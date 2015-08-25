@@ -25,7 +25,7 @@ public informclient(strindex[]) {
 	new myindex 
 	myindex=str_to_num(strindex) 
 	if(myindex>0) 
-		client_print(myindex, print_chat, "%L", myindex, "TYPE_HELP") 
+		client_print(myindex, print_chat, "%L", myindex, "TYPE_HELP_MULTIMOD") 
 } 
 
 
@@ -84,6 +84,7 @@ public admin_showthem(id,level,cid) {
 public plugin_init() {  
 	register_plugin("Server Rules","1.4","DoubleTap")  
 	register_dictionary("adminhelp.txt")
+	register_dictionary("multimodhelp.txt")
 	
 	register_clcmd("say /showrules", "server_rules") 
 	register_clcmd("say showrules", "server_rules") 

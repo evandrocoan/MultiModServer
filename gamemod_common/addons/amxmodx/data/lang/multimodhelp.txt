@@ -1,0 +1,7 @@
+[en]
+TYPE_ADDONS_CONTATO = This server uses [  Addons Multi-Mod v3.0  ]  --  Do Download at: www.addons.zz.mu
+TYPE_HELP_MULTIMOD =  To view the Player controls like buying bazooka, ..., type ( say /commands ) in console.
+
+[bp]
+TYPE_ADDONS_CONTATO = Este server utiliza [  Addons Multi-Mod v3.0  ]  --  Download em:   www.addons.zz.mu
+TYPE_HELP_MULTIMOD =  Para visualizar os comandos, tais como comprar bazooka, ..., digite ( say /commands ) no console.
