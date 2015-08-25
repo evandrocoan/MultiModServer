@@ -1,0 +1,29 @@
+pb help add
+pb add [skill [personality [team [model [name]]]]]
+This command adds a Bot with parameters:
+a) Skill - You can write it from 1 to 100. If You will write 101, it will mean
+   a random skill from pb_minbotskill to pb_maxbotskill cvars.
+b) Personality - 1 to 3 or 5 and these value mean:
+   1 - Normal [POD], 2 - Aggresive [P*D], 3 - Defensive [P0D],
+   5 - Random personality from these 3 above.
+c) Team - 1 is for Terrorists, 2 for CTs and 5 to use auto-assign.
+   Note - this setting might be overwritten by forcing bots to join always
+   one team if pb_bot_join_team cvar is equal to "T" or "CT".
+d) Model (just a class) - is 1-4 or 5 (5 means random CS models from 1 to 4).
+e) Name is of course the name for the bot.
+You can skip all parameters from the right of the last specified, but
+You cannot skip any parameter in the middle of the command nor between, i.e
+pb add 100 3 - it's the right command, but pb add 100 "Roger" is not (You
+skipped the personality and the model parameters - between skill and name.
+
+Bot Personalities
+There are 3 different Personalities in POD now, if you have 'pb_detailnames' turned 
+on they are shown through the Prefixes like this:
+[P*D] = Agressive Bot
+[POD] = Normal Bot
+[P0D] = Defensive Bot
+These personalities affect bot's buying system, they influent taking the decision 
+about paths (more aggresive bots take shortest paths, normal bots care about the 
+history (danger of the path) and the distance, deffensive bots are taking the most 
+safe paths. You can specify which one type of personlity has to be added to the game 
+by pb add command (or pb fillserver or from podbotmenu) .

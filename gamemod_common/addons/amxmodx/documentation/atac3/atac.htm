@@ -1,0 +1,535 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+	<title>ATAC - Advanced Team Attack Control</title>
+	<link rel="stylesheet" href="atac.css">
+</head>
+<body>
+<div class="head">ATAC - Advance Team Attack Control</div>
+<div class="cr">Copyright &copy; 2006-2008 by <font color="#CC9900">ATAC Team</font></div><br>
+<font color="#000066" size="2" face="Verdana">ATAC allows you to customise the way you handle Team Attackers/Killers
+in a variety of different ways for most Half-Life 1 modifications.</font>
+<br><br>
+<font size="2" Face="Verdana">Sections:</font>
+<br>
+<ol>
+	<li><a href="#install">Installation</a><br></li>
+	<li><a href="#config">Configuration</a><br></li>
+	<li><a href="#cvars">CVARs</a><br></li>
+	<li><a href="#cmds">Commands</a><br></li>
+	<li><a href="#natives">Natives and Forwards</a><br></li>
+	<li><a href="#examples">Scripting examples</a><br></li>
+	<li><a href="#support">Support - External Mods</a><br></li>
+	<li><a href="#credits">Credits and copyrights</a><br></li>
+	<li><a href="#changelog">Changelog</a><br></li>
+</ol>
+<br>
+
+
+<p class="head">I. Installation<a name="install"></a></p>
+<p class="indent">ATAC requires <a href="http://www.amxmodx.org/">AMX Mod X 1.76c</a> or above with FakeMeta module enabled.</p>
+<p class="indent">To install the mod, follow these directions:</p>
+<ol>
+     <li>Extract ATAC package into your addons/amxmodx directory</li>
+     <li>Open addons/amxmodx/configs/atac directory configure the cfg files to suit your needs</li>
+     <li>Open addons/amxmodx/configs/atac-plugins.ini file and configure the plugins to suit your needs</li>
+     <li>Restart your HLDS server, and you're done!</li>
+</ol>
+<br>
+<center><a href="" target="_top">Back to Top</a></center>
+
+
+<p class="head">II. Configuration<A name="config"></a></p>
+<p class="indent">Configuration is done 98% through atac.cfg file in amxmodx/configs/atac. The other 2% is done in the atac.inc file in amxmodx/scripting/include which just involves changing the defines at the top of the file.
+This is only required if your not happy with how many registered punishments/hooks are allowed.</p>
+<br>
+<center><a href="" target="_top">Back to Top</a></center>
+
+
+<p class="head">III. CVARs<A name="cvars"></a></p>
+<table style="BORDER-COLLAPSE: collapse; border-color:#111111;" cellPadding="2" width="100%" border="1">
+	<tr>
+		<th align="center" width="100%" bgColor="#66ccff" colSpan="3"><b>ATAC</b></th>
+	</tr>
+	<tr>
+		<th width="25%" bgColor="#ffcc66"><b>Name</b></th>
+		<th width="65%" bgColor="#d4d0c8"><b>Information</b></th>
+		<th width="10%" bgColor="#d4d0c8"><b>Default Value</b></th>
+	</tr>
+	<tr>
+		<td class="tName">atac_disabled</td>
+		<td class="tFunc">Switches ATAC off or on</td>
+		<td class="tVer">0</td>
+	</tr>
+	<tr>
+		<td class="tName">atac_menu</td>
+		<td class="tFunc">Switches punishment menu on or off</td>
+		<td class="tVer">1</td>
+	</tr>
+	<tr>
+		<td class="tName">atac_menu_overwrite</td>
+		<td class="tFunc">Switches menu overwriting on or off</td>
+		<td class="tVer">0</td>
+	</tr>
+	<tr>
+		<td class="tName">atac_show_punishment</td>
+		<td class="tFunc">Shows which punishment was selected</td>
+		<td class="tVer">1</td>
+	</tr>
+	<tr>
+		<td class="tName">atac_immunity_flags</td>
+		<td class="tFunc">Sets the access level flags needed for a player to have immunity</td>
+		<td class="tVer">a</td>
+	</tr>
+	<tr>
+		<td class="tName">atac_admins_immune</td>
+		<td class="tFunc">Sets admin immunity type: 0=OFF, 1=NO KICK/BAN, 2=ON (Admins require flag "a")</td>
+		<td class="tVer">1</td>
+	</tr>
+	<tr>
+		<td class="tName">atac_tk_avoidance</td>
+		<td class="tFunc">Increases Team Killers TK's upon disconnect when trying to avoid punishment: 0=OFF, 1=ON</td>
+		<td class="tVer">1</td>
+	</tr>
+	<tr>
+		<td class="tName">atac_store_kills</td>
+		<td class="tFunc">Switches storage of kills per map on or off</td>
+		<td class="tVer">1</td>
+	</tr>
+	<tr>
+		<td class="tName">atac_tk_afterdeath</td>
+		<td class="tFunc">Sets to count a TA/TK when attacker/killer dies beforehand (ie grenades, or other projectiles)</td>
+		<td class="tVer">0</td>
+	</tr>
+	<tr>
+		<td class="tName">atac_ban_type</td>
+		<td class="tFunc">Sets banning type: 0=OFF, 1=IP, 2=AUTHID, 3=AUTO-DETECT</td>
+		<td class="tVer">3</td>
+	</tr>
+	<tr>
+		<td class="tName">atac_ban_time</td>
+		<td class="tFunc">Sets amount of time (minutes) you want to ban a user after their Team Kills have reached the limit (0=PERMANENT BAN)</td>
+		<td class="tVer">120</td>
+	</tr>
+	<tr>
+		<td class="tName">atac_team_attacks</td>
+		<td class="tFunc">Sets amount of Team Attacks you want to be counted as a Team Kill (0=OFF)</td>
+		<td class="tVer">5</td>
+	</tr>
+	<tr>
+		<td class="tName">atac_team_kills</td>
+		<td class="tFunc">Sets amount of Team Kills you want allowed before user is kicked/banned (0=OFF)</td>
+		<td class="tVer">3</td>
+	</tr>
+	<tr>
+		<th align="center" width="100%" bgColor="#66ccff" colSpan="3"><b>Punishments</b></th>
+	</tr>
+	<tr>
+		<td class="tName">atac_slap_amount</td>
+		<td class="tFunc">Sets how many slaps to give a killer <b>[atac_slap plugin]</b></td>
+		<td class="tVer">10</td>
+	</tr>
+	<tr>
+		<td class="tName">atac_slap_power</td>
+		<td class="tFunc">Sets how much health to take away from killer, for each slap <b>[atac_slap plugin]</b></td>
+		<td class="tVer">5</td>
+	</tr>
+	<tr>
+		<td class="tName">atac_jail_time</td>
+		<td class="tFunc">Sets the amount of time you want the killer jailed for, in seconds <b>[atac_jail plugin]</b></td>
+		<td class="tVer">45</td>
+	</tr>
+	<tr>
+		<td class="tName">atac_bomb_mode</td>
+		<td class="tFunc">Sets whether Time bomber can affect others: 0=Killer *ONLY*, 1=Killer can blow up others <b>[atac_bomb plugin]</b></td>
+		<td class="tVer">0</td>
+	</tr>
+	<tr>
+		<td class="tName">atac_bomb_range</td>
+		<td class="tFunc">Sets explosion range to kill others <b>[atac_bomb plugin]</b></td>
+		<td class="tVer">1000</td>
+	</tr>
+	<tr>
+		<td class="tName">atac_fire_mode</td>
+		<td class="tFunc">Sets whether killer who is on Fire can affect others: 0=Killer *ONLY*, 1=Killer can ignite others <b>[atac_fire plugin]</b></td>
+		<td class="tVer">0</td>
+	</tr>
+	<tr>
+		<th align="center" width="100%" bgColor="#66ccff" colSpan="3"><b>Team Attack Addon [atac_ta plugin]</b></th>
+	</tr>
+	<tr>
+		<td class="tName">atac_slap_attacker</td>
+		<td class="tFunc">Sets slapping on attacker: 0=OFF, 1=ON (Note: no health is deducted)</td>
+		<td class="tVer">0</td>
+	</tr>
+	<tr>
+		<td class="tName">atac_slayon_maxattacks</td>
+		<td class="tFunc">Sets slaying on maximum Team Attacks: 0=OFF, 1=ON</td>
+		<td class="tVer">0</td>
+	</tr>
+	<tr>
+		<td class="tName">atac_health_restore</td>
+		<td class="tFunc">Sets health restoration on victim: 0=OFF, 1=ON</td>
+		<td class="tVer">0</td>
+	</tr>
+	<tr>
+		<td class="tName">atac_mirror_damage</td>
+		<td class="tFunc">Sets mirror damage on attacker: 0=OFF, 1=ON</td>
+		<td class="tVer">0</td>
+	</tr>
+	<tr>
+		<td class="tName">atac_noattack_within</td>
+		<td class="tFunc">Sets no Team Attack timelimit in seconds from beginning of spawn (0=OFF)</td>
+		<td class="tVer">5</td>
+	</tr>
+	<tr>
+		<th align="center" width="100%" bgColor="#66ccff" colSpan="3"><b>Hud Messages Addon [atac_hudmsg plugin]</b></th>
+	</tr>
+	<tr>
+		<td class="tName">atac_hudtext</td>
+		<td class="tFunc">Sets hud notification type: 0=HudText (Default), 1=SayText (Yellow), 2=SayText (Green), 3=SayText (Team Colour)</td>
+		<td class="tVer">0</td>
+	</tr>
+</table>
+<br>
+<center><a href="" target="_top">Back to Top</a></center>
+
+
+<p class="head">IV. Commands<a name="cmds"></a></p>
+<table style="BORDER-COLLAPSE: collapse; border-color:#111111;" cellPadding="2" width="100%" border="1">
+	<tr>
+		<th align="center" width="100%" bgColor="#66ccff" colSpan="3"><b>Server Commands</b>
+	</tr>
+	<tr>
+		<th width="25%" bgColor="#ffcc66"><b>Command</b></th>
+		<th width="60%" bgColor="#d4d0c8"><b>Information</b></th>
+		<th width="15%" bgColor="#d4d0c8"><b>Version Implemented</b></th>
+	</tr>
+	<tr>
+		<td class="tName" valign="top">atac</td>
+		<td class="tFunc">
+			off - disables ATAC<br>
+			on - enables ATAC<br>
+			version - displays ATAC version<br>
+			settings - displays ATAC settings<br>
+			players - displays all players team attacks/kills status<br>
+			punishments - displays punishments registered<br>
+			addons - displays addons registered<br>
+			credits - displays credits<br>
+			team - displays current development team
+		</td>
+		<td class="tVer">
+			3.0<br>
+			3.0<br>
+			3.0<br>
+			3.0<br>
+			3.0<br>
+			3.0<br>
+			3.0<br>
+			3.0<br>
+			3.0
+		</td>
+	</tr>
+	<tr>
+		<th align="center" width="901" bgColor="#66ccff" colSpan="3"><b>Client Commands</b></th>
+	</tr>
+	<tr>
+		<td class="tName">say /atacstatus</td>
+		<td class="tFunc">Shows your Team Attack and Team Kill status</td>
+		<td class="tVer">3.0</td>
+	</tr>
+	<tr>
+		<td class="tName">atac_addmetk</td>
+		<td class="tFunc">Allows admins to increment their own Team Kills, mainly used for testing purposes <b>[atac_cmds plugin]</b></td>
+		<td class="tVer">3.0</td>
+	</tr>
+</table>
+<br>
+<center><a href="" target="_top">Back to Top</a></center>
+
+
+<p class="head">V. Natives<a name="natives"></a></p>
+<table style="BORDER-COLLAPSE: collapse; border-color:#111111;" cellPadding="2" width="100%" border="1">
+	<tr>
+		<th align="center" width="100%" bgColor="#66ccff" colSpan="3"><b>Natives</b>
+	</tr>
+	<tr>
+		<th width="30%" bgColor="#ffcc66"><b>Command</b></th>
+		<th width="55%" bgColor="#d4d0c8"><b>Information</b></th>
+		<th width="15%" bgColor="#d4d0c8"><b>Version Implemented</b></th>
+	</tr>
+	<tr>
+		<td class="tName">atac_register_punishment()</td>
+		<td class="tFunc" valign="top">Register a punishment returns -1 on failure. Allows hooking any forward from <b>[Punishments]</b></td>
+		<td class="tVer" valign="top">3.0</td>
+	</tr>
+	<tr>
+		<td class="tName">atac_register_addon()</td>
+		<td class="tFunc" valign="top">Register a addon returns -1 on failure. Allows hooking any forward from <b>[Addons]</b></td>
+		<td class="tVer" valign="top">3.0</td>
+	</tr>
+	<tr>
+		<td class="tName">is_punishment_valid( index )</td>
+		<td class="tFunc" valign="top">Returns -1 on failure or plugin index if punishment is valid</td>
+		<td class="tVer" valign="top">3.0</td>
+	</tr>
+	<tr>
+		<td class="tName">get_maxpunishments()</td>
+		<td class="tFunc" valign="top">Returns maximum amount of punishments registered</td>
+		<td class="tVer" valign="top">3.0</td>
+	</tr>
+	<tr>
+		<td class="tName">get_atac_attacks( id )</td>
+		<td class="tFunc" valign="top">Gets the amount of Team Attacks done by a player</td>
+		<td class="tVer" valign="top">3.0</td>
+	</tr>
+	<tr>
+		<td class="tName">set_atac_attacks( attacker, victim, amount=-1)</td>
+		<td class="tFunc" valign="top">Sets the amount of Team Attacks done by a player</td>
+		<td class="tVer" valign="top">3.0</td>
+	</tr>
+	<tr>
+		<td class="tName">get_atac_kills( id )</td>
+		<td class="tFunc" valign="top">Gets the amount of Team Kills done by a player</td>
+		<td class="tVer" valign="top">3.0</td>
+	</tr>
+	<tr>
+		<td class="tName">set_atac_kills( killer, victim, amount=-1, special=-1 )</td>
+		<td class="tFunc" valign="top">Sets the amount of Team Kills done by a player.<br><i>special -1 - No action, 0 - Simulate a real team kill longs the killer & victim teams match!, 1 - Fun Menu, 2+ - Activate a specific punishment</i></td>
+		<td class="tVer" valign="top">3.0</td>
+	</tr>
+	<tr>
+		<th align="center" width="100%" bgColor="#66ccff" colSpan="3"><b>Forwards</b>
+	</tr>
+	<tr>
+		<td class="tName">atac_punishment_name( victim )</td>
+		<td class="tFunc" valign="top">Called when ATAC builds it's Team Kill Menu. You must return with EngFunc_AllocString! <b>[Punishments]</b></td>
+		<td class="tVer" valign="top">3.0</td>
+	</tr>
+	<tr>
+		<td class="tName">atac_player_punish( killer, victim )</td>
+		<td class="tFunc" valign="top">Called when a punishment is chosen. <b>[Punishments]</b></td>
+		<td class="tVer" valign="top">3.0</td>
+	</tr>
+	<tr>
+		<td class="tName">atac_player_reset( killer, victim )</td>
+		<td class="tFunc" valign="top">Called when a player dies and just before a player respawns. <b>[Punishments]</b></td>
+		<td class="tVer" valign="top">3.0</td>
+	</tr>
+	<tr>
+		<td class="tName">atac_player_spawn( killer, victim )</td>
+		<td class="tFunc" valign="top">Called when a player (re)spawns. <b>[Punishments]</b></td>
+		<td class="tVer" valign="top">3.0</td>
+	</tr>
+	<tr>
+		<td class="tName">atac_team_attack( attacker, victim, damage )</td>
+		<td class="tFunc" valign="top">Called when a team attack occurs. <b>[Addons]</b></td>
+		<td class="tVer" valign="top">3.0</td>
+	</tr>
+	<tr>
+		<td class="tName">atac_team_kill( killer, victim )</td>
+		<td class="tFunc" valign="top">Called when a team kill occurs. <b>[Addons]</b></td>
+		<td class="tVer" valign="top">3.0</td>
+	</tr>
+	<tr>
+		<td class="tName">atac_punished( killer, const name[], const authid[], bantype )</td>
+		<td class="tFunc" valign="top">Called when a team kill increment occurs. This forward can supercede ATAC's banning system by:<br>return PLUGIN_HANDLED <b>[Addons]</b></td>
+		<td class="tVer" valign="top">3.0</td>
+	</tr>
+	<tr>
+		<td class="tName">atac_punishment_activated( punishment_id, killer, victim )</td>
+		<td class="tFunc" valign="top">Called when a punishment activates. <b>[Addons]</b></td>
+		<td class="tVer" valign="top">3.0.1</td>
+	</tr>
+</table>
+<br>
+<center><a href="" target="_top">Back to Top</a></center>
+
+
+<p class="head">VI. Scripting examples<a name=examples></a></p>
+<p class="indent">Example Registering a Punishment:</p>
+<div class="code"><pre>
+#include &lt;amxmodx&gt;
+#include &lt;fakemeta&gt;
+#include &lt;atac&gt;
+
+#define PLUGIN  "Some Name"
+#define VERSION "Some Number"
+#define AUTHOR  "Some Name"
+
+public plugin_init()
+{
+	register_plugin( PLUGIN, VERSION, AUTHOR )
+	atac_register_punishment()
+}
+
+public atac_punishment_name( id )
+{
+	<span style="color:#FFFF00;">// Setup menu text</span>
+	new text[ 64 ]
+	formatex( text, 63, "%L", id, "SOME_MACRO" )
+	<span style="color:#FFFF00;">// You must do this, else ATAC won't decode your string</span>
+	return engfunc( EngFunc_AllocString, text )
+}
+
+public atac_player_punish( killer, victim )
+{
+	<span style="color:#FFFF00;">// Saves duplicating data</span>
+	exec_punishment( killer )
+	<span style="color:#FFFF00;">// You don't have to return a hook but it saves catching events</span>
+	return ATAC_HOOK_RESET
+}
+
+public atac_player_spawn( killer, victim )
+{
+	<span style="color:#FFFF00;">// Saves duplicating data</span>
+	exec_punishment( killer )
+	<span style="color:#FFFF00;">// You don't have to return a hook but it saves catching events</span>
+	return ATAC_HOOK_RESET
+}
+
+public atac_player_reset( killer, victim )
+{
+	client_print( 0, print_chat, "Punishment ended for: %i", killer )
+}
+
+exec_punishment(id)
+{
+	client_print( 0, print_chat, "Executing punishment on: %i", id )
+}
+</pre></div>
+<p class="indent">Example Registering Team Damage Attack:</p>
+<div class="code"><pre>
+#include &lt;amxmodx&gt;
+#include &lt;atac&gt;
+
+#define PLUGIN  "Some Name"
+#define VERSION "Some Number"
+#define AUTHOR  "Some Name"
+
+public plugin_init()
+{
+	register_plugin( PLUGIN, VERSION, AUTHOR )
+	atac_register_addon()
+}
+
+public atac_team_attack( attacker, victim, damage )
+{
+	client_print( 0, print_chat, "Attacker: %i - Victim: %i - Damage: %i", attacker, victim, damage )
+}
+</pre></div>
+<br>
+<center><a href="" target="_top">Back to Top</a></center>
+
+
+<p class="head">VII. Support - External Mods<a name="support"></a></p>
+<p class="indent">Adding support for external modifications is quite simple. All you need to do is this (Example):</p>
+<div class=code><pre>
+set_pev( id, pev_dmg_inflictor, index )
+<span style="color:#FFFF00;">// FakeMeta Module way</span>
+set_pev( id, pev_health, value )
+<span style="color:#FFFF00;">// Fun Module way</span>
+set_user_health( id, value )
+</pre></div>
+<p class="indent">As soon as health is changed ATAC intercepts the call and checks whether its a team mate attacking.</p>
+<p class="indent">MODs that enhance gameplay which allows for team mate attacking/killing would need to disable ATAC else it'll just spoil the MOD, here is how:</p>
+<div class="code"><pre>
+new atac_active
+
+atac_check()
+{
+	atac_active = get_cvar_pointer( "atac_disabled" )
+	if ( !get_pcvar_num( atac_active ) )
+		server_cmd( "atac off" )
+}
+</pre></div>
+<p class="indent"><b>DO NOT ASK: <font color="#CC9900"><i>any ATAC TEAM member to write direct support for your PLUGIN inside of ATAC itself, it will never happen since as of this version ATAC supports near enough any
+Half-Life 1 modification. Writing direct support for certain PLUGIN's is pointless since they mainly support only one particular MOD!</i></font></b></p>
+<br>
+<center><a href="" target="_top">Back to Top</a></center>
+
+
+<p class="head">VIII. Credits and copyrights<a name="credits"></a></p>
+<p class="courier">
+* Copyright &copy; 2006-2008, ATAC Team<br>
+*<br>
+* ATAC (Advanced Team Attack Control) is free software;<br>
+* you can redistribute it and/or modify it under the terms of the<br>
+* GNU General Public License as published by the Free Software Foundation.<br>
+*<br>
+* This program is distributed in the hope that it will be useful,<br>
+* but WITHOUT ANY WARRANTY; without even the implied warranty of<br>
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the<br>
+* GNU General Public License for more details.<br>
+*<br>
+* You should have received a copy of the GNU General Public License<br>
+* along with ATAC (Advanced Team Attack Control); if not, write to the<br>
+* Free Software Foundation, Inc., 59 Temple Place - Suite 330,<br>
+* Boston, MA  02111-1307, USA.<br>
+</p>
+<p class="courier">People who contributed/inspired ATAC are:</p>
+<dl>
+	<dt style="color:#CC9900">ATAC Team:</dt>
+	<dd>Lead Developer: Phil "Orangutanz" Poland</dd>
+	<dd>Developers: Brad Jones, Christoph "DevconeS" Amrein</dd>
+	<dd>Translations:	Orangutanz (English), arkshine (French), |PJ| Shorty (German), KWo (Polish), Deviance (Swedish),</dd>
+	<dd>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp Nem0 (Romanian), Cofeiini (Finnish), guilherme (Portuguese - Brazil), Dav3 (Hungarian), thedavis (Spanish)</dd>
+	<dd>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp BlackMilk (Dutch), iggy_bus (Serbian), Arion (Portuguese), and Strelomet (Russian)</dd>
+	<dd>Testers: KWo (PODBot developer), M249-M4A1, AMX Mod X community</dd>
+	<dt style="color:#CC9900">Pre ATAC 3:</dt>
+	<dd>Aaron "f117bomb" Drabeck - original co-author of ATAC</dd>
+	<dd>Phil "T(+)rget" Poland - original co-author of ATAC</dd>
+	<dd>teame06 & {NM}Jason - converting and improving ATAC 2.5.x for AMX Mod X</dd>
+	<dt style="color:#CC9900">Misc:</dt>
+	<dd>David "BAILOPAN" Anderson - if it wasn't for this guy ATAC 3 wouldn't of been possible</dd>
+	<dd>Aleksander "OLO" Naszko - if it wasn't for this guy ATAC would of never existed</dd>
+</dl>
+<br>
+<center><a href="" target="_top">Back to Top</a></center>
+
+
+<p class="head">IX. Changelog<A name="changelog"></a></p>
+<pre>
+ 3.0.1: 28/03/08
+	Updated documentation, added Back to Top at the end of each section. Added missing cvars to the table.
+	Fixed an issue with Jail punishment, where in rare instances you maynot spawn with any weapons.
+	Added CVAR "atac_hudtext" to atac_hudmsg plugin as requested by Jay-izi. Allows using SayText, read addons.cfg for more details.
+	Changed forward: "atac_punished(killer, const name[], const authid[])" to "atac_punished(killer, const name[], const authid[], bantype)".
+	Added new forward "atac_punishment_activated(punishment_id, killer, victim)". Called when a punishment activates.
+	Fixed punishments: atac_slap2one, atac_slap, and atac_slay. They shouldn't return ATAC_HOOK_RESET.
+	Added CVAR "atac_tk_avoidance". Increase Team Killers TK's upon disconnect when trying to avoid punishment.
+	Updated addon "atac_cmds" due to native changes.
+	Changed native "set_atac_kills(killer, amount=-1, victim=0, item=0)" to "set_atac_kills(killer, victim, amount=-1, special=-1)".
+	Changed native "set_atac_attacks(attacker, amount, victim=0)" to "set_atac_attacks(attacker, victim, amount=-1)".
+	Added CVAR "atac_show_punishment". Allows you to see which punishment was selected.
+	Updated addon "atac_cmds" so you can define your own access flags, see "atac_commands.cfg" for more details.
+	Changed CVAR "atac_nocount_death" to "atac_tk_afterdeath".
+	Fixed victim menu so if 2+ victims are looking at the same killer record, it now updates.
+	Fixed victim menu so it auto-closes when the killer disconnects.
+	Fixed punishments not being saved on disconnecting client if they were dead.
+	Removed multi_print function, not required due to console_print.
+	Changed register_clcmd and register_srvcmd into one register_concmd (Thx DevconeS for pointing this out).
+	Added CVAR "atac_immunity_flags". Users can now specify the specific flags they want to have immunity.
+	Updated the kick message for when a player is kicked or banned (not via AMXBans).
+	Added the killer's current Team Kill count to the title of the punishment menu.
+	Fixed possible menu exploit which a victim could expose.
+	Updated Polish translation thanks to Sn!ff3r.
+	Fixed multiple issues when a player reaches max Team Kills and the "kick" option is chosen.
+	Minor change to atac_version CVAR so the version immediately changes upon map change.
+	Added Portuguese - Brazil (pt) thanks to guilherme.
+	Added Finnish (fi) thanks to Cofeiini.
+	Added Romanian (ro) thanks to Nem0.
+	Added Portuguese (bp) thanks to Arion.
+	Fixed IP banning system.
+	Fixed Polish translation thanks to zuk4u.
+	Updated ATAC Timebomb to 1.1 which fixes potential double death icon bug.
+	Updated ATAC Badaim to 1.1 which is now converted to FakeMeta scheme.
+	Updated ATAC AMXBans to 1.1 which fixes possible incorrect banning procedure.
+
+ 3.0:	04/10/07
+	Public Release for Series 3.
+</pre>
+<center><a href="" target="_top">Back to Top</a></center>
+</body>
+</html>

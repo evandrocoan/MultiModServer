@@ -1,0 +1,2758 @@
+[en]
+
+AMX_SUPER_TEAM_IMMUNITY = [AMXX] Skipping ^"%s^" because player has immunity.
+AMX_SUPER_NO_PLAYERS = [AMXX] No players in such team!
+AMX_SUPER_AMOUNT_GREATER = [AMXX] Amount to give must be greater than zero!
+
+AMX_SUPER_HEAL_TEAM_CASE2 = [AMXX] ADMIN %s gave %d HP to %s players
+AMX_SUPER_HEAL_TEAM_CASE1 = [AMXX] ADMIN gave %d HP to %s players
+AMX_SUPER_HEAL_PLAYER_CASE2 = [AMXX] ADMIN %s gave %d HP to %s
+AMX_SUPER_HEAL_PLAYER_CASE1 = [AMXX] ADMIN gave %d HP to %s
+AMX_SUPER_HEAL_TEAM_LOG = [AMX_Super] HEAL: ^"%s<%s>^" gave %d HP to ^"%s^" players
+AMX_SUPER_HEAL_PLAYER_LOG = [AMX_Super] HEAL: ^"%s<%s>^" gave %d HP to ^"%s<%s>^" 
+AMX_SUPER_HEAL_TEAM_MSG = [AMXX] Gave %d HP to %s players
+AMX_SUPER_HEAL_PLAYER_MSG = [AMXX] Gave %d HP to %s
+
+AMX_SUPER_ARMOR_TEAM_CASE2 = [AMXX] ADMIN %s gave %d armor to %s players
+AMX_SUPER_ARMOR_TEAM_CASE1 = [AMXX] ADMIN gave %d armor to %s players
+AMX_SUPER_ARMOR_PLAYER_CASE2 = [AMXX] ADMIN %s gave %d armor to %s
+AMX_SUPER_ARMOR_PLAYER_CASE1 = [AMXX] ADMIN gave %d armor to %s
+AMX_SUPER_ARMOR_TEAM_LOG = [AMX_Super] ARMOR: ^"%s<%s>^" gave %d armor to ^"%s^" players
+AMX_SUPER_ARMOR_PLAYER_LOG = [AMX_Super] ARMOR: ^"%s<%s>^" gave %d armor ^"%s<%s>^"
+AMX_SUPER_ARMOR_TEAM_MSG = [AMXX] Gave %d armor to %s players
+AMX_SUPER_ARMOR_PLAYER_MSG = [AMXX] Gave %d armor to %s
+
+AMX_SUPER_STACK_PLAYER_CASE2 = [AMXX] ADMIN %s stacked all players on %s
+AMX_SUPER_STACK_PLAYER_CASE1 = [AMXX] ADMIN stacked all players on %s
+AMX_SUPER_STACK_PLAYER_LOG = [AMX_Super] STACK: ^"%s<%s>^" stacked all players on ^"%s<%s>^"
+AMX_SUPER_STACK_PLAYER_MSG = [AMXX] Stacked all players on %s
+
+AMX_SUPER_ALLTALK_STATUS = [AMXX] sv_alltalk is ^"%d^"
+AMX_SUPER_ALLTALK_SET_CASE2 = [AMXX] ADMIN %s set sv_alltalk to ^"%s^"
+AMX_SUPER_ALLTALK_SET_CASE1 = [AMXX] ADMIN set sv_alltalk to ^"%s^"
+AMX_SUPER_ALLTALK_LOG = [AMX_Super] ALLTALK: ^"%s<%s>^" set sv_alltalk to ^"%s^"
+AMX_SUPER_ALLTALK_MSG = [AMXX] Alltalk has been set to ^"%s^"
+
+AMX_SUPER_GRAVITY_STATUS = [AMXX] sv_gravity is ^"%d^"
+AMX_SUPER_GRAVITY_SET_CASE2 = [AMXX] ADMIN %s set gravity to ^"%s^"
+AMX_SUPER_GRAVITY_SET_CASE1 = [AMXX] ADMIN set gravity to ^"%s^"
+AMX_SUPER_GRAVITY_LOG = [AMX_Super] GRAVITY: ^"%s<%s>^" set sv_gravity to ^"%s^"
+AMX_SUPER_GRAVITY_MSG = [AMXX] Gravity has been set to ^"%s^"
+AMX_SUPER_GRAVITY_CHECK = [AMXX] The gravity is set at %i
+
+AMX_SUPER_BURY_TEAM_CASE2 = [AMXX] ADMIN %s has buried %s players
+AMX_SUPER_BURY_TEAM_CASE1 = [AMXX] ADMIN has buried %s players
+AMX_SUPER_BURY_PLAYER_CASE2 = [AMXX] ADMIN %s has buried %s
+AMX_SUPER_BURY_PLAYER_CASE1 = [AMXX] ADMIN has buried %s
+AMX_SUPER_UNBURY_TEAM_CASE2 = [AMXX] ADMIN %s has unburied %s players
+AMX_SUPER_UNBURY_TEAM_CASE1 = [AMXX] ADMIN has unburied %s players
+AMX_SUPER_UNBURY_PLAYER_CASE2 = [AMXX] ADMIN %s has unburied %s
+AMX_SUPER_UNBURY_PLAYER_CASE1 = [AMXX] ADMIN has unburied %s
+AMX_SUPER_UNBURY_TEAM_LOG = [AMX_Super] UNBURY: ^"%s<%s>^" has unburied ^"%s^" players
+AMX_SUPER_UNBURY_PLAYER_LOG = [AMX_Super] UNBURY: ^"%s<%s>^" has unburied ^"%s<%s>^"
+AMX_SUPER_BURY_PLAYER_LOG = [AMX_Super] BURY: ^"%s<%s>^" has buried ^"%s<%s>^"
+AMX_SUPER_BURY_TEAM_LOG = [AMX_Super] BURY: ^"%s<%s>^" has buried ^"%s^" players
+AMX_SUPER_BURY_MSG = [AMXX] Player %s has been buried
+AMX_SUPER_UNBURY_MSG = [AMXX] Player %s has been unburied
+
+AMX_SUPER_DISARM_TEAM_CASE2 = [AMXX] ADMIN %s has disarmed %s players
+AMX_SUPER_DISARM_TEAM_CASE1 = [AMXX] ADMIN has disarmed %s players
+AMX_SUPER_DISARM_PLAYER_CASE2 = [AMXX] ADMIN %s has disarmed %s
+AMX_SUPER_DISARM_PLAYER_CASE1 = [AMXX] ADMIN has disarmed %s
+AMX_SUPER_DISARM_TEAM_LOG = [AMX_Super] DISARM: ^"%s<%s>^" has disarmed ^"%s^" players
+AMX_SUPER_DISARM_PLAYER_LOG = [AMX_Super] DISARM: ^"%s<%s>^" has disarmed ^"%s<%s>^"
+AMX_SUPER_DISARM_MSG = [AMXX] Player %s has been disarmed
+
+AMX_SUPER_SLAY2_TEAM_CASE2 = [AMXX] ADMIN %s slayed %s players
+AMX_SUPER_SLAY2_TEAM_CASE1 = [AMXX] ADMIN slayed %s players
+AMX_SUPER_SLAY2_PLAYER_CASE2 = [AMXX] ADMIN %s slayed %s
+AMX_SUPER_SLAY2_PLAYER_CASE1 = [AMXX] ADMIN slayed %s
+AMX_SUPER_SLAY2_TEAM_LOG = [AMX_Super] SLAY2: ^"%s<%s>^" slayed ^"%s^" players 
+AMX_SUPER_SLAY2_PLAYER_LOG =  [AMX_Super] SLAY2: ^"%s<%s>^" slayed ^"%s<%s>^"
+AMX_SUPER_SLAY2_TEAM_MSG = [AMXX] Slayed %s players
+AMX_SUPER_SLAY2_PLAYER_MSG = [AMXX] Slayed %s
+
+AMX_SUPER_FIRE_PLAYER_CASE2 = [AMXX] ADMIN %s set %s on fire.
+AMX_SUPER_FIRE_PLAYER_CASE1 = [AMXX] ADMIN set %s on fire.
+AMX_SUPER_FIRE_TEAM_LOG = [AMX_Super] FIRE: ^"%s<%s>^" set fire to ^"%s^" players
+AMX_SUPER_FIRE_PLAYER_LOG = [AMX_Super] FIRE: ^"%s<%s>^" set fire to ^"%s<%s>^"
+AMX_SUPER_FIRE_TEAM_MSG = [AMXX] Set %s players on fire
+AMX_SUPER_FIRE_PLAYER_MSG = [AMXX] Set %s on fire
+AMX_SUPER_FIRE_SPREAD = * [AMXX] OH! NO! %s has caught %s on fire!
+
+AMX_SUPER_ROCKET_TEAM_CASE2 = [AMXX] ADMIN %s made rockets out of %s players
+AMX_SUPER_ROCKET_TEAM_CASE1 = [AMXX] ADMIN made rockets out of %s players
+AMX_SUPER_ROCKET_PLAYER_CASE2 = [AMXX] ADMIN %s made a rocket out of %s
+AMX_SUPER_ROCKET_PLAYER_CASE1 = [AMXX] ADMIN made a rocket out of %s
+AMX_SUPER_ROCKET_TEAM_LOG = [AMX_Super] ROCKET: ^"%s<%s>^" made rockets out of ^"%s^" players
+AMX_SUPER_ROCKET_PLAYER_LOG = [AMX_Super] ROCKET: ^"%s<%s>^" made a rocket out of ^"%s<%s>^"
+AMX_SUPER_ROCKET_TEAM_MSG = [AMXX] Made rockets out of %s players
+AMX_SUPER_ROCKET_PLAYER_MSG = [AMXX] Made a rocket out of %s
+
+AMX_SUPER_UBERSLAP_PLAYER_CASE2 = [AMXX] ADMIN %s uberslapped %s
+AMX_SUPER_UBERSLAP_PLAYER_CASE1 = [AMXX] ADMIN uberslapped %s
+AMX_SUPER_UBERSLAP_PLAYER_MSG = [AMXX] Uberslapped %s
+AMX_SUPER_UBERSLAP_PLAYER_LOG = [AMX_Super] UBERSLAP: ^"%s<%s>^" uberslapped ^"%s<%s>^"
+
+AMX_SUPER_EXEC_ALL_CASE2 = [AMXX] ADMIN %s used command ^"%s^" on everyone
+AMX_SUPER_EXEC_ALL_CASE1 = [AMXX] ADMIN used command ^"%s^" on everyone
+AMX_SUPER_EXEC_TEAM_CASE2 = [AMXX] ADMIN %s used command ^"%s^" on all %s players
+AMX_SUPER_EXEC_TEAM_CASE1 = [AMXX] ADMIN used command ^"%s^" on all %s players
+AMX_SUPER_EXEC_PLAYER_CASE2 = [AMXX] ADMIN %s used command ^"%s^" on %s!
+AMX_SUPER_EXEC_PLAYER_CASE1 = [AMXX] ADMIN used command ^"%s^" on %s!
+AMX_SUPER_EXEC_ALL_LOG = [AMX_Super] EXEC: ^"%s<%s>^" execed ^"%s^" on all players
+AMX_SUPER_EXEC_TEAM_LOG = [AMX_Super] EXEC: ^"%s<%s>^" execed ^"%s^" on all %s players
+AMX_SUPER_EXEC_PLAYER_LOG = [AMX_Super] EXEC: ^"%s<%s>^" execed ^"%s^" on ^"%s<%s>^"
+
+AMX_SUPER_PASSWORD_SET_CASE2 = [AMXX] ADMIN %s has set a server password
+AMX_SUPER_PASSWORD_SET_CASE1 = [AMXX] ADMIN has set a server password
+AMX_SUPER_PASSWORD_REMOVE_CASE2 = [AMXX] ADMIN %s has removed the server password
+AMX_SUPER_PASSWORD_REMOVE_CASE1 = [AMXX] ADMIN has removed the server password
+AMX_SUPER_PASSWORD_SET_LOG = [AMX_Super] PASSWORD: ^"%s<%s>^" set the server password to ^"%s^"
+AMX_SUPER_PASSWORD_REMOVE_LOG = [AMX_Super] PASSWORD: ^"%s<%s>^" removed the server password
+
+AMX_SUPER_REVIVE_TEAM_CASE2 = [AMXX] ADMIN %s revived %s players
+AMX_SUPER_REVIVE_TEAM_CASE1 = [AMXX] ADMIN revived %s players
+AMX_SUPER_REVIVE_PLAYER_CASE2 = [AMXX] ADMIN %s has revived %s
+AMX_SUPER_REVIVE_PLAYER_CASE1 = [AMXX] ADMIN has revived %s
+AMX_SUPER_REVIVE_TEAM_LOG = [AMX_Super] REVIVE: ^"%s<%s>^" revived ^"%s^" players
+AMX_SUPER_REVIVE_PLAYER_LOG = [AMX_Super] REVIVE: ^"%s<%s>^" revived ^"%s<%s>^"
+AMX_SUPER_REVIVE_TEAM_MSG = [AMXX] Revived %s players
+AMX_SUPER_REVIVE_PLAYER_MSG = [AMXX] Revived %s
+AMX_SUPER_REVIVE_TEAM_HUD = %s players have been revived!
+AMX_SUPER_REVIVE_PLAYER_HUD = %s has been revived!
+
+AMX_SUPER_QUIT_TEAM_CASE2 = [AMXX] ADMIN %s made %s players quit the game
+AMX_SUPER_QUIT_TEAM_CASE1 = [AMXX] ADMIN made %s players quit the game
+AMX_SUPER_QUIT_PLAYER_CASE2 = [AMXX] ADMIN %s made %s quit the game
+AMX_SUPER_QUIT_PLAYER_CASE1 = [AMXX] ADMIN made %s quit the game
+AMX_SUPER_QUIT_TEAM_LOG = [AMX_Super] QUIT: ^"%s<%s>^" has made ^"%s^" players quit the game
+AMX_SUPER_QUIT_PLAYER_LOG = [AMX_Super] QUIT: ^"%s<%s>^" has made ^"%s<%s>^" quit the game
+
+AMX_SUPER_GAG_CONNECTED = [AMXX] Gagged player connected ( %s ).
+AMX_SUPER_PLAYER_GAGGED = * You have been gagged
+AMX_SUPER_GAG_PLAYER_DISCONNECT = [AMXX] Gagged player has disconnected: ( %s <%s> )
+AMX_SUPER_PLAYER_NAMELOCK = * Gagged players cannot change their name
+AMX_SUPER_NOT_GAGGED = [AMXX] %s is not gagged & cannot be ungagged.
+AMX_SUPER_GAG_END = [AMXX] %s is no longer gagged
+
+AMX_SUPER_GAG_PLAYER_REASON_CASE2 = [AMXX] ADMIN %s: Has Gagged %s From Speaking For: %s ( %s )
+AMX_SUPER_GAG_PLAYER_REASON_CASE1 = [AMXX] ADMIN: Has Gagged %s From Speaking For: %s ( %s )
+AMX_SUPER_GAG_PLAYER_CASE2 = [AMXX] ADMIN %s: Has Gagged %s From Speaking ( %s )
+AMX_SUPER_GAG_PLAYER_CASE1 = [AMXX] ADMIN: Has Gagged %s From Speaking ( %s )
+
+AMX_SUPER_UNGAG_PLAYER_CASE2 = [AMXX] ADMIN %s: Has Ungagged %s
+AMX_SUPER_UNGAG_PLAYER_CASE1 = [AMXX] ADMIN Has Ungagged %s
+AMX_SUPER_GAG_PLAYER_REASON_LOG = [AMX_Super] Gag: ^"%s<%s>^" Has Gagged %s <%s> for %d ( %d ) Reason: %s
+AMX_SUPER_GAG_PLAYER_LOG = [AMX_Super] Gag: ^"%s<%s>^" Has Gagged %s <%s> for %d ( %d )
+AMX_SUPER_UNGAG_PLAYER_LOG = [AMX_Super] UnGag: ^"%s<%s>^" Has Ungagged %s<%s>
+AMX_SUPER_GAG_REASON = [AMXX] * You are Gagged For The Following Reason: %s
+AMX_SUPER_GAG_RULES = [AMXX] You Were Gagged For Not Following The Rules
+
+AMX_SUPER_WEAPON_TEAM_CASE2 = [AMXX] ADMIN %s gave a weapon to %s players
+AMX_SUPER_WEAPON_TEAM_CASE1 = [AMXX] ADMIN gave a weapon to %s players
+AMX_SUPER_WEAPON_PLAYER_CASE2 = [AMXX] ADMIN %s gave a weapon to %s
+AMX_SUPER_WEAPON_PLAYER_CASE1 = [AMXX] ADMIN gave a weapon to %s
+AMX_SUPER_WEAPON_TEAM_LOG = [AMX_Super] WEAPON: ^"%s<%s>^" gave the weapon ^"%d^" to ^"%s^" players
+AMX_SUPER_WEAPON_PLAYER_LOG = [AMX_Super] WEAPON: ^"%s<%s>^" gave the weapon ^"%d^" to ^"%s<%s>^"
+AMX_SUPER_WEAPON_TEAM_MSG = [AMXX] Gave the weapon %d to %s players
+AMX_SUPER_WEAPON_PLAYER_MSG = [AMXX] Gave the weapon %d to %s
+
+AMX_SUPER_NOCLIP_TEAM_CASE2 = [AMXX] ADMIN %s set noclip ^"%d^" on %s players
+AMX_SUPER_NOCLIP_TEAM_CASE1 = [AMXX] ADMIN set noclip ^"%d^" on %s players
+AMX_SUPER_NOCLIP_PLAYER_CASE2 = [AMXX] ADMIN %s set noclip ^"%d^" on %s
+AMX_SUPER_NOCLIP_PLAYER_CASE1 = [AMXX] ADMIN set noclip ^"%d^" on %s
+AMX_SUPER_NOCLIP_TEAM_LOG = [AMX_Super] NOCLIP: ^"%s<%s>^" set noclip ^"%d^" on ^"%s^" players
+AMX_SUPER_NOCLIP_PLAYER_LOG = [AMX_Super] NOCLIP: ^"%s<%s>^" set noclip ^"%d^" on ^"%s<%s>^"
+AMX_SUPER_NOCLIP_TEAM_MSG = [AMXX] Set noclip ^"%d^" on %s players
+AMX_SUPER_NOCLIP_PLAYER_MSG = [AMXX] Set noclip ^"%d^" on %s
+
+AMX_SUPER_FLASH_TEAM_CASE2 = [AMXX] ADMIN %s flashbanged %s players
+AMX_SUPER_FLASH_TEAM_CASE1 = [AMXX] ADMIN flashbanged %s players
+AMX_SUPER_FLASH_PLAYER_CASE2 = [AMXX] ADMIN %s flashbanged %s
+AMX_SUPER_FLASH_PLAYER_CASE1 = [AMXX] ADMIN flashbanged %s
+AMX_SUPER_FLASH_TEAM_LOG = [AMX_Super] FLASH: ^"%s<%s>^" flashbanged ^"%s^" players
+AMX_SUPER_FLASH_PLAYER_LOG = [AMX_Super] FLASH: ^"%s<%s>^" flashbanged ^"%s<%s>^"
+AMX_SUPER_FLASH_TEAM_MSG = [AMXX] Flashbanged %s players
+AMX_SUPER_FLASH_PLAYER_MSG = [AMXX] Flashbanged %s
+
+AMX_SUPER_GODMODE_TEAM_CASE2 = [AMXX] ADMIN %s set godmode ^"%d^" on %s players
+AMX_SUPER_GODMODE_TEAM_CASE1 = [AMXX] ADMIN set godmode ^"%d^" on %s players
+AMX_SUPER_GODMODE_PLAYER_CASE2 = [AMXX] ADMIN %s set godmode ^"%d^" on %s
+AMX_SUPER_GODMODE_PLAYER_CASE1 = [AMXX] ADMIN set godmode ^"%d^" on %s
+AMX_SUPER_GODMODE_TEAM_LOG = [AMX_Super] GODMODE: ^"%s<%s>^" set godmode ^"%d^" on ^"%s^" players
+AMX_SUPER_GODMODE_PLAYER_LOG = [AMX_Super] GODMODE: ^"%s<%s>^" set godmode ^"%d^" on ^"%s<%s>^"
+AMX_SUPER_GODMODE_TEAM_MSG = [AMXX] Set godmode ^"%d^" on %s players
+AMX_SUPER_GODMODE_PLAYER_MSG = [AMXX] Set godmode ^"%d^" on %s
+
+AMX_SUPER_GIVEMONEY_PLAYER_CASE2 = [AMXX] ADMIN %s gave $%i to %s
+AMX_SUPER_GIVEMONEY_PLAYER_CASE1 = [AMXX] ADMIN gave $%i to %s
+AMX_SUPER_GIVEMONEY_PLAYER_MSG = [AMXX] Gave $%i to %s
+AMX_SUPER_GIVEMONEY_PLAYER_LOG = [AMX_Super] GIVE MONEY: ^"%s<%s>^" gave $%i to ^"%s<%s>^"
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_CASE2 = [AMXX] ADMIN %s took all money from %s
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_CASE1 = [AMXX] ADMIN took all money from %s
+AMX_SUPER_TAKEMONEY_PLAYER_CASE2 = [AMXX] ADMIN %s took $%i from %s
+AMX_SUPER_TAKEMONEY_PLAYER_CASE1 = [AMXX] ADMIN took $%i from %s
+AMX_SUPER_TAKEMONEY_PLAYER_LOG = [AMX_Super] TAKE MONEY: ^"%s<%s>^" took $%i from ^"%s<%s>^"
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_LOG = [AMX_Super] TAKE MONEY: ^"%s<%s>^" took all money from ^"%s<%s>^"
+AMX_SUPER_TAKEMONEY_PLAYER_MSG = [AMXX] Took $%i from %s
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_MSG = [AMXX] Took all money from %s
+
+AMX_SUPER_GLOW_TEAM_CASE2 = [AMXX] ADMIN %s set glowing on %s players
+AMX_SUPER_GLOW_TEAM_CASE1 = [AMXX] ADMIN set glowing on %s players
+AMX_SUPER_GLOW_PLAYER_CASE2 = [AMXX] ADMIN %s set glowing on %s
+AMX_SUPER_GLOW_PLAYER_CASE1 = [AMXX] ADMIN set glowing on %s
+AMX_SUPER_GLOW_TEAM_LOG = [AMX_Super] GLOW: ^"%s<%s>^" set glowing on ^"%s^" players
+AMX_SUPER_GLOW_PLAYER_LOG = [AMX_Super] GLOW: ^"%s<%s>^" set glowing on ^"%s<%s>^"
+AMX_SUPER_GLOW_TEAM_MSG = [AMXX] Set glowing on %s players
+AMX_SUPER_GLOW_PLAYER_MSG = [AMXX] Set glowing on %s
+AMX_SUPER_UNGLOW_TEAM_CASE2 = [AMXX] ADMIN %s removed glowing on %s players
+AMX_SUPER_UNGLOW_TEAM_CASE1 = [AMXX] ADMIN removed glowing on %s players
+AMX_SUPER_UNGLOW_PLAYER_CASE2 = [AMXX] ADMIN %s removed glowing on %s
+AMX_SUPER_UNGLOW_PLAYER_CASE1 = [AMXX] ADMIN removed glowing on %s
+AMX_SUPER_UNGLOW_TEAM_LOG = [AMX_Super] UNGLOW: ^"%s<%s>^" removed glowing on ^"%s^" players
+AMX_SUPER_UNGLOW_PLAYER_LOG = [AMX_Super] UNGLOW: ^"%s<%s>^" removed glowing on ^"%s<%s>^"
+AMX_SUPER_UNGLOW_TEAM_MSG = [AMXX] Removed glowing on %s players
+AMX_SUPER_UNGLOW_PLAYER_MSG = [AMXX] Removed glowing on %s
+
+AMX_SUPER_TEAM_INVALID = [AMXX] Invalid team specified! Valid teams are: T, CT, Auto, Spec
+AMX_SUPER_TEAM_UNLOCKED = [AMXX] The %s team is not locked!
+AMX_SUPER_TEAM_UNLOCK_CASE1 = [AMXX] ADMIN Unlocked the %s team
+AMX_SUPER_TEAM_UNLOCK_CONSOLE = [AMXX] You Unlocked the %s team
+AMX_SUPER_TEAM_UNLOCK_CASE2 = [AMXX] ADMIN %s Unlocked the %s team
+AMX_SUPER_TEAM_LOCK_CASE1 = [AMXX] ADMIN Locked the %s team
+AMX_SUPER_TEAM_LOCK_CASE2 = [AMXX] ADMIN %s Locked the %s team
+AMX_SUPER_TEAM_LOCKED = [AMXX] The %s team is already locked!
+AMX_SUPER_TEAM_LOCK_CONSOLE = [AMXX] You Locked the %s team
+AMX_SUPER_UNLOCK_TEAMS_LOG = [AMX_Super] TEAMLOCKER: ^"%s<%s>^" unlocked the ^"%s^" team
+AMX_SUPER_LOCK_TEAMS_LOG = [AMX_Super] TEAMLOCKER: ^"%s<%s>^" locked the ^"%s^" team
+
+AMX_SUPER_TELEPORT_PLAYER_CASE2 = [AMXX] ADMIN %s teleported %s
+AMX_SUPER_TELEPORT_PLAYER_CASE1 = [AMXX] ADMIN teleported %s
+AMX_SUPER_TELEPORT_PLAYER_MSG = [AMXX] Teleported %s to %d x, %d y, %d z
+AMX_SUPER_TELEPORT_ORIGIN_SAVED = [AMXX] Saved origin %d x, %d y, %d z from %s
+AMX_SUPER_TELEPORT_PLAYER_LOG = [AMX_Super] TELEPORT: ^"%s<%s>^" teleported ^"%s<%s>^" to %d x, %d y, %d z
+
+AMX_SUPER_TRANSFER_PLAYER_CASE1 = [AMXX] ADMIN Successfully transfered %s to the %s team
+AMX_SUPER_TRANSFER_PLAYER_CASE2 = [AMXX] ADMIN %s Successfully transfered %s to the %s team
+AMX_SUPER_TRANSFER_PLAYER_TEAM = [AMXX] You have been transfered to the %s team
+AMX_SUPER_TRANSFER_PLAYER_LOG = [AMX_Super] TEAMTRANSFER: ^"%s<%s>^" transfered ^"%s^" to the ^"%s^" team
+AMX_SUPER_TRANSFER_PLAYER_CONSOLE = [AMXX] You have Successfully transfered %s to the %s team
+AMX_SUPER_TRANSFER_SWAP_PLAYERS_SUCCESS_CASE1 = [AMXX] ADMIN Successfully swapped %s with %s
+AMX_SUPER_TRANSFER_SWAP_PLAYERS_SUCCESS_CASE2 = [AMXX] ADMIN %s Successfully swapped %s with %s
+AMX_SUPER_TRANSFER_SWAP_TEAM_SUCCESS_CASE1 = [AMXX] ADMIN Successfully swapped the teams!
+AMX_SUPER_TRANSFER_SWAP_TEAM_SUCCESS_CASE2 = [AMXX] ADMIN %s Successfully swapped the teams!
+AMX_SUPER_TRANSFER_SWAP_TEAM_MESSAGE = [AMXX] You have swapped the Teams
+AMX_SUPER_TRANSFER_SWAP_PLAYERS_CONSOLE = [AMXX] Successfully swapped %s with %s
+AMX_SUPER_TRANSFER_PLAYER_ERROR_CASE1 = [AMXX] You can't swap players that are on the same team!
+AMX_SUPER_TRANSFER_PLAYER_ERROR_CASE2 = [AMXX] You can't swap players that are not in a team!
+AMX_SUPER_TRANSFER_SWAP_PLAYERS_MESSAGE1 = [AMXX] You have been swapped with %s
+AMX_SUPER_TRANSFER_SWAP_PLAYERS_MESSAGE2 = [AMXX] You have been swapped with %s
+AMX_SUPER_TRANSFER_SWAP_TEAM_LOG = [AMX_Super] TEAMTRANSFER: ^"%s<%s>^" swapped teams
+AMX_SUPER_TRANSFER_SWAP_PLAYERS_LOG = [AMX_Super] TEAMTRANSFER: ^"%s<%s>^" swapped ^"%s^" with ^"%s^"
+
+AMX_SUPER_AMMO_PLAYER_CASE1 = [AMXX] ADMIN Set Unlimited ammo on %s to ^"%d^" 
+AMX_SUPER_AMMO_PLAYER_CASE2 = [AMXX] ADMIN %s Set Unlimited ammo on %s to ^"%d^" 
+AMX_SUPER_AMMO_PLAYER_MSG = [AMXX] ADMIN Set Unlimited ammo on %s to ^"%d^" 
+AMX_SUPER_AMMO_PLAYER_LOG = [AMX_Super] AMMO: ADMIN ^"%s<%s>^" Set Unlimited ammo on ^"%s^" to ^"%d^" 
+AMX_SUPER_AMMO_TEAM_CASE1 = [AMXX] ADMIN Set Unlimited ammo on all %s to ^"%d^" 
+AMX_SUPER_AMMO_TEAM_CASE2 = [AMXX] ADMIN %s Set Unlimited ammo on all %s to ^"%d^" 
+AMX_SUPER_AMMO_TEAM_MSG = [AMXX] ADMIN Set Unlimited ammo on all %s to ^"%d^" 
+AMX_SUPER_AMMO_TEAM_LOG = [AMX_Super] AMMO: ADMIN ^"%s<%s>^" set unlimited ammo on all ^"%s^" to ^"%d^" 
+
+AMX_SUPER_EXTEND_CANNOT_EXTEND = [AMXX] You cannot extend the maptime by a negative number.
+AMX_SUPER_EXTEND_SUCCESS_CASE2 = [AMXX] ADMIN %s has extended the map time by %i minutes
+AMX_SUPER_EXTEND_SUCCESS_CASE1 = [AMXX] ADMIN as extended the map time by %i minutes
+AMX_SUPER_EXTEND_EXTENDTIME = [AMXX] No map may be extended longer than %i minutes at a time.
+AMX_SUPER_EXTEND_EXTENDMAX = [AMXX] No user may extend any map more than %i times.
+AMX_SUPER_EXTEND_BAD_NUMBER = [AMXX] Maps that are not in the mapcycle cannot be extended.
+AMX_SUPER_EXTEND_NOMAPCYCLE = [AMXX] Maps that are not in the mapcycle cannot be extended.
+
+AMX_SUPER_SPAWN_PROTECTION_BADTIME = [AMXX] You have to set the Spawn Protection time between 1 and 10 seconds
+AMX_SUPER_SPAWN_PROTECTION_TIME_SET = [AMXX] You have set the Spawn Protection time to %d second(s)
+AMX_SUPER_SPAWN_PROTECTION_BADSHELL = [AMXX] You have to set the Glow Shellthickness between 1 and 100
+AMX_SUPER_SPAWN_PROTECTION_SHELL_SET = [AMXX] You have set the Glow Shellthickness to %d
+AMX_SUPER_SPAWN_PROTECTION_GLOW_ON = [AMXX] You have set the Glow to ON
+AMX_SUPER_SPAWN_PROTECTION_GLOW_OFF = [AMXX] You have set the Glow to OFF
+AMX_SUPER_SPAWN_PROTECTION_MESSAGE = [AMXX] Spawn Protection is enabled for %d second(s)
+
+AMX_SUPER_VOCOM_NO_ACCESS = [ADMIN VOCOM]: You have no access to this command.
+AMX_SUPER_VOCOM_SPEAKING1 = [ADMIN VOCOM]: %s is speaking to the other admins.
+AMX_SUPER_VOCOM_SPEAKING2 = [ADMIN VOCOM]: You are speaking to the admins.
+
+AMX_SUPER_DRUG_TEAM_CASE2 = [AMXX] ADMIN, %s, gave drugs to %s.
+AMX_SUPER_DRUG_TEAM_CASE1 = [AMXX] ADMIN gave drugs to %s.
+AMX_SUPER_DRUG_PLAYER_CASE2 = [AMXX] ADMIN , %s, gave drugs to %s.
+AMX_SUPER_DRUG_PLAYER_CASE1 = [AMXX] ADMIN gave drugs to %s.
+AMX_SUPER_DRUG_TEAM_LOG = [AMX_Super] %s ( %s ) gave drugs to %s.
+AMX_SUPER_DRUG_PLAYER_LOG = [AMX_Super] %s ( %s ) gave drugs to %s ( %s ).
+AMX_SUPER_DRUG_TEAM_MSG = [AMXX] Gave drugs to %s.
+AMX_SUPER_DRUG_PLAYER_MSG = [AMXX] Gave drugs to %s.
+
+AMX_SUPER_SPEED_TEAM_CASE2 = [AMXX] ADMIN, %s turned %s speed for %s.
+AMX_SUPER_SPEED_TEAM_CASE1 = [AMXX] ADMIN turned %s speed for %s.
+AMX_SUPER_SPEED_PLAYER_CASE2 = [AMXX] ADMIN, %s turned %s speed for %s.
+AMX_SUPER_SPEED_PLAYER_CASE1 = [AMXX] ADMIN turned %s speed for %s.
+AMX_SUPER_SPEED_TEAM_LOG = [AMX_Super] %s ( %s ) set speed for %s
+AMX_SUPER_SPEED_PLAYER_LOG = [AMX_Super] %s ( %s ) set speed for %s ( %s )
+AMX_SUPER_SPEED_TEAM_MSG = [AMXX] Set speed %s for %s.
+AMX_SUPER_SPEED_PLAYER_MSG = [AMXX] Set speed %s for %s.
+
+AMX_SUPER_BADAIM_KILLED = [AMXX] %s was banned for getting a kill while affected by bad aim.
+AMX_SUPER_BADAIM_CONSOLE = amx_badaim <player> <On/off or length of time:1|0|time> <Save?: 1|0>: Turn on/off bad aim on a player.
+AMX_SUPER_BADAIM_NO_BADAIM = [AMXX] %s does not have bad aim...from this plugin at least.
+AMX_SUPER_BADAIM_UNDO = [AMXX] %s's aim is back to normal...whatever that is.
+AMX_SUPER_BADAIM_CURRENT = [AMXX] %s already has bad aim.
+AMX_SUPER_BADAIM_WORSE = [AMXX] %s already had bad aim but now its worse!
+AMX_SUPER_BADAIM_BADTIME = Time cannot be negative, unless you're talking about imaginary time.
+AMX_SUPER_BADAIM_MESSAGE1 = [AMXX] %s already has bad aim, but now it will turn off automatically in %d seconds.
+AMX_SUPER_BADAIM_MESSAGE2 = [AMXX] %s has been given bad aim for %d seconds.
+AMX_SUPER_BADAIM_BAN = [AMXX] A timed bad aim cannot be saved.  However, the bad aim will still be executed.
+AMX_SUPER_BADAIM_NO_BADAIM_MESSAGE = [AMXX] %s no longer has bad aim.
+AMX_SUPER_BADAIM_NO_BADAIM_MESSAGE_CONSOLE = %s no longer has bad aim.
+AMX_SUPER_BADAIM_LOG = [AMX_Super] %s (%s) %s badaim on %s.
+
+AMX_SUPER_FIRE_TEAM_CASE2 = [AMXX] ADMIN %s set %s players on fire
+AMX_SUPER_FIRE_TEAM_CASE1 = [AMXX] ADMIN set %s players on fire
+AMX_SUPER_FIRE_TEAM_LOG = [AMX_Super] FIRE: ^"%s<%s>^" set fire to ^"%s^" players
+
+AMX_SUPER_GIVEMONEY_TEAM_CASE2 = [AMXX] ADMIN %s gave $%i to %s
+AMX_SUPER_GIVEMONEY_TEAM_CASE1 = [AMXX] ADMIN gave $%i to %s
+AMX_SUPER_GIVEMONEY_TEAM_MSG = [AMXX] Gave $%i to %s
+AMX_SUPER_GIVEMONEY_TEAM_LOG = [AMX_Super] GIVE MONEY: ^"%s<%s>^" gave $%i to %s
+
+AMX_SUPER_GLOW_TEAM_OFF_CASE2 = [AMXX] ADMIN %s: turned off glowing on %s players
+AMX_SUPER_GLOW_TEAM_OFF_CASE1 = [AMXX] ADMIN turned off glowing on %s players
+AMX_SUPER_GLOW_PLAYER_OFF_CASE2 = [AMXX] ADMIN %s turned off glowing on %s 
+AMX_SUPER_GLOW_PLAYER_OFF_CASE1 = [AMXX] ADMIN turned off glowing on %s
+AMX_SUPER_GLOW_INVALID_COLOR = [AMXX] That color is not valid. Type amx_glowcolors for a list of valid colors.
+
+AMX_SUPER_BOMB_TRANSFER = Bomb transferred to ^"%s^"^nsince ^"%s^" is AFK
+
+AMX_SUPER_DEADCHAT_MESSAGE = [AMXX] You are dead now, you can chat with the other team via voicecomm.
+
+AMX_SUPER_SOUNDFIX = [AMXX] Your sound will no longer echo now.
+AMX_SUPER_SOUNDFIX_DISABLED = [AMXX] Manual sound fixing is disabled.
+
+AMX_SUPER_AFK_SPEC_KICK_CHAT = "[AMXX] %s has been kicked for spectating on the full server"
+AMX_SUPER_AFK_KICK_CHAT = "[AMXX] %s has been kicked for being AFK on the full server"
+AMX_SUPER_AFK_TO_SPEC_CHAT = "[AMXX] %s has been transferred to the Spectators for being AFK"
+
+AMX_SUPER_SHUTDOWN_CASE1 = [AMXX] ADMIN: %s server in %i seconds
+AMX_SUPER_SHUTDOWN_CASE2 = [AMXX] ADMIN %s: %s server in %i seconds
+AMX_SUPER_SHUTDOWN_CONSOLE = You did not supply a valid time (between 1-20 seconds
+AMX_SUPER_SHUTDOWN_MESSAGE_LOG = [AMX_Super] Cmd: ^"%s<%i><%s>^" initiate %s
+
+
+[sv]
+
+AMX_SUPER_HEAL_TEAM_CASE2 = [AMXX] ADMIN %s gav %d HP till %s spelare
+AMX_SUPER_HEAL_TEAM_CASE1 = [AMXX] ADMIN gav %d HP till %s spelare
+AMX_SUPER_HEAL_PLAYER_CASE2 = [AMXX] ADMIN %s gav %d HP till %s
+AMX_SUPER_HEAL_PLAYER_CASE1 = [AMXX] ADMIN gav %d HP till %s
+AMX_SUPER_HEAL_TEAM_LOG = [AMX_Super] L'A'KA: ^"%s<%s>^" gav %d HP till ^"%s^" spelare
+AMX_SUPER_HEAL_PLAYER_LOG = [AMX_Super] L'A'KA: ^"%s<%s>^" gav %d HP till ^"%s<%s>^" 
+AMX_SUPER_HEAL_TEAM_MSG = [AMXX] Gav #d HP till %s spelare
+AMX_SUPER_HEAL_PLAYER_MSG = [AMXX] Gav %d HP till %s
+
+AMX_SUPER_ARMOR_TEAM_CASE2 = [AMXX] ADMIN %s gav %d armor till %s spelare
+AMX_SUPER_ARMOR_TEAM_CASE1 = [AMXX] ADMIN gav %d armor till %s spelare
+AMX_SUPER_ARMOR_PLAYER_CASE2 = [AMXX] ADMIN %s gav %d armor till %s
+AMX_SUPER_ARMOR_PLAYER_CASE1 = [AMXX] ADMIN gav %d armor till %s
+AMX_SUPER_ARMOR_TEAM_LOG = [AMX_Super] ARMOR: ^"%s<%s>^" gav %d armor till ^"%s^" spelare
+AMX_SUPER_ARMOR_PLAYER_LOG = [AMX_Super] ARMOR: ^"%s<%s>^" gav %d armor till ^"%s<%s>^"
+AMX_SUPER_ARMOR_TEAM_MSG = [AMXX] Gav %d armor till %s spelare
+AMX_SUPER_ARMOR_PLAYER_MSG = [AMXX] Gav %d armor till %s
+
+AMX_SUPER_STACK_PLAYER_CASE2 = [AMXX] ADMIN %s placerade alla spelare pa %s
+AMX_SUPER_STACK_PLAYER_CASE1 = [AMXX] ADMIN placerade alla spelare pa %s
+AMX_SUPER_STACK_PLAYER_LOG = [AMX_Super] PLACERING: ^"%s<%s>^" placerade alla spelare pa ^"%s<%s>^"
+AMX_SUPER_STACK_PLAYER_MSG = [AMXX] Placerade alla spelare pa %s
+
+AMX_SUPER_ALLTALK_STATUS = [AMXX] sv_alltalk 'a'r ^"%d^"
+AMX_SUPER_ALLTALK_SET_CASE2 = [AMXX] ADMIN %s satte sv_alltalk till ^"%s^"
+AMX_SUPER_ALLTALK_SET_CASE1 = [AMXX] ADMIN satte sv_alltalk till ^"%s^"
+AMX_SUPER_ALLTALK_LOG = [AMX_Super] ALLTALK: ^"%s<%s>^" satte sv_alltalk till ^"%s^"
+AMX_SUPER_ALLTALK_MSG = [AMXX] Alltalk har satts till ^"%s^"
+
+AMX_SUPER_GRAVITY_STATUS = [AMXX] sv_gravity 'a'r ^"%d^"
+AMX_SUPER_GRAVITY_SET_CASE2 = [AMXX] ADMIN %s satte gravitationen till ^"%s^"
+AMX_SUPER_GRAVITY_SET_CASE1 = [AMXX] ADMIN satte gravitationen till ^"%s^"
+AMX_SUPER_GRAVITY_LOG = [AMX_Super] GRAVITATION: ^"%s<%s>^" satte sv_gravity till ^"%s^"
+AMX_SUPER_GRAVITY_MSG = [AMXX] Gravitationen har satts till ^"%s^"
+AMX_SUPER_GRAVITY_CHECK = [AMXX] Gravitationen satt till %i
+
+AMX_SUPER_BURY_TEAM_CASE2 = [AMXX] ADMIN %s har begravt %s spelare
+AMX_SUPER_BURY_TEAM_CASE1 = [AMXX] ADMIN har begravt %s spelare
+AMX_SUPER_BURY_PLAYER_CASE2 = [AMXX] ADMIN %s har begravt %s
+AMX_SUPER_BURY_PLAYER_CASE1 = [AMXX] ADMIN har begravt %s
+AMX_SUPER_UNBURY_TEAM_CASE2 = [AMXX] ADMIN %s har gr'a'vt upp %s spelare
+AMX_SUPER_UNBURY_TEAM_CASE1 = [AMXX] ADMIN har gr'a'vt upp %s spelare
+AMX_SUPER_UNBURY_PLAYER_CASE2 = [AMXX] ADMIN %s har gr'a'vt upp %s
+AMX_SUPER_UNBURY_PLAYER_CASE1 = [AMXX] ADMIN har gr'a'vt upp %s
+AMX_SUPER_UNBURY_TEAM_LOG = [AMX_Super] UPPGR'A'VNING: ^"%s<%s>^" har gr'a'vt upp ^"%s^" spelare
+AMX_SUPER_UNBURY_PLAYER_LOG = [AMX_Super] UPPGR'A'VNING: ^"%s<%s>^" har gr'a'vt upp ^"%s<%s>^"
+AMX_SUPER_BURY_PLAYER_LOG = [AMX_Super] BEGRAVNING: ^"%s<%s>^" har begravt ^"%s<%s>^"
+AMX_SUPER_BURY_TEAM_LOG = [AMX_Super] BEGRAVNING: ^"%s<%s>^" har begravt ^"%s^" spelare
+AMX_SUPER_BURY_MSG = [AMXX] Spelare %s har blivit begravd
+AMX_SUPER_UNBURY_MSG = [AMXX] Spelare %s har blivit uppgr'a'vd
+
+AMX_SUPER_DISARM_TEAM_CASE2 = [AMXX] ADMIN %s har avv'a'pnat %s spelare
+AMX_SUPER_DISARM_TEAM_CASE1 = [AMXX] ADMIN har avv'a'pnat %s spelare
+AMX_SUPER_DISARM_PLAYER_CASE2 = [AMXX] ADMIN %s har avv'a'pnat %s
+AMX_SUPER_DISARM_PLAYER_CASE1 = [AMXX] ADMIN har avv'a'pnat %s
+AMX_SUPER_DISARM_TEAM_LOG = [AMX_Super] AVV'A'PNING: ^"%s<%s>^" har avv'a'pnat ^"%s^" spelare
+AMX_SUPER_DISARM_PLAYER_LOG = [AMX_Super] AVV'A'PNING: ^"%s<%s>^" har avv'a'pnat ^"%s<%s>^"
+AMX_SUPER_DISARM_MSG = [AMXX] Spelare %s har blivit avv'a'pnad
+
+AMX_SUPER_SLAY2_TEAM_CASE2 = [AMXX] ADMIN %s d'o'dade %s spelare
+AMX_SUPER_SLAY2_TEAM_CASE1 = [AMXX] ADMIN d'o'dade %s spelare
+AMX_SUPER_SLAY2_PLAYER_CASE2 = [AMXX] ADMIN %s d'o'dade %s
+AMX_SUPER_SLAY2_PLAYER_CASE1 = [AMXX] ADMIN d'o'dade %s
+AMX_SUPER_SLAY2_TEAM_LOG = [AMX_Super] SLAKT2: ^"%s<%s>^" d'o'dade ^"%s^" spelare 
+AMX_SUPER_SLAY2_PLAYER_LOG =  [AMX_Super] SLAKT2: ^"%s<%s>^" d'o'dade ^"%s<%s>^"
+AMX_SUPER_SLAY2_TEAM_MSG = [AMXX] D'o'dade %s spelare
+AMX_SUPER_SLAY2_PLAYER_MSG = [AMXX] D'o'dade %s
+
+AMX_SUPER_FIRE_TEAM_CASE2 = [AMXX] ADMIN %s satte eld pa %s spelare
+AMX_SUPER_FIRE_TEAM_CASE1 = [AMXX] ADMIN satte eld pa %s spelare
+AMX_SUPER_FIRE_PLAYER_CASE2 = [AMXX] ADMIN %s satte eld pa %s
+AMX_SUPER_FIRE_PLAYER_CASE1 = [AMXX] ADMIN satte eld pa %s
+AMX_SUPER_FIRE_TEAM_LOG = [AMX_Super] ELD: ^"%s<%s>^" satte eld pa ^"%s^" spelare
+AMX_SUPER_FIRE_PLAYER_LOG = [AMX_Super] ELD: ^"%s<%s>^" satte eld pa ^"%s<%s>^"
+AMX_SUPER_FIRE_TEAM_MSG = [AMXX] Satte eld pa %s spelare
+AMX_SUPER_FIRE_PLAYER_MSG = [AMXX] Satte eld pa %s
+AMX_SUPER_FIRE_SPREAD = * [AMXX] AH! NEJ! %s har satt eld pa %s!
+
+AMX_SUPER_ROCKET_TEAM_CASE2 = [AMXX] ADMIN %s gjorde %s spelare till raketer
+AMX_SUPER_ROCKET_TEAM_CASE1 = [AMXX] ADMIN gjorde %s spelare till raketer
+AMX_SUPER_ROCKET_PLAYER_CASE2 = [AMXX] ADMIN %s gjorde %s till en raket
+AMX_SUPER_ROCKET_PLAYER_CASE1 = [AMXX] ADMIN gjorde %s till en raket
+AMX_SUPER_ROCKET_TEAM_LOG = [AMX_Super] RAKET: ^"%s<%s>^" gjorde ^"%s^" spelare till raketer
+AMX_SUPER_ROCKET_PLAYER_LOG = [AMX_Super] RAKET: ^"%s<%s>^" gjorde ^"%s<%s>^" till en raket
+AMX_SUPER_ROCKET_TEAM_MSG = [AMXX] Gjorde %s spelare till raketer
+AMX_SUPER_ROCKET_PLAYER_MSG = [AMXX] Gjorde %s till en raket
+
+AMX_SUPER_UBERSLAP_TEAM_CASE2 = [AMXX] ADMIN %s ubersmiskade %s spelare
+AMX_SUPER_UBERSLAP_TEAM_CASE1 = [AMXX] ADMIN ubersmiskade %s spelare
+AMX_SUPER_UBERSLAP_PLAYER_CASE2 = [AMXX] ADMIN %s ubersmiskade %s
+AMX_SUPER_UBERSLAP_PLAYER_CASE1 = [AMXX] ADMIN ubersmiskade %s
+AMX_SUPER_UBERSLAP_TEAM_LOG = [AMX_Super] UBERSMISK: ^"%s<%s>^" ubersmiskade ^"%s^" spelare
+AMX_SUPER_UBERSLAP_PLAYER_LOG = [AMX_Super] UBERSMISK: ^"%s<%s>^" ubersmiskade ^"%s<%s>^"
+AMX_SUPER_UBERSLAP_TEAM_MSG = [AMXX] Ubersmiskade %s spelare
+AMX_SUPER_UBERSLAP_PLAYER_MSG = [AMXX] Ubersmiskade %s
+
+AMX_SUPER_EXEC_ALL_CASE2 = [AMXX] ADMIN %s utf'o'rde kommandot ^"%s^" pa alla
+AMX_SUPER_EXEC_ALL_CASE1 = [AMXX] ADMIN utf'o'rde kommandot ^"%s^" pa alla
+AMX_SUPER_EXEC_TEAM_CASE2 = [AMXX] ADMIN %s utf'o'rde kommandot ^"%s^" pa alla %s spelare
+AMX_SUPER_EXEC_TEAM_CASE1 = [AMXX] ADMIN utf'o'rde kommandot ^"%s^" pa alla %s spelare
+AMX_SUPER_EXEC_PLAYER_CASE2 = [AMXX] ADMIN %s utf'o'rde kommandot ^"%s^" pa %s!
+AMX_SUPER_EXEC_PLAYER_CASE1 = [AMXX] ADMIN utf'o'rde kommandot ^"%s^" pa %s!
+AMX_SUPER_EXEC_ALL_LOG = [AMX_Super] UTF'O'RA: ^"%s<%s>^" utf'o'rde ^"%s^" pa alla spelare
+AMX_SUPER_EXEC_TEAM_LOG = [AMX_Super] UTF'O'RA: ^"%s<%s>^" utf'o'rde ^"%s^" pa alla %s spelare
+AMX_SUPER_EXEC_PLAYER_LOG = [AMX_Super] UTF'O'RA: ^"%s<%s>^" utf'o'rde ^"%s^" pa ^"%s<%s>^"
+
+AMX_SUPER_PASSWORD_SET_CASE2 = [AMXX] ADMIN %s har satt ett serverl'o'senord
+AMX_SUPER_PASSWORD_SET_CASE1 = [AMXX] ADMIN har satt ett serverl'o'senord
+AMX_SUPER_PASSWORD_REMOVE_CASE2 = [AMXX] ADMIN %s har tagit bort serverl'o'senordet
+AMX_SUPER_PASSWORD_REMOVE_CASE1 = [AMXX] ADMIN har tagit bort serverl'o'senordet
+AMX_SUPER_PASSWORD_SET_LOG = [AMX_Super] L'O'SENORD: ^"%s<%s>^" satte serverl'o'senordet till ^"%s^"
+AMX_SUPER_PASSWORD_REMOVE_LOG = [AMX_Super] PASSWORD: ^"%s<%s>^" tog bort serverl'o'senordet
+
+AMX_SUPER_REVIVE_TEAM_CASE2 = [AMXX] ADMIN %s aterupplivade %s spelare
+AMX_SUPER_REVIVE_TEAM_CASE1 = [AMXX] ADMIN aterupplivade %s spelare
+AMX_SUPER_REVIVE_PLAYER_CASE2 = [AMXX] ADMIN %s har aterupplivat %s
+AMX_SUPER_REVIVE_PLAYER_CASE1 = [AMXX] ADMIN har aterupplivat %s
+AMX_SUPER_REVIVE_TEAM_LOG = [AMX_Super] ATERUPPLIVA: ^"%s<%s>^" aterupplivade ^"%s^" spelare
+AMX_SUPER_REVIVE_PLAYER_LOG = [AMX_Super] ATERUPPLIVA: ^"%s<%s>^" aterupplivade ^"%s<%s>^"
+AMX_SUPER_REVIVE_TEAM_MSG = [AMXX] Aterupplivade %s spelare
+AMX_SUPER_REVIVE_PLAYER_MSG = [AMXX] Aterupplivade %s
+AMX_SUPER_REVIVE_TEAM_HUD = %s spelare har blivit aterupplivade!
+AMX_SUPER_REVIVE_PLAYER_HUD = %s har blivit aterupplivad!
+
+AMX_SUPER_QUIT_TEAM_CASE2 = [AMXX] ADMIN %s gjorde att %s spelare fick st'a'nga spelet
+AMX_SUPER_QUIT_TEAM_CASE1 = [AMXX] ADMIN gjorde att %s spelare fick st'a'nga spelet
+AMX_SUPER_QUIT_PLAYER_CASE2 = [AMXX] ADMIN %s gjorde att %s fick st'a'nga spelet
+AMX_SUPER_QUIT_PLAYER_CASE1 = [AMXX] ADMIN gjorde att %s fick st'a'nga spelet
+AMX_SUPER_QUIT_TEAM_LOG = [AMX_Super] ST'A'NG: ^"%s<%s>^" har gjort att ^"%s^" spelare fick st'a'nga spelet
+AMX_SUPER_QUIT_PLAYER_LOG = [AMX_Super] ST'A'NG: ^"%s<%s>^" har gjort att ^"%s<%s>^" fick st'a'nga spelet
+ 
+AMX_SUPER_GAG_PLAYER_CASE2 = [AMXX] ADMIN %s f'o'rstummade %s fran att prata f'o'r %0.0f minuter ( %s )
+AMX_SUPER_GAG_PLAYER_CASE1 = [AMXX] ADMIN f'o'rstummade %s fran att prata f'o'r %0.0f minuter ( %s )
+AMX_SUPER_UNGAG_PLAYER_CASE2 = [AMXX] ADMIN %s tog bort f'o'rstumningen fran %s
+AMX_SUPER_UNGAG_PLAYER_CASE1 = [AMXX] ADMIN tog bort f'o'rstumningen fran %s
+AMX_SUPER_GAG_PLAYER_LOG = [AMX_Super] F'O'RSTUMNING: ^"%s<%s>^" har f'o'rstummat ^"%s<%s>^" f'o'r %d ( %d )
+AMX_SUPER_UNGAG_PLAYER_LOG = [AMX_Super] F'O'RSTUMNING: ^"%s<%s>^" har tagit bort f'o'rstumningen fran ^"%s<%s>^"
+AMX_SUPER_GAG_PLAYER_DISCONNECT = [AMXX] F'o'rstummad spelare har disconnectat: ( %s <%s> )
+AMX_SUPER_PLAYER_GAGGED = * Du har blivit f'o'rstummad
+AMX_SUPER_PLAYER_NAMELOCK = * F'o'rstummade spelare kan inte 'a'ndra sina namn
+AMX_SUPER_NOT_GAGGED = [AMXX] %s 'a'r inte f'o'rstummad & du kan inte ta bort f'o'rstumningen fran honom/henne
+AMX_SUPER_GAG_END = [AMXX] %s 'a'r inte l'a'ngre f'o'rstummad
+
+AMX_SUPER_WEAPON_TEAM_CASE2 = [AMXX] ADMIN %s gav ett vapen till %s spelare
+AMX_SUPER_WEAPON_TEAM_CASE1 = [AMXX] ADMIN gav ett vapen till %s spelare
+AMX_SUPER_WEAPON_PLAYER_CASE2 = [AMXX] ADMIN %s gav ett vapen till %s
+AMX_SUPER_WEAPON_PLAYER_CASE1 = [AMXX] ADMIN gav ett vapen till %s
+AMX_SUPER_WEAPON_TEAM_LOG = [AMX_Super] VAPEN: ^"%s<%s>^" gav vapnet ^"%d^" till ^"%s^" spelare
+AMX_SUPER_WEAPON_PLAYER_LOG = [AMX_Super] VAPEN: ^"%s<%s>^" gav vapnet ^"%d^" till ^"%s<%s>^"
+AMX_SUPER_WEAPON_TEAM_MSG = [AMXX] Gav vapnet %d till %s spelare
+AMX_SUPER_WEAPON_PLAYER_MSG = [AMXX] Gav vapnet %d till %s
+
+AMX_SUPER_NOCLIP_TEAM_CASE2 = [AMXX] ADMIN %s satte noclip ^"%d^" pa %s spelare
+AMX_SUPER_NOCLIP_TEAM_CASE1 = [AMXX] ADMIN satte noclip ^"%d^" pa %s spelare
+AMX_SUPER_NOCLIP_PLAYER_CASE2 = [AMXX] ADMIN %s satte noclip ^"%d^" pa %s
+AMX_SUPER_NOCLIP_PLAYER_CASE1 = [AMXX] ADMIN satte noclip ^"%d^" pa %s
+AMX_SUPER_NOCLIP_TEAM_LOG = [AMX_Super] NOCLIP: ^"%s<%s>^" satte noclip ^"%d^" pa ^"%s^" spelare
+AMX_SUPER_NOCLIP_PLAYER_LOG = [AMX_Super] NOCLIP: ^"%s<%s>^" satte noclip ^"%d^" pa ^"%s<%s>^"
+AMX_SUPER_NOCLIP_TEAM_MSG = [AMXX] Satte noclip ^"%d^" pa %s spelare
+AMX_SUPER_NOCLIP_PLAYER_MSG = [AMXX] Satte noclip ^"%d^" pa %s
+
+AMX_SUPER_FLASH_TEAM_CASE2 = [AMXX] ADMIN %s flashbangade %s spelare
+AMX_SUPER_FLASH_TEAM_CASE1 = [AMXX] ADMIN flashbangade %s spelare
+AMX_SUPER_FLASH_PLAYER_CASE2 = [AMXX] ADMIN %s flashbangade %s
+AMX_SUPER_FLASH_PLAYER_CASE1 = [AMXX] ADMIN flashbangade %s
+AMX_SUPER_FLASH_TEAM_LOG = [AMX_Super] FLASH: ^"%s<%s>^" flashbangade ^"%s^" spelare
+AMX_SUPER_FLASH_PLAYER_LOG = [AMX_Super] FLASH: ^"%s<%s>^" flashbangade ^"%s<%s>^"
+AMX_SUPER_FLASH_TEAM_MSG = [AMXX] Flashbangade %s spelare
+AMX_SUPER_FLASH_PLAYER_MSG = [AMXX] Flashbangade %s
+
+AMX_SUPER_GODMODE_TEAM_CASE2 = [AMXX] ADMIN %s satte godmode ^"%d^" pa %s spelare
+AMX_SUPER_GODMODE_TEAM_CASE1 = [AMXX] ADMIN satte godmode ^"%d^" pa %s spelare
+AMX_SUPER_GODMODE_PLAYER_CASE2 = [AMXX] ADMIN %s satte godmode ^"%d^" pa %s
+AMX_SUPER_GODMODE_PLAYER_CASE1 = [AMXX] ADMIN satte godmode ^"%d^" pa %s
+AMX_SUPER_GODMODE_TEAM_LOG = [AMX_Super] GODMODE: ^"%s<%s>^" satte godmode ^"%d^" pa ^"%s^" spelare
+AMX_SUPER_GODMODE_PLAYER_LOG = [AMX_Super] GODMODE: ^"%s<%s>^" satte godmode ^"%d^" pa ^"%s<%s>^"
+AMX_SUPER_GODMODE_TEAM_MSG = [AMXX] Satte godmode ^"%d^" pa %s spelare
+AMX_SUPER_GODMODE_PLAYER_MSG = [AMXX] Satte godmode ^"%d^" pa %s
+
+AMX_SUPER_GIVEMONEY_PLAYER_CASE2 = [AMXX] ADMIN %s gav $%i till %s
+AMX_SUPER_GIVEMONEY_PLAYER_CASE1 = [AMXX] ADMIN gav $%i till %s
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_CASE2 = [AMXX] ADMIN %s tog all pengar fran %s
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_CASE1 = [AMXX] ADMIN tog all pengar fran %s
+AMX_SUPER_TAKEMONEY_PLAYER_CASE2 = [AMXX] ADMIN %s tog $%i fran %s
+AMX_SUPER_TAKEMONEY_PLAYER_CASE1 = [AMXX] ADMIN tog $%i fran %s
+AMX_SUPER_GIVEMONEY_PLAYER_LOG = [AMX_Super] GE PENGAR: ^"%s<%s>^" gav $%i till ^"%s<%s>^"
+AMX_SUPER_TAKEMONEY_PLAYER_LOG = [AMX_Super] TA PENGAR: ^"%s<%s>^" tog $%i fran ^"%s<%s>^"
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_LOG = [AMX_Super] TA MONEY: ^"%s<%s>^" tog all pengar fran ^"%s<%s>^"
+AMX_SUPER_GIVEMONEY_PLAYER_MSG = [AMXX] Gav $%i till %s
+AMX_SUPER_TAKEMONEY_PLAYER_MSG = [AMXX] Tog $%i fran %s
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_MSG = [AMXX] Tog all pengar fran %s
+
+AMX_SUPER_GLOW_TEAM_CASE2 = [AMXX] ADMIN %s satte gl'o'd pa %s spelare
+AMX_SUPER_GLOW_TEAM_CASE1 = [AMXX] ADMIN satte gl'o'd pa %s spelare
+AMX_SUPER_GLOW_PLAYER_CASE2 = [AMXX] ADMIN %s satte gl'o'd pa %s
+AMX_SUPER_GLOW_PLAYER_CASE1 = [AMXX] ADMIN satte gl'o'd pa %s
+AMX_SUPER_GLOW_TEAM_LOG = [AMX_Super] GL'O'D: ^"%s<%s>^" satte gl'o'd pa ^"%s^" spelare
+AMX_SUPER_GLOW_PLAYER_LOG = [AMX_Super] GL'O'D: ^"%s<%s>^" satte gl'o'd pa ^"%s<%s>^"
+AMX_SUPER_GLOW_TEAM_MSG = [AMXX] Satte gl'o'd pa %s spelare
+AMX_SUPER_GLOW_PLAYER_MSG = [AMXX] Satte gl'o'd pa %s
+AMX_SUPER_UNGLOW_TEAM_CASE2 = [AMXX] ADMIN %s tog bort gl'o'd fran %s spelare
+AMX_SUPER_UNGLOW_TEAM_CASE1 = [AMXX] ADMIN tog bort gl'o'd fran %s spelare
+AMX_SUPER_UNGLOW_PLAYER_CASE2 = [AMXX] ADMIN %s tog bort gl'o'd fran %s
+AMX_SUPER_UNGLOW_PLAYER_CASE1 = [AMXX] ADMIN tog bort gl'o'd fran %s
+AMX_SUPER_UNGLOW_TEAM_LOG = [AMX_Super] UNGLOW: ^"%s<%s>^" tog bort gl'o'd fran ^"%s^" spelare
+AMX_SUPER_UNGLOW_PLAYER_LOG = [AMX_Super] UNGLOW: ^"%s<%s>^" tog bort gl'o'd fran ^"%s<%s>^"
+AMX_SUPER_UNGLOW_TEAM_MSG = [AMXX] Tog bort gl'o'd fran %s spelare
+AMX_SUPER_UNGLOW_PLAYER_MSG = [AMXX] Tog bort gl'o'd fran %s
+
+AMX_SUPER_TEAM_INVALID = [AMXX] Ogiltigt lag specificerat! G'a'llande lag 'a'r: T, CT, Auto, Spec
+AMX_SUPER_TEAM_UNLOCKED = [AMXX] Laget %s 'a'r inte last!
+AMX_SUPER_TEAM_UNLOCK = [AMXX] Laste upp laget %s
+AMX_SUPER_TEAM_LOCKED = [AMXX] Laget %s 'a'r redan last!
+AMX_SUPER_TEAM_LOCK = [AMXX] Laste laget %s
+AMX_SUPER_UNLOCK_TEAMS_LOG = [AMX_Super] LAGLASARE: ^"%s<%s>^" laste upp laget ^"%s^"
+AMX_SUPER_LOCK_TEAMS_LOG = [AMX_Super] LAGLASARE: ^"%s<%s>^" laste upp laget ^"%s^"
+
+AMX_SUPER_SHUTDOWN_MESSAGE = L'a'gg m'a'rke till: Servern haller pa att starta om. Om du inte reconnectas automatiskt, reconnecta nu.
+AMX_SUPER_SHUTDOWN_MESSAGE_LOG = [AMX_Super] NEDST'A'NGNING: ^"%s<%s>^" har satt servern till nedst'a'ngning
+
+AMX_SUPER_DEADCHAT_MESSAGE = [AMXX] Du 'a'r d'o'd nu, Du kan chatta med det andra laget via mikrofonen.
+
+AMX_SUPER_SOUNDFIX = [AMXX] Ditt ljud kommer inte att eka mer.
+AMX_SUPER_SOUNDFIX_DISABLED = [AMXX] Manuellt ljudfixande 'a'r inaktiverat.
+
+AMX_SUPER_TEAM_IMMUNITY = [AMXX] Hoppar 'o'ver ^"%s^" f'o'r att spelaren har immunitet.
+AMX_SUPER_NO_PLAYERS = [AMXX] Inga spelare i det laget!
+AMX_SUPER_AMOUNT_GREATER = [AMXX] Belopp att ge maste vara st'o'rre 'a'n noll!
+
+
+[es]
+
+AMX_SUPER_HEAL_TEAM_CASE2 = [AMXX] ADMIN %s dio %d HP a %s jugadores
+AMX_SUPER_HEAL_TEAM_CASE1 = [AMXX] ADMIN dio %d HP a %s jugadores
+AMX_SUPER_HEAL_PLAYER_CASE2 = [AMXX] ADMIN %s dio %d HP a %s
+AMX_SUPER_HEAL_PLAYER_CASE1 = [AMXX] ADMIN dio %d HP a %s
+AMX_SUPER_HEAL_TEAM_LOG = [AMX_Super] CURA: ^"%s<%s>^" dio %d HP a ^"%s^" jugadores
+AMX_SUPER_HEAL_PLAYER_LOG = [AMX_Super] CURA: ^"%s<%s>^"  %d HP a ^"%s<%s>^" 
+AMX_SUPER_HEAL_TEAM_MSG = [AMXX] Dio %d HP a %s jugadores
+AMX_SUPER_HEAL_PLAYER_MSG = [AMXX] Dio %d HP a %s
+
+AMX_SUPER_ARMOR_TEAM_CASE2 = [AMXX] ADMIN %s dio %d armadura a %s jugadores
+AMX_SUPER_ARMOR_TEAM_CASE1 = [AMXX] ADMIN dio %d armadura a %s jugadores
+AMX_SUPER_ARMOR_PLAYER_CASE2 = [AMXX] ADMIN %s dio %d armadura a %s
+AMX_SUPER_ARMOR_PLAYER_CASE1 = [AMXX] ADMIN dio %d armadura a %s
+AMX_SUPER_ARMOR_TEAM_LOG = [AMX_Super] ARMOR: ^"%s<%s>^" dio %d armadura a ^"%s^" jugadores
+AMX_SUPER_ARMOR_PLAYER_LOG = [AMX_Super] ARMADURA: ^"%s<%s>^" dio %d armadura ^"%s<%s>^"
+AMX_SUPER_ARMOR_TEAM_MSG = [AMXX] Dio %d armadura a %s jugadores
+AMX_SUPER_ARMOR_PLAYER_MSG = [AMXX] Dio %d armadura a %s
+
+AMX_SUPER_BURY_TEAM_CASE2 = [AMXX] ADMIN %s enterro %s jugadores
+AMX_SUPER_BURY_TEAM_CASE1 = [AMXX] ADMIN enterro %s jugadores
+AMX_SUPER_BURY_PLAYER_CASE2 = [AMXX] ADMIN %s enterro %s
+AMX_SUPER_BURY_PLAYER_CASE1 = [AMXX] ADMIN enterro %s
+AMX_SUPER_UNBURY_TEAM_CASE2 = [AMXX] ADMIN %s desenterro %s jugadores
+AMX_SUPER_UNBURY_TEAM_CASE1 = [AMXX] ADMIN desenterro  %s jugadores
+AMX_SUPER_UNBURY_PLAYER_CASE2 = [AMXX] ADMIN %s desenterro %s
+AMX_SUPER_UNBURY_PLAYER_CASE1 = [AMXX] ADMIN desenterro %s
+AMX_SUPER_UNBURY_TEAM_LOG = [AMX_Super] DESENTERRAR: ^"%s<%s>^" desenterro ^"%s^" jugadores
+AMX_SUPER_UNBURY_PLAYER_LOG = [AMX_Super] DESENTERRAR: ^"%s<%s>^" desenterro ^"%s<%s>^"
+AMX_SUPER_BURY_PLAYER_LOG = [AMX_Super] ENTERRAR: ^"%s<%s>^" enterro ^"%s<%s>^"
+AMX_SUPER_BURY_TEAM_LOG = [AMX_Super] ENTERRAR: ^"%s<%s>^" enterro ^"%s^" jugadores
+AMX_SUPER_BURY_MSG = [AMXX] jugador %s fue enterrado
+AMX_SUPER_UNBURY_MSG = [AMXX] jugador %s fue desenterrado
+
+AMX_SUPER_DISARM_TEAM_CASE2 = [AMXX] ADMIN %s desarmo %s jugadores
+AMX_SUPER_DISARM_TEAM_CASE1 = [AMXX] ADMIN desarmo %s jugadores
+AMX_SUPER_DISARM_PLAYER_CASE2 = [AMXX] ADMIN %s desarmo %s
+AMX_SUPER_DISARM_PLAYER_CASE1 = [AMXX] ADMIN desarmo %s
+AMX_SUPER_DISARM_TEAM_LOG = [AMX_Super] DESARME: ^"%s<%s>^" desarmo ^"%s^" jugadores
+AMX_SUPER_DISARM_PLAYER_LOG = [AMX_Super] DESARME: ^"%s<%s>^" desarmo ^"%s<%s>^"
+AMX_SUPER_DISARM_MSG = [AMXX] jugador %s fue desarmado
+
+AMX_SUPER_SLAY2_TEAM_CASE2 = [AMXX] ADMIN %s massacro %s jugadors
+AMX_SUPER_SLAY2_TEAM_CASE1 = [AMXX] ADMIN massacro %s jugadors
+AMX_SUPER_SLAY2_PLAYER_CASE2 = [AMXX] ADMIN %s massacro %s
+AMX_SUPER_SLAY2_PLAYER_CASE1 = [AMXX] ADMIN massacro %s
+AMX_SUPER_SLAY2_TEAM_LOG = [AMX_Super] MASSACRE2: ^"%s<%s>^" massacro ^"%s^" jugadores 
+AMX_SUPER_SLAY2_PLAYER_LOG =  [AMX_Super] MASSACRE2: ^"%s<%s>^" massacro ^"%s<%s>^"
+AMX_SUPER_SLAY2_TEAM_MSG = [AMXX] massacro %s jugadores
+AMX_SUPER_SLAY2_PLAYER_MSG = [AMXX] massacro %s
+
+AMX_SUPER_FIRE_TEAM_CASE2 = [AMXX] ADMIN %s puso %s jugadores en fuego
+AMX_SUPER_FIRE_TEAM_CASE1 = [AMXX] ADMIN set %s jugadores en fuego
+AMX_SUPER_FIRE_PLAYER_CASE2 = [AMXX] ADMIN %s puso %s en fuego.
+AMX_SUPER_FIRE_PLAYER_CASE1 = [AMXX] ADMIN puso %s en fuego.
+AMX_SUPER_FIRE_TEAM_LOG = [AMX_Super] FUEGO: ^"%s<%s>^" le pego fuego ^"%s^" jugadores
+AMX_SUPER_FIRE_PLAYER_LOG = [AMX_Super] FUEGO: ^"%s<%s>^" le pego fuego a ^"%s<%s>^"
+AMX_SUPER_FIRE_TEAM_MSG = [AMXX] Puso %s jugadores en fuego
+AMX_SUPER_FIRE_PLAYER_MSG = [AMXX] Puso %s en fuego
+AMX_SUPER_FIRE_SPREAD = * [AMXX] OH! NO! %s le pego candela a %s !Huele a assado!
+
+AMX_SUPER_ROCKET_TEAM_CASE2 = [AMXX] ADMIN %s transformo en cohetes %s jugadores
+AMX_SUPER_ROCKET_TEAM_CASE1 = [AMXX] ADMIN transformo en cohetes %s jugadores
+AMX_SUPER_ROCKET_PLAYER_CASE2 = [AMXX] ADMIN %s transformo en cohete a %s
+AMX_SUPER_ROCKET_PLAYER_CASE1 = [AMXX] ADMIN transformo en cohete a %s
+AMX_SUPER_ROCKET_TEAM_LOG = [AMX_Super] COHETE: ^"%s<%s>^" transformo en cohetes a ^"%s^" jugadores
+AMX_SUPER_ROCKET_PLAYER_LOG = [AMX_Super] COHETE: ^"%s<%s>^" transformo en cohete a ^"%s<%s>^"
+AMX_SUPER_ROCKET_TEAM_MSG = [AMXX] Transformo en cohetes %s jugadores
+AMX_SUPER_ROCKET_PLAYER_MSG = [AMXX] Transformo en cohete a %s
+
+AMX_SUPER_UBERSLAP_TEAM_CASE2 = [AMXX] ADMIN %s le pego a %s jugadores
+AMX_SUPER_UBERSLAP_TEAM_CASE1 = [AMXX] ADMIN le pego a %s jugadores
+AMX_SUPER_UBERSLAP_PLAYER_CASE2 = [AMXX] ADMIN %s le pego a %s
+AMX_SUPER_UBERSLAP_PLAYER_CASE1 = [AMXX] ADMIN le pego a %s
+AMX_SUPER_UBERSLAP_TEAM_LOG = [AMX_Super] UBERSLAP: ^"%s<%s>^" le pego a ^"%s^" jugadores
+AMX_SUPER_UBERSLAP_PLAYER_LOG = [AMX_Super] UBERSLAP: ^"%s<%s>^" le pego a ^"%s<%s>^"
+AMX_SUPER_UBERSLAP_TEAM_MSG = [AMXX] le pego a %s jugadores
+AMX_SUPER_UBERSLAP_PLAYER_MSG = [AMXX] le pego a %s
+
+AMX_SUPER_EXEC_ALL_CASE2 = [AMXX] ADMIN %s uso el comando ^"%s^" en todos
+AMX_SUPER_EXEC_ALL_CASE1 = [AMXX] ADMIN uso el comando ^"%s^" en todos
+AMX_SUPER_EXEC_TEAM_CASE2 = [AMXX] ADMIN %s uso el comando ^"%s^" on all %s jugadores
+AMX_SUPER_EXEC_TEAM_CASE1 = [AMXX] ADMIN uso el comando ^"%s^" on all %s jugadores
+AMX_SUPER_EXEC_PLAYER_CASE2 = [AMXX] ADMIN %s uso el comando ^"%s^" on %s!
+AMX_SUPER_EXEC_PLAYER_CASE1 = [AMXX] ADMIN uso el comando ^"%s^" on %s!
+AMX_SUPER_EXEC_ALL_LOG = [AMX_Super] EXEC: ^"%s<%s>^" execed ^"%s^" on all jugadores
+AMX_SUPER_EXEC_TEAM_LOG = [AMX_Super] EXEC: ^"%s<%s>^" execed ^"%s^" on all %s jugadores
+AMX_SUPER_EXEC_PLAYER_LOG = [AMX_Super] EXEC: ^"%s<%s>^" execed ^"%s^" on ^"%s<%s>^"
+
+AMX_SUPER_PASSWORD_SET_CASE2 = [AMXX] ADMIN %s puso la pass al server
+AMX_SUPER_PASSWORD_SET_CASE1 = [AMXX] ADMIN puso creo pass al server
+AMX_SUPER_PASSWORD_REMOVE_CASE2 = [AMXX] ADMIN %s quito la pass al server
+AMX_SUPER_PASSWORD_REMOVE_CASE1 = [AMXX] ADMIN quito la pass al server
+AMX_SUPER_PASSWORD_SET_LOG = [AMX_Super] PASSWORD: ^"%s<%s>^" puso al server la pass: ^"%s^"
+AMX_SUPER_PASSWORD_REMOVE_LOG = [AMX_Super] PASSWORD: ^"%s<%s>^" quito la pass al server
+
+AMX_SUPER_REVIVE_TEAM_CASE2 = [AMXX] ADMIN %s revivio %s jugadores
+AMX_SUPER_REVIVE_TEAM_CASE1 = [AMXX] ADMIN revivio %s jugadores
+AMX_SUPER_REVIVE_PLAYER_CASE2 = [AMXX] ADMIN %s revivio a %s
+AMX_SUPER_REVIVE_PLAYER_CASE1 = [AMXX] ADMIN revivio a %s
+AMX_SUPER_REVIVE_TEAM_LOG = [AMX_Super] REVIVE: ^"%s<%s>^" revivio a ^"%s^" jugadores
+AMX_SUPER_REVIVE_PLAYER_LOG = [AMX_Super] REVIVE: ^"%s<%s>^" revivio a ^"%s<%s>^"
+AMX_SUPER_REVIVE_TEAM_MSG = [AMXX] Revivio %s jugadores
+AMX_SUPER_REVIVE_PLAYER_MSG = [AMXX] revivio %s
+AMX_SUPER_REVIVE_TEAM_HUD = %s jugadores fueron revividos!
+AMX_SUPER_REVIVE_PLAYER_HUD = %s fue revivido!
+
+AMX_SUPER_QUIT_TEAM_CASE2 = [AMXX] ADMIN %s hizo que  %s jugadores salieran del juego
+AMX_SUPER_QUIT_TEAM_CASE1 = [AMXX] ADMIN hizo que %s jugadores quit del juego
+AMX_SUPER_QUIT_PLAYER_CASE2 = [AMXX] ADMIN %s hizo que %s quit del juego
+AMX_SUPER_QUIT_PLAYER_CASE1 = [AMXX] ADMIN hizo que %s quit del juego
+AMX_SUPER_QUIT_TEAM_LOG = [AMX_Super] QUIT: ^"%s<%s>^" has made ^"%s^" jugadores quit del juego
+AMX_SUPER_QUIT_PLAYER_LOG = [AMX_Super] QUIT: ^"%s<%s>^" hizo ^"%s<%s>^" quit del juego
+ 
+AMX_SUPER_GAG_PLAYER_CASE2 = [AMXX] ADMIN %s le proibio a %s de hablar por %0. minutos ( %s )
+AMX_SUPER_GAG_PLAYER_CASE1 = [AMXX] ADMIN le proibio a %s de hablar por %0. minutos ( %s )
+AMX_SUPER_UNGAG_PLAYER_CASE2 = [AMXX] ADMIN %s le permitio que %s hablara
+AMX_SUPER_UNGAG_PLAYER_CASE1 = [AMXX] ADMIN le permitio que %s hablara
+AMX_SUPER_GAG_PLAYER_LOG = [AMX_Super] GAG: ^"%s<%s>^" le proibio a ^"%s<%s>^" por %d ( %d )
+AMX_SUPER_UNGAG_PLAYER_LOG = [AMX_Super] UNGAG: ^"%s<%s>^" lo permite ^"%s<%s>^" hablar
+AMX_SUPER_GAG_PLAYER_DISCONNECT = [AMXX] El mudo de fue: ( %s <%s> )
+AMX_SUPER_PLAYER_GAGGED = * Te volviste mudo
+AMX_SUPER_PLAYER_NAMELOCK = * Jugadores mudos no pueden cambiar de nombre!
+AMX_SUPER_NOT_GAGGED = [AMXX] %s no esta mudo por eso el comando no se aplica.
+AMX_SUPER_GAG_END = [AMXX] %s ya no esta mudo
+
+AMX_SUPER_WEAPON_TEAM_CASE2 = [AMXX] ADMIN %s dio armas %s jugadores
+AMX_SUPER_WEAPON_TEAM_CASE1 = [AMXX] ADMIN dio armas %s jugadores
+AMX_SUPER_WEAPON_PLAYER_CASE2 = [AMXX] ADMIN %s dio armas a %s
+AMX_SUPER_WEAPON_PLAYER_CASE1 = [AMXX] ADMIN dio armas a %s
+AMX_SUPER_WEAPON_TEAM_LOG = [AMX_Super] WEAPON: ^"%s<%s>^" dio la arma ^"%d^" a ^"%s^" jugadores
+AMX_SUPER_WEAPON_PLAYER_LOG = [AMX_Super] WEAPON: ^"%s<%s>^" dio la arma ^"%d^" a ^"%s<%s>^"
+AMX_SUPER_WEAPON_TEAM_MSG = [AMXX] Dio la arma %d to %s jugadores
+AMX_SUPER_WEAPON_PLAYER_MSG = [AMXX] Dio la arma %d a %s
+
+AMX_SUPER_NOCLIP_TEAM_CASE2 = [AMXX] ADMIN %s dio noclip ^"%d^" a %s jugadores
+AMX_SUPER_NOCLIP_TEAM_CASE1 = [AMXX] ADMIN dio noclip ^"%d^" on %s jugadores
+AMX_SUPER_NOCLIP_PLAYER_CASE2 = [AMXX] ADMIN %s dio noclip ^"%d^" on %s
+AMX_SUPER_NOCLIP_PLAYER_CASE1 = [AMXX] ADMIN dio noclip ^"%d^" on %s
+AMX_SUPER_NOCLIP_TEAM_LOG = [AMX_Super] NOCLIP: ^"%s<%s>^" dio noclip ^"%d^" on ^"%s^" jugadores
+AMX_SUPER_NOCLIP_PLAYER_LOG = [AMX_Super] NOCLIP: ^"%s<%s>^" dio noclip ^"%d^" on ^"%s<%s>^"
+AMX_SUPER_NOCLIP_TEAM_MSG = [AMXX] dio noclip ^"%d^" a %s jugadores
+AMX_SUPER_NOCLIP_PLAYER_MSG = [AMXX] dio noclip ^"%d^" a %s
+
+AMX_SUPER_FLASH_TEAM_CASE2 = [AMXX] ADMIN %s flashbanged %s jugadores
+AMX_SUPER_FLASH_TEAM_CASE1 = [AMXX] ADMIN flashbanged %s jugadores
+AMX_SUPER_FLASH_PLAYER_CASE2 = [AMXX] ADMIN %s flashbanged %s
+AMX_SUPER_FLASH_PLAYER_CASE1 = [AMXX] ADMIN flashbanged %s
+AMX_SUPER_FLASH_TEAM_LOG = [AMX_Super] FLASH: ^"%s<%s>^" flashbanged ^"%s^" jugadores
+AMX_SUPER_FLASH_jugadore_LOG = [AMX_Super] FLASH: ^"%s<%s>^" flashbanged ^"%s<%s>^"
+AMX_SUPER_FLASH_TEAM_MSG = [AMXX] Flashbanged %s players
+AMX_SUPER_FLASH_PLAYER_MSG = [AMXX] Flashbanged %s
+
+AMX_SUPER_GODMODE_TEAM_CASE2 = [AMXX] ADMIN %s dio godmode ^"%d^" a %s jugadores
+AMX_SUPER_GODMODE_TEAM_CASE1 = [AMXX] ADMIN dio godmode ^"%d^" a %s jugadores
+AMX_SUPER_GODMODE_jugadore_CASE2 = [AMXX] ADMIN %s dio godmode ^"%d^" a %s
+AMX_SUPER_GODMODE_jugadore_CASE1 = [AMXX] ADMIN dio godmode ^"%d^" a %s
+AMX_SUPER_GODMODE_TEAM_LOG = [AMX_Super] GODMODE: ^"%s<%s>^" dio godmode ^"%d^" a ^"%s^" players
+AMX_SUPER_GODMODE_PLAYER_LOG = [AMX_Super] GODMODE: ^"%s<%s>^" dio godmode ^"%d^" a ^"%s<%s>^"
+AMX_SUPER_GODMODE_TEAM_MSG = [AMXX] Dio godmode ^"%d^" a %s jugadores
+AMX_SUPER_GODMODE_PLAYER_MSG = [AMXX] Dio godmode ^"%d^" a %s
+
+AMX_SUPER_GIVEMONEY_PLAYER_CASE2 = [AMXX] ADMIN %s dio $%i a %s
+AMX_SUPER_GIVEMONEY_PLAYER_CASE1 = [AMXX] ADMIN dio $%i a %s
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_CASE2 = [AMXX] ADMIN %s le quito todo el dinero a %s
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_CASE1 = [AMXX] ADMIN le quito todo el dinero a %s
+AMX_SUPER_TAKEMONEY_PLAYER_CASE2 = [AMXX] ADMIN %s le quito $%i a %s
+AMX_SUPER_TAKEMONEY_PLAYER_CASE1 = [AMXX] ADMIN le quito $%i a %s
+AMX_SUPER_GIVEMONEY_PLAYER_LOG = [AMX_Super] GIVE MONEY: ^"%s<%s>^" Dio $%i a ^"%s<%s>^"
+AMX_SUPER_TAKEMONEY_PLAYER_LOG = [AMX_Super] TAKE MONEY: ^"%s<%s>^" dio $%i a ^"%s<%s>^"
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_LOG = [AMX_Super] TAKE MONEY: ^"%s<%s>^" le quito todo el dinero de ^"%s<%s>^"
+AMX_SUPER_GIVEMONEY_PLAYER_MSG = [AMXX] Dio $%i a %s
+AMX_SUPER_TAKEMONEY_PLAYER_MSG = [AMXX] Quito $%i a %s
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_MSG = [AMXX]Se le quito todo el dinero a %s
+
+AMX_SUPER_GLOW_TEAM_CASE2 = [AMXX] ADMIN %s puso brillo a %s jugadores
+AMX_SUPER_GLOW_TEAM_CASE1 = [AMXX] ADMIN puso brillo a %s jugadores
+AMX_SUPER_GLOW_PLAYER_CASE2 = [AMXX] ADMIN %s puso brillo a %s
+AMX_SUPER_GLOW_PLAYER_CASE1 = [AMXX] ADMIN puso brillo a %s
+AMX_SUPER_GLOW_TEAM_LOG = [AMX_Super] GLOW: ^"%s<%s>^" puso brillo a ^"%s^" jugadores
+AMX_SUPER_GLOW_PLAYER_LOG = [AMX_Super] GLOW: ^"%s<%s>^" puso brillo a ^"%s<%s>^"
+AMX_SUPER_GLOW_TEAM_MSG = [AMXX] puso brillo a %s jugadores
+AMX_SUPER_GLOW_PLAYER_MSG = [AMXX] puso brillo a %s
+AMX_SUPER_UNGLOW_TEAM_CASE2 = [AMXX] ADMIN %s le quita el brillo a %s jugadores
+AMX_SUPER_UNGLOW_TEAM_CASE1 = [AMXX] ADMIN le quita el brillo a %s jugadores
+AMX_SUPER_UNGLOW_PLAYER_CASE2 = [AMXX] ADMIN %s rle quita el brillo a %s
+AMX_SUPER_UNGLOW_PLAYER_CASE1 = [AMXX] ADMIN le quita el brillo a %s
+AMX_SUPER_UNGLOW_TEAM_LOG = [AMX_Super] UNGLOW: ^"%s<%s>^" le quita el brillo a ^"%s^" jugadores
+AMX_SUPER_UNGLOW_PLAYER_LOG = [AMX_Super] UNGLOW: ^"%s<%s>^" le quita el brillo a ^"%s<%s>^"
+AMX_SUPER_UNGLOW_TEAM_MSG = [AMXX] le quita el brillo a %s jugadores
+AMX_SUPER_UNGLOW_PLAYER_MSG = [AMXX] le quita el brillo a %s
+
+AMX_SUPER_TEAM_INVALID = [AMXX] Equipa invalida! Las equipas validas son: T, CT, Auto, Spec
+AMX_SUPER_TEAM_UNLOCKED = [AMXX] La %s equipa no esta bloqueada!
+AMX_SUPER_TEAM_UNLOCK = [AMXX] Desbloquea a %s equipa
+AMX_SUPER_TEAM_LOCKED = [AMXX] La %s equipa ya esta bloqueada!
+AMX_SUPER_TEAM_LOCK = [AMXX] Bloqueo the %s equipa
+AMX_SUPER_UNLOCK_TEAMS_LOG = [AMX_Super] TEAMLOCKER: ^"%s<%s>^" desbloqueo la ^"%s^" equipa
+AMX_SUPER_LOCK_TEAMS_LOG = [AMX_Super] TEAMLOCKER: ^"%s<%s>^" bloqueo ^"%s^" equipa
+
+AMX_SUPER_SHUTDOWN_MESSAGE = Noticia: Server va a reempezar. Se no te coneta automatico, por favor hazlo tu.
+AMX_SUPER_SHUTDOWN_MESSAGE_LOG = [AMX_Super] SHUTDOWN: ^"%s<%s>^" Puso el server en shutdown
+
+AMX_SUPER_DEADCHAT_MESSAGE = [AMXX] Estas muerto ya, puedes chatear via voicecomm.
+
+AMX_SUPER_SOUNDFIX = [AMXX] Your sound will no longer echo now.
+AMX_SUPER_SOUNDFIX_DISABLED = [AMXX] Manual sound fixing is disabled.
+
+AMX_SUPER_TEAM_IMMUNITY = [AMXX] Se pasa ^"%s^" porque jugador tiene imunidade.
+AMX_SUPER_NO_PLAYERS = [AMXX] No ay este jugador en esta team!
+AMX_SUPER_AMOUNT_GREATER = [AMXX] Amount to give must be greater than zero!
+
+[nl]
+AMX_SUPER_HEAL_TEAM_CASE2 = [AMXX] ADMIN %s gaf %d HP aan %s spelers
+AMX_SUPER_HEAL_TEAM_CASE1 = [AMXX] ADMIN gaf %d HP aan %s spelers
+AMX_SUPER_HEAL_PLAYER_CASE2 = [AMXX] ADMIN %s gaf %d HP aan %s
+AMX_SUPER_HEAL_PLAYER_CASE1 = [AMXX] ADMIN gaf %d HP aan %s
+AMX_SUPER_HEAL_TEAM_LOG = [AMX_Super] GENEZEN: ^"%s<%s>^" gaf %d HP aan ^"%s^" spelers
+AMX_SUPER_HEAL_PLAYER_LOG = [AMX_Super] GENEZEN: ^"%s<%s>^" gaf %d HP aan ^"%s<%s>^" 
+AMX_SUPER_HEAL_TEAM_MSG = [AMXX] Gaf %d HP aan %s spelers
+AMX_SUPER_HEAL_PLAYER_MSG = [AMXX] Gaf %d HP aan %s
+
+AMX_SUPER_ARMOR_TEAM_CASE2 = [AMXX] ADMIN %s gaf %d armor aan %s spelers
+AMX_SUPER_ARMOR_TEAM_CASE1 = [AMXX] ADMIN gaf %d armor aan %s spelers
+AMX_SUPER_ARMOR_PLAYER_CASE2 = [AMXX] ADMIN %s gaf %d armor aan %s
+AMX_SUPER_ARMOR_PLAYER_CASE1 = [AMXX] ADMIN gaf %d armor aan %s
+AMX_SUPER_ARMOR_TEAM_LOG = [AMX_Super] ARMOR: ^"%s<%s>^" gaf %d armor to ^"%s^" spelers
+AMX_SUPER_ARMOR_PLAYER_LOG = [AMX_Super] ARMOR: ^"%s<%s>^" gaf %d armor ^"%s<%s>^"
+AMX_SUPER_ARMOR_TEAM_MSG = [AMXX] Gaf %d armor aan %s spelers
+AMX_SUPER_ARMOR_PLAYER_MSG = [AMXX] Gaf %d armor aan %s
+
+AMX_SUPER_STACK_PLAYER_CASE2 = [AMXX] ADMIN %s plaatste alle spelers op %s
+AMX_SUPER_STACK_PLAYER_CASE1 = [AMXX] ADMIN plaatste alle spelers op %s
+AMX_SUPER_STACK_PLAYER_LOG = [AMX_Super] PLAATSEN: ^"%s<%s>^" plaatste alle spelers op ^"%s<%s>^"
+AMX_SUPER_STACK_PLAYER_MSG = [AMXX] Plaatste alle spelers op %s
+
+AMX_SUPER_ALLTALK_STATUS = [AMXX] sv_alltalk is ^"%d^"
+AMX_SUPER_ALLTALK_SET_CASE2 = [AMXX] ADMIN %s zette sv_alltalk op ^"%s^"
+AMX_SUPER_ALLTALK_SET_CASE1 = [AMXX] ADMIN zette sv_alltalk op ^"%s^"
+AMX_SUPER_ALLTALK_LOG = [AMX_Super] ALLTALK: ^"%s<%s>^" zette sv_alltalk op ^"%s^"
+AMX_SUPER_ALLTALK_MSG = [AMXX] Alltalk is gezet op ^"%s^"
+
+AMX_SUPER_GRAVITY_STATUS = [AMXX] sv_gravity is ^"%d^"
+AMX_SUPER_GRAVITY_SET_CASE2 = [AMXX] ADMIN %s zette zwaartekracht op ^"%s^"
+AMX_SUPER_GRAVITY_SET_CASE1 = [AMXX] ADMIN zette zwaartekracht op ^"%s^"
+AMX_SUPER_GRAVITY_LOG = [AMX_Super] ZWAARTEKRACHT: ^"%s<%s>^" zette sv_gravity op ^"%s^"
+AMX_SUPER_GRAVITY_MSG = [AMXX] Zwaartekracht is gezet op ^"%s^"
+AMX_SUPER_GRAVITY_CHECK = [AMXX] De zwaartekracht is gezet op %i
+
+AMX_SUPER_BURY_TEAM_CASE2 = [AMXX] ADMIN %s heeft %s spelers begraven
+AMX_SUPER_BURY_TEAM_CASE1 = [AMXX] ADMIN heeft %s spelers begraven
+AMX_SUPER_BURY_PLAYER_CASE2 = [AMXX] ADMIN %s heeft %s begraven
+AMX_SUPER_BURY_PLAYER_CASE1 = [AMXX] ADMIN heeft %s begraven
+AMX_SUPER_UNBURY_TEAM_CASE2 = [AMXX] ADMIN %s heeft %s spelers opgegraven
+AMX_SUPER_UNBURY_TEAM_CASE1 = [AMXX] ADMIN heeft %s spelers opgegraven
+AMX_SUPER_UNBURY_PLAYER_CASE2 = [AMXX] ADMIN %s heeft %s opgegraven
+AMX_SUPER_UNBURY_PLAYER_CASE1 = [AMXX] ADMIN heeft %s opgegraven
+AMX_SUPER_UNBURY_TEAM_LOG = [AMX_Super] OPGRAVEN: ^"%s<%s>^" heeft ^"%s^" spelers opgegraven
+AMX_SUPER_UNBURY_PLAYER_LOG = [AMX_Super] OPGRAVEN: ^"%s<%s>^" heeft ^"%s<%s>^" opgegraven
+AMX_SUPER_BURY_PLAYER_LOG = [AMX_Super] BEGRAVEN: ^"%s<%s>^" heeft ^"%s<%s>^" begraven
+AMX_SUPER_BURY_TEAM_LOG = [AMX_Super] BEGRAVEN: ^"%s<%s>^" heeft ^"%s^" spelers begraven
+AMX_SUPER_BURY_MSG = [AMXX] Speler %s is begraven
+AMX_SUPER_UNBURY_MSG = [AMXX] Speler %s is opgegraven
+
+AMX_SUPER_DISARM_TEAM_CASE2 = [AMXX] ADMIN %s heeft %s spelers ontwapend
+AMX_SUPER_DISARM_TEAM_CASE1 = [AMXX] ADMIN heeft %s spelers ontwapend
+AMX_SUPER_DISARM_PLAYER_CASE2 = [AMXX] ADMIN %s heeft %s ontwapend
+AMX_SUPER_DISARM_PLAYER_CASE1 = [AMXX] ADMIN heeft %s ontwapend
+AMX_SUPER_DISARM_TEAM_LOG = [AMX_Super] ONTWAPEN: ^"%s<%s>^" heeft ^"%s^" spelers ontwapend
+AMX_SUPER_DISARM_PLAYER_LOG = [AMX_Super] ONTWAPEN: ^"%s<%s>^" heeft ^"%s<%s>^" ontwapend
+AMX_SUPER_DISARM_MSG = [AMXX] Speler %s is ontwapend
+
+AMX_SUPER_SLAY2_TEAM_CASE2 = [AMXX] ADMIN %s slachtte %s spelers
+AMX_SUPER_SLAY2_TEAM_CASE1 = [AMXX] ADMIN slachtte %s spelers
+AMX_SUPER_SLAY2_PLAYER_CASE2 = [AMXX] ADMIN %s slachtte %s
+AMX_SUPER_SLAY2_PLAYER_CASE1 = [AMXX] ADMIN slachtte %s
+AMX_SUPER_SLAY2_TEAM_LOG = [AMX_Super] SLACHT2: ^"%s<%s>^" slachtte ^"%s^" spelers 
+AMX_SUPER_SLAY2_PLAYER_LOG =  [AMX_Super] SLACHT2: ^"%s<%s>^" slachtte ^"%s<%s>^"
+AMX_SUPER_SLAY2_TEAM_MSG = [AMXX] Slachtte %s spelers
+AMX_SUPER_SLAY2_PLAYER_MSG = [AMXX] Slachtte %s
+
+AMX_SUPER_FIRE_TEAM_CASE2 = [AMXX] ADMIN %s zette %s spelers onder vuur
+AMX_SUPER_FIRE_TEAM_CASE1 = [AMXX] ADMIN zette %s spelers onder vuur
+AMX_SUPER_FIRE_PLAYER_CASE2 = [AMXX] ADMIN %s zette %s onder vuur.
+AMX_SUPER_FIRE_PLAYER_CASE1 = [AMXX] ADMIN zette %s onder vuur.
+AMX_SUPER_FIRE_TEAM_LOG = [AMX_Super] VUUR: ^"%s<%s>^" zette vuur op ^"%s^" spelers
+AMX_SUPER_FIRE_PLAYER_LOG = [AMX_Super] FIRE: ^"%s<%s>^" zette vuur op ^"%s<%s>^"
+AMX_SUPER_FIRE_TEAM_MSG = [AMXX] Zette %s spelers onder vuur
+AMX_SUPER_FIRE_PLAYER_MSG = [AMXX] Zette %s onder vuur
+AMX_SUPER_FIRE_SPREAD = * [AMXX] OH! NEE! %s zit %s onder vuur!
+
+AMX_SUPER_ROCKET_TEAM_CASE2 = [AMXX] ADMIN %s maakte raketten van %s spelers
+AMX_SUPER_ROCKET_TEAM_CASE1 = [AMXX] ADMIN maakte raketten van %s spelers
+AMX_SUPER_ROCKET_PLAYER_CASE2 = [AMXX] ADMIN %s maakte een raket van %s
+AMX_SUPER_ROCKET_PLAYER_CASE1 = [AMXX] ADMIN maakte een raket van %s
+AMX_SUPER_ROCKET_TEAM_LOG = [AMX_Super] RAKET: ^"%s<%s>^" maakte raketten van ^"%s^" spelers
+AMX_SUPER_ROCKET_PLAYER_LOG = [AMX_Super] RAKET: ^"%s<%s>^" maakte een raket van ^"%s<%s>^"
+AMX_SUPER_ROCKET_TEAM_MSG = [AMXX] Maakte raketten van %s spelers
+AMX_SUPER_ROCKET_PLAYER_MSG = [AMXX] Maakte een raket van %s
+
+AMX_SUPER_UBERSLAP_TEAM_CASE2 = [AMXX] ADMIN %s ubersloeg %s spelers
+AMX_SUPER_UBERSLAP_TEAM_CASE1 = [AMXX] ADMIN ubersloeg %s spelers
+AMX_SUPER_UBERSLAP_PLAYER_CASE2 = [AMXX] ADMIN %s ubersloeg %s
+AMX_SUPER_UBERSLAP_PLAYER_CASE1 = [AMXX] ADMIN ubersloeg %s
+AMX_SUPER_UBERSLAP_TEAM_LOG = [AMX_Super] UBERSLAAN: ^"%s<%s>^" ubersloeg ^"%s^" spelers
+AMX_SUPER_UBERSLAP_PLAYER_LOG = [AMX_Super] UBERSLAAN: ^"%s<%s>^" ubersloeg ^"%s<%s>^"
+AMX_SUPER_UBERSLAP_TEAM_MSG = [AMXX] Ubersloeg %s spelers
+AMX_SUPER_UBERSLAP_PLAYER_MSG = [AMXX] Ubersloeg %s
+
+AMX_SUPER_EXEC_ALL_CASE2 = [AMXX] ADMIN %s gebruikte commando ^"%s^" op iedereen
+AMX_SUPER_EXEC_ALL_CASE1 = [AMXX] ADMIN gebruikte commando ^"%s^" op iedereen
+AMX_SUPER_EXEC_TEAM_CASE2 = [AMXX] ADMIN %s gebruikte commando ^"%s^" op alle %s spelers
+AMX_SUPER_EXEC_TEAM_CASE1 = [AMXX] ADMIN gebruikte commando ^"%s^" op alle %s spelers
+AMX_SUPER_EXEC_PLAYER_CASE2 = [AMXX] ADMIN %s gebruikte commando ^"%s^" op %s!
+AMX_SUPER_EXEC_PLAYER_CASE1 = [AMXX] ADMIN gebruikte commando ^"%s^" op %s!
+AMX_SUPER_EXEC_ALL_LOG = [AMX_Super] UITVOEREN: ^"%s<%s>^" voerde ^"%s^" uit op alle spelers
+AMX_SUPER_EXEC_TEAM_LOG = [AMX_Super] UITVOEREN: ^"%s<%s>^" voerde ^"%s^" uit op alle %s spelers
+AMX_SUPER_EXEC_PLAYER_LOG = [AMX_Super] UITVOEREN: ^"%s<%s>^" voerde ^"%s^" uit op ^"%s<%s>^"
+
+AMX_SUPER_PASSWORD_SET_CASE2 = [AMXX] ADMIN %s heeft een paswoord op de server gezet
+AMX_SUPER_PASSWORD_SET_CASE1 = [AMXX] ADMIN heeft een paswoord op de server gezet
+AMX_SUPER_PASSWORD_REMOVE_CASE2 = [AMXX] ADMIN %s heeft het serverpaswoord weggehaald
+AMX_SUPER_PASSWORD_REMOVE_CASE1 = [AMXX] ADMIN heeft het serverpaswoord weggehaald
+AMX_SUPER_PASSWORD_SET_LOG = [AMX_Super] PASWOORD: ^"%s<%s>^" heeft het serverpaswoord gezet op ^"%s^"
+AMX_SUPER_PASSWORD_REMOVE_LOG = [AMX_Super] PASSWORD: ^"%s<%s>^" haalde het server paswoord weg
+
+AMX_SUPER_REVIVE_TEAM_CASE2 = [AMXX] ADMIN %s heeft %s spelers tot leven gewekt
+AMX_SUPER_REVIVE_TEAM_CASE1 = [AMXX] ADMIN heeft %s spelers tot leven gewekt
+AMX_SUPER_REVIVE_PLAYER_CASE2 = [AMXX] ADMIN %s heeft %s tot leven gewekt
+AMX_SUPER_REVIVE_PLAYER_CASE1 = [AMXX] ADMIN heeft %s tot leven gewekt
+AMX_SUPER_REVIVE_TEAM_LOG = [AMX_Super] TOT LEVEN WEKKEN: ^"%s<%s>^" heeft ^"%s^" spelers tot leven gewekt
+AMX_SUPER_REVIVE_PLAYER_LOG = [AMX_Super] TOT LEVEN WEKKEN: ^"%s<%s>^" heeft ^"%s<%s>^" tot leven gewekt
+AMX_SUPER_REVIVE_TEAM_MSG = [AMXX] Heeft %s spelers tot leven gewekt
+AMX_SUPER_REVIVE_PLAYER_MSG = [AMXX] Heeft %s tot leven gewekt
+AMX_SUPER_REVIVE_TEAM_HUD = %s spelers zijn tot leven gewekt!
+AMX_SUPER_REVIVE_PLAYER_HUD = %s is tot leven gewekt!
+
+AMX_SUPER_QUIT_TEAM_CASE2 = [AMXX] ADMIN %s heeft %s spelers het spel doen verlaten
+AMX_SUPER_QUIT_TEAM_CASE1 = [AMXX] ADMIN heeft %s spelers het spel doen verlaten
+AMX_SUPER_QUIT_PLAYER_CASE2 = [AMXX] ADMIN %s heeft %s het spel doen verlaten
+AMX_SUPER_QUIT_PLAYER_CASE1 = [AMXX] ADMIN heeft %s het spel doen verlaten
+AMX_SUPER_QUIT_TEAM_LOG = [AMX_Super] VERLATEN: ^"%s<%s>^" heeft ^"%s^" spelers het spel doen verlaten
+AMX_SUPER_QUIT_PLAYER_LOG = [AMX_Super] VERLATEN: ^"%s<%s>^" heeft ^"%s<%s>^" het spel doen verlaten
+ 
+AMX_SUPER_GAG_PLAYER_CASE2 = [AMXX] ADMIN %s verbiedt %s om te praten voor het praten van %0.0f minuten ( %s )
+AMX_SUPER_GAG_PLAYER_CASE1 = [AMXX] ADMIN verbiedt %s om te praten voor het praten van %0.0f minutes ( %s )
+AMX_SUPER_UNGAG_PLAYER_CASE2 = [AMXX] ADMIN %s staat %s toe om weer te praten
+AMX_SUPER_UNGAG_PLAYER_CASE1 = [AMXX] ADMIN staat %s toe om weer te praten
+AMX_SUPER_GAG_PLAYER_LOG = [AMX_Super] VERBIEDEN: ^"%s<%s>^" is verboden om te praten ^"%s<%s>^" voor %d ( %d )
+AMX_SUPER_UNGAG_PLAYER_LOG = [AMX_Super] TOESTAAN: ^"%s<%s>^" heeft ^"%s<%s>^" toegestaan om te praten
+AMX_SUPER_GAG_PLAYER_DISCONNECT = [AMXX] Verboden speler heeft het spel verlaten: ( %s <%s> )
+AMX_SUPER_PLAYER_GAGGED = * Je bent verboden om te praten
+AMX_SUPER_PLAYER_NAMELOCK = * Verboden spelers kunnen niet hun naam veranderen
+AMX_SUPER_NOT_GAGGED = [AMXX] %s is niet verboden om te praten & kan niet worden toegestaan om te praten.
+AMX_SUPER_GAG_END = [AMXX] %s is niet langer meer verboden om te praten
+
+AMX_SUPER_WEAPON_TEAM_CASE2 = [AMXX] ADMIN %s gaf een wapen aan %s spelers
+AMX_SUPER_WEAPON_TEAM_CASE1 = [AMXX] ADMIN gaf een wapen aan %s spelers
+AMX_SUPER_WEAPON_PLAYER_CASE2 = [AMXX] ADMIN %s gaf een wapen aan %s
+AMX_SUPER_WEAPON_PLAYER_CASE1 = [AMXX] ADMIN gaf een wapen aan %s
+AMX_SUPER_WEAPON_TEAM_LOG = [AMX_Super] WAPEN: ^"%s<%s>^" gaf een wapen ^"%d^" aan ^"%s^" spelers
+AMX_SUPER_WEAPON_PLAYER_LOG = [AMX_Super] WAPEN: ^"%s<%s>^" gaf een wapen ^"%d^" aan ^"%s<%s>^"
+AMX_SUPER_WEAPON_TEAM_MSG = [AMXX] Gaf het wapen %d aan %s spelers
+AMX_SUPER_WEAPON_PLAYER_MSG = [AMXX] Gaf het wapen %d aan %s
+
+AMX_SUPER_NOCLIP_TEAM_CASE2 = [AMXX] ADMIN %s zette noclip ^"%d^" op %s spelers
+AMX_SUPER_NOCLIP_TEAM_CASE1 = [AMXX] ADMIN zette noclip ^"%d^" op %s spelers
+AMX_SUPER_NOCLIP_PLAYER_CASE2 = [AMXX] ADMIN %s zette noclip ^"%d^" op %s
+AMX_SUPER_NOCLIP_PLAYER_CASE1 = [AMXX] ADMIN zette noclip ^"%d^" op %s
+AMX_SUPER_NOCLIP_TEAM_LOG = [AMX_Super] NOCLIP: ^"%s<%s>^" zette noclip ^"%d^" op ^"%s^" spelers
+AMX_SUPER_NOCLIP_PLAYER_LOG = [AMX_Super] NOCLIP: ^"%s<%s>^" zette noclip ^"%d^" op ^"%s<%s>^"
+AMX_SUPER_NOCLIP_TEAM_MSG = [AMXX] Zette noclip ^"%d^" op %s spelers
+AMX_SUPER_NOCLIP_PLAYER_MSG = [AMXX] Zette noclip ^"%d^" op %s
+
+AMX_SUPER_FLASH_TEAM_CASE2 = [AMXX] ADMIN %s flashbanged %s players
+AMX_SUPER_FLASH_TEAM_CASE1 = [AMXX] ADMIN flashbangde %s spelers
+AMX_SUPER_FLASH_PLAYER_CASE2 = [AMXX] ADMIN %s flashbangde %s
+AMX_SUPER_FLASH_PLAYER_CASE1 = [AMXX] ADMIN flashbangde %s
+AMX_SUPER_FLASH_TEAM_LOG = [AMX_Super] FLASH: ^"%s<%s>^" flashbangde ^"%s^" spelers
+AMX_SUPER_FLASH_PLAYER_LOG = [AMX_Super] FLASH: ^"%s<%s>^" flashbangde ^"%s<%s>^"
+AMX_SUPER_FLASH_TEAM_MSG = [AMXX] Flashbangde %s spelers
+AMX_SUPER_FLASH_PLAYER_MSG = [AMXX] Flashbangde %s
+
+AMX_SUPER_GODMODE_TEAM_CASE2 = [AMXX] ADMIN %s zette godmode ^"%d^" op %s spelers
+AMX_SUPER_GODMODE_TEAM_CASE1 = [AMXX] ADMIN zette godmode ^"%d^" op %s spelers
+AMX_SUPER_GODMODE_PLAYER_CASE2 = [AMXX] ADMIN %s zette godmode ^"%d^" op %s
+AMX_SUPER_GODMODE_PLAYER_CASE1 = [AMXX] ADMIN zette godmode ^"%d^" op %s
+AMX_SUPER_GODMODE_TEAM_LOG = [AMX_Super] GODMODE: ^"%s<%s>^" zette godmode ^"%d^" op ^"%s^" spelers
+AMX_SUPER_GODMODE_PLAYER_LOG = [AMX_Super] GODMODE: ^"%s<%s>^" zette godmode ^"%d^" op ^"%s<%s>^"
+AMX_SUPER_GODMODE_TEAM_MSG = [AMXX] Zette godmode ^"%d^" op %s players
+AMX_SUPER_GODMODE_PLAYER_MSG = [AMXX] Zette godmode ^"%d^" op %s
+
+AMX_SUPER_GIVEMONEY_PLAYER_CASE2 = [AMXX] ADMIN %s gaf $%i aan %s
+AMX_SUPER_GIVEMONEY_PLAYER_CASE1 = [AMXX] ADMIN gaf $%i aan %s
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_CASE2 = [AMXX] ADMIN %s pakte al het geld af van %s
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_CASE1 = [AMXX] ADMIN pakte al het geld af van %s
+AMX_SUPER_TAKEMONEY_PLAYER_CASE2 = [AMXX] ADMIN %s pakte $%i af van %s
+AMX_SUPER_TAKEMONEY_PLAYER_CASE1 = [AMXX] ADMIN pakte $%i af van %s
+AMX_SUPER_GIVEMONEY_PLAYER_LOG = [AMX_Super] GELD GEVEN: ^"%s<%s>^" gaf $%i aan ^"%s<%s>^"
+AMX_SUPER_TAKEMONEY_PLAYER_LOG = [AMX_Super] GELD AFPAKKEN: ^"%s<%s>^" pakte $%i af van ^"%s<%s>^"
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_LOG = [AMX_Super] GELD AFPAKKEN: ^"%s<%s>^" pakte al het geld af van^"%s<%s>^"
+AMX_SUPER_GIVEMONEY_PLAYER_MSG = [AMXX] Gaf $%i aan %s
+AMX_SUPER_TAKEMONEY_PLAYER_MSG = [AMXX] Pakte $%i af van %s
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_MSG = [AMXX] Pakte al het geld af van%s
+
+AMX_SUPER_GLOW_TEAM_CASE2 = [AMXX] ADMIN %s zette %s spelers aan het gloeien
+AMX_SUPER_GLOW_TEAM_CASE1 = [AMXX] ADMIN zette %s spelers aan het gloeien
+AMX_SUPER_GLOW_PLAYER_CASE2 = [AMXX] ADMIN %s zette %s aan het gloeien
+AMX_SUPER_GLOW_PLAYER_CASE1 = [AMXX] ADMIN zette %s aan het gloeien
+AMX_SUPER_GLOW_TEAM_LOG = [AMX_Super] GLOEIEN: ^"%s<%s>^" zette ^"%s^" spelers aan het gloeien
+AMX_SUPER_GLOW_PLAYER_LOG = [AMX_Super] GLOEIEN: ^"%s<%s>^" zette ^"%s<%s>^" aan het gloeien
+AMX_SUPER_GLOW_TEAM_MSG = [AMXX] Zette %s spelers aan het gloeien
+AMX_SUPER_GLOW_PLAYER_MSG = [AMXX] Zette %s aan het gloeien
+AMX_SUPER_UNGLOW_TEAM_CASE2 = [AMXX] ADMIN %s haalde het gloeien af van %s spelers
+AMX_SUPER_UNGLOW_TEAM_CASE1 = [AMXX] ADMIN haalde het gloeien af van %s spelers
+AMX_SUPER_UNGLOW_PLAYER_CASE2 = [AMXX] ADMIN %s haalde het gloeien af van %s
+AMX_SUPER_UNGLOW_PLAYER_CASE1 = [AMXX] ADMIN haalde het gloeien af van %s
+AMX_SUPER_UNGLOW_TEAM_LOG = [AMX_Super] NIET GLOEIEN: ^"%s<%s>^" haalde het gloeien af van ^"%s^" spelers
+AMX_SUPER_UNGLOW_PLAYER_LOG = [AMX_Super] NIET GLOEIEN: ^"%s<%s>^" haalde het gloeien af van ^"%s<%s>^"
+AMX_SUPER_UNGLOW_TEAM_MSG = [AMXX] Haalde het gloeien af van %s spelers
+AMX_SUPER_UNGLOW_PLAYER_MSG = [AMXX] Haalde het gloeien af van %s
+
+AMX_SUPER_TEAM_INVALID = [AMXX] Ongeldig team opgegeven! Geldige teams zijn: T, CT, Auto, Spec
+AMX_SUPER_TEAM_UNLOCKED = [AMXX] Het %s team zit niet op slot!
+AMX_SUPER_TEAM_UNLOCK = [AMXX] Opende het %s team
+AMX_SUPER_TEAM_LOCKED = [AMXX] Het %s team zit al op slot!
+AMX_SUPER_TEAM_LOCK = [AMXX] Het %s team op slot gedaan
+AMX_SUPER_UNLOCK_TEAMS_LOG = [AMX_Super] TEAMSLOT: ^"%s<%s>^" opende het ^"%s^" team
+AMX_SUPER_LOCK_TEAMS_LOG = [AMX_Super] TEAMSLOT: ^"%s<%s>^" heeft het ^"%s^" team op slot gedaan
+
+AMX_SUPER_SHUTDOWN_MESSAGE = Opmerking: Server start opnieuw op. Als je niet automatisch opnieuw erin gaat, ga er dan zelf opnieuw in.
+AMX_SUPER_SHUTDOWN_MESSAGE_LOG = [AMX_Super] SLUITING: ^"%s<%s>^" heeft de server gesloten
+
+AMX_SUPER_DEADCHAT_MESSAGE = [AMXX] Je bent nu dood, je kan chatten met het ander team via voicecomm.
+
+AMX_SUPER_SOUNDFIX = [AMXX] Jouw geluid zal niet nu meer echoën.
+AMX_SUPER_SOUNDFIX_DISABLED = [AMXX] Met de hand geluid fixen kan nu niet meer.
+
+AMX_SUPER_TEAM_IMMUNITY = [AMXX] Slaat ^"%s^" over, omdat de speler immuun is.
+AMX_SUPER_NO_PLAYERS = [AMXX] Geen spelers in dat team!
+AMX_SUPER_AMOUNT_GREATER = [AMXX] Hoeveelheid om te geven moet groter zijn dan 0!
+
+AMX_SUPER_TRANSFER_PLAYER = [AMXX] Succesvol %s overgezet naar het %s team
+AMX_SUPER_TRANSFER_PLAYER_TEAM = [AMXX] Jij bent overgezet naar het %s team
+AMX_SUPER_TRANSFER_PLAYER_ERROR_CASE1 = [AMXX] Je kan geen spelers wisselen die in hetzelfde team zitten!
+AMX_SUPER_TRANSFER_PLAYER_ERROR_CASE2 = [AMXX] Je kan geen spelers wisselen die niet in een team zitten!
+AMX_SUPER_TRANSFER_SWAP_PLAYERS_SUCCESS = [AMXX] Succesvol %s vewisselt voor %s
+AMX_SUPER_TRANSFER_SWAP_PLAYERS_MESSAGE1 = [AMXX] Jij bent verwisseld met %s
+AMX_SUPER_TRANSFER_SWAP_PLAYERS_MESSAGE2 = [AMXX] Jij bent verwisseld met %s
+AMX_SUPER_TRANSFER_SWAP_TEAM_SUCCESS = [AMXX] Succesvol de teams verwisselt!
+AMX_SUPER_TRANSFER_SWAP_TEAM_LOG = [AMX_Super] TEAMOVERZETTER: ^"%s<%s>^" heeft de teams verwisseld
+AMX_SUPER_TRANSFER_SWAP_PLAYERS_LOG = [AMX_Super] TEAMOVERZETTER: ^"%s<%s>^" heeft ^"%s^" verwisselt met ^"%s^"
+AMX_SUPER_TRANSFER_PLAYER_LOG = [AMX_Super] TEAMOVERZETTER: ^"%s<%s>^" zette ^"%s^" over naar het ^"%s^" team
+
+AMX_SUPER_AMMO_PLAYER_CASE1 = [AMXX] ADMIN Gaf oneindige munitie aan %s
+AMX_SUPER_AMMO_PLAYER_CASE2 = [AMXX] ADMIN %s Gaf %s oneindige munitie 
+AMX_SUPER_UNAMMO_PLAYER_CASE1 = [AMXX] ADMIN Haalde oneindige munitie weg bij %s
+AMX_SUPER_UNAMMO_PLAYER_CASE2 = [AMXX] ADMIN %s Haalde oneindige munitie weg bij %s
+AMX_SUPER_AMMO_PLAYER_MSG = [AMXX] ADMIN Gaf %s oneindige munitie
+AMX_SUPER_AMMO_PLAYER_LOG = [AMX_Super] AMMO: ADMIN %s Gaf %s oneindige munitie 
+AMX_SUPER_UNAMMO_PLAYER_MSG = [AMXX] ADMIN Haalde oneindige munitie weg bij %s
+AMX_SUPER_UNAMMO_PLAYER_LOG = [AMX_Super] [AMXX] ADMIN %s Haalde oneindige munitie weg bij %s
+
+AMX_SUPER_BOMB_TRANSFER = Bom is gegeven aan ^"%s^"^n, omdat ^"%s^" AFK is
+
+[bp]
+AMX_SUPER_HEAL_TEAM_CASE2 = [AMXX] ADMIN %s curou %d HP dos %s
+AMX_SUPER_HEAL_TEAM_CASE1 = [AMXX] ADMIN curou %d HP dos %s
+AMX_SUPER_HEAL_PLAYER_CASE2 = [AMXX] ADMIN %s curou %d HP de %s
+AMX_SUPER_HEAL_PLAYER_CASE1 = [AMXX] ADMIN curou %d HP de %s
+AMX_SUPER_HEAL_TEAM_LOG = [AMX_Super] HEAL: ^"%s<%s>^" curou %d HP dos ^"%s^"
+AMX_SUPER_HEAL_PLAYER_LOG = [AMX_Super] HEAL: ^"%s<%s>^" curou %d HP de ^"%s<%s>^" 
+AMX_SUPER_HEAL_TEAM_MSG = [AMXX] Foram curados %d HP dos %s
+AMX_SUPER_HEAL_PLAYER_MSG = [AMXX] Foram curados %d HP de %s
+
+AMX_SUPER_ARMOR_TEAM_CASE2 = [AMXX] ADMIN %s deu %d AP aos %s
+AMX_SUPER_ARMOR_TEAM_CASE1 = [AMXX] ADMIN deu %d AP aos %s
+AMX_SUPER_ARMOR_PLAYER_CASE2 = [AMXX] ADMIN %s deu %d AP a %s
+AMX_SUPER_ARMOR_PLAYER_CASE1 = [AMXX] ADMIN deu %d AP a %s
+AMX_SUPER_ARMOR_TEAM_LOG = [AMX_Super] ARMOR: ^"%s<%s>^" deu %d AP aos ^"%s^"
+AMX_SUPER_ARMOR_PLAYER_LOG = [AMX_Super] ARMOR: ^"%s<%s>^" deu %d AP ^"%s<%s>^"
+AMX_SUPER_ARMOR_TEAM_MSG = [AMXX] %d AP foram dados aos %s
+AMX_SUPER_ARMOR_PLAYER_MSG = [AMXX] Foram dados %d AP a %s
+
+AMX_SUPER_STACK_PLAYER_CASE2 = [AMXX] ADMIN %s empilhou todo mundo na cabeca de %s
+AMX_SUPER_STACK_PLAYER_CASE1 = [AMXX] ADMIN empilhou todo mundo na cabeca de %s
+AMX_SUPER_STACK_PLAYER_LOG = [AMX_Super] STACK: ^"%s<%s>^" empilhou todo mundo na cabeca de ^"%s<%s>^"
+AMX_SUPER_STACK_PLAYER_MSG = [AMXX] Empilhou todo mundo na cabeca de %s
+
+AMX_SUPER_ALLTALK_STATUS = [AMXX] sv_alltalk e ^"%d^"
+AMX_SUPER_ALLTALK_SET_CASE2 = [AMXX] ADMIN %s mudou sv_alltalk a ^"%s^"
+AMX_SUPER_ALLTALK_SET_CASE1 = [AMXX] ADMIN mudou sv_alltalk a ^"%s^"
+AMX_SUPER_ALLTALK_LOG = [AMX_Super] ALLTALK: ^"%s<%s>^" mudou sv_alltalk a ^"%s^"
+AMX_SUPER_ALLTALK_MSG = [AMXX] Todos Falam: ^"%s^"
+
+AMX_SUPER_GRAVITY_STATUS = [AMXX] sv_gravity e ^"%d^"
+AMX_SUPER_GRAVITY_SET_CASE2 = [AMXX] ADMIN %s mudou a gravidade para ^"%s^"
+AMX_SUPER_GRAVITY_SET_CASE1 = [AMXX] ADMIN mudou a gravidade para ^"%s^"
+AMX_SUPER_GRAVITY_LOG = [AMX_Super] GRAVITY: ^"%s<%s>^" mudou sv_gravity paraa ^"%s^"
+AMX_SUPER_GRAVITY_MSG = [AMXX] A gravidade foi mudada paraa ^"%s^"
+AMX_SUPER_GRAVITY_CHECK = [AMXX] A gravidade e de %i
+
+AMX_SUPER_BURY_TEAM_CASE2 = [AMXX] ADMIN %s has buried %s jogadores
+AMX_SUPER_BURY_TEAM_CASE1 = [AMXX] ADMIN has buried %s jogadores
+AMX_SUPER_BURY_PLAYER_CASE2 = [AMXX] ADMIN %s has buried %s
+AMX_SUPER_BURY_PLAYER_CASE1 = [AMXX] ADMIN has buried %s
+AMX_SUPER_UNBURY_TEAM_CASE2 = [AMXX] ADMIN %s has unburied %s jogadores
+AMX_SUPER_UNBURY_TEAM_CASE1 = [AMXX] ADMIN has unburied %s jogadores
+AMX_SUPER_UNBURY_PLAYER_CASE2 = [AMXX] ADMIN %s has unburied %s
+AMX_SUPER_UNBURY_PLAYER_CASE1 = [AMXX] ADMIN has unburied %s
+AMX_SUPER_UNBURY_TEAM_LOG = [AMX_Super] UNBURY: ^"%s<%s>^" has unburied ^"%s^" jogadores
+AMX_SUPER_UNBURY_PLAYER_LOG = [AMX_Super] UNBURY: ^"%s<%s>^" has unburied ^"%s<%s>^"
+AMX_SUPER_BURY_PLAYER_LOG = [AMX_Super] BURY: ^"%s<%s>^" has buried ^"%s<%s>^"
+AMX_SUPER_BURY_TEAM_LOG = [AMX_Super] BURY: ^"%s<%s>^" has buried ^"%s^" jogadores
+AMX_SUPER_BURY_MSG = [AMXX] jogador %s has been buried
+AMX_SUPER_UNBURY_MSG = [AMXX] jogador %s has been unburied
+
+AMX_SUPER_DISARM_TEAM_CASE2 = [AMXX] ADMIN %s desarmou os %s
+AMX_SUPER_DISARM_TEAM_CASE1 = [AMXX] ADMIN desarmou os %s
+AMX_SUPER_DISARM_PLAYER_CASE2 = [AMXX] ADMIN %s desarmou %s
+AMX_SUPER_DISARM_PLAYER_CASE1 = [AMXX] ADMIN desarmou %s
+AMX_SUPER_DISARM_TEAM_LOG = [AMX_Super] DISARM: ^"%s<%s>^" desarmou os ^"%s^"
+AMX_SUPER_DISARM_PLAYER_LOG = [AMX_Super] DISARM: ^"%s<%s>^" desarmou ^"%s<%s>^"
+AMX_SUPER_DISARM_MSG = [AMXX] %s foi desarmado
+
+AMX_SUPER_SLAY2_TEAM_CASE2 = [AMXX] ADMIN %s assasinou os %s
+AMX_SUPER_SLAY2_TEAM_CASE1 = [AMXX] ADMIN assasinou os %s
+AMX_SUPER_SLAY2_PLAYER_CASE2 = [AMXX] ADMIN %s assasinou %s
+AMX_SUPER_SLAY2_PLAYER_CASE1 = [AMXX] ADMIN assasinou %s
+AMX_SUPER_SLAY2_TEAM_LOG = [AMX_Super] SLAY2: ^"%s<%s>^" assasinou os ^"%s^" 
+AMX_SUPER_SLAY2_PLAYER_LOG =  [AMX_Super] SLAY2: ^"%s<%s>^" assasinou ^"%s<%s>^"
+AMX_SUPER_SLAY2_TEAM_MSG = [AMXX] Os %s foram assasinados
+AMX_SUPER_SLAY2_PLAYER_MSG = [AMXX] %s foi assinado
+
+AMX_SUPER_FIRE_TEAM_CASE2 = [AMXX] ADMIN %s tacou fogo nos %s
+AMX_SUPER_FIRE_TEAM_CASE1 = [AMXX] ADMIN tacou fogo nos %s
+AMX_SUPER_FIRE_PLAYER_CASE2 = [AMXX] ADMIN %s tacou fogo em %s.
+AMX_SUPER_FIRE_PLAYER_CASE1 = [AMXX] ADMIN tacou fogo em %s.
+AMX_SUPER_FIRE_TEAM_LOG = [AMX_Super] FIRE: ^"%s<%s>^" tacou fogo nos ^"%s^"
+AMX_SUPER_FIRE_PLAYER_LOG = [AMX_Super] FIRE: ^"%s<%s>^" tacou fogo em ^"%s<%s>^"
+AMX_SUPER_FIRE_TEAM_MSG = [AMXX] Os %s estao em chamas
+AMX_SUPER_FIRE_PLAYER_MSG = [AMXX] %s esta em chamas 
+AMX_SUPER_FIRE_SPREAD = * [AMXX] PQP! %s espalhou o fogo para %s!
+
+AMX_SUPER_ROCKET_TEAM_CASE2 = [AMXX] ADMIN %s transformou os %s em foguetes
+AMX_SUPER_ROCKET_TEAM_CASE1 = [AMXX] ADMIN transformou os %s em foguetes
+AMX_SUPER_ROCKET_PLAYER_CASE2 = [AMXX] ADMIN %s transformou %s em foguete
+AMX_SUPER_ROCKET_PLAYER_CASE1 = [AMXX] ADMIN transformou %s em foguete
+AMX_SUPER_ROCKET_TEAM_LOG = [AMX_Super] ROCKET: ^"%s<%s>^" transformou os ^"%s^" em foguetes
+AMX_SUPER_ROCKET_PLAYER_LOG = [AMX_Super] ROCKET: ^"%s<%s>^" transformou ^"%s<%s>^" em foguete
+AMX_SUPER_ROCKET_TEAM_MSG = [AMXX] Os %s viraram foguetes!
+AMX_SUPER_ROCKET_PLAYER_MSG = [AMXX] %s virou um foguete!
+
+AMX_SUPER_UBERSLAP_TEAM_CASE2 = [AMXX] ADMIN %s deu um Mega Tapa nos %s
+AMX_SUPER_UBERSLAP_TEAM_CASE1 = [AMXX] ADMIN deu um Mega Tapa nos %s
+AMX_SUPER_UBERSLAP_PLAYER_CASE2 = [AMXX] ADMIN %s deu um Mega Tapa em %s
+AMX_SUPER_UBERSLAP_PLAYER_CASE1 = [AMXX] ADMIN deu um Mega Tapa em %s
+AMX_SUPER_UBERSLAP_TEAM_LOG = [AMX_Super] UBERSLAP: ^"%s<%s>^" deu um Mega Tapa nos ^"%s^"
+AMX_SUPER_UBERSLAP_PLAYER_LOG = [AMX_Super] UBERSLAP: ^"%s<%s>^" deu um Mega Tapa em^"%s<%s>^"
+AMX_SUPER_UBERSLAP_TEAM_MSG = [AMXX] Os %s receberam um Mega Tapa
+AMX_SUPER_UBERSLAP_PLAYER_MSG = [AMXX] %s recebeu um Mega Tapa
+
+AMX_SUPER_EXEC_ALL_CASE2 = [AMXX] ADMIN %s usou o comando ^"%s^" em todos
+AMX_SUPER_EXEC_ALL_CASE1 = [AMXX] ADMIN usou o comando ^"%s^" em todos
+AMX_SUPER_EXEC_TEAM_CASE2 = [AMXX] ADMIN %s usou o comando ^"%s^" nos %s
+AMX_SUPER_EXEC_TEAM_CASE1 = [AMXX] ADMIN usou o comando ^"%s^" nos %s
+AMX_SUPER_EXEC_PLAYER_CASE2 = [AMXX] ADMIN %s usou o comando ^"%s^" em %s!
+AMX_SUPER_EXEC_PLAYER_CASE1 = [AMXX] ADMIN usou o comando ^"%s^" em %s!
+AMX_SUPER_EXEC_ALL_LOG = [AMX_Super] EXEC: ^"%s<%s>^" executou ^"%s^" em todos
+AMX_SUPER_EXEC_TEAM_LOG = [AMX_Super] EXEC: ^"%s<%s>^" executou ^"%s^" em todos os %s
+AMX_SUPER_EXEC_PLAYER_LOG = [AMX_Super] EXEC: ^"%s<%s>^" executou ^"%s^" em ^"%s<%s>^"
+
+AMX_SUPER_PASSWORD_SET_CASE2 = [AMXX] ADMIN %s protegeu o servidor com senha
+AMX_SUPER_PASSWORD_SET_CASE1 = [AMXX] ADMIN protegeu o servidor com senha
+AMX_SUPER_PASSWORD_REMOVE_CASE2 = [AMXX] ADMIN %s removeu a senha do servidor
+AMX_SUPER_PASSWORD_REMOVE_CASE1 = [AMXX] ADMIN removeu a senha do servidor
+AMX_SUPER_PASSWORD_SET_LOG = [AMX_Super] PASSWORD: ^"%s<%s>^" mudou a senha do servidor a ^"%s^"
+AMX_SUPER_PASSWORD_REMOVE_LOG = [AMX_Super] PASSWORD: ^"%s<%s>^" removeu a senha do servidor
+
+AMX_SUPER_REVIVE_TEAM_CASE2 = [AMXX] ADMIN %s reviveu %s jogadores
+AMX_SUPER_REVIVE_TEAM_CASE1 = [AMXX] ADMIN reviveu %s jogadores
+AMX_SUPER_REVIVE_PLAYER_CASE2 = [AMXX] ADMIN %s reviveu %s
+AMX_SUPER_REVIVE_PLAYER_CASE1 = [AMXX] ADMIN reviveu %s
+AMX_SUPER_REVIVE_TEAM_LOG = [AMX_Super] REVIVE: ^"%s<%s>^" reviveu os ^"%s^"
+AMX_SUPER_REVIVE_PLAYER_LOG = [AMX_Super] REVIVE: ^"%s<%s>^" reviveu ^"%s<%s>^"
+AMX_SUPER_REVIVE_TEAM_MSG = [AMXX] Reviveu os %s
+AMX_SUPER_REVIVE_PLAYER_MSG = [AMXX] Revived %s
+AMX_SUPER_REVIVE_TEAM_HUD = Os %s foram revividos!
+AMX_SUPER_REVIVE_PLAYER_HUD = %s foi revivido!
+
+AMX_SUPER_QUIT_TEAM_CASE2 = [AMXX] ADMIN %s fechou o jogo dos %s
+AMX_SUPER_QUIT_TEAM_CASE1 = [AMXX] ADMIN fechou o jogo dos %s
+AMX_SUPER_QUIT_PLAYER_CASE2 = [AMXX] ADMIN %s fechou o jogo de %s
+AMX_SUPER_QUIT_PLAYER_CASE1 = [AMXX] ADMIN fechou o jogo de %s
+AMX_SUPER_QUIT_TEAM_LOG = [AMX_Super] QUIT: ^"%s<%s>^" fechou o jogo de %s ^"%s^"
+AMX_SUPER_QUIT_PLAYER_LOG = [AMX_Super] QUIT: ^"%s<%s>^" fechou o jogo de %s ^"%s<%s>^"
+ 
+AMX_SUPER_GAG_PLAYER_CASE2 = [AMXX] ADMIN %s silenciou %s por %0.0f minutos ( %s )
+AMX_SUPER_GAG_PLAYER_CASE1 = [AMXX] ADMIN silenciou %s por %0.0f minutos ( %s )
+AMX_SUPER_UNGAG_PLAYER_CASE2 = [AMXX] ADMIN %s: %s pode falar novamente
+AMX_SUPER_UNGAG_PLAYER_CASE1 = [AMXX] ADMIN: %s pode falar novamente
+AMX_SUPER_GAG_PLAYER_LOG = [AMX_Super] GAG: ^"%s<%s>^" silenciou ^"%s<%s>^" por %d ( %d )
+AMX_SUPER_UNGAG_PLAYER_LOG = [AMX_Super] UNGAG: ^"%s<%s>^" : ^"%s<%s>^" pode falar novamente
+AMX_SUPER_GAG_PLAYER_DISCONNECT = [AMXX] Jogador silenciado desconectado: ( %s <%s> )
+AMX_SUPER_PLAYER_GAGGED = * Voce foi silenciado
+AMX_SUPER_PLAYER_NAMELOCK = * Jogadores silenciados nao podem mudar de nome
+AMX_SUPER_NOT_GAGGED = [AMXX] %s nao esta silenciado & nao pode ser dessilenciado.
+AMX_SUPER_GAG_END = [AMXX] %s pode falar novamente
+
+AMX_SUPER_WEAPON_TEAM_CASE2 = [AMXX] ADMIN %s comprou armas para os %s
+AMX_SUPER_WEAPON_TEAM_CASE1 = [AMXX] ADMIN comprou armas para os %s
+AMX_SUPER_WEAPON_PLAYER_CASE2 = [AMXX] ADMIN %s comprou armas para %s
+AMX_SUPER_WEAPON_PLAYER_CASE1 = [AMXX] ADMIN comprou armas para %s
+AMX_SUPER_WEAPON_TEAM_LOG = [AMX_Super] WEAPON: ^"%s<%s>^" comprou a arma ^"%d^" para os ^"%s^"
+AMX_SUPER_WEAPON_PLAYER_LOG = [AMX_Super] WEAPON: ^"%s<%s>^" comprou a arma ^"%d^" para ^"%s<%s>^"
+AMX_SUPER_WEAPON_TEAM_MSG = [AMXX] Comprou a arma %d para os %s
+AMX_SUPER_WEAPON_PLAYER_MSG = [AMXX] Comprou a arma %d para %s
+
+AMX_SUPER_NOCLIP_TEAM_CASE2 = [AMXX] ADMIN %s: noclip ajustado para ^"%d^" nos %s
+AMX_SUPER_NOCLIP_TEAM_CASE1 = [AMXX] ADMIN: noclip ajustado para ^"%d^" nos %s
+AMX_SUPER_NOCLIP_PLAYER_CASE2 = [AMXX] ADMIN %s: noclip ajustado para ^"%d^" em %s
+AMX_SUPER_NOCLIP_PLAYER_CASE1 = [AMXX] ADMIN: noclip ajustado para ^"%d^" em %s
+AMX_SUPER_NOCLIP_TEAM_LOG = [AMX_Super] NOCLIP: ^"%s<%s>^": noclip ajustado para ^"%d^" nos ^"%s^"
+AMX_SUPER_NOCLIP_PLAYER_LOG = [AMX_Super] NOCLIP: ^"%s<%s>^": noclip ajustado para ^"%d^" em ^"%s<%s>^"
+AMX_SUPER_NOCLIP_TEAM_MSG = [AMXX]: noclip ajustado para ^"%d^" nos %s
+AMX_SUPER_NOCLIP_PLAYER_MSG = [AMXX]: noclip ajustado para ^"%d^" em %s
+
+AMX_SUPER_FLASH_TEAM_CASE2 = [AMXX] ADMIN %s cegou os %s
+AMX_SUPER_FLASH_TEAM_CASE1 = [AMXX] ADMIN cegou os %s
+AMX_SUPER_FLASH_PLAYER_CASE2 = [AMXX] ADMIN %s cegou %s
+AMX_SUPER_FLASH_PLAYER_CASE1 = [AMXX] ADMIN cegou %s
+AMX_SUPER_FLASH_TEAM_LOG = [AMX_Super] FLASH: ^"%s<%s>^" cegou os ^"%s^"
+AMX_SUPER_FLASH_PLAYER_LOG = [AMX_Super] FLASH: ^"%s<%s>^" cegou ^"%s<%s>^"
+AMX_SUPER_FLASH_TEAM_MSG = [AMXX] cegou os %s
+AMX_SUPER_FLASH_PLAYER_MSG = [AMXX] cegou %s
+
+AMX_SUPER_GODMODE_TEAM_CASE2 = [AMXX] ADMIN %s: godmode ajustado para ^"%d^" nos %s
+AMX_SUPER_GODMODE_TEAM_CASE1 = [AMXX] ADMIN: godmode ajustado para ^"%d^" nos %s
+AMX_SUPER_GODMODE_PLAYER_CASE2 = [AMXX] ADMIN %s: godmode ajustado para ^"%d^" em %s
+AMX_SUPER_GODMODE_PLAYER_CASE1 = [AMXX] ADMIN: godmode ajustado para ^"%d^" em %s
+AMX_SUPER_GODMODE_TEAM_LOG = [AMX_Super] GODMODE: ^"%s<%s>^": godmode ajustado para ^"%d^" nos ^"%s^"
+AMX_SUPER_GODMODE_PLAYER_LOG = [AMX_Super] GODMODE: ^"%s<%s>^": godmode ajustado para ^"%d^" em ^"%s<%s>^"
+AMX_SUPER_GODMODE_TEAM_MSG = [AMXX] Godmode ajustado para ^"%d^" nos %s
+AMX_SUPER_GODMODE_PLAYER_MSG = [AMXX] Godmode ajustado para ^"%d^" em %s
+
+AMX_SUPER_GIVEMONEY_PLAYER_CASE2 = [AMXX] ADMIN %s pagou $%i a %s
+AMX_SUPER_GIVEMONEY_PLAYER_CASE1 = [AMXX] ADMIN pagou $%i a %s
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_CASE2 = [AMXX] ADMIN %s roubou todo o dinheiro de %s
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_CASE1 = [AMXX] ADMIN roubou todo o dinheiro de %s
+AMX_SUPER_TAKEMONEY_PLAYER_CASE2 = [AMXX] ADMIN %s roubou $%i de %s
+AMX_SUPER_TAKEMONEY_PLAYER_CASE1 = [AMXX] ADMIN roubou $%i de %s
+AMX_SUPER_GIVEMONEY_PLAYER_LOG = [AMX_Super] GIVE MONEY: ^"%s<%s>^" pagou $%i a ^"%s<%s>^"
+AMX_SUPER_TAKEMONEY_PLAYER_LOG = [AMX_Super] TAKE MONEY: ^"%s<%s>^" roubou $%i de ^"%s<%s>^"
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_LOG = [AMX_Super] TAKE MONEY: ^"%s<%s>^" roubou todo o dinheiro de ^"%s<%s>^"
+AMX_SUPER_GIVEMONEY_PLAYER_MSG = [AMXX] pagou $%i a %s
+AMX_SUPER_TAKEMONEY_PLAYER_MSG = [AMXX] roubou $%i de %s
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_MSG = [AMXX] roubou todo o dinheiro de %s
+
+AMX_SUPER_GLOW_TEAM_CASE2 = [AMXX] ADMIN %s fez os %s brilharem
+AMX_SUPER_GLOW_TEAM_CASE1 = [AMXX] ADMIN fez os %s brilharem
+AMX_SUPER_GLOW_PLAYER_CASE2 = [AMXX] ADMIN %s fez %s brilhar
+AMX_SUPER_GLOW_PLAYER_CASE1 = [AMXX] ADMIN fez %s brilhar
+AMX_SUPER_GLOW_TEAM_LOG = [AMX_Super] GLOW: ^"%s<%s>^" fez os ^"%s^" brilharem
+AMX_SUPER_GLOW_PLAYER_LOG = [AMX_Super] GLOW: ^"%s<%s>^" fez ^"%s<%s>^" brilhar
+AMX_SUPER_GLOW_TEAM_MSG = [AMXX] fez os %s brilharem
+AMX_SUPER_GLOW_PLAYER_MSG = [AMXX] fez %s brilhar
+AMX_SUPER_UNGLOW_TEAM_CASE2 = [AMXX] ADMIN %s removeu o brilho dos %s
+AMX_SUPER_UNGLOW_TEAM_CASE1 = [AMXX] ADMIN removeu o brilho dos %s
+AMX_SUPER_UNGLOW_PLAYER_CASE2 = [AMXX] ADMIN %s removeu o brilho de %s
+AMX_SUPER_UNGLOW_PLAYER_CASE1 = [AMXX] ADMIN removeu o brilho de %s
+AMX_SUPER_UNGLOW_TEAM_LOG = [AMX_Super] UNGLOW: ^"%s<%s>^" removeu o brilho dos ^"%s^"
+AMX_SUPER_UNGLOW_PLAYER_LOG = [AMX_Super] UNGLOW: ^"%s<%s>^" removeu o brilho de ^"%s<%s>^"
+AMX_SUPER_UNGLOW_TEAM_MSG = [AMXX] removeu o brilho dos %s
+AMX_SUPER_UNGLOW_PLAYER_MSG = [AMXX] removeu o brilho de %s
+
+AMX_SUPER_TEAM_INVALID = [AMXX] Time invalido especificado! Times validos: T, CT, Auto, Spec
+AMX_SUPER_TEAM_UNLOCKED = [AMXX] O time %s nao esta travada!
+AMX_SUPER_TEAM_UNLOCK = [AMXX] Destravou o time %s
+AMX_SUPER_TEAM_LOCKED = [AMXX] O time %s ja esta travado!
+AMX_SUPER_TEAM_LOCK = [AMXX] Time %s travado
+AMX_SUPER_UNLOCK_TEAMS_LOG = [AMX_Super] TEAMLOCKER: ^"%s<%s>^" destravou o time ^"%s^"
+AMX_SUPER_LOCK_TEAMS_LOG = [AMX_Super] TEAMLOCKER: ^"%s<%s>^" travou o time ^"%s^"
+
+AMX_SUPER_TELEPORT_PLAYER_CASE2 = [AMXX] ADMIN %s teletransportou %s
+AMX_SUPER_TELEPORT_PLAYER_CASE1 = [AMXX] ADMIN teletransportou %s
+AMX_SUPER_TELEPORT_PLAYER_MSG = [AMXX] teletransportou %s a %d x, %d y, %d z
+AMX_SUPER_TELEPORT_ORIGIN_SAVED = [AMXX] Salva origem %d x, %d y, %d z de %s
+AMX_SUPER_TELEPORT_PLAYER_LOG = [AMX_Super] TELEPORT: ^"%s<%s>^" teletransportou ^"%s<%s>^" a %d x, %d y, %d z
+
+AMX_SUPER_TRANSFER_PLAYER = [AMXX] %s foi transferido com sucesso ao time %s
+AMX_SUPER_TRANSFER_PLAYER_TEAM = [AMXX] Voce foi transferido a o time %s
+AMX_SUPER_TRANSFER_PLAYER_ERROR_CASE1 = [AMXX] Voce nao pode trocar jogadores do mesmo timem!
+AMX_SUPER_TRANSFER_PLAYER_ERROR_CASE2 = [AMXX] Voce nao pode trocar jogadores sem time!
+AMX_SUPER_TRANSFER_SWAP_PLAYERS_SUCCESS = [AMXX] Trocou %s com %s com suceeso
+AMX_SUPER_TRANSFER_SWAP_PLAYERS_MESSAGE1 = [AMXX] Voce foi trocado com %s
+AMX_SUPER_TRANSFER_SWAP_PLAYERS_MESSAGE2 = [AMXX] Voce foi trocado com %s
+AMX_SUPER_TRANSFER_SWAP_TEAM_SUCCESS = [AMXX] Times invertidos com sucesso!
+AMX_SUPER_TRANSFER_SWAP_TEAM_LOG = [AMX_Super] TEAMTRANSFER: ^"%s<%s>^" inverteu os times
+AMX_SUPER_TRANSFER_SWAP_PLAYERS_LOG = [AMX_Super] TEAMTRANSFER: ^"%s<%s>^" trocou ^"%s^" com ^"%s^"
+AMX_SUPER_TRANSFER_PLAYER_LOG = [AMX_Super] TEAMTRANSFER: ^"%s<%s>^" transferiu ^"%s^" a o time ^"%s^"
+
+AMX_SUPER_AMMO_PLAYER_INVALID = [AMXX] Voce so pode especificar 1 ou 0!
+AMX_SUPER_AMMO_PLAYER_CASE1 = [AMXX] ADMIN Deu a %s municao ilimitada
+AMX_SUPER_AMMO_PLAYER_CASE2 = [AMXX] ADMIN %s Deu a %s municao ilimitada
+AMX_SUPER_UNAMMO_PLAYER_CASE1 = [AMXX] ADMIN: Tirou a municao ilimitada de %s
+AMX_SUPER_UNAMMO_PLAYER_CASE2 = [AMXX] ADMIN %s: Tirou a municao ilimitada de %s
+AMX_SUPER_AMMO_PLAYER_MSG = [AMXX] ADMIN Deu a %s municao ilimitada on %s
+AMX_SUPER_AMMO_PLAYER_LOG = [AMX_Super] AMMO: ADMIN %s Deu a %s municao ilimitada
+AMX_SUPER_UNAMMO_PLAYER_MSG = [AMXX] ADMIN: Tirou a municao ilimitada de %s
+AMX_SUPER_UNAMMO_PLAYER_LOG = [AMX_Super] [AMXX] ADMIN %s: Tirou a municao ilimitada de %s
+
+AMX_SUPER_BOMB_TRANSFER = Bomba transferida a ^"%s^"^nja que ^"%s^" esta AFK
+
+AMX_SUPER_SHUTDOWN_MESSAGE = Aviso: Servidor reiniciando. Se voce nao for reconectado automaticamente,por favor faca-o.
+AMX_SUPER_SHUTDOWN_MESSAGE_LOG = [AMX_Super] SHUTDOWN: ^"%s<%s>^" reiniciou o servidor
+
+AMX_SUPER_DEADCHAT_MESSAGE = [AMXX] Voce esta morto, portanto pode comunicar-se com o outro time por voz.
+
+AMX_SUPER_SOUNDFIX = [AMXX] Eco corrigido.
+AMX_SUPER_SOUNDFIX_DISABLED = [AMXX] Correcao manual de eco desabilitada.
+
+AMX_SUPER_TEAM_IMMUNITY = [AMXX] Ignorando ^"%s^" porque possuem imunidade.
+AMX_SUPER_NO_jogadores = [AMXX] Nao ha jogadores neste time!
+AMX_SUPER_AMOUNT_GREATER = [AMXX] Quantidade deve ser maior que zero!
+
+[de]
+
+AMX_SUPER_HEAL_TEAM_CASE2 = [AMXX] ADMIN %s gab %d HP an %s Spieler
+AMX_SUPER_HEAL_TEAM_CASE1 = [AMXX] ADMIN gab %d HP an %s Spieler
+AMX_SUPER_HEAL_PLAYER_CASE2 = [AMXX] ADMIN %s gab %d HP an %s
+AMX_SUPER_HEAL_PLAYER_CASE1 = [AMXX] ADMIN gab %d HP an %s
+AMX_SUPER_HEAL_TEAM_LOG = [AMX_Super] HEAL: ^"%s<%s>^" gab %d HP an ^"%s^" Spieler
+AMX_SUPER_HEAL_PLAYER_LOG = [AMX_Super] HEAL: ^"%s<%s>^" gab %d HP an ^"%s<%s>^"
+AMX_SUPER_HEAL_TEAM_MSG = [AMXX] Gab %d HP an %s Spieler
+AMX_SUPER_HEAL_PLAYER_MSG = [AMXX] Gab %d HP an %s
+
+AMX_SUPER_ARMOR_TEAM_CASE2 = [AMXX] ADMIN %s gab %d Ruestung an %s Spieler
+AMX_SUPER_ARMOR_TEAM_CASE1 = [AMXX] ADMIN gab %d Ruestung an %s Spieler
+AMX_SUPER_ARMOR_PLAYER_CASE2 = [AMXX] ADMIN %s gab %d Ruestung an %s
+AMX_SUPER_ARMOR_PLAYER_CASE1 = [AMXX] ADMIN gab %d Ruestung an %s
+AMX_SUPER_ARMOR_TEAM_LOG = [AMX_Super] HEAL: ^"%s<%s>^" gab %d Ruestung an ^"%s^" Spieler
+AMX_SUPER_ARMOR_PLAYER_LOG = [AMX_Super] HEAL: ^"%s<%s>^" gab %d Ruestung an ^"%s<%s>^"
+AMX_SUPER_ARMOR_TEAM_MSG = [AMXX] Gab %d Ruestung an %s Spieler
+AMX_SUPER_ARMOR_PLAYER_MSG = [AMXX] Gab %d Ruestung an %s
+
+AMX_SUPER_STACK_PLAYER_CASE2 = [AMXX] ADMIN %s stapelte alle Spieler auf %s
+AMX_SUPER_STACK_PLAYER_CASE1 = [AMXX] ADMIN stapelte alle Spieler auf %s
+AMX_SUPER_STACK_PLAYER_LOG = [AMX_Super] STACK: ^"%s<%s>^" stapelte alle Spieler auf ^"%s<%s>^"
+AMX_SUPER_STACK_PLAYER_MSG = [AMXX] Stapelte alle Spieler auf %s
+
+AMX_SUPER_ALLTALK_STATUS = [AMXX] sv_alltalk ist ^"%d^"
+AMX_SUPER_ALLTALK_SET_CASE2 = [AMXX] ADMIN %s setzte sv_alltalk auf ^"%s^"
+AMX_SUPER_ALLTALK_SET_CASE1 = [AMXX] ADMIN setzte sv_alltalk auf ^"%s^"
+AMX_SUPER_ALLTALK_LOG = [AMX_Super] ALLTALK: ^"%s<%s>^" setzte sv_alltalk auf ^"%s^"
+AMX_SUPER_ALLTALK_MSG = [AMXX] Alltalk wurde auf ^"%s^" geaendert
+
+AMX_SUPER_GRAVITY_STATUS = [AMXX] sv_gravity ist ^"%d^"
+AMX_SUPER_GRAVITY_SET_CASE2 = [AMXX] ADMIN %s setzte gravity auf ^"%s^"
+AMX_SUPER_GRAVITY_SET_CASE1 = [AMXX] ADMIN setzte gravity auf ^"%s^"
+AMX_SUPER_GRAVITY_LOG = [AMX_Super] GRAVITY: ^"%s<%s>^" setzte sv_gravity auf ^"%s^"
+AMX_SUPER_GRAVITY_MSG = [AMXX] Gravity wurde auf ^"%s^" geaendert
+AMX_SUPER_GRAVITY_CHECK = [AMXX] Die Schwerkraft ist auf %i
+
+AMX_SUPER_BURY_TEAM_CASE2 = [AMXX] ADMIN %s hat %s Spieler begraben
+AMX_SUPER_BURY_TEAM_CASE1 = [AMXX] ADMIN hat %s Spieler begraben
+AMX_SUPER_BURY_PLAYER_CASE2 = [AMXX] ADMIN %s hat %s begraben
+AMX_SUPER_BURY_PLAYER_CASE1 = [AMXX] ADMIN hat %s begraben
+AMX_SUPER_UNBURY_TEAM_CASE2 = [AMXX] ADMIN %s hat %s Spieler wieder ausgegraben
+AMX_SUPER_UNBURY_TEAM_CASE1 = [AMXX] ADMIN hat %s Spieler wieder ausgegraben
+AMX_SUPER_UNBURY_PLAYER_CASE2 = [AMXX] ADMIN %s hat %s wieder ausgegraben
+AMX_SUPER_UNBURY_PLAYER_CASE1 = [AMXX] ADMIN hat %s wieder ausgegraben
+AMX_SUPER_UNBURY_TEAM_LOG = [AMX_Super] UNBURY: ^"%s<%s>^" hat ^"%s^" Spieler wieder ausgegraben
+AMX_SUPER_UNBURY_PLAYER_LOG = [AMX_Super] UNBURY: ^"%s<%s>^" hat ^"%s<%s>^" wieder ausgegraben
+AMX_SUPER_BURY_PLAYER_LOG = [AMX_Super] BURY: ^"%s<%s>^" hat ^"%s<%s>^" wieder ausgegraben
+AMX_SUPER_BURY_TEAM_LOG = [AMX_Super] BURY: ^"%s<%s>^" hat ^"%s^" wieder ausgegraben
+AMX_SUPER_BURY_MSG = [AMXX] %s wurde begraben
+AMX_SUPER_UNBURY_MSG = [AMXX] %s wurde wieder ausgegraben
+
+AMX_SUPER_DISARM_TEAM_CASE2 = [AMXX] ADMIN %s hat %s Spieler entwaffnet
+AMX_SUPER_DISARM_TEAM_CASE1 = [AMXX] ADMIN hat %s Spieler entwaffnet
+AMX_SUPER_DISARM_PLAYER_CASE2 = [AMXX] ADMIN %s hat %s entwaffnet
+AMX_SUPER_DISARM_PLAYER_CASE1 = [AMXX] ADMIN hat %s entwaffnet
+AMX_SUPER_DISARM_TEAM_LOG = [AMX_Super] DISARM: ^"%s<%s>^" hat ^"%s^" Spieler entwaffnet
+AMX_SUPER_DISARM_PLAYER_LOG = [AMX_Super] DISARM: ^"%s<%s>^" hat ^"%s<%s>^" entwaffnet
+AMX_SUPER_DISARM_MSG = [AMXX] %s wurde entwaffnet
+
+AMX_SUPER_SLAY2_TEAM_CASE2 = [AMXX] ADMIN %s toetete %s Spieler
+AMX_SUPER_SLAY2_TEAM_CASE1 = [AMXX] ADMIN toetete %s Spieler
+AMX_SUPER_SLAY2_PLAYER_CASE2 = [AMXX] ADMIN %s toetete %s
+AMX_SUPER_SLAY2_PLAYER_CASE1 = [AMXX] ADMIN toetete %s
+AMX_SUPER_SLAY2_TEAM_LOG = [AMX_Super] SLAY2: ^"%s<%s>^" toetete ^"%s^" Spieler 
+AMX_SUPER_SLAY2_PLAYER_LOG =  [AMX_Super] SLAY2: ^"%s<%s>^" toetete ^"%s<%s>^"
+AMX_SUPER_SLAY2_TEAM_MSG = [AMXX] %s Spieler wurden getoetet
+AMX_SUPER_SLAY2_PLAYER_MSG = [AMXX] %s wurde getoetet
+
+AMX_SUPER_FIRE_TEAM_CASE2 = [AMXX] ADMIN %s setzte %s Spieler unter Feuer
+AMX_SUPER_FIRE_TEAM_CASE1 = [AMXX] ADMIN setzte %s Spieler unter Feuer
+AMX_SUPER_FIRE_PLAYER_CASE2 = [AMXX] ADMIN %s setzte %s unter Feuer
+AMX_SUPER_FIRE_PLAYER_CASE1 = [AMXX] ADMIN setzte %s unter Feuer
+AMX_SUPER_FIRE_TEAM_LOG = [AMX_Super] FIRE: ^"%s<%s>^" setzte auf ^"%s^" Spieler Feuer
+AMX_SUPER_FIRE_PLAYER_LOG = [AMX_Super] FIRE: ^"%s<%s>^" setzte auf ^"%s<%s>^" Feuer
+AMX_SUPER_FIRE_TEAM_MSG = [AMXX] Setzte %s Spieler unter Feuer
+AMX_SUPER_FIRE_PLAYER_MSG = [AMXX] Setzte %s unter Feuer
+AMX_SUPER_FIRE_SPREAD = * [AMXX] OH! NEIN! %s hat %s mit angebrannt!
+
+AMX_SUPER_ROCKET_TEAM_CASE2 = [AMXX] ADMIN %s machte aus %s Spieler eine Rakete
+AMX_SUPER_ROCKET_TEAM_CASE1 = [AMXX] ADMIN machte aus %s Spieler eine Rakete
+AMX_SUPER_ROCKET_PLAYER_CASE2 = [AMXX] ADMIN %s machte aus %s eine Rakete
+AMX_SUPER_ROCKET_PLAYER_CASE1 = [AMXX] ADMIN machte aus %s eine Rakete
+AMX_SUPER_ROCKET_TEAM_LOG = [AMX_Super] ROCKET: ^"%s<%s>^" machte aus ^"%s^" Spielern eine Rakete
+AMX_SUPER_ROCKET_PLAYER_LOG = [AMX_Super] ROCKET: ^"%s<%s>^" machte aus ^"%s<%s>^" eine Rakete
+AMX_SUPER_ROCKET_TEAM_MSG = [AMXX] %s wurde zu einer Rakete
+AMX_SUPER_ROCKET_PLAYER_MSG = [AMXX] %s wurde zu einer Rakete
+
+AMX_SUPER_UBERSLAP_TEAM_CASE2 = [AMXX] ADMIN %s schlug %s Spieler
+AMX_SUPER_UBERSLAP_TEAM_CASE1 = [AMXX] ADMIN schlug %s Spieler
+AMX_SUPER_UBERSLAP_PLAYER_CASE2 = [AMXX] ADMIN %s schlug %s
+AMX_SUPER_UBERSLAP_PLAYER_CASE1 = [AMXX] ADMIN schlug %s
+AMX_SUPER_UBERSLAP_TEAM_LOG = [AMX_Super] UBERSLAP: ^"%s<%s>^" schlug ^"%s^" Spieler
+AMX_SUPER_UBERSLAP_PLAYER_LOG = [AMX_Super] UBERSLAP: ^"%s<%s>^" schlug ^"%s<%s>^"
+AMX_SUPER_UBERSLAP_TEAM_MSG = [AMXX] %s Spieler wurden geschlagen 
+AMX_SUPER_UBERSLAP_PLAYER_MSG = [AMXX] %s wurden geschlagen
+
+AMX_SUPER_EXEC_ALL_CASE2 = [AMXX] ADMIN %s benutzte den Befehl ^"%s^" an allen
+AMX_SUPER_EXEC_ALL_CASE1 = [AMXX] ADMIN benutzte den Befehl ^"%s^" an allen
+AMX_SUPER_EXEC_TEAM_CASE2 = [AMXX] ADMIN %s benutzte den Befehl ^"%s^" an allen %s Spielern
+AMX_SUPER_EXEC_TEAM_CASE1 = [AMXX] ADMIN benutzte den Befehl ^"%s^" an allen %s Spielern
+AMX_SUPER_EXEC_PLAYER_CASE2 = [AMXX] ADMIN %s benutzte den Befehl ^"%s^" an %s!
+AMX_SUPER_EXEC_PLAYER_CASE1 = [AMXX] ADMIN benutzte den Befehl ^"%s^" an %s!
+AMX_SUPER_EXEC_ALL_LOG = [AMX_Super] EXEC: ^"%s<%s>^" fuehrte ^"%s^" an allen Spielern aus
+AMX_SUPER_EXEC_TEAM_LOG = [AMX_Super] EXEC: ^"%s<%s>^" fuehrte ^"%s^" an allen %s Spielern aus
+AMX_SUPER_EXEC_PLAYER_LOG = [AMX_Super] EXEC: ^"%s<%s>^" fuehrte ^"%s^" an ^"%s<%s>^"
+
+AMX_SUPER_PASSWORD_SET_CASE2 = [AMXX] ADMIN %s hat ein Serverpasswort festgelegt
+AMX_SUPER_PASSWORD_SET_CASE1 = [AMXX] ADMIN hat ein Serverpasswort festgelegt
+AMX_SUPER_PASSWORD_REMOVE_CASE2 = [AMXX] ADMIN %s hat das Serverpasswort geloescht
+AMX_SUPER_PASSWORD_REMOVE_CASE1 = [AMXX] ADMIN hat das Serverpasswort geloescht
+AMX_SUPER_PASSWORD_SET_LOG = [AMX_Super] PASSWORD: ^"%s<%s>^" setzte das Serverpasswort auf ^"%s^"
+AMX_SUPER_PASSWORD_REMOVE_LOG = [AMX_Super] PASSWORD: ^"%s<%s>^" loeschte das Serverpasswort
+
+AMX_SUPER_REVIVE_TEAM_CASE2 = [AMXX] ADMIN %s belebte %s Spieler wieder
+AMX_SUPER_REVIVE_TEAM_CASE1 = [AMXX] ADMIN belebte %s Spieler wieder
+AMX_SUPER_REVIVE_PLAYER_CASE2 = [AMXX] ADMIN %s hat %s wiederbelebt
+AMX_SUPER_REVIVE_PLAYER_CASE1 = [AMXX] ADMIN hat %s wiederbelebt
+AMX_SUPER_REVIVE_TEAM_LOG = [AMX_Super] REVIVE: ^"%s<%s>^" wiederbelebte ^"%s^" Spieler
+AMX_SUPER_REVIVE_PLAYER_LOG = [AMX_Super] REVIVE: ^"%s<%s>^" wiederbelebte ^"%s<%s>^"
+AMX_SUPER_REVIVE_TEAM_MSG = [AMXX] Belebte %s Spieler wieder
+AMX_SUPER_REVIVE_PLAYER_MSG = [AMXX] Belebte %s wieder
+AMX_SUPER_REVIVE_TEAM_HUD = %s Spieler wurden wiederbelebt!
+AMX_SUPER_REVIVE_PLAYER_HUD = %s wurde wiederbelebt!
+
+AMX_SUPER_QUIT_TEAM_CASE2 = [AMXX] ADMIN %s wurf %s Spieler aus dem Spiel
+AMX_SUPER_QUIT_TEAM_CASE1 = [AMXX] ADMIN wurf %s Spieler aus dem Spiel
+AMX_SUPER_QUIT_PLAYER_CASE2 = [AMXX] ADMIN %s wurf %s aus dem Spiel
+AMX_SUPER_QUIT_PLAYER_CASE1 = [AMXX] ADMIN wurf %s aus dem Spiel
+AMX_SUPER_QUIT_TEAM_LOG = [AMX_Super] QUIT: ^"%s<%s>^" brachte ^"%s^" Spieler dazu, das Spiel zu verlassen
+AMX_SUPER_QUIT_PLAYER_LOG = [AMX_Super] QUIT: ^"%s<%s>^" brachte ^"%s<%s>^" dazu, das Spiel zu verlassen
+ 
+AMX_SUPER_GAG_PLAYER_CASE2 = [AMXX] ADMIN %s knebelt %s vom Sprechen fuer %0.0f Minuten ( %s )
+AMX_SUPER_GAG_PLAYER_CASE1 = [AMXX] ADMIN knebelt %s vom Sprechen fuer %0.0f Minuten ( %s )
+AMX_SUPER_UNGAG_PLAYER_CASE2 = [AMXX] ADMIN %s laesst %s wieder sprechen
+AMX_SUPER_UNGAG_PLAYER_CASE1 = [AMXX] ADMIN laesst %s wieder sprechen
+AMX_SUPER_GAG_PLAYER_LOG = [AMX_Super] GAG: ^"%s<%s>^" laesst ^"%s<%s>^" wieder sprechen fuer %d ( %d )
+AMX_SUPER_UNGAG_PLAYER_LOG = [AMX_Super] UNGAG: ^"%s<%s>^" laesst ^"%s<%s>^" wieder sprechen
+AMX_SUPER_GAG_PLAYER_DISCONNECT = [AMXX] Geknebelter Spieler ist raus gegangen: ( %s <%s> )
+AMX_SUPER_PLAYER_GAGGED = * Du wurdest geknebelt!
+AMX_SUPER_PLAYER_NAMELOCK = * Geknebelte Spieler koennen ihren Namen nicht wechseln
+AMX_SUPER_NOT_GAGGED = [AMXX] %s ist nicht ge- und kann nicht ungeknebelt werden
+AMX_SUPER_GAG_END = [AMXX] %s ist nicht laenger geknebelt
+
+AMX_SUPER_WEAPON_TEAM_CASE2 = [AMXX] ADMIN %s gab eine Waffe an %s Spieler
+AMX_SUPER_WEAPON_TEAM_CASE1 = [AMXX] ADMIN gab eine Waffe an %s Spieler
+AMX_SUPER_WEAPON_PLAYER_CASE2 = [AMXX] ADMIN %s gab eine Waffe an %s
+AMX_SUPER_WEAPON_PLAYER_CASE1 = [AMXX] ADMIN gab eine Waffe an %s
+AMX_SUPER_WEAPON_TEAM_LOG = [AMX_Super] WEAPON: ^"%s<%s>^" gab die Waffe ^"%d^" an ^"%s^" Spieler
+AMX_SUPER_WEAPON_PLAYER_LOG = [AMX_Super] WEAPON: ^"%s<%s>^" gab die Waffe ^"%d^" an ^"%s<%s>^"
+AMX_SUPER_WEAPON_TEAM_MSG = [AMXX] Gab die Waffe %d an %s Spieler
+AMX_SUPER_WEAPON_PLAYER_MSG = [AMXX] Gab die Waffe %d an %s
+
+AMX_SUPER_NOCLIP_TEAM_CASE2 = [AMXX] ADMIN %s gab NoClip ^"%d^" an %s Spieler
+AMX_SUPER_NOCLIP_TEAM_CASE1 = [AMXX] ADMIN setzte NoClip ^"%d^" auf %s Spieler
+AMX_SUPER_NOCLIP_PLAYER_CASE2 = [AMXX] ADMIN %s gab NoClip ^"%d^" an %s
+AMX_SUPER_NOCLIP_PLAYER_CASE1 = [AMXX] ADMIN setzte NoClip ^"%d^" auf %s
+AMX_SUPER_NOCLIP_TEAM_LOG = [AMX_Super] NOCLIP: ^"%s<%s>^" setzte NoClip ^"%d^" auf ^"%s^" Spieler
+AMX_SUPER_NOCLIP_PLAYER_LOG = [AMX_Super] NOCLIP: ^"%s<%s>^" setzte NoClip ^"%d^" auf ^"%s<%s>^"
+AMX_SUPER_NOCLIP_TEAM_MSG = [AMXX] Gab NoClip ^"%d^" an %s Spieler
+AMX_SUPER_NOCLIP_PLAYER_MSG = [AMXX] Setzte NoClip ^"%d^" auf %s
+
+AMX_SUPER_FLASH_TEAM_CASE2 = [AMXX] ADMIN %s flasht %s players
+AMX_SUPER_FLASH_TEAM_CASE1 = [AMXX] ADMIN flasht %s players
+AMX_SUPER_FLASH_PLAYER_CASE2 = [AMXX] ADMIN %s flasht %s
+AMX_SUPER_FLASH_PLAYER_CASE1 = [AMXX] ADMIN flasht %s
+AMX_SUPER_FLASH_TEAM_LOG = [AMX_Super] FLASH: ^"%s<%s>^" flashte ^"%s^" Spieler
+AMX_SUPER_FLASH_PLAYER_LOG = [AMX_Super] FLASH: ^"%s<%s>^" flashte ^"%s<%s>^"
+AMX_SUPER_FLASH_TEAM_MSG = [AMXX] %s Spieler wurden geflasht
+AMX_SUPER_FLASH_PLAYER_MSG = [AMXX] %s wurde geflasht
+
+AMX_SUPER_GODMODE_TEAM_CASE2 = [AMXX] ADMIN %s gab GodMode ^"%d^" an %s Spieler
+AMX_SUPER_GODMODE_TEAM_CASE1 = [AMXX] ADMIN setzte GodMode ^"%d^" auf %s Spieler
+AMX_SUPER_GODMODE_PLAYER_CASE2 = [AMXX] ADMIN %s gab GodMode ^"%d^" an %s
+AMX_SUPER_GODMODE_PLAYER_CASE1 = [AMXX] ADMIN setzte GodMode ^"%d^" auf %s
+AMX_SUPER_GODMODE_TEAM_LOG = [AMX_Super] GODMODE: ^"%s<%s>^" gab GodMode ^"%d^" an ^"%s^" Spieler
+AMX_SUPER_GODMODE_PLAYER_LOG = [AMX_Super] GODMODE: ^"%s<%s>^" gab GodMode ^"%d^" an ^"%s<%s>^"
+AMX_SUPER_GODMODE_TEAM_MSG = [AMXX] Gab GodMode ^"%d^" an %s Spieler
+AMX_SUPER_GODMODE_PLAYER_MSG = [AMXX] Setzte GodMode ^"%d^" auf %s
+
+AMX_SUPER_GIVEMONEY_PLAYER_CASE2 = [AMXX] ADMIN %s gab $%i an %s
+AMX_SUPER_GIVEMONEY_PLAYER_CASE1 = [AMXX] ADMIN gab $%i an %s
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_CASE2 = [AMXX] ADMIN %s nahm %s alles Geld
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_CASE1 = [AMXX] ADMIN nahm %s alles Geld
+AMX_SUPER_TAKEMONEY_PLAYER_CASE2 = [AMXX] ADMIN %s nahm $%i von %s
+AMX_SUPER_TAKEMONEY_PLAYER_CASE1 = [AMXX] ADMIN nahm $%i von %s
+AMX_SUPER_GIVEMONEY_PLAYER_LOG = [AMX_Super] GIVE MONEY: ^"%s<%s>^" gab $%i an ^"%s<%s>^"
+AMX_SUPER_TAKEMONEY_PLAYER_LOG = [AMX_Super] TAKE MONEY: ^"%s<%s>^" nahm $%i von ^"%s<%s>^"
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_LOG = [AMX_Super] TAKE MONEY: ^"%s<%s>^" nahm das ganze Geld von ^"%s<%s>^"
+AMX_SUPER_GIVEMONEY_PLAYER_MSG = [AMXX] Gab $%i an %s
+AMX_SUPER_TAKEMONEY_PLAYER_MSG = [AMXX] Nahm $%i von %s
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_MSG = [AMXX] Nahm das ganze Geld von %s
+
+AMX_SUPER_GLOW_TEAM_CASE2 = [AMXX] ADMIN %s laesst %s Spieler leuchten
+AMX_SUPER_GLOW_TEAM_CASE1 = [AMXX] ADMIN laesst %s Spieler leuchten
+AMX_SUPER_GLOW_PLAYER_CASE2 = [AMXX] ADMIN %s laesst %s leuchten
+AMX_SUPER_GLOW_PLAYER_CASE1 = [AMXX] ADMIN laesst %s leuchten
+AMX_SUPER_GLOW_TEAM_LOG = [AMX_Super] GLOW: ^"%s<%s>^" laesst ^"%s^" Spieler leuchten
+AMX_SUPER_GLOW_PLAYER_LOG = [AMX_Super] GLOW: ^"%s<%s>^" laesst ^"%s<%s>^" leuchten
+AMX_SUPER_GLOW_TEAM_MSG = [AMXX] Laesst %s Spieler leuchten
+AMX_SUPER_GLOW_PLAYER_MSG = [AMXX] Laesst %s leuchten
+AMX_SUPER_UNGLOW_TEAM_CASE2 = [AMXX] ADMIN %s loeschte das leuchten von %s Spieler
+AMX_SUPER_UNGLOW_TEAM_CASE1 = [AMXX] ADMIN loeschte das leuchten von %s Spieler
+AMX_SUPER_UNGLOW_PLAYER_CASE2 = [AMXX] ADMIN %s loeschte das leuchten von %s
+AMX_SUPER_UNGLOW_PLAYER_CASE1 = [AMXX] ADMIN loeschte das leuchten von %s
+AMX_SUPER_UNGLOW_TEAM_LOG = [AMX_Super] UNGLOW: ^"%s<%s>^" loeschte das leuchten von ^"%s^" Spieler
+AMX_SUPER_UNGLOW_PLAYER_LOG = [AMX_Super] UNGLOW: ^"%s<%s>^" loeschte das leuchten von ^"%s<%s>^"
+AMX_SUPER_UNGLOW_TEAM_MSG = [AMXX] Nahm %s Spieler das Leuchten
+AMX_SUPER_UNGLOW_PLAYER_MSG = [AMXX] Nahm %s das Leuchten
+
+AMX_SUPER_TEAM_INVALID = [AMXX] Ungueltiges Team angegeben! Gueltige Teams sind: T, CT, Auto, Spec
+AMX_SUPER_TEAM_UNLOCKED = [AMXX] Das %s Team ist nicht gesperrt!
+AMX_SUPER_TEAM_UNLOCK = [AMXX] Das %s Team ist freigeschaltet!
+AMX_SUPER_TEAM_LOCKED = [AMXX] Das %s Team ist bereits gesperrt!
+AMX_SUPER_TEAM_LOCK = [AMXX] Das %s Team wurde gesperrt!
+AMX_SUPER_UNLOCK_TEAMS_LOG = [AMX_Super] TEAMLOCKER: ^"%s<%s>^" schaltete das ^"%s^" Team wieder frei
+AMX_SUPER_LOCK_TEAMS_LOG = [AMX_Super] TEAMLOCKER: ^"%s<%s>^" sperrte das ^"%s^" Team
+
+AMX_SUPER_TELEPORT_PLAYER_CASE2 = [AMXX] ADMIN %s teleportierte %s
+AMX_SUPER_TELEPORT_PLAYER_CASE1 = [AMXX] ADMIN teleportierte %s
+AMX_SUPER_TELEPORT_PLAYER_MSG = [AMXX] Teleportet %s zu %d x, %d y, %d z
+AMX_SUPER_TELEPORT_ORIGIN_SAVED = [AMXX] Ausgangspunkt %d x, %d y, %d z von %s gespeichert
+AMX_SUPER_TELEPORT_PLAYER_LOG = [AMX_Super] TELEPORT: ^"%s<%s>^" teleportiert ^"%s<%s>^" zu %d x, %d y, %d z
+
+AMX_SUPER_TRANSFER_PLAYER = [AMXX] Verschob %s zu dem %s Team erfolgreich!
+AMX_SUPER_TRANSFER_PLAYER_TEAM = [AMXX] Du wurdest zu dem %s Team verschoben!
+AMX_SUPER_TRANSFER_PLAYER_ERROR_CASE1 = [AMXX] Du kannst kein Spieler austauschen, der im selben Team ist!
+AMX_SUPER_TRANSFER_PLAYER_ERROR_CASE2 = [AMXX] Du kannst kein Spieler austauschen, der in keinem Team ist!
+AMX_SUPER_TRANSFER_SWAP_PLAYERS_SUCCESS = [AMXX] Tauschte %s mit %s erfolgreich!
+AMX_SUPER_TRANSFER_SWAP_PLAYERS_MESSAGE1 = [AMXX] Du wurdest mit %s ausgetauscht!
+AMX_SUPER_TRANSFER_SWAP_PLAYERS_MESSAGE2 = [AMXX] Du wurdest mit %s ausgetauscht!
+AMX_SUPER_TRANSFER_SWAP_TEAM_SUCCESS = [AMXX] Erfolgreich die Teams getauscht!
+AMX_SUPER_TRANSFER_SWAP_TEAM_LOG = [AMX_Super] TEAMTRANSFER: ^"%s<%s>^" ausgetauschte Teams
+AMX_SUPER_TRANSFER_SWAP_PLAYERS_LOG = [AMX_Super] TEAMTRANSFER: ^"%s<%s>^" tauschte ^"%s^" mit ^"%s^" aus
+AMX_SUPER_TRANSFER_PLAYER_LOG = [AMX_Super] TEAMTRANSFER: ^"%s<%s>^" verschob ^"%s^" zu dem ^"%s^" Team
+
+AMX_SUPER_AMMO_PLAYER_CASE1 = [AMXX] ADMIN setzte unendliche Munition fuer %s auf ^"%d^" 
+AMX_SUPER_AMMO_PLAYER_CASE2 = [AMXX] ADMIN %s setzte unendliche Munition fuer %s auf ^"%d^"
+AMX_SUPER_AMMO_PLAYER_MSG = [AMXX] ADMIN setzte unendliche Munition fuer %s auf ^"%d^"
+AMX_SUPER_AMMO_PLAYER_LOG = [AMX_Super] AMMO: ADMIN ^"%s<%s>^" setzte unendliche Munition fuer ^"%s^" auf ^"%d^" 
+AMX_SUPER_AMMO_TEAM_CASE1 = [AMXX] ADMIN setzte unendliche Munition fuer alle %s auf ^"%d^" 
+AMX_SUPER_AMMO_TEAM_CASE2 = [AMXX] ADMIN %s setzte unendliche Munition fuer alle %s auf ^"%d^" 
+AMX_SUPER_AMMO_TEAM_MSG = [AMXX] ADMIN setzte unendliche Munition fuer alle %s auf ^"%d^" 
+AMX_SUPER_AMMO_TEAM_LOG = [AMX_Super] AMMO: ADMIN ^"%s<%s>^" setzte unendliche Munition fuer alle ^"%s^" auf ^"%d^"
+
+AMX_SUPER_EXTEND_CANNOT_EXTEND = [AMXX] Du kannst die Maptime nicht auf einen negativen Wert verlaengern.
+AMX_SUPER_EXTEND_SUCCESS = [AMXX] %s hat die Map um %i Minuten verlaengert
+AMX_SUPER_EXTEND_EXTENDTIME = [AMXX] Keine Map kann laenger als %i Minuten auf einmal verlaengert werden.
+AMX_SUPER_EXTEND_EXTENDMAX = [AMXX] Kein Spieler kann ein Map mehr als %i mal verlaengern.
+AMX_SUPER_EXTEND_BAD_NUMBER = [AMXX] Maps die nicht im Mapcycle sind, koennen nicht verlaengert werden.
+AMX_SUPER_EXTEND_NOMAPCYCLE = [AMXX] Maps die nicht im Mapcycle sind, koennen nicht verlaengert werden.
+
+AMX_SUPER_BOMB_TRANSFER = Bombe wurde zu ^"%s^"^n transferiert seit ^"%s^" AFK ist
+
+AMX_SUPER_SHUTDOWN_MESSAGE = Notiz: Der Server startet neu. Falls das automatische wiederverbinden nicht funktioniert, reconnect bitte manuell.
+AMX_SUPER_SHUTDOWN_MESSAGE_LOG = [AMX_Super] SHUTDOWN: ^"%s<%s>^" schaltete den Server aus.
+
+AMX_SUPER_DEADCHAT_MESSAGE = [AMXX] Du bist tot, du kannst mit dem anderen Team per Mikro chatten.
+
+AMX_SUPER_SOUNDFIX = [AMXX] Dein Sound wurde gefixt.
+AMX_SUPER_SOUNDFIX_DISABLED = [AMXX] Manuelles fixen ist aus.
+
+AMX_SUPER_TEAM_IMMUNITY = [AMXX] Ueberspringe ^"%s^" weil er Immunity hat.
+AMX_SUPER_NO_PLAYERS = [AMXX] Keine Spieler in diesem Team!
+AMX_SUPER_AMOUNT_GREATER = [AMXX] Summe muss groesser als 0 sein!
+
+[cn]
+
+AMX_SUPER_HEAL_TEAM_CASE2 = [AMXX] ??? %s ?? %d ??? %s ??
+AMX_SUPER_HEAL_TEAM_CASE1 = [AMXX] ????? %d ??? %s ??
+AMX_SUPER_HEAL_PLAYER_CASE2 = [AMXX] ??? %s ?? %s ???? %d
+AMX_SUPER_HEAL_PLAYER_CASE1 = [AMXX] ????? %s ???? %d
+AMX_SUPER_HEAL_TEAM_LOG = [AMX_Super] ??: ^"%s<%s>^" ? ^"%s^" ??? %d ???
+AMX_SUPER_HEAL_PLAYER_LOG = [AMX_Super] ??: ^"%s<%s>^" ??? %d ???? ^"%s<%s>^" 
+AMX_SUPER_HEAL_TEAM_MSG = [AMXX] ?? %d ???? %s
+AMX_SUPER_HEAL_PLAYER_MSG = [AMXX] ?? %d ???? %s
+AMX_SUPER_ARMOR_TEAM_CASE2 = [AMXX] ????? %d ??? %s ??
+AMX_SUPER_ARMOR_TEAM_CASE1 = [AMXX] ????? %d ??? %s ??
+AMX_SUPER_ARMOR_PLAYER_CASE2 = [AMXX] ??? %s ?? %d ??? %s
+AMX_SUPER_ARMOR_PLAYER_CASE1 = [AMXX] ??? ?? %d ??? %s
+AMX_SUPER_ARMOR_TEAM_LOG = [AMX_Super] ??: ^"%s<%s>^" ?? %d ??? ^"%s^" ??
+AMX_SUPER_ARMOR_PLAYER_LOG = [AMX_Super] ??: ^"%s<%s>^" ?? %d ??? ^"%s<%s>^"
+AMX_SUPER_ARMOR_TEAM_MSG = [AMXX] ?? %d ??? %s ??
+AMX_SUPER_ARMOR_PLAYER_MSG = [AMXX] ?? %d ??? %s
+AMX_SUPER_STACK_PLAYER_CASE2 = [AMXX] ??? %s ??????? %s
+AMX_SUPER_STACK_PLAYER_CASE1 = [AMXX] ??? ??????? %s
+AMX_SUPER_STACK_PLAYER_LOG = [AMX_Super] ?: ^"%s<%s>^" ??????? ^"%s<%s>^"
+AMX_SUPER_STACK_PLAYER_MSG = [AMXX] ??????? %s
+AMX_SUPER_ALLTALK_STATUS = [AMXX] sv_alltalk ? ^"%d^"
+AMX_SUPER_ALLTALK_SET_CASE2 = [AMXX] ??? %s ?? sv_alltalk ? ^"%s^"
+AMX_SUPER_ALLTALK_SET_CASE1 = [AMXX] ????? sv_alltalk ? ^"%s^"
+AMX_SUPER_ALLTALK_LOG = [AMX_Super] ALLTALK: ^"%s<%s>^" ?? sv_alltalk ? ^"%s^"
+AMX_SUPER_ALLTALK_MSG = [AMXX] Alltalk ?????? ^"%s^"
+AMX_SUPER_GRAVITY_STATUS = [AMXX] sv_ gravity ? ^"%d^"
+AMX_SUPER_GRAVITY_SET_CASE2 = [AMXX] ??? %s ????? ^"%s^"
+AMX_SUPER_GRAVITY_SET_CASE1 = [AMXX] ??? ????? ^"%s^"
+AMX_SUPER_GRAVITY_LOG = [AMX_Super] ??: ^"%s<%s>^" ?? sv_ gravity ? ^"%s^"
+AMX_SUPER_GRAVITY_MSG = [AMXX] ???????? ^"%s^"
+AMX_SUPER_GRAVITY_CHECK = [AMXX] ????? %i
+AMX_SUPER_BURY_TEAM_CASE2 = [AMXX] ??? %s ?? %s ??
+AMX_SUPER_BURY_TEAM_CASE1 = [AMXX] ??? ?? %s ??
+AMX_SUPER_BURY_PLAYER_CASE2 = [AMXX] ??? %s ?? %s
+AMX_SUPER_BURY_PLAYER_CASE1 = [AMXX] ??? ?? %s
+AMX_SUPER_UNBURY_TEAM_CASE2 = [AMXX] ??? %s ????? %s ??
+AMX_SUPER_UNBURY_TEAM_CASE1 = [AMXX] ??? ????? %s ??
+AMX_SUPER_UNBURY_PLAYER_CASE2 = [AMXX] ??? %s ????? %s
+AMX_SUPER_UNBURY_PLAYER_CASE1 = [AMXX] ??? ????? %s
+AMX_SUPER_UNBURY_TEAM_LOG = [AMX_Super] ??: ^"%s<%s>^" ????? ^"%s^" ??
+AMX_SUPER_UNBURY_PLAYER_LOG = [AMX_Super] ????: ^"%s<%s>^" ????? ^"%s<%s>^"
+AMX_SUPER_BURY_PLAYER_LOG = [AMX_Super] ??: ^"%s<%s>^" ?? ^"%s<%s>^"
+AMX_SUPER_BURY_TEAM_LOG = [AMX_Super] ??: ^"%s<%s>^" ?? ^"%s^" ??
+AMX_SUPER_BURY_MSG = [AMXX] ?? %s ?????
+AMX_SUPER_UNBURY_MSG = [AMXX] ?? %s ???????
+AMX_SUPER_DISARM_TEAM_CASE2 = [AMXX] ??? %s ????? %s ?????
+AMX_SUPER_DISARM_TEAM_CASE1 = [AMXX] ??? ????? %s ??????
+AMX_SUPER_DISARM_PLAYER_CASE2 = [AMXX] ??? %s ????? %s????
+AMX_SUPER_DISARM_PLAYER_CASE1 = [AMXX] ??? ????? %s????
+AMX_SUPER_DISARM_TEAM_LOG = [AMX_Super] ??: ^"%s<%s>^" ????? ^"%s^" ?????
+AMX_SUPER_DISARM_PLAYER_LOG = [AMX_Super] ??: ^"%s<%s>^" ????? ^"%s<%s>^"???
+AMX_SUPER_DISARM_MSG = [AMXX] ?? %s ????????
+AMX_SUPER_SLAY2_TEAM_CASE2 = [AMXX] ??? %s ?? %s ??
+AMX_SUPER_SLAY2_TEAM_CASE1 = [AMXX] ??? ?? %s ??
+AMX_SUPER_SLAY2_PLAYER_CASE2 = [AMXX] ??? %s ?? %s
+AMX_SUPER_SLAY2_PLAYER_CASE1 = [AMXX] ??? ?? %s
+AMX_SUPER_SLAY2_TEAM_LOG = [AMX_Super] ??2: ^"%s<%s>^" ?? ^"%s^" ?? 
+AMX_SUPER_SLAY2_PLAYER_LOG =  [AMX_Super] ??2: ^"%s<%s>^" ?? ^"%s<%s>^"
+AMX_SUPER_SLAY2_TEAM_MSG = [AMXX] ?? %s ??
+AMX_SUPER_SLAY2_PLAYER_MSG = [AMXX] ?? %s
+AMX_SUPER_FIRE_TEAM_CASE2 = [AMXX] ??? %s ?? %s ?? ???
+AMX_SUPER_FIRE_TEAM_CASE1 = [AMXX] ??? ?? %s ?? ???
+AMX_SUPER_FIRE_PLAYER_CASE2 = [AMXX] ??? %s ?? %s ???.
+AMX_SUPER_FIRE_PLAYER_CASE1 = [AMXX] ??? ?? %s ???.
+AMX_SUPER_FIRE_TEAM_LOG = [AMX_Super] ??: ^"%s<%s>^" ????? ^"%s^" ??
+AMX_SUPER_FIRE_PLAYER_LOG = [AMX_Super] ??: ^"%s<%s>^" ????? ^"%s<%s>^"
+AMX_SUPER_FIRE_TEAM_MSG = [AMXX] ?? %s ?????
+AMX_SUPER_FIRE_PLAYER_MSG = [AMXX] ?? %s ???
+AMX_SUPER_FIRE_SPREAD = * [AMXX] OH! NO! %s ???? %s ???!
+AMX_SUPER_ROCKET_TEAM_CASE2 = [AMXX] ??? %s ? %s ?????
+AMX_SUPER_ROCKET_TEAM_CASE1 = [AMXX] ??? ?%s ?????
+AMX_SUPER_ROCKET_PLAYER_CASE2 = [AMXX] ??? %s ? %s???
+AMX_SUPER_ROCKET_PLAYER_CASE1 = [AMXX] ??? ? %s???
+AMX_SUPER_ROCKET_TEAM_LOG = [AMX_Super] ??: ^"%s<%s>^" ? ^"%s^" ?????
+AMX_SUPER_ROCKET_PLAYER_LOG = [AMX_Super] ??: ^"%s<%s>^" ?^"%s<%s>^"???
+AMX_SUPER_ROCKET_TEAM_MSG = [AMXX] ? %s ???
+AMX_SUPER_ROCKET_PLAYER_MSG = [AMXX] ?%s???
+AMX_SUPER_UBERSLAP_TEAM_CASE2 = [AMXX] ??? %s uberslapped %s ??
+AMX_SUPER_UBERSLAP_TEAM_CASE1 = [AMXX] ??? uberslapped %s ??
+AMX_SUPER_UBERSLAP_PLAYER_CASE2 = [AMXX] ??? %s uberslapped %s
+AMX_SUPER_UBERSLAP_PLAYER_CASE1 = [AMXX] ??? uberslapped %s
+AMX_SUPER_UBERSLAP_TEAM_LOG = [AMX_Super] UBERSLAP: ^"%s<%s>^" uberslapped ^"%s^" ??
+AMX_SUPER_UBERSLAP_PLAYER_LOG = [AMX_Super] UBERSLAP: ^"%s<%s>^" uberslapped ^"%s<%s>^"
+AMX_SUPER_UBERSLAP_TEAM_MSG = [AMXX] Uberslapped %s ??
+AMX_SUPER_UBERSLAP_PLAYER_MSG = [AMXX] Uberslapped %s
+AMX_SUPER_EXEC_ALL_CASE2 = [AMXX] ??? %s ????? ^"%s^" ????
+AMX_SUPER_EXEC_ALL_CASE1 = [AMXX] ??? ????? ^"%s^" ????
+AMX_SUPER_EXEC_TEAM_CASE2 = [AMXX] ??? %s ????? ^"%s^" ? %s ??
+AMX_SUPER_EXEC_TEAM_CASE1 = [AMXX] ??? ????? ^"%s^" ? %s ??
+AMX_SUPER_EXEC_PLAYER_CASE2 = [AMXX] ??? %s ????? ^"%s^" ? %s!
+AMX_SUPER_EXEC_PLAYER_CASE1 = [AMXX] ??? ????? ^"%s^" ? %s!
+AMX_SUPER_EXEC_ALL_LOG = [AMX_Super] ??: ^"%s<%s>^" ????????? ^"%s^"
+AMX_SUPER_EXEC_TEAM_LOG = [AMX_Super] ??: ^"%s<%s>^" ????????? ^"%s^"
+AMX_SUPER_EXEC_PLAYER_LOG = [AMX_Super] ??: ^"%s<%s>^" ?^"%s<%s>^"???? ^"%s^"
+AMX_SUPER_PASSWORD_SET_CASE2 = [AMXX] ??? %s ????????????
+AMX_SUPER_PASSWORD_SET_CASE1 = [AMXX] ??? ???? ???????
+AMX_SUPER_PASSWORD_REMOVE_CASE2 = [AMXX] ??? %s ????????????
+AMX_SUPER_PASSWORD_REMOVE_CASE1 = [AMXX] ??? ????????????
+AMX_SUPER_PASSWORD_SET_LOG = [AMX_Super] ??: ^"%s<%s>^" ?? ??????? ? ^"%s^"
+AMX_SUPER_PASSWORD_REMOVE_LOG = [AMX_Super] ??: ^"%s<%s>^" ??????????
+AMX_SUPER_REVIVE_TEAM_CASE2 = [AMXX] ??? %s ?? %s ??
+AMX_SUPER_REVIVE_TEAM_CASE1 = [AMXX] ??? ?? %s ??
+AMX_SUPER_REVIVE_PLAYER_CASE2 = [AMXX] ??? %s ???? %s
+AMX_SUPER_REVIVE_PLAYER_CASE1 = [AMXX] ??? ???? %s
+AMX_SUPER_REVIVE_TEAM_LOG = [AMX_Super] ??: ^"%s<%s>^" ?? ^"%s^" ??
+AMX_SUPER_REVIVE_PLAYER_LOG = [AMX_Super] ??: ^"%s<%s>^" ?? ^"%s<%s>^"
+AMX_SUPER_REVIVE_TEAM_MSG = [AMXX] ?? %s ??
+AMX_SUPER_REVIVE_PLAYER_MSG = [AMXX] ?? %s
+AMX_SUPER_REVIVE_TEAM_HUD = %s ???????!
+AMX_SUPER_REVIVE_PLAYER_HUD = %s ?????!
+AMX_SUPER_QUIT_TEAM_CASE2 = [AMXX] ??? %s ? %s ??????
+AMX_SUPER_QUIT_TEAM_CASE1 = [AMXX] ??? ? %s ?? ????
+AMX_SUPER_QUIT_PLAYER_CASE2 = [AMXX] ??? %s ? %s ????
+AMX_SUPER_QUIT_PLAYER_CASE1 = [AMXX] ??? ? %s ????
+AMX_SUPER_QUIT_TEAM_LOG = [AMX_Super] ??: ^"%s<%s>^" ??? ^"%s^" ??????
+AMX_SUPER_QUIT_PLAYER_LOG = [AMX_Super] ??: ^"%s<%s>^" ??? ^"%s<%s>^" ????
+ 
+AMX_SUPER_GAG_PLAYER_CASE2 = [AMXX] ??? %s ?? %s ?? %0.? ( %s )
+AMX_SUPER_GAG_PLAYER_CASE1 = [AMXX] ????? %s ?? %0.? ( %s )
+AMX_SUPER_UNGAG_PLAYER_CASE2 = [AMXX] ??? %s ??? %s
+AMX_SUPER_UNGAG_PLAYER_CASE1 = [AMXX] ?????? %s
+AMX_SUPER_GAG_PLAYER_LOG = [AMX_Super] ??: ^"%s<%s>^" ???? ^"%s<%s>^" for %d ( %d )
+AMX_SUPER_UNGAG_PLAYER_LOG = [AMX_Super] ??: ^"%s<%s>^" ????? ^"%s<%s>^"
+AMX_SUPER_GAG_PLAYER_DISCONNECT = [AMXX] ??????: ( %s <%s> )
+AMX_SUPER_PLAYER_GAGGED = * ??????
+AMX_SUPER_PLAYER_NAMELOCK = * ?????????????
+AMX_SUPER_NOT_GAGGED = [AMXX] %s ????? & ?????
+AMX_SUPER_GAG_END = [AMXX] %s ?????
+AMX_SUPER_WEAPON_TEAM_CASE2 = [AMXX] ??? %s ?????? ? %s ??
+AMX_SUPER_WEAPON_TEAM_CASE1 = [AMXX] ??? ??????? %s ??
+AMX_SUPER_WEAPON_PLAYER_CASE2 = [AMXX] ??? %s ??????? %s
+AMX_SUPER_WEAPON_PLAYER_CASE1 = [AMXX] ??? ??????? %s
+AMX_SUPER_WEAPON_TEAM_LOG = [AMX_Super] ??: ^"%s<%s>^" ??????^"%d^" ? ^"%s^" ??
+AMX_SUPER_WEAPON_PLAYER_LOG = [AMX_Super] ??: ^"%s<%s>^" ?????? ^"%d^" ? ^"%s<%s>^"
+AMX_SUPER_WEAPON_TEAM_MSG = [AMXX] ????? %d ? %s ??
+AMX_SUPER_WEAPON_PLAYER_MSG = [AMXX] ????? %d ? %s
+AMX_SUPER_NOCLIP_TEAM_CASE2 = [AMXX] ??? %s ?? noclip ^"%d^" ? %s ????
+AMX_SUPER_NOCLIP_TEAM_CASE1 = [AMXX] ????? noclip ^"%d^" ? %s ??
+AMX_SUPER_NOCLIP_PLAYER_CASE2 = [AMXX] ??? %s ?? noclip ^"%d^" ? %s
+AMX_SUPER_NOCLIP_PLAYER_CASE1 = [AMXX] ????? noclip ^"%d^" ? %s
+AMX_SUPER_NOCLIP_TEAM_LOG = [AMX_Super] NOCLIP: ^"%s<%s>^" ?? noclip ^"%d^" on ^"%s^" ??
+AMX_SUPER_NOCLIP_PLAYER_LOG = [AMX_Super] NOCLIP: ^"%s<%s>^" ?? noclip ^"%d^" on ^"%s<%s>^"
+AMX_SUPER_NOCLIP_TEAM_MSG = [AMXX] Set noclip ^"%d^" ? %s ??
+AMX_SUPER_NOCLIP_PLAYER_MSG = [AMXX] Set noclip ^"%d^" ? %s
+AMX_SUPER_FLASH_TEAM_CASE2 = [AMXX] ??? %s ? %s ????
+AMX_SUPER_FLASH_TEAM_CASE1 = [AMXX] ??? ? %s ????
+AMX_SUPER_FLASH_PLAYER_CASE2 = [AMXX] ??? %s ?%s??
+AMX_SUPER_FLASH_PLAYER_CASE1 = [AMXX] ??? ?%s??
+AMX_SUPER_FLASH_TEAM_LOG = [AMX_Super] ??: ^"%s<%s>^" ? ^"%s^" ????
+AMX_SUPER_FLASH_PLAYER_LOG = [AMX_Super] ??: ^"%s<%s>^" ? ^"%s<%s>^"??
+AMX_SUPER_FLASH_TEAM_MSG = [AMXX] ??? %s ??????
+AMX_SUPER_FLASH_PLAYER_MSG = [AMXX] ???%s??????
+AMX_SUPER_GODMODE_TEAM_CASE2 = [AMXX] ??? %s ?????? ^"%d^" ? %s ??
+AMX_SUPER_GODMODE_TEAM_CASE1 = [AMXX] ??? ?????? ^"%d^" ? %s ??
+AMX_SUPER_GODMODE_PLAYER_CASE2 = [AMXX] ??? %s ?????? ^"%d^" ? %s
+AMX_SUPER_GODMODE_PLAYER_CASE1 = [AMXX] ??? ?????? ^"%d^" ? %s
+AMX_SUPER_GODMODE_TEAM_LOG = [AMX_Super] ????: ^"%s<%s>^" ?????? ^"%d^" ? ^"%s^" ??
+AMX_SUPER_GODMODE_PLAYER_LOG = [AMX_Super] ????: ^"%s<%s>^" ?????? ^"%d^" ? ^"%s<%s>^"
+AMX_SUPER_GODMODE_TEAM_MSG = [AMXX] ?????? ^"%d^" ? %s ??
+AMX_SUPER_GODMODE_PLAYER_MSG = [AMXX] ?????? ^"%d^" ? %s
+AMX_SUPER_GIVEMONEY_PLAYER_CASE2 = [AMXX] ??? %s ?? $%i ? %s
+AMX_SUPER_GIVEMONEY_PLAYER_CASE1 = [AMXX] ??? ?? $%i ? %s
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_CASE2 = [AMXX] ??? %s ? %s?????????
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_CASE1 = [AMXX] ??? ? %s?????????
+AMX_SUPER_TAKEMONEY_PLAYER_CASE2 = [AMXX] ??? %s ?%s??????? $%i 
+AMX_SUPER_TAKEMONEY_PLAYER_CASE1 = [AMXX] ??? ?%s??????? $%i 
+AMX_SUPER_GIVEMONEY_PLAYER_LOG = [AMX_Super] ??: ^"%s<%s>^" ?? $%i ? ^"%s<%s>^"
+AMX_SUPER_TAKEMONEY_PLAYER_LOG = [AMX_Super] ??: ^"%s<%s>^" ?^"%s<%s>^"????? $%i
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_LOG = [AMX_Super] ??: ^"%s<%s>^" ?^"%s<%s>^"?????????
+AMX_SUPER_GIVEMONEY_PLAYER_MSG = [AMXX] ?? $%i ? %s
+AMX_SUPER_TAKEMONEY_PLAYER_MSG = [AMXX] ?? %s ?? $%i 
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_MSG = [AMXX] ? %s?????????
+AMX_SUPER_GLOW_TEAM_CASE2 = [AMXX] ??? %s ????? %s ??
+AMX_SUPER_GLOW_TEAM_CASE1 = [AMXX] ??? ????? %s ??
+AMX_SUPER_GLOW_PLAYER_CASE2 = [AMXX] ??? %s ????? %s
+AMX_SUPER_GLOW_PLAYER_CASE1 = [AMXX] ??? ?? ?? ? %s
+AMX_SUPER_GLOW_TEAM_LOG = [AMX_Super] ??: ^"%s<%s>^" ????? ^"%s^" ??
+AMX_SUPER_GLOW_PLAYER_LOG = [AMX_Super] ??: ^"%s<%s>^" ?????^"%s<%s>^"
+AMX_SUPER_GLOW_TEAM_MSG = [AMXX] ?? ??? %s ??
+AMX_SUPER_GLOW_PLAYER_MSG = [AMXX] ?? ?? ? %s
+AMX_SUPER_UNGLOW_TEAM_CASE2 = [AMXX] ??? %s ??%s ????  
+AMX_SUPER_UNGLOW_TEAM_CASE1 = [AMXX] ??? ??  %s ????
+AMX_SUPER_UNGLOW_PLAYER_CASE2 = [AMXX] ??? %s ?? %s??  
+AMX_SUPER_UNGLOW_PLAYER_CASE1 = [AMXX] ??? ?? %s?? 
+AMX_SUPER_UNGLOW_TEAM_LOG = [AMX_Super] UNGLOW: ^"%s<%s>^" ?? ^"%s^" ???? 
+AMX_SUPER_UNGLOW_PLAYER_LOG = [AMX_Super] UNGLOW: ^"%s<%s>^" ?? ^"%s<%s>^"??
+AMX_SUPER_UNGLOW_TEAM_MSG = [AMXX] ?? %s ???? 
+AMX_SUPER_UNGLOW_PLAYER_MSG = [AMXX] ?? %s??
+AMX_SUPER_TEAM_INVALID = [AMXX] ??????????????: T, CT, Auto, Spec
+AMX_SUPER_TEAM_UNLOCKED = [AMXX] ? %s ????!
+AMX_SUPER_TEAM_UNLOCK = [AMXX] ??? %s ?
+AMX_SUPER_TEAM_LOCKED = [AMXX] ? %s ?????!
+AMX_SUPER_TEAM_LOCK = [AMXX] ??? %s ?
+AMX_SUPER_UNLOCK_TEAMS_LOG = [AMX_Super] ??: ^"%s<%s>^" ?? ^"%s^" ?
+AMX_SUPER_LOCK_TEAMS_LOG = [AMX_Super] ??: ^"%s<%s>^" ?? ^"%s^" ??
+AMX_SUPER_TELEPORT_PLAYER_CASE2 = [AMXX] ??? %s ?? %s
+AMX_SUPER_TELEPORT_PLAYER_CASE1 = [AMXX] ??? ?? %s
+AMX_SUPER_TELEPORT_PLAYER_MSG = [AMXX] ?? %s ? %d x, %d y, %d z
+AMX_SUPER_TELEPORT_ORIGIN_SAVED = [AMXX] ?%s?????? %d x, %d y, %d z
+AMX_SUPER_TELEPORT_PLAYER_LOG = [AMX_Super] ??: ^"%s<%s>^" ??^"%s<%s>^" ? %d x, %d y, %d z
+AMX_SUPER_TRANSFER_PLAYER = [AMXX] ???? %s ?  %s ?
+AMX_SUPER_TRANSFER_PLAYER_TEAM = [AMXX] ??????? %s ?
+AMX_SUPER_TRANSFER_PLAYER_ERROR_CASE1 = [AMXX] ?????????????!
+AMX_SUPER_TRANSFER_PLAYER_ERROR_CASE2 = [AMXX] ????????????!
+AMX_SUPER_TRANSFER_SWAP_PLAYERS_SUCCESS = [AMXX] ????%s ? %s
+AMX_SUPER_TRANSFER_SWAP_PLAYERS_MESSAGE1 = [AMXX] ??? %s????
+AMX_SUPER_TRANSFER_SWAP_PLAYERS_MESSAGE2 = [AMXX] ??? %s?????
+AMX_SUPER_TRANSFER_SWAP_TEAM_SUCCESS = [AMXX] ??????!
+AMX_SUPER_TRANSFER_SWAP_TEAM_LOG = [AMX_Super] ????: ^"%s<%s>^" ????
+AMX_SUPER_TRANSFER_SWAP_PLAYERS_LOG = [AMX_Super] ????: ^"%s<%s>^" ??? ^"%s^" ? ^"%s^"
+AMX_SUPER_TRANSFER_PLAYER_LOG = [AMX_Super] ????: ^"%s<%s>^"?? ^"%s^" ? ^"%s^" ??
+AMX_SUPER_AMMO_PLAYER_INVALID = [AMXX] ????? 1 ? 0!
+AMX_SUPER_AMMO_PLAYER_CASE1 = [AMXX] ??? ?? %s ????? %s
+AMX_SUPER_AMMO_PLAYER_CASE2 = [AMXX] ??? %s ?? %s ????? %s
+AMX_SUPER_UNAMMO_PLAYER_CASE1 = [AMXX] ???: ?? %s????
+AMX_SUPER_UNAMMO_PLAYER_CASE2 = [AMXX] ??? %s: ?? %s????
+AMX_SUPER_AMMO_PLAYER_MSG = [AMXX] ??? ?? %s ????? %s
+AMX_SUPER_AMMO_PLAYER_LOG = [AMX_Super] AMMO: ??? %s ?? %s ????? %s
+AMX_SUPER_UNAMMO_PLAYER_MSG = [AMXX] ???: ?? %s????
+AMX_SUPER_UNAMMO_PLAYER_LOG = [AMX_Super] [AMXX] ??? %s: ?? %s????
+AMX_SUPER_BOMB_TRANSFER = ????? ^"%s^"^nsince ^"%s^" ? AFK
+AMX_SUPER_SHUTDOWN_MESSAGE = ????????????????????????
+AMX_SUPER_SHUTDOWN_MESSAGE_LOG = [AMX_Super] ??: ^"%s<%s>^" ?????????
+AMX_SUPER_DEADCHAT_MESSAGE = [AMXX] ?????????????????
+AMX_SUPER_SOUNDFIX = [AMXX] ????????
+AMX_SUPER_SOUNDFIX_DISABLED = [AMXX] ????????
+AMX_SUPER_TEAM_IMMUNITY = [AMXX] ?? ^"%s^" ?????
+AMX_SUPER_NO_PLAYERS = [AMXX] ????????
+AMX_SUPER_AMOUNT_GREATER = [AMXX] ???????!
+
+[Slovac]
+
+AMX_SUPER_TEAM_IMMUNITY = [AMXX] Hrác ^"%s^" je presko?ený, lebo má imunitu.
+AMX_SUPER_NO_PLAYERS = [AMXX] V tíme nie sú žiadni hrá?i!
+AMX_SUPER_AMOUNT_GREATER = [AMXX] ?íslo musí by? vä?šie ako nula!
+
+AMX_SUPER_HEAL_TEAM_CASE2 = [AMXX] ADMIN %s venoval %d HP pre %s hrá?ov
+AMX_SUPER_HEAL_TEAM_CASE1 = [AMXX] ADMIN venoval %d HP pre %s hrá?ov
+AMX_SUPER_HEAL_PLAYER_CASE2 = [AMXX] ADMIN %s venoval %d HP pre %s
+AMX_SUPER_HEAL_PLAYER_CASE1 = [AMXX] ADMIN venoval %d HP pre %s
+AMX_SUPER_HEAL_TEAM_LOG = [AMX_Super] HEAL: ^"%s<%s>^" venoval %d HP pre ^"%s^" hrá?ov
+AMX_SUPER_HEAL_PLAYER_LOG = [AMX_Super] HEAL: ^"%s<%s>^" venoval %d HP pre ^"%s<%s>^" 
+AMX_SUPER_HEAL_TEAM_MSG = [AMXX] Venoval %d HP pre %s hrá?ov
+AMX_SUPER_HEAL_PLAYER_MSG = [AMXX] Venoval %d HP pre %s
+
+AMX_SUPER_ARMOR_TEAM_CASE2 = [AMXX] ADMIN %s venoval %d armor pre %s hrá?ov
+AMX_SUPER_ARMOR_TEAM_CASE1 = [AMXX] ADMIN venoval %d armor pre %s hrá?ov
+AMX_SUPER_ARMOR_PLAYER_CASE2 = [AMXX] ADMIN %s venoval %d armor pre %s
+AMX_SUPER_ARMOR_PLAYER_CASE1 = [AMXX] ADMIN venoval %d armor pre %s
+AMX_SUPER_ARMOR_TEAM_LOG = [AMX_Super] ARMOR: ^"%s<%s>^" venoval %d armor pre ^"%s^" hrá?ov
+AMX_SUPER_ARMOR_PLAYER_LOG = [AMX_Super] ARMOR: ^"%s<%s>^" venoval %d armor pre ^"%s<%s>^"
+AMX_SUPER_ARMOR_TEAM_MSG = [AMXX] Venoval %d armor pre %s hrá?ov
+AMX_SUPER_ARMOR_PLAYER_MSG = [AMXX] Venoval %d armor pre %s
+
+AMX_SUPER_STACK_PLAYER_CASE2 = [AMXX] ADMIN %s naskladal všetkých hrá?ov na %s
+AMX_SUPER_STACK_PLAYER_CASE1 = [AMXX] ADMIN naskladal všetkých hrá?ov na %s
+AMX_SUPER_STACK_PLAYER_LOG = [AMX_Super] STACK: ^"%s<%s>^" naskladal všetkých hrá?ov na ^"%s<%s>^"
+AMX_SUPER_STACK_PLAYER_MSG = [AMXX] Všetci hrá?i naskladaní na %s
+
+AMX_SUPER_ALLTALK_STATUS = [AMXX] sv_alltalk je ^"%d^"
+AMX_SUPER_ALLTALK_SET_CASE2 = [AMXX] ADMIN %s nastavil sv_alltalk na ^"%s^"
+AMX_SUPER_ALLTALK_SET_CASE1 = [AMXX] ADMIN nastavil sv_alltalk na ^"%s^"
+AMX_SUPER_ALLTALK_LOG = [AMX_Super] ALLTALK: ^"%s<%s>^" nastavil sv_alltalk na ^"%s^"
+AMX_SUPER_ALLTALK_MSG = [AMXX] Alltalk bol nastavený na ^"%s^"
+
+AMX_SUPER_GRAVITY_STATUS = [AMXX] sv_gravity je ^"%d^"
+AMX_SUPER_GRAVITY_SET_CASE2 = [AMXX] ADMIN %s nastavil gravitáciu na ^"%s^"
+AMX_SUPER_GRAVITY_SET_CASE1 = [AMXX] ADMIN nastavil gravitáciu na ^"%s^"
+AMX_SUPER_GRAVITY_LOG = [AMX_Super] GRAVITY: ^"%s<%s>^" nastavil sv_gravity na ^"%s^"
+AMX_SUPER_GRAVITY_MSG = [AMXX] Gravitacia bola nastavená na ^"%s^"
+AMX_SUPER_GRAVITY_CHECK = [AMXX] Gravitácia je %i
+
+AMX_SUPER_BURY_TEAM_CASE2 = [AMXX] ADMIN %s pochoval %s hrá?ov
+AMX_SUPER_BURY_TEAM_CASE1 = [AMXX] ADMIN pochoval %s hrá?ov
+AMX_SUPER_BURY_PLAYER_CASE2 = [AMXX] ADMIN %s pochoval %s
+AMX_SUPER_BURY_PLAYER_CASE1 = [AMXX] ADMIN pochoval %s
+AMX_SUPER_UNBURY_TEAM_CASE2 = [AMXX] ADMIN %s vykopal %s hrá?ov
+AMX_SUPER_UNBURY_TEAM_CASE1 = [AMXX] ADMIN vykopal %s hrá?ov
+AMX_SUPER_UNBURY_PLAYER_CASE2 = [AMXX] ADMIN %s vykopal %s
+AMX_SUPER_UNBURY_PLAYER_CASE1 = [AMXX] ADMIN vykopal %s
+AMX_SUPER_UNBURY_TEAM_LOG = [AMX_Super] UNBURY: ^"%s<%s>^" vykopal ^"%s^" hrá?ov
+AMX_SUPER_UNBURY_PLAYER_LOG = [AMX_Super] UNBURY: ^"%s<%s>^" vykopal ^"%s<%s>^"
+AMX_SUPER_BURY_PLAYER_LOG = [AMX_Super] BURY: ^"%s<%s>^" pochoval ^"%s<%s>^"
+AMX_SUPER_BURY_TEAM_LOG = [AMX_Super] BURY: ^"%s<%s>^" pochoval ^"%s^" hrá?ov
+AMX_SUPER_BURY_MSG = [AMXX] Player %s bol pochovaný
+AMX_SUPER_UNBURY_MSG = [AMXX] Player %s bol vykopaný
+
+AMX_SUPER_DISARM_TEAM_CASE2 = [AMXX] ADMIN %s odzbrojil %s hrá?ov
+AMX_SUPER_DISARM_TEAM_CASE1 = [AMXX] ADMIN odzbrojil %s hrá?ov
+AMX_SUPER_DISARM_PLAYER_CASE2 = [AMXX] ADMIN %s odzbrojil %s
+AMX_SUPER_DISARM_PLAYER_CASE1 = [AMXX] ADMIN odzbrojil %s
+AMX_SUPER_DISARM_TEAM_LOG = [AMX_Super] DISARM: ^"%s<%s>^" odzborjil ^"%s^" hrá?ov
+AMX_SUPER_DISARM_PLAYER_LOG = [AMX_Super] DISARM: ^"%s<%s>^" odzbrojil ^"%s<%s>^"
+AMX_SUPER_DISARM_MSG = [AMXX] Player %s bol odzbrojený
+
+AMX_SUPER_SLAY2_TEAM_CASE2 = [AMXX] ADMIN %s zavraždil %s hrá?ov
+AMX_SUPER_SLAY2_TEAM_CASE1 = [AMXX] ADMIN zavraždil %s players
+AMX_SUPER_SLAY2_PLAYER_CASE2 = [AMXX] ADMIN %s zavraždil %s
+AMX_SUPER_SLAY2_PLAYER_CASE1 = [AMXX] ADMIN zavraždil %s
+AMX_SUPER_SLAY2_TEAM_LOG = [AMX_Super] SLAY2: ^"%s<%s>^" zavraždil ^"%s^" hrá?ov 
+AMX_SUPER_SLAY2_PLAYER_LOG =  [AMX_Super] SLAY2: ^"%s<%s>^" zavraždil ^"%s<%s>^"
+AMX_SUPER_SLAY2_TEAM_MSG = [AMXX] Zavraždení %s hrá?i
+AMX_SUPER_SLAY2_PLAYER_MSG = [AMXX] Hrá? %s zavraždený
+
+AMX_SUPER_FIRE_TEAM_CASE2 = [AMXX] ADMIN %s zapálil %s hrá?ov
+AMX_SUPER_FIRE_TEAM_CASE1 = [AMXX] ADMIN zapálil %s hrá?ov
+AMX_SUPER_FIRE_PLAYER_CASE2 = [AMXX] ADMIN %s zapálil %s 
+AMX_SUPER_FIRE_PLAYER_CASE1 = [AMXX] ADMIN Zapálil %s 
+AMX_SUPER_FIRE_TEAM_LOG = [AMX_Super] FIRE: ^"%s<%s>^" zapálil ^"%s^" hrá?ov
+AMX_SUPER_FIRE_PLAYER_LOG = [AMX_Super] FIRE: ^"%s<%s>^" zapálil ^"%s<%s>^"
+AMX_SUPER_FIRE_TEAM_MSG = [AMXX]  %s hrá?i zapálení
+AMX_SUPER_FIRE_PLAYER_MSG = [AMXX] Hrá? %s zapálený
+AMX_SUPER_FIRE_SPREAD = * [AMXX] OH! LOL! Hrá? %s rozšíril ohe? na %s !
+
+AMX_SUPER_ROCKET_TEAM_CASE2 = [AMXX] ADMIN %s urobil z %s hrá?ov rakety
+AMX_SUPER_ROCKET_TEAM_CASE1 = [AMXX] ADMIN urobil z %s hrá?ov rakety
+AMX_SUPER_ROCKET_PLAYER_CASE2 = [AMXX] ADMIN %s urobil raketu z %s
+AMX_SUPER_ROCKET_PLAYER_CASE1 = [AMXX] ADMIN urobil raketu z %s
+AMX_SUPER_ROCKET_TEAM_LOG = [AMX_Super] ROCKET: ^"%s<%s>^" urobil raketu z ^"%s^" hrá?ov
+AMX_SUPER_ROCKET_PLAYER_LOG = [AMX_Super] ROCKET: ^"%s<%s>^" urobil raketu z ^"%s<%s>^"
+AMX_SUPER_ROCKET_TEAM_MSG = [AMXX] Z %s hrá?ov sú rakety!
+AMX_SUPER_ROCKET_PLAYER_MSG = [AMXX] Z %s je raketa!
+
+AMX_SUPER_UBERSLAP_TEAM_CASE2 = [AMXX] ADMIN %s vyhodil %s hrá?ov do vzduchu
+AMX_SUPER_UBERSLAP_TEAM_CASE1 = [AMXX] ADMIN vyhodil %s hrá?ov do vzduchu
+AMX_SUPER_UBERSLAP_PLAYER_CASE2 = [AMXX] ADMIN %s vyhodil do vzduchu %s
+AMX_SUPER_UBERSLAP_PLAYER_CASE1 = [AMXX] ADMIN vyhodil do vzduchu %s
+AMX_SUPER_UBERSLAP_TEAM_LOG = [AMX_Super] UBERSLAP: ^"%s<%s>^" vyhodil do vzduchu ^"%s^" hrá?ov
+AMX_SUPER_UBERSLAP_PLAYER_LOG = [AMX_Super] UBERSLAP: ^"%s<%s>^" vyhodil do vzduchu ^"%s<%s>^"
+AMX_SUPER_UBERSLAP_TEAM_MSG = [AMXX] Hrá?i %s vyhodení do vzduchu
+AMX_SUPER_UBERSLAP_PLAYER_MSG = [AMXX] %s vyhodený do vzduchu
+
+AMX_SUPER_EXEC_ALL_CASE2 = [AMXX] ADMIN %s použil príkaz ^"%s^" na všetkých
+AMX_SUPER_EXEC_ALL_CASE1 = [AMXX] ADMIN použil príkaz ^"%s^" na všetkých
+AMX_SUPER_EXEC_TEAM_CASE2 = [AMXX] ADMIN %s použil príkaz ^"%s^" na všetkých %s hrá?ov
+AMX_SUPER_EXEC_TEAM_CASE1 = [AMXX] ADMIN použil príkaz ^"%s^" na všetkých %s hrá?ov
+AMX_SUPER_EXEC_PLAYER_CASE2 = [AMXX] ADMIN %s použil príkaz ^"%s^" na %s!
+AMX_SUPER_EXEC_PLAYER_CASE1 = [AMXX] ADMIN použil príkaz ^"%s^" na %s!
+AMX_SUPER_EXEC_ALL_LOG = [AMX_Super] EXEC: ^"%s<%s>^" vykonal ^"%s^" na všetkých hrá?och
+AMX_SUPER_EXEC_TEAM_LOG = [AMX_Super] EXEC: ^"%s<%s>^" vykonal ^"%s^" na všetkých %s hrá?och
+AMX_SUPER_EXEC_PLAYER_LOG = [AMX_Super] EXEC: ^"%s<%s>^" vykonal ^"%s^" na ^"%s<%s>^"
+
+AMX_SUPER_PASSWORD_SET_CASE2 = [AMXX] ADMIN %s nastavil heslo na server
+AMX_SUPER_PASSWORD_SET_CASE1 = [AMXX] ADMIN nastavil heslo na server
+AMX_SUPER_PASSWORD_REMOVE_CASE2 = [AMXX] ADMIN %s odstránil heslo na server
+AMX_SUPER_PASSWORD_REMOVE_CASE1 = [AMXX] ADMIN odstránil heslo na server
+AMX_SUPER_PASSWORD_SET_LOG = [AMX_Super] PASSWORD: ^"%s<%s>^" nastavil heslo na serveri na ^"%s^"
+AMX_SUPER_PASSWORD_REMOVE_LOG = [AMX_Super] PASSWORD: ^"%s<%s>^" odstránil heslo na server
+
+AMX_SUPER_REVIVE_TEAM_CASE2 = [AMXX] ADMIN %s oživil %s hrá?ov
+AMX_SUPER_REVIVE_TEAM_CASE1 = [AMXX] ADMIN oživil %s hrá?ov
+AMX_SUPER_REVIVE_PLAYER_CASE2 = [AMXX] ADMIN %s oživil %s
+AMX_SUPER_REVIVE_PLAYER_CASE1 = [AMXX] ADMIN oživil %s
+AMX_SUPER_REVIVE_TEAM_LOG = [AMX_Super] REVIVE: ^"%s<%s>^" oživil ^"%s^" hrá?ov
+AMX_SUPER_REVIVE_PLAYER_LOG = [AMX_Super] REVIVE: ^"%s<%s>^" oživil ^"%s<%s>^"
+AMX_SUPER_REVIVE_TEAM_MSG = [AMXX] Hrá?i %s oživení
+AMX_SUPER_REVIVE_PLAYER_MSG = [AMXX] %s oživený
+AMX_SUPER_REVIVE_TEAM_HUD = %s hrá?i boli oživení!
+AMX_SUPER_REVIVE_PLAYER_HUD = %s bol oživený!
+
+AMX_SUPER_QUIT_TEAM_CASE2 = [AMXX] ADMIN %s vypol CS %s hrá?om
+AMX_SUPER_QUIT_TEAM_CASE1 = [AMXX] ADMIN vypol CS %s hrá?om
+AMX_SUPER_QUIT_PLAYER_CASE2 = [AMXX] ADMIN %s vypol CS %s 
+AMX_SUPER_QUIT_PLAYER_CASE1 = [AMXX] ADMIN vypol CS %s
+AMX_SUPER_QUIT_TEAM_LOG = [AMX_Super] QUIT: ^"%s<%s>^" vypol CS ^"%s^" hrá?om
+AMX_SUPER_QUIT_PLAYER_LOG = [AMX_Super] QUIT: ^"%s<%s>^" vypol ^"%s<%s>^" hrá?om
+ 
+AMX_SUPER_GAG_PLAYER_CASE2 = [AMXX] ADMIN %s zapchal ústa %s na %0.0f minút ( %s )
+AMX_SUPER_GAG_PLAYER_CASE1 = [AMXX] ADMIN zapchal ústa %s na %0.0f minút ( %s )
+AMX_SUPER_UNGAG_PLAYER_CASE2 = [AMXX] ADMIN %s uvo?nil ústa %s
+AMX_SUPER_UNGAG_PLAYER_CASE1 = [AMXX] ADMIN uvo?nil ústa %s
+AMX_SUPER_GAG_PLAYER_DISCONNECT = [AMXX] Hrá? so zapchatými ústami odišiel: ( %s <%s> )
+AMX_SUPER_PLAYER_GAGGED = * Zapchali ti ústa
+AMX_SUPER_PLAYER_NAMELOCK = * Hrá?i so zapchatými ústami si nemôžu meni? meno
+AMX_SUPER_NOT_GAGGED = [AMXX] %s nemá zapchaté ústa ergo mu ich nemôžete uvo?ni?.
+AMX_SUPER_GAG_END = [AMXX] %s nemá zapchaté ústa
+AMX_SUPER_GAG_CONNECTED = [AMXX] Hrá? so zapchatými ústami sa napojil ( %s ).
+
+AMX_SUPER_WEAPON_TEAM_CASE2 = [AMXX] ADMIN %s ozbrojil %s hrá?ov
+AMX_SUPER_WEAPON_TEAM_CASE1 = [AMXX] ADMIN ozbrojil %s hrá?ov
+AMX_SUPER_WEAPON_PLAYER_CASE2 = [AMXX] ADMIN %s ozbrojil %s
+AMX_SUPER_WEAPON_PLAYER_CASE1 = [AMXX] ADMIN ozbrojil %s
+AMX_SUPER_WEAPON_TEAM_LOG = [AMX_Super] WEAPON: ^"%s<%s>^" dal ^"%d^" ^"%s^" hrá?om
+AMX_SUPER_WEAPON_PLAYER_LOG = [AMX_Super] WEAPON: ^"%s<%s>^" venoval ^"%d^" pre ^"%s<%s>^"
+AMX_SUPER_WEAPON_TEAM_MSG = [AMXX] Zbrane %d boli rozdané medzi %s hrá?ov
+AMX_SUPER_WEAPON_PLAYER_MSG = [AMXX] Zbra? %d dostal %s
+
+AMX_SUPER_NOCLIP_TEAM_CASE2 = [AMXX] ADMIN %s nastavil noclip ^"%d^" na %s hrá?ov
+AMX_SUPER_NOCLIP_TEAM_CASE1 = [AMXX] ADMIN nastavil noclip ^"%d^" na %s hrá?ov
+AMX_SUPER_NOCLIP_PLAYER_CASE2 = [AMXX] ADMIN %s nastavil noclip ^"%d^" na %s
+AMX_SUPER_NOCLIP_PLAYER_CASE1 = [AMXX] ADMIN nastavil noclip ^"%d^" na %s
+AMX_SUPER_NOCLIP_TEAM_LOG = [AMX_Super] NOCLIP: ^"%s<%s>^" nastavil noclip ^"%d^" na ^"%s^" hrá?ov
+AMX_SUPER_NOCLIP_PLAYER_LOG = [AMX_Super] NOCLIP: ^"%s<%s>^" nastavil noclip ^"%d^" na ^"%s<%s>^"
+AMX_SUPER_NOCLIP_TEAM_MSG = [AMXX] Noclip nastavený na ^"%d^" na %s hrá?ov
+AMX_SUPER_NOCLIP_PLAYER_MSG = [AMXX] Noclip nastavený na ^"%d^" na %s
+
+AMX_SUPER_FLASH_TEAM_CASE2 = [AMXX] ADMIN %s oslepil %s hrá?ov
+AMX_SUPER_FLASH_TEAM_CASE1 = [AMXX] ADMIN oslepil %s hrá?ov
+AMX_SUPER_FLASH_PLAYER_CASE2 = [AMXX] ADMIN %s oslepil %s
+AMX_SUPER_FLASH_PLAYER_CASE1 = [AMXX] ADMIN oslepil %s
+AMX_SUPER_FLASH_TEAM_LOG = [AMX_Super] FLASH: ^"%s<%s>^" oslepil ^"%s^" hrá?ov
+AMX_SUPER_FLASH_PLAYER_LOG = [AMX_Super] FLASH: ^"%s<%s>^" oslepil ^"%s<%s>^"
+AMX_SUPER_FLASH_TEAM_MSG = [AMXX] Boli oslepení %s hrá?i
+AMX_SUPER_FLASH_PLAYER_MSG = [AMXX] %s bol oslepený
+
+AMX_SUPER_GODMODE_TEAM_CASE2 = [AMXX] ADMIN %s nastavil godmode ^"%d^" na %s hrá?ov
+AMX_SUPER_GODMODE_TEAM_CASE1 = [AMXX] ADMIN nastavil godmode ^"%d^" na %s hrá?ov
+AMX_SUPER_GODMODE_PLAYER_CASE2 = [AMXX] ADMIN %s nastavil godmode ^"%d^" na %s
+AMX_SUPER_GODMODE_PLAYER_CASE1 = [AMXX] ADMIN nastavil godmode ^"%d^" na %s
+AMX_SUPER_GODMODE_TEAM_LOG = [AMX_Super] GODMODE: ^"%s<%s>^" nastavil godmode ^"%d^" na ^"%s^" hrá?ov
+AMX_SUPER_GODMODE_PLAYER_LOG = [AMX_Super] GODMODE: ^"%s<%s>^" nastavil godmode ^"%d^" na ^"%s<%s>^"
+AMX_SUPER_GODMODE_TEAM_MSG = [AMXX] Godmode ^"%d^" nastavené na %s hrá?ov
+AMX_SUPER_GODMODE_PLAYER_MSG = [AMXX] Godmode ^"%d^" nastavené na %s
+
+AMX_SUPER_GIVEMONEY_PLAYER_CASE2 = [AMXX] ADMIN %s investoval $%i do %s
+AMX_SUPER_GIVEMONEY_PLAYER_CASE1 = [AMXX] ADMIN investoval $%i do %s
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_CASE2 = [AMXX] ADMIN %s zobral všetky peniaze od %s
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_CASE1 = [AMXX] ADMIN zobral všetky peniaze od %s
+AMX_SUPER_TAKEMONEY_PLAYER_CASE2 = [AMXX] ADMIN %s zobral $%i od %s
+AMX_SUPER_TAKEMONEY_PLAYER_CASE1 = [AMXX] ADMIN zobral $%i od %s
+AMX_SUPER_GIVEMONEY_PLAYER_LOG = [AMX_Super] GIVE MONEY: ^"%s<%s>^" investoval $%i do ^"%s<%s>^"
+AMX_SUPER_TAKEMONEY_PLAYER_LOG = [AMX_Super] TAKE MONEY: ^"%s<%s>^" vzal $%i od ^"%s<%s>^"
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_LOG = [AMX_Super] TAKE MONEY: ^"%s<%s>^" zobral všetky peniaze od ^"%s<%s>^"
+AMX_SUPER_GIVEMONEY_PLAYER_MSG = [AMXX] $%i investované do %s
+AMX_SUPER_TAKEMONEY_PLAYER_MSG = [AMXX] $%i odobraté od %s
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_MSG = [AMXX] Všetky peniaze boli odobraté od %s
+
+AMX_SUPER_GLOW_TEAM_CASE2 = [AMXX] ADMIN %s ožiaril %s hrá?ov
+AMX_SUPER_GLOW_TEAM_CASE1 = [AMXX] ADMIN ožiaril %s hrá?ov
+AMX_SUPER_GLOW_PLAYER_CASE2 = [AMXX] ADMIN %s ožiaril %s
+AMX_SUPER_GLOW_PLAYER_CASE1 = [AMXX] ADMIN ožiaril %s
+AMX_SUPER_GLOW_TEAM_LOG = [AMX_Super] GLOW: ^"%s<%s>^" ožiaril ^"%s^" hrá?ov
+AMX_SUPER_GLOW_PLAYER_LOG = [AMX_Super] GLOW: ^"%s<%s>^" ožiaril ^"%s<%s>^"
+AMX_SUPER_GLOW_TEAM_MSG = [AMXX] Hrá?i %s ožiarení
+AMX_SUPER_GLOW_PLAYER_MSG = [AMXX] %s ožiarený
+AMX_SUPER_UNGLOW_TEAM_CASE2 = [AMXX] ADMIN %s zrušil žiatu na %s hrá?och
+AMX_SUPER_UNGLOW_TEAM_CASE1 = [AMXX] ADMIN zrušil žiaru na %s hrá?och
+AMX_SUPER_UNGLOW_PLAYER_CASE2 = [AMXX] ADMIN %s zrušil žiaru z %s
+AMX_SUPER_UNGLOW_PLAYER_CASE1 = [AMXX] ADMIN zrušil žiaru na %s
+AMX_SUPER_UNGLOW_TEAM_LOG = [AMX_Super] UNGLOW: ^"%s<%s>^" Zrušil žiaru na ^"%s^" hrá?och
+AMX_SUPER_UNGLOW_PLAYER_LOG = [AMX_Super] UNGLOW: ^"%s<%s>^" zrušil žiaru z ^"%s<%s>^"
+AMX_SUPER_UNGLOW_TEAM_MSG = [AMXX] Z %s hrá?och odstránená žiara.
+AMX_SUPER_UNGLOW_PLAYER_MSG = [AMXX] Z %s odstránená žiara
+
+AMX_SUPER_TEAM_INVALID = [AMXX] Použitý nesprávny tím! Správne tími sú: T, CT, Auto, Spec
+AMX_SUPER_TEAM_UNLOCKED = [AMXX] Tím %s nie je zamknutý!
+AMX_SUPER_TEAM_UNLOCK = [AMXX] Tím %s odblockovaný
+AMX_SUPER_TEAM_LOCKED = [AMXX] Tím %s je už zamknutý!
+AMX_SUPER_TEAM_LOCK = [AMXX] Tím %s zamknutý
+AMX_SUPER_UNLOCK_TEAMS_LOG = [AMX_Super] TEAMLOCKER: ^"%s<%s>^" odblockoval tím ^"%s^" 
+AMX_SUPER_LOCK_TEAMS_LOG = [AMX_Super] TEAMLOCKER: ^"%s<%s>^" zamkol tím ^"%s^"
+
+AMX_SUPER_TELEPORT_PLAYER_CASE2 = [AMXX] ADMIN %s teleportoval %s
+AMX_SUPER_TELEPORT_PLAYER_CASE1 = [AMXX] ADMIN teleportoval %s
+AMX_SUPER_TELEPORT_PLAYER_MSG = [AMXX] Teleportovaný %s na %d x, %d y, %d z
+AMX_SUPER_TELEPORT_ORIGIN_SAVED = [AMXX] Uložené súradnice %d x, %d y, %d z from %s
+AMX_SUPER_TELEPORT_PLAYER_LOG = [AMX_Super] TELEPORT: ^"%s<%s>^" teleportovaný ^"%s<%s>^" na %d x, %d y, %d z
+
+AMX_SUPER_BOMB_TRANSFER = Bomba preložená na ^"%s^"^, pretože ^"%s^" je AFK
+
+AMX_SUPER_SHUTDOWN_MESSAGE = Notice: Server sa reštartuje. Ak vás nenapojí automaticky, napojte sa prosím.
+AMX_SUPER_SHUTDOWN_MESSAGE_LOG = [AMX_Super] SHUTDOWN: ^"%s<%s>^" reštartol server
+
+AMX_SUPER_DEADCHAT_MESSAGE = [AMXX] Ste m?tvy, môžete rozpráva? s ostatnými cez hlasovú komunikáciu.
+
+AMX_SUPER_SOUNDFIX = [AMXX] Echo (ozveny) odstránené.
+AMX_SUPER_SOUNDFIX_DISABLED = [AMXX] Manuálne opravovanie zvuku je zakázané.
+
+AMX_SUPER_TRANSFER_PLAYER = [AMXX] %s prenesený do tímu %s
+AMX_SUPER_TRANSFER_PLAYER_TEAM = [AMXX] Boli ste premiestnený do %s tímu
+AMX_SUPER_TRANSFER_PLAYER_ERROR_CASE1 = [AMXX] Nemôžete vymeni? hrá?ov z rovnakého tímu!
+AMX_SUPER_TRANSFER_PLAYER_ERROR_CASE2 = [AMXX] Nemôžete vymeni? hrá?ov, ktorí nie sú v žiadnom tíme!
+AMX_SUPER_TRANSFER_SWAP_PLAYERS_SUCCESS = [AMXX] %s vymenený s %s
+AMX_SUPER_TRANSFER_SWAP_PLAYERS_MESSAGE1 = [AMXX] Boli ste vymenený s %s
+AMX_SUPER_TRANSFER_SWAP_PLAYERS_MESSAGE2 = [AMXX] Boli ste vymenený s %s
+AMX_SUPER_TRANSFER_SWAP_TEAM_SUCCESS = [AMXX] Úspešne vymenené tímy!
+AMX_SUPER_TRANSFER_SWAP_TEAM_LOG = [AMX_Super] TEAMTRANSFER: ^"%s<%s>^" vymenil tími
+AMX_SUPER_TRANSFER_SWAP_PLAYERS_LOG = [AMX_Super] TEAMTRANSFER: ^"%s<%s>^" vymenil ^"%s^" s ^"%s^"
+AMX_SUPER_TRANSFER_PLAYER_LOG = [AMX_Super] TEAMTRANSFER: ^"%s<%s>^" preniesol ^"%s^" do ^"%s^" tímu
+
+AMX_SUPER_AMMO_PLAYER_CASE1 = [AMXX] ADMIN nastavil neobmedzené náboje pre %s na ^"%d^" 
+AMX_SUPER_AMMO_PLAYER_CASE2 = [AMXX] ADMIN %s nastavil neobmedzené náboje pre %s na ^"%d^" 
+AMX_SUPER_AMMO_PLAYER_MSG = [AMXX] ADMIN nastavil neobmedzené náboje pre %s na ^"%d^" 
+AMX_SUPER_AMMO_PLAYER_LOG = [AMX_Super] AMMO: ADMIN ^"%s<%s>^" nastavil neobmedzené náboje pre ^"%s^" na ^"%d^" 
+AMX_SUPER_AMMO_TEAM_CASE1 = [AMXX] ADMIN nastavil neobmedzené náboje pre všetkých %s na ^"%d^" 
+AMX_SUPER_AMMO_TEAM_CASE2 = [AMXX] ADMIN %s nastavil neobmedzené náboje pre všetkých %s na ^"%d^" 
+AMX_SUPER_AMMO_TEAM_MSG = [AMXX] ADMIN nastavil neobmedzené náboje pre všetkých %s na ^"%d^" 
+AMX_SUPER_AMMO_TEAM_LOG = [AMX_Super] AMMO: ADMIN ^"%s<%s>^" nastavil neobmedzené náboje pre všetkých ^"%s^" na ^"%d^" 
+
+AMX_SUPER_EXTEND_CANNOT_EXTEND = [AMXX] Nemôžete pred?ži? mapu o zápornú hodnotu.
+AMX_SUPER_EXTEND_SUCCESS = [AMXX] %s pred?žil mapu o %i minút
+AMX_SUPER_EXTEND_EXTENDTIME = [AMXX] Žiadna mapa nemôže by? pred?žená o %i minút.
+AMX_SUPER_EXTEND_EXTENDMAX = [AMXX] Nikto nemôže pred?ži? mapu %i krát.
+AMX_SUPER_EXTEND_BAD_NUMBER = [AMXX] Mapy, ktoré nie sú na zozname nemôžu by? pred?žené.
+AMX_SUPER_EXTEND_NOMAPCYCLE = [AMXX] Mapy, ktoré nie sú na zozname nemôžu by? pred?žené.
+
+AMX_SUPER_SPAWN_PROTECTION_BADTIME = [AMXX] Ochranu na rodisku môžete nastavi? len medzi 1 - 10 sekundami
+AMX_SUPER_SPAWN_PROTECTION_TIME_SET = [AMXX] Nastavili ste ochranu na rodisku na %d sekúnd
+AMX_SUPER_SPAWN_PROTECTION_BADSHELL = [AMXX] Žiaru hrúbky nábojnice musíte nastavi? medzi 1 a 100
+AMX_SUPER_SPAWN_PROTECTION_SHELL_SET = [AMXX] Žiaru hrúbky nábojnice ste nastavili na %d
+AMX_SUPER_SPAWN_PROTECTION_GLOW_ON = [AMXX] Zapli ste žiaru (ON)
+AMX_SUPER_SPAWN_PROTECTION_GLOW_OFF = [AMXX] Vypli ste žiaru (OFF)
+AMX_SUPER_SPAWN_PROTECTION_MESSAGE = [AMXX] Ochrana na rodiku je nastavená na %d sekúnd
+
+AMX_SUPER_VOCOM_NO_ACCESS = [ADMIN VOCOM]: Nemáte práva na tento príkaz.
+AMX_SUPER_VOCOM_SPEAKING1 = [ADMIN VOCOM]: %s sa rozpráva s ostatními adminmi.
+AMX_SUPER_VOCOM_SPEAKING2 = [ADMIN VOCOM]: Hovorís ku adminom.
+
+AMX_SUPER_DRUG_TEAM_CASE2 = [AMXX] ADMIN, %s, nadrogoval %s.
+AMX_SUPER_DRUG_TEAM_CASE1 = [AMXX] ADMIN nadrogoval %s.
+AMX_SUPER_DRUG_PLAYER_CASE2 = [AMXX] ADMIN , %s, nadrogoval %s.
+AMX_SUPER_DRUG_PLAYER_CASE1 = [AMXX] ADMIN nadrogoval %s.
+AMX_SUPER_DRUG_TEAM_LOG = [AMX_Super] %s ( %s ) nadrogoval %s.
+AMX_SUPER_DRUG_PLAYER_LOG = [AMX_Super] %s ( %s ) nadrogoval %s ( %s ).
+AMX_SUPER_DRUG_TEAM_MSG = [AMXX] Tím %s androgovaný.
+AMX_SUPER_DRUG_PLAYER_MSG = [AMXX] ?alší nadrogovaný: %s.
+
+AMX_SUPER_SPEED_TEAM_CASE2 = [AMXX] ADMIN, %s zmenil %s rýchlos? pre %s.
+AMX_SUPER_SPEED_TEAM_CASE1 = [AMXX] ADMIN zmenil %s rýchlos? pre %s.
+AMX_SUPER_SPEED_PLAYER_CASE2 = [AMXX] ADMIN, %s zmenil %s rýchlos? %s.
+AMX_SUPER_SPEED_PLAYER_CASE1 = [AMXX] ADMIN zmenil %s rýchlos? pre %s.
+AMX_SUPER_SPEED_TEAM_LOG = [AMX_Super] %s ( %s ) zmenil rýchlos? na %s
+AMX_SUPER_SPEED_PLAYER_LOG = [AMX_Super] %s ( %s ) zmenil rýchlos? na %s ( %s )
+AMX_SUPER_SPEED_TEAM_MSG = [AMXX] Rýchlos? nastavená na %s.
+AMX_SUPER_SPEED_PLAYER_MSG = [AMXX] Rýchlos? nastavená na %s.
+
+AMX_SUPER_GAG_CONNECTED = [AMXX] Hrá? so zapchatou hubou je s5 ( %s ).
+AMX_SUPER_GAG_PLAYER_LOG = [AMX_Super] %s ( %s ) znemožnil %s ( %s ) používa? ( %s ) na %s minút.
+AMX_SUPER_UNGAG_PLAYER_LOG = [AMX_Super] %s ( %s ) uvo?nil ústa %s ( %s ).
+AMX_SUPER_GAG_PLAYER_ERROR = [AMXX] %s nemá zapchaté ústa ergo mu ich nemôžete uvo?ni?.
+AMX_SUPER_UNGAG_CONSOLE = [AMXX] Boli vám uvo?nené ústa
+AMX_SUPER_GAG_CONSOLE = [AMXX] Bola ti zapchatá huba
+
+AMX_SUPER_GLOW_INVALID_COLOR = [AMXX] Táto farba sa nedá použi?. Napíšte amx_glowcolors pre zoznam možných farieb.
+
+AMX_SUPER_BADAIM_KILLED = [AMXX] %s bol zabanovaný za zabitie po?as ovplyvnenia BadAimom.
+AMX_SUPER_BADAIM_CONSOLE = amx_badaim <hrá?> <on/off alebo ?asový údaj:1|0|?as> <Save?: 1|0>: Vypne/Zapne bad aim na hrá?a.
+AMX_SUPER_BADAIM_NO_BADAIM = [AMXX] %s nemá BadAim...aspo? nie od tohto pluginu.
+AMX_SUPER_BADAIM_UNDO = [AMXX] %s's má zase normálny aim...už akýko?vek on má.
+AMX_SUPER_BADAIM_CURRENT = [AMXX] %s už má BadAim.
+AMX_SUPER_BADAIM_WORSE = [AMXX] %s už mal BadAim, ale teraz to má ešte horšie!
+AMX_SUPER_BADAIM_BADTIME = ?as nemôže by? záporný, ak nerozprávate o imaginárnom ?ase.
+AMX_SUPER_BADAIM_MESSAGE1 = [AMXX] %s už má BadAim, ale ten sa teraz automaticky vypne po %d sekundách.
+AMX_SUPER_BADAIM_MESSAGE2 = [AMXX] %s dostal BadAim na %d sekúnd.
+AMX_SUPER_BADAIM_BAN = [AMXX] ?asovaný BadAim nemôže by? uložený. Avšak stále bude vykonávaný.
+AMX_SUPER_BADAIM_NO_BADAIM_MESSAGE = [AMXX] %s už nemá BadAim.
+AMX_SUPER_BADAIM_NO_BADAIM_MESSAGE_CONSOLE = %s už nemá BadAim.
+AMX_SUPER_BADAIM_LOG = [AMX_Super] %s (%s) %s BadAim na %s.
+
+[fr]
+AMX_SUPER_TEAM_IMMUNITY = [AMXX] Impossible de ^"%s^" car le joueur a l immunite.
+AMX_SUPER_NO_PLAYERS = [AMXX] Pas de joueur dans cette equipe!
+AMX_SUPER_AMOUNT_GREATER = [AMXX] La somme a donner doit etre superieur a 0!
+
+AMX_SUPER_HEAL_TEAM_CASE2 = [AMXX] ADMIN %s donne %d HP aux %s
+AMX_SUPER_HEAL_TEAM_CASE1 = [AMXX] ADMIN donne %d HP aux %s
+AMX_SUPER_HEAL_PLAYER_CASE2 = [AMXX] ADMIN %s donne %d HP a %s
+AMX_SUPER_HEAL_PLAYER_CASE1 = [AMXX] ADMIN donne %d HP a %s
+AMX_SUPER_HEAL_TEAM_LOG = [AMX_Super] HEAL: ^"%s<%s>^" donne %d HP aux ^"%s^"
+AMX_SUPER_HEAL_PLAYER_LOG = [AMX_Super] HEAL: ^"%s<%s>^" donne %d HP a ^"%s<%s>^" 
+AMX_SUPER_HEAL_TEAM_MSG = [AMXX] donne %d HP aux %s
+AMX_SUPER_HEAL_PLAYER_MSG = [AMXX] donne %d HP a %s
+
+AMX_SUPER_ARMOR_TEAM_CASE2 = [AMXX] ADMIN %s donne %d armure aux %s
+AMX_SUPER_ARMOR_TEAM_CASE1 = [AMXX] ADMIN donne %d armure aux %s
+AMX_SUPER_ARMOR_PLAYER_CASE2 = [AMXX] ADMIN %s donne %d armure a %s
+AMX_SUPER_ARMOR_PLAYER_CASE1 = [AMXX] ADMIN donne %d armure a %s
+AMX_SUPER_ARMOR_TEAM_LOG = [AMX_Super] ARMURE: ^"%s<%s>^" donne %d armure aux ^"%s^"
+AMX_SUPER_ARMOR_PLAYER_LOG = [AMX_Super] ARMURE: ^"%s<%s>^" donne %d armure ^"%s<%s>^"
+AMX_SUPER_ARMOR_TEAM_MSG = [AMXX] Donne %d armure aux %s
+AMX_SUPER_ARMOR_PLAYER_MSG = [AMXX] Donne %d armure a %s
+
+AMX_SUPER_STACK_PLAYER_CASE2 = [AMXX] ADMIN %s empile tous les joueurs sur %s
+AMX_SUPER_STACK_PLAYER_CASE1 = [AMXX] ADMIN empile tous les joueurs sur %s
+AMX_SUPER_STACK_PLAYER_LOG = [AMX_Super] STACK: ^"%s<%s>^" empile tous les jours sur ^"%s<%s>^"
+AMX_SUPER_STACK_PLAYER_MSG = [AMXX] Empile tous les joueurs sur %s
+
+AMX_SUPER_ALLTALK_STATUS = [AMXX] sv_alltalk est ^"%d^"
+AMX_SUPER_ALLTALK_SET_CASE2 = [AMXX] ADMIN %s met sv_alltalk sur ^"%s^"
+AMX_SUPER_ALLTALK_SET_CASE1 = [AMXX] ADMIN met sv_alltalk sur ^"%s^"
+AMX_SUPER_ALLTALK_LOG = [AMX_Super] ALLTALK: ^"%s<%s>^" met sv_alltalk sur ^"%s^"
+AMX_SUPER_ALLTALK_MSG = [AMXX] Alltalk est regler a ^"%s^"
+
+AMX_SUPER_GRAVITY_STATUS = [AMXX] sv_gravity est de ^"%d^"
+AMX_SUPER_GRAVITY_SET_CASE2 = [AMXX] ADMIN %s met la gravite a ^"%s^"
+AMX_SUPER_GRAVITY_SET_CASE1 = [AMXX] ADMIN met la gravite a ^"%s^"
+AMX_SUPER_GRAVITY_LOG = [AMX_Super] GRAVITé: ^"%s<%s>^" met la gravite a ^"%s^"
+AMX_SUPER_GRAVITY_MSG = [AMXX] Gravite et mise a ^"%s^"
+AMX_SUPER_GRAVITY_CHECK = [AMXX] La gravite et de %i
+
+AMX_SUPER_BURY_TEAM_CASE2 = [AMXX] ADMIN %s a enterre les %s
+AMX_SUPER_BURY_TEAM_CASE1 = [AMXX] ADMIN a enterre les %s
+AMX_SUPER_BURY_PLAYER_CASE2 = [AMXX] ADMIN %s a enterre %s
+AMX_SUPER_BURY_PLAYER_CASE1 = [AMXX] ADMIN a enterre %s
+AMX_SUPER_UNBURY_TEAM_CASE2 = [AMXX] ADMIN %s a deterre les %s
+AMX_SUPER_UNBURY_TEAM_CASE1 = [AMXX] ADMIN a deterre les %s
+AMX_SUPER_UNBURY_PLAYER_CASE2 = [AMXX] ADMIN %s a deterre %s
+AMX_SUPER_UNBURY_PLAYER_CASE1 = [AMXX] ADMIN a deterre %s
+AMX_SUPER_UNBURY_TEAM_LOG = [AMX_Super] UNBURY: ^"%s<%s>^" a deterre les ^"%s^"
+AMX_SUPER_UNBURY_PLAYER_LOG = [AMX_Super] UNBURY: ^"%s<%s>^" a deterre ^"%s<%s>^"
+AMX_SUPER_BURY_PLAYER_LOG = [AMX_Super] BURY: ^"%s<%s>^" a enterre ^"%s<%s>^"
+AMX_SUPER_BURY_TEAM_LOG = [AMX_Super] BURY: ^"%s<%s>^" a enterre les ^"%s^"
+AMX_SUPER_BURY_MSG = [AMXX] %s a etait enterre
+AMX_SUPER_UNBURY_MSG = [AMXX] %s a etait deterre
+
+AMX_SUPER_DISARM_TEAM_CASE2 = [AMXX] ADMIN %s a desarme les %s
+AMX_SUPER_DISARM_TEAM_CASE1 = [AMXX] ADMIN a desarme les %s
+AMX_SUPER_DISARM_PLAYER_CASE2 = [AMXX] ADMIN %s a desarme %s
+AMX_SUPER_DISARM_PLAYER_CASE1 = [AMXX] ADMIN a desarme %s
+AMX_SUPER_DISARM_TEAM_LOG = [AMX_Super] DISARM: ^"%s<%s>^" a desarme les ^"%s^"
+AMX_SUPER_DISARM_PLAYER_LOG = [AMX_Super] DISARM: ^"%s<%s>^" a desarme ^"%s<%s>^"
+AMX_SUPER_DISARM_MSG = [AMXX] %s a etait desarme
+
+AMX_SUPER_SLAY2_TEAM_CASE2 = [AMXX] ADMIN %s tue les %s
+AMX_SUPER_SLAY2_TEAM_CASE1 = [AMXX] ADMIN tue les %s
+AMX_SUPER_SLAY2_PLAYER_CASE2 = [AMXX] ADMIN %s tue %s
+AMX_SUPER_SLAY2_PLAYER_CASE1 = [AMXX] ADMIN tue %s
+AMX_SUPER_SLAY2_TEAM_LOG = [AMX_Super] SLAY2: ^"%s<%s>^" tue  les ^"%s^" 
+AMX_SUPER_SLAY2_PLAYER_LOG =  [AMX_Super] SLAY2: ^"%s<%s>^" tue ^"%s<%s>^"
+AMX_SUPER_SLAY2_TEAM_MSG = [AMXX] tue les %s
+AMX_SUPER_SLAY2_PLAYER_MSG = [AMXX] tue %s
+
+
+AMX_SUPER_FIRE_PLAYER_CASE2 = [AMXX] ADMIN %s met %s en feu
+AMX_SUPER_FIRE_PLAYER_CASE1 = [AMXX] ADMIN met %s en feu
+AMX_SUPER_FIRE_TEAM_LOG = [AMX_Super] FIRE: ^"%s<%s>^" met feu aux ^"%s^"
+AMX_SUPER_FIRE_PLAYER_LOG = [AMX_Super] FIRE: ^"%s<%s>^" met feu a ^"%s<%s>^"
+AMX_SUPER_FIRE_TEAM_MSG = [AMXX] met les %s en feu
+AMX_SUPER_FIRE_PLAYER_MSG = [AMXX] met %s en feu
+AMX_SUPER_FIRE_SPREAD = * [AMXX] OH! NON! %s as mis %s en feu!
+
+AMX_SUPER_ROCKET_TEAM_CASE2 = [AMXX] ADMIN %s transforme les %s en rocket
+AMX_SUPER_ROCKET_TEAM_CASE1 = [AMXX] ADMIN transforme les %s en rocket
+AMX_SUPER_ROCKET_PLAYER_CASE2 = [AMXX] ADMIN %s transforme %s en rocket
+AMX_SUPER_ROCKET_PLAYER_CASE1 = [AMXX] ADMIN transforme %s en rocket
+AMX_SUPER_ROCKET_TEAM_LOG = [AMX_Super] ROCKET: ^"%s<%s>^" transforme les ^"%s^" en rocket
+AMX_SUPER_ROCKET_PLAYER_LOG = [AMX_Super] ROCKET: ^"%s<%s>^" transforme ^"%s<%s>^" en rocket
+AMX_SUPER_ROCKET_TEAM_MSG = [AMXX] Transforme les %s en rocket
+AMX_SUPER_ROCKET_PLAYER_MSG = [AMXX] Transforme %s en rocket
+
+AMX_SUPER_UBERSLAP_TEAM_CASE2 = [AMXX] ADMIN %s baffe les %s
+AMX_SUPER_UBERSLAP_TEAM_CASE1 = [AMXX] ADMIN baffe les %s
+AMX_SUPER_UBERSLAP_PLAYER_CASE2 = [AMXX] ADMIN %s baffe %s
+AMX_SUPER_UBERSLAP_PLAYER_CASE1 = [AMXX] ADMIN baffe %s
+AMX_SUPER_UBERSLAP_TEAM_LOG = [AMX_Super] UBERSLAP: ^"%s<%s>^" baffe les ^"%s^"
+AMX_SUPER_UBERSLAP_PLAYER_LOG = [AMX_Super] UBERSLAP: ^"%s<%s>^" baffe ^"%s<%s>^"
+AMX_SUPER_UBERSLAP_TEAM_MSG = [AMXX] baffe les %s
+AMX_SUPER_UBERSLAP_PLAYER_MSG = [AMXX] baffe %s
+
+AMX_SUPER_EXEC_ALL_CASE2 = [AMXX] ADMIN %s utilise la commande ^"%s^" sur tout les joueurs
+AMX_SUPER_EXEC_ALL_CASE1 = [AMXX] ADMIN utilise la commande ^"%s^" sur tout les joueurs
+AMX_SUPER_EXEC_TEAM_CASE2 = [AMXX] ADMIN %s utilise  la commande ^"%s^" sur tout les %s
+AMX_SUPER_EXEC_TEAM_CASE1 = [AMXX] ADMIN utilise la commande ^"%s^" sur tout les %s
+AMX_SUPER_EXEC_PLAYER_CASE2 = [AMXX] ADMIN %s utilise la commande ^"%s^" sur %s!
+AMX_SUPER_EXEC_PLAYER_CASE1 = [AMXX] ADMIN utilise la commande ^"%s^" sur %s!
+AMX_SUPER_EXEC_ALL_LOG = [AMX_Super] EXEC: ^"%s<%s>^" execute ^"%s^" sur tout les joueurs
+AMX_SUPER_EXEC_TEAM_LOG = [AMX_Super] EXEC: ^"%s<%s>^" execute ^"%s^" sur tout les %s
+AMX_SUPER_EXEC_PLAYER_LOG = [AMX_Super] EXEC: ^"%s<%s>^" execute ^"%s^" sur ^"%s<%s>^"
+
+AMX_SUPER_PASSWORD_SET_CASE2 = [AMXX] ADMIN %s a mis un mot de passe sur le serveur
+AMX_SUPER_PASSWORD_SET_CASE1 = [AMXX] ADMIN a mis un mot de passe sur le serveur
+AMX_SUPER_PASSWORD_REMOVE_CASE2 = [AMXX] ADMIN %s a enlever le mot de passe du serveur
+AMX_SUPER_PASSWORD_REMOVE_CASE1 = [AMXX] ADMIN a enlever le mot de passe du serveur
+AMX_SUPER_PASSWORD_SET_LOG = [AMX_Super] PASSWORD: ^"%s<%s>^" met le password a ^"%s^"
+AMX_SUPER_PASSWORD_REMOVE_LOG = [AMX_Super] PASSWORD: ^"%s<%s>^" enleve le mot de passe du serveur
+
+AMX_SUPER_REVIVE_TEAM_CASE2 = [AMXX] ADMIN %s fait revivre les %s
+AMX_SUPER_REVIVE_TEAM_CASE1 = [AMXX] ADMIN fait revivre les %s
+AMX_SUPER_REVIVE_PLAYER_CASE2 = [AMXX] ADMIN %s fait revivre %s
+AMX_SUPER_REVIVE_PLAYER_CASE1 = [AMXX] ADMIN fait revivre %s
+AMX_SUPER_REVIVE_TEAM_LOG = [AMX_Super] REVIVE: ^"%s<%s>^" redonne vie aux ^"%s^"
+AMX_SUPER_REVIVE_PLAYER_LOG = [AMX_Super] REVIVE: ^"%s<%s>^" redonne vie a ^"%s<%s>^"
+AMX_SUPER_REVIVE_TEAM_MSG = [AMXX] Redonne vie aux %s
+AMX_SUPER_REVIVE_PLAYER_MSG = [AMXX] Redonne vie a %s
+AMX_SUPER_REVIVE_TEAM_HUD = Les %s revivent!
+AMX_SUPER_REVIVE_PLAYER_HUD = %s est de nouveau en vie!
+
+AMX_SUPER_QUIT_TEAM_CASE2 = [AMXX] ADMIN %s deconnecte les %s
+AMX_SUPER_QUIT_TEAM_CASE1 = [AMXX] ADMIN deconnecte les %s
+AMX_SUPER_QUIT_PLAYER_CASE2 = [AMXX] ADMIN %s deconnecte %s
+AMX_SUPER_QUIT_PLAYER_CASE1 = [AMXX] ADMIN deconnecte %s
+AMX_SUPER_QUIT_TEAM_LOG = [AMX_Super] QUIT: ^"%s<%s>^" deconnecte les ^"%s^" 
+AMX_SUPER_QUIT_PLAYER_LOG = [AMX_Super] QUIT: ^"%s<%s>^" deconnecte ^"%s<%s>^"
+ 
+AMX_SUPER_GAG_PLAYER_CASE2 = [AMXX] ADMIN %s mute %s pour %0.0f minutes ( %s )
+AMX_SUPER_GAG_PLAYER_CASE1 = [AMXX] ADMIN mute %s pour %0.0f minutes ( %s )
+AMX_SUPER_UNGAG_PLAYER_CASE2 = [AMXX] ADMIN %s rend la parole a %s
+AMX_SUPER_UNGAG_PLAYER_CASE1 = [AMXX] ADMIN rend la parole a %s
+AMX_SUPER_GAG_PLAYER_DISCONNECT = [AMXX] Le joueur muetter c est deconnecte: ( %s <%s> )
+AMX_SUPER_PLAYER_GAGGED = * Tu as etait rendu muet!
+AMX_SUPER_PLAYER_NAMELOCK = * Les muets ne peuvent pas changer de pseudo
+AMX_SUPER_NOT_GAGGED = [AMXX] %s n'est pas mute et ne peut donc pas recuperer la parole!.
+AMX_SUPER_GAG_END = [AMXX] %s A retrouver la voix
+AMX_SUPER_GAG_CONNECTED = [AMXX] Le player mute vient de se connecter ( %s ).
+
+AMX_SUPER_WEAPON_TEAM_CASE2 = [AMXX] ADMIN %s donne une arme aux %s
+AMX_SUPER_WEAPON_TEAM_CASE1 = [AMXX] ADMIN donne une arme aux %s
+AMX_SUPER_WEAPON_PLAYER_CASE2 = [AMXX] ADMIN %s donne une arme a %s
+AMX_SUPER_WEAPON_PLAYER_CASE1 = [AMXX] ADMIN donne une arme a %s
+AMX_SUPER_WEAPON_TEAM_LOG = [AMX_Super] WEAPON: ^"%s<%s>^" donne l arme  ^"%d^" aux ^"%s^"
+AMX_SUPER_WEAPON_PLAYER_LOG = [AMX_Super] WEAPON: ^"%s<%s>^" donne l arme ^"%d^" a ^"%s<%s>^"
+AMX_SUPER_WEAPON_TEAM_MSG = [AMXX] Donne l arme %d aux %s
+AMX_SUPER_WEAPON_PLAYER_MSG = [AMXX] Donne l arme %d a %s
+
+AMX_SUPER_NOCLIP_TEAM_CASE2 = [AMXX] ADMIN %s met le noclip ^"%d^" sur les %s
+AMX_SUPER_NOCLIP_TEAM_CASE1 = [AMXX] ADMIN met le noclip ^"%d^" sur les %s
+AMX_SUPER_NOCLIP_PLAYER_CASE2 = [AMXX] ADMIN %s met le noclip ^"%d^" sur %s
+AMX_SUPER_NOCLIP_PLAYER_CASE1 = [AMXX] ADMIN met le noclip ^"%d^" sur %s
+AMX_SUPER_NOCLIP_TEAM_LOG = [AMX_Super] NOCLIP: ^"%s<%s>^" met le noclip ^"%d^" sur les ^"%s^"
+AMX_SUPER_NOCLIP_PLAYER_LOG = [AMX_Super] NOCLIP: ^"%s<%s>^" met le noclip ^"%d^" sur ^"%s<%s>^"
+AMX_SUPER_NOCLIP_TEAM_MSG = [AMXX] Met le noclip ^"%d^" sur les %s
+AMX_SUPER_NOCLIP_PLAYER_MSG = [AMXX] Met le noclip ^"%d^" sur %s
+
+AMX_SUPER_FLASH_TEAM_CASE2 = [AMXX] ADMIN %s flash les %s
+AMX_SUPER_FLASH_TEAM_CASE1 = [AMXX] ADMIN flash les %s
+AMX_SUPER_FLASH_PLAYER_CASE2 = [AMXX] ADMIN %s flash %s
+AMX_SUPER_FLASH_PLAYER_CASE1 = [AMXX] ADMIN flash %s
+AMX_SUPER_FLASH_TEAM_LOG = [AMX_Super] FLASH: ^"%s<%s>^" flash les ^"%s^"
+AMX_SUPER_FLASH_PLAYER_LOG = [AMX_Super] FLASH: ^"%s<%s>^" flash ^"%s<%s>^"
+AMX_SUPER_FLASH_TEAM_MSG = [AMXX] Flash les %s
+AMX_SUPER_FLASH_PLAYER_MSG = [AMXX] Flash %s
+
+AMX_SUPER_GODMODE_TEAM_CASE2 = [AMXX] ADMIN %s a rendu invincible ^"%d^" tout les %s
+AMX_SUPER_GODMODE_TEAM_CASE1 = [AMXX] ADMIN a rendu invincible ^"%d^" tout les %s
+AMX_SUPER_GODMODE_PLAYER_CASE2 = [AMXX] ADMIN %s mettre l invincible ^"%d^" sur %s
+AMX_SUPER_GODMODE_PLAYER_CASE1 = [AMXX] ADMIN met l invincibilite ^"%d^" sur %s
+AMX_SUPER_GODMODE_TEAM_LOG = [AMX_Super] GODMODE: ^"%s<%s>^" invincible mise a ^"%d^" sur ^"%s^"
+AMX_SUPER_GODMODE_PLAYER_LOG = [AMX_Super] GODMODE: ^"%s<%s>^" invincibilte mise a ^"%d^" sur ^"%s<%s>^"
+AMX_SUPER_GODMODE_TEAM_MSG = [AMXX] met invinciblite a ^"%d^" les %s
+AMX_SUPER_GODMODE_PLAYER_MSG = [AMXX] mode invincible a ^"%d^" pour %s
+
+
+AMX_SUPER_GIVEMONEY_PLAYER_CASE2 = [AMXX] ADMIN %s donne $%i a %s
+AMX_SUPER_GIVEMONEY_PLAYER_CASE1 = [AMXX] ADMIN donne $%i a %s
+AMX_SUPER_GIVEMONEY_PLAYER_MSG = [AMXX] Donne $%i a %s
+AMX_SUPER_GIVEMONEY_PLAYER_LOG = [AMX_Super] GIVE MONEY: ^"%s<%s>^" donne $%i a ^"%s<%s>^"
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_CASE2 = [AMXX] ADMIN %s a pris l argent de tout le monde
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_CASE1 = [AMXX] ADMIN a pris l argent de tout le monde
+AMX_SUPER_TAKEMONEY_PLAYER_CASE2 = [AMXX] ADMIN %s a pris $%i a %s
+AMX_SUPER_TAKEMONEY_PLAYER_CASE1 = [AMXX] ADMIN a pris $%i a %s
+AMX_SUPER_TAKEMONEY_PLAYER_LOG = [AMX_Super] TAKE MONEY: ^"%s<%s>^" a pris $%i a ^"%s<%s>^"
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_LOG = [AMX_Super] TAKE MONEY: ^"%s<%s>^" a pris l argent de ^"%s<%s>^"
+AMX_SUPER_TAKEMONEY_PLAYER_MSG = [AMXX] a pris $%i a %s
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_MSG = [AMXX] A pris l argent de tout le monde
+
+AMX_SUPER_GLOW_TEAM_CASE2 = [AMXX] ADMIN %s fait briller les %s
+AMX_SUPER_GLOW_TEAM_CASE1 = [AMXX] ADMIN fait briller les %s
+AMX_SUPER_GLOW_PLAYER_CASE2 = [AMXX] ADMIN %s fait briller %s
+AMX_SUPER_GLOW_PLAYER_CASE1 = [AMXX] ADMIN fait briller %s
+AMX_SUPER_GLOW_TEAM_LOG = [AMX_Super] GLOW: ^"%s<%s>^" mettre fait briller les ^"%s^"
+AMX_SUPER_GLOW_PLAYER_LOG = [AMX_Super] GLOW: ^"%s<%s>^" fait briller ^"%s<%s>^"
+AMX_SUPER_GLOW_TEAM_MSG = [AMXX] fait briller les %s
+AMX_SUPER_GLOW_PLAYER_MSG = [AMXX] fait briller %s
+AMX_SUPER_UNGLOW_TEAM_CASE2 = [AMXX] ADMIN %s arrete de faire briller les %s
+AMX_SUPER_UNGLOW_TEAM_CASE1 = [AMXX] ADMIN arrete de faire briller les %s
+AMX_SUPER_UNGLOW_PLAYER_CASE2 = [AMXX] ADMIN %s arrete de faire briller %s
+AMX_SUPER_UNGLOW_PLAYER_CASE1 = [AMXX] ADMIN arrete de faire briller %s
+AMX_SUPER_UNGLOW_TEAM_LOG = [AMX_Super] UNGLOW: ^"%s<%s>^" arrete de faire briller les ^"%s^"
+AMX_SUPER_UNGLOW_PLAYER_LOG = [AMX_Super] UNGLOW: ^"%s<%s>^" arrete de faire briller ^"%s<%s>^"
+AMX_SUPER_UNGLOW_TEAM_MSG = [AMXX] arrete de faire briller les %s
+AMX_SUPER_UNGLOW_PLAYER_MSG = [AMXX] arrete de faire briller %s
+
+AMX_SUPER_TEAM_INVALID = [AMXX] Choix d equipe invalide! LE choix est: T, CT, Auto, Spec
+AMX_SUPER_TEAM_UNLOCKED = [AMXX] l equipe %s n'est pas verrouille!
+AMX_SUPER_TEAM_UNLOCK = [AMXX] Deverrouiller l equipe %s 
+AMX_SUPER_TEAM_LOCKED = [AMXX] L equipe %s est deja verrouille!
+AMX_SUPER_TEAM_LOCK = [AMXX] Verrouiller l equipe %s
+AMX_SUPER_UNLOCK_TEAMS_LOG = [AMX_Super] TEAMLOCKER: ^"%s<%s>^" deverouiller l equipe ^"%s^"
+AMX_SUPER_LOCK_TEAMS_LOG = [AMX_Super] TEAMLOCKER: ^"%s<%s>^" verrouiller l equipe^"%s^"
+
+AMX_SUPER_TELEPORT_PLAYER_CASE2 = [AMXX] ADMIN %s teleporte %s
+AMX_SUPER_TELEPORT_PLAYER_CASE1 = [AMXX] ADMIN teleporte %s
+AMX_SUPER_TELEPORT_PLAYER_MSG = [AMXX] Teleporte %s de %d x, %d y, %d z
+AMX_SUPER_TELEPORT_ORIGIN_SAVED = [AMXX] sauvegarder orignal %d x, %d y, %d z de %s
+AMX_SUPER_TELEPORT_PLAYER_LOG = [AMX_Super] TELEPORT: ^"%s<%s>^" teleporte ^"%s<%s>^" de %d x, %d y, %d z
+
+AMX_SUPER_BOMB_TRANSFER = Bombe transferer a ^"%s^"^ncar ^"%s^" est AFK
+
+AMX_SUPER_SHUTDOWN_MESSAGE = Notice: Serveur redemarre. Si tu n es pas reconnecter automatiquement, tape retry dans la console.
+AMX_SUPER_SHUTDOWN_MESSAGE_LOG = [AMX_Super] SHUTDOWN: ^"%s<%s>^" stoppe le serveur
+
+AMX_SUPER_DEADCHAT_MESSAGE = [AMXX] Tu es mort, tu peux maintenant parler avec l equipe adverse.
+
+AMX_SUPER_SOUNDFIX = [AMXX] Ton son ne ressonera plus maintenant.
+AMX_SUPER_SOUNDFIX_DISABLED = [AMXX] Reglage manuel du son desactive.
+
+AMX_SUPER_TRANSFER_PLAYER = [AMXX] transfere %s en %s
+AMX_SUPER_TRANSFER_PLAYER_TEAM = [AMXX] Tu a etait transferer en %s
+AMX_SUPER_TRANSFER_PLAYER_ERROR_CASE1 = [AMXX] Tu ne peux pas transferer des joueurs de la meme equipe!
+AMX_SUPER_TRANSFER_PLAYER_ERROR_CASE2 = [AMXX] Tu ne peux pas transferer des joueurs qui ne sont pas dans une equipe!
+AMX_SUPER_TRANSFER_SWAP_PLAYERS_SUCCESS = [AMXX] Transfere %s avec %s
+AMX_SUPER_TRANSFER_SWAP_PLAYERS_MESSAGE1 = [AMXX] Tu as etait echanger avec %s
+AMX_SUPER_TRANSFER_SWAP_PLAYERS_MESSAGE2 = [AMXX] Tu as etait echanger avec %s
+AMX_SUPER_TRANSFER_SWAP_TEAM_SUCCESS = [AMXX] Tu as echanger les equipes!
+AMX_SUPER_TRANSFER_SWAP_TEAM_LOG = [AMX_Super] TEAMTRANSFER: ^"%s<%s>^" echange les equipe
+AMX_SUPER_TRANSFER_SWAP_PLAYERS_LOG = [AMX_Super] TEAMTRANSFER: ^"%s<%s>^" echange ^"%s^" avec ^"%s^"
+AMX_SUPER_TRANSFER_PLAYER_LOG = [AMX_Super] TEAMTRANSFER: ^"%s<%s>^" transfere ^"%s^" en ^"%s^"
+
+AMX_SUPER_AMMO_PLAYER_CASE1 = [AMXX] ADMIN donne des munitions illimitees a %s pour ^"%d^" 
+AMX_SUPER_AMMO_PLAYER_CASE2 = [AMXX] ADMIN %s donne des munitions illimitees a %s pour ^"%d^" 
+AMX_SUPER_AMMO_PLAYER_MSG = [AMXX] ADMIN donne des munitions illimitees a %s pour ^"%d^" 
+AMX_SUPER_AMMO_PLAYER_LOG = [AMX_Super] AMMO: ADMIN ^"%s<%s>^" donne des munitions illimitee a ^"%s^" pour ^"%d^" 
+AMX_SUPER_AMMO_TEAM_CASE1 = [AMXX] ADMIN donne des munitions illimitees aux %s pour ^"%d^" 
+AMX_SUPER_AMMO_TEAM_CASE2 = [AMXX] ADMIN %s donne des munitions illimitees aux %s pour ^"%d^" 
+AMX_SUPER_AMMO_TEAM_MSG = [AMXX] ADMIN donne des munitions illimitees aux %s pour ^"%d^" 
+AMX_SUPER_AMMO_TEAM_LOG = [AMX_Super] AMMO: ADMIN ^"%s<%s>^" donne des munitions illimitees aux ^"%s^" pour ^"%d^" 
+
+AMX_SUPER_EXTEND_CANNOT_EXTEND = [AMXX] Vous ne pouvez pas prolonger la map avec un chiffre negatif.
+AMX_SUPER_EXTEND_SUCCESS = [AMXX] %s a prolonger la map de %i minutes
+AMX_SUPER_EXTEND_EXTENDTIME = [AMXX] Aucune map ne sera prolonger de plus de %i minutes.
+AMX_SUPER_EXTEND_EXTENDMAX = [AMXX] Aucun utilisateur ne prolongera la map plus de %i fois.
+AMX_SUPER_EXTEND_BAD_NUMBER = [AMXX] Les maps qui ne sont pas dans le mapcycle ne peuvent etre prolonger.
+AMX_SUPER_EXTEND_NOMAPCYCLE = [AMXX] Les maps qui ne sont pas dans le mapcycle ne peuvent etre prolonger.
+
+AMX_SUPER_SPAWN_PROTECTION_BADTIME = [AMXX] Tu dois regler la protection de spawn entre 1 and 10 secondes
+AMX_SUPER_SPAWN_PROTECTION_TIME_SET = [AMXX] Tu dois regler la protection de spawn de %d seconde(s)
+AMX_SUPER_SPAWN_PROTECTION_BADSHELL = [AMXX] Tu dois regler la brillance entre 1 est 100
+AMX_SUPER_SPAWN_PROTECTION_SHELL_SET = [AMXX] Tu dois regler la brillance a %d
+AMX_SUPER_SPAWN_PROTECTION_GLOW_ON = [AMXX] Tu as activer le mode briller
+AMX_SUPER_SPAWN_PROTECTION_GLOW_OFF = [AMXX] Tu as desactiver le mode briller
+AMX_SUPER_SPAWN_PROTECTION_MESSAGE = [AMXX] La protection du spawn et activer pendant %d seconde(s)
+
+AMX_SUPER_VOCOM_NO_ACCESS = [ADMIN VOCOM]: Vous n avez pas acces a cette commande.
+AMX_SUPER_VOCOM_SPEAKING1 = [ADMIN VOCOM]: %s parle a tout les admins.
+AMX_SUPER_VOCOM_SPEAKING2 = [ADMIN VOCOM]: Vous parlez aux admins.
+
+AMX_SUPER_DRUG_TEAM_CASE2 = [AMXX] ADMIN, %s, drogue les %s.
+AMX_SUPER_DRUG_TEAM_CASE1 = [AMXX] ADMIN drogue les %s.
+AMX_SUPER_DRUG_PLAYER_CASE2 = [AMXX] ADMIN , %s, drogue %s.
+AMX_SUPER_DRUG_PLAYER_CASE1 = [AMXX] ADMIN drogue %s.
+AMX_SUPER_DRUG_TEAM_LOG = [AMX_Super] %s ( %s ) drogue les %s.
+AMX_SUPER_DRUG_PLAYER_LOG = [AMX_Super] %s ( %s ) drogue %s ( %s ).
+AMX_SUPER_DRUG_TEAM_MSG = [AMXX] drogue les %s.
+AMX_SUPER_DRUG_PLAYER_MSG = [AMXX] drogue %s.
+
+AMX_SUPER_SPEED_TEAM_CASE2 = [AMXX] ADMIN, %s a mis la vitesse des %s a %s.
+AMX_SUPER_SPEED_TEAM_CASE1 = [AMXX] ADMIN a mis la vitesse des %s a %s.
+AMX_SUPER_SPEED_PLAYER_CASE2 = [AMXX] ADMIN, %s a mis la vitesse de %s a %s.
+AMX_SUPER_SPEED_PLAYER_CASE1 = [AMXX] ADMIN a mis la vitesse de  %s a %s.
+AMX_SUPER_SPEED_TEAM_LOG = [AMX_Super] %s ( %s ) met vitesse des %s
+AMX_SUPER_SPEED_PLAYER_LOG = [AMX_Super] %s ( %s ) met la vitesse a %s ( %s )
+AMX_SUPER_SPEED_TEAM_MSG = [AMXX] vitesse mise a %s.
+AMX_SUPER_SPEED_PLAYER_MSG = [AMXX] vitesse mis a %s.
+
+AMX_SUPER_GAG_CONNECTED = [AMXX] joueur muet connecter ( %s ).
+AMX_SUPER_GAG_PLAYER_LOG = [AMX_Super] %s ( %s ) mute %s ( %s ) pour avoir utiliser ( %s ) pendant %s minutes.
+AMX_SUPER_UNGAG_PLAYER_LOG = [AMX_Super] %s ( %s ) rend la parole a %s ( %s ).
+AMX_SUPER_GAG_PLAYER_ERROR = [AMXX] %s n'est pas réduit au silence et ne peut donc pas recuperer sa parole.
+AMX_SUPER_UNGAG_CONSOLE = [AMXX] Tu as recupere la parole
+AMX_SUPER_GAG_CONSOLE = [AMXX] Tu as etait reduit au silence
+
+AMX_SUPER_BADAIM_KILLED = [AMXX] %s a etait banni car il a frag alors qu il avait une mauvaise vision.
+AMX_SUPER_BADAIM_CONSOLE = amx_badaim <player> <On/off ou durer de temp:1|0|time> <Save?: 1|0>: Turn on/off mauvaise viser sur.
+AMX_SUPER_BADAIM_NO_BADAIM = [AMXX] %s n a pas de mauvais viseur...enfin du programme.
+AMX_SUPER_BADAIM_UNDO = [AMXX] %s's viser retour a la normal...enfin du moins.
+AMX_SUPER_BADAIM_CURRENT = [AMXX] %s a deja un mauvais viseur.
+AMX_SUPER_BADAIM_WORSE = [AMXX] %s vise deja mal mais la c est pire!
+AMX_SUPER_BADAIM_BADTIME =  Le temps ne peux pas etre negatif, a moins que tu parles de temps imaginaire.
+AMX_SUPER_BADAIM_MESSAGE1 = [AMXX] %s a deja un mauvais viseur, mais maintenant va s enlever automatiquement dans %d secondes.
+AMX_SUPER_BADAIM_MESSAGE2 = [AMXX] %s a un mauvais viseur pendant %d secondes.
+AMX_SUPER_BADAIM_BAN = [AMXX] Tu ne peux pas sauvegarder un temps pour la visee.  Par contre, la mauvaise visee est toujours active.
+AMX_SUPER_BADAIM_NO_BADAIM_MESSAGE = [AMXX] %s mauvaise visee desactiver.
+AMX_SUPER_BADAIM_NO_BADAIM_MESSAGE_CONSOLE = %s mauvaise visee desactiver.
+AMX_SUPER_BADAIM_LOG = [AMX_Super] %s (%s) %s mauvaise visee activer %s.
+
+AMX_SUPER_GLOW_INVALID_COLOR = [AMXX] Couleur non disponible. Tape amx_glowcolors pour la liste des couleurs valides.
+
+AMX_SUPER_FIRE_TEAM_CASE2 = [AMXX] ADMIN %s met %s en feu
+AMX_SUPER_FIRE_TEAM_CASE1 = [AMXX] ADMIN met %s en feu
+AMX_SUPER_FIRE_TEAM_LOG = [AMX_Super] FIRE: ^"%s<%s>^" met feu a ^"%s^"
+
+AMX_SUPER_GIVEMONEY_TEAM_CASE2 = [AMXX] ADMIN %s donne $%i a tout le monde
+AMX_SUPER_GIVEMONEY_TEAM_CASE1 = [AMXX] ADMIN donne $%i a tout le monde
+AMX_SUPER_GIVEMONEY_TEAM_MSG = [AMXX] Donne $%i aux a tout le monde
+AMX_SUPER_GIVEMONEY_TEAM_LOG = [AMX_Super] GIVE MONEY: ^"%s<%s>^" donne $%i a tout le monde
+
+AMX_SUPER_GLOW_TEAM_OFF_CASE2 = [AMXX] ADMIN %s: Mettre la brillance de off a on sur %s
+AMX_SUPER_GLOW_TEAM_OFF_CASE1 = [AMXX] ADMIN a desactiver la brillance sur %s
+AMX_SUPER_GLOW_PLAYER_OFF_CASE2 = [AMXX] ADMIN %s desactive la brillance sur %s 
+AMX_SUPER_GLOW_PLAYER_OFF_CASE1 = [AMXX] ADMIN desactive la brillance sur %s
+
+
+[pl]
+AMX_SUPER_TEAM_IMMUNITY = [AMXX] Pomijanie ^"%s^", poniewaz gracz ma immunitet.
+AMX_SUPER_NO_PLAYERS = [AMXX] Brak graczy w tej druzynie!
+AMX_SUPER_AMOUNT_GREATER = [AMXX] Podana wartosc musi byc wieksza od zera!
+AMX_SUPER_HEAL_TEAM_CASE2 = [AMXX] ADMIN %s dal %d PZ wszystkim %s
+AMX_SUPER_HEAL_TEAM_CASE1 = [AMXX] ADMIN dal %d PZ wszystkim %s
+AMX_SUPER_HEAL_PLAYER_CASE2 = [AMXX] ADMIN %s dal %d PZ graczowi %s
+AMX_SUPER_HEAL_PLAYER_CASE1 = [AMXX] ADMIN dal %d PZ graczowi %s
+AMX_SUPER_HEAL_TEAM_LOG = [AMX_Super] LECZENIE: ^"%s<%s>^" dal %d PZ wszystkim ^"%s^"
+AMX_SUPER_HEAL_PLAYER_LOG = [AMX_Super] LECZENIE: ^"%s<%s>^" dal %d PZ graczowi ^"%s<%s>^" 
+AMX_SUPER_HEAL_TEAM_MSG = [AMXX] Dales %d PZ wszystkim %s
+AMX_SUPER_HEAL_PLAYER_MSG = [AMXX] Dales %d PZ graczowi %s
+AMX_SUPER_ARMOR_TEAM_CASE2 = [AMXX] ADMIN %s dal %d PP wszystkim %s
+AMX_SUPER_ARMOR_TEAM_CASE1 = [AMXX] ADMIN dal %d PP wszystkim %s
+AMX_SUPER_ARMOR_PLAYER_CASE2 = [AMXX] ADMIN %s dal %d PP graczowi %s
+AMX_SUPER_ARMOR_PLAYER_CASE1 = [AMXX] ADMIN dal %d PP graczowi %s
+AMX_SUPER_ARMOR_TEAM_LOG = [AMX_Super] PANCERZ: ^"%s<%s>^" dal %d PP wszystkim ^"%s^"
+AMX_SUPER_ARMOR_PLAYER_LOG = [AMX_Super] PANCERZ: ^"%s<%s>^" dal %d PP graczowi ^"%s<%s>^"
+AMX_SUPER_ARMOR_TEAM_MSG = [AMXX] Dales %d PP wszystkim %s
+AMX_SUPER_ARMOR_PLAYER_MSG = [AMXX] Dales %d PP graczowi %s
+AMX_SUPER_STACK_PLAYER_CASE2 = [AMXX] ADMIN %s ustawil wszystkich na %s
+AMX_SUPER_STACK_PLAYER_CASE1 = [AMXX] ADMIN ustawil wszystkich na %s
+AMX_SUPER_STACK_PLAYER_LOG = [AMX_Super] STOS: ^"%s<%s>^" ustawil wszystkich na ^"%s<%s>^"
+AMX_SUPER_STACK_PLAYER_MSG = [AMXX] Ustawiles wszystkich na %s
+AMX_SUPER_ALLTALK_STATUS = [AMXX] sv_alltalk jest ^"%d^"
+AMX_SUPER_ALLTALK_SET_CASE2 = [AMXX] ADMIN %s ustawil sv_alltalk na ^"%s^"
+AMX_SUPER_ALLTALK_SET_CASE1 = [AMXX] ADMIN ustawil sv_alltalk na ^"%s^"
+AMX_SUPER_ALLTALK_LOG = [AMX_Super] ALLTALK: ^"%s<%s>^" ustawil sv_alltalk na ^"%s^"
+AMX_SUPER_ALLTALK_MSG = [AMXX] Alltalk zostal ustawiony na ^"%s^"
+AMX_SUPER_GRAVITY_STATUS = [AMXX] sv_gravity jest ^"%d^"
+AMX_SUPER_GRAVITY_SET_CASE2 = [AMXX] ADMIN %s ustawil grawitacje na ^"%s^"
+AMX_SUPER_GRAVITY_SET_CASE1 = [AMXX] ADMIN ustawil grawitacje na ^"%s^"
+AMX_SUPER_GRAVITY_LOG = [AMX_Super] GRAWITACJA: ^"%s<%s>^" ustawil sv_gravity na ^"%s^"
+AMX_SUPER_GRAVITY_MSG = [AMXX] Grawitacja zostala ustawiona na ^"%s^"
+AMX_SUPER_GRAVITY_CHECK = [AMXX] Grawitacja jest ustawiona na %i
+AMX_SUPER_BURY_TEAM_CASE2 = [AMXX] ADMIN %s zakopal wszystkich %s
+AMX_SUPER_BURY_TEAM_CASE1 = [AMXX] ADMIN zakopal wszystkich %s
+AMX_SUPER_BURY_PLAYER_CASE2 = [AMXX] ADMIN %s zakopal %s
+AMX_SUPER_BURY_PLAYER_CASE1 = [AMXX] ADMIN zakopal %s
+AMX_SUPER_UNBURY_TEAM_CASE2 = [AMXX] ADMIN %s odkopal wszystkich %s
+AMX_SUPER_UNBURY_TEAM_CASE1 = [AMXX] ADMIN odkopal wszystkich %s
+AMX_SUPER_UNBURY_PLAYER_CASE2 = [AMXX] ADMIN %s odkopal %s
+AMX_SUPER_UNBURY_PLAYER_CASE1 = [AMXX] ADMIN odkopal %s
+AMX_SUPER_UNBURY_TEAM_LOG = [AMX_Super] ODKOPANIE: ^"%s<%s>^" odkopal wszystkich ^"%s^"
+AMX_SUPER_UNBURY_PLAYER_LOG = [AMX_Super] ODKOPANIE: ^"%s<%s>^" odkopal ^"%s<%s>^"
+AMX_SUPER_BURY_PLAYER_LOG = [AMX_Super] ZAKOPANIE: ^"%s<%s>^" zakopal ^"%s<%s>^"
+AMX_SUPER_BURY_TEAM_LOG = [AMX_Super] ZAKOPANIE: ^"%s<%s>^" zakopal wszystkich ^"%s^"
+AMX_SUPER_BURY_MSG = [AMXX] Gracz %s zostal zakopany
+AMX_SUPER_UNBURY_MSG = [AMXX] Gracz %s zostal odkopany
+AMX_SUPER_DISARM_TEAM_CASE2 = [AMXX] ADMIN %s rozbroil wszystkich %s
+AMX_SUPER_DISARM_TEAM_CASE1 = [AMXX] ADMIN rozbroil wszystkich %s
+AMX_SUPER_DISARM_PLAYER_CASE2 = [AMXX] ADMIN %s rozbroil %s
+AMX_SUPER_DISARM_PLAYER_CASE1 = [AMXX] ADMIN rozbroil %s
+AMX_SUPER_DISARM_TEAM_LOG = [AMX_Super] ROZBROJENIE: ^"%s<%s>^" rozbroil wszystkich ^"%s^"
+AMX_SUPER_DISARM_PLAYER_LOG = [AMX_Super] ROZBROJENIE: ^"%s<%s>^" rozbroil ^"%s<%s>^"
+AMX_SUPER_DISARM_MSG = [AMXX] Gracz %s zostal rozbrojony
+AMX_SUPER_SLAY2_TEAM_CASE2 = [AMXX] ADMIN %s zgladzil wszystkich %s
+AMX_SUPER_SLAY2_TEAM_CASE1 = [AMXX] ADMIN zgladzil wszystkich %s
+AMX_SUPER_SLAY2_PLAYER_CASE2 = [AMXX] ADMIN %s zgladzil %s
+AMX_SUPER_SLAY2_PLAYER_CASE1 = [AMXX] ADMIN zgladzil %s
+AMX_SUPER_SLAY2_TEAM_LOG = [AMX_Super] ZGLADZENIE: ^"%s<%s>^" zgladzil wszystkich ^"%s^" 
+AMX_SUPER_SLAY2_PLAYER_LOG = [AMX_Super] ZGLADZENIE: ^"%s<%s>^" zgladzil ^"%s<%s>^"
+AMX_SUPER_SLAY2_TEAM_MSG = [AMXX] Zgladziles wszystkich %s
+AMX_SUPER_SLAY2_PLAYER_MSG = [AMXX] Zgladziles %s
+AMX_SUPER_FIRE_PLAYER_CASE2 = [AMXX] ADMIN %s podpalil %s.
+AMX_SUPER_FIRE_PLAYER_CASE1 = [AMXX] ADMIN podpalil %s.
+AMX_SUPER_FIRE_TEAM_LOG = [AMX_Super] PODPALENIE: ^"%s<%s>^" podpalil wszystkich ^"%s^"
+AMX_SUPER_FIRE_PLAYER_LOG = [AMX_Super] PODPALENIE: ^"%s<%s>^" podpalil ^"%s<%s>^"
+AMX_SUPER_FIRE_TEAM_MSG = [AMXX] Podpaliles wszystkich %s
+AMX_SUPER_FIRE_PLAYER_MSG = [AMXX] Podpaliles %s
+AMX_SUPER_FIRE_SPREAD = * [AMXX] OH! NIE! Ogien przeniosl sie z %s rowniez na %s!
+AMX_SUPER_ROCKET_TEAM_CASE2 = [AMXX] ADMIN %s zmienil w rakiety wszystkich %s
+AMX_SUPER_ROCKET_TEAM_CASE1 = [AMXX] ADMIN zmienil w rakiety wszystkich %s
+AMX_SUPER_ROCKET_PLAYER_CASE2 = [AMXX] ADMIN %s zmienil %s w rakiete
+AMX_SUPER_ROCKET_PLAYER_CASE1 = [AMXX] ADMIN zmienil %s w rakiete
+AMX_SUPER_ROCKET_TEAM_LOG = [AMX_Super] RAKIETA: ^"%s<%s>^" zmienil w rakiety wszystkich ^"%s^"
+AMX_SUPER_ROCKET_PLAYER_LOG = [AMX_Super] RAKIETA: ^"%s<%s>^" zmienil ^"%s<%s>^" w rakiete
+AMX_SUPER_ROCKET_TEAM_MSG = [AMXX] Zmieniles w rakiety wszystkich %s
+AMX_SUPER_ROCKET_PLAYER_MSG = [AMXX] Zmieniles %s w rakiete
+AMX_SUPER_UBERSLAP_PLAYER_CASE2 = [AMXX] ADMIN %s megaklepnal %s
+AMX_SUPER_UBERSLAP_PLAYER_CASE1 = [AMXX] ADMIN megaklepna %s
+AMX_SUPER_UBERSLAP_PLAYER_MSG = [AMXX] Megaklepnales %s
+AMX_SUPER_UBERSLAP_PLAYER_LOG = [AMX_Super] MEGAKLEPANIE: ^"%s<%s>^" megaklepna ^"%s<%s>^"
+AMX_SUPER_EXEC_ALL_CASE2 = [AMXX] ADMIN %s uzyl na wszystkich komendy ^"%s^"
+AMX_SUPER_EXEC_ALL_CASE1 = [AMXX] ADMIN uzyl na wszystkich komendy ^"%s^"
+AMX_SUPER_EXEC_TEAM_CASE2 = [AMXX] ADMIN %s uzyl komendy ^"%s^" na wszystkich %s
+AMX_SUPER_EXEC_TEAM_CASE1 = [AMXX] ADMIN uzyl komendy ^"%s^" na wszystkich %s
+AMX_SUPER_EXEC_PLAYER_CASE2 = [AMXX] ADMIN %s uzyl komendy ^"%s^" na %s!
+AMX_SUPER_EXEC_PLAYER_CASE1 = [AMXX] ADMIN uzyl komendy ^"%s^" na %s!
+AMX_SUPER_EXEC_ALL_LOG = [AMX_Super] WYKONANIE KOMENDY: ^"%s<%s>^" uzyl na wszystkich komendy ^"%s^"
+AMX_SUPER_EXEC_TEAM_LOG = [AMX_Super] WYKONANIE KOMENDY: ^"%s<%s>^" uzyl komendy ^"%s^" na wszystkich %s
+AMX_SUPER_EXEC_PLAYER_LOG = [AMX_Super] WYKONANIE KOMENDY: ^"%s<%s>^" uzyl komendy ^"%s^" na ^"%s<%s>^"
+AMX_SUPER_PASSWORD_SET_CASE2 = [AMXX] ADMIN %s ustawil haslo na serwer
+AMX_SUPER_PASSWORD_SET_CASE1 = [AMXX] ADMIN ustawil haslo na serwer
+AMX_SUPER_PASSWORD_REMOVE_CASE2 = [AMXX] ADMIN %s usunal haslo na serwer
+AMX_SUPER_PASSWORD_REMOVE_CASE1 = [AMXX] ADMIN usunal haslo na serwer
+AMX_SUPER_PASSWORD_SET_LOG = [AMX_Super] HASLO: ^"%s<%s>^" ustawil haslo na serwer. Haslo brzmi ^"%s^"
+AMX_SUPER_PASSWORD_REMOVE_LOG = [AMX_Super] HASLO: ^"%s<%s>^" usunal haslo na serwer
+AMX_SUPER_REVIVE_TEAM_CASE2 = [AMXX] ADMIN %s wskrzesil wszystkich %s
+AMX_SUPER_REVIVE_TEAM_CASE1 = [AMXX] ADMIN wskrzesil wszystkich %s
+AMX_SUPER_REVIVE_PLAYER_CASE2 = [AMXX] ADMIN %s wskrzesil %s
+AMX_SUPER_REVIVE_PLAYER_CASE1 = [AMXX] ADMIN wskrzesil %s
+AMX_SUPER_REVIVE_TEAM_LOG = [AMX_Super] WSKRZESZENIE: ^"%s<%s>^" wskrzesil wszystkich %s ^"%s^"
+AMX_SUPER_REVIVE_PLAYER_LOG = [AMX_Super] WSKRZESZENIE: ^"%s<%s>^" wskrzesil ^"%s<%s>^"
+AMX_SUPER_REVIVE_TEAM_MSG = [AMXX] Wskrzesiles wszystkich %s
+AMX_SUPER_REVIVE_PLAYER_MSG = [AMXX] Wskrzesiles %s
+AMX_SUPER_REVIVE_TEAM_HUD = Wszyscy %s zostali wskrzeszeni!
+AMX_SUPER_REVIVE_PLAYER_HUD = %s zostal wskrzeszony!
+AMX_SUPER_QUIT_TEAM_CASE2 = [AMXX] ADMIN %s zmusil wszystkich %s do wyjscia z gry
+AMX_SUPER_QUIT_TEAM_CASE1 = [AMXX] ADMIN zmusil wszystkich %s do wyjscia z gry
+AMX_SUPER_QUIT_PLAYER_CASE2 = [AMXX] ADMIN %s zmusil %s do wyjscia z gry
+AMX_SUPER_QUIT_PLAYER_CASE1 = [AMXX] ADMIN zmusil %s do wyjscia z gry
+AMX_SUPER_QUIT_TEAM_LOG = [AMX_Super] WYJSCIE Z GRY: ^"%s<%s>^" zmusil wszystkich ^"%s^" do wyjscia z gry
+AMX_SUPER_QUIT_PLAYER_LOG = [AMX_Super] WYJSCIE Z GRY: ^"%s<%s>^" zmusil ^"%s<%s>^" do wyjscia z gry
+
+AMX_SUPER_GAG_PLAYER_CASE2 = [AMXX] ADMIN %s zakneblowal %s na %0.0f minut ( %s )
+AMX_SUPER_GAG_PLAYER_CASE1 = [AMXX] ADMIN zakneblowal %s na %0.0f minut ( %s )
+AMX_SUPER_UNGAG_PLAYER_CASE2 = [AMXX] ADMIN %s odkneblowal %s
+AMX_SUPER_UNGAG_PLAYER_CASE1 = [AMXX] ADMIN odkneblowal %s
+AMX_SUPER_GAG_PLAYER_DISCONNECT = [AMXX] Zakneblowany gracz rozlaczyl sie: ( %s <%s> )
+AMX_SUPER_PLAYER_GAGGED = * Zostales zakneblowany
+AMX_SUPER_PLAYER_NAMELOCK = * Zakneblowani gracze nie moga zmieniac swojego nicka
+AMX_SUPER_NOT_GAGGED = [AMXX] %s nie jest zakneblowany i nie moze zostac odkneblowany.
+AMX_SUPER_GAG_END = [AMXX] %s nie jest juz zakneblowany
+AMX_SUPER_GAG_CONNECTED = [AMXX] Zakneblowany gracz polaczyl sie ( %s ).
+AMX_SUPER_WEAPON_TEAM_CASE2 = [AMXX] ADMIN %s dal bron wszystkim %s
+AMX_SUPER_WEAPON_TEAM_CASE1 = [AMXX] ADMIN dal bron wszystkim %s
+AMX_SUPER_WEAPON_PLAYER_CASE2 = [AMXX] ADMIN %s dal bron graczowi %s
+AMX_SUPER_WEAPON_PLAYER_CASE1 = [AMXX] ADMIN dal bron graczowi %s
+AMX_SUPER_WEAPON_TEAM_LOG = [AMX_Super] DAWANIE BRONI: ^"%s<%s>^" dal ^"%d^" wszystkim ^"%s^"
+AMX_SUPER_WEAPON_PLAYER_LOG = [AMX_Super] DAWANIE BRONI: ^"%s<%s>^" dal ^"%d^" graczowi ^"%s<%s>^"
+AMX_SUPER_WEAPON_TEAM_MSG = [AMXX] Dales %d wszystkim %s
+AMX_SUPER_WEAPON_PLAYER_MSG = [AMXX] Dales %d graczowi %s
+AMX_SUPER_NOCLIP_TEAM_CASE2 = [AMXX] ADMIN %s ustawil przenikanie przez sciany na ^"%d^" wszystkim %s
+AMX_SUPER_NOCLIP_TEAM_CASE1 = [AMXX] ADMIN ustawil przenikanie przez sciany na ^"%d^" wszystkim %s
+AMX_SUPER_NOCLIP_PLAYER_CASE2 = [AMXX] ADMIN %s ustawil przenikanie przez sciany na ^"%d^" graczowi %s
+AMX_SUPER_NOCLIP_PLAYER_CASE1 = [AMXX] ADMIN ustawil przenikanie przez sciany na ^"%d^" graczowi %s
+AMX_SUPER_NOCLIP_TEAM_LOG = [AMX_Super] PRZENIKANIE PRZEZ SCIANY: ^"%s<%s>^" ustawil przenikanie przez sciany na ^"%d^" wszystkim ^"%s^"
+AMX_SUPER_NOCLIP_PLAYER_LOG = [AMX_Super] PRZENIKANIE PRZEZ SCIANY: ^"%s<%s>^" ustawil przenikanie przez sciany na ^"%d^" graczowi ^"%s<%s>^"
+AMX_SUPER_NOCLIP_TEAM_MSG = [AMXX] Ustawiles przenikanie przez sciany na ^"%d^" wszystkim %s
+AMX_SUPER_NOCLIP_PLAYER_MSG = [AMXX] Ustawiles przenikanie przez sciany na ^"%d^" graczowi %s
+AMX_SUPER_FLASH_TEAM_CASE2 = [AMXX] ADMIN %s oslepil wszystkich %s
+AMX_SUPER_FLASH_TEAM_CASE1 = [AMXX] ADMIN oslepil wszystkich %s
+AMX_SUPER_FLASH_PLAYER_CASE2 = [AMXX] ADMIN %s oslepil %s
+AMX_SUPER_FLASH_PLAYER_CASE1 = [AMXX] ADMIN oslepil %s
+AMX_SUPER_FLASH_TEAM_LOG = [AMX_Super] OSLEPIENIE: ^"%s<%s>^" oslepil wszystkich ^"%s^"
+AMX_SUPER_FLASH_PLAYER_LOG = [AMX_Super] OSLEPIENIE: ^"%s<%s>^" oslepil ^"%s<%s>^"
+AMX_SUPER_FLASH_TEAM_MSG = [AMXX] Oslepiles wszystkich %s
+AMX_SUPER_FLASH_PLAYER_MSG = [AMXX] Oslepiles %s
+AMX_SUPER_GODMODE_TEAM_CASE2 = [AMXX] ADMIN %s ustawil niesmiertelnosc na ^"%d^" wszystkim %s
+AMX_SUPER_GODMODE_TEAM_CASE1 = [AMXX] ADMIN ustawil niesmiertelnosc na ^"%d^" wszystkim %s
+AMX_SUPER_GODMODE_PLAYER_CASE2 = [AMXX] ADMIN %s ustawil niesmiertelnosc na ^"%d^" graczowi %s
+AMX_SUPER_GODMODE_PLAYER_CASE1 = [AMXX] ADMIN ustawil niesmiertelnosc na ^"%d^" graczowi %s
+AMX_SUPER_GODMODE_TEAM_LOG = [AMX_Super] NIESMIERTELNOSC: ^"%s<%s>^" ustawil niesmiertelnosc na ^"%d^" wszystkim ^"%s^"
+AMX_SUPER_GODMODE_PLAYER_LOG = [AMX_Super] NIESMIERTELNOSC: ^"%s<%s>^" ustawil niesmiertelnosc na ^"%d^" graczowi ^"%s<%s>^"
+AMX_SUPER_GODMODE_TEAM_MSG = [AMXX] Ustawiles niesmiertelnosc na ^"%d^" wszystkim %s
+AMX_SUPER_GODMODE_PLAYER_MSG = [AMXX] Ustawiles niesmiertelnosc na ^"%d^" graczowi %s
+AMX_SUPER_GIVEMONEY_PLAYER_CASE2 = [AMXX] ADMIN %s dal $%i graczowi %s
+AMX_SUPER_GIVEMONEY_PLAYER_CASE1 = [AMXX] ADMIN dal $%i graczowi %s
+AMX_SUPER_GIVEMONEY_PLAYER_MSG = [AMXX] Dales $%i graczowi %s
+AMX_SUPER_GIVEMONEY_PLAYER_LOG = [AMX_Super] DAWANIE PIENIEDZY: ^"%s<%s>^" dal $%i graczowi ^"%s<%s>^"
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_CASE2 = [AMXX] ADMIN %s zabral graczowi %s wszystkie pieniadze
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_CASE1 = [AMXX] ADMIN zabral graczowi %s wszystkie pieniadze
+AMX_SUPER_TAKEMONEY_PLAYER_CASE2 = [AMXX] ADMIN %s zabral $%i graczowi %s
+AMX_SUPER_TAKEMONEY_PLAYER_CASE1 = [AMXX] ADMZABIERANIE PIENIEDZY: ^"%s<%s>^" zabral $%i graczowi ^"%s<%s>^"
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_LOG = [AMX_Super] ZABIERANIE PIENIEDZY: ^"%s<%s>^" zabral graczowi ^"%s<%s>^" wszystkie pieniadze
+AMX_SUPER_TAKEMONEY_PLAYER_MSG = [AMXX] Zabrales $%i graczowi %s
+AMX_SUPER_TAKEMONEY_ALL_PLAYER_MSG = [AMXX] Zabrales wszystkie pieniadze %s
+AMX_SUPER_GLOW_TEAM_CASE2 = [AMXX] ADMIN %s wlaczyl poswiate wszystkim %s
+AMX_SUPER_GLOW_TEAM_CASE1 = [AMXX] ADMIN wlaczyl poswiate wszystkim %s
+AMX_SUPER_GLOW_PLAYER_CASE2 = [AMXX] ADMIN %s wlaczyl poswiate graczowi %s
+AMX_SUPER_GLOW_PLAYER_CASE1 = [AMXX] ADMIN wlaczyl poswiate graczowi %s
+AMX_SUPER_GLOW_TEAM_LOG = [AMX_Super] POSWIATA: ^"%s<%s>^" wlaczyl poswiate wszystkim ^"%s^"
+AMX_SUPER_GLOW_PLAYER_LOG = [AMX_Super] POSWIATA: ^"%s<%s>^" wlaczyl poswiate graczowi ^"%s<%s>^"
+AMX_SUPER_GLOW_TEAM_MSG = [AMXX] Wlaczyles poswiate wszystkim %s
+AMX_SUPER_GLOW_PLAYER_MSG = [AMXX] wlaczyles poswiate graczowi %s
+AMX_SUPER_UNGLOW_TEAM_CASE2 = [AMXX] ADMIN %s wylaczyl poswiate wszystkim %s
+AMX_SUPER_UNGLOW_TEAM_CASE1 = [AMXX] ADMIN wylaczyl poswiate wszystkim %s
+AMX_SUPER_UNGLOW_PLAYER_CASE2 = [AMXX] ADMIN %s wylaczyl poswiate graczowi %s
+AMX_SUPER_UNGLOW_PLAYER_CASE1 = [AMXX] ADMIN wylaczyl poswiate graczowi %s
+AMX_SUPER_UNGLOW_TEAM_LOG = [AMX_Super] USUNIECIE POSWIATY: ^"%s<%s>^" wylaczyl poswiate wszystkim ^"%s^"
+AMX_SUPER_UNGLOW_PLAYER_LOG = [AMX_Super] USUNIECIE POSWIATY: ^"%s<%s>^" wylaczyl poswiate graczowi ^"%s<%s>^"
+AMX_SUPER_UNGLOW_TEAM_MSG = [AMXX] Wylaczyles poswiate wszystkim %s
+AMX_SUPER_UNGLOW_PLAYER_MSG = [AMXX] Wylaczyles poswiate graczowi %s
+AMX_SUPER_TEAM_INVALID = [AMXX] Nieprawidlowa nazwa druzyny! Prawidlowe nazwy druzyn to: T, CT, Auto, Spec
+AMX_SUPER_TEAM_UNLOCKED = [AMXX] Druzyna %s nie jest zamknieta!
+AMX_SUPER_TEAM_UNLOCK_CASE1 = [AMXX] ADMIN otworzyl druzyne %s
+AMX_SUPER_TEAM_UNLOCK_CONSOLE = [AMXX] Otworzyles druzyne %s
+AMX_SUPER_TEAM_UNLOCK_CASE2 = [AMXX] ADMIN %s otworzyl druzyne %s
+AMX_SUPER_TEAM_LOCK_CASE1 = [AMXX] ADMIN zamknal druzyne %s
+AMX_SUPER_TEAM_LOCK_CASE2 = [AMXX] ADMIN %s zamknal druzyne %s
+AMX_SUPER_TEAM_LOCKED = [AMXX] Druzyna %s jest juz zamknieta!
+AMX_SUPER_TEAM_LOCK_CONSOLE = [AMXX] Zamknales druzyne %s
+AMX_SUPER_UNLOCK_TEAMS_LOG = [AMX_Super] ZAMYKANIE DRUZYN: ^"%s<%s>^" otworzyl druzyne ^"%s^"
+AMX_SUPER_LOCK_TEAMS_LOG = [AMX_Super] ZAMYKANIE DRUZYN: ^"%s<%s>^" zamknal druzyne ^"%s^"
+AMX_SUPER_TELEPORT_PLAYER_CASE2 = [AMXX] ADMIN %s teleportowal %s
+AMX_SUPER_TELEPORT_PLAYER_CASE1 = [AMXX] ADMIN teleportowal %s
+AMX_SUPER_TELEPORT_PLAYER_MSG = [AMXX] Teleportowales %s na %d x, %d y, %d z
+AMX_SUPER_TELEPORT_ORIGIN_SAVED = [AMXX] Zapisane wspolrzedne %d x, %d y, %d z od %s
+AMX_SUPER_TELEPORT_PLAYER_LOG = [AMX_Super] TELEPORTACJA: ^"%s<%s>^" teleportowal ^"%s<%s>^" na %d x, %d y, %d z
+AMX_SUPER_BOMB_TRANSFER = Bomba przekazana graczowi ^"%s^",^nponiewaz ^"%s^" jest AFK
+AMX_SUPER_SHUTDOWN_MESSAGE = Uwaga: Serwer jest restartowany. Jesli automatycznie sie nie podlaczysz, zrob to recznie.
+AMX_SUPER_SHUTDOWN_MESSAGE_LOG = [AMX_Super] WYLACZANIE: ^"%s<%s>^" wylaczyl serwer
+AMX_SUPER_DEADCHAT_MESSAGE = [AMXX] Nie zyjesz. Mozesz teraz rozmawiac z przeciwnya druzyna przez mikrofon.
+AMX_SUPER_SOUNDFIX = [AMXX] Odglosy zostaly pozbawione echa.
+AMX_SUPER_SOUNDFIX_DISABLED = [AMXX] Reczne wylaczanie echa jest wylaczone.
+AMX_SUPER_TRANSFER_PLAYER_CASE1 = [AMXX] ADMIN przeniosl %s do %s
+AMX_SUPER_TRANSFER_PLAYER_CASE2 = [AMXX] ADMIN %s przeniosl %s do %s
+AMX_SUPER_TRANSFER_PLAYER_TEAM = [AMXX] Zostales przeniesiony do %s
+AMX_SUPER_TRANSFER_PLAYER_LOG = [AMX_Super] PRZENOSZENIE: ^"%s<%s>^" przeniosl ^"%s^" do ^"%s^"
+AMX_SUPER_TRANSFER_PLAYER_CONSOLE = [AMXX] Przeniosles %s do %s
+AMX_SUPER_TRANSFER_SWAP_PLAYERS_SUCCESS_CASE1 = [AMXX] ADMIN zamienil %s z %s
+AMX_SUPER_TRANSFER_SWAP_PLAYERS_SUCCESS_CASE2 = [AMXX] ADMIN %s zamienil %s z %s
+AMX_SUPER_TRANSFER_SWAP_TEAM_SUCCESS_CASE1 = [AMXX] ADMIN zamienil druzyny!
+AMX_SUPER_TRANSFER_SWAP_TEAM_SUCCESS_CASE2 = [AMXX] ADMIN %s zamienil druzyny!
+AMX_SUPER_TRANSFER_SWAP_TEAM_MESSAGE = [AMXX] Zamieniles druzyny
+AMX_SUPER_TRANSFER_SWAP_PLAYERS_CONSOLE = [AMXX] Zamieniles %s z %s
+AMX_SUPER_TRANSFER_PLAYER_ERROR_CASE1 = [AMXX] Nie mozesz zamieniac graczy, ktorzy sa w tej samej druzynie!
+AMX_SUPER_TRANSFER_PLAYER_ERROR_CASE2 = [AMXX] Nie mozesz zamieniac graczy, ktorzy nie sa w zadnej druzynie!
+AMX_SUPER_TRANSFER_SWAP_PLAYERS_MESSAGE1 = [AMXX] zostales zamieniony z %s
+AMX_SUPER_TRANSFER_SWAP_PLAYERS_MESSAGE2 = [AMXX] Zostales zamieniony z %s
+AMX_SUPER_TRANSFER_SWAP_TEAM_LOG = [AMX_Super] PRZENOSZENIE: ^"%s<%s>^" zamienil druzyny
+AMX_SUPER_TRANSFER_SWAP_PLAYERS_LOG = [AMX_Super] PRZENOSZENIE: ^"%s<%s>^" zamienil ^"%s^" z ^"%s^"
+AMX_SUPER_AMMO_PLAYER_CASE1 = [AMXX] ADMIN wlaczyl nieskonczona amunicje graczowi %s na ^"%d^" 
+AMX_SUPER_AMMO_PLAYER_CASE2 = [AMXX] ADMIN %s wlaczyl nieskonczona amunicje graczowi %s na ^"%d^" 
+AMX_SUPER_AMMO_PLAYER_MSG = [AMXX] ADMIN wlaczyl nieskonczona amunicje graczowi %s na ^"%d^" 
+AMX_SUPER_AMMO_PLAYER_LOG = [AMX_Super] NIESKONCZONA AMUNICJA: ADMIN ^"%s<%s>^" wlaczyl nieskonczona amunicje graczowi ^"%s^" na ^"%d^" 
+AMX_SUPER_AMMO_TEAM_CASE1 = [AMXX] ADMIN wlaczyl nieskonczona amunicje wszystkim %s na ^"%d^" 
+AMX_SUPER_AMMO_TEAM_CASE2 = [AMXX] ADMIN %s wlaczyl nieskonczona amunicje wszystkim %s na ^"%d^" 
+AMX_SUPER_AMMO_TEAM_MSG = [AMXX] ADMIN wlaczyl nieskonczona amunicje wszystkim %s na ^"%d^" 
+AMX_SUPER_AMMO_TEAM_LOG = [AMX_Super] NIESKONCZONA AMUNICJA: ADMIN ^"%s<%s>^" wlaczyl nieskonczona amunicje wszystkim ^"%s^" na ^"%d^"
+AMX_SUPER_EXTEND_CANNOT_EXTEND = [AMXX] Nie mozesz przedluzyc mapy o negatywna wartosc.
+AMX_SUPER_EXTEND_SUCCESS_CASE2 = [AMXX] ADMIN %s przedluzyl mape o %i minut
+AMX_SUPER_EXTEND_SUCCESS_CASE1 = [AMXX] ADMIN przedluzyl mape o %i minut
+AMX_SUPER_EXTEND_EXTENDTIME = [AMXX] Zadna mapa nie moze byc przedluzona o %i za jednym razem.
+AMX_SUPER_EXTEND_EXTENDMAX = [AMXX] Zaden gracz nie moze przedluzyc mapy wiecej niz %i razy.
+AMX_SUPER_EXTEND_BAD_NUMBER = [AMXX] Mapy, ktore nie sa w mapcycle nie moga byc przedluzone.
+AMX_SUPER_EXTEND_NOMAPCYCLE = [AMXX] Mapy, ktore nie sa w mapcycle nie moga byc przedluzone.
+AMX_SUPER_SPAWN_PROTECTION_BADTIME = [AMXX] Musisz ustawic czas ochronny pomiedzy 1 a 10 sekund
+AMX_SUPER_SPAWN_PROTECTION_TIME_SET = [AMXX] Ustawiles czas ochronny na %d sekund
+AMX_SUPER_SPAWN_PROTECTION_BADSHELL = [AMXX] You have to set the Glow Shellthickness between 1 and 100
+AMX_SUPER_SPAWN_PROTECTION_SHELL_SET = [AMXX] You have set the Glow Shellthickness to %d
+AMX_SUPER_SPAWN_PROTECTION_GLOW_ON = [AMXX] Wlaczyles ochronna poswiate
+AMX_SUPER_SPAWN_PROTECTION_GLOW_OFF = [AMXX] Wylaczyles ochronna poswiate
+AMX_SUPER_SPAWN_PROTECTION_MESSAGE = [AMXX] Czas ochronny jest aktywny przez %d sekund
+AMX_SUPER_VOCOM_NO_ACCESS = [ADMIN VOCOM]: Nie masz dostepu do tej komendy.
+AMX_SUPER_VOCOM_SPEAKING1 = [ADMIN VOCOM]: %s mowi do innych adminow.
+AMX_SUPER_VOCOM_SPEAKING2 = [ADMIN VOCOM]: Mowisz do innych adminow.
+AMX_SUPER_DRUG_TEAM_CASE2 = [AMXX] ADMIN %s dal prochy wszystkim %s.
+AMX_SUPER_DRUG_TEAM_CASE1 = [AMXX] ADMIN dal prochy wszystkim %s.
+AMX_SUPER_DRUG_PLAYER_CASE2 = [AMXX] ADMIN %s dal prochy graczowi %s.
+AMX_SUPER_DRUG_PLAYER_CASE1 = [AMXX] ADMIN dal prochy graczowi %s.
+AMX_SUPER_DRUG_TEAM_LOG = [AMX_Super] %s ( %s ) dal prochy wszystkim %s.
+AMX_SUPER_DRUG_PLAYER_LOG = [AMX_Super] %s ( %s ) dal prochy graczowi %s ( %s ).
+AMX_SUPER_DRUG_TEAM_MSG = [AMXX] Dales prochy wszystkim %s.
+AMX_SUPER_DRUG_PLAYER_MSG = [AMXX] Dales prochy graczowi %s.
+AMX_SUPER_SPEED_TEAM_CASE2 = [AMXX] ADMIN, %s turned %s speed for %s.
+AMX_SUPER_SPEED_TEAM_CASE1 = [AMXX] ADMIN turned %s speed for %s.
+AMX_SUPER_SPEED_PLAYER_CASE2 = [AMXX] ADMIN, %s turned %s speed for %s.
+AMX_SUPER_SPEED_PLAYER_CASE1 = [AMXX] ADMIN turned %s speed for %s.
+AMX_SUPER_SPEED_TEAM_LOG = [AMX_Super] %s ( %s ) set speed on %s
+AMX_SUPER_SPEED_PLAYER_LOG = [AMX_Super] %s ( %s ) set speed on %s ( %s )
+AMX_SUPER_SPEED_TEAM_MSG = [AMXX] Set speed on %s.
+AMX_SUPER_SPEED_PLAYER_MSG = [AMXX] Set speed on %s.
+AMX_SUPER_GAG_CONNECTED = [AMXX] Zakneblowany gracz polaczyl sie ( %s ).
+AMX_SUPER_GAG_PLAYER_LOG = [AMX_Super] %s ( %s ) zakneblowal %s ( %s ). Zakaz uzywania %s przez %s minut.
+AMX_SUPER_UNGAG_PLAYER_LOG = [AMX_Super] %s ( %s ) odkneblowal %s ( %s ).
+AMX_SUPER_GAG_PLAYER_ERROR = [AMXX] %s nie jest zakneblowany i nie moze zostac odkneblowany.
+AMX_SUPER_UNGAG_CONSOLE = [AMXX] Zostales odkneblowany
+AMX_SUPER_GAG_CONSOLE = [AMXX] Zostales zakneblowany
+AMX_SUPER_BADAIM_KILLED = [AMXX] %s zostal zbanowany za zabicie kogos bedac pod wplywem zlej celnosci.
+AMX_SUPER_BADAIM_CONSOLE = amx_badaim <player> <On/off or length of time:1|0|time> <Save?: 1|0>: Turn on/off bad aim on a player.
+AMX_SUPER_BADAIM_NO_BADAIM = [AMXX] %s nie ma zlej celnosci... przynajmniej od tego pluginu.
+AMX_SUPER_BADAIM_UNDO = [AMXX] Celnosc gracza %s wrocila do normy... cokolwiek to znaczy.
+AMX_SUPER_BADAIM_CURRENT = [AMXX] %s juz posiada zla celnosc. 
+AMX_SUPER_BADAIM_WORSE = [AMXX] %s juz posiadal zla celnosc, ale teraz jest jeszcze gorzej!
+AMX_SUPER_BADAIM_BADTIME = Czas nie moze byc ujemny, chyba ze masz na mysli wyimaginowany czas.
+AMX_SUPER_BADAIM_MESSAGE1 = [AMXX] %s juz posiada zla celnosc, ale teraz zostanie ona automatycznie wylaczona po uplywie %d sekund.
+AMX_SUPER_BADAIM_MESSAGE2 = [AMXX] %s dostal zla celnosc na %d sekund.
+AMX_SUPER_BADAIM_BAN = [AMXX] Czasowa zla celnosc nie moze zostac zapisana. Jednakze, zla celnosc nadal bedzie wykonywana.
+AMX_SUPER_BADAIM_NO_BADAIM_MESSAGE = [AMXX] %s nie ma juz zlej celnosci.
+AMX_SUPER_BADAIM_NO_BADAIM_MESSAGE_CONSOLE = %s nie ma juz zlej celnosci.
+AMX_SUPER_BADAIM_LOG = [AMX_Super] %s (%s) %s zla celnosc na %s.
+AMX_SUPER_GLOW_INVALID_COLOR = [AMXX] Ten kolor jest nieprawidlowy. Wpisz amx_glowcolors, by poznac liste prawidlowych kolorow.
+AMX_SUPER_FIRE_TEAM_CASE2 = [AMXX] ADMIN %s podpalil wszystkich %s
+AMX_SUPER_FIRE_TEAM_CASE1 = [AMXX] ADMIN podpalil wszystkich %s
+AMX_SUPER_FIRE_TEAM_LOG = [AMX_Super] PODPALENIE: ^"%s<%s>^" podpalil wszystkich ^"%s^"
+AMX_SUPER_GIVEMONEY_TEAM_CASE2 = [AMXX] ADMIN %s dal $%i wszystkim %s
+AMX_SUPER_GIVEMONEY_TEAM_CASE1 = [AMXX] ADMIN dal $%i wszystkim %s
+AMX_SUPER_GIVEMONEY_TEAM_MSG = [AMXX] Dales $%i wszystkim %s
+AMX_SUPER_GIVEMONEY_TEAM_LOG = [AMX_Super] DAWANIE PIENIEDZY: ^"%s<%s>^" dal $%i wszystkim %s
+AMX_SUPER_GLOW_TEAM_OFF_CASE2 = [AMXX] ADMIN %s wylaczyl poswiate wszystkim %s
+AMX_SUPER_GLOW_TEAM_OFF_CASE1 = [AMXX] ADMIN wylaczyl poswiate wszystkim %s
+AMX_SUPER_GLOW_PLAYER_OFF_CASE2 = [AMXX] ADMIN %s wylaczyl poswiate %s 
+AMX_SUPER_GLOW_PLAYER_OFF_CASE1 = [AMXX] ADMIN wylaczyl poswiate %s
+AMX_SUPER_SPEED_TEAM_CASE2 = [AMXX] ADMIN, %s ustawil predkosc %s dla %s.
+AMX_SUPER_SPEED_TEAM_CASE1 = [AMXX] ADMIN ustawil predkosc %s dla %s.
+AMX_SUPER_SPEED_PLAYER_CASE2 = [AMXX] ADMIN, ustawil predkosc %s dla %s.
+AMX_SUPER_SPEED_PLAYER_CASE1 = [AMXX] ADMIN ustawil predkosc %s dla %s.
+AMX_SUPER_SPEED_TEAM_LOG = [AMX_Super] %s ( %s ) ustawil predkosc na %s
+AMX_SUPER_SPEED_PLAYER_LOG = [AMX_Super] %s ( %s ) ustawil predkosc na %s ( %s )
+AMX_SUPER_SPEED_TEAM_MSG = [AMXX] Ustawiono predkosc dla %s.
+AMX_SUPER_SPEED_PLAYER_MSG = [AMXX] Ustawiono predkosc dla %s.

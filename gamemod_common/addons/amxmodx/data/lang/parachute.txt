@@ -1,0 +1,120 @@
+[en]
+para_disabled = [AMXX] Parachute plugin is disabled.
+para_has = [AMXX] You already have a parachute.
+para_money = [AMXX] You don't have enough money ($%i needed).
+para_buy = [AMXX] You have bought a parachute. To use it, press +use while falling.
+para_sell = [AMXX] You have sold your parachute for %i.
+para_free_all = [AMXX] The ADMIN had given you all a free parachute.
+para_admin_free = [AMXX] You have a free parachute.
+para_no_player = [AMXX] There is no such player.
+para_give = [AMXX] The ADMIN has given you a free parachute.
+
+[sv]
+para_disabled = [AMXX] Fallsk'a'rm plugin 'a'r inaktiverad.
+para_has = [AMXX] Du har redan en fallsk'a'rm.
+para_money = [AMXX] Du har inte tillr'a'ckligt med pengar (du beh'o'ver $%i).
+para_buy = [AMXX] Du har k'o'pt en fallsk'a'rm. F'o'r att anv'a'nda den, tryck +use medans du faller.
+para_sell = [AMXX] Du har salt din fallsk'a'rm f'o'r %i.
+para_free_all = [AMXX] Admin har gett alla en gratis fallsk'a'rm.
+para_admin_free = [AMXX] Du har en gratis fallsk'a'rm.
+para_no_player = [AMXX] Det finns ingen sadan spelare.
+para_give = [AMXX] Admin har gett dig en gratis fallsk'a'rm.
+
+[nl]
+para_disabled = [AMXX] Parachute plugin is uitgeschakeld.
+para_has = [AMXX] je hebt al een parachute.
+para_money = [AMXX] Je hebt niet genoeg geld ($%i benodigd).
+para_buy = [AMXX] Je hebt een parachute gekocht. Toets +use terwijl je valt om het te gebruiken.
+para_sell = [AMXX] Je hebt je parachute verkocht voor %i
+para_free_all = [AMXX] De ADMIN heeft je een gratis parachute gegeven.
+para_admin_free = [AMXX] Je hebt een gratis parachute.
+para_no_player = [AMXX] Die speler bestaat niet.
+para_give = [AMXX] De ADMIN heeft je een gratis parachute gegeven.
+
+[bp]
+para_disabled = [AMXX] O plugin Para-quedas esta desabilitado.
+para_has = [AMXX] Voce jah tem um para-quedas.
+para_money = [AMXX] Voce nao tem dinheiro suficiente ($%i necessario).
+para_buy = [AMXX] Voce comprou um para-quedas. Para usar, pressione +use quando estiver caindo.
+para_sell = [AMXX] Voce vendeu seu para-quedas por %i.
+para_free_all = [AMXX] O ADMIN deu um para-quedas a todos.
+para_admin_free = [AMXX] Voce ganhou um para-quedas.
+para_no_player = [AMXX] Jogador inexistente.
+para_give = [AMXX] O ADMIN deu um para-quedas para voce.
+
+[pl]
+para_disabled = [AMXX] Plugin Spadochron jest wylaczony.
+para_has = [AMXX] Juz masz spadochron.
+para_money = [AMXX] Nie masz wystarczajacej ilosci pieniedzy (potrzebne $%i).
+para_buy = [AMXX] Kupiles spadochron. Aby go uzyc, wcisnij +use podczas spadania.
+para_sell = [AMXX] Sprzedales swoj spadochron za %i.
+para_free_all = [AMXX] ADMIN dal Wam wszystkim darmowy spadochron.
+para_admin_free = [AMXX] Masz darmowy spadochron.
+para_no_player = [AMXX] Nie ma takiego gracza.
+para_give = [AMXX] ADMIN dal Ci darmowy spadochron.
+
+[da]
+para_disabled = [AMXX] Faldskaerm er deaktiveret.
+para_has = [AMXX] Du har allerede en faldskaerm.
+para_money = [AMXX] Du har ikke nok penge ($%i minimum).
+para_buy = [AMXX] Du har koebt en faldskaerm. For at bruge den, tryk +use naar du falder.
+para_sell = [AMXX] Du har solgt din faldskaerm for %i.
+para_free_all = [AMXX] En ADMIN har givet alle en fladskaerm.
+para_admin_free = [AMXX] Du har en gratis faldskaerm.
+para_no_player = [AMXX] Den spiller eksisterer ikke.
+para_give = [AMXX] En ADMIN har givet dig en gratis faldskaerm.
+
+[de]
+para_disabled = [AMXX] Fallschirm-Plugin ist deaktiviert.
+para_has = [AMXX] Du hast schon einen Fallschirm.
+para_money = [AMXX] Du hast nicht genuegend Geld ($%i benoetigt). 
+para_buy = [AMXX] Du hast einen Fallschirm gekauft. Um ihn zu verwenden, druecke +use waehrend des Fallens.
+para_sell = [AMXX] Du hast Deinen Fallschirm fuer %i verkauft.
+para_free_all = [AMXX] Der ADMIN gab euch allen einen kostenlosen Fallschirm.
+para_admin_free = [AMXX] Du hast einen kostenlosen Fallschirm.
+para_no_player = [AMXX] Diesen Spieler gibt es nicht.
+para_give = [AMXX] Der ADMIN gab Dir einen kostenlosen Fallschirm.
+
+[fr]
+para_disabled = [AMXX] Le plugin Parachute est inactif.
+para_has = [AMXX] Vous possédez deja un parachute.
+para_money = [AMXX] Vous n'avez pas assez d'argent ($%i requis).
+para_buy = [AMXX] Vous venez d'acheter un parachute. Pour l'utiliser, appuyez sur +use lorsque vous tombez.
+para_sell = [AMXX] Vous avez vendu votre parachute pour %i
+para_free_all = [AMXX] Un admin vient de vous offrir à tous un parachute.
+para_admin_free = [AMXX] Vous venez d'obtenir un parachute gratuitement!
+para_no_player = [AMXX] Il n'y a aucun joueur.
+para_give = [AMXX] Un admin vient de vous offrir un parachute.
+
+[fi]
+para_disabled = [AMXX] Laskuvarjo -plugin pois kaytosta..
+para_has = [AMXX] Sinulla on jo laskuvarjo.
+para_money = [AMXX] Sinulla ei ole tarpeeksi rahaa. (tarvitset $%i).
+para_buy = [AMXX] Ostit laskuvarjon. Voit kayttaa sita painamalla +use pudotessasi.
+para_sell = [AMXX] Myit laskuvarjosi %i :lla.
+para_free_all = [AMXX] Admin antoi kaikille ilmaisen laskuvarjon.
+para_admin_free = [AMXX] Sinulla on ilmainen laskuvarjo.
+para_no_player = [AMXX] Kyseista pelaajaa ei ole.
+para_give = [AMXX] Admin antoi sinulle ilmaisen laskuvarjon.
+
+[es]
+para_disabled = [AMXX] Plugin Paracaida Desactivado.
+para_has = [AMXX] Ya tienes un Paracaida.
+para_money = [AMXX] No tienes suficiente dinero (Requerido: $%i).
+para_buy = [AMXX] Has comprado un Paracaidas. Para usarlo, presiona la tecla +USAR mientras caes.
+para_sell = [AMXX] Has vendido tu Paracaidas por: $%i.
+para_free_all = [AMXX] El ADMIN ha regalado Paracaidas para todos.
+para_admin_free = [AMXX] Obtienes un Paracaidas Gratis.
+para_no_player = [AMXX] Jugador Desconectado o Inexistente.
+para_give = [AMXX] El ADMIN te ha regalado un Paracaidas.
+
+[ls]
+para_disabled = [4MXTR3M3 M0d XTR3M3] |\|03$ p@|2@chut3!!!11
+para_has = [4MXTR3M3 M0d XTR3M3] n0 p@|2@chut3 f0 j00
+para_money = [4MXTR3M3 M0d XTR3M3] n0 p@|2@chut3 f0 j00 ($%i m0n!3z n33d3d).
+para_buy = [4MXTR3M3 M0d XTR3M3] \/\/00t! p@|2@chut3 f0 j00!!11. u$3 t3h f0|2(3!
+para_sell = [4MXTR3M3 M0d XTR3M3] \/\/00t! m0n!3z! %i 3a|2n3d!
+para_free_all = [4MXTR3M3 M0d XTR3M3] l33t s3rv3r 0P g@v3 |=r33 chut3z!
+para_admin_free = [4MXTR3M3 M0d XTR3M3] |=r33 chut3z!
+para_no_player = [4MXTR3M3 M0d XTR3M3] 3rr0r: | N0T 3NUFF M4N4! | t00 f3w un-l33t n0 |200t'3d n00b fi7!
+para_give = [4MXTR3M3 M0d XTR3M3] l33t s3rv3r 0P g@v3 |=r33 chut3z!

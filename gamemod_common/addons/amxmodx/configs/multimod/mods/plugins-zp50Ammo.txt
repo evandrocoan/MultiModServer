@@ -1,0 +1,160 @@
+; Items Manager
+zp50_items_ammopacks.amxx
+
+; Rewards
+zp50_rewards_ammopacks.amxx
+
+;Gameplay / Other
+zp50_ammopacks.amxx
+
+
+; ZP 5.0 / Module Version
+; -----------------------
+
+; Engine
+
+zp50_core.amxx
+
+; APIs
+
+amx_settings_api.amxx
+cs_player_models_api.amxx
+cs_teams_api.amxx
+cs_maxspeed_api.amxx
+cs_weap_models_api.amxx
+cs_weap_restrict_api.amxx
+cs_ham_bots_api.amxx
+
+
+; Classes
+
+zp50_class_zombie.amxx
+zp50_class_human.amxx
+zp50_class_nemesis.amxx
+zp50_class_survivor.amxx
+
+
+; Zombie Classes
+
+zp50_class_zombie_classic.amxx
+zp50_class_zombie_raptor.amxx
+zp50_class_zombie_light.amxx
+zp50_class_zombie_fat.amxx
+zp50_class_zombie_leech.amxx
+zp50_class_zombie_rage.amxx
+
+
+; Human Classes
+
+zp50_class_human_classic.amxx
+zp50_class_human_raptor.amxx
+
+
+; This must come before game modes for armor protection to work properly
+zp50_human_armor.amxx
+
+
+; Game Modes Manager
+
+zp50_gamemodes.amxx
+
+
+; Game Modes
+
+zp50_gamemode_infection.amxx
+zp50_gamemode_multi.amxx
+zp50_gamemode_swarm.amxx
+zp50_gamemode_nemesis.amxx
+zp50_gamemode_survivor.amxx
+zp50_gamemode_plague.amxx
+zp50_gamemode_armageddon.amxx
+
+
+; Items Manager
+
+zp50_items.amxx
+
+
+; Extra Items
+
+zp50_item_weapons.amxx
+zp50_item_nightvision.amxx
+zp50_item_antidote.amxx
+zp50_item_zombie_madness.amxx
+zp50_item_infection_bomb.amxx
+zp_extra_pain_mode.amxx
+
+; Admin
+
+zp50_admin_commands.amxx
+zp50_admin_menu.amxx
+zp50_admin_models.amxx
+
+
+; Buying
+
+zp50_buy_menus.amxx
+zp50_buy_zones.amxx
+
+
+; Rewards
+
+zp50_rewards_frags_hp.amxx
+
+
+; Deathmatch
+
+zp50_deathmatch.amxx
+zp50_random_spawn.amxx
+zp50_spawn_protection.amxx
+
+
+; Zombie/Human Features
+
+zp50_zombie_features.amxx
+zp50_zombie_sounds.amxx
+zp50_zombie_damage.amxx
+zp50_human_ammo.amxx
+
+
+; Custom Features
+
+zp50_flashlight.amxx
+zp50_nightvision.amxx
+zp50_leap.amxx
+zp50_painshockfree.amxx
+zp50_knockback.amxx
+zp50_weapon_drop_strip.amxx
+
+
+; Effects
+
+zp50_effects_infect.amxx
+zp50_effects_cure.amxx
+zp50_effects_lighting.amxx
+zp50_ambience_effects.amxx
+zp50_ambience_sounds.amxx
+
+
+; Gameplay / Other
+
+zp50_main_menu.amxx
+zp50_objective_remover.amxx
+zp50_gameplay_fixes.amxx
+zp50_team_scoring.amxx
+zp50_hud_info.amxx
+zp50_serverbrowser_info.amxx
+
+
+; Custom grenades
+
+zp50_grenade_flashbangs.amxx
+zp50_grenade_fire.amxx
+zp50_grenade_frost.amxx
+zp50_grenade_flare.amxx
+
+
+; ZP 4.3 Subplugin Compatibility
+
+zp50_zp43_compat.amxx
+;zp50_biohazard_compat.amxx

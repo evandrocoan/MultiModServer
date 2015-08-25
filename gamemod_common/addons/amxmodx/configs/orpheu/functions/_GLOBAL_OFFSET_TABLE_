@@ -1,0 +1,13 @@
+{
+    "name"      : "_GLOBAL_OFFSET_TABLE_",
+    "library"   : "mod",
+    "identifiers" :
+    [
+
+        {
+            "os"    : "linux",
+            "mod"   : "cstrike",
+            "value" : "_GLOBAL_OFFSET_TABLE_"
+        }
+    ]
+}

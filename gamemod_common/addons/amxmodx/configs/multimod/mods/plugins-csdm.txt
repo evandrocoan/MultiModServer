@@ -1,0 +1,40 @@
+;rename this file to disabled-csdm.ini to turn it off.
+;rename it back to plugins-csdm.ini to turn it on.
+
+;put a semi-colon in front of a plugin to disable it.
+;add the word debug after a plugin to place it in debug mode
+; for example: csdm_main.amxx debug
+;remove a semi-colon to re-enable a plugin
+
+
+;Main plugin, required for most cases
+csdm_main.amxx
+
+;Weapons and equipment menus
+csdm_equip.amxx
+
+;Enables preset spawning and the preset spawning editor
+;Map config files are located in configs/csdm
+csdm_spawn_preset.amxx
+;spawn_editor.amxx
+
+;Miscellanious extra features, such as ammo refills
+; and objective removals
+csdm_misc.amxx
+
+;Spawn protection
+csdm_protection.amxx
+
+;Adds free-for-all mode (must be enabled in csdm.cfg too)
+csdm_ffa.amxx
+
+;Round ticketing mode, like FireArms.  First team to use all
+; of their death points loses the ability to respawn.
+; (must be enabled in csdm.cfg too)
+;csdm_tickets.amxx
+
+;Item mode (from CSDM1)
+;Must be enabled in csdm.cfg as well (at the very bottom)
+;There is currently no item editor!
+;csdm_itemmode.amxx
+

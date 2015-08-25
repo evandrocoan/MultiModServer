@@ -1,0 +1,3459 @@
+[en]
+NOTICE_INFO1 = Press M to show the game menu
+NOTICE_INFO2 = Press , or . to purchase ammo
+NOTICE_VIRUS_FREE = The T-Virus has been set loose...
+NOTICE_FIRST = %s is the first zombie !!
+NOTICE_INFECT = %s's brains has been eaten...
+NOTICE_INFECT2 = %s's brains has been eaten by %s...
+NOTICE_ANTIDOTE = %s has used an antidote...
+NOTICE_NEMESIS = %s is a Nemesis !!!
+NOTICE_SURVIVOR = %s is a Survivor !!!
+NOTICE_SWARM = Swarm Mode !!!
+NOTICE_MULTI = Multiple Infection !!!
+NOTICE_PLAGUE = Plague Mode !!!
+
+WIN_HUMAN = Humans defeated the plague!
+WIN_ZOMBIE = Zombies have taken over the world!
+WIN_NO_ONE = No one won...
+
+CMD_INFECT = turned into a Zombie
+CMD_DISINFECT = turned back to Human
+CMD_NEMESIS = turned into a Nemesis
+CMD_SURVIVAL = turned into a Survivor
+CMD_SWARM = start Swarm Mode
+CMD_MULTI = start Multiple Infection
+CMD_PLAGUE = start Plague Mode
+CMD_RESPAWN = respawned
+CMD_NOT = Unavailable command.
+CMD_ZOMBIE_ONLY = This is only available to zombies.
+CMD_HUMAN_ONLY = This is only available to humans.
+CMD_NOT_STUCK = You are not stuck.
+CMD_NOT_ACCESS = You have no access.
+CMD_NOT_CANTUSE = You can't use this right now.
+CMD_NOT_EXTRAS = Extra Items are disabled.
+CMD_NOT_ZCLASSES = Zombie Classes are disabled.
+
+MENU_BUY = Buy Weapons
+MENU_EXTRABUY = Buy Extra Items
+MENU_ZCLASS = Choose Zombie Class
+MENU_UNSTUCK = Unstuck
+MENU_ADMIN = Admin Menu
+MENU_INFO = Help
+MENU_SPECTATOR = Join Spectators
+
+MENU_BUY1_TITLE = Primary Weapon
+MENU_BUY2_TITLE = Secondary Weapon
+MENU_ZCLASS_TITLE = Zombie Class
+MENU_EXTRA_TITLE = Extra Items
+MENU_ADMIN_TITLE = Admin Menu
+MENU_INFO_TITLE = Plugin Information
+
+MENU_EXTRA1 = NightVision (single round)
+MENU_EXTRA2 = T-Virus Antidote
+MENU_EXTRA3 = Zombie Madness
+MENU_EXTRA4 = Infection Bomb
+MENU_ADMIN1 = Make Zombie/Human
+MENU_ADMIN2 = Make Nemesis
+MENU_ADMIN3 = Make Survivor
+MENU_ADMIN4 = Respawn Someone
+MENU_ADMIN5 = Start Swarm Mode
+MENU_ADMIN6 = Start Multiple Infection
+MENU_ADMIN7 = Start Plague Mode
+MENU_INFO1 = General
+MENU_INFO2 = Humans
+MENU_INFO3 = Zombies
+MENU_INFO4 = Gameplay Modes
+
+MENU_AUTOSELECT = Remember Selection
+MENU_BACK = Back
+MENU_NEXT = Next
+MENU_EXIT = Exit
+
+MOTD_INFO11 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>%s %s by %s :</b> is a Counter-Strike plugin developed for AMX Mod X, in which humans and zombies are confronted. It is based on the classic zombie infection mod: on every round a random player is picked to be the first zombie who has to infect everyone else. 
+MOTD_INFO12 = But there are new features and enhancements. For instance, you are able to buy extra items (such as weapons) in exchange of ammo packs. You can get ammo packs by killing zombies/infecting humans.<br><br><br><u>Current server settings:</u><br>
+MOTD_INFO1_A = <br>Ambience Effects:
+MOTD_INFO1_B = <br>Lightning Level: %s
+MOTD_INFO1_C = <br>Triggered Lights: %L
+MOTD_INFO1_D = <br>Thunderclaps Every: %d seconds
+MOTD_INFO1_E = <br>Doors: %L
+MOTD_INFO1_F = <br>Deathmatch: %L
+MOTD_INFO1_G = <br>Spawn Protection Time: %d seconds
+MOTD_INFO1_H = <br>Random Spawning: %L
+MOTD_INFO1_I = <br>Extra Items: %L
+MOTD_INFO1_J = <br>Zombie Classes: %L
+MOTD_INFO1_K = <br>Custom Nightvision: %L
+MOTD_INFO1_L = <br>Custom Flashlight: %L
+MOTD_INFO2 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Humans:</b> their objective is to eliminate any zombie threat. They have a big arsenal of weapons to choose from, and use flashlights on dark maps. Team work is a must to survive.<br><br><br><u>Current server settings:</u><br>
+MOTD_INFO2_A = <br>Health: %d
+MOTD_INFO2_B = <br>Health Reward for Last Human: %d
+MOTD_INFO2_C = <br>Speed: %d
+MOTD_INFO2_D = <br>Gravity: %d
+MOTD_INFO2_E = <br>Ammo: %L
+MOTD_INFO2_F = <br>Damage to Get an Ammo Pack: %d
+MOTD_INFO2_G = <br>Fire Grenades: %L
+MOTD_INFO2_H = <br>Frost Grenades: %L
+MOTD_INFO2_I = <br>Flare Grenades: %L
+MOTD_INFO2_J = <br>Knockback: %L
+MOTD_INFO3 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Zombies:</b> their objective is to infect every alive human. They are able to see in the dark, but can only attack melee. There are many zombie classes to choose from, each with his own strenghts and weaknesses, but all capable of eating brains.<br><br><br><u>Current server settings:</u><br>
+MOTD_INFO3_A = <br>Zombie Health: %d
+MOTD_INFO3_B = <br>First Zombie Health: %d
+MOTD_INFO3_C = <br>Armor: %d%% damage taken
+MOTD_INFO3_D = <br>Speed: %d
+MOTD_INFO3_E = <br>Gravity: %d
+MOTD_INFO3_F = <br>HP for Infection: %d
+MOTD_INFO3_G = <br>Pain Shock Free: %L
+MOTD_INFO3_H = <br>Bleeding: %L
+MOTD_INFO3_I = <br>Ammo Packs for Infection: %d
+MOTD_INFO4 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Mini-Games:</b> there are 5 special gameplay modes that may randomly take place during the course of the game.<br><br><br><u>Current server settings:</u><br>
+MOTD_INFO4_A = <br>Nemesis: %L
+MOTD_INFO4_B = <br>Nemesis Chance: 1 in %d
+MOTD_INFO4_C = <br>Nemesis Health: %s
+MOTD_INFO4_D = <br>Nemesis Speed: %d
+MOTD_INFO4_E = <br>Nemesis Gravity: %d
+MOTD_INFO4_F = <br>Nemesis Leap: %L
+MOTD_INFO4_G = <br>Nemesis Pain Shock Free: %L
+MOTD_INFO4_H = <br><br>Survivor: %L
+MOTD_INFO4_I = <br>Survivor Chance: 1 in %d
+MOTD_INFO4_J = <br>Survivor Health: %s
+MOTD_INFO4_K = <br>Survivor Speed: %d
+MOTD_INFO4_L = <br>Survivor Gravity: %d
+MOTD_INFO4_M = <br>Survivor Leap: %L
+MOTD_INFO4_N = <br>Survivor Pain Shock Free: %L
+MOTD_INFO4_O = <br><br>Swarm Mode: %L
+MOTD_INFO4_P = <br>Swarm Mode Chance: 1 in %d
+MOTD_INFO4_Q = <br><br>Multi Infection: %L
+MOTD_INFO4_R = <br>Multi Infection Chance: 1 in %d
+MOTD_INFO4_S = <br>Infection Ratio: %d%%
+MOTD_INFO4_T = <br><br>Plague Mode: %L
+MOTD_INFO4_U = <br>Plague Mode Chance: 1 in %d
+MOTD_INFO4_V = <br>Infection Ratio: %d%%
+
+MOTD_ENABLED = Enabled
+MOTD_DISABLED = Disabled
+MOTD_FOG = Fog
+MOTD_RAIN = Rain
+MOTD_SNOW = Snow
+MOTD_ROTATING = Rotating doors removed
+MOTD_DOORS = All doors removed
+MOTD_DM_HUMAN = Respawn as human
+MOTD_DM_ZOMBIE = Respawn as zombie
+MOTD_LIMITED = Limited
+MOTD_AMMO_BP = Unlimited reloads
+MOTD_AMMO_CLIP = Unlimited clip
+MOTD_LASTZOMBIE = Only on last zombie
+
+ZOMBIE_ATTRIB1 = Health
+ZOMBIE_ATTRIB2 = Speed
+ZOMBIE_ATTRIB3 = Gravity
+ZOMBIE_ATTRIB4 = Knockback
+
+CLASS_CLASS = Class:
+CLASS_HUMAN = Human
+CLASS_ZOMBIE = Zombie
+CLASS_SURVIVOR = Survivor
+CLASS_NEMESIS = Nemesis
+
+LAST_ZOMBIE_LEFT = The last zombie has left, %s is the new zombie.
+LAST_HUMAN_LEFT = The last human has left, %s is the new human.
+NOT_ENOUGH_AMMO = You dont have enough ammo packs.
+AMMO_BOUGHT = You purchased extra ammo for your guns.
+ZOMBIE_SELECT = Your zombie class after the next infection will be
+BUY_ENABLED = Your buy menu has been re-enabled.
+AMMO_PACKS1 = Ammo packs:
+AMMO_PACKS2 = ammo packs
+SPECTATING = Spectating:
+
+[es]
+NOTICE_INFO1 = Presiona M para mostrar el menú de juego
+NOTICE_INFO2 = Presiona , o . para comprar munición
+NOTICE_VIRUS_FREE = El Virus-T se ha liberado...
+NOTICE_FIRST = %s es el primer zombie !!
+NOTICE_INFECT = %s ha perdido su cerebro...
+NOTICE_INFECT2 = %s ha perdido su cerebro a manos de %s...
+NOTICE_ANTIDOTE = %s ha usado un antídoto...
+NOTICE_NEMESIS = %s es un Nemesis !!!
+NOTICE_SURVIVOR = %s es un Survivor !!!
+NOTICE_SWARM = Modo Swarm !!!
+NOTICE_MULTI = Infección Multiple !!!
+NOTICE_PLAGUE = Modo Plague !!!
+
+WIN_HUMAN = Los Humanos han vencido la plaga!
+WIN_ZOMBIE = Los Zombies han tomado el mundo!
+WIN_NO_ONE = Nadie ha ganado...
+
+CMD_INFECT = convertido en Zombie
+CMD_DISINFECT = convertido en Humano
+CMD_NEMESIS = convertido en Nemesis
+CMD_SURVIVAL = convertido en Survivor
+CMD_SWARM = comenzar Modo Swarm
+CMD_MULTI = comenzar Infeccion Multiple
+CMD_PLAGUE = comenzar Modo Plague
+CMD_RESPAWN = revivido
+CMD_NOT = Comando no disponible.
+CMD_ZOMBIE_ONLY = Esto sólo está disponible para zombies.
+CMD_HUMAN_ONLY = Esto sólo está disponible para humanos.
+CMD_NOT_STUCK = No estás trabado.
+CMD_NOT_ACCESS = No tienes acceso.
+CMD_NOT_CANTUSE = No puedes usar esto ahora.
+CMD_NOT_EXTRAS = Los Items Extra están deshabilitados.
+CMD_NOT_ZCLASSES = Las Clases de Zombie están deshabilitadas.
+
+MENU_BUY = Comprar Armas
+MENU_EXTRABUY = Comprar Items Extra
+MENU_ZCLASS = Elegir Clase de Zombie
+MENU_UNSTUCK = Destrabar (unstuck)
+MENU_ADMIN = Menú de Admin
+MENU_INFO = Ayuda
+MENU_SPECTATOR = Unirse a Espectador
+
+MENU_BUY1_TITLE = Arma Primaria
+MENU_BUY2_TITLE = Arma Secundaria
+MENU_ZCLASS_TITLE = Clase de Zombie
+MENU_EXTRA_TITLE = Items Extra
+MENU_ADMIN_TITLE = Mení de Admin
+MENU_INFO_TITLE = Información del Plugin
+
+MENU_EXTRA1 = NightVision (una ronda)
+MENU_EXTRA2 = Antídoto del Virus-T
+MENU_EXTRA3 = Furia Zombie
+MENU_EXTRA4 = Bomba de Infección
+MENU_ADMIN1 = Hacer Zombie/Humano
+MENU_ADMIN2 = Hacer Nemesis
+MENU_ADMIN3 = Hacer Survivor
+MENU_ADMIN4 = Revivir a Alguien
+MENU_ADMIN5 = Comenzar Modo Swarm
+MENU_ADMIN6 = Comenzar Infección Multiple
+MENU_ADMIN7 = Comenzar Modo Plague
+MENU_INFO1 = General
+MENU_INFO2 = Humanos
+MENU_INFO3 = Zombies
+MENU_INFO4 = Modos de Juego
+
+MENU_AUTOSELECT = Recordar Selección
+MENU_BACK = Anterior
+MENU_NEXT = Siguiente
+MENU_EXIT = Salir
+
+MOTD_INFO11 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>%s %s por %s :</b> es un plugin de Counter-Strike hecho para AMX Mod X, donde se enfrentan humanos y zombies. Está basado en el clásico zombie infection mod: en cada ronda un jugador al azar es elegido para ser el primer zombie, quien deberá infectar a los demás.
+MOTD_INFO12 = Pero hay nuevas características y mejoras. Por ejemplo, se puede comprar items extra (como armas) a cambio de ammo packs. Los ammo packs se consiguen matando zombies/infectando humanos.<br><br><br><u>Configuración actual del servidor:</u><br>
+MOTD_INFO1_A = <br>Efectos Ambientales:
+MOTD_INFO1_B = <br>Nivel de Iluminación: %s
+MOTD_INFO1_C = <br>Luces de Interrumptores: %L
+MOTD_INFO1_D = <br>Relámpagos cada: %d segundos
+MOTD_INFO1_E = <br>Puertas: %L
+MOTD_INFO1_F = <br>Deathmatch: %L
+MOTD_INFO1_G = <br>Protección de Spawn: %d segundos
+MOTD_INFO1_H = <br>Spawn Aleatorio: %L
+MOTD_INFO1_I = <br>Items Extra: %L
+MOTD_INFO1_J = <br>Clases de Zombie: %L
+MOTD_INFO1_K = <br>Visión Nocturna Personalizada: %L
+MOTD_INFO1_L = <br>Linterna Personalizada: %L
+MOTD_INFO2 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Humanos:</b> su objetivo es eliminar toda amenaza zombie. Tienen un gran arsenal de armas para elegir, y usan linternas en mapas oscuros. El trabajo en equipo es indispensable para sobrevivir.<br><br><br><u>Configuración actual del servidor:</u><br>
+MOTD_INFO2_A = <br>Vida: %d
+MOTD_INFO2_B = <br>Vida Adicional para Ultimo Humano: %d
+MOTD_INFO2_C = <br>Velocidad: %d
+MOTD_INFO2_D = <br>Gravedad: %d
+MOTD_INFO2_E = <br>Munición: %L
+MOTD_INFO2_F = <br>Daño para Conseguir un Ammo Pack: %d
+MOTD_INFO2_G = <br>Granadas de Fuego: %L
+MOTD_INFO2_H = <br>Granadas de Hielo: %L
+MOTD_INFO2_I = <br>Granadas de Luz: %L
+MOTD_INFO2_J = <br>Knockback: %L
+MOTD_INFO3 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Zombies:</b> su objetivo es infectar a todos los humanos. Pueden ver en la oscuridad, pero sólo atacan a corto rango. Hay distintas clases de zombie para elegir, cada una con sus propias fortalezas y debilidades, pero todas capaces de comer cerebros por igual.<br><br><br><u>Configuración actual del servidor:</u><br>
+MOTD_INFO3_A = <br>Vida de Zombie: %d
+MOTD_INFO3_B = <br>Vida de Primer Zombie: %d
+MOTD_INFO3_C = <br>Armadura: %d%% daño recibido
+MOTD_INFO3_D = <br>Velocidad: %d
+MOTD_INFO3_E = <br>Gravedad: %d
+MOTD_INFO3_F = <br>HP por Infección: %d
+MOTD_INFO3_G = <br>Velocidad no Afectada por Daño: %L
+MOTD_INFO3_H = <br>Sangrado: %L
+MOTD_INFO3_I = <br>Ammo Packs por Infección: %d
+MOTD_INFO4 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Mini-juegos</b> hay 5 modos especiales que pueden tener lugar aleatoriamente durante el transcurso del juego.<br><br><br><u>Configuración actual del servidor:</u><br>
+MOTD_INFO4_A = <br>Nemesis: %L
+MOTD_INFO4_B = <br>Chance de Nemesis: 1 en %d
+MOTD_INFO4_C = <br>Vida de Nemesis: %s
+MOTD_INFO4_D = <br>Velocidad de Nemesis: %d
+MOTD_INFO4_E = <br>Gravedad de Nemesis: %d
+MOTD_INFO4_F = <br>Salto Largo de Nemesis: %L
+MOTD_INFO4_G = <br>Velocidad no Afectada por Daño para Nemesis: %L
+MOTD_INFO4_H = <br><br>Survivor: %L
+MOTD_INFO4_I = <br>Chance de Survivor: 1 en %d
+MOTD_INFO4_J = <br>Vida de Survivor: %s
+MOTD_INFO4_K = <br>Velocidad de Survivor: %d
+MOTD_INFO4_L = <br>Gravedad de Survivor: %d
+MOTD_INFO4_M = <br>Salto Largo de Survivor: %L
+MOTD_INFO4_N = <br>Velocidad no Afectada por Daño para Survivor: %L
+MOTD_INFO4_O = <br><br>Modo Swarm: %L
+MOTD_INFO4_P = <br>Chance de Modo Swarm: 1 en %d
+MOTD_INFO4_Q = <br><br>Multi Infección: %L
+MOTD_INFO4_R = <br>Chance de Multi Infección: 1 en %d
+MOTD_INFO4_S = <br>Indice de Infección: %d%%
+MOTD_INFO4_T = <br><br>Modo Plague: %L
+MOTD_INFO4_U = <br>Chance de Modo Plague: 1 en %d
+MOTD_INFO4_V = <br>Indice de Infección: %d%%
+
+MOTD_ENABLED = Habilitado
+MOTD_DISABLED = Deshabilitado
+MOTD_FOG = Niebla
+MOTD_RAIN = Lluvia
+MOTD_SNOW = Nieve
+MOTD_ROTATING = Puertas giratorias removidas
+MOTD_DOORS = Todas las puertas removidas
+MOTD_DM_HUMAN = Renacer como humano
+MOTD_DM_ZOMBIE = Renacer como zombie
+MOTD_LIMITED = Limitada
+MOTD_AMMO_BP = Recargas ilimitadas
+MOTD_AMMO_CLIP = Cartucho ilimitado
+MOTD_LASTZOMBIE = Sólo en el último zombie
+
+ZOMBIE_ATTRIB1 = Vida
+ZOMBIE_ATTRIB2 = Velocidad
+ZOMBIE_ATTRIB3 = Gravedad
+ZOMBIE_ATTRIB4 = Knockback
+
+CLASS_CLASS = Clase:
+CLASS_HUMAN = Humano
+CLASS_ZOMBIE = Zombie
+CLASS_SURVIVOR = Survivor
+CLASS_NEMESIS = Nemesis
+
+LAST_ZOMBIE_LEFT = El último zombie se ha ido, %s es el nuevo zombie.
+LAST_HUMAN_LEFT = El último humano se ha ido, %s es el nuevo humano.
+NOT_ENOUGH_AMMO = No tienes suficientes ammo packs.
+AMMO_BOUGHT = Has comprado munición extra para tus armas.
+ZOMBIE_SELECT = En tu próxima infección tu clase será
+BUY_ENABLED = El menú de compra ha sido re-activado.
+AMMO_PACKS1 = Ammo packs:
+AMMO_PACKS2 = ammo packs
+SPECTATING = Siguiendo a:
+
+[bp]
+NOTICE_INFO1 = Aperte M para mostrar o menu do jogo.
+NOTICE_INFO2 = Aperte , ou . para comprar municao.
+NOTICE_VIRUS_FREE = O Virus-T foi libertado...
+NOTICE_FIRST = %s e o primeiro zombie!
+NOTICE_INFECT = %s teve seu cerebro comido...
+NOTICE_INFECT2 = %s foi Infectado por %s. CORRA!
+NOTICE_ANTIDOTE = %s usou um antidoto...
+NOTICE_NEMESIS = %s e o NEMESIS ! Fuja ou se esconda !
+NOTICE_SURVIVOR = %s e o SURVIVOR... Boa Sote !
+NOTICE_SWARM = Modo Swarm !
+NOTICE_MULTI = Infeccao Multipla !
+NOTICE_PLAGUE = Modo Plague !
+
+WIN_HUMAN = O T-Virus foi extinto do mundo, os Humanos ganharam!
+WIN_ZOMBIE = O T-Virus dominou o mundo. A Humanidade foi extinta!
+WIN_NO_ONE = Resta uma unica pergunta... Ha sobreviventes deste terrivel ataque?
+
+CMD_INFECT = Convertido em Zombie
+CMD_DISINFECT = Convertido em Humano
+CMD_NEMESIS = Convertido em Nemesis
+CMD_SURVIVAL = Convertido em Survivor
+CMD_SWARM = Comecar Modo Swarm
+CMD_MULTI = Comecar Infeccao Multipla
+CMD_PLAGUE = Comecar Modo Plague
+CMD_RESPAWN = Revivido
+CMD_NOT = Comando nao disponivel.
+CMD_ZOMBIE_ONLY = Comando apenas para zombies.
+CMD_HUMAN_ONLY = Comando apenas para humanos.
+CMD_NOT_STUCK = Nao estas encravado.
+CMD_NOT_ACCESS = Voce nao tem acesso a este comando!
+CMD_NOT_CANTUSE = Nao pode usar agora.
+CMD_NOT_EXTRAS = Itens extras desligados!
+CMD_NOT_ZCLASSES = Classes de zombie desligadas!
+
+MENU_BUY = Comprar armas
+MENU_EXTRABUY = Comprar itens extra
+MENU_ZCLASS = Eleger classe de zombie
+MENU_UNSTUCK = Desencravar (unstuck)
+MENU_ADMIN = Menu de admin
+MENU_INFO = Ajuda
+MENU_SPECTATOR = Entrar no modo Espectator
+
+MENU_BUY1_TITLE = Arma primaria
+MENU_BUY2_TITLE = Arma secundaria
+MENU_ZCLASS_TITLE = Classe de zombie
+MENU_EXTRA_TITLE = Itens extra
+MENU_ADMIN_TITLE = Menu de admin
+MENU_INFO_TITLE = Informacao do plugin
+
+MENU_EXTRA1 = NightVision (uma ronda)
+MENU_EXTRA2 = Antidoto do Virus-T
+MENU_EXTRA3 = Furia zombie
+MENU_EXTRA4 = Bomba de infeccao
+MENU_ADMIN1 = Transformar em Zombie/Humano
+MENU_ADMIN2 = Transformar em Nemesis
+MENU_ADMIN3 = Transformar em Survivor
+MENU_ADMIN4 = Reviver cliente
+MENU_ADMIN5 = Comecar modo swarm
+MENU_ADMIN6 = Comecar infeccao multipla
+MENU_ADMIN7 = Comecar modo plague
+MENU_INFO1 = General
+MENU_INFO2 = Humanos
+MENU_INFO3 = Zombies
+MENU_INFO4 = Modos de Jogo
+
+MENU_AUTOSELECT = Lembrar Selecao
+MENU_BACK = Voltar
+MENU_NEXT = Proxima
+MENU_EXIT = Sair
+
+MOTD_INFO11 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>%s %s por %s :</b> &eacute; um plugin para Counter-Strike feito em AMX Mod X, onde se enfrentam humanos e zombies. Est&aacute; baseado no Classico Zombie Infection MOD: em cada ronda um jogador &eacute; infectado, e tem a proesa de espalhar o seu v&iacute;rus, o famoso V&iacute;rus-T.
+MOTD_INFO12 = Novas caracter&iacute;sticas melhoradas. Por exemplo: pode-se comprar itens extra (como armas) e trocar por ammo packs. Os ammo packs s&atildeo obtidos matando zombies ou infectando humanos.<br><br><br><u>Configura&ccedil;&atilde;o actual do servidor:</u><br>
+MOTD_INFO1_A = <br>Efeitos ambiente:
+MOTD_INFO1_B = <br>Nivel de ilumina&ccedil;&atilde;o: %s
+MOTD_INFO1_C = <br>Luzes de interrumptores: %L
+MOTD_INFO1_D = <br>Rel&acirc;mpagos cada: %d segundos
+MOTD_INFO1_E = <br>Portas: %L
+MOTD_INFO1_F = <br>Deathmatch: %L
+MOTD_INFO1_G = <br>Protec&ccedil;&atilde;o de spawn: %d segundos
+MOTD_INFO1_H = <br>Spawn aleat&oacute;rio: %L
+MOTD_INFO1_I = <br>Itens extra: %L
+MOTD_INFO1_J = <br>Classes de zombie: %L
+MOTD_INFO1_K = <br>Vis&atilde;o noturna personalizada: %L
+MOTD_INFO1_L = <br>Lanterna personalizada: %L
+MOTD_INFO2 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Humanos:</b> o seu objetivo &eacute; eliminar qualquer amea&ccedil;a zombie. Tem um grande arsenal de armas para escolher, e usam lanternas em mapas escuros. O trabalho em equipa &eacute; indispens&aacute;vel para sobreviver.<br><br><br><u>Configura&ccedil;&atilde;o actual do servidor:</u><br>
+MOTD_INFO2_A = <br>Vida: %d
+MOTD_INFO2_B = <br>Recompensa de vida para o &uacute;ltimo humano: %d
+MOTD_INFO2_C = <br>Velocidade: %d
+MOTD_INFO2_D = <br>Gravidade: %d
+MOTD_INFO2_E = <br>Muni&ccedil;&otilde;es: %L
+MOTD_INFO2_F = <br>Estrago para conseguir um Ammo Pack: %d
+MOTD_INFO2_G = <br>Granadas de fogo: %L
+MOTD_INFO2_H = <br>Granadas de congela&ccedil;&atilde;: %L
+MOTD_INFO2_I = <br>Granadas flash: %L
+MOTD_INFO2_J = <br>Knockback: %L
+MOTD_INFO3 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Zombies:</b> o seu objetivo &eacute;  infectar todos os humanos. Podem ver na escurid&atilde;o, mas s&oacute; atacam de perto. H&aacute; 6 classes distintas de zombie, cada uma com suas pr&oacute;prias habilidades e caracter&iacute;sticas, mas todas com fome de um bom cerebro.<br><br><br><u>Configura&ccedil;&atilde;o atual do servidor:</u><br>
+MOTD_INFO3_A = <br>Vida de zombie: %d
+MOTD_INFO3_B = <br>Vida do primeiro zombie: %d
+MOTD_INFO3_C = <br>Armadura: %d%% estrago recebido
+MOTD_INFO3_D = <br>Velocidade: %d
+MOTD_INFO3_E = <br>Gravidade: %d
+MOTD_INFO3_F = <br>HP por infec&ccedil;&atilde;o: %d
+MOTD_INFO3_G = <br>Velocidade n&atilde;o afectada por estragp: %L
+MOTD_INFO3_H = <br>Sangrado: %L
+MOTD_INFO3_I = <br>Ammo Packs por infec&ccedil;&atilde;o: %d
+MOTD_INFO4 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Mini-jogos:</b> h&aacute; 4 distintos modos de jogo especiais que ocorrer&atilde;o aleatoriamente durante este jogo.<br><br><br><u>Configura&ccedil;&atilde;o actual do servidor:</u><br>
+MOTD_INFO4_A = <br>Nemesis: %L
+MOTD_INFO4_B = <br>Chance de Nemesis: 1 em %d
+MOTD_INFO4_C = <br>Vida de Nemesis: %s
+MOTD_INFO4_D = <br>Velocidade de Nemesis: %d
+MOTD_INFO4_E = <br>Gravidade de Nemesis: %d
+MOTD_INFO4_F = <br>Salto Largo de Nemesis: %L
+MOTD_INFO4_G = <br>Velocidade n&atilde;o afectada por estrago para Nemesis: %L
+MOTD_INFO4_H = <br><br>Survivor: %L
+MOTD_INFO4_I = <br>Chance de Survivor: 1 em %d
+MOTD_INFO4_J = <br>Vida de Survivor: %s
+MOTD_INFO4_K = <br>Velocidade de Survivor: %d
+MOTD_INFO4_L = <br>Gravidade de Survivor: %d
+MOTD_INFO4_M = <br>Salto Largo de Survivor: %L
+MOTD_INFO4_N = <br>Velocidade n&atilde;o afectada por estrago para Survivor: %L
+MOTD_INFO4_O = <br><br>Modo Swarm: %L
+MOTD_INFO4_P = <br>Chance de modo Swarm: 1 em %d
+MOTD_INFO4_Q = <br><br>Multi infec&ccedil;&atilde;o: %L
+MOTD_INFO4_R = <br>Chance de multi infec&ccedil;&atilde;o: 1 en %d
+MOTD_INFO4_S = <br>Indice de infec&ccedil;&atilde;o: %d%%
+MOTD_INFO4_T = <br><br>Modo Plague: %L
+MOTD_INFO4_U = <br>Chance de modo Plague: 1 em %d
+MOTD_INFO4_V = <br>Indice de infec&ccedil;&atilde;o: %d%%
+
+MOTD_ENABLED = Habilitado
+MOTD_DISABLED = Desabilitado
+MOTD_FOG = Neblina
+MOTD_RAIN = Chuva
+MOTD_SNOW = Neve
+MOTD_ROTATING = Portas girat&oacute;rias removidas
+MOTD_DOORS = Todas as portas foram removidas
+MOTD_DM_HUMAN = Renascer como humano
+MOTD_DM_ZOMBIE = Renascer como zombie
+MOTD_LIMITED = Muni&ccedil;&oacute;o limitada
+MOTD_AMMO_BP = Muni&ccedil;&oacute;o ilimitada
+MOTD_AMMO_CLIP = Sem carregar armas
+MOTD_LASTZOMBIE = Sempre o &uacute;ltimo zombie
+
+ZOMBIE_ATTRIB1 = Vida
+ZOMBIE_ATTRIB2 = Velocidade
+ZOMBIE_ATTRIB3 = Gravidade
+ZOMBIE_ATTRIB4 = Impacto
+
+CLASS_CLASS = Classe:
+CLASS_HUMAN = Humano
+CLASS_ZOMBIE = Zombie
+CLASS_SURVIVOR = Survivor
+CLASS_NEMESIS = Nemesis
+
+LAST_ZOMBIE_LEFT = O ultimo zombie saiu, %s e o novo zombie.
+LAST_HUMAN_LEFT = O ultimo humano saiu, %s e o novo humano.
+NOT_ENOUGH_AMMO = Nao tem suficientes ammo packs.
+AMMO_BOUGHT = Voce comprou Municao Extra.
+ZOMBIE_SELECT = Voce esta na seguinte classe de Zombies:
+BUY_ENABLED = O seu menu de compras foi re-ativado.
+AMMO_PACKS1 = Ammo packs:
+AMMO_PACKS2 = ammo packs
+SPECTATING = Voce esta Assistindo:
+
+[pl]
+NOTICE_INFO1 = Wcisnij M zeby uruchomic menu gry
+NOTICE_INFO2 = wcisnij , albo . zeby kupic amunicje
+NOTICE_VIRUS_FREE = T-Virus zostal zgubiony...
+NOTICE_FIRST = %s jest pierwszym zombi !!
+NOTICE_INFECT = %s - jego mozg zostal zainfekowany...
+NOTICE_INFECT2 = %s - jego mozg zostal zainfekowany przez %s...
+NOTICE_ANTIDOTE = %s uzyl antidotum...
+NOTICE_NEMESIS = %s jest Nemesis !!!
+NOTICE_SURVIVOR = %s stal sie Survivor !!!
+NOTICE_SWARM = Swarm Mode !!!
+NOTICE_MULTI = wielokrotna infekcja !!!
+NOTICE_PLAGUE = Plague Mode !!!
+
+WIN_HUMAN = Ludzie pokonali plage!
+WIN_ZOMBIE = Zombi zapanowal nad swiatem!
+WIN_NO_ONE = Nikt nie wygral...
+
+CMD_INFECT = zmieniony w Zombi
+CMD_DISINFECT = Zmieniony z powrotem w czlowieka
+CMD_NEMESIS = Zmieniony w Nemesis
+CMD_SURVIVAL = zmieniony w Survivor
+CMD_SWARM = Rozpoczyna sie Swarm Mode
+CMD_MULTI = Rozpoczyna sie wielokrotna infekcja
+CMD_PLAGUE = Rozpoczyna sie Plague Mode
+CMD_RESPAWN = Zmaterializowany
+CMD_NOT = Nieznana komenda.
+CMD_ZOMBIE_ONLY = Mozliwe tylko dla zombiakow.
+CMD_HUMAN_ONLY = Mozliwe tylko dla ludzi.
+CMD_NOT_STUCK = Nie jestes uprawniony. (nie jestes zablokowany)
+CMD_NOT_ACCESS = Nie masz dostepu.
+CMD_NOT_CANTUSE = Nie mozesz uzywac tego teraz.
+CMD_NOT_EXTRAS = Dodatkowe rzeczy sa wylaczone.
+CMD_NOT_ZCLASSES = Klasy zombi sa wylaczone.
+
+MENU_BUY = Kup bron
+MENU_EXTRABUY = Kup dodatkowy ekwipunek
+MENU_ZCLASS = Wybierz klase zombi
+MENU_UNSTUCK = Odblokuj
+MENU_ADMIN = Menu Admina
+MENU_INFO = Pomoc
+MENU_SPECTATOR = Dolacz do Obserwatorow
+
+MENU_BUY1_TITLE = Bron pierwsza
+MENU_BUY2_TITLE = Bron druga
+MENU_ZCLASS_TITLE = Klasa Zombi
+MENU_EXTRA_TITLE = Dodatkowe rzeczy
+MENU_ADMIN_TITLE = Menu Admina
+MENU_INFO_TITLE = Informacje o Pluginie
+
+MENU_EXTRA1 = Noktowizor (pojedyncza runda)
+MENU_EXTRA2 = Antidotum na T-virus
+MENU_EXTRA3 = Szalone Zombi
+MENU_EXTRA4 = Zarazajaca bomba
+MENU_ADMIN1 = Zrob Zombie/czlowiekiem
+MENU_ADMIN2 = Zrob Nemesis
+MENU_ADMIN3 = Zrob Survivor
+MENU_ADMIN4 = Zmaterializuj kogos
+MENU_ADMIN5 = Start Swarm Mode
+MENU_ADMIN6 = Start Wielokrotna Infekcje
+MENU_ADMIN7 = Start Plague Mode
+MENU_INFO1 = Ogolne
+MENU_INFO2 = Ludzie
+MENU_INFO3 = Zombi
+MENU_INFO4 = Tryby Gry
+
+MENU_AUTOSELECT = Pamietaj Wybor
+MENU_BACK = Powrot
+MENU_NEXT = Nastepny
+MENU_EXIT = Wyjscie
+
+MOTD_INFO11 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>%s %s by %s :</b> jest Counter-Strike plugin zrobionym pod AMX Mod X, w ktorym ludzie i zombi walcza ze soba. Bazuje na klasach zomni z infection mod: W kazdej rundzie jeden gracz staje sie zombi ktore zaraza wszystkich innych.
+MOTD_INFO12 = Ale teraz sa nowe modyfikacje i dodatki. Dla przykladu, mozesz kupic dodatkowe rzeczy (cos jak bronie) i dokupic do nich amunicje. Mozesz dostawac ammo zabijajac zombi/zainfekowanych ludzi.<br><br><br><u>Obecne ustawienia serwera:</u><br>
+MOTD_INFO1_A = <br>Efekty klimatu:
+MOTD_INFO1_B = <br>Poziom Oswietlenia: %s
+MOTD_INFO1_C = <br>uruchomione swiatla: %L
+MOTD_INFO1_D = <br>Piorun uderza kazde: %d sekund
+MOTD_INFO1_E = <br>Drzwi: %L
+MOTD_INFO1_F = <br>Deathmatch: %L
+MOTD_INFO1_G = <br>Czas ochrony po materializacji: %d sekund
+MOTD_INFO1_H = <br>Przypadkowa materializacja: %L
+MOTD_INFO1_I = <br>Dodatkowe rzeczy: %L
+MOTD_INFO1_J = <br>Klasy Zombi: %L
+MOTD_INFO1_K = <br>Noktowizor uzytkownika: %L
+MOTD_INFO1_L = <br>Latarka uzytkownika: %L
+MOTD_INFO2 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Ludzie:</b> ich celem jest eliminacja wszystkich zombi jakie znajda. Maja duzy arsenal broni oraz uzywaja latarek na ciemnych mapach. PRACUJCIE ZASPOLOWA ZEBYSCIE PRZETRWALI.<br><br><br><u>Obecne ustawienia serwera:</u><br>
+MOTD_INFO2_A = <br>Zdrowie: %d
+MOTD_INFO2_B = <br>Szybkosc: %d
+MOTD_INFO2_C = <br>Grawitacja: %d
+MOTD_INFO2_D = <br>Amunicja: %d
+MOTD_INFO2_E = <br>Obrazenia by uzyskac paczke ammo: %L
+MOTD_INFO2_F = <br>Granaty ogniowe: %d
+MOTD_INFO2_G = <br>Granaty lodowe: %L
+MOTD_INFO2_H = <br>Granaty oswietlajace: %L
+MOTD_INFO2_I = <br>Polobrot: %L
+MOTD_INFO2_J = <br>Sila Polobrotu: %L
+MOTD_INFO3 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Zombies:</b> Waszym celem jest zainfekowanie kazdego zywego czlowieka. Macie mozliwosc widzenia w ciemnosci, ale mozecie akatowac tylko w bezposrednim starciu. Jest 6 roznych klas zombi do wyboru, kazda z nich ma zalety i wady, ale kazda umnie jesc mozgi.<br><br><br><u>Obecne ustawienia serwera:</u><br>
+MOTD_INFO3_A = <br>Zdrowie zombi: %d
+MOTD_INFO3_B = <br>Pierwotne zdrowie zombi: %d
+MOTD_INFO3_C = <br>Pancerz: %d%% przyjete obrazenia
+MOTD_INFO3_D = <br>Szybkosc: %d
+MOTD_INFO3_E = <br>Grawitacja: %d
+MOTD_INFO3_F = <br>HP dla infekcji: %d
+MOTD_INFO3_G = <br>Pain Shock Free: %L
+MOTD_INFO3_H = <br>Krwawienie: %L
+MOTD_INFO3_I = <br>Paczki ammo dla infekcji: %d
+MOTD_INFO4 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Mini-Games:</b> znajduja sie 4 specjalne tryby, gry ktore moga losowo nastapic podczas trwania gra.<br><br><br><u>Obecne ustawienia serwera:</u><br>
+MOTD_INFO4_A = <br>Nemesis: %L
+MOTD_INFO4_B = <br>Nemesis Przypadkowosc: 1 w %d
+MOTD_INFO4_C = <br>Nemesis Zdrowie: %s
+MOTD_INFO4_D = <br>Nemesis Szybkosc: %d
+MOTD_INFO4_E = <br>Nemesis Grawitacja: %d
+MOTD_INFO4_F = <br>Nemesis Skocznosc: %L
+MOTD_INFO4_G = <br>Nemesis Odpornosc na bol: %L
+MOTD_INFO4_H = <br><br>Survivor: %L
+MOTD_INFO4_I = <br>Survivor Przypadkowosc: 1 in %d
+MOTD_INFO4_J = <br>Survivor Zdrowie: %s
+MOTD_INFO4_K = <br>Survivor Szybkosc: %d
+MOTD_INFO4_L = <br>Survivor Grawitacja: %d
+MOTD_INFO4_M = <br>Survivor Skocznosc: %L
+MOTD_INFO4_N = <br>Survivor Odpornosc na bol: %L
+MOTD_INFO4_O = <br><br>Swarm Mode: %L
+MOTD_INFO4_P = <br>Przypadkowosc Swarm Mode: 1 w %d
+MOTD_INFO4_Q = <br><br>Wielokrotna infekcja: %L
+MOTD_INFO4_R = <br>Przypadkowosc wielokrotnej infekcji: 1 w %d
+MOTD_INFO4_S = <br>Stosunek Infekcji: %d%%
+MOTD_INFO4_T = <br><br>Plague Mode: %L
+MOTD_INFO4_U = <br>Przypadkowosc Plague Mode: 1 w %d
+MOTD_INFO4_V = <br>Stosunek Infekcji: %d%%
+
+MOTD_ENABLED = Wlaczone
+MOTD_DISABLED = Wylaczone
+MOTD_FOG = Mgla
+MOTD_RAIN = Deszcz
+MOTD_SNOW = Snieg
+MOTD_ROTATING = Drzwi obrotowe usuniete
+MOTD_DOORS = Wszystkie drzwi usuniete
+MOTD_DM_HUMAN = Rematerializacja jako czlowiek
+MOTD_DM_ZOMBIE = Rematerializacja jako zombi
+MOTD_LIMITED = ograniczone
+MOTD_AMMO_BP = Nieograniczone przeladowania
+MOTD_AMMO_CLIP = Nieograniczony magazynek
+MOTD_LASTZOMBIE = Tylko na ostatnim zombie
+
+ZOMBIE_ATTRIB1 = Zdrowie
+ZOMBIE_ATTRIB2 = Szybkosc
+ZOMBIE_ATTRIB3 = Grawitacja
+ZOMBIE_ATTRIB4 = Odrzucenie
+
+CLASS_CLASS = Klasy:
+CLASS_HUMAN = Czlowiek
+CLASS_ZOMBIE = Zombie
+CLASS_SURVIVOR = Survivor
+CLASS_NEMESIS = Nemesis
+
+LAST_ZOMBIE_LEFT = Ostatnie Zombi opuscilo serwer, %s stal sie nowym zombi.
+LAST_HUMAN_LEFT = Ostatni czlowiek opuscil serwer, %s stal sie nowym czlowiekiem.
+NOT_ENOUGH_AMMO = Nie masz wystarczajacej ilosci paczek z amunicja.
+AMMO_BOUGHT = Zdobyles dodatkowe amo do twojej broni.
+ZOMBIE_SELECT = Twoja nowa klasa zombi jest
+BUY_ENABLED = Twoje menu zakupu zostalo ponownie udostepnione.
+AMMO_PACKS1 = Ammo paki:
+AMMO_PACKS2 = ammo paki
+SPECTATING = Obserwuje:
+
+[de]
+NOTICE_INFO1 = Druecke M um das Game Menu anzuzeigen
+NOTICE_INFO2 = Druecke , oder . um Munition zu kaufen
+NOTICE_VIRUS_FREE = Der T-Virus wurde freigesetzt...
+NOTICE_FIRST = %s ist der erste Zombie !!
+NOTICE_INFECT = %s Gehirn wurde gegessen...
+NOTICE_INFECT2 = %s Gehirn wurde gegessen von %s...
+NOTICE_ANTIDOTE = %s hat ein Gegengift benutzt...
+NOTICE_NEMESIS = %s ist ein Nemesis !!!
+NOTICE_SURVIVOR = %s ist ein Survivor !!!
+NOTICE_SWARM = Swarm Modus !!!
+NOTICE_MULTI = Multiple Infektionen !!!
+NOTICE_PLAGUE = Plague Modus !!!
+
+WIN_HUMAN = Menschen besiegten die Seuche!
+WIN_ZOMBIE = Zombies haben die Welt �bernommen!
+WIN_NO_ONE = Niemand hat gewonnen...
+
+CMD_INFECT = umgewandelt in einen Zombie
+CMD_DISINFECT = zur�ck gewandelt in einen Menschen
+CMD_NEMESIS = umgewandelt in einen Nemesis
+CMD_SURVIVAL = umgewandelt in einen Survivor
+CMD_SWARM = starte Swarm Modus
+CMD_MULTI = starte Multiple Infektionen
+CMD_PLAGUE = starte Plague Modus
+CMD_RESPAWN = wiederbelebt
+CMD_NOT = nicht verfuegbarer Befehl.
+CMD_ZOMBIE_ONLY = Das ist nur fuer Zombies verfuegbar.
+CMD_HUMAN_ONLY = Das ist nur fuer Menschen verfuegbar.
+CMD_NOT_STUCK = Du steckst nicht fest.
+CMD_NOT_ACCESS = Du hast keine Rechte.
+CMD_NOT_CANTUSE = Du kannst dies zur Zeit nicht benutzen.
+CMD_NOT_EXTRAS = Besondere Items sind zur Zeit ausgeschaltet.
+CMD_NOT_ZCLASSES = Zombie Klassen sind ausgeschaltet.
+
+MENU_BUY = Kaufe Waffen
+MENU_EXTRABUY = Kaufe besondere Items
+MENU_ZCLASS = Waehle eine Zombie Klasse
+MENU_UNSTUCK = Freisetzen
+MENU_ADMIN = Admin Menu
+MENU_INFO = Hilfe
+MENU_SPECTATOR = Join Spectator
+
+MENU_BUY1_TITLE = Primaer Waffe
+MENU_BUY2_TITLE = Sekundaer Waffe
+MENU_ZCLASS_TITLE = Zombie Klasse
+MENU_EXTRA_TITLE = Besondere Items
+MENU_ADMIN_TITLE = Admin Menu
+MENU_INFO_TITLE = Plugin Informationen
+
+MENU_EXTRA1 = Nachtsicht (eine Runde)
+MENU_EXTRA2 = T-Virus Gegengift
+MENU_EXTRA3 = Zombie Wahnsinn
+MENU_EXTRA4 = Infektions Bombe
+MENU_ADMIN1 = Erzeuge Zombie/Mensch
+MENU_ADMIN2 = Erzeuge Nemesis
+MENU_ADMIN3 = Erzeuge Survivor
+MENU_ADMIN4 = Jemand wiederbeleben
+MENU_ADMIN5 = Starte Swarm Modus
+MENU_ADMIN6 = Starte Multiple Infektionen
+MENU_ADMIN7 = Starte Plague Modus
+MENU_INFO1 = Allgemeines
+MENU_INFO2 = Menschen
+MENU_INFO3 = Zombies
+MENU_INFO4 = Gameplay Modus
+
+MENU_AUTOSELECT = Remember Selection
+MENU_BACK = Zurueck
+MENU_NEXT = Naechste
+MENU_EXIT = Ausgang
+
+MOTD_INFO11 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>%s %s von %s :</b> ist ein Counter-Strike Plugin welches unter AMX Mod X entwickelt wurde, wo Menschen und Zombies aufeinandertreffen. Es beruht auf dem klassischem Zombie Infection Mod: Bei jeder Runde wird ein beliebiger Spieler ausgew�hlt welcher dann der erste Zombie ist. Der erste Zombie hat als Aufgabe die anderen Spieler zu infizieren. 
+MOTD_INFO12 = Aber es gibt neue Besonderheiten und Erweiterungen. Zum Beispiel kannst du besondere Items kaufen (wie beispielsweise Waffen) im Tausch gegen Munitionspackungen. Du kannst Munitionspackungen kriegen indem du Zombies t�test oder Menschen infizierst.<br><br><br><u>Derzeitige Server-Einstellungen:</u><br>
+MOTD_INFO1_A = <br>Atmosph�re Effekte:
+MOTD_INFO1_B = <br>Blitz Stufe: %s
+MOTD_INFO1_C = <br>Ausgel�ste Lichter: %L
+MOTD_INFO1_D = <br>Jeder Donnerschlag: %d sekunden
+MOTD_INFO1_E = <br>T�ren: %L
+MOTD_INFO1_F = <br>Deathmatch: %L
+MOTD_INFO1_G = <br>Schutz nach Wiederbelebung: %d sekunden
+MOTD_INFO1_H = <br>Irgendwo Wiederbeleben: %L
+MOTD_INFO1_I = <br>Besondere Items: %L
+MOTD_INFO1_J = <br>Zombie Klassen: %L
+MOTD_INFO1_K = <br>Benutzerdefiniertes Nachtsichtger�t: %L
+MOTD_INFO1_L = <br>Benutzerdefinierte Blendgranate: %L
+MOTD_INFO2 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Menschen:</b> Ihr Ziel ist es die Bedrohung durch Zombies zu unterdr�cken. Sie haben eine gro�e Auswahl von verschiedenen Waffen und k�nnen Blendgranaten bei dunklen Maps benutzen. Teamarbeit ist ein muss um zu �berleben.<br><br><br><u>Derzeitige Server-Einstellungen:</u><br>
+MOTD_INFO2_A = <br>Gesundheit: %d
+MOTD_INFO2_B = <br>Gesundheits verg�tung f�r den letzten Mensch: %d
+MOTD_INFO2_C = <br>Geschwindigkeit: %d
+MOTD_INFO2_D = <br>Gravitation: %d
+MOTD_INFO2_E = <br>Munition: %L
+MOTD_INFO2_F = <br>Schaden um eine Munitionspackung zu bekommen: %d
+MOTD_INFO2_G = <br>Feuer Granaten: %L
+MOTD_INFO2_H = <br>Frost Granaten: %L
+MOTD_INFO2_I = <br>Leucht Granaten: %L
+MOTD_INFO2_J = <br>R�ckschlag: %L
+MOTD_INFO3 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Zombies:</b> Ihr Ziel ist es jeden lebenden Menschen zu infizieren. Sie k�nnen im dunklen Sehen aber nur Nahkampfangriffe ausf�hren. Man kann zwischen 6 unterschiedlichen Zombie Klassen ausw�hlen, jede hat ihre eigenen st�rken und schw�chen, aber alle f�hig um ein Gehirn zu essen.<br><br><br><u>Derzeitige Server-Einstellungen:</u><br>
+MOTD_INFO3_A = <br>Zombie Gesundheit: %d
+MOTD_INFO3_B = <br>Erster Zombie Gesundheit: %d
+MOTD_INFO3_C = <br>R�stung: %d%% schaden erhalten
+MOTD_INFO3_D = <br>Geschwindigkeit: %d
+MOTD_INFO3_E = <br>Gravitation: %d
+MOTD_INFO3_F = <br>HP f�r Infektion: %d
+MOTD_INFO3_G = <br>Schmerz Schock frei: %L
+MOTD_INFO3_H = <br>Blutung: %L
+MOTD_INFO3_I = <br>Munitionspackung f�r Infektion: %d
+MOTD_INFO4 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Mini-Spiele:</b> Es gibt 4 unterschiedliche spezial gameplay modi welche beliebig im Spielablauf auftreten.<br><br><br><u>Derzeitige Server-Einstellungen:</u><br>
+MOTD_INFO4_A = <br>Nemesis: %L
+MOTD_INFO4_B = <br>Nemesis Wahrscheinlichkeit: 1 in %d
+MOTD_INFO4_C = <br>Nemesis Gesundheit: %s
+MOTD_INFO4_D = <br>Nemesis Geschwindigkeit: %d
+MOTD_INFO4_E = <br>Nemesis Gravitation: %d
+MOTD_INFO4_F = <br>Nemesis Sprung: %L
+MOTD_INFO4_G = <br>Nemesis Schmerz Schock frei: %L
+MOTD_INFO4_H = <br><br>Survivor: %L
+MOTD_INFO4_I = <br>Survivor Wahrscheinlichkeit: 1 in %d
+MOTD_INFO4_J = <br>Survivor Gesundheit: %s
+MOTD_INFO4_K = <br>Survivor Geschwindigkeit: %d
+MOTD_INFO4_L = <br>Survivor Gravitation: %d
+MOTD_INFO4_M = <br>Survivor Sprung: %L
+MOTD_INFO4_N = <br>Survivor Schmerz Schock frei: %L
+MOTD_INFO4_O = <br><br>Swarm Modus: %L
+MOTD_INFO4_P = <br>Swarm Modus Wahrscheinlichkeit: 1 in %d
+MOTD_INFO4_Q = <br><br>Multi Infektion: %L
+MOTD_INFO4_R = <br>Multi Infektion Wahrscheinlichkeit: 1 in %d
+MOTD_INFO4_S = <br>Infektions Anteil: %d%%
+MOTD_INFO4_T = <br><br>Plague Modus: %L
+MOTD_INFO4_U = <br>Plague Mode Wahrscheinlichkeit: 1 in %d
+MOTD_INFO4_V = <br>Infektions Anteil: %d%%
+
+MOTD_ENABLED = Eingeschaltet
+MOTD_DISABLED = Ausgeschaltet
+MOTD_FOG = Nebel
+MOTD_RAIN = Regen
+MOTD_SNOW = Schnee
+MOTD_ROTATING = Rotierende Tueren entfernt
+MOTD_DOORS = Alle Tueren entfernt
+MOTD_DM_HUMAN = Wiederbeleben als Mensch
+MOTD_DM_ZOMBIE = Wiederbeleben als Zombie
+MOTD_LIMITED = Begrenzt
+MOTD_AMMO_BP = Unbegrenzte Nachladungen
+MOTD_AMMO_CLIP = Unbegrenzter  clip
+MOTD_LASTZOMBIE = Nur bei dem letzten Zombie
+
+ZOMBIE_ATTRIB1 = Gesundheit
+ZOMBIE_ATTRIB2 = Geschwindigkeit
+ZOMBIE_ATTRIB3 = Gravitation
+ZOMBIE_ATTRIB4 = Rueckschlag
+
+CLASS_CLASS = Klasse:
+CLASS_HUMAN = Mensch
+CLASS_ZOMBIE = Zombie
+CLASS_SURVIVOR = Survivor
+CLASS_NEMESIS = Nemesis
+
+LAST_ZOMBIE_LEFT = Der letzte Zombie hat uns verlassen, %s ist der neue Zombie.
+LAST_HUMAN_LEFT = Der letzte Mensch hat uns verlassen, %s ist der neue Mensch.
+NOT_ENOUGH_AMMO = Du hast nicht genug Munitionspackungen.
+AMMO_BOUGHT = Du hast besondere Munition gekauft f�r deine Waffen. 
+ZOMBIE_SELECT = Bei dem n�chsten Mal wird deine Zombie Klasse infiziert.
+BUY_ENABLED = Your buy menu has been re-enabled.
+AMMO_PACKS1 = Munitionspackungen:
+AMMO_PACKS2 = Munitionspackungen
+SPECTATING = Zuschauer:
+
+[lt]
+NOTICE_INFO1 = Spausk M, kad gautum zaidimo meniu
+NOTICE_INFO2 = Spausk , arba . kad nusipirktum soviniu
+NOTICE_VIRUS_FREE = T-Virusas buvo paskleistas...
+NOTICE_FIRST = %s yra pirmasis zombis!!!
+NOTICE_INFECT = %s smegenys buvo suvalgytos...
+NOTICE_INFECT2 = %s smegenys buvo suvalgytos sukurtas %s...
+NOTICE_ANTIDOTE = %s panaudojo priesnuodi...
+NOTICE_NEMESIS = %s yra kersytojas!!!
+NOTICE_SURVIVOR = %s yra isgyventojas!!!
+NOTICE_SWARM = Spieciaus rezimas!!!
+NOTICE_MULTI = Keleriopa infekcija!!!
+NOTICE_PLAGUE = Plague Mode !!!
+
+WIN_HUMAN = Zmones nugalejo mara!
+WIN_ZOMBIE = Zombiai isigalejo pasaulyje!
+WIN_NO_ONE = Nelaimejo niekas...
+
+CMD_INFECT = pavirtai i zombi
+CMD_DISINFECT = atvirtai i zmogu
+CMD_NEMESIS = pavirtai i kersytoja
+CMD_SURVIVAL = pavirtai i isgyventoja
+CMD_SWARM = pradeti spieciaus rezima
+CMD_MULTI = pradeti multi infekcija
+CMD_PLAGUE = pradeti Plague Mode
+CMD_RESPAWN = atsiradai
+CMD_NOT = Negalima komanda.
+CMD_ZOMBIE_ONLY = Tai prieinama tik zombiams.
+CMD_HUMAN_ONLY = Tai prieinama tik zmonems.
+CMD_NOT_STUCK = Tu ne uzstriges.
+CMD_NOT_ACCESS = Neturi priejimo.
+CMD_NOT_CANTUSE = Dabar negali sito naudoti.
+CMD_NOT_EXTRAS = Papildomi daigtai yra isjungti.
+CMD_NOT_ZCLASSES = Zombiu kases yra isjungtos.
+
+MENU_BUY = Pirkti ginklus
+MENU_EXTRABUY = Pirkti papildomus daigtus
+MENU_ZCLASS = Pasirinkti zombiu klase
+MENU_UNSTUCK = Atstrigti
+MENU_ADMIN = Admino meniu
+MENU_INFO = Pagalba
+MENU_SPECTATOR = Join Spectator
+
+MENU_BUY1_TITLE = Pirminis ginklas
+MENU_BUY2_TITLE = Antrinis ginklas
+MENU_ZCLASS_TITLE = Zombio klase
+MENU_EXTRA_TITLE = Papildomi daigtai
+MENU_ADMIN_TITLE = Admino meniu
+MENU_INFO_TITLE = Plugino informacija
+
+MENU_EXTRA1 = NightVision (vienam raundui)
+MENU_EXTRA2 = T-Viruso priesnuodis
+MENU_EXTRA3 = Zombio pasiutimas
+MENU_EXTRA4 = Infekcijos bomba
+MENU_ADMIN1 = Sukurti zombi/zmogu
+MENU_ADMIN2 = Sukurti kersytoja
+MENU_ADMIN3 = Sukurti isgyventoja
+MENU_ADMIN4 = Atstatyti kazka
+MENU_ADMIN5 = Pradeti spieciaus rezima
+MENU_ADMIN6 = Pradeti keleriopa infekcija
+MENU_ADMIN7 = Pradeti Plague Mode
+MENU_INFO1 = Generalinis
+MENU_INFO2 = Zmones
+MENU_INFO3 = Zombiai
+MENU_INFO4 = Zaidimo rezimai
+
+MENU_AUTOSELECT = Remember Selection
+MENU_BACK = Atgal
+MENU_NEXT = Toliau
+MENU_EXIT = Iseiti
+
+MOTD_INFO11 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>%s %s, sukurtas %s:</b> yra Counter-Strike pluginas skirtas AMX Mod X, kur kovoja zmones ir zombiai. Viskas yra paremta klasine zombiu infekcijos modifikacija: kiekviena raunda atsitiktinis zaidejas yra isrinktas, kuris turi infekuoti visus kitus. 
+MOTD_INFO12 = Bet yra nauju ypatybiu bei patobulinimu. Pvz.: jus galite pirkti papildomus daigtus (kad ir ginklus) iskeisdami juos i soviniu paketus. Jus galite gauti soviniu paketus zudydami zombius/infekuodami zmones.<br><br><br><u>Dabartiniai serverio nustatymai:</u><br>
+MOTD_INFO1_A = <br>Atmosferos efektai:
+MOTD_INFO1_B = <br>Zaibavimo lygis: %s
+MOTD_INFO1_C = <br>Paleidziamos sviesos: %L
+MOTD_INFO1_D = <br>Griaustinio dundejimas kas: %d sekundziu
+MOTD_INFO1_E = <br>Durys: %L
+MOTD_INFO1_F = <br>Deathmatch: %L
+MOTD_INFO1_G = <br>Atsiradimo saugos laikas: %d seconds
+MOTD_INFO1_H = <br>Atsiradimas betkur: %L
+MOTD_INFO1_I = <br>Papildomi daigtai: %L
+MOTD_INFO1_J = <br>Zombiu klases: %L
+MOTD_INFO1_K = <br>Kitoks naktinis matymas: %L
+MOTD_INFO1_L = <br>Kitokis prozektorius: %L
+MOTD_INFO2 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Zmones:</b> ju tikslas yra eliminuoti visus zombius. Jie turi dideli ginklu arsenala bei prozektorius tamsioje aplinkoje. Komandinis darbas yra privalomas norint isgyventi.<br><br><br><u>Dabartiniai serverio nustatymai:</u><br>
+MOTD_INFO2_A = <br>Gyvybes: %d
+MOTD_INFO2_B = <br>Gyvybiu apdovanojimas paskutiniam zmogui: %d
+MOTD_INFO2_C = <br>Greitis: %d
+MOTD_INFO2_D = <br>Gravitacija: %d
+MOTD_INFO2_E = <br>Soviniai: %L
+MOTD_INFO2_F = <br>Zala, uz kuria gaunami soviniu paketai: %d
+MOTD_INFO2_G = <br>Ugnies granatos: %L
+MOTD_INFO2_H = <br>Salcio granatos: %L
+MOTD_INFO2_I = <br>Sviesos granatos: %L
+MOTD_INFO2_J = <br>Knockback: %L
+MOTD_INFO3 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Zombiai:</b> ju tikslas yra infekuoti visus gyvus zmones. Jie gali matyti tamsoje, bet gali atakuoti tik rankomias/nagais. Galite rinktis is 6 zombiu klasiu, kiekviena turi pliusu ir minusu, bet visos troksta valgyti smegenis.<br><br><br><u>Dabartiniai serverio nustatymai:</u><br>
+MOTD_INFO3_A = <br>Zombiu gyvybes: %d
+MOTD_INFO3_B = <br>Pirmojo zombio gyvybes: %d
+MOTD_INFO3_C = <br>Sarvai: %d%% padarytos zalos
+MOTD_INFO3_D = <br>Greitis: %d
+MOTD_INFO3_E = <br>Gravitacija: %d
+MOTD_INFO3_F = <br>HP uz infekavima: %d
+MOTD_INFO3_G = <br>Skausmo soko nejautimas: %L
+MOTD_INFO3_H = <br>Kraujavimas: %L
+MOTD_INFO3_I = <br>Soviniu paketai uz infekavima: %d
+MOTD_INFO4 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Mini-zaidimai:</b> yra 4 skirtingi specialus zaidimo rezimai, kurie gali automatiskai pasikeisti einant zaidimui.<br><br><br><u>Dabartiniai serverio nustatymai:</u><br>
+MOTD_INFO4_A = <br>Kersytojas: %L
+MOTD_INFO4_B = <br>Kersytojo sansas: 1 is %d
+MOTD_INFO4_C = <br>Kersytojo gyvybes: %s
+MOTD_INFO4_D = <br>Kersytojo greitis: %d
+MOTD_INFO4_E = <br>Kersytojo gravitacija: %d
+MOTD_INFO4_F = <br>Kersytojo suolis: %L
+MOTD_INFO4_G = <br>Kersytojo skausmo soko nejautimas: %L
+MOTD_INFO4_H = <br><br>Isgyventojas: %L
+MOTD_INFO4_I = <br>Isgyventojo sansas: 1 is %d
+MOTD_INFO4_J = <br>Isgyventojo gyvybes: %s
+MOTD_INFO4_K = <br>Isgyventojo greitis: %d
+MOTD_INFO4_L = <br>Isgyventojo gravitacija: %d
+MOTD_INFO4_M = <br>Isgyventojo suolis: %L
+MOTD_INFO4_N = <br>Isgyventojo skausmo soko nejautimas: %L
+MOTD_INFO4_O = <br><br>Spieciaus rezimas: %L
+MOTD_INFO4_P = <br>Spieciaus rezimo sansas: 1 is %d
+MOTD_INFO4_Q = <br><br>Multi infekcija: %L
+MOTD_INFO4_R = <br>Multi infekcijos sansas: 1 is %d
+MOTD_INFO4_S = <br>Infekcijos santykis: %d%%
+MOTD_INFO4_T = <br><br>Plague Mode: %L
+MOTD_INFO4_U = <br>Plague Mode sansas: 1 is %d
+MOTD_INFO4_V = <br>Infekcijos santykis: %d%%
+
+MOTD_ENABLED = Ijungta
+MOTD_DISABLED = Isjungta
+MOTD_FOG = Rukas
+MOTD_RAIN = Lietus
+MOTD_SNOW = Sniegas
+MOTD_ROTATING = Atidaromos durys isimtos
+MOTD_DOORS = Visos durys isimtos
+MOTD_DM_HUMAN = Atsirasti zmogumi
+MOTD_DM_ZOMBIE = Atsirasti zombiu
+MOTD_LIMITED = Ribota
+MOTD_AMMO_BP = Nesibaigiantys uzsitaisymai
+MOTD_AMMO_CLIP = Nesibaigianti apkaba
+MOTD_LASTZOMBIE = Tik paskutiniam zombiui
+
+ZOMBIE_ATTRIB1 = Gyvybes
+ZOMBIE_ATTRIB2 = Greitis
+ZOMBIE_ATTRIB3 = Gravitacija
+ZOMBIE_ATTRIB4 = Knockback
+
+CLASS_CLASS = Klase:
+CLASS_HUMAN = Zmogus
+CLASS_ZOMBIE = Zombis
+CLASS_SURVIVOR = Isgyventojas
+CLASS_NEMESIS = Kersytojas
+
+LAST_ZOMBIE_LEFT = Paskutinis zombis isejo, %s yra naujas zombis.
+LAST_HUMAN_LEFT = Paskutinis zmogus isejo, %s yra naujas zmogus.
+NOT_ENOUGH_AMMO = Tu neturi pakankamai soviniu paketu.
+AMMO_BOUGHT = Tu nusipirkai ekstra soviniu paketu savo ginklams.
+ZOMBIE_SELECT = Kai sekanti karta busi infekuotas, tavo zombio klase bus
+BUY_ENABLED = Your buy menu has been re-enabled.
+AMMO_PACKS1 = Soviniu paketai:
+AMMO_PACKS2 = soviniu paketai
+SPECTATING = Ziurima:
+
+[bg]
+NOTICE_INFO1 = Natisnete M za da vidite menu-to na sarvara.
+NOTICE_INFO2 = Natisnete , ili . za da si kupite patroni.
+NOTICE_VIRUS_FREE = The T-Virus has been set loose...
+NOTICE_FIRST = %s e purvoto ZOMBIE !!
+NOTICE_INFECT = Na %s mu be6e izqden mozaka...
+NOTICE_INFECT2 = Na %s mu be6e izaden mozaka ot %s...
+NOTICE_ANTIDOTE = %s Izpolzva protivootrova...
+NOTICE_NEMESIS = %s is a Nemesis !!!
+NOTICE_SURVIVOR = %s Ocelq !!!
+NOTICE_SWARM = Go Go Go Sward Mode !!!
+NOTICE_MULTI = Nqkoilko infekcii !!!
+NOTICE_PLAGUE = Plague Mode !!!
+
+WIN_HUMAN = Svetut e spasen!
+WIN_ZOMBIE = Zombies RULE the WORLD !
+WIN_NO_ONE = Nikoi ne spe4eli...
+
+CMD_INFECT = Se prevurna v ZOMBIIE.
+CMD_DISINFECT = Otnovo e 4ovek.
+CMD_NEMESIS = Se prevurna v Nemesis.
+CMD_SURVIVAL = E oceleliq.
+CMD_SWARM = start Swarm Mode.
+CMD_MULTI = start Multiple Infection.
+CMD_PLAGUE = start Plague Mode.
+CMD_RESPAWN = Vuzroden.
+CMD_NOT = Nevalidna komanda..
+CMD_ZOMBIE_ONLY = Tova e pozvoleno samo na Zombitata.
+CMD_HUMAN_ONLY = Tova e pozvoleno samo na Horata.
+CMD_NOT_STUCK = Ne si zasendal.
+CMD_NOT_ACCESS = Nqmate dostup.
+CMD_NOT_CANTUSE = Ne mojete da go izpolzvate sega!
+CMD_NOT_EXTRAS = Extrite sa izkliu4eni.
+CMD_NOT_ZCLASSES = Zombie rasite sa izkliu4eni.
+
+MENU_BUY = Kopuvane na orajiq ...
+MENU_EXTRABUY = Kopuvane na Eztri...
+MENU_ZCLASS = Izberete zombie rasa...
+MENU_UNSTUCK = Otkle6ti me!!!!
+MENU_ADMIN = Menio za admini.
+MENU_INFO = POMO6T
+MENU_SPECTATOR = Join Spectator
+
+MENU_BUY1_TITLE = Primary Weapon
+MENU_BUY2_TITLE = Secondary Weapon
+MENU_ZCLASS_TITLE = Zombie rasa.
+MENU_EXTRA_TITLE = Extra Items
+MENU_ADMIN_TITLE = Menlio za ADMINI.
+MENU_INFO_TITLE = MOD INFORMACIQ!
+
+MENU_EXTRA1 = No6tno vijdane ( za 1 rund)
+MENU_EXTRA2 = Antivirus.
+MENU_EXTRA3 = Zombie Madness
+MENU_EXTRA4 = Infektira6ta bomba.
+MENU_ADMIN1 = Pravi Zombie/Human
+MENU_ADMIN2 = Pravi nqkoi Nemesis
+MENU_ADMIN3 = Pravi nqkoi Survivor
+MENU_ADMIN4 = Vuzrodete nqkoi.
+MENU_ADMIN5 = Zapo4nete Swarm Mode
+MENU_ADMIN6 = Zapo4nete Nqkolko infekcii
+MENU_ADMIN7 = Zapo4nete Plague Mode
+MENU_INFO1 = General
+MENU_INFO2 = Hora
+MENU_INFO3 = Zombita
+MENU_INFO4 = Gameplay Modes
+
+MENU_AUTOSELECT = Remember Selection
+MENU_BACK = Nazad
+MENU_NEXT = Napred
+MENU_EXIT = Izhod
+
+MOTD_INFO11 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>%s %s by %s :</b> is a Counter-Strike plugin developed under AMX Mod X, in where humans and zombies are confronted. It is based on the classic zombie infection mod: on every round a random player is picked to be the first zombie who has to infect everyone else.
+MOTD_INFO12 = But there are new features and enhancements. For instance, you are able to buy extra items (such as weapons) in exchange of ammo packs. You can get ammo packs by killing zombies/infecting humans.<br><br><br><u>Current server settings:</u><br>
+MOTD_INFO1_A = <br>Ambience Effects:
+MOTD_INFO1_B = <br>Lightning Level: %s
+MOTD_INFO1_C = <br>Triggered Lights: %L
+MOTD_INFO1_D = <br>Thunderclaps Every: %d seconds
+MOTD_INFO1_E = <br>Doors: %L
+MOTD_INFO1_F = <br>Deathmatch: %L
+MOTD_INFO1_G = <br>Spawn Protection Time: %d seconds
+MOTD_INFO1_H = <br>Random Spawning: %L
+MOTD_INFO1_I = <br>Extra Items: %L
+MOTD_INFO1_J = <br>Zombie Classes: %L
+MOTD_INFO1_K = <br>Custom Nightvision: %L
+MOTD_INFO1_L = <br>Custom Flashlight: %L
+MOTD_INFO2 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Humans:</b> their objective is to eliminate any zombie threat. They have a big arsenal of weapons to choose from, and use flashlights on dark maps. Team work is a must to survive.<br><br><br><u>Current server settings:</u><br>
+MOTD_INFO2_A = <br>Health: %d
+MOTD_INFO2_B = <br>Health Reward for Last Human: %d
+MOTD_INFO2_C = <br>Speed: %d
+MOTD_INFO2_D = <br>Gravity: %d
+MOTD_INFO2_E = <br>Ammo: %L
+MOTD_INFO2_F = <br>Damage to Get an Ammo Pack: %d
+MOTD_INFO2_G = <br>Fire Grenades: %L
+MOTD_INFO2_H = <br>Frost Grenades: %L
+MOTD_INFO2_I = <br>Flare Grenades: %L
+MOTD_INFO2_J = <br>Knockback: %L
+MOTD_INFO3 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Zombies:</b> their objective is to infect every alive human. They are able to see in the dark, but can only attack melee. There are 6 different zombie classes to choose from, each with his own strenghts and weaknesses, but all capable of eating brains.<br><br><br><u>Current server settings:</u><br>
+MOTD_INFO3_A = <br>Zombie Health: %d
+MOTD_INFO3_B = <br>First Zombie Health: %d
+MOTD_INFO3_C = <br>Armor: %d%% damage taken
+MOTD_INFO3_D = <br>Speed: %d
+MOTD_INFO3_E = <br>Gravity: %d
+MOTD_INFO3_F = <br>HP for Infection: %d
+MOTD_INFO3_G = <br>Pain Shock Free: %L
+MOTD_INFO3_H = <br>Bleeding: %L
+MOTD_INFO3_I = <br>Ammo Packs for Infection: %d
+MOTD_INFO4 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Mini-Games:</b> there are 4 different special gameplay modes that may randomly occur during the course of the game.<br><br><br><u>Current server settings:</u><br>
+MOTD_INFO4_A = <br>Nemesis: %L
+MOTD_INFO4_B = <br>Nemesis Chance: 1 in %d
+MOTD_INFO4_C = <br>Nemesis Health: %s
+MOTD_INFO4_D = <br>Nemesis Speed: %d
+MOTD_INFO4_E = <br>Nemesis Gravity: %d
+MOTD_INFO4_F = <br>Nemesis Leap: %L
+MOTD_INFO4_G = <br>Nemesis Pain Shock Free: %L
+MOTD_INFO4_H = <br><br>Survivor: %L
+MOTD_INFO4_I = <br>Survivor Chance: 1 in %d
+MOTD_INFO4_J = <br>Survivor Health: %s
+MOTD_INFO4_K = <br>Survivor Speed: %d
+MOTD_INFO4_L = <br>Survivor Gravity: %d
+MOTD_INFO4_M = <br>Survivor Leap: %L
+MOTD_INFO4_N = <br>Survivor Pain Shock Free: %L
+MOTD_INFO4_O = <br><br>Swarm Mode: %L
+MOTD_INFO4_P = <br>Swarm Mode Chance: 1 in %d
+MOTD_INFO4_Q = <br><br>Multi Infection: %L
+MOTD_INFO4_R = <br>Multi Infection Chance: 1 in %d
+MOTD_INFO4_S = <br>Infection Ratio: %d%%
+MOTD_INFO4_T = <br><br>Plague Mode: %L
+MOTD_INFO4_U = <br>Plague Mode Chance: 1 in %d
+MOTD_INFO4_V = <br>Plague Infection Ratio: %d%%
+
+MOTD_ENABLED = Vklio4eno
+MOTD_DISABLED = Izkliu4eno.
+MOTD_FOG = Magla.
+MOTD_RAIN = Dujd.
+MOTD_SNOW = Snqg.
+MOTD_ROTATING = Rotating doors removed
+MOTD_DOORS = Vsi4ki vrati premahnati.
+MOTD_DM_HUMAN = Sajivete se kato 4ovek.
+MOTD_DM_ZOMBIE = Sajivete se kato ZOMBIE.
+MOTD_LIMITED = LIMITED
+MOTD_AMMO_BP = Prezarejdaniq bez limit.
+MOTD_AMMO_CLIP = Unlimited clip
+MOTD_LASTZOMBIE = Only on last zombie
+
+ZOMBIE_ATTRIB1 = Kruv.
+ZOMBIE_ATTRIB2 = Skorost.
+ZOMBIE_ATTRIB3 = Gravitaciq.
+ZOMBIE_ATTRIB4 = Knockback
+
+CLASS_CLASS = Rasa:
+CLASS_HUMAN = 4ovek
+CLASS_ZOMBIE = Zombie
+CLASS_SURVIVOR = Ocelql
+CLASS_NEMESIS = Nemesis
+
+LAST_ZOMBIE_LEFT = Poslednoto zombie NAPUSNA, %s e novoto zombie.
+LAST_HUMAN_LEFT = Posledniq 4ovek, %s e noviq 4ovek.
+NOT_ENOUGH_AMMO = Nqmate ostatacno ammo packs.
+AMMO_BOUGHT = Ti polu4i extra ammo za orajiqta si.
+ZOMBIE_SELECT = Ot sledva6tiq put kogato vi napravqt zombie 6te budete
+BUY_ENABLED = Your buy menu has been re-enabled.
+AMMO_PACKS1 = Ammo packs:
+AMMO_PACKS2 = ammo packs
+SPECTATING = Gleda:
+
+[da]
+NOTICE_INFO1 = tryk M for at vise spille menuen
+NOTICE_INFO2 = Tryk , eller . for at kQbe ammunition
+NOTICE_VIRUS_FREE = T-Virusen er sluppet lQs...
+NOTICE_FIRST = %s er den fQrste Zombie !!
+NOTICE_INFECT = %s's Hjerne er blevet spist...
+NOTICE_INFECT2 = %s's Hjerne er blevet spist af %s...
+NOTICE_ANTIDOTE = %s har brugt en modgift...
+NOTICE_NEMESIS = %s er en Nemesis !!!
+NOTICE_SURVIVOR = %s er en Survivor !!!
+NOTICE_SWARM = Swarm Mode !!!
+NOTICE_MULTI = flere infektioner !!!
+NOTICE_PLAGUE = Plague Mode !!!
+
+WIN_HUMAN = Mennesket har overvundet virusen!
+WIN_ZOMBIE = Zombierne har overtaget verden!
+WIN_NO_ONE = ingen vandt...
+
+CMD_INFECT = Blev til en Zombie
+CMD_DISINFECT = Blev et menneske igen
+CMD_NEMESIS = Blev en Nemesis
+CMD_SURVIVAL = Blev en Survivor
+CMD_SWARM = start Swarm Mode
+CMD_MULTI = start flere infektioner
+CMD_PLAGUE = start Plague Mode
+CMD_RESPAWN = genoplevede
+CMD_NOT = Ugyldig kommando.
+CMD_ZOMBIE_ONLY = Dette er kun tilladt for Zombier.
+CMD_HUMAN_ONLY = Dette er kun tilladt for mennesket.
+CMD_NOT_STUCK = Du sidder ikke fast.
+CMD_NOT_ACCESS = Du har ingen adgang.
+CMD_NOT_CANTUSE = Du kan ikke bruge denne lige nu.
+CMD_NOT_EXTRAS = Ekstra ting er slaaet fra.
+CMD_NOT_ZCLASSES = Zombie klasser er slaaet fra.
+
+MENU_BUY = KQb Vaaben
+MENU_EXTRABUY = KQb Ekstra Ting
+MENU_ZCLASS = Vaelg Zombie Klasse
+MENU_UNSTUCK = Unstuck
+MENU_ADMIN = Admin Menu
+MENU_INFO = Hjaelp
+MENU_SPECTATOR = Join Spectators
+
+MENU_BUY1_TITLE = fQrste vaaben
+MENU_BUY2_TITLE = Andet vaaben
+MENU_ZCLASS_TITLE = Zombie Klasse
+MENU_EXTRA_TITLE = Ekstra Ting
+MENU_ADMIN_TITLE = Admin Menu
+MENU_INFO_TITLE = Plugin Information
+
+MENU_EXTRA1 = Nattesyn (en runde)
+MENU_EXTRA2 = T-Virus Modgift
+MENU_EXTRA3 = Zombie vanvid
+MENU_EXTRA4 = Infektions Bombe
+MENU_ADMIN1 = Lav til Zombie/Menneske
+MENU_ADMIN2 = Lav til Nemesis
+MENU_ADMIN3 = Lav til Survivor
+MENU_ADMIN4 = Genopliv en
+MENU_ADMIN5 = Start Swarm Mode
+MENU_ADMIN6 = Start Flere Infektioner
+MENU_ADMIN7 = Start Plague Mode
+MENU_INFO1 = Generalt
+MENU_INFO2 = Mennesker
+MENU_INFO3 = Zombier
+MENU_INFO4 = Gameplay Modes
+
+MENU_AUTOSELECT = Remember Selection
+MENU_BACK = Tilbage
+MENU_NEXT = Naeste
+MENU_EXIT = Luk
+
+MOTD_INFO11 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>%s %s af %s :</b> er et Counter-Strike plugin lavet under AMX Mod X, Hvor Mennesker og zombier er i krig mod hinanden. Det er baseret paa det klassiske zombie infection mod: I Hver runde bliver tilfaeldige spillere valgt til at vaere den f�rste zombie som saa skal inficere de andre spillere. 
+MOTD_INFO12 = Men der er nogle nye ting og forbedringer. for eksempel, Kan du nu k�be ekstra ting (som vaaben) ved hjaelp af ammo packs. Du kan faa ammo packs ved at draebe zombier eller inficere mennesker.<br><br><br><u>Aktuele server ops�tning:</u><br>
+MOTD_INFO1_A = <br>Ambience Effekter:
+MOTD_INFO1_B = <br>Lys niveau: %s
+MOTD_INFO1_C = <br>Aktiveret lys: %L
+MOTD_INFO1_D = <br>Thunderclaps hvert: %d seconds
+MOTD_INFO1_E = <br>D�re: %L
+MOTD_INFO1_F = <br>Deathmatch: %L
+MOTD_INFO1_G = <br>Spawn beskyttelses Tid: %d seconds
+MOTD_INFO1_H = <br>tilfaeldig Spawning: %L
+MOTD_INFO1_I = <br>Ekstra Ting: %L
+MOTD_INFO1_J = <br>Zombie Klasser: %L
+MOTD_INFO1_K = <br>brugerdefineret Nattesyn: %L
+MOTD_INFO1_L = <br>brugerdefineret Lommelygte: %L
+MOTD_INFO2 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Mennesket:</b> Deres mission er at skyde alle Zombier. De har et stort arsenal af v�ben de kan vaelge imellem, og bruger lommelygter i m�rke baner. Samarbejde er et must for at overleve.<br><br><br><u>Aktuele server ops�tninger:</u><br>
+MOTD_INFO2_A = <br>Liv: %d
+MOTD_INFO2_B = <br>Liv tildelt for at v�re sidste levende menneske: %d
+MOTD_INFO2_C = <br>Fart: %d
+MOTD_INFO2_D = <br>Gravity: %d
+MOTD_INFO2_E = <br>ammunition: %L
+MOTD_INFO2_F = <br>Skade for at modtage en Ammo Pack: %d
+MOTD_INFO2_G = <br>Ild Granader: %L
+MOTD_INFO2_H = <br>Frost Granader: %L
+MOTD_INFO2_I = <br>Lys Granader: %L
+MOTD_INFO2_J = <br>Knockback: %L
+MOTD_INFO3 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Zombier:</b> Deres mission er at inficere et hvert levende menneske. De kan se i m�rke, men kan kun angribe med deres h�nder. Der er 6 forskellige zombie klasser at v�lge imellem, hver med deres egen styrke og svagheder, men alle i stand til at �de masser af hjerner.<br><br><br><u>Aktuele server ops�tninger:</u><br>
+MOTD_INFO3_A = <br>Zombie Liv: %d
+MOTD_INFO3_B = <br>F�rste Zombies Liv: %d
+MOTD_INFO3_C = <br>Rustning: %d%% Skade modtaget
+MOTD_INFO3_D = <br>Fart: %d
+MOTD_INFO3_E = <br>Gravity: %d
+MOTD_INFO3_F = <br>Liv for Infektion: %d
+MOTD_INFO3_G = <br>Smerte ryste fri: %L
+MOTD_INFO3_H = <br>Bl�der: %L
+MOTD_INFO3_I = <br>Ammo Packs for Infektion: %d
+MOTD_INFO4 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Smaa-Spil:</b> Der er 4 forskellige smaa spil som tilf�ldigt kan komme mens man spiller.<br><br><br><u>Aktuele server ops�tninger:</u><br>
+MOTD_INFO4_A = <br>Nemesis: %L
+MOTD_INFO4_B = <br>Nemesis Chance: 1 in %d
+MOTD_INFO4_C = <br>Nemesis Liv: %s
+MOTD_INFO4_D = <br>Nemesis Fart: %d
+MOTD_INFO4_E = <br>Nemesis Gravity: %d
+MOTD_INFO4_F = <br>Nemesis Spring: %L
+MOTD_INFO4_G = <br>Nemesis Smerte ryste fri: %L
+MOTD_INFO4_H = <br><br>Survivor: %L
+MOTD_INFO4_I = <br>Survivor Chance: 1 in %d
+MOTD_INFO4_J = <br>Survivor Liv: %s
+MOTD_INFO4_K = <br>Survivor Fart: %d
+MOTD_INFO4_L = <br>Survivor Gravity: %d
+MOTD_INFO4_M = <br>Survivor Spring: %L
+MOTD_INFO4_N = <br>Survivor Smerte ryste fri: %L
+MOTD_INFO4_O = <br><br>Swarm Mode: %L
+MOTD_INFO4_P = <br>Swarm Mode Chance: 1 til %d
+MOTD_INFO4_Q = <br><br>Flere Infektioner: %L
+MOTD_INFO4_R = <br>Flere Infektions Chance: 1 til %d
+MOTD_INFO4_S = <br>Infektion Ratio: %d%%
+MOTD_INFO4_T = <br><br>Plague Mode: %L
+MOTD_INFO4_U = <br>Plague Mode Chance: 1 til %d
+MOTD_INFO4_V = <br>Infektion Ratio: %d%%
+
+MOTD_ENABLED = Slaaet til
+MOTD_DISABLED = Slaaet fra
+MOTD_FOG = Taage
+MOTD_RAIN = Regn
+MOTD_SNOW = Sne
+MOTD_ROTATING = Rotations d�re fjernet
+MOTD_DOORS = Alle d�re er fjernet
+MOTD_DM_HUMAN = Genoplev som menneske
+MOTD_DM_ZOMBIE = Genoplev som zombie
+MOTD_LIMITED = Begr�nset
+MOTD_AMMO_BP = Uendelige genladninger
+MOTD_AMMO_CLIP = Uendelige skud 
+MOTD_LASTZOMBIE = Kun paa den sidste zombie
+
+ZOMBIE_ATTRIB1 = Liv
+ZOMBIE_ATTRIB2 = Fart
+ZOMBIE_ATTRIB3 = Gravity
+ZOMBIE_ATTRIB4 = Knockback
+
+CLASS_CLASS = Klasse:
+CLASS_HUMAN = Menneske
+CLASS_ZOMBIE = Zombie
+CLASS_SURVIVOR = Survivor
+CLASS_NEMESIS = Nemesis
+
+LAST_ZOMBIE_LEFT = Den sidste zombie gik, %s er den nye Zombie.
+LAST_HUMAN_LEFT = Det sidste menneske gik, %s er et nyt menneske.
+NOT_ENOUGH_AMMO = Du har ikke nok ammo packs.
+AMMO_BOUGHT = Du kQbte ekstra ammunition til dine vaaben.
+ZOMBIE_SELECT = Fra naeste gang du bliver inficeret vil din zombie klasse vaere
+AMMO_PACKS1 = Ammo packs:
+AMMO_PACKS2 = ammo packs
+SPECTATING = Kigger paa:
+
+[fr]
+NOTICE_INFO1 = Appuyez sur M pour afficher le menu
+NOTICE_INFO2 = Presse, ou . pour acheter des munitions 
+NOTICE_VIRUS_FREE = Le Virus-T a ete libere...
+NOTICE_FIRST = %s est le premier zombie!!
+NOTICE_INFECT = %s's le cerveau a �t� mangee...
+NOTICE_ANTIDOTE = %s a utilis� un antidote...
+NOTICE_NEMESIS = %s est un Nemesis !!!
+NOTICE_SURVIVOR = %s est un survivant !!!
+NOTICE_SWARM = Swarm Mode !!!
+NOTICE_MULTI = Multiple Infection !!!
+NOTICE_PLAGUE = Plague Mode !!!
+
+WIN_HUMAN = L'homme a vaincu le Virus-T!
+WIN_ZOMBIE = Zombies ont contamine le monde entier!
+WIN_NO_ONE = personne na Gagnee...
+
+CMD_INFECT = turned into a Zombie
+CMD_DISINFECT = turned back to Human
+CMD_NEMESIS = turned into a Nemesis
+CMD_SURVIVAL = turned into a Survivor
+CMD_SWARM = start Swarm Mode
+CMD_MULTI = start Multiple Infection
+CMD_PLAGUE = start Plague Mode
+CMD_RESPAWN = respawned
+CMD_NOT = Unavailable command.
+CMD_ZOMBIE_ONLY = This is only available to zombies.
+CMD_HUMAN_ONLY = This is only available to humans.
+CMD_NOT_STUCK = Vous n'�tes pas coinc�.
+CMD_NOT_ACCESS = Vous n'avez pas acc�s.
+CMD_NOT_CANTUSE = Vous cant usage de ce droit.
+CMD_NOT_EXTRAS = Points suppl�mentaires sont d�sactiv�es.
+CMD_NOT_ZCLASSES = Zombie classes sont d�sactiv�es.
+
+MENU_BUY = acheter des armes
+MENU_EXTRABUY = Acheter Extra items
+MENU_ZCLASS = Choisir la classe de zombie
+MENU_UNSTUCK = D�bloquer
+MENU_ADMIN = admin menu
+MENU_INFO = Aide 
+MENU_SPECTATOR = Join Spectators
+
+MENU_BUY1_TITLE = principale arme
+MENU_BUY2_TITLE = arme secondaire
+MENU_ZCLASS_TITLE = Zombie classe
+MENU_EXTRA_TITLE = Extra articles
+MENU_ADMIN_TITLE = admin menu
+MENU_INFO_TITLE = plugin information 
+
+MENU_EXTRA1 = NightVision (1 seul tour)
+MENU_EXTRA2 = Virus-T Antidote
+MENU_EXTRA3 = Zombie Madness
+MENU_EXTRA4 = infection bombe
+MENU_ADMIN1 = Make Zombie/Human
+MENU_ADMIN2 = Make Nemesis
+MENU_ADMIN3 = Make Survivor
+MENU_ADMIN4 = Respawn Someone
+MENU_ADMIN5 = Start Swarm Mode
+MENU_ADMIN6 = Start Multiple Infection
+MENU_ADMIN7 = Start Plague Mode
+MENU_INFO1 = General
+MENU_INFO2 = Humans
+MENU_INFO3 = Zombies
+MENU_INFO4 = modes de jeu
+
+MENU_AUTOSELECT = Remember Selection
+MENU_BACK = Retour
+MENU_NEXT = Suivant
+MENU_EXIT = Quitter 
+
+MOTD_INFO11 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>%s %s par %s: </b>est un Counter-Strike plugin developpe sous AMX Mod X , O� les humains et les zombies sont confrontes. Il est base sur le classique de l'infection par le mod zombie, � chaque tour un joueur au hasard est choisi pour �tre le premier zombie qui doit infecter tout le monde.
+MOTD_INFO12 = Mais il existe de nouvelles fonctionnalites et ameliorations. Par exemple, vous pouvez acheter des articles supplementaires (comme les armes) en echange de paquets de munitions. Vous pouvez obtenir des paquets de munitions en tuant des zombies / infecter l'homme. <br><br><br><u>Actuelle des parametres du serveur:</u><br>
+MOTD_INFO1_A = <br>Ambience Effects:
+MOTD_INFO1_B = <br>Lightning Level: %s
+MOTD_INFO1_C = <br>Triggered Lights: %L
+MOTD_INFO1_D = <br>Thunderclaps Every: %d seconds
+MOTD_INFO1_E = <br>Doors: %L
+MOTD_INFO1_F = <br>Deathmatch: %L
+MOTD_INFO1_G = <br>Spawn Protection Time: %d seconds
+MOTD_INFO1_H = <br>Random Spawning: %L
+MOTD_INFO1_I = <br>Extra Items: %L
+MOTD_INFO1_J = <br>Zombie Classes: %L
+MOTD_INFO1_K = <br>Custom Nightvision: %L
+MOTD_INFO1_L = <br>Custom Flashlight: %L
+MOTD_INFO2 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>humains: </b>leur objectif est d'�liminer toute menace zombie. Ils ont un grand arsenal d'armes de choix, et l'utilisation des lampes de poche sur la tomb�e de la nuit cartes. Le travail en �quipe est une n�cessit� pour survivre.<br><br><br><u>parametres actuelle du serveur:</u><br>
+MOTD_INFO2_A = <br>Health: %d
+MOTD_INFO2_B = <br>Health Reward for Last Human: %d
+MOTD_INFO2_C = <br>Speed: %d
+MOTD_INFO2_D = <br>Gravity: %d
+MOTD_INFO2_E = <br>Ammo: %L
+MOTD_INFO2_F = <br>Damage to Get an Ammo Pack: %d
+MOTD_INFO2_G = <br>Fire Grenades: %L
+MOTD_INFO2_H = <br>Frost Grenades: %L
+MOTD_INFO2_I = <br>Flare Grenades: %L
+MOTD_INFO2_J = <br>Knockback: %L
+MOTD_INFO3 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Zombies:</b>leur objectif est d'infecter chaque vie humaine. Ils sont capables de voir dans l'obscurit�, mais ne peut attaque de m�l�e. Il ya 6 classes diff�rentes de zombies � choisir, chacun avec ses propres forces et faiblesses, mais tous capables de manger les cerveaux.<br><br><br><u>param�tres actuelle du serveur:</u><br>
+MOTD_INFO3_A = <br>Zombie Health: %d
+MOTD_INFO3_B = <br>First Zombie Health: %d
+MOTD_INFO3_C = <br>Armor: %d%% damage taken
+MOTD_INFO3_D = <br>Speed: %d
+MOTD_INFO3_E = <br>Gravity: %d
+MOTD_INFO3_F = <br>HP for Infection: %d
+MOTD_INFO3_G = <br>Pain Shock Free: %L
+MOTD_INFO3_H = <br>Bleeding: %L
+MOTD_INFO3_I = <br>Ammo Packs for Infection: %d
+MOTD_INFO4 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Mini-Games:</b> Il ya 4 diff�rents modes de jeu sp�ciaux que se produisent de fa�on al�atoire mai au cours de la partie.<br><br><br><u> parametres actuelle du serveur:</u><br>
+MOTD_INFO4_A = <br>Nemesis: %L
+MOTD_INFO4_B = <br>Nemesis Chance: 1 in %d
+MOTD_INFO4_C = <br>Nemesis Health: %s
+MOTD_INFO4_D = <br>Nemesis Speed: %d
+MOTD_INFO4_E = <br>Nemesis Gravity: %d
+MOTD_INFO4_F = <br>Nemesis Leap: %L
+MOTD_INFO4_G = <br>Nemesis Pain Shock Free: %L
+MOTD_INFO4_H = <br><br>Survivor: %L
+MOTD_INFO4_I = <br>Survivor Chance: 1 in %d
+MOTD_INFO4_J = <br>Survivor Health: %s
+MOTD_INFO4_K = <br>Survivor Speed: %d
+MOTD_INFO4_L = <br>Survivor Gravity: %d
+MOTD_INFO4_M = <br>Survivor Leap: %L
+MOTD_INFO4_N = <br>Survivor Pain Shock Free: %L
+MOTD_INFO4_O = <br><br>Swarm Mode: %L
+MOTD_INFO4_P = <br>Swarm Mode Chance: 1 in %d
+MOTD_INFO4_Q = <br><br>Multi Infection: %L
+MOTD_INFO4_R = <br>Multi Infection Chance: 1 in %d
+MOTD_INFO4_S = <br>Infection Ratio: %d%%
+MOTD_INFO4_T = <br><br>Plague Mode: %L
+MOTD_INFO4_U = <br>Plague Mode Chance: 1 in %d
+MOTD_INFO4_V = <br>Plague Infection Ratio: %d%%
+
+MOTD_ENABLED = Active
+MOTD_DISABLED = Desactive
+MOTD_FOG = Fog
+MOTD_RAIN = pluie
+MOTD_SNOW = Neige
+MOTD_ROTATING = portes enleve
+MOTD_DOORS = Tout portes enleve
+MOTD_DM_HUMAN = human respawn 
+MOTD_DM_ZOMBIE = zombie respawn
+MOTD_LIMITED = Limited
+MOTD_AMMO_BP = recharge illimite
+MOTD_AMMO_CLIP = clip illimite
+MOTD_LASTZOMBIE = Uniquement le dernier zombie
+
+ZOMBIE_ATTRIB1 = Sante
+ZOMBIE_ATTRIB2 = vitesse 
+ZOMBIE_ATTRIB3 = Gravite
+ZOMBIE_ATTRIB4 = Knockback
+
+CLASS_CLASS = Categorie:
+CLASS_HUMAN = humain
+CLASS_ZOMBIE = Zombie
+CLASS_SURVIVOR = survivant
+CLASS_NEMESIS = Nemesis
+
+LAST_ZOMBIE_LEFT = Le dernier zombie est partie, %s est le nouveau zombie.
+LAST_HUMAN_LEFT = Le dernier Humain est partie, %s est le nouvel Humain.
+NOT_ENOUGH_AMMO = Vous n'avez pas assez de paquets de munitions.
+AMMO_BOUGHT = Vous avez achet� des munitions suppl�mentaires pour vos armes.
+ZOMBIE_SELECT = Votre class de zombie serat effective a la prochaine infection
+AMMO_PACKS1 = Ammo packs:
+AMMO_PACKS2 = munitions packs
+SPECTATING = Spectateur:
+
+[ro]
+NOTICE_INFO1 = Apasa tasta M pentru a afisa meniul jocului
+NOTICE_INFO2 = Apasa tasta , sau . pentru a cumpara munitie
+NOTICE_VIRUS_FREE = T-virus a fost scapat de sub control !
+NOTICE_FIRST = %s este primul zombie !
+NOTICE_INFECT = %s a fost infectat !
+NOTICE_INFECT2 = %s a fost infectat de %s !
+NOTICE_ANTIDOTE = %s a folosit un antidot...
+NOTICE_NEMESIS = %s este Nemesis !!!
+NOTICE_SURVIVOR = %s este ultimul Supravietuitor !!!
+NOTICE_SWARM = Mod Swarm !!!
+NOTICE_MULTI = Infectare multipla !!!
+NOTICE_PLAGUE = Mod Plague !!!
+
+WIN_HUMAN = Oamenii au invins virusul!
+WIN_ZOMBIE = Zombie au cucerit lumea!
+WIN_NO_ONE = Lupta pentru supravietuire continua...
+
+CMD_INFECT = a fost transformat in Zombie
+CMD_DISINFECT = a fost transformat inapoi in Om
+CMD_NEMESIS = a fost transformat in Nemesis
+CMD_SURVIVAL = a fost transformat in Supravietuitor
+CMD_SWARM = Incepe Modul Swarm
+CMD_MULTI = Incepe Infectarea Multipla
+CMD_PLAGUE = Incepe Modul Plague
+CMD_RESPAWN = reinviat
+CMD_NOT = Comanda indisponibila
+CMD_ZOMBIE_ONLY = Aceasta este disponibila numai pentru zombie
+CMD_HUMAN_ONLY = Aceasta este disponibila numai pentru oameni
+CMD_NOT_STUCK = Nu esti blocat !
+CMD_NOT_ACCESS = Nu ai acces !
+CMD_NOT_CANTUSE = Momentan nu poti folosi aceasta optiune...
+CMD_NOT_EXTRAS = Elementele extra sunt dezactivate !
+CMD_NOT_ZCLASSES = Clasele de zombie sunt dezactivate !
+
+MENU_BUY = Cumparare Arme
+MENU_EXTRABUY = Cumparare Elemente Extra
+MENU_ZCLASS = Alege Clasa De Zombie
+MENU_UNSTUCK = Deblocare
+MENU_ADMIN = Meniu Admin
+MENU_INFO = Ajutor
+MENU_SPECTATOR = Intra Spectator
+
+MENU_BUY1_TITLE = Arme Primare
+MENU_BUY2_TITLE = Arme Secundare
+MENU_ZCLASS_TITLE = Clasa De Zombie
+MENU_EXTRA_TITLE = Elemente Extra
+MENU_ADMIN_TITLE = Meniu Admin
+MENU_INFO_TITLE = Informatii Plugin
+
+MENU_EXTRA1 = Ochelari cu infrarosu (o singura runda)
+MENU_EXTRA2 = Antidot T-Virus
+MENU_EXTRA3 = Zombie Madness
+MENU_EXTRA4 = Grenada De Infectare
+MENU_ADMIN1 = Vindeca | Infecteaza
+MENU_ADMIN2 = Transforma In Nemesis
+MENU_ADMIN3 = Lasa Un Singur Supravietuitor
+MENU_ADMIN4 = Reinviaza
+MENU_ADMIN5 = Incepe Modul Swarm
+MENU_ADMIN6 = Incepe Infectare Multipla
+MENU_ADMIN7 = Incepe Modul Plague
+MENU_INFO1 = General
+MENU_INFO2 = Oameni
+MENU_INFO3 = Zombie
+MENU_INFO4 = Moduri de Joc
+
+MENU_AUTOSELECT = Tine Minte Preferinte
+MENU_BACK = Inapoi
+MENU_NEXT = Urmatorul
+MENU_EXIT = Iesire
+
+MOTD_INFO11 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>%s %s de %s:</b> este un plugin de Counter-Strike, elaborat in conformitate cu AMX Mod X, unde oamenii si zombie se confrunta. Se bazeaza pe modul clasic de Zombie Infection: In fiecare runda un jucator aleator este ales pentru a fi primul zombie care va trebui sa infecteze restul oamenilor
+MOTD_INFO12 = Sunt si caracteristici noi si imbunatatiri. De exemplu, aveti posibilitatea de a cumpara elemente extra (cum ar fi arme) �n schimbul pachetelor de munitie. Aveti posibilitatea sa obtineti pachete de munitie prin a rani/omori un zombie sau prin infectarea unui om <br> <br> <br> <u> Setarile curente ale serverului:</u><br>
+MOTD_INFO1_A = <br>Efecte Atmosfera:
+MOTD_INFO1_B = <br>Nivel Lumina: %s
+MOTD_INFO1_C = <br>Declansare Lumini: %L
+MOTD_INFO1_D = <br>Fulgere O Data La: %d secunde
+MOTD_INFO1_E = <br>Usi: %L
+MOTD_INFO1_F = <br>Reincarnare: %L
+MOTD_INFO1_G = <br>Timp De Protectie Dupa Reincarnare: %d secunde
+MOTD_INFO1_H = <br>Reincarnare Aleatorie: %L
+MOTD_INFO1_I = <br>Elemente Extra: %L
+MOTD_INFO1_J = <br>Clase De Zombie: %L
+MOTD_INFO1_K = <br>Ochelari Cu Infrarosu: %L
+MOTD_INFO1_L = <br>Lanterna: %L
+MOTD_INFO2 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Oamenii:</b> obiectivul lor este sa opreasca raspandirea infectiei. Acestia au un arsenal mare de arme, si pot folosi lanterne pe harti cu vizibilitate redusa. Lucrul in echipa aduce un avantaj oamenilor.<br><br><br><u>Setarile curente ale serverului:</u><br>
+MOTD_INFO2_A = <br>Viata: %d
+MOTD_INFO2_B = <br>Bonus De Viata Pentru Ultimul Om: %d
+MOTD_INFO2_C = <br>Viteza: %d
+MOTD_INFO2_D = <br>Gravitatie: %d
+MOTD_INFO2_E = <br>Munitie: %L
+MOTD_INFO2_F = <br>Daune Necesare Pentru A Primi Un Pachet De Munitie: %d
+MOTD_INFO2_G = <br>Grenazi Foc: %L
+MOTD_INFO2_H = <br>Grenazi Inghetare: %L
+MOTD_INFO2_I = <br>Grenazi Lumina: %L
+MOTD_INFO2_J = <br>KnockBack: %L
+MOTD_INFO3 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Zombie:</b> obiectivul lor este sa infecteze toti oamenii. Ei pot vedea pe intuneric, dar au ca arma numai ghearele. Sunt 6 clase diferite de zombie din care sa alegi, fiecare cu forta si punctul sau slab, dar toti capabili sa infecteze<br><br><br><u>Setarile curente ale serverului:</u><br>
+MOTD_INFO3_A = <br>Viata Zombie: %d
+MOTD_INFO3_B = <br>Viata Primului Zombie: %d
+MOTD_INFO3_C = <br>Armura: %d%% Rani Suferite
+MOTD_INFO3_D = <br>Viteza: %d
+MOTD_INFO3_E = <br>Gravitatie: %d
+MOTD_INFO3_F = <br>Viata Pentru Infectare: %d
+MOTD_INFO3_G = <br>Simte Ranile Suferite: %L
+MOTD_INFO3_H = <br>Sangerare: %L
+MOTD_INFO3_I = <br>Pachete De Munitie Pentru Infectare: %d
+MOTD_INFO4 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Moduri:</b> exista 4 moduri speciale de gameplay care pot aparea in timpul jocului.<br><br><br><u>Setarile curente ale serverului:</u><br>
+MOTD_INFO4_A = <br>Nemesis: %L
+MOTD_INFO4_B = <br>Sansa Nemesis: 1 la %d
+MOTD_INFO4_C = <br>Viata Nemesis: %s
+MOTD_INFO4_D = <br>Viteza Nemesis: %d
+MOTD_INFO4_E = <br>Gravitatie Nemesis: %d
+MOTD_INFO4_F = <br>Sarituri Nemesis: %L
+MOTD_INFO4_G = <br>Nemesis Simte Ranile Suferite: %L
+MOTD_INFO4_H = <br><br>Supravietuitor: %L
+MOTD_INFO4_I = <br>Sansa Supravietuitor: 1 la %d
+MOTD_INFO4_J = <br>Viata Supravietuitor: %s
+MOTD_INFO4_K = <br>Viteza Supravietuitor: %d
+MOTD_INFO4_L = <br>Gravitatia Supravietuitor: %d
+MOTD_INFO4_M = <br>Sarituri Supravietuitor: %L
+MOTD_INFO4_N = <br>Supravietuitorul Simte Ranile Suferite: %L
+MOTD_INFO4_O = <br><br>Modul Swarm: %L
+MOTD_INFO4_P = <br>Sansa Mod Swarm: 1 in %d
+MOTD_INFO4_Q = <br><br>Infectare Multipla: %L
+MOTD_INFO4_R = <br>Sansa Infectie Multipla: 1 in %d
+MOTD_INFO4_S = <br>Rata De Infectare: %d%%
+MOTD_INFO4_T = <br><br>Modul Plague: %L
+MOTD_INFO4_U = <br>Sansa Mod Plague: 1 in %d
+MOTD_INFO4_V = <br>Rata De Infectare: %d%%
+
+MOTD_ENABLED = Activat
+MOTD_DISABLED = Dezactivat
+MOTD_FOG = Ceata
+MOTD_RAIN = Ploaie
+MOTD_SNOW = Ninsoare
+MOTD_ROTATING = Usi rorative eliminate
+MOTD_DOORS = Toate usile au fost eliminate
+MOTD_DM_HUMAN = Reinvie ca Om
+MOTD_DM_ZOMBIE = Reinvie ca Zombie
+MOTD_LIMITED = Limitat
+MOTD_AMMO_BP = Incarcari Nelimitate
+MOTD_AMMO_CLIP = Munitie Nelimitata
+MOTD_LASTZOMBIE = Numai Ultimul Zombie
+
+ZOMBIE_ATTRIB1 = Viata
+ZOMBIE_ATTRIB2 = Viteza
+ZOMBIE_ATTRIB3 = Gravitatie
+ZOMBIE_ATTRIB4 = KnockBack
+
+CLASS_CLASS = Clasa:
+CLASS_HUMAN = Om
+CLASS_ZOMBIE = Zombie
+CLASS_SURVIVOR = Supravietuitor
+CLASS_NEMESIS = Nemesis
+
+LAST_ZOMBIE_LEFT = Ultimul zombie a iesit de pe server, %s este noul zombie !
+LAST_HUMAN_LEFT = Ultimul om ne-a parasit, %s este noul om.
+NOT_ENOUGH_AMMO = Nu ai destule pachete de munitie !
+AMMO_BOUGHT = Ai Cumparat Extra Munitie Pentru Armele Tale
+ZOMBIE_SELECT = Data viitoare cand vei fi infectat, clasa ta de zombie va fi
+BUY_ENABLED = Meniul tau de arme a fost reactivat.
+AMMO_PACKS1 = Pachete De Munitie:
+AMMO_PACKS2 = Pachete De Munitie
+SPECTATING = Urmaresti Pe:
+
+[cz]
+NOTICE_INFO1 = Stiskni "M" pro zobrazeni nabidky.
+NOTICE_INFO2 = Stiskni . nebo , pro koupeni naboju.
+NOTICE_VIRUS_FREE = T-Virus byl vypusten
+NOTICE_FIRST = %s je prvni Zombie !
+NOTICE_INFECT = %s byl nakazen.
+NOTICE_INFECT2 = %s byl nakazen hracem %s.
+NOTICE_ANTIDOTE = %s pouzil protilatku.
+NOTICE_NEMESIS = %s je Nemesis !
+NOTICE_SURVIVOR = %s je Vyvoleny !
+NOTICE_SWARM = Hejno Zombies !
+NOTICE_MULTI = Vicenasobna Infekce !
+NOTICE_PLAGUE = Zacalo Zamoreni !
+
+WIN_HUMAN = Lide vyhrali !
+WIN_ZOMBIE = Zombie vyhrali !
+WIN_NO_ONE = Toto kolo nikdo nevyhral
+
+CMD_INFECT = Zmenen na Zombie
+CMD_DISINFECT = Zmenen na Cloveka
+CMD_NEMESIS = Znemen na Nemesis
+CMD_SURVIVAL = Znemen na Vyvoleneho
+CMD_SWARM = Hejno Zombies !
+CMD_MULTI = Vicenasobna Infekce !
+CMD_PLAGUE = Zacalo Zamoreni
+CMD_RESPAWN = Respawnovan.
+CMD_NOT = Neznamy prikaz.
+CMD_ZOMBIE_ONLY = Tato Funkce pouze pro Zombie.
+CMD_HUMAN_ONLY = Tato Funkce je pouze pro Lidi.
+CMD_NOT_STUCK = Nejsi zaseknuty.
+CMD_NOT_ACCESS = Nemas pristup.
+CMD_NOT_CANTUSE = Ted nemuzes pouzit tuto Funkci.
+CMD_NOT_EXTRAS = Bonus veci byli zakazany.
+CMD_NOT_ZCLASSES = Zombie typy byli zakazany.
+
+MENU_BUY = Zbrane
+MENU_EXTRABUY = Bonus Veci
+MENU_ZCLASS = Vyber Zombie
+MENU_UNSTUCK = Odseknout
+MENU_ADMIN = Admin Menu
+MENU_INFO = Pomoc
+MENU_SPECTATOR = Divak
+
+MENU_BUY1_TITLE = Primarni Zbran
+MENU_BUY2_TITLE = Sekundarni Zbran
+MENU_ZCLASS_TITLE = Zombie Typ
+MENU_EXTRA_TITLE = Bonus Veci
+MENU_ADMIN_TITLE = Admin Menu
+MENU_INFO_TITLE = Informace o Pluginu
+
+MENU_EXTRA1 = Nocni Videni [Jedno Kolo]
+MENU_EXTRA2 = T-Virus Protilatka
+MENU_EXTRA3 = Infekcni Granat
+MENU_EXTRA4 = Zombie Silenstvi
+MENU_ADMIN1 = Vytvorit Zombie | Cloveka
+MENU_ADMIN2 = Vytvorit Nemesis
+MENU_ADMIN3 = Vytvorit Vyvoleneho
+MENU_ADMIN4 = Respawnovat Hrace
+MENU_ADMIN5 = Vytvorit Hejno Zombies
+MENU_ADMIN6 = Zacit Vicenasobnou Infekci
+MENU_ADMIN7 = Zacit Zamoreni
+MENU_INFO1 = Hlavni
+MENU_INFO2 = Lide
+MENU_INFO3 = Zombies
+MENU_INFO4 = Herni Mody
+
+MENU_AUTOSELECT = Zapamatovat Vyber
+MENU_BACK = Zpet
+MENU_NEXT = Dalsi
+MENU_EXIT = Konec
+
+MOTD_INFO11 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>%s %s by %s : je mod Hry Counter-Strike vyvinuty pro AMX Mod X Plugin.</b>
+MOTD_INFO12 = <b>V nove verzi je spoustu novych veci. Napriklad muzes kupovat Bonusove Veci za body [ Nocni Videni a Silne Zbrane jako Clovek nebo Infikovany Granat, T-Virus Protilatku a Zombie Silenstvi jako Zombie ] Body ziskavas za Nakazu Lidi, Zabijeni Zombie nebo za urcity pocet DMG<br><br><u>Aktualni Nastaveni Serveru:</b></u><br>
+MOTD_INFO1_A = <b><br>Efekty
+MOTD_INFO1_B = <br>Uroven Sviceni [ %s ]
+MOTD_INFO1_C = <br>Spousteni Svetel [ %L ]
+MOTD_INFO1_D = <br>Hrmeni kazdych [ %d ] vterin
+MOTD_INFO1_E = <br>Dvere [ %L ]
+MOTD_INFO1_F = <br>Deathmatch [ %L ]
+MOTD_INFO1_G = <br>Cas Spawnove Protekce [ %d ] vterin
+MOTD_INFO1_H = <br>Nahodne Spawnovani [ %L ]
+MOTD_INFO1_I = <br>Bonus Veci [ %L ]
+MOTD_INFO1_J = <br>Zombie Typ [ %L ]
+MOTD_INFO1_K = <br>Nahodna Barva Nocniho Videni [ %L ]
+MOTD_INFO1_L = <br>Nahodna Barva Baterky [ %L ]</b>
+MOTD_INFO2 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Ukolem Lidi je zabit vsechny Zombie. Maji k dispozici hodne zbrani. Bez teamove prace lide nemaji sanci.<br><br><u>Aktualni Nastaveni Lidi:</u><br>
+MOTD_INFO2_A = <b><br>Zdravi [ %d ]
+MOTD_INFO2_B = <br>Zdravi posledniho Cloveka [ %d ]
+MOTD_INFO2_C = <br>Rychlost [ %d ]
+MOTD_INFO2_D = <br>Gravitace [ %d ]
+MOTD_INFO2_E = <br>Naboje [ %L ]
+MOTD_INFO2_F = <br>Pocet poskozeni pro ziskani jednoho bodu [ %d DMG ]
+MOTD_INFO2_G = <br>Ohnive Granaty [ %L ]
+MOTD_INFO2_H = <br>Ledove Granaty [ %L ]
+MOTD_INFO2_I = <br>Svetlice [ %L ]
+MOTD_INFO2_J = <br>Odhozeni [ %L ]</b>
+MOTD_INFO3 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Ukolem Zombies je nakazit vsechny Lidi. Je zde 5. Typu Zombie, kazdy z nich ma svoje vyhody a nevyhody, ale vsichni maji jeden stejny ukol.<br><br><u>Aktualni Nastaveni Zombies:</b></u><br>
+MOTD_INFO3_A = <b><br>Zdravi [ %d ]
+MOTD_INFO3_B = <br>Zdravi prvniho Zombie [ %d HP ]
+MOTD_INFO3_C = <br>Brneni [ %d%% ]
+MOTD_INFO3_D = <br>Rychlost [ %d ]
+MOTD_INFO3_E = <br>Gravitace [ %d ]
+MOTD_INFO3_F = <br>Zdravi za Infekci [ %d ]
+MOTD_INFO3_G = <br>Bolest [ %L ]
+MOTD_INFO3_H = <br>Krvaceni [ %L ]
+MOTD_INFO3_I = <br>Body za Infekci [ %d ]</b>
+MOTD_INFO4 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b><u>Aktualni Nastaveni Modu:</b></u><br>
+MOTD_INFO4_A = <b><br>Nemesis - Stav [ %L ]
+MOTD_INFO4_B = <br>Nemesis - Sance [ 1 v %d ]
+MOTD_INFO4_C = <br>Nemesis - Zdravi %s
+MOTD_INFO4_D = <br>Nemesis - Rychlost [ %d ]
+MOTD_INFO4_E = <br>Nemesis - Gravitace [ %d ]
+MOTD_INFO4_F = <br>Nemesis - Dlouhy Skok [ %L ]
+MOTD_INFO4_G = <br>Nemesis - Bolest [ %L ]
+MOTD_INFO4_H = <br><br>Vyvoleny - Stav [ %L ]
+MOTD_INFO4_I = <br>Vyvoleny - Sance [ 1 v %d ]
+MOTD_INFO4_J = <br>Vyvoleny - Zdravi %s
+MOTD_INFO4_K = <br>Vyvoleny - Rychlost [ %d ]
+MOTD_INFO4_L = <br>Vyvoleny - Gravitace [ %d ]
+MOTD_INFO4_M = <br>Vyvoleny - Dlouhy Skok [ %L ]
+MOTD_INFO4_N = <br>Vyvoleny - Bolest [ %L ]
+MOTD_INFO4_O = <br><br>Hejno - Stav [ %L ]
+MOTD_INFO4_P = <br>Hejno - Sance [ 1 v %d ]
+MOTD_INFO4_Q = <br><br>Vicenasobna Infekce - Stav [ %L ]
+MOTD_INFO4_R = <br>Vicenasobna Infekce - Sance [ 1 v %d ]
+MOTD_INFO4_S = <br>Vicenasobna Infekce - Pocet Infikovanych Hracu z Celku [ %d%% ]
+MOTD_INFO4_T = <br><br>Zamoreni - Stav [ %L ]
+MOTD_INFO4_U = <br>Zamoreni - Sance [ 1 v %d ]
+MOTD_INFO4_V = <br>Zamoreni - Pocet Infikovanych Hracu z Celku [ %d%% ]</b>
+
+MOTD_ENABLED = Povoleno
+MOTD_DISABLED = Zakazano
+MOTD_FOG = Mlha
+MOTD_RAIN = Dest
+MOTD_SNOW = Snih
+MOTD_ROTATING = Rotujici Dvere odstraneny
+MOTD_DOORS = Vsechny Dvere odstraneny
+MOTD_DM_HUMAN = Respawnovan jako Clovek
+MOTD_DM_ZOMBIE = Respawnovan jako Zombie
+MOTD_LIMITED = Limitovane
+MOTD_AMMO_BP = Bez Prebijeni
+MOTD_AMMO_CLIP = Neomezene mnozstvi Zasobniku
+MOTD_LASTZOMBIE = Jen posledni Zombie
+
+ZOMBIE_ATTRIB1 = Zdravi
+ZOMBIE_ATTRIB2 = Rychlost
+ZOMBIE_ATTRIB3 = Gravitace
+ZOMBIE_ATTRIB4 = Odhozeni
+
+CLASS_CLASS = Typ:
+CLASS_HUMAN = Clovek
+CLASS_ZOMBIE = Zombie
+CLASS_SURVIVOR = Vyvoleny
+CLASS_NEMESIS = Nemesis
+
+LAST_ZOMBIE_LEFT = Posledni Zombie odesel. Novy Zombie je %s
+LAST_HUMAN_LEFT = Posledni Clovek odesel. Novy Clovek je %s
+NOT_ENOUGH_AMMO = Nemas dost bodu
+AMMO_BOUGHT = Koupil jsi naboje
+ZOMBIE_SELECT = Po pristim nakazeni budes zombie typu
+BUY_ENABLED = Nakupni menu bylo opet aktivovano.
+AMMO_PACKS1 = Body:
+AMMO_PACKS2 = Bodu
+SPECTATING = Sledujes Hrace:
+
+[sk]
+NOTICE_INFO1 = Stlac "M" na zobrazenie ponuky.
+NOTICE_INFO2 = Stlac . alebo , pre nakupenie n�bojov.
+NOTICE_VIRUS_FREE = T-Virus vypusteny.
+NOTICE_FIRST = %s je prvy Zombie !
+NOTICE_INFECT = %s bol nakazeny.
+NOTICE_INFECT2 = %s bol nakazeny hracom %s.
+NOTICE_ANTIDOTE = %s pouzil protilatku.
+NOTICE_NEMESIS = %s je Nemesis !
+NOTICE_SURVIVOR = %s je Vyvoleny !
+NOTICE_SWARM = Stado Zombies !
+NOTICE_MULTI = Viacnasobna Infekcia !
+NOTICE_PLAGUE = Zacalo Zamorenie !
+
+WIN_HUMAN = Ludia vyhrali !
+WIN_ZOMBIE = Zombie vyhrali !
+WIN_NO_ONE = Toto kolo nikto nevyhral
+
+CMD_INFECT = Zmeneny na Zombie
+CMD_DISINFECT = Zmeneny na Cloveka
+CMD_NEMESIS = Znemeny na Nemesis
+CMD_SURVIVAL = Znemeny na Vyvoleneho
+CMD_SWARM = Stado Zombies 
+CMD_MULTI = Viacnasobna Infekcia 
+CMD_PLAGUE = Zacalo Zamorenie.
+CMD_RESPAWN = Respawnovanie.
+CMD_NOT = Neznamy prikaz.
+CMD_ZOMBIE_ONLY = Tato Funkcia je iba pre Zombie.
+CMD_HUMAN_ONLY = Tato Funkcia je iba pre Ludi.
+CMD_NOT_STUCK = Nie si zaseknuty.
+CMD_NOT_ACCESS = Nemas pristup.
+CMD_NOT_CANTUSE = Teraz nemozes pouzit tuto funkciu.
+CMD_NOT_EXTRAS = Bonusove vybavenie bolo zakazane.
+CMD_NOT_ZCLASSES = Zombie typy boli zakazane.
+
+MENU_BUY = Zbrane
+MENU_EXTRABUY = Bonusove Vybavenie
+MENU_ZCLASS = Vyber Zombie
+MENU_UNSTUCK = Odseknut
+MENU_ADMIN = Admin Menu
+MENU_INFO = Pomoc
+MENU_SPECTATOR = Divak
+
+MENU_BUY1_TITLE = Primarna Zbran
+MENU_BUY2_TITLE = Sekundarna Zbran
+MENU_ZCLASS_TITLE = Zombie Typ
+MENU_EXTRA_TITLE = Bonusove Vybavenie
+MENU_ADMIN_TITLE = Admin Menu
+MENU_INFO_TITLE = Informacie o Plugine
+
+MENU_EXTRA1 = Nocne Videnie [Jedno Kolo]
+MENU_EXTRA2 = T-Virus Protilatka
+MENU_EXTRA3 = Infekcny Granat
+MENU_EXTRA4 = Zombie Sialenstvo
+MENU_ADMIN1 = Vytvorit Zombie | Cloveka
+MENU_ADMIN2 = Vytvorit Nemesis
+MENU_ADMIN3 = Vytvorit Vyvoleneho
+MENU_ADMIN4 = Respawnovat Hraca
+MENU_ADMIN5 = Vytvorit Stado Zombies
+MENU_ADMIN6 = Zacat Viacnasobnu Infekciu
+MENU_ADMIN7 = Zacat Zamorenie
+MENU_INFO1 = Hlavne
+MENU_INFO2 = Ludia
+MENU_INFO3 = Zombies
+MENU_INFO4 = Herne Mody
+
+MENU_AUTOSELECT = Zapamatat Vyber
+MENU_BACK = Spat
+MENU_NEXT = Dalsi
+MENU_EXIT = Koniec
+
+MOTD_INFO11 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>%s %s by %s : je Mod Hry Counter-Strike vyvinuty pre AMX Mod X Plugin.</b>
+MOTD_INFO12 = <b>V novej verzi je mnoho novych veci. Napriklad mozes kupovat Bonusove Vybavenie za body [ Nocne Videnie a Silne Zbrane ako Clovek alebo Infikovany Granat, T-Virus Protilatku a Zombie Sialenstvo ako Zombie ] Body ziskavas za Nakazenie Ludi, Zabijenie Zombie alebo za urcity pocet DMG<br><br><u>Aktualne Nastavenie Serveru:</b></u><br>
+MOTD_INFO1_A = <b><br>Efekty
+MOTD_INFO1_B = <br>Uroven Svietenia [ %s ]
+MOTD_INFO1_C = <br>Spustenie Svetiel [ %L ]
+MOTD_INFO1_D = <br>Hrmenie kazdych [ %d ] sekund
+MOTD_INFO1_E = <br>Dvere [ %L ]
+MOTD_INFO1_F = <br>Deathmatch [ %L ]
+MOTD_INFO1_G = <br>Cas Spawn ochrany [ %d ] sekund
+MOTD_INFO1_H = <br>Nahodne Spawnovanie [ %L ]
+MOTD_INFO1_I = <br>Bonusove vybavenie [ %L ]
+MOTD_INFO1_J = <br>Zombie Typ [ %L ]
+MOTD_INFO1_K = <br>Nahodna Farva Nocneho Videnia [ %L ]
+MOTD_INFO1_L = <br>Nahodna Farva Baterky [ %L ]</b>
+MOTD_INFO2 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Ulohou Ludi je zabit vsetych Zombie. Maju k dispozicii velky arzenal zbrani. Bez teamovej prace ludi nemaju sancu.<br><br><u>Aktualne Nastavenie Ludi:</u><br>
+MOTD_INFO2_A = <b><br>Zdravie [ %d ]
+MOTD_INFO2_B = <br>Zdravie posledneho Cloveka [ %d ]
+MOTD_INFO2_C = <br>Rychlost [ %d ]
+MOTD_INFO2_D = <br>Gravitacia [ %d ]
+MOTD_INFO2_E = <br>Naboje [ %L ]
+MOTD_INFO2_F = <br>Vyska poskodenia pre ziskani jedneho bodu [ %d DMG ]
+MOTD_INFO2_G = <br>Ohnive Granaty [ %L ]
+MOTD_INFO2_H = <br>Ladove Granaty [ %L ]
+MOTD_INFO2_I = <br>Svetlice [ %L ]
+MOTD_INFO2_J = <br>Odhodenie [ %L ]</b>
+MOTD_INFO3 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Ulohou Zombies je nakazit vsetych Ludi. Je tu 5 typov Zombie, kazdy z nich ma svoje vyhody a nevyhody, ale vsetci maju rovnaku ulohu.<br><br><u>Aktualne Nastavenie Zombies:</b></u><br>
+MOTD_INFO3_A = <b><br>Zdravie [ %d ]
+MOTD_INFO3_B = <br>Zdravie prveho Zombie [ %d HP ]
+MOTD_INFO3_C = <br>Brnenie [ %d%% ]
+MOTD_INFO3_D = <br>Rychlost [ %d ]
+MOTD_INFO3_E = <br>Gravitacia [ %d ]
+MOTD_INFO3_F = <br>Zdravie za Infekciu[ %d ]
+MOTD_INFO3_G = <br>Bolest [ %L ]
+MOTD_INFO3_H = <br>Krvacenie [ %L ]
+MOTD_INFO3_I = <br>Body za Infekciu [ %d ]</b>
+MOTD_INFO4 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b><u>Aktualne Nastavenie Modu:</b></u><br>
+MOTD_INFO4_A = <b><br>Nemesis - Stav [ %L ]
+MOTD_INFO4_B = <br>Nemesis - Sanca [ 1 v %d ]
+MOTD_INFO4_C = <br>Nemesis - Zdravie [ %s ]
+MOTD_INFO4_D = <br>Nemesis - Rychlost [ %d ]
+MOTD_INFO4_E = <br>Nemesis - Gravitacia [ %d ]
+MOTD_INFO4_F = <br>Nemesis - Dlhy Skok [ %L ]
+MOTD_INFO4_G = <br>Nemesis - Bolest [ %L ]
+MOTD_INFO4_H = <br><br>Vyvoleny - Stav [ %L ]
+MOTD_INFO4_I = <br>Vyvoleny - Sanca [ 1 v %d ]
+MOTD_INFO4_J = <br>Vyvoleny - Zdravie %s
+MOTD_INFO4_K = <br>Vyvoleny - Rychlost [ %d ]
+MOTD_INFO4_L = <br>Vyvoleny - Gravitacia [ %d ]
+MOTD_INFO4_M = <br>Vyvoleny - Dlhy Skok [ %L ]
+MOTD_INFO4_N = <br>Vyvoleny - Bolest [ %L ]
+MOTD_INFO4_O = <br><br>Hejno - Stav [ %L ]
+MOTD_INFO4_P = <br>Hejno - Sanca [ 1 v %d ]
+MOTD_INFO4_Q = <br><br>Viacnasobna Infekcia - Stav [ %L ]
+MOTD_INFO4_R = <br>Viacnasobna Infekcia - Sanca [ 1 v %d ]
+MOTD_INFO4_S = <br>Viacnasobna Infekcia - Pocet Infikovanych Hracov z Celku [ %d%% ]
+MOTD_INFO4_T = <br><br>Zamorenie - Stav [ %L ]
+MOTD_INFO4_U = <br>Zamorenie - Sanca [ 1 v %d ]
+MOTD_INFO4_V = <br>Zamorenie - Pocet Infikovanych Hracov z Celku [ %d%% ]</b>
+
+MOTD_ENABLED = Povolene
+MOTD_DISABLED = Zakazane
+MOTD_FOG = Hmla
+MOTD_RAIN = Dazd
+MOTD_SNOW = Sneh
+MOTD_ROTATING = Rotujuce Dvere odstranene
+MOTD_DOORS = Vsetky Dvere odstranene
+MOTD_DM_HUMAN = Respawnovany ako Clovek
+MOTD_DM_ZOMBIE = Respawnovany ako Zombie
+MOTD_LIMITED = Limitovane
+MOTD_AMMO_BP = Bez Prebijania
+MOTD_AMMO_CLIP = Neobmedzene mnozstvo Zasobnikov
+MOTD_LASTZOMBIE = Iba posledny Zombie
+
+ZOMBIE_ATTRIB1 = Zdravie
+ZOMBIE_ATTRIB2 = Rychlost
+ZOMBIE_ATTRIB3 = Gravitacia
+ZOMBIE_ATTRIB4 = Odhodenie
+
+CLASS_CLASS = Typ:
+CLASS_HUMAN = Clovek
+CLASS_ZOMBIE = Zombie
+CLASS_SURVIVOR = Vyvoleny
+CLASS_NEMESIS = Nemesis
+
+LAST_ZOMBIE_LEFT = Posledny Zombie odisiel. Novy Zombie je %s
+LAST_HUMAN_LEFT = Posledny Clovek odisiel. Novy Clovek je %s
+NOT_ENOUGH_AMMO = Nemas dostatok bodov
+AMMO_BOUGHT = Kupil si naboje
+ZOMBIE_SELECT = Po nasledujucej nakaze budes zombie typu
+BUY_ENABLED = Nakupne menu bolo opat aktivovane.
+AMMO_PACKS1 = Body:
+AMMO_PACKS2 = Bodov
+SPECTATING = Sledujes Hrace:
+
+[sv]
+NOTICE_INFO1 = Tryck M f'o'r att visa spel menyn
+NOTICE_INFO2 = Tryck , eller . f'o'r att k'o'pa ammo
+NOTICE_VIRUS_FREE = T-Viruset har blivit frisl'a'ppt...
+NOTICE_FIRST = %s 'a'r den f'o'rsta zombie'n !!
+NOTICE_INFECT = %s's hj'a'rna har blivit upp'a'ten...
+NOTICE_INFECT2 = %s's hj'a'rna har blivit upp'a'ten av %s...
+NOTICE_ANTIDOTE = %s har anv'a'nt ett motgift...
+NOTICE_NEMESIS = %s 'a'r en Nemesis !!!
+NOTICE_SURVIVOR = %s 'a'r en 'o'verlevande !!!
+NOTICE_SWARM = Swarm Mode !!!
+NOTICE_MULTI = Flera infektioner !!!
+NOTICE_PLAGUE = Plague Mode !!!
+
+WIN_HUMAN = M'a'nniskorna har vunnit 'o'ver virusen!
+WIN_ZOMBIE = Zombies har tagit 'o'ver makten!
+WIN_NO_ONE = Ingen vann...
+
+CMD_INFECT = F'o'rvandlades till en Zombie
+CMD_DISINFECT = Blev en m'a'nniska igen
+CMD_NEMESIS = F'o'rvandlades till en Nemesis
+CMD_SURVIVAL = blev en 'o'verlevande
+CMD_SWARM = starta Swarm Mode
+CMD_MULTI = starta Flera infektioner
+CMD_PLAGUE = starta Plague Mode
+CMD_RESPAWN = Aterupplivad
+CMD_NOT = Ogiltigt kommando.
+CMD_ZOMBIE_ONLY = Detta 'a'r Endast tillg'a'ngligt f'o'r zombies.
+CMD_HUMAN_ONLY = Detta 'a'r Endast tillg'a'ngligt f'o'r m'a'nniskorna.
+CMD_NOT_STUCK = Du sitter inte fast.
+CMD_NOT_ACCESS = Du har inga r'a'ttigheter.
+CMD_NOT_CANTUSE = Du kan inte anv'a'nda detta just nu.
+CMD_NOT_EXTRAS = Extra saker 'a'r avaktiverade.
+CMD_NOT_ZCLASSES = Zombie klasser 'a'r avaktiverade.
+
+MENU_BUY = K'o'p vapen
+MENU_EXTRABUY = K'o'p extra saker
+MENU_ZCLASS = V'a'lj zombie klass
+MENU_UNSTUCK = Sl'a'pp mig fri
+MENU_ADMIN = Admin Meny
+MENU_INFO = Hj'a'lp
+MENU_SPECTATOR = Bli Spectator
+
+MENU_BUY1_TITLE = Prim'a'rt vapen
+MENU_BUY2_TITLE = Sekund'a'rt vapen
+MENU_ZCLASS_TITLE = Zombie klass
+MENU_EXTRA_TITLE = Extra saker
+MENU_ADMIN_TITLE = Admin Meny
+MENU_INFO_TITLE = Plugin Information
+
+MENU_EXTRA1 = M'o'rkerseende (en runda)
+MENU_EXTRA2 = T-Virus Motgift
+MENU_EXTRA3 = Zombie Ilska
+MENU_EXTRA4 = Infektion Bomb
+MENU_ADMIN1 = Skapa Zombie/M'a'nniska
+MENU_ADMIN2 = Skapa Nemesis
+MENU_ADMIN3 = Skapa 'o'verlevande
+MENU_ADMIN4 = Ateruppliva Nagon
+MENU_ADMIN5 = Starta Swarm Mode
+MENU_ADMIN6 = Starta Dubbla Infektioner
+MENU_ADMIN7 = Starta Plague Mode
+MENU_INFO1 = Generellt
+MENU_INFO2 = M'a'nniskor
+MENU_INFO3 = Zombies
+MENU_INFO4 = Olika spels'a'tt
+
+MENU_AUTOSELECT = Kom ihag val
+MENU_BACK = Bakat
+MENU_NEXT = N'a'sta
+MENU_EXIT = Avsluta
+
+MOTD_INFO11 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>%s %s by %s :</b> 'a'r ett Counter-Strike plugin utvecklat f'o'r AMX Mod X, d'a'r m'a'nniskor och zombies m'o'ter varandra. Det 'a'r baserat pa den klassiska zombie infektionsmodden: Varje runda startar med att en slumpad spelare v'a'ljs till att bli den f'o'rsta zombien som sedan ska d'o'da resten av spelarna. 
+MOTD_INFO12 = Men det 'a'r nya funktioner och f'o'rb'a'ttringar. Ett exempel, du har m'o'jligheten att k'o'pa extra saker (som vapen) i utbyte mot ammunition. Du kan fa ammunition genom att d'o'da zombies/infektera m'a'nniskor.<br><br><br><u>Nuvarande server inst'a'llningar:</u><br>
+MOTD_INFO1_A = <br>Atmosf'a'r effekter:
+MOTD_INFO1_B = <br>Ljusstyrka: %s
+MOTD_INFO1_C = <br>Utl'o'sta lampor: %L
+MOTD_INFO1_D = <br>Thunderclaps Varje: %d sekund
+MOTD_INFO1_E = <br>D'o'rrar: %L
+MOTD_INFO1_F = <br>Deathmatch: %L
+MOTD_INFO1_G = <br>Aterupplivad Skyddstid: %d sekunder
+MOTD_INFO1_H = <br>Slumpad aterupplevnad: %L
+MOTD_INFO1_I = <br>Extra Saker: %L
+MOTD_INFO1_J = <br>Zombie Klasser: %L
+MOTD_INFO1_K = <br>Olika M'o'rkerseenden: %L
+MOTD_INFO1_L = <br>Olika Lampor: %L
+MOTD_INFO2 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>M'a'nniskor:</b> deras uppdrag 'a'r att eliminera nagot zombie hot. De har ett stort urval av vapen att v'a'lja bland, och att anv'a'nda lampor pa m'o'rka banor. Lagsamarbete 'a'r ett maste f'o'r att 'o'verleva!<br><br><br><u>Nuvarande server inst'a'llningar:</u><br>
+MOTD_INFO2_A = <br>He'a'lsa: %d
+MOTD_INFO2_B = <br>H'a'lsa belo'ning f'o'r Senaste M'a'nniskan: %d
+MOTD_INFO2_C = <br>Hastighet: %d
+MOTD_INFO2_D = <br>Gravitation: %d
+MOTD_INFO2_E = <br>Ammo: %L
+MOTD_INFO2_F = <br>Skada f'o'r att fa Ammo: %d
+MOTD_INFO2_G = <br>Eld granater: %L
+MOTD_INFO2_H = <br>Frost granater: %L
+MOTD_INFO2_I = <br>Lysgranater: %L
+MOTD_INFO2_J = <br>'O'veraska: %L
+MOTD_INFO3 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Zombies:</b> deras uppdrag 'a'r att infektera varje levande m'a'nniska. De har m'o'jligheten att see n'a'r det 'a'r m'o'rkt, men kan endast d'o'da nagon med kniven. Det finns 6 olika zombieklasser att v'a'lja mellan, varje klass har sin egen styrka och svaghet, men alla kapabla till att 'a'ta hj'a'rnor.<br><br><br><u>Nuvarande server inst'a'llningar:</u><br>
+MOTD_INFO3_A = <br>Zombie H'a'lsa: %d
+MOTD_INFO3_B = <br>F'o'rsta Zombie H'a'lsan: %d
+MOTD_INFO3_C = <br>Armor: %d%% skada skedd
+MOTD_INFO3_D = <br>Hastighet: %d
+MOTD_INFO3_E = <br>Gravitation: %d
+MOTD_INFO3_F = <br>HP f'o'r Infektion: %d
+MOTD_INFO3_G = <br>Sm'a'rta Skakfri: %L
+MOTD_INFO3_H = <br>Bl'o'der: %L
+MOTD_INFO3_I = <br>Ammo Paket F'o'r Infektion: %d
+MOTD_INFO4 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Mini-spell'a'gen:</b> det finns 4 olika speciella spell'a'gen som slumpvis uppkommer genomspelets gang.<br><br><br><u>Nuvarande server inst'a'llningar:</u><br>
+MOTD_INFO4_A = <br>Nemesis: %L
+MOTD_INFO4_B = <br>Nemesis Chans: 1 in %d
+MOTD_INFO4_C = <br>Nemesis H'a'lsa: %s
+MOTD_INFO4_D = <br>Nemesis Hastighet: %d
+MOTD_INFO4_E = <br>Nemesis Gravitation: %d
+MOTD_INFO4_F = <br>Nemesis Hoppa: %L
+MOTD_INFO4_G = <br>Nemesis Sm'a'rtskaksfri: %L
+MOTD_INFO4_H = <br><br>'O'verlevande: %L
+MOTD_INFO4_I = <br>Survivor Chans: 1 in %d
+MOTD_INFO4_J = <br>Survivor H'a'lsa: %s
+MOTD_INFO4_K = <br>Survivor Hastighet: %d
+MOTD_INFO4_L = <br>Survivor Gravitation: %d
+MOTD_INFO4_M = <br>Survivor Hoppa: %L
+MOTD_INFO4_N = <br>Survivor Sm'a'rtskaksfri: %L
+MOTD_INFO4_O = <br><br>Swarm Mode: %L
+MOTD_INFO4_P = <br>Swarm Mode Chans: 1 in %d
+MOTD_INFO4_Q = <br><br>Dubbel infektion: %L
+MOTD_INFO4_R = <br>Chans F'o'r Dubbelinfektion: 1 in %d
+MOTD_INFO4_S = <br>Infektion Ratio: %d%%
+MOTD_INFO4_T = <br><br>Plague Mode: %L
+MOTD_INFO4_U = <br>Plague Mode Chans: 1 in %d
+MOTD_INFO4_V = <br>Infektion Ratio: %d%%
+
+MOTD_ENABLED = Aktiverad
+MOTD_DISABLED = Avaktiverad
+MOTD_FOG = Dimma 
+MOTD_RAIN = Regn
+MOTD_SNOW = Sn'o'
+MOTD_ROTATING = Roterande d'o'rrar borttagna
+MOTD_DOORS = Alla d'o'rrar borttagna
+MOTD_DM_HUMAN = Aterupplivad som M'a'nniska
+MOTD_DM_ZOMBIE = Aterupplivad som Zombie
+MOTD_LIMITED = Begr'a'nsad
+MOTD_AMMO_BP = Obegr'a'nsat med omladdningar
+MOTD_AMMO_CLIP = Obegr'a'nsad takt
+MOTD_LASTZOMBIE = Endast pa sista zombie'n
+
+ZOMBIE_ATTRIB1 = H'a'lsa
+ZOMBIE_ATTRIB2 = Hastighet
+ZOMBIE_ATTRIB3 = Gravitation
+ZOMBIE_ATTRIB4 = 'O'verraska
+
+CLASS_CLASS = Klass:
+CLASS_HUMAN = M'a'nniska
+CLASS_ZOMBIE = Zombie
+CLASS_SURVIVOR = 'O'verlevande
+CLASS_NEMESIS = Nemesis
+
+LAST_ZOMBIE_LEFT = Den sista zombie'n har l'a'mnat oss, %s 'a'r den nya zombie'n.
+LAST_HUMAN_LEFT = Den sista m'a'nniskan har l'a'mnat oss, %s 'a'r den nya m'a'nniskan.
+NOT_ENOUGH_AMMO = Du har inte tillr'a'ckligt med ammo.
+AMMO_BOUGHT = Du k'o'pte extra ammo till dina vapen.
+ZOMBIE_SELECT = Din zombieklass efter din n'a'sta infektion kommer att bli
+BUY_ENABLED = Din k'o'pmeny har blivit ateraktiverad.
+AMMO_PACKS1 = Ammo paket:
+AMMO_PACKS2 = ammo paket
+SPECTATING = Spectator:
+
+[nl]
+NOTICE_INFO1 = Druk op M om het menu te zien
+NOTICE_INFO2 = Druk op , of . om kogels te kopen
+NOTICE_VIRUS_FREE = Het T-Virus is uitgebroken...
+NOTICE_FIRST = %s is de eerste zombie!!
+NOTICE_INFECT = %s's hersenen zijn opgegeten...
+NOTICE_INFECT2 = %s's hersenen zijn gegeten door %s...
+NOTICE_ANTIDOTE = %s heeft een tegengif gebruikt...
+NOTICE_NEMESIS = %s is de Nemesis !!!
+NOTICE_SURVIVOR = %s is een Overlevende !!!
+NOTICE_SWARM = Zwerm Modus !!!
+NOTICE_MULTI = Meerdere Infecties !!!
+NOTICE_PLAGUE = Plaag Modus !!!
+
+WIN_HUMAN = De mensen hebben de plaag verslagen!
+WIN_ZOMBIE = Zombies hebben de wereld overgenomen!
+WIN_NO_ONE = Niemand heeft gewonnen...
+
+CMD_INFECT = veranderde in een Zombie
+CMD_DISINFECT = veranderde terug in een Mens
+CMD_NEMESIS = veranderde in een Nemesis
+CMD_SURVIVAL = veranderde in een Overlevende
+CMD_SWARM = start Zwerm Modus
+CMD_MULTI = start Meerdere Infecties
+CMD_PLAGUE = start Plaag Modus
+CMD_RESPAWN = terug tot leven gekomen
+CMD_NOT = Onbekend commando.
+CMD_ZOMBIE_ONLY = Dit is alleen toegankelijk voor zombies.
+CMD_HUMAN_ONLY = Dit is alleen toegankelijk voor mensen.
+CMD_NOT_STUCK = Je zit niet vast.
+CMD_NOT_ACCESS = Je hebt geen toegang.
+CMD_NOT_CANTUSE = Je kan dit niet gebruiken op dit moment.
+CMD_NOT_EXTRAS = Extra Spullen zijn uitgeschakeld.
+CMD_NOT_ZCLASSES = Zombie Klasses zijn uitgeschakeld.
+
+MENU_BUY = Koop Wapens
+MENU_EXTRABUY = Koop Extra Spullen
+MENU_ZCLASS = Kies een Zombie Klasse
+MENU_UNSTUCK = Maak jezelf vrij
+MENU_ADMIN = Admin Menu
+MENU_INFO = Help
+MENU_SPECTATOR = Ga naar de Spectators
+
+MENU_BUY1_TITLE = Primaire Wapens (Geweren)
+MENU_BUY2_TITLE = Secondaire Wapens (Pistolen)
+MENU_ZCLASS_TITLE = Zombie Klasse
+MENU_EXTRA_TITLE = Extra Spullen
+MENU_ADMIN_TITLE = Admin Menu
+MENU_INFO_TITLE = Plugin Informatie
+
+MENU_EXTRA1 = Nachtkijker (��n ronde)
+MENU_EXTRA2 = T-Virus Tegengif
+MENU_EXTRA3 = Zombie Gekte
+MENU_EXTRA4 = Infectie Bom
+MENU_ADMIN1 = Maak Zombie/Human
+MENU_ADMIN2 = Maak Nemesis
+MENU_ADMIN3 = Maak Overlevende
+MENU_ADMIN4 = Breng iemand terug tot leven
+MENU_ADMIN5 = Start Zwerm Modus
+MENU_ADMIN6 = Start Meerdere infecties
+MENU_ADMIN7 = Start Plaag Modus
+MENU_INFO1 = Algemeen
+MENU_INFO2 = Mensen
+MENU_INFO3 = Zombies
+MENU_INFO4 = Spel Modi
+
+MENU_AUTOSELECT = Onthoud geselecteerd
+MENU_BACK = Terug
+MENU_NEXT = Volgende
+MENU_EXIT = Verlaat
+
+MOTD_INFO11 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>%s %s door %s :</b> is een Counter-Strike plugin gemaakt voor AMX Mod X, waar mensen en zombies tegen elkaar strijden. Het is gebaseerd op de klassieke Zombie Infection Mod: in elke ronde wordt er een willekeurige speler gekozen die als eerste een zombie wordt, met als doel de andere spelers te infecteren.
+MOTD_INFO12 = Maar er zijn nieuwe eigenschappen en verhogingen. Bijvoorbeeld, je hebt de mogelijkheid om extra spullen (zoals wapens) te kopen in uitwisseling voor munitie pakketten (in plaats van geld). Je krijgt munitie pakketten door een zombie te vermoorden of door mensen te infecteren.<br><br><br><u>Configuratie in deze server:</u><br>
+MOTD_INFO1_A = <br>Sfeer effecten:
+MOTD_INFO1_B = <br>Helderheid van de bliksem: %s
+MOTD_INFO1_C = <br>Lichten: %L
+MOTD_INFO1_D = <br>Bliksem om de: %d seconden
+MOTD_INFO1_E = <br>Deuren: %L
+MOTD_INFO1_F = <br>Deathmatch: %L
+MOTD_INFO1_G = <br>Bescherming vanaf wanneer je begint duurt: %d seconden
+MOTD_INFO1_H = <br>Willekeurige plaats waar je begint: %L
+MOTD_INFO1_I = <br>Extra Spullen: %L
+MOTD_INFO1_J = <br>Zombie Klassen: %L
+MOTD_INFO1_K = <br>Speciale Nachtkijker: %L
+MOTD_INFO1_L = <br>Speciale Zaklantaarn: %L
+MOTD_INFO2 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Mensen:</b> hun missie is om de zombies te elimineren. Ze hebben een groot arsenaal van wapens om uit te kiezen, en kunnen hun zaklantaarn gebruiken bij donkere mappen. Je moet samenwerken wil je overleven.<br><br><br><u>Configuraties in deze server:</u><br>
+MOTD_INFO2_A = <br>Levens: %d
+MOTD_INFO2_B = <br>Extra gezondheid van de laatste mens: %d
+MOTD_INFO2_C = <br>Snelheid: %d
+MOTD_INFO2_D = <br>Zwaartekracht: %d
+MOTD_INFO2_E = <br>Munitie: %L
+MOTD_INFO2_F = <br>Aantal schade aanbrengen om een Munitie Pakket te krijgen: %d
+MOTD_INFO2_G = <br>Brand Granaten: %L
+MOTD_INFO2_H = <br>IJs Granaten: %L
+MOTD_INFO2_I = <br>Signaal Granaten: %L
+MOTD_INFO2_J = <br>Terugslag: %L
+MOTD_INFO3 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Zombies:</b> hun missie is om alle mensen te infecteren, of in sommige gevallen te doden. Ze kunnen zien in het donker door middel van nachtkijkers, maar hebben enkel hun klauwen om mee aan te aanvallen. Er zijn standaard zes verschillende zombie klasses om uit te kiezen.<br><br><br><u>Configuraties in deze server:</u><br>
+MOTD_INFO3_A = <br>Zombie Gezondheid: %d
+MOTD_INFO3_B = <br>Gezondheid van de eerste zombie: %d
+MOTD_INFO3_C = <br>Bescherming: %d%% schade gedaan
+MOTD_INFO3_D = <br>Snelheid: %d
+MOTD_INFO3_E = <br>Zwaartekracht: %d
+MOTD_INFO3_F = <br>Gezondheid na infectie: %d
+MOTD_INFO3_G = <br>Pijn schok vrij: %L
+MOTD_INFO3_H = <br>Bloeden als ze gewond zijn: %L
+MOTD_INFO3_I = <br>Iedere infectie levert %d Munitie Pakketten op
+MOTD_INFO4 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Extra Modi:</b> er zijn vier verschillende extra modi die willekeurig kunnen beginnen aan het begin van iedere ronde.<br><br><br><u>Configuraties van deze server:</u><br>
+MOTD_INFO4_A = <br>Nemesis: %L
+MOTD_INFO4_B = <br>Kans om Nemesis te worden: 1 op %d
+MOTD_INFO4_C = <br>Gezondheid van de Nemesis: %s
+MOTD_INFO4_D = <br>Snelheid van de Nemesis: %d
+MOTD_INFO4_E = <br>Zwaartekracht van de Nemesis: %d
+MOTD_INFO4_F = <br>Gigantische sprong van de Nemesis: %L
+MOTD_INFO4_G = <br>Pijn schok vrij - Nemesis: %L
+MOTD_INFO4_H = <br><br>Overlevende: %L
+MOTD_INFO4_I = <br>Kans om een Overlevende te zijn: 1 op %d
+MOTD_INFO4_J = <br>Gezondheid van de Overlevende: %s
+MOTD_INFO4_K = <br>Snelheid van de Overlevende: %d
+MOTD_INFO4_L = <br>Zwaartekracht van de Overlevende: %d
+MOTD_INFO4_M = <br>Gigantische sprong van de Overlevende: %L
+MOTD_INFO4_N = <br>Pijn schok vrij - Overlevende: %L
+MOTD_INFO4_O = <br><br>Zwerm Modus: %L
+MOTD_INFO4_P = <br>Kans op Zwerm Modus: 1 op %d
+MOTD_INFO4_Q = <br><br>Meerdere Infecties: %L
+MOTD_INFO4_R = <br>Kans op Meerdere Infecties: 1 op %d
+MOTD_INFO4_S = <br>Verhouding van de Infectie: %d%%
+MOTD_INFO4_T = <br><br>Plaag Modus: %L
+MOTD_INFO4_U = <br>Kans op Plaag Modus: 1 op %d
+MOTD_INFO4_V = <br>Verhouding van de Infectie: %d%%
+
+MOTD_ENABLED = Ingeschakeld
+MOTD_DISABLED = Uitgeschakeld
+MOTD_FOG = Mist
+MOTD_RAIN = Regen
+MOTD_SNOW = Sneeuw
+MOTD_ROTATING = Draaiende deuren verwijderd
+MOTD_DOORS = Alle deuren verwijderd
+MOTD_DM_HUMAN = Terug tot leven komen als een mens
+MOTD_DM_ZOMBIE = Terug tot leven komen als een zombie
+MOTD_LIMITED = Beperkt
+MOTD_AMMO_BP = Onbeperkt herladen
+MOTD_AMMO_CLIP = Onbeperkt schieten
+MOTD_LASTZOMBIE = Alleen voor de laatste zombie
+
+ZOMBIE_ATTRIB1 = Gezondheid
+ZOMBIE_ATTRIB2 = Snelheid
+ZOMBIE_ATTRIB3 = Zwaartekracht
+ZOMBIE_ATTRIB4 = Terugslag
+
+CLASS_CLASS = Klasse:
+CLASS_HUMAN = Mens
+CLASS_ZOMBIE = Zombie
+CLASS_SURVIVOR = Overlevende
+CLASS_NEMESIS = Nemesis
+
+LAST_ZOMBIE_LEFT = De laatste zombie heeft de server verlaten, %s is de nieuwe zombie.
+LAST_HUMAN_LEFT = De laatste mens heeft de server verlaten, %s is de nieuwe mens.
+NOT_ENOUGH_AMMO = Je hebt niet genoeg Munitie Pakketten.
+AMMO_BOUGHT = Je kocht extra munitie voor je wapens.
+ZOMBIE_SELECT = Je zombie klasse na de volgende infectie zal zijn:
+BUY_ENABLED = De volgende ronde heb je de optie om opnieuw wapens te kopen.
+AMMO_PACKS1 = Munitie Pakketten:
+AMMO_PACKS2 = munitie pakketten
+SPECTATING = Je volgt:
+
+[gr]
+NOTICE_INFO1 = Pata M gia na deis to menu tou paxnidiou
+NOTICE_INFO2 = Pata , i . gia na pareis sfaires
+NOTICE_VIRUS_FREE = O Ios epese ston...
+NOTICE_FIRST = O % einai to prwto zombie !!
+NOTICE_INFECT = Ta miala tou % fagothikan...
+NOTICE_INFECT2 = Ta miala tou % fagothikan apo %...
+NOTICE_ANTIDOTE = O % xrisimopoihse antidoto...
+NOTICE_NEMESIS = O %s egine Nemesis !!!
+NOTICE_SURVIVOR = Polapli Molinsi !!!
+NOTICE_PLAGUE = Plague Mode !!!
+
+WIN_HUMAN = Oi anthrwpoi nikisan tin panoukla!
+WIN_ZOMBIE = Ta Zombie kiriarxisan ton kosmo!
+WIN_NO_ONE = Kanenas den nikise...
+
+CMD_INFECT = metatrapike se Zombie
+CMD_DISINFECT = metatrapike se Anthrwpo
+CMD_NEMESIS = metatrapike se Nemesis
+CMD_SURVIVAL = metatrapike se Epizonta
+CMD_SWARM = Arxise to Swarm Mode
+CMD_MULTI = Arxise i polapli Molinsi 
+CMD_PLAGUE = Arxise to Plague Mode
+CMD_RESPAWN = anagenithike
+CMD_NOT = Mi diathesimi entoli.
+CMD_ZOMBIE_ONLY = Auto einai mono diathesimo gia ta Zombie.
+CMD_HUMAN_ONLY = TAuto einai mono diathesimo gia tous Anthwpous.
+CMD_NOT_STUCK = Den exeis kolisei.
+CMD_NOT_ACCESS = Den exeis prosbasei edw.
+CMD_NOT_CANTUSE = Den mporeis na to xrisimopoihseis twra.
+CMD_NOT_EXTRAS = Ta extra pragmata einai ektos leitourgeias.
+CMD_NOT_ZCLASSES = Oi Katigories twn Zombie einai ektos leitourgeias.
+
+MENU_BUY = Agorase Opla
+MENU_EXTRABUY = Agorase Extra Pragmata
+MENU_ZCLASS = Diale3e Katigoria Zombie
+MENU_UNSTUCK = 3ekola
+MENU_ADMIN = Admin Menu
+MENU_INFO = Boitheia
+MENU_SPECTATOR = Mpes ws Theatis
+
+MENU_BUY1_TITLE = Arxiko Oplo
+MENU_BUY2_TITLE = Deutero Oplo
+MENU_ZCLASS_TITLE = Katigoria Zombie
+MENU_EXTRA_TITLE = Extra pragmata
+MENU_ADMIN_TITLE = Admin Menu
+MENU_INFO_TITLE = Plirofories Plugin
+
+MENU_EXTRA1 = Nixterini Orasi (Gia 1 giro)
+MENU_EXTRA2 = Antidoto Panouklas
+MENU_EXTRA3 = Trela ton Zombie
+MENU_EXTRA4 = Bomba Molinsis
+MENU_ADMIN1 = Kane ton Zombie/Anthrwpo
+MENU_ADMIN2 = Kane ton Nemesis
+MENU_ADMIN3 = Kane ton Epizonta
+MENU_ADMIN4 = Anagenise Kapion
+MENU_ADMIN5 = 3ekina Swarm Mode
+MENU_ADMIN6 = 3ekina Pollapli Molinsi
+MENU_ADMIN7 = 3ekina Plague Mode
+MENU_INFO1 = Genika
+MENU_INFO2 = Anthrwpoi
+MENU_INFO3 = Zombie
+MENU_INFO4 = Tropoi Gameplay
+
+MENU_AUTOSELECT = Thimisou tin Epilogi
+MENU_BACK = Pisw
+MENU_NEXT = Mprosta
+MENU_EXIT = E3odos
+
+MOTD_INFO11 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>%s %s apo %s :</b> einai ena Plugin tou  Counter-Strike anaptigmeno apo to AMX X MOD, ston opoio oi anthrwpoi kai zombies erxontai antimetwpoi. Einai vasismeno ston klasiko mod zombie infection: se kathe kyklo enas tyxaios paixtis epilegetai gia na einai to prwto zombie pou prepei na tous molinei olous tous alous.  
+MOTD_INFO12 = Alla yparxoun nea xaraktiristika. Gia paradeigma, mporeite na agorasete prostheta pragmata (opws alla opla) me tin antallagi twn paketwn AMMO. Mporeite na parete ta paketa AMMO me ti dolofonia twn zombies i molynontas tous anthrwpous.<br><br><br><u>Trexouses rithmiseis tou Server</u><br>
+MOTD_INFO1_A = <br>Apotelesmata perivalontws:
+MOTD_INFO1_B = <br>Epipedo Astrapis: %s
+MOTD_INFO1_C = <br>Prokaloumena Fwta: %L
+MOTD_INFO1_D = <br>Astrapes kathe: %d deuterolepta
+MOTD_INFO1_E = <br>Portes: %L
+MOTD_INFO1_F = <br>Deathmatch: %L
+MOTD_INFO1_G = <br>Xronos prostasias emfaniseis: %d deuterolepta
+MOTD_INFO1_H = <br>Tixaia Emfanisi: %L
+MOTD_INFO1_I = <br>Extra Pragmata: %L
+MOTD_INFO1_J = <br>Katigories Zombie: %L
+MOTD_INFO1_K = <br>Eidiki Nixterini Orasi: %L
+MOTD_INFO1_L = <br>Eidikos Fakos: %L
+MOTD_INFO2 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Anthrwpoi:</b> O stoxos tous einai na apovaloun opoiadipote apeili twn zombie. Exoun ena megalo oplostasio gia na epileksoun oti tous xreiazete, kai tous fakoys gia tis skoteines perioxes. Prepei na synergastoyn an theloun na epizisoun!<br><br><br><u>Trexouses Rithmiseis tou Server:</u><br>
+MOTD_INFO2_A = <br>Ygeia: %d
+MOTD_INFO2_B = <br>Antamoivi ygeias gia ton teleftaio anthrwpo: %d
+MOTD_INFO2_C = <br>Taxitita: %d
+MOTD_INFO2_D = <br>Baritita: %d
+MOTD_INFO2_E = <br>Ammo: %L
+MOTD_INFO2_F = <br>Zimia gia na pareis ena Paketo Ammo: %d
+MOTD_INFO2_G = <br>Xeirovomvides pyrkagias: %L
+MOTD_INFO2_H = <br>Xeirovomvides pagetoy: %L
+MOTD_INFO2_I = <br>Xeirovomvides flogwn: %L
+MOTD_INFO2_J = <br>Knockback: %L
+MOTD_INFO3 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Zombie:</b> o stoxos tous einai na molynoun kathe zwntano on stin pista. Einai se thesi na doun sto skotadi, alla mporoyn mono na epitethoyn mono apo konta. Yparxoun polles katigories zombie gia na epilextoun, kathe mia me ta prwterimata kai ta elatvmata tou, alla ola eina ikana gia na trwne tous egkefalous. <br><br><br><u>Trexouses rithmiseis tou Server:</u><br>
+MOTD_INFO3_A = <br>Ygeia tou Zombie: %d
+MOTD_INFO3_B = <br>Ygeia tou prwtou Zombie: %d
+MOTD_INFO3_C = <br>Tethwrakismeni: %d%% zimia pou lambanete
+MOTD_INFO3_D = <br>Taxitita: %d
+MOTD_INFO3_E = <br>Baritita: %d
+MOTD_INFO3_F = <br>HP gia tin molinsi: %d
+MOTD_INFO3_G = <br>Klonismos tou ponou: %L
+MOTD_INFO3_H = <br>Aimoragia: %L
+MOTD_INFO3_I = <br>Ammo Paketa gia tin molinsi: %d
+MOTD_INFO4 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Mini-Paixnidia:</b> Yparxoun 5 prosthetoi typoi tou paixnidiou pou mporoyn tyxaia na pragmatopoiithoyn kata ti diarkeia tou paixnidioy.<br><br><br><u>Trexouses rithmiseis tou Server:</u><br>
+MOTD_INFO4_A = <br>Nemesis: %L
+MOTD_INFO4_B = <br>Pithanotita gia Nemesis: 1 se %d
+MOTD_INFO4_C = <br>Ygeia tou Nemesis: %s
+MOTD_INFO4_D = <br>Taxitita tou Nemesis: %d
+MOTD_INFO4_E = <br>Baritita tou Nemesis: %d
+MOTD_INFO4_F = <br>Pidima tou Nemesis: %L
+MOTD_INFO4_G = <br>Klonismos tou ponou tou  tou Nemesis: %L
+MOTD_INFO4_H = <br><br>Epizontas: %L
+MOTD_INFO4_I = <br>Pithanotita Enos Epizonta: 1 se %d
+MOTD_INFO4_J = <br>Ygeia Epizonta: %s
+MOTD_INFO4_K = <br>Taxitita Epizonta: %d
+MOTD_INFO4_L = <br>Baritita Epizonta: %d
+MOTD_INFO4_M = <br>Pidima Epizonta: %L
+MOTD_INFO4_N = <br>Klonismos tou ponou tou Epizonta: %L
+MOTD_INFO4_O = <br><br>Swarm Mode: %L
+MOTD_INFO4_P = <br>Pithanotita Swarm Mode: 1 se %d
+MOTD_INFO4_Q = <br><br>Pollapli Molynsi: %L
+MOTD_INFO4_R = <br>Pithanotita Molynsis: 1 se %d
+MOTD_INFO4_S = <br>Analogia Molynsis: %d%%
+MOTD_INFO4_T = <br><br>Panoukla: %L
+MOTD_INFO4_U = <br>Pithanotita Panoyklas: 1 se %d
+MOTD_INFO4_V = <br>Analogia molynsis: %d%%
+
+MOTD_ENABLED = Energopihthike
+MOTD_DISABLED = Apenergopihthike
+MOTD_FOG = Omixli
+MOTD_RAIN = Broxi
+MOTD_SNOW = Xioni
+MOTD_ROTATING = Oi peristrefomenes portes aferethikan
+MOTD_DOORS = Oles oi portes afairethikan
+MOTD_DM_HUMAN = Anagenithike ws anthrwpos
+MOTD_DM_ZOMBIE = Anagenithike ws zombie
+MOTD_LIMITED = Periorismeno
+MOTD_AMMO_BP = Apeiroi gemistires
+MOTD_AMMO_CLIP = Apeires sfaires
+MOTD_LASTZOMBIE = Mono sto teleutaio Zombie
+ZOMBIE_ATTRIB1 = Ygeia
+ZOMBIE_ATTRIB2 = Taxitita
+ZOMBIE_ATTRIB3 = Baritita
+ZOMBIE_ATTRIB4 = Knockback
+
+CLASS_CLASS = Katigoria:
+CLASS_HUMAN = Anthrwpos
+CLASS_ZOMBIE = Zombie
+CLASS_SURVIVOR = Epizontas
+CLASS_NEMESIS = Nemesis
+
+LAST_ZOMBIE_LEFT = To teleutaio Zombie exei fugei, O % einai to neo zombie.
+LAST_HUMAN_LEFT = O teleutaios Anthrwpos exei fugei,O % einai o neos anthwpos.
+NOT_ENOUGH_AMMO = Den exeis arketa AMMO paketa.
+AMMO_BOUGHT = Agorases extra sfaires gia to oplo sou.
+ZOMBIE_SELECT = I katigoria tou Zombie sas tha einai meta tin epomeni molinsi
+BUY_ENABLED = To menu gia agora oplwn Energopihthike.
+AMMO_PACKS1 = Paketa Ammo:
+AMMO_PACKS2 = Paketa ammo
+SPECTATING = Spectating:
+
+[ru]
+NOTICE_INFO1 = Нажмите М для вызова меню
+NOTICE_INFO2 = Нажмите , или . для покупки патронов
+NOTICE_VIRUS_FREE = Т-вирус витает в воздухе...
+NOTICE_FIRST = %s первый зомби !!!
+NOTICE_INFECT = Мозги %s были съедены...
+NOTICE_INFECT2 = Мозги %s были съедены %sом(ой)...
+NOTICE_ANTIDOTE = %s использовал противоядие...
+NOTICE_NEMESIS = %s Дьявол !!!
+NOTICE_SURVIVOR = %s Выживший !!!
+NOTICE_SWARM = Куча на кучу !!!
+NOTICE_MULTI = Массовое Заражение !!!
+NOTICE_PLAGUE = Чума расползается !!!
+
+WIN_HUMAN = Люди победили заразу !
+WIN_ZOMBIE = Зомби захватили весь мир !
+WIN_NO_ONE = На этот раз ничья...
+
+CMD_INFECT = стал Зомби
+CMD_DISINFECT = превратился обратно в Человека
+CMD_NEMESIS = Дьявол !!!
+CMD_SURVIVAL = Выживший !!!
+CMD_SWARM = Куча на кучу!
+CMD_MULTI = Массовое Заражение!
+CMD_PLAGUE = Чума!
+CMD_RESPAWN = возродился
+CMD_NOT = Недопустимая команда.
+CMD_ZOMBIE_ONLY = Доступно только для Зомби.
+CMD_HUMAN_ONLY = Доступно только для Людей.
+CMD_NOT_STUCK = Вы не застряли.
+CMD_NOT_ACCESS = У вас нет доступа.
+CMD_NOT_CANTUSE = Это нельзя сейчас использовать.
+CMD_NOT_EXTRAS = Специальные вещи отключены.
+CMD_NOT_ZCLASSES = Классы Зомби отключены.
+
+MENU_BUY = Выбрать оружие
+MENU_EXTRABUY = Купить Спец-вещи
+MENU_ZCLASS = Класс Зомби...
+MENU_UNSTUCK = Застрял!
+MENU_ADMIN = Админ-меню
+MENU_INFO = Помощь
+MENU_SPECTATOR = В зрители
+
+MENU_BUY1_TITLE = Главное оружие
+MENU_BUY2_TITLE = Доп. оружие
+MENU_ZCLASS_TITLE = Класс Зомби:
+MENU_EXTRA_TITLE = Спец-вещи
+MENU_ADMIN_TITLE = Админ-меню
+MENU_INFO_TITLE = Инфо о плагине
+
+MENU_EXTRA1 = Ночное видение
+MENU_EXTRA2 = Антидот
+MENU_EXTRA3 = Бешенство зомби
+MENU_EXTRA4 = Граната-вирус
+MENU_ADMIN1 = Сделать Зомби/Человеком
+MENU_ADMIN2 = Дьяволом
+MENU_ADMIN3 = Выжившим
+MENU_ADMIN4 = Возродить
+MENU_ADMIN5 = Куча на кучу
+MENU_ADMIN6 = Массовое Зар.
+MENU_ADMIN7 = Чума
+MENU_INFO1 = В общем
+MENU_INFO2 = Люди
+MENU_INFO3 = Зомби
+MENU_INFO4 = Варианты игры
+
+MENU_AUTOSELECT = Запомнить выбор
+MENU_BACK = Назад
+MENU_NEXT = Вперед
+MENU_EXIT = Выход
+
+MOTD_INFO11 = <meta charset=UTF-8><meta charset=UTF-8><body bgcolor=000000><font color=FF0505><b>%s %s by %s -</b> мод для Counter-Strike. Классический сценарий: случайный игрок становится зомби и должен заразить всех людей.
+MOTD_INFO12 = Но есть немного новшеств. Специальные вещи(за кредиты), классы зомби. Кредиты можно получить убивая зомби или заражая людей.<br><br><u>Настройки:</u><br>
+MOTD_INFO1_A = Эффекты:
+MOTD_INFO1_B = <br>Освещение: %s
+MOTD_INFO1_C = <br>Выключатели: %L
+MOTD_INFO1_D = <br>Молния: %d сек
+MOTD_INFO1_E = <br>Двери: %L
+MOTD_INFO1_F = <br>Десматч: %L
+MOTD_INFO1_G = <br>Нач. защита: %d сек
+MOTD_INFO1_H = <br>Случайное появление: %L
+MOTD_INFO1_I = <br>Спец-вещи: %L
+MOTD_INFO1_J = <br>Классы Зомби: %L
+MOTD_INFO1_K = <br>NightVision: %L
+MOTD_INFO1_L = <br>Фонарик: %L
+MOTD_INFO2 = <meta charset=UTF-8><body bgcolor=000000><font color=FF0505><b>Люди:</b> их главная задача - это убить всех зомби. В их распоряжении большой выбор оружия и специальных вещей. Коммандная игра необходима для выживания.<br><br><br><u>Текущие настройки сервера:</u><br>
+MOTD_INFO2_A = <br>Здоровье: %d
+MOTD_INFO2_B = <br>Добавляемое здоровье последнему: %d
+MOTD_INFO2_C = <br>Скорость: %d
+MOTD_INFO2_D = <br>Гравитация: %d
+MOTD_INFO2_E = <br>Боеприпасы: %L
+MOTD_INFO2_F = <br>Наносимый урон для получения кредита: %d
+MOTD_INFO2_G = <br>Огненный гранаты: %L
+MOTD_INFO2_H = <br>Замораживающие гранаты: %L
+MOTD_INFO2_I = <br>Осветительные гранаты: %L
+MOTD_INFO2_J = <br>Отскок при попадании: %L
+MOTD_INFO3 = <meta charset=UTF-8><body bgcolor=000000><font color=FF0505><b>Зомби:</b> их задача - заразить всех людей и убить поледнего. Они хорошо видят в темноте, но могут атаковать только своими когтями. Существует много классов зомби, каждый со своими характеристиками.<br><br><br><u>Настройк и:</u><br>
+MOTD_INFO3_A = <br>Здоровье: %d
+MOTD_INFO3_B = <br>Здоровье первого: %d
+MOTD_INFO3_C = <br>Повреждения: %d%%
+MOTD_INFO3_D = <br>Скорость: %d
+MOTD_INFO3_E = <br>Гравитация: %d
+MOTD_INFO3_F = <br>Здоровье, получаемое за заражение: %d
+MOTD_INFO3_G = <br>Замедление при попадании: %L
+MOTD_INFO3_H = <br>Кровотечение: %L
+MOTD_INFO3_I = <br>Кредиты за заражение: %d
+MOTD_INFO4 = <meta charset=UTF-8><body bgcolor=000000><font color=FF0505><b>Мини-игры:</b> есть 5 типов, которые создаются случайно на протяжении игры.<br><br><u>Настройки:</u><br><br>
+MOTD_INFO4_A = <u>Дьявол:</u> %L
+MOTD_INFO4_B = <br>Шанс: 1 из %d
+MOTD_INFO4_C = <br>Здоровье: %s
+MOTD_INFO4_D = <br>Скорость: %d
+MOTD_INFO4_E = <br>Гравитация: %d
+MOTD_INFO4_F = <br>Прыжок: %L
+MOTD_INFO4_G = <br>Замедление при попадании: %L
+MOTD_INFO4_H = <br><u>Выживший:</u> %L
+MOTD_INFO4_I = <br>Шанс: 1 из %d
+MOTD_INFO4_J = <br>Здоровье: %s
+MOTD_INFO4_K = <br>Скорость: %d
+MOTD_INFO4_L = <br>Гравитация: %d
+MOTD_INFO4_M = <br>Прыжок: %L
+MOTD_INFO4_N = <br>Замедление при попадании: %L
+MOTD_INFO4_O = <br><u>Куча на кучу:</u> %L
+MOTD_INFO4_P = <br>Шанс: 1 из %d
+MOTD_INFO4_Q = <br><u>Массовое Заражение:</u> %L
+MOTD_INFO4_R = <br>Шанс: 1 из %d
+MOTD_INFO4_S = <br>Зараженные: %d%%
+MOTD_INFO4_T = <br><u>Чума:</u> %L
+MOTD_INFO4_U = <br>Шанс: 1 из %d
+MOTD_INFO4_V = <br>Соотношение: %d%%
+
+MOTD_ENABLED = Вкл
+MOTD_DISABLED = Выкл
+MOTD_FOG = Туман
+MOTD_RAIN = Дождь
+MOTD_SNOW = Снег
+MOTD_ROTATING = Вращающиесы двери убраны
+MOTD_DOORS = Все двери убраны
+MOTD_DM_HUMAN = Как Человек
+MOTD_DM_ZOMBIE = Как Зомби
+MOTD_LIMITED = Ограниченно
+MOTD_AMMO_BP = Неогр. боеприпасы
+MOTD_AMMO_CLIP = Неогр. патроны
+MOTD_LASTZOMBIE = Только последний зомби
+
+ZOMBIE_ATTRIB1 = Здоровье
+ZOMBIE_ATTRIB2 = Скорость
+ZOMBIE_ATTRIB3 = Гравитация
+ZOMBIE_ATTRIB4 = Отброс
+
+CLASS_CLASS = Тип:
+CLASS_HUMAN = Человек
+CLASS_ZOMBIE = Зомби
+CLASS_SURVIVOR = Выживший
+CLASS_NEMESIS = Дьявол
+
+LAST_ZOMBIE_LEFT = Единственный Зомби вышел из игры, теперь %s Зомби.
+LAST_HUMAN_LEFT = Единственный Человек вышел из игры, теперь %s Человек.
+NOT_ENOUGH_AMMO = У вас не хватает кредитов.
+AMMO_BOUGHT = Вы купили патроны.
+ZOMBIE_SELECT = После заражения ваш класс Зомби будет
+BUY_ENABLED = Меню покупки вновь включено.
+AMMO_PACKS1 = Кредиты:
+AMMO_PACKS2 = кр.
+SPECTATING = Наблюдение:
+
+[mn]
+NOTICE_INFO1 = М дарж тоглоомны менюг vзнэ vv
+NOTICE_INFO2 = , эсвэл . дарж сум авна уу
+NOTICE_VIRUS_FREE = Т-Вирус маш олноор тархлаа...
+NOTICE_FIRST = %s бол анхны зомби !!!
+NOTICE_INFECT = %s тvvний тархи идэгдлээ...
+NOTICE_INFECT2 = %s тvvний тархийг %s... амтархан идлээ
+NOTICE_ANTIDOTE = %s ерендег ашиглалаа...
+NOTICE_NEMESIS = %s Нэмэсис боллоо !!!
+NOTICE_SURVIVOR = %s Сурвайвор боллоо !!!
+NOTICE_SWARM = Сvрэг Зомби !!!
+NOTICE_MULTI = Давхар халдварлалт !!!
+NOTICE_PLAGUE = Тахал !!!
+
+WIN_HUMAN = Хvмvvс тахлыг дийллээ!
+WIN_ZOMBIE = Зомбинууд дэлхийг эзэллээ!
+WIN_NO_ONE = Хэн ч ялсангvй...
+
+CMD_INFECT = зомби боллоо
+CMD_DISINFECT = хvн боллоо
+CMD_NEMESIS = Нэмэсис боллоо
+CMD_SURVIVAL = Сурвайвор боллоо
+CMD_SWARM = Сvрэг Зомби-г эхлэх
+CMD_MULTI = Давхар халдварлалт-г эхлэх
+CMD_PLAGUE = Тахал-г эхлэх
+CMD_RESPAWN = амиллаа
+CMD_NOT = Комманд боломгvй байна
+CMD_ZOMBIE_ONLY = Энийг зомбинууд л хэрэглэнэ.
+CMD_HUMAN_ONLY = Энийг хvмvvс л хэрэглэнэ.
+CMD_NOT_STUCK = Та гацаагvй байна.
+CMD_NOT_ACCESS = Та нэвтрэх эрхгvй байна.
+CMD_NOT_CANTUSE = Энийг яг одоо ашиглах боломжгvй байна.
+CMD_NOT_EXTRAS = Нэмэлт Итэм боломжгvй байна.
+CMD_NOT_ZCLASSES = Зомби сонгох боломжгvй байна.
+
+MENU_BUY = Буу авах
+MENU_EXTRABUY = Нэмэлт Итэм авах
+MENU_ZCLASS = Зомби сонгох
+MENU_UNSTUCK = Гацаагаа гаргах
+MENU_ADMIN = Админы меню
+MENU_INFO = Тусламж
+MENU_SPECTATOR = Ажиглагч болох
+
+MENU_BUY1_TITLE = 1 дvгээр зэвсэг
+MENU_BUY2_TITLE = 2 дугээр зэвсэг
+MENU_ZCLASS_TITLE = Зомбины терел
+MENU_EXTRA_TITLE = Нэмэлт Итэм
+MENU_ADMIN_TITLE = Админы меню
+MENU_INFO_TITLE = Мэдээлэл
+
+MENU_EXTRA1 = Шенийн дуран (1 vе)
+MENU_EXTRA2 = Ерендег
+MENU_EXTRA3 = Зомбины солиорол
+MENU_EXTRA4 = Халдваржуулах бомб
+MENU_ADMIN1 = Хvн/Зомби болгох
+MENU_ADMIN2 = Нэмэсис болгох
+MENU_ADMIN3 = Сурвайвор болгох
+MENU_ADMIN4 = Хэн 1нийг амилуулах
+MENU_ADMIN5 = Сvрэг Зомби-г эхлvvлэх
+MENU_ADMIN6 = Давхар халдварлалт-г эхлvvлэх
+MENU_ADMIN7 = Тахал-г эхлvvлэх
+MENU_INFO1 = Еренхий
+MENU_INFO2 = Хvмvvс
+MENU_INFO3 = Зомби
+MENU_INFO4 = Тоглоомны Хувилбарууд
+
+MENU_AUTOSELECT = Сонголтыг хадгалах
+MENU_BACK = Ухрах
+MENU_NEXT = Дараагийн
+MENU_EXIT = Гарах
+
+MOTD_INFO11 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>%s %s by %s :</b> is a Counter-Strike plugin developed under AMX Mod X, in where humans and zombies are confronted. It is based on the classic zombie infection mod: on every round a random player is picked to be the first zombie who has to infect everyone else.
+MOTD_INFO12 = But there are new features and enhancements. For instance, you are able to buy extra items (such as weapons) in exchange of ammo packs. You can get ammo packs by killing zombies/infecting humans.<br><br><br><u>Current server settings:</u><br>
+MOTD_INFO1_A = <br>Ambience Effects:
+MOTD_INFO1_B = <br>Lightning Level: %s
+MOTD_INFO1_C = <br>Triggered Lights: %L
+MOTD_INFO1_D = <br>Thunderclaps Every: %d seconds
+MOTD_INFO1_E = <br>Doors: %L
+MOTD_INFO1_F = <br>Deathmatch: %L
+MOTD_INFO1_G = <br>Spawn Protection Time: %d seconds
+MOTD_INFO1_H = <br>Random Spawning: %L
+MOTD_INFO1_I = <br>Extra Items: %L
+MOTD_INFO1_J = <br>Zombie Classes: %L
+MOTD_INFO1_K = <br>Custom Nightvision: %L
+MOTD_INFO1_L = <br>Custom Flashlight: %L
+MOTD_INFO2 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Humans:</b> their objective is to eliminate any zombie threat. They have a big arsenal of weapons to choose from, and use flashlights on dark maps. Team work is a must to survive.<br><br><br><u>Current server settings:</u><br>
+MOTD_INFO2_A = <br>Health: %d
+MOTD_INFO2_B = <br>Health Reward for Last Human: %d
+MOTD_INFO2_C = <br>Speed: %d
+MOTD_INFO2_D = <br>Gravity: %d
+MOTD_INFO2_E = <br>Ammo: %L
+MOTD_INFO2_F = <br>Damage to Get an Ammo Pack: %d
+MOTD_INFO2_G = <br>Fire Grenades: %L
+MOTD_INFO2_H = <br>Frost Grenades: %L
+MOTD_INFO2_I = <br>Flare Grenades: %L
+MOTD_INFO2_J = <br>Knockback: %L
+MOTD_INFO3 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Zombies:</b> their objective is to infect every alive human. They are able to see in the dark, but can only attack melee. There are 6 different zombie classes to choose from, each with his own strenghts and weaknesses, but all capable of eating brains.<br><br><br><u>Current server settings:</u><br>
+MOTD_INFO3_A = <br>Zombie Health: %d
+MOTD_INFO3_B = <br>First Zombie Health: %d
+MOTD_INFO3_C = <br>Armor: %d%% damage taken
+MOTD_INFO3_D = <br>Speed: %d
+MOTD_INFO3_E = <br>Gravity: %d
+MOTD_INFO3_F = <br>HP for Infection: %d
+MOTD_INFO3_G = <br>Pain Shock Free: %L
+MOTD_INFO3_H = <br>Bleeding: %L
+MOTD_INFO3_I = <br>Ammo Packs for Infection: %d
+MOTD_INFO4 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Mini-Games:</b> there are 4 different special gameplay modes that may randomly occur during the course of the game.<br><br><br><u>Current server settings:</u><br>
+MOTD_INFO4_A = <br>Nemesis: %L
+MOTD_INFO4_B = <br>Nemesis Chance: 1 in %d
+MOTD_INFO4_C = <br>Nemesis Health: %s
+MOTD_INFO4_D = <br>Nemesis Speed: %d
+MOTD_INFO4_E = <br>Nemesis Gravity: %d
+MOTD_INFO4_F = <br>Nemesis Leap: %L
+MOTD_INFO4_G = <br>Nemesis Pain Shock Free: %L
+MOTD_INFO4_H = <br><br>Survivor: %L
+MOTD_INFO4_I = <br>Survivor Chance: 1 in %d
+MOTD_INFO4_J = <br>Survivor Health: %s
+MOTD_INFO4_K = <br>Survivor Speed: %d
+MOTD_INFO4_L = <br>Survivor Gravity: %d
+MOTD_INFO4_M = <br>Survivor Leap: %L
+MOTD_INFO4_N = <br>Survivor Pain Shock Free: %L
+MOTD_INFO4_O = <br><br>Swarm Mode: %L
+MOTD_INFO4_P = <br>Swarm Mode Chance: 1 in %d
+MOTD_INFO4_Q = <br><br>Multi Infection: %L
+MOTD_INFO4_R = <br>Multi Infection Chance: 1 in %d
+MOTD_INFO4_S = <br>Infection Ratio: %d%%
+MOTD_INFO4_T = <br><br>Plague Mode: %L
+MOTD_INFO4_U = <br>Plague Mode Chance: 1 in %d
+MOTD_INFO4_V = <br>Infection Ratio: %d%%
+
+MOTD_ENABLED = Enabled
+MOTD_DISABLED = Disabled
+MOTD_FOG = Манан
+MOTD_RAIN = Бороо
+MOTD_SNOW = Цас
+MOTD_ROTATING = Rotating doors removed
+MOTD_DOORS = All doors removed
+MOTD_DM_HUMAN = Хvн болж терех
+MOTD_DM_ZOMBIE = Зомби болж терех
+MOTD_LIMITED = Хязгаартай
+MOTD_AMMO_BP = Хязгаартай сумтай
+MOTD_AMMO_CLIP = Хязгаартай сумтай
+MOTD_LASTZOMBIE = Зевхен сvvлийн зомбид
+
+ZOMBIE_ATTRIB1 = Амь
+ZOMBIE_ATTRIB2 = Хурд
+ZOMBIE_ATTRIB3 = Таталзах хvч
+ZOMBIE_ATTRIB4 = Нокбакь
+
+CLASS_CLASS = Терел:
+CLASS_HUMAN = Хvн
+CLASS_ZOMBIE = Зомби
+CLASS_SURVIVOR = Сурвайвор
+CLASS_NEMESIS = Нэмэсис
+
+LAST_ZOMBIE_LEFT = Сvvлийн зомби гарсан тул, %s шинэ зомби боллоо.
+LAST_HUMAN_LEFT = Сvvлийн хvн гарсан тул, %s шинэ хvн боллоо.
+NOT_ENOUGH_AMMO = Танд хангалттай Аммо алга.
+AMMO_BOUGHT = Та буундаа сум худалдаж авлаа.
+ZOMBIE_SELECT = Таны дараагий зомби терел бол
+BUY_ENABLED = Худалдаж авах меню идэвхжлээ.
+AMMO_PACKS1 = Aммо:
+AMMO_PACKS2 = аммо
+SPECTATING = Ажиглагчид:
+
+[ls]
+NOTICE_INFO1 = P|2355 M 70 5H0w 7H3 64M3 M3nU
+NOTICE_INFO2 = P|2355 , 0|2 . 70 pU|2CH453 4MM0
+NOTICE_VIRUS_FREE = 7H3 7-V1|2U5 H45 833n 537 L0053...
+NOTICE_FIRST = %s 15 7H3 f1|257 z0M813 !!
+NOTICE_INFECT = %s &|25QU0;5 8|241n5 H45 833n 3473n...
+NOTICE_INFECT2 = %s &|25QU0;5 8|241n5 H45 833n 3473n 8y %s...
+NOTICE_ANTIDOTE = %s H45 U53|} 4n 4n71|}073...
+NOTICE_NEMESIS = %s 15 4 N3M3515 !!!
+NOTICE_SURVIVOR = %s 15 4 5U|2v1v0|2 !!!
+NOTICE_SWARM = 5w4|2M M0|}3 !!!
+NOTICE_MULTI = MUL71pL3 1nf3C710n !!!
+NOTICE_PLAGUE = PL46U3 M0|}3 !!!
+
+WIN_HUMAN = HUM4n5 |}3f3473|} 7H3 pL46U3!
+WIN_ZOMBIE = Z0M8135 H4v3 74K3n 0v3|2 7H3 w0|2L|}!
+WIN_NO_ONE = N0 0n3 w0n...
+
+CMD_INFECT = 7U|2n3|} 1n70 4 Z0M813
+CMD_DISINFECT = 7U|2n3|} 84CK 70 HUM4n
+CMD_NEMESIS = 7U|2n3|} 1n70 4 N3M3515
+CMD_SURVIVAL = 7U|2n3|} 1n70 4 5U|2v1v0|2
+CMD_SWARM = 574|27 5w4|2M M0|}3
+CMD_MULTI = 574|27 MUL71pL3 1nf3C710n
+CMD_PLAGUE = 574|27 PL46U3 M0|}3
+CMD_RESPAWN = |235p4wn3|}
+CMD_NOT = Un4v41L48L3 C0MM4n|}.
+CMD_ZOMBIE_ONLY = 7H15 15 0nLy 4v41L48L3 70 z0M8135.
+CMD_HUMAN_ONLY = 7H15 15 0nLy 4v41L48L3 70 HUM4n5.
+CMD_NOT_STUCK = Y0U 4|23 n07 57UCK.
+CMD_NOT_ACCESS = Y0U H4v3 n0 4CC355.
+CMD_NOT_CANTUSE = Y0U C4n7 U53 7H15 |216H7 n0w.
+CMD_NOT_EXTRAS = 3x7|24 173M5 4|23 |}1548L3|}.
+CMD_NOT_ZCLASSES = Z0M813 CL45535 4|23 |}1548L3|}.
+
+MENU_BUY = 8Uy W34p0n5
+MENU_EXTRABUY = 8Uy 3x7|24 173M5
+MENU_ZCLASS = CH0053 Z0M813 CL455
+MENU_UNSTUCK = Un57UCK
+MENU_ADMIN = 4|}M1n M3nU
+MENU_INFO = H3Lp
+MENU_SPECTATOR = J01n 5p3C7470|25
+
+MENU_BUY1_TITLE = P|21M4|2y W34p0n
+MENU_BUY2_TITLE = 53C0n|}4|2y W34p0n
+MENU_ZCLASS_TITLE = Z0M813 CL455
+MENU_EXTRA_TITLE = 3x7|24 173M5
+MENU_ADMIN_TITLE = 4|}M1n M3nU
+MENU_INFO_TITLE = PLU61n 1nf0|2M4710n
+
+MENU_EXTRA1 = N16H7V1510n (51n6L3 |20Un|})
+MENU_EXTRA2 = 7-V1|2U5 4n71|}073
+MENU_EXTRA3 = Z0M813 M4|}n355
+MENU_EXTRA4 = 1nf3C710n 80M8
+MENU_ADMIN1 = M4K3 Z0M813/HUM4n
+MENU_ADMIN2 = M4K3 N3M3515
+MENU_ADMIN3 = M4K3 5U|2v1v0|2
+MENU_ADMIN4 = |235p4wn 50M30n3
+MENU_ADMIN5 = 574|27 5w4|2M M0|}3
+MENU_ADMIN6 = 574|27 MUL71pL3 1nf3C710n
+MENU_ADMIN7 = 574|27 PL46U3 M0|}3
+MENU_INFO1 = 63n3|24L
+MENU_INFO2 = HUM4n5
+MENU_INFO3 = Z0M8135
+MENU_INFO4 = 64M3pL4y M0|}35
+
+MENU_AUTOSELECT = |23M3M83|2 53L3C710n
+MENU_BACK = 84CK
+MENU_NEXT = N3x7
+MENU_EXIT = 3x17
+
+MOTD_INFO11 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>%s %s 8y %s </b>: 15 4 C0Un73|2-57|21K3 pLU61n |}3v3L0p3|} Un|}3|2 4MX M0|} X, 1n wH3|23 HUM4n5 4n|} z0M8135 4|23 C0nf|20n73|}. 17 15 8453|} 0n 7H3 CL4551C z0M813 1nf3C710n M0|}: 0n 3v3|2y |20Un|} 4 |24n|}0M pL4y3|2 15 p1CK3|} 70 83 7H3 f1|257 z0M813 wH0 H45 70 1nf3C7 3v3|2y0n3 3L53.
+MOTD_INFO12 = 8U7 7H3|23 4|23 n3w f347U|235 4n|} 3nH4nC3M3n75. F0|2 1n574nC3, y0U 4|23 48L3 70 8Uy 3x7|24 173M5 (5UCH 45 w34p0n5) 1n 3xCH4n63 0f 4MM0 p4CK5. Y0U C4n 637 4MM0 p4CK5 8y K1LL1n6 z0M8135/1nf3C71n6 HUM4n5.<br><br><br>CU|2|23n7 53|2v3|2 53771n65:<br>
+MOTD_INFO1_A = <br>4M813nC3 3ff3C75:
+MOTD_INFO1_B = <br>L16H7n1n6 L3v3L: %s
+MOTD_INFO1_C = <br>7|21663|23|} L16H75: %L
+MOTD_INFO1_D = <br>7HUn|}3|2CL4p5 3v3|2y: %d 53C0n|}5
+MOTD_INFO1_E = <br>|}00|25: %L
+MOTD_INFO1_F = <br>|}347HM47CH: %L
+MOTD_INFO1_G = <br>5p4wn P|2073C710n 71M3: %d 53C0n|}5
+MOTD_INFO1_H = <br>|24n|}0M 5p4wn1n6: %L
+MOTD_INFO1_I = <br>3x7|24 173M5: %L
+MOTD_INFO1_J = <br>Z0M813 CL45535: %L
+MOTD_INFO1_K = <br>CU570M N16H7v1510n: %L
+MOTD_INFO1_L = <br>CU570M FL45HL16H7: %L
+MOTD_INFO2 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>HUM4n5:</b> 7H31|2 08j3C71v3 15 70 3L1M1n473 4ny z0M813 7H|2347. 7H3y H4v3 4 816 4|253n4L 0f w34p0n5 70 CH0053 f|20M, 4n|} U53 fL45HL16H75 0n |}4|2K M4p5. 734M w0|2K 15 4 MU57 70 5U|2v1v3.<br><br><br>CU|2|23n7 53|2v3|2 53771n65:<br>
+MOTD_INFO2_B = <br>H34L7H: %d
+MOTD_INFO2_B = <br>H34L7H |23w4|2|} f0|2 L457 HUM4n: %d
+MOTD_INFO2_C = <br>5p33|}: %d
+MOTD_INFO2_D = <br>6|24v17y: %d
+MOTD_INFO2_E = <br>4MM0: %L
+MOTD_INFO2_F = <br>|}4M463 70 637 4n 4MM0 P4CK: %d
+MOTD_INFO2_G = <br>F1|23 6|23n4|}35: %L
+MOTD_INFO2_H = <br>F|2057 6|23n4|}35: %L
+MOTD_INFO2_I = <br>FL4|23 6|23n4|}35: %L
+MOTD_INFO2_J = <br>Kn0CK84CK: %L
+MOTD_INFO3 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Z0M8135:</b> 7H31|2 08j3C71v3 15 70 1nf3C7 3v3|2y 4L1v3 HUM4n. 7H3y 4|23 48L3 70 533 1n 7H3 |}4|2K, 8U7 C4n 0nLy 4774CK M3L33. 7H3|23 4|23 6 |}1ff3|23n7 z0M813 CL45535 70 CH0053 f|20M, 34CH w17H H15 0wn 57|23n6H75 4n|} w34Kn35535, 8U7 4LL C4p48L3 0f 3471n6 8|241n5.<br><br><br>CU|2|23n7 53|2v3|2 53771n65:<br>
+MOTD_INFO3_A = <br>Z0M813 H34L7H: %d
+MOTD_INFO3_B = <br>F1|257 Z0M813 H34L7H: %d
+MOTD_INFO3_C = <br>4|2M0|2: %d%% |}4M463 74K3n
+MOTD_INFO3_D = <br>5p33|}: %d
+MOTD_INFO3_E = <br>6|24v17y: %d
+MOTD_INFO3_F = <br>HP f0|2 1nf3C710n: %d
+MOTD_INFO3_G = <br>P41n 5H0CK F|233: %L
+MOTD_INFO3_H = <br>8L33|}1n6: %L
+MOTD_INFO3_I = <br>4MM0 P4CK5 f0|2 1nf3C710n: %d
+MOTD_INFO4 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>M1n1-64M35:</b> 7H3|23 4|23 4 |}1ff3|23n7 5p3C14L 64M3pL4y M0|}35 7H47 M4y |24n|}0MLy 0CCU|2 |}U|21n6 7H3 C0U|253 0f 7H3 64M3.<br><br><br>CU|2|23n7 53|2v3|2 53771n65:<br>
+MOTD_INFO4_A = <br>N3M3515: %L
+MOTD_INFO4_B = <br>N3M3515 CH4nC3: 1 1n %d
+MOTD_INFO4_C = <br>N3M3515 H34L7H: %s
+MOTD_INFO4_D = <br>N3M3515 5p33|}: %d
+MOTD_INFO4_E = <br>N3M3515 6|24v17y: %d
+MOTD_INFO4_F = <br>N3M3515 L34p: %L
+MOTD_INFO4_G = <br>N3M3515 P41n 5H0CK F|233: %L
+MOTD_INFO4_H = <br><br>5U|2v1v0|2: %L
+MOTD_INFO4_I = <br>5U|2v1v0|2 CH4nC3: 1 1n %d
+MOTD_INFO4_J = <br>5U|2v1v0|2 H34L7H: %s
+MOTD_INFO4_K = <br>5U|2v1v0|2 5p33|}: %d
+MOTD_INFO4_L = <br>5U|2v1v0|2 6|24v17y: %d
+MOTD_INFO4_M = <br>5U|2v1v0|2 L34p: %L
+MOTD_INFO4_N = <br>5U|2v1v0|2 P41n 5H0CK F|233: %L
+MOTD_INFO4_0 = <br><br>5w4|2M M0|}3: %L
+MOTD_INFO4_P = <br>5w4|2M M0|}3 CH4nC3: 1 1n %d
+MOTD_INFO4_Q = <br><br>MUL71 1nf3C710n: %L
+MOTD_INFO4_R = <br>MUL71 1nf3C710n CH4nC3: 1 1n %d
+MOTD_INFO4_S = <br>1nf3C710n |24710: %d%%
+MOTD_INFO4_T = <br><br>PL46U3 M0|}3: %L
+MOTD_INFO4_U = <br>PL46U3 M0|}3 CH4nC3: 1 1n %d
+MOTD_INFO4_V = <br>1nf3C710n |24710: %d%%
+
+MOTD_ENABLED = 3n48L3|}
+MOTD_DISABLED = |}1548L3|}
+MOTD_FOG = F06
+MOTD_RAIN = |241n
+MOTD_SNOW = 5n0w
+MOTD_ROTATING = |207471n6 |}00|25 |23M0v3|}
+MOTD_DOORS = 4LL |}00|25 |23M0v3|}
+MOTD_DM_HUMAN = |235p4wn 45 HUM4n
+MOTD_DM_ZOMBIE = |235p4wn 45 z0M813
+MOTD_LIMITED = L1M173|}
+MOTD_AMMO_BP = UnL1M173|} |23L04|}5
+MOTD_AMMO_CLIP = UnL1M173|} CL1p
+MOTD_LASTZOMBIE = 0nLy 0n L457 z0M813
+
+ZOMBIE_ATTRIB1 = H34L7H
+ZOMBIE_ATTRIB2 = 5p33|}
+ZOMBIE_ATTRIB3 = 6|24v17y
+ZOMBIE_ATTRIB4 = Kn0CK84CK
+
+CLASS_CLASS = CL455:
+CLASS_HUMAN = HUM4n
+CLASS_ZOMBIE = Z0M813
+CLASS_SURVIVOR = 5U|2v1v0|2
+CLASS_NEMESIS = N3M3515
+
+LAST_ZOMBIE_LEFT = 7H3 L457 z0M813 H45 L3f7, %s 15 7H3 n3w z0M813.
+LAST_HUMAN_LEFT = 7H3 L457 HUM4n H45 L3f7, %s 15 7H3 n3w HUM4n.
+NOT_ENOUGH_AMMO = Y0U |}0n7 H4v3 3n0U6H 4MM0 p4CK5.
+AMMO_BOUGHT = Y0U pU|2CH453|} 3x7|24 4MM0 f0|2 y0U|2 6Un5.
+ZOMBIE_SELECT = Y0U|2 z0M813 CL455 4f73|2 7H3 n3x7 1nf3C710n w1LL 83
+BUY_ENABLED = Y0U|2 8Uy M3nU H45 833n |23-3n48L3|}.
+AMMO_PACKS1 = 4MM0 p4CK5:
+AMMO_PACKS2 = 4MM0 p4CK5
+SPECTATING = 5p3C7471n6:
+
+[vn]
+NOTICE_INFO1 = Ấn M để hiện tùy chọn
+NOTICE_INFO2 = Ấn , hoặc . để mua trang bị
+NOTICE_VIRUS_FREE = T-Virus đã thoát ra ngoài...
+NOTICE_FIRST = %s trở thành zombie đầu tiên !!
+NOTICE_INFECT = Não của %s đã bị ăn...
+NOTICE_INFECT2 = %s đã bị ăn thịt bởi %s...
+NOTICE_ANTIDOTE = %s đã sử dụng thuốc kháng độc...
+NOTICE_NEMESIS = %s là Nemesis nó rất nguy hiểm!!!
+NOTICE_SURVIVOR = %s là Survivor cô ấy có sức mạnh phi thường!!!
+NOTICE_SWARM = Chế độ chiến đấu !!!
+NOTICE_MULTI = Bệnh dịch lan tràn !!!
+NOTICE_PLAGUE = Chế độ plague !!!
+
+WIN_HUMAN = Loài người đã dập tắt bệnh dịch!
+WIN_ZOMBIE = Zombies đã chiếm toàn bộ thế giới!
+WIN_NO_ONE = Không Ai Thắng...
+
+CMD_INFECT = đã biến thành Zombie
+CMD_DISINFECT = đã trở lại làm người
+CMD_NEMESIS = đã biến thành Nemesis
+CMD_SURVIVAL = đã trở thành Survivor
+CMD_SWARM = bắt đầu chế độ Chiến Đấu
+CMD_MULTI = bệnh dịch bắt đầu lan tràn
+CMD_PLAGUE = bắt đầu chế độ plague
+CMD_RESPAWN = được hồi sinh
+CMD_NOT = không thể thực hiện được mệnh lệnh.
+CMD_ZOMBIE_ONLY = Cái này chỉ dành cho zombies.
+CMD_HUMAN_ONLY = Cái này chỉ dành cho người.
+CMD_NOT_STUCK = You are not stuck.
+CMD_NOT_ACCESS = Bạn không có quyền truy nhập.
+CMD_NOT_CANTUSE = Bạn không thể sử dụng nó bây giờ.
+CMD_NOT_EXTRAS = Vũ khí bổ sung đã bị tắt.
+CMD_NOT_ZCLASSES = Loại Zombie đã bị tắt.
+
+MENU_BUY = Mua vũ khí
+MENU_EXTRABUY = Mua thêm trang bị
+MENU_ZCLASS = Chọn loại Zombie
+MENU_UNSTUCK = Unstuck
+MENU_ADMIN = Tùy chọn của admin
+MENU_INFO = Trợ giúp
+MENU_SPECTATOR = Tham gia vào nhóm quan sát
+
+MENU_BUY1_TITLE = Vũ khí chính
+MENU_BUY2_TITLE = Vũ khí phụ
+MENU_ZCLASS_TITLE = Loại Zombie
+MENU_EXTRA_TITLE = Thêm trang bị
+MENU_ADMIN_TITLE = Tùy chọn của người quản lý
+MENU_INFO_TITLE = Thông tin về tác giả bản game này
+
+MENU_EXTRA1 = Kính hồng ngoại(1 round)
+MENU_EXTRA2 = Thuốc kháng T-Virus
+MENU_EXTRA3 = Zombie hóa điên
+MENU_EXTRA4 = Bomb độc
+MENU_ADMIN1 = Tạo Zombie/Người
+MENU_ADMIN2 = Tạo Nemesis
+MENU_ADMIN3 = Tạo Survivor
+MENU_ADMIN4 = Hồi sinh ai đó
+MENU_ADMIN5 = Bật chế độ Chiến đấu
+MENU_ADMIN6 = Bệnh dịch lan tràn
+MENU_ADMIN7 = Bắt đầu chế độ Plague
+MENU_INFO1 = Thông tin chung
+MENU_INFO2 = Người
+MENU_INFO3 = Zombies
+MENU_INFO4 = Chế độ chơi
+
+MENU_AUTOSELECT = Lưu tùy chọn trước
+MENU_BACK = Quay lại
+MENU_NEXT = Tiếp theo
+MENU_EXIT = Thoát
+
+MOTD_INFO11 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>%s %s by %s :</b> là 1 tiện ích dành cho Counter-Strike, trong đó loài người và zombie đối đầu nhau. Trong mỗi round 1 người chơi ngẫu nhiên sẽ được chọn làm zombie đầu tiên có nhiệm vụ truyền bệnh cho những người khác.
+MOTD_INFO12 = Nhiều chức năng và nâng cấp. Bạn có thể mua vũ khí hoặc trang bị bằng việc trao đổi ammo packs. Bạn nhận được ammo packs bằng việc giết zombie.<br><br><br><u>Các thiết lập hiện tại của server:</u><br>
+MOTD_INFO1_A = <br>Hiệu ứng âm thanh:
+MOTD_INFO1_B = <br>Cấp độ ánh sáng: %s
+MOTD_INFO1_C = <br>Triggered Lights: %L
+MOTD_INFO1_D = <br>Tần xuất xuất hiện chớp: %d giây
+MOTD_INFO1_E = <br>Các cánh cửa: %L
+MOTD_INFO1_F = <br>Chế độ sinh tử: %L
+MOTD_INFO1_G = <br>Thời gian bảo vệ sau khi hồi sinh: %d giây
+MOTD_INFO1_H = <br>Hồi sinh ngẫu nhiên: %L
+MOTD_INFO1_I = <br>Các món đồ bổ trợ: %L
+MOTD_INFO1_J = <br>Loài Zombie: %L
+MOTD_INFO1_K = <br>Custom Nightvision: %L
+MOTD_INFO1_L = <br>Custom Flashlight: %L
+MOTD_INFO2 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Loài người:</b> nhiệm vụ của họ là giết sạch bọn zombie không cho chúng truyền bệnh. Họ có lượng vũ khí khổng lồ sử dụng đèn để quan sát trong đêm tối. Phối hợp đồng đội là cần thiết để có khả năng sống sót cao.<br><br><br><u>Các thiết lập hiện tại của server:</u><br>
+MOTD_INFO2_A = <br>Máu: %d
+MOTD_INFO2_B = <br>Lượng máu thưởng cho người sống sót cuối cùng: %d
+MOTD_INFO2_C = <br>Tốc độ: %d
+MOTD_INFO2_D = <br>Nhảy cao: %d
+MOTD_INFO2_E = <br>Giáp: %L
+MOTD_INFO2_F = <br>Số máu bắn được để nhận Ammo Pack: %d
+MOTD_INFO2_G = <br>Lựu lửa: %L
+MOTD_INFO2_H = <br>Lựu băng: %L
+MOTD_INFO2_I = <br>Lựu sáng: %L
+MOTD_INFO2_J = <br>Bị bật lại khi dính đạn: %L
+MOTD_INFO3 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Zombies:</b> nhiệm vụ của chúng là truyền bệnh cho những người khỏe mạnh (chúng có khả năng nhìn trong bóng đêm). Có nhiều loài zombie với điểm mạnh điểm yếu riêng.<br><br><br><u>Các thiết lập hiện tại của server:</u><br>
+MOTD_INFO3_A = <br>Máu của Zombie: %d
+MOTD_INFO3_B = <br>Máu của zombie đầu tiên: %d
+MOTD_INFO3_C = <br>Giáp: %d%% số máu bị mất khi bị thương
+MOTD_INFO3_D = <br>Tốc độ: %d
+MOTD_INFO3_E = <br>Nhảy cao: %d
+MOTD_INFO3_F = <br>Lượng máu được thưởng khi giết người: %d
+MOTD_INFO3_G = <br>Ảnh hưởng khi bị dính đạn: %L
+MOTD_INFO3_H = <br>Chảy máu: %L
+MOTD_INFO3_I = <br>Ammo Packs cho việc truyền bệnh: %d
+MOTD_INFO4 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>Các trò chơi phụ:</b> có 5 chế độ chơi đặc biệt có thể được chọn ngẫu nhiên.<br><br><br><u>Các thiết lập hiện tại của server:</u><br>
+MOTD_INFO4_A = <br>Nemesis: %L
+MOTD_INFO4_B = <br>Nemesis Chance: 1 in %d
+MOTD_INFO4_C = <br>Máu của Nemesis: %s
+MOTD_INFO4_D = <br>Tốc độ của Nemesis: %d
+MOTD_INFO4_E = <br>Nhảy cao của Nemesis: %d
+MOTD_INFO4_F = <br>Khả năng nhảy xa của Nemesis: %L
+MOTD_INFO4_G = <br>Ảnh hưởng khi bị dính đạn của Nemesis: %L
+MOTD_INFO4_H = <br><br>Survivor: %L
+MOTD_INFO4_I = <br>Survivor Chance: 1 in %d
+MOTD_INFO4_J = <br>Máu của Survivor: %s
+MOTD_INFO4_K = <br>Tốc độ của Survivor: %d
+MOTD_INFO4_L = <br>Nhảy cao của Survivor: %d
+MOTD_INFO4_M = <br>Khả năng nhảy xa của Survivor: %L
+MOTD_INFO4_N = <br>Ảnh hưởng khi bị dính đạn của Survivor: %L
+MOTD_INFO4_O = <br><br>Chế Độ Chiến Đấu: %L
+MOTD_INFO4_P = <br>Tần xuất Chế Độ Chiến Đấu: 1 in %d
+MOTD_INFO4_Q = <br><br>Chế Độ Dịch Bệnh Lan Tràn: %L
+MOTD_INFO4_R = <br>Tần xuất Chế Độ Dịch Bệnh Lan Tràn: 1 in %d
+MOTD_INFO4_S = <br>Tỉ lệ nhiễm bệnh: %d%%
+MOTD_INFO4_T = <br><br>Chế độ Plague: %L
+MOTD_INFO4_U = <br>Tần xuất Chế độ Plague: 1 in %d
+MOTD_INFO4_V = <br>Tỉ lệ nhiễm bệnh: %d%%
+
+MOTD_ENABLED = Thực hiện
+MOTD_DISABLED = Không thực hiện
+MOTD_FOG = Sương mù
+MOTD_RAIN = Mưa
+MOTD_SNOW = Tuyết
+MOTD_ROTATING = Cánh cửa đã bị bỏ
+MOTD_DOORS = Tất cả các cửa bị bỏ
+MOTD_DM_HUMAN = Hồi sinh ai đó thành người
+MOTD_DM_ZOMBIE = Hồi sinh ai đó thành zombie
+MOTD_LIMITED = Bị giới hạn
+MOTD_AMMO_BP = Không giới hạn nạp đạn
+MOTD_AMMO_CLIP = Bắn không hết đạn
+MOTD_LASTZOMBIE = Chỉ dành cho zombie cuối
+
+ZOMBIE_ATTRIB1 = Máu
+ZOMBIE_ATTRIB2 = Tốc độ
+ZOMBIE_ATTRIB3 = Nhảy cao
+ZOMBIE_ATTRIB4 = Bật lại khi dính đạn
+
+CLASS_CLASS = Loài:
+CLASS_HUMAN = Người
+CLASS_ZOMBIE = Zombie
+CLASS_SURVIVOR = Survivor
+CLASS_NEMESIS = Nemesis
+
+LAST_ZOMBIE_LEFT = Còn lại 1 con zombie cuối cùng, %s là 1 loại zombie mới.
+LAST_HUMAN_LEFT = Còn lại 1 người cuối cùng, %s là 1 loại người mới.
+NOT_ENOUGH_AMMO = Bạn không đủ ammo packs.
+AMMO_BOUGHT = Bạn đã bỏ ra ammo packs cho những khẩu súng đó.
+ZOMBIE_SELECT = Loại zombie mà bạn sẽ biến khi bị nhiễm bệnh lần tới là
+BUY_ENABLED = Cửa sổ mua của bạn đã được kích hoạt.
+AMMO_PACKS1 = Ammo packs:
+AMMO_PACKS2 = ammo packs
+SPECTATING = Đang theo dõi:
+
+[cn]
+NOTICE_INFO1 = 按 M 显示游戏菜单
+NOTICE_INFO2 = 按 , 或 . 来购买弹药
+NOTICE_VIRUS_FREE = T病毒已经开始在整个区域中扩散,请大家小心周围.
+NOTICE_FIRST = %s 是第一个僵尸...
+NOTICE_INFECT = %s 已经被感染病毒了...
+NOTICE_INFECT2 = %s 已经被 %s 感染病毒了...
+NOTICE_ANTIDOTE = %s 使用了T病毒解药...
+NOTICE_NEMESIS = %s 是复仇之神!!!
+NOTICE_SURVIVOR = %s 是一名幸存者!!!
+NOTICE_SWARM = 对战模式!!!
+NOTICE_MULTI = 多重感染模式!!!
+NOTICE_PLAGUE = 军团模式!!!
+
+WIN_HUMAN = 人类战胜了僵尸!
+WIN_ZOMBIE = 僵尸已经统治了世界!
+WIN_NO_ONE = 平局...
+
+CMD_INFECT = 变成僵尸
+CMD_DISINFECT = 变回人类
+CMD_NEMESIS = 变成复仇之神
+CMD_SURVIVAL = 成为一名幸存者
+CMD_SWARM = 开始对战模式
+CMD_MULTI = 开始多重感染模式
+CMD_PLAGUE = 开始军团模式
+CMD_RESPAWN = 复活
+CMD_NOT = 无效的命令
+CMD_ZOMBIE_ONLY = 这是只适用于僵尸.
+CMD_HUMAN_ONLY = 这是只适用于人类.
+CMD_NOT_STUCK = 你没有被卡住!!
+CMD_NOT_ACCESS = 你没有权限使用该命令!
+CMD_NOT_CANTUSE = 你现在不能使用它.
+CMD_NOT_EXTRAS = 道具被禁止使用.
+CMD_NOT_ZCLASSES = 僵尸类型被禁止使用.
+
+MENU_BUY = 购买武器
+MENU_EXTRABUY = 购买道具
+MENU_ZCLASS = 选择僵尸的类型
+MENU_UNSTUCK = 解除卡住(当你被卡住时使用)
+MENU_ADMIN = 管理员菜单
+MENU_INFO = 帮助
+MENU_SPECTATOR = 成为观察者
+
+MENU_BUY1_TITLE = 主要武器
+MENU_BUY2_TITLE = 次要武器
+MENU_ZCLASS_TITLE = 僵尸类型
+MENU_EXTRA_TITLE = 道具
+MENU_ADMIN_TITLE = 管理员菜单
+MENU_INFO_TITLE = 插件信息
+
+MENU_EXTRA1 = 夜视仪(只有一局时间)
+MENU_EXTRA2 = T病毒解药(让你重新成为人类)
+MENU_EXTRA3 = 无敌僵尸(20秒时间)
+MENU_EXTRA4 = T病毒炸弹(可以感染一片的人类)
+MENU_ADMIN1 = 成为僵尸/人类
+MENU_ADMIN2 = 成为复仇之神
+MENU_ADMIN3 = 成为幸存者
+MENU_ADMIN4 = 复活某个人
+MENU_ADMIN5 = 开启对战模式
+MENU_ADMIN6 = 开启群体感染模式
+MENU_ADMIN7 = 开启军团模式
+MENU_INFO1 = 观众
+MENU_INFO2 = 人类
+MENU_INFO3 = 僵尸
+MENU_INFO4 = 游戏模式
+
+MENU_AUTOSELECT = 记住设置
+MENU_BACK = 返回
+MENU_NEXT = 继续
+MENU_EXIT = 退出
+
+MOTD_INFO11 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>%s %s by %s :</b> 是一个基于 AMX Mod X的反恐精英插件, 在这里人类和僵尸才是对立的. 它是基于传统的僵尸模式: 在每一回合,一个随机的队员将变成一个僵尸去感染别人.
+MOTD_INFO12 = 但也有新的增强功能. 举例来说,你可以是用血浆来购买特殊的道具(比如说大杀伤力的武器). 你可以通过杀死僵尸或是感染人类获得血浆<br><br><br><u>服务器的设定:</u><br>
+MOTD_INFO1_A = <br>环境情况:
+MOTD_INFO1_B = <br>闪电强度: %s
+MOTD_INFO1_C = <br>手电强度: %L
+MOTD_INFO1_D = <br>闪电频率: %d 秒
+MOTD_INFO1_E = <br>门: %L
+MOTD_INFO1_F = <br>死斗: %L
+MOTD_INFO1_G = <br>僵尸产生时间: %d 秒
+MOTD_INFO1_H = <br>随机产生僵尸: %L
+MOTD_INFO1_I = <br>道具: %L
+MOTD_INFO1_J = <br>僵尸类型: %L
+MOTD_INFO1_K = <br>自定义夜视: %L
+MOTD_INFO1_L = <br>自定义闪光: %L
+MOTD_INFO2 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>人类:</b> 他们的任务是消灭所有的僵尸. 他们拥有一个庞大的武器库,另外在道具中还可以购买重型武器, 并可以在黑暗的地图中使用照明弹. 团队合作才是生存的条件.<br><br><br><u>服务器的设定:</u><br>
+MOTD_INFO2_A = <br>生命: %d
+MOTD_INFO2_B = <br>最后一个人类的生命: %d
+MOTD_INFO2_C = <br>速度: %d
+MOTD_INFO2_D = <br>重量: %d
+MOTD_INFO2_E = <br>血浆: %L
+MOTD_INFO2_F = <br>杀死僵尸得到的弹药袋: %d
+MOTD_INFO2_G = <br>燃烧弹: %L
+MOTD_INFO2_H = <br>冰冻弹: %L
+MOTD_INFO2_I = <br>照明弹: %L
+MOTD_INFO2_J = <br>死亡后是否复活: %L
+MOTD_INFO3 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>僵尸:</b> 它们的任务是感染所有活着的人类. 它们可以在黑暗中看见事物, 但是只能够近身攻击. 这里有6种僵尸的类型可以挑选, 每一种都有自己的优点和缺点, 但共同点是它们都可以吃人类的大脑.<br><br><br><u>服务器的设定:</u><br>
+MOTD_INFO3_A = <br>僵尸的生命: %d
+MOTD_INFO3_B = <br>第一个僵尸的生命: %d
+MOTD_INFO3_C = <br>护甲: %d%% 伤害值
+MOTD_INFO3_D = <br>速度: %d
+MOTD_INFO3_E = <br>重量: %d
+MOTD_INFO3_F = <br>感染人类奖励的生命: %d
+MOTD_INFO3_G = <br>中弹时被击退: %L
+MOTD_INFO3_H = <br>流血: %L
+MOTD_INFO3_I = <br>感染人类得到的弹药袋: %d
+MOTD_INFO4 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>特殊游戏模式:</b> 这里有4种不同的特殊游戏模式,在游戏中会随机的产生.<br><br><br><u>服务器的设定:</u><br>
+MOTD_INFO4_A = <br>复仇之神: %L
+MOTD_INFO4_B = <br>复仇之神的产生: 1 in %d
+MOTD_INFO4_C = <br>复仇之神的生命值: %s
+MOTD_INFO4_D = <br>复仇之神的速度: %d
+MOTD_INFO4_E = <br>复仇之神的重量: %d
+MOTD_INFO4_F = <br>复仇之神的跳跃: %L
+MOTD_INFO4_G = <br>复仇之神被击退: %L
+MOTD_INFO4_H = <br><br>幸存者: %L
+MOTD_INFO4_I = <br>幸存者的产生: 1 in %d
+MOTD_INFO4_J = <br>幸存者的生命: %s
+MOTD_INFO4_K = <br>幸存者的速度: %d
+MOTD_INFO4_L = <br>幸存者的重量: %d
+MOTD_INFO4_M = <br>幸存者的的跳跃: %L
+MOTD_INFO4_N = <br>幸存者的的击退: %L
+MOTD_INFO4_O = <br><br>对战模式: %L
+MOTD_INFO4_P = <br>对战模式的开启概率: 1 in %d
+MOTD_INFO4_Q = <br><br>多重感染模式: %L
+MOTD_INFO4_R = <br>多重感染源的开启概率: 1 in %d
+MOTD_INFO4_S = <br>感染的比例: %d%%
+MOTD_INFO4_T = <br><br>军团模式: %L
+MOTD_INFO4_U = <br>军团模式的开启概率: 1 in %d
+
+MOTD_ENABLED = 启用
+MOTD_DISABLED = 禁用
+MOTD_FOG = 雾
+MOTD_RAIN = 雨
+MOTD_SNOW = 雪
+MOTD_ROTATING = 拆除转动的大门
+MOTD_DOORS = 拆除所有的大门
+MOTD_DM_HUMAN = 复活成人类
+MOTD_DM_ZOMBIE = 复活成僵尸
+MOTD_LIMITED = 有限的
+MOTD_AMMO_BP = 无限的弹药
+MOTD_AMMO_CLIP = 无限的后备弹药
+MOTD_LASTZOMBIE = 只在最后一个僵尸
+
+ZOMBIE_ATTRIB1 = 生命
+ZOMBIE_ATTRIB2 = 速度
+ZOMBIE_ATTRIB3 = 重量
+ZOMBIE_ATTRIB4 = 击退
+
+CLASS_CLASS = 类型:
+CLASS_HUMAN = 人类
+CLASS_ZOMBIE = 僵尸
+CLASS_SURVIVOR = 幸存者
+CLASS_NEMESIS = 复仇之神
+
+LAST_ZOMBIE_LEFT = 最后的一个僵尸离开了游戏, %s 是新的僵尸.
+LAST_HUMAN_LEFT = 最后的一个人类离开了游戏, %s 是新的人类.
+NOT_ENOUGH_AMMO = 你没有足够的弹药袋.
+AMMO_BOUGHT = 为你的枪购买额外的弹药.
+ZOMBIE_SELECT = 下一次你被感染时是:
+BUY_ENABLED = 你的购买菜单已经被重新启用.
+AMMO_PACKS1 = 弹药袋:
+AMMO_PACKS2 = 弹药袋
+SPECTATING = 观察中
+
+[tc]
+NOTICE_INFO1 = 點選"M"打開遊戲選單
+NOTICE_INFO2 = 點選","或"."購買子彈
+NOTICE_VIRUS_FREE = T-病毒飄散在空氣中...
+NOTICE_FIRST = %s 是第一隻殭屍 !!
+NOTICE_INFECT = %s's 的頭被吃掉了...
+NOTICE_INFECT2 = %s's 的頭是被 %s 吃掉...
+NOTICE_ANTIDOTE = %s 使用解毒劑...
+NOTICE_NEMESIS = %s 是復仇者 !!!
+NOTICE_SURVIVOR = %s 是倖存者 !!!
+NOTICE_SWARM = 對抗殭屍模式 !!!
+NOTICE_MULTI = 多人傳染模式 !!!
+NOTICE_PLAGUE = 瘟疫模式 !!!
+
+WIN_HUMAN = 人類打敗了殭屍!
+WIN_ZOMBIE = 殭屍佔領了全世界!
+WIN_NO_ONE = 沒有人獲勝...
+
+CMD_INFECT = 轉換為殭屍
+CMD_DISINFECT = 轉換為人類
+CMD_NEMESIS = 轉換為復仇者
+CMD_SURVIVAL = 轉換為倖存者
+CMD_SWARM = 開始 對抗殭屍模式
+CMD_MULTI = 開始 多人傳染模式
+CMD_PLAGUE = 開始 瘟疫模式
+CMD_RESPAWN = 重生
+CMD_NOT = 無效的命令.
+CMD_ZOMBIE_ONLY = 只對殭屍有效.
+CMD_HUMAN_ONLY = 只對人類有效.
+CMD_NOT_STUCK = 你不是stuck.
+CMD_NOT_ACCESS = 你沒有權限.
+CMD_NOT_CANTUSE = 你現在不能使用這個.
+CMD_NOT_EXTRAS = 特殊道具已關閉.
+CMD_NOT_ZCLASSES = 殭屍類型已關閉..
+
+MENU_BUY = 買武器
+MENU_EXTRABUY = 買特殊道具
+MENU_ZCLASS = 選擇殭屍類型
+MENU_UNSTUCK = Unstuck
+MENU_ADMIN = 管理者選單
+MENU_INFO = 幫助
+MENU_SPECTATOR = 切換為觀察者
+
+MENU_BUY1_TITLE = 主要武器
+MENU_BUY2_TITLE = 副武器
+MENU_ZCLASS_TITLE = 殭屍類型
+MENU_EXTRA_TITLE = 特殊道具
+MENU_ADMIN_TITLE = 管理者選單
+MENU_INFO_TITLE = 插件訊息
+
+MENU_EXTRA1 = 夜視鏡 (單回合)
+MENU_EXTRA2 = T-病毒解毒劑
+MENU_EXTRA3 = 殭屍憤怒(短時間無敵)
+MENU_EXTRA4 = 毒素彈
+MENU_ADMIN1 = 指定一個為殭屍/人類
+MENU_ADMIN2 = 指定一個為復仇者
+MENU_ADMIN3 = 指定一個為倖存者
+MENU_ADMIN4 = 指定某人重生
+MENU_ADMIN5 = 開殭屍對抗模式
+MENU_ADMIN6 = 開始多人傳染模式
+MENU_ADMIN7 = 開始 瘟疫模式
+MENU_INFO1 = 一般介紹
+MENU_INFO2 = 人類介紹
+MENU_INFO3 = 喪屍介紹
+MENU_INFO4 = 模式介紹
+
+MENU_AUTOSELECT = 記住設定
+MENU_BACK = 回去
+MENU_NEXT = 下頁
+MENU_EXIT = 離開
+
+MOTD_INFO11 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>%s %s by %s 此插件繁體化作者為skymoon蒼月:</b>每回合會有一個玩家被感染為殭屍，第一隻喪屍必須去傳染給其他玩家。
+MOTD_INFO12 = 這遊戲的特色"""彈藥包"""，人類可以用它來買更好的槍、解毒劑，殭屍可以買毒素彈..等等，需要使用的時候請按鍵盤"M"，你也可以隨時點選(,)和(.)買主槍或副槍的子彈，但是會花費一個彈藥包。!!!!!彈藥包的取得方法!!!!!殭屍必須殺人類才有子彈包，而人類只要給予殭屍一定量的傷害就能得到彈藥包，傷害可以累計的。<br><br><br><u>現在伺服器的設置:</u><br>
+MOTD_INFO1_A = <br>環境設置:
+MOTD_INFO1_B = <br>亮度等級: %s
+MOTD_INFO1_C = <br>觸發燈: %L
+MOTD_INFO1_D = <br>閃電頻率: %d 秒數
+MOTD_INFO1_E = <br>門: %L
+MOTD_INFO1_F = <br>死鬥模式: %L
+MOTD_INFO1_G = <br>重生後無敵時間: %d 秒
+MOTD_INFO1_H = <br>隨機重生: %L
+MOTD_INFO1_I = <br>特殊道具: %L
+MOTD_INFO1_J = <br>殭屍類型: %L
+MOTD_INFO1_K = <br>夜視功能: %L
+MOTD_INFO1_L = <br>手電筒功能: %L
+MOTD_INFO2 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>人類:</b> 他們的目標是抵抗殭屍的威脅，團隊合作是非常重要的。<br><br><br><u>現在伺服器的設置:</u><br>
+MOTD_INFO2_A = <br>生命值: %d
+MOTD_INFO2_B = <br>最後一位人類得到額外的生命值: %d
+MOTD_INFO2_C = <br>速度: %d
+MOTD_INFO2_D = <br>重力: %d
+MOTD_INFO2_E = <br>子彈: %L
+MOTD_INFO2_F = <br>達到多少傷害才有彈藥包: %d
+MOTD_INFO2_G = <br>火焰彈: %L
+MOTD_INFO2_H = <br>冰凍彈: %L
+MOTD_INFO2_I = <br>照明彈: %L
+MOTD_INFO2_J = <br>槍枝擊退: %L
+MOTD_INFO3 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>殭屍:</b> 他們目標是撲滅任何的人類，他們能在黑暗中看見，有六種殭屍類型可以選擇，每個都各有他的特色、能力，但全部都很喜歡吃人腦，可以吃人腦來補血。<br><br><br><u>現在伺服器的設置</u><br>
+MOTD_INFO3_A = <br>殭屍生命值: %d
+MOTD_INFO3_B = <br>第一隻殭屍生命值: %d
+MOTD_INFO3_C = <br>防禦力: %d%%
+MOTD_INFO3_D = <br>速度: %d
+MOTD_INFO3_E = <br>重力: %d
+MOTD_INFO3_F = <br>傳染一個人得到的血量: %d
+MOTD_INFO3_G = <br>疼痛免疫: %L
+MOTD_INFO3_H = <br>吸血: %L
+MOTD_INFO3_I = <br>吃一個人得到的子彈包: %d
+MOTD_INFO4 = <meta charset=UTF-8><body bgcolor=\"#000000\"><font color=\"#FF0505\"><b>其他遊戲模式:</b> 有其他四種類型的遊戲模式，會隨機出現。<br><br><br><u>現在伺服器的設置:</u><br>
+MOTD_INFO4_A = <br>復仇者(超級跳): %L
+MOTD_INFO4_B = <br>復仇者模式機率: 1 in %d
+MOTD_INFO4_C = <br>生命值: %s
+MOTD_INFO4_D = <br>速度: %d
+MOTD_INFO4_E = <br>重力: %d
+MOTD_INFO4_F = <br>超級跳: %L
+MOTD_INFO4_G = <br>疼痛免疫: %L
+MOTD_INFO4_H = <br><br>倖存者: %L
+MOTD_INFO4_I = <br>倖存者模式機率: 1 in %d
+MOTD_INFO4_J = <br>生命值: %s
+MOTD_INFO4_K = <br>速度: %d
+MOTD_INFO4_L = <br>重力: %d
+MOTD_INFO4_M = <br>超級跳(前進中時蹲和跳一起按): %L
+MOTD_INFO4_N = <br>疼痛免疫: %L
+MOTD_INFO4_O = <br><br>殭屍對抗模式(人類要消滅喪屍，不會被傳染): %L
+MOTD_INFO4_P = <br>殭屍對抗模式機率: 1 in %d
+MOTD_INFO4_Q = <br><br>多人傳染模式(一次出現多隻殭屍): %L
+MOTD_INFO4_R = <br>多人傳染模式機率: 1 in %d
+MOTD_INFO4_S = <br>傳染比率: %d%%
+MOTD_INFO4_T = <br><br>瘟疫模式: %L
+MOTD_INFO4_U = <br>瘟疫模式機率: 1 in %d
+
+MOTD_ENABLED = 開啟
+MOTD_DISABLED = 關閉
+MOTD_REMOVED = 移除
+MOTD_FOG = 霧
+MOTD_RAIN = 雨
+MOTD_SNOW = 雪
+MOTD_ROTATING = 轉動門移除
+MOTD_DOORS = 移除全部的門
+MOTD_DM_HUMAN = 重生為人類
+MOTD_DM_ZOMBIE = 重生為殭屍
+MOTD_LIMITED = 限制
+MOTD_AMMO_BP = 無線填裝
+MOTD_AMMO_CLIP = 無線彈夾
+MOTD_KNOCKBACK1 = 只用副槍
+MOTD_KNOCKBACK2 = 所有武器
+MOTD_LASTZOMBIE = 只有最後一個殭屍
+
+ZOMBIE_ATTRIB1 = 生命值
+ZOMBIE_ATTRIB2 = 速度
+ZOMBIE_ATTRIB3 = 重力
+ZOMBIE_ATTRIB4 = 反彈力
+
+CLASS_CLASS = 類型:
+CLASS_HUMAN = 人類
+CLASS_ZOMBIE = 殭屍
+CLASS_SURVIVOR = 倖存者
+CLASS_NEMESIS = 復仇者
+
+LAST_ZOMBIE_LEFT = 最後一隻殭屍離開了, %s 是新的殭屍.
+LAST_HUMAN_LEFT = 最後一個人類離開了, %s 是新的人類.
+NOT_ENOUGH_AMMO = 你沒有足夠的彈藥包.
+AMMO_BOUGHT = 你用彈藥包買了子彈.
+ZOMBIE_SELECT = (下次感染時才會變)你選擇的殭屍類型為
+BUY_ENABLED = 您的購買菜單已重新啟用.
+AMMO_PACKS1 = 彈藥包:
+AMMO_PACKS2 = 彈藥包
+SPECTATING = 正在觀察:

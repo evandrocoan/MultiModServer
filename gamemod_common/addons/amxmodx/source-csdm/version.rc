@@ -1,0 +1,40 @@
+// Auto-generated, so don't bother.
+
+#include <winver.h>
+
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION 2013,06,02,0
+PRODUCTVERSION 2013,06,02,0
+FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+FILEFLAGS VS_FF_DEBUG
+#else
+FILEFLAGS 0x0L
+#endif
+FILEOS VOS__WINDOWS32
+FILETYPE VFT_DLL
+FILESUBTYPE VFT2_UNKNOWN
+BEGIN
+   BLOCK "StringFileInfo"
+   BEGIN
+      BLOCK "040904b0"
+      BEGIN
+         VALUE "Comments", "Counter-Strike Deathmatch"
+         VALUE "CompanyName", "AMX MOD X Dev Team\0"
+         VALUE "FileDescription", "CSDM"
+         VALUE "FileVersion", "2.1.3c"
+         VALUE "InternalName", "csdm"
+         VALUE "LegalCopyright", "Copyright (c) 2003-2013, David 'BAILOPAN' Anderson"
+         VALUE "LegalTrademarks", "\0"
+         VALUE "OriginalFilename", "csdm_amxx.dll"
+         VALUE "PrivateBuild", "2.1.3c"
+         VALUE "ProductName", "Counter-Strike Deathmatch"
+         VALUE "ProductVersion", "20130602\0"
+         VALUE "SpecialBuild", "2.1.3c\0"
+      END
+   END
+   BLOCK "VarFileInfo"
+   BEGIN
+      VALUE "Translation", 0x409, 1200
+   END
+END

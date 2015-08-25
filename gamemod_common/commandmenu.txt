@@ -1,0 +1,840 @@
+// Command Menu definition
+// 
+// Basic Format:
+//		"<Bound Key>" "<Button Text>" "<Command sent to server>"
+//
+// 
+//
+//
+// Buttons can also open up submenus, as follows:
+// {
+// 	"Some More Options",
+//	{
+//		...
+//	}
+// }
+//
+//
+// Buttons preceded with "CUSTOM" are handled in special ways. They can only be moved
+// around or deleted.
+//
+//
+// Limitations:
+//		Maximum of 40 menus.
+//		Maximum of 100 buttons per menu.
+
+//--------------------------------------------------------
+// Everything below here is editable
+
+"2" "Menu Remoto"
+{
+	"2" "CSBot Menu"
+	{
+		"3" "Bot Settings"
+		{
+			"1" "Restringir"	
+			{
+				"1" "Granadas"
+				{
+					"1" "Permitir"		"rcon bot_allow_grenades 1"
+					"2" "Restrito"		"rcon bot_allow_grenades 0"
+				}
+				"2" "Metralha..."
+				{
+					"1" "Permitir"		"rcon bot_allow_machine_guns 1"
+					"2" "Restrito"		"rcon bot_allow_machine_guns 0"
+				}
+				"3" "Pistolas"
+				{
+					"1" "Permitir"		"rcon bot_allow_pistols 1"
+					"2" "Restrito"		"rcon bot_allow_pistols 0"
+				}
+				"4" "Rifles"
+				{
+					"1" "Permitir"		"rcon bot_allow_rifles 1"
+					"2" "Restrito"		"rcon bot_allow_rifles 0"
+				}
+				"5" "Escudo"
+				{
+					"1" "Permitir"		"rcon bot_allow_shield 1"
+					"2" "Restrito"		"rcon bot_allow_shield 0"
+				}
+				"6" "Espingar..."
+				{
+					"1" "Permitir"		"rcon bot_allow_shotguns 1"
+					"2" "Restrito"		"rcon bot_allow_shotguns 0"
+				}
+				"7" "Snipers"
+				{
+					"1" "Permitir"		"rcon bot_allow_snipers 1"
+					"2" "Restrito"		"rcon bot_allow_snipers 0"
+				}
+				"8" "Sub-Metra"
+				{
+					"1" "Permitir"		"rcon bot_allow_sub_machine_guns 1"
+					"2" "Restrito"		"rcon bot_allow_sub_machine_guns 0"
+				}
+			}
+			"2" "Difficulty"
+			{
+				"1" "Easy"				"rcon exec bot_difficulty 0"
+				"2" "Normal"			"rcon exec bot_difficulty 1"
+				"3" "Hard"				"rcon exec bot_difficulty 2"
+				"4" "Expert"			"rcon exec bot_difficulty 3"
+			}
+			"4" "Modo Radio"
+			{
+				"1" "Off"	    "rcon bot_chatter off"
+				"2" "Radio"		"rcon bot_chatter radio"
+				"3" "Minimal"			"rcon bot_chatter minimal"
+				"4" "Normal"			"rcon bot_chatter normal"
+			}
+			"5" "Weapon Mode"
+			{
+				"1" "Only Knives"		"rcon bot_knives_only"	
+				"2" "Only Pistols"		"rcon bot_pistols_only"
+				"3" "Only Snipers"	"rcon bot_snipers_only"
+				"4" "All Weapons"		"rcon bot_all_weapons"
+			}
+			"3" "Team"
+			{
+				 "1" "Terroristas"			"rcon bot_join_team any"
+				 "2" "Contra-Terroristas"		"rcon bot_join_team ct"
+				 "3" "Em Todos os Times"		"rcon bot_join_team t"
+			}
+			"6" "Objective"
+			{
+				"1" "Bots Completam"		"rcon bot_defer_to_human 0"
+				"2" "Pessoas Completam"	"rcon bot_defer_to_human 1"
+			}
+			"7" "Play"
+			{
+				"2" "Always"		"rcon bot_join_after_player 0"
+				"1" "When there is Humans"		"rcon bot_join_after_player 1"
+			}
+		}
+		 "3" "Quota"
+		{
+			"1" "3 Bots"		"rcon exec admin/csbot/3quota.cfg"
+			"1" "5 Bots"		"rcon exec admin/csbot/5quota.cfg"
+			"2" "7 Bots"		"rcon exec admin/csbot/7quota.cfg"
+			"3" "9 Bots"		"rcon exec admin/csbot/9quota.cfg"
+			"4" "13 Bots"		"rcon exec admin/csbot/13quota.cfg"
+			"5" "17 Bots"		"rcon exec admin/csbot/17quota.cfg"
+			"6" "23 Bots"		"rcon exec admin/csbot/23quota.cfg"	
+			"7" "29 Bots"		"rcon exec admin/csbot/29quota.cfg"
+		}
+		 "3" "Quota Match"
+		{
+			"1" "1 Bots"		"rcon bot_quota_match 1"
+			"1" "2 Bots"		"rcon bot_quota_match 2"
+			"1" "3 Bots"		"rcon bot_quota_match 3"
+			"1" "5 Bots"		"rcon bot_quota_match 5"
+			"1" "7 Bots"		"rcon bot_quota_match 7"
+			"2" "9 Bots"		"rcon bot_quota_match 9"
+			"3" "11 Bots"		"rcon bot_quota_match 11"
+		}
+        "3" "Training"
+        {
+            "2" "Play Against"
+            {
+                "1" "Bots ::CTs::" "rcon exec admin/treino/xtr.cfg"
+                "2" "Bots ::TRs::" "rcon exec admin/treino/xct.cfg"
+                "3" "Deactivate::" "rcon exec admin/treino/xoff.cfg"
+            }
+            "6" "Easy" "rcon exec admin/treino/treinoEasy0.cfg"
+            "6" "Normal" "rcon exec admin/treino/treinoNormal0.cfg"
+            "6" "Hard" "rcon exec admin/treino/treinoHard0.cfg"
+            "6" "Expert" "rcon exec admin/treino/treinoExpert0.cfg"
+        }
+        "1" "Controle"
+        {
+            "1" "(CSBot Only) Freeze"		"rcon bot_stop 1"
+            "2" "(CSBot...) Unfreeze"	        "rcon bot_stop 0"
+			"1" "Kill All"						"rcon bot_kill"
+			"2" "Kick All"					"rcon exec admin/csbot/kickarBots.cfg"
+        }
+		"1" "Add One"			"rcon exec admin/csbot/addUmBot.cfg"
+		"1" "Add One TR"		"rcon exec admin/csbot/addUmBotTR.cfg"
+		"2" "Add One CT"		"rcon exec admin/csbot/addUmBotCT.cfg"
+	}
+	"2" "PODBot Menu"
+	{
+		 "3" "Quota"
+		{
+			"1" "Add"
+			{
+				"1" "3 Bots"		"rcon exec admin/podbot/3quota.cfg"
+				"1" "5 Bots"		"rcon exec admin/podbot/5quota.cfg"
+				"2" "7 Bots"		"rcon exec admin/podbot/7quota.cfg"
+				"3" "9 Bots"		"rcon exec admin/podbot/9quota.cfg"
+				"4" "13 Bots"		"rcon exec admin/podbot/13quota.cfg"
+				"5" "17 Bots"		"rcon exec admin/podbot/17quota.cfg"
+				"6" "23 Bots"		"rcon exec admin/podbot/23quota.cfg"	
+				"7" "29 Bots"		"rcon exec admin/podbot/29quota.cfg"
+			}
+			"1" "1 Quota Match Bots"		"rcon pb_bot_quota_match 1"
+			"2" "2 Quota Match Bots"		"rcon pb_bot_quota_match 2"
+			"3" "3 Quota Match Bots"		"rcon pb_bot_quota_match 3"
+			"4" "5 Quota Match Bots"		"rcon pb_bot_quota_match 5"
+			"5" "7 Quota Match Bots"		"rcon pb_bot_quota_match 7"
+			"6" "9 Quota Match Bots"		"rcon pb_bot_quota_match 9"	
+			"7" "11 Quota Match Bots"		"rcon pb_bot_quota_match 11"
+		}
+		"3" "Bot Settings"
+		{
+			"5" "Weapon Mode"
+			{
+				"1" "Only Knives"					"rcon pb weaponmode 1"	
+				"2" "Only Pistols"					"rcon pb weaponmode 2"
+				"2" "Only Shotguns"				"rcon pb weaponmode 3"
+				"2" "Only Machine Guns"		"rcon pb weaponmode 4"
+				"2" "Only Rifles"					"rcon pb weaponmode 5"
+				"3" "Only Snipers"					"rcon pb weaponmode 6"
+				"4" "All Weapons"					"rcon pb weaponmode 7"
+			}
+			"2" "Difficulty"
+			{
+				"1" "Easy"				"rcon exec admin/podbot/podBotEasy.cfg"
+				"2" "Normal"			"rcon exec admin/podbot/podBotNormal.cfg"
+				"3" "Hard"				"rcon exec admin/podbot/podBotHard.cfg"
+				"4" "Expert"			"rcon exec admin/podbot/podBotExpert.cfg"
+			}
+			"2" "Auto Kill"
+			{
+				"1" "Auto Kill Apos 45s" "rcon exec admin/podbot/autoKill45.cfg"
+				"2" "Auto Kill Apos 25s" "rcon exec admin/podbot/autoKill25.cfg"
+				"3" "Auto Kill Apos 5s" "rcon exec admin/podbot/autoKill5.cfg"
+				"4" "Deactivate Auto Kill" "rcon pb_autokill 0"
+			}
+			"2" "Name"
+			{
+				"1" "Activate TAG" "rcon pb_detailnames 1"
+				"2" "Deactivate TAG" "rcon pb_detailnames 0"
+				"3" "Exibir Latencia" "rcon pb_latencybot 1"
+				"4" "Ocultar Latencia" "rcon pb_latencybot 0"
+			}
+			"4" "Radio"
+			{
+				"1" "Deactive All"	    "rcon exec admin/podbot/radioDesativado.cfg"
+				"2" "Chat"		"rcon pb_chat 1"
+				"3" "Radio"			"rcon pb_radio 1"
+			}
+			"3" "Team"
+			{
+				 "1" "Terrorists"					"rcon pb_bot_join_team T"
+				 "2" "Conter-Terrorists"	"rcon pb_bot_join_team CT"
+				 "3" "All"							"rcon pb_bot_join_team ANY"
+			}
+			"1" "Team Kill"
+			{
+				"1" "Activate" "rcon pb_ffa 1"
+				"2" "Deactivate" "amx_ rcon pb_ffa 0"
+			}
+		}
+		"1" "Add"
+		{
+			"1" "Easy"
+			{
+				"1" "1 Bot"		"rcon exec admin/podbot/1botsEasy.cfg"
+				"1" "3 Bots"		"rcon exec admin/podbot/3botsEasy.cfg"
+				"2" "6 Bots"		"rcon exec admin/podbot/6botsEasy.cfg"
+				"3" "9 Bots"		"rcon exec admin/podbot/9botsEasy.cfg"
+				"4" "13 Bots"		"rcon exec admin/podbot/13botsEasy.cfg"
+				"5" "17 Bots"		"rcon exec admin/podbot/17botsEasy.cfg"
+			}
+			"1" "Normal"
+			{
+				"1" "1 Bot"		"rcon exec admin/podbot/1botsNormal.cfg"
+				"1" "3 Bots"		"rcon exec admin/podbot/3botsNormal.cfg"
+				"2" "6 Bots"		"rcon exec admin/podbot/6botsNormal.cfg"
+				"3" "9 Bots"		"rcon exec admin/podbot/9botsNormal.cfg"
+				"4" "13 Bots"		"rcon exec admin/podbot/13botsNormal.cfg"
+			}
+			"1" "Hard"
+			{
+				"1" "1 Bot"		"rcon exec admin/podbot/1botsHard.cfg"
+				"1" "3 Bots"		"rcon exec admin/podbot/3botsHard.cfg"
+				"2" "6 Bots"		"rcon exec admin/podbot/6botsHard.cfg"
+				"3" "9 Bots"		"rcon exec admin/podbot/9botsHard.cfg"
+			}
+			"1" "Expert"
+			{
+				"1" "1 Bot"		"rcon exec admin/podbot/1botsExpert.cfg"
+				"1" "3 Bots"		"rcon exec admin/podbot/3botsExpert.cfg"
+				"2" "6 Bots"		"rcon exec admin/podbot/6botsExpert.cfg"
+			}
+		}
+        "3" "Training"
+        {
+            "2" "Play Against"
+            {
+                "1" "Bots ::CTs::" "rcon exec admin/treino2/xtr.cfg"
+                "2" "Bots ::TRs::" "rcon exec admin/treino2/xct.cfg"
+                "3" "Deactivate::" "rcon exec admin/treino2/xoff.cfg"
+            }
+            "6" "Easy" "rcon exec admin/treino2/treinoEasy0.cfg"
+            "6" "Normal" "rcon exec admin/treino2/treinoNormal0.cfg"
+            "6" "Hard" "rcon exec admin/treino2/treinoHard0.cfg"
+            "6" "Expert" "rcon exec admin/treino2/treinoExpert0.cfg"
+        }
+        "1" "Control"
+        {
+			"3" "(listensvrOnly) WayPoint Menu" "pb wpmenu"
+			"3" "PodBot Menu " "pb menu"
+			"1" "Kill All"						"rcon exec admin/podbot/matarBots.cfg"
+			"2" "Kick All"					"rcon exec admin/podbot/kickarBots.cfg"
+        }
+		"1" "Add One"			"rcon exec admin/podbot/addUmBot.cfg"
+		"1" "Add One TR"			"rcon exec admin/podbot/addUmBotTR.cfg"
+		"2" "Add One CT"		"rcon exec admin/podbot/addUmBotCT.cfg"
+	}
+    "1" "Activate Mod"
+    {
+		"1" "Configs Mods"
+		{
+			"2" "Force Vote Mod"					"amx_votemod"
+			"2" "Ask Vote Mod"				"say votemod"
+			"2" "Next Mod"					"say nextmod"
+			"2" "Current Mod"									"say currentmod"
+			"2" "Deactivate Mods"					"amx_multimodz disableMods 1"
+		}
+		"1" "More"
+		{
+			"1" "Dragon Ball Mod"			"amx_multimodz plugins-dragon.txt plugins-dragon.cfg"
+			"1" "Warcraft Mod"			"amx_multimodz plugins-warcraft.txt plugins-warcraft.cfg"
+			"1" "Knife Arena Mod"			"amx_multimodz plugins-knife.txt plugins-knife.cfg"
+			"1" "Predator Mod"			"amx_multimodz plugins-predator.txt plugins-predator.cfg"
+		}
+		"1" "Zombie Mod"
+		{
+			"1" "Ammo Pack"			"amx_multimodz plugins-zp50Ammo.txt plugins-zp50Ammo.cfg"
+			"1" "Money"			"amx_multimodz plugins-zp50Money.txt plugins-zp50Money.cfg"
+		}
+		"1" "CS Deathmatch Mod"			"amx_multimodz plugins-csdm.txt plugins-csdm.cfg"
+		"1" "Super Hero Mod"			"amx_multimodz plugins-shero.txt plugins-shero.cfg"
+		"1" "Gun-Game Mod"			"amx_multimodz plugins-gungame.txt plugins-gungame.cfg"
+    }
+    "1" "Configs 1"
+    {
+        "2" "Gravity"
+        {
+            "1" "Gravity -"
+            {
+                "1" "Gravity de -8500"		"rcon sv_gravity -8500"
+                "1" "Gravity de -1000"		"rcon sv_gravity -1000"
+                "2" "Gravity de -600"		"rcon sv_gravity -600"
+                "3" "Gravity de -200"		"rcon sv_gravity -200"
+                "5" "Gravity de -25"		"rcon sv_gravity -25"
+            }
+            "+" "Gravity +"
+           {
+                "2" "Gravity de 600"		"rcon sv_gravity 600"
+                "2" "Gravity de 450"		"rcon sv_gravity 450"
+                "3" "Gravity de 200"		"rcon sv_gravity 200"
+                "3" "Gravity de 75"		"rcon sv_gravity 75"	
+                "5" "Gravity de 25"		"rcon sv_gravity 25"	
+            }
+            "+" "Gravity + +"
+            {
+                "2" "Gravity de 25000"		"rcon sv_gravity 25000"
+                "2" "Gravity de 10000"		"rcon sv_gravity 10000"
+                "3" "Gravity de 5000"		"rcon sv_gravity 5000"
+                "3" "Gravity de 2000"		"rcon sv_gravity 2000"
+                "5" "Gravity de 1000"		"rcon sv_gravity 1000"
+            }
+            "1" "Gravity Padrao 800"		"rcon sv_gravity 800"
+        }
+        "2" "Step Size"
+        {
+            "2" "Step Size +"
+            {
+                "2" "200" "rcon sv_stepsize 200"
+                "2" "100" "rcon sv_stepsize 100"
+                "2" "50" "rcon sv_stepsize 50"
+                "0" "0" "rcon sv_stepsize 0"
+            }
+            "2" "Step Size + +"
+            {
+                "2" "1200" "rcon sv_stepsize 1200"
+                "2" "800" "rcon sv_stepsize 800"
+                "2" "500" "rcon sv_stepsize 500"
+            }
+            "2" "Step Size + + +"
+            {
+                "2" "4500" "rcon sv_stepsize 4500"
+                "2" "3000" "rcon sv_stepsize 3000"
+                "2" "2000" "rcon sv_stepsize 2000"
+            }
+            "2" "300 (Surf)" "rcon sv_stepsize 300"
+            "2" "18 (Padrao)" "rcon sv_stepsize 18"
+        }
+		"1" "Flashlight"
+		{
+   				  "1" "Des..."			"rcon mp_flashlight 0"
+				  "2" "Ati..."					"rcon mp_flashlight 1"
+		}
+        "1" "Kick idle e TK"
+        {
+                  "1" "Des..."			"rcon mp_autokick 0"
+                  "2" "Ati..."					"rcon mp_autokick 1"
+        }
+        "1" "Friendly Damage"
+        {
+            "1" "Des..."			"rcon mp_friendlyfire 0"
+            2" "Ati..."					"rcon mp_friendlyfire 1"
+        }
+        "1" "TK Punish"
+        {
+              "1" "Des..."			"rcon mp_tkpunish 0"
+                  "2" "Ati..."					"rcon mp_tkpunish 1"
+        }
+    }
+	"4" "Configs 2"
+	{
+        "2" "Freeze Time"
+        {
+                    "3" "0 seconds"		"rcon mp_freezetime 0"
+                    "4" "2 seconds"		"rcon mp_freezetime 2"
+                    "4" "4 seconds"		"rcon mp_freezetime 4"
+                    "4" "6 seconds"		"rcon mp_freezetime 6"
+                    "4" "8 seconds"		"rcon mp_freezetime 8"
+        }
+        "2" "Time Limit"
+        {
+                    "3" "Deactivate"		"rcon mp_timelimit 0"
+                    "4" "20 minutes"		"rcon mp_timelimit 20"
+                    "4" "45 minutes"		"rcon mp_timelimit 45"
+                    "4" "90 minutes"		"rcon mp_timelimit 90"
+                    "4" "180 minutes"		"rcon mp_timelimit 180"
+        }
+        "2" "AutoBalance Teams"
+        {
+                    "3" "Deactivate"				"rcon mp_autoteambalance 0"
+                    "4" "1"		"rcon mp_autoteambalance 1"
+                    "4" "2"		"rcon mp_autoteambalance 2"
+                    "4" "3"		"rcon mp_autoteambalance 3"
+        }
+        "1" "Limit Teams"
+        {
+                  "1" "Des..."			"rcon mp_limitteams 0"
+                  "2" "Ati..."					"rcon mp_limitteams 2"
+        }
+        "1.5" "Airaccelerate"
+        {	
+            "1" "100 (Surf)" 		"rcon sv_airaccelerate 100"
+            "2" "10 (Padrao) " 		"rcon sv_airaccelerate 10"
+        }
+	}
+	"4" "Commands"
+	{
+		"1" "CT's Win" "rcon terminate_round ct au;exec admin/ctwin.cfg"
+		"1" "TR's Win" "rcon terminate_round ob t;exec admin/terwin.cfg"
+		"1" "Draw" "rcon terminate_round dr;exec admin/ndwin.cfg"
+		"1" "Restartround" "rcon sv_restartround 1"
+	}
+    "2" "Admin Logon" "exec admin/say.cfg"
+}
+"1.2" "Admin Menu"
+{
+	"3" "Msg Binds"
+	{
+		"@" "Outros Binds"
+		{
+            "2" "Latio = 3 num"				"exec admin/latio_r.cfg"
+            "1" "Cacarejou = 2 num"			"exec admin/cacarejou_r.cfg"
+            "3" "Fudeu = 4 num"				"exec admin/fude_r.cfg"
+            "4" "Riso Bruxa = 5 num"			"exec admin/riso_B_r.cfg"
+            "5" "Riso Monstro = 6 num"			"exec admin/riso_M_r.cfg"
+            "?" "EeeOoo = * num" 			"exec admin/eeeooo_r.cfg"
+            "?" "Medo = 9 num" 				"exec admin/medo_r.cfg"
+            "?" "Noob = + num" 				"exec admin/noob_r.cfg"
+            "?" "Sinistro = - num" 				"exec admin/terror_r.cfg"
+		}
+        "1" "Menu de Messages = / num" "bind KP_SLASH amx_msgmenu"
+        "1" "Microfone OFF = Del num"		"exec admin/alltalk2_r.cfg"
+        "2" "Microfone ON = Enter num"		"exec admin/alltalk_r.cfg"
+        "1" "Doidao = 7 num"			"exec admin/admin1_r.cfg"
+        "2" "Doidao, Kill = 8 num"			"exec admin/admin2_r.cfg"
+        "2" "Nice = 1 num"				"exec admin/nice_r.cfg"
+        "3" "Objetivo = 0 num" 			"exec admin/objetivo_r.cfg"
+        "2" "Deactivate Menu" "exec admin/msgb.cfg"
+	}
+    "0" "Messages 1"
+    {
+		"0" "Admin ON" 			"exec admin/administration.cfg"
+		"4" "Completar SV"			"exec admin/chamar.cfg"
+        "#" "Live Sem Restart Round" "exec admin/live3.cfg"
+        "#" "Live Com Restart Round" "exec admin/live.cfg"
+        "5" "All spec" 			"exec admin/start.cfg"
+        "6" "Tatica" 				"exec admin/tatica.cfg"
+        "7" "Restart"				"exec admin/restart.cfg"
+    }
+    "?" "Messages 2"
+    {
+		"2" "Spec CT"			"exec admin/spec1.cfg"
+		"2" "Spec T"			"exec admin/spec2.cfg"
+        "?" "Md3 Start" "exec admin/md3.cfg"
+        "2" "CT Win" "exec admin/ctwin.cfg"
+        "2" "TR Win" "exec admin/terwin.cfg"
+        "3" "Empate" "exec admin/ndwin.cfg"
+    }
+    "5" "Configurations"
+    {
+        "3" "MIX" 			"exec admin/mix.cfg"
+        "4" "CPL" 			"exec admin/cpl.cfg"
+        "5" "4FUN" 			"exec admin/4fun.cfg"
+        "2" "ClanBase(cf)"             "exec admin/cb_cs.cfg"
+        "3" "Addons [CFG] "			"exec admin/game_o.cfg"
+    }
+	"#" "Masks"
+	{
+        "7" "Activate Normal = Bind" 			"exec admin/bindmix.cfg"
+        "6" "Des... Normal = Bind" 		"exec admin/bindmix2.cfg"
+        "2" "Activate Mix = Bind"  "exec admin/bindmix3.cfg"
+        "2" "Des... Mix = Bind"  "exec admin/bindmix4.cfg"
+	}
+}
+"1.3" "Player Menu"
+{
+	"2" "Msg Team"
+	{
+		MAP cs_siege "1" "#Cstrike_siege"
+		{
+			"1" "#Cstrike_take_underground"		"say_team Take the underground!"
+			"2" "#Cstrike_enemy_garage" 		"say_team Enemy in parking garage!"
+			"3" "#Cstrike_rush_hostage_room"   	"say_team Rush the hostage room!"
+			"4" "#Cstrike_snipers_watch_out" 	"say_team Snipers! Watch out!"
+			"5" "#Cstrike_take_upper_route"  	"say_team Take the upper route!"
+		}
+	
+		MAP de_train "1" "#Cstrike_train"
+		{
+			"1" "#Cstrike_rush_trainyard" 		"say_team Rush the trainyard bomb site!"
+			"2" "#Cstrike_rush_enclosed"		"say_team Rush the enclosed bomb site!"
+			"3" "#Cstrike_flank_them"   		"say_team Flank them!"
+			"4" "#Cstrike_bomb_site_secure"  	"say_team Bomb site secure!"
+			"5" "#Cstrike_lend_me_blaster"  	"say_team Lend me your blaster!"
+		}
+	
+		MAP de_vertigo "1" "#Cstrike_vertigo"
+		{
+			"1" "#Cstrike_rush_upper_level" 	"say_team Rush the upper level!"
+			"2" "#Cstrike_rush_lower_level" 	"say_team Rush the lower level!"
+			"3" "#Cstrike_flank_them"   		"say_team Flank them!"
+			"4" "#Cstrike_snipers_watch_out"	"say_team Snipers! Watch out!"
+			"5" "#Cstrike_bomb_site_secure"  	"say_team Bomb site secure"
+		}
+	
+		MAP de_prodigy "1" "#Cstrike_prodigy"
+		{
+			"1" "#Cstrike_rush_to_pipes" 		"say_team Rush to the pipes bomb site!"
+			"2" "#Cstrike_rush_to_lab" 		"say_team Rush to the lab!"
+			"3" "#Cstrike_take_the hallway"   	"say_team Take the hallway!"
+			"4" "#Cstrike_flank_them"		"say_team Flank them!"
+			"5" "#Cstrike_take_the_apc"  		"say_team Take the APC route!"
+		}
+	
+		MAP de_aztec "1" "#Cstrike_aztec"
+		{
+			"1" "#Cstrike_take_bridge"		"say_team Take the bridge!"
+			"2" "#Cstrike_enemy_at_bomb_site" 	"say_team Narby, enemy at bomb site!"
+			"3" "#Cstrike_rush_to_bomb_site"   	"say_team Rush to the bomb site!"
+			"4" "#Cstrike_bomb_site_secure"		"say_team Bomb site secure!"
+			"5" "#Cstrike_take_water_route"  	"say_team Take the water route!"
+		}
+	
+		MAP de_inferno "1" "#Cstrike_inferno"
+		{
+			"1" "#Cstrike_take_bridge"		"say_team Take the bridge!"
+			"2" "#Cstrike_enemy_at_bomb_site"	"say_team Enemy at bomb site!"
+			"3" "#Cstrike_rush_to_bomb_site"	"say_team Rush to the bomb site!"
+			"4" "#Cstrike_bomb_site_secure"		"say_team Bomb site secure!"
+			"5" "#Cstrike_take_water_route"		"say_team Take the water route!"
+		}
+	
+		MAP cs_office "1" "#Cstrike_office"
+		{
+			"1" "#Cstrike_take_back_route"		"say_team Take the back route!"
+			"2" "#Cstrike_rush_to_hostages"		"say_team Rush to the hostages!"
+			"3" "#Cstrike_do_it_for_manilov"	"say_team Do it for Manilov!"
+			"4" "#Cstrike_take_front_route"		"say_team Take the front route!"
+			"5" "#Cstrike_flank_them"		"say_team Flank them!"
+		}
+	
+		MAP cs_backalley "1" "#Cstrike_backalley"
+		{
+			"1" "#Cstrike_flank_them"		"say_team Flank them!"
+			"2" "#Cstrike_enemy_overhead" 		"say_team Enemy overhead!"
+			"3" "#Cstrike_rush_to_hostages"		"say_team Rush to the hostages!"
+			"4" "#Cstrike_go_you_blaster"		"say_team Go you blaster!"
+			"5" "#Cstrike_taking_heavy_fire"	"say_team Taking heavy blaster fire!"
+		}
+	
+		MAP cs_747 "1" "#Cstrike_747"
+		{
+			"1" "#Cstrike_rush_the_plane"		"say_team Rush the plane!"
+			"2" "#Cstrike_meet_in_terminal"		"say_team Meet in the terminal"
+			"3" "#Cstrike_enemy_outside_plane"	"say_team Enemy outside plane!"
+			"4" "#Cstrike_enemy_in_cargo"  		"say_team Enemy in cargo hold!"
+			"5" "#Cstrike_flank_them"		"say_team Flank them!"
+		}
+	
+		MAP as_oilrig "1" "#Cstrike_oilrig"
+		{
+			"1" "#Cstrike_rush_to_chopper" 		"say_team Rush to the chopper!"
+			"2" "#Cstrike_to_the_elevator" 		"say_team To the elevator!"
+			"3" "#Cstrike_vip_spotted"   		"say_team VIP spotted!"
+			"4" "#Cstrike_sniper_spotted"  		"say_team Sniper spotted! Look out!"
+			"5" "#Cstrike_protect_the_vip"  	"say_team Protect the VIP!"
+		}
+	
+		MAP cs_assault "1" "#Cstrike_assault"
+		{
+			"1" "#Cstrike_rush_the_building" 	"say_team Rush the building!"
+			"2" "#Cstrike_take_the_vents" 		"say_team Take the vents!"
+			"3" "#Cstrike_enemy_in_vents"   	"say_team Enemy in vents!"
+			"4" "#Cstrike_rush_hostage_room"	"say_team Rush the hostage room!"
+			"5" "#Cstrike_team_regroup"  		"say_team Team! Regroup!"
+		}
+	
+		MAP de_nuke "1" "#Cstrike_nuke"
+		{
+			"1" "#Cstrike_go_to_main_hall" 		"say_team Go to the main hall"
+			"2" "#Cstrike_go_to_basement" 		"say_team Go to basement"
+			"3" "#Cstrike_flank_yard"   		"say_team Flank Yard"
+			"4" "#Cstrike_flank_comm_room"  	"say_team Flank comm-room"
+			"5" "#Cstrike_at_entrance_hall"  	"say_team At the entrance hall"
+		}
+	
+		MAP de_cbble "1" "#Cstrike_cbble"
+		{
+			"1" "#Cstrike_heading_central_hall" 	"say_team Heading to central hallway!"
+			"2" "#Cstrike_heading_underpass" 	"say_team Heading to underpass!"
+			"3" "#Cstrike_sniper_in_tower"   	"say_team Enemy in sniper tower!"
+			"4" "#Cstrike_bomb_target_secure"  	"say_team Bomb target areas secure"
+			"5" "#Cstrike_guard_start_area"  	"say_team Guard start area"
+		}
+	
+		MAP de_dust "1" "#Cstrike_dust"
+		{
+			"1" "#Cstrike_heading_to_hallway" 	"say_team Heading to hallway!"
+			"2" "#Cstrike_heading_underpass" 	"say_team Heading to underpass!"
+			"3" "#Cstrike_bomb_a_secure"   		"say_team Bomb area A secure"
+			"4" "#Cstrike_bomb_b_secure"  		"say_team Bomb area B secure"
+			"5" "#Cstrike_sniper_at_underpass"  	"say_team Snipers at underpass"
+		}
+	
+		MAP de_dust2 "1" "#Cstrike_dust2"
+		{
+			"1" "#Cstrike_heading_to_hallway" 	"say_team Heading to hallway!"
+			"2" "#Cstrike_heading_underpass" 	"say_team Heading to underpass!"
+			"3" "#Cstrike_bomb_a_secure"   		"say_team Bomb area A secure"
+			"4" "#Cstrike_bomb_b_secure"  		"say_team Bomb area B secure"
+			"5" "#Cstrike_heading_to_tunnel"  	"say_team Heading to tunnel!"
+		}
+	
+		MAP cs_italy "1" "#Cstrike_italy"
+		{
+			"1" "#Cstrike_meet_at_market" 		"say_team Meet at the market!"
+			"2" "#Cstrike_rush_the_house" 		"say_team Rush through the house!"
+			"3" "#Cstrike_head_to_wine_cellar"   	"say_team Head for the wine cellar!"
+			"4" "#Cstrike_rush_long_passage"  	"say_team Rush the long passage!"
+			"5" "#Cstrike_hostages_rescued"  	"say_team Hostages being rescued!"
+		}
+	
+		MAP cs_estate "1" "#Cstrike_estate"
+		{
+			"1" "#Cstrike_go_to_sewer" 		"say_team Go to the sewer!"
+			"2" "#Cstrike_enemy_on_first_story" 	"say_team Enemy on first story!"
+			"3" "#Cstrike_enemy_on_sec_story"   	"say_team Enemy on second story!"
+			"4" "#Cstrike_enemy_in_back"  		"say_team Enemy in back of house!"
+			"5" "#Cstrike_enemy_in_front"  		"say_team Enemy in front of house!"
+		}
+		
+		MAP as_tundra "1" "#Cstrike_tundra"
+		{
+			"1" "#Cstrike_use_sec_route" 		"say_team Use the secondary route!"
+			"2" "#Cstrike_use_primary_route" 	"say_team Use the primary route!"
+			"3" "#Cstrike_snipers_watch_out"	"say_team Snipers! Look out!"
+			"4" "#Cstrike_rush_to_apc"  		"say_team Rush to the APC!"
+			"5" "#Cstrike_rush_to_chopper"  	"say_team Rush to the chopper!"
+		}	
+		
+		MAP cs_militia "1" "#Cstrike_militia"
+		{
+			"1" "#Cstrike_meet_at_garage" 		"say_team Meet at garage vent!"
+			"2" "#Cstrike_meet_front_house" 	"say_team Meet at front of house!"
+			"3" "#Cstrike_meet_backyard"   		"say_team Meet in backyard!"
+			"4" "#Cstrike_enemy_topside"  		"say_team Enemy is topside!"
+			"5" "#Cstrike_enemy_sewers"  		"say_team Enemy is in sewers!"
+		}
+		"2" "Reconhecido"	"say_team Positivo, Captei a MENSAGEM!"
+		"3" "Negativo"		"say_team Negativo, sem Chance!"
+		"4" "Vamos Rapido"			"say_team Vamos rapido com isso. Go Go Go! "
+		"5" "Meu Jogo"		"say_team Vamos do meu modo de JOGAR -- OK!!!"
+		"6" "Preciso Help"		"say_team Presiso de Help que a coisa ficou PRETA!"
+		"7" "Area Segura"	"say_team Area ta Domindada, olhem o outro lado, OK!"
+		"9" "Sniper na Area" 	"say_team Cuidado!!! Sniper na AREA!"
+	}
+	"1" "Super Heros"
+	{
+		"1" "Binds"
+			{
+				"7" "Bind Power1, Caps Lock"		"exec admin/herobind1_.cfg"
+				"8" "Bind Power2, v"		"exec admin/herobind2_.cfg"
+				"9" "Bind Power3, F8"		"exec admin/herobind3_.cfg"
+				"^" "Activate All Binds"		"exec admin/hero_.cfg"
+				"10" "Deactivate Binds"		"exec admin/hero2_.cfg"
+			}
+		"1" "Activate Help"		"say /helpon"
+		"2" "Deactivate Help"		"say /helpoff"
+		"3" "Clean Heros"		"say /clearpowers"
+		"4" "Players Heros "		"say /playerskills"
+		"5" "Choose Menu"		"say /showmenu"
+		"6" "Help Heros"			"say /help"
+	}
+    "1" "Binds"
+    {
+        "2" "Fast Change"
+        {
+            "1" "Activate = Caps Lock" "exec admin/fast.cfg"
+            "1" "Des... = Caps Lock" "exec admin/fast2.cfg"
+        }
+        "3" "Walk Continue"
+        {
+        "2" "Activate = SHIFT" "exec admin/walk.cfg"
+        "2" "Des... = SHIFT" "exec admin/walk2.cfg"
+        }
+        "5" "Throw He Granade"
+        {
+        "1" "Activate = v" "exec admin/lancer_HE.cfg"
+        "2" "Des... = v" "exec admin/lancer_HE2.cfg"
+        }
+        "1" "Demo"
+        {
+            "4" "Gravar/Parar = F11" "bind f11 demo;exec admin/demo2.cfg"
+            "5" "Deactivate " "exec admin/demo4.cfg"
+        }
+        "0" "Jedi Grab"
+        {
+            "1" "Activate = Mouse3" "bind mouse3 +grab"
+            "2" "Des... = Mouse3" "exec admin/grab.cfg"
+        }
+        "@" "Info" "exec admin/ativar_alias.cfg"
+    }
+    "2" "Monitor NET"
+    {
+        "1" "Net Graph"
+        {
+            "1" "Posicao"
+            {
+                "3" " Net Gra... Centro" "net_graphpos 2"
+                "4" " Net Gra... Direita" "net_graphpos 1"
+                "5" " Net Gra... Esquerda" "net_graphpos 3"
+            }
+            "1" "Net Graph 3"	 "net_graph 3"
+            "1" "Net Graph 2"	 "net_graph 2"
+            "1" "Net Graph 1"	 "net_graph 1"
+        }
+        "2" "Show FPS" "cl_showfps 1"
+        "2" "Deactivate" "net_graph 0; cl_showfps 0"
+    }
+	"?" "Others"
+	{
+        "2" "Demo"
+        {
+            "#" "Iniciate" "messagemode record"
+            "#" "Stop Demo" "stop"
+        }
+        "2" "Info" "exec admin/info_3.cfg"
+        "2" "Kill Yourself!" "kill"
+	}
+	"4" "Change Team" "chooseteam"
+	"4" "Drop Weapon" 	"drop"
+}
+"2" "Settings"
+{
+    "1" "Crosshair"
+    {
+        "1" "Color"
+        {
+            "1" "Cor Green" "exec admin/miraVerde.cfg"
+            "2" "Cor Red" "exec admin/miraVermelha.cfg"
+            "3" "Cor Blue" "exec admin/miraAzul.cfg"
+            "4" "Cor Yellow" "exec admin/miraAmarela.cfg"
+            "5" "Cor Blue Bright" "exec admin/miraAzulClaro.cfg"
+        }
+        "2" "Size"
+        {
+            "1" "Big" "cl_crosshair_size large"
+            "2" "Middle" "cl_crosshair_size medium"
+            "3" "Small" "cl_crosshair_size small"
+            "4" "Auto-Size" "cl_crosshair_size auto"
+        }
+        "3" "Moving"
+        {
+        "1" "Activate " "cl_dynamiccrosshair 1"
+        "2" "Deactivate" "cl_dynamiccrosshair 0"
+        }
+        "4" "Transculent"
+        {
+        "1" "ON" "cl_crosshair_translucent 1"
+        "2" "OFF" "cl_crosshair_translucent 0"
+        }
+        "9" "Zoom Sensitivity" 	"messagemode zoom_sensitivity_ratio"
+        "10" "Mouse Sensitivity" "messagemode sensitivity"
+    }
+    "4" "Weapon Change"
+    {
+        "1" "Quick" "hud_fastswitch 1"
+        "2" "Normal" "hud_fastswitch 0"
+    }
+    "7" "Players Names" 
+    {
+        "1" "Center Screen" "hud_centerid 1"
+        "2" "Left Screen" "hud_centerid 0"
+    }
+    "2" "Menu Type"
+    {
+        "1" "VGUI"	 "setinfo _vgui_menus 1"
+        "2" "Text" 	"setinfo _vgui_menus 0"
+    }
+    "5" "Radar Type"
+    {
+        "1" "Transculent" "cl_radartype 0"
+        "2" "Solid" "cl_radartype 1"
+    }
+    "7" "Take Weapons"
+    {
+        "1" "At catch" "setinfo _cl_autowepswitch 1"
+        "2" "At Select" "setinfo _cl_autowepswitch 0"
+    }
+    "3" "Change Name" "messagemode name"
+}
+"0" "Others"
+{
+    "4" "Current Map" 		"say currentmap"
+    "1" "Current Time"		"say thetime"
+    "5" "My Rank"	"say /rank"
+    "6" "Stats" 		"say /stats"
+    "7" "See Top15" 		"say /top15"
+}
+"1" "Quick Help"
+{
+	"1" "MAP Description"		"!MAPBRIEFING"
+	"2" "Time Remaining" 		"timeleft"
+	"2" "Next Map"		"say nextmap"
+	"4" "Left Hand Weapon" 		"cl_righthand 0"
+	"5" "Right Hand Weapon" 		"cl_righthand 1"
+}
+"0" "Sair" "slot10"
+//
+//Este commandmenu faz parte do Addons Muilt-Mod
+//Ha alguns bugs, como os treinamentos, se vc executar os de clan de um nivel mais alto duas vezes o jogo da erro, fora esses e o com o sXe e HL-Guard, onde os binds nao funcionam.
+// - 18/12/2008: Pistola automatica Consertada nao totalmente mais da para segurar granadas e plantar c4, com um leve erro mais raro e pequeno, nada de mais!
+// Versao atual, deste menu sofreu a remocao da pistola automarica e algumas outras coisas, devido a serem cheats de console.
+//Funciona perfeitamente na resolução minima de de 640x480
+//Funciona 100% utilizado com o AMX MOD X.
+//Algumas coisas nao funcionam com o AMX MOD, como o Menu de Messages, etc...
+//E menos da metade da metade funciona sem AMX MOD X ou AMX MOD.
