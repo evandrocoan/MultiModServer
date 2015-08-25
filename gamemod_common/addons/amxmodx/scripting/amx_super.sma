@@ -788,9 +788,9 @@ public plugin_init()
 	immune_access_listen = register_cvar("listen_immune_access","d");
 	
 	// Execute main configuration file (amx_super.cfg)
-	new configsDir[64]
+	/*new configsDir[64]
 	get_configsdir(configsDir, 63)
-	server_cmd("exec %s/amx_super.cfg", configsDir) 
+	server_cmd("exec %s/amx_super.cfg", configsDir) */
 	
 	// Variables Set
 	maxplayers = get_maxplayers()
