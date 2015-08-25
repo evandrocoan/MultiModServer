@@ -81,13 +81,6 @@ public admin_showthem(id,level,cid) {
 	return PLUGIN_HANDLED 
 } 
 
-public plugin_cfg()
-{
-	new configs[128]
-	get_configsdir(configs, 127)
-	server_cmd("exec %s/custommenuitems.cfg", configs)
-}
-
 public plugin_init() {  
 	register_plugin("Server Rules","1.4","DoubleTap")  
 	register_dictionary("adminhelp.txt")

@@ -418,7 +418,7 @@ public CommandChangeCvar(id)
 	if (equali(Args,"!cancel",7))
 	{
 		// The client didn't want to change this cvar.
-		client_print(id,print_chat,"[AMXX] Cvar nao trocado.");
+		client_print(id,print_chat,"[AMXX] Cvar not changed.");
 	}
 	else
 	{
@@ -427,7 +427,7 @@ public CommandChangeCvar(id)
 		new pointer=CurrentCvar[id];
 		set_pcvar_string(CurrentCvar[id],Args);
 		
-		client_print(id,print_chat,"[AMXX] Cvar ^"%s^" trocado para ^"%s^"",CurrentCvarName[id],Args);
+		client_print(id,print_chat,"[AMXX] Cvar ^"%s^" changed to ^"%s^"",CurrentCvarName[id],Args);
 		
 		// Copy of admincmd's global output.
 		
@@ -517,7 +517,7 @@ public CvarMenuSelection(id, menu, item)
 		
 		if (CurrentCvar[id]==0) // This should never happen, but just incase..
 		{
-			client_print(id,print_chat,"[AMXX] Avia um erro que foi extraido do Cvar. (Name=^"%s^")",CvarName);
+			client_print(id,print_chat,"[AMXX] There was an error extracting the cvar pointer. (Name=^"%s^")",CvarName);
 			return PLUGIN_HANDLED;
 		}
 		// TODO: ML this
@@ -532,7 +532,7 @@ public CvarMenuSelection(id, menu, item)
 			}
 		}
 		copy(CurrentCvarName[id],sizeof(CurrentCvarName[])-1,CvarName);
-		client_print(id,print_chat,"[AMXX] Digite um novo valor para %s, ou escreva ( !cancel ) para cancelar.",CvarName);
+		client_print(id,print_chat,"[AMXX] Type in the new value for %s, or !cancel to cancel.",CvarName);
 		client_cmd(id,"messagemode amx_changecvar");
 		
 		menu_destroy(menu);
@@ -663,12 +663,12 @@ public SpecificCommandHandler(id,menu,item)
 		menu_item_getinfo(menu, item, Dummy[0], CurrentCommand[id], sizeof(CurrentCommand[])-1,"",0,Dummy[0]);
 		if (CurrentCommand[id][0]==0) // This should never happen, but just incase..
 		{
-			client_print(id,print_chat,"[AMXX] Avia um erro que foi extraido do comando.");
+			client_print(id,print_chat,"[AMXX] There was an error extracting the command name.");
 			return PLUGIN_HANDLED;
 		}
 		// TODO: ML this
 		
-		client_print(id,print_chat,"[AMXX] Digite o valor para %s, ou digite ( !cancel ) para cancelar.",CurrentCommand[id]);
+		client_print(id,print_chat,"[AMXX] Type in the parameters for %s, or !cancel to cancel.",CurrentCommand[id]);
 		client_cmd(id,"messagemode amx_executecmd");
 		
 		menu_destroy(menu);
@@ -680,7 +680,7 @@ public SpecificCommandHandler(id,menu,item)
 		menu_item_getinfo(menu, item, Dummy[0], CurrentCommand[id], sizeof(CurrentCommand[])-1,"",0,Dummy[0]);
 		if (CurrentCommand[id][0]==0) // This should never happen, but just incase..
 		{
-			client_print(id,print_chat,"[AMXX] Avia um erro que foi extraido do comando.");
+			client_print(id,print_chat,"[AMXX] There was an error extracting the command name.");
 			return PLUGIN_HANDLED;
 		}
 		// TODO: ML this
@@ -697,7 +697,7 @@ public SpecificCommandHandler(id,menu,item)
 		menu_destroy(menu);
 		
 		client_cmd(id,"%s",CurrentCommand[id]);
-		client_print(id,print_chat,"[AMXX] Comando ^"%s^" Executado sem parametros",CurrentCommand[id]);
+		client_print(id,print_chat,"[AMXX] Command ^"%s^" executed with no parameters",CurrentCommand[id]);
 		
 		return PLUGIN_HANDLED;
 	}
@@ -777,7 +777,7 @@ public CommandExecuteCommand(id)
 	else
 	{
 		// TODO: ML
-		client_print(id,print_chat,"[AMXX] Comando ^"%s^" executado com ^"%s^"",CurrentCommand[id],Args);
+		client_print(id,print_chat,"[AMXX] Command ^"%s^" executed with ^"%s^"",CurrentCommand[id],Args);
 
 		// Now redraw the menu for the client
 		if (CurrentMenuFunction[id]!=-1 && callfunc_begin_i(CurrentMenuFunction[id])==1)

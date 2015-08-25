@@ -54,7 +54,7 @@ new PLUGINNAME[] = "AMX Mod X"
 #define ADMIN_NAME		(1<<4)
 
 new g_cmdLoopback[16]
-
+new bool:g_CaseSensitiveName[33];
 
 // pcvars
 new amx_mode;
@@ -110,7 +110,6 @@ public plugin_init()
 	
 	server_cmd("exec %s/amxx.cfg", configsDir)	// Execute main configuration file
 	server_cmd("exec %s/sql.cfg", configsDir)
-	//server_cmd("exec %s/mod.cfg", configsDir)
 
 	// Create a vector of 5 cells to store the info.
 	//AdminList=vector_create(5);
@@ -123,7 +122,10 @@ public plugin_init()
 	loadSettings(configsDir)					// Load admins accounts
 #endif
 }
-
+public client_connect(id)
+{
+	g_CaseSensitiveName[id] = false;
+}
 public addadminfn(id, level, cid)
 {
 	if (!cmd_access(id, level, cid, 3))
@@ -629,6 +631,8 @@ getAccess(id, name[], authid[], ip[], password[])
 	static AuthData[44];
 	static Password[32];
 	
+	g_CaseSensitiveName[id] = false;
+
 	Count=admins_num();
 	for (new i = 0; i < Count; ++i)
 	{
@@ -663,18 +667,39 @@ getAccess(id, name[], authid[], ip[], password[])
 		} 
 		else 
 		{
-			if (Flags & FLAG_TAG)
+			if (Flags & FLAG_CASE_SENSITIVE)
 			{
-				if (containi(name, AuthData) != -1)
+				if (Flags & FLAG_TAG)
+				{
+					if (contain(name, AuthData) != -1)
+					{
+						index = i
+						g_CaseSensitiveName[id] = true
+						break
+					}
+				}
+				else if (equal(name, AuthData))
+				{
+					index = i
+					g_CaseSensitiveName[id] = true
+					break
+				}
+			}
+			else
+			{
+				if (Flags & FLAG_TAG)
+				{
+					if (containi(name, AuthData) != -1)
+					{
+						index = i
+						break
+					}
+				}
+				else if (equali(name, AuthData))
 				{
 					index = i
 					break
 				}
-			}
-			else if (equali(name, AuthData))
-			{
-				index = i
-				break
 			}
 		}
 	}
@@ -806,11 +831,20 @@ public client_infochanged(id)
 	get_user_name(id, oldname, 31)
 	get_user_info(id, "name", newname, 31)
 
-	if (!equali(newname, oldname))
+	if (g_CaseSensitiveName[id])
 	{
-		accessUser(id, newname)
+		if (!equal(newname, oldname))
+		{
+			accessUser(id, newname)
+		}
 	}
-
+	else
+	{
+		if (!equali(newname, oldname))
+		{
+			accessUser(id, newname)
+		}
+	}
 	return PLUGIN_CONTINUE
 }
 
