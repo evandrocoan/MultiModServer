@@ -35,7 +35,7 @@ if( $_SESSION[ 'screen_width' ] < 800 )
             <a href="http://www.addons.zz.mu/"><b>Home Page</b></a>
         </div>
         <div class="tableColumn " style="border-bottom:double; padding:5px; border-color:#232323; ">
-            <a href="https://github.com/Addonszz/Addons_zz.mu/issues"><b>Forum - Questions - Request Features</b></a>
+            <a href="https://github.com/Addonszz/AddonsMultiMod/issues"><b>Forum - Questions - Request Features</b></a>
         </div>
     </div>
     <div id="tableRow">
@@ -43,7 +43,7 @@ if( $_SESSION[ 'screen_width' ] < 800 )
             <a href="#installation"><b>Installation</b></a>
         </div>
         <div class="tableColumn " style="border-right:double; border-color:#232323; padding:5px; ">
-            <a href="https://github.com/Addonszz/Addons_zz.mu/releases"><b>Downloads</b></a>
+            <a href="https://github.com/Addonszz/AddonsMultiMod/releases"><b>Downloads</b></a>
         </div>
         <div class="tableColumn " align="center" style="padding:5px; border-color:#232323; ">
             <a href="https://github.com/Addonszz"><b>Contact</b></a>
@@ -60,13 +60,13 @@ EOD;
             <a href="http://www.addons.zz.mu/"><b>Home Page</b></a>
         </div>
         <div class="tableColumn " style="border-right:double; padding:5px; border-color:#232323;">
-            <a href="https://github.com/Addonszz/Addons_zz.mu/issues"><b>Forum - Questions - Request Features</b></a>
+            <a href="https://github.com/Addonszz/AddonsMultiMod/issues"><b>Forum - Questions - Request Features</b></a>
         </div>
         <div class="tableColumn " style="border-right:double; padding:5px; border-color:#232323;">
             <a href="#installation"><b>Installation</b></a>
         </div>
         <div class="tableColumn " style="border-right:double; padding:5px; border-color:#232323;">
-            <a href="https://github.com/Addonszz/Addons_zz.mu/releases"><b>Downloads</b></a>
+            <a href="https://github.com/Addonszz/AddonsMultiMod/releases"><b>Downloads</b></a>
         </div>
         <div class="tableColumn " style="padding:5px; border-color:#232323;">
             <a href="https://github.com/Addonszz"><b>Contact</b></a>
@@ -84,7 +84,7 @@ EOD;
 
 $lang[ 'PRIMEIRA_COLUNA' ] = <<<EOD
 <p><span style="font-size:40px">See more progress at:</span>
-<p><a href="https://github.com/Addonszz/Addons_zz">https://github.com/Addonszz/Addons_zz</a></p>
+<p><a href="https://github.com/Addonszz/AddonsMultiMod">https://github.com/Addonszz/AddonsMultiMod</a></p>
 </p>
 <p>Basic information on the latest version of <strong><font color="red"><u>Addons zz v2.0</u></font></strong>
     released on 12/08/2015: </p>
@@ -156,16 +156,16 @@ $lang[ 'PRIMEIRA_COLUNA' ] = <<<EOD
 adv_killstreak, countdown_exec, ...<br>
 * Total possible modification of available resources addons.
 
-<p><a href="https://github.com/Addonszz/Addons_zz/blob/master/gamemod_common/addons/amxmodx/configs/plugins.ini">See more info here.</a></p>
+<p><a href="https://github.com/Addonszz/AddonsMultiMod/blob/master/gamemod_common/addons/amxmodx/configs/plugins.ini">See more info here.</a></p>
 EOD;
 
 $lang[ 'SEGUNDA_COLUNA' ] = <<<EOF
 <p>It works in <a name="installation"><strong><font color="red"><u>Counter-Strike e Counter-Strike Condition Zero</u></font></strong></a>  updated.</p>
 
 <p><span style="font-size:66px">To install it</span><br>Download the binaries 
-<a href="https://github.com/Addonszz/Addons_zz/releases/download/v3.0/gamemod_common_plugins.zip">(gamemod_common_plugins.zip)</a>, 
-<a href="https://github.com/Addonszz/Addons_zz/releases/download/v3.0/gamemod_common_resources.zip">(gamemod_common_resources.zip)</a> 
-and the sources <a href="https://github.com/Addonszz/Addons_zz/archive/master.zip">(Source Code Zip)</a>, 
+<a href="https://github.com/Addonszz/AddonsMultiMod/releases/download/v3.0/gamemod_common_plugins.zip">(gamemod_common_plugins.zip)</a>, 
+<a href="https://github.com/Addonszz/AddonsMultiMod/releases/download/v3.0/gamemod_common_resources.zip">(gamemod_common_resources.zip)</a> 
+and the sources <a href="https://github.com/Addonszz/AddonsMultiMod/archive/master.zip">(Source Code Zip)</a>, 
 then just unzip and put the content of cstrike/czero and gamemod_common at your Counter-Strike's cstrike/czero folder, replacing existents files. 
 The Counter-Strike's cstrike/czero folder usually is at:</p>
 

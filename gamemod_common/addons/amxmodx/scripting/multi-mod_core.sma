@@ -186,7 +186,7 @@
  ****************************************************************************************
  *
  * For any problems with this plugin visit
- * https://github.com/Addonszz/Addons_zz/issues
+ * https://github.com/Addonszz/AddonsMultiMod/issues
  * for support.
  *
  ****************************************************************************************

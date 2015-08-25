@@ -35,7 +35,7 @@ $lang[ 'MENU_PRINCIPAL' ] = $lang[ 'MENU_PRINCIPAL' ] . <<<EOD
             <a href="http://www.addons.zz.mu/"><b>Página Inicial</b></a>
         </div>
         <div class="tableColumn " style="border-bottom:double; padding:5px; border-color:#232323; ">
-            <a href="https://github.com/Addonszz/Addons_zz.mu/issues"><b>Fórum - Dúvidas - Requisitar Recursos</b></a>
+            <a href="https://github.com/Addonszz/AddonsMultiMod/issues"><b>Fórum - Dúvidas - Requisitar Recursos</b></a>
         </div>
     </div>
     <div id="tableRow">
@@ -43,7 +43,7 @@ $lang[ 'MENU_PRINCIPAL' ] = $lang[ 'MENU_PRINCIPAL' ] . <<<EOD
             <a href="#installation"><b>Instalação</b></a>
         </div>
         <div class="tableColumn " style="border-right:double; border-color:#232323; padding:5px; ">
-            <a href="https://github.com/Addonszz/Addons_zz.mu/releases"><b>Downloads</b></a>
+            <a href="https://github.com/Addonszz/AddonsMultiMod/releases"><b>Downloads</b></a>
         </div>
         <div class="tableColumn " align="center" style="padding:5px; border-color:#232323; ">
             <a href="https://github.com/Addonszz"><b>Contato</b></a>
@@ -60,13 +60,13 @@ $lang[ 'MENU_PRINCIPAL' ] = $lang[ 'MENU_PRINCIPAL' ] . <<<EOD
             <a href="http://www.addons.zz.mu/"><b>Página Inicial</b></a>
         </div>
         <div class="tableColumn " style="border-right:double; padding:5px; border-color:#232323;">
-            <a href="https://github.com/Addonszz/Addons_zz.mu/issues"><b>Fórum - Dúvidas - Requisitar Recursos</b></a>
+            <a href="https://github.com/Addonszz/AddonsMultiMod/issues"><b>Fórum - Dúvidas - Requisitar Recursos</b></a>
         </div>
         <div class="tableColumn " style="border-right:double; padding:5px; border-color:#232323;">
             <a href="#installation"><b>Instalação</b></a>
         </div>
         <div class="tableColumn " style="border-right:double; padding:5px; border-color:#232323;">
-            <a href="https://github.com/Addonszz/Addons_zz.mu/releases"><b>Downloads</b></a>
+            <a href="https://github.com/Addonszz/AddonsMultiMod/releases"><b>Downloads</b></a>
         </div>
         <div class="tableColumn " style="padding:5px; border-color:#232323;">
             <a href="https://github.com/Addonszz"><b>Contato</b></a>
@@ -84,7 +84,7 @@ EOD;
 
 $lang[ 'PRIMEIRA_COLUNA' ] = <<<EOD
 <p><span style="font-size:40px">Veja mais progresso em:</span>
-<p><a href="https://github.com/Addonszz/Addons_zz">https://github.com/Addonszz/Addons_zz</a></p>
+<p><a href="https://github.com/Addonszz/AddonsMultiMod">https://github.com/Addonszz/AddonsMultiMod</a></p>
 </p>
 <p>Notas básicas sobre a última versão do <strong><font color="red"><u>Addons zz v2.0</u></font></strong>
     lança no dia 16/08/2015:</p>
@@ -161,7 +161,7 @@ adv_killstreak, countdown_exec, ...<br>
 * Portando possível total modificação dos recursos
 disponíveis do addons.
 
-<p><a href="https://github.com/Addonszz/Addons_zz/blob/master/gamemod_common/addons/amxmodx/configs/plugins.ini">Veja mais informações aqui.</a></p>
+<p><a href="https://github.com/Addonszz/AddonsMultiMod/blob/master/gamemod_common/addons/amxmodx/configs/plugins.ini">Veja mais informações aqui.</a></p>
 EOD;
 
 $lang[ 'SEGUNDA_COLUNA' ] = <<<EOF
@@ -169,9 +169,9 @@ $lang[ 'SEGUNDA_COLUNA' ] = <<<EOF
 
 <p><span style="font-size:66px">Para instalá-lo</span><br>
 Baixar os binários 
-<a href="https://github.com/Addonszz/Addons_zz/releases/download/v3.0/gamemod_common_plugins.zip">(gamemod_common_plugins.zip)</a>, 
-<a href="https://github.com/Addonszz/Addons_zz/releases/download/v3.0/gamemod_common_resources.zip">(gamemod_common_resources.zip)</a>
-e as fontes <a href="https://github.com/Addonszz/Addons_zz/archive/master.zip">(Source Code Zip)</a>, 
+<a href="https://github.com/Addonszz/AddonsMultiMod/releases/download/v3.0/gamemod_common_plugins.zip">(gamemod_common_plugins.zip)</a>, 
+<a href="https://github.com/Addonszz/AddonsMultiMod/releases/download/v3.0/gamemod_common_resources.zip">(gamemod_common_resources.zip)</a>
+e as fontes <a href="https://github.com/Addonszz/AddonsMultiMod/archive/master.zip">(Source Code Zip)</a>, 
 e então basta descompactar e copiar o conteúdo da pasta cstrike/czero e gamemod_common para a sua pasta cstrike/czero do seu jogo, 
 substituindo os arquivos existentes. A pasta cstrike/czero do jogo geralmente fica em:</p>
 

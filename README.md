@@ -1,4 +1,4 @@
-![Addons zz](http://addons.zz.mu/Addons_zz.mu_600x107_github_painINmyASS3.png)
+![Addons zz](http://addons.zz.mu/Addons_zz.mu_600x107_github_painINmyASS4.png)
 
 The Addons zz is a Addons Multi-Mod and contains numerous mods and comes 
 standard configured for maximum performance and server control. 
@@ -44,8 +44,8 @@ knife_duel, amx_chicken, adv_killstreak, countdown_exec, ...
 #Install
 
 To install it, download the binaries 
-[(gamemod_common_plugins.zip)](https://github.com/Addonszz/Addons_zz/releases/download/v3.0/gamemod_common_plugins.zip), [(gamemod_common_resources.zip)](https://github.com/Addonszz/Addons_zz/releases/download/v3.0/gamemod_common_resources.zip) and the sources 
-[(Source Code Zip)](https://github.com/Addonszz/Addons_zz/archive/master.zip), 
+[(gamemod_common_plugins.zip)](https://github.com/Addonszz/AddonsMultiMod/releases/download/v3.0/gamemod_common_plugins.zip), [(gamemod_common_resources.zip)](https://github.com/Addonszz/AddonsMultiMod/releases/download/v3.0/gamemod_common_resources.zip) and the sources 
+[(Source Code Zip)](https://github.com/Addonszz/AddonsMultiMod/archive/master.zip), 
 then just unzip and put the content of gamemod_common_plugins, 
 gamemod_common_resources and gamemod_common at (Source Code Zip), 
 at your's Game Mod's folder like cstrike and czero, replacing existents files. 
