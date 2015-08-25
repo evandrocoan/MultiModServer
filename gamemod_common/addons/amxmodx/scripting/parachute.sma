@@ -117,8 +117,7 @@ public event_roundstart() {
 			has_parachute[id] = true
 		}
 	}
-	set_task( 3.0, "free_parachute" );
-		
+	free_parachute()
 }
 
 public event_roundend() {
@@ -228,13 +227,13 @@ public free_parachute() {
 		if( !is_user_connected( i ) ) return PLUGIN_CONTINUE
 		
 		if ( get_cvar_num( "para_free") == 1 ) {
-			client_print( i, print_chat, "%L", LANG_PLAYER, "para_admin_free" )
+			//client_print( i, print_chat, "%L", LANG_PLAYER, "para_admin_free" )
 			has_parachute[i] = true
 			
 			return PLUGIN_CONTINUE
 		}
 		if ( get_cvar_num("admin_parachute") == 1 && get_user_flags( i ) && ADMIN_LEVEL_A ) {
-			client_print( i, print_chat, "%L", LANG_PLAYER, "para_admin_free" )
+			//client_print( i, print_chat, "%L", LANG_PLAYER, "para_admin_free" )
 			has_parachute[i] = true
 			
 			return PLUGIN_CONTINUE
@@ -322,7 +321,7 @@ public client_PreThink(id)
 					}
 					if (para_ent[id] > 0)
 					{
-						velocity[2] = (velocity[2] + 40.0 < -100) ? velocity[2] + 40.0 : -100.0
+						velocity[2] =  -20.0
 						entity_set_vector(id, EV_VEC_velocity, velocity)
 						if (entity_get_float(para_ent[id], EV_FL_frame) < 0.0 || entity_get_float(para_ent[id], EV_FL_frame) > 254.0)
 						{
