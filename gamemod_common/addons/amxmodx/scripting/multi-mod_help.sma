@@ -30,7 +30,7 @@ public client_putinserver( id )
         return
     }
 
-    set_task( 50.0, "dispInfo", id )
+    set_task( 50.1, "dispInfo", id )
 }
 
 public dispInfo( id )

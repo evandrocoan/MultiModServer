@@ -52,6 +52,7 @@ public client_putinserver(id)
 		return
 	
 	set_task(65.0, "dispInfo", id)
+	set_task(85.0, "dispInfo2", id)
 }
 
 public client_disconnect(id)
@@ -110,8 +111,6 @@ public cmdHelp(id, level, cid)
 #if defined DISPLAY_MSG
 public dispInfo(id)
 {
-	client_print(id, print_chat, "%L", id, "TYPE_HELP_MULTIMOD")
-	
 	new nextmap[32]
 	get_cvar_string("amx_nextmap", nextmap, 31)
 	
@@ -126,5 +125,10 @@ public dispInfo(id)
 			client_print(id, print_chat, "%L", id, "TIME_INFO_2", nextmap)
 		}
 	}
+}
+
+public dispInfo2(id)
+{
+	client_print(id, print_chat, "%L", id, "TYPE_HELP_MULTIMOD")
 }
 #endif
