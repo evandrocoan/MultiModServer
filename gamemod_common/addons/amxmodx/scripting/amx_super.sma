@@ -350,7 +350,7 @@ stock get_team_target(arg[],players[32],&pnum,skipMode=GET_TEAM_TARGET_SKIPNOBOD
 ///// You may edit some of these Defines (not all)
 ///
 */ 
- 
+#define TASK_SPAWN_PROTECTION_ID 1337
 #define ADMIN_CHECK ADMIN_KICK  // For Admin Check
 #define LOADINGSOUNDS 14	// Number of loading songs
 #define VoiceCommMute 1		// 0 = Disabled | 1 = Voicecomm muteing enabled. 
@@ -2186,10 +2186,11 @@ public sp_on(id)
 	return PLUGIN_CONTINUE
 }
 
+new SpawnProtection[512]
+
 public protect(id) 
 {
 	new Float:SPTime = get_pcvar_float(sv_sptime)
-	new SPSecs = get_pcvar_num(sv_sptime)
 	new FTime = get_pcvar_num(mp_freezetime)
 	new SPShell = get_pcvar_num(sv_spshellthick)
 	fm_set_user_godmode(id, 1)
@@ -2201,7 +2202,7 @@ public protect(id)
 			fm_set_rendering(id, kRenderFxGlowShell, 255, 0, 0, kRenderNormal, SPShell)
 		}
 		
-		if(get_user_team(id) == 2)
+		if(get_user_team(id) == 2) 
 		{
 			fm_set_rendering(id, kRenderFxGlowShell, 0, 0, 255, kRenderNormal, SPShell)
 		}
@@ -2209,23 +2210,42 @@ public protect(id)
 	
 	if(get_pcvar_num(sv_spmessage) == 1)
 	{
-		
-		set_hudmessage(255, 1, 1, 0.4, 0.85, 0, 6.0, SPTime+FTime, 0.1, 0.2, 4) 
-		show_hudmessage(id, "%L", LANG_PLAYER, "AMX_SUPER_SPAWN_PROTECTION_MESSAGE", SPSecs)
-		
+	    new argSpawn[64]
+	    formatex( argSpawn, charsmax(argSpawn), "%d", id )
+	    set_task( 1.0, "SpawnProtectionCountDown", TASK_SPAWN_PROTECTION_ID + id, argSpawn, 64, "b", 0 )
+	    SpawnProtection[id] = floatround(SPTime + FTime)
+	    //server_print("%f", floatround(SPTime + FTime) )
 	}
-	
-	set_task(SPTime+FTime, "sp_off", id)
+
 	return PLUGIN_HANDLED
+}
+
+public SpawnProtectionCountDown( stringID[] )
+{
+    new id = str_to_num( stringID )
+    //server_print("%s - %d", stringID, id )
+    
+    set_hudmessage(255, 1, 1, 0.4, 0.85, 0, 6.0, 1.0, 0.1, 0.1, 4) 
+    show_hudmessage(id, "%L", LANG_PLAYER, "AMX_SUPER_SPAWN_PROTECTION_MESSAGE", SpawnProtection[id])
+    
+    SpawnProtection[id]--;
+
+    if ( SpawnProtection[id] <= 0 )
+    {   
+        if ( task_exists( TASK_SPAWN_PROTECTION_ID + id ) )
+        {   
+            remove_task( TASK_SPAWN_PROTECTION_ID + id );
+            sp_off(id)
+            return;
+        }
+    }
 }
 
 public sp_off(id) 
 {
 	if(!is_user_connected(id))
 	{
-		
 		return PLUGIN_HANDLED
-		
 	}
 	else if( HasPermGlow[id] )
 	{
