@@ -638,7 +638,7 @@ new g_gagged[33]
 new g_wasgagged[33][32]
 new g_gagflags[33]
 new g_c4timer
-new g_msg_showtimer
+//new g_msg_showtimer
 new g_msg_roundtime
 new g_msg_scenario
 new g_name[33][32] 
@@ -814,7 +814,7 @@ public plugin_init()
 	register_forward(FM_Voice_SetClientListening, "fm_mute_forward")
 
 	//C4 Timer Display
-	g_msg_showtimer	= get_user_msgid("ShowTimer")
+	//g_msg_showtimer	= get_user_msgid("ShowTimer")
 	g_msg_roundtime	= get_user_msgid("RoundTime")
 	g_msg_scenario	= get_user_msgid("Scenario")
 	
@@ -2210,7 +2210,7 @@ public protect(id)
 	if(get_pcvar_num(sv_spmessage) == 1)
 	{
 		
-		set_hudmessage(255, 1, 1, -1.0, -1.0, 0, 6.0, SPTime+FTime, 0.1, 0.2, 4)
+		set_hudmessage(255, 1, 1, 0.4, 0.85, 0, 6.0, SPTime+FTime, 0.1, 0.2, 4) 
 		show_hudmessage(id, "%L", LANG_PLAYER, "AMX_SUPER_SPAWN_PROTECTION_MESSAGE", SPSecs)
 		
 	}
