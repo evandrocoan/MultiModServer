@@ -72,7 +72,7 @@ public disp_Info(id)
 	{
 		if (equali(ccode, "err"))
 		{
-			set_user_info(id, "lang", "bp")
+			set_user_info(id, "lang", "en")
 			return PLUGIN_CONTINUE
 		}
 		

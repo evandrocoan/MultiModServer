@@ -431,9 +431,9 @@
 		"1" "CT's Win" "rcon terminate_round ct au;exec admin/ctwin.cfg"
 		"1" "TR's Win" "rcon terminate_round ob t;exec admin/terwin.cfg"
 		"1" "Draw" "rcon terminate_round dr;exec admin/ndwin.cfg"
-		"1" "Restartround" "rcon sv_restartround 1"
+		"2" "Admin Logon" "exec admin/say.cfg"
 	}
-    "2" "Admin Logon" "exec admin/say.cfg"
+	"1" "Restartround" "rcon sv_restartround 1"
 }
 "1.2" "Admin Menu"
 {

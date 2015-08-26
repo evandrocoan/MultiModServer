@@ -350,7 +350,7 @@ stock get_team_target(arg[],players[32],&pnum,skipMode=GET_TEAM_TARGET_SKIPNOBOD
 ///// You may edit some of these Defines (not all)
 ///
 */ 
- 
+#define TASK_SPAWN_PROTECTION_ID 1337
 #define ADMIN_CHECK ADMIN_KICK  // For Admin Check
 #define LOADINGSOUNDS 14	// Number of loading songs
 #define VoiceCommMute 1		// 0 = Disabled | 1 = Voicecomm muteing enabled. 
@@ -638,7 +638,7 @@ new g_gagged[33]
 new g_wasgagged[33][32]
 new g_gagflags[33]
 new g_c4timer
-new g_msg_showtimer
+//new g_msg_showtimer
 new g_msg_roundtime
 new g_msg_scenario
 new g_name[33][32] 
@@ -788,9 +788,9 @@ public plugin_init()
 	immune_access_listen = register_cvar("listen_immune_access","d");
 	
 	// Execute main configuration file (amx_super.cfg)
-	new configsDir[64]
+	/*new configsDir[64]
 	get_configsdir(configsDir, 63)
-	server_cmd("exec %s/amx_super.cfg", configsDir) 
+	server_cmd("exec %s/amx_super.cfg", configsDir) */
 	
 	// Variables Set
 	maxplayers = get_maxplayers()
@@ -814,7 +814,7 @@ public plugin_init()
 	register_forward(FM_Voice_SetClientListening, "fm_mute_forward")
 
 	//C4 Timer Display
-	g_msg_showtimer	= get_user_msgid("ShowTimer")
+	//g_msg_showtimer	= get_user_msgid("ShowTimer")
 	g_msg_roundtime	= get_user_msgid("RoundTime")
 	g_msg_scenario	= get_user_msgid("Scenario")
 	
@@ -847,6 +847,12 @@ public plugin_init()
 
 	// AFK Bomb Transfer Logevents
 	register_logevent("logevent_round_start", 2, "1=Round_Start")
+	
+	register_logevent( "event_roundstart", 2, "0=World triggered", "1=Round_Start" )
+	register_logevent( "event_roundstart", 2, "0=World triggered", "1=Game_Commencing" )
+	register_logevent( "event_roundstart", 2, "0=World triggered", "1=Restart_Round" )
+	register_logevent( "event_roundend", 2, "0=World triggered", "1=Round_End" )
+	
 
 	// AFK Bomb Transfer Task
 	set_task(1.0, "task_afk_check", _, _, _, "b") // AFK Bomb Transfer core loop
@@ -961,21 +967,22 @@ public event_bomb_drop() {
 	g_carrier = 0
 }
 
-public logevent_round_start() {
-	new id[32], num
-	get_players(id, num, "ae", "TERRORIST")
-
-	if (!num) // is server empty?
-		return
-
-	g_freezetime = false
-
-	new x
-	for (new i = 0; i < num; ++i) {
-		x = id[i]
-		get_user_origin(x, g_pos[x])
-		g_time[x] = 0
-	}
+public logevent_round_start() 
+{
+    new id[32], num
+    get_players(id, num, "ae", "TERRORIST")
+    
+    if (!num) // is server empty?
+    return
+    
+    g_freezetime = false
+    
+    new x
+    for (new i = 0; i < num; ++i) {
+        x = id[i]
+        get_user_origin(x, g_pos[x])
+        g_time[x] = 0
+    }
 }
 
 public task_afk_check() {
@@ -2186,46 +2193,85 @@ public sp_on(id)
 	return PLUGIN_CONTINUE
 }
 
+new isRoundStarted = true
+new SpawnProtection[512]
+
+public event_roundstart()
+{
+    isRoundStarted = true
+}
+                    
+public event_roundend()
+{
+    isRoundStarted = false
+}
+
 public protect(id) 
 {
-	new Float:SPTime = get_pcvar_float(sv_sptime)
-	new SPSecs = get_pcvar_num(sv_sptime)
-	new FTime = get_pcvar_num(mp_freezetime)
-	new SPShell = get_pcvar_num(sv_spshellthick)
-	fm_set_user_godmode(id, 1)
+    new FTime = get_pcvar_num(mp_freezetime)
+    new Float:SPTime = get_pcvar_float(sv_sptime)
+    new SPShell = get_pcvar_num(sv_spshellthick)
+    fm_set_user_godmode(id, 1)
 	
-	if(get_pcvar_num(sv_spglow)) { 
+    if( isRoundStarted )
+	{
+	    FTime = 0
+	} else
+	{
+	    FTime = get_pcvar_num(mp_freezetime)
+	}
+    if(get_pcvar_num(sv_spglow)) 
+	{ 
 		
 		if(get_user_team(id) == 1)
 		{
 			fm_set_rendering(id, kRenderFxGlowShell, 255, 0, 0, kRenderNormal, SPShell)
 		}
 		
-		if(get_user_team(id) == 2)
+		if(get_user_team(id) == 2) 
 		{
 			fm_set_rendering(id, kRenderFxGlowShell, 0, 0, 255, kRenderNormal, SPShell)
 		}
 	}
-	
-	if(get_pcvar_num(sv_spmessage) == 1)
+    
+    if(get_pcvar_num(sv_spmessage) == 1)
 	{
-		
-		set_hudmessage(255, 1, 1, -1.0, -1.0, 0, 6.0, SPTime+FTime, 0.1, 0.2, 4)
-		show_hudmessage(id, "%L", LANG_PLAYER, "AMX_SUPER_SPAWN_PROTECTION_MESSAGE", SPSecs)
-		
+	    new argSpawn[64]
+	    formatex( argSpawn, charsmax(argSpawn), "%d", id )
+	    set_task( 1.0, "SpawnProtectionCountDown", TASK_SPAWN_PROTECTION_ID + id, argSpawn, 64, "b", 0 )
+	    SpawnProtection[id] = floatround(SPTime + FTime)
+	    //server_print("%f", floatround(SPTime + FTime) )
 	}
-	
-	set_task(SPTime+FTime, "sp_off", id)
-	return PLUGIN_HANDLED
+    
+    return PLUGIN_HANDLED
+}
+
+public SpawnProtectionCountDown( stringID[] )
+{
+    new id = str_to_num( stringID )
+    //server_print("%s - %d", stringID, id )
+    
+    set_hudmessage(200, 200, 0, 0.35, 0.85, 0, 0.0, 1.0, 0.1, 0.1, 4) 
+    show_hudmessage(id, "%L", LANG_PLAYER, "AMX_SUPER_SPAWN_PROTECTION_MESSAGE", SpawnProtection[id])
+    
+    SpawnProtection[id]--;
+
+    if ( SpawnProtection[id] <= 0 )
+    {   
+        if ( task_exists( TASK_SPAWN_PROTECTION_ID + id ) )
+        {   
+            remove_task( TASK_SPAWN_PROTECTION_ID + id );
+            sp_off(id)
+            return;
+        }
+    }
 }
 
 public sp_off(id) 
 {
 	if(!is_user_connected(id))
 	{
-		
 		return PLUGIN_HANDLED
-		
 	}
 	else if( HasPermGlow[id] )
 	{

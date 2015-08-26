@@ -41,6 +41,7 @@ public plugin_init()
 {
 	register_plugin("Admin Help", AMXX_VERSION_STR, "AMXX Dev Team")
 	register_dictionary("adminhelp.txt")
+	register_dictionary("multimodhelp.txt")
 	register_concmd("amx_help", "cmdHelp", 0, "<page> [nr of cmds (only for server)] - displays this help")
 }
 
@@ -50,7 +51,8 @@ public client_putinserver(id)
 	if (is_user_bot(id))
 		return
 	
-	set_task(15.0, "dispInfo", id)
+	set_task(65.0, "dispInfo", id)
+	set_task(85.0, "dispInfo2", id)
 }
 
 public client_disconnect(id)
@@ -109,8 +111,6 @@ public cmdHelp(id, level, cid)
 #if defined DISPLAY_MSG
 public dispInfo(id)
 {
-	client_print(id, print_chat, "%L", id, "TYPE_HELP")
-	
 	new nextmap[32]
 	get_cvar_string("amx_nextmap", nextmap, 31)
 	
@@ -125,5 +125,10 @@ public dispInfo(id)
 			client_print(id, print_chat, "%L", id, "TIME_INFO_2", nextmap)
 		}
 	}
+}
+
+public dispInfo2(id)
+{
+	client_print(id, print_chat, "%L", id, "TYPE_HELP_MULTIMOD")
 }
 #endif
