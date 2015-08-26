@@ -2,18 +2,21 @@ Amx_Ultra - After the great success of Amx_Super... There is Amx_Ultra
 
 
 1. Why all these plugins are not too much functionality?
- * Because there is only 15 actives by default. Then you those which ones are 
-good or for you, activating or deactivating then. 
-Like, you want to play SuperHeros, Zombie, Dragon Ball, ...? Then active it 
+ * They all are here to save your trouble of going out there taking one by one 
+and installing and testing. All the ones here are already installed and well tested!
+And there is not too much functionality because there is only 15 actives by default. 
+Then you those which ones are good for you, activating or deactivating then. 
+Like, you want to play SuperHeros, Zombie or Dragon Ball? Then active it 
 by typing "amx_multimodz help 1" at console to see the command, or just type, 
-"amx_votemod"  to force a mod votation, admins only of course, but players 
-can still try "say votemod".
-Hence, sure. You can create you own mod combining some of those, as a new 
-Mod Called "Super 4 Fun Mod", containning amx_gore_ultimate, 
-Ultimate Quake Sounds, etc... 
-See here below at "Configuration" section how to configure it at the 
-Multi-Mod_Core v5.0 which is already installed at Amx_Ultra plugin: 
-https://forums.alliedmods.net/showthread.php?t=270188#Configuration
+"amx_votemod"  to force a mod votation, admins only command, of course, 
+but players can still try "say votemod".
+Hence sure, you can create you own new mod Mod as "My Super 4 Fun Mod", 
+combining some of those plugins at Amx_Ultra plugin, like amx_gore_ultimate, 
+Ultimate Quake Sounds, pain_shock_free, cssurfboards, bad_camper, etc... 
+See below at "[Multi-Mod_Core v5.0 - Configuration section](https://forums.alliedmods.net/showthread.php?t=270188#Configuration)" 
+how to configure it. 
+The "Multi-Mod_Core" plugin is already installed at Amx_Ultra plugin, and [here](addons/amxmodx/configs/plugins.ini) 
+is the list of plugins installed at Amx_Ultra plugin.
 
 
 2. Where it come from and why? 
@@ -57,7 +60,6 @@ go huntings its separated plugins.
 
 
 For any problems with this plugin visit for support.
-https://github.com/Addonszz/Amx_Super/issues
+https://github.com/Addonszz/Amx_Ultra/issues
 
-See Credits at: 
-https://github.com/addonszz/Amx_Super/blob/develop/Credits.txt
+See Credits [here](Credits.txt).
