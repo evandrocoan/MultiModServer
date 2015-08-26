@@ -847,6 +847,9 @@ public plugin_init()
 
 	// AFK Bomb Transfer Logevents
 	register_logevent("logevent_round_start", 2, "1=Round_Start")
+	
+	register_logevent( "event_roundstart", 2, "0=World triggered", "1=Round_Start" )
+	register_logevent( "event_roundend", 2, "0=World triggered", "1=Round_End" )
 
 	// AFK Bomb Transfer Task
 	set_task(1.0, "task_afk_check", _, _, _, "b") // AFK Bomb Transfer core loop
@@ -2187,15 +2190,34 @@ public sp_on(id)
 }
 
 new SpawnProtection[512]
+new isRoundStarted = false
+
+public event_roundstart()
+{
+isRoundStarted = true
+}
+
+public event_roundend()
+{
+isRoundStarted = false
+}
 
 public protect(id) 
 {
-	new Float:SPTime = get_pcvar_float(sv_sptime)
-	new FTime = get_pcvar_num(mp_freezetime)
-	new SPShell = get_pcvar_num(sv_spshellthick)
-	fm_set_user_godmode(id, 1)
+    new FTime = get_pcvar_num(mp_freezetime)
+    new Float:SPTime = get_pcvar_float(sv_sptime)
+    new SPShell = get_pcvar_num(sv_spshellthick)
+    fm_set_user_godmode(id, 1)
 	
-	if(get_pcvar_num(sv_spglow)) { 
+    if( !isRoundStarted )
+	{
+	    FTime = get_pcvar_num(mp_freezetime) - 1
+	} else
+	{
+	    FTime = 0
+	}
+    if(get_pcvar_num(sv_spglow)) 
+	{ 
 		
 		if(get_user_team(id) == 1)
 		{
@@ -2207,8 +2229,8 @@ public protect(id)
 			fm_set_rendering(id, kRenderFxGlowShell, 0, 0, 255, kRenderNormal, SPShell)
 		}
 	}
-	
-	if(get_pcvar_num(sv_spmessage) == 1)
+    
+    if(get_pcvar_num(sv_spmessage) == 1)
 	{
 	    new argSpawn[64]
 	    formatex( argSpawn, charsmax(argSpawn), "%d", id )
@@ -2216,8 +2238,8 @@ public protect(id)
 	    SpawnProtection[id] = floatround(SPTime + FTime)
 	    //server_print("%f", floatround(SPTime + FTime) )
 	}
-
-	return PLUGIN_HANDLED
+    
+    return PLUGIN_HANDLED
 }
 
 public SpawnProtectionCountDown( stringID[] )
@@ -2225,7 +2247,8 @@ public SpawnProtectionCountDown( stringID[] )
     new id = str_to_num( stringID )
     //server_print("%s - %d", stringID, id )
     
-    set_hudmessage(255, 1, 1, 0.4, 0.85, 0, 6.0, 1.0, 0.1, 0.1, 4) 
+
+    set_hudmessage(255, 1, 1, 0.35, 0.85, 0, 6.0, 1.0, 0.1, 0.1, 4) 
     show_hudmessage(id, "%L", LANG_PLAYER, "AMX_SUPER_SPAWN_PROTECTION_MESSAGE", SpawnProtection[id])
     
     SpawnProtection[id]--;
