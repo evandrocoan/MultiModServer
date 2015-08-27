@@ -1,7 +1,0 @@
-; This is the public rules file, put your rules below
-; Remember, max amount of characters is 439
-; Escreva abaixo suas regras
-; Obs: Nao usar acentos! ^ ~ ´ `
-
-Nao usar cheats!
-Respeitar os Admins.
