@@ -1,0 +1,41 @@
+[en]
+
+MSG_DEACTIVATE_CONSOLE = Clan Vs. All Mode De-Activated.
+
+MSG_DEACTIVATE_CHAT1 = %s Vs. All Mode De-Activated.
+
+MSG_DEACTIVATE_CHAT2 = (Admin %s) %s Vs. All Mode De-Activated.
+
+MSG_ACTIVATE_CONSOLE = Clan Vs. All Mode Activated.
+
+MSG_ACTIVATE_CHAT1 = %s Vs. All Mode Activated.
+
+MSG_ACTIVATE_CHAT2 = (Admin %s) %s Vs. All Mode Activated.
+
+[de]
+
+MSG_DEACTIVATE_CONSOLE = Clan vs All Mod deaktiviert.
+
+MSG_DEACTIVATE_CHAT1 = %s vs All Mod deaktiviert.
+
+MSG_DEACTIVATE_CHAT2 = (Admin %s) %s vs All Mod deaktiviert.
+
+MSG_ACTIVATE_CONSOLE = Clan vs All Mod aktiviert.
+
+MSG_ACTIVATE_CHAT1 = %s vs All Mod aktiviert.
+
+MSG_ACTIVATE_CHAT2 = (Admin %s) %s vs All Mod aktiviert.
+
+[es]
+
+MSG_DEACTIVATE_CONSOLE = Modo Clan Vs. Todos Desactivado.
+
+MSG_DEACTIVATE_CHAT1 = Modo %s Vs. Todos Desactivado.
+
+MSG_DEACTIVATE_CHAT2 = Modo (Admin %s) %s Vs. Desactivado.
+
+MSG_ACTIVATE_CONSOLE = Modo Clan Vs. Todos  Activado.
+
+MSG_ACTIVATE_CHAT1 = Modo %s Vs. Todos  Activado.
+
+MSG_ACTIVATE_CHAT2 = Modo (Admin %s) %s Vs. Todos Activado.

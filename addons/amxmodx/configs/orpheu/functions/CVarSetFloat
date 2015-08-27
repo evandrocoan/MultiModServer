@@ -1,0 +1,13 @@
+{
+    "name"      : "CVarSetFloat",
+    "library"   : "engine",
+    "arguments" :
+    [
+        {
+            "type" : "char *"
+        },
+        {
+            "type" : "float"
+        }
+    ]
+}
