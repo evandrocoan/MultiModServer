@@ -1,2 +1,0 @@
-set_player_model.amxx
-dragon_ball_mod.amxx

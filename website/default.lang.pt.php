@@ -8,10 +8,10 @@ Language: PORTUGUESE
 $lang = array();
 
 $lang[ 'HEADER' ] = <<<EOD
-    <meta name="description"content="O Addons zz é um add-in para o jogo Counter-Strike. O Addons zz contém inúmeros mods e vem por padrão configurado para o máximo desempenho e controle do servidor.">
-    <title>Addons zz - Para Counter-Strike - CS</title>
-    <meta itemprop="name" content="Addons zz - Para Counter-Strike - CS">
-    <meta itemprop="description"content="O Addons zz é um add-in para o jogo Counter-Strike. O Addons zz contém inúmeros mods e vem por padrão configurado para o máximo desempenho e controle do servidor.">
+    <meta name="description"content="O Addons Multi-Mod é um add-in para o jogo Counter-Strike e Counter-Strike Condition Zero. O Multi-Mod contém inúmeros mods e vem por padrão configurado para o máximo desempenho e controle do servidor.">
+    <title>Addons Multi-Mod - Para Counter-Strike - CS</title>
+    <meta itemprop="name" content="Addons Multi-Mod - Para Counter-Strike - CS">
+    <meta itemprop="description"content="O Addons Multi-Mod é um add-in para o jogo Counter-Strike e Counter-Strike Condition Zero. O Multi-Mod contém inúmeros mods e vem por padrão configurado para o máximo desempenho e controle do servidor.">
 EOD;
 
 $lang[ 'MENU_PRINCIPAL' ] = <<<EOD
@@ -77,16 +77,19 @@ EOD;
 }
 
 $lang[ 'DESCRICAO_INICIAL' ] = <<<EOD
-O Addons zz é um add-in para o jogo &quot;Counter-Strike&quot; e &quot;Counter-Strike: Condition Zero&quot;.
+O Addons Multi-Mod é um add-in para o jogo &quot;Counter-Strike&quot; e &quot;Counter-Strike: Condition Zero&quot;.
 <p>
-O Addons zz contém inúmeros mods e vem por padrão configurado para o máximo desempenho e controle do servidor.</p>
+O Addons Multi-Mod contém inúmeros mods e vem por padrão configurado para o máximo desempenho e controle do servidor.</p>
 EOD;
 
 $lang[ 'PRIMEIRA_COLUNA' ] = <<<EOD
 <p><span style="font-size:40px">Veja mais progresso em:</span>
 <p><a href="https://github.com/Addonszz/AddonsMultiMod">https://github.com/Addonszz/AddonsMultiMod</a></p>
 </p>
-<p>Notas básicas sobre a última versão do <strong><font color="red"><u>Addons zz v2.0</u></font></strong>
+<p><span style="font-size:40px">Sobre Amx Ultra? Veja aqui:</span>
+<p><a href="https://github.com/Addonszz/Amx_Ultra">https://github.com/Addonszz/Amx_Ultra</a></p>
+</p>
+<p>Notas básicas sobre a última versão do <strong><font color="red"><u>Addons Multi-Mod v2.0</u></font></strong>
     lança no dia 16/08/2015:</p>
 * Galileo 1.1.290 que é um plugins cheio de recursos para votar o próximo mapa.<br>
 * Agora nos últimos 5 minutos ou se solicitado antes uma votação pelo comando "say votemod", cria uma votação para selecionar qual será o Mod jogado no próximo mapa.<br>
@@ -101,7 +104,7 @@ $lang[ 'PRIMEIRA_COLUNA' ] = <<<EOD
 * Mensagem mod atual Corrigido.<br>
 * Quando o tempo min voto não for atingido/desativado, display e mensagem informando isso.
     
-<p>Versão do <strong><font color="red"><u>Addons zz v1.5</u></font></strong>
+<p>Versão do <strong><font color="red"><u>Addons Multi-Mod v1.5</u></font></strong>
     lança no dia 12/08/2015:<br>
  
 * Adicionado Dragon Ball Mod v1.3<br>
@@ -109,7 +112,7 @@ $lang[ 'PRIMEIRA_COLUNA' ] = <<<EOD
 * Corrigido a incompatilidade do plugin daily_maps com nextmap.<br>
 * Posição multi-mod_plugin e informação a seu originais plugins nextmap e cmdmenus.</p>
 
-<p>Versão do <strong><font color="red"><u>Addons zz v1.4</u></font></strong>
+<p>Versão do <strong><font color="red"><u>Addons Multi-Mod v1.4</u></font></strong>
     lança no dia 10/08/2015:<br>
 
 * Adicionado plugins pain_shock_free que desativa o andar devagar ao levar tiros.<br>

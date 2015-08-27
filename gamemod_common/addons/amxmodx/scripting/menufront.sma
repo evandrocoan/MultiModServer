@@ -373,6 +373,8 @@ public plugin_init()
 	register_menucmd(register_menuid("AMX Mod X Client Menu"), 1023, "clientActionMenu")
 	register_clcmd("amxmodmenu", "cmdMenu", ADMIN_MENU, "- displays menus")
 	register_clcmd("amx_menu", "clientCmdMenu", 0, "- displays menus available to client")
+	register_clcmd("say menu", "clientCmdMenu", 0, "- displays menus available to client")
+	register_clcmd("say /menu", "clientCmdMenu", 0, "- displays menus available to client")
 
 	register_srvcmd("amx_addmenuitem", "addmenuitem_cmd", 0, "<menu text> <menu command> <access flags> <plugin name | plugin filename> - Add a menu item to Menus Front-End")
 	register_srvcmd("amx_addclientmenuitem", "addclientmenuitem_cmd", 0, "<menu text> <menu command> <access flags> <plugin name | plugin filename> - Add a menu item to Client Menus Front-End")
