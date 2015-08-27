@@ -1,0 +1,438 @@
+<HTML><HEAD><TITLE>CSDM - Counter-Strike Deathmatch, by BAILOPAN</TITLE>
+<style type="text/css">
+<!--
+div, p, ol, ul, td, th
+{
+	color: black;
+	font-family: Verdana;
+	font-size: smaller;
+}
+
+div.head
+{
+	font-size: medium;
+	font-weight: bold;
+}
+
+div.cr
+{
+	color: #000066;
+	font-weight: bold;
+}
+
+p.head { font-weight: bold; }
+p.indent { text-indent: 20px }
+p.courier { font-family: "Courier New" }
+
+div.indent { text-indent: 20px }
+div.indent2 { text-indent: 40px }
+div.indentc { text-indent: 40px; font-family: "Courier New" }
+
+ol { list-style-type: upper-roman }
+ul { list-style-type: disc }
+ul.courier { font-family: "Courier New" }
+dl { font-family: "Courier New"; font-size: smaller; text-indent: 40px }
+li { margin-bottom : 4px; }
+
+td.node
+{
+	text-align: center;
+	height: 19px; width: 20%
+}
+
+td.nodeT
+{
+	text-align: center;
+	height: 19px; width: 20%;
+	font-weight: bold
+}
+
+th
+{
+	text-align: center;
+	height: 32px;
+	font-weight: 100
+}
+
+td { text-align: left; height: 16px }
+td.tName { background-color: #FFCC66; width: 225 }
+td.tFunc { background-color: #D4D0C8; width: 550 }
+td.tVer { text-align: center; background-color: #D4D0C8; width: 88 }
+td.tAL { text-align: center; background-color: #D4D0C8; width: 50 }
+td.black { text-align: center; background-color : #000000; }
+-->
+</style>
+</head>
+<BODY>
+<div class="head">csdm_amxx - Counter-Strike Deathmatch.</div>
+<div class="cr">(C)2003-2006 by David "<font color=#cc9900>BAILOPAN</font>" Anderson</div><BR>
+<FONT color=#000066 size=2 face="Verdana">CSDM Mod allows you to play Counter-Strike in a variety of 
+highly configurable deathmatch scenarios.  The current version is 2.1.</FONT>
+<BR><BR>
+
+<font size=2 Face="Verdana">Sections:</font><BR><ol>
+<li><A href="#dl">Downloading</A><BR>
+<li><A href="#install">Installing</A><BR>
+<li><A href="#cvars">Configuration</A><BR>
+<li><A href="#cmds">Commands</A><BR>
+<li><A href="#dev">Developing/Codng</A><BR>
+<li><A href="#support">Support</A><BR>
+<li><A href="#credits">The credits and copyrights.</A><BR>
+<li><A href="#changes">Changelog</A><BR>
+</ol>
+<BR>
+<p class="head">I.  Downloading<a name="dl"></a></p>
+<p class="indent">You can always find the latest version of CSDM as a package at the <a href="http://www.bailopan.net/csdm/">CSDM Homepage</a>.
+<p class="indent">The source code is available in full in its <a href="http://svn.alliedmods.net/viewvc.cgi/amxmodx/csdm_amxx/?root=dvander">SVN Repository</a>.
+</p>
+<p class="head">II. Installing<A name=install></A></p>
+<p class="indent">CSDM Mod requires <a href="http://www.amxmodx.org/">AMX Mod X 1.75</a> or higher. Most plugins will require the Engine and CSTRIKE modules enabled. It was designed to run on Counter-Strike and will not work on any other mod (except  Condition Zero).
+<p class="indent">To install the mod, follow these directions:
+<ol>
+     <li>Extract the CSDM package to your addons/amxmodx folder, or extract it locally for upload to FTP.</li>
+     <li>Open addons/amxmodx/configs/plugins-csdm.ini file and enable/disable the plugins you want.</li>
+     <li>Open addons/amxmodx/configs/csdm.cfg and configure CSDM to your liking.</li>
+     <li>Restart your HLDS server, and you're done!</li>
+</ol>
+<p class="head">III. Configuration<A name=howto></A></P>
+<p class="indent">Configuration is done entirely through the csdm.cfg file in amxmodx/configs.  <b>These values are NOT cvars!</b>  The csdm.cfg file is a special file that is read and parsed separately so multiple plugins can easily see values in it.  Each value is explained either in the csdm.cfg file or in the documentation provided by the respective plugin.</p>
+<p class="head">IV. Commands<A name=cmds></A>
+<p class="indent">These are commands that can be typed through the console..</p>
+<TABLE style="BORDER-COLLAPSE: collapse" borderColor=#111111 cellPadding=2 width="100%" border=1>
+  <TR><TH align=middle width="100%" bgColor=#66ccff colSpan=4 height=18><b>Admin Commands</b></TR>
+  <TR>
+    <TH width="25%" bgColor=#ffcc66>Command</TH>
+    <TH width="60%" bgColor=#d4d0c8>What it Does</TH>
+    <TH width="10%" bgColor=#d4d0c8>Plugin</TH>
+    <TH width="5%" bgColor=#d4d0c8>Access Level</TH>
+  </TR>
+  <TR>
+    <TD class="tName">csdm_enable/csdm_disable</TD>
+    <TD class="tFunc">Switches whether CSDM mode is on or off.</TD>
+    <TD class="tVer">csdm_main</TD>
+    <TD class="tAL">f</TD>
+  </TR>
+  <TR>
+    <TD class="tName">csdm_reload</TD>
+    <TD class="tFunc">Reloads the csdm.cfg config file.</TD>
+    <TD class="tVer">csdm_main</TD>
+    <TD class="tAL">f</TD>
+  </TR>
+  <TR>
+    <TD class="tName">csdm_menu</TD>
+    <TD class="tFunc">Shows the CSDM admin menu.</TD>
+    <TD class="tVer">csdm_main</TD>
+    <TD class="tAL">u</TD>
+  </TR>
+  <TR>
+    <TD class="tName">edit_spawns</TD>
+    <TD class="tFunc">Shows the spawn editing menu (for adding or changing map support).  Map config files are stored in amxmodx/configs/csdm/map.spawns.cfg, where map is the map name.</TD>
+    <TD class="tVer">spawn_editor</TD>
+    <TD class="tAL">f</TD>
+  </TR>
+  <TR>
+    <TD class="tName">csdm_cache</TD>
+    <TD class="tFunc">Developers - shows information about the CSDM runtime cache.</TD>
+    <TD class="tVer">csdm_main</TD>
+    <TD class="tAL">f</TD>
+  </TR>
+  <TR>
+    <TD class="tName">guns, /guns, menu, enablemenu, enable_menu</TD>
+    <TD class="tFunc">Saying any of these re-enables the equip menu.</TD>
+    <TD class="tVer">csdm_equip</TD>
+    <TD class="tAL">ANY</TD>
+  </TR>
+  <TR>
+  	<td class="tName">csdm_ffa_enable, csdm_ffa_disable, csdm_ffa_ctrl</td>
+  	<td class="tFunc">Enable/Disable/Menu for FFA Mode.</td>
+  	<td class="tVer">csdm_ffa</td>
+  	<td class="tAL">f</td>
+  </TR>
+</TABLE>
+<p class="indent">
+CSDM also defines two publically cvars: csdm_active (sets whether CSDM is enabled, also can be set by admins), and csdm_version (the CSDM version).  Lastly, there is a public "csdm" command that displays credits.
+<br />
+<p class="head">V. Developing/Coding<A name=dev></A></P>
+<p class="indent">CSDM 2.1 is modular.  The base portion is a module built to handle and capture primitive events, as well as express things which would be computationally expensive as a plugin.  It is optimized for efficiency. </p>
+<p class="indent">The idea behind CSDM 2.1 is rather than including every portion in one plugin, developers can write simple addons, using the basic events provided by the module.  This way using other modules or expensive parsing is often not necessary.  For a full reference of CSDM 2.0's API, you should see csdm.inc in the scripting/include folder of the CSDM download, or view it on SVN: <a href="http://svn.alliedmods.net/viewvc.cgi/amxmodx/csdm_amxx/scripting/include/csdm.inc?revision=371&root=dvander&view=markup" target="_blank">csdm.inc</a>.  A good example of a simple plugin using the API is csdm_tickets.sma.</p>
+<p class="indent">The module automatically respawns players whenever a player joins, a round restarts, or a player dies.  The spawn events allow plugins to interrupt or hook various importat stages in a player's death/revival.  The module makes no attempt to spawn players in a certain location, it simply revives them.  Instead, it allows "spawn handlers" to attach.  The current spawn style handler (set by csdm_main) is notified when it can relocate a player.</p>
+<p class="ident">The module handles the following things, notifying plugins:
+<ul>
+ <li>Round restarts</li>
+ <li>Player deaths (you can block respawning)</li>
+ <li>Player spawns (both "fake" and "real")</li>
+ <li>Configuration file settings</li>
+</ul></p>
+<p class="indent">Lastly, the module also contains fast routines for common things, such as setting/retrieving player positions, respawning players through the CSDM interface, and removing weapons from the world or players.</p>
+</pre>
+<br />
+<p class="head">VI. Support<A name=support></A></P><p class="indent">I do not officially support CSDM, as it is an open-source project I created in my spare time.  However, if you've read the manual and speak English I might be able to help you out.  You can find me:
+ <ul>
+  <li>IRC: <a href="irc://irc.gamesurge.net/lambdatcw">#amxmodx on GameSurge</a>, usually named BAILOPAN or dvander.</li><li>E-mail: <a href="mailto:bailopan@gmail.com">bailopan@gmail@com</a></li><li>PM: <a href="http://www.amxmodx.org/forums/privmsg.php?mode=post&u=10">Send me a PM</a> on the AMX Mod X forums.</a></li></ul><p class="head">VII. The Credits and copyrights.<A name=credits></A></P><p class="courier">(C)2003-2006 David "BAILOPAN" Anderson<br />
+This would not have been possible without the help of Freecode, AssKicR, and PM.<br />
+Large parts of the CSDM plugin base was written by Freecode.  Thank you very much, Freecode!<br />
+Thanks to Riddick51 of <a href="http://www.ufcgaming.us">UFC</a>, who sponsored CSDM 2.0! <br />
+Thanks to twistedeuphoria for being a competitor, motivating this.<br />
+<a href="http://amxmod.net/forums/viewtopic.php?t=27085">Original idea</a> by isbunk (lagbeast).<br />
+<A href="http://www.tcwonline.org/">http://www.tcwonline.org/</A><br />
+<br />
+
+ * This program is free software; you can redistribute it and/or<br>
+ * modify it under the terms of the GNU General Public License<br>
+ * as published by the Free Software Foundation; either version 2<br>
+ * of the License, or (at your option) any later version.<br>
+ *<br>
+ * This program is distributed in the hope that it will be useful,<br>
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of<br>
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the<br>
+ * GNU General Public License for more details.<br>
+ *<br>
+ * You should have received a copy of the GNU General Public License<br>
+ * along with this program; if not, write to the Free Software<br>
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.<br>
+</p>
+<p class="courier">AMX Mod X can be found here: http://www.amxmodx.org/</p><p class="courier">The people who contributed to csdm_mod are:</P><ul class="courier">
+  <LI>Developer: David "BAILOPAN" Anderson ( <a href="http://www.bailopan.net/">www.bailopan.net</a> )
+  <LI>Developer: Mike "Freecode" Vvedenskiy ( thanks for the plugin help! )
+  <LI>Developer: Borja "faluco" Ferrer ( thanks for csdm_itemmode help! )</LI><LI>Ideas, solutions, fixes, contributors: isbunk, AssKicR, Freecode, PM OnoTo
+  <LI>Beta testing: BAILOPAN, isbunk, AssKicR, Freecode, ESEA, KWo
+  <LI>Pre 1.50 Spawn points: BAILOPAN, isbunk
+  <LI>Entity+Spawn points: BAILOPAN, AssKicR, Romaaa
+  <LI>Thanks to teame06 and Nick|NFo of <a href="http://www.nuclearfallout.net/">NuclearFallout</a> for testing and bug reporting.</LI><LI>A <b>HUGE</b> thanks to Riddick of <a href="http://www.ufcgaming.us">Ultimate Fighting Championship (UFC)</a>, who sponsored the development of CSDM 2.0.</li><LI>Thank you to ESportsEA at <a href="http://www.esportsea.com/">http://www.esportsea.com</a> for sponsoring the initial Steam Fixes toward CSDM, and letting me play on their premium servers =)
+  <LI>Thanks to everyone who enjoyed CSDM!  This is the mod that brought me into every corner of the HL development world, and I've been very grateful for your support.</li></ul><p class="head">VIII. Changelog.<A name=changes></A></P><PRE>----------
+Changelog:
+----------
+2.1.1 -- Bugfix Release (11-08-2007)
+	Fixed compatibility bug with AMX Mod X 1.8.0 and Linux.
+	Fixed two small potential RTE errors.
+	Fixed admin command having blank access permissions.
+	Merged in a few bug fixes from AMX Mod X Core.
+	Reduced or eliminated potential FreeBSD compatibility problems.
+	Commented spawn editor from being enabled by default.
+	Removed AMD64 build.
+2.1 -- Final Release (10-10-2006)
+	Fixed bots not getting defuse kits when auto-enabled.
+	Fixed defuse kits not being removed from the world on death.
+2.1-rc7 -- Private Release Candidate (10-10-2006)
+	Fixed various issues when enabling the shield (unsupported).
+2.1-rc6 -- Private Release Candidate (10-10-2006)
+	CSDM now remembers whether a user silenced their gun or not (M4A1, USP).
+	Fixed bots not getting autoarmor/grenades properly.
+2.1-rc5 -- Private Release Candidate (10-05-2006)
+	Rewrote, optimized, and improved safety of weapon deletion.
+	Added 'n' autoitem to give nightvision goggles.
+	Added 'd' autoitem to give defuse kits to CTs.
+	Fixed another spectator spawning glitch.
+	Fixed shields not being deleted if enabled.
+	Fixed being able to say "respawn" in ticket mode while dead.
+2.1-beta4 -- Public Beta (06-06-2006)
+	Rewrote many internal hooking routines to be more deterministic and faster.
+	Rewrote respawning mechanism to reduce ghosting possibilities.
+	Removed "Engine" dependency - CSDM is now Fakemeta only.
+	Added "item mode" from CSDM 1.7.
+	Added FFA mode -- and fixed reduced damage, tk messages, and scoring.
+	Re-wrote spawn editor from scratch - now actually works.
+	Added "spawn_wait_time" to csdm.cfg.
+	Fixed ghosting bugs.
+	Fixed round ticketing bugs.
+	Fixed various minor bugs.
+	Fixed various API issues (note: CSDM2.1 breaks CSDM2 API).
+2.00    Release Build 500 (10-18-2005)
+	Completely rewrote CSDM to be a modular API.
+	CSDM is now a module, controlled by separate plugins.
+	Configuration is through a unified file, rather than cvars.
+	Replaced spawn commands with a graphical, intuitive spawn editor.
+	Improved spawn algorithms.
+	Rounds can be blocked correctly again.
+	ResetHUD exploits no longer work.
+	Added round-ticketing mode.
+	Removed all support for AMX Mod (all versions).
+	Removed all support for earlier versions of CS.
+	Removed "item" and "ffa" modes (to be re-added later).
+	Vastly reduced base CPU usage.
+1.70 Release Build 280 (11-15-2004)
+	Updated for AMX Mod X 1.00.
+	Added KWo's bot support.&nbsp; Thank you, KWo!
+	Added many more spawn points from the community.
+	Fixed a bug where some weapons could not be blocked.
+1.69 Release Build 275 (04-22-2004)
+	Fixed trivial Condition Zero support.
+	Fixed crash bug in C4 removal code (thanks to BMC for test server).
+	&nbsp; Note on the above: this would cause the game to crash on Ts joining.
+	Fixed radio blocking.
+	Updated some messages.
+1.68 Release Build 268 (04-16-2004)
+	Converted to AMX Mod X.
+	Added trivial support for Condition Zero.
+	Added entities for de_train (Freeman)
+	Added entities+spawns for scoutezknives, iceworld, awp_map, <span id="From">ka_legoland </span>(<span id="From0">-[Dos]- Clan).
+	Added cvar csdm_sounds (defaults to 1) to turn the spawning sounds off.</span>
+	Fixed bad variable notation in for loops.
+	Fixed references to get_user_weapons (AMX bug).
+	Fixed errors relating to grenade blocking.
+	Hostages SHOULD be restored properly on csdm shutdown now.
+	Note: There was an intermediary 1.67 release for trivial AMXx support.
+1.60 Release Build 260 (02-25-2004)
+	!!! NEW SPAWN CREATION ALGORITHM
+	!!! NEW WEAPON DELETION ALGORITHM
+	!!! FIXED CPU/LAG PROBLEMS
+	!!! NEW MAP PACK
+	Added weapon restriction and limiting.
+	Added C4 disabling.
+	Added restartround to clear maps for CSDM.
+	Added the ability to fully switch CSDM on and off WITHOUT RESTARTING.
+	Added new cvar - csdm_steam (defaults to 1).
+	Added more voting options and changed voting code.
+	Fixed spawn point manipulation commands.
+	Fixed spawn point view angles.
+	Fixed csdm_drop_weapons - you can drop weapons again.
+	Fixed possible internal entity collision problem.
+	Fixed spawning to work with new Steam engine.
+	Fixed bug where round restart made it impossible to use or get longjumps.
+	Fixed bug where pressing "2" in menu mode would not rebuy armor or grenades.
+	Fixed bug where voting for CSDM actually did nothing.&nbsp; Oops.
+	Fixed bugs in file parsing algorithms.
+	Fixed bugs in entity parsing algorithms.
+	Fixed menus to show P90.
+	Fixed weapon blocking (1.30+).
+	Fixed menus so they no longer disappear on invalid selection.
+	Changed some CVAR defaults.
+	Removed map cleaning process to appease new Steam engine.
+	Removed csdm_allow_smoke - use blocked.cfg.
+1.13 Release Build 191 (02-02-2004)
+	Added entities for cs_estate( AssKicR).
+	Fixed minor bug with ammo.
+1.10 Release Build 190 (02-01-2004)
+	Added pseudo-random spawning (based on cvar timer).
+	Added weapon blocking/restrictions.
+	Added AssKicR's changes.
+	Added voting to enable CSDM.
+	Fixed sound issues with items.
+	Fixed random spawning algorithm.
+	Fixed csdm_delete_time.
+	Completely removed debug mode.
+	Made csdm_viewspawns show T or CTs.
+	Enhanced readme.
+	NOTE: AssKicR is now the CSDM maintainer.
+1.00 Release Build 184 (01-29-2004)
+	Fixed small error in command blocking.
+	Fixed error not being able to pick up MP5s.
+1.00 FINAL RELEASE 183 (01-28-2004)
+	Final Public Release
+	Added auto-gun dropping option.
+	Fixed internal entity table (fixes csdm_delent).
+	Reverted to original entity creation system.
+	Redefined de_dust entities.
+	Added entities for cs_militia (BAILOPAN).
+	Added entities for cs_office (BAILOPAN).
+	Added entities for cs_siege (AssKicR).
+	Added entities for de_inferno (AssKicR).
+1.00 Release Build 178 (01-27-2004)
+	Rewrote weapon entity collision/creation system.
+	Wrote a weaponbox deletion system that will safely remove weapons.
+1.00 Release Build 171 (01-26-2004)
+	Removed unncessary tempent code.
+	Hardened crashed protection?
+1.00 Release build 170 (01-26-2004)
+	Added requirement of Xtrafun (to count entities).
+	Added native support for item_healthkit, item_battery, and item_longjump.
+	Added more cvars for control.
+	Rewrote entity system.&nbsp; Fixed crashes.
+	Fixed spawn/spectator stacking.
+	Fixed all entity timing problems.
+	Fixed having to restart the plugin to make changes.
+	Separated debugging mode into optional compile.
+1.00 Beta build 148: (01-12-2004)
+	Fixed csdm_setspawn, csdm_setspawnv.
+	Fixed small bug in respawn code.
+	Removed csdm_add_items requirement for csdm_viewspawns.
+1.00 Beta build 145: (01-12-2004)
+	Added better buy-blocking, thank you AssKicR.
+	Added csdm_look, thank you AssKicR.
+	Added csdm_spawn_protect which has new modes.
+	Added new says: players can now say "guns", "enablemenu", "menu", and "enable_menu".
+	Changed how csdm_setspawn works -- more random and now can set predefined spawn values.
+	Fixed weapon dropping AGAIN, this time for bots too.
+	Fixed that annoying team join bug.
+	Fixed HUD problems by using double spawn trick - again.
+	Re-formatted all spawn entries for new format.
+1.00 Beta build 143: (01-12-2004)
+	Completely rewrote weapon dropping code.
+	Added new debug code - csdm_debug.
+	Added opt-out option for menus.
+	Removed double respawn hack.
+	Fixed menus again.
+	Fixed crashing bug in force_drop_all().
+	Fixed possible edict slot problem in replaceWeapons().
+	Fixed loading/viewing spawn angle vectors.
+1.00 Beta build 138: (01-10-2004)
+	Fixed issues with enable_menu and guns.
+	Fixed issues with csdm_spawn_spam.
+	Added CVAR csdm_allow_smoke, default 1.
+	Finished removing debug code.
+1.00 Beta build 137: (01-10-2004)
+	Fixed errors in csdm_setent.
+	Fixed error with first spawn.
+	Fixed how weapons kind of plop down. (AssKicR)
+	Added de_aztec entities.
+	Removed some issues with dropping weapons.
+	Removed debug mode.
+1.00 Beta build 136: (01-10-2004)
+	Fixed readMapFile() - DO NOT USE BUILD 135
+	Made so "guns" and "respawn" can be used through say.
+1.00 Beta build 135: (01-10-2004)
+	Now uses HEV suit for csdm_viewspawns.
+	Removed dummyguerilla precache.
+	Changed respawning, again.&nbsp; Not instaneous anymore.
+	Fixed potential crash bug with menus?
+	Fixed csdm_killall bug.
+	csdm_setspawnv records angles.
+	Removed HUD-redrawing code.
+1.00 Beta build 134: (01-07-2004)
+	Fixed all HUD message problems.
+	Fixed spawning problems.
+	Fixed weapon dropping problems.
+	Fixed weapon deletion problems.
+	Fixed weapons dropping on death problems.
+	Fixed spawn weapon problems in normal mode.
+	Added csdm_ent, fixed csdm_delent.
+	Added skeleton code for csdm_look.
+1.00 Beta build 131: (01-07-2004)
+	Added blocking of radio again.
+	Fixed csdm_kill_all issue.
+1.00 Beta build 130: (01-07-2004)
+	Fixed dropping issue.
+	Fixed weapons not disappearing issue.
+	Reverted to some older code.
+1.00 Beta build 128: (01-07-2004)
+	Changed "armour" to "armor".
+	Fixed secondary weapon bug.
+	Made guns re-enable menu.
+	Increased MAX_ENTS to 200.
+	[Unrelated] Finished de_dust ents.
+	Fixed clip sizes for flashbang, fiveseven.
+	Removed blank line error in spawn/ent files.
+	Fixed crosshairs.
+	Fixed menu issues, again.
+1.00 Beta build 127: (01-07-2004)
+	Changed "armour" to "armor".
+	Fixed secondary weapon bug.
+	Made guns re-enable menu.
+	Increased MAX_ENTS to 200.
+	[Unrelated] Finished de_dust ents.
+1.00 Beta Build 126: (01-07-2004)
+	Fixed more spawning issues.
+	Added more to menu options.
+	Added csdm_set_amenu, csdm_set_gmenu, csdm_near, csdm_debug
+	Added CVARs csdm_enable_amenu, csdm_enable_gmenu
+	Resolved end of map crashing issue.
+1.00 Beta Build 121: (01-06-2004)
+	Fixed spawning issues.
+	Unblocked radio and audio messages.
+1.00 Beta Build 120: (01-06-2004)
+	Removed old drop hook code and task code.
+1.00 Beta Build 119: (01-06-2004)
+	Fixed equip bug
+1.00 Beta Build 118: (01-06-2004)
+	Initial beta release
+</PRE></BODY></HTML>
