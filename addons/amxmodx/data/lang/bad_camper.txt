@@ -1,0 +1,155 @@
+[en]
+CAMP_METER = Camp Meter: %i%%
+CAMPING_STARTED = %s is camping.
+CAMPING_STOPPED = %s is no longer camping.
+PUNISH_SLAP = Slap
+PUNISH_HEALTH = Health Reduction
+PUNISH_SOUND = Sound
+PUNISH_BLIND = Blind
+PUNISH_MONEY = Money Reduction
+PUNISH_SNARKS = Snark Attack
+SOUND_SNORE = Snore
+SOUND_HEART = Heartbeat
+
+[bp]
+CAMP_METER = Camp Medidor: %i%%
+CAMPING_STARTED = %s esta plantado.
+CAMPING_STOPPED = %s nao esta mais plantado.
+PUNISH_SLAP = Bofetada
+PUNISH_HEALTH = Redução de Energia
+PUNISH_SOUND = Som
+PUNISH_BLIND = Cegueira
+PUNISH_MONEY = Redução de Dinheiro
+PUNISH_SNARKS = Ataque de Snark
+SOUND_SNORE = Ronco
+SOUND_HEART = Batimentos Cardiacos
+
+[de]
+CAMP_METER = Camp-Meter: %i%%
+CAMPING_STARTED = %s campt.
+CAMPING_STOPPED = %s campt nicht laenger.
+PUNISH_SLAP = Schlag
+PUNISH_HEALTH = Gesundheitsabbau
+PUNISH_SOUND = Sound
+PUNISH_BLIND = Erblinden
+PUNISH_MONEY = Geldabbau
+PUNISH_SNARKS = Snark-Angriff
+SOUND_SNORE = Schnarchen
+SOUND_HEART = Herzschlag
+
+[es]
+CAMP_METER = Camper Metro: %i%%
+CAMPING_STARTED = %s esta campeando.
+CAMPING_STOPPED = %s dejo de campear.
+PUNISH_SLAP = Cachetazo
+PUNISH_HEALTH = Reduccion de Vida
+PUNISH_SOUND = Sonido
+PUNISH_BLIND = Ceguera
+PUNISH_MONEY = Reduccion de Dinero
+PUNISH_SNARKS = Ataque de Snark
+SOUND_SNORE = Ronquido
+SOUND_HEART = Latido de Corazon
+
+[fi]
+CAMP_METER = Camppimittari : %i%%
+CAMPING_STARTED = %s camppii.
+CAMPING_STOPPED = %s ei enaa campi.
+PUNISH_SLAP = Slap
+PUNISH_HEALTH = Healtin vahennys
+PUNISH_SOUND = Aani
+PUNISH_BLIND = Sokaisu
+PUNISH_MONEY = Rahan vahennys
+PUNISH_SNARKS = Snark-hyokkays
+SOUND_SNORE = Kuorsaus
+SOUND_HEART = Sydammenlyonnit
+
+[fr]
+CAMP_METER = Niveau de campe : %i%%
+CAMPING_STARTED = %s campe... On s'bouge ! :P
+CAMPING_STOPPED = %s ne campe plus. L'abus est mauvais pour le jeu ! :D
+PUNISH_SLAP = Baffe
+PUNISH_HEALTH = Reduction de vie
+PUNISH_SOUND = Son
+PUNISH_BLIND = Aveuglement
+PUNISH_MONEY = Reduction d'argent
+PUNISH_SNARKS = Attaque de Monstres
+SOUND_SNORE = Ronflement
+SOUND_HEART = Battement de coeur
+
+[hu]
+CAMP_METER = KempMeter: %i%%
+CAMPING_STARTED = %s kempel.
+CAMPING_STOPPED = %s mar nem kempel.
+PUNISH_SLAP = Utes
+PUNISH_HEALTH = Elet Levonas
+PUNISH_SOUND = Hang
+PUNISH_BLIND = Vakság
+PUNISH_MONEY = Penz Levonas
+PUNISH_SNARKS = Snark-Tamadas
+SOUND_SNORE = Horkolas
+SOUND_HEART = Szivveres
+
+[nl]
+CAMP_METER = Camp Meter: %i%%
+CAMPING_STARTED = %s campt.
+CAMPING_STOPPED = %s campt niet meer.
+PUNISH_SLAP = Slappen
+PUNISH_HEALTH = Gezondheid verlagen
+PUNISH_SOUND = Geluid
+PUNISH_BLIND = Verblinden
+PUNISH_MONEY = Geld afnemen
+PUNISH_SNARKS = Snark aanval
+SOUND_SNORE = Snurken
+SOUND_HEART = Hartslag
+
+[ls]
+CAMP_METER = Z0MG-l33t M3t3r: %i%%
+CAMPING_STARTED = %s iz un-l33t c@mp3|2 n00b
+CAMPING_STOPPED = %s iz z|ghtlz l3zz un-l33t
+PUNISH_SLAP = F!v3 f!ng3|2z + face == SL!Z#P!
+PUNISH_HEALTH = N03z \/@mp!|23 @tt#ck!!!!111
+PUNISH_SOUND = Z0undz!
+PUNISH_BLIND = N03z s33z!
+PUNISH_MONEY = /\/\0n!3s $t0l3nz
+PUNISH_SNARKS = Z0MG $n@|2kz!
+SOUND_SNORE = n33d m0|23 c@ff!3n3!
+SOUND_HEART = bubump! bubump! bubump!
+
+[pl]
+CAMP_METER = Kamp Meter: %i%%
+CAMPING_STARTED = %s kampi.
+CAMPING_STOPPED = %s juz nie kampi.
+PUNISH_SLAP = Klaps
+PUNISH_HEALTH = Redukcja zycia
+PUNISH_SOUND = Dzwiek
+PUNISH_BLIND = Slepy
+PUNISH_MONEY = Redukcja pieniedzy
+PUNISH_SNARKS = Snark Attack
+SOUND_SNORE = Chrapanie
+SOUND_HEART = Bicie serca
+
+[ro]
+CAMP_METER = Camp Meter: %i%%
+CAMPING_STARTED = %s campeaza.
+CAMPING_STOPPED = %s nu mai campeaza.
+PUNISH_SLAP = Slap
+PUNISH_HEALTH = Reducerea vietii
+PUNISH_SOUND = Sunet
+PUNISH_BLIND = Orb
+PUNISH_MONEY = Reducerea banilor
+PUNISH_SNARKS = Atacul Snark
+SOUND_SNORE = Sforait
+SOUND_HEART = Palpitatie
+
+[sv]
+CAMP_METER = Camping M'a'tare: %i%%
+CAMPING_STARTED = %s campar.
+CAMPING_STOPPED = %s campar inte l'a'ngre.
+PUNISH_SLAP = 'O'rfilar
+PUNISH_HEALTH = Reducerat liv
+PUNISH_SOUND = Ljud
+PUNISH_BLIND = Blindhet
+PUNISH_MONEY = Reducerade pengar
+PUNISH_SNARKS = Snark Attack
+SOUND_SNORE = Snarkningar
+SOUND_HEART = Hj'a'rtslag
