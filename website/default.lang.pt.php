@@ -197,9 +197,12 @@ substituindo os arquivos existentes. A pasta cstrike ou czero do jogo geralmente
 <p>E siga as instruções contidas neles. </p>
 
 <p>Nota 1: Para utilizar o commandmenu (h tecla no jogo). Cada administrador 
-do server deveria ter os arquivos de código fonte (Source Code Zip) acima instalado,
-em sua própria cópia do jogo, ou apenas a pasta "gamemod_common/admin" e
-o arquivo "gamemod_common/commandmenu.txt".</p>
+deve ter o arquivo 
+<a href="https://github.com/Addonszz/AddonsMultiMod/archive/master.zip">AddonsMultiMod-master.zip</a> 
+acima instalado a com a SENHA RCON configurada em sua própria cópia do jogo.
+Um admin também pode somente ter a pasta "gamemod_common/admin" com os seus conteúdos 
+e os arquivos "gamemod_common/commandmenu.txt" e "gamemod_common/autoexec.cfg",
+com a SENHA RCON configurada.</p>
 
 <p>Nota 2: A SENHA do arquivo podbotconfig.cfg na sua pasta gamemod, serve para criar
     waypoint utilizando o linstenserver ( jogo offline pelo new game ) e adicionar podbots. Mas quem tem
