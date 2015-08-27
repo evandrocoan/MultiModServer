@@ -108,6 +108,10 @@
 * f117bomb, XxAvalanchexX, VEN, Sether 
 * and all the fine users of this plugin.
 *
+*********************************************************************************
+* Changelog
+* v4.1.1
+* Corrected some original exceptions/errors and better functionally to SpawnProtection
 *
 *********************************************************************************
 *
@@ -129,7 +133,7 @@
 
 // Plugin Info
 new const PLUGIN[]  = "AMX Super"
-new const VERSION[] = "4.1 Nospeed"
+new const VERSION[] = "4.1.1 Nospeed"
 new const AUTHOR[]  = "Bmann_420"
 
 
