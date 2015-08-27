@@ -191,9 +191,12 @@ The Counter-Strike's cstrike or czero folder usually is at:</p>
 <p>Following the instructions contained therein.</p>
 
 <p>Note 1: In order to use the commandmenu (key h in game). Every server 
-administrator should have the source code files (Source Code Zip) above installed, 
-at his own Game Mod copy, or just the the folder "gamemod_common/admin" and
-the file "gamemod_common/commandmenu.txt".</p>
+administrator should have the file 
+<a href="https://github.com/Addonszz/AddonsMultiMod/archive/master.zip">AddonsMultiMod-master.zip</a> 
+above installed, and with the RCON password configured at his own Game Mod copy. 
+An admin can too just have the folder "gamemod_common/admin" with its contents and 
+the files "gamemod_common/commandmenu.txt" and "gamemod_common/autoexec.cfg",
+with the RCON password configured.</p>
 
 <p>Note 2: The PASSWORD at podbotconfig.cfg at your gamemod folder, serves 
 to create waypoint using the linstenserver (play offline at new game) and add 

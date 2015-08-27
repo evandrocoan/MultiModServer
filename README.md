@@ -82,8 +82,10 @@ Following the instructions contained therein.
 Note 1: In order to use the commandmenu (key h in game). Every server 
 administrator should have the 
 [AddonsMultiMod-master.zip](https://github.com/Addonszz/AddonsMultiMod/archive/master.zip) 
-above installed, at his own Game Mod copy, or just the the folder "gamemod_common/admin" 
-with its contents and the file "gamemod_common/commandmenu.txt".
+above installed and with the RCON password configured, at his own Game Mod copy. 
+An admin can too just have the folder "gamemod_common/admin" with its contents and 
+the files "gamemod_common/commandmenu.txt" and "gamemod_common/autoexec.cfg",
+with the RCON password configured. 
 
 Note 2: The PASSWORD at podbotconfig.cfg at your gamemod folder, serves 
 to create waypoint using the linstenserver (play offline at new game) and add 
