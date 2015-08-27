@@ -1,0 +1,22 @@
+{
+    "name"    : "CheckWinConditions",
+    "class"   : "CHalfLifeMultiplay",
+    "library" : "mod",
+    "return"  :
+    {
+        "type" : "bool"
+    },
+    "identifiers" : 
+    [
+        {
+            "os"    : "windows",
+            "mod"   : "cstrike",
+            "value" : [0x83,0xEC,0x38,0x53,0x55,0x8B,0xE9,0x56,0x33,0xF6,0x57,0x8A,0x85,0xB4,0x02,0x00,0x00,0x89,0x74,0x24,0x10,0x84,0xC0,0x74,"*",0x39,0x75,0x74,0x0F,0x85,"*","*","*","*"]
+        },
+        {
+            "os"    : "linux",
+            "mod"   : "cstrike",
+            "value" : "CheckWinConditions__18CHalfLifeMultiplay"
+        }
+    ]
+}
