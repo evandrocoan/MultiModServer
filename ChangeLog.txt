@@ -3,6 +3,10 @@
 - This project adheres to [Semantic Versioning](http://semver.org/).
 
 
+2015-08-27 - v4.0
+	* Separated the Amx_Ultra plugin from the Addons.
+
+
 2015-08-22 - v3.0
 	* Currently it is tested under Counter-Strike and Counter-Strike Condition Zero
 	* Added support to control PodBot and CSBot throw commandmenu.txt
