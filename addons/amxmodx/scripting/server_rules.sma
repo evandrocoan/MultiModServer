@@ -27,9 +27,9 @@ public mandatoryinform( strindex[ ] )
     myindex = str_to_num( strindex )
     if(myindex>0)
 #if defined _amxmodx_included
-    show_motd(myindex,"/addons/amxmodx/configs/comandos.html","Server Rules")
+    show_motd(myindex,"/addons/amxmodx/configs/commands.html","Server Rules")
 #else
-    show_motd( myindex, "/addons/amxmodx/configs/comandos.html", "Server Rules" )
+    show_motd( myindex, "/addons/amxmodx/configs/commands.html", "Server Rules" )
 #endif
 }
 
@@ -70,9 +70,9 @@ public admin_showthem( id, level, cid )
     //get_user_name(player,name,31) 
     client_cmd(player,"say Don't shoot! I am studing!")
 #if defined _amxmodx_included	
-    show_motd(player,"/addons/amxmodx/configs/comandos.html","READ THE RULES!")
+    show_motd(player,"/addons/amxmodx/configs/commands.html","READ THE RULES!")
 #else
-    show_motd(player,"/addons/amxmodx/configs/comandos.html","READ THE RULES!")
+    show_motd(player,"/addons/amxmodx/configs/commands.html","READ THE RULES!")
 #endif
     return PLUGIN_HANDLED
 }

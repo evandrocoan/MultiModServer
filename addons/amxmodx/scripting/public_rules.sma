@@ -51,7 +51,7 @@ to players when they join server
 #include <amxmodx>
 #include <amxmisc>
 
-new base[] = "addons/amxmodx/configs/regras.txt"
+new base[] = "addons/amxmodx/configs/rules.txt"
 
 new i, num, text[127], hudmsg[440] //max hudmessage length was 439 chars (?)
 

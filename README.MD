@@ -3,8 +3,10 @@ Amx_Ultra - After the great success of Amx_Super... There is Amx_Ultra
 
 1. Why all these plugins are not too much functionality?
  * They all are here to save your trouble of going out there taking one by one 
-and installing and testing. All the ones here are already installed and well tested!
-And there is not too much functionality because there is only 15 actives by default. 
+and installing and configuring and testing. All the ones here are already installed 
+and tested.
+And there is not too much functionality because there is only some actives by default. 
+These plugins are located at addons/amxmodx/configs/plugins/[plugins-ultra.ini](addons/amxmodx/configs/plugins.ini). 
 Then you those which ones are good for you, activating or deactivating then. 
 Like, you want to play SuperHeros, Zombie or Dragon Ball? Then active it 
 by typing "amx_multimodz help 1" at console to see the command, or just type, 
