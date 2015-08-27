@@ -83,7 +83,7 @@ The Addons Multi-Mod contains numerous mods and comes standard configured for ma
 EOD;
 
 $lang[ 'PRIMEIRA_COLUNA' ] = <<<EOD
-<p><span style="font-size:40px">See more progress at:</span>
+<p><span style="font-size:40px">About Addons Multi-Mod? See here:</span>
 <p><a href="https://github.com/Addonszz/AddonsMultiMod">https://github.com/Addonszz/AddonsMultiMod</a></p>
 </p>
 <p><span style="font-size:40px">About Amx Ultra? See here:</span>
@@ -166,11 +166,14 @@ $lang[ 'SEGUNDA_COLUNA' ] = <<<EOF
 <p>It works in <a name="installation"><strong><font color="red"><u>Counter-Strike e Counter-Strike Condition Zero</u></font></strong></a>  updated.</p>
 
 <p><span style="font-size:66px">To install it</span><br>Download the binaries 
-<a href="https://github.com/Addonszz/AddonsMultiMod/releases/download/v3.0/gamemod_common_plugins.zip">(gamemod_common_plugins.zip)</a>, 
-<a href="https://github.com/Addonszz/AddonsMultiMod/releases/download/v3.0/gamemod_common_resources.zip">(gamemod_common_resources.zip)</a> 
-and the sources <a href="https://github.com/Addonszz/AddonsMultiMod/archive/master.zip">(Source Code Zip)</a>, 
-then just unzip and put the content of cstrike/czero and gamemod_common at your Counter-Strike's cstrike/czero folder, replacing existents files. 
-The Counter-Strike's cstrike/czero folder usually is at:</p>
+<a href="https://github.com/Addonszz/Amx_Ultra/releases/download/v1.0/amx_ultra_plugin.zip">amx_ultra_plugin.zip</a>, 
+<a href="https://github.com/Addonszz/Amx_Ultra/releases/download/v1.0/amx_ultra_resources.zip">amx_ultra_resources.zip</a>, 
+<a href="https://github.com/Addonszz/AddonsMultiMod/releases/download/v4.0/addons_resources.zip">addons_resources.zip</a>, 
+<a href="https://github.com/Addonszz/Amx_Ultra/archive/master.zip">Amx_Ultra-master.zip</a> 
+and 
+<a href="https://github.com/Addonszz/AddonsMultiMod/archive/master.zip">AddonsMultiMod-master.zip</a>, 
+then just unzip and put the content of cstrike or czero and gamemod_common at your Counter-Strike's cstrike or czero folder, replacing existents files. 
+The Counter-Strike's cstrike or czero folder usually is at:</p>
 
 <p><u>C:\Program Files (x86)\Steam\SteamApps\common\Half-Life\cstrike</u></p>
 <p><u>C:\Program Files (x86)\Steam\SteamApps\common\Half-Life\czero</u></p>

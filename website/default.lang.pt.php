@@ -83,7 +83,7 @@ O Addons Multi-Mod contém inúmeros mods e vem por padrão configurado para o m
 EOD;
 
 $lang[ 'PRIMEIRA_COLUNA' ] = <<<EOD
-<p><span style="font-size:40px">Veja mais progresso em:</span>
+<p><span style="font-size:40px">Sobre Addons Multi-Mod? Veja aqui:</span>
 <p><a href="https://github.com/Addonszz/AddonsMultiMod">https://github.com/Addonszz/AddonsMultiMod</a></p>
 </p>
 <p><span style="font-size:40px">Sobre Amx Ultra? Veja aqui:</span>
@@ -170,13 +170,16 @@ EOD;
 $lang[ 'SEGUNDA_COLUNA' ] = <<<EOF
 <p>Ele funciona em <a name="installation"><strong><font color="red"><u>Counter-Strike e Counter-Strike Condition Zero</u></font></strong></a> atualizado.</p>
 
-<p><span style="font-size:66px">Para instalá-lo</span><br>
+<p><span style="font-size:66px">Para instalá-lo</span><br> 
 Baixar os binários 
-<a href="https://github.com/Addonszz/AddonsMultiMod/releases/download/v3.0/gamemod_common_plugins.zip">(gamemod_common_plugins.zip)</a>, 
-<a href="https://github.com/Addonszz/AddonsMultiMod/releases/download/v3.0/gamemod_common_resources.zip">(gamemod_common_resources.zip)</a>
-e as fontes <a href="https://github.com/Addonszz/AddonsMultiMod/archive/master.zip">(Source Code Zip)</a>, 
-e então basta descompactar e copiar o conteúdo da pasta cstrike/czero e gamemod_common para a sua pasta cstrike/czero do seu jogo, 
-substituindo os arquivos existentes. A pasta cstrike/czero do jogo geralmente fica em:</p>
+<a href="https://github.com/Addonszz/Amx_Ultra/releases/download/v1.0/amx_ultra_plugin.zip">amx_ultra_plugin.zip</a>, 
+<a href="https://github.com/Addonszz/Amx_Ultra/releases/download/v1.0/amx_ultra_resources.zip">amx_ultra_resources</a>, 
+<a href="https://github.com/Addonszz/AddonsMultiMod/releases/download/v4.0/addons_resources.zip">addons_resources.zip</a>, 
+<a href="https://github.com/Addonszz/Amx_Ultra/archive/master.zip">Amx_Ultra-master.zip</a> 
+e 
+<a href="https://github.com/Addonszz/AddonsMultiMod/archive/master.zip">AddonsMultiMod-master.zip</a>, 
+e então basta descompactar e copiar o conteúdo da pasta cstrike ou czero e gamemod_common para a sua pasta cstrike ou czero do seu jogo, 
+substituindo os arquivos existentes. A pasta cstrike ou czero do jogo geralmente fica em:</p>
 
 <p><u>C:\Arquivos de Programas (x86)\Steam\SteamApps\common\Half-Life\cstrike</u></p>
 <p><u>C:\Arquivos de Programas (x86)\Steam\SteamApps\common\Half-Life\czero</u></p>
