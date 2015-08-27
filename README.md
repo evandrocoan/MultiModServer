@@ -1,4 +1,4 @@
-![Addons zz](http://addons.zz.mu/Addons_zz.mu_600x107_github_painINmyASS4.png)
+![Addons zz](http://addons.zz.mu/Addons_zz.mu_600x107_github_painINmyASS5.png)
 
 The Addons zz is a Addons Multi-Mod and contains numerous mods and comes 
 standard configured for maximum performance and server control. 
@@ -14,7 +14,7 @@ deactivate it or active some other mod like predator. And in the last five minut
 or be asked before a vote by the command "say votemod", creates a vote to select 
 what will be the Mod played in the next changelevel/restart.
 
-####Some Features
+####Some Features with its Core Plugin [Amx Ultra](https://github.com/addonszz/Amx_Ultra) installed
 - Support for: 
 - linux and windows servers.
 - Mac OS PODBot, Linux and Windows.
@@ -41,46 +41,61 @@ knife_duel, amx_chicken, adv_killstreak, countdown_exec, ...
 
 [See more info here.](gamemod_common/addons/amxmodx/configs/plugins.ini)
 
-#Install
+#To install it
 
-To install it, download the binaries 
-[(gamemod_common_plugins.zip)](https://github.com/Addonszz/AddonsMultiMod/releases/download/v3.0/gamemod_common_plugins.zip), [(gamemod_common_resources.zip)](https://github.com/Addonszz/AddonsMultiMod/releases/download/v3.0/gamemod_common_resources.zip) and the sources 
-[(Source Code Zip)](https://github.com/Addonszz/AddonsMultiMod/archive/master.zip), 
-then just unzip and put the content of gamemod_common_plugins, 
-gamemod_common_resources and gamemod_common at (Source Code Zip), 
-at your's Game Mod's folder like cstrike and czero, replacing existents files. 
-Your Game Mod folder usually is at: C:\Program Files (x86)\Steam\SteamApps\common\Half-Life\gamemod
+Download the binaries 
+[addons_resources.zip](https://github.com/Addonszz/AddonsMultiMod/releases/download/v4.0/addons_resources.zip)
+and [AddonsMultiMod-master.zip](https://github.com/Addonszz/AddonsMultiMod/archive/master.zip), 
+then just unzip and put the content of 
+[addons_resources.zip](https://github.com/Addonszz/AddonsMultiMod/releases/download/v4.0/addons_resources.zip) 
+and gamemod_common inside [AddonsMultiMod-master.zip](https://github.com/Addonszz/AddonsMultiMod/archive/master.zip), 
+at your's Game Mod's folder like cstrike or czero, replacing existents files. 
+Yours Game Mod's folder usually is at: C:\Program Files (x86)\Steam\SteamApps\common\Half-Life\gamemod
 
-If your game mode is cstrike or czero, copy the content of cstrike/czero at (Source Code Zip)
-to your cstrike/czero game folder replacing the existents files.
-And if your game is different than cstrike/czero, edit your "liblist.gam" at your gamemod folder 
-as the "liblist.gam" at cstrike/czero folder at (Source Code Zip).
+If your game mode is cstrike or czero, copy the content of cstrike or czero inside the downloaded 
+[AddonsMultiMod-master.zip](https://github.com/Addonszz/AddonsMultiMod/archive/master.zip)
+to your cstrike or czero game folder, replacing the existents files.
+And if your game is different than cstrike or czero, edit your "liblist.gam" at your 
+gamemod folder as the "liblist.gam" at cstrike or czero folder inside 
+[AddonsMultiMod-master.zip](https://github.com/Addonszz/AddonsMultiMod/archive/master.zip).
 
-After installing addons, just set your STEAM ID user. Please update the file:
+Observation 1: The folder website at (Source Code Zip) is just illustrative website and 
+does not fill any role at your installation/setup.
+
+Observation 2: The files hlds_cstrike_27015 and hlds_czero_27015 are to create 
+a command line server, due highly use less resources. It is configured at 27015 port. 
+To open more then one serve at once, duplicate the file and edit inside it, changing it to 
+use another port at the command +port 27015.
+
+After installing the addons, install its Core Plugin [Amx_Ultra](https://github.com/addonszz/Amx_Ultra).
+
+After installing the addons, too just set your STEAM ID user. Please update the file:
 
 1. users (user.ini) at folder gamemod/addons/amxmodx/configs
 
 After installing addons, just set your RCON password:
 
-2. autoexec (autoexec.cfg) at folder gamemod.
+2. autoexec (autoexec.cfg) at the folder gamemod.
 
 Following the instructions contained therein. 
 
 Note 1: In order to use the commandmenu (key h in game). Every server 
-administrator should have the source code files (Source Code Zip) above installed, 
-at his own Game Mod copy, or just the the folder "gamemod_common/admin" and
-the file "gamemod_common/commandmenu.txt".
+administrator should have the 
+[AddonsMultiMod-master.zip](https://github.com/Addonszz/AddonsMultiMod/archive/master.zip) 
+above installed, at his own Game Mod copy, or just the the folder "gamemod_common/admin" 
+with its contents and the file "gamemod_common/commandmenu.txt".
 
 Note 2: The PASSWORD at podbotconfig.cfg at your gamemod folder, serves 
 to create waypoint using the linstenserver (play offline at new game) and add 
 podbots. But who has rcon authentication can also control the podbots.
 
-If you have trouble configuring the server, this is an awesome tutorial on 
-setting an updated Steam server that works with any type of customer:
+If you have trouble configuring the server, this below is an awesome tutorial on 
+setting an updated Steam server that works with any type of customer 
+using SteamCMD:
 
 http://steamcommunity.com/sharedfiles/filedetails/?id=340974032
 
 https://developer.valvesoftware.com/wiki/SteamCMD
 
-[Veja Aqui em Português](http://addons.zz.mu/default.php?lang=pt)
+[Veja Aqui em Português](http://translate.google.com.br/translate?hl=pt-BR&sl=en&u=https://github.com/addonszz/AddonsMultiMod)
 ==========================

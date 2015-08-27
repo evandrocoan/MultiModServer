@@ -8,10 +8,10 @@ Language: ENGLISH
 $lang = array();
 
 $lang[ 'HEADER' ] = <<<EOD
-    <meta name="description"content="The Addons zz is an add-in for Counter-Strike game. The Addons zz contains numerous mods and comes standard configured for maximum performance and server control.">
-    <title>Addons zz - For Counter-Strike - CS </title>
-    <meta itemprop="name" content="Addons zz - For Counter-Strike - CS ">
-    <meta itemprop="description"content="The Addons zz is an add-in for Counter-Strike game. The Addons zz contains numerous mods and comes standard configured for maximum performance and server control.">
+    <meta name="description"content="The Addons Multi-Mod is an add-in for Counter-Strike and Counter-Strike Condition Zero games. The Addons Multi-Mod contains numerous mods and comes standard configured for maximum performance and server control.">
+    <title>Addons Multi-Mod - For Counter-Strike - CS </title>
+    <meta itemprop="name" content="Addons Multi-Mod - For Counter-Strike - CS ">
+    <meta itemprop="description"content="The Addons Multi-Mod is an add-in for Counter-Strike and Counter-Strike Condition Zero games. The Addons Multi-Mod contains numerous mods and comes standard configured for maximum performance and server control.">
 EOD;
 
 $lang[ 'MENU_PRINCIPAL' ] = <<<EOD
@@ -77,16 +77,19 @@ EOD;
 }
 
 $lang[ 'DESCRICAO_INICIAL' ] = <<<EOD
-The Addons zz is an add-in for &quot;Counter-Strike 1.6&quot; and &quot;Counter-Strike: Condition Zero&quot; game.
+The Addons Multi-Mod is an add-in for &quot;Counter-Strike 1.6&quot; and &quot;Counter-Strike: Condition Zero&quot; game.
 <p>
-The Addons zz contains numerous mods and comes standard configured for maximum performance and server control.</p>
+The Addons Multi-Mod contains numerous mods and comes standard configured for maximum performance and server control.</p>
 EOD;
 
 $lang[ 'PRIMEIRA_COLUNA' ] = <<<EOD
-<p><span style="font-size:40px">See more progress at:</span>
+<p><span style="font-size:40px">About Addons Multi-Mod? See here:</span>
 <p><a href="https://github.com/Addonszz/AddonsMultiMod">https://github.com/Addonszz/AddonsMultiMod</a></p>
 </p>
-<p>Basic information on the latest version of <strong><font color="red"><u>Addons zz v2.0</u></font></strong>
+<p><span style="font-size:40px">About Amx Ultra? See here:</span>
+<p><a href="https://github.com/Addonszz/Amx_Ultra">https://github.com/Addonszz/Amx_Ultra</a></p>
+</p>
+<p>Basic information on the latest version of <strong><font color="red"><u>Addons Multi-Mod v2.0</u></font></strong>
     released on 12/08/2015: </p>
 * Galileo 1.1.290 that is a feature rich map voting plugin.<br>
 * In the last five minutes or be asked before a vote by the command "say votemod", creates a vote to select what will be the Mod played in próprimo round.<br>
@@ -102,7 +105,7 @@ $lang[ 'PRIMEIRA_COLUNA' ] = <<<EOD
 *  Made "Next Mod: " message display there is no actived mod, when there is not.<br>
 *  When the min vote time is not reached/disabled, display e message informing that.
 
-<p>Version of <strong><font color="red"><u>Addons zz v1.5</u></font></strong>
+<p>Version of <strong><font color="red"><u>Addons Multi-Mod v1.5</u></font></strong>
     released on 12/08/2015: <br>
 
 * Added Dragon Ball Mod v1.3<br>
@@ -110,7 +113,7 @@ $lang[ 'PRIMEIRA_COLUNA' ] = <<<EOD
 * Fixed daily_maps incompatibility with nextmap.<br>
 * Placed multi-mod_plugin and info to its originals plugins nextmap and cmdmenus.
 
-<p>Version of <strong><font color="red"><u>Addons zz v1.4</u></font></strong>
+<p>Version of <strong><font color="red"><u>Addons Multi-Mod v1.4</u></font></strong>
     released on 10/08/2015: <br>
 * Added pain_shock_free plugins that disables the slow walking when taking shots.<br>
 * Added new Command Menu (h button on the game) with support:<br>
@@ -163,11 +166,14 @@ $lang[ 'SEGUNDA_COLUNA' ] = <<<EOF
 <p>It works in <a name="installation"><strong><font color="red"><u>Counter-Strike e Counter-Strike Condition Zero</u></font></strong></a>  updated.</p>
 
 <p><span style="font-size:66px">To install it</span><br>Download the binaries 
-<a href="https://github.com/Addonszz/AddonsMultiMod/releases/download/v3.0/gamemod_common_plugins.zip">(gamemod_common_plugins.zip)</a>, 
-<a href="https://github.com/Addonszz/AddonsMultiMod/releases/download/v3.0/gamemod_common_resources.zip">(gamemod_common_resources.zip)</a> 
-and the sources <a href="https://github.com/Addonszz/AddonsMultiMod/archive/master.zip">(Source Code Zip)</a>, 
-then just unzip and put the content of cstrike/czero and gamemod_common at your Counter-Strike's cstrike/czero folder, replacing existents files. 
-The Counter-Strike's cstrike/czero folder usually is at:</p>
+<a href="https://github.com/Addonszz/Amx_Ultra/releases/download/v1.0/amx_ultra_plugin.zip">amx_ultra_plugin.zip</a>, 
+<a href="https://github.com/Addonszz/Amx_Ultra/releases/download/v1.0/amx_ultra_resources.zip">amx_ultra_resources.zip</a>, 
+<a href="https://github.com/Addonszz/AddonsMultiMod/releases/download/v4.0/addons_resources.zip">addons_resources.zip</a>, 
+<a href="https://github.com/Addonszz/Amx_Ultra/archive/master.zip">Amx_Ultra-master.zip</a> 
+and 
+<a href="https://github.com/Addonszz/AddonsMultiMod/archive/master.zip">AddonsMultiMod-master.zip</a>, 
+then just unzip and put the content of cstrike or czero and gamemod_common at your Counter-Strike's cstrike or czero folder, replacing existents files. 
+The Counter-Strike's cstrike or czero folder usually is at:</p>
 
 <p><u>C:\Program Files (x86)\Steam\SteamApps\common\Half-Life\cstrike</u></p>
 <p><u>C:\Program Files (x86)\Steam\SteamApps\common\Half-Life\czero</u></p>

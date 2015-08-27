@@ -58,7 +58,7 @@ native socket_send(_socket, const _data[], _length);
 native socket_send2(_socket, const _data[], _length);
 
 /* This function will return true if the state (buffer content) have changed within the last recieve or
-* the timeout, where timeout is a value in ÂµSeconds, (1 sec =1000000 Âµsec). 
+* the timeout, where timeout is a value in µSeconds, (1 sec =1000000 µsec). 
 * Use to check if new data is in your socket. */
 
 native socket_change(_socket, _timeout=100000);

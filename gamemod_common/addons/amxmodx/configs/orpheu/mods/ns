@@ -1,9 +1,0 @@
-{
-	"name" : "ns",
-	"aliases" : ["nsp"],
-	"pev" :
-	{
-		"windows" : 4,
-		"linux" : 0
-	}
-}
