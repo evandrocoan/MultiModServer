@@ -39,7 +39,7 @@ what will be the Mod played in the next changelevel/restart.
 - multi-mod_core, amx_exec, head_shot_announcer, grentrail, parachute, 
 knife_duel, amx_chicken, adv_killstreak, countdown_exec, ... 
 
-[See more info here.](gamemod_common/addons/amxmodx/configs/plugins.ini)
+[See more info here.](https://github.com/addonszz/Amx_Ultra/blob/master/addons/amxmodx/configs/plugins-ultra.ini)
 
 #To install it
 
