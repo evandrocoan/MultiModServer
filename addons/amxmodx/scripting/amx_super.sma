@@ -111,7 +111,8 @@
 *********************************************************************************
 * Changelog
 * v4.1.1
-* Corrected some original exceptions/errors and better functionally to SpawnProtection
+* Corrected some exceptions and added SpawnProtection countdown,  
+*	and freeze time alignment support to amx_super 4.1 Nospeed.
 *
 *********************************************************************************
 *

@@ -46,8 +46,8 @@ don't come all at once big file.
 4. For who Amx_Ultra is designed and why it is here?
  * To whoever want its functionalities, and to [Addons Multi-Mod](https://github.com/addonszz/AddonsMultiMod) use it. 
 And its is here for those who don't want install the Addons Multi-Mod but 
-still want its functionalities. And of course, to find the best of the best 
-and don't spend time testing, configuring and debugging they.
+still want its functionalities. And of course, to find the well tested plugins 
+and don't to spend time testing, configuring and debugging they.
 
 #To install it
 
