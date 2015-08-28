@@ -178,11 +178,25 @@ Baixar os binários
 <a href="https://github.com/Addonszz/Amx_Ultra/archive/master.zip">Amx_Ultra-master.zip</a> 
 e 
 <a href="https://github.com/Addonszz/AddonsMultiMod/archive/master.zip">AddonsMultiMod-master.zip</a>, 
-e então basta descompactar e copiar o conteúdo da pasta cstrike ou czero e gamemod_common para a sua pasta cstrike ou czero do seu jogo, 
-substituindo os arquivos existentes. A pasta cstrike ou czero do jogo geralmente fica em:</p>
+então basta descompactar o conteudo de <br>
+"<a href="https://github.com/Addonszz/AddonsMultiMod/archive/master.zip">AddonsMultiMod-master.zip</a>/AddonsMultiMod-master/cstrike" 
+ou <br>
+"<a href="https://github.com/Addonszz/AddonsMultiMod/archive/master.zip">AddonsMultiMod-master.zip</a>/AddonsMultiMod-master/czero" 
+e <br>
+"<a href="https://github.com/Addonszz/AddonsMultiMod/archive/master.zip">AddonsMultiMod-master.zip</a>/AddonsMultiMod-master/gamemod_common", <br>
+"<a href="https://github.com/Addonszz/Amx_Ultra/archive/master.zip">Amx_Ultra-master.zip</a>/Amx_Ultra-master", <br>
+"<a href="https://github.com/Addonszz/Amx_Ultra/releases/download/v1.0/amx_ultra_plugin.zip">amx_ultra_plugin.zip</a>", <br>
+"<a href="https://github.com/Addonszz/AddonsMultiMod/releases/download/v4.0/addons_resources.zip">addons_resources.zip</a>" 
+and <br>
+"<a href="https://github.com/Addonszz/Amx_Ultra/releases/download/v1.0/amx_ultra_resources.zip">amx_ultra_resources</a>" <br>
+na sua pasta  cstrike ou czero, substituindo as arquivos existentes. A pasta cstrike ou czero usualmente fica em:</p>
 
-<p><u>C:\Arquivos de Programas (x86)\Steam\SteamApps\common\Half-Life\cstrike</u></p>
-<p><u>C:\Arquivos de Programas (x86)\Steam\SteamApps\common\Half-Life\czero</u></p>
+<p><u>C:\Program Files (x86)\Steam\SteamApps\common\Half-Life\cstrike</u></p>
+<p><u>C:\Program Files (x86)\Steam\SteamApps\common\Half-Life\czero</u></p>
+
+Se o jogo é diferente do que "cstrike" ou "czero", editar o seu "liblist.gam" na sua 
+pasta gamemod como o "liblist.gam" na pasta "cstrike" ou "czero" dentro da pasta <br>
+"<a href="https://github.com/Addonszz/AddonsMultiMod/archive/master.zip">AddonsMultiMod-master.zip</a>/AddonsMultiMod-master".
 
 <p>Após instalar o addons, basta configurar o seu STEAM ID usuário. </p>
 
@@ -198,10 +212,14 @@ substituindo os arquivos existentes. A pasta cstrike ou czero do jogo geralmente
 
 <p>Nota 1: Para utilizar o commandmenu (h tecla no jogo). Cada administrador 
 deve ter o arquivo 
-<a href="https://github.com/Addonszz/AddonsMultiMod/archive/master.zip">AddonsMultiMod-master.zip</a> 
+"<a href="https://github.com/Addonszz/AddonsMultiMod/archive/master.zip">AddonsMultiMod-master.zip</a>/gamemod_common" <br> 
 acima instalado a com a SENHA RCON configurada em sua própria cópia do jogo.
-Um admin também pode somente ter a pasta "gamemod_common/admin" com os seus conteúdos 
-e os arquivos "gamemod_common/commandmenu.txt" e "gamemod_common/autoexec.cfg",
+Um admin também pode somente ter a pasta <br>
+"<a href="https://github.com/Addonszz/AddonsMultiMod/archive/master.zip">AddonsMultiMod-master.zip</a>/gamemod_common/admin" <br>
+com os seus conteúdos e os arquivos <br>
+"<a href="https://github.com/Addonszz/AddonsMultiMod/archive/master.zip">AddonsMultiMod-master.zip</a>/gamemod_common/commandmenu.txt" 
+e <br>
+"<a href="https://github.com/Addonszz/AddonsMultiMod/archive/master.zip">AddonsMultiMod-master.zip</a>/gamemod_common/autoexec.cfg", <br>
 com a SENHA RCON configurada.</p>
 
 <p>Nota 2: A SENHA do arquivo podbotconfig.cfg na sua pasta gamemod, serve para criar
@@ -217,6 +235,10 @@ com a SENHA RCON configurada.</p>
 
 <p>
     <a href="http://translate.google.com.br/translate?hl=pt-BR&sl=en&u=https://developer.valvesoftware.com/wiki/SteamCMD">https://developer.valvesoftware.com/wiki/SteamCMD</a>
+</p>
+
+<p><span style="font-size:66px">Veja aqui</span> novas instruções para instalação:
+<a href="http://translate.google.com.br/translate?hl=pt-BR&sl=en&u=https://github.com/addonszz/AddonsMultiMod#to-install-it">https://github.com/addonszz/AddonsMultiMod#to-install-it</a>
 </p>
 
 EOF;
