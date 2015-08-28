@@ -5,6 +5,8 @@
 
 2015-08-27 - v4.0
 	* Separated the Amx_Ultra plugin from Addons Multi-Mod v3.0
+	* Corrected some exceptions and added SpawnProtection countdown,  
+	   and freeze time alignment support to amx_super 4.1 Nospeed.
 
 
 2015-08-22 - v3.0
