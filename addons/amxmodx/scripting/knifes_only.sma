@@ -41,8 +41,8 @@ new voteknifesonly[] = "\yKnifes Only?\w^n^n1. On^n2. Off"
 public plugin_init(){
 register_plugin("Knifes Only","0.1","BillyTheKid")
 register_concmd("amx_knifesonly","cmdknifes_only",ADMIN_LEVEL_A,"- disable and enable knife war 1 = on 0 = off")
-register_concmd("","cmdvoteknifes_only",ADMIN_VOTE,"- Starts a vote for knifesonly")
-register_concmd("","cmdvote",ADMIN_VOTE,"- start a vote to turn knifes Only on or off")
+register_concmd("say voteknife","cmdvoteknifes_only",ADMIN_VOTE,"- Starts a vote for knifesonly")
+register_concmd("amx_voteknifeonly","cmdvote",ADMIN_VOTE,"- Start a vote to turn knifes Only on or off")
 register_menucmd(register_menuid("\yKnifes Only?"),(1<<0)|(1<<1),"count_votes")
 register_event("CurWeapon","knife","b")
 }

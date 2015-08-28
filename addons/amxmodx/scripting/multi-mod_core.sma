@@ -244,7 +244,7 @@ which is run every time the server starts and defines which mods are enabled.^n/
 This file is managed automatically by multi-mod_core.sma plugin^n//\
 and any modification will be discarded in the activation of some mod.^n^n"
 
-new helpAmx_addonszz[LONG_STRING] = "^n^namx_multimodz help 1           | for help.^n^n"
+new helpAmx_addonszz[LONG_STRING] = "amx_multimodz help 1           | for help."
 
 new cmdsAvailables1[LONG_STRING] = "^namx_multimodz help 1    | To show this help.^n\
 amx_multimodz disableMods 1   | To deactivate any active Mod.^n\
