@@ -7,19 +7,19 @@ and installing and configuring and testing. All the ones here are already instal
 and tested. Hence, this was not developed from night to day, took me years of experience
 and tousands of hours testing and debuging to finally bring it here, specially to you.
 And there is not too much functionality because there is only some actives by default. 
-These plugins are located at addons/amxmodx/configs/plugins/[plugins-ultra.ini](addons/amxmodx/configs/plugins.ini). 
+These plugins are located at "addons/amxmodx/configs/plugins/[plugins-ultra.ini](addons/amxmodx/configs/plugins-ultra.ini)". 
 Then you choose which ones are good for you, activating or deactivating then. 
 Like, you want to play SuperHeros, Zombie or Dragon Ball? Then active it 
 by typing "amx_multimodz help 1" at console to see the command, or just type, 
 "amx_votemod"  to force a mod votation, admins only command, of course, 
 but players can still try "say votemod".
 Hence sure, you can create you own new mod Mod as "My Super 4 Fun Mod", 
-combining some of those [plugins](addons/amxmodx/configs/plugins.ini) of 
+combining some of those [plugins](addons/amxmodx/configs/plugins-ultra.ini) of 
 Amx_Ultra, like amx_gore_ultimate, Ultimate Quake Sounds, 
 pain_shock_free, cssurfboards, bad_camper, etc... 
 See at "[Multi-Mod_Core v5.0 - Configuration section](https://forums.alliedmods.net/showthread.php?t=270188#Configuration)" 
 how to configure it. 
-The "Multi-Mod_Core" plugin is already integrated at Amx_Ultra.
+The "Multi-Mod_Core" plugin is already integrated with Amx_Ultra.
 
 
 2. Where it come from and why? 
@@ -46,8 +46,24 @@ don't come all at once big file.
 4. For who Amx_Ultra is designed and why it is here?
  * To whoever want its functionalities, and to [Addons Multi-Mod](https://github.com/addonszz/AddonsMultiMod) use it. 
 And its is here for those who don't want install the Addons Multi-Mod but 
-still want its functionalities. And of course, find the best of the best 
-plugins and don't spend time testing and configuring they.
+still want its functionalities. And of course, to find the well tested plugins 
+and don't to spend time testing, configuring and debugging they.
+
+#To install it
+
+Download the binaries 
+[amx_ultra_plugin.zip](https://github.com/Addonszz/Amx_Ultra/releases/download/v1.0/amx_ultra_plugin.zip), 
+[amx_ultra_resources.zip](https://github.com/Addonszz/Amx_Ultra/releases/download/v1.0/amx_ultra_resources.zip) 
+and 
+[Amx_Ultra-master](https://github.com/Addonszz/Amx_Ultra/archive/master.zip), 
+then just unzip and put the content of 
+[amx_ultra_plugin.zip](https://github.com/Addonszz/Amx_Ultra/releases/download/v1.0/amx_ultra_plugin.zip), 
+[amx_ultra_resources.zip](https://github.com/Addonszz/Amx_Ultra/releases/download/v1.0/amx_ultra_resources.zip) 
+and 
+[Amx_Ultra-master.zip](https://github.com/Addonszz/Amx_Ultra/archive/master.zip), 
+at your's Game Mod's folder like cstrike or czero, replacing existents files. 
+Your Game Mod's folder is usually at: 
+"C:\Program Files (x86)\Steam\SteamApps\common\Half-Life\gamemod"
 
 
 For any problems with this plugin visit 
