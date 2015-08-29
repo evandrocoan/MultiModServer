@@ -56,11 +56,14 @@ and
 then just unzip and put the content of 
 [amx_ultra_plugin.zip](https://github.com/Addonszz/Amx_Ultra/releases/download/v1.0/amx_ultra_plugin.zip), 
 [amx_ultra_resources.zip](https://github.com/Addonszz/Amx_Ultra/releases/download/v1.0/amx_ultra_resources.zip) 
-and 
+and the folder "Amx_Ultra-master" inside 
 [Amx_Ultra-master.zip](https://github.com/Addonszz/Amx_Ultra/archive/master.zip), 
 at your's Game Mod's folder like cstrike or czero, replacing existents files. 
 Your Game Mod's folder is usually at: 
 "C:\Program Files (x86)\Steam\SteamApps\common\Half-Life\gamemod" 
+
+If you have trouble configuring/installing the server, install the Addons Multi-Mod below: 
+https://github.com/addonszz/AddonsMultiMod
 
 ####Frequently Asked Questions
 
@@ -102,14 +105,11 @@ customize/personalize Amx_Ultra with you own taste easily.
 5. For who Amx_Ultra is designed and why it is here? 
  * To whoever want its functionalities, and to [Addons Multi-Mod](https://github.com/addonszz/AddonsMultiMod) use it. 
 And its is here for those who don't want install the Addons Multi-Mod but 
-still want its functionalities. And of course, to find the well tested plugins 
+still want its functionalities. And of course, to find tested plugins 
 and to save time testing and configuring they. 
 
 That are a lot of credits, so just read its own source code doc to heads up. But you can see 
 a general credits name list [here](Credits.txt). 
-
-If you have trouble configuring the server, install the Addons Multi-Mod below first: 
-https://github.com/addonszz/AddonsMultiMod
 
 [Veja Aqui em Português](http://translate.google.com.br/translate?hl=pt-BR&sl=en&u=https://github.com/addonszz/Amx_Ultra)
 ==========================
