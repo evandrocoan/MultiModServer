@@ -4,8 +4,8 @@ Amx_Ultra - After the great success of Amx_Super... There is Amx_Ultra
 1. Why all these plugins are not too much functionality?
  * They all are here to save your trouble of going out there taking one by one 
 and installing and configuring and testing. All the ones here are already installed 
-and tested. Hence, this was not developed from night to day, took me years of experience
-and tousands of hours testing and debuging to finally bring it here, specially to you.
+and tested. Hence, this was not developed from night to day, took years of experience
+and hours testing and debuging to finally bring it here, specially to you.
 And there is not too much functionality because there is only some actives by default. 
 These plugins are located at "addons/amxmodx/configs/plugins/[plugins-ultra.ini](addons/amxmodx/configs/plugins-ultra.ini)". 
 Then you choose which ones are good for you, activating or deactivating then. 
