@@ -912,7 +912,7 @@ public start_vote()
         set_task( 6.0, "check_vote", TASK_CHVOMOD )
     } else
     {   
-        set_task( 65.0, "check_vote", TASK_CHVOMOD )
+        set_task( 30.0, "check_vote", TASK_CHVOMOD )
     }
 }
 
@@ -1021,7 +1021,7 @@ public display_votemod_menu( id, menu_current_page )
         show_menu( id, menu_valid_keys, menu_body, 5, g_menuname )
     } else
     {   
-        show_menu( id, menu_valid_keys, menu_body, 60, g_menuname )
+        show_menu( id, menu_valid_keys, menu_body, 25, g_menuname )
     }
 }
 

@@ -3,14 +3,24 @@
 - This project adheres to [Semantic Versioning](http://semver.org/).
 
 
+2015-08-30 - v4.0.1
+	* Added auto-pause feature to galileo and multi-mod_mapchooser. 
+	* Fixed galileo restart server after timelimit change.
+	* Translated to english auto restart menu messages.
+	* Fixed spawn protection message 1 second late delay.
+	* Adjusted vote max vote time.
+
+
 2015-08-27 - v4.0
 	* Separated the Amx_Ultra plugin from Addons Multi-Mod 
 	* Corrected some exceptions and added SpawnProtection countdown, 
        and freeze time alignment support to amx_super 4.1 Nospeed. 
 
+
 2015-08-22 - v3.0
 	* Currently it is tested under Counter-Strike and Counter-Strike Condition Zero
 	* Log chat messages of: say, say_team, amx_say, ...
+
 
 2015-08-17 - v2.0
     * Added Galileo 1.1.290 that is a feature rich map voting plugin.
@@ -26,11 +36,13 @@
     * Made "Next Mod: " message display there is no actived mod, when there is not.
     * When the min vote time is not reached/disabled, display e message informing that.
 
+
 2015-08-12 v1.5
 	* Added Dragon Ball Mod v1.3
 	* New multi-mod_core with improved server control.
 	* Fixed daily_maps incompatibility with nextmap.
 	* Placed multi-mod_plugin and info to its originals plugins nextmap and cmdmenus.
+
 
 2015-08-10 1.4
 	* Added Gun-Game Mod v2.13c
@@ -45,6 +57,7 @@
 	* Added support for Knife Arena Mod 1.2
 	* Added the mod Zombie Mod 5.08a with new game modes.
 
+
 2015-07-27 v1.2
 	* Added:
 	- player_wanted that pays rewards for CT's and TR's most sought after.
@@ -56,3 +69,4 @@
 	- bad_camper that punishes who does camper indiscriminately.
 	- multi-mod_core, amx_exec, head_shot_announcer, grentrail, parachute, knife_duel, 
 	  amx_chicken, adv_killstreak, countdown_exec, ... 
+
