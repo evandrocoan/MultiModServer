@@ -25,7 +25,7 @@
  *  Removed map end control from galileo and restaured this responsability to 
  *    the original AMXX Dev Team plugin NextMap.amxx, because it was 
  *    too much, and was becoming the plugin unmaintainable.
- *  Made changemap immediately after a forced mapvote, calling gal_startvote. 
+ * Made changemap immediately after a forced mapvote, calling gal_startvote. 
  * Fixed a bug where it change the map right after normal vote map finished.
  * Removed the functionality change server map when empty server due to be 
  *   unmaintainable, there other specialized plugins at it.
@@ -33,6 +33,9 @@
  * Removed the functionality allow round finish, due to be unmaintainable and there is 
  *   others specialized plugins at it.
  * If nobody voted keep the initial server next map.
+ * v1.1.293
+ *  Removed messages "say currentmap", "say nextmap", due to be unmaintainable and 
+ *    there is specialized plugins doing so, like nextmap.amxx.
  */
 
 new const PLUGIN_VERSION[]  = "1.1.291"; // $Revision: 290 $ $Date: 2009-02-26 11:20:25 -0500 (Thu, 26 Feb 2009) $;
@@ -71,7 +74,7 @@ new const PLUGIN_VERSION[]  = "1.1.291"; // $Revision: 290 $ $Date: 2009-02-26 1
 #define MAX_PREFIX_CNT			32
 #define MAX_RECENT_MAP_CNT	16
 
-#define MAX_PLAYER_CNT				32
+#define MAX_PLAYER_CNT				33
 #define MAX_STANDARD_MAP_CNT	25
 #define MAX_MAPNAME_LEN				31
 #define MAX_MAPS_IN_VOTE			8
@@ -196,9 +199,9 @@ public plugin_init()
 	register_menucmd(g_menuChooseMap, MENU_KEY_1|MENU_KEY_2|MENU_KEY_3|MENU_KEY_4|MENU_KEY_5|MENU_KEY_6|MENU_KEY_7|MENU_KEY_8|MENU_KEY_9|MENU_KEY_0, "vote_handleChoice");
 
 	register_clcmd("say", "cmd_say", -1);
-	register_clcmd("say nextmap", "cmd_nextmap", 0, "- displays nextmap");
+	/*register_clcmd("say nextmap", "cmd_nextmap", 0, "- displays nextmap");
 	register_clcmd("say currentmap", "cmd_currentmap", 0, "- display current map");
-	register_clcmd("say ff", "cmd_ff", 0, "- display friendly fire status");	// grrface
+	register_clcmd("say ff", "cmd_ff", 0, "- display friendly fire status");	// grrface*/
 	register_clcmd("votemap", "cmd_HL1_votemap");
 	register_clcmd("listmaps", "cmd_HL1_listmaps");
 
@@ -585,19 +588,19 @@ public cmd_nominations(id)
 	return PLUGIN_CONTINUE;
 }
 
-public cmd_nextmap(id)
+/*public cmd_nextmap(id)
 {
 	new map[32];
 	get_cvar_string("amx_nextmap", map, sizeof(map)-1);
 	client_print(0, print_chat, "%L %s", LANG_PLAYER, "NEXT_MAP", map);
 	return PLUGIN_CONTINUE;
-}
+}*/
 
-public cmd_currentmap(id)
+/*public cmd_currentmap(id)
 {
 	client_print(0, print_chat, "%L: %s", LANG_PLAYER, "PLAYED_MAP", g_currentMap);
 	return PLUGIN_CONTINUE;
-}
+}*/
 
 public cmd_listrecent(id)
 {
@@ -732,12 +735,12 @@ public map_loadNominationList()
 	g_nominationMapCnt = map_populateList(g_nominationMap, filename);
 }
 
-// grrface, this has no place in a map choosing plugin. just replicating it because it's in AMXX's
+/*// grrface, this has no place in a map choosing plugin. just replicating it because it's in AMXX's
 public cmd_ff()
 {
 	client_print(0, print_chat, "%L: %L", LANG_PLAYER, "FRIEND_FIRE", LANG_PLAYER, get_cvar_num("mp_friendlyfire") ? "ON" : "OFF");
 	return PLUGIN_CONTINUE;
-}
+}*/
 
 public cmd_createMapFile(id, level, cid)
 {

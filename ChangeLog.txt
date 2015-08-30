@@ -3,6 +3,12 @@
 - This project adheres to [Semantic Versioning](http://semver.org/).
 
 
+2015-08-30 - v4.0.2
+	*  Removed map end control from galileo and restaured this responsability to 
+	    the original AMXX Dev Team plugin NextMap.amxx, because it was 
+	    too much, and was becoming the plugin unmaintainable.
+
+
 2015-08-30 - v4.0.1
 	* Added auto-pause feature  for anothers plugins map managers to galileo 
        and multi-mod_mapchooser. 
