@@ -1,4 +1,30 @@
-new const PLUGIN_VERSION[]  = "1.1 $Revision: 290 $"; // $Date: 2009-02-26 11:20:25 -0500 (Thu, 26 Feb 2009) $;
+/*
+ ************************* List of tasks *********************************************
+ * vote_setupEnd
+ * srv_initEmptyCheck
+ * vote_manageEnd
+ * vote_startDirector
+ * map_change
+ * vote_countdownPendingVote
+ * vote_handleDisplay
+ * vote_display
+ * vote_expire
+ * vote_startDirector
+ * srv_announceEarlyVote
+ * srv_startEmptyCycle
+ * 
+ ************************************************************************************
+ * 
+ * Changelog
+ * v1.1.291
+ *  Fixed server timelimit re-change after change to 0.
+ *  Fixed server restart after change timelimit to 0.
+ *  Added autopause for anothers plugins map managers. 
+ *  Disable GAL_NEXTMAP_UNKNOWN variable at server start.
+ * 
+ */
+
+new const PLUGIN_VERSION[]  = "1.1.291"; // $Revision: 290 $ $Date: 2009-02-26 11:20:25 -0500 (Thu, 26 Feb 2009) $;
 
 #include <amxmodx>
 #include <amxmisc>
@@ -70,6 +96,8 @@ new CLR_GREY[3];		// \d
 new bool:g_wasLastRound = false;
 new g_mapPrefix[MAX_PREFIX_CNT][16], g_mapPrefixCnt = 1;
 new g_currentMap[MAX_MAPNAME_LEN+1], Float:g_originalTimelimit = TIMELIMIT_NOT_SET;
+new isTimeToChangeLevel = false;
+new isTimeLimitChanged = false; 
 
 new g_nomination[MAX_PLAYER_CNT + 1][MAX_NOMINATION_CNT + 1], g_nominationCnt, g_nominationMatchesMenu[MAX_PLAYER_CNT];
 //new g_nonOverlapHudSync;
@@ -233,8 +261,25 @@ public dbg_fakeVotes()
 	}
 }
 
+/**
+ * Called when all plugins went through plugin_init().
+ * When this forward is called, most plugins should have registered their
+ * cvars and commands already.
+ */
 public plugin_cfg()
 {
+	isTimeToChangeLevel = false;
+	isTimeLimitChanged = false;
+
+	if( is_plugin_loaded( "Nextmap Chooser" ) != -1 )
+	{
+		server_cmd( "amxx pause mapchooser.amxx" );
+	}
+	if( is_plugin_loaded( "NextMap" ) != -1 )
+	{
+		server_cmd( "amxx pause nextmap.amxx" );
+	}
+
 	formatex(DIR_CONFIGS[get_configsdir(DIR_CONFIGS, sizeof(DIR_CONFIGS)-1)], sizeof(DIR_CONFIGS)-1, "/galileo");
 	formatex(DIR_DATA[get_datadir(DIR_DATA, sizeof(DIR_DATA)-1)], sizeof(DIR_DATA)-1, "/galileo");
 
@@ -320,16 +365,16 @@ public vote_setupEnd()
 	g_originalTimelimit = get_cvar_float("mp_timelimit");
 	
 	new nextMap[32];
-	if (get_pcvar_num(cvar_endOfMapVote))
+	/*if (get_pcvar_num(cvar_endOfMapVote))
 	{
 		formatex(nextMap, sizeof(nextMap)-1, "%L", LANG_SERVER, "GAL_NEXTMAP_UNKNOWN");
 	}
 	else
-	{
-		g_mapCycle = ArrayCreate(32);
-		map_populateList(g_mapCycle, "mapcycle.txt");
-		map_getNext(g_mapCycle, g_currentMap, nextMap);
-	}
+	{*/
+	g_mapCycle = ArrayCreate(32);
+	map_populateList(g_mapCycle, "mapcycle.txt");
+	map_getNext(g_mapCycle, g_currentMap, nextMap);
+	//}
 	map_setNext(nextMap);
 	
 	// as long as the time limit isn't set to 0, we can manage the end of the map automatically
@@ -823,6 +868,7 @@ public map_manageEnd()
 
 			// prevent the map from ending automatically
 			server_cmd("mp_timelimit 0");
+			isTimeLimitChanged = true;
 		}
 		else
 		{
@@ -890,6 +936,7 @@ public event_intermission()
 	g_pauseMapEndManagerTask = true;
 	
 	// change the map after "chattime" is over
+	isTimeToChangeLevel = true;
 	set_task(floatmax(get_cvar_float("mp_chattime"), 2.0), "map_change");
 
 	return PLUGIN_CONTINUE;
@@ -2155,6 +2202,7 @@ public vote_expire()
 		if ((g_voteStatus & VOTE_FORCED || (playerCnt == 1 && idxWinner < g_choiceCnt) || playerCnt == 0) && !(get_cvar_num("gal_debug") & 4))
 		{
 			// tell the map we need to finish up
+			isTimeToChangeLevel = true;
 			set_task(2.0, "map_manageEnd");
 		}
 		else
@@ -2176,6 +2224,7 @@ map_extend()
 	}	
 
 	// do that actual map extension
+	isTimeLimitChanged = true;
 	set_cvar_float("mp_timelimit", get_cvar_float("mp_timelimit") + get_pcvar_float(cvar_extendmapStep));
 	server_exec();
 
@@ -2374,7 +2423,11 @@ public map_change()
 	}
 
 	// change to the map
-	server_cmd("changelevel %s", map);
+	if( isTimeToChangeLevel )
+	{
+		server_cmd("changelevel %s", map);
+		isTimeToChangeLevel = false;
+	}
 }
 
 Float:map_getMinutesElapsed()
@@ -2806,6 +2859,7 @@ public srv_startEmptyCycle()
 	// immediately change to next map that is
 	if (mapIdx == -1)
 	{
+		isTimeToChangeLevel = true;
 		map_change();
 	}
 }
@@ -2871,10 +2925,11 @@ print_color(id, text[])
 map_restoreOriginalTimeLimit()
 {
 	dbg_log(2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "map_restoreOriginalTimeLimit(in)", get_cvar_float("mp_timelimit"), g_originalTimelimit);
-	if (g_originalTimelimit != TIMELIMIT_NOT_SET)
+	if ( isTimeLimitChanged )
 	{	
 		server_cmd("mp_timelimit %f", g_originalTimelimit);
 		server_exec();
+		isTimeLimitChanged = false;
 	}
 	dbg_log(2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "map_restoreOriginalTimeLimit(out)", get_cvar_float("mp_timelimit"), g_originalTimelimit);
 }

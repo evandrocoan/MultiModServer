@@ -4,8 +4,11 @@
 
 
 2015-08-30 - v4.0.1
-	* Added auto-pause feature to galileo and multi-mod_mapchooser. 
+	* Added auto-pause feature  for anothers plugins map managers to galileo 
+       and multi-mod_mapchooser. 
 	* Fixed galileo restart server after timelimit change.
+	*  Fixed server timelimit re-change after change to 0.
+	*  Fixed server restart after change timelimit to 0.
 	* Translated to english auto restart menu messages.
 	* Fixed spawn protection message 1 second late delay.
 	* Adjusted vote max vote time.
