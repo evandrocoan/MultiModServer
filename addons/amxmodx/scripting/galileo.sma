@@ -1,44 +1,62 @@
 /*
- ************************* List of tasks *********************************************
- * vote_setupEnd
- * srv_initEmptyCheck
- * vote_manageEnd
- * vote_startDirector
- * map_change
- * vote_countdownPendingVote
- * vote_handleDisplay
- * vote_display
- * vote_expire
- * vote_startDirector
- * srv_announceEarlyVote
- * srv_startEmptyCycle
- * 
- ************************************************************************************
- * 
- * Changelog
- * v1.1.291
- *  Fixed server timelimit re-change after change to 0.
- *  Fixed server restart after change timelimit to 0.
- *  Added autopause for anothers plugins map managers. 
- *  Disable GAL_NEXTMAP_UNKNOWN variable at server start.
- * v1.1.292
- *  Removed map end control from galileo and restaured this responsability to 
- *    the original AMXX Dev Team plugin NextMap.amxx, because it was 
- *    too much, and was becoming the plugin unmaintainable.
- * Made changemap immediately after a forced mapvote, calling gal_startvote. 
- * Fixed a bug where it change the map right after normal vote map finished.
- * Removed the functionality change server map when empty server due to be 
- *   unmaintainable, there other specialized plugins at it.
- * Removed the change to [vote in progress], due to be unmaintainable. 
- * Removed the functionality allow round finish, due to be unmaintainable and there is 
- *   others specialized plugins at it.
- * If nobody voted keep the initial server next map.
- * v1.1.293
- *  Removed messages "say currentmap", "say nextmap", due to be unmaintainable and 
- *    there is specialized plugins doing so, like nextmap.amxx.
- */
+See here the original authors (Brad) plugin post:
+https://forums.alliedmods.net/showthread.php?t=77391
 
-new const PLUGIN_VERSION[]  = "1.1.291"; // $Revision: 290 $ $Date: 2009-02-26 11:20:25 -0500 (Thu, 26 Feb 2009) $;
+This newer updates goal to fix bug and to remove functionalities that are not working 
+and can be achieved by using third parts plugins, due this become this own plugin 
+unmaintainable. See the original post (link above) and changelog below to heads up.
+
+*********************** List of tasks *********************************************
+vote_setupEnd
+srv_initEmptyCheck
+vote_manageEnd
+vote_startDirector
+map_change
+vote_countdownPendingVote
+vote_handleDisplay
+vote_display
+vote_expire
+vote_startDirector
+srv_announceEarlyVote
+srv_startEmptyCycle
+
+********************************************************************************
+
+Changelog
+v1.1.291
+ Fixed server timelimit re-change after change to 0.
+ Fixed server restart after change timelimit to 0.
+ Added autopause for anothers plugins map managers. 
+ Disable GAL_NEXTMAP_UNKNOWN variable at server start.
+v1.1.292
+ Removed map end control from galileo and restaured this responsability to 
+   the original AMXX Dev Team plugin NextMap.amxx, because it was 
+   too much, and was becoming the plugin unmaintainable.
+Made changemap immediately after a forced mapvote, calling gal_startvote. 
+Fixed a bug where it change the map right after normal vote map finished.
+Removed the functionality change server map when empty server due to be 
+  unmaintainable, there other specialized plugins at it.
+Removed the change to [vote in progress], due to be unmaintainable and unnecessary. 
+Removed the functionality allow round finish, due to be unmaintainable and there is 
+  others specialized plugins at it.
+If nobody voted, keep the initial server next map.
+v1.1.293
+ Removed messages "say currentmap", "say nextmap", due to be unmaintainable and 
+   there is specialized plugins doing so, like nextmap.amxx
+v1.1.294
+ Made the vote map list be loaded from the current mapcycle file.
+ Added a option "#" to gal_nom_mapfile, to use the current mapcycle to nominate maps.
+
+*********************************************************************************
+Credits: 
+Brad: The galileo developer from version 0.1 to 1.1.290 
+Addons zz: For versions 1.1.290 to 1.1.294 
+Th3822: for find a error from map_nominate, it was just a small typo on g_nominationMatchesMenu.
+
+*********************************************************************************
+*/
+
+new const PLUGIN_VERSION[]  = "1.1.292"; // $Date: 2009-02-26 11:20:25 -0500 (Thu, 26 Feb 2009) $;
 
 #include <amxmodx>
 #include <amxmisc>
@@ -152,7 +170,8 @@ new cvar_nomMapFile, cvar_nomPrefixes;
 new cvar_nomQtyUsed, cvar_nomPlayerAllowance;
 new cvar_voteExpCountdown, cvar_voteWeightFlags, cvar_voteWeight;
 new cvar_voteMapChoiceCnt, cvar_voteAnnounceChoice, cvar_voteUniquePrefixes;
-new cvar_voteMapFile, cvar_rtvReminder;
+//new cvar_voteMapFile; 
+new cvar_rtvReminder;
 new cvar_srvStart;
 //new cvar_emptyWait
 //new cvar_emptyMapFile;
@@ -240,7 +259,7 @@ public plugin_init()
 	
 	cvar_voteWeight 				= register_cvar("gal_vote_weight", "2");
 	cvar_voteWeightFlags		= register_cvar("gal_vote_weightflags", "y");
-	cvar_voteMapFile				= register_cvar("gal_vote_mapfile", "mapcycle.txt");
+	//cvar_voteMapFile				= register_cvar("gal_vote_mapfile", "mapcycle.txt");
 	cvar_voteDuration				= register_cvar("gal_vote_duration", "15");
 	cvar_voteExpCountdown		= register_cvar("gal_vote_expirationcountdown", "1");
 	cvar_voteMapChoiceCnt		=	register_cvar("gal_vote_mapchoices", "5");
@@ -668,7 +687,7 @@ map_populateList(Array:mapArray, mapFilename[])
 	// load the array with maps
 	new mapCnt;
 	
-	if (!equal(mapFilename, "*"))
+	if ( !equal(mapFilename, "*") && !equal(mapFilename, "#") )
 	{
 		new file = fopen(mapFilename, "rt");
 		if (file)
@@ -695,33 +714,61 @@ map_populateList(Array:mapArray, mapFilename[])
 	}
 	else
 	{
-		// no file provided, assuming contents of "maps" folder
-		new dir, mapName[32];
-		dir = open_dir("maps", mapName, sizeof(mapName)-1);
-
-		if (dir)
+		if ( equal(mapFilename, "*") )
 		{
-			new lenMapName;
-			
-			while (next_file(dir, mapName, sizeof(mapName)-1))
+			// no file provided, assuming contents of "maps" folder
+			new dir, mapName[32];
+			dir = open_dir("maps", mapName, sizeof(mapName)-1);
+
+			if (dir)
 			{
-				lenMapName = strlen(mapName);	
-				if (lenMapName > 4 && equali(mapName[lenMapName - 4], ".bsp", 4))
+				new lenMapName;
+				
+				while (next_file(dir, mapName, sizeof(mapName)-1))
 				{
-					mapName[lenMapName-4] = '^0';
-					if (is_map_valid(mapName))
+					lenMapName = strlen(mapName);	
+					if (lenMapName > 4 && equali(mapName[lenMapName - 4], ".bsp", 4))
 					{
-						ArrayPushString(mapArray, mapName);
+						mapName[lenMapName-4] = '^0';
+						if (is_map_valid(mapName))
+						{
+							ArrayPushString(mapArray, mapName);
+							++mapCnt;
+						}
+					}
+				}
+				close_dir(dir);
+			}
+			else
+			{
+				// directory not found, wtf?
+				log_error(AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FOLDERMISSING");
+			}
+		} else 
+		{
+			get_cvar_string("mapcyclefile", mapFilename, 255 );
+			new file = fopen(mapFilename, "rt");
+			if (file)
+			{
+				new buffer[32];
+				
+				while (!feof(file))
+				{
+					fgets(file, buffer, sizeof(buffer)-1);
+					trim(buffer);
+					
+					if (buffer[0] && !equal(buffer, "//", 2) && !equal(buffer, ";", 1) && is_map_valid(buffer))
+					{
+						ArrayPushString(mapArray, buffer);
 						++mapCnt;
 					}
 				}
+				fclose(file);
 			}
-			close_dir(dir);
-		}
-		else
-		{
-			// directory not found, wtf?
-			log_error(AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FOLDERMISSING");
+			else
+			{
+				log_error(AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilename);
+			}
 		}
 	}
 	return mapCnt;	
@@ -1576,7 +1623,7 @@ vote_addFiller()
 
 	// grab the name of the filler file
 	new filename[256];
-	get_pcvar_string(cvar_voteMapFile, filename, sizeof(filename)-1);
+	get_cvar_string("mapcyclefile", filename, sizeof(filename)-1);
 
 	// create an array of files that will be pulled from
 	new fillerFile[8][256];
