@@ -83,7 +83,7 @@ include_once 'default.' . $lang_file;
     <img src="//www.fraudlog.com/tracker/1600|1437172524|300*200*1*1*7|FFE98F*00364A|1*1*1/4684NR-IPIB/14028/2/njsUrl/" 
     alt="auction fraud block" style="border:0px;"></a>
     <span style="padding-right:50px"></span>
-    <a href="http://api.hostinger.com.br/redir/10589730" target="_blank"><img src="http://hostinger.com.br/banners/br/hostinger-125x125-powered-1.gif" alt="Hospedagem" border="0" width="125" height="125"/></a>
+    <a href="http://www.hostinger.com.br/" target="_blank"><img src="http://hostinger.com.br/banners/br/hostinger-125x125-powered-1.gif" alt="Hospedagem" border="0" width="125" height="125"/></a>
     <br>
     <br>
     <span class="textoForte">__«^‿^»__ <a href="https://github.com/Addonszz">website by: Addons zz</a> __«~‿~»__

@@ -59,8 +59,9 @@ And if your game is different than cstrike or czero, edit your "liblist.gam" at 
 gamemod folder as the "liblist.gam" at cstrike or czero folder inside 
 [AddonsMultiMod-master.zip](https://github.com/Addonszz/AddonsMultiMod/archive/master.zip).
 
-Observation 1: The folder website at (Source Code Zip) is just illustrative website and 
-does not fill any role at your installation/setup.
+Observation 1: The folder website at 
+[AddonsMultiMod-master.zip](https://github.com/Addonszz/AddonsMultiMod/archive/master.zip) 
+is just illustrative website and does not fill any role at your installation/setup.
 
 Observation 2: The files hlds_cstrike_27015 and hlds_czero_27015 are to create 
 a command line server, due highly use less resources. It is configured at 27015 port. 

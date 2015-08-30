@@ -35,7 +35,7 @@
 #include <amxmodx>
 
 #define DISPLAY_MSG		// Comment to disable message on join
-#define HELPAMOUNT 10	// Number of commands per page
+#define HELPAMOUNT 10000	// Number of commands per page
 
 public plugin_init()
 {

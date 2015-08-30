@@ -172,11 +172,24 @@ $lang[ 'SEGUNDA_COLUNA' ] = <<<EOF
 <a href="https://github.com/Addonszz/Amx_Ultra/archive/master.zip">Amx_Ultra-master.zip</a> 
 and 
 <a href="https://github.com/Addonszz/AddonsMultiMod/archive/master.zip">AddonsMultiMod-master.zip</a>, 
-then just unzip and put the content of cstrike or czero and gamemod_common at your Counter-Strike's cstrike or czero folder, replacing existents files. 
-The Counter-Strike's cstrike or czero folder usually is at:</p>
+then just unzip and put the content of <br>
+"<a href="https://github.com/Addonszz/AddonsMultiMod/archive/master.zip">AddonsMultiMod-master.zip</a>/AddonsMultiMod-master/cstrike" or <br>
+"<a href="https://github.com/Addonszz/AddonsMultiMod/archive/master.zip">AddonsMultiMod-master.zip</a>/AddonsMultiMod-master/czero" and <br>
+"<a href="https://github.com/Addonszz/AddonsMultiMod/archive/master.zip">AddonsMultiMod-master.zip</a>/AddonsMultiMod-master/gamemod_common", <br>
+"<a href="https://github.com/Addonszz/Amx_Ultra/archive/master.zip">Amx_Ultra-master.zip</a>/Amx_Ultra-master", <br>
+"<a href="https://github.com/Addonszz/Amx_Ultra/releases/download/v1.0/amx_ultra_plugin.zip">amx_ultra_plugin.zip</a>", <br>
+"<a href="https://github.com/Addonszz/AddonsMultiMod/releases/download/v4.0/addons_resources.zip">addons_resources.zip</a>" <br>
+and 
+"<a href="https://github.com/Addonszz/Amx_Ultra/releases/download/v1.0/amx_ultra_resources.zip">amx_ultra_resources.zip</a>" <br>
+at your Counter-Strike's cstrike or czero folder, 
+replacing existents files. The Counter-Strike's cstrike or czero folder usually is at:</p>
 
 <p><u>C:\Program Files (x86)\Steam\SteamApps\common\Half-Life\cstrike</u></p>
 <p><u>C:\Program Files (x86)\Steam\SteamApps\common\Half-Life\czero</u></p>
+
+If your game is different than "cstrike" or "czero", edit your "liblist.gam" at your 
+gamemod folder as the "liblist.gam" at "cstrike" or "czero" folder inside <br>
+"<a href="https://github.com/Addonszz/AddonsMultiMod/archive/master.zip">AddonsMultiMod-master.zip</a>/AddonsMultiMod-master".
 
 <p>After installing addons, just set your STEAM ID user.</p>
 
@@ -191,11 +204,15 @@ The Counter-Strike's cstrike or czero folder usually is at:</p>
 <p>Following the instructions contained therein.</p>
 
 <p>Note 1: In order to use the commandmenu (key h in game). Every server 
-administrator should have the file 
-<a href="https://github.com/Addonszz/AddonsMultiMod/archive/master.zip">AddonsMultiMod-master.zip</a> 
-above installed, and with the RCON password configured at his own Game Mod copy. 
-An admin can too just have the folder "gamemod_common/admin" with its contents and 
-the files "gamemod_common/commandmenu.txt" and "gamemod_common/autoexec.cfg",
+administrator should have the file <br>
+"<a href="https://github.com/Addonszz/AddonsMultiMod/archive/master.zip">AddonsMultiMod-master.zip</a>/gamemod_common" <br> 
+above installed, and with the RCON password configured at his own Game Mod copy. <br><br>
+An admin can too just have the folder <br>
+"<a href="https://github.com/Addonszz/AddonsMultiMod/archive/master.zip">AddonsMultiMod-master.zip</a>/gamemod_common/admin" <br>
+with its contents and the files <br>
+"<a href="https://github.com/Addonszz/AddonsMultiMod/archive/master.zip">AddonsMultiMod-master.zip</a>/gamemod_common/commandmenu.txt" <br>
+and 
+"<a href="https://github.com/Addonszz/AddonsMultiMod/archive/master.zip">AddonsMultiMod-master.zip</a>/gamemod_common/autoexec.cfg", <br>
 with the RCON password configured.</p>
 
 <p>Note 2: The PASSWORD at podbotconfig.cfg at your gamemod folder, serves 
@@ -210,6 +227,10 @@ podbots. But who has rcon authentication can also control the podbots.</p>
 
 <p>
     <a href="https://developer.valvesoftware.com/wiki/SteamCMD">https://developer.valvesoftware.com/wiki/SteamCMD</a>
+</p>
+
+<p><span style="font-size:66px">See here</span> newer instructions for installation:
+<a href="https://github.com/addonszz/AddonsMultiMod#to-install-it">https://github.com/addonszz/AddonsMultiMod#to-install-it</a>
 </p>
 
 EOF;

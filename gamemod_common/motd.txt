@@ -34,9 +34,9 @@ a:hover {
 <div align="center"> 
   <pre><b><font face="Tahoma" size="3" color="#eeeeee">
 </font><img src="http://www.addons.zz.mu/Addons_zz.mu_450x80.png" width="450" height="80"></b></img></pre>
-  <p><font color="#EC0006" size="4" face="Georgia, Times New Roman, Times, serif"><b>Addons Multi-Mod v4.0</font></p>
-  <p><font color="#EC0006" size="4" face="Georgia, Times New Roman, Times, serif">Download:</font></p>
-  <p><font color="#EC0006" size="4" face="Georgia, Times New Roman, Times, serif">www.addons.zz.mu</b></font></p>
+  <p><font color="#0063ec" size="4" face="Georgia, Times New Roman, Times, serif"><b>Addons Multi-Mod v4.0</font></p>
+  <p><font color="#0063ec" size="4" face="Georgia, Times New Roman, Times, serif">Download:</font></p>
+  <p><font color="#0063ec" size="4" face="Georgia, Times New Roman, Times, serif">www.addons.zz.mu</b></font></p>
   </div>
 </body>
 </html>

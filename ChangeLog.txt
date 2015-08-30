@@ -4,16 +4,12 @@
 
 
 2015-08-27 - v4.0
-	* Separated the Amx_Ultra plugin from Addons Multi-Mod v3.0
-	* Corrected some exceptions and added SpawnProtection countdown,  
-	   and freeze time alignment support to amx_super 4.1 Nospeed.
-
+	* Separated the Amx_Ultra plugin from the Addons Multi-Mod.
 
 2015-08-22 - v3.0
 	* Currently it is tested under Counter-Strike and Counter-Strike Condition Zero
 	* Added support to control PodBot and CSBot throw commandmenu.txt
 	* Log chat messages of: say, say_team, amx_say, ...
-
 
 2015-08-17 - v2.0
     * Added Galileo 1.1.290 that is a feature rich map voting plugin.
@@ -29,22 +25,19 @@
     * Made "Next Mod: " message display there is no actived mod, when there is not.
     * When the min vote time is not reached/disabled, display e message informing that.
 
-
 2015-08-12 v1.5
 	* Added Dragon Ball Mod v1.3
 	* New multi-mod_core with improved server control.
 	* Fixed daily_maps incompatibility with nextmap.
 	* Placed multi-mod_plugin and info to its originals plugins nextmap and cmdmenus.
 
-
 2015-08-10 1.4
 	* Added Gun-Game Mod v2.13c
 	* Added CSDM (Death-Match) v2.1.3c
-	* Restored the broken restart menu.
-
+	* Restaured the broken restart menu.
 
 2015-08-10 v1.3
-	* Added pain_shock_free plugins that disables the slow down when taking shots.
+	* Added pain_shock_free plugins that disables the floor wander when taking shots.
 	* Added support for Superheros Mod 1.2.1
 	* Added support for Predator Mod_B2 2.1
 	* Added support for Ultimate Warcraft Mod 3
@@ -54,7 +47,7 @@
 	   The first zombie may turn into a Nemesis, a powerful fast-moving
 	   beast. His goal is to kill every human while sustaining the gunfire.
 	* Survivor:
-	   Everyone became a zombie except him. The survivor gets a machine gun
+	   Everyone became a zombie except him. The survivor gets a machinegun
 	   with unlimited ammo and has to stop the never-ending army of undead.
 	* Multiple Infection:
 	   The round starts with many humans infected, so the remaining players
@@ -65,7 +58,6 @@
 	* Plague Mode: [bonus]
 	   A full armed Survivor and his soldiers are to face Nemesis and
 	   his zombie minions. The future of the world is in their hands.
-
 
 2015-07-27 v1.2
 	* Added new Command Menu (h button on the game) with support:
@@ -92,8 +84,7 @@
 	- multi-mod_core, amx_exec, head_shot_announcer, grentrail, parachute, knife_duel, 
 	  amx_chicken, adv_killstreak, countdown_exec, ... 
 
-
 2015-07-09
 	* Hlds.bat: Created a file that creates a server throw command line. That is
      useful because a command line server usually is 50% more efficient in the use
-     processor.
+     procesador.
