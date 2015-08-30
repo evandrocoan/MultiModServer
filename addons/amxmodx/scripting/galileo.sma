@@ -21,7 +21,18 @@
  *  Fixed server restart after change timelimit to 0.
  *  Added autopause for anothers plugins map managers. 
  *  Disable GAL_NEXTMAP_UNKNOWN variable at server start.
- * 
+ * v1.1.292
+ *  Removed map end control from galileo and restaured this responsability to 
+ *    the original AMXX Dev Team plugin NextMap.amxx, because it was 
+ *    too much, and was becoming the plugin unmaintainable.
+ *  Made changemap immediately after a forced mapvote, calling gal_startvote. 
+ * Fixed a bug where it change the map right after normal vote map finished.
+ * Removed the functionality change server map when empty server due to be 
+ *   unmaintainable, there other specialized plugins at it.
+ * Removed the change to [vote in progress], due to be unmaintainable. 
+ * Removed the functionality allow round finish, due to be unmaintainable and there is 
+ *   others specialized plugins at it.
+ * If nobody voted keep the initial server next map.
  */
 
 new const PLUGIN_VERSION[]  = "1.1.291"; // $Revision: 290 $ $Date: 2009-02-26 11:20:25 -0500 (Thu, 26 Feb 2009) $;
@@ -104,9 +115,11 @@ new g_nomination[MAX_PLAYER_CNT + 1][MAX_NOMINATION_CNT + 1], g_nominationCnt, g
 
 new g_voteWeightFlags[32];
 
-new Array:g_emptyCycleMap, bool:g_isUsingEmptyCycle = false, g_emptyMapCnt = 0;
+//new Array:g_emptyCycleMap;
+//new bool:g_isUsingEmptyCycle = false;
+//new g_emptyMapCnt = 0;
 
-new Array:g_mapCycle;
+//new Array:g_mapCycle;
 
 new g_recentMap[MAX_RECENT_MAP_CNT][MAX_MAPNAME_LEN + 1], g_cntRecentMap;
 new Array:g_nominationMap, g_nominationMapCnt;
@@ -138,7 +151,9 @@ new cvar_voteExpCountdown, cvar_voteWeightFlags, cvar_voteWeight;
 new cvar_voteMapChoiceCnt, cvar_voteAnnounceChoice, cvar_voteUniquePrefixes;
 new cvar_voteMapFile, cvar_rtvReminder;
 new cvar_srvStart;
-new cvar_emptyWait, cvar_emptyMapFile, cvar_emptyCycle;
+//new cvar_emptyWait
+//new cvar_emptyMapFile;
+new cvar_emptyCycle;
 new cvar_runoffEnabled, cvar_runoffDuration;
 new cvar_voteStatus, cvar_voteStatusType;
 new cvar_soundsMute;
@@ -190,7 +205,7 @@ public plugin_init()
 	register_concmd("gal_startvote", "cmd_startVote", ADMIN_MAP);
 	register_concmd("gal_createmapfile", "cmd_createMapFile", ADMIN_RCON);
 
-	register_cvar("amx_nextmap", "", FCVAR_SERVER|FCVAR_EXTDLL|FCVAR_SPONLY);
+	//register_cvar("amx_nextmap", "", FCVAR_SERVER|FCVAR_EXTDLL|FCVAR_SPONLY);
 	cvar_extendmapMax				=	register_cvar("amx_extendmap_max", "90");
 	cvar_extendmapStep			=	register_cvar("amx_extendmap_step", "15");
 	
@@ -205,8 +220,8 @@ public plugin_init()
 	cvar_endOnRound					= register_cvar("gal_endonround", "1");
 	cvar_endOfMapVote				= register_cvar("gal_endofmapvote", "1");
 
-	cvar_emptyWait					=	register_cvar("gal_emptyserver_wait", "0");
-	cvar_emptyMapFile				= register_cvar("gal_emptyserver_mapfile", "");
+	//cvar_emptyWait					=	register_cvar("gal_emptyserver_wait", "0");
+	//cvar_emptyMapFile				= register_cvar("gal_emptyserver_mapfile", "");
 
 	cvar_srvStart						= register_cvar("gal_srv_start", "0");
 
@@ -275,10 +290,6 @@ public plugin_cfg()
 	{
 		server_cmd( "amxx pause mapchooser.amxx" );
 	}
-	if( is_plugin_loaded( "NextMap" ) != -1 )
-	{
-		server_cmd( "amxx pause nextmap.amxx" );
-	}
 
 	formatex(DIR_CONFIGS[get_configsdir(DIR_CONFIGS, sizeof(DIR_CONFIGS)-1)], sizeof(DIR_CONFIGS)-1, "/galileo");
 	formatex(DIR_DATA[get_datadir(DIR_DATA, sizeof(DIR_DATA)-1)], sizeof(DIR_DATA)-1, "/galileo");
@@ -345,12 +356,12 @@ public plugin_cfg()
 
 	set_task(10.0, "vote_setupEnd");
 
-	if (get_pcvar_num(cvar_emptyWait))
+	/*if (get_pcvar_num(cvar_emptyWait))
 	{
 		g_emptyCycleMap = ArrayCreate(32);
 		map_loadEmptyCycleList();
 		set_task(60.0, "srv_initEmptyCheck");
-	}
+	}*/
 }
 
 public plugin_end()
@@ -364,29 +375,29 @@ public vote_setupEnd()
 	
 	g_originalTimelimit = get_cvar_float("mp_timelimit");
 	
-	new nextMap[32];
-	/*if (get_pcvar_num(cvar_endOfMapVote))
+	/*new nextMap[32];
+	if (get_pcvar_num(cvar_endOfMapVote))
 	{
 		formatex(nextMap, sizeof(nextMap)-1, "%L", LANG_SERVER, "GAL_NEXTMAP_UNKNOWN");
 	}
 	else
-	{*/
+	{
 	g_mapCycle = ArrayCreate(32);
 	map_populateList(g_mapCycle, "mapcycle.txt");
 	map_getNext(g_mapCycle, g_currentMap, nextMap);
-	//}
+	}
 	map_setNext(nextMap);
 	
 	// as long as the time limit isn't set to 0, we can manage the end of the map automatically
 	if (g_originalTimelimit)
-	{
-		set_task(15.0, "vote_manageEnd", _, _, _, "b");
-	}
+	{*/
+	set_task(15.0, "vote_manageEnd", _, _, _, "b");
+	//}
 	
 	dbg_log(2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "vote_setupEnd(out)", get_cvar_float("mp_timelimit"), g_originalTimelimit);
 }
 
-map_getNext(Array:mapArray, currentMap[], nextMap[32])
+/*map_getNext(Array:mapArray, currentMap[], nextMap[32])
 {
 	new thisMap[32], mapCnt = ArraySize(mapArray), nextmapIdx = 0, returnVal = -1;
 	for (new mapIdx = 0; mapIdx < mapCnt; mapIdx++)
@@ -402,7 +413,7 @@ map_getNext(Array:mapArray, currentMap[], nextMap[32])
 	ArrayGetString(mapArray, nextmapIdx, nextMap, sizeof(nextMap)-1);
 	
 	return returnVal;
-}
+}*/
 
 public srv_handleStart()
 {
@@ -639,7 +650,7 @@ public cmd_startVote(id, level, cid)
 				g_handleMapChange = false;
 			}
 		}
-		
+		isTimeToChangeLevel = true;
 		vote_startDirector(true);	
 	}
 
@@ -830,13 +841,13 @@ public map_loadPrefixList()
 	return PLUGIN_HANDLED;
 }
 
-map_loadEmptyCycleList()
+/*map_loadEmptyCycleList()
 {
 	new filename[256];
 	get_pcvar_string(cvar_emptyMapFile, filename, sizeof(filename)-1);
 
-	g_emptyMapCnt = map_populateList(g_emptyCycleMap, filename);	
-}
+	//g_emptyMapCnt = map_populateList(g_emptyCycleMap, filename);	
+}*/
 
 public map_manageEnd()
 {
@@ -867,8 +878,8 @@ public map_manageEnd()
 			}
 
 			// prevent the map from ending automatically
-			server_cmd("mp_timelimit 0");
-			isTimeLimitChanged = true;
+			//server_cmd("mp_timelimit 0");
+			//isTimeLimitChanged = true;
 		}
 		else
 		{
@@ -882,7 +893,7 @@ public map_manageEnd()
 			//set_task(1.0, "intermission_displayTimer", chatTime, _, _, "a", chatTime);
 
 			// change the map after "chattime" is over
-			set_task(floatmax(get_cvar_float("mp_chattime"), 2.0), "map_change");
+			// set_task(floatmax(get_cvar_float("mp_chattime"), 2.0), "map_change");
 		}
 
 		new map[MAX_MAPNAME_LEN + 1];
@@ -936,8 +947,8 @@ public event_intermission()
 	g_pauseMapEndManagerTask = true;
 	
 	// change the map after "chattime" is over
-	isTimeToChangeLevel = true;
-	set_task(floatmax(get_cvar_float("mp_chattime"), 2.0), "map_change");
+	//isTimeToChangeLevel = true;
+	//set_task(floatmax(get_cvar_float("mp_chattime"), 2.0), "map_change");
 
 	return PLUGIN_CONTINUE;
 }
@@ -1368,12 +1379,12 @@ public vote_startDirector(bool:forced)
 		remove_task(TASKID_REMINDER);
 
 		// set nextmap to "voting"
-		if (forced || get_pcvar_num(cvar_endOfMapVote))
+		/*if (forced || get_pcvar_num(cvar_endOfMapVote))
 		{
 			new nextMap[32];
 			formatex(nextMap, sizeof(nextMap)-1, "%L", LANG_SERVER, "GAL_NEXTMAP_VOTING");
 			map_setNext(nextMap);
-		}
+		}*/
 	
 		// pause the "end of map" tasks so they don't interfere
 		g_pauseMapEndVoteTask = true;
@@ -2182,10 +2193,15 @@ public vote_expire()
 	else
 	{
 		// nobody voted. pick a random map from the choices provided.
-		idxWinner = random_num(0, g_choiceCnt - 1);
-		map_setNext(g_mapChoice[idxWinner]);
+		/*idxWinner = random_num(0, g_choiceCnt - 1);
+		map_setNext(g_mapChoice[idxWinner]);*/
+		// if nobody voted keep the initial server next map.
+		
+		// the initial nextmap
+		new initialNextMap[MAX_MAPNAME_LEN + 1];
+		get_cvar_string("amx_nextmap", initialNextMap, sizeof(initialNextMap)-1);
 
-		client_print(0, print_chat, "%L", LANG_PLAYER, "GAL_WINNER_RANDOM", g_mapChoice[idxWinner]);
+		client_print(0, print_chat, "%L", LANG_PLAYER, "GAL_WINNER_RANDOM", initialNextMap );
 		
 		g_voteStatus |= VOTE_IS_OVER;
 	}
@@ -2202,8 +2218,12 @@ public vote_expire()
 		if ((g_voteStatus & VOTE_FORCED || (playerCnt == 1 && idxWinner < g_choiceCnt) || playerCnt == 0) && !(get_cvar_num("gal_debug") & 4))
 		{
 			// tell the map we need to finish up
-			isTimeToChangeLevel = true;
-			set_task(2.0, "map_manageEnd");
+			//isTimeToChangeLevel = true;
+			//set_task(2.0, "map_manageEnd");
+			if( isTimeToChangeLevel )
+			{
+				set_task(2.0, "map_manageEnd");
+			}
 		}
 		else
 		{
@@ -2805,10 +2825,10 @@ srv_handleEmpty()
 	}
 
 	// might be utilizing "empty server" feature
-	if (g_isUsingEmptyCycle && g_emptyMapCnt)
+	/*if (g_isUsingEmptyCycle && g_emptyMapCnt)
 	{
 		srv_startEmptyCountdown();
-	}
+	}*/
 	
 	dbg_log(2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "srv_handleEmpty(out)", get_cvar_float("mp_timelimit"), g_originalTimelimit);
 }
@@ -2824,7 +2844,7 @@ public srv_announceEarlyVote(id)
 	}
 }
 
-public srv_initEmptyCheck()
+/*public srv_initEmptyCheck()
 {
 	if (get_pcvar_num(cvar_emptyWait))
 	{
@@ -2862,7 +2882,7 @@ public srv_startEmptyCycle()
 		isTimeToChangeLevel = true;
 		map_change();
 	}
-}
+}*/
 
 nomination_announceCancellation(nominations[])
 {
