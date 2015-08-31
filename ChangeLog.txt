@@ -3,6 +3,11 @@
 - This project adheres to [Semantic Versioning](http://semver.org/).
 
 
+2015-08-30 - v4.0.1
+	* Added new commandmenu options.
+	* Fixed messages menu sounds and messages.
+
+
 2015-08-27 - v4.0
 	* Separated the Amx_Ultra plugin from the Addons Multi-Mod.
 
