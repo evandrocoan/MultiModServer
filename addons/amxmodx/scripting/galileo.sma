@@ -46,6 +46,8 @@ v1.1.293
 v1.1.294
  Made the vote map list be loaded from the current mapcycle file.
  Added a option "#" to gal_nom_mapfile, to use the current mapcycle to nominate maps.
+v1.1.295
+ Removed not initiating vote map, at the first map, after forcing votemap.
 
 *********************************************************************************
 Credits: 
@@ -305,6 +307,7 @@ public dbg_fakeVotes()
  */
 public plugin_cfg()
 {
+	g_pauseMapEndVoteTask = false;
 	isTimeToChangeLevel = false;
 	isTimeLimitChanged = false;
 
@@ -532,6 +535,9 @@ public vote_manageEnd()
 	if (secondsLeft < 150 && secondsLeft > 90 && !g_pauseMapEndVoteTask && get_pcvar_num(cvar_endOfMapVote) && !get_pcvar_num(cvar_emptyCycle))
 	{
 		vote_startDirector(false);
+	} else
+	{
+		g_pauseMapEndVoteTask = false;
 	}
 	
 	// are we managing the end of the map?
@@ -2202,12 +2208,12 @@ public vote_expire()
 
 		if (idxWinner == g_choiceCnt)
 		{
-			if (get_pcvar_num(cvar_endOfMapVote))
+			/*if (get_pcvar_num(cvar_endOfMapVote))
 			{
 				new nextMap[32];
 				formatex(nextMap, sizeof(nextMap)-1, "%L", LANG_SERVER, "GAL_NEXTMAP_UNKNOWN");
 				map_setNext(nextMap);
-			}
+			}*/
 
 			// restart map end vote task			
 			g_pauseMapEndVoteTask = false;
