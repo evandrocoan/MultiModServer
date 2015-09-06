@@ -1,0 +1,1355 @@
+[en]
+TEAM_RED = Red
+TEAM_BLUE = Blue
+TEAM_SPEC = Spectator
+FLAG_RED = Red
+FLAG_BLUE = Blue
+
+JOIN_INFO = This server is running %s%s%s by %s%s%s - see console for quick-help.
+JOIN_NOFEATURES = This server has disabled some of jCTF's features, type /help to see which.
+
+QH_TITLE = Quick-help
+QH_MADEBY = Mod made by
+QH_LINE1 = You must capture the enemy flag while defending your own.
+QH_LINE2 = This mod has lots of features, but you'll learn'em all,
+QH_LINE3 = just get in there and start scoring some flag captures!
+QH_HELP = For additional help, type /help in chat
+QH_ADRENALINE = You should bind ^"adrenaline^" to a key !
+
+SPAWN_NOMONEY = No spawn money because you commited suicide last life!
+DEATH_TRANSFER = You have been transfered to the %s%L team%s due to auto-team balance.
+DEATH_ONLY1CHANGE = You can change your team only once after each death!
+DEATH_FLAGCAPTURED = You've been slain because the enemy captured your flag!
+DEATH_NOFREELOOK = Free look mode is blocked.
+HINT = Hint
+STARTING_NEWROUND = Starting new round...
+
+INSTANTSPAWN_NOTEAM = You must be in a team and dead to buy an instant respawn.
+INSTANTSPAWN_NOADRENALINE = You don't have enough adrenaline, %d required!
+INSTANTSPAWN_BOUGHT = You bought an instant respawn for %d adrenaline!
+
+RESPAWNING_IN = Respawning in %d seconds...
+RESPAWNING = Respawning...
+
+PROTECTION_LEFT = Spawn protection: %d seconds left...
+PROTECTION_EXPIRED = Spawn protection expired.
+PROTECTION_ADRENALINE = Spawn protection disabled - adrenaline used!
+PROTECTION_TOUCHFLAG = Spawn protection disabled - flag touched!
+PROTECTION_WEAPONUSE = Spawn protection disabled - weapon used!
+
+DROPFLAG_NOFLAG = You don't have the flag!
+
+HELP_TITLE = HELP
+HELP_1 = Mod gameplay
+HELP_1_LINE1 = Gameplay is simple, two teams, RED (Terrorists) and BLUE (CTs), each having a flag near their base.
+HELP_1_LINE2 = The goal of each team is to capture the enemy flag while defending their own because in order to capture
+HELP_1_LINE3 = the enemy flag, you must bring it to your base and your flag must be there.
+HELP_1_LINE4 = Enemy flag is stolen and team flag is returned by a simple touch.
+HELP_2 = Player commands
+HELP_2_NOTE = NOTA: Some commands can be used in console but without '/'
+HELP_2_LINE1 = /lights - enables/disables dynamic flag lights for that player
+HELP_2_LINE2 = /sounds 1-10 or test - sets the announcer volume or tests the announcer volume
+HELP_2_LINE3 = /spawn - buy an instant spawn for %d adrenaline
+HELP_2_LINE4 = /dropflag - drops the flag (You will loose all rewards got!)
+HELP_2_LINE5 = /adrenaline - adrenaline combo pick menu once you got 100 adrenaline.
+HELP_3 = Server's mod settings:
+HELP_3_INFROUND = Infinite round: %L
+HELP_3_ROUNDEND = Flag capture round end: %L
+HELP_3_CAPTURESLAY = Slay team of which flag is captured: %L
+HELP_3_BUY = Custom buy menu: %L
+HELP_3_C4 = C4 buying: %L
+HELP_3_ADRENALINE = Adrenaline: %L
+HELP_3_FLAGHEAL = Flag healing teammates: %L
+HELP_3_RESPAWN = Respawn time: %d seconds
+HELP_3_PROTECTION = Spawn protection time: %d seconds
+HELP_3_FLAGRETURN = Flags auto return in %d seconds
+HELP_3_WEAPONSTAY = Weapons stay on ground for %d seconds
+HELP_3_ITEMDROP = Item dropping chance: %d%%
+HELP_4 = Download mod for your server
+HELP_4_LINE1 = AmxModX thread
+HELP_4_LINE2 = Developer's page
+
+HINT_1 = Your adrenaline gives you temporary combos, once you have 100, use adrenaline command.
+HINT_2 = The enemy flag can be captured only if your flag is in the base.
+HINT_3 = Sometimes killed players drop useful items, keep an eye out.
+HINT_4 = The C4 kills everything in it's range in a short time, however it's defusable.
+HINT_5 = Both flags are constantly displayed as a blinking dot on all players radar.
+HINT_6 = Spawn protection will be disabled prematurely if you use a weapon.
+HINT_7 = When you're using an adrenalin combo, the adrenaline drains depending on the combo.
+HINT_8 = The machinegun, snipers, shield and C4 cost alot of money and adrenaline.^nThey can be found in Buy menu -> Special Weapons.
+HINT_9 = You can buy an instant respawn for 50 adrenaline, while dead just type /spawn.
+HINT_10 = Ammo does not cost anything, feel free to resupply every time you pass by your buyzone.
+HINT_11 = Once you have the enemy flag you will be slown down, always have the team covering you.
+HINT_12 = To win, your team needs to steal the enemy flag while defending their own flag.
+
+ADMIN_MOVEBASE_1 = ADMIN: moved %L team's flag base
+ADMIN_MOVEBASE_2 = ADMIN %s: moved %L team's flag base
+ADMIN_MOVEBASE_MOVED = The %L flag base moved to your origin.
+ADMIN_MOVEBASE_SAVED = Saved base locations as
+
+ADMIN_RETURN_1 = ADMIN: returned the %L flag to base
+ADMIN_RETURN_2 = ADMIN %s: returned the %L flag to base
+ADMIN_RETURN_DONE = The %L flag has been returned.
+ADMIN_RETURN_WAIT = The %L flag needs to be dropped at least %d seconds before you can return it by command.
+ADMIN_RETURN_NOTDROPPED = The %L flag is not dropped.
+
+BUYMENU_TITLE = Buy Menu
+BUYMENU_PISTOLS = Pistols
+BUYMENU_SHOTGUNS = Shotguns
+BUYMENU_SMGS = Sub-machine guns
+BUYMENU_RIFLES = Rifles
+BUYMENU_SPECIAL = Special weapons
+BUYMENU_AMMO = Full ammo
+BUYMENU_EQUIPAMENT = Equipament
+BUYMENU_ITEM_SHIELD = Shield
+BUYMENU_ITEM_C4 = C4
+BUYMENU_ITEM_VEST = Kevlar Vest
+BUYMENU_ITEM_VESTHELM = Kevlar + Helmet
+BUYMENU_ITEM_FLASHBANG = Flashbang grenade
+BUYMENU_ITEM_HE = HE grenade
+BUYMENU_ITEM_SMOKE = Smoke grenade
+BUYMENU_ITEM_NVG = Nightvision goggles
+BUY_NOTINZONE = You must be in a buy zone!
+BUY_REBOUGHT = %d items attempted to be rebought.
+BUY_NEEDMONEY = Not enough money, you need $%d.
+BUY_NEEDADRENALINE = Not enough adrenaline, you need %d.
+BUY_HAVE_C4 = You already have a C4!
+BUY_HAVE_NVG = You already have nightvision goggles!
+BUY_HAVE_KEVLAR = You already have kevlar vest!
+BUY_HAVE_KEVLARHELM = You already have kevlar vest and helmet!
+BUY_NOMORE_FLASH = You can't carry any more flashbangs!
+BUY_DELAY_FLASH = You can buy two flashbangs every %d seconds!
+BUY_NOMORE_HE = You can't carry any more HE grenades!
+BUY_DELAY_HE = You can buy a HE grenade every %d seconds!
+BUY_NOMORE_SMOKE = You can't carry any more smoke grenades!
+BUY_DELAY_SMOKE = You can buy a smoke grenade every %d seconds!
+BUY_HAVE_WEAPON = You already have that weapon!
+BUY_FULLAMMO = Ammo filled.
+
+C4_ARMED = C4 armed, detonation in %d seconds!
+C4_ARMED_RADIO = C4 planted, %d seconds...
+C4_NODEFUSE = Can't defuse team's C4, better run!
+C4_DEFUSING = Defusing C4 in %d seconds...
+C4_DEFUSED = C4 disarmed, now it's yours!
+
+PICKED_AMMO = Picked up ammo pack
+PICKED_HEALTH = Picked up medkit +%d health
+PICKED_ADRENALINE = Picked up adrenaline +%d
+
+REWARD = Reward
+FRAG = frag
+FRAGS = frags
+ADRENALINE = adrenaline
+
+ANNOUNCEMENT = Announcement
+ANNOUNCE_FLAGTAKEN = %s took the %L flag!
+ANNOUNCE_FLAGDROPPED = %s dropped the %L flag!
+ANNOUNCE_FLAGRETURNED = %s returned the %L flag!
+ANNOUNCE_FLAGAUTORETURNED = The %L flag returned automatically!
+ANNOUNCE_FLAGCAPTURED = %s captured the %L flag!
+ANNOUNCE_TEAMTAKESLEAD = %L team takes the lead!
+ANNOUNCE_TEAMWON = %L team is the winner!
+
+REWARD_KILL = for killing
+REWARD_KILLCARRIER = for killing the flag carrier
+REWARD_RETURN = for returning your team flag
+REWARD_RETURN_ASSIST = for assisting on returning your team flag
+REWARD_CAPTURE = for capturing the enemy flag
+REWARD_CAPTURE_ASSIST = for assisting on capturing the enemy flag
+REWARD_CAPTURE_TEAM = because team captured the enemy flag
+REWARD_STEAL = for stealing the enemy flag
+REWARD_PICKUP = for picking up the enemy flag
+PENALTY_SUICIDE = for suicide
+PENALTY_TEAMKILL = for teamkill
+PENALTY_MANUALDROP = for intentionally dropping the flag
+
+HUD_YOUHAVEFLAG = You have the flag, return to base!
+HUD_ENEMYHASFLAG = The enemy has your flag, get it back!
+HUD_RETURNYOURFLAG = Your flag is dropped, return it!
+
+HUD_RETURNEDFLAG = You returned your team flag!
+HUD_CAPTUREDFLAG = You captured the enemy flag!
+
+HUD_ADRENALINE = Adrenaline: %d of %d
+HUD_ADRENALINEFULL = Adrenaline FULL!^nType adrenaline in console to use a combo!
+HUD_ADRENALINECOMBO = Using combo: %L^nAdrenaline left: %d of %d
+
+LIGHTS_ON = The flag lights have been turned %sON%s (memorized only this map)
+LIGHTS_OFF = The flag lights have been turned %sOFF%s (memorized only this map)
+LIGHTS_INVALID = Invalid parameter, use %son%s / %soff
+
+SOUNDS_SET = Announcement sound volume set to %s%d
+SOUNDS_TEST = Announcement test, you should hear%s...
+SOUNDS_INVALID = Invalid parameter, use a number from%s to%s or%s
+
+ADR_MENU_TITLE = Adrenaline combos
+ADR_SPEED = Speed
+ADR_SPEED_DESC = Faster movement
+ADR_BERSERK = Berserk
+ADR_BERSERK_DESC = Double damage and faster shooting
+ADR_REGENERATE = Regenerate
+ADR_REGENERATE_DESC = Regenerate health and armor
+ADR_INVISIBILITY = Invisibility
+ADR_INVISIBILITY_DESC = Barely visible
+ADR_ALIVE = You must be alive to use adrenaline!
+ADR_USING = You are already using an adrenaline combo, wait until it's finished.
+ADR_MORE = Not enough adrenaline, it must be full (%d) to use it !
+
+[ro]
+TEAM_RED = Rosie
+TEAM_BLUE = Albastra
+TEAM_SPEC = Spectator
+FLAG_RED = Rosu
+FLAG_BLUE = Albastru
+
+JOIN_INFO = Acest server ruleaza %s%s%s facut de %s%s%s - vezi consola pentru ajutor rapid
+JOIN_NOFEATURES = Acest server are trasaturi jCTF dezactivate, scrie /help ca sa vezi care.
+
+QH_TITLE = Ajutor rapid
+QH_MADEBY = Mod creat de
+QH_LINE1 = Trebuie sa capturezi steagul inamic in timp ce-ti aperi propiul steag
+QH_LINE2 = Acest mod are multe facilitati, le vei invata in timp,
+QH_LINE3 = acum intra in joc si incepe sa capturezi niste steaguri!
+QH_HELP = Pentru mai multe informatii, scrie /help in chat
+QH_ADRENALINE = Ar trebui sa asociezi comanda ^"adrenaline^" cu o tasta !
+
+SPAWN_NOMONEY = Nu primesti bani pentru ca te-ai sinucis viata trecuta.
+DEATH_TRANSFER = Ai fost transferat la %sechipa %L%s pentru a egaliza echipele.
+DEATH_ONLY1CHANGE = Poti sa-ti schimbi echipa numai o data dupa fiecare deces!
+DEATH_FLAGCAPTURED = Ai fost omorat pentru ca inamicii ti-au capturat steagul!
+DEATH_NOFREELOOK = Modul observarii libere este blocat.
+HINT = Pont
+STARTING_NEWROUND = Incepe o noua runda...
+
+INSTANTSPAWN_NOTEAM = Trebuie sa fi intr-o echipa si mort ca sa poti cumpara inviere instanta.
+INSTANTSPAWN_NOADRENALINE = Nu ai destula adrenalina, %d este necesara!
+INSTANTSPAWN_BOUGHT = Ai cumparat inviere instanta cu %d adrenalina!
+
+RESPAWNING_IN = Inviere in %d seconds...
+RESPAWNING = Invii imediat...
+
+PROTECTION_LEFT = Protectie: %d secunde ramase...
+PROTECTION_EXPIRED = Protectia a expirat.
+PROTECTION_ADRENALINE = Protectie dezactivata - ai folosit adrenalina!
+PROTECTION_TOUCHFLAG = Protectie dezactivata - ai atins un steag!
+PROTECTION_WEAPONUSE = Protectie dezactivata - ai folosit o arma!
+
+DROPFLAG_NOFLAG = Nu ai steagul!
+
+HELP_TITLE = Ajutor
+HELP_1 = Cum se joaca
+HELP_1_LINE1 = Jocul e simplu, doua echipe, RED (Teroristii) si BLUE (CT), ambele avand un steag langa baza lor.
+HELP_1_LINE2 = Golul fiecarei echipe este sa captureze steagul inamicului cat timp si-l apara pe-al lor, deoarece,
+HELP_1_LINE3 = ca sa poti captura steagul inamic, trebuie sa-l aduci in baza ta si steagul tau trebuie sa fie acolo.
+HELP_1_LINE4 = Steagul inamic este furat si steagul echipei este adus inapoi la baza printr-o simpla atingere.
+HELP_2 = Comenzi
+HELP_2_NOTE = NOTA: Unele comenzi pot fi folosite si in consola dar fara '/'
+HELP_2_LINE1 = /lights - activeaza/dezactiveaza luminile de steag numai tie
+HELP_2_LINE2 = /sounds 1-10 sau test - seteaza volumul anunturilor sau testeaza volumul
+HELP_2_LINE3 = /spawn - cumperi o inviere instanta folosind %d adrenalina
+HELP_2_LINE4 = /dropflag - arunca steagul (Pierzi toate recompensele primite!)
+HELP_2_LINE5 = /adrenaline - meniul pentru a alege un combo odata ce ai 100 adrenalina.
+HELP_3 = Setarile modului de pe acest server
+HELP_3_INFROUND = Runda infinita: %L
+HELP_3_ROUNDEND = Runda terminata daca steagul este capturat: %L
+HELP_3_CAPTURESLAY = Omoara echipa carora le este capturat steagul: %L
+HELP_3_BUY = Meniu cumparare special: %L
+HELP_3_C4 = Cumparare bomba: %L
+HELP_3_ADRENALINE = Adrenalina: %L
+HELP_3_FLAGHEAL = Steagul vindeca coetipierii: %L
+HELP_3_RESPAWN = Durata inviere: %d secunde
+HELP_3_PROTECTION = Protectie dupa inviere: %d secunde
+HELP_3_FLAGRETURN = Steagurile se intorc automat in %d secunde
+HELP_3_WEAPONSTAY = Armele stau pe jos timp de %d secunde
+HELP_3_ITEMDROP = Sansa de a scapa obiecte folositoare: %d%%
+HELP_4 = Downloadeaza modul pentru serverul tau
+HELP_4_LINE1 = Topicul AmxModX
+HELP_4_LINE2 = Pagina developerului
+
+HINT_1 = Adrenalina iti da combo-uri temporare, indata ce ai 100, foloseste comanda adrenaline.
+HINT_2 = Steagul inamic poate fi capturat doar daca steagul tau este in baza.
+HINT_3 = Uneori jucatorii omorati scapa obiecte folositoare, uita-te atent.
+HINT_4 = Bomba omoara totul in raza ei intr-un timp scurt, totusi se poate dezamorsa.
+HINT_5 = Ambele steaguri sunt constant indicate cu un punct rosu pe radarul tuturor jucatorilor.
+HINT_6 = Protectia de inviere este dezactivata prematur daca folosesti o arma.
+HINT_7 = Cand folosesti un combo de adrenalina, viteza scaderii adrenalinei scade depinzand de combo.
+HINT_8 = Mitrariera grea, sniperele, scutul si bomba costa multi bani si adrenalina.^nEle pot fi gasite in Meniul de cumparat > Arme speciale.
+HINT_9 = Poti cumpara inviere instanta pentru 50 adrenalina, cand esti mort, scrie /spawn.
+HINT_10 = Munitia nu costa nimic, ia-ti munitie de fiecare data cand treci prin zona de cumparat.
+HINT_11 = Indata ce ai steagul inamic, vei merge mai greu, ia-ti mereu echipa sa te acopere.
+HINT_12 = Ca sa castige, echipa ta trebuie sa fure steagul inamic in timp ce-l apara pe-al ei.
+
+ADMIN_MOVEBASE_1 = ADMIN: baza steagului %L a fost mutata
+ADMIN_MOVEBASE_2 = ADMIN %s: a mutat baza steagului %L
+ADMIN_MOVEBASE_MOVED = Baza steagului %L a fost mutata sub tine
+ADMIN_MOVEBASE_SAVED = Locatiile bazelor au fost salvate ca
+
+ADMIN_RETURN_1 = ADMIN: steagul %L a fost inapoiat la baza
+ADMIN_RETURN_2 = ADMIN %s: a inapoiat steagul %L la baza
+ADMIN_RETURN_DONE = Steagul %L a fost inapoiat la baza
+ADMIN_RETURN_WAIT = Steagul %L trebuie sa fie pe jos timp de %d secunde inainte sa poata fi inapoiat folosind comanda.
+ADMIN_RETURN_NOTDROPPED = Steagul %L nu este pe jos.
+
+BUYMENU_TITLE = Meniu de cumparat
+BUYMENU_PISTOLS = Pistoale
+BUYMENU_SHOTGUNS = Pusti
+BUYMENU_SMGS = Pistoale mitrariera
+BUYMENU_RIFLES = Arme de asalt
+BUYMENU_SPECIAL = Arme speciale
+BUYMENU_AMMO = Munitie
+BUYMENU_EQUIPAMENT = Echipament
+BUYMENU_ITEM_SHIELD = Scut
+BUYMENU_ITEM_C4 = Bomba
+BUYMENU_ITEM_VEST = Vesta antiglont
+BUYMENU_ITEM_VESTHELM = Vesta + Casca
+BUYMENU_ITEM_FLASHBANG = Grenada flashbang
+BUYMENU_ITEM_HE = Grenada exploziva
+BUYMENU_ITEM_SMOKE = Fumigena
+BUYMENU_ITEM_NVG = Ochelari cu infrarosu
+BUY_NOTINZONE = Trebuie sa fi intr-o zona de cumparat!
+BUY_REBOUGHT = %d echipamente au fost re-cumparate.
+BUY_NEEDMONEY = Nu ai destui bani, iti trebuie %d$.
+BUY_NEEDADRENALINE = Nu ai destula adrenalina, iti trebuie %d.
+BUY_HAVE_C4 = Ai deja o bomba!
+BUY_HAVE_NVG = Ai deja ochelari cu infrarosu!
+BUY_HAVE_KEVLAR = Ai deja o vesta antiglont!
+BUY_HAVE_KEVLARHELM = Ai deja o vesta si o casca antiglont!
+BUY_NOMORE_FLASH = Nu poti cara mai multe flashbang-uri!
+BUY_DELAY_FLASH = Poti cumpara doua flashbang-uri odata la interval de %d secunde!
+BUY_NOMORE_HE = Nu poti cara mai multe grenade!
+BUY_DELAY_HE = Poti cumpara o grenada la interval de %d secunde!
+BUY_NOMORE_SMOKE = Nu poti cara mai multe fumigene!
+BUY_DELAY_SMOKE = Poti cumpara o fumigena la interval de %d secunde!
+BUY_HAVE_WEAPON = Ai deja acea arma!
+BUY_FULLAMMO = Munitia e umpluta.
+
+C4_ARMED = Bomba pusa, detonare in %d secunde!
+C4_ARMED_RADIO = Bomba pusa, %d secunde...
+C4_NODEFUSE = Nu poti dezamorsa bomba echipei, mai bine fugi!
+C4_DEFUSING = Dezamorsezi bomba in %d secunde...
+C4_DEFUSED = Bomba dezamorsata, acum este a ta!
+
+PICKED_AMMO = Ai gasit munitie
+PICKED_HEALTH = Ai gasit primajutor +%d viata
+PICKED_ADRENALINE = Ai gasit adrenalina +%d
+
+REWARD = Recompensa
+FRAG = frag
+FRAGS = frag-uri
+ADRENALINE = adrenalina
+
+ANNOUNCEMENT = Anunt
+ANNOUNCE_FLAGTAKEN = %s a luat steagul %L!
+ANNOUNCE_FLAGDROPPED = %s a scapat steagul %L!
+ANNOUNCE_FLAGRETURNED = %s a inapoiat steagul %L!
+ANNOUNCE_FLAGAUTORETURNED = Steagul %L a fost inapoiat automat!
+ANNOUNCE_FLAGCAPTURED = %s a capturat steagul %L!
+ANNOUNCE_TEAMTAKESLEAD = Echipa %L a luat conducerea!
+ANNOUNCE_TEAMWON = Echipa %L este castigatoarea!
+
+REWARD_KILL = pentru ca ai omorat un inamic
+REWARD_KILLCARRIER = pentru ca ai ucis hotul de steag
+REWARD_RETURN = pentru ca ai inapoiat steagul echipei
+REWARD_RETURN_ASSIST = pentru ca ai ajutat la inapoierea steagului echipei
+REWARD_CAPTURE = pentru ca ai capturat steagul echipei inamice
+REWARD_CAPTURE_ASSIST = pentru ca ai ajutat la capturarea steagului echipei inamice
+REWARD_CAPTURE_TEAM = pentru ca echipa ta a capturat steagul inamic
+REWARD_STEAL = pentru ca ai furat steagul inamic
+REWARD_PICKUP = pentru ca ai luat steagul inamic de pe jos
+PENALTY_SUICIDE = pentru sinucidere
+PENALTY_TEAMKILL = pentru ca ai omorat un coetipier
+PENALTY_MANUALDROP = pentru ca ai aruncat intentioant steagul
+
+HUD_YOUHAVEFLAG = Ai steagul inamic, intoarce-te la baza!
+HUD_ENEMYHASFLAG = Inamicii au steagul tau, recupereaza-l!
+HUD_RETURNYOURFLAG = Steagul tau este pe jos, inapoieaza-l!
+
+HUD_RETURNEDFLAG = Ai inapoiat steagul echipei tale!
+HUD_CAPTUREDFLAG = Ai capturat steagul echipei inamice!
+
+HUD_ADRENALINE = Adrenalina: %d din %d
+HUD_ADRENALINEFULL = Adrenalina PLINA!^nScrie adrenaline in consola ca sa alegi un combo!
+HUD_ADRENALINECOMBO = Folosesti combo: %L^nAdrenalina ramasa: %d din %d
+
+LIGHTS_ON = Luminile de steaguri au fost %sactivate%s (memorate numai harta aceasta)
+LIGHTS_OFF = Luminile de steaguri au fost %sdezactivate%s (memorate numai harta aceasta)
+LIGHTS_INVALID = Parametri incorecti, foloseste %son%s sau %soff
+
+SOUNDS_SET = Volumul anunturilor a fost setat la %s%d
+SOUNDS_TEST = Test anunt, ar trebui sa auzi%s...
+SOUNDS_INVALID = Parametru incorect, foloseste un numar de la%s la%s sau%s
+
+ADR_MENU_TITLE = Combo-uri adrenalina
+ADR_SPEED = Viteza
+ADR_SPEED_DESC = Viteza mare de mers
+ADR_BERSERK = Feroce
+ADR_BERSERK_DESC = Putere dubla si viteza mare de foc
+ADR_REGENERATE = Regenerare
+ADR_REGENERATE_DESC = Regenerare viata si armura
+ADR_INVISIBILITY = Invizibilitate
+ADR_INVISIBILITY_DESC = Abia vizibil
+ADR_ALIVE = Trebuie sa fi viu ca sa poti folosi adrenalina!
+ADR_USING = Folosesti deja un combo de adrenalina, asteapta pana se termina!
+ADR_MORE = Nu ai destula adrenalina, trebuie sa fie plina (%d) ca sa o poti folosi!
+
+[de]
+TEAM_RED = Rot
+TEAM_BLUE = Blau
+TEAM_SPEC = Zuschauer
+FLAG_RED = Rote
+FLAG_BLUE = Blaue
+
+JOIN_INFO = Auf diesem Server laueft %s%s%s von %s%s%s - schaue in die Konsole fuer Sofort-Hilfe.
+JOIN_NOFEATURES = Dieser Server hat ein paar jCTF's Merkmale abgeschaltet, schreibe /help um sehen zu koennen welche.
+
+QH_TITLE = Soforthilfe
+QH_MADEBY = Modifizierung von
+QH_LINE1 = Du musst die gegnerische Flagge uebernehmen waehrend du deine eigene Verteidigst.
+QH_LINE2 = Dieser Mod hat viele Merkmale, aber du wirst sie schon lernen,
+QH_LINE3 = fang einfach an und mache Punkte indem du die Flagge uebernimmst!
+QH_HELP = Fuer zusaetzliche Hilfe schreibe /help in den Chat
+QH_ADRENALINE = Du solltest ^"adrenaline^" einer Taste zuordnen !
+
+SPAWN_NOMONEY = Kein Extra Geld weil du die letzte Runde mit einem Selbstmord beendet hast!
+DEATH_TRANSFER = Du wurdest wegen Autoteamballance in das %s%L Team%s geschoben.
+DEATH_ONLY1CHANGE = Du kannst das Team nur einmal nach deinem Tod wechseln!
+DEATH_FLAGCAPTURED = Du wurdest erschlagen, weil dein Gegner deine Fahne erobert hatte!
+DEATH_NOFREELOOK = Freie Uebersicht Modus ist blockiert.
+HINT = Hinweis
+STARTING_NEWROUND = Starte neue Runde...
+
+INSTANTSPAWN_NOTEAM = Du musst in einem Team und tot sein um eine sofortige Wiederbelebung kaufen zu koennen.
+INSTANTSPAWN_NOADRENALINE = Du hast nicht genug Adrenalin, %d benoetigt!
+INSTANTSPAWN_BOUGHT = Du hast fuer %d Adrenalin eine sofortige Wiederbelebung erworben!
+
+RESPAWNING_IN = Wiederbelebt in %d Sekunden...
+RESPAWNING = Starte neu...
+
+PROTECTION_LEFT = Neustart geschuetzt: %d Sekunden uebrig...
+PROTECTION_EXPIRED = Neustartschutz abgelaufen.
+PROTECTION_ADRENALINE = Neustartschutz abgeschaltet - Adrenalin benutzt!
+PROTECTION_TOUCHFLAG = Neustartschutz abgeschaltet - Flagge beruehrt!
+PROTECTION_WEAPONUSE = Neustartschutz abgeschaltet - Waffe genutzt!
+
+DROPFLAG_NOFLAG = Du hast die Flagge nicht!
+
+HELP_TITLE = HILFE
+HELP_1 = Mod Spielweise
+HELP_1_LINE1 = Das Spiel ist einfach, zwei Teams, ROT (Terroristen) und BLAU (CTs), Jedes eine Flagge bei ihrer Basis.
+HELP_1_LINE2 = Das Ziel jedes Teams ist es, die gegnerische Flagge zu erobern und die eigene zu verteidigen, denn um die gegnerische
+HELP_1_LINE3 = Flagge erobern zu koennen, musst du sie in deine Basis bringen waehrend deine eigene da ist.
+HELP_1_LINE4 = Du stiehlst die gegnerische Flagge oder bringst deine eigene zurueck durch einfaches Beruehren.
+HELP_2 = Spielerbefehle
+HELP_2_NOTE = HINWEIS: Manche Befehle koennen in der Konsole ohne '/' beutzt werden.
+HELP_2_LINE1 = /lights - schaltet dynamisches Flaggenlichtfuer diesen Spieler ein/aus
+HELP_2_LINE2 = /sounds 1-10 oder test -  setzt bzw testet die Lautstaerke des Ansagers
+HELP_2_LINE3 = /spawn - kauft sofortige Wiederbelebung fuer %d Adrenalin
+HELP_2_LINE4 = /dropflag - laesst die Flagge fallen (du verlierst alle Belohnungen!)
+HELP_2_LINE5 = /adrenaline - Adrenalin Combo waehlbar sobald du 100 Adrenalin hast.
+HELP_3 = Server Modus Einstellungen:
+HELP_3_INFROUND = Endlose Runde: %L
+HELP_3_ROUNDEND = Flaggeneroberung beendet die Runde: %L
+HELP_3_CAPTURESLAY = Erschlage das Team dessen Flagge erobert wurde: %L
+HELP_3_BUY = Benutzerdefiniertes Kaufmenue: %L
+HELP_3_C4 = C4 kaufen: %L
+HELP_3_ADRENALINE = Adrenalin: %L
+HELP_3_FLAGHEAL = Flage heilt Teammkameraden: %L
+HELP_3_RESPAWN = Zeit zur Wiederbelebung: %d Sekunden
+HELP_3_PROTECTION = Geschuetzt nach Wiederbelebung fuer: %d Sekunden
+HELP_3_FLAGRETURN = Flagge kehrt automatisch zurueck in %d Sekunden
+HELP_3_WEAPONSTAY = Waffen bleiben liegen fuer %d Sekunden
+HELP_3_ITEMDROP = Chance das ein Gegenstand faellt: %d%%
+HELP_4 = Download Modus fuer deinen Server
+HELP_4_LINE1 = AmxModX thread
+HELP_4_LINE2 = Entwickler Seite
+
+HINT_1 = Adrenalin gibt dir kurzzeitig Combos, sobald du 100 hast, nutze den adrenaline Befehl.
+HINT_2 = Die gegnerische Flagge kann nur erobert werden, wenn deine eigene in der Basis ist.
+HINT_3 = Manchmal lassen geoetete Spieler etwas fallen, halt die Augen offen.
+HINT_4 = Das C4 toetet jeden in reichweite in kurzer Zeit, es laesst sich aber entschaerfen.
+HINT_5 = Beide Flaggen sind staendig als blinkende Punkte auf jedes Spielers Radar zu sehen.
+HINT_6 = Der Wiederbelebungsschutz wird vorzeitig beendet, wenn du eine Waffe benutzt.
+HINT_7 = Waehrend du eine Adrenali-Combo nutzt, nimmt dein Adrenalin ab, abhaengig von der Combo.
+HINT_8 = Das Maschinengewehr, Scharfschuetzengewehre, Schild und C4 kosten viel Geld und Adrenalin.^nFinden kannst du sie im Kauf-Menue -> Spezielle Waffen.
+HINT_9 = Du kannst dich fuer 50 Adrenalin sofort wiederbeleben lassen, wenn du tot bist, schreibe einfach /spawn.
+HINT_10 = Munition kostet nichts, wann immer du durch eine Kaufzone gehst steht es dir frei, dich neu damit auszuruesten.
+HINT_11 = Sobald du die gegenerische Flagge hast wirst du langsamer, achte darauf, das dein Team dich schuetzt.
+HINT_12 = Um zu gewinnen, erobere die gegnerische Flagge waehrend du deine eigene schuetzt.
+
+ADMIN_MOVEBASE_1 = ADMIN: verschob die Flaggenbasis von Team %L
+ADMIN_MOVEBASE_2 = ADMIN %s: verschob die Flaggenbasis von Team %L
+ADMIN_MOVEBASE_MOVED = Die %L Flaggenbasis wurde zu deinem Anfang bewegt.
+ADMIN_MOVEBASE_SAVED = Basis-Standorte gespeichert als
+
+ADMIN_RETURN_1 = ADMIN: bewegte die %L Flagge zur Basis zurueck
+ADMIN_RETURN_2 = ADMIN %s: bewegte die %L Flagge zur Basis zurueck
+ADMIN_RETURN_DONE = Die %L Flagge kam zurueck.
+ADMIN_RETURN_WAIT = Die %L Flagge muss wenigstens %d Sekunden liegen, bevor du sie per Befehl zurueck bringen kannst.
+ADMIN_RETURN_NOTDROPPED = Die %L Flagge wurde nicht fallen gelassen.
+
+BUYMENU_TITLE = Kauf Menue
+BUYMENU_PISTOLS = Pistolen
+BUYMENU_SHOTGUNS = Schrotgewehre
+BUYMENU_SMGS = Sub-machine Gewehre
+BUYMENU_RIFLES = Gewehre
+BUYMENU_SPECIAL = Spezielle Waffen
+BUYMENU_AMMO = Volle Munition
+BUYMENU_EQUIPAMENT = Ausruestung
+BUYMENU_ITEM_SHIELD = Schild
+BUYMENU_ITEM_C4 = C4
+BUYMENU_ITEM_VEST = Kevlar-Weste
+BUYMENU_ITEM_VESTHELM = Kevlar + Helm
+BUYMENU_ITEM_FLASHBANG = Blendgranate
+BUYMENU_ITEM_HE = HE Granate
+BUYMENU_ITEM_SMOKE = Rauch-Granate
+BUYMENU_ITEM_NVG = Nachtsichtgeraet
+BUY_NOTINZONE = Du musst in einer Kaufzone sein!
+BUY_REBOUGHT = versuchte %d Gegenstaende erneut zu kaufen.
+BUY_NEEDMONEY = Nicht genug Geld, du benoetigst $%d.
+BUY_NEEDADRENALINE = Nicht genug Adrenalin, du brauchst %d.
+BUY_HAVE_C4 = Du hast bereits C4!
+BUY_HAVE_NVG = Du hast bereits ein Nachtsichtgeraet!
+BUY_HAVE_KEVLAR = Du hast bereits eine Kevlar-Weste!
+BUY_HAVE_KEVLARHELM = Du hast bereits eine Kevlar-Weste und Helm!
+BUY_NOMORE_FLASH = Du kannst keine weiteren Blendgranaten mehr tragen!
+BUY_DELAY_FLASH = Du kannst 2 Blendgranaten alle %d Sekunden kaufen!
+BUY_NOMORE_HE = Du kannst keine weiteren HE Granaten kaufen!
+BUY_DELAY_HE = Du kannst eine HE Granate alle %d Sekunden kaufen!
+BUY_NOMORE_SMOKE = Du kannst keine weitere Rauch-Granate kaufen!
+BUY_DELAY_SMOKE = Du kannst eine Rauch-Granate alle %d Sekunden kaufen!
+BUY_HAVE_WEAPON = Du hast diese Waffe bereits!
+BUY_FULLAMMO = Munition aufgefuellt.
+
+C4_ARMED = C4 scharf, Detonation in %d Sekunden!
+C4_ARMED_RADIO = C4 gelegt, %d Sekunden...
+C4_NODEFUSE = Du kannst kein C4 deines Teams entschaerfen, lauf lieber!
+C4_DEFUSING = Entschaerfe C4 in %d Sekunden...
+C4_DEFUSED = C4 entschaerft, nun gehoert es dir!
+
+PICKED_AMMO = Munition aufgehoben
+PICKED_HEALTH = Medikit aufgehoben +%d Leben
+PICKED_ADRENALINE = Adrenalin aufgehoben +%d
+
+REWARD = Belohnung
+FRAG = Toetung
+FRAGS = Toetungen
+ADRENALINE = Adrenalin
+
+ANNOUNCEMENT = Ankuendigung
+ANNOUNCE_FLAGTAKEN = %s hat die %L Flagge genommen!
+ANNOUNCE_FLAGDROPPED = %s hat die %L Flagge fallen gelassen!
+ANNOUNCE_FLAGRETURNED = %s brachte die %L Flagge zurueck!
+ANNOUNCE_FLAGAUTORETURNED = Die %L Flagge ging automatisch zurueck!
+ANNOUNCE_FLAGCAPTURED = %s eroberte die %L Flagge!
+ANNOUNCE_TEAMTAKESLEAD = %L team takes the lead!
+ANNOUNCE_TEAMWON = %L team is the winner!
+
+REWARD_KILL = fuer das Toeten
+REWARD_KILLCARRIER = fuer das Toeten des Flaggentraegers
+REWARD_RETURN = fuer das Zurueckbringen deiner Flagge
+REWARD_RETURN_ASSIST = fuer die Hilfe beim zurueckbringen deiner Flagge
+REWARD_CAPTURE = fuer das Erobern der Gegnerischen Flagge
+REWARD_CAPTURE_ASSIST = fuer die Hilfe beim erobern der gegnerischen Flagge
+REWARD_CAPTURE_TEAM = weil das Team die gegnerische Flagge erobert hat
+REWARD_STEAL = fuer das Stehlen der gegnerischen Flagge
+REWARD_PICKUP = fuer das Aufheben der gegnerischen Flagge
+PENALTY_SUICIDE = fuer Selbstmord
+PENALTY_TEAMKILL = fuer das Toeten eines Teamkameraden
+PENALTY_MANUALDROP = fuer absichtliches fallen lassen der Flagge
+
+HUD_YOUHAVEFLAG = Du hast die Flagge, kehr zur Basis zurueck!
+HUD_ENEMYHASFLAG = Der Feind hat deine Flagge, hol sie zurueck!
+HUD_RETURNYOURFLAG = Deine Flagge liegt herum, hol sie zurueck!
+
+HUD_RETURNEDFLAG = Du hast deine Flagge zurueck gebracht!
+HUD_CAPTUREDFLAG = Du hast die gegnerische Flagge erobert!
+
+HUD_ADRENALINE = Adrenalin: %d von %d
+HUD_ADRENALINEFULL = Adrenalin ist VOLL!^nSchreibe adrenaline in die Konsole um eine Combo zu nutzen!
+HUD_ADRENALINECOMBO = Benutze Combo: %L^nAdrenalin uebrig: %d von %d
+
+LIGHTS_ON = Die Flaggen-Lichter wurden %sEIN%s geschaltet(gespeichert nur fuer diese Karte)
+LIGHTS_OFF = Die Flaggen-Lichter wurden %sAUS%s geschaltet(gespeichert nur fuer diese Karte)
+LIGHTS_INVALID = Ungueltiger Parameter, nutze %son%s / %soff
+
+SOUNDS_SET = Lautstaerke der Ankuendigungen auf %s%d gesetzt
+SOUNDS_TEST = Ankuendigungen werden getestet, du solltest %s hoehren...
+SOUNDS_INVALID = Ungueltiger Parameter, nutze eine Zahl von %s bis%s oder%s
+
+ADR_MENU_TITLE = Adrenalin-Combo
+ADR_SPEED = Geschwindigkeit
+ADR_SPEED_DESC = schnellere Bewegungen
+ADR_BERSERK = Berserker
+ADR_BERSERK_DESC = Doppelter Schaden und schneller Schiessen
+ADR_REGENERATE = Regenerieren
+ADR_REGENERATE_DESC = Regeneriert Leben und Panzerung
+ADR_INVISIBILITY = Unsichtbarkeit
+ADR_INVISIBILITY_DESC = Schlecht zu sehen
+ADR_ALIVE = Du musst am Leben sein um Adrenalin zu nutzen!
+ADR_USING = Du nutzt bereits eine Adrenalin-Combo, warte bis sie zu ende ist.
+ADR_MORE = Nicht genug Adrenalin, es muss voll (%d) sein um es zu nutzen!
+
+[nl]
+TEAM_RED = Rood
+TEAM_BLUE = Blauw
+TEAM_SPEC = Toeshouwer
+FLAG_RED = Rood
+FLAG_BLUE = Blauw
+
+JOIN_INFO = Deze server gebruikt %s%s%s door %s%s%s - bekijk console voor snelle hulp.
+JOIN_NOFEATURES = Deze server heeft sommige van de jCTF functies gedeactiveerd, typ /help om te zien welke.
+
+QH_TITLE = Snelle hulp
+QH_MADEBY = Mod gemaakt door
+QH_LINE1 = Je moet de vijandelijke vlag stelen terwijl je je eigen vlag beschermd.
+QH_LINE2 = Deze mod heeft veel features, maar je zal ze allemaal leren,
+QH_LINE3 = Ga er gewoon voor en begin vlaggen te scoren !
+QH_HELP = voor additional help, type /help in chat
+QH_ADRENALINE = Je moet ^"adrenaline^" aan een toets binden !
+
+SPAWN_NOMONEY = Geen spawn geld omdat je zelfmoord pleegde in je vorig leven !
+DEATH_TRANSFER = Je bent overgeplaatst naar het %s%L team%s door auto-team balance.
+DEATH_ONLY1CHANGE = Je can maar één keer van team veranderen na elke dood !
+DEATH_FLAGCAPTURED = Je bent geslacht omdat de vijand je vlag verovert heeft!
+DEATH_NOFREELOOK = Vrije kijk mode is gedeactiveerd.
+HINT = Hint
+STARTING_NEWROUND = Nieuwe ronde starten...
+
+INSTANTSPAWN_NOTEAM = Je moet in een team en dood zijn om onmiddelijke respawn te kopen.
+INSTANTSPAWN_NOADRENALINE = Je hebt niet genoeg adrenaline, %d vereist!
+INSTANTSPAWN_BOUGHT = Je kocht onmiddelijke respawn voor %d adrenaline!
+
+RESPAWNING_IN = Respawnen in %d seconden...
+RESPAWNING = Respawnen...
+
+PROTECTION_LEFT = Spawn bescherming: %d seconden over...
+PROTECTION_EXPIRED = Spawn bescherming verlopen.
+PROTECTION_ADRENALINE = Spawn bescherming gedeactiveerd - adrenaline gebruikt!
+PROTECTION_TOUCHFLAG = Spawn bescherming gedeactiveerd - vlag aangeraakt!
+PROTECTION_WEAPONUSE = Spawn bescherming gedeactiveerd - wapen gebruikt!
+
+DROPFLAG_NOFLAG = Je hebt de vlag niet!
+
+HELP_TITLE = HELP
+HELP_1 = Mod gameplay
+HELP_1_LINE1 = Gameplay is simpel, twee teams, ROOD (Terroristen) and BLAUW (CTs), hebben elk een vlag nabij hun basis.
+HELP_1_LINE2 = Het doel van elk team is om de vijandelijke vlag te veroveren terwijl je je eigen vlag beschermd. Om de
+HELP_1_LINE3 = Om de vijandelijke vlag te veroveren, moet je deze terug naar je basis brengen en jou vlag moet daar zijn.
+HELP_1_LINE4 = Vijandelijke vlag wordt gestolen en jouw vlag teruggebracht door een simpele aanraking.
+HELP_2 = Speler Commando's
+HELP_2_NOTE = NOTA: Sommige commando's kunnen gebruikt worden in console maar zonder '/'
+HELP_2_LINE1 = /lights - activeerd/deactiveerd dynamishe vlag lichten voor die speler
+HELP_2_LINE2 = /sounds 1-10 of test - zet de aankondiger's volume of test de aankondiger's volume
+HELP_2_LINE3 = /spawn - Koop een onmiddelijke spawn voor %d adrenaline
+HELP_2_LINE4 = /dropflag - Laat de vlag vallen (Je zal al je beloningen kwijtgeraken!)
+HELP_2_LINE5 = /adrenaline - adrenaline combo keuze menu als je 100 adrenaline hebt.
+HELP_3 = Server's mod instellingen:
+HELP_3_INFROUND = Oneindige ronde: %L
+HELP_3_ROUNDEND = Vlag gestolen eindigt ronde: %L
+HELP_3_CAPTURESLAY = Slacht team van wie de vlag veroverd is: %L
+HELP_3_BUY = Aangepast koop menu: %L
+HELP_3_C4 = C4 kopen: %L
+HELP_3_ADRENALINE = Adrenaline: %L
+HELP_3_FLAGHEAL = Vlag geneest teammaten: %L
+HELP_3_RESPAWN = Respawn tijd: %d seconden
+HELP_3_PROTECTION = Spawn bescherming tijd: %d seconden
+HELP_3_FLAGRETURN = Vlaggen automatisch terug naar basis in %d seconden
+HELP_3_WEAPONSTAY = Wapens blijven op de grond voor %d seconden
+HELP_3_ITEMDROP = Item dropping kans: %d%%
+HELP_4 = Download mod voor je server
+HELP_4_LINE1 = AmxModX thread
+HELP_4_LINE2 = Ontwikkelaar's pagina
+
+HINT_1 = Je adrenaline geeft je tijdelijke combo's, als je 100 hebt, gebruik adrenaline commando.
+HINT_2 = De vijandelijke vlag kan alleen verovert worden als jouw vlag op je basis is.
+HINT_3 = Soms laten vermoorde spelers handige voorwerpen vallen, let erop.
+HINT_4 = De C4 vermoordt alles in zijn omvang in een korte tijd, maar hij kan onschadelijk gemaakt worden.
+HINT_5 = Allebei de vlaggen zijn constant weergegeven als een knipperende punt op alle spelers radars.
+HINT_6 = Spawn bescherming zal vroegtijdig worden deactiveerd als je een wapen gebruikt. 
+HINT_7 = Als je een adrenaline combo gebruikt zal je adrenaline worden afgetapt afhankelijk van de combo
+HINT_8 = Het machinegeweer, snipers, schild en C4 kosten veel geld en adrenaline.^nDeze kunnen gevonden worden in Koop menu -> Speciale Wapens.
+HINT_9 = Je kan een onmiddelijke respawn voor 50 adrenaline kopen, als je dood bent typ /spawn.
+HINT_10 = Munitie kost niets, je kan aanvullen elke keer je de koopzone passeert.
+HINT_11 = Als je de vijandelijke vlag draagt, zal je vertragen. Zorg dat je team je beschermt.
+HINT_12 = Om te winnen moet je team de vijandelijke vlag veroveren terwijl je je eigen vlag beschermt.
+
+ADMIN_MOVEBASE_1 = ADMIN: verplaats %L team z'n vlag basis
+ADMIN_MOVEBASE_2 = ADMIN %s: verplaats %L team z'n vlag basis
+ADMIN_MOVEBASE_MOVED = De %L vlag basis is verplaats naar jouw locatie.
+ADMIN_MOVEBASE_SAVED = Basis locaties opgeslaan als
+
+ADMIN_RETURN_1 = ADMIN: zet %L z'n vlag terug naar de basis
+ADMIN_RETURN_2 = ADMIN %s: zet %L z'n vlag terug naar de basis
+ADMIN_RETURN_DONE = De %L vlag is teruggezet.
+ADMIN_RETURN_WAIT = De %L vlag moet minstens %d seconden gedropt zijn voor je ze kan terugzetten met dit commando.
+ADMIN_RETURN_NOTDROPPED = De %L vlag is niet gedropt.
+
+BUYMENU_TITLE = Koop Menu
+BUYMENU_PISTOLS = Pistolen
+BUYMENU_SHOTGUNS = Shotguns
+BUYMENU_SMGS = Sub-machine geweren
+BUYMENU_RIFLES = Geweren
+BUYMENU_SPECIAL = Speciale wapens
+BUYMENU_AMMO = Volledige munitie
+BUYMENU_EQUIPAMENT = Apparatuur
+BUYMENU_ITEM_SHIELD = Schild
+BUYMENU_ITEM_C4 = C4
+BUYMENU_ITEM_VEST = Kevlar Vest
+BUYMENU_ITEM_VESTHELM = Kevlar + Helm
+BUYMENU_ITEM_FLASHBANG = Flashbang granaat
+BUYMENU_ITEM_HE = HE granaat
+BUYMENU_ITEM_SMOKE = Rook granaat
+BUYMENU_ITEM_NVG = Nachtkijker
+BUY_NOTINZONE = Je moet in een koop zone zijn!
+BUY_REBOUGHT = %d voorwerpen geprobeerd terug te kopen
+BUY_NEEDMONEY = Niet genoeg geld, je hebt $%d nodig.
+BUY_NEEDADRENALINE = Niet genoeg adrenaline, je hebt %d nodig.
+BUY_HAVE_C4 = Je hebt al een C4!
+BUY_HAVE_NVG = Je hebt al een nachtkijker!
+BUY_HAVE_KEVLAR = Je hebt al een kevlar vest!
+BUY_HAVE_KEVLARHELM = Je hebt al een kevlar vest en helm!
+BUY_NOMORE_FLASH = Je kan niet meer flashbangs dragen!
+BUY_DELAY_FLASH = Je kan twee flashbangs kopen elke %d seconden!
+BUY_NOMORE_HE = Je kan niet meer HE granaten dragen!
+BUY_DELAY_HE = Je kan een HE granaat kopen elke %d seconden!
+BUY_NOMORE_SMOKE = Je kan niet meer rookgranaten dragen!
+BUY_DELAY_SMOKE = Je kan een rookgranaat kopen elke %d seconden!
+BUY_HAVE_WEAPON = Je hebt dat wapen al!
+BUY_FULLAMMO = Munitie hervult.
+
+C4_ARMED = C4 gewapend, detonatie in %d seconden!
+C4_ARMED_RADIO = C4 geplaatst, %d seconden...
+C4_NODEFUSE = Kan team's C4 niet onschadelijk maken, beter weglopen!
+C4_DEFUSING = C4 onschadelijk maken in %d seconden!
+C4_DEFUSED = C4 onschadelijk gemaakt, hij is nu van jou!
+
+PICKED_AMMO = Munitiepakket opgeraapt
+PICKED_HEALTH = EHBO kit opgeraapt +%d gezondheid
+PICKED_ADRENALINE = Adrenaline opgeraapt +%d
+
+REWARD = Beloning
+FRAG = punt
+FRAGS = punten
+ADRENALINE = adrenaline
+
+ANNOUNCEMENT = Aankondiging
+ANNOUNCE_FLAGTAKEN = %s pakte de %L vlag!
+ANNOUNCE_FLAGDROPPED = %s dropte de %L vlag!
+ANNOUNCE_FLAGRETURNED = %s bracht de %L vlag terug!
+ANNOUNCE_FLAGAUTORETURNED = De %L vlag is automatisch teruggebracht!
+ANNOUNCE_FLAGCAPTURED = %s veroverde de %L vlag!
+ANNOUNCE_TEAMTAKESLEAD = %L team heeft de leiding genomen!
+ANNOUNCE_TEAMWON = %L team is de winaar!
+
+REWARD_KILL = voor dodeon
+REWARD_KILLCARRIER = voor het doden van de vlag drager
+REWARD_RETURN = voor je team's vlag terug te brengen
+REWARD_RETURN_ASSIST = voor het assisteren om je vlag terug te brengen
+REWARD_CAPTURE = voor het veroveren van de vijandelijke vlag
+REWARD_CAPTURE_ASSIST = voor het assisteren bij het veroveren van de vijandelijke vlag
+REWARD_CAPTURE_TEAM = omdat team de vijandelijke vlag heeft veroverd
+REWARD_STEAL = voor het stelen van de vijandelijke vlag
+REWARD_PICKUP = voor het oppakken up the vijandelijke vlag
+PENALTY_SUICIDE = voor zelfmoord
+PENALTY_TEAMKILL = voor teammoord
+PENALTY_MANUALDROP = voor het opzettelijk droppen van de vlag
+
+HUD_YOUHAVEFLAG = Je hebt de vijandelijke vlag, ga terug naar je basis!
+HUD_ENEMYHASFLAG = De vijand heeft je vlag, haal ze terug!
+HUD_RETURNYOURFLAG = Je vlag is gedropt, breng ze terug!
+
+HUD_RETURNEDFLAG = Je bracht je team z'n vlag terug!
+HUD_CAPTUREDFLAG = Je veroverde de vijandelijke vlag!
+
+HUD_ADRENALINE = Adrenaline: %d van %d
+HUD_ADRENALINEFULL = Adrenaline VOL!^nTyp adrenaline in console om een combo te gebruiken!
+HUD_ADRENALINECOMBO = Gebruik combo: %L^nAdrenaline over: %d of %d
+
+LIGHTS_ON = De vlag lichten zijn %sGEACTIVEERD%s (onthoud alleen op deze map)
+LIGHTS_OFF = De vlag lichten zijn %sGEDEACTIVEERD%s (onthoud alleen op deze map)
+LIGHTS_INVALID = Ongeldige parameter, gebruik %son%s / %soff
+
+SOUNDS_SET = Aankondigings geluid volume op %s%d gezet
+SOUNDS_TEST = Aankondigings test, je zou %s moeten horen...
+SOUNDS_INVALID = Ongeldige parameter, gebruik een nummer van %s tot %s of %s
+
+ADR_MENU_TITLE = Adrenaline combos
+ADR_SPEED = Snelheid
+ADR_SPEED_DESC = Snellere bewegingen
+ADR_BERSERK = Gek
+ADR_BERSERK_DESC = Dubbele schade en sneller schieten
+ADR_REGENERATE = Regeneratie
+ADR_REGENERATE_DESC = regenereer gezondheid en pantser
+ADR_INVISIBILITY = Onzichtbaarheid
+ADR_INVISIBILITY_DESC = Nauwlijks zichtbaar
+ADR_ALIVE = Je moet leven om adrenaline te gebruiken!
+ADR_USING = Je bent al een adrenaline combo aan het gebruiken, wacht tot deze gedaan is.
+ADR_MORE = Niet genoeg adrenaline, hij moet vol (%d) zijn om te gebruiken !
+
+[bp]
+TEAM_RED = Vermelho
+TEAM_BLUE = Azul
+TEAM_SPEC = Espectador
+FLAG_RED = Vermelho
+FLAG_BLUE = Azul
+JOIN_INFO = Este servidor esta em execucao %s%s%s by %s%s%s - ver console para quick-help.
+JOIN_NOFEATURES = Este servidor desativou algumas das caracteristicas jCTF, digite /help para ver quais.
+QH_TITLE = Quick-help
+QH_MADEBY = Mod made by
+QH_LINE1 = Voce deve capturar a bandeira inimiga enquanto defendia sua propria.
+QH_LINE2 = Este mod tem muitos recursos, mas voce vai learn'em todos,
+QH_LINE3 = so chegar la e comecar a marcar alguns captura de bandeira!
+QH_HELP = Para obter ajuda adicional, digite / help no chat
+QH_ADRENALINE = voce deveria bind ^"adrenaline^" a uma tecla !
+SPAWN_NOMONEY = Sem dinheiro desovar porque voce cometeu suicidio vida passada!
+DEATH_TRANSFER = Voce tem sido transferidos para o %s%L equipe%s devido ao auto-equilibrio da equipe.
+DEATH_ONLY1CHANGE = Voce pode alterar a sua equipa apenas uma vez apos cada morte!
+DEATH_FLAGCAPTURED = Voce foi morto porque o inimigo capturou a sua bandeira!
+DEATH_NOFREELOOK = Modo de olhar livre e bloqueado.
+HINT = sugestao
+STARTING_NEWROUND = Iniciando nova rodada...
+INSTANTSPAWN_NOTEAM = Voce deve estar em uma equipe e mortos para comprar um reaparecimento instantanea.
+INSTANTSPAWN_NOADRENALINE = Voce nao tem adrenalina suficiente, %d exigido!
+INSTANTSPAWN_BOUGHT = Voce comprou um reaparecimento imediato para %d adrenaline!
+RESPAWNING_IN = Voce Nasceu em %d segundo...
+RESPAWNING = Voce Nasceu...
+PROTECTION_LEFT = Spawn protecao: %d segundos restantes...
+PROTECTION_EXPIRED = Spawn protecao expirado.
+PROTECTION_ADRENALINE = Spawn protecao com eficiencias - adrenalina utilizada!
+PROTECTION_TOUCHFLAG = Spawn protecao com eficiencias bandeira tocou!
+PROTECTION_WEAPONUSE = Spawn protecao com eficiencias arma usada!
+DROPFLAG_NOFLAG = Voce nao tem a bandeira!
+HELP_TITLE = HELP
+HELP_1 = Mod gameplay
+HELP_1_LINE1 = A jogabilidade e simples, duas equipes, vermelho (terroristas) e Azul (CTs), cada um com uma bandeira perto de sua base.
+HELP_1_LINE2 = O objetivo de cada equipe e capturar a bandeira inimiga enquanto defendem a própria causa, a fim de capturar
+HELP_1_LINE3 = a bandeira do inimigo, voce deve traze-lo para sua base e sua bandeira deve estar la.
+HELP_1_LINE4 = Bandeira inimiga e roubado e bandeira equipe esta retornado por um simples toque.
+HELP_2 = comandos do jogador
+HELP_2_NOTE = NOTA: Alguns comandos podem ser usados no console mas sem '/'
+HELP_2_LINE1 = /lights - habilita / desabilita luzes bandeira dinamico para que o jogador
+HELP_2_LINE2 = /sounds 1-10 ou teste - define o volume locutor ou testes o volume locutor
+HELP_2_LINE3 = /spawn - comprar um instantâneo para desovar %d adrenaline
+HELP_2_LINE4 = /dropflag - cai a bandeira (voce vai perder todas as recompensas tem!)
+HELP_2_LINE5 = /adrenaline - adrenalina de combinacao de menu uma vez que voce escolher tem 100 adrenalina.
+HELP_3 = Servidor configuracoes mod:
+HELP_3_INFROUND = rodada infinita: %L
+HELP_3_ROUNDEND = Final bandeira capturar rodada: %L
+HELP_3_CAPTURESLAY = Slay equipe de que bandeira e capturado: %L
+HELP_3_BUY = Menu de compra personalizada: %L
+HELP_3_C4 = comprando C4: %L
+HELP_3_ADRENALINE = Adrenaline: %L
+HELP_3_FLAGHEAL = Cura companheiros de bandeira: %L
+HELP_3_RESPAWN = Tempo de respawn: %d segundos
+HELP_3_PROTECTION = Spawn protecao em tempo: %d segundos
+HELP_3_FLAGRETURN = Bandeiras retorno automatico em %d segundos
+HELP_3_WEAPONSTAY = Armas permanecer no terreno para %d segundos
+HELP_3_ITEMDROP = Item de cair oportunidade: %d%%
+HELP_4 = Mod download para o seu servidor
+HELP_4_LINE1 = Rosca AmxModX
+HELP_4_LINE2 = Pagina do Desenvolvedor
+HINT_1 = Sua adrenalina da combos temporaria, uma vez que voce tem 100, use o comando adrenalina.
+HINT_2 = A bandeira do inimigo pode ser capturada somente se sua bandeira esta na base.
+HINT_3 = As vezes os jogadores mortos soltar itens úteis, fique de olho.
+HINT_4 = O C4 mata tudo em sua gama em um curto espaço de tempo, no entanto, e defusable.
+HINT_5 = Ambas as bandeiras estao constantemente exibido como um ponto piscando no radar todos os jogadores.
+HINT_6 = Protecao sera desativado prematuramente se voce usar uma arma.
+HINT_7 = Quando voce estiver usando uma combinação de adrenalina, a adrenalina drenos, dependendo da combinacao.
+HINT_8 = A metralhadora, snipers, escudo e C4 custar muito dinheiro e adrenalina ^nThey pode ser encontrado no menu Buy -.> Armas Especiais.
+HINT_9 = Voce pode comprar um reaparecimento instantaneas para 50 adrenalina, enquanto mortos apenas digite /spawn.
+HINT_10 = Municao nao custa nada, sinta-se livre para reabastecer a cada vez que voce passa pelo seu buyzone.
+HINT_11 = Depois de ter a bandeira do inimigo, voce sera slown para baixo, sempre tem a equipe cobrindo voce.
+HINT_12 = Para vencer, sua equipe precisa roubar a bandeira inimiga, defendendo sua propria bandeira.
+ADMIN_MOVEBASE_1 = ADMIN: movido %L de base da equipe bandeira
+ADMIN_MOVEBASE_2 = ADMIN %s: movido %L de base da equipe bandeira
+ADMIN_MOVEBASE_MOVED = A base %L base de bandeira mudou-se para a sua origem
+ADMIN_MOVEBASE_SAVED = Localizacaes guardadas base como
+ADMIN_RETURN_1 = ADMIN: devolveu o %L bandeira para a base
+ADMIN_RETURN_2 = ADMIN %s: devolveu o %L bandeira para a base
+ADMIN_RETURN_DONE = A base %L bandeira foi devolvido.
+ADMIN_RETURN_WAIT = A base %L bandeira deve ser descartada, pelo menos, %d segundos antes que voce pode devolve-lo pelo comando.
+ADMIN_RETURN_NOTDROPPED = A base %L bandeira nao e descartada.
+BUYMENU_TITLE = Menu de comprar
+BUYMENU_PISTOLS = pistolas
+BUYMENU_SHOTGUNS = Shotguns
+BUYMENU_SMGS = Sub-metralhadoras
+BUYMENU_RIFLES = Rifles
+BUYMENU_SPECIAL = armas especiais
+BUYMENU_AMMO = municao completa
+BUYMENU_EQUIPAMENT = Equipamentos
+BUYMENU_ITEM_SHIELD = escudo
+BUYMENU_ITEM_C4 = C4
+BUYMENU_ITEM_VEST = Kevlar Vest
+BUYMENU_ITEM_VESTHELM = Kevlar + Helmet
+BUYMENU_ITEM_FLASHBANG = Flashbang grenade
+BUYMENU_ITEM_HE = HE grenade
+BUYMENU_ITEM_SMOKE = Smoke grenade
+BUYMENU_ITEM_NVG = Nightvision goggles
+BUY_NOTINZONE = Voce deve estar em uma zona de compra!
+BUY_REBOUGHT = %d itens que se tentou rebought.
+BUY_NEEDMONEY = Sem dinheiro suficiente, voce precisa $%d.
+BUY_NEEDADRENALINE = Nao basta adrenalina, voce precisa %d.
+BUY_HAVE_C4 = Voce ja tem uma C4!
+BUY_HAVE_NVG = Voce ja tem oculos de visao noturna!
+BUY_HAVE_KEVLAR = Voce ja tem colete kevlar!
+BUY_HAVE_KEVLARHELM = Voce ja tem kevlar colete e capacete!
+BUY_NOMORE_FLASH = Voce nao pode carregar mais flashbangs!
+BUY_DELAY_FLASH = Voce pode comprar dois flashbangs cada %d segundos!
+BUY_NOMORE_HE = Voce nao pode carregar mais HE grenades!
+BUY_DELAY_HE = Voce pode comprar uma HE grenade cada %d segundos!
+BUY_NOMORE_SMOKE = Voce nao pode carregar maissmoke grenades!
+BUY_DELAY_SMOKE = Voce pode comprar um smoke grenade cada %d segundos!
+BUY_HAVE_WEAPON = Voce ja tem essa arma!
+BUY_FULLAMMO = municao cheia.
+C4_ARMED = C4 armados, na detonacao %d segundos!
+C4_ARMED_RADIO = C4 plantada, %d segundos.
+C4_NODEFUSE = Nao pode desarmar C4 equipe, e melhor correr!
+C4_DEFUSING = Desarmar C4 em %d segundos...
+C4_DEFUSED = C4 desarmou, agora ela e sua!
+PICKED_AMMO = Pegou pacote de municao
+PICKED_HEALTH = Pegou medkit +%d saude
+PICKED_ADRENALINE = Pegou adrenalina +%d
+REWARD = Recompensa
+FRAG = bandeira
+FRAGS = bandeira
+ADRENALINE = adrenaline
+ANNOUNCEMENT = anUncio
+ANNOUNCE_FLAGTAKEN = %s tomou a %L bandeira!
+ANNOUNCE_FLAGDROPPED = %s deixou cair a %L bandeira!
+ANNOUNCE_FLAGRETURNED = %s devolveu o %L bandeira!
+ANNOUNCE_FLAGAUTORETURNED = A bandeira %L retornaram automaticamente!
+ANNOUNCE_FLAGCAPTURED = %s capturou a %L bandeira!
+ANNOUNCE_TEAMTAKESLEAD = %L equipe assume a lideranca!
+ANNOUNCE_TEAMWON = %L equipe e o vencedor!
+REWARD_KILL = para matar
+REWARD_KILLCARRIER = para matar a transportadora de bandeira
+REWARD_RETURN = para entrega de bandeira da equipe
+REWARD_RETURN_ASSIST = para auxiliar no retorno a sua bandeira da equipe
+REWARD_CAPTURE = para capturar a bandeira inimiga
+REWARD_CAPTURE_ASSIST = para auxiliar na captura da bandeira inimiga
+REWARD_CAPTURE_TEAM = because team captured the enemy flag
+REWARD_STEAL = para roubar a bandeira inimiga
+REWARD_PICKUP = para pegar a bandeira inimiga
+PENALTY_SUICIDE = para o suicidio
+PENALTY_TEAMKILL = para suicidar
+PENALTY_MANUALDROP = intencionalmente para deixar cair a bandeira
+HUD_YOUHAVEFLAG = Voce tem a bandeira, retornar a base!
+HUD_ENEMYHASFLAG = O inimigo tem sua bandeira, recupera lo!
+HUD_RETURNYOURFLAG = Sua bandeira e descartado, devolve lo!
+HUD_RETURNEDFLAG = Voce retornou a sua bandeira da equipe!
+HUD_CAPTUREDFLAG = Voce capturou a bandeira inimiga!
+HUD_ADRENALINE = Adrenaline: %d of %d
+HUD_ADRENALINEFULL = Adrenaline COMPLETA!^nTempo adrenaline no console para usar um combo!
+HUD_ADRENALINECOMBO = usando de combinaCAo: %L^nAdrenaline A esquerda: %d of %d
+LIGHTS_ON = As luzes da bandeira foram transformados %sON%s (memorizado apenas mapear esse)
+LIGHTS_OFF = As luzes da bandeira foram transformados %sOFF%s (memorizado apenas mapear esse)
+LIGHTS_INVALID = Parametro invalido, use %son%s / %soff
+SOUNDS_SET = Volume de som definido para anuncio %s%d
+SOUNDS_TEST = Teste de anuncio, voce deve ouvir%s...
+SOUNDS_INVALID = Parametro invalido, use um numero de%s para%s ou%s
+ADR_MENU_TITLE = Adrenaline combos
+ADR_SPEED = velocidade
+ADR_SPEED_DESC = movimento mais rapido
+ADR_BERSERK = Tiromaisforte
+ADR_BERSERK_DESC = O dobro de dano e gravacao mais rapida
+ADR_REGENERATE = Regenerar
+ADR_REGENERATE_DESC = Regenerar a saude e armaduras
+ADR_INVISIBILITY = Invisibilidade
+ADR_INVISIBILITY_DESC = Corpo Invisivel
+ADR_ALIVE = Voce deve estar vivo para usar adrenaline!
+ADR_USING = Voce ja esta usando uma combinacao de adrenalina, espere ate que termine.
+ADR_MORE = Nao adrenalina suficiente, ele deve estar cheio (%d) usalo! 
+
+[es]
+TEAM_RED = Rojo
+TEAM_BLUE = Azul
+TEAM_SPEC = Espectador
+FLAG_RED = Rojo
+FLAG_BLUE = Azul
+
+JOIN_INFO = Este servidor usa %s%s%s por %s%s%s - mira la consola para ayuda rapida.
+JOIN_NOFEATURES = Este servidor a deshabilitado algunas funciones jCTF, escribe /help para ver cuales.
+
+QH_TITLE = Ayuda rapida
+QH_MADEBY = Mod hecho por
+QH_LINE1 = Tienes que capturar la bandera enemiga mientras defiendes la tuya.
+QH_LINE2 = Este modo tiene muchas funciones, pero las aprenderas todas!
+QH_LINE3 = Entra alli y empieza a ganar puntos capturando banderas.!
+QH_HELP = Para ayuda addicional, escribe /help en el chat.
+QH_ADRENALINE = Deberias bindear ^"adrenaline^" a una tecla!
+
+SPAWN_NOMONEY = No recibes dinero porque te suicidaste la vida anterior!
+DEATH_TRANSFER = Fuiste transferiodo al equipo %s %s%L debido a un auto balance de equipos.
+DEATH_ONLY1CHANGE = Puedes cambiarte de equipo solo una vez, despues de muerto!
+DEATH_FLAGCAPTURED = Has sido castigado porque el otro equipo capturo la bandera.
+DEATH_NOFREELOOK = Free look esta bloqueada.
+HINT = Pista
+STARTING_NEWROUND = Empezando una nueva ronda...
+
+INSTANTSPAWN_NOTEAM = Tienes que estar en un equipo y muerto, para comprar "Revivir".
+INSTANTSPAWN_NOADRENALINE = No tienes suficiente adrenalina, necesitas %d !
+INSTANTSPAWN_BOUGHT = Compraste "Revivir" por %d adrenalina!
+
+RESPAWNING_IN = Reviviendo en %d segundos...
+RESPAWNING = Reviviendo...
+
+PROTECTION_LEFT = Proteccion al revivir: quedan %d segundos...
+PROTECTION_EXPIRED = La proteccion expiro.
+PROTECTION_ADRENALINE = Proteccion deshabilitada - adrenalina usada!
+PROTECTION_TOUCHFLAG = Proteccion deshabilitada - Bandera tocada!
+PROTECTION_WEAPONUSE = Proteccion deshabilitada - Arma usada!
+
+DROPFLAG_NOFLAG = Tu no tienes la bandera!
+
+HELP_TITLE = AYUDA
+HELP_1 = Modo de juego.
+HELP_1_LINE1 = El juego es simpre, dos equipos, Rojo (Terroristas) y Azul (Anti-Terroristas),cada uno con una bandera en su base.
+HELP_1_LINE2 = El objetivo de cada eqipo es capturar la bandera enemiga mientras defiendes la tuya, porque
+HELP_1_LINE3 = debes llevar la bandera enemiga a tu base y tu bandera debe estar ahi.
+HELP_1_LINE4 = Robas la bandera enemiga y recuperas la tuya tan solo tocandolas.
+HELP_2 = Comando para Jugadores
+HELP_2_NOTE = NOTA: Algunos comandos pueden usarse en la consola pero si la '/'
+HELP_2_LINE1 = /lights - habilita/deshabilita la luz dinamica en la bandera para el usuario.
+HELP_2_LINE2 = /sounds 1-10 o test - Elijes el volumen del mensajero o pruebas el volumen
+HELP_2_LINE3 = /spawn - Compras "Revivir" instantaneamente por %d adrenalina
+HELP_2_LINE4 = /dropflag - tirar la bandera (Perderas todoas las funciones que tenias!)
+HELP_2_LINE5 = /adrenaline - Menu de combos de adrenalina, una vez que tienes 100 adrenalina.
+HELP_3 = Configuracion del modo en el Servidor:
+HELP_3_INFROUND = Rondas infinitas: %L
+HELP_3_ROUNDEND = Ronda termina al capturar bandera: %L
+HELP_3_CAPTURESLAY = Castigar al equipo que le capturan la bandera: %L
+HELP_3_BUY = Editar menu de compra: %L
+HELP_3_C4 = Comprar C4: %L
+HELP_3_ADRENALINE = Adrenalina: %L
+HELP_3_FLAGHEAL = La bandera cura al equipo: %L
+HELP_3_RESPAWN = Tiempo para revivir: %d segundos
+HELP_3_PROTECTION = Proteccion por revivir: %d segundos
+HELP_3_FLAGRETURN = Banderas vuelven a la base en %d segundos
+HELP_3_WEAPONSTAY = Armas permanecen en el piso por %d segundos
+HELP_3_ITEMDROP = Chance de tirar un item: %d%%
+HELP_4 = Descargar modo para tu servidor
+HELP_4_LINE1 = Hilo AmxModX
+HELP_4_LINE2 = Pagina del programador
+
+HINT_1 = Tu adrenalina te da combos por un tiempo breve, una vez que tienes 100 adrenalina, usa el comando adrenalina.
+HINT_2 = La bandera enemiga puede ser capturada solo si la tuya esta en tu base.
+HINT_3 = Algunos jugadores cuando mueren tiran objetos utiles, manten los ojos abiertos.
+HINT_4 = La bomba C4 mata a todo lo que este en el rango de alcance, pero se puede desactibar.
+HINT_5 = Ambas banderas se muestran en el radar como un punto que titila.
+HINT_6 = La proteccion por revivir sera deshabilitada al instante si usas una arma.
+HINT_7 = Cuando usas un combo de adrenalina, la adrenalina se consumira dependiendo el combo.
+HINT_8 = La ametralladora, rifleThe machinegun, snipers, escudos y C4 cuestan mucha plata y adrenalina.^n Los puedes encontrar en Menu de compra -> Armas especiales.
+HINT_9 = Puedes comprar "Revivir instanteaneamente", cuesta 50 de adrenalina. Cuando estes muerto escribe /spawn.
+HINT_10 = Las municiones no cuestan nada. Puedes comprar cuantas veces quieras en la Zona de Compra.
+HINT_11 = Una vez q captures la bandera enemiga iras mas lento, asegurate de que tu equipo te cubra.
+HINT_12 = Para ganar tu equipo tiene que robar la bandera enemiga mientras defienden la suya.
+
+ADMIN_MOVEBASE_1 = ADMIN: mueve la bandera del equpo %L a la base
+ADMIN_MOVEBASE_2 = ADMIN %s: mueve la bandera del equpo %L a la base
+ADMIN_MOVEBASE_MOVED = La bandera %L ha sido movida a la base.
+ADMIN_MOVEBASE_SAVED = Guardar posicion como base
+
+ADMIN_RETURN_1 = ADMIN: devuelve la bandera del equpo %L a la base
+ADMIN_RETURN_2 = ADMIN %s: devuelve la bandera del equpo %L a la base
+ADMIN_RETURN_DONE = La bandera %L ha sido devuelta a la base.
+ADMIN_RETURN_WAIT = La bandera %L tiene que estar al menos %d segundos en el piso antes de usar el comando devolver.
+ADMIN_RETURN_NOTDROPPED = La bandera %L no esta en el piso.
+
+BUYMENU_TITLE = Menu de compra.
+BUYMENU_PISTOLS = Pistolas
+BUYMENU_SHOTGUNS = Scopetas
+BUYMENU_SMGS = Mini-Ametralladoras
+BUYMENU_RIFLES = Rifles
+BUYMENU_SPECIAL = Armas especiales
+BUYMENU_AMMO = Municiones 
+BUYMENU_EQUIPAMENT = Equipamiento
+BUYMENU_ITEM_SHIELD = Escudo
+BUYMENU_ITEM_C4 = C4
+BUYMENU_ITEM_VEST = Chaleco Kevlar
+BUYMENU_ITEM_VESTHELM = Kevlar + Casco
+BUYMENU_ITEM_FLASHBANG = Granada Cegadora
+BUYMENU_ITEM_HE = Granada HE
+BUYMENU_ITEM_SMOKE = Granada de humo
+BUYMENU_ITEM_NVG = Vision Nocturna
+BUY_NOTINZONE = Tienes que estar en la zona de compra!
+BUY_REBOUGHT = %d a sido intentado re-comprar el item.
+BUY_NEEDMONEY = No tienes plata suficiente, necesitas $%d.
+BUY_NEEDADRENALINE = No tienes adrenalina suficiente, necesitas $%d.
+BUY_HAVE_C4 = Ya tienes una C4!
+BUY_HAVE_NVG = Ya tienes Vision Nocturna!
+BUY_HAVE_KEVLAR = Ya tienes un chaleco kevlar!
+BUY_HAVE_KEVLARHELM = Ya tienes Kevlar y casco.
+BUY_NOMORE_FLASH = No puedes llevar mas bombas cegadoras!
+BUY_DELAY_FLASH = Puedes comprar solo 2 combas cegadoras cada %d segundos!
+BUY_NOMORE_HE = No puedes llevar mas granadas HE!
+BUY_DELAY_HE =  Puedes comprar una granada HE cada %d segundos!
+BUY_NOMORE_SMOKE = No puedes llevar mas granadas de humo!
+BUY_DELAY_SMOKE = Puedes comprar una granada de humo cada %d segundos!
+BUY_HAVE_WEAPON = Ya tienes esa arma!
+BUY_FULLAMMO = Municiones al maximo.
+
+C4_ARMED = C4 armada, detona en %d segundos!
+C4_ARMED_RADIO = C4 plantada, %d segundos...
+C4_NODEFUSE = No se puede desacivar la C4 del equipo, mejor corre!
+C4_DEFUSING = Desactivando C4 en %d segundos...
+C4_DEFUSED = C4 desactivada, ahora es tuya!
+
+PICKED_AMMO = Juntaste un pack de municiones
+PICKED_HEALTH = Juntaste un kit medico +%d de vida
+PICKED_ADRENALINE = Juntaste adrenalina +%d
+
+REWARD = Recompensas
+FRAG = Frag
+FRAGS = Frags
+ADRENALINE = Adrenalina
+
+ANNOUNCEMENT = Anuncio
+ANNOUNCE_FLAGTAKEN = %s tomo la bandera %L !
+ANNOUNCE_FLAGDROPPED = %s tiraron la bandera %L !
+ANNOUNCE_FLAGRETURNED = %s devolvieron la bandera %L !
+ANNOUNCE_FLAGAUTORETURNED = La bandera %L fue devuelta automaticamente!
+ANNOUNCE_FLAGCAPTURED = %s capturo la bandera %L !
+ANNOUNCE_TEAMTAKESLEAD = El equipo %L va ganando!
+ANNOUNCE_TEAMWON = El equipo %L es el ganador!
+
+REWARD_KILL = Por matar
+REWARD_KILLCARRIER = Por matar al que lleva la bandera
+REWARD_RETURN = Por devolver la bandera de tu equipo
+REWARD_RETURN_ASSIST = Por asisitir a devolver la bandera de tu equipo
+REWARD_CAPTURE = Por capturar la bandera del enemigo
+REWARD_CAPTURE_ASSIST = Por asisitir a capturar la bandera del enemigo
+REWARD_CAPTURE_TEAM = Porque tu equiupo capturo la bandera enemiga
+REWARD_STEAL = Por robar la bandera enemiga
+REWARD_PICKUP = Por juntar la bandera enemiga
+PENALTY_SUICIDE = Por suicidarte
+PENALTY_TEAMKILL = Por matar a un companiero
+PENALTY_MANUALDROP = Por soltar la bandera intencionalmente
+
+HUD_YOUHAVEFLAG = Tienes la bandera, vuelve a tu base!
+HUD_ENEMYHASFLAG = El enemigo tiene tu bandera, recuperala!
+HUD_RETURNYOURFLAG = Tu babdera a sido soltada, recuperala!
+
+HUD_RETURNEDFLAG = Devolviste tu bandera!
+HUD_CAPTUREDFLAG = Capturaste la bandera del enemigo!
+
+HUD_ADRENALINE = Adrenalina: %d de %d
+HUD_ADRENALINEFULL = Adrenalina LLENA!^nEscribe adrenaline en la consola para usar un combo!
+HUD_ADRENALINECOMBO = Usando combo: %L^nAdrenalina restante: %d de %d
+
+LIGHTS_ON = La luz de la bandera a sido %sEncendida%s (Solo por este mapa)
+LIGHTS_OFF = La luz de la bandera a sido %sApagada%s (Solo por este mapa)
+LIGHTS_INVALID = Parametro invalido, usa %son%s / %soff
+
+SOUNDS_SET = Volumen del anunciante fijado en %s%d
+SOUNDS_TEST = Prueba del anunciante, deberias escuchar%s...
+SOUNDS_INVALID = Parametro invalido, usa numeros desde%s a%s o%s
+
+ADR_MENU_TITLE = Combos de adrenalina
+ADR_SPEED = Velocidad
+ADR_SPEED_DESC = Movimientos rapidos
+ADR_BERSERK = Berserk
+ADR_BERSERK_DESC = Doble danio y disparo rapido
+ADR_REGENERATE = Regenerar
+ADR_REGENERATE_DESC = Regenerat vida y armadura
+ADR_INVISIBILITY = Invisible
+ADR_INVISIBILITY_DESC = Apenas visible
+ADR_ALIVE = Tienes q estar vivio para usar adrenalina!
+ADR_USING = Estas usando un combo de adrenalina, espera a que termine.
+ADR_MORE = No tienes adrenalina suficiente, tiene que estar llena (%d) para usarlo!
+
+[tr]
+TEAM_RED = Kirmizi
+TEAM_BLUE = Mavi
+TEAM_SPEC = Izleyici
+FLAG_RED = Kirmizi
+FLAG_BLUE = Mavi
+
+JOIN_INFO = Bu server'da %s%s%s by %s%s%s calismaktadir. -  Hizli-yardim icin konsola bakin.
+JOIN_NOFEATURES = Bu server bazi jCTF ozelliklerini deaktif etmistir, hangilerinin deaktif edildigini ogrenmek icin /help yazin.
+
+QH_TITLE = Hizli-Yardim
+QH_MADEBY = Bu mod yapan:
+QH_LINE1 = Kendi bayraginizi korurken, dusmanin bayragini ele gecirmelisiniz.
+QH_LINE2 = Bu mod bir cok ozellige sahip, fakat hepsini ogreneceksin.
+QH_LINE3 = Sadece oyuna  gir ve Bayrak Ele Gecirme skorlari toplamaya basla !
+QH_HELP = Fazladan yardim icin, sohbet kismina /help yaz.
+QH_ADRENALINE = Bir tusa ^"adrenaline^" atamalisin. Ornek: bind v ^"adrenaline^" .
+
+SPAWN_NOMONEY = Spawn parasi kazanamadin cunku intihar ettin !
+DEATH_TRANSFER = Sen otomatik takim dengeleme nedeniyle transfer edildin %s%L team%s
+DEATH_ONLY1CHANGE = Her olumden sonra yalnizca bir kere takim degistirebilirsin !
+DEATH_FLAGCAPTURED = Olduruldun ! Cunku rakibin bayragini ele gecirdi !
+DEATH_NOFREELOOK = Free-Look secenegi bloklu !
+HINT = Ipucu
+STARTING_NEWROUND = Yeni raunt basliyor...
+
+INSTANTSPAWN_NOTEAM = Hizli yeniden-dogus satin almak icin bir takimde ve olu olman gerek.
+INSTANTSPAWN_NOADRENALINE = Yeternice adrenalinin yok, %d gerekli !
+INSTANTSPAWN_BOUGHT = %d adrenalin karsiliginda hizli yeniden-dogus satin aldin !
+
+RESPAWNING_IN = %d saniye icinde yeniden-dogacaksin...
+RESPAWNING = Yeniden-doguluyor.
+
+PROTECTION_LEFT = Spawn Korumasi: %d saniye daha kaldi.
+PROTECTION_EXPIRED = Spawn korumasinin suresi doldu.
+PROTECTION_ADRENALINE = Spawn korumasi deaktif - adrenalin kullanildi !
+PROTECTION_TOUCHFLAG = Spawn korumasi deaktif - bayraga dokunuldu !
+PROTECTION_WEAPONUSE = Spawn korumasi deaktif - silah kullanildi !
+
+DROPFLAG_NOFLAG = Bayrak Tasimiyorsun !
+
+HELP_TITLE = YARDIM
+HELP_1 = Modun Oynanisi
+HELP_1_LINE1 = Oynanis basit, iki takim, Kirmizi (Terorist) ve Mavi (CT), her iki takimda bolgelerinde bayraga sahip.
+HELP_1_LINE2 = Iki takimin da hedefi kendi bayragini korurken dusman bayragini yakalamak.
+HELP_1_LINE3 = Dusman bayragini kendi bolgene koymalisin. Ayni zamanda sizin bayraginiz da burada bulunmali.
+HELP_1_LINE4 = Bayraklar basit bir dokunusla calinir.
+HELP_2 = Oyuncu Komutlari
+HELP_2_NOTE = NOT: Bazi komutlar konsolda '/' olmadan kullanilabilir.
+HELP_2_LINE1 = /lights - Dinamik bayrak isiklarini oyuncu icin 'etkinlestirir/devre disi birakir'
+HELP_2_LINE2 = /sounds 1-10 veya test - Spikerin ses duzeyini ayarlar veya Spikerin ses duzeyini test eder.
+HELP_2_LINE3 = /spawn - %d Adrenalin karsiliginda yeniden-dogus satin alir.
+HELP_2_LINE4 = /dropflag - Bayragi birakir (Tum odullerini kaybedebilirsin!)
+HELP_2_LINE5 = /adrenaline - Adrenalin kombo toplama menusu
+HELP_3 = Server'in Mod Ayarlari:
+HELP_3_INFROUND = Sonsuz Raunt: %L
+HELP_3_ROUNDEND = Bayragin Ele Gecirilmesiyle Rauntun Bitmesi: %L
+HELP_3_CAPTURESLAY = Bayragi Ele Gecirilen Takimin Tum Oyuncularini Oldur: %L
+HELP_3_BUY = Ozel Satin Alma Menusu: %L
+HELP_3_C4 = C4 Satin Alma: %L
+HELP_3_ADRENALINE = Adrenalin: %L
+HELP_3_FLAGHEAL = Bayrak Takim Arkadaslarini Iyilestirir: %L
+HELP_3_RESPAWN = Yeniden Dogma Suresi: %d Saniye
+HELP_3_PROTECTION = Spawn korumasi suresi: %d Saniye
+HELP_3_FLAGRETURN = Bayraklar %d Saniyede Doner
+HELP_3_WEAPONSTAY = Silahlar Yerde %d Saniye Kalir
+HELP_3_ITEMDROP = Esya Dusurme Sansi: %d%%
+HELP_4 = Modu Server'in Icin Indir
+HELP_4_LINE1 = AmxModX Konusu
+HELP_4_LINE2 = Gelistiricinin Sayfasi
+
+HINT_1 = Adrenalinin sana gecici kombolar verir, bir defa 100 oldugunda, Adrenalin komutunu kullan.
+HINT_2 = Dusman bayragi, sadece kendi bayragin kendi bolgende oldugu zaman ele gecirilebilir.
+HINT_3 = Bazen oldurdugun dusmanlaran esya cikabilir, gozunu dort ac !
+HINT_4 = C4 kendi menzilindeki her seyi kisa surede oldurur, Ancak C4 imha edilebilir.
+HINT_5 = Iki bayrak da radarda yanip sonen bir nokta olarak sik sik gorunur.
+HINT_6 = Eger silah kullanirsan Spawn Korumasi zamanindan once bitebilir.
+HINT_7 = Adrenalin Kombosu kullanirken Adrenalin, komboya bagli olarak tukenebilir.
+HINT_8 = Makineli, sniper, kalkan ve C4 cok para ve adrenaline mal olur.^nEsya Menusu > Ozel Silahlar kisminda bulabilirsiniz.
+HINT_9 = 50 Adrenaline Hizli Yeniden-Dogus satin alabilirsin, Oluyken /spawn yazmaniz yeterli.
+HINT_10 = Cephane hicbir seye mal olmaz, Satin Alma Bolgende istedigin her an bedavaya alabilirsin.
+HINT_11 = Dusman Bayragini aldiginda yavaslarsin, daima takimin seni korumali.
+HINT_12 = Kazanmak Icin, takim kendi bayragini korurken dusman bayragini calmalidir.
+
+ADMIN_MOVEBASE_1 = ADMIN: moved %L team's flag base
+ADMIN_MOVEBASE_2 = ADMIN %s: moved %L team's flag base
+ADMIN_MOVEBASE_MOVED = The %L flag base moved to your origin.
+ADMIN_MOVEBASE_SAVED = Saved base locations as
+
+ADMIN_RETURN_1 = ADMIN: returned the %L flag to base
+ADMIN_RETURN_2 = ADMIN %s: returned the %L flag to base
+ADMIN_RETURN_DONE = The %L flag has been returned.
+ADMIN_RETURN_WAIT = The %L flag needs to be dropped at least %d seconds before you can return it by command.
+ADMIN_RETURN_NOTDROPPED = The %L flag is not dropped.
+
+BUYMENU_TITLE = Esya Menusu
+BUYMENU_PISTOLS = Tabancalar
+BUYMENU_SHOTGUNS = Pompalilar
+BUYMENU_SMGS = Hafif-Makineli Silahlar (SMG)
+BUYMENU_RIFLES = Tufekler
+BUYMENU_SPECIAL = Ozel Silahlar
+BUYMENU_AMMO = Tam Cephane
+BUYMENU_EQUIPAMENT = Ekipman
+BUYMENU_ITEM_SHIELD = Kalkan
+BUYMENU_ITEM_C4 = C4
+BUYMENU_ITEM_VEST = Celik Yelek
+BUYMENU_ITEM_VESTHELM = Celik Yelek + Kask
+BUYMENU_ITEM_FLASHBANG = Flashbang Bombasi
+BUYMENU_ITEM_HE = HE grenade
+BUYMENU_ITEM_SMOKE = Sis Bombasi
+BUYMENU_ITEM_NVG = Gece Gorusu
+BUY_NOTINZONE = Satin Alma Bolgesinde Olmalisin !
+BUY_REBOUGHT = %d Esyalar Yeniden Satin Alindi.
+BUY_NEEDMONEY = Yetersiz Para, $%d Gerekli.
+BUY_NEEDADRENALINE = Yetersiz Adrenalin, %d Gerekli
+BUY_HAVE_C4 = Zaten Bir C4'un Var !
+BUY_HAVE_NVG = Zaten Gece Gorusun Var !
+BUY_HAVE_KEVLAR = Zaten Celik Yelegin Var !
+BUY_HAVE_KEVLARHELM = Zaten Celik Yelek ve Kaskin Var !
+BUY_NOMORE_FLASH = Daha fazla Flashbang Tasiyamazsin !
+BUY_DELAY_FLASH = Her %d saniyede bir 2 Flashbang Alabilirsin.
+BUY_NOMORE_HE = Daha Fazla HE Grenade Tasiyamazsin !
+BUY_DELAY_HE = Her %d saniyede bir defa HE Grenade Alabilirsin !
+BUY_NOMORE_SMOKE = Daha Fazla Sis Bombasi Tasiyamazsin !
+BUY_DELAY_SMOKE = Her %d saniyede bir defa Sis Bombasi Alabilirsin !
+BUY_HAVE_WEAPON = Bu Silaha Zaten Sahipsin !
+BUY_FULLAMMO = Cephane Doldu !
+
+C4_ARMED = C4 Kuruldu, %d Saniye Icinde Patlayacak !!!
+C4_ARMED_RADIO = C4 kuruldu, %d saniye...
+C4_NODEFUSE = Takimin C4'unu Imha Edemezsin, Hizla Kac !!
+C4_DEFUSING = C4 Imha Ediliyor .. %d Saniye Kaldi...
+C4_DEFUSED = C4 Imha Edildi, Artik bu C4 Senin...
+
+PICKED_AMMO = Cephane Paketi Toplandi.
+PICKED_HEALTH = Ilkyardim Seti Alindi +%d Can
+PICKED_ADRENALINE = Adrenalin Toplandi +%d
+
+REWARD = Odul:
+FRAG = Oldurme
+FRAGS = Oldurme
+ADRENALINE = adrenaline
+
+ANNOUNCEMENT = Duyuru
+ANNOUNCE_FLAGTAKEN = %s , %L nin Bayragini Aldi !
+ANNOUNCE_FLAGDROPPED = %s , %L nin Bayragini Dusurdu !
+ANNOUNCE_FLAGRETURNED = %s , %L Bayragini Geri Goturdu !
+ANNOUNCE_FLAGAUTORETURNED = %L Bayragi Otomatik Olarak Geri Dondu !
+ANNOUNCE_FLAGCAPTURED = %s , %L Bayragini Ele Gecirdi !
+ANNOUNCE_TEAMTAKESLEAD = %L One Gecti !
+ANNOUNCE_TEAMWON = %L Takimi Kazandi !
+
+REWARD_KILL = Oldurme Icin
+REWARD_KILLCARRIER = Bayrak Tasiyani Oldurme Icin.
+REWARD_RETURN = Takim Bayragini Geri Getirme Icin.
+REWARD_RETURN_ASSIST = Takimin Bayragini Geri Getirmede, Yardim Etme Icin.
+REWARD_CAPTURE = Rakip Bayragi Ele Gecirme Icin.
+REWARD_CAPTURE_ASSIST = Rakip Bayragini Ele Gecirmede, Yardim Etme Icin.
+REWARD_CAPTURE_TEAM = Takim, Rakibin Bayragini Ele Gecirdigi Icin.
+REWARD_STEAL = Rakip Bayragi Calma Icin.
+REWARD_PICKUP = Rakip Bayragini Yerden Alma Icin.
+PENALTY_SUICIDE = Intihar Icin.
+PENALTY_TEAMKILL = Takim Arkadasini Oldurme Icin.
+PENALTY_MANUALDROP = Kasten Bayragi Yere Atma Icin.
+
+HUD_YOUHAVEFLAG = Bayragi Aldin, Bolgeye Don !
+HUD_ENEMYHASFLAG = Rakip, Bayragini Aldi, Geri Getir !
+HUD_RETURNYOURFLAG = Bayragin Dusuruldu, Geri Getir !
+
+HUD_RETURNEDFLAG = Takiminin Bayragini Geri Getirdin !
+HUD_CAPTUREDFLAG = Dusman Bayragini Ele Gecirdin !
+
+HUD_ADRENALINE = Adrenalin: %d of %d
+HUD_ADRENALINEFULL = Adrenalin TAM!^nKonsola adrenaline yaz ve Kombo Kullan !
+HUD_ADRENALINECOMBO = Kombo Kullaniliyor: %L^nAdrenaline kaldi: %d of %d
+
+LIGHTS_ON = Bayrak Isiklari %sON%s (Sadece Bu Map Icin Hatirlandi)
+LIGHTS_OFF = Bayrak Isiklari %sOFF%s (Sadece Bu Map Icin Hatirlandi)
+LIGHTS_INVALID = Gecersiz parametre, %son%s veya %soff yaz.
+
+SOUNDS_SET = Duyuru ses duzeyi: %s%d olarak ayarlandi.
+SOUNDS_TEST = Duyuru Testi, Duymalisin%s...
+SOUNDS_INVALID = Gecersiz Parametre, Bir Rakam Kullan %sdan %sa veya%s
+
+ADR_MENU_TITLE = Adrenalin Kombolari
+ADR_SPEED = Hiz
+ADR_SPEED_DESC = Daha Hizli Hareket Etmek
+ADR_BERSERK = Cilginlik
+ADR_BERSERK_DESC = Iki Kati Zarar ve Daha Hizli Ates Etmek
+ADR_REGENERATE = Yenilenmek
+ADR_REGENERATE_DESC = Can ve Zirhin Yenilenir.
+ADR_INVISIBILITY = Gorunmezlik
+ADR_INVISIBILITY_DESC = Zor Gorunur.
+ADR_ALIVE = Adrenalin Kullanmak Icin Canli Olmalisin.
+ADR_USING = Sen zaten adrenalin kombosu kullaniyorsun,  bitene kadar bekle.
+ADR_MORE = Yetersiz Adrenalin, Tam Dolu Olmali (%d)
