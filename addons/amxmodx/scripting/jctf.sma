@@ -1256,7 +1256,7 @@ public plugin_init()
 
 	unregister_forward(FM_Spawn, gHook_EntSpawn)
 
-	register_forward(FM_GetGameDescription, "game_description")
+	//register_forward(FM_GetGameDescription, "game_description")
 
 	register_touch(FLAG_CLASSNAME, PLAYER, "flag_touch")
 

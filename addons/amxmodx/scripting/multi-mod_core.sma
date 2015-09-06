@@ -597,8 +597,9 @@ public set_multimod(modid)
 
         if( file_exists( g_filemaps[modid] ) )
         {   
-            set_localinfo( "lastmapcycle", g_filemaps[modid] )
-            set_pcvar_string( gp_mapcyclefile, g_filemaps[modid] )
+			server_cmd("amxx pause daily_changer")
+			set_localinfo( "lastmapcycle", g_filemaps[modid] )
+			set_pcvar_string( gp_mapcyclefile, g_filemaps[modid] )
         }
         configMapManager( modid )
     }
