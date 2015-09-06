@@ -471,7 +471,7 @@ new const SEPARATOR[] =				" - - - - - - - - - - - - - - - - - - - - - - - - - -
 #define NULL					""
 
 #define HUD_HINT					255, 255, 255, 0.15, -0.3, 0, 0.0, 10.0, 2.0, 10.0, 4
-#define HUD_HELP					255, 255, 0, -1.0, 0.2, 2, 0.1, 2.0, 0.01, 2.0, 2
+#define HUD_HELP					255, 255, 0, -1.0, 0.15, 2, 0.1, 2.0, 0.01, 2.0, 2
 #define HUD_HELP2					255, 255, 0, -1.0, 0.25, 2, 0.1, 2.0, 0.01, 2.0, 3
 #define HUD_ANNOUNCE				-1.0, 0.3, 0, 0.0, 3.0, 0.1, 1.0, 4
 #define HUD_RESPAWN				0, 255, 0, -1.0, 0.6, 2, 0.5, 0.1, 0.0, 1.0, 1
@@ -1135,7 +1135,7 @@ new bool:g_bLinux
 new OrpheuHook:g_oMapConditions
 new OrpheuHook:g_oWinConditions
 new OrpheuHook:g_oRoundTimeExpired
-new MEMORY_ROUNDTIME[] = "roundTimeCheck"
+//new MEMORY_ROUNDTIME[] = "roundTimeCheck"
 
 #endif // FEATURE_ORPHEU
 
@@ -1498,13 +1498,13 @@ public game_onInstallGameRules()
 public game_enableForwards() <> {}
 public game_enableForwards() <disabled>
 {
-	g_oMapConditions = OrpheuRegisterHook(OrpheuGetFunction("CheckMapConditions", "CHalfLifeMultiplay"), "game_blockConditions")
 	g_oWinConditions = OrpheuRegisterHook(OrpheuGetFunction("CheckWinConditions", "CHalfLifeMultiplay"), "game_blockConditions")
+	//g_oMapConditions = OrpheuRegisterHook(OrpheuGetFunction("CheckMapConditions", "CHalfLifeMultiplay"), "game_blockConditions")
 
 	if(g_bLinux)
 		g_oRoundTimeExpired = OrpheuRegisterHook(OrpheuGetFunction("HasRoundTimeExpired", "CHalfLifeMultiplay"), "game_blockConditions")
-	else
-		game_memoryReplace(MEMORY_ROUNDTIME, {0x90, 0x90, 0x90})
+	/*else
+		game_memoryReplace(MEMORY_ROUNDTIME, {0x90, 0x90, 0x90})*/
 
 	state enabled
 }
@@ -1517,8 +1517,8 @@ public game_disableForwards() <enabled>
 
 	if(g_bLinux)
 		OrpheuUnregisterHook(g_oRoundTimeExpired)
-	else
-		game_memoryReplace(MEMORY_ROUNDTIME, {0xF6, 0xC4, 0x41})
+	/*else
+		game_memoryReplace(MEMORY_ROUNDTIME, {0xF6, 0xC4, 0x41})*/
 
 	state disabled
 }
@@ -1533,9 +1533,9 @@ public OrpheuHookReturn:game_blockConditions() <enabled>
 	return OrpheuSupercede
 }
 
-game_memoryReplace(szID[], const iBytes[], const iLen = sizeof iBytes)
+/*game_memoryReplace(szID[], const iBytes[], const iLen = sizeof iBytes)
 {
-	new iAddress
+	new iAddress 
 
 	OrpheuMemoryGet(szID, iAddress)
 
@@ -1547,7 +1547,7 @@ game_memoryReplace(szID[], const iBytes[], const iLen = sizeof iBytes)
 	}
 
 	server_cmd("sv_restart 1")
-}
+}*/
 
 public server_cmd_infiniteround()
 {
