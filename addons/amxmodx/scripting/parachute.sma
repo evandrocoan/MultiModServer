@@ -321,7 +321,7 @@ public client_PreThink(id)
 					}
 					if (para_ent[id] > 0)
 					{
-						velocity[2] =  -27.1
+						velocity[2] =  -21.1
 						entity_set_vector(id, EV_VEC_velocity, velocity)
 						if (entity_get_float(para_ent[id], EV_FL_frame) < 0.0 || entity_get_float(para_ent[id], EV_FL_frame) > 254.0)
 						{

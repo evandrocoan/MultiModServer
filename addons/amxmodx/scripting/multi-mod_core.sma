@@ -122,7 +122,7 @@
  * 
  * (Optinal)
  * yourgamemod/addons/amxmodx/configs/multimod/msg/gungame.cfg
- * yourgamemod/mapcycles/gungame.ini
+ * yourgamemod/mapcycles/gungame.txt
  * 
  * -------------- Explanations of created files above -------------------------
  * 
@@ -148,7 +148,7 @@
  * The command "amx_execall" needs a special plugins called "Exec" by "ToXiC".
  *    https://forums.alliedmods.net/showthread.php?p=3313
  * 
- * 4. The file (opcional) "yourgamemod/mapcycles/gungame.ini" contains the mapcycle used when 
+ * 4. The file (opcional) "yourgamemod/mapcycles/gungame.txt" contains the mapcycle used when 
  * gungame mod is active.
  * 
  * ----------------------- Change Log -----------------------------------------
@@ -273,6 +273,7 @@ public plugin_init()
     register_cvar("MultiModManager", VERSION, FCVAR_SERVER|FCVAR_SPONLY)
     register_dictionary("mapchooser.txt")
     register_dictionary("multimod.txt")
+    //set_localinfo( "isFirstTimeLoadMapCycle", "1" );
 
     gp_mode = register_cvar("amx_multimod_mode", "0") // 0=auto ; 1=mapchooser ; 2=galileo
     gp_mintime = register_cvar("amx_mintime", "10")
@@ -471,7 +472,7 @@ public build_first_mods()
 
     formatex( g_modnames[g_modcount], SHORT_STRING - 1, "Keep Current Mod" )
     formatex( g_fileCfgs[g_modcount], SHORT_STRING - 1, "none.cfg" )
-    formatex( g_filemaps[g_modcount], SHORT_STRING - 1, "none.ini" )
+    formatex( g_filemaps[g_modcount], SHORT_STRING - 1, "none.txt" )
     formatex( g_fileplugins[g_modcount], SHORT_STRING - 1, "none.txt" )
     formatex( g_fileMsg[g_modcount], SHORT_STRING - 1, "nobe.cfg" )
 
@@ -479,7 +480,7 @@ public build_first_mods()
 
     formatex( g_modnames[g_modcount], SHORT_STRING - 1, "No mod - Disable Mod" )
     formatex( g_fileCfgs[g_modcount], SHORT_STRING - 1, "none.cfg" )
-    formatex( g_filemaps[g_modcount], SHORT_STRING - 1, "none.ini" )
+    formatex( g_filemaps[g_modcount], SHORT_STRING - 1, "none.txt" )
     formatex( g_fileplugins[g_modcount], SHORT_STRING - 1, "none.txt" )
     formatex( g_fileMsg[g_modcount], SHORT_STRING - 1, "nobe.cfg" )
 }
@@ -537,7 +538,7 @@ public load_cfg()
             //filemapsname and plugin_modname
             formatex(g_modnames[g_modcount], SHORT_STRING - 1, "%s", szModName)
             formatex(g_fileCfgs[g_modcount], SHORT_STRING - 1, "%s", szCfg)
-            formatex(g_filemaps[g_modcount], SHORT_STRING - 1, "mapcycles/%s.ini", szTag)
+            formatex(g_filemaps[g_modcount], SHORT_STRING - 1, "mapcycles/%s.txt", szTag)
             formatex(g_fileplugins[g_modcount], SHORT_STRING - 1, "plugins-%s.txt", szTag)
             formatex(g_fileMsg[g_modcount], SHORT_STRING - 1, "%s.cfg", szTag)
 
@@ -573,7 +574,11 @@ public get_firstmap(modid)
 }
 
 /**
- * Set the current game mod and changes the mapcycle, if and only if it was created.
+ * Set the current game mod and changes the mapcycle, if and only if it was created. 
+ * And change the game global variable at localinfo, isFirstTimeLoadMapCycle to 1, 
+ *   after the first map load if  there is a game mod mapcycle file. Or to 2 if there is not.
+ * The isFirstTimeLoadMapCycle is used by daily_maps.sma to know if there is a 
+ *   game mod mapcycle.
  * 
  * @param modid the mod index.
  */
@@ -595,11 +600,22 @@ public set_multimod(modid)
         set_localinfo( "amx_multimod", g_modnames[modid] )
         activateMod( g_fileplugins[modid], g_fileCfgs[modid], alertMultiMod )
 
+        new isFirstTime[32]
+        get_localinfo( "isFirstTimeLoadMapCycle", isFirstTime, charsmax( isFirstTime ) );
+        new isFirstTimeNum = str_to_num( isFirstTime )
+
         if( file_exists( g_filemaps[modid] ) )
         {   
-			server_cmd("amxx pause daily_changer")
-			set_localinfo( "lastmapcycle", g_filemaps[modid] )
-			set_pcvar_string( gp_mapcyclefile, g_filemaps[modid] )
+            if( isFirstTimeNum  == 0 )
+            {
+                //server_print("^n^n^n^n^n%d^n^n", isFirstTimeNum)
+                set_localinfo( "isFirstTimeLoadMapCycle", "1" );
+                set_localinfo( "lastmapcycle", g_filemaps[modid] )
+                set_pcvar_string( gp_mapcyclefile, g_filemaps[modid] )
+            }
+        } else 
+        {
+            set_localinfo( "isFirstTimeLoadMapCycle", "2" );
         }
         configMapManager( modid )
     }
@@ -713,8 +729,7 @@ public activateMod( arqPlugin[], arqConfig[], alerta[] )
     formatex( filePluginWrite, charsmax(configFolder), "%s/plugins-multi.ini", configFolder )
     formatex( fileConfigWrite, charsmax(configFolder), "%s/multiMod.cfg", configFolder )
 
-    if( file_exists(filePluginRead) & file_exists(fileConfigRead)
-    & file_exists(filePluginWrite) & file_exists(fileConfigWrite) )
+    if( file_exists(filePluginRead) & file_exists(fileConfigRead) )
     {   
         copyFiles( filePluginRead, filePluginWrite, alerta )
         copyFiles( fileConfigRead, fileConfigWrite, alerta )
@@ -1058,20 +1073,9 @@ public player_vote(id, key)
     {   
         server_print( "Key before switch: %d", key )
     }
-    /* 
-     * Well, I dont know why, but it doesnt even matter, how hard you try...
-     * You press the key 0, you gets 9 here.
-     * You press the key 1, you gets 0 here.
-     * You press the key 2, you gets 1 here.
-     * You press the key 3, you gets 2 here.
-     * You press the key 4, you gets 3 here.
-     * You press the key 5, you gets 4 here.
-     * You press the key 6, you gets 5 here.
-     * You press the key 7, you gets 6 here.
-     * You press the key 8, you gets 7 here.
-     * You press the key 9, you gets 8 here.
-     * So here, i made the switch back.
-     */
+    /* Well, I dont know why, but it doesnt even matter, how hard you try...
+     * You press the key 0, you gets 9 here. ...
+     * So here, i made the switch back.  */
     switch( key )
     {   
         case 9: key = 0

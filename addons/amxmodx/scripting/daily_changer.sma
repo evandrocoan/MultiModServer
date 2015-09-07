@@ -53,14 +53,21 @@
 
 public plugin_init()
 {
-	register_plugin("Daily Changer", "1.2", "JustinHoMi & JGHG")
-	new today[8], workpath[32]
+    register_plugin("Daily Changer", "1.2", "JustinHoMi & JGHG")
+    new today[8], workpath[32]
 
-	get_time("%a", today, 8)
+    new isFirstTime[32]
+    get_localinfo( "isFirstTimeLoadMapCycle", isFirstTime, charsmax( isFirstTime ) );
+    new isFirstTimeNum = str_to_num( isFirstTime )
 
-	format(workpath, 31, "mapcycles/%s.ini", today)
-	set_cvar_string("mapcyclefile", workpath)
+    if ( isFirstTimeNum == 2 )
+	{
+        get_time("%a", today, 8)
 
-	format(workpath, 31, "mapcycles/%s.cfg", today)
-	set_cvar_string("mapchangecfgfile", workpath)
+        format(workpath, 31, "mapcycles/%s.ini", today)
+        set_cvar_string("mapcyclefile", workpath)
+
+        format(workpath, 31, "mapcycles/%s.cfg", today)
+        set_cvar_string("mapchangecfgfile", workpath)
+    }
 }
