@@ -2,6 +2,7 @@ de_dust2002
 cs_office
 de_nuke
 de_prodigy
+catch_dust2
 de_dust2006
 cs_havana
 de_inferno
@@ -12,6 +13,7 @@ cs_mansion
 de_vertigo
 aim_mp5
 cs_italy
+catch_dusty
 surf_ski_2
 awp_dust
 zm_boatescape
@@ -19,6 +21,7 @@ cs_chaves
 cs_assault
 as_oilrig
 zm_Hell_
+catch_assault
 starwars
 de_vegas
 cs_militia
@@ -31,7 +34,7 @@ de_dust2_fundo
 cs_deagle5
 !!~sex_movie
 surf_tutorial
-de_dust_cz
+de_dust2_cz
 cs_italy_cz
 cs_militia_cz
 cs_office_cz
@@ -39,7 +42,7 @@ de_airstrip_cz
 de_aztec_cz
 de_cbble_cz
 de_chateau_cz
-de_dust2_cz
+de_dust_cz
 de_fastline_cz
 de_inferno_cz
 de_piranesi_cz
