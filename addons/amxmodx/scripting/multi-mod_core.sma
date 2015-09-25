@@ -552,7 +552,9 @@ public load_cfg()
         }
     }
     fclose(f)
-    set_task(10.0, "check_task", TASK_VOTEMOD, "", 0, "b")
+
+    if( !gp_allowedvote )
+        set_task(15.0, "check_task", TASK_VOTEMOD, "", 0, "b")
 }
 
 /**
@@ -890,7 +892,7 @@ public user_votemod(id)
 public check_task()
 {   
     new timeleft = get_timeleft()
-    if(timeleft < 120 || timeleft > 380)
+    if(timeleft < 300 || timeleft > 330)
     {   
         return
     }

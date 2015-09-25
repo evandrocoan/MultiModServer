@@ -532,7 +532,7 @@ public vote_manageEnd()
 	new secondsLeft = get_timeleft();	
 	
 	// are we ready to start an "end of map" vote?
-	if (secondsLeft < 150 && secondsLeft > 90 && !g_pauseMapEndVoteTask && get_pcvar_num(cvar_endOfMapVote) && !get_pcvar_num(cvar_emptyCycle))
+	if (secondsLeft < 151 && secondsLeft > 129 && !g_pauseMapEndVoteTask && get_pcvar_num(cvar_endOfMapVote) && !get_pcvar_num(cvar_emptyCycle))
 	{
 		vote_startDirector(false);
 	} else
@@ -1414,114 +1414,122 @@ public nomination_list(id)
 
 public vote_startDirector(bool:forced)
 {
-	new choicesLoaded, voteDuration;
-	
-	if (g_voteStatus & VOTE_IS_RUNOFF)
+	new secondsLeft = get_timeleft();	
+
+	if (g_voteStatus & VOTE_IN_PROGRESS & secondsLeft > 151 && secondsLeft < 129 )
 	{
-		choicesLoaded = vote_loadRunoffChoices();
-		voteDuration = get_pcvar_num(cvar_runoffDuration);
+		client_print(0, print_chat, "%L", 0, "GAL_VOTE_INPROGRESS");
+	} else
+    {
+        new choicesLoaded, voteDuration;
+        
+        if (g_voteStatus & VOTE_IS_RUNOFF)
+        {
+            choicesLoaded = vote_loadRunoffChoices();
+            voteDuration = get_pcvar_num(cvar_runoffDuration);
 
-		if (get_realplayersnum())
-		{
-			dbg_log(4, "   [RUNOFF VOTE CHOICES (%i)]", choicesLoaded);
-		}
-	}
-	else
-	{
-		// make it known that a vote is in progress
-		g_voteStatus |= VOTE_IN_PROGRESS;
+            if (get_realplayersnum())
+            {
+                dbg_log(4, "   [RUNOFF VOTE CHOICES (%i)]", choicesLoaded);
+            }
+        }
+        else
+        {
+            // make it known that a vote is in progress
+            g_voteStatus |= VOTE_IN_PROGRESS;
 
-		// stop RTV reminders
-		remove_task(TASKID_REMINDER);
+            // stop RTV reminders
+            remove_task(TASKID_REMINDER);
 
-		// set nextmap to "voting"
-		/*if (forced || get_pcvar_num(cvar_endOfMapVote))
-		{
-			new nextMap[32];
-			formatex(nextMap, sizeof(nextMap)-1, "%L", LANG_SERVER, "GAL_NEXTMAP_VOTING");
-			map_setNext(nextMap);
-		}*/
-	
-		// pause the "end of map" tasks so they don't interfere
-		g_pauseMapEndVoteTask = true;
-		g_pauseMapEndManagerTask = true;
-		
-		if (forced)
-		{
-			g_voteStatus |= VOTE_FORCED;
-		}
-		
-		choicesLoaded = vote_loadChoices();
-		voteDuration = get_pcvar_num(cvar_voteDuration);
-		
-		if (get_realplayersnum())
-		{
-			dbg_log(4, "   [PRIMARY VOTE CHOICES (%i)]", choicesLoaded);
-		}
-		
-		if (choicesLoaded)
-		{
-			// clear all nominations
-			nomination_clearAll();
-		}
-	}
-	
-	if (choicesLoaded)
-	{
-		// alphabetize the maps
-		SortCustom2D(g_mapChoice, choicesLoaded, "sort_stringsi");
+            // set nextmap to "voting"
+            /*if (forced || get_pcvar_num(cvar_endOfMapVote))
+            {
+                new nextMap[32];
+                formatex(nextMap, sizeof(nextMap)-1, "%L", LANG_SERVER, "GAL_NEXTMAP_VOTING");
+                map_setNext(nextMap);
+            }*/
+        
+            // pause the "end of map" tasks so they don't interfere
+            g_pauseMapEndVoteTask = true;
+            g_pauseMapEndManagerTask = true;
+            
+            if (forced)
+            {
+                g_voteStatus |= VOTE_FORCED;
+            }
+            
+            choicesLoaded = vote_loadChoices();
+            voteDuration = get_pcvar_num(cvar_voteDuration);
+            
+            if (get_realplayersnum())
+            {
+                dbg_log(4, "   [PRIMARY VOTE CHOICES (%i)]", choicesLoaded);
+            }
+            
+            if (choicesLoaded)
+            {
+                // clear all nominations
+                nomination_clearAll();
+            }
+        }
+        
+        if (choicesLoaded)
+        {
+            // alphabetize the maps
+            SortCustom2D(g_mapChoice, choicesLoaded, "sort_stringsi");
 
-		// dbg code ----
-		if (get_realplayersnum())
-		{
-			for (new dbgChoice = 0; dbgChoice < choicesLoaded; dbgChoice++)
-			{
-				dbg_log(4, "      %i. %s", dbgChoice+1, g_mapChoice[dbgChoice]);
-			}
-		}
-		//--------------
+            // dbg code ----
+            if (get_realplayersnum())
+            {
+                for (new dbgChoice = 0; dbgChoice < choicesLoaded; dbgChoice++)
+                {
+                    dbg_log(4, "      %i. %s", dbgChoice+1, g_mapChoice[dbgChoice]);
+                }
+            }
+            //--------------
 
-		// mark the players who are in this vote for use later
-		new player[32], playerCnt;
-		get_players(player, playerCnt, "ch");	// skip bots and hltv
-		for (new idxPlayer = 0; idxPlayer < playerCnt; ++idxPlayer)
-		{
-			g_voted[player[idxPlayer]] = false;
-		}
+            // mark the players who are in this vote for use later
+            new player[32], playerCnt;
+            get_players(player, playerCnt, "ch");	// skip bots and hltv
+            for (new idxPlayer = 0; idxPlayer < playerCnt; ++idxPlayer)
+            {
+                g_voted[player[idxPlayer]] = false;
+            }
 
-		// make perfunctory announcement: "get ready to choose a map"
-		if (!(get_pcvar_num(cvar_soundsMute) & SOUND_GETREADYTOCHOOSE))
-		{
-			client_cmd(0, "spk ^"get red(e80) ninety(s45) to check(e20) use bay(s18) mass(e42) cap(s50)^"");
-		}
+            // make perfunctory announcement: "get ready to choose a map"
+            if (!(get_pcvar_num(cvar_soundsMute) & SOUND_GETREADYTOCHOOSE))
+            {
+                client_cmd(0, "spk ^"get red(e80) ninety(s45) to check(e20) use bay(s18) mass(e42) cap(s50)^"");
+            }
 
-		// announce the pending vote countdown from 7 to 1
-		set_task(1.0, "vote_countdownPendingVote", _, _, _, "a", 7);
+            // announce the pending vote countdown from 7 to 1
+            set_task(1.0, "vote_countdownPendingVote", _, _, _, "a", 7);
 
-		// display the map choices
-		set_task(8.5, "vote_handleDisplay");
+            // display the map choices
+            set_task(8.5, "vote_handleDisplay");
 
-		// display the vote outcome 
-		if (get_pcvar_num(cvar_voteStatus))
-		{
-			new arg[3] = {-1, -1, false}; // indicates it's the end of vote display
-			set_task(8.5 + float(voteDuration) + 1.0, "vote_display", _, arg, 3);
-			set_task(8.5 + float(voteDuration) + 6.0, "vote_expire");
-		}
-		else
-		{
-			set_task(8.5 + float(voteDuration) + 3.0, "vote_expire");
-		}
-	}
-	else
-	{
-		client_print(0, print_chat, "%L", LANG_PLAYER, "GAL_VOTE_NOMAPS");
-	}
-	if (get_realplayersnum())
-	{
-		dbg_log(4, "");
-		dbg_log(4, "   [PLAYER CHOICES]");
-	}
+            // display the vote outcome 
+            if (get_pcvar_num(cvar_voteStatus))
+            {
+                new arg[3] = {-1, -1, false}; // indicates it's the end of vote display
+                set_task(8.5 + float(voteDuration) + 1.0, "vote_display", _, arg, 3);
+                set_task(8.5 + float(voteDuration) + 6.0, "vote_expire");
+            }
+            else
+            {
+                set_task(8.5 + float(voteDuration) + 3.0, "vote_expire");
+            }
+        }
+        else
+        {
+            client_print(0, print_chat, "%L", LANG_PLAYER, "GAL_VOTE_NOMAPS");
+        }
+        if (get_realplayersnum())
+        {
+            dbg_log(4, "");
+            dbg_log(4, "   [PLAYER CHOICES]");
+        }
+    }
 }
 
 public vote_countdownPendingVote()
