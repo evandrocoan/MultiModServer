@@ -23,6 +23,13 @@ amx_rcon variavel valor
 Exemplo:
 amx_rcon mp_timelimit 50
 
+5.1) O server pode da pau e fechar sozinho por causa do limite que o jogo impõe de no 
+máximo 512 sons, modelos de armas, plantas, latinhas que um mapa de counter-strike 
+pode ter. Então, se ao carregar um mapa, ele passa disso, o server dá pau e fecha. 
+
+5.2) O server também da pau por causa dos plugins, que carregam sons, e skins, que 
+também contam nesse limite de 512 entidades. Por isso é perigoso carregar muita coisa.
+
 6) Abaixo uma lista de comandos básicos e a lista com todos os mapas do server:
 
 amx_help       // escreva isso no seu console para ver a lista baixo
