@@ -729,7 +729,7 @@ public activateMod( arqPlugin[], arqConfig[], alerta[] )
     formatex( filePluginRead, charsmax(configFolder), "%s/multimod/mods/%s", configFolder, arqPlugin )
     formatex( fileConfigRead, charsmax(configFolder), "%s/multimod/mods/%s", configFolder, arqConfig )
     formatex( filePluginWrite, charsmax(configFolder), "%s/plugins-multi.ini", configFolder )
-    formatex( fileConfigWrite, charsmax(configFolder), "%s/multiMod.cfg", configFolder )
+    formatex( fileConfigWrite, charsmax(configFolder), "%s/multimod/multimod.cfg", configFolder )
 
     if( file_exists(filePluginRead) & file_exists(fileConfigRead) )
     {   
@@ -796,7 +796,7 @@ public modActivatedMsg( modid )
     g_modnames[modid] )
 
     printMessage( mensagem, 0 )
-    server_cmd( "exec %s/multimod/msg/%s", configFolder, g_fileMsg[modid] )
+    server_cmd( "exec %s/multimod/mods/msg/%s", configFolder, g_fileMsg[modid] )
 }
 
 /**
@@ -855,11 +855,6 @@ public user_currentmod(id)
  */
 public user_votemod(id)
 {   
-    if( !gp_allowedvote )
-    {   
-        client_print( id, print_chat, "Vote mod is currently disabled!" )
-        return PLUGIN_HANDLED
-    }
     if( g_alreadyvoted )
     {   
         client_print(0, print_chat, "%L", LANG_PLAYER, "MM_VOTEMOD", g_modnames[g_nextmodid])
@@ -1197,6 +1192,8 @@ public displayVoteResults( mostVoted, totalVotes )
 
         client_print( 0, print_chat, mensagem )
         server_print( mensagem )
+
+        server_cmd( "exec %s/multimod/votefinished.cfg", configFolder )
     } else
     {   
         new mensagem[LONG_STRING]

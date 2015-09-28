@@ -50,6 +50,7 @@ new g_lastMap[32]
 
 new g_coloredMenus
 new bool:g_selected = false
+new bool:isToChange = false
 
 public plugin_init()
 {   
@@ -71,6 +72,8 @@ public plugin_init()
     register_menucmd(register_menuid(MenuName), (-1^(-1<<(SELECTMAPS+2))), "countVote")
     register_cvar("amx_extendmap_max", "90")
     register_cvar("amx_extendmap_step", "15")
+
+    register_concmd("mapchooser_startvote", "startVoteNextmap", ADMIN_MAP);
 
     if (cstrike_running())
     register_event("TeamScore", "team_score", "a")
@@ -110,7 +113,11 @@ public checkVotes()
         client_print(0, print_chat, "%L", LANG_PLAYER, "CHO_FIN_EXT", steptime)
         log_amx("Vote: Voting for the nextmap finished. Map %s will be extended to next %.0f minutes", mapname, steptime)
 
-        set_task(5.0, "changeMap")
+        if( isToChange )
+        {
+            set_task(5.0, "changeMap")
+            isToChange = false
+        }
         return
     }
 
@@ -124,7 +131,12 @@ public checkVotes()
     get_cvar_string("amx_nextmap", smap, 31)
     client_print(0, print_chat, "%L", LANG_PLAYER, "CHO_FIN_NEXT", smap)
     log_amx("Vote: Voting for the nextmap finished. The nextmap will be %s", smap)
-    set_task(5.0, "changeMap")
+
+    if( isToChange )
+    {
+        set_task(5.0, "changeMap")
+        isToChange = false
+    }
 }
 
 public countVote(id, key)
@@ -194,6 +206,16 @@ public voteNextmap()
 
     g_selected = true
     doVoteNextmap()
+}
+
+public startVoteNextmap(id, level, cid)
+{
+    if (!cmd_access(id, level, cid, 1))
+        return PLUGIN_HANDLED;
+    
+    isToChange = true
+    doVoteNextmap()
+    return PLUGIN_HANDLED;
 }
 
 public doVoteNextmap()
@@ -334,5 +356,5 @@ public changeMap(id)
 {   
     new smap[32]
     get_cvar_string("amx_nextmap", smap, 31)
-    //server_cmd("changelevel %s", smap)
+    server_cmd("changelevel %s", smap)
 }

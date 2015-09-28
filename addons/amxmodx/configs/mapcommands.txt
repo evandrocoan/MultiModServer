@@ -60,6 +60,7 @@ echo "de_, no execmode, 1"
 echo "de_, no execmode, 2"
 echo "de_, no execmode, 3"
 echo "de_, no execmode, 4"
+amx_maxjumps 0
 #server
 echo "de_, server, 1"
 echo "de_, server, 2"

@@ -1,0 +1,6 @@
+
+adminspeed.amxx          ; With this plugin , the admin can set Players's running speed.
+surf_olympics.amxx		; Plugin to measure speed and other, ideal for maps surf
+usurf.amxx				; It provides help and other things to surf maps.
+no_fall_damage.amxx
+multijump.amxx 					; This plugin will allow you to jump in the air a defined number of times.

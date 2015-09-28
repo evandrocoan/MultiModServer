@@ -1,5 +1,5 @@
-Os arquivos nesta pasta contém os plugins que serão ativos ao ativar o mod 
-correspondente ao arquivo.
+The files in this folder contains the plugins that will be active to activate the mod
+corresponding to the file.
 
-Coloque nestes arquivos os plugins que você quer que sejam ativos junto com o mod
-que você vai ativar.
+Put these files the plugins you want to be active with the mod
+you will activate.
