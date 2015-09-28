@@ -136,6 +136,7 @@ new g_nomination[MAX_PLAYER_CNT + 1][MAX_NOMINATION_CNT + 1], g_nominationCnt, g
 
 new g_voteWeightFlags[32];
 new isTimeToChangeLevel = false;
+new isTimeToChangeLevel2 = false;
 
 new g_recentMap[MAX_RECENT_MAP_CNT][MAX_MAPNAME_LEN + 1], g_cntRecentMap;
 new Array:g_nominationMap, g_nominationMapCnt;
@@ -198,7 +199,14 @@ public plugin_init()
     register_clcmd("votemap", "cmd_HL1_votemap");
     register_clcmd("listmaps", "cmd_HL1_listmaps");
 
+    // Called when need to start a votemap, where extend the current map, aka, Keep Current Map, 
+    // will to do the real extend
     register_concmd("gal_startvote", "cmd_startVote", ADMIN_MAP);
+
+    // Called when need to start a votemap, where extend the current map, aka, Keep Current Map
+    // restart the server at the current map
+    register_concmd("gal_startvote2", "cmd_startVote2", ADMIN_MAP);
+
     register_concmd("gal_createmapfile", "cmd_createMapFile", ADMIN_RCON);
 
     cvar_extendmapMax                =    register_cvar("amx_extendmap_max", "90");
@@ -275,6 +283,7 @@ public plugin_cfg()
 {
     isTimeLimitChanged = false;
     isTimeToChangeLevel = false;
+    isTimeToChangeLevel2 = false;
 
     if( is_plugin_loaded( "Nextmap Chooser" ) != -1 )
     {
@@ -455,7 +464,7 @@ public vote_manageEnd()
     new secondsLeft = get_timeleft();    
     
     // are we ready to start an "end of map" vote?
-    if (secondsLeft < 151 && secondsLeft > 129 && get_pcvar_num(cvar_endOfMapVote) )
+    if (secondsLeft < 151 && secondsLeft > 129 && get_pcvar_num(cvar_endOfMapVote) && !( g_voteStatus & VOTE_IN_PROGRESS ) )
     {
         vote_startDirector(false);
     }
@@ -564,6 +573,25 @@ public cmd_startVote(id, level, cid)
     else 
     {
         isTimeToChangeLevel = true;
+        vote_startDirector(true);    
+    }
+
+    return PLUGIN_HANDLED;
+}
+
+public cmd_startVote2(id, level, cid)
+{
+    if (!cmd_access(id, level, cid, 1))
+        return PLUGIN_HANDLED;
+
+    if (g_voteStatus & VOTE_IN_PROGRESS)
+    {
+        client_print(id, print_chat, "%L", id, "GAL_VOTE_INPROGRESS");
+    }
+    else 
+    {
+        isTimeToChangeLevel = true;
+        isTimeToChangeLevel2 = true;
         vote_startDirector(true);    
     }
 
@@ -1666,9 +1694,15 @@ public vote_display(arg[3])
             charCnt += formatex(voteStatus[charCnt], sizeof(voteStatus)-1-charCnt, "^n%s%i. %s%s%s", CLR_RED, choiceIdx+1, CLR_WHITE, g_mapChoice[choiceIdx], voteTally);
             keys |= (1<<choiceIdx);
         }
+
+        if( isTimeToChangeLevel )
+        {
+            allowExtend = false;
+            allowStay = true;
+        }
     
         // add optional menu item
-        if (allowExtend || allowStay)
+        if ( allowExtend || allowStay )
         {
             // if it's not a runoff vote, add a space between the maps and the additional option
             if (g_voteStatus & VOTE_IS_RUNOFF == 0)
@@ -1976,9 +2010,31 @@ public vote_expire()
             }
             else
             {
-                // "extend map" won
-                client_print(0, print_chat, "%L", LANG_PLAYER, "GAL_WINNER_EXTEND", floatround(get_pcvar_float(cvar_extendmapStep)));
-                map_extend();
+                if( isTimeToChangeLevel2 )
+                {
+                    // "stay here" won
+                    client_print(0, print_chat, "%L", LANG_PLAYER, "GAL_WINNER_STAY");
+
+                    if( isTimeToChangeLevel )
+                    {
+                        set_task(5.0, "map_change_stays");
+
+                        // freeze the game and show the scoreboard
+                        message_begin(MSG_ALL, SVC_INTERMISSION);
+                        message_end();
+                    }
+                } else 
+                {
+                    if( isTimeToChangeLevel )
+                    {
+                        client_print(0, print_chat, "%L", LANG_PLAYER, "GAL_WINNER_STAY");
+                    }
+                    else {
+                        // "extend map" won
+                        client_print(0, print_chat, "%L", LANG_PLAYER, "GAL_WINNER_EXTEND", floatround(get_pcvar_float(cvar_extendmapStep)));
+                        map_extend();
+                    }
+                }
             }
         }
         else 
@@ -1987,8 +2043,15 @@ public vote_expire()
             server_exec();
 
             client_print(0, print_chat, "%L", LANG_PLAYER, "GAL_NEXTMAP", g_mapChoice[idxWinner]);
-            set_task(5.0, "map_change");
-            
+
+            if( isTimeToChangeLevel )
+            {
+                set_task(5.0, "map_change");
+
+                // freeze the game and show the scoreboard
+                message_begin(MSG_ALL, SVC_INTERMISSION);
+                message_end();
+            }
             g_voteStatus |= VOTE_IS_OVER;
         }
     }
@@ -1999,7 +2062,16 @@ public vote_expire()
         get_cvar_string("amx_nextmap", initialNextMap, sizeof(initialNextMap)-1);
 
         client_print(0, print_chat, "%L", LANG_PLAYER, "GAL_WINNER_RANDOM", initialNextMap );
-        
+
+        if( isTimeToChangeLevel )
+        {
+            set_task(5.0, "map_change");
+
+            // freeze the game and show the scoreboard
+            message_begin(MSG_ALL, SVC_INTERMISSION);
+            message_end();
+        }
+
         g_voteStatus |= VOTE_IS_OVER;
     }
     
@@ -2037,6 +2109,7 @@ map_extend()
 vote_resetStats()
 {
 //    g_vote[0] = 0;
+    g_choiceCnt = 0;
     g_votesCast = 0;
     arrayset(g_mapVote, 0, MAX_MAPS_IN_VOTE + 1);    
     // reset everyones' rocks
@@ -2324,31 +2397,38 @@ public cmd_listmaps(id)
     return PLUGIN_HANDLED;
 }
 
-
+// change to the map
 public map_change()
 {
-	// restore the map's timelimit, just in case we had changed it
-	map_restoreOriginalTimeLimit();
-	
-	// grab the name of the map we're changing to	
-	new map[MAX_MAPNAME_LEN + 1];
-	get_cvar_string("amx_nextmap", map, sizeof(map)-1);
+    // restore the map's timelimit, just in case we had changed it
+    map_restoreOriginalTimeLimit();
+    
+    // grab the name of the map we're changing to	
+    new map[MAX_MAPNAME_LEN + 1];
+    get_cvar_string("amx_nextmap", map, sizeof(map)-1);
 
-	// verify we're changing to a valid map
-	if (!is_map_valid(map))
-	{
-		// probably admin did something dumb like changed the map time limit below
-		// the time remaining in the map, thus making the map over immediately.
-		// since the next map is unknown, just restart the current map.
-		copy(map, sizeof(map)-1, g_currentMap);
-	}
+    isTimeToChangeLevel = false;
 
-	// change to the map
-	if( isTimeToChangeLevel )
-	{
-		server_cmd("changelevel %s", map);
-		isTimeToChangeLevel = false;
-	}
+    // verify we're changing to a valid map
+    if (!is_map_valid(map))
+    {
+        // probably admin did something dumb like changed the map time limit below
+        // the time remaining in the map, thus making the map over immediately.
+        // since the next map is unknown, just restart the current map.
+        copy(map, sizeof(map)-1, g_currentMap);
+    }
+    server_cmd("changelevel %s", map);
+}
+
+public map_change_stays()
+{
+    isTimeToChangeLevel = false;
+    isTimeToChangeLevel2 = false;
+
+    // no longer is an early vote
+    g_voteStatus &= ~VOTE_IS_EARLY;
+
+    server_cmd("changelevel %s", g_currentMap);
 }
 
 
