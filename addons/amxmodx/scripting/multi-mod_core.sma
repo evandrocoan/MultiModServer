@@ -774,7 +774,7 @@ public activateMod( arqPlugin[], arqConfig[], alerta[] )
     new fileConfigWrite[LONG_STRING]
 
     formatex( filePluginRead, charsmax(configFolder), "%s/multimod/mods/%s", configFolder, arqPlugin )
-    formatex( fileConfigRead, charsmax(configFolder), "%s/multimod/mods/%s", configFolder, arqConfig )
+    formatex( fileConfigRead, charsmax(configFolder), "%s/multimod/mods/cfg/%s", configFolder, arqConfig )
     formatex( filePluginWrite, charsmax(configFolder), "%s/plugins-multi.ini", configFolder )
     formatex( fileConfigWrite, charsmax(configFolder), "%s/multimod/multimod.cfg", configFolder )
 
