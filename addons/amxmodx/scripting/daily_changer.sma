@@ -64,7 +64,7 @@ public plugin_init()
 	{
         get_time("%a", today, 8)
 
-        format(workpath, 31, "mapcycles/day/%s.ini", today)
+        format(workpath, 31, "mapcycles/day/%s.txt", today)
         set_cvar_string("mapcyclefile", workpath)
 
         format(workpath, 31, "mapcycles/day/cfg/%s.cfg", today)
