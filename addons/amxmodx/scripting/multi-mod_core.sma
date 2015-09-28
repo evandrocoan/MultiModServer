@@ -244,7 +244,9 @@ which is run every time the server starts and defines which mods are enabled.^n/
 This file is managed automatically by multi-mod_core.sma plugin^n//\
 and any modification will be discarded in the activation of some mod.^n^n"
 
-new helpAmx_addonszz[LONG_STRING] = "amx_multimodz help 1           | for help."
+new helpAmx_multimodz[LONG_STRING] = "amx_multimodz help 1           | for help."
+new helpAmx_multimods[LONG_STRING] = "amx_multimods | \
+Disable mods straight restarting the server, (silent mod): amx_multimods disableMods 1"
 
 new cmdsAvailables1[LONG_STRING] = "^namx_multimodz help 1    | To show this help.^n\
 amx_multimodz disableMods 1   | To deactivate any active Mod.^n\
@@ -289,13 +291,31 @@ public plugin_init()
     register_clcmd("say_team currentmod", "user_currentmod")
     register_clcmd("say votemod", "user_votemod")
     register_clcmd("say_team votemod", "user_votemod")
-    register_concmd("amx_multimodz", "receiveCommand", ADMIN_RCON, helpAmx_addonszz )
+    register_concmd("amx_multimodz", "receiveCommand", ADMIN_RCON, helpAmx_multimodz )
+    register_concmd("amx_multimods", "receiveCommandSilent", ADMIN_RCON, helpAmx_multimods )
 
     formatex(MenuName, charsmax(MenuName), "%L", LANG_PLAYER, "MM_VOTE")
     register_menucmd(register_menuid(g_menuname), BIG_STRING - 1, "player_vote")
     g_coloredmenus = colored_menus()
     totalVotes = 0
     g_nextmodid = 1
+}
+
+/**
+ * Makes auto configuration about mapchooser plugin, switching between multi-mod_mapchooser and 
+ * galileo. 
+ * Gets current game mods cvars pointer to this program global variables.
+ * Adjust the localinfo variable that store the current mod loaded, reading the current mod file.
+ */
+public plugin_cfg()
+{   
+    gp_voteanswers = get_cvar_pointer("amx_vote_answers")
+    gp_timelimit = get_cvar_pointer("mp_timelimit")
+    gp_mapcyclefile = get_cvar_pointer("mapcyclefile")
+    get_localinfo("amx_multimod", g_multimod, charsmax(g_multimod))
+
+    switchMapManager()
+    loadCurrentMod()
 }
 
 /**
@@ -336,6 +356,49 @@ public receiveCommand(id, level, cid)
         }
     }
     return PLUGIN_HANDLED
+}
+
+/**
+ * Process the input command "amx_multimodz OPITON1 OPITON2". 
+ * Straight restarting the server, (silent mod).
+ * 
+ *  @param id - will hold the players id who started the command
+ *  @param level - will hold the access level of the command
+ *  @param cid - will hold the commands internal id 
+ */
+public receiveCommandSilent(id, level, cid)
+{   
+    //Make sure this user is an admin
+    if (!cmd_access(id, level, cid, 3))
+    {   
+        return PLUGIN_HANDLED
+    }
+
+    new Arg1[64]
+
+    //Get the command arguments from the console
+    read_argv(1, Arg1, 63)
+
+    if( equal( Arg1, "disableMods" ) )
+    {   
+        if( g_currentmodid != 1 )
+        {
+            disableMods( 0 )
+            set_task(5.0, "startRestart");
+        }
+    } else 
+    {
+        new error[128]="^nERROR!! Mod invalid or a configuration file is missing!"
+        printMessage( error, 0 )
+        printHelp( id )
+    }
+
+    return PLUGIN_HANDLED
+}
+
+public startRestart()
+{
+    server_cmd( "restart" )
 }
 
 /**
@@ -402,41 +465,6 @@ public getModID( modPluginFile[] )
 }
 
 /**
- * Makes auto configuration about mapchooser plugin, switching between multi-mod_mapchooser and 
- * galileo. 
- * Gets current game mods cvars pointer to this program global variables.
- * Adjust the localinfo variable that store the current mod loaded, reading the current mod file.
- */
-public plugin_cfg()
-{   
-    gp_voteanswers = get_cvar_pointer("amx_vote_answers")
-    gp_timelimit = get_cvar_pointer("mp_timelimit")
-    gp_mapcyclefile = get_cvar_pointer("mapcyclefile")
-    get_localinfo("amx_multimod", g_multimod, charsmax(g_multimod))
-
-    switchMapManager()
-    loadCurrentMod()
-}
-
-/**
- * Makes the autoswitch between mapchooser and galileo. If both are active, prevails galieo.
- */
-public switchMapManager()
-{   
-    if(!get_pcvar_num(gp_mode))
-    {   
-        if(find_plugin_byfile( MULTIMOD_MAPCHOOSER ) != -1)
-        {   
-            set_pcvar_num(gp_mode, 1)
-        }
-        if(find_plugin_byfile( "galileo.amxx" ) != -1)
-        {   
-            set_pcvar_num(gp_mode, 2)
-        }
-    }
-}
-
-/**
  * The currentmod.ini stores the current mod id. If -1 is stored, then there is no mod 
  * actually active.
  */
@@ -459,6 +487,75 @@ public loadCurrentMod()
     } else
     {   
         set_multimod( 1 )
+    }
+}
+
+/**
+ * Given a modid, salves it to file "currentmod.ini".
+ */
+saveCurrentMod( modid )
+{   
+    new modidString[SHORT_STRING]
+    new arqCurrentMod[LONG_STRING]
+
+    formatex( arqCurrentMod, charsmax(configFolder), "%s/multimod/currentmod.ini", configFolder )
+
+    if ( file_exists( arqCurrentMod ) )
+    {   
+        delete_file( arqCurrentMod )
+    }
+    modid = modid - 2
+
+    formatex( modidString, charsmax(modidString), "%d", modid )
+    write_file( arqCurrentMod, modidString )
+}
+
+
+/**
+ * Set the current game mod and changes the mapcycle, if and only if it was created. 
+ * And change the game global variable at localinfo, isFirstTimeLoadMapCycle to 1, 
+ *   after the first map load if  there is a game mod mapcycle file. Or to 2 if there is not.
+ * The isFirstTimeLoadMapCycle is used by daily_maps.sma to know if there is a 
+ *   game mod mapcycle.
+ * 
+ * @param modid the mod index.
+ */
+public set_multimod(modid)
+{   
+    g_currentmodid = modid
+
+    if( modid == 1 ) // "Keep Current Mod"
+    {   
+        return
+    }
+    if( modid == 2 ) // "No mod - Disable Mod"
+    {   
+        disableMods( 0 )
+    }
+    if( !( ( modid == 1 ) || ( modid == 2 ) ) )
+    {   
+        server_print( "Setting multimod to %i - %s", modid - 2, g_modnames[modid] )
+        set_localinfo( "amx_multimod", g_modnames[modid] )
+        activateMod( g_fileplugins[modid], g_fileCfgs[modid], alertMultiMod )
+
+        new isFirstTime[32]
+        get_localinfo( "isFirstTimeLoadMapCycle", isFirstTime, charsmax( isFirstTime ) );
+        new isFirstTimeNum = str_to_num( isFirstTime )
+
+        if( file_exists( g_filemaps[modid] ) )
+        {   
+            if( isFirstTimeNum  == 0 )
+            {
+                //server_print("^n^n^n^n^n%d^n^n", isFirstTimeNum)
+                set_localinfo( "isFirstTimeLoadMapCycle", "1" );
+                set_localinfo( "lastmapcycle", g_filemaps[modid] )
+                set_pcvar_string( gp_mapcyclefile, g_filemaps[modid] )
+            }
+        } else 
+        {
+            set_localinfo( "isFirstTimeLoadMapCycle", "2" );
+        }
+        configMapManager( modid )
     }
 }
 
@@ -576,71 +673,21 @@ public get_firstmap(modid)
 }
 
 /**
- * Set the current game mod and changes the mapcycle, if and only if it was created. 
- * And change the game global variable at localinfo, isFirstTimeLoadMapCycle to 1, 
- *   after the first map load if  there is a game mod mapcycle file. Or to 2 if there is not.
- * The isFirstTimeLoadMapCycle is used by daily_maps.sma to know if there is a 
- *   game mod mapcycle.
- * 
- * @param modid the mod index.
+ * Makes the autoswitch between mapchooser and galileo. If both are active, prevails galieo.
  */
-public set_multimod(modid)
+public switchMapManager()
 {   
-    g_currentmodid = modid
-
-    if( modid == 1 ) // "Keep Current Mod"
+    if(!get_pcvar_num(gp_mode))
     {   
-        return
-    }
-    if( modid == 2 ) // "No mod - Disable Mod"
-    {   
-        disableMods( 0 )
-    }
-    if( !( ( modid == 1 ) || ( modid == 2 ) ) )
-    {   
-        server_print( "Setting multimod to %i - %s", modid - 2, g_modnames[modid] )
-        set_localinfo( "amx_multimod", g_modnames[modid] )
-        activateMod( g_fileplugins[modid], g_fileCfgs[modid], alertMultiMod )
-
-        new isFirstTime[32]
-        get_localinfo( "isFirstTimeLoadMapCycle", isFirstTime, charsmax( isFirstTime ) );
-        new isFirstTimeNum = str_to_num( isFirstTime )
-
-        if( file_exists( g_filemaps[modid] ) )
+        if(find_plugin_byfile( MULTIMOD_MAPCHOOSER ) != -1)
         {   
-            if( isFirstTimeNum  == 0 )
-            {
-                //server_print("^n^n^n^n^n%d^n^n", isFirstTimeNum)
-                set_localinfo( "isFirstTimeLoadMapCycle", "1" );
-                set_localinfo( "lastmapcycle", g_filemaps[modid] )
-                set_pcvar_string( gp_mapcyclefile, g_filemaps[modid] )
-            }
-        } else 
-        {
-            set_localinfo( "isFirstTimeLoadMapCycle", "2" );
+            set_pcvar_num(gp_mode, 1)
         }
-        configMapManager( modid )
+        if(find_plugin_byfile( "galileo.amxx" ) != -1)
+        {   
+            set_pcvar_num(gp_mode, 2)
+        }
     }
-}
-
-/**
- * Given a modid, salves it to file "currentmod.ini".
- */
-saveCurrentMod( modid )
-{   
-    new modidString[SHORT_STRING]
-    new arqCurrentMod[LONG_STRING]
-
-    formatex( arqCurrentMod, charsmax(configFolder), "%s/multimod/currentmod.ini", configFolder )
-
-    if ( file_exists( arqCurrentMod ) )
-    {   
-        delete_file( arqCurrentMod )
-    }
-    modid = modid - 2
-
-    formatex( modidString, charsmax(modidString), "%d", modid )
-    write_file( arqCurrentMod, modidString )
 }
 
 /**
