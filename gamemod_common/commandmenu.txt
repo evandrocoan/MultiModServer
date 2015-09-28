@@ -26,9 +26,9 @@
 //--------------------------------------------------------
 // Everything below here is editable
 
-"2" "Menu Remoto"
+"2" "Remoto"
 {
-	"2" "CSBot Menu"
+	"2" "CSBot"
 	{
 		"3" "Bot Settings"
 		{
@@ -158,7 +158,7 @@
 		"1" "Add One TR"		"rcon exec admin/csbot/addUmBotTR.cfg"
 		"2" "Add One CT"		"rcon exec admin/csbot/addUmBotCT.cfg"
 	}
-	"2" "PODBot Menu"
+	"2" "PODBot"
 	{
 		 "3" "Quota"
 		{
@@ -291,14 +291,6 @@
 	}
     "1" "Activate Mod"
     {
-		"1" "Configs Mods"
-		{
-			"2" "Force Vote Mod"					"amx_votemod"
-			"2" "Ask Vote Mod"				"say votemod"
-			"2" "Next Mod"					"say nextmod"
-			"2" "Current Mod"									"say currentmod"
-			"2" "Deactivate Mods"					"amx_multimodz disableMods 1"
-		}
 		"1" "More"
 		{
 			"1" "Dragon Ball Mod"			"amx_multimodz plugins-dragon.txt plugins-dragon.cfg"
@@ -306,6 +298,15 @@
 			"1" "Knife Arena Mod"			"amx_multimodz plugins-knife.txt plugins-knife.cfg"
 			"1" "Predator Mod"			"amx_multimodz plugins-predator.txt plugins-predator.cfg"
 			"1" "JCTF - Capture Flag"			"amx_multimodz plugins-jctf.txt plugins-jctf.cfg"
+            "1" "Catch Mod"			"amx_multimodz plugins-catch.txt plugins-catch.cfg"
+		}
+		"1" "Configs Mods"
+		{
+			"2" "Force Vote MOD"					"amx_votemod"
+			"2" "Force Vote Map"					"gal_startvote;mapchooser_startvote"
+			"2" "Ask Vote MOD"				"say rtv"
+			"2" "Ask Vote Map"				"say votemod"
+			"2" "Deactivate Mods"					"amx_multimodz disableMods 1"
 		}
 		"1" "Zombie Mod"
 		{
@@ -436,7 +437,7 @@
 	}
 	"1" "Restartround" "rcon sv_restartround 1"
 }
-"1.2" "Admin Menu"
+"1.2" "Admin"
 {
 	"3" "Msg Binds"
 	{
@@ -496,7 +497,7 @@
         "2" "Des... Mix = Bind"  "exec admin/bindmix4.cfg"
 	}
 }
-"1.3" "Player Menu"
+"1.3" "Player"
 {
 	"2" "Msg Team"
 	{
@@ -816,6 +817,7 @@
 "0" "Others"
 {
     "4" "Current Map" 		"say currentmap"
+    "2" "Current Mod"		"say currentmod"
     "1" "Current Time"		"say thetime"
     "5" "My Rank"	"say /rank"
     "6" "Stats" 		"say /stats"
