@@ -291,14 +291,18 @@
 	}
     "1" "Activate Mod"
     {
-		"1" "More"
+		"1" "More 1"
 		{
-			"1" "Dragon Ball Mod"			"amx_multimodz plugins-dragon.txt plugins-dragon.cfg"
-			"1" "Warcraft Mod"			"amx_multimodz plugins-warcraft.txt plugins-warcraft.cfg"
-			"1" "Knife Arena Mod"			"amx_multimodz plugins-knife.txt plugins-knife.cfg"
-			"1" "Predator Mod"			"amx_multimodz plugins-predator.txt plugins-predator.cfg"
-			"1" "JCTF - Capture Flag"			"amx_multimodz plugins-jctf.txt plugins-jctf.cfg"
-            "1" "Catch Mod"			"amx_multimodz plugins-catch.txt plugins-catch.cfg"
+			"1" "Dragon Ball Mod"			"amx_multimods dragon"
+			"1" "Warcraft Mod"			"amx_multimods warcraft"
+			"1" "Knife Arena Mod"			"amx_multimods knife"
+			"1" "Predator Mod"			"amx_multimods predator"
+			"1" "JCTF - Capture Flag"			"amx_multimods jctf"
+            "1" "Catch Mod"			"amx_multimods catch"
+		}
+		"1" "More 2"
+		{
+			"1" "Surf Mod"			"amx_multimods surf"
 		}
 		"1" "Configs Mods"
 		{
@@ -310,12 +314,12 @@
 		}
 		"1" "Zombie Mod"
 		{
-			"1" "Ammo Pack"			"amx_multimodz plugins-zp50Ammo.txt plugins-zp50Ammo.cfg"
-			"1" "Money"			"amx_multimodz plugins-zp50Money.txt plugins-zp50Money.cfg"
+			"1" "Ammo Pack"			"amx_multimods zp50Ammo"
+			"1" "Money"			"amx_multimods zp50Money"
 		}
-		"1" "CS Deathmatch Mod"			"amx_multimodz plugins-csdm.txt plugins-csdm.cfg"
-		"1" "Super Hero Mod"			"amx_multimodz plugins-shero.txt plugins-shero.cfg"
-		"1" "Gun-Game Mod"			"amx_multimodz plugins-gungame.txt plugins-gungame.cfg"
+		"1" "CS Deathmatch Mod"			"amx_multimods csdm"
+		"1" "Super Hero Mod"			"amx_multimods shero"
+		"1" "Gun-Game Mod"			"amx_multimods gungame"
     }
     "1" "Configs 1"
     {
