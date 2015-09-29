@@ -291,6 +291,7 @@ public plugin_init()
     register_clcmd("say_team currentmod", "user_currentmod")
     register_clcmd("say votemod", "user_votemod")
     register_clcmd("say_team votemod", "user_votemod")
+
     register_concmd("amx_multimodz", "receiveCommand", ADMIN_RCON, helpAmx_multimodz )
     register_concmd("amx_multimods", "receiveCommandSilent", ADMIN_RCON, helpAmx_multimods )
 
@@ -360,7 +361,8 @@ public receiveCommand(id, level, cid)
 
 /**
  * Process the input command "amx_multimodz OPITON1 OPITON2". 
- * Straight restarting the server, (silent mod).
+ * Straight restarting the server, (silent mod) and changes and configures the mapcycle if 
+ *   there is one
  * 
  *  @param id - will hold the players id who started the command
  *  @param level - will hold the access level of the command
@@ -386,12 +388,17 @@ public receiveCommandSilent(id, level, cid)
             disableMods( 0 )
             set_task(5.0, "startRestart");
         }
-    } else 
+    } else
     {
-        new error[128]="^nERROR!! Mod invalid or a configuration file is missing!"
-        printMessage( error, 0 )
-        printHelp( id )
-    }
+        new filePlugin[SHORT_STRING]
+        new fileConfig[SHORT_STRING]
+
+        formatex( filePlugin, SHORT_STRING - 1, "plugins-%s.txt", Arg1 )
+        formatex( fileConfig, SHORT_STRING - 1, "plugins-%s.cfg", Arg1 )
+        configMapManagerSilent( Arg1 )
+
+        activateModSilent( filePlugin, fileConfig, alertMultiMod )
+    } 
 
     return PLUGIN_HANDLED
 }
@@ -725,6 +732,47 @@ public configMapManager(modid)
 }
 
 /**
+ * Setup the map manager to work with votemod menu at Silent mode. That is, configures
+ *  the compatibility with galileo and MULTIMOD_MAPCHOOSER it self, because 
+ *  now there is no modid, hence because the mod is not loaded from the mod file configs.
+ */
+public configMapManagerSilent( Arg1[] )
+{   
+    new mapcycleTemp[SHORT_STRING]
+    formatex( mapcycleTemp, SHORT_STRING - 1, "mapcycles/%s.txt", Arg1)
+
+    if( file_exists( mapcycleTemp ) )
+    {   
+        new galileo_mapfile = get_cvar_pointer( "gal_vote_mapfile" )
+
+        if( galileo_mapfile )
+        {           
+            set_pcvar_string( galileo_mapfile, mapcycleTemp )
+        }
+
+        new isFirstTime[32]
+        get_localinfo( "isFirstTimeLoadMapCycle", isFirstTime, charsmax( isFirstTime ) );
+        new isFirstTimeNum = str_to_num( isFirstTime )
+
+        if( isFirstTimeNum  == 0 )
+        {
+            //server_print("^n^n^n^n^n%d^n^n", isFirstTimeNum)
+            set_localinfo( "isFirstTimeLoadMapCycle", "1" );
+            set_localinfo( "lastmapcycle", mapcycleTemp )
+            set_pcvar_string( gp_mapcyclefile, mapcycleTemp )
+        }
+    } else 
+    {
+        set_localinfo( "isFirstTimeLoadMapCycle", "2" );
+    }
+
+    if( callfunc_begin("plugin_init", MULTIMOD_MAPCHOOSER ) == 1 )
+    {   
+        callfunc_end()
+    }
+}
+
+/**
  * Deactive any loaded/active mod.
  * 
  * @param id the players id to display the deactivation messages.
@@ -785,7 +833,56 @@ public activateMod( arqPlugin[], arqConfig[], alerta[] )
         saveCurrentMod( g_currentmodid )
     } else
     {   
-        new error[128]="ERROR!! Some config file is missing!"
+        new error[128]="^nERROR!! Mod invalid or a configuration file is missing!"
+        printMessage( error, 0 )
+    }
+}
+
+/**
+ * Actives a mod by its configs files silently and straight restat the server. That is, change 
+ *   the current mod to 'Keep Current Mod', the active the mods by its file name exists.
+ * 
+ * @param ArqPlugin the file containing the original plugin to be installed.
+ * @param ArqConfig the file that contains the special plugin settings being activated.
+ * @param Alert the message will be written at the beginning of the plugin file and configuration.
+ *
+ * Throws = ERROR !! Any configuration file is missing!
+ */
+public activateModSilent( arqPlugin[], arqConfig[], alerta[] )
+{   
+    new filePluginRead[LONG_STRING]
+    new filePluginWrite[LONG_STRING]
+    new fileConfigRead[LONG_STRING]
+    new fileConfigWrite[LONG_STRING]
+
+    formatex( filePluginRead, charsmax(configFolder), "%s/multimod/mods/%s", configFolder, arqPlugin )
+    formatex( fileConfigRead, charsmax(configFolder), "%s/multimod/mods/cfg/%s", configFolder, arqConfig )
+    formatex( filePluginWrite, charsmax(configFolder), "%s/plugins-multi.ini", configFolder )
+    formatex( fileConfigWrite, charsmax(configFolder), "%s/multimod/multimod.cfg", configFolder )
+
+    if( file_exists(filePluginRead) & file_exists(fileConfigRead) )
+    {   
+        copyFiles( filePluginRead, filePluginWrite, alerta )
+        copyFiles( fileConfigRead, fileConfigWrite, alerta )
+
+        saveCurrentMod( 1 )
+
+        server_print( "Setting multimod to %s", arqPlugin )
+        set_localinfo( "amx_multimod", arqPlugin )
+
+        // freeze the game and show the scoreboard
+        message_begin(MSG_ALL, SVC_INTERMISSION);
+        message_end();
+
+        new mensagem[LONG_STRING]
+        formatex( mensagem, charsmax(mensagem), "The mod ( %s ) will be actived at next \
+                server restart.", arqPlugin )
+
+        printMessage( mensagem, 0 )
+        set_task(5.0, "startRestart");
+    } else
+    {   
+        new error[128]="^nERROR!! Mod invalid or a configuration file is missing!"
         printMessage( error, 0 )
     }
 }
