@@ -327,14 +327,6 @@ public plugin_cfg()
 }
 
 /**
- * A simple instantly server restart.
- */
-public restartTheServer()
-{
-    server_cmd( "restart" )
-}
-
-/**
  * Process the input command "amx_multimodz OPITON1 OPITON2".
  * 
  *  @param id - will hold the players id who started the command
@@ -401,7 +393,8 @@ public primitiveFunctions( Arg1[], id )
         disableMods()
 
         printMessage( "The mod will be deactivated at next server restart.", id )
-        resourceActivatedMsg("disableMods")
+        msgResourceActivated("disableMods")
+
         return false
     }
     if( equal( Arg1, "help" ) )
@@ -493,8 +486,18 @@ public receiveCommandSilent(id, level, cid)
 }
 
 /**
- * The currentmod.ini stores the current mod id. If -1 is stored, then there is no mod 
- * actually active.
+ * A simple instantly server restart.
+ */
+public restartTheServer()
+{
+    server_cmd( "restart" )
+}
+
+/**
+ * The 'currentmod.ini' and 'currentmodsilent.ini', at multimod folder, stores the current 
+ *   mod actually active and the current mod was activated by silent mode, respectively. 
+ * When 'currentmod.ini' stores 0, 'currentmodsilent.ini' defines the current mod. 
+ * When 'currentmod.ini' stores anything that is not 0, 'currentmod.ini' defines the current mod.
  */
 public loadCurrentMod()
 {   
@@ -664,9 +667,9 @@ public load_cfg()
             //filemapsname and plugin_modname
             formatex( g_modnames[g_modcount], SHORT_STRING - 1, "%s", szModName )
             formatex( g_modShortName[g_modcount], SHORT_STRING - 1, "%s", szTag )
-            formatex( g_fileCfgs[g_modcount], SHORT_STRING - 1, "plugins-%s.cfg", szTag )
+            formatex( g_fileCfgs[g_modcount], SHORT_STRING - 1, "%s.cfg", szTag )
             formatex( g_filemaps[g_modcount], SHORT_STRING - 1, "%s", mapCyclePathCoder( szTag) )
-            formatex( g_fileplugins[g_modcount], SHORT_STRING - 1, "plugins-%s.txt", szTag )
+            formatex( g_fileplugins[g_modcount], SHORT_STRING - 1, "%s.txt", szTag )
             formatex( g_fileMsg[g_modcount], SHORT_STRING - 1, "%s.cfg", szTag )
 
             if( equal(szModName, g_multimod) )
@@ -804,6 +807,36 @@ public mapCyclePathCoder( Arg1[] )
 }
 
 /**
+ * Hard code the plugin file location.
+ * 
+ * @param Arg1 the file name without path. Ex: surf.txt
+ *
+ * @return the file path with extension. Ex: mapcycles/surf.txt
+ */
+public filePluginPathCoder( modid )
+{   
+    new temp[ charsmax( g_configFolder ) + 1 ]
+    formatex( temp, charsmax( g_configFolder ),"%s/multimod/plugins/%s", g_configFolder, g_fileplugins[modid] )
+
+    return temp
+}
+
+/**
+ * Hard code the plugin file location.
+ * 
+ * @param Arg1 the file name without path. Ex: surf.txt
+ *
+ * @return the file path with extension. Ex: mapcycles/surf.txt
+ */
+public fileCFGPathCoder( modid )
+{   
+    new temp[ charsmax( g_configFolder ) + 1 ]
+    formatex( temp, charsmax(g_configFolder), "%s/multimod/cfg/%s", g_configFolder, g_fileCfgs[modid] )
+
+    return temp
+}
+
+/**
  * Change the game global variable at localinfo, isFirstTimeLoadMapCycle to 1, after 
  *   the first map load if  there is a game mod mapcycle file. Or to 2 if there is not.
  * The isFirstTimeLoadMapCycle is used by daily_maps.sma to know if there is a 
@@ -876,7 +909,7 @@ public disableMods()
     formatex( arquivoPluginsMulti, charsmax(g_configFolder), "%s/plugins-multi.ini", g_configFolder )
     formatex( arquivoCurrentMod, charsmax(g_configFolder), "%s/multimod/currentmod.ini", g_configFolder )
     formatex( arquivoCurrentModSilent, charsmax(g_configFolder), "%s/multimod/currentmodsilent.ini", g_configFolder )
-    formatex( configFile, charsmax(g_configFolder), "%s/multiMod.cfg", g_configFolder )
+    formatex( configFile, charsmax(g_configFolder), "%s/multimod/multimod.cfg", g_configFolder )
 
     if( file_exists( arquivoCurrentMod ) )
     {   
@@ -918,8 +951,9 @@ public activateMod( modid )
     new fileConfigRead[LONG_STRING]
     new fileConfigWrite[LONG_STRING]
 
-    formatex( filePluginRead, charsmax(g_configFolder), "%s/multimod/mods/%s", g_configFolder, g_fileplugins[modid] )
-    formatex( fileConfigRead, charsmax(g_configFolder), "%s/multimod/mods/cfg/%s", g_configFolder, g_fileCfgs[modid] )
+    copy( filePluginRead, charsmax(g_configFolder), filePluginPathCoder( modid ) )
+    copy( fileConfigRead, charsmax(g_configFolder), fileCFGPathCoder( modid ) )
+
     formatex( filePluginWrite, charsmax(g_configFolder), "%s/plugins-multi.ini", g_configFolder )
     formatex( fileConfigWrite, charsmax(g_configFolder), "%s/multimod/multimod.cfg", g_configFolder )
 
@@ -953,19 +987,20 @@ public activateModSilent( Arg1[] )
     new fileConfigRead[LONG_STRING]
     new fileConfigWrite[LONG_STRING]
 
-    formatex( filePluginRead, charsmax(g_configFolder), "%s/multimod/mods/plugins-%s.txt", g_configFolder, Arg1 )
-    formatex( fileConfigRead, charsmax(g_configFolder), "%s/multimod/mods/cfg/plugins-%s.cfg", g_configFolder, Arg1 )
+    formatex( filePluginRead, charsmax(g_configFolder), "%s/multimod/plugins/%s.txt", g_configFolder, Arg1 )
+    formatex( fileConfigRead, charsmax(g_configFolder), "%s/multimod/cfg/%s.cfg", g_configFolder, Arg1 )
     formatex( filePluginWrite, charsmax(g_configFolder), "%s/plugins-multi.ini", g_configFolder )
     formatex( fileConfigWrite, charsmax(g_configFolder), "%s/multimod/multimod.cfg", g_configFolder )
 
     if( file_exists(filePluginRead) & file_exists(fileConfigRead) )
     {   
+        new mapCycleFile[SHORT_STRING] 
+
         disableMods()
 
         copyFiles( filePluginRead, filePluginWrite, g_alertMultiMod )
         copyFiles( fileConfigRead, fileConfigWrite, g_alertMultiMod )
 
-        new mapCycleFile[SHORT_STRING] 
         copy( mapCycleFile, SHORT_STRING, mapCyclePathCoder( Arg1 ) )
         
         configMapManagerSilent( mapCycleFile )
@@ -1037,7 +1072,7 @@ public msgModActivated( modid )
     g_modnames[modid] )
 
     printMessage( mensagem, 0 )
-    server_cmd( "exec %s/multimod/mods/msg/%s", g_configFolder, g_fileMsg[modid] )
+    server_cmd( "exec %s/multimod/msg/%s", g_configFolder, g_fileMsg[modid] )
 }
 
 /**
@@ -1046,14 +1081,14 @@ public msgModActivated( modid )
  * @param nomeDoRecurso the name of the actived resource. OBS: Its must match the file msg 
  *    name at "multimod/msg" folder.
  */
-public resourceActivatedMsg( nomeDoRecurso[] )
+public msgResourceActivated( nomeDoRecurso[] )
 {   
     new mensagem[LONG_STRING]
     formatex( mensagem, charsmax(mensagem), "The mod ( %s ) will be actived at next server restart.",
     nomeDoRecurso )
 
     printMessage( mensagem, 0 )
-    server_cmd( "exec %s/multimod/msg/%s.cfg", g_configFolder, nomeDoRecurso )
+    server_cmd( "exec %s/multimod/%s.cfg", g_configFolder, nomeDoRecurso )
 }
 
 /**
