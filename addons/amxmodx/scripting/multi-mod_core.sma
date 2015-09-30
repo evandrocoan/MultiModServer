@@ -356,7 +356,7 @@ public receiveCommand(id, level, cid)
 
         } else
         {   
-            new error[128]="^nERROR!! Mod invalid or a configuration file is missing!"
+            new error[128]="ERROR at receiveCommand!! Mod invalid or a configuration file is missing!"
             printMessage( error, 0 )
             printHelp( id )
         }
@@ -758,7 +758,7 @@ public configMapManager(modid)
                 callfunc_end()
             } else
             {   
-                new error[128]="^nERROR!! MULTIMOD_MAPCHOOSER NOT FOUND!^n"
+                new error[128]="ERROR at configMapManager!! MULTIMOD_MAPCHOOSER NOT FOUND!^n"
                 client_print( 0, print_console , error )
                 server_print( error )
             }
@@ -967,7 +967,7 @@ public activateMod( modid )
         saveCurrentMod( modid )
     } else
     {   
-        new error[128]="^nERROR!! Mod invalid or a configuration file is missing!"
+        new error[128]="ERROR at activateMod!! Mod invalid or a configuration file is missing!"
         printMessage( error, 0 )
     }
 }
@@ -1014,7 +1014,7 @@ public activateModSilent( Arg1[] )
         set_localinfo( "amx_multimod", Arg1 )
     } else
     {   
-        new error[128]="^nERROR!! Mod invalid or a configuration file is missing!"
+        new error[128]="ERROR at activateModSilent!! Mod invalid or a configuration file is missing!"
         printMessage( error, 0 )
     }
 }
