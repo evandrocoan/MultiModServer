@@ -10,7 +10,7 @@
  *
  *  This program is distributed in the hope that it will be useful, but
  *  WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
  *  General Public License for more details.
  *
  *  This plugins was originally written by JoRoPiTo. The original can only load 10 mods and 
@@ -250,8 +250,8 @@ This file is managed automatically by multi-mod_core.sma plugin^n//\
 and any modification will be discarded in the activation of some mod.^n^n"
 
 new g_helpAmx_multimodz[LONG_STRING] = "help 1           | for help.^n"
-new g_helpAmx_multimods[LONG_STRING] = "shortModName 1           | Enable/Disable ^n\
-any mod, loaded or not, straight restarting the server (silent mod).^n"
+new g_helpAmx_multimods[LONG_STRING] = "shortModName <1 or 0> to restart or not      | Enable/Disable any mod, ^n\
+loaded or not (silent mod). Ex: amx_multimods surf 0^n"
 
 new g_cmdsAvailables1[LONG_STRING] = "^namx_multimodz help 1    | To show this help.^n\
 amx_multimodz disableMods 1   | To deactivate any active Mod.^n\
@@ -340,20 +340,26 @@ public receiveCommand(id, level, cid)
     {   
         return PLUGIN_HANDLED
     }
-    new Arg1[64]
+    new Arg1[ SHORT_STRING ]
+    new Arg2[SHORT_STRING]
 
     //Get the command arguments from the console
-    read_argv(1, Arg1, 63)
+    read_argv( 1, Arg1, charsmax( Arg1 ) )
+    read_argv( 2, Arg2, charsmax( Arg2 ) )
 
-    if( primitiveFunctions( Arg1, id ) )
+    if( primitiveFunctions( Arg1, Arg2, id ) )
     {   
         new modid = getModID( Arg1 )
 
-        if( modid != -1 ) // modid is -1 if it is specified a invalid mod at Arg1 above
+        if( modid != -1 ) // modid is -1 if it is specified a invalid mod, at Arg1 above
         {   
-            configureMultimod( modid )
-            msgModActivated( modid )
+            // don't need return if it was successful, because the modid guarantee it
+            configureMultimod( modid ) 
 
+            if( !equal( Arg2, "0" ) ) 
+            {
+                msgModActivated( modid )
+            }
         } else
         {   
             new error[128]="ERROR at receiveCommand!! Mod invalid or a configuration file is missing!"
@@ -386,15 +392,17 @@ public getModID( shortName[] )
  *
  * @return true if was not asked for a primitive function, false otherwise.
  */
-public primitiveFunctions( Arg1[], id )
+public primitiveFunctions( Arg1[], Arg2[], id )
 {   
     if( equal( Arg1, "disableMods" ) )
     {   
         disableMods()
-
         printMessage( "The mod will be deactivated at next server restart.", id )
-        msgResourceActivated("disableMods")
 
+        if( !equal( Arg2, "0" ) )
+        {
+            msgResourceActivated("disableMods")
+        }
         return false
     }
     if( equal( Arg1, "help" ) )
@@ -447,29 +455,32 @@ public receiveCommandSilent(id, level, cid)
         return PLUGIN_HANDLED
     }
 
-    new Arg1[64]
+    new Arg1[SHORT_STRING]
+    new Arg2[SHORT_STRING]
 
     //Get the command arguments from the console
-    read_argv(1, Arg1, 63)
+    read_argv( 1, Arg1, charsmax( Arg1 ) )
+    read_argv( 2, Arg2, charsmax( Arg2 ) )
 
     if( equal( Arg1, "disableMods" ) )
     {   
         disableMods()
 
-        // freeze the game and show the scoreboard
-        message_begin(MSG_ALL, SVC_INTERMISSION);
-        message_end();
+        if( !equal( Arg2, "0" ) )
+        {
+            // freeze the game and show the scoreboard
+            message_begin(MSG_ALL, SVC_INTERMISSION);
+            message_end();
 
-        new mensagem[LONG_STRING]
-        formatex( mensagem, charsmax(mensagem), "The mod activate will be deactivated at next \
-                server restart.", Arg1 )
+            new mensagem[LONG_STRING]
+            formatex( mensagem, charsmax(mensagem), "The mod activate will be deactivated at next \
+                    server restart.", Arg1 )
 
-        printMessage( mensagem, 0 )
-        set_task(5.0, "restartTheServer");
-
-    } else {
-        activateModSilent( Arg1 )
-
+            printMessage( mensagem, 0 )
+            set_task(5.0, "restartTheServer");
+        }
+    } else if( activateModSilent( Arg1 ) && !equal( Arg2, "0" ) )
+    {
         // freeze the game and show the scoreboard
         message_begin(MSG_ALL, SVC_INTERMISSION);
         message_end();
@@ -1015,7 +1026,7 @@ public activateModSilent( Arg1[] )
         copyFiles( filePluginRead, filePluginWrite, g_alertMultiMod )
         copyFiles( fileConfigRead, fileConfigWrite, g_alertMultiMod )
 
-        copy( mapCycleFile, charsmax(SHORT_STRING), mapCyclePathCoder( Arg1 ) )
+        copy( mapCycleFile, charsmax(mapCycleFile), mapCyclePathCoder( Arg1 ) )
         
         configMapManagerSilent( mapCycleFile )
         configDailyMapsSilent( mapCycleFile )
@@ -1026,11 +1037,14 @@ public activateModSilent( Arg1[] )
 
         server_print( "Setting multimod to %s", Arg1 )
         set_localinfo( "amx_multimod", Arg1 )
+        
+        return true
     } else
     {   
         new error[128]="ERROR at activateModSilent!! Mod invalid or a configuration file is missing!"
         printMessage( error, 0 )
     }
+    return false
 }
 
 /**
