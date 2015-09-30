@@ -293,16 +293,16 @@
     {
 		"1" "More 1"
 		{
-			"1" "Dragon Ball Mod"			"amx_multimods dragon"
-			"1" "Warcraft Mod"			"amx_multimods warcraft"
-			"1" "Knife Arena Mod"			"amx_multimods knife"
-			"1" "Predator Mod"			"amx_multimods predator"
-			"1" "JCTF - Capture Flag"			"amx_multimods jctf"
-            "1" "Catch Mod"			"amx_multimods catch"
+			"1" "Dragon Ball Mod"			"amx_multimods dragon 1"
+			"1" "Warcraft Mod"			"amx_multimods warcraft 1"
+			"1" "Knife Arena Mod"			"amx_multimods knife 1"
+			"1" "Predator Mod"			"amx_multimods predator 1"
+			"1" "JCTF - Capture Flag"			"amx_multimods jctf 1"
+            "1" "Catch Mod"			"amx_multimods catch 1"
 		}
 		"1" "More 2"
 		{
-			"1" "Surf Mod"			"amx_multimods surf"
+			"1" "Surf Mod"			"amx_multimods surf 1"
 		}
 		"1" "Configs Mods"
 		{
@@ -310,16 +310,16 @@
 			"2" "Force Vote Map"					"gal_startvote;mapchooser_startvote"
 			"2" "Ask Vote MOD"				"say rtv"
 			"2" "Ask Vote Map"				"say votemod"
-			"2" "Deactivate Mods"					"amx_multimodz disableMods 1"
+			"2" "Deactivate Mods"					"amx_multimods disableMods 1"
 		}
 		"1" "Zombie Mod"
 		{
-			"1" "Ammo Pack"			"amx_multimods zp50Ammo"
-			"1" "Money"			"amx_multimods zp50Money"
+			"1" "Ammo Pack"			"amx_multimods zp50Ammo 1"
+			"1" "Money"			"amx_multimods zp50Money 1"
 		}
-		"1" "CS Deathmatch Mod"			"amx_multimods csdm"
-		"1" "Super Hero Mod"			"amx_multimods shero"
-		"1" "Gun-Game Mod"			"amx_multimods gungame"
+		"1" "CS Deathmatch Mod"			"amx_multimods csdm 1"
+		"1" "Super Hero Mod"			"amx_multimods shero 1"
+		"1" "Gun-Game Mod"			"amx_multimods gungame 1"
     }
     "1" "Configs 1"
     {
