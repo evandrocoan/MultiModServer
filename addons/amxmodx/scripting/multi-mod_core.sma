@@ -582,22 +582,18 @@ public configureMultimod( modid )
 {   
     g_currentmodid = modid
 
-    if( modid == 1 ) // "Keep Current Mod"
+    if( modid == 1 ) // "Keep Current Mod", it is necessary when silent mode is used.
     {   
         return
     }
-    if( modid == 2 ) // "No mod - Disable Mod"
+    if( modid == 2 ) // "No mod - Disable Mod", it is necessary at user votes.
     {   
         disableMods()
     }
     if( !( ( modid == 1 ) || ( modid == 2 ) ) )
     {   
-        server_print( "Setting multimod to %i - %s", modid - 2, g_modnames[modid] )
-        set_localinfo( "amx_multimod", g_modnames[modid] )
-
         activateMod( modid  )
     }
-
     configDailyMaps( modid )
     configMapManager( modid )
 }
@@ -901,15 +897,30 @@ public configDailyMapsSilent( Arg1[] )
  */
 public disableMods()
 {   
+    new currentModShortName[ SHORT_STRING ]
+    get_localinfo( "amx_multimod", currentModShortName, charsmax( currentModShortName ) );
+    
+    new arquivoCurrentModShortName[ LONG_STRING ]
     new arquivoPluginsMulti[LONG_STRING]
     new arquivoCurrentMod[LONG_STRING]
     new arquivoCurrentModSilent[LONG_STRING]
     new configFile[LONG_STRING]
 
+    formatex( arquivoCurrentModShortName, charsmax(g_configFolder), "%s/multimod/latecfg/%.cfg", g_configFolder, currentModShortName )
     formatex( arquivoPluginsMulti, charsmax(g_configFolder), "%s/plugins-multi.ini", g_configFolder )
-    formatex( arquivoCurrentMod, charsmax(g_configFolder), "%s/multimod/currentmod.ini", g_configFolder )
+    formatex( arquivoCurrentMod, charsmax(g_configFolder), "%s/multimod/currentmod.ini", g_configFolder ) 
     formatex( arquivoCurrentModSilent, charsmax(g_configFolder), "%s/multimod/currentmodsilent.ini", g_configFolder )
     formatex( configFile, charsmax(g_configFolder), "%s/multimod/multimod.cfg", g_configFolder )
+
+    if( file_exists( arquivoCurrentModShortName ) )
+    {   
+        new mensagem[LONG_STRING]
+        formatex( mensagem, charsmax(mensagem), "Executing the deactivation mod \
+                configuration file ( %s ).", arquivoCurrentModShortName )
+
+        printMessage( mensagem, 0 )
+        server_cmd( "exec %s", arquivoCurrentModShortName )
+    }
 
     if( file_exists( arquivoCurrentMod ) )
     {   
@@ -951,11 +962,11 @@ public activateMod( modid )
     new fileConfigRead[LONG_STRING]
     new fileConfigWrite[LONG_STRING]
 
-    copy( filePluginRead, charsmax(g_configFolder), filePluginPathCoder( modid ) )
-    copy( fileConfigRead, charsmax(g_configFolder), fileCFGPathCoder( modid ) )
+    copy( filePluginRead, charsmax(filePluginRead), filePluginPathCoder( modid ) )
+    copy( fileConfigRead, charsmax(fileConfigRead), fileCFGPathCoder( modid ) )
 
-    formatex( filePluginWrite, charsmax(g_configFolder), "%s/plugins-multi.ini", g_configFolder )
-    formatex( fileConfigWrite, charsmax(g_configFolder), "%s/multimod/multimod.cfg", g_configFolder )
+    formatex( filePluginWrite, charsmax(filePluginWrite), "%s/plugins-multi.ini", g_configFolder )
+    formatex( fileConfigWrite, charsmax(fileConfigWrite), "%s/multimod/multimod.cfg", g_configFolder )
 
     if( file_exists(filePluginRead) & file_exists(fileConfigRead) )
     {   
@@ -965,6 +976,9 @@ public activateMod( modid )
         copyFiles( fileConfigRead, fileConfigWrite, g_alertMultiMod )
 
         saveCurrentMod( modid )
+
+        server_print( "Setting multimod to %i - %s", modid - 2, g_modnames[modid] )
+        set_localinfo( "amx_multimod", g_modShortName[modid] )
     } else
     {   
         new error[128]="ERROR at activateMod!! Mod invalid or a configuration file is missing!"
@@ -987,10 +1001,10 @@ public activateModSilent( Arg1[] )
     new fileConfigRead[LONG_STRING]
     new fileConfigWrite[LONG_STRING]
 
-    formatex( filePluginRead, charsmax(g_configFolder), "%s/multimod/plugins/%s.txt", g_configFolder, Arg1 )
-    formatex( fileConfigRead, charsmax(g_configFolder), "%s/multimod/cfg/%s.cfg", g_configFolder, Arg1 )
-    formatex( filePluginWrite, charsmax(g_configFolder), "%s/plugins-multi.ini", g_configFolder )
-    formatex( fileConfigWrite, charsmax(g_configFolder), "%s/multimod/multimod.cfg", g_configFolder )
+    formatex( filePluginRead, charsmax(filePluginRead), "%s/multimod/plugins/%s.txt", g_configFolder, Arg1 )
+    formatex( fileConfigRead, charsmax(fileConfigRead), "%s/multimod/cfg/%s.cfg", g_configFolder, Arg1 )
+    formatex( filePluginWrite, charsmax(filePluginWrite), "%s/plugins-multi.ini", g_configFolder )
+    formatex( fileConfigWrite, charsmax(fileConfigWrite), "%s/multimod/multimod.cfg", g_configFolder )
 
     if( file_exists(filePluginRead) & file_exists(fileConfigRead) )
     {   
@@ -1001,7 +1015,7 @@ public activateModSilent( Arg1[] )
         copyFiles( filePluginRead, filePluginWrite, g_alertMultiMod )
         copyFiles( fileConfigRead, fileConfigWrite, g_alertMultiMod )
 
-        copy( mapCycleFile, SHORT_STRING, mapCyclePathCoder( Arg1 ) )
+        copy( mapCycleFile, charsmax(SHORT_STRING), mapCyclePathCoder( Arg1 ) )
         
         configMapManagerSilent( mapCycleFile )
         configDailyMapsSilent( mapCycleFile )
@@ -1068,7 +1082,7 @@ public copyFiles2( arquivoFonte[], arquivoDestino[] )
 public msgModActivated( modid )
 {   
     new mensagem[LONG_STRING]
-    formatex( mensagem, charsmax(mensagem), "The mod ( %s ) will be actived at next server restart.",
+    formatex( mensagem, charsmax(mensagem), "The mod ( %s ) will be activated at next server restart.",
     g_modnames[modid] )
 
     printMessage( mensagem, 0 )
@@ -1084,7 +1098,7 @@ public msgModActivated( modid )
 public msgResourceActivated( nomeDoRecurso[] )
 {   
     new mensagem[LONG_STRING]
-    formatex( mensagem, charsmax(mensagem), "The mod ( %s ) will be actived at next server restart.",
+    formatex( mensagem, charsmax(mensagem), "The mod ( %s ) will be activated at next server restart.",
     nomeDoRecurso )
 
     printMessage( mensagem, 0 )
