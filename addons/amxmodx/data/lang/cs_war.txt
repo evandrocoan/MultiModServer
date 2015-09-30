@@ -1,0 +1,113 @@
+[en]
+CSWAR_EQUAL_POINT = There is no points leader!
+CSWAR_POINT_LEADER = %s is point leader with %d point!
+
+CSWAR_WAR_START = %s round!
+CSWAR_WAR_HUD = Current round: ^n%s war!
+
+CSWAR_RESTRICT_IN_WAR = Command is restricted !yin %s round!
+CSWAR_CURRENT_WAR = Now is !y%s war!
+CSWAR_POINT_CHAT = %s is point leader !ywith %d point!
+CSWAR_COMMAND_RESTRICT = Command is restricted!
+
+CSWAR_VOTE_START = Vote is !yalready started!
+CSWAR_ADMIN_VOTE = ADMIN %s start !y%s vote!
+CSWAR_VOTE_TIME = %d seconds !yto vote!
+CSWAR_VOTE_SUCCESS = Voting sucessful!
+CSWAR_VOTE_FAILED = Voting failed!
+CSWAR_NO_VOTE = No voting in !y%s round!
+
+CSWAR_NEXT_WAR = Next is !y%s war!
+
+[ro]
+CSWAR_RESTRICT_IN_WAR = Comanda este restrictionata !yin runda %s!
+CSWAR_CURRENT_WAR = Acum este razboiul !y%s!
+
+CSWAR_VOTE_START = Votul este !ydeja pornit!
+CSWAR_ADMIN_VOTE = ADMINUL %s a pornit votul pentru !y%s!
+CSWAR_VOTE_TIME = %d secunde !ypentru a vota!
+CSWAR_VOTE_SUCCESS = Votul s-a incheiat cu succes!
+CSWAR_VOTE_FAILED = Votul nu a reusit!
+CSWAR_NO_VOTE = Niciun vot in runda !y%s!
+
+CSWAR_NEXT_WAR = Urmatorul razboi este cu !y%s!
+
+[tr]
+CSWAR_RESTRICT_IN_WAR = Komut !y %s rauntunda yasaklidir!
+CSWAR_CURRENT_WAR = Simdi !y%s savasi var!
+
+CSWAR_VOTE_START = Oylama zaten !ybaslatildi!
+CSWAR_ADMIN_VOTE = ADMIN %s !y%s rauntu oylamasini baslatti!
+CSWAR_VOTE_TIME = Oy kullanmak icin %d saniyen !ykaldi!
+CSWAR_VOTE_SUCCESS = Oylama basarili!
+CSWAR_VOTE_FAILED = Oylama hatali!
+CSWAR_NO_VOTE = !y%s rauntunda oylama yok! 
+
+CSWAR_NEXT_WAR = Sirada !y%s savasi var!
+
+[es]
+CSWAR_RESTRICT_IN_WAR = El comando está restringido en la !yronda dé %s !
+CSWAR_CURRENT_WAR = Es una guerra de !y%s !
+
+CSWAR_VOTE_START = La votación !yya ha empezado!
+CSWAR_ADMIN_VOTE = El ADMIN %s ha empezado una votación para una ronda !y%s !
+CSWAR_VOTE_TIME = Quedan %d segundos !ypara votar!
+CSWAR_VOTE_SUCCESS = Votación Exitosa!
+CSWAR_VOTE_FAILED = Votación Fallida!
+CSWAR_NO_VOTE = No hay votación en ronda de !y%s !
+
+CSWAR_NEXT_WAR = Próxima ronda Guerra de !y%s!
+
+[bp]
+CSWAR_RESTRICT_IN_WAR = Comando restrito !ydurante %s rondas!
+CSWAR_CURRENT_WAR = Agora e a !yguerra de %s!
+
+CSWAR_VOTE_START = A votacao !yja esta em progresso!
+CSWAR_ADMIN_VOTE = ADMIN %s comecou a !yvotacao de %s!
+CSWAR_VOTE_TIME = %d segundos !ypara votar!
+CSWAR_VOTE_SUCCESS = Votacao bem sucedida!
+CSWAR_VOTE_FAILED = Votacao falhada!
+CSWAR_NO_VOTE = Sem votacao na ronda de !y%s!
+
+CSWAR_NEXT_WAR = A proxima e a !yguerra de %s!
+
+[hu]
+CSWAR_EQUAL_POINT = Nincs pont vezér!
+CSWAR_POINT_LEADER = %s vezet %d pontal! 
+
+CSWAR_WAR_START = %s kör!
+CSWAR_WAR_HUD = Jelenlegi kör: ^n%s háború!
+
+CSWAR_RESTRICT_IN_WAR = Parancs tiltva !yebben a körben %s !
+CSWAR_CURRENT_WAR = Most van !y%s csata!
+CSWAR_POINT_CHAT = %s vezet !y%d pontal!
+
+CSWAR_VOTE_START = A szavazás !yelkezdődött!
+CSWAR_ADMIN_VOTE = ADMIN %s elindította a !y%s szavazást!
+CSWAR_VOTE_TIME = %d másodperc !ya szavazásig!
+CSWAR_VOTE_SUCCESS = A szavazás sikeres!
+CSWAR_VOTE_FAILED = A szavazás sikertelen!
+CSWAR_NO_VOTE = Ebben a körben !y%s nem szavazhatsz!
+
+CSWAR_NEXT_WAR = Következő !y%s csatában!
+
+[fr]
+CSWAR_EQUAL_POINT = Il n'y a aucun chef de point!
+CSWAR_POINT_LEADER = %s est chef de point avec %d point!
+
+CSWAR_WAR_START = %s round!
+CSWAR_WAR_HUD = Round actuel: ^n%s guerre!
+
+CSWAR_RESTRICT_IN_WAR = Commande est limitée !yen %s round!
+CSWAR_CURRENT_WAR = Maintenant c'est la !y%s guerre!
+CSWAR_POINT_CHAT = %s est chef du point !ywith %d point!
+CSWAR_COMMAND_RESTRICT = Commande est limité !
+
+CSWAR_VOTE_START = Le vote est !y déjà commence!
+CSWAR_ADMIN_VOTE = ADMIN %s a debuter le !y%s vote!
+CSWAR_VOTE_TIME = %d secondes !y pour voter!
+CSWAR_VOTE_SUCCESS = Vote réussie!
+CSWAR_VOTE_FAILED = Vote a échouer!
+CSWAR_NO_VOTE = Aucun vote dans !y%s round!
+
+CSWAR_NEXT_WAR = Prochainement c'est la %s guerre!
