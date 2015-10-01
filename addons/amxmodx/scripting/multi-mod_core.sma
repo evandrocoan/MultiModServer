@@ -388,7 +388,11 @@ public getModID( shortName[] )
 }
 
 /**
- * Check the activation of the function of  disableMods and help.
+ * Check the activation of the function of disableMods and help.
+ * 
+ * @param Arg1[] the first command line argument
+ * @param Arg2[] the second command line argument
+ * @param id the player id
  *
  * @return true if was not asked for a primitive function, false otherwise.
  */
@@ -414,8 +418,10 @@ public primitiveFunctions( Arg1[], Arg2[], id )
 }
 
 /**
- * Given a playerd id, prints to him and at server console the help about the command 
+ * Given a player id, prints to him and at server console the help about the command 
  * "amx_multimodz".
+ *
+ * @param id the player id
  */
 public printHelp( id )
 {   
@@ -569,7 +575,7 @@ saveCurrentMod( modid )
 /**
  *  Saves the current silent mod activated to file "currentmodsilent.ini", at multimod folder.
  *
- * @param Arg1 the mod short name. Ex: surf.
+ * @param Arg1[] the mod short name. Ex: surf.
  */
 public saveCurrentModSilent( Arg1[] )
 {
@@ -778,7 +784,7 @@ public configMapManager(modid)
  *  the compatibility with galileo, MULTIMOD_MAPCHOOSER and daily_maps, because 
  *  now there is no modid, hence because the mod is not loaded from the mod file configs.
  * 
- * @param Arg1 the mapcycle file name with extension and path. Ex: mapcycles/surf.txt
+ * @param Arg1[] the mapcycle file name with extension and path. Ex: mapcycles/surf.txt
  */
 public configMapManagerSilent( Arg1[] )
 {   
@@ -801,7 +807,7 @@ public configMapManagerSilent( Arg1[] )
 /**
  * Hard code the mapcycle file location.
  * 
- * @param Arg1 the mapcycle file name without extension and path. Ex: surf
+ * @param Arg1[] the mapcycle file name without extension and path. Ex: surf
  *
  * @return the mapcycle file name with extension and path. Ex: mapcycles/surf.txt
  */
@@ -816,7 +822,7 @@ public mapCyclePathCoder( Arg1[] )
 /**
  * Hard code the plugin file location.
  * 
- * @param Arg1 the file name without path. Ex: surf.txt
+ * @param modid the modid
  *
  * @return the file path with extension. Ex: mapcycles/surf.txt
  */
@@ -831,7 +837,7 @@ public filePluginPathCoder( modid )
 /**
  * Hard code the plugin file location.
  * 
- * @param Arg1 the file name without path. Ex: surf.txt
+ * @param modid the modid
  *
  * @return the file path with extension. Ex: mapcycles/surf.txt
  */
@@ -878,7 +884,7 @@ public configDailyMaps( modid )
  * The isFirstTimeLoadMapCycle is used by daily_maps.sma to know if there is a 
  *   game mod mapcycle.
  *
- * @param Arg1 the mapcycle file name with extension and path. Ex: mapcycles/surf.txt
+ * @param Arg1[] the mapcycle file name with extension and path. Ex: mapcycles/surf.txt
  */
 public configDailyMapsSilent( Arg1[] )
 {
@@ -903,8 +909,6 @@ public configDailyMapsSilent( Arg1[] )
 
 /**
  * Deactive any loaded/active mod.
- * 
- * @param id the players id to display the deactivation messages.
  */
 public disableMods()
 {   
@@ -1001,7 +1005,7 @@ public activateMod( modid )
  * Actives a mod by its configs files silently and straight restat the server. That is, change 
  *   the current mod to 'Keep Current Mod', the active the mods by its file name exists.
  * 
- * @param Arg1 the mod short name to active. Ex: surf
+ * @param Arg1[] the mod short name to active. Ex: surf
  *
  * Throws = ERROR !! Any configuration file is missing!
  */
@@ -1050,6 +1054,10 @@ public activateModSilent( Arg1[] )
 /**
  * Copy the arquivoFonte to arquivoDestino, replacing the existing file destination and
  * adding to its beginning the contents of the String textoInicial.
+ *
+ * @param arquivoFonte[] the source file
+ * @param arquivoDestino[] the destination file
+ * @param textoInicial[] an additional text
  */
 public copyFiles( arquivoFonte[], arquivoDestino[], textoInicial[] )
 {   
@@ -1072,7 +1080,10 @@ public copyFiles( arquivoFonte[], arquivoDestino[], textoInicial[] )
 }
 
 /**
- * Copies the contents of ArquivoFonte to the beginning of arquivoDestino.
+ * Copies the contents of ArquivoFonte to the beginning of arquivoDestino
+ * 
+ * @param arquivoFonte[] the source file
+ * @param arquivoDestino[] the destination file
  */
 public copyFiles2( arquivoFonte[], arquivoDestino[] )
 {   
@@ -1091,7 +1102,7 @@ public copyFiles2( arquivoFonte[], arquivoDestino[] )
 /**
  * Displays a message to all server players about a command line Mod active with "amx_multimodz".
  * 
- * @param modid the actived mod id.
+ * @param modid the activated mod id.
  */
 public msgModActivated( modid )
 {   
@@ -1105,9 +1116,9 @@ public msgModActivated( modid )
 
 /**
  * Displays a message to all server player about a command line Resource active with "amx_multimodz".
+ * Its must match the file msg name at "multimod" folder.
  * 
- * @param nomeDoRecurso the name of the actived resource. OBS: Its must match the file msg 
- *    name at "multimod/msg" folder.
+ * @param nomeDoRecurso[] the name of the actived resource. OBS: 
  */
 public msgResourceActivated( nomeDoRecurso[] )
 {   
@@ -1120,7 +1131,10 @@ public msgResourceActivated( nomeDoRecurso[] )
 }
 
 /**
- * Displays a message to a specific server player id.
+ * Displays a message to a specific server player id and at the server console.
+ *
+ * @param mensagem[] the text to display
+ * @param id the player id
  */
 public printMessage( mensagem[], id )
 {   
@@ -1265,7 +1279,7 @@ public display_votemod_menu( id, menu_current_page )
     if( g_coloredmenus )
     {   
         current_write_position = formatex( menu_body, charsmax(menu_body), "\y%L: \R%d/%d\w^n^n",
-        LANG_PLAYER, "MM_CHOOSE", menu_current_page + 1, g_menu_total_pages )
+                LANG_PLAYER, "MM_CHOOSE", menu_current_page + 1, g_menu_total_pages )
     } else
     {   
         current_write_position = formatex( menu_body, charsmax(menu_body), "%L: %d/%d^n^n",
@@ -1291,8 +1305,8 @@ public display_votemod_menu( id, menu_current_page )
         mod_vote_id = convert_octal_to_decimal( vote_mod_code )
 
         current_write_position += formatex( menu_body[ current_write_position ],
-        BIG_STRING - current_write_position , "%d. %s^n", for_index + 1,
-        g_modnames[ mod_vote_id + 1] )
+                BIG_STRING - current_write_position , "%d. %s^n", for_index + 1,
+                g_modnames[ mod_vote_id + 1] )
 
         g_votemodcount[ mod_vote_id ] = 0
         for_index++
@@ -1312,18 +1326,18 @@ public display_votemod_menu( id, menu_current_page )
         if( g_menu_total_pages == menu_current_page + 1 )
         {   
             current_write_position += formatex( menu_body[current_write_position],
-            BIG_STRING - current_write_position, "^n0. Back" )
+                    BIG_STRING - current_write_position, "^n0. Back" )
         } else
         {   
             current_write_position += formatex( menu_body[current_write_position],
-            BIG_STRING - current_write_position, "^n9. More...^n0. Back" )
+                    BIG_STRING - current_write_position, "^n9. More...^n0. Back" )
         }
     } else
     {   
         if( g_menu_total_pages != menu_current_page + 1 )
         {   
             current_write_position += formatex( menu_body[current_write_position],
-            BIG_STRING - current_write_position, "^n9. More...^n" )
+                    BIG_STRING - current_write_position, "^n9. More...^n" )
         }
     }
 
@@ -1333,7 +1347,7 @@ public display_votemod_menu( id, menu_current_page )
         get_user_name( id, debug_player_name, 63 )
 
         server_print( "Player: %s^nMenu body %s ^nMenu name: %s ^nMenu valid keys: %i",
-        debug_player_name, menu_body, g_menuname, menu_valid_keys )
+                debug_player_name, menu_body, g_menuname, menu_valid_keys )
 
         show_menu( id, menu_valid_keys, menu_body, 5, g_menuname )
     } else
