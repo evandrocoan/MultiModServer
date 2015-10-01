@@ -123,10 +123,6 @@ public hook_say(id)
     new message[192]
     read_args(message, charsmax(message))
 
-    new username[64] 
-    get_user_name( id, username, charsmax( username) ) 
-    client_print( 0, print_console , "%s %s", username, message )
-
     remove_quotes(message)
         
     switch(message[0])
@@ -172,10 +168,6 @@ public hook_sayTeam(id)
 {
     new message[192]
     read_args(message, charsmax(message))
-
-    new username[64] 
-    get_user_name( id, username, charsmax( username) ) 
-    client_print( 0, print_console , "%s %s", username, message )
 
     remove_quotes(message)
         
@@ -366,14 +358,15 @@ public cmd_hsay(id, level, cid)
     
     if(dhud)
     {
-        set_dhudmessage(g_HudValues[clr][R], g_HudValues[clr][G], g_HudValues[clr][B], g_Positions[type][X], position, 0, 6.0, 6.0, 0.5, 0.15)
+        set_dhudmessage(g_HudValues[clr][R], g_HudValues[clr][G], g_HudValues[clr][B], g_Positions[type][X], position, 0, 6.0, 12.0, 0.5, 0.15)
         show_dhudmessage(0, message)
     }
     else
     {
-        set_hudmessage(g_HudValues[clr][R], g_HudValues[clr][G], g_HudValues[clr][B], g_Positions[type][X], position, 0, 6.0, 6.0, 0.5, 0.15, -1)
+        set_hudmessage(g_HudValues[clr][R], g_HudValues[clr][G], g_HudValues[clr][B], g_Positions[type][X], position, 0, 6.0, 12.0, 0.5, 0.15, -1)
         show_hudmessage(0, message)
     }
+    client_print( 0, print_console , "%s", message )
     
     message_log(name, arg, command)
     return PLUGIN_HANDLED
@@ -383,7 +376,9 @@ public plugin_precache()
     precache_sound(szPrivate)
 
 public message_log(name[], message[], command[])
+{
     log_amx("[%s] %s : %s", command, name, message)
+}
 
 stock get_message(id, player, msg[], arg[])
 {
