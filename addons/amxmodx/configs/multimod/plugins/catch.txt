@@ -2,4 +2,4 @@
 bunnyhop.amxx
 catch_mod.amxx
 no_fall_damage.amxx
-multijump.amxx 					; This plugin will allow you to jump in the air a defined number of times.
+//multijump.amxx 					; This plugin will allow you to jump in the air a defined number of times.

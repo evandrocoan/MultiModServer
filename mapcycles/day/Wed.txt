@@ -5,7 +5,6 @@ surf_ski_2
 surf_ski_3_summer
 surf_sand
 surf_winter
-zm_2Fort_v2
 zm_boatescape
 zm_Hell_
 de_dust_cz
