@@ -35,7 +35,8 @@
 #include <amxmodx>
 
 #define DISPLAY_MSG		// Comment to disable message on join
-#define HELPAMOUNT 10000	// Number of commands per page
+#define HELPAMOUNT 10	// Number of commands per page
+#define HELPAMOUNT2 10000
 
 public plugin_init()
 {
@@ -43,6 +44,7 @@ public plugin_init()
 	register_dictionary("adminhelp.txt")
 	register_dictionary("multimodhelp.txt")
 	register_concmd("amx_help", "cmdHelp", 0, "<page> [nr of cmds (only for server)] - displays this help")
+	register_concmd("amx_helpserver", "cmdHelp2", 0, "<page> [nr of cmds (only for server)] - displays this help")
 }
 
 #if defined DISPLAY_MSG
@@ -75,6 +77,53 @@ public cmdHelp(id, level, cid)
 	
 	if (id == 0 && read_argc() == 3)
 		lHelpAmount = read_argv(2, arg1, 7) ? str_to_num(arg1) : HELPAMOUNT
+
+	if (--start < 0)
+		start = 0
+
+	new clcmdsnum = get_concmdsnum(flags, id)
+
+	if (start >= clcmdsnum)
+		start = clcmdsnum - 1
+
+	console_print(id, "^n----- %L -----", id, "HELP_COMS")
+	
+	new info[128], cmd[32], eflags
+	new end = start + lHelpAmount // HELPAMOUNT
+
+	if (end > clcmdsnum)
+		end = clcmdsnum
+
+	for (new i = start; i < end; i++)
+	{
+		get_concmd(i, cmd, 31, eflags, info, 127, flags, id)
+		console_print(id, "%3d: %s %s", i + 1, cmd, info)
+	}
+	
+	console_print(id, "----- %L -----", id, "HELP_ENTRIES", start + 1, end, clcmdsnum)
+
+	if (end < clcmdsnum)
+		console_print(id, "----- %L -----", id, "HELP_USE_MORE", end + 1)
+	else
+		console_print(id, "----- %L -----", id, "HELP_USE_BEGIN")
+
+	return PLUGIN_HANDLED
+}
+
+public cmdHelp2(id, level, cid)
+{
+	new arg1[8], flags = get_user_flags(id)
+	new start = read_argv(1, arg1, 7) ? str_to_num(arg1) : 1
+	new lHelpAmount = HELPAMOUNT2
+	
+	// HACK: ADMIN_ADMIN is never set as a user's actual flags, so those types of commands never show
+	if (flags > 0 && !(flags & ADMIN_USER))
+	{
+		flags |= ADMIN_ADMIN;
+	}
+	
+	if (id == 0 && read_argc() == 3)
+		lHelpAmount = read_argv(2, arg1, 7) ? str_to_num(arg1) : HELPAMOUNT2
 
 	if (--start < 0)
 		start = 0
