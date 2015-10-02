@@ -1,0 +1,35 @@
+[en]
+RESETSCORE_PLAYER_ALREADY_RESETED = [AMXX] Your score is already reseted!
+RESETSCORE_PLAYER_WAIT_BEFORE_RESET = [AMXX] You must wait %d minute(s) since your last score reset to do that again
+RESETSCORE_PLAYER_SUCCESS_ONE_REMAIN = [AMXX] Score successfully reseted ; you may use this command only once
+RESETSCORE_PLAYER_SUCCESS_MORE_RAMAIN = [AMXX] Score successfully reseted ; you may use this command %d times
+RESETSCORE_PLAYER_SUCCESS_NOT_REMAIN = [AMXX] Score successfully reseted ; you won't be able to use this command anymore
+RESETSCORE_PLAYER_CANT_USE_NOT_REMAIN = [AMXX] You've used this command too much, therefore you can't use it anymore!
+RESETSCORE_PLAYER_ADMIN_HAS_RESETSCORE = [AMXX] The admin has reset your score
+RESETSCORE_PLAYER_SUCCES_FREE_RESET = [AMXX] Score successfully reseted
+RESETSCORE_ADMIN_ALREADY_RESETED = [AMXX] The players's score is already reseted
+RESETSCORE_ADMIN_SUCCESS_RESETED = [AMXX] Successfully reseted score.
+
+[nl]
+RESETSCORE_PLAYER_ALREADY_RESETED = [AMXX] Jouw score is reeds terug gezet!
+RESETSCORE_PLAYER_WAIT_BEFORE_RESET = [AMXX] Je moet %d minute(n) sinds je laatste terugzetting van de score om het opnieuw te doen.
+RESETSCORE_PLAYER_SUCCESS_ONE_REMAIN = [AMXX] Score succesvol teruggezet ; je mag dit commando maar 1 keer gebruiken.
+RESETSCORE_PLAYER_SUCCESS_MORE_RAMAIN = [AMXX] Score succesvol teruggezet ; je mag dit commando %d keren gebruiken.
+RESETSCORE_PLAYER_SUCCESS_NOT_REMAIN = [AMXX] Score succesvol teruggezet ; je zal dit commando niet meer kunnen gebruiken.
+RESETSCORE_PLAYER_CANT_USE_NOT_REMAIN = [AMXX] Je gebruikte dit commando te veel, daarvoor kan je het niet meer gebruiken!
+RESETSCORE_PLAYER_ADMIN_HAS_RESETSCORE = [AMXX] De beheerder heeft je score teruggezet.
+RESETSCORE_PLAYER_SUCCES_FREE_RESET = [AMXX] Score succesvol teruggezet
+RESETSCORE_ADMIN_ALREADY_RESETED = [AMXX] De score van de speler is reeds teruggezet.
+RESETSCORE_ADMIN_SUCCESS_RESETED = [AMXX] Score succesvol teruggezet. 
+
+[es]
+RESETSCORE_PLAYER_ALREADY_RESETED = [AMXX] Tu puntuacion ya ha sido reiniciada!
+RESETSCORE_PLAYER_WAIT_BEFORE_RESET = [AMXX] Debes esperar %d minuto(s) desde el ultimo reinicio para poder hacer esto otra vez
+RESETSCORE_PLAYER_SUCCESS_ONE_REMAIN = [AMXX] Puntuacion reiniciada ; puedes usar este comando una vez
+RESETSCORE_PLAYER_SUCCESS_MORE_RAMAIN = [AMXX] Puntuacion reiniciada ; puedes usar este comando %d veces mas
+RESETSCORE_PLAYER_SUCCESS_NOT_REMAIN = [AMXX] Puntuacion reiniciada ; no puedes usar mas este comando
+RESETSCORE_PLAYER_CANT_USE_NOT_REMAIN = [AMXX] Has usado este comando muchas veces, asi que no lo puedes volver a utilizar!
+RESETSCORE_PLAYER_ADMIN_HAS_RESETSCORE = [AMXX] El admin ha reiniciado tu puntuacion
+RESETSCORE_PLAYER_SUCCES_FREE_RESET = [AMXX] Puntuacion reiniciada
+RESETSCORE_ADMIN_ALREADY_RESETED = [AMXX] La puntuacion del jugador ya esta reiniciada
+RESETSCORE_ADMIN_SUCCESS_RESETED = [AMXX] Puntuacion reiniciada satisfactoriamente.
