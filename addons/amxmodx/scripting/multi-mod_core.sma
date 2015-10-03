@@ -1,206 +1,228 @@
 /*********************** Licensing *******************************************************
- * Multi-Mod Core
- *
- * by Addons zz
- *
- *  This program is free software; you can redistribute it and/or modify it
- *  under the terms of the GNU General Public License as published by the
- *  Free Software Foundation; either version 2 of the License, or (at
- *  your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
- *  General Public License for more details.
- *
- *  This plugins was originally written by JoRoPiTo. The original can only load 10 mods and 
- *  display a vote Mod Menu of its 10, does not save the active mod. Now, after lot work, 
- *  it can load until 100 mods and display a vote Mod Menu of its 100 Mods and save the loaded mod.
- *  Original Plugin: "multimod.sma"
- *  https://forums.alliedmods.net/showthread.php?t=95568
- *
- ************************ Introduction ***************************************************
- * How it works? 
- * When remaining 5 minutes to end round, this plugins launches a vote to 
- * choose which mod will be played at the next map. If less than 30% voted, the game keep 
- * the current mod or keep disabled if there is no Mod enabled. The first to options of 
- * the vote menu are: "1. Keep Current Mod" and "2. No mod - Disable Mod". The others are 
- * until 100 Mods loaded from "multimod.ini" file. Beyound 100 this votemenu will not display
- * then, or change de compiler constant "#define MAXMODS 100" inside the plugin.
- * 
- * The "multi-mod_core.sma" Its waits the user choose to activate one Mod, by vote menu, 
- * or by command line. It saves the current active mod and keep it active forever or until 
- * some other mod is activate or your disable the active mod by "amx_multimodz disableMods 1" 
- * command line. 
- * 
- * The "Multi-Mod Core" works completely diffent from the original "MultiMod Manager". 
- * It keeps your original "plugins.ini" and add a new custom set of ones (the Mod) to the 
- * current game without changing the original "plugins.ini".  
- * Its too made the votemod keep the current mod if less than 30% of players voted. 
- * There is compatibility with the (AMXX Team) "multi-mod_mapchooser.sma" replacement previded here. 
- * There is compatibility too, with the the original "galileo.sma":
- * https://forums.alliedmods.net/showthread.php?t=77391
- * 
- *****************************************************************************************
- * Requirements
- * Amx Mod X 1.8.x
- * Tested with Counter-Strike, and it is supposed to work with others mods Amx Mod X
- * 
- * Cvars
- * amx_mintime 10   // Minimum time to play before players can make MOD voting
- * amx_multimod_mode 0   // Compatibility mode 0 [auto] ; 1 [mapachooser_multimod] ; 2 [Galileo]
- * amx_multimod_voteallowed 1   // enable (1) or disable (0) multimod voting.
- * 
- * Commands
- * amx_multimodz      //Command line control of multimod system
- * amx_votemod    //Admin only command to launch MOD & MAP voting
- * say nextmod    //Check which MOD will be running in next map
- * say_team nextmod   //Check which MOD will be running in next map
- * say currentmod     //Check which MOD is running in the current map
- * say votemod      //Player command to launch MOD & MAP voting
- * say_team votemod       //Player command to launch MOD & MAP voting
- * 
- *********************** Deepening ******************************************************
- * 
- * The command "amx_multimodz help 1" display the acceptable inputs and loaded mods 
- * from the file "addons/amxmodx/configs/multimod/multimod.ini". There is 2 built-in operatins 
- * beyond mods activation: "amx_multimodz help 1" and "amx_multimodz disableMods 1". 
- * Respectively to: Shows help and Disable any active mod.
- * 
- * The command line "amx_multimodz help 1", or "amx_multimodz a a", or "amx_multimodz 1 1", 
- * or anything with 2 parameters that are not valid commands, shows help options with 
- * its 2 built-in and all loaded mods from multimod.ini config file.
- * 
- * Example of usage of "amx_multimodz help 1":
- * amx_multimodz help 1
- * amx_multimodz disableMods 1     | To deactivate any loaded mod.
- * amx_votemod    | To force a votemod.
- * say nextmod     | To see which is the next mod.
- * say_team nextmod    | To see which is the next mod.
- * say currentmod    | To see which is the current mod.
- * say votemod     | To try start a vote mod.
- * say_team votemod     | To try start a vote mod.
- * amx_multimodz plugins-shero.txt plugins-shero.cfg    | to use Super Heros
- * amx_multimodz plugins-warcraft.txt plugins-warcraft.cfg    | to use Warcraft Ultimate Mod 3
- * amx_multimodz plugins-predator.txt plugins-predator.cfg    | to use Predator Mod_b2
- * amx_multimodz plugins-knife.txt plugins-knife.cfg    | to use Knife Arena Mod
- * amx_multimodz plugins-zp50Money.txt plugins-zp50Money.cfg    | to use Zombie Money Mod
- * amx_multimodz plugins-zp50Ammo.txt plugins-zp50Ammo.cfg    | to use Zombie Pack Ammo Mod
- * amx_multimodz plugins-csdm.txt plugins-csdm.cfg    | to use CS-DM (DeathMatch)
- * amx_multimodz plugins-gungame.txt plugins-gungame.cfg    | to use Gun Game Mod
- * amx_multimodz plugins-dragon.txt plugins-dragon.cfg    | to use Dragon Ball Mod
- * 
- ********************************** Installation *****************************************
- * To install it:
- * 1. Download the files "multi-mod_core.sma" and "gamemod_resources.zip". Optionally, 
- * "multi-mod_mapchooser.sma" at Downloads section, or the original Galileo.
- * 
- * 2. Then unzip the content of "yourgamemod" from "plugin_resources.zip", to your gamemod folder. 
- * 
- * 3. Compile the files "multi-mod_core.sma" and put the compiled file "multi-mod_core.amxx" to 
- * your plugins folder at "yourgamemod/addons/amxmodx/plugins".
- * 
- * 4. Put the next line to your "plugins.ini" file at "yourgamemod/addons/amxmodx/configs" and 
- * disable the original "mapchooser.amxx":
- * multi-mod_core.amxx
- * 
- * 5. Put the next line to your "amxx.cfg" file at "yourgamemod/addons/amxmodx/configs":
- * exec addons/amxmodx/configs/multiMod.cfg
- * 
- * 6. Configure your own mods at "yourgamemod/addons/amxmodx/configs/multimod/multimod.ini" as 
- * follow:
- * 
- * --- Example of: yourgamemod/addons/amxmodx/configs/multimod/multimod.ini ------
- * 
- * ;[mode name]:[mod tag]:[custom cvars cfg file]
- * [Gun Game]:[gungame]:[plugins-gungame.cfg]
- * 
- * -------------- And you have to create the files:----------------------------
- * 
- * yourgamemod/addons/amxmodx/configs/multimod/mods/plugins-gungame.txt
- * yourgamemod/addons/amxmodx/configs/multimod/mods/plugins-gungame.cfg
- * 
- * (Optinal)
- * yourgamemod/addons/amxmodx/configs/multimod/msg/gungame.cfg
- * yourgamemod/mapcycles/gungame.txt
- * 
- * -------------- Explanations of created files above -------------------------
- * 
- * 1. The file "yourgamemod/mods/plugins-gungame.txt" contains the plugins that compose the Mod.
- * 
- * 2. The file "yourgamemod/mods/plugins-gungame.cfg" contains yours special configuration, like:
- *    amxx pause amx_adminmodel
- *    sv_gravity 850
- * 
- * 3. The file (opcional) "yourgamemod/addons/amxmodx/configs/multimod/msg/gungame.cfg" contains 
- * commands that are executed when a mod is actived by the command line "amx_multimodz". 
- * Usually it contains a command to restart the server, like "amx_countdown 5 restart". 
- * Example of "yourgamemod/addons/amxmodx/configs/multimod/msg/gungame.cfg":
- *    amx_execall speak ambience/ratchant
- *    amx_tsay ocean Zoobie Ammo Pack Mod sera Ativado no proximo restart!!!!
- *    amx_tsay blue Zoobie Ammo Pack Mod sera Ativado no proximo restart!!!!
- *    amx_tsay cyan Zoobie Ammo Pack Mod sera Ativado no proximo restart!!!!
- *    amx_tsay ocean Zoobie Ammo Pack Mod sera Ativado no proximo restart!!!!
- *    amx_countdown 5 restart
- * OBS: 
- * The command "amx_countdown" needs the special plugin called "Countdown Exec" by "SniperBeamer". 
- *    https://forums.alliedmods.net/showthread.php?t=62879
- * The command "amx_execall" needs a special plugins called "Exec" by "ToXiC".
- *    https://forums.alliedmods.net/showthread.php?p=3313
- * 
- * 4. The file (opcional) "yourgamemod/mapcycles/gungame.txt" contains the mapcycle used when 
- * gungame mod is active.
- * 
- * ----------------------- Change Log -----------------------------------------
- * v5.0
- *   Added program code documentation.
- *   Added exception/error handling to everything.
- *   Developed a multi-page votemod menu system to display until 100 mods.
- *   Added a currentmod.ini file to save current active mod id and load it at server start.
- *   Changes the mapcycle, if and only if a custom mod mapcycle was created.
- *   Made the votemod keep the current mod if less than 30% of players voted.
- *   Made "Extend current map" right after choose, not to restart the game at the current map.
- *   Made the "currentmod.ini" store mod ids related to the mods order at "multimod.ini".
- *   Fixed current mod message is displaying "Next Mod: ".
- *   Made "Next Mod: " message display there is no actived mod, when there is not.
- *   When the min vote time is not reached/disabled, display e message informing that.
- * v5.0.0.1
- *   Fixed error message when the vote mod choose keep current mod.
- * v5.0.0.2
- *   Fixed documentation and reformatted a small part of the code.
- * v5.0.1
- *   Improved code using compiler constants with formatex.
- * v6.0
- *   Added new command 'amx_multimods modShortName', to enable/disable any mod, loaded or not, 
- *      straight restarting the server (silent mod).
- *   Added short mod name activation to the command 'amx_multimodz modShortName'.
- *
- * ------------ Credits ------------------------------------------------------
- * 
- *   fysiks: The first to realize the idea of "multimod.sma" and some code improvements.
- *   joropito: The idea/program developer of "multimod.sma" from version v0.1 to v2.3
- *   crazyeffect: Colaborate with multilangual support of "multimod.sma"
- *   dark vador 008: Time and server for testing under czero "multimod.sma"
- *   Addons zz: The "multi-mod_core.sma" developer.
- *   
- * ------------ TODO ----------------------------------------------------------
- * 
- *   
- * 
- ****************************************************************************************
- *
- * For any problems with this plugin visit
- * https://github.com/Addonszz/AddonsMultiMod/issues
- * for support.
- *
- ****************************************************************************************
+[SIZE="6"][COLOR="Blue"][B]Multimod Core v5.0[/B][/COLOR][/SIZE]
+[B]Release: 16.08.2015 | Last Update: 18.08.2015[/B]
+
+[anchor]Top[/anchor][SIZE="5"][COLOR="blue"][B]Table of Contents[/B][/COLOR][/SIZE] 
+
+[LIST]
+[*][goanchor=Introduction]How it works?[/goanchor]
+[*][goanchor=Requirements]Requirements[/goanchor]
+[*][goanchor=Deepening]Deepening[/goanchor]
+[*][goanchor=Installation]Installation[/goanchor]
+[*][goanchor=Explanations]Explanations[/goanchor]
+[*][goanchor=Configuration]Configuration[/goanchor]
+[*][goanchor=Change ]Change Log[/goanchor]
+[*][goanchor=Credits]Credits[/goanchor]
+[*][goanchor=TODO]TODO[/goanchor]
+[*][goanchor=Sourcecode]Sourcecode[/goanchor]
+[*][goanchor=Downloads]Downloads[/goanchor]
+[/LIST]
+This plugins was originally written by JoRoPiTo. The original can only load 10 mods and 
+display a vote Mod Menu of its 10, does not save the active mod. Now, after lot work, 
+it can load until 100 mods and display a vote Mod Menu of its 100 Mods and save the loaded mod.
+Original Plugin: "[URL="https://forums.alliedmods.net/showthread.php?t=95568"]multimod.sma[/URL]"
+
+********************** [anchor]Introduction[/anchor][B]Introduction[/B] ***************************************************
+[SIZE="5"][COLOR="Blue"][B]How it works?[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor] 
+When remaining 5 minutes to end round, this plugins launches a vote to 
+choose which mod will be played at the next map. If less than 30% voted, the game keep 
+the current mod or keep disabled if there is no Mod enabled. The first to options of 
+the vote menu are: "1. Keep Current Mod" and "2. No mod - Disable Mod". The others are 
+until 100 Mods loaded from “multimod.ini” file. Beyound 100 this votemenu will not display
+then, or change de compiler constant "#define MAXMODS 100" inside the plugin.
+
+[IMG]http://addons.zz.mu/recursos/2015-08-16_14-08_Counter-Strike.jpg[/IMG]
+
+The "multi-mod_core.sma" waits the user choose to activate one Mod, by vote menu, 
+or by command line. It saves the current active mod and keep it active forever or until 
+some other mod is activate or your disable the active mod by "amx_multimodz disableMods 1" 
+command line. 
+
+[IMG]http://addons.zz.mu/recursos/2015-08-16_14-08_Counter-Strike(2).jpg[/IMG]
+
+The "Multi-Mod Core" works completely diffent from the original "MultiMod Manager". 
+It keeps your original "plugins.ini" and add a new custom set of ones (the Mod) to the 
+current game without changing the original "plugins.ini".  
+Its too made the votemod keep the current mod if less than 30% of players voted. 
+There is compatibility with the (AMXX Team) "multi-mod_mapchooser.sma" replacement previded [goanchor=Downloads]here[/goanchor].
+There is compatibility too, with the original "[URL="https://forums.alliedmods.net/showthread.php?t=77391"]galileo.sma[/URL]":
+
+***************************************************************************************
+[anchor]Requirements[/anchor][SIZE="5"][COLOR="Blue"][B]Requirements[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor] 
+Amx Mod X 1.8.x
+Tested under Counter-Strike and Counter-Strike: Condition Zero
+
+[B]Cvars[/B]
+amx_mintime 10   // Minimum time to play before players can make MOD voting
+amx_multimod_mode 0   // Compatibility mode 0 [auto] ; 1 [mapachooser_multimod] ; 2 [Galileo]
+amx_multimod_voteallowed 1   // enable (1) or disable (0) multimod voting.
+
+[B]Commands[/B]
+amx_multimodz      //Command line control of multimod system
+amx_votemod    //Admin only command to launch MOD & MAP voting
+say nextmod    //Check which MOD will be running in next map
+say_team nextmod   //Check which MOD will be running in next map
+say currentmod     //Check which MOD is running in the current map
+say votemod      //Player command to launch MOD & MAP voting
+say_team votemod       //Player command to launch MOD & MAP voting
+
+********************* [anchor]Deepening[/anchor][B][SIZE="5"][COLOR="blue"]Deepening[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] ******************************************************
+
+The command "amx_multimodz help 1" display the acceptable inputs and loaded mods 
+from the file "addons/amxmodx/configs/multimod/multimod.ini". There is 2 built-in operatins 
+beyond mods activation: "amx_multimodz help 1" and "amx_multimodz disableMods 1". 
+Respectively to: Shows help and Disable any active mod.
+
+The command line "amx_multimodz help 1", or "amx_multimodz a a", or "amx_multimodz 1 1", 
+or anything with 2 parameters that are not valid commands, shows help options with 
+its 2 built-in and all loaded mods from multimod.ini config file.
+
+[B]Example[/B] of usage of "amx_multimodz help 1":
+[QUOTE]amx_multimodz help 1
+amx_multimodz disableMods 1     | To deactivate any loaded mod.
+amx_votemod    | To force a votemod.
+say nextmod     | To see which is the next mod.
+say_team nextmod    | To see which is the next mod.
+say currentmod    | To see which is the current mod.
+say votemod     | To try start a vote mod.
+say_team votemod     | To try start a vote mod.
+amx_multimodz plugins-shero.txt plugins-shero.cfg    | to use Super Heros
+amx_multimodz plugins-warcraft.txt plugins-warcraft.cfg    | to use Warcraft Ultimate Mod 3
+amx_multimodz plugins-predator.txt plugins-predator.cfg    | to use Predator Mod_b2
+amx_multimodz plugins-knife.txt plugins-knife.cfg    | to use Knife Arena Mod
+amx_multimodz plugins-zp50Money.txt plugins-zp50Money.cfg    | to use Zombie Money Mod
+amx_multimodz plugins-zp50Ammo.txt plugins-zp50Ammo.cfg    | to use Zombie Pack Ammo Mod
+amx_multimodz plugins-csdm.txt plugins-csdm.cfg    | to use CS-DM (DeathMatch)
+amx_multimodz plugins-gungame.txt plugins-gungame.cfg    | to use Gun Game Mod
+amx_multimodz plugins-dragon.txt plugins-dragon.cfg    | to use Dragon Ball Mod[/QUOTE]
+
+[SIZE="6"]This above Setup server with:[/SIZE]
+[LIST]
+[*]Galileo 1.1.290 that is a feature rich map voting plugin.
+[*]Gun-Game Mod v2.13c
+[*]Superheros Mod 1.2.1
+[*]CSDM (Death-Match) v2.1.3c
+[*]Predator Mod_B2 2.1
+[*]Ultimate Warcraft Mod 3
+[*]Knife Arena Mod 1.2
+[*]Dragon Ball Mod v1.3
+[*]Zombie Mod 5.08a
+[/LIST]
+Is available [URL="https://github.com/Addonszz/AddonsMultiMod"]here[/URL].
+
+******************************** [anchor]Installation[/anchor][B]Installation[/B] *****************************************
+[SIZE="5"][COLOR="Blue"][B]To install it:[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor] 
+[B]1.[/B] Download the files "multi-mod_core.sma" and "plugin_resources.zip". Optionally, 
+"multi-mod_mapchooser.sma" at [goanchor=Downloads]Downloads[/goanchor] section, or the original [URL="https://forums.alliedmods.net/showthread.php?t=77391"]Galileo[/URL].
+
+[B]2.[/B] Then unzip the content of "yourgamemod" from "gamemod_resources.zip", to your gamemod folder. 
+
+[B]3.[/B] Compile the files "multi-mod_core.sma" and put the compiled file "multi-mod_core.amxx" to 
+your plugins folder at "yourgamemod/addons/amxmodx/plugins".
+
+[B]4.[/B] Put the next line to your "plugins.ini" file at "yourgamemod/addons/amxmodx/configs" and
+disable the original "mapchooser.amxx":
+multi-mod_core.amxx
+
+[B]5.[/B] Put the next line to your "amxx.cfg" file at "yourgamemod/addons/amxmodx/configs":
+exec addons/amxmodx/configs/multiMod.cfg
+
+[anchor]Configuration[/anchor][B]6. [SIZE="5"][COLOR="red"]Configure[/COLOR][/SIZE][/B] your own mods at "yourgamemod/addons/amxmodx/configs/multimod/multimod.ini" as 
+follow:
+
+--- [B]Example of:[/B] yourgamemod/addons/amxmodx/configs/multimod/multimod.ini ------
+[QUOTE];[mode name]:[mod tag]:[custom cvars cfg file]
+[Gun Game]:[gungame]:[plugins-gungame.cfg][/QUOTE]
+
+-------------- And you have to create the files:----------------------------
+[QUOTE]yourgamemod/addons/amxmodx/configs/multimod/mods/plugins-gungame.txt
+yourgamemod/addons/amxmodx/configs/multimod/mods/plugins-gungame.cfg
+
+(Optinal)
+yourgamemod/addons/amxmodx/configs/multimod/msg/gungame.cfg
+yourgamemod/mapcycles/gungame.ini[/QUOTE]
+
+-------------- [anchor]Explanations[/anchor][B][SIZE="5"][COLOR="blue"]Explanations[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] -------------------------
+
+[B]1.[/B] The file "yourgamemod/addons/amxmodx/configs/multimod/mods/plugins-gungame.txt", 
+contains the plugins that compose the Mod.
+
+[B]2.[/B] The file "yourgamemod/addons/amxmodx/configs/multimod/mods/plugins-gungame.cfg", 
+ contains yours special configuration, like:
+   amxx pause amx_adminmodel
+   sv_gravity 850
+
+[B]3.[/B] The file (opcional) "yourgamemod/addons/amxmodx/configs/multimod/msg/gungame.cfg" contains 
+commands that are executed when a mod is actived by the command line "amx_multimodz". 
+Usually it contains a command to restart the server, like "amx_countdown 5 restart". 
+[B]Example[/B] of "yourgamemod/addons/amxmodx/configs/multimod/msg/gungame.cfg":
+   amx_execall speak ambience/ratchant
+   amx_tsay ocean Zoobie Ammo Pack Mod sera Ativado no proximo restart!!!!
+   amx_tsay blue Zoobie Ammo Pack Mod sera Ativado no proximo restart!!!!
+   amx_tsay cyan Zoobie Ammo Pack Mod sera Ativado no proximo restart!!!!
+   amx_tsay ocean Zoobie Ammo Pack Mod sera Ativado no proximo restart!!!!
+   amx_countdown 5 restart
+OBS: 
+[B]The command[/B] "amx_countdown" needs the special plugin called "[URL="https://forums.alliedmods.net/showthread.php?t=62879"]Countdown Exec[/URL]" by "SniperBeamer". 
+[B]The command[/B] "amx_execall" needs a special plugins called "[URL="https://forums.alliedmods.net/showthread.php?p=3313"]Exec[/URL]" by "ToXiC".
+
+[B]4.[/B] The file (opcional) "yourgamemod/mapcycles/gungame.ini" contains the mapcycle used when 
+gungame mod is active.
+
+----------------------- [anchor]Change [/anchor][B][SIZE="5"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] -----------------------------------------
+[QUOTE]v5.0
+ * Added program code documentation.
+ * Added exception/error handling to everything.
+ * Developed a multi-page votemod menu system to display until 100 mods.
+ * Added a currentmod.ini file to save current active mod id and load it at server start.
+ * Changes the mapcycle, if and only if a custom mod mapcycle was created.
+ * Made the votemod keep the current mod if less than 30% of players voted.
+ * Made "Extend current map" right after choose, not to restart the game at the current map.
+ * Made the "currentmod.ini" store mod ids related to the mods order at "multimod.ini".
+ * Fixed current mod message is displaying "Next Mod: ".
+ * Made "Next Mod: " message display there is no actived mod, when there is not.
+ * When the min vote time is not reached/disabled, display e message informing that.
+v5.0.0.1
+ * Fixed error message when the vote mod choose keep current mod.
+v5.0.0.2
+ * Fixed documentation and reformatted a small part of the code.
+v5.0.1
+ * Improved code using compiler constants with formatex.
+v6.0
+ * Added new command 'amx_multimods modShortName', to enable/disable any mod, loaded or not, 
+ *   straight restarting the server (silent mod).
+ * Added short mod name activation to the command 'amx_multimodz modShortName'.
+[/QUOTE]
+  
+------------ [anchor]Credits[/anchor][B][SIZE="5"][COLOR="blue"]Credits[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] ------------------------------------------------------
+
+  fysiks: The first to realize the idea of "multimod.sma" and some code improvements.
+  joropito: The idea/program developer of "multimod.sma" from version v0.1 to v2.3
+  crazyeffect: Colaborate with multilangual support of "multimod.sma"
+  dark vador 008: Time and server for testing under czero "multimod.sma"
+  Addons zz: The "multi-mod_core.sma" developer.
+  
+------------ [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] ----------------------------------------------------------
+
+
+[anchor]Sourcecode[/anchor]***************************************************************************************
+[SIZE="6"]This sourcecode is available on [B]GitHub[/B].[/SIZE]
+[URL="https://github.com/Addonszz/AddonsMultiMod/blob/master/gamemod_common/addons/amxmodx/scripting/multi-mod_core.sma"]https://github.com/Addonszz/AddonsMultiMod/blob/master/gamemod_common/addons/amxmodx/scripting/multi-mod_core.sma[/URL]
+
+For any problems with this plugin visit this own page or:
+[url]https://github.com/Addonszz/AddonsMultiMod/issues[/url]
+for support.
+
+***************************************************************************************
+
+[anchor]Downloads[/anchor][SIZE="6"][COLOR="Blue"][B]Downloads[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor]
  */
 
 #include <amxmodx>
 #include <amxmisc>
 
 #define PLUGIN "Multi-Mod Core"
-#define VERSION "5.0.1"
+#define VERSION "6.0"
 #define AUTHOR "Addons zz"
 
 #define MULTIMOD_MAPCHOOSER "multi-mod_mapchooser.amxx"
