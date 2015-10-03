@@ -1,4 +1,15 @@
 /*********************** Licensing *******************************************************
+*  This program is free software; you can redistribute it and/or modify it
+*  under the terms of the GNU General Public License as published by the
+*  Free Software Foundation; either version 2 of the License, or (at
+*  your option) any later version.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the implied warranty of
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+*  General Public License for more details.
+*
+*****************************************************************************************
 [SIZE="6"][COLOR="Blue"][B]Multimod Core v5.0[/B][/COLOR][/SIZE]
 [B]Release: 16.08.2015 | Last Update: 18.08.2015[/B]
 
@@ -17,10 +28,8 @@
 [*][goanchor=Sourcecode]Sourcecode[/goanchor]
 [*][goanchor=Downloads]Downloads[/goanchor]
 [/LIST]
-This plugins was originally written by JoRoPiTo. The original can only load 10 mods and 
-display a vote Mod Menu of its 10, does not save the active mod. Now, after lot work, 
-it can load until 100 mods and display a vote Mod Menu of its 100 Mods and save the loaded mod.
-Original Plugin: "[URL="https://forums.alliedmods.net/showthread.php?t=95568"]multimod.sma[/URL]"
+This plugins was originally written by JoRoPiTo. Original Plugin: "[URL="https://forums.alliedmods.net/showthread.php?t=95568"]multimod.sma[/URL]".
+See the [goanchor=Change ]Change Log[/goanchor] and [goanchor=Credits]Credits[/goanchor] for more information. 
 
 ********************** [anchor]Introduction[/anchor][B]Introduction[/B] ***************************************************
 [SIZE="5"][COLOR="Blue"][B]How it works?[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor] 
@@ -192,6 +201,8 @@ v6.0
  * Added new command 'amx_multimods modShortName', to enable/disable any mod, loaded or not, 
  *   straight restarting the server (silent mod).
  * Added short mod name activation to the command 'amx_multimodz modShortName'.
+ * Added restart option to the activation to the command:
+ *   'amx_multimodz/amx_multimods modShortName <1 or 0>', to restart or not respectively.
 [/QUOTE]
   
 ------------ [anchor]Credits[/anchor][B][SIZE="5"][COLOR="blue"]Credits[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] ------------------------------------------------------
