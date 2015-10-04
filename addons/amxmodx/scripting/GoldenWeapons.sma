@@ -16,8 +16,6 @@
 #include <fakemeta>
 #include <fun>
 #include <cstrike>
-#include <engine>
-#include <amxmisc>
 #include <hamsandwich>
 
 #define is_valid_player(%1) (1 <= %1 <= 32)
@@ -33,16 +31,45 @@ new MP5_P_MODEL[64] = "models/golden/p_mp5.mdl"
 
 new ZOOM_WEAPON_SOUND[64] = "weapons/zoom.wav"
 
-new g_Menu
-new g_weapon_cost = 16000
-new g_weapon_damage
+new const primaryWeapons[][] = 
+{
+	"weapon_shield",
+	"weapon_scout",
+	"weapon_xm1014",
+	"weapon_mac10",
+	"weapon_aug",
+	"weapon_ump45",
+	"weapon_sg550",
+	"weapon_galil",
+	"weapon_famas",
+	"weapon_awp",
+	"weapon_mp5navy",
+	"weapon_m249",
+	"weapon_m3",
+	"weapon_m4a1",
+	"weapon_tmp",
+	"weapon_g3sg1",
+	"weapon_sg552",
+	"weapon_ak47",
+	"weapon_p90"
+}
 
-new bool:g_hasSpecialWeapon[33] = {false, ...}
-new bool:g_hasZoom[ 33 ] = {false, ...}
+// Max BP ammo for weapons
+new const MAXBPAMMO[] = { -1, 52, -1, 90, 1, 32, 1, 100, 90, 1, 120, 100, 100, 90, 90, 90, 100, 120,
+	30, 120, 200, 32, 90, 120, 90, 2, 35, 90, 90, -1, 100 }
+
+// Ammo type names for weapons
+new const AMMOTYPE[][] = { "", "357sig", "", "762nato", "", "buckshot", "", "45acp", "556nato", "", "9mm", "57mm", "45acp",
+	"556nato", "556nato", "556nato", "45acp", "9mm", "338magnum", "9mm", "556natobox", "buckshot",
+	"556nato", "9mm", "762nato", "", "50ae", "556nato", "762nato", "", "57mm" }
 
 new gp_cvar_dmg
+new g_weapon_damage
+new g_weapon_cost = 16000
+new g_Menu
 
-const Wep_ak47 = ((1<<CSW_AK47))
+new g_whichSpecialWeapon[33]
+new bool:g_hasZoom[ 33 ] = {false, ...}
 
 public plugin_init()
 {
@@ -66,7 +93,7 @@ public plugin_init()
     register_event("DeathMsg", "Death", "a")
     register_event("WeapPickup","weapPickupEvent","b","1=19")
     register_event("CurWeapon","curWeaponEvent","be","1=1")
-    //register_event("TextMsg", "event_game_commencing", "a", "2=#Game_Commencing", "2=#Game_will_restart_in");
+    register_event("TextMsg", "event_game_commencing", "a", "2=#Game_Commencing", "2=#Game_will_restart_in");
 
     register_forward( FM_CmdStart, "giveAugZoomForward" )
 
@@ -78,17 +105,19 @@ public plugin_cfg()
     g_weapon_damage = get_pcvar_num( gp_cvar_dmg )
 }
 
-/**
- * There are 3 specials weapons, buy one of then you win it, but if you normally 
- *   bought another special weapons, you win that normal weapon as a special one
- * This is done to avoid extra conditional expressions then reduce processor use.
- */
-public fw_takedamage(victim, inflictor, attacker, Float:damage)
+public fw_takedamage( victim, inflictor, attacker, Float:damage )
 {
-    if( g_hasSpecialWeapon[attacker] )
+    if( attacker > 0 )
     {
-        SetHamParamFloat(4, damage * g_weapon_damage )
-        return true
+        new clip
+        new ammo
+        new currentSpecialWeapon = get_user_weapon(attacker, clip, ammo)
+
+        if( g_whichSpecialWeapon[attacker] == currentSpecialWeapon )
+        {
+            SetHamParamFloat(4, damage * g_weapon_damage )
+            return true
+        }
     }
     return false
 }
@@ -97,9 +126,10 @@ public showmenu(id)
 {
     new menu[512]
 
-    format(menu, 511, "\rSilver Weapons\w^n^n1. Buy Silver AK           \
-            \y($%i)\w^n2. Buy Silver M4A1       \
-            \y($%i)\w^n3. Buy Silver MP5         \
+    format(menu, 511, "\rGolden Licenses Store\
+            \w^n^n1. Buy a Golden AK47 License      \
+            \y($%i)\w^n2. Buy a Golden M4A1 License      \
+            \y($%i)\w^n3. Buy a Golden MP5 License        \
             \y($%i)\w^n^n0. Exit^n", g_weapon_cost, g_weapon_cost, g_weapon_cost )
 
     new keys = (1<<0|1<<1|1<<2|1<<9)
@@ -117,84 +147,102 @@ public silvermenu( id, key )
 
     if( money >= g_weapon_cost)
     { 
+        drop_prim(id)
+
+        new licenteType[32]
+
         switch(key) 
         {
             case 0: 
             {
-                drop_prim(id) 
-                
-                g_hasSpecialWeapon[id] = true
+                g_whichSpecialWeapon[id] = CSW_AK47
+                copy( licenteType, charsmax( licenteType ), "AK47" )
 
-                new playerWeapon[32]
-                copy(playerWeapon, charsmax(playerWeapon), "weapon_ak47")
-
-                give_item(id, playerWeapon)
-                give_item(id, playerWeapon)
-                engclient_cmd(id, playerWeapon) 
-                engclient_cmd(id, playerWeapon)
-                engclient_cmd(id, playerWeapon)
+                set_task(0.3, "giveAK47", id )
             }
             case 1: 
             {
-                drop_prim(id) 
+                g_whichSpecialWeapon[id] = CSW_M4A1
+                copy( licenteType, charsmax( licenteType ), "M4A1" )
 
-                g_hasSpecialWeapon[id] = true
-
-                new playerWeapon[32]
-                copy(playerWeapon, charsmax(playerWeapon), "weapon_m4a1")
-
-                give_item(id, playerWeapon)
-                give_item(id, playerWeapon)
-                engclient_cmd(id, playerWeapon) 
-                engclient_cmd(id, playerWeapon)
+                set_task(0.3, "giveM4A1", id )
             }
             case 2: 
             {
-                drop_prim(id) 
+                g_whichSpecialWeapon[id] = CSW_MP5NAVY
+                copy( licenteType, charsmax( licenteType ), "MP5" )
 
-                g_hasSpecialWeapon[id] = true
-
-                new playerWeapon[32]
-                copy(playerWeapon, charsmax(playerWeapon), "weapon_mp5navy")
-
-                give_item(id, playerWeapon)
-                give_item(id, playerWeapon)
-                engclient_cmd(id, playerWeapon) 
-                engclient_cmd(id, playerWeapon)
-                engclient_cmd(id, playerWeapon)
+                set_task(0.3, "giveMP5", id )
             }
             default: return PLUGIN_HANDLED
         }
         cs_set_user_money( id, money - g_weapon_cost )
-        weapPickupEvent( id )
 
-    } else
+        client_print( id, print_chat, "[AMXX] You own now a %s Golden Weapon licence!", licenteType )
+
+    } else 
     {
         client_print( id, print_chat, "[AMXX] You do not have enough money to buy Golden Weapons. Cost $%d ", g_weapon_cost )
     }
     return PLUGIN_HANDLED
 }
 
+public giveAK47( id )
+{
+    give_item( id, "weapon_ak47")
+
+    set_pev(id, pev_viewmodel2, AK47_V_MODEL)
+    set_pev(id, pev_weaponmodel2, AK47_P_MODEL)
+
+    new weapon_id = CSW_AK47
+
+    ExecuteHamB(Ham_GiveAmmo, id, MAXBPAMMO[weapon_id], AMMOTYPE[weapon_id], MAXBPAMMO[weapon_id])
+}
+
+public giveM4A1( id )
+{
+    give_item( id, "weapon_m4a1")
+
+    set_pev(id, pev_viewmodel2, M4A1_V_MODEL)
+    set_pev(id, pev_weaponmodel2, M4A1_P_MODEL)
+
+    new weapon_id = CSW_AK47
+
+    ExecuteHamB(Ham_GiveAmmo, id, MAXBPAMMO[weapon_id], AMMOTYPE[weapon_id], MAXBPAMMO[weapon_id])
+}
+
+public giveMP5( id )
+{
+    give_item( id, "weapon_mp5navy")
+
+    set_pev(id, pev_viewmodel2, MP5_V_MODEL)
+    set_pev(id, pev_weaponmodel2, MP5_P_MODEL)
+
+    new weapon_id = CSW_AK47
+
+    ExecuteHamB(Ham_GiveAmmo, id, MAXBPAMMO[weapon_id], AMMOTYPE[weapon_id], MAXBPAMMO[weapon_id])
+}
+
 public client_connect(id)
 {
-    g_hasSpecialWeapon[id] = false
+    g_whichSpecialWeapon[id] = 0
 }
 
 public event_game_commencing()
 {
-    arrayset(g_hasSpecialWeapon, false, sizeof(g_hasSpecialWeapon) )
+    arrayset(g_whichSpecialWeapon, 0, sizeof(g_whichSpecialWeapon) )
 }
 
 public client_disconnect(id)
 {
-    g_hasSpecialWeapon[id] = false
+    g_whichSpecialWeapon[id] = 0
 }
 
 public Death()
 {
     new id = read_data(2)
 
-    g_hasSpecialWeapon[id] = false
+    g_whichSpecialWeapon[id] = 0
 }
 
 public plugin_precache()
@@ -212,14 +260,26 @@ public plugin_precache()
 }
 
 /**
+ * This message updates the numerical magazine ammo count and the corresponding ammo 
+ *    type icon on the HUD.
+ */
+public curWeaponEvent(id)
+{
+    weapPickupEvent(id)
+
+    return PLUGIN_HANDLED
+}
+
+
+/**
  * When a player pickup a weapon, its change the model view to the Golden Weapon.
  */
 public weapPickupEvent(id)
 {
-    if( g_hasSpecialWeapon[id] )
-    {
-        new szWeapID = read_data(2)
+    new szWeapID = read_data(2)
 
+    if( g_whichSpecialWeapon[id] == szWeapID )
+    {
         switch( szWeapID )
         {
             case CSW_AK47: 
@@ -243,17 +303,6 @@ public weapPickupEvent(id)
 }
 
 /**
- * This message updates the numerical magazine ammo count and the corresponding ammo 
- *    type icon on the HUD.
- */
-public curWeaponEvent(id)
-{
-    weapPickupEvent(id)
-
-    return PLUGIN_HANDLED
-}
-
-/**
  * Added 'aug' zoom to the Golden Weapons.
  */
 public giveAugZoomForward( id, uc_handle, seed )
@@ -268,13 +317,13 @@ public giveAugZoomForward( id, uc_handle, seed )
         new szClip, szAmmo
         new szWeapID = get_user_weapon( id, szClip, szAmmo )
         
-        if( szWeapID == CSW_AK47 && g_hasSpecialWeapon[id] && !g_hasZoom[id] )
+        if( szWeapID == CSW_AK47 && g_whichSpecialWeapon[id] > 0 && !g_hasZoom[id] )
         {
             g_hasZoom[id] = true
             cs_set_user_zoom( id, CS_SET_AUGSG552_ZOOM, 0 )
             emit_sound( id, CHAN_ITEM, ZOOM_WEAPON_SOUND, 0.20, 2.40, 0, 100 )
 
-        } else if ( szWeapID == CSW_AK47 && g_hasSpecialWeapon[id] && g_hasZoom[id])
+        } else if ( szWeapID == CSW_AK47 && g_whichSpecialWeapon[id] > 0 && g_hasZoom[id])
         {
             g_hasZoom[ id ] = false 
             cs_set_user_zoom( id, CS_RESET_ZOOM, 0 )
@@ -285,16 +334,8 @@ public giveAugZoomForward( id, uc_handle, seed )
 
 stock drop_prim(id) 
 {
-    new weapons[32], num
-    get_user_weapons(id, weapons, num)
-
-    for (new i = 0; i < num; i++) 
+    for (new i = 0; i < sizeof(primaryWeapons); i++) 
     {
-        if ( Wep_ak47 & (1<<weapons[i]) ) 
-        {
-            static wname[32]
-            get_weaponname(weapons[i], wname, sizeof wname - 1)
-            engclient_cmd(id, "drop", wname)
-        }
+        client_cmd(id, "drop %s", primaryWeapons[i])
     }
 }
