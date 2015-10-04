@@ -546,6 +546,8 @@ inside your "[URL="https://github.com/addonszz/Amx_Ultra/blob/master/addons/amxm
 "addons/amxmodx/configs/" folder, after the Mod Activation. 
 
 ***************************************************************************************
+Testing server
+[IMG]http://cache.www.gametracker.com/server_info/jacks.noip.me:27015/b_560_95_1.png[/IMG]
 
 [anchor]Downloads[/anchor][SIZE="6"][COLOR="Blue"][B]Downloads[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor]
 

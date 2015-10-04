@@ -9,7 +9,7 @@
 *  WITHOUT ANY WARRANTY; without even the implied warranty of
 *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
 *  General Public License for more details.
-*
+* 
 */
 
 #include <amxmodx>
@@ -54,15 +54,6 @@ new const primaryWeapons[][] =
 	"weapon_p90"
 }
 
-// Max BP ammo for weapons
-new const MAXBPAMMO[] = { -1, 52, -1, 90, 1, 32, 1, 100, 90, 1, 120, 100, 100, 90, 90, 90, 100, 120,
-	30, 120, 200, 32, 90, 120, 90, 2, 35, 90, 90, -1, 100 }
-
-// Ammo type names for weapons
-new const AMMOTYPE[][] = { "", "357sig", "", "762nato", "", "buckshot", "", "45acp", "556nato", "", "9mm", "57mm", "45acp",
-	"556nato", "556nato", "556nato", "45acp", "9mm", "338magnum", "9mm", "556natobox", "buckshot",
-	"556nato", "9mm", "762nato", "", "50ae", "556nato", "762nato", "", "57mm" }
-
 new gp_cvar_dmg
 new g_weapon_damage
 new g_weapon_cost = 16000
@@ -105,6 +96,9 @@ public plugin_cfg()
     g_weapon_damage = get_pcvar_num( gp_cvar_dmg )
 }
 
+/**
+ * Does not affect cs built-in bots. Only players and PODBots.
+ */
 public fw_takedamage( victim, inflictor, attacker, Float:damage )
 {
     if( attacker > 0 )
@@ -133,7 +127,7 @@ public showmenu(id)
             \y($%i)\w^n^n0. Exit^n", g_weapon_cost, g_weapon_cost, g_weapon_cost )
 
     new keys = (1<<0|1<<1|1<<2|1<<9)
-    show_menu(id, keys, menu, -1, "Silver Weapons")
+    show_menu(id, keys, menu, -1, "Golden Weapons")
 }
 
 public silvermenu( id, key ) 
@@ -194,9 +188,9 @@ public giveAK47( id )
     set_pev(id, pev_viewmodel2, AK47_V_MODEL)
     set_pev(id, pev_weaponmodel2, AK47_P_MODEL)
 
-    new weapon_id = CSW_AK47
-
-    ExecuteHamB(Ham_GiveAmmo, id, MAXBPAMMO[weapon_id], AMMOTYPE[weapon_id], MAXBPAMMO[weapon_id])
+    give_item(id,"ammo_762nato");
+    give_item(id,"ammo_762nato");
+    give_item(id,"ammo_762nato");
 }
 
 public giveM4A1( id )
@@ -206,9 +200,9 @@ public giveM4A1( id )
     set_pev(id, pev_viewmodel2, M4A1_V_MODEL)
     set_pev(id, pev_weaponmodel2, M4A1_P_MODEL)
 
-    new weapon_id = CSW_AK47
-
-    ExecuteHamB(Ham_GiveAmmo, id, MAXBPAMMO[weapon_id], AMMOTYPE[weapon_id], MAXBPAMMO[weapon_id])
+    give_item(id,"ammo_556nato");
+    give_item(id,"ammo_556nato");
+    give_item(id,"ammo_556nato");
 }
 
 public giveMP5( id )
@@ -218,9 +212,10 @@ public giveMP5( id )
     set_pev(id, pev_viewmodel2, MP5_V_MODEL)
     set_pev(id, pev_weaponmodel2, MP5_P_MODEL)
 
-    new weapon_id = CSW_AK47
-
-    ExecuteHamB(Ham_GiveAmmo, id, MAXBPAMMO[weapon_id], AMMOTYPE[weapon_id], MAXBPAMMO[weapon_id])
+    give_item(id,"ammo_9mm");
+    give_item(id,"ammo_9mm");
+    give_item(id,"ammo_9mm");
+    give_item(id,"ammo_9mm");
 }
 
 public client_connect(id)
@@ -269,7 +264,6 @@ public curWeaponEvent(id)
 
     return PLUGIN_HANDLED
 }
-
 
 /**
  * When a player pickup a weapon, its change the model view to the Golden Weapon.
