@@ -1127,7 +1127,7 @@ public cmdStopsound(id)
 //==========================================================================================================
 public on_damage(id)
 {
-	if(!get_pcvar_num(bulletdamage))
+	if(!get_pcvar_num(bulletdamage) || 0 >= id )
 		return PLUGIN_HANDLED
 
 	new attacker = get_user_attacker(id)
