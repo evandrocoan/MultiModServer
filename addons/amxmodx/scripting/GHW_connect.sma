@@ -40,6 +40,7 @@
 new display_type_pcvar
 
 new name[33][32]
+new g_connection_name[33][32]
 new authid[33][32]
 new country[33][46]
 new ip[33][32]
@@ -73,64 +74,77 @@ public plugin_precache()
 
 public client_putinserver(id)
 {
-    if(!is_user_bot(id))
+    formatex( g_connection_name[id], 31, "00000")
+}
+
+public client_connect(id)
+{
+    if( !is_user_bot(id) )
     {
-        get_client_info(id)
+        new connection_name_temp[32]
+        get_user_name(id, connection_name_temp, 31)
 
-        new display_type = get_pcvar_num(display_type_pcvar)
-        if(display_type & SHOW_CONNECT)
+        if( !equal( connection_name_temp, g_connection_name[id] ) )
         {
-            new string[200]
-            get_cvar_string("cm_connect_string",string,199)
-            format(string,199,"^x01%s",string)
+            new display_type = get_pcvar_num(display_type_pcvar)
 
-            if(display_type & SHOW_COLOR)
+            get_user_name(id, g_connection_name[id], 31)
+            get_client_info(id)
+
+            if(display_type & SHOW_CONNECT)
             {
-                new holder[46]
+                new string[200]
+                get_cvar_string("cm_connect_string",string,199)
+                format(string,199,"^x01%s",string)
 
-                format(holder,45,"^x04%s^x01",name[id])
-                replace(string,199,"%name",holder)
-
-                format(holder,45,"^x04%s^x01",authid[id])
-                replace(string,199,"%steamid",holder)
-
-                format(holder,45,"^x04%s^x01",country[id])
-                replace(string,199,"%country",holder)
-
-                format(holder,45,"^x04%s^x01",ip[id])
-                replace(string,199,"%ip",holder)
-            }
-            else
-            {
-                replace(string,199,"%name",name[id])
-                replace(string,199,"%steamid",authid[id])
-                replace(string,199,"%country",country[id])
-                replace(string,199,"%ip",ip[id])
-            }
-
-            new num, players[32], player
-            get_players(players,num,"ch")
-            for(new i=0;i<num;i++)
-            {
-                player = players[i]
-
-                message_begin(MSG_ONE, saytext_msgid,{0,0,0}, player)
-                write_byte(player)
-                write_string(string)
-                message_end()
-
-                server_print(string)
-
-                if(display_type & PLAY_SOUND_CONNECT)
+                if(display_type & SHOW_COLOR)
                 {
-                    new stringlen = strlen(connect_soundfile)
-                    if(connect_soundfile[stringlen - 1]=='v' && connect_soundfile[stringlen - 2]=='a' && connect_soundfile[stringlen - 3]=='w') //wav
+                    new holder[46]
+
+                    format(holder,45,"^x04%s^x01",name[id])
+                    replace(string,199,"%name",holder)
+
+                    format(holder,45,"^x04%s^x01",authid[id])
+                    replace(string,199,"%steamid",holder)
+
+                    format(holder,45,"^x04%s^x01",country[id])
+                    replace(string,199,"%country",holder)
+
+                    format(holder,45,"^x04%s^x01",ip[id])
+                    replace(string,199,"%ip",holder)
+                }
+                else
+                {
+                    replace(string,199,"%name",name[id])
+                    replace(string,199,"%steamid",authid[id])
+                    replace(string,199,"%country",country[id])
+                    replace(string,199,"%ip",ip[id])
+                }
+
+                new num, players[32], player
+                get_players(players,num,"ch")
+                for(new i=0;i<num;i++)
+                {
+                    player = players[i]
+
+                    message_begin(MSG_ONE, saytext_msgid,{0,0,0}, player)
+                    write_byte(player)
+                    write_string(string)
+                    message_end()
+
+                    server_print(string)
+
+                    if(display_type & PLAY_SOUND_CONNECT)
                     {
-                        client_cmd(player,"spk ^"sound/%s^"",connect_soundfile)
-                    }
-                    if(connect_soundfile[stringlen - 1]=='3' && connect_soundfile[stringlen - 2]=='p' && connect_soundfile[stringlen - 3]=='m') //wav
-                    {
-                        client_cmd(player,"mp3 play ^"sound/%s^"",connect_soundfile)
+                        new stringlen = strlen(connect_soundfile)
+                        if(connect_soundfile[stringlen - 1]=='v' && connect_soundfile[stringlen - 2]=='a' && connect_soundfile[stringlen - 3]=='w') //wav
+                        {
+                            client_cmd(player,"spk ^"sound/%s^"",connect_soundfile)
+                        }
+                        if(connect_soundfile[stringlen - 1]=='3' && connect_soundfile[stringlen - 2]=='p' && connect_soundfile[stringlen - 3]=='m') //wav
+                        {
+                            client_cmd(player,"mp3 play ^"sound/%s^"",connect_soundfile)
+                        }
                     }
                 }
             }
@@ -174,6 +188,7 @@ public client_disconnect(id)
     if(!is_user_bot(id))
     {
         new display_type = get_pcvar_num(display_type_pcvar)
+
         if(display_type & SHOW_DISCONNECT)
         {
             new string[200]
