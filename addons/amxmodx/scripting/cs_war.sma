@@ -12,7 +12,6 @@
 */
 
 #include <amxmodx>
-#include <cs_core>
 #include <fakemeta>
 #include <hamsandwich>
 #include <cstrike> 
@@ -20,6 +19,9 @@
 #include <fun>
 
 #define MAXPLAYERS 32
+
+// BP ammo refill
+#define REFILL_WEAPONID args[0]
 
 // Weapons Offsets
 #define XO_WEAPONS 4
@@ -62,6 +64,19 @@ enum _:WEAPONSWAR
 	WeaponIndex
 }
 
+// Weapon IDs for ammo types
+new const WEAPONID[] = { 0, CSW_AWP, CSW_SCOUT, CSW_M249, CSW_AUG, CSW_XM1014, CSW_MAC10, CSW_FIVESEVEN, CSW_DEAGLE,
+			CSW_P228, CSW_ELITE, CSW_FLASHBANG, CSW_HEGRENADE, CSW_SMOKEGRENADE, CSW_C4 }
+			
+// Ammo type names for weapons
+new const AMMOTYPE[][] = { "", "357sig", "", "762nato", "", "buckshot", "", "45acp", "556nato", "", "9mm", "57mm", "45acp",
+	"556nato", "556nato", "556nato", "45acp", "9mm", "338magnum", "9mm", "556natobox", "buckshot",
+	"556nato", "9mm", "762nato", "", "50ae", "556nato", "762nato", "", "57mm" }
+
+// Max BP ammo for weapons
+new const MAXBPAMMO[] = { -1, 52, -1, 90, 1, 32, 1, 100, 90, 1, 120, 100, 100, 90, 90, 90, 100, 120,
+	30, 120, 200, 32, 90, 120, 90, 2, 35, 90, 90, -1, 100 }
+	
 new const m_rgpPlayerItems_CWeaponBox[6] = {34,35,...}
 new const WeaponsData[][WEAPONSWAR] =
 {
@@ -99,7 +114,7 @@ new bool:g_bHEWar
 new bool:g_bStartWar
 new bool:g_bVote
 new bool:g_bLastRoundIsWar
-new bool:g_bJustDrop[MAXPLAYERS+1]
+new bool:g_bJustDrop[MAXPLAYERS+1], bool:g_bBPUnlimit[MAXPLAYERS+1]
 
 // Float
 new Float:g_iCHudXPosition
@@ -122,7 +137,7 @@ new g_iVoteMenu
 
 new g_WarMenu, g_isPointLeader
 new g_iAllowWarStart, g_iAllowWarVote
-new g_iVotingTime, g_iBullet, g_iCUnlimitClip
+new g_iVotingTime, g_iBullet
 new g_iShowHud, g_iXPosition, g_iYPosition, g_iHudColors
 new g_iPointLeader, g_iPointBonus, g_iBonusAmount
 new g_iAutoWarVote, g_iVoteCountdown, g_iAutoWarStart, g_iWarCountdown
@@ -130,11 +145,11 @@ new g_iVoteDelay, g_iWarDelay, g_iWeaponDrop
 new g_iAutoRespawn, g_iStripWeapon, g_iNoShield 
 new g_iKillerView, g_iBlockChangeViewTime, g_iKillerViewFade, g_iSpecMode
 
-new g_iMsgSayTxt, g_iSyncHud, g_iMsgScreenFade
+new g_iMsgSayTxt, g_iSyncHud, g_iMsgScreenFade, g_iMsgAmmo
 
 public plugin_init() 
 {
-	register_plugin("Weapons War", "6.8", "zmd94")
+	register_plugin("Weapons War", "7.0", "zmd94")
 	
 	register_dictionary("cs_war.txt")
 	
@@ -148,6 +163,7 @@ public plugin_init()
 	register_event("HLTV", "cs_war_new_round", "a", "1=0", "2=0")
 	register_event("TextMsg", "cs_war_restart", "a", "2&#Game_C", "2&#Game_w")	
 	register_event("CurWeapon", "cs_war_CurWeapon", "be", "1=1")
+	register_event("AmmoX", "cs_war_ammo", "be")
 	
 	register_logevent("cs_war_round_start", 2, "1=Round_Start")
 	register_logevent("cs_war_round_end", 2, "1=Round_End") 
@@ -204,8 +220,9 @@ public plugin_init()
 	g_iMsgSayTxt = get_user_msgid("SayText") 
 	g_iSyncHud = CreateHudSyncObj()
 	g_iMsgScreenFade = get_user_msgid("ScreenFade")
+	g_iMsgAmmo = get_user_msgid("AmmoPickup")
 	
-	g_WarMenu = menu_create("\yWeapons War \rv6.8", "war_handler")
+	g_WarMenu = menu_create("\yWeapons War \rv7.0", "war_handler")
     
 	new szItem[64]
 	for(new i; i < sizeof(WeaponsData); i++)
@@ -217,7 +234,6 @@ public plugin_init()
 
 public plugin_cfg()
 {
-	g_iCUnlimitClip = get_pcvar_num(g_iBullet)
 	g_iCHudXPosition = get_pcvar_float(g_iXPosition)
 	g_iCHudYPosition = get_pcvar_float(g_iYPosition)
 }
@@ -379,6 +395,7 @@ public cs_war_new_round()
 		id = iPlayers[i]
 		g_iAllVote[id] = false
 		g_bJustDrop[id] = false
+		g_bBPUnlimit[id] = false
 
 		g_iPoints[id] = 0
 	}
@@ -463,7 +480,8 @@ public cs_war_round_end()
 			
 			if(g_bHEWar)
 			{
-				cs_grenade_reward(id, 1, 0)
+				give_item(id, g_sWeaponID)
+				cs_set_user_bpammo(id, g_WeaponIndex, 1)
 				
 				g_bHEWar = false
 			}
@@ -477,6 +495,9 @@ public cs_war_round_end()
 					}
 				}
 			}
+			
+			g_bJustDrop[id] = false
+			g_bBPUnlimit[id] = false
 			
 			remove_task(id+TASK_RESPAWN)
 		}
@@ -509,7 +530,7 @@ public cs_war_round_end()
 				
 				if (get_pcvar_num(g_iPointBonus))
 				{
-					cs_money_reward(iLeader, get_pcvar_num(g_iBonusAmount), 1)
+					cs_set_user_money(iLeader, min(cs_get_user_money(iLeader) + get_pcvar_num(g_iBonusAmount), 16000))
 					print_colored(0, "!g[WW]!t %L", LANG_PLAYER, "CSWAR_POINT_CHAT", szName, iPoints)
 				}
 			}
@@ -576,17 +597,19 @@ public cs_war_PlayerRespawn(id)
 		{
 			if(g_bHEWar)
 			{
-				cs_grenade_reward(id, 191, 0)
+				give_item(id, g_sWeaponID)
+				cs_set_user_bpammo(id, g_WeaponIndex, 191)
 			}
 			else
 			{
-				cs_weapon_reward(id, g_sWeaponID)
+				give_item(id, g_sWeaponID)
+				ExecuteHamB(Ham_GiveAmmo, id, MAXBPAMMO[g_WeaponIndex], AMMOTYPE[g_WeaponIndex], MAXBPAMMO[g_WeaponIndex])
 				
-				if(g_iCUnlimitClip)
+				if(get_pcvar_num(g_iBullet))
 				{
 					if(!equal(g_sWeaponID, "weapon_knife"))
 					{
-						cs_unlimited_reward(id, 2, 0, 0.0)
+						g_bBPUnlimit[id] = true
 					}
 				}
 			}
@@ -690,6 +713,8 @@ public cs_war_WeaponsDeploy(iWeapon)
 public client_disconnect(id)
 {
 	g_iAllVote[id] = false
+	g_bBPUnlimit[id] = false
+	g_bJustDrop[id] = false
 	g_iPoints[id] = 0
 	
 	flag_unset(g_isPointLeader, id)
@@ -704,11 +729,9 @@ public cs_war_drop(id)
 			print_colored(id, "!g[WW]!t %L", LANG_PLAYER, "CSWAR_RESTRICT_IN_WAR", g_sWeaponWar)
 			return PLUGIN_HANDLED
 		}
-		else
-		{
-			g_bJustDrop[id] = true
-			set_task(2.0, "RestoreDrop", id)
-		}
+		
+		g_bJustDrop[id] = true
+		set_task(3.0, "RestoreDrop", id)
 	}
 	
 	return PLUGIN_CONTINUE
@@ -908,19 +931,21 @@ public StartWar()
 	
 		if(equal(g_sWeaponID, "weapon_hegrenade"))
 		{
-			cs_grenade_reward(id, 191, 0)
+			give_item(id, g_sWeaponID)
+			cs_set_user_bpammo(id, g_WeaponIndex, 191)
 			
 			g_bHEWar = true
 		}
 		else
 		{
-			cs_weapon_reward(id, g_sWeaponID)
+			give_item(id, g_sWeaponID)
+			ExecuteHamB(Ham_GiveAmmo, id, MAXBPAMMO[g_WeaponIndex], AMMOTYPE[g_WeaponIndex], MAXBPAMMO[g_WeaponIndex])
 			
-			if(g_iCUnlimitClip)
+			if(get_pcvar_num(g_iBullet))
 			{
 				if(!equal(g_sWeaponID, "weapon_knife"))
 				{
-					cs_unlimited_reward(id, 2, 0, 0.0)
+					g_bBPUnlimit[id] = true
 				}
 			}
 		}
@@ -943,16 +968,19 @@ public StartWar()
 	if(get_pcvar_num(g_iWeaponDrop))
 	{
 		new szWeapon[20]
-		new iId = get_weaponid(g_sWeaponID)
-		if(iId != CSW_KNIFE || iId != CSW_HEGRENADE)
+		for(new i; i < sizeof(WeaponsData); i++)
 		{
-			for(new i; i < sizeof(WeaponsData); i++)
-			{
-				copy(szWeapon, charsmax(szWeapon), WeaponsData[i][WeaponID])
-				RegisterHam(Ham_CS_Item_CanDrop, szWeapon, "cs_war_CannotDrop")
-			}
-			
-			RegisterHam(Ham_CS_Item_CanDrop, g_sWeaponID, "cs_war_CanDrop")
+			copy(szWeapon, charsmax(szWeapon), WeaponsData[i][WeaponID])
+			RegisterHam(Ham_CS_Item_CanDrop, szWeapon, "cs_war_CannotDrop")
+		}
+		
+		RegisterHam(Ham_CS_Item_CanDrop, g_sWeaponID, "cs_war_CanDrop")
+		
+		new const WeaponCannotDrop[][] = {"weapon_knife", "weapon_hegrenade"}
+		for(new i; i < sizeof(WeaponCannotDrop); i++)
+		{
+			copy(szWeapon, charsmax(szWeapon), WeaponCannotDrop[i])
+			RegisterHam(Ham_CS_Item_CanDrop, szWeapon, "cs_war_CannotDrop")
 		}
 	}
 }
@@ -968,6 +996,55 @@ public cs_war_CannotDrop(iEnt)
 {
 	SetHamReturnInteger(0)
 	return HAM_SUPERCEDE
+}
+
+// Credit to ZP Team
+// BP Ammo update
+public cs_war_ammo(id)
+{
+	// Not alive or not human
+	if (!is_user_alive(id) || !g_bInWar || !g_bBPUnlimit[id])
+		return;
+	
+	// This is to get ammo type
+	new type = read_data(1)
+	if (type >= sizeof WEAPONID)
+		return;
+	
+	// This is to get weapon's id
+	new weapon = WEAPONID[type]
+	
+	// Primary and secondary only
+	if (MAXBPAMMO[weapon] <= 2)
+		return;
+	
+	// This is to get ammo amount
+	new amount = read_data(2)
+	
+	// Unlimited BP ammo
+	if (amount < MAXBPAMMO[weapon])
+	{
+		// The BP Ammo refill code causes the engine to send a message, but we
+		// can't have that in this forward or we risk getting some recursion bugs.
+		// For more info see: https://bugs.alliedmods.net/show_bug.cgi?id=3664
+		new args[1]
+		args[0] = weapon
+		set_task(0.1, "Refill_BPAmmo", id, args, sizeof args)
+	}
+}
+
+// Refill BP ammo
+public Refill_BPAmmo(const args[], id)
+{
+	// Player died or 
+	if (!is_user_alive(id) || !g_bInWar || !g_bBPUnlimit[id])
+		return;
+	
+	new g_iStatus = get_msg_block(g_iMsgAmmo)
+	set_msg_block(g_iMsgAmmo, BLOCK_ONCE)
+	
+	ExecuteHamB(Ham_GiveAmmo, id, MAXBPAMMO[REFILL_WEAPONID], AMMOTYPE[REFILL_WEAPONID], MAXBPAMMO[REFILL_WEAPONID])
+	set_msg_block(g_iMsgAmmo, g_iStatus)
 }
 
 public WarHud()
@@ -987,14 +1064,16 @@ public WarHud()
 // Credit to ConnorMcLeod: https://forums.alliedmods.net/showthread.php?t=235139
 public cs_war_WeaponBox(ent, id)
 {
-	if(get_pcvar_num(g_iWeaponDrop) && g_bInWar)
+	if(get_pcvar_num(g_iWeaponDrop) && g_bInWar && is_user_alive(id))
 	{
 		new iId = GetWeaponBoxWeaponType(ent)
-		new iBP = cs_get_user_bpammo(id, iId)
 		if(!g_bJustDrop[id] && iId == g_WeaponIndex)
 		{
-			give_item(id, g_sWeaponID)
-			cs_set_user_bpammo(id, g_WeaponIndex, iBP)
+			if(!(cs_get_user_bpammo(id, iId) == 0))
+			{
+				give_item(id, g_sWeaponID)
+				cs_set_user_bpammo(id, g_WeaponIndex, cs_get_user_bpammo(id, iId))
+			}
 		}
 	}
 }
