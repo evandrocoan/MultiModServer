@@ -114,6 +114,7 @@ new bool:g_bHEWar
 new bool:g_bStartWar
 new bool:g_bVote
 new bool:g_bLastRoundIsWar
+new bool:g_bStartConsecutive
 new bool:g_bJustDrop[MAXPLAYERS+1], bool:g_bBPUnlimit[MAXPLAYERS+1]
 
 // Float
@@ -144,12 +145,12 @@ new g_iAutoWarVote, g_iVoteCountdown, g_iAutoWarStart, g_iWarCountdown
 new g_iVoteDelay, g_iWarDelay, g_iWeaponDrop
 new g_iAutoRespawn, g_iStripWeapon, g_iNoShield 
 new g_iKillerView, g_iBlockChangeViewTime, g_iKillerViewFade, g_iSpecMode
-
+new g_iAllowConsecutive, g_iConWarAmount
 new g_iMsgSayTxt, g_iSyncHud, g_iMsgScreenFade, g_iMsgAmmo
 
 public plugin_init() 
 {
-	register_plugin("Weapons War", "7.0", "zmd94")
+	register_plugin("Weapons War", "7.1", "zmd94")
 	
 	register_dictionary("cs_war.txt")
 	
@@ -159,6 +160,8 @@ public plugin_init()
 	register_clcmd("say_team /ww", "cs_war_start")
 	register_clcmd("say /wvote", "cs_war_vote")
 	register_clcmd("say_team /wvote", "cs_war_vote")
+	register_clcmd("say /cw", "cs_consecutive_war")
+	register_clcmd("say_team /cw", "cs_consecutive_war")
 	
 	register_event("HLTV", "cs_war_new_round", "a", "1=0", "2=0")
 	register_event("TextMsg", "cs_war_restart", "a", "2&#Game_C", "2&#Game_w")	
@@ -181,17 +184,21 @@ public plugin_init()
 	register_touch("weaponbox", "player", "cs_war_WeaponBox")
 	register_touch("weapon_shield", "player", "cs_war_Shield")
 	
-	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	//             If you want to allow custom war round, please disable below option. ;)                //
-	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	g_iAllowWarStart = register_cvar("ww_allow_war_start", "1") // Allow admin to start custom war round
+	g_sAdminFlag = register_cvar("ww_admin_flag", "j") // Configure access flag to open war menu and start vote command. ;)
+	g_iAllowWarVote = register_cvar("ww_allow_war_vote", "1") // Allow admin to start custom war vote
 	g_iAutoWarVote = register_cvar("ww_auto_vote", "0") // Allow auto war vote
 	g_iAutoWarStart = register_cvar("ww_auto_war", "0") // Allow auto war start
-	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	g_sAdminFlag = register_cvar("ww_admin_flag", "j") // Configure access flag to open war menu and start vote command. ;)
-	g_iAllowWarStart = register_cvar("ww_allow_war_start", "1") // Allow admin to start custom war round
-	g_iAllowWarVote = register_cvar("ww_allow_war_vote", "1") // Allow admin to start custom war vote
-	g_iVoteDelay = register_cvar("ww_vote_delay", "2") // Amount of round delay for auto war vote
-	g_iWarDelay = register_cvar("ww_war_delay", "3") // Amount of round delay for auto war start
+	/////////////////////////////////////////////////////////////////////////////
+	// If both auto-vote and auto-war features are enabled, please read below: //
+	// 1. Auto-vote delay value must be a reference value for auto-vote delay. //
+	// 2. Both auto-vote and auto-war delay value must in odd number.          //
+	// 3. As example, if auto-vote delay is 3, so auto-war delay must 5.       //
+	/////////////////////////////////////////////////////////////////////////////
+	g_iVoteDelay = register_cvar("ww_vote_delay", "3") // Amount of round delay for auto war vote
+	g_iWarDelay = register_cvar("ww_war_delay", "5") // Amount of round delay for auto war start
+	g_iAllowConsecutive = register_cvar("ww_allow_consecutive", "1") // Allow consecutive war
+	g_iConWarAmount = register_cvar("ww_con_war_amount", "5") // Amount of consecutive war round
 	g_iWeaponDrop = register_cvar("ww_weapon_drop", "1") // 0; Prevent players to drop any weapons || 1; Allow players to drop current war weapon
 	g_iBullet = register_cvar("ww_allow_bullet", "0") // Allow player to have unlimited bullet
 	g_iShowHud = register_cvar("ww_show_war_hud", "1") // Show current war round. ;)
@@ -207,7 +214,7 @@ public plugin_init()
 	g_iNoShield  = register_cvar("ww_no_shield", "1") // Prevent player from getting shield on floor
 	g_iKillerView = register_cvar("ww_allow_killer_view", "1") // Allow players see themselves dying from killer's view
 	g_iBlockChangeViewTime = register_cvar("ww_buttons_delay", "2.0") // Delay before which player won't be able to switch spec view/target with mouse buttons
-	g_iSpecMode = register_cvar("ww_spec_mode", "0") // 0; Third person view || 1; First person view
+	g_iSpecMode = register_cvar("ww_spec_mode", "0") // 0; First person view || 1; Third person view
 	g_iKillerViewFade = register_cvar("ww_fade_color", "030000000180") // Color and alpha of fade effect. RRR is red, GGG is green, BBB is blue and AAA is alpha
 	
 	// Forwards
@@ -222,7 +229,7 @@ public plugin_init()
 	g_iMsgScreenFade = get_user_msgid("ScreenFade")
 	g_iMsgAmmo = get_user_msgid("AmmoPickup")
 	
-	g_WarMenu = menu_create("\yWeapons War \rv7.0", "war_handler")
+	g_WarMenu = menu_create("\yWeapons War \rv7.1", "war_handler")
     
 	new szItem[64]
 	for(new i; i < sizeof(WeaponsData); i++)
@@ -297,20 +304,31 @@ public native_war_set(iPlugin, iParams)
 
 public native_start_war(iPlugin, iParams)
 {
+	if(get_pcvar_num(g_iAllowConsecutive) && g_bStartConsecutive)
+	{
+		log_error(AMX_ERR_NATIVE, "cs_start_war native is incorrect. Now is auto war consecutive round!") 
+		return 0
+	}
+	
 	if(g_bVote)
 	{
-		log_error(AMX_ERR_NATIVE, "cs_start_war native is incorrect. There is already on-going vote") 
+		log_error(AMX_ERR_NATIVE, "cs_start_war native is incorrect. There is already on-going vote!") 
 		return 0
 	}
 		
 	if(g_bStartWar || g_bInWar)
 	{
-		log_error(AMX_ERR_NATIVE, "cs_start_war native is incorrect. There is already on-going weapon war")
+		log_error(AMX_ERR_NATIVE, "cs_start_war native is incorrect. There is already on-going weapon war!")
 		return 0
 	}
 	
 	// Start war round. ;)
 	StartWar()
+	
+	if(get_pcvar_num(g_iAutoWarStart))
+	{
+		g_iWarCountdown = 0
+	}
 	
 	return 1
 }
@@ -323,15 +341,21 @@ public native_start_vote(iPlugin, iParams)
 		return 0
 	}
 	
+	if(get_pcvar_num(g_iAllowConsecutive) && g_bStartConsecutive)
+	{
+		log_error(AMX_ERR_NATIVE, "cs_start_vote native is incorrect. Now is auto war consecutive round!") 
+		return 0
+	}
+	
 	if(g_bVote)
 	{
-		log_error(AMX_ERR_NATIVE, "cs_start_vote native is incorrect. There is already on-going vote") 
+		log_error(AMX_ERR_NATIVE, "cs_start_vote native is incorrect. There is already on-going vote!") 
 		return 0
 	}
 		
 	if(g_bStartWar || g_bInWar)
 	{
-		log_error(AMX_ERR_NATIVE, "cs_start_war native is incorrect. There is already on-going weapon war")
+		log_error(AMX_ERR_NATIVE, "cs_start_war native is incorrect. There is already on-going weapon war!")
 		return 0
 	}
 	
@@ -340,7 +364,7 @@ public native_start_vote(iPlugin, iParams)
 	// Prevent vote if the values is less than "0.0"
 	if(fVoteTime < 0.0)
 	{
-		log_error(AMX_ERR_NATIVE, "cs_start_vote native is incorrect. fVoteTime must not less than 0.0")
+		log_error(AMX_ERR_NATIVE, "cs_start_vote native is incorrect. fVoteTime must not less than 0.0!")
 		return 0
 	}
 	
@@ -353,6 +377,11 @@ public native_start_vote(iPlugin, iParams)
 	// Start war vote. ;)
 	StartVote()
 	
+	if(get_pcvar_num(g_iAutoWarVote))
+	{
+		g_iVoteCountdown = 0
+	}
+	
 	return 1
 }
 
@@ -360,7 +389,7 @@ public native_is_point_leader(iPlugin, iParams)
 {
 	if(iParams != 1)
 	{
-		log_error(AMX_ERR_NATIVE, "cs_is_point_leader native is incorrect. Param count is 1")
+		log_error(AMX_ERR_NATIVE, "cs_is_point_leader native is incorrect. Param count is 1!")
 		return 0
 	}
 	
@@ -387,6 +416,16 @@ public cs_war_new_round()
 	remove_task(TASK_HUD)
 	remove_task(TASK_VOTE)
 	
+	if(get_pcvar_num(g_iAutoWarVote))
+	{
+		g_iVoteCountdown ++
+	}
+	
+	if(get_pcvar_num(g_iAutoWarStart) || get_pcvar_num(g_iAllowConsecutive))
+	{
+		g_iWarCountdown ++
+	}
+	
 	new iPlayers[MAXPLAYERS], iPlayerCount, i, id
 	
 	get_players(iPlayers, iPlayerCount, "c") 
@@ -403,17 +442,50 @@ public cs_war_new_round()
 
 public cs_war_restart()
 {
-	g_iWarCountdown = 0
-	g_iVoteCountdown = 0
+	if(get_pcvar_num(g_iAutoWarVote))
+	{
+		g_iVoteCountdown = 0
+	}
+	
+	if(get_pcvar_num(g_iAutoWarStart) || get_pcvar_num(g_iAllowConsecutive))
+	{
+		g_iWarCountdown = 0
+	}
 }
 
 public cs_war_round_start()
-{		
-	if(g_bStartWar)
+{
+	if(get_pcvar_num(g_iAllowConsecutive) && g_bStartConsecutive)
+	{
+		if(get_pcvar_num(g_iAutoWarVote) || get_pcvar_num(g_iAutoWarStart))
+		{
+			log_amx("Auto-war or auto-vote cannot start. Now is consecutive war round!")
+		}
+		
+		if(g_iWarCountdown > get_pcvar_num(g_iConWarAmount))
+		{
+			print_colored(0, "!g[WW]!t %L", LANG_PLAYER, "CSWAR_CON_WAR_STOP")
+			
+			g_bStartConsecutive = false
+			g_iWarCountdown = 0
+		}
+		else
+		{
+			AutoWar()
+		}
+	}
+	else if(g_bStartWar)
 	{
 		StartWar()
 		
 		g_bStartWar = false
+		
+		if(get_pcvar_num(g_iAutoWarStart) && g_iWarCountdown >= get_pcvar_num(g_iWarDelay))
+		{
+			log_amx("Auto war round cannot start. Please configure you auto war delay again!")
+			
+			g_iWarCountdown = 0
+		}
 	}
 	else
 	{
@@ -421,44 +493,74 @@ public cs_war_round_start()
 		{
 			if(g_iVoteCountdown >= get_pcvar_num(g_iVoteDelay))
 			{
-				new iWeaponIndex = random(sizeof WeaponsData)
-				
-				copy(g_sWeaponWar, charsmax(g_sWeaponWar), WeaponsData[iWeaponIndex][WeaponName])
-				copy(g_sWeaponID, charsmax(g_sWeaponID), WeaponsData[iWeaponIndex][WeaponID])
-				g_WeaponIndex = WeaponsData[iWeaponIndex][WeaponIndex]
-				
-				set_task(get_pcvar_float(g_iVotingTime), "EndVote", TASK_VOTE)
-				
-				print_colored(0, "!g[WW]!t %L", LANG_PLAYER, "CSWAR_VOTE_TIME", get_pcvar_num(g_iVotingTime))
-				
-				g_bVote = true
-				
-				StartVote()
+				AutoVote()
 				
 				g_iVoteCountdown = 0
+				g_bVote = true
 			}
-
-			g_iVoteCountdown ++
 		}
 		
 		if(get_pcvar_num(g_iAutoWarStart))
 		{
 			if(g_iWarCountdown >= get_pcvar_num(g_iWarDelay))
 			{
-				new iWeaponIndex = random(sizeof WeaponsData)
-				
-				copy(g_sWeaponWar, charsmax(g_sWeaponWar), WeaponsData[iWeaponIndex][WeaponName])
-				copy(g_sWeaponID, charsmax(g_sWeaponID), WeaponsData[iWeaponIndex][WeaponID])
-				g_WeaponIndex = WeaponsData[iWeaponIndex][WeaponIndex]
-				
-				StartWar()
-				
-				g_iWarCountdown = 0
+				if(g_bVote)
+				{
+					log_amx("Auto war round cannot start. Please configure you auto war delay again!")
+					
+					g_iWarCountdown = 0
+				}
+				else
+				{
+					AutoWar()
+					
+					g_iWarCountdown = 0
+				}
 			}
-			
-			g_iWarCountdown ++
 		}
 	}
+}
+
+public AutoVote()
+{
+	FindWar()
+	
+	if(equal(g_sWeaponWar, g_sLastWar))
+	{
+		AutoVote()
+		log_amx("Find vote war again!")
+	}
+	else
+	{
+		set_task(get_pcvar_float(g_iVotingTime), "EndVote", TASK_VOTE)
+		print_colored(0, "!g[WW]!t %L", LANG_PLAYER, "CSWAR_VOTE_TIME", get_pcvar_num(g_iVotingTime))
+		
+		StartVote()
+	}
+}
+
+public AutoWar()
+{
+	FindWar()
+	
+	if(equal(g_sWeaponWar, g_sLastWar))
+	{
+		AutoWar()
+		log_amx("Find war round again!")
+	}
+	else
+	{
+		StartWar()
+	}
+}
+
+public FindWar()
+{
+	new iWeaponIndex = random(sizeof WeaponsData)
+	
+	copy(g_sWeaponWar, charsmax(g_sWeaponWar), WeaponsData[iWeaponIndex][WeaponName])
+	copy(g_sWeaponID, charsmax(g_sWeaponID), WeaponsData[iWeaponIndex][WeaponID])
+	g_WeaponIndex = WeaponsData[iWeaponIndex][WeaponIndex]
 }
 
 public cs_war_round_end()
@@ -599,11 +701,15 @@ public cs_war_PlayerRespawn(id)
 			{
 				give_item(id, g_sWeaponID)
 				cs_set_user_bpammo(id, g_WeaponIndex, 191)
+				
+				engclient_cmd(id, g_sWeaponID)
 			}
 			else
 			{
 				give_item(id, g_sWeaponID)
 				ExecuteHamB(Ham_GiveAmmo, id, MAXBPAMMO[g_WeaponIndex], AMMOTYPE[g_WeaponIndex], MAXBPAMMO[g_WeaponIndex])
+				
+				engclient_cmd(id, g_sWeaponID)
 				
 				if(get_pcvar_num(g_iBullet))
 				{
@@ -751,27 +857,34 @@ public cs_war_vote(id)
 	new iFlags  = read_flags(g_sCurrentFlag)
 	if(get_pcvar_num(g_iAllowWarStart) && get_user_flags(id) & iFlags)
 	{
-		if(g_bVote)
+		if(get_pcvar_num(g_iAllowConsecutive) && g_bStartConsecutive)
 		{
-			print_colored(id, "!g[WW]!t %L", LANG_PLAYER, "CSWAR_VOTE_START")
+			print_colored(id, "!g[WW]!t %L", LANG_PLAYER, "CSWAR_CON_WAR_START")
 		}
 		else
 		{
-			if(g_bStartWar)
+			if(g_bVote)
 			{
-				print_colored(id, "!g[WW]!t %L", LANG_PLAYER, "CSWAR_NEXT_WAR", g_sWeaponWar)
+				print_colored(id, "!g[WW]!t %L", LANG_PLAYER, "CSWAR_VOTE_START")
 			}
 			else
-			{		
-				if(g_bInWar)
+			{
+				if(g_bStartWar)
 				{
-					print_colored(id, "!g[WW]!t %L", LANG_PLAYER, "CSWAR_NO_VOTE", g_sWeaponWar)
+					print_colored(id, "!g[WW]!t %L", LANG_PLAYER, "CSWAR_NEXT_WAR", g_sWeaponWar)
 				}
 				else
-				{
-					g_iAllVote[id] = true
-					
-					menu_display(id, g_WarMenu, 0)
+				{		
+					if(g_bInWar)
+					{
+						print_colored(id, "!g[WW]!t %L", LANG_PLAYER, "CSWAR_NO_VOTE", g_sWeaponWar)
+					}
+					else
+					{
+						g_iAllVote[id] = true
+						
+						menu_display(id, g_WarMenu, 0)
+					}
 				}
 			}
 		}
@@ -800,25 +913,32 @@ public cs_war_start(id)
 	new iFlags  = read_flags(g_sCurrentFlag)
 	if(get_pcvar_num(g_iAllowWarVote) && get_user_flags(id) & iFlags)
 	{
-		if(g_bVote)
+		if(get_pcvar_num(g_iAllowConsecutive) && g_bStartConsecutive)
 		{
-			print_colored(id, "!g[WW]!t %L", LANG_PLAYER, "CSWAR_VOTE_START")
+			print_colored(id, "!g[WW]!t %L", LANG_PLAYER, "CSWAR_CON_WAR_START")
 		}
 		else
 		{
-			if(g_bStartWar)
+			if(g_bVote)
 			{
-				print_colored(id, "!g[WW]!t %L", LANG_PLAYER, "CSWAR_NEXT_WAR", g_sWeaponWar)
+				print_colored(id, "!g[WW]!t %L", LANG_PLAYER, "CSWAR_VOTE_START")
 			}
 			else
 			{
-				if(g_bInWar)
+				if(g_bStartWar)
 				{
-					print_colored(0, "!g[WW]!t %L", LANG_PLAYER, "CSWAR_CURRENT_WAR", g_sWeaponWar)
+					print_colored(id, "!g[WW]!t %L", LANG_PLAYER, "CSWAR_NEXT_WAR", g_sWeaponWar)
 				}
 				else
 				{
-					menu_display(id, g_WarMenu, 0)
+					if(g_bInWar)
+					{
+						print_colored(id, "!g[WW]!t %L", LANG_PLAYER, "CSWAR_CURRENT_WAR", g_sWeaponWar)
+					}
+					else
+					{
+						menu_display(id, g_WarMenu, 0)
+					}
 				}
 			}
 		}
@@ -865,10 +985,20 @@ public WarType(id)
 		g_bVote = true
 		
 		StartVote()
+		
+		if(get_pcvar_num(g_iAutoWarVote))
+		{
+			g_iVoteCountdown = 0
+		}
 	}
 	else
 	{
 		StartWar()
+		
+		if(get_pcvar_num(g_iAutoWarStart))
+		{
+			g_iWarCountdown = 0
+		}
 	}
 }
 
@@ -919,6 +1049,49 @@ public EndVote()
 	ExecuteForward(g_Forwards[FW_WAR_VOTE_END], g_ForwardResult)
 }
 
+public cs_consecutive_war(id)
+{
+	get_pcvar_string(g_sAdminFlag, g_sCurrentFlag, charsmax(g_sCurrentFlag))
+	new iFlags  = read_flags(g_sCurrentFlag)
+	if(get_pcvar_num(g_iAllowConsecutive) && get_user_flags(id) & iFlags)
+	{
+		if(g_bStartConsecutive)
+		{
+			g_bStartConsecutive = false
+			
+			print_colored(id, "!g[WW]!t %L", LANG_PLAYER, "CSWAR_CON_WAR_STOP")
+		}
+		else if(g_bVote)
+		{
+			print_colored(id, "!g[WW]!t %L", LANG_PLAYER, "CSWAR_VOTE_START")
+		}
+		else
+		{
+			if(g_bStartWar)
+			{
+				print_colored(id, "!g[WW]!t %L", LANG_PLAYER, "CSWAR_NEXT_WAR", g_sWeaponWar)
+			}
+			else
+			{
+				if(g_bInWar)
+				{
+					print_colored(id, "!g[WW]!t %L", LANG_PLAYER, "CSWAR_CURRENT_WAR", g_sWeaponWar)
+				}
+				else
+				{
+					g_bStartConsecutive = true
+					
+					print_colored(id, "!g[WW]!t %L", LANG_PLAYER, "CSWAR_CON_WAR_START")
+				}
+			}
+		}
+	}
+	else
+	{
+		print_colored(id, "!g[WW]!t %L", LANG_PLAYER, "CSWAR_COMMAND_RESTRICT")
+	}
+}
+
 public StartWar()
 {
 	new iPlayers[MAXPLAYERS], iPlayerCount, i, id
@@ -934,12 +1107,16 @@ public StartWar()
 			give_item(id, g_sWeaponID)
 			cs_set_user_bpammo(id, g_WeaponIndex, 191)
 			
+			engclient_cmd(id, g_sWeaponID)
+			
 			g_bHEWar = true
 		}
 		else
 		{
 			give_item(id, g_sWeaponID)
 			ExecuteHamB(Ham_GiveAmmo, id, MAXBPAMMO[g_WeaponIndex], AMMOTYPE[g_WeaponIndex], MAXBPAMMO[g_WeaponIndex])
+			
+			engclient_cmd(id, g_sWeaponID)
 			
 			if(get_pcvar_num(g_iBullet))
 			{
@@ -1058,7 +1235,14 @@ public WarHud()
 	iRed = str_to_num(szRed); iGreen = str_to_num(szGreen); iBlue = str_to_num(szBlue);
 	
 	set_hudmessage(iRed, iGreen, iBlue, g_iCHudXPosition, g_iCHudYPosition, 0, 1.0, 1.0)
-	ShowSyncHudMsg(0, g_iSyncHud, "%L", LANG_PLAYER, "CSWAR_WAR_HUD", g_sWeaponWar)
+	if(get_pcvar_num(g_iAllowConsecutive) && g_bStartConsecutive)
+	{
+		ShowSyncHudMsg(0, g_iSyncHud, "%L", LANG_PLAYER, "CSWAR_CON_WAR_HUD", g_sWeaponWar, get_pcvar_num(g_iConWarAmount) - g_iWarCountdown)
+	}
+	else
+	{
+		ShowSyncHudMsg(0, g_iSyncHud, "%L", LANG_PLAYER, "CSWAR_WAR_HUD", g_sWeaponWar)
+	}
 }
 
 // Credit to ConnorMcLeod: https://forums.alliedmods.net/showthread.php?t=235139

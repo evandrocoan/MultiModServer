@@ -19,6 +19,10 @@ CSWAR_NO_VOTE = No voting in !y%s round!
 
 CSWAR_NEXT_WAR = Next is !y%s war!
 
+CSWAR_CON_WAR_HUD = Consecutive round: ^n%s war! ^nRemaining round: %d!
+CSWAR_CON_WAR_START = Consecutive war round is start!
+CSWAR_CON_WAR_STOP = Consecutive war round is stop!
+
 [ro]
 CSWAR_RESTRICT_IN_WAR = Comanda este restrictionata !yin runda %s!
 CSWAR_CURRENT_WAR = Acum este razboiul !y%s!
