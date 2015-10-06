@@ -256,17 +256,6 @@ public plugin_precache()
  */
 public curWeaponEvent(id)
 {
-	weapPickupEvent(id)
-
-	return PLUGIN_HANDLED
-}
-
-
-/**
- * When a player pickup a weapon, its change the model view to the Golden Weapon.
- */
-public weapPickupEvent(id)
-{
 	new szWeapID = read_data(2)
 
 	if( g_whichSpecialWeapon[id] == szWeapID )
