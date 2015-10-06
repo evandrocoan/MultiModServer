@@ -162,36 +162,41 @@
 	{
 		 "3" "Quota"
 		{
-			"1" "Add"
+			"1" "Quota Bots"
 			{
+                "1" "More Options"
+                {
+                    "3" "9 Bots"		"amx_cfg admin/podbot/9quota.cfg"
+                    "4" "13 Bots"		"amx_cfg admin/podbot/13quota.cfg"
+                    "5" "17 Bots"		"amx_cfg admin/podbot/17quota.cfg"
+                    "6" "23 Bots"		"amx_cfg admin/podbot/23quota.cfg"	
+                    "7" "29 Bots"		"amx_cfg admin/podbot/29quota.cfg"
+                }
+				"1" "0 Bots"		"amx_cfg admin/podbot/0quota.cfg"
+				"1" "1 Bots"		"amx_cfg admin/podbot/1quota.cfg"
+				"1" "2 Bots"		"amx_cfg admin/podbot/2quota.cfg"
 				"1" "3 Bots"		"amx_cfg admin/podbot/3quota.cfg"
 				"1" "5 Bots"		"amx_cfg admin/podbot/5quota.cfg"
 				"2" "7 Bots"		"amx_cfg admin/podbot/7quota.cfg"
-				"3" "9 Bots"		"amx_cfg admin/podbot/9quota.cfg"
-				"4" "13 Bots"		"amx_cfg admin/podbot/13quota.cfg"
-				"5" "17 Bots"		"amx_cfg admin/podbot/17quota.cfg"
-				"6" "23 Bots"		"amx_cfg admin/podbot/23quota.cfg"	
-				"7" "29 Bots"		"amx_cfg admin/podbot/29quota.cfg"
 			}
-			"1" "1 Quota Match Bots"		"amx_cvar pb_bot_quota_match 1"
-			"2" "2 Quota Match Bots"		"amx_cvar pb_bot_quota_match 2"
-			"3" "3 Quota Match Bots"		"amx_cvar pb_bot_quota_match 3"
-			"4" "5 Quota Match Bots"		"amx_cvar pb_bot_quota_match 5"
-			"5" "7 Quota Match Bots"		"amx_cvar pb_bot_quota_match 7"
-			"6" "9 Quota Match Bots"		"amx_cvar pb_bot_quota_match 9"	
-			"7" "11 Quota Match Bots"		"amx_cvar pb_bot_quota_match 11"
+			"1" "1 Quota Match"		"amx_cvar pb_bot_quota_match 1"
+			"2" "2 Quota Match"		"amx_cvar pb_bot_quota_match 2"
+			"3" "3 Quota Match"		"amx_cvar pb_bot_quota_match 3"
+			"4" "5 Quota Match"		"amx_cvar pb_bot_quota_match 5"
+			"5" "7 Quota Match"		"amx_cvar pb_bot_quota_match 7"
+			"6" "9 Quota Match"		"amx_cvar pb_bot_quota_match 9"	
 		}
 		"3" "Bot Settings"
 		{
 			"5" "Weapon Mode"
 			{
-				"1" "Only Knives"					"amx_cvar pb weaponmode 1"	
-				"2" "Only Pistols"					    "amx_cvar pb weaponmode 2"
-				"2" "Only Shotguns"				    "amx_cvar pb weaponmode 3"
-				"2" "Only Machine Guns"		    "amx_cvar pb weaponmode 4"
-				"2" "Only Rifles"					    "amx_cvar pb weaponmode 5"
-				"3" "Only Snipers"					"amx_cvar pb weaponmode 6"
-				"4" "All Weapons"					"amx_cvar pb weaponmode 7"
+				"1" "Only Knives"					"amx_cfg admin/podbot/weaponmode1.cfg"	
+				"2" "Only Pistols"					    "amx_cfg admin/podbot/weaponmode2.cfg"
+				"2" "Only Shotguns"				    "amx_cfg admin/podbot/weaponmode3.cfg"
+				"2" "Only Machine Guns"		    "amx_cfg admin/podbot/weaponmode4.cfg"
+				"2" "Only Rifles"					    "amx_cfg admin/podbot/weaponmode5.cfg"
+				"3" "Only Snipers"					"amx_cfg admin/podbot/weaponmode6.cfg"
+				"4" "All Weapons"					"amx_cfg admin/podbot/weaponmode7.cfg"
 			}
 			"2" "Difficulty"
 			{
