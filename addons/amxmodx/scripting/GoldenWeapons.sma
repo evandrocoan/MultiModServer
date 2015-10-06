@@ -86,8 +86,6 @@ public plugin_init()
     register_event("CurWeapon","curWeaponEvent","be","1=1")
     register_event("TextMsg", "event_game_commencing", "a", "2=#Game_Commencing", "2=#Game_will_restart_in");
 
-    register_forward( FM_CmdStart, "giveAugZoomForward" )
-
     RegisterHam(Ham_TakeDamage, "player", "fw_takedamage", 0)
 }
 
@@ -110,10 +108,10 @@ public fw_takedamage( victim, inflictor, attacker, Float:damage )
         if( g_whichSpecialWeapon[attacker] == currentSpecialWeapon )
         {
             SetHamParamFloat(4, damage * g_weapon_damage )
-            return true
+            return HAM_HANDLED 
         }
     }
-    return false
+    return HAM_IGNORED 
 }
 
 public showmenu(id) 
@@ -291,36 +289,6 @@ public weapPickupEvent(id)
                 set_pev(id, pev_viewmodel2, MP5_V_MODEL)
                 set_pev(id, pev_weaponmodel2, MP5_P_MODEL)
             }
-        }
-    }
-    return PLUGIN_HANDLED
-}
-
-/**
- * Added 'aug' zoom to the Golden Weapons.
- */
-public giveAugZoomForward( id, uc_handle, seed )
-{
-    if( !is_user_alive( id ) ) 
-    {
-        return PLUGIN_HANDLED
-    }
-    
-    if( ( get_uc( uc_handle, UC_Buttons ) & IN_ATTACK2 ) && !( pev( id, pev_oldbuttons ) & IN_ATTACK2 ) )
-    {
-        new szClip, szAmmo
-        new szWeapID = get_user_weapon( id, szClip, szAmmo )
-        
-        if( szWeapID == CSW_AK47 && g_whichSpecialWeapon[id] > 0 && !g_hasZoom[id] )
-        {
-            g_hasZoom[id] = true
-            cs_set_user_zoom( id, CS_SET_AUGSG552_ZOOM, 0 )
-            emit_sound( id, CHAN_ITEM, ZOOM_WEAPON_SOUND, 0.20, 2.40, 0, 100 )
-
-        } else if ( szWeapID == CSW_AK47 && g_whichSpecialWeapon[id] > 0 && g_hasZoom[id])
-        {
-            g_hasZoom[ id ] = false 
-            cs_set_user_zoom( id, CS_RESET_ZOOM, 0 )
         }
     }
     return PLUGIN_HANDLED
