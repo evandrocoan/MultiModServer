@@ -1,13 +1,16 @@
 [en]
 CSWAR_EQUAL_POINT = There is no points leader!
-CSWAR_POINT_LEADER = %s is point leader with %d point!
+CSWAR_POINT_LEADER = %s is point leader !y|| Points: %d!
+CSWAR_NEW_LEADER = New points leader!
+CSWAR_SAME_LEADER = Same points leader from previous!
+CSWAR_WHOIS_LEADER = %s is new points leader!
 
 CSWAR_WAR_START = %s round!
 CSWAR_WAR_HUD = Current round: ^n%s war!
 
 CSWAR_RESTRICT_IN_WAR = Command is restricted !yin %s round!
 CSWAR_CURRENT_WAR = Now is !y%s war!
-CSWAR_POINT_CHAT = %s is point leader !ywith %d point!
+CSWAR_BONUS = Free money: !y$%d!
 CSWAR_COMMAND_RESTRICT = Command is restricted!
 
 CSWAR_VOTE_START = Vote is !yalready started!
