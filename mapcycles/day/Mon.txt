@@ -10,7 +10,6 @@ cs_italy
 cs_mansion
 cs_militia
 cs_office
-cs_pf_dust
 cs_rio
 cs_siege
 de_dust_cz
