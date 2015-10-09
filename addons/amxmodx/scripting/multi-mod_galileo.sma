@@ -1,64 +1,55 @@
-/*
+/*********************** Licensing *******************************************************
+*  This program is free software; you can redistribute it and/or modify it
+*  under the terms of the GNU General Public License as published by the
+*  Free Software Foundation; either version 2 of the License, or (at
+*  your option) any later version.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the implied warranty of
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+*  General Public License for more details.
+*
+*****************************************************************************************
+
 See here the original authors (Brad) plugin post:
 https://forums.alliedmods.net/showthread.php?t=77391
 
-This newer updates goal to fix bug and to remove functionalities that are not working 
-and can be achieved by using third parts plugins, due this become this own plugin 
-unmaintainable. See the original post (link above) and changelog below to heads up.
+This newer updates goal to make it to be the official multi-mod_manager mapchooser. 
 
-*********************** List of tasks *********************************************
-vote_setupEnd
-srv_initEmptyCheck
-vote_manageEnd
-vote_startDirector
-map_change
-vote_countdownPendingVote
-vote_handleDisplay
-vote_display
-vote_expire
-vote_startDirector
-srv_announceEarlyVote
-srv_startEmptyCycle
+********************************** TODO ***********************************************
+Fix broken vote re-opt. 
+To clear unused language constants. 
+Add colored messages. 
+Add nominate maps list. 
+Add auto-update vote menu during a vote. 
 
-********************************************************************************
+***************************** Change Log ***************************************************
+v1.0-alpha1
+ * Fixed server timelimit re-change after change it to 0.
+ * Fixed server restart after change timelimit to 0.
+ * Fixed bug where it change the map right after a normal vote map finished. 
+ * Added auto-pause for anothers plugins map managers. 
+ * Added a option "#" to gal_nom_mapfile, to use the current mapcycle to nominate maps.
+ * Made the vote map list be loaded from the current mapcycle file.
+ * Made changemap immediately after a forced map vote, calling gal_startvote. 
+ * When nobody vote for next map, keep the initial server next map.
+ * Disabled nextmap unknown change. 
+ * Removed map end control to the original AMXX Dev Team plugin nextmap.amxx
+ * Removed change server map when empty server feature. 
+ * Removed the "amx_nextmap" change to [vote in progress].
+ * Removed the feature to allow round finish.
+ * Removed the messages "say currentmap", "say nextmap", to nextmap.amxx
+ * Removed not initiating vote map, at the first map, after forcing votemap.
 
-Changelog
-v1.1.291
- Fixed server timelimit re-change after change to 0.
- Fixed server restart after change timelimit to 0.
- Added autopause for anothers plugins map managers. 
- Disable GAL_NEXTMAP_UNKNOWN variable at server start.
-v1.1.292
- Removed map end control from galileo and restaured this responsability to 
-   the original AMXX Dev Team plugin NextMap.amxx, because it was 
-   too much, and was becoming the plugin unmaintainable.
-Made changemap immediately after a forced mapvote, calling gal_startvote. 
-Fixed a bug where it change the map right after normal vote map finished.
-Removed the functionality change server map when empty server due to be 
-  unmaintainable, there other specialized plugins at it.
-Removed the change to [vote in progress], due to be unmaintainable and unnecessary. 
-Removed the functionality allow round finish, due to be unmaintainable and there is 
-  others specialized plugins at it.
-If nobody voted, keep the initial server next map.
-v1.1.293
- Removed messages "say currentmap", "say nextmap", due to be unmaintainable and 
-   there is specialized plugins doing so, like nextmap.amxx
-v1.1.294
- Made the vote map list be loaded from the current mapcycle file.
- Added a option "#" to gal_nom_mapfile, to use the current mapcycle to nominate maps.
-v1.1.295
- Removed not initiating vote map, at the first map, after forcing votemap.
-
-*********************************************************************************
-Credits: 
-Brad: The galileo developer from version 0.1 to 1.1.290 
-Addons zz: For versions 1.1.290 to 1.1.294 
-Th3822: for find a error from map_nominate, it was just a small typo on g_nominationMatchesMenu.
+********************************** Credits ***********************************************
+Brad: The original galileo developer.
+Addons zz: The multi-mod_galileo.sma developer. 
+Th3822: For find a error from map_nominate. 
 
 *********************************************************************************
 */
 
-new const PLUGIN_VERSION[]  = "1.1.292"; // $Date: 2009-02-26 11:20:25 -0500 (Thu, 26 Feb 2009) $;
+new const PLUGIN_VERSION[]  = "1.0-alpha1";
 
 #include <amxmodx>
 #include <amxmisc>
@@ -188,7 +179,7 @@ public plugin_init()
 
     register_dictionary("common.txt");
     register_dictionary("nextmap.txt");
-    register_dictionary("galileo.txt");
+    register_dictionary("multimodgalileo.txt");
 
     register_event("TextMsg", "event_game_commencing", "a", "2=#Game_Commencing", "2=#Game_will_restart_in");
 
