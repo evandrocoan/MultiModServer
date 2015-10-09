@@ -1,8 +1,6 @@
 /*********************** Licensing *******************************************************
- * Amx Ultra Core
- *
- * by Addons zz
- *
+ * Addons zz's Multi-Mod Server Core
+ * 
  *  This program is free software; you can redistribute it and/or modify it
  *  under the terms of the GNU General Public License as published by the
  *  Free Software Foundation; either version 2 of the License, or (at
@@ -22,7 +20,7 @@
 #include <amxmodx>
 #include <amxmisc>
 
-#define PLUGIN "Amx Ultra Core"
+#define PLUGIN "Addons zz's Multi-Mod Server Core"
 #define VERSION "1.0"
 #define AUTHOR "Addons zz"
 
