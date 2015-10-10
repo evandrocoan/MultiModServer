@@ -36,8 +36,11 @@ This is a release candidate, which is a beta version with potential to be a fina
 released unless significant bugs emerge. In this stage of product stabilization, all product features have been 
 designed, coded and tested through one or more beta cycles with no known show stopper-class bug. 
 
+This plugin is not compatible with the AMXX's very own [B]Map Chooser[/B], but with its modification 
+"[B]multi-mod_mapchooser.sma[/B]" provided here, or with the new "[URL=" "]galieo_reloaded.sma[/URL]". 
+
 As I am working at another plugins, I cannot provide immediately fixes and forum's answers here. But 
-as soon as I can, I am going to release the final version.
+as soon as I can, I am going to release the final version. 
 [URL="http://www.gametracker.com/search/?search_by=server_variable&search_by2=MultiModManager&query=&loc=_all&sort=&order="]
 [SIZE=5][B][COLOR=DarkGreen]Click here to see all servers using this plugin.[/COLOR][/B][/SIZE][/URL]
 
@@ -141,7 +144,7 @@ Tested under [B]Counter-Strike[/B] and Counter-Strike: [B]Condition Zero[/B]
 
 ******************************** [anchor]Installation[/anchor][B][SIZE="5"][COLOR="Blue"]Installation[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor]  **********************
 [B]1.[/B] Download the files "[B]multi-mod_manager.sma[/B]", "[B]plugin_resources.zip[/B]" and 
-"[B]multi-mod_mapchooser.sma[/B]" at [goanchor=Downloads]Downloads[/goanchor] section.
+"[B]multi-mod_mapchooser.sma[/B]" at [goanchor=Downloads]Downloads[/goanchor] section. 
 
 [B]2.[/B] Then unzip the content of "[B]yourgamemod[/B]" from "[B]plugin_resources.zip[/B]", to your gamemod folder. 
 
@@ -281,7 +284,7 @@ from the [B]amxx cvars[/B] command. They will be grouped together.
 #include <amxmisc>
 
 #define PLUGIN "Multi-Mod Manager"
-#define VERSION "v1.0-release_candidate1"
+#define VERSION "v1.0-rc1"
 #define AUTHOR "Addons zz"
 
 #define MULTIMOD_MAPCHOOSER "multi-mod_mapchooser.amxx"

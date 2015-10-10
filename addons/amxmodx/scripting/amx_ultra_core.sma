@@ -37,10 +37,10 @@ new configFolder[ LONG_STRING ]
  */
 public plugin_init()
 {
-    register_plugin( PLUGIN, VERSION, AUTHOR )
+	register_plugin( PLUGIN, VERSION, AUTHOR )
 	register_cvar("MultiModServerCore", VERSION, FCVAR_SERVER|FCVAR_SPONLY)
 
-    get_configsdir( configFolder, charsmax( configFolder ) )
+	get_configsdir( configFolder, charsmax( configFolder ) )
 }
 
 /*
@@ -51,5 +51,5 @@ public plugin_init()
  */
 public plugin_cfg()
 {
-    server_cmd( "exec %s/amxx_ultra.cfg", configFolder )
+	server_cmd( "exec %s/amxx_ultra.cfg", configFolder )
 }
