@@ -38,7 +38,6 @@ designed, coded and tested through one or more beta cycles with no known show st
 
 As I am working at another plugins, I cannot provide immediately fixes and forum's answers here. But 
 as soon as I can, I am going to release the final version.
-
 [URL="http://www.gametracker.com/search/?search_by=server_variable&search_by2=MultiModManager&query=&loc=_all&sort=&order="]
 [SIZE=5][B][COLOR=DarkGreen]Click here to see all servers using this plugin.[/COLOR][/B][/SIZE][/URL]
 

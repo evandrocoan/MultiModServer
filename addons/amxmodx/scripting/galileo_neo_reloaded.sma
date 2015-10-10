@@ -34,7 +34,9 @@ section for features that are planned for the final version.
 
 As I am working at anothers plugins, I cannot provide immediately fixes and forum's answers here. But 
 as soon as I can, I am going to release a new alpha version, fixing the current bugs listed here at 
-[goanchor=TODO]TODO[/goanchor] section.
+[goanchor=TODO]TODO[/goanchor] section. 
+[URL="http://www.gametracker.com/search/?search_by=server_variable&search_by2=gal_neo_version&query=&loc=_all&sort=&order="]
+[SIZE=5][B][COLOR=DarkGreen]Click here to see all servers using this plugin.[/COLOR][/B][/SIZE][/URL]
 
 ********************** [anchor]Introduction[/anchor][B][SIZE="5"][COLOR="blue"]Introduction[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor]  *******************************
 This is a feature rich map voting plugin.  It's intended to be used in place of any other map choosing plugin 
@@ -330,7 +332,7 @@ public plugin_init()
 
     register_plugin("Galileo Neo Reloaded", pluginVersion, "Brad Jones");
     
-    register_cvar("gal_version", pluginVersion, FCVAR_SERVER|FCVAR_SPONLY);
+    register_cvar("gal_neo_version", pluginVersion, FCVAR_SERVER|FCVAR_SPONLY);
     set_cvar_string("gal_version", pluginVersion);
     
     register_cvar("gal_server_starting", "1", FCVAR_SPONLY);
