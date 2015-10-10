@@ -11,7 +11,7 @@
 *
 *****************************************************************************************
 [SIZE="6"][COLOR="Blue"][B]Galileo Neo Reloaded v1.0-alpha1[/B][/COLOR][/SIZE]
-[B]Release: 09.10.2015 | Last Update: 09.10.2015[/B]
+[B]Release: 10.10.2015 | Last Update: 10.10.2015[/B]
 
 [anchor]Top[/anchor][SIZE="5"][COLOR="blue"][B]Contents' Table[/B][/COLOR][/SIZE] 
 
@@ -57,6 +57,9 @@ have with this plugin.  It's located in the [B]Attached ZIP[/B] available at the
        changed once the next map has been determined. If the "[COLOR="blue"][B]-nochange[/B][/COLOR]" argument is supplied, 
        the map will not be changed by [COLOR="Blue"]Galileo Neo Reload[/COLOR], which is useful when you have a different 
        plugin handling the actual changing of the map. 
+
+ * Command '[COLOR="Blue"][B]gal_startvote2 [-nochange][/B][/COLOR]', the same as the first but, when keep the current 
+       map option wins, the current map is restarted. 
 
  * Command '[COLOR="Blue"][B]gal_createmapfile filename[/B][/COLOR]', Creates a file that contains a list of every valid 
        map in your maps folder. The [COLOR="Blue"][B]filename[/B][/COLOR] argument indicates specifies the name to be used for 
@@ -133,6 +136,7 @@ v1.0-alpha1
  * Removed the feature to allow round finish. 
  * Removed the messages "say currentmap", "say nextmap", to nextmap.amxx 
  * Removed not initiating vote map, at the first map, after forcing votemap. 
+ * Added the count down voting remaining time to be always show. 
  * Added auto-pause for anothers plugins map managers. 
  * Added a option "#" to gal_nom_mapfile, to use the current mapcycle to nominate maps. 
  * Made the vote map list be loaded from the current mapcycle file. 
@@ -141,7 +145,7 @@ v1.0-alpha1
  * Disabled nextmap unknown change. 
 [/QUOTE]
 
-********************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *****************************************
+******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *********************************
 [QUOTE]
  * Fix broken re-opt vote. 
  * To clear unused language file constants. 
@@ -151,7 +155,7 @@ v1.0-alpha1
 [/QUOTE]
 
 ******************************** [anchor]Credits[/anchor][B][SIZE="5"][COLOR="blue"]Credits[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *******************************
-[B]Brad[/B]: The original [URL="https://forums.alliedmods.net/showthread.php?t=77391"]galileo.sma[/URL] developer.
+[B]Brad[/B]: The original [URL="https://forums.alliedmods.net/showthread.php?t=77391"]galileo.sma[/URL] developer. 
 [B]Addons zz[/B]: The galileo_neo_reloaded.sma developer. 
 [B]Th3822[/B]: For find a error from map_nominate. 
 [QUOTE=Brad;684848][COLOR=darkblue][SIZE=4][B]Donations to the Original Author[/B][/SIZE][/COLOR] 
@@ -171,21 +175,21 @@ Thank you!  It means a lot to me.
 This source code is available on [B]GitHub[/B]. 
 [URL="https://github.com/addonszz/Multi-Mod_Server/blob/develop/addons/amxmodx/scripting/galileo_neo_reloaded.sma"]https://github.com/addonszz/Multi-Mod_Server/blob/develop/addons/amxmodx/scripting/galileo_neo_reloaded.sma[/URL]
 
-For any problems with this plugin visit [URL="https://forums.alliedmods.net/index.php"]this own page[/URL] or:
+For any problems with this plugin visit [B][URL="https://forums.alliedmods.net/index.php"]this own page[/URL][/B] or:
 [url]https://github.com/Addonszz/Multi-Mod_Server/issues[/url]
 for support.
 
-If you are posting because the plugin or a feature of the plugin isn't working for you, please do 
-all of the following, so we can more efficiently figure out what's going on:
+If you are [B]posting[/B] because the plugin or a [B]feature[/B] of the plugin isn't working for you, [B]please[/B] do 
+all of the following, so we can [COLOR="Blue"]more efficiently[/COLOR] figure out what's going on:
 [QUOTE]
-If you have access to your game server's console, type the following in the server console:
+If you have access to your game server's console, type the [COLOR="Blue"][B]following[/B][/COLOR] in the server console:
 [LIST]
 [*]status
 [*]meta list
 [*]amxx plugins
 [*]amxx cvars
 [/LIST]
-If you don't have access the your game server's console, join your server and type the 
+If you don't have access the your [COLOR="Blue"][B]game server's console[/B][/COLOR], join your server and type the 
 following in your game console:
 
 [LIST]

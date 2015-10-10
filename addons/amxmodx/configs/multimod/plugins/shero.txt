@@ -1,4 +1,5 @@
-﻿//To save XP to a nVault file (default)
+
+//To save XP to a nVault file (default)
 //superheromodnvault.amxx
 
 //To save XP to the VAULT file (uncomment this and comment out the other plugin) 
@@ -13,7 +14,7 @@ amxmod_compat.amxx      ; Need to activate to use plugins that end in (. amx) or
 // That can be loaded without causing the server to not open, or gerarar
 // Overflow errors.
 //
-//Active, ​​But you risk more, but the last heros the list below:
+//Active, ??But you risk more, but the last heros the list below:
 // Zeus, xavier, ..., will not appear in the selection list, however, may continue
 // Cause the server to not open, or gerarar overflow errors.
 //
