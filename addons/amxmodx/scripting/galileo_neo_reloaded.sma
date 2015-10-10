@@ -10,43 +10,199 @@
 *  General Public License for more details.
 *
 *****************************************************************************************
+[SIZE="6"][COLOR="Blue"][B]Galileo Neo Reloaded v1.0-alpha1[/B][/COLOR][/SIZE]
+[B]Release: 09.10.2015 | Last Update: 09.10.2015[/B]
 
-See here the original authors (Brad) plugin post:
-https://forums.alliedmods.net/showthread.php?t=77391
+[anchor]Top[/anchor][SIZE="5"][COLOR="blue"][B]Contents' Table[/B][/COLOR][/SIZE] 
 
-This newer updates goal to make it to be the official multi-mod_manager mapchooser. 
+[LIST]
+[*][goanchor=Introduction]Introduction[/goanchor]
+[*][goanchor=Requirements]Requirements and Commands[/goanchor]
+[*][goanchor=Installation]Installation[/goanchor]
+[*][goanchor=Change]Change Log[/goanchor]
+[*][goanchor=TODO]TODO[/goanchor]
+[*][goanchor=Credits]Credits[/goanchor]
+[*][goanchor=Sourcecode]Source Code and Support[/goanchor]
+[*][goanchor=Downloads]Downloads[/goanchor]
+[/LIST]
+The original plugin "[URL="https://forums.alliedmods.net/showthread.php?t=77391"]galileo.sma[/URL]" is originally written by [B]Brad[/B]. The "Galileo Neo Reloaded" works differently 
+from the original "[B]Galileo[/B]". See the [goanchor=Change]Change Log[/goanchor] and [goanchor=Credits]Credits[/goanchor] for more info. 
 
-********************************** TODO ***********************************************
-Fix broken vote re-opt. 
-To clear unused language constants. 
-Add colored messages. 
-Add nominate maps list. 
-Add auto-update vote menu during a vote. 
+This is a Alpha version. This Alpha software can be unstable, see [goanchor=TODO]TODO[/goanchor] section for more information. 
+As [B]Alpha software[/B] may not contain all of the features that are planned for the final version, see [goanchor=TODO]TODO[/goanchor] 
+section for features that are planned for the final version. 
 
-***************************** Change Log ***************************************************
+As I am working at anothers plugins, I cannot provide immediately fixes and forum's answers here. But 
+as soon as I can, I am going to release a new alpha version, fixing the current bugs listed here at 
+[goanchor=TODO]TODO[/goanchor] section.
+
+********************** [anchor]Introduction[/anchor][B][SIZE="5"][COLOR="blue"]Introduction[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor]  *******************************
+This is a feature rich map voting plugin.  It's intended to be used in place of any other map choosing plugin 
+such as the original [B]Galileo[/B], [B]Deagles' Map Manager[/B] and AMXX's very own [B]Map Chooser[/B].
+
+It is [COLOR="Red"][B]highly recommended[/B][/COLOR] you to review the well-commented "[B]galileo.cfg[/B]" to see all the options you 
+have with this plugin.  It's located in the [B]Attached ZIP[/B] available at the [goanchor=Downloads]Downloads[/goanchor] section.
+
+[COLOR="Blue"][B]Features' list:[/B][/COLOR] 
+[QUOTE]
+ * Ability to "[B]rock the vote[/B]".
+
+ * Map [B]nominations[/B] to be used in the next map vote.
+
+ * [B]Runoff[/B] voting when no map gets more than 50% of the total vote.
+
+ * [B]Weighted[/B] map votes for players with customizable admin flags.
+
+ * Command '[COLOR="Blue"][B]gal_startvote [-nochange][/B][/COLOR]', to forces a map vote to begin and the map will be 
+       changed once the next map has been determined. If the "[COLOR="blue"][B]-nochange[/B][/COLOR]" argument is supplied, 
+       the map will not be changed by [COLOR="Blue"]Galileo Neo Reload[/COLOR], which is useful when you have a different 
+       plugin handling the actual changing of the map. 
+
+ * Command '[COLOR="Blue"][B]gal_createmapfile filename[/B][/COLOR]', Creates a file that contains a list of every valid 
+       map in your maps folder. The [COLOR="Blue"][B]filename[/B][/COLOR] argument indicates specifies the name to be used for 
+       the new file.  It will be created in the [COLOR="Blue"][B].\configs\galileo[/B][/COLOR] folder.
+[/QUOTE]
+
+********************** [anchor]Requirements[/anchor][SIZE="5"][COLOR="Blue"][B]Requirements and Commands[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor]  ******
+[B]Amx Mod X 1.8.2[/B] 
+Tested under [B]Counter-Strike[/B] and Counter-Strike: [B]Condition Zero[/B] 
+
+[B]Client's Commands:[/B]
+[QUOTE]
+//Displays a listing, to all players, of the most recently played maps.
+//Requires CVAR "gal_banrecent" to be set to a value higher than 0.
+[COLOR="Blue"]say [B]recentmaps[/B][/COLOR]
+
+//Registers the players request for a map vote and change. The player will be 
+//informed how many more players need to rock the vote before a map vote will be forced.
+//The [I]anything[/I] argument can be any "word" up to 20 characters.
+//Requires CVAR "gal_rtv_commands" to be set to an appropriate value.
+[COLOR="Blue"]say [B]rockthevote[/B][/COLOR]
+[COLOR="Blue"]say [B]rtv[/B][/COLOR]
+[COLOR="Blue"]say rockthe[B]anything[/B]vote[/COLOR]
+
+//Displays, to all players, a listing of maps that have been nominated.
+//Requires CVAR "gal_nom_playerallowance" to be set to a value higher than 0.
+[COLOR="Blue"]say [B]nominations[/B][/COLOR]
+[COLOR="Blue"]say [B]noms[/B][/COLOR]
+
+//Attempts to nominate the map specified by the [I]partialMapName[/I] argument.
+//If there are multiple matches for [I]partialMapName[/I], a menu of the matches will 
+//be displayed to the player allowing them to select the map they meant.
+//Requires CVAR "gal_nom_playerallowance" to be set to a value higher than 0.
+[COLOR="Blue"]say [I]nominate[/I] [B]partialMapName[/B][/COLOR]
+[COLOR="Blue"]say [I]nom[/I] [B]partialMapName[/B][/COLOR]
+
+//Cancels the nomination of [I]mapname[/I], which would have had to be previously 
+//nominated by the player.
+//Requires CVAR "gal_nom_playerallowance" to be set to a value higher than 0.
+[COLOR="Blue"]say [I]cancel[/I] [B]mapname[/B][/COLOR]
+
+//If [I]mapname[/I] has been nominated by the player, will cancel the nomination.  
+//If [I]mapname[/I] has not been nominated by the player, will attempt to nominate it.
+//Requires CVAR "gal_nom_playerallowance" to be set to a value higher than 0.
+[COLOR="Blue"]say [B]mapname[/B][/COLOR]
+[/QUOTE]
+
+******************************** [anchor]Installation[/anchor][B][SIZE="5"][COLOR="Blue"]Installation[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor]  **********************
+[B]1.[/B] Download the files "[B]galileo_neo_reloaded.sma[/B]" and "[B]plugin_resources.zip[/B]" at [goanchor=Downloads]Downloads[/goanchor] 
+section.
+
+[B]2.[/B] Then unzip the content of "[B]yourgamemod[/B]" from "[B]plugin_resources.zip[/B]", to your gamemod folder. 
+Ex: czero, cstrike, ...
+
+[B]3.[/B] [B]Compile[/B] the file and put the [B]compiled[/B] file to your plugins folder at 
+"yourgamemod/addons/amxmodx/[B]plugins[/B]". 
+
+[B]4.[/B] Put the [B]next line[/B] to your "[B]plugins.ini[/B]" file at "yourgamemod/addons/amxmodx/[B]configs[/B]" folder and
+disable the original "[B]mapchooser.amxx[/B]" or any other [B]map manager plugin[/B], like the original the 
+"[URL="https://forums.alliedmods.net/showthread.php?t=77391"]galileo.sma[/URL]":
+[QUOTE]
+galileo_neo_reloaded.amxx
+[/QUOTE]
+
+******************************** [anchor]Change[/anchor][B][SIZE="5"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] ***********************
+[QUOTE]
 v1.0-alpha1
- * Fixed server timelimit re-change after change it to 0.
- * Fixed server restart after change timelimit to 0.
+ * Fixed server restart after change timelimit to 0. 
+ * Fixed server timelimit re-change after change it to 0. 
  * Fixed bug where it change the map right after a normal vote map finished. 
+ * Removed map end control, to the original AMXX Dev Team plugin nextmap.amxx 
+ * Removed  the feature to change server map, when the server is empty. 
+ * Removed the "amx_nextmap" change to [vote in progress]. 
+ * Removed the feature to allow round finish. 
+ * Removed the messages "say currentmap", "say nextmap", to nextmap.amxx 
+ * Removed not initiating vote map, at the first map, after forcing votemap. 
  * Added auto-pause for anothers plugins map managers. 
- * Added a option "#" to gal_nom_mapfile, to use the current mapcycle to nominate maps.
- * Made the vote map list be loaded from the current mapcycle file.
+ * Added a option "#" to gal_nom_mapfile, to use the current mapcycle to nominate maps. 
+ * Made the vote map list be loaded from the current mapcycle file. 
  * Made changemap immediately after a forced map vote, calling gal_startvote. 
- * When nobody vote for next map, keep the initial server next map.
+ * When nobody vote for next map, keep the initial server next map. 
  * Disabled nextmap unknown change. 
- * Removed map end control to the original AMXX Dev Team plugin nextmap.amxx
- * Removed change server map when empty server feature. 
- * Removed the "amx_nextmap" change to [vote in progress].
- * Removed the feature to allow round finish.
- * Removed the messages "say currentmap", "say nextmap", to nextmap.amxx
- * Removed not initiating vote map, at the first map, after forcing votemap.
+[/QUOTE]
 
-********************************** Credits ***********************************************
-Brad: The original galileo developer.
-Addons zz: The multi-mod_galileo.sma developer. 
-Th3822: For find a error from map_nominate. 
+********************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *****************************************
+[QUOTE]
+ * Fix broken re-opt vote. 
+ * To clear unused language file constants. 
+ * Add colored messages. 
+ * Add nominate maps by a map list. 
+ * Add auto-update feature to the vote menu while voting. 
+[/QUOTE]
 
-*********************************************************************************
+******************************** [anchor]Credits[/anchor][B][SIZE="5"][COLOR="blue"]Credits[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *******************************
+[B]Brad[/B]: The original [URL="https://forums.alliedmods.net/showthread.php?t=77391"]galileo.sma[/URL] developer.
+[B]Addons zz[/B]: The galileo_neo_reloaded.sma developer. 
+[B]Th3822[/B]: For find a error from map_nominate. 
+[QUOTE=Brad;684848][COLOR=darkblue][SIZE=4][B]Donations to the Original Author[/B][/SIZE][/COLOR] 
+A lot of time and effort went into making this plugin, making features just right, 
+making sure there were no bugs, making sure it was easy to use. If you are glad I made 
+this plugin, and are able, I'd appreciate a token donation. 
+[URL="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=brad%40mixedberry%2enet&item_name=Thank%20you%21&item_number=Galileo&amount=5%2e00&no_shipping=1&return=http%3a%2f%2fforums%2ealliedmods%2enet%2fshowthread%2ephp%3ft%3d77391%23files&cn=Optional%20Note&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8"]$5[/URL], 
+[URL="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=brad%40mixedberry%2enet&item_name=Thank%20you%21&item_number=Galileo&amount=10%2e00&no_shipping=1&return=http%3a%2f%2fforums%2ealliedmods%2enet%2fshowthread%2ephp%3ft%3d77391%23files&cn=Optional%20Note&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8"]$10[/URL], 
+or [URL="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=brad%40mixedberry%2enet&item_name=Thank%20you%21&item_number=Galileo&no_shipping=1&return=http%3a%2f%2fforums%2ealliedmods%2enet%2fshowthread%2ephp%3ft%3d77391%23files&cn=Optional%20Note&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8"]whatever works[/URL] for you.
+
+[URL="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=brad%40mixedberry%2enet&item_name=Thank%20you%21&item_number=Galileo&no_shipping=1&return=http%3a%2f%2fforums%2ealliedmods%2enet%2fshowthread%2ephp%3ft%3d77391%23files&cn=Optional%20Note&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8"][IMG]https://www.paypal.com/en_US/i/btn/btn_donateCC_LG.gif[/IMG][/URL]
+
+Thank you!  It means a lot to me.
+--Brad
+[/QUOTE]
+******************************** [anchor]Sourcecode[/anchor][SIZE="5"][COLOR="blue"][B]Source Code and Support[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor] ***
+This source code is available on [B]GitHub[/B]. 
+[URL="https://github.com/addonszz/Multi-Mod_Server/blob/develop/addons/amxmodx/scripting/galileo_neo_reloaded.sma"]https://github.com/addonszz/Multi-Mod_Server/blob/develop/addons/amxmodx/scripting/galileo_neo_reloaded.sma[/URL]
+
+For any problems with this plugin visit [URL="https://forums.alliedmods.net/index.php"]this own page[/URL] or:
+[url]https://github.com/Addonszz/Multi-Mod_Server/issues[/url]
+for support.
+
+If you are posting because the plugin or a feature of the plugin isn't working for you, please do 
+all of the following, so we can more efficiently figure out what's going on:
+[QUOTE]
+If you have access to your game server's console, type the following in the server console:
+[LIST]
+[*]status
+[*]meta list
+[*]amxx plugins
+[*]amxx cvars
+[/LIST]
+If you don't have access the your game server's console, join your server and type the 
+following in your game console:
+
+[LIST]
+[*]status
+[*]rcon_password your_rcon_password
+[*]rcon meta list
+[*]rcon amxx plugins
+[*]rcon amxx cvars
+[/LIST]
+[LIST=1]
+[*]Paste here everything from the [B]status[/B] command [COLOR="Red"][B]*except*[/B][/COLOR] the player list.
+[*]Paste here the entire result from the [B]meta list[/B] and [B]amxx plugins[/B] commands. 
+[*]Paste here [COLOR="red"][B]*only*[/B][/COLOR] the CVARs that contain "[COLOR="SeaGreen"][B]galileo.amxx[/B][/COLOR]" in the last column 
+from the [B]amxx cvars[/B] command. They will be grouped together.
+[/LIST]
+[/QUOTE]
+******************************** [anchor]Downloads[/anchor][SIZE="6"][COLOR="Blue"][B]Downloads[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor] ********************
 */
 
 new const PLUGIN_VERSION[]  = "1.0-alpha1";
@@ -121,13 +277,13 @@ new CLR_GREY[3];        // \d
 new g_mapPrefix[MAX_PREFIX_CNT][16], g_mapPrefixCnt = 1;
 new g_currentMap[MAX_MAPNAME_LEN+1], Float:g_originalTimelimit = TIMELIMIT_NOT_SET;
 
-new isTimeLimitChanged = false; 
-
 new g_nomination[MAX_PLAYER_CNT + 1][MAX_NOMINATION_CNT + 1], g_nominationCnt, g_nominationMatchesMenu[MAX_PLAYER_CNT];
 
 new g_voteWeightFlags[32];
+
 new isTimeToChangeLevel = false;
 new isTimeToChangeLevel2 = false;
+new isTimeLimitChanged = false; 
 
 new g_recentMap[MAX_RECENT_MAP_CNT][MAX_MAPNAME_LEN + 1], g_cntRecentMap;
 new Array:g_nominationMap, g_nominationMapCnt;
@@ -168,7 +324,7 @@ public plugin_init()
     new pluginVersion[16];
     formatex(pluginVersion, sizeof(pluginVersion)-1, "%s.%s", version, rev);
 
-    register_plugin("Galileo", pluginVersion, "Brad Jones");
+    register_plugin("Galileo Neo Reloaded", pluginVersion, "Brad Jones");
     
     register_cvar("gal_version", pluginVersion, FCVAR_SERVER|FCVAR_SPONLY);
     set_cvar_string("gal_version", pluginVersion);
