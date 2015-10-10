@@ -335,7 +335,7 @@ This file is managed automatically by multi-mod_manager.sma plugin^n//\
 and any modification will be discarded in the activation of some mod.^n^n"
 
 new g_helpamx_setmod[LONG_STRING] = "help 1	      | for help."
-new g_helpamx_setmods[LONG_STRING] = "shortModName <1 or 0> to restart or not       | Enable/Disable any mod, ^n\
+new g_helpamx_setmods[LONG_STRING] = "shortModName <1 or 0> to restart or not       | Enable/Disable any mod, \
 loaded or not (silent mod). Ex: amx_setmods surf 0"
 
 new g_cmdsAvailables1[LONG_STRING] = "^namx_setmod help 1       | To show this help.^n\
