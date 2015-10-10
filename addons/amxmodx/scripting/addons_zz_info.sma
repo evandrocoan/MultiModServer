@@ -11,10 +11,40 @@
  */
 #include <amxmodx>
 
+#define PLUGIN "Addons zz Info"
+#define VERSION "1.0"
+#define AUTHOR "Addons zz"
+
+#define SHORT_STRING 64
+
+new g_configFolder[ LONG_STRING ]
+
+/*
+ * Called just after server activation.
+ * 
+ * Good place to initialize most of the plugin, such as registering
+ * cvars, commands or forwards, creating data structures for later use, or
+ * generating and loading other required configurations.
+ */
 public plugin_init()
 {   
-    register_plugin( "Multi-Mod Help", "1.0", "Addons zz" )
+	register_plugin( PLUGIN, VERSION, AUTHOR )
+
     register_dictionary( "multimodhelp.txt" )
+	register_cvar("MultiModServerCore", VERSION, FCVAR_SERVER|FCVAR_SPONLY)
+
+	get_configsdir( g_configFolder, charsmax( g_configFolder ) )
+}
+
+/*
+ * Called when all plugins went through plugin_init().
+ * 
+ * When this forward is called, most plugins should have registered their
+ * cvars and commands already.
+ */
+public plugin_cfg()
+{
+	server_cmd( "exec %s/amxx_ultra.cfg", g_configFolder )
 }
 
 public plugin_precache()

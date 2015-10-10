@@ -110,9 +110,9 @@
 			}
 			"5" "Weapon Mode"
 			{
-				"1" "Only Knives"		"amx_cvar bot_knives_only"	
-				"2" "Only Pistols"		"amx_cvar bot_pistols_only"
-				"3" "Only Snipers"	"amx_cvar bot_snipers_only"
+				"1" "Only Knives"		"amx_cfg admin/csbot/bot_knives_only.cfg"	
+				"2" "Only Pistols"		"amx_cfg admin/csbot/bot_pistols_only.cfg"
+				"3" "Only Snipers"		"amx_cfg admin/csbot/bot_snipers_only.cfg"
 				"4" "All Weapons"		"amx_cfg admin/csbot/bot_all_weapons.cfg"
 			}
 			"3" "Team"
@@ -197,19 +197,19 @@
 		{
 			"2" "Training Level"
 			{
-				"6" "Easy" "amx_cfg admin/treino/treinoEasy0.cfg"
-				"6" "Normal" "amx_cfg admin/treino/treinoNormal0.cfg"
-				"6" "Hard" "amx_cfg admin/treino/treinoHard0.cfg"
-				"6" "Expert" "amx_cfg admin/treino/treinoExpert0.cfg"
+				"6" "Easy" 			"amx_cfg admin/treino/treinoEasy0.cfg"
+				"6" "Normal" 		"amx_cfg admin/treino/treinoNormal0.cfg"
+				"6" "Hard" 			"amx_cfg admin/treino/treinoHard0.cfg"
+				"6" "Expert" 		"amx_cfg admin/treino/treinoExpert0.cfg"
 			}
-			"1" "Play Against Bots ::CTs::" "amx_cfg admin/treino/xtr.cfg"
-			"2" "Play Against Bots ::TRs::" "amx_cfg admin/treino/xct.cfg"
-			"3" "Deactivate ::ALL::" "amx_cfg admin/treino/xoff.cfg"
+			"1" "Play Against Bots ::CTs::" 			"amx_cfg admin/treino/xtr.cfg"
+			"2" "Play Against Bots ::TRs::" 			"amx_cfg admin/treino/xct.cfg"
+			"3" "Deactivate ::ALL::" 					"amx_cfg admin/treino/xoff.cfg"
 		}
-		"1" "Freeze CSBots"		"amx_cvar bot_stop 1"
+		"1" "Freeze CSBots"				"amx_cvar bot_stop 1"
 		"2" "Unfreeze CSBots"			"amx_cvar bot_stop 0"
-		"1" "Kill All"						"amx_cvar bot_kill"
-		"2" "Kick All"					"amx_cfg admin/csbot/kickarBots.cfg"
+		"1" "Kill All"							"amx_cvar bot_kill"
+		"2" "Kick All"							"amx_cfg admin/csbot/kickarBots.cfg"
 	}
 	"2" "PODBot"
 	{
@@ -234,35 +234,35 @@
 			}
 			"2" "Auto Kill"
 			{
-				"1" "Auto Kill Apos 45s"			"amx_cfg admin/podbot/autoKill45.cfg"
-				"2" "Auto Kill Apos 25s"			"amx_cfg admin/podbot/autoKill25.cfg"
-				"3" "Auto Kill Apos 5s"			  "amx_cfg admin/podbot/autoKill5.cfg"
-				"4" "Deactivate Auto Kill"		  "amx_cvar pb_autokill 0"
+				"1" "Auto Kill Apos 45s"				"amx_cfg admin/podbot/autoKill45.cfg"
+				"2" "Auto Kill Apos 25s"				"amx_cfg admin/podbot/autoKill25.cfg"
+				"3" "Auto Kill Apos 5s"					"amx_cfg admin/podbot/autoKill5.cfg"
+				"4" "Deactivate Auto Kill"				"amx_cvar pb_autokill 0"
 			}
 			"2" "TAG & Latency"
 			{
-				"1" "Activate TAG"				 "amx_cvar pb_detailnames 1"
-				"2" "Deactivate TAG"			 "amx_cvar pb_detailnames 0"
-				"3" "Show Ping"			   "amx_cvar pb_latencybot 2"
-				"3" "Show BOT"			   "amx_cvar pb_latencybot 1"
-				"4" "Hide Latency"			 "amx_cvar pb_latencybot 0"
+				"1" "Activate TAG"				"amx_cvar pb_detailnames 1"
+				"2" "Deactivate TAG"				"amx_cvar pb_detailnames 0"
+				"3" "Show Ping"			 			"amx_cvar pb_latencybot 2"
+				"3" "Show BOT"			   			"amx_cvar pb_latencybot 1"
+				"4" "Hide Latency"			 		"amx_cvar pb_latencybot 0"
 			}
 			"4" "Radio"
 			{
-				"1" "Deactivate"		"amx_cfg admin/podbot/radioDesativado.cfg"
-				"2" "Chat"		"amx_cvar pb_chat 1"
-				"3" "Radio"			"amx_cvar pb_radio 1"
+				"1" "Deactivate"				"amx_cfg admin/podbot/radioDesativado.cfg"
+				"2" "Chat"						"amx_cvar pb_chat 1"
+				"3" "Radio"						"amx_cvar pb_radio 1"
 			}
 			"3" "Team"
 			{
 				 "1" "Terrorists"					"amx_cvar pb_bot_join_team T"
-				 "2" "Conter-Terrorists"	"amx_cvar pb_bot_join_team CT"
+				 "2" "Conter-Terrorists"		"amx_cvar pb_bot_join_team CT"
 				 "3" "All"							"amx_cvar pb_bot_join_team ANY"
 			}
 			"1" "Team Kill"
 			{
-				"1" "Activate" "amx_cvar pb_ffa 1"
-				"2" "Deactivate" "amx_ amx_cvar pb_ffa 0"
+				"1" "Activate" 					"amx_cvar pb_ffa 1"
+				"2" "Deactivate" 					"amx_ amx_cvar pb_ffa 0"
 			}
 		}
 		 "3" "Quota"
@@ -330,40 +330,40 @@
 		{
 			"2" "Training Level"
 			{
-				"6" "Easy" "amx_cfg admin/treino2/treinoEasy0.cfg"
-				"6" "Normal" "amx_cfg admin/treino2/treinoNormal0.cfg"
-				"6" "Hard" "amx_cfg admin/treino2/treinoHard0.cfg"
-				"6" "Expert" "amx_cfg admin/treino2/treinoExpert0.cfg"
+				"6" "Easy" 				"amx_cfg admin/treino2/treinoEasy0.cfg"
+				"6" "Normal" 			"amx_cfg admin/treino2/treinoNormal0.cfg"
+				"6" "Hard" 				"amx_cfg admin/treino2/treinoHard0.cfg"
+				"6" "Expert" 			"amx_cfg admin/treino2/treinoExpert0.cfg"
 			}
-			"1" "Play Against Bots ::CTs::" "amx_cfg admin/treino2/xtr.cfg"
-			"2" "Play Against Bots ::TRs::" "amx_cfg admin/treino2/xct.cfg"
-			"3" "Deactivate ::ALL::" "amx_cfg admin/treino2/xoff.cfg"
+			"1" "Play Against Bots ::CTs::" 				"amx_cfg admin/treino2/xtr.cfg"
+			"2" "Play Against Bots ::TRs::" 				"amx_cfg admin/treino2/xct.cfg"
+			"3" "Deactivate ::ALL::" 						"amx_cfg admin/treino2/xoff.cfg"
 		}
-		"3" "WayPoint Menu" "pb wpmenu"
-		"3" "PodBot Menu " "pb menu"
-		"1" "Kill All"						"amx_cfg admin/podbot/matarBots.cfg"
-		"2" "Kick All"					"amx_cfg admin/podbot/kickarBots.cfg"
+		"3" "WayPoint Menu" 					"pb wpmenu"
+		"3" "PodBot Menu " 						"pb menu"
+		"1" "Kill All"									"amx_cfg admin/podbot/matarBots.cfg"
+		"2" "Kick All"									"amx_cfg admin/podbot/kickarBots.cfg"
 	}
 	"1" "Activate Mod"
 	{
 		"1" "More 1"
 		{
-			"1" "Dragon Ball Mod"			"amx_multimods dragon 1"
-			"1" "Warcraft Mod"			"amx_multimods warcraft 1"
-			"1" "Knife Arena Mod"			"amx_multimods knife 1"
-			"1" "Predator Mod"			"amx_multimods predator 1"
-			"1" "JCTF - Capture Flag"			"amx_multimods jctf 1"
-			"1" "Catch Mod"			"amx_multimods catch 1"
+			"1" "Dragon Ball Mod"					"amx_multimods dragon 1"
+			"1" "Warcraft Mod"						"amx_multimods warcraft 1"
+			"1" "Knife Arena Mod"					"amx_multimods knife 1"
+			"1" "Predator Mod"							"amx_multimods predator 1"
+			"1" "JCTF - Capture Flag"				"amx_multimods jctf 1"
+			"1" "Catch Mod"								"amx_multimods catch 1"
 		}
 		"1" "More 2"
 		{
-			"1" "Surf Mod"			"amx_multimods surf 1"
+			"1" "Surf Mod"				"amx_multimods surf 1"
 		}
 		"1" "Zombie Mod Ammo"			"amx_multimods zp50Ammo 1"
 		"1" "Zombie Mod Money"			"amx_multimods zp50Money 1"
 		"1" "CS Deathmatch Mod"			"amx_multimods csdm 1"
-		"1" "Super Hero Mod"			"amx_multimods shero 1"
-		"1" "Gun-Game Mod"			"amx_multimods gungame 1"
+		"1" "Super Hero Mod"				"amx_multimods shero 1"
+		"1" "Gun-Game Mod"					"amx_multimods gungame 1"
 	}
 	"1" "Configs 1"
 	{
@@ -373,25 +373,25 @@
 			{
 				"1" "Gravity de -8500"		"amx_cvar sv_gravity -8500"
 				"1" "Gravity de -1000"		"amx_cvar sv_gravity -1000"
-				"2" "Gravity de -600"		"amx_cvar sv_gravity -600"
-				"3" "Gravity de -200"		"amx_cvar sv_gravity -200"
-				"5" "Gravity de -25"		"amx_cvar sv_gravity -25"
+				"2" "Gravity de -600"			"amx_cvar sv_gravity -600"
+				"3" "Gravity de -200"			"amx_cvar sv_gravity -200"
+				"5" "Gravity de -25"			"amx_cvar sv_gravity -25"
 			}
 			"+" "Gravity +"
 		   {
 				"2" "Gravity de 600"		"amx_cvar sv_gravity 600"
 				"2" "Gravity de 450"		"amx_cvar sv_gravity 450"
 				"3" "Gravity de 200"		"amx_cvar sv_gravity 200"
-				"3" "Gravity de 75"		"amx_cvar sv_gravity 75"	
-				"5" "Gravity de 25"		"amx_cvar sv_gravity 25"	
+				"3" "Gravity de 75"			"amx_cvar sv_gravity 75"	
+				"5" "Gravity de 25"			"amx_cvar sv_gravity 25"	
 			}
 			"+" "Gravity + +"
 			{
 				"2" "Gravity de 25000"		"amx_cvar sv_gravity 25000"
 				"2" "Gravity de 10000"		"amx_cvar sv_gravity 10000"
-				"3" "Gravity de 5000"		"amx_cvar sv_gravity 5000"
-				"3" "Gravity de 2000"		"amx_cvar sv_gravity 2000"
-				"5" "Gravity de 1000"		"amx_cvar sv_gravity 1000"
+				"3" "Gravity de 5000"			"amx_cvar sv_gravity 5000"
+				"3" "Gravity de 2000"			"amx_cvar sv_gravity 2000"
+				"5" "Gravity de 1000"			"amx_cvar sv_gravity 1000"
 			}
 			"1" "Gravity Padrao 800"		"amx_cvar sv_gravity 800"
 		}
@@ -399,44 +399,44 @@
 		{
 			"2" "Step Size +"
 			{
-				"2" "200" "amx_cvar sv_stepsize 200"
-				"2" "100" "amx_cvar sv_stepsize 100"
-				"2" "50" "amx_cvar sv_stepsize 50"
-				"0" "0" "amx_cvar sv_stepsize 0"
+				"2" "200" 			"amx_cvar sv_stepsize 200"
+				"2" "100" 			"amx_cvar sv_stepsize 100"
+				"2" "50" 				"amx_cvar sv_stepsize 50"
+				"0" "0" 				"amx_cvar sv_stepsize 0"
 			}
 			"2" "Step Size + +"
 			{
-				"2" "1200" "amx_cvar sv_stepsize 1200"
-				"2" "800" "amx_cvar sv_stepsize 800"
-				"2" "500" "amx_cvar sv_stepsize 500"
+				"2" "1200" 				"amx_cvar sv_stepsize 1200"
+				"2" "800" 				"amx_cvar sv_stepsize 800"
+				"2" "500" 				"amx_cvar sv_stepsize 500"
 			}
 			"2" "Step Size + + +"
 			{
-				"2" "4500" "amx_cvar sv_stepsize 4500"
-				"2" "3000" "amx_cvar sv_stepsize 3000"
-				"2" "2000" "amx_cvar sv_stepsize 2000"
+				"2" "4500" 				"amx_cvar sv_stepsize 4500"
+				"2" "3000" 				"amx_cvar sv_stepsize 3000"
+				"2" "2000" 				"amx_cvar sv_stepsize 2000"
 			}
-			"2" "300 (Surf)" "amx_cvar sv_stepsize 300"
-			"2" "18 (Padrao)" "amx_cvar sv_stepsize 18"
+			"2" "300 (Surf)" 				"amx_cvar sv_stepsize 300"
+			"2" "18 (Padrao)" 			"amx_cvar sv_stepsize 18"
 		}
 		"1" "Flashlight"
 		{
-   				  "1" "Des..."			"amx_cvar mp_flashlight 0"
+   				  "1" "Des..."				"amx_cvar mp_flashlight 0"
 				  "2" "Ati..."					"amx_cvar mp_flashlight 1"
 		}
 		"1" "Kick idle e TK"
 		{
-				  "1" "Des..."			"amx_cvar mp_autokick 0"
+				  "1" "Des..."				"amx_cvar mp_autokick 0"
 				  "2" "Ati..."					"amx_cvar mp_autokick 1"
 		}
 		"1" "Friendly Damage"
 		{
-			"1" "Des..."			"amx_cvar mp_friendlyfire 0"
+			"1" "Des..."					"amx_cvar mp_friendlyfire 0"
 			2" "Ati..."					"amx_cvar mp_friendlyfire 1"
 		}
 		"1" "TK Punish"
 		{
-			  "1" "Des..."			"amx_cvar mp_tkpunish 0"
+			  "1" "Des..."					"amx_cvar mp_tkpunish 0"
 				  "2" "Ati..."					"amx_cvar mp_tkpunish 1"
 		}
 	}
@@ -461,33 +461,33 @@
 		"2" "AutoBalance Teams"
 		{
 					"3" "Deactivate"				"amx_cvar mp_autoteambalance 0"
-					"4" "1"		"amx_cvar mp_autoteambalance 1"
-					"4" "2"		"amx_cvar mp_autoteambalance 2"
-					"4" "3"		"amx_cvar mp_autoteambalance 3"
+					"4" "1"								"amx_cvar mp_autoteambalance 1"
+					"4" "2"								"amx_cvar mp_autoteambalance 2"
+					"4" "3"								"amx_cvar mp_autoteambalance 3"
 		}
 		"1" "Limit Teams"
 		{
-				  "1" "Des..."			"amx_cvar mp_limitteams 0"
+				  "1" "Des..."				"amx_cvar mp_limitteams 0"
 				  "2" "Ati..."					"amx_cvar mp_limitteams 2"
 		}
 		"1.5" "AirAccelerate"
 		{	
-			"1" "100 (Surf)" 		"amx_cvar sv_airaccelerate 100"
+			"1" "100 (Surf)" 			"amx_cvar sv_airaccelerate 100"
 			"2" "10 (Padrao) " 		"amx_cvar sv_airaccelerate 10"
 		}
 	}
 	"1" "Configs Mods"
 	{
 		"2" "Force Vote MOD"					"amx_votemod"
-		"2" "Force Vote Map"					"gal_startvote;mapchooser_startvote"
-		"2" "Ask Vote MOD"				"say rtv"
-		"2" "Ask Vote Map"				"say votemod"
+		"2" "Force Vote Map"						"gal_startvote;mapchooser_startvote"
+		"2" "Ask Vote MOD"						"say votemod"
+		"2" "Ask Vote Map"						"say rtv"
 		"2" "Deactivate Mods"					"amx_multimods disableMods 1"
 	}
-	"1" "CT's Win" "terminate_round ct au;exec admin/ctwin.cfg"
-	"1" "TR's Win" "terminate_round ob t;exec admin/terwin.cfg"
-	"1" "Draw" "terminate_round dr;exec admin/ndwin.cfg"
-	"1" "Restartround" "amx_cvar sv_restartround 1"
+	"1" "CT's Win" 					"terminate_round ct au;exec admin/ctwin.cfg"
+	"1" "TR's Win" 					"terminate_round ob t;exec admin/terwin.cfg"
+	"1" "Draw" 							"terminate_round dr;exec admin/ndwin.cfg"
+	"1" "Restartround" 				"amx_cvar sv_restartround 1"
 }
 "1.2" "Admin"
 {
@@ -500,40 +500,40 @@
 		"5" "Nice"									"exec admin/nice.cfg"
 		"6" "Objective" 							"exec admin/objetivo.cfg"
 		"7" "Noob" 									"exec admin/noob.cfg"
-		"8" "Sinister = - num" 					"exec admin/terror.cfg"
+		"8" "Sinister = - num" 				"exec admin/terror.cfg"
 	}
 	"@" "Messages 2"
 	{
-		"1" "Bark"							"exec admin/latio.cfg"
-		"2" "Cackled"					"exec admin/cacarejou.cfg"
+		"1" "Bark"										"exec admin/latio.cfg"
+		"2" "Cackled"									"exec admin/cacarejou.cfg"
 		"3" "I See, Full Day"						"exec admin/fude.cfg"
-		"4" "Witch Laugh"				"exec admin/riso_B.cfg"
-		"5" "Monster Laugh"			"exec admin/riso_M.cfg"
-		"5" "EooOoooO" 					"exec admin/eeeooo.cfg"
-		"7" "Afraid" 						"exec admin/medo.cfg"
+		"4" "Witch Laugh"							"exec admin/riso_B.cfg"
+		"5" "Monster Laugh"						"exec admin/riso_M.cfg"
+		"5" "EooOoooO" 							"exec admin/eeeooo.cfg"
+		"7" "Afraid" 									"exec admin/medo.cfg"
 	}	
 	"0" "Messages 3"
 	{
 		"1" "Admin ON" 							"exec admin/administration.cfg"
-		"2" "Fill SERVER"						"exec admin/chamar.cfg"
-		"3" "Live Restart Round" 		"exec admin/live3.cfg"
-		"4" "Live Message"		"exec admin/live.cfg"
+		"2" "Fill SERVER"							"exec admin/chamar.cfg"
+		"3" "Live Restart Round" 				"exec admin/live3.cfg"
+		"4" "Live Message"							"exec admin/live.cfg"
 		"5" "All spec" 								"exec admin/start.cfg"
 		"6" "Tatics" 									"exec admin/tatica.cfg"
 	}
 	"?" "Messages 4"
 	{
-		"1" "Spec go CT"			"exec admin/spec1.cfg"
-		"2" "Spec go T"			"exec admin/spec2.cfg"
-		"3" "CT Win" "exec admin/ctwin.cfg"
-		"4" "TR Win" "exec admin/terwin.cfg"
-		"5" "Draw" "exec admin/ndwin.cfg"
-		"6" "Md3 Start" 								"exec admin/md3.cfg"
+		"1" "Spec go CT"					"exec admin/spec1.cfg"
+		"2" "Spec go T"						"exec admin/spec2.cfg"
+		"3" "CT Win" 							"exec admin/ctwin.cfg"
+		"4" "TR Win" 							"exec admin/terwin.cfg"
+		"5" "Draw" 								"exec admin/ndwin.cfg"
+		"6" "2-out-of-3 Series" 			"exec admin/md3.cfg"
 	}
-	"3" "MIX" 			"exec admin/mix.cfg"
-	"4" "CPL" 			"exec admin/cpl.cfg"
-	"5" "4FUN" 			"exec admin/4fun.cfg"
-	"2" "ClanBase(cf)"			 "exec admin/cb_cs.cfg"
+	"3" "MIX" 							"exec admin/mix.cfg"
+	"4" "CPL" 							"exec admin/cpl.cfg"
+	"5" "4FUN" 						"exec admin/4fun.cfg"
+	"2" "ClanBase(cf)"				"exec admin/cb_cs.cfg"
 	"3" "Addons [CFG] "			"exec admin/game_o.cfg"
 }
 "1.3" "Player"
@@ -542,7 +542,7 @@
 	{
 		MAP cs_siege "1" "#Cstrike_siege"
 		{
-			"1" "#Cstrike_take_underground"		"say_team Take the underground!"
+			"1" "#Cstrike_take_underground"			"say_team Take the underground!"
 			"2" "#Cstrike_enemy_garage" 		"say_team Enemy in parking garage!"
 			"3" "#Cstrike_rush_hostage_room"   	"say_team Rush the hostage room!"
 			"4" "#Cstrike_snipers_watch_out" 	"say_team Snipers! Watch out!"

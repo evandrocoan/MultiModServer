@@ -1135,5 +1135,5 @@ public plugin_init() {
 	if (vaultdata_exists(VAULTKEY_POT))
 		g_pot = get_vaultdata(VAULTKEY_POT)
 
-	server_print("%s version %s initialized.", PLUGINNAME, VERSION)
+	//server_print("%s version %s initialized.", PLUGINNAME, VERSION)
 }

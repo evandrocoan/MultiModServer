@@ -94,7 +94,7 @@ new g_coloredMenus
 
 public plugin_init()
 {
-	register_plugin("Addons zz Menus","9.0", "AMXX Dev Team");
+	register_plugin("Addons zz Menus","1.0", "Addons zz/AMXX Dev Team");
 	register_dictionary("cmdmenusnd.txt")
 	register_dictionary("common.txt");
 	register_dictionary("cmdmenu.txt")

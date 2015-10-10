@@ -244,7 +244,7 @@ v1.0-release_candidate1
 
 ******************************** [anchor]Sourcecode[/anchor][SIZE="5"][COLOR="blue"][B]Source Code and Support[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor] ***
 This source code is available on [B]GitHub[/B]. 
-[URL="https://github.com/addonszz/Multi-Mod_Server/blob/develop/addons/amxmodx/scripting/multi-mod_manager.sma"]https://github.com/addonszz/Multi-Mod_Server/blob/develop/addons/amxmodx/scripting/multi-mod_manager.sma[/URL]
+[URL]https://github.com/addonszz/Multi-Mod_Server/blob/develop/addons/amxmodx/scripting/multi-mod_manager.sma[/URL]
 
 For any problems with this plugin visit [B][URL="https://forums.alliedmods.net/index.php"]this own page[/URL][/B] or:
 [url]https://github.com/Addonszz/Multi-Mod_Server/issues[/url]
@@ -406,7 +406,7 @@ public plugin_cfg()
 	switchMapManager()
 	loadCurrentMod()
 
-	if( gp_endmapvote )
+	if( get_pcvar_num( gp_endmapvote ) )
 	{
 		set_task(15.0, "check_task", TASK_VOTEMOD, "", 0, "b")
 	}
@@ -1319,7 +1319,7 @@ public user_currentmod(id)
  */
 public user_votemod(id)
 {   
-	if( gp_allowedvote )
+	if( get_pcvar_num( gp_allowedvote ) )
 	{   
 		client_print(0, print_chat, "%L", LANG_PLAYER, "MM_VOTEMOD", g_modnames[g_nextmodid])
 		return PLUGIN_HANDLED

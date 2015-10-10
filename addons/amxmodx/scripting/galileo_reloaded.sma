@@ -177,39 +177,39 @@ Thank you!  It means a lot to me.
 [/QUOTE]
 ******************************** [anchor]Sourcecode[/anchor][SIZE="5"][COLOR="blue"][B]Source Code and Support[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor] ***
 This source code is available on [B]GitHub[/B]. 
-[URL="https://github.com/addonszz/Multi-Mod_Server/blob/develop/addons/amxmodx/scripting/galileo_neo_reloaded.sma"]https://github.com/addonszz/Multi-Mod_Server/blob/develop/addons/amxmodx/scripting/galileo_neo_reloaded.sma[/URL]
+[URL]https://github.com/addonszz/Multi-Mod_Server/blob/develop/addons/amxmodx/scripting/galileo_neo_reloaded.sma[/URL]
 
 For any problems with this plugin visit [B][URL="https://forums.alliedmods.net/index.php"]this own page[/URL][/B] or:
 [url]https://github.com/Addonszz/Multi-Mod_Server/issues[/url]
 for support.
 
 If you are [B]posting[/B] because the plugin or a [B]feature[/B] of the plugin isn't working for you, [B]please[/B] do 
-all of the following, so we can [COLOR="Blue"]more efficiently[/COLOR] figure out what's going on:
-[QUOTE]
-If you have access to your game server's console, type the [COLOR="Blue"][B]following[/B][/COLOR] in the server console:
-[LIST]
-[*]status
-[*]meta list
-[*]amxx plugins
-[*]amxx cvars
-[/LIST]
+all of the following, so we can [COLOR="Blue"]more efficiently[/COLOR] figure out what's going on: 
+[QUOTE] 
+If you have access to your game server's console, type the [COLOR="Blue"][B]following[/B][/COLOR] in the server console: 
+[LIST] 
+[*]status 
+[*]meta list 
+[*]amxx plugins 
+[*]amxx cvars 
+[/LIST] 
 If you don't have access the your [COLOR="Blue"][B]game server's console[/B][/COLOR], join your server and type the 
-following in your game console:
+following in your game console: 
 
-[LIST]
-[*]status
-[*]rcon_password your_rcon_password
-[*]rcon meta list
-[*]rcon amxx plugins
-[*]rcon amxx cvars
-[/LIST]
-[LIST=1]
-[*]Paste here everything from the [B]status[/B] command [COLOR="Red"][B]*except*[/B][/COLOR] the player list.
+[LIST] 
+[*]status 
+[*]rcon_password your_rcon_password 
+[*]rcon meta list 
+[*]rcon amxx plugins 
+[*]rcon amxx cvars 
+[/LIST] 
+[LIST=1] 
+[*]Paste here everything from the [B]status[/B] command [COLOR="Red"][B]*except*[/B][/COLOR] the player list. 
 [*]Paste here the entire result from the [B]meta list[/B] and [B]amxx plugins[/B] commands. 
 [*]Paste here [COLOR="red"][B]*only*[/B][/COLOR] the CVARs that contain "[COLOR="SeaGreen"][B]galileo.amxx[/B][/COLOR]" in the last column 
-from the [B]amxx cvars[/B] command. They will be grouped together.
-[/LIST]
-[/QUOTE]
+from the [B]amxx cvars[/B] command. They will be grouped together. 
+[/LIST] 
+[/QUOTE] 
 ******************************** [anchor]Downloads[/anchor][SIZE="6"][COLOR="Blue"][B]Downloads[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor] ********************
 */
 
@@ -326,7 +326,7 @@ new cvar_soundsMute;
 
 public plugin_init()
 {
-	register_plugin("Galileo Reloaded", PLUGIN_VERSION, "Brad Jones");
+	register_plugin("Galileo Reloaded", PLUGIN_VERSION, "Addons zz/Brad Jones");
 	
 	register_cvar("GalileoReloaded", PLUGIN_VERSION, FCVAR_SERVER|FCVAR_SPONLY);
 		
@@ -336,7 +336,7 @@ public plugin_init()
 
 	register_dictionary("common.txt");
 	register_dictionary("nextmap.txt");
-	register_dictionary("multimodgalileo.txt");
+	register_dictionary("galileo_reloaded.txt");
 
 	register_event("TextMsg", "event_game_commencing", "a", "2=#Game_Commencing", "2=#Game_will_restart_in");
 
