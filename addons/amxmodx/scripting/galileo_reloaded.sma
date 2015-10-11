@@ -119,7 +119,7 @@ Tested under [B]Counter-Strike[/B] and Counter-Strike: [B]Condition Zero[/B]
 [B]1.[/B] Download the files "[B]galileo_reloaded.sma[/B]" and "[B]plugin_resources.zip[/B]" at [goanchor=Downloads]Downloads[/goanchor] 
 section.
 
-[B]2.[/B] Then take the content of "[B]yourgamemod[/B]" from "[B]plugin_resources.zip[/B]", to your gamemod folder. 
+[B]2.[/B] Then take the contents of "[B]yourgamemod[/B]" from "[B]plugin_resources.zip[/B]", to your gamemod folder. 
 Ex: czero, cstrike, ...
 
 [B]3.[/B] [B]Compile[/B] the file and put the [B]compiled[/B] file to your plugins folder at 

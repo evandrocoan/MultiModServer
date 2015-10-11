@@ -14,7 +14,7 @@
 *
  ******************************************************************************
 
-[SIZE="6"][COLOR="Blue"][B]Addons zz's Multi-Mod Server v1.0-alpha1[/B][/COLOR][/SIZE]
+[SIZE="6"][COLOR="Blue"][B]Addons zz's Multi-Mod Server v1.0-alpha1.hotfix2[/B][/COLOR][/SIZE]
 [B]Release: 10.10.2015 | Last Update: 10.10.2015[/B]
 
 [anchor]Top[/anchor][SIZE="5"][COLOR="blue"][B]Contents' Table[/B][/COLOR][/SIZE] 
@@ -37,7 +37,9 @@ numerous mods and comes standard configured for maximum performance and server c
 This is a Alpha version. This Alpha software can be unstable, see [goanchor=TODO]TODO[/goanchor] section for more information. 
 As [B]Alpha software[/B] may not contain all of the features that are planned for the final version, see [goanchor=TODO]TODO[/goanchor] 
 section for features that are [B]planned[/B] for the final version. 
-[URL="http://www.gametracker.com/search/?search_by=server_variable&search_by2=MultiModServerCore&query=&loc=_all&sort=&order="] 
+
+[IMG]http://addons.zz.mu/recursos/2015-10-11_01-43_CommandMenuNew.jpg[/IMG]
+[URL="http://www.gametracker.com/search/?search_by=server_variable&search_by2=MultiModServer&query=&loc=_all&sort=&order="] 
 [SIZE=3][B][COLOR=DarkGreen]Click here to see all servers using this configuration.[/COLOR][/B][/SIZE][/URL] 
 
 ********************** [anchor]Introduction[/anchor][B][SIZE="5"][COLOR="blue"]Introduction[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor]  *******************************
@@ -85,33 +87,33 @@ rename back the [B]"maps_old"[/B] folder.
 
 [B]Example[/B] of "[B]amx_setmod help 1[/B]":
 [QUOTE]
-amx_setmod help 1       | To show this help.
+amx_setmod help 1	   | To show this help.
 amx_setmod disable 1   | To deactivate any active Mod.
-amx_votemod     | To force a votemod.
-say nextmod      | To see which is the next mod.
-say_team nextmod               | To see which is the next mod.
+amx_votemod	 | To force a votemod.
+say nextmod	  | To see which is the next mod.
+say_team nextmod			   | To see which is the next mod.
 say currentmod  | To see which is the current mod.
-say votemod      | To try start a vote mod.
-say_team votemod         | To try start a vote mod.
-amx_setmod csdm 1          | to use CS-DM (DeathMatch)
-amx_setmod catch 1          | to use Catch Mod
-amx_setmod dragon 1          | to use Dragon Ball Mod
-amx_setmod gungame 1          | to use Gun Game Mod
-amx_setmod hiden 1          | to use Hide N Seek Mod
-amx_setmod jctf 1          | to use Just Capture The Flag
-amx_setmod knife 1          | to use Knife Arena Mod
-amx_setmod predator 1          | to use Predator Mod_b2
-amx_setmod shero 1          | to use Super Heros
-amx_setmod surf 1          | to use Surf Mod
-amx_setmod warcraft 1          | to use Warcraft Ultimate Mod 3
-amx_setmod zp50Money 1          | to use Zombie Money Mod
-amx_setmod zp50Ammo 1          | to use Zombie Pack Ammo Mod
+say votemod	  | To try start a vote mod.
+say_team votemod		 | To try start a vote mod.
+amx_setmod csdm 1		  | to use CS-DM (DeathMatch)
+amx_setmod catch 1		  | to use Catch Mod
+amx_setmod dragon 1		  | to use Dragon Ball Mod
+amx_setmod gungame 1		  | to use Gun Game Mod
+amx_setmod hiden 1		  | to use Hide N Seek Mod
+amx_setmod jctf 1		  | to use Just Capture The Flag
+amx_setmod knife 1		  | to use Knife Arena Mod
+amx_setmod predator 1		  | to use Predator Mod_b2
+amx_setmod shero 1		  | to use Super Heros
+amx_setmod surf 1		  | to use Surf Mod
+amx_setmod warcraft 1		  | to use Warcraft Ultimate Mod 3
+amx_setmod zp50Money 1		  | to use Zombie Money Mod
+amx_setmod zp50Ammo 1		  | to use Zombie Pack Ammo Mod
 [/QUOTE]
 ******************************** [anchor]Installation[/anchor][B][SIZE="5"][COLOR="Blue"]Installation[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor]  **********************
 [B]1.[/B] Download the files "[B]Multi-Mod_Server-master.zip[/B]" and "[B]Multi-Mod_Server_resources.zip[/B]" at 
 [goanchor=Downloads]Downloads[/goanchor] section. 
 
-[B]2.[/B] Then put the contents at the folder "[B]Multi-Mod_Server-master[/B]" inside "[B]Multi-Mod_Server-master.zip[/B]" 
+[B]2.[/B] Then take the contents at the folder "[B]Multi-Mod_Server-master[/B]" inside "[B]Multi-Mod_Server-master.zip[/B]" 
 and the contents at "[B]Multi-Mod_Server_resources.zip[/B]" to your gamemod folder, replacing the existents 
 files.
 
@@ -132,6 +134,8 @@ at the folder [COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]scripting/comp
 [QUOTE]
 v1.0-alpha1
  * Initial alpha release. 
+v1.0-alpha1.hotfix2
+ * Fixed misssing include at addons_zz_info.sma
 [/QUOTE]
 
 ******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *********************************
@@ -195,12 +199,13 @@ Testing server
 
  */
 #include <amxmodx>
+#include <amxmisc>
 
 #define PLUGIN "Addons zz Info"
 #define VERSION "1.0"
 #define AUTHOR "Addons zz"
 
-#define SHORT_STRING 64
+#define LONG_STRING 256
 
 new g_configFolder[ LONG_STRING ]
 
@@ -215,10 +220,8 @@ public plugin_init()
 {   
 	register_plugin( PLUGIN, VERSION, AUTHOR ) 
 
-    register_dictionary( "multimodhelp.txt" ) 
+	register_dictionary( "multimodhelp.txt" ) 
 	register_cvar("MultiModServer", VERSION, FCVAR_SERVER|FCVAR_SPONLY) 
-
-	get_configsdir( g_configFolder, charsmax( g_configFolder ) ) 
 }
 
 /*
@@ -229,31 +232,33 @@ public plugin_init()
  */
 public plugin_cfg()
 {
+	get_configsdir(g_configFolder, charsmax(g_configFolder))
+
 	server_cmd( "exec %s/amxx_ultra.cfg", g_configFolder )
 }
 
 public plugin_precache()
 {   
-    precache_sound( "ambience/ratchant.wav" );
-    precache_sound( "misc/snore.wav" );
+	precache_sound( "ambience/ratchant.wav" );
+	precache_sound( "misc/snore.wav" );
 }
 
 public client_putinserver( id )
 {   
-    if ( is_user_bot( id ) )
-    {   
-        return
-    }
+	if ( is_user_bot( id ) )
+	{   
+		return
+	}
 
-    set_task( 50.1, "dispInfo", id )
+	set_task( 50.1, "dispInfo", id )
 }
 
 public dispInfo( id )
 {   
-    client_print( id, print_chat, "%L", id, "TYPE_ADDONS_CONTATO" )
+	client_print( id, print_chat, "%L", id, "TYPE_ADDONS_CONTATO" )
 }
 
 public client_disconnect( id )
 {   
-    remove_task (id)
+	remove_task (id)
 }

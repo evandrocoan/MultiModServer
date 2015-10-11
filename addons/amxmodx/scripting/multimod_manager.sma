@@ -42,7 +42,7 @@ designed, coded and tested through one or more beta cycles with no known show st
 
 This plugin [COLOR="Red"]is [B]not[/B] compatible[/COLOR] with the AMXX's very own [B]Map Chooser[/B] or "[B]Daily Maps[/B]", but yes with its 
 modification "[B]multimod_mapchooser.sma[/B]" and "[B]multimod_daily_changer[/B]" provided here. The new 
-"[URL="https://forums.alliedmods.net/showthread.php?t=273019"]galieo_reloaded.sma[/URL]" which is a different Galileo version, is ready to be used with this [B]Multi-Mod Manager[/B]". 
+"[URL="https://forums.alliedmods.net/showthread.php?t=273019"]galieo_reloaded.sma[/URL]" which is a different Galileo version, [COLOR="Red"]is ready[/COLOR] to be used with this [B]Multi-Mod Manager[/B]". 
 
 The "[B]Multi-Mod Daily Maps[/B]" is a modified version of "[B]Daily Maps[/B]" to work with this "[B]Multi-Mod Manager[/B]". 
 This plugin only works with "[B]Multi-Mod Manager[/B]", alone the "[B]Multi-Mod Daily Maps[/B]" does nothing. Its allows 
@@ -157,10 +157,10 @@ Tested under [B]Counter-Strike[/B] and Counter-Strike: [B]Condition Zero[/B]
 [SIZE="4"][URL="https://forums.alliedmods.net/showthread.php?t=273018"]Is available here[/URL][/SIZE]. 
 
 ******************************** [anchor]Installation[/anchor][B][SIZE="5"][COLOR="Blue"]Installation[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor]  **********************
-[B]1.[/B] Download the files "[B]multimod_manager.sma[/B]", "[B]plugin_resources.zip[/B]",  
+[B]1.[/B] Download the files "[B]multimod_manager.sma[/B]", "[B][COLOR="Red"]plugin_resources.zip[/COLOR][/B]",  
 "[B]multimod_mapchooser.sma[/B]" and "[B]multimod_daily_changer.sma[/B]" (optionally), at [goanchor=Downloads]Downloads[/goanchor] section. 
 
-[B]2.[/B] Then unzip the content of "[B]yourgamemod[/B]" from "[B]plugin_resources.zip[/B]", to your gamemod folder. 
+[B]2.[/B] Then take the contents of "[B]yourgamemod[/B]" from "[B]plugin_resources.zip[/B]", to your gamemod folder. 
 
 [B]3.[/B] [B]Compile[/B] the files and put the [B]compiled[/B] files to your plugins folder at 
 "[COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]plugins[/B]" folder. 
@@ -173,7 +173,7 @@ multimod_mapchooser.amxx
 multimod_daily_changer.amxx
 [/QUOTE]
 
-[B]5.[/B] Put the next line to your "[B]amxx.cfg[B]" file at "[COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]configs[/B]":
+[B]5.[/B] Put the next line to your "[B]amxx.cfg[/B]" file at "[COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]configs[/B]":
 [QUOTE]
 exec addons/amxmodx/configs/multimod/multiMod.cfg
 [/QUOTE]
