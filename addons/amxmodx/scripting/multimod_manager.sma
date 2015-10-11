@@ -242,6 +242,8 @@ exec addons/amxmodx/configs/multimod/votefinished.cfg
 [QUOTE]
 v1.0-release_candidate1
  * Initial release candidate. 
+v1.0-release_candidate1.hotfix1
+ * Add exception handle when the currentmod.ini or currentmodsilent.ini is does not found. 
 [/QUOTE]
 
 ******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *********************************
@@ -636,14 +638,26 @@ public loadCurrentMod()
 	formatex(currentModFile, charsmax(currentModFile), "%s/multimod/currentmod.ini", g_configFolder)
 	formatex(currentModSilentFile, charsmax(currentModFile), "%s/multimod/currentmodsilent.ini", g_configFolder)
 
-	read_file(currentModFile, 0, currentModID_String, charsmax(currentModID_String), ilen )
-	read_file(currentModSilentFile, 0, currentModSilentFile_String, charsmax(currentModSilentFile_String), ilen )
+	if( file_exists( currentModFile ) )
+	{
+		read_file(currentModFile, 0, currentModID_String, charsmax(currentModID_String), ilen )
+	} else
+	{
+		copy( currentModID_String, charsmax( currentModID_String ), "0" )
+	}
+	if( file_exists( currentModSilentFile ) )
+	{
+		read_file(currentModSilentFile, 0, currentModSilentFile_String, charsmax(currentModSilentFile_String), ilen )
+	} else
+	{
+		copy( currentModID_String, charsmax( currentModID_String ), "0" )
+	}
 
 	build_first_mods()
 	load_cfg()
 
 	// If -1, there is no mod active. If 0, the current mod was activated by silent mode
-	if( !( equal( currentModID_String, "-1" ) || equal( currentModID_String, "0" ) ) )
+	if( !equal( currentModID_String, "-1" ) && !equal( currentModID_String, "0" ) )
 	{   
 		new currentModID = str_to_num( currentModID_String ) + 2
 		configureMultimod( currentModID )
@@ -823,7 +837,7 @@ public get_firstmap(modid)
 {   
 	new ilen
 
-	if(!file_exists(g_filemaps[modid]))
+	if( !file_exists(g_filemaps[modid]) )
 	{   
 		get_mapname(g_nextmap, charsmax(g_nextmap))
 	}
