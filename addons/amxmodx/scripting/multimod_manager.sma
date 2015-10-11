@@ -37,8 +37,16 @@ This is a release candidate, which is a beta version with potential to be a fina
 released unless [B]significant bugs[/B] emerge. In this stage of product stabilization, all product [B]features[/B] have been 
 designed, coded and tested through one or more beta cycles with no known show stopper-class bug. 
 
-This plugin is not compatible with the AMXX's very own [B]Map Chooser[/B], but with its modification 
-"[B]multi-mod_mapchooser.sma[/B]" provided here, or with the new "[URL=" "]galieo_reloaded.sma[/URL]". 
+This plugin [COLOR="Red"]is [B]not[/B] compatible[/COLOR] with the AMXX's very own [B]Map Chooser[/B] or "[B]Daily Maps[/B]", but yes with its 
+modification "[B]multimod_mapchooser.sma[/B]" and "[B]multimod_daily_changer[/B]" provided here. The new 
+"[URL=" "]galieo_reloaded.sma[/URL]" which is a different Galileo version, is ready to be used with this [B]Multi-Mod Manager[/B]". 
+
+The "[B]Multi-Mod Daily Maps[/B]" is a modified version of "[B]Daily Maps[/B]" to work with this "[B]Multi-Mod Manager[/B]". 
+This plugin only works with "[B]Multi-Mod Manager[/B]", alone the "[B]Multi-Mod Daily Maps[/B]" does nothing. Its allows 
+you to specify a different "[B]mapcycles[/B]" and "[B]server cfg[/B]" files rotation, for every day. These daily mapcycles are 
+only active when you are not using any mod, or your current mod does not specifies a special mapcycle. The 
+"[B]mapcycles[/B]" and "[B]server cfg[/B]" files respectively, are located at "[COLOR="Blue"]yourgamemod/mapcycles/[/COLOR][B]day[/B]" and 
+"[COLOR="Blue"]yourgamemod/mapcycles/[/COLOR][B]day/cfg[/B]". 
 
 As I am working at another plugins, I cannot provide immediately fixes and forum's answers here. But 
 as soon as I can, I am going to release the final version. 
@@ -56,7 +64,7 @@ redefine the compiler constant "[COLOR="Blue"][B]#define MAXMODS 100[/B][/COLOR]
 
 [IMG]http://addons.zz.mu/recursos/2015-08-16_14-08_Counter-Strike.jpg[/IMG]
 
-The "[B]multi-mod_manager.sma[/B]" waits the user choose to activate one mod, by vote menu, 
+The "[B]multimod_manager.sma[/B]" waits the user choose to activate one mod, by vote menu, 
 or by command line. It [B]saves[/B] the current active mod and [COLOR="Blue"][B]keep it active[/B][/COLOR] forever or until some 
 other mod is [COLOR="Blue"][B]activated[/B][/COLOR] or your disable the active mod by the "[B]amx_setmod disable 1[/B]" command. 
 
@@ -146,8 +154,8 @@ Tested under [B]Counter-Strike[/B] and Counter-Strike: [B]Condition Zero[/B]
 [SIZE="4"][URL="https://github.com/Addonszz/Multi-Mod_Server"]Is available here[/URL][/SIZE]. 
 
 ******************************** [anchor]Installation[/anchor][B][SIZE="5"][COLOR="Blue"]Installation[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor]  **********************
-[B]1.[/B] Download the files "[B]multi-mod_manager.sma[/B]", "[B]plugin_resources.zip[/B]" and 
-"[B]multi-mod_mapchooser.sma[/B]" at [goanchor=Downloads]Downloads[/goanchor] section. 
+[B]1.[/B] Download the files "[B]multimod_manager.sma[/B]", "[B]plugin_resources.zip[/B]",  
+"[B]multimod_mapchooser.sma[/B]" and "[B]multimod_daily_changer.sma[/B]" (optionally), at [goanchor=Downloads]Downloads[/goanchor] section. 
 
 [B]2.[/B] Then unzip the content of "[B]yourgamemod[/B]" from "[B]plugin_resources.zip[/B]", to your gamemod folder. 
 
@@ -157,8 +165,9 @@ Tested under [B]Counter-Strike[/B] and Counter-Strike: [B]Condition Zero[/B]
 [B]4.[/B] Put the next lines to your "[B]plugins.ini[/B]" file at "[COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]configs[/B]" and
 disable the original "[B]mapchooser.amxx[/B]": 
 [QUOTE]
-multi-mod_manager.amxx
-multi-mod_mapchooser.amxx
+multimod_manager.amxx
+multimod_mapchooser.amxx
+multimod_daily_changer.amxx
 [/QUOTE]
 
 [B]5.[/B] Put the next line to your "[B]amxx.cfg[B]" file at "[COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]configs[/B]":
@@ -242,12 +251,14 @@ v1.0-release_candidate1
 [B]joropito[/B]: The idea/program developer of "[URL="https://forums.alliedmods.net/showthread.php?t=95568"]multimod.sma[/URL]". 
 [B]crazyeffect[/B]: Colaborate with multilangual support of "multimod.sma". 
 [B]dark vador 008[/B]: Time and server for testing under czero "multimod.sma". 
-[B]Addons zz[/B]: The "multi-mod_manager.sma" developer. 
+[B]Addons zz[/B]: The "multimod_manager.sma" developer. 
 [B]DeRoiD's[/B]: For print_color function. 
+[B]JustinHoMi & JGHG[/B]: For the "[URL="https://forums.alliedmods.net/showthread.php?t=51995"]Daily Maps[/URL]" plugin. 
+[B]AMXX Dev Team[/B]: For the "Map Chooser" plugin. 
 
 ******************************** [anchor]Sourcecode[/anchor][SIZE="5"][COLOR="blue"][B]Source Code and Support[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor] ***
 This source code is available on [B]GitHub[/B]. 
-[URL]https://github.com/addonszz/Multi-Mod_Server/blob/develop/addons/amxmodx/scripting/multi-mod_manager.sma[/URL]
+[URL]https://github.com/addonszz/Multi-Mod_Server/blob/develop/addons/amxmodx/scripting/multimod_manager.sma[/URL]
 
 For any problems with this plugin visit [B][URL="https://forums.alliedmods.net/index.php"]this own page[/URL][/B] or:
 [url]https://github.com/Addonszz/Multi-Mod_Server/issues[/url]
@@ -276,7 +287,7 @@ following in your game console:
 [LIST=1]
 [*]Paste here everything from the [B]status[/B] command [COLOR="Red"][B]*except*[/B][/COLOR] the player list.
 [*]Paste here the entire result from the [B]meta list[/B] and [B]amxx plugins[/B] commands. 
-[*]Paste here [COLOR="red"][B]*only*[/B][/COLOR] the CVARs that contain "[COLOR="SeaGreen"][B]multi-mod_manager.amxx[/B][/COLOR]" in the last column 
+[*]Paste here [COLOR="red"][B]*only*[/B][/COLOR] the CVARs that contain "[COLOR="SeaGreen"][B]multimod_manager.amxx[/B][/COLOR]" in the last column 
 from the [B]amxx cvars[/B] command. They will be grouped together.
 [/LIST]
 [/QUOTE]
@@ -291,7 +302,7 @@ from the [B]amxx cvars[/B] command. They will be grouped together.
 #define VERSION "v1.0-rc1"
 #define AUTHOR "Addons zz"
 
-#define MULTIMOD_MAPCHOOSER "multi-mod_mapchooser.amxx"
+#define MULTIMOD_MAPCHOOSER "multimod_mapchooser.amxx"
 #define TASK_VOTEMOD 2487002
 #define TASK_CHVOMOD 2487004
 #define MAXMODS 100
@@ -335,7 +346,7 @@ new gp_mapcyclefile
 
 new g_alertMultiMod[BIG_STRING] = ";Configuration files of Multi-Mod System^n//\
 which is run every time the server starts and defines which mods are enabled.^n//\
-This file is managed automatically by multi-mod_manager.sma plugin^n//\
+This file is managed automatically by multimod_manager.sma plugin^n//\
 and any modification will be discarded in the activation of some mod.^n^n"
 
 new g_helpamx_setmod[LONG_STRING] = "help 1	      | for help."
@@ -395,7 +406,7 @@ public plugin_init()
 }
 
 /**
- * Makes auto configuration about mapchooser plugin, switching between multi-mod_mapchooser and 
+ * Makes auto configuration about mapchooser plugin, switching between multimod_mapchooser and 
  * galileo. 
  * Gets current game mods cvars pointer to this program global variables.
  * Adjust the localinfo variable that store the current mod loaded, reading the current mod file.
