@@ -1,0 +1,60 @@
+<html>
+
+<style type="text/css">
+body
+{
+background-color:#000000;
+background-position:top center;
+background-image:url(http://i75.photobucket.com/albums/i310/X-olent/motd_background.png);
+background-attachment:fixed;
+background-repeat:repeat-x;
+}
+</style>
+
+<body>
+<div align="center">
+<font face="Arial" size="6" color="#cccccc"><b>
+%s v%s<br>
+</b></font>
+<font face="Arial" size="4" color="#999999"><b>
+by %s
+</b></font>
+
+<br>
+<br>
+<br>
+<font face="Arial" size="4" color="#999999"><b>
+Introduction:
+</b></font>
+<br>
+<font face="Arial" size="2" color="#FFFFFF"><b>
+%s is when one team hides from another.<br>
+The %s team is hiding, and the %s team is seeking.<br>
+%s.
+</b></font>
+
+<br>
+<br>
+<br>
+<font face="Arial" size="4" color="#999999"><b>
+Hider Equipment:
+</b></font>
+<br>
+<font face="Arial" size="2" color="#FFFFFF"><b>
+%s
+</b></font>
+
+<br>
+<br>
+<br>
+<font face="Arial" size="4" color="#999999"><b>
+Seeker Equipment:
+</b></font>
+<br>
+<font face="Arial" size="2" color="#FFFFFF"><b>
+%s
+</b></font>
+
+</div>
+</body>
+</html>

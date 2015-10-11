@@ -206,7 +206,7 @@ static const TITLES[NUMRECORDS+1][] = {
 }
 
 //symbols records use, order must match enum up top.
-static const TYPES[NUMRECORDS+1][] = { "NULL", "sec", "mph", "sec", "ft", "ft" }
+static const TYPES[NUMRECORDS+1][] = { "NULL", "sec", "KM/H", "sec", "ft", "ft" }
 
 #if defined COMMENTATOR
 static const BAD_COMMENT[4][] = { 
@@ -690,7 +690,7 @@ Float:Check_Completion(id) {
 Validate_BeatRecord(id, recordtype, Float:jRecord) {
 	
 	//Format HUD Stat String of recordtype
-	format(g_StatText[id][recordtype], MAX_TEXT_LENGTH, "^n%s -- %.2f %s", TITLES[recordtype], jRecord, TYPES[recordtype])
+	format(g_StatText[id][recordtype], MAX_TEXT_LENGTH, "^n%s -- %.2f %s", TITLES[recordtype], jRecord * 1.6 , TYPES[recordtype])
 	
 	//If our running statistic beats players record of current session, update it
 	//and check if it beat a personal/top record, if so, mark its flag.

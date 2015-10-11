@@ -1,0 +1,259 @@
+
+//To save XP to a nVault file (default)
+//superheromodnvault.amxx
+
+//To save XP to the VAULT file (uncomment this and comment out the other plugin) 
+superheromodvault.amxx
+ 
+//To save XP to a mysql database (uncomment this and comment out the other plugin) 
+//superheromodmysql.amxx
+
+amxmod_compat.amxx      ; Need to activate to use plugins that end in (. amx) or old like shero supergirl.
+
+// Do not enable more heros, why there is a LIMIT of heros
+// That can be loaded without causing the server to not open, or gerarar
+// Overflow errors.
+//
+//Active, ??But you risk more, but the last heros the list below:
+// Zeus, xavier, ..., will not appear in the selection list, however, may continue
+// Cause the server to not open, or gerarar overflow errors.
+//
+// That's why unfortunately the game is limited to a maximum of 512 features:
+// FATAL ERROR (shutting down): Host_Error: PF_precache_sound_I:
+// Sound 'squeek / sqk_blast1.wav' failed to precache because the item count is over
+// The 512 limit. Reduce the number of brush models and / or regular models in the map
+// To correct this.
+//
+// So you can perhaps turn one, for every one turn.
+// However, Some that you turn in place of others, can allocate more resources
+// And so the server can exceed the limit of 512.
+//
+// Remember that the server usually closes the map exchange.
+// And in other cases direct closes on first boot.
+//
+// There are currently 75 activated heros (limit is 80).
+// And 144 off by exceeding the limit of 80.
+//
+//sh_abe.amxx //Insert your spirit into enemies", "You can insert your spirit into enemies"
+//sh_abomination.amxx //"Super Strong and Ugly", "Chance of godmode every time your hit"
+//sh_achilles.amxx //"Immortality", "You can get hit only in the left leg - careful if you fall !"
+//sh_adrenaline.amxx //"Adrenaline", "Press the +power key to adrenalinize your self!"
+//sh_afterburn.amxx //"Flames From Beyond", "Shoot flames while your dead, from your dead body or while in dead spectate mode."
+//sh_agent.amxx //"TelePort Menu", "TelePort Menu and Unlimited Desert Eagle Ammo"
+//sh_agentzero.amxx //"No Recoil", "Get No Recoil when shooting.",
+//sh_akasha.amxx //"Unholiness", "Suck life and experience out of corpses; then turn them into zombies"
+//sh_alien.amxx //Get Alien Vision and Invisibility when using Knife
+//sh_anubis.amxx //"Dark Notices", "Nothing Is Secret From You.  Hear Enemies - See Damage"
+//sh_aquaman.amxx // "Gills & Bubble Attack", "You can Breathe Underwater and use your Bubble Attack"
+//sh_arcticPredator.amxx //"Hunter", "Invisble Hunt Mode, Press N to toggle Hunter Helmet Power, Throw Predator Disc."
+//sh_avenger.amxx //"Revenge for the fallen", "Teleports to a fallen teammember and become invincible."
+//sh_bass.amxx //Uber Energy Beam - Press the +power key to fire your your beam cannon
+sh_batgirl.amxx //Grappling Hook - You now have the Bat-Grapple Hook. Shoot your Hook and automatically be ziplined to the target.
+sh_batman.amxx //Utility Belt - Extra Weapons and HP/AP - Buy the Ammo or Use with Punisher
+//sh_batteam.amxx //"Guns/HP/AP/Speed/Gravity And Hook", "Get All Of BatTeam's Powers!"
+//sh_bazooka.amxx //"Rocket-Laucher", "Fire Many Different Types of Rockets"
+//sh_beast.amxx //"Speed/HP/AP/Gravity", "Faster than Flash, More Health, More Armor and Lower Gravity."
+//sh_beyonder.amxx //"Fake Player", "Make a fake ilussion of a player"
+//sh_bigmoma.amxx //"Spawn a Big Momma", "Spawn a crazy Big Momma thing on keydown!"
+//sh_bishop.amxx //"Absorb Energy", "Absorb Damage and use it with your weapons! Or release all energy to deal even more damage."
+//sh_black_hole.amxx //"Black Hole(Admin Only!)", "+power key for a black hole to suck up ur enemies"
+//sh_blackmage.amxx //"Death and Decay!", "Death and Decay!"
+//sh_blackpanther.amxx //Silent Boots", "Your boots have Vibranium soles that absorb sound"
+//sh_blink.amxx //"Instant Teleport", "Point to a location and teleport with the blink of an eye!"
+//sh_blueblood.amxx //"Blood Blood", "Load up your opponent with weapons when you shoot them."
+//sh_bomberman.amxx //"Remote Bombs", "Press +power button to plant, and again to detonate"
+//sh_bombsquad.amxx //"Always get bomb/defuser", "Always get bomb/defuser and godmode while defusing/planting
+//sh_bond.amxx //"Golden Gun", " Lower Gravity / Golden Gun With More Damage."
+//sh_bullseye.amxx //"Expert Aim", "You can now zoom with any gun"
+//sh_bullsquid.amxx //"Spawn a Bullsquid", "Spawn a crazy Bullsquid thing on keydown!"
+//sh_cable.amxx //"Laser Gun", "Fire your laser gun!"
+//sh_captaina.amxx //"Super Shield", "Random Invincibility, better chance the higher your level"
+//sh_captaini.amxx //Green Flash - Ultra Defense - shshack says Has high speed and armor with Ultimate Green Flashes to protect him (Godmode)
+//sh_casper.amxx //"Ghost Mode", "Hold power key down for 95 percent invisibility with noclip! Low HP/AP while in Ghost Mode."
+//sh_catwoman.amxx //Sneak Into Enemies Base", "Chance Of Sneaking Into Enemies Base
+//sh_chin.amxx //"Strong Chin", "Justice! Thy Name Is Chin! Immune To Headshots
+//sh_chucky.amxx //Voodoo Powers", "Rise again from the dead. Get a Bloody Knife that does more damage, which you are faster with.
+//sh_cloud.amxx //Cloud", "Fires Clouds limit break Blade Beam!
+//sh_colalover.amxx //Caffeine and Sugar", "Now you run Fast and have More HP
+//sh_colossus.amxx //Iron Body", "Godmode in X sek on keydown
+//sh_covenant.amxx //Covenant Elite", "You are now equipped with a covenant shield"
+//sh_ctrooper.amxx //CTrooper", "Become a Clone Trooper! - Cooler Player Model and Gun and laser bullets"
+sh_cyclone.amxx //Tornado", "You become a cyclone and you sux
+//sh_cyclops.amxx //Optic Blast", "Press the +power key to fire your optic laser beam"
+//sh_daredevil.amxx //"Radar Sense", "ESP Rings show you when other players are approaching"
+//sh_darkpredator.amxx //"Deagle/Invisibility", "Get a free deagle and invisibility. Plus ESP rings, armor and regen."
+//sh_darthmaul.amxx //Sith Lightsaber & Regen", "Get a Sith Double Bladed Lightsaber with more damage and speed. Also regenerate HP.
+//sh_dazzler.amxx //Sparkle Flash", "Flash Nearby Enemies - Grows in intensity as you level up
+//sh_deadpool.amxx //More DAMAGE!!!", "Do more damage with every gun + unlimited ammo.
+//sh_demoman.amxx //"Tripmines", "Unlimited Tripmines - Limited ammount that can be planted at once"
+//sh_detonator.amxx //"Remotely explode the C4!", "After the C4 is planted, press the bind key and you can make it EXPLODE!
+//sh_dirty.amxx //"44 Magnum.", "You get 44 Magnum (Deagle), the most powerful handgun in the world with a knock back effect for enemys and for you."
+//sh_domino.amxx //"Even the Odds", "Do more Gun Damage to Higher Levels, the larger the difference the more damage."
+//sh_donator.amxx //Generosity", "Give some of your xp to others
+sh_dracula.amxx //Vampiric Drain", "Gain HP by attacking players - More HPs per level
+//sh_drdoom.amxx //Gauntlet Blasters/Armor", "Hold down +power key to Fire Concussive Bolts of Force!"
+//sh_dreadnought.amxx //Rocket", "Turn someone into a rocket to make them explode!"
+//sh_drjackal.amxx //"The Master of Knives", "You will be too fast too be seen and you can instant kill with a knife "
+//sh_drstrange.amxx //"Mystical Arts", "Mystical Bolts, Mystical Armor, Cloak of Levitation, and Ressurection Stone."
+//sh_ducttape.amxx //"Sticky Tape", "Stick others in their tracks!"
+//sh_dukenukem.amxx //"Nuke", "if ur enemys get 2 close 2 u just blow them up!"
+//sh_electro.amxx //"Chain Lightning", "Shock several people at once!"
+//sh_exodus.amxx //"Telekinesis", "Telekinetically pick up and drag player in the air with +power key."
+//sh_explosion.amxx //"Explosion", "Blows up when killed!"
+//sh_fartman.amxx //Fart Gas Nades", "Your Smoke Grenades are now toxic Fart Gas Grenades."
+//sh_firebat.amxx //"Flame Thrower", "Get a Flame Thrower to use on enemies"
+//sh_firestarter.amxx //"Teleport and Explode", "Point to a location and teleport there to explode."
+//sh_flash.amxx //"Super Speed", "You will run much faster with this hero"
+//sh_fm.amxx //"Clothes Menu", "Open your closet and choose any skin you like"
+//sh_forearm.amxx //"Mighty Slap!", "Slap your enemies Several times, send them flying!"
+//sh_frieza.amxx //"Energy Disk", "Unleash an energy disk and take control of where it flies!"
+//sh_frogger.amxx //"Longjump", "Get a Half-Life Longjump pack. While moving forward, press duck and jump."
+//sh_gambit.amxx //"Kinetically Charged Nades", "Charge your HE Grenades with Kinetic Energy for Extra Damage, also refill HE Grenades."
+//sh_gamblor.amxx //Roll the Dice!", "Take a chance for a benifit or disadvantage!"
+//sh_general.amxx //"ExtraDamage for Teammates", "Because of Encouragement from the General, Teammates will do Extra Damage with weapon attacks."
+//sh_gloce.amxx //"Ice Glock" - Icy Powers - Slow down your enemies with your Ice glock
+//sh_gogeta.amxx //"Super Saiyan Menu", "Your Choice of a Gogeta Kamehameha Wave on keydown. Also Regenerate your KI(Armor) and get extra speed.",
+//sh_gohan.amxx //"Super Power-Up", "Start with more HP, gain even more each second. Also, has Ultra Speed and Low Gravity!"
+sh_goku.amxx //"Super Saiyan Powers", "Generate KI/Armor to transform into Super Saiyan forms. Get a Special Power plus an HP/Speed boost for each SSJ Level."
+//sh_goten.amxx //"Kamekameha!", "Fire Goten's Kamehameha Wave on Keydown."
+//sh_grandmaster.amxx //"Revive Dead", "Utilize cosmic life force to Revive one Dead Teammate"
+//sh_greenlantern.amxx //"Lantern Shield", "Protect you from projectile attacks."
+//sh_grimreaper.amxx //"Invisibility/Scythe/Float/Silent", "Invisibility/Knife=1 Hit KO/Low Gravity/Silent Walking",
+//sh_havok.amxx //"Blow Up Grenades", "Plasma Blast a nearby Enemy's HE Grenade just after it's thrown",
+//sh_hawkeye.amxx // "Sig/Aug Auto-shoot", "Auto-shoot and run faster with Sig as T or Aug as CT. Also, see Damage.",
+//sh_healer.amxx //"Lightning regenerate", "Lightning that regenerate Multiple ally"
+//sh_hgrunt.amxx //"Spawn a Hgrunt", "Spawn a crazy Hgrunt thing on keydown!"
+//sh_hitman.amxx //"Silent Assasin", "Use a USP to ASSASINATE your Enemys - And Get $10,000 For Each ASSASINATION - T's Must Buy Thier Own USP"
+sh_hobgoblin.amxx //Hobgoblin Grenades - Extra Nade Damage/Refill Nade
+//sh_houndeye.amxx //"Spawn a Houndeye", "Spawn a crazy Houndeye thing on keydown!"
+//sh_hulk.amxx //"Power Stomp", "Immobilizes Self and Nearby Enemies"
+//sh_humantorch.amxx //"Flame Blast", "Ignite your enemies on fire with a Flame Blast"
+//sh_iceman.amxx //"Ice Blast", "Freeze your enemy for 10 secounds"
+//sh_icemanv2.amxx //"Ice Man", "Ice Trail - Create a trail of ice to go wherever you want."
+//sh_invisman.amxx //Invisibility - Makes you less visible and harder to see. Only works while standing/not shooting and not zooming.
+sh_inviswoman.amxx // "Invisibility", "Press +power key to become invisible for a short period of time"
+//sh_ironman.amxx //"Rocket Pack", "Rocket Jetpack - use +power key to take off"
+//sh_jaws.amxx //"Summon Jaws", "Jaws will hunt down and eat your enemies"
+//sh_joker.amxx //"Tie Squirter", "Your Tommy Gun does more damage and you got a tie squirter!"
+//sh_jolt.amxx //"Super Agility", "Double tab in any driection to fly in that direction",
+//sh_jubilee.amxx //"Pink Shades", "Use Shades for protection from bright flashes",
+//sh_juggernaut.amxx //"Only a Juggernaut?", "Start with Para, Extra Health and Armor!"
+//sh_justice.amxx //"Mobility", "Faster, Lower Gravity and Triple Jump"
+//sh_kadaj.amxx //"Final Fantasy", "Kadaj, the body of thought of sephiroth!"
+//sh_kamikaze.amxx //"Blow Self Up", "Blow up the enemies with a Kamikaze attack"
+//sh_Kaoiken.amxx // "10x Kaioken Power-up", "Just like Goku, you now have his Kaioken Power-up. Activate on Keydown"
+//sh_ken.amxx //"Shoryuken", "Press Keydown to use Uppercut"
+//sh_kenshin.amxx //"Kenshin Sword", "Extra Knife Damage, Extra Knife Speed",
+//sh_kirby.amxx //"Drop Smash!", "Jump in the air and press the binded key to smash onto your enemies!"
+//sh_kraven.amxx //"Tranquilizer Gun", "Stun your prey, with your tranquilizer bullets"
+//sh_lancer.amxx // "Torpedo", "Hold Keydown to charge, Release to fire your torpedo."
+//sh_leviathan.amxx //"Flood", "Flood the map when you are on low health; then, swim fast and shoot hard; tap forward to swim"
+//sh_luke.amxx //"Ligthsaber", "Kill Your Enemies With The Mighty Powers Of The Force!"
+sh_magneto.amxx //Master of Magnetism - Strip and Get a players guns when they shoot you
+//sh_majinbuu.amxx // "MajinBuu", "Turn people into chocolate to eat them after you kill them for health."
+//sh_makubex.amxx //"The Cyber Lord of Hacking", "Create a random virtual illusion and get a SUPER MACHINE-GUN"
+//sh_marduk.amxx //"Time Stop", "Press key to simply stop the time !"
+//sh_mario.amxx //"Mulitple Jumps", "You can now jump in the air for a certain amount of times!"
+//sh_mask.amxx //"Choose!", "You will have a menu with nice opportunities."
+//sh_masterchief.amxx //"SPARTAN project", "Become Master Chief - get a MJOLNIR battlesuit and MA5B Assault Rifle (P90), which does more damage."
+//sh_mblaster.amxx //Master Blast", "Super Auto Shoty/Health/Armor/Gravity. Has one Explosive Master Blast!"
+//sh_megaman.amxx //"Photon Cannon", "Blazing Cannon and Megasuit"
+//sh_meteorix.amxx // "Blue lightnings", "You can throw blue lightnings on key down"
+//sh_mindbend.amxx //"Mental Control", "Make player switch to knife"
+//sh_mirage.amxx // "Delusion", "Turn invisible for a short time when someone aims at you"
+//sh_moleman.amxx //Tame Monsters", "Monsters will no longer attack or spawn on you."
+//sh_morph.amxx //Shapeshift into a Crate", "Disguise yourself as a Crate and blend into the environment! Crate looks best when standing still."
+//sh_morpheus.amxx //"Dual MP5's", "Lower Gravity/Dual MP5's/Unlimited Ammo
+//sh_mrfreeze.amxx //Freeze the Ground", "Freeze the ground and make everyone slide around like on ice!
+sh_mystique.amxx //Morph into Enemy", "Press the +power key to shapeshift into the Enemy"
+sh_naruto.amxx //"HP, Speed, etc.", "He has the Kyuubi sealed in himself. He is Naruto!"
+//sh_necro.amxx //"Raise the Dead", "Raise a dead teamate as a zombie!
+//sh_neo.amxx //"Neo!", "You Look Like Neo
+sh_neoreloaded.amxx //Bullet Time", "Slow Motion and Bullet Time, when using Neo you can stop bullets!"
+//sh_nightcrawler.amxx //Walk Through Walls", "Can Walk Through Walls for Short Time - GET STUCK AND YOU'LL BE AUTO-SLAIN!"
+//sh_nihilanth.amxx //Spawn aliens", "Spawn aliens from Xen on keydown
+//sh_noob.amxx //"exploding deagle shots", "U WILL HAVE A DEAGE WITH 3 EXPLODING SHOTS!!"
+//sh_Op.amxx //UBERNESS!!!", "You get explosive para bullets/hp/grav/ap/speed/"
+//sh_overload.amxx //"OveRLoAd Assistance!", "On Key Down, Once Per Round, You Gain 100 HP Instantly!
+//sh_palpatine.amxx //"Dark Lord", "Death and Decay!",
+sh_penguin.amxx //Seeking HE-Penguins", "Throw HE Grenade strapped Pengiun friends that Seek out your enemy, also refill HE Grenades.
+//sh_pesk.amxx // "Pesk", "Shoot people when your dead"
+sh_phoenix.amxx //"Re-Birth", "As the Phoenix you shall Rise Again from your Burning Ashes."
+//sh_poisonivy.amxx //"Infect Poison", "Infect the enemy with your Poisoned Bullets or Poisoned Knife"
+//sh_polaris.amxx //"Metal Control", "Deflect grenades"
+//sh_potemkin.amxx //Powerful and Protective", "Slow, but very powerful. Deals double damage and has a chance to negate any attack on himself
+//sh_predator.amxx //"Invisibility, LaserCannon, Lazer Deagle, SuperClaw", "Invisibility while not shooting, Super Claw, Laser Beam
+//sh_probe.amxx //"3rd Person Views", "Use +power key to cycle view modes"
+//sh_psylocke.amxx // "Psychic Detection", "Recieve a Telepathic Warning when an Enemy is near.",
+sh_punisher.amxx //"Unlimited Ammo", "Endless Bullets. No Reload! Keep Shooting"
+//sh_raiden.amxx //"Sneaking", "Less visible and no footsteps.
+//sh_rambo.amxx //Rambo Style", "Start with a Para and do more Para damage. More HP/AP, free Glock and all 3 Nade types.
+//sh_rattler.amxx //Shockwave Shield", "Create a shockwave shield to deflect more dmg as level increases.
+//sh_redblood.amxx //Revenge!", "Do instant damage to your attacker!
+//sh_riddick.amxx //Auto Heal + SuperKnife", "Auto-Heal, Knife Damage, Extra Knife Speed
+//sh_robin.amxx //Utility Belt Addon", "Extra Weapons and Health - Buy the Ammo or Use with Punisher"
+//sh_rogue.amxx //Stealth, WoW style", "Walk around with stealth, World of Warcraft style
+//sh_rom.amxx //Senses", "Know where the player is
+//sh_saddam.amxx //Escape from enemies", "Press bind key to hide in a hole for a while"
+//sh_sandman.amxx //Quicksand", "Use +power key on Enemy in crosshair to Trap them in Quicksand
+//sh_santa.amxx //Santa Claus", "Santa Claus has extra hp extra ap extra speed lower gravity and more damage for ak47.
+//sh_sasuke.amxx //GodLike Hero", "Speed, FireBall, HP, Armor, Regen"
+//sh_scarlet.amxx  //Walk up walls", "Press the bound key and run into a wall to climb up it!"
+//sh_scat.amxx //Shadow Cat Powers", "Use Your knife to Walk through walls.
+//sh_scorpion.amxx //Get Over Here!", "Hold +power key to Harpoon and Drag opponents to you
+//sh_sephiroth.amxx //Sephiroth", "Generate Chi/Armor for mega attack.
+//sh_seymour.amxx //Summon Monsters", "Summon a selected Monster on enemy closest to aim location with +power key
+//sh_shade.amxx //Dust-storm", "Create a dust storm!
+//sh_shadow.amxx //Hero or Villain?", "More damage with Colt M4A1/HP/AP/Godmode + Chaos Blast
+//sh_shadowcat.amxx //Walk Through Walls", "Can Walk Through Walls for Short Time - GET STUCK AND YOU'LL BE AUTO-SLAIN!
+//sh_silversurfer.amxx //Cosmic Powers", "Endless Noclip, Hold Power Key Down
+//sh_skeletor.amxx //Summon Monsters", "Will automatically Summon Monsters to Attack Enemy Campers
+//sh_skulk.amxx //Bite Them", "Random Chance of Devouring Other Player
+//sh_slapstick.amxx //Comic Slap!", "Slap yourself around the map!
+//sh_slayer.amxx //God Removal/Assassinate", "Godmode removal; small chance of assassinating enemies with 1 bullet",
+//sh_snake.amxx //Health Rations & USP", "More Health, Free Armor, Free Powerful USP, and Health Rations on power key use.
+//sh_solid.amxx //Rations, Stealth, Snake's appearance, Socom", "You can use rations on keydown to healing, you have Snake's body, stealth camouflage and Socom instead USP"
+//sh_sonic.amxx //Fast & Jump High", "Run Fast, Jump High, more Health and Armor
+//sh_speedydemise.amxx //Decaying speed!", "You are dying... need to kill fast!
+//sh_spiderman.amxx //Web Swing", "Shoot Web to Swing - Jump Reels In, Duck Reels Out
+sh_spidermanv2.amxx //"High Jump/Spider Sense", "Press and Hold Jump, before hitting ground press Keydown to Jump even higher
+//sh_spy.amxx //Detection", "See the closest enemy on the radar!
+//sh_ssjgohan.amxx //Guided Kamehameha", "Hold +power key down to charge, and release to fire your Kamehameha.
+//sh_staticshock.amxx  //Fly", "You are now Static Shock"
+//sh_stealthpredator.amxx //Speed/Revive/Heal/Invisibility/No Footsteps", "Hold Keydown to go Invisible and No Footsteps
+sh_steel.amxx //Armored Battle Suit", "Suit activates when Health gets low: you can only get shot in the Head, regen Armor, and all weapons are 2x Damage
+//sh_stick.amxx //"Proximity Sense", "Longer ESP Rings show you when other players are approaching, also run faster.
+//sh_subzero.amxx //Ice Blast", "Fire A Ice Blast to freeze your enemys
+//sh_superchicken.amxx //Not Ordinary Chicken", "You knew the job was Dangerous when you took it!
+//sh_supergirl.amxx //Health/Armor/Flying", "More Health, Free Armor, and Flying on +power key"
+sh_superman.amxx //Health/Armor/Gravity", "More Health, Free Armor, and Reduced Gravity"
+//sh_SuperVegeta.amxx //GalitGun", "On +keydown Fire Vegeta's GalitGun and regen 1hp per sec
+//sh_t800.amxx //Change into a T-800", "Get a giant mini gun and you are indistructable"
+//sh_tenshinhan.amxx //Solar Flare", "Fire Tenshinhan's Solar Flare to blind enemy
+//sh_tentacle.amxx //Spawn a Tentacle", "Spawn a crazy tentacle thing on keydown!
+//sh_terminator.amxx //Power", "Steal the skin of dead people & Red NVGs"
+//sh_terranmarine.amxx //Stim Pack", "You will run much faster when stimmed
+//sh_thetick.amxx //No Fall Damage", "SPOOOON! Take no damage from falling
+//sh_thief.amxx //Pick Pocket", "Steal money from people by knifeing them
+//sh_thing.amxx //Rock Skin", "Chance to ignore bullets and knife hits
+//sh_thor.amxx //Thunder Bolt", "Strike Attackers with a Mighty Lightning Bolt from Thor's uru hammer Mjolnir.
+//sh_trunks.amxx //"Armor Refill and Knife Damage", "Gain 10 armor every second, free bombs, and knife damage.
+//sh_tyrael.amxx //Banish", "Temporarily teleports your attackers to the netherworld"
+//sh_ubergunner.amxx  //Wild2k", "Become UberGunner - Get an m4a1 wich does more dmg.",
+//sh_unclesam.amxx //NUKE (Admin Only)", "*** Admin Only Hero *** - Launch a Nuclear Strike and kill everyone (no XP gain/loss)"
+//sh_usmarine.amxx //M4A1 Reskin", " Lower Gravity / New M4A1 skin with unlimited ammo and more damge"
+//sh_vash.amxx //Revolver & Evasion", "Get Vash's .45 Long Colt Revolver (DEAGLE), that does More Damage. Also, evade by removing random hitzones.
+//sh_veronika.amxx //Resident Evil", "AK Grenade Launcher Right Mouse Button."
+//sh_vic15.amxx //15th Sacrament", "Deal damage to enemies merely by standing near them and always come back to life. Be careful of triggered deaths!
+//sh_vision.amxx  //Walk Through Walls, Robotic Skin, High Grav.", "You can walk through walls for a bit, Your armor and hp is SKY HIGH, real heavy
+//sh_Wargod.amxx //Wargod", "HP,AP,Ivisible,regenration,alien vision,esp,exploding bullets,summon monsters,random invincibility,Detect Team,Metal Control,Dark Notices,Raise Dead,Laser Shots"
+//sh_Wario.amxx //Be Wario", "NewWarioHammer Low Speed,High DMG
+//sh_warmachine.amxx //"Jet-Boots/Damage", "Rocket Jet Boots, jump and rocket to take off! Heavy Weaponry, Extra Damage for all weapons."
+//sh_weedman.amxx //Drug Rush.", "Regenerates health very fast while being drugged."
+sh_windwalker.amxx //"Silent Wind", "Enemy cannot hear your footsteps"
+sh_wolverine.amxx //Auto-Heal & Claws", "Auto-Heal, Extra Knife Damage and Speed Boost
+sh_xavier.amxx //Team Detection", "Detect what team a player is on by a glowing trail
+//sh_yoda.amxx //Force Push", "Push enemies away with the Jedi Power of the Force."
+//sh_zerog.amxx //Set 0 Gravity on Enemy", "Set gravity 0 on your opponent when you shoot them.
+sh_zeus.amxx //"Raise Dead", "Will Automatically Raise One Fallen Teammate
+//sh_zombie.amxx //Zombie", "Random chance of revive/can eat skull of victims

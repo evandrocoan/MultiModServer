@@ -129,7 +129,7 @@ public plugin_init()
 	// Surf Help
 	register_clcmd("say /surfhelp","CmdSurfhelp")
 	p_Help = register_cvar("usurf_help","1")
-	p_HelpInterval = register_cvar("usurf_help_interval","60.0")
+	p_HelpInterval = register_cvar("usurf_help_interval","600.0")
 	set_task(get_pcvar_float(p_HelpInterval),"ShowSurfHelp")
 	g_SurfHelpMenu = menu_create("Surf Help","SurfHelpHandle")
 	menu_additem(g_SurfHelpMenu,"Surfing Help")

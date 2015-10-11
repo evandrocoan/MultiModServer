@@ -1127,7 +1127,7 @@ public cmdStopsound(id)
 //==========================================================================================================
 public on_damage(id)
 {
-	if(!get_pcvar_num(bulletdamage))
+	if(!get_pcvar_num(bulletdamage) || 0 >= id )
 		return PLUGIN_HANDLED
 
 	new attacker = get_user_attacker(id)
@@ -2256,8 +2256,8 @@ public SpawnProtectionCountDown( stringID[] )
     new id = str_to_num( stringID )
     //server_print("%s - %d", stringID, id )
     
-    set_hudmessage(200, 200, 0, 0.35, 0.85, 0, 0.0, 1.0, 0.1, 0.1, 4) 
-    show_hudmessage(id, "%L", LANG_PLAYER, "AMX_SUPER_SPAWN_PROTECTION_MESSAGE", SpawnProtection[id])
+    set_hudmessage( 200, 200, 0, 0.35, 0.85, 0, 0.0, 1.0, 0.1, 0.1, 4 ) 
+    show_hudmessage( id, "%L", LANG_PLAYER, "AMX_SUPER_SPAWN_PROTECTION_MESSAGE", SpawnProtection[id] - 1 )
     
     SpawnProtection[id]--;
 
