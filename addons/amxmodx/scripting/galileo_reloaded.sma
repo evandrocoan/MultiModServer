@@ -8,9 +8,13 @@
 *  WITHOUT ANY WARRANTY; without even the implied warranty of
 *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
 *  General Public License for more details.
+*  
+*  You should have received a copy of the GNU General Public License
+*  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
 *****************************************************************************************
-[SIZE="6"][COLOR="Blue"][B]Galileo Neo v1.0-alpha1[/B][/COLOR][/SIZE]
+
+[SIZE="6"][COLOR="Blue"][B]Galileo Reloaded v1.0-alpha1[/B][/COLOR][/SIZE]
 [B]Release: 10.10.2015 | Last Update: 10.10.2015[/B]
 
 [anchor]Top[/anchor][SIZE="5"][COLOR="blue"][B]Contents' Table[/B][/COLOR][/SIZE] 
@@ -25,8 +29,8 @@
 [*][goanchor=Sourcecode]Source Code and Support[/goanchor]
 [*][goanchor=Downloads]Downloads[/goanchor]
 [/LIST]
-The original plugin "[URL="https://forums.alliedmods.net/showthread.php?t=77391"]galileo.sma[/URL]" is originally written by [B]Brad[/B]. The "Galileo Neo" works differently 
-from the original "[B]Galileo[/B]". This has special features for the "Multi-Mod Manager" plugin, but 
+The original plugin "[URL="https://forums.alliedmods.net/showthread.php?t=77391"]galileo.sma[/URL]" is originally written by [B]Brad[/B]. The "Galileo Reload" works differently 
+from the original "[B]Galileo[/B]". This has special features for the "[URL=" "]Multi-Mod Manager[/URL]" plugin, but 
 still can be used alone. See the [goanchor=Change]Change Log[/goanchor] and [goanchor=Credits]Credits[/goanchor] for more info. 
 
 This is a Alpha version. This Alpha software can be unstable, see [goanchor=TODO]TODO[/goanchor] section for more information. 
@@ -58,11 +62,11 @@ have with this plugin.  It's located in the [B]Attached ZIP[/B] available at the
 
  * Command '[COLOR="Blue"][B]gal_startvote [-nochange][/B][/COLOR]', to forces a map vote to begin and the map will be 
 	   changed once the next map has been determined. If the "[COLOR="blue"][B]-nochange[/B][/COLOR]" argument is supplied, 
-	   the map will not be changed by [COLOR="Blue"]Galileo Neo Reload[/COLOR], which is useful when you have a different 
+	   the map will not be changed by [COLOR="Blue"]Galileo Reload[/COLOR], which is useful when you have a different 
 	   plugin handling the actual changing of the map. 
 
  * Command '[COLOR="Blue"][B]gal_startvote2 [-nochange][/B][/COLOR]', the same as the first but, when keep the current 
-	   map option wins, the current map is restarted. This command is specially for the "Multi-Mod Manager" plugin. 
+	   map option wins, the current map is restarted. This command is specially for the "[URL=" "]Multi-Mod Manager[/URL]" plugin. 
 
  * Command '[COLOR="Blue"][B]gal_createmapfile filename[/B][/COLOR]', Creates a file that contains a list of every valid 
 	   map in your maps folder. The [COLOR="Blue"][B]filename[/B][/COLOR] argument indicates specifies the name to be used for 
@@ -111,20 +115,20 @@ Tested under [B]Counter-Strike[/B] and Counter-Strike: [B]Condition Zero[/B]
 [/QUOTE]
 
 ******************************** [anchor]Installation[/anchor][B][SIZE="5"][COLOR="Blue"]Installation[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor]  **********************
-[B]1.[/B] Download the files "[B]galileo_neo_reloaded.sma[/B]" and "[B]plugin_resources.zip[/B]" at [goanchor=Downloads]Downloads[/goanchor] 
+[B]1.[/B] Download the files "[B]galileo_reloaded.sma[/B]" and "[B]plugin_resources.zip[/B]" at [goanchor=Downloads]Downloads[/goanchor] 
 section.
 
-[B]2.[/B] Then unzip the content of "[B]yourgamemod[/B]" from "[B]plugin_resources.zip[/B]", to your gamemod folder. 
+[B]2.[/B] Then take the content of "[B]yourgamemod[/B]" from "[B]plugin_resources.zip[/B]", to your gamemod folder. 
 Ex: czero, cstrike, ...
 
 [B]3.[/B] [B]Compile[/B] the file and put the [B]compiled[/B] file to your plugins folder at 
-"yourgamemod/addons/amxmodx/[B]plugins[/B]". 
+"[COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]plugins[/B]". 
 
 [B]4.[/B] Put the [B]next line[/B] to your "[B]plugins.ini[/B]" file at "yourgamemod/addons/amxmodx/[B]configs[/B]" folder and
 disable the original "[B]mapchooser.amxx[/B]" or any other [B]map manager plugin[/B], like the original the 
 "[URL="https://forums.alliedmods.net/showthread.php?t=77391"]galileo.sma[/URL]":
 [QUOTE]
-galileo_neo_reloaded.amxx
+galileo_reloaded.amxx
 [/QUOTE]
 
 ******************************** [anchor]Change[/anchor][B][SIZE="5"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] ***********************
@@ -160,7 +164,7 @@ v1.0-alpha1
 
 ******************************** [anchor]Credits[/anchor][B][SIZE="5"][COLOR="blue"]Credits[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *******************************
 [B]Brad[/B]: The original [URL="https://forums.alliedmods.net/showthread.php?t=77391"]galileo.sma[/URL] developer. 
-[B]Addons zz[/B]: The galileo_neo_reloaded.sma developer. 
+[B]Addons zz[/B]: The galileo_reloaded.sma developer. 
 [B]Th3822[/B]: For find a error from map_nominate. 
 [QUOTE=Brad;684848][COLOR=darkblue][SIZE=4][B]Donations to the Original Author[/B][/SIZE][/COLOR] 
 A lot of time and effort went into making this plugin, making features just right, 
@@ -177,7 +181,7 @@ Thank you!  It means a lot to me.
 [/QUOTE]
 ******************************** [anchor]Sourcecode[/anchor][SIZE="5"][COLOR="blue"][B]Source Code and Support[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor] ***
 This source code is available on [B]GitHub[/B]. 
-[URL]https://github.com/addonszz/Multi-Mod_Server/blob/develop/addons/amxmodx/scripting/galileo_neo_reloaded.sma[/URL]
+[URL]https://github.com/addonszz/Multi-Mod_Server/blob/develop/addons/amxmodx/scripting/galileo_reloaded.sma[/URL]
 
 For any problems with this plugin visit [B][URL="https://forums.alliedmods.net/index.php"]this own page[/URL][/B] or:
 [url]https://github.com/Addonszz/Multi-Mod_Server/issues[/url]
@@ -211,6 +215,7 @@ from the [B]amxx cvars[/B] command. They will be grouped together.
 [/LIST] 
 [/QUOTE] 
 ******************************** [anchor]Downloads[/anchor][SIZE="6"][COLOR="Blue"][B]Downloads[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor] ********************
+
 */
 
 new const PLUGIN_VERSION[]  = "1.0-alpha1";

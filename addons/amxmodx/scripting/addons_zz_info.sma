@@ -8,7 +8,12 @@
  *  WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  *  General Public License for more details.
+*  
+*  You should have received a copy of the GNU General Public License
+*  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*
  ******************************************************************************
+
 [SIZE="6"][COLOR="Blue"][B]Addons zz's Multi-Mod Server v1.0-alpha1[/B][/COLOR][/SIZE]
 [B]Release: 10.10.2015 | Last Update: 10.10.2015[/B]
 
@@ -41,7 +46,7 @@ This will be "[URL="https://github.com/addonszz/Multi-Mod_Server/blob/master/add
 of all plugins at this Multi-Mod_Server. There you can active or deactivate then as you usually do 
 at your own "[B]plugins.ini[/B]. 
 
-This Multi-Mod_Server comes with the following Mods installed and configured: 
+This Multi-Mod_Server comes with the following Mods [B]installed[/B] and configured: 
 [LIST]
 [*]CS-DM (DeathMatch)
 [*]Catch Mod
@@ -69,10 +74,10 @@ file.
 See [URL="https://github.com/addonszz/Multi-Mod_Server/blob/master/Commands.txt"]here[/URL] the big list of commands actually activated. To see the new ones after active a plugin, just type 
 "[B]amx_help[/B]"/"[B]amxx cvars[/B]" at server's console, to see the commands and cvars of all plugins activated. 
 
-If you enter at a new map, like "[B]zm_*[/B]" maps for zombie plague mod, the Zombie Mod is activated 
-automatically. If you was using some other mod, it [B]automatically deactivate[/B] when you are at "[B]zm_*[/B]" maps. 
-When you leave the "[B]zm_*[/B]" map, the Zombie Mod is deactivated automatically, and you last mod is activated 
-automatically, if there was [B]an active[/B] mod before enter at the "[B]zm_*[/B]" map. 
+If you enter at a new map, like "[B]zm_*[/B]" maps for zombie plague mod, the Zombie Mod is activated automatically. 
+If you was using some other mod, it [B]automatically deactivate[/B] when you are at "[B]zm_*[/B]" maps. When you leave 
+the "[B]zm_*[/B]" map, the Zombie Mod is deactivated automatically, and you last mod is activated automatically, 
+if there was [B]an active[/B] mod before you enter at the "[B]zm_*[/B]" map. 
 
 The same happens to "[B]catch_*[/B]" and "[B]surf_*[/B]" maps. If want to disable that feature, rename the folder 
 "[COLOR="Blue"]yourgamemod/addons/amxmodx/configs/[/COLOR][B]maps[/B]" to [B]"maps_old"[/B]. If you want to enable that feature again, 
@@ -118,7 +123,7 @@ at the folder [COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]scripting/comp
 
 [anchor]Configuration[/anchor][B]4.[/B] [SIZE="4"]Edit[/SIZE] the "[URL="https://github.com/addonszz/Multi-Mod_Server/blob/master/addons/amxmodx/configs/plugins-ultra.ini"]plugins-ultra.ini[/URL]" file at [COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]configs/[/B] folder, to your own taste. 
 
-[B]5.[/B] If you want, [SIZE="4"][COLOR="red"]learn how to configure[/COLOR][/SIZE] your [URL="https://forums.alliedmods.net/index.php"]own mods here[/URL].
+[B]5.[/B] If you want, [SIZE="4"][COLOR="red"]learn how to configure[/COLOR][/SIZE] your [URL="                         "]own mods here[/URL].
 
 ******************************** [anchor]Profiler[/anchor][B] Profiler Benchmark [/B] *****************************************
 [goanchor=TODO]TODO[/goanchor] 
@@ -148,7 +153,7 @@ Hence, that are a lot of credits, so just read its own source code doc to heads 
 This source code is available on [B]GitHub[/B]. 
 [URL]https://github.com/addonszz/Multi-Mod_Server[/URL]
 
-For any problems with this plugin visit [B][URL="https://forums.alliedmods.net/index.php"]this own page[/URL][/B] or:
+For any problems with this plugin visit [B][URL="                      "]this own page[/URL][/B] or:
 [url]https://github.com/Addonszz/Multi-Mod_Server/issues[/url]
 for support. 
 
@@ -182,7 +187,7 @@ from the [B]amxx cvars[/B] command. They will be grouped together.
 
 ***************************************************************************************	
 Testing server
-[IMG]http://cache.www.gametracker.com/server_info/jacks.noip.me:27015/b_560_95_1.png[/IMG]
+[URL="http://cache.www.gametracker.com/server_info/jacks.noip.me:27015/"][IMG]http://cache.www.gametracker.com/server_info/jacks.noip.me:27015/b_560_95_1.png[/IMG][/URL]
 
 [anchor]Downloads[/anchor][SIZE="6"][COLOR="Blue"][B]Downloads[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor]
 
@@ -208,12 +213,12 @@ new g_configFolder[ LONG_STRING ]
  */
 public plugin_init()
 {   
-	register_plugin( PLUGIN, VERSION, AUTHOR )
+	register_plugin( PLUGIN, VERSION, AUTHOR ) 
 
-    register_dictionary( "multimodhelp.txt" )
-	register_cvar("MultiModServerCore", VERSION, FCVAR_SERVER|FCVAR_SPONLY)
+    register_dictionary( "multimodhelp.txt" ) 
+	register_cvar("MultiModServer", VERSION, FCVAR_SERVER|FCVAR_SPONLY) 
 
-	get_configsdir( g_configFolder, charsmax( g_configFolder ) )
+	get_configsdir( g_configFolder, charsmax( g_configFolder ) ) 
 }
 
 /*

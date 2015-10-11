@@ -8,6 +8,9 @@
 *  WITHOUT ANY WARRANTY; without even the implied warranty of
 *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
 *  General Public License for more details.
+*  
+*  You should have received a copy of the GNU General Public License
+*  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
 *****************************************************************************************
 
@@ -51,7 +54,7 @@ only active when you are not using any mod, or your current mod does not specifi
 As I am working at another plugins, I cannot provide immediately fixes and forum's answers here. But 
 as soon as I can, I am going to release the final version. 
 [URL="http://www.gametracker.com/search/?search_by=server_variable&search_by2=MultiModManager&query=&loc=_all&sort=&order="]
-[SIZE=3][B][COLOR=DarkGreen]Click here to see all servers using this plugin.[/COLOR][/B][/SIZE][/URL]
+[SIZE=3][B][COLOR=DarkGreen]Click here to see all servers using this plugin.[/COLOR][/B][/SIZE][/URL] 
 
 ********************** [anchor]Introduction[/anchor][B][SIZE="5"][COLOR="blue"]Introduction[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor]  *******************************
 This is a multi-mod server manager, that controls which mod is, or will be activated. 
@@ -151,7 +154,7 @@ Tested under [B]Counter-Strike[/B] and Counter-Strike: [B]Condition Zero[/B]
 [*]Zombie Money Mod
 [*]Zombie Pack Ammo Mod
 [/LIST]
-[SIZE="4"][URL="https://github.com/Addonszz/Multi-Mod_Server"]Is available here[/URL][/SIZE]. 
+[SIZE="4"][URL=" "]Is available here[/URL][/SIZE]. 
 
 ******************************** [anchor]Installation[/anchor][B][SIZE="5"][COLOR="Blue"]Installation[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor]  **********************
 [B]1.[/B] Download the files "[B]multimod_manager.sma[/B]", "[B]plugin_resources.zip[/B]",  
@@ -260,9 +263,9 @@ v1.0-release_candidate1
 This source code is available on [B]GitHub[/B]. 
 [URL]https://github.com/addonszz/Multi-Mod_Server/blob/develop/addons/amxmodx/scripting/multimod_manager.sma[/URL]
 
-For any problems with this plugin visit [B][URL="https://forums.alliedmods.net/index.php"]this own page[/URL][/B] or:
-[url]https://github.com/Addonszz/Multi-Mod_Server/issues[/url]
-for support.
+For any problems with this plugin visit [B][URL=" "]this own page[/URL][/B] or: 
+[url]https://github.com/Addonszz/Multi-Mod_Server/issues[/url] 
+for support. 
 
 If you are [B]posting[/B] because the plugin or a [B]feature[/B] of the plugin isn't working for you, [B]please[/B] do 
 all of the following, so we can [COLOR="Blue"]more efficiently[/COLOR] figure out what's going on:
