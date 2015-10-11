@@ -85,27 +85,27 @@ rename back the [B]"maps_old"[/B] folder.
 
 [B]Example[/B] of "[B]amx_setmod help 1[/B]":
 [QUOTE]
-amx_setmod help 1       | To show this help.
+amx_setmod help 1	   | To show this help.
 amx_setmod disable 1   | To deactivate any active Mod.
-amx_votemod     | To force a votemod.
-say nextmod      | To see which is the next mod.
-say_team nextmod               | To see which is the next mod.
+amx_votemod	 | To force a votemod.
+say nextmod	  | To see which is the next mod.
+say_team nextmod			   | To see which is the next mod.
 say currentmod  | To see which is the current mod.
-say votemod      | To try start a vote mod.
-say_team votemod         | To try start a vote mod.
-amx_setmod csdm 1          | to use CS-DM (DeathMatch)
-amx_setmod catch 1          | to use Catch Mod
-amx_setmod dragon 1          | to use Dragon Ball Mod
-amx_setmod gungame 1          | to use Gun Game Mod
-amx_setmod hiden 1          | to use Hide N Seek Mod
-amx_setmod jctf 1          | to use Just Capture The Flag
-amx_setmod knife 1          | to use Knife Arena Mod
-amx_setmod predator 1          | to use Predator Mod_b2
-amx_setmod shero 1          | to use Super Heros
-amx_setmod surf 1          | to use Surf Mod
-amx_setmod warcraft 1          | to use Warcraft Ultimate Mod 3
-amx_setmod zp50Money 1          | to use Zombie Money Mod
-amx_setmod zp50Ammo 1          | to use Zombie Pack Ammo Mod
+say votemod	  | To try start a vote mod.
+say_team votemod		 | To try start a vote mod.
+amx_setmod csdm 1		  | to use CS-DM (DeathMatch)
+amx_setmod catch 1		  | to use Catch Mod
+amx_setmod dragon 1		  | to use Dragon Ball Mod
+amx_setmod gungame 1		  | to use Gun Game Mod
+amx_setmod hiden 1		  | to use Hide N Seek Mod
+amx_setmod jctf 1		  | to use Just Capture The Flag
+amx_setmod knife 1		  | to use Knife Arena Mod
+amx_setmod predator 1		  | to use Predator Mod_b2
+amx_setmod shero 1		  | to use Super Heros
+amx_setmod surf 1		  | to use Surf Mod
+amx_setmod warcraft 1		  | to use Warcraft Ultimate Mod 3
+amx_setmod zp50Money 1		  | to use Zombie Money Mod
+amx_setmod zp50Ammo 1		  | to use Zombie Pack Ammo Mod
 [/QUOTE]
 ******************************** [anchor]Installation[/anchor][B][SIZE="5"][COLOR="Blue"]Installation[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor]  **********************
 [B]1.[/B] Download the files "[B]Multi-Mod_Server-master.zip[/B]" and "[B]Multi-Mod_Server_resources.zip[/B]" at 
@@ -195,12 +195,13 @@ Testing server
 
  */
 #include <amxmodx>
+#include <amxmisc>
 
 #define PLUGIN "Addons zz Info"
 #define VERSION "1.0"
 #define AUTHOR "Addons zz"
 
-#define SHORT_STRING 64
+#define LONG_STRING 256
 
 new g_configFolder[ LONG_STRING ]
 
@@ -215,10 +216,8 @@ public plugin_init()
 {   
 	register_plugin( PLUGIN, VERSION, AUTHOR ) 
 
-    register_dictionary( "multimodhelp.txt" ) 
+	register_dictionary( "multimodhelp.txt" ) 
 	register_cvar("MultiModServer", VERSION, FCVAR_SERVER|FCVAR_SPONLY) 
-
-	get_configsdir( g_configFolder, charsmax( g_configFolder ) ) 
 }
 
 /*
@@ -229,31 +228,33 @@ public plugin_init()
  */
 public plugin_cfg()
 {
+	get_configsdir(g_configFolder, charsmax(g_configFolder))
+
 	server_cmd( "exec %s/amxx_ultra.cfg", g_configFolder )
 }
 
 public plugin_precache()
 {   
-    precache_sound( "ambience/ratchant.wav" );
-    precache_sound( "misc/snore.wav" );
+	precache_sound( "ambience/ratchant.wav" );
+	precache_sound( "misc/snore.wav" );
 }
 
 public client_putinserver( id )
 {   
-    if ( is_user_bot( id ) )
-    {   
-        return
-    }
+	if ( is_user_bot( id ) )
+	{   
+		return
+	}
 
-    set_task( 50.1, "dispInfo", id )
+	set_task( 50.1, "dispInfo", id )
 }
 
 public dispInfo( id )
 {   
-    client_print( id, print_chat, "%L", id, "TYPE_ADDONS_CONTATO" )
+	client_print( id, print_chat, "%L", id, "TYPE_ADDONS_CONTATO" )
 }
 
 public client_disconnect( id )
 {   
-    remove_task (id)
+	remove_task (id)
 }
