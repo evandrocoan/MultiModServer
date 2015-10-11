@@ -10,6 +10,7 @@
 *  General Public License for more details.
 *
 *****************************************************************************************
+
 [SIZE="6"][COLOR="Blue"][B]Multi-Mod Manager v1.0-release_candidate1[/B][/COLOR][/SIZE]
 [B]Release: 10.10.2015 | Last Update: 10.10.2015[/B]
 
@@ -33,7 +34,7 @@ differently from the original "[COLOR="Blue"]MultiMod Manager[/COLOR]". It keeps
 set ([B]the Mod[/B]) to the current game, without changing your original "[B]plugins.ini[/B]". See [goanchor=Credits]Credits[/goanchor] for information. 
 
 This is a release candidate, which is a beta version with potential to be a final product, which is ready to be 
-released unless significant bugs emerge. In this stage of product stabilization, all product features have been 
+released unless [B]significant bugs[/B] emerge. In this stage of product stabilization, all product [B]features[/B] have been 
 designed, coded and tested through one or more beta cycles with no known show stopper-class bug. 
 
 This plugin is not compatible with the AMXX's very own [B]Map Chooser[/B], but with its modification 
@@ -42,7 +43,7 @@ This plugin is not compatible with the AMXX's very own [B]Map Chooser[/B], but w
 As I am working at another plugins, I cannot provide immediately fixes and forum's answers here. But 
 as soon as I can, I am going to release the final version. 
 [URL="http://www.gametracker.com/search/?search_by=server_variable&search_by2=MultiModManager&query=&loc=_all&sort=&order="]
-[SIZE=5][B][COLOR=DarkGreen]Click here to see all servers using this plugin.[/COLOR][/B][/SIZE][/URL]
+[SIZE=3][B][COLOR=DarkGreen]Click here to see all servers using this plugin.[/COLOR][/B][/SIZE][/URL]
 
 ********************** [anchor]Introduction[/anchor][B][SIZE="5"][COLOR="blue"]Introduction[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor]  *******************************
 This is a multi-mod server manager, that controls which mod is, or will be activated. 
@@ -73,7 +74,9 @@ other mod is [COLOR="Blue"][B]activated[/B][/COLOR] or your disable the active m
       starting a vote map (1) or not (0), right after. 
 
  * Command '[COLOR="Blue"][B]amx_setmods modShortName <1 or 0>[/B][/COLOR]', to enable the mod "modShortName" as [COLOR="Blue"]surf[/COLOR], 
-      restarting (1) or not (0) the server, immediately. 
+      restarting (1) or not (0) the server immediately, [B]s[/B]ilently. 
+
+OBS: A mod can [B]only[/B] to be/get activated after a restart. 
 [/QUOTE]
 
 The command "[B]amx_setmod help 1[/B]" display the acceptable inputs and loaded mods 
@@ -278,7 +281,8 @@ from the [B]amxx cvars[/B] command. They will be grouped together.
 [/LIST]
 [/QUOTE]
 ******************************** [anchor]Downloads[/anchor][SIZE="6"][COLOR="Blue"][B]Downloads[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor] ********************
- */
+ 
+*/
 
 #include <amxmodx>
 #include <amxmisc>
