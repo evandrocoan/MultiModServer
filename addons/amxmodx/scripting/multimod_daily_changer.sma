@@ -62,20 +62,29 @@
 public plugin_init()
 {
     register_plugin("Multi-Mod Daily Changer", "1.0", "Addons zz/JustinHoMi & JGHG")
-    new today[8], workpath[32]
 
     new isFirstTime[32]
     get_localinfo( "isFirstTimeLoadMapCycle", isFirstTime, charsmax( isFirstTime ) );
+
     new isFirstTimeNum = str_to_num( isFirstTime )
 
     if ( isFirstTimeNum == 2 )
 	{
+		new today[8]
+		new mapCycleFilePath[32]
+		new serverCfgFilePath[32]
+
         get_time("%a", today, 8)
+        formatex( mapCycleFilePath, charsmax( mapCycleFilePath ), "mapcycles/day/%s.txt", today )
+        formatex( serverCfgFilePath, charsmax( serverCfgFilePath ), "mapcycles/day/cfg/%s.cfg", today)
 
-        format(workpath, 31, "mapcycles/day/%s.txt", today)
-        set_cvar_string("mapcyclefile", workpath)
-
-        format(workpath, 31, "mapcycles/day/cfg/%s.cfg", today)
-        set_cvar_string("mapchangecfgfile", workpath)
+		if( file_exists(mapCycleFilePath) )
+		{
+			set_cvar_string("mapcyclefile", mapCycleFilePath)
+		}
+		if( file_exists(serverCfgFilePath) )
+		{
+			set_cvar_string("mapchangecfgfile", serverCfgFilePath)
+		}
     }
 }
