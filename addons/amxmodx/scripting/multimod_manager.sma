@@ -42,7 +42,7 @@ designed, coded and tested through one or more beta cycles with no known show st
 
 This plugin [COLOR="Red"]is [B]not[/B] compatible[/COLOR] with the AMXX's very own [B]Map Chooser[/B] or "[B]Daily Maps[/B]", but yes with its 
 modification "[B]multimod_mapchooser.sma[/B]" and "[B]multimod_daily_changer[/B]" provided here. The new 
-"[URL=" "]galieo_reloaded.sma[/URL]" which is a different Galileo version, is ready to be used with this [B]Multi-Mod Manager[/B]". 
+"[URL="https://forums.alliedmods.net/showthread.php?t=273019"]galieo_reloaded.sma[/URL]" which is a different Galileo version, is ready to be used with this [B]Multi-Mod Manager[/B]". 
 
 The "[B]Multi-Mod Daily Maps[/B]" is a modified version of "[B]Daily Maps[/B]" to work with this "[B]Multi-Mod Manager[/B]". 
 This plugin only works with "[B]Multi-Mod Manager[/B]", alone the "[B]Multi-Mod Daily Maps[/B]" does nothing. Its allows 
@@ -154,7 +154,7 @@ Tested under [B]Counter-Strike[/B] and Counter-Strike: [B]Condition Zero[/B]
 [*]Zombie Money Mod
 [*]Zombie Pack Ammo Mod
 [/LIST]
-[SIZE="4"][URL=" "]Is available here[/URL][/SIZE]. 
+[SIZE="4"][URL="https://forums.alliedmods.net/showthread.php?t=273018"]Is available here[/URL][/SIZE]. 
 
 ******************************** [anchor]Installation[/anchor][B][SIZE="5"][COLOR="Blue"]Installation[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor]  **********************
 [B]1.[/B] Download the files "[B]multimod_manager.sma[/B]", "[B]plugin_resources.zip[/B]",  
@@ -179,7 +179,7 @@ exec addons/amxmodx/configs/multimod/multiMod.cfg
 [/QUOTE]
 
 [anchor]Configuration[/anchor][B]6. [SIZE="5"][COLOR="red"]Configure[/COLOR][/SIZE][/B] your own mods at "[COLOR="Blue"]yourgamemod/addons/amxmodx/configs/multimod/[/COLOR][B]multimod.ini[/B]" 
-file as follow:
+file as follow (the short mod name cannot be longer than 15 characters neither have spaces):
 
 --- [B]Example of:[/B] [COLOR="Blue"]yourgamemod/addons/amxmodx/configs/multimod/[/COLOR][B]multimod.ini[/B] ------
 [QUOTE]
@@ -256,14 +256,14 @@ v1.0-release_candidate1
 [B]dark vador 008[/B]: Time and server for testing under czero "multimod.sma". 
 [B]Addons zz[/B]: The "multimod_manager.sma" developer. 
 [B]DeRoiD's[/B]: For print_color function. 
-[B]JustinHoMi & JGHG[/B]: For the "[URL="https://forums.alliedmods.net/showthread.php?t=51995"]Daily Maps[/URL]" plugin. 
+[B]JustinHoMi & JGHG[/B]: For the "[URL="https://forums.alliedmods.net/showthread.php?t=3886"]Daily Maps[/URL]" plugin. 
 [B]AMXX Dev Team[/B]: For the "Map Chooser" plugin. 
 
 ******************************** [anchor]Sourcecode[/anchor][SIZE="5"][COLOR="blue"][B]Source Code and Support[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor] ***
 This source code is available on [B]GitHub[/B]. 
 [URL]https://github.com/addonszz/Multi-Mod_Server/blob/develop/addons/amxmodx/scripting/multimod_manager.sma[/URL]
 
-For any problems with this plugin visit [B][URL=" "]this own page[/URL][/B] or: 
+For any problems with this plugin visit [B][URL="https://forums.alliedmods.net/showthread.php?t=273020"]this own page[/URL][/B] or: 
 [url]https://github.com/Addonszz/Multi-Mod_Server/issues[/url] 
 for support. 
 
@@ -295,7 +295,7 @@ from the [B]amxx cvars[/B] command. They will be grouped together.
 [/LIST]
 [/QUOTE]
 ******************************** [anchor]Downloads[/anchor][SIZE="6"][COLOR="Blue"][B]Downloads[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor] ********************
- 
+
 */
 
 #include <amxmodx>

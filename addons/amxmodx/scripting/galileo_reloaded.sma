@@ -30,7 +30,7 @@
 [*][goanchor=Downloads]Downloads[/goanchor]
 [/LIST]
 The original plugin "[URL="https://forums.alliedmods.net/showthread.php?t=77391"]galileo.sma[/URL]" is originally written by [B]Brad[/B]. The "Galileo Reload" works differently 
-from the original "[B]Galileo[/B]". This has special features for the "[URL=" "]Multi-Mod Manager[/URL]" plugin, but 
+from the original "[B]Galileo[/B]". This has special features for the "[URL="https://forums.alliedmods.net/showthread.php?t=273020"]Multi-Mod Manager[/URL]" plugin, but 
 still can be used alone. See the [goanchor=Change]Change Log[/goanchor] and [goanchor=Credits]Credits[/goanchor] for more info. 
 
 This is a Alpha version. This Alpha software can be unstable, see [goanchor=TODO]TODO[/goanchor] section for more information. 
@@ -41,7 +41,7 @@ As I am working at another plugins, I cannot provide immediately fixes and forum
 as soon as I can, I am going to release a new alpha version, fixing the current bugs listed here at 
 [goanchor=TODO]TODO[/goanchor] section. 
 [URL="http://www.gametracker.com/search/?search_by=server_variable&search_by2=GalileoReloaded&query=&loc=_all&sort=&order="]
-[SIZE=5][B][COLOR=DarkGreen]Click here to see all servers using this plugin.[/COLOR][/B][/SIZE][/URL]
+[SIZE=3][B][COLOR=DarkGreen]Click here to see all servers using this plugin.[/COLOR][/B][/SIZE][/URL]
 
 ********************** [anchor]Introduction[/anchor][B][SIZE="5"][COLOR="blue"]Introduction[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor]  *******************************
 This is a feature rich map voting plugin.  It's intended to be used in place of any other map choosing plugin 
@@ -66,7 +66,8 @@ have with this plugin.  It's located in the [B]Attached ZIP[/B] available at the
 	   plugin handling the actual changing of the map. 
 
  * Command '[COLOR="Blue"][B]gal_startvote2 [-nochange][/B][/COLOR]', the same as the first but, when keep the current 
-	   map option wins, the current map is restarted. This command is specially for the "[URL=" "]Multi-Mod Manager[/URL]" plugin. 
+	   map option wins, the current map is restarted. This command is specially for the "[URL="https://forums.alliedmods.net/showthread.php?t=273020"]Multi-Mod Manager[/URL]" 
+       plugin. 
 
  * Command '[COLOR="Blue"][B]gal_createmapfile filename[/B][/COLOR]', Creates a file that contains a list of every valid 
 	   map in your maps folder. The [COLOR="Blue"][B]filename[/B][/COLOR] argument indicates specifies the name to be used for 
@@ -158,7 +159,7 @@ v1.0-alpha1
  * Fix broken re-opt vote. 
  * To clear unused language file constants. 
  * Add colored messages. 
- * Add nominate maps by a map list. 
+ * Add nominate maps by a map list menu. 
  * Add auto-update feature to the vote menu while voting. 
 [/QUOTE]
 
@@ -183,7 +184,7 @@ Thank you!  It means a lot to me.
 This source code is available on [B]GitHub[/B]. 
 [URL]https://github.com/addonszz/Multi-Mod_Server/blob/develop/addons/amxmodx/scripting/galileo_reloaded.sma[/URL]
 
-For any problems with this plugin visit [B][URL="https://forums.alliedmods.net/index.php"]this own page[/URL][/B] or:
+For any problems with this plugin visit [B][URL="https://forums.alliedmods.net/showthread.php?t=273019"]this own page[/URL][/B] or:
 [url]https://github.com/Addonszz/Multi-Mod_Server/issues[/url]
 for support.
 

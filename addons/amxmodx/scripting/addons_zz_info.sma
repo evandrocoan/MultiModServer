@@ -123,7 +123,7 @@ at the folder [COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]scripting/comp
 
 [anchor]Configuration[/anchor][B]4.[/B] [SIZE="4"]Edit[/SIZE] the "[URL="https://github.com/addonszz/Multi-Mod_Server/blob/master/addons/amxmodx/configs/plugins-ultra.ini"]plugins-ultra.ini[/URL]" file at [COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]configs/[/B] folder, to your own taste. 
 
-[B]5.[/B] If you want, [SIZE="4"][COLOR="red"]learn how to configure[/COLOR][/SIZE] your [URL="                         "]own mods here[/URL].
+[B]5.[/B] If you want, [SIZE="4"][COLOR="red"]learn how to configure[/COLOR][/SIZE] your [URL="https://forums.alliedmods.net/showthread.php?t=273020#Configuration"]own mods here[/URL].
 
 ******************************** [anchor]Profiler[/anchor][B] Profiler Benchmark [/B] *****************************************
 [goanchor=TODO]TODO[/goanchor] 
@@ -153,7 +153,7 @@ Hence, that are a lot of credits, so just read its own source code doc to heads 
 This source code is available on [B]GitHub[/B]. 
 [URL]https://github.com/addonszz/Multi-Mod_Server[/URL]
 
-For any problems with this plugin visit [B][URL="                      "]this own page[/URL][/B] or:
+For any problems with this plugin visit [B][URL="https://forums.alliedmods.net/showthread.php?t=273018"]this own page[/URL][/B] or:
 [url]https://github.com/Addonszz/Multi-Mod_Server/issues[/url]
 for support. 
 
