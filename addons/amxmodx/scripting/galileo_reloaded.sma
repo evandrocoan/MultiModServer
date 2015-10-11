@@ -116,10 +116,10 @@ Tested under [B]Counter-Strike[/B] and Counter-Strike: [B]Condition Zero[/B]
 [/QUOTE]
 
 ******************************** [anchor]Installation[/anchor][B][SIZE="5"][COLOR="Blue"]Installation[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor]  **********************
-[B]1.[/B] Download the files "[B]galileo_reloaded.sma[/B]" and "[B]plugin_resources.zip[/B]" at [goanchor=Downloads]Downloads[/goanchor] 
+[B]1.[/B] Download the files "[B]galileo_reloaded.sma[/B]" and "[B]configuration_files.zip[/B]" at [goanchor=Downloads]Downloads[/goanchor] 
 section.
 
-[B]2.[/B] Then take the contents of "[B]yourgamemod[/B]" from "[B]plugin_resources.zip[/B]", to your gamemod folder. 
+[B]2.[/B] Then take the contents of "[B]yourgamemod[/B]" from "[B]configuration_files.zip[/B]", to your gamemod folder. 
 Ex: czero, cstrike, ...
 
 [B]3.[/B] [B]Compile[/B] the file and put the [B]compiled[/B] file to your plugins folder at 
@@ -151,12 +151,12 @@ v1.0-alpha1
  * Made the vote map list be loaded from the current mapcycle file. 
  * Made changemap immediately after a forced map vote, calling gal_startvote. 
  * When nobody vote for next map, keep the initial server next map. 
- * Disabled nextmap unknown change. 
+ * Disabled amx_nextmap to [unknown] value change. 
 [/QUOTE]
 
 ******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *********************************
 [QUOTE]
- * Fix broken re-opt vote. 
+ * Fix broken re-opt (Runoff ) vote. 
  * To clear unused language file constants. 
  * Add colored messages. 
  * Add nominate maps by a map list menu. 

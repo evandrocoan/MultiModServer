@@ -82,10 +82,12 @@ other mod is [COLOR="Blue"][B]activated[/B][/COLOR] or your disable the active m
  * When the min vote mod time is not [B]reached/disabled[/B], display a message informing it. 
 
  * Command '[COLOR="Blue"][B]amx_setmod modShortName <1 or 0>[/B][/COLOR]', to enable the mod "modShortName" as [COLOR="Blue"]csdm[/COLOR], 
-      starting a vote map (1) or not (0), right after. 
+      starting a vote map (1) or not (0), right after. This command can [B]only active mods loaded[/B] from 
+      "[B]multimod.ini[/B]" file, and needs an admin level ADMIN_CFG. 
 
  * Command '[COLOR="Blue"][B]amx_setmods modShortName <1 or 0>[/B][/COLOR]', to enable the mod "modShortName" as [COLOR="Blue"]surf[/COLOR], 
-      restarting (1) or not (0) the server immediately, [B]s[/B]ilently. 
+      restarting (1) or not (0) the server immediately, [B]s[/B]ilently. This command can [B]active any mod installed[/B] 
+      at the server, and it needs an admin level ADMIN_CVAR. 
 
 OBS: A mod can [B]only[/B] to be/get activated after a restart. 
 [/QUOTE]
@@ -121,6 +123,7 @@ Tested under [B]Counter-Strike[/B] and Counter-Strike: [B]Condition Zero[/B]
 [QUOTE]
 //Command line control of [B]multimod system[/B]
 [COLOR="Blue"]amx_setmod[/COLOR] 
+[COLOR="Blue"]amx_setmods[/COLOR] 
 
 //[B]Admin only[/B] command to launch MOD voting
 [COLOR="Blue"]amx_votemod[/COLOR] 
@@ -157,10 +160,10 @@ Tested under [B]Counter-Strike[/B] and Counter-Strike: [B]Condition Zero[/B]
 [SIZE="4"][URL="https://forums.alliedmods.net/showthread.php?t=273018"]Is available here[/URL][/SIZE]. 
 
 ******************************** [anchor]Installation[/anchor][B][SIZE="5"][COLOR="Blue"]Installation[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor]  **********************
-[B]1.[/B] Download the files "[B]multimod_manager.sma[/B]", "[B][COLOR="Red"]plugin_resources.zip[/COLOR][/B]",  
-"[B]multimod_mapchooser.sma[/B]" and "[B]multimod_daily_changer.sma[/B]" (optionally), at [goanchor=Downloads]Downloads[/goanchor] section. 
+[B]1.[/B] Download the files "[B]multimod_manager.sma[/B]", "[B][COLOR="Red"]configuration_files.zip[/COLOR][/B]",  
+"[B]multimod_mapchooser.sma[/B]" and "[B]multimod_daily_changer.sma[/B]"(this is optional), at [goanchor=Downloads]Downloads[/goanchor] section. 
 
-[B]2.[/B] Then take the contents of "[B]yourgamemod[/B]" from "[B]plugin_resources.zip[/B]", to your gamemod folder. 
+[B]2.[/B] Then take the contents of "[B]yourgamemod[/B]" from "[B]configuration_files.zip[/B]", to your gamemod folder. 
 
 [B]3.[/B] [B]Compile[/B] the files and put the [B]compiled[/B] files to your plugins folder at 
 "[COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]plugins[/B]" folder. 
@@ -175,7 +178,7 @@ multimod_daily_changer.amxx
 
 [B]5.[/B] Put the next line to your "[B]amxx.cfg[/B]" file at "[COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]configs[/B]":
 [QUOTE]
-exec addons/amxmodx/configs/multimod/multiMod.cfg
+exec addons/amxmodx/configs/multimod/multimod.cfg
 [/QUOTE]
 
 [anchor]Configuration[/anchor][B]6. [SIZE="5"][COLOR="red"]Configure[/COLOR][/SIZE][/B] your own mods at "[COLOR="Blue"]yourgamemod/addons/amxmodx/configs/multimod/[/COLOR][B]multimod.ini[/B]" 
@@ -248,6 +251,7 @@ v1.0-release_candidate2
  * Removed unused function get_firstmap() and variable g_nextmap. 
  * Replaced unnecessary functions configMapManager and configDailyMaps. 
  * Removed unnecessary MULTIMOD_MAPCHOOSER compiler constant. 
+ * Added to multimod_daily_changer.sma compatibility with galileo_reloaded.sma 
 [/QUOTE]
 
 ******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *********************************
