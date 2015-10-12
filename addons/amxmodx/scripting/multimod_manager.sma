@@ -14,8 +14,8 @@
 *
 *****************************************************************************************
 
-[SIZE="6"][COLOR="Blue"][B]Multi-Mod Manager v1.0-release_candidate2[/B][/COLOR][/SIZE]
-[B]Release: 10.10.2015 | Last Update: 11.10.2015[/B]
+[SIZE="6"][COLOR="Blue"][B]Multi-Mod Manager v1.0-release_candidate2.hotfix1[/B][/COLOR][/SIZE]
+[B]Release: 10.10.2015 | Last Update: 12.10.2015[/B]
 
 [anchor]Top[/anchor][SIZE="5"][COLOR="blue"][B]Contents' Table[/B][/COLOR][/SIZE] 
 
@@ -252,6 +252,8 @@ v1.0-release_candidate2
  * Replaced unnecessary functions configMapManager and configDailyMaps. 
  * Removed unnecessary MULTIMOD_MAPCHOOSER compiler constant. 
  * Added to multimod_daily_changer.sma compatibility with galileo_reloaded.sma 
+v1.0-release_candidate2.hotfix1
+ * Added missing format parameter at msgModActivated function.
 [/QUOTE]
 
 ******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *********************************
@@ -270,12 +272,8 @@ v1.0-release_candidate2
 [B]AMXX Dev Team[/B]: For the "Map Chooser" plugin. 
 
 ******************************** [anchor]Sourcecode[/anchor][SIZE="5"][COLOR="blue"][B]Source Code and Support[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor] ***
-This source code is available on [B]GitHub[/B]. 
-[URL]https://github.com/addonszz/Multi-Mod_Server/blob/develop/addons/amxmodx/scripting/multimod_manager.sma[/URL]
-
-For any problems with this plugin visit [B][URL="https://forums.alliedmods.net/showthread.php?t=273020"]this own page[/URL][/B] or: 
-[url]https://github.com/Addonszz/Multi-Mod_Server/issues[/url] 
-for support. 
+For any problems with this plugin visit this own page for support:
+https://forums.alliedmods.net/showthread.php?t=273020
 
 If you are [B]posting[/B] because the plugin or a [B]feature[/B] of the plugin isn't working for you, [B]please[/B] do 
 all of the following, so we can [COLOR="Blue"]more efficiently[/COLOR] figure out what's going on:
@@ -312,7 +310,7 @@ from the [B]amxx cvars[/B] command. They will be grouped together.
 #include <amxmisc>
 
 #define PLUGIN "Multi-Mod Manager"
-#define VERSION "v1.0-rc2"
+#define VERSION "v1.0-rc2.1"
 #define AUTHOR "Addons zz"
 
 #define TASK_VOTEMOD 2487002
@@ -1155,7 +1153,7 @@ public msgModActivated( modShortName[], is_restart[] )
 
 		if( file_exists( msgPath ) )
 		{
-			server_cmd( "exec %s" )
+			server_cmd( "exec %s", msgPath )
 
 		} else
 		{
