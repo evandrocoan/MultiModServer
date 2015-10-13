@@ -44,7 +44,7 @@ section for features that are [B]planned[/B] for the final version.
 
 ********************** [anchor]Introduction[/anchor][B][SIZE="5"][COLOR="blue"]Introduction[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor]  *******************************
 You will have a new plugins list beyond you own "[B]plugins.ini[/B]" at "[COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]configs[/B]". 
-This will be "[URL="https://github.com/addonszz/Multi-Mod_Server/blob/master/addons/amxmodx/configs/plugins-ultra.ini"]plugins-ultra.ini[/URL]", too at "[COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]configs[/B]". It contains the descriptions 
+This will be "[URL="http://addons.zz.mu/recursos/plugins-ultra.ini"]plugins-ultra.ini[/URL]", too at "[COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]configs[/B]". It contains the descriptions 
 of all plugins at this Multi-Mod_Server. There you can active or deactivate then as you usually do 
 at your own "[B]plugins.ini[/B]. 
 
@@ -69,11 +69,11 @@ This Multi-Mod_Server comes with the following Mods [B]installed[/B] and configu
 Tested under [B]Counter-Strike[/B] and Counter-Strike: [B]Condition Zero[/B] 
 
 [B]Cvars[/B]
-You can see and configure the [B]default cvars[/B] at "[COLOR="Blue"]yougamemod/addons/amxmodx/[B]configs/[/B][/COLOR][URL="https://github.com/addonszz/Multi-Mod_Server/blob/master/addons/amxmodx/configs/amxx_ultra.cfg"]amxx_ultra.cfg[/URL]" 
+You can see and configure the [B]default cvars[/B] at "[COLOR="Blue"]yougamemod/addons/amxmodx/[B]configs/[/B][/COLOR][URL="http://addons.zz.mu/recursos/amxx_ultra.cfg"]amxx_ultra.cfg[/URL]" 
 file.
 
 [B]Commands[/B]
-See [URL="https://github.com/addonszz/Multi-Mod_Server/blob/master/Commands.txt"]here[/URL] the big list of commands actually activated. To see the new ones after active a plugin, just type 
+See [URL="http://addons.zz.mu/recursos/Commands.txt"]here[/URL] the big list of commands actually activated. To see the new ones after active a plugin, just type 
 "[B]amx_help[/B]"/"[B]amxx cvars[/B]" at server's console, to see the commands and cvars of all plugins activated. 
 
 If you enter at a new map, like "[B]zm_*[/B]" maps for zombie plague mod, the Zombie Mod is activated automatically. 
@@ -81,9 +81,10 @@ If you was using some other mod, it [B]automatically deactivate[/B] when you are
 the "[B]zm_*[/B]" map, the Zombie Mod is deactivated automatically, and you last mod is activated automatically, 
 if there was [B]an active[/B] mod before you enter at the "[B]zm_*[/B]" map. 
 
-The same happens to "[B]catch_*[/B]" and "[B]surf_*[/B]" maps. If want to disable that feature, rename the folder 
-"[COLOR="Blue"]yourgamemod/addons/amxmodx/configs/[/COLOR][B]maps[/B]" to [B]"maps_old"[/B]. If you want to enable that feature again, 
-rename back the [B]"maps_old"[/B] folder. 
+The same happens to "[B]catch_*[/B]" and "[B]surf_*[/B]" maps. If want to disable that feature, go to the folder 
+"[COLOR="Blue"]yourgamemod/addons/amxmodx/configs/[/COLOR][B]maps/[/B]" and rename the files [B]"plugins-catch.ini"[/B], [B]"plugins-surf.ini"[/B] 
+and [B]"plugins-zm.ini"[/B] to [B]"old_plugins-catch.ini"[/B], [B]"old_plugins-surf.ini"[/B] and [B]"old_plugins-zm.ini"[/B], 
+respectively. If you want to enable that feature again, "[COLOR="Blue"]rename them[/COLOR]" back. 
 
 [B]Example[/B] of "[B]amx_setmod help 1[/B]":
 [QUOTE]
@@ -123,7 +124,7 @@ at the folder [COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]scripting/comp
 [B]Note:[/B] To compile all files at your [B]scripting/[/B] folder, just run "[B]compile.exe[/B]" (windows) or [B]compile.sh[/B] 
 (linux/mac).
 
-[anchor]Configuration[/anchor][B]4.[/B] [SIZE="4"]Edit[/SIZE] the "[URL="https://github.com/addonszz/Multi-Mod_Server/blob/master/addons/amxmodx/configs/plugins-ultra.ini"]plugins-ultra.ini[/URL]" file at [COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]configs/[/B] folder, to your own taste. 
+[anchor]Configuration[/anchor][B]4.[/B] [SIZE="4"]Edit[/SIZE] the "[URL="http://addons.zz.mu/recursos/plugins-ultra.ini"]plugins-ultra.ini[/URL]" file at [COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]configs/[/B] folder, to your own taste. 
 
 [B]5.[/B] If you want, [SIZE="4"][COLOR="red"]learn how to configure[/COLOR][/SIZE] your [URL="https://forums.alliedmods.net/showthread.php?t=273020#Configuration"]own mods here[/URL].
 
@@ -154,12 +155,8 @@ all around the world. Now, after lot work from everybody, it is easy to install 
 Hence, that are a lot of credits, so just read its own source code doc to heads up. 
 
 ******************************** [anchor]Sourcecode[/anchor][SIZE="5"][COLOR="blue"][B]Source Code and Support[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor] ***
-This source code is available on [B]GitHub[/B]. 
-[URL]https://github.com/addonszz/Multi-Mod_Server[/URL]
-
-For any problems with this plugin visit [B][URL="https://forums.alliedmods.net/showthread.php?t=273018"]this own page[/URL][/B] or:
-[url]https://github.com/Addonszz/Multi-Mod_Server/issues[/url]
-for support. 
+For any problems with this plugin visit this own page for support: 
+https://forums.alliedmods.net/showthread.php?t=273018
 
 If you are [B]posting[/B] because the plugin or a [B]feature[/B] of the plugin isn't working for you, [B]please[/B] do 
 all of the following, so we can [COLOR="Blue"]more efficiently[/COLOR] figure out what's going on:
@@ -195,7 +192,7 @@ Testing server
 
 [anchor]Downloads[/anchor][SIZE="6"][COLOR="Blue"][B]Downloads[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor]
 
-[URL="https://github.com/Addonszz/Multi-Mod_Server/releases/download/v1.0-alpha1/Multi-Mod_Server_resources.zip"]Multi-Mod_Server_resources.zip[/URL] (131.49 MB)
+[URL="http://addons.net63.net/zyro/gallery/Multi-Mod_Server_resources.zip"]Multi-Mod_Server_resources.zip[/URL] (131.49 MB)
 
  */
 #include <amxmodx>
