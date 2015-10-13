@@ -14,7 +14,7 @@
 *
 *****************************************************************************************
 
-[SIZE="6"][COLOR="Blue"][B]Multi-Mod Manager v1.0-release_candidate2.hotfix1[/B][/COLOR][/SIZE]
+[SIZE="6"][COLOR="Blue"][B]Multi-Mod Manager v1.0-release_candidate2.hotfix2[/B][/COLOR][/SIZE]
 [B]Release: 10.10.2015 | Last Update: 12.10.2015[/B]
 
 [anchor]Top[/anchor][SIZE="5"][COLOR="blue"][B]Contents' Table[/B][/COLOR][/SIZE] 
@@ -254,6 +254,8 @@ v1.0-release_candidate2
  * Added to multimod_daily_changer.sma compatibility with galileo_reloaded.sma 
 v1.0-release_candidate2.hotfix1
  * Added missing format parameter at msgModActivated function.
+v1.0-release_candidate2.hotfix2
+ * Added missing MM_CHOOSE line at multilingual file.
 [/QUOTE]
 
 ******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *********************************
@@ -310,7 +312,7 @@ from the [B]amxx cvars[/B] command. They will be grouped together.
 #include <amxmisc>
 
 #define PLUGIN "Multi-Mod Manager"
-#define VERSION "v1.0-rc2.1"
+#define VERSION "v1.0-rc2.2"
 #define AUTHOR "Addons zz"
 
 #define TASK_VOTEMOD 2487002
