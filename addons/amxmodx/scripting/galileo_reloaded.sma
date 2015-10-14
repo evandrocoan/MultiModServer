@@ -131,7 +131,7 @@ galileo_reloaded.amxx
 
 ******************************** [anchor]Change[/anchor][B][SIZE="5"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] ***********************
 [QUOTE]
-v1.0-alpha1
+v1.0-alpha1 | 2015-10-10
  * Fixed server restart after change timelimit to 0. 
  * Fixed server timelimit re-change after change it to 0. 
  * Fixed bug where it change the map right after a normal vote map finished. 
@@ -149,8 +149,10 @@ v1.0-alpha1
  * Made changemap immediately after a forced map vote, calling gal_startvote. 
  * When nobody vote for next map, keep the initial server next map. 
  * Disabled amx_nextmap to [unknown] value change. 
-v1.0-alpha2
+
+v1.0-alpha2 | 2015-10-14
  * Fixed broken re-opt (RunOff) vote. 
+ * Fixed automatic changelevel at normal vote map, after a successful keep current map wins. 
  * Improved code readability and added some new code documentation. 
  * Removed weighted votes allows admins to have their vote counted more. 
  * Removed cvar to specifies the maximum number of minutes a map can be played. 
@@ -1856,7 +1858,7 @@ public vote_display(arg[3])
 			keys |= (1<<choiceIdx);
 		}
 
-		new bool:allowExtend = false;
+		new bool:allowExtend = get_cvar_float("mp_timelimit") < 151;
 
 		new allowStay = (g_voteStatus & VOTE_IS_EARLY);
 		new isRunoff = (g_voteStatus & VOTE_IS_RUNOFF);
@@ -2302,7 +2304,7 @@ public vote_expire()
 		}
 
 		// winnerVoteMapIndex == g_totalVoteOptions, means that it it keep current map option, then 
-		// here we keep the current map
+		// here we keep the current map or extend current map 
 		if (winnerVoteMapIndex == g_totalVoteOptions)
 		{
 			if (g_voteStatus & VOTE_IS_EARLY)
@@ -2320,11 +2322,18 @@ public vote_expire()
 			{
 				if( isTimeToChangeLevel2 )
 				{
+					isTimeToChangeLevel2 = false;
+
 					// "stay here" won
 					client_print(0, print_chat, "%L", LANG_PLAYER, "GAL_WINNER_STAY");
 
 					if( isTimeToChangeLevel )
 					{
+						isTimeToChangeLevel = false;
+
+						// no longer is an early vote
+						g_voteStatus &= ~VOTE_IS_EARLY;
+
 						set_task(5.0, "map_change_stays");
 
 						// freeze the game and show the scoreboard
@@ -2335,6 +2344,7 @@ public vote_expire()
 				{
 					if( isTimeToChangeLevel )
 					{
+						isTimeToChangeLevel = false;
 						client_print(0, print_chat, "%L", LANG_PLAYER, "GAL_WINNER_STAY");
 					}
 					else 
@@ -2355,12 +2365,14 @@ public vote_expire()
 
 			if( isTimeToChangeLevel )
 			{
+				isTimeToChangeLevel = false;
 				set_task(5.0, "map_change");
 
 				// freeze the game and show the scoreboard
 				message_begin(MSG_ALL, SVC_INTERMISSION);
 				message_end();
 			}
+			
 			g_voteStatus |= VOTE_IS_OVER;
 		}
 	}
@@ -2374,6 +2386,7 @@ public vote_expire()
 
 		if( isTimeToChangeLevel )
 		{
+			isTimeToChangeLevel = false;
 			set_task(5.0, "map_change");
 
 			// freeze the game and show the scoreboard
@@ -2723,12 +2736,6 @@ public map_change()
 
 public map_change_stays()
 {
-	isTimeToChangeLevel = false;
-	isTimeToChangeLevel2 = false;
-
-	// no longer is an early vote
-	g_voteStatus &= ~VOTE_IS_EARLY;
-
 	server_cmd("changelevel %s", g_currentMap);
 }
 
