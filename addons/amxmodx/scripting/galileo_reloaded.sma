@@ -156,6 +156,9 @@ v1.0-alpha2 | 2015-10-14
  * Improved code readability and added some new code documentation. 
  * Removed weighted votes allows admins to have their vote counted more. 
  * Removed cvar to specifies the maximum number of minutes a map can be played. 
+ * Fixed galiegalileo_reloaded.sma normal end map vote runoff showing an extra option.
+ * Always shows "None" vote option, to not participate at the voting. 
+ * Synchronized debug RunOff menu time and normal voting menu time. 
 [/QUOTE]
 
 ******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *********************************
@@ -1407,16 +1410,7 @@ public vote_startDirector(bool:forced)
 		}
 		
 		choicesLoaded = vote_loadChoices();
-
-		if( g_isDebugEnabledNumber )
-		{
-			voteDuration = 5
-			g_voteDuration = 5
-		} 
-		else
-		{
-			voteDuration = get_pcvar_num(cvar_voteDuration);
-		}
+		voteDuration = get_pcvar_num(cvar_voteDuration);
 		
 		if (g_isDebugEnabledNumber)
 		{
@@ -1430,6 +1424,12 @@ public vote_startDirector(bool:forced)
 		}
 	}
 	
+	if( g_isDebugEnabledNumber )
+	{
+		voteDuration = 5
+		g_voteDuration = 5
+	} 
+
 	if (choicesLoaded)
 	{
 		// alphabetize the maps
@@ -1919,14 +1919,11 @@ public vote_display(arg[3])
 		}
 
 		// make a copy of the virgin menu
-		if (g_vote[0] == 0)
-		{
-			new cleanCharCnt = copy(g_vote, sizeof(g_vote)-1, voteStatus);
-			
-			// append a "None" option on for people to choose if they don't like any other choice
-			formatex(g_vote[cleanCharCnt], sizeof(g_vote)-1-cleanCharCnt, 
-					"^n^n%s0. %s%L", CLR_RED, CLR_WHITE, LANG_SERVER, "GAL_OPTION_NONE");
-		}
+		new cleanCharCnt = copy(g_vote, sizeof(g_vote)-1, voteStatus);
+
+		// append a "None" option on for people to choose if they don't like any other choice
+		formatex(g_vote[cleanCharCnt], sizeof(g_vote)-1-cleanCharCnt, 
+				"^n^n%s0. %s%L", CLR_RED, CLR_WHITE, LANG_SERVER, "GAL_OPTION_NONE");
 		
 		charCnt += formatex(voteStatus[charCnt], sizeof(voteStatus)-1-charCnt, "^n^n");
 		
@@ -1949,6 +1946,7 @@ public vote_display(arg[3])
 	menuDirty[0] = 0;
 	
 	formatex(menuClean, sizeof(menuClean)-1, "%s%s", g_vote, voteFooter);
+
 	if (!isVoteOver)
 	{
 		formatex(menuDirty, sizeof(menuDirty)-1, "%s%s", voteStatus, voteFooter);
@@ -1962,6 +1960,7 @@ public vote_display(arg[3])
 
 	// display the vote
 	new showStatus = get_pcvar_num(cvar_voteStatus);
+
 	if (id > 0)
 	{
 		// optionally display to single player that just voted

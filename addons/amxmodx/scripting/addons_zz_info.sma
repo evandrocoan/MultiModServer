@@ -14,8 +14,8 @@
 *
  ******************************************************************************
 
-[SIZE="6"][COLOR="Blue"][B]Addons zz's Multi-Mod Server v1.0-alpha1.hotfix2[/B][/COLOR][/SIZE]
-[B]Release: 10.10.2015 | Last Update: 10.10.2015[/B]
+[SIZE="6"][COLOR="Blue"][B]Addons zz's Multi-Mod Server v1.0-alpha1.hotfix3[/B][/COLOR][/SIZE]
+[B]Release: 10.10.2015 | Last Update: 14.10.2015[/B]
 
 [anchor]Top[/anchor][SIZE="5"][COLOR="blue"][B]Contents' Table[/B][/COLOR][/SIZE] 
 
@@ -133,10 +133,16 @@ at the folder [COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]scripting/comp
 
 ******************************** [anchor]Change[/anchor][B][SIZE="5"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] ***********************
 [QUOTE]
-v1.0-alpha1
+v1.0-alpha1 | 2015-10-10
  * Initial alpha release. 
-v1.0-alpha1.hotfix2
+
+v1.0-alpha1.hotfix2 | 2015-10-10
  * Fixed misssing include at addons_zz_info.sma
+
+v1.0-alpha1.hotfix3 | 2015-10-14
+ * Updaded galileo_reloaded.sma to newer version. 
+ * Fixed cs_rio map crashing czero server's due 512 GoldSrc models limit. 
+ * Fixed Superheros Mod crashing czero server's due 512 GoldSrc models limit. 
 [/QUOTE]
 
 ******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *********************************
@@ -144,8 +150,8 @@ v1.0-alpha1.hotfix2
  * Compile a good map pack and good mapcycles for each mods, weeks days and to default one. 
  * Realise server benchmarks/profiler against a default AMXX Default install. 
  * Find plugins which are leaking server's and client's performance and ping. 
- * Remove, fix or substitute plugins bad coded which are leaking server's and client's performance and ping.
- * Install deathrun, jailbreak mods and fix superheros mod crashing czero server's due 512 GoldSrc models limit. 
+ * Remove, fix or substitute plugins bad coded which are leaking server's and client's performance and ping. 
+ * Install deathrun, jailbreak mods. 
  * Install hideNseek mod recommended complementary plugins as blockmarker. 
 [/QUOTE] 
 
@@ -199,7 +205,7 @@ Testing server
 #include <amxmisc>
 
 #define PLUGIN "Addons zz Info"
-#define VERSION "1.0"
+#define VERSION "1.0-alpha1.3"
 #define AUTHOR "Addons zz"
 
 #define LONG_STRING 256
