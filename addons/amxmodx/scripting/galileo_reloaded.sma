@@ -339,7 +339,7 @@ public plugin_init()
 
 	register_cvar("GalileoReloaded", PLUGIN_VERSION, FCVAR_SERVER|FCVAR_SPONLY);
 	register_cvar("gal_server_starting", "1", FCVAR_SPONLY);
-	register_cvar("gal_debug", "20");
+	register_cvar("gal_debug", "21");
 
 	cvar_extendmapStep			=	register_cvar("amx_extendmap_step", "15");
 	cvar_cmdVotemap				 = register_cvar("gal_cmd_votemap", "0");
@@ -2965,18 +2965,17 @@ map_restoreOriginalTimeLimit()
 }
 
 /**
- * Write debug messages to debug log file located at you game mod folder, named as 
- *   "_galileoDATA.log" file at "yourgamemod/addons/amxmodx/logs" folder.
+ * Write debug messages to server's console. 
  * 
  * @param mode the debug mode level:
  *   (00000) 0 disable all debug.
- *   (00001) 1 displays formatted debug message at server console.
+ *   (00001) 1 displays formatted debug message at client's console. 
  *   (00010) 2 displays players disconnect, how many remaining, and multiple time limits 
  * 						changes and restores. 
  *   (00100) 4 displays maps events as: choices, votes, nominations and the current map name at plugin_cfg()
  *   (01000) 8 displays vote_loadChoices() and actions at vote_startDirector
  *   (10000) 16 displays messages related to RunOff voting
- *   (11111) 31 displays all debug logs levels at debug file and server console.
+ *   (11111) 31 displays all debug logs levels at server console. 
  */
 debugMessageLog(const mode, const text[] = "", {Float,Sql,Result,_}:...)
 {	
@@ -2988,15 +2987,13 @@ debugMessageLog(const mode, const text[] = "", {Float,Sql,Result,_}:...)
 		new formattedText[1024];
 		format_args(formattedText, 1023, 1);
 
-		// grab the current game time
-		new Float:gameTime = get_gametime();
-
-		// log text to file
-		log_to_file("_galileo.log", "{%3.4f} %s", gameTime, formattedText);
-		
-		if ( g_isDebugEnabledNumber & 1 && formattedText[0])
+		if ( formattedText[0] )
 		{
 			server_print( "%s", formattedText )
+		}
+		if( mode & 1 )
+		{
+			client_print( 0, print_console, "%s", formattedText )
 		}
 	}
 	// not needed but gets rid of stupid compiler error
