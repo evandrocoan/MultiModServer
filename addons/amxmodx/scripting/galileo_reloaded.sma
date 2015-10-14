@@ -273,6 +273,8 @@ new const PLUGIN_VERSION[]  = "1.0-alpha2";
 #define LISTMAPS_LAST		1
 
 #define TIMELIMIT_NOT_SET -1.0
+#define START_VOTEMAP_MIN_TIME 		151
+#define START_VOTEMAP_MAX_TIME 		129
 
 new MENU_CHOOSEMAP[] = "gal_menuChooseMap";
 
@@ -617,7 +619,8 @@ public vote_manageEnd()
 	new secondsLeft = get_timeleft();	
 	
 	// are we ready to start an "end of map" vote?
-	if (secondsLeft < 151 && secondsLeft > 129 && get_pcvar_num(cvar_endOfMapVote) && !( g_voteStatus & VOTE_IN_PROGRESS ) )
+	if (secondsLeft < START_VOTEMAP_MIN_TIME && secondsLeft > START_VOTEMAP_MAX_TIME 
+			&& get_pcvar_num(cvar_endOfMapVote) && !( g_voteStatus & VOTE_IN_PROGRESS ) )
 	{
 		vote_startDirector(false);
 	}
@@ -1858,10 +1861,11 @@ public vote_display(arg[3])
 			keys |= (1<<choiceIdx);
 		}
 
-		new bool:allowExtend = get_cvar_float("mp_timelimit") < 151;
-
 		new allowStay = (g_voteStatus & VOTE_IS_EARLY);
 		new isRunoff = (g_voteStatus & VOTE_IS_RUNOFF);
+
+		new bool:allowExtend = get_cvar_float("mp_timelimit") < START_VOTEMAP_MIN_TIME 
+				&& !isRunoff
 
 		if( isTimeToChangeLevel && !isRunoff )
 		{ 
@@ -1871,7 +1875,16 @@ public vote_display(arg[3])
 
 		if( g_isRunOffNeedingKeepCurrentMap )
 		{
-			allowExtend = false;
+			// if it is a end map RunOff, then it is a extend button, not a keep current map button
+			if( get_cvar_float("mp_timelimit") < START_VOTEMAP_MIN_TIME )
+			{
+				allowExtend = true;
+			}
+			else	
+			{
+				allowExtend = false;
+			}
+
 			allowStay = true;
 		}
 	
@@ -3047,7 +3060,8 @@ public dbg_fakeVotes()
 }
 
 /**
- * Write debug messages to server's console. 
+ * Write debug messages to server's console accordantly with cvar gal_debug.
+ * If gal_debug 1 or more accordantly below, enable debug vote times at 5 seconds. 
  * 
  * @param mode the debug mode level:
  *   (00000) 0 disable all debug.
