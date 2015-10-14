@@ -428,10 +428,10 @@ public plugin_cfg()
 		server_cmd( "amxx pause multimod_mapchooser.amxx" );
 	}
 
-	formatex(DIR_CONFIGS[get_configsdir(DIR_CONFIGS, sizeof(DIR_CONFIGS)-1)], sizeof(DIR_CONFIGS)-1, "/galileo");
-	formatex(DIR_DATA[get_datadir(DIR_DATA, sizeof(DIR_DATA)-1)], sizeof(DIR_DATA)-1, "/galileo");
+	formatex(DIR_CONFIGS[get_configsdir(DIR_CONFIGS, sizeof(DIR_CONFIGS)-1)], sizeof(DIR_CONFIGS)-1, "/galileo_reloaded");
+	formatex(DIR_DATA[get_datadir(DIR_DATA, sizeof(DIR_DATA)-1)], sizeof(DIR_DATA)-1, "/galileo_reloaded");
 
-	server_cmd("exec %s/galileo.cfg", DIR_CONFIGS);
+	server_cmd("exec %s/galileo_reloaded.cfg", DIR_CONFIGS);
 	server_exec();
 
 	if (colored_menus())
