@@ -15,7 +15,7 @@
 *****************************************************************************************
 
 [SIZE="6"][COLOR="Blue"][B]Multi-Mod Manager v1.0-release_candidate2.hotfix2[/B][/COLOR][/SIZE]
-[B]Release: 10.10.2015 | Last Update: 12.10.2015[/B]
+[B]Release: 10.10.2015 | Last Update: 13.10.2015[/B]
 
 [anchor]Top[/anchor][SIZE="5"][COLOR="blue"][B]Contents' Table[/B][/COLOR][/SIZE] 
 
@@ -243,18 +243,22 @@ exec addons/amxmodx/configs/multimod/votefinished.cfg
 
 ******************************** [anchor]Change[/anchor][B][SIZE="5"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] ***********************
 [QUOTE]
-v1.0-release_candidate1
+2015-10-10 | v1.0-release_candidate1
  * Initial release candidate. 
-v1.0-release_candidate1.hotfix1
+
+2015-10-10 | v1.0-release_candidate1.hotfix1
  * Add exception handle when the currentmod.ini or currentmodsilent.ini is not found. 
-v1.0-release_candidate2
+
+2015-10-12 | v1.0-release_candidate2
  * Removed unused function get_firstmap() and variable g_nextmap. 
  * Replaced unnecessary functions configMapManager and configDailyMaps. 
  * Removed unnecessary MULTIMOD_MAPCHOOSER compiler constant. 
  * Added to multimod_daily_changer.sma compatibility with galileo_reloaded.sma 
-v1.0-release_candidate2.hotfix1
+
+2015-10-13 | v1.0-release_candidate2.hotfix1
  * Added missing format parameter at msgModActivated function.
-v1.0-release_candidate2.hotfix2
+
+2015-10-13 | v1.0-release_candidate2.hotfix2
  * Added missing MM_CHOOSE line at multilingual file.
 [/QUOTE]
 
