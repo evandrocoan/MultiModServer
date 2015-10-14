@@ -60,6 +60,10 @@ public plugin_init()
     {   
         pause("a")
     }
+    if( is_plugin_loaded( "galileo_reloaded.amxx" ) != -1 )
+    {   
+        pause("a")
+    }
 
     register_dictionary("mapchooser.txt")
     register_dictionary("common.txt")

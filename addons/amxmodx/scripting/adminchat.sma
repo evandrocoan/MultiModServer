@@ -6,7 +6,7 @@
 #endif
 
 #define PLUGIN_NAME "OciXCrom's Admin Chat"
-#define PLUGIN_VERSION "1.1"
+#define PLUGIN_VERSION "1.2"
 
 #define FLAG_ADMIN ADMIN_SLAY 								/* Flag for "ADMIN" usage */
 #define FLAG_PSAY ADMIN_BAN 								/* Players with this flag can read others players' private messages, including team ones */
@@ -444,6 +444,9 @@ public cmd_hsay(id, level, cid)
 		if(equal(color, g_HudColors[clr]))
 			break
 	}
+	
+	if(clr >= sizeof(g_HudColors))
+		clr = 0
 	
 	new dhud = (command[8] == '2') ? 1 : 0
 	new bool:rndm = (clr == 0) ? true : false

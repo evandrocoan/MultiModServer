@@ -14,8 +14,8 @@
 *
 *****************************************************************************************
 
-[SIZE="6"][COLOR="Blue"][B]Multi-Mod Manager v1.0-release_candidate1[/B][/COLOR][/SIZE]
-[B]Release: 10.10.2015 | Last Update: 10.10.2015[/B]
+[SIZE="6"][COLOR="Blue"][B]Multi-Mod Manager v1.0-release_candidate2.hotfix2[/B][/COLOR][/SIZE]
+[B]Release: 10.10.2015 | Last Update: 13.10.2015[/B]
 
 [anchor]Top[/anchor][SIZE="5"][COLOR="blue"][B]Contents' Table[/B][/COLOR][/SIZE] 
 
@@ -42,7 +42,7 @@ designed, coded and tested through one or more beta cycles with no known show st
 
 This plugin [COLOR="Red"]is [B]not[/B] compatible[/COLOR] with the AMXX's very own [B]Map Chooser[/B] or "[B]Daily Maps[/B]", but yes with its 
 modification "[B]multimod_mapchooser.sma[/B]" and "[B]multimod_daily_changer[/B]" provided here. The new 
-"[URL="https://forums.alliedmods.net/showthread.php?t=273019"]galieo_reloaded.sma[/URL]" which is a different Galileo version, is ready to be used with this [B]Multi-Mod Manager[/B]". 
+"[URL="https://forums.alliedmods.net/showthread.php?t=273019"]galieo_reloaded.sma[/URL]" which is a different Galileo version, [COLOR="Red"]is ready[/COLOR] to be used with this [B]Multi-Mod Manager[/B]". 
 
 The "[B]Multi-Mod Daily Maps[/B]" is a modified version of "[B]Daily Maps[/B]" to work with this "[B]Multi-Mod Manager[/B]". 
 This plugin only works with "[B]Multi-Mod Manager[/B]", alone the "[B]Multi-Mod Daily Maps[/B]" does nothing. Its allows 
@@ -82,10 +82,12 @@ other mod is [COLOR="Blue"][B]activated[/B][/COLOR] or your disable the active m
  * When the min vote mod time is not [B]reached/disabled[/B], display a message informing it. 
 
  * Command '[COLOR="Blue"][B]amx_setmod modShortName <1 or 0>[/B][/COLOR]', to enable the mod "modShortName" as [COLOR="Blue"]csdm[/COLOR], 
-      starting a vote map (1) or not (0), right after. 
+      starting a vote map (1) or not (0), right after. This command can [B]only active mods loaded[/B] from 
+      "[B]multimod.ini[/B]" file, and needs an admin level ADMIN_CFG. 
 
  * Command '[COLOR="Blue"][B]amx_setmods modShortName <1 or 0>[/B][/COLOR]', to enable the mod "modShortName" as [COLOR="Blue"]surf[/COLOR], 
-      restarting (1) or not (0) the server immediately, [B]s[/B]ilently. 
+      restarting (1) or not (0) the server immediately, [B]s[/B]ilently. This command can [B]active any mod installed[/B] 
+      at the server, and it needs an admin level ADMIN_CVAR. 
 
 OBS: A mod can [B]only[/B] to be/get activated after a restart. 
 [/QUOTE]
@@ -121,6 +123,7 @@ Tested under [B]Counter-Strike[/B] and Counter-Strike: [B]Condition Zero[/B]
 [QUOTE]
 //Command line control of [B]multimod system[/B]
 [COLOR="Blue"]amx_setmod[/COLOR] 
+[COLOR="Blue"]amx_setmods[/COLOR] 
 
 //[B]Admin only[/B] command to launch MOD voting
 [COLOR="Blue"]amx_votemod[/COLOR] 
@@ -157,10 +160,10 @@ Tested under [B]Counter-Strike[/B] and Counter-Strike: [B]Condition Zero[/B]
 [SIZE="4"][URL="https://forums.alliedmods.net/showthread.php?t=273018"]Is available here[/URL][/SIZE]. 
 
 ******************************** [anchor]Installation[/anchor][B][SIZE="5"][COLOR="Blue"]Installation[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor]  **********************
-[B]1.[/B] Download the files "[B]multimod_manager.sma[/B]", "[B]plugin_resources.zip[/B]",  
-"[B]multimod_mapchooser.sma[/B]" and "[B]multimod_daily_changer.sma[/B]" (optionally), at [goanchor=Downloads]Downloads[/goanchor] section. 
+[B]1.[/B] Download the files "[B]multimod_manager.sma[/B]", "[B][COLOR="Red"]configuration_files.zip[/COLOR][/B]",  
+"[B]multimod_mapchooser.sma[/B]" and "[B]multimod_daily_changer.sma[/B]"(this is optional), at [goanchor=Downloads]Downloads[/goanchor] section. 
 
-[B]2.[/B] Then unzip the content of "[B]yourgamemod[/B]" from "[B]plugin_resources.zip[/B]", to your gamemod folder. 
+[B]2.[/B] Then take the contents of "[B]yourgamemod[/B]" from "[B]configuration_files.zip[/B]", to your gamemod folder. 
 
 [B]3.[/B] [B]Compile[/B] the files and put the [B]compiled[/B] files to your plugins folder at 
 "[COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]plugins[/B]" folder. 
@@ -173,9 +176,9 @@ multimod_mapchooser.amxx
 multimod_daily_changer.amxx
 [/QUOTE]
 
-[B]5.[/B] Put the next line to your "[B]amxx.cfg[B]" file at "[COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]configs[/B]":
+[B]5.[/B] Put the next line to your "[B]amxx.cfg[/B]" file at "[COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]configs[/B]":
 [QUOTE]
-exec addons/amxmodx/configs/multimod/multiMod.cfg
+exec addons/amxmodx/configs/multimod/multimod.cfg
 [/QUOTE]
 
 [anchor]Configuration[/anchor][B]6. [SIZE="5"][COLOR="red"]Configure[/COLOR][/SIZE][/B] your own mods at "[COLOR="Blue"]yourgamemod/addons/amxmodx/configs/multimod/[/COLOR][B]multimod.ini[/B]" 
@@ -185,7 +188,7 @@ file as follow (the short mod name cannot be longer than 15 characters neither h
 [QUOTE]
 [Gun Game]:[gungame]:
 
-;[mode name]:[short mod name]:
+;[mode name]:[shortModName]:
 [/QUOTE]
 
 -------------- And you have [B]to create[/B] the files:----------------------------
@@ -240,8 +243,23 @@ exec addons/amxmodx/configs/multimod/votefinished.cfg
 
 ******************************** [anchor]Change[/anchor][B][SIZE="5"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] ***********************
 [QUOTE]
-v1.0-release_candidate1
+v1.0-release_candidate1 | 2015-10-10
  * Initial release candidate. 
+
+v1.0-release_candidate1.hotfix1 | 2015-10-10
+ * Add exception handle when the currentmod.ini or currentmodsilent.ini is not found. 
+
+v1.0-release_candidate2 | 2015-10-12
+ * Removed unused function get_firstmap() and variable g_nextmap. 
+ * Replaced unnecessary functions configMapManager and configDailyMaps. 
+ * Removed unnecessary MULTIMOD_MAPCHOOSER compiler constant. 
+ * Added to multimod_daily_changer.sma compatibility with galileo_reloaded.sma 
+
+v1.0-release_candidate2.hotfix1 | 2015-10-13
+ * Added missing format parameter at msgModActivated function.
+
+v1.0-release_candidate2.hotfix2  | 2015-10-13
+ * Added missing MM_CHOOSE line at multilingual file.
 [/QUOTE]
 
 ******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *********************************
@@ -260,12 +278,8 @@ v1.0-release_candidate1
 [B]AMXX Dev Team[/B]: For the "Map Chooser" plugin. 
 
 ******************************** [anchor]Sourcecode[/anchor][SIZE="5"][COLOR="blue"][B]Source Code and Support[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor] ***
-This source code is available on [B]GitHub[/B]. 
-[URL]https://github.com/addonszz/Multi-Mod_Server/blob/develop/addons/amxmodx/scripting/multimod_manager.sma[/URL]
-
-For any problems with this plugin visit [B][URL="https://forums.alliedmods.net/showthread.php?t=273020"]this own page[/URL][/B] or: 
-[url]https://github.com/Addonszz/Multi-Mod_Server/issues[/url] 
-for support. 
+For any problems with this plugin visit this own page for support:
+https://forums.alliedmods.net/showthread.php?t=273020
 
 If you are [B]posting[/B] because the plugin or a [B]feature[/B] of the plugin isn't working for you, [B]please[/B] do 
 all of the following, so we can [COLOR="Blue"]more efficiently[/COLOR] figure out what's going on:
@@ -302,10 +316,9 @@ from the [B]amxx cvars[/B] command. They will be grouped together.
 #include <amxmisc>
 
 #define PLUGIN "Multi-Mod Manager"
-#define VERSION "v1.0-rc1"
+#define VERSION "v1.0-rc2.2"
 #define AUTHOR "Addons zz"
 
-#define MULTIMOD_MAPCHOOSER "multimod_mapchooser.amxx"
 #define TASK_VOTEMOD 2487002
 #define TASK_CHVOMOD 2487004
 #define MAXMODS 100
@@ -335,7 +348,6 @@ new gp_endmapvote
 new g_nextmodid
 new g_currentmodid
 new g_multimod[SHORT_STRING]
-new g_nextmap[SHORT_STRING]
 new g_currentmod[SHORT_STRING]
 new totalVotes
 new SayText
@@ -379,8 +391,7 @@ public plugin_init()
 	register_plugin(PLUGIN, VERSION, AUTHOR)
 	register_cvar("MultiModManager", VERSION, FCVAR_SERVER|FCVAR_SPONLY)
 	register_dictionary("mapchooser.txt")
-	register_dictionary("multimod.txt")
-	//set_localinfo( "isFirstTimeLoadMapCycle", "1" );
+	register_dictionary("multimodmanager.txt")
 
 	gp_mintime = register_cvar("amx_mintime", "10")
 	gp_allowedvote = register_cvar("amx_multimod_voteallowed", "1")
@@ -636,14 +647,26 @@ public loadCurrentMod()
 	formatex(currentModFile, charsmax(currentModFile), "%s/multimod/currentmod.ini", g_configFolder)
 	formatex(currentModSilentFile, charsmax(currentModFile), "%s/multimod/currentmodsilent.ini", g_configFolder)
 
-	read_file(currentModFile, 0, currentModID_String, charsmax(currentModID_String), ilen )
-	read_file(currentModSilentFile, 0, currentModSilentFile_String, charsmax(currentModSilentFile_String), ilen )
+	if( file_exists( currentModFile ) )
+	{
+		read_file(currentModFile, 0, currentModID_String, charsmax(currentModID_String), ilen )
+	} else
+	{
+		copy( currentModID_String, charsmax( currentModID_String ), "0" )
+	}
+	if( file_exists( currentModSilentFile ) )
+	{
+		read_file(currentModSilentFile, 0, currentModSilentFile_String, charsmax(currentModSilentFile_String), ilen )
+	} else
+	{
+		copy( currentModID_String, charsmax( currentModID_String ), "0" )
+	}
 
 	build_first_mods()
 	load_cfg()
 
 	// If -1, there is no mod active. If 0, the current mod was activated by silent mode
-	if( !( equal( currentModID_String, "-1" ) || equal( currentModID_String, "0" ) ) )
+	if( !equal( currentModID_String, "-1" ) && !equal( currentModID_String, "0" ) )
 	{   
 		new currentModID = str_to_num( currentModID_String ) + 2
 		configureMultimod( currentModID )
@@ -719,8 +742,8 @@ public configureMultimod( modid )
 	{   
 		activateMod( modid  )
 	}
-	configDailyMaps( modid )
-	configMapManager( modid )
+	configDailyMapsSilent( g_filemaps[modid] )
+	configMapManagerSilent( g_filemaps[modid] )
 }
 
 /**
@@ -816,98 +839,6 @@ public load_cfg()
 }
 
 /**
- * Gets the first map to load after mod active. If the map file doesn't exist, keep the current 
- * map as the first map to load after mod active.
- */
-public get_firstmap(modid)
-{   
-	new ilen
-
-	if(!file_exists(g_filemaps[modid]))
-	{   
-		get_mapname(g_nextmap, charsmax(g_nextmap))
-	}
-	else
-	{   
-		read_file(g_filemaps[modid], 0, g_nextmap, charsmax(g_nextmap), ilen)
-	}
-}
-
-/**
- * Makes the autoswitch between mapchooser and galileo. If both are active, prevails galieo.
- */
-public switchMapManager()
-{   
-	if( find_plugin_byfile( "galileo.amxx" ) != -1 )
-	{   
-		g_mapmanagertype = 2
-
-	} else if( find_plugin_byfile( MULTIMOD_MAPCHOOSER ) != -1 )
-	{   
-		g_mapmanagertype = 1
-	}
-}
-
-/**
- * Setup the map manager to work with votemod menu.
- */
-public configMapManager(modid)
-{   
-	switch( g_mapmanagertype )
-	{   
-		case 2:
-		{   
-			new galileo_mapfile = get_cvar_pointer( "gal_vote_mapfile" )
-
-			if( galileo_mapfile )
-			{   
-				if( file_exists( g_filemaps[modid] ) )
-				{   
-					set_pcvar_string( galileo_mapfile, g_filemaps[modid] )
-				}
-			}
-		}
-		case 1:
-		{   
-			if( callfunc_begin("plugin_init", MULTIMOD_MAPCHOOSER ) == 1 )
-			{   
-				callfunc_end()
-			} else
-			{   
-				new error[128]="ERROR at configMapManager!! MULTIMOD_MAPCHOOSER NOT FOUND!^n"
-				client_print( 0, print_console , error )
-				server_print( error )
-			}
-		}
-	}
-}
-
-/**
- * Setup the map manager to work with votemod menu at Silent mode. That is, configures
- *  the compatibility with galileo, MULTIMOD_MAPCHOOSER and daily_maps, because 
- *  now there is no modid, hence because the mod is not loaded from the mod file configs.
- * 
- * @param Arg1[] the mapcycle file name with extension and path. Ex: mapcycles/surf.txt
- */
-public configMapManagerSilent( Arg1[] )
-{   
-	if( file_exists( Arg1 ) )
-	{   
-		new galileo_mapfile = get_cvar_pointer( "gal_vote_mapfile" )
-
-		if( galileo_mapfile )
-		{		   
-			set_pcvar_string( galileo_mapfile, Arg1 )
-		}
-	}
-
-	if( callfunc_begin("plugin_init", MULTIMOD_MAPCHOOSER ) == 1 )
-	{   
-		callfunc_end()
-	}
-}
-
-/**
  * Hard code the mapcycle file location.
  * 
  * @param Arg1[] the mapcycle file name without extension and path. Ex: surf
@@ -923,31 +854,56 @@ public mapCyclePathCoder( Arg1[] )
 }
 
 /**
- * Change the game global variable at localinfo, isFirstTimeLoadMapCycle to 1, after 
- *   the first map load if  there is a game mod mapcycle file. Or to 2 if there is not.
- * The isFirstTimeLoadMapCycle is used by daily_maps.sma to know if there is a 
- *   game mod mapcycle.
- *
- * @param modid current mod id.
+ * Makes the autoswitch between mapchooser and galileo. If both are active, prevails galieo.
  */
-public configDailyMaps( modid )
-{
-	new isFirstTime[32]
-	get_localinfo( "isFirstTimeLoadMapCycle", isFirstTime, charsmax( isFirstTime ) );
-	new isFirstTimeNum = str_to_num( isFirstTime )
-
-	if( file_exists( g_filemaps[modid] ) )
+public switchMapManager()
+{   
+	if( find_plugin_byfile( "galileo_reloaded.amxx" ) != -1 )
 	{   
-		if( isFirstTimeNum  == 0 )
-		{
-			//server_print("^n^n^n^n^n%d^n^n", isFirstTimeNum)
-			set_localinfo( "isFirstTimeLoadMapCycle", "1" );
-			set_localinfo( "lastmapcycle", g_filemaps[modid] )
-			set_pcvar_string( gp_mapcyclefile, g_filemaps[modid] )
+		g_mapmanagertype = 2
+
+	} else if( find_plugin_byfile( "multimod_mapchooser.amxx" ) != -1 )
+	{   
+		g_mapmanagertype = 1
+	}
+}
+
+/**
+ * Setup the map manager to work with votemod menu at Silent mode. That is, configures
+ *  the compatibility with galileo, multimod_mapchooser and daily_maps, because now 
+ *  there is no modid, hence because the mod is not loaded from the mod file configs.
+ * 
+ * @param Arg1[] the mapcycle file name with extension and path. Ex: mapcycles/surf.txt
+ */
+public configMapManagerSilent( Arg1[] )
+{   
+	if( file_exists( Arg1 ) )
+	{   
+		switch( g_mapmanagertype )
+		{   
+			case 1:
+			{   
+				if( callfunc_begin("plugin_init", "multimod_mapchooser.amxx" ) == 1 )
+				{   
+					callfunc_end()
+
+				} else
+				{   
+					new error[128]="ERROR at configMapManager!! multimod_mapchooser.amxx NOT FOUND!^n"
+					client_print( 0, print_console , error )
+					server_print( error )
+				}
+			}
+			case 2:
+			{   
+				new galileo_mapfile = get_cvar_pointer( "gal_vote_mapfile" )
+
+				if( galileo_mapfile )
+				{   
+					set_pcvar_string( galileo_mapfile, Arg1 )
+				}
+			}
 		}
-	} else 
-	{
-		set_localinfo( "isFirstTimeLoadMapCycle", "2" );
 	}
 }
 
@@ -1203,7 +1159,7 @@ public msgModActivated( modShortName[], is_restart[] )
 
 		if( file_exists( msgPath ) )
 		{
-			server_cmd( "exec %s" )
+			server_cmd( "exec %s", msgPath )
 
 		} else
 		{

@@ -44,14 +44,15 @@
 *
 * In the cfg's, u just put what cvars u want to apply for that day
 * In the txt's, u just put the maps u want to be rotated though on that day
-*    Example:
-*       de_dust
-*       de_aztec_cz
-*       cs_assault_cz
+*	Example:
+*	   de_dust
+*	   de_aztec_cz
+*	   cs_assault_cz
 * (u dont need .bsp)
 *
 * Multi-Mod Daily Changer's Change log:
 *  v1.0, Make compatibility with multimod_manager.sma
+*  v2.0, Make compatibility with galileo_reloaded.sma and multimod_mapchooser.sma
 *
 * Daily Changer's Change log:
 *  v1.2, Make it .ini for map stuff
@@ -64,30 +65,53 @@
 
 public plugin_init()
 {
-    register_plugin("Multi-Mod Daily Changer", "1.0", "Addons zz/JustinHoMi & JGHG")
+	register_plugin("Multi-Mod Daily Changer", "2.0", "Addons zz/JustinHoMi & JGHG")
 
-    new isFirstTime[32]
-    get_localinfo( "isFirstTimeLoadMapCycle", isFirstTime, charsmax( isFirstTime ) );
+	new isFirstTime[32]
+	get_localinfo( "isFirstTimeLoadMapCycle", isFirstTime, charsmax( isFirstTime ) );
 
-    new isFirstTimeNum = str_to_num( isFirstTime )
+	new isFirstTimeNum = str_to_num( isFirstTime )
 
-    if ( isFirstTimeNum == 2 )
+	if ( isFirstTimeNum == 2 )
 	{
 		new today[8]
 		new mapCycleFilePath[32]
 		new serverCfgFilePath[32]
 
-        get_time("%a", today, 8)
-        formatex( mapCycleFilePath, charsmax( mapCycleFilePath ), "mapcycles/day/%s.txt", today )
-        formatex( serverCfgFilePath, charsmax( serverCfgFilePath ), "mapcycles/day/cfg/%s.cfg", today)
+		get_time("%a", today, 8)
+		formatex( mapCycleFilePath, charsmax( mapCycleFilePath ), "mapcycles/day/%s.txt", today )
+		formatex( serverCfgFilePath, charsmax( serverCfgFilePath ), "mapcycles/day/cfg/%s.cfg", today)
 
 		if( file_exists(mapCycleFilePath) )
 		{
 			set_cvar_string("mapcyclefile", mapCycleFilePath)
+
+			if( find_plugin_byfile( "galileo_reloaded.amxx" ) != -1 )
+			{   
+				new galileo_mapfile = get_cvar_pointer( "gal_vote_mapfile" )
+
+				if( galileo_mapfile )
+				{   
+					set_pcvar_string( galileo_mapfile, mapCycleFilePath )
+				}
+
+			} else if( find_plugin_byfile( "multimod_mapchooser.amxx" ) != -1 )
+			{   
+				if( callfunc_begin("plugin_init", "multimod_mapchooser.amxx" ) == 1 )
+				{   
+					callfunc_end()
+
+				} else
+				{   
+					new error[128]="ERROR at configMapManager!! multimod_mapchooser.amxx NOT FOUND!^n"
+					client_print( 0, print_console , error )
+					server_print( error )
+				}
+			}
 		}
 		if( file_exists(serverCfgFilePath) )
 		{
 			set_cvar_string("mapchangecfgfile", serverCfgFilePath)
 		}
-    }
+	}
 }
