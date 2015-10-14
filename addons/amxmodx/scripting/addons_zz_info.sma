@@ -205,6 +205,7 @@ Testing server
 #define LONG_STRING 256
 
 new g_configFolder[ LONG_STRING ]
+new gp_allowedzz
 
 /*
  * Called just after server activation.
@@ -219,6 +220,8 @@ public plugin_init()
 
 	register_dictionary( "multimodhelp.txt" ) 
 	register_cvar("MultiModServer", VERSION, FCVAR_SERVER|FCVAR_SPONLY) 
+
+	gp_allowedzz = register_cvar("amx_allow_zz_info", "1") 
 }
 
 /*
@@ -246,8 +249,10 @@ public client_putinserver( id )
 	{   
 		return
 	}
-
-	set_task( 50.1, "dispInfo", id )
+	if( get_pcvar_num( gp_allowedzz ) )
+	{  
+		set_task( 50.1, "dispInfo", id )
+	}
 }
 
 public dispInfo( id )
