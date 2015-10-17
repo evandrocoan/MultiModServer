@@ -17,6 +17,50 @@
 [SIZE="6"][COLOR="Blue"][B]Galileo Reloaded v1.0-alpha2[/B][/COLOR][/SIZE]
 [B]Release: 10.10.2015 | Last Update: 14.10.2015[/B]
 
+[SIZE="5"]Basic differences between the original Galileo and Galileo Reloaded[/SIZE] 
+
+[B]Galileo Reloaded will can:[/B]
+[LIST=1]
+[*]display colored text messages. 
+[*]nominate maps by a map list menu.
+[*]allow the last round to finish before change to the next map. 
+[*]change the server map to a popular one when the server is empty too much time. 
+[*]change the nextmap to [not voted yet] 
+[*]during a vote, change the nextmap to [vote in progress] 
+[*]show only the last 10 seconds remaining to end the voting. 
+[*]give weighted votes to admins counting more points. 
+[/LIST]
+
+[B]Galileo Reloaded can:[/B]
+[LIST=1]
+[*]always show the option "Keep Current Map" at any voting. 
+[*]always show the countdown remaining vote time. 
+[*]manage RunOff vote between a map and "Keep Current Map". 
+[*]change the time limit to zero. 
+[*]be used with the AMXX very own "Next Map" plugin. 
+[*]pause the AMXX very own "Map Chooser" and the original "Galileo" plugin if you forget to disable them. 
+[*]use the current mapcycle to nominate maps. 
+[*]load the current vote/nominate map list from the current mapcycle file. 
+[*]keep the initial server next map when nobody vote for next map. 
+[*]be easier learned to code new features as it has some code documentation.
+[/LIST]
+
+[B]The original Galileo cannot:[/B]
+[LIST=1]
+[*]always show the option "Keep Current Map" at any voting. 
+[*]always show the countdown remaining vote time. 
+[*]manage RunOff vote between a map and "Keep Current Map". 
+[*]change the time limit to zero. 
+[*]display colored text messages. 
+[*]nominate maps by a map list menu.
+[*]be used with the AMXX very own "Next Map" plugin. 
+[*]pause the AMXX very own "Map Chooser" and the original "Galileo" plugin if you forget to disable them. 
+[*]use the current mapcycle to nominate maps. 
+[*]load the current vote/nominate map list from the current mapcycle file. 
+[*]keep the initial server next map when nobody vote for next map. 
+[*]be easier learned to code new features as it has some useful code documentation.
+[/LIST]
+
 [anchor]Top[/anchor][SIZE="5"][COLOR="blue"][B]Contents' Table[/B][/COLOR][/SIZE] 
 
 [LIST]
@@ -30,7 +74,7 @@
 [*][goanchor=Downloads]Downloads[/goanchor]
 [/LIST]
 The original plugin "[URL="https://forums.alliedmods.net/showthread.php?t=77391"]galileo.sma[/URL]" is originally written by [B]Brad[/B]. The "Galileo Reload" works similarly 
-as the original "[B]Galileo[/B]". And this has special features for the "[URL="https://forums.alliedmods.net/showthread.php?t=273020"]Multi-Mod Manager[/URL]" plugin, but it 
+as the original "[B]Galileo[/B]". But "[B][COLOR="Red"]Galileo Reloaded[/COLOR][/B]" has special features for the "[URL="https://forums.alliedmods.net/showthread.php?t=273020"]Multi-Mod Manager[/URL]" plugin, but it 
 still can be used alone. See the [goanchor=Change]Change Log[/goanchor] and [goanchor=Credits]Credits[/goanchor] for more info. 
 
 This is a Alpha version. This Alpha software can be unstable, see [goanchor=TODO]TODO[/goanchor] section for more information. 
@@ -41,14 +85,14 @@ As I am working at another plugins, I cannot provide immediately fixes and forum
 as soon as I can, I am going to release a new alpha version, fixing the current bugs listed here at 
 [goanchor=TODO]TODO[/goanchor] section. 
 [URL="http://www.gametracker.com/search/?search_by=server_variable&search_by2=GalileoReloaded&query=&loc=_all&sort=&order="]
-[SIZE=3][B][COLOR=DarkGreen]Click here to see all servers using this plugin.[/COLOR][/B][/SIZE][/URL]
+[SIZE=5][B][COLOR=DarkGreen]Click here to see all servers using this plugin.[/COLOR][/B][/SIZE][/URL]
 
 ********************** [anchor]Introduction[/anchor][B][SIZE="5"][COLOR="blue"]Introduction[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor]  *******************************
 This is a feature rich map voting plugin.  It's intended to be used in place of any other map choosing plugin 
 such as the original [B]Galileo[/B], [B]Deagles' Map Manager[/B] and AMXX's very own [B]Map Chooser[/B].
 
-It is [COLOR="Red"][B]highly recommended[/B][/COLOR] you to review the well-commented "[B]galileo.cfg[/B]" to see all the options you 
-have with this plugin.  It's located in the [B]Attached ZIP[/B] available at the [goanchor=Downloads]Downloads[/goanchor] section.
+It is [COLOR="Red"][B]highly recommended[/B][/COLOR] you to review the well-commented "[B]galileo_reloaded.cfg[/B]" to see all the cvars' options you 
+have with this plugin.  It's located in the [B]Attached ZIP[/B] available at the [goanchor=Downloads]Downloads[/goanchor] section. 
 
 [COLOR="Blue"][B]Features' list:[/B][/COLOR] 
 [QUOTE]
@@ -58,8 +102,6 @@ have with this plugin.  It's located in the [B]Attached ZIP[/B] available at the
 
  * [B]Runoff[/B] voting when no map gets more than 50% of the total vote.
 
- * [B]Weighted[/B] map votes for players with customizable admin flags.
-
  * Command '[COLOR="Blue"][B]gal_startvote[/B][/COLOR]', to forces a map vote to begin and the map will be changed once the 
 	   next map has been determined. 
 
@@ -67,8 +109,8 @@ have with this plugin.  It's located in the [B]Attached ZIP[/B] available at the
 	   the current map is restarted. This command is specially for the "[URL="https://forums.alliedmods.net/showthread.php?t=273020"]Multi-Mod Manager[/URL]" plugin. 
 
  * Command '[COLOR="Blue"][B]gal_createmapfile filename[/B][/COLOR]', Creates a file that contains a list of every valid 
-	   map in your maps folder. The [COLOR="Blue"][B]filename[/B][/COLOR] argument indicates specifies the name to be used for 
-	   the new file.  It will be created in the [COLOR="Blue"][B].\configs\galileo[/B][/COLOR] folder.
+	   map in your maps folder. The [B]filename[/B] argument indicates specifies the name to be used for 
+	   the new file.  It will be created in the [COLOR="Blue"][B].\configs\galileo_reloaded[/B][/COLOR] folder.
 [/QUOTE]
 
 ********************** [anchor]Requirements[/anchor][SIZE="5"][COLOR="Blue"][B]Requirements and Commands[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor]  ******
@@ -146,7 +188,6 @@ galileo_reloaded.amxx
  * Added auto-pause for anothers plugins map managers. 
  * Added a option "#" to gal_nom_mapfile, to use the current mapcycle to nominate maps. 
  * Made the vote map list be loaded from the current mapcycle file. 
- * Made changemap immediately after a forced map vote, calling gal_startvote. 
  * When nobody vote for next map, keep the initial server next map. 
  * Disabled amx_nextmap to [unknown] value change. 
 
@@ -154,7 +195,7 @@ galileo_reloaded.amxx
  * Fixed broken re-opt (RunOff) vote. 
  * Fixed automatic changelevel at normal vote map, after a successful keep current map wins. 
  * Improved code readability and added some new code documentation. 
- * Removed weighted votes allows admins to have their vote counted more. 
+ * Removed weighted votes that allows admins to have their vote counted more. 
  * Removed cvar to specifies the maximum number of minutes a map can be played. 
  * Fixed galileo_reloaded.sma normal end map vote runoff showing an extra option.
  * Always shows "None" vote option, to not participate at the voting. 
@@ -166,6 +207,14 @@ galileo_reloaded.amxx
  * To clear unused language file constants. 
  * Add colored messages. 
  * Add nominate maps by a map list menu. 
+ * display colored text messages. 
+ * nominate maps by a map list menu.
+ * allow the last round to finish before change to the next map. 
+ * change the server map to a popular one when the server is empty too much time. 
+ * change the nextmap to [not voted yet] 
+ * during a vote, change the nextmap to [vote in progress] 
+ * show only the last 10 seconds remaining to end the voting. 
+ * give weighted votes to admins counting more points. 
 [/QUOTE]
 
 ******************************** [anchor]Credits[/anchor][B][SIZE="5"][COLOR="blue"]Credits[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *******************************
@@ -216,6 +265,14 @@ following in your game console:
 from the [B]amxx cvars[/B] command. They will be grouped together. 
 [/LIST] 
 [/QUOTE] 
+
+***************************************************************************************	
+[SIZE="6"]BRAZIL (South America) Testing Server[/SIZE]
+[URL="http://www.gametracker.com/server_info/jacks.noip.me:27015/"][IMG]http://www.gametracker.com/server_info/jacks.noip.me:27015/b_560_95_1.png[/IMG][/URL]
+
+[SIZE="6"]GERMANY (Europe) Testing Server[/SIZE]
+[URL="http://www.gametracker.com/server_info/vipersnake.net:27030/"][IMG]http://www.gametracker.com/server_info/vipersnake.net:27030/b_560_95_1.png[/IMG][/URL]
+
 ******************************** [anchor]Downloads[/anchor][SIZE="6"][COLOR="Blue"][B]Downloads[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor] ********************
 
 */

@@ -17,6 +17,47 @@
 [SIZE="6"][COLOR="Blue"][B]Multi-Mod Manager v1.0-release_candidate2.hotfix2[/B][/COLOR][/SIZE]
 [B]Release: 10.10.2015 | Last Update: 13.10.2015[/B]
 
+[SIZE="4"]Basic differences between the original [B]Joropito's MultiMod[/B] and [B]addons_zz's Multi-Mod Manager[/B][/SIZE]
+
+[B]addons_zz's Multi-mod Manager can:[/B]
+[LIST=1]
+[*]display colored text messages. 
+[*]easily implemented any new feature that you want, as it is a fully documented plugin. 
+[*]improve its code as it is well [URL="http://www.d.umn.edu/~gshute/softeng/principles.html"]software engineered[/URL]. 
+[*]easily manage extremely big mod plugins files and mods configurations files. 
+[*]easily manage extremely big mods amount. 
+[*]have a vote mod until 100 mods or more, despite it's not being too much comprehensive. 
+[*]install the [COLOR="Red"]fully compatible[/COLOR] "[B]multimod_daily_changer[/B]" provided [goanchor=Downloads]here[/goanchor]. 
+[*]install the [COLOR="Red"]fully compatible[/COLOR] and new richest "[URL="https://forums.alliedmods.net/showthread.php?t=273019"]galieo_reloaded.sma[/URL]". 
+[*]unload metamod csdm modules automatically after disable the csdm mod, or before enable any another mod, as long as you configure it. 
+[*]restore server's cvars and server's commands automatically after disable any mod, or before enable another mod, as long as you configure it. 
+[*]install/use every mod that exists and will exists in the universe, without any special plugin or any "Multi-Mod Manager" modification, 
+            as long as this mod you wanna install runs at an AMXX very own default install. 
+[*]if you want to, you can have any mod activated never ever at you server, even if there is more then 10 installed and fully working mods. 
+[*]use the command "[B]amx_setmod help 1[/B]" display the acceptable inputs and loaded mods 
+            from the file "[COLOR="Blue"]yougamemod/addons/amxmodx/configs/multimod/[/COLOR][B]multimod.ini[/B]". 
+[*]use the command '[COLOR="Blue"][B]amx_setmod modShortName <1 or 0>[/B][/COLOR]', to enable the mod "modShortName" as [COLOR="Blue"]csdm[/COLOR], 
+            starting a vote map (1) or not (0), right after. This command can [B]only active mods loaded[/B] from 
+            "[B]multimod.ini[/B]" file, and needs an admin level ADMIN_CFG. 
+[*]use the command '[COLOR="Blue"][B]amx_setmods modShortName <1 or 0>[/B][/COLOR]', to enable the mod "modShortName" as [COLOR="Blue"]surf[/COLOR], 
+            restarting (1) or not (0) the server immediately, [B]s[/B]ilently. This command can [B]active any mod installed at the server[/B] 
+            despite it is or it is not at the "[B]multimod.ini[/B]" server configuration file. And most important, it needs an admin level ADMIN_IMMUNITY. 
+[*]use the cvar [COLOR="Blue"]amx_multimod_endmapvote [B]<0 - 1>[/B][/COLOR] to enable ([B]1[/B]) or disable ([B]0[/B]) end map automatic [B]multi-mod[/B] voting.
+[*]waits as long as you want to choose to activate one mod or not, by vote menu and by command line. 
+[*]at voting [B]keep the current mod[/B], if less than 30% voted, or [B]keep it disabled[/B] if there is no mod enabled. 
+[*]keep the server's current mod at voting as the [COLOR="Blue"]vote menu's[/COLOR] first option is always: "[B]1. Keep Current Mod[/B]". 
+[*]disable the server's current mod at voting as the [COLOR="Blue"]vote menu's[/COLOR] second option is always: "[B]2. No mod - Disable Mod[/B]". 
+[*]let the original AMXX very own "Map Chooser" enabled and its source code not replaced, despite it probably not be a useful plugin for voting map. 
+[*]see that are any mod currently activated, when you type "say currentmod" and there is no mod active. 
+[*]execute a special server's configuration file at the comment you active a server's mod. That is executed only and only at the 
+            mod first activation time by the command "amx_setmod" (the silence one, "amx_setmods" has not this feature, because it is silent). 
+[*]receive a clear and self-explanatory error message when you mis-configure anything, anywhere, anytime. 
+[*]freeze the game and show the scoreboard when activating a mod silently, using the command "amx_setmods".
+[*]see the voting results details at server's console. 
+[/LIST]
+
+[SIZE="4"]And even better, server's admins with right flag can change the server's current mod without needing direct access like ftp, to the server's files.[/SIZE]
+
 [anchor]Top[/anchor][SIZE="5"][COLOR="blue"][B]Contents' Table[/B][/COLOR][/SIZE] 
 
 [LIST]
@@ -33,15 +74,14 @@
 [*][goanchor=Downloads]Downloads[/goanchor]
 [/LIST]
 The original plugin "[URL="https://forums.alliedmods.net/showthread.php?t=95568"]multimod.sma[/URL]" is originally written by JoRoPiTo. This "[B]Multi-Mod Manager[/B]" works 
-differently from the original "[COLOR="Blue"]MultiMod Manager[/COLOR]". It keeps your original "plugins.ini" and add a new custom 
-set ([B]the Mod[/B]) to the current game, without changing your original "[B]plugins.ini[/B]". See [goanchor=Credits]Credits[/goanchor] for information. 
+differently from the original "[COLOR="Blue"]MultiMod Manager[/COLOR]". See [goanchor=Credits]Credits[/goanchor] for information. 
 
 This is a release candidate, which is a beta version with potential to be a final product, which is ready to be 
 released unless [B]significant bugs[/B] emerge. In this stage of product stabilization, all product [B]features[/B] have been 
 designed, coded and tested through one or more beta cycles with no known show stopper-class bug. 
 
 This plugin [COLOR="Red"]is [B]not[/B] compatible[/COLOR] with the AMXX's very own [B]Map Chooser[/B] or "[B]Daily Maps[/B]", but yes with its 
-modification "[B]multimod_mapchooser.sma[/B]" and "[B]multimod_daily_changer[/B]" provided here. The new 
+modification "[B]multimod_mapchooser.sma[/B]" and "[B]multimod_daily_changer[/B]" provided [goanchor=Downloads]here[/goanchor]. The new 
 "[URL="https://forums.alliedmods.net/showthread.php?t=273019"]galieo_reloaded.sma[/URL]" which is a different Galileo version, [COLOR="Red"]is ready[/COLOR] to be used with this [B]Multi-Mod Manager[/B]". 
 
 The "[B]Multi-Mod Daily Maps[/B]" is a modified version of "[B]Daily Maps[/B]" to work with this "[B]Multi-Mod Manager[/B]". 
@@ -54,7 +94,7 @@ only active when you are not using any mod, or your current mod does not specifi
 As I am working at another plugins, I cannot provide immediately fixes and forum's answers here. But 
 as soon as I can, I am going to release the final version. 
 [URL="http://www.gametracker.com/search/?search_by=server_variable&search_by2=MultiModManager&query=&loc=_all&sort=&order="]
-[SIZE=3][B][COLOR=DarkGreen]Click here to see all servers using this plugin.[/COLOR][/B][/SIZE][/URL] 
+[SIZE=5][B][COLOR=DarkGreen]Click here to see all servers using this plugin.[/COLOR][/B][/SIZE][/URL] 
 
 ********************** [anchor]Introduction[/anchor][B][SIZE="5"][COLOR="blue"]Introduction[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor]  *******************************
 This is a multi-mod server manager, that controls which mod is, or will be activated. 
@@ -75,19 +115,23 @@ other mod is [COLOR="Blue"][B]activated[/B][/COLOR] or your disable the active m
 [QUOTE]
  * Changes the [B]default mapcycle[/B], if and only if a custom mod mapcycle was created.
 
- * The [COLOR="Blue"]vote menu's[/COLOR] first to options are: "[B]1. Keep Current Mod[/B]" and "[B]2. No mod - Disable Mod[/B]".
+ * The [COLOR="Blue"]vote menu's[/COLOR] first to options always are: "[B]1. Keep Current Mod[/B]" and "[B]2. No mod - Disable Mod[/B]". 
 
  * The vote mod [B]keep the current mod[/B], when less than 30% of players voted. 
 
  * When the min vote mod time is not [B]reached/disabled[/B], display a message informing it. 
+
+ * Command '[COLOR="Blue"][B]amx_votemod[/B][/COLOR]', to start force start a vote mod, even if it is disabled. This command can 
+       [B]only active mods loaded[/B] from "[B]multimod.ini[/B]" file, and needs an admin level ADMIN_MAP. 
 
  * Command '[COLOR="Blue"][B]amx_setmod modShortName <1 or 0>[/B][/COLOR]', to enable the mod "modShortName" as [COLOR="Blue"]csdm[/COLOR], 
       starting a vote map (1) or not (0), right after. This command can [B]only active mods loaded[/B] from 
       "[B]multimod.ini[/B]" file, and needs an admin level ADMIN_CFG. 
 
  * Command '[COLOR="Blue"][B]amx_setmods modShortName <1 or 0>[/B][/COLOR]', to enable the mod "modShortName" as [COLOR="Blue"]surf[/COLOR], 
-      restarting (1) or not (0) the server immediately, [B]s[/B]ilently. This command can [B]active any mod installed[/B] 
-      at the server, and it needs an admin level ADMIN_CVAR. 
+      restarting (1) or not (0) the server immediately, [B]s[/B]ilently. This command can [B]active any mod installed 
+      at the server[/B] despite it is or not at the "[B]multimod.ini[/B]" server's configuration file. And most important, 
+      it needs an admin level ADMIN_IMMUNITY. 
 
 OBS: A mod can [B]only[/B] to be/get activated after a restart. 
 [/QUOTE]
@@ -112,7 +156,7 @@ Tested under [B]Counter-Strike[/B] and Counter-Strike: [B]Condition Zero[/B]
 // Minimum [B]time[/B] to play before players can make [B]MOD voting[/B]. 
 [COLOR="Blue"]amx_mintime [B]10 [/B][/COLOR]
 
-// enable ([B]1[/B]) or disable ([B]0[/B]) end map [B]multi-mod[/B] voting.
+// enable ([B]1[/B]) or disable ([B]0[/B]) end map automatic [B]multi-mod[/B] voting.
 [COLOR="Blue"]amx_multimod_endmapvote [B]0 [/B][/COLOR]
 
 // enable ([B]1[/B]) or disable ([B]0[/B]) multi-mod voting ([B]say votemod[/B]).
@@ -308,6 +352,14 @@ following in your game console:
 from the [B]amxx cvars[/B] command. They will be grouped together.
 [/LIST]
 [/QUOTE]
+
+***************************************************************************************	
+[SIZE="6"]BRAZIL (South America) Testing Server[/SIZE]
+[URL="http://www.gametracker.com/server_info/jacks.noip.me:27015/"][IMG]http://www.gametracker.com/server_info/jacks.noip.me:27015/b_560_95_1.png[/IMG][/URL]
+
+[SIZE="6"]GERMANY (Europe) Testing Server[/SIZE]
+[URL="http://www.gametracker.com/server_info/vipersnake.net:27030/"][IMG]http://www.gametracker.com/server_info/vipersnake.net:27030/b_560_95_1.png[/IMG][/URL]
+
 ******************************** [anchor]Downloads[/anchor][SIZE="6"][COLOR="Blue"][B]Downloads[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor] ********************
 
 */
@@ -410,7 +462,7 @@ public plugin_init()
 	register_clcmd("say_team votemod", "user_votemod")
 
 	register_concmd("amx_setmod", "receiveCommand", ADMIN_CFG, g_helpamx_setmod )
-	register_concmd("amx_setmods", "receiveCommandSilent", ADMIN_CVAR, g_helpamx_setmods )
+	register_concmd("amx_setmods", "receiveCommandSilent", ADMIN_IMMUNITY, g_helpamx_setmods )
 
 	formatex(MenuName, charsmax(MenuName), "%L", LANG_PLAYER, "MM_VOTE")
 	register_menucmd(register_menuid(g_menuname), BIG_STRING - 1, "player_vote")
@@ -810,7 +862,7 @@ public load_cfg()
 			formatex( g_modnames[g_modcount], SHORT_STRING - 1, "%s", szModName )
 			formatex( g_modShortName[g_modcount], SHORT_STRING - 1, "%s", szTag )
 			formatex( g_fileCfgs[g_modcount], SHORT_STRING - 1, "%s.cfg", szTag )
-			formatex( g_filemaps[g_modcount], SHORT_STRING - 1, "%s", mapCyclePathCoder( szTag) )
+			formatex( g_filemaps[g_modcount], SHORT_STRING - 1, "%s", mapCyclePathCoder( szTag ) )
 			formatex( g_fileplugins[g_modcount], SHORT_STRING - 1, "%s.txt", szTag )
 			formatex( g_fileMsg[g_modcount], SHORT_STRING - 1, "%s.cfg", szTag )
 
@@ -854,7 +906,8 @@ public mapCyclePathCoder( Arg1[] )
 }
 
 /**
- * Makes the autoswitch between mapchooser and galileo. If both are active, prevails galieo.
+ * Makes the autoswitch between mapchooser and galileo_reloaded. If both are 
+ *   active, prevails galileo_reloaded.
  */
 public switchMapManager()
 {   
@@ -870,7 +923,7 @@ public switchMapManager()
 
 /**
  * Setup the map manager to work with votemod menu at Silent mode. That is, configures
- *  the compatibility with galileo, multimod_mapchooser and daily_maps, because now 
+ *  the compatibility with galileo_reloaded, multimod_mapchooser and daily_maps, because now 
  *  there is no modid, hence because the mod is not loaded from the mod file configs.
  * 
  * @param Arg1[] the mapcycle file name with extension and path. Ex: mapcycles/surf.txt
@@ -909,11 +962,11 @@ public configMapManagerSilent( Arg1[] )
 
 /**
  * Change the game global variable at localinfo, isFirstTimeLoadMapCycle to 1, after 
- *   the first map load if  there is a game mod mapcycle file. Or to 2 if there is not.
- * The isFirstTimeLoadMapCycle is used by daily_maps.sma to know if there is a 
- *   game mod mapcycle.
+ *   the first map load if there is a game mod mapcycle file. Or to 2 if there is not.
+ * The isFirstTimeLoadMapCycle is used by multimod_daily_changer.sma to know if there is a 
+ *   game mod mapcycle. 
  *
- * @param Arg1[] the mapcycle file name with extension and path. Ex: mapcycles/surf.txt
+ * @param Arg1[] the mapcycle file name with its extension and path. Ex: mapcycles/surf.txt
  */
 public configDailyMapsSilent( Arg1[] )
 {
@@ -1036,7 +1089,7 @@ public activateMod( modid )
 }
 
 /**
- * Actives a mod by its configs files silently and straight restat the server. That is, change 
+ * Actives a mod by its configs files silently and straight restart the server. That is, change 
  *   the current mod to 'Keep Current Mod', the active the mods by its file name exists.
  * 
  * @param Arg1[] the mod short name to active. Ex: surf
@@ -1148,7 +1201,7 @@ public msgModActivated( modShortName[], is_restart[] )
 {   
 	new mensagem[LONG_STRING]
 	formatex( mensagem, charsmax(mensagem), "^1The mod ( ^4%s^1 ) will be activated at ^4next server restart^1.",
-	     modShortName )
+			modShortName )
 
 	printMessage( mensagem, 0 )
 
@@ -1174,7 +1227,7 @@ public msgModActivated( modShortName[], is_restart[] )
 
 /**
  * Displays a message to all server player about a command line Resource active with "amx_setmod".
- * Its must match the file msg name at "multimod" folder.
+ * Its must match the file msg name at "multimod" folder. 
  * 
  * @param nomeDoRecurso[] the name of the activated resource. Ex: disable
  * @param is_restart[] inform to restart the server if "1"
@@ -1182,7 +1235,7 @@ public msgModActivated( modShortName[], is_restart[] )
 public msgResourceActivated( nomeDoRecurso[], is_restart[] )
 {   
 	new mensagem[LONG_STRING]
-	formatex( mensagem, charsmax(mensagem), "^1The mod ( ^4%s^1 ) will be activated at ^4next server restart^1.", 
+	formatex( mensagem, charsmax(mensagem), "^1The resource ( ^4%s^1 ) will be activated at ^4next server restart^1.", 
 			nomeDoRecurso )
 
 	printMessage( mensagem, 0 )
@@ -1271,7 +1324,7 @@ stock print_color(const id, const input[], any:...)
  */
 public user_nextmod(id)
 {   
-	client_print(0, print_chat, "%L", LANG_PLAYER, "MM_NEXTMOD", g_modnames[g_nextmodid])
+	client_print(0, print_chat, "%L", LANG_PLAYER, "MM_NEXTMOD", g_modnames[ g_nextmodid ])
 	return PLUGIN_HANDLED
 }
 
@@ -1288,7 +1341,7 @@ public user_currentmod(id)
 
 /**
  * Called with "say votemod". Checks:
- *	If users can invoke votation.
+ *	If users can invoke voting.
  *	If its already voted.
  */
 public user_votemod(id)
@@ -1333,11 +1386,11 @@ public check_task()
 }
 
 /**
- * Start multi mod votation.
+ * Start multi mod voting.
  * 
- * If a new votation was invoked:
- *   Restart votation count.
- *   Restart votation players menu position.
+ * If a new voting was invoked:
+ *   Restart voting count.
+ *   Restart voting players menu position.
  */
 public start_vote()
 {   
@@ -1589,7 +1642,7 @@ public get_mod_vote_id( current_menu_page, current_pressed_key )
 }
 
 /**
- * Start computing the mod votation.
+ * Start computing the mod voting.
  */
 public check_vote()
 {   
@@ -1614,33 +1667,31 @@ public check_vote()
  */
 public displayVoteResults( mostVoted, totalVotes )
 {   
+	new mensagem[LONG_STRING]
 	new playerMin = playersPlaying( 0.3 )
+
 	server_print( "Total Mod Votes: %d  | Player Min: %d  | Most Voted: %s",
-	totalVotes, playerMin, g_modnames[ mostVoted ] )
+			totalVotes, playerMin, g_modnames[ mostVoted ] )
 
 	if( totalVotes > playerMin )
 	{   
 		g_nextmodid = mostVoted
 		configureMultimod(mostVoted)
 
-		new mensagem[LONG_STRING]
+		
 		formatex( mensagem, charsmax(mensagem), "%L", LANG_PLAYER, "MM_VOTEMOD",
 		g_modnames[ mostVoted ])
 
-		client_print( 0, print_chat, mensagem )
-		server_print( mensagem )
-
 		server_cmd( "exec %s/multimod/votefinished.cfg", g_configFolder )
-	} else
+	} 
+	else
 	{   
 		new mensagem[LONG_STRING]
 		formatex( mensagem, charsmax(mensagem), "The vote did not reached the required minimum! \
 		The next mod remains: %s", g_modnames[ g_currentmodid ])
-
-		client_print(0, print_chat, mensagem)
-		server_print( mensagem )
 	}
 	totalVotes = 0
+	printMessage( mensagem, 0 )
 }
 
 /**

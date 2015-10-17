@@ -193,8 +193,11 @@ from the [B]amxx cvars[/B] command. They will be grouped together.
 [/QUOTE]
 
 ***************************************************************************************	
-Testing server
-[URL="http://cache.www.gametracker.com/server_info/jacks.noip.me:27015/"][IMG]http://cache.www.gametracker.com/server_info/jacks.noip.me:27015/b_560_95_1.png[/IMG][/URL]
+[SIZE="6"]BRAZIL (South America) Testing Server[/SIZE]
+[URL="http://www.gametracker.com/server_info/jacks.noip.me:27015/"][IMG]http://www.gametracker.com/server_info/jacks.noip.me:27015/b_560_95_1.png[/IMG][/URL]
+
+[SIZE="6"]GERMANY (Europe) Testing Server[/SIZE]
+[URL="http://www.gametracker.com/server_info/vipersnake.net:27030/"][IMG]http://www.gametracker.com/server_info/vipersnake.net:27030/b_560_95_1.png[/IMG][/URL]
 
 [anchor]Downloads[/anchor][SIZE="6"][COLOR="Blue"][B]Downloads[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor]
 
