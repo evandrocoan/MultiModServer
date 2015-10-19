@@ -27,7 +27,6 @@
 [*]change the server map to a popular one when the server is empty too much time. 
 [*]change the nextmap to [not voted yet] 
 [*]during a vote, change the nextmap to [vote in progress] 
-[*]show only the last 10 seconds remaining to end the voting. 
 [*]give weighted votes to admins counting more points. 
 [/LIST]
 
@@ -38,11 +37,10 @@
 [*]manage RunOff vote between a map and "Keep Current Map". 
 [*]change the time limit to zero. 
 [*]be used with the AMXX very own "Next Map" plugin. 
-[*]pause the AMXX very own "Map Chooser" and the original "Galileo" plugin if you forget to disable them. 
 [*]use the current mapcycle to nominate maps. 
 [*]load the current vote/nominate map list from the current mapcycle file. 
 [*]keep the initial server next map when nobody vote for next map. 
-[*]be easier learned to code new features as it has some code documentation.
+[*]be easier learned to code new features as it has some code documentation. 
 [/LIST]
 
 [B]The original Galileo cannot:[/B]
@@ -54,7 +52,6 @@
 [*]display colored text messages. 
 [*]nominate maps by a map list menu.
 [*]be used with the AMXX very own "Next Map" plugin. 
-[*]pause the AMXX very own "Map Chooser" and the original "Galileo" plugin if you forget to disable them. 
 [*]use the current mapcycle to nominate maps. 
 [*]load the current vote/nominate map list from the current mapcycle file. 
 [*]keep the initial server next map when nobody vote for next map. 
@@ -231,7 +228,7 @@ or [URL="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=brad%40mi
 
 [URL="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=brad%40mixedberry%2enet&item_name=Thank%20you%21&item_number=Galileo&no_shipping=1&return=http%3a%2f%2fforums%2ealliedmods%2enet%2fshowthread%2ephp%3ft%3d77391%23files&cn=Optional%20Note&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8"][IMG]https://www.paypal.com/en_US/i/btn/btn_donateCC_LG.gif[/IMG][/URL]
 
-Thank you!  It means a lot to me.
+Thank you!  It means a lot to me. 
 --Brad
 [/QUOTE]
 ******************************** [anchor]Sourcecode[/anchor][SIZE="5"][COLOR="blue"][B]Source Code and Support[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor] ***
@@ -356,7 +353,7 @@ new g_nominationCnt
 new g_nominationMatchesMenu[MAX_PLAYER_CNT];
 
 new isTimeToChangeLevel = false;
-new isTimeToChangeLevel2 = false;
+new isTimeToChangeLevelAndRestart = false;
 new isTimeLimitChanged = false; 
 new g_isDebugEnabledNumber = 0;
 
@@ -483,7 +480,7 @@ public plugin_cfg()
 {
 	isTimeLimitChanged = false;
 	isTimeToChangeLevel = false;
-	isTimeToChangeLevel2 = false;
+	isTimeToChangeLevelAndRestart = false;
 	g_isDebugEnabledNumber = get_cvar_num("gal_debug");
 
 	if( is_plugin_loaded( "Nextmap Chooser" ) != -1 )
@@ -815,7 +812,7 @@ public cmd_startVote2(id, level, cid)
 	else 
 	{
 		isTimeToChangeLevel = true;
-		isTimeToChangeLevel2 = true;
+		isTimeToChangeLevelAndRestart = true;
 		vote_startDirector(true);	
 	}
 
@@ -2389,9 +2386,9 @@ public vote_expire()
 			}
 			else
 			{
-				if( isTimeToChangeLevel2 )
+				if( isTimeToChangeLevelAndRestart )
 				{
-					isTimeToChangeLevel2 = false;
+					isTimeToChangeLevelAndRestart = false;
 
 					// "stay here" won
 					client_print(0, print_chat, "%L", LANG_PLAYER, "GAL_WINNER_STAY");
@@ -2413,6 +2410,7 @@ public vote_expire()
 				{
 					if( isTimeToChangeLevel )
 					{
+						// "stay here" won
 						isTimeToChangeLevel = false;
 						client_print(0, print_chat, "%L", LANG_PLAYER, "GAL_WINNER_STAY");
 					}

@@ -109,9 +109,9 @@ public plugin_init()
 				}
 			}
 		}
-		if( file_exists(serverCfgFilePath) )
-		{
-			set_cvar_string("mapchangecfgfile", serverCfgFilePath)
-		}
+	}
+	if( file_exists(serverCfgFilePath) )
+	{
+		set_cvar_string("mapchangecfgfile", serverCfgFilePath)
 	}
 }
