@@ -316,12 +316,16 @@ exec addons/amxmodx/configs/multimod/votefinished.cfg
 
 2015-10-19 | v1.0-release_candidate2.hotfix3
  * Translated to english lost code variables. 
- * Replaced a implemented a switch by a native switch. 
+ * Replaced a implemented switch by a native switch. 
+
+2015-10-19 | v1.0-release_candidate2.hotfix4
+ * Improved variables meaningful. 
+ * Replaced another implemented switch by a native switch. 
 [/QUOTE]
 
 ******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *********************************
 [QUOTE]
- * Removed unnecessary variables like g_fileMsg, g_fileplugins, g_filemaps and g_fileCfgs.
+ * Removed unnecessary variables like g_messageFileNames, g_pluginsFileNames, g_mapcycleFileNames and g_configsFileNames.
 
 [QUOTE=fysiks;2353142]
 You should never return a string from a function. Strings should always be passed by-ref with the max characters 
@@ -366,7 +370,7 @@ I'm sure there is more but I am done for now.
 [/QUOTE]
 Of course, there is more clever programing techniques to learn: 
 [LIST=1]
-[*]use tries instead of g_modShortName.  
+[*]use tries instead of g_modShortNames.  
 [*]count better current playing player at playersPlaying. 
 [*]copy more efficiently a files at copyFiles and copyFiles2. 
 [*]print colored text more efficiently than at print_color. 
@@ -439,34 +443,40 @@ from the [B]amxx cvars[/B] command. They will be grouped together.
 
 #define TASK_VOTEMOD 2487002
 #define TASK_CHVOMOD 2487004
+
 #define MAXMODS 100
+
 #define BIG_STRING 2048
 #define LONG_STRING 256
 #define SHORT_STRING 64
+
 #define MENU_ITEMS_PER_PAGE	8
 
 // Enables debug server console messages.
 new g_is_debug = false
 
+new g_coloredmenus
 new g_menu_total_pages
 new g_menuPosition[33]
 new g_menuname[] = "VOTE MOD MENU"
 new g_votemodcount[MAXMODS]
-new g_modShortName[MAXMODS][SHORT_STRING]// Per-mod short Names
-new g_fileMsg[MAXMODS][SHORT_STRING]// Per-mod Mod msg Names
-new g_fileCfgs[MAXMODS][SHORT_STRING]// Per-mod Mod cfg Names
-new g_modnames[MAXMODS][SHORT_STRING]// Per-mod Mod Names
-new g_filemaps[MAXMODS][LONG_STRING]// Per-mod Maps Files
-new g_fileplugins[MAXMODS][LONG_STRING]// Per-mod Plugin Files
 
-new g_coloredmenus
-new g_modcount = 0 // integer with configured mods count, that is pre increment, so first mod is 1
+new g_modShortNames[MAXMODS][SHORT_STRING]// Per-mod short Names
+new g_messageFileNames[MAXMODS][SHORT_STRING]// Per-mod Mod msg Names
+new g_configsFileNames[MAXMODS][SHORT_STRING]// Per-mod Mod cfg Names
+new g_modNames[MAXMODS][SHORT_STRING]// Per-mod Mod Names
+new g_mapcycleFileNames[MAXMODS][LONG_STRING]// Per-mod Maps Files
+new g_pluginsFileNames[MAXMODS][LONG_STRING]// Per-mod Plugin Files
+
+new g_modCounter = 0 // integer with configured mods count, that is pre increment, so first mod is 1
+
 new gp_allowedvote
 new gp_endmapvote
+
+new g_currentModShortName[SHORT_STRING]
 new g_nextmodid
 new g_currentmodid
-new g_multimod[SHORT_STRING]
-new g_currentmod[SHORT_STRING]
+
 new totalVotes
 new SayText
 
@@ -484,7 +494,7 @@ and any modification will be discarded in the activation of some mod.^n^n"
 
 new g_helpamx_setmod[LONG_STRING] = "help 1	      | for help."
 new g_helpamx_setmods[LONG_STRING] = "shortModName <1 or 0> to restart or not       | Enable/Disable any mod, \
-loaded or not (silent mod). Ex: amx_setmods surf 0"
+loaded or not (silent mod). "
 
 new g_cmdsAvailables1[LONG_STRING] = "^namx_setmod help 1       | To show this help.^n\
 amx_setmod disable 1   | To deactivate any active Mod.^n\
@@ -548,7 +558,7 @@ public plugin_cfg()
 	gp_voteanswers = get_cvar_pointer("amx_vote_answers")
 	gp_timelimit = get_cvar_pointer("mp_timelimit")
 	gp_mapcyclefile = get_cvar_pointer("mapcyclefile")
-	get_localinfo("amx_multimod", g_multimod, charsmax(g_multimod))
+	get_localinfo( "amx_multimod", g_currentModShortName, charsmax(g_currentModShortName) )
 
 	switchMapManager()
 	loadCurrentMod()
@@ -611,9 +621,9 @@ public receiveCommand(id, level, cid)
  */
 public getModID( shortName[] )
 {   
-	for( new mod_id_number = 3; mod_id_number <= g_modcount; mod_id_number++ )
+	for( new mod_id_number = 3; mod_id_number <= g_modCounter; mod_id_number++ )
 	{   
-		if( equal( shortName, g_modShortName[mod_id_number] ) )
+		if( equal( shortName, g_modShortNames[mod_id_number] ) )
 		{   
 			return mod_id_number
 		}
@@ -666,10 +676,10 @@ public printHelp( id )
 	server_print( g_cmdsAvailables1 )
 	server_print( g_cmdsAvailables2 )
 
-	for( new i = 3; i <= g_modcount; i++ )
+	for( new i = 3; i <= g_modCounter; i++ )
 	{   
 		formatex( text, charsmax(text), "amx_setmod %s 1          | to use %s",
-				g_modShortName[i], g_modnames[i] )
+				g_modShortNames[i], g_modNames[i] )
 
 		client_print( id, print_console , text )
 		server_print( text )
@@ -749,94 +759,103 @@ public restartTheServer()
 
 /**
  * The 'currentmod.ini' and 'currentmodsilent.ini', at multimod folder, stores the current 
- *   mod actually active and the current mod was activated by silent mode, respectively. 
+ *    mod actually active and the current mod was activated by silent mode, respectively. 
  * When 'currentmod.ini' stores 0, 'currentmodsilent.ini' defines the current mod. 
  * When 'currentmod.ini' stores anything that is not 0, 'currentmod.ini' defines the current mod.
  */
 public loadCurrentMod()
 {   
-	new currentModFile[LONG_STRING]
-	new currentModSilentFile[LONG_STRING]
-
-	new currentModID_String[SHORT_STRING]
-	new currentModSilentFile_String[SHORT_STRING]
+	new currentModCode
 	new ilen
 
-	formatex(currentModFile, charsmax(currentModFile), "%s/multimod/currentmod.ini", g_configFolder)
-	formatex(currentModSilentFile, charsmax(currentModFile), "%s/multimod/currentmodsilent.ini", g_configFolder)
+	new currentModFilePath[LONG_STRING]
+	new currentModSilentFilePath[LONG_STRING]
 
-	if( file_exists( currentModFile ) )
+	new currentModId_String[SHORT_STRING]
+	new currentModSilentId_String[SHORT_STRING]
+
+	formatex(currentModFilePath, charsmax(currentModFilePath), "%s/multimod/currentmod.ini", g_configFolder)
+	formatex(currentModSilentFilePath, charsmax(currentModFilePath), "%s/multimod/currentmodsilent.ini", g_configFolder)
+
+	// normal mod activation 
+	if( file_exists( currentModFilePath ) )
 	{
-		read_file(currentModFile, 0, currentModID_String, charsmax(currentModID_String), ilen )
-	} else
+		read_file(currentModFilePath, 0, currentModId_String, charsmax(currentModId_String), ilen )
+		currentModCode = str_to_num( currentModId_String )
+	} 
+	else
 	{
-		copy( currentModID_String, charsmax( currentModID_String ), "0" )
+		currentModCode = -1
 	}
-	if( file_exists( currentModSilentFile ) )
-	{
-		read_file(currentModSilentFile, 0, currentModSilentFile_String, charsmax(currentModSilentFile_String), ilen )
-	} else
-	{
-		copy( currentModID_String, charsmax( currentModID_String ), "0" )
-	}
 
-	build_first_mods()
-	load_cfg()
+	// silent mod activation 
+	if( file_exists( currentModSilentFilePath ) )
+	{
+		read_file( currentModSilentFilePath, 0, currentModSilentId_String, charsmax(currentModSilentId_String), ilen )
+	} 
+	else
+	{
+		currentModCode = -1
+	} 
 
-	// If -1, there is no mod active. If 0, the current mod was activated by silent mode
-	if( !equal( currentModID_String, "-1" ) && !equal( currentModID_String, "0" ) )
+	build_first_mods() 
+	load_cfg() 
+
+	switch( currentModCode )
 	{   
-		new currentModID = str_to_num( currentModID_String ) + 2
-		configureMultimod( currentModID )
-
-	} else if ( equal( currentModID_String, "0" ) )
-	{   
-		activateModSilent( currentModSilentFile_String )
-
-	} else 
-	{
-		configureMultimod( 2 )
+		case -1: // If -1, there is no mod active. 
+		{   
+			configureMultimod( 2 ) 
+		}
+		case 0: // If 0, the current mod was activated by silent mode
+		{
+			g_currentmodid = 1
+			activateModSilent( currentModSilentId_String ) 
+		}
+		default: 
+		{
+			configureMultimod( currentModCode + 2  ) 
+		}
 	}
 }
 
 /**
  * Given a mod_id_number, salves it to file "currentmod.ini", at multimod folder.
  * 
- * @param the mod id.
+ * @param mod_id_number the mod id.
  */
 saveCurrentMod( mod_id_number )
 {   
-	new modidString[SHORT_STRING]
-	new arqCurrentMod[LONG_STRING]
+	new mod_idString[SHORT_STRING]
+	new currentModConfigFilePath[LONG_STRING]
 
-	formatex( arqCurrentMod, charsmax(g_configFolder), "%s/multimod/currentmod.ini", g_configFolder )
+	formatex( currentModConfigFilePath, charsmax(g_configFolder), "%s/multimod/currentmod.ini", g_configFolder )
 
-	if ( file_exists( arqCurrentMod ) )
+	if ( file_exists( currentModConfigFilePath ) )
 	{   
-		delete_file( arqCurrentMod )
+		delete_file( currentModConfigFilePath )
 	}
-	mod_id_number = mod_id_number - 2
 
-	formatex( modidString, charsmax(modidString), "%d", mod_id_number )
-	write_file( arqCurrentMod, modidString )
+	formatex( mod_idString, charsmax(mod_idString), "%d", mod_id_number - 2 )
+	write_file( currentModConfigFilePath, mod_idString )
 }
 
 /**
  *  Saves the current silent mod activated to file "currentmodsilent.ini", at multimod folder.
  *
- * @param Arg1[] the mod short name. Ex: surf.
+ * @param modShortName[] the mod short name. Ex: surf.
  */
-public saveCurrentModSilent( Arg1[] )
+public saveCurrentModSilent( modShortName[] )
 {
-	new arqCurrentMod[LONG_STRING]
+	new currentModConfigFilePath[LONG_STRING]
 
-	formatex( arqCurrentMod, charsmax(g_configFolder), "%s/multimod/currentmodsilent.ini", g_configFolder )
+	formatex( currentModConfigFilePath, charsmax(g_configFolder), "%s/multimod/currentmodsilent.ini", g_configFolder )
 
-	if( file_exists( arqCurrentMod ) )
+	if( file_exists( currentModConfigFilePath ) )
 	{   
-		delete_file( arqCurrentMod )
+		delete_file( currentModConfigFilePath )
 	}
-	write_file( arqCurrentMod, Arg1 )
+	write_file( currentModConfigFilePath, modShortName )
 }
 
 /**
@@ -863,8 +882,8 @@ public configureMultimod( mod_id_number )
 			activateMod( mod_id_number  )
 		}
 	}
-	configDailyMapsSilent( g_filemaps[mod_id_number] )
-	configMapManagerSilent( g_filemaps[mod_id_number] )
+	configDailyMapsSilent( g_mapcycleFileNames[mod_id_number] )
+	configMapManagerSilent( g_mapcycleFileNames[mod_id_number] )
 }
 
 /**
@@ -873,21 +892,21 @@ public configureMultimod( mod_id_number )
  */
 public build_first_mods()
 {   
-	g_modcount++
+	g_modCounter++
 
-	formatex( g_modnames[g_modcount], SHORT_STRING - 1, "Keep Current Mod" )
-	formatex( g_fileCfgs[g_modcount], SHORT_STRING - 1, "none.cfg" )
-	formatex( g_filemaps[g_modcount], SHORT_STRING - 1, "none.txt" )
-	formatex( g_fileplugins[g_modcount], SHORT_STRING - 1, "none.txt" )
-	formatex( g_fileMsg[g_modcount], SHORT_STRING - 1, "nobe.cfg" )
+	formatex( g_modNames[g_modCounter], SHORT_STRING - 1, "Keep Current Mod" )
+	formatex( g_configsFileNames[g_modCounter], SHORT_STRING - 1, "none.cfg" )
+	formatex( g_mapcycleFileNames[g_modCounter], SHORT_STRING - 1, "none.txt" )
+	formatex( g_pluginsFileNames[g_modCounter], SHORT_STRING - 1, "none.txt" )
+	formatex( g_messageFileNames[g_modCounter], SHORT_STRING - 1, "nobe.cfg" )
 
-	g_modcount++
+	g_modCounter++
 
-	formatex( g_modnames[g_modcount], SHORT_STRING - 1, "No mod - Disable Mod" )
-	formatex( g_fileCfgs[g_modcount], SHORT_STRING - 1, "none.cfg" )
-	formatex( g_filemaps[g_modcount], SHORT_STRING - 1, "none.txt" )
-	formatex( g_fileplugins[g_modcount], SHORT_STRING - 1, "none.txt" )
-	formatex( g_fileMsg[g_modcount], SHORT_STRING - 1, "nobe.cfg" )
+	formatex( g_modNames[g_modCounter], SHORT_STRING - 1, "No mod - Disable Mod" )
+	formatex( g_configsFileNames[g_modCounter], SHORT_STRING - 1, "none.cfg" )
+	formatex( g_mapcycleFileNames[g_modCounter], SHORT_STRING - 1, "none.txt" )
+	formatex( g_pluginsFileNames[g_modCounter], SHORT_STRING - 1, "none.txt" )
+	formatex( g_messageFileNames[g_modCounter], SHORT_STRING - 1, "nobe.cfg" )
 }
 
 /**
@@ -895,68 +914,60 @@ public build_first_mods()
  */
 public load_cfg()
 {   
-	new szData[LONG_STRING]
-	new szFilename[LONG_STRING]
+	new currentLine[LONG_STRING]
+	new configFilePath[LONG_STRING]
 
-	formatex(szFilename, charsmax(szFilename), "%s/multimod/multimod.ini", g_configFolder)
+	formatex(configFilePath, charsmax(configFilePath), "%s/multimod/multimod.ini", g_configFolder)
 
-	new f = fopen(szFilename, "rt")
-	new szTemp[SHORT_STRING],szModName[SHORT_STRING], szTag[SHORT_STRING], szCfg[SHORT_STRING]
+	new configFilePointer = fopen( configFilePath, "rt" )
+	new currentLineSplited[SHORT_STRING]
+	new modName[SHORT_STRING]
+	new modShortNameString[SHORT_STRING]
+	new unusedLastString[SHORT_STRING]
 
-	while(!feof(f))
+	while( !feof( configFilePointer ) )
 	{   
-		fgets(f, szData, charsmax(szData))
-		trim(szData)
+		fgets( configFilePointer, currentLine, charsmax(currentLine) )
+		trim( currentLine )
 
 		// skip commentaries while reading file
-		if(!szData[0] || szData[0] == ';' || (szData[0] == '/' && szData[1] == '/'))
+		if( !currentLine[0] || currentLine[0] == ';' 
+				|| ( currentLine[0] == '/' && currentLine[1] == '/' ) )
 		{   
 			continue
 		}
 
-		if(szData[0] == '[')
+		if( currentLine[0] == '[' )
 		{   
-			g_modcount++
+			g_modCounter++
 
 			// remove line delimiters [ and ]
-			replace_all(szData, charsmax(szData), "[", "")
-			replace_all(szData, charsmax(szData), "]", "")
+			replace_all( currentLine, charsmax(currentLine), "[", "" )
+			replace_all( currentLine, charsmax(currentLine), "]", "" )
 
-			//broke the current config line, in modname (szModName), modtag (szTag) 
-			strtok(szData, szModName, charsmax(szModName), szTemp, charsmax(szTemp), ':', 0)
-			strtok(szTemp, szTag, charsmax(szTag), szCfg, charsmax(szCfg), ':', 0)
+			// broke the current config line, in modname (modName), modtag (modShortNameString) 
+			strtok( currentLine, modName, charsmax(modName), currentLineSplited, charsmax(currentLineSplited), ':', 0 )
+			strtok( currentLineSplited, modShortNameString, charsmax(modShortNameString), unusedLastString, charsmax( unusedLastString ), ':', 0 )
 
-			//stores at memory multi-dimensionals arrrays: the cfgfilename, modname, 
-			//filemapsname and plugin_modname
-			formatex( g_modnames[g_modcount], SHORT_STRING - 1, "%s", szModName )
-			formatex( g_modShortName[g_modcount], SHORT_STRING - 1, "%s", szTag )
-			formatex( g_fileCfgs[g_modcount], SHORT_STRING - 1, "%s.cfg", szTag )
-			formatex( g_filemaps[g_modcount], SHORT_STRING - 1, "%s", mapCyclePathCoder( szTag ) )
-			formatex( g_fileplugins[g_modcount], SHORT_STRING - 1, "%s.txt", szTag )
-			formatex( g_fileMsg[g_modcount], SHORT_STRING - 1, "%s.cfg", szTag )
-
-			if( equal(szModName, g_multimod) )
-			{   
-				copy(g_currentmod, charsmax(g_currentmod), szModName)
-				g_currentmodid = g_modcount
-
-				if( g_is_debug )
-				{   
-					server_print("[AMX MultiMod] %L", LANG_PLAYER, "MM_WILL_BE",
-					g_multimod, szTag, szCfg)
-				}
-			}
+			// stores at memory multi-dimensionals arrrays: the cfgfilename, modname, 
+			// filemapsname and plugin_modname
+			formatex( g_modNames[g_modCounter], SHORT_STRING - 1, "%s", modName )
+			formatex( g_modShortNames[g_modCounter], SHORT_STRING - 1, "%s", modShortNameString )
+			formatex( g_configsFileNames[g_modCounter], SHORT_STRING - 1, "%s.cfg", modShortNameString )
+			formatex( g_mapcycleFileNames[g_modCounter], SHORT_STRING - 1, "%s", mapCyclePathCoder( modShortNameString ) )
+			formatex( g_pluginsFileNames[g_modCounter], SHORT_STRING - 1, "%s.txt", modShortNameString )
+			formatex( g_messageFileNames[g_modCounter], SHORT_STRING - 1, "%s.cfg", modShortNameString )
 
 			//print at server console each mod loaded
 			if( g_is_debug )
 			{   
-				server_print( "[AMX MOD Loaded] %d %s - %s %s %s %s", g_modcount - 2,
-				g_modnames[g_modcount], g_fileplugins[g_modcount], g_fileCfgs[g_modcount],
-				g_filemaps[g_modcount], g_fileMsg[g_modcount] )
+				server_print( "[AMX MOD Loaded] %d %s - %s %s %s %s", g_modCounter - 2,
+						g_modNames[g_modCounter], g_pluginsFileNames[g_modCounter], g_configsFileNames[g_modCounter],
+						g_mapcycleFileNames[g_modCounter], g_messageFileNames[g_modCounter] )
 			}
 		}
 	}
-	fclose(f)
+	fclose( configFilePointer )
 }
 
 /**
@@ -1130,7 +1141,7 @@ public activateMod( mod_id_number )
 	new filePluginRead[LONG_STRING]
 	new filePluginWrite[LONG_STRING]
 
-	formatex( filePluginRead, charsmax( filePluginRead ),"%s/multimod/plugins/%s", g_configFolder, g_fileplugins[mod_id_number] )
+	formatex( filePluginRead, charsmax( filePluginRead ),"%s/multimod/plugins/%s", g_configFolder, g_pluginsFileNames[mod_id_number] )
 	formatex( filePluginWrite, charsmax(filePluginWrite), "%s/plugins-multi.ini", g_configFolder )
 
 	if( file_exists(filePluginRead) )
@@ -1138,7 +1149,7 @@ public activateMod( mod_id_number )
 		new fileConfigRead[LONG_STRING]
 		new fileConfigWrite[LONG_STRING]
 
-		formatex( fileConfigRead, charsmax(fileConfigRead), "%s/multimod/cfg/%s", g_configFolder, g_fileCfgs[mod_id_number] )
+		formatex( fileConfigRead, charsmax(fileConfigRead), "%s/multimod/cfg/%s", g_configFolder, g_configsFileNames[mod_id_number] )
 		formatex( fileConfigWrite, charsmax(fileConfigWrite), "%s/multimod/multimod.cfg", g_configFolder )
 		disableMods()
 
@@ -1151,8 +1162,8 @@ public activateMod( mod_id_number )
 
 		saveCurrentMod( mod_id_number )
 
-		server_print( "Setting multimod to %i - %s", mod_id_number - 2, g_modnames[mod_id_number] )
-		set_localinfo( "amx_multimod", g_modShortName[mod_id_number] )
+		server_print( "Setting multimod to %i - %s", mod_id_number - 2, g_modNames[mod_id_number] )
+		set_localinfo( "amx_multimod", g_modShortNames[mod_id_number] )
 
 	} else
 	{   
@@ -1391,24 +1402,26 @@ stock print_color(const id, const input[], any:...)
 }
 
 /**
- * Displays a message to a specific server player showing the mod id as the next mod to be loaded.
+ * Displays a message to a specific server player showing the next mod to be loaded. 
  * 
  * @param id the player id
  */
 public user_nextmod(id)
 {   
-	client_print(0, print_chat, "%L", LANG_PLAYER, "MM_NEXTMOD", g_modnames[ g_nextmodid ])
+	client_print( 0, print_chat, "%L", LANG_PLAYER, "MM_NEXTMOD", g_modNames[ g_nextmodid ] )
+
 	return PLUGIN_HANDLED
 }
 
 /**
- * Displays a message to a specific server player show the mod id as current mod.
+ * Displays a message to a specific server player show the current mod.
  * 
  * @param id the player id
  */
 public user_currentmod(id)
 {   
-	client_print(0, print_chat, "The game current mod is: %s", g_modnames[ g_currentmodid ] )
+	client_print(0, print_chat, "The game current mod is: %s", g_modNames[ g_currentmodid ] )
+
 	return PLUGIN_HANDLED
 }
 
@@ -1421,7 +1434,7 @@ public user_votemod(id)
 {   
 	if( get_pcvar_num( gp_allowedvote ) )
 	{   
-		client_print(0, print_chat, "%L", LANG_PLAYER, "MM_VOTEMOD", g_modnames[g_nextmodid])
+		client_print(0, print_chat, "%L", LANG_PLAYER, "MM_VOTEMOD", g_modNames[g_nextmodid])
 		return PLUGIN_HANDLED
 	}
 	new Float:elapsedTime = get_pcvar_float(gp_timelimit) - (float(get_timeleft()) / 60.0)
@@ -1451,6 +1464,7 @@ public user_votemod(id)
 public check_task()
 {   
 	new timeleft = get_timeleft()
+
 	if(timeleft < 300 || timeleft > 330)
 	{   
 		return
@@ -1509,7 +1523,7 @@ public display_votemod_menu( id, menu_current_page )
 	new menu_valid_keys
 	new current_write_position
 	new current_page_itens
-	new g_menusNumber = g_modcount
+	new g_menusNumber = g_modCounter
 
 	// calc. g_menu_total_pages
 	if( ( g_menusNumber % MENU_ITEMS_PER_PAGE ) > 0 )
@@ -1551,7 +1565,7 @@ public display_votemod_menu( id, menu_current_page )
 
 		current_write_position += formatex( menu_body[ current_write_position ],
 				BIG_STRING - current_write_position , "%d. %s^n", for_index + 1,
-				g_modnames[ mod_vote_id + 1] )
+				g_modNames[ mod_vote_id + 1] )
 
 		g_votemodcount[ mod_vote_id ] = 0
 		for_index++
@@ -1678,14 +1692,14 @@ public player_vote(id, key)
 		{   
 			new mod_vote_id = get_mod_vote_id( g_menuPosition[id], key )
 
-			if( mod_vote_id <= g_modcount && get_pcvar_num( gp_voteanswers) )
+			if( mod_vote_id <= g_modCounter && get_pcvar_num( gp_voteanswers) )
 			{   
 				new player[SHORT_STRING]
 				new choose_message[LONG_STRING]
 
 				get_user_name(id, player, charsmax(player))
 				formatex( choose_message, charsmax(choose_message), "%L", LANG_PLAYER, "X_CHOSE_X", player,
-				g_modnames[ mod_vote_id ] )
+				g_modNames[ mod_vote_id ] )
 
 				client_print( 0, print_chat, choose_message )
 				server_print( choose_message )
@@ -1721,7 +1735,7 @@ public check_vote()
 {   
 	new mostVoted = 1
 
-	for(new a = 0; a <= g_modcount; a++)
+	for(new a = 0; a <= g_modCounter; a++)
 	{   
 		if(g_votemodcount[mostVoted] < g_votemodcount[a])
 		{   
@@ -1744,7 +1758,7 @@ public displayVoteResults( mostVoted, totalVotes )
 	new playerMin = playersPlaying( 0.3 )
 
 	server_print( "Total Mod Votes: %d  | Player Min: %d  | Most Voted: %s",
-			totalVotes, playerMin, g_modnames[ mostVoted ] )
+			totalVotes, playerMin, g_modNames[ mostVoted ] )
 
 	if( totalVotes > playerMin )
 	{   
@@ -1753,7 +1767,7 @@ public displayVoteResults( mostVoted, totalVotes )
 
 		
 		formatex( result_message, charsmax(result_message), "%L", LANG_PLAYER, "MM_VOTEMOD",
-		g_modnames[ mostVoted ])
+		g_modNames[ mostVoted ])
 
 		server_cmd( "exec %s/multimod/votefinished.cfg", g_configFolder )
 	} 
@@ -1761,7 +1775,7 @@ public displayVoteResults( mostVoted, totalVotes )
 	{   
 		new result_message[LONG_STRING]
 		formatex( result_message, charsmax(result_message), "The vote did not reached the required minimum! \
-		The next mod remains: %s", g_modnames[ g_currentmodid ])
+		The next mod remains: %s", g_modNames[ g_currentmodid ])
 	}
 	totalVotes = 0
 	printMessage( result_message, 0 )

@@ -348,23 +348,23 @@
 	{
 		"1" "More 1"
 		{
-			"1" "Dragon Ball Mod"					"amx_multimods dragon 1"
-			"1" "Warcraft Mod"						"amx_multimods warcraft 1"
-			"1" "Knife Arena Mod"					"amx_multimods knife 1"
-			"1" "Predator Mod"						"amx_multimods predator 1"
-			"1" "JCTF - Capture Flag"			"amx_multimods jctf 1"
-			"1" "Catch Mod"							"amx_multimods catch 1"
-			"1" "Hide N seek Mod"				"amx_multimods hiden 1"
+			"1" "Dragon Ball Mod"					"amx_setmods dragon 1"
+			"1" "Warcraft Mod"						"amx_setmods warcraft 1"
+			"1" "Knife Arena Mod"					"amx_setmods knife 1"
+			"1" "Predator Mod"						"amx_setmods predator 1"
+			"1" "JCTF - Capture Flag"			"amx_setmods jctf 1"
+			"1" "Catch Mod"							"amx_setmods catch 1"
+			"1" "Hide N seek Mod"				"amx_setmods hiden 1"
 		}
 		"1" "More 2"
 		{
-			"1" "Surf Mod"						"amx_multimods surf 1"
+			"1" "Surf Mod"						"amx_setmods surf 1"
 		}
-		"1" "Zombie Mod Ammo"			"amx_multimods zp50Ammo 1"
-		"1" "Zombie Mod Money"			"amx_multimods zp50Money 1"
-		"1" "CS Deathmatch Mod"			"amx_multimods csdm 1"
-		"1" "Super Hero Mod"					"amx_multimods shero 1"
-		"1" "Gun-Game Mod"					"amx_multimods gungame 1"
+		"1" "Zombie Mod Ammo"			"amx_setmods zp50Ammo 1"
+		"1" "Zombie Mod Money"			"amx_setmods zp50Money 1"
+		"1" "CS Deathmatch Mod"			"amx_setmods csdm 1"
+		"1" "Super Hero Mod"					"amx_setmods shero 1"
+		"1" "Gun-Game Mod"					"amx_setmods gungame 1"
 	}
 	"1" "Configs 1"
 	{
@@ -483,7 +483,7 @@
 		"2" "Force Vote Map"						"gal_startvote;mapchooser_startvote"
 		"2" "Ask Vote MOD"						"say votemod"
 		"2" "Ask Vote Map"						"say rtv"
-		"2" "Deactivate Mods"					"amx_multimods disableMods 1"
+		"2" "Deactivate Mods"					"amx_setmods disableMods 1"
 	}
 	"1" "CT's Win" 					"terminate_round ct au;exec admin/ctwin.cfg"
 	"1" "TR's Win" 					"terminate_round ob t;exec admin/terwin.cfg"
