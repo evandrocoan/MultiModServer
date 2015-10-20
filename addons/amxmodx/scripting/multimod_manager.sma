@@ -14,7 +14,7 @@
 *
 ***************************************************************************************
 
-[SIZE="6"][COLOR="Blue"][B]Multi-Mod Manager v1.0-release_candidate2.hotfix2[/B][/COLOR][/SIZE]
+[SIZE="6"][COLOR="Blue"][B]Multi-Mod Manager v1.0-release_candidate2.hotfix3[/B][/COLOR][/SIZE]
 [B]Release: 10.10.2015 | Last Update: 19.10.2015[/B]
 
 [SIZE="4"]Basic differences between the original [B]Joropito's MultiMod[/B] and [B]addons_zz's Multi-Mod Manager[/B][/SIZE]
@@ -317,10 +317,8 @@ exec addons/amxmodx/configs/multimod/votefinished.cfg
 2015-10-19 | v1.0-release_candidate2.hotfix3
  * Translated to english lost code variables. 
  * Replaced a implemented switch by a native switch. 
-
-2015-10-19 | v1.0-release_candidate2.hotfix4
- * Improved variables meaningful. 
  * Replaced another implemented switch by a native switch. 
+ * Improved variables names meaningful. 
 [/QUOTE]
 
 ******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *********************************
