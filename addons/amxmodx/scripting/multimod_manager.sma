@@ -15,8 +15,8 @@
 ***************************************************************************************
 
 
-[SIZE="6"][COLOR="Blue"][B]Multi-Mod Manager v1.0-release_candidate2.hotfix3[/B][/COLOR][/SIZE]
-[B]Release: 10.10.2015 | Last Update: 19.10.2015[/B]
+[SIZE="6"][COLOR="Blue"][B]Multi-Mod Manager v1.0-release_candidate2.hotfix4[/B][/COLOR][/SIZE]
+[B]Release: 10.10.2015 | Last Update: 21.10.2015[/B]
 
 [SIZE="4"]Basic differences between the original [B]Joropito's MultiMod[/B] and [B]addons_zz's Multi-Mod Manager[/B][/SIZE]
 
@@ -316,6 +316,9 @@ exec addons/amxmodx/configs/multimod/votefinished.cfg
  * Replaced a implemented switch by a native switch. 
  * Replaced another implemented switch by a native switch. 
  * Improved variables names meaningful. 
+
+2015-10-21 | v1.0-release_candidate2.hotfix4
+ * Fixed mapcycle not setting when a mod was activated by command line or voting.  
 [/QUOTE]
 
 ******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *********************************
@@ -437,7 +440,7 @@ from the [B]amxx cvars[/B] command. They will be grouped together.
 #include <amxmisc>
 
 #define PLUGIN "Multi-Mod Manager"
-#define VERSION "v1.0-rc2.3"
+#define VERSION "v1.0-rc2.4"
 #define AUTHOR "Addons zz"
 
 #define TASK_VOTEMOD 2487002
@@ -475,6 +478,7 @@ new gp_endmapvote
 new g_currentModShortName[SHORT_STRING]
 new g_nextmodid
 new g_currentmodid
+new g_isTimeToChangeMapcyle = false
 
 new totalVotes
 new SayText
@@ -592,6 +596,8 @@ public receiveCommand(id, level, cid)
 	read_argv( 1, Arg1, charsmax( Arg1 ) )
 	read_argv( 2, Arg2, charsmax( Arg2 ) )
 
+	g_isTimeToChangeMapcyle = true
+
 	if( primitiveFunctions( Arg1, Arg2, id ) )
 	{   
 		new mod_id_number = getModID( Arg1 )
@@ -610,6 +616,8 @@ public receiveCommand(id, level, cid)
 			printHelp( id )
 		}
 	}
+	g_isTimeToChangeMapcyle = false
+
 	return PLUGIN_HANDLED
 }
 
@@ -714,6 +722,8 @@ public receiveCommandSilent(id, level, cid)
 	read_argv( 1, Arg1, charsmax( Arg1 ) )
 	read_argv( 2, Arg2, charsmax( Arg2 ) )
 
+	g_isTimeToChangeMapcyle = true
+
 	if( equal( Arg1, "disable" ) )
 	{   
 		disableMods()
@@ -744,6 +754,7 @@ public receiveCommandSilent(id, level, cid)
 		printMessage( activation_message, 0 )
 		set_task(5.0, "restartTheServer");
 	} 
+	g_isTimeToChangeMapcyle = false
 
 	return PLUGIN_HANDLED
 }
@@ -1059,8 +1070,10 @@ public configDailyMapsSilent( Arg1[] )
 
 	if( file_exists( Arg1 ) )
 	{   
-		if( isFirstTimeNum  == 0 )
+		if( isFirstTimeNum  == 0 || g_isTimeToChangeMapcyle )
 		{
+			g_isTimeToChangeMapcyle = false
+
 			//server_print("^n^n^n^n^n%d^n^n", isFirstTimeNum)
 			set_localinfo( "isFirstTimeLoadMapCycle", "1" );
 			set_localinfo( "lastmapcycle", Arg1 )
@@ -1762,8 +1775,9 @@ public displayVoteResults( mostVoted, totalVotes )
 	if( totalVotes > playerMin )
 	{   
 		g_nextmodid = mostVoted
-		configureMultimod(mostVoted)
 
+		g_isTimeToChangeMapcyle = true 
+		configureMultimod(mostVoted)
 		
 		formatex( result_message, charsmax(result_message), "%L", LANG_PLAYER, "MM_VOTEMOD",
 		g_modNames[ mostVoted ])
