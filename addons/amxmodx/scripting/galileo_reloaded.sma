@@ -417,7 +417,7 @@ new cvar_soundsMute;
 
 public plugin_init()
 {
-	register_plugin("Galileo Reloaded", PLUGIN_VERSION, "Addons zz/Brad Jones");
+	register_plugin("Galileo", PLUGIN_VERSION, "Addons zz/Brad Jones");
 
 	register_dictionary("common.txt");
 	register_dictionary("galileo_reloaded.txt");

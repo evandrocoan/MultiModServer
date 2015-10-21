@@ -56,11 +56,7 @@ public plugin_init()
 {   
     register_plugin("Nextmap Chooser", AMXX_VERSION_STR, "AMXX Dev Team")
 
-    if( is_plugin_loaded( "galileo.amxx" ) != -1 )
-    {   
-        pause("a")
-    }
-    if( is_plugin_loaded( "galileo_reloaded.amxx" ) != -1 )
+    if( is_plugin_loaded( "Galileo" ) != -1 )
     {   
         pause("a")
     }
