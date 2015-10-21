@@ -14,8 +14,8 @@
 *
 *****************************************************************************************
 
-[SIZE="6"][COLOR="Blue"][B]Galileo v1.2-alpha2[/B][/COLOR][/SIZE]
-[B]Release: 10.10.2015 | Last Update: 20.10.2015[/B]
+[SIZE="6"][COLOR="Blue"][B]Galileo Reloaded v1.0-alpha2.hotfix1[/B][/COLOR][/SIZE]
+[B]Release: 10.10.2015 | Last Update: 21.10.2015[/B]
 
 [SIZE="5"]Basic differences between the original Galileo and Galileo Reloaded[/SIZE] 
 
@@ -167,7 +167,7 @@ galileo_reloaded.amxx
 
 ******************************** [anchor]Change[/anchor][B][SIZE="5"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] ***********************
 [QUOTE]
-2015-10-10 | v1.2-alpha1 
+2015-10-10 | v1.0-alpha1 
  * Fixed server restart after change timelimit to 0. 
  * Fixed server timelimit re-change after change it to 0. 
  * Fixed bug where it change the map right after a normal vote map finished. 
@@ -185,7 +185,7 @@ galileo_reloaded.amxx
  * When nobody vote for next map, keep the initial server next map. 
  * Disabled amx_nextmap to [unknown] value change. 
 
-2015-10-14 | v1.2-alpha2 
+2015-10-14 | v1.0-alpha2 
  * Fixed broken re-opt (RunOff) vote. 
  * Fixed automatic changelevel at normal vote map, after a successful keep current map wins. 
  * Improved code readability and added some new code documentation. 
@@ -194,6 +194,9 @@ galileo_reloaded.amxx
  * Fixed galileo_reloaded.sma normal end map vote runoff showing an extra option.
  * Always shows "None" vote option, to not participate at the voting. 
  * Synchronized debug RunOff menu time and normal voting menu time. 
+
+2015-10-21 | v1.0-alpha2.hotfix1
+ * Improved some variables meaning 
 [/QUOTE]
 
 ******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *********************************
@@ -271,7 +274,7 @@ from the [B]amxx cvars[/B] command. They will be grouped together.
 
 */
 
-new const PLUGIN_VERSION[]  = "1.2-alpha2";
+new const PLUGIN_VERSION[]  = "1.0-alpha2.1"; 
 
 #include <amxmodx>
 #include <amxmisc>
@@ -349,9 +352,9 @@ new g_nomination[MAX_PLAYER_CNT + 1][MAX_NOMINATION_CNT + 1]
 new g_nominationCnt
 new g_nominationMatchesMenu[MAX_PLAYER_CNT];
 
-new isTimeToChangeLevel = false;
-new isTimeToChangeLevelAndRestart = false;
-new isTimeLimitChanged = false; 
+new g_isTimeToChangeLevel = false;
+new g_isTimeToChangeLevelAndRestart = false;
+new g_isTimeLimitChanged = false; 
 new g_isDebugEnabledNumber = 0;
 
 new g_recentMap[MAX_RECENT_MAP_CNT][MAX_MAPNAME_LEN + 1]
@@ -475,9 +478,9 @@ public plugin_init()
  */
 public plugin_cfg()
 {
-	isTimeLimitChanged = false;
-	isTimeToChangeLevel = false;
-	isTimeToChangeLevelAndRestart = false;
+	g_isTimeLimitChanged = false;
+	g_isTimeToChangeLevel = false;
+	g_isTimeToChangeLevelAndRestart = false;
 	g_isDebugEnabledNumber = get_cvar_num("gal_debug");
 
 	if( is_plugin_loaded( "Nextmap Chooser" ) != -1 )
@@ -786,7 +789,7 @@ public cmd_startVote(id, level, cid)
 	}
 	else 
 	{
-		isTimeToChangeLevel = true;
+		g_isTimeToChangeLevel = true;
 		vote_startDirector(true);	
 	}
 
@@ -808,8 +811,8 @@ public cmd_startVote2(id, level, cid)
 	}
 	else 
 	{
-		isTimeToChangeLevel = true;
-		isTimeToChangeLevelAndRestart = true;
+		g_isTimeToChangeLevel = true;
+		g_isTimeToChangeLevelAndRestart = true;
 		vote_startDirector(true);	
 	}
 
@@ -1442,10 +1445,7 @@ public vote_startDirector(bool:forced)
 		debugMessageLog( 16, "At vote_startDirector --- Runoff map1: %s, Runoff map2: %s --- choicesLoaded: %d", 
 				g_mapsVoteMenuNames[0], g_mapsVoteMenuNames[1], choicesLoaded ) 
 
-		if (g_isDebugEnabledNumber)
-		{
-			debugMessageLog(4, "   [RUNOFF VOTE CHOICES (%i)]", choicesLoaded);
-		}
+		debugMessageLog(4, "   [RUNOFF VOTE CHOICES (%i)]", choicesLoaded);
 	}
 	else
 	{
@@ -1463,10 +1463,7 @@ public vote_startDirector(bool:forced)
 		choicesLoaded = vote_loadChoices();
 		voteDuration = get_pcvar_num(cvar_voteDuration);
 		
-		if (g_isDebugEnabledNumber)
-		{
-			debugMessageLog(4, "   [PRIMARY VOTE CHOICES (%i)]", choicesLoaded);
-		}
+		debugMessageLog(4, "   [PRIMARY VOTE CHOICES (%i)]", choicesLoaded);
 		
 		if (choicesLoaded)
 		{
@@ -1487,7 +1484,7 @@ public vote_startDirector(bool:forced)
 		SortCustom2D(g_mapsVoteMenuNames, choicesLoaded, "sort_stringsi");
 
 		// isDebugEnabledNumber code ----
-		if (g_isDebugEnabledNumber)
+		if ( g_isDebugEnabledNumber )
 		{
 			for (new dbgChoice = 0; dbgChoice < choicesLoaded; dbgChoice++)
 			{
@@ -1533,7 +1530,7 @@ public vote_startDirector(bool:forced)
 	{
 		client_print(0, print_chat, "%L", LANG_PLAYER, "GAL_VOTE_NOMAPS");
 	}
-	if (g_isDebugEnabledNumber)
+	if ( g_isDebugEnabledNumber )
 	{
 		debugMessageLog(4, "");
 		debugMessageLog(4, "   [PLAYER CHOICES]");
@@ -1569,12 +1566,8 @@ public vote_countdownPendingVote()
 vote_addNominations()
 {
 	// isDebugEnabledNumber code ----
-	if (g_isDebugEnabledNumber)
-	{
-		debugMessageLog(4, "   [NOMINATIONS (%i)]", g_nominationCnt);
-	}
-	//--------------
-	
+	debugMessageLog(4, "   [NOMINATIONS (%i)]", g_nominationCnt);
+
 	if (g_nominationCnt)
 	{
 		// set how many total nominations we can use in this vote
@@ -1589,8 +1582,7 @@ vote_addNominations()
 		// [TODO: develop a better method of determining which nominations make the cut; either FIFO or random]
 		new idxMap, id, mapName[32];
 
-		// isDebugEnabledNumber code ----
-		if (g_isDebugEnabledNumber)
+		if ( g_isDebugEnabledNumber )
 		{
 			new nominator_id, playerName[32];
 			for (new idxNomination = playerNominationMax; idxNomination >= 1; --idxNomination)
@@ -1857,8 +1849,7 @@ public vote_display(arg[3])
 	new updateTimeRemaining = arg[0];
 	new id = arg[1];
 
-	// isDebugEnabledNumber code ----
-	if (g_isDebugEnabledNumber)
+	if ( g_isDebugEnabledNumber )
 	{
 		new snuff = (id > 0) ? g_snuffDisplay[id] : -1;
 		debugMessageLog(4, "   [votedisplay()] id: %i  updateTimeRemaining: %i  unsnuffDisplay: %i  g_snuffDisplay: %i  \
@@ -1918,7 +1909,7 @@ public vote_display(arg[3])
 		new bool:allowExtend = get_cvar_float("mp_timelimit") < START_VOTEMAP_MIN_TIME 
 				&& !isRunoff
 
-		if( isTimeToChangeLevel && !isRunoff )
+		if( g_isTimeToChangeLevel && !isRunoff )
 		{ 
 			allowExtend = false;
 			allowStay = true;
@@ -2114,7 +2105,6 @@ public vote_expire()
 {
 	g_voteStatus |= VOTE_HAS_EXPIRED;
 	
-	// isDebugEnabledNumber code ----
 	if ( g_isDebugEnabledNumber )
 	{
 		debugMessageLog(4, "");
@@ -2383,16 +2373,16 @@ public vote_expire()
 			}
 			else
 			{
-				if( isTimeToChangeLevelAndRestart )
+				if( g_isTimeToChangeLevelAndRestart )
 				{
-					isTimeToChangeLevelAndRestart = false;
+					g_isTimeToChangeLevelAndRestart = false;
 
 					// "stay here" won
 					client_print(0, print_chat, "%L", LANG_PLAYER, "GAL_WINNER_STAY");
 
-					if( isTimeToChangeLevel )
+					if( g_isTimeToChangeLevel )
 					{
-						isTimeToChangeLevel = false;
+						g_isTimeToChangeLevel = false;
 
 						// no longer is an early vote
 						g_voteStatus &= ~VOTE_IS_EARLY;
@@ -2405,10 +2395,10 @@ public vote_expire()
 					}
 				} else 
 				{
-					if( isTimeToChangeLevel )
+					if( g_isTimeToChangeLevel )
 					{
 						// "stay here" won
-						isTimeToChangeLevel = false;
+						g_isTimeToChangeLevel = false;
 						client_print(0, print_chat, "%L", LANG_PLAYER, "GAL_WINNER_STAY");
 					}
 					else 
@@ -2427,9 +2417,9 @@ public vote_expire()
 
 			client_print(0, print_chat, "%L", LANG_PLAYER, "GAL_NEXTMAP", g_mapsVoteMenuNames[winnerVoteMapIndex]);
 
-			if( isTimeToChangeLevel )
+			if( g_isTimeToChangeLevel )
 			{
-				isTimeToChangeLevel = false;
+				g_isTimeToChangeLevel = false;
 				set_task(5.0, "map_change");
 
 				// freeze the game and show the scoreboard
@@ -2448,9 +2438,9 @@ public vote_expire()
 
 		client_print(0, print_chat, "%L", LANG_PLAYER, "GAL_WINNER_RANDOM", initialNextMap );
 
-		if( isTimeToChangeLevel )
+		if( g_isTimeToChangeLevel )
 		{
-			isTimeToChangeLevel = false;
+			g_isTimeToChangeLevel = false;
 			set_task(5.0, "map_change");
 
 			// freeze the game and show the scoreboard
@@ -2484,7 +2474,7 @@ map_extend()
 	} 
 
 	// do that actual map extension
-	isTimeLimitChanged = true;
+	g_isTimeLimitChanged = true;
 	set_cvar_float("mp_timelimit", get_cvar_float("mp_timelimit") + get_pcvar_float(cvar_extendmapStep));
 	server_exec();
 
@@ -2785,7 +2775,7 @@ public map_change()
 	new map[MAX_MAPNAME_LEN + 1];
 	get_cvar_string("amx_nextmap", map, sizeof(map)-1);
 
-	isTimeToChangeLevel = false;
+	g_isTimeToChangeLevel = false;
 
 	// verify we're changing to a valid map
 	if (!is_map_valid(map))
@@ -3076,11 +3066,11 @@ map_restoreOriginalTimeLimit()
 	debugMessageLog(2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "map_restoreOriginalTimeLimit(in)", 
 			get_cvar_float("mp_timelimit"), g_originalTimelimit);
 	
-	if ( isTimeLimitChanged )
+	if ( g_isTimeLimitChanged )
 	{	
 		server_cmd("mp_timelimit %f", g_originalTimelimit);
 		server_exec();
-		isTimeLimitChanged = false;
+		g_isTimeLimitChanged = false;
 	}
 	debugMessageLog(2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "map_restoreOriginalTimeLimit(out)", 
 			get_cvar_float("mp_timelimit"), g_originalTimelimit);
@@ -3127,7 +3117,7 @@ debugMessageLog(const mode, const text[] = "", {Float,Sql,Result,_}:...)
 {	
 	g_isDebugEnabledNumber = get_cvar_num("gal_debug");
 
-	if (mode & g_isDebugEnabledNumber)
+	if( mode & g_isDebugEnabledNumber )
 	{
 		// format the text as needed
 		new formattedText[1024];
