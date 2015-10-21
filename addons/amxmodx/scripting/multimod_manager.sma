@@ -14,6 +14,7 @@
 *
 ***************************************************************************************
 
+
 [SIZE="6"][COLOR="Blue"][B]Multi-Mod Manager v1.0-release_candidate2.hotfix3[/B][/COLOR][/SIZE]
 [B]Release: 10.10.2015 | Last Update: 19.10.2015[/B]
 
@@ -28,7 +29,7 @@
 [*]easily manage extremely big mods amount. 
 [*]have a vote mod until 100 mods or more, despite it's not being too much comprehensive. 
 [*]install the [COLOR="Red"]fully compatible[/COLOR] "[B]multimod_daily_changer[/B]" provided [goanchor=Downloads]here[/goanchor]. 
-[*]install the [COLOR="Red"]fully compatible[/COLOR] and new galieo_reloaded provided [goanchor=Downloads]here[/goanchor]. 
+[*]install the [COLOR="Red"]fully compatible[/COLOR] and new "[B]galieo_reloaded.sma[/B]" provided [URL="https://forums.alliedmods.net/showthread.php?t=273019"]here[/URL]. 
 [*]unload metamod csdm modules automatically after disable the csdm mod, or before enable any another mod, as long as you configure it. 
 [*]restore server's cvars and server's commands automatically after disable any mod, or before enable another mod, as long as you configure it. 
 [*]install/use every mod that exists and will exists in the universe, without any special plugin or any "Multi-Mod Manager" modification, 
@@ -76,17 +77,13 @@
 The original plugin "[URL="https://forums.alliedmods.net/showthread.php?t=95568"]multimod.sma[/URL]" is originally written by JoRoPiTo. This "[B]Multi-Mod Manager[/B]" works 
 differently from the original "[COLOR="Blue"]MultiMod Manager[/COLOR]". See [goanchor=Credits]Credits[/goanchor] for information. 
 
-The original plugin "[URL="https://forums.alliedmods.net/showthread.php?t=77391"]galileo.sma[/URL]" is originally written by [B]Brad[/B]. The "Galileo Reload" works similarly 
-as the original "[B]Galileo[/B]". But "[B][COLOR="Red"]Galileo Reloaded[/COLOR][/B]" has special features for the "Multi-Mod Manager" plugin, but it 
-still can be used alone. See the [goanchor=Change]Change Log[/goanchor] and [goanchor=Credits]Credits[/goanchor] for more info. 
-
 This is a release candidate, which is a beta version with potential to be a final product, which is ready to be 
 released unless [B]significant bugs[/B] emerge. In this stage of product stabilization, all product [B]features[/B] have been 
 designed, coded and tested through one or more beta cycles with no known show stopper-class bug. 
 
 This plugin [COLOR="Red"]is [B]not[/B] compatible[/COLOR] with the AMXX's very own [B]Map Chooser[/B] or "[B]Daily Maps[/B]", but yes with its 
 modification "[B]multimod_mapchooser.sma[/B]" and "[B]multimod_daily_changer[/B]" provided [goanchor=Downloads]here[/goanchor]. The new 
-[goanchor=Downloads]galieo_reloaded.sma[/goanchor] which is a different Galileo version, [COLOR="Red"]is ready[/COLOR] to be used with this [B]Multi-Mod Manager[/B]". 
+[URL="https://forums.alliedmods.net/showthread.php?t=273019"]galieo_reloaded.sma[/URL] which is a different Galileo version, [COLOR="Red"]is ready[/COLOR] to be used with this [B]Multi-Mod Manager[/B]". 
 
 The "[B]Multi-Mod Daily Maps[/B]" is a modified version of "[B]Daily Maps[/B]" to work with this "[B]Multi-Mod Manager[/B]". 
 This plugin only works with "[B]Multi-Mod Manager[/B]", alone the "[B]Multi-Mod Daily Maps[/B]" does nothing. Its allows 
@@ -391,7 +388,7 @@ Of course, there is more clever programing techniques to learn:
 
 ******************************** [anchor]Sourcecode[/anchor][SIZE="5"][COLOR="blue"][B]Source Code and Support[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor] ***
 For any problems with this plugin visit this own page for support:
-https://forums.alliedmods.net/showthread.php?t=273020
+[url]https://forums.alliedmods.net/showthread.php?t=273020[/url]
 
 If you are [B]posting[/B] because the plugin or a [B]feature[/B] of the plugin isn't working for you, [B]please[/B] do 
 all of the following, so we can [COLOR="Blue"]more efficiently[/COLOR] figure out what's going on:
@@ -429,6 +426,7 @@ from the [B]amxx cvars[/B] command. They will be grouped together.
 [URL="http://www.gametracker.com/server_info/vipersnake.net:27030/"][IMG]http://www.gametracker.com/server_info/vipersnake.net:27030/b_560_95_1.png[/IMG][/URL]
 
 ******************************** [anchor]Downloads[/anchor][SIZE="6"][COLOR="Blue"][B]Downloads[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor] ********************
+
 
 */
 

@@ -14,8 +14,8 @@
 *
 *****************************************************************************************
 
-[SIZE="6"][COLOR="Blue"][B]Galileo Reloaded v1.0-alpha2[/B][/COLOR][/SIZE]
-[B]Release: 10.10.2015 | Last Update: 14.10.2015[/B]
+[SIZE="6"][COLOR="Blue"][B]Galileo v1.2-alpha2[/B][/COLOR][/SIZE]
+[B]Release: 10.10.2015 | Last Update: 20.10.2015[/B]
 
 [SIZE="5"]Basic differences between the original Galileo and Galileo Reloaded[/SIZE] 
 
@@ -78,9 +78,6 @@ This is a Alpha version. This Alpha software can be unstable, see [goanchor=TODO
 As [B]Alpha software[/B] may not contain all of the features that are planned for the final version, see [goanchor=TODO]TODO[/goanchor] 
 section for features that are planned for the final version. 
 
-As I am working at another plugins, I cannot provide immediately fixes and forum's answers here. But 
-as soon as I can, I am going to release a new alpha version, fixing the current bugs listed here at 
-[goanchor=TODO]TODO[/goanchor] section. 
 [URL="http://www.gametracker.com/search/?search_by=server_variable&search_by2=GalileoReloaded&query=&loc=_all&sort=&order="]
 [SIZE=5][B][COLOR=DarkGreen]Click here to see all servers using this plugin.[/COLOR][/B][/SIZE][/URL]
 
@@ -170,7 +167,7 @@ galileo_reloaded.amxx
 
 ******************************** [anchor]Change[/anchor][B][SIZE="5"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] ***********************
 [QUOTE]
-2015-10-10 | v1.0-alpha1 
+2015-10-10 | v1.2-alpha1 
  * Fixed server restart after change timelimit to 0. 
  * Fixed server timelimit re-change after change it to 0. 
  * Fixed bug where it change the map right after a normal vote map finished. 
@@ -188,7 +185,7 @@ galileo_reloaded.amxx
  * When nobody vote for next map, keep the initial server next map. 
  * Disabled amx_nextmap to [unknown] value change. 
 
-2015-10-14 | v1.0-alpha2 
+2015-10-14 | v1.2-alpha2 
  * Fixed broken re-opt (RunOff) vote. 
  * Fixed automatic changelevel at normal vote map, after a successful keep current map wins. 
  * Improved code readability and added some new code documentation. 
@@ -274,7 +271,7 @@ from the [B]amxx cvars[/B] command. They will be grouped together.
 
 */
 
-new const PLUGIN_VERSION[]  = "1.0-alpha2";
+new const PLUGIN_VERSION[]  = "1.2-alpha2";
 
 #include <amxmodx>
 #include <amxmisc>
