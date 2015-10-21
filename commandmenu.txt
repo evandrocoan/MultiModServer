@@ -344,30 +344,30 @@
 		"1" "Kill All"									"amx_cfg admin/podbot/matarBots.cfg"
 		"2" "Kick All"									"amx_cfg admin/podbot/kickarBots.cfg"
 	}
-	"1" "Activate Mod"
-	{
-		"1" "More 1"
-		{
-			"1" "Dragon Ball Mod"					"amx_setmods dragon 1"
-			"1" "Warcraft Mod"						"amx_setmods warcraft 1"
-			"1" "Knife Arena Mod"					"amx_setmods knife 1"
-			"1" "Predator Mod"						"amx_setmods predator 1"
-			"1" "JCTF - Capture Flag"			"amx_setmods jctf 1"
-			"1" "Catch Mod"							"amx_setmods catch 1"
-			"1" "Hide N seek Mod"				"amx_setmods hiden 1"
-		}
-		"1" "More 2"
-		{
-			"1" "Surf Mod"						"amx_setmods surf 1"
-		}
-		"1" "Zombie Mod Ammo"			"amx_setmods zp50Ammo 1"
-		"1" "Zombie Mod Money"			"amx_setmods zp50Money 1"
-		"1" "CS Deathmatch Mod"			"amx_setmods csdm 1"
-		"1" "Super Hero Mod"					"amx_setmods shero 1"
-		"1" "Gun-Game Mod"					"amx_setmods gungame 1"
-	}
 	"1" "Configs 1"
 	{
+		"1" "Activate Mod"
+		{
+			"1" "More 1"
+			{
+				"1" "Dragon Ball Mod"					"amx_setmods dragon 1"
+				"1" "Warcraft Mod"						"amx_setmods warcraft 1"
+				"1" "Knife Arena Mod"					"amx_setmods knife 1"
+				"1" "Predator Mod"						"amx_setmods predator 1"
+				"1" "JCTF - Capture Flag"			"amx_setmods jctf 1"
+				"1" "Catch Mod"							"amx_setmods catch 1"
+				"1" "Hide N seek Mod"				"amx_setmods hiden 1"
+			}
+			"1" "More 2"
+			{
+				"1" "Surf Mod"						"amx_setmods surf 1"
+			}
+			"1" "Zombie Mod Ammo"			"amx_setmods zp50Ammo 1"
+			"1" "Zombie Mod Money"			"amx_setmods zp50Money 1"
+			"1" "CS Deathmatch Mod"			"amx_setmods csdm 1"
+			"1" "Super Hero Mod"					"amx_setmods shero 1"
+			"1" "Gun-Game Mod"					"amx_setmods gungame 1"
+		}
 		"2" "Gravity"
 		{
 			"1" "Gravity -"
@@ -443,38 +443,52 @@
 	}
 	"4" "Configs 2"
 	{
-		"2" "Freeze Time"
+		"1" "Part 1"
 		{
-					"3" "0 seconds"		"amx_cvar mp_freezetime 0"
-					"4" "2 seconds"		"amx_cvar mp_freezetime 2"
-					"4" "4 seconds"		"amx_cvar mp_freezetime 4"
-					"4" "6 seconds"		"amx_cvar mp_freezetime 6"
-					"4" "8 seconds"		"amx_cvar mp_freezetime 8"
+			"2" "Freeze Time"
+			{
+				"3" "0 seconds"		"amx_cvar mp_freezetime 0"
+				"4" "2 seconds"		"amx_cvar mp_freezetime 2"
+				"4" "4 seconds"		"amx_cvar mp_freezetime 4"
+				"4" "6 seconds"		"amx_cvar mp_freezetime 6"
+				"4" "8 seconds"		"amx_cvar mp_freezetime 8"
+				"4" "12 seconds"		"amx_cvar mp_freezetime 12"
+			}
+			"2" "Time Limit"
+			{
+				"3" "Deactivate"		"amx_cvar mp_timelimit 0"
+				"4" "20 minutes"		"amx_cvar mp_timelimit 20"
+				"4" "45 minutes"		"amx_cvar mp_timelimit 45"
+				"4" "90 minutes"		"amx_cvar mp_timelimit 90"
+				"4" "180 minutes"		"amx_cvar mp_timelimit 180"
+			}
+			"2" "AutoBalance Teams"
+			{
+				"3" "Deactivate"				"amx_cvar mp_autoteambalance 0"
+				"4" "1"								"amx_cvar mp_autoteambalance 1"
+				"4" "2"								"amx_cvar mp_autoteambalance 2"
+				"4" "3"								"amx_cvar mp_autoteambalance 3"
+			}
+			"1" "Limit Teams"
+			{
+				  "1" "Deactivated"				"amx_cvar mp_limitteams 0"
+				  "2" "Limit Teams 2"					"amx_cvar mp_limitteams 2"
+				  "2" "Limit Teams 3"					"amx_cvar mp_limitteams 3"
+			}
+			"1.5" "AirAccelerate"
+			{	
+				"1" "100 (Surf)" 			"amx_cvar sv_airaccelerate 100"
+				"2" "10 (Padrao) " 		"amx_cvar sv_airaccelerate 10"
+			}
 		}
-		"2" "Time Limit"
+		"2" "Round Time"
 		{
-					"3" "Deactivate"		"amx_cvar mp_timelimit 0"
-					"4" "20 minutes"		"amx_cvar mp_timelimit 20"
-					"4" "45 minutes"		"amx_cvar mp_timelimit 45"
-					"4" "90 minutes"		"amx_cvar mp_timelimit 90"
-					"4" "180 minutes"		"amx_cvar mp_timelimit 180"
-		}
-		"2" "AutoBalance Teams"
-		{
-					"3" "Deactivate"				"amx_cvar mp_autoteambalance 0"
-					"4" "1"								"amx_cvar mp_autoteambalance 1"
-					"4" "2"								"amx_cvar mp_autoteambalance 2"
-					"4" "3"								"amx_cvar mp_autoteambalance 3"
-		}
-		"1" "Limit Teams"
-		{
-				  "1" "Des..."				"amx_cvar mp_limitteams 0"
-				  "2" "Ati..."					"amx_cvar mp_limitteams 2"
-		}
-		"1.5" "AirAccelerate"
-		{	
-			"1" "100 (Surf)" 			"amx_cvar sv_airaccelerate 100"
-			"2" "10 (Padrao) " 		"amx_cvar sv_airaccelerate 10"
+			"3" "1 minute"		"amx_cvar mp_roundtime 1"
+			"4" "2 minutes"		"amx_cvar mp_roundtime 2"
+			"4" "3 minutes"		"amx_cvar mp_roundtime 3"
+			"4" "5 minutes"		"amx_cvar mp_roundtime 5"
+			"4" "7 minutes"		"amx_cvar mp_roundtime 7"
+			"4" "9 minutes"		"amx_cvar mp_roundtime 9"
 		}
 	}
 	"1" "Configs Mods"

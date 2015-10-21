@@ -255,7 +255,7 @@ following in your game console:
 [LIST=1] 
 [*]Paste here everything from the [B]status[/B] command [COLOR="Red"][B]*except*[/B][/COLOR] the player list. 
 [*]Paste here the entire result from the [B]meta list[/B] and [B]amxx plugins[/B] commands. 
-[*]Paste here [COLOR="red"][B]*only*[/B][/COLOR] the CVARs that contain "[COLOR="SeaGreen"][B]galileo.amxx[/B][/COLOR]" in the last column 
+[*]Paste here [COLOR="red"][B]*only*[/B][/COLOR] the CVARs that contain "[COLOR="SeaGreen"][B]galileo_reloaded.amxx[/B][/COLOR]" in the last column 
 from the [B]amxx cvars[/B] command. They will be grouped together. 
 [/LIST] 
 [/QUOTE] 
