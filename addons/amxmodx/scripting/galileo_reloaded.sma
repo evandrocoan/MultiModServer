@@ -353,7 +353,7 @@ new g_nominationCnt
 new g_nominationMatchesMenu[MAX_PLAYER_CNT];
 
 new g_isTimeToChangeLevel = false;
-new g_isTimeToChangeLevelAndRestart = false;
+new g_isTimeToRestartAndChangeLevel = false;
 new g_isTimeLimitChanged = false; 
 new g_isDebugEnabledNumber = 0;
 
@@ -480,7 +480,7 @@ public plugin_cfg()
 {
 	g_isTimeLimitChanged = false;
 	g_isTimeToChangeLevel = false;
-	g_isTimeToChangeLevelAndRestart = false;
+	g_isTimeToRestartAndChangeLevel = false;
 	g_isDebugEnabledNumber = get_cvar_num("gal_debug");
 
 	if( is_plugin_loaded( "Nextmap Chooser" ) != -1 )
@@ -775,8 +775,9 @@ public cmd_listrecent(id)
 }
 
 /** 
- * Called when need to start a votemap, where extend the current map, aka, Keep Current Map, 
- *   will to do the real extend.
+ * Called when need to start a vote map, where the command line arg1: 
+ *    -nochange: extend the current map, aka, Keep Current Map, will to do the real extend. 
+ *    -restart: extend the current map, aka, Keep Current Map restart the server at the current map. 
  */
 public cmd_startVote(id, level, cid)
 {
@@ -789,40 +790,32 @@ public cmd_startVote(id, level, cid)
 	}
 	else 
 	{
-		g_isTimeToChangeLevel = true;
+		g_isTimeToChangeLevel = true; 
+
+		if (read_argc() == 2)
+		{
+			new arg[32];
+			read_args( arg, sizeof( arg ) - 1 );
+
+			if ( equali(arg, "-nochange") )
+			{
+				g_isTimeToChangeLevel = false;
+			}
+			if ( equali(arg, "-restart") )
+			{
+				g_isTimeToRestartAndChangeLevel = true;
+			}
+		}
 		vote_startDirector(true);	
 	}
 
 	return PLUGIN_HANDLED;
 }
 
-/** 
- * Called when need to start a votemap, where extend the current map, aka, Keep Current Map
- *   restart the server at the current map.
- */
-public cmd_startVote2(id, level, cid)
-{
-	if (!cmd_access(id, level, cid, 1))
-		return PLUGIN_HANDLED;
-
-	if (g_voteStatus & VOTE_IN_PROGRESS)
-	{
-		client_print(id, print_chat, "%L", id, "GAL_VOTE_INPROGRESS");
-	}
-	else 
-	{
-		g_isTimeToChangeLevel = true;
-		g_isTimeToChangeLevelAndRestart = true;
-		vote_startDirector(true);	
-	}
-
-	return PLUGIN_HANDLED;
-}
-
-map_populateList(Array:mapArray, mapFilename[])
+map_populateList( Array:mapArray, mapFilename[] )
 {
 	// clear the map array in case we're reusing it
-	ArrayClear(mapArray);
+	ArrayClear( mapArray );
 	
 	// load the array with maps
 	new mapCnt;
@@ -1483,7 +1476,6 @@ public vote_startDirector(bool:forced)
 		// alphabetize the maps
 		SortCustom2D(g_mapsVoteMenuNames, choicesLoaded, "sort_stringsi");
 
-		// isDebugEnabledNumber code ----
 		if ( g_isDebugEnabledNumber )
 		{
 			for (new dbgChoice = 0; dbgChoice < choicesLoaded; dbgChoice++)
@@ -1565,7 +1557,6 @@ public vote_countdownPendingVote()
 
 vote_addNominations()
 {
-	// isDebugEnabledNumber code ----
 	debugMessageLog(4, "   [NOMINATIONS (%i)]", g_nominationCnt);
 
 	if (g_nominationCnt)
@@ -1602,7 +1593,6 @@ vote_addNominations()
 			}
 			debugMessageLog(4, "");
 		}
-		//--------------
 
 		for (new idxNomination = playerNominationMax; idxNomination >= 1; --idxNomination)
 		{
@@ -2008,7 +1998,6 @@ public vote_display(arg[3])
 		// optionally display to single player that just voted
 		if (showStatus == SHOWSTATUS_VOTE)
 		{
-			// isDebugEnabledNumber code ----
 			new name[32];
 			get_user_name(id, name, 31);
 			
@@ -2035,7 +2024,6 @@ public vote_display(arg[3])
 	
 			if (g_voted[id] == false && !isVoteOver)
 			{
-				// isDebugEnabledNumber code ----
 				if (playerIdx == 0)
 				{
 					new name[32];
@@ -2043,8 +2031,7 @@ public vote_display(arg[3])
 					
 					debugMessageLog(4, "	[%s (clean)]", name);
 					debugMessageLog(4, "		%s", menuClean);
-				}				
-				//--------------
+				} 
 
 				get_user_menu(id, menuid, menukeys);
 				if (menuid == 0 || menuid == g_menuChooseMap)
@@ -2056,7 +2043,6 @@ public vote_display(arg[3])
 			{
 				if ((isVoteOver && showStatus) || (showStatus == SHOWSTATUS_VOTE && g_voted[id]))
 				{
-					// isDebugEnabledNumber code ----
 					if (playerIdx == 0)
 					{
 						new name[32];
@@ -2065,7 +2051,6 @@ public vote_display(arg[3])
 						debugMessageLog(4, "	[%s (dirty)]", name);
 						debugMessageLog(4, "		%s", menuDirty);
 					}				
-					//--------------
 
 					get_user_menu(id, menuid, menukeys);
 					if (menuid == 0 || menuid == g_menuChooseMap)
@@ -2074,12 +2059,10 @@ public vote_display(arg[3])
 					}
 				}
 			}
-			// isDebugEnabledNumber code ----
 			if (id == 1)
 			{
 				debugMessageLog(4, "");
 			}
-			//--------------
 		}
 	}
 }
@@ -2120,7 +2103,6 @@ public vote_expire()
 		}	
 		debugMessageLog(4, "");
 	}
-	//--------------
 	
 	g_vote[0] = 0;
 	
@@ -2373,9 +2355,9 @@ public vote_expire()
 			}
 			else
 			{
-				if( g_isTimeToChangeLevelAndRestart )
+				if( g_isTimeToRestartAndChangeLevel )
 				{
-					g_isTimeToChangeLevelAndRestart = false;
+					g_isTimeToRestartAndChangeLevel = false;
 
 					// "stay here" won
 					client_print(0, print_chat, "%L", LANG_PLAYER, "GAL_WINNER_STAY");
@@ -2565,10 +2547,7 @@ public vote_handleChoice(id, key)
 		{
 			get_user_name(id, name, sizeof(name)-1);
 		}
-
-		// isDebugEnabledNumber code ----
 		get_user_name(id, name, sizeof(name)-1);
-		//--------------
 
 		// confirm the player's choice
 		if (key == 9)
