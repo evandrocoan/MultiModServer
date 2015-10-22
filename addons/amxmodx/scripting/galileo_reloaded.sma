@@ -14,7 +14,7 @@
 *
 *****************************************************************************************
 
-[SIZE="6"][COLOR="Blue"][B]Galileo Reloaded v1.0-alpha2.hotfix1[/B][/COLOR][/SIZE]
+[SIZE="6"][COLOR="Blue"][B]Galileo Reloaded v1.0-alpha3[/B][/COLOR][/SIZE]
 [B]Release: 10.10.2015 | Last Update: 21.10.2015[/B]
 
 [SIZE="5"]Basic differences between the original Galileo and Galileo Reloaded[/SIZE] 
@@ -96,11 +96,14 @@ have with this plugin.  It's located in the [B]Attached ZIP[/B] available at the
 
  * [B]Runoff[/B] voting when no map gets more than 50% of the total vote.
 
- * Command '[COLOR="Blue"][B]gal_startvote[/B][/COLOR]', to forces a map vote to begin and the map will be changed once the 
-	   next map has been determined. 
-
- * Command '[COLOR="Blue"][B]gal_startvote2[/B][/COLOR]', the same as the first but, when keep the current map option wins, 
-	   the current map is restarted. This command is specially for the "[URL="https://forums.alliedmods.net/showthread.php?t=273020"]Multi-Mod Manager[/URL]" plugin. 
+ * Command '[COLOR="Blue"][B]gal_startvote [-nochange or -restart][/B][/COLOR]', to forces a map vote to begin 
+	   and the map will be changed once the next map has been determined. 
+			[LIST]
+			[*]If the "[COLOR="blue"][B]-nochange[/B][/COLOR]" argument is supplied, the map will not be changed by [COLOR="Blue"]Galileo Reload[/COLOR], 
+			which is useful when you have a different plugin handling the actual changing of the map. 
+			[*]If the "[COLOR="blue"][B]-restart[/B][/COLOR]" argument is supplied and the voting opting "Keep the Current Map" wins, 
+			the current map is restarted. This command is specially for the "[URL="https://forums.alliedmods.net/showthread.php?t=273020"]Multi-Mod Manager[/URL]" plugin. 
+			[/LIST]
 
  * Command '[COLOR="Blue"][B]gal_createmapfile filename[/B][/COLOR]', Creates a file that contains a list of every valid 
 	   map in your maps folder. The [B]filename[/B] argument indicates specifies the name to be used for 
@@ -197,6 +200,10 @@ galileo_reloaded.amxx
 
 2015-10-21 | v1.0-alpha2.hotfix1
  * Improved some variables meaning 
+
+2015-10-XX | v1.0-alpha3
+ * Removed the command "gal_startvote2"
+ * Added to the command gal_startvote the options -nochange and -restart. 
 [/QUOTE]
 
 ******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *********************************
@@ -274,7 +281,7 @@ from the [B]amxx cvars[/B] command. They will be grouped together.
 
 */
 
-new const PLUGIN_VERSION[]  = "1.0-alpha2.1"; 
+new const PLUGIN_VERSION[]  = "1.0-alpha3"; 
 
 #include <amxmodx>
 #include <amxmisc>
