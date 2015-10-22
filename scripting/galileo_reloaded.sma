@@ -1,4 +1,225 @@
-new const PLUGIN_VERSION[]  = "1.1 $Revision: 290 $"; // $Date: 2009-02-26 11:20:25 -0500 (Thu, 26 Feb 2009) $;
+/*********************** Licensing *******************************************************
+*  This program is free software; you can redistribute it and/or modify it
+*  under the terms of the GNU General Public License as published by the
+*  Free Software Foundation; either version 2 of the License, or (at
+*  your option) any later version.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the implied warranty of
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+*  General Public License for more details.
+*  
+*  You should have received a copy of the GNU General Public License
+*  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*
+*****************************************************************************************
+
+[SIZE="6"][COLOR="Blue"][B]Galileo Reloaded v1.0-alpha1[/B][/COLOR][/SIZE]
+[B]Release: 10.10.2015 | Last Update: 10.10.2015[/B]
+
+[anchor]Top[/anchor][SIZE="5"][COLOR="blue"][B]Contents' Table[/B][/COLOR][/SIZE] 
+
+[LIST]
+[*][goanchor=Introduction]Introduction[/goanchor]
+[*][goanchor=Requirements]Requirements and Commands[/goanchor]
+[*][goanchor=Installation]Installation[/goanchor]
+[*][goanchor=Change]Change Log[/goanchor]
+[*][goanchor=TODO]TODO[/goanchor]
+[*][goanchor=Credits]Credits[/goanchor]
+[*][goanchor=Sourcecode]Source Code and Support[/goanchor]
+[*][goanchor=Downloads]Downloads[/goanchor]
+[/LIST]
+The original plugin "[URL="https://forums.alliedmods.net/showthread.php?t=77391"]galileo.sma[/URL]" is originally written by [B]Brad[/B]. The "Galileo Reload" works differently 
+from the original "[B]Galileo[/B]". This has special features for the "[URL="https://forums.alliedmods.net/showthread.php?t=273020"]Multi-Mod Manager[/URL]" plugin, but 
+still can be used alone. See the [goanchor=Change]Change Log[/goanchor] and [goanchor=Credits]Credits[/goanchor] for more info. 
+
+This is a Alpha version. This Alpha software can be unstable, see [goanchor=TODO]TODO[/goanchor] section for more information. 
+As [B]Alpha software[/B] may not contain all of the features that are planned for the final version, see [goanchor=TODO]TODO[/goanchor] 
+section for features that are planned for the final version. 
+
+As I am working at another plugins, I cannot provide immediately fixes and forum's answers here. But 
+as soon as I can, I am going to release a new alpha version, fixing the current bugs listed here at 
+[goanchor=TODO]TODO[/goanchor] section. 
+[URL="http://www.gametracker.com/search/?search_by=server_variable&search_by2=GalileoReloaded&query=&loc=_all&sort=&order="]
+[SIZE=3][B][COLOR=DarkGreen]Click here to see all servers using this plugin.[/COLOR][/B][/SIZE][/URL]
+
+********************** [anchor]Introduction[/anchor][B][SIZE="5"][COLOR="blue"]Introduction[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor]  *******************************
+This is a feature rich map voting plugin.  It's intended to be used in place of any other map choosing plugin 
+such as the original [B]Galileo[/B], [B]Deagles' Map Manager[/B] and AMXX's very own [B]Map Chooser[/B].
+
+It is [COLOR="Red"][B]highly recommended[/B][/COLOR] you to review the well-commented "[B]galileo.cfg[/B]" to see all the options you 
+have with this plugin.  It's located in the [B]Attached ZIP[/B] available at the [goanchor=Downloads]Downloads[/goanchor] section.
+
+[COLOR="Blue"][B]Features' list:[/B][/COLOR] 
+[QUOTE]
+ * Ability to "[B]rock the vote[/B]".
+
+ * Map [B]nominations[/B] to be used in the next map vote.
+
+ * [B]Runoff[/B] voting when no map gets more than 50% of the total vote.
+
+ * [B]Weighted[/B] map votes for players with customizable admin flags.
+
+ * Command '[COLOR="Blue"][B]gal_startvote [-nochange][/B][/COLOR]', to forces a map vote to begin and the map will be 
+	   changed once the next map has been determined. If the "[COLOR="blue"][B]-nochange[/B][/COLOR]" argument is supplied, 
+	   the map will not be changed by [COLOR="Blue"]Galileo Reload[/COLOR], which is useful when you have a different 
+	   plugin handling the actual changing of the map. 
+
+ * Command '[COLOR="Blue"][B]gal_startvote2 [-nochange][/B][/COLOR]', the same as the first but, when keep the current 
+	   map option wins, the current map is restarted. This command is specially for the "[URL="https://forums.alliedmods.net/showthread.php?t=273020"]Multi-Mod Manager[/URL]" 
+       plugin. 
+
+ * Command '[COLOR="Blue"][B]gal_createmapfile filename[/B][/COLOR]', Creates a file that contains a list of every valid 
+	   map in your maps folder. The [COLOR="Blue"][B]filename[/B][/COLOR] argument indicates specifies the name to be used for 
+	   the new file.  It will be created in the [COLOR="Blue"][B].\configs\galileo[/B][/COLOR] folder.
+[/QUOTE]
+
+********************** [anchor]Requirements[/anchor][SIZE="5"][COLOR="Blue"][B]Requirements and Commands[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor]  ******
+[B]Amx Mod X 1.8.2[/B] 
+Tested under [B]Counter-Strike[/B] and Counter-Strike: [B]Condition Zero[/B] 
+
+[B]Client's Commands:[/B]
+[QUOTE]
+//Displays a listing, to all players, of the most recently played maps.
+//Requires CVAR "gal_banrecent" to be set to a value higher than 0.
+[COLOR="Blue"]say [B]recentmaps[/B][/COLOR]
+
+//Registers the players request for a map vote and change. The player will be 
+//informed how many more players need to rock the vote before a map vote will be forced.
+//The [I]anything[/I] argument can be any "word" up to 20 characters.
+//Requires CVAR "gal_rtv_commands" to be set to an appropriate value.
+[COLOR="Blue"]say [B]rockthevote[/B][/COLOR]
+[COLOR="Blue"]say [B]rtv[/B][/COLOR]
+[COLOR="Blue"]say rockthe[B]anything[/B]vote[/COLOR]
+
+//Displays, to all players, a listing of maps that have been nominated.
+//Requires CVAR "gal_nom_playerallowance" to be set to a value higher than 0.
+[COLOR="Blue"]say [B]nominations[/B][/COLOR]
+[COLOR="Blue"]say [B]noms[/B][/COLOR]
+
+//Attempts to nominate the map specified by the [I]partialMapName[/I] argument.
+//If there are multiple matches for [I]partialMapName[/I], a menu of the matches will 
+//be displayed to the player allowing them to select the map they meant.
+//Requires CVAR "gal_nom_playerallowance" to be set to a value higher than 0.
+[COLOR="Blue"]say [I]nominate[/I] [B]partialMapName[/B][/COLOR]
+[COLOR="Blue"]say [I]nom[/I] [B]partialMapName[/B][/COLOR]
+
+//Cancels the nomination of [I]mapname[/I], which would have had to be previously 
+//nominated by the player.
+//Requires CVAR "gal_nom_playerallowance" to be set to a value higher than 0.
+[COLOR="Blue"]say [I]cancel[/I] [B]mapname[/B][/COLOR]
+
+//If [I]mapname[/I] has been nominated by the player, will cancel the nomination.  
+//If [I]mapname[/I] has not been nominated by the player, will attempt to nominate it.
+//Requires CVAR "gal_nom_playerallowance" to be set to a value higher than 0.
+[COLOR="Blue"]say [B]mapname[/B][/COLOR]
+[/QUOTE]
+
+******************************** [anchor]Installation[/anchor][B][SIZE="5"][COLOR="Blue"]Installation[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor]  **********************
+[B]1.[/B] Download the files "[B]galileo_reloaded.sma[/B]" and "[B]configuration_files.zip[/B]" at [goanchor=Downloads]Downloads[/goanchor] 
+section.
+
+[B]2.[/B] Then take the contents of "[B]yourgamemod[/B]" from "[B]configuration_files.zip[/B]", to your gamemod folder. 
+Ex: czero, cstrike, ...
+
+[B]3.[/B] [B]Compile[/B] the file and put the [B]compiled[/B] file to your plugins folder at 
+"[COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]plugins[/B]". 
+
+[B]4.[/B] Put the [B]next line[/B] to your "[B]plugins.ini[/B]" file at "yourgamemod/addons/amxmodx/[B]configs[/B]" folder and
+disable the original "[B]mapchooser.amxx[/B]" or any other [B]map manager plugin[/B], like the original the 
+"[URL="https://forums.alliedmods.net/showthread.php?t=77391"]galileo.sma[/URL]":
+[QUOTE]
+galileo_reloaded.amxx
+[/QUOTE]
+
+******************************** [anchor]Change[/anchor][B][SIZE="5"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] ***********************
+[QUOTE]
+v1.0-alpha1
+ * Fixed server restart after change timelimit to 0. 
+ * Fixed server timelimit re-change after change it to 0. 
+ * Fixed bug where it change the map right after a normal vote map finished. 
+ * Removed map end control, to the original AMXX Dev Team plugin nextmap.amxx 
+ * Removed  the feature to change server map, when the server is empty. 
+ * Removed the "amx_nextmap" change to [vote in progress]. 
+ * Removed the feature to allow round finish. 
+ * Removed the messages "say currentmap", "say nextmap", to nextmap.amxx 
+ * Removed not initiating vote map, at the first map, after forcing votemap. 
+ * Added the command "gal_startvote2" to restart the current map when keep the current map. 
+ * Added the count down voting remaining time to be always show. 
+ * Added auto-pause for anothers plugins map managers. 
+ * Added a option "#" to gal_nom_mapfile, to use the current mapcycle to nominate maps. 
+ * Made the vote map list be loaded from the current mapcycle file. 
+ * Made changemap immediately after a forced map vote, calling gal_startvote. 
+ * When nobody vote for next map, keep the initial server next map. 
+ * Disabled amx_nextmap to [unknown] value change. 
+[/QUOTE]
+
+******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *********************************
+[QUOTE]
+ * Fix broken re-opt (Runoff ) vote. 
+ * To clear unused language file constants. 
+ * Add colored messages. 
+ * Add nominate maps by a map list menu. 
+ * Add auto-update feature to the vote menu while voting. 
+[/QUOTE]
+
+******************************** [anchor]Credits[/anchor][B][SIZE="5"][COLOR="blue"]Credits[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *******************************
+[B]Brad[/B]: The original [URL="https://forums.alliedmods.net/showthread.php?t=77391"]galileo.sma[/URL] developer. 
+[B]Addons zz[/B]: The galileo_reloaded.sma developer. 
+[B]Th3822[/B]: For find a error from map_nominate. 
+[QUOTE=Brad;684848][COLOR=darkblue][SIZE=4][B]Donations to the Original Author[/B][/SIZE][/COLOR] 
+A lot of time and effort went into making this plugin, making features just right, 
+making sure there were no bugs, making sure it was easy to use. If you are glad I made 
+this plugin, and are able, I'd appreciate a token donation. 
+[URL="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=brad%40mixedberry%2enet&item_name=Thank%20you%21&item_number=Galileo&amount=5%2e00&no_shipping=1&return=http%3a%2f%2fforums%2ealliedmods%2enet%2fshowthread%2ephp%3ft%3d77391%23files&cn=Optional%20Note&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8"]$5[/URL], 
+[URL="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=brad%40mixedberry%2enet&item_name=Thank%20you%21&item_number=Galileo&amount=10%2e00&no_shipping=1&return=http%3a%2f%2fforums%2ealliedmods%2enet%2fshowthread%2ephp%3ft%3d77391%23files&cn=Optional%20Note&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8"]$10[/URL], 
+or [URL="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=brad%40mixedberry%2enet&item_name=Thank%20you%21&item_number=Galileo&no_shipping=1&return=http%3a%2f%2fforums%2ealliedmods%2enet%2fshowthread%2ephp%3ft%3d77391%23files&cn=Optional%20Note&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8"]whatever works[/URL] for you.
+
+[URL="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=brad%40mixedberry%2enet&item_name=Thank%20you%21&item_number=Galileo&no_shipping=1&return=http%3a%2f%2fforums%2ealliedmods%2enet%2fshowthread%2ephp%3ft%3d77391%23files&cn=Optional%20Note&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8"][IMG]https://www.paypal.com/en_US/i/btn/btn_donateCC_LG.gif[/IMG][/URL]
+
+Thank you!  It means a lot to me.
+--Brad
+[/QUOTE]
+******************************** [anchor]Sourcecode[/anchor][SIZE="5"][COLOR="blue"][B]Source Code and Support[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor] ***
+This source code is available on [B]GitHub[/B]. 
+[URL]https://github.com/addonszz/Multi-Mod_Server/blob/develop/addons/amxmodx/scripting/galileo_reloaded.sma[/URL]
+
+For any problems with this plugin visit [B][URL="https://forums.alliedmods.net/showthread.php?t=273019"]this own page[/URL][/B] or:
+[url]https://github.com/Addonszz/Multi-Mod_Server/issues[/url]
+for support.
+
+If you are [B]posting[/B] because the plugin or a [B]feature[/B] of the plugin isn't working for you, [B]please[/B] do 
+all of the following, so we can [COLOR="Blue"]more efficiently[/COLOR] figure out what's going on: 
+[QUOTE] 
+If you have access to your game server's console, type the [COLOR="Blue"][B]following[/B][/COLOR] in the server console: 
+[LIST] 
+[*]status 
+[*]meta list 
+[*]amxx plugins 
+[*]amxx cvars 
+[/LIST] 
+If you don't have access the your [COLOR="Blue"][B]game server's console[/B][/COLOR], join your server and type the 
+following in your game console: 
+
+[LIST] 
+[*]status 
+[*]rcon_password your_rcon_password 
+[*]rcon meta list 
+[*]rcon amxx plugins 
+[*]rcon amxx cvars 
+[/LIST] 
+[LIST=1] 
+[*]Paste here everything from the [B]status[/B] command [COLOR="Red"][B]*except*[/B][/COLOR] the player list. 
+[*]Paste here the entire result from the [B]meta list[/B] and [B]amxx plugins[/B] commands. 
+[*]Paste here [COLOR="red"][B]*only*[/B][/COLOR] the CVARs that contain "[COLOR="SeaGreen"][B]galileo.amxx[/B][/COLOR]" in the last column 
+from the [B]amxx cvars[/B] command. They will be grouped together. 
+[/LIST] 
+[/QUOTE] 
+******************************** [anchor]Downloads[/anchor][SIZE="6"][COLOR="Blue"][B]Downloads[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor] ********************
+
+*/
+
+new const PLUGIN_VERSION[]  = "1.0-alpha1";
 
 #include <amxmodx>
 #include <amxmisc>
@@ -8,7 +229,7 @@ new const PLUGIN_VERSION[]  = "1.1 $Revision: 290 $"; // $Date: 2009-02-26 11:20
 #define TASKID_EMPTYSERVER	98176977
 #define TASKID_REMINDER			52691153
 
-#define RTV_CMD_STANDARD 	1
+#define RTV_CMD_STANDARD	 1
 #define RTV_CMD_SHORTHAND	2
 #define RTV_CMD_DYNAMIC		4
 
@@ -34,16 +255,16 @@ new const PLUGIN_VERSION[]  = "1.1 $Revision: 290 $"; // $Date: 2009-02-26 11:20
 #define MAX_PREFIX_CNT			32
 #define MAX_RECENT_MAP_CNT	16
 
-#define MAX_PLAYER_CNT				32
+#define MAX_PLAYER_CNT				33
 #define MAX_STANDARD_MAP_CNT	25
 #define MAX_MAPNAME_LEN				31
 #define MAX_MAPS_IN_VOTE			8
-#define MAX_NOM_MATCH_CNT     1000
+#define MAX_NOM_MATCH_CNT	 1000
 
 #define VOTE_IN_PROGRESS	1
 #define VOTE_FORCED				2
 #define VOTE_IS_RUNOFF		4
-#define VOTE_IS_OVER      8
+#define VOTE_IS_OVER	  8
 #define VOTE_IS_EARLY			16
 #define VOTE_HAS_EXPIRED	32
 
@@ -67,18 +288,16 @@ new CLR_WHITE[3];   // \w
 new CLR_YELLOW[3];  // \y
 new CLR_GREY[3];		// \d
 
-new bool:g_wasLastRound = false;
 new g_mapPrefix[MAX_PREFIX_CNT][16], g_mapPrefixCnt = 1;
 new g_currentMap[MAX_MAPNAME_LEN+1], Float:g_originalTimelimit = TIMELIMIT_NOT_SET;
 
 new g_nomination[MAX_PLAYER_CNT + 1][MAX_NOMINATION_CNT + 1], g_nominationCnt, g_nominationMatchesMenu[MAX_PLAYER_CNT];
-//new g_nonOverlapHudSync;
 
 new g_voteWeightFlags[32];
 
-new Array:g_emptyCycleMap, bool:g_isUsingEmptyCycle = false, g_emptyMapCnt = 0;
-
-new Array:g_mapCycle;
+new isTimeToChangeLevel = false;
+new isTimeToChangeLevel2 = false;
+new isTimeLimitChanged = false; 
 
 new g_recentMap[MAX_RECENT_MAP_CNT][MAX_MAPNAME_LEN + 1], g_cntRecentMap;
 new Array:g_nominationMap, g_nominationMapCnt;
@@ -91,16 +310,13 @@ new bool:g_voted[MAX_PLAYER_CNT + 1] = {true, ...}, g_mapVote[MAX_MAPS_IN_VOTE +
 new g_voteStatus, g_voteDuration, g_votesCast;
 new g_runoffChoice[2];
 new g_vote[512];
-new bool:g_handleMapChange = true;
 
 new g_refreshVoteStatus = true, g_voteTallyType[3], g_snuffDisplay[MAX_PLAYER_CNT + 1];
 
 new g_menuChooseMap;
 
-new g_pauseMapEndVoteTask, g_pauseMapEndManagerTask;
-
 new cvar_extendmapMax, cvar_extendmapStep;
-new cvar_endOnRound, cvar_endOfMapVote;
+new cvar_endOfMapVote;
 new cvar_rtvWait, cvar_rtvRatio, cvar_rtvCommands;
 new cvar_cmdVotemap, cvar_cmdListmaps, cvar_listmapsPaginate;
 new cvar_banRecent, cvar_banRecentStyle, cvar_voteDuration;
@@ -108,82 +324,62 @@ new cvar_nomMapFile, cvar_nomPrefixes;
 new cvar_nomQtyUsed, cvar_nomPlayerAllowance;
 new cvar_voteExpCountdown, cvar_voteWeightFlags, cvar_voteWeight;
 new cvar_voteMapChoiceCnt, cvar_voteAnnounceChoice, cvar_voteUniquePrefixes;
-new cvar_voteMapFile, cvar_rtvReminder;
+new cvar_rtvReminder;
 new cvar_srvStart;
-new cvar_emptyWait, cvar_emptyMapFile, cvar_emptyCycle;
 new cvar_runoffEnabled, cvar_runoffDuration;
 new cvar_voteStatus, cvar_voteStatusType;
 new cvar_soundsMute;
 
 public plugin_init()
 {
-	// build version information
-	new jnk[1], version[8], rev[8];
-	parse(PLUGIN_VERSION, version, sizeof(version)-1, jnk, sizeof(jnk)-1, rev, sizeof(rev)-1, jnk, sizeof(jnk)-1);
-	new pluginVersion[16];
-	formatex(pluginVersion, sizeof(pluginVersion)-1, "%s.%s", version, rev);
-
-	register_plugin("Galileo", pluginVersion, "Brad Jones");
+	register_plugin("Galileo Reloaded", PLUGIN_VERSION, "Addons zz/Brad Jones");
 	
-	register_cvar("gal_version", pluginVersion, FCVAR_SERVER|FCVAR_SPONLY);
-	set_cvar_string("gal_version", pluginVersion);
-	
+	register_cvar("GalileoReloaded", PLUGIN_VERSION, FCVAR_SERVER|FCVAR_SPONLY);
+		
 	register_cvar("gal_server_starting", "1", FCVAR_SPONLY);
-	cvar_emptyCycle = register_cvar("gal_in_empty_cycle", "0", FCVAR_SPONLY);
 
 	register_cvar("gal_debug", "0");
 
 	register_dictionary("common.txt");
 	register_dictionary("nextmap.txt");
-	register_dictionary("galileo.txt");
-
-	if (module_exists("cstrike"))
-	{
-		register_event("HLTV", "event_round_start", "a", "1=0", "2=0");
-	}
-	else if (module_exists("dodx"))
-	{
-		register_event("RoundState", "event_round_start", "a", "1=1");
-	}
+	register_dictionary("galileo_reloaded.txt");
 
 	register_event("TextMsg", "event_game_commencing", "a", "2=#Game_Commencing", "2=#Game_will_restart_in");
-	register_event("30", "event_intermission", "a");
 
 	g_menuChooseMap = register_menuid(MENU_CHOOSEMAP);
 	register_menucmd(g_menuChooseMap, MENU_KEY_1|MENU_KEY_2|MENU_KEY_3|MENU_KEY_4|MENU_KEY_5|MENU_KEY_6|MENU_KEY_7|MENU_KEY_8|MENU_KEY_9|MENU_KEY_0, "vote_handleChoice");
 
 	register_clcmd("say", "cmd_say", -1);
-	register_clcmd("say nextmap", "cmd_nextmap", 0, "- displays nextmap");
-	register_clcmd("say currentmap", "cmd_currentmap", 0, "- display current map");
-	register_clcmd("say ff", "cmd_ff", 0, "- display friendly fire status");	// grrface
 	register_clcmd("votemap", "cmd_HL1_votemap");
 	register_clcmd("listmaps", "cmd_HL1_listmaps");
 
+	// Called when need to start a votemap, where extend the current map, aka, Keep Current Map, 
+	// will to do the real extend
 	register_concmd("gal_startvote", "cmd_startVote", ADMIN_MAP);
+
+	// Called when need to start a votemap, where extend the current map, aka, Keep Current Map
+	// restart the server at the current map
+	register_concmd("gal_startvote2", "cmd_startVote2", ADMIN_MAP);
+
 	register_concmd("gal_createmapfile", "cmd_createMapFile", ADMIN_RCON);
 
-	register_cvar("amx_nextmap", "", FCVAR_SERVER|FCVAR_EXTDLL|FCVAR_SPONLY);
 	cvar_extendmapMax				=	register_cvar("amx_extendmap_max", "90");
 	cvar_extendmapStep			=	register_cvar("amx_extendmap_step", "15");
 	
-	cvar_cmdVotemap 				= register_cvar("gal_cmd_votemap", "0");
+	cvar_cmdVotemap				 = register_cvar("gal_cmd_votemap", "0");
 	cvar_cmdListmaps				= register_cvar("gal_cmd_listmaps", "2");
 
-	cvar_listmapsPaginate	 	= register_cvar("gal_listmaps_paginate", "10");
+	cvar_listmapsPaginate		 = register_cvar("gal_listmaps_paginate", "10");
 	
 	cvar_banRecent					= register_cvar("gal_banrecent", "3");
 	cvar_banRecentStyle			= register_cvar("gal_banrecentstyle", "1");
 
-	cvar_endOnRound					= register_cvar("gal_endonround", "1");
 	cvar_endOfMapVote				= register_cvar("gal_endofmapvote", "1");
-
-	cvar_emptyWait					=	register_cvar("gal_emptyserver_wait", "0");
-	cvar_emptyMapFile				= register_cvar("gal_emptyserver_mapfile", "");
 
 	cvar_srvStart						= register_cvar("gal_srv_start", "0");
 
 	cvar_rtvCommands				= register_cvar("gal_rtv_commands", "3");
-	cvar_rtvWait	  				= register_cvar("gal_rtv_wait", "10");
+	cvar_rtvWait					  = register_cvar("gal_rtv_wait", "10");
 	cvar_rtvRatio						= register_cvar("gal_rtv_ratio", "0.60");
 	cvar_rtvReminder				= register_cvar("gal_rtv_reminder", "2");
 
@@ -192,9 +388,8 @@ public plugin_init()
 	cvar_nomPrefixes				= register_cvar("gal_nom_prefixes", "1");
 	cvar_nomQtyUsed					= register_cvar("gal_nom_qtyused", "0");
 	
-	cvar_voteWeight 				= register_cvar("gal_vote_weight", "2");
+	cvar_voteWeight				 = register_cvar("gal_vote_weight", "2");
 	cvar_voteWeightFlags		= register_cvar("gal_vote_weightflags", "y");
-	cvar_voteMapFile				= register_cvar("gal_vote_mapfile", "mapcycle.txt");
 	cvar_voteDuration				= register_cvar("gal_vote_duration", "15");
 	cvar_voteExpCountdown		= register_cvar("gal_vote_expirationcountdown", "1");
 	cvar_voteMapChoiceCnt		=	register_cvar("gal_vote_mapchoices", "5");
@@ -215,11 +410,11 @@ public dbg_fakeVotes()
 {
 	if (!(g_voteStatus & VOTE_IS_RUNOFF))
 	{
-		g_mapVote[0] += 2; 	// map 1
-		g_mapVote[1] += 0; 	// map 2
-		g_mapVote[2] += 6; 	// map 3
-		g_mapVote[3] += 0; 	// map 4
-		g_mapVote[4] += 0; 	// map 5
+		g_mapVote[0] += 2;	 // map 1
+		g_mapVote[1] += 0;	 // map 2
+		g_mapVote[2] += 6;	 // map 3
+		g_mapVote[3] += 0;	 // map 4
+		g_mapVote[4] += 0;	 // map 5
 		g_mapVote[5] += 4;	// extend option
 		
 		g_votesCast = g_mapVote[0] + g_mapVote[1] + g_mapVote[2] + g_mapVote[3] + g_mapVote[4] + g_mapVote[5];
@@ -233,8 +428,22 @@ public dbg_fakeVotes()
 	}
 }
 
+/**
+ * Called when all plugins went through plugin_init().
+ * When this forward is called, most plugins should have registered their
+ * cvars and commands already.
+ */
 public plugin_cfg()
 {
+	isTimeLimitChanged = false;
+	isTimeToChangeLevel = false;
+	isTimeToChangeLevel2 = false;
+
+	if( is_plugin_loaded( "Nextmap Chooser" ) != -1 )
+	{
+		server_cmd( "amxx pause mapchooser.amxx" );
+	}
+
 	formatex(DIR_CONFIGS[get_configsdir(DIR_CONFIGS, sizeof(DIR_CONFIGS)-1)], sizeof(DIR_CONFIGS)-1, "/galileo");
 	formatex(DIR_DATA[get_datadir(DIR_DATA, sizeof(DIR_DATA)-1)], sizeof(DIR_DATA)-1, "/galileo");
 
@@ -252,7 +461,7 @@ public plugin_cfg()
 	get_pcvar_string(cvar_voteWeightFlags, g_voteWeightFlags, sizeof(g_voteWeightFlags)-1);
 	get_mapname(g_currentMap, sizeof(g_currentMap)-1);
 	g_choiceMax = max(min(MAX_MAPS_IN_VOTE, get_pcvar_num(cvar_voteMapChoiceCnt)), 2);
-//	g_nonOverlapHudSync = CreateHudSyncObj();
+	// g_nonOverlapHudSync = CreateHudSyncObj();
 	g_fillerMap = ArrayCreate(32);
 	g_nominationMap = ArrayCreate(32);
 
@@ -299,13 +508,6 @@ public plugin_cfg()
 	}
 
 	set_task(10.0, "vote_setupEnd");
-
-	if (get_pcvar_num(cvar_emptyWait))
-	{
-		g_emptyCycleMap = ArrayCreate(32);
-		map_loadEmptyCycleList();
-		set_task(60.0, "srv_initEmptyCheck");
-	}
 }
 
 public plugin_end()
@@ -318,45 +520,10 @@ public vote_setupEnd()
 	dbg_log(4, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "vote_setupEnd(in)", get_cvar_float("mp_timelimit"), g_originalTimelimit);
 	
 	g_originalTimelimit = get_cvar_float("mp_timelimit");
-	
-	new nextMap[32];
-	if (get_pcvar_num(cvar_endOfMapVote))
-	{
-		formatex(nextMap, sizeof(nextMap)-1, "%L", LANG_SERVER, "GAL_NEXTMAP_UNKNOWN");
-	}
-	else
-	{
-		g_mapCycle = ArrayCreate(32);
-		map_populateList(g_mapCycle, "mapcycle.txt");
-		map_getNext(g_mapCycle, g_currentMap, nextMap);
-	}
-	map_setNext(nextMap);
-	
-	// as long as the time limit isn't set to 0, we can manage the end of the map automatically
-	if (g_originalTimelimit)
-	{
-		set_task(15.0, "vote_manageEnd", _, _, _, "b");
-	}
+
+	set_task(15.0, "vote_manageEnd", _, _, _, "b");
 	
 	dbg_log(2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "vote_setupEnd(out)", get_cvar_float("mp_timelimit"), g_originalTimelimit);
-}
-
-map_getNext(Array:mapArray, currentMap[], nextMap[32])
-{
-	new thisMap[32], mapCnt = ArraySize(mapArray), nextmapIdx = 0, returnVal = -1;
-	for (new mapIdx = 0; mapIdx < mapCnt; mapIdx++)
-	{
-		ArrayGetString(mapArray, mapIdx, thisMap, sizeof(thisMap)-1);
-		if (equal(currentMap, thisMap))
-		{
-			nextmapIdx = (mapIdx == mapCnt - 1) ? 0 : mapIdx + 1;
-			returnVal = nextmapIdx;
-			break;
-		}
-	}
-	ArrayGetString(mapArray, nextmapIdx, nextMap, sizeof(nextMap)-1);
-	
-	return returnVal;
 }
 
 public srv_handleStart()
@@ -451,15 +618,9 @@ public vote_manageEnd()
 	new secondsLeft = get_timeleft();	
 	
 	// are we ready to start an "end of map" vote?
-	if (secondsLeft < 150 && secondsLeft > 90 && !g_pauseMapEndVoteTask && get_pcvar_num(cvar_endOfMapVote) && !get_pcvar_num(cvar_emptyCycle))
+	if (secondsLeft < 151 && secondsLeft > 129 && get_pcvar_num(cvar_endOfMapVote) && !( g_voteStatus & VOTE_IN_PROGRESS ) )
 	{
 		vote_startDirector(false);
-	}
-	
-	// are we managing the end of the map?
-	if (secondsLeft < 20 && !g_pauseMapEndManagerTask)
-	{
-		map_manageEnd();
 	}
 }
 
@@ -529,20 +690,6 @@ public cmd_nominations(id)
 	return PLUGIN_CONTINUE;
 }
 
-public cmd_nextmap(id)
-{
-	new map[32];
-	get_cvar_string("amx_nextmap", map, sizeof(map)-1);
-	client_print(0, print_chat, "%L %s", LANG_PLAYER, "NEXT_MAP", map);
-	return PLUGIN_CONTINUE;
-}
-
-public cmd_currentmap(id)
-{
-	client_print(0, print_chat, "%L: %s", LANG_PLAYER, "PLAYED_MAP", g_currentMap);
-	return PLUGIN_CONTINUE;
-}
-
 public cmd_listrecent(id)
 {
 	switch (get_pcvar_num(cvar_banRecentStyle))
@@ -577,24 +724,28 @@ public cmd_startVote(id, level, cid)
 	{
 		client_print(id, print_chat, "%L", id, "GAL_VOTE_INPROGRESS");
 	}
-	else if (g_voteStatus & VOTE_IS_OVER)
+	else 
 	{
-		client_print(id, print_chat, "%L", id, "GAL_VOTE_ENDED");
+		isTimeToChangeLevel = true;
+		vote_startDirector(true);	
 	}
-	else
+
+	return PLUGIN_HANDLED;
+}
+
+public cmd_startVote2(id, level, cid)
+{
+	if (!cmd_access(id, level, cid, 1))
+		return PLUGIN_HANDLED;
+
+	if (g_voteStatus & VOTE_IN_PROGRESS)
 	{
-		// we may not want to actually change the map after outcome of vote is determined
-		if (read_argc() == 2)
-		{
-			new arg[32];
-			read_args(arg, sizeof(arg)-1);
-			
-			if (equali(arg, "-nochange"))
-			{
-				g_handleMapChange = false;
-			}
-		}
-		
+		client_print(id, print_chat, "%L", id, "GAL_VOTE_INPROGRESS");
+	}
+	else 
+	{
+		isTimeToChangeLevel = true;
+		isTimeToChangeLevel2 = true;
 		vote_startDirector(true);	
 	}
 
@@ -609,7 +760,7 @@ map_populateList(Array:mapArray, mapFilename[])
 	// load the array with maps
 	new mapCnt;
 	
-	if (!equal(mapFilename, "*"))
+	if ( !equal(mapFilename, "*") && !equal(mapFilename, "#") )
 	{
 		new file = fopen(mapFilename, "rt");
 		if (file)
@@ -636,33 +787,61 @@ map_populateList(Array:mapArray, mapFilename[])
 	}
 	else
 	{
-		// no file provided, assuming contents of "maps" folder
-		new dir, mapName[32];
-		dir = open_dir("maps", mapName, sizeof(mapName)-1);
-
-		if (dir)
+		if ( equal(mapFilename, "*") )
 		{
-			new lenMapName;
-			
-			while (next_file(dir, mapName, sizeof(mapName)-1))
+			// no file provided, assuming contents of "maps" folder
+			new dir, mapName[32];
+			dir = open_dir("maps", mapName, sizeof(mapName)-1);
+
+			if (dir)
 			{
-				lenMapName = strlen(mapName);	
-				if (lenMapName > 4 && equali(mapName[lenMapName - 4], ".bsp", 4))
+				new lenMapName;
+				
+				while (next_file(dir, mapName, sizeof(mapName)-1))
 				{
-					mapName[lenMapName-4] = '^0';
-					if (is_map_valid(mapName))
+					lenMapName = strlen(mapName);	
+					if (lenMapName > 4 && equali(mapName[lenMapName - 4], ".bsp", 4))
 					{
-						ArrayPushString(mapArray, mapName);
+						mapName[lenMapName-4] = '^0';
+						if (is_map_valid(mapName))
+						{
+							ArrayPushString(mapArray, mapName);
+							++mapCnt;
+						}
+					}
+				}
+				close_dir(dir);
+			}
+			else
+			{
+				// directory not found, wtf?
+				log_error(AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FOLDERMISSING");
+			}
+		} else 
+		{
+			get_cvar_string("mapcyclefile", mapFilename, 255 );
+			new file = fopen(mapFilename, "rt");
+			if (file)
+			{
+				new buffer[32];
+				
+				while (!feof(file))
+				{
+					fgets(file, buffer, sizeof(buffer)-1);
+					trim(buffer);
+					
+					if (buffer[0] && !equal(buffer, "//", 2) && !equal(buffer, ";", 1) && is_map_valid(buffer))
+					{
+						ArrayPushString(mapArray, buffer);
 						++mapCnt;
 					}
 				}
+				fclose(file);
 			}
-			close_dir(dir);
-		}
-		else
-		{
-			// directory not found, wtf?
-			log_error(AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FOLDERMISSING");
+			else
+			{
+				log_error(AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilename);
+			}
 		}
 	}
 	return mapCnt;	
@@ -674,13 +853,6 @@ public map_loadNominationList()
 	get_pcvar_string(cvar_nomMapFile, filename, sizeof(filename)-1);
 
 	g_nominationMapCnt = map_populateList(g_nominationMap, filename);
-}
-
-// grrface, this has no place in a map choosing plugin. just replicating it because it's in AMXX's
-public cmd_ff()
-{
-	client_print(0, print_chat, "%L: %L", LANG_PLAYER, "FRIEND_FIRE", LANG_PLAYER, get_cvar_num("mp_friendlyfire") ? "ON" : "OFF");
-	return PLUGIN_CONTINUE;
 }
 
 public cmd_createMapFile(id, level, cid)
@@ -785,114 +957,11 @@ public map_loadPrefixList()
 	return PLUGIN_HANDLED;
 }
 
-map_loadEmptyCycleList()
-{
-	new filename[256];
-	get_pcvar_string(cvar_emptyMapFile, filename, sizeof(filename)-1);
-
-	g_emptyMapCnt = map_populateList(g_emptyCycleMap, filename);	
-}
-
-public map_manageEnd()
-{
-	dbg_log(2, "%32s mp_timelimit: %f", "map_manageEnd(in)", get_cvar_float("mp_timelimit"));
-	
-	g_pauseMapEndManagerTask = true;
-
-	if (get_realplayersnum() <= 1)
-	{
-		// at most there is only one player on the server, so no need to stay around
-		map_change();
-	}
-	else
-	{
-		if (get_pcvar_num(cvar_endOnRound) && g_wasLastRound == false)
-		{
-			// let the server know it's the last round
-			g_wasLastRound = true;
-			
-			// let the players know it's the last round
-			if (g_voteStatus & VOTE_FORCED)
-			{
-				client_print(0, print_chat, "%L", LANG_PLAYER, "GAL_CHANGE_NEXTROUND");
-			}
-			else
-			{
-				client_print(0, print_chat, "%L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED", LANG_PLAYER, "GAL_CHANGE_NEXTROUND");
-			}
-
-			// prevent the map from ending automatically
-			server_cmd("mp_timelimit 0");
-		}
-		else
-		{
-			// freeze the game and show the scoreboard
-			message_begin(MSG_ALL, SVC_INTERMISSION);
-			message_end();
-
-			//new chatTime = floatround(get_cvar_float("mp_chattime"), floatround_floor);
-
-			// display intermission expiration countdown
-			//set_task(1.0, "intermission_displayTimer", chatTime, _, _, "a", chatTime);
-
-			// change the map after "chattime" is over
-			set_task(floatmax(get_cvar_float("mp_chattime"), 2.0), "map_change");
-		}
-
-		new map[MAX_MAPNAME_LEN + 1];
-		get_cvar_string("amx_nextmap", map, sizeof(map)-1);
-		client_print(0, print_chat, "%L", LANG_PLAYER, "GAL_NEXTMAP", map);
-	}
-	
-	dbg_log(2, "%32s mp_timelimit: %f", "map_manageEnd(out)", get_cvar_float("mp_timelimit"));
-}
-
-/*
-public intermission_displayTimer(originalChatTime)
-{
-	static secondsLeft = -1;
-	if (secondsLeft == -1)
-	{
-		secondsLeft = originalChatTime;
-	}
-	secondsLeft--;
-
-	client_print(0, print_center, "Intermission ends in %i seconds.", secondsLeft);
-	client_print(0, print_chat, "%i seconds", secondsLeft);
-
-	set_hudmessage(255, 0, 90, 0.80, 0.20, 0, 1.0, 2.0, 0.1, 0.1, -1);
-//	set_hudmessage(0, 222, 50, -1.0, 0.13, 0, 1.0, 0.94, 0.0, 0.0, -1);
-	show_hudmessage(0, "Intermission ends in %i seconds.", secondsLeft);
-	// use audio since visual doesn't seem to work
-	// something like "map will change in 2 seconds"
-	
-}
-*/
-
-public event_round_start()
-{
-	if (g_wasLastRound)
-	{
-		map_manageEnd();
-	}
-}
-
 public event_game_commencing()
 {
 	// make sure the reset time is the original time limit 
 	// (can be skewed if map was previously extended)
 	map_restoreOriginalTimeLimit();
-}
-
-public event_intermission()
-{
-	// don't let the normal end interfere
-	g_pauseMapEndManagerTask = true;
-	
-	// change the map after "chattime" is over
-	set_task(floatmax(get_cvar_float("mp_chattime"), 2.0), "map_change");
-
-	return PLUGIN_CONTINUE;
 }
 
 map_getIdx(text[])
@@ -1278,10 +1347,6 @@ public nomination_list(id)
 					mapCnt = 0;
 					msg[0] = 0;
 				}
-				// construct the HUD message
-//				format(hudMessage, sizeof(hudMessage)-1, "%s^n%s", hudMessage, mapName);
-				
-				// construct the console message
 			}
 		}
 	}
@@ -1300,113 +1365,109 @@ public nomination_list(id)
 
 public vote_startDirector(bool:forced)
 {
-	new choicesLoaded, voteDuration;
-	
-	if (g_voteStatus & VOTE_IS_RUNOFF)
+	new secondsLeft = get_timeleft();	
+
+	if (g_voteStatus & VOTE_IN_PROGRESS & secondsLeft > 151 && secondsLeft < 129 )
 	{
-		choicesLoaded = vote_loadRunoffChoices();
-		voteDuration = get_pcvar_num(cvar_runoffDuration);
-
-		if (get_realplayersnum())
-		{
-			dbg_log(4, "   [RUNOFF VOTE CHOICES (%i)]", choicesLoaded);
-		}
-	}
-	else
+		client_print(0, print_chat, "%L", 0, "GAL_VOTE_INPROGRESS");
+	} else
 	{
-		// make it known that a vote is in progress
-		g_voteStatus |= VOTE_IN_PROGRESS;
+		new choicesLoaded, voteDuration;
+		
+		if (g_voteStatus & VOTE_IS_RUNOFF)
+		{
+			choicesLoaded = vote_loadRunoffChoices();
+			voteDuration = get_pcvar_num(cvar_runoffDuration);
 
-		// stop RTV reminders
-		remove_task(TASKID_REMINDER);
+			if (get_realplayersnum())
+			{
+				dbg_log(4, "   [RUNOFF VOTE CHOICES (%i)]", choicesLoaded);
+			}
+		}
+		else
+		{
+			// make it known that a vote is in progress
+			g_voteStatus |= VOTE_IN_PROGRESS;
 
-		// set nextmap to "voting"
-		if (forced || get_pcvar_num(cvar_endOfMapVote))
-		{
-			new nextMap[32];
-			formatex(nextMap, sizeof(nextMap)-1, "%L", LANG_SERVER, "GAL_NEXTMAP_VOTING");
-			map_setNext(nextMap);
-		}
-	
-		// pause the "end of map" tasks so they don't interfere
-		g_pauseMapEndVoteTask = true;
-		g_pauseMapEndManagerTask = true;
-		
-		if (forced)
-		{
-			g_voteStatus |= VOTE_FORCED;
-		}
-		
-		choicesLoaded = vote_loadChoices();
-		voteDuration = get_pcvar_num(cvar_voteDuration);
-		
-		if (get_realplayersnum())
-		{
-			dbg_log(4, "   [PRIMARY VOTE CHOICES (%i)]", choicesLoaded);
+			// stop RTV reminders
+			remove_task(TASKID_REMINDER);
+
+			if (forced)
+			{
+				g_voteStatus |= VOTE_FORCED;
+			}
+			
+			choicesLoaded = vote_loadChoices();
+			voteDuration = get_pcvar_num(cvar_voteDuration);
+			
+			if (get_realplayersnum())
+			{
+				dbg_log(4, "   [PRIMARY VOTE CHOICES (%i)]", choicesLoaded);
+			}
+			
+			if (choicesLoaded)
+			{
+				// clear all nominations
+				nomination_clearAll();
+			}
 		}
 		
 		if (choicesLoaded)
 		{
-			// clear all nominations
-			nomination_clearAll();
-		}
-	}
-	
-	if (choicesLoaded)
-	{
-		// alphabetize the maps
-		SortCustom2D(g_mapChoice, choicesLoaded, "sort_stringsi");
+			// alphabetize the maps
+			SortCustom2D(g_mapChoice, choicesLoaded, "sort_stringsi");
 
-		// dbg code ----
-		if (get_realplayersnum())
-		{
-			for (new dbgChoice = 0; dbgChoice < choicesLoaded; dbgChoice++)
+			// dbg code ----
+			if (get_realplayersnum())
 			{
-				dbg_log(4, "      %i. %s", dbgChoice+1, g_mapChoice[dbgChoice]);
+				for (new dbgChoice = 0; dbgChoice < choicesLoaded; dbgChoice++)
+				{
+					dbg_log(4, "	  %i. %s", dbgChoice+1, g_mapChoice[dbgChoice]);
+				}
 			}
-		}
-		//--------------
+			//--------------
 
-		// mark the players who are in this vote for use later
-		new player[32], playerCnt;
-		get_players(player, playerCnt, "ch");	// skip bots and hltv
-		for (new idxPlayer = 0; idxPlayer < playerCnt; ++idxPlayer)
-		{
-			g_voted[player[idxPlayer]] = false;
-		}
+			// mark the players who are in this vote for use later
+			new player[32], playerCnt;
+			get_players(player, playerCnt, "ch");	// skip bots and hltv
+			for (new idxPlayer = 0; idxPlayer < playerCnt; ++idxPlayer)
+			{
+				g_voted[player[idxPlayer]] = false;
+			}
 
-		// make perfunctory announcement: "get ready to choose a map"
-		if (!(get_pcvar_num(cvar_soundsMute) & SOUND_GETREADYTOCHOOSE))
-		{
-			client_cmd(0, "spk ^"get red(e80) ninety(s45) to check(e20) use bay(s18) mass(e42) cap(s50)^"");
-		}
+			// make perfunctory announcement: "get ready to choose a map"
+			if (!(get_pcvar_num(cvar_soundsMute) & SOUND_GETREADYTOCHOOSE))
+			{
+				client_cmd(0, "spk ^"get red(e80) ninety(s45) to check(e20) use bay(s18) mass(e42) cap(s50)^"");
+			}
 
-		// announce the pending vote countdown from 7 to 1
-		set_task(1.0, "vote_countdownPendingVote", _, _, _, "a", 7);
+			// announce the pending vote countdown from 7 to 1
+			set_task(1.0, "vote_countdownPendingVote", _, _, _, "a", 7);
 
-		// display the map choices
-		set_task(8.5, "vote_handleDisplay");
+			// display the map choices
+			set_task(8.5, "vote_handleDisplay");
 
-		// display the vote outcome 
-		if (get_pcvar_num(cvar_voteStatus))
-		{
-			new arg[3] = {-1, -1, false}; // indicates it's the end of vote display
-			set_task(8.5 + float(voteDuration) + 1.0, "vote_display", _, arg, 3);
-			set_task(8.5 + float(voteDuration) + 6.0, "vote_expire");
+			// display the vote outcome 
+			if (get_pcvar_num(cvar_voteStatus))
+			{
+				new arg[3] = {-1, -1, false}; // indicates it's the end of vote display
+				set_task(8.5 + float(voteDuration) + 1.0, "vote_display", _, arg, 3);
+				set_task(8.5 + float(voteDuration) + 6.0, "vote_expire");
+			}
+			else
+			{
+				set_task(8.5 + float(voteDuration) + 3.0, "vote_expire");
+			}
 		}
 		else
 		{
-			set_task(8.5 + float(voteDuration) + 3.0, "vote_expire");
+			client_print(0, print_chat, "%L", LANG_PLAYER, "GAL_VOTE_NOMAPS");
 		}
-	}
-	else
-	{
-		client_print(0, print_chat, "%L", LANG_PLAYER, "GAL_VOTE_NOMAPS");
-	}
-	if (get_realplayersnum())
-	{
-		dbg_log(4, "");
-		dbg_log(4, "   [PLAYER CHOICES]");
+		if (get_realplayersnum())
+		{
+			dbg_log(4, "");
+			dbg_log(4, "   [PLAYER CHOICES]");
+		}
 	}
 }
 
@@ -1474,7 +1535,7 @@ vote_addNominations()
 						nominator_id = nomination_getPlayer(idxMap);
 						get_user_name(nominator_id, playerName, sizeof(playerName)-1);
 	
-						dbg_log(4, "      %-32s %s", mapName, playerName);
+						dbg_log(4, "	  %-32s %s", mapName, playerName);
 					}
 				}
 			}
@@ -1515,7 +1576,7 @@ vote_addFiller()
 
 	// grab the name of the filler file
 	new filename[256];
-	get_pcvar_string(cvar_voteMapFile, filename, sizeof(filename)-1);
+	get_cvar_string("mapcyclefile", filename, sizeof(filename)-1);
 
 	// create an array of files that will be pulled from
 	new fillerFile[8][256];
@@ -1787,9 +1848,15 @@ public vote_display(arg[3])
 			charCnt += formatex(voteStatus[charCnt], sizeof(voteStatus)-1-charCnt, "^n%s%i. %s%s%s", CLR_RED, choiceIdx+1, CLR_WHITE, g_mapChoice[choiceIdx], voteTally);
 			keys |= (1<<choiceIdx);
 		}
+
+		if( isTimeToChangeLevel )
+		{
+			allowExtend = false;
+			allowStay = true;
+		}
 	
 		// add optional menu item
-		if (allowExtend || allowStay)
+		if ( allowExtend || allowStay )
 		{
 			// if it's not a runoff vote, add a space between the maps and the additional option
 			if (g_voteStatus & VOTE_IS_RUNOFF == 0)
@@ -1832,10 +1899,8 @@ public vote_display(arg[3])
 	{
 		charCnt = copy(voteFooter, sizeof(voteFooter)-1, "^n^n");
 		
-		if (--g_voteDuration <= 10)
-		{
-			formatex(voteFooter[charCnt], sizeof(voteFooter)-1-charCnt, "%s%L: %s%i", CLR_GREY, LANG_SERVER, "GAL_TIMELEFT", CLR_RED, g_voteDuration);
-		}
+		g_voteDuration--;
+		formatex(voteFooter[charCnt], sizeof(voteFooter)-1-charCnt, "%s%L: %s%i", CLR_GREY, LANG_SERVER, "GAL_TIMELEFT", CLR_RED, g_voteDuration);
 	}
 	
 	// create the different displays
@@ -1866,8 +1931,8 @@ public vote_display(arg[3])
 			new name[32];
 			get_user_name(id, name, 31);
 			
-			dbg_log(4, "    [%s (dirty, just voted)]", name);
-			dbg_log(4, "        %s", menuDirty);
+			dbg_log(4, "	[%s (dirty, just voted)]", name);
+			dbg_log(4, "		%s", menuDirty);
 			//--------------
 
 			get_user_menu(id, menuid, menukeys);
@@ -1895,8 +1960,8 @@ public vote_display(arg[3])
 					new name[32];
 					get_user_name(id, name, 31);
 					
-					dbg_log(4, "    [%s (clean)]", name);
-					dbg_log(4, "        %s", menuClean);
+					dbg_log(4, "	[%s (clean)]", name);
+					dbg_log(4, "		%s", menuClean);
 				}				
 				//--------------
 
@@ -1916,8 +1981,8 @@ public vote_display(arg[3])
 						new name[32];
 						get_user_name(id, name, 31);
 						
-						dbg_log(4, "    [%s (dirty)]", name);
-						dbg_log(4, "        %s", menuDirty);
+						dbg_log(4, "	[%s (dirty)]", name);
+						dbg_log(4, "		%s", menuDirty);
 					}				
 					//--------------
 
@@ -1968,7 +2033,7 @@ public vote_expire()
 		for (new idxChoice = 0; idxChoice <= g_choiceCnt; ++idxChoice)
 		{
 			vote_getTallyStr(voteTally, sizeof(voteTally)-1, g_mapVote[idxChoice]);
-			dbg_log(4, "      %2i/%3i  %i. %s", g_mapVote[idxChoice], voteTally, idxChoice, g_mapChoice[idxChoice]);
+			dbg_log(4, "	  %2i/%3i  %i. %s", g_mapVote[idxChoice], voteTally, idxChoice, g_mapChoice[idxChoice]);
 		}	
 		dbg_log(4, "");
 	}
@@ -2063,14 +2128,6 @@ public vote_expire()
 					
 					client_print(0, print_chat, "%L", LANG_PLAYER, "GAL_RESULT_TIED2", secondPlaceCnt);
 				}
-
-/*
-				// dbg
-				new dbg1 = g_runoffChoice[0];
-				new dbg2 = g_runoffChoice[1];
-				client_print(0, print_chat, "%s, %s", g_mapChoice[dbg1], g_mapChoice[dbg2]);
-*/
-
 				// clear all the votes
 				vote_resetStats();
 				
@@ -2094,16 +2151,6 @@ public vote_expire()
 
 		if (idxWinner == g_choiceCnt)
 		{
-			if (get_pcvar_num(cvar_endOfMapVote))
-			{
-				new nextMap[32];
-				formatex(nextMap, sizeof(nextMap)-1, "%L", LANG_SERVER, "GAL_NEXTMAP_UNKNOWN");
-				map_setNext(nextMap);
-			}
-
-			// restart map end vote task			
-			g_pauseMapEndVoteTask = false;
-
 			if (g_voteStatus & VOTE_IS_EARLY)
 			{
 				// "stay here" won
@@ -2117,9 +2164,31 @@ public vote_expire()
 			}
 			else
 			{
-				// "extend map" won
-				client_print(0, print_chat, "%L", LANG_PLAYER, "GAL_WINNER_EXTEND", floatround(get_pcvar_float(cvar_extendmapStep)));
-				map_extend();
+				if( isTimeToChangeLevel2 )
+				{
+					// "stay here" won
+					client_print(0, print_chat, "%L", LANG_PLAYER, "GAL_WINNER_STAY");
+
+					if( isTimeToChangeLevel )
+					{
+						set_task(5.0, "map_change_stays");
+
+						// freeze the game and show the scoreboard
+						message_begin(MSG_ALL, SVC_INTERMISSION);
+						message_end();
+					}
+				} else 
+				{
+					if( isTimeToChangeLevel )
+					{
+						client_print(0, print_chat, "%L", LANG_PLAYER, "GAL_WINNER_STAY");
+					}
+					else {
+						// "extend map" won
+						client_print(0, print_chat, "%L", LANG_PLAYER, "GAL_WINNER_EXTEND", floatround(get_pcvar_float(cvar_extendmapStep)));
+						map_extend();
+					}
+				}
 			}
 		}
 		else 
@@ -2128,41 +2197,43 @@ public vote_expire()
 			server_exec();
 
 			client_print(0, print_chat, "%L", LANG_PLAYER, "GAL_NEXTMAP", g_mapChoice[idxWinner]);
-			
+
+			if( isTimeToChangeLevel )
+			{
+				set_task(5.0, "map_change");
+
+				// freeze the game and show the scoreboard
+				message_begin(MSG_ALL, SVC_INTERMISSION);
+				message_end();
+			}
 			g_voteStatus |= VOTE_IS_OVER;
 		}
 	}
 	else
 	{
-		// nobody voted. pick a random map from the choices provided.
-		idxWinner = random_num(0, g_choiceCnt - 1);
-		map_setNext(g_mapChoice[idxWinner]);
+		// the initial nextmap
+		new initialNextMap[MAX_MAPNAME_LEN + 1];
+		get_cvar_string("amx_nextmap", initialNextMap, sizeof(initialNextMap)-1);
 
-		client_print(0, print_chat, "%L", LANG_PLAYER, "GAL_WINNER_RANDOM", g_mapChoice[idxWinner]);
-		
+		client_print(0, print_chat, "%L", LANG_PLAYER, "GAL_WINNER_RANDOM", initialNextMap );
+
+		if( isTimeToChangeLevel )
+		{
+			set_task(5.0, "map_change");
+
+			// freeze the game and show the scoreboard
+			message_begin(MSG_ALL, SVC_INTERMISSION);
+			message_end();
+		}
+
 		g_voteStatus |= VOTE_IS_OVER;
 	}
 	
 	g_refreshVoteStatus = true;
-	
-	new playerCnt = get_realplayersnum();
 
 	// vote is no longer in progress
 	g_voteStatus &= ~VOTE_IN_PROGRESS;
-
-	if (g_handleMapChange)
-	{
-		if ((g_voteStatus & VOTE_FORCED || (playerCnt == 1 && idxWinner < g_choiceCnt) || playerCnt == 0) && !(get_cvar_num("gal_debug") & 4))
-		{
-			// tell the map we need to finish up
-			set_task(2.0, "map_manageEnd");
-		}
-		else
-		{
-			// restart map end task
-			g_pauseMapEndManagerTask = false;
-		}
-	}
+	vote_resetStats();
 }
 
 map_extend()
@@ -2173,9 +2244,10 @@ map_extend()
 	if (g_rtvWait)
 	{
 		g_rtvWait = get_cvar_float("mp_timelimit") + g_rtvWait;
-	}	
+	} 
 
 	// do that actual map extension
+	isTimeLimitChanged = true;
 	set_cvar_float("mp_timelimit", get_cvar_float("mp_timelimit") + get_pcvar_float(cvar_extendmapStep));
 	server_exec();
 
@@ -2191,13 +2263,14 @@ map_extend()
 vote_resetStats()
 {
 //	g_vote[0] = 0;
+	g_choiceCnt = 0;
 	g_votesCast = 0;
 	arrayset(g_mapVote, 0, MAX_MAPS_IN_VOTE + 1);	
 	// reset everyones' rocks
 	arrayset(g_rockedVote, false, sizeof(g_rockedVote));
 	g_rockedVoteCnt	= 0;
 	// reset everyones' votes
-//	arrayset(g_voted, false, sizeof(g_voted));
+	// arrayset(g_voted, false, sizeof(g_voted));
 }
 
 map_isInMenu(map[])
@@ -2273,7 +2346,7 @@ public vote_handleChoice(id, key)
 		// confirm the player's choice
 		if (key == 9)
 		{
-			dbg_log(4, "      %-32s (none)", name);
+			dbg_log(4, "	  %-32s (none)", name);
 
 			if (get_pcvar_num(cvar_voteAnnounceChoice))
 			{
@@ -2294,7 +2367,7 @@ public vote_handleChoice(id, key)
 				// only display the "none" vote if we haven't already voted (we can make it here from the vote status menu too)
 				if (g_voted[id] == false)
 				{
-					dbg_log(4, "      %-32s (extend)", name);
+					dbg_log(4, "	  %-32s (extend)", name);
 
 					if (get_pcvar_num(cvar_voteAnnounceChoice))
 					{
@@ -2308,7 +2381,7 @@ public vote_handleChoice(id, key)
 			}
 			else
 			{
-				dbg_log(4, "      %-32s %s", name, g_mapChoice[key]);
+				dbg_log(4, "	  %-32s %s", name, g_mapChoice[key]);
 
 				if (get_pcvar_num(cvar_voteAnnounceChoice))
 				{
@@ -2353,28 +2426,6 @@ public vote_handleChoice(id, key)
 		set_task(0.1, "vote_display", _, arg, sizeof(arg));
 		//vote_display(arg);
 	}
-}
-
-public map_change()
-{
-	// restore the map's timelimit, just in case we had changed it
-	map_restoreOriginalTimeLimit();
-	
-	// grab the name of the map we're changing to	
-	new map[MAX_MAPNAME_LEN + 1];
-	get_cvar_string("amx_nextmap", map, sizeof(map)-1);
-
-	// verify we're changing to a valid map
-	if (!is_map_valid(map))
-	{
-		// probably admin did something dumb like changed the map time limit below
-		// the time remaining in the map, thus making the map over immediately.
-		// since the next map is unknown, just restart the current map.
-		copy(map, sizeof(map)-1, g_currentMap);
-	}
-
-	// change to the map
-	server_cmd("changelevel %s", map);
 }
 
 Float:map_getMinutesElapsed()
@@ -2499,6 +2550,41 @@ public cmd_listmaps(id)
 
 	return PLUGIN_HANDLED;
 }
+
+// change to the map
+public map_change()
+{
+	// restore the map's timelimit, just in case we had changed it
+	map_restoreOriginalTimeLimit();
+	
+	// grab the name of the map we're changing to	
+	new map[MAX_MAPNAME_LEN + 1];
+	get_cvar_string("amx_nextmap", map, sizeof(map)-1);
+
+	isTimeToChangeLevel = false;
+
+	// verify we're changing to a valid map
+	if (!is_map_valid(map))
+	{
+		// probably admin did something dumb like changed the map time limit below
+		// the time remaining in the map, thus making the map over immediately.
+		// since the next map is unknown, just restart the current map.
+		copy(map, sizeof(map)-1, g_currentMap);
+	}
+	server_cmd("changelevel %s", map);
+}
+
+public map_change_stays()
+{
+	isTimeToChangeLevel = false;
+	isTimeToChangeLevel2 = false;
+
+	// no longer is an early vote
+	g_voteStatus &= ~VOTE_IS_EARLY;
+
+	server_cmd("changelevel %s", g_currentMap);
+}
+
 
 public cmd_HL1_votemap(id)
 {
@@ -2631,39 +2717,6 @@ map_listAll(id)
 	}
 }
 
-/*
-map_listMatches(id, match[])
-{
-	strtolower(match);
-	con_print(id, "%L", id, "GAL_MATCHING", match);
-	con_print(id, "------------------------------------------");
-	
-	new mapName[32], matchCnt;
-	new nominated[64], nominator_id, name[32];
-
-	for (new idx = 1; idx <= g_nominationMapCnt; ++idx)
-	{
-		copy(mapName, sizeof(mapName)-1, g_nominationMap[idx]);
-		strtolower(mapName);
-		
-		if (containi(mapName, match) > -1)
-		{
-			nominator_id = nomination_getPlayer(idx);
-			if (nominator_id)
-			{
-				get_user_name(nominator_id, name, sizeof(name)-1);
-				formatex(nominated, sizeof(nominated)-1, "(nominated by %s)", name);
-			}
-			else
-			{
-				nominated[0] = 0;
-			}			
-			con_print(id, "%3i: %s  %s", ++matchCnt, g_nominationMap[idx], nominated);
-		}
-	}
-}
-*/
-
 con_print(id, message[], {Float,Sql,Result,_}:...)
 {
 	new consoleMessage[256];
@@ -2716,17 +2769,10 @@ public client_disconnect(id)
 
 	new dbg_playerCnt = get_realplayersnum()-1;
 	dbg_log(2, "%32s dbg_playerCnt:%i", "client_disconnect()", dbg_playerCnt);
-
-	if (dbg_playerCnt == 0)
-	{
-		srv_handleEmpty();
-	}
 }
 
 public client_connect(id)
 {
-	set_pcvar_num(cvar_emptyCycle, 0);
-	
 	vote_unrock(id);
 }
 
@@ -2738,28 +2784,6 @@ public client_putinserver(id)
 	}
 }
 
-srv_handleEmpty()
-{
-	dbg_log(2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "srv_handleEmpty(in)", get_cvar_float("mp_timelimit"), g_originalTimelimit);
-	
-	if (g_originalTimelimit != get_cvar_float("mp_timelimit"))
-	{
-		// it's possible that the map has been extended at least once. that 
-		// means that if someone comes into the server, the time limit will 
-		// be the extended time limit rather than the normal time limit. bad.
-		// reset the original time limit
-		map_restoreOriginalTimeLimit();
-	}
-
-	// might be utilizing "empty server" feature
-	if (g_isUsingEmptyCycle && g_emptyMapCnt)
-	{
-		srv_startEmptyCountdown();
-	}
-	
-	dbg_log(2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "srv_handleEmpty(out)", get_cvar_float("mp_timelimit"), g_originalTimelimit);
-}
-
 public srv_announceEarlyVote(id)
 {
 	if (is_user_connected(id))
@@ -2768,45 +2792,6 @@ public srv_announceEarlyVote(id)
 		new text[101];
 		formatex(text, sizeof(text)-1, "^x04%L", id, "GAL_VOTE_EARLY");
 		print_color(id, text);
-	}
-}
-
-public srv_initEmptyCheck()
-{
-	if (get_pcvar_num(cvar_emptyWait))
-	{
-		if ((get_realplayersnum()) == 0 && !get_pcvar_num(cvar_emptyCycle))
-		{
-			srv_startEmptyCountdown();
-		}
-		g_isUsingEmptyCycle = true;
-	}
-}
-
-srv_startEmptyCountdown()
-{
-	new waitMinutes = get_pcvar_num(cvar_emptyWait);
-	if (waitMinutes)
-	{
-		set_task(float(waitMinutes * 60), "srv_startEmptyCycle", TASKID_EMPTYSERVER);
-	}
-}
-
-public srv_startEmptyCycle()
-{
-	set_pcvar_num(cvar_emptyCycle, 1);
-	
-	// set the next map from the empty cycle list,
-	// or the first one, if the current map isn't part of the cycle
-	new nextMap[32], mapIdx;
-	mapIdx = map_getNext(g_emptyCycleMap, g_currentMap, nextMap);
-	map_setNext(nextMap);
-	
-	// if the current map isn't part of the empty cycle, 
-	// immediately change to next map that is
-	if (mapIdx == -1)
-	{
-		map_change();
 	}
 }
 
@@ -2871,10 +2856,11 @@ print_color(id, text[])
 map_restoreOriginalTimeLimit()
 {
 	dbg_log(2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "map_restoreOriginalTimeLimit(in)", get_cvar_float("mp_timelimit"), g_originalTimelimit);
-	if (g_originalTimelimit != TIMELIMIT_NOT_SET)
+	if ( isTimeLimitChanged )
 	{	
 		server_cmd("mp_timelimit %f", g_originalTimelimit);
 		server_exec();
+		isTimeLimitChanged = false;
 	}
 	dbg_log(2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "map_restoreOriginalTimeLimit(out)", get_cvar_float("mp_timelimit"), g_originalTimelimit);
 }
