@@ -70,8 +70,12 @@
 [*][goanchor=Sourcecode]Source Code and Support[/goanchor]
 [*][goanchor=Downloads]Downloads[/goanchor]
 [/LIST]
+[B]See its current development at: [URL="https://github.com/addonszz/Galileo_Reloaded"]Github
+[IMG]https://cdn3.iconfinder.com/data/icons/social-network-round-gloss-shine/128/GitHub_Social-Network-Communicate-Page-Curl-Effect-Circle-Glossy-Shadow-Shine.png[/IMG][/URL][/B] 
+[B][COLOR="Blue"](look for the developer and feature branches)[/COLOR][/B]
+
 The original plugin "[URL="https://forums.alliedmods.net/showthread.php?t=77391"]galileo.sma[/URL]" is originally written by [B]Brad[/B]. The "Galileo Reload" works similarly 
-as the original "[B]Galileo[/B]". But "[B][COLOR="Red"]Galileo Reloaded[/COLOR][/B]" has special features for the "[URL="https://forums.alliedmods.net/showthread.php?t=273020"]Multi-Mod Manager[/URL]" plugin, but it 
+as the original "[B]Galileo[/B]". But "[B][COLOR="Blue"]Galileo Reloaded[/COLOR][/B]" has special features for the "[URL="https://forums.alliedmods.net/showthread.php?t=273020"]Multi-Mod Manager[/URL]" plugin, but it 
 still can be used alone. See the [goanchor=Change]Change Log[/goanchor] and [goanchor=Credits]Credits[/goanchor] for more info. 
 
 This is a Alpha version. This Alpha software can be unstable, see [goanchor=TODO]TODO[/goanchor] section for more information. 
@@ -184,7 +188,7 @@ galileo_reloaded.amxx
  * Added the count down voting remaining time to be always show. 
  * Added auto-pause for anothers plugins map managers. 
  * Added a option "#" to gal_nom_mapfile, to use the current mapcycle to nominate maps. 
- * Made the vote map list be loaded from the current mapcycle file. 
+ * Made the vote map list to be loaded from the current mapcycle file. 
  * When nobody vote for next map, keep the initial server next map. 
  * Disabled amx_nextmap to [unknown] value change. 
 
@@ -211,14 +215,12 @@ galileo_reloaded.amxx
  * To clear unused language file constants. 
  * Add colored messages. 
  * Add nominate maps by a map list menu. 
- * display colored text messages. 
- * nominate maps by a map list menu.
- * allow the last round to finish before change to the next map. 
- * change the server map to a popular one when the server is empty too much time. 
- * change the nextmap to [not voted yet] 
- * during a vote, change the nextmap to [vote in progress] 
- * show only the last 10 seconds remaining to end the voting. 
- * give weighted votes to admins counting more points. 
+ * Allow the last round to finish before change to the next map. 
+ * Change the server map to a popular one when the server is empty too much time. 
+ * Change the nextmap to [not voted yet] 
+ * During a vote, change the nextmap to [vote in progress] 
+ * Show only the last 10 seconds remaining to end the voting. 
+ * Give weighted votes to admins counting more points. 
 [/QUOTE]
 
 ******************************** [anchor]Credits[/anchor][B][SIZE="5"][COLOR="blue"]Credits[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *******************************
