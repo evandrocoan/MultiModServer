@@ -353,7 +353,7 @@ new g_nominationCnt
 new g_nominationMatchesMenu[MAX_PLAYER_CNT];
 
 new g_isTimeToChangeLevel = false;
-new g_isTimeToRestartAndChangeLevel = false;
+new g_isTimeToRestart = false;
 new g_isTimeLimitChanged = false; 
 new g_isDebugEnabledNumber = 0;
 
@@ -460,7 +460,6 @@ public plugin_init()
 	register_clcmd("listmaps", "cmd_HL1_listmaps");
 
 	register_concmd("gal_startvote", "cmd_startVote", ADMIN_MAP);
-	register_concmd("gal_startvote2", "cmd_startVote2", ADMIN_MAP);
 	register_concmd("gal_createmapfile", "cmd_createMapFile", ADMIN_RCON);
 
 	g_menuChooseMap = register_menuid(MENU_CHOOSEMAP);
@@ -480,7 +479,7 @@ public plugin_cfg()
 {
 	g_isTimeLimitChanged = false;
 	g_isTimeToChangeLevel = false;
-	g_isTimeToRestartAndChangeLevel = false;
+	g_isTimeToRestart = false;
 	g_isDebugEnabledNumber = get_cvar_num("gal_debug");
 
 	if( is_plugin_loaded( "Nextmap Chooser" ) != -1 )
@@ -803,7 +802,7 @@ public cmd_startVote(id, level, cid)
 			}
 			if ( equali(arg, "-restart") )
 			{
-				g_isTimeToRestartAndChangeLevel = true;
+				g_isTimeToRestart = true;
 			}
 		}
 		vote_startDirector(true);	
@@ -2355,9 +2354,9 @@ public vote_expire()
 			}
 			else
 			{
-				if( g_isTimeToRestartAndChangeLevel )
+				if( g_isTimeToRestart )
 				{
-					g_isTimeToRestartAndChangeLevel = false;
+					g_isTimeToRestart = false;
 
 					// "stay here" won
 					client_print(0, print_chat, "%L", LANG_PLAYER, "GAL_WINNER_STAY");
