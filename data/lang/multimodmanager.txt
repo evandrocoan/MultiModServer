@@ -1,0 +1,7 @@
+[en]
+MM_WILL_BE = Selected mod will be: %s (%s:%s)
+MM_PL_WAIT = Players must wait %i minutes to vote a new MOD
+MM_VOTE = Vote Nextmod
+MM_NEXTMOD = Next Mod: %s
+MM_VOTEMOD = Vote: Voting for the next MOD finished. The next MOD will be %s
+MM_CHOOSE = Choose Next Mod
