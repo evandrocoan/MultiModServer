@@ -8,10 +8,56 @@
 *  WITHOUT ANY WARRANTY; without even the implied warranty of
 *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
 *  General Public License for more details.
+*  
+*  You should have received a copy of the GNU General Public License
+*  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
-*****************************************************************************************
-[SIZE="6"][COLOR="Blue"][B]Multi-Mod Manager v1.0-release_candidate1[/B][/COLOR][/SIZE]
-[B]Release: 10.10.2015 | Last Update: 10.10.2015[/B]
+***************************************************************************************
+
+
+[SIZE="6"][COLOR="Blue"][B]Multi-Mod Manager v1.0-release_candidate2.hotfix4[/B][/COLOR][/SIZE]
+[B]Release: 10.10.2015 | Last Update: 21.10.2015[/B]
+
+[SIZE="4"]Basic differences between the original [B]Joropito's MultiMod[/B] and [B]addons_zz's Multi-Mod Manager[/B][/SIZE]
+
+[B]addons_zz's Multi-mod Manager can:[/B]
+[LIST=1]
+[*]display colored text messages. 
+[*]easily implemented any new feature that you want, as it is a fully documented plugin. 
+[*]improve its code as it is well [URL="http://www.d.umn.edu/~gshute/softeng/principles.html"]software engineered[/URL]. 
+[*]easily manage extremely big mod plugins files and mods configurations files. 
+[*]easily manage extremely big mods amount. 
+[*]have a vote mod until 100 mods or more, despite it's not being too much comprehensive. 
+[*]install the [COLOR="Red"]fully compatible[/COLOR] "[B]multimod_daily_changer[/B]" provided [goanchor=Downloads]here[/goanchor]. 
+[*]install the [COLOR="Red"]fully compatible[/COLOR] and new "[B]galieo_reloaded.sma[/B]" provided [URL="https://forums.alliedmods.net/showthread.php?t=273019"]here[/URL]. 
+[*]unload metamod csdm modules automatically after disable the csdm mod, or before enable any another mod, as long as you configure it. 
+[*]restore server's cvars and server's commands automatically after disable any mod, or before enable another mod, as long as you configure it. 
+[*]install/use every mod that exists and will exists in the universe, without any special plugin or any "Multi-Mod Manager" modification, 
+            as long as this mod you wanna install runs at an AMXX very own default install. 
+[*]if you want to, you can have any mod activated never ever at you server, even if there is more then 10 installed and fully working mods. 
+[*]use the command "[B]amx_setmod help 1[/B]" display the acceptable inputs and loaded mods 
+            from the file "[COLOR="Blue"]yourgamemod/addons/amxmodx/configs/multimod/[/COLOR][B]multimod.ini[/B]". 
+[*]use the command '[COLOR="Blue"][B]amx_setmod modShortName <1 or 0>[/B][/COLOR]', to enable the mod "modShortName" as [COLOR="Blue"]csdm[/COLOR], 
+            starting a vote map (1) or not (0), right after. This command can [B]only active mods loaded[/B] from 
+            "[B]multimod.ini[/B]" file, and needs an admin level ADMIN_CFG. 
+[*]use the command '[COLOR="Blue"][B]amx_setmods modShortName <1 or 0>[/B][/COLOR]', to enable the mod "modShortName" as [COLOR="Blue"]surf[/COLOR], 
+            restarting (1) or not (0) the server immediately, [B]s[/B]ilently. This command can [B]active any mod installed at the server[/B] 
+            despite it is or it is not at the "[B]multimod.ini[/B]" server configuration file. And most important, it needs an admin level ADMIN_IMMUNITY. 
+[*]use the cvar [COLOR="Blue"]amx_multimod_endmapvote [B]<0 - 1>[/B][/COLOR] to enable ([B]1[/B]) or disable ([B]0[/B]) end map automatic [B]multi-mod[/B] voting.
+[*]waits as long as you want to choose to activate one mod or not, by vote menu and by command line. 
+[*]at voting [B]keep the current mod[/B], if less than 30% voted, or [B]keep it disabled[/B] if there is no mod enabled. 
+[*]keep the server's current mod at voting as the [COLOR="Blue"]vote menu's[/COLOR] first option is always: "[B]1. Keep Current Mod[/B]". 
+[*]disable the server's current mod at voting as the [COLOR="Blue"]vote menu's[/COLOR] second option is always: "[B]2. No mod - Disable Mod[/B]". 
+[*]let the original AMXX very own "Map Chooser" enabled and its source code not replaced, despite it probably not be a useful plugin for voting map. 
+[*]see that are any mod currently activated, when you type "say currentmod" and there is no mod active. 
+[*]execute a special server's configuration file at the comment you active a server's mod. That is executed only and only at the 
+            mod first activation time by the command "amx_setmod" (the silence one, "amx_setmods" has not this feature, because it is silent). 
+[*]receive a clear and self-explanatory error message when you mis-configure anything, anywhere, anytime. 
+[*]freeze the game and show the scoreboard when activating a mod silently, using the command "amx_setmods".
+[*]see the voting results details at server's console. 
+[/LIST]
+
+[SIZE="4"]And even better, server's admins with right flag can change the server's current mod without needing direct access like ftp, to the server's files.[/SIZE]
 
 [anchor]Top[/anchor][SIZE="5"][COLOR="blue"][B]Contents' Table[/B][/COLOR][/SIZE] 
 
@@ -29,20 +75,30 @@
 [*][goanchor=Downloads]Downloads[/goanchor]
 [/LIST]
 The original plugin "[URL="https://forums.alliedmods.net/showthread.php?t=95568"]multimod.sma[/URL]" is originally written by JoRoPiTo. This "[B]Multi-Mod Manager[/B]" works 
-differently from the original "[COLOR="Blue"]MultiMod Manager[/COLOR]". It keeps your original "plugins.ini" and add a new custom 
-set ([B]the Mod[/B]) to the current game, without changing your original "[B]plugins.ini[/B]". See [goanchor=Credits]Credits[/goanchor] for information. 
+differently from the original "[COLOR="Blue"]MultiMod Manager[/COLOR]". See [goanchor=Credits]Credits[/goanchor] for information. 
 
 This is a release candidate, which is a beta version with potential to be a final product, which is ready to be 
-released unless significant bugs emerge. In this stage of product stabilization, all product features have been 
+released unless [B]significant bugs[/B] emerge. In this stage of product stabilization, all product [B]features[/B] have been 
 designed, coded and tested through one or more beta cycles with no known show stopper-class bug. 
 
+This plugin [COLOR="Red"]is [B]not[/B] compatible[/COLOR] with the AMXX's very own [B]Map Chooser[/B] or "[B]Daily Maps[/B]", but yes with its 
+modification "[B]multimod_mapchooser.sma[/B]" and "[B]multimod_daily_changer[/B]" provided [goanchor=Downloads]here[/goanchor]. The new 
+[URL="https://forums.alliedmods.net/showthread.php?t=273019"]galieo_reloaded.sma[/URL] which is a different Galileo version, [COLOR="Red"]is ready[/COLOR] to be used with this [B]Multi-Mod Manager[/B]". 
+
+The "[B]Multi-Mod Daily Maps[/B]" is a modified version of "[B]Daily Maps[/B]" to work with this "[B]Multi-Mod Manager[/B]". 
+This plugin only works with "[B]Multi-Mod Manager[/B]", alone the "[B]Multi-Mod Daily Maps[/B]" does nothing. Its allows 
+you to specify a different "[B]mapcycles[/B]" and "[B]server cfg[/B]" files rotation, for every day. These daily mapcycles are 
+only active when you are not using any mod, or your current mod does not specifies a special mapcycle. The 
+"[B]mapcycles[/B]" and "[B]server cfg[/B]" files respectively, are located at "[COLOR="Blue"]yourgamemod/mapcycles/[/COLOR][B]day[/B]" and 
+"[COLOR="Blue"]yourgamemod/mapcycles/[/COLOR][B]day/cfg[/B]". 
+
 As I am working at another plugins, I cannot provide immediately fixes and forum's answers here. But 
-as soon as I can, I am going to release the final version.
-
+as soon as I can, I am going to release the final version. 
 [URL="http://www.gametracker.com/search/?search_by=server_variable&search_by2=MultiModManager&query=&loc=_all&sort=&order="]
-[SIZE=5][B][COLOR=DarkGreen]Click here to see all servers using this plugin.[/COLOR][/B][/SIZE][/URL]
+[SIZE=5][B][COLOR=DarkGreen]Click here to see all servers using this plugin.[/COLOR][/B][/SIZE][/URL] 
 
-********************** [anchor]Introduction[/anchor][B][SIZE="5"][COLOR="blue"]Introduction[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor]  *******************************
+[anchor]Introduction[/anchor]
+********************** [B][SIZE="5"][COLOR="blue"]Introduction[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor]  *******************************
 This is a multi-mod server manager, that controls which mod is, or will be activated. 
 A mod can be activated by vote ([B]say votemod[/B]), or by force ([B]amx_setmod[/B] or [B]amx_setmods[/B]).
 
@@ -53,7 +109,7 @@ redefine the compiler constant "[COLOR="Blue"][B]#define MAXMODS 100[/B][/COLOR]
 
 [IMG]http://addons.zz.mu/recursos/2015-08-16_14-08_Counter-Strike.jpg[/IMG]
 
-The "[B]multi-mod_manager.sma[/B]" waits the user choose to activate one mod, by vote menu, 
+The "[B]multimod_manager.sma[/B]" waits the user choose to activate one mod, by vote menu, 
 or by command line. It [B]saves[/B] the current active mod and [COLOR="Blue"][B]keep it active[/B][/COLOR] forever or until some 
 other mod is [COLOR="Blue"][B]activated[/B][/COLOR] or your disable the active mod by the "[B]amx_setmod disable 1[/B]" command. 
 
@@ -61,21 +117,29 @@ other mod is [COLOR="Blue"][B]activated[/B][/COLOR] or your disable the active m
 [QUOTE]
  * Changes the [B]default mapcycle[/B], if and only if a custom mod mapcycle was created.
 
- * The [COLOR="Blue"]vote menu's[/COLOR] first to options are: "[B]1. Keep Current Mod[/B]" and "[B]2. No mod - Disable Mod[/B]".
+ * The [COLOR="Blue"]vote menu's[/COLOR] first to options always are: "[B]1. Keep Current Mod[/B]" and "[B]2. No mod - Disable Mod[/B]". 
 
  * The vote mod [B]keep the current mod[/B], when less than 30% of players voted. 
 
  * When the min vote mod time is not [B]reached/disabled[/B], display a message informing it. 
 
+ * Command '[COLOR="Blue"][B]amx_votemod[/B][/COLOR]', to start force start a vote mod, even if it is disabled. This command can 
+       [B]only active mods loaded[/B] from "[B]multimod.ini[/B]" file, and needs an admin level ADMIN_MAP. 
+
  * Command '[COLOR="Blue"][B]amx_setmod modShortName <1 or 0>[/B][/COLOR]', to enable the mod "modShortName" as [COLOR="Blue"]csdm[/COLOR], 
-      starting a vote map (1) or not (0), right after. 
+      starting a vote map (1) or not (0), right after. This command can [B]only active mods loaded[/B] from 
+      "[B]multimod.ini[/B]" file, and needs an admin level ADMIN_CFG. 
 
  * Command '[COLOR="Blue"][B]amx_setmods modShortName <1 or 0>[/B][/COLOR]', to enable the mod "modShortName" as [COLOR="Blue"]surf[/COLOR], 
-      restarting (1) or not (0) the server, immediately. 
+      restarting (1) or not (0) the server immediately, [B]s[/B]ilently. This command can [B]active any mod installed 
+      at the server[/B] despite it is or not at the "[B]multimod.ini[/B]" server's configuration file. And most important, 
+      it needs an admin level ADMIN_IMMUNITY. 
+
+OBS: A mod can [B]only[/B] to be/get activated after a restart. 
 [/QUOTE]
 
 The command "[B]amx_setmod help 1[/B]" display the acceptable inputs and loaded mods 
-from the file "[COLOR="Blue"]yougamemod/addons/amxmodx/configs/multimod/[/COLOR][B]multimod.ini[/B]". There is 
+from the file "[COLOR="Blue"]yourgamemod/addons/amxmodx/configs/multimod/[/COLOR][B]multimod.ini[/B]". There is 
 2 built-in operations beyond mods activation: "[COLOR="Blue"][B]amx_setmod help 1[/B][/COLOR]" and "[COLOR="Blue"][B]amx_setmod disable 1[/B][/COLOR]",
 respectively to shows [B]help[/B] and [B]disable[/B] any active mod.
 
@@ -94,7 +158,7 @@ Tested under [B]Counter-Strike[/B] and Counter-Strike: [B]Condition Zero[/B]
 // Minimum [B]time[/B] to play before players can make [B]MOD voting[/B]. 
 [COLOR="Blue"]amx_mintime [B]10 [/B][/COLOR]
 
-// enable ([B]1[/B]) or disable ([B]0[/B]) end map [B]multi-mod[/B] voting.
+// enable ([B]1[/B]) or disable ([B]0[/B]) end map automatic [B]multi-mod[/B] voting.
 [COLOR="Blue"]amx_multimod_endmapvote [B]0 [/B][/COLOR]
 
 // enable ([B]1[/B]) or disable ([B]0[/B]) multi-mod voting ([B]say votemod[/B]).
@@ -105,6 +169,7 @@ Tested under [B]Counter-Strike[/B] and Counter-Strike: [B]Condition Zero[/B]
 [QUOTE]
 //Command line control of [B]multimod system[/B]
 [COLOR="Blue"]amx_setmod[/COLOR] 
+[COLOR="Blue"]amx_setmods[/COLOR] 
 
 //[B]Admin only[/B] command to launch MOD voting
 [COLOR="Blue"]amx_votemod[/COLOR] 
@@ -138,13 +203,14 @@ Tested under [B]Counter-Strike[/B] and Counter-Strike: [B]Condition Zero[/B]
 [*]Zombie Money Mod
 [*]Zombie Pack Ammo Mod
 [/LIST]
-[SIZE="4"][URL="https://github.com/Addonszz/Multi-Mod_Server"]Is available here[/URL][/SIZE]. 
+[SIZE="4"][URL="https://forums.alliedmods.net/showthread.php?t=273018"]Is available here[/URL][/SIZE]. 
 
 ******************************** [anchor]Installation[/anchor][B][SIZE="5"][COLOR="Blue"]Installation[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor]  **********************
-[B]1.[/B] Download the files "[B]multi-mod_manager.sma[/B]", "[B]plugin_resources.zip[/B]" and 
-"[B]multi-mod_mapchooser.sma[/B]" at [goanchor=Downloads]Downloads[/goanchor] section.
+[B]1.[/B] Download the files "[B]multimod_manager.sma[/B]", "[B][COLOR="Red"]configuration_files.zip[/COLOR][/B]",  
+"[B]multimod_mapchooser.sma[/B]" or "[B]galieo_reloaded.sma[/B]" and "[B]multimod_daily_changer.sma[/B]"(this is optional), 
+at [goanchor=Downloads]Downloads[/goanchor] section. 
 
-[B]2.[/B] Then unzip the content of "[B]yourgamemod[/B]" from "[B]plugin_resources.zip[/B]", to your gamemod folder. 
+[B]2.[/B] Then take the contents of "[B]yourgamemod[/B]" from "[B]configuration_files.zip[/B]", to your gamemod folder. 
 
 [B]3.[/B] [B]Compile[/B] the files and put the [B]compiled[/B] files to your plugins folder at 
 "[COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]plugins[/B]" folder. 
@@ -152,23 +218,27 @@ Tested under [B]Counter-Strike[/B] and Counter-Strike: [B]Condition Zero[/B]
 [B]4.[/B] Put the next lines to your "[B]plugins.ini[/B]" file at "[COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]configs[/B]" and
 disable the original "[B]mapchooser.amxx[/B]": 
 [QUOTE]
-multi-mod_manager.amxx
-multi-mod_mapchooser.amxx
+multimod_manager.amxx
+multimod_daily_changer.amxx
+; Choose
+multimod_mapchooser.amxx
+;or
+galieo_reloaded.amxx
 [/QUOTE]
 
-[B]5.[/B] Put the next line to your "[B]amxx.cfg[B]" file at "[COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]configs[/B]":
+[B]5.[/B] Put the next line to your "[B]amxx.cfg[/B]" file at "[COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]configs[/B]":
 [QUOTE]
-exec addons/amxmodx/configs/multimod/multiMod.cfg
+exec addons/amxmodx/configs/multimod/multimod.cfg
 [/QUOTE]
 
 [anchor]Configuration[/anchor][B]6. [SIZE="5"][COLOR="red"]Configure[/COLOR][/SIZE][/B] your own mods at "[COLOR="Blue"]yourgamemod/addons/amxmodx/configs/multimod/[/COLOR][B]multimod.ini[/B]" 
-file as follow:
+file as follow (the short mod name cannot be longer than 15 characters neither have spaces):
 
 --- [B]Example of:[/B] [COLOR="Blue"]yourgamemod/addons/amxmodx/configs/multimod/[/COLOR][B]multimod.ini[/B] ------
 [QUOTE]
 [Gun Game]:[gungame]:
 
-;[mode name]:[short mod name]:
+;[mode name]:[shortModName]:
 [/QUOTE]
 
 -------------- And you have [B]to create[/B] the files:----------------------------
@@ -223,13 +293,88 @@ exec addons/amxmodx/configs/multimod/votefinished.cfg
 
 ******************************** [anchor]Change[/anchor][B][SIZE="5"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] ***********************
 [QUOTE]
-v1.0-release_candidate1
+2015-10-10 | v1.0-release_candidate1
  * Initial release candidate. 
+
+2015-10-10 | v1.0-release_candidate1.hotfix1
+ * Add exception handle when the currentmod.ini or currentmodsilent.ini is not found. 
+
+2015-10-12 | v1.0-release_candidate2
+ * Removed unused function get_firstmap() and variable g_nextmap. 
+ * Replaced unnecessary functions configMapManager and configDailyMaps. 
+ * Removed unnecessary MULTIMOD_MAPCHOOSER compiler constant. 
+ * Added to multimod_daily_changer.sma compatibility with galileo_reloaded.sma 
+
+2015-10-13 | v1.0-release_candidate2.hotfix1
+ * Added missing format parameter at msgModActivated function.
+
+2015-10-13 | v1.0-release_candidate2.hotfix2
+ * Added missing MM_CHOOSE line at multilingual file.
+
+2015-10-19 | v1.0-release_candidate2.hotfix3
+ * Translated to english lost code variables. 
+ * Replaced a implemented switch by a native switch. 
+ * Replaced another implemented switch by a native switch. 
+ * Improved variables names meaningful. 
+
+2015-10-21 | v1.0-release_candidate2.hotfix4
+ * Fixed mapcycle not setting when a mod was activated by command line or voting.  
 [/QUOTE]
 
 ******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *********************************
 [QUOTE]
- * Removed unnecessary variables like g_fileMsg, g_fileplugins, g_filemaps and g_fileCfgs.
+ * Removed unnecessary variables like g_messageFileNames, g_pluginsFileNames, g_mapcycleFileNames and g_configsFileNames.
+
+[QUOTE=fysiks;2353142]
+You should never return a string from a function. Strings should always be passed by-ref with the max characters 
+passed as another parameter.  Then, in the function, you would either format directly into that string using the size 
+provided or use copy().
+[/QUOTE]
+Coming soon: mapCyclePathCoder( stringToCode, sizeof( stringToCode ) - 1, stringCoded )
+
+[QUOTE=fysiks;2353142]
+Don't pass an integer value to a function by putting it in a string. Just pass the integer.  E.g. msgResourceActivated().  
+If the original source of the value is from a string like read_argv() then you should convert it to an integer before 
+passing it to a function like primitiveFunctions().
+[/QUOTE]
+Yea, I should convert it to integer. 
+
+[QUOTE=fysiks;2353142]
+If you are going to use the multilingual system to print to the server console, you should not use 
+LANG_PLAYER; that just doesn't make sense.  You should use LANG_SERVER.
+[*]This will only work with Counter-Strike (because of color chat) and thus your submission 
+should not be labeled as "Modification:   ALL".
+[/QUOTE]
+I posted wrong, and I was misleading the LANG_PLAYER and LANG_SERVER's use. 
+It will be fixed. And I forgot, this will be modification ALL, but it is not currently modification ALL. 
+It will be correct at threads page until it is definitely modification all. 
+
+[QUOTE=fysiks;2353142]
+IIRC, printing info to the client in a for loop can cause an overflow.  Simply build the whole text into 
+a single string and then send that only once.  You can create multiple lines by using "^n".
+[/QUOTE]
+It is the same problem as the AMXX very own "adminhelp.sma". I cannot build I a big string as pawn is limited. 
+I must limit the output number as "adminhelp.sma", receiving a page list number to show and limit 
+each page to show only a big string supported. 
+
+[QUOTE=fysiks;2353142]
+The use of server_print() should be rare and mostly for debugging.  For registered commands, 
+it should only be used with register_srvcmd() (unless it's for debugging of course).
+[/QUOTE]
+I did not know this register_srvcmd(). Then now I can register a register_srvcmd to server_print, and another register_clcmd to client_print.
+
+[QUOTE=fysiks;2353142]
+I'm sure there is more but I am done for now. 
+[/QUOTE]
+Of course, there is more clever programing techniques to learn: 
+[LIST=1]
+[*]use tries instead of g_modShortNames.  
+[*]count better current playing player at playersPlaying. 
+[*]copy more efficiently a files at copyFiles and copyFiles2. 
+[*]print colored text more efficiently than at print_color. 
+[*]receive commands more efficiently than "command arg1 arg2" even a for 1 argument command. 
+[/LIST]
+
 [/QUOTE]
   
 ******************************** [anchor]Credits[/anchor][B][SIZE="5"][COLOR="blue"]Credits[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *******************************
@@ -237,16 +382,16 @@ v1.0-release_candidate1
 [B]joropito[/B]: The idea/program developer of "[URL="https://forums.alliedmods.net/showthread.php?t=95568"]multimod.sma[/URL]". 
 [B]crazyeffect[/B]: Colaborate with multilangual support of "multimod.sma". 
 [B]dark vador 008[/B]: Time and server for testing under czero "multimod.sma". 
-[B]Addons zz[/B]: The "multi-mod_manager.sma" developer. 
+[B]Brad[/B]: The original [URL="https://forums.alliedmods.net/showthread.php?t=77391"]galileo.sma[/URL] developer. 
+[B]Th3822[/B]: For find a error from map_nominate. 
+[B]Addons zz[/B]: This plugin developer. 
 [B]DeRoiD's[/B]: For print_color function. 
+[B]JustinHoMi & JGHG[/B]: For the "[URL="https://forums.alliedmods.net/showthread.php?t=3886"]Daily Maps[/URL]" plugin. 
+[B]AMXX Dev Team[/B]: For the "Map Chooser" plugin. 
 
 ******************************** [anchor]Sourcecode[/anchor][SIZE="5"][COLOR="blue"][B]Source Code and Support[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor] ***
-This source code is available on [B]GitHub[/B]. 
-[URL="https://github.com/addonszz/Multi-Mod_Server/blob/develop/addons/amxmodx/scripting/multi-mod_manager.sma"]https://github.com/addonszz/Multi-Mod_Server/blob/develop/addons/amxmodx/scripting/multi-mod_manager.sma[/URL]
-
-For any problems with this plugin visit [B][URL="https://forums.alliedmods.net/index.php"]this own page[/URL][/B] or:
-[url]https://github.com/Addonszz/Multi-Mod_Server/issues[/url]
-for support.
+For any problems with this plugin visit this own page for support:
+[url]https://forums.alliedmods.net/showthread.php?t=273020[/url]
 
 If you are [B]posting[/B] because the plugin or a [B]feature[/B] of the plugin isn't working for you, [B]please[/B] do 
 all of the following, so we can [COLOR="Blue"]more efficiently[/COLOR] figure out what's going on:
@@ -271,52 +416,70 @@ following in your game console:
 [LIST=1]
 [*]Paste here everything from the [B]status[/B] command [COLOR="Red"][B]*except*[/B][/COLOR] the player list.
 [*]Paste here the entire result from the [B]meta list[/B] and [B]amxx plugins[/B] commands. 
-[*]Paste here [COLOR="red"][B]*only*[/B][/COLOR] the CVARs that contain "[COLOR="SeaGreen"][B]multi-mod_manager.amxx[/B][/COLOR]" in the last column 
+[*]Paste here [COLOR="red"][B]*only*[/B][/COLOR] the CVARs that contain "[COLOR="SeaGreen"][B]multimod_manager.amxx[/B][/COLOR]" in the last column 
 from the [B]amxx cvars[/B] command. They will be grouped together.
 [/LIST]
 [/QUOTE]
+
+***************************************************************************************	
+[SIZE="6"]BRAZIL (South America) Testing Server[/SIZE]
+[URL="http://www.gametracker.com/server_info/jacks.noip.me:27015/"][IMG]http://www.gametracker.com/server_info/jacks.noip.me:27015/b_560_95_1.png[/IMG][/URL]
+
+[SIZE="6"]GERMANY (Europe) Testing Server[/SIZE]
+[URL="http://www.gametracker.com/server_info/vipersnake.net:27030/"][IMG]http://www.gametracker.com/server_info/vipersnake.net:27030/b_560_95_1.png[/IMG][/URL]
+
 ******************************** [anchor]Downloads[/anchor][SIZE="6"][COLOR="Blue"][B]Downloads[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor] ********************
- */
+[LIST]
+[*][URL="https://forums.alliedmods.net/showthread.php?t=273019"]galieo_reloaded.sma[/URL]
+[/LIST]
+
+
+*/
 
 #include <amxmodx>
 #include <amxmisc>
 
 #define PLUGIN "Multi-Mod Manager"
-#define VERSION "v1.0-release_candidate1"
+#define VERSION "v1.0-rc2.4"
 #define AUTHOR "Addons zz"
 
-#define MULTIMOD_MAPCHOOSER "multi-mod_mapchooser.amxx"
 #define TASK_VOTEMOD 2487002
 #define TASK_CHVOMOD 2487004
+
 #define MAXMODS 100
+
 #define BIG_STRING 2048
 #define LONG_STRING 256
 #define SHORT_STRING 64
+
 #define MENU_ITEMS_PER_PAGE	8
 
 // Enables debug server console messages.
 new g_is_debug = false
 
+new g_coloredmenus
 new g_menu_total_pages
 new g_menuPosition[33]
 new g_menuname[] = "VOTE MOD MENU"
 new g_votemodcount[MAXMODS]
-new g_modShortName[MAXMODS][SHORT_STRING]// Per-mod short Names
-new g_fileMsg[MAXMODS][SHORT_STRING]// Per-mod Mod msg Names
-new g_fileCfgs[MAXMODS][SHORT_STRING]// Per-mod Mod cfg Names
-new g_modnames[MAXMODS][SHORT_STRING]// Per-mod Mod Names
-new g_filemaps[MAXMODS][LONG_STRING]// Per-mod Maps Files
-new g_fileplugins[MAXMODS][LONG_STRING]// Per-mod Plugin Files
 
-new g_coloredmenus
-new g_modcount = 0 // integer with configured mods count, that is pre increment, so first mod is 1
+new g_modShortNames[MAXMODS][SHORT_STRING]// Per-mod short Names
+new g_messageFileNames[MAXMODS][SHORT_STRING]// Per-mod Mod msg Names
+new g_configsFileNames[MAXMODS][SHORT_STRING]// Per-mod Mod cfg Names
+new g_modNames[MAXMODS][SHORT_STRING]// Per-mod Mod Names
+new g_mapcycleFileNames[MAXMODS][LONG_STRING]// Per-mod Maps Files
+new g_pluginsFileNames[MAXMODS][LONG_STRING]// Per-mod Plugin Files
+
+new g_modCounter = 0 // integer with configured mods count, that is pre increment, so first mod is 1
+
 new gp_allowedvote
 new gp_endmapvote
+
+new g_currentModShortName[SHORT_STRING]
 new g_nextmodid
 new g_currentmodid
-new g_multimod[SHORT_STRING]
-new g_nextmap[SHORT_STRING]
-new g_currentmod[SHORT_STRING]
+new g_isTimeToChangeMapcyle = false
+
 new totalVotes
 new SayText
 
@@ -329,12 +492,12 @@ new gp_mapcyclefile
 
 new g_alertMultiMod[BIG_STRING] = ";Configuration files of Multi-Mod System^n//\
 which is run every time the server starts and defines which mods are enabled.^n//\
-This file is managed automatically by multi-mod_manager.sma plugin^n//\
+This file is managed automatically by multimod_manager.sma plugin^n//\
 and any modification will be discarded in the activation of some mod.^n^n"
 
 new g_helpamx_setmod[LONG_STRING] = "help 1	      | for help."
-new g_helpamx_setmods[LONG_STRING] = "shortModName <1 or 0> to restart or not       | Enable/Disable any mod, ^n\
-loaded or not (silent mod). Ex: amx_setmods surf 0"
+new g_helpamx_setmods[LONG_STRING] = "shortModName <1 or 0> to restart or not       | Enable/Disable any mod, \
+loaded or not (silent mod). "
 
 new g_cmdsAvailables1[LONG_STRING] = "^namx_setmod help 1       | To show this help.^n\
 amx_setmod disable 1   | To deactivate any active Mod.^n\
@@ -359,8 +522,7 @@ public plugin_init()
 	register_plugin(PLUGIN, VERSION, AUTHOR)
 	register_cvar("MultiModManager", VERSION, FCVAR_SERVER|FCVAR_SPONLY)
 	register_dictionary("mapchooser.txt")
-	register_dictionary("multimod.txt")
-	//set_localinfo( "isFirstTimeLoadMapCycle", "1" );
+	register_dictionary("multimodmanager.txt")
 
 	gp_mintime = register_cvar("amx_mintime", "10")
 	gp_allowedvote = register_cvar("amx_multimod_voteallowed", "1")
@@ -379,7 +541,7 @@ public plugin_init()
 	register_clcmd("say_team votemod", "user_votemod")
 
 	register_concmd("amx_setmod", "receiveCommand", ADMIN_CFG, g_helpamx_setmod )
-	register_concmd("amx_setmods", "receiveCommandSilent", ADMIN_CVAR, g_helpamx_setmods )
+	register_concmd("amx_setmods", "receiveCommandSilent", ADMIN_IMMUNITY, g_helpamx_setmods )
 
 	formatex(MenuName, charsmax(MenuName), "%L", LANG_PLAYER, "MM_VOTE")
 	register_menucmd(register_menuid(g_menuname), BIG_STRING - 1, "player_vote")
@@ -389,7 +551,7 @@ public plugin_init()
 }
 
 /**
- * Makes auto configuration about mapchooser plugin, switching between multi-mod_mapchooser and 
+ * Makes auto configuration about mapchooser plugin, switching between multimod_mapchooser and 
  * galileo. 
  * Gets current game mods cvars pointer to this program global variables.
  * Adjust the localinfo variable that store the current mod loaded, reading the current mod file.
@@ -399,12 +561,12 @@ public plugin_cfg()
 	gp_voteanswers = get_cvar_pointer("amx_vote_answers")
 	gp_timelimit = get_cvar_pointer("mp_timelimit")
 	gp_mapcyclefile = get_cvar_pointer("mapcyclefile")
-	get_localinfo("amx_multimod", g_multimod, charsmax(g_multimod))
+	get_localinfo( "amx_multimod", g_currentModShortName, charsmax(g_currentModShortName) )
 
 	switchMapManager()
 	loadCurrentMod()
 
-	if( gp_endmapvote )
+	if( get_pcvar_num( gp_endmapvote ) )
 	{
 		set_task(15.0, "check_task", TASK_VOTEMOD, "", 0, "b")
 	}
@@ -434,14 +596,16 @@ public receiveCommand(id, level, cid)
 	read_argv( 1, Arg1, charsmax( Arg1 ) )
 	read_argv( 2, Arg2, charsmax( Arg2 ) )
 
+	g_isTimeToChangeMapcyle = true
+
 	if( primitiveFunctions( Arg1, Arg2, id ) )
 	{   
-		new modid = getModID( Arg1 )
+		new mod_id_number = getModID( Arg1 )
 
-		if( modid != -1 ) // modid is -1 if it is specified a invalid mod, at Arg1 above
+		if( mod_id_number != -1 ) // mod_id_number is -1 if it is specified a invalid mod, at Arg1 above
 		{   
-			// don't need return if it was successful, because the modid guarantee it
-			configureMultimod( modid ) 
+			// don't need return if it was successful, because the mod_id_number guarantee it
+			configureMultimod( mod_id_number ) 
 
 			msgModActivated( Arg1, Arg2 )
 
@@ -452,6 +616,8 @@ public receiveCommand(id, level, cid)
 			printHelp( id )
 		}
 	}
+	g_isTimeToChangeMapcyle = false
+
 	return PLUGIN_HANDLED
 }
 
@@ -462,11 +628,11 @@ public receiveCommand(id, level, cid)
  */
 public getModID( shortName[] )
 {   
-	for( new modID = 3; modID <= g_modcount; modID++ )
+	for( new mod_id_number = 3; mod_id_number <= g_modCounter; mod_id_number++ )
 	{   
-		if( equal( shortName, g_modShortName[modID] ) )
+		if( equal( shortName, g_modShortNames[mod_id_number] ) )
 		{   
-			return modID
+			return mod_id_number
 		}
 	}
 	return -1
@@ -517,10 +683,10 @@ public printHelp( id )
 	server_print( g_cmdsAvailables1 )
 	server_print( g_cmdsAvailables2 )
 
-	for( new i = 3; i <= g_modcount; i++ )
+	for( new i = 3; i <= g_modCounter; i++ )
 	{   
 		formatex( text, charsmax(text), "amx_setmod %s 1          | to use %s",
-				g_modShortName[i], g_modnames[i] )
+				g_modShortNames[i], g_modNames[i] )
 
 		client_print( id, print_console , text )
 		server_print( text )
@@ -556,6 +722,8 @@ public receiveCommandSilent(id, level, cid)
 	read_argv( 1, Arg1, charsmax( Arg1 ) )
 	read_argv( 2, Arg2, charsmax( Arg2 ) )
 
+	g_isTimeToChangeMapcyle = true
+
 	if( equal( Arg1, "disable" ) )
 	{   
 		disableMods()
@@ -566,11 +734,11 @@ public receiveCommandSilent(id, level, cid)
 			message_begin(MSG_ALL, SVC_INTERMISSION);
 			message_end();
 
-			new mensagem[LONG_STRING]
-			formatex( mensagem, charsmax(mensagem), "^1The ^4current mod^1 will be deactivated at ^4next \
+			new deactivation_message[LONG_STRING]
+			formatex( deactivation_message, charsmax(deactivation_message), "^1The ^4current mod^1 will be deactivated at ^4next \
 					server restart^1.", Arg1 )
 
-			printMessage( mensagem, 0 )
+			printMessage( deactivation_message, 0 )
 			set_task(5.0, "restartTheServer");
 		}
 	} else if( activateModSilent( Arg1 ) && equal( Arg2, "1" ) )
@@ -579,13 +747,14 @@ public receiveCommandSilent(id, level, cid)
 		message_begin(MSG_ALL, SVC_INTERMISSION);
 		message_end();
 
-		new mensagem[LONG_STRING]
-		formatex( mensagem, charsmax(mensagem), "^1The mod ( ^4%s^1 ) will be activated at ^4next \
+		new activation_message[LONG_STRING]
+		formatex( activation_message, charsmax(activation_message), "^1The mod ( ^4%s^1 ) will be activated at ^4next \
 				server restart^1.", Arg1 )
 
-		printMessage( mensagem, 0 )
+		printMessage( activation_message, 0 )
 		set_task(5.0, "restartTheServer");
 	} 
+	g_isTimeToChangeMapcyle = false
 
 	return PLUGIN_HANDLED
 }
@@ -600,107 +769,131 @@ public restartTheServer()
 
 /**
  * The 'currentmod.ini' and 'currentmodsilent.ini', at multimod folder, stores the current 
- *   mod actually active and the current mod was activated by silent mode, respectively. 
+ *    mod actually active and the current mod was activated by silent mode, respectively. 
  * When 'currentmod.ini' stores 0, 'currentmodsilent.ini' defines the current mod. 
  * When 'currentmod.ini' stores anything that is not 0, 'currentmod.ini' defines the current mod.
  */
 public loadCurrentMod()
 {   
-	new currentModFile[LONG_STRING]
-	new currentModSilentFile[LONG_STRING]
-
-	new currentModID_String[SHORT_STRING]
-	new currentModSilentFile_String[SHORT_STRING]
+	new currentModCode
 	new ilen
 
-	formatex(currentModFile, charsmax(currentModFile), "%s/multimod/currentmod.ini", g_configFolder)
-	formatex(currentModSilentFile, charsmax(currentModFile), "%s/multimod/currentmodsilent.ini", g_configFolder)
+	new currentModFilePath[LONG_STRING]
+	new currentModSilentFilePath[LONG_STRING]
 
-	read_file(currentModFile, 0, currentModID_String, charsmax(currentModID_String), ilen )
-	read_file(currentModSilentFile, 0, currentModSilentFile_String, charsmax(currentModSilentFile_String), ilen )
+	new currentModId_String[SHORT_STRING]
+	new currentModSilentId_String[SHORT_STRING]
 
-	build_first_mods()
-	load_cfg()
+	formatex(currentModFilePath, charsmax(currentModFilePath), "%s/multimod/currentmod.ini", g_configFolder)
+	formatex(currentModSilentFilePath, charsmax(currentModFilePath), "%s/multimod/currentmodsilent.ini", g_configFolder)
 
-	// If -1, there is no mod active. If 0, the current mod was activated by silent mode
-	if( !( equal( currentModID_String, "-1" ) || equal( currentModID_String, "0" ) ) )
-	{   
-		new currentModID = str_to_num( currentModID_String ) + 2
-		configureMultimod( currentModID )
-
-	} else if ( equal( currentModID_String, "0" ) )
-	{   
-		activateModSilent( currentModSilentFile_String )
-
-	} else 
+	// normal mod activation 
+	if( file_exists( currentModFilePath ) )
 	{
-		configureMultimod( 2 )
+		read_file(currentModFilePath, 0, currentModId_String, charsmax(currentModId_String), ilen )
+		currentModCode = str_to_num( currentModId_String )
+	} 
+	else
+	{
+		currentModCode = -1
+	}
+
+	// silent mod activation 
+	if( file_exists( currentModSilentFilePath ) )
+	{
+		read_file( currentModSilentFilePath, 0, currentModSilentId_String, charsmax(currentModSilentId_String), ilen )
+	} 
+	else
+	{
+		currentModCode = -1
+	} 
+
+	build_first_mods() 
+	load_cfg() 
+
+	switch( currentModCode )
+	{   
+		case -1: // If -1, there is no mod active. 
+		{   
+			configureMultimod( 2 ) 
+		}
+		case 0: // If 0, the current mod was activated by silent mode
+		{
+			g_currentmodid = 1
+			activateModSilent( currentModSilentId_String ) 
+		}
+		default: 
+		{
+			configureMultimod( currentModCode + 2  ) 
+		}
 	}
 }
 
 /**
- * Given a modid, salves it to file "currentmod.ini", at multimod folder.
+ * Given a mod_id_number, salves it to file "currentmod.ini", at multimod folder.
  * 
- * @param the mod id.
+ * @param mod_id_number the mod id.
  */
-saveCurrentMod( modid )
+saveCurrentMod( mod_id_number )
 {   
-	new modidString[SHORT_STRING]
-	new arqCurrentMod[LONG_STRING]
+	new mod_idString[SHORT_STRING]
+	new currentModConfigFilePath[LONG_STRING]
 
-	formatex( arqCurrentMod, charsmax(g_configFolder), "%s/multimod/currentmod.ini", g_configFolder )
+	formatex( currentModConfigFilePath, charsmax(g_configFolder), "%s/multimod/currentmod.ini", g_configFolder )
 
-	if ( file_exists( arqCurrentMod ) )
+	if ( file_exists( currentModConfigFilePath ) )
 	{   
-		delete_file( arqCurrentMod )
+		delete_file( currentModConfigFilePath )
 	}
-	modid = modid - 2
 
-	formatex( modidString, charsmax(modidString), "%d", modid )
-	write_file( arqCurrentMod, modidString )
+	formatex( mod_idString, charsmax(mod_idString), "%d", mod_id_number - 2 )
+	write_file( currentModConfigFilePath, mod_idString )
 }
 
 /**
  *  Saves the current silent mod activated to file "currentmodsilent.ini", at multimod folder.
  *
- * @param Arg1[] the mod short name. Ex: surf.
+ * @param modShortName[] the mod short name. Ex: surf.
  */
-public saveCurrentModSilent( Arg1[] )
+public saveCurrentModSilent( modShortName[] )
 {
-	new arqCurrentMod[LONG_STRING]
+	new currentModConfigFilePath[LONG_STRING]
 
-	formatex( arqCurrentMod, charsmax(g_configFolder), "%s/multimod/currentmodsilent.ini", g_configFolder )
+	formatex( currentModConfigFilePath, charsmax(g_configFolder), "%s/multimod/currentmodsilent.ini", g_configFolder )
 
-	if( file_exists( arqCurrentMod ) )
+	if( file_exists( currentModConfigFilePath ) )
 	{   
-		delete_file( arqCurrentMod )
+		delete_file( currentModConfigFilePath )
 	}
-	write_file( arqCurrentMod, Arg1 )
+	write_file( currentModConfigFilePath, modShortName )
 }
 
 /**
  * Set the current game mod and changes the mapcycle, if and only if it was created. 
  * 
- * @param modid the mod index.
+ * @param mod_id_number the mod index.
  */
-public configureMultimod( modid )
+public configureMultimod( mod_id_number )
 {   
-	g_currentmodid = modid
+	g_currentmodid = mod_id_number
 
-	if( modid == 1 ) // "Keep Current Mod", it is necessary when silent mode is used.
+	switch( mod_id_number )
 	{   
-		return
+		case 1: // "Keep Current Mod", it is necessary when silent mode is used.
+		{   
+			return
+		}
+		case 2: // "No mod - Disable Mod", it is necessary at user votes.
+		{   
+			disableMods()
+		}
+		default: 
+		{   
+			activateMod( mod_id_number  )
+		}
 	}
-	if( modid == 2 ) // "No mod - Disable Mod", it is necessary at user votes.
-	{   
-		disableMods()
-	}
-	if( !( ( modid == 1 ) || ( modid == 2 ) ) )
-	{   
-		activateMod( modid  )
-	}
-	configDailyMaps( modid )
-	configMapManager( modid )
+	configDailyMapsSilent( g_mapcycleFileNames[mod_id_number] )
+	configMapManagerSilent( g_mapcycleFileNames[mod_id_number] )
 }
 
 /**
@@ -709,21 +902,21 @@ public configureMultimod( modid )
  */
 public build_first_mods()
 {   
-	g_modcount++
+	g_modCounter++
 
-	formatex( g_modnames[g_modcount], SHORT_STRING - 1, "Keep Current Mod" )
-	formatex( g_fileCfgs[g_modcount], SHORT_STRING - 1, "none.cfg" )
-	formatex( g_filemaps[g_modcount], SHORT_STRING - 1, "none.txt" )
-	formatex( g_fileplugins[g_modcount], SHORT_STRING - 1, "none.txt" )
-	formatex( g_fileMsg[g_modcount], SHORT_STRING - 1, "nobe.cfg" )
+	formatex( g_modNames[g_modCounter], SHORT_STRING - 1, "Keep Current Mod" )
+	formatex( g_configsFileNames[g_modCounter], SHORT_STRING - 1, "none.cfg" )
+	formatex( g_mapcycleFileNames[g_modCounter], SHORT_STRING - 1, "none.txt" )
+	formatex( g_pluginsFileNames[g_modCounter], SHORT_STRING - 1, "none.txt" )
+	formatex( g_messageFileNames[g_modCounter], SHORT_STRING - 1, "nobe.cfg" )
 
-	g_modcount++
+	g_modCounter++
 
-	formatex( g_modnames[g_modcount], SHORT_STRING - 1, "No mod - Disable Mod" )
-	formatex( g_fileCfgs[g_modcount], SHORT_STRING - 1, "none.cfg" )
-	formatex( g_filemaps[g_modcount], SHORT_STRING - 1, "none.txt" )
-	formatex( g_fileplugins[g_modcount], SHORT_STRING - 1, "none.txt" )
-	formatex( g_fileMsg[g_modcount], SHORT_STRING - 1, "nobe.cfg" )
+	formatex( g_modNames[g_modCounter], SHORT_STRING - 1, "No mod - Disable Mod" )
+	formatex( g_configsFileNames[g_modCounter], SHORT_STRING - 1, "none.cfg" )
+	formatex( g_mapcycleFileNames[g_modCounter], SHORT_STRING - 1, "none.txt" )
+	formatex( g_pluginsFileNames[g_modCounter], SHORT_STRING - 1, "none.txt" )
+	formatex( g_messageFileNames[g_modCounter], SHORT_STRING - 1, "nobe.cfg" )
 }
 
 /**
@@ -731,160 +924,60 @@ public build_first_mods()
  */
 public load_cfg()
 {   
-	new szData[LONG_STRING]
-	new szFilename[LONG_STRING]
+	new currentLine[LONG_STRING]
+	new configFilePath[LONG_STRING]
 
-	formatex(szFilename, charsmax(szFilename), "%s/multimod/multimod.ini", g_configFolder)
+	formatex(configFilePath, charsmax(configFilePath), "%s/multimod/multimod.ini", g_configFolder)
 
-	new f = fopen(szFilename, "rt")
-	new szTemp[SHORT_STRING],szModName[SHORT_STRING], szTag[SHORT_STRING], szCfg[SHORT_STRING]
+	new configFilePointer = fopen( configFilePath, "rt" )
+	new currentLineSplited[SHORT_STRING]
+	new modName[SHORT_STRING]
+	new modShortNameString[SHORT_STRING]
+	new unusedLastString[SHORT_STRING]
 
-	while(!feof(f))
+	while( !feof( configFilePointer ) )
 	{   
-		fgets(f, szData, charsmax(szData))
-		trim(szData)
+		fgets( configFilePointer, currentLine, charsmax(currentLine) )
+		trim( currentLine )
 
 		// skip commentaries while reading file
-		if(!szData[0] || szData[0] == ';' || (szData[0] == '/' && szData[1] == '/'))
+		if( !currentLine[0] || currentLine[0] == ';' 
+				|| ( currentLine[0] == '/' && currentLine[1] == '/' ) )
 		{   
 			continue
 		}
 
-		if(szData[0] == '[')
+		if( currentLine[0] == '[' )
 		{   
-			g_modcount++
+			g_modCounter++
 
 			// remove line delimiters [ and ]
-			replace_all(szData, charsmax(szData), "[", "")
-			replace_all(szData, charsmax(szData), "]", "")
+			replace_all( currentLine, charsmax(currentLine), "[", "" )
+			replace_all( currentLine, charsmax(currentLine), "]", "" )
 
-			//broke the current config line, in modname (szModName), modtag (szTag) 
-			strtok(szData, szModName, charsmax(szModName), szTemp, charsmax(szTemp), ':', 0)
-			strtok(szTemp, szTag, charsmax(szTag), szCfg, charsmax(szCfg), ':', 0)
+			// broke the current config line, in modname (modName), modtag (modShortNameString) 
+			strtok( currentLine, modName, charsmax(modName), currentLineSplited, charsmax(currentLineSplited), ':', 0 )
+			strtok( currentLineSplited, modShortNameString, charsmax(modShortNameString), unusedLastString, charsmax( unusedLastString ), ':', 0 )
 
-			//stores at memory multi-dimensionals arrrays: the cfgfilename, modname, 
-			//filemapsname and plugin_modname
-			formatex( g_modnames[g_modcount], SHORT_STRING - 1, "%s", szModName )
-			formatex( g_modShortName[g_modcount], SHORT_STRING - 1, "%s", szTag )
-			formatex( g_fileCfgs[g_modcount], SHORT_STRING - 1, "%s.cfg", szTag )
-			formatex( g_filemaps[g_modcount], SHORT_STRING - 1, "%s", mapCyclePathCoder( szTag) )
-			formatex( g_fileplugins[g_modcount], SHORT_STRING - 1, "%s.txt", szTag )
-			formatex( g_fileMsg[g_modcount], SHORT_STRING - 1, "%s.cfg", szTag )
-
-			if( equal(szModName, g_multimod) )
-			{   
-				copy(g_currentmod, charsmax(g_currentmod), szModName)
-				g_currentmodid = g_modcount
-
-				if( g_is_debug )
-				{   
-					server_print("[AMX MultiMod] %L", LANG_PLAYER, "MM_WILL_BE",
-					g_multimod, szTag, szCfg)
-				}
-			}
+			// stores at memory multi-dimensionals arrrays: the cfgfilename, modname, 
+			// filemapsname and plugin_modname
+			formatex( g_modNames[g_modCounter], SHORT_STRING - 1, "%s", modName )
+			formatex( g_modShortNames[g_modCounter], SHORT_STRING - 1, "%s", modShortNameString )
+			formatex( g_configsFileNames[g_modCounter], SHORT_STRING - 1, "%s.cfg", modShortNameString )
+			formatex( g_mapcycleFileNames[g_modCounter], SHORT_STRING - 1, "%s", mapCyclePathCoder( modShortNameString ) )
+			formatex( g_pluginsFileNames[g_modCounter], SHORT_STRING - 1, "%s.txt", modShortNameString )
+			formatex( g_messageFileNames[g_modCounter], SHORT_STRING - 1, "%s.cfg", modShortNameString )
 
 			//print at server console each mod loaded
 			if( g_is_debug )
 			{   
-				server_print( "[AMX MOD Loaded] %d %s - %s %s %s %s", g_modcount - 2,
-				g_modnames[g_modcount], g_fileplugins[g_modcount], g_fileCfgs[g_modcount],
-				g_filemaps[g_modcount], g_fileMsg[g_modcount] )
+				server_print( "[AMX MOD Loaded] %d %s - %s %s %s %s", g_modCounter - 2,
+						g_modNames[g_modCounter], g_pluginsFileNames[g_modCounter], g_configsFileNames[g_modCounter],
+						g_mapcycleFileNames[g_modCounter], g_messageFileNames[g_modCounter] )
 			}
 		}
 	}
-	fclose(f)
-}
-
-/**
- * Gets the first map to load after mod active. If the map file doesn't exist, keep the current 
- * map as the first map to load after mod active.
- */
-public get_firstmap(modid)
-{   
-	new ilen
-
-	if(!file_exists(g_filemaps[modid]))
-	{   
-		get_mapname(g_nextmap, charsmax(g_nextmap))
-	}
-	else
-	{   
-		read_file(g_filemaps[modid], 0, g_nextmap, charsmax(g_nextmap), ilen)
-	}
-}
-
-/**
- * Makes the autoswitch between mapchooser and galileo. If both are active, prevails galieo.
- */
-public switchMapManager()
-{   
-	if( find_plugin_byfile( "galileo.amxx" ) != -1 )
-	{   
-		g_mapmanagertype = 2
-
-	} else if( find_plugin_byfile( MULTIMOD_MAPCHOOSER ) != -1 )
-	{   
-		g_mapmanagertype = 1
-	}
-}
-
-/**
- * Setup the map manager to work with votemod menu.
- */
-public configMapManager(modid)
-{   
-	switch( g_mapmanagertype )
-	{   
-		case 2:
-		{   
-			new galileo_mapfile = get_cvar_pointer( "gal_vote_mapfile" )
-
-			if( galileo_mapfile )
-			{   
-				if( file_exists( g_filemaps[modid] ) )
-				{   
-					set_pcvar_string( galileo_mapfile, g_filemaps[modid] )
-				}
-			}
-		}
-		case 1:
-		{   
-			if( callfunc_begin("plugin_init", MULTIMOD_MAPCHOOSER ) == 1 )
-			{   
-				callfunc_end()
-			} else
-			{   
-				new error[128]="ERROR at configMapManager!! MULTIMOD_MAPCHOOSER NOT FOUND!^n"
-				client_print( 0, print_console , error )
-				server_print( error )
-			}
-		}
-	}
-}
-
-/**
- * Setup the map manager to work with votemod menu at Silent mode. That is, configures
- *  the compatibility with galileo, MULTIMOD_MAPCHOOSER and daily_maps, because 
- *  now there is no modid, hence because the mod is not loaded from the mod file configs.
- * 
- * @param Arg1[] the mapcycle file name with extension and path. Ex: mapcycles/surf.txt
- */
-public configMapManagerSilent( Arg1[] )
-{   
-	if( file_exists( Arg1 ) )
-	{   
-		new galileo_mapfile = get_cvar_pointer( "gal_vote_mapfile" )
-
-		if( galileo_mapfile )
-		{		   
-			set_pcvar_string( galileo_mapfile, Arg1 )
-		}
-	}
-
-	if( callfunc_begin("plugin_init", MULTIMOD_MAPCHOOSER ) == 1 )
-	{   
-		callfunc_end()
-	}
+	fclose( configFilePointer )
 }
 
 /**
@@ -903,41 +996,71 @@ public mapCyclePathCoder( Arg1[] )
 }
 
 /**
- * Change the game global variable at localinfo, isFirstTimeLoadMapCycle to 1, after 
- *   the first map load if  there is a game mod mapcycle file. Or to 2 if there is not.
- * The isFirstTimeLoadMapCycle is used by daily_maps.sma to know if there is a 
- *   game mod mapcycle.
- *
- * @param modid current mod id.
+ * Makes the autoswitch between mapchooser and galileo_reloaded. If both are 
+ *   active, prevails galileo_reloaded.
  */
-public configDailyMaps( modid )
-{
-	new isFirstTime[32]
-	get_localinfo( "isFirstTimeLoadMapCycle", isFirstTime, charsmax( isFirstTime ) );
-	new isFirstTimeNum = str_to_num( isFirstTime )
-
-	if( file_exists( g_filemaps[modid] ) )
+public switchMapManager()
+{   
+	if( find_plugin_byfile( "galileo_reloaded.amxx" ) != -1 )
 	{   
-		if( isFirstTimeNum  == 0 )
-		{
-			//server_print("^n^n^n^n^n%d^n^n", isFirstTimeNum)
-			set_localinfo( "isFirstTimeLoadMapCycle", "1" );
-			set_localinfo( "lastmapcycle", g_filemaps[modid] )
-			set_pcvar_string( gp_mapcyclefile, g_filemaps[modid] )
-		}
-	} else 
-	{
-		set_localinfo( "isFirstTimeLoadMapCycle", "2" );
+		g_mapmanagertype = 2
+
+	} else if( find_plugin_byfile( "multimod_mapchooser.amxx" ) != -1 )
+	{   
+		g_mapmanagertype = 1
 	}
 }
 
 /**
- * Change the game global variable at localinfo, isFirstTimeLoadMapCycle to 1, after 
- *   the first map load if  there is a game mod mapcycle file. Or to 2 if there is not.
- * The isFirstTimeLoadMapCycle is used by daily_maps.sma to know if there is a 
- *   game mod mapcycle.
- *
+ * Setup the map manager to work with votemod menu at Silent mode. That is, configures
+ *  the compatibility with galileo_reloaded, multimod_mapchooser and daily_maps, because now 
+ *  there is no mod_id_number, hence because the mod is not loaded from the mod file configs.
+ * 
  * @param Arg1[] the mapcycle file name with extension and path. Ex: mapcycles/surf.txt
+ */
+public configMapManagerSilent( Arg1[] )
+{   
+	if( file_exists( Arg1 ) )
+	{   
+		switch( g_mapmanagertype )
+		{   
+			case 1:
+			{   
+				if( callfunc_begin("plugin_init", "multimod_mapchooser.amxx" ) == 1 )
+				{   
+					callfunc_end()
+
+				} else
+				{   
+					new error[128]="ERROR at configMapManager!! multimod_mapchooser.amxx NOT FOUND!^n"
+					client_print( 0, print_console , error )
+					server_print( error )
+				}
+			}
+			case 2:
+			{   
+				new galileo_mapfile = get_cvar_pointer( "gal_vote_mapfile" )
+
+				if( galileo_mapfile )
+				{   
+					set_pcvar_string( galileo_mapfile, Arg1 )
+				}
+			}
+		}
+	}
+}
+
+/**
+ * Change the game global variable at localinfo isFirstTimeLoadMapCycle to 1 or 2, after 
+ *   the first map load. It is to avoid mapcycle re-change, causing the first mapcycle 
+ *   map, always being the nextmap. 
+ * 
+ * The localinfo isFirstTimeLoadMapCycle as 1, is used by multimod_manager.sma, 
+ *    to know if there is a game mod mapcycle file. 
+ * The localinfo isFirstTimeLoadMapCycle as 2, is used by multimod_daily_changer.sma, 
+ *    to know if there is not game mod mapcycle. 
+ *
+ * @param Arg1[] the mapcycle file name with its extension and path. Ex: mapcycles/surf.txt
  */
 public configDailyMapsSilent( Arg1[] )
 {
@@ -947,8 +1070,10 @@ public configDailyMapsSilent( Arg1[] )
 
 	if( file_exists( Arg1 ) )
 	{   
-		if( isFirstTimeNum  == 0 )
+		if( isFirstTimeNum  == 0 || g_isTimeToChangeMapcyle )
 		{
+			g_isTimeToChangeMapcyle = false
+
 			//server_print("^n^n^n^n^n%d^n^n", isFirstTimeNum)
 			set_localinfo( "isFirstTimeLoadMapCycle", "1" );
 			set_localinfo( "lastmapcycle", Arg1 )
@@ -982,11 +1107,11 @@ public disableMods()
 
 	if( file_exists( fileLateConfigRead ) )
 	{   
-		new mensagem[LONG_STRING]
-		formatex( mensagem, charsmax(mensagem), "Executing the deactivation mod \
+		new deactivation_message[LONG_STRING]
+		formatex( deactivation_message, charsmax(deactivation_message), "Executing the deactivation mod \
 				configuration file ( %s ).", fileLateConfigRead )
 
-		printMessage( mensagem, 0 )
+		printMessage( deactivation_message, 0 )
 		server_cmd( "exec %s", fileLateConfigRead )
 	}
 
@@ -1019,16 +1144,16 @@ public disableMods()
 /**
  * Actives a mod by its configs files.
  * 
- * @param modid the mod id to active.
+ * @param mod_id_number the mod id to active.
  *
  * Throws = ERROR !! Any configuration file is missing!
  */
-public activateMod( modid )
+public activateMod( mod_id_number )
 {   
 	new filePluginRead[LONG_STRING]
 	new filePluginWrite[LONG_STRING]
 
-	formatex( filePluginRead, charsmax( filePluginRead ),"%s/multimod/plugins/%s", g_configFolder, g_fileplugins[modid] )
+	formatex( filePluginRead, charsmax( filePluginRead ),"%s/multimod/plugins/%s", g_configFolder, g_pluginsFileNames[mod_id_number] )
 	formatex( filePluginWrite, charsmax(filePluginWrite), "%s/plugins-multi.ini", g_configFolder )
 
 	if( file_exists(filePluginRead) )
@@ -1036,21 +1161,21 @@ public activateMod( modid )
 		new fileConfigRead[LONG_STRING]
 		new fileConfigWrite[LONG_STRING]
 
-		formatex( fileConfigRead, charsmax(fileConfigRead), "%s/multimod/cfg/%s", g_configFolder, g_fileCfgs[modid] )
+		formatex( fileConfigRead, charsmax(fileConfigRead), "%s/multimod/cfg/%s", g_configFolder, g_configsFileNames[mod_id_number] )
 		formatex( fileConfigWrite, charsmax(fileConfigWrite), "%s/multimod/multimod.cfg", g_configFolder )
 		disableMods()
 
 		copyFiles( filePluginRead, filePluginWrite, g_alertMultiMod )
 
-		if( file_exists(fileConfigRead) )
+		if( file_exists( fileConfigRead ) )
 		{
 			copyFiles( fileConfigRead, fileConfigWrite, g_alertMultiMod )
 		}
 
-		saveCurrentMod( modid )
+		saveCurrentMod( mod_id_number )
 
-		server_print( "Setting multimod to %i - %s", modid - 2, g_modnames[modid] )
-		set_localinfo( "amx_multimod", g_modShortName[modid] )
+		server_print( "Setting multimod to %i - %s", mod_id_number - 2, g_modNames[mod_id_number] )
+		set_localinfo( "amx_multimod", g_modShortNames[mod_id_number] )
 
 	} else
 	{   
@@ -1060,19 +1185,19 @@ public activateMod( modid )
 }
 
 /**
- * Actives a mod by its configs files silently and straight restat the server. That is, change 
+ * Actives a mod by its configs files silently and straight restart the server. That is, change 
  *   the current mod to 'Keep Current Mod', the active the mods by its file name exists.
  * 
- * @param Arg1[] the mod short name to active. Ex: surf
+ * @param modShortName[] the mod short name to active. Ex: surf
  *
  * Throws = ERROR !! Any configuration file is missing!
  */
-public activateModSilent( Arg1[] )
+public activateModSilent( modShortName[] )
 {   
 	new filePluginRead[LONG_STRING]
 	new filePluginWrite[LONG_STRING]
 
-	formatex( filePluginRead, charsmax(filePluginRead), "%s/multimod/plugins/%s.txt", g_configFolder, Arg1 )
+	formatex( filePluginRead, charsmax(filePluginRead), "%s/multimod/plugins/%s.txt", g_configFolder, modShortName )
 	formatex( filePluginWrite, charsmax(filePluginWrite), "%s/plugins-multi.ini", g_configFolder )
 
 	if( file_exists(filePluginRead) )
@@ -1081,7 +1206,7 @@ public activateModSilent( Arg1[] )
 		new fileConfigWrite[LONG_STRING]
 		new mapCycleFile[SHORT_STRING] 
 
-		formatex( fileConfigRead, charsmax(fileConfigRead), "%s/multimod/cfg/%s.cfg", g_configFolder, Arg1 )
+		formatex( fileConfigRead, charsmax(fileConfigRead), "%s/multimod/cfg/%s.cfg", g_configFolder, modShortName )
 		formatex( fileConfigWrite, charsmax(fileConfigWrite), "%s/multimod/multimod.cfg", g_configFolder )
 		disableMods()
 
@@ -1092,17 +1217,17 @@ public activateModSilent( Arg1[] )
 			copyFiles( fileConfigRead, fileConfigWrite, g_alertMultiMod )
 		}
 
-		copy( mapCycleFile, charsmax(mapCycleFile), mapCyclePathCoder( Arg1 ) )
+		copy( mapCycleFile, charsmax(mapCycleFile), mapCyclePathCoder( modShortName ) )
 		
 		configMapManagerSilent( mapCycleFile )
 		configDailyMapsSilent( mapCycleFile )
 
 		g_currentmodid = 1
 		saveCurrentMod( 2 )
-		saveCurrentModSilent( Arg1 )
+		saveCurrentModSilent( modShortName )
 
-		server_print( "Setting multimod to %s", Arg1 )
-		set_localinfo( "amx_multimod", Arg1 )
+		server_print( "Setting multimod to %s", modShortName )
+		set_localinfo( "amx_multimod", modShortName )
 		
 		return true
 
@@ -1115,51 +1240,51 @@ public activateModSilent( Arg1[] )
 }
 
 /**
- * Copy the arquivoFonte to arquivoDestino, replacing the existing file destination and
- * adding to its beginning the contents of the String textoInicial.
+ * Copy the sourceFilePath to destinationFilePath, replacing the existing file destination and
+ * adding to its beginning the contents of the String inicialFileText.
  *
- * @param arquivoFonte[] the source file
- * @param arquivoDestino[] the destination file
- * @param textoInicial[] an additional text
+ * @param sourceFilePath[] the source file
+ * @param destinationFilePath[] the destination file
+ * @param inicialFileText[] an additional text
  */
-public copyFiles( arquivoFonte[], arquivoDestino[], textoInicial[] )
+public copyFiles( sourceFilePath[], destinationFilePath[], inicialFileText[] )
 {   
-	if ( file_exists( arquivoDestino ) )
+	if ( file_exists( destinationFilePath ) )
 	{   
-		delete_file( arquivoDestino )
+		delete_file( destinationFilePath )
 	}	
-	write_file( arquivoDestino, textoInicial, 0 )
+	write_file( destinationFilePath, inicialFileText, 0 )
 
-	new arquivoFontePointer = fopen( arquivoFonte, "rt" )
+	new sourceFilePathPointer = fopen( sourceFilePath, "rt" )
 	new Text[512];
 
-	while ( !feof( arquivoFontePointer ) )
+	while ( !feof( sourceFilePathPointer ) )
 	{   
-		fgets( arquivoFontePointer, Text, sizeof(Text) - 1 )
+		fgets( sourceFilePathPointer, Text, sizeof(Text) - 1 )
 		trim(Text)
-		write_file( arquivoDestino, Text, -1)
+		write_file( destinationFilePath, Text, -1)
 	}
-	fclose( arquivoFontePointer )
+	fclose( sourceFilePathPointer )
 }
 
 /**
- * Copies the contents of ArquivoFonte to the beginning of arquivoDestino
+ * Copies the contents of sourceFilePath to the beginning of destinationFilePath
  * 
- * @param arquivoFonte[] the source file
- * @param arquivoDestino[] the destination file
+ * @param sourceFilePath[] the source file
+ * @param destinationFilePath[] the destination file
  */
-public copyFiles2( arquivoFonte[], arquivoDestino[] )
+public copyFiles2( sourceFilePath[], destinationFilePath[] )
 {   
-	new arquivoFontePointer = fopen( arquivoFonte, "rt" )
+	new sourceFilePathPointer = fopen( sourceFilePath, "rt" )
 	new Text[512];
 
-	while ( !feof( arquivoFontePointer ) )
+	while ( !feof( sourceFilePathPointer ) )
 	{   
-		fgets( arquivoFontePointer, Text, sizeof(Text) - 1 )
+		fgets( sourceFilePathPointer, Text, sizeof(Text) - 1 )
 		trim(Text)
-		write_file( arquivoDestino, Text, -1 )
+		write_file( destinationFilePath, Text, -1 )
 	}
-	fclose( arquivoFontePointer )
+	fclose( sourceFilePathPointer )
 }
 
 /**
@@ -1170,11 +1295,11 @@ public copyFiles2( arquivoFonte[], arquivoDestino[] )
  */
 public msgModActivated( modShortName[], is_restart[] )
 {   
-	new mensagem[LONG_STRING]
-	formatex( mensagem, charsmax(mensagem), "^1The mod ( ^4%s^1 ) will be activated at ^4next server restart^1.",
-	     modShortName )
+	new activation_message[LONG_STRING]
+	formatex( activation_message, charsmax(activation_message), "^1The mod ( ^4%s^1 ) will be activated at ^4next server restart^1.",
+			modShortName )
 
-	printMessage( mensagem, 0 )
+	printMessage( activation_message, 0 )
 
 	if( equal( is_restart, "1" ) )
 	{
@@ -1183,7 +1308,7 @@ public msgModActivated( modShortName[], is_restart[] )
 
 		if( file_exists( msgPath ) )
 		{
-			server_cmd( "exec %s" )
+			server_cmd( "exec %s", msgPath )
 
 		} else
 		{
@@ -1198,23 +1323,23 @@ public msgModActivated( modShortName[], is_restart[] )
 
 /**
  * Displays a message to all server player about a command line Resource active with "amx_setmod".
- * Its must match the file msg name at "multimod" folder.
+ * Its must match the file msg name at "multimod" folder. 
  * 
- * @param nomeDoRecurso[] the name of the activated resource. Ex: disable
+ * @param resourceName[] the name of the activated resource. Ex: disable
  * @param is_restart[] inform to restart the server if "1"
  */
-public msgResourceActivated( nomeDoRecurso[], is_restart[] )
+public msgResourceActivated( resourceName[], is_restart[] )
 {   
-	new mensagem[LONG_STRING]
-	formatex( mensagem, charsmax(mensagem), "^1The mod ( ^4%s^1 ) will be activated at ^4next server restart^1.", 
-			nomeDoRecurso )
+	new activation_message[LONG_STRING]
+	formatex( activation_message, charsmax(activation_message), "^1The resource ( ^4%s^1 ) will be activated at ^4next server restart^1.", 
+			resourceName )
 
-	printMessage( mensagem, 0 )
+	printMessage( activation_message, 0 )
 
 	if( equal( is_restart, "1" ) )
 	{
 		new msgPath[LONG_STRING]
-		formatex( msgPath, charsmax(msgPath), "%s/multimod/%s.cfg", g_configFolder, nomeDoRecurso )
+		formatex( msgPath, charsmax(msgPath), "%s/multimod/%s.cfg", g_configFolder, resourceName )
 
 		if( file_exists( msgPath ) )
 		{
@@ -1234,24 +1359,24 @@ public msgResourceActivated( nomeDoRecurso[], is_restart[] )
 /**
  * Displays a message to a specific server player id and at the server console.
  *
- * @param mensagem[] the text to display
+ * @param message[] the text to display
  * @param id the player id
  */
-public printMessage( mensagem[], id )
+public printMessage( message[], id )
 {   
 #if AMXX_VERSION_NUM < 183
-	print_color( id, mensagem )
+	print_color( id, message )
 #else
-	print_chat_color( id, mensagem )
+	print_chat_color( id, message )
 #endif
 	
-	replace_all( mensagem, 190, "^4", "" );
-	replace_all( mensagem, 190, "^1", "" );
-	replace_all( mensagem, 190, "^3", "" );
+	replace_all( message, 190, "^4", "" );
+	replace_all( message, 190, "^1", "" );
+	replace_all( message, 190, "^3", "" );
 	
-	client_print( id, print_center , mensagem )
-	client_print( id, print_console , mensagem )
-	server_print( mensagem )
+	client_print( id, print_center , message )
+	client_print( id, print_console , message )
+	server_print( message )
 }
 
 /**
@@ -1289,37 +1414,39 @@ stock print_color(const id, const input[], any:...)
 }
 
 /**
- * Displays a message to a specific server player showing the mod id as the next mod to be loaded.
+ * Displays a message to a specific server player showing the next mod to be loaded. 
  * 
  * @param id the player id
  */
 public user_nextmod(id)
 {   
-	client_print(0, print_chat, "%L", LANG_PLAYER, "MM_NEXTMOD", g_modnames[g_nextmodid])
+	client_print( 0, print_chat, "%L", LANG_PLAYER, "MM_NEXTMOD", g_modNames[ g_nextmodid ] )
+
 	return PLUGIN_HANDLED
 }
 
 /**
- * Displays a message to a specific server player show the mod id as current mod.
+ * Displays a message to a specific server player show the current mod.
  * 
  * @param id the player id
  */
 public user_currentmod(id)
 {   
-	client_print(0, print_chat, "The game current mod is: %s", g_modnames[ g_currentmodid ] )
+	client_print(0, print_chat, "The game current mod is: %s", g_modNames[ g_currentmodid ] )
+
 	return PLUGIN_HANDLED
 }
 
 /**
  * Called with "say votemod". Checks:
- *	If users can invoke votation.
+ *	If users can invoke voting.
  *	If its already voted.
  */
 public user_votemod(id)
 {   
-	if( gp_allowedvote )
+	if( get_pcvar_num( gp_allowedvote ) )
 	{   
-		client_print(0, print_chat, "%L", LANG_PLAYER, "MM_VOTEMOD", g_modnames[g_nextmodid])
+		client_print(0, print_chat, "%L", LANG_PLAYER, "MM_VOTEMOD", g_modNames[g_nextmodid])
 		return PLUGIN_HANDLED
 	}
 	new Float:elapsedTime = get_pcvar_float(gp_timelimit) - (float(get_timeleft()) / 60.0)
@@ -1349,6 +1476,7 @@ public user_votemod(id)
 public check_task()
 {   
 	new timeleft = get_timeleft()
+
 	if(timeleft < 300 || timeleft > 330)
 	{   
 		return
@@ -1357,11 +1485,11 @@ public check_task()
 }
 
 /**
- * Start multi mod votation.
+ * Start multi mod voting.
  * 
- * If a new votation was invoked:
- *   Restart votation count.
- *   Restart votation players menu position.
+ * If a new voting was invoked:
+ *   Restart voting count.
+ *   Restart voting players menu position.
  */
 public start_vote()
 {   
@@ -1407,7 +1535,7 @@ public display_votemod_menu( id, menu_current_page )
 	new menu_valid_keys
 	new current_write_position
 	new current_page_itens
-	new g_menusNumber = g_modcount
+	new g_menusNumber = g_modCounter
 
 	// calc. g_menu_total_pages
 	if( ( g_menusNumber % MENU_ITEMS_PER_PAGE ) > 0 )
@@ -1449,7 +1577,7 @@ public display_votemod_menu( id, menu_current_page )
 
 		current_write_position += formatex( menu_body[ current_write_position ],
 				BIG_STRING - current_write_position , "%d. %s^n", for_index + 1,
-				g_modnames[ mod_vote_id + 1] )
+				g_modNames[ mod_vote_id + 1] )
 
 		g_votemodcount[ mod_vote_id ] = 0
 		for_index++
@@ -1576,17 +1704,17 @@ public player_vote(id, key)
 		{   
 			new mod_vote_id = get_mod_vote_id( g_menuPosition[id], key )
 
-			if( mod_vote_id <= g_modcount && get_pcvar_num( gp_voteanswers) )
+			if( mod_vote_id <= g_modCounter && get_pcvar_num( gp_voteanswers) )
 			{   
 				new player[SHORT_STRING]
-				new mensagem[LONG_STRING]
+				new choose_message[LONG_STRING]
 
 				get_user_name(id, player, charsmax(player))
-				formatex( mensagem, charsmax(mensagem), "%L", LANG_PLAYER, "X_CHOSE_X", player,
-				g_modnames[ mod_vote_id ] )
+				formatex( choose_message, charsmax(choose_message), "%L", LANG_PLAYER, "X_CHOSE_X", player,
+				g_modNames[ mod_vote_id ] )
 
-				client_print( 0, print_chat, mensagem )
-				server_print( mensagem )
+				client_print( 0, print_chat, choose_message )
+				server_print( choose_message )
 
 				g_votemodcount[ mod_vote_id ]++
 			} else
@@ -1613,13 +1741,13 @@ public get_mod_vote_id( current_menu_page, current_pressed_key )
 }
 
 /**
- * Start computing the mod votation.
+ * Start computing the mod voting.
  */
 public check_vote()
 {   
 	new mostVoted = 1
 
-	for(new a = 0; a <= g_modcount; a++)
+	for(new a = 0; a <= g_modCounter; a++)
 	{   
 		if(g_votemodcount[mostVoted] < g_votemodcount[a])
 		{   
@@ -1638,33 +1766,32 @@ public check_vote()
  */
 public displayVoteResults( mostVoted, totalVotes )
 {   
+	new result_message[LONG_STRING]
 	new playerMin = playersPlaying( 0.3 )
+
 	server_print( "Total Mod Votes: %d  | Player Min: %d  | Most Voted: %s",
-	totalVotes, playerMin, g_modnames[ mostVoted ] )
+			totalVotes, playerMin, g_modNames[ mostVoted ] )
 
 	if( totalVotes > playerMin )
 	{   
 		g_nextmodid = mostVoted
+
+		g_isTimeToChangeMapcyle = true 
 		configureMultimod(mostVoted)
-
-		new mensagem[LONG_STRING]
-		formatex( mensagem, charsmax(mensagem), "%L", LANG_PLAYER, "MM_VOTEMOD",
-		g_modnames[ mostVoted ])
-
-		client_print( 0, print_chat, mensagem )
-		server_print( mensagem )
+		
+		formatex( result_message, charsmax(result_message), "%L", LANG_PLAYER, "MM_VOTEMOD",
+		g_modNames[ mostVoted ])
 
 		server_cmd( "exec %s/multimod/votefinished.cfg", g_configFolder )
-	} else
+	} 
+	else
 	{   
-		new mensagem[LONG_STRING]
-		formatex( mensagem, charsmax(mensagem), "The vote did not reached the required minimum! \
-		The next mod remains: %s", g_modnames[ g_currentmodid ])
-
-		client_print(0, print_chat, mensagem)
-		server_print( mensagem )
+		new result_message[LONG_STRING]
+		formatex( result_message, charsmax(result_message), "The vote did not reached the required minimum! \
+		The next mod remains: %s", g_modNames[ g_currentmodid ])
 	}
 	totalVotes = 0
+	printMessage( result_message, 0 )
 }
 
 /**
