@@ -14,7 +14,7 @@
 *
 *****************************************************************************************
 
-[SIZE="6"][COLOR="Blue"][B]Galileo Reloaded v1.0-alpha2.hotfix1[/B][/COLOR][/SIZE]
+[SIZE="6"][COLOR="Blue"][B]Galileo Reloaded v1.0-alpha3[/B][/COLOR][/SIZE]
 [B]Release: 10.10.2015 | Last Update: 21.10.2015[/B]
 
 [SIZE="5"]Basic differences between the original Galileo and Galileo Reloaded[/SIZE] 
@@ -96,11 +96,14 @@ have with this plugin.  It's located in the [B]Attached ZIP[/B] available at the
 
  * [B]Runoff[/B] voting when no map gets more than 50% of the total vote.
 
- * Command '[COLOR="Blue"][B]gal_startvote[/B][/COLOR]', to forces a map vote to begin and the map will be changed once the 
-	   next map has been determined. 
-
- * Command '[COLOR="Blue"][B]gal_startvote2[/B][/COLOR]', the same as the first but, when keep the current map option wins, 
-	   the current map is restarted. This command is specially for the "[URL="https://forums.alliedmods.net/showthread.php?t=273020"]Multi-Mod Manager[/URL]" plugin. 
+ * Command '[COLOR="Blue"][B]gal_startvote [-nochange or -restart][/B][/COLOR]', to forces a map vote to begin 
+	   and the map will be changed once the next map has been determined. 
+			[LIST]
+			[*]If the "[COLOR="blue"][B]-nochange[/B][/COLOR]" argument is supplied, the map will not be changed by [COLOR="Blue"]Galileo Reload[/COLOR], 
+			which is useful when you have a different plugin handling the actual changing of the map. 
+			[*]If the "[COLOR="blue"][B]-restart[/B][/COLOR]" argument is supplied and the voting opting "Keep the Current Map" wins, 
+			the current map is restarted. This command is specially for the "[URL="https://forums.alliedmods.net/showthread.php?t=273020"]Multi-Mod Manager[/URL]" plugin. 
+			[/LIST]
 
  * Command '[COLOR="Blue"][B]gal_createmapfile filename[/B][/COLOR]', Creates a file that contains a list of every valid 
 	   map in your maps folder. The [B]filename[/B] argument indicates specifies the name to be used for 
@@ -197,6 +200,10 @@ galileo_reloaded.amxx
 
 2015-10-21 | v1.0-alpha2.hotfix1
  * Improved some variables meaning 
+
+2015-10-XX | v1.0-alpha3
+ * Removed the command "gal_startvote2"
+ * Added to the command gal_startvote the options -nochange and -restart. 
 [/QUOTE]
 
 ******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *********************************
@@ -274,7 +281,7 @@ from the [B]amxx cvars[/B] command. They will be grouped together.
 
 */
 
-new const PLUGIN_VERSION[]  = "1.0-alpha2.1"; 
+new const PLUGIN_VERSION[]  = "1.0-alpha3"; 
 
 #include <amxmodx>
 #include <amxmisc>
@@ -353,7 +360,7 @@ new g_nominationCnt
 new g_nominationMatchesMenu[MAX_PLAYER_CNT];
 
 new g_isTimeToChangeLevel = false;
-new g_isTimeToChangeLevelAndRestart = false;
+new g_isTimeToRestart = false;
 new g_isTimeLimitChanged = false; 
 new g_isDebugEnabledNumber = 0;
 
@@ -460,7 +467,6 @@ public plugin_init()
 	register_clcmd("listmaps", "cmd_HL1_listmaps");
 
 	register_concmd("gal_startvote", "cmd_startVote", ADMIN_MAP);
-	register_concmd("gal_startvote2", "cmd_startVote2", ADMIN_MAP);
 	register_concmd("gal_createmapfile", "cmd_createMapFile", ADMIN_RCON);
 
 	g_menuChooseMap = register_menuid(MENU_CHOOSEMAP);
@@ -480,7 +486,7 @@ public plugin_cfg()
 {
 	g_isTimeLimitChanged = false;
 	g_isTimeToChangeLevel = false;
-	g_isTimeToChangeLevelAndRestart = false;
+	g_isTimeToRestart = false;
 	g_isDebugEnabledNumber = get_cvar_num("gal_debug");
 
 	if( is_plugin_loaded( "Nextmap Chooser" ) != -1 )
@@ -775,8 +781,9 @@ public cmd_listrecent(id)
 }
 
 /** 
- * Called when need to start a votemap, where extend the current map, aka, Keep Current Map, 
- *   will to do the real extend.
+ * Called when need to start a vote map, where the command line arg1: 
+ *    -nochange: extend the current map, aka, Keep Current Map, will to do the real extend. 
+ *    -restart: extend the current map, aka, Keep Current Map restart the server at the current map. 
  */
 public cmd_startVote(id, level, cid)
 {
@@ -789,40 +796,32 @@ public cmd_startVote(id, level, cid)
 	}
 	else 
 	{
-		g_isTimeToChangeLevel = true;
+		g_isTimeToChangeLevel = true; 
+
+		if (read_argc() == 2)
+		{
+			new arg[32];
+			read_args( arg, sizeof( arg ) - 1 );
+
+			if ( equali(arg, "-nochange") )
+			{
+				g_isTimeToChangeLevel = false;
+			}
+			if ( equali(arg, "-restart") )
+			{
+				g_isTimeToRestart = true;
+			}
+		}
 		vote_startDirector(true);	
 	}
 
 	return PLUGIN_HANDLED;
 }
 
-/** 
- * Called when need to start a votemap, where extend the current map, aka, Keep Current Map
- *   restart the server at the current map.
- */
-public cmd_startVote2(id, level, cid)
-{
-	if (!cmd_access(id, level, cid, 1))
-		return PLUGIN_HANDLED;
-
-	if (g_voteStatus & VOTE_IN_PROGRESS)
-	{
-		client_print(id, print_chat, "%L", id, "GAL_VOTE_INPROGRESS");
-	}
-	else 
-	{
-		g_isTimeToChangeLevel = true;
-		g_isTimeToChangeLevelAndRestart = true;
-		vote_startDirector(true);	
-	}
-
-	return PLUGIN_HANDLED;
-}
-
-map_populateList(Array:mapArray, mapFilename[])
+map_populateList( Array:mapArray, mapFilename[] )
 {
 	// clear the map array in case we're reusing it
-	ArrayClear(mapArray);
+	ArrayClear( mapArray );
 	
 	// load the array with maps
 	new mapCnt;
@@ -1483,7 +1482,6 @@ public vote_startDirector(bool:forced)
 		// alphabetize the maps
 		SortCustom2D(g_mapsVoteMenuNames, choicesLoaded, "sort_stringsi");
 
-		// isDebugEnabledNumber code ----
 		if ( g_isDebugEnabledNumber )
 		{
 			for (new dbgChoice = 0; dbgChoice < choicesLoaded; dbgChoice++)
@@ -1565,7 +1563,6 @@ public vote_countdownPendingVote()
 
 vote_addNominations()
 {
-	// isDebugEnabledNumber code ----
 	debugMessageLog(4, "   [NOMINATIONS (%i)]", g_nominationCnt);
 
 	if (g_nominationCnt)
@@ -1602,7 +1599,6 @@ vote_addNominations()
 			}
 			debugMessageLog(4, "");
 		}
-		//--------------
 
 		for (new idxNomination = playerNominationMax; idxNomination >= 1; --idxNomination)
 		{
@@ -2008,7 +2004,6 @@ public vote_display(arg[3])
 		// optionally display to single player that just voted
 		if (showStatus == SHOWSTATUS_VOTE)
 		{
-			// isDebugEnabledNumber code ----
 			new name[32];
 			get_user_name(id, name, 31);
 			
@@ -2035,7 +2030,6 @@ public vote_display(arg[3])
 	
 			if (g_voted[id] == false && !isVoteOver)
 			{
-				// isDebugEnabledNumber code ----
 				if (playerIdx == 0)
 				{
 					new name[32];
@@ -2043,8 +2037,7 @@ public vote_display(arg[3])
 					
 					debugMessageLog(4, "	[%s (clean)]", name);
 					debugMessageLog(4, "		%s", menuClean);
-				}				
-				//--------------
+				} 
 
 				get_user_menu(id, menuid, menukeys);
 				if (menuid == 0 || menuid == g_menuChooseMap)
@@ -2056,7 +2049,6 @@ public vote_display(arg[3])
 			{
 				if ((isVoteOver && showStatus) || (showStatus == SHOWSTATUS_VOTE && g_voted[id]))
 				{
-					// isDebugEnabledNumber code ----
 					if (playerIdx == 0)
 					{
 						new name[32];
@@ -2065,7 +2057,6 @@ public vote_display(arg[3])
 						debugMessageLog(4, "	[%s (dirty)]", name);
 						debugMessageLog(4, "		%s", menuDirty);
 					}				
-					//--------------
 
 					get_user_menu(id, menuid, menukeys);
 					if (menuid == 0 || menuid == g_menuChooseMap)
@@ -2074,12 +2065,10 @@ public vote_display(arg[3])
 					}
 				}
 			}
-			// isDebugEnabledNumber code ----
 			if (id == 1)
 			{
 				debugMessageLog(4, "");
 			}
-			//--------------
 		}
 	}
 }
@@ -2120,7 +2109,6 @@ public vote_expire()
 		}	
 		debugMessageLog(4, "");
 	}
-	//--------------
 	
 	g_vote[0] = 0;
 	
@@ -2373,9 +2361,9 @@ public vote_expire()
 			}
 			else
 			{
-				if( g_isTimeToChangeLevelAndRestart )
+				if( g_isTimeToRestart )
 				{
-					g_isTimeToChangeLevelAndRestart = false;
+					g_isTimeToRestart = false;
 
 					// "stay here" won
 					client_print(0, print_chat, "%L", LANG_PLAYER, "GAL_WINNER_STAY");
@@ -2565,10 +2553,7 @@ public vote_handleChoice(id, key)
 		{
 			get_user_name(id, name, sizeof(name)-1);
 		}
-
-		// isDebugEnabledNumber code ----
 		get_user_name(id, name, sizeof(name)-1);
-		//--------------
 
 		// confirm the player's choice
 		if (key == 9)
