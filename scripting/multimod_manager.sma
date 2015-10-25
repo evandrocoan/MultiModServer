@@ -373,7 +373,7 @@ Of course, there is more clever programing techniques to learn:
 [*]count better current playing player at playersPlaying. 
 [*]copy more efficiently a files at copyFiles and copyFiles2. 
 [*]print colored text more efficiently than at print_color. 
-[*]receive commands more efficiently than "command firstCommandLineArgument secondCommandLineArgument" even a for 1 argument command. 
+[*]receive commands more efficiently than "command firstCommand_lineArgument secondCommand_lineArgument" even a for 1 argument command. 
 [/LIST]
 
 ******************************** [anchor]Credits[/anchor][B][SIZE="5"][COLOR="blue"]Credits[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *******************************
@@ -452,7 +452,7 @@ from the [B]amxx cvars[/B] command. They will be grouped together.
 #define MENU_ITEMS_PER_PAGE	8
 
 // Enables debug server console messages.
-new g_is_debug = true
+new g_is_debug = 1
 
 new g_totalVotes
 new g_sayText
@@ -561,8 +561,9 @@ public plugin_cfg()
 	formatex( g_voteFinished_filePath, charsmax(g_voteFinished_filePath), "%s/multimod/votefinished.cfg", g_configFolder )
 
 	switchMapManager()
+	retrievesCurrentMod_atLocalInfo()
 	loadCurrentMod()
-	//unloadLastActiveMod()
+	unloadLastActiveMod()
 
 	if( get_pcvar_num( gp_endmapvote ) )
 	{
@@ -598,12 +599,7 @@ public unloadLastActiveMod()
 
 		if( file_exists( lateConfig_filePath ) )
 		{   
-			new deactivation_message[LONG_STRING]
-
-			formatex( deactivation_message, charsmax(deactivation_message), "Executing the deactivation mod \
-					configuration file ( %s ).", lateConfig_filePath )
-
-			printMessage( 0, deactivation_message )
+			printMessage( 0, "Executing the deactivation mod configuration file ( %s ).", lateConfig_filePath )
 			server_cmd( "exec %s", lateConfig_filePath )
 		}
 
@@ -614,41 +610,40 @@ public unloadLastActiveMod()
 /**
  * Process the input command "amx_setmod OPITON1 OPITON2".
  * 
- * @param playerID - will hold the players playerID who started the command
+ * @param player_id - will hold the players id who started the command
  * @param level - will hold the access level of the command
- * @param cid - will hold the commands internal playerID 
+ * @param cid - will hold the commands internal id 
  *
- * @arg firstCommandLineArgument the modShortName to enable 
- * @arg secondCommandLineArgument inform to start a vote map "1" or not "0" 
+ * @ARG1 firstCommand_lineArgument the modShortName to enable 
+ * @ARG2 secondCommand_lineArgument inform to start a vote map "1" or not "0" 
  */
-public receiveCommand(playerID, level, cid)
+public receiveCommand(player_id, level, cid)
 {   
 	//Make sure this user is an admin
-	if (!cmd_access(playerID, level, cid, 3))
+	if (!cmd_access(player_id, level, cid, 3))
 	{   
 		return PLUGIN_HANDLED
 	}
-	new firstCommandLineArgument[ SHORT_STRING ]
-	new secondCommandLineArgument[SHORT_STRING]
+	new firstCommand_lineArgument			[ SHORT_STRING ]
+	new secondCommand_lineArgument		[SHORT_STRING]
 
 	//Get the command arguments from the console
-	read_argv( 1, firstCommandLineArgument, charsmax( firstCommandLineArgument ) )
-	read_argv( 2, secondCommandLineArgument, charsmax( secondCommandLineArgument ) )
+	read_argv( 1, firstCommand_lineArgument, 		charsmax( firstCommand_lineArgument ) )
+	read_argv( 2, secondCommand_lineArgument, charsmax( secondCommand_lineArgument ) )
 
-	new isTimeToRestart = equal( secondCommandLineArgument, "1" )
+	new isTimeToRestart 			= equal( secondCommand_lineArgument, "1" )
 	g_isTimeTo_changeMapcyle = true
 
-	if( primitiveFunctions( playerID, firstCommandLineArgument, isTimeToRestart ) )
+	if( primitiveFunctions( player_id, firstCommand_lineArgument, isTimeToRestart ) )
 	{   
-		if( activateMod_byShortName( firstCommandLineArgument )  ) 
+		if( activateMod_byShortName( firstCommand_lineArgument )  ) 
 		{   
-			configureModID( firstCommandLineArgument )
-			messageModActivated( firstCommandLineArgument, isTimeToRestart )
+			configureModID( firstCommand_lineArgument )
+			messageModActivated( firstCommand_lineArgument, isTimeToRestart, true )
 		} 
 		else
 		{   
-			printMessage( 0, "ERROR at receiveCommand!! Mod invalid or a configuration file is missing!" )
-			printHelp( playerID )
+			printHelp( player_id )
 		}
 	}
 	g_isTimeTo_changeMapcyle = false
@@ -678,28 +673,27 @@ public configureModID( shortName[] )
 /**
  * Check the activation of the function of disableMods and help.
  * 
- * @param firstCommandLineArgument[] the first command line argument
- * @param secondCommandLineArgument[] the second command line argument
- * @param playerID the player playerID
+ * @param firstCommand_lineArgument[] the first command line argument
+ * @param secondCommand_lineArgument[] the second command line argument
+ * @param player_id the player id
  *
  * @return true if was not asked for a primitive function, false otherwise.
  */
-public primitiveFunctions( playerID, firstCommandLineArgument[], isTimeToRestart )
+public primitiveFunctions( player_id, firstCommand_lineArgument[], isTimeToRestart )
 {   
-	if( equal( firstCommandLineArgument, "disable" ) )
+	if( equal( firstCommand_lineArgument, "disable" ) )
 	{   
 		disableMods()
-		printMessage( playerID, "^1The ^4current mod^1 will be deactivated at ^4next server restart^1." )
 
 		if( isTimeToRestart )
 		{
-			msgResourceActivated( "disable", isTimeToRestart )
+			msgResourceActivated( "disable", isTimeToRestart, true )
 		}
 		return false
 	}
-	if( equal( firstCommandLineArgument, "help" ) )
+	if( equal( firstCommand_lineArgument, "help" ) )
 	{   
-		printHelp( playerID )
+		printHelp( player_id )
 		return false
 	}
 	return true
@@ -717,13 +711,13 @@ public printHelp( player_id )
 
 	client_print( player_id, print_console , g_cmdsAvailables1 )
 	client_print( player_id, print_console , g_cmdsAvailables2 )
+
 	server_print( g_cmdsAvailables1 )
 	server_print( g_cmdsAvailables2 )
 
 	for( new i = 3; i <= g_modCounter; i++ )
 	{   
-		formatex( text, charsmax(text), "amx_setmod %s 1          | to use %s",
-				g_modShortNames[i], g_modNames[i] )
+		formatex( text, charsmax(text), "amx_setmod %s 1          | to use %s", g_modShortNames[i], g_modNames[i] )
 
 		client_print( player_id, print_console , text )
 		server_print( text )
@@ -741,8 +735,8 @@ public printHelp( player_id )
  * @param level - will hold the access level of the command
  * @param cid - will hold the commands internal id 
  * 
- * @arg firstCommandLineArgument the modShortName to enable silently
- * @arg secondCommandLineArgument inform to restart the current map "1" or not "0" 
+ * @arg firstCommand_lineArgument the modShortName to enable silently
+ * @arg secondCommand_lineArgument inform to restart the current map "1" or not "0" 
  */
 public receiveCommandSilent( player_id, level, cid )
 {   
@@ -751,50 +745,27 @@ public receiveCommandSilent( player_id, level, cid )
 	{   
 		return PLUGIN_HANDLED
 	}
-	new firstCommandLineArgument			[SHORT_STRING]
-	new secondCommandLineArgument		[SHORT_STRING]
+	new firstCommand_lineArgument			[SHORT_STRING]
+	new secondCommand_lineArgument		[SHORT_STRING]
 
-	read_argv( 1, firstCommandLineArgument, charsmax( firstCommandLineArgument ) )
-	read_argv( 2, secondCommandLineArgument, charsmax( secondCommandLineArgument ) )
+	read_argv( 1, firstCommand_lineArgument, charsmax( firstCommand_lineArgument ) )
+	read_argv( 2, secondCommand_lineArgument, charsmax( secondCommand_lineArgument ) )
 
-	new isTimeToRestart = equal( secondCommandLineArgument, "1" )
+	new isTimeToRestart 			= equal( secondCommand_lineArgument, "1" )
 	g_isTimeTo_changeMapcyle = true
 
-	if( equal( firstCommandLineArgument, "disable" ) )
+	if( equal( firstCommand_lineArgument, "disable" ) )
 	{   
 		disableMods()
-
-		if( isTimeToRestart )
-		{
-			// freeze the game and show the scoreboard
-			message_begin(MSG_ALL, SVC_INTERMISSION);
-			message_end();
-
-			printMessage( 0, "^1The ^4current mod^1 will be deactivated at ^4next \
-					server restart^1." )
-			set_task(5.0, "restartTheServer");
-		}
+		msgResourceActivated( "disable", isTimeToRestart, false )
 	} 
-	else if( activateMod_byShortName( firstCommandLineArgument ) )
+	else if( activateMod_byShortName( firstCommand_lineArgument ) )
 	{
-		g_currentMod_id = 1
+		g_currentMod_id = 0 
 		saveCurrentModBy_id( 2 )
 
-		saveCurrentModBy_ShortName( firstCommandLineArgument )
-
-		if( isTimeToRestart )
-		{
-			// freeze the game and show the scoreboard
-			message_begin(MSG_ALL, SVC_INTERMISSION);
-			message_end();
-
-			new activation_message[LONG_STRING]
-			formatex( activation_message, charsmax(activation_message), "^1The mod ( ^4%s^1 ) will be activated at ^4next \
-					server restart^1.", firstCommandLineArgument )
-
-			printMessage( 0, activation_message )
-			set_task(5.0, "restartTheServer");
-		} 
+		saveCurrentModBy_ShortName( firstCommand_lineArgument			 )
+		messageModActivated( 				firstCommand_lineArgument, isTimeToRestart, false )
 	}
 	g_isTimeTo_changeMapcyle = false
 
@@ -832,13 +803,13 @@ public loadCurrentMod()
 
 	if( file_exists( g_currentMod_id_filePath ) ) // normal mod activation 
 	{
-		read_file(g_currentMod_id_filePath, 0, currentModId_String, charsmax(currentModId_String), lenghtInteger )
-		currentModCode = str_to_num( currentModId_String )
+		read_file( 			g_currentMod_id_filePath, 0, currentModId_String, charsmax(currentModId_String), lenghtInteger )
+		currentModCode 	= str_to_num( currentModId_String )
 	} 
 	else
 	{
-		write_file( g_currentMod_id_filePath,	"-1" 	)
 		currentModCode = -1
+		write_file( g_currentMod_id_filePath,	"-1" 	)
 	}
 
 	if( file_exists( g_currentMod_shortName_filePath ) ) // silent mod activation 
@@ -847,8 +818,8 @@ public loadCurrentMod()
 	} 
 	else
 	{
-		write_file( g_currentMod_shortName_filePath, "" )
 		currentModCode = -1
+		write_file( g_currentMod_shortName_filePath, "" )
 	} 
 
 	build_first_mods() 
@@ -869,26 +840,24 @@ public loadCurrentMod()
  */
 public configureMod_byModCode( currentModCode, currentMod_shortName[] ) 
 {
-	g_currentMod_id = currentModCode 
-
-	server_print(  "^n^ncurrentModCode: %d | currentMod_shortName: %s^n", currentModCode, currentMod_shortName )
+	debugMessageLog( 1,  "^n^ncurrentModCode: %d | currentMod_shortName: %s^n", currentModCode, currentMod_shortName )
 
 	switch( currentModCode )
 	{   
 		case -1: 
 		{   
+			g_currentMod_id = 2 
 			disableMods()
-			setCurrentMod_atLocalInfo( g_modShortNames[2] )
 		}
 		case 0: 
 		{
+			g_currentMod_id = 0 
 			activateMod_byShortName( currentMod_shortName )
-			setCurrentMod_atLocalInfo( g_modShortNames[ currentModCode + 2 ] )
 		}
 		default: 
 		{
+			g_currentMod_id = currentModCode + 2 
 			activateMod_byShortName( g_modShortNames[ currentModCode + 2 ] )
-			setCurrentMod_atLocalInfo( g_modShortNames[ currentModCode + 2 ] )
 		}
 	}
 }
@@ -914,27 +883,27 @@ public configureMod_byModID( mostVoted_modID )
 		case 2: 
 		{
 			disableMods()
-			setCurrentMod_atLocalInfo( g_modShortNames[ mostVoted_modID ] )
 		}
 		default: 
 		{	
 			saveCurrentModBy_id( mostVoted_modID )
-
-			setCurrentMod_atLocalInfo( g_modShortNames[ mostVoted_modID ] )
 			activateMod_byShortName( g_modShortNames[ mostVoted_modID ] )
 		}
 	}
 }
 
 /**
- * Sets the localinfo "amx_correntmod" and the global variable "g_currentMod_shortName" 
- *    to the mod short name currently activated. 
+ * Saves the last mod activated at localinfo "amx_lastmod" and sets the localinfo 
+ *   "amx_correntmod" and the global variable "g_currentMod_shortName" to the mod 
+ *   short name currently activated. 
  * 
- * @param currentMod_shortName the current mod short name. 
+ * @param currentMod_shortName the current just activated mod short name. 
  */ 
 public setCurrentMod_atLocalInfo( currentMod_shortName[] )
 {
+	set_localinfo( "amx_lastmod", g_currentMod_shortName )
 	set_localinfo( "amx_correntmod", 	currentMod_shortName )
+
 	copy( g_currentMod_shortName, charsmax( g_currentMod_shortName ), currentMod_shortName )
 }
 
@@ -1043,7 +1012,9 @@ public load_votingList()
 			formatex( g_modNames[g_modCounter], SHORT_STRING - 1, "%s", modName )
 			formatex( g_modShortNames[g_modCounter], SHORT_STRING - 1, "%s", modShortName_string )
 
-			if( g_is_debug ) //print at server console each mod loaded 
+			debugMessageLog( 1, "[AMX MOD Loaded] %d - %s",  g_modCounter - 2, g_modNames[g_modCounter] )
+
+			if( g_is_debug & 2 ) 
 			{   
 				new mapcycle_filePath					[SHORT_STRING] 
 				new config_filePath						[SHORT_STRING] 
@@ -1059,14 +1030,13 @@ public load_votingList()
 				messageResource_pathCoder( modShortName_string, messageResource_filePath, charsmax( messageResource_filePath ) ) 
 				lateConfig_pathCoder( modShortName_string, lateConfig_filePath, charsmax( lateConfig_filePath ) )
 
-				server_print( "[AMX MOD Loaded] %d - %s",  g_modCounter - 2, g_modNames[g_modCounter] )
-				/*server_print( "[AMX MOD Loaded] %s", modShortName_string )
+				server_print( "[AMX MOD Loaded] %s", modShortName_string )
 				server_print( "[AMX MOD Loaded] %s", mapcycle_filePath )
 				server_print( "[AMX MOD Loaded] %s", plugin_filePath )
 				server_print( "[AMX MOD Loaded] %s", config_filePath )
 				server_print( "[AMX MOD Loaded] %s", message_filePath )
 				server_print( "[AMX MOD Loaded] %s", lateConfig_filePath )
-				server_print( "[AMX MOD Loaded] %s^n", messageResource_filePath )*/
+				server_print( "[AMX MOD Loaded] %s^n", messageResource_filePath )
 			}
 		}
 	}
@@ -1176,11 +1146,11 @@ public switchMapManager()
  *  the compatibility with galileo_reloaded, multimod_mapchooser and daily_maps, because now 
  *  there is no mod_id_number, hence because the mod is not loaded from the mod file configs.
  * 
- * @param firstCommandLineArgument[] the mapcycle file name with extension and path. Ex: mapcycles/surf.txt
+ * @param firstCommand_lineArgument[] the mapcycle file name with extension and path. Ex: mapcycles/surf.txt
  */
-public configMapManagerSilent( firstCommandLineArgument[] )
+public configMapManagerSilent( firstCommand_lineArgument[] )
 {   
-	if( file_exists( firstCommandLineArgument ) )
+	if( file_exists( firstCommand_lineArgument ) )
 	{   
 		switch( g_mapManagerType )
 		{   
@@ -1189,12 +1159,10 @@ public configMapManagerSilent( firstCommandLineArgument[] )
 				if( callfunc_begin("plugin_init", "multimod_mapchooser.amxx" ) == 1 )
 				{   
 					callfunc_end()
-
-				} else
+				} 
+				else
 				{   
-					new error[128]="ERROR at configMapManager!! multimod_mapchooser.amxx NOT FOUND!^n"
-					client_print( 0, print_console , error )
-					server_print( error )
+					printMessage( 0, "Error at configMapManager!! multimod_mapchooser.amxx NOT FOUND!^n" )
 				}
 			}
 			case 2:
@@ -1203,7 +1171,7 @@ public configMapManagerSilent( firstCommandLineArgument[] )
 
 				if( galileo_mapfile )
 				{   
-					set_pcvar_string( galileo_mapfile, firstCommandLineArgument )
+					set_pcvar_string( galileo_mapfile, firstCommand_lineArgument )
 				}
 			}
 		}
@@ -1220,9 +1188,9 @@ public configMapManagerSilent( firstCommandLineArgument[] )
  * The localinfo isFirstTimeLoadMapCycle as 2, is used by multimod_daily_changer.sma, 
  *    to know if there is not game mod mapcycle. 
  *
- * @param firstCommandLineArgument[] the mapcycle file name with its extension and path. Ex: mapcycles/surf.txt
+ * @param firstCommand_lineArgument[] the mapcycle file name with its extension and path. Ex: mapcycles/surf.txt
  */
-public configDailyMapsSilent( firstCommandLineArgument[] )
+public configDailyMapsSilent( firstCommand_lineArgument[] )
 {
 	new isFirstTime[32]
 
@@ -1230,7 +1198,7 @@ public configDailyMapsSilent( firstCommandLineArgument[] )
 
 	g_isFirstTime_serverLoad = str_to_num( isFirstTime )
 
-	if( file_exists( firstCommandLineArgument ) )
+	if( file_exists( firstCommand_lineArgument ) )
 	{   
 		if( g_isFirstTime_serverLoad  == 0 || g_isTimeTo_changeMapcyle )
 		{
@@ -1242,7 +1210,7 @@ public configDailyMapsSilent( firstCommandLineArgument[] )
 
 			set_localinfo( 			"lastmapcycle", 								currentMapcycle_filePath )
 			set_localinfo(			 "isFirstTimeLoadMapCycle", 		"1" 	)
-			set_pcvar_string( 			gp_mapcyclefile, 						firstCommandLineArgument )
+			set_pcvar_string( 			gp_mapcyclefile, 						firstCommand_lineArgument )
 		}
 	} else 
 	{
@@ -1257,10 +1225,9 @@ public disableMods()
 {   
 	g_currentMod_id = 2
 
-	if( g_is_debug )
-	{
-		server_print(  "^n disableMods, g_currentMod_shortName: %s^n", g_currentMod_shortName )
-	}
+	setCurrentMod_atLocalInfo( g_modShortNames[ g_currentMod_id ] )
+
+	debugMessageLog( 1, "^n AT disableMods, the g_currentMod_shortName is: %s^n", g_currentMod_shortName )
 
 	if( file_exists( g_currentMod_id_filePath ) )
 	{   
@@ -1294,7 +1261,7 @@ public disableMods()
  * 
  * @param modShortName[] the mod short name to active. Ex: surf 
  *
- * Throws = ERROR !! Any configuration file is missing!
+ * @throws error any configuration file is missing!
  */
 public activateMod_byShortName( modShortName[] )
 {   
@@ -1319,22 +1286,18 @@ public activateMod_byShortName( modShortName[] )
 		configMapManagerSilent( mapcycle_filePath )
 		configDailyMapsSilent( mapcycle_filePath )
 
-		server_print( "activateMod_byShortName setting multimod to %s", modShortName )
+		server_print( "[AMX MOD Loaded] Setting multimod to %s", modShortName )
 
-		set_localinfo( "amx_lastmod", g_currentMod_shortName )
-		copy( g_currentMod_shortName, charsmax( g_currentMod_shortName ), modShortName )
-		
+		setCurrentMod_atLocalInfo( modShortName )
+
 		return true
 	}
 	else
 	{   
-		new error[128]="ERROR at activateMod_byShortName!! Mod invalid or a configuration file is missing!"
-		printMessage( 0, error )
+		printMessage( 0, "Error at activateMod_byShortName!! plugin_filePath: %s", plugin_filePath )
 	}
-	if( g_is_debug )
-	{
-		server_print(  "^n activateMod_byShortName, plugin_filePath: %s^n", plugin_filePath )
-	}
+	debugMessageLog( 1, "^n activateMod_byShortName, plugin_filePath: %s^n", plugin_filePath )
+
 	return false
 }
 
@@ -1391,14 +1354,11 @@ public copyFiles2( sourceFilePath[], destinationFilePath[] )
  * 
  * @param modShortName[] the activated mod mod long name. Ex: surf
  * @param isTimeToRestart inform to restart the server 
+ * @param isTimeTo_executeMessage instruct to execute the message activation file. Ex: "msg/csdm.cfg"
  */
-public messageModActivated( modShortName[], isTimeToRestart )
+public messageModActivated( modShortName[], isTimeToRestart, isTimeTo_executeMessage )
 {   
-	new activation_message[LONG_STRING]
-	formatex( activation_message, charsmax(activation_message), "^1The mod ( ^4%s^1 ) will be activated at ^4next server restart^1.",
-			modShortName )
-
-	printMessage( 0, activation_message )
+	printMessage( 0, "^1The mod ( ^4%s^1 ) will be activated at ^4next server restart^1.", modShortName )
 
 	if( isTimeToRestart )
 	{
@@ -1406,11 +1366,11 @@ public messageModActivated( modShortName[], isTimeToRestart )
 
 		message_pathCoder( modShortName, message_filePath, charsmax( message_filePath ) ) 
 
-		if( file_exists( message_filePath ) )
+		if( file_exists( message_filePath ) && isTimeTo_executeMessage )
 		{
 			server_cmd( "exec %s", message_filePath )
-
-		} else
+		} 
+		else
 		{
 			// freeze the game and show the scoreboard
 			message_begin(MSG_ALL, SVC_INTERMISSION);
@@ -1427,15 +1387,11 @@ public messageModActivated( modShortName[], isTimeToRestart )
  * 
  * @param resourceName[] the name of the activated resource. Ex: disable
  * @param isTimeToRestart inform to restart the server 
+ * @param isTimeTo_executeMessage instruct to execute the message activation file. Ex: "msg/csdm.cfg"
  */
-public msgResourceActivated( resourceName[], isTimeToRestart )
+public msgResourceActivated( resourceName[], isTimeToRestart, isTimeTo_executeMessage )
 {   
-	new activation_message[LONG_STRING]
-
-	formatex( activation_message, charsmax(activation_message), "^1The resource ( ^4%s^1 ) will be activated at ^4next server restart^1.", 
-			resourceName )
-
-	printMessage( 0, activation_message )
+	printMessage( 0, "^1The resource ( ^4%s^1 ) will be activated at ^4next server restart^1.", resourceName )
 
 	if( isTimeToRestart )
 	{
@@ -1443,11 +1399,11 @@ public msgResourceActivated( resourceName[], isTimeToRestart )
 
 		messageResource_pathCoder( resourceName, messageResource_filePath, charsmax( messageResource_filePath ) ) 
 
-		if( file_exists( messageResource_filePath ) )
+		if( file_exists( messageResource_filePath ) && isTimeTo_executeMessage )
 		{
 			server_cmd( "exec %s", messageResource_filePath )
-
-		} else
+		} 
+		else
 		{
 			// freeze the game and show the scoreboard
 			message_begin(MSG_ALL, SVC_INTERMISSION);
@@ -1481,9 +1437,7 @@ public printMessage( player_id, message[], any:... )
 	replace_all( formated_message, charsmax( formated_message ), "^1", "" ) 
 	replace_all( formated_message, charsmax( formated_message ), "^3", "" ) 
 	
-	client_print( player_id, print_center, formated_message )
-	client_print( player_id, print_console, formated_message )
-
+	client_print( 	player_id, print_console, formated_message )
 	server_print( formated_message )
 }
 
@@ -1711,13 +1665,15 @@ public display_votemod_menu( player_id, menu_current_page )
 	if( g_is_debug )
 	{   
 		new debug_player_name[64]
+
 		get_user_name( player_id, debug_player_name, 63 )
 
-		server_print( "Player: %s^nMenu body %s ^nMenu name: %s ^nMenu valid keys: %i",
+		server_print( "Player: %s^nMenu body %s ^nMenu name: %s ^nMenu valid keys: %i", 
 				debug_player_name, menu_body, g_menuname, menu_valid_keys )
 
 		show_menu( player_id, menu_valid_keys, menu_body, 5, g_menuname )
-	} else
+	} 
+	else
 	{   
 		show_menu( player_id, menu_valid_keys, menu_body, 25, g_menuname )
 	}
@@ -1751,10 +1707,8 @@ public convert_octal_to_decimal( octal_number )
  */
 public player_vote( player_id, key )
 {   
-	if( g_is_debug )
-	{   
-		server_print( "Key before switch: %d", key )
-	}
+	debugMessageLog( 4, "Key before switch: %d", key )
+
 	/* Well, I dont know why, but it doesnt even matter, how hard you try...
 	 * You press the key 0, you gets 9 here. ...
 	 * So here, i made the switch back.  */
@@ -1771,10 +1725,7 @@ public player_vote( player_id, key )
 		case 7: key = 8
 		case 8: key = 9
 	}
-	if( g_is_debug )
-	{   
-		server_print( "Key after switch: %d", key )
-	}
+	debugMessageLog( 4, "Key after switch: %d", key )
 
 	if( key == 9 )
 	{   
@@ -1803,18 +1754,14 @@ public player_vote( player_id, key )
 			if( mod_vote_id <= g_modCounter && get_pcvar_num( gp_voteanswers) )
 			{   
 				new player_name				[SHORT_STRING]
-				new choose_message		[LONG_STRING]
 
 				get_user_name( player_id, player_name, charsmax( player_name ) )
 
-				formatex( choose_message, charsmax( choose_message ), "%L", LANG_PLAYER, "X_CHOSE_X", player_name,
-						g_modNames[ mod_vote_id ] )
-
-				client_print( 0, print_chat, choose_message )
-				server_print( choose_message )
+				printMessage( 0, "%L", LANG_PLAYER, "X_CHOSE_X", player_name, g_modNames[ mod_vote_id ] )
 
 				g_votemodcount[ mod_vote_id ]++
-			} else
+			} 
+			else
 			{   
 				display_votemod_menu( player_id, g_menuPosition[ player_id ] )
 			}
@@ -1871,7 +1818,6 @@ public displayVoteResults( mostVoted_modID, g_totalVotes )
 	{   
 		g_isTimeTo_changeMapcyle = true 
 
-		disableMods()
 		configureMod_byModID( mostVoted_modID )
 
 		formatex( result_message, charsmax(result_message), "%L", LANG_PLAYER, "MM_VOTEMOD",
@@ -1889,8 +1835,7 @@ public displayVoteResults( mostVoted_modID, g_totalVotes )
 
 	printMessage( 0, result_message )
 
-	server_print( "Total Mod Votes: %d  | Player Min: %d  | Most Voted: %s",
-			g_totalVotes, playerMin, g_modNames[ mostVoted_modID ] )
+	server_print( "Total Mod Votes: %d  | Player Min: %d  | Most Voted: %s", g_totalVotes, playerMin, g_modNames[ mostVoted_modID ] )
 }
 
 /**
@@ -1924,4 +1869,29 @@ public playersPlaying( Float:percent )
 		}
 	}
 	return floatround( count * percent )
+}
+
+/**
+ * Write debug messages to server's console accordantly to the global variable g_is_debug. 
+ * 
+ * @param mode the debug level to be used: 
+ *   		(00000) 0 disable all debug. 
+ *   		(00001) 1 displays basic debug messages. 
+ *   		(00010) 2 displays each mod loaded. 
+ *   		(00010) 4 displays the keys pressed during voting. 
+ * 
+ * @param message[] the text formatting rules to display. If omitted displays ""
+ * @param any the variable number of formatting parameters. 
+ */
+public debugMessageLog( mode, message[], any:... )
+{   
+	if( mode & g_is_debug )
+	{
+		static formated_message[LONG_STRING] 
+
+		vformat( formated_message, charsmax( formated_message ), message, 3 ) 
+
+		server_print( "%s", formated_message 		)
+		client_print( 		0, print_console, 			"%s", formated_message )
+	}
 }
