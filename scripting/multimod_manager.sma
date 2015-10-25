@@ -709,14 +709,14 @@ public primitiveFunctions( playerID, firstCommandLineArgument[], isTimeToRestart
  * Given a player id, prints to him and at server console the help about the command 
  * "amx_setmod".
  *
- * @param id the player id
+ * @param player_id the player id
  */
-public printHelp( id )
+public printHelp( player_id )
 {   
 	new text[LONG_STRING]
 
-	client_print( id, print_console , g_cmdsAvailables1 )
-	client_print( id, print_console , g_cmdsAvailables2 )
+	client_print( player_id, print_console , g_cmdsAvailables1 )
+	client_print( player_id, print_console , g_cmdsAvailables2 )
 	server_print( g_cmdsAvailables1 )
 	server_print( g_cmdsAvailables2 )
 
@@ -725,10 +725,10 @@ public printHelp( id )
 		formatex( text, charsmax(text), "amx_setmod %s 1          | to use %s",
 				g_modShortNames[i], g_modNames[i] )
 
-		client_print( id, print_console , text )
+		client_print( player_id, print_console , text )
 		server_print( text )
 	}
-	client_print( id, print_console , "^n" )
+	client_print( player_id, print_console , "^n" )
 	server_print( "^n" )
 }
 
@@ -737,17 +737,17 @@ public printHelp( id )
  * Straight restarting the server, (silent mod) and changes and configures the mapcycle if 
  *   there is one
  * 
- * @param id - will hold the players id who started the command
+ * @param player_id - will hold the players id who started the command
  * @param level - will hold the access level of the command
  * @param cid - will hold the commands internal id 
  * 
  * @arg firstCommandLineArgument the modShortName to enable silently
  * @arg secondCommandLineArgument inform to restart the current map "1" or not "0" 
  */
-public receiveCommandSilent(id, level, cid)
+public receiveCommandSilent( player_id, level, cid )
 {   
 	//Make sure this user is an admin
-	if (!cmd_access(id, level, cid, 3))
+	if ( !cmd_access( player_id, level, cid, 3 ) )
 	{   
 		return PLUGIN_HANDLED
 	}
@@ -1460,54 +1460,58 @@ public msgResourceActivated( resourceName[], isTimeToRestart )
 
 /**
  * Displays a message to a specific server player id and at the server console.
- *
- * @param message[] the text to display
- * @param id the player id
+ * 
+ * @param player_id the player id. 
+ * @param message[] the text formatting rules to display. 
+ * @param any the variable number of formatting parameters. 
  */
-public printMessage( id, message[] )
+public printMessage( player_id, message[], any:... )
 {   
+	static formated_message[LONG_STRING] 
+
+	vformat( formated_message, charsmax( formated_message ), message, 3 ) 
+
 #if AMXX_VERSION_NUM < 183
-	print_color( id, message )
+	print_color( player_id, formated_message )
 #else
-	print_chat_color( id, message )
+	print_chat_color( player_id, formated_message )
 #endif
 	
-	replace_all( message, 190, "^4", "" );
-	replace_all( message, 190, "^1", "" );
-	replace_all( message, 190, "^3", "" );
+	replace_all( formated_message, charsmax( formated_message ), "^4", "" ) 
+	replace_all( formated_message, charsmax( formated_message ), "^1", "" ) 
+	replace_all( formated_message, charsmax( formated_message ), "^3", "" ) 
 	
-	client_print( id, print_center , message )
-	client_print( id, print_console , message )
-	server_print( message )
+	client_print( player_id, print_center, formated_message )
+	client_print( player_id, print_console, formated_message )
+
+	server_print( formated_message )
 }
 
 /**
  * DeRoiD's Mapchooser print_color function:
  *   https://forums.alliedmods.net/showthread.php?t=261412
  * 
- * @id the player id to display, use 0 for all players.
- * @input the colored formatting rules
- * @any the variable number of formatting parameters
+ * @param player_id the player id to display, use 0 for all players.
+ * @param input the colored formatting rules
+ * @param any the variable number of formatting parameters
  */
-stock print_color(const id, const input[], any:...)
+stock print_color( const player_id, const input[], any:... )
 {
-	new Count = 1, Players[32];
-	static Msg[191];
-	vformat(Msg, 190, input, 3);
-	
-	//replace_all(Msg, 190, "!g", "^4");
-	//replace_all(Msg, 190, "!y", "^1");
-	//replace_all(Msg, 190, "!t", "^3");
+	new playerIndex_idsCounter = 1, players_ids[32];
 
-	if(id) Players[0] = id; else get_players(Players, Count, "ch");
+	static formated_message[LONG_STRING];
+
+	vformat(formated_message, charsmax( formated_message ), input, 3);
+
+	if( player_id ) players_ids[0] = player_id; else get_players(players_ids, playerIndex_idsCounter, "ch");
 	{
-		for (new i = 0; i < Count; i++)
+		for (new i = 0; i < playerIndex_idsCounter; i++)
 		{
-			if (is_user_connected(Players[i]))
+			if (is_user_connected(players_ids[i]))
 			{
-				message_begin(MSG_ONE_UNRELIABLE, g_sayText, _, Players[i]);
-				write_byte(Players[i]);
-				write_string(Msg);
+				message_begin( MSG_ONE_UNRELIABLE, g_sayText, _, players_ids[i] );
+				write_byte( players_ids[i] );
+				write_string( formated_message );
 				message_end();
 			}
 		}
@@ -1518,9 +1522,9 @@ stock print_color(const id, const input[], any:...)
 /**
  * Displays a message to a specific server player show the current mod.
  * 
- * @param id the player id
+ * @param player_id the player id
  */
-public user_currentmod(id)
+public user_currentmod(player_id)
 {   
 	client_print(0, print_chat, "The game current mod is: %s", g_modNames[ g_currentMod_id ] )
 
@@ -1531,8 +1535,10 @@ public user_currentmod(id)
  * Called with "say votemod". Checks:
  *	If users can invoke voting.
  *	If its already voted.
+ * 
+ * @param player_id the player id
  */
-public user_votemod(id)
+public user_votemod(player_id)
 {   
 	if( get_pcvar_num( gp_allowedvote ) )
 	{   
@@ -1545,7 +1551,7 @@ public user_votemod(id)
 
 	if(elapsedTime < minTime)
 	{   
-		client_print( id, print_chat, "[AMX MultiMod] %L", LANG_PLAYER, "MM_PL_WAIT",
+		client_print( player_id, print_chat, "[AMX MultiMod] %L", LANG_PLAYER, "MM_PL_WAIT",
 		floatround(minTime - elapsedTime, floatround_ceil) )
 
 		return PLUGIN_HANDLED
@@ -1554,7 +1560,7 @@ public user_votemod(id)
 
 	if(timeleft < 180)
 	{   
-		client_print( id, print_chat, "You can't start a vote mod while the timeleft is %d seconds",
+		client_print( player_id, print_chat, "You can't start a vote mod while the timeleft is %d seconds",
 				timeleft )
 
 		return PLUGIN_HANDLED
@@ -1611,10 +1617,10 @@ public start_vote()
 /**
  * Create the vote mod menu multi pages.
  * 
- * @param id the player id to display the menu.
+ * @param player_id the player id to display the menu.
  * @param menu_current_page the number of the current menu page to draw the menu.
  */
-public display_votemod_menu( id, menu_current_page )
+public display_votemod_menu( player_id, menu_current_page )
 {   
 	if( menu_current_page < 0 )
 	{   
@@ -1705,15 +1711,15 @@ public display_votemod_menu( id, menu_current_page )
 	if( g_is_debug )
 	{   
 		new debug_player_name[64]
-		get_user_name( id, debug_player_name, 63 )
+		get_user_name( player_id, debug_player_name, 63 )
 
 		server_print( "Player: %s^nMenu body %s ^nMenu name: %s ^nMenu valid keys: %i",
 				debug_player_name, menu_body, g_menuname, menu_valid_keys )
 
-		show_menu( id, menu_valid_keys, menu_body, 5, g_menuname )
+		show_menu( player_id, menu_valid_keys, menu_body, 5, g_menuname )
 	} else
 	{   
-		show_menu( id, menu_valid_keys, menu_body, 25, g_menuname )
+		show_menu( player_id, menu_valid_keys, menu_body, 25, g_menuname )
 	}
 }
 
@@ -1740,10 +1746,10 @@ public convert_octal_to_decimal( octal_number )
 /**
  * Compute a player mod vote.
  * 
- * @param id the player id
+ * @param player_id the player id
  * @param key the player pressed/option key.
  */
-public player_vote(id, key)
+public player_vote( player_id, key )
 {   
 	if( g_is_debug )
 	{   
@@ -1772,36 +1778,37 @@ public player_vote(id, key)
 
 	if( key == 9 )
 	{   
-		if( g_menuPosition[id] + 1 != g_menu_total_pages )
+		if( g_menuPosition[ player_id ] + 1 != g_menu_total_pages )
 		{   
-			display_votemod_menu(id, ++g_menuPosition[id])
+			display_votemod_menu( player_id, ++g_menuPosition[ player_id ] )
 		} else
 		{   
-			display_votemod_menu(id, g_menuPosition[id])
+			display_votemod_menu( player_id, g_menuPosition[ player_id ] )
 		}
 	} else
 	{   
 		if( key == 0 )
 		{   
-			if( g_menuPosition[id] != 0 )
+			if( g_menuPosition[ player_id ] != 0 )
 			{   
-				display_votemod_menu(id, --g_menuPosition[id])
+				display_votemod_menu( player_id, --g_menuPosition[ player_id ] )
 			} else
 			{   
-				display_votemod_menu(id, g_menuPosition[id])
+				display_votemod_menu( player_id, g_menuPosition[ player_id ] )
 			}
 		} else
 		{   
-			new mod_vote_id = get_mod_vote_id( g_menuPosition[id], key )
+			new mod_vote_id = get_mod_vote_id( g_menuPosition[player_id], key )
 
 			if( mod_vote_id <= g_modCounter && get_pcvar_num( gp_voteanswers) )
 			{   
-				new player[SHORT_STRING]
-				new choose_message[LONG_STRING]
+				new player_name				[SHORT_STRING]
+				new choose_message		[LONG_STRING]
 
-				get_user_name(id, player, charsmax(player))
-				formatex( choose_message, charsmax(choose_message), "%L", LANG_PLAYER, "X_CHOSE_X", player,
-				g_modNames[ mod_vote_id ] )
+				get_user_name( player_id, player_name, charsmax( player_name ) )
+
+				formatex( choose_message, charsmax( choose_message ), "%L", LANG_PLAYER, "X_CHOSE_X", player_name,
+						g_modNames[ mod_vote_id ] )
 
 				client_print( 0, print_chat, choose_message )
 				server_print( choose_message )
@@ -1809,7 +1816,7 @@ public player_vote(id, key)
 				g_votemodcount[ mod_vote_id ]++
 			} else
 			{   
-				display_votemod_menu(id, g_menuPosition[id])
+				display_votemod_menu( player_id, g_menuPosition[ player_id ] )
 			}
 		}
 
@@ -1837,9 +1844,9 @@ public check_vote()
 {   
 	new mostVoted_modID = 1
 
-	for(new a = 0; a <= g_modCounter; a++)
+	for( new a = 0; a <= g_modCounter; a++ )
 	{   
-		if(g_votemodcount[mostVoted_modID] < g_votemodcount[a])
+		if( g_votemodcount[mostVoted_modID] < g_votemodcount[a] )
 		{   
 			mostVoted_modID = a
 		}
@@ -1856,7 +1863,7 @@ public check_vote()
  */
 public displayVoteResults( mostVoted_modID, g_totalVotes )
 {   
-	new result_message[LONG_STRING]
+	new result_message[ LONG_STRING ]
 
 	new playerMin = playersPlaying( 0.3 )
 
