@@ -186,7 +186,6 @@ galileo_reloaded.amxx
  * Removed not initiating vote map, at the first map, after forcing votemap. 
  * Added the command "gal_startvote2" to restart the current map when keep the current map. 
  * Added the count down voting remaining time to be always show. 
- * Added auto-pause for anothers plugins map managers. 
  * Added a option "#" to gal_nom_mapfile, to use the current mapcycle to nominate maps. 
  * Made the vote map list to be loaded from the current mapcycle file. 
  * When nobody vote for next map, keep the initial server next map. 
@@ -490,12 +489,6 @@ public plugin_cfg()
 	g_isTimeToChangeLevel = false;
 	g_isTimeToRestart = false;
 	g_isDebugEnabledNumber = get_cvar_num("gal_debug");
-
-	if( is_plugin_loaded( "Nextmap Chooser" ) != -1 )
-	{
-		server_cmd( "amxx pause mapchooser.amxx" );
-		server_cmd( "amxx pause multimod_mapchooser.amxx" );
-	}
 
 	formatex(DIR_CONFIGS[get_configsdir(DIR_CONFIGS, sizeof(DIR_CONFIGS)-1)], sizeof(DIR_CONFIGS)-1, "/galileo_reloaded");
 	formatex(DIR_DATA[get_datadir(DIR_DATA, sizeof(DIR_DATA)-1)], sizeof(DIR_DATA)-1, "/galileo_reloaded");
@@ -3092,13 +3085,16 @@ public dbg_fakeVotes()
  * If gal_debug 1 or more accordantly below, enable debug vote times at 5 seconds. 
  * 
  * @param mode the debug mode level:
- *   (00000) 0 disable all debug.
- *   (00010) 2 displays players disconnect, how many remaining, and multiple time limits 
- * 						changes and restores. 
- *   (00100) 4 displays maps events as: choices, votes, nominations and the current map name at plugin_cfg()
- *   (01000) 8 displays vote_loadChoices() and actions at vote_startDirector
- *   (10000) 16 displays messages related to RunOff voting
- *   (11111) 31 displays all debug logs levels at server console. 
+ *   		(00000) 0 disable all debug.
+ *   		(00010) 2 displays players disconnect, how many remaining, and multiple time limits 
+ * 								changes and restores. 
+ *   		(00100) 4 displays maps events as: choices, votes, nominations and the current map name at plugin_cfg()
+ *   		(01000) 8 displays vote_loadChoices() and actions at vote_startDirector
+ *   		(10000) 16 displays messages related to RunOff voting
+ *   		(11111) 31 displays all debug logs levels at server console. 
+ *
+ * @param text the debug message, if omitted its default value is ""
+ * @param any the variable number of formatting parameters
  */
 debugMessageLog(const mode, const text[] = "", {Float,Sql,Result,_}:...)
 {	
