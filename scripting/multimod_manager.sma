@@ -333,6 +333,8 @@ exec addons/amxmodx/configs/multimod/votefinished.cfg
 [/QUOTE]
 
 ******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *********************************
+ * Added auto configs files creation at first run, creating readme files. 
+
 [QUOTE=fysiks;2353142]
 Don't pass an integer value to a function by putting it in a string. Just pass the integer.  E.g. msgResourceActivated().  
 If the original source of the value is from a string like read_argv() then you should convert it to an integer before 
@@ -561,7 +563,10 @@ public plugin_cfg()
 	formatex( g_voteFinished_filePath, charsmax(g_voteFinished_filePath), "%s/multimod/votefinished.cfg", g_configFolder )
 
 	switchMapManager()
-	retrievesCurrentMod_atLocalInfo()
+
+	build_first_mods() 
+	load_votingList() 
+
 	loadCurrentMod()
 	unloadLastActiveMod()
 
@@ -796,15 +801,16 @@ public restartTheServer()
 public loadCurrentMod()
 {   
 	new currentModCode
-	new lenghtInteger
+	new unused_lenghtInteger
 
-	new currentModId_String[SHORT_STRING]
+	new currentModCode_String[SHORT_STRING]
 	new currentMod_shortName[SHORT_STRING]
 
-	if( file_exists( g_currentMod_id_filePath ) ) // normal mod activation 
+	// normal mod activation 
+	if( file_exists( g_currentMod_id_filePath ) ) 
 	{
-		read_file( 			g_currentMod_id_filePath, 0, currentModId_String, charsmax(currentModId_String), lenghtInteger )
-		currentModCode 	= str_to_num( currentModId_String )
+		read_file( 			g_currentMod_id_filePath, 0, currentModCode_String, charsmax(currentModCode_String), unused_lenghtInteger )
+		currentModCode 	= str_to_num( currentModCode_String )
 	} 
 	else
 	{
@@ -812,18 +818,16 @@ public loadCurrentMod()
 		write_file( g_currentMod_id_filePath,	"-1" 	)
 	}
 
-	if( file_exists( g_currentMod_shortName_filePath ) ) // silent mod activation 
+	// silent mod activation 
+	if( file_exists( g_currentMod_shortName_filePath ) ) 
 	{
-		read_file( g_currentMod_shortName_filePath, 0, currentMod_shortName, charsmax(currentMod_shortName), lenghtInteger )
+		read_file( g_currentMod_shortName_filePath, 0, currentMod_shortName, charsmax(currentMod_shortName), unused_lenghtInteger )
 	} 
 	else
 	{
 		currentModCode = -1
 		write_file( g_currentMod_shortName_filePath, "" )
 	} 
-
-	build_first_mods() 
-	load_votingList() 
 
 	configureMod_byModCode( currentModCode, currentMod_shortName ) 
 }
@@ -847,17 +851,17 @@ public configureMod_byModCode( currentModCode, currentMod_shortName[] )
 		case -1: 
 		{   
 			g_currentMod_id = 2 
-			disableMods()
+			setCurrentMod_atLocalInfo( g_modShortNames[ 2 ] )
 		}
 		case 0: 
 		{
 			g_currentMod_id = 0 
-			activateMod_byShortName( currentMod_shortName )
+			setCurrentMod_atLocalInfo( currentMod_shortName )
 		}
 		default: 
 		{
 			g_currentMod_id = currentModCode + 2 
-			activateMod_byShortName( g_modShortNames[ currentModCode + 2 ] )
+			setCurrentMod_atLocalInfo( g_modShortNames[ g_currentMod_id ] )
 		}
 	}
 }
@@ -901,6 +905,8 @@ public configureMod_byModID( mostVoted_modID )
  */ 
 public setCurrentMod_atLocalInfo( currentMod_shortName[] )
 {
+	retrievesCurrentMod_atLocalInfo()
+	
 	set_localinfo( "amx_lastmod", g_currentMod_shortName )
 	set_localinfo( "amx_correntmod", 	currentMod_shortName )
 
@@ -1223,10 +1229,6 @@ public configDailyMapsSilent( firstCommand_lineArgument[] )
  */
 public disableMods()
 {   
-	g_currentMod_id = 2
-
-	setCurrentMod_atLocalInfo( g_modShortNames[ g_currentMod_id ] )
-
 	debugMessageLog( 1, "^n AT disableMods, the g_currentMod_shortName is: %s^n", g_currentMod_shortName )
 
 	if( file_exists( g_currentMod_id_filePath ) )
@@ -1287,8 +1289,6 @@ public activateMod_byShortName( modShortName[] )
 		configDailyMapsSilent( mapcycle_filePath )
 
 		server_print( "[AMX MOD Loaded] Setting multimod to %s", modShortName )
-
-		setCurrentMod_atLocalInfo( modShortName )
 
 		return true
 	}
