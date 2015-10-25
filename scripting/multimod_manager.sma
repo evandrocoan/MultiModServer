@@ -375,7 +375,6 @@ Of course, there is more clever programing techniques to learn:
 [*]count better current playing player at playersPlaying. 
 [*]copy more efficiently a files at copyFiles and copyFiles2. 
 [*]print colored text more efficiently than at print_color. 
-[*]receive commands more efficiently than "command firstCommand_lineArgument secondCommand_lineArgument" even a for 1 argument command. 
 [/LIST]
 
 ******************************** [anchor]Credits[/anchor][B][SIZE="5"][COLOR="blue"]Credits[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *******************************
@@ -454,7 +453,7 @@ from the [B]amxx cvars[/B] command. They will be grouped together.
 #define MENU_ITEMS_PER_PAGE	8
 
 // Enables debug server console messages.
-new g_is_debug = 1
+new g_is_debug = 9
 
 new g_totalVotes
 new g_sayText
@@ -568,6 +567,7 @@ public plugin_cfg()
 	load_votingList() 
 
 	loadCurrentMod()
+
 	unloadLastActiveMod()
 
 	if( get_pcvar_num( gp_endmapvote ) )
@@ -592,11 +592,11 @@ public plugin_cfg()
 public unloadLastActiveMod()
 {
 	new lastMod_shortName	[ SHORT_STRING ]
-	new lastMod_Mapcycle	[ SHORT_STRING ]
+	new lastMod_Mapcycle		[SHORT_STRING ]
 	new lateConfig_filePath		[LONG_STRING]
 
 	get_localinfo( "amx_lastmod", lastMod_shortName, charsmax( lastMod_shortName ) )
-	get_localinfo( "lastmapcycle", lastMod_Mapcycle, charsmax( lastMod_Mapcycle ) )
+	get_localinfo( "firstMapcycle_loaded", lastMod_Mapcycle, charsmax( lastMod_Mapcycle ) )
 
 	if( !equal( lastMod_shortName, g_currentMod_shortName ) && !g_isFirstTime_serverLoad )
 	{
@@ -851,7 +851,7 @@ public configureMod_byModCode( currentModCode, currentMod_shortName[] )
 		case -1: 
 		{   
 			g_currentMod_id = 2 
-			setCurrentMod_atLocalInfo( g_modShortNames[ 2 ] )
+			setCurrentMod_atLocalInfo( g_modShortNames[ g_currentMod_id ] )
 		}
 		case 0: 
 		{
@@ -882,7 +882,7 @@ public configureMod_byModID( mostVoted_modID )
 	{   
 		case 1: 
 		{
-
+			debugMessageLog( 1,  "^n^AT configureMod_byModID, we are keeping the current mod" )
 		}
 		case 2: 
 		{
@@ -906,7 +906,9 @@ public configureMod_byModID( mostVoted_modID )
 public setCurrentMod_atLocalInfo( currentMod_shortName[] )
 {
 	retrievesCurrentMod_atLocalInfo()
-	
+
+	configureMapcycles( currentMod_shortName )	
+
 	set_localinfo( "amx_lastmod", g_currentMod_shortName )
 	set_localinfo( "amx_correntmod", 	currentMod_shortName )
 
@@ -1132,6 +1134,21 @@ public mapcycle_pathCoder( modShortName[], mapcycle_filePath[], stringReturnSize
 }
 
 /**
+ * Configure which map cycles the server will use at start up and after each mod is loaded. 
+ * 
+ * @param modShortName[] the mod short name to configure is mapcycle. Ex: csdm
+ */
+configureMapcycles( modShortName[] )
+{
+	new mapcycle_filePath[SHORT_STRING] 
+
+	mapcycle_pathCoder( modShortName, mapcycle_filePath, charsmax( mapcycle_filePath ) )
+
+	configMapManager( mapcycle_filePath )
+	configDailyMaps( mapcycle_filePath )
+}
+
+/**
  * Makes the autoswitch between mapchooser and galileo_reloaded. If both are 
  *   active, prevails galileo_reloaded.
  */
@@ -1152,11 +1169,11 @@ public switchMapManager()
  *  the compatibility with galileo_reloaded, multimod_mapchooser and daily_maps, because now 
  *  there is no mod_id_number, hence because the mod is not loaded from the mod file configs.
  * 
- * @param firstCommand_lineArgument[] the mapcycle file name with extension and path. Ex: mapcycles/surf.txt
+ * @param mapcycle_filePath[] the mapcycle file name with extension and path. Ex: mapcycles/surf.txt
  */
-public configMapManagerSilent( firstCommand_lineArgument[] )
+public configMapManager( mapcycle_filePath[] )
 {   
-	if( file_exists( firstCommand_lineArgument ) )
+	if( file_exists( mapcycle_filePath ) )
 	{   
 		switch( g_mapManagerType )
 		{   
@@ -1177,7 +1194,7 @@ public configMapManagerSilent( firstCommand_lineArgument[] )
 
 				if( galileo_mapfile )
 				{   
-					set_pcvar_string( galileo_mapfile, firstCommand_lineArgument )
+					set_pcvar_string( galileo_mapfile, mapcycle_filePath )
 				}
 			}
 		}
@@ -1185,42 +1202,56 @@ public configMapManagerSilent( firstCommand_lineArgument[] )
 }
 
 /**
- * Change the game global variable at localinfo isFirstTimeLoadMapCycle to 1 or 2, after 
+ * Change the game global variable at localinfo isFirstTime_serverLoad to 1 or 2, after 
  *   the first map load. It is to avoid mapcycle re-change, causing the first mapcycle 
  *   map, always being the nextmap. 
  * 
- * The localinfo isFirstTimeLoadMapCycle as 1, is used by multimod_manager.sma, 
- *    to know if there is a game mod mapcycle file. 
- * The localinfo isFirstTimeLoadMapCycle as 2, is used by multimod_daily_changer.sma, 
- *    to know if there is not game mod mapcycle. 
+ * The localinfo isFirstTime_serverLoad as 1, is used by multimod_manager.sma, 
+ *    to know if there is a game mod mapcycle file being used. 
+ * 
+ * The localinfo isFirstTime_serverLoad as 2, is used by multimod_daily_changer.sma, 
+ *    to know if its can define which one is the mapcycle. 
  *
- * @param firstCommand_lineArgument[] the mapcycle file name with its extension and path. Ex: mapcycles/surf.txt
+ * @param mapcycle_filePath[] the mapcycle file name with its extension and path. Ex: mapcycles/surf.txt
  */
-public configDailyMapsSilent( firstCommand_lineArgument[] )
+public configDailyMaps( mapcycle_filePath[] )
 {
 	new isFirstTime[32]
 
-	get_localinfo( "isFirstTimeLoadMapCycle", isFirstTime, charsmax( isFirstTime ) );
+	get_localinfo( 		"isFirstTime_serverLoad", isFirstTime, charsmax( isFirstTime ) );
+	g_isFirstTime_serverLoad 	= str_to_num( isFirstTime )
 
-	g_isFirstTime_serverLoad = str_to_num( isFirstTime )
-
-	if( file_exists( firstCommand_lineArgument ) )
-	{   
-		if( g_isFirstTime_serverLoad  == 0 || g_isTimeTo_changeMapcyle )
-		{
-			new currentMapcycle_filePath[SHORT_STRING]
-
-			g_isTimeTo_changeMapcyle = false
-
-			get_cvar_string( "mapcyclefile", currentMapcycle_filePath, charsmax( currentMapcycle_filePath ) );
-
-			set_localinfo( 			"lastmapcycle", 								currentMapcycle_filePath )
-			set_localinfo(			 "isFirstTimeLoadMapCycle", 		"1" 	)
-			set_pcvar_string( 			gp_mapcyclefile, 						firstCommand_lineArgument )
-		}
-	} else 
+	if( g_isFirstTime_serverLoad  == 0 )
 	{
-		set_localinfo( "isFirstTimeLoadMapCycle", "2" );
+		new currentMapcycle_filePath		[SHORT_STRING]
+		get_cvar_string( 			"mapcyclefile", 			currentMapcycle_filePath, 	charsmax( currentMapcycle_filePath ) )
+
+		set_localinfo( 	"firstMapcycle_loaded", 		currentMapcycle_filePath )
+		set_localinfo(	 "isFirstTime_serverLoad", 		"1" 	)
+	}
+
+	if( g_is_debug & 8 ) 
+	{  
+		server_print( "AT configDailyMaps: " )
+		server_print( "g_isFirstTime_serverLoad is: %d", 		g_isFirstTime_serverLoad 	)
+		server_print( "g_isTimeTo_changeMapcyle is: %d", 		g_isTimeTo_changeMapcyle )
+		server_print( "file_exists( mapcycle_filePath ) is: %d", 	file_exists( mapcycle_filePath ) )
+		server_print( "mapcycle_filePath is: %s", 							mapcycle_filePath 		)
+	}
+
+	if( g_isFirstTime_serverLoad  == 0 || g_isTimeTo_changeMapcyle )
+	{
+		g_isTimeTo_changeMapcyle = false
+
+		if( file_exists( mapcycle_filePath ) )
+		{   
+			set_pcvar_string( 	gp_mapcyclefile, 		mapcycle_filePath 	)
+			set_localinfo(	 	"isFirstTime_serverLoad", 		"1" 		)
+		} 
+		else 
+		{
+			set_localinfo( "isFirstTime_serverLoad", "2" );
+		}
 	}
 }
 
@@ -1274,10 +1305,8 @@ public activateMod_byShortName( modShortName[] )
 	if( file_exists(plugin_filePath) )
 	{   
 		new config_filePath[LONG_STRING] 
-		new mapcycle_filePath[SHORT_STRING] 
 
 		config_pathCoder( modShortName, config_filePath, charsmax( config_filePath ) ) 
-		mapcycle_pathCoder( modShortName, mapcycle_filePath, charsmax( mapcycle_filePath ) )
 
 		if( file_exists( config_filePath ) )
 		{
@@ -1285,8 +1314,7 @@ public activateMod_byShortName( modShortName[] )
 		}
 		copyFiles( plugin_filePath, g_masterPlugin_filePath, g_alertMultiMod )
 
-		configMapManagerSilent( mapcycle_filePath )
-		configDailyMapsSilent( mapcycle_filePath )
+		configureMapcycles( modShortName )
 
 		server_print( "[AMX MOD Loaded] Setting multimod to %s", modShortName )
 
@@ -1878,7 +1906,8 @@ public playersPlaying( Float:percent )
  *   		(00000) 0 disable all debug. 
  *   		(00001) 1 displays basic debug messages. 
  *   		(00010) 2 displays each mod loaded. 
- *   		(00010) 4 displays the keys pressed during voting. 
+ *   		(00100) 4 displays the keys pressed during voting. 
+ *   		(01000) 8 displays the the mapcycle configuration. 
  * 
  * @param message[] the text formatting rules to display. If omitted displays ""
  * @param any the variable number of formatting parameters. 

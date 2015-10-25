@@ -74,7 +74,7 @@ public plugin_init()
 
 	get_time("%a", today, 8)
 	formatex( serverCfgFilePath, charsmax( serverCfgFilePath ), "mapcycles/day/cfg/%s.cfg", today )
-	get_localinfo( "isFirstTimeLoadMapCycle", isFirstTime, charsmax( isFirstTime ) );
+	get_localinfo( "isFirstTime_serverLoad", isFirstTime, charsmax( isFirstTime ) );
 
 	if( file_exists(serverCfgFilePath) )
 	{
