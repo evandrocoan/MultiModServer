@@ -15,8 +15,8 @@
 ***************************************************************************************
 
 
-[SIZE="6"][COLOR="Blue"][B]Multi-Mod Manager v1.0-release_candidate2.hotfix4[/B][/COLOR][/SIZE]
-[B]Release: 10.10.2015 | Last Update: 21.10.2015[/B]
+[SIZE="6"][COLOR="Blue"][B]Multi-Mod Manager v1.1-alpha1[/B][/COLOR][/SIZE]
+[B]Release: 10.10.2015 | Last Update: 25.10.2015[/B]
 
 [SIZE="4"]Basic differences between the original [B]Joropito's MultiMod[/B] and [B]addons_zz's Multi-Mod Manager[/B][/SIZE]
 
@@ -37,6 +37,9 @@
 [*]if you want to, you can have any mod activated never ever at you server, even if there is more then 10 installed and fully working mods. 
 [*]use the command "[B]amx_setmod help 1[/B]" display the acceptable inputs and loaded mods 
             from the file "[COLOR="Blue"]yourgamemod/addons/amxmodx/configs/multimod/[/COLOR][B]multimod.ini[/B]". 
+[*]automatically execute late configuration file execution to built-in AMXX per map configurations. 
+[*]automatically to restaure the first mapcycle used. 
+[*]freeze the game and show the scoreboard when activating a mod silently, using the command "amx_setmods".
 [*]use the command '[COLOR="Blue"][B]amx_setmod modShortName <1 or 0>[/B][/COLOR]', to enable the mod "modShortName" as [COLOR="Blue"]csdm[/COLOR], 
             starting a vote map (1) or not (0), right after. This command can [B]only active mods loaded[/B] from 
             "[B]multimod.ini[/B]" file, and needs an admin level ADMIN_CFG. 
@@ -46,14 +49,13 @@
 [*]use the cvar [COLOR="Blue"]amx_multimod_endmapvote [B]<0 - 1>[/B][/COLOR] to enable ([B]1[/B]) or disable ([B]0[/B]) end map automatic [B]multi-mod[/B] voting.
 [*]waits as long as you want to choose to activate one mod or not, by vote menu and by command line. 
 [*]at voting [B]keep the current mod[/B], if less than 30% voted, or [B]keep it disabled[/B] if there is no mod enabled. 
+[*]see the voting results details at server's console. 
 [*]keep the server's current mod at voting as the [COLOR="Blue"]vote menu's[/COLOR] first option is always: "[B]1. Keep Current Mod[/B]". 
 [*]disable the server's current mod at voting as the [COLOR="Blue"]vote menu's[/COLOR] second option is always: "[B]2. No mod - Disable Mod[/B]". 
 [*]see that are any mod currently activated, when you type "say currentmod" and there is no mod active. 
 [*]execute a special server's configuration file at the comment you active a server's mod. That is executed only and only at the 
             mod first activation time by the command "amx_setmod" (the silence one, "amx_setmods" has not this feature, because it is silent). 
 [*]receive a clear and self-explanatory error message when you mis-configure anything, anywhere, anytime. 
-[*]freeze the game and show the scoreboard when activating a mod silently, using the command "amx_setmods".
-[*]see the voting results details at server's console. 
 [/LIST]
 
 [SIZE="4"]And even better, server's admins with right flag can change the server's current mod without needing direct access like ftp, to the server's files.[/SIZE]
@@ -80,9 +82,9 @@
 The original plugin "[URL="https://forums.alliedmods.net/showthread.php?t=95568"]multimod.sma[/URL]" is originally written by JoRoPiTo. This "[B]Multi-Mod Manager[/B]" works 
 differently from the original "[COLOR="Blue"]MultiMod Manager[/COLOR]". See [goanchor=Credits]Credits[/goanchor] for information. 
 
-This is a release candidate, which is a beta version with potential to be a final product, which is ready to be 
-released unless [B]significant bugs[/B] emerge. In this stage of product stabilization, all product [B]features[/B] have been 
-designed, coded and tested through one or more beta cycles with no known show stopper-class bug. 
+This is a Alpha version. This Alpha software can be unstable, see [goanchor=TODO]TODO[/goanchor] section for more information. 
+As [B]Alpha software[/B] may not contain all of the features that are planned for the final version, see [goanchor=TODO]TODO[/goanchor] 
+section for features that are planned for the final version. 
 
 This plugin [COLOR="Red"]is [B]not[/B] compatible[/COLOR] with the AMXX's very own [B]Map Chooser[/B] or "[B]Daily Maps[/B]", but yes with its 
 modification "[B]multimod_mapchooser.sma[/B]" and "[B]multimod_daily_changer[/B]" provided [goanchor=Downloads]here[/goanchor]. The new 
@@ -323,24 +325,18 @@ exec addons/amxmodx/configs/multimod/votefinished.cfg
 2015-10-21 | v1.0-release_candidate2.hotfix4
  * Fixed mapcycle not setting when a mod was activated by command line or voting.  
 
-2015-10-21 | v1.0-release_candidate3
+2015-10-25 | v1.1-alpha1
  * Added late configuration file execution to built-in AMXX per map configurations. 
- * Added restaure the last mapcycle used. 
+ * Added to restaure the first mapcycle used. 
  * Improved code clearness. 
  * Added path coders to every multi-generated string. 
  * Added immutable strings paths as global variables. 
+ * Removed passing an integer value to a function by string. 
  * Removed unnecessary variables like g_messageFileNames and g_pluginsFileNames. 
 [/QUOTE]
 
 ******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *********************************
- * Added auto configs files creation at first run, creating readme files. 
-
-[QUOTE=fysiks;2353142]
-Don't pass an integer value to a function by putting it in a string. Just pass the integer.  E.g. msgResourceActivated().  
-If the original source of the value is from a string like read_argv() then you should convert it to an integer before 
-passing it to a function like primitiveFunctions().
-[/QUOTE]
-Yea, I should convert it to integer. 
+ * Add auto configs files auto-creation at first run, creating readme files. 
 
 [QUOTE=fysiks;2353142]
 If you are going to use the multilingual system to print to the server console, you should not use 
@@ -433,14 +429,13 @@ from the [B]amxx cvars[/B] command. They will be grouped together.
 [*][URL="https://forums.alliedmods.net/showthread.php?t=273019"]galieo_reloaded.sma[/URL]
 [/LIST]
 
-
 */
 
 #include <amxmodx>
 #include <amxmisc>
 
 #define PLUGIN "Multi-Mod Manager"
-#define VERSION "v1.0-rc2.4"
+#define VERSION "v1.1-alpha1"
 #define AUTHOR "Addons zz"
 
 #define TASK_VOTEMOD 2487002
@@ -453,7 +448,7 @@ from the [B]amxx cvars[/B] command. They will be grouped together.
 #define MENU_ITEMS_PER_PAGE	8
 
 // Enables debug server console messages.
-new g_is_debug = 9
+new g_is_debug = 0
 
 new g_totalVotes
 new g_sayText
@@ -578,7 +573,7 @@ public plugin_cfg()
 
 /**
  * After the first time the server loads, this function execute the late configuration file 
- *   used to restaure the last active mod cvars changed and the last mapcycle used. 
+ *   used to restaure the last active mod cvars changed and the first mapcycle used. 
  * 
  * This function stills detect when the mod is changed due specific maps configurations 
  *   files like, "./configs/maps/plugins-zm.ini", that actives the zombie plague mod. 
@@ -592,11 +587,11 @@ public plugin_cfg()
 public unloadLastActiveMod()
 {
 	new lastMod_shortName	[ SHORT_STRING ]
-	new lastMod_Mapcycle		[SHORT_STRING ]
+	new firstServer_Mapcycle		[SHORT_STRING ]
 	new lateConfig_filePath		[LONG_STRING]
 
 	get_localinfo( "amx_lastmod", lastMod_shortName, charsmax( lastMod_shortName ) )
-	get_localinfo( "firstMapcycle_loaded", lastMod_Mapcycle, charsmax( lastMod_Mapcycle ) )
+	get_localinfo( "firstMapcycle_loaded", firstServer_Mapcycle, charsmax( firstServer_Mapcycle ) )
 
 	if( !equal( lastMod_shortName, g_currentMod_shortName ) && !g_isFirstTime_serverLoad )
 	{
@@ -608,7 +603,7 @@ public unloadLastActiveMod()
 			server_cmd( "exec %s", lateConfig_filePath )
 		}
 
-		server_cmd( "mapcyclefile %s", lastMod_Mapcycle )
+		server_cmd( "mapcyclefile %s", firstServer_Mapcycle )
 	}
 }
 
@@ -882,7 +877,7 @@ public configureMod_byModID( mostVoted_modID )
 	{   
 		case 1: 
 		{
-			debugMessageLog( 1,  "^n^AT configureMod_byModID, we are keeping the current mod" )
+			debugMessageLog( 1, "^nAT configureMod_byModID, we are keeping the current mod" )
 		}
 		case 2: 
 		{
