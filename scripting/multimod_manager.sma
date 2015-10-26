@@ -55,7 +55,7 @@
 [*]see that are any mod currently activated, when you type "say currentmod" and there is no mod active. 
 [*]execute a special server's configuration file at the comment you active a server's mod. That is executed only and only at the 
             mod first activation time by the command "amx_setmod" (the silence one, "amx_setmods" has not this feature, because it is silent). 
-[*]receive a clear and self-explanatory error message when you mis-configure anything, anywhere, anytime. 
+[*]receive a clear and self-explanatory error message when you mis-configure the mod plugins file name/location. 
 [/LIST]
 
 [SIZE="4"]And even better, server's admins with right flag can change the server's current mod without needing direct access like ftp, to the server's files.[/SIZE]
@@ -447,7 +447,8 @@ from the [B]amxx cvars[/B] command. They will be grouped together.
 
 #define MENU_ITEMS_PER_PAGE	8
 
-// Enables debug server console messages.
+// Enables debug server console messages. 
+// See debugMessageLog function for values options. 
 new g_is_debug = 0
 
 new g_totalVotes
@@ -472,10 +473,10 @@ new g_currentMod_shortName			[SHORT_STRING]
 new g_configFolder								[LONG_STRING]
 new g_masterConfig_filePath				[LONG_STRING]
 new g_masterPlugin_filePath					[LONG_STRING]
-new g_voteFinished_filePath				[LONG_STRING]
+new g_votingFinished_filePath				[LONG_STRING]
 new g_currentMod_id_filePath						[LONG_STRING]
 new g_currentMod_shortName_filePath		[LONG_STRING]
-new g_multimod_votingList_filePath			[LONG_STRING]
+new g_votingList_filePath			[LONG_STRING]
 
 new gp_allowedvote
 new gp_endmapvote
@@ -490,8 +491,8 @@ This file is managed automatically by multimod_manager.sma plugin^n//\
 and any modification will be discarded in the activation of some mod.^n^n"
 
 new g_helpamx_setmod[LONG_STRING] = "help 1	      | for help."
-new g_helpamx_setmods[LONG_STRING] = "shortModName <1 or 0> to restart or not       | Enable/Disable any mod, \
-loaded or not (silent mod). "
+new g_helpamx_setmods[LONG_STRING] = "shortModName <1 or 0> to restart or not       \
+| Enable/Disable any mod, loaded or not (silent mod). "
 
 new g_cmdsAvailables1[LONG_STRING] = "^namx_setmod help 1       | To show this help.^n\
 amx_setmod disable 1   | To deactivate any active Mod.^n\
@@ -547,14 +548,23 @@ public plugin_cfg()
 
 	get_configsdir( g_configFolder, charsmax(g_configFolder) )
 
-	formatex( g_masterPlugin_filePath, charsmax(g_masterPlugin_filePath), "%s/plugins-multi.ini", g_configFolder )
-	formatex( g_masterConfig_filePath, charsmax(g_masterConfig_filePath), "%s/multimod/multimod.cfg", g_configFolder )
+	formatex( g_masterPlugin_filePath, charsmax(g_masterPlugin_filePath), 
+			"%s/plugins-multi.ini", g_configFolder )
 
-	formatex( g_currentMod_id_filePath, charsmax(g_currentMod_id_filePath), "%s/multimod/currentmod_id.ini", g_configFolder ) 
-	formatex( g_currentMod_shortName_filePath, charsmax(g_currentMod_shortName_filePath), "%s/multimod/currentmod_shortname.ini", g_configFolder )
+	formatex( g_masterConfig_filePath, charsmax(g_masterConfig_filePath), 
+			"%s/multimod/multimod.cfg", g_configFolder )
 
-	formatex( g_multimod_votingList_filePath, charsmax(g_multimod_votingList_filePath), "%s/multimod/voting_list.ini", g_configFolder )
-	formatex( g_voteFinished_filePath, charsmax(g_voteFinished_filePath), "%s/multimod/votefinished.cfg", g_configFolder )
+	formatex( g_currentMod_id_filePath, charsmax(g_currentMod_id_filePath), 
+			"%s/multimod/currentmod_id.ini", g_configFolder ) 
+
+	formatex( g_currentMod_shortName_filePath, charsmax(g_currentMod_shortName_filePath), 
+			"%s/multimod/currentmod_shortname.ini", g_configFolder )
+
+	formatex( g_votingList_filePath, charsmax(g_votingList_filePath), 
+			"%s/multimod/voting_list.ini", g_configFolder )
+
+	formatex( g_votingFinished_filePath, charsmax(g_votingFinished_filePath), 
+			"%s/multimod/votefinished.cfg", g_configFolder )
 
 	switchMapManager()
 
@@ -804,7 +814,9 @@ public loadCurrentMod()
 	// normal mod activation 
 	if( file_exists( g_currentMod_id_filePath ) ) 
 	{
-		read_file( 			g_currentMod_id_filePath, 0, currentModCode_String, charsmax(currentModCode_String), unused_lenghtInteger )
+		read_file( 	g_currentMod_id_filePath, 0, currentModCode_String, 
+				charsmax(currentModCode_String), unused_lenghtInteger )
+
 		currentModCode 	= str_to_num( currentModCode_String )
 	} 
 	else
@@ -816,7 +828,8 @@ public loadCurrentMod()
 	// silent mod activation 
 	if( file_exists( g_currentMod_shortName_filePath ) ) 
 	{
-		read_file( g_currentMod_shortName_filePath, 0, currentMod_shortName, charsmax(currentMod_shortName), unused_lenghtInteger )
+		read_file( g_currentMod_shortName_filePath, 0, currentMod_shortName, 
+				charsmax(currentMod_shortName), unused_lenghtInteger )
 	} 
 	else
 	{
@@ -839,7 +852,8 @@ public loadCurrentMod()
  */
 public configureMod_byModCode( currentModCode, currentMod_shortName[] ) 
 {
-	debugMessageLog( 1,  "^n^ncurrentModCode: %d | currentMod_shortName: %s^n", currentModCode, currentMod_shortName )
+	debugMessageLog( 1,  "^n^ncurrentModCode: %d | currentMod_shortName: %s^n", 
+			currentModCode, currentMod_shortName )
 
 	switch( currentModCode )
 	{   
@@ -902,7 +916,7 @@ public setCurrentMod_atLocalInfo( currentMod_shortName[] )
 {
 	retrievesCurrentMod_atLocalInfo()
 
-	configureMapcycles( currentMod_shortName )	
+	configureMapcycle( currentMod_shortName )	
 
 	set_localinfo( "amx_lastmod", g_currentMod_shortName )
 	set_localinfo( "amx_correntmod", 	currentMod_shortName )
@@ -986,11 +1000,11 @@ public load_votingList()
 	new modShortName_string				[SHORT_STRING]
 	new unusedLast_string					[SHORT_STRING]
 
-	new currentMod_filePointer = fopen( g_multimod_votingList_filePath, "rt" )
+	new votingList_filePointer = fopen( g_votingList_filePath, "rt" )
 
-	while( !feof( currentMod_filePointer ) )
+	while( !feof( votingList_filePointer ) )
 	{   
-		fgets( currentMod_filePointer, currentLine, charsmax(currentLine) )
+		fgets( votingList_filePointer, currentLine, charsmax(currentLine) )
 		trim( currentLine )
 
 		// skip commentaries while reading file
@@ -1009,7 +1023,8 @@ public load_votingList()
 
 			// broke the current config line, in modname (modName), modtag (modShortName_string) 
 			strtok( currentLine, modName, charsmax(modName), currentLine_splited, charsmax(currentLine_splited), ':', 0 )
-			strtok( currentLine_splited, modShortName_string, charsmax(modShortName_string), unusedLast_string, charsmax( unusedLast_string ), ':', 0 )
+			strtok( currentLine_splited, modShortName_string, charsmax(modShortName_string), unusedLast_string, 
+					charsmax( unusedLast_string ), ':', 0 )
 
 			// stores at memory the modname and the modShortName
 			formatex( g_modNames[g_modCounter], SHORT_STRING - 1, "%s", modName )
@@ -1026,11 +1041,14 @@ public load_votingList()
 				new messageResource_filePath			[SHORT_STRING]
 				new lateConfig_filePath				[SHORT_STRING] 
 
-				mapcycle_pathCoder( modShortName_string, mapcycle_filePath, charsmax( mapcycle_filePath ) ) 
-				config_pathCoder( modShortName_string, config_filePath, charsmax( config_filePath ) ) 
-				plugin_pathCoder( modShortName_string, plugin_filePath, charsmax( plugin_filePath ) ) 
-				message_pathCoder( modShortName_string, message_filePath, charsmax( message_filePath ) ) 
-				messageResource_pathCoder( modShortName_string, messageResource_filePath, charsmax( messageResource_filePath ) ) 
+				mapcycle_pathCoder( modShortName_string, mapcycle_filePath, charsmax( mapcycle_filePath ) )
+				config_pathCoder( modShortName_string, config_filePath, charsmax( config_filePath ) )
+				plugin_pathCoder( modShortName_string, plugin_filePath, charsmax( plugin_filePath ) )
+				message_pathCoder( modShortName_string, message_filePath, charsmax( message_filePath ) )
+
+				messageResource_pathCoder( modShortName_string, messageResource_filePath, 
+						charsmax( messageResource_filePath ) )
+
 				lateConfig_pathCoder( modShortName_string, lateConfig_filePath, charsmax( lateConfig_filePath ) )
 
 				server_print( "[AMX MOD Loaded] %s", modShortName_string )
@@ -1043,7 +1061,7 @@ public load_votingList()
 			}
 		}
 	}
-	fclose( currentMod_filePointer )
+	fclose( votingList_filePointer )
 }
 
 /**
@@ -1052,7 +1070,9 @@ public load_votingList()
  *   resource as disable, is activated by the command "amx_setmod". 
  * 
  * @param modShortName[] the mod short name without extension. Ex: surf
- * @param messageResource_filePath[] the message resource file path containing its file extension. Ex: mapcycles/surf.txt
+ * @param messageResource_filePath[] the message resource file path containing its file extension. 
+ *                    Ex: mapcycles/surf.txt
+ * 
  * @param stringReturnSize the messageResource_filePath[] charsmax value. 
  */
 public messageResource_pathCoder( resourceName[], messageResource_filePath[], stringReturnSize )
@@ -1133,7 +1153,7 @@ public mapcycle_pathCoder( modShortName[], mapcycle_filePath[], stringReturnSize
  * 
  * @param modShortName[] the mod short name to configure is mapcycle. Ex: csdm
  */
-configureMapcycles( modShortName[] )
+configureMapcycle( modShortName[] )
 {
 	new mapcycle_filePath[SHORT_STRING] 
 
@@ -1309,7 +1329,7 @@ public activateMod_byShortName( modShortName[] )
 		}
 		copyFiles( plugin_filePath, g_masterPlugin_filePath, g_alertMultiMod )
 
-		configureMapcycles( modShortName )
+		configureMapcycle( modShortName )
 
 		server_print( "[AMX MOD Loaded] Setting multimod to %s", modShortName )
 
@@ -1846,7 +1866,7 @@ public displayVoteResults( mostVoted_modID, g_totalVotes )
 		formatex( result_message, charsmax(result_message), "%L", LANG_PLAYER, "MM_VOTEMOD",
 				g_modNames[ mostVoted_modID ])
 
-		server_cmd( "exec %s", g_voteFinished_filePath )
+		server_cmd( "exec %s", g_votingFinished_filePath )
 	} 
 	else
 	{   
@@ -1858,7 +1878,8 @@ public displayVoteResults( mostVoted_modID, g_totalVotes )
 
 	printMessage( 0, result_message )
 
-	server_print( "Total Mod Votes: %d  | Player Min: %d  | Most Voted: %s", g_totalVotes, playerMin, g_modNames[ mostVoted_modID ] )
+	server_print( "Total Mod Votes: %d  | Player Min: %d  | Most Voted: %s", 
+			g_totalVotes, playerMin, g_modNames[ mostVoted_modID ] )
 }
 
 /**
