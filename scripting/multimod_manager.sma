@@ -180,7 +180,7 @@ Tested under [B]Counter-Strike[/B] and Counter-Strike: [B]Condition Zero[/B]
 [COLOR="Blue"]amx_votemod[/COLOR] 
 
 //Check which MOD [B]will be running[/B] in next map
-[COLOR="Blue"]say nextmod[/COLOR]	
+[COLOR="Blue"]say nextmod[/COLOR]    
 [COLOR="Blue"]say_team nextmod[/COLOR] 
 
 //Check which [B]MOD[/B] is running in the [B]current map[/B]
@@ -417,7 +417,7 @@ from the [B]amxx cvars[/B] command. They will be grouped together.
 [/LIST]
 [/QUOTE]
 
-***************************************************************************************	
+***************************************************************************************    
 [SIZE="6"]BRAZIL (South America) Testing Server[/SIZE]
 [URL="http://www.gametracker.com/server_info/jacks.noip.me:27015/"][IMG]http://www.gametracker.com/server_info/jacks.noip.me:27015/b_560_95_1.png[/IMG][/URL]
 
@@ -445,7 +445,7 @@ from the [B]amxx cvars[/B] command. They will be grouped together.
 #define LONG_STRING 256
 #define SHORT_STRING 64
 
-#define MENU_ITEMS_PER_PAGE	8
+#define MENU_ITEMS_PER_PAGE    8
 
 // Enables debug server console messages. 
 // See debugMessageLog function for values options. 
@@ -459,24 +459,24 @@ new g_currentMod_id
 new g_mapManagerType
 new g_isFirstTime_serverLoad
 
-new g_modNames					[MAXMODS][SHORT_STRING] 
-new g_modShortNames			[MAXMODS][SHORT_STRING] 
-new g_votemodcount				[MAXMODS]
+new g_modNames                    [MAXMODS][SHORT_STRING] 
+new g_modShortNames            [MAXMODS][SHORT_STRING] 
+new g_votemodcount                [MAXMODS]
 
-new g_modCounter 									= 0 
-new g_isTimeTo_changeMapcyle 			= false
-new g_menuname[] 									= "VOTE MOD MENU"
+new g_modCounter                                     = 0 
+new g_isTimeTo_changeMapcyle             = false
+new g_menuname[]                                     = "VOTE MOD MENU"
 
-new g_menuPosition							[33]
-new g_currentMod_shortName			[SHORT_STRING]
+new g_menuPosition                            [33]
+new g_currentMod_shortName            [SHORT_STRING]
 
-new g_configFolder								[LONG_STRING]
-new g_masterConfig_filePath				[LONG_STRING]
-new g_masterPlugin_filePath					[LONG_STRING]
-new g_votingFinished_filePath				[LONG_STRING]
-new g_currentMod_id_filePath						[LONG_STRING]
-new g_currentMod_shortName_filePath		[LONG_STRING]
-new g_votingList_filePath			[LONG_STRING]
+new g_configFolder                                [LONG_STRING]
+new g_masterConfig_filePath                [LONG_STRING]
+new g_masterPlugin_filePath                    [LONG_STRING]
+new g_votingFinished_filePath                [LONG_STRING]
+new g_currentMod_id_filePath                        [LONG_STRING]
+new g_currentMod_shortName_filePath        [LONG_STRING]
+new g_votingList_filePath            [LONG_STRING]
 
 new gp_allowedvote
 new gp_endmapvote
@@ -490,48 +490,48 @@ which is run every time the server starts and defines which mods are enabled.^n/
 This file is managed automatically by multimod_manager.sma plugin^n//\
 and any modification will be discarded in the activation of some mod.^n^n"
 
-new g_helpamx_setmod[LONG_STRING] = "help 1	      | for help."
+new g_helpamx_setmod[LONG_STRING] = "help 1          | for help."
 new g_helpamx_setmods[LONG_STRING] = "shortModName <1 or 0> to restart or not       \
 | Enable/Disable any mod, loaded or not (silent mod). "
 
 new g_cmdsAvailables1[LONG_STRING] = "^namx_setmod help 1       | To show this help.^n\
 amx_setmod disable 1   | To deactivate any active Mod.^n\
-amx_votemod	| To force a votemod. "
+amx_votemod    | To force a votemod. "
 
-new g_cmdsAvailables2[LONG_STRING] = "say_team nextmod	       | To see which is the next mod.^n\
-say currentmod	| To see which is the current mod.^n\
-say votemod	 | To try start a vote mod.^n\
-say_team votemod	 | To try start a vote mod."
+new g_cmdsAvailables2[LONG_STRING] = "say_team nextmod           | To see which is the next mod.^n\
+say currentmod    | To see which is the current mod.^n\
+say votemod     | To try start a vote mod.^n\
+say_team votemod     | To try start a vote mod."
 
 /**
  * Register plugin commands and load configurations.
  */
 public plugin_init()
 {   
-	register_plugin( PLUGIN, VERSION, AUTHOR )
+    register_plugin( PLUGIN, VERSION, AUTHOR )
 
-	register_cvar( "MultiModManager", VERSION, FCVAR_SERVER|FCVAR_SPONLY )
+    register_cvar( "MultiModManager", VERSION, FCVAR_SERVER|FCVAR_SPONLY )
 
-	register_dictionary( "mapchooser.txt" )
-	register_dictionary( "multimodmanager.txt" )
+    register_dictionary( "mapchooser.txt" )
+    register_dictionary( "multimodmanager.txt" )
 
-	gp_mintime = 			register_cvar( "amx_mintime", "10" )
-	gp_allowedvote = 		register_cvar( "amx_multimod_voteallowed", "1" )
-	gp_endmapvote = 		register_cvar( "amx_multimod_endmapvote", "0" )
+    gp_mintime =             register_cvar( "amx_mintime", "10" )
+    gp_allowedvote =         register_cvar( "amx_multimod_voteallowed", "1" )
+    gp_endmapvote =         register_cvar( "amx_multimod_endmapvote", "0" )
 
-	register_clcmd( "amx_votemod", "start_vote", ADMIN_MAP, "Vote for the next mod" )
-	register_clcmd( "say currentmod", "user_currentmod" )
-	register_clcmd( "say_team currentmod", "user_currentmod" )
-	register_clcmd( "say votemod", "user_votemod" )
-	register_clcmd( "say_team votemod", "user_votemod" )
+    register_clcmd( "amx_votemod", "start_vote", ADMIN_MAP, "Vote for the next mod" )
+    register_clcmd( "say currentmod", "user_currentmod" )
+    register_clcmd( "say_team currentmod", "user_currentmod" )
+    register_clcmd( "say votemod", "user_votemod" )
+    register_clcmd( "say_team votemod", "user_votemod" )
 
-	register_concmd( "amx_setmod", "receiveCommand", ADMIN_CFG, g_helpamx_setmod )
-	register_concmd( "amx_setmods", "receiveCommandSilent", ADMIN_IMMUNITY, g_helpamx_setmods )
-	register_menucmd( register_menuid( g_menuname ), 2047, "player_vote" )
+    register_concmd( "amx_setmod", "receiveCommand", ADMIN_CFG, g_helpamx_setmod )
+    register_concmd( "amx_setmods", "receiveCommandSilent", ADMIN_IMMUNITY, g_helpamx_setmods )
+    register_menucmd( register_menuid( g_menuname ), 2047, "player_vote" )
 
-	g_sayText = get_user_msgid("SayText");
-	g_coloredmenus = colored_menus()
-	g_totalVotes = 0
+    g_sayText = get_user_msgid("SayText");
+    g_coloredmenus = colored_menus()
+    g_totalVotes = 0
 }
 
 /**
@@ -542,43 +542,43 @@ public plugin_init()
  */
 public plugin_cfg()
 {   
-	gp_voteanswers = get_cvar_pointer("amx_vote_answers")
-	gp_timelimit = get_cvar_pointer("mp_timelimit")
-	gp_mapcyclefile = get_cvar_pointer("mapcyclefile")
+    gp_voteanswers = get_cvar_pointer("amx_vote_answers")
+    gp_timelimit = get_cvar_pointer("mp_timelimit")
+    gp_mapcyclefile = get_cvar_pointer("mapcyclefile")
 
-	get_configsdir( g_configFolder, charsmax(g_configFolder) )
+    get_configsdir( g_configFolder, charsmax(g_configFolder) )
 
-	formatex( g_masterPlugin_filePath, charsmax(g_masterPlugin_filePath), 
-			"%s/plugins-multi.ini", g_configFolder )
+    formatex( g_masterPlugin_filePath, charsmax(g_masterPlugin_filePath), 
+            "%s/plugins-multi.ini", g_configFolder )
 
-	formatex( g_masterConfig_filePath, charsmax(g_masterConfig_filePath), 
-			"%s/multimod/multimod.cfg", g_configFolder )
+    formatex( g_masterConfig_filePath, charsmax(g_masterConfig_filePath), 
+            "%s/multimod/multimod.cfg", g_configFolder )
 
-	formatex( g_currentMod_id_filePath, charsmax(g_currentMod_id_filePath), 
-			"%s/multimod/currentmod_id.ini", g_configFolder ) 
+    formatex( g_currentMod_id_filePath, charsmax(g_currentMod_id_filePath), 
+            "%s/multimod/currentmod_id.ini", g_configFolder ) 
 
-	formatex( g_currentMod_shortName_filePath, charsmax(g_currentMod_shortName_filePath), 
-			"%s/multimod/currentmod_shortname.ini", g_configFolder )
+    formatex( g_currentMod_shortName_filePath, charsmax(g_currentMod_shortName_filePath), 
+            "%s/multimod/currentmod_shortname.ini", g_configFolder )
 
-	formatex( g_votingList_filePath, charsmax(g_votingList_filePath), 
-			"%s/multimod/voting_list.ini", g_configFolder )
+    formatex( g_votingList_filePath, charsmax(g_votingList_filePath), 
+            "%s/multimod/voting_list.ini", g_configFolder )
 
-	formatex( g_votingFinished_filePath, charsmax(g_votingFinished_filePath), 
-			"%s/multimod/votefinished.cfg", g_configFolder )
+    formatex( g_votingFinished_filePath, charsmax(g_votingFinished_filePath), 
+            "%s/multimod/votefinished.cfg", g_configFolder )
 
-	switchMapManager()
+    switchMapManager()
 
-	build_first_mods() 
-	load_votingList() 
+    build_first_mods() 
+    load_votingList() 
 
-	loadCurrentMod()
+    loadCurrentMod()
 
-	unloadLastActiveMod()
+    unloadLastActiveMod()
 
-	if( get_pcvar_num( gp_endmapvote ) )
-	{
-		set_task(15.0, "check_task", TASK_VOTEMOD, "", 0, "b")
-	}
+    if( get_pcvar_num( gp_endmapvote ) )
+    {
+        set_task(15.0, "check_task", TASK_VOTEMOD, "", 0, "b")
+    }
 }
 
 /**
@@ -596,25 +596,25 @@ public plugin_cfg()
  */
 public unloadLastActiveMod()
 {
-	new lastMod_shortName	[ SHORT_STRING ]
-	new firstServer_Mapcycle		[SHORT_STRING ]
-	new lateConfig_filePath		[LONG_STRING]
+    new lastMod_shortName    [ SHORT_STRING ]
+    new firstServer_Mapcycle        [SHORT_STRING ]
+    new lateConfig_filePath        [LONG_STRING]
 
-	get_localinfo( "amx_lastmod", lastMod_shortName, charsmax( lastMod_shortName ) )
-	get_localinfo( "firstMapcycle_loaded", firstServer_Mapcycle, charsmax( firstServer_Mapcycle ) )
+    get_localinfo( "amx_lastmod", lastMod_shortName, charsmax( lastMod_shortName ) )
+    get_localinfo( "firstMapcycle_loaded", firstServer_Mapcycle, charsmax( firstServer_Mapcycle ) )
 
-	if( !equal( lastMod_shortName, g_currentMod_shortName ) && !g_isFirstTime_serverLoad )
-	{
-		lateConfig_pathCoder( lastMod_shortName, lateConfig_filePath, charsmax( lateConfig_filePath ) )
+    if( !equal( lastMod_shortName, g_currentMod_shortName ) && !g_isFirstTime_serverLoad )
+    {
+        lateConfig_pathCoder( lastMod_shortName, lateConfig_filePath, charsmax( lateConfig_filePath ) )
 
-		if( file_exists( lateConfig_filePath ) )
-		{   
-			printMessage( 0, "Executing the deactivation mod configuration file ( %s ).", lateConfig_filePath )
-			server_cmd( "exec %s", lateConfig_filePath )
-		}
+        if( file_exists( lateConfig_filePath ) )
+        {   
+            printMessage( 0, "Executing the deactivation mod configuration file ( %s ).", lateConfig_filePath )
+            server_cmd( "exec %s", lateConfig_filePath )
+        }
 
-		server_cmd( "mapcyclefile %s", firstServer_Mapcycle )
-	}
+        server_cmd( "mapcyclefile %s", firstServer_Mapcycle )
+    }
 }
 
 /**
@@ -629,36 +629,36 @@ public unloadLastActiveMod()
  */
 public receiveCommand(player_id, level, cid)
 {   
-	//Make sure this user is an admin
-	if (!cmd_access(player_id, level, cid, 3))
-	{   
-		return PLUGIN_HANDLED
-	}
-	new firstCommand_lineArgument			[ SHORT_STRING ]
-	new secondCommand_lineArgument		[SHORT_STRING]
+    //Make sure this user is an admin
+    if (!cmd_access(player_id, level, cid, 3))
+    {   
+        return PLUGIN_HANDLED
+    }
+    new firstCommand_lineArgument            [ SHORT_STRING ]
+    new secondCommand_lineArgument        [SHORT_STRING]
 
-	//Get the command arguments from the console
-	read_argv( 1, firstCommand_lineArgument, 		charsmax( firstCommand_lineArgument ) )
-	read_argv( 2, secondCommand_lineArgument, charsmax( secondCommand_lineArgument ) )
+    //Get the command arguments from the console
+    read_argv( 1, firstCommand_lineArgument,         charsmax( firstCommand_lineArgument ) )
+    read_argv( 2, secondCommand_lineArgument, charsmax( secondCommand_lineArgument ) )
 
-	new isTimeToRestart 			= equal( secondCommand_lineArgument, "1" )
-	g_isTimeTo_changeMapcyle = true
+    new isTimeToRestart             = equal( secondCommand_lineArgument, "1" )
+    g_isTimeTo_changeMapcyle = true
 
-	if( primitiveFunctions( player_id, firstCommand_lineArgument, isTimeToRestart ) )
-	{   
-		if( activateMod_byShortName( firstCommand_lineArgument )  ) 
-		{   
-			configureModID( firstCommand_lineArgument )
-			messageModActivated( firstCommand_lineArgument, isTimeToRestart, true )
-		} 
-		else
-		{   
-			printHelp( player_id )
-		}
-	}
-	g_isTimeTo_changeMapcyle = false
+    if( primitiveFunctions( player_id, firstCommand_lineArgument, isTimeToRestart ) )
+    {   
+        if( activateMod_byShortName( firstCommand_lineArgument )  ) 
+        {   
+            configureModID( firstCommand_lineArgument )
+            messageModActivated( firstCommand_lineArgument, isTimeToRestart, true )
+        } 
+        else
+        {   
+            printHelp( player_id )
+        }
+    }
+    g_isTimeTo_changeMapcyle = false
 
-	return PLUGIN_HANDLED
+    return PLUGIN_HANDLED
 }
 
 /**
@@ -670,14 +670,14 @@ public receiveCommand(player_id, level, cid)
  */
 public configureModID( shortName[] )
 {   
-	for( new mod_id_number = 3; mod_id_number <= g_modCounter; mod_id_number++ )
-	{   
-		if( equal( shortName, g_modShortNames[mod_id_number] ) )
-		{   
-			g_currentMod_id = mod_id_number
-			saveCurrentModBy_id( mod_id_number )
-		}
-	}
+    for( new mod_id_number = 3; mod_id_number <= g_modCounter; mod_id_number++ )
+    {   
+        if( equal( shortName, g_modShortNames[mod_id_number] ) )
+        {   
+            g_currentMod_id = mod_id_number
+            saveCurrentModBy_id( mod_id_number )
+        }
+    }
 }
 
 /**
@@ -691,22 +691,22 @@ public configureModID( shortName[] )
  */
 public primitiveFunctions( player_id, firstCommand_lineArgument[], isTimeToRestart )
 {   
-	if( equal( firstCommand_lineArgument, "disable" ) )
-	{   
-		disableMods()
+    if( equal( firstCommand_lineArgument, "disable" ) )
+    {   
+        disableMods()
 
-		if( isTimeToRestart )
-		{
-			msgResourceActivated( "disable", isTimeToRestart, true )
-		}
-		return false
-	}
-	if( equal( firstCommand_lineArgument, "help" ) )
-	{   
-		printHelp( player_id )
-		return false
-	}
-	return true
+        if( isTimeToRestart )
+        {
+            msgResourceActivated( "disable", isTimeToRestart, true )
+        }
+        return false
+    }
+    if( equal( firstCommand_lineArgument, "help" ) )
+    {   
+        printHelp( player_id )
+        return false
+    }
+    return true
 }
 
 /**
@@ -717,23 +717,23 @@ public primitiveFunctions( player_id, firstCommand_lineArgument[], isTimeToResta
  */
 public printHelp( player_id )
 {   
-	new text[LONG_STRING]
+    new text[LONG_STRING]
 
-	client_print( player_id, print_console , g_cmdsAvailables1 )
-	client_print( player_id, print_console , g_cmdsAvailables2 )
+    client_print( player_id, print_console , g_cmdsAvailables1 )
+    client_print( player_id, print_console , g_cmdsAvailables2 )
 
-	server_print( g_cmdsAvailables1 )
-	server_print( g_cmdsAvailables2 )
+    server_print( g_cmdsAvailables1 )
+    server_print( g_cmdsAvailables2 )
 
-	for( new i = 3; i <= g_modCounter; i++ )
-	{   
-		formatex( text, charsmax(text), "amx_setmod %s 1          | to use %s", g_modShortNames[i], g_modNames[i] )
+    for( new i = 3; i <= g_modCounter; i++ )
+    {   
+        formatex( text, charsmax(text), "amx_setmod %s 1          | to use %s", g_modShortNames[i], g_modNames[i] )
 
-		client_print( player_id, print_console , text )
-		server_print( text )
-	}
-	client_print( player_id, print_console , "^n" )
-	server_print( "^n" )
+        client_print( player_id, print_console , text )
+        server_print( text )
+    }
+    client_print( player_id, print_console , "^n" )
+    server_print( "^n" )
 }
 
 /**
@@ -750,36 +750,36 @@ public printHelp( player_id )
  */
 public receiveCommandSilent( player_id, level, cid )
 {   
-	//Make sure this user is an admin
-	if ( !cmd_access( player_id, level, cid, 3 ) )
-	{   
-		return PLUGIN_HANDLED
-	}
-	new firstCommand_lineArgument			[SHORT_STRING]
-	new secondCommand_lineArgument		[SHORT_STRING]
+    //Make sure this user is an admin
+    if ( !cmd_access( player_id, level, cid, 3 ) )
+    {   
+        return PLUGIN_HANDLED
+    }
+    new firstCommand_lineArgument            [SHORT_STRING]
+    new secondCommand_lineArgument        [SHORT_STRING]
 
-	read_argv( 1, firstCommand_lineArgument, charsmax( firstCommand_lineArgument ) )
-	read_argv( 2, secondCommand_lineArgument, charsmax( secondCommand_lineArgument ) )
+    read_argv( 1, firstCommand_lineArgument, charsmax( firstCommand_lineArgument ) )
+    read_argv( 2, secondCommand_lineArgument, charsmax( secondCommand_lineArgument ) )
 
-	new isTimeToRestart 			= equal( secondCommand_lineArgument, "1" )
-	g_isTimeTo_changeMapcyle = true
+    new isTimeToRestart             = equal( secondCommand_lineArgument, "1" )
+    g_isTimeTo_changeMapcyle = true
 
-	if( equal( firstCommand_lineArgument, "disable" ) )
-	{   
-		disableMods()
-		msgResourceActivated( "disable", isTimeToRestart, false )
-	} 
-	else if( activateMod_byShortName( firstCommand_lineArgument ) )
-	{
-		g_currentMod_id = 0 
-		saveCurrentModBy_id( 2 )
+    if( equal( firstCommand_lineArgument, "disable" ) )
+    {   
+        disableMods()
+        msgResourceActivated( "disable", isTimeToRestart, false )
+    } 
+    else if( activateMod_byShortName( firstCommand_lineArgument ) )
+    {
+        g_currentMod_id = 0 
+        saveCurrentModBy_id( 2 )
 
-		saveCurrentModBy_ShortName( firstCommand_lineArgument			 )
-		messageModActivated( 				firstCommand_lineArgument, isTimeToRestart, false )
-	}
-	g_isTimeTo_changeMapcyle = false
+        saveCurrentModBy_ShortName( firstCommand_lineArgument             )
+        messageModActivated(                 firstCommand_lineArgument, isTimeToRestart, false )
+    }
+    g_isTimeTo_changeMapcyle = false
 
-	return PLUGIN_HANDLED
+    return PLUGIN_HANDLED
 }
 
 /**
@@ -787,7 +787,7 @@ public receiveCommandSilent( player_id, level, cid )
  */
 public restartTheServer()
 {
-	server_cmd( "restart" )
+    server_cmd( "restart" )
 }
 
 /**
@@ -797,7 +797,7 @@ public restartTheServer()
  * 
  * If the mod_id stored at 'currentmod_id.ini' is:
  *     greater than 0, it is any mod saved. 
- *	    0, a silent mod is activated. 
+ *        0, a silent mod is activated. 
  *     -1, the mods are disabled. 
  * 
  * When 'currentmod_id.ini' stores 0, 'currentmod_shortname.ini' defines the current mod. 
@@ -805,74 +805,74 @@ public restartTheServer()
  */
 public loadCurrentMod()
 {   
-	new currentModCode
-	new unused_lenghtInteger
+    new currentModCode
+    new unused_lenghtInteger
 
-	new currentModCode_String[SHORT_STRING]
-	new currentMod_shortName[SHORT_STRING]
+    new currentModCode_String[SHORT_STRING]
+    new currentMod_shortName[SHORT_STRING]
 
-	// normal mod activation 
-	if( file_exists( g_currentMod_id_filePath ) ) 
-	{
-		read_file( 	g_currentMod_id_filePath, 0, currentModCode_String, 
-				charsmax(currentModCode_String), unused_lenghtInteger )
+    // normal mod activation 
+    if( file_exists( g_currentMod_id_filePath ) ) 
+    {
+        read_file(     g_currentMod_id_filePath, 0, currentModCode_String, 
+                charsmax(currentModCode_String), unused_lenghtInteger )
 
-		currentModCode 	= str_to_num( currentModCode_String )
-	} 
-	else
-	{
-		currentModCode = -1
-		write_file( g_currentMod_id_filePath,	"-1" 	)
-	}
+        currentModCode     = str_to_num( currentModCode_String )
+    } 
+    else
+    {
+        currentModCode = -1
+        write_file( g_currentMod_id_filePath,    "-1"     )
+    }
 
-	// silent mod activation 
-	if( file_exists( g_currentMod_shortName_filePath ) ) 
-	{
-		read_file( g_currentMod_shortName_filePath, 0, currentMod_shortName, 
-				charsmax(currentMod_shortName), unused_lenghtInteger )
-	} 
-	else
-	{
-		currentModCode = -1
-		write_file( g_currentMod_shortName_filePath, "" )
-	} 
+    // silent mod activation 
+    if( file_exists( g_currentMod_shortName_filePath ) ) 
+    {
+        read_file( g_currentMod_shortName_filePath, 0, currentMod_shortName, 
+                charsmax(currentMod_shortName), unused_lenghtInteger )
+    } 
+    else
+    {
+        currentModCode = -1
+        write_file( g_currentMod_shortName_filePath, "" )
+    } 
 
-	configureMod_byModCode( currentModCode, currentMod_shortName ) 
+    configureMod_byModCode( currentModCode, currentMod_shortName ) 
 }
 
 /**
  * Configure the current mod action after is being loaded from the file at map server start. 
  * 
  * @param currentModCode the code loaded from the current mod file. If it is: 
- *			-1, there is no mod active. 
- * 		0, the current mod was activated by silent mode.
+ *            -1, there is no mod active. 
+ *         0, the current mod was activated by silent mode.
  * 
  * @param currentMod_shortName[] the current mod short name loaded from the 
  *    current mod silent file. 
  */
 public configureMod_byModCode( currentModCode, currentMod_shortName[] ) 
 {
-	debugMessageLog( 1,  "^n^ncurrentModCode: %d | currentMod_shortName: %s^n", 
-			currentModCode, currentMod_shortName )
+    debugMessageLog( 1,  "^n^ncurrentModCode: %d | currentMod_shortName: %s^n", 
+            currentModCode, currentMod_shortName )
 
-	switch( currentModCode )
-	{   
-		case -1: 
-		{   
-			g_currentMod_id = 2 
-			setCurrentMod_atLocalInfo( g_modShortNames[ g_currentMod_id ] )
-		}
-		case 0: 
-		{
-			g_currentMod_id = 0 
-			setCurrentMod_atLocalInfo( currentMod_shortName )
-		}
-		default: 
-		{
-			g_currentMod_id = currentModCode + 2 
-			setCurrentMod_atLocalInfo( g_modShortNames[ g_currentMod_id ] )
-		}
-	}
+    switch( currentModCode )
+    {   
+        case -1: 
+        {   
+            g_currentMod_id = 2 
+            setCurrentMod_atLocalInfo( g_modShortNames[ g_currentMod_id ] )
+        }
+        case 0: 
+        {
+            g_currentMod_id = 0 
+            setCurrentMod_atLocalInfo( currentMod_shortName )
+        }
+        default: 
+        {
+            g_currentMod_id = currentModCode + 2 
+            setCurrentMod_atLocalInfo( g_modShortNames[ g_currentMod_id ] )
+        }
+    }
 }
 
 /**
@@ -885,24 +885,24 @@ public configureMod_byModCode( currentModCode, currentMod_shortName[] )
  */
 public configureMod_byModID( mostVoted_modID ) 
 {
-	g_currentMod_id = mostVoted_modID 
+    g_currentMod_id = mostVoted_modID 
 
-	switch( mostVoted_modID )
-	{   
-		case 1: 
-		{
-			debugMessageLog( 1, "^nAT configureMod_byModID, we are keeping the current mod" )
-		}
-		case 2: 
-		{
-			disableMods()
-		}
-		default: 
-		{	
-			saveCurrentModBy_id( mostVoted_modID )
-			activateMod_byShortName( g_modShortNames[ mostVoted_modID ] )
-		}
-	}
+    switch( mostVoted_modID )
+    {   
+        case 1: 
+        {
+            debugMessageLog( 1, "^nAT configureMod_byModID, we are keeping the current mod" )
+        }
+        case 2: 
+        {
+            disableMods()
+        }
+        default: 
+        {    
+            saveCurrentModBy_id( mostVoted_modID )
+            activateMod_byShortName( g_modShortNames[ mostVoted_modID ] )
+        }
+    }
 }
 
 /**
@@ -914,14 +914,14 @@ public configureMod_byModID( mostVoted_modID )
  */ 
 public setCurrentMod_atLocalInfo( currentMod_shortName[] )
 {
-	retrievesCurrentMod_atLocalInfo()
+    retrievesCurrentMod_atLocalInfo()
 
-	configureMapcycle( currentMod_shortName )	
+    configureMapcycle( currentMod_shortName )    
 
-	set_localinfo( "amx_lastmod", g_currentMod_shortName )
-	set_localinfo( "amx_correntmod", 	currentMod_shortName )
+    set_localinfo( "amx_lastmod", g_currentMod_shortName )
+    set_localinfo( "amx_correntmod",     currentMod_shortName )
 
-	copy( g_currentMod_shortName, charsmax( g_currentMod_shortName ), currentMod_shortName )
+    copy( g_currentMod_shortName, charsmax( g_currentMod_shortName ), currentMod_shortName )
 }
 
 /**
@@ -930,29 +930,29 @@ public setCurrentMod_atLocalInfo( currentMod_shortName[] )
  */ 
 public retrievesCurrentMod_atLocalInfo()
 {
-	get_localinfo( "amx_correntmod", g_currentMod_shortName, charsmax( g_currentMod_shortName ) );
+    get_localinfo( "amx_correntmod", g_currentMod_shortName, charsmax( g_currentMod_shortName ) );
 }
 
 /**
  * Given a mod_id_number, salves it to file "currentmod_id.ini", at multimod folder.
  * 
  * @param mod_id_number the mod id. If the mod_id_number is:
- * 		greater than 2, it is any mod. 
- *			2, a silent mod activated. 
- * 		1, the mods are disabled. 
+ *         greater than 2, it is any mod. 
+ *            2, a silent mod activated. 
+ *         1, the mods are disabled. 
  */
 saveCurrentModBy_id( mod_id_number )
 {   
-	new mod_idString[SHORT_STRING]
+    new mod_idString[SHORT_STRING]
 
-	if ( file_exists( g_currentMod_id_filePath ) )
-	{   
-		delete_file( g_currentMod_id_filePath )
-	}
+    if ( file_exists( g_currentMod_id_filePath ) )
+    {   
+        delete_file( g_currentMod_id_filePath )
+    }
 
-	formatex( mod_idString, charsmax(mod_idString), "%d", mod_id_number - 2 )
+    formatex( mod_idString, charsmax(mod_idString), "%d", mod_id_number - 2 )
 
-	write_file( g_currentMod_id_filePath, mod_idString )
+    write_file( g_currentMod_id_filePath, mod_idString )
 }
 
 /**
@@ -962,11 +962,11 @@ saveCurrentModBy_id( mod_id_number )
  */
 public saveCurrentModBy_ShortName( modShortName[] )
 {
-	if( file_exists( g_currentMod_shortName_filePath ) )
-	{   
-		delete_file( g_currentMod_shortName_filePath )
-	}
-	write_file( g_currentMod_shortName_filePath, modShortName )
+    if( file_exists( g_currentMod_shortName_filePath ) )
+    {   
+        delete_file( g_currentMod_shortName_filePath )
+    }
+    write_file( g_currentMod_shortName_filePath, modShortName )
 }
 
 /**
@@ -975,18 +975,18 @@ public saveCurrentModBy_ShortName( modShortName[] )
  */
 public build_first_mods()
 {   
-	formatex( g_modNames[g_modCounter], SHORT_STRING - 1, "Silent Mod  Currently" )
-	formatex( g_modShortNames[g_modCounter], SHORT_STRING - 1, "silentMod" )
+    formatex( g_modNames[g_modCounter], SHORT_STRING - 1, "Silent Mod  Currently" )
+    formatex( g_modShortNames[g_modCounter], SHORT_STRING - 1, "silentMod" )
 
-	g_modCounter++
+    g_modCounter++
 
-	formatex( g_modNames[g_modCounter], SHORT_STRING - 1, "Keep Current Mod" )
-	formatex( g_modShortNames[g_modCounter], SHORT_STRING - 1, "keepCurrent" )
+    formatex( g_modNames[g_modCounter], SHORT_STRING - 1, "Keep Current Mod" )
+    formatex( g_modShortNames[g_modCounter], SHORT_STRING - 1, "keepCurrent" )
 
-	g_modCounter++
+    g_modCounter++
 
-	formatex( g_modNames[g_modCounter], SHORT_STRING - 1, "No mod - Disable Mod" )
-	formatex( g_modShortNames[g_modCounter], SHORT_STRING - 1, "disableMod" )
+    formatex( g_modNames[g_modCounter], SHORT_STRING - 1, "No mod - Disable Mod" )
+    formatex( g_modShortNames[g_modCounter], SHORT_STRING - 1, "disableMod" )
 }
 
 /**
@@ -994,74 +994,74 @@ public build_first_mods()
  */
 public load_votingList()
 {   
-	new currentLine								[LONG_STRING]
-	new currentLine_splited					[SHORT_STRING]
-	new modName									[SHORT_STRING]
-	new modShortName_string				[SHORT_STRING]
-	new unusedLast_string					[SHORT_STRING]
+    new currentLine                                [LONG_STRING]
+    new currentLine_splited                    [SHORT_STRING]
+    new modName                                    [SHORT_STRING]
+    new modShortName_string                [SHORT_STRING]
+    new unusedLast_string                    [SHORT_STRING]
 
-	new votingList_filePointer = fopen( g_votingList_filePath, "rt" )
+    new votingList_filePointer = fopen( g_votingList_filePath, "rt" )
 
-	while( !feof( votingList_filePointer ) )
-	{   
-		fgets( votingList_filePointer, currentLine, charsmax(currentLine) )
-		trim( currentLine )
+    while( !feof( votingList_filePointer ) )
+    {   
+        fgets( votingList_filePointer, currentLine, charsmax(currentLine) )
+        trim( currentLine )
 
-		// skip commentaries while reading file
-		if( !currentLine[0] || currentLine[0] == ';' || ( currentLine[0] == '/' && currentLine[1] == '/' ) )
-		{   
-			continue
-		}
+        // skip commentaries while reading file
+        if( !currentLine[0] || currentLine[0] == ';' || ( currentLine[0] == '/' && currentLine[1] == '/' ) )
+        {   
+            continue
+        }
 
-		if( currentLine[0] == '[' )
-		{   
-			g_modCounter++
+        if( currentLine[0] == '[' )
+        {   
+            g_modCounter++
 
-			// remove line delimiters [ and ]
-			replace_all( currentLine, charsmax(currentLine), "[", "" )
-			replace_all( currentLine, charsmax(currentLine), "]", "" )
+            // remove line delimiters [ and ]
+            replace_all( currentLine, charsmax(currentLine), "[", "" )
+            replace_all( currentLine, charsmax(currentLine), "]", "" )
 
-			// broke the current config line, in modname (modName), modtag (modShortName_string) 
-			strtok( currentLine, modName, charsmax(modName), currentLine_splited, charsmax(currentLine_splited), ':', 0 )
-			strtok( currentLine_splited, modShortName_string, charsmax(modShortName_string), unusedLast_string, 
-					charsmax( unusedLast_string ), ':', 0 )
+            // broke the current config line, in modname (modName), modtag (modShortName_string) 
+            strtok( currentLine, modName, charsmax(modName), currentLine_splited, charsmax(currentLine_splited), ':', 0 )
+            strtok( currentLine_splited, modShortName_string, charsmax(modShortName_string), unusedLast_string, 
+                    charsmax( unusedLast_string ), ':', 0 )
 
-			// stores at memory the modname and the modShortName
-			formatex( g_modNames[g_modCounter], SHORT_STRING - 1, "%s", modName )
-			formatex( g_modShortNames[g_modCounter], SHORT_STRING - 1, "%s", modShortName_string )
+            // stores at memory the modname and the modShortName
+            formatex( g_modNames[g_modCounter], SHORT_STRING - 1, "%s", modName )
+            formatex( g_modShortNames[g_modCounter], SHORT_STRING - 1, "%s", modShortName_string )
 
-			debugMessageLog( 1, "[AMX MOD Loaded] %d - %s",  g_modCounter - 2, g_modNames[g_modCounter] )
+            debugMessageLog( 1, "[AMX MOD Loaded] %d - %s",  g_modCounter - 2, g_modNames[g_modCounter] )
 
-			if( g_is_debug & 2 ) 
-			{   
-				new mapcycle_filePath					[SHORT_STRING] 
-				new config_filePath						[SHORT_STRING] 
-				new plugin_filePath						[SHORT_STRING] 
-				new message_filePath					[SHORT_STRING]
-				new messageResource_filePath			[SHORT_STRING]
-				new lateConfig_filePath				[SHORT_STRING] 
+            if( g_is_debug & 2 ) 
+            {   
+                new mapcycle_filePath                    [SHORT_STRING] 
+                new config_filePath                        [SHORT_STRING] 
+                new plugin_filePath                        [SHORT_STRING] 
+                new message_filePath                    [SHORT_STRING]
+                new messageResource_filePath            [SHORT_STRING]
+                new lateConfig_filePath                [SHORT_STRING] 
 
-				mapcycle_pathCoder( modShortName_string, mapcycle_filePath, charsmax( mapcycle_filePath ) )
-				config_pathCoder( modShortName_string, config_filePath, charsmax( config_filePath ) )
-				plugin_pathCoder( modShortName_string, plugin_filePath, charsmax( plugin_filePath ) )
-				message_pathCoder( modShortName_string, message_filePath, charsmax( message_filePath ) )
+                mapcycle_pathCoder( modShortName_string, mapcycle_filePath, charsmax( mapcycle_filePath ) )
+                config_pathCoder( modShortName_string, config_filePath, charsmax( config_filePath ) )
+                plugin_pathCoder( modShortName_string, plugin_filePath, charsmax( plugin_filePath ) )
+                message_pathCoder( modShortName_string, message_filePath, charsmax( message_filePath ) )
 
-				messageResource_pathCoder( modShortName_string, messageResource_filePath, 
-						charsmax( messageResource_filePath ) )
+                messageResource_pathCoder( modShortName_string, messageResource_filePath, 
+                        charsmax( messageResource_filePath ) )
 
-				lateConfig_pathCoder( modShortName_string, lateConfig_filePath, charsmax( lateConfig_filePath ) )
+                lateConfig_pathCoder( modShortName_string, lateConfig_filePath, charsmax( lateConfig_filePath ) )
 
-				server_print( "[AMX MOD Loaded] %s", modShortName_string )
-				server_print( "[AMX MOD Loaded] %s", mapcycle_filePath )
-				server_print( "[AMX MOD Loaded] %s", plugin_filePath )
-				server_print( "[AMX MOD Loaded] %s", config_filePath )
-				server_print( "[AMX MOD Loaded] %s", message_filePath )
-				server_print( "[AMX MOD Loaded] %s", lateConfig_filePath )
-				server_print( "[AMX MOD Loaded] %s^n", messageResource_filePath )
-			}
-		}
-	}
-	fclose( votingList_filePointer )
+                server_print( "[AMX MOD Loaded] %s", modShortName_string )
+                server_print( "[AMX MOD Loaded] %s", mapcycle_filePath )
+                server_print( "[AMX MOD Loaded] %s", plugin_filePath )
+                server_print( "[AMX MOD Loaded] %s", config_filePath )
+                server_print( "[AMX MOD Loaded] %s", message_filePath )
+                server_print( "[AMX MOD Loaded] %s", lateConfig_filePath )
+                server_print( "[AMX MOD Loaded] %s^n", messageResource_filePath )
+            }
+        }
+    }
+    fclose( votingList_filePointer )
 }
 
 /**
@@ -1077,7 +1077,7 @@ public load_votingList()
  */
 public messageResource_pathCoder( resourceName[], messageResource_filePath[], stringReturnSize )
 {   
-	formatex( messageResource_filePath, stringReturnSize, "%s/multimod/%s.cfg", g_configFolder, resourceName )
+    formatex( messageResource_filePath, stringReturnSize, "%s/multimod/%s.cfg", g_configFolder, resourceName )
 }
 
 /**
@@ -1091,7 +1091,7 @@ public messageResource_pathCoder( resourceName[], messageResource_filePath[], st
  */
 public message_pathCoder( modShortName[], message_filePath[], stringReturnSize )
 {   
-	formatex( message_filePath, stringReturnSize, "%s/multimod/msg/%s.cfg", g_configFolder, modShortName )
+    formatex( message_filePath, stringReturnSize, "%s/multimod/msg/%s.cfg", g_configFolder, modShortName )
 }
 
 /**
@@ -1104,7 +1104,7 @@ public message_pathCoder( modShortName[], message_filePath[], stringReturnSize )
  */
 public plugin_pathCoder( modShortName[], plugin_filePath[], stringReturnSize)
 {   
-	formatex( plugin_filePath, stringReturnSize, "%s/multimod/plugins/%s.ini", g_configFolder, modShortName )
+    formatex( plugin_filePath, stringReturnSize, "%s/multimod/plugins/%s.ini", g_configFolder, modShortName )
 }
 
 /**
@@ -1117,7 +1117,7 @@ public plugin_pathCoder( modShortName[], plugin_filePath[], stringReturnSize)
  */
 public config_pathCoder( modShortName[], config_filePath[], stringReturnSize)
 {   
-	formatex( config_filePath, stringReturnSize, "%s/multimod/cfg/%s.cfg", g_configFolder, modShortName )
+    formatex( config_filePath, stringReturnSize, "%s/multimod/cfg/%s.cfg", g_configFolder, modShortName )
 }
 
 /**
@@ -1131,7 +1131,7 @@ public config_pathCoder( modShortName[], config_filePath[], stringReturnSize)
  */
 public lateConfig_pathCoder( modShortName[], lateConfig_filePath[], stringReturnSize)
 {   
-	formatex( lateConfig_filePath, stringReturnSize, "%s/multimod/latecfg/%s.cfg", g_configFolder, modShortName )
+    formatex( lateConfig_filePath, stringReturnSize, "%s/multimod/latecfg/%s.cfg", g_configFolder, modShortName )
 }
 
 /**
@@ -1145,7 +1145,7 @@ public lateConfig_pathCoder( modShortName[], lateConfig_filePath[], stringReturn
  */
 public mapcycle_pathCoder( modShortName[], mapcycle_filePath[], stringReturnSize)
 {   
-	formatex( mapcycle_filePath, stringReturnSize, "mapcycles/%s.txt", modShortName )
+    formatex( mapcycle_filePath, stringReturnSize, "mapcycles/%s.txt", modShortName )
 }
 
 /**
@@ -1155,12 +1155,12 @@ public mapcycle_pathCoder( modShortName[], mapcycle_filePath[], stringReturnSize
  */
 configureMapcycle( modShortName[] )
 {
-	new mapcycle_filePath[SHORT_STRING] 
+    new mapcycle_filePath[SHORT_STRING] 
 
-	mapcycle_pathCoder( modShortName, mapcycle_filePath, charsmax( mapcycle_filePath ) )
+    mapcycle_pathCoder( modShortName, mapcycle_filePath, charsmax( mapcycle_filePath ) )
 
-	configMapManager( mapcycle_filePath )
-	configDailyMaps( mapcycle_filePath )
+    configMapManager( mapcycle_filePath )
+    configDailyMaps( mapcycle_filePath )
 }
 
 /**
@@ -1169,14 +1169,14 @@ configureMapcycle( modShortName[] )
  */
 public switchMapManager()
 {   
-	if( is_plugin_loaded( "Galileo" ) != -1 )
-	{   
-		g_mapManagerType = 2
-	} 
-	else if( find_plugin_byfile( "Nextmap Chooser" ) != -1 )
-	{   
-		g_mapManagerType = 1
-	}
+    if( is_plugin_loaded( "Galileo" ) != -1 )
+    {   
+        g_mapManagerType = 2
+    } 
+    else if( find_plugin_byfile( "Nextmap Chooser" ) != -1 )
+    {   
+        g_mapManagerType = 1
+    }
 }
 
 /**
@@ -1188,32 +1188,32 @@ public switchMapManager()
  */
 public configMapManager( mapcycle_filePath[] )
 {   
-	if( file_exists( mapcycle_filePath ) )
-	{   
-		switch( g_mapManagerType )
-		{   
-			case 1:
-			{   
-				if( callfunc_begin("plugin_init", "multimod_mapchooser.amxx" ) == 1 )
-				{   
-					callfunc_end()
-				} 
-				else
-				{   
-					printMessage( 0, "Error at configMapManager!! multimod_mapchooser.amxx NOT FOUND!^n" )
-				}
-			}
-			case 2:
-			{   
-				new galileo_mapfile = get_cvar_pointer( "gal_vote_mapfile" )
+    if( file_exists( mapcycle_filePath ) )
+    {   
+        switch( g_mapManagerType )
+        {   
+            case 1:
+            {   
+                if( callfunc_begin("plugin_init", "multimod_mapchooser.amxx" ) == 1 )
+                {   
+                    callfunc_end()
+                } 
+                else
+                {   
+                    printMessage( 0, "Error at configMapManager!! multimod_mapchooser.amxx NOT FOUND!^n" )
+                }
+            }
+            case 2:
+            {   
+                new galileo_mapfile = get_cvar_pointer( "gal_vote_mapfile" )
 
-				if( galileo_mapfile )
-				{   
-					set_pcvar_string( galileo_mapfile, mapcycle_filePath )
-				}
-			}
-		}
-	}
+                if( galileo_mapfile )
+                {   
+                    set_pcvar_string( galileo_mapfile, mapcycle_filePath )
+                }
+            }
+        }
+    }
 }
 
 /**
@@ -1231,43 +1231,43 @@ public configMapManager( mapcycle_filePath[] )
  */
 public configDailyMaps( mapcycle_filePath[] )
 {
-	new isFirstTime[32]
+    new isFirstTime[32]
 
-	get_localinfo( 		"isFirstTime_serverLoad", isFirstTime, charsmax( isFirstTime ) );
-	g_isFirstTime_serverLoad 	= str_to_num( isFirstTime )
+    get_localinfo(         "isFirstTime_serverLoad", isFirstTime, charsmax( isFirstTime ) );
+    g_isFirstTime_serverLoad     = str_to_num( isFirstTime )
 
-	if( g_isFirstTime_serverLoad  == 0 )
-	{
-		new currentMapcycle_filePath		[SHORT_STRING]
-		get_cvar_string( 			"mapcyclefile", 			currentMapcycle_filePath, 	charsmax( currentMapcycle_filePath ) )
+    if( g_isFirstTime_serverLoad  == 0 )
+    {
+        new currentMapcycle_filePath        [SHORT_STRING]
+        get_cvar_string(             "mapcyclefile",             currentMapcycle_filePath,     charsmax( currentMapcycle_filePath ) )
 
-		set_localinfo( 	"firstMapcycle_loaded", 		currentMapcycle_filePath )
-		set_localinfo(	 "isFirstTime_serverLoad", 		"1" 	)
-	}
+        set_localinfo(     "firstMapcycle_loaded",         currentMapcycle_filePath )
+        set_localinfo(     "isFirstTime_serverLoad",         "1"     )
+    }
 
-	if( g_is_debug & 8 ) 
-	{  
-		server_print( "AT configDailyMaps: " )
-		server_print( "g_isFirstTime_serverLoad is: %d", 		g_isFirstTime_serverLoad 	)
-		server_print( "g_isTimeTo_changeMapcyle is: %d", 		g_isTimeTo_changeMapcyle )
-		server_print( "file_exists( mapcycle_filePath ) is: %d", 	file_exists( mapcycle_filePath ) )
-		server_print( "mapcycle_filePath is: %s", 							mapcycle_filePath 		)
-	}
+    if( g_is_debug & 8 ) 
+    {  
+        server_print( "AT configDailyMaps: " )
+        server_print( "g_isFirstTime_serverLoad is: %d",         g_isFirstTime_serverLoad     )
+        server_print( "g_isTimeTo_changeMapcyle is: %d",         g_isTimeTo_changeMapcyle )
+        server_print( "file_exists( mapcycle_filePath ) is: %d",     file_exists( mapcycle_filePath ) )
+        server_print( "mapcycle_filePath is: %s",                             mapcycle_filePath         )
+    }
 
-	if( g_isFirstTime_serverLoad  == 0 || g_isTimeTo_changeMapcyle )
-	{
-		g_isTimeTo_changeMapcyle = false
+    if( g_isFirstTime_serverLoad  == 0 || g_isTimeTo_changeMapcyle )
+    {
+        g_isTimeTo_changeMapcyle = false
 
-		if( file_exists( mapcycle_filePath ) )
-		{   
-			set_pcvar_string( 	gp_mapcyclefile, 		mapcycle_filePath 	)
-			set_localinfo(	 	"isFirstTime_serverLoad", 		"1" 		)
-		} 
-		else 
-		{
-			set_localinfo( "isFirstTime_serverLoad", "2" );
-		}
-	}
+        if( file_exists( mapcycle_filePath ) )
+        {   
+            set_pcvar_string(     gp_mapcyclefile,         mapcycle_filePath     )
+            set_localinfo(         "isFirstTime_serverLoad",         "1"         )
+        } 
+        else 
+        {
+            set_localinfo( "isFirstTime_serverLoad", "2" );
+        }
+    }
 }
 
 /**
@@ -1275,32 +1275,32 @@ public configDailyMaps( mapcycle_filePath[] )
  */
 public disableMods()
 {   
-	debugMessageLog( 1, "^n AT disableMods, the g_currentMod_shortName is: %s^n", g_currentMod_shortName )
+    debugMessageLog( 1, "^n AT disableMods, the g_currentMod_shortName is: %s^n", g_currentMod_shortName )
 
-	if( file_exists( g_currentMod_id_filePath ) )
-	{   
-		delete_file( g_currentMod_id_filePath )
-	}
+    if( file_exists( g_currentMod_id_filePath ) )
+    {   
+        delete_file( g_currentMod_id_filePath )
+    }
 
-	if( file_exists( g_masterConfig_filePath ) )
-	{   
-		delete_file( g_masterConfig_filePath )
-	}
+    if( file_exists( g_masterConfig_filePath ) )
+    {   
+        delete_file( g_masterConfig_filePath )
+    }
 
-	if( file_exists( g_currentMod_shortName_filePath ) )
-	{   
-		delete_file( g_currentMod_shortName_filePath )
-	}
+    if( file_exists( g_currentMod_shortName_filePath ) )
+    {   
+        delete_file( g_currentMod_shortName_filePath )
+    }
 
-	if( file_exists( g_masterPlugin_filePath ) )
-	{   
-		delete_file( g_masterPlugin_filePath )
-	}
+    if( file_exists( g_masterPlugin_filePath ) )
+    {   
+        delete_file( g_masterPlugin_filePath )
+    }
 
-	write_file( g_masterConfig_filePath, 					g_alertMultiMod )
-	write_file( g_masterPlugin_filePath, 									g_alertMultiMod )
-	write_file( g_currentMod_shortName_filePath, 		"" 							)
-	write_file( g_currentMod_id_filePath,				 		"-1" 							)
+    write_file( g_masterConfig_filePath,                     g_alertMultiMod )
+    write_file( g_masterPlugin_filePath,                                     g_alertMultiMod )
+    write_file( g_currentMod_shortName_filePath,         ""                             )
+    write_file( g_currentMod_id_filePath,                         "-1"                             )
 }
 
 /**
@@ -1313,35 +1313,35 @@ public disableMods()
  */
 public activateMod_byShortName( modShortName[] )
 {   
-	new plugin_filePath[LONG_STRING]
+    new plugin_filePath[LONG_STRING]
 
-	plugin_pathCoder( modShortName, plugin_filePath, charsmax( plugin_filePath ) ) 
+    plugin_pathCoder( modShortName, plugin_filePath, charsmax( plugin_filePath ) ) 
 
-	if( file_exists(plugin_filePath) )
-	{   
-		new config_filePath[LONG_STRING] 
+    if( file_exists(plugin_filePath) )
+    {   
+        new config_filePath[LONG_STRING] 
 
-		config_pathCoder( modShortName, config_filePath, charsmax( config_filePath ) ) 
+        config_pathCoder( modShortName, config_filePath, charsmax( config_filePath ) ) 
 
-		if( file_exists( config_filePath ) )
-		{
-			copyFiles( config_filePath, g_masterConfig_filePath, g_alertMultiMod )
-		}
-		copyFiles( plugin_filePath, g_masterPlugin_filePath, g_alertMultiMod )
+        if( file_exists( config_filePath ) )
+        {
+            copyFiles( config_filePath, g_masterConfig_filePath, g_alertMultiMod )
+        }
+        copyFiles( plugin_filePath, g_masterPlugin_filePath, g_alertMultiMod )
 
-		configureMapcycle( modShortName )
+        configureMapcycle( modShortName )
 
-		server_print( "[AMX MOD Loaded] Setting multimod to %s", modShortName )
+        server_print( "[AMX MOD Loaded] Setting multimod to %s", modShortName )
 
-		return true
-	}
-	else
-	{   
-		printMessage( 0, "Error at activateMod_byShortName!! plugin_filePath: %s", plugin_filePath )
-	}
-	debugMessageLog( 1, "^n activateMod_byShortName, plugin_filePath: %s^n", plugin_filePath )
+        return true
+    }
+    else
+    {   
+        printMessage( 0, "Error at activateMod_byShortName!! plugin_filePath: %s", plugin_filePath )
+    }
+    debugMessageLog( 1, "^n activateMod_byShortName, plugin_filePath: %s^n", plugin_filePath )
 
-	return false
+    return false
 }
 
 /**
@@ -1354,22 +1354,22 @@ public activateMod_byShortName( modShortName[] )
  */
 public copyFiles( sourceFilePath[], destinationFilePath[], inicialFileText[] )
 {   
-	if ( file_exists( destinationFilePath ) )
-	{   
-		delete_file( destinationFilePath )
-	}	
-	write_file( destinationFilePath, inicialFileText, 0 )
+    if ( file_exists( destinationFilePath ) )
+    {   
+        delete_file( destinationFilePath )
+    }    
+    write_file( destinationFilePath, inicialFileText, 0 )
 
-	new sourceFilePathPointer = fopen( sourceFilePath, "rt" )
-	new Text[512];
+    new sourceFilePathPointer = fopen( sourceFilePath, "rt" )
+    new Text[512];
 
-	while ( !feof( sourceFilePathPointer ) )
-	{   
-		fgets( sourceFilePathPointer, Text, sizeof(Text) - 1 )
-		trim(Text)
-		write_file( destinationFilePath, Text, -1)
-	}
-	fclose( sourceFilePathPointer )
+    while ( !feof( sourceFilePathPointer ) )
+    {   
+        fgets( sourceFilePathPointer, Text, sizeof(Text) - 1 )
+        trim(Text)
+        write_file( destinationFilePath, Text, -1)
+    }
+    fclose( sourceFilePathPointer )
 }
 
 /**
@@ -1380,16 +1380,16 @@ public copyFiles( sourceFilePath[], destinationFilePath[], inicialFileText[] )
  */
 public copyFiles2( sourceFilePath[], destinationFilePath[] )
 {   
-	new sourceFilePathPointer = fopen( sourceFilePath, "rt" )
-	new Text[512];
+    new sourceFilePathPointer = fopen( sourceFilePath, "rt" )
+    new Text[512];
 
-	while ( !feof( sourceFilePathPointer ) )
-	{   
-		fgets( sourceFilePathPointer, Text, sizeof(Text) - 1 )
-		trim(Text)
-		write_file( destinationFilePath, Text, -1 )
-	}
-	fclose( sourceFilePathPointer )
+    while ( !feof( sourceFilePathPointer ) )
+    {   
+        fgets( sourceFilePathPointer, Text, sizeof(Text) - 1 )
+        trim(Text)
+        write_file( destinationFilePath, Text, -1 )
+    }
+    fclose( sourceFilePathPointer )
 }
 
 /**
@@ -1401,27 +1401,27 @@ public copyFiles2( sourceFilePath[], destinationFilePath[] )
  */
 public messageModActivated( modShortName[], isTimeToRestart, isTimeTo_executeMessage )
 {   
-	printMessage( 0, "^1The mod ( ^4%s^1 ) will be activated at ^4next server restart^1.", modShortName )
+    printMessage( 0, "^1The mod ( ^4%s^1 ) will be activated at ^4next server restart^1.", modShortName )
 
-	if( isTimeToRestart )
-	{
-		new message_filePath[LONG_STRING]
+    if( isTimeToRestart )
+    {
+        new message_filePath[LONG_STRING]
 
-		message_pathCoder( modShortName, message_filePath, charsmax( message_filePath ) ) 
+        message_pathCoder( modShortName, message_filePath, charsmax( message_filePath ) ) 
 
-		if( file_exists( message_filePath ) && isTimeTo_executeMessage )
-		{
-			server_cmd( "exec %s", message_filePath )
-		} 
-		else
-		{
-			// freeze the game and show the scoreboard
-			message_begin(MSG_ALL, SVC_INTERMISSION);
-			message_end();
+        if( file_exists( message_filePath ) && isTimeTo_executeMessage )
+        {
+            server_cmd( "exec %s", message_filePath )
+        } 
+        else
+        {
+            // freeze the game and show the scoreboard
+            message_begin(MSG_ALL, SVC_INTERMISSION);
+            message_end();
 
-			set_task(5.0, "restartTheServer");
-		}
-	}
+            set_task(5.0, "restartTheServer");
+        }
+    }
 }
 
 /**
@@ -1434,27 +1434,27 @@ public messageModActivated( modShortName[], isTimeToRestart, isTimeTo_executeMes
  */
 public msgResourceActivated( resourceName[], isTimeToRestart, isTimeTo_executeMessage )
 {   
-	printMessage( 0, "^1The resource ( ^4%s^1 ) will be activated at ^4next server restart^1.", resourceName )
+    printMessage( 0, "^1The resource ( ^4%s^1 ) will be activated at ^4next server restart^1.", resourceName )
 
-	if( isTimeToRestart )
-	{
-		new messageResource_filePath[LONG_STRING]
+    if( isTimeToRestart )
+    {
+        new messageResource_filePath[LONG_STRING]
 
-		messageResource_pathCoder( resourceName, messageResource_filePath, charsmax( messageResource_filePath ) ) 
+        messageResource_pathCoder( resourceName, messageResource_filePath, charsmax( messageResource_filePath ) ) 
 
-		if( file_exists( messageResource_filePath ) && isTimeTo_executeMessage )
-		{
-			server_cmd( "exec %s", messageResource_filePath )
-		} 
-		else
-		{
-			// freeze the game and show the scoreboard
-			message_begin(MSG_ALL, SVC_INTERMISSION);
-			message_end();
+        if( file_exists( messageResource_filePath ) && isTimeTo_executeMessage )
+        {
+            server_cmd( "exec %s", messageResource_filePath )
+        } 
+        else
+        {
+            // freeze the game and show the scoreboard
+            message_begin(MSG_ALL, SVC_INTERMISSION);
+            message_end();
 
-			set_task(5.0, "restartTheServer");
-		}
-	}
+            set_task(5.0, "restartTheServer");
+        }
+    }
 }
 
 /**
@@ -1466,22 +1466,22 @@ public msgResourceActivated( resourceName[], isTimeToRestart, isTimeTo_executeMe
  */
 public printMessage( player_id, message[], any:... )
 {   
-	static formated_message[LONG_STRING] 
+    static formated_message[LONG_STRING] 
 
-	vformat( formated_message, charsmax( formated_message ), message, 3 ) 
+    vformat( formated_message, charsmax( formated_message ), message, 3 ) 
 
 #if AMXX_VERSION_NUM < 183
-	print_color( player_id, formated_message )
+    print_color( player_id, formated_message )
 #else
-	print_chat_color( player_id, formated_message )
+    print_chat_color( player_id, formated_message )
 #endif
-	
-	replace_all( formated_message, charsmax( formated_message ), "^4", "" ) 
-	replace_all( formated_message, charsmax( formated_message ), "^1", "" ) 
-	replace_all( formated_message, charsmax( formated_message ), "^3", "" ) 
-	
-	client_print( 	player_id, print_console, formated_message )
-	server_print( formated_message )
+    
+    replace_all( formated_message, charsmax( formated_message ), "^4", "" ) 
+    replace_all( formated_message, charsmax( formated_message ), "^1", "" ) 
+    replace_all( formated_message, charsmax( formated_message ), "^3", "" ) 
+    
+    client_print(     player_id, print_console, formated_message )
+    server_print( formated_message )
 }
 
 /**
@@ -1494,26 +1494,26 @@ public printMessage( player_id, message[], any:... )
  */
 stock print_color( const player_id, const input[], any:... )
 {
-	new playerIndex_idsCounter = 1, players_ids[32];
+    new playerIndex_idsCounter = 1, players_ids[32];
 
-	static formated_message[LONG_STRING];
+    static formated_message[LONG_STRING];
 
-	vformat(formated_message, charsmax( formated_message ), input, 3);
+    vformat(formated_message, charsmax( formated_message ), input, 3);
 
-	if( player_id ) players_ids[0] = player_id; else get_players(players_ids, playerIndex_idsCounter, "ch");
-	{
-		for (new i = 0; i < playerIndex_idsCounter; i++)
-		{
-			if (is_user_connected(players_ids[i]))
-			{
-				message_begin( MSG_ONE_UNRELIABLE, g_sayText, _, players_ids[i] );
-				write_byte( players_ids[i] );
-				write_string( formated_message );
-				message_end();
-			}
-		}
-	}
-	return PLUGIN_HANDLED;
+    if( player_id ) players_ids[0] = player_id; else get_players(players_ids, playerIndex_idsCounter, "ch");
+    {
+        for (new i = 0; i < playerIndex_idsCounter; i++)
+        {
+            if (is_user_connected(players_ids[i]))
+            {
+                message_begin( MSG_ONE_UNRELIABLE, g_sayText, _, players_ids[i] );
+                write_byte( players_ids[i] );
+                write_string( formated_message );
+                message_end();
+            }
+        }
+    }
+    return PLUGIN_HANDLED;
 }
 
 /**
@@ -1523,58 +1523,58 @@ stock print_color( const player_id, const input[], any:... )
  */
 public user_currentmod(player_id)
 {   
-	client_print(0, print_chat, "The game current mod is: %s", g_modNames[ g_currentMod_id ] )
+    client_print(0, print_chat, "The game current mod is: %s", g_modNames[ g_currentMod_id ] )
 
-	return PLUGIN_HANDLED
+    return PLUGIN_HANDLED
 }
 
 /**
  * Called with "say votemod". Checks:
- *	If users can invoke voting.
- *	If its already voted.
+ *    If users can invoke voting.
+ *    If its already voted.
  * 
  * @param player_id the player id
  */
 public user_votemod(player_id)
 {   
-	if( get_pcvar_num( gp_allowedvote ) )
-	{   
-		client_print(0, print_chat, "%L", LANG_PLAYER, "MM_VOTEMOD", g_modNames[g_currentMod_id] )
-		return PLUGIN_HANDLED
-	}
-	new Float:elapsedTime = get_pcvar_float(gp_timelimit) - (float(get_timeleft()) / 60.0)
-	new Float:minTime
-	minTime = get_pcvar_float(gp_mintime)
+    if( get_pcvar_num( gp_allowedvote ) )
+    {   
+        client_print(0, print_chat, "%L", LANG_PLAYER, "MM_VOTEMOD", g_modNames[g_currentMod_id] )
+        return PLUGIN_HANDLED
+    }
+    new Float:elapsedTime = get_pcvar_float(gp_timelimit) - (float(get_timeleft()) / 60.0)
+    new Float:minTime
+    minTime = get_pcvar_float(gp_mintime)
 
-	if(elapsedTime < minTime)
-	{   
-		client_print( player_id, print_chat, "[AMX MultiMod] %L", LANG_PLAYER, "MM_PL_WAIT",
-		floatround(minTime - elapsedTime, floatround_ceil) )
+    if(elapsedTime < minTime)
+    {   
+        client_print( player_id, print_chat, "[AMX MultiMod] %L", LANG_PLAYER, "MM_PL_WAIT",
+        floatround(minTime - elapsedTime, floatround_ceil) )
 
-		return PLUGIN_HANDLED
-	}
-	new timeleft = get_timeleft()
+        return PLUGIN_HANDLED
+    }
+    new timeleft = get_timeleft()
 
-	if(timeleft < 180)
-	{   
-		client_print( player_id, print_chat, "You can't start a vote mod while the timeleft is %d seconds",
-				timeleft )
+    if(timeleft < 180)
+    {   
+        client_print( player_id, print_chat, "You can't start a vote mod while the timeleft is %d seconds",
+                timeleft )
 
-		return PLUGIN_HANDLED
-	}
-	start_vote()
-	return PLUGIN_HANDLED
+        return PLUGIN_HANDLED
+    }
+    start_vote()
+    return PLUGIN_HANDLED
 }
 
 public check_task()
 {   
-	new timeleft = get_timeleft()
+    new timeleft = get_timeleft()
 
-	if(timeleft < 300 || timeleft > 330)
-	{   
-		return
-	}
-	start_vote()
+    if(timeleft < 300 || timeleft > 330)
+    {   
+        return
+    }
+    start_vote()
 }
 
 /**
@@ -1586,29 +1586,29 @@ public check_task()
  */
 public start_vote()
 {   
-	remove_task(TASK_VOTEMOD)
-	remove_task(TASK_CHVOMOD)
+    remove_task(TASK_VOTEMOD)
+    remove_task(TASK_CHVOMOD)
 
-	for( new i = 0; i < 33; i++ )
-	{   
-		g_menuPosition[i] = 0
-	}
+    for( new i = 0; i < 33; i++ )
+    {   
+        g_menuPosition[i] = 0
+    }
 
-	for( new i = 0; i < MAXMODS; i++ )
-	{   
-		g_votemodcount[i] = 0
-	}
+    for( new i = 0; i < MAXMODS; i++ )
+    {   
+        g_votemodcount[i] = 0
+    }
 
-	display_votemod_menu( 0, 0 )
-	client_cmd(0, "spk Gman/Gman_Choose2")
+    display_votemod_menu( 0, 0 )
+    client_cmd(0, "spk Gman/Gman_Choose2")
 
-	if( g_is_debug )
-	{   
-		set_task( 6.0, "check_vote", TASK_CHVOMOD )
-	} else
-	{   
-		set_task( 30.0, "check_vote", TASK_CHVOMOD )
-	}
+    if( g_is_debug )
+    {   
+        set_task( 6.0, "check_vote", TASK_CHVOMOD )
+    } else
+    {   
+        set_task( 30.0, "check_vote", TASK_CHVOMOD )
+    }
 }
 
 /**
@@ -1619,107 +1619,107 @@ public start_vote()
  */
 public display_votemod_menu( player_id, menu_current_page )
 {   
-	if( menu_current_page < 0 )
-	{   
-		return
-	}
+    if( menu_current_page < 0 )
+    {   
+        return
+    }
 
-	new menu_body[1024]
-	new menu_valid_keys
-	new current_write_position
-	new current_page_itens
-	new g_menusNumber = g_modCounter
+    new menu_body[1024]
+    new menu_valid_keys
+    new current_write_position
+    new current_page_itens
+    new g_menusNumber = g_modCounter
 
-	// calc. g_menu_total_pages
-	if( ( g_menusNumber % MENU_ITEMS_PER_PAGE ) > 0 )
-	{   
-		g_menu_total_pages = ( g_menusNumber / MENU_ITEMS_PER_PAGE ) + 1
-	} else
-	{   
-		g_menu_total_pages = ( g_menusNumber / MENU_ITEMS_PER_PAGE )
-	}
+    // calc. g_menu_total_pages
+    if( ( g_menusNumber % MENU_ITEMS_PER_PAGE ) > 0 )
+    {   
+        g_menu_total_pages = ( g_menusNumber / MENU_ITEMS_PER_PAGE ) + 1
+    } else
+    {   
+        g_menu_total_pages = ( g_menusNumber / MENU_ITEMS_PER_PAGE )
+    }
 
-	// calc. Menu titles
-	if( g_coloredmenus )
-	{   
-		current_write_position = formatex( menu_body, charsmax(menu_body), "\y%L: \R%d/%d\w^n^n",
-				LANG_PLAYER, "MM_CHOOSE", menu_current_page + 1, g_menu_total_pages )
-	} else
-	{   
-		current_write_position = formatex( menu_body, charsmax(menu_body), "%L: %d/%d^n^n",
-		LANG_PLAYER, "MM_CHOOSE", menu_current_page + 1, g_menu_total_pages )
-	}
+    // calc. Menu titles
+    if( g_coloredmenus )
+    {   
+        current_write_position = formatex( menu_body, charsmax(menu_body), "\y%L: \R%d/%d\w^n^n",
+                LANG_PLAYER, "MM_CHOOSE", menu_current_page + 1, g_menu_total_pages )
+    } else
+    {   
+        current_write_position = formatex( menu_body, charsmax(menu_body), "%L: %d/%d^n^n",
+        LANG_PLAYER, "MM_CHOOSE", menu_current_page + 1, g_menu_total_pages )
+    }
 
-	// calc. the number of current_page_itens
-	if( g_menu_total_pages == menu_current_page + 1 )
-	{   
-		current_page_itens = g_menusNumber % MENU_ITEMS_PER_PAGE
-	} else
-	{   
-		current_page_itens = MENU_ITEMS_PER_PAGE
-	}
+    // calc. the number of current_page_itens
+    if( g_menu_total_pages == menu_current_page + 1 )
+    {   
+        current_page_itens = g_menusNumber % MENU_ITEMS_PER_PAGE
+    } else
+    {   
+        current_page_itens = MENU_ITEMS_PER_PAGE
+    }
 
-	// calc. the current page menu body
-	new for_index = 0
-	new mod_vote_id
+    // calc. the current page menu body
+    new for_index = 0
+    new mod_vote_id
 
-	for( new vote_mod_code = menu_current_page * 10;
-	vote_mod_code < menu_current_page * 10 + current_page_itens; vote_mod_code++ )
-	{   
-		mod_vote_id = convert_octal_to_decimal( vote_mod_code )
+    for( new vote_mod_code = menu_current_page * 10;
+    vote_mod_code < menu_current_page * 10 + current_page_itens; vote_mod_code++ )
+    {   
+        mod_vote_id = convert_octal_to_decimal( vote_mod_code )
 
-		current_write_position += formatex( menu_body[ current_write_position ], 
-				sizeof( menu_body ) - current_write_position , "%d. %s^n", for_index + 1,
-				g_modNames[ mod_vote_id + 1] )
+        current_write_position += formatex( menu_body[ current_write_position ], 
+                sizeof( menu_body ) - current_write_position , "%d. %s^n", for_index + 1,
+                g_modNames[ mod_vote_id + 1] )
 
-		g_votemodcount[ mod_vote_id ] = 0
-		for_index++
-	}
+        g_votemodcount[ mod_vote_id ] = 0
+        for_index++
+    }
 
-	// create valid keys ( 0 to 9 )
-	menu_valid_keys = MENU_KEY_0
-	for( new i = 0; i < 9; i++ )
-	{   
-		menu_valid_keys |= (1<<i)
-	}
-	menu_valid_keys |= MENU_KEY_9
+    // create valid keys ( 0 to 9 )
+    menu_valid_keys = MENU_KEY_0
+    for( new i = 0; i < 9; i++ )
+    {   
+        menu_valid_keys |= (1<<i)
+    }
+    menu_valid_keys |= MENU_KEY_9
 
-	// calc. the final page buttons
-	if ( menu_current_page )
-	{   
-		if( g_menu_total_pages == menu_current_page + 1 )
-		{   
-			current_write_position += formatex( menu_body[current_write_position],
-					sizeof( menu_body ) - current_write_position, "^n0. Back" )
-		} else
-		{   
-			current_write_position += formatex( menu_body[current_write_position],
-					sizeof( menu_body ) - current_write_position, "^n9. More...^n0. Back" )
-		}
-	} else
-	{   
-		if( g_menu_total_pages != menu_current_page + 1 )
-		{   
-			current_write_position += formatex( menu_body[current_write_position],
-					sizeof( menu_body ) - current_write_position, "^n9. More...^n" )
-		}
-	}
+    // calc. the final page buttons
+    if ( menu_current_page )
+    {   
+        if( g_menu_total_pages == menu_current_page + 1 )
+        {   
+            current_write_position += formatex( menu_body[current_write_position],
+                    sizeof( menu_body ) - current_write_position, "^n0. Back" )
+        } else
+        {   
+            current_write_position += formatex( menu_body[current_write_position],
+                    sizeof( menu_body ) - current_write_position, "^n9. More...^n0. Back" )
+        }
+    } else
+    {   
+        if( g_menu_total_pages != menu_current_page + 1 )
+        {   
+            current_write_position += formatex( menu_body[current_write_position],
+                    sizeof( menu_body ) - current_write_position, "^n9. More...^n" )
+        }
+    }
 
-	if( g_is_debug )
-	{   
-		new debug_player_name[64]
+    if( g_is_debug )
+    {   
+        new debug_player_name[64]
 
-		get_user_name( player_id, debug_player_name, 63 )
+        get_user_name( player_id, debug_player_name, 63 )
 
-		server_print( "Player: %s^nMenu body %s ^nMenu name: %s ^nMenu valid keys: %i", 
-				debug_player_name, menu_body, g_menuname, menu_valid_keys )
+        server_print( "Player: %s^nMenu body %s ^nMenu name: %s ^nMenu valid keys: %i", 
+                debug_player_name, menu_body, g_menuname, menu_valid_keys )
 
-		show_menu( player_id, menu_valid_keys, menu_body, 5, g_menuname )
-	} 
-	else
-	{   
-		show_menu( player_id, menu_valid_keys, menu_body, 25, g_menuname )
-	}
+        show_menu( player_id, menu_valid_keys, menu_body, 5, g_menuname )
+    } 
+    else
+    {   
+        show_menu( player_id, menu_valid_keys, menu_body, 25, g_menuname )
+    }
 }
 
 /**
@@ -1728,18 +1728,18 @@ public display_votemod_menu( player_id, menu_current_page )
  */
 public convert_octal_to_decimal( octal_number )
 {   
-	new decimal = 0
-	new i = 0
-	new remainder
+    new decimal = 0
+    new i = 0
+    new remainder
 
-	while( octal_number != 0 )
-	{   
-		remainder = octal_number % 10
-		octal_number /= 10
-		decimal += remainder * power(8, i);
-		++i
-	}
-	return decimal;
+    while( octal_number != 0 )
+    {   
+        remainder = octal_number % 10
+        octal_number /= 10
+        decimal += remainder * power(8, i);
+        ++i
+    }
+    return decimal;
 }
 
 /**
@@ -1750,67 +1750,67 @@ public convert_octal_to_decimal( octal_number )
  */
 public player_vote( player_id, key )
 {   
-	debugMessageLog( 4, "Key before switch: %d", key )
+    debugMessageLog( 4, "Key before switch: %d", key )
 
-	/* Well, I dont know why, but it doesnt even matter, how hard you try...
-	 * You press the key 0, you gets 9 here. ...
-	 * So here, i made the switch back.  */
-	switch( key )
-	{   
-		case 9: key = 0
-		case 0: key = 1
-		case 1: key = 2
-		case 2: key = 3
-		case 3: key = 4
-		case 4: key = 5
-		case 5: key = 6
-		case 6: key = 7
-		case 7: key = 8
-		case 8: key = 9
-	}
-	debugMessageLog( 4, "Key after switch: %d", key )
+    /* Well, I dont know why, but it doesnt even matter, how hard you try...
+     * You press the key 0, you gets 9 here. ...
+     * So here, i made the switch back.  */
+    switch( key )
+    {   
+        case 9: key = 0
+        case 0: key = 1
+        case 1: key = 2
+        case 2: key = 3
+        case 3: key = 4
+        case 4: key = 5
+        case 5: key = 6
+        case 6: key = 7
+        case 7: key = 8
+        case 8: key = 9
+    }
+    debugMessageLog( 4, "Key after switch: %d", key )
 
-	if( key == 9 )
-	{   
-		if( g_menuPosition[ player_id ] + 1 != g_menu_total_pages )
-		{   
-			display_votemod_menu( player_id, ++g_menuPosition[ player_id ] )
-		} else
-		{   
-			display_votemod_menu( player_id, g_menuPosition[ player_id ] )
-		}
-	} else
-	{   
-		if( key == 0 )
-		{   
-			if( g_menuPosition[ player_id ] != 0 )
-			{   
-				display_votemod_menu( player_id, --g_menuPosition[ player_id ] )
-			} else
-			{   
-				display_votemod_menu( player_id, g_menuPosition[ player_id ] )
-			}
-		} else
-		{   
-			new mod_vote_id = get_mod_vote_id( g_menuPosition[player_id], key )
+    if( key == 9 )
+    {   
+        if( g_menuPosition[ player_id ] + 1 != g_menu_total_pages )
+        {   
+            display_votemod_menu( player_id, ++g_menuPosition[ player_id ] )
+        } else
+        {   
+            display_votemod_menu( player_id, g_menuPosition[ player_id ] )
+        }
+    } else
+    {   
+        if( key == 0 )
+        {   
+            if( g_menuPosition[ player_id ] != 0 )
+            {   
+                display_votemod_menu( player_id, --g_menuPosition[ player_id ] )
+            } else
+            {   
+                display_votemod_menu( player_id, g_menuPosition[ player_id ] )
+            }
+        } else
+        {   
+            new mod_vote_id = get_mod_vote_id( g_menuPosition[player_id], key )
 
-			if( mod_vote_id <= g_modCounter && get_pcvar_num( gp_voteanswers) )
-			{   
-				new player_name				[SHORT_STRING]
+            if( mod_vote_id <= g_modCounter && get_pcvar_num( gp_voteanswers) )
+            {   
+                new player_name                [SHORT_STRING]
 
-				get_user_name( player_id, player_name, charsmax( player_name ) )
+                get_user_name( player_id, player_name, charsmax( player_name ) )
 
-				printMessage( 0, "%L", LANG_PLAYER, "X_CHOSE_X", player_name, g_modNames[ mod_vote_id ] )
+                printMessage( 0, "%L", LANG_PLAYER, "X_CHOSE_X", player_name, g_modNames[ mod_vote_id ] )
 
-				g_votemodcount[ mod_vote_id ]++
-			} 
-			else
-			{   
-				display_votemod_menu( player_id, g_menuPosition[ player_id ] )
-			}
-		}
+                g_votemodcount[ mod_vote_id ]++
+            } 
+            else
+            {   
+                display_votemod_menu( player_id, g_menuPosition[ player_id ] )
+            }
+        }
 
-	}
+    }
 }
 
 /**
@@ -1821,10 +1821,10 @@ public player_vote( player_id, key )
  */
 public get_mod_vote_id( current_menu_page, current_pressed_key )
 {   
-	new vote_mod_code = current_menu_page * 10 + current_pressed_key
-	new mod_vote_id = convert_octal_to_decimal( vote_mod_code )
+    new vote_mod_code = current_menu_page * 10 + current_pressed_key
+    new mod_vote_id = convert_octal_to_decimal( vote_mod_code )
 
-	return mod_vote_id
+    return mod_vote_id
 }
 
 /**
@@ -1832,17 +1832,17 @@ public get_mod_vote_id( current_menu_page, current_pressed_key )
  */
 public check_vote()
 {   
-	new mostVoted_modID = 1
+    new mostVoted_modID = 1
 
-	for( new a = 0; a <= g_modCounter; a++ )
-	{   
-		if( g_votemodcount[mostVoted_modID] < g_votemodcount[a] )
-		{   
-			mostVoted_modID = a
-		}
-		g_totalVotes = g_totalVotes + g_votemodcount[a]
-	}
-	displayVoteResults( mostVoted_modID, g_totalVotes )
+    for( new a = 0; a <= g_modCounter; a++ )
+    {   
+        if( g_votemodcount[mostVoted_modID] < g_votemodcount[a] )
+        {   
+            mostVoted_modID = a
+        }
+        g_totalVotes = g_totalVotes + g_votemodcount[a]
+    }
+    displayVoteResults( mostVoted_modID, g_totalVotes )
 }
 
 /**
@@ -1853,33 +1853,33 @@ public check_vote()
  */
 public displayVoteResults( mostVoted_modID, g_totalVotes )
 {   
-	new result_message[ LONG_STRING ]
+    new result_message[ LONG_STRING ]
 
-	new playerMin = playersPlaying( 0.3 )
+    new playerMin = playersPlaying( 0.3 )
 
-	if( g_totalVotes > playerMin )
-	{   
-		g_isTimeTo_changeMapcyle = true 
+    if( g_totalVotes > playerMin )
+    {   
+        g_isTimeTo_changeMapcyle = true 
 
-		configureMod_byModID( mostVoted_modID )
+        configureMod_byModID( mostVoted_modID )
 
-		formatex( result_message, charsmax(result_message), "%L", LANG_PLAYER, "MM_VOTEMOD",
-				g_modNames[ mostVoted_modID ])
+        formatex( result_message, charsmax(result_message), "%L", LANG_PLAYER, "MM_VOTEMOD",
+                g_modNames[ mostVoted_modID ])
 
-		server_cmd( "exec %s", g_votingFinished_filePath )
-	} 
-	else
-	{   
-		new result_message[LONG_STRING]
-		formatex( result_message, charsmax(result_message), "The vote did not reached the required minimum! \
-		The next mod remains: %s", g_modNames[ g_currentMod_id ])
-	}
-	g_totalVotes = 0
+        server_cmd( "exec %s", g_votingFinished_filePath )
+    } 
+    else
+    {   
+        new result_message[LONG_STRING]
+        formatex( result_message, charsmax(result_message), "The vote did not reached the required minimum! \
+        The next mod remains: %s", g_modNames[ g_currentMod_id ])
+    }
+    g_totalVotes = 0
 
-	printMessage( 0, result_message )
+    printMessage( 0, result_message )
 
-	server_print( "Total Mod Votes: %d  | Player Min: %d  | Most Voted: %s", 
-			g_totalVotes, playerMin, g_modNames[ mostVoted_modID ] )
+    server_print( "Total Mod Votes: %d  | Player Min: %d  | Most Voted: %s", 
+            g_totalVotes, playerMin, g_modNames[ mostVoted_modID ] )
 }
 
 /**
@@ -1891,52 +1891,52 @@ public displayVoteResults( mostVoted_modID, g_totalVotes )
  */
 public playersPlaying( Float:percent )
 {   
-	new players[ 32 ]
-	new players_count
-	new count = 0
+    new players[ 32 ]
+    new players_count
+    new count = 0
 
-	// get the players in the server skipping bots
-	get_players( players, players_count, "c" )
+    // get the players in the server skipping bots
+    get_players( players, players_count, "c" )
 
-	for( new i = 1; i <= players_count; i++ )
-	{   
-		switch( get_user_team( i ) )
-		{   
-			case 1:
-			{   
-				count++ // terror
-			}
-			case 2:
-			{   
-				count++ // ct
-			}
-		}
-	}
-	return floatround( count * percent )
+    for( new i = 1; i <= players_count; i++ )
+    {   
+        switch( get_user_team( i ) )
+        {   
+            case 1:
+            {   
+                count++ // terror
+            }
+            case 2:
+            {   
+                count++ // ct
+            }
+        }
+    }
+    return floatround( count * percent )
 }
 
 /**
  * Write debug messages to server's console accordantly to the global variable g_is_debug. 
  * 
  * @param mode the debug level to be used: 
- *   		(00000) 0 disable all debug. 
- *   		(00001) 1 displays basic debug messages. 
- *   		(00010) 2 displays each mod loaded. 
- *   		(00100) 4 displays the keys pressed during voting. 
- *   		(01000) 8 displays the the mapcycle configuration. 
+ *           (00000) 0 disable all debug. 
+ *           (00001) 1 displays basic debug messages. 
+ *           (00010) 2 displays each mod loaded. 
+ *           (00100) 4 displays the keys pressed during voting. 
+ *           (01000) 8 displays the the mapcycle configuration. 
  * 
  * @param message[] the text formatting rules to display. If omitted displays ""
  * @param any the variable number of formatting parameters. 
  */
 public debugMessageLog( mode, message[], any:... )
 {   
-	if( mode & g_is_debug )
-	{
-		static formated_message[LONG_STRING] 
+    if( mode & g_is_debug )
+    {
+        static formated_message[LONG_STRING] 
 
-		vformat( formated_message, charsmax( formated_message ), message, 3 ) 
+        vformat( formated_message, charsmax( formated_message ), message, 3 ) 
 
-		server_print( "%s", formated_message 		)
-		client_print( 		0, print_console, 			"%s", formated_message )
-	}
+        server_print( "%s", formated_message         )
+        client_print(         0, print_console,             "%s", formated_message )
+    }
 }
