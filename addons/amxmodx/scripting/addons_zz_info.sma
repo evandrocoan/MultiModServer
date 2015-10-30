@@ -40,7 +40,7 @@ section for features that are [B]planned[/B] for the final version.
 
 [IMG]http://addons.zz.mu/recursos/2015-10-11_01-43_CommandMenuNew.jpg[/IMG]
 [URL="http://www.gametracker.com/search/?search_by=server_variable&search_by2=MultiModServer&query=&loc=_all&sort=&order="] 
-[SIZE=3][B][COLOR=DarkGreen]Click here to see all servers using this configuration.[/COLOR][/B][/SIZE][/URL] 
+[SIZE=5][B][COLOR=DarkGreen]Click here to see all servers using this configuration.[/COLOR][/B][/SIZE][/URL] 
 
 ********************** [anchor]Introduction[/anchor][B][SIZE="5"][COLOR="blue"]Introduction[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor]  *******************************
 You will have a new plugins list beyond you own "[B]plugins.ini[/B]" at "[COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]configs[/B]". 
@@ -201,7 +201,9 @@ from the [B]amxx cvars[/B] command. They will be grouped together.
 
 [anchor]Downloads[/anchor][SIZE="6"][COLOR="Blue"][B]Downloads[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor]
 
-[URL="http://addons.net63.net/zyro/gallery/Multi-Mod_Server_resources.zip"]Multi-Mod_Server_resources.zip[/URL] (131.49 MB)
+[LIST]
+[*][URL="http://addons.net63.net/zyro/gallery/Multi-Mod_Server_resources.zip"]Multi-Mod_Server_resources.zip[/URL] (131.49 MB)
+[/LIST]
 
  */
 #include <amxmodx>

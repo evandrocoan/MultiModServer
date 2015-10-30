@@ -76,12 +76,14 @@ public plugin_init()
 	register_menucmd(g_Menu, 1023, "silvermenu")
 
 	// Register The Buy Cmd
-	register_clcmd("say /goldenak", "showmenu")
+	register_clcmd("say /goldmenu", "showmenu")
+	register_clcmd("say goldmenu", "showmenu")
+
 	register_clcmd("say /silvermenu", "showmenu")
+	register_clcmd("say silvermenu", "showmenu")
+
 	register_clcmd("say /akdemonio", "showmenu")
-	register_clcmd("say /coltdemonio", "showmenu")
 	register_clcmd("say akdemonio", "showmenu")
-	register_clcmd("say coltdemonio", "showmenu")
 	
 	register_event("DeathMsg", "Death", "a")
 	register_event("CurWeapon","curWeaponEvent","be","1=1")

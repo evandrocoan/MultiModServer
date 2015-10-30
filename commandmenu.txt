@@ -497,7 +497,7 @@
 		"2" "Force Vote Map"						"gal_startvote;mapchooser_startvote"
 		"2" "Ask Vote MOD"						"say votemod"
 		"2" "Ask Vote Map"						"say rtv"
-		"2" "Deactivate Mods"					"amx_setmods disableMods 1"
+		"2" "Deactivate Mods"					"amx_setmods disable 1"
 	}
 	"1" "CT's Win" 					"terminate_round ct au;exec admin/ctwin.cfg"
 	"1" "TR's Win" 					"terminate_round ob t;exec admin/terwin.cfg"
@@ -545,11 +545,11 @@
 		"5" "Draw" 								"exec admin/ndwin.cfg"
 		"6" "2-out-of-3 Series" 			"exec admin/md3.cfg"
 	}
-	"3" "MIX" 							"exec admin/mix.cfg"
-	"4" "CPL" 							"exec admin/cpl.cfg"
-	"5" "4FUN" 						"exec admin/4fun.cfg"
-	"2" "ClanBase(cf)"				"exec admin/cb_cs.cfg"
-	"3" "Addons [CFG] "			"exec admin/game_o.cfg"
+	"3" "MIX" 							"amx_cfg admin/mix.cfg"
+	"4" "CPL" 							"amx_cfg admin/cpl.cfg"
+	"5" "4FUN" 						"amx_cfg admin/4fun.cfg"
+	"2" "ClanBase(cf)"				"amx_cfg admin/cb_cs.cfg"
+	"3" "Addons [CFG] "			"amx_cfg admin/game_o.cfg"
 }
 "1.3" "Player"
 {
