@@ -14,275 +14,248 @@
 *
 ***************************************************************************************
 
+Multi-Mod Manager v1.1-alpha1
+Release: 10.10.2015 | Last Update: 25.10.2015
 
-[SIZE="6"][COLOR="Blue"][B]Multi-Mod Manager v1.1-alpha1[/B][/COLOR][/SIZE]
-[B]Release: 10.10.2015 | Last Update: 25.10.2015[/B]
+Basic differences between the original Joropito's MultiMod and addons_zz's Multi-Mod Manager
 
-[SIZE="4"]Basic differences between the original [B]Joropito's MultiMod[/B] and [B]addons_zz's Multi-Mod Manager[/B][/SIZE]
+addons_zz's Multi-mod Manager can:
+display colored text messages.
+easily implemented any new feature that you want, as it is a fully documented plugin.
+improve its code as it is well software engineered.
+easily manage extremely big mod plugins files and mods configurations files.
+easily manage extremely big mods amount.
+have a vote mod until 100 mods or more, despite it's not being too much comprehensive.
+install the fully compatible "multimod_daily_changer" provided here.
+install the fully compatible and new "galieo_reloaded.sma" provided here.
+unload metamod csdm modules automatically after disable the csdm mod, or before enable any another mod, as long as you configure it.
+restore server's cvars and server's commands automatically after disable any mod, or before enable another mod, as long as you configure it.
+install/use every mod that exists and will exists in the universe, without any special plugin or any "Multi-Mod Manager" modification, 
+as long as this mod you wanna install runs at an AMXX very own default install.
+if you want to, you can have any mod activated never ever at you server, even if there is more then 10 installed and fully working mods.
+use the command "amx_setmod help 1" display the acceptable inputs and loaded mods 
+from the file "yourgamemod/addons/amxmodx/configs/multimod/multimod.ini".
+automatically execute late configuration file execution to built-in AMXX per map configurations.
+automatically to restaure the first mapcycle used.
+freeze the game and show the scoreboard when activating a mod silently, using the command "amx_setmods".
+use the command 'amx_setmod modShortName <1 or 0>', to enable the mod "modShortName" as csdm, 
+starting a vote map (1) or not (0), right after. This command can only active mods loaded from 
+"multimod.ini" file, and needs an admin level ADMIN_CFG.
+use the command 'amx_setmods modShortName <1 or 0>', to enable the mod "modShortName" as surf, 
+restarting (1) or not (0) the server immediately, silently. This command can active any mod installed at the server 
+despite it is or it is not at the "multimod.ini" server configuration file. And most important, it needs an admin level ADMIN_IMMUNITY.
+use the cvar amx_multimod_endmapvote <0 - 1> to enable (1) or disable (0) end map automatic multi-mod voting.
+waits as long as you want to choose to activate one mod or not, by vote menu and by command line.
+at voting keep the current mod, if less than 30% voted, or keep it disabled if there is no mod enabled.
+see the voting results details at server's console.
+keep the server's current mod at voting as the vote menu's first option is always: "1. Keep Current Mod".
+disable the server's current mod at voting as the vote menu's second option is always: "2. No mod - Disable Mod".
+see that are any mod currently activated, when you type "say currentmod" and there is no mod active.
+execute a special server's configuration file at the comment you active a server's mod. That is executed only and only at the 
+mod first activation time by the command "amx_setmod" (the silence one, "amx_setmods" has not this feature, because it is silent).
+receive a clear and self-explanatory error message when you mis-configure the mod plugins file name/location.
 
-[B]addons_zz's Multi-mod Manager can:[/B]
-[LIST=1]
-[*]display colored text messages. 
-[*]easily implemented any new feature that you want, as it is a fully documented plugin. 
-[*]improve its code as it is well [URL="http://www.d.umn.edu/~gshute/softeng/principles.html"]software engineered[/URL]. 
-[*]easily manage extremely big mod plugins files and mods configurations files. 
-[*]easily manage extremely big mods amount. 
-[*]have a vote mod until 100 mods or more, despite it's not being too much comprehensive. 
-[*]install the [COLOR="Red"]fully compatible[/COLOR] "[B]multimod_daily_changer[/B]" provided [goanchor=Downloads]here[/goanchor]. 
-[*]install the [COLOR="Red"]fully compatible[/COLOR] and new "[B]galieo_reloaded.sma[/B]" provided [URL="https://forums.alliedmods.net/showthread.php?t=273019"]here[/URL]. 
-[*]unload metamod csdm modules automatically after disable the csdm mod, or before enable any another mod, as long as you configure it. 
-[*]restore server's cvars and server's commands automatically after disable any mod, or before enable another mod, as long as you configure it. 
-[*]install/use every mod that exists and will exists in the universe, without any special plugin or any "Multi-Mod Manager" modification, 
-            as long as this mod you wanna install runs at an AMXX very own default install. 
-[*]if you want to, you can have any mod activated never ever at you server, even if there is more then 10 installed and fully working mods. 
-[*]use the command "[B]amx_setmod help 1[/B]" display the acceptable inputs and loaded mods 
-            from the file "[COLOR="Blue"]yourgamemod/addons/amxmodx/configs/multimod/[/COLOR][B]multimod.ini[/B]". 
-[*]automatically execute late configuration file execution to built-in AMXX per map configurations. 
-[*]automatically to restaure the first mapcycle used. 
-[*]freeze the game and show the scoreboard when activating a mod silently, using the command "amx_setmods".
-[*]use the command '[COLOR="Blue"][B]amx_setmod modShortName <1 or 0>[/B][/COLOR]', to enable the mod "modShortName" as [COLOR="Blue"]csdm[/COLOR], 
-            starting a vote map (1) or not (0), right after. This command can [B]only active mods loaded[/B] from 
-            "[B]multimod.ini[/B]" file, and needs an admin level ADMIN_CFG. 
-[*]use the command '[COLOR="Blue"][B]amx_setmods modShortName <1 or 0>[/B][/COLOR]', to enable the mod "modShortName" as [COLOR="Blue"]surf[/COLOR], 
-            restarting (1) or not (0) the server immediately, [B]s[/B]ilently. This command can [B]active any mod installed at the server[/B] 
-            despite it is or it is not at the "[B]multimod.ini[/B]" server configuration file. And most important, it needs an admin level ADMIN_IMMUNITY. 
-[*]use the cvar [COLOR="Blue"]amx_multimod_endmapvote [B]<0 - 1>[/B][/COLOR] to enable ([B]1[/B]) or disable ([B]0[/B]) end map automatic [B]multi-mod[/B] voting.
-[*]waits as long as you want to choose to activate one mod or not, by vote menu and by command line. 
-[*]at voting [B]keep the current mod[/B], if less than 30% voted, or [B]keep it disabled[/B] if there is no mod enabled. 
-[*]see the voting results details at server's console. 
-[*]keep the server's current mod at voting as the [COLOR="Blue"]vote menu's[/COLOR] first option is always: "[B]1. Keep Current Mod[/B]". 
-[*]disable the server's current mod at voting as the [COLOR="Blue"]vote menu's[/COLOR] second option is always: "[B]2. No mod - Disable Mod[/B]". 
-[*]see that are any mod currently activated, when you type "say currentmod" and there is no mod active. 
-[*]execute a special server's configuration file at the comment you active a server's mod. That is executed only and only at the 
-            mod first activation time by the command "amx_setmod" (the silence one, "amx_setmods" has not this feature, because it is silent). 
-[*]receive a clear and self-explanatory error message when you mis-configure the mod plugins file name/location. 
-[/LIST]
+And even better, server's admins with right flag can change the server's current mod without needing direct access like ftp, to the server's files.
 
-[SIZE="4"]And even better, server's admins with right flag can change the server's current mod without needing direct access like ftp, to the server's files.[/SIZE]
+Contents' Table 
+Introduction
+Requirements and Commands
+My Multi-Mod Server
+Installation
+Explanations
+Configuration
+Change Log
+TODO
+Credits
+Source Code and Support
+Downloads
+See its current development at: Github
+ 
+(look for the developer and feature branches)
 
-[anchor]Top[/anchor][SIZE="5"][COLOR="blue"][B]Contents' Table[/B][/COLOR][/SIZE] 
+The original plugin "multimod.sma" is originally written by JoRoPiTo. This "Multi-Mod Manager" works 
+differently from the original "MultiMod Manager". See Credits for information. 
 
-[LIST]
-[*][goanchor=Introduction]Introduction[/goanchor]
-[*][goanchor=Requirements]Requirements and Commands[/goanchor]
-[*][goanchor=MyMultiModServer]My Multi-Mod Server[/goanchor]
-[*][goanchor=Installation]Installation[/goanchor]
-[*][goanchor=Explanations]Explanations[/goanchor]
-[*][goanchor=Configuration]Configuration[/goanchor]
-[*][goanchor=Change]Change Log[/goanchor]
-[*][goanchor=TODO]TODO[/goanchor]
-[*][goanchor=Credits]Credits[/goanchor]
-[*][goanchor=Sourcecode]Source Code and Support[/goanchor]
-[*][goanchor=Downloads]Downloads[/goanchor]
-[/LIST]
-[B]See its current development at: [URL="https://github.com/addonszz/MultiMod_Manager"]Github
-[IMG]https://cdn3.iconfinder.com/data/icons/social-network-round-gloss-shine/128/GitHub_Social-Network-Communicate-Page-Curl-Effect-Circle-Glossy-Shadow-Shine.png[/IMG][/URL][/B] 
-[B][COLOR="Blue"](look for the developer and feature branches)[/COLOR][/B]
-
-The original plugin "[URL="https://forums.alliedmods.net/showthread.php?t=95568"]multimod.sma[/URL]" is originally written by JoRoPiTo. This "[B]Multi-Mod Manager[/B]" works 
-differently from the original "[COLOR="Blue"]MultiMod Manager[/COLOR]". See [goanchor=Credits]Credits[/goanchor] for information. 
-
-This is a Alpha version. This Alpha software can be unstable, see [goanchor=TODO]TODO[/goanchor] section for more information. 
-As [B]Alpha software[/B] may not contain all of the features that are planned for the final version, see [goanchor=TODO]TODO[/goanchor] 
+This is a Alpha version. This Alpha software can be unstable, see TODO section for more information. 
+As Alpha software may not contain all of the features that are planned for the final version, see TODO 
 section for features that are planned for the final version. 
 
-This plugin [COLOR="Red"]is [B]not[/B] compatible[/COLOR] with the AMXX's very own [B]Map Chooser[/B] or "[B]Daily Maps[/B]", but yes with its 
-modification "[B]multimod_mapchooser.sma[/B]" and "[B]multimod_daily_changer[/B]" provided [goanchor=Downloads]here[/goanchor]. The new 
-[URL="https://forums.alliedmods.net/showthread.php?t=273019"]galieo_reloaded.sma[/URL] which is a different Galileo version, [COLOR="Red"]is ready[/COLOR] to be used with this [B]Multi-Mod Manager[/B]". 
+This plugin is not compatible with the AMXX's very own Map Chooser or "Daily Maps", but yes with its 
+modification "multimod_mapchooser.sma" and "multimod_daily_changer" provided here. The new 
+galieo_reloaded.sma which is a different Galileo version, is ready to be used with this Multi-Mod Manager". 
 
-The "[B]Multi-Mod Daily Maps[/B]" is a modified version of "[B]Daily Maps[/B]" to work with this "[B]Multi-Mod Manager[/B]". 
-This plugin only works with "[B]Multi-Mod Manager[/B]", alone the "[B]Multi-Mod Daily Maps[/B]" does nothing. Its allows 
-you to specify a different "[B]mapcycles[/B]" and "[B]server cfg[/B]" files rotation, for every day. These daily mapcycles are 
+The "Multi-Mod Daily Maps" is a modified version of "Daily Maps" to work with this "Multi-Mod Manager". 
+This plugin only works with "Multi-Mod Manager", alone the "Multi-Mod Daily Maps" does nothing. Its allows 
+you to specify a different "mapcycles" and "server cfg" files rotation, for every day. These daily mapcycles are 
 only active when you are not using any mod, or your current mod does not specifies a special mapcycle. The 
-"[B]mapcycles[/B]" and "[B]server cfg[/B]" files respectively, are located at "[COLOR="Blue"]yourgamemod/mapcycles/[/COLOR][B]day[/B]" and 
-"[COLOR="Blue"]yourgamemod/mapcycles/[/COLOR][B]day/cfg[/B]". 
+"mapcycles" and "server cfg" files respectively, are located at "yourgamemod/mapcycles/day" and 
+"yourgamemod/mapcycles/day/cfg". 
 
 As I am working at another plugins, I cannot provide immediately fixes and forum's answers here. But 
 as soon as I can, I am going to release the final version. 
-[URL="http://www.gametracker.com/search/?search_by=server_variable&search_by2=MultiModManager&query=&loc=_all&sort=&order="]
-[SIZE=5][B][COLOR=DarkGreen]Click here to see all servers using this plugin.[/COLOR][/B][/SIZE][/URL] 
 
-[anchor]Introduction[/anchor]
-********************** [B][SIZE="5"][COLOR="blue"]Introduction[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor]  *******************************
+Click here to see all servers using this plugin. 
+
+
+********************** Introduction Go Top *******************************
 This is a multi-mod server manager, that controls which mod is, or will be activated. 
-A mod can be activated by vote ([B]say votemod[/B]), or by force ([B]amx_setmod[/B] or [B]amx_setmods[/B]).
+A mod can be activated by vote (say votemod), or by force (amx_setmod or amx_setmods).
 
-There is a list of mods ([COLOR="Blue"][B]multimod.ini[/B][/COLOR]) that decides which mods will show up at a mod vote. 
-The vote mod supports a multi-page menu, that display until 100 Mods loaded from “[B]multimod.ini[/B]” file. 
-Beyond [B]100 mods[/B], the vote mod menu will not display then. To enable more than 100 mods, 
-redefine the compiler constant "[COLOR="Blue"][B]#define MAXMODS 100[/B][/COLOR]" inside the plugin.
+There is a list of mods (multimod.ini) that decides which mods will show up at a mod vote. 
+The vote mod supports a multi-page menu, that display until 100 Mods loaded from “multimod.ini” file. 
+Beyond 100 mods, the vote mod menu will not display then. To enable more than 100 mods, 
+redefine the compiler constant "#define MAXMODS 100" inside the plugin.
 
-[IMG]http://addons.zz.mu/recursos/2015-08-16_14-08_Counter-Strike.jpg[/IMG]
 
-The "[B]multimod_manager.sma[/B]" waits the user choose to activate one mod, by vote menu, 
-or by command line. It [B]saves[/B] the current active mod and [COLOR="Blue"][B]keep it active[/B][/COLOR] forever or until some 
-other mod is [COLOR="Blue"][B]activated[/B][/COLOR] or your disable the active mod by the "[B]amx_setmod disable 1[/B]" command. 
 
-[COLOR="Blue"][B]Features' list:[/B][/COLOR] 
-[QUOTE]
- * Changes the [B]default mapcycle[/B], if and only if a custom mod mapcycle was created.
+The "multimod_manager.sma" waits the user choose to activate one mod, by vote menu, 
+or by command line. It saves the current active mod and keep it active forever or until some 
+other mod is activated or your disable the active mod by the "amx_setmod disable 1" command. 
 
- * The [COLOR="Blue"]vote menu's[/COLOR] first to options always are: "[B]1. Keep Current Mod[/B]" and "[B]2. No mod - Disable Mod[/B]". 
+Features' list: 
+Quote:
+* Changes the default mapcycle, if and only if a custom mod mapcycle was created.
 
- * The vote mod [B]keep the current mod[/B], when less than 30% of players voted. 
+* The vote menu's first to options always are: "1. Keep Current Mod" and "2. No mod - Disable Mod". 
 
- * When the min vote mod time is not [B]reached/disabled[/B], display a message informing it. 
+* The vote mod keep the current mod, when less than 30% of players voted. 
 
- * Command '[COLOR="Blue"][B]amx_votemod[/B][/COLOR]', to start force start a vote mod, even if it is disabled. This command can 
-       [B]only active mods loaded[/B] from "[B]multimod.ini[/B]" file, and needs an admin level ADMIN_MAP. 
+* When the min vote mod time is not reached/disabled, display a message informing it. 
 
- * Command '[COLOR="Blue"][B]amx_setmod modShortName <1 or 0>[/B][/COLOR]', to enable the mod "modShortName" as [COLOR="Blue"]csdm[/COLOR], 
-      starting a vote map (1) or not (0), right after. This command can [B]only active mods loaded[/B] from 
-      "[B]multimod.ini[/B]" file, and needs an admin level ADMIN_CFG. 
+* Command 'amx_votemod', to start force start a vote mod, even if it is disabled. This command can 
+only active mods loaded from "multimod.ini" file, and needs an admin level ADMIN_MAP. 
 
- * Command '[COLOR="Blue"][B]amx_setmods modShortName <1 or 0>[/B][/COLOR]', to enable the mod "modShortName" as [COLOR="Blue"]surf[/COLOR], 
-      restarting (1) or not (0) the server immediately, [B]s[/B]ilently. This command can [B]active any mod installed 
-      at the server[/B] despite it is or not at the "[B]multimod.ini[/B]" server's configuration file. And most important, 
-      it needs an admin level ADMIN_IMMUNITY. 
+* Command 'amx_setmod modShortName <1 or 0>', to enable the mod "modShortName" as csdm, 
+starting a vote map (1) or not (0), right after. This command can only active mods loaded from 
+"multimod.ini" file, and needs an admin level ADMIN_CFG. 
 
-OBS: A mod can [B]only[/B] to be/get activated after a restart. 
-[/QUOTE]
+* Command 'amx_setmods modShortName <1 or 0>', to enable the mod "modShortName" as surf, 
+restarting (1) or not (0) the server immediately, silently. This command can active any mod installed 
+at the server despite it is or not at the "multimod.ini" server's configuration file. And most important, 
+it needs an admin level ADMIN_IMMUNITY. 
 
-The command "[B]amx_setmod help 1[/B]" display the acceptable inputs and loaded mods 
-from the file "[COLOR="Blue"]yourgamemod/addons/amxmodx/configs/multimod/[/COLOR][B]multimod.ini[/B]". There is 
-2 built-in operations beyond mods activation: "[COLOR="Blue"][B]amx_setmod help 1[/B][/COLOR]" and "[COLOR="Blue"][B]amx_setmod disable 1[/B][/COLOR]",
-respectively to shows [B]help[/B] and [B]disable[/B] any active mod.
+OBS: A mod can only to be/get activated after a restart.
+The command "amx_setmod help 1" display the acceptable inputs and loaded mods 
+from the file "yourgamemod/addons/amxmodx/configs/multimod/multimod.ini". There is 
+2 built-in operations beyond mods activation: "amx_setmod help 1" and "amx_setmod disable 1",
+respectively to shows help and disable any active mod.
 
-[IMG]http://addons.zz.mu/recursos/2015-08-16_14-08_Counter-Strike(2).jpg[/IMG]
 
-If enabled ([B]default disabled[/B]), when remaining [COLOR="Blue"][B]5 minutes to end[/B][/COLOR] current map, this plugins launches a vote to 
-choose which mod will be played at the [B]next map[/B]. If less than 30% voted, the game [B]keep the current mod[/B] 
-or [B]keep it disabled[/B] if there is no mod enabled. 
 
-********************** [anchor]Requirements[/anchor][SIZE="5"][COLOR="Blue"][B]Requirements and Commands[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor]  ******
-[B]Amx Mod X 1.8.2[/B] 
-Tested under [B]Counter-Strike[/B] and Counter-Strike: [B]Condition Zero[/B] 
+If enabled (default disabled), when remaining 5 minutes to end current map, this plugins launches a vote to 
+choose which mod will be played at the next map. If less than 30% voted, the game keep the current mod 
+or keep it disabled if there is no mod enabled. 
 
-[B]Cvars:[/B]
-[QUOTE]
-// Minimum [B]time[/B] to play before players can make [B]MOD voting[/B]. 
-[COLOR="Blue"]amx_mintime [B]10 [/B][/COLOR]
+********************** Requirements and Commands Go Top ******
+Amx Mod X 1.8.2 
+Tested under Counter-Strike and Counter-Strike: Condition Zero 
 
-// enable ([B]1[/B]) or disable ([B]0[/B]) end map automatic [B]multi-mod[/B] voting.
-[COLOR="Blue"]amx_multimod_endmapvote [B]0 [/B][/COLOR]
+Cvars:
+Quote:
+// Minimum time to play before players can make MOD voting. 
+amx_mintime 10 
 
-// enable ([B]1[/B]) or disable ([B]0[/B]) multi-mod voting ([B]say votemod[/B]).
-[COLOR="Blue"]amx_multimod_voteallowed [B]1 [/B][/COLOR]
-[/QUOTE]
+// enable (1) or disable (0) end map automatic multi-mod voting.
+amx_multimod_endmapvote 0 
 
-[B]Commands:[/B]
-[QUOTE]
-//Command line control of [B]multimod system[/B]
-[COLOR="Blue"]amx_setmod[/COLOR] 
-[COLOR="Blue"]amx_setmods[/COLOR] 
+// enable (1) or disable (0) multi-mod voting (say votemod).
+amx_multimod_voteallowed 1
+Commands:
+Quote:
+//Command line control of multimod system
+amx_setmod 
+amx_setmods 
 
-//[B]Admin only[/B] command to launch MOD voting
-[COLOR="Blue"]amx_votemod[/COLOR] 
+//Admin only command to launch MOD voting
+amx_votemod 
 
-//Check which MOD [B]will be running[/B] in next map
-[COLOR="Blue"]say nextmod[/COLOR]    
-[COLOR="Blue"]say_team nextmod[/COLOR] 
+//Check which MOD will be running in next map
+say nextmod	
+say_team nextmod 
 
-//Check which [B]MOD[/B] is running in the [B]current map[/B]
-[COLOR="Blue"]say currentmod[/COLOR] 
-[COLOR="Blue"]say_team currentmod[/COLOR] 
+//Check which MOD is running in the current map
+say currentmod 
+say_team currentmod 
 
-//Player command [B]to launch[/B] MOD voting
-[COLOR="Blue"]say votemod[/COLOR] 
-[COLOR="Blue"]say_team votemod[/COLOR] 
-[/QUOTE]
+//Player command to launch MOD voting
+say votemod 
+say_team votemod
+There is a Multi-Mod Server Configuration with:
+CS-DM (DeathMatch)
+Catch Mod
+Dragon Ball Mod
+Gun Game Mod
+Hide N Seek Mod
+Just Capture The Flag
+Knife Arena Mod
+Predator Mod_b2
+Super Heros
+Surf Mod
+Warcraft Ultimate Mod 3
+Zombie Money Mod
+Zombie Pack Ammo Mod
+Is available here. 
 
-[anchor]MyMultiModServer[/anchor][SIZE="4"][B]There is a Multi-Mod Server Configuration with:[/B][/SIZE] 
-[LIST]
-[*]CS-DM (DeathMatch)
-[*]Catch Mod
-[*]Dragon Ball Mod
-[*]Gun Game Mod
-[*]Hide N Seek Mod
-[*]Just Capture The Flag
-[*]Knife Arena Mod
-[*]Predator Mod_b2
-[*]Super Heros
-[*]Surf Mod
-[*]Warcraft Ultimate Mod 3
-[*]Zombie Money Mod
-[*]Zombie Pack Ammo Mod
-[/LIST]
-[SIZE="6"]Is available [URL="https://forums.alliedmods.net/showthread.php?t=273018"]here[/URL][/SIZE]. 
+******************************** Installation Go Top **********************
+1. Download the files "multimod_manager.sma", "configuration_files.zip", 
+"multimod_mapchooser.sma" or "galieo_reloaded.sma" and "multimod_daily_changer.sma"(this is optional), 
+at Downloads section. 
 
-******************************** [anchor]Installation[/anchor][B][SIZE="5"][COLOR="Blue"]Installation[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor]  **********************
-[B]1.[/B] Download the files "[B]multimod_manager.sma[/B]", "[B][COLOR="Red"]configuration_files.zip[/COLOR][/B]",  
-"[B]multimod_mapchooser.sma[/B]" or "[B]galieo_reloaded.sma[/B]" and "[B]multimod_daily_changer.sma[/B]"(this is optional), 
-at [goanchor=Downloads]Downloads[/goanchor] section. 
+2. Then take the contents of "yourgamemod" from "configuration_files.zip", to your gamemod folder. 
 
-[B]2.[/B] Then take the contents of "[B]yourgamemod[/B]" from "[B]configuration_files.zip[/B]", to your gamemod folder. 
+3. Compile the files and put the compiled files to your plugins folder at 
+"yourgamemod/addons/amxmodx/plugins" folder. 
 
-[B]3.[/B] [B]Compile[/B] the files and put the [B]compiled[/B] files to your plugins folder at 
-"[COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]plugins[/B]" folder. 
-
-[B]4.[/B] Put the next lines to your "[B]plugins.ini[/B]" file at "[COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]configs[/B]" and
-disable the original "[B]mapchooser.amxx[/B]": 
-[QUOTE]
+4. Put the next lines to your "plugins.ini" file at "yourgamemod/addons/amxmodx/configs" and
+disable the original "mapchooser.amxx": 
+Quote:
 multimod_manager.amxx
 multimod_daily_changer.amxx
 ; Choose
 multimod_mapchooser.amxx
 ;or
 galieo_reloaded.amxx
-[/QUOTE]
-
-[B]5.[/B] Put the next line to your "[B]amxx.cfg[/B]" file at "[COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]configs[/B]":
-[QUOTE]
+5. Put the next line to your "amxx.cfg" file at "yourgamemod/addons/amxmodx/configs":
+Quote:
 exec addons/amxmodx/configs/multimod/multimod.cfg
-[/QUOTE]
-
-[anchor]Configuration[/anchor][B]6. [SIZE="5"][COLOR="red"]Configure[/COLOR][/SIZE][/B] your own mods at "[COLOR="Blue"]yourgamemod/addons/amxmodx/configs/multimod/[/COLOR][B]voting_list.ini[/B]" 
+6. Configure your own mods at "yourgamemod/addons/amxmodx/configs/multimod/voting_list.ini" 
 file as follow (the short mod name cannot be longer than 15 characters neither have spaces):
 
---- [B]Example of:[/B] [COLOR="Blue"]yourgamemod/addons/amxmodx/configs/multimod/[/COLOR][B]voting_list.ini[/B] ------
-[QUOTE]
+--- Example of: yourgamemod/addons/amxmodx/configs/multimod/voting_list.ini ------
+Quote:
 [Gun Game]:[gungame]:
 
 ;[mode name]:[shortModName]:
-[/QUOTE]
+-------------- And you have to create the files:----------------------------
+Quote:
+yourgamemod/addons/amxmodx/configs/multimod/plugins/gungame.ini
 
--------------- And you have [B]to create[/B] the files:----------------------------
-[QUOTE][COLOR="Blue"]yourgamemod/addons/amxmodx/configs/multimod/[/COLOR][B]plugins/gungame.ini[/B]
+(Optinal files)
+yourgamemod/addons/amxmodx/configs/multimod/cfg/gungame.cfg
+yourgamemod/addons/amxmodx/configs/multimod/latecfg/gungame.cfg
+yourgamemod/addons/amxmodx/configs/multimod/msg/gungame.cfg
+yourgamemod/mapcycles/gungame.txt
+-------------- Explanations Go Top -------------------------
 
-[B](Optinal files)[/B]
-[COLOR="Blue"]yourgamemod/addons/amxmodx/configs/multimod/[/COLOR][B]cfg/gungame.cfg[/B]
-[COLOR="Blue"]yourgamemod/addons/amxmodx/configs/multimod/[/COLOR][B]latecfg/gungame.cfg[/B]
-[COLOR="Blue"]yourgamemod/addons/amxmodx/configs/multimod/[/COLOR][B]msg/gungame.cfg[/B]
-[COLOR="Blue"]yourgamemod/mapcycles/[/COLOR][B]gungame.txt[/B]
-[/QUOTE]
-
--------------- [anchor]Explanations[/anchor][B][SIZE="5"][COLOR="blue"]Explanations[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] -------------------------
-
-[B]1.[/B] The file "[COLOR="Blue"]yourgamemod/addons/amxmodx/configs/multimod/[/COLOR][B]plugins/gungame.txt[/B]", 
+1. The file "yourgamemod/addons/amxmodx/configs/multimod/plugins/gungame.txt", 
 contains the plugins that compose the Mod like:
-[QUOTE]
+Quote:
 gungame.amxx
-[/QUOTE]
-
-[B]2.[/B] The file ([B]opcional[/B]) "[COLOR="Blue"]yourgamemod/addons/amxmodx/configs/multimod/[/COLOR][B]cfg/gungame.cfg[/B]", 
-[COLOR="Blue"]contains[/COLOR] yours special configuration used at the mod activation, like:
-[QUOTE]
+2. The file (opcional) "yourgamemod/addons/amxmodx/configs/multimod/cfg/gungame.cfg", 
+contains yours special configuration used at the mod activation, like:
+Quote:
 amxx pause amx_adminmodel
-sv_gravity 600 
-[/QUOTE]
-
-[B]3.[/B] The file ([B]opcional[/B]) "[COLOR="Blue"]yourgamemod/addons/amxmodx/configs/multimod/[/COLOR][B]cfg/gungame.cfg[/B]", 
-contains [COLOR="Blue"]yours[/COLOR] special configuration used after the mod deactivation, like:
-[QUOTE]
+sv_gravity 600
+3. The file (opcional) "yourgamemod/addons/amxmodx/configs/multimod/cfg/gungame.cfg", 
+contains yours special configuration used after the mod deactivation, like:
+Quote:
 amxx unpause amx_adminmodel
-sv_gravity 800 
-[/QUOTE]
-
-[B]4.[/B] The file ([B]opcional[/B]) "[COLOR="Blue"]yourgamemod/addons/amxmodx/configs/multimod/[/COLOR][B]msg/gungame.cfg[/B]" contains 
-commands that are executed when a mod is activated by the command line "[B]amx_setmod[/B]". 
-Usually it contains a command [B][COLOR="Blue"]to restart[/COLOR][/B] the server. 
-[B]Example[/B] of "[COLOR="Blue"]yourgamemod/addons/amxmodx/configs/multimod/msg/[/COLOR][B]gungame.cfg[/B]":
-[QUOTE]
+sv_gravity 800
+4. The file (opcional) "yourgamemod/addons/amxmodx/configs/multimod/msg/gungame.cfg" contains 
+commands that are executed when a mod is activated by the command line "amx_setmod". 
+Usually it contains a command to restart the server. 
+Example of "yourgamemod/addons/amxmodx/configs/multimod/msg/gungame.cfg":
+Quote:
 amx_execall speak ambience/ratchant
 amx_tsay ocean GUN-GAME will be activated at next server restart!!!!
 amx_tsay blue GUN-GAME will be activated at next server restart!!!!
@@ -291,143 +264,127 @@ amx_tsay ocean GUN-GAME will be activated at next server restart!!!!
 
 //amx_countdown 5 restart
 exec addons/amxmodx/configs/multimod/votefinished.cfg
-[/QUOTE]
+5. The file (opcional) "yourgamemod/mapcycles/gungame.txt" contains the mapcycle used when 
+gungame mod is active.
 
-[B]5.[/B] The file ([B]opcional[/B]) "[COLOR="Blue"]yourgamemod/mapcycles/[/COLOR][B]gungame.txt[/B]" contains the mapcycle used when 
-[COLOR="Blue"]gungame mod[/COLOR]  is active.
-
-******************************** [anchor]Change[/anchor][B][SIZE="5"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] ***********************
-[QUOTE]
+******************************** Change Log Go Top ***********************
+Quote:
 2015-10-10 | v1.0-release_candidate1
- * Initial release candidate. 
+* Initial release candidate. 
 
 2015-10-10 | v1.0-release_candidate1.hotfix1
- * Add exception handle when the currentmod_id.ini or currentmod_shortname.ini is not found. 
+* Add exception handle when the currentmod_id.ini or currentmod_shortname.ini is not found. 
 
 2015-10-12 | v1.0-release_candidate2
- * Removed unused function get_firstmap() and variable g_nextmap. 
- * Replaced unnecessary functions configMapManager and configDailyMaps. 
- * Removed unnecessary MULTIMOD_MAPCHOOSER compiler constant. 
- * Added to multimod_daily_changer.sma compatibility with galileo_reloaded.sma 
+* Removed unused function get_firstmap() and variable g_nextmap. 
+* Replaced unnecessary functions configMapManager and configDailyMaps. 
+* Removed unnecessary MULTIMOD_MAPCHOOSER compiler constant. 
+* Added to multimod_daily_changer.sma compatibility with galileo_reloaded.sma 
 
 2015-10-13 | v1.0-release_candidate2.hotfix1
- * Added missing format parameter at messageModActivated function.
+* Added missing format parameter at messageModActivated function.
 
 2015-10-13 | v1.0-release_candidate2.hotfix2
- * Added missing MM_CHOOSE line at multilingual file.
+* Added missing MM_CHOOSE line at multilingual file.
 
 2015-10-19 | v1.0-release_candidate2.hotfix3
- * Translated to english lost code variables. 
- * Replaced a implemented switch by a native switch. 
- * Replaced another implemented switch by a native switch. 
- * Improved variables names meaningful. 
+* Translated to english lost code variables. 
+* Replaced a implemented switch by a native switch. 
+* Replaced another implemented switch by a native switch. 
+* Improved variables names meaningful. 
 
 2015-10-21 | v1.0-release_candidate2.hotfix4
- * Fixed mapcycle not setting when a mod was activated by command line or voting.  
+* Fixed mapcycle not setting when a mod was activated by command line or voting. 
 
 2015-10-25 | v1.1-alpha1
- * Added late configuration file execution to built-in AMXX per map configurations. 
- * Added to restaure the first mapcycle used. 
- * Improved code clearness. 
- * Added path coders to every multi-generated string. 
- * Added immutable strings paths as global variables. 
- * Removed passing an integer value to a function by string. 
- * Removed unnecessary variables like g_messageFileNames and g_pluginsFileNames. 
-[/QUOTE]
+* Added late configuration file execution to built-in AMXX per map configurations. 
+* Added to restaure the first mapcycle used. 
+* Improved code clearness. 
+* Added path coders to every multi-generated string. 
+* Added immutable strings paths as global variables. 
+* Removed passing an integer value to a function by string. 
+* Removed unnecessary variables like g_messageFileNames and g_pluginsFileNames.
+******************************** TODO Go Top *********************************
+* Add auto configs files auto-creation at first run, creating readme files. 
 
-******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *********************************
- * Add auto configs files auto-creation at first run, creating readme files. 
-
-[QUOTE=fysiks;2353142]
+Quote:
+Originally Posted by fysiks  View Post
 If you are going to use the multilingual system to print to the server console, you should not use 
-LANG_PLAYER; that just doesn't make sense.  You should use LANG_SERVER.
-[*]This will only work with Counter-Strike (because of color chat) and thus your submission 
-should not be labeled as "Modification:   ALL".
-[/QUOTE]
+LANG_PLAYER; that just doesn't make sense. You should use LANG_SERVER.[*]This will only work with 
+Counter-Strike (because of color chat) and thus your submission 
+should not be labeled as "Modification: ALL".
 I posted wrong, and I was misleading the LANG_PLAYER and LANG_SERVER's use. 
 It will be fixed. And I forgot, this will be modification ALL, but it is not currently modification ALL. 
 It will be correct at threads page until it is definitely modification all. 
 
-[QUOTE=fysiks;2353142]
-IIRC, printing info to the client in a for loop can cause an overflow.  Simply build the whole text into 
-a single string and then send that only once.  You can create multiple lines by using "^n".
-[/QUOTE]
+Quote:
+Originally Posted by fysiks  View Post
+IIRC, printing info to the client in a for loop can cause an overflow. Simply build the whole text into 
+a single string and then send that only once. You can create multiple lines by using "^n".
 It is the same problem as the AMXX very own "adminhelp.sma". I cannot build I a big string as pawn is limited. 
 I must limit the output number as "adminhelp.sma", receiving a page list number to show and limit 
 each page to show only a big string supported. 
 
-[QUOTE=fysiks;2353142]
-The use of server_print() should be rare and mostly for debugging.  For registered commands, 
+Quote:
+Originally Posted by fysiks  View Post
+The use of server_print() should be rare and mostly for debugging. For registered commands, 
 it should only be used with register_srvcmd() (unless it's for debugging of course).
-[/QUOTE]
-I did not know this register_srvcmd(). Then now I can register a register_srvcmd to server_print, and another register_clcmd to client_print.
+I did not know this register_srvcmd(). Then now I can register a register_srvcmd to server_print, 
+and another register_clcmd to client_print.
 
-[QUOTE=fysiks;2353142]
-I'm sure there is more but I am done for now. 
-[/QUOTE]
-Of course, there is more clever programing techniques to learn: 
-[LIST=1]
-[*]use tries instead of g_modShortNames.  
-[*]count better current playing player at playersPlaying. 
-[*]copy more efficiently a files at copyFiles and copyFiles2. 
-[*]print colored text more efficiently than at print_color. 
-[/LIST]
+Quote:
+Originally Posted by fysiks  View Post
+I'm sure there is more but I am done for now.
+Of course, there is more clever programing techniques to learn:
+use tries instead of g_modShortNames.
+count better current playing player at playersPlaying.
+copy more efficiently a files at copyFiles and copyFiles2.
+print colored text more efficiently than at print_color.
 
-******************************** [anchor]Credits[/anchor][B][SIZE="5"][COLOR="blue"]Credits[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *******************************
-[B]fysiks[/B]: The first to realize the idea of "multimod.sma" and some code improvements. 
-[B]joropito[/B]: The idea/program developer of "[URL="https://forums.alliedmods.net/showthread.php?t=95568"]multimod.sma[/URL]". 
-[B]crazyeffect[/B]: Colaborate with multilangual support of "multimod.sma". 
-[B]dark vador 008[/B]: Time and server for testing under czero "multimod.sma". 
-[B]Brad[/B]: The original [URL="https://forums.alliedmods.net/showthread.php?t=77391"]galileo.sma[/URL] developer. 
-[B]Th3822[/B]: For find a error from map_nominate. 
-[B]Addons zz[/B]: This plugin developer. 
-[B]DeRoiD's[/B]: For print_color function. 
-[B]JustinHoMi & JGHG[/B]: For the "[URL="https://forums.alliedmods.net/showthread.php?t=3886"]Daily Maps[/URL]" plugin. 
-[B]AMXX Dev Team[/B]: For the "Map Chooser" plugin. 
+******************************** Credits Go Top *******************************
+fysiks: The first to realize the idea of "multimod.sma" and some code improvements. 
+joropito: The idea/program developer of "multimod.sma". 
+crazyeffect: Colaborate with multilangual support of "multimod.sma". 
+dark vador 008: Time and server for testing under czero "multimod.sma". 
+Brad: The original galileo.sma developer. 
+Th3822: For find a error from map_nominate. 
+Addons zz: This plugin developer. 
+DeRoiD's: For print_color function. 
+JustinHoMi & JGHG: For the "Daily Maps" plugin. 
+AMXX Dev Team: For the "Map Chooser" plugin. 
 
-******************************** [anchor]Sourcecode[/anchor][SIZE="5"][COLOR="blue"][B]Source Code and Support[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor] ***
+******************************** Source Code and Support Go Top ***
 For any problems with this plugin visit this own page for support:
-[url]https://forums.alliedmods.net/showthread.php?t=273020[/url]
+https://forums.alliedmods.net/showthread.php?t=273020
 
-If you are [B]posting[/B] because the plugin or a [B]feature[/B] of the plugin isn't working for you, [B]please[/B] do 
-all of the following, so we can [COLOR="Blue"]more efficiently[/COLOR] figure out what's going on:
-[QUOTE]
-If you have access to your game server's console, type the [COLOR="Blue"][B]following[/B][/COLOR] in the server console:
-[LIST]
-[*]status
-[*]meta list
-[*]amxx plugins
-[*]amxx cvars
-[/LIST]
-If you don't have access the your [COLOR="Blue"][B]game server's console[/B][/COLOR], join your server and type the 
+If you are posting because the plugin or a feature of the plugin isn't working for you, please do 
+all of the following, so we can more efficiently figure out what's going on:
+Quote:
+If you have access to your game server's console, type the following in the server console:
+status
+meta list
+amxx plugins
+amxx cvars
+If you don't have access the your game server's console, join your server and type the 
 following in your game console:
+status
+rcon_password your_rcon_password
+rcon meta list
+rcon amxx plugins
+rcon amxx cvars
+Paste here everything from the status command *except* the player list.
+Paste here the entire result from the meta list and amxx plugins commands.
+Paste here *only* the CVARs that contain "multimod_manager.amxx" in the last column 
+from the amxx cvars command. They will be grouped together.
+********************************************* ******************************************	
+BRAZIL (South America) Testing Server
 
-[LIST]
-[*]status
-[*]rcon_password your_rcon_password
-[*]rcon meta list
-[*]rcon amxx plugins
-[*]rcon amxx cvars
-[/LIST]
-[LIST=1]
-[*]Paste here everything from the [B]status[/B] command [COLOR="Red"][B]*except*[/B][/COLOR] the player list.
-[*]Paste here the entire result from the [B]meta list[/B] and [B]amxx plugins[/B] commands. 
-[*]Paste here [COLOR="red"][B]*only*[/B][/COLOR] the CVARs that contain "[COLOR="SeaGreen"][B]multimod_manager.amxx[/B][/COLOR]" in the last column 
-from the [B]amxx cvars[/B] command. They will be grouped together.
-[/LIST]
-[/QUOTE]
 
-***************************************************************************************    
-[SIZE="6"]BRAZIL (South America) Testing Server[/SIZE]
-[URL="http://www.gametracker.com/server_info/jacks.noip.me:27015/"][IMG]http://www.gametracker.com/server_info/jacks.noip.me:27015/b_560_95_1.png[/IMG][/URL]
+GERMANY (Europe) Testing Server
 
-[SIZE="6"]GERMANY (Europe) Testing Server[/SIZE]
-[URL="http://www.gametracker.com/server_info/vipersnake.net:27030/"][IMG]http://www.gametracker.com/server_info/vipersnake.net:27030/b_560_95_1.png[/IMG][/URL]
 
-******************************** [anchor]Downloads[/anchor][SIZE="6"][COLOR="Blue"][B]Downloads[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor] ********************
-[LIST]
-[*][URL="https://forums.alliedmods.net/showthread.php?t=273019"]galieo_reloaded.sma[/URL]
-[/LIST]
+******************************** Downloads Go Top ********************
+galieo_reloaded.sma
 
 */
 
@@ -634,7 +591,7 @@ public receiveCommand(player_id, level, cid)
     {   
         return PLUGIN_HANDLED
     }
-    new firstCommand_lineArgument            [ SHORT_STRING ]
+    new firstCommand_lineArgument            [SHORT_STRING]
     new secondCommand_lineArgument        [SHORT_STRING]
 
     //Get the command arguments from the console
