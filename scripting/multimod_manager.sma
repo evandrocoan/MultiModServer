@@ -170,7 +170,7 @@ amx_setmods
 amx_votemod 
 
 //Check which MOD will be running in next map
-say nextmod	
+say nextmod    
 say_team nextmod 
 
 //Check which MOD is running in the current map
@@ -376,7 +376,7 @@ Paste here everything from the status command *except* the player list.
 Paste here the entire result from the meta list and amxx plugins commands.
 Paste here *only* the CVARs that contain "multimod_manager.amxx" in the last column 
 from the amxx cvars command. They will be grouped together.
-********************************************* ******************************************	
+********************************************* ******************************************    
 BRAZIL (South America) Testing Server
 
 
@@ -392,7 +392,7 @@ galieo_reloaded.sma
 #include <amxmisc>
 
 #define PLUGIN "Multi-Mod Manager"
-#define VERSION "v1.1-alpha1"
+#define VERSION "v1.1-alpha1.1"
 #define AUTHOR "Addons zz"
 
 #define TASK_VOTEMOD 2487002
@@ -560,7 +560,7 @@ public unloadLastActiveMod()
     get_localinfo( "amx_lastmod", lastMod_shortName, charsmax( lastMod_shortName ) )
     get_localinfo( "firstMapcycle_loaded", firstServer_Mapcycle, charsmax( firstServer_Mapcycle ) )
 
-    if( !equal( lastMod_shortName, g_currentMod_shortName ) && !g_isFirstTime_serverLoad )
+    if( !equal( lastMod_shortName, g_currentMod_shortName ) && g_isFirstTime_serverLoad != 0 )
     {
         lateConfig_pathCoder( lastMod_shortName, lateConfig_filePath, charsmax( lateConfig_filePath ) )
 
@@ -570,7 +570,10 @@ public unloadLastActiveMod()
             server_cmd( "exec %s", lateConfig_filePath )
         }
 
-        server_cmd( "mapcyclefile %s", firstServer_Mapcycle )
+        if( g_isFirstTime_serverLoad == 2 )
+        {
+            server_cmd( "mapcyclefile %s", firstServer_Mapcycle )
+        }
     }
 }
 
@@ -947,7 +950,7 @@ public build_first_mods()
 }
 
 /**
- * Loads the config file "multimod.ini" and all mods stored there.
+ * Loads the config file "voting_list.ini" and all mods stored there.
  */
 public load_votingList()
 {   
@@ -1195,11 +1198,13 @@ public configDailyMaps( mapcycle_filePath[] )
 
     if( g_isFirstTime_serverLoad  == 0 )
     {
-        new currentMapcycle_filePath        [SHORT_STRING]
-        get_cvar_string(             "mapcyclefile",             currentMapcycle_filePath,     charsmax( currentMapcycle_filePath ) )
+        new currentMapcycle_filePath[SHORT_STRING]
+
+        g_isTimeTo_changeMapcyle = true
+
+        get_pcvar_string( gp_mapcyclefile, currentMapcycle_filePath, charsmax( currentMapcycle_filePath ) )
 
         set_localinfo(     "firstMapcycle_loaded",         currentMapcycle_filePath )
-        set_localinfo(     "isFirstTime_serverLoad",         "1"     )
     }
 
     if( g_is_debug & 8 ) 
@@ -1208,17 +1213,17 @@ public configDailyMaps( mapcycle_filePath[] )
         server_print( "g_isFirstTime_serverLoad is: %d",         g_isFirstTime_serverLoad     )
         server_print( "g_isTimeTo_changeMapcyle is: %d",         g_isTimeTo_changeMapcyle )
         server_print( "file_exists( mapcycle_filePath ) is: %d",     file_exists( mapcycle_filePath ) )
-        server_print( "mapcycle_filePath is: %s",                             mapcycle_filePath         )
+        server_print( "mapcycle_filePath is: %s^n",                             mapcycle_filePath         )
     }
 
-    if( g_isFirstTime_serverLoad  == 0 || g_isTimeTo_changeMapcyle )
+    if( g_isTimeTo_changeMapcyle )
     {
         g_isTimeTo_changeMapcyle = false
 
         if( file_exists( mapcycle_filePath ) )
         {   
-            set_pcvar_string(     gp_mapcyclefile,         mapcycle_filePath     )
-            set_localinfo(         "isFirstTime_serverLoad",         "1"         )
+            set_pcvar_string(     gp_mapcyclefile,           mapcycle_filePath )
+            set_localinfo(    "isFirstTime_serverLoad",         "1"                 )
         } 
         else 
         {
@@ -1876,7 +1881,7 @@ public playersPlaying( Float:percent )
  * Write debug messages to server's console accordantly to the global variable g_is_debug. 
  * 
  * @param mode the debug level to be used: 
- *           (00000) 0 disable all debug. 
+ *           (00000) 0 disabled all debug. 
  *           (00001) 1 displays basic debug messages. 
  *           (00010) 2 displays each mod loaded. 
  *           (00100) 4 displays the keys pressed during voting. 
