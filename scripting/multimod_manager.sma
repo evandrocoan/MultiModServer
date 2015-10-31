@@ -14,8 +14,8 @@
 *
 ***************************************************************************************
 
-Multi-Mod Manager v1.1-alpha1
-Release: 10.10.2015 | Last Update: 25.10.2015
+Multi-Mod Manager v1.1-alpha1.hotfix1
+Release: 10.10.2015 | Last Update: 30.10.2015
 
 Basic differences between the original Joropito's MultiMod and addons_zz's Multi-Mod Manager
 
@@ -34,16 +34,16 @@ install/use every mod that exists and will exists in the universe, without any s
 as long as this mod you wanna install runs at an AMXX very own default install.
 if you want to, you can have any mod activated never ever at you server, even if there is more then 10 installed and fully working mods.
 use the command "amx_setmod help 1" display the acceptable inputs and loaded mods 
-from the file "yourgamemod/addons/amxmodx/configs/multimod/multimod.ini".
+from the file "yourgamemod/addons/amxmodx/configs/multimod/voting_list.ini".
 automatically execute late configuration file execution to built-in AMXX per map configurations.
 automatically to restaure the first mapcycle used.
 freeze the game and show the scoreboard when activating a mod silently, using the command "amx_setmods".
 use the command 'amx_setmod modShortName <1 or 0>', to enable the mod "modShortName" as csdm, 
 starting a vote map (1) or not (0), right after. This command can only active mods loaded from 
-"multimod.ini" file, and needs an admin level ADMIN_CFG.
+"voting_list.ini" file, and needs an admin level ADMIN_CFG.
 use the command 'amx_setmods modShortName <1 or 0>', to enable the mod "modShortName" as surf, 
 restarting (1) or not (0) the server immediately, silently. This command can active any mod installed at the server 
-despite it is or it is not at the "multimod.ini" server configuration file. And most important, it needs an admin level ADMIN_IMMUNITY.
+despite it is or it is not at the "voting_list.ini" server configuration file. And most important, it needs an admin level ADMIN_IMMUNITY.
 use the cvar amx_multimod_endmapvote <0 - 1> to enable (1) or disable (0) end map automatic multi-mod voting.
 waits as long as you want to choose to activate one mod or not, by vote menu and by command line.
 at voting keep the current mod, if less than 30% voted, or keep it disabled if there is no mod enabled.
@@ -101,8 +101,8 @@ Click here to see all servers using this plugin.
 This is a multi-mod server manager, that controls which mod is, or will be activated. 
 A mod can be activated by vote (say votemod), or by force (amx_setmod or amx_setmods).
 
-There is a list of mods (multimod.ini) that decides which mods will show up at a mod vote. 
-The vote mod supports a multi-page menu, that display until 100 Mods loaded from “multimod.ini” file. 
+There is a list of mods (voting_list.ini) that decides which mods will show up at a mod vote. 
+The vote mod supports a multi-page menu, that display until 100 Mods loaded from “voting_list.ini” file. 
 Beyond 100 mods, the vote mod menu will not display then. To enable more than 100 mods, 
 redefine the compiler constant "#define MAXMODS 100" inside the plugin.
 
@@ -123,20 +123,20 @@ Quote:
 * When the min vote mod time is not reached/disabled, display a message informing it. 
 
 * Command 'amx_votemod', to start force start a vote mod, even if it is disabled. This command can 
-only active mods loaded from "multimod.ini" file, and needs an admin level ADMIN_MAP. 
+only active mods loaded from "voting_list.ini" file, and needs an admin level ADMIN_MAP. 
 
 * Command 'amx_setmod modShortName <1 or 0>', to enable the mod "modShortName" as csdm, 
 starting a vote map (1) or not (0), right after. This command can only active mods loaded from 
-"multimod.ini" file, and needs an admin level ADMIN_CFG. 
+"voting_list.ini" file, and needs an admin level ADMIN_CFG. 
 
 * Command 'amx_setmods modShortName <1 or 0>', to enable the mod "modShortName" as surf, 
 restarting (1) or not (0) the server immediately, silently. This command can active any mod installed 
-at the server despite it is or not at the "multimod.ini" server's configuration file. And most important, 
+at the server despite it is or not at the "voting_list.ini" server's configuration file. And most important, 
 it needs an admin level ADMIN_IMMUNITY. 
 
 OBS: A mod can only to be/get activated after a restart.
 The command "amx_setmod help 1" display the acceptable inputs and loaded mods 
-from the file "yourgamemod/addons/amxmodx/configs/multimod/multimod.ini". There is 
+from the file "yourgamemod/addons/amxmodx/configs/multimod/voting_list.ini". There is 
 2 built-in operations beyond mods activation: "amx_setmod help 1" and "amx_setmod disable 1",
 respectively to shows help and disable any active mod.
 
@@ -170,7 +170,7 @@ amx_setmods
 amx_votemod 
 
 //Check which MOD will be running in next map
-say nextmod    
+say nextmod 
 say_team nextmod 
 
 //Check which MOD is running in the current map
@@ -237,7 +237,7 @@ yourgamemod/addons/amxmodx/configs/multimod/msg/gungame.cfg
 yourgamemod/mapcycles/gungame.txt
 -------------- Explanations Go Top -------------------------
 
-1. The file "yourgamemod/addons/amxmodx/configs/multimod/plugins/gungame.txt", 
+1. The file "yourgamemod/addons/amxmodx/configs/multimod/plugins/gungame.ini", 
 contains the plugins that compose the Mod like:
 Quote:
 gungame.amxx
@@ -303,15 +303,17 @@ Quote:
 * Added path coders to every multi-generated string. 
 * Added immutable strings paths as global variables. 
 * Removed passing an integer value to a function by string. 
-* Removed unnecessary variables like g_messageFileNames and g_pluginsFileNames.
+* Removed unnecessary variables like g_messageFileNames and g_pluginsFileNames. 
+
+2015-10-30 | v1.1-alpha1.hotfix1
+* Fixed the mod map cycle not changing.
 ******************************** TODO Go Top *********************************
 * Add auto configs files auto-creation at first run, creating readme files. 
 
 Quote:
 Originally Posted by fysiks  View Post
 If you are going to use the multilingual system to print to the server console, you should not use 
-LANG_PLAYER; that just doesn't make sense. You should use LANG_SERVER.[*]This will only work with 
-Counter-Strike (because of color chat) and thus your submission 
+LANG_PLAYER; that just doesn't make sense. You should use LANG_SERVER.[*]This will only work with Counter-Strike (because of color chat) and thus your submission 
 should not be labeled as "Modification: ALL".
 I posted wrong, and I was misleading the LANG_PLAYER and LANG_SERVER's use. 
 It will be fixed. And I forgot, this will be modification ALL, but it is not currently modification ALL. 
@@ -329,8 +331,7 @@ Quote:
 Originally Posted by fysiks  View Post
 The use of server_print() should be rare and mostly for debugging. For registered commands, 
 it should only be used with register_srvcmd() (unless it's for debugging of course).
-I did not know this register_srvcmd(). Then now I can register a register_srvcmd to server_print, 
-and another register_clcmd to client_print.
+I did not know this register_srvcmd(). Then now I can register a register_srvcmd to server_print, and another register_clcmd to client_print.
 
 Quote:
 Originally Posted by fysiks  View Post
@@ -376,7 +377,7 @@ Paste here everything from the status command *except* the player list.
 Paste here the entire result from the meta list and amxx plugins commands.
 Paste here *only* the CVARs that contain "multimod_manager.amxx" in the last column 
 from the amxx cvars command. They will be grouped together.
-********************************************* ******************************************    
+********************************************* ****************************************** 
 BRAZIL (South America) Testing Server
 
 
@@ -392,7 +393,7 @@ galieo_reloaded.sma
 #include <amxmisc>
 
 #define PLUGIN "Multi-Mod Manager"
-#define VERSION "v1.1-alpha1.1"
+#define VERSION "1.1-alpha1.1"
 #define AUTHOR "Addons zz"
 
 #define TASK_VOTEMOD 2487002
