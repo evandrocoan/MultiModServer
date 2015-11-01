@@ -1,8 +1,8 @@
 /*********************** Licensing *******************************************************
 *  This program is free software; you can redistribute it and/or modify it
 *  under the terms of the GNU General Public License as published by the
-*  Free Software Foundation; either version 2 of the License, or (at
-*  your option) any later version.
+*  Free Software Foundation; either version 2 of the License, or ( at
+*  your option ) any later version.
 *
 *  This program is distributed in the hope that it will be useful, but
 *  WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -39,12 +39,12 @@ automatically execute late configuration file execution to built-in AMXX per map
 automatically to restaure the first mapcycle used.
 freeze the game and show the scoreboard when activating a mod silently, using the command "amx_setmods".
 use the command 'amx_setmod modShortName <1 or 0>', to enable the mod "modShortName" as csdm, 
-starting a vote map (1) or not (0), right after. This command can only active mods loaded from 
+starting a vote map ( 1 ) or not ( 0 ), right after. This command can only active mods loaded from 
 "voting_list.ini" file, and needs an admin level ADMIN_CFG.
 use the command 'amx_setmods modShortName <1 or 0>', to enable the mod "modShortName" as surf, 
-restarting (1) or not (0) the server immediately, silently. This command can active any mod installed at the server 
+restarting ( 1 ) or not ( 0 ) the server immediately, silently. This command can active any mod installed at the server 
 despite it is or it is not at the "voting_list.ini" server configuration file. And most important, it needs an admin level ADMIN_IMMUNITY.
-use the cvar amx_multimod_endmapvote <0 - 1> to enable (1) or disable (0) end map automatic multi-mod voting.
+use the cvar amx_multimod_endmapvote <0 - 1> to enable ( 1 ) or disable ( 0 ) end map automatic multi-mod voting.
 waits as long as you want to choose to activate one mod or not, by vote menu and by command line.
 at voting keep the current mod, if less than 30% voted, or keep it disabled if there is no mod enabled.
 see the voting results details at server's console.
@@ -52,7 +52,7 @@ keep the server's current mod at voting as the vote menu's first option is alway
 disable the server's current mod at voting as the vote menu's second option is always: "2. No mod - Disable Mod".
 see that are any mod currently activated, when you type "say currentmod" and there is no mod active.
 execute a special server's configuration file at the comment you active a server's mod. That is executed only and only at the 
-mod first activation time by the command "amx_setmod" (the silence one, "amx_setmods" has not this feature, because it is silent).
+mod first activation time by the command "amx_setmod" ( the silence one, "amx_setmods" has not this feature, because it is silent ).
 receive a clear and self-explanatory error message when you mis-configure the mod plugins file name/location.
 
 And even better, server's admins with right flag can change the server's current mod without needing direct access like ftp, to the server's files.
@@ -71,7 +71,7 @@ Source Code and Support
 Downloads
 See its current development at: Github
  
-(look for the developer and feature branches)
+( look for the developer and feature branches )
 
 The original plugin "multimod.sma" is originally written by JoRoPiTo. This "Multi-Mod Manager" works 
 differently from the original "MultiMod Manager". See Credits for information. 
@@ -99,9 +99,9 @@ Click here to see all servers using this plugin.
 
 ********************** Introduction Go Top *******************************
 This is a multi-mod server manager, that controls which mod is, or will be activated. 
-A mod can be activated by vote (say votemod), or by force (amx_setmod or amx_setmods).
+A mod can be activated by vote ( say votemod ), or by force ( amx_setmod or amx_setmods ).
 
-There is a list of mods (voting_list.ini) that decides which mods will show up at a mod vote. 
+There is a list of mods ( voting_list.ini ) that decides which mods will show up at a mod vote. 
 The vote mod supports a multi-page menu, that display until 100 Mods loaded from “voting_list.ini” file. 
 Beyond 100 mods, the vote mod menu will not display then. To enable more than 100 mods, 
 redefine the compiler constant "#define MAXMODS 100" inside the plugin.
@@ -126,11 +126,11 @@ Quote:
 only active mods loaded from "voting_list.ini" file, and needs an admin level ADMIN_MAP. 
 
 * Command 'amx_setmod modShortName <1 or 0>', to enable the mod "modShortName" as csdm, 
-starting a vote map (1) or not (0), right after. This command can only active mods loaded from 
+starting a vote map ( 1 ) or not ( 0 ), right after. This command can only active mods loaded from 
 "voting_list.ini" file, and needs an admin level ADMIN_CFG. 
 
 * Command 'amx_setmods modShortName <1 or 0>', to enable the mod "modShortName" as surf, 
-restarting (1) or not (0) the server immediately, silently. This command can active any mod installed 
+restarting ( 1 ) or not ( 0 ) the server immediately, silently. This command can active any mod installed 
 at the server despite it is or not at the "voting_list.ini" server's configuration file. And most important, 
 it needs an admin level ADMIN_IMMUNITY. 
 
@@ -142,7 +142,7 @@ respectively to shows help and disable any active mod.
 
 
 
-If enabled (default disabled), when remaining 5 minutes to end current map, this plugins launches a vote to 
+If enabled ( default disabled ), when remaining 5 minutes to end current map, this plugins launches a vote to 
 choose which mod will be played at the next map. If less than 30% voted, the game keep the current mod 
 or keep it disabled if there is no mod enabled. 
 
@@ -155,10 +155,10 @@ Quote:
 // Minimum time to play before players can make MOD voting. 
 amx_mintime 10 
 
-// enable (1) or disable (0) end map automatic multi-mod voting.
+// enable ( 1 ) or disable ( 0 ) end map automatic multi-mod voting.
 amx_multimod_endmapvote 0 
 
-// enable (1) or disable (0) multi-mod voting (say votemod).
+// enable ( 1 ) or disable ( 0 ) multi-mod voting ( say votemod ).
 amx_multimod_voteallowed 1
 Commands:
 Quote:
@@ -181,7 +181,7 @@ say_team currentmod
 say votemod 
 say_team votemod
 There is a Multi-Mod Server Configuration with:
-CS-DM (DeathMatch)
+CS-DM ( DeathMatch )
 Catch Mod
 Dragon Ball Mod
 Gun Game Mod
@@ -198,7 +198,7 @@ Is available here.
 
 ******************************** Installation Go Top **********************
 1. Download the files "multimod_manager.sma", "configuration_files.zip", 
-"multimod_mapchooser.sma" or "galieo_reloaded.sma" and "multimod_daily_changer.sma"(this is optional), 
+"multimod_mapchooser.sma" or "galieo_reloaded.sma" and "multimod_daily_changer.sma"( this is optional ), 
 at Downloads section. 
 
 2. Then take the contents of "yourgamemod" from "configuration_files.zip", to your gamemod folder. 
@@ -219,7 +219,7 @@ galieo_reloaded.amxx
 Quote:
 exec addons/amxmodx/configs/multimod/multimod.cfg
 6. Configure your own mods at "yourgamemod/addons/amxmodx/configs/multimod/voting_list.ini" 
-file as follow (the short mod name cannot be longer than 15 characters neither have spaces):
+file as follow ( the short mod name cannot be longer than 15 characters neither have spaces ):
 
 --- Example of: yourgamemod/addons/amxmodx/configs/multimod/voting_list.ini ------
 Quote:
@@ -230,7 +230,7 @@ Quote:
 Quote:
 yourgamemod/addons/amxmodx/configs/multimod/plugins/gungame.ini
 
-(Optinal files)
+( Optinal files )
 yourgamemod/addons/amxmodx/configs/multimod/cfg/gungame.cfg
 yourgamemod/addons/amxmodx/configs/multimod/latecfg/gungame.cfg
 yourgamemod/addons/amxmodx/configs/multimod/msg/gungame.cfg
@@ -241,17 +241,17 @@ yourgamemod/mapcycles/gungame.txt
 contains the plugins that compose the Mod like:
 Quote:
 gungame.amxx
-2. The file (opcional) "yourgamemod/addons/amxmodx/configs/multimod/cfg/gungame.cfg", 
+2. The file ( opcional ) "yourgamemod/addons/amxmodx/configs/multimod/cfg/gungame.cfg", 
 contains yours special configuration used at the mod activation, like:
 Quote:
 amxx pause amx_adminmodel
 sv_gravity 600
-3. The file (opcional) "yourgamemod/addons/amxmodx/configs/multimod/cfg/gungame.cfg", 
+3. The file ( opcional ) "yourgamemod/addons/amxmodx/configs/multimod/cfg/gungame.cfg", 
 contains yours special configuration used after the mod deactivation, like:
 Quote:
 amxx unpause amx_adminmodel
 sv_gravity 800
-4. The file (opcional) "yourgamemod/addons/amxmodx/configs/multimod/msg/gungame.cfg" contains 
+4. The file ( opcional ) "yourgamemod/addons/amxmodx/configs/multimod/msg/gungame.cfg" contains 
 commands that are executed when a mod is activated by the command line "amx_setmod". 
 Usually it contains a command to restart the server. 
 Example of "yourgamemod/addons/amxmodx/configs/multimod/msg/gungame.cfg":
@@ -264,7 +264,7 @@ amx_tsay ocean GUN-GAME will be activated at next server restart!!!!
 
 //amx_countdown 5 restart
 exec addons/amxmodx/configs/multimod/votefinished.cfg
-5. The file (opcional) "yourgamemod/mapcycles/gungame.txt" contains the mapcycle used when 
+5. The file ( opcional ) "yourgamemod/mapcycles/gungame.txt" contains the mapcycle used when 
 gungame mod is active.
 
 ******************************** Change Log Go Top ***********************
@@ -313,7 +313,7 @@ Quote:
 Quote:
 Originally Posted by fysiks  View Post
 If you are going to use the multilingual system to print to the server console, you should not use 
-LANG_PLAYER; that just doesn't make sense. You should use LANG_SERVER.[*]This will only work with Counter-Strike (because of color chat) and thus your submission 
+LANG_PLAYER; that just doesn't make sense. You should use LANG_SERVER.[*]This will only work with Counter-Strike ( because of color chat ) and thus your submission 
 should not be labeled as "Modification: ALL".
 I posted wrong, and I was misleading the LANG_PLAYER and LANG_SERVER's use. 
 It will be fixed. And I forgot, this will be modification ALL, but it is not currently modification ALL. 
@@ -330,7 +330,7 @@ each page to show only a big string supported.
 Quote:
 Originally Posted by fysiks  View Post
 The use of server_print() should be rare and mostly for debugging. For registered commands, 
-it should only be used with register_srvcmd() (unless it's for debugging of course).
+it should only be used with register_srvcmd() ( unless it's for debugging of course ).
 I did not know this register_srvcmd(). Then now I can register a register_srvcmd to server_print, and another register_clcmd to client_print.
 
 Quote:
@@ -378,10 +378,10 @@ Paste here the entire result from the meta list and amxx plugins commands.
 Paste here *only* the CVARs that contain "multimod_manager.amxx" in the last column 
 from the amxx cvars command. They will be grouped together.
 ********************************************* ****************************************** 
-BRAZIL (South America) Testing Server
+BRAZIL ( South America ) Testing Server
 
 
-GERMANY (Europe) Testing Server
+GERMANY ( Europe ) Testing Server
 
 
 ******************************** Downloads Go Top ********************
@@ -450,7 +450,7 @@ and any modification will be discarded in the activation of some mod.^n^n"
 
 new g_helpamx_setmod[LONG_STRING] = "help 1          | for help."
 new g_helpamx_setmods[LONG_STRING] = "shortModName <1 or 0> to restart or not       \
-| Enable/Disable any mod, loaded or not (silent mod). "
+| Enable/Disable any mod, loaded or not ( silent mod ). "
 
 new g_cmdsAvailables1[LONG_STRING] = "^namx_setmod help 1       | To show this help.^n\
 amx_setmod disable 1   | To deactivate any active Mod.^n\
@@ -487,7 +487,7 @@ public plugin_init()
     register_concmd( "amx_setmods", "receiveCommandSilent", ADMIN_IMMUNITY, g_helpamx_setmods )
     register_menucmd( register_menuid( g_menuname ), 2047, "player_vote" )
 
-    g_sayText = get_user_msgid("SayText");
+    g_sayText = get_user_msgid( "SayText" );
     g_coloredmenus = colored_menus()
     g_totalVotes = 0
 }
@@ -500,28 +500,28 @@ public plugin_init()
  */
 public plugin_cfg()
 {   
-    gp_voteanswers = get_cvar_pointer("amx_vote_answers")
-    gp_timelimit = get_cvar_pointer("mp_timelimit")
-    gp_mapcyclefile = get_cvar_pointer("mapcyclefile")
+    gp_voteanswers = get_cvar_pointer( "amx_vote_answers" )
+    gp_timelimit = get_cvar_pointer( "mp_timelimit" )
+    gp_mapcyclefile = get_cvar_pointer( "mapcyclefile" )
 
-    get_configsdir( g_configFolder, charsmax(g_configFolder) )
+    get_configsdir( g_configFolder, charsmax( g_configFolder ) )
 
-    formatex( g_masterPlugin_filePath, charsmax(g_masterPlugin_filePath), 
+    formatex( g_masterPlugin_filePath, charsmax( g_masterPlugin_filePath ), 
             "%s/plugins-multi.ini", g_configFolder )
 
-    formatex( g_masterConfig_filePath, charsmax(g_masterConfig_filePath), 
+    formatex( g_masterConfig_filePath, charsmax( g_masterConfig_filePath ), 
             "%s/multimod/multimod.cfg", g_configFolder )
 
-    formatex( g_currentMod_id_filePath, charsmax(g_currentMod_id_filePath), 
+    formatex( g_currentMod_id_filePath, charsmax( g_currentMod_id_filePath ), 
             "%s/multimod/currentmod_id.ini", g_configFolder ) 
 
-    formatex( g_currentMod_shortName_filePath, charsmax(g_currentMod_shortName_filePath), 
+    formatex( g_currentMod_shortName_filePath, charsmax( g_currentMod_shortName_filePath ), 
             "%s/multimod/currentmod_shortname.ini", g_configFolder )
 
-    formatex( g_votingList_filePath, charsmax(g_votingList_filePath), 
+    formatex( g_votingList_filePath, charsmax( g_votingList_filePath ), 
             "%s/multimod/voting_list.ini", g_configFolder )
 
-    formatex( g_votingFinished_filePath, charsmax(g_votingFinished_filePath), 
+    formatex( g_votingFinished_filePath, charsmax( g_votingFinished_filePath ), 
             "%s/multimod/votefinished.cfg", g_configFolder )
 
     switchMapManager()
@@ -535,7 +535,7 @@ public plugin_cfg()
 
     if( get_pcvar_num( gp_endmapvote ) )
     {
-        set_task(15.0, "check_task", TASK_VOTEMOD, "", 0, "b")
+        set_task( 15.0, "check_task", TASK_VOTEMOD, "", 0, "b" )
     }
 }
 
@@ -588,10 +588,10 @@ public unloadLastActiveMod()
  * @ARG1 firstCommand_lineArgument the modShortName to enable 
  * @ARG2 secondCommand_lineArgument inform to start a vote map "1" or not "0" 
  */
-public receiveCommand(player_id, level, cid)
+public receiveCommand( player_id, level, cid )
 {   
     //Make sure this user is an admin
-    if (!cmd_access(player_id, level, cid, 3))
+    if ( !cmd_access( player_id, level, cid, 3 ) )
     {   
         return PLUGIN_HANDLED
     }
@@ -688,7 +688,7 @@ public printHelp( player_id )
 
     for( new i = 3; i <= g_modCounter; i++ )
     {   
-        formatex( text, charsmax(text), "amx_setmod %s 1          | to use %s", g_modShortNames[i], g_modNames[i] )
+        formatex( text, charsmax( text ), "amx_setmod %s 1          | to use %s", g_modShortNames[i], g_modNames[i] )
 
         client_print( player_id, print_console , text )
         server_print( text )
@@ -699,7 +699,7 @@ public printHelp( player_id )
 
 /**
  * Process the input command "amx_setmod OPITON1 OPITON2". 
- * Straight restarting the server, (silent mod) and changes and configures the mapcycle if 
+ * Straight restarting the server, ( silent mod ) and changes and configures the mapcycle if 
  *   there is one
  * 
  * @param player_id - will hold the players id who started the command
@@ -736,7 +736,7 @@ public receiveCommandSilent( player_id, level, cid )
         saveCurrentModBy_id( 2 )
 
         saveCurrentModBy_ShortName( firstCommand_lineArgument             )
-        messageModActivated(                 firstCommand_lineArgument, isTimeToRestart, false )
+        messageModActivated(               firstCommand_lineArgument, isTimeToRestart, false )
     }
     g_isTimeTo_changeMapcyle = false
 
@@ -775,8 +775,8 @@ public loadCurrentMod()
     // normal mod activation 
     if( file_exists( g_currentMod_id_filePath ) ) 
     {
-        read_file(     g_currentMod_id_filePath, 0, currentModCode_String, 
-                charsmax(currentModCode_String), unused_lenghtInteger )
+        read_file(   g_currentMod_id_filePath, 0, currentModCode_String, 
+                charsmax( currentModCode_String ), unused_lenghtInteger )
 
         currentModCode     = str_to_num( currentModCode_String )
     } 
@@ -790,7 +790,7 @@ public loadCurrentMod()
     if( file_exists( g_currentMod_shortName_filePath ) ) 
     {
         read_file( g_currentMod_shortName_filePath, 0, currentMod_shortName, 
-                charsmax(currentMod_shortName), unused_lenghtInteger )
+                charsmax( currentMod_shortName ), unused_lenghtInteger )
     } 
     else
     {
@@ -911,7 +911,7 @@ saveCurrentModBy_id( mod_id_number )
         delete_file( g_currentMod_id_filePath )
     }
 
-    formatex( mod_idString, charsmax(mod_idString), "%d", mod_id_number - 2 )
+    formatex( mod_idString, charsmax( mod_idString ), "%d", mod_id_number - 2 )
 
     write_file( g_currentMod_id_filePath, mod_idString )
 }
@@ -965,7 +965,7 @@ public load_votingList()
 
     while( !feof( votingList_filePointer ) )
     {   
-        fgets( votingList_filePointer, currentLine, charsmax(currentLine) )
+        fgets( votingList_filePointer, currentLine, charsmax( currentLine ) )
         trim( currentLine )
 
         // skip commentaries while reading file
@@ -979,12 +979,12 @@ public load_votingList()
             g_modCounter++
 
             // remove line delimiters [ and ]
-            replace_all( currentLine, charsmax(currentLine), "[", "" )
-            replace_all( currentLine, charsmax(currentLine), "]", "" )
+            replace_all( currentLine, charsmax( currentLine ), "[", "" )
+            replace_all( currentLine, charsmax( currentLine ), "]", "" )
 
-            // broke the current config line, in modname (modName), modtag (modShortName_string) 
-            strtok( currentLine, modName, charsmax(modName), currentLine_splited, charsmax(currentLine_splited), ':', 0 )
-            strtok( currentLine_splited, modShortName_string, charsmax(modShortName_string), unusedLast_string, 
+            // broke the current config line, in modname ( modName ), modtag ( modShortName_string ) 
+            strtok( currentLine, modName, charsmax( modName ), currentLine_splited, charsmax( currentLine_splited ), ':', 0 )
+            strtok( currentLine_splited, modShortName_string, charsmax( modShortName_string ), unusedLast_string, 
                     charsmax( unusedLast_string ), ':', 0 )
 
             // stores at memory the modname and the modShortName
@@ -1063,7 +1063,7 @@ public message_pathCoder( modShortName[], message_filePath[], stringReturnSize )
  * @param plugin_filePath[] the plugin file path containing its file extension. Ex: mapcycles/surf.txt
  * @param stringReturnSize the plugin_filePath[] charsmax value. 
  */
-public plugin_pathCoder( modShortName[], plugin_filePath[], stringReturnSize)
+public plugin_pathCoder( modShortName[], plugin_filePath[], stringReturnSize )
 {   
     formatex( plugin_filePath, stringReturnSize, "%s/multimod/plugins/%s.ini", g_configFolder, modShortName )
 }
@@ -1076,7 +1076,7 @@ public plugin_pathCoder( modShortName[], plugin_filePath[], stringReturnSize)
  * @param config_filePath[] the config file path containing its file extension. Ex: mapcycles/surf.txt
  * @param stringReturnSize the config_filePath[] charsmax value. 
  */
-public config_pathCoder( modShortName[], config_filePath[], stringReturnSize)
+public config_pathCoder( modShortName[], config_filePath[], stringReturnSize )
 {   
     formatex( config_filePath, stringReturnSize, "%s/multimod/cfg/%s.cfg", g_configFolder, modShortName )
 }
@@ -1090,7 +1090,7 @@ public config_pathCoder( modShortName[], config_filePath[], stringReturnSize)
  * @param lateConfig_filePath[] the late config file path containing its file extension. Ex: mapcycles/surf.txt
  * @param stringReturnSize the lateConfig_filePath[] charsmax value. 
  */
-public lateConfig_pathCoder( modShortName[], lateConfig_filePath[], stringReturnSize)
+public lateConfig_pathCoder( modShortName[], lateConfig_filePath[], stringReturnSize )
 {   
     formatex( lateConfig_filePath, stringReturnSize, "%s/multimod/latecfg/%s.cfg", g_configFolder, modShortName )
 }
@@ -1104,7 +1104,7 @@ public lateConfig_pathCoder( modShortName[], lateConfig_filePath[], stringReturn
  * @param mapcycle_filePath[] the mapcycle file path containing its file extension. Ex: mapcycles/surf.txt
  * @param stringReturnSize the mapcycle_filePath[] charsmax value. 
  */
-public mapcycle_pathCoder( modShortName[], mapcycle_filePath[], stringReturnSize)
+public mapcycle_pathCoder( modShortName[], mapcycle_filePath[], stringReturnSize )
 {   
     formatex( mapcycle_filePath, stringReturnSize, "mapcycles/%s.txt", modShortName )
 }
@@ -1155,7 +1155,7 @@ public configMapManager( mapcycle_filePath[] )
         {   
             case 1:
             {   
-                if( callfunc_begin("plugin_init", "multimod_mapchooser.amxx" ) == 1 )
+                if( callfunc_begin( "plugin_init", "multimod_mapchooser.amxx" ) == 1 )
                 {   
                     callfunc_end()
                 } 
@@ -1194,7 +1194,7 @@ public configDailyMaps( mapcycle_filePath[] )
 {
     new isFirstTime[32]
 
-    get_localinfo(         "isFirstTime_serverLoad", isFirstTime, charsmax( isFirstTime ) );
+    get_localinfo(       "isFirstTime_serverLoad", isFirstTime, charsmax( isFirstTime ) );
     g_isFirstTime_serverLoad     = str_to_num( isFirstTime )
 
     if( g_isFirstTime_serverLoad  == 0 )
@@ -1205,7 +1205,7 @@ public configDailyMaps( mapcycle_filePath[] )
 
         get_pcvar_string( gp_mapcyclefile, currentMapcycle_filePath, charsmax( currentMapcycle_filePath ) )
 
-        set_localinfo(     "firstMapcycle_loaded",         currentMapcycle_filePath )
+        set_localinfo(   "firstMapcycle_loaded",         currentMapcycle_filePath )
     }
 
     if( g_is_debug & 8 ) 
@@ -1223,8 +1223,8 @@ public configDailyMaps( mapcycle_filePath[] )
 
         if( file_exists( mapcycle_filePath ) )
         {   
-            set_pcvar_string(     gp_mapcyclefile,           mapcycle_filePath )
-            set_localinfo(    "isFirstTime_serverLoad",         "1"                 )
+            set_pcvar_string(   gp_mapcyclefile,           mapcycle_filePath )
+            set_localinfo(  "isFirstTime_serverLoad",         "1"                 )
         } 
         else 
         {
@@ -1280,7 +1280,7 @@ public activateMod_byShortName( modShortName[] )
 
     plugin_pathCoder( modShortName, plugin_filePath, charsmax( plugin_filePath ) ) 
 
-    if( file_exists(plugin_filePath) )
+    if( file_exists( plugin_filePath ) )
     {   
         new config_filePath[LONG_STRING] 
 
@@ -1328,9 +1328,9 @@ public copyFiles( sourceFilePath[], destinationFilePath[], inicialFileText[] )
 
     while ( !feof( sourceFilePathPointer ) )
     {   
-        fgets( sourceFilePathPointer, Text, sizeof(Text) - 1 )
-        trim(Text)
-        write_file( destinationFilePath, Text, -1)
+        fgets( sourceFilePathPointer, Text, sizeof( Text ) - 1 )
+        trim( Text )
+        write_file( destinationFilePath, Text, -1 )
     }
     fclose( sourceFilePathPointer )
 }
@@ -1348,8 +1348,8 @@ public copyFiles2( sourceFilePath[], destinationFilePath[] )
 
     while ( !feof( sourceFilePathPointer ) )
     {   
-        fgets( sourceFilePathPointer, Text, sizeof(Text) - 1 )
-        trim(Text)
+        fgets( sourceFilePathPointer, Text, sizeof( Text ) - 1 )
+        trim( Text )
         write_file( destinationFilePath, Text, -1 )
     }
     fclose( sourceFilePathPointer )
@@ -1379,10 +1379,10 @@ public messageModActivated( modShortName[], isTimeToRestart, isTimeTo_executeMes
         else
         {
             // freeze the game and show the scoreboard
-            message_begin(MSG_ALL, SVC_INTERMISSION);
+            message_begin( MSG_ALL, SVC_INTERMISSION );
             message_end();
 
-            set_task(5.0, "restartTheServer");
+            set_task( 5.0, "restartTheServer" );
         }
     }
 }
@@ -1412,10 +1412,10 @@ public msgResourceActivated( resourceName[], isTimeToRestart, isTimeTo_executeMe
         else
         {
             // freeze the game and show the scoreboard
-            message_begin(MSG_ALL, SVC_INTERMISSION);
+            message_begin( MSG_ALL, SVC_INTERMISSION );
             message_end();
 
-            set_task(5.0, "restartTheServer");
+            set_task( 5.0, "restartTheServer" );
         }
     }
 }
@@ -1443,7 +1443,7 @@ public printMessage( player_id, message[], any:... )
     replace_all( formated_message, charsmax( formated_message ), "^1", "" ) 
     replace_all( formated_message, charsmax( formated_message ), "^3", "" ) 
     
-    client_print(     player_id, print_console, formated_message )
+    client_print(   player_id, print_console, formated_message )
     server_print( formated_message )
 }
 
@@ -1461,13 +1461,13 @@ stock print_color( const player_id, const input[], any:... )
 
     static formated_message[LONG_STRING];
 
-    vformat(formated_message, charsmax( formated_message ), input, 3);
+    vformat( formated_message, charsmax( formated_message ), input, 3 );
 
-    if( player_id ) players_ids[0] = player_id; else get_players(players_ids, playerIndex_idsCounter, "ch");
+    if( player_id ) players_ids[0] = player_id; else get_players( players_ids, playerIndex_idsCounter, "ch" );
     {
-        for (new i = 0; i < playerIndex_idsCounter; i++)
+        for ( new i = 0; i < playerIndex_idsCounter; i++ )
         {
-            if (is_user_connected(players_ids[i]))
+            if ( is_user_connected( players_ids[i] ) )
             {
                 message_begin( MSG_ONE_UNRELIABLE, g_sayText, _, players_ids[i] );
                 write_byte( players_ids[i] );
@@ -1484,9 +1484,9 @@ stock print_color( const player_id, const input[], any:... )
  * 
  * @param player_id the player id
  */
-public user_currentmod(player_id)
+public user_currentmod( player_id )
 {   
-    client_print(0, print_chat, "The game current mod is: %s", g_modNames[ g_currentMod_id ] )
+    client_print( 0, print_chat, "The game current mod is: %s", g_modNames[ g_currentMod_id ] )
 
     return PLUGIN_HANDLED
 }
@@ -1498,27 +1498,27 @@ public user_currentmod(player_id)
  * 
  * @param player_id the player id
  */
-public user_votemod(player_id)
+public user_votemod( player_id )
 {   
     if( get_pcvar_num( gp_allowedvote ) )
     {   
-        client_print(0, print_chat, "%L", LANG_PLAYER, "MM_VOTEMOD", g_modNames[g_currentMod_id] )
+        client_print( 0, print_chat, "%L", LANG_PLAYER, "MM_VOTEMOD", g_modNames[g_currentMod_id] )
         return PLUGIN_HANDLED
     }
-    new Float:elapsedTime = get_pcvar_float(gp_timelimit) - (float(get_timeleft()) / 60.0)
+    new Float:elapsedTime = get_pcvar_float( gp_timelimit ) - ( float( get_timeleft() ) / 60.0 )
     new Float:minTime
-    minTime = get_pcvar_float(gp_mintime)
+    minTime = get_pcvar_float( gp_mintime )
 
-    if(elapsedTime < minTime)
+    if( elapsedTime < minTime )
     {   
         client_print( player_id, print_chat, "[AMX MultiMod] %L", LANG_PLAYER, "MM_PL_WAIT",
-        floatround(minTime - elapsedTime, floatround_ceil) )
+        floatround( minTime - elapsedTime, floatround_ceil ) )
 
         return PLUGIN_HANDLED
     }
     new timeleft = get_timeleft()
 
-    if(timeleft < 180)
+    if( timeleft < 180 )
     {   
         client_print( player_id, print_chat, "You can't start a vote mod while the timeleft is %d seconds",
                 timeleft )
@@ -1533,7 +1533,7 @@ public check_task()
 {   
     new timeleft = get_timeleft()
 
-    if(timeleft < 300 || timeleft > 330)
+    if( timeleft < 300 || timeleft > 330 )
     {   
         return
     }
@@ -1549,8 +1549,8 @@ public check_task()
  */
 public start_vote()
 {   
-    remove_task(TASK_VOTEMOD)
-    remove_task(TASK_CHVOMOD)
+    remove_task( TASK_VOTEMOD )
+    remove_task( TASK_CHVOMOD )
 
     for( new i = 0; i < 33; i++ )
     {   
@@ -1563,7 +1563,7 @@ public start_vote()
     }
 
     display_votemod_menu( 0, 0 )
-    client_cmd(0, "spk Gman/Gman_Choose2")
+    client_cmd( 0, "spk Gman/Gman_Choose2" )
 
     if( g_is_debug )
     {   
@@ -1605,11 +1605,11 @@ public display_votemod_menu( player_id, menu_current_page )
     // calc. Menu titles
     if( g_coloredmenus )
     {   
-        current_write_position = formatex( menu_body, charsmax(menu_body), "\y%L: \R%d/%d\w^n^n",
+        current_write_position = formatex( menu_body, charsmax( menu_body ), "\y%L: \R%d/%d\w^n^n",
                 LANG_PLAYER, "MM_CHOOSE", menu_current_page + 1, g_menu_total_pages )
     } else
     {   
-        current_write_position = formatex( menu_body, charsmax(menu_body), "%L: %d/%d^n^n",
+        current_write_position = formatex( menu_body, charsmax( menu_body ), "%L: %d/%d^n^n",
         LANG_PLAYER, "MM_CHOOSE", menu_current_page + 1, g_menu_total_pages )
     }
 
@@ -1643,7 +1643,7 @@ public display_votemod_menu( player_id, menu_current_page )
     menu_valid_keys = MENU_KEY_0
     for( new i = 0; i < 9; i++ )
     {   
-        menu_valid_keys |= (1<<i)
+        menu_valid_keys |= ( 1<<i )
     }
     menu_valid_keys |= MENU_KEY_9
 
@@ -1686,8 +1686,8 @@ public display_votemod_menu( player_id, menu_current_page )
 }
 
 /**
- * Given a vote_mod_code (octal number), calculates and return the mod internal id 
- * (decimal number).
+ * Given a vote_mod_code ( octal number ), calculates and return the mod internal id 
+ * ( decimal number ).
  */
 public convert_octal_to_decimal( octal_number )
 {   
@@ -1699,7 +1699,7 @@ public convert_octal_to_decimal( octal_number )
     {   
         remainder = octal_number % 10
         octal_number /= 10
-        decimal += remainder * power(8, i);
+        decimal += remainder * power( 8, i );
         ++i
     }
     return decimal;
@@ -1757,7 +1757,7 @@ public player_vote( player_id, key )
         {   
             new mod_vote_id = get_mod_vote_id( g_menuPosition[player_id], key )
 
-            if( mod_vote_id <= g_modCounter && get_pcvar_num( gp_voteanswers) )
+            if( mod_vote_id <= g_modCounter && get_pcvar_num( gp_voteanswers ) )
             {   
                 new player_name                [SHORT_STRING]
 
@@ -1826,16 +1826,16 @@ public displayVoteResults( mostVoted_modID, g_totalVotes )
 
         configureMod_byModID( mostVoted_modID )
 
-        formatex( result_message, charsmax(result_message), "%L", LANG_PLAYER, "MM_VOTEMOD",
-                g_modNames[ mostVoted_modID ])
+        formatex( result_message, charsmax( result_message ), "%L", LANG_PLAYER, "MM_VOTEMOD",
+                g_modNames[ mostVoted_modID ] )
 
         server_cmd( "exec %s", g_votingFinished_filePath )
     } 
     else
     {   
         new result_message[LONG_STRING]
-        formatex( result_message, charsmax(result_message), "The vote did not reached the required minimum! \
-        The next mod remains: %s", g_modNames[ g_currentMod_id ])
+        formatex( result_message, charsmax( result_message ), "The vote did not reached the required minimum! \
+        The next mod remains: %s", g_modNames[ g_currentMod_id ] )
     }
     g_totalVotes = 0
 
@@ -1882,11 +1882,11 @@ public playersPlaying( Float:percent )
  * Write debug messages to server's console accordantly to the global variable g_is_debug. 
  * 
  * @param mode the debug level to be used: 
- *           (00000) 0 disabled all debug. 
- *           (00001) 1 displays basic debug messages. 
- *           (00010) 2 displays each mod loaded. 
- *           (00100) 4 displays the keys pressed during voting. 
- *           (01000) 8 displays the the mapcycle configuration. 
+ *           ( 00000 ) 0 disabled all debug. 
+ *           ( 00001 ) 1 displays basic debug messages. 
+ *           ( 00010 ) 2 displays each mod loaded. 
+ *           ( 00100 ) 4 displays the keys pressed during voting. 
+ *           ( 01000 ) 8 displays the the mapcycle configuration. 
  * 
  * @param message[] the text formatting rules to display. If omitted displays ""
  * @param any the variable number of formatting parameters. 
@@ -1900,6 +1900,6 @@ public debugMessageLog( mode, message[], any:... )
         vformat( formated_message, charsmax( formated_message ), message, 3 ) 
 
         server_print( "%s", formated_message         )
-        client_print(         0, print_console,             "%s", formated_message )
+        client_print(       0, print_console,             "%s", formated_message )
     }
 }

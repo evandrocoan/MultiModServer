@@ -324,6 +324,7 @@ exec addons/amxmodx/configs/multimod/votefinished.cfg
 
 ******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *********************************
  * Add auto configs files auto-creation at first run, creating readme files. 
+ * Use the actual current mod map cycle, right after a vote mod, instead the previous one. 
 
 [QUOTE=fysiks;2353142]
 If you are going to use the multilingual system to print to the server console, you should not use 
