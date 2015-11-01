@@ -337,7 +337,7 @@ Quote:
 Originally Posted by fysiks  View Post
 I'm sure there is more but I am done for now.
 Of course, there is more clever programing techniques to learn:
-use tries instead of g_modShortNames.
+use tries instead of g_mod_shortNames.
 count better current playing player at playersPlaying.
 copy more efficiently a files at copyFiles and copyFiles2.
 print colored text more efficiently than at print_color.
@@ -417,8 +417,8 @@ new g_currentMod_id
 new g_mapManagerType
 new g_isFirstTime_serverLoad
 
-new g_modNames                    [MAXMODS][SHORT_STRING] 
-new g_modShortNames            [MAXMODS][SHORT_STRING] 
+new g_mod_names                    [MAXMODS][SHORT_STRING] 
+new g_mod_shortNames            [MAXMODS][SHORT_STRING] 
 new g_votemodcount                [MAXMODS]
 
 new g_modCounter                                     = 0 
@@ -633,7 +633,7 @@ public configureModID( shortName[] )
 {   
     for( new mod_id_number = 3; mod_id_number <= g_modCounter; mod_id_number++ )
     {   
-        if( equal( shortName, g_modShortNames[mod_id_number] ) )
+        if( equal( shortName, g_mod_shortNames[mod_id_number] ) )
         {   
             g_currentMod_id = mod_id_number
             saveCurrentModBy_id( mod_id_number )
@@ -688,7 +688,7 @@ public printHelp( player_id )
 
     for( new i = 3; i <= g_modCounter; i++ )
     {   
-        formatex( text, charsmax( text ), "amx_setmod %s 1          | to use %s", g_modShortNames[i], g_modNames[i] )
+        formatex( text, charsmax( text ), "amx_setmod %s 1          | to use %s", g_mod_shortNames[i], g_mod_names[i] )
 
         client_print( player_id, print_console , text )
         server_print( text )
@@ -821,7 +821,7 @@ public configureMod_byModCode( currentModCode, currentMod_shortName[] )
         case -1: 
         {   
             g_currentMod_id = 2 
-            setCurrentMod_atLocalInfo( g_modShortNames[ g_currentMod_id ] )
+            setCurrentMod_atLocalInfo( g_mod_shortNames[ g_currentMod_id ] )
         }
         case 0: 
         {
@@ -831,7 +831,7 @@ public configureMod_byModCode( currentModCode, currentMod_shortName[] )
         default: 
         {
             g_currentMod_id = currentModCode + 2 
-            setCurrentMod_atLocalInfo( g_modShortNames[ g_currentMod_id ] )
+            setCurrentMod_atLocalInfo( g_mod_shortNames[ g_currentMod_id ] )
         }
     }
 }
@@ -861,7 +861,7 @@ public configureMod_byModID( mostVoted_modID )
         default: 
         {    
             saveCurrentModBy_id( mostVoted_modID )
-            activateMod_byShortName( g_modShortNames[ mostVoted_modID ] )
+            activateMod_byShortName( g_mod_shortNames[ mostVoted_modID ] )
         }
     }
 }
@@ -936,18 +936,18 @@ public saveCurrentModBy_ShortName( modShortName[] )
  */
 public build_first_mods()
 {   
-    formatex( g_modNames[g_modCounter], SHORT_STRING - 1, "Silent Mod  Currently" )
-    formatex( g_modShortNames[g_modCounter], SHORT_STRING - 1, "silentMod" )
+    formatex( g_mod_names[g_modCounter], SHORT_STRING - 1, "Silent Mod  Currently" )
+    formatex( g_mod_shortNames[g_modCounter], SHORT_STRING - 1, "silentMod" )
 
     g_modCounter++
 
-    formatex( g_modNames[g_modCounter], SHORT_STRING - 1, "Keep Current Mod" )
-    formatex( g_modShortNames[g_modCounter], SHORT_STRING - 1, "keepCurrent" )
+    formatex( g_mod_names[g_modCounter], SHORT_STRING - 1, "Keep Current Mod" )
+    formatex( g_mod_shortNames[g_modCounter], SHORT_STRING - 1, "keepCurrent" )
 
     g_modCounter++
 
-    formatex( g_modNames[g_modCounter], SHORT_STRING - 1, "No mod - Disable Mod" )
-    formatex( g_modShortNames[g_modCounter], SHORT_STRING - 1, "disableMod" )
+    formatex( g_mod_names[g_modCounter], SHORT_STRING - 1, "No mod - Disable Mod" )
+    formatex( g_mod_shortNames[g_modCounter], SHORT_STRING - 1, "disableMod" )
 }
 
 /**
@@ -957,8 +957,8 @@ public load_votingList()
 {   
     new currentLine                                [LONG_STRING]
     new currentLine_splited                    [SHORT_STRING]
-    new modName                                    [SHORT_STRING]
-    new modShortName_string                [SHORT_STRING]
+    new mod_name                                    [SHORT_STRING]
+    new mod_shortName_string                [SHORT_STRING]
     new unusedLast_string                    [SHORT_STRING]
 
     new votingList_filePointer = fopen( g_votingList_filePath, "rt" )
@@ -982,16 +982,16 @@ public load_votingList()
             replace_all( currentLine, charsmax( currentLine ), "[", "" )
             replace_all( currentLine, charsmax( currentLine ), "]", "" )
 
-            // broke the current config line, in modname ( modName ), modtag ( modShortName_string ) 
-            strtok( currentLine, modName, charsmax( modName ), currentLine_splited, charsmax( currentLine_splited ), ':', 0 )
-            strtok( currentLine_splited, modShortName_string, charsmax( modShortName_string ), unusedLast_string, 
+            // broke the current config line, in modname ( mod_name ), modtag ( mod_shortName_string ) 
+            strtok( currentLine, mod_name, charsmax( mod_name ), currentLine_splited, charsmax( currentLine_splited ), ':', 0 )
+            strtok( currentLine_splited, mod_shortName_string, charsmax( mod_shortName_string ), unusedLast_string, 
                     charsmax( unusedLast_string ), ':', 0 )
 
             // stores at memory the modname and the modShortName
-            formatex( g_modNames[g_modCounter], SHORT_STRING - 1, "%s", modName )
-            formatex( g_modShortNames[g_modCounter], SHORT_STRING - 1, "%s", modShortName_string )
+            formatex( g_mod_names[g_modCounter], SHORT_STRING - 1, "%s", mod_name )
+            formatex( g_mod_shortNames[g_modCounter], SHORT_STRING - 1, "%s", mod_shortName_string )
 
-            debugMessageLog( 1, "[AMX MOD Loaded] %d - %s",  g_modCounter - 2, g_modNames[g_modCounter] )
+            debugMessageLog( 1, "[AMX MOD Loaded] %d - %s",  g_modCounter - 2, g_mod_names[g_modCounter] )
 
             if( g_is_debug & 2 ) 
             {   
@@ -1002,17 +1002,17 @@ public load_votingList()
                 new messageResource_filePath            [SHORT_STRING]
                 new lateConfig_filePath                [SHORT_STRING] 
 
-                mapcycle_pathCoder( modShortName_string, mapcycle_filePath, charsmax( mapcycle_filePath ) )
-                config_pathCoder( modShortName_string, config_filePath, charsmax( config_filePath ) )
-                plugin_pathCoder( modShortName_string, plugin_filePath, charsmax( plugin_filePath ) )
-                message_pathCoder( modShortName_string, message_filePath, charsmax( message_filePath ) )
+                mapcycle_pathCoder( mod_shortName_string, mapcycle_filePath, charsmax( mapcycle_filePath ) )
+                config_pathCoder( mod_shortName_string, config_filePath, charsmax( config_filePath ) )
+                plugin_pathCoder( mod_shortName_string, plugin_filePath, charsmax( plugin_filePath ) )
+                message_pathCoder( mod_shortName_string, message_filePath, charsmax( message_filePath ) )
 
-                messageResource_pathCoder( modShortName_string, messageResource_filePath, 
+                messageResource_pathCoder( mod_shortName_string, messageResource_filePath, 
                         charsmax( messageResource_filePath ) )
 
-                lateConfig_pathCoder( modShortName_string, lateConfig_filePath, charsmax( lateConfig_filePath ) )
+                lateConfig_pathCoder( mod_shortName_string, lateConfig_filePath, charsmax( lateConfig_filePath ) )
 
-                server_print( "[AMX MOD Loaded] %s", modShortName_string )
+                server_print( "[AMX MOD Loaded] %s", mod_shortName_string )
                 server_print( "[AMX MOD Loaded] %s", mapcycle_filePath )
                 server_print( "[AMX MOD Loaded] %s", plugin_filePath )
                 server_print( "[AMX MOD Loaded] %s", config_filePath )
@@ -1486,7 +1486,7 @@ stock print_color( const player_id, const input[], any:... )
  */
 public user_currentmod( player_id )
 {   
-    client_print( 0, print_chat, "The game current mod is: %s", g_modNames[ g_currentMod_id ] )
+    client_print( 0, print_chat, "The game current mod is: %s", g_mod_names[ g_currentMod_id ] )
 
     return PLUGIN_HANDLED
 }
@@ -1502,7 +1502,7 @@ public user_votemod( player_id )
 {   
     if( get_pcvar_num( gp_allowedvote ) )
     {   
-        client_print( 0, print_chat, "%L", LANG_PLAYER, "MM_VOTEMOD", g_modNames[g_currentMod_id] )
+        client_print( 0, print_chat, "%L", LANG_PLAYER, "MM_VOTEMOD", g_mod_names[g_currentMod_id] )
         return PLUGIN_HANDLED
     }
     new Float:elapsedTime = get_pcvar_float( gp_timelimit ) - ( float( get_timeleft() ) / 60.0 )
@@ -1633,7 +1633,7 @@ public display_votemod_menu( player_id, menu_current_page )
 
         current_write_position += formatex( menu_body[ current_write_position ], 
                 sizeof( menu_body ) - current_write_position , "%d. %s^n", for_index + 1,
-                g_modNames[ mod_vote_id + 1] )
+                g_mod_names[ mod_vote_id + 1] )
 
         g_votemodcount[ mod_vote_id ] = 0
         for_index++
@@ -1763,7 +1763,7 @@ public player_vote( player_id, key )
 
                 get_user_name( player_id, player_name, charsmax( player_name ) )
 
-                printMessage( 0, "%L", LANG_PLAYER, "X_CHOSE_X", player_name, g_modNames[ mod_vote_id ] )
+                printMessage( 0, "%L", LANG_PLAYER, "X_CHOSE_X", player_name, g_mod_names[ mod_vote_id ] )
 
                 g_votemodcount[ mod_vote_id ]++
             } 
@@ -1827,7 +1827,7 @@ public displayVoteResults( mostVoted_modID, g_totalVotes )
         configureMod_byModID( mostVoted_modID )
 
         formatex( result_message, charsmax( result_message ), "%L", LANG_PLAYER, "MM_VOTEMOD",
-                g_modNames[ mostVoted_modID ] )
+                g_mod_names[ mostVoted_modID ] )
 
         server_cmd( "exec %s", g_votingFinished_filePath )
     } 
@@ -1835,14 +1835,14 @@ public displayVoteResults( mostVoted_modID, g_totalVotes )
     {   
         new result_message[LONG_STRING]
         formatex( result_message, charsmax( result_message ), "The vote did not reached the required minimum! \
-        The next mod remains: %s", g_modNames[ g_currentMod_id ] )
+        The next mod remains: %s", g_mod_names[ g_currentMod_id ] )
     }
     g_totalVotes = 0
 
     printMessage( 0, result_message )
 
     server_print( "Total Mod Votes: %d  | Player Min: %d  | Most Voted: %s", 
-            g_totalVotes, playerMin, g_modNames[ mostVoted_modID ] )
+            g_totalVotes, playerMin, g_mod_names[ mostVoted_modID ] )
 }
 
 /**
