@@ -69,7 +69,7 @@ If you was using some other mod, it [B]automatically deactivate[/B] when you are
 the "[B]zm_*[/B]" map, the Zombie Mod is deactivated automatically, and you last mod is activated automatically, 
 if there was [B]an active[/B] mod before you enter at the "[B]zm_*[/B]" map. 
 
-The same happens to "[B]catch_*[/B]" and "[B]surf_*[/B]" maps. If want to disable that feature, go to the folder 
+The same happens to "[B]catch_*[/B]" and "[B]surf_*[/B]" maps. If want [B][COLOR="Red"]to disable that feature[/COLOR][/B], go to the folder 
 "[COLOR="Blue"]yourgamemod/addons/amxmodx/configs/[/COLOR][B]maps/[/B]" and rename the files [B]"plugins-catch.ini"[/B], [B]"plugins-surf.ini"[/B] 
 and [B]"plugins-zm.ini"[/B] to [B]"old_plugins-catch.ini"[/B], [B]"old_plugins-surf.ini"[/B] and [B]"old_plugins-zm.ini"[/B], 
 respectively. If you want to enable that feature again, "[COLOR="Blue"]rename them[/COLOR]" back. 
