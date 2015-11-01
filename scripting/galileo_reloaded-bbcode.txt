@@ -65,7 +65,7 @@ still can be used alone. See the [goanchor=Change]Change Log[/goanchor] and [goa
 
 This is a Alpha version. This Alpha software can be unstable, see [goanchor=TODO]TODO[/goanchor] section for more information. 
 As [B]Alpha software[/B] may not contain all of the features that are planned for the final version, see [goanchor=TODO]TODO[/goanchor] 
-section for features that are planned for the final version. 
+section for features that are planned for the final version. It is tested under [B]Counter-Strike[/B] and Counter-Strike: [B]Condition Zero[/B]. 
 
 [URL="http://www.gametracker.com/search/?search_by=server_variable&search_by2=GalileoReloaded&query=&loc=_all&sort=&order="]
 [SIZE=5][B][COLOR=DarkGreen]Click here to see all servers using this plugin.[/COLOR][/B][/SIZE][/URL]
@@ -100,8 +100,8 @@ have with this plugin.  It's located in the [B]Attached ZIP[/B] available at the
 [/QUOTE]
 
 ********************** [anchor]Requirements[/anchor][SIZE="5"][COLOR="Blue"][B]Requirements and Commands[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor]  ******
-[B]Amx Mod X 1.8.2[/B] 
-Tested under [B]Counter-Strike[/B] and Counter-Strike: [B]Condition Zero[/B] 
+[B]Amx Mod X 1.8.X[/B] 
+The plugin the AMXX very own "[B]nextmap.amxx[/B]" plugin [COLOR="red"][B]enabled[/COLOR][/B]. 
 
 [B]Client's Commands:[/B]
 [QUOTE]
@@ -205,6 +205,7 @@ galileo_reloaded.amxx
  * During a vote, change the nextmap to [vote in progress] 
  * Show only the last 10 seconds remaining to end the voting. 
  * Give weighted votes to admins counting more points. 
+ * Add a cvar to keep current map featuare disabled. 
 [/QUOTE]
 
 ******************************** [anchor]Credits[/anchor][B][SIZE="5"][COLOR="blue"]Credits[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *******************************
