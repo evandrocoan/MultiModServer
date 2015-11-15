@@ -936,17 +936,17 @@ public saveCurrentModBy_ShortName( modShortName[] )
  */
 public build_first_mods()
 {   
-    formatex( g_mod_names[g_modCounter], SHORT_STRING - 1, "Silent Mod  Currently" )
+    formatex( g_mod_names[g_modCounter], SHORT_STRING - 1, "Silent Mod Currently" )
     formatex( g_mod_shortNames[g_modCounter], SHORT_STRING - 1, "silentMod" )
 
     g_modCounter++
 
-    formatex( g_mod_names[g_modCounter], SHORT_STRING - 1, "Keep Current Mod" )
-    formatex( g_mod_shortNames[g_modCounter], SHORT_STRING - 1, "keepCurrent" )
+    formatex( g_mod_names[g_modCounter], SHORT_STRING - 1, "Extend Current Mod" )
+    formatex( g_mod_shortNames[g_modCounter], SHORT_STRING - 1, "extendCurrent" )
 
     g_modCounter++
 
-    formatex( g_mod_names[g_modCounter], SHORT_STRING - 1, "No mod - Disable Mod" )
+    formatex( g_mod_names[g_modCounter], SHORT_STRING - 1, "Disable Current Mod" )
     formatex( g_mod_shortNames[g_modCounter], SHORT_STRING - 1, "disableMod" )
 }
 

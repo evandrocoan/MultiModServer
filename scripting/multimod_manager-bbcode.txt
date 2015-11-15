@@ -71,8 +71,8 @@ As [B]Alpha software[/B] may not contain all of the features that are planned fo
 section for features that are planned for the final version. 
 
 This plugin [COLOR="Red"]is [B]not[/B] compatible[/COLOR] with the AMXX's very own [B]Map Chooser[/B] or "[B]Daily Maps[/B]", but yes with its 
-modification "[B]multimod_mapchooser.sma[/B]" and "[B]multimod_daily_changer[/B]" provided [goanchor=Downloads]here[/goanchor]. The new 
-[URL="https://forums.alliedmods.net/showthread.php?t=273019"]galieo_reloaded.sma[/URL] which is a different Galileo version, [COLOR="Red"]is ready[/COLOR] to be used with this [B]Multi-Mod Manager[/B]". 
+modification "[B]multimod_daily_changer[/B]" provided [goanchor=Downloads]here[/goanchor]. The new [URL="https://forums.alliedmods.net/showthread.php?t=273019"]galieo_reloaded.sma[/URL] 
+which is a different Galileo version, [COLOR="Red"]is ready[/COLOR] to be used with this [B]Multi-Mod Manager[/B]". 
 
 The "[B]Multi-Mod Daily Maps[/B]" is a modified version of "[B]Daily Maps[/B]" to work with this "[B]Multi-Mod Manager[/B]". 
 This plugin only works with "[B]Multi-Mod Manager[/B]", alone the "[B]Multi-Mod Daily Maps[/B]" does nothing. Its allows 
@@ -139,7 +139,7 @@ choose which mod will be played at the [B]next map[/B]. If less than 30% voted, 
 or [B]keep it disabled[/B] if there is no mod enabled. 
 
 ********************** [anchor]Requirements[/anchor][SIZE="5"][COLOR="Blue"][B]Requirements and Commands[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor]  ******
-[B]Amx Mod X 1.8.2[/B] 
+[B]Amx Mod X 1.8.X[/B] 
 Tested under [B]Counter-Strike[/B] and Counter-Strike: [B]Condition Zero[/B] 
 
 [B]Cvars:[/B]
@@ -196,8 +196,7 @@ Tested under [B]Counter-Strike[/B] and Counter-Strike: [B]Condition Zero[/B]
 
 ******************************** [anchor]Installation[/anchor][B][SIZE="5"][COLOR="Blue"]Installation[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor]  **********************
 [B]1.[/B] Download the files "[B]multimod_manager.sma[/B]", "[B][COLOR="Red"]configuration_files.zip[/COLOR][/B]",  
-"[B]multimod_mapchooser.sma[/B]" or "[B]galieo_reloaded.sma[/B]" and "[B]multimod_daily_changer.sma[/B]"(this is optional), 
-at [goanchor=Downloads]Downloads[/goanchor] section. 
+"[B]galieo_reloaded.sma[/B]" and "[B]multimod_daily_changer.sma[/B]"(this is optional), at [goanchor=Downloads]Downloads[/goanchor] section. 
 
 [B]2.[/B] Then take the contents of "[B]yourgamemod[/B]" from "[B]configuration_files.zip[/B]", to your gamemod folder. 
 
@@ -205,13 +204,11 @@ at [goanchor=Downloads]Downloads[/goanchor] section.
 "[COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]plugins[/B]" folder. 
 
 [B]4.[/B] Put the next lines to your "[B]plugins.ini[/B]" file at "[COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]configs[/B]" and
-disable the original "[B]mapchooser.amxx[/B]": 
+[B][COLOR="Red"]disable[/COLOR][/B] the original "[B]mapchooser.amxx[/B]": 
 [QUOTE]
 multimod_manager.amxx
 multimod_daily_changer.amxx
 ; Choose
-multimod_mapchooser.amxx
-;or
 galieo_reloaded.amxx
 [/QUOTE]
 
@@ -220,7 +217,7 @@ galieo_reloaded.amxx
 exec addons/amxmodx/configs/multimod/multimod.cfg
 [/QUOTE]
 
-[anchor]Configuration[/anchor][B]6. [SIZE="5"][COLOR="red"]Configure[/COLOR][/SIZE][/B] your own mods at "[COLOR="Blue"]yourgamemod/addons/amxmodx/configs/multimod/[/COLOR][B]voting_list.ini[/B]" 
+[anchor]Configuration[/anchor][B]6. [SIZE="4"][COLOR="red"]Configure[/COLOR][/SIZE][/B] your own mods at "[COLOR="Blue"]yourgamemod/addons/amxmodx/configs/multimod/[/COLOR][B]voting_list.ini[/B]" 
 file as follow (the short mod name cannot be longer than 15 characters neither have spaces):
 
 --- [B]Example of:[/B] [COLOR="Blue"]yourgamemod/addons/amxmodx/configs/multimod/[/COLOR][B]voting_list.ini[/B] ------
@@ -240,7 +237,7 @@ file as follow (the short mod name cannot be longer than 15 characters neither h
 [COLOR="Blue"]yourgamemod/mapcycles/[/COLOR][B]gungame.txt[/B]
 [/QUOTE]
 
--------------- [anchor]Explanations[/anchor][B][SIZE="5"][COLOR="blue"]Explanations[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] -------------------------
+-------------- [anchor]Explanations[/anchor][B][SIZE="3"][COLOR="blue"]Explanations[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] -------------------------
 
 [B]1.[/B] The file "[COLOR="Blue"]yourgamemod/addons/amxmodx/configs/multimod/[/COLOR][B]plugins/gungame.ini[/B]", 
 contains the plugins that compose the Mod like:
