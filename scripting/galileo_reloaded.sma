@@ -1,7 +1,7 @@
 /*********************** Licensing *******************************************************
 *  This program is free software; you can redistribute it and/or modify it
 *  under the terms of the GNU General Public License as published by the
-*  Free Software Foundation; either version 2 of the License, or ( at
+*  Free Software Foundation; either version 3 of the License, or ( at
 *  your option ) any later version.
 *
 *  This program is distributed in the hope that it will be useful, but
@@ -329,7 +329,7 @@ new g_nominationMatchesMenu[MAX_PLAYER_CNT];
 new g_isTimeToChangeLevel = false;
 new g_isTimeToRestart = false;
 new g_isTimeLimitChanged = false; 
-new g_isDebugEnabledNumber = 0;
+new g_number_isDebugEnabled = 0;
 
 new g_recentMap[MAX_RECENT_MAP_CNT][MAX_MAPNAME_LEN + 1]
 new g_cntRecentMap;
@@ -444,6 +444,11 @@ public plugin_init( )
             "vote_handleChoice" );
 }
 
+stock runTests()
+{
+	
+}
+
 /**
  * Called when all plugins went through plugin_init( ).
  * When this forward is called, most plugins should have registered their
@@ -454,7 +459,7 @@ public plugin_cfg( )
     g_isTimeLimitChanged = false;
     g_isTimeToChangeLevel = false;
     g_isTimeToRestart = false;
-    g_isDebugEnabledNumber = get_cvar_num( "gal_debug" );
+    g_number_isDebugEnabled = get_cvar_num( "gal_debug" );
 
     formatex( DIR_CONFIGS[get_configsdir( DIR_CONFIGS, sizeof( DIR_CONFIGS )-1 )], sizeof( DIR_CONFIGS )-1, "/galileo_reloaded" );
     formatex( DIR_DATA[get_datadir( DIR_DATA, sizeof( DIR_DATA )-1 )], sizeof( DIR_DATA )-1, "/galileo_reloaded" );
@@ -519,6 +524,8 @@ public plugin_cfg( )
     }
 
     set_task( 10.0, "vote_setupEnd" );
+
+	if( deb
 }
 
 public plugin_end( )
@@ -1432,7 +1439,7 @@ public vote_startDirector( bool:forced )
         }
     }
     
-    if( g_isDebugEnabledNumber )
+    if( g_number_isDebugEnabled )
     {
         voteDuration = 5
         g_voteDuration = 5
@@ -1443,7 +1450,7 @@ public vote_startDirector( bool:forced )
         // alphabetize the maps
         SortCustom2D( g_mapsVoteMenuNames, choicesLoaded, "sort_stringsi" );
 
-        if ( g_isDebugEnabledNumber )
+        if ( g_number_isDebugEnabled )
         {
             for ( new dbgChoice = 0; dbgChoice < choicesLoaded; dbgChoice++ )
             {
@@ -1489,7 +1496,7 @@ public vote_startDirector( bool:forced )
     {
         client_print( 0, print_chat, "%L", LANG_PLAYER, "GAL_VOTE_NOMAPS" );
     }
-    if ( g_isDebugEnabledNumber )
+    if ( g_number_isDebugEnabled )
     {
         debugMessageLog( 4, "" );
         debugMessageLog( 4, "   [PLAYER CHOICES]" );
@@ -1540,7 +1547,7 @@ vote_addNominations( )
         // [TODO: develop a better method of determining which nominations make the cut; either FIFO or random]
         new idxMap, id, mapName[32];
 
-        if ( g_isDebugEnabledNumber )
+        if ( g_number_isDebugEnabled )
         {
             new nominator_id, playerName[32];
             for ( new idxNomination = playerNominationMax; idxNomination >= 1; --idxNomination )
@@ -1752,7 +1759,7 @@ public vote_handleDisplay( )
         client_cmd( 0, "spk Gman/Gman_Choose%i", random_num( 1, 2 ) );
     }
 
-    if( g_isDebugEnabledNumber )
+    if( g_number_isDebugEnabled )
     {
         g_voteDuration = 5
     } 
@@ -1806,7 +1813,7 @@ public vote_display( arg[3] )
     new updateTimeRemaining = arg[0];
     new id = arg[1];
 
-    if ( g_isDebugEnabledNumber )
+    if ( g_number_isDebugEnabled )
     {
         new snuff = ( id > 0 ) ? g_snuffDisplay[id] : -1;
         debugMessageLog( 4, "   [votedisplay( )] id: %i  updateTimeRemaining: %i  unsnuffDisplay: %i  g_snuffDisplay: %i  \
@@ -2055,7 +2062,7 @@ public vote_expire( )
 {
     g_voteStatus |= VOTE_HAS_EXPIRED;
     
-    if ( g_isDebugEnabledNumber )
+    if ( g_number_isDebugEnabled )
     {
         debugMessageLog( 4, "" );
         debugMessageLog( 4, "   [VOTE RESULT]" );
@@ -3065,9 +3072,9 @@ public dbg_fakeVotes( )
  */
 debugMessageLog( const mode, const text[] = "", {Float,Sql,Result,_}:... )
 {    
-    g_isDebugEnabledNumber = get_cvar_num( "gal_debug" );
+    g_number_isDebugEnabled = get_cvar_num( "gal_debug" );
 
-    if( mode & g_isDebugEnabledNumber )
+    if( mode & g_number_isDebugEnabled )
     {
         // format the text as needed
         new formattedText[1024];
