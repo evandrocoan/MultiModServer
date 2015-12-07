@@ -2,6 +2,8 @@
 [SIZE="6"][COLOR="Blue"][B]Galileo Reloaded v1.0-alpha3[/B][/COLOR][/SIZE]
 [B]Release: 10.10.2015 | Last Update: 21.10.2015[/B]
 
+Tested under [COLOR="red"]Counter-Strike[/COLOR] and Counter-Strike [B]Condition Zero[/B] 
+
 [SIZE="5"]Basic differences between the original Galileo and Galileo Reloaded[/SIZE] 
 
 [B]Galileo Reloaded will can:[/B]
@@ -100,8 +102,8 @@ have with this plugin.  It's located in the [B]Attached ZIP[/B] available at the
 [/QUOTE]
 
 ********************** [anchor]Requirements[/anchor][SIZE="5"][COLOR="Blue"][B]Requirements and Commands[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor]  ******
-[B]Amx Mod X 1.8.X[/B] 
-The plugin the AMXX very own "[B]nextmap.amxx[/B]" plugin [COLOR="red"][B]enabled[/COLOR][/B]. 
+Amx Mod X [B]1.8.2[/B] 
+The Default '[B]Amx Mod X[/B]' [COLOR="Red"]NextMap Plugin Enabled[/COLOR]
 
 [B]Client's Commands:[/B]
 [QUOTE]
