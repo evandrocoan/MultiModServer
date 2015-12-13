@@ -936,18 +936,18 @@ public saveCurrentModBy_ShortName( modShortName[] )
  */
 public build_first_mods()
 {   
-    formatex( g_mod_names[g_modCounter], SHORT_STRING - 1, "Silent Mod Currently" )
-    formatex( g_mod_shortNames[g_modCounter], SHORT_STRING - 1, "silentMod" )
+    formatex( g_mod_names[g_modCounter], sizeof( g_mod_names[] ) - 1, "Silent Mod Currently" )
+    formatex( g_mod_shortNames[g_modCounter], sizeof( g_mod_shortNames[] ) - 1, "silentMod" )
 
     g_modCounter++
 
-    formatex( g_mod_names[g_modCounter], SHORT_STRING - 1, "Extend Current Mod" )
-    formatex( g_mod_shortNames[g_modCounter], SHORT_STRING - 1, "extendCurrent" )
+    formatex( g_mod_names[g_modCounter], sizeof( g_mod_names[] ) - 1, "Extend Current Mod" )
+    formatex( g_mod_shortNames[g_modCounter], sizeof( g_mod_shortNames[] ) - 1, "extendCurrent" )
 
     g_modCounter++
 
-    formatex( g_mod_names[g_modCounter], SHORT_STRING - 1, "Disable Current Mod" )
-    formatex( g_mod_shortNames[g_modCounter], SHORT_STRING - 1, "disableMod" )
+    formatex( g_mod_names[g_modCounter], sizeof( g_mod_names[] ) - 1, "Disable Current Mod" )
+    formatex( g_mod_shortNames[g_modCounter], sizeof( g_mod_shortNames[] ) - 1, "disableMod" )
 }
 
 /**
@@ -988,8 +988,8 @@ public load_votingList()
                     charsmax( unusedLast_string ), ':', 0 )
 
             // stores at memory the modname and the modShortName
-            formatex( g_mod_names[g_modCounter], SHORT_STRING - 1, "%s", mod_name )
-            formatex( g_mod_shortNames[g_modCounter], SHORT_STRING - 1, "%s", mod_shortName_string )
+            formatex( g_mod_names[g_modCounter], sizeof( g_mod_names[] ) - 1, "%s", mod_name )
+            formatex( g_mod_shortNames[g_modCounter], sizeof( g_mod_shortNames[] ) - 1, "%s", mod_shortName_string )
 
             debugMessageLog( 1, "[AMX MOD Loaded] %d - %s",  g_modCounter - 2, g_mod_names[g_modCounter] )
 
