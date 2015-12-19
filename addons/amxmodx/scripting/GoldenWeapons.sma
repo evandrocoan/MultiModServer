@@ -65,7 +65,7 @@ new const primaryWeapons[][] =
 
 new gp_cvar_dmg
 
-new g_Menu
+new g_buy_menu_id
 new g_weapon_damage
 new g_weapon_cost = 16000
 new g_whichSpecialWeapon[33] = {0, ...}
@@ -76,8 +76,8 @@ public plugin_init()
 
 	gp_cvar_dmg = register_cvar( "amx_gold_damage", "5" )
 
-	g_Menu = register_menuid( BUY_WEAPON_MENU_NAME )
-	register_menucmd( g_Menu, 1023, "buy_weaponMenu" )
+	g_buy_menu_id = register_menuid( BUY_WEAPON_MENU_NAME )
+	register_menucmd( g_buy_menu_id, 1023, "buy_weaponMenu" )
 
 	register_clcmd( "say /goldmenu", "showmenu" )
 	register_clcmd( "say goldmenu", "showmenu" )

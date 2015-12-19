@@ -145,12 +145,14 @@ public get_client_info(id)
 
     get_user_ip(id,ip[id],31)
     geoip_country(ip[id],country[id])
+
     if(equal(country[id],"error"))
     {
         if(contain(ip[id],"192.168") == 0 || equal(ip[id],"127.0.0.1") || contain(ip[id],"10.")==0 ||  contain(ip[id],"172.")==0)
         {
             country[id] = "LAN"
-        } else if(equal(ip[id],"loopback"))
+        } 
+        else if(equal(ip[id],"loopback"))
         {
             country[id] = "ListenServer User"
         }
