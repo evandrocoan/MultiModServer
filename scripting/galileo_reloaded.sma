@@ -14,237 +14,7 @@
 *
 *****************************************************************************************
 
-Galileo Reloaded v1.0-alpha2.hotfix1
-Release: 10.10.2015 | Last Update: 21.10.2015
 
-Basic differences between the original Galileo and Galileo Reloaded 
-
-Galileo Reloaded will can:
-display colored text messages.
-nominate maps by a map list menu.
-allow the last round to finish before change to the next map.
-change the server map to a popular one when the server is empty too much time.
-change the nextmap to [not voted yet]
-during a vote, change the nextmap to [vote in progress]
-give weighted votes to admins counting more points.
-
-Galileo Reloaded can:
-always show the option "Keep Current Map" at any voting.
-always show the countdown remaining vote time.
-manage RunOff vote between a map and "Keep Current Map".
-change the time limit to zero.
-be used with the AMXX very own "Next Map" plugin.
-use the current mapcycle to nominate maps.
-load the current vote/nominate map list from the current mapcycle file.
-keep the initial server next map when nobody vote for next map.
-be easier learned to code new features as it has some code documentation.
-
-The original Galileo cannot:
-always show the option "Keep Current Map" at any voting.
-always show the countdown remaining vote time.
-manage RunOff vote between a map and "Keep Current Map".
-change the time limit to zero.
-display colored text messages.
-nominate maps by a map list menu.
-be used with the AMXX very own "Next Map" plugin.
-use the current mapcycle to nominate maps.
-load the current vote/nominate map list from the current mapcycle file.
-keep the initial server next map when nobody vote for next map.
-be easier learned to code new features as it has some useful code documentation.
-
-Contents' Table 
-Introduction
-Requirements and Commands
-Installation
-Change Log
-TODO
-Credits
-Source Code and Support
-Downloads
-See its current development at: Github
- 
-( look for the developer and feature branches )
-
-The original plugin "galileo.sma" is originally written by Brad. The "Galileo Reload" works similarly 
-as the original "Galileo". But "Galileo Reloaded" has special features for the "Multi-Mod Manager" plugin, but it 
-still can be used alone. See the Change Log and Credits for more info. 
-
-This is a Alpha version. This Alpha software can be unstable, see TODO section for more information. 
-As Alpha software may not contain all of the features that are planned for the final version, see TODO 
-section for features that are planned for the final version. 
-
-
-Click here to see all servers using this plugin.
-
-********************** Introduction Go Top *******************************
-This is a feature rich map voting plugin. It's intended to be used in place of any other map choosing plugin 
-such as the original Galileo, Deagles' Map Manager and AMXX's very own Map Chooser.
-
-It is highly recommended you to review the well-commented "galileo_reloaded.cfg" to see all the cvars' options you 
-have with this plugin. It's located in the Attached ZIP available at the Downloads section. 
-
-Features' list: 
-Quote:
-* Ability to "rock the vote".
-
-* Map nominations to be used in the next map vote.
-
-* Runoff voting when no map gets more than 50% of the total vote.
-
-* Command 'gal_startvote', to forces a map vote to begin and the map will be changed once the 
-next map has been determined. 
-
-* Command 'gal_startvote2', the same as the first but, when keep the current map option wins, 
-the current map is restarted. This command is specially for the "Multi-Mod Manager" plugin. 
-
-* Command 'gal_createmapfile filename', Creates a file that contains a list of every valid 
-map in your maps folder. The filename argument indicates specifies the name to be used for 
-the new file. It will be created in the .\configs\galileo_reloaded folder.
-********************** Requirements and Commands Go Top ******
-Amx Mod X 1.8.2 
-Tested under Counter-Strike and Counter-Strike: Condition Zero 
-
-Client's Commands:
-Quote:
-//Displays a listing, to all players, of the most recently played maps.
-//Requires CVAR "gal_banrecent" to be set to a value higher than 0.
-say recentmaps
-
-//Registers the players request for a map vote and change. The player will be 
-//informed how many more players need to rock the vote before a map vote will be forced.
-//The anything argument can be any "word" up to 20 characters.
-//Requires CVAR "gal_rtv_commands" to be set to an appropriate value.
-say rockthevote
-say rtv
-say rocktheanythingvote
-
-//Displays, to all players, a listing of maps that have been nominated.
-//Requires CVAR "gal_nom_playerallowance" to be set to a value higher than 0.
-say nominations
-say noms
-
-//Attempts to nominate the map specified by the partialMapName argument.
-//If there are multiple matches for partialMapName, a menu of the matches will 
-//be displayed to the player allowing them to select the map they meant.
-//Requires CVAR "gal_nom_playerallowance" to be set to a value higher than 0.
-say nominate partialMapName
-say nom partialMapName
-
-//Cancels the nomination of mapname, which would have had to be previously 
-//nominated by the player.
-//Requires CVAR "gal_nom_playerallowance" to be set to a value higher than 0.
-say cancel mapname
-
-//If mapname has been nominated by the player, will cancel the nomination. 
-//If mapname has not been nominated by the player, will attempt to nominate it.
-//Requires CVAR "gal_nom_playerallowance" to be set to a value higher than 0.
-say mapname
-******************************** Installation Go Top **********************
-1. Download the files "galileo_reloaded.sma" and "configuration_files.zip" at Downloads 
-section.
-
-2. Then take the contents of "yourgamemod" folder from "configuration_files.zip", to your gamemod folder. 
-Ex: czero, cstrike, ...
-
-3. Compile the file and put the compiled file to your plugins folder at 
-"yourgamemod/addons/amxmodx/plugins". 
-
-4. Put the next line to your "plugins.ini" file at "yourgamemod/addons/amxmodx/configs" folder and
-disable the original "mapchooser.amxx" or any other map manager plugin, like the original the 
-"galileo.sma":
-Quote:
-galileo_reloaded.amxx
-******************************** Change Log Go Top ***********************
-Quote:
-2015-10-10 | v1.0-alpha1 
-* Fixed server restart after change timelimit to 0. 
-* Fixed server timelimit re-change after change it to 0. 
-* Fixed bug where it change the map right after a normal vote map finished. 
-* Removed map end control, to the original AMXX Dev Team plugin nextmap.amxx 
-* Removed the feature to change server map, when the server is empty. 
-* Removed the "amx_nextmap" change to [vote in progress]. 
-* Removed the feature to allow round finish. 
-* Removed the messages "say currentmap" and "say nextmap" to the AMXX nextmap.amxx 
-* Removed not initiating vote map, at the first map, after forcing votemap. 
-* Added the command "gal_startvote2" to restart the current map when keep the current map. 
-* Added the count down voting remaining time to be always show. 
-* Added a option "#" to gal_nom_mapfile, to use the current mapcycle to nominate maps. 
-* Made the vote map list be loaded from the current mapcycle file. 
-* When nobody vote for next map, keep the initial server next map. 
-* Disabled amx_nextmap to [unknown] value change. 
-
-2015-10-14 | v1.0-alpha2 
-* Fixed broken re-opt ( RunOff ) vote. 
-* Fixed automatic changelevel at normal vote map, after a successful keep current map wins. 
-* Improved code readability and added some new code documentation. 
-* Removed weighted votes that allows admins to have their vote counted more. 
-* Removed cvar to specifies the maximum number of minutes a map can be played. 
-* Fixed galileo_reloaded.sma normal end map vote runoff showing an extra option.
-* Always shows "None" vote option, to not participate at the voting. 
-* Synchronized debug RunOff menu time and normal voting menu time. 
-
-2015-10-14 | v1.0-alpha2.hotfix1
-* Improved some variables meaning
-******************************** TODO Go Top *********************************
-Quote:
-* To clear unused language file constants. 
-* Add colored messages. 
-* Add nominate maps by a map list menu. 
-* Allow the last round to finish before change to the next map. 
-* Change the server map to a popular one when the server is empty too much time. 
-* Change the nextmap to [not voted yet] 
-* During a vote, change the nextmap to [vote in progress] 
-* Show only the last 10 seconds remaining to end the voting. 
-* Give weighted votes to admins counting more points.
-******************************** Credits Go Top *******************************
-Brad: The original galileo.sma developer. 
-Addons zz: The galileo_reloaded.sma developer. 
-Th3822: For find a error from map_nominate. 
-Quote:
-Originally Posted by Brad  View Post
-Donations to the Original Author 
-A lot of time and effort went into making this plugin, making features just right, 
-making sure there were no bugs, making sure it was easy to use. If you are glad I made 
-this plugin, and are able, I'd appreciate a token donation. 
-$5, 
-$10, 
-or whatever works for you.
-
-
-
-Thank you! It means a lot to me. 
---Brad
-******************************** Source Code and Support Go Top ***
-For any problems with this plugin visit this own page for support: 
-https://forums.alliedmods.net/showthread.php?t=273019
-
-If you are posting because the plugin or a feature of the plugin isn't working for you, please do 
-all of the following, so we can more efficiently figure out what's going on: 
-Quote:
-If you have access to your game server's console, type the following in the server console:
-status
-meta list
-amxx plugins
-amxx cvars
-If you don't have access the your game server's console, join your server and type the 
-following in your game console: 
-status
-rcon_password your_rcon_password
-rcon meta list
-rcon amxx plugins
-rcon amxx cvars
-Paste here everything from the status command *except* the player list.
-Paste here the entire result from the meta list and amxx plugins commands.
-Paste here *only* the CVARs that contain "galileo_reloaded.amxx" in the last column 
-from the amxx cvars command. They will be grouped together.
-********************************************* ******************************************	
-BRAZIL ( South America ) Testing Server
-
-
-GERMANY ( Europe ) Testing Server
-
-
-******************************** Downloads Go Top ********************
 
 */
 
@@ -252,6 +22,11 @@ new const PLUGIN_VERSION[]  = "1.0-alpha3";
 
 #include <amxmodx>
 #include <amxmisc>
+
+#define IS_DEBUG_ENABLED        1
+
+#define LONG_STRING 256
+#define SHORT_STRING 64
 
 #define TASKID_EMPTYSERVER    98176977
 #define TASKID_REMINDER            52691153
@@ -304,6 +79,7 @@ new const PLUGIN_VERSION[]  = "1.0-alpha3";
 #define LISTMAPS_LAST        1
 
 #define TIMELIMIT_NOT_SET -1.0
+
 #define START_VOTEMAP_MIN_TIME         151
 #define START_VOTEMAP_MAX_TIME         129
 
@@ -313,9 +89,9 @@ new DIR_CONFIGS[64];
 new DIR_DATA[64];
 
 new CLR_RED[3];            // \r
-new CLR_WHITE[3];   // \w
-new CLR_YELLOW[3];  // \y
-new CLR_GREY[3];        // \d
+new CLR_WHITE[3];       // \w
+new CLR_YELLOW[3];   // \y
+new CLR_GREY[3];         // \d
 
 new g_mapPrefix[MAX_PREFIX_CNT][16]
 new g_mapPrefixCnt = 1;
@@ -329,7 +105,12 @@ new g_nominationMatchesMenu[MAX_PLAYER_CNT];
 new g_isTimeToChangeLevel = false;
 new g_isTimeToRestart = false;
 new g_isTimeLimitChanged = false; 
-new g_number_isDebugEnabled = 0;
+
+new g_number_isDebugEnabled
+new g_integer_totalSuccessfulTests = 0;
+new g_integer_totalFailureTests = 0;
+new Array: g_tests_idsAndNames
+new Array: g_tests_failure_ids
 
 new g_recentMap[MAX_RECENT_MAP_CNT][MAX_MAPNAME_LEN + 1]
 new g_cntRecentMap;
@@ -396,9 +177,12 @@ public plugin_init( )
     register_dictionary( "common.txt" );
     register_dictionary( "galileo_reloaded.txt" );
 
+    g_tests_idsAndNames = ArrayCreate( SHORT_STRING )
+    g_tests_failure_ids = ArrayCreate( 1 )
+
     register_cvar( "GalileoReloaded", PLUGIN_VERSION, FCVAR_SERVER|FCVAR_SPONLY );
     register_cvar( "gal_server_starting", "1", FCVAR_SPONLY );
-    register_cvar( "gal_debug", "0" );
+    register_cvar( "gal_debug", "IS_DEBUG_ENABLED" );
 
     cvar_extendmapStep            =    register_cvar( "amx_extendmap_step", "15" );
     cvar_cmdVotemap                 = register_cvar( "gal_cmd_votemap", "0" );
@@ -444,9 +228,89 @@ public plugin_init( )
             "vote_handleChoice" );
 }
 
+/**
+ * This function run all tests that are listed at it. Every test that is created must 
+ * to be called here to it register itself at the Test System and perform the testing. 
+ */
 stock runTests()
 {
-	
+    debugMessageLog( 1, "^n^n    Executing the 'Galileo Reloaded' Tests: ^n" )
+
+    test_register_test()
+
+    debugMessageLog( 1, "^n    %d tests succeed. \
+            ^n    %d tests failed. ^n^n", g_integer_totalSuccessfulTests, 
+            g_integer_totalFailureTests )
+
+    //for( new 
+
+    debugMessageLog( 1, "^n    Finished the 'Galileo Reloaded' Tests Execution. ^n^n" )
+}
+
+/**
+ * This is the first thing called when a test begin running. It function is to let the 
+ * Test System know that the test exists and then know how to handle it using 
+ * the test id. 
+ * 
+ * @param test_name the test name to register
+ *
+ * @return test_id an integer that refers it at the Test System. 
+ */
+stock register_test( test_name[] ) 
+{
+    g_integer_totalSuccessfulTests++
+
+    new totalTests = g_integer_totalSuccessfulTests + g_integer_totalFailureTests
+
+    ArrayPushString( g_tests_idsAndNames, test_name )
+    debugMessageLog( 1, "    Executing test %d - %s", totalTests, test_name )
+
+    return totalTests
+}
+
+stock test_register_test()
+{
+    new test_id = register_test( "test_register_test" )
+    
+    if( g_integer_totalSuccessfulTests != 1 )
+    {
+        set_test_failure( test_id, "g_integer_totalSuccessfulTests != 1 (it was = %d)", 
+                g_integer_totalSuccessfulTests ) 
+    }
+
+    if( test_id != 1 )
+    {
+        set_test_failure( test_id, "test_id != 1 (it was = %d)", test_id ) 
+    }
+
+    new first_test_name[64]
+    ArrayGetString( g_tests_idsAndNames, 0, first_test_name, charsmax( first_test_name ) )
+
+    if( !equal( first_test_name, "test_register_test" ) )
+    {
+        set_test_failure( test_id, "first_test_name != test_register_test (it was = %s)", 
+                first_test_name ) 
+    }
+}
+
+/**
+ * Informs the Test System that the test failed and why. 
+ * 
+ * @test_id the test id at the Test System
+ * @failure_reason the reason why the test failed 
+ * @any a variable number of formatting parameters
+ */
+stock set_test_failure( test_id, failure_reason[], any:... )
+{
+    g_integer_totalSuccessfulTests--
+    g_integer_totalFailureTests++
+
+    static formated_message[256] 
+
+    vformat( formated_message, charsmax( formated_message ), failure_reason, 3 ) 
+
+    ArrayPushCell( g_tests_failure_ids, test_id )
+    debugMessageLog( 1 ,"    |||| Test failure! %s", formated_message )
 }
 
 /**
@@ -525,12 +389,18 @@ public plugin_cfg( )
 
     set_task( 10.0, "vote_setupEnd" );
 
-	if( deb
+    if( g_number_isDebugEnabled ) 
+    {
+        runTests()
+    }
 }
 
 public plugin_end( )
 {
     map_restoreOriginalTimeLimit( );
+
+    ArrayDestroy( g_tests_idsAndNames )
+    ArrayDestroy( g_tests_failure_ids )
 }
 
 public vote_setupEnd( )
