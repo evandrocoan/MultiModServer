@@ -162,7 +162,7 @@ If you have access to your game server's console, type the [COLOR="Blue"][B]foll
 [LIST]
 [*]status
 [*]meta list
-[*]amxx plugins
+[*]amxx list
 [*]amxx cvars
 [/LIST]
 If you don't have access the your [COLOR="Blue"][B]game server's console[/B][/COLOR], join your server and type the 
@@ -172,7 +172,7 @@ following in your game console:
 [*]status
 [*]rcon_password your_rcon_password
 [*]rcon meta list
-[*]rcon amxx plugins
+[*]rcon amxx list
 [*]rcon amxx cvars
 [/LIST]
 [LIST=1]

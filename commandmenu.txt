@@ -208,7 +208,7 @@
 		}
 		"1" "Freeze CSBots"				"amx_cvar bot_stop 1"
 		"2" "Unfreeze CSBots"			"amx_cvar bot_stop 0"
-		"1" "Kill All"							"amx_cvar bot_kill"
+		"1" "Kill All"							"amx_cfg admin/csbot/matarBots.cfg"
 		"2" "Kick All"							"amx_cfg admin/csbot/kickarBots.cfg"
 	}
 	"2" "PODBot"
