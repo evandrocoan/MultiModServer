@@ -347,16 +347,10 @@ it should only be used with register_srvcmd() (unless it's for debugging of cour
 [/QUOTE]
 I did not know this register_srvcmd(). Then now I can register a register_srvcmd to server_print, and another register_clcmd to client_print.
 
-[QUOTE=fysiks;2353142]
-I'm sure there is more but I am done for now. 
+[QUOTE=HamletEagle;2374088]
+You could probably use dynamic arrays, to have unlimited models. Then, making a menu with the items in array, and accessing the right entry by the item index from the menu.
 [/QUOTE]
-Of course, there is more clever programing techniques to learn: 
-[LIST=1]
-[*]use tries instead of g_modShortNames.  
-[*]count better current playing player at playersPlaying. 
-[*]copy more efficiently a files at copyFiles and copyFiles2. 
-[*]print colored text more efficiently than at print_color. 
-[/LIST]
+They are perfect to this job. 
 
 ******************************** [anchor]Credits[/anchor][B][SIZE="5"][COLOR="blue"]Credits[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *******************************
 [B]fysiks[/B]: The first to realize the idea of "multimod.sma" and some code improvements. 
@@ -381,7 +375,7 @@ If you have access to your game server's console, type the [COLOR="Blue"][B]foll
 [LIST]
 [*]status
 [*]meta list
-[*]amxx plugins
+[*]amxx list
 [*]amxx cvars
 [/LIST]
 If you don't have access the your [COLOR="Blue"][B]game server's console[/B][/COLOR], join your server and type the 
@@ -391,7 +385,7 @@ following in your game console:
 [*]status
 [*]rcon_password your_rcon_password
 [*]rcon meta list
-[*]rcon amxx plugins
+[*]rcon amxx list
 [*]rcon amxx cvars
 [/LIST]
 [LIST=1]
