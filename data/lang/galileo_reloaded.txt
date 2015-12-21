@@ -1,5 +1,3 @@
-// $Revision: 288 $ $Date: 2009-02-18 22:02:21 -0500 (Wed, 18 Feb 2009) $
-
 [en]
 GAL_CANCEL_FAIL_INPROGRESS = Cancellation failed; vote is already in progress.
 GAL_CANCEL_FAIL_SOMEONEELSE = Cancellation failed; ^"%s^" was nominated by %s.
