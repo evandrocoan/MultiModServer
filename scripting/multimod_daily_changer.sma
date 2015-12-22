@@ -6,9 +6,9 @@
 *
 *  This program is distributed in the hope that it will be useful, but
 *  WITHOUT ANY WARRANTY; without even the implied warranty of
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 *  General Public License for more details.
-*  
+*
 *  You should have received a copy of the GNU General Public License
 *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
@@ -44,10 +44,10 @@
 *
 * In the cfg's, u just put what cvars u want to apply for that day
 * In the txt's, u just put the maps u want to be rotated though on that day
-*	Example:
-*	   de_dust
-*	   de_aztec_cz
-*	   cs_assault_cz
+*   Example:
+*      de_dust
+*      de_aztec_cz
+*      cs_assault_cz
 * (u dont need .bsp)
 *
 * Multi-Mod Daily Changer's Change log:
@@ -65,54 +65,54 @@
 
 public plugin_init()
 {
-	register_plugin("Multi-Mod Daily Changer", "2.0", "Addons zz/JustinHoMi & JGHG")
-
-	new today[8]
-	new serverCfgFilePath[64]
-	new isFirstTime[32]
-	new isFirstTimeNum = str_to_num( isFirstTime )
-
-	get_time("%a", today, 8)
-	formatex( serverCfgFilePath, charsmax( serverCfgFilePath ), "mapcycles/day/cfg/%s.cfg", today )
-	get_localinfo( "isFirstTime_serverLoad", isFirstTime, charsmax( isFirstTime ) );
-
-	if( file_exists(serverCfgFilePath) )
-	{
-		set_cvar_string("mapchangecfgfile", serverCfgFilePath)
-	}
-
-	if ( isFirstTimeNum == 2 )
-	{
-		new mapCycleFilePath[32]
-
-		formatex( mapCycleFilePath, charsmax( mapCycleFilePath ), "mapcycles/day/%s.txt", today )
-
-		if( file_exists(mapCycleFilePath) )
-		{
-			set_cvar_string("mapcyclefile", mapCycleFilePath)
-
-			if( find_plugin_byfile( "galileo_reloaded.amxx" ) != -1 )
-			{   
-				new galileo_mapfile = get_cvar_pointer( "gal_vote_mapfile" )
-
-				if( galileo_mapfile )
-				{   
-					set_pcvar_string( galileo_mapfile, mapCycleFilePath )
-				}
-
-			} else if( find_plugin_byfile( "multimod_mapchooser.amxx" ) != -1 )
-			{   
-				if( callfunc_begin("plugin_init", "multimod_mapchooser.amxx" ) == 1 )
-				{   
-					callfunc_end()
-
-				} else
-				{   
-					new error[128]="ERROR at configMapManager!! multimod_mapchooser.amxx NOT FOUND!^n"
-					client_print( 0, print_console , error )
-					server_print( error )
-				}
-			}
-		}
-	}
+    register_plugin( "Multi-Mod Daily Changer", "2.0", "Addons zz/JustinHoMi & JGHG" )
+    
+    new today[ 8 ]
+    new serverCfgFilePath[ 64 ]
+    new isFirstTime[ 32 ]
+    new isFirstTimeNum = str_to_num( isFirstTime )
+    
+    get_time( "%a", today, 8 )
+    formatex( serverCfgFilePath, charsmax( serverCfgFilePath ), "mapcycles/day/cfg/%s.cfg", today )
+    get_localinfo( "isFirstTime_serverLoad", isFirstTime, charsmax( isFirstTime ) );
+    
+    if( file_exists( serverCfgFilePath ) )
+    {
+        set_cvar_string( "mapchangecfgfile", serverCfgFilePath )
+    }
+    
+    if( isFirstTimeNum == 2 )
+    {
+        new mapCycleFilePath[ 32 ]
+        
+        formatex( mapCycleFilePath, charsmax( mapCycleFilePath ), "mapcycles/day/%s.txt", today )
+        
+        if( file_exists( mapCycleFilePath ) )
+        {
+            set_cvar_string( "mapcyclefile", mapCycleFilePath )
+            
+            if( find_plugin_byfile( "galileo_reloaded.amxx" ) != -1 )
+            {
+                new galileo_mapfile = get_cvar_pointer( "gal_vote_mapfile" )
+                
+                if( galileo_mapfile )
+                {
+                    set_pcvar_string( galileo_mapfile, mapCycleFilePath )
+                }
+            }
+            else if( find_plugin_byfile( "multimod_mapchooser.amxx" ) != -1 )
+            {
+                if( callfunc_begin( "plugin_init", "multimod_mapchooser.amxx" ) == 1 )
+                {
+                    callfunc_end()
+                }
+                else
+                {
+                    new error[ 128 ] = "ERROR at configMapManager!! multimod_mapchooser.amxx NOT FOUND!^n"
+                    client_print( 0, print_console, error )
+                    server_print( error )
+                }
+            }
+        }
+    }
 }
