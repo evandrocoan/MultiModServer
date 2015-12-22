@@ -2,8 +2,8 @@
 
 for %%i in (*.sma) do (
     echo.
-    echo uncrustify.exe -c uncrustify\cfg\amxmodx.cfg --no-backup %%i
-    uncrustify.exe -c uncrustify\cfg\amxmodx.cfg --no-backup %%i
+    echo uncrustify.exe -c amxmodx.cfg --no-backup %%i
+    uncrustify.exe -c amxmodx.cfg --no-backup %%i
     
     echo intend_empty_lines.lua %%i > temp_file.txt
     intend_empty_lines.lua %%i > temp_file.txt
