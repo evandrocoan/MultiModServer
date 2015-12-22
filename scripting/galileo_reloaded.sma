@@ -602,22 +602,22 @@ public cmd_listrecent( id )
 {
     switch( get_pcvar_num( cvar_banRecentStyle ) )
     {
-    case 1:
-    {
-        new msg[ 101 ], msgIdx;
-        for( new idx = 0; idx < g_cntRecentMap; ++idx )
+        case 1:
         {
-            msgIdx += format( msg[ msgIdx ], sizeof( msg ) - 1 - msgIdx, ", %s", g_recentMap[ idx ] );
+            new msg[ 101 ], msgIdx;
+            for( new idx = 0; idx < g_cntRecentMap; ++idx )
+            {
+                msgIdx += format( msg[ msgIdx ], sizeof( msg ) - 1 - msgIdx, ", %s", g_recentMap[ idx ] );
+            }
+            client_print( 0, print_chat, "%L: %s", LANG_PLAYER, "GAL_MAP_RECENTMAPS", msg[ 2 ] );
         }
-        client_print( 0, print_chat, "%L: %s", LANG_PLAYER, "GAL_MAP_RECENTMAPS", msg[ 2 ] );
-    }
-    case 2:
-    {
-        for( new idx = 0; idx < g_cntRecentMap; ++idx )
+        case 2:
         {
-            client_print( 0, print_chat, "%L ( %i ): %s", LANG_PLAYER, "GAL_MAP_RECENTMAP", idx + 1, g_recentMap[ idx ] );
+            for( new idx = 0; idx < g_cntRecentMap; ++idx )
+            {
+                client_print( 0, print_chat, "%L ( %i ): %s", LANG_PLAYER, "GAL_MAP_RECENTMAP", idx + 1, g_recentMap[ idx ] );
+            }
         }
-    }
     }
 
     return PLUGIN_HANDLED;
@@ -786,61 +786,61 @@ public cmd_createMapFile( id, level, cid )
 
     switch( cntArg )
     {
-    case 1:
-    {
-        new arg1[ 256 ];
-        read_argv( 1, arg1, sizeof( arg1 ) - 1 );
-        remove_quotes( arg1 );
-
-        new mapName[ MAX_MAPNAME_LEN + 5 ];    // map name is 31 ( i.e. MAX_MAPNAME_LEN ), ".bsp" is 4, string terminator is 1.
-        new dir, file, mapCnt, lenMapName;
-
-        dir = open_dir( "maps", mapName, sizeof( mapName ) - 1 );
-        if( dir )
+        case 1:
         {
-            new filename[ 256 ];
-            formatex( filename, sizeof( filename ) - 1, "%s/%s", DIR_CONFIGS, arg1 );
+            new arg1[ 256 ];
+            read_argv( 1, arg1, sizeof( arg1 ) - 1 );
+            remove_quotes( arg1 );
 
-            file = fopen( filename, "wt" );
-            if( file )
+            new mapName[ MAX_MAPNAME_LEN + 5 ]; // map name is 31 ( i.e. MAX_MAPNAME_LEN ), ".bsp" is 4, string terminator is 1.
+            new dir, file, mapCnt, lenMapName;
+
+            dir = open_dir( "maps", mapName, sizeof( mapName ) - 1 );
+            if( dir )
             {
-                mapCnt = 0;
-                while( next_file( dir, mapName, sizeof( mapName ) - 1 ) )
-                {
-                    lenMapName = strlen( mapName );
+                new filename[ 256 ];
+                formatex( filename, sizeof( filename ) - 1, "%s/%s", DIR_CONFIGS, arg1 );
 
-                    if( lenMapName > 4
-                        && equali( mapName[ lenMapName - 4 ], ".bsp", 4 ) )
+                file = fopen( filename, "wt" );
+                if( file )
+                {
+                    mapCnt = 0;
+                    while( next_file( dir, mapName, sizeof( mapName ) - 1 ) )
                     {
-                        mapName[ lenMapName - 4 ] = '^0';
-                        if( is_map_valid( mapName ) )
+                        lenMapName = strlen( mapName );
+
+                        if( lenMapName > 4
+                            && equali( mapName[ lenMapName - 4 ], ".bsp", 4 ) )
                         {
-                            mapCnt++;
-                            fprintf( file, "%s^n", mapName );
+                            mapName[ lenMapName - 4 ] = '^0';
+                            if( is_map_valid( mapName ) )
+                            {
+                                mapCnt++;
+                                fprintf( file, "%s^n", mapName );
+                            }
                         }
                     }
+                    fclose( file );
+                    con_print( id, "%L", LANG_SERVER, "GAL_CREATIONSUCCESS", filename, mapCnt );
                 }
-                fclose( file );
-                con_print( id, "%L", LANG_SERVER, "GAL_CREATIONSUCCESS", filename, mapCnt );
+                else
+                {
+                    con_print( id, "%L", LANG_SERVER, "GAL_CREATIONFAILED", filename );
+                }
+                close_dir( dir );
             }
             else
             {
-                con_print( id, "%L", LANG_SERVER, "GAL_CREATIONFAILED", filename );
+                // directory not found, wtf?
+                con_print( id, "%L", LANG_SERVER, "GAL_MAPSFOLDERMISSING" );
             }
-            close_dir( dir );
         }
-        else
+        default:
         {
-            // directory not found, wtf?
-            con_print( id, "%L", LANG_SERVER, "GAL_MAPSFOLDERMISSING" );
+            // inform of correct usage
+            con_print( id, "%L", id, "GAL_CMD_CREATEFILE_USAGE1" );
+            con_print( id, "%L", id, "GAL_CMD_CREATEFILE_USAGE2" );
         }
-    }
-    default:
-    {
-        // inform of correct usage
-        con_print( id, "%L", id, "GAL_CMD_CREATEFILE_USAGE1" );
-        con_print( id, "%L", id, "GAL_CMD_CREATEFILE_USAGE2" );
-    }
     }
     return PLUGIN_HANDLED;
 }
@@ -1034,26 +1034,26 @@ nomination_attempt( id, nomination[] ) // ( playerName[], &phraseIdx, matchingSe
     // handle the number of matches
     switch( matchCnt )
     {
-    case 0:
-    {
-        // no matches; pity the poor fool
-        client_print( id, print_chat, "%L", id, "GAL_NOM_FAIL_NOMATCHES", nomination );
-    }
-    case 1:
-    {
-        // one match?! omg, this is just like awesome
-        map_nominate( id, matchIdx );
-    }
-    default:
-    {
-        // this is kinda sexy; we put up a menu of the matches for them to pick the right one
-        client_print( id, print_chat, "%L", id, "GAL_NOM_MATCHES", nomination );
-        if( matchCnt == MAX_NOM_MATCH_CNT )
+        case 0:
         {
-            client_print( id, print_chat, "%L", id, "GAL_NOM_MATCHES_MAX", MAX_NOM_MATCH_CNT, MAX_NOM_MATCH_CNT );
+            // no matches; pity the poor fool
+            client_print( id, print_chat, "%L", id, "GAL_NOM_FAIL_NOMATCHES", nomination );
         }
-        menu_display( id, g_nominationMatchesMenu[ id ] );
-    }
+        case 1:
+        {
+            // one match?! omg, this is just like awesome
+            map_nominate( id, matchIdx );
+        }
+        default:
+        {
+            // this is kinda sexy; we put up a menu of the matches for them to pick the right one
+            client_print( id, print_chat, "%L", id, "GAL_NOM_MATCHES", nomination );
+            if( matchCnt == MAX_NOM_MATCH_CNT )
+            {
+                client_print( id, print_chat, "%L", id, "GAL_NOM_MATCHES_MAX", MAX_NOM_MATCH_CNT, MAX_NOM_MATCH_CNT );
+            }
+            menu_display( id, g_nominationMatchesMenu[ id ] );
+        }
     }
 }
 
@@ -2679,18 +2679,18 @@ public cmd_HL1_listmaps( id )
 {
     switch( get_pcvar_num( cvar_cmdListmaps ) )
     {
-    case 0:
-    {
-        con_print( id, "%L", id, "GAL_DISABLED" );
-    }
-    case 2:
-    {
-        map_listAll( id );
-    }
-    default:
-    {
-        return PLUGIN_CONTINUE;
-    }
+        case 0:
+        {
+            con_print( id, "%L", id, "GAL_DISABLED" );
+        }
+        case 2:
+        {
+            map_listAll( id );
+        }
+        default:
+        {
+            return PLUGIN_CONTINUE;
+        }
     }
     return PLUGIN_HANDLED;
 }
