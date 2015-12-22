@@ -223,9 +223,9 @@ public plugin_init()
     g_menuChooseMap = register_menuid( MENU_CHOOSEMAP );
 
     register_menucmd( g_menuChooseMap, MENU_KEY_1 | MENU_KEY_2 |
-        MENU_KEY_3 | MENU_KEY_4 | MENU_KEY_5 | MENU_KEY_6 |
-        MENU_KEY_7 | MENU_KEY_8 | MENU_KEY_9 | MENU_KEY_0,
-        "vote_handleChoice" );
+            MENU_KEY_3 | MENU_KEY_4 | MENU_KEY_5 | MENU_KEY_6 |
+            MENU_KEY_7 | MENU_KEY_8 | MENU_KEY_9 | MENU_KEY_0,
+            "vote_handleChoice" );
 }
 
 /**
@@ -240,7 +240,7 @@ stock runTests()
 
     debugMessageLog( 1, "^n    %d tests succeed. \
             ^n    %d tests failed. ^n^n", g_integer_totalSuccessfulTests,
-        g_integer_totalFailureTests )
+            g_integer_totalFailureTests )
 
     //for( new
 
@@ -275,7 +275,7 @@ stock test_register_test()
     if( g_integer_totalSuccessfulTests != 1 )
     {
         set_test_failure( test_id, "g_integer_totalSuccessfulTests != 1 (it was = %d)",
-            g_integer_totalSuccessfulTests )
+                g_integer_totalSuccessfulTests )
     }
 
     if( test_id != 1 )
@@ -289,7 +289,7 @@ stock test_register_test()
     if( !equal( first_test_name, "test_register_test" ) )
     {
         set_test_failure( test_id, "first_test_name != test_register_test (it was = %s)",
-            first_test_name )
+                first_test_name )
     }
 }
 
@@ -406,13 +406,15 @@ public plugin_end()
 
 public vote_setupEnd()
 {
-    debugMessageLog( 4, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "vote_setupEnd( in )", get_cvar_float( "mp_timelimit" ), g_originalTimelimit );
+    debugMessageLog( 4, "%32s mp_timelimit: %f  g_originalTimelimit: %f",
+            "vote_setupEnd( in )", get_cvar_float( "mp_timelimit" ), g_originalTimelimit );
 
     g_originalTimelimit = get_cvar_float( "mp_timelimit" );
 
     set_task( 15.0, "vote_manageEnd", _, _, _, "b" );
 
-    debugMessageLog( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "vote_setupEnd( out )", get_cvar_float( "mp_timelimit" ), g_originalTimelimit );
+    debugMessageLog( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f",
+            "vote_setupEnd( out )", get_cvar_float( "mp_timelimit" ), g_originalTimelimit );
 }
 
 /**
@@ -803,7 +805,7 @@ public cmd_createMapFile( id, level, cid )
             read_argv( 1, arg1, sizeof( arg1 ) - 1 );
             remove_quotes( arg1 );
 
-            new mapName[ MAX_MAPNAME_LEN + 5 ]; // map name is 31 ( i.e. MAX_MAPNAME_LEN ), ".bsp" is 4, string terminator is 1.
+            new mapName[ MAX_MAPNAME_LEN + 5 ];    // map name is 31 ( i.e. MAX_MAPNAME_LEN ), ".bsp" is 4, string terminator is 1.
             new dir, file, mapCnt, lenMapName;
 
             dir = open_dir( "maps", mapName, sizeof( mapName ) - 1 );
@@ -1333,7 +1335,7 @@ public vote_startDirector( bool:forced )
         voteDuration = get_pcvar_num( cvar_runoffDuration );
 
         debugMessageLog( 16, "At vote_startDirector --- Runoff map1: %s, Runoff map2: %s --- choicesLoaded: %d",
-            g_mapsVoteMenuNames[ 0 ], g_mapsVoteMenuNames[ 1 ], choicesLoaded )
+                g_mapsVoteMenuNames[ 0 ], g_mapsVoteMenuNames[ 1 ], choicesLoaded )
 
         debugMessageLog( 4, "   [RUNOFF VOTE CHOICES ( %i )]", choicesLoaded );
     }
@@ -1615,7 +1617,7 @@ vote_addFiller()
     {
         mapCnt = map_loadFillerList( fillerFile[ groupIdx ] );
         debugMessageLog( 8, "[%i] groupCnt:%i   mapCnt: %i   g_totalVoteOptions: %i   g_choiceMax: %i   fillerFile: %s",
-            groupIdx, groupCnt, mapCnt, g_totalVoteOptions, g_choiceMax, fillerFile[ groupIdx ] );
+                groupIdx, groupCnt, mapCnt, g_totalVoteOptions, g_choiceMax, fillerFile[ groupIdx ] );
 
         if( ( g_totalVoteOptions < g_choiceMax )
             && mapCnt )
@@ -1623,14 +1625,14 @@ vote_addFiller()
             unsuccessfulCnt = 0;
             allowedCnt      = min( min( mapsPerGroup[ groupIdx ], g_choiceMax - g_totalVoteOptions ), mapCnt );
             debugMessageLog( 8, "[%i] allowedCnt: %i   mapsPerGroup: %i   Max-Cnt: %i", groupIdx, allowedCnt,
-                mapsPerGroup[ groupIdx ], g_choiceMax - g_totalVoteOptions );
+                    mapsPerGroup[ groupIdx ], g_choiceMax - g_totalVoteOptions );
 
             for( choiceIdx = 0; choiceIdx < allowedCnt; ++choiceIdx )
             {
                 mapKey = random_num( 0, mapCnt - 1 );
                 ArrayGetString( g_fillerMap, mapKey, mapName, sizeof( mapName ) - 1 );
                 debugMessageLog( 8, "[%i] choiceIdx: %i   allowedCnt: %i   mapKey: %i   mapName: %s",
-                    groupIdx, choiceIdx, allowedCnt, mapKey, mapName );
+                        groupIdx, choiceIdx, allowedCnt, mapKey, mapName );
                 unsuccessfulCnt = 0;
 
                 while( ( map_isInMenu( mapName )
@@ -1658,7 +1660,7 @@ vote_addFiller()
                 //client_print( 0, print_chat, "mapIdx: %i  map: %s", mapIdx, mapName );
                 copy( g_mapsVoteMenuNames[ g_totalVoteOptions++ ], sizeof( g_mapsVoteMenuNames[] ) - 1, mapName );
                 debugMessageLog( 8, "[%i] mapName: %s   unsuccessfulCnt: %i   mapCnt: %i   g_totalVoteOptions: %i",
-                    groupIdx, mapName, unsuccessfulCnt, mapCnt, g_totalVoteOptions );
+                        groupIdx, mapName, unsuccessfulCnt, mapCnt, g_totalVoteOptions );
             }
         }
     }
@@ -1675,7 +1677,7 @@ vote_loadChoices()
 vote_loadRunoffChoices()
 {
     debugMessageLog( 16, "At vote_loadRunoffChoices --- Runoff map1: %s, Runoff map2: %s",
-        g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 0 ] ], g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 1 ] ] )
+            g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 0 ] ], g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 1 ] ] )
 
     new runOffNameChoices[ 2 ][ MAX_MAPNAME_LEN + 1 ];
     copy( runOffNameChoices[ 0 ], sizeof( runOffNameChoices[] ) - 1, g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 0 ] ] );
@@ -1753,7 +1755,7 @@ public vote_display( arg[ 3 ] )
         new snuff = ( id > 0 ) ? g_snuffDisplay[ id ] : -1;
         debugMessageLog( 4, "   [votedisplay( )] id: %i  updateTimeRemaining: %i  unsnuffDisplay: %i  g_snuffDisplay: %i  \
                 g_refreshVoteStatus: %i  g_totalVoteOptions: %i  len( g_vote ): %i  len( voteStatus ): %i", arg[ 1 ], arg[ 0 ],
-            arg[ 2 ], snuff, g_refreshVoteStatus, g_totalVoteOptions, strlen( g_vote ), strlen( voteStatus ) );
+                arg[ 2 ], snuff, g_refreshVoteStatus, g_totalVoteOptions, strlen( g_vote ), strlen( voteStatus ) );
     }
 
     if( id > 0
@@ -1801,7 +1803,7 @@ public vote_display( arg[ 3 ] )
             getTotalVotesAtMap( g_totalVoteAtMap, sizeof( g_totalVoteAtMap ) - 1, voteCnt );
 
             charCnt += formatex( voteStatus[ charCnt ], sizeof( voteStatus ) - 1 - charCnt, "^n%s%i. %s%s%s",
-                CLR_RED, choiceIdx + 1, CLR_WHITE, g_mapsVoteMenuNames[ choiceIdx ], g_totalVoteAtMap );
+                    CLR_RED, choiceIdx + 1, CLR_WHITE, g_mapsVoteMenuNames[ choiceIdx ], g_totalVoteAtMap );
 
             keys |= ( 1 << choiceIdx );
         }
@@ -1850,16 +1852,16 @@ public vote_display( arg[ 3 ] )
             {
                 // add the "Extend Map" menu item.
                 charCnt += formatex( voteStatus[ charCnt ], sizeof( voteStatus ) - 1 - charCnt,
-                    "^n%s%i. %s%L%s", CLR_RED, g_totalVoteOptions + 1, CLR_WHITE, LANG_SERVER,
-                    "GAL_OPTION_EXTEND", g_currentMap,
-                    floatround( get_pcvar_float( cvar_extendmapStep ) ), g_totalVoteAtMap );
+                        "^n%s%i. %s%L%s", CLR_RED, g_totalVoteOptions + 1, CLR_WHITE, LANG_SERVER,
+                        "GAL_OPTION_EXTEND", g_currentMap,
+                        floatround( get_pcvar_float( cvar_extendmapStep ) ), g_totalVoteAtMap );
             }
             else
             {
                 // add the "Stay Here" menu item
                 charCnt += formatex( voteStatus[ charCnt ], sizeof( voteStatus ) - 1 - charCnt,
-                    "^n%s%i. %s%L%s", CLR_RED, g_totalVoteOptions + 1,
-                    CLR_WHITE, LANG_SERVER, "GAL_OPTION_STAY", g_totalVoteAtMap );
+                        "^n%s%i. %s%L%s", CLR_RED, g_totalVoteOptions + 1,
+                        CLR_WHITE, LANG_SERVER, "GAL_OPTION_STAY", g_totalVoteAtMap );
             }
 
             keys |= ( 1 << g_totalVoteOptions );
@@ -1870,7 +1872,7 @@ public vote_display( arg[ 3 ] )
 
         // append a "None" option on for people to choose if they don't like any other choice
         formatex( g_vote[ cleanCharCnt ], sizeof( g_vote ) - 1 - cleanCharCnt,
-            "^n^n%s0. %s%L", CLR_RED, CLR_WHITE, LANG_SERVER, "GAL_OPTION_NONE" );
+                "^n^n%s0. %s%L", CLR_RED, CLR_WHITE, LANG_SERVER, "GAL_OPTION_NONE" );
 
         charCnt += formatex( voteStatus[ charCnt ], sizeof( voteStatus ) - 1 - charCnt, "^n^n" );
 
@@ -1886,7 +1888,7 @@ public vote_display( arg[ 3 ] )
 
         g_voteDuration--;
         formatex( voteFooter[ charCnt ], sizeof( voteFooter ) - 1 - charCnt, "%s%L: %s%i",
-            CLR_GREY, LANG_SERVER, "GAL_TIMELEFT", CLR_RED, g_voteDuration );
+                CLR_GREY, LANG_SERVER, "GAL_TIMELEFT", CLR_RED, g_voteDuration );
     }
 
     // create the different displays
@@ -2029,7 +2031,7 @@ public vote_expire()
             getTotalVotesAtMap( g_totalVoteAtMap, sizeof( g_totalVoteAtMap ) - 1, g_arrayOfMapsWithVotesNumber[ userVoteMapChoiceIndex ] );
 
             debugMessageLog( 4, "      %2i/%3i  %i. %s", g_arrayOfMapsWithVotesNumber[ userVoteMapChoiceIndex ], g_totalVoteAtMap,
-                userVoteMapChoiceIndex, g_mapsVoteMenuNames[ userVoteMapChoiceIndex ] );
+                    userVoteMapChoiceIndex, g_mapsVoteMenuNames[ userVoteMapChoiceIndex ] );
         }
         debugMessageLog( 4, "" );
     }
@@ -2061,7 +2063,7 @@ public vote_expire()
     for( new userVoteMapChoiceIndex = 0; userVoteMapChoiceIndex <= g_totalVoteOptions; ++userVoteMapChoiceIndex )
     {
         debugMessageLog( 16, "At g_arrayOfMapsWithVotesNumber[%d] = %d ", userVoteMapChoiceIndex,
-            g_arrayOfMapsWithVotesNumber[ userVoteMapChoiceIndex ] )
+                g_arrayOfMapsWithVotesNumber[ userVoteMapChoiceIndex ] )
 
         if( g_arrayOfMapsWithVotesNumber[ userVoteMapChoiceIndex ] == numberOfVotesAtFirstPlace )
         {
@@ -2077,7 +2079,7 @@ public vote_expire()
     // At for: g_totalVoteOptions: 5, numberOfMapsAtFirstPosition: 3, numberOfMapsAtSecondPosition: 0
     debugMessageLog( 16, "At for: g_totalVoteOptions: %d, numberOfMapsAtFirstPosition: %d, \
             numberOfMapsAtSecondPosition: %d",
-        g_totalVoteOptions, numberOfMapsAtFirstPosition, numberOfMapsAtSecondPosition )
+            g_totalVoteOptions, numberOfMapsAtFirstPosition, numberOfMapsAtSecondPosition )
 
     // announce the outcome
     new winnerVoteMapIndex;
@@ -2105,7 +2107,7 @@ public vote_expire()
                 if( numberOfMapsAtFirstPosition > 2 )
                 {
                     debugMessageLog( 16, "0 - firstPlaceChoices[ numberOfMapsAtFirstPosition - 1 ] : %d",
-                        firstPlaceChoices[ numberOfMapsAtFirstPosition - 1 ] )
+                            firstPlaceChoices[ numberOfMapsAtFirstPosition - 1 ] )
 
                     // determine the two choices that will be facing off
                     new firstChoiceIndex
@@ -2115,7 +2117,7 @@ public vote_expire()
                     secondChoiceIndex = random_num( 0, numberOfMapsAtFirstPosition - 1 );
 
                     debugMessageLog( 16, "1 - At: firstChoiceIndex: %d, secondChoiceIndex: %d",
-                        firstChoiceIndex, secondChoiceIndex )
+                            firstChoiceIndex, secondChoiceIndex )
 
                     if( firstChoiceIndex == secondChoiceIndex )
                     {
@@ -2162,13 +2164,13 @@ public vote_expire()
                     }
 
                     debugMessageLog( 16, "2 - At: firstChoiceIndex: %d, secondChoiceIndex: %d",
-                        firstChoiceIndex, secondChoiceIndex )
+                            firstChoiceIndex, secondChoiceIndex )
 
                     g_arrayOfRunOffChoices[ 0 ] = firstPlaceChoices[ firstChoiceIndex ];
                     g_arrayOfRunOffChoices[ 1 ] = firstPlaceChoices[ secondChoiceIndex ];
 
                     debugMessageLog( 16, "At GAL_RESULT_TIED1 --- Runoff map1: %s, Runoff map2: %s",
-                        g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 0 ] ], g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 1 ] ] )
+                            g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 0 ] ], g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 1 ] ] )
 
                     client_print( 0, print_chat, "%L", LANG_PLAYER, "GAL_RESULT_TIED1", numberOfMapsAtFirstPosition );
                 }
@@ -2194,7 +2196,7 @@ public vote_expire()
                     }
 
                     debugMessageLog( 16, "At numberOfMapsAtFirstPosition == 2 --- Runoff map1: %s, Runoff map2: %s",
-                        g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 0 ] ], g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 1 ] ] )
+                            g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 0 ] ], g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 1 ] ] )
                 }
                 else if( numberOfMapsAtSecondPosition == 1 )
                 {
@@ -2218,7 +2220,7 @@ public vote_expire()
                     }
 
                     debugMessageLog( 16, "At numberOfMapsAtSecondPosition == 1 --- Runoff map1: %s, Runoff map2: %s",
-                        g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 0 ] ], g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 1 ] ] )
+                            g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 0 ] ], g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 1 ] ] )
                 }
                 else
                 {
@@ -2244,7 +2246,7 @@ public vote_expire()
                     }
 
                     debugMessageLog( 16, "At numberOfMapsAtSecondPosition == 1 ELSE --- Runoff map1: %s, Runoff map2: %s",
-                        g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 0 ] ], g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 1 ] ] )
+                            g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 0 ] ], g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 1 ] ] )
 
                     client_print( 0, print_chat, "%L", LANG_PLAYER, "GAL_RESULT_TIED2", numberOfMapsAtSecondPosition );
                 }
@@ -2379,7 +2381,7 @@ public vote_expire()
 map_extend()
 {
     debugMessageLog( 2, "%32s mp_timelimit: %f  g_rtvWait: %f  extendmapStep: %f", "map_extend( in )",
-        get_cvar_float( "mp_timelimit" ), g_rtvWait, get_pcvar_float( cvar_extendmapStep ) );
+            get_cvar_float( "mp_timelimit" ), g_rtvWait, get_pcvar_float( cvar_extendmapStep ) );
 
     // reset the "rtv wait" time, taking into consideration the map extension
     if( g_rtvWait )
@@ -2396,7 +2398,7 @@ map_extend()
     vote_resetStats();
 
     debugMessageLog( 2, "%32s mp_timelimit: %f  g_rtvWait: %f  extendmapStep: %f", "map_extend( out )",
-        get_cvar_float( "mp_timelimit" ), g_rtvWait, get_pcvar_float( cvar_extendmapStep ) );
+            get_cvar_float( "mp_timelimit" ), g_rtvWait, get_pcvar_float( cvar_extendmapStep ) );
 }
 
 vote_resetStats()
@@ -2988,7 +2990,7 @@ print_color( id, text[] )
 map_restoreOriginalTimeLimit()
 {
     debugMessageLog( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "map_restoreOriginalTimeLimit( in )",
-        get_cvar_float( "mp_timelimit" ), g_originalTimelimit );
+            get_cvar_float( "mp_timelimit" ), g_originalTimelimit );
 
     if( g_isTimeLimitChanged )
     {
@@ -2997,7 +2999,7 @@ map_restoreOriginalTimeLimit()
         g_isTimeLimitChanged = false;
     }
     debugMessageLog( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "map_restoreOriginalTimeLimit( out )",
-        get_cvar_float( "mp_timelimit" ), g_originalTimelimit );
+            get_cvar_float( "mp_timelimit" ), g_originalTimelimit );
 }
 
 public dbg_fakeVotes()
@@ -3017,8 +3019,8 @@ public dbg_fakeVotes()
     }
     else if( g_voteStatus & VOTE_IS_RUNOFF )
     {
-        g_arrayOfMapsWithVotesNumber[ 0 ] += 2;    // choice 1
-        g_arrayOfMapsWithVotesNumber[ 1 ] += 2;    // choice 2
+        g_arrayOfMapsWithVotesNumber[ 0 ] += 2;     // choice 1
+        g_arrayOfMapsWithVotesNumber[ 1 ] += 2;     // choice 2
 
         g_totalVotesCounted = g_arrayOfMapsWithVotesNumber[ 0 ] + g_arrayOfMapsWithVotesNumber[ 1 ];
     }
