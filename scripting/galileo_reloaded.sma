@@ -2436,9 +2436,11 @@ prefix_isInMenu( map[] )
         
         strtok( map, tentativePrefix, sizeof( tentativePrefix ) - 1, junk, sizeof( junk ) - 1, '_', 1 );
         
-        for( new userVoteMapChoiceIndex = 0; userVoteMapChoiceIndex < g_totalVoteOptions; ++userVoteMapChoiceIndex )
+        for( new userVoteMapChoiceIndex = 0; userVoteMapChoiceIndex < g_totalVoteOptions;
+             ++userVoteMapChoiceIndex )
         {
-            strtok( g_mapsVoteMenuNames[ userVoteMapChoiceIndex ], existingPrefix, sizeof( existingPrefix ) - 1, junk, sizeof( junk ) - 1, '_', 1 );
+            strtok( g_mapsVoteMenuNames[ userVoteMapChoiceIndex ], existingPrefix,
+                    sizeof( existingPrefix ) - 1, junk, sizeof( junk ) - 1, '_', 1 );
             
             if( equal( tentativePrefix, existingPrefix ) )
             {
@@ -3014,8 +3016,8 @@ public dbg_fakeVotes()
         g_arrayOfMapsWithVotesNumber[ 5 ] += 2;    // extend option
         
         g_totalVotesCounted = g_arrayOfMapsWithVotesNumber[ 0 ] + g_arrayOfMapsWithVotesNumber[ 1 ] +
-                              g_arrayOfMapsWithVotesNumber[ 2 ] + g_arrayOfMapsWithVotesNumber[ 3 ] + g_arrayOfMapsWithVotesNumber[ 4 ] +
-                              g_arrayOfMapsWithVotesNumber[ 5 ];
+                              g_arrayOfMapsWithVotesNumber[ 2 ] + g_arrayOfMapsWithVotesNumber[ 3 ] +
+                              g_arrayOfMapsWithVotesNumber[ 4 ] + g_arrayOfMapsWithVotesNumber[ 5 ];
     }
     else if( g_voteStatus & VOTE_IS_RUNOFF )
     {
