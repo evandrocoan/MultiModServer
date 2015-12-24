@@ -2,7 +2,7 @@
 [SIZE="6"][COLOR="Blue"][B]Galileo Reloaded v1.0-alpha3[/B][/COLOR][/SIZE]
 [B]Release: 10.10.2015 | Last Update: 21.10.2015[/B]
 
-Tested under [COLOR="red"]Counter-Strike[/COLOR] and Counter-Strike [B]Condition Zero[/B] 
+[B]Tested[/B] under [COLOR="red"]Counter-Strike[/COLOR] and Counter-Strike [B]Condition Zero[/B] 
 
 [SIZE="5"]Basic differences between the original Galileo and Galileo Reloaded[/SIZE] 
 
@@ -61,7 +61,7 @@ Tested under [COLOR="red"]Counter-Strike[/COLOR] and Counter-Strike [B]Condition
 [IMG]https://cdn3.iconfinder.com/data/icons/social-network-round-gloss-shine/128/GitHub_Social-Network-Communicate-Page-Curl-Effect-Circle-Glossy-Shadow-Shine.png[/IMG][/URL][/B] 
 [B][COLOR="Blue"](look for the developer and feature branches)[/COLOR][/B]
 
-The original plugin "[URL="https://forums.alliedmods.net/showthread.php?t=77391"]galileo.sma[/URL]" is originally written by [B]Brad[/B]. The "Galileo Reload" works similarly 
+The original plugin "[URL="https://forums.alliedmods.net/showthread.php?t=77391"]Galileo[/URL]" is originally written by [B]Brad[/B]. The "Galileo Reload" works similarly 
 as the original "[B]Galileo[/B]". But "[B][COLOR="Blue"]Galileo Reloaded[/COLOR][/B]" has special features for the "[URL="https://forums.alliedmods.net/showthread.php?t=273020"]Multi-Mod Manager[/URL]" plugin, but it 
 still can be used alone. See the [goanchor=Change]Change Log[/goanchor] and [goanchor=Credits]Credits[/goanchor] for more info. 
 
@@ -154,7 +154,7 @@ Ex: czero, cstrike, ...
 
 [B]4.[/B] Put the [B]next line[/B] to your "[B]plugins.ini[/B]" file at "yourgamemod/addons/amxmodx/[B]configs[/B]" folder and
 disable the original "[B]mapchooser.amxx[/B]" or any other [B]map manager plugin[/B], like the original the 
-"[URL="https://forums.alliedmods.net/showthread.php?t=77391"]galileo.sma[/URL]":
+[B]galileo.amxx[/B]:
 [QUOTE]
 galileo_reloaded.amxx
 [/QUOTE]
@@ -211,7 +211,7 @@ galileo_reloaded.amxx
 [/QUOTE]
 
 ******************************** [anchor]Credits[/anchor][B][SIZE="5"][COLOR="blue"]Credits[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *******************************
-[B]Brad[/B]: The original [URL="https://forums.alliedmods.net/showthread.php?t=77391"]galileo.sma[/URL] developer. 
+[B]Brad[/B]: The original Galileo developer. 
 [B]Addons zz[/B]: The galileo_reloaded.sma developer. 
 [B]Th3822[/B]: For find a error from map_nominate. 
 [QUOTE=Brad;684848][COLOR=darkblue][SIZE=4][B]Donations to the Original Author[/B][/SIZE][/COLOR] 
