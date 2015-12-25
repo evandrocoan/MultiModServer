@@ -4,6 +4,9 @@
  Version: 0.2.2
  Author: KRoTaL
 
+ Version: 0.3
+ Author: Addons zz
+
  0.1    Release
  0.1.1  Players can't buy a parachute if they already own one
  0.1.2	 Release for AMX MOD X
@@ -20,37 +23,8 @@
  0.2.2  Fixed the parachute remove bug
  0.2.3  Fixed the alive bug
 
-
- Commands:
-
- say buy_parachute	- buys a parachute
- 
- amx_parachute <name>|@all	- gives a player a free parachute
-
- Press +use to slow down your fall.
-
- Cvars:
-
- sv_parachute "1"	 -	0: disables the plugin
- 1: enables the plugin
-
- parachute_cost "1000"	 -	cost of the parachute
- 
- admin_parachute "0"	 -	0: admins with level A won't get a free parachute
- 1: admins with level A get a free parachute
- 
- parachute_payback "75"	 -	the amount you get back of the parachute in %(75/100*1000) = 750
- 
- para_free "0"		 -	0: no free parachute
- 1: free parachute for everyone
- 
-
- Setup (AMXX 1.71):
-
- Install the amxx file. 
- Enable engine and cstrike(amxx's modules.ini) 
- Put the parachute.mdl file in the cstrike/models folder
-
+0.3 - by Addons zz
+ Removed everything except the free parachute for all. 
 
  ***************************************************************************************************/
 
@@ -60,8 +34,8 @@
 #include <cstrike>
 
 #define PLUGINNAME	"AMXX Parachute"
-#define VERSION		"0.2.3"
-#define AUTHOR		"KRoT@L"
+#define VERSION		"0.3"
+#define AUTHOR		"KRoT@L/Addonszz"
 
 new para_ent[ 33 ];
 
