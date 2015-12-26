@@ -191,16 +191,19 @@ galileo_reloaded.amxx
 2015-10-21 | v1.0-alpha2.hotfix1
  * Improved some variables meaning 
 
-2015-10-XX | v1.0-alpha3
+2015-12-27 | v1.0-alpha3
  * Removed the command "gal_startvote2"
  * Added to the command gal_startvote the options -nochange and -restart.
  * Implemented mp_winlimit and mp_maxrounds end map voting.
+ * Added new cvar "amx_extendmap_step_rounds" to the config file. 
  * Fixed concurrency problem between mp_maxrounds, mp_winlimit and mp_timelimit.
  * Added a basic unit test structure for developers/scripters.
 [/QUOTE]
 
 ******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *********************************
 [QUOTE]
+another issue is that RV does not start , meanign if i set 1 minute as rtv start time even then even afte r10 minutes it will say 1 minute before rtv
+
  * To clear unused language file constants. 
  * Add colored messages. 
  * Add nominate maps by a map list menu. 
