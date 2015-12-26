@@ -18,12 +18,10 @@
 
 */
 
-new const PLUGIN_VERSION[] = "1.0-alpha3";
+#define PLUGIN_VERSION "1.0-alpha3"
 
 #include <amxmodx>
 #include <amxmisc>
-
-#define IS_DEBUG_ENABLED 1
 
 #define LONG_STRING  256
 #define SHORT_STRING 64
@@ -83,6 +81,17 @@ new const PLUGIN_VERSION[] = "1.0-alpha3";
 #define START_VOTEMAP_MIN_TIME 151
 #define START_VOTEMAP_MAX_TIME 129
 
+#define VOTE_START_ROUNDS  4
+
+#define VOTE_START_ROUNDS_DELAY \
+    g_is_maxrounds_vote_map = true; \
+    set_task( get_pcvar_num( g_freezetime_pointer ) + 10.0, \
+            "start_voting_by_rounds"); 
+
+#define IS_FINAL_VOTE \
+    ( get_cvar_float("mp_timelimit") < START_VOTEMAP_MIN_TIME ) \
+      || ( g_is_maxrounds_vote_map )
+
 new MENU_CHOOSEMAP[] = "gal_menuChooseMap";
 
 new DIR_CONFIGS[ 64 ];
@@ -98,13 +107,25 @@ new g_mapPrefixCnt = 1;
 new g_currentMap[ MAX_MAPNAME_LEN + 1 ]
 new Float:g_originalTimelimit = TIMELIMIT_NOT_SET;
 
+new g_originalMaxRounds
+new g_originalWinLimit
+
 new g_nomination[ MAX_PLAYER_CNT + 1 ][ MAX_NOMINATION_CNT + 1 ]
 new g_nominationCnt
 new g_nominationMatchesMenu[ MAX_PLAYER_CNT ];
 
-new g_isTimeToChangeLevel = false;
-new g_isTimeToRestart     = false;
-new g_isTimeLimitChanged  = false;
+new g_freezetime_pointer
+new g_winlimit_pointer;
+new g_maxrounds_pointer;
+
+new g_total_rounds_played;
+new g_total_terrorists_wins; 
+new g_total_CT_wins; 
+
+new g_is_maxrounds_vote_map
+new g_isTimeToChangeLevel
+new g_isTimeToRestart 
+new g_isTimeLimitChanged 
 
 new g_number_isDebugEnabled
 new g_integer_totalSuccessfulTests = 0;
@@ -136,6 +157,7 @@ new g_totalVotesCounted;
 new g_arrayOfRunOffChoices[ 2 ];
 new g_vote[ 512 ];
 
+new g_is_voting_locked
 new g_refreshVoteStatus = true
 new g_totalVoteAtMapType[ 3 ]
 new g_snuffDisplay[ MAX_PLAYER_CNT + 1 ];
@@ -144,6 +166,7 @@ new g_menuChooseMap;
 new g_isRunOffNeedingKeepCurrentMap = false;
 
 new cvar_extendmapStep;
+new g_extendmapStepRounds_pointer;
 new cvar_endOfMapVote;
 new cvar_rtvWait
 new cvar_rtvRatio
@@ -170,6 +193,7 @@ new cvar_voteStatus
 new cvar_voteStatusType;
 new cvar_soundsMute;
 
+
 public plugin_init()
 {
     register_plugin( "Galileo", PLUGIN_VERSION, "Addons zz/Brad Jones" );
@@ -182,7 +206,7 @@ public plugin_init()
     
     register_cvar( "GalileoReloaded", PLUGIN_VERSION, FCVAR_SERVER | FCVAR_SPONLY );
     register_cvar( "gal_server_starting", "1", FCVAR_SPONLY );
-    register_cvar( "gal_debug", "IS_DEBUG_ENABLED" );
+    register_cvar( "gal_debug", "0" );
     
     cvar_extendmapStep      = register_cvar( "amx_extendmap_step", "15" );
     cvar_cmdVotemap         = register_cvar( "gal_cmd_votemap", "0" );
@@ -211,7 +235,11 @@ public plugin_init()
     cvar_runoffDuration     = register_cvar( "gal_runoff_duration", "10" );
     cvar_soundsMute         = register_cvar( "gal_sounds_mute", "0" );
     
-    register_event( "TextMsg", "event_game_commencing", "a", "2=#Game_Commencing", "2=#Game_will_restart_in" );
+    register_logevent("event_game_commencing", 2, "0=World triggered", 
+            "1=Game_Commencing", "1&Restart_Round_")
+
+    register_logevent("team_win", 6, "0=Team")
+    register_logevent("round_end", 2, "1=Round_End") 
     
     register_clcmd( "say", "cmd_say", -1 );
     register_clcmd( "votemap", "cmd_HL1_votemap" );
@@ -222,10 +250,102 @@ public plugin_init()
     
     g_menuChooseMap = register_menuid( MENU_CHOOSEMAP );
     
+    g_maxrounds_pointer = get_cvar_pointer("mp_maxrounds")
+    g_winlimit_pointer = get_cvar_pointer("mp_winlimit")
+    g_freezetime_pointer = get_cvar_pointer("mp_freezetime")
+    g_extendmapStepRounds_pointer            =    register_cvar("amx_extendmap_step_rounds", "30");
+
     register_menucmd( g_menuChooseMap, MENU_KEY_1 | MENU_KEY_2 |
             MENU_KEY_3 | MENU_KEY_4 | MENU_KEY_5 | MENU_KEY_6 |
             MENU_KEY_7 | MENU_KEY_8 | MENU_KEY_9 | MENU_KEY_0,
             "vote_handleChoice" );
+}
+
+/**
+ * Called when all plugins went through plugin_init( ).
+ * When this forward is called, most plugins should have registered their
+ * cvars and commands already.
+ */
+public plugin_cfg()
+{
+    g_isTimeLimitChanged    = false;
+    g_isTimeToChangeLevel   = false;
+    g_isTimeToRestart       = false;
+    g_is_maxrounds_vote_map = false;
+    g_is_voting_locked      = false;
+    g_number_isDebugEnabled = get_cvar_num( "gal_debug" );
+
+    reset_rounds_scores()
+    
+    formatex( DIR_CONFIGS[ get_configsdir( DIR_CONFIGS, sizeof( DIR_CONFIGS ) - 1 ) ], sizeof( DIR_CONFIGS ) - 1, "/galileo_reloaded" );
+    formatex( DIR_DATA[ get_datadir( DIR_DATA, sizeof( DIR_DATA ) - 1 ) ], sizeof( DIR_DATA ) - 1, "/galileo_reloaded" );
+    
+    server_cmd( "exec %s/galileo_reloaded.cfg", DIR_CONFIGS );
+    server_exec();
+    
+    if( colored_menus() )
+    {
+        copy( CLR_RED, 2, "\r" );
+        copy( CLR_WHITE, 2, "\w" );
+        copy( CLR_YELLOW, 2, "\y" );
+    }
+    g_rtvWait = get_pcvar_float( cvar_rtvWait );
+    
+    get_mapname( g_currentMap, sizeof( g_currentMap ) - 1 );
+    g_choiceMax = max( min( MAX_MAPS_IN_VOTE, get_pcvar_num( cvar_voteMapChoiceCnt ) ), 2 );
+    
+    g_fillerMap     = ArrayCreate( 32 );
+    g_nominationMap = ArrayCreate( 32 );
+    
+    // initialize nominations table
+    nomination_clearAll();
+    
+    if( get_pcvar_num( cvar_banRecent ) )
+    {
+        register_clcmd( "say recentmaps", "cmd_listrecent", 0 );
+        
+        map_loadRecentList();
+        
+        if( !( get_cvar_num( "gal_server_starting" )
+               && get_pcvar_num( cvar_srvStart ) ) )
+        {
+            map_writeRecentList();
+        }
+    }
+    
+    if( get_pcvar_num( cvar_rtvCommands ) & RTV_CMD_STANDARD )
+    {
+        register_clcmd( "say rockthevote", "cmd_rockthevote", 0 );
+    }
+    
+    if( get_pcvar_num( cvar_nomPlayerAllowance ) )
+    {
+        register_concmd( "gal_listmaps", "cmd_listmaps" );
+        register_clcmd( "say nominations", "cmd_nominations", 0, "- displays current nominations for next map" );
+        
+        if( get_pcvar_num( cvar_nomPrefixes ) )
+        {
+            map_loadPrefixList();
+        }
+        map_loadNominationList();
+    }
+    
+    new mapName[ 32 ];
+    get_mapname( mapName, 31 );
+    debugMessageLog( 4, "[%s]", mapName );
+    debugMessageLog( 4, "" );
+    
+    if( get_cvar_num( "gal_server_starting" ) )
+    {
+        srv_handleStart();
+    }
+    
+    set_task( 10.0, "vote_setupEnd" );
+    
+    if( g_number_isDebugEnabled )
+    {
+        runTests()
+    }
 }
 
 /**
@@ -313,88 +433,81 @@ stock set_test_failure( test_id, failure_reason[], any: ... )
     debugMessageLog( 1, "    |||| Test failure! %s", formated_message )
 }
 
-/**
- * Called when all plugins went through plugin_init( ).
- * When this forward is called, most plugins should have registered their
- * cvars and commands already.
- */
-public plugin_cfg()
+public team_win()
 {
-    g_isTimeLimitChanged    = false;
-    g_isTimeToChangeLevel   = false;
-    g_isTimeToRestart       = false;
-    g_number_isDebugEnabled = get_cvar_num( "gal_debug" );
-    
-    formatex( DIR_CONFIGS[ get_configsdir( DIR_CONFIGS, sizeof( DIR_CONFIGS ) - 1 ) ], sizeof( DIR_CONFIGS ) - 1, "/galileo_reloaded" );
-    formatex( DIR_DATA[ get_datadir( DIR_DATA, sizeof( DIR_DATA ) - 1 ) ], sizeof( DIR_DATA ) - 1, "/galileo_reloaded" );
-    
-    server_cmd( "exec %s/galileo_reloaded.cfg", DIR_CONFIGS );
-    server_exec();
-    
-    if( colored_menus() )
+    new winlimit_integer
+    new maxrounds_integer
+    new current_wins_total
+    new string_team_winner[16]
+
+    read_logargv(1, string_team_winner, charsmax( string_team_winner) )
+
+    if(string_team_winner[0] == 'T')
     {
-        copy( CLR_RED, 2, "\r" );
-        copy( CLR_WHITE, 2, "\w" );
-        copy( CLR_YELLOW, 2, "\y" );
+        g_total_terrorists_wins++
     }
-    g_rtvWait = get_pcvar_float( cvar_rtvWait );
-    
-    get_mapname( g_currentMap, sizeof( g_currentMap ) - 1 );
-    g_choiceMax = max( min( MAX_MAPS_IN_VOTE, get_pcvar_num( cvar_voteMapChoiceCnt ) ), 2 );
-    
-    g_fillerMap     = ArrayCreate( 32 );
-    g_nominationMap = ArrayCreate( 32 );
-    
-    // initialize nominations table
-    nomination_clearAll();
-    
-    if( get_pcvar_num( cvar_banRecent ) )
+    else if( string_team_winner[0] == 'C')
     {
-        register_clcmd( "say recentmaps", "cmd_listrecent", 0 );
-        
-        map_loadRecentList();
-        
-        if( !( get_cvar_num( "gal_server_starting" )
-               && get_pcvar_num( cvar_srvStart ) ) )
+        g_total_CT_wins++ 
+    }
+
+    winlimit_integer = get_pcvar_num( g_winlimit_pointer )
+    maxrounds_integer = get_pcvar_num( g_maxrounds_pointer )
+
+    if( maxrounds_integer || winlimit_integer )
+    {
+        current_wins_total = g_total_CT_wins + g_total_terrorists_wins + VOTE_START_ROUNDS
+
+        if( ( ( current_wins_total > winlimit_integer )
+              || ( current_wins_total > maxrounds_integer ) )
+            && !g_is_maxrounds_vote_map )
         {
-            map_writeRecentList();
+            VOTE_START_ROUNDS_DELAY
         }
     }
-    
-    if( get_pcvar_num( cvar_rtvCommands ) & RTV_CMD_STANDARD )
-    {
-        register_clcmd( "say rockthevote", "cmd_rockthevote", 0 );
-    }
-    
-    if( get_pcvar_num( cvar_nomPlayerAllowance ) )
-    {
-        register_concmd( "gal_listmaps", "cmd_listmaps" );
-        register_clcmd( "say nominations", "cmd_nominations", 0, "- displays current nominations for next map" );
-        
-        if( get_pcvar_num( cvar_nomPrefixes ) )
-        {
-            map_loadPrefixList();
-        }
-        map_loadNominationList();
-    }
-    
-    new mapName[ 32 ];
-    get_mapname( mapName, 31 );
-    debugMessageLog( 4, "[%s]", mapName );
-    debugMessageLog( 4, "" );
-    
-    if( get_cvar_num( "gal_server_starting" ) )
-    {
-        srv_handleStart();
-    }
-    
-    set_task( 10.0, "vote_setupEnd" );
-    
-    if( g_number_isDebugEnabled )
-    {
-        runTests()
-    }
+
+    debugMessageLog( 32, "Team_Wind: team_winner = %s, maxrounds = %d, \
+            winlimit = %d, current_wins_total = %d, g_total_rounds_played = %d", 
+            string_team_winner, 
+            maxrounds_integer, winlimit_integer, current_wins_total, g_total_rounds_played )
 }
+
+public round_end()
+{
+    new maxrounds_integer;
+    new current_rounds_total
+
+    g_total_rounds_played++
+
+    maxrounds_integer = get_pcvar_num( g_maxrounds_pointer )
+
+    if( maxrounds_integer )
+    {
+        current_rounds_total = g_total_rounds_played + VOTE_START_ROUNDS
+
+        if( ( current_rounds_total > maxrounds_integer )
+            && !g_is_maxrounds_vote_map )
+        {
+            VOTE_START_ROUNDS_DELAY
+        }
+    }
+
+    debugMessageLog( 32, "Round_End:  maxrounds_integer = %d, \
+            g_total_rounds_played = %d, current_rounds_total = %d", 
+            maxrounds_integer, g_total_rounds_played, current_rounds_total )
+}
+
+public start_voting_by_rounds()
+{
+    vote_startDirector(false)
+}
+
+stock reset_rounds_scores()
+{
+    g_total_rounds_played = -1
+    g_total_terrorists_wins = 0
+    g_total_CT_wins = 0 
+}  
 
 public plugin_end()
 {
@@ -410,6 +523,8 @@ public vote_setupEnd()
             "vote_setupEnd( in )", get_cvar_float( "mp_timelimit" ), g_originalTimelimit );
     
     g_originalTimelimit = get_cvar_float( "mp_timelimit" );
+    g_originalMaxRounds = get_pcvar_num( g_maxrounds_pointer )
+    g_originalWinLimit = get_pcvar_num( g_winlimit_pointer )
     
     set_task( 15.0, "vote_manageEnd", _, _, _, "b" );
     
@@ -528,10 +643,11 @@ public vote_manageEnd()
     new secondsLeft = get_timeleft();
     
     // are we ready to start an "end of map" vote?
-    if( secondsLeft < START_VOTEMAP_MIN_TIME
-        && secondsLeft > START_VOTEMAP_MAX_TIME
-        && get_pcvar_num( cvar_endOfMapVote )
-        && !( g_voteStatus & VOTE_IN_PROGRESS ) )
+    if( ( secondsLeft < START_VOTEMAP_MIN_TIME ) 
+      && ( secondsLeft > START_VOTEMAP_MAX_TIME )  
+      && ( get_pcvar_num(cvar_endOfMapVote) ) 
+      && !( g_voteStatus & VOTE_IN_PROGRESS )
+      && !g_is_maxrounds_vote_map )
     {
         vote_startDirector( false );
     }
@@ -906,6 +1022,10 @@ public event_game_commencing()
     // make sure the reset time is the original time limit
     // ( can be skewed if map was previously extended )
     map_restoreOriginalTimeLimit();
+    reset_rounds_scores()
+    g_is_maxrounds_vote_map = false
+
+    debugMessageLog( 32, "^n AT: event_game_commencing" )
 }
 
 map_getIdx( text[] )
@@ -1321,10 +1441,22 @@ public nomination_list( id )
     }
 }
 
+public lock_voting()
+{
+    g_is_voting_locked = false
+}
+
 public vote_startDirector( bool:forced )
 {
     new choicesLoaded, voteDuration;
     
+    if( ( ( g_voteStatus & VOTE_IN_PROGRESS )
+          && !( g_voteStatus & VOTE_IS_RUNOFF ) )
+        || g_is_voting_locked )
+    {
+        return
+    }
+
     if( g_voteStatus & VOTE_IS_RUNOFF )
     {
         vote_loadRunoffChoices();
@@ -1343,7 +1475,11 @@ public vote_startDirector( bool:forced )
     {
         // make it known that a vote is in progress
         g_voteStatus |= VOTE_IN_PROGRESS;
-        
+
+        // Lock the voting 
+        g_is_voting_locked = true
+        set_task( 120.0, "unlock_voting" );
+
         // stop RTV reminders
         remove_task( TASKID_REMINDER );
         
@@ -1811,8 +1947,7 @@ public vote_display( arg[ 3 ] )
         new allowStay = ( g_voteStatus & VOTE_IS_EARLY );
         new isRunoff  = ( g_voteStatus & VOTE_IS_RUNOFF );
         
-        new bool:allowExtend = get_cvar_float( "mp_timelimit" ) < START_VOTEMAP_MIN_TIME
-        && !isRunoff
+        new bool:allowExtend = IS_FINAL_VOTE && !isRunoff
         
         if( g_isTimeToChangeLevel
             && !isRunoff )
@@ -1824,7 +1959,7 @@ public vote_display( arg[ 3 ] )
         if( g_isRunOffNeedingKeepCurrentMap )
         {
             // if it is a end map RunOff, then it is a extend button, not a keep current map button
-            if( get_cvar_float( "mp_timelimit" ) < START_VOTEMAP_MIN_TIME )
+            if( IS_FINAL_VOTE )
             {
                 allowExtend = true;
             }
@@ -1850,11 +1985,24 @@ public vote_display( arg[ 3 ] )
             
             if( allowExtend )
             {
+                new extend_step = 15
+                new extend_option_type[32]
+
                 // add the "Extend Map" menu item.
-                charCnt += formatex( voteStatus[ charCnt ], sizeof( voteStatus ) - 1 - charCnt,
-                        "^n%s%i. %s%L%s", CLR_RED, g_totalVoteOptions + 1, CLR_WHITE, LANG_SERVER,
-                        "GAL_OPTION_EXTEND", g_currentMap,
-                        floatround( get_pcvar_float( cvar_extendmapStep ) ), g_totalVoteAtMap );
+                if( g_is_maxrounds_vote_map )
+                {
+                    extend_step = get_pcvar_num( g_extendmapStepRounds_pointer )
+                    copy( extend_option_type, charsmax( extend_option_type ), "GAL_OPTION_EXTEND_ROUND" )
+                }
+                else
+                {
+                    extend_step = floatround( get_pcvar_float( cvar_extendmapStep ) )
+                    copy( extend_option_type, charsmax( extend_option_type ), "GAL_OPTION_EXTEND" )
+                }
+
+                charCnt += formatex(voteStatus[charCnt], sizeof(voteStatus)-1-charCnt, 
+                        "^n%s%i. %s%L%s", CLR_RED, g_totalVoteOptions+1, CLR_WHITE, LANG_SERVER, 
+                        extend_option_type, g_currentMap, extend_step, g_totalVoteAtMap );
             }
             else
             {
@@ -2320,7 +2468,17 @@ public vote_expire()
                     else
                     {
                         // "extend map" won
-                        client_print( 0, print_chat, "%L", LANG_PLAYER, "GAL_WINNER_EXTEND", floatround( get_pcvar_float( cvar_extendmapStep ) ) );
+                        if( g_is_maxrounds_vote_map )
+                        {
+                            client_print( 0, print_chat, "%L", LANG_PLAYER, "GAL_WINNER_EXTEND_ROUND", 
+                                    get_pcvar_num( g_extendmapStepRounds_pointer ) );
+                        }
+                        else
+                        {
+                            client_print( 0, print_chat, "%L", LANG_PLAYER, "GAL_WINNER_EXTEND", 
+                                    floatround( get_pcvar_float(cvar_extendmapStep)) );
+                        }
+
                         map_extend();
                     }
                 }
@@ -2389,10 +2547,31 @@ map_extend()
         g_rtvWait = get_cvar_float( "mp_timelimit" ) + g_rtvWait;
     }
     
+    if( !g_isTimeLimitChanged ) 
+    {
+        g_isTimeLimitChanged = true;
+
+        g_originalTimelimit = get_cvar_float("mp_timelimit")
+        g_originalMaxRounds = get_pcvar_num( g_maxrounds_pointer )
+        g_originalWinLimit = get_pcvar_num( g_winlimit_pointer )
+    }
+
     // do that actual map extension
-    g_isTimeLimitChanged = true;
-    set_cvar_float( "mp_timelimit", get_cvar_float( "mp_timelimit" ) + get_pcvar_float( cvar_extendmapStep ) );
-    server_exec();
+    if( g_is_maxrounds_vote_map )
+    {
+        new extendmap_step_rounds = get_pcvar_num( g_extendmapStepRounds_pointer )
+        
+        set_cvar_num("mp_maxrounds", get_pcvar_num( g_maxrounds_pointer ) + extendmap_step_rounds );
+        set_cvar_num("mp_winlimit", get_pcvar_num( g_winlimit_pointer ) + extendmap_step_rounds );
+
+        server_exec()
+        g_is_maxrounds_vote_map = false
+    }
+    else
+    {
+        set_cvar_float("mp_timelimit", get_cvar_float("mp_timelimit") + get_pcvar_float(cvar_extendmapStep));
+        server_exec();
+    }
     
     // clear vote stats
     vote_resetStats();
@@ -2567,7 +2746,8 @@ Float:map_getMinutesElapsed()
 public vote_rock( id )
 {
     // if an early vote is pending, don't allow any rocks
-    if( g_voteStatus & VOTE_IS_EARLY )
+    if( ( g_voteStatus & VOTE_IS_EARLY ) 
+        || g_is_maxrounds_vote_map )
     {
         client_print( id, print_chat, "%L", id, "GAL_ROCK_FAIL_PENDINGVOTE" );
         return;
@@ -2960,7 +3140,6 @@ has_flag( id, flags[] )
 {
     return ( get_user_flags( id ) & read_flags( flags ) );
 }
-
 #endif
 
 public sort_stringsi( const elem1[], const elem2[], const array[], data[], data_size )
@@ -2996,10 +3175,14 @@ map_restoreOriginalTimeLimit()
     
     if( g_isTimeLimitChanged )
     {
-        server_cmd( "mp_timelimit %f", g_originalTimelimit );
+        server_cmd("mp_timelimit %f", g_originalTimelimit ) 
+        server_cmd("mp_maxrounds %d", g_originalMaxRounds )
+        server_cmd("mp_winlimit %d", g_originalWinLimit )
+
         server_exec();
         g_isTimeLimitChanged = false;
     }
+
     debugMessageLog( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "map_restoreOriginalTimeLimit( out )",
             get_cvar_float( "mp_timelimit" ), g_originalTimelimit );
 }
@@ -3033,14 +3216,15 @@ public dbg_fakeVotes()
  * If gal_debug 1 or more higher, the voting and runoff times are set to 5 seconds.
  *
  * @param mode the debug mode level:
- *           ( 00000 ) 0 disabled all debug.
- *           ( 00001 ) 1 displays basic debug messages.
- *           ( 00010 ) 2 displays players disconnect, how many remaining, and multiple time limits
+ *           ( 0 ) 0 disabled all debug.
+ *           ( 1 ) 1 displays basic debug messages.
+ *           ( 10 ) 2 displays players disconnect, how many remaining, and multiple time limits
  *                                 changes and restores.
- *           ( 00100 ) 4 displays maps events as: choices, votes, nominations and the current map name at plugin_cfg( )
- *           ( 01000 ) 8 displays vote_loadChoices( ) and actions at vote_startDirector
+ *           ( 100 ) 4 displays maps events as: choices, votes, nominations and the current map name at plugin_cfg( )
+ *           ( 1000 ) 8 displays vote_loadChoices( ) and actions at vote_startDirector
  *           ( 10000 ) 16 displays messages related to RunOff voting
- *           ( 11111 ) 31 displays all debug logs levels at server console.
+ *           ( 100000 ) 32 displays messages related to the rounds end map voting
+ *           ( 111111 ) 63 displays all debug logs levels at server console.
  *
  * @param text the debug message, if omitted its default value is ""
  * @param any the variable number of formatting parameters
