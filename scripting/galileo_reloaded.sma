@@ -18,7 +18,7 @@
 
 */
 
-#define PLUGIN_VERSION "1.0-alpha3"
+#define PLUGIN_VERSION "1.0-3"
 
 #include <amxmodx>
 #include <amxmisc>
@@ -1454,7 +1454,8 @@ public vote_startDirector( bool:forced )
     
     if( ( ( g_voteStatus & VOTE_IN_PROGRESS )
           && !( g_voteStatus & VOTE_IS_RUNOFF ) )
-        || g_is_voting_locked )
+        || ( g_is_voting_locked
+             && !( g_voteStatus & VOTE_IS_RUNOFF ) ) )
     {
         return
     }
