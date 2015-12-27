@@ -122,6 +122,8 @@ new g_total_rounds_played;
 new g_total_terrorists_wins;
 new g_total_CT_wins;
 
+new g_is_voting_locked
+new g_is_maxrounds_extend
 new g_is_maxrounds_vote_map
 new g_isTimeToChangeLevel
 new g_isTimeToRestart
@@ -157,7 +159,6 @@ new g_totalVotesCounted;
 new g_arrayOfRunOffChoices[ 2 ];
 new g_vote[ 512 ];
 
-new g_is_voting_locked
 new g_refreshVoteStatus = true
 new g_totalVoteAtMapType[ 3 ]
 new g_snuffDisplay[ MAX_PLAYER_CNT + 1 ];
@@ -271,7 +272,6 @@ public plugin_cfg()
     g_isTimeLimitChanged    = false;
     g_isTimeToChangeLevel   = false;
     g_isTimeToRestart       = false;
-    g_is_maxrounds_vote_map = false;
     g_is_voting_locked      = false;
     g_number_isDebugEnabled = get_cvar_num( "gal_debug" );
     
@@ -437,8 +437,9 @@ stock set_test_failure( test_id, failure_reason[], any: ... )
 public team_win()
 {
     new winlimit_integer
-    new maxrounds_integer
-    new current_wins_total
+    new maxrounds_number
+    new wins_Terrorist_trigger
+    new wins_CT_trigger
     new string_team_winner[ 16 ]
     
     read_logargv( 1, string_team_winner, charsmax( string_team_winner ) )
@@ -452,51 +453,53 @@ public team_win()
         g_total_CT_wins++
     }
     
-    winlimit_integer  = get_pcvar_num( g_winlimit_pointer )
-    maxrounds_integer = get_pcvar_num( g_maxrounds_pointer )
+    winlimit_integer = get_pcvar_num( g_winlimit_pointer )
     
-    if( maxrounds_integer
-        || winlimit_integer )
+    if( winlimit_integer )
     {
-        current_wins_total = g_total_CT_wins + g_total_terrorists_wins + VOTE_START_ROUNDS
+        wins_CT_trigger        = g_total_CT_wins + VOTE_START_ROUNDS
+        wins_Terrorist_trigger = g_total_terrorists_wins + VOTE_START_ROUNDS
         
-        if( ( ( current_wins_total > winlimit_integer )
-              || ( current_wins_total > maxrounds_integer ) )
+        if( ( ( wins_CT_trigger > winlimit_integer )
+              || ( wins_Terrorist_trigger > winlimit_integer ) )
             && !g_is_maxrounds_vote_map )
         {
+            g_is_maxrounds_extend = false;
+            
             VOTE_START_ROUNDS_DELAY
         }
     }
     
-    debugMessageLog( 32, "Team_Wind: team_winner = %s, maxrounds = %d, \
-            winlimit = %d, current_wins_total = %d, g_total_rounds_played = %d",
-            string_team_winner,
-            maxrounds_integer, winlimit_integer, current_wins_total, g_total_rounds_played )
+    debugMessageLog( 32, "Team_Wind: string_team_winner = %s, winlimit_integer = %d, \
+            wins_CT_trigger = %d, wins_Terrorist_trigger = %d",
+            string_team_winner, winlimit_integer, wins_CT_trigger, wins_Terrorist_trigger )
 }
 
 public round_end()
 {
-    new maxrounds_integer;
-    new current_rounds_total
+    new maxrounds_number;
+    new current_rounds_trigger
     
     g_total_rounds_played++
     
-    maxrounds_integer = get_pcvar_num( g_maxrounds_pointer )
+    maxrounds_number = get_pcvar_num( g_maxrounds_pointer )
     
-    if( maxrounds_integer )
+    if( maxrounds_number )
     {
-        current_rounds_total = g_total_rounds_played + VOTE_START_ROUNDS
+        current_rounds_trigger = g_total_rounds_played + VOTE_START_ROUNDS
         
-        if( ( current_rounds_total > maxrounds_integer )
+        if( ( current_rounds_trigger > maxrounds_number )
             && !g_is_maxrounds_vote_map )
         {
+            g_is_maxrounds_extend = true;
+            
             VOTE_START_ROUNDS_DELAY
         }
     }
     
-    debugMessageLog( 32, "Round_End:  maxrounds_integer = %d, \
-            g_total_rounds_played = %d, current_rounds_total = %d",
-            maxrounds_integer, g_total_rounds_played, current_rounds_total )
+    debugMessageLog( 32, "Round_End:  maxrounds_number = %d, \
+            g_total_rounds_played = %d, current_rounds_trigger = %d",
+            maxrounds_number, g_total_rounds_played, current_rounds_trigger )
 }
 
 public start_voting_by_rounds()
@@ -506,6 +509,9 @@ public start_voting_by_rounds()
 
 stock reset_rounds_scores()
 {
+    g_is_maxrounds_vote_map = false;
+    g_is_maxrounds_extend   = false;
+    
     g_total_rounds_played   = -1
     g_total_terrorists_wins = 0
     g_total_CT_wins         = 0
@@ -1025,7 +1031,6 @@ public event_game_commencing()
     // ( can be skewed if map was previously extended )
     map_restoreOriginalTimeLimit();
     reset_rounds_scores()
-    g_is_maxrounds_vote_map = false
     
     debugMessageLog( 32, "^n AT: event_game_commencing" )
 }
@@ -2565,8 +2570,18 @@ map_extend()
     {
         new extendmap_step_rounds = get_pcvar_num( g_extendmapStepRounds_pointer )
         
-        set_cvar_num( "mp_maxrounds", get_pcvar_num( g_maxrounds_pointer ) + extendmap_step_rounds );
-        set_cvar_num( "mp_winlimit", get_pcvar_num( g_winlimit_pointer ) + extendmap_step_rounds );
+        if( g_is_maxrounds_extend )
+        {
+            set_cvar_num( "mp_maxrounds", get_pcvar_num( g_maxrounds_pointer ) + extendmap_step_rounds );
+            set_cvar_num( "mp_winlimit", 0 );
+            
+            g_is_maxrounds_extend = false;
+        }
+        else
+        {
+            set_cvar_num( "mp_maxrounds", 0 );
+            set_cvar_num( "mp_winlimit", get_pcvar_num( g_winlimit_pointer ) + extendmap_step_rounds );
+        }
         set_cvar_float( "mp_timelimit", 0.0 );
         
         server_exec()

@@ -1,6 +1,6 @@
 
 [SIZE="6"][COLOR="Blue"][B]Galileo Reloaded v1.0-alpha3[/B][/COLOR][/SIZE]
-[B]Release: 10.10.2015 | Last Update: 21.10.2015[/B]
+[B]Release: 10.10.2015 | Last Update: 27.12.2015[/B]
 
 [B]Tested[/B] under [COLOR="red"]Counter-Strike[/COLOR] and Counter-Strike [B]Condition Zero[/B] 
 
@@ -201,9 +201,10 @@ galileo_reloaded.amxx
 [/QUOTE]
 
 ******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *********************************
-[QUOTE]
+[QUOTE=utaker]
 another issue is that RV does not start , meanign if i set 1 minute as rtv start time even then even afte r10 minutes it will say 1 minute before rtv
-
+[/QUOTE]
+[QUOTE]
  * To clear unused language file constants. 
  * Add colored messages. 
  * Add nominate maps by a map list menu. 
@@ -220,6 +221,7 @@ another issue is that RV does not start , meanign if i set 1 minute as rtv start
 [B]Brad[/B]: The original Galileo developer. 
 [B]Addons zz[/B]: The galileo_reloaded.sma developer. 
 [B]Th3822[/B]: For find a error from map_nominate. 
+[B]utaker[/B]: For suggesting and help testing the mp_maxrounds feature. 
 [QUOTE=Brad;684848][COLOR=darkblue][SIZE=4][B]Donations to the Original Author[/B][/SIZE][/COLOR] 
 A lot of time and effort went into making this plugin, making features just right, 
 making sure there were no bugs, making sure it was easy to use. If you are glad I made 
