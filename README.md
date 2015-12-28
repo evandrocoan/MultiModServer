@@ -14,7 +14,7 @@ deactivate it or active some other mod like predator. And in the last five minut
 or be asked before a vote by the command "say votemod", creates a vote to select 
 what will be the Mod played in the next changelevel/restart.
 
-####Some Features with its Core Plugin [Amx Ultra](https://github.com/addonszz/Amx_Ultra) installed
+####Some Features with its Core Plugin [Multi-Mod_Plugin](https://github.com/addonszz/Multi-Mod_Plugin) installed
 - Support for: 
 - linux and windows servers.
 - Mac OS PODBot, Linux and Windows.
@@ -44,23 +44,23 @@ knife_duel, amx_chicken, adv_killstreak, countdown_exec, ...
 #To install it
 
 Download the binaries 
-[addons_resources.zip](https://github.com/Addonszz/AddonsMultiMod/releases/download/v4.0/addons_resources.zip)
-and [AddonsMultiMod-master.zip](https://github.com/Addonszz/AddonsMultiMod/archive/master.zip), 
+[server_resources.zip](https://github.com/Addonszz/Multi-Mod_Server/releases/download/v4.0/server_resources.zip)
+and [Multi-Mod_Server-master.zip](https://github.com/Addonszz/Multi-Mod_Server/archive/master.zip), 
 then just unzip and put the content of 
-[addons_resources.zip](https://github.com/Addonszz/AddonsMultiMod/releases/download/v4.0/addons_resources.zip) 
-and gamemod_common inside [AddonsMultiMod-master.zip](https://github.com/Addonszz/AddonsMultiMod/archive/master.zip), 
+[server_resources.zip](https://github.com/Addonszz/Multi-Mod_Server/releases/download/v4.0/server_resources.zip) 
+and gamemod_common inside [Multi-Mod_Server-master.zip](https://github.com/Addonszz/Multi-Mod_Server/archive/master.zip), 
 at your's Game Mod's folder like cstrike or czero, replacing existents files. 
-Yours Game Mod's folder usually is at: C:\Program Files (x86)\Steam\SteamApps\common\Half-Life\gamemod
+Your Game Mod's folder usually is at: C:\Program Files (x86)\Steam\SteamApps\common\Half-Life\gamemod
 
 If your game mode is cstrike or czero, copy the content of cstrike or czero inside the downloaded 
-[AddonsMultiMod-master.zip](https://github.com/Addonszz/AddonsMultiMod/archive/master.zip)
+[Multi-Mod_Server-master.zip](https://github.com/Addonszz/Multi-Mod_Server/archive/master.zip)
 to your cstrike or czero game folder, replacing the existents files.
 And if your game is different than cstrike or czero, edit your "liblist.gam" at your 
 gamemod folder as the "liblist.gam" at cstrike or czero folder inside 
-[AddonsMultiMod-master.zip](https://github.com/Addonszz/AddonsMultiMod/archive/master.zip).
+[Multi-Mod_Server-master.zip](https://github.com/Addonszz/Multi-Mod_Server/archive/master.zip).
 
 Observation 1: The folder website at 
-[AddonsMultiMod-master.zip](https://github.com/Addonszz/AddonsMultiMod/archive/master.zip) 
+[Multi-Mod_Server-master.zip](https://github.com/Addonszz/Multi-Mod_Server/archive/master.zip) 
 is just illustrative website and does not fill any role at your installation/setup.
 
 Observation 2: The files hlds_cstrike_27015 and hlds_czero_27015 are to create 
@@ -68,7 +68,7 @@ a command line server, due highly use less resources. It is configured at 27015 
 To open more then one serve at once, duplicate the file and edit inside it, changing it to 
 use another port at the command +port 27015.
 
-After installing the addons, install its Core Plugin [Amx_Ultra](https://github.com/addonszz/Amx_Ultra).
+After installing the addons, install its Core Plugin [Multi-Mod_Plugin](https://github.com/addonszz/Multi-Mod_Plugin).
 
 After installing the addons, too just set your STEAM ID user. Please update the file:
 
