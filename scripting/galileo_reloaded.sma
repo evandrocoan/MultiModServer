@@ -2769,8 +2769,7 @@ Float:map_getMinutesElapsed()
 public vote_rock( id )
 {
     // if an early vote is pending, don't allow any rocks
-    if( ( g_voteStatus & VOTE_IS_EARLY )
-        || g_is_maxrounds_vote_map )
+    if( g_voteStatus & VOTE_IS_EARLY )
     {
         client_print( id, print_chat, "%L", id, "GAL_ROCK_FAIL_PENDINGVOTE" );
         return;
