@@ -70,9 +70,9 @@ use another port at the command +port 27015.
 
 After installing the addons, install its Core Plugin [Multi-Mod_Plugin](https://github.com/addonszz/Multi-Mod_Plugin).
 
-After installing the addons, too just set your STEAM ID user. Please update the file:
+And too, after installing the addons, just set your STEAM ID user. Please update the file:
 
-1. users (user.ini) at folder gamemod/addons/amxmodx/configs
+1. users (users.ini) at folder gamemod/addons/amxmodx/configs
 
 After installing addons, just set your RCON password:
 
