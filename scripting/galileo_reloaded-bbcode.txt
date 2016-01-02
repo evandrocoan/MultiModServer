@@ -24,6 +24,7 @@
 [*]manage RunOff vote between a map and "Keep Current Map". 
 [*]change the time limit to zero. 
 [*]be used with the AMXX very own "Next Map" plugin. 
+[*]manage/start end map vote with mp_maxrounds, mp_winlimit or mp_timelimit. 
 [*]use the current mapcycle to nominate maps. 
 [*]load the current vote/nominate map list from the current mapcycle file. 
 [*]keep the initial server next map when nobody vote for next map. 
@@ -39,6 +40,7 @@
 [*]display colored text messages. 
 [*]nominate maps by a map list menu.
 [*]be used with the AMXX very own "Next Map" plugin. 
+[*]manage/start end map vote with mp_maxrounds, mp_winlimit or mp_timelimit.
 [*]use the current mapcycle to nominate maps. 
 [*]load the current vote/nominate map list from the current mapcycle file. 
 [*]keep the initial server next map when nobody vote for next map. 
