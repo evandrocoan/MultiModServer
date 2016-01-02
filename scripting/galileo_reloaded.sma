@@ -1,4 +1,10 @@
 /*********************** Licensing *******************************************************
+*
+*   Copyright 2008-2010 @ Brad Jones
+*  	Copyright 2015-2016 @ Addons zz
+*
+*   Plugin Theard: https://forums.alliedmods.net/showthread.php?t=273019
+*
 *  This program is free software; you can redistribute it and/or modify it
 *  under the terms of the GNU General Public License as published by the
 *  Free Software Foundation; either version 3 of the License, or ( at
@@ -91,6 +97,9 @@
 #define IS_FINAL_VOTE \
     ( get_cvar_float( "mp_timelimit" ) < START_VOTEMAP_MIN_TIME ) \
     || ( g_is_maxrounds_vote_map )
+
+#define ALL_TESTS_TO_EXECUTE \
+    test_register_test();
 
 new MENU_CHOOSEMAP[] = "gal_menuChooseMap";
 
@@ -354,16 +363,28 @@ public plugin_cfg()
  */
 stock runTests()
 {
+    new test_name[ SHORT_STRING ]
+
     debugMessageLog( 1, "^n^n    Executing the 'Galileo Reloaded' Tests: ^n" )
     
-    test_register_test()
+    ALL_TESTS_TO_EXECUTE
     
     debugMessageLog( 1, "^n    %d tests succeed. \
-            ^n    %d tests failed: ^n^n", g_integer_totalSuccessfulTests,
+            ^n    %d tests failed.", g_integer_totalSuccessfulTests,
             g_integer_totalFailureTests )
     
-    // TODO, print all failed tests on screen
-    //for( new i ; i < 
+    if( ArraySize( g_tests_failure_ids ) )
+    {
+        debugMessageLog( 1, "^n    The fallowing tests failed:" )
+    }
+
+    for( new i = 0 ; i < ArraySize( g_tests_failure_ids ); i++ )
+    {
+        ArrayGetString( g_tests_idsAndNames, ArrayGetCell( g_tests_failure_ids, i ) - 1, 
+                test_name, charsmax( test_name ) )
+
+        debugMessageLog( 1, "       %s", test_name )
+    }
     
     debugMessageLog( 1, "^n    Finished the 'Galileo Reloaded' Tests Execution. ^n^n" )
 }
@@ -395,13 +416,15 @@ stock test_register_test()
     
     if( g_integer_totalSuccessfulTests != 1 )
     {
-        set_test_failure( test_id, "g_integer_totalSuccessfulTests != 1 (it was = %d)",
+        set_test_failure( test_id, "g_integer_totalSuccessfulTests must be != 1 (it was = %d)",
                 g_integer_totalSuccessfulTests )
+        return;
     }
     
     if( test_id != 1 )
     {
         set_test_failure( test_id, "test_id != 1 (it was = %d)", test_id )
+        return;
     }
     
     new first_test_name[ 64 ]
@@ -411,6 +434,7 @@ stock test_register_test()
     {
         set_test_failure( test_id, "first_test_name != test_register_test (it was = %s)",
                 first_test_name )
+        return;
     }
 }
 
@@ -429,15 +453,14 @@ stock set_test_failure( test_id, failure_reason[], any: ... )
     static formated_message[ 256 ]
     
     vformat( formated_message, charsmax( formated_message ), failure_reason, 3 )
-    
+
     ArrayPushCell( g_tests_failure_ids, test_id )
-    debugMessageLog( 1, "    |||| Test failure! %s", formated_message )
+    debugMessageLog( 1, "       Test failure! %s", formated_message )
 }
 
 public team_win()
 {
     new winlimit_integer
-    new maxrounds_number
     new wins_Terrorist_trigger
     new wins_CT_trigger
     new string_team_winner[ 16 ]
