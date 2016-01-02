@@ -147,7 +147,7 @@ new g_rockedVoteCnt;
 new g_mapsVoteMenuNames[ MAX_MAPS_IN_VOTE + 1 ][ MAX_MAPNAME_LEN + 1 ]
 
 new g_totalVoteOptions
-new g_totalVoteOptions2
+new g_totalVoteOptions_temp
 
 new g_choiceMax;
 new bool:g_voted[ MAX_PLAYER_CNT + 1 ] = { true, ... }
@@ -197,7 +197,7 @@ new cvar_soundsMute;
 
 public plugin_init()
 {
-    register_plugin( "Galileo", PLUGIN_VERSION, "Addons zz/Brad Jones" );
+    register_plugin( "Galileo", PLUGIN_VERSION, "Brad Jones/Addons zz" );
     
     register_dictionary( "common.txt" );
     register_dictionary( "galileo_reloaded.txt" );
@@ -363,7 +363,7 @@ stock runTests()
             g_integer_totalFailureTests )
     
     // TODO, print all failed tests on screen
-    //for( new
+    //for( new i ; i < 
     
     debugMessageLog( 1, "^n    Finished the 'Galileo Reloaded' Tests Execution. ^n^n" )
 }
@@ -1469,8 +1469,8 @@ public vote_startDirector( bool:forced )
     {
         vote_loadRunoffChoices();
         
-        choicesLoaded      = g_totalVoteOptions2
-        g_totalVoteOptions = g_totalVoteOptions2
+        choicesLoaded      = g_totalVoteOptions_temp
+        g_totalVoteOptions = g_totalVoteOptions_temp
         
         voteDuration = get_pcvar_num( cvar_runoffDuration );
         
@@ -2295,17 +2295,17 @@ public vote_expire()
                     {
                         g_isRunOffNeedingKeepCurrentMap = true
                         firstChoiceIndex--
-                        g_totalVoteOptions2 = 1;
+                        g_totalVoteOptions_temp = 1;
                     }
                     else if( firstPlaceChoices[ secondChoiceIndex ] == g_totalVoteOptions )
                     {
                         g_isRunOffNeedingKeepCurrentMap = true
                         secondChoiceIndex--
-                        g_totalVoteOptions2 = 1;
+                        g_totalVoteOptions_temp = 1;
                     }
                     else
                     {
-                        g_totalVoteOptions2 = 2;
+                        g_totalVoteOptions_temp = 2;
                     }
                     
                     if( firstChoiceIndex == secondChoiceIndex )
@@ -2337,17 +2337,17 @@ public vote_expire()
                     {
                         g_isRunOffNeedingKeepCurrentMap = true
                         g_arrayOfRunOffChoices[ 0 ]     = firstPlaceChoices[ 1 ];
-                        g_totalVoteOptions2             = 1;
+                        g_totalVoteOptions_temp             = 1;
                     }
                     else if( firstPlaceChoices[ 1 ] == g_totalVoteOptions )
                     {
                         g_isRunOffNeedingKeepCurrentMap = true
                         g_arrayOfRunOffChoices[ 0 ]     = firstPlaceChoices[ 0 ];
-                        g_totalVoteOptions2             = 1;
+                        g_totalVoteOptions_temp             = 1;
                     }
                     else
                     {
-                        g_totalVoteOptions2         = 2;
+                        g_totalVoteOptions_temp         = 2;
                         g_arrayOfRunOffChoices[ 0 ] = firstPlaceChoices[ 0 ];
                         g_arrayOfRunOffChoices[ 1 ] = firstPlaceChoices[ 1 ];
                     }
@@ -2361,17 +2361,17 @@ public vote_expire()
                     {
                         g_isRunOffNeedingKeepCurrentMap = true
                         g_arrayOfRunOffChoices[ 0 ]     = secondPlaceChoices[ 0 ];
-                        g_totalVoteOptions2             = 1;
+                        g_totalVoteOptions_temp             = 1;
                     }
                     else if( secondPlaceChoices[ 0 ] == g_totalVoteOptions )
                     {
                         g_isRunOffNeedingKeepCurrentMap = true
                         g_arrayOfRunOffChoices[ 0 ]     = firstPlaceChoices[ 0 ];
-                        g_totalVoteOptions2             = 1;
+                        g_totalVoteOptions_temp             = 1;
                     }
                     else
                     {
-                        g_totalVoteOptions2         = 2;
+                        g_totalVoteOptions_temp         = 2;
                         g_arrayOfRunOffChoices[ 0 ] = firstPlaceChoices[ 0 ];
                         g_arrayOfRunOffChoices[ 1 ] = secondPlaceChoices[ 0 ];
                     }
@@ -2387,17 +2387,17 @@ public vote_expire()
                     {
                         g_isRunOffNeedingKeepCurrentMap = true
                         g_arrayOfRunOffChoices[ 0 ]     = secondPlaceChoices[ randonNumber ];
-                        g_totalVoteOptions2             = 1;
+                        g_totalVoteOptions_temp             = 1;
                     }
                     else if( secondPlaceChoices[ randonNumber ] == g_totalVoteOptions )
                     {
                         g_isRunOffNeedingKeepCurrentMap = true
                         g_arrayOfRunOffChoices[ 0 ]     = firstPlaceChoices[ 0 ];
-                        g_totalVoteOptions2             = 1;
+                        g_totalVoteOptions_temp             = 1;
                     }
                     else
                     {
-                        g_totalVoteOptions2         = 2;
+                        g_totalVoteOptions_temp         = 2;
                         g_arrayOfRunOffChoices[ 0 ] = firstPlaceChoices[ 0 ];
                         g_arrayOfRunOffChoices[ 1 ] = secondPlaceChoices[ randonNumber ];
                     }
