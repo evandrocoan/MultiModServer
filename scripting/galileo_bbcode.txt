@@ -89,6 +89,8 @@ have with this plugin.  It's located in the [B]Attached ZIP[/B] available at the
 
  * [B]Runoff[/B] voting when no map gets more than 50% of the total vote.
 
+ * Auto Map Change On Empty Server. 
+
  * Command '[COLOR="Blue"][B]gal_startvote [-nochange or -restart][/B][/COLOR]', to forces a map vote to begin 
        and the map will be changed once the next map has been determined. 
             [LIST]
@@ -167,11 +169,11 @@ galileo_reloaded.amxx
  * Fixed server restart after change timelimit to 0. 
  * Fixed server timelimit re-change after change it to 0. 
  * Fixed bug where it change the map right after a normal vote map finished. 
- * Removed map end control, to the original AMXX Dev Team plugin nextmap.amxx 
+ * Removed map end control, to the original AMXX Dev Team plugin 'nextmap.amxx'
  * Removed  the feature to change server map, when the server is empty. 
- * Removed the "amx_nextmap" change to [vote in progress]. 
+ * Removed the 'amx_nextmap' change to [vote in progress]. 
  * Removed the feature to allow round finish. 
- * Removed the messages "say currentmap" and "say nextmap" to the AMXX nextmap.amxx 
+ * Removed the messages 'say currentmap' and 'say nextmap' to the AMXX 'nextmap.amxx' 
  * Removed not initiating vote map, at the first map, after forcing votemap. 
  * Added the command "gal_startvote2" to restart the current map when keep the current map. 
  * Added the count down voting remaining time to be always show. 
@@ -194,11 +196,13 @@ galileo_reloaded.amxx
  * Improved some variables meaning 
 
 2015-12-27 | v1.0-alpha3
+ * Implemented mp_winlimit and mp_maxrounds end map voting.
  * Removed the command "gal_startvote2"
  * Added to the command gal_startvote the options -nochange and -restart.
- * Implemented mp_winlimit and mp_maxrounds end map voting.
  * Added new cvar "amx_extendmap_step_rounds" to the config file. 
  * Added new the cvar "amx_extendmap_max" which limits the max extension time.
+ * Added new the cvar "gal_emptyserver_wait" which implements the server empty feature. 
+ * Added new the cvar "gal_emptyserver_mapfile" which specifies a empty server map cycle list. 
  * Fixed concurrency problem between mp_maxrounds, mp_winlimit and mp_timelimit.
  * Added a basic unit test structure for developers/scripters.
 [/QUOTE]
