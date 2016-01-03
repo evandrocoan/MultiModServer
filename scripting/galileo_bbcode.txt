@@ -198,6 +198,7 @@ galileo_reloaded.amxx
  * Added to the command gal_startvote the options -nochange and -restart.
  * Implemented mp_winlimit and mp_maxrounds end map voting.
  * Added new cvar "amx_extendmap_step_rounds" to the config file. 
+ * Added new the cvar "amx_extendmap_max" which limits the max extension time.
  * Fixed concurrency problem between mp_maxrounds, mp_winlimit and mp_timelimit.
  * Added a basic unit test structure for developers/scripters.
 [/QUOTE]
