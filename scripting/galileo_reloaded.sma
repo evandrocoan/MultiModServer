@@ -1,7 +1,7 @@
 /*********************** Licensing *******************************************************
 *
 *   Copyright 2008-2010 @ Brad Jones
-*  	Copyright 2015-2016 @ Addons zz
+*   Copyright 2015-2016 @ Addons zz
 *
 *   Plugin Theard: https://forums.alliedmods.net/showthread.php?t=273019
 *
@@ -93,32 +93,37 @@
 #define START_VOTEMAP_MIN_TIME 151
 #define START_VOTEMAP_MAX_TIME 129
 
+
 /**
  * The rounds number before the mp_maxrounds/mp_winlimit to be reached to start the map voting.
  */
 #define VOTE_START_ROUNDS 4
 
+
 /**
- * Start a map voting delayed after the mp_maxrounds or mp_winlimit minimum to be reached. 
+ * Start a map voting delayed after the mp_maxrounds or mp_winlimit minimum to be reached.
  */
 #define VOTE_START_ROUNDS_DELAY \
     g_is_maxrounds_vote_map = true; \
     set_task( get_pcvar_num( g_freezetime_pointer ) + 10.0, \
         "start_voting_by_rounds", TASKID_START_VOTING_BY_ROUNDS );
 
+
 /**
  * Determines if it is a end of map vote due time limit or max rounds expiration.
  */
 #define IS_FINAL_VOTE \
     ( get_cvar_float( "mp_timelimit" ) < START_VOTEMAP_MIN_TIME ) \
-      || ( g_is_maxrounds_vote_map )
+    || ( g_is_maxrounds_vote_map )
+
 
 /**
- * Contains all unit tests to execute. 
+ * Contains all unit tests to execute.
  */
 #define ALL_TESTS_TO_EXECUTE \
     test_register_test(); \
-    test_is_map_extension_allowed(); 
+    test_is_map_extension_allowed();
+
 
 /**
  * Test unit variables related to debug level 1, displays basic debug messages.
@@ -144,10 +149,12 @@ new g_mapPrefix[ MAX_PREFIX_CNT ][ 16 ]
 new g_mapPrefixCnt = 1;
 new g_currentMap[ MAX_MAPNAME_LEN + 1 ]
 
+
 /**
  * Lock the voting to fight concurrency problem between mp_maxrounds, mp_winlimit and mp_timelimit.
  */
 new g_is_voting_locked
+
 
 /**
  * Variables related to debug level 32: displays messages related to the rounds end map voting
@@ -251,7 +258,7 @@ public plugin_init()
     register_cvar( "gal_server_starting", "1", FCVAR_SPONLY );
     register_cvar( "gal_debug", "0" );
     
-    cvar_extendmapMax		= register_cvar("amx_extendmap_max", "90");
+    cvar_extendmapMax       = register_cvar( "amx_extendmap_max", "90" );
     cvar_extendmapStep      = register_cvar( "amx_extendmap_step", "15" );
     cvar_cmdVotemap         = register_cvar( "gal_cmd_votemap", "0" );
     cvar_cmdListmaps        = register_cvar( "gal_cmd_listmaps", "2" );
@@ -259,6 +266,8 @@ public plugin_init()
     cvar_banRecent          = register_cvar( "gal_banrecent", "3" );
     cvar_banRecentStyle     = register_cvar( "gal_banrecentstyle", "1" );
     cvar_endOfMapVote       = register_cvar( "gal_endofmapvote", "1" );
+    cvar_emptyWait          = register_cvar( "gal_emptyserver_wait", "0" );
+    cvar_emptyMapFile       = register_cvar( "gal_emptyserver_mapfile", "" );
     cvar_srvStart           = register_cvar( "gal_srv_start", "0" );
     cvar_rtvCommands        = register_cvar( "gal_rtv_commands", "3" );
     cvar_rtvWait            = register_cvar( "gal_rtv_wait", "10" );
@@ -332,7 +341,7 @@ public plugin_cfg()
         copy( CLR_WHITE, 2, "\w" );
         copy( CLR_YELLOW, 2, "\y" );
     }
-
+    
     g_rtvWait = get_pcvar_float( cvar_rtvWait );
     
     get_mapname( g_currentMap, sizeof( g_currentMap ) - 1 );
@@ -384,6 +393,13 @@ public plugin_cfg()
         srv_handleStart();
     }
     
+    if( get_pcvar_num( cvar_emptyWait ) )
+    {
+        g_emptyCycleMap = ArrayCreate( 32 );
+        map_loadEmptyCycleList();
+        set_task( 60.0, "srv_initEmptyCheck" );
+    }
+    
     set_task( 10.0, "vote_setupEnd" );
     
     if( g_number_isDebugEnabled )
@@ -399,7 +415,7 @@ public plugin_cfg()
 stock runTests()
 {
     new test_name[ SHORT_STRING ]
-
+    
     debugMessageLog( 1, "^n^n    Executing the 'Galileo Reloaded' Tests: ^n" )
     
     ALL_TESTS_TO_EXECUTE
@@ -412,26 +428,26 @@ stock runTests()
     {
         debugMessageLog( 1, "^n    The following tests failed:" )
     }
-
-    for( new i = 0 ; i < ArraySize( g_tests_failure_ids ); i++ )
+    
+    for( new i = 0; i < ArraySize( g_tests_failure_ids ); i++ )
     {
-        ArrayGetString( g_tests_idsAndNames, ArrayGetCell( g_tests_failure_ids, i ) - 1, 
+        ArrayGetString( g_tests_idsAndNames, ArrayGetCell( g_tests_failure_ids, i ) - 1,
                 test_name, charsmax( test_name ) )
-
+        
         debugMessageLog( 1, "       %s", test_name )
     }
-
+    
     if( g_max_delay_result )
     {
-        debugMessageLog( 1, "^n    The following tests are waiting until %d seconds to finish:", 
+        debugMessageLog( 1, "^n    The following tests are waiting until %d seconds to finish:",
                 g_max_delay_result )
     }
-
-    for( new i = 0 ; i < ArraySize( g_tests_delayed_ids ); i++ )
+    
+    for( new i = 0; i < ArraySize( g_tests_delayed_ids ); i++ )
     {
-        ArrayGetString( g_tests_idsAndNames, ArrayGetCell( g_tests_delayed_ids, i ) - 1, 
+        ArrayGetString( g_tests_idsAndNames, ArrayGetCell( g_tests_delayed_ids, i ) - 1,
                 test_name, charsmax( test_name ) )
-
+        
         debugMessageLog( 1, "       %s", test_name )
     }
     
@@ -449,29 +465,29 @@ stock runTests()
 public show_delayed_results()
 {
     new test_name[ SHORT_STRING ]
-
+    
     debugMessageLog( 1, "^n^n    Showing 'Galileo Reloaded' Tests Delayed Results..." )
-
+    
     debugMessageLog( 1, "^n    %d tests succeed. \
             ^n    %d tests failed.", g_totalSuccessfulTests,
             g_totalFailureTests )
-
+    
     if( ArraySize( g_tests_failure_ids ) )
     {
         debugMessageLog( 1, "^n    The following tests failed:" )
     }
-
-    for( new i = 0 ; i < ArraySize( g_tests_failure_ids ); i++ )
+    
+    for( new i = 0; i < ArraySize( g_tests_failure_ids ); i++ )
     {
-        ArrayGetString( g_tests_idsAndNames, ArrayGetCell( g_tests_failure_ids, i ) - 1, 
+        ArrayGetString( g_tests_idsAndNames, ArrayGetCell( g_tests_failure_ids, i ) - 1,
                 test_name, charsmax( test_name ) )
-
+        
         debugMessageLog( 1, "       %s", test_name )
     }
-
+    
     debugMessageLog( 1, "^n    Finished 'Galileo Reloaded' Tests Execution. ^n^n" )
-
-    // clean the testing 
+    
+    // clean the testing
     cancel_voting()
 }
 
@@ -480,7 +496,7 @@ public show_delayed_results()
  * Test System know that the test exists and then know how to handle it using
  * the test_id.
  *
- * @param max_delay_result the max delay time to finish test execution. 
+ * @param max_delay_result the max delay time to finish test execution.
  * @param test_name the test name to register
  *
  * @return test_id an integer that refers it at the Test System.
@@ -492,19 +508,19 @@ stock register_test( max_delay_result, test_name[] )
     new totalTests = g_totalSuccessfulTests + g_totalFailureTests
     
     ArrayPushString( g_tests_idsAndNames, test_name )
-    debugMessageLog( 1, "    Executing test %d with %d delay - %s ", totalTests, max_delay_result, 
+    debugMessageLog( 1, "    Executing test %d with %d delay - %s ", totalTests, max_delay_result,
             test_name )
-
+    
     if( g_max_delay_result < max_delay_result )
     {
         g_max_delay_result = max_delay_result
     }
-
+    
     if( max_delay_result )
     {
         ArrayPushCell( g_tests_delayed_ids, totalTests )
     }
-
+    
     return totalTests
 }
 
@@ -523,7 +539,7 @@ stock set_test_failure( test_id, failure_reason[], any: ... )
     static formated_message[ 256 ]
     
     vformat( formated_message, charsmax( formated_message ), failure_reason, 3 )
-
+    
     ArrayPushCell( g_tests_failure_ids, test_id )
     debugMessageLog( 1, "       Test failure! %s", formated_message )
 }
@@ -558,76 +574,76 @@ stock test_register_test()
 
 /**
  * This is the vote_startDirector() tests chain beginning. Because the vote_startDirector() cannot
- * to be tested simultaneously. 
- * 
- * Then, all tests that involves the vote_startDirector() chain, must to be executed sequencially 
+ * to be tested simultaneously.
+ *
+ * Then, all tests that involves the vote_startDirector() chain, must to be executed sequencially
  * after this chain end.
- * 
- * This is the first chain test, and test if the cvar 'amx_extendmap_max' functionality is working 
- * properly. 
+ *
+ * This is the first chain test, and test if the cvar 'amx_extendmap_max' functionality is working
+ * properly.
  */
 stock test_is_map_extension_allowed()
 {
     new test_id = register_test( 20, "test_is_map_extension_allowed" )
-
+    
     if( g_is_map_extension_allowed )
     {
         set_test_failure( test_id, "g_is_map_extension_allowed must be false (it was %d)",
                 g_is_map_extension_allowed )
         return;
     }
-
+    
     if( !g_refreshVoteStatus )
     {
         set_test_failure( test_id, "g_refreshVoteStatus must be true (it was %d)",
                 g_is_map_extension_allowed )
         return;
     }
-
+    
     cancel_voting()
     vote_startDirector( false )
-
+    
     if( !g_is_map_extension_allowed )
     {
         set_test_failure( test_id, "g_is_map_extension_allowed must be true (it was %d)",
                 g_is_map_extension_allowed )
         return;
     }
-
-    set_task(10.0, "test_is_map_extension_delayed", test_id )
-    g_refreshVoteStatus = true; 
+    
+    set_task( 10.0, "test_is_map_extension_delayed", test_id )
+    g_refreshVoteStatus = true;
 }
 
 public test_is_map_extension_delayed( test_id )
 {
     new Float:original_extendmap_max = get_pcvar_float( cvar_extendmapMax )
     new Float:original_mp_timelimit  = get_cvar_float( "mp_timelimit" )
-
+    
     if( g_refreshVoteStatus )
     {
         set_test_failure( test_id, "g_refreshVoteStatus must be 0 (it was %d)",
                 g_is_map_extension_allowed )
         return;
     }
-
+    
     set_pcvar_num( cvar_extendmapMax, 10 )
     set_cvar_num( "mp_timelimit", 20 )
-
+    
     cancel_voting()
     vote_startDirector( false )
-
+    
     if( g_is_map_extension_allowed )
     {
         set_test_failure( test_id, "g_is_map_extension_allowed must be 0 (it was %d)",
                 g_is_map_extension_allowed )
         return;
     }
-
+    
     set_pcvar_float( cvar_extendmapMax, original_extendmap_max )
     set_cvar_float( "mp_timelimit", original_mp_timelimit )
-
-    set_task(10.0, "test_is_map_extension_delayed2", test_id )
-    g_refreshVoteStatus = false; 
+    
+    set_task( 10.0, "test_is_map_extension_delayed2", test_id )
+    g_refreshVoteStatus = false;
 }
 
 public test_is_map_extension_delayed2( test_id )
@@ -650,10 +666,10 @@ stock cancel_voting()
     remove_task( TASKID_DBG_FAKEVOTES )
     remove_task( TASKID_VOTE_STARTDIRECTOR )
     remove_task( TASKID_MAP_CHANGE )
-
+    
     g_is_voting_locked = false
-    g_voteStatus = 0
-
+    g_voteStatus       = 0
+    
     vote_resetStats()
 }
 
@@ -1708,8 +1724,8 @@ public vote_startDirector( bool:forced )
     {
         // make it known that a vote is in progress
         g_voteStatus |= VOTE_IN_PROGRESS;
-
-        g_is_map_extension_allowed = get_cvar_float("mp_timelimit") < get_pcvar_float(cvar_extendmapMax)
+        
+        g_is_map_extension_allowed = get_cvar_float( "mp_timelimit" ) < get_pcvar_float( cvar_extendmapMax )
         
         g_is_voting_locked = true
         set_task( 120.0, "unlock_voting", TASKID_UNLOCK_VOTING );
@@ -2118,7 +2134,7 @@ public vote_display( vote_display_task_argument[ 3 ] )
     static keys, voteStatus[ 512 ], g_totalVoteAtMap[ 16 ];
     
     new updateTimeRemaining = vote_display_task_argument[ 0 ];
-    new player_id                  = vote_display_task_argument[ 1 ];
+    new player_id           = vote_display_task_argument[ 1 ];
     
     if( g_number_isDebugEnabled )
     {
@@ -2181,7 +2197,8 @@ public vote_display( vote_display_task_argument[ 3 ] )
         new allowStay = ( g_voteStatus & VOTE_IS_EARLY );
         new isRunoff  = ( g_voteStatus & VOTE_IS_RUNOFF );
         
-        new bool:allowExtend = IS_FINAL_VOTE && !isRunoff
+        new bool:allowExtend = IS_FINAL_VOTE
+                               && !isRunoff
         
         if( g_isTimeToChangeLevel
             && !isRunoff )
@@ -2204,7 +2221,7 @@ public vote_display( vote_display_task_argument[ 3 ] )
             
             allowStay = true;
         }
-
+        
         // add optional menu item
         if( g_is_map_extension_allowed )
         {
@@ -2565,17 +2582,17 @@ public vote_expire()
                     {
                         g_isRunOffNeedingKeepCurrentMap = true
                         g_arrayOfRunOffChoices[ 0 ]     = firstPlaceChoices[ 1 ];
-                        g_totalVoteOptions_temp             = 1;
+                        g_totalVoteOptions_temp         = 1;
                     }
                     else if( firstPlaceChoices[ 1 ] == g_totalVoteOptions )
                     {
                         g_isRunOffNeedingKeepCurrentMap = true
                         g_arrayOfRunOffChoices[ 0 ]     = firstPlaceChoices[ 0 ];
-                        g_totalVoteOptions_temp             = 1;
+                        g_totalVoteOptions_temp         = 1;
                     }
                     else
                     {
-                        g_totalVoteOptions_temp         = 2;
+                        g_totalVoteOptions_temp     = 2;
                         g_arrayOfRunOffChoices[ 0 ] = firstPlaceChoices[ 0 ];
                         g_arrayOfRunOffChoices[ 1 ] = firstPlaceChoices[ 1 ];
                     }
@@ -2589,17 +2606,17 @@ public vote_expire()
                     {
                         g_isRunOffNeedingKeepCurrentMap = true
                         g_arrayOfRunOffChoices[ 0 ]     = secondPlaceChoices[ 0 ];
-                        g_totalVoteOptions_temp             = 1;
+                        g_totalVoteOptions_temp         = 1;
                     }
                     else if( secondPlaceChoices[ 0 ] == g_totalVoteOptions )
                     {
                         g_isRunOffNeedingKeepCurrentMap = true
                         g_arrayOfRunOffChoices[ 0 ]     = firstPlaceChoices[ 0 ];
-                        g_totalVoteOptions_temp             = 1;
+                        g_totalVoteOptions_temp         = 1;
                     }
                     else
                     {
-                        g_totalVoteOptions_temp         = 2;
+                        g_totalVoteOptions_temp     = 2;
                         g_arrayOfRunOffChoices[ 0 ] = firstPlaceChoices[ 0 ];
                         g_arrayOfRunOffChoices[ 1 ] = secondPlaceChoices[ 0 ];
                     }
@@ -2615,17 +2632,17 @@ public vote_expire()
                     {
                         g_isRunOffNeedingKeepCurrentMap = true
                         g_arrayOfRunOffChoices[ 0 ]     = secondPlaceChoices[ randonNumber ];
-                        g_totalVoteOptions_temp             = 1;
+                        g_totalVoteOptions_temp         = 1;
                     }
                     else if( secondPlaceChoices[ randonNumber ] == g_totalVoteOptions )
                     {
                         g_isRunOffNeedingKeepCurrentMap = true
                         g_arrayOfRunOffChoices[ 0 ]     = firstPlaceChoices[ 0 ];
-                        g_totalVoteOptions_temp             = 1;
+                        g_totalVoteOptions_temp         = 1;
                     }
                     else
                     {
-                        g_totalVoteOptions_temp         = 2;
+                        g_totalVoteOptions_temp     = 2;
                         g_arrayOfRunOffChoices[ 0 ] = firstPlaceChoices[ 0 ];
                         g_arrayOfRunOffChoices[ 1 ] = secondPlaceChoices[ randonNumber ];
                     }
@@ -2967,8 +2984,8 @@ public vote_handleChoice( player_id, key )
             }
             g_arrayOfMapsWithVotesNumber[ key ]++;
         }
-        g_voted[ player_id ]       = true;
-        g_refreshVoteStatus = true;
+        g_voted[ player_id ] = true;
+        g_refreshVoteStatus  = true;
     }
     else
     {
