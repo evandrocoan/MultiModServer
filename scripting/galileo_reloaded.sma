@@ -200,7 +200,7 @@ new g_totalVotesCounted;
  * Server cvars
  */
 new cvar_emptyCycle;
-new cvar_unrockDisconnected;
+new cvar_unnominateDisconnected;
 new cvar_extendmapMax;
 new cvar_extendmapStep;
 new cvar_extendmapStepRounds;
@@ -280,35 +280,35 @@ public plugin_init()
     cvar_extendmapStep       = register_cvar( "amx_extendmap_step", "15" );
     cvar_extendmapStepRounds = register_cvar( "amx_extendmap_step_rounds", "30" );
     
-    cvar_emptyCycle         = register_cvar( "gal_in_empty_cycle", "0", FCVAR_SPONLY );
-    cvar_unrockDisconnected = register_cvar( "gal_unrock_disconnected", "0" );
-    cvar_cmdVotemap         = register_cvar( "gal_cmd_votemap", "0" );
-    cvar_cmdListmaps        = register_cvar( "gal_cmd_listmaps", "2" );
-    cvar_listmapsPaginate   = register_cvar( "gal_listmaps_paginate", "10" );
-    cvar_banRecent          = register_cvar( "gal_banrecent", "3" );
-    cvar_banRecentStyle     = register_cvar( "gal_banrecentstyle", "1" );
-    cvar_endOfMapVote       = register_cvar( "gal_endofmapvote", "1" );
-    cvar_emptyWait          = register_cvar( "gal_emptyserver_wait", "0" );
-    cvar_emptyMapFile       = register_cvar( "gal_emptyserver_mapfile", "" );
-    cvar_srvStart           = register_cvar( "gal_srv_start", "0" );
-    cvar_rtvCommands        = register_cvar( "gal_rtv_commands", "3" );
-    cvar_rtvWait            = register_cvar( "gal_rtv_wait", "10" );
-    cvar_rtvRatio           = register_cvar( "gal_rtv_ratio", "0.60" );
-    cvar_rtvReminder        = register_cvar( "gal_rtv_reminder", "2" );
-    cvar_nomPlayerAllowance = register_cvar( "gal_nom_playerallowance", "2" );
-    cvar_nomMapFile         = register_cvar( "gal_nom_mapfile", "mapcycle" );
-    cvar_nomPrefixes        = register_cvar( "gal_nom_prefixes", "1" );
-    cvar_nomQtyUsed         = register_cvar( "gal_nom_qtyused", "0" );
-    cvar_voteDuration       = register_cvar( "gal_vote_duration", "15" );
-    cvar_voteExpCountdown   = register_cvar( "gal_vote_expirationcountdown", "1" );
-    cvar_voteMapChoiceCnt   = register_cvar( "gal_vote_mapchoices", "5" );
-    cvar_voteAnnounceChoice = register_cvar( "gal_vote_announcechoice", "1" );
-    cvar_voteStatus         = register_cvar( "gal_vote_showstatus", "1" );
-    cvar_voteStatusType     = register_cvar( "gal_vote_showstatustype", "2" );
-    cvar_voteUniquePrefixes = register_cvar( "gal_vote_uniqueprefixes", "0" );
-    cvar_runoffEnabled      = register_cvar( "gal_runoff_enabled", "0" );
-    cvar_runoffDuration     = register_cvar( "gal_runoff_duration", "10" );
-    cvar_soundsMute         = register_cvar( "gal_sounds_mute", "0" );
+    cvar_emptyCycle             = register_cvar( "gal_in_empty_cycle", "0", FCVAR_SPONLY );
+    cvar_unnominateDisconnected = register_cvar( "gal_unnominate_disconnected", "0" );
+    cvar_cmdVotemap             = register_cvar( "gal_cmd_votemap", "0" );
+    cvar_cmdListmaps            = register_cvar( "gal_cmd_listmaps", "2" );
+    cvar_listmapsPaginate       = register_cvar( "gal_listmaps_paginate", "10" );
+    cvar_banRecent              = register_cvar( "gal_banrecent", "3" );
+    cvar_banRecentStyle         = register_cvar( "gal_banrecentstyle", "1" );
+    cvar_endOfMapVote           = register_cvar( "gal_endofmapvote", "1" );
+    cvar_emptyWait              = register_cvar( "gal_emptyserver_wait", "0" );
+    cvar_emptyMapFile           = register_cvar( "gal_emptyserver_mapfile", "" );
+    cvar_srvStart               = register_cvar( "gal_srv_start", "0" );
+    cvar_rtvCommands            = register_cvar( "gal_rtv_commands", "3" );
+    cvar_rtvWait                = register_cvar( "gal_rtv_wait", "10" );
+    cvar_rtvRatio               = register_cvar( "gal_rtv_ratio", "0.60" );
+    cvar_rtvReminder            = register_cvar( "gal_rtv_reminder", "2" );
+    cvar_nomPlayerAllowance     = register_cvar( "gal_nom_playerallowance", "2" );
+    cvar_nomMapFile             = register_cvar( "gal_nom_mapfile", "mapcycle" );
+    cvar_nomPrefixes            = register_cvar( "gal_nom_prefixes", "1" );
+    cvar_nomQtyUsed             = register_cvar( "gal_nom_qtyused", "0" );
+    cvar_voteDuration           = register_cvar( "gal_vote_duration", "15" );
+    cvar_voteExpCountdown       = register_cvar( "gal_vote_expirationcountdown", "1" );
+    cvar_voteMapChoiceCnt       = register_cvar( "gal_vote_mapchoices", "5" );
+    cvar_voteAnnounceChoice     = register_cvar( "gal_vote_announcechoice", "1" );
+    cvar_voteStatus             = register_cvar( "gal_vote_showstatus", "1" );
+    cvar_voteStatusType         = register_cvar( "gal_vote_showstatustype", "2" );
+    cvar_voteUniquePrefixes     = register_cvar( "gal_vote_uniqueprefixes", "0" );
+    cvar_runoffEnabled          = register_cvar( "gal_runoff_enabled", "0" );
+    cvar_runoffDuration         = register_cvar( "gal_runoff_duration", "10" );
+    cvar_soundsMute             = register_cvar( "gal_sounds_mute", "0" );
     
     register_logevent( "event_game_commencing", 2, "0=World triggered",
             "1=Game_Commencing", "1&Restart_Round_" )
@@ -610,7 +610,7 @@ stock test_register_test()
  * Then, all tests that involves the vote_startDirector() chain, must to be executed sequencially
  * after this chain end.
  *
- * This is the first chain test, and test if the cvar 'amx_extendmap_max' functionality is working
+ * This is the 1º chain test, and test if the cvar 'amx_extendmap_max' functionality is working
  * properly.
  */
 stock test_is_map_extension_allowed()
@@ -3384,7 +3384,7 @@ public client_disconnect( player_id )
     // un-rock the vote
     vote_unrock( player_id );
     
-    if( get_pcvar_num( cvar_unrockDisconnected ) )
+    if( get_pcvar_num( cvar_unnominateDisconnected ) )
     {
         new idxMap
         new nominationCnt
