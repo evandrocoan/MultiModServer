@@ -123,13 +123,17 @@
  */
 #define ALL_TESTS_TO_EXECUTE \
     test_register_test(); \
-    test_is_map_extension_allowed();
+    test_is_map_extension_allowed(); \
+    test_gal_in_empty_cycle1(); \
+    test_gal_in_empty_cycle2(); \
+    test_gal_in_empty_cycle3(); \
+    test_gal_in_empty_cycle4();
 
 
 /**
  * Test unit variables related to debug level 1, displays basic debug messages.
  */
-new g_is_debug_enabled_integer
+new g_is_debug_enabled
 new g_max_delay_result
 new g_totalSuccessfulTests
 new g_totalFailureTests
@@ -137,8 +141,8 @@ new Array: g_tests_idsAndNames
 new Array: g_tests_delayed_ids
 new Array: g_tests_failure_ids
 
-new Float:test_original_extendmap_max
-new Float:test_original_mp_timelimit
+new Float:test_extendmap_max
+new Float:test_mp_timelimit
 
 
 /**
@@ -184,8 +188,8 @@ new Float:g_rtvWait;
 new g_rockedVoteCnt;
 
 new MENU_CHOOSEMAP[] = "gal_menuChooseMap";
-new DIR_CONFIGS[ 64 ];
-new DIR_DATA[ 64 ];
+new DIR_CONFIGS[ 128 ];
+new DIR_DATA[ 128 ];
 
 new g_totalVoteOptions
 new g_totalVoteOptions_temp
@@ -343,15 +347,18 @@ public plugin_cfg()
     g_isTimeToRestart     = false;
     g_is_voting_locked    = false;
     
-    g_is_debug_enabled_integer = get_cvar_num( "gal_debug" );
-    g_maxrounds_pointer        = get_cvar_pointer( "mp_maxrounds" )
-    g_winlimit_pointer         = get_cvar_pointer( "mp_winlimit" )
-    g_freezetime_pointer       = get_cvar_pointer( "mp_freezetime" )
+    g_is_debug_enabled   = get_cvar_num( "gal_debug" );
+    g_maxrounds_pointer  = get_cvar_pointer( "mp_maxrounds" )
+    g_winlimit_pointer   = get_cvar_pointer( "mp_winlimit" )
+    g_freezetime_pointer = get_cvar_pointer( "mp_freezetime" )
     
     reset_rounds_scores()
     
-    formatex( DIR_CONFIGS[ get_configsdir( DIR_CONFIGS, sizeof( DIR_CONFIGS ) - 1 ) ], sizeof( DIR_CONFIGS ) - 1, "/galileo_reloaded" );
-    formatex( DIR_DATA[ get_datadir( DIR_DATA, sizeof( DIR_DATA ) - 1 ) ], sizeof( DIR_DATA ) - 1, "/galileo_reloaded" );
+    formatex( DIR_CONFIGS[ get_configsdir( DIR_CONFIGS, sizeof( DIR_CONFIGS ) - 1 ) ],
+            sizeof( DIR_CONFIGS ) - 1, "/galileo_reloaded" );
+    
+    formatex( DIR_DATA[ get_datadir( DIR_DATA, sizeof( DIR_DATA ) - 1 ) ],
+            sizeof( DIR_DATA ) - 1, "/galileo_reloaded" );
     
     server_cmd( "exec %s/galileo_reloaded.cfg", DIR_CONFIGS );
     server_exec();
@@ -423,7 +430,7 @@ public plugin_cfg()
     
     set_task( 10.0, "vote_setupEnd" );
     
-    if( g_is_debug_enabled_integer )
+    if( g_is_debug_enabled )
     {
         runTests()
     }
@@ -619,14 +626,14 @@ stock test_is_map_extension_allowed()
     
     if( g_is_map_extension_allowed )
     {
-        set_test_failure( test_id, "g_is_map_extension_allowed must be false (it was %d)",
+        set_test_failure( test_id, "g_is_map_extension_allowed must be 0 (it was %d)",
                 g_is_map_extension_allowed )
         return;
     }
     
     if( !g_refreshVoteStatus )
     {
-        set_test_failure( test_id, "g_refreshVoteStatus must be true (it was %d)",
+        set_test_failure( test_id, "g_refreshVoteStatus must be 1 (it was %d)",
                 g_is_map_extension_allowed )
         return;
     }
@@ -636,7 +643,7 @@ stock test_is_map_extension_allowed()
     
     if( !g_is_map_extension_allowed )
     {
-        set_test_failure( test_id, "g_is_map_extension_allowed must be true (it was %d)",
+        set_test_failure( test_id, "g_is_map_extension_allowed must be 1 (it was %d)",
                 g_is_map_extension_allowed )
         return;
     }
@@ -690,14 +697,149 @@ public test_is_map_extension_delayed2( test_id )
 }
 
 /**
+ * Test for client connect cvar_emptyCycle behavior.
+ */
+stock test_gal_in_empty_cycle1()
+{
+    new test_id = register_test( 0, "test_gal_in_empty_cycle1" )
+    
+    set_pcvar_num( cvar_emptyCycle, 1 )
+    client_connect( 1 )
+    
+    if( get_pcvar_num( cvar_emptyCycle ) )
+    {
+        set_test_failure( test_id, "cvar_emptyCycle must be 0 (it was %d)",
+                get_pcvar_num( cvar_emptyCycle ) )
+        return;
+    }
+    
+    set_pcvar_num( cvar_emptyCycle, 0 )
+    client_connect( 1 )
+    
+    if( get_pcvar_num( cvar_emptyCycle ) )
+    {
+        set_test_failure( test_id, "cvar_emptyCycle must be 0 (it was %d)",
+                get_pcvar_num( cvar_emptyCycle ) )
+        return;
+    }
+}
+
+/**
+ * This 1º case test if the current map isn't part of the empty cycle, immediately change to next map
+ * that is.
+ */
+stock test_gal_in_empty_cycle2()
+{
+    new test_id              = register_test( 0, "test_gal_in_empty_cycle2" )
+    new Array: emptyCycleMap = ArrayCreate( 32 );
+    
+    ArrayPushString( emptyCycleMap, "de_dust2" )
+    ArrayPushString( emptyCycleMap, "de_inferno" )
+    
+    // set the next map from the empty cycle list,
+    // or the first one, if the current map isn't part of the cycle
+    new nextMap[ 32 ]
+    
+    new mapIdx = map_getNext( emptyCycleMap, "de_dust2", nextMap );
+    
+    if( !equal( nextMap, "de_inferno" ) )
+    {
+        set_test_failure( test_id, "test_gal_in_empty_cycle2() nextMap must be 'de_inferno' \
+                (it was %s)", nextMap )
+        return;
+    }
+    
+    // if the current map isn't part of the empty cycle,
+    // immediately change to next map that is
+    if( mapIdx == -1 )
+    {
+        set_test_failure( test_id, "test_gal_in_empty_cycle2() mapIdx must NOT be '-1' \
+                (it was %d)", mapIdx )
+        return;
+    }
+}
+
+/**
+ * This 2º case test if the current map isn't part of the empty cycle, immediately change to next map
+ * that is.
+ */
+stock test_gal_in_empty_cycle3()
+{
+    new test_id              = register_test( 0, "test_gal_in_empty_cycle3" )
+    new Array: emptyCycleMap = ArrayCreate( 32 );
+    
+    ArrayPushString( emptyCycleMap, "de_dust2" )
+    ArrayPushString( emptyCycleMap, "de_inferno" )
+    ArrayPushString( emptyCycleMap, "de_dust4" )
+    
+    // set the next map from the empty cycle list,
+    // or the first one, if the current map isn't part of the cycle
+    new nextMap[ 32 ]
+    
+    new mapIdx = map_getNext( emptyCycleMap, "de_inferno", nextMap );
+    
+    if( !equal( nextMap, "de_dust4" ) )
+    {
+        set_test_failure( test_id, "test_gal_in_empty_cycle3() nextMap must be 'de_dust4' \
+                (it was %s)", nextMap )
+        return;
+    }
+    
+    // if the current map isn't part of the empty cycle,
+    // immediately change to next map that is
+    if( mapIdx == -1 )
+    {
+        set_test_failure( test_id, "test_gal_in_empty_cycle3() mapIdx must NOT be '-1' \
+                (it was %d)", mapIdx )
+        return;
+    }
+}
+
+/**
+ * This 3º case test if the current map isn't part of the empty cycle, immediately change to next map
+ * that is.
+ */
+stock test_gal_in_empty_cycle4()
+{
+    new test_id              = register_test( 0, "test_gal_in_empty_cycle3" )
+    new Array: emptyCycleMap = ArrayCreate( 32 );
+    
+    ArrayPushString( emptyCycleMap, "de_dust2" )
+    ArrayPushString( emptyCycleMap, "de_inferno" )
+    ArrayPushString( emptyCycleMap, "de_dust4" )
+    
+    // set the next map from the empty cycle list,
+    // or the first one, if the current map isn't part of the cycle
+    new nextMap[ 32 ]
+    
+    new mapIdx = map_getNext( emptyCycleMap, "de_dust", nextMap );
+    
+    if( !equal( nextMap, "de_dust2" ) )
+    {
+        set_test_failure( test_id, "test_gal_in_empty_cycle3() nextMap must be 'de_dust2' \
+                (it was %s)", nextMap )
+        return;
+    }
+    
+    // if the current map isn't part of the empty cycle,
+    // immediately change to next map that is
+    if( !( mapIdx == -1 ) )
+    {
+        set_test_failure( test_id, "test_gal_in_empty_cycle3() mapIdx must be '-1' \
+                (it was %d)", mapIdx )
+        return;
+    }
+}
+
+/**
  * Every time a cvar is changed during the tests, it must be saved here to a global test variable
  * to be restored at the restore_server_cvars_for_test(), which is executed at the end of all
  * tests execution. This is executed before the first rest run.
  */
 stock save_server_cvasr_for_test()
 {
-    test_original_extendmap_max = get_pcvar_float( cvar_extendmapMax )
-    test_original_mp_timelimit  = get_cvar_float( "mp_timelimit" )
+    test_extendmap_max = get_pcvar_float( cvar_extendmapMax )
+    test_mp_timelimit  = get_cvar_float( "mp_timelimit" )
 }
 
 /**
@@ -705,8 +847,8 @@ stock save_server_cvasr_for_test()
  */
 stock restore_server_cvars_for_test()
 {
-    set_pcvar_float( cvar_extendmapMax, test_original_extendmap_max )
-    set_cvar_float( "mp_timelimit", test_original_mp_timelimit )
+    set_pcvar_float( cvar_extendmapMax, test_extendmap_max )
+    set_cvar_float( "mp_timelimit", test_mp_timelimit )
 }
 
 /**
@@ -1120,6 +1262,7 @@ map_populateList( Array:mapArray, mapFilename[] )
                 {
                     ArrayPushString( mapArray, buffer );
                     ++mapCnt;
+                    debugMessageLog( 4, "map_populateList(...) buffer = %s", buffer )
                 }
             }
             fclose( file );
@@ -1287,6 +1430,8 @@ map_loadEmptyCycleList()
     get_pcvar_string( cvar_emptyMapFile, filename, sizeof( filename ) - 1 );
     
     g_emptyMapCnt = map_populateList( g_emptyCycleMap, filename );
+    
+    debugMessageLog( 4, "map_loadEmptyCycleList() g_emptyMapCnt = %d", g_emptyMapCnt )
 }
 
 public map_loadPrefixList()
@@ -1814,7 +1959,7 @@ public vote_startDirector( bool:forced )
         }
     }
     
-    if( g_is_debug_enabled_integer )
+    if( g_is_debug_enabled )
     {
         voteDuration   = 5
         g_voteDuration = 5
@@ -1825,7 +1970,7 @@ public vote_startDirector( bool:forced )
         // alphabetize the maps
         SortCustom2D( g_mapsVoteMenuNames, choicesLoaded, "sort_stringsi" );
         
-        if( g_is_debug_enabled_integer )
+        if( g_is_debug_enabled )
         {
             for( new dbgChoice = 0; dbgChoice < choicesLoaded; dbgChoice++ )
             {
@@ -1872,7 +2017,7 @@ public vote_startDirector( bool:forced )
         client_print( 0, print_chat, "%L", LANG_PLAYER, "GAL_VOTE_NOMAPS" );
     }
     
-    if( g_is_debug_enabled_integer )
+    if( g_is_debug_enabled )
     {
         debugMessageLog( 4, "" );
         debugMessageLog( 4, "   [PLAYER CHOICES]" );
@@ -1923,7 +2068,7 @@ vote_addNominations()
         // [TODO: develop a better method of determining which nominations make the cut; either FIFO or random]
         new idxMap, player_id, mapName[ 32 ];
         
-        if( g_is_debug_enabled_integer )
+        if( g_is_debug_enabled )
         {
             new nominator_id, playerName[ 32 ];
             
@@ -2145,7 +2290,7 @@ public vote_handleDisplay()
         client_cmd( 0, "spk Gman/Gman_Choose%i", random_num( 1, 2 ) );
     }
     
-    if( g_is_debug_enabled_integer )
+    if( g_is_debug_enabled )
     {
         g_voteDuration = 5
     }
@@ -2200,7 +2345,7 @@ public vote_display( vote_display_task_argument[ 3 ] )
     new updateTimeRemaining = vote_display_task_argument[ 0 ];
     new player_id           = vote_display_task_argument[ 1 ];
     
-    if( g_is_debug_enabled_integer )
+    if( g_is_debug_enabled )
     {
         new snuff = ( player_id > 0 ) ? g_snuffDisplay[ player_id ] : -1;
         debugMessageLog( 4, "   [votedisplay( )] player_id: %i  updateTimeRemaining: %i  unsnuffDisplay: %i  g_snuffDisplay: %i  \
@@ -2486,7 +2631,7 @@ public vote_expire()
 {
     g_voteStatus |= VOTE_HAS_EXPIRED;
     
-    if( g_is_debug_enabled_integer )
+    if( g_is_debug_enabled )
     {
         debugMessageLog( 4, "" );
         debugMessageLog( 4, "   [VOTE RESULT]" );
@@ -3422,7 +3567,7 @@ public client_disconnect( player_id )
     new dbg_playerCnt = get_realplayersnum() - 1;
     debugMessageLog( 2, "%32s dbg_playerCnt:%i", "client_disconnect( )", dbg_playerCnt );
     
-    if( dbg_playerCnt == 0 )
+    if( dbg_playerCnt <= 0 )
     {
         srv_handleEmpty();
     }
@@ -3435,6 +3580,11 @@ public client_connect( player_id )
     vote_unrock( player_id );
 }
 
+/**
+ *  Called when the last server player disconnect. This changes the map even if we are at a
+ *  map that is on the empty list. This function is different than srv_initEmptyCheck, which
+ *  just change the map if it is not on a map at empty list.
+ */
 srv_handleEmpty()
 {
     debugMessageLog( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "srv_handleEmpty(in)",
@@ -3455,22 +3605,25 @@ srv_handleEmpty()
     {
         srv_startEmptyCountdown();
     }
+    debugMessageLog( 2, "g_isUsingEmptyCycle = %d, g_emptyMapCnt = %d", g_isUsingEmptyCycle,
+            g_emptyMapCnt )
     
     debugMessageLog( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "srv_handleEmpty(out)",
             get_cvar_float( "mp_timelimit" ), g_originalTimelimit );
 }
 
+/**
+ * Start a empty map count down just when the last player disconnect.
+ * If the map just entered at the map at the empty list, stays at it.
+ */
 public srv_initEmptyCheck()
 {
-    if( get_pcvar_num( cvar_emptyWait ) )
+    if( ( get_realplayersnum() ) == 0
+        && !get_pcvar_num( cvar_emptyCycle ) )
     {
-        if( ( get_realplayersnum() ) == 0
-            && !get_pcvar_num( cvar_emptyCycle ) )
-        {
-            srv_startEmptyCountdown();
-        }
-        g_isUsingEmptyCycle = true;
+        srv_startEmptyCountdown();
     }
+    g_isUsingEmptyCycle = true;
 }
 
 srv_startEmptyCountdown()
@@ -3485,12 +3638,15 @@ srv_startEmptyCountdown()
 
 public srv_startEmptyCycle()
 {
+    // stop this system at the next map, due we already be at a popular map
     set_pcvar_num( cvar_emptyCycle, 1 );
     
     // set the next map from the empty cycle list,
     // or the first one, if the current map isn't part of the cycle
-    new nextMap[ 32 ], mapIdx;
-    mapIdx = map_getNext( g_emptyCycleMap, g_currentMap, nextMap );
+    new nextMap[ 32 ]
+    
+    new mapIdx = map_getNext( g_emptyCycleMap, g_currentMap, nextMap );
+    
     map_setNext( nextMap );
     
     // if the current map isn't part of the empty cycle,
@@ -3503,7 +3659,11 @@ public srv_startEmptyCycle()
 
 map_getNext( Array:mapArray, currentMap[], nextMap[ 32 ] )
 {
-    new thisMap[ 32 ], mapCnt = ArraySize( mapArray ), nextmapIdx = 0, returnVal = -1;
+    new thisMap[ 32 ]
+    
+    new nextmapIdx = 0
+    new returnVal  = -1
+    new mapCnt     = ArraySize( mapArray )
     
     for( new mapIdx = 0; mapIdx < mapCnt; mapIdx++ )
     {
@@ -3511,8 +3671,15 @@ map_getNext( Array:mapArray, currentMap[], nextMap[ 32 ] )
         
         if( equal( currentMap, thisMap ) )
         {
-            nextmapIdx = ( mapIdx == mapCnt - 1 ) ? 0 : mapIdx + 1;
-            returnVal  = nextmapIdx;
+            if( mapIdx == mapCnt - 1 )
+            {
+                nextmapIdx = 0
+            }
+            else
+            {
+                nextmapIdx = mapIdx + 1
+            }
+            returnVal = nextmapIdx;
             break;
         }
     }
@@ -3651,8 +3818,9 @@ public dbg_fakeVotes()
  *           ( 0 ) 0 disabled all debug.
  *           ( 1 ) 1 displays basic debug messages.
  *           ( 10 ) 2 displays players disconnect, how many remaining, and multiple time limits
- *                                 changes and restores.
- *           ( 100 ) 4 displays maps events as: choices, votes, nominations and the current map name at plugin_cfg( )
+ *                          changes and restores.
+ *           ( 100 ) 4 displays maps events as: choices, votes, nominations, and the calls to
+ *                          map_populateList( Array:mapArray, mapFilename[] ).
  *           ( 1000 ) 8 displays vote_loadChoices( ) and actions at vote_startDirector
  *           ( 10000 ) 16 displays messages related to RunOff voting
  *           ( 100000 ) 32 displays messages related to the rounds end map voting
@@ -3663,9 +3831,9 @@ public dbg_fakeVotes()
  */
 debugMessageLog( const mode, const text[] = "", { Float, Sql, Result, _ }: ... )
 {
-    g_is_debug_enabled_integer = get_cvar_num( "gal_debug" );
+    g_is_debug_enabled = get_cvar_num( "gal_debug" );
     
-    if( mode & g_is_debug_enabled_integer )
+    if( mode & g_is_debug_enabled )
     {
         // format the text as needed
         new formattedText[ 1024 ];
