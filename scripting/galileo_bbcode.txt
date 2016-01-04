@@ -89,7 +89,9 @@ have with this plugin.  It's located in the [B]Attached ZIP[/B] available at the
 
  * [B]Runoff[/B] voting when no map gets more than 50% of the total vote.
 
- * Auto Map Change On Empty Server. 
+ * Auto Map Change On Empty Server.
+
+ * Allow last round finish when a map the time runs out.
 
  * Command '[COLOR="Blue"][B]gal_startvote [-nochange or -restart][/B][/COLOR]', to forces a map vote to begin 
        and the map will be changed once the next map has been determined. 
@@ -204,6 +206,8 @@ galileo_reloaded.amxx
  * Added new cvar "gal_emptyserver_wait" which implements the server empty feature. 
  * Added new cvar "gal_emptyserver_mapfile" which specifies a empty server map cycle list. 
  * Added new cvar "gal_unnominate_disconnected" to remove a disconnected player nominations.
+ * Added new cvar "gal_endonround_msg" to indicates how to announce the last round.
+ * Fixed the cvar "gal_endonround" that indicates when a map should end when time runs out.
  * Fixed concurrency problem between mp_maxrounds, mp_winlimit and mp_timelimit.
  * Added a basic unit test structure for developers/scripters.
 [/QUOTE]
