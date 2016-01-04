@@ -33,6 +33,7 @@
 #define SHORT_STRING 64
 
 #define TASKID_REMINDER                  52691153
+#define TASKID_EMPTYSERVER               98176977
 #define TASKID_START_VOTING_BY_ROUNDS    52691160
 #define TASKID_UNLOCK_VOTING             52691163
 #define TASKID_VOTE_COUNTDOWNPENDINGVOTE 52691164
@@ -128,7 +129,7 @@
 /**
  * Test unit variables related to debug level 1, displays basic debug messages.
  */
-new g_number_isDebugEnabled
+new g_is_debug_enabled_integer
 new g_max_delay_result
 new g_totalSuccessfulTests
 new g_totalFailureTests
@@ -136,18 +137,8 @@ new Array: g_tests_idsAndNames
 new Array: g_tests_delayed_ids
 new Array: g_tests_failure_ids
 
-new MENU_CHOOSEMAP[] = "gal_menuChooseMap";
-new DIR_CONFIGS[ 64 ];
-new DIR_DATA[ 64 ];
-
-new CLR_RED[ 3 ];            // \r
-new CLR_WHITE[ 3 ];       // \w
-new CLR_YELLOW[ 3 ];   // \y
-new CLR_GREY[ 3 ];         // \d
-
-new g_mapPrefix[ MAX_PREFIX_CNT ][ 16 ]
-new g_mapPrefixCnt = 1;
-new g_currentMap[ MAX_MAPNAME_LEN + 1 ]
+new Float:test_original_extendmap_max
+new Float:test_original_mp_timelimit
 
 
 /**
@@ -162,10 +153,6 @@ new g_is_voting_locked
 new g_originalMaxRounds
 new g_originalWinLimit
 new Float:g_originalTimelimit
-
-new g_nomination[ MAX_PLAYER_CNT + 1 ][ MAX_NOMINATION_CNT + 1 ]
-new g_nominationCnt
-new g_nominationMatchesMenu[ MAX_PLAYER_CNT ];
 
 new g_freezetime_pointer
 new g_winlimit_pointer;
@@ -182,41 +169,44 @@ new g_isTimeToRestart
 new g_isTimeLimitChanged
 new g_is_map_extension_allowed
 
-new g_recentMap[ MAX_RECENT_MAP_CNT ][ MAX_MAPNAME_LEN + 1 ]
+
+/**
+ *
+ */
+new bool:g_isUsingEmptyCycle
+new Array: g_emptyCycleMap
+new g_emptyMapCnt
 new g_cntRecentMap;
 new Array:g_nominationMap
 new g_nominationMapCnt;
 new Array:g_fillerMap;
 new Float:g_rtvWait;
-new bool:g_rockedVote[ MAX_PLAYER_CNT + 1 ]
 new g_rockedVoteCnt;
 
-new g_mapsVoteMenuNames[ MAX_MAPS_IN_VOTE + 1 ][ MAX_MAPNAME_LEN + 1 ]
+new MENU_CHOOSEMAP[] = "gal_menuChooseMap";
+new DIR_CONFIGS[ 64 ];
+new DIR_DATA[ 64 ];
 
 new g_totalVoteOptions
 new g_totalVoteOptions_temp
 
 new g_choiceMax;
-new bool:g_voted[ MAX_PLAYER_CNT + 1 ] = { true, ... }
-
-new g_arrayOfMapsWithVotesNumber[ MAX_MAPS_IN_VOTE + 1 ];
 new g_voteStatus
 new g_voteDuration
 new g_totalVotesCounted;
-new g_arrayOfRunOffChoices[ 2 ];
-new g_vote[ 512 ];
 
-new g_refreshVoteStatus = true
-new g_totalVoteAtMapType[ 3 ]
-new g_snuffDisplay[ MAX_PLAYER_CNT + 1 ];
 
-new g_menuChooseMap;
-new g_isRunOffNeedingKeepCurrentMap = false;
-
+/**
+ * Server cvars
+ */
+new cvar_emptyCycle;
+new cvar_unrockDisconnected;
 new cvar_extendmapMax;
 new cvar_extendmapStep;
-new g_extendmapStepRounds_pointer;
+new cvar_extendmapStepRounds;
 new cvar_endOfMapVote;
+new cvar_emptyWait
+new cvar_emptyMapFile
 new cvar_rtvWait
 new cvar_rtvRatio
 new cvar_rtvCommands;
@@ -242,10 +232,38 @@ new cvar_voteStatus
 new cvar_voteStatusType;
 new cvar_soundsMute;
 
+new CLR_RED[ 3 ];    // \r
+new CLR_WHITE[ 3 ];  // \w
+new CLR_YELLOW[ 3 ]; // \y
+new CLR_GREY[ 3 ];   // \d
+
+new g_refreshVoteStatus = true
+new g_totalVoteAtMapType[ 3 ]
+new g_snuffDisplay[ MAX_PLAYER_CNT + 1 ];
+
+new g_mapPrefix[ MAX_PREFIX_CNT ][ 16 ]
+new g_mapPrefixCnt = 1;
+new g_currentMap[ MAX_MAPNAME_LEN + 1 ]
+
+new g_nomination[ MAX_PLAYER_CNT + 1 ][ MAX_NOMINATION_CNT + 1 ]
+new g_nominationCnt
+new g_nominationMatchesMenu[ MAX_PLAYER_CNT ];
+
+new g_vote[ 512 ];
+new g_arrayOfRunOffChoices[ 2 ];
+new bool:g_voted[ MAX_PLAYER_CNT + 1 ] = { true, ... }
+new g_arrayOfMapsWithVotesNumber[ MAX_MAPS_IN_VOTE + 1 ];
+
+new bool:g_rockedVote[ MAX_PLAYER_CNT + 1 ]
+new g_recentMap[ MAX_RECENT_MAP_CNT ][ MAX_MAPNAME_LEN + 1 ]
+new g_mapsVoteMenuNames[ MAX_MAPS_IN_VOTE + 1 ][ MAX_MAPNAME_LEN + 1 ]
+
+new g_menuChooseMap;
+new g_isRunOffNeedingKeepCurrentMap = false;
 
 public plugin_init()
 {
-    register_plugin( "Galileo", PLUGIN_VERSION, "Brad Jones/Addons zz" );
+    register_plugin( "Galileo", PLUGIN_VERSION, "Addons zz/Brad Jones" );
     
     register_dictionary( "common.txt" );
     register_dictionary( "galileo_reloaded.txt" );
@@ -258,8 +276,12 @@ public plugin_init()
     register_cvar( "gal_server_starting", "1", FCVAR_SPONLY );
     register_cvar( "gal_debug", "0" );
     
-    cvar_extendmapMax       = register_cvar( "amx_extendmap_max", "90" );
-    cvar_extendmapStep      = register_cvar( "amx_extendmap_step", "15" );
+    cvar_extendmapMax        = register_cvar( "amx_extendmap_max", "90" );
+    cvar_extendmapStep       = register_cvar( "amx_extendmap_step", "15" );
+    cvar_extendmapStepRounds = register_cvar( "amx_extendmap_step_rounds", "30" );
+    
+    cvar_emptyCycle         = register_cvar( "gal_in_empty_cycle", "0", FCVAR_SPONLY );
+    cvar_unrockDisconnected = register_cvar( "gal_unrock_disconnected", "0" );
     cvar_cmdVotemap         = register_cvar( "gal_cmd_votemap", "0" );
     cvar_cmdListmaps        = register_cvar( "gal_cmd_listmaps", "2" );
     cvar_listmapsPaginate   = register_cvar( "gal_listmaps_paginate", "10" );
@@ -303,11 +325,6 @@ public plugin_init()
     
     g_menuChooseMap = register_menuid( MENU_CHOOSEMAP );
     
-    g_maxrounds_pointer           = get_cvar_pointer( "mp_maxrounds" )
-    g_winlimit_pointer            = get_cvar_pointer( "mp_winlimit" )
-    g_freezetime_pointer          = get_cvar_pointer( "mp_freezetime" )
-    g_extendmapStepRounds_pointer =    register_cvar( "amx_extendmap_step_rounds", "30" );
-    
     register_menucmd( g_menuChooseMap, MENU_KEY_1 | MENU_KEY_2 |
             MENU_KEY_3 | MENU_KEY_4 | MENU_KEY_5 | MENU_KEY_6 |
             MENU_KEY_7 | MENU_KEY_8 | MENU_KEY_9 | MENU_KEY_0,
@@ -321,11 +338,15 @@ public plugin_init()
  */
 public plugin_cfg()
 {
-    g_isTimeLimitChanged    = false;
-    g_isTimeToChangeLevel   = false;
-    g_isTimeToRestart       = false;
-    g_is_voting_locked      = false;
-    g_number_isDebugEnabled = get_cvar_num( "gal_debug" );
+    g_isTimeLimitChanged  = false;
+    g_isTimeToChangeLevel = false;
+    g_isTimeToRestart     = false;
+    g_is_voting_locked    = false;
+    
+    g_is_debug_enabled_integer = get_cvar_num( "gal_debug" );
+    g_maxrounds_pointer        = get_cvar_pointer( "mp_maxrounds" )
+    g_winlimit_pointer         = get_cvar_pointer( "mp_winlimit" )
+    g_freezetime_pointer       = get_cvar_pointer( "mp_freezetime" )
     
     reset_rounds_scores()
     
@@ -402,7 +423,7 @@ public plugin_cfg()
     
     set_task( 10.0, "vote_setupEnd" );
     
-    if( g_number_isDebugEnabled )
+    if( g_is_debug_enabled_integer )
     {
         runTests()
     }
@@ -417,6 +438,8 @@ stock runTests()
     new test_name[ SHORT_STRING ]
     
     debugMessageLog( 1, "^n^n    Executing the 'Galileo Reloaded' Tests: ^n" )
+    
+    save_server_cvasr_for_test()
     
     ALL_TESTS_TO_EXECUTE
     
@@ -462,6 +485,10 @@ stock runTests()
     }
 }
 
+/**
+ * This is executed at the end of the delayed tests execution to show its results and restore any
+ * cvars variable change.
+ */
 public show_delayed_results()
 {
     new test_name[ SHORT_STRING ]
@@ -489,6 +516,7 @@ public show_delayed_results()
     
     // clean the testing
     cancel_voting()
+    restore_server_cvars_for_test()
 }
 
 /**
@@ -544,6 +572,9 @@ stock set_test_failure( test_id, failure_reason[], any: ... )
     debugMessageLog( 1, "       Test failure! %s", formated_message )
 }
 
+/**
+ * This is a simple test to verify the basic registering test functionality.
+ */
 stock test_register_test()
 {
     new test_id = register_test( 0, "test_register_test" )
@@ -614,11 +645,12 @@ stock test_is_map_extension_allowed()
     g_refreshVoteStatus = true;
 }
 
+/**
+ * This is the 2º test at vote_startDirector() chain and must add 10.0 seconds to the total time
+ * execution.
+ */
 public test_is_map_extension_delayed( test_id )
 {
-    new Float:original_extendmap_max = get_pcvar_float( cvar_extendmapMax )
-    new Float:original_mp_timelimit  = get_cvar_float( "mp_timelimit" )
-    
     if( g_refreshVoteStatus )
     {
         set_test_failure( test_id, "g_refreshVoteStatus must be 0 (it was %d)",
@@ -639,13 +671,14 @@ public test_is_map_extension_delayed( test_id )
         return;
     }
     
-    set_pcvar_float( cvar_extendmapMax, original_extendmap_max )
-    set_cvar_float( "mp_timelimit", original_mp_timelimit )
-    
     set_task( 10.0, "test_is_map_extension_delayed2", test_id )
     g_refreshVoteStatus = false;
 }
 
+/**
+ * This is the 3º test at vote_startDirector() chain and must add 0 seconds to the total time
+ * execution.
+ */
 public test_is_map_extension_delayed2( test_id )
 {
     if( !g_refreshVoteStatus )
@@ -656,6 +689,29 @@ public test_is_map_extension_delayed2( test_id )
     }
 }
 
+/**
+ * Every time a cvar is changed during the tests, it must be saved here to a global test variable
+ * to be restored at the restore_server_cvars_for_test(), which is executed at the end of all
+ * tests execution. This is executed before the first rest run.
+ */
+stock save_server_cvasr_for_test()
+{
+    test_original_extendmap_max = get_pcvar_float( cvar_extendmapMax )
+    test_original_mp_timelimit  = get_cvar_float( "mp_timelimit" )
+}
+
+/**
+ * This is executed at the end of all tests execution to restore server variables changes.
+ */
+stock restore_server_cvars_for_test()
+{
+    set_pcvar_float( cvar_extendmapMax, test_original_extendmap_max )
+    set_cvar_float( "mp_timelimit", test_original_mp_timelimit )
+}
+
+/**
+ * Immediately stops any vote in progress.
+ */
 stock cancel_voting()
 {
     remove_task( TASKID_START_VOTING_BY_ROUNDS )
@@ -1225,6 +1281,14 @@ public cmd_createMapFile( player_id, level, cid )
     return PLUGIN_HANDLED;
 }
 
+map_loadEmptyCycleList()
+{
+    new filename[ 256 ];
+    get_pcvar_string( cvar_emptyMapFile, filename, sizeof( filename ) - 1 );
+    
+    g_emptyMapCnt = map_populateList( g_emptyCycleMap, filename );
+}
+
 public map_loadPrefixList()
 {
     new filename[ 256 ];
@@ -1750,7 +1814,7 @@ public vote_startDirector( bool:forced )
         }
     }
     
-    if( g_number_isDebugEnabled )
+    if( g_is_debug_enabled_integer )
     {
         voteDuration   = 5
         g_voteDuration = 5
@@ -1761,7 +1825,7 @@ public vote_startDirector( bool:forced )
         // alphabetize the maps
         SortCustom2D( g_mapsVoteMenuNames, choicesLoaded, "sort_stringsi" );
         
-        if( g_number_isDebugEnabled )
+        if( g_is_debug_enabled_integer )
         {
             for( new dbgChoice = 0; dbgChoice < choicesLoaded; dbgChoice++ )
             {
@@ -1808,7 +1872,7 @@ public vote_startDirector( bool:forced )
         client_print( 0, print_chat, "%L", LANG_PLAYER, "GAL_VOTE_NOMAPS" );
     }
     
-    if( g_number_isDebugEnabled )
+    if( g_is_debug_enabled_integer )
     {
         debugMessageLog( 4, "" );
         debugMessageLog( 4, "   [PLAYER CHOICES]" );
@@ -1859,7 +1923,7 @@ vote_addNominations()
         // [TODO: develop a better method of determining which nominations make the cut; either FIFO or random]
         new idxMap, player_id, mapName[ 32 ];
         
-        if( g_number_isDebugEnabled )
+        if( g_is_debug_enabled_integer )
         {
             new nominator_id, playerName[ 32 ];
             
@@ -2081,7 +2145,7 @@ public vote_handleDisplay()
         client_cmd( 0, "spk Gman/Gman_Choose%i", random_num( 1, 2 ) );
     }
     
-    if( g_number_isDebugEnabled )
+    if( g_is_debug_enabled_integer )
     {
         g_voteDuration = 5
     }
@@ -2136,7 +2200,7 @@ public vote_display( vote_display_task_argument[ 3 ] )
     new updateTimeRemaining = vote_display_task_argument[ 0 ];
     new player_id           = vote_display_task_argument[ 1 ];
     
-    if( g_number_isDebugEnabled )
+    if( g_is_debug_enabled_integer )
     {
         new snuff = ( player_id > 0 ) ? g_snuffDisplay[ player_id ] : -1;
         debugMessageLog( 4, "   [votedisplay( )] player_id: %i  updateTimeRemaining: %i  unsnuffDisplay: %i  g_snuffDisplay: %i  \
@@ -2198,7 +2262,7 @@ public vote_display( vote_display_task_argument[ 3 ] )
         new isRunoff  = ( g_voteStatus & VOTE_IS_RUNOFF );
         
         new bool:allowExtend = IS_FINAL_VOTE
-                               && !isRunoff
+        && !isRunoff
         
         if( g_isTimeToChangeLevel
             && !isRunoff )
@@ -2244,7 +2308,7 @@ public vote_display( vote_display_task_argument[ 3 ] )
                     // add the "Extend Map" menu item.
                     if( g_is_maxrounds_vote_map )
                     {
-                        extend_step = get_pcvar_num( g_extendmapStepRounds_pointer )
+                        extend_step = get_pcvar_num( cvar_extendmapStepRounds )
                         copy( extend_option_type, charsmax( extend_option_type ), "GAL_OPTION_EXTEND_ROUND" )
                     }
                     else
@@ -2422,7 +2486,7 @@ public vote_expire()
 {
     g_voteStatus |= VOTE_HAS_EXPIRED;
     
-    if( g_number_isDebugEnabled )
+    if( g_is_debug_enabled_integer )
     {
         debugMessageLog( 4, "" );
         debugMessageLog( 4, "   [VOTE RESULT]" );
@@ -2725,7 +2789,7 @@ public vote_expire()
                         if( g_is_maxrounds_vote_map )
                         {
                             client_print( 0, print_chat, "%L", LANG_PLAYER, "GAL_WINNER_EXTEND_ROUND",
-                                    get_pcvar_num( g_extendmapStepRounds_pointer ) );
+                                    get_pcvar_num( cvar_extendmapStepRounds ) );
                         }
                         else
                         {
@@ -2813,7 +2877,7 @@ map_extend()
     // do that actual map extension
     if( g_is_maxrounds_vote_map )
     {
-        new extendmap_step_rounds = get_pcvar_num( g_extendmapStepRounds_pointer )
+        new extendmap_step_rounds = get_pcvar_num( cvar_extendmapStepRounds )
         
         if( g_is_maxrounds_extend )
         {
@@ -3320,39 +3384,141 @@ public client_disconnect( player_id )
     // un-rock the vote
     vote_unrock( player_id );
     
-    // cancel player's nominations
-    new playerNominationMax = min( get_pcvar_num( cvar_nomPlayerAllowance ), MAX_NOMINATION_CNT );
-    new nominatedMaps[ 256 ], nominationCnt, idxMap, mapName[ 32 ];
-    
-    for( new idxNomination = 1; idxNomination <= playerNominationMax; ++idxNomination )
+    if( get_pcvar_num( cvar_unrockDisconnected ) )
     {
-        idxMap = g_nomination[ player_id ][ idxNomination ];
+        new idxMap
+        new nominationCnt
+        new playerNominationMax
         
-        if( idxMap >= 0 )
+        new mapName[ 32 ]
+        new nominatedMaps[ 256 ]
+        
+        // cancel player's nominations
+        playerNominationMax = min( get_pcvar_num( cvar_nomPlayerAllowance ), MAX_NOMINATION_CNT );
+        
+        for( new idxNomination = 1; idxNomination <= playerNominationMax; ++idxNomination )
         {
-            ArrayGetString( g_nominationMap, idxMap, mapName, sizeof( mapName ) - 1 );
-            nominationCnt++;
-            format( nominatedMaps, sizeof( nominatedMaps ) - 1, "%s%s, ", nominatedMaps, mapName );
-            g_nomination[ player_id ][ idxNomination ] = -1;
+            idxMap = g_nomination[ player_id ][ idxNomination ];
+            
+            if( idxMap >= 0 )
+            {
+                ArrayGetString( g_nominationMap, idxMap, mapName, sizeof( mapName ) - 1 );
+                nominationCnt++;
+                format( nominatedMaps, sizeof( nominatedMaps ) - 1, "%s%s, ", nominatedMaps, mapName );
+                g_nomination[ player_id ][ idxNomination ] = -1;
+            }
         }
-    }
-    
-    if( nominationCnt )
-    {
-        // strip the extraneous ", " from the string
-        nominatedMaps[ strlen( nominatedMaps ) - 2 ] = 0;
         
-        // inform the masses that the maps are no longer nominated
-        nomination_announceCancellation( nominatedMaps );
+        if( nominationCnt )
+        {
+            // strip the extraneous ", " from the string
+            nominatedMaps[ strlen( nominatedMaps ) - 2 ] = 0;
+            
+            // inform the masses that the maps are no longer nominated
+            nomination_announceCancellation( nominatedMaps );
+        }
     }
     
     new dbg_playerCnt = get_realplayersnum() - 1;
     debugMessageLog( 2, "%32s dbg_playerCnt:%i", "client_disconnect( )", dbg_playerCnt );
+    
+    if( dbg_playerCnt == 0 )
+    {
+        srv_handleEmpty();
+    }
 }
 
 public client_connect( player_id )
 {
+    set_pcvar_num( cvar_emptyCycle, 0 );
+    
     vote_unrock( player_id );
+}
+
+srv_handleEmpty()
+{
+    debugMessageLog( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "srv_handleEmpty(in)",
+            get_cvar_float( "mp_timelimit" ), g_originalTimelimit );
+    
+    if( g_originalTimelimit != get_cvar_float( "mp_timelimit" ) )
+    {
+        // it's possible that the map has been extended at least once. that
+        // means that if someone comes into the server, the time limit will
+        // be the extended time limit rather than the normal time limit. bad.
+        // reset the original time limit
+        map_restoreOriginalTimeLimit();
+    }
+    
+    // might be utilizing "empty server" feature
+    if( g_isUsingEmptyCycle
+        && g_emptyMapCnt )
+    {
+        srv_startEmptyCountdown();
+    }
+    
+    debugMessageLog( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "srv_handleEmpty(out)",
+            get_cvar_float( "mp_timelimit" ), g_originalTimelimit );
+}
+
+public srv_initEmptyCheck()
+{
+    if( get_pcvar_num( cvar_emptyWait ) )
+    {
+        if( ( get_realplayersnum() ) == 0
+            && !get_pcvar_num( cvar_emptyCycle ) )
+        {
+            srv_startEmptyCountdown();
+        }
+        g_isUsingEmptyCycle = true;
+    }
+}
+
+srv_startEmptyCountdown()
+{
+    new waitMinutes = get_pcvar_num( cvar_emptyWait );
+    
+    if( waitMinutes )
+    {
+        set_task( float( waitMinutes * 60 ), "srv_startEmptyCycle", TASKID_EMPTYSERVER );
+    }
+}
+
+public srv_startEmptyCycle()
+{
+    set_pcvar_num( cvar_emptyCycle, 1 );
+    
+    // set the next map from the empty cycle list,
+    // or the first one, if the current map isn't part of the cycle
+    new nextMap[ 32 ], mapIdx;
+    mapIdx = map_getNext( g_emptyCycleMap, g_currentMap, nextMap );
+    map_setNext( nextMap );
+    
+    // if the current map isn't part of the empty cycle,
+    // immediately change to next map that is
+    if( mapIdx == -1 )
+    {
+        map_change();
+    }
+}
+
+map_getNext( Array:mapArray, currentMap[], nextMap[ 32 ] )
+{
+    new thisMap[ 32 ], mapCnt = ArraySize( mapArray ), nextmapIdx = 0, returnVal = -1;
+    
+    for( new mapIdx = 0; mapIdx < mapCnt; mapIdx++ )
+    {
+        ArrayGetString( mapArray, mapIdx, thisMap, sizeof( thisMap ) - 1 );
+        
+        if( equal( currentMap, thisMap ) )
+        {
+            nextmapIdx = ( mapIdx == mapCnt - 1 ) ? 0 : mapIdx + 1;
+            returnVal  = nextmapIdx;
+            break;
+        }
+    }
+    ArrayGetString( mapArray, nextmapIdx, nextMap, sizeof( nextMap ) - 1 );
+    
+    return returnVal;
 }
 
 public client_putinserver( player_id )
@@ -3497,9 +3663,9 @@ public dbg_fakeVotes()
  */
 debugMessageLog( const mode, const text[] = "", { Float, Sql, Result, _ }: ... )
 {
-    g_number_isDebugEnabled = get_cvar_num( "gal_debug" );
+    g_is_debug_enabled_integer = get_cvar_num( "gal_debug" );
     
-    if( mode & g_number_isDebugEnabled )
+    if( mode & g_is_debug_enabled_integer )
     {
         // format the text as needed
         new formattedText[ 1024 ];
