@@ -33,6 +33,8 @@
 #define SHORT_STRING 64
 
 #define TASKID_REMINDER                  52691153
+#define TASKID_VOTE_MANAGEEND            52691152
+#define TASKID_SHOW_LAST_ROUND_HUD       52691052
 #define TASKID_EMPTYSERVER               98176977
 #define TASKID_START_VOTING_BY_ROUNDS    52691160
 #define TASKID_UNLOCK_VOTING             52691163
@@ -169,6 +171,7 @@ new g_total_CT_wins;
 new g_is_maxrounds_extend
 new g_is_maxrounds_vote_map
 new g_isTimeToChangeLevel
+new g_is_last_round
 new g_isTimeToRestart
 new g_isTimeLimitChanged
 new g_is_map_extension_allowed
@@ -205,6 +208,8 @@ new g_totalVotesCounted;
  */
 new cvar_emptyCycle;
 new cvar_unnominateDisconnected;
+new cvar_endOnRound
+new cvar_endOnRound_msg
 new cvar_extendmapMax;
 new cvar_extendmapStep;
 new cvar_extendmapStepRounds;
@@ -286,6 +291,8 @@ public plugin_init()
     
     cvar_emptyCycle             = register_cvar( "gal_in_empty_cycle", "0", FCVAR_SPONLY );
     cvar_unnominateDisconnected = register_cvar( "gal_unnominate_disconnected", "0" );
+    cvar_endOnRound             = register_cvar( "gal_endonround", "2" );
+    cvar_endOnRound_msg         = register_cvar( "gal_endonround_msg", "2" );
     cvar_cmdVotemap             = register_cvar( "gal_cmd_votemap", "0" );
     cvar_cmdListmaps            = register_cvar( "gal_cmd_listmaps", "2" );
     cvar_listmapsPaginate       = register_cvar( "gal_listmaps_paginate", "10" );
@@ -342,11 +349,6 @@ public plugin_init()
  */
 public plugin_cfg()
 {
-    g_isTimeLimitChanged  = false;
-    g_isTimeToChangeLevel = false;
-    g_isTimeToRestart     = false;
-    g_is_voting_locked    = false;
-    
     g_is_debug_enabled   = get_cvar_num( "gal_debug" );
     g_maxrounds_pointer  = get_cvar_pointer( "mp_maxrounds" )
     g_winlimit_pointer   = get_cvar_pointer( "mp_winlimit" )
@@ -936,6 +938,29 @@ public round_end()
     debugMessageLog( 32, "Round_End:  maxrounds_number = %d, \
             g_total_rounds_played = %d, current_rounds_trigger = %d",
             maxrounds_number, g_total_rounds_played, current_rounds_trigger )
+    
+    if( g_is_last_round )
+    {
+        if( g_isTimeToChangeLevel ) // when time runs out, end at the current round end
+        {
+            intermission_display( false )
+        }
+        else // when time runs out, end at the next round end
+        {
+            g_isTimeToChangeLevel = true
+            
+            if( get_pcvar_num( cvar_endOnRound_msg ) )
+            {
+                set_task( 1.0, "show_last_round_HUD", TASKID_SHOW_LAST_ROUND_HUD, _, _, "b" )
+            }
+        }
+    }
+}
+
+stock show_last_round_HUD()
+{
+    set_hudmessage( 255, 255, 255, 0.8, 0.8, 0, 1.0, 0, 0, -1 )
+    show_hudmessage( 0, "%L", LANG_PLAYER, "GAL_CHANGE_NEXTROUND" )
 }
 
 public start_voting_by_rounds()
@@ -971,10 +996,21 @@ public vote_setupEnd()
     g_originalMaxRounds = get_pcvar_num( g_maxrounds_pointer )
     g_originalWinLimit  = get_pcvar_num( g_winlimit_pointer )
     
-    set_task( 15.0, "vote_manageEnd", _, _, _, "b" );
+    setup_vote_manageEnd_task()
     
     debugMessageLog( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f",
             "vote_setupEnd( out )", get_cvar_float( "mp_timelimit" ), g_originalTimelimit );
+}
+
+/**
+ * Setup the main task that schedules the end map voting and allow round finish feature.
+ */
+stock setup_vote_manageEnd_task()
+{
+    if( !task_exists( TASKID_VOTE_MANAGEEND ) )
+    {
+        set_task( 15.0, "vote_manageEnd", TASKID_VOTE_MANAGEEND, _, _, "b" );
+    }
 }
 
 /**
@@ -1096,6 +1132,97 @@ public vote_manageEnd()
     {
         vote_startDirector( false );
     }
+    
+    // are we managing the end of the map?
+    if( secondsLeft < 30 )
+    {
+        remove_task( TASKID_VOTE_MANAGEEND )
+        map_manageEnd();
+    }
+}
+
+stock intermission_display( is_map_change_stays = false )
+{
+    if( g_isTimeToChangeLevel )
+    {
+        g_isTimeToChangeLevel = false;
+        
+        if( is_map_change_stays )
+        {
+            set_task( 5.0, "map_change_stays", TASKID_MAP_CHANGE );
+        }
+        else
+        {
+            set_task( 5.0, "map_change", TASKID_MAP_CHANGE );
+        }
+        
+        // freeze the game and show the scoreboard
+        message_begin( MSG_ALL, SVC_INTERMISSION );
+        message_end();
+    }
+}
+
+/*
+    TODO, implement displayTime using audio since visual doesn't seem to work
+    
+    // freeze the game and show the scoreboard
+    message_begin(MSG_ALL, SVC_INTERMISSION);
+    message_end();
+    
+    //new chatTime = floatround(get_cvar_float("mp_chattime"), floatround_floor);
+    
+    // display intermission expiration countdown
+    //set_task(1.0, "intermission_displayTimer", chatTime, _, _, "a", chatTime);
+    
+    // change the map after "chattime" is over
+    set_task(floatmax(get_cvar_float("mp_chattime"), 2.0), "map_change");
+
+public intermission_displayTimer(originalChatTime)
+{
+    static secondsLeft = -1;
+    if (secondsLeft == -1)
+    {
+        secondsLeft = originalChatTime;
+    }
+    secondsLeft--;
+    
+    client_print(0, print_center, "Intermission ends in %i seconds.", secondsLeft);
+    client_print(0, print_chat, "%i seconds", secondsLeft);
+    
+    set_hudmessage(255, 0, 90, 0.80, 0.20, 0, 1.0, 2.0, 0.1, 0.1, -1);
+//    set_hudmessage(0, 222, 50, -1.0, 0.13, 0, 1.0, 0.94, 0.0, 0.0, -1);
+    show_hudmessage(0, "Intermission ends in %i seconds.", secondsLeft);
+    // use audio since visual doesn't seem to work
+    // something like "map will change in 2 seconds"
+
+}
+*/
+
+public map_manageEnd()
+{
+    debugMessageLog( 2, "%32s mp_timelimit: %f", "map_manageEnd(in)", get_cvar_float( "mp_timelimit" ) );
+    
+    if( get_pcvar_num( cvar_endOnRound ) )
+    {
+        g_is_last_round = true;
+        
+        client_print( 0, print_chat, "%L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED",
+                LANG_PLAYER, "GAL_CHANGE_NEXTROUND" );
+        
+        // prevent the map from ending automatically
+        server_cmd( "mp_timelimit 0" );
+    }
+    
+    if( get_pcvar_num( cvar_endOnRound ) == 1 )
+    {
+        g_isTimeToChangeLevel = true;
+    }
+    
+    new map[ MAX_MAPNAME_LEN + 1 ];
+    get_cvar_string( "amx_nextmap", map, sizeof( map ) - 1 );
+    client_print( 0, print_chat, "%L", LANG_PLAYER, "GAL_NEXTMAP", map );
+    
+    debugMessageLog( 2, "%32s mp_timelimit: %f", "map_manageEnd(out)", get_cvar_float( "mp_timelimit" ) );
 }
 
 public map_loadRecentList()
@@ -1479,6 +1606,8 @@ public event_game_commencing()
     // ( can be skewed if map was previously extended )
     map_restoreOriginalTimeLimit();
     reset_rounds_scores()
+    
+    setup_vote_manageEnd_task()
     
     debugMessageLog( 32, "^n AT: event_game_commencing" )
 }
@@ -2406,8 +2535,8 @@ public vote_display( vote_display_task_argument[ 3 ] )
         new allowStay = ( g_voteStatus & VOTE_IS_EARLY );
         new isRunoff  = ( g_voteStatus & VOTE_IS_RUNOFF );
         
-        new bool:allowExtend = IS_FINAL_VOTE
-        && !isRunoff
+        new bool:allowExtend = ( IS_FINAL_VOTE
+                                 && !isRunoff )
         
         if( g_isTimeToChangeLevel
             && !isRunoff )
@@ -2906,19 +3035,10 @@ public vote_expire()
                     // "stay here" won
                     client_print( 0, print_chat, "%L", LANG_PLAYER, "GAL_WINNER_STAY" );
                     
-                    if( g_isTimeToChangeLevel )
-                    {
-                        g_isTimeToChangeLevel = false;
-                        
-                        // no longer is an early vote
-                        g_voteStatus &= ~VOTE_IS_EARLY;
-                        
-                        set_task( 5.0, "map_change_stays", TASKID_MAP_CHANGE );
-                        
-                        // freeze the game and show the scoreboard
-                        message_begin( MSG_ALL, SVC_INTERMISSION );
-                        message_end();
-                    }
+                    // no longer is an early vote
+                    g_voteStatus &= ~VOTE_IS_EARLY;
+                    
+                    intermission_display( true )
                 }
                 else
                 {
@@ -2954,15 +3074,7 @@ public vote_expire()
             
             client_print( 0, print_chat, "%L", LANG_PLAYER, "GAL_NEXTMAP", g_mapsVoteMenuNames[ winnerVoteMapIndex ] );
             
-            if( g_isTimeToChangeLevel )
-            {
-                g_isTimeToChangeLevel = false;
-                set_task( 5.0, "map_change", TASKID_MAP_CHANGE );
-                
-                // freeze the game and show the scoreboard
-                message_begin( MSG_ALL, SVC_INTERMISSION );
-                message_end();
-            }
+            intermission_display()
             
             g_voteStatus |= VOTE_IS_OVER;
         }
@@ -2975,15 +3087,7 @@ public vote_expire()
         
         client_print( 0, print_chat, "%L", LANG_PLAYER, "GAL_WINNER_RANDOM", initialNextMap );
         
-        if( g_isTimeToChangeLevel )
-        {
-            g_isTimeToChangeLevel = false;
-            set_task( 5.0, "map_change", TASKID_MAP_CHANGE );
-            
-            // freeze the game and show the scoreboard
-            message_begin( MSG_ALL, SVC_INTERMISSION );
-            message_end();
-        }
+        intermission_display()
         
         g_voteStatus |= VOTE_IS_OVER;
     }
