@@ -178,32 +178,6 @@ new g_is_map_extension_allowed
 
 
 /**
- *
- */
-new bool:g_isUsingEmptyCycle
-new Array: g_emptyCycleMap
-new g_emptyMapCnt
-new g_cntRecentMap;
-new Array:g_nominationMap
-new g_nominationMapCnt;
-new Array:g_fillerMap;
-new Float:g_rtvWait;
-new g_rockedVoteCnt;
-
-new MENU_CHOOSEMAP[] = "gal_menuChooseMap";
-new DIR_CONFIGS[ 128 ];
-new DIR_DATA[ 128 ];
-
-new g_totalVoteOptions
-new g_totalVoteOptions_temp
-
-new g_choiceMax;
-new g_voteStatus
-new g_voteDuration
-new g_totalVotesCounted;
-
-
-/**
  * Server cvars
  */
 new cvar_emptyCycle;
@@ -242,6 +216,32 @@ new cvar_runoffDuration;
 new cvar_voteStatus
 new cvar_voteStatusType;
 new cvar_soundsMute;
+
+/**
+ * Various Artists
+ */
+new bool:g_is_to_cancel_end_vote
+new bool:g_isUsingEmptyCycle
+new Array: g_emptyCycleMap
+new g_emptyMapCnt
+new g_cntRecentMap;
+new Array:g_nominationMap
+new g_nominationMapCnt;
+new Array:g_fillerMap;
+new Float:g_rtvWait;
+new g_rockedVoteCnt;
+
+new MENU_CHOOSEMAP[] = "gal_menuChooseMap";
+new DIR_CONFIGS[ 128 ];
+new DIR_DATA[ 128 ];
+
+new g_totalVoteOptions
+new g_totalVoteOptions_temp
+
+new g_choiceMax;
+new g_voteStatus
+new g_voteDuration
+new g_totalVotesCounted;
 
 new CLR_RED[ 3 ];    // \r
 new CLR_WHITE[ 3 ];  // \w
@@ -712,9 +712,8 @@ public vote_manageEnd()
     // are we ready to start an "end of map" vote?
     if( ( secondsLeft < START_VOTEMAP_MIN_TIME )
         && ( secondsLeft > START_VOTEMAP_MAX_TIME )
-        && ( get_pcvar_num( cvar_endOfMapVote ) )
-        && !( g_voteStatus & VOTE_IN_PROGRESS )
-        && !g_is_maxrounds_vote_map )
+        && !g_is_maxrounds_vote_map
+        && get_pcvar_num( cvar_endOfMapVote ) )
     {
         vote_startDirector( false );
     }
@@ -929,6 +928,7 @@ public cmd_startVote( player_id, level, cid )
             
             if( equali( vote_display_task_argument, "-nochange" ) )
             {
+                g_is_to_cancel_end_vote = true;
                 g_isTimeToChangeLevel = false;
             }
             
@@ -1621,9 +1621,12 @@ public vote_startDirector( bool:forced )
     if( ( ( g_voteStatus & VOTE_IN_PROGRESS )
           && !( g_voteStatus & VOTE_IS_RUNOFF ) )
         || ( g_is_voting_locked
-             && !( g_voteStatus & VOTE_IS_RUNOFF ) ) )
+             && !( g_voteStatus & VOTE_IS_RUNOFF ) )
+        || g_is_to_cancel_end_vote )
     {
-        debugMessageLog( 1, "At vote_startDirector --- The voting was canceled." )
+        debugMessageLog( 1, "At vote_startDirector --- The voting was canceled. g_voteStatus=%d, \
+                g_is_voting_locked=%d, g_is_to_cancel_end_vote=%d", 
+                g_voteStatus, g_is_voting_locked, g_is_to_cancel_end_vote )
         return
     }
     
