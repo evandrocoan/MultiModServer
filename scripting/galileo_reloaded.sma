@@ -121,11 +121,19 @@
 
 
 /**
+ * Call the internal function to perform its task and stop the current test execution to avoid
+ * double failure at the test control system.
+ */
+#define SET_TEST_FAILURE(%1) ( set_test_failure_internal( %1 ) ); \
+    return;
+
+
+/**
  * Contains all unit tests to execute.
  */
 #define ALL_TESTS_TO_EXECUTE \
     test_register_test(); \
-    test_is_map_extension_allowed(); \
+    test_is_map_extension_allowed1(); \
     test_gal_in_empty_cycle1(); \
     test_gal_in_empty_cycle2(); \
     test_gal_in_empty_cycle3(); \
@@ -184,6 +192,7 @@ new cvar_emptyCycle;
 new cvar_unnominateDisconnected;
 new cvar_endOnRound
 new cvar_endOnRound_msg
+new cvar_endOnRound_players
 new cvar_voteWeight
 new cvar_voteWeightFlags
 new cvar_extendmapMax;
@@ -217,6 +226,7 @@ new cvar_voteStatus
 new cvar_voteStatusType;
 new cvar_soundsMute;
 
+
 /**
  * Various Artists
  */
@@ -249,7 +259,7 @@ new CLR_YELLOW[ 3 ]; // \y
 new CLR_GREY[ 3 ];   // \d
 
 new g_refreshVoteStatus = true
-new g_voteWeightFlags[32];
+new g_voteWeightFlags[ 32 ];
 new g_nextmap[ MAX_MAPNAME_LEN + 1 ];
 new g_totalVoteAtMapType[ 3 ]
 new g_snuffDisplay[ MAX_PLAYER_CNT + 1 ];
@@ -297,6 +307,7 @@ public plugin_init()
     cvar_unnominateDisconnected = register_cvar( "gal_unnominate_disconnected", "0" );
     cvar_endOnRound             = register_cvar( "gal_endonround", "2" );
     cvar_endOnRound_msg         = register_cvar( "gal_endonround_msg", "1" );
+    cvar_endOnRound_players     = register_cvar( "gal_endonround_players", "1" );
     cvar_voteWeight             = register_cvar( "gal_vote_weight", "1" );
     cvar_voteWeightFlags        = register_cvar( "gal_vote_weightflags", "y" );
     cvar_cmdVotemap             = register_cvar( "gal_cmd_votemap", "0" );
@@ -378,9 +389,9 @@ public plugin_cfg()
         copy( CLR_YELLOW, 2, "\y" );
     }
     
-    g_rtvWait = get_pcvar_float( cvar_rtvWait );
+    g_rtvWait   = get_pcvar_float( cvar_rtvWait );
     g_choiceMax = max( min( MAX_MAPS_IN_VOTE, get_pcvar_num( cvar_voteMapChoiceCnt ) ), 2 )
-
+    
     get_pcvar_string( cvar_voteWeightFlags, g_voteWeightFlags, sizeof( g_voteWeightFlags ) - 1 );
     get_mapname( g_currentMap, sizeof( g_currentMap ) - 1 );
     
@@ -797,8 +808,7 @@ public show_last_round_HUD()
 
 stock prevent_map_change()
 {
-    if( get_realplayersnum() > 1
-        || g_is_debug_enabled )
+    if( get_realplayersnum() >= get_pcvar_num( cvar_endOnRound_players ) )
     {
         save_time_limit()
         
@@ -929,7 +939,7 @@ public cmd_startVote( player_id, level, cid )
             if( equali( vote_display_task_argument, "-nochange" ) )
             {
                 g_is_to_cancel_end_vote = true;
-                g_isTimeToChangeLevel = false;
+                g_isTimeToChangeLevel   = false;
             }
             
             if( equali( vote_display_task_argument, "-restart" ) )
@@ -1625,7 +1635,7 @@ public vote_startDirector( bool:forced )
         || g_is_to_cancel_end_vote )
     {
         debugMessageLog( 1, "At vote_startDirector --- The voting was canceled. g_voteStatus=%d, \
-                g_is_voting_locked=%d, g_is_to_cancel_end_vote=%d", 
+                g_is_voting_locked=%d, g_is_to_cancel_end_vote=%d",
                 g_voteStatus, g_is_voting_locked, g_is_to_cancel_end_vote )
         return
     }
@@ -2886,20 +2896,21 @@ public vote_handleChoice( player_id, key )
                     client_print( player_id, print_chat, "%L", player_id, "GAL_CHOICE_MAP", g_mapsVoteMenuNames[ key ] );
                 }
             }
-
+            
             // register the player's choice giving extra weight to admin votes
-            new voteWeight = get_pcvar_num(cvar_voteWeight);
-
-            if (voteWeight > 1 && has_flag(player_id, g_voteWeightFlags))
+            new voteWeight = get_pcvar_num( cvar_voteWeight );
+            
+            if( voteWeight > 1
+                && has_flag( player_id, g_voteWeightFlags ) )
             {
-                g_arrayOfMapsWithVotesNumber[key] += voteWeight;
-                g_totalVotesCounted += (voteWeight - 1);
-
-                client_print(player_id, print_chat, "%L", player_id, "GAL_VOTE_WEIGHTED", voteWeight);
+                g_arrayOfMapsWithVotesNumber[ key ] += voteWeight;
+                g_totalVotesCounted                 += ( voteWeight - 1 );
+                
+                client_print( player_id, print_chat, "%L", player_id, "GAL_VOTE_WEIGHTED", voteWeight );
             }
             else
             {
-                g_arrayOfMapsWithVotesNumber[key]++;
+                g_arrayOfMapsWithVotesNumber[ key ]++;
             }
         }
         g_voted[ player_id ] = true;
@@ -3566,11 +3577,12 @@ stock runTests()
     
     if( g_max_delay_result )
     {
-        debugMessageLog( 1, "^n    Finished Tests First Step Execution.^n^n" )
         set_task( g_max_delay_result + 1.0, "show_delayed_results" )
+        debugMessageLog( 1, "^n    Finished Tests First Step Execution.^n^n" )
     }
     else
     {
+        restore_server_cvars_for_test()
         debugMessageLog( 1, "^n    Finished 'Galileo Reloaded' Tests Execution.^n^n" )
     }
 }
@@ -3649,7 +3661,7 @@ stock register_test( max_delay_result, test_name[] )
  * @failure_reason the reason why the test failed
  * @any a variable number of formatting parameters
  */
-stock set_test_failure( test_id, failure_reason[], any: ... )
+stock set_test_failure_internal( test_id, failure_reason[], any: ... )
 {
     g_totalSuccessfulTests--
     g_totalFailureTests++
@@ -3671,15 +3683,13 @@ stock test_register_test()
     
     if( g_totalSuccessfulTests != 1 )
     {
-        set_test_failure( test_id, "g_totalSuccessfulTests must be 1 (it was %d)",
+        SET_TEST_FAILURE( test_id, "g_totalSuccessfulTests must be 1 (it was %d)", \
                 g_totalSuccessfulTests )
-        return;
     }
     
     if( test_id != 1 )
     {
-        set_test_failure( test_id, "test_id must be 1 (it was %d)", test_id )
-        return;
+        SET_TEST_FAILURE( test_id, "test_id must be 1 (it was %d)", test_id )
     }
     
     new first_test_name[ 64 ]
@@ -3687,9 +3697,8 @@ stock test_register_test()
     
     if( !equal( first_test_name, "test_register_test" ) )
     {
-        set_test_failure( test_id, "first_test_name must be 'test_register_test' (it was %s)",
+        SET_TEST_FAILURE( test_id, "first_test_name must be 'test_register_test' (it was %s)", \
                 first_test_name )
-        return;
     }
 }
 
@@ -3703,22 +3712,20 @@ stock test_register_test()
  * This is the 1º chain test, and test if the cvar 'amx_extendmap_max' functionality is working
  * properly.
  */
-stock test_is_map_extension_allowed()
+stock test_is_map_extension_allowed1()
 {
-    new test_id = register_test( 20, "test_is_map_extension_allowed" )
+    new test_id = register_test( 20, "test_is_map_extension_allowed1" )
     
     if( g_is_map_extension_allowed )
     {
-        set_test_failure( test_id, "g_is_map_extension_allowed must be 0 (it was %d)",
+        SET_TEST_FAILURE( test_id, "g_is_map_extension_allowed must be 0 (it was %d)", \
                 g_is_map_extension_allowed )
-        return;
     }
     
     if( !g_refreshVoteStatus )
     {
-        set_test_failure( test_id, "g_refreshVoteStatus must be 1 (it was %d)",
+        SET_TEST_FAILURE( test_id, "g_refreshVoteStatus must be 1 (it was %d)", \
                 g_is_map_extension_allowed )
-        return;
     }
     
     cancel_voting()
@@ -3726,12 +3733,11 @@ stock test_is_map_extension_allowed()
     
     if( !g_is_map_extension_allowed )
     {
-        set_test_failure( test_id, "g_is_map_extension_allowed must be 1 (it was %d)",
+        SET_TEST_FAILURE( test_id, "g_is_map_extension_allowed must be 1 (it was %d)", \
                 g_is_map_extension_allowed )
-        return;
     }
     
-    set_task( 10.0, "test_is_map_extension_delayed", test_id )
+    set_task( 10.0, "test_is_map_extension_allowed2", test_id )
     g_refreshVoteStatus = true;
 }
 
@@ -3739,13 +3745,12 @@ stock test_is_map_extension_allowed()
  * This is the 2º test at vote_startDirector() chain and must add 10.0 seconds to the total time
  * execution.
  */
-public test_is_map_extension_delayed( test_id )
+public test_is_map_extension_allowed2( test_id )
 {
     if( g_refreshVoteStatus )
     {
-        set_test_failure( test_id, "g_refreshVoteStatus must be 0 (it was %d)",
+        SET_TEST_FAILURE( test_id, "g_refreshVoteStatus must be 0 (it was %d)", \
                 g_is_map_extension_allowed )
-        return;
     }
     
     set_pcvar_num( cvar_extendmapMax, 10 )
@@ -3756,26 +3761,42 @@ public test_is_map_extension_delayed( test_id )
     
     if( g_is_map_extension_allowed )
     {
-        set_test_failure( test_id, "g_is_map_extension_allowed must be 0 (it was %d)",
+        SET_TEST_FAILURE( test_id, "g_is_map_extension_allowed must be 0 (it was %d)", \
                 g_is_map_extension_allowed )
-        return;
     }
     
-    set_task( 10.0, "test_is_map_extension_delayed2", test_id )
+    set_task( 10.0, "test_is_map_extension_allowed3", test_id )
     g_refreshVoteStatus = false;
 }
 
 /**
  * This is the 3º test at vote_startDirector() chain and must add 0 seconds to the total time
  * execution.
+ *
+ * This tests if the end map voting is starting automatically at the end of map due time limit
+ * expiration.
  */
-public test_is_map_extension_delayed2( test_id )
+public test_is_map_extension_allowed3( test_id )
 {
+    new secondsLeft = get_timeleft();
+    
     if( !g_refreshVoteStatus )
     {
-        set_test_failure( test_id, "g_refreshVoteStatus must be 1 (it was %d)",
+        SET_TEST_FAILURE( test_id, "g_refreshVoteStatus must be 1 (it was %d)", \
                 g_is_map_extension_allowed )
-        return;
+    }
+    
+    cancel_voting()
+    
+    set_cvar_float( "mp_timelimit", (
+                ( get_cvar_float( "mp_timelimit" ) ) * 60 - secondsLeft
+                + START_VOTEMAP_MIN_TIME - 10 ) / 60 )
+    
+    vote_manageEnd()
+    
+    if( !g_is_voting_locked )
+    {
+        SET_TEST_FAILURE( test_id, "vote_startDirector() does not started!" )
     }
 }
 
@@ -3791,9 +3812,8 @@ stock test_gal_in_empty_cycle1()
     
     if( get_pcvar_num( cvar_emptyCycle ) )
     {
-        set_test_failure( test_id, "cvar_emptyCycle must be 0 (it was %d)",
+        SET_TEST_FAILURE( test_id, "cvar_emptyCycle must be 0 (it was %d)", \
                 get_pcvar_num( cvar_emptyCycle ) )
-        return;
     }
     
     set_pcvar_num( cvar_emptyCycle, 0 )
@@ -3801,9 +3821,8 @@ stock test_gal_in_empty_cycle1()
     
     if( get_pcvar_num( cvar_emptyCycle ) )
     {
-        set_test_failure( test_id, "cvar_emptyCycle must be 0 (it was %d)",
+        SET_TEST_FAILURE( test_id, "cvar_emptyCycle must be 0 (it was %d)", \
                 get_pcvar_num( cvar_emptyCycle ) )
-        return;
     }
 }
 
@@ -3827,18 +3846,16 @@ stock test_gal_in_empty_cycle2()
     
     if( !equal( nextMap, "de_inferno" ) )
     {
-        set_test_failure( test_id, "test_gal_in_empty_cycle2() nextMap must be 'de_inferno' \
+        SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle2() nextMap must be 'de_inferno' \
                 (it was %s)", nextMap )
-        return;
     }
     
     // if the current map isn't part of the empty cycle,
     // immediately change to next map that is
     if( mapIdx == -1 )
     {
-        set_test_failure( test_id, "test_gal_in_empty_cycle2() mapIdx must NOT be '-1' \
+        SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle2() mapIdx must NOT be '-1' \
                 (it was %d)", mapIdx )
-        return;
     }
 }
 
@@ -3863,18 +3880,16 @@ stock test_gal_in_empty_cycle3()
     
     if( !equal( nextMap, "de_dust4" ) )
     {
-        set_test_failure( test_id, "test_gal_in_empty_cycle3() nextMap must be 'de_dust4' \
+        SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle3() nextMap must be 'de_dust4' \
                 (it was %s)", nextMap )
-        return;
     }
     
     // if the current map isn't part of the empty cycle,
     // immediately change to next map that is
     if( mapIdx == -1 )
     {
-        set_test_failure( test_id, "test_gal_in_empty_cycle3() mapIdx must NOT be '-1' \
+        SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle3() mapIdx must NOT be '-1' \
                 (it was %d)", mapIdx )
-        return;
     }
 }
 
@@ -3899,18 +3914,16 @@ stock test_gal_in_empty_cycle4()
     
     if( !equal( nextMap, "de_dust2" ) )
     {
-        set_test_failure( test_id, "test_gal_in_empty_cycle3() nextMap must be 'de_dust2' \
+        SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle3() nextMap must be 'de_dust2' \
                 (it was %s)", nextMap )
-        return;
     }
     
     // if the current map isn't part of the empty cycle,
     // immediately change to next map that is
     if( !( mapIdx == -1 ) )
     {
-        set_test_failure( test_id, "test_gal_in_empty_cycle3() mapIdx must be '-1' \
+        SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle3() mapIdx must be '-1' \
                 (it was %d)", mapIdx )
-        return;
     }
 }
 
