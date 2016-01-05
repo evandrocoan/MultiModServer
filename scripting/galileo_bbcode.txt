@@ -8,9 +8,7 @@
 
 [B]Galileo Reloaded will can:[/B]
 [LIST=1]
-[*]display colored text messages. 
 [*]nominate maps by a map list menu.
-[*]allow the last round to finish before change to the next map. 
 [*]change the server map to a popular one when the server is empty too much time. 
 [*]change the nextmap to [not voted yet] 
 [*]during a vote, change the nextmap to [vote in progress] 
@@ -19,6 +17,7 @@
 
 [B]Galileo Reloaded can:[/B]
 [LIST=1]
+[*]display colored text messages. 
 [*]always show the option "Keep Current Map" at any voting. 
 [*]always show the countdown remaining vote time. 
 [*]manage RunOff vote between a map and "Keep Current Map". 
@@ -29,6 +28,7 @@
 [*]load the current vote/nominate map list from the current mapcycle file. 
 [*]keep the initial server next map when nobody vote for next map. 
 [*]be easier learned to code new features as it has some code documentation. 
+[*]allow the last round to finish before change to the next map. 
 [/LIST]
 
 [B]The original Galileo cannot:[/B]
@@ -210,6 +210,8 @@ galileo_reloaded.amxx
  * Fixed the cvar "gal_endonround" that indicates when a map should end when time runs out.
  * Fixed concurrency problem between mp_maxrounds, mp_winlimit and mp_timelimit.
  * Added a basic unit test structure for developers/scripters.
+ * Added weighted votes that allows admins to have their vote counted more. 
+ * Added display colored text messages support.
 [/QUOTE]
 
 ******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *********************************

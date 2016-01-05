@@ -210,6 +210,8 @@ new cvar_emptyCycle;
 new cvar_unnominateDisconnected;
 new cvar_endOnRound
 new cvar_endOnRound_msg
+new cvar_voteWeight
+new cvar_voteWeightFlags
 new cvar_extendmapMax;
 new cvar_extendmapStep;
 new cvar_extendmapStepRounds;
@@ -247,6 +249,7 @@ new CLR_YELLOW[ 3 ]; // \y
 new CLR_GREY[ 3 ];   // \d
 
 new g_refreshVoteStatus = true
+new g_voteWeightFlags[32];
 new g_nextmap[ MAX_MAPNAME_LEN + 1 ];
 new g_totalVoteAtMapType[ 3 ]
 new g_snuffDisplay[ MAX_PLAYER_CNT + 1 ];
@@ -294,6 +297,8 @@ public plugin_init()
     cvar_unnominateDisconnected = register_cvar( "gal_unnominate_disconnected", "0" );
     cvar_endOnRound             = register_cvar( "gal_endonround", "2" );
     cvar_endOnRound_msg         = register_cvar( "gal_endonround_msg", "1" );
+    cvar_voteWeight             = register_cvar( "gal_vote_weight", "1" );
+    cvar_voteWeightFlags        = register_cvar( "gal_vote_weightflags", "y" );
     cvar_cmdVotemap             = register_cvar( "gal_cmd_votemap", "0" );
     cvar_cmdListmaps            = register_cvar( "gal_cmd_listmaps", "2" );
     cvar_listmapsPaginate       = register_cvar( "gal_listmaps_paginate", "10" );
@@ -374,9 +379,10 @@ public plugin_cfg()
     }
     
     g_rtvWait = get_pcvar_float( cvar_rtvWait );
-    
+    g_choiceMax = max( min( MAX_MAPS_IN_VOTE, get_pcvar_num( cvar_voteMapChoiceCnt ) ), 2 )
+
+    get_pcvar_string( cvar_voteWeightFlags, g_voteWeightFlags, sizeof( g_voteWeightFlags ) - 1 );
     get_mapname( g_currentMap, sizeof( g_currentMap ) - 1 );
-    g_choiceMax = max( min( MAX_MAPS_IN_VOTE, get_pcvar_num( cvar_voteMapChoiceCnt ) ), 2 );
     
     g_fillerMap     = ArrayCreate( 32 );
     g_nominationMap = ArrayCreate( 32 );
@@ -2877,7 +2883,21 @@ public vote_handleChoice( player_id, key )
                     client_print( player_id, print_chat, "%L", player_id, "GAL_CHOICE_MAP", g_mapsVoteMenuNames[ key ] );
                 }
             }
-            g_arrayOfMapsWithVotesNumber[ key ]++;
+
+            // register the player's choice giving extra weight to admin votes
+            new voteWeight = get_pcvar_num(cvar_voteWeight);
+
+            if (voteWeight > 1 && has_flag(player_id, g_voteWeightFlags))
+            {
+                g_arrayOfMapsWithVotesNumber[key] += voteWeight;
+                g_totalVotesCounted += (voteWeight - 1);
+
+                client_print(player_id, print_chat, "%L", player_id, "GAL_VOTE_WEIGHTED", voteWeight);
+            }
+            else
+            {
+                g_arrayOfMapsWithVotesNumber[key]++;
+            }
         }
         g_voted[ player_id ] = true;
         g_refreshVoteStatus  = true;
