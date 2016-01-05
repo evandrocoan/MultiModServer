@@ -28,7 +28,7 @@
 [*]load the current vote/nominate map list from the current mapcycle file. 
 [*]keep the initial server next map when nobody vote for next map. 
 [*]be easier learned to code new features as it has some code documentation. 
-[*]allow the last round to finish before change to the next map. 
+[*]allow the last round to finish before change to the next map.
 [/LIST]
 
 [B]The original Galileo cannot:[/B]
@@ -39,12 +39,11 @@
 [*]change the time limit to zero. 
 [*]display colored text messages. 
 [*]nominate maps by a map list menu.
-[*]be used with the AMXX very own "Next Map" plugin. 
+[*]be used with the AMXX "Next Map" plugin.
 [*]manage/start end map vote with mp_maxrounds, mp_winlimit or mp_timelimit.
 [*]use the current mapcycle to nominate maps. 
 [*]load the current vote/nominate map list from the current mapcycle file. 
 [*]keep the initial server next map when nobody vote for next map. 
-[*]be easier learned to code new features as it has some useful code documentation.
 [/LIST]
 
 [anchor]Top[/anchor][SIZE="5"][COLOR="blue"][B]Contents' Table[/B][/COLOR][/SIZE] 
@@ -206,6 +205,8 @@ galileo_reloaded.amxx
  * Added new cvar "gal_emptyserver_wait" which implements the server empty feature.
  * Added new cvar "gal_emptyserver_mapfile" which specifies a empty server map cycle list.
  * Added new cvar "gal_unnominate_disconnected" to remove a disconnected player nominations.
+ * Added new cvar "gal_endonround_players" which indicates the players minimum number necessary 
+    to allow the last round to be finished when time runs out.
  * Added new cvar "gal_endonround_msg" to indicates how to announce the last round.
  * Fixed the cvar "gal_endonround" that indicates when a map should end when time runs out.
  * Fixed concurrency problem between mp_maxrounds, mp_winlimit and mp_timelimit.
