@@ -753,7 +753,6 @@ public map_manageEnd()
     debugMessageLog( 2, "%32s mp_timelimit: %f", "map_manageEnd(in)", get_cvar_float( "mp_timelimit" ) );
     
     get_cvar_string( "amx_nextmap", g_nextmap, sizeof( g_nextmap ) - 1 );
-    print_colored( 0, "%L", LANG_PLAYER, "GAL_NEXTMAP", g_nextmap );
     
     if( get_pcvar_num( cvar_endOnRound ) == 1 ) // when time runs out, end at the current round end
     {
@@ -806,12 +805,12 @@ public show_last_round_HUD()
     
     if( g_isTimeToChangeLevel )
     {
-        show_hudmessage( 0, "%L %L", LANG_PLAYER, "GAL_CHANGE_NEXTROUND",
+        show_hudmessage( 0, "%L ^n%L", LANG_PLAYER, "GAL_CHANGE_NEXTROUND",
                 LANG_PLAYER, "GAL_NEXTMAP", g_nextmap )
     }
     else
     {
-        show_hudmessage( 0, "%L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED",
+        show_hudmessage( 0, "%L ^n%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED",
                 LANG_PLAYER, "GAL_NEXTMAP", g_nextmap )
     }
 }
@@ -3488,18 +3487,16 @@ stock percent( is, of )
 stock print_colored( player_id, message[], any: ... )
 {
     new formated_message[ MAX_COLOR_MESSAGE ]
+    new formated_colored[ MAX_COLOR_MESSAGE ]
     
     vformat( formated_message, charsmax( formated_message ), message, 3 )
+    formatex( formated_colored, charsmax( formated_colored ), "^1%s", formated_message )
     
     if( g_is_supported_color_chat )
     {
-        new formated_colored[ MAX_COLOR_MESSAGE ]
-        
-        replace_all( formated_message, charsmax( formated_message ), "!y", "^1" ); // yellow
-        replace_all( formated_message, charsmax( formated_message ), "!t", "^3" ); // team
-        replace_all( formated_message, charsmax( formated_message ), "!g", "^4" ); // green
-        
-        formatex( formated_colored, charsmax( formated_colored ), "^1%s", formated_message )
+        replace_all( formated_colored, charsmax( formated_colored ), "!y", "^1" ); // yellow
+        replace_all( formated_colored, charsmax( formated_colored ), "!t", "^3" ); // team
+        replace_all( formated_colored, charsmax( formated_colored ), "!g", "^4" ); // green
 
 #if AMXX_VERSION_NUM < 183
         print_color_text_chooser( player_id, formated_colored )
@@ -3516,14 +3513,7 @@ stock print_colored( player_id, message[], any: ... )
         client_print( player_id, print_chat, formated_message )
     }
     
-    if( g_is_debug_enabled )
-    {
-        replace_all( formated_message, charsmax( formated_message ), "!y", "" ) // yellow
-        replace_all( formated_message, charsmax( formated_message ), "!t", "" ) // team
-        replace_all( formated_message, charsmax( formated_message ), "!g", "" ) // green
-        
-        debugMessageLog( 1, "Player Id: %d, Chat printed: %s", player_id, formated_message )
-    }
+    debugMessageLog( 1, "Player Id: %d, Chat printed: %s", player_id, formated_message )
 }
 
 stock print_color_text_chooser( player_id, input[] )
@@ -3549,8 +3539,6 @@ stock print_color_text_chooser( player_id, input[] )
 
 stock print_color_text_internal( player_id, text[] )
 {
-    text[ 192 ] = '^0' // max message size 192
-    
     message_begin( MSG_ONE_UNRELIABLE, g_user_msgid, _, player_id );
     write_byte( player_id );
     write_string( text );
