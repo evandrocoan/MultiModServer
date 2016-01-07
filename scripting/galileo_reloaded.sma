@@ -141,10 +141,15 @@
     test_gal_in_empty_cycle4();
 
 
+/** This is to view internal program data while execution. See the function 'debugMessageLog(...)'
+ * at the end of this file, for more information. Default value: 0  - which is disabled.
+ */
+new g_debug_level
+
+
 /**
  * Test unit variables related to debug level 1, displays basic debug messages.
  */
-new g_is_debug_enabled
 new g_max_delay_result
 new g_totalSuccessfulTests
 new g_totalFailureTests
@@ -244,7 +249,10 @@ new g_nominationMapCnt;
 new Array:g_fillerMap;
 new Float:g_rtvWait;
 new g_rockedVoteCnt;
+
+#if AMXX_VERSION_NUM < 183
 new g_user_msgid
+#endif
 
 new MENU_CHOOSEMAP[] = "gal_menuChooseMap";
 new DIR_CONFIGS[ 128 ];
@@ -357,7 +365,10 @@ public plugin_init()
     register_concmd( "gal_createmapfile", "cmd_createMapFile", ADMIN_RCON );
     
     g_menuChooseMap = register_menuid( MENU_CHOOSEMAP );
-    g_user_msgid    = get_user_msgid( "SayText" )
+
+#if AMXX_VERSION_NUM < 183
+    g_user_msgid = get_user_msgid( "SayText" )
+#endif
     
     register_menucmd( g_menuChooseMap, MENU_KEY_1 | MENU_KEY_2 |
             MENU_KEY_3 | MENU_KEY_4 | MENU_KEY_5 | MENU_KEY_6 |
@@ -372,7 +383,7 @@ public plugin_init()
  */
 public plugin_cfg()
 {
-    g_is_debug_enabled   = get_cvar_num( "gal_debug" );
+    g_debug_level        = get_cvar_num( "gal_debug" );
     g_maxrounds_pointer  = get_cvar_pointer( "mp_maxrounds" )
     g_winlimit_pointer   = get_cvar_pointer( "mp_winlimit" )
     g_freezetime_pointer = get_cvar_pointer( "mp_freezetime" )
@@ -459,7 +470,7 @@ public plugin_cfg()
     
     set_task( 10.0, "vote_setupEnd" );
     
-    if( g_is_debug_enabled )
+    if( g_debug_level )
     {
         runTests()
     }
@@ -758,10 +769,24 @@ public map_manageEnd()
     {
         g_is_last_round       = true;
         g_isTimeToChangeLevel = true;
+    
+    #if AMXX_VERSION_NUM < 183
+        new players_ids[ 32 ]
         
-        print_colored( 0, "%L %L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED",
-                LANG_PLAYER, "GAL_CHANGE_NEXTROUND", LANG_PLAYER, "GAL_NEXTMAP", g_nextmap );
+        new playerIndex_idsCounter
         
+        get_players( players_ids, playerIndex_idsCounter, "ch" );
+        
+        for( new i = 0; i < playerIndex_idsCounter; i++ )
+        {
+            client_print_color_internal( players_ids[ i ], "^1%L %L %L",
+                    players_ids[ i ], "GAL_CHANGE_TIMEEXPIRED",
+                    players_ids[ i ], "GAL_CHANGE_NEXTROUND", players_ids[ i ], "GAL_NEXTMAP", g_nextmap )
+        }
+    #else
+        client_print_color_internal( 0, "^1%L %L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED",
+                LANG_PLAYER, "GAL_CHANGE_NEXTROUND", LANG_PLAYER, "GAL_NEXTMAP", g_nextmap )
+    #endif
         prevent_map_change()
     }
     else if( get_pcvar_num( cvar_endOnRound ) == 2 ) // when time runs out, end at the next round end
@@ -773,14 +798,44 @@ public map_manageEnd()
         if( get_cvar_float( "mp_roundtime" ) > 8 )
         {
             g_isTimeToChangeLevel = true;
+        
+        #if AMXX_VERSION_NUM < 183
+            new players_ids[ 32 ]
             
-            print_colored( 0, "%L %L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED",
-                    LANG_PLAYER, "GAL_CHANGE_NEXTROUND", LANG_PLAYER, "GAL_NEXTMAP", g_nextmap );
+            new playerIndex_idsCounter
+            
+            get_players( players_ids, playerIndex_idsCounter, "ch" );
+            
+            for( new i = 0; i < playerIndex_idsCounter; i++ )
+            {
+                client_print_color_internal( players_ids[ i ], "^1%L %L %L",
+                        players_ids[ i ], "GAL_CHANGE_TIMEEXPIRED",
+                        players_ids[ i ], "GAL_CHANGE_NEXTROUND", players_ids[ i ], "GAL_NEXTMAP", g_nextmap )
+            }
+        #else
+            client_print_color_internal( 0, "^1%L %L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED",
+                    LANG_PLAYER, "GAL_CHANGE_NEXTROUND", LANG_PLAYER, "GAL_NEXTMAP", g_nextmap )
+        #endif
         }
         else
         {
-            print_colored( 0, "%L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED",
-                    LANG_PLAYER, "GAL_NEXTMAP", g_nextmap );
+        #if AMXX_VERSION_NUM < 183
+            new players_ids[ 32 ]
+            
+            new playerIndex_idsCounter
+            
+            get_players( players_ids, playerIndex_idsCounter, "ch" );
+            
+            for( new i = 0; i < playerIndex_idsCounter; i++ )
+            {
+                client_print_color_internal( players_ids[ i ], "^1%L %L",
+                        players_ids[ i ], "GAL_CHANGE_TIMEEXPIRED",
+                        players_ids[ i ], "GAL_NEXTMAP", g_nextmap )
+            }
+        #else
+            client_print_color_internal( 0, "^1%L %L",
+                    LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED", LANG_PLAYER, "GAL_NEXTMAP", g_nextmap );
+        #endif
         }
         
         prevent_map_change()
@@ -882,14 +937,16 @@ public map_loadFillerList( filename[] )
 
 public cmd_rockthevote( player_id )
 {
-    print_colored( player_id, "%L", player_id, "GAL_CMD_RTV" );
+    client_print_color_internal( player_id, "^1%L", player_id, "GAL_CMD_RTV" );
+    
     vote_rock( player_id );
     return PLUGIN_CONTINUE;
 }
 
 public cmd_nominations( player_id )
 {
-    print_colored( player_id, "%L", player_id, "GAL_CMD_NOMS" );
+    client_print_color_internal( player_id, "^1%L", player_id, "GAL_CMD_NOMS" );
+    
     nomination_list( player_id );
     return PLUGIN_CONTINUE;
 }
@@ -906,13 +963,42 @@ public cmd_listrecent( player_id )
             {
                 msgIdx += format( msg[ msgIdx ], sizeof( msg ) - 1 - msgIdx, ", %s", g_recentMap[ idx ] );
             }
-            print_colored( 0, "%L: %s", LANG_PLAYER, "GAL_MAP_RECENTMAPS", msg[ 2 ] );
+        #if AMXX_VERSION_NUM < 183
+            new players_ids[ 32 ]
+            
+            new playerIndex_idsCounter
+            
+            get_players( players_ids, playerIndex_idsCounter, "ch" );
+            
+            for( new i = 0; i < playerIndex_idsCounter; i++ )
+            {
+                client_print_color_internal( players_ids[ i ], "^1%L: %s", players_ids[ i ],
+                        "GAL_MAP_RECENTMAPS", msg[ 2 ] );
+            }
+        #else
+            client_print_color_internal( 0, "^1%L: %s", LANG_PLAYER, "GAL_MAP_RECENTMAPS", msg[ 2 ] );
+        #endif
         }
         case 2:
         {
             for( new idx = 0; idx < g_cntRecentMap; ++idx )
             {
-                print_colored( 0, "%L ( %i ): %s", LANG_PLAYER, "GAL_MAP_RECENTMAP", idx + 1, g_recentMap[ idx ] );
+            #if AMXX_VERSION_NUM < 183
+                new players_ids[ 32 ]
+                
+                new playerIndex_idsCounter
+                
+                get_players( players_ids, playerIndex_idsCounter, "ch" );
+                
+                for( new i = 0; i < playerIndex_idsCounter; i++ )
+                {
+                    client_print_color_internal( players_ids[ i ], "^1%L ( %i ): %s", players_ids[ i ],
+                            "GAL_MAP_RECENTMAP", idx + 1, g_recentMap[ idx ] );
+                }
+            #else
+                client_print_color_internal( 0, "^1%L ( %i ): %s", LANG_PLAYER, "GAL_MAP_RECENTMAP",
+                        idx + 1, g_recentMap[ idx ] );
+            #endif
             }
         }
     }
@@ -934,7 +1020,7 @@ public cmd_startVote( player_id, level, cid )
     
     if( g_voteStatus & VOTE_IN_PROGRESS )
     {
-        print_colored( player_id, "%L", player_id, "GAL_VOTE_INPROGRESS" );
+        client_print_color_internal( player_id, "^1%L", player_id, "GAL_VOTE_INPROGRESS" );
     }
     else
     {
@@ -1366,7 +1452,7 @@ stock nomination_attempt( player_id, nomination[] ) // ( playerName[], &phraseId
         case 0:
         {
             // no matches; pity the poor fool
-            print_colored( player_id, "%L", player_id, "GAL_NOM_FAIL_NOMATCHES", nomination );
+            client_print_color_internal( player_id, "^1%L", player_id, "GAL_NOM_FAIL_NOMATCHES", nomination );
         }
         case 1:
         {
@@ -1376,11 +1462,12 @@ stock nomination_attempt( player_id, nomination[] ) // ( playerName[], &phraseId
         default:
         {
             // this is kinda sexy; we put up a menu of the matches for them to pick the right one
-            print_colored( player_id, "%L", player_id, "GAL_NOM_MATCHES", nomination );
+            client_print_color_internal( player_id, "^1%L", player_id, "GAL_NOM_MATCHES", nomination );
             
             if( matchCnt == MAX_NOM_MATCH_CNT )
             {
-                print_colored( player_id, "%L", player_id, "GAL_NOM_MATCHES_MAX", MAX_NOM_MATCH_CNT, MAX_NOM_MATCH_CNT );
+                client_print_color_internal( player_id, "^1%L", player_id, "GAL_NOM_MATCHES_MAX",
+                        MAX_NOM_MATCH_CNT, MAX_NOM_MATCH_CNT );
             }
             menu_display( player_id, g_nominationMatchesMenu[ player_id ] );
         }
@@ -1444,13 +1531,13 @@ stock nomination_cancel( player_id, idxMap )
     // cancellations can only be made if a vote isn't already in progress
     if( g_voteStatus & VOTE_IN_PROGRESS )
     {
-        print_colored( player_id, "%L", player_id, "GAL_CANCEL_FAIL_INPROGRESS" );
+        client_print_color_internal( player_id, "^1%L", player_id, "GAL_CANCEL_FAIL_INPROGRESS" );
         return;
     }
     // and if the outcome of the vote hasn't already been determined
     else if( g_voteStatus & VOTE_IS_OVER )
     {
-        print_colored( player_id, "%L", player_id, "GAL_CANCEL_FAIL_VOTEOVER" );
+        client_print_color_internal( player_id, "^1%L", player_id, "GAL_CANCEL_FAIL_VOTEOVER" );
         return;
     }
     
@@ -1485,11 +1572,12 @@ stock nomination_cancel( player_id, idxMap )
             new name[ 32 ];
             get_user_name( idNominator, name, 31 );
             
-            print_colored( player_id, "%L", player_id, "GAL_CANCEL_FAIL_SOMEONEELSE", mapName, name );
+            client_print_color_internal( player_id, "^1%L", player_id, "GAL_CANCEL_FAIL_SOMEONEELSE",
+                    mapName, name );
         }
         else
         {
-            print_colored( player_id, "%L", player_id, "GAL_CANCEL_FAIL_WASNOTYOU", mapName );
+            client_print_color_internal( player_id, "^1%L", player_id, "GAL_CANCEL_FAIL_WASNOTYOU", mapName );
         }
     }
 }
@@ -1499,13 +1587,13 @@ stock map_nominate( player_id, idxMap, idNominator = -1 )
     // nominations can only be made if a vote isn't already in progress
     if( g_voteStatus & VOTE_IN_PROGRESS )
     {
-        print_colored( player_id, "%L", player_id, "GAL_NOM_FAIL_INPROGRESS" );
+        client_print_color_internal( player_id, "^1%L", player_id, "GAL_NOM_FAIL_INPROGRESS" );
         return;
     }
     // and if the outcome of the vote hasn't already been determined
     else if( g_voteStatus & VOTE_IS_OVER )
     {
-        print_colored( player_id, "%L", player_id, "GAL_NOM_FAIL_VOTEOVER" );
+        client_print_color_internal( player_id, "^1%L", player_id, "GAL_NOM_FAIL_VOTEOVER" );
         return;
     }
     
@@ -1515,15 +1603,15 @@ stock map_nominate( player_id, idxMap, idNominator = -1 )
     // players can not nominate the current map
     if( equal( g_currentMap, mapName ) )
     {
-        print_colored( player_id, "%L", player_id, "GAL_NOM_FAIL_CURRENTMAP", g_currentMap );
+        client_print_color_internal( player_id, "^1%L", player_id, "GAL_NOM_FAIL_CURRENTMAP", g_currentMap );
         return;
     }
     
     // players may not be able to nominate recently played maps
     if( map_isTooRecent( mapName ) )
     {
-        print_colored( player_id, "%L", player_id, "GAL_NOM_FAIL_TOORECENT", mapName );
-        print_colored( player_id, "%L", player_id, "GAL_NOM_FAIL_TOORECENT_HLP" );
+        client_print_color_internal( player_id, "^1%L", player_id, "GAL_NOM_FAIL_TOORECENT", mapName );
+        client_print_color_internal( player_id, "^1%L", player_id, "GAL_NOM_FAIL_TOORECENT_HLP" );
         return;
     }
     
@@ -1563,8 +1651,10 @@ stock map_nominate( player_id, idxMap, idNominator = -1 )
                 format( nominatedMaps, sizeof( nominatedMaps ) - 1, "%s%s%s", nominatedMaps, ( idxNomination == 1 ) ? "" : ", ", buffer );
             }
             
-            print_colored( player_id, "%L", player_id, "GAL_NOM_FAIL_TOOMANY", playerNominationMax, nominatedMaps );
-            print_colored( player_id, "%L", player_id, "GAL_NOM_FAIL_TOOMANY_HLP" );
+            client_print_color_internal( player_id, "^1%L", player_id, "GAL_NOM_FAIL_TOOMANY",
+                    playerNominationMax, nominatedMaps );
+            
+            client_print_color_internal( player_id, "^1%L", player_id, "GAL_NOM_FAIL_TOOMANY_HLP" );
         }
         else
         {
@@ -1572,20 +1662,21 @@ stock map_nominate( player_id, idxMap, idNominator = -1 )
             g_nomination[ player_id ][ idxNominationOpen ] = idxMap;
             g_nominationCnt++;
             map_announceNomination( player_id, mapName );
-            print_colored( player_id, "%L", player_id, "GAL_NOM_GOOD_HLP" );
+            
+            client_print_color_internal( player_id, "^1%L", player_id, "GAL_NOM_GOOD_HLP" );
         }
     }
     else if( idNominator == player_id )
     {
-        print_colored( player_id, "%L", player_id, "GAL_NOM_FAIL_ALREADY", mapName );
+        client_print_color_internal( player_id, "^1%L", player_id, "GAL_NOM_FAIL_ALREADY", mapName );
     }
     else
     {
         new name[ 32 ];
         get_user_name( idNominator, name, 31 );
         
-        print_colored( player_id, "%L", player_id, "GAL_NOM_FAIL_SOMEONEELSE", mapName, name );
-        print_colored( player_id, "%L", player_id, "GAL_NOM_FAIL_SOMEONEELSE_HLP" );
+        client_print_color_internal( player_id, "^1%L", player_id, "GAL_NOM_FAIL_SOMEONEELSE", mapName, name );
+        client_print_color_internal( player_id, "^1%L", player_id, "GAL_NOM_FAIL_SOMEONEELSE_HLP" );
     }
 }
 
@@ -1609,7 +1700,22 @@ public nomination_list( player_id )
                 
                 if( ++mapCnt == 4 )     // list 4 maps per chat line
                 {
-                    print_colored( 0, "%L: %s", LANG_PLAYER, "GAL_NOMINATIONS", msg[ 2 ] );
+                #if AMXX_VERSION_NUM < 183
+                    new players_ids[ 32 ]
+                    
+                    new playerIndex_idsCounter
+                    
+                    get_players( players_ids, playerIndex_idsCounter, "ch" );
+                    
+                    for( new i = 0; i < playerIndex_idsCounter; i++ )
+                    {
+                        client_print_color_internal( players_ids[ i ], "^1%L: %s", players_ids[ i ],
+                                "GAL_NOMINATIONS", msg[ 2 ] );
+                    }
+                #else
+                    client_print_color_internal( 0, "^1%L: %s", LANG_PLAYER, "GAL_NOMINATIONS",
+                            msg[ 2 ] );
+                #endif
                     mapCnt   = 0;
                     msg[ 0 ] = 0;
                 }
@@ -1619,11 +1725,40 @@ public nomination_list( player_id )
     
     if( msg[ 0 ] )
     {
-        print_colored( 0, "%L: %s", LANG_PLAYER, "GAL_NOMINATIONS", msg[ 2 ] );
+    #if AMXX_VERSION_NUM < 183
+        new players_ids[ 32 ]
+        
+        new playerIndex_idsCounter
+        
+        get_players( players_ids, playerIndex_idsCounter, "ch" );
+        
+        for( new i = 0; i < playerIndex_idsCounter; i++ )
+        {
+            client_print_color_internal( players_ids[ i ], "^1%L: %s", players_ids[ i ],
+                    "GAL_NOMINATIONS", msg[ 2 ] );
+        }
+    #else
+        client_print_color_internal( 0, "^1%L: %s", LANG_PLAYER, "GAL_NOMINATIONS", msg[ 2 ] );
+    #endif
     }
     else
     {
-        print_colored( 0, "%L: %L", LANG_PLAYER, "GAL_NOMINATIONS", LANG_PLAYER, "NONE" );
+    #if AMXX_VERSION_NUM < 183
+        new players_ids[ 32 ]
+        
+        new playerIndex_idsCounter
+        
+        get_players( players_ids, playerIndex_idsCounter, "ch" );
+        
+        for( new i = 0; i < playerIndex_idsCounter; i++ )
+        {
+            client_print_color_internal( players_ids[ i ], "^1%L: %L", players_ids[ i ], "GAL_NOMINATIONS",
+                    players_ids[ i ], "NONE" );
+        }
+    #else
+        client_print_color_internal( 0, "^1%L: %L", LANG_PLAYER, "GAL_NOMINATIONS",
+                LANG_PLAYER, "NONE" );
+    #endif
     }
 }
 
@@ -1693,7 +1828,7 @@ public vote_startDirector( bool:forced )
         }
     }
     
-    if( g_is_debug_enabled )
+    if( g_debug_level )
     {
         voteDuration   = 5
         g_voteDuration = 5
@@ -1704,7 +1839,7 @@ public vote_startDirector( bool:forced )
         // alphabetize the maps
         SortCustom2D( g_mapsVoteMenuNames, choicesLoaded, "sort_stringsi" );
         
-        if( g_is_debug_enabled )
+        if( g_debug_level )
         {
             for( new dbgChoice = 0; dbgChoice < choicesLoaded; dbgChoice++ )
             {
@@ -1748,10 +1883,23 @@ public vote_startDirector( bool:forced )
     }
     else
     {
-        print_colored( 0, "%L", LANG_PLAYER, "GAL_VOTE_NOMAPS" );
+    #if AMXX_VERSION_NUM < 183
+        new players_ids[ 32 ]
+        
+        new playerIndex_idsCounter
+        
+        get_players( players_ids, playerIndex_idsCounter, "ch" );
+        
+        for( new i = 0; i < playerIndex_idsCounter; i++ )
+        {
+            client_print_color_internal( players_ids[ i ], "^1%L", players_ids[ i ], "GAL_VOTE_NOMAPS" );
+        }
+    #else
+        client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_VOTE_NOMAPS" );
+    #endif
     }
     
-    if( g_is_debug_enabled )
+    if( g_debug_level )
     {
         debugMessageLog( 4, "" );
         debugMessageLog( 4, "   [PLAYER CHOICES]" );
@@ -1802,7 +1950,7 @@ stock vote_addNominations()
         // [TODO: develop a better method of determining which nominations make the cut; either FIFO or random]
         new idxMap, player_id, mapName[ 32 ];
         
-        if( g_is_debug_enabled )
+        if( g_debug_level )
         {
             new nominator_id, playerName[ 32 ];
             
@@ -2024,7 +2172,7 @@ public vote_handleDisplay()
         client_cmd( 0, "spk Gman/Gman_Choose%i", random_num( 1, 2 ) );
     }
     
-    if( g_is_debug_enabled )
+    if( g_debug_level )
     {
         g_voteDuration = 5
     }
@@ -2079,7 +2227,7 @@ public vote_display( vote_display_task_argument[ 3 ] )
     new updateTimeRemaining = vote_display_task_argument[ 0 ];
     new player_id           = vote_display_task_argument[ 1 ];
     
-    if( g_is_debug_enabled )
+    if( g_debug_level )
     {
         new snuff = ( player_id > 0 ) ? g_snuffDisplay[ player_id ] : -1;
         debugMessageLog( 4, "   [votedisplay( )] player_id: %i  updateTimeRemaining: %i  unsnuffDisplay: %i  g_snuffDisplay: %i  \
@@ -2365,7 +2513,7 @@ public vote_expire()
 {
     g_voteStatus |= VOTE_HAS_EXPIRED;
     
-    if( g_is_debug_enabled )
+    if( g_debug_level )
     {
         debugMessageLog( 4, "" );
         debugMessageLog( 4, "   [VOTE RESULT]" );
@@ -2439,11 +2587,26 @@ public vote_expire()
             if( numberOfVotesAtFirstPlace <= totalVotes / 2 )
             {
                 // announce runoff voting requirement
-                print_colored( 0, "%L", LANG_PLAYER, "GAL_RUNOFF_REQUIRED" );
+            #if AMXX_VERSION_NUM < 183
+                new players_ids[ 32 ]
+                
+                new playerIndex_idsCounter
+                
+                get_players( players_ids, playerIndex_idsCounter, "ch" );
+                
+                for( new i = 0; i < playerIndex_idsCounter; i++ )
+                {
+                    client_print_color_internal( players_ids[ i ], "^1%L", players_ids[ i ],
+                            "GAL_RUNOFF_REQUIRED" );
+                }
+            #else
+                client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_RUNOFF_REQUIRED" );
+            #endif
                 
                 if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_RUNOFFREQUIRED ) )
                 {
-                    client_cmd( 0, "spk ^"run officer( e40 ) voltage( e30 ) accelerating( s70 ) is required^"" );
+                    client_cmd( 0, "spk ^"run officer( e40 ) voltage( e30 ) accelerating( s70 ) \
+                            is required^"" );
                 }
                 
                 // let the server know the next vote will be a runoff
@@ -2516,8 +2679,21 @@ public vote_expire()
                     
                     debugMessageLog( 16, "At GAL_RESULT_TIED1 --- Runoff map1: %s, Runoff map2: %s",
                             g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 0 ] ], g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 1 ] ] )
+                
+                #if AMXX_VERSION_NUM < 183
+                    new players_ids[ 32 ]
                     
-                    print_colored( 0, "%L", LANG_PLAYER, "GAL_RESULT_TIED1", numberOfMapsAtFirstPosition );
+                    new playerIndex_idsCounter
+                    
+                    get_players( players_ids, playerIndex_idsCounter, "ch" );
+                    
+                    for( new i = 0; i < playerIndex_idsCounter; i++ )
+                    {
+                        client_print_color_internal( players_ids[ i ], "^1%L", players_ids[ i ], "GAL_RESULT_TIED1", numberOfMapsAtFirstPosition );
+                    }
+                #else
+                    client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_RESULT_TIED1", numberOfMapsAtFirstPosition );
+                #endif
                 }
                 else if( numberOfMapsAtFirstPosition == 2 )
                 {
@@ -2592,8 +2768,23 @@ public vote_expire()
                     
                     debugMessageLog( 16, "At numberOfMapsAtSecondPosition == 1 ELSE --- Runoff map1: %s, Runoff map2: %s",
                             g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 0 ] ], g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 1 ] ] )
+                
+                #if AMXX_VERSION_NUM < 183
+                    new players_ids[ 32 ]
                     
-                    print_colored( 0, "%L", LANG_PLAYER, "GAL_RESULT_TIED2", numberOfMapsAtSecondPosition );
+                    new playerIndex_idsCounter
+                    
+                    get_players( players_ids, playerIndex_idsCounter, "ch" );
+                    
+                    for( new i = 0; i < playerIndex_idsCounter; i++ )
+                    {
+                        client_print_color_internal( players_ids[ i ], "^1%L", players_ids[ i ],
+                                "GAL_RESULT_TIED2", numberOfMapsAtSecondPosition );
+                    }
+                #else
+                    client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_RESULT_TIED2",
+                            numberOfMapsAtSecondPosition );
+                #endif
                 }
                 // clear all the votes
                 vote_resetStats();
@@ -2609,7 +2800,23 @@ public vote_expire()
         if( numberOfMapsAtFirstPosition > 1 )
         {
             winnerVoteMapIndex = firstPlaceChoices[ random_num( 0, numberOfMapsAtFirstPosition - 1 ) ];
-            print_colored( 0, "%L", LANG_PLAYER, "GAL_WINNER_TIED", numberOfMapsAtFirstPosition );
+        
+        #if AMXX_VERSION_NUM < 183
+            new players_ids[ 32 ]
+            
+            new playerIndex_idsCounter
+            
+            get_players( players_ids, playerIndex_idsCounter, "ch" );
+            
+            for( new i = 0; i < playerIndex_idsCounter; i++ )
+            {
+                client_print_color_internal( players_ids[ i ], "^1%L", players_ids[ i ],
+                        "GAL_WINNER_TIED", numberOfMapsAtFirstPosition );
+            }
+        #else
+            client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_TIED",
+                    numberOfMapsAtFirstPosition );
+        #endif
         }
         else
         {
@@ -2623,7 +2830,21 @@ public vote_expire()
             if( g_voteStatus & VOTE_IS_EARLY )
             {
                 // "stay here" won
-                print_colored( 0, "%L", LANG_PLAYER, "GAL_WINNER_STAY" );
+            #if AMXX_VERSION_NUM < 183
+                new players_ids[ 32 ]
+                
+                new playerIndex_idsCounter
+                
+                get_players( players_ids, playerIndex_idsCounter, "ch" );
+                
+                for( new i = 0; i < playerIndex_idsCounter; i++ )
+                {
+                    client_print_color_internal( players_ids[ i ], "^1%L", players_ids[ i ],
+                            "GAL_WINNER_STAY" );
+                }
+            #else
+                client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_STAY" );
+            #endif
                 
                 // clear all the votes
                 vote_resetStats();
@@ -2638,7 +2859,21 @@ public vote_expire()
                     g_isTimeToRestart = false;
                     
                     // "stay here" won
-                    print_colored( 0, "%L", LANG_PLAYER, "GAL_WINNER_STAY" );
+                    #if AMXX_VERSION_NUM < 183
+                    new players_ids[ 32 ]
+                    
+                    new playerIndex_idsCounter
+                    
+                    get_players( players_ids, playerIndex_idsCounter, "ch" );
+                    
+                    for( new i = 0; i < playerIndex_idsCounter; i++ )
+                    {
+                        client_print_color_internal( players_ids[ i ], "^1%L", players_ids[ i ],
+                                "GAL_WINNER_STAY" );
+                    }
+                    #else
+                    client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_STAY" );
+                    #endif
                     
                     // no longer is an early vote
                     g_voteStatus &= ~VOTE_IS_EARLY;
@@ -2651,20 +2886,64 @@ public vote_expire()
                     {
                         // "stay here" won
                         g_isTimeToChangeLevel = false;
-                        print_colored( 0, "%L", LANG_PLAYER, "GAL_WINNER_STAY" );
+                    
+                    #if AMXX_VERSION_NUM < 183
+                        new players_ids[ 32 ]
+                        
+                        new playerIndex_idsCounter
+                        
+                        get_players( players_ids, playerIndex_idsCounter, "ch" );
+                        
+                        for( new i = 0; i < playerIndex_idsCounter; i++ )
+                        {
+                            client_print_color_internal( players_ids[ i ], "^1%L", players_ids[ i ],
+                                    "GAL_WINNER_STAY" );
+                        }
+                    #else
+                        client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_STAY" );
+                    #endif
                     }
                     else
                     {
                         // "extend map" won
                         if( g_is_maxrounds_vote_map )
                         {
-                            print_colored( 0, "%L", LANG_PLAYER, "GAL_WINNER_EXTEND_ROUND",
+                        #if AMXX_VERSION_NUM < 183
+                            new players_ids[ 32 ]
+                            
+                            new playerIndex_idsCounter
+                            
+                            get_players( players_ids, playerIndex_idsCounter, "ch" );
+                            
+                            for( new i = 0; i < playerIndex_idsCounter; i++ )
+                            {
+                                client_print_color_internal( players_ids[ i ], "^1%L", players_ids[ i ],
+                                        "GAL_WINNER_EXTEND_ROUND", get_pcvar_num( cvar_extendmapStepRounds ) );
+                            }
+                        #else
+                            client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_EXTEND_ROUND",
                                     get_pcvar_num( cvar_extendmapStepRounds ) );
+                        #endif
                         }
                         else
                         {
-                            print_colored( 0, "%L", LANG_PLAYER, "GAL_WINNER_EXTEND",
+                        #if AMXX_VERSION_NUM < 183
+                            new players_ids[ 32 ]
+                            
+                            new playerIndex_idsCounter
+                            
+                            get_players( players_ids, playerIndex_idsCounter, "ch" );
+                            
+                            for( new i = 0; i < playerIndex_idsCounter; i++ )
+                            {
+                                client_print_color_internal( players_ids[ i ], "^1%L",
+                                        players_ids[ i ], "GAL_WINNER_EXTEND",
+                                        floatround( get_pcvar_float( cvar_extendmapStep ) ) );
+                            }
+                        #else
+                            client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_EXTEND",
                                     floatround( get_pcvar_float( cvar_extendmapStep ) ) );
+                        #endif
                         }
                         
                         map_extend();
@@ -2676,8 +2955,23 @@ public vote_expire()
         {
             map_setNext( g_mapsVoteMenuNames[ winnerVoteMapIndex ] );
             server_exec();
+        
+        #if AMXX_VERSION_NUM < 183
+            new players_ids[ 32 ]
             
-            print_colored( 0, "%L", LANG_PLAYER, "GAL_NEXTMAP", g_mapsVoteMenuNames[ winnerVoteMapIndex ] );
+            new playerIndex_idsCounter
+            
+            get_players( players_ids, playerIndex_idsCounter, "ch" );
+            
+            for( new i = 0; i < playerIndex_idsCounter; i++ )
+            {
+                client_print_color_internal( players_ids[ i ], "^1%L", players_ids[ i ], "GAL_NEXTMAP",
+                        g_mapsVoteMenuNames[ winnerVoteMapIndex ] );
+            }
+        #else
+            client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_NEXTMAP",
+                    g_mapsVoteMenuNames[ winnerVoteMapIndex ] );
+        #endif
             
             intermission_display()
             
@@ -2689,8 +2983,22 @@ public vote_expire()
         // the initial nextmap
         new initialNextMap[ MAX_MAPNAME_LEN + 1 ];
         get_cvar_string( "amx_nextmap", initialNextMap, sizeof( initialNextMap ) - 1 );
+    
+    #if AMXX_VERSION_NUM < 183
+        new players_ids[ 32 ]
         
-        print_colored( 0, "%L", LANG_PLAYER, "GAL_WINNER_RANDOM", initialNextMap );
+        new playerIndex_idsCounter
+        
+        get_players( players_ids, playerIndex_idsCounter, "ch" );
+        
+        for( new i = 0; i < playerIndex_idsCounter; i++ )
+        {
+            client_print_color_internal( players_ids[ i ], "^1%L", players_ids[ i ],
+                    "GAL_WINNER_RANDOM", initialNextMap );
+        }
+    #else
+        client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_RANDOM", initialNextMap );
+    #endif
         
         intermission_display()
         
@@ -2863,11 +3171,25 @@ public vote_handleChoice( player_id, key )
             
             if( get_pcvar_num( cvar_voteAnnounceChoice ) )
             {
-                print_colored( 0, "%L", LANG_PLAYER, "GAL_CHOICE_NONE_ALL", name );
+            #if AMXX_VERSION_NUM < 183
+                new players_ids[ 32 ]
+                
+                new playerIndex_idsCounter
+                
+                get_players( players_ids, playerIndex_idsCounter, "ch" );
+                
+                for( new i = 0; i < playerIndex_idsCounter; i++ )
+                {
+                    client_print_color_internal( players_ids[ i ], "^1%L", players_ids[ i ],
+                            "GAL_CHOICE_NONE_ALL", name );
+                }
+            #else
+                client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_CHOICE_NONE_ALL", name );
+            #endif
             }
             else
             {
-                print_colored( player_id, "%L", player_id, "GAL_CHOICE_NONE" );
+                client_print_color_internal( player_id, "^1%L", player_id, "GAL_CHOICE_NONE" );
             }
         }
         else
@@ -2884,11 +3206,25 @@ public vote_handleChoice( player_id, key )
                     
                     if( get_pcvar_num( cvar_voteAnnounceChoice ) )
                     {
-                        print_colored( 0, "%L", LANG_PLAYER, "GAL_CHOICE_EXTEND_ALL", name );
+                    #if AMXX_VERSION_NUM < 183
+                        new players_ids[ 32 ]
+                        
+                        new playerIndex_idsCounter
+                        
+                        get_players( players_ids, playerIndex_idsCounter, "ch" );
+                        
+                        for( new i = 0; i < playerIndex_idsCounter; i++ )
+                        {
+                            client_print_color_internal( players_ids[ i ], "^1%L", players_ids[ i ],
+                                    "GAL_CHOICE_EXTEND_ALL", name );
+                        }
+                    #else
+                        client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_CHOICE_EXTEND_ALL", name );
+                    #endif
                     }
                     else
                     {
-                        print_colored( player_id, "%L", player_id, "GAL_CHOICE_EXTEND" );
+                        client_print_color_internal( player_id, "^1%L", player_id, "GAL_CHOICE_EXTEND" );
                     }
                 }
             }
@@ -2898,11 +3234,27 @@ public vote_handleChoice( player_id, key )
                 
                 if( get_pcvar_num( cvar_voteAnnounceChoice ) )
                 {
-                    print_colored( 0, "%L", LANG_PLAYER, "GAL_CHOICE_MAP_ALL", name, g_mapsVoteMenuNames[ key ] );
+                #if AMXX_VERSION_NUM < 183
+                    new players_ids[ 32 ]
+                    
+                    new playerIndex_idsCounter
+                    
+                    get_players( players_ids, playerIndex_idsCounter, "ch" );
+                    
+                    for( new i = 0; i < playerIndex_idsCounter; i++ )
+                    {
+                        client_print_color_internal( players_ids[ i ], "^1%L", players_ids[ i ],
+                                "GAL_CHOICE_MAP_ALL", name, g_mapsVoteMenuNames[ key ] );
+                    }
+                #else
+                    client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_CHOICE_MAP_ALL", name,
+                            g_mapsVoteMenuNames[ key ] );
+                #endif
                 }
                 else
                 {
-                    print_colored( player_id, "%L", player_id, "GAL_CHOICE_MAP", g_mapsVoteMenuNames[ key ] );
+                    client_print_color_internal( player_id, "^1%L", player_id, "GAL_CHOICE_MAP",
+                            g_mapsVoteMenuNames[ key ] );
                 }
             }
             
@@ -2915,7 +3267,7 @@ public vote_handleChoice( player_id, key )
                 g_arrayOfMapsWithVotesNumber[ key ] += voteWeight;
                 g_totalVotesCounted                 += ( voteWeight - 1 );
                 
-                print_colored( player_id, "%L", player_id, "GAL_VOTE_WEIGHTED", voteWeight );
+                client_print_color_internal( player_id, "^1L", player_id, "GAL_VOTE_WEIGHTED", voteWeight );
             }
             else
             {
@@ -2953,7 +3305,7 @@ public vote_rock( player_id )
     // if an early vote is pending, don't allow any rocks
     if( g_voteStatus & VOTE_IS_EARLY )
     {
-        print_colored( player_id, "%L", player_id, "GAL_ROCK_FAIL_PENDINGVOTE" );
+        client_print_color_internal( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_PENDINGVOTE" );
         return;
     }
     
@@ -2972,7 +3324,8 @@ public vote_rock( player_id )
     {
         if( minutesElapsed < g_rtvWait )
         {
-            print_colored( player_id, "%L", player_id, "GAL_ROCK_FAIL_TOOSOON", floatround( g_rtvWait - minutesElapsed, floatround_ceil ) );
+            client_print_color_internal( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_TOOSOON",
+                    floatround( g_rtvWait - minutesElapsed, floatround_ceil ) );
             return;
         }
     }
@@ -2980,13 +3333,13 @@ public vote_rock( player_id )
     // rocks can only be made if a vote isn't already in progress
     if( g_voteStatus & VOTE_IN_PROGRESS )
     {
-        print_colored( player_id, "%L", player_id, "GAL_ROCK_FAIL_INPROGRESS" );
+        client_print_color_internal( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_INPROGRESS" );
         return;
     }
     // and if the outcome of the vote hasn't already been determined
     else if( g_voteStatus & VOTE_IS_OVER )
     {
-        print_colored( player_id, "%L", player_id, "GAL_ROCK_FAIL_VOTEOVER" );
+        client_print_color_internal( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_VOTEOVER" );
         return;
     }
     
@@ -2996,14 +3349,17 @@ public vote_rock( player_id )
     // make sure player hasn't already rocked the vote
     if( g_rockedVote[ player_id ] )
     {
-        print_colored( player_id, "%L", player_id, "GAL_ROCK_FAIL_ALREADY", rocksNeeded - g_rockedVoteCnt );
+        client_print_color_internal( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_ALREADY",
+                rocksNeeded - g_rockedVoteCnt );
+        
         rtv_remind( TASKID_REMINDER + player_id );
         return;
     }
     
     // allow the player to rock the vote
     g_rockedVote[ player_id ] = true;
-    print_colored( player_id, "%L", player_id, "GAL_ROCK_SUCCESS" );
+    
+    client_print_color_internal( player_id, "^1%L", player_id, "GAL_ROCK_SUCCESS" );
     
     // make sure the rtv reminder timer has stopped
     if( task_exists( TASKID_REMINDER ) )
@@ -3015,7 +3371,20 @@ public vote_rock( player_id )
     if( ++g_rockedVoteCnt >= rocksNeeded )
     {
         // announce that the vote has been rocked
-        print_colored( 0, "%L", LANG_PLAYER, "GAL_ROCK_ENOUGH" );
+    #if AMXX_VERSION_NUM < 183
+        new players_ids[ 32 ]
+        
+        new playerIndex_idsCounter
+        
+        get_players( players_ids, playerIndex_idsCounter, "ch" );
+        
+        for( new i = 0; i < playerIndex_idsCounter; i++ )
+        {
+            client_print_color_internal( players_ids[ i ], "^1%L", players_ids[ i ], "GAL_ROCK_ENOUGH" );
+        }
+    #else
+        client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_ROCK_ENOUGH" );
+    #endif
         
         // start up the vote director
         vote_startDirector( true );
@@ -3053,7 +3422,8 @@ public rtv_remind( param )
     new player_id = param - TASKID_REMINDER;
     
     // let the players know how many more rocks are needed
-    print_colored( player_id, "%L", LANG_PLAYER, "GAL_ROCK_NEEDMORE", vote_getRocksNeeded() - g_rockedVoteCnt );
+    client_print_color_internal( player_id, "^1%L", LANG_PLAYER, "GAL_ROCK_NEEDMORE",
+            vote_getRocksNeeded() - g_rockedVoteCnt );
 }
 
 // change to the map
@@ -3241,7 +3611,12 @@ stock con_print( player_id, message[], { Float, Sql, Result, _ }: ... )
     server_print( consoleMessage );
 }
 
+
+#if AMXX_VERSION_NUM < 183
 public client_disconnect( player_id )
+#else
+public client_disconnected( player_id )
+#endif
 {
     g_voted[ player_id ] = false;
     
@@ -3421,15 +3796,27 @@ public srv_announceEarlyVote( player_id )
 {
     if( is_user_connected( player_id ) )
     {
-        new text[ 101 ];
-        formatex( text, sizeof( text ) - 1, "^4%L", player_id, "GAL_VOTE_EARLY" );
-        print_colored( player_id, text );
+        client_print_color_internal( player_id, "^4%L", player_id, "GAL_VOTE_EARLY" );
     }
 }
 
 stock nomination_announceCancellation( nominations[] )
 {
-    print_colored( 0, "%L", LANG_PLAYER, "GAL_CANCEL_SUCCESS", nominations );
+#if AMXX_VERSION_NUM < 183
+    new players_ids[ 32 ]
+    
+    new playerIndex_idsCounter
+    
+    get_players( players_ids, playerIndex_idsCounter, "ch" );
+    
+    for( new i = 0; i < playerIndex_idsCounter; i++ )
+    {
+        client_print_color_internal( players_ids[ i ], "^1%L", players_ids[ i ],
+                "GAL_CANCEL_SUCCESS", nominations );
+    }
+#else
+    client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_CANCEL_SUCCESS", nominations );
+#endif
 }
 
 stock nomination_clearAll()
@@ -3448,8 +3835,22 @@ stock map_announceNomination( player_id, map[] )
 {
     new name[ 32 ];
     get_user_name( player_id, name, sizeof( name ) - 1 );
+
+#if AMXX_VERSION_NUM < 183
+    new players_ids[ 32 ]
     
-    print_colored( 0, "%L", LANG_PLAYER, "GAL_NOM_SUCCESS", name, map );
+    new playerIndex_idsCounter
+    
+    get_players( players_ids, playerIndex_idsCounter, "ch" );
+    
+    for( new i = 0; i < playerIndex_idsCounter; i++ )
+    {
+        client_print_color_internal( players_ids[ i ], "^1%L", players_ids[ i ], "GAL_NOM_SUCCESS",
+                name, map );
+    }
+#else
+    client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_NOM_SUCCESS", name, map );
+#endif
 }
 
 #if AMXX_VERSION_NUM < 180
@@ -3478,71 +3879,63 @@ stock percent( is, of )
 }
 
 /**
- * Print colored text to a give player_id. Use 0 for all players.
- *
+ * Print colored text to a given player_id. It has to be called to each player using its player_id 
+ * instead of 'LANG_PLAYER' constant. Just use the 'LANG_PLAYER' constant when using this function
+ * to display to all players.
+ * 
+ * If you are at the Amx Mod X 1.8.2, you cannot call this function using the player_id as 0. You
+ * must call it to every player on the server, to display the colored message to all players.
+ * 
+ * If you are at the Amx Mod X 1.8.3 or superior, you can call this function using the player_id 
+ * as 0, to display the colored message to all players on the server 
+ * 
+ * If you run this function on a Game Mod that do not support colored messages, they will be
+ * displayed as normal messages without any errors or bad formats.
+ * 
+ * This allow you to use '!g for green', '!y for yellow', '!t for team' color at the LANG file or anywhere.
+ * 
  * @param player_id the player id.
  * @param message[] the text formatting rules to display.
  * @param any the variable number of formatting parameters.
+ * 
+ * @see <a href="https://www.amxmodx.org/api/amxmodx/client_print_color">client_print_color</a> 
+ * for Amx Mod X 1.8.3 or superior.
  */
-stock print_colored( player_id, message[], any: ... )
+stock client_print_color_internal( player_id, message[], any: ... )
 {
     new formated_message[ MAX_COLOR_MESSAGE ]
-    new formated_colored[ MAX_COLOR_MESSAGE ]
     
     vformat( formated_message, charsmax( formated_message ), message, 3 )
-    formatex( formated_colored, charsmax( formated_colored ), "^1%s", formated_message )
+    debugMessageLog( 1, "( in ) Player Id: %d, Chat printed: %s", player_id, formated_message )
     
     if( g_is_supported_color_chat )
     {
-        replace_all( formated_colored, charsmax( formated_colored ), "!y", "^1" ); // yellow
-        replace_all( formated_colored, charsmax( formated_colored ), "!t", "^3" ); // team
-        replace_all( formated_colored, charsmax( formated_colored ), "!g", "^4" ); // green
+        replace_all( formated_message, charsmax( formated_message ), "!y", "^1" ); // yellow
+        replace_all( formated_message, charsmax( formated_message ), "!t", "^3" ); // team
+        replace_all( formated_message, charsmax( formated_message ), "!g", "^4" ); // green
 
 #if AMXX_VERSION_NUM < 183
-        print_color_text_chooser( player_id, formated_colored )
+        message_begin( MSG_ONE_UNRELIABLE, g_user_msgid, _, player_id );
+        write_byte( player_id );
+        write_string( formated_message );
+        message_end();
 #else
-        client_print_color( player_id, formated_colored )
+        client_print_color( player_id, print_team_default, formated_message )
 #endif
     }
     else
     {
-        replace_all( formated_message, charsmax( formated_message ), "!y", "" ) // yellow
-        replace_all( formated_message, charsmax( formated_message ), "!t", "" ) // team
-        replace_all( formated_message, charsmax( formated_message ), "!g", "" ) // green
+        replace_all( formated_message, charsmax( formated_message ), "!y", "" ); // yellow
+        replace_all( formated_message, charsmax( formated_message ), "!t", "" ); // team
+        replace_all( formated_message, charsmax( formated_message ), "!g", "" ); // green
+        replace_all( formated_message, charsmax( formated_message ), "^1", "" ); // yellow
+        replace_all( formated_message, charsmax( formated_message ), "^2", "" ); // ...
+        replace_all( formated_message, charsmax( formated_message ), "^3", "" ); // team
+        replace_all( formated_message, charsmax( formated_message ), "^4", "" ); // green
         
         client_print( player_id, print_chat, formated_message )
     }
-    
-    debugMessageLog( 1, "Player Id: %d, Chat printed: %s", player_id, formated_message )
-}
-
-stock print_color_text_chooser( player_id, input[] )
-{
-    if( player_id )
-    {
-        print_color_text_internal( player_id, input )
-    }
-    else
-    {
-        new players_ids[ 32 ]
-        
-        new playerIndex_idsCounter
-        
-        get_players( players_ids, playerIndex_idsCounter, "ch" );
-        
-        for( new i = 0; i < playerIndex_idsCounter; i++ )
-        {
-            print_color_text_internal( players_ids[ i ], input )
-        }
-    }
-}
-
-stock print_color_text_internal( player_id, text[] )
-{
-    message_begin( MSG_ONE_UNRELIABLE, g_user_msgid, _, player_id );
-    write_byte( player_id );
-    write_string( text );
-    message_end();
+    debugMessageLog( 1, "( out ) Player Id: %d, Chat printed: %s", player_id, formated_message )
 }
 
 stock map_restoreOriginalTimeLimit()
@@ -3814,9 +4207,22 @@ public test_is_map_extension_allowed2( test_id )
     set_pcvar_num( cvar_extendmapMax, 10 )
     set_cvar_num( "mp_timelimit", 20 )
     
-    if( g_is_debug_enabled )
+    if( g_debug_level )
     {
-        print_colored( 0, "%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED" );
+    #if AMXX_VERSION_NUM < 183
+        new players_ids[ 32 ]
+        
+        new playerIndex_idsCounter
+        
+        get_players( players_ids, playerIndex_idsCounter, "ch" );
+        
+        for( new i = 0; i < playerIndex_idsCounter; i++ )
+        {
+            client_print_color_internal( players_ids[ i ], "^1%L", players_ids[ i ], "GAL_CHANGE_TIMEEXPIRED" );
+        }
+    #else
+        client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED" );
+    #endif
     }
     
     cancel_voting()
@@ -4071,9 +4477,9 @@ stock cancel_voting()
  */
 debugMessageLog( const mode, const text[] = "", { Float, Sql, Result, _ }: ... )
 {
-    g_is_debug_enabled = get_cvar_num( "gal_debug" );
+    g_debug_level = get_cvar_num( "gal_debug" );
     
-    if( mode & g_is_debug_enabled )
+    if( mode & g_debug_level )
     {
         // format the text as needed
         new formattedText[ 1024 ];
