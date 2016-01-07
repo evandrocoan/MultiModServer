@@ -302,7 +302,7 @@ public plugin_init()
     register_plugin( "Galileo", PLUGIN_VERSION, "Addons zz/Brad Jones" );
     
     register_dictionary( "common.txt" );
-    register_dictionary( "galileo_reloaded.txt" );
+    register_dictionary_colored( "galileo_reloaded.txt" );
     
     g_tests_idsAndNames = ArrayCreate( SHORT_STRING )
     g_tests_delayed_ids = ArrayCreate( 1 )
@@ -3611,7 +3611,6 @@ stock con_print( player_id, message[], { Float, Sql, Result, _ }: ... )
     server_print( consoleMessage );
 }
 
-
 #if AMXX_VERSION_NUM < 183
 public client_disconnect( player_id )
 #else
@@ -3879,26 +3878,26 @@ stock percent( is, of )
 }
 
 /**
- * Print colored text to a given player_id. It has to be called to each player using its player_id 
+ * Print colored text to a given player_id. It has to be called to each player using its player_id
  * instead of 'LANG_PLAYER' constant. Just use the 'LANG_PLAYER' constant when using this function
  * to display to all players.
- * 
+ *
  * If you are at the Amx Mod X 1.8.2, you cannot call this function using the player_id as 0. You
  * must call it to every player on the server, to display the colored message to all players.
- * 
- * If you are at the Amx Mod X 1.8.3 or superior, you can call this function using the player_id 
- * as 0, to display the colored message to all players on the server 
- * 
+ *
+ * If you are at the Amx Mod X 1.8.3 or superior, you can call this function using the player_id
+ * as 0, to display the colored message to all players on the server
+ *
  * If you run this function on a Game Mod that do not support colored messages, they will be
  * displayed as normal messages without any errors or bad formats.
- * 
+ *
  * This allow you to use '!g for green', '!y for yellow', '!t for team' color at the LANG file or anywhere.
- * 
+ *
  * @param player_id the player id.
  * @param message[] the text formatting rules to display.
  * @param any the variable number of formatting parameters.
- * 
- * @see <a href="https://www.amxmodx.org/api/amxmodx/client_print_color">client_print_color</a> 
+ *
+ * @see <a href="https://www.amxmodx.org/api/amxmodx/client_print_color">client_print_color</a>
  * for Amx Mod X 1.8.3 or superior.
  */
 stock client_print_color_internal( player_id, message[], any: ... )
@@ -3910,10 +3909,6 @@ stock client_print_color_internal( player_id, message[], any: ... )
     
     if( g_is_supported_color_chat )
     {
-        replace_all( formated_message, charsmax( formated_message ), "!y", "^1" ); // yellow
-        replace_all( formated_message, charsmax( formated_message ), "!t", "^3" ); // team
-        replace_all( formated_message, charsmax( formated_message ), "!g", "^4" ); // green
-
 #if AMXX_VERSION_NUM < 183
         message_begin( MSG_ONE_UNRELIABLE, g_user_msgid, _, player_id );
         write_byte( player_id );
@@ -3925,9 +3920,6 @@ stock client_print_color_internal( player_id, message[], any: ... )
     }
     else
     {
-        replace_all( formated_message, charsmax( formated_message ), "!y", "" ); // yellow
-        replace_all( formated_message, charsmax( formated_message ), "!t", "" ); // team
-        replace_all( formated_message, charsmax( formated_message ), "!g", "" ); // green
         replace_all( formated_message, charsmax( formated_message ), "^1", "" ); // yellow
         replace_all( formated_message, charsmax( formated_message ), "^2", "" ); // ...
         replace_all( formated_message, charsmax( formated_message ), "^3", "" ); // team
@@ -3936,6 +3928,61 @@ stock client_print_color_internal( player_id, message[], any: ... )
         client_print( player_id, print_chat, formated_message )
     }
     debugMessageLog( 1, "( out ) Player Id: %d, Chat printed: %s", player_id, formated_message )
+}
+
+/**
+ * ConnorMcLeod's [Dyn Native] ColorChat v0.3.2 (04 jul 2013) register_dictionary_colored function:
+ *   https://forums.alliedmods.net/showthread.php?p=851160
+ *
+ * @param filename the dictionary file name including its file extension.
+ */
+stock register_dictionary_colored( const filename[] )
+{
+    if( !register_dictionary( filename ) )
+    {
+        return 0;
+    }
+    
+    new szFileName[ 256 ];
+    get_localinfo( "amxx_datadir", szFileName, charsmax( szFileName ) );
+    format( szFileName, charsmax( szFileName ), "%s/lang/%s", szFileName, filename );
+    new fp = fopen( szFileName, "rt" );
+    
+    if( !fp )
+    {
+        log_amx( "Failed to open %s", szFileName );
+        return 0;
+    }
+    
+    new szBuffer[ 512 ], szLang[ 3 ], szKey[ 64 ], szTranslation[ 256 ], TransKey:iKey;
+    
+    while( !feof( fp ) )
+    {
+        fgets( fp, szBuffer, charsmax( szBuffer ) );
+        trim( szBuffer );
+        
+        if( szBuffer[ 0 ] == '[' )
+        {
+            strtok( szBuffer[ 1 ], szLang, charsmax( szLang ), szBuffer, 1, ']' );
+        }
+        else if( szBuffer[ 0 ] )
+        {
+            strbreak( szBuffer, szKey, charsmax( szKey ), szTranslation, charsmax( szTranslation ) );
+            iKey = GetLangTransKey( szKey );
+            
+            if( iKey != TransKey_Bad )
+            {
+                replace_all( szTranslation, charsmax( szTranslation ), "!g", "^4" );
+                replace_all( szTranslation, charsmax( szTranslation ), "!t", "^3" );
+                replace_all( szTranslation, charsmax( szTranslation ), "!n", "^1" );
+                replace_all( szTranslation, charsmax( szTranslation ), "!y", "^1" );
+                AddTranslation( szLang, iKey, szTranslation[ 2 ] );
+            }
+        }
+    }
+    
+    fclose( fp );
+    return 1;
 }
 
 stock map_restoreOriginalTimeLimit()
