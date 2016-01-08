@@ -322,7 +322,7 @@ public plugin_init()
     register_plugin( "Galileo", PLUGIN_VERSION, "Addons zz/Brad Jones" );
     
     register_dictionary( "common.txt" );
-    register_dictionary( "galileo_reloaded.txt" );
+    register_dictionary_colored( "galileo_reloaded.txt" );
     
     g_tests_idsAndNames = ArrayCreate( SHORT_STRING )
     g_tests_delayed_ids = ArrayCreate( 1 )
@@ -3966,9 +3966,7 @@ stock client_print_color_internal( player_id, message[], any: ... )
                     
                     vformat( formated_message, charsmax( formated_message ), message, 3 )
                     debugMessageLog( 1, "( in ) Player player_id: %d, Chat printed: %s", player_id, formated_message )
-                    
-                    INSERT_COLOR_TAGS( formated_message )
-                    
+
                     message_begin( MSG_ONE_UNRELIABLE, g_user_msgid, _, player_id );
                     write_byte( player_id );
                     write_string( formated_message );
@@ -3986,8 +3984,6 @@ stock client_print_color_internal( player_id, message[], any: ... )
         }
         else
         {
-            INSERT_COLOR_TAGS( formated_message )
-            
             message_begin( MSG_ONE_UNRELIABLE, g_user_msgid, _, player_id );
             write_byte( player_id );
             write_string( formated_message );
@@ -4054,10 +4050,7 @@ stock register_dictionary_colored( const filename[] )
             
             if( iKey != TransKey_Bad )
             {
-                replace_all( szTranslation, charsmax( szTranslation ), "!g", "^4" );
-                replace_all( szTranslation, charsmax( szTranslation ), "!t", "^3" );
-                replace_all( szTranslation, charsmax( szTranslation ), "!n", "^1" );
-                replace_all( szTranslation, charsmax( szTranslation ), "!y", "^1" );
+                INSERT_COLOR_TAGS( szTranslation )
                 AddTranslation( szLang, iKey, szTranslation[ 2 ] );
             }
         }
