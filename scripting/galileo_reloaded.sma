@@ -29,6 +29,19 @@
 #include <amxmodx>
 #include <amxmisc>
 
+
+/** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
+ * at the end of this file, for more information. Default value: 0  - which is disabled.
+ */
+#define IS_DEBUG_ENABLED 1
+
+#if IS_DEBUG_ENABLED > 0
+    #define DEBUG_LOGGER(%1) debugMesssageLogger( %1 )
+    new g_debug_level
+#else
+    #define DEBUG_LOGGER(%1) //
+#endif
+
 #define LONG_STRING       256
 #define MAX_COLOR_MESSAGE 192
 #define SHORT_STRING      64
@@ -168,18 +181,12 @@
 #define ALL_TESTS_TO_EXECUTE \
     { \
         test_register_test(); \
-        test_is_map_extension_allowed1(); \
         test_gal_in_empty_cycle1(); \
         test_gal_in_empty_cycle2(); \
         test_gal_in_empty_cycle3(); \
         test_gal_in_empty_cycle4(); \
+        test_is_map_extension_allowed1(); \
     }
-
-
-/** This is to view internal program data while execution. See the function 'debugMessageLog(...)'
- * at the end of this file, for more information. Default value: 0  - which is disabled.
- */
-new g_debug_level
 
 
 /**
@@ -418,7 +425,9 @@ public plugin_init()
  */
 public plugin_cfg()
 {
-    g_debug_level        = get_cvar_num( "gal_debug" );
+#if IS_DEBUG_ENABLED > 0
+    g_debug_level = get_cvar_num( "gal_debug" );
+#endif
     g_maxrounds_pointer  = get_cvar_pointer( "mp_maxrounds" )
     g_winlimit_pointer   = get_cvar_pointer( "mp_winlimit" )
     g_freezetime_pointer = get_cvar_pointer( "mp_freezetime" )
@@ -488,8 +497,8 @@ public plugin_cfg()
     
     new mapName[ 32 ];
     get_mapname( mapName, 31 );
-    debugMessageLog( 4, "[%s]", mapName );
-    debugMessageLog( 4, "" );
+    DEBUG_LOGGER( 4, "[%s]", mapName )
+    DEBUG_LOGGER( 4, "" )
     
     if( get_cvar_num( "gal_server_starting" ) )
     {
@@ -504,11 +513,10 @@ public plugin_cfg()
     }
     
     set_task( 10.0, "vote_setupEnd" );
-    
-    if( g_debug_level )
-    {
-        runTests()
-    }
+
+#if IS_DEBUG_ENABLED > 0
+    runTests()
+#endif
 }
 
 public team_win()
@@ -546,8 +554,8 @@ public team_win()
         }
     }
     
-    debugMessageLog( 32, "Team_Wind: string_team_winner = %s, winlimit_integer = %d, \
-            wins_CT_trigger = %d, wins_Terrorist_trigger = %d",
+    DEBUG_LOGGER( 32, "Team_Win: string_team_winner = %s, winlimit_integer = %d, \
+            wins_CT_trigger = %d, wins_Terrorist_trigger = %d", \
             string_team_winner, winlimit_integer, wins_CT_trigger, wins_Terrorist_trigger )
 }
 
@@ -573,8 +581,8 @@ public round_end()
         }
     }
     
-    debugMessageLog( 32, "Round_End:  maxrounds_number = %d, \
-            g_total_rounds_played = %d, current_rounds_trigger = %d",
+    DEBUG_LOGGER( 32, "Round_End:  maxrounds_number = %d, \
+            g_total_rounds_played = %d, current_rounds_trigger = %d", \
             maxrounds_number, g_total_rounds_played, current_rounds_trigger )
     
     if( g_is_last_round )
@@ -642,8 +650,8 @@ public plugin_end()
 
 public vote_setupEnd()
 {
-    debugMessageLog( 4, "%32s mp_timelimit: %f  g_originalTimelimit: %f",
-            "vote_setupEnd( in )", get_cvar_float( "mp_timelimit" ), g_originalTimelimit );
+    DEBUG_LOGGER( 4, "%32s mp_timelimit: %f  g_originalTimelimit: %f", \
+            "vote_setupEnd( in )", get_cvar_float( "mp_timelimit" ), g_originalTimelimit )
     
     g_originalTimelimit = get_cvar_float( "mp_timelimit" );
     g_originalMaxRounds = get_pcvar_num( g_maxrounds_pointer )
@@ -651,8 +659,8 @@ public vote_setupEnd()
     
     setup_vote_manageEnd_task()
     
-    debugMessageLog( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f",
-            "vote_setupEnd( out )", get_cvar_float( "mp_timelimit" ), g_originalTimelimit );
+    DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", \
+            "vote_setupEnd( out )", get_cvar_float( "mp_timelimit" ), g_originalTimelimit )
 }
 
 /**
@@ -796,7 +804,7 @@ public vote_manageEnd()
 
 public map_manageEnd()
 {
-    debugMessageLog( 2, "%32s mp_timelimit: %f", "map_manageEnd(in)", get_cvar_float( "mp_timelimit" ) );
+    DEBUG_LOGGER( 2, "%32s mp_timelimit: %f", "map_manageEnd(in)", get_cvar_float( "mp_timelimit" ) )
     
     get_cvar_string( "amx_nextmap", g_nextmap, sizeof( g_nextmap ) - 1 );
     
@@ -834,7 +842,7 @@ public map_manageEnd()
     
     configure_last_round_HUD( bool:get_pcvar_num( cvar_endOnRound_msg ) )
     
-    debugMessageLog( 2, "%32s mp_timelimit: %f", "map_manageEnd(out)", get_cvar_float( "mp_timelimit" ) );
+    DEBUG_LOGGER( 2, "%32s mp_timelimit: %f", "map_manageEnd(out)", get_cvar_float( "mp_timelimit" ) )
 }
 
 public configure_last_round_HUD( bool:is_to_show )
@@ -1068,7 +1076,7 @@ stock map_populateList( Array:mapArray, mapFilename[] )
                 {
                     ArrayPushString( mapArray, buffer );
                     ++mapCnt;
-                    debugMessageLog( 4, "map_populateList(...) buffer = %s", buffer )
+                    DEBUG_LOGGER( 4, "map_populateList(...) buffer = %s", buffer )
                 }
             }
             fclose( file );
@@ -1237,7 +1245,7 @@ stock map_loadEmptyCycleList()
     
     g_emptyMapCnt = map_populateList( g_emptyCycleMap, filename );
     
-    debugMessageLog( 4, "map_loadEmptyCycleList() g_emptyMapCnt = %d", g_emptyMapCnt )
+    DEBUG_LOGGER( 4, "map_loadEmptyCycleList() g_emptyMapCnt = %d", g_emptyMapCnt )
 }
 
 public map_loadPrefixList()
@@ -1288,7 +1296,7 @@ public event_game_commencing()
     
     setup_vote_manageEnd_task()
     
-    debugMessageLog( 32, "^n AT: event_game_commencing" )
+    DEBUG_LOGGER( 32, "^n AT: event_game_commencing" )
 }
 
 stock map_getIdx( text[] )
@@ -1769,8 +1777,8 @@ public vote_startDirector( bool:forced )
              && !( g_voteStatus & VOTE_IS_RUNOFF ) )
         || g_is_to_cancel_end_vote )
     {
-        debugMessageLog( 1, "At vote_startDirector --- The voting was canceled. g_voteStatus=%d, \
-                g_is_voting_locked=%d, g_is_to_cancel_end_vote=%d",
+        DEBUG_LOGGER( 1, "At vote_startDirector --- The voting was canceled. g_voteStatus=%d, \
+                g_is_voting_locked=%d, g_is_to_cancel_end_vote=%d", \
                 g_voteStatus, g_is_voting_locked, g_is_to_cancel_end_vote )
         return
     }
@@ -1784,10 +1792,10 @@ public vote_startDirector( bool:forced )
         
         voteDuration = get_pcvar_num( cvar_runoffDuration );
         
-        debugMessageLog( 16, "At vote_startDirector --- Runoff map1: %s, Runoff map2: %s --- choicesLoaded: %d",
+        DEBUG_LOGGER( 16, "At vote_startDirector --- Runoff map1: %s, Runoff map2: %s --- choicesLoaded: %d", \
                 g_mapsVoteMenuNames[ 0 ], g_mapsVoteMenuNames[ 1 ], choicesLoaded )
         
-        debugMessageLog( 4, "   [RUNOFF VOTE CHOICES ( %i )]", choicesLoaded );
+        DEBUG_LOGGER( 4, "   [RUNOFF VOTE CHOICES ( %i )]", choicesLoaded )
     }
     else
     {
@@ -1810,7 +1818,7 @@ public vote_startDirector( bool:forced )
         choicesLoaded = vote_loadChoices();
         voteDuration  = get_pcvar_num( cvar_voteDuration );
         
-        debugMessageLog( 4, "   [PRIMARY VOTE CHOICES ( %i )]", choicesLoaded );
+        DEBUG_LOGGER( 4, "   [PRIMARY VOTE CHOICES ( %i )]", choicesLoaded )
         
         if( choicesLoaded )
         {
@@ -1818,26 +1826,23 @@ public vote_startDirector( bool:forced )
             nomination_clearAll();
         }
     }
-    
-    if( g_debug_level )
-    {
-        voteDuration   = 5
-        g_voteDuration = 5
-    }
+
+#if IS_DEBUG_ENABLED > 0
+    voteDuration   = 5
+    g_voteDuration = 5
+#endif
     
     if( choicesLoaded )
     {
         // alphabetize the maps
         SortCustom2D( g_mapsVoteMenuNames, choicesLoaded, "sort_stringsi" );
-        
-        if( g_debug_level )
+
+#if IS_DEBUG_ENABLED > 0
+        for( new dbgChoice = 0; dbgChoice < choicesLoaded; dbgChoice++ )
         {
-            for( new dbgChoice = 0; dbgChoice < choicesLoaded; dbgChoice++ )
-            {
-                debugMessageLog( 4, "      %i. %s", dbgChoice + 1, g_mapsVoteMenuNames[ dbgChoice ] );
-            }
+            DEBUG_LOGGER( 4, "      %i. %s", dbgChoice + 1, g_mapsVoteMenuNames[ dbgChoice ] )
         }
-        //--------------
+#endif
         
         // mark the players who are in this vote for use later
         new player[ 32 ], playerCnt;
@@ -1889,12 +1894,11 @@ public vote_startDirector( bool:forced )
         client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_VOTE_NOMAPS" );
     #endif
     }
-    
-    if( g_debug_level )
-    {
-        debugMessageLog( 4, "" );
-        debugMessageLog( 4, "   [PLAYER CHOICES]" );
-    }
+
+#if IS_DEBUG_ENABLED > 0
+    DEBUG_LOGGER( 4, "" )
+    DEBUG_LOGGER( 4, "   [PLAYER CHOICES]" )
+#endif
 }
 
 public vote_countdownPendingVote()
@@ -1925,7 +1929,7 @@ public vote_countdownPendingVote()
 
 stock vote_addNominations()
 {
-    debugMessageLog( 4, "   [NOMINATIONS ( %i )]", g_nominationCnt );
+    DEBUG_LOGGER( 4, "   [NOMINATIONS ( %i )]", g_nominationCnt )
     
     if( g_nominationCnt )
     {
@@ -1940,29 +1944,28 @@ stock vote_addNominations()
         // add as many nominations as we can
         // [TODO: develop a better method of determining which nominations make the cut; either FIFO or random]
         new idxMap, player_id, mapName[ 32 ];
+
+#if IS_DEBUG_ENABLED > 0
+        new nominator_id, playerName[ 32 ];
         
-        if( g_debug_level )
+        for( new idxNomination = playerNominationMax; idxNomination >= 1; --idxNomination )
         {
-            new nominator_id, playerName[ 32 ];
-            
-            for( new idxNomination = playerNominationMax; idxNomination >= 1; --idxNomination )
+            for( player_id = 1; player_id <= MAX_PLAYER_CNT; ++player_id )
             {
-                for( player_id = 1; player_id <= MAX_PLAYER_CNT; ++player_id )
+                idxMap = g_nomination[ player_id ][ idxNomination ];
+                
+                if( idxMap >= 0 )
                 {
-                    idxMap = g_nomination[ player_id ][ idxNomination ];
+                    ArrayGetString( g_nominationMap, idxMap, mapName, sizeof( mapName ) - 1 );
+                    nominator_id = nomination_getPlayer( idxMap );
+                    get_user_name( nominator_id, playerName, sizeof( playerName ) - 1 );
                     
-                    if( idxMap >= 0 )
-                    {
-                        ArrayGetString( g_nominationMap, idxMap, mapName, sizeof( mapName ) - 1 );
-                        nominator_id = nomination_getPlayer( idxMap );
-                        get_user_name( nominator_id, playerName, sizeof( playerName ) - 1 );
-                        
-                        debugMessageLog( 4, "      %-32s %s", mapName, playerName );
-                    }
+                    DEBUG_LOGGER( 4, "      %-32s %s", mapName, playerName )
                 }
             }
-            debugMessageLog( 4, "" );
         }
+        DEBUG_LOGGER( 4, "" )
+#endif
         
         for( new idxNomination = playerNominationMax; idxNomination >= 1; --idxNomination )
         {
@@ -2019,8 +2022,8 @@ stock vote_addFiller()
             
             if( equali( buffer, "[groups]" ) )
             {
-                debugMessageLog( 8, " " );
-                debugMessageLog( 8, "this is a [groups] file" );
+                DEBUG_LOGGER( 8, " " )
+                DEBUG_LOGGER( 8, "this is a [groups] file" )
                 // read the filler file to determine how many groups there are ( max of 8 )
                 new groupIdx;
                 
@@ -2030,7 +2033,8 @@ stock vote_addFiller()
                 {
                     fgets( file, buffer, sizeof( buffer ) - 1 );
                     trim( buffer );
-                    debugMessageLog( 8, "buffer: %s   isdigit: %i   groupCnt: %i  ", buffer, isdigit( buffer[ 0 ] ), groupCnt );
+                    DEBUG_LOGGER( 8, "buffer: %s   isdigit: %i   groupCnt: %i  ", buffer, \
+                            isdigit( buffer[ 0 ] ), groupCnt )
                     
                     if( isdigit( buffer[ 0 ] ) )
                     {
@@ -2038,8 +2042,9 @@ stock vote_addFiller()
                         {
                             groupIdx                 = groupCnt++;
                             mapsPerGroup[ groupIdx ] = str_to_num( buffer );
-                            formatex( fillerFile[ groupIdx ], sizeof( fillerFile[] ) - 1, "%s/%i.ini", DIR_CONFIGS, groupCnt );
-                            debugMessageLog( 8, "fillerFile: %s", fillerFile[ groupIdx ] );
+                            formatex( fillerFile[ groupIdx ], sizeof( fillerFile[] ) - 1,
+                                    "%s/%i.ini", DIR_CONFIGS, groupCnt )
+                            DEBUG_LOGGER( 8, "fillerFile: %s", fillerFile[ groupIdx ] )
                         }
                         else
                         {
@@ -2084,23 +2089,24 @@ stock vote_addFiller()
     for( new groupIdx = 0; groupIdx < groupCnt; ++groupIdx )
     {
         mapCnt = map_loadFillerList( fillerFile[ groupIdx ] );
-        debugMessageLog( 8, "[%i] groupCnt:%i   mapCnt: %i   g_totalVoteOptions: %i   g_choiceMax: %i   fillerFile: %s",
-                groupIdx, groupCnt, mapCnt, g_totalVoteOptions, g_choiceMax, fillerFile[ groupIdx ] );
+        DEBUG_LOGGER( 8, "[%i] groupCnt:%i   mapCnt: %i   g_totalVoteOptions: %i   \
+                g_choiceMax: %i   fillerFile: %s", groupIdx, groupCnt, mapCnt, \
+                g_totalVoteOptions, g_choiceMax, fillerFile[ groupIdx ] )
         
         if( ( g_totalVoteOptions < g_choiceMax )
             && mapCnt )
         {
             unsuccessfulCnt = 0;
             allowedCnt      = min( min( mapsPerGroup[ groupIdx ], g_choiceMax - g_totalVoteOptions ), mapCnt );
-            debugMessageLog( 8, "[%i] allowedCnt: %i   mapsPerGroup: %i   Max-Cnt: %i", groupIdx, allowedCnt,
-                    mapsPerGroup[ groupIdx ], g_choiceMax - g_totalVoteOptions );
+            DEBUG_LOGGER( 8, "[%i] allowedCnt: %i   mapsPerGroup: %i   Max-Cnt: %i", groupIdx, \
+                    allowedCnt, mapsPerGroup[ groupIdx ], g_choiceMax - g_totalVoteOptions )
             
             for( choiceIdx = 0; choiceIdx < allowedCnt; ++choiceIdx )
             {
                 mapKey = random_num( 0, mapCnt - 1 );
                 ArrayGetString( g_fillerMap, mapKey, mapName, sizeof( mapName ) - 1 );
-                debugMessageLog( 8, "[%i] choiceIdx: %i   allowedCnt: %i   mapKey: %i   mapName: %s",
-                        groupIdx, choiceIdx, allowedCnt, mapKey, mapName );
+                DEBUG_LOGGER( 8, "[%i] choiceIdx: %i   allowedCnt: %i   mapKey: %i   mapName: %s", \
+                        groupIdx, choiceIdx, allowedCnt, mapKey, mapName )
                 unsuccessfulCnt = 0;
                 
                 while( ( map_isInMenu( mapName )
@@ -2127,8 +2133,9 @@ stock vote_addFiller()
                 
                 //print_colored( 0, "mapIdx: %i  map: %s", mapIdx, mapName );
                 copy( g_mapsVoteMenuNames[ g_totalVoteOptions++ ], sizeof( g_mapsVoteMenuNames[] ) - 1, mapName );
-                debugMessageLog( 8, "[%i] mapName: %s   unsuccessfulCnt: %i   mapCnt: %i   g_totalVoteOptions: %i",
-                        groupIdx, mapName, unsuccessfulCnt, mapCnt, g_totalVoteOptions );
+                DEBUG_LOGGER( 8, "[%i] mapName: %s   unsuccessfulCnt: %i   mapCnt: %i   \
+                        g_totalVoteOptions: %i", \
+                        groupIdx, mapName, unsuccessfulCnt, mapCnt, g_totalVoteOptions )
             }
         }
     }
@@ -2144,8 +2151,9 @@ stock vote_loadChoices()
 
 stock vote_loadRunoffChoices()
 {
-    debugMessageLog( 16, "At vote_loadRunoffChoices --- Runoff map1: %s, Runoff map2: %s",
-            g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 0 ] ], g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 1 ] ] )
+    DEBUG_LOGGER( 16, "At vote_loadRunoffChoices --- Runoff map1: %s, Runoff map2: %s", \
+            g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 0 ] ], \
+            g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 1 ] ] )
     
     new runOffNameChoices[ 2 ][ MAX_MAPNAME_LEN + 1 ];
     copy( runOffNameChoices[ 0 ], sizeof( runOffNameChoices[] ) - 1, g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 0 ] ] );
@@ -2163,11 +2171,7 @@ public vote_handleDisplay()
         client_cmd( 0, "spk Gman/Gman_Choose%i", random_num( 1, 2 ) );
     }
     
-    if( g_debug_level )
-    {
-        g_voteDuration = 5
-    }
-    else if( g_voteStatus & VOTE_IS_RUNOFF )
+    if( g_voteStatus & VOTE_IS_RUNOFF )
     {
         g_voteDuration = get_pcvar_num( cvar_runoffDuration );
     }
@@ -2175,6 +2179,10 @@ public vote_handleDisplay()
     {
         g_voteDuration = get_pcvar_num( cvar_voteDuration );
     }
+
+#if IS_DEBUG_ENABLED > 0
+    g_voteDuration = 5
+#endif
     
     if( get_pcvar_num( cvar_voteStatus )
         && get_pcvar_num( cvar_voteStatusType ) == SHOWSTATUSTYPE_PERCENTAGE )
@@ -2217,14 +2225,17 @@ public vote_display( vote_display_task_argument[ 3 ] )
     
     new updateTimeRemaining = vote_display_task_argument[ 0 ];
     new player_id           = vote_display_task_argument[ 1 ];
+
+#if IS_DEBUG_ENABLED > 0
+    new snuff = ( player_id > 0 ) ? g_snuffDisplay[ player_id ] : -1;
     
-    if( g_debug_level )
-    {
-        new snuff = ( player_id > 0 ) ? g_snuffDisplay[ player_id ] : -1;
-        debugMessageLog( 4, "   [votedisplay( )] player_id: %i  updateTimeRemaining: %i  unsnuffDisplay: %i  g_snuffDisplay: %i  \
-                g_refreshVoteStatus: %i  g_totalVoteOptions: %i  len( g_vote ): %i  len( voteStatus ): %i", vote_display_task_argument[ 1 ], vote_display_task_argument[ 0 ],
-                vote_display_task_argument[ 2 ], snuff, g_refreshVoteStatus, g_totalVoteOptions, strlen( g_vote ), strlen( voteStatus ) );
-    }
+    DEBUG_LOGGER( 4, "   [votedisplay( )] player_id: %i  updateTimeRemaining: %i\
+        unsnuffDisplay: %i  g_snuffDisplay: %i  g_refreshVoteStatus: %i\
+        g_totalVoteOptions: %i  len( g_vote ): %i  len( voteStatus ): %i", \
+            vote_display_task_argument[ 1 ], vote_display_task_argument[ 0 ], \
+            vote_display_task_argument[ 2 ], snuff, g_refreshVoteStatus, \
+            g_totalVoteOptions, strlen( g_vote ), strlen( voteStatus ) )
+#endif
     
     if( player_id > 0
         && g_snuffDisplay[ player_id ] )
@@ -2404,9 +2415,8 @@ public vote_display( vote_display_task_argument[ 3 ] )
             new name[ 32 ];
             get_user_name( player_id, name, 31 );
             
-            debugMessageLog( 4, "    [%s ( dirty, just voted )]", name );
-            debugMessageLog( 4, "        %s", menuDirty );
-            //--------------
+            DEBUG_LOGGER( 4, "    [%s ( dirty, just voted )]", name )
+            DEBUG_LOGGER( 4, "        %s", menuDirty )
             
             get_user_menu( player_id, menuid, menukeys );
             
@@ -2435,8 +2445,8 @@ public vote_display( vote_display_task_argument[ 3 ] )
                     new name[ 32 ];
                     get_user_name( player_id, name, 31 );
                     
-                    debugMessageLog( 4, "    [%s ( clean )]", name );
-                    debugMessageLog( 4, "        %s", menuClean );
+                    DEBUG_LOGGER( 4, "    [%s ( clean )]", name )
+                    DEBUG_LOGGER( 4, "        %s", menuClean )
                 }
                 
                 get_user_menu( player_id, menuid, menukeys );
@@ -2459,8 +2469,8 @@ public vote_display( vote_display_task_argument[ 3 ] )
                         new name[ 32 ];
                         get_user_name( player_id, name, 31 );
                         
-                        debugMessageLog( 4, "    [%s ( dirty )]", name );
-                        debugMessageLog( 4, "        %s", menuDirty );
+                        DEBUG_LOGGER( 4, "    [%s ( dirty )]", name )
+                        DEBUG_LOGGER( 4, "        %s", menuDirty )
                     }
                     
                     get_user_menu( player_id, menuid, menukeys );
@@ -2475,7 +2485,7 @@ public vote_display( vote_display_task_argument[ 3 ] )
             
             if( player_id == 1 )
             {
-                debugMessageLog( 4, "" );
+                DEBUG_LOGGER( 4, "" )
             }
         }
     }
@@ -2503,29 +2513,31 @@ stock getTotalVotesAtMap( g_totalVoteAtMap[], g_totalVoteAtMapLen, voteCnt )
 public vote_expire()
 {
     g_voteStatus |= VOTE_HAS_EXPIRED;
+
+#if IS_DEBUG_ENABLED > 0
+    DEBUG_LOGGER( 4, "" )
+    DEBUG_LOGGER( 4, "   [VOTE RESULT]" )
+    new g_totalVoteAtMap[ 16 ];
     
-    if( g_debug_level )
+    for( new userVoteMapChoiceIndex = 0; userVoteMapChoiceIndex <= g_totalVoteOptions; ++userVoteMapChoiceIndex )
     {
-        debugMessageLog( 4, "" );
-        debugMessageLog( 4, "   [VOTE RESULT]" );
-        new g_totalVoteAtMap[ 16 ];
+        getTotalVotesAtMap( g_totalVoteAtMap, sizeof( g_totalVoteAtMap ) - 1,
+                g_arrayOfMapsWithVotesNumber[ userVoteMapChoiceIndex ] );
         
-        for( new userVoteMapChoiceIndex = 0; userVoteMapChoiceIndex <= g_totalVoteOptions; ++userVoteMapChoiceIndex )
-        {
-            getTotalVotesAtMap( g_totalVoteAtMap, sizeof( g_totalVoteAtMap ) - 1, g_arrayOfMapsWithVotesNumber[ userVoteMapChoiceIndex ] );
-            
-            debugMessageLog( 4, "      %2i/%3i  %i. %s", g_arrayOfMapsWithVotesNumber[ userVoteMapChoiceIndex ], g_totalVoteAtMap,
-                    userVoteMapChoiceIndex, g_mapsVoteMenuNames[ userVoteMapChoiceIndex ] );
-        }
-        debugMessageLog( 4, "" );
+        DEBUG_LOGGER( 4, "      %2i/%3i  %i. %s", \
+                g_arrayOfMapsWithVotesNumber[ userVoteMapChoiceIndex ], g_totalVoteAtMap, \
+                userVoteMapChoiceIndex, g_mapsVoteMenuNames[ userVoteMapChoiceIndex ] )
     }
+    DEBUG_LOGGER( 4, "" )
+#endif
     
     g_vote[ 0 ] = 0;
     
     // determine the number of votes for 1st and 2nd place
     new numberOfVotesAtFirstPlace, numberOfVotesAtSecondPlace, totalVotes;
     
-    for( new userVoteMapChoiceIndex = 0; userVoteMapChoiceIndex <= g_totalVoteOptions; ++userVoteMapChoiceIndex )
+    for( new userVoteMapChoiceIndex = 0;
+         userVoteMapChoiceIndex <= g_totalVoteOptions; ++userVoteMapChoiceIndex )
     {
         totalVotes += g_arrayOfMapsWithVotesNumber[ userVoteMapChoiceIndex ];
         
@@ -2546,7 +2558,7 @@ public vote_expire()
     
     for( new userVoteMapChoiceIndex = 0; userVoteMapChoiceIndex <= g_totalVoteOptions; ++userVoteMapChoiceIndex )
     {
-        debugMessageLog( 16, "At g_arrayOfMapsWithVotesNumber[%d] = %d ", userVoteMapChoiceIndex,
+        DEBUG_LOGGER( 16, "At g_arrayOfMapsWithVotesNumber[%d] = %d ", userVoteMapChoiceIndex, \
                 g_arrayOfMapsWithVotesNumber[ userVoteMapChoiceIndex ] )
         
         if( g_arrayOfMapsWithVotesNumber[ userVoteMapChoiceIndex ] == numberOfVotesAtFirstPlace )
@@ -2561,8 +2573,8 @@ public vote_expire()
     }
     
     // At for: g_totalVoteOptions: 5, numberOfMapsAtFirstPosition: 3, numberOfMapsAtSecondPosition: 0
-    debugMessageLog( 16, "At for: g_totalVoteOptions: %d, numberOfMapsAtFirstPosition: %d, \
-            numberOfMapsAtSecondPosition: %d",
+    DEBUG_LOGGER( 16, "At for: g_totalVoteOptions: %d, numberOfMapsAtFirstPosition: %d, \
+            numberOfMapsAtSecondPosition: %d", \
             g_totalVoteOptions, numberOfMapsAtFirstPosition, numberOfMapsAtSecondPosition )
     
     // announce the outcome
@@ -2605,7 +2617,7 @@ public vote_expire()
                 
                 if( numberOfMapsAtFirstPosition > 2 )
                 {
-                    debugMessageLog( 16, "0 - firstPlaceChoices[ numberOfMapsAtFirstPosition - 1 ] : %d",
+                    DEBUG_LOGGER( 16, "0 - firstPlaceChoices[ numberOfMapsAtFirstPosition - 1 ] : %d", \
                             firstPlaceChoices[ numberOfMapsAtFirstPosition - 1 ] )
                     
                     // determine the two choices that will be facing off
@@ -2615,7 +2627,7 @@ public vote_expire()
                     firstChoiceIndex  = random_num( 0, numberOfMapsAtFirstPosition - 1 );
                     secondChoiceIndex = random_num( 0, numberOfMapsAtFirstPosition - 1 );
                     
-                    debugMessageLog( 16, "1 - At: firstChoiceIndex: %d, secondChoiceIndex: %d",
+                    DEBUG_LOGGER( 16, "1 - At: firstChoiceIndex: %d, secondChoiceIndex: %d", \
                             firstChoiceIndex, secondChoiceIndex )
                     
                     if( firstChoiceIndex == secondChoiceIndex )
@@ -2662,14 +2674,15 @@ public vote_expire()
                         }
                     }
                     
-                    debugMessageLog( 16, "2 - At: firstChoiceIndex: %d, secondChoiceIndex: %d",
+                    DEBUG_LOGGER( 16, "2 - At: firstChoiceIndex: %d, secondChoiceIndex: %d", \
                             firstChoiceIndex, secondChoiceIndex )
                     
                     g_arrayOfRunOffChoices[ 0 ] = firstPlaceChoices[ firstChoiceIndex ];
                     g_arrayOfRunOffChoices[ 1 ] = firstPlaceChoices[ secondChoiceIndex ];
                     
-                    debugMessageLog( 16, "At GAL_RESULT_TIED1 --- Runoff map1: %s, Runoff map2: %s",
-                            g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 0 ] ], g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 1 ] ] )
+                    DEBUG_LOGGER( 16, "At GAL_RESULT_TIED1 --- Runoff map1: %s, Runoff map2: %s", \
+                            g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 0 ] ], \
+                            g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 1 ] ] )
                 
                 #if AMXX_VERSION_NUM < 183
                     new players_ids[ 32 ]
@@ -2683,7 +2696,8 @@ public vote_expire()
                         client_print_color_internal( players_ids[ i ], "^1%L", players_ids[ i ], "GAL_RESULT_TIED1", numberOfMapsAtFirstPosition );
                     }
                 #else
-                    client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_RESULT_TIED1", numberOfMapsAtFirstPosition );
+                    client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_RESULT_TIED1", \
+                            numberOfMapsAtFirstPosition )
                 #endif
                 }
                 else if( numberOfMapsAtFirstPosition == 2 )
@@ -2707,8 +2721,10 @@ public vote_expire()
                         g_arrayOfRunOffChoices[ 1 ] = firstPlaceChoices[ 1 ];
                     }
                     
-                    debugMessageLog( 16, "At numberOfMapsAtFirstPosition == 2 --- Runoff map1: %s, Runoff map2: %s",
-                            g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 0 ] ], g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 1 ] ] )
+                    DEBUG_LOGGER( 16, "At numberOfMapsAtFirstPosition == 2 --- Runoff map1: %s, \
+                            Runoff map2: %s", \
+                            g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 0 ] ], \
+                            g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 1 ] ] )
                 }
                 else if( numberOfMapsAtSecondPosition == 1 )
                 {
@@ -2731,8 +2747,10 @@ public vote_expire()
                         g_arrayOfRunOffChoices[ 1 ] = secondPlaceChoices[ 0 ];
                     }
                     
-                    debugMessageLog( 16, "At numberOfMapsAtSecondPosition == 1 --- Runoff map1: %s, Runoff map2: %s",
-                            g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 0 ] ], g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 1 ] ] )
+                    DEBUG_LOGGER( 16, "At numberOfMapsAtSecondPosition == 1 --- Runoff map1: %s, \
+                            Runoff map2: %s", \
+                            g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 0 ] ], \
+                            g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 1 ] ] )
                 }
                 else
                 {
@@ -2757,8 +2775,10 @@ public vote_expire()
                         g_arrayOfRunOffChoices[ 1 ] = secondPlaceChoices[ randonNumber ];
                     }
                     
-                    debugMessageLog( 16, "At numberOfMapsAtSecondPosition == 1 ELSE --- Runoff map1: %s, Runoff map2: %s",
-                            g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 0 ] ], g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 1 ] ] )
+                    DEBUG_LOGGER( 16, "At numberOfMapsAtSecondPosition == 1 ELSE --- Runoff map1: %s, \
+                            Runoff map2: %s", \
+                            g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 0 ] ], \
+                            g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 1 ] ] )
                 
                 #if AMXX_VERSION_NUM < 183
                     new players_ids[ 32 ]
@@ -3009,8 +3029,8 @@ public vote_expire()
 
 stock map_extend()
 {
-    debugMessageLog( 2, "%32s mp_timelimit: %f  g_rtvWait: %f  extendmapStep: %f", "map_extend( in )",
-            get_cvar_float( "mp_timelimit" ), g_rtvWait, get_pcvar_float( cvar_extendmapStep ) );
+    DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_rtvWait: %f  extendmapStep: %f", "map_extend( in )", \
+            get_cvar_float( "mp_timelimit" ), g_rtvWait, get_pcvar_float( cvar_extendmapStep ) )
     
     // reset the "rtv wait" time, taking into consideration the map extension
     if( g_rtvWait )
@@ -3054,8 +3074,8 @@ stock map_extend()
     // clear vote stats
     vote_resetStats();
     
-    debugMessageLog( 2, "%32s mp_timelimit: %f  g_rtvWait: %f  extendmapStep: %f", "map_extend( out )",
-            get_cvar_float( "mp_timelimit" ), g_rtvWait, get_pcvar_float( cvar_extendmapStep ) );
+    DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_rtvWait: %f  extendmapStep: %f", "map_extend( out )", \
+            get_cvar_float( "mp_timelimit" ), g_rtvWait, get_pcvar_float( cvar_extendmapStep ) )
 }
 
 stock save_time_limit()
@@ -3158,7 +3178,7 @@ public vote_handleChoice( player_id, key )
         // confirm the player's choice
         if( key == 9 )
         {
-            debugMessageLog( 4, "      %-32s ( none )", name );
+            DEBUG_LOGGER( 4, "      %-32s ( none )", name )
             
             if( get_pcvar_num( cvar_voteAnnounceChoice ) )
             {
@@ -3193,7 +3213,7 @@ public vote_handleChoice( player_id, key )
                 // only display the "none" vote if we haven't already voted ( we can make it here from the vote status menu too )
                 if( g_voted[ player_id ] == false )
                 {
-                    debugMessageLog( 4, "      %-32s ( extend )", name );
+                    DEBUG_LOGGER( 4, "      %-32s ( extend )", name )
                     
                     if( get_pcvar_num( cvar_voteAnnounceChoice ) )
                     {
@@ -3221,7 +3241,7 @@ public vote_handleChoice( player_id, key )
             }
             else
             {
-                debugMessageLog( 4, "      %-32s %s", name, g_mapsVoteMenuNames[ key ] );
+                DEBUG_LOGGER( 4, "      %-32s %s", name, g_mapsVoteMenuNames[ key ] )
                 
                 if( get_pcvar_num( cvar_voteAnnounceChoice ) )
                 {
@@ -3287,7 +3307,9 @@ public vote_handleChoice( player_id, key )
 
 stock Float:map_getMinutesElapsed()
 {
-    debugMessageLog( 2, "%32s mp_timelimit: %f", "map_getMinutesElapsed( in/out )", get_cvar_float( "mp_timelimit" ) );
+    DEBUG_LOGGER( 2, "%32s mp_timelimit: %f", "map_getMinutesElapsed( in/out )", \
+            get_cvar_float( "mp_timelimit" ) )
+    
     return get_cvar_float( "mp_timelimit" ) - ( float( get_timeleft() ) / 60.0 );
 }
 
@@ -3649,7 +3671,7 @@ public client_disconnected( player_id )
     }
     
     new dbg_playerCnt = get_realplayersnum() - 1;
-    debugMessageLog( 2, "%32s dbg_playerCnt:%i", "client_disconnect( )", dbg_playerCnt );
+    DEBUG_LOGGER( 2, "%32s dbg_playerCnt:%i", "client_disconnect( )", dbg_playerCnt )
     
     if( dbg_playerCnt <= 0 )
     {
@@ -3671,8 +3693,8 @@ public client_connect( player_id )
  */
 stock srv_handleEmpty()
 {
-    debugMessageLog( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "srv_handleEmpty(in)",
-            get_cvar_float( "mp_timelimit" ), g_originalTimelimit );
+    DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "srv_handleEmpty(in)", \
+            get_cvar_float( "mp_timelimit" ), g_originalTimelimit )
     
     if( g_originalTimelimit != get_cvar_float( "mp_timelimit" ) )
     {
@@ -3689,11 +3711,11 @@ stock srv_handleEmpty()
     {
         srv_startEmptyCountdown();
     }
-    debugMessageLog( 2, "g_isUsingEmptyCycle = %d, g_emptyMapCnt = %d", g_isUsingEmptyCycle,
+    DEBUG_LOGGER( 2, "g_isUsingEmptyCycle = %d, g_emptyMapCnt = %d", g_isUsingEmptyCycle, \
             g_emptyMapCnt )
     
-    debugMessageLog( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "srv_handleEmpty(out)",
-            get_cvar_float( "mp_timelimit" ), g_originalTimelimit );
+    DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "srv_handleEmpty(out)", \
+            get_cvar_float( "mp_timelimit" ), g_originalTimelimit )
 }
 
 /**
@@ -3921,6 +3943,7 @@ stock client_print_color_internal( player_id, message[], any: ... )
 #if AMXX_VERSION_NUM < 183
         if( player_id )
         {
+            vformat( formated_message, charsmax( formated_message ), message, 3 )
             PRINT_COLORED_MESSAGE( player_id, formated_message )
         }
         else
@@ -3934,7 +3957,7 @@ stock client_print_color_internal( player_id, message[], any: ... )
             // so we don't execute useless code
             if( !players_number )
             {
-                debugMessageLog( 64, "!players_number. players_number = %d", players_number )
+                DEBUG_LOGGER( 64, "!players_number. players_number = %d", players_number )
                 return;
             }
             
@@ -3946,13 +3969,13 @@ stock client_print_color_internal( player_id, message[], any: ... )
             new params_number                     = numargs();
             new Array:multi_lingual_indexes_array = ArrayCreate();
             
-            debugMessageLog( 64, "players_number: %d, params_number: %d", players_number, params_number )
+            DEBUG_LOGGER( 64, "players_number: %d, params_number: %d", players_number, params_number )
             
             if( params_number >= 4 ) // ML can be used
             {
                 for( argument_index = 2; argument_index < params_number; argument_index++ )
                 {
-                    debugMessageLog( 64, "argument_index: %d, getarg(argument_index): %d / %s",
+                    DEBUG_LOGGER( 64, "argument_index: %d, getarg(argument_index): %d / %s", \
                             argument_index, getarg( argument_index ), getarg( argument_index ) )
                     
                     // retrieve original param value and check if it's LANG_PLAYER value
@@ -3967,10 +3990,10 @@ stock client_print_color_internal( player_id, message[], any: ... )
                         }
                         formated_message[ string_index ] = 0
                         
-                        debugMessageLog( 64, "Player_Id: %d, formated_message: %s, GetLangTransKey( \
-                                formated_message ) != TransKey_Bad: %d", player_id, formated_message,
+                        DEBUG_LOGGER( 64, "Player_Id: %d, formated_message: %s, GetLangTransKey( \
+                                formated_message ) != TransKey_Bad: %d", player_id, formated_message, \
                                 GetLangTransKey( formated_message ) != TransKey_Bad )
-                        debugMessageLog( 64, "(multi_lingual_constants_number: %d, string_index: %d",
+                        DEBUG_LOGGER( 64, "(multi_lingual_constants_number: %d, string_index: %d", \
                                 multi_lingual_constants_number, string_index )
                         
                         if( GetLangTransKey( formated_message ) != TransKey_Bad )
@@ -3983,12 +4006,12 @@ stock client_print_color_internal( player_id, message[], any: ... )
                             multi_lingual_constants_number++;
                         }
                         
-                        debugMessageLog( 64, "argument_index (after ArrayPushCell): %d", argument_index )
+                        DEBUG_LOGGER( 64, "argument_index (after ArrayPushCell): %d", argument_index )
                     }
                 }
             }
             
-            debugMessageLog( 64, "(multi_lingual_constants_number: %d", multi_lingual_constants_number )
+            DEBUG_LOGGER( 64, "(multi_lingual_constants_number: %d", multi_lingual_constants_number )
             
             for( --players_number; players_number >= 0; players_number-- )
             {
@@ -4002,9 +4025,9 @@ stock client_print_color_internal( player_id, message[], any: ... )
                         // so we can format the text for that specific player
                         setarg( ArrayGetCell( multi_lingual_indexes_array, argument_index ), _, player_id );
                         
-                        debugMessageLog( 64, "(argument_index: %d, player_id: %d, \
-                                ArrayGetCell( multi_lingual_indexes_array, argument_index ): %d",
-                                argument_index, player_id,
+                        DEBUG_LOGGER( 64, "(argument_index: %d, player_id: %d, \
+                                ArrayGetCell( multi_lingual_indexes_array, argument_index ): %d", \
+                                argument_index, player_id, \
                                 ArrayGetCell( multi_lingual_indexes_array, argument_index ) )
                     }
                     
@@ -4016,14 +4039,14 @@ stock client_print_color_internal( player_id, message[], any: ... )
                     client_print( player_id, print_chat, message )
                 }
                 
-                debugMessageLog( 64, "( in ) Player_Id: %d, Chat printed: %s", player_id, formated_message )
+                DEBUG_LOGGER( 64, "( in ) Player_Id: %d, Chat printed: %s", player_id, formated_message )
             }
             
             ArrayDestroy( multi_lingual_indexes_array );
         }
 #else
         vformat( formated_message, charsmax( formated_message ), message, 3 )
-        debugMessageLog( 64, "( in ) Player_Id: %d, Chat printed: %s", player_id, formated_message )
+        DEBUG_LOGGER( 64, "( in ) Player_Id: %d, Chat printed: %s", player_id, formated_message )
         
         client_print_color( player_id, print_team_default, formated_message )
 #endif
@@ -4031,12 +4054,12 @@ stock client_print_color_internal( player_id, message[], any: ... )
     else
     {
         vformat( formated_message, charsmax( formated_message ), message, 3 )
-        debugMessageLog( 64, "( in ) Player_Id: %d, Chat printed: %s", player_id, formated_message )
+        DEBUG_LOGGER( 64, "( in ) Player_Id: %d, Chat printed: %s", player_id, formated_message )
         
         REMOVE_COLOR_TAGS( formated_message )
         client_print( player_id, print_chat, formated_message )
     }
-    debugMessageLog( 64, "( out ) Player_Id: %d, Chat printed: %s", player_id, formated_message )
+    DEBUG_LOGGER( 64, "( out ) Player_Id: %d, Chat printed: %s", player_id, formated_message )
 }
 
 /**
@@ -4093,8 +4116,8 @@ stock register_dictionary_colored( const filename[] )
 
 stock map_restoreOriginalTimeLimit()
 {
-    debugMessageLog( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "map_restoreOriginalTimeLimit( in )",
-            get_cvar_float( "mp_timelimit" ), g_originalTimelimit );
+    DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "map_restoreOriginalTimeLimit( in )", \
+            get_cvar_float( "mp_timelimit" ), g_originalTimelimit )
     
     if( g_isTimeLimitChanged )
     {
@@ -4106,8 +4129,8 @@ stock map_restoreOriginalTimeLimit()
         g_isTimeLimitChanged = false;
     }
     
-    debugMessageLog( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "map_restoreOriginalTimeLimit( out )",
-            get_cvar_float( "mp_timelimit" ), g_originalTimelimit );
+    DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "map_restoreOriginalTimeLimit( out )", \
+            get_cvar_float( "mp_timelimit" ), g_originalTimelimit )
 }
 
 public dbg_fakeVotes()
@@ -4142,19 +4165,18 @@ stock runTests()
 {
     new test_name[ SHORT_STRING ]
     
-    debugMessageLog( 1, "^n^n    Executing the 'Galileo Reloaded' Tests: ^n" )
+    DEBUG_LOGGER( 1, "^n^n    Executing the 'Galileo Reloaded' Tests: ^n" )
     
     save_server_cvasr_for_test()
     
     ALL_TESTS_TO_EXECUTE
     
-    debugMessageLog( 1, "^n    %d tests succeed. \
-            ^n    %d tests failed.", g_totalSuccessfulTests,
+    DEBUG_LOGGER( 1, "^n    %d tests succeed.^n    %d tests failed.", g_totalSuccessfulTests, \
             g_totalFailureTests )
     
     if( ArraySize( g_tests_failure_ids ) )
     {
-        debugMessageLog( 1, "^n    The following tests failed:" )
+        DEBUG_LOGGER( 1, "^n    The following tests failed:" )
     }
     
     for( new i = 0; i < ArraySize( g_tests_failure_ids ); i++ )
@@ -4162,12 +4184,12 @@ stock runTests()
         ArrayGetString( g_tests_idsAndNames, ArrayGetCell( g_tests_failure_ids, i ) - 1,
                 test_name, charsmax( test_name ) )
         
-        debugMessageLog( 1, "       %s", test_name )
+        DEBUG_LOGGER( 1, "       %s", test_name )
     }
     
     if( g_max_delay_result )
     {
-        debugMessageLog( 1, "^n    The following tests are waiting until %d seconds to finish:",
+        DEBUG_LOGGER( 1, "^n    The following tests are waiting until %d seconds to finish:", \
                 g_max_delay_result )
     }
     
@@ -4176,18 +4198,18 @@ stock runTests()
         ArrayGetString( g_tests_idsAndNames, ArrayGetCell( g_tests_delayed_ids, i ) - 1,
                 test_name, charsmax( test_name ) )
         
-        debugMessageLog( 1, "       %s", test_name )
+        DEBUG_LOGGER( 1, "       %s", test_name )
     }
     
     if( g_max_delay_result )
     {
         set_task( g_max_delay_result + 1.0, "show_delayed_results" )
-        debugMessageLog( 1, "^n    Finished Tests First Step Execution.^n^n" )
+        DEBUG_LOGGER( 1, "^n    Finished Tests First Step Execution.^n^n" )
     }
     else
     {
         restore_server_cvars_for_test()
-        debugMessageLog( 1, "^n    Finished 'Galileo Reloaded' Tests Execution.^n^n" )
+        DEBUG_LOGGER( 1, "^n    Finished 'Galileo Reloaded' Tests Execution.^n^n" )
     }
 }
 
@@ -4199,15 +4221,14 @@ public show_delayed_results()
 {
     new test_name[ SHORT_STRING ]
     
-    debugMessageLog( 1, "^n^n    Showing 'Galileo Reloaded' Tests Delayed Results..." )
+    DEBUG_LOGGER( 1, "^n^n    Showing 'Galileo Reloaded' Tests Delayed Results..." )
     
-    debugMessageLog( 1, "^n    %d tests succeed. \
-            ^n    %d tests failed.", g_totalSuccessfulTests,
+    DEBUG_LOGGER( 1, "^n    %d tests succeed.^n    %d tests failed.", g_totalSuccessfulTests, \
             g_totalFailureTests )
     
     if( ArraySize( g_tests_failure_ids ) )
     {
-        debugMessageLog( 1, "^n    The following tests failed:" )
+        DEBUG_LOGGER( 1, "^n    The following tests failed:" )
     }
     
     for( new i = 0; i < ArraySize( g_tests_failure_ids ); i++ )
@@ -4215,10 +4236,10 @@ public show_delayed_results()
         ArrayGetString( g_tests_idsAndNames, ArrayGetCell( g_tests_failure_ids, i ) - 1,
                 test_name, charsmax( test_name ) )
         
-        debugMessageLog( 1, "       %s", test_name )
+        DEBUG_LOGGER( 1, "       %s", test_name )
     }
     
-    debugMessageLog( 1, "^n    Finished 'Galileo Reloaded' Tests Execution. ^n^n" )
+    DEBUG_LOGGER( 1, "^n    Finished 'Galileo Reloaded' Tests Execution. ^n^n" )
     
     // clean the testing
     cancel_voting()
@@ -4242,7 +4263,7 @@ stock register_test( max_delay_result, test_name[] )
     new totalTests = g_totalSuccessfulTests + g_totalFailureTests
     
     ArrayPushString( g_tests_idsAndNames, test_name )
-    debugMessageLog( 1, "    Executing test %d with %d delay - %s ", totalTests, max_delay_result,
+    DEBUG_LOGGER( 1, "    Executing test %d with %d delay - %s ", totalTests, max_delay_result, \
             test_name )
     
     if( g_max_delay_result < max_delay_result )
@@ -4275,7 +4296,7 @@ stock set_test_failure_internal( test_id, failure_reason[], any: ... )
     vformat( formated_message, charsmax( formated_message ), failure_reason, 3 )
     
     ArrayPushCell( g_tests_failure_ids, test_id )
-    debugMessageLog( 1, "       Test failure! %s", formated_message )
+    DEBUG_LOGGER( 1, "       Test failure! %s", formated_message )
 }
 
 /**
@@ -4303,121 +4324,6 @@ stock test_register_test()
     {
         SET_TEST_FAILURE( test_id, "first_test_name must be 'test_register_test' (it was %s)", \
                 first_test_name )
-    }
-}
-
-/**
- * This is the vote_startDirector() tests chain beginning. Because the vote_startDirector() cannot
- * to be tested simultaneously.
- *
- * Then, all tests that involves the vote_startDirector() chain, must to be executed sequencially
- * after this chain end.
- *
- * This is the 1º chain test, and test if the cvar 'amx_extendmap_max' functionality is working
- * properly.
- */
-stock test_is_map_extension_allowed1()
-{
-    new test_id = register_test( 23, "test_is_map_extension_allowed1" )
-    
-    if( g_is_map_extension_allowed )
-    {
-        SET_TEST_FAILURE( test_id, "g_is_map_extension_allowed must be 0 (it was %d)", \
-                g_is_map_extension_allowed )
-    }
-    
-    if( !g_refreshVoteStatus )
-    {
-        SET_TEST_FAILURE( test_id, "g_refreshVoteStatus must be 1 (it was %d)", \
-                g_is_map_extension_allowed )
-    }
-    
-    cancel_voting()
-    vote_startDirector( false )
-    
-    if( !g_is_map_extension_allowed )
-    {
-        SET_TEST_FAILURE( test_id, "g_is_map_extension_allowed must be 1 (it was %d)", \
-                g_is_map_extension_allowed )
-    }
-    
-    set_task( 10.0, "test_is_map_extension_allowed2", test_id )
-    g_refreshVoteStatus = true;
-}
-
-/**
- * This is the 2º test at vote_startDirector() chain and must add 10.0 seconds to the total time
- * execution.
- */
-public test_is_map_extension_allowed2( test_id )
-{
-    if( g_refreshVoteStatus )
-    {
-        SET_TEST_FAILURE( test_id, "g_refreshVoteStatus must be 0 (it was %d)", \
-                g_is_map_extension_allowed )
-    }
-    
-    set_pcvar_num( cvar_extendmapMax, 10 )
-    set_cvar_num( "mp_timelimit", 20 )
-    
-    if( g_debug_level )
-    {
-        client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED" );
-    }
-    
-    cancel_voting()
-    vote_startDirector( false )
-    
-    if( g_is_map_extension_allowed )
-    {
-        SET_TEST_FAILURE( test_id, "g_is_map_extension_allowed must be 0 (it was %d)", \
-                g_is_map_extension_allowed )
-    }
-    
-    set_task( 10.0, "test_is_map_extension_allowed3", test_id )
-    g_refreshVoteStatus = false;
-}
-
-/**
- * This is the 3º test at vote_startDirector() chain and must add 3 seconds to the total time
- * execution.
- *
- * This tests if the end map voting is starting automatically at the end of map due time limit
- * expiration.
- */
-public test_is_map_extension_allowed3( test_id )
-{
-    if( !g_refreshVoteStatus )
-    {
-        SET_TEST_FAILURE( test_id, "g_refreshVoteStatus must be 1 (it was %d)", \
-                g_is_map_extension_allowed )
-    }
-    
-    cancel_voting()
-    
-    set_task( 3.0, "test_is_map_extension_allowed4", test_id )
-}
-
-/**
- * This is the 4º test at vote_startDirector() chain and must add 0 seconds to the total time
- * execution.
- *
- * This tests if the end map voting is starting automatically at the end of map due time limit
- * expiration.
- */
-public test_is_map_extension_allowed4( test_id )
-{
-    new secondsLeft = get_timeleft();
-    
-    set_cvar_float( "mp_timelimit", (
-                ( get_cvar_float( "mp_timelimit" ) ) * 60 - secondsLeft
-                + START_VOTEMAP_MIN_TIME - 10 ) / 60 )
-    
-    vote_manageEnd()
-    
-    if( !g_is_voting_locked )
-    {
-        SET_TEST_FAILURE( test_id, "vote_startDirector() does not started!" )
     }
 }
 
@@ -4549,6 +4455,120 @@ stock test_gal_in_empty_cycle4()
 }
 
 /**
+ * This is the vote_startDirector() tests chain beginning. Because the vote_startDirector() cannot
+ * to be tested simultaneously.
+ *
+ * Then, all tests that involves the vote_startDirector() chain, must to be executed sequencially
+ * after this chain end.
+ *
+ * This is the 1º chain test, and test if the cvar 'amx_extendmap_max' functionality is working
+ * properly.
+ */
+stock test_is_map_extension_allowed1()
+{
+    new test_id = register_test( 23, "test_is_map_extension_allowed1" )
+    
+    if( g_is_map_extension_allowed )
+    {
+        SET_TEST_FAILURE( test_id, "g_is_map_extension_allowed must be 0 (it was %d)", \
+                g_is_map_extension_allowed )
+    }
+    
+    if( !g_refreshVoteStatus )
+    {
+        SET_TEST_FAILURE( test_id, "g_refreshVoteStatus must be 1 (it was %d)", \
+                g_is_map_extension_allowed )
+    }
+    
+    cancel_voting()
+    vote_startDirector( false )
+    
+    if( !g_is_map_extension_allowed )
+    {
+        SET_TEST_FAILURE( test_id, "g_is_map_extension_allowed must be 1 (it was %d)", \
+                g_is_map_extension_allowed )
+    }
+    
+    set_task( 10.0, "test_is_map_extension_allowed2", test_id )
+    g_refreshVoteStatus = true;
+}
+
+/**
+ * This is the 2º test at vote_startDirector() chain and must add 10.0 seconds to the total time
+ * execution.
+ */
+public test_is_map_extension_allowed2( test_id )
+{
+    if( g_refreshVoteStatus )
+    {
+        SET_TEST_FAILURE( test_id, "g_refreshVoteStatus must be 0 (it was %d)", \
+                g_is_map_extension_allowed )
+    }
+    
+    set_pcvar_float( cvar_extendmapMax, 10.0 )
+    set_cvar_float( "mp_timelimit", 20.0 )
+
+#if IS_DEBUG_ENABLED > 0
+    client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED" );
+#endif
+    
+    cancel_voting()
+    vote_startDirector( false )
+    
+    if( g_is_map_extension_allowed )
+    {
+        SET_TEST_FAILURE( test_id, "g_is_map_extension_allowed must be 0 (it was %d)", \
+                g_is_map_extension_allowed )
+    }
+    
+    set_task( 10.0, "test_is_map_extension_allowed3", test_id )
+    g_refreshVoteStatus = false;
+}
+
+/**
+ * This is the 3º test at vote_startDirector() chain and must add 3 seconds to the total time
+ * execution.
+ *
+ * This tests if the end map voting is starting automatically at the end of map due time limit
+ * expiration.
+ */
+public test_is_map_extension_allowed3( test_id )
+{
+    if( !g_refreshVoteStatus )
+    {
+        SET_TEST_FAILURE( test_id, "g_refreshVoteStatus must be 1 (it was %d)", \
+                g_is_map_extension_allowed )
+    }
+    
+    cancel_voting()
+    
+    set_task( 3.0, "test_is_map_extension_allowed4", test_id )
+}
+
+/**
+ * This is the 4º test at vote_startDirector() chain and must add 0 seconds to the total time
+ * execution.
+ *
+ * This tests if the end map voting is starting automatically at the end of map due time limit
+ * expiration.
+ */
+public test_is_map_extension_allowed4( test_id )
+{
+    new secondsLeft = get_timeleft();
+    
+    set_cvar_float( "mp_timelimit", (
+                ( get_cvar_float( "mp_timelimit" ) ) * 60 - secondsLeft
+                + START_VOTEMAP_MIN_TIME - 10 ) / 60 )
+    
+    vote_manageEnd()
+    
+    if( !g_is_voting_locked )
+    {
+        SET_TEST_FAILURE( test_id, "vote_startDirector() does not started!" )
+    }
+}
+
+/**
  * Every time a cvar is changed during the tests, it must be saved here to a global test variable
  * to be restored at the restore_server_cvars_for_test(), which is executed at the end of all
  * tests execution. This is executed before the first rest run.
@@ -4616,7 +4636,7 @@ stock cancel_voting()
  * @param text the debug message, if omitted its default value is ""
  * @param any the variable number of formatting parameters
  */
-debugMessageLog( const mode, const text[] = "", { Float, Sql, Result, _ }: ... )
+stock debugMesssageLogger( const mode, const text[] = "", { Float, Sql, Result, _ }: ... )
 {
     g_debug_level = get_cvar_num( "gal_debug" );
     
