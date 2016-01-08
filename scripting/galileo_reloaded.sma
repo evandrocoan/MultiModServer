@@ -122,6 +122,26 @@
 
 
 /**
+ * Convert colored strings codes '!g for green', '!y for yellow', '!t for team'.
+ */
+#define INSERT_COLOR_TAGS(%1) \
+    { \
+        replace_all( %1, charsmax( %1 ), "!g", "^4" ); \
+        replace_all( %1, charsmax( %1 ), "!t", "^3" ); \
+        replace_all( %1, charsmax( %1 ), "!n", "^1" ); \
+        replace_all( %1, charsmax( %1 ), "!y", "^1" ); \
+    }
+
+#define REMOVE_COLOR_TAGS(%1) \
+    { \
+        replace_all( %1, charsmax( %1 ), "^1", "" ); \
+        replace_all( %1, charsmax( %1 ), "^2", "" ); \
+        replace_all( %1, charsmax( %1 ), "^3", "" ); \
+        replace_all( %1, charsmax( %1 ), "^4", "" ); \
+    }
+
+
+/**
  * Call the internal function to perform its task and stop the current test execution to avoid
  * double failure at the test control system.
  */
@@ -302,7 +322,7 @@ public plugin_init()
     register_plugin( "Galileo", PLUGIN_VERSION, "Addons zz/Brad Jones" );
     
     register_dictionary( "common.txt" );
-    register_dictionary_colored( "galileo_reloaded.txt" );
+    register_dictionary( "galileo_reloaded.txt" );
     
     g_tests_idsAndNames = ArrayCreate( SHORT_STRING )
     g_tests_delayed_ids = ArrayCreate( 1 )
@@ -769,24 +789,10 @@ public map_manageEnd()
     {
         g_is_last_round       = true;
         g_isTimeToChangeLevel = true;
-    
-    #if AMXX_VERSION_NUM < 183
-        new players_ids[ 32 ]
         
-        new playerIndex_idsCounter
-        
-        get_players( players_ids, playerIndex_idsCounter, "ch" );
-        
-        for( new i = 0; i < playerIndex_idsCounter; i++ )
-        {
-            client_print_color_internal( players_ids[ i ], "^1%L %L %L",
-                    players_ids[ i ], "GAL_CHANGE_TIMEEXPIRED",
-                    players_ids[ i ], "GAL_CHANGE_NEXTROUND", players_ids[ i ], "GAL_NEXTMAP", g_nextmap )
-        }
-    #else
         client_print_color_internal( 0, "^1%L %L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED",
                 LANG_PLAYER, "GAL_CHANGE_NEXTROUND", LANG_PLAYER, "GAL_NEXTMAP", g_nextmap )
-    #endif
+        
         prevent_map_change()
     }
     else if( get_pcvar_num( cvar_endOnRound ) == 2 ) // when time runs out, end at the next round end
@@ -798,44 +804,14 @@ public map_manageEnd()
         if( get_cvar_float( "mp_roundtime" ) > 8 )
         {
             g_isTimeToChangeLevel = true;
-        
-        #if AMXX_VERSION_NUM < 183
-            new players_ids[ 32 ]
             
-            new playerIndex_idsCounter
-            
-            get_players( players_ids, playerIndex_idsCounter, "ch" );
-            
-            for( new i = 0; i < playerIndex_idsCounter; i++ )
-            {
-                client_print_color_internal( players_ids[ i ], "^1%L %L %L",
-                        players_ids[ i ], "GAL_CHANGE_TIMEEXPIRED",
-                        players_ids[ i ], "GAL_CHANGE_NEXTROUND", players_ids[ i ], "GAL_NEXTMAP", g_nextmap )
-            }
-        #else
             client_print_color_internal( 0, "^1%L %L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED",
                     LANG_PLAYER, "GAL_CHANGE_NEXTROUND", LANG_PLAYER, "GAL_NEXTMAP", g_nextmap )
-        #endif
         }
         else
         {
-        #if AMXX_VERSION_NUM < 183
-            new players_ids[ 32 ]
-            
-            new playerIndex_idsCounter
-            
-            get_players( players_ids, playerIndex_idsCounter, "ch" );
-            
-            for( new i = 0; i < playerIndex_idsCounter; i++ )
-            {
-                client_print_color_internal( players_ids[ i ], "^1%L %L",
-                        players_ids[ i ], "GAL_CHANGE_TIMEEXPIRED",
-                        players_ids[ i ], "GAL_NEXTMAP", g_nextmap )
-            }
-        #else
             client_print_color_internal( 0, "^1%L %L",
                     LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED", LANG_PLAYER, "GAL_NEXTMAP", g_nextmap );
-        #endif
         }
         
         prevent_map_change()
@@ -3904,30 +3880,136 @@ stock client_print_color_internal( player_id, message[], any: ... )
 {
     new formated_message[ MAX_COLOR_MESSAGE ]
     
-    vformat( formated_message, charsmax( formated_message ), message, 3 )
-    debugMessageLog( 1, "( in ) Player Id: %d, Chat printed: %s", player_id, formated_message )
-    
     if( g_is_supported_color_chat )
     {
 #if AMXX_VERSION_NUM < 183
-        message_begin( MSG_ONE_UNRELIABLE, g_user_msgid, _, player_id );
-        write_byte( player_id );
-        write_string( formated_message );
-        message_end();
+        if( !player_id )
+        {
+            // Figure out if at least 1 player is connected
+            // so we don't execute useless useless code if not
+            new players_array[ 32 ]
+            new players_number;
+            new player_id;
+            new params_number = numargs();
+            
+            get_players( players_array, players_number, "ch" );
+            
+            
+            /*if( !players_number )
+            {
+                return;
+            }*/
+            
+            new multi_lingual_constants_number
+            new string_index
+            new argument_index
+            new Array:aStoreML = ArrayCreate();
+            
+            debugMessageLog( 1, "(multi_lingual_constants_number: %d, string_index: %d",
+                    multi_lingual_constants_number, string_index )
+            debugMessageLog( 1, "(argument_index: %d, players_number: %d, params_number: %d",
+                    argument_index, players_number, params_number )
+            debugMessageLog( 1, "Player player_id: %d, Chat printed: %s", player_id, formated_message )
+            
+            if( params_number >= 4 ) // ML can be used
+            {
+                for( argument_index = 2; argument_index < params_number; argument_index++ )
+                {
+                    debugMessageLog( 1, "string_index: %d, getarg(argument_index): %d",
+                            string_index, getarg( argument_index ) )
+                    
+                    // retrieve original param value and check if it's LANG_PLAYER value
+                    if( getarg( argument_index ) == LANG_PLAYER )
+                    {
+                        string_index = 0;
+                        
+                        // as LANG_PLAYER == -1, check if next parm string is a registered language translation
+                        while( ( formated_message[ string_index ] = getarg( argument_index + 1, string_index++ ) ) )
+                        {
+                        }
+                        formated_message[ string_index ] = 0
+                        
+                        debugMessageLog( 1, "formated_message: %s, TransKey_Bad = %d",
+                                formated_message, GetLangTransKey( formated_message ) != TransKey_Bad )
+                        
+                        if( GetLangTransKey( formated_message ) != TransKey_Bad )
+                        {
+                            // Store that arg as LANG_PLAYER so we can alter it later
+                            ArrayPushCell( aStoreML, argument_index++ );
+                            
+                            // Update ML array saire so we'll know 1st if ML is used,
+                            // 2nd how many args we have to alterate
+                            multi_lingual_constants_number++;
+                        }
+                    }
+                }
+            }
+            
+            debugMessageLog( 1, "(multi_lingual_constants_number: %d, string_index: %d",
+                    multi_lingual_constants_number, string_index )
+            debugMessageLog( 1, "(argument_index: %d, players_number: %d, params_number: %d",
+                    argument_index, players_number, params_number )
+            debugMessageLog( 1, "Player player_id: %d, Chat printed: %s", player_id, formated_message )
+            
+            for( --players_number; players_number >= 0; players_number-- )
+            {
+                player_id = players_array[ players_number ];
+                
+                if( multi_lingual_constants_number )
+                {
+                    for( argument_index = 0; argument_index < multi_lingual_constants_number; argument_index++ )
+                    {
+                        // Set all LANG_PLAYER args to player index ( = player_id )
+                        // so we can format the text for that specific player
+                        setarg( ArrayGetCell( aStoreML, argument_index ), _, player_id );
+                    }
+                    
+                    vformat( formated_message, charsmax( formated_message ), message, 3 )
+                    debugMessageLog( 1, "( in ) Player player_id: %d, Chat printed: %s", player_id, formated_message )
+                    
+                    INSERT_COLOR_TAGS( formated_message )
+                    
+                    message_begin( MSG_ONE_UNRELIABLE, g_user_msgid, _, player_id );
+                    write_byte( player_id );
+                    write_string( formated_message );
+                    message_end();
+                }
+            }
+            
+            debugMessageLog( 1, "(multi_lingual_constants_number: %d, string_index: %d",
+                    multi_lingual_constants_number, string_index )
+            debugMessageLog( 1, "(argument_index: %d, players_number: %d, params_number: %d",
+                    argument_index, players_number, params_number )
+            debugMessageLog( 1, "Player player_id: %d, Chat printed: %s", player_id, formated_message )
+            
+            ArrayDestroy( aStoreML );
+        }
+        else
+        {
+            INSERT_COLOR_TAGS( formated_message )
+            
+            message_begin( MSG_ONE_UNRELIABLE, g_user_msgid, _, player_id );
+            write_byte( player_id );
+            write_string( formated_message );
+            message_end();
+        }
 #else
+        vformat( formated_message, charsmax( formated_message ), message, 3 )
+        debugMessageLog( 1, "( in ) Player_Id: %d, Chat printed: %s", player_id, formated_message )
+        
         client_print_color( player_id, print_team_default, formated_message )
 #endif
     }
     else
     {
-        replace_all( formated_message, charsmax( formated_message ), "^1", "" ); // yellow
-        replace_all( formated_message, charsmax( formated_message ), "^2", "" ); // ...
-        replace_all( formated_message, charsmax( formated_message ), "^3", "" ); // team
-        replace_all( formated_message, charsmax( formated_message ), "^4", "" ); // green
+        vformat( formated_message, charsmax( formated_message ), message, 3 )
+        debugMessageLog( 1, "( in ) Player_Id: %d, Chat printed: %s", player_id, formated_message )
+        
+        REMOVE_COLOR_TAGS( formated_message )
         
         client_print( player_id, print_chat, formated_message )
     }
-    debugMessageLog( 1, "( out ) Player Id: %d, Chat printed: %s", player_id, formated_message )
+    debugMessageLog( 1, "( out ) Player_Id: %d, Chat printed: %s", player_id, formated_message )
 }
 
 /**
@@ -4256,20 +4338,7 @@ public test_is_map_extension_allowed2( test_id )
     
     if( g_debug_level )
     {
-    #if AMXX_VERSION_NUM < 183
-        new players_ids[ 32 ]
-        
-        new playerIndex_idsCounter
-        
-        get_players( players_ids, playerIndex_idsCounter, "ch" );
-        
-        for( new i = 0; i < playerIndex_idsCounter; i++ )
-        {
-            client_print_color_internal( players_ids[ i ], "^1%L", players_ids[ i ], "GAL_CHANGE_TIMEEXPIRED" );
-        }
-    #else
         client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED" );
-    #endif
     }
     
     cancel_voting()
