@@ -108,9 +108,11 @@
  * Start a map voting delayed after the mp_maxrounds or mp_winlimit minimum to be reached.
  */
 #define VOTE_START_ROUNDS_DELAY \
-    g_is_maxrounds_vote_map = true; \
-    set_task( get_pcvar_num( g_freezetime_pointer ) + 10.0, \
-        "start_voting_by_rounds", TASKID_START_VOTING_BY_ROUNDS );
+    { \
+        g_is_maxrounds_vote_map = true; \
+        set_task( get_pcvar_num( g_freezetime_pointer ) + 10.0, \
+                "start_voting_by_rounds", TASKID_START_VOTING_BY_ROUNDS ); \
+    }
 
 
 /**
@@ -140,25 +142,38 @@
         replace_all( %1, charsmax( %1 ), "^4", "" ); \
     }
 
+#define PRINT_COLORED_MESSAGE(%1,%2) \
+    { \
+        message_begin( MSG_ONE_UNRELIABLE, g_user_msgid, _, %1 ); \
+        write_byte( %1 ); \
+        write_string( %2 ); \
+        message_end(); \
+    }
+
 
 /**
  * Call the internal function to perform its task and stop the current test execution to avoid
  * double failure at the test control system.
  */
-#define SET_TEST_FAILURE(%1) ( set_test_failure_internal( %1 ) ); \
-    return;
+#define SET_TEST_FAILURE(%1) \
+    { \
+        ( set_test_failure_internal( %1 ) ); \
+        return; \
+    }
 
 
 /**
  * Contains all unit tests to execute.
  */
 #define ALL_TESTS_TO_EXECUTE \
-    test_register_test(); \
-    test_is_map_extension_allowed1(); \
-    test_gal_in_empty_cycle1(); \
-    test_gal_in_empty_cycle2(); \
-    test_gal_in_empty_cycle3(); \
-    test_gal_in_empty_cycle4();
+    { \
+        test_register_test(); \
+        test_is_map_extension_allowed1(); \
+        test_gal_in_empty_cycle1(); \
+        test_gal_in_empty_cycle2(); \
+        test_gal_in_empty_cycle3(); \
+        test_gal_in_empty_cycle4(); \
+    }
 
 
 /** This is to view internal program data while execution. See the function 'debugMessageLog(...)'
@@ -3858,16 +3873,37 @@ stock percent( is, of )
  * instead of 'LANG_PLAYER' constant. Just use the 'LANG_PLAYER' constant when using this function
  * to display to all players.
  *
- * If you are at the Amx Mod X 1.8.2, you cannot call this function using the player_id as 0. You
- * must call it to every player on the server, to display the colored message to all players.
+ * If you are at the Amx Mod X 1.8.2, you can call this function using the player_id as 0. But it
+ * will use more resources to decode its arguments. To be more optimized you must call it to every
+ * player on the server, to display the colored message to all players. Example:
+ * @code{.cpp}
+ * #if AMXX_VERSION_NUM < 183
+ *     new players_ids[ 32 ]
+ *
+ *     new playerIndex_idsCounter
+ *
+ *     get_players( players_ids, playerIndex_idsCounter, "ch" );
+ *
+ *     for( new i = 0; i < playerIndex_idsCounter; i++ )
+ *     {
+ *         client_print_color_internal( players_ids[ i ], "^1%L %L %L",
+ *                 players_ids[ i ], "LANG_A", players_ids[ i ], "LANG_B",
+ *                 players_ids[ i ], "LANG_C", any_variable_used_on_LANG_C )
+ *     }
+ * #else
+ *     client_print_color_internal( 0, "^1%L %L %L", LANG_PLAYER, "LANG_A",
+ *             LANG_PLAYER, "LANG_B", LANG_PLAYER, "LANG_C", any_variable_used_on_LANG_C );
+ * #endif
+ * @endcode
  *
  * If you are at the Amx Mod X 1.8.3 or superior, you can call this function using the player_id
- * as 0, to display the colored message to all players on the server
+ * as 0, to display the colored message to all players on the server.
  *
  * If you run this function on a Game Mod that do not support colored messages, they will be
  * displayed as normal messages without any errors or bad formats.
  *
- * This allow you to use '!g for green', '!y for yellow', '!t for team' color at the LANG file or anywhere.
+ * This allow you to use '!g for green', '!y for yellow', '!t for team' color with LANGs at a
+ * register_dictionary_colored file. Otherwise use '^1', '^2', '^3' and '^4'.
  *
  * @param player_id the player id.
  * @param message[] the text formatting rules to display.
@@ -3883,73 +3919,76 @@ stock client_print_color_internal( player_id, message[], any: ... )
     if( g_is_supported_color_chat )
     {
 #if AMXX_VERSION_NUM < 183
-        if( !player_id )
+        if( player_id )
         {
-            // Figure out if at least 1 player is connected
-            // so we don't execute useless useless code if not
+            PRINT_COLORED_MESSAGE( player_id, formated_message )
+        }
+        else
+        {
             new players_array[ 32 ]
             new players_number;
-            new player_id;
-            new params_number = numargs();
             
             get_players( players_array, players_number, "ch" );
             
-            
-            /*if( !players_number )
+            // Figure out if at least 1 player is connected
+            // so we don't execute useless code
+            if( !players_number )
             {
+                debugMessageLog( 64, "!players_number. players_number = %d", players_number )
                 return;
-            }*/
+            }
             
-            new multi_lingual_constants_number
+            new player_id;
             new string_index
             new argument_index
-            new Array:aStoreML = ArrayCreate();
+            new multi_lingual_constants_number
             
-            debugMessageLog( 1, "(multi_lingual_constants_number: %d, string_index: %d",
-                    multi_lingual_constants_number, string_index )
-            debugMessageLog( 1, "(argument_index: %d, players_number: %d, params_number: %d",
-                    argument_index, players_number, params_number )
-            debugMessageLog( 1, "Player player_id: %d, Chat printed: %s", player_id, formated_message )
+            new params_number                     = numargs();
+            new Array:multi_lingual_indexes_array = ArrayCreate();
+            
+            debugMessageLog( 64, "players_number: %d, params_number: %d", players_number, params_number )
             
             if( params_number >= 4 ) // ML can be used
             {
                 for( argument_index = 2; argument_index < params_number; argument_index++ )
                 {
-                    debugMessageLog( 1, "string_index: %d, getarg(argument_index): %d",
-                            string_index, getarg( argument_index ) )
+                    debugMessageLog( 64, "argument_index: %d, getarg(argument_index): %d / %s",
+                            argument_index, getarg( argument_index ), getarg( argument_index ) )
                     
                     // retrieve original param value and check if it's LANG_PLAYER value
                     if( getarg( argument_index ) == LANG_PLAYER )
                     {
                         string_index = 0;
                         
-                        // as LANG_PLAYER == -1, check if next parm string is a registered language translation
-                        while( ( formated_message[ string_index ] = getarg( argument_index + 1, string_index++ ) ) )
+                        // as LANG_PLAYER == -1, check if next param string is a registered language translation
+                        while( ( formated_message[ string_index ] =
+                                     getarg( argument_index + 1, string_index++ ) ) )
                         {
                         }
                         formated_message[ string_index ] = 0
                         
-                        debugMessageLog( 1, "formated_message: %s, TransKey_Bad = %d",
-                                formated_message, GetLangTransKey( formated_message ) != TransKey_Bad )
+                        debugMessageLog( 64, "Player_Id: %d, formated_message: %s, GetLangTransKey( \
+                                formated_message ) != TransKey_Bad: %d", player_id, formated_message,
+                                GetLangTransKey( formated_message ) != TransKey_Bad )
+                        debugMessageLog( 64, "(multi_lingual_constants_number: %d, string_index: %d",
+                                multi_lingual_constants_number, string_index )
                         
                         if( GetLangTransKey( formated_message ) != TransKey_Bad )
                         {
-                            // Store that arg as LANG_PLAYER so we can alter it later
-                            ArrayPushCell( aStoreML, argument_index++ );
+                            // Store that argument as LANG_PLAYER so we can alter it later
+                            ArrayPushCell( multi_lingual_indexes_array, argument_index++ );
                             
-                            // Update ML array saire so we'll know 1st if ML is used,
-                            // 2nd how many args we have to alterate
+                            // Update ML array, so we'll know 1st if ML is used,
+                            // 2nd how many arguments we have to change
                             multi_lingual_constants_number++;
                         }
+                        
+                        debugMessageLog( 64, "argument_index (after ArrayPushCell): %d", argument_index )
                     }
                 }
             }
             
-            debugMessageLog( 1, "(multi_lingual_constants_number: %d, string_index: %d",
-                    multi_lingual_constants_number, string_index )
-            debugMessageLog( 1, "(argument_index: %d, players_number: %d, params_number: %d",
-                    argument_index, players_number, params_number )
-            debugMessageLog( 1, "Player player_id: %d, Chat printed: %s", player_id, formated_message )
+            debugMessageLog( 64, "(multi_lingual_constants_number: %d", multi_lingual_constants_number )
             
             for( --players_number; players_number >= 0; players_number-- )
             {
@@ -3961,37 +4000,30 @@ stock client_print_color_internal( player_id, message[], any: ... )
                     {
                         // Set all LANG_PLAYER args to player index ( = player_id )
                         // so we can format the text for that specific player
-                        setarg( ArrayGetCell( aStoreML, argument_index ), _, player_id );
+                        setarg( ArrayGetCell( multi_lingual_indexes_array, argument_index ), _, player_id );
+                        
+                        debugMessageLog( 64, "(argument_index: %d, player_id: %d, \
+                                ArrayGetCell( multi_lingual_indexes_array, argument_index ): %d",
+                                argument_index, player_id,
+                                ArrayGetCell( multi_lingual_indexes_array, argument_index ) )
                     }
                     
                     vformat( formated_message, charsmax( formated_message ), message, 3 )
-                    debugMessageLog( 1, "( in ) Player player_id: %d, Chat printed: %s", player_id, formated_message )
-
-                    message_begin( MSG_ONE_UNRELIABLE, g_user_msgid, _, player_id );
-                    write_byte( player_id );
-                    write_string( formated_message );
-                    message_end();
+                    PRINT_COLORED_MESSAGE( player_id, formated_message )
                 }
+                else
+                {
+                    client_print( player_id, print_chat, message )
+                }
+                
+                debugMessageLog( 64, "( in ) Player_Id: %d, Chat printed: %s", player_id, formated_message )
             }
             
-            debugMessageLog( 1, "(multi_lingual_constants_number: %d, string_index: %d",
-                    multi_lingual_constants_number, string_index )
-            debugMessageLog( 1, "(argument_index: %d, players_number: %d, params_number: %d",
-                    argument_index, players_number, params_number )
-            debugMessageLog( 1, "Player player_id: %d, Chat printed: %s", player_id, formated_message )
-            
-            ArrayDestroy( aStoreML );
-        }
-        else
-        {
-            message_begin( MSG_ONE_UNRELIABLE, g_user_msgid, _, player_id );
-            write_byte( player_id );
-            write_string( formated_message );
-            message_end();
+            ArrayDestroy( multi_lingual_indexes_array );
         }
 #else
         vformat( formated_message, charsmax( formated_message ), message, 3 )
-        debugMessageLog( 1, "( in ) Player_Id: %d, Chat printed: %s", player_id, formated_message )
+        debugMessageLog( 64, "( in ) Player_Id: %d, Chat printed: %s", player_id, formated_message )
         
         client_print_color( player_id, print_team_default, formated_message )
 #endif
@@ -3999,13 +4031,12 @@ stock client_print_color_internal( player_id, message[], any: ... )
     else
     {
         vformat( formated_message, charsmax( formated_message ), message, 3 )
-        debugMessageLog( 1, "( in ) Player_Id: %d, Chat printed: %s", player_id, formated_message )
+        debugMessageLog( 64, "( in ) Player_Id: %d, Chat printed: %s", player_id, formated_message )
         
         REMOVE_COLOR_TAGS( formated_message )
-        
         client_print( player_id, print_chat, formated_message )
     }
-    debugMessageLog( 1, "( out ) Player_Id: %d, Chat printed: %s", player_id, formated_message )
+    debugMessageLog( 64, "( out ) Player_Id: %d, Chat printed: %s", player_id, formated_message )
 }
 
 /**
@@ -4579,7 +4610,8 @@ stock cancel_voting()
  *           ( 1000 ) 8 displays vote_loadChoices( ) and actions at vote_startDirector
  *           ( 10000 ) 16 displays messages related to RunOff voting
  *           ( 100000 ) 32 displays messages related to the rounds end map voting
- *           ( 111111 ) 63 displays all debug logs levels at server console.
+ *           ( 1000000 ) 64 displays messages related client_print_color_internal(...)
+ *           ( 1111111 ) 127 displays all debug logs levels at server console.
  *
  * @param text the debug message, if omitted its default value is ""
  * @param any the variable number of formatting parameters
