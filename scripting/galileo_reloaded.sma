@@ -412,7 +412,7 @@ public plugin_init()
     register_concmd( "gal_createmapfile", "cmd_createMapFile", ADMIN_RCON );
     
     g_menuChooseMap = register_menuid( MENU_CHOOSEMAP );
-
+    
     g_maxrounds_pointer  = get_cvar_pointer( "mp_maxrounds" )
     g_winlimit_pointer   = get_cvar_pointer( "mp_winlimit" )
     g_freezetime_pointer = get_cvar_pointer( "mp_freezetime" )
@@ -437,9 +437,6 @@ public plugin_cfg()
 #if IS_DEBUG_ENABLED > 0
     g_debug_level = get_cvar_num( "gal_debug" );
 #endif
-    DEBUG_LOGGER( 4, "^n%32s mp_timelimit: %f  g_originalTimelimit: %f", \
-            "plugin_cfg( in )", get_cvar_float( "mp_timelimit" ), g_originalTimelimit )
-
     reset_rounds_scores()
     
     formatex( DIR_CONFIGS[ get_configsdir( DIR_CONFIGS, sizeof( DIR_CONFIGS ) - 1 ) ],
@@ -504,7 +501,7 @@ public plugin_cfg()
         }
         map_loadNominationList();
     }
-
+    
     if( get_cvar_num( "gal_server_starting" ) )
     {
         srv_handleStart();
@@ -516,15 +513,14 @@ public plugin_cfg()
         map_loadEmptyCycleList();
         set_task( 60.0, "srv_initEmptyCheck" );
     }
-
+    
     // setup the main task that schedules the end map voting and allow round finish feature.
     set_task( 15.0, "vote_manageEnd", TASKID_VOTE_MANAGEEND, _, _, "b" );
 
 #if IS_DEBUG_ENABLED > 0
-    runTests()
+    // delayed because it need to wait the 'server.cfg' run to save its cvars
+    set_task( 10.0, "runTests" )
 #endif
-    DEBUG_LOGGER( 4, "%32s mp_timelimit: %f  g_originalTimelimit: %f", \
-            "plugin_cfg( out )", get_cvar_float( "mp_timelimit" ), g_originalTimelimit )
 }
 
 public team_win()
@@ -793,7 +789,7 @@ public map_manageEnd()
     {
         g_is_last_round       = true;
         g_isTimeToChangeLevel = true;
-        
+    
     #if AMXX_VERSION_NUM < 183
         get_players( print_colored_players_ids, g_colored_players_number, "ch" );
         
@@ -801,16 +797,16 @@ public map_manageEnd()
              g_colored_current_index++ )
         {
             g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
-
+            
             client_print_color_internal( g_colored_player_id, "^1%L %L %L", g_colored_player_id,
-                    "GAL_CHANGE_TIMEEXPIRED", g_colored_player_id, "GAL_CHANGE_NEXTROUND", 
+                    "GAL_CHANGE_TIMEEXPIRED", g_colored_player_id, "GAL_CHANGE_NEXTROUND",
                     g_colored_player_id, "GAL_NEXTMAP", g_nextmap )
         }
     #else
         client_print_color_internal( 0, "^1%L %L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED",
                 LANG_PLAYER, "GAL_CHANGE_NEXTROUND", LANG_PLAYER, "GAL_NEXTMAP", g_nextmap )
     #endif
-
+        
         prevent_map_change()
     }
     else if( get_pcvar_num( cvar_endOnRound ) == 2 ) // when time runs out, end at the next round end
@@ -822,7 +818,7 @@ public map_manageEnd()
         if( get_cvar_float( "mp_roundtime" ) > 8 )
         {
             g_isTimeToChangeLevel = true;
-
+        
         #if AMXX_VERSION_NUM < 183
             get_players( print_colored_players_ids, g_colored_players_number, "ch" );
             
@@ -830,9 +826,9 @@ public map_manageEnd()
                  g_colored_current_index++ )
             {
                 g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
-
-                client_print_color_internal( 0, "^1%L %L %L", g_colored_player_id, "GAL_CHANGE_TIMEEXPIRED",
-                        g_colored_player_id, "GAL_CHANGE_NEXTROUND",
+                
+                client_print_color_internal( g_colored_player_id, "^1%L %L %L", g_colored_player_id,
+                        "GAL_CHANGE_TIMEEXPIRED", g_colored_player_id, "GAL_CHANGE_NEXTROUND", 
                         g_colored_player_id, "GAL_NEXTMAP", g_nextmap )
             }
         #else
@@ -849,12 +845,12 @@ public map_manageEnd()
                  g_colored_current_index++ )
             {
                 g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
-
-                client_print_color_internal( 0, "^1%L %L", g_colored_player_id, "GAL_CHANGE_TIMEEXPIRED", 
-                        g_colored_player_id, "GAL_NEXTMAP", g_nextmap );
+                
+                client_print_color_internal( g_colored_player_id, "^1%L %L", g_colored_player_id, 
+                        "GAL_CHANGE_TIMEEXPIRED", g_colored_player_id, "GAL_NEXTMAP", g_nextmap );
             }
         #else
-            client_print_color_internal( 0, "^1%L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED", 
+            client_print_color_internal( 0, "^1%L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED",
                     LANG_PLAYER, "GAL_NEXTMAP", g_nextmap );
         #endif
         }
@@ -1313,7 +1309,7 @@ public event_game_commencing()
     // ( can be skewed if map was previously extended )
     map_restoreOriginalTimeLimit();
     reset_rounds_scores()
-
+    
     DEBUG_LOGGER( 32, "^n AT: event_game_commencing" )
 }
 
@@ -4031,8 +4027,6 @@ stock client_print_color_internal( player_id, message[], any: ... )
             {
                 player_id = players_array[ players_number ];
                 
-                DEBUG_LOGGER( 64, "( in ) Player_Id: %d, Chat printed: %s", player_id, formated_message )
-                
                 if( multi_lingual_constants_number )
                 {
                     for( argument_index = 0; argument_index < multi_lingual_constants_number; argument_index++ )
@@ -4046,10 +4040,10 @@ stock client_print_color_internal( player_id, message[], any: ... )
                                 argument_index, player_id, \
                                 ArrayGetCell( multi_lingual_indexes_array, argument_index ) )
                     }
-                    
                     vformat( formated_message, charsmax( formated_message ), message, 3 )
                 }
-                
+
+                DEBUG_LOGGER( 64, "( in ) Player_Id: %d, Chat printed: %s", player_id, formated_message )
                 PRINT_COLORED_MESSAGE( player_id, formated_message )
             }
             
@@ -4172,7 +4166,7 @@ public dbg_fakeVotes()
  * This function run all tests that are listed at it. Every test that is created must
  * to be called here to it register itself at the Test System and perform the testing.
  */
-stock runTests()
+public runTests()
 {
     new test_name[ SHORT_STRING ]
     
@@ -4518,10 +4512,8 @@ public test_is_map_extension_allowed2( test_id )
     
     set_pcvar_float( cvar_extendmapMax, 10.0 )
     set_cvar_float( "mp_timelimit", 20.0 )
-
-#if IS_DEBUG_ENABLED > 0
+    
     client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED" );
-#endif
     
     cancel_voting()
     vote_startDirector( false )
@@ -4590,7 +4582,7 @@ stock save_server_cvasr_for_test()
     
     test_extendmap_max = get_pcvar_float( cvar_extendmapMax )
     test_mp_timelimit  = get_cvar_float( "mp_timelimit" )
-
+    
     DEBUG_LOGGER( 4, "%32s mp_timelimit: %f  test_mp_timelimit: %f   g_originalTimelimit: %f",  \
             "save_server_cvasr_for_test( out )", get_cvar_float( "mp_timelimit" ), \
             test_mp_timelimit, g_originalTimelimit )
@@ -4604,7 +4596,7 @@ stock restore_server_cvars_for_test()
     DEBUG_LOGGER( 4, "%32s mp_timelimit: %f  test_mp_timelimit: %f  g_originalTimelimit: %f",  \
             "restore_server_cvars_for_test( in )", get_cvar_float( "mp_timelimit" ), \
             test_mp_timelimit, g_originalTimelimit )
-
+    
     if( g_is_test_changed_cvars )
     {
         g_is_test_changed_cvars = false
@@ -4612,7 +4604,7 @@ stock restore_server_cvars_for_test()
         set_pcvar_float( cvar_extendmapMax, test_extendmap_max )
         set_cvar_float( "mp_timelimit", test_mp_timelimit )
     }
-
+    
     DEBUG_LOGGER( 4, "%32s mp_timelimit: %f  test_mp_timelimit: %f  g_originalTimelimit: %f",  \
             "restore_server_cvars_for_test( out )", get_cvar_float( "mp_timelimit" ), \
             test_mp_timelimit, g_originalTimelimit )
