@@ -42,9 +42,39 @@ new g_debug_level
     #define DEBUG_LOGGER(%1) //
 #endif
 
-#define LONG_STRING       256
-#define MAX_COLOR_MESSAGE 192
-#define SHORT_STRING      64
+
+/**
+ * Contains all unit tests to execute.
+ */
+#define ALL_TESTS_TO_EXECUTE \
+    { \
+        test_register_test(); \
+        test_gal_in_empty_cycle1(); \
+        test_gal_in_empty_cycle2(); \
+        test_gal_in_empty_cycle3(); \
+        test_gal_in_empty_cycle4(); \
+        test_is_map_extension_allowed1(); \
+    }
+
+
+/**
+ * Test unit variables related to debug level 1, displays basic debug messages.
+ */
+new g_max_delay_result
+new g_totalSuccessfulTests
+new g_totalFailureTests
+new Array: g_tests_idsAndNames
+new Array: g_tests_delayed_ids
+new Array: g_tests_failure_ids
+
+new bool:g_is_test_changed_cvars
+
+new Float:test_extendmap_max
+new Float:test_mp_timelimit
+
+#define LONG_STRING   256
+#define COLOR_MESSAGE 192
+#define SHORT_STRING  64
 
 #define TASKID_REMINDER                  52691153
 #define TASKID_VOTE_MANAGEEND            52691152
@@ -173,36 +203,6 @@ new g_debug_level
         ( set_test_failure_internal( %1 ) ); \
         return; \
     }
-
-
-/**
- * Contains all unit tests to execute.
- */
-#define ALL_TESTS_TO_EXECUTE \
-    { \
-        test_register_test(); \
-        test_gal_in_empty_cycle1(); \
-        test_gal_in_empty_cycle2(); \
-        test_gal_in_empty_cycle3(); \
-        test_gal_in_empty_cycle4(); \
-        test_is_map_extension_allowed1(); \
-    }
-
-
-/**
- * Test unit variables related to debug level 1, displays basic debug messages.
- */
-new g_max_delay_result
-new g_totalSuccessfulTests
-new g_totalFailureTests
-new Array: g_tests_idsAndNames
-new Array: g_tests_delayed_ids
-new Array: g_tests_failure_ids
-
-new bool:g_is_test_changed_cvars
-
-new Float:test_extendmap_max
-new Float:test_mp_timelimit
 
 
 /**
@@ -413,6 +413,10 @@ public plugin_init()
     
     g_menuChooseMap = register_menuid( MENU_CHOOSEMAP );
 
+    g_maxrounds_pointer  = get_cvar_pointer( "mp_maxrounds" )
+    g_winlimit_pointer   = get_cvar_pointer( "mp_winlimit" )
+    g_freezetime_pointer = get_cvar_pointer( "mp_freezetime" )
+
 #if AMXX_VERSION_NUM < 183
     g_user_msgid = get_user_msgid( "SayText" )
 #endif
@@ -433,10 +437,9 @@ public plugin_cfg()
 #if IS_DEBUG_ENABLED > 0
     g_debug_level = get_cvar_num( "gal_debug" );
 #endif
-    g_maxrounds_pointer  = get_cvar_pointer( "mp_maxrounds" )
-    g_winlimit_pointer   = get_cvar_pointer( "mp_winlimit" )
-    g_freezetime_pointer = get_cvar_pointer( "mp_freezetime" )
-    
+    DEBUG_LOGGER( 4, "^n%32s mp_timelimit: %f  g_originalTimelimit: %f", \
+            "plugin_cfg( in )", get_cvar_float( "mp_timelimit" ), g_originalTimelimit )
+
     reset_rounds_scores()
     
     formatex( DIR_CONFIGS[ get_configsdir( DIR_CONFIGS, sizeof( DIR_CONFIGS ) - 1 ) ],
@@ -463,6 +466,8 @@ public plugin_cfg()
     
     get_pcvar_string( cvar_voteWeightFlags, g_voteWeightFlags, sizeof( g_voteWeightFlags ) - 1 );
     get_mapname( g_currentMap, sizeof( g_currentMap ) - 1 );
+    DEBUG_LOGGER( 4, "Current MAP [%s]", g_currentMap )
+    DEBUG_LOGGER( 4, "" )
     
     g_fillerMap     = ArrayCreate( 32 );
     g_nominationMap = ArrayCreate( 32 );
@@ -499,12 +504,7 @@ public plugin_cfg()
         }
         map_loadNominationList();
     }
-    
-    new mapName[ 32 ];
-    get_mapname( mapName, 31 );
-    DEBUG_LOGGER( 4, "[%s]", mapName )
-    DEBUG_LOGGER( 4, "" )
-    
+
     if( get_cvar_num( "gal_server_starting" ) )
     {
         srv_handleStart();
@@ -516,12 +516,15 @@ public plugin_cfg()
         map_loadEmptyCycleList();
         set_task( 60.0, "srv_initEmptyCheck" );
     }
-    
-    set_task( 10.0, "vote_setupEnd" );
+
+    // setup the main task that schedules the end map voting and allow round finish feature.
+    set_task( 15.0, "vote_manageEnd", TASKID_VOTE_MANAGEEND, _, _, "b" );
 
 #if IS_DEBUG_ENABLED > 0
     runTests()
 #endif
+    DEBUG_LOGGER( 4, "%32s mp_timelimit: %f  g_originalTimelimit: %f", \
+            "plugin_cfg( out )", get_cvar_float( "mp_timelimit" ), g_originalTimelimit )
 }
 
 public team_win()
@@ -653,35 +656,8 @@ public plugin_end()
     ArrayDestroy( g_tests_failure_ids )
 }
 
-public vote_setupEnd()
-{
-    DEBUG_LOGGER( 4, "%32s mp_timelimit: %f  g_originalTimelimit: %f", \
-            "vote_setupEnd( in )", get_cvar_float( "mp_timelimit" ), g_originalTimelimit )
-    
-    g_originalTimelimit = get_cvar_float( "mp_timelimit" );
-    g_originalMaxRounds = get_pcvar_num( g_maxrounds_pointer )
-    g_originalWinLimit  = get_pcvar_num( g_winlimit_pointer )
-    
-    setup_vote_manageEnd_task()
-    
-    DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", \
-            "vote_setupEnd( out )", get_cvar_float( "mp_timelimit" ), g_originalTimelimit )
-}
-
 /**
- * Setup the main task that schedules the end map voting and allow round finish feature.
- */
-stock setup_vote_manageEnd_task()
-{
-    if( !task_exists( TASKID_VOTE_MANAGEEND ) )
-    {
-        set_task( 15.0, "vote_manageEnd", TASKID_VOTE_MANAGEEND, _, _, "b" );
-    }
-}
-
-/**
- * Indicates which action to take when it is detected
- * that the server has been restarted.
+ * Indicates which action to take when it is detected that the server has been restarted.
  * 0 - stay on the map the server started with
  * 1 - change to the map that was being played when the server was reset
  * 2 - change to what would have been the next map had the server not
@@ -1337,9 +1313,7 @@ public event_game_commencing()
     // ( can be skewed if map was previously extended )
     map_restoreOriginalTimeLimit();
     reset_rounds_scores()
-    
-    setup_vote_manageEnd_task()
-    
+
     DEBUG_LOGGER( 32, "^n AT: event_game_commencing" )
 }
 
@@ -3972,7 +3946,7 @@ stock percent( is, of )
  */
 stock client_print_color_internal( player_id, message[], any: ... )
 {
-    new formated_message[ MAX_COLOR_MESSAGE ]
+    new formated_message[ COLOR_MESSAGE ]
     
     if( g_is_supported_color_chat )
     {
@@ -4616,6 +4590,10 @@ stock save_server_cvasr_for_test()
     
     test_extendmap_max = get_pcvar_float( cvar_extendmapMax )
     test_mp_timelimit  = get_cvar_float( "mp_timelimit" )
+
+    DEBUG_LOGGER( 4, "%32s mp_timelimit: %f  test_mp_timelimit: %f   g_originalTimelimit: %f",  \
+            "save_server_cvasr_for_test( out )", get_cvar_float( "mp_timelimit" ), \
+            test_mp_timelimit, g_originalTimelimit )
 }
 
 /**
@@ -4623,6 +4601,10 @@ stock save_server_cvasr_for_test()
  */
 stock restore_server_cvars_for_test()
 {
+    DEBUG_LOGGER( 4, "%32s mp_timelimit: %f  test_mp_timelimit: %f  g_originalTimelimit: %f",  \
+            "restore_server_cvars_for_test( in )", get_cvar_float( "mp_timelimit" ), \
+            test_mp_timelimit, g_originalTimelimit )
+
     if( g_is_test_changed_cvars )
     {
         g_is_test_changed_cvars = false
@@ -4630,6 +4612,10 @@ stock restore_server_cvars_for_test()
         set_pcvar_float( cvar_extendmapMax, test_extendmap_max )
         set_cvar_float( "mp_timelimit", test_mp_timelimit )
     }
+
+    DEBUG_LOGGER( 4, "%32s mp_timelimit: %f  test_mp_timelimit: %f  g_originalTimelimit: %f",  \
+            "restore_server_cvars_for_test( out )", get_cvar_float( "mp_timelimit" ), \
+            test_mp_timelimit, g_originalTimelimit )
 }
 
 /**
