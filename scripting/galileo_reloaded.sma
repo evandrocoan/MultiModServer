@@ -37,7 +37,23 @@
 
 #if IS_DEBUG_ENABLED > 0
     #define DEBUG_LOGGER(%1) debugMesssageLogger( %1 )
+
+
+/**
+ * Test unit variables related to debug level 1, displays basic debug messages.
+ */
 new g_debug_level
+new g_max_delay_result
+new g_totalSuccessfulTests
+new g_totalFailureTests
+new Array: g_tests_idsAndNames
+new Array: g_tests_delayed_ids
+new Array: g_tests_failure_ids
+
+new bool:g_is_test_changed_cvars
+
+new Float:test_extendmap_max
+new Float:test_mp_timelimit
 #else
     #define DEBUG_LOGGER(%1) //
 #endif
@@ -56,21 +72,6 @@ new g_debug_level
         test_is_map_extension_allowed1(); \
     }
 
-
-/**
- * Test unit variables related to debug level 1, displays basic debug messages.
- */
-new g_max_delay_result
-new g_totalSuccessfulTests
-new g_totalFailureTests
-new Array: g_tests_idsAndNames
-new Array: g_tests_delayed_ids
-new Array: g_tests_failure_ids
-
-new bool:g_is_test_changed_cvars
-
-new Float:test_extendmap_max
-new Float:test_mp_timelimit
 
 #define LONG_STRING   256
 #define COLOR_MESSAGE 192
@@ -292,13 +293,12 @@ new Array:g_fillerMap;
 new Float:g_rtvWait;
 new g_rockedVoteCnt;
 
+#if AMXX_VERSION_NUM < 183
+new g_user_msgid
 new g_colored_player_id
 new g_colored_players_number
 new g_colored_current_index
 new print_colored_players_ids[ 32 ]
-
-#if AMXX_VERSION_NUM < 183
-new g_user_msgid
 #endif
 
 new MENU_CHOOSEMAP[] = "gal_menuChooseMap";
@@ -350,10 +350,6 @@ public plugin_init()
     
     register_dictionary( "common.txt" );
     register_dictionary_colored( "galileo_reloaded.txt" );
-    
-    g_tests_idsAndNames = ArrayCreate( SHORT_STRING )
-    g_tests_delayed_ids = ArrayCreate( 1 )
-    g_tests_failure_ids = ArrayCreate( 1 )
     
     register_cvar( "GalileoReloaded", PLUGIN_VERSION, FCVAR_SERVER | FCVAR_SPONLY );
     register_cvar( "gal_server_starting", "1", FCVAR_SPONLY );
@@ -435,7 +431,10 @@ public plugin_init()
 public plugin_cfg()
 {
 #if IS_DEBUG_ENABLED > 0
-    g_debug_level = get_cvar_num( "gal_debug" );
+    g_debug_level       = get_cvar_num( "gal_debug" );
+    g_tests_idsAndNames = ArrayCreate( SHORT_STRING )
+    g_tests_delayed_ids = ArrayCreate( 1 )
+    g_tests_failure_ids = ArrayCreate( 1 )
 #endif
     reset_rounds_scores()
     
@@ -644,12 +643,13 @@ stock reset_rounds_scores()
 
 public plugin_end()
 {
-    restore_server_cvars_for_test
     map_restoreOriginalTimeLimit()
-    
+#if IS_DEBUG_ENABLED > 0
+    restore_server_cvars_for_test()
     ArrayDestroy( g_tests_idsAndNames )
     ArrayDestroy( g_tests_delayed_ids )
     ArrayDestroy( g_tests_failure_ids )
+#endif
 }
 
 /**
@@ -828,7 +828,7 @@ public map_manageEnd()
                 g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
                 
                 client_print_color_internal( g_colored_player_id, "^1%L %L %L", g_colored_player_id,
-                        "GAL_CHANGE_TIMEEXPIRED", g_colored_player_id, "GAL_CHANGE_NEXTROUND", 
+                        "GAL_CHANGE_TIMEEXPIRED", g_colored_player_id, "GAL_CHANGE_NEXTROUND",
                         g_colored_player_id, "GAL_NEXTMAP", g_nextmap )
             }
         #else
@@ -846,7 +846,7 @@ public map_manageEnd()
             {
                 g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
                 
-                client_print_color_internal( g_colored_player_id, "^1%L %L", g_colored_player_id, 
+                client_print_color_internal( g_colored_player_id, "^1%L %L", g_colored_player_id,
                         "GAL_CHANGE_TIMEEXPIRED", g_colored_player_id, "GAL_NEXTMAP", g_nextmap );
             }
         #else
@@ -2192,17 +2192,17 @@ public vote_handleDisplay()
 
 #if IS_DEBUG_ENABLED > 0
     g_voteDuration = 5
+    
+    if( g_debug_level & 4 )
+    {
+        set_task( 2.0, "dbg_fakeVotes", TASKID_DBG_FAKEVOTES );
+    }
 #endif
     
     if( get_pcvar_num( cvar_voteStatus )
         && get_pcvar_num( cvar_voteStatusType ) == SHOWSTATUSTYPE_PERCENTAGE )
     {
         copy( g_totalVoteAtMapType, sizeof( g_totalVoteAtMapType ) - 1, "%" );
-    }
-    
-    if( get_cvar_num( "gal_debug" ) & 4 )
-    {
-        set_task( 2.0, "dbg_fakeVotes", TASKID_DBG_FAKEVOTES );
     }
     
     // make sure the display is constructed from scratch
@@ -3890,6 +3890,10 @@ stock percent( is, of )
  * instead of 'LANG_PLAYER' constant. Just use the 'LANG_PLAYER' constant when using this function
  * to display to all players.
  *
+ * This includes the code:
+ * ConnorMcLeod's [Dyn Native] ColorChat v0.3.2 (04 jul 2013) register_dictionary_colored function:
+ *   <a href="https://forums.alliedmods.net/showthread.php?p=851160">ColorChat v0.3.2</a>
+ *
  * If you are at the Amx Mod X 1.8.2, you can call this function using the player_id as 0. But it
  * will use more resources to decode its arguments. To be more optimized you should call it to every
  * player on the server, to display the colored message to all players using global scope. Example:
@@ -4042,7 +4046,7 @@ stock client_print_color_internal( player_id, message[], any: ... )
                     }
                     vformat( formated_message, charsmax( formated_message ), message, 3 )
                 }
-
+                
                 DEBUG_LOGGER( 64, "( in ) Player_Id: %d, Chat printed: %s", player_id, formated_message )
                 PRINT_COLORED_MESSAGE( player_id, formated_message )
             }
@@ -4069,7 +4073,7 @@ stock client_print_color_internal( player_id, message[], any: ... )
 
 /**
  * ConnorMcLeod's [Dyn Native] ColorChat v0.3.2 (04 jul 2013) register_dictionary_colored function:
- *   https://forums.alliedmods.net/showthread.php?p=851160
+ *   <a href="https://forums.alliedmods.net/showthread.php?p=851160">ColorChat v0.3.2</a>
  *
  * @param filename the dictionary file name including its file extension.
  */
@@ -4104,7 +4108,11 @@ stock register_dictionary_colored( const filename[] )
         }
         else if( szBuffer[ 0 ] )
         {
+        #if AMXX_VERSION_NUM < 183
             strbreak( szBuffer, szKey, charsmax( szKey ), szTranslation, charsmax( szTranslation ) );
+        #else
+            argbreak( szBuffer, szKey, charsmax( szKey ), szTranslation, charsmax( szTranslation ) );
+        #endif
             iKey = GetLangTransKey( szKey );
             
             if( iKey != TransKey_Bad )
@@ -4138,6 +4146,8 @@ stock map_restoreOriginalTimeLimit()
             get_cvar_float( "mp_timelimit" ), g_originalTimelimit )
 }
 
+// ################################## BELOW HERE ONLY GOES DEBUG/TEST CODE ###################################
+#if IS_DEBUG_ENABLED > 0
 public dbg_fakeVotes()
 {
     if( !( g_voteStatus & VOTE_IS_RUNOFF ) )
@@ -4669,3 +4679,4 @@ stock debugMesssageLogger( const mode, const text[] = "", { Float, Sql, Result, 
         return;
     }
 }
+#endif
