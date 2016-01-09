@@ -37,7 +37,7 @@
 
 #if IS_DEBUG_ENABLED > 0
     #define DEBUG_LOGGER(%1) debugMesssageLogger( %1 )
-    new g_debug_level
+new g_debug_level
 #else
     #define DEBUG_LOGGER(%1) //
 #endif
@@ -291,6 +291,11 @@ new g_nominationMapCnt;
 new Array:g_fillerMap;
 new Float:g_rtvWait;
 new g_rockedVoteCnt;
+
+new g_colored_player_id
+new g_colored_players_number
+new g_colored_current_index
+new print_colored_players_ids[ 32 ]
 
 #if AMXX_VERSION_NUM < 183
 new g_user_msgid
@@ -813,9 +818,23 @@ public map_manageEnd()
         g_is_last_round       = true;
         g_isTimeToChangeLevel = true;
         
+    #if AMXX_VERSION_NUM < 183
+        get_players( print_colored_players_ids, g_colored_players_number, "ch" );
+        
+        for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+             g_colored_current_index++ )
+        {
+            g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+
+            client_print_color_internal( g_colored_player_id, "^1%L %L %L", g_colored_player_id,
+                    "GAL_CHANGE_TIMEEXPIRED", g_colored_player_id, "GAL_CHANGE_NEXTROUND", 
+                    g_colored_player_id, "GAL_NEXTMAP", g_nextmap )
+        }
+    #else
         client_print_color_internal( 0, "^1%L %L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED",
                 LANG_PLAYER, "GAL_CHANGE_NEXTROUND", LANG_PLAYER, "GAL_NEXTMAP", g_nextmap )
-        
+    #endif
+
         prevent_map_change()
     }
     else if( get_pcvar_num( cvar_endOnRound ) == 2 ) // when time runs out, end at the next round end
@@ -827,14 +846,41 @@ public map_manageEnd()
         if( get_cvar_float( "mp_roundtime" ) > 8 )
         {
             g_isTimeToChangeLevel = true;
+
+        #if AMXX_VERSION_NUM < 183
+            get_players( print_colored_players_ids, g_colored_players_number, "ch" );
             
+            for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+                 g_colored_current_index++ )
+            {
+                g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+
+                client_print_color_internal( 0, "^1%L %L %L", g_colored_player_id, "GAL_CHANGE_TIMEEXPIRED",
+                        g_colored_player_id, "GAL_CHANGE_NEXTROUND",
+                        g_colored_player_id, "GAL_NEXTMAP", g_nextmap )
+            }
+        #else
             client_print_color_internal( 0, "^1%L %L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED",
                     LANG_PLAYER, "GAL_CHANGE_NEXTROUND", LANG_PLAYER, "GAL_NEXTMAP", g_nextmap )
+        #endif
         }
         else
         {
-            client_print_color_internal( 0, "^1%L %L",
-                    LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED", LANG_PLAYER, "GAL_NEXTMAP", g_nextmap );
+        #if AMXX_VERSION_NUM < 183
+            get_players( print_colored_players_ids, g_colored_players_number, "ch" );
+            
+            for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+                 g_colored_current_index++ )
+            {
+                g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+
+                client_print_color_internal( 0, "^1%L %L", g_colored_player_id, "GAL_CHANGE_TIMEEXPIRED", 
+                        g_colored_player_id, "GAL_NEXTMAP", g_nextmap );
+            }
+        #else
+            client_print_color_internal( 0, "^1%L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED", 
+                    LANG_PLAYER, "GAL_NEXTMAP", g_nextmap );
+        #endif
         }
         
         prevent_map_change()
@@ -963,15 +1009,14 @@ public cmd_listrecent( player_id )
                 msgIdx += format( msg[ msgIdx ], sizeof( msg ) - 1 - msgIdx, ", %s", g_recentMap[ idx ] );
             }
         #if AMXX_VERSION_NUM < 183
-            new players_ids[ 32 ]
+            get_players( print_colored_players_ids, g_colored_players_number, "ch" );
             
-            new playerIndex_idsCounter
-            
-            get_players( players_ids, playerIndex_idsCounter, "ch" );
-            
-            for( new i = 0; i < playerIndex_idsCounter; i++ )
+            for( new g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+                 g_colored_current_index++ )
             {
-                client_print_color_internal( players_ids[ i ], "^1%L: %s", players_ids[ i ],
+                g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+                
+                client_print_color_internal( g_colored_player_id, "^1%L: %s", g_colored_player_id,
                         "GAL_MAP_RECENTMAPS", msg[ 2 ] );
             }
         #else
@@ -983,15 +1028,14 @@ public cmd_listrecent( player_id )
             for( new idx = 0; idx < g_cntRecentMap; ++idx )
             {
             #if AMXX_VERSION_NUM < 183
-                new players_ids[ 32 ]
+                get_players( print_colored_players_ids, g_colored_players_number, "ch" );
                 
-                new playerIndex_idsCounter
-                
-                get_players( players_ids, playerIndex_idsCounter, "ch" );
-                
-                for( new i = 0; i < playerIndex_idsCounter; i++ )
+                for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+                     g_colored_current_index++ )
                 {
-                    client_print_color_internal( players_ids[ i ], "^1%L ( %i ): %s", players_ids[ i ],
+                    g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+                    
+                    client_print_color_internal( g_colored_player_id, "^1%L ( %i ): %s", g_colored_player_id,
                             "GAL_MAP_RECENTMAP", idx + 1, g_recentMap[ idx ] );
                 }
             #else
@@ -1700,15 +1744,14 @@ public nomination_list( player_id )
                 if( ++mapCnt == 4 )     // list 4 maps per chat line
                 {
                 #if AMXX_VERSION_NUM < 183
-                    new players_ids[ 32 ]
+                    get_players( print_colored_players_ids, g_colored_players_number, "ch" );
                     
-                    new playerIndex_idsCounter
-                    
-                    get_players( players_ids, playerIndex_idsCounter, "ch" );
-                    
-                    for( new i = 0; i < playerIndex_idsCounter; i++ )
+                    for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+                         g_colored_current_index++ )
                     {
-                        client_print_color_internal( players_ids[ i ], "^1%L: %s", players_ids[ i ],
+                        g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+                        
+                        client_print_color_internal( g_colored_player_id, "^1%L: %s", g_colored_player_id,
                                 "GAL_NOMINATIONS", msg[ 2 ] );
                     }
                 #else
@@ -1725,15 +1768,14 @@ public nomination_list( player_id )
     if( msg[ 0 ] )
     {
     #if AMXX_VERSION_NUM < 183
-        new players_ids[ 32 ]
+        get_players( print_colored_players_ids, g_colored_players_number, "ch" );
         
-        new playerIndex_idsCounter
-        
-        get_players( players_ids, playerIndex_idsCounter, "ch" );
-        
-        for( new i = 0; i < playerIndex_idsCounter; i++ )
+        for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+             g_colored_current_index++ )
         {
-            client_print_color_internal( players_ids[ i ], "^1%L: %s", players_ids[ i ],
+            g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+            
+            client_print_color_internal( g_colored_player_id, "^1%L: %s", g_colored_player_id,
                     "GAL_NOMINATIONS", msg[ 2 ] );
         }
     #else
@@ -1743,16 +1785,15 @@ public nomination_list( player_id )
     else
     {
     #if AMXX_VERSION_NUM < 183
-        new players_ids[ 32 ]
+        get_players( print_colored_players_ids, g_colored_players_number, "ch" );
         
-        new playerIndex_idsCounter
-        
-        get_players( players_ids, playerIndex_idsCounter, "ch" );
-        
-        for( new i = 0; i < playerIndex_idsCounter; i++ )
+        for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+             g_colored_current_index++ )
         {
-            client_print_color_internal( players_ids[ i ], "^1%L: %L", players_ids[ i ], "GAL_NOMINATIONS",
-                    players_ids[ i ], "NONE" );
+            g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+            
+            client_print_color_internal( g_colored_player_id, "^1%L: %L", g_colored_player_id, "GAL_NOMINATIONS",
+                    g_colored_player_id, "NONE" );
         }
     #else
         client_print_color_internal( 0, "^1%L: %L", LANG_PLAYER, "GAL_NOMINATIONS",
@@ -1880,15 +1921,14 @@ public vote_startDirector( bool:forced )
     else
     {
     #if AMXX_VERSION_NUM < 183
-        new players_ids[ 32 ]
+        get_players( print_colored_players_ids, g_colored_players_number, "ch" );
         
-        new playerIndex_idsCounter
-        
-        get_players( players_ids, playerIndex_idsCounter, "ch" );
-        
-        for( new i = 0; i < playerIndex_idsCounter; i++ )
+        for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+             g_colored_current_index++ )
         {
-            client_print_color_internal( players_ids[ i ], "^1%L", players_ids[ i ], "GAL_VOTE_NOMAPS" );
+            g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+            
+            client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id, "GAL_VOTE_NOMAPS" );
         }
     #else
         client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_VOTE_NOMAPS" );
@@ -2591,15 +2631,14 @@ public vote_expire()
             {
                 // announce runoff voting requirement
             #if AMXX_VERSION_NUM < 183
-                new players_ids[ 32 ]
+                get_players( print_colored_players_ids, g_colored_players_number, "ch" );
                 
-                new playerIndex_idsCounter
-                
-                get_players( players_ids, playerIndex_idsCounter, "ch" );
-                
-                for( new i = 0; i < playerIndex_idsCounter; i++ )
+                for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+                     g_colored_current_index++ )
                 {
-                    client_print_color_internal( players_ids[ i ], "^1%L", players_ids[ i ],
+                    g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+                    
+                    client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
                             "GAL_RUNOFF_REQUIRED" );
                 }
             #else
@@ -2685,15 +2724,14 @@ public vote_expire()
                             g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 1 ] ] )
                 
                 #if AMXX_VERSION_NUM < 183
-                    new players_ids[ 32 ]
+                    get_players( print_colored_players_ids, g_colored_players_number, "ch" );
                     
-                    new playerIndex_idsCounter
-                    
-                    get_players( players_ids, playerIndex_idsCounter, "ch" );
-                    
-                    for( new i = 0; i < playerIndex_idsCounter; i++ )
+                    for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+                         g_colored_current_index++ )
                     {
-                        client_print_color_internal( players_ids[ i ], "^1%L", players_ids[ i ], "GAL_RESULT_TIED1", numberOfMapsAtFirstPosition );
+                        g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+                        
+                        client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id, "GAL_RESULT_TIED1", numberOfMapsAtFirstPosition );
                     }
                 #else
                     client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_RESULT_TIED1", \
@@ -2781,15 +2819,14 @@ public vote_expire()
                             g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 1 ] ] )
                 
                 #if AMXX_VERSION_NUM < 183
-                    new players_ids[ 32 ]
+                    get_players( print_colored_players_ids, g_colored_players_number, "ch" );
                     
-                    new playerIndex_idsCounter
-                    
-                    get_players( players_ids, playerIndex_idsCounter, "ch" );
-                    
-                    for( new i = 0; i < playerIndex_idsCounter; i++ )
+                    for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+                         g_colored_current_index++ )
                     {
-                        client_print_color_internal( players_ids[ i ], "^1%L", players_ids[ i ],
+                        g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+                        
+                        client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
                                 "GAL_RESULT_TIED2", numberOfMapsAtSecondPosition );
                     }
                 #else
@@ -2813,15 +2850,16 @@ public vote_expire()
             winnerVoteMapIndex = firstPlaceChoices[ random_num( 0, numberOfMapsAtFirstPosition - 1 ) ];
         
         #if AMXX_VERSION_NUM < 183
-            new players_ids[ 32 ]
+            get_players( print_colored_players_ids, g_colored_players_number, "ch" );
             
-            new playerIndex_idsCounter
-            
-            get_players( players_ids, playerIndex_idsCounter, "ch" );
-            
-            for( new i = 0; i < playerIndex_idsCounter; i++ )
+            for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+                 g_colored_current_index++ )
             {
-                client_print_color_internal( players_ids[ i ], "^1%L", players_ids[ i ],
+                g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+                
+                g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+                
+                client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
                         "GAL_WINNER_TIED", numberOfMapsAtFirstPosition );
             }
         #else
@@ -2842,15 +2880,14 @@ public vote_expire()
             {
                 // "stay here" won
             #if AMXX_VERSION_NUM < 183
-                new players_ids[ 32 ]
+                get_players( print_colored_players_ids, g_colored_players_number, "ch" );
                 
-                new playerIndex_idsCounter
-                
-                get_players( players_ids, playerIndex_idsCounter, "ch" );
-                
-                for( new i = 0; i < playerIndex_idsCounter; i++ )
+                for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+                     g_colored_current_index++ )
                 {
-                    client_print_color_internal( players_ids[ i ], "^1%L", players_ids[ i ],
+                    g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+                    
+                    client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
                             "GAL_WINNER_STAY" );
                 }
             #else
@@ -2871,15 +2908,14 @@ public vote_expire()
                     
                     // "stay here" won
                     #if AMXX_VERSION_NUM < 183
-                    new players_ids[ 32 ]
+                    get_players( print_colored_players_ids, g_colored_players_number, "ch" );
                     
-                    new playerIndex_idsCounter
-                    
-                    get_players( players_ids, playerIndex_idsCounter, "ch" );
-                    
-                    for( new i = 0; i < playerIndex_idsCounter; i++ )
+                    for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+                         g_colored_current_index++ )
                     {
-                        client_print_color_internal( players_ids[ i ], "^1%L", players_ids[ i ],
+                        g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+                        
+                        client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
                                 "GAL_WINNER_STAY" );
                     }
                     #else
@@ -2899,15 +2935,14 @@ public vote_expire()
                         g_isTimeToChangeLevel = false;
                     
                     #if AMXX_VERSION_NUM < 183
-                        new players_ids[ 32 ]
+                        get_players( print_colored_players_ids, g_colored_players_number, "ch" );
                         
-                        new playerIndex_idsCounter
-                        
-                        get_players( players_ids, playerIndex_idsCounter, "ch" );
-                        
-                        for( new i = 0; i < playerIndex_idsCounter; i++ )
+                        for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+                             g_colored_current_index++ )
                         {
-                            client_print_color_internal( players_ids[ i ], "^1%L", players_ids[ i ],
+                            g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+                            
+                            client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
                                     "GAL_WINNER_STAY" );
                         }
                     #else
@@ -2920,15 +2955,14 @@ public vote_expire()
                         if( g_is_maxrounds_vote_map )
                         {
                         #if AMXX_VERSION_NUM < 183
-                            new players_ids[ 32 ]
+                            get_players( print_colored_players_ids, g_colored_players_number, "ch" );
                             
-                            new playerIndex_idsCounter
-                            
-                            get_players( players_ids, playerIndex_idsCounter, "ch" );
-                            
-                            for( new i = 0; i < playerIndex_idsCounter; i++ )
+                            for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+                                 g_colored_current_index++ )
                             {
-                                client_print_color_internal( players_ids[ i ], "^1%L", players_ids[ i ],
+                                g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+                                
+                                client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
                                         "GAL_WINNER_EXTEND_ROUND", get_pcvar_num( cvar_extendmapStepRounds ) );
                             }
                         #else
@@ -2939,16 +2973,15 @@ public vote_expire()
                         else
                         {
                         #if AMXX_VERSION_NUM < 183
-                            new players_ids[ 32 ]
+                            get_players( print_colored_players_ids, g_colored_players_number, "ch" );
                             
-                            new playerIndex_idsCounter
-                            
-                            get_players( players_ids, playerIndex_idsCounter, "ch" );
-                            
-                            for( new i = 0; i < playerIndex_idsCounter; i++ )
+                            for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+                                 g_colored_current_index++ )
                             {
-                                client_print_color_internal( players_ids[ i ], "^1%L",
-                                        players_ids[ i ], "GAL_WINNER_EXTEND",
+                                g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+                                
+                                client_print_color_internal( g_colored_player_id, "^1%L",
+                                        g_colored_player_id, "GAL_WINNER_EXTEND",
                                         floatround( get_pcvar_float( cvar_extendmapStep ) ) );
                             }
                         #else
@@ -2968,15 +3001,14 @@ public vote_expire()
             server_exec();
         
         #if AMXX_VERSION_NUM < 183
-            new players_ids[ 32 ]
+            get_players( print_colored_players_ids, g_colored_players_number, "ch" );
             
-            new playerIndex_idsCounter
-            
-            get_players( players_ids, playerIndex_idsCounter, "ch" );
-            
-            for( new i = 0; i < playerIndex_idsCounter; i++ )
+            for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+                 g_colored_current_index++ )
             {
-                client_print_color_internal( players_ids[ i ], "^1%L", players_ids[ i ], "GAL_NEXTMAP",
+                g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+                
+                client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id, "GAL_NEXTMAP",
                         g_mapsVoteMenuNames[ winnerVoteMapIndex ] );
             }
         #else
@@ -2996,15 +3028,14 @@ public vote_expire()
         get_cvar_string( "amx_nextmap", initialNextMap, sizeof( initialNextMap ) - 1 );
     
     #if AMXX_VERSION_NUM < 183
-        new players_ids[ 32 ]
+        get_players( print_colored_players_ids, g_colored_players_number, "ch" );
         
-        new playerIndex_idsCounter
-        
-        get_players( players_ids, playerIndex_idsCounter, "ch" );
-        
-        for( new i = 0; i < playerIndex_idsCounter; i++ )
+        for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+             g_colored_current_index++ )
         {
-            client_print_color_internal( players_ids[ i ], "^1%L", players_ids[ i ],
+            g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+            
+            client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
                     "GAL_WINNER_RANDOM", initialNextMap );
         }
     #else
@@ -3183,15 +3214,14 @@ public vote_handleChoice( player_id, key )
             if( get_pcvar_num( cvar_voteAnnounceChoice ) )
             {
             #if AMXX_VERSION_NUM < 183
-                new players_ids[ 32 ]
+                get_players( print_colored_players_ids, g_colored_players_number, "ch" );
                 
-                new playerIndex_idsCounter
-                
-                get_players( players_ids, playerIndex_idsCounter, "ch" );
-                
-                for( new i = 0; i < playerIndex_idsCounter; i++ )
+                for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+                     g_colored_current_index++ )
                 {
-                    client_print_color_internal( players_ids[ i ], "^1%L", players_ids[ i ],
+                    g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+                    
+                    client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
                             "GAL_CHOICE_NONE_ALL", name );
                 }
             #else
@@ -3218,15 +3248,14 @@ public vote_handleChoice( player_id, key )
                     if( get_pcvar_num( cvar_voteAnnounceChoice ) )
                     {
                     #if AMXX_VERSION_NUM < 183
-                        new players_ids[ 32 ]
+                        get_players( print_colored_players_ids, g_colored_players_number, "ch" );
                         
-                        new playerIndex_idsCounter
-                        
-                        get_players( players_ids, playerIndex_idsCounter, "ch" );
-                        
-                        for( new i = 0; i < playerIndex_idsCounter; i++ )
+                        for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+                             g_colored_current_index++ )
                         {
-                            client_print_color_internal( players_ids[ i ], "^1%L", players_ids[ i ],
+                            g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+                            
+                            client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
                                     "GAL_CHOICE_EXTEND_ALL", name );
                         }
                     #else
@@ -3246,15 +3275,14 @@ public vote_handleChoice( player_id, key )
                 if( get_pcvar_num( cvar_voteAnnounceChoice ) )
                 {
                 #if AMXX_VERSION_NUM < 183
-                    new players_ids[ 32 ]
+                    get_players( print_colored_players_ids, g_colored_players_number, "ch" );
                     
-                    new playerIndex_idsCounter
-                    
-                    get_players( players_ids, playerIndex_idsCounter, "ch" );
-                    
-                    for( new i = 0; i < playerIndex_idsCounter; i++ )
+                    for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+                         g_colored_current_index++ )
                     {
-                        client_print_color_internal( players_ids[ i ], "^1%L", players_ids[ i ],
+                        g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+                        
+                        client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
                                 "GAL_CHOICE_MAP_ALL", name, g_mapsVoteMenuNames[ key ] );
                     }
                 #else
@@ -3385,15 +3413,14 @@ public vote_rock( player_id )
     {
         // announce that the vote has been rocked
     #if AMXX_VERSION_NUM < 183
-        new players_ids[ 32 ]
+        get_players( print_colored_players_ids, g_colored_players_number, "ch" );
         
-        new playerIndex_idsCounter
-        
-        get_players( players_ids, playerIndex_idsCounter, "ch" );
-        
-        for( new i = 0; i < playerIndex_idsCounter; i++ )
+        for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+             g_colored_current_index++ )
         {
-            client_print_color_internal( players_ids[ i ], "^1%L", players_ids[ i ], "GAL_ROCK_ENOUGH" );
+            g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+            
+            client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id, "GAL_ROCK_ENOUGH" );
         }
     #else
         client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_ROCK_ENOUGH" );
@@ -3815,15 +3842,14 @@ public srv_announceEarlyVote( player_id )
 stock nomination_announceCancellation( nominations[] )
 {
 #if AMXX_VERSION_NUM < 183
-    new players_ids[ 32 ]
+    get_players( print_colored_players_ids, g_colored_players_number, "ch" );
     
-    new playerIndex_idsCounter
-    
-    get_players( players_ids, playerIndex_idsCounter, "ch" );
-    
-    for( new i = 0; i < playerIndex_idsCounter; i++ )
+    for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+         g_colored_current_index++ )
     {
-        client_print_color_internal( players_ids[ i ], "^1%L", players_ids[ i ],
+        g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+        
+        client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
                 "GAL_CANCEL_SUCCESS", nominations );
     }
 #else
@@ -3849,15 +3875,14 @@ stock map_announceNomination( player_id, map[] )
     get_user_name( player_id, name, sizeof( name ) - 1 );
 
 #if AMXX_VERSION_NUM < 183
-    new players_ids[ 32 ]
+    get_players( print_colored_players_ids, g_colored_players_number, "ch" );
     
-    new playerIndex_idsCounter
-    
-    get_players( players_ids, playerIndex_idsCounter, "ch" );
-    
-    for( new i = 0; i < playerIndex_idsCounter; i++ )
+    for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+         g_colored_current_index++ )
     {
-        client_print_color_internal( players_ids[ i ], "^1%L", players_ids[ i ], "GAL_NOM_SUCCESS",
+        g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+        
+        client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id, "GAL_NOM_SUCCESS",
                 name, map );
     }
 #else
@@ -3896,26 +3921,37 @@ stock percent( is, of )
  * to display to all players.
  *
  * If you are at the Amx Mod X 1.8.2, you can call this function using the player_id as 0. But it
- * will use more resources to decode its arguments. To be more optimized you must call it to every
- * player on the server, to display the colored message to all players. Example:
+ * will use more resources to decode its arguments. To be more optimized you should call it to every
+ * player on the server, to display the colored message to all players using global scope. Example:
  * @code{.cpp}
  * #if AMXX_VERSION_NUM < 183
- *     new players_ids[ 32 ]
+ * new g_colored_player_id
+ * new g_colored_players_number
+ * new g_colored_current_index
+ * new g_colored_players_ids[ 32 ]
+ * #endif
  *
- *     new playerIndex_idsCounter
+ * some_function()
+ * {
+ *     ... some code
+ * #if AMXX_VERSION_NUM < 183
+ *     get_players( g_colored_players_ids, g_colored_players_number, "ch" );
  *
- *     get_players( players_ids, playerIndex_idsCounter, "ch" );
- *
- *     for( new i = 0; i < playerIndex_idsCounter; i++ )
+ *     for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+ *          g_colored_current_index++ )
  *     {
- *         client_print_color_internal( players_ids[ i ], "^1%L %L %L",
- *                 players_ids[ i ], "LANG_A", players_ids[ i ], "LANG_B",
- *                 players_ids[ i ], "LANG_C", any_variable_used_on_LANG_C )
+ *         g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
+ *
+ *         client_print_color_internal( g_colored_player_id, "^1%L %L %L",
+ *                 g_colored_player_id, "LANG_A", g_colored_player_id, "LANG_B",
+ *                 g_colored_player_id, "LANG_C", any_variable_used_on_LANG_C )
  *     }
  * #else
  *     client_print_color_internal( 0, "^1%L %L %L", LANG_PLAYER, "LANG_A",
  *             LANG_PLAYER, "LANG_B", LANG_PLAYER, "LANG_C", any_variable_used_on_LANG_C );
  * #endif
+ *     ... some code
+ * }
  * @endcode
  *
  * If you are at the Amx Mod X 1.8.3 or superior, you can call this function using the player_id
@@ -3944,6 +3980,8 @@ stock client_print_color_internal( player_id, message[], any: ... )
         if( player_id )
         {
             vformat( formated_message, charsmax( formated_message ), message, 3 )
+            DEBUG_LOGGER( 64, "( in ) Player_Id: %d, Chat printed: %s", player_id, formated_message )
+            
             PRINT_COLORED_MESSAGE( player_id, formated_message )
         }
         else
@@ -3990,9 +4028,11 @@ stock client_print_color_internal( player_id, message[], any: ... )
                         }
                         formated_message[ string_index ] = 0
                         
-                        DEBUG_LOGGER( 64, "Player_Id: %d, formated_message: %s, GetLangTransKey( \
-                                formated_message ) != TransKey_Bad: %d", player_id, formated_message, \
+                        DEBUG_LOGGER( 64, "Player_Id: %d, formated_message: %s, \
+                                GetLangTransKey( formated_message ) != TransKey_Bad: %d", \
+                                player_id, formated_message, \
                                 GetLangTransKey( formated_message ) != TransKey_Bad )
+                        
                         DEBUG_LOGGER( 64, "(multi_lingual_constants_number: %d, string_index: %d", \
                                 multi_lingual_constants_number, string_index )
                         
@@ -4017,6 +4057,8 @@ stock client_print_color_internal( player_id, message[], any: ... )
             {
                 player_id = players_array[ players_number ];
                 
+                DEBUG_LOGGER( 64, "( in ) Player_Id: %d, Chat printed: %s", player_id, formated_message )
+                
                 if( multi_lingual_constants_number )
                 {
                     for( argument_index = 0; argument_index < multi_lingual_constants_number; argument_index++ )
@@ -4032,14 +4074,9 @@ stock client_print_color_internal( player_id, message[], any: ... )
                     }
                     
                     vformat( formated_message, charsmax( formated_message ), message, 3 )
-                    PRINT_COLORED_MESSAGE( player_id, formated_message )
-                }
-                else
-                {
-                    client_print( player_id, print_chat, message )
                 }
                 
-                DEBUG_LOGGER( 64, "( in ) Player_Id: %d, Chat printed: %s", player_id, formated_message )
+                PRINT_COLORED_MESSAGE( player_id, formated_message )
             }
             
             ArrayDestroy( multi_lingual_indexes_array );
@@ -4179,9 +4216,9 @@ stock runTests()
         DEBUG_LOGGER( 1, "^n    The following tests failed:" )
     }
     
-    for( new i = 0; i < ArraySize( g_tests_failure_ids ); i++ )
+    for( new failure_index = 0; failure_index < ArraySize( g_tests_failure_ids ); failure_index++ )
     {
-        ArrayGetString( g_tests_idsAndNames, ArrayGetCell( g_tests_failure_ids, i ) - 1,
+        ArrayGetString( g_tests_idsAndNames, ArrayGetCell( g_tests_failure_ids, failure_index ) - 1,
                 test_name, charsmax( test_name ) )
         
         DEBUG_LOGGER( 1, "       %s", test_name )
@@ -4193,9 +4230,9 @@ stock runTests()
                 g_max_delay_result )
     }
     
-    for( new i = 0; i < ArraySize( g_tests_delayed_ids ); i++ )
+    for( new delayed_index = 0; delayed_index < ArraySize( g_tests_delayed_ids ); delayed_index++ )
     {
-        ArrayGetString( g_tests_idsAndNames, ArrayGetCell( g_tests_delayed_ids, i ) - 1,
+        ArrayGetString( g_tests_idsAndNames, ArrayGetCell( g_tests_delayed_ids, delayed_index ) - 1,
                 test_name, charsmax( test_name ) )
         
         DEBUG_LOGGER( 1, "       %s", test_name )
@@ -4231,9 +4268,9 @@ public show_delayed_results()
         DEBUG_LOGGER( 1, "^n    The following tests failed:" )
     }
     
-    for( new i = 0; i < ArraySize( g_tests_failure_ids ); i++ )
+    for( new failure_index = 0; failure_index < ArraySize( g_tests_failure_ids ); failure_index++ )
     {
-        ArrayGetString( g_tests_idsAndNames, ArrayGetCell( g_tests_failure_ids, i ) - 1,
+        ArrayGetString( g_tests_idsAndNames, ArrayGetCell( g_tests_failure_ids, failure_index ) - 1,
                 test_name, charsmax( test_name ) )
         
         DEBUG_LOGGER( 1, "       %s", test_name )
@@ -4638,8 +4675,6 @@ stock cancel_voting()
  */
 stock debugMesssageLogger( const mode, const text[] = "", { Float, Sql, Result, _ }: ... )
 {
-    g_debug_level = get_cvar_num( "gal_debug" );
-    
     if( mode & g_debug_level )
     {
         // format the text as needed
