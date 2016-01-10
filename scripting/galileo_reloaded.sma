@@ -492,7 +492,8 @@ public plugin_cfg()
     if( get_pcvar_num( cvar_nomPlayerAllowance ) )
     {
         register_concmd( "gal_listmaps", "map_listAll" );
-        register_clcmd( "say nominations", "cmd_nominations", 0, "- displays current nominations for next map" );
+        register_clcmd( "say nominations", "cmd_nominations", 0, "- displays current \
+                nominations for next map" );
         
         if( get_pcvar_num( cvar_nomPrefixes ) )
         {
@@ -705,7 +706,8 @@ public srv_handleStart()
             
             if( g_nominationMapCnt )
             {
-                ArrayGetString( g_nominationMap, random_num( 0, g_nominationMapCnt - 1 ), nextMap, sizeof( nextMap ) - 1 );
+                ArrayGetString( g_nominationMap, random_num( 0, g_nominationMapCnt - 1 ), nextMap,
+                        sizeof( nextMap ) - 1 );
             }
         }
         
@@ -1197,7 +1199,8 @@ public cmd_createMapFile( player_id, level, cid )
             read_argv( 1, arg1, sizeof( arg1 ) - 1 );
             remove_quotes( arg1 );
             
-            new mapName[ MAX_MAPNAME_LEN + 5 ];    // map name is 31 ( i.e. MAX_MAPNAME_LEN ), ".bsp" is 4, string terminator is 1.
+            // map name is 31 ( i.e. MAX_MAPNAME_LEN ), ".bsp" is 4, string terminator is 1.
+            new mapName[ MAX_MAPNAME_LEN + 5 ];
             new dir, file, mapCnt, lenMapName;
             
             dir = open_dir( "maps", mapName, sizeof( mapName ) - 1 );
@@ -1289,7 +1292,8 @@ public map_loadPrefixList()
                 }
                 else
                 {
-                    log_error( AMX_ERR_BOUNDS, "%L", LANG_SERVER, "GAL_PREFIXES_TOOMANY", MAX_PREFIX_CNT, filename );
+                    log_error( AMX_ERR_BOUNDS, "%L", LANG_SERVER, "GAL_PREFIXES_TOOMANY",
+                            MAX_PREFIX_CNT, filename );
                     break;
                 }
             }
@@ -1420,7 +1424,8 @@ stock nomination_attempt( player_id, nomination[] ) // ( playerName[], &phraseId
     g_nominationMatchesMenu[ player_id ] = menu_create( "Nominate Map", "nomination_handleMatchChoice" );
     
     // gather all maps that match the nomination
-    new mapIdx, nominationMap[ 32 ], matchCnt = 0, matchIdx = -1, info[ 1 ], choice[ 64 ], disabledReason[ 16 ];
+    new mapIdx, nominationMap[ 32 ], matchCnt = 0, matchIdx = -1, info[ 1 ], choice[ 64 ]
+    new disabledReason[ 16 ];
     
     for( mapIdx = 0; mapIdx < g_nominationMapCnt
          && matchCnt <= MAX_NOM_MATCH_CNT; ++mapIdx )
@@ -1442,20 +1447,25 @@ stock nomination_attempt( player_id, nomination[] ) // ( playerName[], &phraseId
             // disable if the map has already been nominated
             if( nomination_getPlayer( mapIdx ) )
             {
-                formatex( disabledReason, sizeof( disabledReason ) - 1, "%L", player_id, "GAL_MATCH_NOMINATED" );
+                formatex( disabledReason, sizeof( disabledReason ) - 1, "%L", player_id,
+                        "GAL_MATCH_NOMINATED" );
             }
             // disable if the map is too recent
             else if( map_isTooRecent( nominationMap ) )
             {
-                formatex( disabledReason, sizeof( disabledReason ) - 1, "%L", player_id, "GAL_MATCH_TOORECENT" );
+                formatex( disabledReason, sizeof( disabledReason ) - 1, "%L", player_id,
+                        "GAL_MATCH_TOORECENT" );
             }
             else if( equal( g_currentMap, nominationMap ) )
             {
-                formatex( disabledReason, sizeof( disabledReason ) - 1, "%L", player_id, "GAL_MATCH_CURRENTMAP" );
+                formatex( disabledReason, sizeof( disabledReason ) - 1, "%L", player_id,
+                        "GAL_MATCH_CURRENTMAP" );
             }
             
             formatex( choice, sizeof( choice ) - 1, "%s %s", nominationMap, disabledReason );
-            menu_additem( g_nominationMatchesMenu[ player_id ], choice, info, ( disabledReason[ 0 ] == 0 ) ? 0 : ( 1 << 26 ) );
+            
+            menu_additem( g_nominationMatchesMenu[ player_id ], choice, info,
+                    ( disabledReason[ 0 ] == 0 ) ? 0 : ( 1 << 26 ) );
         }
     }
     
@@ -1465,7 +1475,8 @@ stock nomination_attempt( player_id, nomination[] ) // ( playerName[], &phraseId
         case 0:
         {
             // no matches; pity the poor fool
-            client_print_color_internal( player_id, "^1%L", player_id, "GAL_NOM_FAIL_NOMATCHES", nomination );
+            client_print_color_internal( player_id, "^1%L", player_id, "GAL_NOM_FAIL_NOMATCHES",
+                    nomination );
         }
         case 1:
         {
@@ -1590,7 +1601,8 @@ stock nomination_cancel( player_id, idxMap )
         }
         else
         {
-            client_print_color_internal( player_id, "^1%L", player_id, "GAL_CANCEL_FAIL_WASNOTYOU", mapName );
+            client_print_color_internal( player_id, "^1%L", player_id, "GAL_CANCEL_FAIL_WASNOTYOU",
+                    mapName );
         }
     }
 }
@@ -1661,7 +1673,8 @@ stock map_nominate( player_id, idxMap, idNominator = -1 )
             {
                 idxMap = g_nomination[ player_id ][ idxNomination ];
                 ArrayGetString( g_nominationMap, idxMap, buffer, sizeof( buffer ) - 1 );
-                format( nominatedMaps, sizeof( nominatedMaps ) - 1, "%s%s%s", nominatedMaps, ( idxNomination == 1 ) ? "" : ", ", buffer );
+                format( nominatedMaps, sizeof( nominatedMaps ) - 1, "%s%s%s", nominatedMaps,
+                        ( idxNomination == 1 ) ? "" : ", ", buffer );
             }
             
             client_print_color_internal( player_id, "^1%L", player_id, "GAL_NOM_FAIL_TOOMANY",
@@ -1688,7 +1701,9 @@ stock map_nominate( player_id, idxMap, idNominator = -1 )
         new name[ 32 ];
         get_user_name( idNominator, name, 31 );
         
-        client_print_color_internal( player_id, "^1%L", player_id, "GAL_NOM_FAIL_SOMEONEELSE", mapName, name );
+        client_print_color_internal( player_id, "^1%L", player_id, "GAL_NOM_FAIL_SOMEONEELSE",
+                mapName, name );
+        
         client_print_color_internal( player_id, "^1%L", player_id, "GAL_NOM_FAIL_SOMEONEELSE_HLP" );
     }
 }
@@ -1762,8 +1777,8 @@ public nomination_list( player_id )
         {
             g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
             
-            client_print_color_internal( g_colored_player_id, "^1%L: %L", g_colored_player_id, "GAL_NOMINATIONS",
-                    g_colored_player_id, "NONE" );
+            client_print_color_internal( g_colored_player_id, "^1%L: %L", g_colored_player_id,
+                    "GAL_NOMINATIONS", g_colored_player_id, "NONE" );
         }
     #else
         client_print_color_internal( 0, "^1%L: %L", LANG_PLAYER, "GAL_NOMINATIONS",
@@ -1867,7 +1882,8 @@ public vote_startDirector( bool:forced )
         // make perfunctory announcement: "get ready to choose a map"
         if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_GETREADYTOCHOOSE ) )
         {
-            client_cmd( 0, "spk ^"get red( e80 ) ninety( s45 ) to check( e20 ) use bay( s18 ) mass( e42 ) cap( s50 )^"" );
+            client_cmd( 0, "spk ^"get red( e80 ) ninety( s45 ) to check( e20 ) \
+                    use bay( s18 ) mass( e42 ) cap( s50 )^"" );
         }
         
         // announce the pending vote countdown from 7 to 1
@@ -1879,8 +1895,11 @@ public vote_startDirector( bool:forced )
         // display the vote outcome
         if( get_pcvar_num( cvar_voteStatus ) )
         {
-            new vote_display_task_argument[ 3 ] = { -1, -1, false }; // indicates it's the end of vote display
-            set_task( 8.5 + float( voteDuration ) + 1.0, "vote_display", TASKID_VOTE_DISPLAY, vote_display_task_argument, 3 );
+            // indicates it's the end of vote display
+            new vote_display_task_argument[ 3 ] = { -1, -1, false };
+            
+            set_task( 8.5 + float( voteDuration ) + 1.0, "vote_display", TASKID_VOTE_DISPLAY,
+                    vote_display_task_argument, 3 );
             set_task( 8.5 + float( voteDuration ) + 6.0, "vote_expire", TASKID_VOTE_EXPIRE );
         }
         else
@@ -1898,7 +1917,8 @@ public vote_startDirector( bool:forced )
         {
             g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
             
-            client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id, "GAL_VOTE_NOMAPS" );
+            client_print_color_internal( g_colored_player_id, "^1%L",
+                    g_colored_player_id, "GAL_VOTE_NOMAPS" );
         }
     #else
         client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_VOTE_NOMAPS" );
@@ -1951,8 +1971,8 @@ stock vote_addNominations()
         // set how many total nominations each player is allowed
         new playerNominationMax = min( get_pcvar_num( cvar_nomPlayerAllowance ), MAX_NOMINATION_CNT );
         
-        // add as many nominations as we can
-        // [TODO: develop a better method of determining which nominations make the cut; either FIFO or random]
+        // add as many nominations as we can [TODO: develop a
+        // better method of determining which nominations make the cut; either FIFO or random]
         new idxMap, player_id, mapName[ 32 ];
 
 #if IS_DEBUG_ENABLED > 0
@@ -1986,7 +2006,8 @@ stock vote_addNominations()
                 if( idxMap >= 0 )
                 {
                     ArrayGetString( g_nominationMap, idxMap, mapName, sizeof( mapName ) - 1 );
-                    copy( g_mapsVoteMenuNames[ g_totalVoteOptions++ ], sizeof( g_mapsVoteMenuNames[] ) - 1, mapName );
+                    copy( g_mapsVoteMenuNames[ g_totalVoteOptions++ ],
+                            sizeof( g_mapsVoteMenuNames[] ) - 1, mapName );
                     
                     if( g_totalVoteOptions == voteNominationMax )
                     {
@@ -2058,7 +2079,8 @@ stock vote_addFiller()
                         }
                         else
                         {
-                            log_error( AMX_ERR_BOUNDS, "%L", LANG_SERVER, "GAL_GRP_FAIL_TOOMANY", filename );
+                            log_error( AMX_ERR_BOUNDS, "%L", LANG_SERVER, "GAL_GRP_FAIL_TOOMANY",
+                                    filename );
                             break;
                         }
                     }
@@ -2107,7 +2129,9 @@ stock vote_addFiller()
             && mapCnt )
         {
             unsuccessfulCnt = 0;
-            allowedCnt      = min( min( mapsPerGroup[ groupIdx ], g_choiceMax - g_totalVoteOptions ), mapCnt );
+            allowedCnt      = min( min( mapsPerGroup[ groupIdx ],
+                            g_choiceMax - g_totalVoteOptions ), mapCnt );
+            
             DEBUG_LOGGER( 8, "[%i] allowedCnt: %i   mapsPerGroup: %i   Max-Cnt: %i", groupIdx, \
                     allowedCnt, mapsPerGroup[ groupIdx ], g_choiceMax - g_totalVoteOptions )
             
@@ -2142,7 +2166,8 @@ stock vote_addFiller()
                 }
                 
                 //print_colored( 0, "mapIdx: %i  map: %s", mapIdx, mapName );
-                copy( g_mapsVoteMenuNames[ g_totalVoteOptions++ ], sizeof( g_mapsVoteMenuNames[] ) - 1, mapName );
+                copy( g_mapsVoteMenuNames[ g_totalVoteOptions++ ],
+                        sizeof( g_mapsVoteMenuNames[] ) - 1, mapName );
                 DEBUG_LOGGER( 8, "[%i] mapName: %s   unsuccessfulCnt: %i   mapCnt: %i   \
                         g_totalVoteOptions: %i", \
                         groupIdx, mapName, unsuccessfulCnt, mapCnt, g_totalVoteOptions )
@@ -2166,8 +2191,12 @@ stock vote_loadRunoffChoices()
             g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 1 ] ] )
     
     new runOffNameChoices[ 2 ][ MAX_MAPNAME_LEN + 1 ];
-    copy( runOffNameChoices[ 0 ], sizeof( runOffNameChoices[] ) - 1, g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 0 ] ] );
-    copy( runOffNameChoices[ 1 ], sizeof( runOffNameChoices[] ) - 1, g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 1 ] ] );
+    
+    copy( runOffNameChoices[ 0 ], sizeof( runOffNameChoices[] ) - 1,
+            g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 0 ] ] );
+    
+    copy( runOffNameChoices[ 1 ], sizeof( runOffNameChoices[] ) - 1,
+            g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 1 ] ] );
     
     copy( g_mapsVoteMenuNames[ 0 ], sizeof( g_mapsVoteMenuNames[] ) - 1, runOffNameChoices[ 0 ] );
     copy( g_mapsVoteMenuNames[ 1 ], sizeof( g_mapsVoteMenuNames[] ) - 1, runOffNameChoices[ 1 ] );
@@ -2218,11 +2247,13 @@ public vote_handleDisplay()
     
     if( get_pcvar_num( cvar_voteStatus ) == SHOWSTATUS_VOTE )
     {
-        set_task( 1.0, "vote_display", TASKID_VOTE_DISPLAY, vote_display_task_argument, sizeof( vote_display_task_argument ), "a", g_voteDuration );
+        set_task( 1.0, "vote_display", TASKID_VOTE_DISPLAY, vote_display_task_argument,
+                sizeof( vote_display_task_argument ), "a", g_voteDuration );
     }
     else
     {
-        set_task( 1.0, "vote_display", TASKID_VOTE_DISPLAY, vote_display_task_argument, sizeof( vote_display_task_argument ) );
+        set_task( 1.0, "vote_display", TASKID_VOTE_DISPLAY, vote_display_task_argument,
+                sizeof( vote_display_task_argument ) );
     }
 }
 
@@ -2278,11 +2309,13 @@ public vote_display( vote_display_task_argument[ 3 ] )
         // add the header
         if( isVoteOver )
         {
-            charCnt = formatex( voteStatus, sizeof( voteStatus ) - 1, "%s%L^n", CLR_YELLOW, LANG_SERVER, "GAL_RESULT" );
+            charCnt = formatex( voteStatus, sizeof( voteStatus ) - 1, "%s%L^n", CLR_YELLOW,
+                    LANG_SERVER, "GAL_RESULT" );
         }
         else
         {
-            charCnt = formatex( voteStatus, sizeof( voteStatus ) - 1, "%s%L^n", CLR_YELLOW, LANG_SERVER, "GAL_CHOOSE" );
+            charCnt = formatex( voteStatus, sizeof( voteStatus ) - 1, "%s%L^n", CLR_YELLOW,
+                    LANG_SERVER, "GAL_CHOOSE" );
         }
         
         // add maps to the menu
@@ -2291,8 +2324,9 @@ public vote_display( vote_display_task_argument[ 3 ] )
             voteCnt = g_arrayOfMapsWithVotesNumber[ choiceIdx ];
             getTotalVotesAtMap( g_totalVoteAtMap, sizeof( g_totalVoteAtMap ) - 1, voteCnt );
             
-            charCnt += formatex( voteStatus[ charCnt ], sizeof( voteStatus ) - 1 - charCnt, "^n%s%i. %s%s%s",
-                    CLR_RED, choiceIdx + 1, CLR_WHITE, g_mapsVoteMenuNames[ choiceIdx ], g_totalVoteAtMap );
+            charCnt += formatex( voteStatus[ charCnt ], sizeof( voteStatus ) - 1 - charCnt,
+                    "^n%s%i. %s%s%s", CLR_RED, choiceIdx + 1, CLR_WHITE,
+                    g_mapsVoteMenuNames[ choiceIdx ], g_totalVoteAtMap );
             
             keys |= ( 1 << choiceIdx );
         }
@@ -2337,7 +2371,8 @@ public vote_display( vote_display_task_argument[ 3 ] )
                     charCnt += formatex( voteStatus[ charCnt ], sizeof( voteStatus ) - 1 - charCnt, "^n" );
                 }
                 
-                getTotalVotesAtMap( g_totalVoteAtMap, sizeof( g_totalVoteAtMap ) - 1, g_arrayOfMapsWithVotesNumber[ g_totalVoteOptions ] );
+                getTotalVotesAtMap( g_totalVoteAtMap, sizeof( g_totalVoteAtMap ) - 1,
+                        g_arrayOfMapsWithVotesNumber[ g_totalVoteOptions ] );
                 
                 if( allowExtend )
                 {
@@ -2409,7 +2444,8 @@ public vote_display( vote_display_task_argument[ 3 ] )
     }
     else
     {
-        formatex( menuDirty, sizeof( menuDirty ) - 1, "%s^n^n%s%L", voteStatus, CLR_YELLOW, LANG_SERVER, "GAL_VOTE_ENDED" );
+        formatex( menuDirty, sizeof( menuDirty ) - 1, "%s^n^n%s%L", voteStatus, CLR_YELLOW,
+                LANG_SERVER, "GAL_VOTE_ENDED" );
     }
     
     new menuid, menukeys;
@@ -2450,6 +2486,7 @@ public vote_display( vote_display_task_argument[ 3 ] )
             if( g_voted[ player_id ] == false
                 && !isVoteOver )
             {
+            #if IS_DEBUG_ENABLED > 0
                 if( playerIdx == 0 )
                 {
                     new name[ 32 ];
@@ -2458,7 +2495,7 @@ public vote_display( vote_display_task_argument[ 3 ] )
                     DEBUG_LOGGER( 4, "    [%s ( clean )]", name )
                     DEBUG_LOGGER( 4, "        %s", menuClean )
                 }
-                
+            #endif
                 get_user_menu( player_id, menuid, menukeys );
                 
                 if( menuid == 0
@@ -2488,7 +2525,8 @@ public vote_display( vote_display_task_argument[ 3 ] )
                     if( menuid == 0
                         || menuid == g_menuChooseMap )
                     {
-                        show_menu( player_id, allKeys, menuDirty, ( isVoteOver ) ? 5 : max( 1, g_voteDuration ), MENU_CHOOSEMAP );
+                        show_menu( player_id, allKeys, menuDirty,
+                                ( isVoteOver ) ? 5 : max( 1, g_voteDuration ), MENU_CHOOSEMAP );
                     }
                 }
             }
@@ -2512,7 +2550,8 @@ stock getTotalVotesAtMap( g_totalVoteAtMap[], g_totalVoteAtMapLen, voteCnt )
     if( get_pcvar_num( cvar_voteStatus )
         && voteCnt )
     {
-        formatex( g_totalVoteAtMap, g_totalVoteAtMapLen, " %s( %i%s )", CLR_GREY, voteCnt, g_totalVoteAtMapType );
+        formatex( g_totalVoteAtMap, g_totalVoteAtMapLen, " %s( %i%s )", CLR_GREY, voteCnt,
+                g_totalVoteAtMapType );
     }
     else
     {
@@ -2529,7 +2568,8 @@ public vote_expire()
     DEBUG_LOGGER( 4, "   [VOTE RESULT]" )
     new g_totalVoteAtMap[ 16 ];
     
-    for( new userVoteMapChoiceIndex = 0; userVoteMapChoiceIndex <= g_totalVoteOptions; ++userVoteMapChoiceIndex )
+    for( new userVoteMapChoiceIndex = 0; userVoteMapChoiceIndex <= g_totalVoteOptions;
+         ++userVoteMapChoiceIndex )
     {
         getTotalVotesAtMap( g_totalVoteAtMap, sizeof( g_totalVoteAtMap ) - 1,
                 g_arrayOfMapsWithVotesNumber[ userVoteMapChoiceIndex ] );
@@ -2566,7 +2606,8 @@ public vote_expire()
     new firstPlaceChoices[ MAX_MAPS_IN_VOTE + 1 ], numberOfMapsAtFirstPosition;
     new secondPlaceChoices[ MAX_MAPS_IN_VOTE + 1 ], numberOfMapsAtSecondPosition;
     
-    for( new userVoteMapChoiceIndex = 0; userVoteMapChoiceIndex <= g_totalVoteOptions; ++userVoteMapChoiceIndex )
+    for( new userVoteMapChoiceIndex = 0; userVoteMapChoiceIndex <= g_totalVoteOptions;
+         ++userVoteMapChoiceIndex )
     {
         DEBUG_LOGGER( 16, "At g_arrayOfMapsWithVotesNumber[%d] = %d ", userVoteMapChoiceIndex, \
                 g_arrayOfMapsWithVotesNumber[ userVoteMapChoiceIndex ] )
@@ -2652,8 +2693,8 @@ public vote_expire()
                     }
                     
                     // if firstPlaceChoices[ numberOfMapsAtFirstPosition - 1 ]  is equal to g_totalVoteOptions
-                    // then it option is not a valid map, it is the keep current map option, and must be
-                    // informed it to the vote_display function, to show the 1 map options and the keep current map.
+                    // then it option is not a valid map, it is the keep current map option, and must be informed
+                    // it to the vote_display function, to show the 1 map options and the keep current map.
                     if( firstPlaceChoices[ firstChoiceIndex ] == g_totalVoteOptions )
                     {
                         g_isRunOffNeedingKeepCurrentMap = true
@@ -2701,7 +2742,8 @@ public vote_expire()
                     {
                         g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
                         
-                        client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id, "GAL_RESULT_TIED1", numberOfMapsAtFirstPosition );
+                        client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
+                                "GAL_RESULT_TIED1", numberOfMapsAtFirstPosition );
                     }
                 #else
                     client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_RESULT_TIED1", \
@@ -3067,7 +3109,8 @@ stock map_extend()
     {
         set_cvar_num( "mp_maxrounds", 0 );
         set_cvar_num( "mp_winlimit", 0 );
-        set_cvar_float( "mp_timelimit", get_cvar_float( "mp_timelimit" ) + get_pcvar_float( cvar_extendmapStep ) );
+        set_cvar_float( "mp_timelimit", get_cvar_float( "mp_timelimit" )
+                + get_pcvar_float( cvar_extendmapStep ) );
         
         server_exec();
     }
@@ -3108,7 +3151,8 @@ stock vote_resetStats()
 
 stock map_isInMenu( map[] )
 {
-    for( new userVoteMapChoiceIndex = 0; userVoteMapChoiceIndex < g_totalVoteOptions; ++userVoteMapChoiceIndex )
+    for( new userVoteMapChoiceIndex = 0; userVoteMapChoiceIndex < g_totalVoteOptions;
+         ++userVoteMapChoiceIndex )
     {
         if( equal( map, g_mapsVoteMenuNames[ userVoteMapChoiceIndex ] ) )
         {
@@ -3210,7 +3254,8 @@ public vote_handleChoice( player_id, key )
             
             if( key == g_totalVoteOptions )
             {
-                // only display the "none" vote if we haven't already voted ( we can make it here from the vote status menu too )
+                // only display the "none" vote if we haven't already voted
+                // ( we can make it here from the vote status menu too )
                 if( g_voted[ player_id ] == false )
                 {
                     DEBUG_LOGGER( 4, "      %-32s ( extend )", name )
@@ -3299,7 +3344,8 @@ public vote_handleChoice( player_id, key )
         vote_display_task_argument[ 1 ] = player_id;
         vote_display_task_argument[ 2 ] = true;
         
-        set_task( 0.1, "vote_display", TASKID_VOTE_DISPLAY, vote_display_task_argument, sizeof( vote_display_task_argument ) );
+        set_task( 0.1, "vote_display", TASKID_VOTE_DISPLAY, vote_display_task_argument,
+                sizeof( vote_display_task_argument ) );
     }
 }
 
@@ -3390,7 +3436,8 @@ public vote_rock( player_id )
         {
             g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
             
-            client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id, "GAL_ROCK_ENOUGH" );
+            client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
+                    "GAL_ROCK_ENOUGH" );
         }
     #else
         client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_ROCK_ENOUGH" );
@@ -3406,8 +3453,10 @@ public vote_rock( player_id )
         
         if( get_pcvar_num( cvar_rtvReminder ) )
         {
-            // initialize the rtv reminder timer to repeat how many rocks are still needed, at regular intervals
-            set_task( get_pcvar_float( cvar_rtvReminder ) * 60.0, "rtv_remind", TASKID_REMINDER, _, _, "b" );
+            // initialize the rtv reminder timer to repeat how many
+            // rocks are still needed, at regular intervals
+            set_task( get_pcvar_float( cvar_rtvReminder ) * 60.0, "rtv_remind",
+                    TASKID_REMINDER, _, _, "b" );
         }
     }
 }
@@ -3592,11 +3641,13 @@ public map_listAll( player_id )
     if( mapCount
         && mapCount < g_nominationMapCnt )
     {
-        con_print( player_id, "----- %L -----", player_id, "GAL_LISTMAPS_SHOWING", start, idx, g_nominationMapCnt );
+        con_print( player_id, "----- %L -----", player_id, "GAL_LISTMAPS_SHOWING",
+                start, idx, g_nominationMapCnt );
         
         if( end < g_nominationMapCnt )
         {
-            con_print( player_id, "----- %L -----", player_id, "GAL_LISTMAPS_MORE", command, end + 1, command );
+            con_print( player_id, "----- %L -----", player_id, "GAL_LISTMAPS_MORE",
+                    command, end + 1, command );
         }
     }
 }
