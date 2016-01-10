@@ -284,11 +284,11 @@ new cvar_soundsMute;
 new bool:g_is_supported_color_chat
 new bool:g_is_to_cancel_end_vote
 new bool:g_isUsingEmptyCycle
-new Array: g_emptyCycleMap
 new g_emptyMapCnt
 new g_cntRecentMap;
 new Array:g_nominationMap
 new g_nominationMapCnt;
+new Array: g_emptyCycleMap
 new Array:g_fillerMap;
 new Float:g_rtvWait;
 new g_rockedVoteCnt;
@@ -593,7 +593,7 @@ public round_end()
     {
         if( g_isTimeToChangeLevel ) // when time runs out, end at the current round end
         {
-            intermission_display()
+            set_task( 6.0, "intermission_display_delayed" )
         }
         else // when time runs out, end at the next round end
         {
@@ -604,6 +604,11 @@ public round_end()
             set_task( 5.0, "configure_last_round_HUD", 1 )
         }
     }
+}
+
+public intermission_display_delayed()
+{
+    intermission_display()
 }
 
 stock intermission_display( is_map_change_stays = false )
