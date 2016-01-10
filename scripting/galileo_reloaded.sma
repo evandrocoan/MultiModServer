@@ -588,27 +588,31 @@ public round_end()
     DEBUG_LOGGER( 32, "Round_End:  maxrounds_number = %d, \
             g_total_rounds_played = %d, current_rounds_trigger = %d", \
             maxrounds_number, g_total_rounds_played, current_rounds_trigger )
-    
+
     if( g_is_last_round )
     {
-        if( g_isTimeToChangeLevel ) // when time runs out, end at the current round end
-        {
-            set_task( 6.0, "intermission_display_delayed" )
+        if( g_isTimeToChangeLevel ) // when time runs out, end map at the current round end
+        {   
+            g_is_last_round = false
+
+            set_task( 7.0, "process_last_round" )
         }
-        else // when time runs out, end at the next round end
+        else // when time runs out, end map at the next round end
         {
             g_isTimeToChangeLevel = true
-            
+
             remove_task( TASKID_SHOW_LAST_ROUND_HUD )
-            
             set_task( 5.0, "configure_last_round_HUD", 1 )
         }
     }
 }
 
-public intermission_display_delayed()
+public process_last_round()
 {
-    intermission_display()
+    if( g_isTimeToChangeLevel )
+    {
+        intermission_display()
+    }
 }
 
 stock intermission_display( is_map_change_stays = false )
@@ -889,8 +893,7 @@ public show_last_round_HUD()
     }
     else
     {
-        show_hudmessage( 0, "%L ^n%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED",
-                LANG_PLAYER, "GAL_NEXTMAP", g_nextmap )
+        show_hudmessage( 0, "%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED" )
     }
 }
 
@@ -1312,12 +1315,20 @@ public map_loadPrefixList()
     return PLUGIN_HANDLED;
 }
 
+/**
+ * Make sure the reset time is the original time limit, can be skewed if map was previously extended.
+ * It is delayed because if we are at g_is_last_round, we need to wait the game restart. 
+ */
 public event_game_commencing()
 {
-    // make sure the reset time is the original time limit
-    // ( can be skewed if map was previously extended )
-    map_restoreOriginalTimeLimit();
     reset_rounds_scores()
+
+    set_task( 10.0 + get_cvar_float( "sv_restartround" ), "map_restoreOriginalTimeLimit" )
+    remove_task( TASKID_SHOW_LAST_ROUND_HUD )
+
+    // reset the round ending, if it is in progress.
+    g_isTimeToChangeLevel = false
+    g_is_last_round       = false
     
     DEBUG_LOGGER( 32, "^n AT: event_game_commencing" )
 }
@@ -4183,7 +4194,7 @@ stock register_dictionary_colored( const filename[] )
     return 1;
 }
 
-stock map_restoreOriginalTimeLimit()
+public map_restoreOriginalTimeLimit()
 {
     DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "map_restoreOriginalTimeLimit( in )", \
             get_cvar_float( "mp_timelimit" ), g_originalTimelimit )
