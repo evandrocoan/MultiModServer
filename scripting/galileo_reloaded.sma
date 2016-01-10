@@ -84,6 +84,7 @@ new Float:test_mp_timelimit
 #define TASKID_START_VOTING_BY_ROUNDS    52691160
 #define TASKID_UNLOCK_VOTING             52691163
 #define TASKID_VOTE_COUNTDOWNPENDINGVOTE 52691164
+#define TASKID_PROCESS_LAST_ROUND        42691173
 #define TASKID_VOTE_HANDLEDISPLAY        52691264
 #define TASKID_VOTE_DISPLAY              52691165
 #define TASKID_VOTE_EXPIRE               52691166
@@ -218,6 +219,7 @@ new g_is_voting_locked
 new g_originalMaxRounds
 new g_originalWinLimit
 new Float:g_originalTimelimit
+new Float:g_original_sv_maxspeed
 
 new g_freezetime_pointer
 new g_winlimit_pointer;
@@ -595,7 +597,8 @@ public round_end()
         {   
             g_is_last_round = false
 
-            set_task( 7.0, "process_last_round" )
+            remove_task( TASKID_SHOW_LAST_ROUND_HUD )
+            set_task( 6.0, "process_last_round" )
         }
         else // when time runs out, end map at the next round end
         {
@@ -611,6 +614,40 @@ public process_last_round()
 {
     if( g_isTimeToChangeLevel )
     {
+        if( get_pcvar_num( cvar_voteExpCountdown ) )
+        {
+            set_task( 1.0, "process_last_round_counting", TASKID_PROCESS_LAST_ROUND, _, _, "a", 10 );
+        }
+        else
+        {
+            intermission_display()
+        }
+    }
+}
+
+public process_last_round_counting()
+{    
+    static countdown = 10;
+    
+    // visual countdown
+    set_hudmessage( 255, 10, 10, -1.0, 0.13, 0, 1.0, 0.94, 0.0, 0.0, -1 );
+    show_hudmessage( 0, "%d %L...", countdown, LANG_PLAYER, "GAL_TIMELEFT" );
+    
+    // audio countdown
+    if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_COUNTDOWN ) )
+    {
+        new word[ 6 ];
+        num_to_word( countdown, word, 5 );
+        
+        client_cmd( 0, "spk ^"fvox/%s^"", word );
+    }
+    
+    // decrement the countdown
+    countdown--;
+    
+    if( countdown == 0 )
+    {
+        countdown = 10;
         intermission_display()
     }
 }
@@ -619,20 +656,33 @@ stock intermission_display( is_map_change_stays = false )
 {
     if( g_isTimeToChangeLevel )
     {
+        new Float:mp_chattime = get_cvar_float( "mp_chattime" )
+
+        if( mp_chattime > 12 )
+        {
+            mp_chattime = 12.0
+        }
+
         g_isTimeToChangeLevel = false;
         
         if( is_map_change_stays )
         {
-            set_task( 5.0, "map_change_stays", TASKID_MAP_CHANGE );
+            set_task( mp_chattime, "map_change_stays", TASKID_MAP_CHANGE );
         }
         else
         {
-            set_task( 5.0, "map_change", TASKID_MAP_CHANGE );
+            set_task( mp_chattime, "map_change", TASKID_MAP_CHANGE );
         }
         
         // freeze the game and show the scoreboard
-        message_begin( MSG_ALL, SVC_INTERMISSION );
-        message_end();
+        g_original_sv_maxspeed = get_cvar_float("sv_maxspeed")
+        set_cvar_float("sv_maxspeed", 0.0)
+        
+        client_cmd( 0, "drop weapon_c4" )
+        client_cmd( 0, "drop" )
+        client_cmd( 0, "drop" )
+        client_cmd( 0, "+showscores" )
+        client_cmd( 0, "speak ^"loading environment on to your computer^"")
     }
 }
 
@@ -654,6 +704,11 @@ stock reset_rounds_scores()
 public plugin_end()
 {
     map_restoreOriginalTimeLimit()
+
+    if( get_cvar_float("sv_maxspeed") == 0 )
+    {
+        set_cvar_float( "sv_maxspeed", g_original_sv_maxspeed )
+    }
 #if IS_DEBUG_ENABLED > 0
     restore_server_cvars_for_test()
     ArrayDestroy( g_tests_idsAndNames )
@@ -4641,7 +4696,7 @@ public test_is_map_extension_allowed4( test_id )
                 + START_VOTEMAP_MIN_TIME - 10 ) / 60 )
     
     vote_manageEnd()
-    
+
     if( !g_is_voting_locked )
     {
         SET_TEST_FAILURE( test_id, "vote_startDirector() does not started!" )
