@@ -99,7 +99,6 @@ new g_colored_players_ids[ 32 ]
 #define SHORT_STRING  64
 
 #define TASKID_REMINDER                  52691153
-#define TASKID_VOTE_MANAGEEND            52691152
 #define TASKID_SHOW_LAST_ROUND_HUD       52691052
 #define TASKID_EMPTYSERVER               98176977
 #define TASKID_START_VOTING_BY_ROUNDS    52691160
@@ -526,7 +525,7 @@ public plugin_cfg()
     }
     
     // setup the main task that schedules the end map voting and allow round finish feature.
-    set_task( 15.0, "vote_manageEnd", TASKID_VOTE_MANAGEEND, _, _, "b" );
+    set_task( 15.0, "vote_manageEnd", _, _, _, "b" );
 
 #if IS_DEBUG_ENABLED > 0
     // delayed because it need to wait the 'server.cfg' run to save its cvars
@@ -610,14 +609,14 @@ public round_end()
             g_is_last_round = false
             
             remove_task( TASKID_SHOW_LAST_ROUND_HUD )
-            set_task( 6.0, "process_last_round" )
+            set_task( 6.0, "process_last_round", TASKID_PROCESS_LAST_ROUND )
         }
         else // when time runs out, end map at the next round end
         {
             g_isTimeToChangeLevel = true
             
             remove_task( TASKID_SHOW_LAST_ROUND_HUD )
-            set_task( 5.0, "configure_last_round_HUD", 1 )
+            set_task( 5.0, "configure_last_round_HUD", TASKID_PROCESS_LAST_ROUND )
         }
     }
 }
@@ -797,11 +796,7 @@ stock reset_rounds_scores()
 public plugin_end()
 {
     map_restoreOriginalTimeLimit()
-    
-    if( get_cvar_float( "sv_maxspeed" ) == 0 )
-    {
-        set_cvar_float( "sv_maxspeed", g_original_sv_maxspeed )
-    }
+
 #if IS_DEBUG_ENABLED > 0
     restore_server_cvars_for_test()
     ArrayDestroy( g_tests_idsAndNames )
@@ -1447,9 +1442,10 @@ public map_loadPrefixList()
 public event_game_commencing()
 {
     reset_rounds_scores()
+    cancel_voting()
     
-    set_task( 10.0 + get_cvar_float( "sv_restartround" ), "map_restoreOriginalTimeLimit" )
     remove_task( TASKID_SHOW_LAST_ROUND_HUD )
+    set_task( 1.0 + get_cvar_float( "sv_restartround" ), "map_restoreOriginalTimeLimit" )
     
     // reset the round ending, if it is in progress.
     g_isTimeToChangeLevel = false
@@ -4333,12 +4329,16 @@ public map_restoreOriginalTimeLimit()
         g_isTimeLimitChanged = false;
     }
     
+    if( get_cvar_float( "sv_maxspeed" ) == 0 )
+    {
+        set_cvar_float( "sv_maxspeed", g_original_sv_maxspeed )
+    }
+    
     DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "map_restoreOriginalTimeLimit( out )", \
             get_pcvar_float( g_timelimit_pointer ), g_originalTimelimit )
 }
 
 // ################################## BELOW HERE ONLY GOES DEBUG/TEST CODE ###################################
-#if IS_DEBUG_ENABLED > 0
 public dbg_fakeVotes()
 {
     if( !( g_voteStatus & VOTE_IS_RUNOFF ) )
@@ -4825,11 +4825,14 @@ stock cancel_voting()
     remove_task( TASKID_UNLOCK_VOTING )
     remove_task( TASKID_VOTE_COUNTDOWNPENDINGVOTE )
     remove_task( TASKID_VOTE_DISPLAY )
+    remove_task( TASKID_DBG_FAKEVOTES )
     remove_task( TASKID_VOTE_HANDLEDISPLAY )
     remove_task( TASKID_VOTE_EXPIRE )
     remove_task( TASKID_DBG_FAKEVOTES )
     remove_task( TASKID_VOTE_STARTDIRECTOR )
     remove_task( TASKID_MAP_CHANGE )
+    remove_task( TASKID_PROCESS_LAST_ROUND )
+    remove_task( TASKID_SHOW_LAST_ROUND_HUD )
     
     g_is_voting_locked = false
     g_voteStatus       = 0
@@ -4863,4 +4866,3 @@ stock debugMesssageLogger( const mode, const text[] = "", { Float, Sql, Result, 
         return;
     }
 }
-#endif
