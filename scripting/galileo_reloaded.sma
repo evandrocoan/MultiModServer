@@ -182,7 +182,7 @@ new g_colored_players_ids[ 32 ]
  * Determines if it is a end of map vote due time limit or max rounds expiration.
  */
 #define IS_FINAL_VOTE \
-    ( get_cvar_float( "mp_timelimit" ) < START_VOTEMAP_MIN_TIME ) \
+    ( get_pcvar_float( g_timelimit_pointer ) < START_VOTEMAP_MIN_TIME ) \
     || ( g_is_maxrounds_vote_map )
 
 
@@ -239,6 +239,7 @@ new Float:g_original_sv_maxspeed
 new g_freezetime_pointer
 new g_winlimit_pointer;
 new g_maxrounds_pointer;
+new g_timelimit_pointer;
 
 new g_total_rounds_played;
 new g_total_terrorists_wins;
@@ -421,6 +422,7 @@ public plugin_init()
     g_maxrounds_pointer  = get_cvar_pointer( "mp_maxrounds" )
     g_winlimit_pointer   = get_cvar_pointer( "mp_winlimit" )
     g_freezetime_pointer = get_cvar_pointer( "mp_freezetime" )
+    g_timelimit_pointer  = get_cvar_pointer( "mp_timelimit" )
 
 #if AMXX_VERSION_NUM < 183
     g_user_msgid = get_user_msgid( "SayText" )
@@ -938,7 +940,7 @@ public vote_manageEnd()
 
 public map_manageEnd()
 {
-    DEBUG_LOGGER( 2, "%32s mp_timelimit: %f", "map_manageEnd(in)", get_cvar_float( "mp_timelimit" ) )
+    DEBUG_LOGGER( 2, "%32s mp_timelimit: %f", "map_manageEnd(in)", get_pcvar_float( g_timelimit_pointer ) )
     
     get_cvar_string( "amx_nextmap", g_nextmap, sizeof( g_nextmap ) - 1 );
     
@@ -1017,7 +1019,7 @@ public map_manageEnd()
     
     configure_last_round_HUD( bool:get_pcvar_num( cvar_endOnRound_msg ) )
     
-    DEBUG_LOGGER( 2, "%32s mp_timelimit: %f", "map_manageEnd(out)", get_cvar_float( "mp_timelimit" ) )
+    DEBUG_LOGGER( 2, "%32s mp_timelimit: %f", "map_manageEnd(out)", get_pcvar_float( g_timelimit_pointer ) )
 }
 
 stock prevent_map_change()
@@ -1967,7 +1969,8 @@ public vote_startDirector( bool:forced )
         // make it known that a vote is in progress
         g_voteStatus |= VOTE_IN_PROGRESS;
         
-        g_is_map_extension_allowed = get_cvar_float( "mp_timelimit" ) < get_pcvar_float( cvar_extendmapMax )
+        g_is_map_extension_allowed =
+            get_pcvar_float( g_timelimit_pointer ) < get_pcvar_float( cvar_extendmapMax )
         
         g_is_voting_locked = true
         set_task( 120.0, "unlock_voting", TASKID_UNLOCK_VOTING );
@@ -3210,12 +3213,12 @@ public vote_expire()
 stock map_extend()
 {
     DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_rtvWait: %f  extendmapStep: %f", "map_extend( in )", \
-            get_cvar_float( "mp_timelimit" ), g_rtvWait, get_pcvar_float( cvar_extendmapStep ) )
+            get_pcvar_float( g_timelimit_pointer ), g_rtvWait, get_pcvar_float( cvar_extendmapStep ) )
     
     // reset the "rtv wait" time, taking into consideration the map extension
     if( g_rtvWait )
     {
-        g_rtvWait = get_cvar_float( "mp_timelimit" ) + g_rtvWait;
+        g_rtvWait = get_pcvar_float( g_timelimit_pointer ) + g_rtvWait;
     }
     
     save_time_limit()
@@ -3237,7 +3240,7 @@ stock map_extend()
             set_cvar_num( "mp_maxrounds", 0 );
             set_cvar_num( "mp_winlimit", get_pcvar_num( g_winlimit_pointer ) + extendmap_step_rounds );
         }
-        set_cvar_float( "mp_timelimit", 0.0 );
+        set_pcvar_float( g_timelimit_pointer, 0.0 );
         
         server_exec()
         g_is_maxrounds_vote_map = false
@@ -3246,7 +3249,7 @@ stock map_extend()
     {
         set_cvar_num( "mp_maxrounds", 0 );
         set_cvar_num( "mp_winlimit", 0 );
-        set_cvar_float( "mp_timelimit", get_cvar_float( "mp_timelimit" )
+        set_pcvar_float( g_timelimit_pointer, get_pcvar_float( g_timelimit_pointer )
                 + get_pcvar_float( cvar_extendmapStep ) );
         
         server_exec();
@@ -3256,7 +3259,7 @@ stock map_extend()
     vote_resetStats();
     
     DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_rtvWait: %f  extendmapStep: %f", "map_extend( out )", \
-            get_cvar_float( "mp_timelimit" ), g_rtvWait, get_pcvar_float( cvar_extendmapStep ) )
+            get_pcvar_float( g_timelimit_pointer ), g_rtvWait, get_pcvar_float( cvar_extendmapStep ) )
 }
 
 stock save_time_limit()
@@ -3265,7 +3268,7 @@ stock save_time_limit()
     {
         g_isTimeLimitChanged = true;
         
-        g_originalTimelimit = get_cvar_float( "mp_timelimit" )
+        g_originalTimelimit = get_pcvar_float( g_timelimit_pointer )
         g_originalMaxRounds = get_pcvar_num( g_maxrounds_pointer )
         g_originalWinLimit  = get_pcvar_num( g_winlimit_pointer )
     }
@@ -3489,9 +3492,9 @@ public vote_handleChoice( player_id, key )
 stock Float:map_getMinutesElapsed()
 {
     DEBUG_LOGGER( 2, "%32s mp_timelimit: %f", "map_getMinutesElapsed( in/out )", \
-            get_cvar_float( "mp_timelimit" ) )
+            get_pcvar_float( g_timelimit_pointer ) )
     
-    return get_cvar_float( "mp_timelimit" ) - ( float( get_timeleft() ) / 60.0 );
+    return get_pcvar_float( g_timelimit_pointer ) - ( float( get_timeleft() ) / 60.0 );
 }
 
 public vote_rock( player_id )
@@ -3879,9 +3882,9 @@ public client_connect( player_id )
 stock srv_handleEmpty()
 {
     DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "srv_handleEmpty(in)", \
-            get_cvar_float( "mp_timelimit" ), g_originalTimelimit )
+            get_pcvar_float( g_timelimit_pointer ), g_originalTimelimit )
     
-    if( g_originalTimelimit != get_cvar_float( "mp_timelimit" ) )
+    if( g_originalTimelimit != get_pcvar_float( g_timelimit_pointer ) )
     {
         // it's possible that the map has been extended at least once. that
         // means that if someone comes into the server, the time limit will
@@ -3900,7 +3903,7 @@ stock srv_handleEmpty()
             g_emptyMapCnt )
     
     DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "srv_handleEmpty(out)", \
-            get_cvar_float( "mp_timelimit" ), g_originalTimelimit )
+            get_pcvar_float( g_timelimit_pointer ), g_originalTimelimit )
 }
 
 /**
@@ -4318,7 +4321,7 @@ stock register_dictionary_colored( const filename[] )
 public map_restoreOriginalTimeLimit()
 {
     DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "map_restoreOriginalTimeLimit( in )", \
-            get_cvar_float( "mp_timelimit" ), g_originalTimelimit )
+            get_pcvar_float( g_timelimit_pointer ), g_originalTimelimit )
     
     if( g_isTimeLimitChanged )
     {
@@ -4331,7 +4334,7 @@ public map_restoreOriginalTimeLimit()
     }
     
     DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "map_restoreOriginalTimeLimit( out )", \
-            get_cvar_float( "mp_timelimit" ), g_originalTimelimit )
+            get_pcvar_float( g_timelimit_pointer ), g_originalTimelimit )
 }
 
 // ################################## BELOW HERE ONLY GOES DEBUG/TEST CODE ###################################
@@ -4714,7 +4717,7 @@ public test_is_map_extension_allowed2( test_id )
     }
     
     set_pcvar_float( cvar_extendmapMax, 10.0 )
-    set_cvar_float( "mp_timelimit", 20.0 )
+    set_pcvar_float( g_timelimit_pointer, 20.0 )
     
     client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED" );
     
@@ -4762,8 +4765,8 @@ public test_is_map_extension_allowed4( test_id )
 {
     new secondsLeft = get_timeleft();
     
-    set_cvar_float( "mp_timelimit", (
-                ( get_cvar_float( "mp_timelimit" ) ) * 60 - secondsLeft
+    set_pcvar_float( g_timelimit_pointer, (
+                ( get_pcvar_float( g_timelimit_pointer ) ) * 60 - secondsLeft
                 + START_VOTEMAP_MIN_TIME - 10 ) / 60 )
     
     vote_manageEnd()
@@ -4784,10 +4787,10 @@ stock save_server_cvasr_for_test()
     g_is_test_changed_cvars = true
     
     test_extendmap_max = get_pcvar_float( cvar_extendmapMax )
-    test_mp_timelimit  = get_cvar_float( "mp_timelimit" )
+    test_mp_timelimit  = get_pcvar_float( g_timelimit_pointer )
     
     DEBUG_LOGGER( 4, "%32s mp_timelimit: %f  test_mp_timelimit: %f   g_originalTimelimit: %f",  \
-            "save_server_cvasr_for_test( out )", get_cvar_float( "mp_timelimit" ), \
+            "save_server_cvasr_for_test( out )", get_pcvar_float( g_timelimit_pointer ), \
             test_mp_timelimit, g_originalTimelimit )
 }
 
@@ -4797,7 +4800,7 @@ stock save_server_cvasr_for_test()
 stock restore_server_cvars_for_test()
 {
     DEBUG_LOGGER( 4, "%32s mp_timelimit: %f  test_mp_timelimit: %f  g_originalTimelimit: %f",  \
-            "restore_server_cvars_for_test( in )", get_cvar_float( "mp_timelimit" ), \
+            "restore_server_cvars_for_test( in )", get_pcvar_float( g_timelimit_pointer ), \
             test_mp_timelimit, g_originalTimelimit )
     
     if( g_is_test_changed_cvars )
@@ -4805,11 +4808,11 @@ stock restore_server_cvars_for_test()
         g_is_test_changed_cvars = false
         
         set_pcvar_float( cvar_extendmapMax, test_extendmap_max )
-        set_cvar_float( "mp_timelimit", test_mp_timelimit )
+        set_pcvar_float( g_timelimit_pointer, test_mp_timelimit )
     }
     
     DEBUG_LOGGER( 4, "%32s mp_timelimit: %f  test_mp_timelimit: %f  g_originalTimelimit: %f",  \
-            "restore_server_cvars_for_test( out )", get_cvar_float( "mp_timelimit" ), \
+            "restore_server_cvars_for_test( out )", get_pcvar_float( g_timelimit_pointer ), \
             test_mp_timelimit, g_originalTimelimit )
 }
 
