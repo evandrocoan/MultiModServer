@@ -732,6 +732,8 @@ public show_last_round_HUD()
     
     if( g_isTimeToChangeLevel )
     {
+    // This is because the Amx Mod X 1.8.2 is not recognizing the player LANG_PLAYER when it is 
+    // formatted before with formatex(...)
     #if AMXX_VERSION_NUM < 183
         get_players( players_ids, players_number, "ch" );
         
@@ -762,7 +764,7 @@ public show_last_round_HUD()
         {
             player_id = players_ids[ current_index ]
             
-            formatex( last_round_message, charsmax( last_round_message ), "%L", LANG_PLAYER,
+            formatex( last_round_message, charsmax( last_round_message ), "%L", player_id,
                     "GAL_CHANGE_TIMEEXPIRED" )
             
             REMOVE_COLOR_TAGS( last_round_message )
@@ -795,6 +797,8 @@ stock reset_rounds_scores()
 
 public plugin_end()
 {
+    DEBUG_LOGGER( 32, "^n AT: plugin_end" )
+    
     map_restoreOriginalTimeLimit()
 
 #if IS_DEBUG_ENABLED > 0
@@ -1441,15 +1445,15 @@ public map_loadPrefixList()
  */
 public event_game_commencing()
 {
-    reset_rounds_scores()
-    cancel_voting()
-    
-    remove_task( TASKID_SHOW_LAST_ROUND_HUD )
-    set_task( 1.0 + get_cvar_float( "sv_restartround" ), "map_restoreOriginalTimeLimit" )
-    
     // reset the round ending, if it is in progress.
     g_isTimeToChangeLevel = false
     g_is_last_round       = false
+    
+    remove_task( TASKID_SHOW_LAST_ROUND_HUD )
+    set_task( 10.0 + get_cvar_float( "sv_restartround" ), "map_restoreOriginalTimeLimit" )
+    
+    reset_rounds_scores()
+    cancel_voting()
     
     DEBUG_LOGGER( 32, "^n AT: event_game_commencing" )
 }
@@ -1557,7 +1561,7 @@ stock nomination_attempt( player_id, nomination[] ) // ( playerName[], &phraseId
     strtolower( nomination );
     
     // assume there'll be more than one match ( because we're lazy ) and starting building the match menu
-    //menu_destroy( g_nominationMatchesMenu[player_id] );
+    // menu_destroy( g_nominationMatchesMenu[player_id] );
     g_nominationMatchesMenu[ player_id ] = menu_create( "Nominate Map", "nomination_handleMatchChoice" );
     
     // gather all maps that match the nomination
@@ -3624,9 +3628,6 @@ public rtv_remind( param )
 // change to the map
 public map_change()
 {
-    // restore the map's timelimit, just in case we had changed it
-    map_restoreOriginalTimeLimit();
-    
     // grab the name of the map we're changing to
     new map[ MAX_MAPNAME_LEN + 1 ];
     get_cvar_string( "amx_nextmap", map, sizeof( map ) - 1 );
@@ -3854,10 +3855,10 @@ public client_disconnected( player_id )
         }
     }
     
-    new dbg_playerCnt = get_realplayersnum() - 1;
+    new dbg_playerCnt = get_realplayersnum();
     DEBUG_LOGGER( 2, "%32s dbg_playerCnt:%i", "client_disconnect( )", dbg_playerCnt )
     
-    if( dbg_playerCnt <= 0 )
+    if( dbg_playerCnt == 0 )
     {
         srv_handleEmpty();
     }
