@@ -28,21 +28,35 @@
 
 #include <amxmodx>
 #include <amxmisc>
+#include <fun>
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
- * at the end of this file, for more information. Default value: 0  - which is disabled.
+ * at the end of this file and the variable 'g_debug_level'  for more information.
+ * Default value: 0  - which is disabled.
  */
 #define IS_DEBUG_ENABLED 1
 
 #if IS_DEBUG_ENABLED > 0
     #define DEBUG_LOGGER(%1) debugMesssageLogger( %1 )
 
+/**
+ * ( 0 ) 0 disabled all debug.
+ * ( 1 ) 1 displays basic debug messages.
+ * ( 10 ) 2 displays players disconnect, total number, multiple time limits changes and restores.
+ * ( 100 ) 4 displays maps events, choices, votes, nominations, and the calls to 'map_populateList'.
+ * ( ... ) 8 displays vote_loadChoices( ) and actions at vote_startDirector.
+ * ( ... ) 16 displays messages related to RunOff voting.
+ * ( ... ) 32 displays messages related to the rounds end map voting.
+ * ( ... ) 64 displays messages related 'client_print_color_internal'.
+ * ( ... ) 128 execute the test units and print their out put results.
+ * ( 11111111 ) 255 displays all debug logs levels at server console.
+ */
+new g_debug_level
 
 /**
  * Test unit variables related to debug level 1, displays basic debug messages.
  */
-new g_debug_level
 new g_max_delay_result
 new g_totalSuccessfulTests
 new g_totalFailureTests
@@ -54,10 +68,10 @@ new bool:g_is_test_changed_cvars
 
 new Float:test_extendmap_max
 new Float:test_mp_timelimit
+
 #else
     #define DEBUG_LOGGER(%1) //
 #endif
-
 
 /**
  * Contains all unit tests to execute.
@@ -69,9 +83,16 @@ new Float:test_mp_timelimit
         test_gal_in_empty_cycle2(); \
         test_gal_in_empty_cycle3(); \
         test_gal_in_empty_cycle4(); \
-        test_is_map_extension_allowed1(); \
+        test_is_map_extension_allowed1( true ); \
     }
 
+#if AMXX_VERSION_NUM < 183
+new g_user_msgid
+new g_colored_player_id
+new g_colored_players_number
+new g_colored_current_index
+new g_colored_players_ids[ 32 ]
+#endif
 
 #define LONG_STRING   256
 #define COLOR_MESSAGE 192
@@ -142,12 +163,10 @@ new Float:test_mp_timelimit
 #define START_VOTEMAP_MIN_TIME 151
 #define START_VOTEMAP_MAX_TIME 129
 
-
 /**
  * The rounds number before the mp_maxrounds/mp_winlimit to be reached to start the map voting.
  */
 #define VOTE_START_ROUNDS 4
-
 
 /**
  * Start a map voting delayed after the mp_maxrounds or mp_winlimit minimum to be reached.
@@ -158,7 +177,6 @@ new Float:test_mp_timelimit
         set_task( get_pcvar_num( g_freezetime_pointer ) + 10.0, \
                 "start_voting_by_rounds", TASKID_START_VOTING_BY_ROUNDS ); \
     }
-
 
 /**
  * Determines if it is a end of map vote due time limit or max rounds expiration.
@@ -195,7 +213,6 @@ new Float:test_mp_timelimit
         message_end(); \
     }
 
-
 /**
  * Call the internal function to perform its task and stop the current test execution to avoid
  * double failure at the test control system.
@@ -206,12 +223,10 @@ new Float:test_mp_timelimit
         return; \
     }
 
-
 /**
  * Lock the voting to fight concurrency problem between mp_maxrounds, mp_winlimit and mp_timelimit.
  */
 new g_is_voting_locked
-
 
 /**
  * Variables related to debug level 32: displays messages related to the rounds end map voting
@@ -236,7 +251,6 @@ new g_is_last_round
 new g_isTimeToRestart
 new g_isTimeLimitChanged
 new g_is_map_extension_allowed
-
 
 /**
  * Server cvars
@@ -268,6 +282,7 @@ new cvar_nomPrefixes;
 new cvar_nomQtyUsed
 new cvar_nomPlayerAllowance;
 new cvar_voteExpCountdown
+new cvar_endMapCountdown
 new cvar_voteMapChoiceCnt
 new cvar_voteAnnounceChoice
 new cvar_voteUniquePrefixes;
@@ -279,11 +294,10 @@ new cvar_voteStatus
 new cvar_voteStatusType;
 new cvar_soundsMute;
 
-
 /**
  * Various Artists
  */
-new bool:g_is_supported_color_chat
+new bool:g_is_color_chat_supported
 new bool:g_is_to_cancel_end_vote
 new bool:g_isUsingEmptyCycle
 new g_emptyMapCnt
@@ -294,14 +308,6 @@ new Array: g_emptyCycleMap
 new Array:g_fillerMap;
 new Float:g_rtvWait;
 new g_rockedVoteCnt;
-
-#if AMXX_VERSION_NUM < 183
-new g_user_msgid
-new g_colored_player_id
-new g_colored_players_number
-new g_colored_current_index
-new print_colored_players_ids[ 32 ]
-#endif
 
 new MENU_CHOOSEMAP[] = "gal_menuChooseMap";
 new DIR_CONFIGS[ 128 ];
@@ -387,6 +393,7 @@ public plugin_init()
     cvar_nomQtyUsed             = register_cvar( "gal_nom_qtyused", "0" );
     cvar_voteDuration           = register_cvar( "gal_vote_duration", "15" );
     cvar_voteExpCountdown       = register_cvar( "gal_vote_expirationcountdown", "1" );
+    cvar_endMapCountdown        = register_cvar( "gal_endonround_countdown", "1" );
     cvar_voteMapChoiceCnt       = register_cvar( "gal_vote_mapchoices", "5" );
     cvar_voteAnnounceChoice     = register_cvar( "gal_vote_announcechoice", "1" );
     cvar_voteStatus             = register_cvar( "gal_vote_showstatus", "1" );
@@ -449,7 +456,7 @@ public plugin_cfg()
     server_cmd( "exec %s/galileo_reloaded.cfg", DIR_CONFIGS );
     server_exec();
     
-    g_is_supported_color_chat = ( is_running( "czero" )
+    g_is_color_chat_supported = ( is_running( "czero" )
                                   || is_running( "cstrike" ) )
     
     if( colored_menus() )
@@ -521,7 +528,10 @@ public plugin_cfg()
 
 #if IS_DEBUG_ENABLED > 0
     // delayed because it need to wait the 'server.cfg' run to save its cvars
-    set_task( 10.0, "runTests" )
+    if( g_debug_level & 128 )
+    {
+        set_task( 10.0, "runTests" )
+    }
 #endif
 }
 
@@ -590,20 +600,20 @@ public round_end()
     DEBUG_LOGGER( 32, "Round_End:  maxrounds_number = %d, \
             g_total_rounds_played = %d, current_rounds_trigger = %d", \
             maxrounds_number, g_total_rounds_played, current_rounds_trigger )
-
+    
     if( g_is_last_round )
     {
         if( g_isTimeToChangeLevel ) // when time runs out, end map at the current round end
-        {   
+        {
             g_is_last_round = false
-
+            
             remove_task( TASKID_SHOW_LAST_ROUND_HUD )
             set_task( 6.0, "process_last_round" )
         }
         else // when time runs out, end map at the next round end
         {
             g_isTimeToChangeLevel = true
-
+            
             remove_task( TASKID_SHOW_LAST_ROUND_HUD )
             set_task( 5.0, "configure_last_round_HUD", 1 )
         }
@@ -614,9 +624,9 @@ public process_last_round()
 {
     if( g_isTimeToChangeLevel )
     {
-        if( get_pcvar_num( cvar_voteExpCountdown ) )
+        if( get_pcvar_num( cvar_endMapCountdown ) )
         {
-            set_task( 1.0, "process_last_round_counting", TASKID_PROCESS_LAST_ROUND, _, _, "a", 10 );
+            set_task( 1.0, "process_last_round_counting", TASKID_PROCESS_LAST_ROUND, _, _, "a", 5 );
         }
         else
         {
@@ -626,8 +636,8 @@ public process_last_round()
 }
 
 public process_last_round_counting()
-{    
-    static countdown = 10;
+{
+    static countdown = 5;
     
     // visual countdown
     set_hudmessage( 255, 10, 10, -1.0, 0.13, 0, 1.0, 0.94, 0.0, 0.0, -1 );
@@ -647,7 +657,7 @@ public process_last_round_counting()
     
     if( countdown == 0 )
     {
-        countdown = 10;
+        countdown = 5;
         intermission_display()
     }
 }
@@ -656,33 +666,114 @@ stock intermission_display( is_map_change_stays = false )
 {
     if( g_isTimeToChangeLevel )
     {
-        new Float:mp_chattime = get_cvar_float( "mp_chattime" )
-
-        if( mp_chattime > 12 )
+        if( get_pcvar_num( cvar_endMapCountdown ) )
         {
-            mp_chattime = 12.0
-        }
-
-        g_isTimeToChangeLevel = false;
-        
-        if( is_map_change_stays )
-        {
-            set_task( mp_chattime, "map_change_stays", TASKID_MAP_CHANGE );
+            new Float:mp_chattime = get_cvar_float( "mp_chattime" )
+            
+            if( mp_chattime > 12 )
+            {
+                mp_chattime = 12.0
+            }
+            
+            g_isTimeToChangeLevel = false;
+            
+            if( is_map_change_stays )
+            {
+                set_task( mp_chattime, "map_change_stays", TASKID_MAP_CHANGE );
+            }
+            else
+            {
+                set_task( mp_chattime, "map_change", TASKID_MAP_CHANGE );
+            }
+            
+            // freeze the game and show the scoreboard
+            g_original_sv_maxspeed = get_cvar_float( "sv_maxspeed" )
+            set_cvar_float( "sv_maxspeed", 0.0 )
+            
+            client_cmd( 0, "drop weapon_c4" )
+            client_cmd( 0, "drop" )
+            client_cmd( 0, "drop" )
+            
+            client_cmd( 0, "flash" )
+            client_cmd( 0, "sgren" )
+            client_cmd( 0, "hegren" )
+            
+            client_cmd( 0, "+showscores" )
+            client_cmd( 0, "speak ^"loading environment on to your computer^"" )
         }
         else
         {
-            set_task( mp_chattime, "map_change", TASKID_MAP_CHANGE );
+            // freeze the game and show the scoreboard
+            message_begin( MSG_ALL, SVC_INTERMISSION );
+            message_end();
         }
+    }
+}
+
+public configure_last_round_HUD( bool:is_to_show )
+{
+    if( is_to_show )
+    {
+        set_task( 1.0, "show_last_round_HUD", TASKID_SHOW_LAST_ROUND_HUD, _, _, "b" )
+    }
+}
+
+public show_last_round_HUD()
+{
+    set_hudmessage( 255, 255, 255, 0.15, 0.15, 0, 0.0, 1.0, 0.1, 0.1, 1 )
+    
+    new last_round_message[ COLOR_MESSAGE ]
+    
+    static player_id
+    static players_number
+    static current_index
+    static players_ids[ 32 ]
+    
+    if( g_isTimeToChangeLevel )
+    {
+    #if AMXX_VERSION_NUM < 183
+        get_players( players_ids, players_number, "ch" );
         
-        // freeze the game and show the scoreboard
-        g_original_sv_maxspeed = get_cvar_float("sv_maxspeed")
-        set_cvar_float("sv_maxspeed", 0.0)
+        for( current_index = 0; current_index < players_number; current_index++ )
+        {
+            player_id = players_ids[ current_index ]
+            
+            formatex( last_round_message, charsmax( last_round_message ), "%L ^n%L",
+                    player_id, "GAL_CHANGE_NEXTROUND",  player_id, "GAL_NEXTMAP", g_nextmap )
+            
+            REMOVE_COLOR_TAGS( last_round_message )
+            show_hudmessage( player_id, last_round_message )
+        }
+    #else
+        formatex( last_round_message, charsmax( last_round_message ), "%L ^n%L",
+                LANG_PLAYER, "GAL_CHANGE_NEXTROUND",  LANG_PLAYER, "GAL_NEXTMAP", g_nextmap )
         
-        client_cmd( 0, "drop weapon_c4" )
-        client_cmd( 0, "drop" )
-        client_cmd( 0, "drop" )
-        client_cmd( 0, "+showscores" )
-        client_cmd( 0, "speak ^"loading environment on to your computer^"")
+        REMOVE_COLOR_TAGS( last_round_message )
+        show_hudmessage( 0, last_round_message )
+    #endif
+    }
+    else
+    {
+    #if AMXX_VERSION_NUM < 183
+        get_players( players_ids, players_number, "ch" );
+        
+        for( current_index = 0; current_index < players_number; current_index++ )
+        {
+            player_id = players_ids[ current_index ]
+            
+            formatex( last_round_message, charsmax( last_round_message ), "%L", LANG_PLAYER,
+                    "GAL_CHANGE_TIMEEXPIRED" )
+            
+            REMOVE_COLOR_TAGS( last_round_message )
+            show_hudmessage( player_id, last_round_message )
+        }
+    #else
+        formatex( last_round_message, charsmax( last_round_message ), "%L", LANG_PLAYER,
+                "GAL_CHANGE_TIMEEXPIRED" )
+        
+        REMOVE_COLOR_TAGS( last_round_message )
+        show_hudmessage( 0, last_round_message )
+    #endif
     }
 }
 
@@ -704,8 +795,8 @@ stock reset_rounds_scores()
 public plugin_end()
 {
     map_restoreOriginalTimeLimit()
-
-    if( get_cvar_float("sv_maxspeed") == 0 )
+    
+    if( get_cvar_float( "sv_maxspeed" ) == 0 )
     {
         set_cvar_float( "sv_maxspeed", g_original_sv_maxspeed )
     }
@@ -857,12 +948,12 @@ public map_manageEnd()
         g_isTimeToChangeLevel = true;
     
     #if AMXX_VERSION_NUM < 183
-        get_players( print_colored_players_ids, g_colored_players_number, "ch" );
+        get_players( g_colored_players_ids, g_colored_players_number, "ch" );
         
         for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
              g_colored_current_index++ )
         {
-            g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+            g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
             
             client_print_color_internal( g_colored_player_id, "^1%L %L %L", g_colored_player_id,
                     "GAL_CHANGE_TIMEEXPIRED", g_colored_player_id, "GAL_CHANGE_NEXTROUND",
@@ -886,12 +977,12 @@ public map_manageEnd()
             g_isTimeToChangeLevel = true;
         
         #if AMXX_VERSION_NUM < 183
-            get_players( print_colored_players_ids, g_colored_players_number, "ch" );
+            get_players( g_colored_players_ids, g_colored_players_number, "ch" );
             
             for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
                  g_colored_current_index++ )
             {
-                g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+                g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
                 
                 client_print_color_internal( g_colored_player_id, "^1%L %L %L", g_colored_player_id,
                         "GAL_CHANGE_TIMEEXPIRED", g_colored_player_id, "GAL_CHANGE_NEXTROUND",
@@ -905,12 +996,12 @@ public map_manageEnd()
         else
         {
         #if AMXX_VERSION_NUM < 183
-            get_players( print_colored_players_ids, g_colored_players_number, "ch" );
+            get_players( g_colored_players_ids, g_colored_players_number, "ch" );
             
             for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
                  g_colored_current_index++ )
             {
-                g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+                g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
                 
                 client_print_color_internal( g_colored_player_id, "^1%L %L", g_colored_player_id,
                         "GAL_CHANGE_TIMEEXPIRED", g_colored_player_id, "GAL_NEXTMAP", g_nextmap );
@@ -927,29 +1018,6 @@ public map_manageEnd()
     configure_last_round_HUD( bool:get_pcvar_num( cvar_endOnRound_msg ) )
     
     DEBUG_LOGGER( 2, "%32s mp_timelimit: %f", "map_manageEnd(out)", get_cvar_float( "mp_timelimit" ) )
-}
-
-public configure_last_round_HUD( bool:is_to_show )
-{
-    if( is_to_show )
-    {
-        set_task( 1.0, "show_last_round_HUD", TASKID_SHOW_LAST_ROUND_HUD, _, _, "b" )
-    }
-}
-
-public show_last_round_HUD()
-{
-    set_hudmessage( 255, 255, 255, 0.15, 0.15, 0, 0.0, 1.0, 0.1, 0.1, 1 )
-    
-    if( g_isTimeToChangeLevel )
-    {
-        show_hudmessage( 0, "%L ^n%L", LANG_PLAYER, "GAL_CHANGE_NEXTROUND",
-                LANG_PLAYER, "GAL_NEXTMAP", g_nextmap )
-    }
-    else
-    {
-        show_hudmessage( 0, "%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED" )
-    }
 }
 
 stock prevent_map_change()
@@ -1046,12 +1114,12 @@ public cmd_listrecent( player_id )
                 msgIdx += format( msg[ msgIdx ], sizeof( msg ) - 1 - msgIdx, ", %s", g_recentMap[ idx ] );
             }
         #if AMXX_VERSION_NUM < 183
-            get_players( print_colored_players_ids, g_colored_players_number, "ch" );
+            get_players( g_colored_players_ids, g_colored_players_number, "ch" );
             
             for( new g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
                  g_colored_current_index++ )
             {
-                g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+                g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
                 
                 client_print_color_internal( g_colored_player_id, "^1%L: %s", g_colored_player_id,
                         "GAL_MAP_RECENTMAPS", msg[ 2 ] );
@@ -1065,12 +1133,12 @@ public cmd_listrecent( player_id )
             for( new idx = 0; idx < g_cntRecentMap; ++idx )
             {
             #if AMXX_VERSION_NUM < 183
-                get_players( print_colored_players_ids, g_colored_players_number, "ch" );
+                get_players( g_colored_players_ids, g_colored_players_number, "ch" );
                 
                 for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
                      g_colored_current_index++ )
                 {
-                    g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+                    g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
                     
                     client_print_color_internal( g_colored_player_id, "^1%L ( %i ): %s", g_colored_player_id,
                             "GAL_MAP_RECENTMAP", idx + 1, g_recentMap[ idx ] );
@@ -1372,15 +1440,15 @@ public map_loadPrefixList()
 
 /**
  * Make sure the reset time is the original time limit, can be skewed if map was previously extended.
- * It is delayed because if we are at g_is_last_round, we need to wait the game restart. 
+ * It is delayed because if we are at g_is_last_round, we need to wait the game restart.
  */
 public event_game_commencing()
 {
     reset_rounds_scores()
-
+    
     set_task( 10.0 + get_cvar_float( "sv_restartround" ), "map_restoreOriginalTimeLimit" )
     remove_task( TASKID_SHOW_LAST_ROUND_HUD )
-
+    
     // reset the round ending, if it is in progress.
     g_isTimeToChangeLevel = false
     g_is_last_round       = false
@@ -1800,12 +1868,12 @@ public nomination_list( player_id )
                 if( ++mapCnt == 4 )     // list 4 maps per chat line
                 {
                 #if AMXX_VERSION_NUM < 183
-                    get_players( print_colored_players_ids, g_colored_players_number, "ch" );
+                    get_players( g_colored_players_ids, g_colored_players_number, "ch" );
                     
                     for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
                          g_colored_current_index++ )
                     {
-                        g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+                        g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
                         
                         client_print_color_internal( g_colored_player_id, "^1%L: %s", g_colored_player_id,
                                 "GAL_NOMINATIONS", msg[ 2 ] );
@@ -1824,12 +1892,12 @@ public nomination_list( player_id )
     if( msg[ 0 ] )
     {
     #if AMXX_VERSION_NUM < 183
-        get_players( print_colored_players_ids, g_colored_players_number, "ch" );
+        get_players( g_colored_players_ids, g_colored_players_number, "ch" );
         
         for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
              g_colored_current_index++ )
         {
-            g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+            g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
             
             client_print_color_internal( g_colored_player_id, "^1%L: %s", g_colored_player_id,
                     "GAL_NOMINATIONS", msg[ 2 ] );
@@ -1841,12 +1909,12 @@ public nomination_list( player_id )
     else
     {
     #if AMXX_VERSION_NUM < 183
-        get_players( print_colored_players_ids, g_colored_players_number, "ch" );
+        get_players( g_colored_players_ids, g_colored_players_number, "ch" );
         
         for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
              g_colored_current_index++ )
         {
-            g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+            g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
             
             client_print_color_internal( g_colored_player_id, "^1%L: %L", g_colored_player_id,
                     "GAL_NOMINATIONS", g_colored_player_id, "NONE" );
@@ -1933,13 +2001,13 @@ public vote_startDirector( bool:forced )
     {
         // alphabetize the maps
         SortCustom2D( g_mapsVoteMenuNames, choicesLoaded, "sort_stringsi" );
-
-#if IS_DEBUG_ENABLED > 0
+    
+    #if IS_DEBUG_ENABLED > 0
         for( new dbgChoice = 0; dbgChoice < choicesLoaded; dbgChoice++ )
         {
             DEBUG_LOGGER( 4, "      %i. %s", dbgChoice + 1, g_mapsVoteMenuNames[ dbgChoice ] )
         }
-#endif
+    #endif
         
         // mark the players who are in this vote for use later
         new player[ 32 ], playerCnt;
@@ -1981,12 +2049,12 @@ public vote_startDirector( bool:forced )
     else
     {
     #if AMXX_VERSION_NUM < 183
-        get_players( print_colored_players_ids, g_colored_players_number, "ch" );
+        get_players( g_colored_players_ids, g_colored_players_number, "ch" );
         
         for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
              g_colored_current_index++ )
         {
-            g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+            g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
             
             client_print_color_internal( g_colored_player_id, "^1%L",
                     g_colored_player_id, "GAL_VOTE_NOMAPS" );
@@ -1995,11 +2063,9 @@ public vote_startDirector( bool:forced )
         client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_VOTE_NOMAPS" );
     #endif
     }
-
-#if IS_DEBUG_ENABLED > 0
+    
     DEBUG_LOGGER( 4, "" )
     DEBUG_LOGGER( 4, "   [PLAYER CHOICES]" )
-#endif
 }
 
 public vote_countdownPendingVote()
@@ -2713,12 +2779,12 @@ public vote_expire()
             {
                 // announce runoff voting requirement
             #if AMXX_VERSION_NUM < 183
-                get_players( print_colored_players_ids, g_colored_players_number, "ch" );
+                get_players( g_colored_players_ids, g_colored_players_number, "ch" );
                 
                 for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
                      g_colored_current_index++ )
                 {
-                    g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+                    g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
                     
                     client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
                             "GAL_RUNOFF_REQUIRED" );
@@ -2806,12 +2872,12 @@ public vote_expire()
                             g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 1 ] ] )
                 
                 #if AMXX_VERSION_NUM < 183
-                    get_players( print_colored_players_ids, g_colored_players_number, "ch" );
+                    get_players( g_colored_players_ids, g_colored_players_number, "ch" );
                     
                     for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
                          g_colored_current_index++ )
                     {
-                        g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+                        g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
                         
                         client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
                                 "GAL_RESULT_TIED1", numberOfMapsAtFirstPosition );
@@ -2902,12 +2968,12 @@ public vote_expire()
                             g_mapsVoteMenuNames[ g_arrayOfRunOffChoices[ 1 ] ] )
                 
                 #if AMXX_VERSION_NUM < 183
-                    get_players( print_colored_players_ids, g_colored_players_number, "ch" );
+                    get_players( g_colored_players_ids, g_colored_players_number, "ch" );
                     
                     for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
                          g_colored_current_index++ )
                     {
-                        g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+                        g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
                         
                         client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
                                 "GAL_RESULT_TIED2", numberOfMapsAtSecondPosition );
@@ -2933,14 +2999,14 @@ public vote_expire()
             winnerVoteMapIndex = firstPlaceChoices[ random_num( 0, numberOfMapsAtFirstPosition - 1 ) ];
         
         #if AMXX_VERSION_NUM < 183
-            get_players( print_colored_players_ids, g_colored_players_number, "ch" );
+            get_players( g_colored_players_ids, g_colored_players_number, "ch" );
             
             for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
                  g_colored_current_index++ )
             {
-                g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+                g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
                 
-                g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+                g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
                 
                 client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
                         "GAL_WINNER_TIED", numberOfMapsAtFirstPosition );
@@ -2963,12 +3029,12 @@ public vote_expire()
             {
                 // "stay here" won
             #if AMXX_VERSION_NUM < 183
-                get_players( print_colored_players_ids, g_colored_players_number, "ch" );
+                get_players( g_colored_players_ids, g_colored_players_number, "ch" );
                 
                 for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
                      g_colored_current_index++ )
                 {
-                    g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+                    g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
                     
                     client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
                             "GAL_WINNER_STAY" );
@@ -2991,12 +3057,12 @@ public vote_expire()
                     
                     // "stay here" won
                     #if AMXX_VERSION_NUM < 183
-                    get_players( print_colored_players_ids, g_colored_players_number, "ch" );
+                    get_players( g_colored_players_ids, g_colored_players_number, "ch" );
                     
                     for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
                          g_colored_current_index++ )
                     {
-                        g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+                        g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
                         
                         client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
                                 "GAL_WINNER_STAY" );
@@ -3018,12 +3084,12 @@ public vote_expire()
                         g_isTimeToChangeLevel = false;
                     
                     #if AMXX_VERSION_NUM < 183
-                        get_players( print_colored_players_ids, g_colored_players_number, "ch" );
+                        get_players( g_colored_players_ids, g_colored_players_number, "ch" );
                         
                         for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
                              g_colored_current_index++ )
                         {
-                            g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+                            g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
                             
                             client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
                                     "GAL_WINNER_STAY" );
@@ -3038,12 +3104,12 @@ public vote_expire()
                         if( g_is_maxrounds_vote_map )
                         {
                         #if AMXX_VERSION_NUM < 183
-                            get_players( print_colored_players_ids, g_colored_players_number, "ch" );
+                            get_players( g_colored_players_ids, g_colored_players_number, "ch" );
                             
                             for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
                                  g_colored_current_index++ )
                             {
-                                g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+                                g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
                                 
                                 client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
                                         "GAL_WINNER_EXTEND_ROUND", get_pcvar_num( cvar_extendmapStepRounds ) );
@@ -3056,12 +3122,12 @@ public vote_expire()
                         else
                         {
                         #if AMXX_VERSION_NUM < 183
-                            get_players( print_colored_players_ids, g_colored_players_number, "ch" );
+                            get_players( g_colored_players_ids, g_colored_players_number, "ch" );
                             
                             for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
                                  g_colored_current_index++ )
                             {
-                                g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+                                g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
                                 
                                 client_print_color_internal( g_colored_player_id, "^1%L",
                                         g_colored_player_id, "GAL_WINNER_EXTEND",
@@ -3084,12 +3150,12 @@ public vote_expire()
             server_exec();
         
         #if AMXX_VERSION_NUM < 183
-            get_players( print_colored_players_ids, g_colored_players_number, "ch" );
+            get_players( g_colored_players_ids, g_colored_players_number, "ch" );
             
             for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
                  g_colored_current_index++ )
             {
-                g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+                g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
                 
                 client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id, "GAL_NEXTMAP",
                         g_mapsVoteMenuNames[ winnerVoteMapIndex ] );
@@ -3111,12 +3177,12 @@ public vote_expire()
         get_cvar_string( "amx_nextmap", initialNextMap, sizeof( initialNextMap ) - 1 );
     
     #if AMXX_VERSION_NUM < 183
-        get_players( print_colored_players_ids, g_colored_players_number, "ch" );
+        get_players( g_colored_players_ids, g_colored_players_number, "ch" );
         
         for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
              g_colored_current_index++ )
         {
-            g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+            g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
             
             client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
                     "GAL_WINNER_RANDOM", initialNextMap );
@@ -3299,12 +3365,12 @@ public vote_handleChoice( player_id, key )
             if( get_pcvar_num( cvar_voteAnnounceChoice ) )
             {
             #if AMXX_VERSION_NUM < 183
-                get_players( print_colored_players_ids, g_colored_players_number, "ch" );
+                get_players( g_colored_players_ids, g_colored_players_number, "ch" );
                 
                 for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
                      g_colored_current_index++ )
                 {
-                    g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+                    g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
                     
                     client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
                             "GAL_CHOICE_NONE_ALL", name );
@@ -3334,12 +3400,12 @@ public vote_handleChoice( player_id, key )
                     if( get_pcvar_num( cvar_voteAnnounceChoice ) )
                     {
                     #if AMXX_VERSION_NUM < 183
-                        get_players( print_colored_players_ids, g_colored_players_number, "ch" );
+                        get_players( g_colored_players_ids, g_colored_players_number, "ch" );
                         
                         for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
                              g_colored_current_index++ )
                         {
-                            g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+                            g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
                             
                             client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
                                     "GAL_CHOICE_EXTEND_ALL", name );
@@ -3361,12 +3427,12 @@ public vote_handleChoice( player_id, key )
                 if( get_pcvar_num( cvar_voteAnnounceChoice ) )
                 {
                 #if AMXX_VERSION_NUM < 183
-                    get_players( print_colored_players_ids, g_colored_players_number, "ch" );
+                    get_players( g_colored_players_ids, g_colored_players_number, "ch" );
                     
                     for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
                          g_colored_current_index++ )
                     {
-                        g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+                        g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
                         
                         client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
                                 "GAL_CHOICE_MAP_ALL", name, g_mapsVoteMenuNames[ key ] );
@@ -3500,12 +3566,12 @@ public vote_rock( player_id )
     {
         // announce that the vote has been rocked
     #if AMXX_VERSION_NUM < 183
-        get_players( print_colored_players_ids, g_colored_players_number, "ch" );
+        get_players( g_colored_players_ids, g_colored_players_number, "ch" );
         
         for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
              g_colored_current_index++ )
         {
-            g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+            g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
             
             client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
                     "GAL_ROCK_ENOUGH" );
@@ -3934,12 +4000,12 @@ public srv_announceEarlyVote( player_id )
 stock nomination_announceCancellation( nominations[] )
 {
 #if AMXX_VERSION_NUM < 183
-    get_players( print_colored_players_ids, g_colored_players_number, "ch" );
+    get_players( g_colored_players_ids, g_colored_players_number, "ch" );
     
     for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
          g_colored_current_index++ )
     {
-        g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+        g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
         
         client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
                 "GAL_CANCEL_SUCCESS", nominations );
@@ -3967,12 +4033,12 @@ stock map_announceNomination( player_id, map[] )
     get_user_name( player_id, name, sizeof( name ) - 1 );
 
 #if AMXX_VERSION_NUM < 183
-    get_players( print_colored_players_ids, g_colored_players_number, "ch" );
+    get_players( g_colored_players_ids, g_colored_players_number, "ch" );
     
     for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
          g_colored_current_index++ )
     {
-        g_colored_player_id = print_colored_players_ids[ g_colored_current_index ]
+        g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
         
         client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id, "GAL_NOM_SUCCESS",
                 name, map );
@@ -4070,7 +4136,7 @@ stock client_print_color_internal( player_id, message[], any: ... )
 {
     new formated_message[ COLOR_MESSAGE ]
     
-    if( g_is_supported_color_chat )
+    if( g_is_color_chat_supported )
     {
 #if AMXX_VERSION_NUM < 183
         if( player_id )
@@ -4302,18 +4368,18 @@ public runTests()
 {
     new test_name[ SHORT_STRING ]
     
-    DEBUG_LOGGER( 1, "^n^n    Executing the 'Galileo Reloaded' Tests: ^n" )
+    DEBUG_LOGGER( 128, "^n^n    Executing the 'Galileo Reloaded' Tests: ^n" )
     
     save_server_cvasr_for_test()
     
     ALL_TESTS_TO_EXECUTE
     
-    DEBUG_LOGGER( 1, "^n    %d tests succeed.^n    %d tests failed.", g_totalSuccessfulTests, \
+    DEBUG_LOGGER( 128, "^n    %d tests succeed.^n    %d tests failed.", g_totalSuccessfulTests, \
             g_totalFailureTests )
     
     if( ArraySize( g_tests_failure_ids ) )
     {
-        DEBUG_LOGGER( 1, "^n    The following tests failed:" )
+        DEBUG_LOGGER( 128, "^n    The following tests failed:" )
     }
     
     for( new failure_index = 0; failure_index < ArraySize( g_tests_failure_ids ); failure_index++ )
@@ -4321,12 +4387,12 @@ public runTests()
         ArrayGetString( g_tests_idsAndNames, ArrayGetCell( g_tests_failure_ids, failure_index ) - 1,
                 test_name, charsmax( test_name ) )
         
-        DEBUG_LOGGER( 1, "       %s", test_name )
+        DEBUG_LOGGER( 128, "       %s", test_name )
     }
     
     if( g_max_delay_result )
     {
-        DEBUG_LOGGER( 1, "^n    The following tests are waiting until %d seconds to finish:", \
+        DEBUG_LOGGER( 128, "^n    The following tests are waiting until %d seconds to finish:", \
                 g_max_delay_result )
     }
     
@@ -4335,18 +4401,18 @@ public runTests()
         ArrayGetString( g_tests_idsAndNames, ArrayGetCell( g_tests_delayed_ids, delayed_index ) - 1,
                 test_name, charsmax( test_name ) )
         
-        DEBUG_LOGGER( 1, "       %s", test_name )
+        DEBUG_LOGGER( 128, "       %s", test_name )
     }
     
     if( g_max_delay_result )
     {
         set_task( g_max_delay_result + 1.0, "show_delayed_results" )
-        DEBUG_LOGGER( 1, "^n    Finished Tests First Step Execution.^n^n" )
+        DEBUG_LOGGER( 128, "^n    Finished Tests First Step Execution.^n^n" )
     }
     else
     {
         restore_server_cvars_for_test()
-        DEBUG_LOGGER( 1, "^n    Finished 'Galileo Reloaded' Tests Execution.^n^n" )
+        DEBUG_LOGGER( 128, "^n    Finished 'Galileo Reloaded' Tests Execution.^n^n" )
     }
 }
 
@@ -4358,14 +4424,14 @@ public show_delayed_results()
 {
     new test_name[ SHORT_STRING ]
     
-    DEBUG_LOGGER( 1, "^n^n    Showing 'Galileo Reloaded' Tests Delayed Results..." )
+    DEBUG_LOGGER( 128, "^n^n    Showing 'Galileo Reloaded' Tests Delayed Results..." )
     
-    DEBUG_LOGGER( 1, "^n    %d tests succeed.^n    %d tests failed.", g_totalSuccessfulTests, \
+    DEBUG_LOGGER( 128, "^n    %d tests succeed.^n    %d tests failed.", g_totalSuccessfulTests, \
             g_totalFailureTests )
     
     if( ArraySize( g_tests_failure_ids ) )
     {
-        DEBUG_LOGGER( 1, "^n    The following tests failed:" )
+        DEBUG_LOGGER( 128, "^n    The following tests failed:" )
     }
     
     for( new failure_index = 0; failure_index < ArraySize( g_tests_failure_ids ); failure_index++ )
@@ -4373,10 +4439,10 @@ public show_delayed_results()
         ArrayGetString( g_tests_idsAndNames, ArrayGetCell( g_tests_failure_ids, failure_index ) - 1,
                 test_name, charsmax( test_name ) )
         
-        DEBUG_LOGGER( 1, "       %s", test_name )
+        DEBUG_LOGGER( 128, "       %s", test_name )
     }
     
-    DEBUG_LOGGER( 1, "^n    Finished 'Galileo Reloaded' Tests Execution. ^n^n" )
+    DEBUG_LOGGER( 128, "^n    Finished 'Galileo Reloaded' Tests Execution. ^n^n" )
     
     // clean the testing
     cancel_voting()
@@ -4400,7 +4466,7 @@ stock register_test( max_delay_result, test_name[] )
     new totalTests = g_totalSuccessfulTests + g_totalFailureTests
     
     ArrayPushString( g_tests_idsAndNames, test_name )
-    DEBUG_LOGGER( 1, "    Executing test %d with %d delay - %s ", totalTests, max_delay_result, \
+    DEBUG_LOGGER( 128, "    Executing test %d with %d delay - %s ", totalTests, max_delay_result, \
             test_name )
     
     if( g_max_delay_result < max_delay_result )
@@ -4433,7 +4499,7 @@ stock set_test_failure_internal( test_id, failure_reason[], any: ... )
     vformat( formated_message, charsmax( formated_message ), failure_reason, 3 )
     
     ArrayPushCell( g_tests_failure_ids, test_id )
-    DEBUG_LOGGER( 1, "       Test failure! %s", formated_message )
+    DEBUG_LOGGER( 128, "       Test failure! %s", formated_message )
 }
 
 /**
@@ -4601,8 +4667,13 @@ stock test_gal_in_empty_cycle4()
  * This is the 1º chain test, and test if the cvar 'amx_extendmap_max' functionality is working
  * properly.
  */
-stock test_is_map_extension_allowed1()
+stock test_is_map_extension_allowed1( bool:skip = false )
 {
+    if( skip )
+    {
+        return
+    }
+    
     new test_id = register_test( 23, "test_is_map_extension_allowed1" )
     
     if( g_is_map_extension_allowed )
@@ -4696,7 +4767,7 @@ public test_is_map_extension_allowed4( test_id )
                 + START_VOTEMAP_MIN_TIME - 10 ) / 60 )
     
     vote_manageEnd()
-
+    
     if( !g_is_voting_locked )
     {
         SET_TEST_FAILURE( test_id, "vote_startDirector() does not started!" )
@@ -4767,19 +4838,7 @@ stock cancel_voting()
  * Write debug messages to server's console accordantly with cvar gal_debug.
  * If gal_debug 1 or more higher, the voting and runoff times are set to 5 seconds.
  *
- * @param mode the debug mode level:
- *           ( 0 ) 0 disabled all debug.
- *           ( 1 ) 1 displays basic debug messages.
- *           ( 10 ) 2 displays players disconnect, how many remaining, and multiple time limits
- *                          changes and restores.
- *           ( 100 ) 4 displays maps events as: choices, votes, nominations, and the calls to
- *                          map_populateList( Array:mapArray, mapFilename[] ).
- *           ( 1000 ) 8 displays vote_loadChoices( ) and actions at vote_startDirector
- *           ( 10000 ) 16 displays messages related to RunOff voting
- *           ( 100000 ) 32 displays messages related to the rounds end map voting
- *           ( 1000000 ) 64 displays messages related client_print_color_internal(...)
- *           ( 1111111 ) 127 displays all debug logs levels at server console.
- *
+ * @param mode the debug mode level, see the variable 'g_debug_level' for the levels.
  * @param text the debug message, if omitted its default value is ""
  * @param any the variable number of formatting parameters
  */

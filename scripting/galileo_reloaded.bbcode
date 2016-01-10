@@ -200,13 +200,14 @@ galileo_reloaded.amxx
  * Implemented mp_winlimit and mp_maxrounds end map voting.
  * Removed automatic vote map, after forcing votemap using '-nochange' argument.
  * Replaced the commando 'gal_startvote2' with 'gal_startvote' and options '-nochange' and '-restart'.
+ * Added new cvar "gal_endonround_players" which indicates the players minimum number necessary 
+   to allow the last round to be finished when time runs out.
  * Added new cvar "amx_extendmap_step_rounds" to the config file.
  * Added new cvar "amx_extendmap_max" which limits the max extension time.
  * Added new cvar "gal_emptyserver_wait" which implements the server empty feature.
  * Added new cvar "gal_emptyserver_mapfile" which specifies a empty server map cycle list.
  * Added new cvar "gal_unnominate_disconnected" to remove a disconnected player nominations.
- * Added new cvar "gal_endonround_players" which indicates the players minimum number necessary 
-    to allow the last round to be finished when time runs out.
+ * Added new cvar "gal_endonround_countdown" to show the countdown, drop weapons and buy grenades.
  * Added new cvar "gal_endonround_msg" to indicates how to announce the last round.
  * Fixed the cvar "gal_endonround" that indicates when a map should end when time runs out.
  * Fixed concurrency problem between mp_maxrounds, mp_winlimit and mp_timelimit.
