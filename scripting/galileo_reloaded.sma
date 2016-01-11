@@ -85,7 +85,6 @@ new Float:test_mp_timelimit
         test_gal_in_empty_cycle3(); \
         test_gal_in_empty_cycle4(); \
         test_is_map_extension_allowed1( true ); \
-        test_nomination_attempt(); \
     }
 
 #if AMXX_VERSION_NUM < 183
@@ -105,7 +104,6 @@ new g_colored_players_ids[ 32 ]
 #define TASKID_EMPTYSERVER               98176977
 #define TASKID_START_VOTING_BY_ROUNDS    52691160
 #define TASKID_UNLOCK_VOTING             52691163
-#define TASKID_VOTE_COUNTDOWNPENDINGVOTE 52691164
 #define TASKID_PROCESS_LAST_ROUND        42691173
 #define TASKID_VOTE_HANDLEDISPLAY        52691264
 #define TASKID_VOTE_DISPLAY              52691165
@@ -725,12 +723,14 @@ public show_last_round_HUD()
 {
     set_hudmessage( 255, 255, 255, 0.15, 0.15, 0, 0.0, 1.0, 0.1, 0.1, 1 )
     
-    new last_round_message[ COLOR_MESSAGE ]
+    static last_round_message[ COLOR_MESSAGE ]
     
     static player_id
     static players_number
     static current_index
     static players_ids[ 32 ]
+
+    last_round_message[ 0 ] = '^0'
     
     if( g_isTimeToChangeLevel )
     {
@@ -1114,7 +1114,7 @@ public cmd_listrecent( player_id )
             
             for( new idx = 0; idx < g_cntRecentMap; ++idx )
             {
-                msgIdx += format( msg[ msgIdx ], charsmax( msg ) - msgIdx, ", %s", g_recentMap[ idx ] );
+                msgIdx += formatex( msg[ msgIdx ], charsmax( msg ) - msgIdx, ", %s", g_recentMap[ idx ] );
             }
         #if AMXX_VERSION_NUM < 183
             get_players( g_colored_players_ids, g_colored_players_number, "ch" );
@@ -1453,6 +1453,7 @@ public event_game_commencing()
     
     remove_task( TASKID_SHOW_LAST_ROUND_HUD )
     set_task( 10.0 + get_cvar_float( "sv_restartround" ), "map_restoreOriginalTimeLimit" )
+    client_cmd( 0, "-showscores" )
     
     reset_rounds_scores()
     cancel_voting()
@@ -1498,11 +1499,11 @@ public cmd_say( player_id )
     arg1[ 0 ] = '^0'
     arg2[ 0 ] = '^0'
     arg3[ 0 ] = '^0'
-    
+
     read_args( text, charsmax( text ) );
     remove_quotes( text );
     
-    parse( text, arg1, charsmax( arg1 ), arg2, charsmax( arg2 ), arg3, charsmax( arg3 ) );
+    parse( text, arg1, charsmax( arg1 ), arg2, charsmax( arg2 ), arg3, charsmax( arg3 ) )
     
     // if the chat line has more than 2 words, we're not interested at all
     if( arg3[ 0 ] == '^0' )
@@ -1510,20 +1511,21 @@ public cmd_say( player_id )
         new idxMap;
         
         // if the chat line contains 1 word, it could be a map or a one-word command
-        if( arg2[ 0 ] == 0 ) // "say [rtv|rockthe<anything>vote]"
+        if( arg2[ 0 ] == '^0' ) // "say [rtv|rockthe<anything>vote]"
         {
             if( ( get_pcvar_num( cvar_rtvCommands ) & RTV_CMD_SHORTHAND
                   && equali( arg1, "rtv" ) )
-                || ( ( get_pcvar_num( cvar_rtvCommands ) & RTV_CMD_DYNAMIC
+                || ( get_pcvar_num( cvar_rtvCommands ) & RTV_CMD_DYNAMIC
                        && equali( arg1, "rockthe", 7 )
-                       && equali( arg1[ strlen( arg1 ) - 4 ], "vote" ) ) ) )
+                       && equali( arg1[ strlen( arg1 ) - 4 ], "vote" ) ) )
             {
                 vote_rock( player_id );
                 return PLUGIN_HANDLED;
             }
             else if( get_pcvar_num( cvar_nomPlayerAllowance ) )
             {
-                if( equali( arg1, "noms" ) )
+                if( equali( arg1, "noms" )
+                    || equali( arg1, "nominations" ) )
                 {
                     nomination_list( player_id );
                     return PLUGIN_HANDLED;
@@ -1537,6 +1539,16 @@ public cmd_say( player_id )
                         nomination_toggle( player_id, idxMap );
                         return PLUGIN_HANDLED;
                     }
+                    else if( strlen( arg1 ) > 3 
+                             && equali( arg1, "nom", 3 )
+                             && equali( arg1[ strlen( arg1 ) - 4 ], "menu" ) )
+                    {
+                        nomination_menu( player_id )
+                    }
+
+                    DEBUG_LOGGER( 4, "( cmd_say ) equali( arg1, 'nom', 3 ): %d, \
+                            equali( arg1[ strlen( arg1 ) - 4 ], 'menu' ): %d", \
+                            equali( arg1, "nom", 3 ), equali( arg1[ strlen( arg1 ) - 4 ], "menu" ) )
                 }
             }
         }
@@ -1562,6 +1574,60 @@ public cmd_say( player_id )
         }
     }
     return PLUGIN_CONTINUE;
+}
+
+stock nomination_menu( player_id )
+{
+    // assume there'll be more than one match ( because we're lazy ) and starting building the match menu
+    if( g_nominationMatchesMenu[ player_id ] )
+    {
+        menu_destroy( g_nominationMatchesMenu[ player_id ] );
+    }
+    
+    g_nominationMatchesMenu[ player_id ] = menu_create( "Nominate Map", "nomination_handleMatchChoice" );
+    
+    // gather all maps that match the nomination
+    new mapIdx
+
+    new info[ 1 ]
+    new choice[ 64 ]
+    new nominationMap[ 32 ]
+    new disabledReason[ 16 ]
+    
+    for( mapIdx = 0; mapIdx < g_nominationMapCnt; mapIdx++ )
+    {
+        ArrayGetString( g_nominationMap, mapIdx, nominationMap, charsmax( nominationMap ) );
+
+        info[ 0 ] = mapIdx;
+        
+        // in most cases, the map will be available for selection, so assume that's the case here
+        disabledReason[ 0 ] = '^0';
+
+        if( nomination_getPlayer( mapIdx ) ) // disable if the map has already been nominated
+        {
+            formatex( disabledReason, charsmax( disabledReason ), "%L", player_id,
+                    "GAL_MATCH_NOMINATED" );
+        }
+        else if( map_isTooRecent( nominationMap ) ) // disable if the map is too recent
+        {
+            formatex( disabledReason, charsmax( disabledReason ), "%L", player_id,
+                    "GAL_MATCH_TOORECENT" );
+        }
+        else if( equal( g_currentMap, nominationMap ) ) // disable if the map is the current map
+        {
+            formatex( disabledReason, charsmax( disabledReason ), "%L", player_id,
+                    "GAL_MATCH_CURRENTMAP" );
+        }
+        
+        formatex( choice, charsmax( choice ), "%s %s", nominationMap, disabledReason )
+        
+        menu_additem( g_nominationMatchesMenu[ player_id ], choice, info,
+                ( disabledReason[ 0 ] == 0 ) ? 0 : ( 1 << 26 ) )
+
+        DEBUG_LOGGER( 4, "( nomination_menu ) choice: %s, info[0]: %d", choice, info[0] )
+    }
+
+    menu_display( player_id, g_nominationMatchesMenu[ player_id ] )
 }
 
 stock nomination_attempt( player_id, nomination[] ) // ( playerName[], &phraseIdx, matchingSegment[] )
@@ -1600,10 +1666,9 @@ stock nomination_attempt( player_id, nomination[] ) // ( playerName[], &phraseId
             info[ 0 ] = mapIdx;
             
             // in most cases, the map will be available for selection, so assume that's the case here
-            disabledReason[ 0 ] = 0;
+            disabledReason[ 0 ] = '^0';
             
-            // disable if the map has already been nominated
-            if( nomination_getPlayer( mapIdx ) ) 
+            if( nomination_getPlayer( mapIdx ) ) // disable if the map has already been nominated
             {
                 formatex( disabledReason, charsmax( disabledReason ), "%L", player_id,
                         "GAL_MATCH_NOMINATED" );
@@ -1613,7 +1678,7 @@ stock nomination_attempt( player_id, nomination[] ) // ( playerName[], &phraseId
                 formatex( disabledReason, charsmax( disabledReason ), "%L", player_id,
                         "GAL_MATCH_TOORECENT" );
             }
-            else if( equal( g_currentMap, nominationMap ) )
+            else if( equal( g_currentMap, nominationMap ) ) // disable if the map is the current map
             {
                 formatex( disabledReason, charsmax( disabledReason ), "%L", player_id,
                         "GAL_MATCH_CURRENTMAP" );
@@ -1645,7 +1710,7 @@ stock nomination_attempt( player_id, nomination[] ) // ( playerName[], &phraseId
             // this is kinda sexy; we put up a menu of the matches for them to pick the right one
             client_print_color_internal( player_id, "^1%L", player_id, "GAL_NOM_MATCHES", nomination );
             
-            if( matchCnt == MAX_NOM_MATCH_CNT )
+            if( matchCnt >= MAX_NOM_MATCH_CNT )
             {
                 client_print_color_internal( player_id, "^1%L", player_id, "GAL_NOM_MATCHES_MAX",
                         MAX_NOM_MATCH_CNT, MAX_NOM_MATCH_CNT );
@@ -1663,13 +1728,19 @@ public nomination_handleMatchChoice( player_id, menu, item )
     }
     
     // Get item info
-    new mapIdx, info[ 1 ];
+    new info[ 1 ];
     new access, callback;
+
+    DEBUG_LOGGER( 4, "( nomination_handleMatchChoice ) item: %d - %s, player_id: %d, menu: %d", \
+            item, item, player_id, menu )
     
     menu_item_getinfo( g_nominationMatchesMenu[ player_id ], item, access, info, 1, _, _, callback );
+
+    DEBUG_LOGGER( 4, "( nomination_handleMatchChoice ) info[ 0 ]: %d - %s, access: %d, \
+            g_nominationMatchesMenu[ player_id ]: %d", \
+            info[ 0 ], info[ 0 ], access, g_nominationMatchesMenu[ player_id ] )
     
-    mapIdx = info[ 0 ];
-    map_nominate( player_id, mapIdx );
+    map_nominate( player_id, item );
     
     return PLUGIN_HANDLED;
 }
@@ -1774,15 +1845,21 @@ stock map_nominate( player_id, idxMap, idNominator = -1 )
         client_print_color_internal( player_id, "^1%L", player_id, "GAL_NOM_FAIL_INPROGRESS" );
         return;
     }
+
     // and if the outcome of the vote hasn't already been determined
     else if( g_voteStatus & VOTE_IS_OVER )
     {
         client_print_color_internal( player_id, "^1%L", player_id, "GAL_NOM_FAIL_VOTEOVER" );
         return;
     }
+
+    DEBUG_LOGGER( 4, "( map_nominate ) idxMap: %d, sizeof( g_nominationMap ): %d", idxMap, \
+            sizeof( g_nominationMap ) )
+    DEBUG_LOGGER( 4, "( map_nominate ) idxMap: %d, ArraySize( g_nominationMap ): %d", idxMap, \
+            ArraySize( g_nominationMap ) )
     
-    new mapName[ 32 ];
-    ArrayGetString( g_nominationMap, idxMap, mapName, charsmax( mapName ) );
+    new mapName[ 32 ]
+    ArrayGetString( g_nominationMap, idxMap, mapName, charsmax( mapName ) )
     
     // players can not nominate the current map
     if( equal( g_currentMap, mapName ) )
@@ -1831,8 +1908,9 @@ stock map_nominate( player_id, idxMap, idNominator = -1 )
             for( idxNomination = 1; idxNomination <= playerNominationMax; ++idxNomination )
             {
                 idxMap = g_nomination[ player_id ][ idxNomination ];
+
                 ArrayGetString( g_nominationMap, idxMap, buffer, charsmax( buffer ) );
-                format( nominatedMaps, charsmax( nominatedMaps ), "%s%s%s", nominatedMaps,
+                formatex(         nominatedMaps, charsmax( nominatedMaps ), "%s%s%s", nominatedMaps,
                         ( idxNomination == 1 ) ? "" : ", ", buffer );
             }
             
@@ -1883,7 +1961,7 @@ public nomination_list( player_id )
             if( idxMap >= 0 )
             {
                 ArrayGetString( g_nominationMap, idxMap, mapName, charsmax( mapName ) );
-                format( msg, charsmax( msg ), "%s, %s", msg, mapName );
+                formatex( msg, charsmax( msg ), "%s, %s", msg, mapName );
                 
                 if( ++mapCnt == 4 )     // list 4 maps per chat line
                 {
@@ -2047,7 +2125,7 @@ public vote_startDirector( bool:forced )
         }
         
         // announce the pending vote countdown from 7 to 1
-        set_task( 1.0, "vote_countdownPendingVote", TASKID_VOTE_COUNTDOWNPENDINGVOTE, _, _, "a", 7 );
+        set_task( 1.0, "vote_countdownPendingVote", _, _, _, "a", 7 );
         
         // display the map choices
         set_task( 8.5, "vote_handleDisplay", TASKID_VOTE_HANDLEDISPLAY );
@@ -3858,7 +3936,7 @@ public client_disconnected( player_id )
             {
                 ArrayGetString( g_nominationMap, idxMap, mapName, charsmax( mapName ) );
                 nominationCnt++;
-                format( nominatedMaps, charsmax( nominatedMaps ), "%s%s, ", nominatedMaps, mapName );
+                formatex( nominatedMaps, charsmax( nominatedMaps ), "%s%s, ", nominatedMaps, mapName );
                 g_nomination[ player_id ][ idxNomination ] = -1;
             }
         }
@@ -4292,7 +4370,7 @@ stock register_dictionary_colored( const filename[] )
     
     new szFileName[ 256 ];
     get_localinfo( "amxx_datadir", szFileName, charsmax( szFileName ) );
-    format( szFileName, charsmax( szFileName ), "%s/lang/%s", szFileName, filename );
+    formatex( szFileName, charsmax( szFileName ), "%s/lang/%s", szFileName, filename );
     new fp = fopen( szFileName, "rt" );
     
     if( !fp )
@@ -4799,20 +4877,6 @@ public test_is_map_extension_allowed4( test_id )
 }
 
 /**
- *
- */
-stock test_nomination_attempt( bool:skip = false )
-{
-    if( skip )
-    {
-        return
-    }
-    new test_id = register_test( 0, "test_nomination_attempt" )
-    
-    nomination_attempt( 1, "de_dust" )
-}
-
-/**
  * Every time a cvar is changed during the tests, it must be saved here to a global test variable
  * to be restored at the restore_server_cvars_for_test(), which is executed at the end of all
  * tests execution. This is executed before the first rest run.
@@ -4858,7 +4922,6 @@ stock cancel_voting()
 {
     remove_task( TASKID_START_VOTING_BY_ROUNDS )
     remove_task( TASKID_UNLOCK_VOTING )
-    remove_task( TASKID_VOTE_COUNTDOWNPENDINGVOTE )
     remove_task( TASKID_VOTE_DISPLAY )
     remove_task( TASKID_DBG_FAKEVOTES )
     remove_task( TASKID_VOTE_HANDLEDISPLAY )
@@ -4892,7 +4955,7 @@ stock debugMesssageLogger( const mode, const text[] = "", { Float, Sql, Result, 
         format_args( formattedText, 1023, 1 );
         
         server_print( "%s", formattedText )
-        client_print( 0, print_console, "%s", formattedText )
+        //client_print( 0, print_console, "%s", formattedText )
     }
     
     // not needed but gets rid of stupid compiler error
