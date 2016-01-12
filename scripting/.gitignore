@@ -1,3 +1,5 @@
+uncrustify.exe
+
 /compile.dat
 compiled/*
 amxxpc.exe
