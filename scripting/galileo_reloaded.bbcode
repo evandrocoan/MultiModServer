@@ -94,7 +94,7 @@ galileo_reloaded.cfg contents.
 
 ********************** [anchor]Requirements[/anchor][SIZE="5"][COLOR="Blue"][B]Requirements and Commands[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor]  ******
 Amx Mod X [B]1.8.2[/B] or [COLOR="Red"][B]superior[/B][/COLOR]
-The Default '[B]Amx Mod X[/B]' [COLOR="Red"]NextMap Plugin Enabled[/COLOR] (nextmap.amxx)
+The Default '[B]Amx Mod X[/B]' [COLOR="Red"]NextMap Plugin [B]Enabled[/B][/COLOR] (nextmap.amxx)
 
 [B]Client's Commands:[/B]
 [QUOTE]
@@ -143,7 +143,7 @@ The Default '[B]Amx Mod X[/B]' [COLOR="Red"]NextMap Plugin Enabled[/COLOR] (next
 [COLOR="Blue"]say [B]mapname[/B][/COLOR]
 [/QUOTE]
 
-******************************** [anchor]Installation[/anchor][B][SIZE="5"][COLOR="Blue"]Installation[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor]  **********************
+******************************** [anchor]Installation[/anchor][B][SIZE="5"][COLOR="Blue"]Installation[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor]  ***********************
 [SPOILER]
 [B]1.[/B] Download the files "[B]galileo_reloaded.sma[/B]" and "[B]configuration_files.zip[/B]" at [goanchor=Downloads]Downloads[/goanchor]
 section.
@@ -197,7 +197,7 @@ galileo_reloaded.amxx
  * Added a nominations map menu at 'say nomenu', 'say nomanythingmenu' or 'say mapprefix_'.
  * Implemented mp_winlimit and mp_maxrounds end map voting.
  * Removed automatic vote map, after forcing votemap using '-nochange' argument.
- * Replaced the commando 'gal_startvote2' with 'gal_startvote' and options '-nochange' and '-restart'.
+ * Replaced the command 'gal_startvote2' with 'gal_startvote' and options '-nochange' and '-restart'.
  * Added new cvar "gal_endonround_players" which indicates the players minimum number necessary 
    to allow the last round to be finished when time runs out.
  * Added new cvar option "gal_rtv_commands 7" to enable 7 the options 1, 2 and 4 at the same time.
@@ -215,6 +215,112 @@ galileo_reloaded.amxx
  * Added weighted votes that allows admins to have their vote counted more.
  * Added display colored text messages support.
 [/QUOTE]
+[LIST=1]
+[*]Deagles' Map Manager v3.25Beta - [COLOR="Blue"]deagsmapmanager.sma[/COLOR], by DynamicBits: [url]https://forums.alliedmods.net/showthread.php?t=177180[/url]
+[*]DeRoiD's Mapchooser v2.33 - [COLOR="blue"]dmc233.sma[/COLOR], by DeRoiD: [url]https://forums.alliedmods.net/showthread.php?t=261412[/url]
+[*]Galileo 1.1.290 (a feature rich map voting plugin) - [COLOR="blue"]galileo.sma[/COLOR], by Brad Jones: [url]https://forums.alliedmods.net/showthread.php?t=77391[/url]
+[*]Galileo Reloaded Mapchooser v1.0-beta1 | Last Update: 12.01.2016 - [COLOR="blue"]galileo_reloaded.sma[/COLOR], by Brad Jones/Addons zz: [url]https://forums.alliedmods.net/showthread.php?t=273019[/url]
+[*]Nextmap Chooser (v1.8.2) - [COLOR="blue"]mapchooser.sma[/COLOR], by AMXX Team
+[/LIST]Table with all:[PAWN]
+Plugin name: deagsmapmanager.sma      dmc233.sma    galileo.sma  galileo_reloaded.sma  mapchooser.sma  Max value
+Header size:          3.648 bytes    2.480 bytes    3.384 bytes           3.532 bytes     1.064 bytes  3.648 bytes
+Code size:          111.044 bytes   50.864 bytes   66.260 bytes          70.936 bytes     8.412 bytes  111.044 bytes
+Data size:          405.296 bytes   71.288 bytes   45.228 bytes          42.696 bytes     3.592 bytes  405.296 bytes
+Stack/heap size:     16.384 bytes   16.384 bytes   16.384 bytes          16.384 bytes    16.384 bytes  16.384
+Total requirements: 536.372 bytes  141.016 bytes  131.256 bytes         133.548 bytes    29.452 bytes  536.372 bytes
+Compilation Time:      0,87 sec       0,52 sec       0,45 sec              0,52 sec        0,22 sec    0,87 sec
+[/PAWN]Table with just [COLOR="Blue"]galileo.sma[/COLOR] and [COLOR="blue"]galileo_reloaded.sma[/COLOR][PAWN]
+Plugin name:          galileo.sma   galileo_reloaded.sma    Diferences
+Header size:          3.384 bytes            3.532 bytes     +148 bytes
+Code size:           66.260 bytes           70.936 bytes   +4.676 bytes
+Data size:           45.228 bytes           42.696 bytes   -2.532 bytes
+Stack/heap size:     16.384 bytes           16.384 bytes     +0.0 bytes
+Total requirements: 131.256 bytes          133.548 bytes   +2.292 bytes
+Compilation Time:      0,45 sec               0,52 sec      +0,07 sec  
+[/PAWN]Source Data:[SPOILER] 
+[PAWN]
+//AMXXPC compile.exe
+// by the AMX Mod X Dev Team
+
+
+//// deagsmapmanager.sma
+// 
+// D:\AmxModX_1.8.3_Compiler\deagsmapmanager.sma(284) : warning 233: symbol "client_disconnect" is marked as deprecated: Use client_disconnected() instead.
+// 
+// D:\AmxModX_1.8.3_Compiler\deagsmapmanager.sma(1527) : warning 233: symbol "strbreak" is marked as deprecated: Use argbreak() instead
+// D:\AmxModX_1.8.3_Compiler\deagsmapmanager.sma(2846) : warning 233: symbol "is_amd64_server" is marked as deprecated: AMXX is not shipping 64bits builds anymore. This native is basically guaranteed to return 0.
+// 
+// Header size:           3648 bytes
+// Code size:           111044 bytes
+// Data size:           405296 bytes
+// Stack/heap size:      16384 bytes
+// Total requirements:  536372 bytes
+// 
+// 3 Warnings.
+// Done.
+//
+// Compilation Time: 0,87 sec
+// ----------------------------------------
+
+//// dmc233.sma
+// 
+// D:\AmxModX_1.8.3_Compiler\dmc233.sma(1629) : warning 233: symbol "client_disconnect" is marked as deprecated: Use client_disconnected() instead.
+// 
+// Header size:           2480 bytes
+// Code size:            50864 bytes
+// Data size:            71288 bytes
+// Stack/heap size:      16384 bytes
+// Total requirements:  141016 bytes
+// 
+// 1 Warning.
+// Done.
+//
+// Compilation Time: 0,52 sec
+// ----------------------------------------
+
+//// galileo.sma
+// 
+// D:\AmxModX_1.8.3_Compiler\galileo.sma(2688) : warning 233: symbol "client_disconnect" is marked as deprecated: Use client_disconnected() instead.
+// 
+// Header size:           3384 bytes
+// Code size:            66260 bytes
+// Data size:            45228 bytes
+// Stack/heap size:      16384 bytes
+// Total requirements:  131256 bytes
+// 
+// 1 Warning.
+// Done.
+//
+// Compilation Time: 0,45 sec
+// ----------------------------------------
+
+//// galileo_reloaded.sma
+// 
+// Header size:           3532 bytes
+// Code size:            70936 bytes
+// Data size:            42696 bytes
+// Stack/heap size:      16384 bytes
+// Total requirements:  133548 bytes
+// Done.
+//
+// Compilation Time: 0,52 sec
+// ----------------------------------------
+
+//// mapchooser.sma
+// 
+// Header size:           1064 bytes
+// Code size:             8412 bytes
+// Data size:             3592 bytes
+// Stack/heap size:      16384 bytes
+// Total requirements:   29452 bytes
+// Done.
+//
+// Compilation Time: 0,22 sec
+// ----------------------------------------
+
+Press enter to exit ...
+[/PAWN]
+[/SPOILER]
 [/SPOILER]******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] *********************************
 [SPOILER]
 [QUOTE]
@@ -290,7 +396,7 @@ from the [B]amxx cvars[/B] command. They will be grouped together.
 
 [URL="http://www.gametracker.com/search/?search_by=server_variable&search_by2=GalileoReloaded&query=&loc=_all&sort=&order="]
 [SIZE=4][B][COLOR=DarkGreen]Click here to see all servers using this plugin.[/COLOR][/B][/SIZE][/URL]
-[/SPOILER]******************************** [anchor]Downloads[/anchor][SIZE="5"][COLOR="Blue"][B]Downloads[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor] ********************
+[/SPOILER]******************************** [anchor]Downloads[/anchor][SIZE="5"][COLOR="Blue"][B]Downloads[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor] *************************
 Old versions downloads:
 [LIST=1]
 [*]v1.0-alpha2.hotfix1: (galileo_reloaded.sma - 111 views - 92.9 KB)
