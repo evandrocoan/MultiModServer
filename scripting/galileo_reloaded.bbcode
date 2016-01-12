@@ -127,6 +127,7 @@ The Default '[B]Amx Mod X[/B]' [COLOR="Red"]NextMap Plugin Enabled[/COLOR] (next
 //The [I]anything[/I] argument can be any "word" up to 20 characters without spaces.
 //Configure the valid map prefixed at './amxmodx/configs/galileo_reloaed/prefixes.ini'.
 //Requires CVAR "gal_nom_playerallowance" to be set to a value higher than 0.
+//Requires CVAR "gal_nom_prefixes" to be set to a value higher than 0.
 [COLOR="Blue"]say [I]nom[/I][B]anything[/B]menu[/COLOR]
 [COLOR="Blue"]say [I]nom[/I]menu[/COLOR]
 [COLOR="Blue"]say [B]mapprefix_[/B][/COLOR]
@@ -208,6 +209,7 @@ galileo_reloaded.amxx
  * Added new cvar "gal_endonround_countdown" to show the countdown, drop weapons and buy grenades.
  * Added new cvar "gal_endonround_msg" to indicates how to announce the last round.
  * Fixed the cvar "gal_endonround" that indicates when a map should end when time runs out.
+ * Removed an unused cvar "gal_vote_mapfile" as we just use the current map cycle file.
  * Fixed concurrency problem between mp_maxrounds, mp_winlimit and mp_timelimit.
  * Added a basic unit test structure for developers/scripters.
  * Added weighted votes that allows admins to have their vote counted more.
@@ -217,6 +219,10 @@ galileo_reloaded.amxx
 [SPOILER]
 [QUOTE]
  * Change the nextmap to [not voted yet]
+ * Add an option to 'gal_vote_showstatus', to always the vote progress to a player.
+ * Add an option to 'gal_vote_showstatustype', to show the vote progress as porcetage and count.
+ * Add an option to 'gal_banrecentstyle', to show the recent maps are displayed as a menu.
+ * Improve the command 'gal_listmaps_paginate' to show all maps without paginate or channel overflow.
  * During a vote, change the nextmap to [vote in progress]
  * Show only the last 10 seconds remaining to end the voting.
  * Add a cvar to keep current map featuare disabled.
