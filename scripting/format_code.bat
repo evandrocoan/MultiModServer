@@ -15,4 +15,5 @@ for %%i in (*.sma) do (
     del temp_file.txt
 )
 
+echo.
 if "%1"=="" pause

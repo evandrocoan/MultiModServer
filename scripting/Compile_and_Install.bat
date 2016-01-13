@@ -1,14 +1,16 @@
 @echo off
 
+for /f %%i in ('date /T') do set CURRENT_DATE=%%i
+
 for %%i in (*.sma) do (
     echo.
-    echo // Compiling %%i ...
+    echo // Compiling %%i ... Current time is: %time% - %CURRENT_DATE% 
     echo.
 
     amxxpc.exe "%%i" -ocompiled/"%%~ni.amxx"
 )
 
-xcopy /E /S /Y ".\compiled" "F:\SteamCMD\steamapps\common\Half-Life\cstrike\addons\amxmodx\plugins"
-xcopy /E /S /Y ".\compiled" "F:\SteamCMD\steamapps\common\Half-Life\czero\addons\amxmodx\plugins"
-
+echo.
 if "%1"=="" pause
+
+start /min install.bat 1

@@ -1,4 +1,9 @@
 /*********************** Licensing *******************************************************
+*
+*  	Copyleft 2015-2016 @ Addons zz
+*
+*	Plugin Theard: https://forums.alliedmods.net/showthread.php?t=273020
+*
 *  This program is free software; you can redistribute it and/or modify it
 *  under the terms of the GNU General Public License as published by the
 *  Free Software Foundation; either version 2 of the License, or ( at
@@ -34,9 +39,10 @@
 
 #define MENU_ITEMS_PER_PAGE 8
 
-// Enables debug server console messages.
-// See debugMessageLog function for values options.
-new g_is_debug = 0
+/** This is to view internal program data while execution. See the function 'debugMessageLog(...)'
+ * at the end of this file, for more information. Default value: 0  - which is disabled. 
+ */
+new g_debug_level = 0
 
 new g_totalVotes
 new g_sayText
@@ -103,7 +109,7 @@ public plugin_init()
     register_dictionary( "mapchooser.txt" )
     register_dictionary( "multimodmanager.txt" )
     
-    gp_mintime     =             register_cvar( "amx_mintime", "10" )
+    gp_mintime     =         register_cvar( "amx_mintime", "10" )
     gp_allowedvote =         register_cvar( "amx_multimod_voteallowed", "1" )
     gp_endmapvote  =         register_cvar( "amx_multimod_endmapvote", "0" )
     
@@ -628,7 +634,7 @@ public load_votingList()
             
             debugMessageLog( 1, "[AMX MOD Loaded] %d - %s",  g_modCounter - 2, g_mod_names[ g_modCounter ] )
             
-            if( g_is_debug & 2 )
+            if( g_debug_level & 2 )
             {
                 new mapcycle_filePath                    [ SHORT_STRING ]
                 new config_filePath                        [ SHORT_STRING ]
@@ -843,7 +849,7 @@ public configDailyMaps( mapcycle_filePath[] )
         set_localinfo(   "firstMapcycle_loaded",         currentMapcycle_filePath )
     }
     
-    if( g_is_debug & 8 )
+    if( g_debug_level & 8 )
     {
         server_print( "AT configDailyMaps: " )
         server_print( "g_isFirstTime_serverLoad is: %d",         g_isFirstTime_serverLoad     )
@@ -1073,7 +1079,7 @@ public printMessage( player_id, message[], any: ... )
 #if AMXX_VERSION_NUM < 183
     print_color( player_id, formated_message )
 #else
-    print_chat_color( player_id, formated_message )
+    client_print_color( player_id, formated_message )
 #endif
     
     replace_all( formated_message, charsmax( formated_message ), "^4", "" )
@@ -1108,18 +1114,18 @@ stock print_color( const player_id, const input[], any: ... )
     {
         get_players( players_ids, playerIndex_idsCounter, "ch" );
     }
+
+    for( new i = 0; i < playerIndex_idsCounter; i++ )
     {
-        for( new i = 0; i < playerIndex_idsCounter; i++ )
+        if( is_user_connected( players_ids[ i ] ) )
         {
-            if( is_user_connected( players_ids[ i ] ) )
-            {
-                message_begin( MSG_ONE_UNRELIABLE, g_sayText, _, players_ids[ i ] );
-                write_byte( players_ids[ i ] );
-                write_string( formated_message );
-                message_end();
-            }
+            message_begin( MSG_ONE_UNRELIABLE, g_sayText, _, players_ids[ i ] );
+            write_byte( players_ids[ i ] );
+            write_string( formated_message );
+            message_end();
         }
     }
+
     return PLUGIN_HANDLED;
 }
 
@@ -1210,7 +1216,7 @@ public start_vote()
     display_votemod_menu( 0, 0 )
     client_cmd( 0, "spk Gman/Gman_Choose2" )
     
-    if( g_is_debug )
+    if( g_debug_level )
     {
         set_task( 6.0, "check_vote", TASK_CHVOMOD )
     }
@@ -1320,7 +1326,7 @@ public display_votemod_menu( player_id, menu_current_page )
         }
     }
     
-    if( g_is_debug )
+    if( g_debug_level )
     {
         new debug_player_name[ 64 ]
         
@@ -1536,7 +1542,7 @@ public playersPlaying( Float:percent )
 }
 
 /**
- * Write debug messages to server's console accordantly to the global variable g_is_debug.
+ * Write debug messages to server's console accordantly to the global variable g_debug_level.
  *
  * @param mode the debug level to be used:
  *           ( 00000 ) 0 disabled all debug.
@@ -1550,7 +1556,7 @@ public playersPlaying( Float:percent )
  */
 public debugMessageLog( mode, message[], any: ... )
 {
-    if( mode & g_is_debug )
+    if( mode & g_debug_level )
     {
         static formated_message[ LONG_STRING ]
         
