@@ -1,4 +1,11 @@
 /*********************** Licensing *******************************************************
+* Daily Mapcycle
+*  by JustinHoMi
+**************************************
+* Ported by Burnzy
+*  Visit www.burnsdesign.org
+**************************************
+*
 *  This program is free software; you can redistribute it and/or modify it
 *  under the terms of the GNU General Public License as published by the
 *  Free Software Foundation; either version 2 of the License, or (at
@@ -13,12 +20,7 @@
 *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
 *****************************************************************************************
-* Daily Mapcycle
-*  by JustinHoMi
-**************************************
-* Ported by Burnzy
-*  Visit www.burnsdesign.org
-**************************************
+*
 * Allows you to specify a different map rotation for every day, mapcycles.txt should
 * be placed in yourgamemod/mapcycles/day and for daily_cfgs to be placed into
 * yourgamemod/mapcycles/day/cfg | The cfgs should be started with the
