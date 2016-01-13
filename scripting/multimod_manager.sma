@@ -23,29 +23,79 @@
 
 */
 
+#define VERSION "1.1-rc1"
+
 #include <amxmodx>
 #include <amxmisc>
 
+/** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
+ * at the end of this file and the variable 'g_debug_level' for more information.
+ * Default value: 0  - which is disabled.
+ */
+#define IS_DEBUG_ENABLED 1
+
+#if IS_DEBUG_ENABLED > 0
+    #define DEBUG_LOGGER(%1) debugMesssageLogger( %1 )
+
+/**
+ * ( 00000 ) 0 disabled all debug.
+ * ( 00001 ) 1 displays basic debug messages.
+ * ( 00010 ) 2 displays each mod loaded.
+ * ( 00100 ) 4 displays the keys pressed during voting.
+ * ( 01000 ) 8 displays the the mapcycle configuration.
+ * ( 11111 ) 15 displays all debug levels.
+ * 
+ * ( ... ) 64 displays messages related 'client_print_color_internal'.
+ */
+new g_debug_level
+#else
+    #define DEBUG_LOGGER(%1) //
+#endif
+
 #define PLUGIN  "Multi-Mod Manager"
-#define VERSION "1.1-alpha1.1"
 #define AUTHOR  "Addons zz"
 
 #define TASK_VOTEMOD 2487002
 #define TASK_CHVOMOD 2487004
 
-#define MAXMODS      100
-#define LONG_STRING  256
-#define SHORT_STRING 64
+#define MAXMODS       100
+#define LONG_STRING   256
+#define COLOR_MESSAGE 192
+#define SHORT_STRING  64
 
 #define MENU_ITEMS_PER_PAGE 8
 
-/** This is to view internal program data while execution. See the function 'debugMessageLog(...)'
- * at the end of this file, for more information. Default value: 0  - which is disabled. 
+/**
+ * Convert colored strings codes '!g for green', '!y for yellow', '!t for team'.
  */
-new g_debug_level = 0
+#define INSERT_COLOR_TAGS(%1) \
+    { \
+        replace_all( %1, charsmax( %1 ), "!g", "^4" ); \
+        replace_all( %1, charsmax( %1 ), "!t", "^3" ); \
+        replace_all( %1, charsmax( %1 ), "!n", "^1" ); \
+        replace_all( %1, charsmax( %1 ), "!y", "^1" ); \
+    }
+
+#define REMOVE_COLOR_TAGS(%1) \
+    { \
+        replace_all( %1, charsmax( %1 ), "^1", "" ); \
+        replace_all( %1, charsmax( %1 ), "^2", "" ); \
+        replace_all( %1, charsmax( %1 ), "^3", "" ); \
+        replace_all( %1, charsmax( %1 ), "^4", "" ); \
+    }
+
+#define PRINT_COLORED_MESSAGE(%1,%2) \
+    { \
+        message_begin( MSG_ONE_UNRELIABLE, g_user_msgid, _, %1 ); \
+        write_byte( %1 ); \
+        write_string( %2 ); \
+        message_end(); \
+    }
+
+new bool:g_is_supported_color_chat
 
 new g_totalVotes
-new g_sayText
+new g_user_msgid
 new g_coloredmenus
 new g_menu_total_pages
 new g_currentMod_id
@@ -107,7 +157,7 @@ public plugin_init()
     register_cvar( "MultiModManager", VERSION, FCVAR_SERVER | FCVAR_SPONLY )
     
     register_dictionary( "mapchooser.txt" )
-    register_dictionary( "multimodmanager.txt" )
+    register_dictionary_colored( "multimodmanager.txt" )
     
     gp_mintime     =         register_cvar( "amx_mintime", "10" )
     gp_allowedvote =         register_cvar( "amx_multimod_voteallowed", "1" )
@@ -123,7 +173,7 @@ public plugin_init()
     register_concmd( "amx_setmods", "receiveCommandSilent", ADMIN_IMMUNITY, g_helpamx_setmods )
     register_menucmd( register_menuid( g_menuname ), 2047, "player_vote" )
     
-    g_sayText      = get_user_msgid( "SayText" );
+    g_user_msgid      = get_user_msgid( "SayText" );
     g_coloredmenus = colored_menus()
     g_totalVotes   = 0
 }
@@ -159,7 +209,10 @@ public plugin_cfg()
     
     formatex( g_votingFinished_filePath, charsmax( g_votingFinished_filePath ),
             "%s/multimod/votefinished.cfg", g_configFolder )
-    
+
+    g_is_supported_color_chat = ( is_running( "czero" )
+                                  || is_running( "cstrike" ) )
+
     switchMapManager()
     
     build_first_mods()
@@ -451,7 +504,7 @@ public loadCurrentMod()
  */
 public configureMod_byModCode( currentModCode, currentMod_shortName[] )
 {
-    debugMessageLog( 1,  "^n^ncurrentModCode: %d | currentMod_shortName: %s^n",
+    DEBUG_LOGGER( 1,  "^n^ncurrentModCode: %d | currentMod_shortName: %s^n", \
             currentModCode, currentMod_shortName )
     
     switch( currentModCode )
@@ -490,7 +543,7 @@ public configureMod_byModID( mostVoted_modID )
     {
         case 1:
         {
-            debugMessageLog( 1, "^nAT configureMod_byModID, we are keeping the current mod" )
+            DEBUG_LOGGER( 1, "^nAT configureMod_byModID, we are keeping the current mod" )
         }
         case 2:
         {
@@ -632,35 +685,34 @@ public load_votingList()
             formatex( g_mod_names[ g_modCounter ], sizeof( g_mod_names[] ) - 1, "%s", mod_name )
             formatex( g_mod_shortNames[ g_modCounter ], sizeof( g_mod_shortNames[] ) - 1, "%s", mod_shortName_string )
             
-            debugMessageLog( 1, "[AMX MOD Loaded] %d - %s",  g_modCounter - 2, g_mod_names[ g_modCounter ] )
+            DEBUG_LOGGER( 1, "[AMX MOD Loaded] %d - %s",  g_modCounter - 2, g_mod_names[ g_modCounter ] )
             
-            if( g_debug_level & 2 )
-            {
-                new mapcycle_filePath                    [ SHORT_STRING ]
-                new config_filePath                        [ SHORT_STRING ]
-                new plugin_filePath                        [ SHORT_STRING ]
-                new message_filePath                    [ SHORT_STRING ]
-                new messageResource_filePath            [ SHORT_STRING ]
-                new lateConfig_filePath                [ SHORT_STRING ]
-                
-                mapcycle_pathCoder( mod_shortName_string, mapcycle_filePath, charsmax( mapcycle_filePath ) )
-                config_pathCoder( mod_shortName_string, config_filePath, charsmax( config_filePath ) )
-                plugin_pathCoder( mod_shortName_string, plugin_filePath, charsmax( plugin_filePath ) )
-                message_pathCoder( mod_shortName_string, message_filePath, charsmax( message_filePath ) )
-                
-                messageResource_pathCoder( mod_shortName_string, messageResource_filePath,
-                        charsmax( messageResource_filePath ) )
-                
-                lateConfig_pathCoder( mod_shortName_string, lateConfig_filePath, charsmax( lateConfig_filePath ) )
-                
-                server_print( "[AMX MOD Loaded] %s", mod_shortName_string )
-                server_print( "[AMX MOD Loaded] %s", mapcycle_filePath )
-                server_print( "[AMX MOD Loaded] %s", plugin_filePath )
-                server_print( "[AMX MOD Loaded] %s", config_filePath )
-                server_print( "[AMX MOD Loaded] %s", message_filePath )
-                server_print( "[AMX MOD Loaded] %s", lateConfig_filePath )
-                server_print( "[AMX MOD Loaded] %s^n", messageResource_filePath )
-            }
+        #if IS_DEBUG_ENABLED > 0
+            new mapcycle_filePath                    [ SHORT_STRING ]
+            new config_filePath                        [ SHORT_STRING ]
+            new plugin_filePath                        [ SHORT_STRING ]
+            new message_filePath                    [ SHORT_STRING ]
+            new messageResource_filePath            [ SHORT_STRING ]
+            new lateConfig_filePath                [ SHORT_STRING ]
+            
+            mapcycle_pathCoder( mod_shortName_string, mapcycle_filePath, charsmax( mapcycle_filePath ) )
+            config_pathCoder( mod_shortName_string, config_filePath, charsmax( config_filePath ) )
+            plugin_pathCoder( mod_shortName_string, plugin_filePath, charsmax( plugin_filePath ) )
+            message_pathCoder( mod_shortName_string, message_filePath, charsmax( message_filePath ) )
+            
+            messageResource_pathCoder( mod_shortName_string, messageResource_filePath,
+                    charsmax( messageResource_filePath ) )
+            
+            lateConfig_pathCoder( mod_shortName_string, lateConfig_filePath, charsmax( lateConfig_filePath ) )
+            
+            server_print( "[AMX MOD Loaded] %s", mod_shortName_string )
+            server_print( "[AMX MOD Loaded] %s", mapcycle_filePath )
+            server_print( "[AMX MOD Loaded] %s", plugin_filePath )
+            server_print( "[AMX MOD Loaded] %s", config_filePath )
+            server_print( "[AMX MOD Loaded] %s", message_filePath )
+            server_print( "[AMX MOD Loaded] %s", lateConfig_filePath )
+            server_print( "[AMX MOD Loaded] %s^n", messageResource_filePath )
+        #endif
         }
     }
     fclose( votingList_filePointer )
@@ -849,14 +901,13 @@ public configDailyMaps( mapcycle_filePath[] )
         set_localinfo(   "firstMapcycle_loaded",         currentMapcycle_filePath )
     }
     
-    if( g_debug_level & 8 )
-    {
-        server_print( "AT configDailyMaps: " )
-        server_print( "g_isFirstTime_serverLoad is: %d",         g_isFirstTime_serverLoad     )
-        server_print( "g_isTimeTo_changeMapcyle is: %d",         g_isTimeTo_changeMapcyle )
-        server_print( "file_exists( mapcycle_filePath ) is: %d",     file_exists( mapcycle_filePath ) )
-        server_print( "mapcycle_filePath is: %s^n",                             mapcycle_filePath         )
-    }
+#if IS_DEBUG_ENABLED > 0
+    server_print( "AT configDailyMaps: " )
+    server_print( "g_isFirstTime_serverLoad is: %d",         g_isFirstTime_serverLoad     )
+    server_print( "g_isTimeTo_changeMapcyle is: %d",         g_isTimeTo_changeMapcyle )
+    server_print( "file_exists( mapcycle_filePath ) is: %d",     file_exists( mapcycle_filePath ) )
+    server_print( "mapcycle_filePath is: %s^n",                             mapcycle_filePath         )
+#endif
     
     if( g_isTimeTo_changeMapcyle )
     {
@@ -879,7 +930,7 @@ public configDailyMaps( mapcycle_filePath[] )
  */
 public disableMods()
 {
-    debugMessageLog( 1, "^n AT disableMods, the g_currentMod_shortName is: %s^n", g_currentMod_shortName )
+    DEBUG_LOGGER( 1, "^n AT disableMods, the g_currentMod_shortName is: %s^n", g_currentMod_shortName )
     
     if( file_exists( g_currentMod_id_filePath ) )
     {
@@ -943,7 +994,7 @@ public activateMod_byShortName( modShortName[] )
     {
         printMessage( 0, "Error at activateMod_byShortName!! plugin_filePath: %s", plugin_filePath )
     }
-    debugMessageLog( 1, "^n activateMod_byShortName, plugin_filePath: %s^n", plugin_filePath )
+    DEBUG_LOGGER( 1, "^n activateMod_byShortName, plugin_filePath: %s^n", plugin_filePath )
     
     return false
 }
@@ -1064,72 +1115,6 @@ public msgResourceActivated( resourceName[], isTimeToRestart, isTimeTo_executeMe
 }
 
 /**
- * Displays a message to a specific server player id and at the server console.
- *
- * @param player_id the player id.
- * @param message[] the text formatting rules to display.
- * @param any the variable number of formatting parameters.
- */
-public printMessage( player_id, message[], any: ... )
-{
-    static formated_message[ LONG_STRING ]
-    
-    vformat( formated_message, charsmax( formated_message ), message, 3 )
-
-#if AMXX_VERSION_NUM < 183
-    print_color( player_id, formated_message )
-#else
-    client_print_color( player_id, formated_message )
-#endif
-    
-    replace_all( formated_message, charsmax( formated_message ), "^4", "" )
-    replace_all( formated_message, charsmax( formated_message ), "^1", "" )
-    replace_all( formated_message, charsmax( formated_message ), "^3", "" )
-    
-    client_print(   player_id, print_console, formated_message )
-    server_print( formated_message )
-}
-
-/**
- * DeRoiD's Mapchooser print_color function:
- *   https://forums.alliedmods.net/showthread.php?t=261412
- *
- * @param player_id the player id to display, use 0 for all players.
- * @param input the colored formatting rules
- * @param any the variable number of formatting parameters
- */
-stock print_color( const player_id, const input[], any: ... )
-{
-    new playerIndex_idsCounter = 1, players_ids[ 32 ];
-    
-    static formated_message[ LONG_STRING ];
-    
-    vformat( formated_message, charsmax( formated_message ), input, 3 );
-    
-    if( player_id )
-    {
-        players_ids[ 0 ] = player_id;
-    }
-    else
-    {
-        get_players( players_ids, playerIndex_idsCounter, "ch" );
-    }
-
-    for( new i = 0; i < playerIndex_idsCounter; i++ )
-    {
-        if( is_user_connected( players_ids[ i ] ) )
-        {
-            message_begin( MSG_ONE_UNRELIABLE, g_sayText, _, players_ids[ i ] );
-            write_byte( players_ids[ i ] );
-            write_string( formated_message );
-            message_end();
-        }
-    }
-
-    return PLUGIN_HANDLED;
-}
-
-/**
  * Displays a message to a specific server player show the current mod.
  *
  * @param player_id the player id
@@ -1216,14 +1201,11 @@ public start_vote()
     display_votemod_menu( 0, 0 )
     client_cmd( 0, "spk Gman/Gman_Choose2" )
     
-    if( g_debug_level )
-    {
-        set_task( 6.0, "check_vote", TASK_CHVOMOD )
-    }
-    else
-    {
-        set_task( 30.0, "check_vote", TASK_CHVOMOD )
-    }
+#if IS_DEBUG_ENABLED > 0
+    set_task( 6.0, "check_vote", TASK_CHVOMOD )
+#else
+    set_task( 30.0, "check_vote", TASK_CHVOMOD )
+#endif
 }
 
 /**
@@ -1326,21 +1308,18 @@ public display_votemod_menu( player_id, menu_current_page )
         }
     }
     
-    if( g_debug_level )
-    {
-        new debug_player_name[ 64 ]
-        
-        get_user_name( player_id, debug_player_name, 63 )
-        
-        server_print( "Player: %s^nMenu body %s ^nMenu name: %s ^nMenu valid keys: %i",
-                debug_player_name, menu_body, g_menuname, menu_valid_keys )
-        
-        show_menu( player_id, menu_valid_keys, menu_body, 5, g_menuname )
-    }
-    else
-    {
-        show_menu( player_id, menu_valid_keys, menu_body, 25, g_menuname )
-    }
+#if IS_DEBUG_ENABLED > 0
+    new debug_player_name[ 64 ]
+    
+    get_user_name( player_id, debug_player_name, 63 )
+    
+    server_print( "Player: %s^nMenu body %s ^nMenu name: %s ^nMenu valid keys: %i",
+            debug_player_name, menu_body, g_menuname, menu_valid_keys )
+    
+    show_menu( player_id, menu_valid_keys, menu_body, 5, g_menuname )
+#else
+    show_menu( player_id, menu_valid_keys, menu_body, 25, g_menuname )
+#endif
 }
 
 /**
@@ -1371,7 +1350,7 @@ public convert_octal_to_decimal( octal_number )
  */
 public player_vote( player_id, key )
 {
-    debugMessageLog( 4, "Key before switch: %d", key )
+    DEBUG_LOGGER( 4, "Key before switch: %d", key )
     
     
     /* Well, I dont know why, but it doesnt even matter, how hard you try...
@@ -1390,7 +1369,7 @@ public player_vote( player_id, key )
         case 7: key = 8
         case 8: key = 9
     }
-    debugMessageLog( 4, "Key after switch: %d", key )
+    DEBUG_LOGGER( 4, "Key after switch: %d", key )
     
     if( key == 9 )
     {
@@ -1541,20 +1520,139 @@ public playersPlaying( Float:percent )
     return floatround( count * percent )
 }
 
+
+/**
+ * Displays a message to a specific server player id and at the server console.
+ *
+ * @param player_id the player id.
+ * @param message[] the text formatting rules to display.
+ * @param any the variable number of formatting parameters.
+ */
+public printMessage( player_id, message[], any: ... )
+{
+    static formated_message[ LONG_STRING ]
+    
+    vformat( formated_message, charsmax( formated_message ), message, 3 )
+
+    if( g_is_supported_color_chat )
+    {
+    #if AMXX_VERSION_NUM < 183
+        print_color( player_id, formated_message )
+    #else
+        client_print_color( player_id, formated_message )
+    #endif
+    }
+    else
+    {
+        REMOVE_COLOR_TAGS( formated_message )
+
+        client_print( player_id, print_console, formated_message )
+    }
+
+    // MOD events message are very important because of the subject, so it is always printed
+    // to the server console.
+    server_print( formated_message )
+}
+
+/**
+ * DeRoiD's Mapchooser print_color function:
+ *   https://forums.alliedmods.net/showthread.php?t=261412
+ *
+ * @param player_id the player id to display, use 0 for all players.
+ * @param input the colored formatting rules
+ * @param any the variable number of formatting parameters
+ */
+stock print_color( const player_id, const input[], any: ... )
+{
+    static playerIndex_idsCounter
+    static players_ids[ 32 ];
+    static formated_message[ COLOR_MESSAGE ];
+
+    playerIndex_idsCounter = 0
+    
+    vformat( formated_message, charsmax( formated_message ), input, 3 );
+    
+    if( player_id )
+    {
+        PRINT_COLORED_MESSAGE( player_id, formated_message )
+    }
+    else
+    {
+        get_players( players_ids, playerIndex_idsCounter, "ch" );
+
+        for( new i = 0; i < playerIndex_idsCounter; i++ )
+        {
+            PRINT_COLORED_MESSAGE( players_ids[ i ], formated_message )
+        }
+    }
+    
+    return PLUGIN_HANDLED;
+}
+
+/**
+ * ConnorMcLeod's [Dyn Native] ColorChat v0.3.2 (04 jul 2013) register_dictionary_colored function:
+ *   <a href="https://forums.alliedmods.net/showthread.php?p=851160">ColorChat v0.3.2</a>
+ *
+ * @param filename the dictionary file name including its file extension.
+ */
+stock register_dictionary_colored( const filename[] )
+{
+    if( !register_dictionary( filename ) )
+    {
+        return 0;
+    }
+    
+    new szFileName[ 256 ];
+    get_localinfo( "amxx_datadir", szFileName, charsmax( szFileName ) );
+    formatex( szFileName, charsmax( szFileName ), "%s/lang/%s", szFileName, filename );
+    new fp = fopen( szFileName, "rt" );
+    
+    if( !fp )
+    {
+        log_amx( "Failed to open %s", szFileName );
+        return 0;
+    }
+    
+    new szBuffer[ 512 ], szLang[ 3 ], szKey[ 64 ], szTranslation[ 256 ], TransKey:iKey;
+    
+    while( !feof( fp ) )
+    {
+        fgets( fp, szBuffer, charsmax( szBuffer ) );
+        trim( szBuffer );
+        
+        if( szBuffer[ 0 ] == '[' )
+        {
+            strtok( szBuffer[ 1 ], szLang, charsmax( szLang ), szBuffer, 1, ']' );
+        }
+        else if( szBuffer[ 0 ] )
+        {
+        #if AMXX_VERSION_NUM < 183
+            strbreak( szBuffer, szKey, charsmax( szKey ), szTranslation, charsmax( szTranslation ) );
+        #else
+            argbreak( szBuffer, szKey, charsmax( szKey ), szTranslation, charsmax( szTranslation ) );
+        #endif
+            iKey = GetLangTransKey( szKey );
+            
+            if( iKey != TransKey_Bad )
+            {
+                INSERT_COLOR_TAGS( szTranslation )
+                AddTranslation( szLang, iKey, szTranslation[ 2 ] );
+            }
+        }
+    }
+    
+    fclose( fp );
+    return 1;
+}
+
 /**
  * Write debug messages to server's console accordantly to the global variable g_debug_level.
  *
- * @param mode the debug level to be used:
- *           ( 00000 ) 0 disabled all debug.
- *           ( 00001 ) 1 displays basic debug messages.
- *           ( 00010 ) 2 displays each mod loaded.
- *           ( 00100 ) 4 displays the keys pressed during voting.
- *           ( 01000 ) 8 displays the the mapcycle configuration.
- *
+ * @param mode the debug mode level, see the variable 'g_debug_level' for the levels.
  * @param message[] the text formatting rules to display. If omitted displays ""
  * @param any the variable number of formatting parameters.
  */
-public debugMessageLog( mode, message[], any: ... )
+stock debugMesssageLogger( mode, message[], any: ... )
 {
     if( mode & g_debug_level )
     {
