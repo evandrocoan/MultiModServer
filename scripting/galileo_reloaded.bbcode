@@ -8,8 +8,8 @@
 [*][goanchor=Introduction]Introduction[/goanchor]
 [*][goanchor=Requirements]Requirements and Commands[/goanchor]
 [*][goanchor=Installation]Installation[/goanchor]
-[*][goanchor=Change]Change Log[/goanchor]
 [*][goanchor=TODO]TODO[/goanchor]
+[*][goanchor=Change]Change Log[/goanchor]
 [*][goanchor=Credits]Credits[/goanchor]
 [*][goanchor=Sourcecode]Source Code and Support[/goanchor]
 [*][goanchor=Downloads]Downloads[/goanchor]
@@ -160,6 +160,18 @@ disable the original "[B]mapchooser.amxx[/B]" or any other [B]map manager plugin
 [QUOTE]
 galileo_reloaded.amxx
 [/QUOTE]
+[/SPOILER]******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] *********************************
+[SPOILER]
+[QUOTE]
+ * Change the nextmap to [not voted yet]
+ * Fix bug where runoff show a 3º option, Extend Current Map.
+ * Add an option to 'gal_vote_showstatustype', to show the vote progress as porcetage and count.
+ * Add an option to 'gal_banrecentstyle', to show the recent maps are displayed as a menu.
+ * Improve the command 'gal_listmaps_paginate' to show all maps without paginate or channel overflow.
+ * During a vote, change the nextmap to [vote in progress]
+ * Show only the last 10 seconds remaining to end the voting.
+ * Add a cvar to keep current map featuare disabled.
+[/QUOTE]
 [/SPOILER]******************************** [anchor]Change[/anchor][B][SIZE="5"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
 [SPOILER]
 [QUOTE]
@@ -214,6 +226,9 @@ galileo_reloaded.amxx
  * Added a basic unit test structure for developers/scripters.
  * Added weighted votes that allows admins to have their vote counted more.
  * Added display colored text messages support.
+
+2016-01-31 | v1.0
+ * Add an option to 'gal_vote_showstatus', to always the vote progress to a player.
 [/QUOTE]
 [LIST=1]
 [*]Deagles' Map Manager v3.25Beta - [COLOR="Blue"]deagsmapmanager.sma[/COLOR], by DynamicBits: [url]https://forums.alliedmods.net/showthread.php?t=177180[/url]
@@ -321,18 +336,6 @@ Compilation Time:      0,45 sec               0,52 sec      +0,07 sec
 Press enter to exit ...
 [/PAWN]
 [/SPOILER]
-[/SPOILER]******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] *********************************
-[SPOILER]
-[QUOTE]
- * Change the nextmap to [not voted yet]
- * Add an option to 'gal_vote_showstatus', to always the vote progress to a player.
- * Add an option to 'gal_vote_showstatustype', to show the vote progress as porcetage and count.
- * Add an option to 'gal_banrecentstyle', to show the recent maps are displayed as a menu.
- * Improve the command 'gal_listmaps_paginate' to show all maps without paginate or channel overflow.
- * During a vote, change the nextmap to [vote in progress]
- * Show only the last 10 seconds remaining to end the voting.
- * Add a cvar to keep current map featuare disabled.
-[/QUOTE]
 [/SPOILER]******************************** [anchor]Credits[/anchor][B][SIZE="5"][COLOR="blue"]Credits[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] *******************************
 [SPOILER]
 [B]Brad[/B]: The Original Galileo developer. 
