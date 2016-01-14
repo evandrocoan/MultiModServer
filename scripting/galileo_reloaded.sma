@@ -260,6 +260,7 @@ new cvar_voteWeightFlags
 new cvar_extendmapMax;
 new cvar_extendmapStep;
 new cvar_extendmapStepRounds;
+new cvar_extendmapAllowStay
 new cvar_endOfMapVote;
 new cvar_emptyWait
 new cvar_emptyMapFile
@@ -295,6 +296,7 @@ new cvar_soundsMute;
 new bool:g_is_color_chat_supported
 new bool:g_is_to_cancel_end_vote
 new bool:g_isUsingEmptyCycle
+new bool:g_is_vote_blocked
 new g_emptyMapCnt
 new g_cntRecentMap;
 new Array:g_nominationMap
@@ -361,6 +363,7 @@ public plugin_init()
     cvar_extendmapMax        = register_cvar( "amx_extendmap_max", "90" );
     cvar_extendmapStep       = register_cvar( "amx_extendmap_step", "15" );
     cvar_extendmapStepRounds = register_cvar( "amx_extendmap_step_rounds", "30" );
+    cvar_extendmapAllowStay  = register_cvar( "amx_extendmap_allow_stay", "1" );
     
     cvar_emptyCycle             = register_cvar( "gal_in_empty_cycle", "0", FCVAR_SPONLY );
     cvar_unnominateDisconnected = register_cvar( "gal_unnominate_disconnected", "0" );
@@ -411,8 +414,6 @@ public plugin_init()
     register_concmd( "gal_startvote", "cmd_startVote", ADMIN_MAP );
     register_concmd( "gal_createmapfile", "cmd_createMapFile", ADMIN_RCON );
     
-    g_menuChooseMap = register_menuid( MENU_CHOOSEMAP );
-    
     g_maxrounds_pointer  = get_cvar_pointer( "mp_maxrounds" )
     g_winlimit_pointer   = get_cvar_pointer( "mp_winlimit" )
     g_freezetime_pointer = get_cvar_pointer( "mp_freezetime" )
@@ -421,6 +422,7 @@ public plugin_init()
 #if AMXX_VERSION_NUM < 183
     g_user_msgid = get_user_msgid( "SayText" )
 #endif
+    g_menuChooseMap = register_menuid( MENU_CHOOSEMAP );
     
     register_menucmd( g_menuChooseMap, MENU_KEY_1 | MENU_KEY_2 |
             MENU_KEY_3 | MENU_KEY_4 | MENU_KEY_5 | MENU_KEY_6 |
@@ -2082,10 +2084,18 @@ public vote_startDirector( bool:forced )
     {
         vote_loadRunoffChoices();
         
-        choicesLoaded      = g_totalVoteOptions_temp
-        g_totalVoteOptions = g_totalVoteOptions_temp
+        if( !get_pcvar_num( cvar_extendmapAllowStay ) )
+        {
+            choicesLoaded      = 2
+            g_totalVoteOptions = 2
+        }
+        else
+        {
+            choicesLoaded      = g_totalVoteOptions_temp
+            g_totalVoteOptions = g_totalVoteOptions_temp
+        }
         
-        voteDuration = get_pcvar_num( cvar_runoffDuration );
+        voteDuration = get_pcvar_num( cvar_runoffDuration )
         
         DEBUG_LOGGER( 16, "At vote_startDirector --- Runoff map1: %s, Runoff map2: %s --- choicesLoaded: %d", \
                 g_mapsVoteMenuNames[ 0 ], g_mapsVoteMenuNames[ 1 ], choicesLoaded )
@@ -2097,8 +2107,15 @@ public vote_startDirector( bool:forced )
         // make it known that a vote is in progress
         g_voteStatus |= VOTE_IN_PROGRESS;
         
-        g_is_map_extension_allowed =
-            get_pcvar_float( g_timelimit_pointer ) < get_pcvar_float( cvar_extendmapMax )
+        // Max rounds vote map does not have a max rounds extension limit as mp_timelimit
+        if( g_is_maxrounds_vote_map )
+        {
+            g_is_map_extension_allowed = true
+        }
+        {
+            g_is_map_extension_allowed =
+                get_pcvar_float( g_timelimit_pointer ) < get_pcvar_float( cvar_extendmapMax )
+        }
         
         g_is_voting_locked = true
         set_task( 120.0, "unlock_voting", TASKID_UNLOCK_VOTING );
@@ -2111,7 +2128,8 @@ public vote_startDirector( bool:forced )
             g_voteStatus |= VOTE_FORCED;
         }
         
-        choicesLoaded = vote_loadChoices();
+        vote_loadChoices();
+        choicesLoaded = g_totalVoteOptions
         voteDuration  = get_pcvar_num( cvar_voteDuration );
         
         DEBUG_LOGGER( 4, "   [PRIMARY VOTE CHOICES ( %i )]", choicesLoaded )
@@ -2161,6 +2179,10 @@ public vote_startDirector( bool:forced )
         
         // display the map choices
         set_task( 8.5, "vote_handleDisplay", TASKID_VOTE_HANDLEDISPLAY );
+
+        // block player that does not voted 
+        set_task( 8.0 + float( voteDuration ), "block_vote", TASKID_VOTE_DISPLAY )
+        g_is_vote_blocked = false;
         
         // display the vote outcome
         if( get_pcvar_num( cvar_voteStatus ) )
@@ -2198,6 +2220,12 @@ public vote_startDirector( bool:forced )
     
     DEBUG_LOGGER( 4, "" )
     DEBUG_LOGGER( 4, "   [PLAYER CHOICES]" )
+}
+
+public block_vote()
+{
+    arrayset( g_voted, false, sizeof( g_voted ) )
+    g_is_vote_blocked = true
 }
 
 public vote_countdownPendingVote()
@@ -2398,8 +2426,8 @@ stock vote_addFiller()
             && mapCnt )
         {
             unsuccessfulCnt = 0;
-            allowedCnt      = min( min( mapsPerGroup[ groupIdx ],
-                            g_choiceMax - g_totalVoteOptions ), mapCnt );
+            allowedCnt      = min( min( mapsPerGroup[ groupIdx ], g_choiceMax - g_totalVoteOptions ), 
+                            mapCnt );
             
             DEBUG_LOGGER( 8, "[%i] allowedCnt: %i   mapsPerGroup: %i   Max-Cnt: %i", groupIdx, \
                     allowedCnt, mapsPerGroup[ groupIdx ], g_choiceMax - g_totalVoteOptions )
@@ -2534,9 +2562,6 @@ public vote_handleDisplay()
 
 public vote_display( vote_display_task_argument[ 3 ] )
 {
-    static allKeys = MENU_KEY_1 | MENU_KEY_2 | MENU_KEY_3 | MENU_KEY_4 |
-                     MENU_KEY_5 | MENU_KEY_6 | MENU_KEY_7 | MENU_KEY_8 | MENU_KEY_9 | MENU_KEY_0;
-    
     static keys, voteStatus[ 512 ], g_totalVoteAtMap[ 16 ];
     
     new updateTimeRemaining = vote_display_task_argument[ 0 ];
@@ -2634,6 +2659,11 @@ public vote_display( vote_display_task_argument[ 3 ] )
             }
         }
         
+        if( !get_pcvar_num( cvar_extendmapAllowStay ) )
+        {
+            allowStay   = false;
+        }
+
         // add optional menu item
         if( g_is_map_extension_allowed )
         {
@@ -2678,7 +2708,11 @@ public vote_display( vote_display_task_argument[ 3 ] )
                             CLR_WHITE, LANG_SERVER, "GAL_OPTION_STAY", g_totalVoteAtMap );
                 }
                 
-                keys |= ( 1 << g_totalVoteOptions );
+                // Added the extension/stay key option (1 << 2 = key 3, 1 << 3 = key 4, ...)
+                if( get_pcvar_num( cvar_extendmapAllowStay) || g_is_map_extension_allowed )
+                {
+                    keys |= ( 1 << g_totalVoteOptions );
+                }
             }
             
             // make a copy of the virgin menu
@@ -2702,8 +2736,17 @@ public vote_display( vote_display_task_argument[ 3 ] )
         charCnt = copy( voteFooter, charsmax( voteFooter ), "^n^n" );
         
         g_voteDuration--;
-        formatex( voteFooter[ charCnt ], charsmax( voteFooter ) - charCnt, "%s%L: %s%i",
-                CLR_GREY, LANG_SERVER, "GAL_TIMELEFT", CLR_RED, g_voteDuration );
+        
+        if( g_voteDuration > 0 )
+        {
+            formatex( voteFooter[ charCnt ], charsmax( voteFooter ) - charCnt, "%s%L: %s%i",
+                    CLR_GREY, LANG_SERVER, "GAL_TIMELEFT", CLR_RED, g_voteDuration );
+        }
+        else
+        {
+            formatex( voteFooter[ charCnt ], charsmax( voteFooter ) - charCnt, "%s%L: %s%i",
+                    CLR_GREY, LANG_SERVER, "GAL_TIMELEFT", CLR_RED, 0 );
+        }
     }
     
     // create the different displays
@@ -2745,7 +2788,7 @@ public vote_display( vote_display_task_argument[ 3 ] )
             if( menuid == 0
                 || menuid == g_menuChooseMap )
             {
-                show_menu( player_id, allKeys, menuDirty, max( 1, g_voteDuration ), MENU_CHOOSEMAP );
+                show_menu( player_id, keys, menuDirty, max( 1, g_voteDuration ), MENU_CHOOSEMAP );
             }
         }
     }
@@ -2801,7 +2844,7 @@ public vote_display( vote_display_task_argument[ 3 ] )
                     if( menuid == 0
                         || menuid == g_menuChooseMap )
                     {
-                        show_menu( player_id, allKeys, menuDirty,
+                        show_menu( player_id, keys, menuDirty,
                                 ( isVoteOver ) ? 5 : max( 1, g_voteDuration ), MENU_CHOOSEMAP );
                     }
                 }
@@ -3160,9 +3203,12 @@ public vote_expire()
             winnerVoteMapIndex = firstPlaceChoices[ 0 ];
         }
         
-        // winnerVoteMapIndex == g_totalVoteOptions, means that it it keep current map option, then
-        // here we keep the current map or extend current map
-        if( winnerVoteMapIndex == g_totalVoteOptions )
+        // winnerVoteMapIndex == g_totalVoteOptions, means the 'keep current map' option, then
+        // here we keep the current map or extend current map, unless the cvar_extendmapAllowStay
+        // is set to 0 or g_is_map_extension_allowed is disallowed.
+        if( winnerVoteMapIndex == g_totalVoteOptions 
+            && ( get_pcvar_num( cvar_extendmapAllowStay )
+                || g_is_map_extension_allowed ) )
         {
             if( g_voteStatus & VOTE_IS_EARLY )
             {
@@ -3356,7 +3402,7 @@ public vote_handleChoice( player_id, key )
     
     g_snuffDisplay[ player_id ] = true;
     
-    if( g_voted[ player_id ] == false )
+    if( g_voted[ player_id ] == false && !g_is_vote_blocked )
     {
         new name[ 32 ];
         
@@ -3483,7 +3529,7 @@ public vote_handleChoice( player_id, key )
     }
     
     // display the vote again, with status
-    if( get_pcvar_num( cvar_voteStatus ) == SHOWSTATUS_VOTE )
+    if( get_pcvar_num( cvar_voteStatus ) & SHOWSTATUS_VOTE )
     {
         new vote_display_task_argument[ 3 ];
         vote_display_task_argument[ 0 ] = false;
@@ -4509,7 +4555,11 @@ public create_fakeVotes()
         g_arrayOfMapsWithVotesNumber[ 2 ] += 0;     // map 3
         g_arrayOfMapsWithVotesNumber[ 3 ] += 0;     // map 4
         g_arrayOfMapsWithVotesNumber[ 4 ] += 0;     // map 5
-        g_arrayOfMapsWithVotesNumber[ 5 ] += 2;    // extend option
+
+        if( get_pcvar_num( cvar_extendmapAllowStay ) )
+        {
+            g_arrayOfMapsWithVotesNumber[ 5 ] += 2;    // extend option
+        }
         
         g_totalVotesCounted = g_arrayOfMapsWithVotesNumber[ 0 ] + g_arrayOfMapsWithVotesNumber[ 1 ] +
                               g_arrayOfMapsWithVotesNumber[ 2 ] + g_arrayOfMapsWithVotesNumber[ 3 ] +
