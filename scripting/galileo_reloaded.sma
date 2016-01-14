@@ -2523,7 +2523,8 @@ public vote_handleDisplay()
     vote_display_task_argument[ 1 ] = 0;
     vote_display_task_argument[ 2 ] = false;
     
-    if( get_pcvar_num( cvar_voteStatus ) == SHOWSTATUS_VOTE )
+    if( get_pcvar_num( cvar_voteStatus ) == SHOWSTATUS_VOTE
+        || get_pcvar_num( cvar_voteStatus ) == 3 )
     {
         set_task( 1.0, "vote_display", TASKID_VOTE_DISPLAY, vote_display_task_argument,
                 sizeof( vote_display_task_argument ), "a", g_voteDuration );
@@ -2736,12 +2737,13 @@ public vote_display( vote_display_task_argument[ 3 ] )
         // optionally display to single player that just voted
         if( showStatus == SHOWSTATUS_VOTE )
         {
+        #if IS_DEBUG_ENABLED > 0
             new name[ 32 ];
             get_user_name( player_id, name, 31 );
             
             DEBUG_LOGGER( 4, "    [%s ( dirty, just voted )]", name )
             DEBUG_LOGGER( 4, "        %s", menuDirty )
-            
+        #endif
             get_user_menu( player_id, menuid, menukeys );
             
             if( menuid == 0
@@ -3348,136 +3350,6 @@ public vote_expire()
     g_voteStatus &= ~VOTE_IS_RUNOFF;
 }
 
-stock map_extend()
-{
-    DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_rtvWait: %f  extendmapStep: %f", "map_extend( in )", \
-            get_pcvar_float( g_timelimit_pointer ), g_rtvWait, get_pcvar_float( cvar_extendmapStep ) )
-    
-    // reset the "rtv wait" time, taking into consideration the map extension
-    if( g_rtvWait )
-    {
-        g_rtvWait = get_pcvar_float( g_timelimit_pointer ) + g_rtvWait;
-    }
-    
-    save_time_limit()
-    
-    // do that actual map extension
-    if( g_is_maxrounds_vote_map )
-    {
-        new extendmap_step_rounds = get_pcvar_num( cvar_extendmapStepRounds )
-        
-        if( g_is_maxrounds_extend )
-        {
-            set_cvar_num( "mp_maxrounds", get_pcvar_num( g_maxrounds_pointer ) + extendmap_step_rounds );
-            set_cvar_num( "mp_winlimit", 0 );
-            
-            g_is_maxrounds_extend = false;
-        }
-        else
-        {
-            set_cvar_num( "mp_maxrounds", 0 );
-            set_cvar_num( "mp_winlimit", get_pcvar_num( g_winlimit_pointer ) + extendmap_step_rounds );
-        }
-        set_pcvar_float( g_timelimit_pointer, 0.0 );
-        
-        server_exec()
-        g_is_maxrounds_vote_map = false
-    }
-    else
-    {
-        set_cvar_num( "mp_maxrounds", 0 );
-        set_cvar_num( "mp_winlimit", 0 );
-        set_pcvar_float( g_timelimit_pointer, get_pcvar_float( g_timelimit_pointer )
-                + get_pcvar_float( cvar_extendmapStep ) );
-        
-        server_exec();
-    }
-    
-    // clear vote stats
-    vote_resetStats();
-    
-    DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_rtvWait: %f  extendmapStep: %f", "map_extend( out )", \
-            get_pcvar_float( g_timelimit_pointer ), g_rtvWait, get_pcvar_float( cvar_extendmapStep ) )
-}
-
-stock save_time_limit()
-{
-    if( !g_isTimeLimitChanged )
-    {
-        g_isTimeLimitChanged = true;
-        
-        g_originalTimelimit = get_pcvar_float( g_timelimit_pointer )
-        g_originalMaxRounds = get_pcvar_num( g_maxrounds_pointer )
-        g_originalWinLimit  = get_pcvar_num( g_winlimit_pointer )
-    }
-}
-
-stock vote_resetStats()
-{
-    g_totalVoteOptions  = 0;
-    g_totalVotesCounted = 0;
-    
-    arrayset( g_arrayOfMapsWithVotesNumber, 0, MAX_MAPS_IN_VOTE + 1 );
-    
-    // reset everyones' rocks
-    arrayset( g_rockedVote, false, sizeof( g_rockedVote ) );
-    g_rockedVoteCnt = 0;
-    
-    // reset everyones' votes
-    arrayset( g_voted, false, sizeof( g_voted ) );
-}
-
-stock map_isInMenu( map[] )
-{
-    for( new userVoteMapChoiceIndex = 0; userVoteMapChoiceIndex < g_totalVoteOptions;
-         ++userVoteMapChoiceIndex )
-    {
-        if( equal( map, g_mapsVoteMenuNames[ userVoteMapChoiceIndex ] ) )
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
-stock prefix_isInMenu( map[] )
-{
-    if( get_pcvar_num( cvar_voteUniquePrefixes ) )
-    {
-        new tentativePrefix[ 8 ], existingPrefix[ 8 ], junk[ 8 ];
-        
-        strtok( map, tentativePrefix, charsmax( tentativePrefix ), junk, charsmax( junk ), '_', 1 );
-        
-        for( new userVoteMapChoiceIndex = 0; userVoteMapChoiceIndex < g_totalVoteOptions;
-             ++userVoteMapChoiceIndex )
-        {
-            strtok( g_mapsVoteMenuNames[ userVoteMapChoiceIndex ], existingPrefix,
-                    charsmax( existingPrefix ), junk, charsmax( junk ), '_', 1 );
-            
-            if( equal( tentativePrefix, existingPrefix ) )
-            {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-stock map_isTooRecent( map[] )
-{
-    if( get_pcvar_num( cvar_banRecent ) )
-    {
-        for( new idxBannedMap = 0; idxBannedMap < g_cntRecentMap; ++idxBannedMap )
-        {
-            if( equal( map, g_recentMap[ idxBannedMap ] ) )
-            {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
 public vote_handleChoice( player_id, key )
 {
     if( g_voteStatus & VOTE_HAS_EXPIRED )
@@ -3633,6 +3505,137 @@ stock Float:map_getMinutesElapsed()
             get_pcvar_float( g_timelimit_pointer ) )
     
     return get_pcvar_float( g_timelimit_pointer ) - ( float( get_timeleft() ) / 60.0 );
+}
+
+
+stock map_extend()
+{
+    DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_rtvWait: %f  extendmapStep: %f", "map_extend( in )", \
+            get_pcvar_float( g_timelimit_pointer ), g_rtvWait, get_pcvar_float( cvar_extendmapStep ) )
+    
+    // reset the "rtv wait" time, taking into consideration the map extension
+    if( g_rtvWait )
+    {
+        g_rtvWait = get_pcvar_float( g_timelimit_pointer ) + g_rtvWait;
+    }
+    
+    save_time_limit()
+    
+    // do that actual map extension
+    if( g_is_maxrounds_vote_map )
+    {
+        new extendmap_step_rounds = get_pcvar_num( cvar_extendmapStepRounds )
+        
+        if( g_is_maxrounds_extend )
+        {
+            set_cvar_num( "mp_maxrounds", get_pcvar_num( g_maxrounds_pointer ) + extendmap_step_rounds );
+            set_cvar_num( "mp_winlimit", 0 );
+            
+            g_is_maxrounds_extend = false;
+        }
+        else
+        {
+            set_cvar_num( "mp_maxrounds", 0 );
+            set_cvar_num( "mp_winlimit", get_pcvar_num( g_winlimit_pointer ) + extendmap_step_rounds );
+        }
+        set_pcvar_float( g_timelimit_pointer, 0.0 );
+        
+        server_exec()
+        g_is_maxrounds_vote_map = false
+    }
+    else
+    {
+        set_cvar_num( "mp_maxrounds", 0 );
+        set_cvar_num( "mp_winlimit", 0 );
+        set_pcvar_float( g_timelimit_pointer, get_pcvar_float( g_timelimit_pointer )
+                + get_pcvar_float( cvar_extendmapStep ) );
+        
+        server_exec();
+    }
+    
+    // clear vote stats
+    vote_resetStats();
+    
+    DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_rtvWait: %f  extendmapStep: %f", "map_extend( out )", \
+            get_pcvar_float( g_timelimit_pointer ), g_rtvWait, get_pcvar_float( cvar_extendmapStep ) )
+}
+
+stock save_time_limit()
+{
+    if( !g_isTimeLimitChanged )
+    {
+        g_isTimeLimitChanged = true;
+        
+        g_originalTimelimit = get_pcvar_float( g_timelimit_pointer )
+        g_originalMaxRounds = get_pcvar_num( g_maxrounds_pointer )
+        g_originalWinLimit  = get_pcvar_num( g_winlimit_pointer )
+    }
+}
+
+stock vote_resetStats()
+{
+    g_totalVoteOptions  = 0;
+    g_totalVotesCounted = 0;
+    
+    arrayset( g_arrayOfMapsWithVotesNumber, 0, MAX_MAPS_IN_VOTE + 1 );
+    
+    // reset everyones' rocks
+    arrayset( g_rockedVote, false, sizeof( g_rockedVote ) );
+    g_rockedVoteCnt = 0;
+    
+    // reset everyones' votes
+    arrayset( g_voted, false, sizeof( g_voted ) );
+}
+
+stock map_isInMenu( map[] )
+{
+    for( new userVoteMapChoiceIndex = 0; userVoteMapChoiceIndex < g_totalVoteOptions;
+         ++userVoteMapChoiceIndex )
+    {
+        if( equal( map, g_mapsVoteMenuNames[ userVoteMapChoiceIndex ] ) )
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+stock prefix_isInMenu( map[] )
+{
+    if( get_pcvar_num( cvar_voteUniquePrefixes ) )
+    {
+        new tentativePrefix[ 8 ], existingPrefix[ 8 ], junk[ 8 ];
+        
+        strtok( map, tentativePrefix, charsmax( tentativePrefix ), junk, charsmax( junk ), '_', 1 );
+        
+        for( new userVoteMapChoiceIndex = 0; userVoteMapChoiceIndex < g_totalVoteOptions;
+             ++userVoteMapChoiceIndex )
+        {
+            strtok( g_mapsVoteMenuNames[ userVoteMapChoiceIndex ], existingPrefix,
+                    charsmax( existingPrefix ), junk, charsmax( junk ), '_', 1 );
+            
+            if( equal( tentativePrefix, existingPrefix ) )
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+stock map_isTooRecent( map[] )
+{
+    if( get_pcvar_num( cvar_banRecent ) )
+    {
+        for( new idxBannedMap = 0; idxBannedMap < g_cntRecentMap; ++idxBannedMap )
+        {
+            if( equal( map, g_recentMap[ idxBannedMap ] ) )
+            {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 public vote_rock( player_id )
