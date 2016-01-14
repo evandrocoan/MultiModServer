@@ -176,7 +176,7 @@ new g_colored_players_ids[ 32 ]
  * Determines if it is a end of map vote due time limit or max rounds expiration.
  */
 #define IS_FINAL_VOTE \
-    ( get_pcvar_float( g_timelimit_pointer ) < START_VOTEMAP_MIN_TIME ) \
+    ( ( get_pcvar_float( g_timelimit_pointer ) * 60 ) < START_VOTEMAP_MIN_TIME ) \
     || ( g_is_maxrounds_vote_map )
 
 
@@ -2065,11 +2065,12 @@ public vote_startDirector( bool:forced )
     new choicesLoaded
     new voteDuration
     
-    if( ( ( g_voteStatus & VOTE_IN_PROGRESS )
-          && !( g_voteStatus & VOTE_IS_RUNOFF ) )
-        || ( g_is_voting_locked
-             && !( g_voteStatus & VOTE_IS_RUNOFF ) )
-        || g_is_to_cancel_end_vote )
+    if( ( ( ( g_voteStatus & VOTE_IN_PROGRESS )
+            && !( g_voteStatus & VOTE_IS_RUNOFF ) )
+          || ( g_is_voting_locked
+               && !( g_voteStatus & VOTE_IS_RUNOFF ) )
+          || g_is_to_cancel_end_vote )
+        && !g_debug_level )
     {
         DEBUG_LOGGER( 1, "At vote_startDirector --- The voting was canceled. g_voteStatus: %d, \
                 g_is_voting_locked: %d, g_is_to_cancel_end_vote: %d", \
@@ -2624,13 +2625,13 @@ public vote_display( vote_display_task_argument[ 3 ] )
             if( IS_FINAL_VOTE )
             {
                 allowExtend = true;
+                allowStay   = false;
             }
             else
             {
                 allowExtend = false;
+                allowStay   = true;
             }
-            
-            allowStay = true;
         }
         
         // add optional menu item
@@ -3501,7 +3502,6 @@ stock Float:map_getMinutesElapsed()
     
     return get_pcvar_float( g_timelimit_pointer ) - ( float( get_timeleft() ) / 60.0 );
 }
-
 
 stock map_extend()
 {
