@@ -19,9 +19,6 @@
 *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
 *****************************************************************************************
-
-
-
 */
 
 #define PLUGIN_VERSION "1.0"
@@ -42,7 +39,7 @@
  * ( 0 ) 0 disabled all debug.
  * ( 1 ) 1 displays basic debug messages.
  * ( 10 ) 2 displays players disconnect, total number, multiple time limits changes and restores.
- * ( 100 ) 4 displays maps events, choices, votes, nominations, and the calls to 'map_populateList'.
+ * ( 100 ) 4 displays maps events, vote choices, votes, nominations, and the calls to 'map_populateList'.
  * ( ... ) 8 displays vote_loadChoices( ) and actions at vote_startDirector.
  * ( ... ) 16 displays messages related to RunOff voting.
  * ( ... ) 32 displays messages related to the rounds end map voting.
@@ -694,7 +691,6 @@ stock intermission_display( is_map_change_stays = false )
             client_cmd( 0, "drop" )
             client_cmd( 0, "drop" )
             
-            client_cmd( 0, "flash" )
             client_cmd( 0, "sgren" )
             client_cmd( 0, "hegren" )
             
@@ -2502,7 +2498,7 @@ public vote_handleDisplay()
     
     if( g_debug_level & 4 )
     {
-        set_task( 2.0, "dbg_fakeVotes", TASKID_DBG_FAKEVOTES );
+        set_task( 2.0, "create_fakeVotes", TASKID_DBG_FAKEVOTES );
     }
 #endif
     
@@ -2523,8 +2519,7 @@ public vote_handleDisplay()
     vote_display_task_argument[ 1 ] = 0;
     vote_display_task_argument[ 2 ] = false;
     
-    if( get_pcvar_num( cvar_voteStatus ) == SHOWSTATUS_VOTE
-        || get_pcvar_num( cvar_voteStatus ) == 3 )
+    if( get_pcvar_num( cvar_voteStatus ) & SHOWSTATUS_VOTE )
     {
         set_task( 1.0, "vote_display", TASKID_VOTE_DISPLAY, vote_display_task_argument,
                 sizeof( vote_display_task_argument ), "a", g_voteDuration );
@@ -2549,8 +2544,8 @@ public vote_display( vote_display_task_argument[ 3 ] )
 #if IS_DEBUG_ENABLED > 0
     new snuff = ( player_id > 0 ) ? g_snuffDisplay[ player_id ] : -1;
     
-    DEBUG_LOGGER( 4, "   [votedisplay( )] player_id: %i  updateTimeRemaining: %i\
-        unsnuffDisplay: %i  g_snuffDisplay: %i  g_refreshVoteStatus: %i\
+    DEBUG_LOGGER( 4, "   [votedisplay( )] player_id: %i  updateTimeRemaining: %i,  \
+        unsnuffDisplay: %i  g_snuffDisplay: %i  g_refreshVoteStatus: %i,  \
         g_totalVoteOptions: %i  len( g_vote ): %i  len( voteStatus ): %i", \
             vote_display_task_argument[ 1 ], vote_display_task_argument[ 0 ], \
             vote_display_task_argument[ 2 ], snuff, g_refreshVoteStatus, \
@@ -2694,7 +2689,7 @@ public vote_display( vote_display_task_argument[ 3 ] )
             
             charCnt += formatex( voteStatus[ charCnt ], charsmax( voteStatus ) - charCnt, "^n^n" );
             
-            g_refreshVoteStatus = false;
+            g_refreshVoteStatus = get_pcvar_num( cvar_voteStatus ) & 3;
         }
     }
     
@@ -2735,7 +2730,7 @@ public vote_display( vote_display_task_argument[ 3 ] )
     if( player_id > 0 )
     {
         // optionally display to single player that just voted
-        if( showStatus == SHOWSTATUS_VOTE )
+        if( showStatus & SHOWSTATUS_VOTE )
         {
         #if IS_DEBUG_ENABLED > 0
             new name[ 32 ];
@@ -2788,7 +2783,7 @@ public vote_display( vote_display_task_argument[ 3 ] )
             {
                 if( ( isVoteOver
                       && showStatus )
-                    || ( showStatus == SHOWSTATUS_VOTE
+                    || ( showStatus & SHOWSTATUS_VOTE
                          && g_voted[ player_id ] ) )
                 {
                     if( playerIdx == 0 )
@@ -4505,7 +4500,7 @@ stock cancel_voting()
 
 // ################################## BELOW HERE ONLY GOES DEBUG/TEST CODE ###################################
 #if IS_DEBUG_ENABLED > 0
-public dbg_fakeVotes()
+public create_fakeVotes()
 {
     if( !( g_voteStatus & VOTE_IS_RUNOFF ) )
     {
