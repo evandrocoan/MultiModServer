@@ -1513,19 +1513,19 @@ public cmd_say( player_id )
     
     parse( text, arg1, charsmax( arg1 ), arg2, charsmax( arg2 ), arg3, charsmax( arg3 ) )
     
-    DEBUG_LOGGER( 1, "( cmd_say ) text: %s, arg1: %s, arg2: %s, arg3: %s", text, arg1, arg2, arg3 )
+    DEBUG_LOGGER( 4, "( cmd_say ) text: %s, arg1: %s, arg2: %s, arg3: %s", text, arg1, arg2, arg3 )
     
     // if the chat line has more than 2 words, we're not interested at all
     if( arg3[ 0 ] == '^0' )
     {
         new idxMap;
         
-        DEBUG_LOGGER( 1, "( cmd_say ) On: arg3[ 0 ] == '^0'" )
+        DEBUG_LOGGER( 4, "( cmd_say ) On: arg3[ 0 ] == '^0'" )
         
         // if the chat line contains 1 word, it could be a map or a one-word command
         if( arg2[ 0 ] == '^0' ) // "say [rtv|rockthe<anything>vote]"
         {
-            DEBUG_LOGGER( 1, "( cmd_say ) On: arg2[ 0 ] == '^0'" )
+            DEBUG_LOGGER( 4, "( cmd_say ) On: arg2[ 0 ] == '^0'" )
             
             if( ( get_pcvar_num( cvar_rtvCommands ) & RTV_CMD_SHORTHAND
                   && equali( arg1, "rtv" ) )
@@ -1533,14 +1533,14 @@ public cmd_say( player_id )
                      && equali( arg1, "rockthe", 7 )
                      && equali( arg1[ strlen( arg1 ) - 4 ], "vote" ) ) )
             {
-                DEBUG_LOGGER( 1, "( cmd_say ) On: vote_rock( player_id );'" )
+                DEBUG_LOGGER( 4, "( cmd_say ) On: vote_rock( player_id );'" )
                 
                 vote_rock( player_id );
                 return PLUGIN_HANDLED;
             }
             else if( get_pcvar_num( cvar_nomPlayerAllowance ) )
             {
-                DEBUG_LOGGER( 1, "( cmd_say ) On: else if( get_pcvar_num( cvar_nomPlayerAllowance ) ) " )
+                DEBUG_LOGGER( 4, "( cmd_say ) On: else if( get_pcvar_num( cvar_nomPlayerAllowance ) ) " )
                 
                 if( equali( arg1, "noms" )
                     || equali( arg1, "nominations" ) )
@@ -1569,7 +1569,7 @@ public cmd_say( player_id )
                     {
                         for( prefix_index = 0; prefix_index < g_mapPrefixCnt; prefix_index++ )
                         {
-                            DEBUG_LOGGER( 1, "( cmd_say ) arg1: %s, prefix_index: %d, \
+                            DEBUG_LOGGER( 4, "( cmd_say ) arg1: %s, prefix_index: %d, \
                                     g_mapPrefix[ prefix_index ]: %s, \
                                     contain( arg1, g_mapPrefix[ prefix_index ] ): %d", \
                                     arg1, prefix_index, g_mapPrefix[ prefix_index ], \
@@ -1583,7 +1583,7 @@ public cmd_say( player_id )
                         }
                     }
                     
-                    DEBUG_LOGGER( 1, "( cmd_say ) equali( arg1, 'nom', 3 ): %d, \
+                    DEBUG_LOGGER( 4, "( cmd_say ) equali( arg1, 'nom', 3 ): %d, \
                             strlen( arg1 ) > 5: %d", \
                             equali( arg1, "nom", 3 ), strlen( arg1 ) > 5 )
                 }
@@ -2173,7 +2173,7 @@ public vote_startDirector( bool:forced )
             
             set_task( 8.5 + float( voteDuration ) + 1.0, "vote_display", TASKID_VOTE_DISPLAY,
                     vote_display_task_argument, 3 );
-
+            
             set_task( 8.5 + float( voteDuration ) + 6.0, "vote_expire", TASKID_VOTE_EXPIRE );
         }
         else
@@ -2409,11 +2409,13 @@ stock vote_addFiller()
             
             for( choiceIdx = 0; choiceIdx < allowedCnt; ++choiceIdx )
             {
-                mapKey = random_num( 0, mapCnt - 1 );
+                unsuccessfulCnt = 0;
+                mapKey          = random_num( 0, mapCnt - 1 );
+                
                 ArrayGetString( g_fillerMap, mapKey, mapName, charsmax( mapName ) );
+                
                 DEBUG_LOGGER( 8, "[%i] choiceIdx: %i   allowedCnt: %i   mapKey: %i   mapName: %s", \
                         groupIdx, choiceIdx, allowedCnt, mapKey, mapName )
-                unsuccessfulCnt = 0;
                 
                 while( ( map_isInMenu( mapName )
                          || equal( g_currentMap, mapName )
@@ -2427,19 +2429,23 @@ stock vote_addFiller()
                     {
                         mapKey = 0;
                     }
+                    
                     ArrayGetString( g_fillerMap, mapKey, mapName, charsmax( mapName ) );
                 }
                 
                 if( unsuccessfulCnt == mapCnt )
                 {
-                    //print_colored( 0, "unsuccessfulCnt: %i  mapCnt: %i", unsuccessfulCnt, mapCnt );
+                    DEBUG_LOGGER( 8, "unsuccessfulCnt: %i  mapCnt: %i", unsuccessfulCnt, mapCnt );
+                    
                     // there aren't enough maps in this filler file to continue adding anymore
                     break;
                 }
                 
-                //print_colored( 0, "mapIdx: %i  map: %s", mapIdx, mapName );
-                copy( g_mapsVoteMenuNames[ g_totalVoteOptions++ ],
-                        charsmax( g_mapsVoteMenuNames[] ), mapName );
+                DEBUG_LOGGER( 8, "groupIdx: %i  map: %s", groupIdx, mapName );
+                
+                copy( g_mapsVoteMenuNames[ g_totalVoteOptions++ ], charsmax( g_mapsVoteMenuNames[] ),
+                        mapName );
+                
                 DEBUG_LOGGER( 8, "[%i] mapName: %s   unsuccessfulCnt: %i   mapCnt: %i   \
                         g_totalVoteOptions: %i", \
                         groupIdx, mapName, unsuccessfulCnt, mapCnt, g_totalVoteOptions )
