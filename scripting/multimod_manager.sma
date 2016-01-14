@@ -530,10 +530,9 @@ public configureMod_byModCode( currentModCode, currentMod_shortName[] )
 /**
  * Configure the current mod action after being voted the next mod.
  *
- * If 1, is to keep the current mod
- * If 2, is to disable the current mod.
- *
- * @param mostVoted_modID the mod most voted during the vote mod.
+ * @param mostVoted_modID the mod most voted during the vote mod:
+ *      If 1, is to keep the current mod
+ *      If 2, is to disable the current mod.
  */
 public configureMod_byModID( mostVoted_modID )
 {
@@ -871,6 +870,9 @@ public configMapManager( mapcycle_filePath[] )
             }
         }
     }
+    
+    set_pcvar_string( gp_mapcyclefile, mapcycle_filePath )
+    server_exec()
 }
 
 /**
@@ -920,6 +922,7 @@ public configDailyMaps( mapcycle_filePath[] )
         {
             set_pcvar_string(   gp_mapcyclefile,           mapcycle_filePath )
             set_localinfo(  "isFirstTime_serverLoad",         "1"                 )
+            server_exec()
         }
         else
         {
@@ -1460,8 +1463,6 @@ public check_vote()
  */
 public displayVoteResults( mostVoted_modID, g_totalVotes )
 {
-    new result_message[ LONG_STRING ]
-    
     new playerMin = players_currently_playing( 0.3 )
     
     if( g_totalVotes > playerMin )
@@ -1470,20 +1471,16 @@ public displayVoteResults( mostVoted_modID, g_totalVotes )
         
         configureMod_byModID( mostVoted_modID )
         
-        formatex( result_message, charsmax( result_message ), "%L", LANG_PLAYER, "MM_VOTEMOD",
-                g_mod_names[ mostVoted_modID ] )
+        client_print_color_internal( 0,  "%L", LANG_PLAYER, "MM_VOTEMOD", g_mod_names[ mostVoted_modID ] )
         
         server_cmd( "exec %s", g_votingFinished_filePath )
     }
     else
     {
-        new result_message[ LONG_STRING ]
-        formatex( result_message, charsmax( result_message ), "The vote did not reached the required minimum! \
-        The next mod remains: %s", g_mod_names[ g_currentMod_id ] )
+        client_print_color_internal( 0,  "The vote did not reached the required minimum! \
+                The next mod remains: %s", g_mod_names[ g_currentMod_id ] )
     }
     g_totalVotes = 0
-    
-    client_print_color_internal( 0, result_message )
     
     server_print( "Total Mod Votes: %d  | Player Min: %d  | Most Voted: %s",
             g_totalVotes, playerMin, g_mod_names[ mostVoted_modID ] )
