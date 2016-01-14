@@ -1143,7 +1143,7 @@ public user_votemod( player_id )
 {
     if( get_pcvar_num( gp_allowedvote ) )
     {
-        client_print( 0, print_chat, "%L", LANG_PLAYER, "MM_VOTEMOD", g_mod_names[ g_currentMod_id ] )
+        client_print( player_id, print_chat, "%L", player_id, "MM_VOTEMOD", g_mod_names[ g_currentMod_id ] )
         return PLUGIN_HANDLED
     }
     new Float:elapsedTime = get_pcvar_float( gp_timelimit ) - ( float( get_timeleft() ) / 60.0 )
@@ -1152,7 +1152,7 @@ public user_votemod( player_id )
     
     if( elapsedTime < minTime )
     {
-        client_print( player_id, print_chat, "[AMX MultiMod] %L", LANG_PLAYER, "MM_PL_WAIT",
+        client_print( player_id, print_chat, "[AMX MultiMod] %L", player_id, "MM_PL_WAIT",
                 floatround( minTime - elapsedTime, floatround_ceil ) )
         
         return PLUGIN_HANDLED
@@ -1247,12 +1247,12 @@ public display_votemod_menu( player_id, menu_current_page )
     if( g_coloredmenus )
     {
         current_write_position = formatex( menu_body, charsmax( menu_body ), "\y%L: \R%d/%d\w^n^n",
-                LANG_PLAYER, "MM_CHOOSE", menu_current_page + 1, g_menu_total_pages )
+                player_id, "MM_CHOOSE", menu_current_page + 1, g_menu_total_pages )
     }
     else
     {
         current_write_position = formatex( menu_body, charsmax( menu_body ), "%L: %d/%d^n^n",
-                LANG_PLAYER, "MM_CHOOSE", menu_current_page + 1, g_menu_total_pages )
+                player_id, "MM_CHOOSE", menu_current_page + 1, g_menu_total_pages )
     }
     
     // calc. the number of current_page_itens
@@ -1411,7 +1411,7 @@ public player_vote( player_id, key )
                 
                 get_user_name( player_id, player_name, charsmax( player_name ) )
                 
-                client_print_color_internal( 0, "%L", LANG_PLAYER, "X_CHOSE_X", player_name, g_mod_names[ mod_vote_id ] )
+                client_print_color_internal( 0, "%L", player_id, "X_CHOSE_X", player_name, g_mod_names[ mod_vote_id ] )
                 
                 g_votemodcount[ mod_vote_id ]++
             }
