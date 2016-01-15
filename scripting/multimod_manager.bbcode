@@ -324,21 +324,14 @@ exec addons/amxmodx/configs/multimod/votefinished.cfg
  * Updated modification type to all GoldSrc engine games.
  * Fixed LANG_PLAYER misuse.
  * Fixed server_print overuse.
+ * Fixed printing info to the client in a for loop can cause an overflow.
 [/QUOTE]
 
 ******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *********************************
-[QUOTE=fysiks;2353142]
-IIRC, printing info to the client in a for loop can cause an overflow.  Simply build the whole text into 
-a single string and then send that only once.  You can create multiple lines by using "^n".
-[/QUOTE]
-It is the same problem as the AMXX very own "adminhelp.sma". I cannot build I a big string as pawn is limited. 
-I must limit the output number as "adminhelp.sma", receiving a page list number to show and limit 
-each page to show only a big string supported. 
-
 [QUOTE=HamletEagle;2374088]
 You could probably use dynamic arrays, to have unlimited models. Then, making a menu with the items in array, and accessing the right entry by the item index from the menu.
 [/QUOTE]
-They are perfect to this job. 
+They are perfect to this job.
 
 ******************************** [anchor]Credits[/anchor][B][SIZE="5"][COLOR="blue"]Credits[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *******************************
 [B]fysiks[/B]: The first to realize the idea of "multimod.sma" and various code improvements. 

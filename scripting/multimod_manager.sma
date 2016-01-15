@@ -52,13 +52,19 @@ new g_debug_level = 1
 #define PLUGIN "Multi-Mod Manager"
 #define AUTHOR "Addons zz"
 
-#define TASK_VOTEMOD 2487002
-#define TASK_CHVOMOD 2487004
+#define TASK_VOTEMOD      2487002
+#define TASK_CHVOMOD      2487004
+#define TASKIS_PRINT_HELP 648215
 
 #define MAXMODS       100
 #define LONG_STRING   256
 #define COLOR_MESSAGE 192
 #define SHORT_STRING  64
+
+/**
+ * The client console lines number to print when is showed the help command.
+ */
+#define LINES_PER_PAGE 10
 
 #define MENU_ITEMS_PER_PAGE 8
 
@@ -99,24 +105,25 @@ new g_currentMod_id
 new g_mapManagerType
 new g_isFirstTime_serverLoad
 
-new g_mod_names                    [ MAXMODS ][ SHORT_STRING ]
-new g_mod_shortNames            [ MAXMODS ][ SHORT_STRING ]
-new g_votemodcount                [ MAXMODS ]
+new g_mod_names     [ MAXMODS ][ SHORT_STRING ]
+new g_mod_shortNames[ MAXMODS ][ SHORT_STRING ]
+new g_votemodcount  [ MAXMODS ]
 
 new g_modCounter             = 0
 new g_isTimeTo_changeMapcyle = false
 new g_menuname[]             = "VOTE MOD MENU"
 
-new g_menuPosition                            [ 33 ]
-new g_currentMod_shortName            [ SHORT_STRING ]
+new g_menuPosition        [ 33 ]
+new g_currentMod_shortName[ SHORT_STRING ]
+new g_current_print_page  [ 33 ]
 
-new g_configFolder                                [ LONG_STRING ]
-new g_masterConfig_filePath                [ LONG_STRING ]
-new g_masterPlugin_filePath                    [ LONG_STRING ]
-new g_votingFinished_filePath                [ LONG_STRING ]
-new g_currentMod_id_filePath                        [ LONG_STRING ]
-new g_currentMod_shortName_filePath        [ LONG_STRING ]
-new g_votingList_filePath            [ LONG_STRING ]
+new g_configFolder                 [ LONG_STRING ]
+new g_masterConfig_filePath        [ LONG_STRING ]
+new g_masterPlugin_filePath        [ LONG_STRING ]
+new g_votingFinished_filePath      [ LONG_STRING ]
+new g_currentMod_id_filePath       [ LONG_STRING ]
+new g_currentMod_shortName_filePath[ LONG_STRING ]
+new g_votingList_filePath          [ LONG_STRING ]
 
 new gp_allowedvote
 new gp_endmapvote
@@ -130,19 +137,20 @@ which is run every time the server starts and defines which mods are enabled.^n/
 This file is managed automatically by multimod_manager.sma plugin^n//\
 and any modification will be discarded in the activation of some mod.^n^n"
 
-new g_helpamx_setmod[ LONG_STRING ]  = "help 1          | for help."
-new g_helpamx_setmods[ LONG_STRING ] = "shortModName <1 or 0> to restart or not       \
+new g_helpamx_setmod[ LONG_STRING ]  = "help 1  | for help."
+new g_helpamx_setmods[ LONG_STRING ] = "shortModName <1 or 0> to restart or not  \
 | Enable/Disable any mod, loaded or not ( silent mod ). "
 
-new g_cmdsAvailables1[ LONG_STRING ] = "^namx_setmod help 1       | To show this help.^n\
-amx_setmod disable 1   | To deactivate any active Mod.^n\
-amx_votemod    | To force a votemod. "
-
-new g_cmdsAvailables2[ LONG_STRING ] = "say_team nextmod           | To see which is the next mod.^n\
-say currentmod    | To see which is the current mod.^n\
-say votemod     | To try start a vote mod.^n\
-say_team votemod     | To try start a vote mod."
-
+new g_cmdsAvailables[][ SHORT_STRING ] =
+{
+    "^namx_setmod help       | To show this help.",
+    "amx_setmod disable 1    | To deactivate any active Mod.",
+    "amx_votemod             | To force a votemod.",
+    "say_team nextmod        | To see which is the next mod.",
+    "say currentmod          | To see which is the current mod.",
+    "say votemod             | To try start a vote mod.",
+    "say_team votemod        | To try start a vote mod."
+}
 
 /**
  * Register plugin commands and load configurations.
@@ -156,9 +164,9 @@ public plugin_init()
     register_dictionary( "mapchooser.txt" )
     register_dictionary_colored( "multimodmanager.txt" )
     
-    gp_mintime     =         register_cvar( "amx_mintime", "10" )
-    gp_allowedvote =         register_cvar( "amx_multimod_voteallowed", "1" )
-    gp_endmapvote  =         register_cvar( "amx_multimod_endmapvote", "0" )
+    gp_mintime     = register_cvar( "amx_mintime", "10" )
+    gp_allowedvote = register_cvar( "amx_multimod_voteallowed", "1" )
+    gp_endmapvote  = register_cvar( "amx_multimod_endmapvote", "0" )
     
     register_clcmd( "amx_votemod", "start_vote", ADMIN_MAP, "Vote for the next mod" )
     register_clcmd( "say currentmod", "user_currentmod" )
@@ -368,21 +376,80 @@ public printHelp( player_id )
 {
     if( player_id )
     {
-        client_print( player_id, print_console, g_cmdsAvailables1 )
-        client_print( player_id, print_console, g_cmdsAvailables2 )
+        player_id = player_id - TASKIS_PRINT_HELP
         
-        for( new i = 3; i <= g_modCounter; i++ )
+        new current_print_page_total      = g_current_print_page[ player_id ] * LINES_PER_PAGE
+        g_current_print_page[ player_id ] = g_current_print_page[ player_id ] + 1
+        
+        DEBUG_LOGGER( 1, "current_print_page_total: %d, g_current_print_page[ player_id ]: %d", \
+                current_print_page_total, g_current_print_page[ player_id ] )
+        
+        // print the page header
+        if( !current_print_page_total )
         {
-            client_print( player_id, print_console, "amx_setmod %s 1          | to use %s",
-                    g_mod_shortNames[ i ], g_mod_names[ i ] )
+            for( new i = 0; i < sizeof( g_cmdsAvailables ); i++ )
+            {
+                client_print( player_id, print_console, g_cmdsAvailables[ i ] )
+                DEBUG_LOGGER( 1, g_cmdsAvailables[ i ] )
+            }
+            
+            set_task( 1.0, "printHelp", player_id )
+            return
         }
         
-        client_print( player_id, print_console, "^n" )
+        // print the page body
+        if( current_print_page_total - LINES_PER_PAGE < g_modCounter )
+        {
+            new internal_current_page_limit = 0
+            
+            new menu_page_total_int = g_modCounter / LINES_PER_PAGE
+            new menu_page_total     = floatround( float( g_modCounter ) / float( LINES_PER_PAGE ), floatround_ceil )
+            
+            if( g_modCounter < LINES_PER_PAGE + 3 )
+            {
+                menu_page_total_int = 1
+                menu_page_total     = 1
+            }
+            
+            client_print( player_id, print_console, "^nPrinting Page: %d of %d",
+                    g_current_print_page[ player_id ] - 1,
+                    ( g_modCounter % LINES_PER_PAGE < 2 ) ? menu_page_total_int : menu_page_total )
+            
+            DEBUG_LOGGER( 1, "^nPrinting Page: %d of %d", \
+                    g_current_print_page[ player_id ] - 1, \
+                    ( g_modCounter % LINES_PER_PAGE < 2 ) ? menu_page_total_int : menu_page_total )
+            
+            for( new i = 3 + current_print_page_total - LINES_PER_PAGE; i <= g_modCounter; i++ )
+            {
+                client_print( player_id, print_console, "amx_setmod %s 1          | to use %s",
+                        g_mod_shortNames[ i ],
+                        g_mod_names[ i ] )
+                
+                DEBUG_LOGGER( 1, "amx_setmod %s 1          | to use %s", \
+                        g_mod_shortNames[ i ], \
+                        g_mod_names[ i ] )
+                
+                if( internal_current_page_limit++ >= ( LINES_PER_PAGE - 1 )
+                    && i < g_modCounter )
+                {
+                    set_task( 0.5, "printHelp", player_id + TASKIS_PRINT_HELP )
+                    break
+                }
+            }
+        }
+        
+        // print the page bottom
+        if( current_print_page_total > g_modCounter )
+        {
+            g_current_print_page[ player_id ] = 0
+        }
     }
     else
     {
-        server_print( g_cmdsAvailables1 )
-        server_print( g_cmdsAvailables2 )
+        for( new i = 0; i < sizeof( g_cmdsAvailables ); i++ )
+        {
+            server_print( g_cmdsAvailables[ i ] )
+        }
         
         for( new i = 3; i <= g_modCounter; i++ )
         {
@@ -391,6 +458,15 @@ public printHelp( player_id )
         
         server_print( "^n" )
     }
+}
+
+#if AMXX_VERSION_NUM < 183
+public client_disconnect( player_id )
+#else
+public client_disconnected( player_id )
+#endif
+{
+    remove_task( player_id + TASKIS_PRINT_HELP )
 }
 
 /**
@@ -1535,7 +1611,7 @@ public print_message_to_all( message[], any: ... )
     static formated_message[ LONG_STRING ]
     
     vformat( formated_message, charsmax( formated_message ), message, 2 )
-
+    
     client_print( 0, print_console, formated_message )
     server_print( formated_message )
 }
@@ -1799,6 +1875,6 @@ stock debugMesssageLogger( mode, message[], any: ... )
         vformat( formated_message, charsmax( formated_message ), message, 3 )
         
         server_print( "%s", formated_message         )
-        client_print(       0, print_console,             "%s", formated_message )
+        //client_print(       0, print_console,             "%s", formated_message )
     }
 }
