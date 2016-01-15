@@ -254,7 +254,7 @@ public unloadLastActiveMod()
         
         if( file_exists( lateConfig_filePath ) )
         {
-            server_print( "Executing the deactivation mod configuration file ( %s ).", lateConfig_filePath )
+            print_message_to_all( "Executing the deactivation mod configuration file ( %s ).", lateConfig_filePath )
             server_cmd( "exec %s", lateConfig_filePath )
         }
         
@@ -711,13 +711,13 @@ public load_votingList()
                 
                 lateConfig_pathCoder( mod_shortName_string, lateConfig_filePath, charsmax( lateConfig_filePath ) )
                 
-                server_print( "[AMX MOD Loaded] %s", mod_shortName_string )
-                server_print( "[AMX MOD Loaded] %s", mapcycle_filePath )
-                server_print( "[AMX MOD Loaded] %s", plugin_filePath )
-                server_print( "[AMX MOD Loaded] %s", config_filePath )
-                server_print( "[AMX MOD Loaded] %s", message_filePath )
-                server_print( "[AMX MOD Loaded] %s", lateConfig_filePath )
-                server_print( "[AMX MOD Loaded] %s^n", messageResource_filePath )
+                DEBUG_LOGGER( 1, "[AMX MOD Loaded] %s", mod_shortName_string )
+                DEBUG_LOGGER( 1, "[AMX MOD Loaded] %s", mapcycle_filePath )
+                DEBUG_LOGGER( 1, "[AMX MOD Loaded] %s", plugin_filePath )
+                DEBUG_LOGGER( 1, "[AMX MOD Loaded] %s", config_filePath )
+                DEBUG_LOGGER( 1, "[AMX MOD Loaded] %s", message_filePath )
+                DEBUG_LOGGER( 1, "[AMX MOD Loaded] %s", lateConfig_filePath )
+                DEBUG_LOGGER( 1, "[AMX MOD Loaded] %s^n", messageResource_filePath )
             }
         #endif
         }
@@ -912,11 +912,11 @@ public configDailyMaps( mapcycle_filePath[] )
     }
 
 #if IS_DEBUG_ENABLED > 0
-    server_print( "AT configDailyMaps: " )
-    server_print( "g_isFirstTime_serverLoad is: %d",         g_isFirstTime_serverLoad     )
-    server_print( "g_isTimeTo_changeMapcyle is: %d",         g_isTimeTo_changeMapcyle )
-    server_print( "file_exists( mapcycle_filePath ) is: %d",     file_exists( mapcycle_filePath ) )
-    server_print( "mapcycle_filePath is: %s^n",                             mapcycle_filePath         )
+    DEBUG_LOGGER( 1, "AT configDailyMaps: " )
+    DEBUG_LOGGER( 1, "g_isFirstTime_serverLoad is: %d",         g_isFirstTime_serverLoad     )
+    DEBUG_LOGGER( 1, "g_isTimeTo_changeMapcyle is: %d",         g_isTimeTo_changeMapcyle )
+    DEBUG_LOGGER( 1, "file_exists( mapcycle_filePath ) is: %d",     file_exists( mapcycle_filePath ) )
+    DEBUG_LOGGER( 1, "mapcycle_filePath is: %s^n",                             mapcycle_filePath         )
 #endif
     
     if( g_isTimeTo_changeMapcyle )
@@ -997,7 +997,7 @@ public activateMod_byShortName( modShortName[] )
         
         configureMapcycle( modShortName )
         
-        server_print( "[AMX MOD Loaded] Setting multimod to %s", modShortName )
+        print_message_to_all( "[AMX MOD Loaded] Setting multimod to %s", modShortName )
         
         return true
     }
@@ -1324,7 +1324,7 @@ public display_votemod_menu( player_id, menu_current_page )
     
     get_user_name( player_id, debug_player_name, 63 )
     
-    server_print( "Player: %s^nMenu body %s ^nMenu name: %s ^nMenu valid keys: %i",
+    DEBUG_LOGGER( 1, "Player: %s^nMenu body %s ^nMenu name: %s ^nMenu valid keys: %i", \
             debug_player_name, menu_body, g_menuname, menu_valid_keys )
     
     show_menu( player_id, menu_valid_keys, menu_body, 5, g_menuname )
@@ -1487,7 +1487,7 @@ public displayVoteResults( mostVoted_modID, g_totalVotes )
     }
     g_totalVotes = 0
     
-    server_print( "Total Mod Votes: %d  | Player Min: %d  | Most Voted: %s",
+    print_message_to_all( "Total Mod Votes: %d  | Player Min: %d  | Most Voted: %s",
             g_totalVotes, playerMin, g_mod_names[ mostVoted_modID ] )
 }
 
@@ -1522,6 +1522,22 @@ public players_currently_playing( Float:percent )
         }
     }
     return floatround( count * percent )
+}
+
+/**
+ * Displays a message all players and server consoles.
+ *
+ * @param message[] the text formatting rules to display.
+ * @param any the variable number of formatting parameters.
+ */
+public print_message_to_all( message[], any: ... )
+{
+    static formated_message[ LONG_STRING ]
+    
+    vformat( formated_message, charsmax( formated_message ), message, 2 )
+
+    client_print( 0, print_console, formated_message )
+    server_print( formated_message )
 }
 
 /**
@@ -1707,10 +1723,6 @@ stock client_print_color_internal( player_id, message[], any: ... )
         REMOVE_COLOR_TAGS( formated_message )
         client_print( player_id, print_chat, formated_message )
     }
-    
-    // MOD events message are very important because of the subject, so it is always printed
-    // to the server console.
-    server_print( formated_message )
     
     DEBUG_LOGGER( 64, "( out ) Player_Id: %d, Chat printed: %s", player_id, formated_message )
 }

@@ -323,6 +323,7 @@ exec addons/amxmodx/configs/multimod/votefinished.cfg
  * Use the actual current mod map cycle, right after a vote mod, instead the previous one.
  * Updated modification type to all GoldSrc engine games.
  * Fixed LANG_PLAYER misuse.
+ * Fixed server_print overuse.
 [/QUOTE]
 
 ******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *********************************
@@ -333,12 +334,6 @@ a single string and then send that only once.  You can create multiple lines by 
 It is the same problem as the AMXX very own "adminhelp.sma". I cannot build I a big string as pawn is limited. 
 I must limit the output number as "adminhelp.sma", receiving a page list number to show and limit 
 each page to show only a big string supported. 
-
-[QUOTE=fysiks;2353142]
-The use of server_print() should be rare and mostly for debugging.  For registered commands, 
-it should only be used with register_srvcmd() (unless it's for debugging of course).
-[/QUOTE]
-I did not know this register_srvcmd(). Then now I can register a register_srvcmd to server_print, and another register_clcmd to client_print.
 
 [QUOTE=HamletEagle;2374088]
 You could probably use dynamic arrays, to have unlimited models. Then, making a menu with the items in array, and accessing the right entry by the item index from the menu.
