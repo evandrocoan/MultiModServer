@@ -269,7 +269,7 @@ public unloadLastActiveMod()
         
         if( file_exists( lateConfig_filePath ) )
         {
-            print_message_to_all( "Executing the deactivation mod configuration file ( %s ).", lateConfig_filePath )
+            print_at_console_to_all( "Executing the deactivation mod configuration file ( %s ).", lateConfig_filePath )
             server_cmd( "exec %s", lateConfig_filePath )
         }
         
@@ -297,11 +297,11 @@ public receiveCommand( player_id, level, cid )
     {
         return PLUGIN_HANDLED
     }
-    new firstCommand_lineArgument            [ SHORT_STRING ]
-    new secondCommand_lineArgument        [ SHORT_STRING ]
+    new firstCommand_lineArgument [ SHORT_STRING ]
+    new secondCommand_lineArgument[ SHORT_STRING ]
     
     //Get the command arguments from the console
-    read_argv( 1, firstCommand_lineArgument,         charsmax( firstCommand_lineArgument ) )
+    read_argv( 1, firstCommand_lineArgument,   charsmax( firstCommand_lineArgument ) )
     read_argv( 2, secondCommand_lineArgument, charsmax( secondCommand_lineArgument ) )
     
     new isTimeToRestart      = equal( secondCommand_lineArgument, "1" )
@@ -786,12 +786,12 @@ public load_votingList()
 
             if( g_debug_level & 2 )
             {
-                new mapcycle_filePath                    [ SHORT_STRING ]
-                new config_filePath                        [ SHORT_STRING ]
-                new plugin_filePath                        [ SHORT_STRING ]
-                new message_filePath                    [ SHORT_STRING ]
-                new messageResource_filePath            [ SHORT_STRING ]
-                new lateConfig_filePath                [ SHORT_STRING ]
+                new mapcycle_filePath       [ SHORT_STRING ]
+                new config_filePath         [ SHORT_STRING ]
+                new plugin_filePath         [ SHORT_STRING ]
+                new message_filePath        [ SHORT_STRING ]
+                new messageResource_filePath[ SHORT_STRING ]
+                new lateConfig_filePath     [ SHORT_STRING ]
                 
                 mapcycle_pathCoder( g_mod_short_name_temp, mapcycle_filePath, charsmax( mapcycle_filePath ) )
                 config_pathCoder( g_mod_short_name_temp, config_filePath, charsmax( config_filePath ) )
@@ -954,6 +954,7 @@ public configMapManager( mapcycle_filePath[] )
                 else
                 {
                     log_error( AMX_ERR_NOTFOUND, "Error at configMapManager!! multimod_mapchooser.amxx NOT FOUND!^n" )
+                    print_at_console_to_all( "Error at configMapManager!! multimod_mapchooser.amxx NOT FOUND!^n" )
                 }
             }
             case 2:
@@ -1093,13 +1094,14 @@ public activateMod_byShortName( modShortName[] )
         
         configureMapcycle( modShortName )
         
-        print_message_to_all( "[AMX MOD Loaded] Setting multimod to %s", modShortName )
+        print_at_console_to_all( "[AMX MOD Loaded] Setting multimod to %s", modShortName )
         
         return true
     }
     else
     {
         log_error( AMX_ERR_NOTFOUND, "Error at activateMod_byShortName!! plugin_filePath: %s", plugin_filePath )
+        print_at_console_to_all( "Error at activateMod_byShortName!! plugin_filePath: %s", plugin_filePath )
     }
     DEBUG_LOGGER( 1, "^n activateMod_byShortName, plugin_filePath: %s^n", plugin_filePath )
     
@@ -1589,7 +1591,7 @@ public displayVoteResults( mostVoted_modID, g_totalVotes )
     }
     g_totalVotes = 0
     
-    print_message_to_all( "Total Mod Votes: %d  | Player Min: %d  | Most Voted: %s",
+    print_at_console_to_all( "Total Mod Votes: %d  | Player Min: %d  | Most Voted: %s",
             g_totalVotes, playerMin, g_mod_name_temp )
 }
 
@@ -1632,7 +1634,7 @@ public players_currently_playing( Float:percent )
  * @param message[] the text formatting rules to display.
  * @param any the variable number of formatting parameters.
  */
-public print_message_to_all( message[], any: ... )
+public print_at_console_to_all( message[], any: ... )
 {
     static formated_message[ LONG_STRING ]
     
@@ -1826,6 +1828,17 @@ stock client_print_color_internal( player_id, message[], any: ... )
         client_print( player_id, print_chat, formated_message )
     }
     
+    // this is to show the immediate results, as the plugin is usually controlled by the server
+    // or the player console.
+    if( player_id )
+    {
+        client_print( player_id, print_console, formated_message )
+    }
+    else
+    {
+        server_print( formated_message )
+    }
+
     DEBUG_LOGGER( 64, "( out ) Player_Id: %d, Chat printed: %s", player_id, formated_message )
 }
 
@@ -1901,6 +1914,5 @@ stock debugMesssageLogger( mode, message[], any: ... )
         vformat( formated_message, charsmax( formated_message ), message, 3 )
         
         server_print( "%s", formated_message         )
-        //client_print(       0, print_console,             "%s", formated_message )
     }
 }

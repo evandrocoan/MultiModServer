@@ -13,7 +13,7 @@
 [*]easily manage extremely big mods amount. 
 [*]to have [COLOR="Red"][B]unlimited[/B][/COLOR] MODS installed.
 [*]install the [COLOR="Red"]fully compatible[/COLOR] "[B]multimod_daily_changer[/B]" provided [goanchor=Downloads]here[/goanchor]. 
-[*]install the [COLOR="Red"]fully compatible[/COLOR] and new "[B]galieo_reloaded.sma[/B]" provided [URL="https://forums.alliedmods.net/showthread.php?t=273019"]here[/URL]. 
+[*]install the [COLOR="Red"]fully compatible[/COLOR] and new "[B]Galileo[/B]" provided [URL="https://forums.alliedmods.net/showthread.php?t=273019"]here[/URL]. 
 [*]unload metamod csdm modules automatically after disable the csdm mod, or before enable any another mod, as long as you configure it. 
 [*]restore server's cvars and server's commands automatically after disable any mod, or before enable another mod, as long as you configure it. 
 [*]install/use every mod that exists and will exists in the universe, without any special plugin or any "Multi-Mod Manager" modification, 
@@ -62,11 +62,11 @@
 [IMG]https://cdn3.iconfinder.com/data/icons/social-network-round-gloss-shine/128/GitHub_Social-Network-Communicate-Page-Curl-Effect-Circle-Glossy-Shadow-Shine.png[/IMG][/URL][/B] 
 [B][COLOR="Blue"](look for the developer and feature branches)[/COLOR][/B]
 
-The original plugin "[URL="https://forums.alliedmods.net/showthread.php?t=95568"]multimod.sma[/URL]" is originally written by JoRoPiTo. This "[B]Multi-Mod Manager[/B]" works 
+The original plugin "[URL="https://forums.alliedmods.net/showthread.php?t=95568"]multimod.sma[/URL]" is originally written by [URL="https://forums.alliedmods.net/member.php?u=48840"][B]JoRoPiTo[/B][/URL]. This "[B]Multi-Mod Manager[/B]" works 
 differently from the original "[COLOR="Blue"]MultiMod Manager[/COLOR]". See [goanchor=Credits]Credits[/goanchor] for information. 
 
 This plugin [COLOR="Red"]is [B]not[/B] compatible[/COLOR] with the AMXX's very own [B]Map Chooser[/B] or "[B]Daily Maps[/B]", but yes with its 
-modification "[B]multimod_daily_changer[/B]" provided [goanchor=Downloads]here[/goanchor]. The new [URL="https://forums.alliedmods.net/showthread.php?t=273019"]galieo_reloaded.sma[/URL] 
+modification "[B]multimod_daily_changer[/B]" provided [goanchor=Downloads]here[/goanchor]. The new [URL="https://forums.alliedmods.net/showthread.php?t=273019"]Galileo[/URL] 
 which is a different Galileo version, [COLOR="Red"]is ready[/COLOR] to be used with this [B]Multi-Mod Manager[/B]". 
 
 The "[B]Multi-Mod Daily Maps[/B]" is a modified version of "[B]Daily Maps[/B]" to work with this "[B]Multi-Mod Manager[/B]". 
@@ -187,7 +187,7 @@ Tested under [B]Counter-Strike[/B] and Counter-Strike: [B]Condition Zero[/B]
 
 ******************************** [anchor]Installation[/anchor][B][SIZE="5"][COLOR="Blue"]Installation[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor]  **********************
 [B]1.[/B] Download the files "[B]multimod_manager.sma[/B]", "[B][COLOR="Red"]configuration_files.zip[/COLOR][/B]",  
-"[B]galieo_reloaded.sma[/B]" and "[B]multimod_daily_changer.sma[/B]"(this is optional), at [goanchor=Downloads]Downloads[/goanchor] section. 
+"[B]galileo.sma[/B]" and "[B]multimod_daily_changer.sma[/B]"(this is optional), at [goanchor=Downloads]Downloads[/goanchor] section. 
 
 [B]2.[/B] Then take the contents of "[B]yourgamemod[/B]" from "[B]configuration_files.zip[/B]", to your gamemod folder. 
 
@@ -200,7 +200,7 @@ Tested under [B]Counter-Strike[/B] and Counter-Strike: [B]Condition Zero[/B]
 multimod_manager.amxx
 multimod_daily_changer.amxx
 ; Choose
-galieo_reloaded.amxx
+galileo.amxx
 [/QUOTE]
 
 [B]5.[/B] Put the next line to your "[B]amxx.cfg[/B]" file at "[COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]configs[/B]":
@@ -280,7 +280,7 @@ exec addons/amxmodx/configs/multimod/votefinished.cfg
  * Removed unused function get_firstmap() and variable g_nextmap. 
  * Replaced unnecessary functions configMapManager and configDailyMaps. 
  * Removed unnecessary MULTIMOD_MAPCHOOSER compiler constant. 
- * Added to multimod_daily_changer.sma compatibility with galileo_reloaded.sma 
+ * Added to multimod_daily_changer.sma compatibility with Galileo.
 
 2015-10-13 | v1.0-release_candidate2.hotfix1
  * Added missing format parameter at messageModActivated function.
@@ -309,7 +309,7 @@ exec addons/amxmodx/configs/multimod/votefinished.cfg
 2015-10-30 | v1.1-alpha1.hotfix1
  * Fixed the mod map cycle not changing. 
 
-2016-01-13 | v1.1-Release_Candidate1
+2016-01-15 | v1.1-Release_Candidate1
  * Replaced wrong color chat system with correct one.
  * Use the actual current mod map cycle, right after a vote mod, instead the previous one.
  * Updated modification type to all GoldSrc engine games.
@@ -327,7 +327,7 @@ exec addons/amxmodx/configs/multimod/votefinished.cfg
 [B]joropito[/B]: The idea/program developer of "[URL="https://forums.alliedmods.net/showthread.php?t=95568"]multimod.sma[/URL]". 
 [B]crazyeffect[/B]: Colaborate with multilangual support of "multimod.sma". 
 [B]dark vador 008[/B]: Time and server for testing under czero "multimod.sma". 
-[B]Brad[/B]: The original [URL="https://forums.alliedmods.net/showthread.php?t=77391"]galileo.sma[/URL] developer. 
+[B]Brad[/B]: The original [URL="https://forums.alliedmods.net/showthread.php?t=77391"]Galileo[/URL] developer. 
 [B]Th3822[/B]: For find a error from map_nominate. 
 [B]Addons zz[/B]: This plugin developer. 
 [B]ConnorMcLeod[/B]: For the [Dyn Native] ColorChat v0.3.2 (04 jul 2013) functions.
@@ -374,10 +374,10 @@ from the [B]amxx cvars[/B] command. They will be grouped together.
 [URL="http://www.gametracker.com/server_info/vipersnake.net:27030/"][IMG]http://www.gametracker.com/server_info/vipersnake.net:27030/b_560_95_1.png[/IMG][/URL]
 
 ******************************** [anchor]Downloads[/anchor][SIZE="6"][COLOR="Blue"][B]Downloads[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor] ********************
-[LIST]
-[*][URL="https://forums.alliedmods.net/showthread.php?t=273019"]galieo_reloaded.sma[/URL]
-[/LIST]
 Old versions downloads:
 [LIST=1]
 [*]v1.0-alpha2.hotfix1: (multimod_manager.sma - 72 views - 66.8 KB)
+[/LIST]
+[LIST]
+[*][URL="https://forums.alliedmods.net/showthread.php?t=273019#Downloads"]galileo.sma[/URL]
 [/LIST]
