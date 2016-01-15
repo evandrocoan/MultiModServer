@@ -29,7 +29,7 @@
  * at the end of this file and the variable 'g_debug_level' for more information.
  * Default value: 0  - which is disabled.
  */
-#define IS_DEBUG_ENABLED 1
+#define IS_DEBUG_ENABLED 0
 
 #if IS_DEBUG_ENABLED > 0
     #define DEBUG_LOGGER(%1) debugMesssageLogger( %1 )
@@ -44,7 +44,7 @@
  *
  * ( ... ) 64 displays messages related 'client_print_color_internal'.
  */
-new g_debug_level = 1
+new g_debug_level = 15
 #else
     #define DEBUG_LOGGER(%1) //
 #endif
@@ -56,7 +56,6 @@ new g_debug_level = 1
 #define TASK_CHVOMOD      2487004
 #define TASKIS_PRINT_HELP 648215
 
-#define MAXMODS       100
 #define LONG_STRING   256
 #define COLOR_MESSAGE 192
 #define SHORT_STRING  64
@@ -104,10 +103,14 @@ new g_menu_total_pages
 new g_currentMod_id
 new g_mapManagerType
 new g_isFirstTime_serverLoad
+new g_dynamic_array_size_temp
 
-new g_mod_names     [ MAXMODS ][ SHORT_STRING ]
-new g_mod_shortNames[ MAXMODS ][ SHORT_STRING ]
-new g_votemodcount  [ MAXMODS ]
+new Array:g_mod_names
+new Array:g_mod_shortNames
+new Array:g_votemodcount
+
+new g_mod_name_temp      [ SHORT_STRING ]
+new g_mod_short_name_temp[ SHORT_STRING ]
 
 new g_modCounter             = 0
 new g_isTimeTo_changeMapcyle = false
@@ -137,8 +140,8 @@ which is run every time the server starts and defines which mods are enabled.^n/
 This file is managed automatically by multimod_manager.sma plugin^n//\
 and any modification will be discarded in the activation of some mod.^n^n"
 
-new g_helpamx_setmod[ LONG_STRING ]  = "help 1  | for help."
-new g_helpamx_setmods[ LONG_STRING ] = "shortModName <1 or 0> to restart or not  \
+new g_helpamx_setmod[ SHORT_STRING ]  = "help 1  | for help."
+new g_helpamx_setmods[ 128 ] = "shortModName <1 or 0> to restart or not  \
 | Enable/Disable any mod, loaded or not ( silent mod ). "
 
 new g_cmdsAvailables[][ SHORT_STRING ] =
@@ -167,6 +170,10 @@ public plugin_init()
     gp_mintime     = register_cvar( "amx_mintime", "10" )
     gp_allowedvote = register_cvar( "amx_multimod_voteallowed", "1" )
     gp_endmapvote  = register_cvar( "amx_multimod_endmapvote", "0" )
+
+    g_mod_names = ArrayCreate( SHORT_STRING )
+    g_mod_shortNames = ArrayCreate( SHORT_STRING )
+    g_votemodcount = ArrayCreate( 1 )
     
     register_clcmd( "amx_votemod", "start_vote", ADMIN_MAP, "Vote for the next mod" )
     register_clcmd( "say currentmod", "user_currentmod" )
@@ -328,7 +335,9 @@ public configureModID( shortName[] )
 {
     for( new mod_id_number = 3; mod_id_number <= g_modCounter; mod_id_number++ )
     {
-        if( equal( shortName, g_mod_shortNames[ mod_id_number ] ) )
+        ArrayGetString( g_mod_shortNames, mod_id_number, g_mod_short_name_temp, charsmax( g_mod_short_name_temp ) )
+        
+        if( equal( shortName, g_mod_short_name_temp ) )
         {
             g_currentMod_id = mod_id_number
             saveCurrentModBy_id( mod_id_number )
@@ -421,13 +430,14 @@ public printHelp( player_id )
             
             for( new i = 3 + current_print_page_total - LINES_PER_PAGE; i <= g_modCounter; i++ )
             {
+                ArrayGetString( g_mod_names, i, g_mod_name_temp, charsmax( g_mod_name_temp ) )
+                ArrayGetString( g_mod_shortNames, i, g_mod_short_name_temp, charsmax( g_mod_short_name_temp ) )
+
                 client_print( player_id, print_console, "amx_setmod %s 1          | to use %s",
-                        g_mod_shortNames[ i ],
-                        g_mod_names[ i ] )
+                        g_mod_short_name_temp, g_mod_name_temp )
                 
                 DEBUG_LOGGER( 1, "amx_setmod %s 1          | to use %s", \
-                        g_mod_shortNames[ i ], \
-                        g_mod_names[ i ] )
+                        g_mod_short_name_temp, g_mod_name_temp )
                 
                 if( internal_current_page_limit++ >= ( LINES_PER_PAGE - 1 )
                     && i < g_modCounter )
@@ -453,7 +463,10 @@ public printHelp( player_id )
         
         for( new i = 3; i <= g_modCounter; i++ )
         {
-            server_print( "amx_setmod %s 1          | to use %s", g_mod_shortNames[ i ], g_mod_names[ i ] )
+            ArrayGetString( g_mod_names, i, g_mod_name_temp, charsmax( g_mod_name_temp ) )
+            ArrayGetString( g_mod_shortNames, i, g_mod_short_name_temp, charsmax( g_mod_short_name_temp ) )
+
+            server_print( "amx_setmod %s 1          | to use %s", g_mod_short_name_temp, g_mod_name_temp )
         }
         
         server_print( "^n" )
@@ -587,13 +600,15 @@ public configureMod_byModCode( currentModCode, currentMod_shortName[] )
 {
     DEBUG_LOGGER( 1,  "^n^ncurrentModCode: %d | currentMod_shortName: %s^n", \
             currentModCode, currentMod_shortName )
-    
+
     switch( currentModCode )
     {
         case -1:
         {
             g_currentMod_id = 2
-            setCurrentMod_atLocalInfo( g_mod_shortNames[ g_currentMod_id ] )
+
+            ArrayGetString( g_mod_shortNames, g_currentMod_id, g_mod_short_name_temp, charsmax( g_mod_short_name_temp ) )
+            setCurrentMod_atLocalInfo( g_mod_short_name_temp )
         }
         case 0:
         {
@@ -603,7 +618,9 @@ public configureMod_byModCode( currentModCode, currentMod_shortName[] )
         default:
         {
             g_currentMod_id = currentModCode + 2
-            setCurrentMod_atLocalInfo( g_mod_shortNames[ g_currentMod_id ] )
+
+            ArrayGetString( g_mod_shortNames, g_currentMod_id, g_mod_short_name_temp, charsmax( g_mod_short_name_temp ) )
+            setCurrentMod_atLocalInfo( g_mod_short_name_temp )
         }
     }
 }
@@ -632,7 +649,8 @@ public configureMod_byModID( mostVoted_modID )
         default:
         {
             saveCurrentModBy_id( mostVoted_modID )
-            activateMod_byShortName( g_mod_shortNames[ mostVoted_modID ] )
+            ArrayGetString( g_mod_shortNames, mostVoted_modID, g_mod_short_name_temp, charsmax( g_mod_short_name_temp ) )
+            activateMod_byShortName( g_mod_short_name_temp )
         }
     }
 }
@@ -707,18 +725,16 @@ public saveCurrentModBy_ShortName( modShortName[] )
  */
 public build_first_mods()
 {
-    formatex( g_mod_names[ g_modCounter ], sizeof( g_mod_names[] ) - 1, "Silent Mod Currently" )
-    formatex( g_mod_shortNames[ g_modCounter ], sizeof( g_mod_shortNames[] ) - 1, "silentMod" )
-    
-    g_modCounter++
-    
-    formatex( g_mod_names[ g_modCounter ], sizeof( g_mod_names[] ) - 1, "Extend Current Mod" )
-    formatex( g_mod_shortNames[ g_modCounter ], sizeof( g_mod_shortNames[] ) - 1, "extendCurrent" )
-    
-    g_modCounter++
-    
-    formatex( g_mod_names[ g_modCounter ], sizeof( g_mod_names[] ) - 1, "Disable Current Mod" )
-    formatex( g_mod_shortNames[ g_modCounter ], sizeof( g_mod_shortNames[] ) - 1, "disableMod" )
+    g_modCounter = g_modCounter + 2
+
+    ArrayPushString( g_mod_names, "Silent Mod Currently" )
+    ArrayPushString( g_mod_shortNames, "silentMod" )
+
+    ArrayPushString( g_mod_names, "Extend Current Mod" )
+    ArrayPushString( g_mod_shortNames, "extendCurrent" )
+
+    ArrayPushString( g_mod_names, "Disable Current Mod" )
+    ArrayPushString( g_mod_shortNames, "disableMod" )
 }
 
 /**
@@ -726,11 +742,9 @@ public build_first_mods()
  */
 public load_votingList()
 {
-    new currentLine                                [ LONG_STRING ]
-    new currentLine_splited                    [ SHORT_STRING ]
-    new mod_name                                    [ SHORT_STRING ]
-    new mod_shortName_string                [ SHORT_STRING ]
-    new unusedLast_string                    [ SHORT_STRING ]
+    new currentLine         [ LONG_STRING ]
+    new currentLine_splited [ SHORT_STRING ]
+    new unusedLast_string   [ SHORT_STRING ]
     
     new votingList_filePointer = fopen( g_votingList_filePath, "rt" )
     
@@ -756,18 +770,20 @@ public load_votingList()
             replace_all( currentLine, charsmax( currentLine ), "[", "" )
             replace_all( currentLine, charsmax( currentLine ), "]", "" )
             
-            // broke the current config line, in modname ( mod_name ), modtag ( mod_shortName_string )
-            strtok( currentLine, mod_name, charsmax( mod_name ), currentLine_splited, charsmax( currentLine_splited ), ':', 0 )
-            strtok( currentLine_splited, mod_shortName_string, charsmax( mod_shortName_string ), unusedLast_string,
+            // broke the current config line, in modname ( g_mod_name_temp ), modtag ( g_mod_short_name_temp )
+            strtok( currentLine, g_mod_name_temp, charsmax( g_mod_name_temp ), currentLine_splited, 
+                    charsmax( currentLine_splited ), ':', 0 )
+            strtok( currentLine_splited, g_mod_short_name_temp, charsmax( g_mod_short_name_temp ), unusedLast_string,
                     charsmax( unusedLast_string ), ':', 0 )
             
             // stores at memory the modname and the modShortName
-            formatex( g_mod_names[ g_modCounter ], sizeof( g_mod_names[] ) - 1, "%s", mod_name )
-            formatex( g_mod_shortNames[ g_modCounter ], sizeof( g_mod_shortNames[] ) - 1, "%s", mod_shortName_string )
-            
-            DEBUG_LOGGER( 1, "[AMX MOD Loaded] %d - %s",  g_modCounter - 2, g_mod_names[ g_modCounter ] )
-        
+            ArrayPushString( g_mod_names, g_mod_name_temp )
+            ArrayPushString( g_mod_shortNames, g_mod_short_name_temp )
+
         #if IS_DEBUG_ENABLED > 0
+            ArrayGetString( g_mod_names, g_modCounter, g_mod_name_temp, charsmax( g_mod_name_temp ) )
+            DEBUG_LOGGER( 1, "[AMX MOD Loaded] %d - %s",  g_modCounter - 2, g_mod_name_temp )
+
             if( g_debug_level & 2 )
             {
                 new mapcycle_filePath                    [ SHORT_STRING ]
@@ -777,17 +793,17 @@ public load_votingList()
                 new messageResource_filePath            [ SHORT_STRING ]
                 new lateConfig_filePath                [ SHORT_STRING ]
                 
-                mapcycle_pathCoder( mod_shortName_string, mapcycle_filePath, charsmax( mapcycle_filePath ) )
-                config_pathCoder( mod_shortName_string, config_filePath, charsmax( config_filePath ) )
-                plugin_pathCoder( mod_shortName_string, plugin_filePath, charsmax( plugin_filePath ) )
-                message_pathCoder( mod_shortName_string, message_filePath, charsmax( message_filePath ) )
+                mapcycle_pathCoder( g_mod_short_name_temp, mapcycle_filePath, charsmax( mapcycle_filePath ) )
+                config_pathCoder( g_mod_short_name_temp, config_filePath, charsmax( config_filePath ) )
+                plugin_pathCoder( g_mod_short_name_temp, plugin_filePath, charsmax( plugin_filePath ) )
+                message_pathCoder( g_mod_short_name_temp, message_filePath, charsmax( message_filePath ) )
                 
-                messageResource_pathCoder( mod_shortName_string, messageResource_filePath,
+                messageResource_pathCoder( g_mod_short_name_temp, messageResource_filePath,
                         charsmax( messageResource_filePath ) )
                 
-                lateConfig_pathCoder( mod_shortName_string, lateConfig_filePath, charsmax( lateConfig_filePath ) )
+                lateConfig_pathCoder( g_mod_short_name_temp, lateConfig_filePath, charsmax( lateConfig_filePath ) )
                 
-                DEBUG_LOGGER( 1, "[AMX MOD Loaded] %s", mod_shortName_string )
+                DEBUG_LOGGER( 1, "[AMX MOD Loaded] %s", g_mod_short_name_temp )
                 DEBUG_LOGGER( 1, "[AMX MOD Loaded] %s", mapcycle_filePath )
                 DEBUG_LOGGER( 1, "[AMX MOD Loaded] %s", plugin_filePath )
                 DEBUG_LOGGER( 1, "[AMX MOD Loaded] %s", config_filePath )
@@ -952,7 +968,11 @@ public configMapManager( mapcycle_filePath[] )
         }
     }
     
-    set_pcvar_string( gp_mapcyclefile, mapcycle_filePath )
+    if( file_exists( mapcycle_filePath ) )
+    {
+        set_pcvar_string( gp_mapcyclefile, mapcycle_filePath )
+    }
+    
     server_exec()
 }
 
@@ -988,11 +1008,11 @@ public configDailyMaps( mapcycle_filePath[] )
     }
 
 #if IS_DEBUG_ENABLED > 0
-    DEBUG_LOGGER( 1, "AT configDailyMaps: " )
-    DEBUG_LOGGER( 1, "g_isFirstTime_serverLoad is: %d",         g_isFirstTime_serverLoad     )
-    DEBUG_LOGGER( 1, "g_isTimeTo_changeMapcyle is: %d",         g_isTimeTo_changeMapcyle )
-    DEBUG_LOGGER( 1, "file_exists( mapcycle_filePath ) is: %d",     file_exists( mapcycle_filePath ) )
-    DEBUG_LOGGER( 1, "mapcycle_filePath is: %s^n",                             mapcycle_filePath         )
+    DEBUG_LOGGER( 1, "( Inside ) configDailyMaps()" )
+    DEBUG_LOGGER( 1, "g_isFirstTime_serverLoad is: %d",         g_isFirstTime_serverLoad         )
+    DEBUG_LOGGER( 1, "g_isTimeTo_changeMapcyle is: %d",         g_isTimeTo_changeMapcyle         )
+    DEBUG_LOGGER( 1, "file_exists( mapcycle_filePath ) is: %d", file_exists( mapcycle_filePath ) )
+    DEBUG_LOGGER( 1, "mapcycle_filePath is: %s^n",              mapcycle_filePath                )
 #endif
     
     if( g_isTimeTo_changeMapcyle )
@@ -1208,7 +1228,8 @@ public msgResourceActivated( resourceName[], isTimeToRestart, isTimeTo_executeMe
  */
 public user_currentmod( player_id )
 {
-    client_print_color_internal( player_id, "^1L%", player_id, "MM_HUDMSG", g_mod_names[ g_currentMod_id ] )
+    ArrayGetString(               g_mod_names, g_currentMod_id, g_mod_name_temp, charsmax( g_mod_name_temp ) )
+    client_print_color_internal( player_id, "^1L%", player_id, "MM_HUDMSG", g_mod_name_temp )
     
     return PLUGIN_HANDLED
 }
@@ -1224,8 +1245,9 @@ public user_votemod( player_id )
 {
     if( get_pcvar_num( gp_allowedvote ) )
     {
-        client_print_color_internal( player_id, "^1%L", player_id, "MM_VOTEMOD",
-                g_mod_names[ g_currentMod_id ] )
+        ArrayGetString(               g_mod_names, g_currentMod_id, g_mod_name_temp, charsmax( g_mod_name_temp ) )
+        client_print_color_internal( player_id, "^1%L", player_id, "MM_VOTEMOD", g_mod_name_temp )
+
         return PLUGIN_HANDLED
     }
     new Float:elapsedTime = get_pcvar_float( gp_timelimit ) - ( float( get_timeleft() ) / 60.0 )
@@ -1279,10 +1301,10 @@ public start_vote()
     {
         g_menuPosition[ i ] = 0
     }
-    
-    for( new i = 0; i < MAXMODS; i++ )
+
+    for( new i = 0; i < ArraySize( g_votemodcount); i++ )
     {
-        g_votemodcount[ i ] = 0
+        ArraySetCell( g_votemodcount, i, 0)
     }
     
     display_votemod_menu( 0, 0 )
@@ -1354,12 +1376,13 @@ public display_votemod_menu( player_id, menu_current_page )
          vote_mod_code < menu_current_page * 10 + current_page_itens; vote_mod_code++ )
     {
         mod_vote_id = convert_octal_to_decimal( vote_mod_code )
-        
+
+        ArrayGetString( g_mod_names, mod_vote_id + 1, g_mod_name_temp, charsmax( g_mod_name_temp ) )
+
         current_write_position += formatex( menu_body[ current_write_position ],
-                sizeof( menu_body ) - current_write_position, "%d. %s^n", for_index + 1,
-                g_mod_names[ mod_vote_id + 1 ] )
+                sizeof( menu_body ) - current_write_position, "%d. %s^n", for_index + 1, g_mod_name_temp )
         
-        g_votemodcount[ mod_vote_id ] = 0
+        ArraySetCell( g_votemodcount, mod_vote_id, 0 )
         for_index++
     }
     
@@ -1488,13 +1511,14 @@ public player_vote( player_id, key )
             if( mod_vote_id <= g_modCounter
                 && get_pcvar_num( gp_voteanswers ) )
             {
-                new player_name                [ SHORT_STRING ]
+                new player_name[ SHORT_STRING ]
+
+                get_user_name(  player_id, player_name, charsmax( player_name ) )
+                ArrayGetString( g_mod_names, mod_vote_id, g_mod_name_temp, charsmax( g_mod_name_temp ) )
                 
-                get_user_name( player_id, player_name, charsmax( player_name ) )
+                client_print_color_internal( 0, "^1%L", player_id, "X_CHOSE_X", player_name, g_mod_name_temp )
                 
-                client_print_color_internal( 0, "^1%L", player_id, "X_CHOSE_X", player_name, g_mod_names[ mod_vote_id ] )
-                
-                g_votemodcount[ mod_vote_id ]++
+                ArraySetCell( g_votemodcount, mod_vote_id, ArrayGetCell( g_votemodcount, mod_vote_id ) + 1 )
             }
             else
             {
@@ -1527,11 +1551,13 @@ public check_vote()
     
     for( new a = 0; a <= g_modCounter; a++ )
     {
-        if( g_votemodcount[ mostVoted_modID ] < g_votemodcount[ a ] )
+        g_dynamic_array_size_temp = ArrayGetCell( g_votemodcount, a )
+    
+        if( ArrayGetCell( g_votemodcount, mostVoted_modID ) < g_dynamic_array_size_temp )
         {
             mostVoted_modID = a
         }
-        g_totalVotes = g_totalVotes + g_votemodcount[ a ]
+        g_totalVotes = g_totalVotes + g_dynamic_array_size_temp
     }
     displayVoteResults( mostVoted_modID, g_totalVotes )
 }
@@ -1546,25 +1572,25 @@ public displayVoteResults( mostVoted_modID, g_totalVotes )
 {
     new playerMin = players_currently_playing( 0.3 )
     
+    ArrayGetString( g_mod_names, mostVoted_modID, g_mod_name_temp, charsmax( g_mod_name_temp ) )
+
     if( g_totalVotes > playerMin )
     {
         g_isTimeTo_changeMapcyle = true
         
-        configureMod_byModID( mostVoted_modID )
-        
-        client_print_color_internal( 0,  "^1%L", LANG_PLAYER, "MM_VOTEMOD", g_mod_names[ mostVoted_modID ] )
-        
-        server_cmd( "exec %s", g_votingFinished_filePath )
+        configureMod_byModID(       mostVoted_modID    )
+        client_print_color_internal( 0,  "^1%L", LANG_PLAYER, "MM_VOTEMOD", g_mod_name_temp )
+        server_cmd(        "exec %s", g_votingFinished_filePath )
     }
     else
     {
         client_print_color_internal( 0,  "^1The vote did not reached the ^3required minimum! \
-                ^4The next mod remains: %s", g_mod_names[ g_currentMod_id ] )
+                ^4The next mod remains: %s", g_mod_name_temp )
     }
     g_totalVotes = 0
     
     print_message_to_all( "Total Mod Votes: %d  | Player Min: %d  | Most Voted: %s",
-            g_totalVotes, playerMin, g_mod_names[ mostVoted_modID ] )
+            g_totalVotes, playerMin, g_mod_name_temp )
 }
 
 /**

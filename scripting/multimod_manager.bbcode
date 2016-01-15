@@ -1,6 +1,6 @@
 
-[SIZE="6"][COLOR="Blue"][B]Multi-Mod Manager v1.1-alpha1.hotfix1[/B][/COLOR][/SIZE]
-[B]Release: 10.10.2015 | Last Update: 30.10.2015[/B]
+[SIZE="6"][COLOR="Blue"][B]Multi-Mod Manager v1.1-Release-Candidate1[/B][/COLOR][/SIZE]
+[B]Release: 10.10.2015 | Last Update: 15.01.2016[/B]
 
 [SIZE="4"]Basic differences between the original [B]Joropito's MultiMod[/B] and [B]addons_zz's Multi-Mod Manager[/B][/SIZE]
 
@@ -11,7 +11,7 @@
 [*]improve its code as it is well [URL="http://www.d.umn.edu/~gshute/softeng/principles.html"]software engineered[/URL]. 
 [*]easily manage extremely big mod plugins files and mods configurations files. 
 [*]easily manage extremely big mods amount. 
-[*]have a vote mod until 100 mods or more, despite it's not being too much comprehensive. 
+[*]to have [COLOR="Red"][B]unlimited[/B][/COLOR] MODS installed.
 [*]install the [COLOR="Red"]fully compatible[/COLOR] "[B]multimod_daily_changer[/B]" provided [goanchor=Downloads]here[/goanchor]. 
 [*]install the [COLOR="Red"]fully compatible[/COLOR] and new "[B]galieo_reloaded.sma[/B]" provided [URL="https://forums.alliedmods.net/showthread.php?t=273019"]here[/URL]. 
 [*]unload metamod csdm modules automatically after disable the csdm mod, or before enable any another mod, as long as you configure it. 
@@ -39,10 +39,9 @@
 [*]see that are any mod currently activated, when you type "say currentmod" and there is no mod active. 
 [*]execute a special server's configuration file at the comment you active a server's mod. That is executed only and only at the 
             mod first activation time by the command "amx_setmod" (the silence one, "amx_setmods" has not this feature, because it is silent). 
-[*]receive a clear and self-explanatory error message when you mis-configure the mod plugins file name/location. 
+[*]receive a clear and self-explanatory error message when you mis-configure the mod plugins file name/location.
+[*]server's admins with right flag can change the server's current mod without needing direct access like ftp, to the server's files.
 [/LIST]
-
-[SIZE="4"]And even better, server's admins with right flag can change the server's current mod without needing direct access like ftp, to the server's files.[/SIZE]
 
 [anchor]Top[/anchor][SIZE="5"][COLOR="blue"][B]Contents' Table[/B][/COLOR][/SIZE] 
 
@@ -66,10 +65,6 @@
 The original plugin "[URL="https://forums.alliedmods.net/showthread.php?t=95568"]multimod.sma[/URL]" is originally written by JoRoPiTo. This "[B]Multi-Mod Manager[/B]" works 
 differently from the original "[COLOR="Blue"]MultiMod Manager[/COLOR]". See [goanchor=Credits]Credits[/goanchor] for information. 
 
-This is a Alpha version. This Alpha software can be unstable, see [goanchor=TODO]TODO[/goanchor] section for more information. 
-As [B]Alpha software[/B] may not contain all of the features that are planned for the final version, see [goanchor=TODO]TODO[/goanchor] 
-section for features that are planned for the final version. 
-
 This plugin [COLOR="Red"]is [B]not[/B] compatible[/COLOR] with the AMXX's very own [B]Map Chooser[/B] or "[B]Daily Maps[/B]", but yes with its 
 modification "[B]multimod_daily_changer[/B]" provided [goanchor=Downloads]here[/goanchor]. The new [URL="https://forums.alliedmods.net/showthread.php?t=273019"]galieo_reloaded.sma[/URL] 
 which is a different Galileo version, [COLOR="Red"]is ready[/COLOR] to be used with this [B]Multi-Mod Manager[/B]". 
@@ -81,8 +76,6 @@ only active when you are not using any mod, or your current mod does not specifi
 "[B]mapcycles[/B]" and "[B]server cfg[/B]" files respectively, are located at "[COLOR="Blue"]yourgamemod/mapcycles/[/COLOR][B]day[/B]" and 
 "[COLOR="Blue"]yourgamemod/mapcycles/[/COLOR][B]day/cfg[/B]". 
 
-As I am working at another plugins, I cannot provide immediately fixes and forum's answers here. But 
-as soon as I can, I am going to release the final version. 
 [URL="http://www.gametracker.com/search/?search_by=server_variable&search_by2=MultiModManager&query=&loc=_all&sort=&order="]
 [SIZE=5][B][COLOR=DarkGreen]Click here to see all servers using this plugin.[/COLOR][/B][/SIZE][/URL] 
 
@@ -91,10 +84,8 @@ as soon as I can, I am going to release the final version.
 This is a multi-mod server manager, that controls which mod is, or will be activated. 
 A mod can be activated by vote ([B]say votemod[/B]), or by force ([B]amx_setmod[/B] or [B]amx_setmods[/B]).
 
-There is a list of mods ([COLOR="Blue"][B]voting_list.ini[/B][/COLOR]) that decides which mods will show up at a mod vote. 
-The vote mod supports a multi-page menu, that display until 100 Mods loaded from “[B]voting_list.ini[/B]” file. 
-Beyond [B]100 mods[/B], the vote mod menu will not display then. To enable more than 100 mods, 
-redefine the compiler constant "[COLOR="Blue"][B]#define MAXMODS 100[/B][/COLOR]" inside the plugin.
+There is a list of mods ([COLOR="Blue"][B]voting_list.ini[/B][/COLOR]) that decides which mods will show up at a mod vote.
+The vote mod supports a multi-page menu, that display [COLOR="Red"][B]unlimited[/B][/COLOR] Mods loaded from “[B]voting_list.ini[/B]” file.
 
 [IMG]http://addons.zz.mu/recursos/2015-08-16_14-08_Counter-Strike.jpg[/IMG]
 
@@ -318,20 +309,18 @@ exec addons/amxmodx/configs/multimod/votefinished.cfg
 2015-10-30 | v1.1-alpha1.hotfix1
  * Fixed the mod map cycle not changing. 
 
-2016-01-13 | v1.1-release_candidate1
+2016-01-13 | v1.1-Release_Candidate1
  * Replaced wrong color chat system with correct one.
  * Use the actual current mod map cycle, right after a vote mod, instead the previous one.
  * Updated modification type to all GoldSrc engine games.
  * Fixed LANG_PLAYER misuse.
  * Fixed server_print overuse.
  * Fixed printing info to the client in a for loop can cause an overflow.
+ * Implemented dynamic arrays, to have unlimited models.
+ * Fixed bug, where was enabled to set a invalid mapcycle.
 [/QUOTE]
 
 ******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *********************************
-[QUOTE=HamletEagle;2374088]
-You could probably use dynamic arrays, to have unlimited models. Then, making a menu with the items in array, and accessing the right entry by the item index from the menu.
-[/QUOTE]
-They are perfect to this job.
 
 ******************************** [anchor]Credits[/anchor][B][SIZE="5"][COLOR="blue"]Credits[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *******************************
 [B]fysiks[/B]: The first to realize the idea of "multimod.sma" and various code improvements. 
@@ -387,4 +376,8 @@ from the [B]amxx cvars[/B] command. They will be grouped together.
 ******************************** [anchor]Downloads[/anchor][SIZE="6"][COLOR="Blue"][B]Downloads[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor] ********************
 [LIST]
 [*][URL="https://forums.alliedmods.net/showthread.php?t=273019"]galieo_reloaded.sma[/URL]
+[/LIST]
+Old versions downloads:
+[LIST=1]
+[*]v1.0-alpha2.hotfix1: (multimod_manager.sma - 72 views - 66.8 KB)
 [/LIST]
