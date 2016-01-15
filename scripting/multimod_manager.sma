@@ -18,9 +18,6 @@
 *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
 ***************************************************************************************
-
-
-
 */
 
 #define VERSION "1.1-rc1"
@@ -257,7 +254,7 @@ public unloadLastActiveMod()
         
         if( file_exists( lateConfig_filePath ) )
         {
-            client_print_color_internal( 0, "Executing the deactivation mod configuration file ( %s ).", lateConfig_filePath )
+            server_print( "Executing the deactivation mod configuration file ( %s ).", lateConfig_filePath )
             server_cmd( "exec %s", lateConfig_filePath )
         }
         
@@ -369,23 +366,31 @@ public primitiveFunctions( player_id, firstCommand_lineArgument[], isTimeToResta
  */
 public printHelp( player_id )
 {
-    new text[ LONG_STRING ]
-    
-    client_print( player_id, print_console, g_cmdsAvailables1 )
-    client_print( player_id, print_console, g_cmdsAvailables2 )
-    
-    server_print( g_cmdsAvailables1 )
-    server_print( g_cmdsAvailables2 )
-    
-    for( new i = 3; i <= g_modCounter; i++ )
+    if( player_id )
     {
-        formatex( text, charsmax( text ), "amx_setmod %s 1          | to use %s", g_mod_shortNames[ i ], g_mod_names[ i ] )
+        client_print( player_id, print_console, g_cmdsAvailables1 )
+        client_print( player_id, print_console, g_cmdsAvailables2 )
         
-        client_print( player_id, print_console, text )
-        server_print( text )
+        for( new i = 3; i <= g_modCounter; i++ )
+        {
+            client_print( player_id, print_console, "amx_setmod %s 1          | to use %s",
+                    g_mod_shortNames[ i ], g_mod_names[ i ] )
+        }
+        
+        client_print( player_id, print_console, "^n" )
     }
-    client_print( player_id, print_console, "^n" )
-    server_print( "^n" )
+    else
+    {
+        server_print( g_cmdsAvailables1 )
+        server_print( g_cmdsAvailables2 )
+        
+        for( new i = 3; i <= g_modCounter; i++ )
+        {
+            server_print( "amx_setmod %s 1          | to use %s", g_mod_shortNames[ i ], g_mod_names[ i ] )
+        }
+        
+        server_print( "^n" )
+    }
 }
 
 /**
@@ -856,7 +861,7 @@ public configMapManager( mapcycle_filePath[] )
                 }
                 else
                 {
-                    client_print_color_internal( 0, "Error at configMapManager!! multimod_mapchooser.amxx NOT FOUND!^n" )
+                    log_error( AMX_ERR_NOTFOUND, "Error at configMapManager!! multimod_mapchooser.amxx NOT FOUND!^n" )
                 }
             }
             case 2:
@@ -998,7 +1003,7 @@ public activateMod_byShortName( modShortName[] )
     }
     else
     {
-        client_print_color_internal( 0, "Error at activateMod_byShortName!! plugin_filePath: %s", plugin_filePath )
+        log_error( AMX_ERR_NOTFOUND, "Error at activateMod_byShortName!! plugin_filePath: %s", plugin_filePath )
     }
     DEBUG_LOGGER( 1, "^n activateMod_byShortName, plugin_filePath: %s^n", plugin_filePath )
     
@@ -1127,7 +1132,7 @@ public msgResourceActivated( resourceName[], isTimeToRestart, isTimeTo_executeMe
  */
 public user_currentmod( player_id )
 {
-    client_print( 0, print_chat, "The game current mod is: %s", g_mod_names[ g_currentMod_id ] )
+    client_print_color_internal( player_id, "^1L%", player_id, "MM_HUDMSG", g_mod_names[ g_currentMod_id ] )
     
     return PLUGIN_HANDLED
 }
@@ -1143,7 +1148,8 @@ public user_votemod( player_id )
 {
     if( get_pcvar_num( gp_allowedvote ) )
     {
-        client_print( player_id, print_chat, "%L", player_id, "MM_VOTEMOD", g_mod_names[ g_currentMod_id ] )
+        client_print_color_internal( player_id, "^1%L", player_id, "MM_VOTEMOD",
+                g_mod_names[ g_currentMod_id ] )
         return PLUGIN_HANDLED
     }
     new Float:elapsedTime = get_pcvar_float( gp_timelimit ) - ( float( get_timeleft() ) / 60.0 )
@@ -1152,7 +1158,7 @@ public user_votemod( player_id )
     
     if( elapsedTime < minTime )
     {
-        client_print( player_id, print_chat, "[AMX MultiMod] %L", player_id, "MM_PL_WAIT",
+        client_print_color_internal( player_id, "^4[AMX MultiMod]^1 %L", player_id, "MM_PL_WAIT",
                 floatround( minTime - elapsedTime, floatround_ceil ) )
         
         return PLUGIN_HANDLED
@@ -1161,8 +1167,7 @@ public user_votemod( player_id )
     
     if( timeleft < 180 )
     {
-        client_print( player_id, print_chat, "You can't start a vote mod while the timeleft is %d seconds",
-                timeleft )
+        client_print_color_internal( player_id, "^1%L", player_id, "MM_PL_WAIT", timeleft )
         
         return PLUGIN_HANDLED
     }
@@ -1411,7 +1416,7 @@ public player_vote( player_id, key )
                 
                 get_user_name( player_id, player_name, charsmax( player_name ) )
                 
-                client_print_color_internal( 0, "%L", player_id, "X_CHOSE_X", player_name, g_mod_names[ mod_vote_id ] )
+                client_print_color_internal( 0, "^1%L", player_id, "X_CHOSE_X", player_name, g_mod_names[ mod_vote_id ] )
                 
                 g_votemodcount[ mod_vote_id ]++
             }
@@ -1471,14 +1476,14 @@ public displayVoteResults( mostVoted_modID, g_totalVotes )
         
         configureMod_byModID( mostVoted_modID )
         
-        client_print_color_internal( 0,  "%L", LANG_PLAYER, "MM_VOTEMOD", g_mod_names[ mostVoted_modID ] )
+        client_print_color_internal( 0,  "^1%L", LANG_PLAYER, "MM_VOTEMOD", g_mod_names[ mostVoted_modID ] )
         
         server_cmd( "exec %s", g_votingFinished_filePath )
     }
     else
     {
-        client_print_color_internal( 0,  "The vote did not reached the required minimum! \
-                The next mod remains: %s", g_mod_names[ g_currentMod_id ] )
+        client_print_color_internal( 0,  "^1The vote did not reached the ^3required minimum! \
+                ^4The next mod remains: %s", g_mod_names[ g_currentMod_id ] )
     }
     g_totalVotes = 0
     

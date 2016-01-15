@@ -321,19 +321,11 @@ exec addons/amxmodx/configs/multimod/votefinished.cfg
 2016-01-13 | v1.1-release_candidate1
  * Replaced wrong color chat system with correct one.
  * Use the actual current mod map cycle, right after a vote mod, instead the previous one.
+ * Updated modification type to all GoldSrc engine games.
+ * Fixed LANG_PLAYER misuse.
 [/QUOTE]
 
 ******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *********************************
-[QUOTE=fysiks;2353142]
-If you are going to use the multilingual system to print to the server console, you should not use 
-LANG_PLAYER; that just doesn't make sense.  You should use LANG_SERVER.
-[*]This will only work with Counter-Strike (because of color chat) and thus your submission 
-should not be labeled as "Modification:   ALL".
-[/QUOTE]
-I posted wrong, and I was misleading the LANG_PLAYER and LANG_SERVER's use. 
-It will be fixed. And I forgot, this will be modification ALL, but it is not currently modification ALL. 
-It will be correct at threads page until it is definitely modification all. 
-
 [QUOTE=fysiks;2353142]
 IIRC, printing info to the client in a for loop can cause an overflow.  Simply build the whole text into 
 a single string and then send that only once.  You can create multiple lines by using "^n".
