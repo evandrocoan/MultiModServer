@@ -21,7 +21,7 @@
 *****************************************************************************************
 */
 
-#define PLUGIN_VERSION "1.0"
+#define PLUGIN_VERSION "1.2-rc1"
 
 #include <amxmodx>
 #include <amxmisc>
@@ -250,6 +250,7 @@ new g_is_map_extension_allowed
 /**
  * Server cvars
  */
+new cvar_coloredChatEnabled
 new cvar_emptyCycle;
 new cvar_unnominateDisconnected;
 new cvar_endOnRound
@@ -297,6 +298,8 @@ new bool:g_is_color_chat_supported
 new bool:g_is_to_cancel_end_vote
 new bool:g_isUsingEmptyCycle
 new bool:g_is_vote_blocked
+new g_is_colored_chat_enabled
+
 new g_emptyMapCnt
 new g_cntRecentMap;
 new Array:g_nominationMap
@@ -365,6 +368,7 @@ public plugin_init()
     cvar_extendmapStepRounds = register_cvar( "amx_extendmap_step_rounds", "30" );
     cvar_extendmapAllowStay  = register_cvar( "amx_extendmap_allow_stay", "1" );
     
+    cvar_coloredChatEnabled     = register_cvar( "gal_colored_chat_enabled", "0", FCVAR_SPONLY );
     cvar_emptyCycle             = register_cvar( "gal_in_empty_cycle", "0", FCVAR_SPONLY );
     cvar_unnominateDisconnected = register_cvar( "gal_unnominate_disconnected", "0" );
     cvar_endOnRound             = register_cvar( "gal_endonround", "2" );
@@ -454,6 +458,7 @@ public plugin_cfg()
     server_cmd( "exec %s/galileo_reloaded.cfg", DIR_CONFIGS );
     server_exec();
     
+    g_is_colored_chat_enabled = get_pcvar_num( cvar_coloredChatEnabled )
     g_is_color_chat_supported = ( is_running( "czero" )
                                   || is_running( "cstrike" ) )
     
@@ -464,6 +469,7 @@ public plugin_cfg()
         copy( CLR_YELLOW, 2, "\y" );
     }
     
+ 
     g_rtvWait   = get_pcvar_float( cvar_rtvWait );
     g_choiceMax = max( min( MAX_MAPS_IN_VOTE, get_pcvar_num( cvar_voteMapChoiceCnt ) ), 2 )
     
@@ -4318,7 +4324,7 @@ stock client_print_color_internal( player_id, message[], any: ... )
 {
     new formated_message[ COLOR_MESSAGE ]
     
-    if( g_is_color_chat_supported )
+    if( g_is_color_chat_supported && g_is_colored_chat_enabled )
     {
 #if AMXX_VERSION_NUM < 183
         if( player_id )
