@@ -25,6 +25,10 @@
 #include <amxmodx>
 #include <amxmisc>
 
+#define LONG_STRING   256
+#define COLOR_MESSAGE 192
+#define SHORT_STRING  64
+
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
  * at the end of this file and the variable 'g_debug_level' for more information.
  * Default value: 0  - which is disabled.
@@ -45,6 +49,25 @@
  * ( 1001111 ) 79 displays all debug levels.
  */
 new g_debug_level = 79
+
+/**
+ * Write debug messages to server's console accordantly to the global variable g_debug_level.
+ *
+ * @param mode the debug mode level, see the variable 'g_debug_level' for the levels.
+ * @param message[] the text formatting rules to display.
+ * @param any the variable number of formatting parameters.
+ */
+stock debugMesssageLogger( mode, message[], any: ... )
+{
+    if( mode & g_debug_level )
+    {
+        static formated_message[ LONG_STRING ]
+        
+        vformat( formated_message, charsmax( formated_message ), message, 3 )
+        
+        server_print( "%s", formated_message         )
+    }
+}
 #else
     #define DEBUG_LOGGER(%1) //
 #endif
@@ -55,10 +78,6 @@ new g_debug_level = 79
 #define TASK_VOTEMOD      2487002
 #define TASK_CHVOMOD      2487004
 #define TASKIS_PRINT_HELP 648215
-
-#define LONG_STRING   256
-#define COLOR_MESSAGE 192
-#define SHORT_STRING  64
 
 /**
  * The client console lines number to print when is showed the help command.
@@ -1901,23 +1920,4 @@ stock register_dictionary_colored( const filename[] )
     
     fclose( fp );
     return 1;
-}
-
-/**
- * Write debug messages to server's console accordantly to the global variable g_debug_level.
- *
- * @param mode the debug mode level, see the variable 'g_debug_level' for the levels.
- * @param message[] the text formatting rules to display.
- * @param any the variable number of formatting parameters.
- */
-stock debugMesssageLogger( mode, message[], any: ... )
-{
-    if( mode & g_debug_level )
-    {
-        static formated_message[ LONG_STRING ]
-        
-        vformat( formated_message, charsmax( formated_message ), message, 3 )
-        
-        server_print( "%s", formated_message         )
-    }
 }
