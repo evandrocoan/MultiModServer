@@ -6,39 +6,39 @@
 
 [B]addons_zz's Multi-mod Manager can:[/B]
 [LIST=1]
-[*]display colored text messages. 
-[*]easily implemented any new feature that you want, as it is a fully documented plugin. 
-[*]improve its code as it is well [URL="http://www.d.umn.edu/~gshute/softeng/principles.html"]software engineered[/URL]. 
-[*]easily manage extremely big mod plugins files and mods configurations files. 
-[*]easily manage extremely big mods amount. 
+[*]display colored text messages.
+[*]easily implemented any new feature that you want, as it is a fully documented plugin.
+[*]improve its code as it is well [URL="http://www.d.umn.edu/~gshute/softeng/principles.html"]software engineered[/URL].
+[*]easily manage extremely big mod plugins files and mods configurations files.
+[*]easily manage extremely big mods amount.
 [*]to have [COLOR="Red"][B]unlimited[/B][/COLOR] MODS installed.
-[*]install the [COLOR="Red"]fully compatible[/COLOR] "[B]multimod_daily_changer[/B]" provided [goanchor=Downloads]here[/goanchor]. 
-[*]install the [COLOR="Red"]fully compatible[/COLOR] and new "[B]Galileo[/B]" provided [URL="https://forums.alliedmods.net/showthread.php?t=273019"]here[/URL]. 
-[*]unload metamod csdm modules automatically after disable the csdm mod, or before enable any another mod, as long as you configure it. 
-[*]restore server's cvars and server's commands automatically after disable any mod, or before enable another mod, as long as you configure it. 
+[*]install the [COLOR="Red"]fully compatible[/COLOR] "[B]multimod_daily_changer[/B]" provided [goanchor=Downloads]here[/goanchor].
+[*]install the [COLOR="Red"]fully compatible[/COLOR] and new "[B]Galileo[/B]" provided [URL="https://forums.alliedmods.net/showthread.php?t=273019"]here[/URL].
+[*]unload metamod csdm modules automatically after disable the csdm mod, or before enable any another mod, as long as you configure it.
+[*]restore server's cvars and server's commands automatically after disable any mod, or before enable another mod, as long as you configure it.
 [*]install/use every mod that exists and will exists in the universe, without any special plugin or any "Multi-Mod Manager" modification, 
-            as long as this mod you wanna install runs at an AMXX very own default install. 
+            as long as this mod you wanna install runs at an AMXX very own default install.
 [*]if you want to, you can have any mod activated never ever at you server, even if there is more then 10 installed and fully working mods. 
-[*]use the command "[B]amx_setmod help 1[/B]" display the acceptable inputs and loaded mods 
-            from the file "[COLOR="Blue"]yourgamemod/addons/amxmodx/configs/multimod/[/COLOR][B]voting_list.ini[/B]". 
-[*]automatically execute late configuration file execution to built-in AMXX per map configurations. 
-[*]automatically to restaure the first mapcycle used. 
+[*]use the command "[B]amx_setmod help 1[/B]" display the acceptable inputs and loaded mods
+            from the file "[COLOR="Blue"]yourgamemod/addons/amxmodx/configs/multimod/[/COLOR][B]voting_list.ini[/B]".
+[*]automatically execute late configuration file execution to built-in AMXX per map configurations.
+[*]automatically to restaure the first mapcycle used.
 [*]freeze the game and show the scoreboard when activating a mod silently, using the command "amx_setmods".
-[*]use the command '[COLOR="Blue"][B]amx_setmod modShortName <1 or 0>[/B][/COLOR]', to enable the mod "modShortName" as [COLOR="Blue"]csdm[/COLOR], 
-            starting a vote map (1) or not (0), right after. This command can [B]only active mods loaded[/B] from 
-            "[B]voting_list.ini[/B]" file, and needs an admin level ADMIN_CFG. 
-[*]use the command '[COLOR="Blue"][B]amx_setmods modShortName <1 or 0>[/B][/COLOR]', to enable the mod "modShortName" as [COLOR="Blue"]surf[/COLOR], 
-            restarting (1) or not (0) the server immediately, [B]s[/B]ilently. This command can [B]active any mod installed at the server[/B] 
-            despite it is or it is not at the "[B]voting_list.ini[/B]" server configuration file. And most important, it needs an admin level ADMIN_IMMUNITY. 
+[*]use the command '[COLOR="Blue"][B]amx_setmod modShortName <1 or 0>[/B][/COLOR]', to enable the mod "modShortName" as [COLOR="Blue"]csdm[/COLOR],
+            starting a vote map (1) or not (0), right after. This command can [B]only active mods loaded[/B] from
+            "[B]voting_list.ini[/B]" file, and needs an admin level ADMIN_CFG.
+[*]use the command '[COLOR="Blue"][B]amx_setmods modShortName <1 or 0>[/B][/COLOR]', to enable the mod "modShortName" as [COLOR="Blue"]surf[/COLOR],
+            restarting (1) or not (0) the server immediately, [B]s[/B]ilently. This command can [B]active any mod installed at the server[/B]
+            despite it is or it is not at the "[B]voting_list.ini[/B]" server configuration file. And most important, it needs an admin level ADMIN_IMMUNITY.
 [*]use the cvar [COLOR="Blue"]amx_multimod_endmapvote [B]<0 - 1>[/B][/COLOR] to enable ([B]1[/B]) or disable ([B]0[/B]) end map automatic [B]multi-mod[/B] voting.
-[*]waits as long as you want to choose to activate one mod or not, by vote menu and by command line. 
-[*]at voting [B]keep the current mod[/B], if less than 30% voted, or [B]keep it disabled[/B] if there is no mod enabled. 
-[*]see the voting results details at server's console. 
-[*]keep the server's current mod at voting as the [COLOR="Blue"]vote menu's[/COLOR] first option is always: "[B]1. Keep Current Mod[/B]". 
-[*]disable the server's current mod at voting as the [COLOR="Blue"]vote menu's[/COLOR] second option is always: "[B]2. No mod - Disable Mod[/B]". 
-[*]see that are any mod currently activated, when you type "say currentmod" and there is no mod active. 
-[*]execute a special server's configuration file at the comment you active a server's mod. That is executed only and only at the 
-            mod first activation time by the command "amx_setmod" (the silence one, "amx_setmods" has not this feature, because it is silent). 
+[*]waits as long as you want to choose to activate one mod or not, by vote menu and by command line.
+[*]at voting [B]keep the current mod[/B], if less than 30% voted, or [B]keep it disabled[/B] if there is no mod enabled.
+[*]see the voting results details at server's console.
+[*]keep the server's current mod at voting as the [COLOR="Blue"]vote menu's[/COLOR] first option is always: "[B]1. Keep Current Mod[/B]".
+[*]disable the server's current mod at voting as the [COLOR="Blue"]vote menu's[/COLOR] second option is always: "[B]2. No mod - Disable Mod[/B]".
+[*]see that are any mod currently activated, when you type "say currentmod" and there is no mod active.
+[*]execute a special server's configuration file at the comment you active a server's mod. That is executed only and only at the
+            mod first activation time by the command "amx_setmod" (the silence one, "amx_setmods" has not this feature, because it is silent).
 [*]receive a clear and self-explanatory error message when you mis-configure the mod plugins file name/location.
 [*]server's admins with right flag can change the server's current mod without needing direct access like ftp, to the server's files.
 [/LIST]
