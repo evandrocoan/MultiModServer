@@ -29,7 +29,7 @@
  * at the end of this file and the variable 'g_debug_level' for more information.
  * Default value: 0  - which is disabled.
  */
-#define IS_DEBUG_ENABLED 1
+#define IS_DEBUG_ENABLED 0
 
 #if IS_DEBUG_ENABLED > 0
     #define DEBUG_LOGGER(%1) debugMesssageLogger( %1 )
