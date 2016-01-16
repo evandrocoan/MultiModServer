@@ -371,9 +371,9 @@ public plugin_init()
     register_plugin( "Galileo", PLUGIN_VERSION, "Brad Jones/Addons zz" );
     
     register_dictionary( "common.txt" );
-    register_dictionary_colored( "galileo_reloaded.txt" );
+    register_dictionary_colored( "galileo.txt" );
     
-    register_cvar( "GalileoReloaded", PLUGIN_VERSION, FCVAR_SERVER | FCVAR_SPONLY );
+    register_cvar( "Galileo", PLUGIN_VERSION, FCVAR_SERVER | FCVAR_SPONLY );
     register_cvar( "gal_server_starting", "1", FCVAR_SPONLY );
     
     cvar_extendmapMax        = register_cvar( "amx_extendmap_max", "90" );
@@ -463,12 +463,12 @@ public plugin_cfg()
     reset_rounds_scores()
     
     formatex( DIR_CONFIGS[ get_configsdir( DIR_CONFIGS, charsmax( DIR_CONFIGS ) ) ],
-            charsmax( DIR_CONFIGS ), "/galileo_reloaded" );
+            charsmax( DIR_CONFIGS ), "/galileo" );
     
     formatex( DIR_DATA[ get_datadir( DIR_DATA, charsmax( DIR_DATA ) ) ],
-            charsmax( DIR_DATA ), "/galileo_reloaded" );
+            charsmax( DIR_DATA ), "/galileo" );
     
-    server_cmd( "exec %s/galileo_reloaded.cfg", DIR_CONFIGS );
+    server_cmd( "exec %s/galileo.cfg", DIR_CONFIGS );
     server_exec();
     
     g_is_colored_chat_enabled = get_pcvar_num( cvar_coloredChatEnabled )
@@ -4655,7 +4655,7 @@ public runTests()
 {
     new test_name[ SHORT_STRING ]
     
-    DEBUG_LOGGER( 128, "^n^n    Executing the 'Galileo Reloaded' Tests: ^n" )
+    DEBUG_LOGGER( 128, "^n^n    Executing the 'Galileo' Tests: ^n" )
     
     save_server_cvasr_for_test()
     
@@ -4699,7 +4699,7 @@ public runTests()
     else
     {
         restore_server_cvars_for_test()
-        DEBUG_LOGGER( 128, "^n    Finished 'Galileo Reloaded' Tests Execution.^n^n" )
+        DEBUG_LOGGER( 128, "^n    Finished 'Galileo' Tests Execution.^n^n" )
     }
 }
 
@@ -4711,7 +4711,7 @@ public show_delayed_results()
 {
     new test_name[ SHORT_STRING ]
     
-    DEBUG_LOGGER( 128, "^n^n    Showing 'Galileo Reloaded' Tests Delayed Results..." )
+    DEBUG_LOGGER( 128, "^n^n    Showing 'Galileo' Tests Delayed Results..." )
     
     DEBUG_LOGGER( 128, "^n    %d tests succeed.^n    %d tests failed.", g_totalSuccessfulTests, \
             g_totalFailureTests )
@@ -4729,7 +4729,7 @@ public show_delayed_results()
         DEBUG_LOGGER( 128, "       %s", test_name )
     }
     
-    DEBUG_LOGGER( 128, "^n    Finished 'Galileo Reloaded' Tests Execution. ^n^n" )
+    DEBUG_LOGGER( 128, "^n    Finished 'Galileo' Tests Execution. ^n^n" )
     
     // clean the testing
     cancel_voting()
