@@ -26,6 +26,10 @@
 #include <amxmodx>
 #include <amxmisc>
 
+#define LONG_STRING   256
+#define COLOR_MESSAGE 192
+#define SHORT_STRING  64
+
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
  * at the end of this file and the variable 'g_debug_level' for more information.
  * Default value: 0  - which is disabled.
@@ -65,6 +69,26 @@ new bool:g_is_test_changed_cvars
 new Float:test_extendmap_max
 new Float:test_mp_timelimit
 
+/**
+ * Write debug messages to server's console accordantly with cvar gal_debug.
+ * If gal_debug 1 or more higher, the voting and runoff times are set to 5 seconds.
+ *
+ * @param mode the debug mode level, see the variable 'g_debug_level' for the levels.
+ * @param text the debug message, if omitted its default value is ""
+ * @param any the variable number of formatting parameters
+ */
+stock debugMesssageLogger( mode, message[], any: ... )
+{
+    if( mode & g_debug_level )
+    {
+        static formated_message[ LONG_STRING ]
+        
+        vformat( formated_message, charsmax( formated_message ), message, 3 )
+        
+        server_print( "%s",                      formated_message )
+        client_print( 0,    print_console, "%s", formated_message )
+    }
+}
 #else
     #define DEBUG_LOGGER(%1) //
 #endif
@@ -89,10 +113,6 @@ new g_colored_players_number
 new g_colored_current_index
 new g_colored_players_ids[ 32 ]
 #endif
-
-#define LONG_STRING   256
-#define COLOR_MESSAGE 192
-#define SHORT_STRING  64
 
 #define TASKID_REMINDER               52691153
 #define TASKID_SHOW_LAST_ROUND_HUD    52691052
@@ -5080,32 +5100,5 @@ stock restore_server_cvars_for_test()
     DEBUG_LOGGER( 4, "%32s mp_timelimit: %f  test_mp_timelimit: %f  g_originalTimelimit: %f",  \
             "restore_server_cvars_for_test( out )", get_pcvar_float( g_timelimit_pointer ), \
             test_mp_timelimit, g_originalTimelimit )
-}
-
-/**
- * Write debug messages to server's console accordantly with cvar gal_debug.
- * If gal_debug 1 or more higher, the voting and runoff times are set to 5 seconds.
- *
- * @param mode the debug mode level, see the variable 'g_debug_level' for the levels.
- * @param text the debug message, if omitted its default value is ""
- * @param any the variable number of formatting parameters
- */
-stock debugMesssageLogger( const mode, const text[] = "", { Float, Sql, Result, _ }: ... )
-{
-    if( mode & g_debug_level )
-    {
-        // format the text as needed
-        new formattedText[ 1024 ];
-        format_args( formattedText, 1023, 1 );
-        
-        server_print( "%s", formattedText )
-        client_print( 0, print_console, "%s", formattedText )
-    }
-    
-    // not needed but gets rid of stupid compiler error
-    if( text[ 0 ] == '^0' )
-    {
-        return;
-    }
 }
 #endif
