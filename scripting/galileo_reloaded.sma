@@ -47,7 +47,7 @@
  * ( ... ) 128 execute the test units and print their out put results.
  * ( 11111111 ) 255 displays all debug logs levels at server console.
  */
-new g_debug_level
+new g_debug_level = 251
 
 /**
  * Test unit variables related to debug level 128, displays basic debug messages.
@@ -173,14 +173,6 @@ new g_colored_players_ids[ 32 ]
     }
 
 /**
- * Determines if it is a end of map vote due time limit or max rounds expiration.
- */
-#define IS_FINAL_VOTE \
-    ( ( get_pcvar_float( g_timelimit_pointer ) * 60 ) < START_VOTEMAP_MIN_TIME ) \
-    || ( g_is_maxrounds_vote_map )
-
-
-/**
  * Convert colored strings codes '!g for green', '!y for yellow', '!t for team'.
  */
 #define INSERT_COLOR_TAGS(%1) \
@@ -250,6 +242,7 @@ new g_is_map_extension_allowed
 /**
  * Server cvars
  */
+new cvar_extendmapAllowOrder
 new cvar_coloredChatEnabled
 new cvar_emptyCycle;
 new cvar_unnominateDisconnected;
@@ -298,6 +291,7 @@ new bool:g_is_color_chat_supported
 new bool:g_is_to_cancel_end_vote
 new bool:g_isUsingEmptyCycle
 new bool:g_is_vote_blocked
+new bool:g_is_final_voting
 new g_is_colored_chat_enabled
 
 new g_emptyMapCnt
@@ -361,12 +355,12 @@ public plugin_init()
     
     register_cvar( "GalileoReloaded", PLUGIN_VERSION, FCVAR_SERVER | FCVAR_SPONLY );
     register_cvar( "gal_server_starting", "1", FCVAR_SPONLY );
-    register_cvar( "gal_debug", "0" );
     
     cvar_extendmapMax        = register_cvar( "amx_extendmap_max", "90" );
     cvar_extendmapStep       = register_cvar( "amx_extendmap_step", "15" );
     cvar_extendmapStepRounds = register_cvar( "amx_extendmap_step_rounds", "30" );
-    cvar_extendmapAllowStay  = register_cvar( "amx_extendmap_allow_stay", "1" );
+    cvar_extendmapAllowStay  = register_cvar( "amx_extendmap_allow_stay", "0" );
+    cvar_extendmapAllowOrder = register_cvar( "amx_extendmap_allow_order", "0" );
     
     cvar_coloredChatEnabled     = register_cvar( "gal_colored_chat_enabled", "0", FCVAR_SPONLY );
     cvar_emptyCycle             = register_cvar( "gal_in_empty_cycle", "0", FCVAR_SPONLY );
@@ -442,7 +436,6 @@ public plugin_init()
 public plugin_cfg()
 {
 #if IS_DEBUG_ENABLED > 0
-    g_debug_level       = get_cvar_num( "gal_debug" );
     g_tests_idsAndNames = ArrayCreate( SHORT_STRING )
     g_tests_delayed_ids = ArrayCreate( 1 )
     g_tests_failure_ids = ArrayCreate( 1 )
@@ -469,7 +462,7 @@ public plugin_cfg()
         copy( CLR_YELLOW, 2, "\y" );
     }
     
- 
+    
     g_rtvWait   = get_pcvar_float( cvar_rtvWait );
     g_choiceMax = max( min( MAX_MAPS_IN_VOTE, get_pcvar_num( cvar_voteMapChoiceCnt ) ), 2 )
     
@@ -668,28 +661,27 @@ public process_last_round_counting()
 
 stock intermission_display( is_map_change_stays = false )
 {
-    if( g_isTimeToChangeLevel )
+    if( g_isTimeToChangeLevel
+        || g_isTimeToRestart )
     {
+        new Float:mp_chattime = get_cvar_float( "mp_chattime" )
+        
+        if( mp_chattime > 12 )
+        {
+            mp_chattime = 12.0
+        }
+        
+        if( is_map_change_stays )
+        {
+            set_task( mp_chattime, "map_change_stays", TASKID_MAP_CHANGE );
+        }
+        else
+        {
+            set_task( mp_chattime, "map_change", TASKID_MAP_CHANGE );
+        }
+        
         if( get_pcvar_num( cvar_endMapCountdown ) )
         {
-            new Float:mp_chattime = get_cvar_float( "mp_chattime" )
-            
-            if( mp_chattime > 12 )
-            {
-                mp_chattime = 12.0
-            }
-            
-            g_isTimeToChangeLevel = false;
-            
-            if( is_map_change_stays )
-            {
-                set_task( mp_chattime, "map_change_stays", TASKID_MAP_CHANGE );
-            }
-            else
-            {
-                set_task( mp_chattime, "map_change", TASKID_MAP_CHANGE );
-            }
-            
             // freeze the game and show the scoreboard
             g_original_sv_maxspeed = get_cvar_float( "sv_maxspeed" )
             set_cvar_float( "sv_maxspeed", 0.0 )
@@ -1174,6 +1166,8 @@ public cmd_listrecent( player_id )
  */
 public cmd_startVote( player_id, level, cid )
 {
+    DEBUG_LOGGER( 1, "( in ) cmd_startVote()| player_id: %d, level: %d, cid: %d", player_id, level, cid )
+    
     if( !cmd_access( player_id, level, cid, 1 ) )
     {
         return PLUGIN_HANDLED;
@@ -1198,11 +1192,22 @@ public cmd_startVote( player_id, level, cid )
                 g_isTimeToChangeLevel   = false;
             }
             
-            if( equali( vote_display_task_argument, "-restart" ) )
+            DEBUG_LOGGER( 1, "( inside ) cmd_startVote()| vote_display_task_argument: %s", \
+                    vote_display_task_argument )
+            
+            if( equali( vote_display_task_argument, "-restart", 4 ) )
             {
                 g_isTimeToRestart = true;
             }
+            
+            DEBUG_LOGGER( 1, "( inside ) cmd_startVote()| \
+                    equal( vote_display_task_argument, ^"-restart^", 4 ): %d", \
+                    equal( vote_display_task_argument, "-restart", 4 ) )
         }
+        DEBUG_LOGGER( 1, "( cmd_startVote ) g_isTimeToRestart: %d, g_isTimeToChangeLevel: %d \
+                g_is_to_cancel_end_vote: %d", \
+                g_isTimeToRestart, g_isTimeToChangeLevel, g_is_to_cancel_end_vote )
+        
         vote_startDirector( true );
     }
     
@@ -2123,6 +2128,9 @@ public vote_startDirector( bool:forced )
                 get_pcvar_float( g_timelimit_pointer ) < get_pcvar_float( cvar_extendmapMax )
         }
         
+        g_is_final_voting = ( ( ( get_pcvar_float( g_timelimit_pointer ) * 60 ) < START_VOTEMAP_MIN_TIME )
+                              || ( g_is_maxrounds_vote_map ) )
+        
         g_is_voting_locked = true
         set_task( 120.0, "unlock_voting", TASKID_UNLOCK_VOTING );
         
@@ -2185,8 +2193,8 @@ public vote_startDirector( bool:forced )
         
         // display the map choices
         set_task( 8.5, "vote_handleDisplay", TASKID_VOTE_HANDLEDISPLAY );
-
-        // block player that does not voted 
+        
+        // block player that does not voted
         set_task( 8.0 + float( voteDuration ), "block_vote", TASKID_VOTE_DISPLAY )
         g_is_vote_blocked = false;
         
@@ -2223,6 +2231,10 @@ public vote_startDirector( bool:forced )
         client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_VOTE_NOMAPS" );
     #endif
     }
+    
+    DEBUG_LOGGER( 1, "( vote_startDirector ) g_isTimeToRestart: %d, g_isTimeToChangeLevel: %d \
+            g_is_to_cancel_end_vote: %d", \
+            g_isTimeToRestart, g_isTimeToChangeLevel, g_is_to_cancel_end_vote )
     
     DEBUG_LOGGER( 4, "" )
     DEBUG_LOGGER( 4, "   [PLAYER CHOICES]" )
@@ -2432,8 +2444,8 @@ stock vote_addFiller()
             && mapCnt )
         {
             unsuccessfulCnt = 0;
-            allowedCnt      = min( min( mapsPerGroup[ groupIdx ], g_choiceMax - g_totalVoteOptions ), 
-                            mapCnt );
+            allowedCnt      = min( min( mapsPerGroup[ groupIdx ], g_choiceMax - g_totalVoteOptions ),
+                    mapCnt );
             
             DEBUG_LOGGER( 8, "[%i] allowedCnt: %i   mapsPerGroup: %i   Max-Cnt: %i", groupIdx, \
                     allowedCnt, mapsPerGroup[ groupIdx ], g_choiceMax - g_totalVoteOptions )
@@ -2640,7 +2652,7 @@ public vote_display( vote_display_task_argument[ 3 ] )
         new allowStay = ( g_voteStatus & VOTE_IS_EARLY );
         new isRunoff  = ( g_voteStatus & VOTE_IS_RUNOFF );
         
-        new bool:allowExtend = ( IS_FINAL_VOTE
+        new bool:allowExtend = ( g_is_final_voting
                                  && !isRunoff )
         
         if( g_isTimeToChangeLevel
@@ -2653,7 +2665,7 @@ public vote_display( vote_display_task_argument[ 3 ] )
         if( g_isRunOffNeedingKeepCurrentMap )
         {
             // if it is a end map RunOff, then it is a extend button, not a keep current map button
-            if( IS_FINAL_VOTE )
+            if( g_is_final_voting )
             {
                 allowExtend = true;
                 allowStay   = false;
@@ -2667,9 +2679,9 @@ public vote_display( vote_display_task_argument[ 3 ] )
         
         if( !get_pcvar_num( cvar_extendmapAllowStay ) )
         {
-            allowStay   = false;
+            allowStay = false;
         }
-
+        
         // add optional menu item
         if( g_is_map_extension_allowed )
         {
@@ -2715,7 +2727,8 @@ public vote_display( vote_display_task_argument[ 3 ] )
                 }
                 
                 // Added the extension/stay key option (1 << 2 = key 3, 1 << 3 = key 4, ...)
-                if( get_pcvar_num( cvar_extendmapAllowStay) || g_is_map_extension_allowed )
+                if( get_pcvar_num( cvar_extendmapAllowStay )
+                    || g_is_map_extension_allowed )
                 {
                     keys |= ( 1 << g_totalVoteOptions );
                 }
@@ -2952,6 +2965,10 @@ public vote_expire()
     DEBUG_LOGGER( 16, "At for: g_totalVoteOptions: %d, numberOfMapsAtFirstPosition: %d, \
             numberOfMapsAtSecondPosition: %d", \
             g_totalVoteOptions, numberOfMapsAtFirstPosition, numberOfMapsAtSecondPosition )
+    
+    DEBUG_LOGGER( 1, "( vote_expire|middle ) g_isTimeToRestart: %d, g_isTimeToChangeLevel: %d \
+            g_is_to_cancel_end_vote: %d", \
+            g_isTimeToRestart, g_isTimeToChangeLevel, g_is_to_cancel_end_vote )
     
     // announce the outcome
     new winnerVoteMapIndex;
@@ -3209,16 +3226,24 @@ public vote_expire()
             winnerVoteMapIndex = firstPlaceChoices[ 0 ];
         }
         
+        DEBUG_LOGGER( 1, "( vote_expire|moreover ) g_isTimeToRestart: %d, g_isTimeToChangeLevel: %d \
+                g_is_to_cancel_end_vote: %d", \
+                g_isTimeToRestart, g_isTimeToChangeLevel, g_is_to_cancel_end_vote )
+        
         // winnerVoteMapIndex == g_totalVoteOptions, means the 'keep current map' option, then
         // here we keep the current map or extend current map, unless the cvar_extendmapAllowStay
         // is set to 0 or g_is_map_extension_allowed is disallowed.
-        if( winnerVoteMapIndex == g_totalVoteOptions 
+        if( winnerVoteMapIndex == g_totalVoteOptions
             && ( get_pcvar_num( cvar_extendmapAllowStay )
-                || g_is_map_extension_allowed ) )
+                 || g_is_map_extension_allowed ) )
         {
-            if( g_voteStatus & VOTE_IS_EARLY )
+            if( ( g_voteStatus & VOTE_IS_EARLY ) // if it is a early vote, we just change map later
+                && !g_isTimeToRestart ) // but it must not be time to restart
             {
                 // "stay here" won
+                g_isTimeToChangeLevel = false;
+                g_isTimeToRestart     = false;
+            
             #if AMXX_VERSION_NUM < 183
                 get_players( g_colored_players_ids, g_colored_players_number, "ch" );
                 
@@ -3244,8 +3269,6 @@ public vote_expire()
             {
                 if( g_isTimeToRestart )
                 {
-                    g_isTimeToRestart = false;
-                    
                     // "stay here" won
                     #if AMXX_VERSION_NUM < 183
                     get_players( g_colored_players_ids, g_colored_players_number, "ch" );
@@ -3262,36 +3285,12 @@ public vote_expire()
                     client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_STAY" );
                     #endif
                     
-                    // no longer is an early vote
-                    g_voteStatus &= ~VOTE_IS_EARLY;
-                    
                     intermission_display( true )
                 }
                 else
                 {
-                    if( g_isTimeToChangeLevel )
+                    if( g_is_final_voting ) // "extend map" won
                     {
-                        // "stay here" won
-                        g_isTimeToChangeLevel = false;
-                    
-                    #if AMXX_VERSION_NUM < 183
-                        get_players( g_colored_players_ids, g_colored_players_number, "ch" );
-                        
-                        for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
-                             g_colored_current_index++ )
-                        {
-                            g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
-                            
-                            client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
-                                    "GAL_WINNER_STAY" );
-                        }
-                    #else
-                        client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_STAY" );
-                    #endif
-                    }
-                    else
-                    {
-                        // "extend map" won
                         if( g_is_maxrounds_vote_map )
                         {
                         #if AMXX_VERSION_NUM < 183
@@ -3332,10 +3331,30 @@ public vote_expire()
                         
                         map_extend();
                     }
+                    else // "stay here" won
+                    {
+                    #if AMXX_VERSION_NUM < 183
+                        get_players( g_colored_players_ids, g_colored_players_number, "ch" );
+                        
+                        for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+                             g_colored_current_index++ )
+                        {
+                            g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
+                            
+                            client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
+                                    "GAL_WINNER_STAY" );
+                        }
+                    #else
+                        client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_STAY" );
+                    #endif
+                    }
+                    
+                    g_isTimeToChangeLevel = false;
+                    g_isTimeToRestart     = false;
                 }
             }
         }
-        else
+        else // the execution flow gets here when the winner option is not keep/extend map
         {
             map_setNext( g_mapsVoteMenuNames[ winnerVoteMapIndex ] );
             server_exec();
@@ -3361,11 +3380,23 @@ public vote_expire()
             g_voteStatus |= VOTE_IS_OVER;
         }
     }
-    else
+    else // the execution flow gets here when anybody voted for next map
     {
         // the initial nextmap
         new initialNextMap[ MAX_MAPNAME_LEN + 1 ];
-        get_cvar_string( "amx_nextmap", initialNextMap, charsmax( initialNextMap ) );
+        
+        if( get_pcvar_num( cvar_extendmapAllowOrder ) )
+        {
+            get_cvar_string( "amx_nextmap", initialNextMap, charsmax( initialNextMap ) );
+        }
+        else
+        {
+            winnerVoteMapIndex = random_num( 0, g_totalVoteOptions - 1 );
+            
+            copy( initialNextMap, charsmax( initialNextMap ), g_mapsVoteMenuNames[ winnerVoteMapIndex ] )
+            
+            map_setNext( initialNextMap );
+        }
     
     #if AMXX_VERSION_NUM < 183
         get_players( g_colored_players_ids, g_colored_players_number, "ch" );
@@ -3386,6 +3417,10 @@ public vote_expire()
         
         g_voteStatus |= VOTE_IS_OVER;
     }
+    
+    DEBUG_LOGGER( 1, "( vote_expire|out ) g_isTimeToRestart: %d, g_isTimeToChangeLevel: %d \
+            g_is_to_cancel_end_vote: %d", \
+            g_isTimeToRestart, g_isTimeToChangeLevel, g_is_to_cancel_end_vote )
     
     g_isRunOffNeedingKeepCurrentMap = false;
     g_refreshVoteStatus             = true;
@@ -3408,7 +3443,8 @@ public vote_handleChoice( player_id, key )
     
     g_snuffDisplay[ player_id ] = true;
     
-    if( g_voted[ player_id ] == false && !g_is_vote_blocked )
+    if( g_voted[ player_id ] == false
+        && !g_is_vote_blocked )
     {
         new name[ 32 ];
         
@@ -3821,6 +3857,7 @@ public map_change()
     get_cvar_string( "amx_nextmap", map, charsmax( map ) );
     
     g_isTimeToChangeLevel = false;
+    g_isTimeToRestart     = false;
     
     // verify we're changing to a valid map
     if( !is_map_valid( map ) )
@@ -3835,7 +3872,16 @@ public map_change()
 
 public map_change_stays()
 {
-    server_cmd( "changelevel %s", g_currentMap );
+    // grab the name of the map we're changing to
+    new map[ MAX_MAPNAME_LEN + 1 ];
+    get_mapname( map, charsmax( map ) );
+    
+    g_isTimeToRestart     = false;
+    g_isTimeToChangeLevel = false;
+    
+    DEBUG_LOGGER( 1, " ( inside ) map_change_stays()| map: %s, g_currentMap: %s", map, g_currentMap )
+    
+    server_cmd( "changelevel %s", map );
 }
 
 public cmd_HL1_votemap( player_id )
@@ -4324,7 +4370,8 @@ stock client_print_color_internal( player_id, message[], any: ... )
 {
     new formated_message[ COLOR_MESSAGE ]
     
-    if( g_is_color_chat_supported && g_is_colored_chat_enabled )
+    if( g_is_color_chat_supported
+        && g_is_colored_chat_enabled )
     {
 #if AMXX_VERSION_NUM < 183
         if( player_id )
@@ -4561,7 +4608,7 @@ public create_fakeVotes()
         g_arrayOfMapsWithVotesNumber[ 2 ] += 0;     // map 3
         g_arrayOfMapsWithVotesNumber[ 3 ] += 0;     // map 4
         g_arrayOfMapsWithVotesNumber[ 4 ] += 0;     // map 5
-
+        
         if( get_pcvar_num( cvar_extendmapAllowStay ) )
         {
             g_arrayOfMapsWithVotesNumber[ 5 ] += 2;    // extend option
