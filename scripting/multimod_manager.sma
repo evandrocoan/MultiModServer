@@ -29,7 +29,7 @@
  * at the end of this file and the variable 'g_debug_level' for more information.
  * Default value: 0  - which is disabled.
  */
-#define IS_DEBUG_ENABLED 0
+#define IS_DEBUG_ENABLED 1
 
 #if IS_DEBUG_ENABLED > 0
     #define DEBUG_LOGGER(%1) debugMesssageLogger( %1 )
@@ -96,7 +96,6 @@ new g_debug_level = 79
 
 new bool:g_is_color_chat_supported
 
-new g_totalVotes
 new g_user_msgid
 new g_coloredmenus
 new g_menu_total_pages
@@ -185,7 +184,6 @@ public plugin_init()
     
     g_user_msgid   = get_user_msgid( "SayText" );
     g_coloredmenus = colored_menus()
-    g_totalVotes   = 0
 }
 
 /**
@@ -217,7 +215,7 @@ public plugin_cfg()
             "%s/multimod/voting_list.ini", g_configFolder )
     
     formatex( g_votingFinished_filePath, charsmax( g_votingFinished_filePath ),
-            "%s/multimod/votefinished.cfg", g_configFolder )
+            "%s/multimod/votingfinished.cfg", g_configFolder )
     
     g_is_color_chat_supported = ( is_running( "czero" )
                                   || is_running( "cstrike" ) )
@@ -1552,33 +1550,39 @@ public get_mod_vote_id( current_menu_page, current_pressed_key )
 public check_vote()
 {
     new mostVoted_modID = 1
+    new totalVotes
     
-    for( new a = 0; a <= g_modCounter; a++ )
+    for( new possible_most_voted_index = 0; possible_most_voted_index <= g_modCounter;
+         possible_most_voted_index++ )
     {
-        g_dynamic_array_size_temp = ArrayGetCell( g_votemodcount, a )
+        g_dynamic_array_size_temp = ArrayGetCell( g_votemodcount, possible_most_voted_index )
         
         if( ArrayGetCell( g_votemodcount, mostVoted_modID ) < g_dynamic_array_size_temp )
         {
-            mostVoted_modID = a
+            mostVoted_modID = possible_most_voted_index
         }
-        g_totalVotes = g_totalVotes + g_dynamic_array_size_temp
+        
+        totalVotes = totalVotes + g_dynamic_array_size_temp
+        
+        DEBUG_LOGGER( 1, "( inside ) check_vote()| totalVotes:%d, g_dynamic_array_size_temp: %d", \
+                totalVotes, g_dynamic_array_size_temp )
     }
-    displayVoteResults( mostVoted_modID, g_totalVotes )
+    displayVoteResults( mostVoted_modID, totalVotes )
 }
 
 /**
  * Calculates the minimum votes required and print to server users the mod voting results.
  *
  * @param mostVoted_modID the most voted mod id.
- * @param g_totalVotes the number total of votes.
+ * @param totalVotes the number total of votes.
  */
-public displayVoteResults( mostVoted_modID, g_totalVotes )
+public displayVoteResults( mostVoted_modID, totalVotes )
 {
     new playerMin = players_currently_playing( 0.3 )
     
     ArrayGetString( g_mod_names, mostVoted_modID, g_mod_name_temp, charsmax( g_mod_name_temp ) )
     
-    if( g_totalVotes > playerMin )
+    if( totalVotes > playerMin )
     {
         g_isTimeTo_changeMapcyle = true
         
@@ -1591,16 +1595,15 @@ public displayVoteResults( mostVoted_modID, g_totalVotes )
         client_print_color_internal( 0,  "^1The vote did not reached the ^3required minimum! \
                 ^4The next mod remains: %s", g_mod_name_temp )
     }
-    g_totalVotes = 0
     
     print_at_console_to_all( "Total Mod Votes: %d  | Player Min: %d  | Most Voted: %s",
-            g_totalVotes, playerMin, g_mod_name_temp )
+            totalVotes, playerMin, g_mod_name_temp )
 }
 
 /**
  * Returns the percent of player playing at game server, skipping bots and spectators.
  *
- * @param a percent of the total playing players, in decimal. Example for 30%: 0.3
+ * @param percent a percent of the total playing players, in decimal. Example for 30%: 0.3
  *
  * @return an integer of the parameter percent of players
  */

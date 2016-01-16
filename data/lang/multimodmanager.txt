@@ -15,6 +15,23 @@ MM_WARMUP_END = Warmup Round End
 MM_WARMUP_ROUND = Warmup Round: !t%i!g seconds
 X_CHOSE_X = !g%s!t chose !g%s
 
+[bp]
+MM_WILL_BE = O MOD selecionado serah: !g%s!t (!g%s!t:!g%s!t).
+MM_FAILED = Falhou em parar !g%s!t.
+MM_FAILED_UN = Falhou em desparar !g%s!t.
+MM_EXECUTING = Executando o arquivo de configuracao !g%s!t.
+MM_HUDMSG = !tServidor MultiMod:!y Jogando o MOD !g%s!t.
+MM_WARMUP = Rodada de !gAquecimento!!g 30 segundos!y ate o!t MOD!y reiniciar.
+MM_PL_WAIT = Jogadores precisam esperar !t%i!g minutos para iniciar uma nova votacao MOD.
+MM_CHOOSE = Escolha o proximo MOD.
+MM_VOTE = Votacao do Proximo MOD.
+MM_VOTING = Votando para o MOD: !t%i!g !t%i!g !t%i!g.
+MM_NEXTMOD = !tProximo MOD: !g%s!t.
+MM_VOTEMOD = !gVotacao:!t Votacao para o proximo!g MOD!t finalizada. O proximo MOD sera !g%s!t.
+MM_WARMUP_END = A rodada de aquecimento terminou.
+MM_WARMUP_ROUND = Rodada de Aquecimento: !t%i!g segundos.
+X_CHOSE_X = !g%s!t escolheu !g%s.
+
 [nl]
 MM_WILL_BE = Geselecteerde Modus zal zijn: !g%s!t (!g%s!t:!g%s!t)
 MM_FAILED = Gefaald om !g%s!t te pauzeren

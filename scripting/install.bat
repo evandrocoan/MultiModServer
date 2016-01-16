@@ -14,8 +14,8 @@ xcopy /E /S /Y ".\compiled" "%GAME_FOLDER%\czero\addons\amxmodx\plugins"
 cd ..
 
 echo.
-xcopy /E /S /Y ".\configs\galileo_reloaded" "%GAME_FOLDER%\cstrike\addons\amxmodx\configs\galileo_reloaded"
-xcopy /E /S /Y ".\configs\galileo_reloaded" "%GAME_FOLDER%\czero\addons\amxmodx\configs\galileo_reloaded"
+xcopy /E /S /Y ".\configs" "%GAME_FOLDER%\cstrike\addons\amxmodx\configs"
+xcopy /E /S /Y ".\configs" "%GAME_FOLDER%\czero\addons\amxmodx\configs"
 
 echo.
 xcopy /E /S /Y ".\data\lang" "%GAME_FOLDER%\cstrike\addons\amxmodx\data\lang"
