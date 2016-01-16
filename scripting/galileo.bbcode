@@ -11,7 +11,8 @@ How to upgrade your Galileo?
 [LIST=1]
 [*]You will get bug fixes.
 [*]You will have new features.
-[/LIST]Observation: If you want use the new features, download the new configuration files and updated yours using the new the cvars.
+[/LIST]Observation: If you want use the new features, download the new configuration files and updated yours using the new the cvars. 
+If not, you will see anything new, because all new feature are by default disabled.
 
 [anchor]Top[/anchor][SIZE="5"][COLOR="blue"][B]Contents' Table[/B][/COLOR][/SIZE] 
 
@@ -25,19 +26,19 @@ How to upgrade your Galileo?
 [*][goanchor=Sourcecode]Source Code and Support[/goanchor]
 [*][goanchor=Downloads]Downloads[/goanchor]
 [/LIST]
-[B]See its current development at: [URL="https://github.com/addonszz/Galileo_Reloaded"]Github
+[B]See its current development at: [URL="https://github.com/addonszz/galileo"]Github
 [IMG]https://cdn3.iconfinder.com/data/icons/social-network-round-gloss-shine/128/GitHub_Social-Network-Communicate-Page-Curl-Effect-Circle-Glossy-Shadow-Shine.png[/IMG][/URL][/B] 
 [B][COLOR="Blue"](look for the developer and feature branches)[/COLOR][/B]
 
-The original plugin "[URL="https://forums.alliedmods.net/showthread.php?t=77391"]Galileo[/URL]" is written by [B]Brad[/B]. The "Galileo Reload" works similarly as the original
-"[B]Galileo[/B]". But "[B][COLOR="Blue"]Galileo Reloaded[/COLOR][/B]" has special features for the "[URL="https://forums.alliedmods.net/showthread.php?t=273020"]Multi-Mod Manager[/URL]" plugin, but it 
+The original plugin "[URL="https://forums.alliedmods.net/showthread.php?t=77391"]Galileo[/URL]" is written by [B]Brad[/B]. The "Galileo 1.2" works similarly as the original
+"[B]Galileo[/B]". But "[B][COLOR="Blue"]Galileo 1.2[/COLOR][/B]" has special features for the "[URL="https://forums.alliedmods.net/showthread.php?t=273020"]Multi-Mod Manager[/URL]" plugin, but it 
 still can be used alone. See the [goanchor=Change]Change Log[/goanchor] and [goanchor=Credits]Credits[/goanchor] for more info.
 
 ********************** [anchor]Introduction[/anchor][B][SIZE="5"][COLOR="blue"]Introduction[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor]  *******************************
 This is a feature rich map voting plugin.  It's intended to be used in place of any other map choosing plugin 
 such as the original [B]Galileo[/B], [B]Deagles' Map Manager[/B] and AMXX's very own [B]Map Chooser[/B].
 
-[SIZE="4"]Basic differences between the [COLOR="Red"]Original Galileo[/COLOR] and [COLOR="Red"]Galileo Reloaded[/COLOR][/SIZE] 
+[SIZE="4"]Basic differences between the [COLOR="Red"]Original Galileo[/COLOR] and [COLOR="Red"]Galileo 1.2[/COLOR][/SIZE] 
 
 [B]The Galileo 1.2 can:[/B]
 [LIST=1]
@@ -70,11 +71,11 @@ such as the original [B]Galileo[/B], [B]Deagles' Map Manager[/B] and AMXX's very
 [*]use the current mapcycle to nominate maps.
 [*]keep the initial server next map when nobody vote for next map.
 [/LIST]
-It is [COLOR="Red"][B]highly recommended[/B][/COLOR] you to review the well-commented "[B]galileo_reloaded.cfg[/B]" to see all the cvars' options
+It is [COLOR="Red"][B]highly recommended[/B][/COLOR] you to review the well-commented "[B]galileo.cfg[/B]" to see all the cvars' options
 you have with this plugin.  It's located in the [B]Attached ZIP[/B] available at the [goanchor=Downloads]Downloads[/goanchor] section, and [B]here below[/B]:
 [SPOILER]
 [PAWN]
-galileo_reloaded.cfg contents.
+galileo.cfg contents.
 [/PAWN]
 [/SPOILER][COLOR="Blue"][B]Features' list:[/B][/COLOR]
 [QUOTE]
@@ -93,14 +94,14 @@ galileo_reloaded.cfg contents.
  * Command '[COLOR="Blue"][B]gal_startvote -nochange or -restart[/B][/COLOR]', to forces a map vote to begin 
        and the map will be changed once the next map has been determined. 
             [LIST]
-            [*]If the "[COLOR="blue"][B]-nochange[/B][/COLOR]" argument is supplied, the map will not be changed by [COLOR="Blue"]Galileo Reload[/COLOR], 
+            [*]If the "[COLOR="blue"][B]-nochange[/B][/COLOR]" argument is supplied, the map will not be changed by [COLOR="Blue"]Galileo 1.2[/COLOR], 
             which is useful when you have a different plugin handling the actual changing of the map. 
             [*]If the "[COLOR="blue"][B]-restart[/B][/COLOR]" argument is supplied and the voting opting "Keep the Current Map" wins, 
             the current map is restarted. This command is specially for the "[URL="https://forums.alliedmods.net/showthread.php?t=273020"]Multi-Mod Manager[/URL]" plugin. 
             [/LIST]
  * Command '[COLOR="Blue"][B]gal_createmapfile filename[/B][/COLOR]', Creates a file that contains a list of every valid 
        map in your maps folder. The [B]filename[/B] argument indicates specifies the name to be used for 
-       the new file.  It will be created in the [COLOR="Blue"][B].\configs\galileo_reloaded[/B][/COLOR] folder.
+       the new file.  It will be created in the [COLOR="Blue"][B].\configs\galileo[/B][/COLOR] folder.
 [/QUOTE]
 
 ********************** [anchor]Requirements[/anchor][SIZE="5"][COLOR="Blue"][B]Requirements and Commands[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor]  ******
@@ -136,7 +137,7 @@ The Default '[B]Amx Mod X[/B]' [COLOR="Red"]NextMap Plugin [B]Enabled[/B][/COLOR
 
 //Open a nomination map menu containing all the plugins allowed to nominate.
 //The [I]anything[/I] argument can be any "word" up to 20 characters without spaces.
-//Configure the valid map prefixed at './amxmodx/configs/galileo_reloaed/prefixes.ini'.
+//Configure the valid map prefixed at './amxmodx/configs/galileo/prefixes.ini'.
 //Requires CVAR "gal_nom_playerallowance" to be set to a value higher than 0.
 //Requires CVAR "gal_nom_prefixes" to be set to a value higher than 0.
 [COLOR="Blue"]say [I]nom[/I][B]anything[/B]menu[/COLOR]
@@ -156,7 +157,7 @@ The Default '[B]Amx Mod X[/B]' [COLOR="Red"]NextMap Plugin [B]Enabled[/B][/COLOR
 
 ******************************** [anchor]Installation[/anchor][B][SIZE="5"][COLOR="Blue"]Installation[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor]  ***********************
 [SPOILER]
-[B]1.[/B] Download the files "[B]galileo_reloaded.sma[/B]" and "[B]configuration_files.zip[/B]" at [goanchor=Downloads]Downloads[/goanchor]
+[B]1.[/B] Download the files "[B]galileo.sma[/B]" and "[B]configuration_files.zip[/B]" at [goanchor=Downloads]Downloads[/goanchor]
 section.
 
 [B]2.[/B] Then take the contents of "[B]yourgamemod[/B]" folder from "[B]configuration_files.zip[/B]", to your gamemod folder.
@@ -169,7 +170,7 @@ Ex: czero, cstrike, ...
 disable the original "[B]mapchooser.amxx[/B]" or any other [B]map manager plugin[/B], like the original the 
 [B]galileo.amxx[/B]:
 [QUOTE]
-galileo_reloaded.amxx
+galileo.amxx
 [/QUOTE]
 [/SPOILER]******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] *********************************
 [SPOILER]
@@ -183,7 +184,7 @@ galileo_reloaded.amxx
 [/QUOTE]
 [/SPOILER]******************************** [anchor]Change[/anchor][B][SIZE="5"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
 [QUOTE]
-2015-10-10 | v1.0-alpha1 
+2015-10-10 | v1.2-alpha1 
  * Fixed server restart after change timelimit to 0. 
  * Fixed server timelimit re-change after change it to 0. 
  * Fixed bug where it change the map right after a normal vote map finished. 
@@ -200,20 +201,20 @@ galileo_reloaded.amxx
  * When nobody vote for next map, keep the initial server next map. 
  * Disabled amx_nextmap to [unknown] value change. 
 
-2015-10-14 | v1.0-alpha2 
+2015-10-14 | v1.2-alpha2 
  * Fixed broken re-opt (RunOff) vote. 
  * Fixed automatic changelevel at normal vote map, after a successful keep current map wins. 
  * Improved code readability and added some new code documentation. 
  * Removed weighted votes that allows admins to have their vote counted more. 
  * Removed cvar to specifies the maximum number of minutes a map can be played. 
- * Fixed galileo_reloaded.sma normal end map vote runoff showing an extra option.
+ * Fixed galileo.sma normal end map vote runoff showing an extra option.
  * Always shows "None" vote option, to not participate at the voting. 
  * Synchronized debug RunOff menu time and normal voting menu time. 
 
-2015-10-21 | v1.0-alpha2.hotfix1
+2015-10-21 | v1.2-alpha2.hotfix1
  * Improved some variables meaning 
 
-2016-01-12 | v1.0-beta1
+2016-01-12 | v1.2-beta1
  * Added a nominations map menu at 'say nomenu', 'say nomanythingmenu' or 'say mapprefix_'.
  * Implemented mp_winlimit and mp_maxrounds end map voting.
  * Removed automatic vote map, after forcing votemap using '-nochange' argument.
@@ -247,19 +248,19 @@ galileo_reloaded.amxx
 [LIST=1]
 [*]Deagles' Map Manager v3.25Beta - [COLOR="Blue"]deagsmapmanager.sma[/COLOR], by DynamicBits: [url]https://forums.alliedmods.net/showthread.php?t=177180[/url]
 [*]DeRoiD's Mapchooser v2.33 - [COLOR="blue"]dmc233.sma[/COLOR], by DeRoiD: [url]https://forums.alliedmods.net/showthread.php?t=261412[/url]
-[*]Galileo 1.1.290 (a feature rich map voting plugin) - [COLOR="blue"]galileo.sma[/COLOR], by Brad Jones: [url]https://forums.alliedmods.net/showthread.php?t=77391[/url]
-[*]Galileo Reloaded Mapchooser v1.0-beta1 | Last Update: 12.01.2016 - [COLOR="blue"]galileo_reloaded.sma[/COLOR], by Brad Jones/Addons zz: [url]https://forums.alliedmods.net/showthread.php?t=273019[/url]
+[*]Galileo 1.1.290 (a feature rich map voting plugin) - [COLOR="blue"]galileo1.1.sma[/COLOR], by Brad Jones: [url]https://forums.alliedmods.net/showthread.php?t=77391[/url]
+[*]Galileo v1.2-beta1 | Last Update: 12.01.2016 - [COLOR="blue"]galileo1.2.sma[/COLOR], by Brad Jones/Addons zz: [url]https://forums.alliedmods.net/showthread.php?t=273019[/url]
 [*]Nextmap Chooser (v1.8.2) - [COLOR="blue"]mapchooser.sma[/COLOR], by AMXX Team
 [/LIST]Table with all:[PAWN]
-Plugin name: deagsmapmanager.sma      dmc233.sma    galileo.sma  galileo_reloaded.sma  mapchooser.sma  Max value
+Plugin name: deagsmapmanager.sma      dmc233.sma    galileo.sma  galileo.sma  mapchooser.sma  Max value
 Header size:          3.648 bytes    2.480 bytes    3.384 bytes           3.532 bytes     1.064 bytes  3.648 bytes
 Code size:          111.044 bytes   50.864 bytes   66.260 bytes          70.936 bytes     8.412 bytes  111.044 bytes
 Data size:          405.296 bytes   71.288 bytes   45.228 bytes          42.696 bytes     3.592 bytes  405.296 bytes
 Stack/heap size:     16.384 bytes   16.384 bytes   16.384 bytes          16.384 bytes    16.384 bytes  16.384
 Total requirements: 536.372 bytes  141.016 bytes  131.256 bytes         133.548 bytes    29.452 bytes  536.372 bytes
 Compilation Time:      0,87 sec       0,52 sec       0,45 sec              0,52 sec        0,22 sec    0,87 sec
-[/PAWN]Table with just [COLOR="Blue"]galileo.sma[/COLOR] and [COLOR="blue"]galileo_reloaded.sma[/COLOR][PAWN]
-Plugin name:          galileo.sma   galileo_reloaded.sma    Diferences
+[/PAWN]Table with just [COLOR="Blue"]galileo.sma 1.1[/COLOR] and [COLOR="blue"]galileo.sma 1.2[/COLOR][PAWN]
+Plugin name:       galileo1.1.sma   galileo1.2.sma           Diferences
 Header size:          3.384 bytes            3.532 bytes     +148 bytes
 Code size:           66.260 bytes           70.936 bytes   +4.676 bytes
 Data size:           45.228 bytes           42.696 bytes   -2.532 bytes
@@ -307,7 +308,7 @@ Compilation Time:      0,45 sec               0,52 sec      +0,07 sec
 // Compilation Time: 0,52 sec
 // ----------------------------------------
 
-//// galileo.sma
+//// galileo1.1.sma
 // 
 // D:\AmxModX_1.8.3_Compiler\galileo.sma(2688) : warning 233: symbol "client_disconnect" is marked as deprecated: Use client_disconnected() instead.
 // 
@@ -323,7 +324,7 @@ Compilation Time:      0,45 sec               0,52 sec      +0,07 sec
 // Compilation Time: 0,45 sec
 // ----------------------------------------
 
-//// galileo_reloaded.sma
+//// galileo1.2.sma
 // 
 // Header size:           3532 bytes
 // Code size:            70936 bytes
@@ -352,16 +353,16 @@ Press enter to exit ...
 [/SPOILER]
 ******************************** [anchor]Credits[/anchor][B][SIZE="5"][COLOR="blue"]Credits[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] *******************************
 [SPOILER]
-[B]Brad[/B]: The Original Galileo developer. 
-[B]Addons zz[/B]: The Galileo Reloaded developer. 
-[B]Th3822[/B]: For find a error from map_nominate. 
+[B]Brad[/B]: The Original Galileo developer.
+[B]Addons zz[/B]: The Galileo 1.2 developer.
+[B]Th3822[/B]: For find a error from map_nominate.
 [B]utaker[/B]: For suggesting and help testing the mp_maxrounds feature.
 [B]ConnorMcLeod[/B]: For the [Dyn Native] ColorChat v0.3.2 (04 jul 2013) register_dictionary_colored function.
 
 [QUOTE=Brad;684848][COLOR=darkblue][SIZE=4][B]Donations to the Original Author[/B][/SIZE][/COLOR] 
-A lot of time and effort went into making this plugin, making features just right, 
-making sure there were no bugs, making sure it was easy to use. If you are glad I made 
-this plugin, and are able, I'd appreciate a token donation. 
+A lot of time and effort went into making this plugin, making features just right,
+making sure there were no bugs, making sure it was easy to use. If you are glad I made
+this plugin, and are able, I'd appreciate a token donation.
 [URL="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=brad%40mixedberry%2enet&item_name=Thank%20you%21&item_number=Galileo&amount=5%2e00&no_shipping=1&return=http%3a%2f%2fforums%2ealliedmods%2enet%2fshowthread%2ephp%3ft%3d77391%23files&cn=Optional%20Note&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8"]$5[/URL], 
 [URL="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=brad%40mixedberry%2enet&item_name=Thank%20you%21&item_number=Galileo&amount=10%2e00&no_shipping=1&return=http%3a%2f%2fforums%2ealliedmods%2enet%2fshowthread%2ephp%3ft%3d77391%23files&cn=Optional%20Note&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8"]$10[/URL], 
 or [URL="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=brad%40mixedberry%2enet&item_name=Thank%20you%21&item_number=Galileo&no_shipping=1&return=http%3a%2f%2fforums%2ealliedmods%2enet%2fshowthread%2ephp%3ft%3d77391%23files&cn=Optional%20Note&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8"]whatever works[/URL] for you.
@@ -399,7 +400,7 @@ following in your game console:
 [LIST=1] 
 [*]Paste here everything from the [B]status[/B] command [COLOR="Red"][B]*except*[/B][/COLOR] the player list. 
 [*]Paste here the entire result from the [B]meta list[/B] and [B]amxx plugins[/B] commands. 
-[*]Paste here [COLOR="red"][B]*only*[/B][/COLOR] the CVARs that contain "[COLOR="SeaGreen"][B]galileo_reloaded.amxx[/B][/COLOR]" in the last column 
+[*]Paste here [COLOR="red"][B]*only*[/B][/COLOR] the CVARs that contain "[COLOR="SeaGreen"][B]galileo.amxx[/B][/COLOR]" in the last column 
 from the [B]amxx cvars[/B] command. They will be grouped together. 
 [/LIST]
 [/QUOTE] 
@@ -411,10 +412,10 @@ from the [B]amxx cvars[/B] command. They will be grouped together.
 [SIZE="5"]GERMANY (Europe) Testing Server[/SIZE]
 [URL="http://www.gametracker.com/server_info/vipersnake.net:27030/"][IMG]http://www.gametracker.com/server_info/vipersnake.net:27030/b_560_95_1.png[/IMG][/URL]
 
-[URL="http://www.gametracker.com/search/?search_by=server_variable&search_by2=GalileoReloaded&query=&loc=_all&sort=&order="]
+[URL="http://www.gametracker.com/search/?search_by=server_variable&search_by2=Galileo&query=&loc=_all&sort=&order="]
 [SIZE=4][B][COLOR=DarkGreen]Click here to see all servers using this plugin.[/COLOR][/B][/SIZE][/URL]
 [/SPOILER]******************************** [anchor]Downloads[/anchor][SIZE="5"][COLOR="Blue"][B]Downloads[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor] *************************
 Old versions downloads:
 [LIST=1]
-[*]v1.0-alpha2.hotfix1: (galileo_reloaded.sma - 111 views - 92.9 KB)
+[*]v1.2-alpha2.hotfix1: (galileo.sma - 111 views - 92.9 KB)
 [/LIST]
