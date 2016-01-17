@@ -35,7 +35,7 @@
  * at the end of this file and the variable 'g_debug_level' for more information.
  * Default value: 0  - which is disabled.
  */
-#define IS_DEBUG_ENABLED 1
+#define IS_DEBUG_ENABLED 0
 
 #if IS_DEBUG_ENABLED > 0
     #define DEBUG_LOGGER(%1) debugMesssageLogger( %1 )
@@ -268,6 +268,7 @@ new cvar_extendmap_allow_stay_type
 new cvar_gal_nextmap_change
 new cvar_gal_vote_show_counter
 new cvar_gal_vote_show_none
+new cvar_gal_vote_show_none_type
 new cvar_extendmapAllowOrder
 new cvar_coloredChatEnabled
 new cvar_emptyCycle;
@@ -390,46 +391,47 @@ public plugin_init()
     cvar_extendmapAllowOrder       = register_cvar( "amx_extendmap_allow_order", "0" );
     cvar_extendmap_allow_stay_type = register_cvar( "amx_extendmap_allow_stay_type", "0" );
     
-    cvar_gal_nextmap_change     = register_cvar( "gal_nextmap_change", "1" );
-    cvar_gal_vote_show_counter  = register_cvar( "gal_vote_show_counter", "0" );
-    cvar_gal_vote_show_none     = register_cvar( "gal_vote_show_none", "0" );
-    cvar_coloredChatEnabled     = register_cvar( "gal_colored_chat_enabled", "0", FCVAR_SPONLY );
-    cvar_emptyCycle             = register_cvar( "gal_in_empty_cycle", "0", FCVAR_SPONLY );
-    cvar_unnominateDisconnected = register_cvar( "gal_unnominate_disconnected", "0" );
-    cvar_endOnRound             = register_cvar( "gal_endonround", "1" );
-    cvar_endOnRound_msg         = register_cvar( "gal_endonround_msg", "0" );
-    cvar_endOnRound_players     = register_cvar( "gal_endonround_players", "1" );
-    cvar_voteWeight             = register_cvar( "gal_vote_weight", "1" );
-    cvar_voteWeightFlags        = register_cvar( "gal_vote_weightflags", "y" );
-    cvar_cmdVotemap             = register_cvar( "gal_cmd_votemap", "0" );
-    cvar_cmdListmaps            = register_cvar( "gal_cmd_listmaps", "2" );
-    cvar_listmapsPaginate       = register_cvar( "gal_listmaps_paginate", "10" );
-    cvar_banRecent              = register_cvar( "gal_banrecent", "3" );
-    cvar_banRecentStyle         = register_cvar( "gal_banrecentstyle", "1" );
-    cvar_endOfMapVote           = register_cvar( "gal_endofmapvote", "1" );
-    cvar_emptyWait              = register_cvar( "gal_emptyserver_wait", "0" );
-    cvar_emptyMapFile           = register_cvar( "gal_emptyserver_mapfile", "" );
-    cvar_srvStart               = register_cvar( "gal_srv_start", "0" );
-    cvar_rtvCommands            = register_cvar( "gal_rtv_commands", "3" );
-    cvar_rtvWait                = register_cvar( "gal_rtv_wait", "10" );
-    cvar_rtvRatio               = register_cvar( "gal_rtv_ratio", "0.60" );
-    cvar_rtvReminder            = register_cvar( "gal_rtv_reminder", "2" );
-    cvar_nomPlayerAllowance     = register_cvar( "gal_nom_playerallowance", "2" );
-    cvar_nomMapFile             = register_cvar( "gal_nom_mapfile", "*" );
-    cvar_nomPrefixes            = register_cvar( "gal_nom_prefixes", "1" );
-    cvar_nomQtyUsed             = register_cvar( "gal_nom_qtyused", "0" );
-    cvar_voteDuration           = register_cvar( "gal_vote_duration", "15" );
-    cvar_voteExpCountdown       = register_cvar( "gal_vote_expirationcountdown", "1" );
-    cvar_endMapCountdown        = register_cvar( "gal_endonround_countdown", "0" );
-    cvar_voteMapChoiceCnt       = register_cvar( "gal_vote_mapchoices", "5" );
-    cvar_voteAnnounceChoice     = register_cvar( "gal_vote_announcechoice", "1" );
-    cvar_voteStatus             = register_cvar( "gal_vote_showstatus", "1" );
-    cvar_voteStatusType         = register_cvar( "gal_vote_showstatustype", "3" );
-    cvar_voteUniquePrefixes     = register_cvar( "gal_vote_uniqueprefixes", "0" );
-    cvar_runoffEnabled          = register_cvar( "gal_runoff_enabled", "0" );
-    cvar_runoffDuration         = register_cvar( "gal_runoff_duration", "10" );
-    cvar_soundsMute             = register_cvar( "gal_sounds_mute", "0" );
-    cvar_voteMapFile            = register_cvar( "gal_vote_mapfile", "*" );
+    cvar_gal_nextmap_change      = register_cvar( "gal_nextmap_change", "1" );
+    cvar_gal_vote_show_counter   = register_cvar( "gal_vote_show_counter", "0" );
+    cvar_gal_vote_show_none      = register_cvar( "gal_vote_show_none", "0" );
+    cvar_gal_vote_show_none_type = register_cvar( "gal_vote_show_none_type", "0" );
+    cvar_coloredChatEnabled      = register_cvar( "gal_colored_chat_enabled", "0", FCVAR_SPONLY );
+    cvar_emptyCycle              = register_cvar( "gal_in_empty_cycle", "0", FCVAR_SPONLY );
+    cvar_unnominateDisconnected  = register_cvar( "gal_unnominate_disconnected", "0" );
+    cvar_endOnRound              = register_cvar( "gal_endonround", "1" );
+    cvar_endOnRound_msg          = register_cvar( "gal_endonround_msg", "0" );
+    cvar_endOnRound_players      = register_cvar( "gal_endonround_players", "1" );
+    cvar_voteWeight              = register_cvar( "gal_vote_weight", "1" );
+    cvar_voteWeightFlags         = register_cvar( "gal_vote_weightflags", "y" );
+    cvar_cmdVotemap              = register_cvar( "gal_cmd_votemap", "0" );
+    cvar_cmdListmaps             = register_cvar( "gal_cmd_listmaps", "2" );
+    cvar_listmapsPaginate        = register_cvar( "gal_listmaps_paginate", "10" );
+    cvar_banRecent               = register_cvar( "gal_banrecent", "3" );
+    cvar_banRecentStyle          = register_cvar( "gal_banrecentstyle", "1" );
+    cvar_endOfMapVote            = register_cvar( "gal_endofmapvote", "1" );
+    cvar_emptyWait               = register_cvar( "gal_emptyserver_wait", "0" );
+    cvar_emptyMapFile            = register_cvar( "gal_emptyserver_mapfile", "" );
+    cvar_srvStart                = register_cvar( "gal_srv_start", "0" );
+    cvar_rtvCommands             = register_cvar( "gal_rtv_commands", "3" );
+    cvar_rtvWait                 = register_cvar( "gal_rtv_wait", "10" );
+    cvar_rtvRatio                = register_cvar( "gal_rtv_ratio", "0.60" );
+    cvar_rtvReminder             = register_cvar( "gal_rtv_reminder", "2" );
+    cvar_nomPlayerAllowance      = register_cvar( "gal_nom_playerallowance", "2" );
+    cvar_nomMapFile              = register_cvar( "gal_nom_mapfile", "*" );
+    cvar_nomPrefixes             = register_cvar( "gal_nom_prefixes", "1" );
+    cvar_nomQtyUsed              = register_cvar( "gal_nom_qtyused", "0" );
+    cvar_voteDuration            = register_cvar( "gal_vote_duration", "15" );
+    cvar_voteExpCountdown        = register_cvar( "gal_vote_expirationcountdown", "1" );
+    cvar_endMapCountdown         = register_cvar( "gal_endonround_countdown", "0" );
+    cvar_voteMapChoiceCnt        = register_cvar( "gal_vote_mapchoices", "5" );
+    cvar_voteAnnounceChoice      = register_cvar( "gal_vote_announcechoice", "1" );
+    cvar_voteStatus              = register_cvar( "gal_vote_showstatus", "1" );
+    cvar_voteStatusType          = register_cvar( "gal_vote_showstatustype", "3" );
+    cvar_voteUniquePrefixes      = register_cvar( "gal_vote_uniqueprefixes", "0" );
+    cvar_runoffEnabled           = register_cvar( "gal_runoff_enabled", "0" );
+    cvar_runoffDuration          = register_cvar( "gal_runoff_duration", "10" );
+    cvar_soundsMute              = register_cvar( "gal_sounds_mute", "0" );
+    cvar_voteMapFile             = register_cvar( "gal_vote_mapfile", "*" );
     
     register_logevent( "event_game_commencing", 2, "0=World triggered",
             "1=Game_Commencing", "1&Restart_Round_" )
@@ -2496,7 +2498,7 @@ public vote_startDirector( bool:forced )
         set_task( 8.5, "vote_handleDisplay", TASKID_VOTE_HANDLEDISPLAY );
         
         // block player that does not voted
-        set_task( 8.0 + float( voteDuration ), "block_vote", TASKID_VOTE_DISPLAY )
+        set_task( 8.5 + float( voteDuration ), "block_vote", TASKID_VOTE_DISPLAY )
         g_is_vote_blocked = false;
         
         // display the vote outcome
@@ -3240,7 +3242,18 @@ public vote_display( vote_display_task_argument[ 3 ] )
     }
     
     // make a copy of the virgin menu
-    copy( g_vote, charsmax( g_vote ), voteStatus );
+    new cleanCharCnt = copy( g_vote, charsmax( g_vote ), voteStatus );
+    
+    // append a "None" option on for people to choose if they don't like any other choice
+    if( get_pcvar_num( cvar_gal_vote_show_none )
+        && !get_pcvar_num( cvar_gal_vote_show_none_type )
+        && !g_is_vote_blocked )
+    {
+        formatex( g_vote[ cleanCharCnt ], charsmax( g_vote ) - cleanCharCnt,
+                "^n^n%s0. %s%L", CLR_RED, CLR_WHITE, LANG_SERVER, "GAL_OPTION_NONE" );
+        
+        charCnt += formatex( voteStatus[ charCnt ], charsmax( voteStatus ) - charCnt, "^n^n" );
+    }
     
     static voteFooter[ 64 ];
     
@@ -3275,7 +3288,8 @@ public vote_display( vote_display_task_argument[ 3 ] )
     menuDirty[ 0 ] = '^0';
     
     // append a "None" option on for people to choose if they don't like any other choice
-    if( get_pcvar_num( cvar_gal_vote_show_none ) )
+    if( get_pcvar_num( cvar_gal_vote_show_none ) 
+        && get_pcvar_num( cvar_gal_vote_show_none_type ) )
     {
         formatex( menuClean, charsmax( menuClean ), "%s^n^n%s0. %s%L%s", g_vote,
                 CLR_RED, CLR_WHITE, LANG_SERVER, "GAL_OPTION_NONE", voteFooter );
@@ -3287,7 +3301,8 @@ public vote_display( vote_display_task_argument[ 3 ] )
     
     if( isVoteOver )
     {
-        if( get_pcvar_num( cvar_gal_vote_show_none ) )
+        if( get_pcvar_num( cvar_gal_vote_show_none ) 
+            && get_pcvar_num( cvar_gal_vote_show_none_type ))
         {
             formatex( menuDirty, charsmax( menuDirty ), "%s^n^n%s0. %s%L^n^n%s%L", voteStatus,
                     CLR_RED, CLR_WHITE, LANG_SERVER, "GAL_OPTION_NONE",
@@ -3300,14 +3315,24 @@ public vote_display( vote_display_task_argument[ 3 ] )
         }
     }
     else
-    {        
-        if( get_pcvar_num( cvar_gal_vote_show_none ) )
+    {
+        if( get_pcvar_num( cvar_gal_vote_show_none )
+            && get_pcvar_num( cvar_gal_vote_show_none_type ) )
         {
             formatex( menuDirty, charsmax( menuDirty ), "%s^n^n%s0. %s%L%s", voteStatus,
                     CLR_RED, CLR_WHITE, LANG_SERVER, "GAL_OPTION_NONE", voteFooter );
         }
         else
         {
+            // remove the extra space after the 'None' option is hidden
+            if( get_pcvar_num( cvar_gal_vote_show_none )
+                && !get_pcvar_num( cvar_gal_vote_show_none_type )
+                && !g_is_vote_blocked )
+            {
+                voteFooter[0] = '^b'
+                voteFooter[1] = '^b'
+            }
+
             formatex( menuDirty, charsmax( menuDirty ), "%s%s", voteStatus, voteFooter );
         }
 
