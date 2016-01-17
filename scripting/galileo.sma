@@ -22,7 +22,7 @@
 *****************************************************************************************
 */
 
-#define PLUGIN_VERSION "1.2-rc1"
+#define PLUGIN_VERSION "1.2-rc1.1"
 
 #include <amxmodx>
 #include <amxmisc>
@@ -52,7 +52,7 @@
  * ( ... ) 128 execute the test units and print their out put results.
  * ( 11111111 ) 255 displays all debug logs levels at server console.
  */
-new g_debug_level = 251
+new g_debug_level = 4
 
 /**
  * Test unit variables related to debug level 128, displays basic debug messages.
@@ -264,9 +264,11 @@ new g_is_map_extension_allowed
 /**
  * Server cvars
  */
+new cvar_extendmap_allow_stay_type
 new cvar_gal_nextmap_change
 new cvar_gal_vote_show_counter
 new cvar_gal_vote_show_none
+new cvar_gal_vote_show_none_type
 new cvar_extendmapAllowOrder
 new cvar_coloredChatEnabled
 new cvar_emptyCycle;
@@ -382,52 +384,54 @@ public plugin_init()
     register_cvar( "gal_version", PLUGIN_VERSION, FCVAR_SERVER | FCVAR_SPONLY );
     register_cvar( "gal_server_starting", "1", FCVAR_SPONLY );
     
-    cvar_extendmapMax        = register_cvar( "amx_extendmap_max", "90" );
-    cvar_extendmapStep       = register_cvar( "amx_extendmap_step", "15" );
-    cvar_extendmapStepRounds = register_cvar( "amx_extendmap_step_rounds", "30" );
-    cvar_extendmapAllowStay  = register_cvar( "amx_extendmap_allow_stay", "0" );
-    cvar_extendmapAllowOrder = register_cvar( "amx_extendmap_allow_order", "0" );
+    cvar_extendmapMax              = register_cvar( "amx_extendmap_max", "90" );
+    cvar_extendmapStep             = register_cvar( "amx_extendmap_step", "15" );
+    cvar_extendmapStepRounds       = register_cvar( "amx_extendmap_step_rounds", "30" );
+    cvar_extendmapAllowStay        = register_cvar( "amx_extendmap_allow_stay", "0" );
+    cvar_extendmapAllowOrder       = register_cvar( "amx_extendmap_allow_order", "0" );
+    cvar_extendmap_allow_stay_type = register_cvar( "amx_extendmap_allow_stay_type", "0" );
     
-    cvar_gal_nextmap_change     = register_cvar( "gal_nextmap_change", "1" );
-    cvar_gal_vote_show_counter  = register_cvar( "gal_vote_show_counter", "0" );
-    cvar_gal_vote_show_none     = register_cvar( "gal_vote_show_none", "0" );
-    cvar_coloredChatEnabled     = register_cvar( "gal_colored_chat_enabled", "0", FCVAR_SPONLY );
-    cvar_emptyCycle             = register_cvar( "gal_in_empty_cycle", "0", FCVAR_SPONLY );
-    cvar_unnominateDisconnected = register_cvar( "gal_unnominate_disconnected", "0" );
-    cvar_endOnRound             = register_cvar( "gal_endonround", "1" );
-    cvar_endOnRound_msg         = register_cvar( "gal_endonround_msg", "1" );
-    cvar_endOnRound_players     = register_cvar( "gal_endonround_players", "1" );
-    cvar_voteWeight             = register_cvar( "gal_vote_weight", "1" );
-    cvar_voteWeightFlags        = register_cvar( "gal_vote_weightflags", "y" );
-    cvar_cmdVotemap             = register_cvar( "gal_cmd_votemap", "0" );
-    cvar_cmdListmaps            = register_cvar( "gal_cmd_listmaps", "2" );
-    cvar_listmapsPaginate       = register_cvar( "gal_listmaps_paginate", "10" );
-    cvar_banRecent              = register_cvar( "gal_banrecent", "3" );
-    cvar_banRecentStyle         = register_cvar( "gal_banrecentstyle", "1" );
-    cvar_endOfMapVote           = register_cvar( "gal_endofmapvote", "1" );
-    cvar_emptyWait              = register_cvar( "gal_emptyserver_wait", "0" );
-    cvar_emptyMapFile           = register_cvar( "gal_emptyserver_mapfile", "" );
-    cvar_srvStart               = register_cvar( "gal_srv_start", "0" );
-    cvar_rtvCommands            = register_cvar( "gal_rtv_commands", "3" );
-    cvar_rtvWait                = register_cvar( "gal_rtv_wait", "10" );
-    cvar_rtvRatio               = register_cvar( "gal_rtv_ratio", "0.60" );
-    cvar_rtvReminder            = register_cvar( "gal_rtv_reminder", "2" );
-    cvar_nomPlayerAllowance     = register_cvar( "gal_nom_playerallowance", "2" );
-    cvar_nomMapFile             = register_cvar( "gal_nom_mapfile", "*" );
-    cvar_nomPrefixes            = register_cvar( "gal_nom_prefixes", "1" );
-    cvar_nomQtyUsed             = register_cvar( "gal_nom_qtyused", "0" );
-    cvar_voteDuration           = register_cvar( "gal_vote_duration", "15" );
-    cvar_voteExpCountdown       = register_cvar( "gal_vote_expirationcountdown", "1" );
-    cvar_endMapCountdown        = register_cvar( "gal_endonround_countdown", "1" );
-    cvar_voteMapChoiceCnt       = register_cvar( "gal_vote_mapchoices", "5" );
-    cvar_voteAnnounceChoice     = register_cvar( "gal_vote_announcechoice", "1" );
-    cvar_voteStatus             = register_cvar( "gal_vote_showstatus", "1" );
-    cvar_voteStatusType         = register_cvar( "gal_vote_showstatustype", "3" );
-    cvar_voteUniquePrefixes     = register_cvar( "gal_vote_uniqueprefixes", "0" );
-    cvar_runoffEnabled          = register_cvar( "gal_runoff_enabled", "0" );
-    cvar_runoffDuration         = register_cvar( "gal_runoff_duration", "10" );
-    cvar_soundsMute             = register_cvar( "gal_sounds_mute", "0" );
-    cvar_voteMapFile            = register_cvar( "gal_vote_mapfile", "*" );
+    cvar_gal_nextmap_change      = register_cvar( "gal_nextmap_change", "1" );
+    cvar_gal_vote_show_counter   = register_cvar( "gal_vote_show_counter", "0" );
+    cvar_gal_vote_show_none      = register_cvar( "gal_vote_show_none", "0" );
+    cvar_gal_vote_show_none_type = register_cvar( "gal_vote_show_none_type", "0" );
+    cvar_coloredChatEnabled      = register_cvar( "gal_colored_chat_enabled", "0", FCVAR_SPONLY );
+    cvar_emptyCycle              = register_cvar( "gal_in_empty_cycle", "0", FCVAR_SPONLY );
+    cvar_unnominateDisconnected  = register_cvar( "gal_unnominate_disconnected", "0" );
+    cvar_endOnRound              = register_cvar( "gal_endonround", "1" );
+    cvar_endOnRound_msg          = register_cvar( "gal_endonround_msg", "0" );
+    cvar_endOnRound_players      = register_cvar( "gal_endonround_players", "1" );
+    cvar_voteWeight              = register_cvar( "gal_vote_weight", "1" );
+    cvar_voteWeightFlags         = register_cvar( "gal_vote_weightflags", "y" );
+    cvar_cmdVotemap              = register_cvar( "gal_cmd_votemap", "0" );
+    cvar_cmdListmaps             = register_cvar( "gal_cmd_listmaps", "2" );
+    cvar_listmapsPaginate        = register_cvar( "gal_listmaps_paginate", "10" );
+    cvar_banRecent               = register_cvar( "gal_banrecent", "3" );
+    cvar_banRecentStyle          = register_cvar( "gal_banrecentstyle", "1" );
+    cvar_endOfMapVote            = register_cvar( "gal_endofmapvote", "1" );
+    cvar_emptyWait               = register_cvar( "gal_emptyserver_wait", "0" );
+    cvar_emptyMapFile            = register_cvar( "gal_emptyserver_mapfile", "" );
+    cvar_srvStart                = register_cvar( "gal_srv_start", "0" );
+    cvar_rtvCommands             = register_cvar( "gal_rtv_commands", "3" );
+    cvar_rtvWait                 = register_cvar( "gal_rtv_wait", "10" );
+    cvar_rtvRatio                = register_cvar( "gal_rtv_ratio", "0.60" );
+    cvar_rtvReminder             = register_cvar( "gal_rtv_reminder", "2" );
+    cvar_nomPlayerAllowance      = register_cvar( "gal_nom_playerallowance", "2" );
+    cvar_nomMapFile              = register_cvar( "gal_nom_mapfile", "*" );
+    cvar_nomPrefixes             = register_cvar( "gal_nom_prefixes", "1" );
+    cvar_nomQtyUsed              = register_cvar( "gal_nom_qtyused", "0" );
+    cvar_voteDuration            = register_cvar( "gal_vote_duration", "15" );
+    cvar_voteExpCountdown        = register_cvar( "gal_vote_expirationcountdown", "1" );
+    cvar_endMapCountdown         = register_cvar( "gal_endonround_countdown", "0" );
+    cvar_voteMapChoiceCnt        = register_cvar( "gal_vote_mapchoices", "5" );
+    cvar_voteAnnounceChoice      = register_cvar( "gal_vote_announcechoice", "1" );
+    cvar_voteStatus              = register_cvar( "gal_vote_showstatus", "1" );
+    cvar_voteStatusType          = register_cvar( "gal_vote_showstatustype", "3" );
+    cvar_voteUniquePrefixes      = register_cvar( "gal_vote_uniqueprefixes", "0" );
+    cvar_runoffEnabled           = register_cvar( "gal_runoff_enabled", "0" );
+    cvar_runoffDuration          = register_cvar( "gal_runoff_duration", "10" );
+    cvar_soundsMute              = register_cvar( "gal_sounds_mute", "0" );
+    cvar_voteMapFile             = register_cvar( "gal_vote_mapfile", "*" );
     
     register_logevent( "event_game_commencing", 2, "0=World triggered",
             "1=Game_Commencing", "1&Restart_Round_" )
@@ -527,7 +531,7 @@ getNextMapName( szArg[], iMax )
 
 public sayNextMap()
 {
-    if( get_pcvar_num( cvar_gal_nextmap_change ) 
+    if( get_pcvar_num( cvar_gal_nextmap_change )
         && !g_is_last_round
         && !( g_voteStatus & VOTE_IS_OVER ) )
     {
@@ -541,11 +545,13 @@ public sayNextMap()
             {
                 g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
                 
-                client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
-                        "GAL_NEXTMAP_VOTING" )
+                client_print_color_internal( g_colored_player_id, "^1%L %L",
+                        g_colored_player_id, "NEXT_MAP",
+                        g_colored_player_id, "GAL_NEXTMAP_VOTING" )
             }
         #else
-            client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_NEXTMAP_VOTING" )
+            client_print_color_internal( 0, "^1%L %L", LANG_PLAYER, "NEXT_MAP",
+                    LANG_PLAYER, "GAL_NEXTMAP_VOTING" )
         #endif
         }
         else
@@ -558,11 +564,13 @@ public sayNextMap()
             {
                 g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
                 
-                client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
-                        "GAL_NEXTMAP_UNKNOWN" )
+                client_print_color_internal( g_colored_player_id, "^1%L %L",
+                        g_colored_player_id, "NEXT_MAP",
+                        g_colored_player_id, "GAL_NEXTMAP_UNKNOWN" )
             }
         #else
-            client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_NEXTMAP_UNKNOWN" )
+            client_print_color_internal( 0, "^1%L", LANG_PLAYER, "NEXT_MAP",
+                    LANG_PLAYER, "GAL_NEXTMAP_UNKNOWN" )
         #endif
         }
     }
@@ -2490,7 +2498,6 @@ public vote_startDirector( bool:forced )
         set_task( 8.5, "vote_handleDisplay", TASKID_VOTE_HANDLEDISPLAY );
         
         // block player that does not voted
-        set_task( 8.0 + float( voteDuration ), "block_vote", TASKID_VOTE_DISPLAY )
         g_is_vote_blocked = false;
         
         // display the vote outcome
@@ -2499,6 +2506,7 @@ public vote_startDirector( bool:forced )
             // indicates it's the end of vote display
             new vote_display_task_argument[ 3 ] = { -1, -1, false };
             
+            set_task( 8.5 + float( voteDuration ) + 1.0, "block_vote", TASKID_VOTE_DISPLAY )
             set_task( 8.5 + float( voteDuration ) + 1.0, "vote_display", TASKID_VOTE_DISPLAY,
                     vote_display_task_argument, 3 );
             
@@ -2506,6 +2514,7 @@ public vote_startDirector( bool:forced )
         }
         else
         {
+            set_task( 8.5 + float( voteDuration ) + 3.0, "block_vote", TASKID_VOTE_DISPLAY )
             set_task( 8.5 + float( voteDuration ) + 3.0, "vote_expire", TASKID_VOTE_EXPIRE );
         }
     }
@@ -2879,6 +2888,183 @@ public vote_handleDisplay()
     }
 }
 
+public vote_handleChoice( player_id, key )
+{
+    if( g_voteStatus & VOTE_HAS_EXPIRED )
+    {
+        client_cmd( player_id, "^"slot%i^"", key + 1 );
+        return;
+    }
+    
+    g_snuffDisplay[ player_id ] = true;
+    
+    if( g_voted[ player_id ] == false
+        && !g_is_vote_blocked )
+    {
+        new name[ 32 ];
+        
+        if( get_pcvar_num( cvar_voteAnnounceChoice ) )
+        {
+            get_user_name( player_id, name, charsmax( name ) );
+        }
+        get_user_name( player_id, name, charsmax( name ) );
+        
+        // confirm the player's choice
+        if( key == 9 )
+        {
+            DEBUG_LOGGER( 4, "      %-32s ( none )", name )
+            
+            if( get_pcvar_num( cvar_voteAnnounceChoice ) )
+            {
+            #if AMXX_VERSION_NUM < 183
+                get_players( g_colored_players_ids, g_colored_players_number, "ch" );
+                
+                for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+                     g_colored_current_index++ )
+                {
+                    g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
+                    
+                    client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
+                            "GAL_CHOICE_NONE_ALL", name );
+                }
+            #else
+                client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_CHOICE_NONE_ALL", name );
+            #endif
+            }
+            else
+            {
+                client_print_color_internal( player_id, "^1%L", player_id, "GAL_CHOICE_NONE" );
+            }
+        }
+        else
+        {
+            // increment votes cast count
+            g_totalVotesCounted++;
+            
+            if( key == g_totalVoteOptions )
+            {
+                // only display the "none" vote if we haven't already voted
+                // ( we can make it here from the vote status menu too )
+                if( g_voted[ player_id ] == false )
+                {
+                    DEBUG_LOGGER( 4, "      %-32s ( extend )", name )
+                    
+                    if( g_is_final_voting )
+                    {
+                        if( get_pcvar_num( cvar_voteAnnounceChoice ) )
+                        {
+                        #if AMXX_VERSION_NUM < 183
+                            get_players( g_colored_players_ids, g_colored_players_number, "ch" );
+                            
+                            for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+                                 g_colored_current_index++ )
+                            {
+                                g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
+                                
+                                client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
+                                        "GAL_CHOICE_EXTEND_ALL", name );
+                            }
+                        #else
+                            client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_CHOICE_EXTEND_ALL", name );
+                        #endif
+                        }
+                        else
+                        {
+                            client_print_color_internal( player_id, "^1%L", player_id, "GAL_CHOICE_EXTEND" );
+                        }
+                    }
+                    else
+                    {
+                        if( get_pcvar_num( cvar_voteAnnounceChoice ) )
+                        {
+                        #if AMXX_VERSION_NUM < 183
+                            get_players( g_colored_players_ids, g_colored_players_number, "ch" );
+                            
+                            for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+                                 g_colored_current_index++ )
+                            {
+                                g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
+                                
+                                client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
+                                        "GAL_CHOICE_STAY_ALL", name );
+                            }
+                        #else
+                            client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_CHOICE_STAY_ALL", name );
+                        #endif
+                        }
+                        else
+                        {
+                            client_print_color_internal( player_id, "^1%L", player_id, "GAL_CHOICE_STAY" );
+                        }
+                    }
+                }
+            }
+            else
+            {
+                DEBUG_LOGGER( 4, "      %-32s %s", name, g_mapsVoteMenuNames[ key ] )
+                
+                if( get_pcvar_num( cvar_voteAnnounceChoice ) )
+                {
+                #if AMXX_VERSION_NUM < 183
+                    get_players( g_colored_players_ids, g_colored_players_number, "ch" );
+                    
+                    for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+                         g_colored_current_index++ )
+                    {
+                        g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
+                        
+                        client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
+                                "GAL_CHOICE_MAP_ALL", name, g_mapsVoteMenuNames[ key ] );
+                    }
+                #else
+                    client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_CHOICE_MAP_ALL", name,
+                            g_mapsVoteMenuNames[ key ] );
+                #endif
+                }
+                else
+                {
+                    client_print_color_internal( player_id, "^1%L", player_id, "GAL_CHOICE_MAP",
+                            g_mapsVoteMenuNames[ key ] );
+                }
+            }
+            
+            // register the player's choice giving extra weight to admin votes
+            new voteWeight = get_pcvar_num( cvar_voteWeight );
+            
+            if( voteWeight > 1
+                && has_flag( player_id, g_voteWeightFlags ) )
+            {
+                g_arrayOfMapsWithVotesNumber[ key ] += voteWeight;
+                g_totalVotesCounted                 += ( voteWeight - 1 );
+                
+                client_print_color_internal( player_id, "^1L", player_id, "GAL_VOTE_WEIGHTED", voteWeight );
+            }
+            else
+            {
+                g_arrayOfMapsWithVotesNumber[ key ]++;
+            }
+        }
+        g_voted[ player_id ] = true;
+        g_refreshVoteStatus  = true;
+    }
+    else
+    {
+        client_cmd( player_id, "^"slot%i^"", key + 1 );
+    }
+    
+    // display the vote again, with status
+    if( get_pcvar_num( cvar_voteStatus ) & SHOWSTATUS_VOTE )
+    {
+        new vote_display_task_argument[ 3 ];
+        vote_display_task_argument[ 0 ] = false;
+        vote_display_task_argument[ 1 ] = player_id;
+        vote_display_task_argument[ 2 ] = true;
+        
+        set_task( 0.1, "vote_display", TASKID_VOTE_DISPLAY, vote_display_task_argument,
+                sizeof( vote_display_task_argument ) );
+    }
+}
+
 public vote_display( vote_display_task_argument[ 3 ] )
 {
     static keys, voteStatus[ 512 ], g_totalVoteAtMap[ 32 ];
@@ -2913,8 +3099,8 @@ public vote_display( vote_display_task_argument[ 3 ] )
     }
     
     new isVoteOver = ( updateTimeRemaining == -1
-                       && player_id == -1 );
-    new charCnt;
+                       && player_id == -1 )
+    new charCnt
     
     if( g_refreshVoteStatus
         || isVoteOver )
@@ -2923,7 +3109,12 @@ public vote_display( vote_display_task_argument[ 3 ] )
         
         // wipe the previous vote status clean
         voteStatus[ 0 ] = 0;
-        keys            = MENU_KEY_0;
+
+        // register the 'None' option key
+        if( get_pcvar_num( cvar_gal_vote_show_none ) && !g_is_vote_blocked )
+        {
+            keys = MENU_KEY_0;
+        }
         
         // add the header
         if( isVoteOver )
@@ -3025,9 +3216,18 @@ public vote_display( vote_display_task_argument[ 3 ] )
                 else
                 {
                     // add the "Stay Here" menu item
-                    charCnt += formatex( voteStatus[ charCnt ], charsmax( voteStatus ) - charCnt,
-                            "^n%s%i. %s%L%s", CLR_RED, g_totalVoteOptions + 1,
-                            CLR_WHITE, LANG_SERVER, "GAL_OPTION_STAY", g_totalVoteAtMap );
+                    if( get_pcvar_num( cvar_extendmap_allow_stay_type ) )
+                    {
+                        charCnt += formatex( voteStatus[ charCnt ], charsmax( voteStatus ) - charCnt,
+                                "^n%s%i. %s%L%s", CLR_RED, g_totalVoteOptions + 1,
+                                CLR_WHITE, LANG_SERVER, "GAL_OPTION_STAY_MAP", g_currentMap, g_totalVoteAtMap );
+                    }
+                    else
+                    {
+                        charCnt += formatex( voteStatus[ charCnt ], charsmax( voteStatus ) - charCnt,
+                                "^n%s%i. %s%L%s", CLR_RED, g_totalVoteOptions + 1,
+                                CLR_WHITE, LANG_SERVER, "GAL_OPTION_STAY", g_totalVoteAtMap );
+                    }
                 }
                 
                 // Added the extension/stay key option (1 << 2 = key 3, 1 << 3 = key 4, ...)
@@ -3039,32 +3239,36 @@ public vote_display( vote_display_task_argument[ 3 ] )
             }
         }
         
-        // make a copy of the virgin menu
-        new cleanCharCnt = copy( g_vote, charsmax( g_vote ), voteStatus );
-        
-        // append a "None" option on for people to choose if they don't like any other choice
-        if( get_pcvar_num( cvar_gal_vote_show_none ) )
-        {
-            formatex( g_vote[ cleanCharCnt ], charsmax( g_vote ) - cleanCharCnt,
-                    "^n^n%s0. %s%L", CLR_RED, CLR_WHITE, LANG_SERVER, "GAL_OPTION_NONE" );
-        }
-        charCnt += formatex( voteStatus[ charCnt ], charsmax( voteStatus ) - charCnt, "^n^n" );
-        
         g_refreshVoteStatus = get_pcvar_num( cvar_voteStatus ) & 3;
     }
     
-    static voteFooter[ 32 ];
+    // make a copy of the virgin menu
+    new cleanCharCnt = copy( g_vote, charsmax( g_vote ), voteStatus );
+    
+    // append a "None" option on for people to choose if they don't like any other choice
+    if( get_pcvar_num( cvar_gal_vote_show_none )
+        && !get_pcvar_num( cvar_gal_vote_show_none_type )
+        && !g_is_vote_blocked )
+    {
+        formatex( g_vote[ cleanCharCnt ], charsmax( g_vote ) - cleanCharCnt,
+                "^n^n%s0. %s%L", CLR_RED, CLR_WHITE, LANG_SERVER, "GAL_OPTION_NONE" );
+        
+        charCnt += formatex( voteStatus[ charCnt ], charsmax( voteStatus ) - charCnt, "^n^n" );
+    }
+    
+    static voteFooter[ 64 ];
     
     if( updateTimeRemaining )
     {
-        charCnt = copy( voteFooter, charsmax( voteFooter ), "^n^n" );
-        
         g_voteDuration--;
+        
+        charCnt = copy( voteFooter, charsmax( voteFooter ), "^n^n" );
         
         if( get_pcvar_num( cvar_voteExpCountdown ) )
         {
-            if( g_voteDuration <= 10
-                || get_pcvar_num( cvar_gal_vote_show_counter ) )
+            if( ( g_voteDuration <= 10
+                  || get_pcvar_num( cvar_gal_vote_show_counter ) )
+                && !( get_pcvar_num( cvar_voteStatus ) == SHOWSTATUS_END ) )
             {
                 if( g_voteDuration > 0 )
                 {
@@ -3073,8 +3277,8 @@ public vote_display( vote_display_task_argument[ 3 ] )
                 }
                 else
                 {
-                    formatex( voteFooter[ charCnt ], charsmax( voteFooter ) - charCnt, "%s%L: %s%i",
-                            CLR_WHITE, LANG_SERVER, "GAL_TIMELEFT", CLR_RED, 0 );
+                    formatex( voteFooter[ charCnt ], charsmax( voteFooter ) - charCnt,
+                            "%s%L", CLR_YELLOW, LANG_SERVER, "GAL_VOTE_ENDED" );
                 }
             }
         }
@@ -3085,16 +3289,55 @@ public vote_display( vote_display_task_argument[ 3 ] )
     menuClean[ 0 ] = '^0';
     menuDirty[ 0 ] = '^0';
     
-    formatex( menuClean, charsmax( menuClean ), "%s%s", g_vote, voteFooter );
-    
-    if( !isVoteOver )
+    // append a "None" option on for people to choose if they don't like any other choice
+    if( get_pcvar_num( cvar_gal_vote_show_none ) 
+        && get_pcvar_num( cvar_gal_vote_show_none_type ) )
     {
-        formatex( menuDirty, charsmax( menuDirty ), "%s%s", voteStatus, voteFooter );
+        formatex( menuClean, charsmax( menuClean ), "%s^n^n%s0. %s%L%s", g_vote,
+                CLR_RED, CLR_WHITE, LANG_SERVER, "GAL_OPTION_NONE", voteFooter );
     }
     else
     {
-        formatex( menuDirty, charsmax( menuDirty ), "%s^n^n%s%L", voteStatus, CLR_YELLOW,
-                LANG_SERVER, "GAL_VOTE_ENDED" );
+        formatex( menuClean, charsmax( menuClean ), "%s%s", g_vote, voteFooter );
+    }
+    
+    if( isVoteOver )
+    {
+        if( get_pcvar_num( cvar_gal_vote_show_none ) 
+            && get_pcvar_num( cvar_gal_vote_show_none_type ))
+        {
+            formatex( menuDirty, charsmax( menuDirty ), "%s^n^n%s0. %s%L^n^n%s%L", voteStatus,
+                    CLR_RED, CLR_WHITE, LANG_SERVER, "GAL_OPTION_NONE",
+                    CLR_YELLOW, LANG_SERVER, "GAL_VOTE_ENDED" )
+        }
+        else
+        {
+            formatex( menuDirty, charsmax( menuDirty ), "%s^n^n%s%L", voteStatus, CLR_YELLOW,
+                    LANG_SERVER, "GAL_VOTE_ENDED" );
+        }
+    }
+    else
+    {
+        if( get_pcvar_num( cvar_gal_vote_show_none )
+            && get_pcvar_num( cvar_gal_vote_show_none_type ) )
+        {
+            formatex( menuDirty, charsmax( menuDirty ), "%s^n^n%s0. %s%L%s", voteStatus,
+                    CLR_RED, CLR_WHITE, LANG_SERVER, "GAL_OPTION_NONE", voteFooter );
+        }
+        else
+        {
+            // remove the extra space after the 'None' option is hidden
+            if( get_pcvar_num( cvar_gal_vote_show_none )
+                && !get_pcvar_num( cvar_gal_vote_show_none_type )
+                && !g_is_vote_blocked )
+            {
+                voteFooter[0] = ' '
+                voteFooter[1] = ' '
+            }
+
+            formatex( menuDirty, charsmax( menuDirty ), "%s%s", voteStatus, voteFooter );
+        }
+
     }
     
     new menuid, menukeys;
@@ -3758,183 +4001,6 @@ public vote_expire()
     
     // if we were in a runoff mode, get out of it
     g_voteStatus &= ~VOTE_IS_RUNOFF;
-}
-
-public vote_handleChoice( player_id, key )
-{
-    if( g_voteStatus & VOTE_HAS_EXPIRED )
-    {
-        client_cmd( player_id, "^"slot%i^"", key + 1 );
-        return;
-    }
-    
-    g_snuffDisplay[ player_id ] = true;
-    
-    if( g_voted[ player_id ] == false
-        && !g_is_vote_blocked )
-    {
-        new name[ 32 ];
-        
-        if( get_pcvar_num( cvar_voteAnnounceChoice ) )
-        {
-            get_user_name( player_id, name, charsmax( name ) );
-        }
-        get_user_name( player_id, name, charsmax( name ) );
-        
-        // confirm the player's choice
-        if( key == 9 )
-        {
-            DEBUG_LOGGER( 4, "      %-32s ( none )", name )
-            
-            if( get_pcvar_num( cvar_voteAnnounceChoice ) )
-            {
-            #if AMXX_VERSION_NUM < 183
-                get_players( g_colored_players_ids, g_colored_players_number, "ch" );
-                
-                for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
-                     g_colored_current_index++ )
-                {
-                    g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
-                    
-                    client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
-                            "GAL_CHOICE_NONE_ALL", name );
-                }
-            #else
-                client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_CHOICE_NONE_ALL", name );
-            #endif
-            }
-            else
-            {
-                client_print_color_internal( player_id, "^1%L", player_id, "GAL_CHOICE_NONE" );
-            }
-        }
-        else
-        {
-            // increment votes cast count
-            g_totalVotesCounted++;
-            
-            if( key == g_totalVoteOptions )
-            {
-                // only display the "none" vote if we haven't already voted
-                // ( we can make it here from the vote status menu too )
-                if( g_voted[ player_id ] == false )
-                {
-                    DEBUG_LOGGER( 4, "      %-32s ( extend )", name )
-                    
-                    if( g_is_final_voting )
-                    {
-                        if( get_pcvar_num( cvar_voteAnnounceChoice ) )
-                        {
-                        #if AMXX_VERSION_NUM < 183
-                            get_players( g_colored_players_ids, g_colored_players_number, "ch" );
-                            
-                            for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
-                                 g_colored_current_index++ )
-                            {
-                                g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
-                                
-                                client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
-                                        "GAL_CHOICE_EXTEND_ALL", name );
-                            }
-                        #else
-                            client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_CHOICE_EXTEND_ALL", name );
-                        #endif
-                        }
-                        else
-                        {
-                            client_print_color_internal( player_id, "^1%L", player_id, "GAL_CHOICE_EXTEND" );
-                        }
-                    }
-                    else
-                    {
-                        if( get_pcvar_num( cvar_voteAnnounceChoice ) )
-                        {
-                        #if AMXX_VERSION_NUM < 183
-                            get_players( g_colored_players_ids, g_colored_players_number, "ch" );
-                            
-                            for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
-                                 g_colored_current_index++ )
-                            {
-                                g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
-                                
-                                client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
-                                        "GAL_CHOICE_STAY_ALL", name );
-                            }
-                        #else
-                            client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_CHOICE_STAY_ALL", name );
-                        #endif
-                        }
-                        else
-                        {
-                            client_print_color_internal( player_id, "^1%L", player_id, "GAL_CHOICE_STAY" );
-                        }
-                    }
-                }
-            }
-            else
-            {
-                DEBUG_LOGGER( 4, "      %-32s %s", name, g_mapsVoteMenuNames[ key ] )
-                
-                if( get_pcvar_num( cvar_voteAnnounceChoice ) )
-                {
-                #if AMXX_VERSION_NUM < 183
-                    get_players( g_colored_players_ids, g_colored_players_number, "ch" );
-                    
-                    for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
-                         g_colored_current_index++ )
-                    {
-                        g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
-                        
-                        client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
-                                "GAL_CHOICE_MAP_ALL", name, g_mapsVoteMenuNames[ key ] );
-                    }
-                #else
-                    client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_CHOICE_MAP_ALL", name,
-                            g_mapsVoteMenuNames[ key ] );
-                #endif
-                }
-                else
-                {
-                    client_print_color_internal( player_id, "^1%L", player_id, "GAL_CHOICE_MAP",
-                            g_mapsVoteMenuNames[ key ] );
-                }
-            }
-            
-            // register the player's choice giving extra weight to admin votes
-            new voteWeight = get_pcvar_num( cvar_voteWeight );
-            
-            if( voteWeight > 1
-                && has_flag( player_id, g_voteWeightFlags ) )
-            {
-                g_arrayOfMapsWithVotesNumber[ key ] += voteWeight;
-                g_totalVotesCounted                 += ( voteWeight - 1 );
-                
-                client_print_color_internal( player_id, "^1L", player_id, "GAL_VOTE_WEIGHTED", voteWeight );
-            }
-            else
-            {
-                g_arrayOfMapsWithVotesNumber[ key ]++;
-            }
-        }
-        g_voted[ player_id ] = true;
-        g_refreshVoteStatus  = true;
-    }
-    else
-    {
-        client_cmd( player_id, "^"slot%i^"", key + 1 );
-    }
-    
-    // display the vote again, with status
-    if( get_pcvar_num( cvar_voteStatus ) & SHOWSTATUS_VOTE )
-    {
-        new vote_display_task_argument[ 3 ];
-        vote_display_task_argument[ 0 ] = false;
-        vote_display_task_argument[ 1 ] = player_id;
-        vote_display_task_argument[ 2 ] = true;
-        
-        set_task( 0.1, "vote_display", TASKID_VOTE_DISPLAY, vote_display_task_argument,
-                sizeof( vote_display_task_argument ) );
-    }
 }
 
 stock Float:map_getMinutesElapsed()
