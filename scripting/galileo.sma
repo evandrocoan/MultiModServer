@@ -3107,6 +3107,7 @@ public vote_display( vote_display_task_argument[ 3 ] )
         // wipe the previous vote status clean
         voteStatus[ 0 ] = 0;
 
+        // register the 'None' option key
         if( get_pcvar_num( cvar_gal_vote_show_none ) && !g_is_vote_blocked )
         {
             keys = MENU_KEY_0;
@@ -3241,7 +3242,7 @@ public vote_display( vote_display_task_argument[ 3 ] )
     // make a copy of the virgin menu
     copy( g_vote, charsmax( g_vote ), voteStatus );
     
-    static voteFooter[ 32 ];
+    static voteFooter[ 64 ];
     
     if( updateTimeRemaining )
     {
@@ -3261,8 +3262,8 @@ public vote_display( vote_display_task_argument[ 3 ] )
                 }
                 else
                 {
-                    formatex( voteFooter[ charCnt ], charsmax( voteFooter ) - charCnt, "%s%L: %s%i",
-                            CLR_WHITE, LANG_SERVER, "GAL_TIMELEFT", CLR_RED, 0 );
+                    formatex( voteFooter[ charCnt ], charsmax( voteFooter ) - charCnt,
+                            "%s%L", CLR_YELLOW, LANG_SERVER, "GAL_VOTE_ENDED" );
                 }
             }
         }
