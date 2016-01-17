@@ -3239,16 +3239,7 @@ public vote_display( vote_display_task_argument[ 3 ] )
     }
     
     // make a copy of the virgin menu
-    new cleanCharCnt = copy( g_vote, charsmax( g_vote ), voteStatus );
-    
-    // append a "None" option on for people to choose if they don't like any other choice
-    if( get_pcvar_num( cvar_gal_vote_show_none ) )
-    {
-        formatex( g_vote[ cleanCharCnt ], charsmax( g_vote ) - cleanCharCnt,
-                "^n^n%s0. %s%L", CLR_RED, CLR_WHITE, LANG_SERVER, "GAL_OPTION_NONE" );
-
-        charCnt += formatex( voteStatus[ charCnt ], charsmax( voteStatus ) - charCnt, "^n^n" );
-    }
+    copy( g_vote, charsmax( g_vote ), voteStatus );
     
     static voteFooter[ 32 ];
     
@@ -3282,13 +3273,22 @@ public vote_display( vote_display_task_argument[ 3 ] )
     menuClean[ 0 ] = '^0';
     menuDirty[ 0 ] = '^0';
     
-    formatex( menuClean, charsmax( menuClean ), "%s%s", g_vote, voteFooter );
+    // append a "None" option on for people to choose if they don't like any other choice
+    if( get_pcvar_num( cvar_gal_vote_show_none ) )
+    {
+        formatex( menuClean, charsmax( menuClean ), "%s^n^n%s0. %s%L%s", g_vote,
+                CLR_RED, CLR_WHITE, LANG_SERVER, "GAL_OPTION_NONE", voteFooter );
+    }
+    else
+    {
+        formatex( menuClean, charsmax( menuClean ), "%s%s", g_vote, voteFooter );
+    }
     
     if( isVoteOver )
     {
         if( get_pcvar_num( cvar_gal_vote_show_none ) )
         {
-            formatex( menuDirty, charsmax( menuDirty ), "%s%s0. %s%L^n^n%s%L", voteStatus,
+            formatex( menuDirty, charsmax( menuDirty ), "%s^n^n%s0. %s%L^n^n%s%L", voteStatus,
                     CLR_RED, CLR_WHITE, LANG_SERVER, "GAL_OPTION_NONE",
                     CLR_YELLOW, LANG_SERVER, "GAL_VOTE_ENDED" )
         }
@@ -3299,8 +3299,17 @@ public vote_display( vote_display_task_argument[ 3 ] )
         }
     }
     else
-    {
-        formatex( menuDirty, charsmax( menuDirty ), "%s%s", voteStatus, voteFooter );
+    {        
+        if( get_pcvar_num( cvar_gal_vote_show_none ) )
+        {
+            formatex( menuDirty, charsmax( menuDirty ), "%s^n^n%s0. %s%L%s", voteStatus,
+                    CLR_RED, CLR_WHITE, LANG_SERVER, "GAL_OPTION_NONE", voteFooter );
+        }
+        else
+        {
+            formatex( menuDirty, charsmax( menuDirty ), "%s%s", voteStatus, voteFooter );
+        }
+
     }
     
     new menuid, menukeys;
