@@ -1,11 +1,11 @@
-[SIZE="6"][COLOR="Blue"][B]Galileo v1.2-release_candidate1[/B][/COLOR][/SIZE]
+[SIZE="6"][COLOR="Blue"][B]Galileo v1.2-release_candidate1.hotfix1[/B][/COLOR][/SIZE]
 [B]Release: 10.10.2015 | Last Update: 17.01.2016[/B]
 
 If you want to translate the 'Galileo Reloaded Mapchooser' to your language or if you see some error or bad coloring tags positioning at the current translations, feel free to correct and come here to [URL="https://forums.alliedmods.net/showthread.php?t=277636"]this translation request thread[/URL] and post your translation or fix.
 
 [B]How to upgrade your Galileo?[/B]
 [LIST=1]
-[*]Download the galileo.amxx
+[*]Download the "galileo.amxx"
 [*]Replace your currenty installed version.
 [*]It is done.
 [/LIST][B]What will be the diference?[/B]
@@ -85,11 +85,10 @@ such as the original [B]Galileo[/B], [B]Deagles' Map Manager[/B] and AMXX's very
 [/LIST]
 It is [COLOR="Red"][B]highly recommended[/B][/COLOR] you to review the well-commented "[B]galileo.cfg[/B]" to see all the cvars' options
 you have with this plugin.  It's located in the [B]Attached ZIP[/B] available at the [goanchor=Downloads]Downloads[/goanchor] section, and [B]here below[/B]:
-[SPOILER]
-[PAWN]
+[PHP]
 galileo.cfg contents.
-[/PAWN]
-[/SPOILER][COLOR="Blue"][B]Features' list:[/B][/COLOR]
+[/PHP]
+[COLOR="Blue"][B]Features' list:[/B][/COLOR]
 [QUOTE]
  * Ability to "[B]rock the vote[/B]".
 
@@ -124,7 +123,6 @@ The Default '[B]Amx Mod X[/B]' [COLOR="Red"]NextMap Plugin [B]Disabled[/B][/COLO
 [QUOTE]
 //Displays, to all players, the next map that will be played.  This is
 //a replacement for AMXX's command of the same name. 
-//
 //When using end of map voting (CVAR "gal_endofmapvote" and "gal_nextmap_change"
 //set to 1), this command will return "[not yet voted on]" if the map vote hasn't
 //started yet and "[voting in progress]" once the vote has started.
@@ -254,7 +252,7 @@ galileo.amxx
 
 2016-01-31 | v1.2-release_candidate1
  * Add an option to 'gal_vote_showstatus', to always the vote progress to a player.
- * Fix bug where runoff show a 3º option, Extend Current Map.
+ * Fix bug where runoff show a third option, Extend Current Map.
  * Add a cvar 'amx_extendmap_allow_stay' to keep current map featuare disabled.
  * Added a new cvar to disable the colored chat.
  * Fixed 'gal_startvote' [-restart] argument not working.
@@ -268,7 +266,16 @@ galileo.amxx
  * Integrated the newest and updated Amx Mod X NextMap plugin into Galileo.
  * Change the nextmap to [not voted yet]
  * During a vote, change the nextmap to [vote in progress]
-[/QUOTE]
+
+2016-01-31 | v1.2-release_candidate1.hotfix1
+ * Added new cvar 'amx_extendmap_allow_stay_type' to allow show the current map name on stay here option.
+ * Fixed misspelling at multilingual file.
+ * Fixed 'None' vote map option blink at the last second.
+ * Fixed voting on option none after the voting end.
+ * Fixed remainning time showing 0 seconds instead of 'vote has ended'.
+ * Added new cvar 'gal_vote_show_none_type', to control the 'None' option should behavior when it is active.
+ * Fixed 'gal_vote_showstatus' option 2, causing the voting to show the countdown timer freezed.
+[/QUOTE]Compilations data comparisons at the Amx Mod X "1.8.3-dev+4964" between:
 [LIST=1]
 [*]Deagles' Map Manager v3.25Beta - [COLOR="Blue"]deagsmapmanager.sma[/COLOR], by DynamicBits: [url]https://forums.alliedmods.net/showthread.php?t=177180[/url]
 [*]DeRoiD's Mapchooser v2.33 - [COLOR="blue"]dmc233.sma[/COLOR], by DeRoiD: [url]https://forums.alliedmods.net/showthread.php?t=261412[/url]
@@ -284,7 +291,7 @@ Stack/heap size:     16.384 bytes   16.384 bytes     16.384 bytes      16.384 by
 Total requirements: 536.372 bytes  141.016 bytes    131.256 bytes     145.768 bytes    29.452 bytes
 Compilation Time:      0,87 sec       0,52 sec         0,45 sec          0,59 sec        0,22 sec  
 [/PAWN]Table with just [COLOR="Blue"]galileo1.1.sma[/COLOR] and [COLOR="blue"]galileo1.2.sma[/COLOR][PAWN]
-Plugin name:       galileo1.1.sma    galileo1.2.sma         Diferences
+Plugin name:       galileo1.1.sma     galileo1.2.sma        Diferences
 Header size:          3.384 bytes        3.876 bytes        +492 bytes
 Code size:           66.260 bytes       78.196 bytes     +11.936 bytes
 Data size:           45.228 bytes       47.312 bytes      +2.084 bytes
@@ -374,8 +381,7 @@ Compilation Time:      0,45 sec          0,59 sec          +0,14 sec
 
 Press enter to exit ...
 [/PAWN]
-[/SPOILER]
-******************************** [anchor]Credits[/anchor][B][SIZE="5"][COLOR="blue"]Credits[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] *******************************
+[/SPOILER]******************************** [anchor]Credits[/anchor][B][SIZE="5"][COLOR="blue"]Credits[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] *******************************
 [SPOILER]
 [B]Brad[/B]: The Original Galileo developer.
 [B]Addons zz[/B]: The Galileo 1.2 developer.
@@ -415,22 +421,23 @@ If you have access to your game server's console, type the [COLOR="Blue"][B]foll
 If you don't have access the your [COLOR="Blue"][B]game server's console[/B][/COLOR], join your server and type the 
 following in your game console: 
 
-[LIST] 
-[*]status 
-[*]rcon_password your_rcon_password 
-[*]rcon meta list 
-[*]rcon amxx list 
-[*]rcon amxx cvars 
-[/LIST] 
-[LIST=1] 
-[*]Paste here everything from the [B]status[/B] command [COLOR="Red"][B]*except*[/B][/COLOR] the player list. 
-[*]Paste here the entire result from the [B]meta list[/B] and [B]amxx plugins[/B] commands. 
-[*]Paste here [COLOR="red"][B]*only*[/B][/COLOR] the CVARs that contain "[COLOR="SeaGreen"][B]galileo.amxx[/B][/COLOR]" in the last column 
-from the [B]amxx cvars[/B] command. They will be grouped together. 
+[LIST]
+[*]status
+[*]rcon_password your_rcon_password
+[*]rcon meta list
+[*]rcon amxx list
+[*]rcon amxx cvars
 [/LIST]
-[/QUOTE] 
+[LIST=1]
+[*]Paste here everything from the [B]status[/B] command [COLOR="Red"][B]*except*[/B][/COLOR] the player list.
+[*]Paste here the entire result from the [B]meta list[/B] and [B]amxx plugins[/B] commands.
+[*]Paste here [COLOR="red"][B]*only*[/B][/COLOR] the CVARs that contain "[COLOR="SeaGreen"][B]galileo.amxx[/B][/COLOR]" in the last column
+from the [B]amxx cvars[/B] command. They will be grouped together.
+[/LIST]
+[/QUOTE]
 
-***************************************************************************************    
+***************************************************************************************
+[SIZE="6"]BRAZIL (South America) Testing Server[/SIZE]
 [URL="http://www.gametracker.com/server_info/jacks.noip.me:27015/"][IMG]http://www.gametracker.com/server_info/jacks.noip.me:27015/b_560_95_1.png[/IMG][/URL]
 
 [SIZE="6"]GERMANY (Europe) Testing Server[/SIZE]
