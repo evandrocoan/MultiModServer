@@ -254,8 +254,8 @@ new g_total_CT_wins;
 
 new g_is_maxrounds_extend
 new g_is_maxrounds_vote_map
-new g_isTimeToChangeLevel
 new g_is_last_round
+new g_isTimeToChangeLevel
 new g_isTimeToRestart
 new g_isTimeLimitChanged
 new g_is_map_extension_allowed
@@ -415,7 +415,7 @@ public plugin_init()
     cvar_voteMapChoiceCnt       = register_cvar( "gal_vote_mapchoices", "5" );
     cvar_voteAnnounceChoice     = register_cvar( "gal_vote_announcechoice", "1" );
     cvar_voteStatus             = register_cvar( "gal_vote_showstatus", "1" );
-    cvar_voteStatusType         = register_cvar( "gal_vote_showstatustype", "2" );
+    cvar_voteStatusType         = register_cvar( "gal_vote_showstatustype", "3" );
     cvar_voteUniquePrefixes     = register_cvar( "gal_vote_uniqueprefixes", "0" );
     cvar_runoffEnabled          = register_cvar( "gal_runoff_enabled", "0" );
     cvar_runoffDuration         = register_cvar( "gal_runoff_duration", "10" );
@@ -483,6 +483,7 @@ public plugin_cfg()
         copy( CLR_RED, 2, "\r" );
         copy( CLR_WHITE, 2, "\w" );
         copy( CLR_YELLOW, 2, "\y" );
+        copy( CLR_GREY, 2, "\d" );
     }
     
     
@@ -1314,7 +1315,7 @@ stock map_populateList( Array:mapArray, mapFilename[] )
         }
         else
         {
-            get_cvar_string( "mapcyclefile", mapFilename, charsmax( mapFilename ) );
+            get_cvar_string( "mapcyclefile", mapFilename, strlen( mapFilename ) );
             
             new file = fopen( mapFilename, "rt" );
             
@@ -2147,6 +2148,7 @@ public vote_startDirector( bool:forced )
         {
             g_is_map_extension_allowed = true
         }
+        else 
         {
             g_is_map_extension_allowed =
                 get_pcvar_float( g_timelimit_pointer ) < get_pcvar_float( cvar_extendmapMax )
@@ -2580,7 +2582,7 @@ public vote_handleDisplay()
 #endif
     
     if( get_pcvar_num( cvar_voteStatus )
-        && get_pcvar_num( cvar_voteStatusType ) == SHOWSTATUSTYPE_PERCENTAGE )
+        && get_pcvar_num( cvar_voteStatusType ) & SHOWSTATUSTYPE_PERCENTAGE )
     {
         copy( g_totalVoteAtMapType, charsmax( g_totalVoteAtMapType ), "%" );
     }
@@ -2610,7 +2612,7 @@ public vote_handleDisplay()
 
 public vote_display( vote_display_task_argument[ 3 ] )
 {
-    static keys, voteStatus[ 512 ], g_totalVoteAtMap[ 16 ];
+    static keys, voteStatus[ 512 ], g_totalVoteAtMap[ 32 ];
     
     new updateTimeRemaining = vote_display_task_argument[ 0 ];
     new player_id           = vote_display_task_argument[ 1 ];
@@ -2682,10 +2684,9 @@ public vote_display( vote_display_task_argument[ 3 ] )
         new allowStay = ( g_voteStatus & VOTE_IS_EARLY );
         new isRunoff  = ( g_voteStatus & VOTE_IS_RUNOFF );
         
-        new bool:allowExtend = ( g_is_final_voting
-                                 && !isRunoff )
+        new bool:allowExtend = g_is_final_voting
         
-        if( g_isTimeToChangeLevel
+        if( !g_is_final_voting
             && !isRunoff )
         {
             allowExtend = false;
@@ -2712,6 +2713,10 @@ public vote_display( vote_display_task_argument[ 3 ] )
             allowStay = false;
         }
         
+        DEBUG_LOGGER( 1, "( vote_handleDisplay ) Add optional menu item| \
+                allowStay: %d, allowExtend: %d, get_pcvar_num( cvar_extendmapAllowStay ): %d", \
+                allowStay, allowExtend, get_pcvar_num( cvar_extendmapAllowStay ) )
+
         // add optional menu item
         if( g_is_map_extension_allowed )
         {
@@ -2909,17 +2914,32 @@ public vote_display( vote_display_task_argument[ 3 ] )
 
 stock getTotalVotesAtMap( g_totalVoteAtMap[], g_totalVoteAtMapLen, voteCnt )
 {
+    new voteCntNumber = voteCnt
+
     if( voteCnt
-        && get_pcvar_num( cvar_voteStatusType ) == SHOWSTATUSTYPE_PERCENTAGE )
+        && get_pcvar_num( cvar_voteStatusType ) & SHOWSTATUSTYPE_PERCENTAGE )
     {
         voteCnt = percent( voteCnt, g_totalVotesCounted );
     }
     
+    DEBUG_LOGGER( 0, " ( getTotalVotesAtMap ) | get_pcvar_num( cvar_voteStatus ): %d, \
+            get_pcvar_num( cvar_voteStatusType ): %d", \
+            get_pcvar_num( cvar_voteStatus ), get_pcvar_num( cvar_voteStatusType ) )
+
     if( get_pcvar_num( cvar_voteStatus )
         && voteCnt )
     {
-        formatex( g_totalVoteAtMap, g_totalVoteAtMapLen, " %s( %i%s )", CLR_GREY, voteCnt,
-                g_totalVoteAtMapType );
+        if( get_pcvar_num( cvar_voteStatusType ) == 3 )
+        {
+            formatex( g_totalVoteAtMap, g_totalVoteAtMapLen, " %s(%s %i%s %s[%s%d%s] %s)",
+                    CLR_RED, CLR_GREY, voteCnt, g_totalVoteAtMapType,
+                    CLR_YELLOW, CLR_GREY, voteCntNumber, CLR_YELLOW, CLR_RED );
+        }
+        else
+        {
+            formatex( g_totalVoteAtMap, g_totalVoteAtMapLen, " %s( %i%s )", CLR_GREY, voteCnt,
+                    g_totalVoteAtMapType );
+        }
     }
     else
     {
@@ -2934,7 +2954,7 @@ public vote_expire()
 #if IS_DEBUG_ENABLED > 0
     DEBUG_LOGGER( 4, "" )
     DEBUG_LOGGER( 4, "   [VOTE RESULT]" )
-    new g_totalVoteAtMap[ 16 ];
+    new g_totalVoteAtMap[ 32 ];
     
     for( new userVoteMapChoiceIndex = 0; userVoteMapChoiceIndex <= g_totalVoteOptions;
          ++userVoteMapChoiceIndex )
@@ -3561,15 +3581,15 @@ public vote_handleChoice( player_id, key )
                                 g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
                                 
                                 client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
-                                        "GAL_CHOICE_NONE_ALL", name );
+                                        "GAL_CHOICE_STAY_ALL", name );
                             }
                         #else
-                            client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_CHOICE_NONE_ALL", name );
+                            client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_CHOICE_STAY_ALL", name );
                         #endif
                         }
                         else
                         {
-                            client_print_color_internal( player_id, "^1%L", player_id, "GAL_CHOICE_NONE" );
+                            client_print_color_internal( player_id, "^1%L", player_id, "GAL_CHOICE_STAY" );
                         }
                     }
                 }
