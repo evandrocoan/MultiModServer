@@ -22,7 +22,7 @@
 *****************************************************************************************
 */
 
-#define PLUGIN_VERSION "1.2-rc1"
+#define PLUGIN_VERSION "1.2-rc1.1"
 
 #include <amxmodx>
 #include <amxmisc>
@@ -35,7 +35,7 @@
  * at the end of this file and the variable 'g_debug_level' for more information.
  * Default value: 0  - which is disabled.
  */
-#define IS_DEBUG_ENABLED 0
+#define IS_DEBUG_ENABLED 1
 
 #if IS_DEBUG_ENABLED > 0
     #define DEBUG_LOGGER(%1) debugMesssageLogger( %1 )
@@ -52,7 +52,7 @@
  * ( ... ) 128 execute the test units and print their out put results.
  * ( 11111111 ) 255 displays all debug logs levels at server console.
  */
-new g_debug_level = 251
+new g_debug_level = 4
 
 /**
  * Test unit variables related to debug level 128, displays basic debug messages.
@@ -264,6 +264,7 @@ new g_is_map_extension_allowed
 /**
  * Server cvars
  */
+new cvar_extendmap_allow_stay_type
 new cvar_gal_nextmap_change
 new cvar_gal_vote_show_counter
 new cvar_gal_vote_show_none
@@ -382,11 +383,12 @@ public plugin_init()
     register_cvar( "gal_version", PLUGIN_VERSION, FCVAR_SERVER | FCVAR_SPONLY );
     register_cvar( "gal_server_starting", "1", FCVAR_SPONLY );
     
-    cvar_extendmapMax        = register_cvar( "amx_extendmap_max", "90" );
-    cvar_extendmapStep       = register_cvar( "amx_extendmap_step", "15" );
-    cvar_extendmapStepRounds = register_cvar( "amx_extendmap_step_rounds", "30" );
-    cvar_extendmapAllowStay  = register_cvar( "amx_extendmap_allow_stay", "0" );
-    cvar_extendmapAllowOrder = register_cvar( "amx_extendmap_allow_order", "0" );
+    cvar_extendmapMax              = register_cvar( "amx_extendmap_max", "90" );
+    cvar_extendmapStep             = register_cvar( "amx_extendmap_step", "15" );
+    cvar_extendmapStepRounds       = register_cvar( "amx_extendmap_step_rounds", "30" );
+    cvar_extendmapAllowStay        = register_cvar( "amx_extendmap_allow_stay", "0" );
+    cvar_extendmapAllowOrder       = register_cvar( "amx_extendmap_allow_order", "0" );
+    cvar_extendmap_allow_stay_type = register_cvar( "amx_extendmap_allow_stay_type", "0" );
     
     cvar_gal_nextmap_change     = register_cvar( "gal_nextmap_change", "1" );
     cvar_gal_vote_show_counter  = register_cvar( "gal_vote_show_counter", "0" );
@@ -395,7 +397,7 @@ public plugin_init()
     cvar_emptyCycle             = register_cvar( "gal_in_empty_cycle", "0", FCVAR_SPONLY );
     cvar_unnominateDisconnected = register_cvar( "gal_unnominate_disconnected", "0" );
     cvar_endOnRound             = register_cvar( "gal_endonround", "1" );
-    cvar_endOnRound_msg         = register_cvar( "gal_endonround_msg", "1" );
+    cvar_endOnRound_msg         = register_cvar( "gal_endonround_msg", "0" );
     cvar_endOnRound_players     = register_cvar( "gal_endonround_players", "1" );
     cvar_voteWeight             = register_cvar( "gal_vote_weight", "1" );
     cvar_voteWeightFlags        = register_cvar( "gal_vote_weightflags", "y" );
@@ -418,7 +420,7 @@ public plugin_init()
     cvar_nomQtyUsed             = register_cvar( "gal_nom_qtyused", "0" );
     cvar_voteDuration           = register_cvar( "gal_vote_duration", "15" );
     cvar_voteExpCountdown       = register_cvar( "gal_vote_expirationcountdown", "1" );
-    cvar_endMapCountdown        = register_cvar( "gal_endonround_countdown", "1" );
+    cvar_endMapCountdown        = register_cvar( "gal_endonround_countdown", "0" );
     cvar_voteMapChoiceCnt       = register_cvar( "gal_vote_mapchoices", "5" );
     cvar_voteAnnounceChoice     = register_cvar( "gal_vote_announcechoice", "1" );
     cvar_voteStatus             = register_cvar( "gal_vote_showstatus", "1" );
@@ -3029,9 +3031,18 @@ public vote_display( vote_display_task_argument[ 3 ] )
                 else
                 {
                     // add the "Stay Here" menu item
-                    charCnt += formatex( voteStatus[ charCnt ], charsmax( voteStatus ) - charCnt,
-                            "^n%s%i. %s%L%s", CLR_RED, g_totalVoteOptions + 1,
-                            CLR_WHITE, LANG_SERVER, "GAL_OPTION_STAY", g_totalVoteAtMap );
+                    if( get_pcvar_num( cvar_extendmap_allow_stay_type ) )
+                    {
+                        charCnt += formatex( voteStatus[ charCnt ], charsmax( voteStatus ) - charCnt,
+                                "^n%s%i. %s%L%s", CLR_RED, g_totalVoteOptions + 1,
+                                CLR_WHITE, LANG_SERVER, "GAL_OPTION_STAY_MAP", g_currentMap, g_totalVoteAtMap );
+                    }
+                    else
+                    {
+                        charCnt += formatex( voteStatus[ charCnt ], charsmax( voteStatus ) - charCnt,
+                                "^n%s%i. %s%L%s", CLR_RED, g_totalVoteOptions + 1,
+                                CLR_WHITE, LANG_SERVER, "GAL_OPTION_STAY", g_totalVoteAtMap );
+                    }
                 }
                 
                 // Added the extension/stay key option (1 << 2 = key 3, 1 << 3 = key 4, ...)
@@ -3047,12 +3058,13 @@ public vote_display( vote_display_task_argument[ 3 ] )
         new cleanCharCnt = copy( g_vote, charsmax( g_vote ), voteStatus );
         
         // append a "None" option on for people to choose if they don't like any other choice
-        if( get_pcvar_num( cvar_gal_vote_show_none ) )
+        if( get_pcvar_num( cvar_gal_vote_show_none ) && !g_is_vote_blocked )
         {
             formatex( g_vote[ cleanCharCnt ], charsmax( g_vote ) - cleanCharCnt,
                     "^n^n%s0. %s%L", CLR_RED, CLR_WHITE, LANG_SERVER, "GAL_OPTION_NONE" );
+
+            charCnt += formatex( voteStatus[ charCnt ], charsmax( voteStatus ) - charCnt, "^n^n" );
         }
-        charCnt += formatex( voteStatus[ charCnt ], charsmax( voteStatus ) - charCnt, "^n^n" );
         
         g_refreshVoteStatus = get_pcvar_num( cvar_voteStatus ) & 3;
     }
@@ -3061,9 +3073,9 @@ public vote_display( vote_display_task_argument[ 3 ] )
     
     if( updateTimeRemaining )
     {
-        charCnt = copy( voteFooter, charsmax( voteFooter ), "^n^n" );
-        
         g_voteDuration--;
+        
+        charCnt = copy( voteFooter, charsmax( voteFooter ), "^n^n" );
         
         if( get_pcvar_num( cvar_voteExpCountdown ) )
         {
