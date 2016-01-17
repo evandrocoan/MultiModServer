@@ -2,6 +2,7 @@
 *
 *   Copyright 2008-2010 @ Brad Jones
 *   Copyright 2015-2016 @ Addons zz
+*   Copyright 2004-2016 @ AMX Mod X Development Team
 *
 *   Plugin Thread: https://forums.alliedmods.net/showthread.php?t=273019
 *
@@ -432,6 +433,8 @@ public plugin_init()
     register_logevent( "team_win", 6, "0=Team" )
     register_logevent( "round_end", 2, "1=Round_End" )
     
+    nextmap_plugin_init()
+    
     register_clcmd( "say", "cmd_say", -1 );
     register_clcmd( "votemap", "cmd_HL1_votemap" );
     register_clcmd( "listmaps", "cmd_HL1_listmaps" );
@@ -453,6 +456,161 @@ public plugin_init()
             MENU_KEY_3 | MENU_KEY_4 | MENU_KEY_5 | MENU_KEY_6 |
             MENU_KEY_7 | MENU_KEY_8 | MENU_KEY_9 | MENU_KEY_0,
             "vote_handleChoice" );
+}
+
+new plugin_nextmap_g_nextMap[ 32 ]
+new plugin_nextmap_g_mapCycle[ 32 ]
+new plugin_nextmap_g_pos
+
+public nextmap_plugin_init()
+{
+    pause( "acd", "nextmap.amxx" )
+    
+    register_dictionary( "nextmap.txt" )
+    register_event( "30", "changeMap", "a" )
+    register_clcmd( "say nextmap", "sayNextMap", 0, "- displays nextmap" )
+    register_clcmd( "say currentmap", "sayCurrentMap", 0, "- display current map" )
+    register_clcmd( "say ff", "sayFFStatus", 0, "- display friendly fire status" )
+    register_cvar( "amx_nextmap", "", FCVAR_SERVER | FCVAR_EXTDLL | FCVAR_SPONLY )
+    
+    new szString[ 32 ], szString2[ 32 ], szString3[ 8 ]
+    
+    get_localinfo( "lastmapcycle", szString, 31 )
+    parse( szString, szString2, 31, szString3, 7 )
+    plugin_nextmap_g_pos = str_to_num( szString3 )
+    get_cvar_string( "mapcyclefile", plugin_nextmap_g_mapCycle, 31 )
+    
+    if( !equal( plugin_nextmap_g_mapCycle, szString2 ) )
+    {
+        plugin_nextmap_g_pos = 0    // mapcyclefile has been changed - go from first
+    }
+    readMapCycle( plugin_nextmap_g_mapCycle, plugin_nextmap_g_nextMap, 31 )
+    set_cvar_string( "amx_nextmap", plugin_nextmap_g_nextMap )
+    format( szString3, 31, "%s %d", plugin_nextmap_g_mapCycle, plugin_nextmap_g_pos )    // save lastmapcycle settings
+    set_localinfo( "lastmapcycle", szString3 )
+}
+
+getNextMapName( szArg[], iMax )
+{
+    new len = get_cvar_string( "amx_nextmap", szArg, iMax )
+    
+    if( ValidMap( szArg ) )
+    {
+        return len
+    }
+    len = copy( szArg, iMax, plugin_nextmap_g_nextMap )
+    set_cvar_string( "amx_nextmap", plugin_nextmap_g_nextMap )
+    
+    return len
+}
+
+public sayNextMap()
+{
+    new name[ 32 ]
+    
+    getNextMapName( name, 31 )
+    client_print( 0, print_chat, "%L %s", LANG_PLAYER, "NEXT_MAP", name )
+}
+
+public sayCurrentMap()
+{
+    new mapname[ 32 ]
+    
+    get_mapname( mapname, 31 )
+    client_print( 0, print_chat, "%L: %s", LANG_PLAYER, "PLAYED_MAP", mapname )
+}
+
+public sayFFStatus()
+{
+    client_print( 0, print_chat, "%L: %L", LANG_PLAYER, "FRIEND_FIRE", LANG_PLAYER, get_cvar_num( "mp_friendlyfire" ) ? "ON" : "OFF" )
+}
+
+public delayedChange( param[] )
+{
+    set_cvar_float( "mp_chattime", get_cvar_float( "mp_chattime" ) - 2.0 )
+    server_cmd( "changelevel %s", param )
+}
+
+public changeMap()
+{
+    new string[ 32 ]
+    new Float:chattime = get_cvar_float( "mp_chattime" )
+    
+    set_cvar_float( "mp_chattime", chattime + 2.0 )        // make sure mp_chattime is long
+    new len = getNextMapName( string, 31 ) + 1
+    set_task( chattime, "delayedChange", 0, string, len )    // change with 1.5 sec. delay
+}
+
+new g_warning[] = "WARNING: Couldn't find a valid map or the file doesn't exist (file ^"%s^")"
+
+stock bool:ValidMap( mapname[] )
+{
+    if( is_map_valid( mapname ) )
+    {
+        return true;
+    }
+    // If the is_map_valid check failed, check the end of the string
+    new len = strlen( mapname ) - 4;
+    
+    // The mapname was too short to possibly house the .bsp extension
+    if( len < 0 )
+    {
+        return false;
+    }
+    
+    if( equali( mapname[ len ], ".bsp" ) )
+    {
+        // If the ending was .bsp, then cut it off.
+        // the string is byref'ed, so this copies back to the loaded text.
+        mapname[ len ] = '^0';
+        
+        // recheck
+        if( is_map_valid( mapname ) )
+        {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+readMapCycle( szFileName[], szNext[], iNext )
+{
+    new b, i = 0, iMaps = 0
+    new szBuffer[ 32 ], szFirst[ 32 ]
+    
+    if( file_exists( szFileName ) )
+    {
+        while( read_file( szFileName, i++, szBuffer, 31, b ) )
+        {
+            if( !isalnum( szBuffer[ 0 ] )
+                || !ValidMap( szBuffer ) )
+            {
+                continue
+            }
+            
+            if( !iMaps )
+            {
+                copy( szFirst, 31, szBuffer )
+            }
+            
+            if( ++iMaps > plugin_nextmap_g_pos )
+            {
+                copy( szNext, iNext, szBuffer )
+                plugin_nextmap_g_pos = iMaps
+                return
+            }
+        }
+    }
+    
+    if( !iMaps )
+    {
+        log_amx( g_warning, szFileName )
+        get_mapname( szFirst, 31 )
+    }
+    
+    copy( szNext, iNext, szFirst )
+    plugin_nextmap_g_pos = 1
 }
 
 /**
@@ -4154,10 +4312,10 @@ stock con_print( player_id, message[], { Float, Sql, Result, _ }: ... )
     if( player_id )
     {
         new authid[ 32 ];
-
+        
         get_user_authid( player_id, authid, 31 );
         console_print( player_id, consoleMessage );
-
+        
         return;
     }
     
