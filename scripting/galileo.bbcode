@@ -11,8 +11,7 @@ How to upgrade your Galileo?
 [LIST=1]
 [*]You will get bug fixes.
 [*]You will have new features.
-[/LIST]Observation: If you want use the new features, download the new configuration files and updated yours using the new the cvars. 
-If not, you will see anything new, because all new feature are by default disabled.
+[/LIST]Observation: If you want use the new features, download the new configuration files and updated yours using the new the cvars. If not, you will see anything new, because all new feature are by default disabled.
 
 [anchor]Top[/anchor][SIZE="5"][COLOR="blue"][B]Contents' Table[/B][/COLOR][/SIZE] 
 
@@ -179,7 +178,6 @@ galileo.amxx
  * Add an option to 'gal_banrecentstyle', to show the recent maps are displayed as a menu.
  * Improve the command 'gal_listmaps_paginate' to show all maps without paginate or channel overflow.
  * During a vote, change the nextmap to [vote in progress]
- * Show only the last 10 seconds remaining to end the voting.
 [/QUOTE]
 [/SPOILER]******************************** [anchor]Change[/anchor][B][SIZE="5"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
 [QUOTE]
@@ -242,12 +240,10 @@ galileo.amxx
  * Added a new cvar to disable the colored chat.
  * Fixed 'gal_startvote' [-restart] argument not working.
  * Fixed showing that the player chose extend map, instead of stay on map.
- * Added new cvar 'amx_extendmap_allow_order' to follow the map cycle map order, when anyone vote 
-   for next map.
- * Added support to the old cvar variable 'gal_vote_mapfile', and a new option '*' to choose use
-   the mapcycle instead.
- * Added the 'gal_vote_show_none' cvar to shows the voting option "None" for people to choose 
-   if they don't like any other choice.
+ * Added new cvar 'amx_extendmap_allow_order' to follow the map cycle map order, when anyone vote for next map.
+ * Added support to the old cvar variable 'gal_vote_mapfile', and a new option '*' to choose use the mapcycle instead.
+ * Added the 'gal_vote_show_none' cvar to shows the voting option "None" for people to choose if they don't like any other choice.
+ * Added a new cvar 'gal_vote_show_counter', to show only the last 10 seconds remaining to end the voting.
  * Added an option to 'gal_vote_showstatustype', to show the vote progress as porcetage and count.
 [/QUOTE]
 [LIST=1]
