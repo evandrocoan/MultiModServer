@@ -1,25 +1,23 @@
-
-[SIZE="6"][COLOR="Blue"][B]Galileo v1.2-Release_Candidate1[/B][/COLOR][/SIZE]
-[B]Release: 10.10.2015 | Last Update: 31.01.2016[/B]
+[SIZE="6"][COLOR="Blue"][B]Galileo v1.2-release_candidate1[/B][/COLOR][/SIZE]
+[B]Release: 10.10.2015 | Last Update: 17.01.2016[/B]
 
 If you want to translate the 'Galileo Reloaded Mapchooser' to your language or if you see some error or bad coloring tags positioning at the current translations, feel free to correct and come here to [URL="https://forums.alliedmods.net/showthread.php?t=277636"]this translation request thread[/URL] and post your translation or fix.
 
-How to upgrade your Galileo?
+[B]How to upgrade your Galileo?[/B]
 [LIST=1]
 [*]Download the galileo.amxx
 [*]Replace your currenty installed version.
 [*]It is done.
-[/LIST]What will be the diference?
+[/LIST][B]What will be the diference?[/B]
 [LIST=1]
 [*]You will get bug fixes.
 [*]You will have new features.
-[/LIST]Observation: If you want use the new features, download the new configuration files and updated yours using the new the cvars. If not, you will see anything new, because all new feature are by default disabled.
+[/LIST][COLOR="Blue"]Observation:[/COLOR] If you want use the new features, download the new configuration files and updated yours using the new the cvars. If not, you will see anything new, because all new feature are by default disabled.
 
-Miscellaneous:[LIST=1]
+[B]Miscellaneous:[/B][LIST=1]
 [*]You need to disable "nextmap.amxx".
 [*]You need to disable any other map choosing plugins, such as "mapchooser.amxx".
 [/LIST]
-
 [anchor]Top[/anchor][SIZE="5"][COLOR="blue"][B]Contents' Table[/B][/COLOR][/SIZE] 
 
 [LIST]
@@ -40,42 +38,50 @@ The original plugin "[URL="https://forums.alliedmods.net/showthread.php?t=77391"
 "[B]Galileo[/B]". But "[B][COLOR="Blue"]Galileo 1.2[/COLOR][/B]" has special features for the "[URL="https://forums.alliedmods.net/showthread.php?t=273020"]Multi-Mod Manager[/URL]" plugin, but it 
 still can be used alone. See the [goanchor=Change]Change Log[/goanchor] and [goanchor=Credits]Credits[/goanchor] for more info.
 
+This is a release candidate, which is a beta version with potential to be a final product, which is ready to be 
+released unless [B]significant bugs[/B] emerge. In this stage of product stabilization, all product [B]features[/B] have been 
+designed, coded and tested through one or more beta cycles with no known show stopper-class bug. 
+[URL="http://www.gametracker.com/search/?search_by=server_variable&search_by2=gal_version&query=&loc=_all&sort=&order=&searchipp=50#search"]
+[SIZE=5][B][COLOR=DarkGreen]Click here to see all servers using this plugin.[/COLOR][/B][/SIZE][/URL]
+
 ********************** [anchor]Introduction[/anchor][B][SIZE="5"][COLOR="blue"]Introduction[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor]  *******************************
 This is a feature rich map voting plugin.  It's intended to be used in place of any other map choosing plugin 
 such as the original [B]Galileo[/B], [B]Deagles' Map Manager[/B] and AMXX's very own [B]Map Chooser[/B].
 
-[SIZE="4"]Basic differences between the [COLOR="Red"]Original Galileo[/COLOR] and [COLOR="Red"]Galileo 1.2[/COLOR][/SIZE] 
+[SIZE="4"]Basic differences between the [COLOR="Red"]Galileo 1.1.290[/COLOR] and [COLOR="Red"]Galileo 1.2[/COLOR][/SIZE] 
 
 [B]The Galileo 1.2 can:[/B]
 [LIST=1]
-[*]display colored text messages.
-[*]always show the option "Keep Current Map" at any voting.
-[*]always show the countdown remaining vote time.
+[*]configure to display colored text messages.
+[*]configure to always show the option "Keep Current Map" at any voting.
+[*]configure to always show the countdown remaining vote time.
 [*]manage RunOff vote between a map and "Keep Current Map".
 [*]change the time limit to zero.
-[*]be used with the AMXX very own "Next Map" plugin.
 [*]manage/start end map vote with mp_maxrounds, mp_winlimit or mp_timelimit.
-[*]use the current mapcycle to nominate maps.
-[*]keep the initial server next map when nobody vote for next map.
+[*]configure to use the current mapcycle to nominate maps.
+[*]configure to keep the initial server next map when nobody vote for next map.
 [*]be easier learned to code new features as it has some code documentation.
-[*]change the server map to a popular one when the server is empty too much time.
-[*]give weighted votes to admins counting more points.
-[*]use all maps on maps folder to nominate maps.
+[*]configure change the server map to a popular one when the server is empty too much time.
+[*]configure to give weighted votes to admins counting more points.
+[*]configure to use all maps on maps folder to nominate maps.
 [*]nominate maps by a map list menu.
-[*]allow the last round to finish before change to the next map.
+[*]configure to allow the last round to finish before change to the next map.
+[*]configure to show the vote progress as porcetage and count.
+[*]configure to show the recent maps are displayed as a menu.
+[*]configure to always see the currently vote progress.
+[*]configure to always shows the voting option "None".
 [/LIST]
 [B]The Galileo 1.1.290 cannot:[/B]
 [LIST=1]
-[*]always show the option "Keep Current Map" at any voting.
-[*]always show the countdown remaining vote time.
-[*]manage RunOff vote between a map and "Keep Current Map".
+[*]configure to always show the option "Keep Current Map" at any voting.
+[*]configure to always show the countdown remaining vote time.
+[*]configure to manage RunOff vote between a map and "Keep Current Map".
 [*]change the time limit to zero.
-[*]display colored text messages.
+[*]configure to display colored text messages.
 [*]nominate maps by a map list menu.
-[*]to be used with the AMXX "Next Map" plugin.
 [*]manage/start end map vote with mp_maxrounds, mp_winlimit or mp_timelimit.
-[*]use the current mapcycle to nominate maps.
-[*]keep the initial server next map when nobody vote for next map.
+[*]configure to use the current mapcycle to nominate maps.
+[*]configure to keep the initial server next map when nobody vote for next map.
 [/LIST]
 It is [COLOR="Red"][B]highly recommended[/B][/COLOR] you to review the well-commented "[B]galileo.cfg[/B]" to see all the cvars' options
 you have with this plugin.  It's located in the [B]Attached ZIP[/B] available at the [goanchor=Downloads]Downloads[/goanchor] section, and [B]here below[/B]:
@@ -230,8 +236,7 @@ galileo.amxx
  * Implemented mp_winlimit and mp_maxrounds end map voting.
  * Removed automatic vote map, after forcing votemap using '-nochange' argument.
  * Replaced the command 'gal_startvote2' with 'gal_startvote' and options '-nochange' and '-restart'.
- * Added new cvar "gal_endonround_players" which indicates the players minimum number necessary 
-   to allow the last round to be finished when time runs out.
+ * Added new cvar "gal_endonround_players" which indicates the players minimum number necessary to allow the last round to be finished when time runs out.
  * Added new cvar option "gal_rtv_commands 7" to enable 7 the options 1, 2 and 4 at the same time.
  * Added new cvar "amx_extendmap_step_rounds" to the config file.
  * Added new cvar "amx_extendmap_max" which limits the max extension time.
@@ -247,7 +252,7 @@ galileo.amxx
  * Added weighted votes that allows admins to have their vote counted more.
  * Added display colored text messages support.
 
-2016-01-31 | v1.2-Release_Candidate1
+2016-01-31 | v1.2-release_candidate1
  * Add an option to 'gal_vote_showstatus', to always the vote progress to a player.
  * Fix bug where runoff show a 3º option, Extend Current Map.
  * Add a cvar 'amx_extendmap_allow_stay' to keep current map featuare disabled.
@@ -271,21 +276,21 @@ galileo.amxx
 [*]Galileo v1.2-beta1 | Last Update: 12.01.2016 - [COLOR="blue"]galileo1.2.sma[/COLOR], by Brad Jones/Addons zz: [url]https://forums.alliedmods.net/showthread.php?t=273019[/url]
 [*]Nextmap Chooser (v1.8.2) - [COLOR="blue"]mapchooser.sma[/COLOR], by AMXX Team
 [/LIST]Table with all:[PAWN]
-Plugin name: deagsmapmanager.sma      dmc233.sma    galileo.sma  galileo.sma  mapchooser.sma  Max value
-Header size:          3.648 bytes    2.480 bytes    3.384 bytes           3.532 bytes     1.064 bytes  3.648 bytes
-Code size:          111.044 bytes   50.864 bytes   66.260 bytes          70.936 bytes     8.412 bytes  111.044 bytes
-Data size:          405.296 bytes   71.288 bytes   45.228 bytes          42.696 bytes     3.592 bytes  405.296 bytes
-Stack/heap size:     16.384 bytes   16.384 bytes   16.384 bytes          16.384 bytes    16.384 bytes  16.384
-Total requirements: 536.372 bytes  141.016 bytes  131.256 bytes         133.548 bytes    29.452 bytes  536.372 bytes
-Compilation Time:      0,87 sec       0,52 sec       0,45 sec              0,52 sec        0,22 sec    0,87 sec
-[/PAWN]Table with just [COLOR="Blue"]galileo.sma 1.1[/COLOR] and [COLOR="blue"]galileo.sma 1.2[/COLOR][PAWN]
-Plugin name:       galileo1.1.sma   galileo1.2.sma           Diferences
-Header size:          3.384 bytes            3.532 bytes     +148 bytes
-Code size:           66.260 bytes           70.936 bytes   +4.676 bytes
-Data size:           45.228 bytes           42.696 bytes   -2.532 bytes
-Stack/heap size:     16.384 bytes           16.384 bytes     +0.0 bytes
-Total requirements: 131.256 bytes          133.548 bytes   +2.292 bytes
-Compilation Time:      0,45 sec               0,52 sec      +0,07 sec  
+Plugin name: deagsmapmanager.sma      dmc233.sma   galileo1.1.sma    galileo1.2.sma  mapchooser.sma
+Header size:          3.648 bytes    2.480 bytes      3.384 bytes       3.876 bytes     1.064 bytes
+Code size:          111.044 bytes   50.864 bytes     66.260 bytes      78.196 bytes     8.412 bytes
+Data size:          405.296 bytes   71.288 bytes     45.228 bytes      47.312 bytes     3.592 bytes
+Stack/heap size:     16.384 bytes   16.384 bytes     16.384 bytes      16.384 bytes    16.384 bytes
+Total requirements: 536.372 bytes  141.016 bytes    131.256 bytes     145.768 bytes    29.452 bytes
+Compilation Time:      0,87 sec       0,52 sec         0,45 sec          0,59 sec        0,22 sec  
+[/PAWN]Table with just [COLOR="Blue"]galileo1.1.sma[/COLOR] and [COLOR="blue"]galileo1.2.sma[/COLOR][PAWN]
+Plugin name:       galileo1.1.sma    galileo1.2.sma         Diferences
+Header size:          3.384 bytes        3.876 bytes        +492 bytes
+Code size:           66.260 bytes       78.196 bytes     +11.936 bytes
+Data size:           45.228 bytes       47.312 bytes      +2.084 bytes
+Stack/heap size:     16.384 bytes       16.384 bytes        +0.0 bytes
+Total requirements: 131.256 bytes      145.768 bytes     +14.512 bytes
+Compilation Time:      0,45 sec          0,59 sec          +0,14 sec  
 [/PAWN]Source Data:[SPOILER] 
 [PAWN]
 //AMXXPC compile.exe
@@ -345,14 +350,14 @@ Compilation Time:      0,45 sec               0,52 sec      +0,07 sec
 
 //// galileo1.2.sma
 // 
-// Header size:           3532 bytes
-// Code size:            70936 bytes
-// Data size:            42696 bytes
+// Header size:           3876 bytes
+// Code size:            78196 bytes
+// Data size:            47312 bytes
 // Stack/heap size:      16384 bytes
-// Total requirements:  133548 bytes
+// Total requirements:  145768 bytes
 // Done.
 //
-// Compilation Time: 0,52 sec
+// Compilation Time: 0,59 sec
 // ----------------------------------------
 
 //// mapchooser.sma
@@ -392,11 +397,10 @@ Thank you!  It means a lot to me.
 --Brad
 [/QUOTE]
 [/SPOILER]******************************** [anchor]Sourcecode[/anchor][SIZE="5"][COLOR="blue"][B]Source Code and Support[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor] ***
-[SPOILER]
 You can receive support for this plugin within this thread. Non-Steam servers are not supported.
 
 For any problems with this plugin visit this own page for support: 
-https://forums.alliedmods.net/showthread.php?t=273019
+[url="https://forums.alliedmods.net/showthread.php?t=273019"] https://forums.alliedmods.net/showthread.php?t=273019[/url]
 
 If you are [B]posting[/B] because the plugin or a [B]feature[/B] of the plugin isn't working for you, [B]please[/B] do 
 all of the following, so we can [COLOR="Blue"]more efficiently[/COLOR] figure out what's going on: 
@@ -427,15 +431,12 @@ from the [B]amxx cvars[/B] command. They will be grouped together.
 [/QUOTE] 
 
 ***************************************************************************************    
-[SIZE="5"]BRAZIL (South America) Testing Server[/SIZE]
 [URL="http://www.gametracker.com/server_info/jacks.noip.me:27015/"][IMG]http://www.gametracker.com/server_info/jacks.noip.me:27015/b_560_95_1.png[/IMG][/URL]
 
-[SIZE="5"]GERMANY (Europe) Testing Server[/SIZE]
+[SIZE="6"]GERMANY (Europe) Testing Server[/SIZE]
 [URL="http://www.gametracker.com/server_info/vipersnake.net:27030/"][IMG]http://www.gametracker.com/server_info/vipersnake.net:27030/b_560_95_1.png[/IMG][/URL]
 
-[URL="http://www.gametracker.com/search/?search_by=server_variable&search_by2=Galileo&query=&loc=_all&sort=&order="]
-[SIZE=4][B][COLOR=DarkGreen]Click here to see all servers using this plugin.[/COLOR][/B][/SIZE][/URL]
-[/SPOILER]******************************** [anchor]Downloads[/anchor][SIZE="5"][COLOR="Blue"][B]Downloads[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor] *************************
+******************************** [anchor]Downloads[/anchor][SIZE="5"][COLOR="Blue"][B]Downloads[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor] *************************
 Old versions downloads:
 [LIST=1]
 [*]v1.2-alpha2.hotfix1: (galileo.sma - 111 views - 92.9 KB)
