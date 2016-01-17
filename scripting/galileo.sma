@@ -35,7 +35,7 @@
  * at the end of this file and the variable 'g_debug_level' for more information.
  * Default value: 0  - which is disabled.
  */
-#define IS_DEBUG_ENABLED 1
+#define IS_DEBUG_ENABLED 0
 
 #if IS_DEBUG_ENABLED > 0
     #define DEBUG_LOGGER(%1) debugMesssageLogger( %1 )
@@ -264,6 +264,7 @@ new g_is_map_extension_allowed
 /**
  * Server cvars
  */
+new cvar_gal_nextmap_change
 new cvar_gal_vote_show_counter
 new cvar_gal_vote_show_none
 new cvar_extendmapAllowOrder
@@ -378,7 +379,7 @@ public plugin_init()
     register_dictionary( "common.txt" );
     register_dictionary_colored( "galileo.txt" );
     
-    register_cvar( "Galileo", PLUGIN_VERSION, FCVAR_SERVER | FCVAR_SPONLY );
+    register_cvar( "gal_version", PLUGIN_VERSION, FCVAR_SERVER | FCVAR_SPONLY );
     register_cvar( "gal_server_starting", "1", FCVAR_SPONLY );
     
     cvar_extendmapMax        = register_cvar( "amx_extendmap_max", "90" );
@@ -387,6 +388,7 @@ public plugin_init()
     cvar_extendmapAllowStay  = register_cvar( "amx_extendmap_allow_stay", "0" );
     cvar_extendmapAllowOrder = register_cvar( "amx_extendmap_allow_order", "0" );
     
+    cvar_gal_nextmap_change     = register_cvar( "gal_nextmap_change", "1" );
     cvar_gal_vote_show_counter  = register_cvar( "gal_vote_show_counter", "0" );
     cvar_gal_vote_show_none     = register_cvar( "gal_vote_show_none", "0" );
     cvar_coloredChatEnabled     = register_cvar( "gal_colored_chat_enabled", "0", FCVAR_SPONLY );
@@ -525,10 +527,52 @@ getNextMapName( szArg[], iMax )
 
 public sayNextMap()
 {
-    new name[ 32 ]
-    
-    getNextMapName( name, charsmax( name ) )
-    client_print( 0, print_chat, "%L %s", LANG_PLAYER, "NEXT_MAP", name )
+    if( get_pcvar_num( cvar_gal_nextmap_change ) 
+        && !g_is_last_round
+        && !( g_voteStatus & VOTE_IS_OVER ) )
+    {
+        if( g_voteStatus & VOTE_IN_PROGRESS )
+        {
+        #if AMXX_VERSION_NUM < 183
+            get_players( g_colored_players_ids, g_colored_players_number, "ch" );
+            
+            for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+                 g_colored_current_index++ )
+            {
+                g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
+                
+                client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
+                        "GAL_NEXTMAP_VOTING" )
+            }
+        #else
+            client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_NEXTMAP_VOTING" )
+        #endif
+        }
+        else
+        {
+        #if AMXX_VERSION_NUM < 183
+            get_players( g_colored_players_ids, g_colored_players_number, "ch" );
+            
+            for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+                 g_colored_current_index++ )
+            {
+                g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
+                
+                client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
+                        "GAL_NEXTMAP_UNKNOWN" )
+            }
+        #else
+            client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_NEXTMAP_UNKNOWN" )
+        #endif
+        }
+    }
+    else
+    {
+        new name[ 32 ]
+        
+        getNextMapName( name, charsmax( name ) )
+        client_print( 0, print_chat, "%L %s", LANG_PLAYER, "NEXT_MAP", name )
+    }
 }
 
 public sayCurrentMap()
@@ -874,7 +918,7 @@ public process_last_round_counting()
     }
 }
 
-stock intermission_display( is_map_change_stays = false )
+stock intermission_display()
 {
     if( g_isTimeToChangeLevel
         || g_isTimeToRestart )
@@ -886,7 +930,7 @@ stock intermission_display( is_map_change_stays = false )
             mp_chattime = 12.0
         }
         
-        if( is_map_change_stays )
+        if( g_isTimeToRestart )
         {
             set_task( mp_chattime, "map_change_stays", TASKID_MAP_CHANGE );
         }
@@ -3568,7 +3612,7 @@ public vote_expire()
                     client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_STAY" );
                     #endif
                     
-                    intermission_display( true )
+                    intermission_display()
                 }
                 else
                 {

@@ -2,6 +2,8 @@
 [SIZE="6"][COLOR="Blue"][B]Galileo v1.2-Release_Candidate1[/B][/COLOR][/SIZE]
 [B]Release: 10.10.2015 | Last Update: 31.01.2016[/B]
 
+If you want to translate the 'Galileo Reloaded Mapchooser' to your language or if you see some error or bad coloring tags positioning at the current translations, feel free to correct and come here to [URL="https://forums.alliedmods.net/showthread.php?t=277636"]this translation request thread[/URL] and post your translation or fix.
+
 How to upgrade your Galileo?
 [LIST=1]
 [*]Download the galileo.amxx
@@ -12,6 +14,11 @@ How to upgrade your Galileo?
 [*]You will get bug fixes.
 [*]You will have new features.
 [/LIST]Observation: If you want use the new features, download the new configuration files and updated yours using the new the cvars. If not, you will see anything new, because all new feature are by default disabled.
+
+Miscellaneous:[LIST=1]
+[*]You need to disable "nextmap.amxx".
+[*]You need to disable any other map choosing plugins, such as "mapchooser.amxx".
+[/LIST]
 
 [anchor]Top[/anchor][SIZE="5"][COLOR="blue"][B]Contents' Table[/B][/COLOR][/SIZE] 
 
@@ -104,11 +111,24 @@ galileo.cfg contents.
 [/QUOTE]
 
 ********************** [anchor]Requirements[/anchor][SIZE="5"][COLOR="Blue"][B]Requirements and Commands[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor]  ******
-Amx Mod X [B]1.8.2[/B] or [COLOR="Red"][B]superior[/B][/COLOR]
+Amx Mod X [B]1.8.2[/B] or [COLOR="Red"][B]higher only[/B][/COLOR]
 The Default '[B]Amx Mod X[/B]' [COLOR="Red"]NextMap Plugin [B]Disabled[/B][/COLOR] (nextmap.amxx)
 
 [B]Client's Commands:[/B]
 [QUOTE]
+//Displays, to all players, the next map that will be played.  This is
+//a replacement for AMXX's command of the same name. 
+//
+//When using end of map voting (CVAR "gal_endofmapvote" and "gal_nextmap_change"
+//set to 1), this command will return "[not yet voted on]" if the map vote hasn't
+//started yet and "[voting in progress]" once the vote has started.
+//When the outcome of the vote is determined, this command will
+//return the map name.
+[COLOR="Blue"]say [B]nextmap[/B][/COLOR]
+
+//Displays, to all players, the current map name.
+[COLOR="Blue"]say [B]currentmap[/B][/COLOR]
+
 //Displays a listing, to all players, of the most recently played maps.
 //Requires CVAR "gal_banrecent" to be set to a value higher than 0.
 [COLOR="Blue"]say [B]recentmaps[/B][/COLOR]
@@ -172,12 +192,8 @@ disable the original "[B]mapchooser.amxx[/B]" or any other [B]map manager plugin
 galileo.amxx
 [/QUOTE]
 [/SPOILER]******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] *********************************
-[SPOILER]
-[QUOTE]
- * Change the nextmap to [not voted yet]
- * During a vote, change the nextmap to [vote in progress]
-[/QUOTE]
-[/SPOILER]******************************** [anchor]Change[/anchor][B][SIZE="5"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
+
+******************************** [anchor]Change[/anchor][B][SIZE="5"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
 [QUOTE]
 2015-10-10 | v1.2-alpha1 
  * Fixed server restart after change timelimit to 0. 
@@ -244,6 +260,9 @@ galileo.amxx
  * Added a new cvar 'gal_vote_show_counter', to show only the last 10 seconds remaining to end the voting.
  * Added an option to 'gal_vote_showstatustype', to show the vote progress as porcetage and count.
  * Added an option to 'gal_banrecentstyle', to show the recent maps are displayed as a menu.
+ * Integrated the newest and updated Amx Mod X NextMap plugin into Galileo.
+ * Change the nextmap to [not voted yet]
+ * During a vote, change the nextmap to [vote in progress]
 [/QUOTE]
 [LIST=1]
 [*]Deagles' Map Manager v3.25Beta - [COLOR="Blue"]deagsmapmanager.sma[/COLOR], by DynamicBits: [url]https://forums.alliedmods.net/showthread.php?t=177180[/url]
@@ -374,6 +393,8 @@ Thank you!  It means a lot to me.
 [/QUOTE]
 [/SPOILER]******************************** [anchor]Sourcecode[/anchor][SIZE="5"][COLOR="blue"][B]Source Code and Support[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor] ***
 [SPOILER]
+You can receive support for this plugin within this thread. Non-Steam servers are not supported.
+
 For any problems with this plugin visit this own page for support: 
 https://forums.alliedmods.net/showthread.php?t=273019
 
