@@ -263,6 +263,7 @@ new g_is_map_extension_allowed
 /**
  * Server cvars
  */
+new cvar_gal_vote_show_counter
 new cvar_gal_vote_show_none
 new cvar_extendmapAllowOrder
 new cvar_coloredChatEnabled
@@ -385,6 +386,7 @@ public plugin_init()
     cvar_extendmapAllowStay  = register_cvar( "amx_extendmap_allow_stay", "0" );
     cvar_extendmapAllowOrder = register_cvar( "amx_extendmap_allow_order", "0" );
     
+    cvar_gal_vote_show_counter  = register_cvar( "gal_vote_show_counter", "0" );
     cvar_gal_vote_show_none     = register_cvar( "gal_vote_show_none", "0" );
     cvar_coloredChatEnabled     = register_cvar( "gal_colored_chat_enabled", "0", FCVAR_SPONLY );
     cvar_emptyCycle             = register_cvar( "gal_in_empty_cycle", "0", FCVAR_SPONLY );
@@ -2150,7 +2152,7 @@ public vote_startDirector( bool:forced )
         {
             g_is_map_extension_allowed = true
         }
-        else 
+        else
         {
             g_is_map_extension_allowed =
                 get_pcvar_float( g_timelimit_pointer ) < get_pcvar_float( cvar_extendmapMax )
@@ -2718,7 +2720,7 @@ public vote_display( vote_display_task_argument[ 3 ] )
         DEBUG_LOGGER( 1, "( vote_handleDisplay ) Add optional menu item| \
                 allowStay: %d, allowExtend: %d, get_pcvar_num( cvar_extendmapAllowStay ): %d", \
                 allowStay, allowExtend, get_pcvar_num( cvar_extendmapAllowStay ) )
-
+        
         // add optional menu item
         if( g_is_map_extension_allowed )
         {
@@ -2771,7 +2773,7 @@ public vote_display( vote_display_task_argument[ 3 ] )
                 }
             }
         }
-            
+        
         // make a copy of the virgin menu
         new cleanCharCnt = copy( g_vote, charsmax( g_vote ), voteStatus );
         
@@ -2788,22 +2790,28 @@ public vote_display( vote_display_task_argument[ 3 ] )
     
     static voteFooter[ 32 ];
     
-    if( updateTimeRemaining
-        && get_pcvar_num( cvar_voteExpCountdown ) )
+    if( updateTimeRemaining )
     {
         charCnt = copy( voteFooter, charsmax( voteFooter ), "^n^n" );
         
         g_voteDuration--;
         
-        if( g_voteDuration > 0 )
+        if( get_pcvar_num( cvar_voteExpCountdown ) )
         {
-            formatex( voteFooter[ charCnt ], charsmax( voteFooter ) - charCnt, "%s%L: %s%i",
-                    CLR_WHITE, LANG_SERVER, "GAL_TIMELEFT", CLR_RED, g_voteDuration );
-        }
-        else
-        {
-            formatex( voteFooter[ charCnt ], charsmax( voteFooter ) - charCnt, "%s%L: %s%i",
-                    CLR_WHITE, LANG_SERVER, "GAL_TIMELEFT", CLR_RED, 0 );
+            if( g_voteDuration <= 10
+                || get_pcvar_num( cvar_gal_vote_show_counter ) )
+            {
+                if( g_voteDuration > 0 )
+                {
+                    formatex( voteFooter[ charCnt ], charsmax( voteFooter ) - charCnt, "%s%L: %s%i",
+                            CLR_WHITE, LANG_SERVER, "GAL_TIMELEFT", CLR_RED, g_voteDuration );
+                }
+                else
+                {
+                    formatex( voteFooter[ charCnt ], charsmax( voteFooter ) - charCnt, "%s%L: %s%i",
+                            CLR_WHITE, LANG_SERVER, "GAL_TIMELEFT", CLR_RED, 0 );
+                }
+            }
         }
     }
     
@@ -2919,7 +2927,7 @@ public vote_display( vote_display_task_argument[ 3 ] )
 stock getTotalVotesAtMap( g_totalVoteAtMap[], g_totalVoteAtMapLen, voteCnt )
 {
     new voteCntNumber = voteCnt
-
+    
     if( voteCnt
         && get_pcvar_num( cvar_voteStatusType ) & SHOWSTATUSTYPE_PERCENTAGE )
     {
@@ -2929,7 +2937,7 @@ stock getTotalVotesAtMap( g_totalVoteAtMap[], g_totalVoteAtMapLen, voteCnt )
     DEBUG_LOGGER( 0, " ( getTotalVotesAtMap ) | get_pcvar_num( cvar_voteStatus ): %d, \
             get_pcvar_num( cvar_voteStatusType ): %d", \
             get_pcvar_num( cvar_voteStatus ), get_pcvar_num( cvar_voteStatusType ) )
-
+    
     if( get_pcvar_num( cvar_voteStatus )
         && voteCnt )
     {
