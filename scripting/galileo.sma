@@ -3109,9 +3109,10 @@ public vote_display( vote_display_task_argument[ 3 ] )
         
         // wipe the previous vote status clean
         voteStatus[ 0 ] = 0;
-
+        
         // register the 'None' option key
-        if( get_pcvar_num( cvar_gal_vote_show_none ) && !g_is_vote_blocked )
+        if( get_pcvar_num( cvar_gal_vote_show_none )
+            && !g_is_vote_blocked )
         {
             keys = MENU_KEY_0;
         }
@@ -3290,7 +3291,7 @@ public vote_display( vote_display_task_argument[ 3 ] )
     menuDirty[ 0 ] = '^0';
     
     // append a "None" option on for people to choose if they don't like any other choice
-    if( get_pcvar_num( cvar_gal_vote_show_none ) 
+    if( get_pcvar_num( cvar_gal_vote_show_none )
         && get_pcvar_num( cvar_gal_vote_show_none_type ) )
     {
         formatex( menuClean, charsmax( menuClean ), "%s^n^n%s0. %s%L%s", g_vote,
@@ -3303,8 +3304,8 @@ public vote_display( vote_display_task_argument[ 3 ] )
     
     if( isVoteOver )
     {
-        if( get_pcvar_num( cvar_gal_vote_show_none ) 
-            && get_pcvar_num( cvar_gal_vote_show_none_type ))
+        if( get_pcvar_num( cvar_gal_vote_show_none )
+            && get_pcvar_num( cvar_gal_vote_show_none_type ) )
         {
             formatex( menuDirty, charsmax( menuDirty ), "%s^n^n%s0. %s%L^n^n%s%L", voteStatus,
                     CLR_RED, CLR_WHITE, LANG_SERVER, "GAL_OPTION_NONE",
@@ -3331,13 +3332,12 @@ public vote_display( vote_display_task_argument[ 3 ] )
                 && !get_pcvar_num( cvar_gal_vote_show_none_type )
                 && !g_is_vote_blocked )
             {
-                voteFooter[0] = ' '
-                voteFooter[1] = ' '
+                voteFooter[ 0 ] = ' '
+                voteFooter[ 1 ] = ' '
             }
-
+            
             formatex( menuDirty, charsmax( menuDirty ), "%s%s", voteStatus, voteFooter );
         }
-
     }
     
     new menuid, menukeys;
