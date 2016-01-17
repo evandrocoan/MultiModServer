@@ -458,9 +458,14 @@ public plugin_init()
             "vote_handleChoice" );
 }
 
-new plugin_nextmap_g_nextMap[ 32 ]
-new plugin_nextmap_g_mapCycle[ 32 ]
+new plugin_nextmap_g_nextMap[ 128 ]
+new plugin_nextmap_g_mapCycle[ 128 ]
 new plugin_nextmap_g_pos
+new plugin_nextmap_g_currentMap[ 128 ]
+
+// pcvars
+new plugin_nextmap_g_friendlyfire, plugin_nextmap_g_chattime
+new plugin_nextmap_gp_nextmap
 
 public nextmap_plugin_init()
 {
@@ -470,36 +475,50 @@ public nextmap_plugin_init()
     register_event( "30", "changeMap", "a" )
     register_clcmd( "say nextmap", "sayNextMap", 0, "- displays nextmap" )
     register_clcmd( "say currentmap", "sayCurrentMap", 0, "- display current map" )
-    register_clcmd( "say ff", "sayFFStatus", 0, "- display friendly fire status" )
-    register_cvar( "amx_nextmap", "", FCVAR_SERVER | FCVAR_EXTDLL | FCVAR_SPONLY )
     
-    new szString[ 32 ], szString2[ 32 ], szString3[ 8 ]
+    plugin_nextmap_gp_nextmap     = register_cvar( "amx_nextmap", "", FCVAR_SERVER | FCVAR_EXTDLL | FCVAR_SPONLY )
+    plugin_nextmap_g_chattime     = get_cvar_pointer( "mp_chattime" )
+    plugin_nextmap_g_friendlyfire = get_cvar_pointer( "mp_friendlyfire" )
     
-    get_localinfo( "lastmapcycle", szString, 31 )
-    parse( szString, szString2, 31, szString3, 7 )
-    plugin_nextmap_g_pos = str_to_num( szString3 )
-    get_cvar_string( "mapcyclefile", plugin_nextmap_g_mapCycle, 31 )
+    if( plugin_nextmap_g_friendlyfire )
+    {
+        register_clcmd( "say ff", "sayFFStatus", 0, "- display friendly fire status" )
+    }
+    
+    get_mapname( plugin_nextmap_g_currentMap, charsmax( plugin_nextmap_g_currentMap ) )
+    
+    new szString[ 40 ], szString2[ 32 ], szString3[ 8 ]
+    
+    get_localinfo( "lastmapcycle", szString, charsmax( szString ) )
+    parse( szString, szString2, charsmax( szString2 ), szString3, charsmax( szString3 ) )
+    
+    get_cvar_string( "mapcyclefile", plugin_nextmap_g_mapCycle, charsmax( plugin_nextmap_g_mapCycle ) )
     
     if( !equal( plugin_nextmap_g_mapCycle, szString2 ) )
     {
         plugin_nextmap_g_pos = 0    // mapcyclefile has been changed - go from first
     }
-    readMapCycle( plugin_nextmap_g_mapCycle, plugin_nextmap_g_nextMap, 31 )
-    set_cvar_string( "amx_nextmap", plugin_nextmap_g_nextMap )
-    format( szString3, 31, "%s %d", plugin_nextmap_g_mapCycle, plugin_nextmap_g_pos )    // save lastmapcycle settings
-    set_localinfo( "lastmapcycle", szString3 )
+    else
+    {
+        plugin_nextmap_g_pos = str_to_num( szString3 )
+    }
+    
+    readMapCycle( plugin_nextmap_g_mapCycle, plugin_nextmap_g_nextMap, charsmax( plugin_nextmap_g_nextMap ) )
+    set_pcvar_string( plugin_nextmap_gp_nextmap, plugin_nextmap_g_nextMap )
+    formatex( szString, charsmax( szString ), "%s %d", plugin_nextmap_g_mapCycle, plugin_nextmap_g_pos )
+    set_localinfo( "lastmapcycle", szString ) // save lastmapcycle settings
 }
 
 getNextMapName( szArg[], iMax )
 {
-    new len = get_cvar_string( "amx_nextmap", szArg, iMax )
+    new len = get_pcvar_string( plugin_nextmap_gp_nextmap, szArg, iMax )
     
     if( ValidMap( szArg ) )
     {
         return len
     }
     len = copy( szArg, iMax, plugin_nextmap_g_nextMap )
-    set_cvar_string( "amx_nextmap", plugin_nextmap_g_nextMap )
+    set_pcvar_string( plugin_nextmap_gp_nextmap, plugin_nextmap_g_nextMap )
     
     return len
 }
@@ -508,37 +527,45 @@ public sayNextMap()
 {
     new name[ 32 ]
     
-    getNextMapName( name, 31 )
+    getNextMapName( name, charsmax( name ) )
     client_print( 0, print_chat, "%L %s", LANG_PLAYER, "NEXT_MAP", name )
 }
 
 public sayCurrentMap()
 {
-    new mapname[ 32 ]
-    
-    get_mapname( mapname, 31 )
-    client_print( 0, print_chat, "%L: %s", LANG_PLAYER, "PLAYED_MAP", mapname )
+    client_print( 0, print_chat, "%L: %s", LANG_PLAYER, "PLAYED_MAP", plugin_nextmap_g_currentMap )
 }
 
 public sayFFStatus()
 {
-    client_print( 0, print_chat, "%L: %L", LANG_PLAYER, "FRIEND_FIRE", LANG_PLAYER, get_cvar_num( "mp_friendlyfire" ) ? "ON" : "OFF" )
+    client_print( 0, print_chat, "%L: %L", LANG_PLAYER, "FRIEND_FIRE", LANG_PLAYER,
+            get_pcvar_num( plugin_nextmap_g_friendlyfire ) ? "ON" : "OFF" )
 }
 
 public delayedChange( param[] )
 {
-    set_cvar_float( "mp_chattime", get_cvar_float( "mp_chattime" ) - 2.0 )
+    if( plugin_nextmap_g_chattime )
+    {
+        set_pcvar_float( plugin_nextmap_g_chattime, get_pcvar_float( plugin_nextmap_g_chattime ) - 2.0 )
+    }
+#if AMXX_VERSION_NUM < 183
     server_cmd( "changelevel %s", param )
+#else
+    engine_changelevel( param )
+#endif
 }
 
 public changeMap()
 {
-    new string[ 32 ]
-    new Float:chattime = get_cvar_float( "mp_chattime" )
+    new string[ 32 ] // mp_chattime defaults to 10 in other mods
+    new Float:chattime = plugin_nextmap_g_chattime ? get_pcvar_float( plugin_nextmap_g_chattime ) : 10.0;
     
-    set_cvar_float( "mp_chattime", chattime + 2.0 )        // make sure mp_chattime is long
-    new len = getNextMapName( string, 31 ) + 1
-    set_task( chattime, "delayedChange", 0, string, len )    // change with 1.5 sec. delay
+    if( plugin_nextmap_g_chattime )
+    {
+        set_pcvar_float( plugin_nextmap_g_chattime, chattime + 2.0 ) // make sure mp_chattime is long
+    }
+    new len = getNextMapName( string, charsmax( string ) ) + 1
+    set_task( chattime, "delayedChange", 0, string, len ) // change with 1.5 sec. delay
 }
 
 new g_warning[] = "WARNING: Couldn't find a valid map or the file doesn't exist (file ^"%s^")"
@@ -581,7 +608,7 @@ readMapCycle( szFileName[], szNext[], iNext )
     
     if( file_exists( szFileName ) )
     {
-        while( read_file( szFileName, i++, szBuffer, 31, b ) )
+        while( read_file( szFileName, i++, szBuffer, charsmax( szBuffer ), b ) )
         {
             if( !isalnum( szBuffer[ 0 ] )
                 || !ValidMap( szBuffer ) )
@@ -591,7 +618,7 @@ readMapCycle( szFileName[], szNext[], iNext )
             
             if( !iMaps )
             {
-                copy( szFirst, 31, szBuffer )
+                copy( szFirst, charsmax( szFirst ), szBuffer )
             }
             
             if( ++iMaps > plugin_nextmap_g_pos )
@@ -606,10 +633,12 @@ readMapCycle( szFileName[], szNext[], iNext )
     if( !iMaps )
     {
         log_amx( g_warning, szFileName )
-        get_mapname( szFirst, 31 )
+        copy( szNext, iNext, plugin_nextmap_g_currentMap )
     }
-    
-    copy( szNext, iNext, szFirst )
+    else
+    {
+        copy( szNext, iNext, szFirst )
+    }
     plugin_nextmap_g_pos = 1
 }
 
