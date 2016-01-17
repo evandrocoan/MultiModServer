@@ -3,7 +3,7 @@
 *   Copyright 2008-2010 @ Brad Jones
 *   Copyright 2015-2016 @ Addons zz
 *
-*   Plugin Theard: https://forums.alliedmods.net/showthread.php?t=273019
+*   Plugin Thread: https://forums.alliedmods.net/showthread.php?t=273019
 *
 *  This program is free software; you can redistribute it and/or modify it
 *  under the terms of the GNU General Public License as published by the
@@ -1182,7 +1182,41 @@ public cmd_listrecent( player_id )
             #endif
             }
         }
+        case 3:
+        {
+            // assume there'll be more than one match ( because we're lazy ) and starting building the match menu
+            if( g_nominationMatchesMenu[ player_id ] )
+            {
+                menu_destroy( g_nominationMatchesMenu[ player_id ] );
+            }
+            
+            new recent_maps_menu_name[ 64 ]
+            
+            formatex( recent_maps_menu_name, charsmax( recent_maps_menu_name ), "%L",
+                    player_id, "GAL_MAP_RECENTMAPS" )
+            
+            g_nominationMatchesMenu[ player_id ] = menu_create( "Nominate Map", "cmd_listrecent_handler" );
+            
+            for( new idx = 0; idx < g_cntRecentMap; ++idx )
+            {
+                menu_additem( g_nominationMatchesMenu[ player_id ], g_recentMap[ idx ] )
+            }
+            
+            menu_display( player_id, g_nominationMatchesMenu[ player_id ] )
+        }
     }
+    
+    return PLUGIN_HANDLED;
+}
+
+public cmd_listrecent_handler( player_id, menu, item )
+{
+    if( item < 0 )
+    {
+        return PLUGIN_CONTINUE;
+    }
+    
+    menu_display( player_id, g_nominationMatchesMenu[ player_id ] )
     
     return PLUGIN_HANDLED;
 }
@@ -4120,13 +4154,11 @@ stock con_print( player_id, message[], { Float, Sql, Result, _ }: ... )
     if( player_id )
     {
         new authid[ 32 ];
+
         get_user_authid( player_id, authid, 31 );
-        
-        if( !equal( authid, "STEAM_ID_LAN" ) )
-        {
-            console_print( player_id, consoleMessage );
-            return;
-        }
+        console_print( player_id, consoleMessage );
+
+        return;
     }
     
     server_print( consoleMessage );
