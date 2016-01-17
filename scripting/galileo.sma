@@ -2498,7 +2498,6 @@ public vote_startDirector( bool:forced )
         set_task( 8.5, "vote_handleDisplay", TASKID_VOTE_HANDLEDISPLAY );
         
         // block player that does not voted
-        set_task( 8.5 + float( voteDuration ), "block_vote", TASKID_VOTE_DISPLAY )
         g_is_vote_blocked = false;
         
         // display the vote outcome
@@ -2507,6 +2506,7 @@ public vote_startDirector( bool:forced )
             // indicates it's the end of vote display
             new vote_display_task_argument[ 3 ] = { -1, -1, false };
             
+            set_task( 8.5 + float( voteDuration ) + 1.0, "block_vote", TASKID_VOTE_DISPLAY )
             set_task( 8.5 + float( voteDuration ) + 1.0, "vote_display", TASKID_VOTE_DISPLAY,
                     vote_display_task_argument, 3 );
             
@@ -2514,6 +2514,7 @@ public vote_startDirector( bool:forced )
         }
         else
         {
+            set_task( 8.5 + float( voteDuration ) + 3.0, "block_vote", TASKID_VOTE_DISPLAY )
             set_task( 8.5 + float( voteDuration ) + 3.0, "vote_expire", TASKID_VOTE_EXPIRE );
         }
     }
@@ -3265,8 +3266,9 @@ public vote_display( vote_display_task_argument[ 3 ] )
         
         if( get_pcvar_num( cvar_voteExpCountdown ) )
         {
-            if( g_voteDuration <= 10
-                || get_pcvar_num( cvar_gal_vote_show_counter ) )
+            if( ( g_voteDuration <= 10
+                  || get_pcvar_num( cvar_gal_vote_show_counter ) )
+                && !( get_pcvar_num( cvar_voteStatus ) == SHOWSTATUS_END ) )
             {
                 if( g_voteDuration > 0 )
                 {
@@ -3329,8 +3331,8 @@ public vote_display( vote_display_task_argument[ 3 ] )
                 && !get_pcvar_num( cvar_gal_vote_show_none_type )
                 && !g_is_vote_blocked )
             {
-                voteFooter[0] = '^b'
-                voteFooter[1] = '^b'
+                voteFooter[0] = ' '
+                voteFooter[1] = ' '
             }
 
             formatex( menuDirty, charsmax( menuDirty ), "%s%s", voteStatus, voteFooter );
