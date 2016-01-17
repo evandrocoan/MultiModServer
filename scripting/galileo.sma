@@ -263,6 +263,7 @@ new g_is_map_extension_allowed
 /**
  * Server cvars
  */
+new cvar_gal_vote_show_none
 new cvar_extendmapAllowOrder
 new cvar_coloredChatEnabled
 new cvar_emptyCycle;
@@ -384,6 +385,7 @@ public plugin_init()
     cvar_extendmapAllowStay  = register_cvar( "amx_extendmap_allow_stay", "0" );
     cvar_extendmapAllowOrder = register_cvar( "amx_extendmap_allow_order", "0" );
     
+    cvar_gal_vote_show_none     = register_cvar( "gal_vote_show_none", "0" );
     cvar_coloredChatEnabled     = register_cvar( "gal_colored_chat_enabled", "0", FCVAR_SPONLY );
     cvar_emptyCycle             = register_cvar( "gal_in_empty_cycle", "0", FCVAR_SPONLY );
     cvar_unnominateDisconnected = register_cvar( "gal_unnominate_disconnected", "0" );
@@ -2108,7 +2110,7 @@ public vote_startDirector( bool:forced )
           || ( g_is_voting_locked
                && !( g_voteStatus & VOTE_IS_RUNOFF ) )
           || g_is_to_cancel_end_vote )
-        && !g_debug_level )
+        && !IS_DEBUG_ENABLED )
     {
         DEBUG_LOGGER( 1, "At vote_startDirector --- The voting was canceled. g_voteStatus: %d, \
                 g_is_voting_locked: %d, g_is_to_cancel_end_vote: %d", \
@@ -2510,16 +2512,16 @@ stock vote_addFiller()
                 
                 if( unsuccessfulCnt == mapCnt )
                 {
-                    DEBUG_LOGGER( 8, "unsuccessfulCnt: %i  mapCnt: %i", unsuccessfulCnt, mapCnt );
+                    DEBUG_LOGGER( 8, "unsuccessfulCnt: %i  mapCnt: %i", unsuccessfulCnt, mapCnt )
                     
                     // there aren't enough maps in this filler file to continue adding anymore
                     break;
                 }
                 
-                DEBUG_LOGGER( 8, "groupIdx: %i  map: %s", groupIdx, mapName );
+                DEBUG_LOGGER( 8, "groupIdx: %i  map: %s", groupIdx, mapName )
                 
                 copy( g_mapsVoteMenuNames[ g_totalVoteOptions++ ], charsmax( g_mapsVoteMenuNames[] ),
-                        mapName );
+                        mapName )
                 
                 DEBUG_LOGGER( 8, "[%i] mapName: %s   unsuccessfulCnt: %i   mapCnt: %i   \
                         g_totalVoteOptions: %i", \
@@ -2768,18 +2770,20 @@ public vote_display( vote_display_task_argument[ 3 ] )
                     keys |= ( 1 << g_totalVoteOptions );
                 }
             }
+        }
             
-            // make a copy of the virgin menu
-            new cleanCharCnt = copy( g_vote, charsmax( g_vote ), voteStatus );
-            
-            // append a "None" option on for people to choose if they don't like any other choice
+        // make a copy of the virgin menu
+        new cleanCharCnt = copy( g_vote, charsmax( g_vote ), voteStatus );
+        
+        // append a "None" option on for people to choose if they don't like any other choice
+        if( get_pcvar_num( cvar_gal_vote_show_none ) )
+        {
             formatex( g_vote[ cleanCharCnt ], charsmax( g_vote ) - cleanCharCnt,
                     "^n^n%s0. %s%L", CLR_RED, CLR_WHITE, LANG_SERVER, "GAL_OPTION_NONE" );
-            
-            charCnt += formatex( voteStatus[ charCnt ], charsmax( voteStatus ) - charCnt, "^n^n" );
-            
-            g_refreshVoteStatus = get_pcvar_num( cvar_voteStatus ) & 3;
         }
+        charCnt += formatex( voteStatus[ charCnt ], charsmax( voteStatus ) - charCnt, "^n^n" );
+        
+        g_refreshVoteStatus = get_pcvar_num( cvar_voteStatus ) & 3;
     }
     
     static voteFooter[ 32 ];
@@ -2794,19 +2798,19 @@ public vote_display( vote_display_task_argument[ 3 ] )
         if( g_voteDuration > 0 )
         {
             formatex( voteFooter[ charCnt ], charsmax( voteFooter ) - charCnt, "%s%L: %s%i",
-                    CLR_GREY, LANG_SERVER, "GAL_TIMELEFT", CLR_RED, g_voteDuration );
+                    CLR_WHITE, LANG_SERVER, "GAL_TIMELEFT", CLR_RED, g_voteDuration );
         }
         else
         {
             formatex( voteFooter[ charCnt ], charsmax( voteFooter ) - charCnt, "%s%L: %s%i",
-                    CLR_GREY, LANG_SERVER, "GAL_TIMELEFT", CLR_RED, 0 );
+                    CLR_WHITE, LANG_SERVER, "GAL_TIMELEFT", CLR_RED, 0 );
         }
     }
     
     // create the different displays
     static menuClean[ 512 ], menuDirty[ 512 ];
-    menuClean[ 0 ] = 0;
-    menuDirty[ 0 ] = 0;
+    menuClean[ 0 ] = '^0';
+    menuDirty[ 0 ] = '^0';
     
     formatex( menuClean, charsmax( menuClean ), "%s%s", g_vote, voteFooter );
     
