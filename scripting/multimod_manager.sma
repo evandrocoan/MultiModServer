@@ -2,7 +2,7 @@
 *
 *   Copyleft 2015-2016 @ Addons zz
 *
-*   Plugin Theard: https://forums.alliedmods.net/showthread.php?t=273020
+*   Plugin Thread: https://forums.alliedmods.net/showthread.php?t=273020
 *
 *  This program is free software; you can redistribute it and/or modify it
 *  under the terms of the GNU General Public License as published by the
