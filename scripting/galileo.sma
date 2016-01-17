@@ -527,7 +527,7 @@ getNextMapName( szArg[], iMax )
 
 public sayNextMap()
 {
-    if( get_pcvar_num( cvar_gal_nextmap_change ) 
+    if( get_pcvar_num( cvar_gal_nextmap_change )
         && !g_is_last_round
         && !( g_voteStatus & VOTE_IS_OVER ) )
     {
@@ -541,11 +541,13 @@ public sayNextMap()
             {
                 g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
                 
-                client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
-                        "GAL_NEXTMAP_VOTING" )
+                client_print_color_internal( g_colored_player_id, "^1%L %L",
+                        g_colored_player_id, "NEXT_MAP",
+                        g_colored_player_id, "GAL_NEXTMAP_VOTING" )
             }
         #else
-            client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_NEXTMAP_VOTING" )
+            client_print_color_internal( 0, "^1%L %L", LANG_PLAYER, "NEXT_MAP",
+                    LANG_PLAYER, "GAL_NEXTMAP_VOTING" )
         #endif
         }
         else
@@ -558,11 +560,13 @@ public sayNextMap()
             {
                 g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
                 
-                client_print_color_internal( g_colored_player_id, "^1%L", g_colored_player_id,
-                        "GAL_NEXTMAP_UNKNOWN" )
+                client_print_color_internal( g_colored_player_id, "^1%L %L",
+                        g_colored_player_id, "NEXT_MAP",
+                        g_colored_player_id, "GAL_NEXTMAP_UNKNOWN" )
             }
         #else
-            client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_NEXTMAP_UNKNOWN" )
+            client_print_color_internal( 0, "^1%L", LANG_PLAYER, "NEXT_MAP",
+                    LANG_PLAYER, "GAL_NEXTMAP_UNKNOWN" )
         #endif
         }
     }
