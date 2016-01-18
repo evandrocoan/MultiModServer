@@ -1,0 +1,324 @@
+[en]
+DR_NOW_TERR = %s\YEL is now the terrorist.
+DR_STARTING = Starting in 10 seconds.
+DR_NO_DETECT = No terrorist detected, restarting now.
+DR_NOT_ENOUGH = Not enough players to start Deathrun!
+DR_STARTING_CC = Starting in\GRN 10\YEL seconds.
+
+DR_LIFE_CC_COUNT = You have\TEM %i\YEL lifes.
+DR_LIFE_CC_NO = You dont have lifes, kill enemy to get one!
+DR_LIFE_COUNT = You have %i lifes.
+DR_LIFE_NO = You dont have lifes^nKill enemy to get one!
+DR_LIFE_DISABLE = Life system is disabled.
+DR_LIFE_RESPAWN = You will be respawned in\TEM 3\YEL seconds!
+DR_LIFE_CANT = You could be respawned but all CT's are dead now!
+
+DR_BLOCK_SPRAY = Spray's not allowed on this server!
+DR_BLOCK_KILL = You can't kill yourself!
+
+[ru]
+DR_NOW_TERR = %s\YEL teper' terrorist!
+DR_STARTING = Nachinaem cherez 10 sekund.
+DR_NO_DETECT = Terrorist nenajden, restart.
+DR_NOT_ENOUGH = Nedostatochno igrokov chtoby nachat' igru!
+DR_STARTING_CC = Nachinaem cherez\GRN 10\YEL sekund.
+
+DR_LIFE_CC_COUNT = U tebja\TEM %i\YEL dopolnitel'nyh zhiznej.
+DR_LIFE_CC_NO = U tebja net dopolnitel'nyh zhiznej, ubej vraga chtoby poluchit' odnu!
+DR_LIFE_COUNT = U tebja %i dopolnitel'nyh zhiznej.
+DR_LIFE_NO = U tebja net dopolnitel'nyh zhiznej^nUbej vraga chtoby poluchit' odnu!
+DR_LIFE_DISABLE = Sistema dopolnitel'nyh zhiznej vykljuchena.
+DR_LIFE_RESPAWN = Ty budesh respavnut cherez\TEM 3\YEL sekundy!
+DR_LIFE_CANT = Ty mogby respavnutsja no ne ostalos' drugih zhivih CT!
+
+DR_BLOCK_SPRAY = Pol'zovatsja sprejem na jetom servere nel'zja!
+DR_BLOCK_KILL = Ty nemozhesh ubit' sebja!
+
+[de]
+DR_NOW_TERR = %s\YEL ist jetzt der Terrorist.
+DR_STARTING = Start in 10 Sekunden.
+DR_NO_DETECT = Kein Terrorist gefunden, neustart beginnt.
+DR_NOT_ENOUGH = Nicht genuegend Spieler vorhanden um Deathrun zu Starten
+DR_STARTING_CC = Start in\GRN 10\YEL Sekunden.
+
+DR_LIFE_CC_COUNT = Sie haben\TEM %i\YEL Leben.
+DR_LIFE_CC_NO = Sie haben kein Leben, toete einen Feind um eines zu bekommen!
+DR_LIFE_COUNT = Sie haben %i Leben.
+DR_LIFE_NO = Sie haben kein Leben^ntoete einen Feind um eines zu bekommen!
+DR_LIFE_DISABLE = Life system ist deaktiviert.
+DR_LIFE_RESPAWN = Sie werden in \TEM 3\YEL Sekunden wiederbelebt!
+DR_LIFE_CANT = Sie koennen nicht wiederbelebt werden da alle CTs tot sind!
+
+DR_BLOCK_SPRAY = Auf diesem Server ist Sprayen verboten!
+DR_BLOCK_KILL = Sie koennen sich nicht selbst toeten!
+
+[es]
+DR_NOW_TERR = %s\YEL es ahora el terrorista.
+DR_STARTING = Empezando en 10 segundos.
+DR_NO_DETECT = No se ha detectado al terrorista, reiniciando.
+DR_NOT_ENOUGH = No hay suficientes jugadores para empezar Deathrun!
+DR_STARTING_CC = Empezando en\GRN 10\YEL segundos.
+
+DR_LIFE_CC_COUNT = Tu tienes\TEM %i\YEL vidas.
+DR_LIFE_CC_NO = No tienes vidas, mata a los enemigos para conseguirlas!
+DR_LIFE_COUNT = Tu tienes %i vidas.
+DR_LIFE_NO = Tu no tienes vidas^nMata a los enemigos para conseguirlas!
+DR_LIFE_DISABLE = Sistema de vidas desactivado.
+DR_LIFE_RESPAWN = Tu seras revivido en\TEM 3\YEL segundos!
+DR_LIFE_CANT = Tu deberias ser revivido ahora, pero todos los CTs estan muertos!
+
+DR_BLOCK_SPRAY = Los spray's no estan permitidos en este servidor!
+DR_BLOCK_KILL = No puedes suicidarte!
+
+[ro]
+DR_NOW_TERR = %s\YEL este acum terorist.
+DR_STARTING = Incepem in 10 secunde.
+DR_NO_DETECT = Nu exista niciun terorist, se da restart.
+DR_NOT_ENOUGH = Nu sunt destui jucatori pentru a incepe Deathrun!
+DR_STARTING_CC = Incepem in\GRN 10\YEL secunde.
+
+DR_LIFE_CC_COUNT = Ai\TEM %i\YEL vieti.
+DR_LIFE_CC_NO = Nu ai nicio viata, ucide un inamic pentru a castiga una!
+DR_LIFE_COUNT = Ai %i vieti.
+DR_LIFE_NO = Nu ai vieti^nUcide un inamic pentru a castiga una!
+DR_LIFE_DISABLE = Sistemul de vieti este oprit.
+DR_LIFE_RESPAWN = Vei reinvia in\TEM 3\YEL secunde!
+DR_LIFE_CANT = Puteai sa fi reinviat dar, toti CT sunt morti!
+
+DR_BLOCK_SPRAY = Sunt interzise tatuajele pe acest server!
+DR_BLOCK_KILL = Nu te poti sinucide!
+
+[sv]
+DR_NOW_TERR = %s\YEL 'a'r nu terroristen.
+DR_STARTING = B'o'rjar om 10 sekunder.
+DR_NO_DETECT = Ingen terrorist hittad, startar om nu.
+DR_NOT_ENOUGH = Inte tillr'a'ckligt med spelare f'o'r att starta Deathrun.
+DR_STARTING_CC = B'o'rjar om\GRN 10\YEL sekunder.
+
+DR_LIFE_CC_COUNT = Du har\TEM %i\YEL liv.
+DR_LIFE_CC_NO = Du har inga liv, d'o'da en fiende f'o'r att fa ett.
+DR_LIFE_COUNT = Du har %i liv.
+DR_LIFE_NO = Du har inga liv^nD'o'da en fiende f'o'r att fa ett!
+DR_LIFE_DISABLE = Liv funktionen 'a'r av.
+DR_LIFE_RESPAWN = Du kommer att bli aterupplivad om\TEM 3\YEL sekunder!
+DR_LIFE_CANT = Du kunde bli aterupplivad men alla CT's 'a'r d'o'da.
+
+DR_BLOCK_SPRAY = Sprej 'a'r inte tillaten pa den h'a'r servern.
+DR_BLOCK_KILL = Du kan inte d'o'da dig sj'a'lv.
+
+[bp]
+DR_NOW_TERR = %s\YEL e agora o terrorista.
+DR_STARTING = A comecar em 10 segundos.
+DR_NO_DETECT = Nenhum terrorista detectado, a reiniciar.
+DR_NOT_ENOUGH = Nao ha jogadores suficientes para comecar a Deathrun!
+DR_STARTING_CC = A comecar em\GRN 10\YEL segundos.
+
+DR_LIFE_CC_COUNT = Tens\TEM %i\YEL vidas.
+DR_LIFE_CC_NO = Nao tens vidas, mata os teus inimigos para as obteres!
+DR_LIFE_COUNT = Tens %i vidas.
+DR_LIFE_NO = Nao tens vidas^mata os teus inimigos para as obteres!
+DR_LIFE_DISABLE = O sistema de vidas esta desactivado.
+DR_LIFE_RESPAWN = Vais renascer em \TEM 3\YEL segundos!
+DR_LIFE_CANT = Tu poderias renascer mas, todos os CT's estao mortos!
+
+DR_BLOCK_SPRAY = Nao sao permitidos sprays neste servidor!
+DR_BLOCK_KILL = Nao te podes matar!
+
+[nl]
+DR_NOW_TERR = %s\YEL is nu een terrorist.
+DR_STARTING = Het spel zal starten in 10 seconden.
+DR_NO_DETECT = Geen terroristen gedetecteerd, spel herstart nu.
+DR_NOT_ENOUGH = Niet genoeg spelers om DeathRun te spelen!
+DR_STARTING_CC = Het spel start in\GRN 10\YEL seconden.
+
+DR_LIFE_CC_COUNT = Je hebt\TEM %i\YEL levens.
+DR_LIFE_CC_NO = Je hebt geen levens, vermoord tegenstanders om er te krijgen!
+DR_LIFE_COUNT = Jij hebt %i levens.
+DR_LIFE_NO = Je hebt geen levens^nVermoord spelers om er te krijgen!
+DR_LIFE_DISABLE = Levens systeem is uitgeschakeld.
+DR_LIFE_RESPAWN = Je zal terug tot leven komen in\TEM 3\YEL seconden!
+DR_LIFE_CANT = Je zou jezelf kunnen tot leven wekken maar alle CTs zijn dood!
+
+DR_BLOCK_SPRAY = Sprays zijn niet toegestaan in deze server!
+DR_BLOCK_KILL = Je kan jezelf niet vermoorden!
+
+[pl]
+DR_NOW_TERR = %s\YEL zostal terrorysta.
+DR_STARTING = Zaczynamy zabawe za 10 sekund.
+DR_NO_DETECT = Brakuje terrorysty, wymagany restart.
+DR_NOT_ENOUGH = Zbyt malo graczy! Zapros kolegow ;-)
+DR_STARTING_CC = Zaczynamy zabawe za\GRN 10\YEL sekund.
+
+DR_LIFE_CC_COUNT = You have\TEM %i\YEL lifes.
+DR_LIFE_CC_NO = Nie posiadasz juz dodatkowych zyc, zabij kogos !
+DR_LIFE_COUNT = Posiadasz %i zyc.
+DR_LIFE_NO = Nie masz dodatkowych zyc^nZabij kogos aby je zyskac !
+DR_LIFE_DISABLE = System zyc jest wylaczony.
+DR_LIFE_RESPAWN = Odrodzisz sie w ciagu \TEM 3\YEL sekund!
+DR_LIFE_CANT = Moglbys zostac odrodzony lecz wszyscy CT sa juz niezywi!
+
+DR_BLOCK_SPRAY = Malowanie logajest wylaczone.
+DR_BLOCK_KILL = Nie mozesz popelnic samobojstwa!
+
+[lt]
+DR_NOW_TERR = %s\YEL dabar teroristas.
+DR_STARTING = Pradzia po 10 sekundziu.
+DR_NO_DETECT = Nerastas teroristas, raundas restartuojamas.
+DR_NOT_ENOUGH = Nepakanka zaideju, kad pradeti DeathRun!
+DR_STARTING_CC = Pradzia po\GRN 10\YEL sekundziu.
+
+DR_LIFE_CC_COUNT = Jus turite\TEM %i\YEL gyvybes.
+DR_LIFE_CC_NO = Jus neturite gyvybiu, nusaukite priesa, kad gautumet viena!
+DR_LIFE_COUNT = Jus turite %i gyvybe.
+DR_LIFE_NO = Jus neturite gyvybiu^nNusaukite priesininka, kad gautumet viena!
+DR_LIFE_DISABLE = Gyvybiu sistema isjungta..
+DR_LIFE_RESPAWN = Jus prisikelsite po\TEM 3\YEL sekundziu!
+DR_LIFE_CANT = Jus galite prisikelti, bet visi CT yra negyvi!
+
+DR_BLOCK_SPRAY = Spray logo neleistini siame serveryje!
+DR_BLOCK_KILL = Jus negalite uzmusti saves!
+
+[sk]
+DR_NOW_TERR = %s\YEL je teraz Terorista.
+DR_STARTING = Zaciname o 10 sekund.
+DR_NO_DETECT = Nenaslo ziadneho teroristu, restartujem hru.
+DR_NOT_ENOUGH = Nedostatocny pocet pre zacatie Deathrun modu!
+DR_STARTING_CC = Zaciname o\GRN 10\YEL sekund.
+
+DR_LIFE_CC_COUNT = Tvoje zivoty: \TEM %i\YEL 
+DR_LIFE_CC_NO = Nemas zivoty. Zabi nepriatela pre ziskanie jedneho.
+DR_LIFE_COUNT = Tvoje zivoty: %i.
+DR_LIFE_NO = Nemas zivoty^n!
+Zabi nepriatela pre ziskanie jedneho.
+DR_LIFE_DISABLE = Ziskavanie zivotov vypnute.
+DR_LIFE_RESPAWN = Budes respavnovany o\TEM 3\YEL sekund!
+DR_LIFE_CANT = Mozes byt respavnuty, ale vsetci CT su teraz mrtvi!
+
+DR_BLOCK_SPRAY = Na tomto servery nie su povolene spray loga!
+DR_BLOCK_KILL = Nemozes zabit sam seba!
+
+[sr]
+DR_NOW_TERR = %s\YEL je sada Terrorist.
+DR_STARTING = Igra pocinje za 10 sekundi.
+DR_NO_DETECT = Nema terorista, RESTART.
+DR_NOT_ENOUGH = Nema dovoljno igraca za DeathRun.
+DR_STARTING_CC = Startuje se za\GRN 10\YEL Sekundi !
+
+DR_LIFE_CC_COUNT = Ti imas\TEM %i\YEL zivota..
+DR_LIFE_CC_NO = Ti nemas zivota, ubi nekoga da uzmes jedan!
+DR_LIFE_COUNT = Ti imas %i zivota.
+DR_LIFE_NO = Ti nemas zivota^ potrebno ti je da ubijes nekoga da bi uzeo zivot.
+DR_LIFE_DISABLE = Life sistem je iskljucen.
+DR_LIFE_RESPAWN = Ti ces se oziveti za\TEM 3\YEL sekunde!
+DR_LIFE_CANT = Mogao bi da se ozivis, ali CT team je mrtav.
+
+DR_BLOCK_SPRAY = Sprej/Potpis nije dozvoljen na ovom serveru.
+DR_BLOCK_KILL = Ti se ne mozes ubiti!
+
+[bg]
+DR_NOW_TERR = %s\YEL sega e terorista.
+DR_STARTING = Igrata zapochva sled 10 sekundi.
+DR_NO_DETECT = Nqma terorist, restartirane na igrata.
+DR_NOT_ENOUGH = Nqma dostatachno igrachi, za da zapochne DeathRun!
+DR_STARTING_CC = Igrata zapochva sled\GRN 10\YEL sekundi.
+ 
+DR_LIFE_CC_COUNT = Imash\TEM %i\YEL jivota.
+DR_LIFE_CC_NO = Nqmash jivoti, ubii vrag, za da poluchish edin!
+DR_LIFE_COUNT = Imash %i jivota.
+DR_LIFE_NO = Nqmash jivoti.^nUbii vrag, za da poluchish edin!
+DR_LIFE_DISABLE = Sistemata s jivoti e izkliuchena.
+DR_LIFE_RESPAWN = Shte badesh sajiven sled\TEM 3\YEL sekundi!
+DR_LIFE_CANT = Mojesh da badesh sujiven, no vsichki teroristi sa martvi!
+ 
+DR_BLOCK_SPRAY = Spreq ne e pozvolen v servera!
+DR_BLOCK_KILL = Ne mojesh da se samoubiesh!
+
+[fr]
+DR_NOW_TERR = %s\YEL est transfere en terroriste.
+DR_STARTING = Depart dans 10 secondes.
+DR_NO_DETECT = Pas de terroriste detecte! Restart immediat.
+DR_NOT_ENOUGH = Pas de joueur pour demmarrer la deathrun!
+DR_STARTING_CC = Depart dans\GRN 10\YEL secondes.
+
+DR_LIFE_CC_COUNT = Tu as\TEM %i\YEL vies.
+DR_LIFE_CC_NO = Tu n'as pas de vie, Tue un ennemie pour en avoir une!
+DR_LIFE_COUNT = Tu as %i vies.
+DR_LIFE_NO = Tu n'as pas de vie,^nTue un ennemie pour en avoir une!
+DR_LIFE_DISABLE = Le systeme de vie est actif.
+DR_LIFE_RESPAWN = Tu ressucite dans\TEM 3\YEL secondes!
+DR_LIFE_CANT = Tu ne peux revivre maintenant car tout les CT's sont morts!
+
+DR_BLOCK_SPRAY = Les Tags sont interdits sur ce serveur!
+DR_BLOCK_KILL = Tu ne peux pas te suicider!
+
+[cz]
+DR_NOW_TERR = %s\YEL je nyni terrorista.
+DR_STARTING = Zacina se za 10 sekund.
+DR_NO_DETECT = Zadny terrorista nebyl nalezen, nyni probehne restart.
+DR_NOT_ENOUGH = Neni dostatecne hracu pro start Deathrun-u!
+DR_STARTING_CC = Zacina se za\GRN 10\YEL sekund.
+
+DR_LIFE_CC_COUNT = Mas\TEM %i\YEL zivotu.
+DR_LIFE_CC_NO = Nemas zadne zivoty, zabij nepritele pro ziskani jednoho!
+DR_LIFE_COUNT = Mas %i zivotu.
+DR_LIFE_NO = Nemas zadne zivoty^nzabij nepritele pro ziskani jednoho!
+DR_LIFE_DISABLE = System s zivoty je vypnuty.
+DR_LIFE_RESPAWN = Budes respawnuty za\TEM 3\YEL sekund!
+DR_LIFE_CANT = Mohl by si byt respawnuty, ale vischni CT jsou ted mrtvy!
+
+DR_BLOCK_SPRAY = Spreje nejsou povoleny na tomto serveru!
+DR_BLOCK_KILL = Nemuzes se sam zabit!
+
+[tr]
+DR_NOW_TERR = %s\YEL simdi terrorist.
+DR_STARTING = 10 saniye icinde baslayacak.
+DR_NO_DETECT = Terrorist bulunamad, restart atiliyor.
+DR_NOT_ENOUGH = Deathrun'un baslamasi icin yeterli oyuncu yok!
+DR_STARTING_CC = \GRN 10\YEL saniye icinde baslayacak.
+
+DR_LIFE_CC_COUNT = \TEM %i\YEL yeniden dogma hakkina sahipsin.
+DR_LIFE_CC_NO = Yeniden dogma hakkin yok,bir tane kazanmak icin dusman oldur!
+DR_LIFE_COUNT = %i yeniden dogma hakkina sahipsin.
+DR_LIFE_NO = Yeniden dogma hakkin yok^nBir tane kazanmak icin dusman oldur!
+DR_LIFE_DISABLE = Yeniden dogma sistemi kapali.
+DR_LIFE_RESPAWN = \TEM 3\YEL saniye icinde yeniden dogacaksin!
+DR_LIFE_CANT = Butun CT'ler olu oldugu icin yeniden dogma hakkini kullanamiyorsun!
+
+DR_BLOCK_SPRAY = Bu serverda sprey kullanimi kapatilmis!
+DR_BLOCK_KILL = Kendinizi olduremezsiniz!
+
+[lv]
+DR_NOW_TERR = %s\YEL tagad ir terorists.
+DR_STARTING = Starts 10 sekundees.
+DR_NO_DETECT = Nav teroristu, buus restarts.
+DR_NOT_ENOUGH = Nav pietiekami speeletaaju lai saaktu DeathRun!
+DR_STARTING_CC = Starts\GRN 10\YEL sekundees.
+
+DR_LIFE_CC_COUNT = Tev ir\TEM %i\YEL dziiviibas.
+DR_LIFE_CC_NO = Tev nav dziiviibu, nogalini kaadu!
+DR_LIFE_COUNT = Tev ir %i dziiviibas.
+DR_LIFE_NO = Tev nav dziiviibu^nNogalini pretiniueku lai sanemtu kaadu!
+DR_LIFE_DISABLE = Dziivibu sisteema ir atsleegta.
+DR_LIFE_RESPAWN = Tu atdziivosies\TEM 3\YEL sekundees!
+DR_LIFE_CANT = Tu vareetu atdziivoties, bet visi CT ir mirusi!
+
+DR_BLOCK_SPRAY = Smidizinaatajs nav atlauts saja serverii!
+DR_BLOCK_KILL = Tu nevari sevi nogalinaat!
+
+[et]
+DR_NOW_TERR = %s\YEL on jargmine terrorist!
+DR_STARTING = Deathrun algab 10 sekundi jooksul.
+DR_NO_DETECT = Terroristi pole leitud, toimub restart.
+DR_NOT_ENOUGH = Pole piisavalt mangijaid, et alustada Deathrunni.
+DR_STARTING_CC = Deathrun algab\GRN 10\YEL jooksul.
+
+DR_LIFE_CC_COUNT = Sul on\TEM %i\YEL elu.
+DR_LIFE_CC_NO = Sul ei ole elusi, tapa vaenlasi, et saada neid!
+DR_LIFE_COUNT = Sul on %i elu.
+DR_LIFE_NO = Sul ei ole elusi^nTapa vaenlasi, et saada neid!
+DR_LIFE_DISABLE = Elu susteem keelatud.
+DR_LIFE_RESPAWN = Sa taassunnid\TEM 3\YEL sekundi jooksul!
+DR_LIFE_CANT = Sa oleksid taassundinud aga kqik CT-d on surnud!
+
+DR_BLOCK_SPRAY = Spray on keelatud!
+DR_BLOCK_KILL = Sa ei saa iseennast tappa!
