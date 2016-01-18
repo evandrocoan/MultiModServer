@@ -3232,11 +3232,7 @@ public vote_display( vote_display_task_argument[ 3 ] )
                 }
                 
                 // Added the extension/stay key option (1 << 2 = key 3, 1 << 3 = key 4, ...)
-                if( get_pcvar_num( cvar_extendmapAllowStay )
-                    || g_is_map_extension_allowed )
-                {
-                    keys |= ( 1 << g_totalVoteOptions );
-                }
+                keys |= ( 1 << g_totalVoteOptions );
             }
         }
         
