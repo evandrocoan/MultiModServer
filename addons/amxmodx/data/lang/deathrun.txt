@@ -188,8 +188,7 @@ DR_STARTING_CC = Zaciname o\GRN 10\YEL sekund.
 DR_LIFE_CC_COUNT = Tvoje zivoty: \TEM %i\YEL 
 DR_LIFE_CC_NO = Nemas zivoty. Zabi nepriatela pre ziskanie jedneho.
 DR_LIFE_COUNT = Tvoje zivoty: %i.
-DR_LIFE_NO = Nemas zivoty^n!
-Zabi nepriatela pre ziskanie jedneho.
+DR_LIFE_NO = Nemas zivoty^n!DR_LIFE_NO
 DR_LIFE_DISABLE = Ziskavanie zivotov vypnute.
 DR_LIFE_RESPAWN = Budes respavnovany o\TEM 3\YEL sekund!
 DR_LIFE_CANT = Mozes byt respavnuty, ale vsetci CT su teraz mrtvi!

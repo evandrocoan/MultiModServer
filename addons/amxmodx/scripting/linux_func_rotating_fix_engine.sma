@@ -5,7 +5,7 @@ public plugin_init() {
 	register_plugin("rotate_fix_EN","1.2","NL)Ramon(NL")
 	if(!is_linux_server()) 
 	{
-		set_fail_state("LINUX ONLY")
+		pause("ad")
 		server_print("The func_rotating fix plugin is for linux servers ONLY. Operations aborted.")
 		return PLUGIN_CONTINUE
 	}
