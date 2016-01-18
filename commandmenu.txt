@@ -490,6 +490,14 @@
 			"4" "7 minutes"		"amx_cvar mp_roundtime 7"
 			"4" "9 minutes"		"amx_cvar mp_roundtime 9"
 		}
+		"2" "Buy Time"
+		{
+			"3" "15 seconds"		"amx_cvar mp_buytime 15"
+			"4" "45 seconds"		"amx_cvar mp_buytime 45"
+			"4" "90 seconds"		"amx_cvar mp_buytime 90"
+			"4" "150 seconds"		"amx_cvar mp_buytime 180"
+			"4" "300 seconds"		"amx_cvar mp_buytime 300"
+		}
 	}
 	"1" "Configs Mods"
 	{
