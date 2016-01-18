@@ -2,7 +2,7 @@
 *
 *   Copyleft 2015-2016 @ Addons zz
 *
-*   Plugin Theard: https://forums.alliedmods.net/showthread.php?t=273020
+*   Plugin Thread: https://forums.alliedmods.net/showthread.php?t=273020
 *
 *  This program is free software; you can redistribute it and/or modify it
 *  under the terms of the GNU General Public License as published by the
@@ -25,6 +25,10 @@
 #include <amxmodx>
 #include <amxmisc>
 
+#define LONG_STRING   256
+#define COLOR_MESSAGE 192
+#define SHORT_STRING  64
+
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
  * at the end of this file and the variable 'g_debug_level' for more information.
  * Default value: 0  - which is disabled.
@@ -45,6 +49,25 @@
  * ( 1001111 ) 79 displays all debug levels.
  */
 new g_debug_level = 79
+
+/**
+ * Write debug messages to server's console accordantly to the global variable g_debug_level.
+ *
+ * @param mode the debug mode level, see the variable 'g_debug_level' for the levels.
+ * @param message[] the text formatting rules to display.
+ * @param any the variable number of formatting parameters.
+ */
+stock debugMesssageLogger( mode, message[], any: ... )
+{
+    if( mode & g_debug_level )
+    {
+        static formated_message[ LONG_STRING ]
+        
+        vformat( formated_message, charsmax( formated_message ), message, 3 )
+        
+        server_print( "%s", formated_message         )
+    }
+}
 #else
     #define DEBUG_LOGGER(%1) //
 #endif
@@ -55,10 +78,6 @@ new g_debug_level = 79
 #define TASK_VOTEMOD      2487002
 #define TASK_CHVOMOD      2487004
 #define TASKIS_PRINT_HELP 648215
-
-#define LONG_STRING   256
-#define COLOR_MESSAGE 192
-#define SHORT_STRING  64
 
 /**
  * The client console lines number to print when is showed the help command.
@@ -142,15 +161,15 @@ new g_helpamx_setmod[ SHORT_STRING ] = "help 1  | for help."
 new g_helpamx_setmods[ 128 ]         = "shortModName <1 or 0> to restart or not  \
 | Enable/Disable any mod, loaded or not ( silent mod ). "
 
-new g_cmdsAvailables[][ SHORT_STRING ] =
+new g_cmdsAvailables[][ 72 ] =
 {
-    "^namx_setmod help       | To show this help.",
-    "amx_setmod disable 1    | To deactivate any active Mod.",
-    "amx_votemod             | To force a votemod.",
-    "say_team nextmod        | To see which is the next mod.",
-    "say currentmod          | To see which is the current mod.",
-    "say votemod             | To try start a vote mod.",
-    "say_team votemod        | To try start a vote mod."
+    "^namx_setmod help 1                | To show this help.",
+    "amx_setmod disable 1             | To deactivate any active Mod.",
+    "amx_votemod                      | To force a votemod.",
+    "say_team nextmod                 | To see which is the next mod.",
+    "say currentmod                   | To see which is the current mod.",
+    "say votemod                      | To try start a vote mod.",
+    "say_team votemod                 | To try start a vote mod."
 }
 
 /**
@@ -378,6 +397,8 @@ public primitiveFunctions( player_id, firstCommand_lineArgument[], isTimeToResta
  */
 public printHelp( player_id )
 {
+    static formatted_string[32]
+
     if( player_id )
     {
         player_id = player_id - TASKIS_PRINT_HELP
@@ -428,11 +449,12 @@ public printHelp( player_id )
                 ArrayGetString( g_mod_names, i, g_mod_name_temp, charsmax( g_mod_name_temp ) )
                 ArrayGetString( g_mod_shortNames, i, g_mod_short_name_temp, charsmax( g_mod_short_name_temp ) )
                 
-                client_print( player_id, print_console, "amx_setmod %s 1          | to use %s",
-                        g_mod_short_name_temp, g_mod_name_temp )
+                formatex( formatted_string, charsmax( formatted_string ), "%s 1", g_mod_short_name_temp )
                 
-                DEBUG_LOGGER( 1, "amx_setmod %s 1          | to use %s", \
-                        g_mod_short_name_temp, g_mod_name_temp )
+                client_print( player_id, print_console, "amx_setmod %-22s| to use %s", formatted_string,
+                        g_mod_name_temp )
+                
+                DEBUG_LOGGER( 1, "amx_setmod %-22s| to use %s", formatted_string, g_mod_name_temp )
                 
                 if( internal_current_page_limit++ >= ( LINES_PER_PAGE - 1 )
                     && i < g_modCounter )
@@ -461,7 +483,8 @@ public printHelp( player_id )
             ArrayGetString( g_mod_names, i, g_mod_name_temp, charsmax( g_mod_name_temp ) )
             ArrayGetString( g_mod_shortNames, i, g_mod_short_name_temp, charsmax( g_mod_short_name_temp ) )
             
-            server_print( "amx_setmod %s 1          | to use %s", g_mod_short_name_temp, g_mod_name_temp )
+            formatex( formatted_string, charsmax( formatted_string ), "%s 1", g_mod_short_name_temp )
+            server_print( "amx_setmod %-22s| to use %s", formatted_string, g_mod_name_temp )
         }
         
         server_print( "^n" )
@@ -1901,23 +1924,4 @@ stock register_dictionary_colored( const filename[] )
     
     fclose( fp );
     return 1;
-}
-
-/**
- * Write debug messages to server's console accordantly to the global variable g_debug_level.
- *
- * @param mode the debug mode level, see the variable 'g_debug_level' for the levels.
- * @param message[] the text formatting rules to display.
- * @param any the variable number of formatting parameters.
- */
-stock debugMesssageLogger( mode, message[], any: ... )
-{
-    if( mode & g_debug_level )
-    {
-        static formated_message[ LONG_STRING ]
-        
-        vformat( formated_message, charsmax( formated_message ), message, 3 )
-        
-        server_print( "%s", formated_message         )
-    }
 }
