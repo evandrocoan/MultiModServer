@@ -12,6 +12,8 @@
 #include <amxmodx>
 #include <amxmisc>
 
+#define STRING_SIZE 256
+
 public plugin_init()
 {
 	register_plugin("[AMXX] Settings API", "1.0", "MeRcyLeZZ")
@@ -136,7 +138,7 @@ public native_load_setting_string(plugin_id, num_params)
 	}
 	
 	// Return string by reference
-	new value[128]
+	new value[STRING_SIZE]
 	SeekReturnValues(file, keypos_start, value, charsmax(value))
 	set_string(4, value, get_param(5))
 	
@@ -284,7 +286,7 @@ public native_save_setting_string(plugin_id, num_params)
 		return false;
 	
 	// Get string
-	new string[128]
+	new string[STRING_SIZE]
 	get_string(4, string, charsmax(string))
 	
 	// Open file for read
@@ -997,7 +999,7 @@ WriteKeyValueArrayString(file, setting_key[], Array:array_handle)
 FormatKeyValueArrayString(linedata[], len1, setting_key[], Array:array_handle)
 {
 	// Format key
-	new index, current_value[128]
+	new index, current_value[STRING_SIZE]
 	formatex(linedata, len1, "%s =", setting_key)
 	
 	// First value, append to linedata with no commas
@@ -1030,7 +1032,7 @@ SeekReturnValues(file, keypos_start, values[], len1)
 ParseValuesArrayString(values[], len1, Array:array_handle)
 {
 	// Parse values
-	new current_value[128]
+	new current_value[STRING_SIZE]
 	while (values[0] != 0 && strtok(values, current_value, charsmax(current_value), values, len1, ','))
 	{
 		// Trim spaces

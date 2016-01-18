@@ -90,6 +90,78 @@
         ]
     },
     {
+        "name"        : "m_iNumTerrorist",
+        "type"        : "int",
+        "memoryType"  : "data",
+        "identifiers" : 
+        [
+            {
+                "os"    : "windows",
+                "mod"   : "cstrike",
+                "value" : 84
+            },
+            {
+                "os"    : "linux",
+                "mod"   : "cstrike",
+                "value" : 76
+            }
+        ]
+    },
+    {
+        "name"        : "m_iNumCT",
+        "type"        : "int",
+        "memoryType"  : "data",
+        "identifiers" : 
+        [
+            {
+                "os"    : "windows",
+                "mod"   : "cstrike",
+                "value" : 88
+            },
+            {
+                "os"    : "linux",
+                "mod"   : "cstrike",
+                "value" : 80
+            }
+        ]
+    },
+    {
+        "name"        : "m_iNumSpawnableTerrorist",
+        "type"        : "int",
+        "memoryType"  : "data",
+        "identifiers" : 
+        [
+            {
+                "os"    : "windows",
+                "mod"   : "cstrike",
+                "value" : 92
+            },
+            {
+                "os"    : "linux",
+                "mod"   : "cstrike",
+                "value" : 84
+            }
+        ]
+    },
+    {
+        "name"        : "m_iNumSpawnableCT",
+        "type"        : "int",
+        "memoryType"  : "data",
+        "identifiers" : 
+        [
+            {
+                "os"    : "windows",
+                "mod"   : "cstrike",
+                "value" : 96
+            },
+            {
+                "os"    : "linux",
+                "mod"   : "cstrike",
+                "value" : 88
+            }
+        ]
+    },
+    {
         "name"        : "m_iNumSpawnableTerrorist",
         "type"        : "int",
         "memoryType"  : "data",
@@ -324,6 +396,24 @@
         ]
     }, 
     {
+        "name"        : "m_bCompleteReset",
+        "type"        : "byte",
+        "memoryType"  : "data",
+        "identifiers" : 
+        [
+            {
+                "os"    : "windows",
+                "mod"   : "cstrike",
+                "value" : 170
+            },
+            {
+                "os"    : "linux",
+                "mod"   : "cstrike",
+                "value" : 162
+            }
+        ]
+    },
+    {
         "name"        : "m_bRoundTerminating",
         "type"        : "byte",
         "memoryType"  : "data",
@@ -410,6 +500,42 @@
                 "os"    : "linux",
                 "mod"   : "cstrike",
                 "value" : 644
+            }
+        ]
+    },
+    {
+        "name"        : "m_bFirstConnected",
+        "type"        : "int",
+        "memoryType"  : "data",
+        "identifiers" : 
+        [
+            {
+                "os"    : "windows",
+                "mod"   : "cstrike",
+                "value" : 692
+            },
+            {
+                "os"    : "linux",
+                "mod"   : "cstrike",
+                "value" : 684
+            }
+        ]
+    },
+	{
+        "name"        : "m_bSkipSpawn",
+        "type"        : "byte",
+        "memoryType"  : "data",
+        "identifiers" : 
+        [
+            {
+                "os"    : "windows",
+                "mod"   : "cstrike",
+                "value" : 704
+            },
+            {
+                "os"    : "linux",
+                "mod"   : "cstrike",
+                "value" : 703
             }
         ]
     }
