@@ -263,7 +263,7 @@ amx_tsay cyan GUN-GAME will be activated at next server restart!!!!
 amx_tsay ocean GUN-GAME will be activated at next server restart!!!!
 
 //amx_countdown 5 restart
-exec addons/amxmodx/configs/multimod/votefinished.cfg
+exec addons/amxmodx/configs/multimod/votingfinished.cfg
 5. The file (opcional) "yourgamemod/mapcycles/gungame.txt" contains the mapcycle used when 
 gungame mod is active.
 
@@ -521,7 +521,7 @@ public plugin_cfg()
             "%s/multimod/voting_list.ini", g_configFolder )
 
     formatex( g_votingFinished_filePath, charsmax(g_votingFinished_filePath), 
-            "%s/multimod/votefinished.cfg", g_configFolder )
+            "%s/multimod/votingfinished.cfg", g_configFolder )
 
     switchMapManager()
 
