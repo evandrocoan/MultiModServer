@@ -161,15 +161,15 @@ new g_helpamx_setmod[ SHORT_STRING ] = "help 1  | for help."
 new g_helpamx_setmods[ 128 ]         = "shortModName <1 or 0> to restart or not  \
 | Enable/Disable any mod, loaded or not ( silent mod ). "
 
-new g_cmdsAvailables[][ SHORT_STRING ] =
+new g_cmdsAvailables[][ 72 ] =
 {
-    "^namx_setmod help       | To show this help.",
-    "amx_setmod disable 1    | To deactivate any active Mod.",
-    "amx_votemod             | To force a votemod.",
-    "say_team nextmod        | To see which is the next mod.",
-    "say currentmod          | To see which is the current mod.",
-    "say votemod             | To try start a vote mod.",
-    "say_team votemod        | To try start a vote mod."
+    "^namx_setmod help 1                | To show this help.",
+    "amx_setmod disable 1             | To deactivate any active Mod.",
+    "amx_votemod                      | To force a votemod.",
+    "say_team nextmod                 | To see which is the next mod.",
+    "say currentmod                   | To see which is the current mod.",
+    "say votemod                      | To try start a vote mod.",
+    "say_team votemod                 | To try start a vote mod."
 }
 
 /**
@@ -397,6 +397,8 @@ public primitiveFunctions( player_id, firstCommand_lineArgument[], isTimeToResta
  */
 public printHelp( player_id )
 {
+    static formatted_string[32]
+
     if( player_id )
     {
         player_id = player_id - TASKIS_PRINT_HELP
@@ -447,11 +449,12 @@ public printHelp( player_id )
                 ArrayGetString( g_mod_names, i, g_mod_name_temp, charsmax( g_mod_name_temp ) )
                 ArrayGetString( g_mod_shortNames, i, g_mod_short_name_temp, charsmax( g_mod_short_name_temp ) )
                 
-                client_print( player_id, print_console, "amx_setmod %s 1          | to use %s",
-                        g_mod_short_name_temp, g_mod_name_temp )
+                formatex( formatted_string, charsmax( formatted_string ), "%s 1", g_mod_short_name_temp )
                 
-                DEBUG_LOGGER( 1, "amx_setmod %s 1          | to use %s", \
-                        g_mod_short_name_temp, g_mod_name_temp )
+                client_print( player_id, print_console, "amx_setmod %-22s| to use %s", formatted_string,
+                        g_mod_name_temp )
+                
+                DEBUG_LOGGER( 1, "amx_setmod %-22s| to use %s", formatted_string, g_mod_name_temp )
                 
                 if( internal_current_page_limit++ >= ( LINES_PER_PAGE - 1 )
                     && i < g_modCounter )
@@ -480,7 +483,8 @@ public printHelp( player_id )
             ArrayGetString( g_mod_names, i, g_mod_name_temp, charsmax( g_mod_name_temp ) )
             ArrayGetString( g_mod_shortNames, i, g_mod_short_name_temp, charsmax( g_mod_short_name_temp ) )
             
-            server_print( "amx_setmod %s 1          | to use %s", g_mod_short_name_temp, g_mod_name_temp )
+            formatex( formatted_string, charsmax( formatted_string ), "%s 1", g_mod_short_name_temp )
+            server_print( "amx_setmod %-22s| to use %s", formatted_string, g_mod_name_temp )
         }
         
         server_print( "^n" )
