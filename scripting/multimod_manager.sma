@@ -30,7 +30,7 @@
 #define SHORT_STRING  64
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
- * at the end of this file and the variable 'g_debug_level' for more information.
+ * and the variable 'g_debug_level' for more information.
  * Default value: 0  - which is disabled.
  */
 #define IS_DEBUG_ENABLED 0

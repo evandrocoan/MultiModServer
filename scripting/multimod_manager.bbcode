@@ -294,20 +294,21 @@ exec addons/amxmodx/configs/multimod/votingfinished.cfg
 [COLOR="Blue"]gungame mod[/COLOR]  is active.
 
 ******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *********************************
- * Create a new folder called cvars, to list the cvars to autosave to the latecfg file name.
+ * Create a new folder called cvars, to list the cvars to autosave to the latecfg file name. An give an option to autodetect the changed cvars from the './multimod/cfg' folder.
+ * Create a option to automatically create a file at '.configs/maps' folder, to autoload a mod on its maps types, as deathrun on deathrun_/zm_ prefixes maps names. To do this, add at the voting_list, a last parameter specifing the map_prefix where that mod must be autoloaded.
 
 ******************************** [anchor]Change[/anchor][B][SIZE="5"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] ***********************
-[QUOTE]
+[CODE]
 2015-10-10 | v1.0-release_candidate1
- * Initial release candidate. 
+ * Initial release candidate.
 
 2015-10-10 | v1.0-release_candidate1.hotfix1
- * Add exception handle when the currentmod_id.ini or currentmod_shortname.ini is not found. 
+ * Add exception handle when the currentmod_id.ini or currentmod_shortname.ini is not found.
 
 2015-10-12 | v1.0-release_candidate2
- * Removed unused function get_firstmap() and variable g_nextmap. 
- * Replaced unnecessary functions configMapManager and configDailyMaps. 
- * Removed unnecessary MULTIMOD_MAPCHOOSER compiler constant. 
+ * Removed unused function get_firstmap() and variable g_nextmap.
+ * Replaced unnecessary functions configMapManager and configDailyMaps.
+ * Removed unnecessary MULTIMOD_MAPCHOOSER compiler constant.
  * Added to multimod_daily_changer.sma compatibility with Galileo.
 
 2015-10-13 | v1.0-release_candidate2.hotfix1
@@ -317,25 +318,25 @@ exec addons/amxmodx/configs/multimod/votingfinished.cfg
  * Added missing MM_CHOOSE line at multilingual file.
 
 2015-10-19 | v1.0-release_candidate2.hotfix3
- * Translated to english lost code variables. 
- * Replaced a implemented switch by a native switch. 
- * Replaced another implemented switch by a native switch. 
- * Improved variables names meaningful. 
+ * Translated to english lost code variables.
+ * Replaced a implemented switch by a native switch.
+ * Replaced another implemented switch by a native switch.
+ * Improved variables names meaningful.
 
 2015-10-21 | v1.0-release_candidate2.hotfix4
- * Fixed mapcycle not setting when a mod was activated by command line or voting.  
+ * Fixed mapcycle not setting when a mod was activated by command line or voting.
 
 2015-10-25 | v1.1-alpha1
- * Added late configuration file execution to built-in AMXX per map configurations. 
- * Added to restaure the first mapcycle used. 
- * Improved code clearness. 
- * Added path coders to every multi-generated string. 
- * Added immutable strings paths as global variables. 
- * Removed passing an integer value to a function by string. 
- * Removed unnecessary variables like g_messageFileNames and g_pluginsFileNames. 
+ * Added late configuration file execution to built-in AMXX per map configurations.
+ * Added to restaure the first mapcycle used.
+ * Improved code clearness.
+ * Added path coders to every multi-generated string.
+ * Added immutable strings paths as global variables.
+ * Removed passing an integer value to a function by string.
+ * Removed unnecessary variables like g_messageFileNames and g_pluginsFileNames.
 
 2015-10-30 | v1.1-alpha1.hotfix1
- * Fixed the mod map cycle not changing. 
+ * Fixed the mod map cycle not changing.
 
 2016-01-16 | v1.1-release_candidate1
  * Replaced wrong color chat system with correct one.
@@ -346,9 +347,7 @@ exec addons/amxmodx/configs/multimod/votingfinished.cfg
  * Fixed printing info to the client in a for loop can cause an overflow.
  * Implemented dynamic arrays, to have unlimited models.
  * Fixed bug, where was enabled to set a invalid mapcycle.
-[/QUOTE]
-
-******************************** [anchor]Credits[/anchor][B][SIZE="5"][COLOR="blue"]Credits[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *******************************
+[/CODE]******************************** [anchor]Credits[/anchor][B][SIZE="5"][COLOR="blue"]Credits[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *******************************
 [B]fysiks[/B]: The first to realize the idea of "multimod.sma" and various code improvements. 
 [B]joropito[/B]: The idea/program developer of "[URL="https://forums.alliedmods.net/showthread.php?t=95568"]multimod.sma[/URL]". 
 [B]crazyeffect[/B]: Colaborate with multilangual support of "multimod.sma". 
