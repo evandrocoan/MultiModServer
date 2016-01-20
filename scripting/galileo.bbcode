@@ -49,14 +49,12 @@ designed, coded and tested through one or more beta cycles with no known show st
 This is a feature rich map voting plugin.  It's intended to be used in place of any other map choosing plugin 
 such as the original [B]Galileo[/B], [B]Deagles' Map Manager[/B] and AMXX's very own [B]Map Chooser[/B].
 
-[SIZE="4"]Basic differences between the [COLOR="Red"]Galileo 1.1.290[/COLOR] and [COLOR="Red"]Galileo 1.2[/COLOR][/SIZE] 
-
 [B]The Galileo 1.2 can:[/B]
 [LIST=1]
 [*]configure to display colored text messages.
-[*]configure to always show the option "Keep Current Map" at any voting.
+[*]configure to always show the option "Stay Here" at any voting.
 [*]configure to always show the countdown remaining vote time.
-[*]manage RunOff vote between a map and "Keep Current Map".
+[*]manage RunOff vote between a map and "Stay Here".
 [*]change the time limit to zero.
 [*]manage/start end map vote with mp_maxrounds, mp_winlimit or mp_timelimit.
 [*]configure to use the current mapcycle to nominate maps.
@@ -71,18 +69,6 @@ such as the original [B]Galileo[/B], [B]Deagles' Map Manager[/B] and AMXX's very
 [*]configure to show the recent maps are displayed as a menu.
 [*]configure to always see the currently vote progress.
 [*]configure to always shows the voting option "None".
-[/LIST]
-[B]The Galileo 1.1.290 cannot:[/B]
-[LIST=1]
-[*]configure to always show the option "Keep Current Map" at any voting.
-[*]configure to always show the countdown remaining vote time.
-[*]configure to manage RunOff vote between a map and "Keep Current Map".
-[*]change the time limit to zero.
-[*]configure to display colored text messages.
-[*]nominate maps by a map list menu.
-[*]manage/start end map vote with mp_maxrounds, mp_winlimit or mp_timelimit.
-[*]configure to use the current mapcycle to nominate maps.
-[*]configure to keep the initial server next map when nobody vote for next map.
 [/LIST]
 It is [COLOR="Red"][B]highly recommended[/B][/COLOR] you to review the well-commented "[B]galileo.cfg[/B]" to see all the cvars' options
 you have with this plugin.  It's located in the [B]Attached ZIP[/B] available at the [goanchor=Downloads]Downloads[/goanchor] section, and [B]here below[/B]:
@@ -196,6 +182,7 @@ galileo.amxx
 ******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] *********************************
 
 ******************************** [anchor]Change[/anchor][B][SIZE="5"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
+[CODE]
 2015-10-10 | v1.2-alpha1 
  * Fixed server restart after change timelimit to 0. 
  * Fixed server timelimit re-change after change it to 0. 
@@ -215,7 +202,7 @@ galileo.amxx
 
 2015-10-14 | v1.2-alpha2 
  * Fixed broken re-opt (RunOff) vote. 
- * Fixed automatic changelevel at normal vote map, after a successful keep current map wins. 
+ * Fixed automatic changelevel at normal vote map, after a successful 'Stay Here' option wins. 
  * Improved code readability and added some new code documentation. 
  * Removed weighted votes that allows admins to have their vote counted more. 
  * Removed cvar to specifies the maximum number of minutes a map can be played. 
@@ -250,7 +237,7 @@ galileo.amxx
 2016-01-17 | v1.2-release_candidate1
  * Add an option to 'gal_vote_showstatus', to always the vote progress to a player.
  * Fix bug where runoff show a third option, Extend Current Map.
- * Add a cvar 'amx_extendmap_allow_stay' to keep current map featuare disabled.
+ * Add a cvar 'amx_extendmap_allow_stay' to keep 'Stay Here' featuare disabled.
  * Added a new cvar to disable the colored chat.
  * Fixed 'gal_startvote' [-restart] argument not working.
  * Fixed showing that the player chose extend map, instead of stay on map.
@@ -272,8 +259,7 @@ galileo.amxx
  * Fixed remainning time showing 0 seconds instead of 'vote has ended'.
  * Added new cvar 'gal_vote_show_none_type', to control the 'None' option should behavior when it is active.
  * Fixed 'gal_vote_showstatus' option 2, causing the voting to show the countdown timer freezed.
-
-Compilations data comparisons at the Amx Mod X "1.8.3-dev+4964" between:
+[/CODE]Compilations data comparisons at the Amx Mod X "1.8.3-dev+4964" between:
 [LIST=1]
 [*]Deagles' Map Manager v3.25Beta - [COLOR="Blue"]deagsmapmanager.sma[/COLOR], by DynamicBits: [url]https://forums.alliedmods.net/showthread.php?t=177180[/url]
 [*]DeRoiD's Mapchooser v2.33 - [COLOR="blue"]dmc233.sma[/COLOR], by DeRoiD: [url]https://forums.alliedmods.net/showthread.php?t=261412[/url]
@@ -297,7 +283,7 @@ Stack/heap size:     16.384 bytes       16.384 bytes        +0.0 bytes
 Total requirements: 131.256 bytes      145.768 bytes     +14.512 bytes
 Compilation Time:      0,45 sec          0,59 sec          +0,14 sec  
 [/PAWN]Source Data:[SPOILER] 
-[PAWN]
+[CODE]
 //AMXXPC compile.exe
 // by the AMX Mod X Dev Team
 
@@ -378,7 +364,7 @@ Compilation Time:      0,45 sec          0,59 sec          +0,14 sec
 // ----------------------------------------
 
 Press enter to exit ...
-[/PAWN]
+[/CODE]
 [/SPOILER]******************************** [anchor]Credits[/anchor][B][SIZE="5"][COLOR="blue"]Credits[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] *******************************
 [B]Brad[/B]: The Original Galileo developer.
 [B]Addons zz[/B]: The Galileo 1.2 developer.
