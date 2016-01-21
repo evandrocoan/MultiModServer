@@ -127,6 +127,8 @@
 
 #define PLAYER_MODELS // Enable Player Models
 
+#define MAIN_HUD_MESSAGE_POSITION -1.0, 0.25
+
 // CS Player PData Offsets (win32)
 const PDATA_SAFE = 2
 const OFFSET_CSMENUCODE = 205
@@ -2081,28 +2083,28 @@ public dbz_loop(id)
 		
 				else if (g_power[2][id] >= g_energy_level[0] && g_power[2][id] < g_energy_level[1] && g_power[0][id] < 1) {
 					args[1] = 5
-					set_hudmessage(255, 255, 100, -1.0, 0.10, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(255, 255, 100, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Goku] %L", id, "TURNED_SUPER_SAYAN")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/goku_powerup1.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[0][id] = 1
 				}
 				else if (g_power[2][id] >= g_energy_level[1] && g_power[2][id] < g_energy_level[2] && g_power[0][id] < 2) {
 					args[1] = 7
-					set_hudmessage(222, 226, 0, -1.0, 0.10, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(222, 226, 0, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Goku] %L 2", id, "TURNED_SUPER_SAYAN")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/goku_powerup2.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[0][id] = 2
 				}
 				else if (g_power[2][id] >= g_energy_level[2] && g_power[2][id] < g_energy_level[3] && g_power[0][id] < 3) {
 					args[1] = 9
-					set_hudmessage(248, 220, 117, -1.0, 0.10, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(248, 220, 117, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Goku] %L 3", id, "TURNED_SUPER_SAYAN")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/goku_powerup3.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[0][id] = 3
 				}
 				else if (g_power[2][id] >= g_energy_level[3] && g_power[2][id] < g_energy_level[4] && g_power[0][id] < 4) {
 					args[1] = 11
-					set_hudmessage(196, 0, 0, -1.0, 0.10, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(196, 0, 0, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Goku] %L 4", id, "TURNED_SUPER_SAYAN")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/goku_powerup4.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[0][id] = 4
@@ -2110,7 +2112,7 @@ public dbz_loop(id)
 				
 				else if (g_power[2][id] >= g_energy_level[4] && g_power[0][id] < 5) {
 					args[1] = 20
-					set_hudmessage(255, 255, 255, -1.0, 0.10, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(255, 255, 255, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(0, "[Goku] %L 5", LANG_PLAYER, "MAX_TURNED_SUPER_SAYAN", name)
 					emit_sound(id, CHAN_STATIC, "dbz_mod/goku_powerup5.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[0][id] = 5
@@ -2126,28 +2128,28 @@ public dbz_loop(id)
 				
 				else if (g_power[2][id] >= g_energy_level[0] && g_power[2][id] < g_energy_level[1] && g_power[0][id] < 1) {
 					args[1] = 5
-					set_hudmessage(255, 255, 100, -1.0, 0.10, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(255, 255, 100, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Vegeta] %L", id, "TURNED_SUPER_SAYAN")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/vegeta_powerup1.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[0][id] = 1
 				}
 				else if (g_power[2][id] >= g_energy_level[1] && g_power[2][id] < g_energy_level[2] && g_power[0][id] < 2) {
 					args[1] = 7
-					set_hudmessage(222, 226, 0, -1.0, 0.10, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(222, 226, 0, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Vegeta] %L 2", id, "TURNED_SUPER_SAYAN")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/vegeta_powerup2.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[0][id] = 2
 				}
 				else if (g_power[2][id] >= g_energy_level[2] && g_power[2][id] < g_energy_level[3] && g_power[0][id] < 3) {
 					args[1] = 9
-					set_hudmessage(248, 220, 117, -1.0, 0.10, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(248, 220, 117, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Vegeta] %L 3", id, "TURNED_SUPER_SAYAN")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/vegeta_powerup3.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[0][id] = 3
 				}
 				else if (g_power[2][id] >= g_energy_level[3] && g_power[0][id] < 4) {
 					args[1] = 11
-					set_hudmessage(196, 0, 0, -1.0, 0.10, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(196, 0, 0, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(0, "[Vegeta] %L 4", LANG_PLAYER, "MAX_TURNED_SUPER_SAYAN", name)
 					emit_sound(id, CHAN_STATIC, "dbz_mod/vegeta_powerup4.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[0][id] = 4
@@ -2169,14 +2171,14 @@ public dbz_loop(id)
 				}
 				else if (g_power[2][id] >= g_energy_level[1] && g_power[2][id] < g_energy_level[2] && g_power[0][id] < 2) {
 					args[1] = 7
-					set_hudmessage(222, 226, 0, -1.0, 0.10, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(222, 226, 0, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Gohan] %L", id, "TURNED_SUPER_SAYAN")
 					g_power[0][id] = 2
 					emit_sound(id, CHAN_STATIC, "dbz_mod/gohan_powerup2.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 				}
 				else if (g_power[2][id] >= g_energy_level[2] && g_power[0][id] < 3) {
 					args[1] = 11
-					set_hudmessage(248, 220, 117, -1.0, 0.10, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(248, 220, 117, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(0, "[Gohan] %L 2", LANG_PLAYER, "MAX_TURNED_SUPER_SAYAN", name)
 					g_power[0][id] = 3
 					emit_sound(id, CHAN_STATIC, "dbz_mod/gohan_powerup3.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
@@ -2247,28 +2249,28 @@ public dbz_loop(id)
 
 				else if (g_power[2][id] >= g_energy_level[0] && g_power[2][id] < g_energy_level[1] && g_power[0][id] < 1) {
 					args[1] = 5
-					set_hudmessage(255, 0, 255, -1.0, 0.10, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(255, 0, 255, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Frieza] %L", id, "FRIEZA_TRANSFORM_1")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/frieza_powerup1.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[0][id] = 1
 				}
 				else if (g_power[2][id] >= g_energy_level[1] && g_power[2][id] < g_energy_level[2] && g_power[0][id] < 2) {
 					args[1] = 7
-					set_hudmessage(255, 0, 255, -1.0, 0.10, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(255, 0, 255, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Frieza] %L", id, "FRIEZA_TRANSFORM_2")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/frieza_powerup2.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[0][id] = 2
 				}
 				else if (g_power[2][id] >= g_energy_level[2] && g_power[2][id] < g_energy_level[3] && g_power[0][id] < 3) {
 					args[1] = 9
-					set_hudmessage(255, 0, 255, -1.0, 0.10, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(255, 0, 255, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Frieza] %L", id, "FRIEZA_TRANSFORM_3")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/frieza_powerup3.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[0][id] = 3
 				}
 				else if (g_power[2][id] >= g_energy_level[3] && g_power[0][id] < 4) {
 					args[1] = 11
-					set_hudmessage(255, 0, 255, -1.0, 0.10, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(255, 0, 255, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(0, "[Frieza] %L", LANG_PLAYER, "FRIEZA_TRANSFORM_4", name)
 					emit_sound(id, CHAN_STATIC, "dbz_mod/frieza_powerup4.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[0][id] = 4
@@ -2283,21 +2285,21 @@ public dbz_loop(id)
 
 				else if (g_power[2][id] >= g_energy_level[0] && g_power[2][id] < g_energy_level[1] && g_power[0][id] < 1) {
 					args[1] = 5
-					set_hudmessage(0, 255, 0, -1.0, 0.10, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(0, 255, 0, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Cell] %L", id, "CELL_TRANSFORM_1")
 					g_power[0][id] = 1
 					emit_sound(id, CHAN_STATIC, "dbz_mod/cell_powerup1.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 				}
 				else if (g_power[2][id] >= g_energy_level[1] && g_power[2][id] < g_energy_level[2] && g_power[0][id] < 2) {
 					args[1] = 7
-					set_hudmessage(0, 255, 0, -1.0, 0.10, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(0, 255, 0, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Cell] %L", id, "CELL_TRANSFORM_2")
 					g_power[0][id] = 2
 					emit_sound(id, CHAN_STATIC, "dbz_mod/cell_powerup2.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 				}
 				else if (g_power[2][id] >= g_energy_level[2] && g_power[0][id] < 3) {
 					args[1] = 9
-					set_hudmessage(0, 255, 0, -1.0, 0.10, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(0, 255, 0, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(0, "[Cell] %L", LANG_PLAYER, "CELL_TRANSFORM_3", name)
 					g_power[0][id] = 3
 					emit_sound(id, CHAN_STATIC, "dbz_mod/cell_powerup3.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
@@ -2314,28 +2316,28 @@ public dbz_loop(id)
 				{
 					args[1] = 7
 					emit_sound(id, CHAN_STATIC, "dbz_mod/superbuu_powerup1_fix.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
-					set_hudmessage(0, 255, 0, -1.0, 0.10, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(0, 255, 0, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Superbuu] %L", id, "SUPER_BUU_TRASNFORM")
 					g_power[0][id] = 1
 				}
 				else if (g_power[2][id] >= g_energy_level[1] && g_power[2][id] < g_energy_level[2] && g_power[0][id] < 2) 
 				{
 					args[1] = 11
-					set_hudmessage(255, 165, 0, -1.0, 0.10, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(255, 165, 0, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Superbuu] %L 2", id, "SUPER_BUU_TRASNFORM")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/superbuu_powerup2.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[0][id] = 2
 				}
 				else if (g_power[2][id] >= g_energy_level[2] && g_power[2][id] < g_energy_level[3] && g_power[0][id] < 3) {
 					args[1] = 15
-					set_hudmessage(0, 255, 255, -1.0, 0.10, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(0, 255, 255, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Superbuu] %L 3", id, "SUPER_BUU_TRASNFORM")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/superbuu_powerup3.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[0][id] = 3
 				}
 				else if (g_power[2][id] >= g_energy_level[3] && g_power[0][id] < 4) {
 					args[1] = 20
-					set_hudmessage(255, 165, 0, -1.0, 0.10, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(255, 165, 0, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					emit_sound(id, CHAN_STATIC, "dbz_mod/superbuu_powerup3.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					show_hudmessage(id, "[Superbuu] %L 4", id, "SUPER_BUU_TRASNFORM")
 					g_power[0][id] = 4
@@ -2350,28 +2352,28 @@ public dbz_loop(id)
 				
 				if (g_power[2][id] >= g_energy_level[0] && g_power[2][id] < g_energy_level[1] && g_power[0][id] < 1) {
 					args[1] = 7
-					set_hudmessage(0, 255, 0, -1.0, 0.10, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(0, 255, 0, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Broly] %L", id, "TURNED_SUPER_SAYAN")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/broly_powerup1.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[0][id] = 1
 				}
 				else if (g_power[2][id] >= g_energy_level[1] && g_power[2][id] < g_energy_level[2] && g_power[0][id] < 2) {
 					args[1] = 9
-					set_hudmessage(255, 165, 0, -1.0, 0.10, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(255, 165, 0, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Broly] %L 2", id, "TURNED_SUPER_SAYAN")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/broly_powerup3.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[0][id] = 2
 				}
 				else if (g_power[2][id] >= g_energy_level[2] && g_power[2][id] < g_energy_level[3] && g_power[0][id] < 3) {
 					args[1] = 11
-					set_hudmessage(0, 255, 255, -1.0, 0.10, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(0, 255, 255, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Broly] %L 3", id, "TURNED_SUPER_SAYAN")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/broly_powerup2.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
 					g_power[0][id] = 3
 				}
 				else if (g_power[2][id] >= g_energy_level[3] && g_power[0][id] < 4) {
 					args[1] = 20
-					set_hudmessage(255, 165, 0, -1.0, 0.10, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(255, 165, 0, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(0, "[Broly] %L 4", LANG_PLAYER, "MAX_TURNED_SUPER_SAYAN", name)
 					emit_sound(id, CHAN_STATIC, "dbz_mod/broly_powerup4.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)         
 					g_power[0][id] = 4
@@ -2386,19 +2388,19 @@ public dbz_loop(id)
 
 				else if (g_power[2][id] >= g_energy_level[0] && g_power[2][id] < g_energy_level[1] && g_power[0][id] < 1) {
 					args[1] = 5
-					set_hudmessage(255, 69, 0, -1.0, 0.10, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(255, 69, 0, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Omega Sheron] %L", id, "OMEGA_SHERON_TRANSFORM_1")
 					g_power[0][id] = 1
 				}
 				else if (g_power[2][id] >= g_energy_level[1] && g_power[2][id] < g_energy_level[2] && g_power[0][id] < 2) {
 					args[1] = 10
-					set_hudmessage(255, 69, 0, -1.0, 0.10, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(255, 69, 0, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Omega Sheron] %L", id, "OMEGA_SHERON_TRANSFORM_2")
 					g_power[0][id] = 2
 				}
 				else if (g_power[2][id] >= g_energy_level[2] && g_power[0][id] < 3) {
 					args[1] = 20
-					set_hudmessage(255, 69, 0, -1.0, 0.10, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(255, 69, 0, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(0, "[Omega Sheron] %L", LANG_PLAYER, "OMEGA_SHERON_TRANSFORM_3", name)
 					g_power[0][id] = 3
 				}
