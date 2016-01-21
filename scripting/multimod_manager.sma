@@ -20,7 +20,7 @@
 ***************************************************************************************
 */
 
-#define VERSION "1.1-rc1"
+#define VERSION "1.1-rc1.1"
 
 #include <amxmodx>
 #include <amxmisc>
@@ -1405,7 +1405,6 @@ public display_votemod_menu( player_id, menu_current_page )
                 sizeof( menu_body ) - current_write_position, "%d. %s^n", for_index + 1, g_mod_name_temp )
         
         DEBUG_LOGGER( 4, "( inside ) display_votemod_menu()| mod_vote_id:%d", mod_vote_id )
-        ArraySetCell( g_votemodcount, mod_vote_id, 0 )
         for_index++
     }
     
