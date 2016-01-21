@@ -1,5 +1,5 @@
 /*===============================================================================================================
-				[Dragon Ball Z Mode]
+				  [Dragon Ball Z Mode]
 				
 				** Description of Mod: 
 	      Each character has a power and has a different Transformation and which 
@@ -109,6 +109,12 @@
 			* Added Knife Sound
 			* Fixed Some Bugs
 			* Etc.
+		v 1.4:
+			* Fixed Sounds
+			* Use button in FM_emitsound
+			* Fixed Some bugs
+			* Added Join Spec Option
+			* Added More Superbuu Models
 	
 ======================================================================================================================*/
 
@@ -121,17 +127,23 @@
 
 #define PLAYER_MODELS // Enable Player Models
 
+// CS Player PData Offsets (win32)
+const PDATA_SAFE = 2
+const OFFSET_CSMENUCODE = 205
+
+// Linux diff's
+const OFFSET_LINUX = 5 // offsets 5 higher in Linux builds
+
 #if defined PLAYER_MODELS
 #include <playermodel>
 #define TASK_MODEL 31219283
 #endif
 
 #define PLUGIN "Dragon Ball Mod [Heroes vs Villains]"
-#define VERSION "1.3"
+#define VERSION "1.4"
 #define AUTHOR "[P]erfec[T] [S]cr[@]s[H]"
 
-#define fm_cs_set_user_nobuy(%1) set_pdata_int(%1, 235, get_pdata_int(%1, 235) & ~(1<<0)) //no weapon buy
-#define is_user_valid_connected(%1) (1 <= %1 <= get_maxplayers() && is_user_connected(%1))
+#define is_user_valid_connected(%1) (1 <= %1 <= g_maxpl && is_user_connected(%1))
 #define TASK_LOOP 2139812931
 #define TASK_SHOWHUD 1293192
 #define ID_SHOWHUD (taskid - TASK_SHOWHUD)
@@ -142,7 +154,7 @@ new const VillainLangs[][] = { "NONE", "CHARACTER_FRIEZA", "CHARACTER_CELL", "CH
 
 // General variables
 new g_villain_id[33], g_hero_id[33], cvar_energy_for_second, cvar_energy_need, cvar_start_life_quantity, cvar_blast_decalls, cvar_powerup_effect
-new g_power[4][33], g_max[2][33], g_energy_level[6], fw_gSpawn, spr[2], g_msg_syc
+new g_power[4][33], g_max[2][33], g_energy_level[6], fw_gSpawn, spr[2], g_msg_syc, g_maxpl
 
 // Characters Cvars
 new cvar_goku[10], cvar_frieza[8], cvar_vegeta[8], cvar_gohan[6], cvar_krilin[6], cvar_picolo[6], cvar_broly[8], cvar_superbuu[8], cvar_cell[6], cvar_omega_sheron[6]
@@ -177,8 +189,7 @@ new gohan_models[][] = { "dbz_gohan", "dbz_gohan", "dbz_gohan_ssj", "dbz_gohan_s
 new frieza_models[][] = { "dbz_frieza", "dbz_frieza2", "dbz_frieza3", "dbz_frieza4", "dbz_frieza4"}
 new cell_models[][] = { "dbz_cell1", "dbz_cell2", "dbz_cell3", "dbz_cell3" }
 new broly_models[][] = { "dbz_broly2", "dbz_broly2", "dbz_broly2", "dbz_broly3", "dbz_broly4" }
-//new superbuu_models[][] = { "dbz_superbuu", "dbz_superbuu", "dbz_superbuu", "dbz_superbuu", "dbz_superbuu"  }
-#define SUPERBUU_MODEL "dbz_superbuu"
+new superbuu_models[][] = { "dbz_evilbuu", "dbz_superbuu", "dbz_superbuu2", "dbz_superbuu3", "dbz_kidbuu" }
 #define OMEGASHENRON_MODEL "dbz_omegashenron"
 #endif
 
@@ -204,7 +215,6 @@ public plugin_init()
 	register_message(get_user_msgid("StatusIcon"),	"Message_StatusIcon")
 	register_forward(FM_EmitSound, "fw_EmitSound")
 	register_forward(FM_Touch, "fwd_Touch")
-	register_forward(FM_PlayerPreThink, "fm_playerprethink")
 	register_forward(FM_GetGameDescription, "fw_GetGameDescription")
 	register_message(get_user_msgid("Health"), "message_health")
 	unregister_forward(FM_Spawn, fw_gSpawn);
@@ -309,6 +319,7 @@ public plugin_init()
 	cvar_omega_sheron[5] = register_cvar("dbz_omega_sheron_radius_minus_energy_power_ball", "1000")	// Minus Energy Power Ball Radius
 	
 	g_msg_syc = CreateHudSyncObj()
+	g_maxpl = get_maxplayers()
 	
 }
 
@@ -331,7 +342,7 @@ public plugin_natives()
 public fw_GetGameDescription()
 {
 	// Return the mod name so it can be easily identified
-	forward_return(FMV_STRING, "Dragon Ball Z Mod v 1.3")
+	forward_return(FMV_STRING, "Dragon Ball Z Mod v 1.4")
 	return FMRES_SUPERCEDE;
 }
 
@@ -364,24 +375,21 @@ public plugin_precache()
 	engfunc(EngFunc_PrecacheSound, "dbz_mod/gohan_powerup2.wav")
 	engfunc(EngFunc_PrecacheSound, "dbz_mod/gohan_powerup3.wav")
 	engfunc(EngFunc_PrecacheSound, "dbz_mod/gohan_masenko.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/ssjgohan_kamehame.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/ssjgohan_ha.wav")
+	engfunc(EngFunc_PrecacheSound, "dbz_mod/ssjgohan_kamehameha.wav")
 	engfunc(EngFunc_PrecacheSound, "dbz_mod/krillin_powerup1.wav")
 	engfunc(EngFunc_PrecacheSound, "dbz_mod/krillin_powerup2.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/krillin_kamehame.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/krillin_ha.wav")
+	engfunc(EngFunc_PrecacheSound, "dbz_mod/krillin_kamehameha.wav")
 	engfunc(EngFunc_PrecacheSound, "dbz_mod/krillin_destructodisc.wav")
 	engfunc(EngFunc_PrecacheSound, "dbz_mod/cell_powerup1.wav")
 	engfunc(EngFunc_PrecacheSound, "dbz_mod/cell_powerup2.wav")
 	engfunc(EngFunc_PrecacheSound, "dbz_mod/cell_powerup3.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/cell_kamehame.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/cell_ha.wav")
+	engfunc(EngFunc_PrecacheSound, "dbz_mod/cell_kamehameha.wav")
 	engfunc(EngFunc_PrecacheSound, "player/pl_pain2.wav")
 	engfunc(EngFunc_PrecacheSound, "dbz_mod/superbuu_galitgun.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/superbuu_finalflashb.wav")
+	engfunc(EngFunc_PrecacheSound, "dbz_mod/superbuu_finalflashb_fix.wav")
 	engfunc(EngFunc_PrecacheSound, "dbz_mod/superbuu_bigbang.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/superbuu_deathball.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/superbuu_powerup1.wav")
+	engfunc(EngFunc_PrecacheSound, "dbz_mod/superbuu_deathball_fix.wav")
+	engfunc(EngFunc_PrecacheSound, "dbz_mod/superbuu_powerup1_fix.wav")
 	engfunc(EngFunc_PrecacheSound, "dbz_mod/superbuu_powerup2.wav")
 	engfunc(EngFunc_PrecacheSound, "dbz_mod/superbuu_powerup3.wav")
 	engfunc(EngFunc_PrecacheSound, "dbz_mod/frieza_destructodisc.wav")
@@ -466,11 +474,10 @@ public plugin_precache()
 		precache_playermodel(broly_models[i])
 	}
 
-	/*for (i = 0; i < sizeof superbuu_models; i++) {
+	for (i = 0; i < sizeof superbuu_models; i++) {
 		precache_playermodel(superbuu_models[i])
-	}*/
+	}
 	
-	precache_playermodel(SUPERBUU_MODEL)
 	precache_playermodel(OMEGASHENRON_MODEL)
 	#endif
 
@@ -576,17 +583,8 @@ public Message_StatusIcon(iMsgId, MSG_DEST, id)
 	return PLUGIN_CONTINUE;
 }
 /*===============================================================================
-[For Use Powers with use button]
+[For Use the Powers]
 ================================================================================*/
-public fm_playerprethink(id)
-{
-	static iButton; iButton = pev(id, pev_button)
-	static iOldButton; iOldButton = pev(id, pev_oldbuttons)
-
-	if((iButton & IN_USE) && !(iOldButton & IN_USE))
-		use_power(id)
-}  
-
 public use_power(id)
 {
 	if(!is_user_connected(id) || !is_user_alive(id))
@@ -707,8 +705,7 @@ public use_power(id)
 				}
 				else if (g_power[2][id] >= g_energy_level[2]) {
 					client_printcolor(id,"%L Kamehameha!!!", id, "DBZ_TAG")
-					emit_sound(id, CHAN_STATIC, "dbz_mod/ssjgohan_kamehame.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM)
-					set_task(4.0, "kamehameha_sound_complete", id)
+					emit_sound(id, CHAN_STATIC, "dbz_mod/ssjgohan_kamehameha.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM)
 					g_power[2][id] -= g_energy_level[2]
 					g_max[1][id] = get_pcvar_num(cvar_gohan[2])
 					g_max[0][id] = get_pcvar_num(cvar_gohan[5])
@@ -733,8 +730,7 @@ public use_power(id)
 					g_max[1][id] = get_pcvar_num(cvar_krilin[1])
 					g_max[0][id] = get_pcvar_num(cvar_krilin[4])
 					g_power[1][id] = 2
-					emit_sound(id, CHAN_STATIC, "dbz_mod/krillin_kamehame.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM)
-					set_task(2.0, "kamehameha_sound_complete", id)
+					emit_sound(id, CHAN_STATIC, "dbz_mod/krillin_kamehameha.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM)
 				}
 				else if (g_power[2][id] >= g_energy_level[2]) {
 					client_printcolor(id,"%L Destrucion Disc !!!", id, "DBZ_TAG")
@@ -839,8 +835,7 @@ public use_power(id)
 					g_max[1][id] = get_pcvar_num(cvar_cell[2])
 					g_max[0][id] = get_pcvar_num(cvar_cell[5])
 					g_power[1][id] = 3
-					emit_sound(id, CHAN_STATIC, "dbz_mod/cell_kamehame.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
-					set_task(6.0, "kamehameha_sound_complete", id)
+					emit_sound(id, CHAN_STATIC, "dbz_mod/cell_kamehameha.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 				}
 				create_power(id)
 			}
@@ -856,8 +851,7 @@ public use_power(id)
 				}
 				else if (g_power[2][id] >= g_energy_level[1] && g_power[2][id] < g_energy_level[2]) {
 					client_printcolor(id,"%L Final Flash!!", id, "DBZ_TAG")
-					emit_sound(id, CHAN_STATIC, "dbz_mod/superbuu_finalflashb.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
-					set_task(3.0, "stop_buu_sound", id)
+					emit_sound(id, CHAN_STATIC, "dbz_mod/superbuu_finalflashb_fix.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
 					g_power[2][id] -= g_energy_level[1]
 					g_max[1][id] = get_pcvar_num(cvar_superbuu[1])
 					g_max[0][id] = get_pcvar_num(cvar_superbuu[5])
@@ -873,7 +867,7 @@ public use_power(id)
 				}
 				else if (g_power[2][id] >= g_energy_level[3]) {
 					client_printcolor(id,"%L Deathball!!!", id, "DBZ_TAG")
-					emit_sound(id, CHAN_STATIC, "dbz_mod/superbuu_deathball.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+					emit_sound(id, CHAN_STATIC, "dbz_mod/superbuu_deathball_fix.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
 					g_power[2][id] -= g_energy_level[3]
 					g_max[1][id] = get_pcvar_num(cvar_superbuu[3])
 					g_max[0][id] = get_pcvar_num(cvar_superbuu[7])
@@ -948,59 +942,6 @@ public use_power(id)
 	}
 }
 
-/*===============================================================================
-[Stop Attack/Tranform Sounds]
-================================================================================*/
-public kamehameha_sound_complete(id)
-{
-	if(g_hero_id[id] == 3) {
-		emit_sound(id, CHAN_STATIC, "dbz_mod/ssjgohan_kamehame.wav", VOL_NORM, ATTN_NORM, SND_STOP, PITCH_NORM) // Stop the sound
-		emit_sound(id, CHAN_STATIC, "dbz_mod/ssjgohan_ha.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM)
-	}
-	if(g_hero_id[id] == 4) {
-		emit_sound(id, CHAN_STATIC, "dbz_mod/krillin_kamehame.wav", VOL_NORM, ATTN_NORM, SND_STOP, PITCH_NORM) // Stop the sound
-		emit_sound(id, CHAN_STATIC, "dbz_mod/krillin_ha.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM)
-	}
-	if(g_villain_id[id] == 2) {
-		emit_sound(id, CHAN_STATIC, "dbz_mod/cell_kamehame.wav", 0.8, ATTN_NORM, SND_STOP, PITCH_NORM) // Stop the sound
-		emit_sound(id, CHAN_STATIC, "dbz_mod/cell_ha.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM)
-	}
-}
-
-public stop_buu_sound(id) emit_sound(id, CHAN_STATIC, "dbz_mod/superbuu_finalflashb.wav", VOL_NORM, ATTN_NORM, SND_STOP, PITCH_NORM)
-
-/*
-public stop_transform_sound(id)
-{
-	new i, sound[64]
-	for(i = 1; i <= 5; i++) {
-		formatex(sound, charsmax(sound), "dbz_mod/goku_powerup%d.wav", i)
-		emit_sound(id, CHAN_STATIC, sound, VOL_NORM, ATTN_NORM, SND_STOP, PITCH_NORM)
-		
-		if(i < 5) {
-			formatex(sound, charsmax(sound), "dbz_mod/vegeta_powerup%d.wav", i)
-			emit_sound(id, CHAN_STATIC, sound, VOL_NORM, ATTN_NORM, SND_STOP, PITCH_NORM)
-			formatex(sound, charsmax(sound), "dbz_mod/broly_powerup%d.wav", i)
-			emit_sound(id, CHAN_STATIC, sound, VOL_NORM, ATTN_NORM, SND_STOP, PITCH_NORM)
-			formatex(sound, charsmax(sound), "dbz_mod/frieza_powerup%d.wav", i)
-			emit_sound(id, CHAN_STATIC, sound, VOL_NORM, ATTN_NORM, SND_STOP, PITCH_NORM)
-		}
-		if(i < 4) {
-			formatex(sound, charsmax(sound), "dbz_mod/gohan_powerup%d.wav", i)
-			emit_sound(id, CHAN_STATIC, sound, VOL_NORM, ATTN_NORM, SND_STOP, PITCH_NORM)
-			formatex(sound, charsmax(sound), "dbz_mod/piccolo_powerup%d.wav", i)
-			emit_sound(id, CHAN_STATIC, sound, VOL_NORM, ATTN_NORM, SND_STOP, PITCH_NORM)
-			formatex(sound, charsmax(sound), "dbz_mod/cell_powerup%d.wav", i)
-			emit_sound(id, CHAN_STATIC, sound, VOL_NORM, ATTN_NORM, SND_STOP, PITCH_NORM)
-			formatex(sound, charsmax(sound), "dbz_mod/superbuu_powerup%d.wav", i)
-			emit_sound(id, CHAN_STATIC, sound, VOL_NORM, ATTN_NORM, SND_STOP, PITCH_NORM)
-		}
-		if(i < 3) {
-			formatex(sound, charsmax(sound), "dbz_mod/krillin_powerup%d.wav", i)
-			emit_sound(id, CHAN_STATIC, sound, VOL_NORM, ATTN_NORM, SND_STOP, PITCH_NORM)
-		}
-	}
-}*/
 /*===============================================================================
 [Some Protections]
 ================================================================================*/
@@ -1101,8 +1042,7 @@ public client_disconnect(id)
 public protecao_jointeam(id)
 {
 	static Team; Team = get_user_team(id)
-	if(Team == 0 || Team == 3 || g_hero_id[id] <= 0 && g_villain_id[id] <= 0) 
-	{
+	if(Team == 0 || Team == 3 || g_hero_id[id] <= 0 && g_villain_id[id] <= 0) {
 		menu_choose_team(id)
 		return PLUGIN_HANDLED
 	}
@@ -1110,8 +1050,7 @@ public protecao_jointeam(id)
 	return PLUGIN_CONTINUE
 }
 
-public protecao3(id)
-{
+public protecao3(id) {
 	menu_choose_team(id)
 	return PLUGIN_HANDLED
 }
@@ -1131,12 +1070,19 @@ public menu_choose_team(id)
 	formatex(szText, charsmax(szText), "%L", id, "CHOSE_TEAM_MENU_ITEM1");
 	menu_additem(menu, szText, "1", 0)
 	
-	formatex(szText, charsmax(szText), "%L", id, "CHOSE_TEAM_MENU_ITEM2");
+	formatex(szText, charsmax(szText), "%L^n", id, "CHOSE_TEAM_MENU_ITEM2");
 	menu_additem(menu, szText, "2", 0)
+	
+	formatex(szText, charsmax(szText), "%L", id, "CHOSE_TEAM_MENU_ITEM3");
+	menu_additem(menu, szText, "3", 0)
 	
 	menu_setprop(menu, MPROP_EXIT, MEXIT_ALL)
 	
 	if(g_hero_id[id] == 0 && g_villain_id[id] == 0) menu_setprop(menu, MPROP_EXIT, MEXIT_NEVER)
+	
+	// Fix for AMXX custom menus
+	if (pev_valid(id) == PDATA_SAFE)
+		set_pdata_int(id, OFFSET_CSMENUCODE, 0, OFFSET_LINUX)
 
 	menu_display(id, menu, 0)
 }
@@ -1156,6 +1102,12 @@ public menu_choose_team_handler(id, menu, item)
 	switch(key) {
 		case 1: choose_character(id, 1)
 		case 2: choose_character(id, 0)
+		case 3: {
+			if(is_user_alive(id))
+				dllfunc(DLLFunc_ClientKill, id)
+				
+			cs_set_user_team(id, CS_TEAM_SPECTATOR)
+		}
 	}
 
 	menu_destroy(menu)
@@ -1179,6 +1131,11 @@ public choose_character(id, team)
 	}
 	
 	menu_setprop(menu, MPROP_EXIT, MEXIT_ALL)
+	
+	// Fix for AMXX custom menus
+	if (pev_valid(id) == PDATA_SAFE)
+		set_pdata_int(id, OFFSET_CSMENUCODE, 0, OFFSET_LINUX)
+	
 	menu_display(id, menu, 0)
 }
 
@@ -1198,7 +1155,7 @@ public choose_vilain_handler(id, menu, item)
 	if(g_hero_id[id] > 0 || g_villain_id[id] != key)
 	{
 		if (g_power[3][id] > 0)	remove_power(id, g_power[3][id]);
-		if(is_user_alive(id)) user_silentkill(id);
+		if(is_user_alive(id)) dllfunc(DLLFunc_ClientKill, id);
 			
 		g_hero_id[id] = 0
 		g_power[2][id] = 0
@@ -1208,7 +1165,6 @@ public choose_vilain_handler(id, menu, item)
 		client_printcolor(id, "%L %L", id, "DBZ_TAG", id, "CHOSED_CHARACTER", id, VillainLangs[g_villain_id[id]])
 	}
 	remove_task(id+TASK_LOOP)
-	set_task(1.0, "dbz_loop", id + TASK_LOOP, "", 0, "b")
 	engclient_cmd(id,"jointeam","1") 
 	engclient_cmd(id,"joinclass","1")
 	menu_destroy(menu)
@@ -1230,7 +1186,7 @@ public choose_hero_handler(id, menu, item)
 	if(g_villain_id[id] > 0 || g_hero_id[id] != key)
 	{
 		if (g_power[3][id] > 0) remove_power(id, g_power[3][id]);
-		if(is_user_alive(id)) user_silentkill(id);
+		if(is_user_alive(id)) dllfunc(DLLFunc_ClientKill, id);
 			
 		g_villain_id[id] = 0
 		g_power[2][id] = 0
@@ -1242,7 +1198,6 @@ public choose_hero_handler(id, menu, item)
 	}
 
 	remove_task(id+TASK_LOOP)
-	set_task(1.0, "dbz_loop", id + TASK_LOOP, "", 0, "b")
 	engclient_cmd(id,"jointeam","2") 
 	engclient_cmd(id,"joinclass","2")
 	menu_destroy(menu)
@@ -2358,7 +2313,7 @@ public dbz_loop(id)
 				if (g_power[2][id] >= g_energy_level[0] && g_power[2][id] < g_energy_level[1] && g_power[0][id] < 1) 
 				{
 					args[1] = 7
-					emit_sound(id, CHAN_STATIC, "dbz_mod/superbuu_powerup1.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
+					emit_sound(id, CHAN_STATIC, "dbz_mod/superbuu_powerup1_fix.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					set_hudmessage(0, 255, 0, -1.0, 0.10, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Superbuu] %L", id, "SUPER_BUU_TRASNFORM")
 					g_power[0][id] = 1
@@ -2476,7 +2431,7 @@ public model_update(id)
 		switch(g_villain_id[id]) {
 			case 1: formatex(g_playermodel[id], charsmax(g_playermodel[]), "%s", frieza_models[g_power[0][id]])
 			case 2: formatex(g_playermodel[id], charsmax(g_playermodel[]), "%s", cell_models[g_power[0][id]])
-			case 3: formatex(g_playermodel[id], charsmax(g_playermodel[]), "%s", SUPERBUU_MODEL)
+			case 3: formatex(g_playermodel[id], charsmax(g_playermodel[]), "%s", superbuu_models[g_power[0][id]])
 			case 4: formatex(g_playermodel[id], charsmax(g_playermodel[]), "%s", broly_models[g_power[0][id]])
 			case 5: formatex(g_playermodel[id], charsmax(g_playermodel[]), "%s", OMEGASHENRON_MODEL)
 		}
@@ -2525,6 +2480,10 @@ public fw_EmitSound(id, channel, const sample[], Float:volume, Float:attn, flags
 			return FMRES_SUPERCEDE;
 		}	
 	}
+	
+	// Use power with IN_USE button
+	if(equal(sample, "common/wpn_denyselect.wav") && (pev(id, pev_button) & IN_USE))
+		use_power(id)
 	
 	return FMRES_IGNORED;
 }
@@ -2592,17 +2551,9 @@ public plugin_cfg()
 	new configsdir[32]; get_configsdir(configsdir, charsmax(configsdir))
 	server_cmd("exec %s/dragon_ball_z_mod.cfg", configsdir)
 	
-	loadCVARS()
-}
-
-public loadCVARS()
-{
 	// These cvars are checked very often
-	g_energy_level[0] = get_pcvar_num(cvar_energy_need)
-	g_energy_level[1] = get_pcvar_num(cvar_energy_need) * 2
-	g_energy_level[2] = get_pcvar_num(cvar_energy_need) * 3
-	g_energy_level[3] = get_pcvar_num(cvar_energy_need) * 4
-	g_energy_level[4] = get_pcvar_num(cvar_energy_need) * 5
+	for(new i = 0; i <= 4; i++)
+		g_energy_level[i] = get_pcvar_num(cvar_energy_need) * (i+1)
 }
 
 /*===============================================================================
@@ -2660,21 +2611,6 @@ extra_dmg(id, attacker, damage, weaponDescription[])
 	else  {
 		ExecuteHam(Ham_TakeDamage, id, 0, attacker, float(damage), DMG_BLAST)
 	}
-	/*else 
-	{
-		new origin[3]; get_user_origin(id, origin);
-		
-		message_begin(MSG_ONE,get_user_msgid("Damage"),{0,0,0},id);
-		write_byte(21);
-		write_byte(20);
-		write_long(DMG_BLAST);
-		write_coord(origin[0]);
-		write_coord(origin[1]);
-		write_coord(origin[2]);
-		message_end();
-		
-		set_pev(id, pev_health, pev(id, pev_health) - float(damage));
-	}*/
 }
 
 // Fix for the HL engine bug when HP is multiples of 256
@@ -2706,16 +2642,24 @@ stock client_printcolor(const id, const input[], any:...)
 	replace_all(msg, 190, "!y", "^1")  // Yellow Chat
 	replace_all(msg, 190, "!t", "^3")  // Team Color Chat
 	
+	#if AMXX_VERSION_NUM < 183
+	new g_msgsaytext
+	
+	if(!g_msgsaytext) {
+		g_msgsaytext = get_user_msgid("SayText")
+	}
+	
 	if (id) players[0] = id; else get_players(players, count, "ch")
 	
 	for (new i = 0; i < count; i++) {
-		if (is_user_connected(players[i])) {
-			message_begin(MSG_ONE_UNRELIABLE, get_user_msgid("SayText"), _, players[i])
-			write_byte(players[i]);
-			write_string(msg);
-			message_end();
-		}
+		message_begin(MSG_ONE_UNRELIABLE, get_user_msgid("SayText"), _, players[i])
+		write_byte(players[i]);
+		write_string(msg);
+		message_end();
 	}
+	#else
+	client_print_color(id, print_team_default, msg)
+	#endif
 }
 
 // fakemeta_util Utilities
@@ -2762,6 +2706,13 @@ stock set_user_health(index, health) {
 	return 1;
 }
 
+stock fm_cs_set_user_nobuy(id) {
+	if (pev_valid(id) != PDATA_SAFE)
+		return;
+	
+	set_pdata_int(id, 235, get_pdata_int(id, 235) & ~(1<<0)) //no weapon buy
+}
+
 #if defined PLAYER_MODELS
 precache_playermodel(const modelname[]) 
 {  
@@ -2774,6 +2725,3 @@ precache_playermodel(const modelname[])
 		engfunc(EngFunc_PrecacheModel, longname)
 } 
 #endif
-/* AMXX-Studio Notes - DO NOT MODIFY BELOW HERE
-*{\\ rtf1\\ ansi\\ deff0{\\ fonttbl{\\ f0\\ fnil Tahoma;}}\n\\ viewkind4\\ uc1\\ pard\\ lang1046\\ f0\\ fs16 \n\\ par }
-*/
