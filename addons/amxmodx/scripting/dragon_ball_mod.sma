@@ -127,7 +127,7 @@
 
 #define PLAYER_MODELS // Enable Player Models
 
-#define MAIN_HUD_MESSAGE_POSITION -1.0, 0.25
+#define MAIN_HUD_MESSAGE_POSITION -1.0, 0.10
 
 // CS Player PData Offsets (win32)
 const PDATA_SAFE = 2
