@@ -22,7 +22,7 @@
 *****************************************************************************************
 */
 
-#define PLUGIN_VERSION "1.2-rc1.1"
+#define PLUGIN_VERSION "1.2"
 
 #include <amxmodx>
 #include <amxmisc>
@@ -35,7 +35,7 @@
  * and the variable 'g_debug_level' for more information.
  * Default value: 0  - which is disabled.
  */
-#define IS_DEBUG_ENABLED 0
+#define IS_DEBUG_ENABLED 1
 
 #if IS_DEBUG_ENABLED > 0
     #define DEBUG_LOGGER(%1) debugMesssageLogger( %1 )
@@ -52,7 +52,7 @@
  * ( ... ) 128 execute the test units and print their out put results.
  * ( 11111111 ) 255 displays all debug logs levels at server console.
  */
-new g_debug_level = 4
+new g_debug_level = 5
 
 /**
  * Test unit variables related to debug level 128, displays basic debug messages.
@@ -433,11 +433,11 @@ public plugin_init()
     cvar_soundsMute              = register_cvar( "gal_sounds_mute", "0" );
     cvar_voteMapFile             = register_cvar( "gal_vote_mapfile", "*" );
     
-    register_logevent( "event_game_commencing", 2, "0=World triggered",
+    register_logevent( "game_commencing_event", 2, "0=World triggered",
             "1=Game_Commencing", "1&Restart_Round_" )
     
-    register_logevent( "team_win", 6, "0=Team" )
-    register_logevent( "round_end", 2, "1=Round_End" )
+    register_logevent( "team_win_event", 6, "0=Team" )
+    register_logevent( "round_end_event", 2, "1=Round_End" )
     
     nextmap_plugin_init()
     
@@ -799,7 +799,7 @@ public plugin_cfg()
 #endif
 }
 
-public team_win()
+public team_win_event()
 {
     new winlimit_integer
     new wins_Terrorist_trigger
@@ -839,7 +839,7 @@ public team_win()
             string_team_winner, winlimit_integer, wins_CT_trigger, wins_Terrorist_trigger )
 }
 
-public round_end()
+public round_end_event()
 {
     new maxrounds_number;
     new current_rounds_trigger
@@ -1486,6 +1486,7 @@ public cmd_startVote( player_id, level, cid )
         {
             new vote_display_task_argument[ 32 ];
             read_args( vote_display_task_argument, charsmax( vote_display_task_argument ) );
+            remove_quotes( vote_display_task_argument )
             
             if( equali( vote_display_task_argument, "-nochange" ) )
             {
@@ -1501,10 +1502,11 @@ public cmd_startVote( player_id, level, cid )
                 g_isTimeToRestart = true;
             }
             
-            DEBUG_LOGGER( 1, "( inside ) cmd_startVote()| \
+            DEBUG_LOGGER( 1, "( inside ) cmd_startVote() | \
                     equal( vote_display_task_argument, ^"-restart^", 4 ): %d", \
                     equal( vote_display_task_argument, "-restart", 4 ) )
         }
+        
         DEBUG_LOGGER( 1, "( cmd_startVote ) g_isTimeToRestart: %d, g_isTimeToChangeLevel: %d \
                 g_is_to_cancel_end_vote: %d", \
                 g_isTimeToRestart, g_isTimeToChangeLevel, g_is_to_cancel_end_vote )
@@ -1630,6 +1632,8 @@ public map_loadNominationList()
     new filename[ 256 ];
     get_pcvar_string( cvar_nomMapFile, filename, charsmax( filename ) );
     
+    DEBUG_LOGGER( 4, "( map_loadNominationList() ) cvar_nomMapFile filename: %s", filename )
+    
     g_nominationMapCnt = map_populateList( g_nominationMap, filename );
 }
 
@@ -1715,7 +1719,7 @@ stock map_loadEmptyCycleList()
     
     g_emptyMapCnt = map_populateList( g_emptyCycleMap, filename );
     
-    DEBUG_LOGGER( 4, "map_loadEmptyCycleList() g_emptyMapCnt = %d", g_emptyMapCnt )
+    DEBUG_LOGGER( 4, "( map_loadEmptyCycleList() ) g_emptyMapCnt = %d", g_emptyMapCnt )
 }
 
 public map_loadPrefixList()
@@ -1762,7 +1766,7 @@ public map_loadPrefixList()
  * Make sure the reset time is the original time limit, can be skewed if map was previously extended.
  * It is delayed because if we are at g_is_last_round, we need to wait the game restart.
  */
-public event_game_commencing()
+public game_commencing_event()
 {
     // reset the round ending, if it is in progress.
     g_isTimeToChangeLevel = false
@@ -1775,7 +1779,7 @@ public event_game_commencing()
     reset_rounds_scores()
     cancel_voting()
     
-    DEBUG_LOGGER( 32, "^n AT: event_game_commencing" )
+    DEBUG_LOGGER( 32, "^n AT: game_commencing_event" )
 }
 
 stock map_getIdx( text[] )
@@ -1801,12 +1805,11 @@ stock map_getIdx( text[] )
     return -1;
 }
 
+/**
+ * Generic say handler to determine if we need to act on what was said.
+ */
 public cmd_say( player_id )
 {
-    //-----
-    // generic say handler to determine if we need to act on what was said
-    //-----
-    
     static text[ 70 ]
     static arg1[ 32 ]
     static arg2[ 32 ]
@@ -2654,6 +2657,8 @@ stock vote_addFiller()
     new filename[ 256 ];
     
     get_pcvar_string( cvar_voteMapFile, filename, charsmax( filename ) )
+    
+    DEBUG_LOGGER( 4, "( vote_addFiller() ) cvar_voteMapFile filename: %s", filename )
     
     if( filename[ 0 ] == '*' )
     {
