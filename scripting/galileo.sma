@@ -22,7 +22,7 @@
 *****************************************************************************************
 */
 
-#define PLUGIN_VERSION "1.2-rc1.1"
+#define PLUGIN_VERSION "1.2"
 
 #include <amxmodx>
 #include <amxmisc>
@@ -32,7 +32,7 @@
 #define SHORT_STRING  64
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
- * at the end of this file and the variable 'g_debug_level' for more information.
+ * and the variable 'g_debug_level' for more information.
  * Default value: 0  - which is disabled.
  */
 #define IS_DEBUG_ENABLED 0
@@ -52,7 +52,7 @@
  * ( ... ) 128 execute the test units and print their out put results.
  * ( 11111111 ) 255 displays all debug logs levels at server console.
  */
-new g_debug_level = 4
+new g_debug_level = 5
 
 /**
  * Test unit variables related to debug level 128, displays basic debug messages.
@@ -311,6 +311,8 @@ new cvar_voteStatus
 new cvar_voteStatusType;
 new cvar_soundsMute;
 new cvar_voteMapFile
+new cvar_voteMinPlayers
+new cvar_voteMinPlayersMapFile
 
 /**
  * Various Artists
@@ -432,12 +434,14 @@ public plugin_init()
     cvar_runoffDuration          = register_cvar( "gal_runoff_duration", "10" );
     cvar_soundsMute              = register_cvar( "gal_sounds_mute", "0" );
     cvar_voteMapFile             = register_cvar( "gal_vote_mapfile", "*" );
+    cvar_voteMinPlayers          = register_cvar( "gal_vote_minplayers", "0" );
+    cvar_voteMinPlayersMapFile   = register_cvar( "gal_vote_minplayers_mapfile", "mapcycle.txt" );
     
-    register_logevent( "event_game_commencing", 2, "0=World triggered",
+    register_logevent( "game_commencing_event", 2, "0=World triggered",
             "1=Game_Commencing", "1&Restart_Round_" )
     
-    register_logevent( "team_win", 6, "0=Team" )
-    register_logevent( "round_end", 2, "1=Round_End" )
+    register_logevent( "team_win_event", 6, "0=Team" )
+    register_logevent( "round_end_event", 2, "1=Round_End" )
     
     nextmap_plugin_init()
     
@@ -799,7 +803,7 @@ public plugin_cfg()
 #endif
 }
 
-public team_win()
+public team_win_event()
 {
     new winlimit_integer
     new wins_Terrorist_trigger
@@ -839,7 +843,7 @@ public team_win()
             string_team_winner, winlimit_integer, wins_CT_trigger, wins_Terrorist_trigger )
 }
 
-public round_end()
+public round_end_event()
 {
     new maxrounds_number;
     new current_rounds_trigger
@@ -1214,38 +1218,11 @@ public map_manageEnd()
     
     get_cvar_string( "amx_nextmap", g_nextmap, charsmax( g_nextmap ) );
     
-    if( get_pcvar_num( cvar_endOnRound ) == 1 ) // when time runs out, end at the current round end
+    switch( get_pcvar_num( cvar_endOnRound ) )
     {
-        g_is_last_round       = true;
-        g_isTimeToChangeLevel = true;
-    
-    #if AMXX_VERSION_NUM < 183
-        get_players( g_colored_players_ids, g_colored_players_number, "ch" );
-        
-        for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
-             g_colored_current_index++ )
+        case 1: // when time runs out, end at the current round end
         {
-            g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
-            
-            client_print_color_internal( g_colored_player_id, "^1%L %L %L", g_colored_player_id,
-                    "GAL_CHANGE_TIMEEXPIRED", g_colored_player_id, "GAL_CHANGE_NEXTROUND",
-                    g_colored_player_id, "GAL_NEXTMAP", g_nextmap )
-        }
-    #else
-        client_print_color_internal( 0, "^1%L %L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED",
-                LANG_PLAYER, "GAL_CHANGE_NEXTROUND", LANG_PLAYER, "GAL_NEXTMAP", g_nextmap )
-    #endif
-        
-        prevent_map_change()
-    }
-    else if( get_pcvar_num( cvar_endOnRound ) == 2 ) // when time runs out, end at the next round end
-    {
-        g_is_last_round = true;
-        
-        // This is to avoid have a extra round at special mods where time limit is equal the
-        // round timer.
-        if( get_cvar_float( "mp_roundtime" ) > 8 )
-        {
+            g_is_last_round       = true;
             g_isTimeToChangeLevel = true;
         
         #if AMXX_VERSION_NUM < 183
@@ -1264,29 +1241,59 @@ public map_manageEnd()
             client_print_color_internal( 0, "^1%L %L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED",
                     LANG_PLAYER, "GAL_CHANGE_NEXTROUND", LANG_PLAYER, "GAL_NEXTMAP", g_nextmap )
         #endif
-        }
-        else
-        {
-        #if AMXX_VERSION_NUM < 183
-            get_players( g_colored_players_ids, g_colored_players_number, "ch" );
             
-            for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
-                 g_colored_current_index++ )
-            {
-                g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
-                
-                client_print_color_internal( g_colored_player_id, "^1%L %L", g_colored_player_id,
-                        "GAL_CHANGE_TIMEEXPIRED", g_colored_player_id, "GAL_NEXTMAP", g_nextmap );
-            }
-        #else
-            client_print_color_internal( 0, "^1%L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED",
-                    LANG_PLAYER, "GAL_NEXTMAP", g_nextmap );
-        #endif
+            prevent_map_change()
         }
-        
-        prevent_map_change()
+        case 2: // when time runs out, end at the next round end
+        {
+            g_is_last_round = true;
+            
+            // This is to avoid have a extra round at special mods where time limit is equal the
+            // round timer.
+            if( get_cvar_float( "mp_roundtime" ) > 8 )
+            {
+                g_isTimeToChangeLevel = true;
+            
+            #if AMXX_VERSION_NUM < 183
+                get_players( g_colored_players_ids, g_colored_players_number, "ch" );
+                
+                for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+                     g_colored_current_index++ )
+                {
+                    g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
+                    
+                    client_print_color_internal( g_colored_player_id, "^1%L %L %L", g_colored_player_id,
+                            "GAL_CHANGE_TIMEEXPIRED", g_colored_player_id, "GAL_CHANGE_NEXTROUND",
+                            g_colored_player_id, "GAL_NEXTMAP", g_nextmap )
+                }
+            #else
+                client_print_color_internal( 0, "^1%L %L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED",
+                        LANG_PLAYER, "GAL_CHANGE_NEXTROUND", LANG_PLAYER, "GAL_NEXTMAP", g_nextmap )
+            #endif
+            }
+            else
+            {
+            #if AMXX_VERSION_NUM < 183
+                get_players( g_colored_players_ids, g_colored_players_number, "ch" );
+                
+                for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+                     g_colored_current_index++ )
+                {
+                    g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
+                    
+                    client_print_color_internal( g_colored_player_id, "^1%L %L", g_colored_player_id,
+                            "GAL_CHANGE_TIMEEXPIRED", g_colored_player_id, "GAL_NEXTMAP", g_nextmap );
+                }
+            #else
+                client_print_color_internal( 0, "^1%L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED",
+                        LANG_PLAYER, "GAL_NEXTMAP", g_nextmap );
+            #endif
+            }
+            
+            prevent_map_change()
+        }
     }
-    
+
     configure_last_round_HUD( bool:get_pcvar_num( cvar_endOnRound_msg ) )
     
     DEBUG_LOGGER( 2, "%32s mp_timelimit: %f", "map_manageEnd(out)", get_pcvar_float( g_timelimit_pointer ) )
@@ -1486,6 +1493,7 @@ public cmd_startVote( player_id, level, cid )
         {
             new vote_display_task_argument[ 32 ];
             read_args( vote_display_task_argument, charsmax( vote_display_task_argument ) );
+            remove_quotes( vote_display_task_argument )
             
             if( equali( vote_display_task_argument, "-nochange" ) )
             {
@@ -1501,10 +1509,11 @@ public cmd_startVote( player_id, level, cid )
                 g_isTimeToRestart = true;
             }
             
-            DEBUG_LOGGER( 1, "( inside ) cmd_startVote()| \
+            DEBUG_LOGGER( 1, "( inside ) cmd_startVote() | \
                     equal( vote_display_task_argument, ^"-restart^", 4 ): %d", \
                     equal( vote_display_task_argument, "-restart", 4 ) )
         }
+        
         DEBUG_LOGGER( 1, "( cmd_startVote ) g_isTimeToRestart: %d, g_isTimeToChangeLevel: %d \
                 g_is_to_cancel_end_vote: %d", \
                 g_isTimeToRestart, g_isTimeToChangeLevel, g_is_to_cancel_end_vote )
@@ -1630,6 +1639,8 @@ public map_loadNominationList()
     new filename[ 256 ];
     get_pcvar_string( cvar_nomMapFile, filename, charsmax( filename ) );
     
+    DEBUG_LOGGER( 4, "( map_loadNominationList() ) cvar_nomMapFile filename: %s", filename )
+    
     g_nominationMapCnt = map_populateList( g_nominationMap, filename );
 }
 
@@ -1715,7 +1726,7 @@ stock map_loadEmptyCycleList()
     
     g_emptyMapCnt = map_populateList( g_emptyCycleMap, filename );
     
-    DEBUG_LOGGER( 4, "map_loadEmptyCycleList() g_emptyMapCnt = %d", g_emptyMapCnt )
+    DEBUG_LOGGER( 4, "( map_loadEmptyCycleList() ) g_emptyMapCnt = %d", g_emptyMapCnt )
 }
 
 public map_loadPrefixList()
@@ -1762,7 +1773,7 @@ public map_loadPrefixList()
  * Make sure the reset time is the original time limit, can be skewed if map was previously extended.
  * It is delayed because if we are at g_is_last_round, we need to wait the game restart.
  */
-public event_game_commencing()
+public game_commencing_event()
 {
     // reset the round ending, if it is in progress.
     g_isTimeToChangeLevel = false
@@ -1775,7 +1786,7 @@ public event_game_commencing()
     reset_rounds_scores()
     cancel_voting()
     
-    DEBUG_LOGGER( 32, "^n AT: event_game_commencing" )
+    DEBUG_LOGGER( 32, "^n AT: game_commencing_event" )
 }
 
 stock map_getIdx( text[] )
@@ -1801,12 +1812,11 @@ stock map_getIdx( text[] )
     return -1;
 }
 
+/**
+ * Generic say handler to determine if we need to act on what was said.
+ */
 public cmd_say( player_id )
 {
-    //-----
-    // generic say handler to determine if we need to act on what was said
-    //-----
-    
     static text[ 70 ]
     static arg1[ 32 ]
     static arg2[ 32 ]
@@ -2655,7 +2665,13 @@ stock vote_addFiller()
     
     get_pcvar_string( cvar_voteMapFile, filename, charsmax( filename ) )
     
-    if( filename[ 0 ] == '*' )
+    DEBUG_LOGGER( 4, "( vote_addFiller() ) cvar_voteMapFile filename: %s", filename )
+    
+    if( get_realplayersnum() < get_pcvar_num( cvar_voteMinPlayers ) )
+    {
+        get_pcvar_string( cvar_voteMinPlayersMapFile, filename, charsmax( filename ) )
+    }
+    else if( filename[ 0 ] == '*' )
     {
         get_cvar_string( "mapcyclefile", filename, charsmax( filename ) );
     }
@@ -3109,9 +3125,10 @@ public vote_display( vote_display_task_argument[ 3 ] )
         
         // wipe the previous vote status clean
         voteStatus[ 0 ] = 0;
-
+        
         // register the 'None' option key
-        if( get_pcvar_num( cvar_gal_vote_show_none ) && !g_is_vote_blocked )
+        if( get_pcvar_num( cvar_gal_vote_show_none )
+            && !g_is_vote_blocked )
         {
             keys = MENU_KEY_0;
         }
@@ -3231,11 +3248,7 @@ public vote_display( vote_display_task_argument[ 3 ] )
                 }
                 
                 // Added the extension/stay key option (1 << 2 = key 3, 1 << 3 = key 4, ...)
-                if( get_pcvar_num( cvar_extendmapAllowStay )
-                    || g_is_map_extension_allowed )
-                {
-                    keys |= ( 1 << g_totalVoteOptions );
-                }
+                keys |= ( 1 << g_totalVoteOptions );
             }
         }
         
@@ -3290,7 +3303,7 @@ public vote_display( vote_display_task_argument[ 3 ] )
     menuDirty[ 0 ] = '^0';
     
     // append a "None" option on for people to choose if they don't like any other choice
-    if( get_pcvar_num( cvar_gal_vote_show_none ) 
+    if( get_pcvar_num( cvar_gal_vote_show_none )
         && get_pcvar_num( cvar_gal_vote_show_none_type ) )
     {
         formatex( menuClean, charsmax( menuClean ), "%s^n^n%s0. %s%L%s", g_vote,
@@ -3303,8 +3316,8 @@ public vote_display( vote_display_task_argument[ 3 ] )
     
     if( isVoteOver )
     {
-        if( get_pcvar_num( cvar_gal_vote_show_none ) 
-            && get_pcvar_num( cvar_gal_vote_show_none_type ))
+        if( get_pcvar_num( cvar_gal_vote_show_none )
+            && get_pcvar_num( cvar_gal_vote_show_none_type ) )
         {
             formatex( menuDirty, charsmax( menuDirty ), "%s^n^n%s0. %s%L^n^n%s%L", voteStatus,
                     CLR_RED, CLR_WHITE, LANG_SERVER, "GAL_OPTION_NONE",
@@ -3331,13 +3344,12 @@ public vote_display( vote_display_task_argument[ 3 ] )
                 && !get_pcvar_num( cvar_gal_vote_show_none_type )
                 && !g_is_vote_blocked )
             {
-                voteFooter[0] = ' '
-                voteFooter[1] = ' '
+                voteFooter[ 0 ] = ' '
+                voteFooter[ 1 ] = ' '
             }
-
+            
             formatex( menuDirty, charsmax( menuDirty ), "%s%s", voteStatus, voteFooter );
         }
-
     }
     
     new menuid, menukeys;
