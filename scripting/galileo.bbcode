@@ -1,5 +1,5 @@
-[SIZE="6"][COLOR="Blue"][B]Galileo v1.2-release_candidate1.hotfix1[/B][/COLOR][/SIZE]
-[B]Release: 10.10.2015 | Last Update: 17.01.2016[/B]
+[SIZE="6"][COLOR="Blue"][B]Galileo v1.2[/B][/COLOR][/SIZE]
+[B]Release: 10.10.2015 | Last Update: 23.01.2016[/B]
 
 If you want to translate the 'Galileo Reloaded Mapchooser' to your language or if you see some error or bad coloring tags positioning at the current translations, feel free to correct and come here to [URL="https://forums.alliedmods.net/showthread.php?t=277636"]this translation request thread[/URL] and post your translation or fix.
 
@@ -187,8 +187,6 @@ gal_minplayers "10" > minimum players on server to use different mapcycle file
 
 basically when there are less players [based on cvar] on the server plugin should use different mapcycle 
 
-* Verify the command start vote handler about double quotes remove. Test also the gal_mapfile * functionality.
-
 ******************************** [anchor]Change[/anchor][B][SIZE="5"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
 [CODE]
 2015-10-10 | v1.2-alpha1 
@@ -267,6 +265,9 @@ basically when there are less players [based on cvar] on the server plugin shoul
  * Fixed remainning time showing 0 seconds instead of 'vote has ended'.
  * Added new cvar 'gal_vote_show_none_type', to control the 'None' option should behavior when it is active.
  * Fixed 'gal_vote_showstatus' option 2, causing the voting to show the countdown timer freezed.
+
+2016-01-17 | v1.2
+ * Fixed the command 'gal_startvote' handler not ignoring double quotes.
 [/CODE]Compilations data comparisons at the Amx Mod X "1.8.3-dev+4964" between:
 [LIST=1]
 [*]Deagles' Map Manager v3.25Beta - [COLOR="Blue"]deagsmapmanager.sma[/COLOR], by DynamicBits: [url]https://forums.alliedmods.net/showthread.php?t=177180[/url]
