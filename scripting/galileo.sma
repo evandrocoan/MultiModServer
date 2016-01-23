@@ -35,7 +35,7 @@
  * and the variable 'g_debug_level' for more information.
  * Default value: 0  - which is disabled.
  */
-#define IS_DEBUG_ENABLED 1
+#define IS_DEBUG_ENABLED 0
 
 #if IS_DEBUG_ENABLED > 0
     #define DEBUG_LOGGER(%1) debugMesssageLogger( %1 )
@@ -311,6 +311,8 @@ new cvar_voteStatus
 new cvar_voteStatusType;
 new cvar_soundsMute;
 new cvar_voteMapFile
+new cvar_voteMinPlayers
+new cvar_voteMinPlayersMapFile
 
 /**
  * Various Artists
@@ -432,6 +434,8 @@ public plugin_init()
     cvar_runoffDuration          = register_cvar( "gal_runoff_duration", "10" );
     cvar_soundsMute              = register_cvar( "gal_sounds_mute", "0" );
     cvar_voteMapFile             = register_cvar( "gal_vote_mapfile", "*" );
+    cvar_voteMinPlayers          = register_cvar( "gal_vote_minplayers", "0" );
+    cvar_voteMinPlayersMapFile   = register_cvar( "gal_vote_minplayers_mapfile", "mapcycle.txt" );
     
     register_logevent( "game_commencing_event", 2, "0=World triggered",
             "1=Game_Commencing", "1&Restart_Round_" )
@@ -1214,38 +1218,11 @@ public map_manageEnd()
     
     get_cvar_string( "amx_nextmap", g_nextmap, charsmax( g_nextmap ) );
     
-    if( get_pcvar_num( cvar_endOnRound ) == 1 ) // when time runs out, end at the current round end
+    switch( get_pcvar_num( cvar_endOnRound ) )
     {
-        g_is_last_round       = true;
-        g_isTimeToChangeLevel = true;
-    
-    #if AMXX_VERSION_NUM < 183
-        get_players( g_colored_players_ids, g_colored_players_number, "ch" );
-        
-        for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
-             g_colored_current_index++ )
+        case 1: // when time runs out, end at the current round end
         {
-            g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
-            
-            client_print_color_internal( g_colored_player_id, "^1%L %L %L", g_colored_player_id,
-                    "GAL_CHANGE_TIMEEXPIRED", g_colored_player_id, "GAL_CHANGE_NEXTROUND",
-                    g_colored_player_id, "GAL_NEXTMAP", g_nextmap )
-        }
-    #else
-        client_print_color_internal( 0, "^1%L %L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED",
-                LANG_PLAYER, "GAL_CHANGE_NEXTROUND", LANG_PLAYER, "GAL_NEXTMAP", g_nextmap )
-    #endif
-        
-        prevent_map_change()
-    }
-    else if( get_pcvar_num( cvar_endOnRound ) == 2 ) // when time runs out, end at the next round end
-    {
-        g_is_last_round = true;
-        
-        // This is to avoid have a extra round at special mods where time limit is equal the
-        // round timer.
-        if( get_cvar_float( "mp_roundtime" ) > 8 )
-        {
+            g_is_last_round       = true;
             g_isTimeToChangeLevel = true;
         
         #if AMXX_VERSION_NUM < 183
@@ -1264,29 +1241,59 @@ public map_manageEnd()
             client_print_color_internal( 0, "^1%L %L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED",
                     LANG_PLAYER, "GAL_CHANGE_NEXTROUND", LANG_PLAYER, "GAL_NEXTMAP", g_nextmap )
         #endif
-        }
-        else
-        {
-        #if AMXX_VERSION_NUM < 183
-            get_players( g_colored_players_ids, g_colored_players_number, "ch" );
             
-            for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
-                 g_colored_current_index++ )
-            {
-                g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
-                
-                client_print_color_internal( g_colored_player_id, "^1%L %L", g_colored_player_id,
-                        "GAL_CHANGE_TIMEEXPIRED", g_colored_player_id, "GAL_NEXTMAP", g_nextmap );
-            }
-        #else
-            client_print_color_internal( 0, "^1%L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED",
-                    LANG_PLAYER, "GAL_NEXTMAP", g_nextmap );
-        #endif
+            prevent_map_change()
         }
-        
-        prevent_map_change()
+        case 2: // when time runs out, end at the next round end
+        {
+            g_is_last_round = true;
+            
+            // This is to avoid have a extra round at special mods where time limit is equal the
+            // round timer.
+            if( get_cvar_float( "mp_roundtime" ) > 8 )
+            {
+                g_isTimeToChangeLevel = true;
+            
+            #if AMXX_VERSION_NUM < 183
+                get_players( g_colored_players_ids, g_colored_players_number, "ch" );
+                
+                for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+                     g_colored_current_index++ )
+                {
+                    g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
+                    
+                    client_print_color_internal( g_colored_player_id, "^1%L %L %L", g_colored_player_id,
+                            "GAL_CHANGE_TIMEEXPIRED", g_colored_player_id, "GAL_CHANGE_NEXTROUND",
+                            g_colored_player_id, "GAL_NEXTMAP", g_nextmap )
+                }
+            #else
+                client_print_color_internal( 0, "^1%L %L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED",
+                        LANG_PLAYER, "GAL_CHANGE_NEXTROUND", LANG_PLAYER, "GAL_NEXTMAP", g_nextmap )
+            #endif
+            }
+            else
+            {
+            #if AMXX_VERSION_NUM < 183
+                get_players( g_colored_players_ids, g_colored_players_number, "ch" );
+                
+                for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+                     g_colored_current_index++ )
+                {
+                    g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
+                    
+                    client_print_color_internal( g_colored_player_id, "^1%L %L", g_colored_player_id,
+                            "GAL_CHANGE_TIMEEXPIRED", g_colored_player_id, "GAL_NEXTMAP", g_nextmap );
+                }
+            #else
+                client_print_color_internal( 0, "^1%L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED",
+                        LANG_PLAYER, "GAL_NEXTMAP", g_nextmap );
+            #endif
+            }
+            
+            prevent_map_change()
+        }
     }
-    
+
     configure_last_round_HUD( bool:get_pcvar_num( cvar_endOnRound_msg ) )
     
     DEBUG_LOGGER( 2, "%32s mp_timelimit: %f", "map_manageEnd(out)", get_pcvar_float( g_timelimit_pointer ) )
@@ -2660,7 +2667,11 @@ stock vote_addFiller()
     
     DEBUG_LOGGER( 4, "( vote_addFiller() ) cvar_voteMapFile filename: %s", filename )
     
-    if( filename[ 0 ] == '*' )
+    if( get_realplayersnum() < get_pcvar_num( cvar_voteMinPlayers ) )
+    {
+        get_pcvar_string( cvar_voteMinPlayersMapFile, filename, charsmax( filename ) )
+    }
+    else if( filename[ 0 ] == '*' )
     {
         get_cvar_string( "mapcyclefile", filename, charsmax( filename ) );
     }
