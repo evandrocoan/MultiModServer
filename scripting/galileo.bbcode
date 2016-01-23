@@ -180,12 +180,6 @@ disable the original "[B]mapchooser.amxx[/B]" or any other [B]map manager plugin
 galileo.amxx
 [/QUOTE]
 ******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] *********************************
-* lets say there are like 5 players on the server when it comes time for vote next map the plugin to use maps from different mapcycle file based on cvar like 
-
-gal_minplayers_mapcyclefile "maps_small.ini" > mapcycle file used when gal_minplayers is on 
-gal_minplayers "10" > minimum players on server to use different mapcycle file 
-
-basically when there are less players [based on cvar] on the server plugin should use different mapcycle 
 
 ******************************** [anchor]Change[/anchor][B][SIZE="5"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
 [CODE]
@@ -268,6 +262,8 @@ basically when there are less players [based on cvar] on the server plugin shoul
 
 2016-01-17 | v1.2
  * Fixed the command 'gal_startvote' handler not ignoring double quotes.
+ * Added new cvar 'gal_vote_minplayers_mapfile' to specifiy the mapcycle file to use when 'gal_vote_minplayers' is activated.
+ * Added new cvar 'gal_vote_minplayers' to specify the minimum players number to use the 'gal_vote_minplayers_mapfile'.
 [/CODE]Compilations data comparisons at the Amx Mod X "1.8.3-dev+4964" between:
 [LIST=1]
 [*]Deagles' Map Manager v3.25Beta - [COLOR="Blue"]deagsmapmanager.sma[/COLOR], by DynamicBits: [url]https://forums.alliedmods.net/showthread.php?t=177180[/url]
