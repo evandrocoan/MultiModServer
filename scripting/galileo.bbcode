@@ -12,7 +12,7 @@ If you want to translate the 'Galileo Reloaded Mapchooser' to your language or i
 [LIST=1]
 [*]You will get bug fixes.
 [*]You will have new features.
-[/LIST][COLOR="Blue"]Observation:[/COLOR] If you want use the new features, download the new configuration files and updated yours using the new the cvars. If not, you will see anything new, because all new feature are by default disabled.
+[/LIST][COLOR="Blue"]Observation:[/COLOR] If you want use the new features, download the new configuration files and updated yours using the new the cvars. If not, you will see anything new, because all new feature are by default disabled. So, to keep everything new disabled, just do not install the new configuration file 'galileo.cfg'.
 
 [B]Miscellaneous:[/B][LIST=1]
 [*]You need to disable "nextmap.amxx".
@@ -180,6 +180,14 @@ disable the original "[B]mapchooser.amxx[/B]" or any other [B]map manager plugin
 galileo.amxx
 [/QUOTE]
 ******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] *********************************
+* lets say there are like 5 players on the server when it comes time for vote next map the plugin to use maps from different mapcycle file based on cvar like 
+
+gal_minplayers_mapcyclefile "maps_small.ini" > mapcycle file used when gal_minplayers is on 
+gal_minplayers "10" > minimum players on server to use different mapcycle file 
+
+basically when there are less players [based on cvar] on the server plugin should use different mapcycle 
+
+* Verify the command start vote handler about double quotes remove. Test also the gal_mapfile * functionality.
 
 ******************************** [anchor]Change[/anchor][B][SIZE="5"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
 [CODE]
