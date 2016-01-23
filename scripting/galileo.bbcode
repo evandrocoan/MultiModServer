@@ -1,5 +1,5 @@
-[SIZE="6"][COLOR="Blue"][B]Galileo v1.2-release_candidate1.hotfix1[/B][/COLOR][/SIZE]
-[B]Release: 10.10.2015 | Last Update: 17.01.2016[/B]
+[SIZE="6"][COLOR="Blue"][B]Galileo v1.2[/B][/COLOR][/SIZE]
+[B]Release: 10.10.2015 | Last Update: 23.01.2016[/B]
 
 If you want to translate the 'Galileo Reloaded Mapchooser' to your language or if you see some error or bad coloring tags positioning at the current translations, feel free to correct and come here to [URL="https://forums.alliedmods.net/showthread.php?t=277636"]this translation request thread[/URL] and post your translation or fix.
 
@@ -12,7 +12,7 @@ If you want to translate the 'Galileo Reloaded Mapchooser' to your language or i
 [LIST=1]
 [*]You will get bug fixes.
 [*]You will have new features.
-[/LIST][COLOR="Blue"]Observation:[/COLOR] If you want use the new features, download the new configuration files and updated yours using the new the cvars. If not, you will see anything new, because all new feature are by default disabled.
+[/LIST][COLOR="Blue"]Observation:[/COLOR] If you want use the new features, download the new configuration files and updated yours using the new the cvars. If not, you will see anything new, because all new feature are by default disabled. So, to keep everything new disabled, just do not install the new configuration file 'galileo.cfg'.
 
 [B]Miscellaneous:[/B][LIST=1]
 [*]You need to disable "nextmap.amxx".
@@ -31,7 +31,8 @@ If you want to translate the 'Galileo Reloaded Mapchooser' to your language or i
 [*][goanchor=Downloads]Downloads[/goanchor]
 [/LIST]
 [B]See its current development at: [URL="https://github.com/addonszz/galileo"]Github
-[IMG]https://cdn3.iconfinder.com/data/icons/social-network-round-gloss-shine/128/GitHub_Social-Network-Communicate-Page-Curl-Effect-Circle-Glossy-Shadow-Shine.png[/IMG][/URL][/B] 
+[IMG]https://cdn3.iconfinder.com/data/icons/social-network-round-gloss-shine/128/GitHub_Social-Network-Communicate-Page-Curl-Effect-Circle-Glossy-Shadow-Shine.png[/IMG]
+https://github.com/addonszz/galileo[/URL][/B] 
 [B][COLOR="Blue"](look for the developer and feature branches)[/COLOR][/B]
 
 The original plugin "[URL="https://forums.alliedmods.net/showthread.php?t=77391"]Galileo[/URL]" is written by [B]Brad[/B]. The "Galileo 1.2" works similarly as the original
@@ -48,14 +49,12 @@ designed, coded and tested through one or more beta cycles with no known show st
 This is a feature rich map voting plugin.  It's intended to be used in place of any other map choosing plugin 
 such as the original [B]Galileo[/B], [B]Deagles' Map Manager[/B] and AMXX's very own [B]Map Chooser[/B].
 
-[SIZE="4"]Basic differences between the [COLOR="Red"]Galileo 1.1.290[/COLOR] and [COLOR="Red"]Galileo 1.2[/COLOR][/SIZE] 
-
 [B]The Galileo 1.2 can:[/B]
 [LIST=1]
 [*]configure to display colored text messages.
-[*]configure to always show the option "Keep Current Map" at any voting.
+[*]configure to always show the option "Stay Here" at any voting.
 [*]configure to always show the countdown remaining vote time.
-[*]manage RunOff vote between a map and "Keep Current Map".
+[*]manage RunOff vote between a map and "Stay Here".
 [*]change the time limit to zero.
 [*]manage/start end map vote with mp_maxrounds, mp_winlimit or mp_timelimit.
 [*]configure to use the current mapcycle to nominate maps.
@@ -70,18 +69,6 @@ such as the original [B]Galileo[/B], [B]Deagles' Map Manager[/B] and AMXX's very
 [*]configure to show the recent maps are displayed as a menu.
 [*]configure to always see the currently vote progress.
 [*]configure to always shows the voting option "None".
-[/LIST]
-[B]The Galileo 1.1.290 cannot:[/B]
-[LIST=1]
-[*]configure to always show the option "Keep Current Map" at any voting.
-[*]configure to always show the countdown remaining vote time.
-[*]configure to manage RunOff vote between a map and "Keep Current Map".
-[*]change the time limit to zero.
-[*]configure to display colored text messages.
-[*]nominate maps by a map list menu.
-[*]manage/start end map vote with mp_maxrounds, mp_winlimit or mp_timelimit.
-[*]configure to use the current mapcycle to nominate maps.
-[*]configure to keep the initial server next map when nobody vote for next map.
 [/LIST]
 It is [COLOR="Red"][B]highly recommended[/B][/COLOR] you to review the well-commented "[B]galileo.cfg[/B]" to see all the cvars' options
 you have with this plugin.  It's located in the [B]Attached ZIP[/B] available at the [goanchor=Downloads]Downloads[/goanchor] section, and [B]here below[/B]:
@@ -116,11 +103,10 @@ galileo.cfg contents.
 [/QUOTE]
 
 ********************** [anchor]Requirements[/anchor][SIZE="5"][COLOR="Blue"][B]Requirements and Commands[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor]  ******
-Amx Mod X [B]1.8.2[/B] or [COLOR="Red"][B]higher only[/B][/COLOR]
+Amx Mod X [B]1.8[/B] or [COLOR="Red"][B]higher only[/B][/COLOR]
 The Default '[B]Amx Mod X[/B]' [COLOR="Red"]NextMap Plugin [B]Disabled[/B][/COLOR] (nextmap.amxx)
 
 [B]Client's Commands:[/B]
-[QUOTE]
 //Displays, to all players, the next map that will be played.  This is
 //a replacement for AMXX's command of the same name. 
 //When using end of map voting (CVAR "gal_endofmapvote" and "gal_nextmap_change"
@@ -176,10 +162,8 @@ The Default '[B]Amx Mod X[/B]' [COLOR="Red"]NextMap Plugin [B]Disabled[/B][/COLO
 //If [I]mapname[/I] has not been nominated by the player, will attempt to nominate it.
 //Requires CVAR "gal_nom_playerallowance" to be set to a value higher than 0.
 [COLOR="Blue"]say [B]mapname[/B][/COLOR]
-[/QUOTE]
 
 ******************************** [anchor]Installation[/anchor][B][SIZE="5"][COLOR="Blue"]Installation[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor]  ***********************
-[SPOILER]
 [B]1.[/B] Download the files "[B]galileo.sma[/B]" and "[B]configuration_files.zip[/B]" at [goanchor=Downloads]Downloads[/goanchor]
 section.
 
@@ -195,10 +179,10 @@ disable the original "[B]mapchooser.amxx[/B]" or any other [B]map manager plugin
 [QUOTE]
 galileo.amxx
 [/QUOTE]
-[/SPOILER]******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] *********************************
+******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] *********************************
 
 ******************************** [anchor]Change[/anchor][B][SIZE="5"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
-[QUOTE]
+[CODE]
 2015-10-10 | v1.2-alpha1 
  * Fixed server restart after change timelimit to 0. 
  * Fixed server timelimit re-change after change it to 0. 
@@ -218,7 +202,7 @@ galileo.amxx
 
 2015-10-14 | v1.2-alpha2 
  * Fixed broken re-opt (RunOff) vote. 
- * Fixed automatic changelevel at normal vote map, after a successful keep current map wins. 
+ * Fixed automatic changelevel at normal vote map, after a successful 'Stay Here' option wins. 
  * Improved code readability and added some new code documentation. 
  * Removed weighted votes that allows admins to have their vote counted more. 
  * Removed cvar to specifies the maximum number of minutes a map can be played. 
@@ -250,10 +234,10 @@ galileo.amxx
  * Added weighted votes that allows admins to have their vote counted more.
  * Added display colored text messages support.
 
-2016-01-31 | v1.2-release_candidate1
+2016-01-17 | v1.2-release_candidate1
  * Add an option to 'gal_vote_showstatus', to always the vote progress to a player.
  * Fix bug where runoff show a third option, Extend Current Map.
- * Add a cvar 'amx_extendmap_allow_stay' to keep current map featuare disabled.
+ * Add a cvar 'amx_extendmap_allow_stay' to keep 'Stay Here' featuare disabled.
  * Added a new cvar to disable the colored chat.
  * Fixed 'gal_startvote' [-restart] argument not working.
  * Fixed showing that the player chose extend map, instead of stay on map.
@@ -267,7 +251,7 @@ galileo.amxx
  * Change the nextmap to [not voted yet]
  * During a vote, change the nextmap to [vote in progress]
 
-2016-01-31 | v1.2-release_candidate1.hotfix1
+2016-01-17 | v1.2-release_candidate1.hotfix1
  * Added new cvar 'amx_extendmap_allow_stay_type' to allow show the current map name on stay here option.
  * Fixed misspelling at multilingual file.
  * Fixed 'None' vote map option blink at the last second.
@@ -275,12 +259,17 @@ galileo.amxx
  * Fixed remainning time showing 0 seconds instead of 'vote has ended'.
  * Added new cvar 'gal_vote_show_none_type', to control the 'None' option should behavior when it is active.
  * Fixed 'gal_vote_showstatus' option 2, causing the voting to show the countdown timer freezed.
-[/QUOTE]Compilations data comparisons at the Amx Mod X "1.8.3-dev+4964" between:
+
+2016-01-17 | v1.2
+ * Fixed the command 'gal_startvote' handler not ignoring double quotes.
+ * Added new cvar 'gal_vote_minplayers_mapfile' to specifiy the mapcycle file to use when 'gal_vote_minplayers' is activated.
+ * Added new cvar 'gal_vote_minplayers' to specify the minimum players number to use the 'gal_vote_minplayers_mapfile'.
+[/CODE]Compilations data comparisons at the Amx Mod X "1.8.3-dev+4964" between:
 [LIST=1]
 [*]Deagles' Map Manager v3.25Beta - [COLOR="Blue"]deagsmapmanager.sma[/COLOR], by DynamicBits: [url]https://forums.alliedmods.net/showthread.php?t=177180[/url]
 [*]DeRoiD's Mapchooser v2.33 - [COLOR="blue"]dmc233.sma[/COLOR], by DeRoiD: [url]https://forums.alliedmods.net/showthread.php?t=261412[/url]
 [*]Galileo 1.1.290 (a feature rich map voting plugin) - [COLOR="blue"]galileo1.1.sma[/COLOR], by Brad Jones: [url]https://forums.alliedmods.net/showthread.php?t=77391[/url]
-[*]Galileo v1.2-beta1 | Last Update: 12.01.2016 - [COLOR="blue"]galileo1.2.sma[/COLOR], by Brad Jones/Addons zz: [url]https://forums.alliedmods.net/showthread.php?t=273019[/url]
+[*]Galileo v1.2-rc1 | Last Update: 12.01.2016 - [COLOR="blue"]galileo1.2.sma[/COLOR], by Brad Jones/Addons zz: [url]https://forums.alliedmods.net/showthread.php?t=273019[/url]
 [*]Nextmap Chooser (v1.8.2) - [COLOR="blue"]mapchooser.sma[/COLOR], by AMXX Team
 [/LIST]Table with all:[PAWN]
 Plugin name: deagsmapmanager.sma      dmc233.sma   galileo1.1.sma    galileo1.2.sma  mapchooser.sma
@@ -299,7 +288,7 @@ Stack/heap size:     16.384 bytes       16.384 bytes        +0.0 bytes
 Total requirements: 131.256 bytes      145.768 bytes     +14.512 bytes
 Compilation Time:      0,45 sec          0,59 sec          +0,14 sec  
 [/PAWN]Source Data:[SPOILER] 
-[PAWN]
+[CODE]
 //AMXXPC compile.exe
 // by the AMX Mod X Dev Team
 
@@ -380,9 +369,8 @@ Compilation Time:      0,45 sec          0,59 sec          +0,14 sec
 // ----------------------------------------
 
 Press enter to exit ...
-[/PAWN]
+[/CODE]
 [/SPOILER]******************************** [anchor]Credits[/anchor][B][SIZE="5"][COLOR="blue"]Credits[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] *******************************
-[SPOILER]
 [B]Brad[/B]: The Original Galileo developer.
 [B]Addons zz[/B]: The Galileo 1.2 developer.
 [B]Th3822[/B]: For find a error from map_nominate.
@@ -402,7 +390,7 @@ or [URL="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=brad%40mi
 Thank you!  It means a lot to me. 
 --Brad
 [/QUOTE]
-[/SPOILER]******************************** [anchor]Sourcecode[/anchor][SIZE="5"][COLOR="blue"][B]Source Code and Support[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor] ***
+******************************** [anchor]Sourcecode[/anchor][SIZE="5"][COLOR="blue"][B]Source Code and Support[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor] ***
 You can receive support for this plugin within this thread. Non-Steam servers are not supported.
 
 For any problems with this plugin visit this own page for support: 
