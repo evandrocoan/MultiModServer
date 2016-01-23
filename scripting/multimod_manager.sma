@@ -30,8 +30,7 @@
 #define SHORT_STRING  64
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
- * and the variable 'g_debug_level' for more information.
- * Default value: 0  - which is disabled.
+ * and the variable 'g_debug_level' for more information. Default value: 0  - which is disabled.
  */
 #define IS_DEBUG_ENABLED 0
 
@@ -72,8 +71,8 @@ stock debugMesssageLogger( mode, message[], any: ... )
     #define DEBUG_LOGGER(%1) //
 #endif
 
-#define PLUGIN "Multi-Mod Manager"
-#define AUTHOR "Addons zz"
+#define PLUGIN_NAME        "Multi-Mod Manager"
+#define PLUGIN_AUTHOR_NAME "Addons zz"
 
 #define TASK_VOTEMOD      2487002
 #define TASK_CHVOMOD      2487004
@@ -177,7 +176,7 @@ new g_cmdsAvailables[][ 72 ] =
  */
 public plugin_init()
 {
-    register_plugin( PLUGIN, VERSION, AUTHOR )
+    register_plugin( PLUGIN_NAME, VERSION, PLUGIN_AUTHOR_NAME )
     
     register_cvar( "MultiModManager", VERSION, FCVAR_SERVER | FCVAR_SPONLY )
     
