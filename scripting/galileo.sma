@@ -32,8 +32,7 @@
 #define SHORT_STRING  64
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
- * and the variable 'g_debug_level' for more information.
- * Default value: 0  - which is disabled.
+ * and the variable 'g_debug_level' for more information. Default value: 0  - which is disabled.
  */
 #define IS_DEBUG_ENABLED 0
 
@@ -1293,7 +1292,7 @@ public map_manageEnd()
             prevent_map_change()
         }
     }
-
+    
     configure_last_round_HUD( bool:get_pcvar_num( cvar_endOnRound_msg ) )
     
     DEBUG_LOGGER( 2, "%32s mp_timelimit: %f", "map_manageEnd(out)", get_pcvar_float( g_timelimit_pointer ) )
