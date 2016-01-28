@@ -124,17 +124,24 @@
 #include <engine>
 #include <hamsandwich>
 #include <cstrike>
+#include <colorchat>
 
 #define PLAYER_MODELS // Enable Player Models
 
-#define MAIN_HUD_MESSAGE_POSITION -1.0, 0.10
+// Hud Position (X, Y)
+#define TRANSFORM_HUD_POS -1.0, 0.25
+#define HUD_INFO_POS -1.0, 0.7
 
 // CS Player PData Offsets (win32)
 const PDATA_SAFE = 2
 const OFFSET_CSMENUCODE = 205
 
+// CS Weapon CBase Offsets (win32)
+const OFFSET_WEAPONOWNER = 41
+
 // Linux diff's
 const OFFSET_LINUX = 5 // offsets 5 higher in Linux builds
+const OFFSET_LINUX_WEAPONS = 4 // weapon offsets are only 4 steps higher on Linux
 
 #if defined PLAYER_MODELS
 #include <playermodel>
@@ -142,7 +149,7 @@ const OFFSET_LINUX = 5 // offsets 5 higher in Linux builds
 #endif
 
 #define PLUGIN "Dragon Ball Mod [Heroes vs Villains]"
-#define VERSION "1.4"
+#define VERSION "1.5"
 #define AUTHOR "[P]erfec[T] [S]cr[@]s[H]"
 
 #define is_user_valid_connected(%1) (1 <= %1 <= g_maxpl && is_user_connected(%1))
@@ -156,7 +163,7 @@ new const VillainLangs[][] = { "NONE", "CHARACTER_FRIEZA", "CHARACTER_CELL", "CH
 
 // General variables
 new g_villain_id[33], g_hero_id[33], cvar_energy_for_second, cvar_energy_need, cvar_start_life_quantity, cvar_blast_decalls, cvar_powerup_effect
-new g_power[4][33], g_max[2][33], g_energy_level[6], fw_gSpawn, spr[2], g_msg_syc, g_maxpl
+new g_power[4][33], g_max[2][33], g_energy_level[6], fw_gSpawn, spr[2], g_msg_syc, g_maxpl, cvar_bot_maxtime, cvar_bot_mintime
 
 // Characters Cvars
 new cvar_goku[10], cvar_frieza[8], cvar_vegeta[8], cvar_gohan[6], cvar_krilin[6], cvar_picolo[6], cvar_broly[8], cvar_superbuu[8], cvar_cell[6], cvar_omega_sheron[6]
@@ -166,6 +173,11 @@ static const g_burnDecalBig[3] = {46, 47, 48}
 
 new const Remove_Entities[][] = { "func_bomb_target", "info_bomb_target", "hostage_entity", "monster_scientist", "func_hostage_rescue", "info_hostage_rescue",
 "info_vip_start", "func_vip_safetyzone", "func_escapezone"}
+
+// Weapon entity names
+new const wpn_ent_names[][] = { "", "weapon_p228", "", "weapon_scout", "weapon_hegrenade", "weapon_xm1014", "weapon_c4", "weapon_mac10", "weapon_aug", "weapon_smokegrenade", 
+"weapon_elite", "weapon_fiveseven", "weapon_ump45", "weapon_sg550", "weapon_galil", "weapon_famas", "weapon_usp", "weapon_glock18", "weapon_awp", "weapon_mp5navy", "weapon_m249",
+"weapon_m3", "weapon_m4a1", "weapon_tmp", "weapon_g3sg1", "weapon_flashbang", "weapon_deagle", "weapon_sg552", "weapon_ak47", "weapon_knife", "weapon_p90" }
 
 #define MAX_TRAILS 15
 new g_trail[MAX_TRAILS]
@@ -206,7 +218,6 @@ public plugin_init()
 	register_dictionary("dragon_ball_mod.txt") // Lang Register
 
 	// Events
-	register_event("CurWeapon", "event_CurWeapon", "b", "1=1")
 	register_message(get_user_msgid("ShowMenu"), "message_show_menu")
 	register_message(get_user_msgid("VGUIMenu"), "message_vgui_menu")
 	register_menucmd(register_menuid("Terrorist_Select",1),511,"cmd_joinclass"); // Choose Team menu
@@ -220,6 +231,9 @@ public plugin_init()
 	register_forward(FM_GetGameDescription, "fw_GetGameDescription")
 	register_message(get_user_msgid("Health"), "message_health")
 	unregister_forward(FM_Spawn, fw_gSpawn);
+
+	for (new i = 1; i < sizeof wpn_ent_names; i++)
+		if(wpn_ent_names[i][0]) RegisterHam(Ham_Item_Deploy, wpn_ent_names[i], "fw_Item_Deploy_Post", 1)
 	
 	// General Cvars
 	cvar_energy_for_second = register_cvar("dbz_energy_for_second", "20") 	// Amount of energy to Earn Per Second
@@ -227,6 +241,8 @@ public plugin_init()
 	cvar_blast_decalls = register_cvar("dbz_blast_decals_enable", "1")
 	cvar_start_life_quantity = register_cvar("dbz_start_life_on_spawn", "1000") // How life should begin when reviving
 	cvar_powerup_effect = register_cvar("dbz_powerup_effect_enable", "1") // Enable Powerup Effect
+	cvar_bot_maxtime = register_cvar("dbz_bot_power_maxtime", "20.0") // Time of Range for Bot use the powers
+	cvar_bot_mintime = register_cvar("dbz_bot_power_mintime", "5.0")
 	
 	// Cvars - Goku	
 	cvar_goku[0] = register_cvar("dbz_goku_damage_ki_blast", "50")		// Ki-Blast Damage
@@ -322,7 +338,6 @@ public plugin_init()
 	
 	g_msg_syc = CreateHudSyncObj()
 	g_maxpl = get_maxplayers()
-	
 }
 
 /*===============================================================================
@@ -344,7 +359,7 @@ public plugin_natives()
 public fw_GetGameDescription()
 {
 	// Return the mod name so it can be easily identified
-	forward_return(FMV_STRING, "Dragon Ball Z Mod v 1.4")
+	forward_return(FMV_STRING, "Dragon Ball Z Mod v1.5")
 	return FMRES_SUPERCEDE;
 }
 
@@ -353,98 +368,98 @@ public fw_GetGameDescription()
 ================================================================================*/
 public plugin_precache()
 {
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/goku_ki_blast.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/goku_kamehameha.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/goku_10x_kamehameha.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/goku_spirit_bomb.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/goku_powerup1.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/goku_powerup2.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/goku_powerup3.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/goku_powerup4.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/goku_powerup5.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/frieza_powerup1.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/frieza_powerup2.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/frieza_powerup3.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/frieza_powerup4.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/frieza_deathball.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/vegeta_powerup1.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/vegeta_powerup2.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/vegeta_powerup3.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/vegeta_powerup4.wav")	
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/gallitgunfire.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/vegeta_finalflash.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/gohan_powerup1.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/gohan_powerup2.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/gohan_powerup3.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/gohan_masenko.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/ssjgohan_kamehameha.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/krillin_powerup1.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/krillin_powerup2.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/krillin_kamehameha.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/krillin_destructodisc.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/cell_powerup1.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/cell_powerup2.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/cell_powerup3.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/cell_kamehameha.wav")
-	engfunc(EngFunc_PrecacheSound, "player/pl_pain2.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/superbuu_galitgun.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/superbuu_finalflashb_fix.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/superbuu_bigbang.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/superbuu_deathball_fix.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/superbuu_powerup1_fix.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/superbuu_powerup2.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/superbuu_powerup3.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/frieza_destructodisc.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/piccolo_masenko.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/specialbeamcannon.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/piccolo_powerup1.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/piccolo_powerup2.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/piccolo_powerup3.wav")
-	engfunc(EngFunc_PrecacheSound, "player/pl_pain2.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/broly_galitgun.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/broly_finalflashb.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/broly_bigbang.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/broly_deathball.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/broly_powerup1.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/broly_powerup2.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/broly_powerup3.wav")
-	engfunc(EngFunc_PrecacheSound, "dbz_mod/broly_powerup4.wav")
-	engfunc(EngFunc_PrecacheModel, "sprites/dbz_mod/ki_blast.spr")
-	engfunc(EngFunc_PrecacheModel, "sprites/dbz_mod/kamehameha_blue.spr")
-	engfunc(EngFunc_PrecacheModel, "sprites/dbz_mod/kamehameha_red.spr")
-	engfunc(EngFunc_PrecacheModel, "sprites/dbz_mod/spirit_bomb.spr")
+	precache_sound("dbz_mod/goku_ki_blast.wav")
+	precache_sound("dbz_mod/goku_kamehameha.wav")
+	precache_sound("dbz_mod/goku_10x_kamehameha.wav")
+	precache_sound("dbz_mod/goku_spirit_bomb.wav")
+	precache_sound("dbz_mod/goku_powerup1.wav")
+	precache_sound("dbz_mod/goku_powerup2.wav")
+	precache_sound("dbz_mod/goku_powerup3.wav")
+	precache_sound("dbz_mod/goku_powerup4.wav")
+	precache_sound("dbz_mod/goku_powerup5.wav")
+	precache_sound("dbz_mod/frieza_powerup1.wav")
+	precache_sound("dbz_mod/frieza_powerup2.wav")
+	precache_sound("dbz_mod/frieza_powerup3.wav")
+	precache_sound("dbz_mod/frieza_powerup4.wav")
+	precache_sound("dbz_mod/frieza_deathball.wav")
+	precache_sound("dbz_mod/vegeta_powerup1.wav")
+	precache_sound("dbz_mod/vegeta_powerup2.wav")
+	precache_sound("dbz_mod/vegeta_powerup3.wav")
+	precache_sound("dbz_mod/vegeta_powerup4.wav")	
+	precache_sound("dbz_mod/gallitgunfire.wav")
+	precache_sound("dbz_mod/vegeta_finalflash.wav")
+	precache_sound("dbz_mod/gohan_powerup1.wav")
+	precache_sound("dbz_mod/gohan_powerup2.wav")
+	precache_sound("dbz_mod/gohan_powerup3.wav")
+	precache_sound("dbz_mod/gohan_masenko.wav")
+	precache_sound("dbz_mod/ssjgohan_kamehameha.wav")
+	precache_sound("dbz_mod/krillin_powerup1.wav")
+	precache_sound("dbz_mod/krillin_powerup2.wav")
+	precache_sound("dbz_mod/krillin_kamehameha.wav")
+	precache_sound("dbz_mod/krillin_destructodisc.wav")
+	precache_sound("dbz_mod/cell_powerup1.wav")
+	precache_sound("dbz_mod/cell_powerup2.wav")
+	precache_sound("dbz_mod/cell_powerup3.wav")
+	precache_sound("dbz_mod/cell_kamehameha.wav")
+	precache_sound("dbz_mod/superbuu_galitgun.wav")
+	precache_sound("dbz_mod/superbuu_finalflashb_fix.wav")
+	precache_sound("dbz_mod/superbuu_bigbang.wav")
+	precache_sound("dbz_mod/superbuu_deathball_fix.wav")
+	precache_sound("dbz_mod/superbuu_powerup1_fix.wav")
+	precache_sound("dbz_mod/superbuu_powerup2.wav")
+	precache_sound("dbz_mod/superbuu_powerup3.wav")
+	precache_sound("dbz_mod/frieza_destructodisc.wav")
+	precache_sound("dbz_mod/piccolo_masenko.wav")
+	precache_sound("dbz_mod/specialbeamcannon.wav")
+	precache_sound("dbz_mod/piccolo_powerup1.wav")
+	precache_sound("dbz_mod/piccolo_powerup2.wav")
+	precache_sound("dbz_mod/piccolo_powerup3.wav")
+	precache_sound("player/pl_pain2.wav")
+	precache_sound("dbz_mod/broly_galitgun.wav")
+	precache_sound("dbz_mod/broly_finalflashb.wav")
+	precache_sound("dbz_mod/broly_bigbang.wav")
+	precache_sound("dbz_mod/broly_deathball.wav")
+	precache_sound("dbz_mod/broly_powerup1.wav")
+	precache_sound("dbz_mod/broly_powerup2.wav")
+	precache_sound("dbz_mod/broly_powerup3.wav")
+	precache_sound("dbz_mod/broly_powerup4.wav")	
 	
-	spr[1] = engfunc(EngFunc_PrecacheModel, "sprites/dbz_mod/powerup.spr")
-	spr[0] = engfunc(EngFunc_PrecacheModel, "sprites/wall_puff4.spr")
+	spr[1] = precache_model("sprites/dbz_mod/powerup.spr")
+	spr[0] = precache_model("sprites/wall_puff4.spr")
 	
-	engfunc(EngFunc_PrecacheModel, "sprites/dbz_mod/masenkob.spr")
-	engfunc(EngFunc_PrecacheModel, "sprites/dbz_mod/dragon_first.spr")
-	engfunc(EngFunc_PrecacheModel, "sprites/dbz_mod/special_bean.spr")
-	engfunc(EngFunc_PrecacheModel, "models/dbz_mod/kurilin_disc.mdl")
-	engfunc(EngFunc_PrecacheModel, "sprites/dbz_mod/frieza_deathball.spr")
-	engfunc(EngFunc_PrecacheModel, "models/dbz_mod/frieza_friezadisc.mdl")
-	engfunc(EngFunc_PrecacheModel, "sprites/dbz_mod/broly_final_flash_charge.spr")
-	engfunc(EngFunc_PrecacheModel, "sprites/dbz_mod/broly_big_bang.spr")
-	engfunc(EngFunc_PrecacheModel, "sprites/dbz_mod/broly_death_ball.spr")
-	engfunc(EngFunc_PrecacheModel, "sprites/dbz_mod/buu_gallitgun.spr")
-	engfunc(EngFunc_PrecacheModel, "sprites/dbz_mod/buu_final_flash_charge.spr")
-	engfunc(EngFunc_PrecacheModel, "sprites/dbz_mod/buu_big_bang.spr")
-	engfunc(EngFunc_PrecacheModel, "sprites/dbz_mod/buu_death_ball.spr")
-	engfunc(EngFunc_PrecacheModel, "sprites/dbz_mod/green_kamehameha.spr")
-	engfunc(EngFunc_PrecacheModel, "sprites/dbz_mod/gallitgunb.spr")
-	engfunc(EngFunc_PrecacheModel, "sprites/dbz_mod/minus_enegy_power_ball.spr")
-	engfunc(EngFunc_PrecacheModel, DBZ_KNIFE_V_MODEL)
-	engfunc(EngFunc_PrecacheModel, "sprites/nhth1.spr")
+	precache_model("sprites/dbz_mod/ki_blast.spr")
+	precache_model("sprites/dbz_mod/kamehameha_blue.spr")
+	precache_model("sprites/dbz_mod/kamehameha_red.spr")
+	precache_model("sprites/dbz_mod/spirit_bomb.spr")	
+	precache_model("sprites/dbz_mod/masenkob.spr")
+	precache_model("sprites/dbz_mod/dragon_first.spr")
+	precache_model("sprites/dbz_mod/special_bean.spr")
+	precache_model("models/dbz_mod/kurilin_disc.mdl")
+	precache_model("sprites/dbz_mod/frieza_deathball.spr")
+	precache_model("models/dbz_mod/frieza_friezadisc.mdl")
+	precache_model("sprites/dbz_mod/broly_final_flash_charge.spr")
+	precache_model("sprites/dbz_mod/broly_big_bang.spr")
+	precache_model("sprites/dbz_mod/broly_death_ball.spr")
+	precache_model("sprites/dbz_mod/buu_gallitgun.spr")
+	precache_model("sprites/dbz_mod/buu_final_flash_charge.spr")
+	precache_model("sprites/dbz_mod/buu_big_bang.spr")
+	precache_model("sprites/dbz_mod/buu_death_ball.spr")
+	precache_model("sprites/dbz_mod/green_kamehameha.spr")
+	precache_model("sprites/dbz_mod/gallitgunb.spr")
+	precache_model("sprites/dbz_mod/minus_enegy_power_ball.spr")
+	precache_model("sprites/nhth1.spr")
+
+	precache_model(DBZ_KNIFE_V_MODEL)
 	
 	new i
 	for(i = 0; i < MAX_EXPLOSION; i++) {
-		g_explosion[i] = engfunc(EngFunc_PrecacheModel, Exp_Sprs[i])
+		g_explosion[i] = precache_model(Exp_Sprs[i])
 	}
 	for(i = 0; i < MAX_TRAILS; i++) {
-		g_trail[i] = engfunc(EngFunc_PrecacheModel, Trail_Sprs[i])
+		g_trail[i] = precache_model(Trail_Sprs[i])
 	}
 	for (i = 0; i < sizeof knife_sounds; i++) {
-		engfunc(EngFunc_PrecacheSound, knife_sounds[i])
+		precache_sound(knife_sounds[i])
 	}
 
 	// Player Models
@@ -521,7 +536,6 @@ public fwd_PlayerSpawn(id)
 	if (g_power[3][id] > 0) 
 		remove_power(id, g_power[3][id]);
 	
-	remove_task(id+TASK_LOOP)
 	g_power[2][id] = 0
 	g_power[0][id] = 0
 	
@@ -539,37 +553,32 @@ public fwd_PlayerSpawn(id)
 		g_villain_id[id] = random_num(1,5) 
 	}
 	
-	client_printcolor(id, "!g--==!t Dragon Ball Z Mod %s By: [P]erfec[T] [S]cr[@]s[H] !g==--", VERSION) // Show Credits
+	ColorChat(id, id, "^4--==^3 Dragon Ball Z Mod %s By: [P]erfec[T] [S]cr[@]s[H] ^4==--", VERSION) // Show Credits
 	client_cmd(id, "stopsound") // Stop sounds
-	
-	set_task(0.5, "give_itens", id)
-}
-
-public give_itens(id) 
-{
-	if(!is_user_alive(id))
-		return
 	
 	set_user_health(id, get_pcvar_num(cvar_start_life_quantity))
 	
-	fm_strip_user_weapons(id)
-	give_item(id, "weapon_knife"); 		// Knifes Only
+	new iwpn, iwpns[32], nwpn[32];
+	get_user_weapons ( id, iwpns, iwpn );
+	for ( new a = 0; a < iwpn; ++a ) {
+		get_weaponname ( iwpns[a], nwpn, 31 ); // Use Knifes Only
+		engclient_cmd ( id, "drop", nwpn );
+	}
 	
-	remove_task(id+TASK_LOOP) // If they change the value of the cvar energy per second
-	set_task(1.0, "dbz_loop", id+TASK_LOOP, "", 0, "b");
+	if(!task_exists(id+TASK_LOOP))
+		set_task(1.0, "dbz_loop", id+TASK_LOOP, "", 0, "b");
 
 	// Bot Suport
-	if(is_user_bot(id))
-	{
+	if(is_user_bot(id)) {
 		if(cs_get_user_team(id) == CS_TEAM_T) g_villain_id[id] = random_num(1,5); // Choose villain automatically
 		
 		if(cs_get_user_team(id) == CS_TEAM_CT) g_hero_id[id] = random_num(1,5); // Choose hero automatically
 		
 		remove_task(id)
-		set_task(random_float(5.0, 20.0), "use_power", id, _, _, "b") // For Bots use the Powers
-		
+		set_task(random_float(get_pcvar_float(cvar_bot_mintime), get_pcvar_float(cvar_bot_maxtime)), "use_power", id, _, _, "b") // For Bots use the Powers
 	}
 }
+
 
 public Message_StatusIcon(iMsgId, MSG_DEST, id) 
 { 
@@ -589,15 +598,15 @@ public Message_StatusIcon(iMsgId, MSG_DEST, id)
 ================================================================================*/
 public use_power(id)
 {
-	if(!is_user_connected(id) || !is_user_alive(id))
+	if(!is_user_alive(id))
 		return
 
 	if (g_power[2][id] < g_energy_level[0]) {
-		client_printcolor(id, "%L %L", id, "DBZ_TAG", id, "DONT_HAVE_ENERGY")
+		ColorChat(id, GREY, "^4%L^1 %L", id, "DBZ_TAG", id, "DONT_HAVE_ENERGY")
 		return
 	}
 	if(g_power[3][id]){
-		client_printcolor(id, "%L %L", id, "DBZ_TAG", id, "ONE_POWER_BY_TIME")
+		ColorChat(id, GREY, "^4%L^1 %L", id, "DBZ_TAG", id, "ONE_POWER_BY_TIME")
 		return
 	}
 	
@@ -608,7 +617,7 @@ public use_power(id)
 			case 1: {
 				
 				if (g_power[2][id] >= g_energy_level[0] && g_power[2][id] < g_energy_level[1]) {
-					client_printcolor(id, "%L Ki Blast!", id, "DBZ_TAG")
+					ColorChat(id, GREY, "^4%L^1 Ki Blast!", id, "DBZ_TAG")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/goku_ki_blast.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[2][id] -= g_energy_level[0]
 					g_max[1][id] = get_pcvar_num(cvar_goku[0])
@@ -616,7 +625,7 @@ public use_power(id)
 					g_power[1][id] = 1
 				}
 				else if (g_power[2][id] >= g_energy_level[1] && g_power[2][id] < g_energy_level[2]) {
-					client_printcolor(id,"%L Kamehameha!!", id, "DBZ_TAG")
+					ColorChat(id, GREY, "^4%L^1 Kamehameha!!", id, "DBZ_TAG")
 					// Wish this sound was shorter
 					emit_sound(id, CHAN_STATIC, "dbz_mod/goku_kamehameha.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[2][id] -= g_energy_level[1]
@@ -625,14 +634,14 @@ public use_power(id)
 					g_power[1][id] = 2
 				}
 				else if (g_power[2][id] >= g_energy_level[2] && g_power[2][id] < g_energy_level[3]) {
-					client_printcolor(id,"%L Dragon First!!!", id, "DBZ_TAG")
+					ColorChat(id, GREY, "^4%L^1 Dragon First!!!", id, "DBZ_TAG")
 					g_power[2][id] -= g_energy_level[2]
 					g_max[1][id] = get_pcvar_num(cvar_goku[2])
 					g_max[0][id] = get_pcvar_num(cvar_goku[7])
 					g_power[1][id] = 3
 				}
 				else if (g_power[2][id] >= g_energy_level[3] && g_power[2][id] < g_energy_level[4]) {
-					client_printcolor(id,"%L 10x Kamehameha!!!", id, "DBZ_TAG")
+					ColorChat(id, GREY, "^4%L^1 10x Kamehameha!!!", id, "DBZ_TAG")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/goku_10x_kamehameha.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[2][id] -= g_energy_level[3]
 					g_max[1][id] = get_pcvar_num(cvar_goku[3])
@@ -641,7 +650,7 @@ public use_power(id)
 				}
 				else if (g_power[2][id] >= g_energy_level[4]) {
 					set_rendering(id)
-					client_printcolor(id,"%L Spirit Bomb!!!!", id, "DBZ_TAG")
+					ColorChat(id, GREY, "^4%L^1 Spirit Bomb!!!!", id, "DBZ_TAG")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/goku_spirit_bomb.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[2][id] -= g_energy_level[4]
 					g_max[1][id] = get_pcvar_num(cvar_goku[4])
@@ -654,7 +663,7 @@ public use_power(id)
 			// Vegeta
 			case 2:	{
 				if (g_power[2][id] >= g_energy_level[0] && g_power[2][id] < g_energy_level[1]) {
-					client_printcolor(id, "%L Ki Blast!", id, "DBZ_TAG")
+					ColorChat(id, GREY, "^4%L^1 Ki Blast!", id, "DBZ_TAG")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/goku_ki_blast.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[2][id] -= g_energy_level[0]
 					g_max[1][id] = get_pcvar_num(cvar_vegeta[0])
@@ -662,7 +671,7 @@ public use_power(id)
 					g_power[1][id] = 1
 				}
 				else if (g_power[2][id] >= g_energy_level[1] && g_power[2][id] < g_energy_level[2]) {
-					client_printcolor(id,"%L Garlic Gun !!", id, "DBZ_TAG")
+					ColorChat(id, GREY, "^4%L^1 Garlic Gun !!", id, "DBZ_TAG")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/gallitgunfire.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[2][id] -= g_energy_level[1]
 					g_max[1][id] = get_pcvar_num(cvar_vegeta[1])
@@ -670,7 +679,7 @@ public use_power(id)
 					g_power[1][id] = 2
 				}
 				else if (g_power[2][id] >= g_energy_level[2] && g_power[2][id] < g_energy_level[3]) {
-					client_printcolor(id,"%L Final Flash !!!", id, "DBZ_TAG")
+					ColorChat(id, GREY, "^4%L^1 Final Flash !!!", id, "DBZ_TAG")
 					g_power[2][id] -= g_energy_level[2]
 					g_max[1][id] = get_pcvar_num(cvar_vegeta[2])
 					g_max[0][id] = get_pcvar_num(cvar_vegeta[6])
@@ -678,7 +687,7 @@ public use_power(id)
 					g_power[1][id] = 3
 				}
 				else if (g_power[2][id] >= g_energy_level[3]) {
-					client_printcolor(id,"%L Final Shine Attack!!!", id, "DBZ_TAG")
+					ColorChat(id, GREY, "^4%L^1 Final Shine Attack!!!", id, "DBZ_TAG")
 					g_power[2][id] -= g_energy_level[3]
 					g_max[1][id] = get_pcvar_num(cvar_vegeta[3])
 					g_max[0][id] = get_pcvar_num(cvar_vegeta[7])
@@ -690,7 +699,7 @@ public use_power(id)
 			// Gohan
 			case 3:	{
 				if (g_power[2][id] >= g_energy_level[0] && g_power[2][id] < g_energy_level[1]) {
-					client_printcolor(id, "%L Ki Blast!", id, "DBZ_TAG")
+					ColorChat(id, GREY, "^4%L^1 Ki Blast!", id, "DBZ_TAG")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/goku_ki_blast.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[2][id] -= g_energy_level[0]
 					g_max[1][id] = get_pcvar_num(cvar_gohan[0])
@@ -698,7 +707,7 @@ public use_power(id)
 					g_power[1][id] = 1
 				}
 				else if (g_power[2][id] >= g_energy_level[1] && g_power[2][id] < g_energy_level[2]) {
-					client_printcolor(id,"%L Masenko!!", id, "DBZ_TAG")
+					ColorChat(id, GREY, "^4%L^1 Masenko!!", id, "DBZ_TAG")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/gohan_masenko.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM)
 					g_power[2][id] -= g_energy_level[1]
 					g_max[1][id] = get_pcvar_num(cvar_gohan[1])
@@ -706,7 +715,7 @@ public use_power(id)
 					g_power[1][id] = 2
 				}
 				else if (g_power[2][id] >= g_energy_level[2]) {
-					client_printcolor(id,"%L Kamehameha!!!", id, "DBZ_TAG")
+					ColorChat(id, GREY, "^4%L^1 Kamehameha!!!", id, "DBZ_TAG")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/ssjgohan_kamehameha.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM)
 					g_power[2][id] -= g_energy_level[2]
 					g_max[1][id] = get_pcvar_num(cvar_gohan[2])
@@ -719,7 +728,7 @@ public use_power(id)
 			// Krilin
 			case 4:	{
 				if (g_power[2][id] >= g_energy_level[0] && g_power[2][id] < g_energy_level[1]) {
-					client_printcolor(id, "%L Ki Blast!", id, "DBZ_TAG")
+					ColorChat(id, GREY, "^4%L^1 Ki Blast!", id, "DBZ_TAG")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/goku_ki_blast.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[2][id] -= g_energy_level[0]
 					g_max[1][id] = get_pcvar_num(cvar_krilin[0])
@@ -727,7 +736,7 @@ public use_power(id)
 					g_power[1][id] = 1
 				}
 				else if (g_power[2][id] >= g_energy_level[1] && g_power[2][id] < g_energy_level[2]) {
-					client_printcolor(id,"%L Kamehameha !!", id, "DBZ_TAG")
+					ColorChat(id, GREY, "^4%L^1 Kamehameha !!", id, "DBZ_TAG")
 					g_power[2][id] -= g_energy_level[1]
 					g_max[1][id] = get_pcvar_num(cvar_krilin[1])
 					g_max[0][id] = get_pcvar_num(cvar_krilin[4])
@@ -735,7 +744,7 @@ public use_power(id)
 					emit_sound(id, CHAN_STATIC, "dbz_mod/krillin_kamehameha.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM)
 				}
 				else if (g_power[2][id] >= g_energy_level[2]) {
-					client_printcolor(id,"%L Destrucion Disc !!!", id, "DBZ_TAG")
+					ColorChat(id, GREY, "^4%L^1 Destrucion Disc !!!", id, "DBZ_TAG")
 					g_power[2][id] -= g_energy_level[2]
 					g_max[1][id] = get_pcvar_num(cvar_krilin[2])
 					g_max[0][id] = get_pcvar_num(cvar_krilin[5])
@@ -748,7 +757,7 @@ public use_power(id)
 			// Picolo
 			case 5:	{
 				if (g_power[2][id] >= g_energy_level[0] && g_power[2][id] < g_energy_level[1]) {
-					client_printcolor(id, "%L Ki Blast!", id, "DBZ_TAG")
+					ColorChat(id, GREY, "^4%L^1 Ki Blast!", id, "DBZ_TAG")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/goku_ki_blast.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[2][id] -= g_energy_level[0]
 					g_max[1][id] = get_pcvar_num(cvar_picolo[0])
@@ -756,7 +765,7 @@ public use_power(id)
 					g_power[1][id] = 1
 				}
 				else if (g_power[2][id] >= g_energy_level[1] && g_power[2][id] < g_energy_level[2]) {
-					client_printcolor(id,"%L Masenko !!!", id, "DBZ_TAG")
+					ColorChat(id, GREY, "^4%L^1 Masenko !!!", id, "DBZ_TAG")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/piccolo_masenko.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[2][id] -= g_energy_level[2]
 					g_max[1][id] = get_pcvar_num(cvar_picolo[1])
@@ -764,7 +773,7 @@ public use_power(id)
 					g_power[1][id] = 2
 				}
 				else if (g_power[2][id] >= g_energy_level[2]) {
-					client_printcolor(id,"%L Special Bean Cannon!!", id, "DBZ_TAG")
+					ColorChat(id, GREY, "^4%L^1 Special Bean Cannon!!", id, "DBZ_TAG")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/specialbeamcannon.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[2][id] -= g_energy_level[1]
 					g_max[1][id] = get_pcvar_num(cvar_picolo[2])
@@ -781,7 +790,7 @@ public use_power(id)
 			// Frieza
 			case 1:	{
 				if (g_power[2][id] >= g_energy_level[0] && g_power[2][id] < g_energy_level[1]) {
-					client_printcolor(id, "%L Ki Blast!", id, "DBZ_TAG")
+					ColorChat(id, GREY, "^4%L^1 Ki Blast!", id, "DBZ_TAG")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/goku_ki_blast.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[2][id] -= g_energy_level[0]
 					g_max[1][id]  = get_pcvar_num(cvar_frieza[0])
@@ -789,14 +798,14 @@ public use_power(id)
 					g_power[1][id] = 1
 				}
 				else if (g_power[2][id] >= g_energy_level[1] && g_power[2][id] < g_energy_level[2]) {
-					client_printcolor(id,"%L Death Beam!!", id, "DBZ_TAG")
+					ColorChat(id, GREY, "^4%L^1 Death Beam!!", id, "DBZ_TAG")
 					g_power[2][id] -= g_energy_level[1]
 					g_max[1][id]  = get_pcvar_num(cvar_frieza[1])
 					g_max[0][id] = get_pcvar_num(cvar_frieza[5])
 					g_power[1][id] = 2
 				}
 				else if (g_power[2][id] >= g_energy_level[2] && g_power[2][id] < g_energy_level[3]) {
-					client_printcolor(id,"%L Destrucion Disc !!!", id, "DBZ_TAG")
+					ColorChat(id, GREY, "^4%L^1 Destrucion Disc !!!", id, "DBZ_TAG")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/frieza_destructodisc.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[2][id] -= g_energy_level[2]
 					g_max[1][id]  = get_pcvar_num(cvar_frieza[2])
@@ -804,7 +813,7 @@ public use_power(id)
 					g_power[1][id] = 3
 				}
 				else if (g_power[2][id] >= g_energy_level[3]) {
-					client_printcolor(id,"%L Death Ball!!!", id, "DBZ_TAG")
+					ColorChat(id, GREY, "^4%L^1 Death Ball!!!", id, "DBZ_TAG")
 					g_power[2][id] -= g_energy_level[3]
 					g_max[1][id]  = get_pcvar_num(cvar_frieza[3])
 					g_max[0][id] = get_pcvar_num(cvar_frieza[7])
@@ -817,7 +826,7 @@ public use_power(id)
 			// Cell
 			case 2:	{
 				if (g_power[2][id] >= g_energy_level[0] && g_power[2][id] < g_energy_level[1]) {
-					client_printcolor(id, "%L Ki Blast!", id, "DBZ_TAG")
+					ColorChat(id, GREY, "^4%L^1 Ki Blast!", id, "DBZ_TAG")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/goku_ki_blast.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[2][id] -= g_energy_level[0]
 					g_max[1][id] = get_pcvar_num(cvar_cell[0])
@@ -825,14 +834,14 @@ public use_power(id)
 					g_power[1][id] = 1
 				}
 				else if (g_power[2][id] >= g_energy_level[1] && g_power[2][id] < g_energy_level[2]) {
-					client_printcolor(id,"%L Death Beam !!", id, "DBZ_TAG")
+					ColorChat(id, GREY, "^4%L^1 Death Beam !!", id, "DBZ_TAG")
 					g_power[2][id] -= g_energy_level[1]
 					g_max[1][id] = get_pcvar_num(cvar_cell[1])
 					g_max[0][id] = get_pcvar_num(cvar_cell[4])
 					g_power[1][id] = 2
 				}
 				else if (g_power[2][id] >= g_energy_level[2]) {
-					client_printcolor(id,"%L Kamehameha !!!", id, "DBZ_TAG")
+					ColorChat(id, GREY, "^4%L^1 Kamehameha !!!", id, "DBZ_TAG")
 					g_power[2][id] -= g_energy_level[2]
 					g_max[1][id] = get_pcvar_num(cvar_cell[2])
 					g_max[0][id] = get_pcvar_num(cvar_cell[5])
@@ -844,7 +853,7 @@ public use_power(id)
 			// Super Buu
 			case 3: {
 				if (g_power[2][id] >= g_energy_level[0] && g_power[2][id] < g_energy_level[1]) {
-					client_printcolor(id, "%L Ki Blast!", id, "DBZ_TAG")
+					ColorChat(id, GREY, "^4%L^1 Ki Blast!", id, "DBZ_TAG")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/superbuu_galitgun.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
 					g_power[2][id] -= g_energy_level[0]
 					g_max[1][id] = get_pcvar_num(cvar_superbuu[0])
@@ -852,7 +861,7 @@ public use_power(id)
 					g_power[1][id] = 1
 				}
 				else if (g_power[2][id] >= g_energy_level[1] && g_power[2][id] < g_energy_level[2]) {
-					client_printcolor(id,"%L Final Flash!!", id, "DBZ_TAG")
+					ColorChat(id, GREY, "^4%L^1 Final Flash!!", id, "DBZ_TAG")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/superbuu_finalflashb_fix.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
 					g_power[2][id] -= g_energy_level[1]
 					g_max[1][id] = get_pcvar_num(cvar_superbuu[1])
@@ -860,7 +869,7 @@ public use_power(id)
 					g_power[1][id] = 2
 				}
 				else if (g_power[2][id] >= g_energy_level[2] && g_power[2][id] < g_energy_level[3]) {
-					client_printcolor(id,"%L Big Bang!!!", id, "DBZ_TAG")
+					ColorChat(id, GREY, "^4%L^1 Big Bang!!!", id, "DBZ_TAG")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/superbuu_bigbang.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
 					g_power[2][id] -= g_energy_level[2]
 					g_max[1][id] = get_pcvar_num(cvar_superbuu[2])
@@ -868,7 +877,7 @@ public use_power(id)
 					g_power[1][id] = 3
 				}
 				else if (g_power[2][id] >= g_energy_level[3]) {
-					client_printcolor(id,"%L Deathball!!!", id, "DBZ_TAG")
+					ColorChat(id, GREY, "^4%L^1 Deathball!!!", id, "DBZ_TAG")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/superbuu_deathball_fix.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
 					g_power[2][id] -= g_energy_level[3]
 					g_max[1][id] = get_pcvar_num(cvar_superbuu[3])
@@ -881,14 +890,14 @@ public use_power(id)
 			// Broly
 			case 4:	{
 				if (g_power[2][id] >= g_energy_level[0] && g_power[2][id] < g_energy_level[1]) {
-					client_printcolor(id, "%L Ki Blast!", id, "DBZ_TAG")
+					ColorChat(id, GREY, "^4%L^1 Ki Blast!", id, "DBZ_TAG")
 					g_power[2][id] -= g_energy_level[0]
 					g_max[1][id] = get_pcvar_num(cvar_broly[0])
 					g_max[0][id] = get_pcvar_num(cvar_broly[4])
 					g_power[1][id] = 1
 				}
 				else if (g_power[2][id] >= g_energy_level[1] && g_power[2][id] < g_energy_level[2]) {
-					client_printcolor(id,"%L Final Flash!!", id, "DBZ_TAG")
+					ColorChat(id, GREY, "^4%L^1 Final Flash!!", id, "DBZ_TAG")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/broly_finalflashb.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
 					g_power[2][id] -= g_energy_level[1]
 					g_max[1][id] = get_pcvar_num(cvar_broly[1])
@@ -896,7 +905,7 @@ public use_power(id)
 					g_power[1][id] = 2
 				}
 				else if (g_power[2][id] >= g_energy_level[2] && g_power[2][id] < g_energy_level[3]) {
-					client_printcolor(id,"%L Big Bang!!!", id, "DBZ_TAG")
+					ColorChat(id, GREY, "^4%L^1 Big Bang!!!", id, "DBZ_TAG")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/broly_bigbang.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
 					g_power[2][id] -= g_energy_level[2]
 					g_max[1][id] = get_pcvar_num(cvar_broly[2])
@@ -904,7 +913,7 @@ public use_power(id)
 					g_power[1][id] = 3
 				}
 				else if (g_power[2][id] >= g_energy_level[3]) {
-					client_printcolor(id,"%L Deathball!!!", id, "DBZ_TAG")
+					ColorChat(id, GREY, "^4%L^1 Deathball!!!", id, "DBZ_TAG")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/broly_deathball.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
 					g_power[2][id] -= g_energy_level[3]
 					g_max[1][id] = get_pcvar_num(cvar_broly[3])
@@ -917,7 +926,7 @@ public use_power(id)
 			// Omega Sheron
 			case 5: {
 				if (g_power[2][id] >= g_energy_level[0] && g_power[2][id] < g_energy_level[1]) {
-					client_printcolor(id, "%L Ki Blast!", id, "DBZ_TAG")
+					ColorChat(id, GREY, "^4%L^1 Ki Blast!", id, "DBZ_TAG")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/goku_ki_blast.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[2][id] -= g_energy_level[0]
 					g_max[1][id] = get_pcvar_num(cvar_omega_sheron[0])
@@ -925,14 +934,14 @@ public use_power(id)
 					g_power[1][id] = 1
 				}
 				else if (g_power[2][id] >= g_energy_level[1] && g_power[2][id] < g_energy_level[2]) {
-					client_printcolor(id,"%L Dragon Thunder !!", id, "DBZ_TAG")
+					ColorChat(id, GREY, "^4%L^1 Dragon Thunder !!", id, "DBZ_TAG")
 					g_power[2][id] -= g_energy_level[1]
 					g_max[1][id] = get_pcvar_num(cvar_omega_sheron[1])
 					g_max[0][id] = get_pcvar_num(cvar_omega_sheron[4])
 					g_power[1][id] = 2
 				}
 				else if (g_power[2][id] >= g_energy_level[2]) {
-					client_printcolor(id,"%L Minus Energy Power Ball !!!", id, "DBZ_TAG")
+					ColorChat(id, GREY, "^4%L^1 Minus Energy Power Ball !!!", id, "DBZ_TAG")
 					g_power[2][id] -= g_energy_level[2]
 					g_max[1][id] = get_pcvar_num(cvar_omega_sheron[2])
 					g_max[0][id] = get_pcvar_num(cvar_omega_sheron[5])
@@ -952,7 +961,7 @@ public fwd_Touch(ent, id)
 	if (!is_user_alive(id) || !pev_valid(ent)) return FMRES_IGNORED;
 	
 	static szEntModel[32]; pev(ent , pev_model , szEntModel , 31); 
-	if (contain(szEntModel, "w_")) return FMRES_SUPERCEDE; // Don't Pick Weapons on ground
+	if (contain(szEntModel, "w_") != -1) return FMRES_SUPERCEDE; // Don't Pick Weapons on ground
 	
 	return FMRES_IGNORED;
 }
@@ -1009,17 +1018,11 @@ public task_force_team_join(menu_msgid[], id)
 public client_putinserver(id)
 {
 	if (g_power[3][id] > 0)	remove_power(id, g_power[3][id]);
-
 	g_villain_id[id] = 0
 	g_hero_id[id] = 0
 	g_power[2][id] = 0
 	g_power[0][id] = 0
-	remove_task(id)
-	remove_task(id+TASK_LOOP)
-	remove_task(id+TASK_SHOWHUD)
-	#if defined PLAYER_MODELS
-	remove_task(id+TASK_MODEL)
-	#endif
+
 	if(!is_user_bot(id)) set_task(1.0, "ShowHUD", id+TASK_SHOWHUD, _, _, "b")
 }
 
@@ -1164,9 +1167,8 @@ public choose_vilain_handler(id, menu, item)
 		g_power[0][id] = 0
 		cs_set_user_team(id, CS_TEAM_T)
 		g_villain_id[id] = key
-		client_printcolor(id, "%L %L", id, "DBZ_TAG", id, "CHOSED_CHARACTER", id, VillainLangs[g_villain_id[id]])
+		ColorChat(id, GREY, "^4%L^1 %L", id, "DBZ_TAG", id, "CHOSED_CHARACTER", id, VillainLangs[g_villain_id[id]])
 	}
-	remove_task(id+TASK_LOOP)
 	engclient_cmd(id,"jointeam","1") 
 	engclient_cmd(id,"joinclass","1")
 	menu_destroy(menu)
@@ -1196,10 +1198,9 @@ public choose_hero_handler(id, menu, item)
 		cs_set_user_team(id, CS_TEAM_CT)
 
 		g_hero_id[id] = key
-		client_printcolor(id, "%L %L", id, "DBZ_TAG", id, "CHOSED_CHARACTER", id, HeroLangs[g_hero_id[id]])
+		ColorChat(id, GREY, "^4%L^1 %L", id, "DBZ_TAG", id, "CHOSED_CHARACTER", id, HeroLangs[g_hero_id[id]])
 	}
 
-	remove_task(id+TASK_LOOP)
 	engclient_cmd(id,"jointeam","2") 
 	engclient_cmd(id,"joinclass","2")
 	menu_destroy(menu)
@@ -1224,17 +1225,17 @@ public ShowHUD(taskid)
 		if (!is_user_alive(id)) return;
 	}
 	
-	new sName[32]; get_user_name(id, sName, 31)
+	new sName[32]; get_user_name(id, sName, charsmax(sName))
 		
-	if(cs_get_user_team(id) == CS_TEAM_T) 
-	{
-		set_hudmessage(255, 69, 0, -1.0, 0.7, 0, 0.0, 1.1, 0.0, 0.0, 2)
-		ShowSyncHudMsg(ID_SHOWHUD, g_msg_syc, "%L", ID_SHOWHUD, "HUD_INFO", sName, id, VillainLangs[g_villain_id[id]], get_user_health(id), g_power[2][id], g_power[0][id])
-	}
-	if(cs_get_user_team(id) == CS_TEAM_CT)
-	{
-		set_hudmessage(0, 255, 255, -1.0, 0.7, 0, 0.0, 1.1, 0.0, 0.0, 2)
-		ShowSyncHudMsg(ID_SHOWHUD, g_msg_syc, "%L", ID_SHOWHUD, "HUD_INFO", sName, id, HeroLangs[g_hero_id[id]], get_user_health(id), g_power[2][id], g_power[0][id])
+	switch(cs_get_user_team(id)) {
+		case CS_TEAM_T: {
+			set_hudmessage(255, 69, 0, HUD_INFO_POS, 0, 0.0, 1.1, 0.0, 0.0, 2)
+			ShowSyncHudMsg(ID_SHOWHUD, g_msg_syc, "%L", ID_SHOWHUD, "HUD_INFO", sName, id, VillainLangs[g_villain_id[id]], get_user_health(id), g_power[2][id], g_power[0][id])
+		}
+		case CS_TEAM_CT: {
+			set_hudmessage(0, 255, 255, HUD_INFO_POS, 0, 0.0, 1.1, 0.0, 0.0, 2)
+			ShowSyncHudMsg(ID_SHOWHUD, g_msg_syc, "%L", ID_SHOWHUD, "HUD_INFO", sName, id, HeroLangs[g_hero_id[id]], get_user_health(id), g_power[2][id], g_power[0][id])
+		}
 	}
 }
 
@@ -1658,7 +1659,7 @@ public create_power(id)
 	
 	new newEnt = create_entity("info_target")
 	if(newEnt == 0) {
-		client_printcolor(id, "%L %L", id, "DBZ_TAG", id, "ENTITY_FAIL")
+		ColorChat(id, GREY, "^4%L^1 %L", id, "DBZ_TAG", id, "ENTITY_FAIL")
 		return
 	}
 	
@@ -1824,7 +1825,7 @@ public vexd_pfntouch(pToucher, pTouched) {
 	if (!is_valid_ent(pToucher)) return
 	
 	new szClassName[32]
-	entity_get_string(pToucher, EV_SZ_classname, szClassName, 31)
+	entity_get_string(pToucher, EV_SZ_classname, szClassName, charsmax(szClassName))
 	
 	if(equal(szClassName, "vexd_dbz_power")) 
 	{
@@ -1955,7 +1956,7 @@ public vexd_pfntouch(pToucher, pTouched) {
 		for (new i = 0; i < pnum; i++) 
 		{
 			vic = players[i];
-			if(!is_user_alive(vic) || cs_get_user_team(id) == cs_get_user_team(vic)) continue;
+			if(!is_user_alive(vic) || cs_get_user_team(id) == cs_get_user_team(vic) && !get_cvar_num("mp_friendlyfire")) continue;
 			
 			get_user_origin(vic, vicOrigin); distance = get_distance(vExplodeAt, vicOrigin)
 			
@@ -2066,9 +2067,12 @@ public dbz_loop(id)
 {
 	id -= TASK_LOOP
 	
-	if(!is_user_alive(id)) return;
+	if(!is_user_alive(id)) {
+		remove_task(id+TASK_LOOP)
+		return;
+	}
 	
-	new name[32]; get_user_name(id, name, 31)
+	new name[32]; get_user_name(id, name, charsmax(name))
 	new args[2]; args[0] = id; args[1] = 0
 	
 	if (g_hero_id[id] > 0) {
@@ -2083,28 +2087,28 @@ public dbz_loop(id)
 		
 				else if (g_power[2][id] >= g_energy_level[0] && g_power[2][id] < g_energy_level[1] && g_power[0][id] < 1) {
 					args[1] = 5
-					set_hudmessage(255, 255, 100, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(255, 255, 100, TRANSFORM_HUD_POS, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Goku] %L", id, "TURNED_SUPER_SAYAN")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/goku_powerup1.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[0][id] = 1
 				}
 				else if (g_power[2][id] >= g_energy_level[1] && g_power[2][id] < g_energy_level[2] && g_power[0][id] < 2) {
 					args[1] = 7
-					set_hudmessage(222, 226, 0, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(222, 226, 0, TRANSFORM_HUD_POS, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Goku] %L 2", id, "TURNED_SUPER_SAYAN")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/goku_powerup2.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[0][id] = 2
 				}
 				else if (g_power[2][id] >= g_energy_level[2] && g_power[2][id] < g_energy_level[3] && g_power[0][id] < 3) {
 					args[1] = 9
-					set_hudmessage(248, 220, 117, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(248, 220, 117, TRANSFORM_HUD_POS, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Goku] %L 3", id, "TURNED_SUPER_SAYAN")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/goku_powerup3.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[0][id] = 3
 				}
 				else if (g_power[2][id] >= g_energy_level[3] && g_power[2][id] < g_energy_level[4] && g_power[0][id] < 4) {
 					args[1] = 11
-					set_hudmessage(196, 0, 0, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(196, 0, 0, TRANSFORM_HUD_POS, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Goku] %L 4", id, "TURNED_SUPER_SAYAN")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/goku_powerup4.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[0][id] = 4
@@ -2112,7 +2116,7 @@ public dbz_loop(id)
 				
 				else if (g_power[2][id] >= g_energy_level[4] && g_power[0][id] < 5) {
 					args[1] = 20
-					set_hudmessage(255, 255, 255, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(255, 255, 255, TRANSFORM_HUD_POS, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(0, "[Goku] %L 5", LANG_PLAYER, "MAX_TURNED_SUPER_SAYAN", name)
 					emit_sound(id, CHAN_STATIC, "dbz_mod/goku_powerup5.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[0][id] = 5
@@ -2128,28 +2132,28 @@ public dbz_loop(id)
 				
 				else if (g_power[2][id] >= g_energy_level[0] && g_power[2][id] < g_energy_level[1] && g_power[0][id] < 1) {
 					args[1] = 5
-					set_hudmessage(255, 255, 100, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(255, 255, 100, TRANSFORM_HUD_POS, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Vegeta] %L", id, "TURNED_SUPER_SAYAN")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/vegeta_powerup1.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[0][id] = 1
 				}
 				else if (g_power[2][id] >= g_energy_level[1] && g_power[2][id] < g_energy_level[2] && g_power[0][id] < 2) {
 					args[1] = 7
-					set_hudmessage(222, 226, 0, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(222, 226, 0, TRANSFORM_HUD_POS, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Vegeta] %L 2", id, "TURNED_SUPER_SAYAN")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/vegeta_powerup2.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[0][id] = 2
 				}
 				else if (g_power[2][id] >= g_energy_level[2] && g_power[2][id] < g_energy_level[3] && g_power[0][id] < 3) {
 					args[1] = 9
-					set_hudmessage(248, 220, 117, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(248, 220, 117, TRANSFORM_HUD_POS, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Vegeta] %L 3", id, "TURNED_SUPER_SAYAN")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/vegeta_powerup3.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[0][id] = 3
 				}
 				else if (g_power[2][id] >= g_energy_level[3] && g_power[0][id] < 4) {
 					args[1] = 11
-					set_hudmessage(196, 0, 0, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(196, 0, 0, TRANSFORM_HUD_POS, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(0, "[Vegeta] %L 4", LANG_PLAYER, "MAX_TURNED_SUPER_SAYAN", name)
 					emit_sound(id, CHAN_STATIC, "dbz_mod/vegeta_powerup4.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[0][id] = 4
@@ -2165,20 +2169,20 @@ public dbz_loop(id)
 
 				else if (g_power[2][id] >= g_energy_level[0] && g_power[2][id] < g_energy_level[1] && g_power[0][id] < 1) {
 					args[1] = 5
-					client_printcolor(id, "%L %L", id, "DBZ_TAG", id, "KI_BLAST_PREPARED")
+					ColorChat(id, GREY, "^4%L^1 %L", id, "DBZ_TAG", id, "KI_BLAST_PREPARED")
 					g_power[0][id] = 1
 					emit_sound(id, CHAN_STATIC, "dbz_mod/gohan_powerup1.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 				}
 				else if (g_power[2][id] >= g_energy_level[1] && g_power[2][id] < g_energy_level[2] && g_power[0][id] < 2) {
 					args[1] = 7
-					set_hudmessage(222, 226, 0, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(222, 226, 0, TRANSFORM_HUD_POS, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Gohan] %L", id, "TURNED_SUPER_SAYAN")
 					g_power[0][id] = 2
 					emit_sound(id, CHAN_STATIC, "dbz_mod/gohan_powerup2.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 				}
 				else if (g_power[2][id] >= g_energy_level[2] && g_power[0][id] < 3) {
 					args[1] = 11
-					set_hudmessage(248, 220, 117, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(248, 220, 117, TRANSFORM_HUD_POS, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(0, "[Gohan] %L 2", LANG_PLAYER, "MAX_TURNED_SUPER_SAYAN", name)
 					g_power[0][id] = 3
 					emit_sound(id, CHAN_STATIC, "dbz_mod/gohan_powerup3.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
@@ -2193,19 +2197,19 @@ public dbz_loop(id)
 				
 				else if (g_power[2][id] >= g_energy_level[0] && g_power[2][id] < g_energy_level[1] && g_power[0][id] < 1) {
 					args[1] = 5
-					client_printcolor(id, "%L %L", id, "DBZ_TAG", id, "KI_BLAST_PREPARED")
+					ColorChat(id, GREY, "^4%L^1 %L", id, "DBZ_TAG", id, "KI_BLAST_PREPARED")
 					g_power[0][id] = 1
 					emit_sound(id, CHAN_STATIC, "dbz_mod/krillin_powerup1.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 				}
 				else if (g_power[2][id] >= g_energy_level[1] && g_power[2][id] < g_energy_level[2] && g_power[0][id] < 2) {
 					args[1] = 7
-					client_printcolor(id, "%L %L", id, "DBZ_TAG", id, "KAMEHAMEHA_PREPARED")
+					ColorChat(id, GREY, "^4%L^1 %L", id, "DBZ_TAG", id, "KAMEHAMEHA_PREPARED")
 					g_power[0][id] = 2
 					emit_sound(id, CHAN_STATIC, "dbz_mod/krillin_powerup1.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 				}
 				else if (g_power[2][id] >= g_energy_level[2] && g_power[0][id] < 3) {
 					args[1] = 9
-					client_printcolor(id, "%L %L", id, "DBZ_TAG", id, "DESTRUCION_DISC_PREPARED")
+					ColorChat(id, GREY, "^4%L^1 %L", id, "DBZ_TAG", id, "DESTRUCION_DISC_PREPARED")
 					g_power[0][id] = 3
 					emit_sound(id, CHAN_STATIC, "dbz_mod/krillin_powerup2.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 				}
@@ -2219,19 +2223,19 @@ public dbz_loop(id)
 				
 				else if (g_power[2][id] >= g_energy_level[0] && g_power[2][id] < g_energy_level[1] && g_power[0][id] < 1) {
 					args[1] = 5
-					client_printcolor(id, "%L %L", id, "DBZ_TAG", id, "KI_BLAST_PREPARED")
+					ColorChat(id, GREY, "^4%L^1 %L", id, "DBZ_TAG", id, "KI_BLAST_PREPARED")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/piccolo_powerup1.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[0][id] = 1
 				}
 				else if (g_power[2][id] >= g_energy_level[1] && g_power[2][id] < g_energy_level[2] && g_power[0][id] < 2) {
 					args[1] = 7
-					client_printcolor(id, "%L %L", id, "DBZ_TAG", id, "MASENKO_PREPARED")
+					ColorChat(id, GREY, "^4%L^1 %L", id, "DBZ_TAG", id, "MASENKO_PREPARED")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/piccolo_powerup2.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[0][id] = 2
 				}
 				else if (g_power[2][id] >= g_energy_level[2] && g_power[0][id] < 3) {
 					args[1] = 9
-					client_printcolor(id, "%L %L", id, "DBZ_TAG", id, "SPECIAL_BEAN_PREPARED")
+					ColorChat(id, GREY, "^4%L^1 %L", id, "DBZ_TAG", id, "SPECIAL_BEAN_PREPARED")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/piccolo_powerup3.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[0][id] = 3
 				}
@@ -2249,28 +2253,28 @@ public dbz_loop(id)
 
 				else if (g_power[2][id] >= g_energy_level[0] && g_power[2][id] < g_energy_level[1] && g_power[0][id] < 1) {
 					args[1] = 5
-					set_hudmessage(255, 0, 255, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(255, 0, 255, TRANSFORM_HUD_POS, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Frieza] %L", id, "FRIEZA_TRANSFORM_1")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/frieza_powerup1.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[0][id] = 1
 				}
 				else if (g_power[2][id] >= g_energy_level[1] && g_power[2][id] < g_energy_level[2] && g_power[0][id] < 2) {
 					args[1] = 7
-					set_hudmessage(255, 0, 255, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(255, 0, 255, TRANSFORM_HUD_POS, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Frieza] %L", id, "FRIEZA_TRANSFORM_2")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/frieza_powerup2.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[0][id] = 2
 				}
 				else if (g_power[2][id] >= g_energy_level[2] && g_power[2][id] < g_energy_level[3] && g_power[0][id] < 3) {
 					args[1] = 9
-					set_hudmessage(255, 0, 255, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(255, 0, 255, TRANSFORM_HUD_POS, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Frieza] %L", id, "FRIEZA_TRANSFORM_3")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/frieza_powerup3.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[0][id] = 3
 				}
 				else if (g_power[2][id] >= g_energy_level[3] && g_power[0][id] < 4) {
 					args[1] = 11
-					set_hudmessage(255, 0, 255, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(255, 0, 255, TRANSFORM_HUD_POS, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(0, "[Frieza] %L", LANG_PLAYER, "FRIEZA_TRANSFORM_4", name)
 					emit_sound(id, CHAN_STATIC, "dbz_mod/frieza_powerup4.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[0][id] = 4
@@ -2285,21 +2289,21 @@ public dbz_loop(id)
 
 				else if (g_power[2][id] >= g_energy_level[0] && g_power[2][id] < g_energy_level[1] && g_power[0][id] < 1) {
 					args[1] = 5
-					set_hudmessage(0, 255, 0, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(0, 255, 0, TRANSFORM_HUD_POS, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Cell] %L", id, "CELL_TRANSFORM_1")
 					g_power[0][id] = 1
 					emit_sound(id, CHAN_STATIC, "dbz_mod/cell_powerup1.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 				}
 				else if (g_power[2][id] >= g_energy_level[1] && g_power[2][id] < g_energy_level[2] && g_power[0][id] < 2) {
 					args[1] = 7
-					set_hudmessage(0, 255, 0, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(0, 255, 0, TRANSFORM_HUD_POS, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Cell] %L", id, "CELL_TRANSFORM_2")
 					g_power[0][id] = 2
 					emit_sound(id, CHAN_STATIC, "dbz_mod/cell_powerup2.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 				}
 				else if (g_power[2][id] >= g_energy_level[2] && g_power[0][id] < 3) {
 					args[1] = 9
-					set_hudmessage(0, 255, 0, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(0, 255, 0, TRANSFORM_HUD_POS, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(0, "[Cell] %L", LANG_PLAYER, "CELL_TRANSFORM_3", name)
 					g_power[0][id] = 3
 					emit_sound(id, CHAN_STATIC, "dbz_mod/cell_powerup3.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
@@ -2316,28 +2320,28 @@ public dbz_loop(id)
 				{
 					args[1] = 7
 					emit_sound(id, CHAN_STATIC, "dbz_mod/superbuu_powerup1_fix.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
-					set_hudmessage(0, 255, 0, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(0, 255, 0, TRANSFORM_HUD_POS, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Superbuu] %L", id, "SUPER_BUU_TRASNFORM")
 					g_power[0][id] = 1
 				}
 				else if (g_power[2][id] >= g_energy_level[1] && g_power[2][id] < g_energy_level[2] && g_power[0][id] < 2) 
 				{
 					args[1] = 11
-					set_hudmessage(255, 165, 0, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(255, 165, 0, TRANSFORM_HUD_POS, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Superbuu] %L 2", id, "SUPER_BUU_TRASNFORM")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/superbuu_powerup2.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[0][id] = 2
 				}
 				else if (g_power[2][id] >= g_energy_level[2] && g_power[2][id] < g_energy_level[3] && g_power[0][id] < 3) {
 					args[1] = 15
-					set_hudmessage(0, 255, 255, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(0, 255, 255, TRANSFORM_HUD_POS, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Superbuu] %L 3", id, "SUPER_BUU_TRASNFORM")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/superbuu_powerup3.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[0][id] = 3
 				}
 				else if (g_power[2][id] >= g_energy_level[3] && g_power[0][id] < 4) {
 					args[1] = 20
-					set_hudmessage(255, 165, 0, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(255, 165, 0, TRANSFORM_HUD_POS, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					emit_sound(id, CHAN_STATIC, "dbz_mod/superbuu_powerup3.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					show_hudmessage(id, "[Superbuu] %L 4", id, "SUPER_BUU_TRASNFORM")
 					g_power[0][id] = 4
@@ -2352,28 +2356,28 @@ public dbz_loop(id)
 				
 				if (g_power[2][id] >= g_energy_level[0] && g_power[2][id] < g_energy_level[1] && g_power[0][id] < 1) {
 					args[1] = 7
-					set_hudmessage(0, 255, 0, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(0, 255, 0, TRANSFORM_HUD_POS, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Broly] %L", id, "TURNED_SUPER_SAYAN")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/broly_powerup1.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[0][id] = 1
 				}
 				else if (g_power[2][id] >= g_energy_level[1] && g_power[2][id] < g_energy_level[2] && g_power[0][id] < 2) {
 					args[1] = 9
-					set_hudmessage(255, 165, 0, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(255, 165, 0, TRANSFORM_HUD_POS, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Broly] %L 2", id, "TURNED_SUPER_SAYAN")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/broly_powerup3.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)
 					g_power[0][id] = 2
 				}
 				else if (g_power[2][id] >= g_energy_level[2] && g_power[2][id] < g_energy_level[3] && g_power[0][id] < 3) {
 					args[1] = 11
-					set_hudmessage(0, 255, 255, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(0, 255, 255, TRANSFORM_HUD_POS, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Broly] %L 3", id, "TURNED_SUPER_SAYAN")
 					emit_sound(id, CHAN_STATIC, "dbz_mod/broly_powerup2.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
 					g_power[0][id] = 3
 				}
 				else if (g_power[2][id] >= g_energy_level[3] && g_power[0][id] < 4) {
 					args[1] = 20
-					set_hudmessage(255, 165, 0, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(255, 165, 0, TRANSFORM_HUD_POS, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(0, "[Broly] %L 4", LANG_PLAYER, "MAX_TURNED_SUPER_SAYAN", name)
 					emit_sound(id, CHAN_STATIC, "dbz_mod/broly_powerup4.wav", 0.8, ATTN_NORM, 0, PITCH_NORM)         
 					g_power[0][id] = 4
@@ -2388,19 +2392,19 @@ public dbz_loop(id)
 
 				else if (g_power[2][id] >= g_energy_level[0] && g_power[2][id] < g_energy_level[1] && g_power[0][id] < 1) {
 					args[1] = 5
-					set_hudmessage(255, 69, 0, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(255, 69, 0, TRANSFORM_HUD_POS, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Omega Sheron] %L", id, "OMEGA_SHERON_TRANSFORM_1")
 					g_power[0][id] = 1
 				}
 				else if (g_power[2][id] >= g_energy_level[1] && g_power[2][id] < g_energy_level[2] && g_power[0][id] < 2) {
 					args[1] = 10
-					set_hudmessage(255, 69, 0, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(255, 69, 0, TRANSFORM_HUD_POS, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(id, "[Omega Sheron] %L", id, "OMEGA_SHERON_TRANSFORM_2")
 					g_power[0][id] = 2
 				}
 				else if (g_power[2][id] >= g_energy_level[2] && g_power[0][id] < 3) {
 					args[1] = 20
-					set_hudmessage(255, 69, 0, MAIN_HUD_MESSAGE_POSITION, 0, 0.25, 3.0, 0.0, 0.0, 84)
+					set_hudmessage(255, 69, 0, TRANSFORM_HUD_POS, 0, 0.25, 3.0, 0.0, 0.0, 84)
 					show_hudmessage(0, "[Omega Sheron] %L", LANG_PLAYER, "OMEGA_SHERON_TRANSFORM_3", name)
 					g_power[0][id] = 3
 				}
@@ -2449,7 +2453,7 @@ public model_change(id)
 	
 	if(is_user_alive(id)) {
 		new currentmodel[32]
-		get_user_model(id, currentmodel, 31)
+		get_user_model(id, currentmodel, charsmax(currentmodel))
 		
 		if(!equali(currentmodel, g_playermodel[id]))
 			fm_set_user_model(id, g_playermodel[id], false)
@@ -2527,21 +2531,26 @@ public powerup_effect(args[])
 /*====================================================================
 [Knife Model]
 =====================================================================*/
-public event_CurWeapon(id)
+// Ham Weapon Deploy Forward
+public fw_Item_Deploy_Post(weapon_ent)
 {
-	// Not alive...
-	if(!is_user_alive(id))
-		return PLUGIN_CONTINUE
+	if(!pev_valid(weapon_ent))
+		return
 	
-	if(read_data(2) == CSW_KNIFE) {
-		entity_set_string(id, EV_SZ_viewmodel, DBZ_KNIFE_V_MODEL)
-		entity_set_string(id, EV_SZ_weaponmodel, "")
+	// Get weapon's owner
+	static owner
+	owner = fm_cs_get_weapon_ent_owner(weapon_ent)
+	
+	// Get weapon's id
+	static weaponid
+	weaponid = cs_get_weapon_id(weapon_ent)
+	
+	entity_set_string(owner, EV_SZ_viewmodel, DBZ_KNIFE_V_MODEL)
+	entity_set_string(owner, EV_SZ_weaponmodel, "")
+
+	if(is_user_alive(owner) && !((1<<weaponid) & (1<<CSW_KNIFE))) {
+		engclient_cmd(owner, "weapon_knife")	// Knifes Only
 	}
-	else {
-		engclient_cmd(id, "weapon_knife")
-	}
-		
-	return PLUGIN_CONTINUE
 }
 
 /*===============================================================================
@@ -2604,8 +2613,8 @@ extra_dmg(id, attacker, damage, weaponDescription[])
 		set_pev(attacker, pev_frags, float(get_user_frags(attacker) + 1));
 		
 		new kname[32], vname[32], kauthid[32], vauthid[32], kteam[10], vteam[10];
-		get_user_name(attacker, kname, 31); get_user_team(attacker, kteam, 9); get_user_authid(attacker, kauthid, 31);
-		get_user_name(id, vname, 31); get_user_team(id, vteam, 9); get_user_authid(id, vauthid, 31);
+		get_user_name(attacker, kname, charsmax(kname)); get_user_team(attacker, kteam, charsmax(kteam)); get_user_authid(attacker, kauthid, charsmax(kauthid));
+		get_user_name(id, vname, charsmax(vname)); get_user_team(id, vteam, charsmax(vteam)); get_user_authid(id, vauthid, charsmax(vauthid));
 		
 		log_message("^"%s<%d><%s><%s>^" killed ^"%s<%d><%s><%s>^" with ^"%s^"", kname, get_user_userid(attacker), kauthid, kteam, 
 		vname, get_user_userid(id), vauthid, vteam, weaponDescription);
@@ -2633,75 +2642,6 @@ public message_health(msg_id, msg_dest, msg_entity)
 	set_msg_arg_int(1, get_msg_argtype(1), 255)
 }
 
-// Colored Chat (client_printcolor)
-stock client_printcolor(const id, const input[], any:...)
-{
-	new count = 1, players[32]
-	static msg[191]
-	vformat(msg, 190, input, 3)
-	
-	replace_all(msg, 190, "!g", "^4")  // Green Chat
-	replace_all(msg, 190, "!y", "^1")  // Yellow Chat
-	replace_all(msg, 190, "!t", "^3")  // Team Color Chat
-	
-	#if AMXX_VERSION_NUM < 183
-	new g_msgsaytext
-	
-	if(!g_msgsaytext) {
-		g_msgsaytext = get_user_msgid("SayText")
-	}
-	
-	if (id) players[0] = id; else get_players(players, count, "ch")
-	
-	for (new i = 0; i < count; i++) {
-		message_begin(MSG_ONE_UNRELIABLE, get_user_msgid("SayText"), _, players[i])
-		write_byte(players[i]);
-		write_string(msg);
-		message_end();
-	}
-	#else
-	client_print_color(id, print_team_default, msg)
-	#endif
-}
-
-// fakemeta_util Utilities
-stock fm_strip_user_weapons(index) {
-	new ent = engfunc(EngFunc_CreateNamedEntity, engfunc(EngFunc_AllocString,"player_weaponstrip"));
-	if (!pev_valid(ent))
-		return 0;
-	
-	dllfunc(DLLFunc_Spawn, ent);
-	dllfunc(DLLFunc_Use, ent, index);
-	engfunc(EngFunc_RemoveEntity, ent);
-	
-	return 1;
-}
-
-// fakemeta_util Utilities
-stock give_item(index, const item[]) {
-	if (!equal(item, "weapon_", 7) && !equal(item, "ammo_", 5) && !equal(item, "item_", 5) && !equal(item, "tf_weapon_", 10))
-		return 0;
-	
-	new ent = engfunc(EngFunc_CreateNamedEntity, engfunc(EngFunc_AllocString, item))
-	if (!pev_valid(ent))
-		return 0;
-	
-	new Float:origin[3];
-	pev(index, pev_origin, origin);
-	set_pev(ent, pev_origin, origin);
-	set_pev(ent, pev_spawnflags, pev(ent, pev_spawnflags) | SF_NORESPAWN);
-	dllfunc(DLLFunc_Spawn, ent);
-	
-	new save = pev(ent, pev_solid);
-	dllfunc(DLLFunc_Touch, ent, index);
-	if (pev(ent, pev_solid) != save)
-		return ent;
-	
-	engfunc(EngFunc_RemoveEntity, ent);
-	
-	return -1;
-}
-
 // fakemeta_util Utilities
 stock set_user_health(index, health) {
 	health > 0 ? set_pev(index, pev_health, float(health)) : dllfunc(DLLFunc_ClientKill, index);
@@ -2720,10 +2660,19 @@ precache_playermodel(const modelname[])
 {  
 	static longname[128] 
 	formatex(longname, charsmax(longname), "models/player/%s/%s.mdl", modelname, modelname)  	
-	engfunc(EngFunc_PrecacheModel, longname)
+	precache_model(longname)
 	
 	copy(longname[strlen(longname)-4], charsmax(longname) - (strlen(longname)-4), "T.mdl") 
 	if (file_exists(longname)) 
-		engfunc(EngFunc_PrecacheModel, longname)
+		precache_model(longname)
 } 
 #endif
+
+// Get Weapon Entity's Owner
+stock fm_cs_get_weapon_ent_owner(ent) {
+	// Prevent server crash if entity's private data not initalized
+	if (pev_valid(ent) != PDATA_SAFE)
+		return -1;
+	
+	return get_pdata_cbase(ent, OFFSET_WEAPONOWNER, OFFSET_LINUX_WEAPONS);
+}
