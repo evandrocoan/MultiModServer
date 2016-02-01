@@ -1,7 +1,7 @@
 [anchor]Top[/anchor][SIZE="6"][COLOR="Blue"][B]Galileo v1.2[/B][/COLOR][/SIZE]
 [B]Release: 10.10.2015 | Last Update: 23.01.2016[/B]
 
-If you want to translate the 'Galileo Reloaded Mapchooser' to your language or if you see some error or bad coloring tags positioning at the current translations, feel free to correct and come here to [URL="https://forums.alliedmods.net/showthread.php?t=277636"]this translation request thread[/URL] and post your translation or fix.
+If you want to translate the 'Galileo Reloaded Mapchooser' to your language or if you see some error or bad coloring tags positioning at the current translations, feel free to correct and come here to [URL="https://forums.alliedmods.net/showthread.php?t=277636"]this translation request thread[/URL] to post your translation or fix.
 
 [B]How to upgrade your Galileo?[/B]
 [LIST=1]
@@ -12,7 +12,7 @@ If you want to translate the 'Galileo Reloaded Mapchooser' to your language or i
 [LIST=1]
 [*]You will get bug fixes.
 [*]You will have new features.
-[/LIST][COLOR="Blue"]Observation:[/COLOR] If you want use the new features, download the new configuration files and updated yours using the new the cvars. If not, you will see anything new, because all new feature are by default disabled. So, to keep everything new disabled, just do not install the new configuration file 'galileo.cfg'.
+[/LIST][COLOR="Blue"]Observation:[/COLOR] If you want use the new features, download the new configuration files and updated yours using the new the cvars. If not, you will see anything new, because all new features are by default disabled. So, to keep everything new disabled, just do not install the new configuration file 'galileo.cfg'.
 
 [B]Miscellaneous:[/B][LIST=1]
 [*]You need to disable "nextmap.amxx".
@@ -170,13 +170,13 @@ section.
 [B]2.[/B] Then take the contents of "[B]yourgamemod[/B]" folder from "[B]configuration_files.zip[/B]", to your gamemod folder.
 Ex: czero, cstrike, ...
 
-[B]3.[/B] [B]Compile[/B] the file and put the [B]compiled[/B] file to your plugins folder at 
+[B]3.[/B] [B]Compile[/B] the 'galileo.sma' file and put the [B]compiled[/B] 'galileo.amxx' file to your plugins folder usually at 
 "[COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]plugins[/B]".
 
 [B]4.[/B] Put the [B]next line[/B] to your "[B]plugins.ini[/B]" file at "yourgamemod/addons/amxmodx/[B]configs[/B]" folder and
-disable the original "[B]mapchooser.amxx[/B]" or any other [B]map manager plugin[/B], like the original the 
-[B]galileo.amxx[/B]:
-[QUOTE]
+disable the original "[B]mapchooser.amxx[/B]" or any other [B]map manager plugin[/B], like the
+[B]deagsmapmanager.amxx[/B]: [QUOTE]
+;deagsmapmanager.amxx
 galileo.amxx
 [/QUOTE]
 ******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] *********************************
