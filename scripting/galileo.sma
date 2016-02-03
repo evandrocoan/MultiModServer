@@ -711,10 +711,10 @@ public plugin_cfg()
 #endif
     reset_rounds_scores()
     
-    formatex( DIR_CONFIGS[ get_configsdir( DIR_CONFIGS, charsmax( DIR_CONFIGS ) ) ],
+    copy( DIR_CONFIGS[ get_configsdir( DIR_CONFIGS, charsmax( DIR_CONFIGS ) ) ],
             charsmax( DIR_CONFIGS ), "/galileo" );
     
-    formatex( DIR_DATA[ get_datadir( DIR_DATA, charsmax( DIR_DATA ) ) ],
+    copy( DIR_DATA[ get_datadir( DIR_DATA, charsmax( DIR_DATA ) ) ],
             charsmax( DIR_DATA ), "/galileo" );
     
     server_cmd( "exec %s/galileo.cfg", DIR_CONFIGS );
