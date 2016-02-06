@@ -67,6 +67,7 @@ stock debugMesssageLogger( mode, message[], any: ... )
         server_print( "%s", formated_message         )
     }
 }
+
 #else
     #define DEBUG_LOGGER(%1) //
 #endif
@@ -89,28 +90,28 @@ stock debugMesssageLogger( mode, message[], any: ... )
  * Convert colored strings codes '!g for green', '!y for yellow', '!t for team'.
  */
 #define INSERT_COLOR_TAGS(%1) \
-    { \
-        replace_all( %1, charsmax( %1 ), "!g", "^4" ); \
-        replace_all( %1, charsmax( %1 ), "!t", "^3" ); \
-        replace_all( %1, charsmax( %1 ), "!n", "^1" ); \
-        replace_all( %1, charsmax( %1 ), "!y", "^1" ); \
-    }
+{ \
+    replace_all( %1, charsmax( %1 ), "!g", "^4" ); \
+    replace_all( %1, charsmax( %1 ), "!t", "^3" ); \
+    replace_all( %1, charsmax( %1 ), "!n", "^1" ); \
+    replace_all( %1, charsmax( %1 ), "!y", "^1" ); \
+}
 
 #define REMOVE_COLOR_TAGS(%1) \
-    { \
-        replace_all( %1, charsmax( %1 ), "^1", "" ); \
-        replace_all( %1, charsmax( %1 ), "^2", "" ); \
-        replace_all( %1, charsmax( %1 ), "^3", "" ); \
-        replace_all( %1, charsmax( %1 ), "^4", "" ); \
-    }
+{ \
+    replace_all( %1, charsmax( %1 ), "^1", "" ); \
+    replace_all( %1, charsmax( %1 ), "^2", "" ); \
+    replace_all( %1, charsmax( %1 ), "^3", "" ); \
+    replace_all( %1, charsmax( %1 ), "^4", "" ); \
+}
 
 #define PRINT_COLORED_MESSAGE(%1,%2) \
-    { \
-        message_begin( MSG_ONE_UNRELIABLE, g_user_msgid, _, %1 ); \
-        write_byte( %1 ); \
-        write_string( %2 ); \
-        message_end(); \
-    }
+{ \
+    message_begin( MSG_ONE_UNRELIABLE, g_user_msgid, _, %1 ); \
+    write_byte( %1 ); \
+    write_string( %2 ); \
+    message_end(); \
+}
 
 new bool:g_is_color_chat_supported
 
@@ -396,8 +397,8 @@ public primitiveFunctions( player_id, firstCommand_lineArgument[], isTimeToResta
  */
 public printHelp( player_id )
 {
-    static formatted_string[32]
-
+    static formatted_string[ 32 ]
+    
     if( player_id )
     {
         player_id = player_id - TASKIS_PRINT_HELP
