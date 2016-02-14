@@ -186,35 +186,43 @@ galileo.amxx
 [CODE]
 [/CODE]******************************** [anchor]Change[/anchor][B][SIZE="5"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
 [CODE]
-2015-10-10 | v1.2-alpha1 
- * Fixed server restart after change timelimit to 0. 
- * Fixed server timelimit re-change after change it to 0. 
- * Fixed bug where it change the map right after a normal vote map finished. 
- * Removed map end control, to the original AMXX Dev Team plugin 'nextmap.amxx'
- * Removed  the feature to change server map, when the server is empty. 
- * Removed the 'amx_nextmap' change to [vote in progress]. 
- * Removed the feature to allow round finish. 
- * Removed the messages 'say currentmap' and 'say nextmap' to the AMXX 'nextmap.amxx' 
- * Removed not initiating vote map, at the first map, after forcing votemap. 
- * Added the command "gal_startvote2" to restart the current map when keep the current map. 
- * Added the count down voting remaining time to be always show. 
- * Added a option "#" to gal_nom_mapfile, to use the current mapcycle to nominate maps. 
- * Made the vote map list to be loaded from the current mapcycle file. 
- * When nobody vote for next map, keep the initial server next map. 
- * Disabled amx_nextmap to [unknown] value change. 
+2016-02-11 | v1.2.2
+ * Add a new cvar 'gal_rtv_wait_rounds' for the RTV wait.
+ * Fixed bug when the vote started by rtv vote work but the map didn't change.
 
-2015-10-14 | v1.2-alpha2 
- * Fixed broken re-opt (RunOff) vote. 
- * Fixed automatic changelevel at normal vote map, after a successful 'Stay Here' option wins. 
- * Improved code readability and added some new code documentation. 
- * Removed weighted votes that allows admins to have their vote counted more. 
- * Removed cvar to specifies the maximum number of minutes a map can be played. 
- * Fixed galileo.sma normal end map vote runoff showing an extra option.
- * Always shows "None" vote option, to not participate at the voting. 
- * Synchronized debug RunOff menu time and normal voting menu time. 
+2016-02-11 | v1.2.1
+ * Added RTV support to 'mp_maxrounds' and 'mp_winlimit'.
 
-2015-10-21 | v1.2-alpha2.hotfix1
- * Improved some variables meaning 
+2016-01-17 | v1.2
+ * Fixed the command 'gal_startvote' handler not ignoring double quotes.
+ * Added new cvar 'gal_vote_minplayers_mapfile' to specifiy the mapcycle file to use when 'gal_vote_minplayers' is activated.
+ * Added new cvar 'gal_vote_minplayers' to specify the minimum players number to use the 'gal_vote_minplayers_mapfile'.
+
+2016-01-17 | v1.2-release_candidate1.hotfix1
+ * Added new cvar 'amx_extendmap_allow_stay_type' to allow show the current map name on stay here option.
+ * Fixed misspelling at multilingual file.
+ * Fixed 'None' vote map option blink at the last second.
+ * Fixed voting on option none after the voting end.
+ * Fixed remainning time showing 0 seconds instead of 'vote has ended'.
+ * Added new cvar 'gal_vote_show_none_type', to control the 'None' option should behavior when it is active.
+ * Fixed 'gal_vote_showstatus' option 2, causing the voting to show the countdown timer freezed.
+
+2016-01-17 | v1.2-release_candidate1
+ * Add an option to 'gal_vote_showstatus', to always the vote progress to a player.
+ * Fix bug where runoff show a third option, Extend Current Map.
+ * Add a cvar 'amx_extendmap_allow_stay' to keep 'Stay Here' featuare disabled.
+ * Added a new cvar to disable the colored chat.
+ * Fixed 'gal_startvote' [-restart] argument not working.
+ * Fixed showing that the player chose extend map, instead of stay on map.
+ * Added new cvar 'amx_extendmap_allow_order' to follow the map cycle map order, when anyone vote for next map.
+ * Added support to the old cvar variable 'gal_vote_mapfile', and a new option '*' to choose use the mapcycle instead.
+ * Added the 'gal_vote_show_none' cvar to shows the voting option "None" for people to choose if they don't like any other choice.
+ * Added a new cvar 'gal_vote_show_counter', to show only the last 10 seconds remaining to end the voting.
+ * Added an option to 'gal_vote_showstatustype', to show the vote progress as porcetage and count.
+ * Added an option to 'gal_banrecentstyle', to show the recent maps are displayed as a menu.
+ * Integrated the newest and updated Amx Mod X NextMap plugin into Galileo.
+ * Change the nextmap to [not voted yet]
+ * During a vote, change the nextmap to [vote in progress]
 
 2016-01-12 | v1.2-beta1
  * Added a nominations map menu at 'say nomenu', 'say nomanythingmenu' or 'say mapprefix_'.
@@ -237,43 +245,35 @@ galileo.amxx
  * Added weighted votes that allows admins to have their vote counted more.
  * Added display colored text messages support.
 
-2016-01-17 | v1.2-release_candidate1
- * Add an option to 'gal_vote_showstatus', to always the vote progress to a player.
- * Fix bug where runoff show a third option, Extend Current Map.
- * Add a cvar 'amx_extendmap_allow_stay' to keep 'Stay Here' featuare disabled.
- * Added a new cvar to disable the colored chat.
- * Fixed 'gal_startvote' [-restart] argument not working.
- * Fixed showing that the player chose extend map, instead of stay on map.
- * Added new cvar 'amx_extendmap_allow_order' to follow the map cycle map order, when anyone vote for next map.
- * Added support to the old cvar variable 'gal_vote_mapfile', and a new option '*' to choose use the mapcycle instead.
- * Added the 'gal_vote_show_none' cvar to shows the voting option "None" for people to choose if they don't like any other choice.
- * Added a new cvar 'gal_vote_show_counter', to show only the last 10 seconds remaining to end the voting.
- * Added an option to 'gal_vote_showstatustype', to show the vote progress as porcetage and count.
- * Added an option to 'gal_banrecentstyle', to show the recent maps are displayed as a menu.
- * Integrated the newest and updated Amx Mod X NextMap plugin into Galileo.
- * Change the nextmap to [not voted yet]
- * During a vote, change the nextmap to [vote in progress]
+2015-10-21 | v1.2-alpha2.hotfix1
+ * Improved some variables meaning 
 
-2016-01-17 | v1.2-release_candidate1.hotfix1
- * Added new cvar 'amx_extendmap_allow_stay_type' to allow show the current map name on stay here option.
- * Fixed misspelling at multilingual file.
- * Fixed 'None' vote map option blink at the last second.
- * Fixed voting on option none after the voting end.
- * Fixed remainning time showing 0 seconds instead of 'vote has ended'.
- * Added new cvar 'gal_vote_show_none_type', to control the 'None' option should behavior when it is active.
- * Fixed 'gal_vote_showstatus' option 2, causing the voting to show the countdown timer freezed.
+2015-10-14 | v1.2-alpha2 
+ * Fixed broken re-opt (RunOff) vote. 
+ * Fixed automatic changelevel at normal vote map, after a successful 'Stay Here' option wins. 
+ * Improved code readability and added some new code documentation. 
+ * Removed weighted votes that allows admins to have their vote counted more. 
+ * Removed cvar to specifies the maximum number of minutes a map can be played. 
+ * Fixed galileo.sma normal end map vote runoff showing an extra option.
+ * Always shows "None" vote option, to not participate at the voting. 
+ * Synchronized debug RunOff menu time and normal voting menu time. 
 
-2016-01-17 | v1.2
- * Fixed the command 'gal_startvote' handler not ignoring double quotes.
- * Added new cvar 'gal_vote_minplayers_mapfile' to specifiy the mapcycle file to use when 'gal_vote_minplayers' is activated.
- * Added new cvar 'gal_vote_minplayers' to specify the minimum players number to use the 'gal_vote_minplayers_mapfile'.
-
-2016-02-11 | v1.2.1
- * Added RTV support to 'mp_maxrounds' and 'mp_winlimit'.
-
-2016-02-11 | v1.2.2
- * Add a new cvar 'gal_rtv_wait_rounds' for the RTV wait.
- * Fixed bug when the vote started by rtv vote work but the map didn't change.
+2015-10-10 | v1.2-alpha1 
+ * Fixed server restart after change timelimit to 0. 
+ * Fixed server timelimit re-change after change it to 0. 
+ * Fixed bug where it change the map right after a normal vote map finished. 
+ * Removed map end control, to the original AMXX Dev Team plugin 'nextmap.amxx'
+ * Removed  the feature to change server map, when the server is empty. 
+ * Removed the 'amx_nextmap' change to [vote in progress]. 
+ * Removed the feature to allow round finish. 
+ * Removed the messages 'say currentmap' and 'say nextmap' to the AMXX 'nextmap.amxx' 
+ * Removed not initiating vote map, at the first map, after forcing votemap. 
+ * Added the command "gal_startvote2" to restart the current map when keep the current map. 
+ * Added the count down voting remaining time to be always show. 
+ * Added a option "#" to gal_nom_mapfile, to use the current mapcycle to nominate maps. 
+ * Made the vote map list to be loaded from the current mapcycle file. 
+ * When nobody vote for next map, keep the initial server next map. 
+ * Disabled amx_nextmap to [unknown] value change. 
 [/CODE]Compilations data comparisons at the Amx Mod X "1.8.3-dev+4964" between:
 [LIST=1]
 [*]Deagles' Map Manager v3.25Beta - [COLOR="Blue"]deagsmapmanager.sma[/COLOR], by DynamicBits: [url]https://forums.alliedmods.net/showthread.php?t=177180[/url]
