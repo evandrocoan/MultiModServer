@@ -22,7 +22,7 @@
 *****************************************************************************************
 */
 
-#define PLUGIN_VERSION "1.2.1"
+#define PLUGIN_VERSION "1.2.2"
 
 #include <amxmodx>
 #include <amxmisc>
@@ -285,6 +285,7 @@ new cvar_endOfMapVote;
 new cvar_emptyWait
 new cvar_emptyMapFile
 new cvar_rtvWait
+new cvar_rtvWaitRounds
 new cvar_rtvRatio
 new cvar_rtvCommands;
 new cvar_cmdVotemap
@@ -330,6 +331,7 @@ new g_nominationMapCnt;
 new Array: g_emptyCycleMap
 new Array:g_fillerMap;
 new Float:g_rtvWait;
+new g_rtvWaitRounds
 new g_rockedVoteCnt;
 
 new MENU_CHOOSEMAP[] = "gal_menuChooseMap";
@@ -415,6 +417,7 @@ public plugin_init()
     cvar_srvStart                = register_cvar( "gal_srv_start", "0" );
     cvar_rtvCommands             = register_cvar( "gal_rtv_commands", "3" );
     cvar_rtvWait                 = register_cvar( "gal_rtv_wait", "10" );
+    cvar_rtvWaitRounds           = register_cvar( "gal_rtv_wait_rounds", "5" );
     cvar_rtvRatio                = register_cvar( "gal_rtv_ratio", "0.60" );
     cvar_rtvReminder             = register_cvar( "gal_rtv_reminder", "2" );
     cvar_nomPlayerAllowance      = register_cvar( "gal_nom_playerallowance", "2" );
@@ -733,8 +736,9 @@ public plugin_cfg()
     }
     
     
-    g_rtvWait   = get_pcvar_float( cvar_rtvWait );
-    g_choiceMax = max( min( MAX_MAPS_IN_VOTE, get_pcvar_num( cvar_voteMapChoiceCnt ) ), 2 )
+    g_rtvWait       = get_pcvar_float( cvar_rtvWait );
+    g_rtvWaitRounds = get_pcvar_num( cvar_rtvWaitRounds );
+    g_choiceMax     = max( min( MAX_MAPS_IN_VOTE, get_pcvar_num( cvar_voteMapChoiceCnt ) ), 2 )
     
     get_pcvar_string( cvar_voteWeightFlags, g_voteWeightFlags, charsmax( g_voteWeightFlags ) );
     get_mapname( g_currentMap, charsmax( g_currentMap ) );
@@ -4023,10 +4027,10 @@ stock Float:map_getMinutesElapsed()
     
     if( time_elapsed )
     {
-		return time_elapsed
+        return time_elapsed
     }
     
-    return float(g_total_rounds_played);
+    return float( g_total_rounds_played );
 }
 
 stock map_extend()
@@ -4037,7 +4041,8 @@ stock map_extend()
     // reset the "rtv wait" time, taking into consideration the map extension
     if( g_rtvWait )
     {
-        g_rtvWait = get_pcvar_float( g_timelimit_pointer ) + g_rtvWait;
+        g_rtvWait       += get_pcvar_float( g_timelimit_pointer );
+        g_rtvWaitRounds += get_pcvar_num( g_maxrounds_pointer );
     }
     
     save_time_limit()
@@ -4177,7 +4182,10 @@ public vote_rock( player_id )
     }
     
     // make sure enough time has gone by on the current map
-    if( g_rtvWait && minutesElapsed < g_rtvWait )
+    if( ( g_rtvWait
+          || g_rtvWaitRounds )
+        && ( minutesElapsed < g_rtvWait
+             || minutesElapsed < g_rtvWaitRounds ) )
     {
         client_print_color_internal( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_TOOSOON",
                 floatround( g_rtvWait - minutesElapsed, floatround_ceil ) );
