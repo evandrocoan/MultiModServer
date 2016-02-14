@@ -1,7 +1,9 @@
-[SIZE="6"][COLOR="Blue"][B]Galileo v1.2[/B][/COLOR][/SIZE]
+[anchor]Top[/anchor][SIZE="6"][COLOR="Blue"][B]Galileo v1.2[/B][/COLOR][/SIZE]
 [B]Release: 10.10.2015 | Last Update: 23.01.2016[/B]
 
-If you want to translate the 'Galileo Reloaded Mapchooser' to your language or if you see some error or bad coloring tags positioning at the current translations, feel free to correct and come here to [URL="https://forums.alliedmods.net/showthread.php?t=277636"]this translation request thread[/URL] and post your translation or fix.
+If you want to translate the 'Galileo Reloaded Mapchooser' to your language or if you 
+see some error or bad coloring tags positioning at the current translations, feel free 
+to correct and come here to [URL="https://forums.alliedmods.net/showthread.php?t=277636"]this translation request thread[/URL] to post your translation or fix.
 
 [B]How to upgrade your Galileo?[/B]
 [LIST=1]
@@ -12,13 +14,17 @@ If you want to translate the 'Galileo Reloaded Mapchooser' to your language or i
 [LIST=1]
 [*]You will get bug fixes.
 [*]You will have new features.
-[/LIST][COLOR="Blue"]Observation:[/COLOR] If you want use the new features, download the new configuration files and updated yours using the new the cvars. If not, you will see anything new, because all new feature are by default disabled. So, to keep everything new disabled, just do not install the new configuration file 'galileo.cfg'.
+[/LIST][COLOR="Blue"]Observation:[/COLOR] If you want use the new features, download the new configuration files and 
+updated yours using the new the cvars. If not, you will see anything new, because all 
+new features are by default disabled. So, to keep everything new disabled, just do not 
+install the new configuration file '.configs/galileo/galileo.cfg' and the new colored 
+lang file './data/lang/galileo.txt'.
 
 [B]Miscellaneous:[/B][LIST=1]
 [*]You need to disable "nextmap.amxx".
 [*]You need to disable any other map choosing plugins, such as "mapchooser.amxx".
 [/LIST]
-[anchor]Top[/anchor][SIZE="5"][COLOR="blue"][B]Contents' Table[/B][/COLOR][/SIZE] 
+[SIZE="5"][COLOR="blue"][B]Contents' Table[/B][/COLOR][/SIZE] 
 
 [LIST]
 [*][goanchor=Introduction]Introduction[/goanchor]
@@ -38,12 +44,9 @@ https://github.com/addonszz/galileo[/URL][/B]
 The original plugin "[URL="https://forums.alliedmods.net/showthread.php?t=77391"]Galileo[/URL]" is written by [B]Brad[/B]. The "Galileo 1.2" works similarly as the original
 "[B]Galileo[/B]". But "[B][COLOR="Blue"]Galileo 1.2[/COLOR][/B]" has special features for the "[URL="https://forums.alliedmods.net/showthread.php?t=273020"]Multi-Mod Manager[/URL]" plugin, but it 
 still can be used alone. See the [goanchor=Change]Change Log[/goanchor] and [goanchor=Credits]Credits[/goanchor] for more info.
-
-This is a release candidate, which is a beta version with potential to be a final product, which is ready to be 
-released unless [B]significant bugs[/B] emerge. In this stage of product stabilization, all product [B]features[/B] have been 
-designed, coded and tested through one or more beta cycles with no known show stopper-class bug. 
 [URL="http://www.gametracker.com/search/?search_by=server_variable&search_by2=gal_version&query=&loc=_all&sort=&order=&searchipp=50#search"]
 [SIZE=5][B][COLOR=DarkGreen]Click here to see all servers using this plugin.[/COLOR][/B][/SIZE][/URL]
+
 
 ********************** [anchor]Introduction[/anchor][B][SIZE="5"][COLOR="blue"]Introduction[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor]  *******************************
 This is a feature rich map voting plugin.  It's intended to be used in place of any other map choosing plugin 
@@ -170,13 +173,13 @@ section.
 [B]2.[/B] Then take the contents of "[B]yourgamemod[/B]" folder from "[B]configuration_files.zip[/B]", to your gamemod folder.
 Ex: czero, cstrike, ...
 
-[B]3.[/B] [B]Compile[/B] the file and put the [B]compiled[/B] file to your plugins folder at 
+[B]3.[/B] [B]Compile[/B] the 'galileo.sma' file and put the [B]compiled[/B] 'galileo.amxx' file to your plugins folder usually at 
 "[COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]plugins[/B]".
 
 [B]4.[/B] Put the [B]next line[/B] to your "[B]plugins.ini[/B]" file at "yourgamemod/addons/amxmodx/[B]configs[/B]" folder and
-disable the original "[B]mapchooser.amxx[/B]" or any other [B]map manager plugin[/B], like the original the 
-[B]galileo.amxx[/B]:
-[QUOTE]
+disable the original "[B]mapchooser.amxx[/B]" or any other [B]map manager plugin[/B], like the
+[B]deagsmapmanager.amxx[/B]: [QUOTE]
+;deagsmapmanager.amxx
 galileo.amxx
 [/QUOTE]
 ******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] *********************************
@@ -264,6 +267,9 @@ galileo.amxx
  * Fixed the command 'gal_startvote' handler not ignoring double quotes.
  * Added new cvar 'gal_vote_minplayers_mapfile' to specifiy the mapcycle file to use when 'gal_vote_minplayers' is activated.
  * Added new cvar 'gal_vote_minplayers' to specify the minimum players number to use the 'gal_vote_minplayers_mapfile'.
+
+2016-01-17 | v1.2.1
+ * Added RTV support to 'mp_maxrounds' and 'mp_winlimit'.
 [/CODE]Compilations data comparisons at the Amx Mod X "1.8.3-dev+4964" between:
 [LIST=1]
 [*]Deagles' Map Manager v3.25Beta - [COLOR="Blue"]deagsmapmanager.sma[/COLOR], by DynamicBits: [url]https://forums.alliedmods.net/showthread.php?t=177180[/url]
@@ -376,6 +382,7 @@ Press enter to exit ...
 [B]Th3822[/B]: For find a error from map_nominate.
 [B]utaker[/B]: For suggesting and help testing the mp_maxrounds feature.
 [B]ConnorMcLeod[/B]: For the [Dyn Native] ColorChat v0.3.2 (04 jul 2013) register_dictionary_colored function.
+[URL="https://forums.alliedmods.net/member.php?u=263772"][B]Old.School[/B][/URL]: Bug report, rtv is not work always saying you have to wait x minutes to rock the vote and the time is always the same.
 
 [QUOTE=Brad;684848][COLOR=darkblue][SIZE=4][B]Donations to the Original Author[/B][/SIZE][/COLOR] 
 A lot of time and effort went into making this plugin, making features just right,
@@ -423,13 +430,6 @@ following in your game console:
 from the [B]amxx cvars[/B] command. They will be grouped together.
 [/LIST]
 [/QUOTE]
-
-***************************************************************************************
-[SIZE="6"]BRAZIL (South America) Testing Server[/SIZE]
-[URL="http://www.gametracker.com/server_info/jacks.noip.me:27015/"][IMG]http://www.gametracker.com/server_info/jacks.noip.me:27015/b_560_95_1.png[/IMG][/URL]
-
-[SIZE="6"]GERMANY (Europe) Testing Server[/SIZE]
-[URL="http://www.gametracker.com/server_info/vipersnake.net:27030/"][IMG]http://www.gametracker.com/server_info/vipersnake.net:27030/b_560_95_1.png[/IMG][/URL]
 
 ******************************** [anchor]Downloads[/anchor][SIZE="5"][COLOR="Blue"][B]Downloads[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor] *************************
 Old versions downloads:
