@@ -22,7 +22,7 @@
 *****************************************************************************************
 */
 
-#define PLUGIN_VERSION "1.2"
+#define PLUGIN_VERSION "1.2.1"
 
 #include <amxmodx>
 #include <amxmisc>
