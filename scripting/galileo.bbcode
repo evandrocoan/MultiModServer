@@ -1,5 +1,5 @@
-[anchor]Top[/anchor][SIZE="6"][COLOR="Blue"][B]Galileo v1.2.2[/B][/COLOR][/SIZE]
-[B]Release: 10.10.2015 | Last Update: 11.02.2016[/B]
+[anchor]Top[/anchor][SIZE="6"][COLOR="Blue"][B]Galileo v1.2.X[/B][/COLOR][/SIZE]
+[B]Release: 10.10.2015 | Last Update: XX.02.2016[/B]
 
 If you want to translate the 'Galileo Reloaded Mapchooser' to your language or if you 
 see some error or bad coloring tags positioning at the current translations, feel free 
@@ -184,15 +184,20 @@ galileo.amxx
 [/QUOTE]
 ******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] *********************************
 [CODE]
- * add Cvar to control sv_restart 
+ * Add Cvar to control sv_restart 
    using rounds exmple : mp_maxrounds 40 and 20 rounds passed and admin used sv_restart
    if the cvar is 1 the rounds left will be 20
    if the cvar is 0 the rounds left will 40
- * add two cvars the first one :
+ * Add two cvars the first one :
    if 1 and the Cvar control sv_restart is 1 too next the sv restart he will add x rounds/time to mp_maxrounds /mp_timelimit
    the second cvar is the x rounds/time if the first cvar is 1
+ * Create a new LANG file to show 'rounds' instead of 'minutes', when you are using rounds.
+ * Add an admin command 'gal_cancelvote' to cancel the current vote.
 [/CODE]******************************** [anchor]Change[/anchor][B][SIZE="5"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
 [CODE]
+2016-02-XX | v1.2.X
+ * Fixed a bug, where 'gal_rtv_wait_rounds' has priority over 'gal_rtv_wait'.
+
 2016-02-11 | v1.2.2
  * Add a new cvar 'gal_rtv_wait_rounds' for the RTV wait.
  * Fixed bug when the vote started by rtv vote work but the map didn't change.
