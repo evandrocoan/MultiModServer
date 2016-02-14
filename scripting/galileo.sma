@@ -3815,20 +3815,16 @@ public vote_expire()
                 g_is_to_cancel_end_vote: %d", \
                 g_isTimeToRestart, g_isTimeToChangeLevel, g_is_to_cancel_end_vote )
         
-        // winnerVoteMapIndex == g_totalVoteOptions, means the 'keep current map' option, then
-        // here we keep the current map or extend current map, unless the cvar_extendmapAllowStay
-        // is set to 0 or g_is_map_extension_allowed is disallowed.
+        // winnerVoteMapIndex == g_totalVoteOptions, means the 'keep current map' option.
+        // Then, here we keep the current map or extend current map, unless the 'cvar_extendmapAllowStay'
+        // is set to 0 or 'g_is_map_extension_allowed' is disallowed.
         if( winnerVoteMapIndex == g_totalVoteOptions
             && ( get_pcvar_num( cvar_extendmapAllowStay )
                  || g_is_map_extension_allowed ) )
         {
             if( ( g_voteStatus & VOTE_IS_EARLY ) // if it is a early vote, we just change map later
-                && !g_isTimeToRestart ) // but it must not be time to restart
+                && !g_isTimeToRestart ) // "stay here" won and the map mustn't be restarted.
             {
-                // "stay here" won
-                g_isTimeToChangeLevel = false;
-                g_isTimeToRestart     = false;
-            
             #if AMXX_VERSION_NUM < 183
                 get_players( g_colored_players_ids, g_colored_players_number, "ch" );
                 
@@ -3850,11 +3846,10 @@ public vote_expire()
                 // no longer is an early vote
                 g_voteStatus &= ~VOTE_IS_EARLY;
             }
-            else
+            else // "stay here" won and the map must be restarted or extended.
             {
                 if( g_isTimeToRestart )
                 {
-                    // "stay here" won
                     #if AMXX_VERSION_NUM < 183
                     get_players( g_colored_players_ids, g_colored_players_number, "ch" );
                     
@@ -3872,9 +3867,9 @@ public vote_expire()
                     
                     intermission_display()
                 }
-                else
+                else // "extend map" won and a restart isn't needed.
                 {
-                    if( g_is_final_voting ) // "extend map" won
+                    if( g_is_final_voting )
                     {
                         if( g_is_maxrounds_vote_map )
                         {
@@ -3916,7 +3911,7 @@ public vote_expire()
                         
                         map_extend();
                     }
-                    else // "stay here" won
+                    else // "stay here" won and a restart isn't needed.
                     {
                     #if AMXX_VERSION_NUM < 183
                         get_players( g_colored_players_ids, g_colored_players_number, "ch" );
@@ -3932,12 +3927,12 @@ public vote_expire()
                     #else
                         client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_STAY" );
                     #endif
-                    }
-                    
-                    g_isTimeToChangeLevel = false;
-                    g_isTimeToRestart     = false;
-                }
-            }
+                    } // end: "stay here" won and a restart isn't needed.
+                } // end: "extend map" won and a restart isn't needed.
+            } // end: "stay here" won and the map must be restarted.
+            
+            g_isTimeToChangeLevel = false;
+            g_isTimeToRestart     = false;
         }
         else // the execution flow gets here when the winner option is not keep/extend map
         {
@@ -4177,6 +4172,7 @@ public vote_rock( player_id )
     // if the player is the only one on the server, bring up the vote immediately
     if( get_realplayersnum() == 1 )
     {
+        g_isTimeToChangeLevel = true;
         vote_startDirector( true );
         return;
     }
@@ -4248,6 +4244,7 @@ public vote_rock( player_id )
     #endif
         
         // start up the vote director
+        g_isTimeToChangeLevel = true;
         vote_startDirector( true );
     }
     else
