@@ -4019,7 +4019,14 @@ stock Float:map_getMinutesElapsed()
     DEBUG_LOGGER( 2, "%32s mp_timelimit: %f", "map_getMinutesElapsed( in/out )", \
             get_pcvar_float( g_timelimit_pointer ) )
     
-    return get_pcvar_float( g_timelimit_pointer ) - ( float( get_timeleft() ) / 60.0 );
+    new Float:time_elapsed = get_pcvar_float( g_timelimit_pointer ) - ( float( get_timeleft() ) / 60.0 );
+    
+    if( time_elapsed )
+    {
+		return time_elapsed
+    }
+    
+    return float(g_total_rounds_played);
 }
 
 stock map_extend()
@@ -4054,7 +4061,6 @@ stock map_extend()
         }
         set_pcvar_float( g_timelimit_pointer, 0.0 );
         
-        server_exec()
         g_is_maxrounds_vote_map = false
     }
     else
@@ -4063,9 +4069,9 @@ stock map_extend()
         set_cvar_num( "mp_winlimit", 0 );
         set_pcvar_float( g_timelimit_pointer, get_pcvar_float( g_timelimit_pointer )
                 + get_pcvar_float( cvar_extendmapStep ) );
-        
-        server_exec();
     }
+    
+    server_exec()
     
     // clear vote stats
     vote_resetStats();
@@ -4164,22 +4170,18 @@ public vote_rock( player_id )
     new Float:minutesElapsed = map_getMinutesElapsed();
     
     // if the player is the only one on the server, bring up the vote immediately
-    if( get_realplayersnum() == 1
-        && minutesElapsed > floatmin( 2.0, g_rtvWait ) )
+    if( get_realplayersnum() == 1 )
     {
         vote_startDirector( true );
         return;
     }
     
     // make sure enough time has gone by on the current map
-    if( g_rtvWait )
+    if( g_rtvWait && minutesElapsed < g_rtvWait )
     {
-        if( minutesElapsed < g_rtvWait )
-        {
-            client_print_color_internal( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_TOOSOON",
-                    floatround( g_rtvWait - minutesElapsed, floatround_ceil ) );
-            return;
-        }
+        client_print_color_internal( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_TOOSOON",
+                floatround( g_rtvWait - minutesElapsed, floatround_ceil ) );
+        return;
     }
     
     // rocks can only be made if a vote isn't already in progress
@@ -4188,8 +4190,7 @@ public vote_rock( player_id )
         client_print_color_internal( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_INPROGRESS" );
         return;
     }
-    // and if the outcome of the vote hasn't already been determined
-    else if( g_voteStatus & VOTE_IS_OVER )
+    else if( g_voteStatus & VOTE_IS_OVER ) // and if the outcome of the vote hasn't already been determined
     {
         client_print_color_internal( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_VOTEOVER" );
         return;
