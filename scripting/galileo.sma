@@ -4017,15 +4017,8 @@ stock Float:map_getMinutesElapsed()
 {
     DEBUG_LOGGER( 2, "%32s mp_timelimit: %f", "map_getMinutesElapsed( in/out )", \
             get_pcvar_float( g_timelimit_pointer ) )
-    
-    new Float:time_elapsed = get_pcvar_float( g_timelimit_pointer ) - ( float( get_timeleft() ) / 60.0 );
-    
-    if( time_elapsed )
-    {
-        return time_elapsed
-    }
-    
-    return float( g_total_rounds_played );
+	
+    return get_pcvar_float( g_timelimit_pointer ) - ( float( get_timeleft() ) / 60.0 );
 }
 
 stock map_extend()
@@ -4178,13 +4171,19 @@ public vote_rock( player_id )
     }
     
     // make sure enough time has gone by on the current map
-    if( ( g_rtvWait
-          || g_rtvWaitRounds )
-        && ( minutesElapsed < g_rtvWait
-             || minutesElapsed < g_rtvWaitRounds ) )
+    if( g_rtvWait 
+        && minutesElapsed
+        && minutesElapsed < g_rtvWait )
     {
         client_print_color_internal( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_TOOSOON",
                 floatround( g_rtvWait - minutesElapsed, floatround_ceil ) );
+        return;
+    }
+    else if( g_rtvWaitRounds
+             && g_total_rounds_played < g_rtvWaitRounds )
+    {
+        client_print_color_internal( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_TOOSOON",
+                floatround( g_rtvWaitRounds - g_total_rounds_played, floatround_ceil ) );
         return;
     }
     
