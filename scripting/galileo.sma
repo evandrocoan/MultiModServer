@@ -22,7 +22,7 @@
 *****************************************************************************************
 */
 
-#define PLUGIN_VERSION "1.2.1"
+#define PLUGIN_VERSION "1.2.2"
 
 #include <amxmodx>
 #include <amxmisc>
@@ -285,6 +285,7 @@ new cvar_endOfMapVote;
 new cvar_emptyWait
 new cvar_emptyMapFile
 new cvar_rtvWait
+new cvar_rtvWaitRounds
 new cvar_rtvRatio
 new cvar_rtvCommands;
 new cvar_cmdVotemap
@@ -330,6 +331,7 @@ new g_nominationMapCnt;
 new Array: g_emptyCycleMap
 new Array:g_fillerMap;
 new Float:g_rtvWait;
+new g_rtvWaitRounds
 new g_rockedVoteCnt;
 
 new MENU_CHOOSEMAP[] = "gal_menuChooseMap";
@@ -415,6 +417,7 @@ public plugin_init()
     cvar_srvStart                = register_cvar( "gal_srv_start", "0" );
     cvar_rtvCommands             = register_cvar( "gal_rtv_commands", "3" );
     cvar_rtvWait                 = register_cvar( "gal_rtv_wait", "10" );
+    cvar_rtvWaitRounds           = register_cvar( "gal_rtv_wait_rounds", "5" );
     cvar_rtvRatio                = register_cvar( "gal_rtv_ratio", "0.60" );
     cvar_rtvReminder             = register_cvar( "gal_rtv_reminder", "2" );
     cvar_nomPlayerAllowance      = register_cvar( "gal_nom_playerallowance", "2" );
@@ -733,8 +736,9 @@ public plugin_cfg()
     }
     
     
-    g_rtvWait   = get_pcvar_float( cvar_rtvWait );
-    g_choiceMax = max( min( MAX_MAPS_IN_VOTE, get_pcvar_num( cvar_voteMapChoiceCnt ) ), 2 )
+    g_rtvWait       = get_pcvar_float( cvar_rtvWait );
+    g_rtvWaitRounds = get_pcvar_num( cvar_rtvWaitRounds );
+    g_choiceMax     = max( min( MAX_MAPS_IN_VOTE, get_pcvar_num( cvar_voteMapChoiceCnt ) ), 2 )
     
     get_pcvar_string( cvar_voteWeightFlags, g_voteWeightFlags, charsmax( g_voteWeightFlags ) );
     get_mapname( g_currentMap, charsmax( g_currentMap ) );
@@ -3811,20 +3815,16 @@ public vote_expire()
                 g_is_to_cancel_end_vote: %d", \
                 g_isTimeToRestart, g_isTimeToChangeLevel, g_is_to_cancel_end_vote )
         
-        // winnerVoteMapIndex == g_totalVoteOptions, means the 'keep current map' option, then
-        // here we keep the current map or extend current map, unless the cvar_extendmapAllowStay
-        // is set to 0 or g_is_map_extension_allowed is disallowed.
+        // winnerVoteMapIndex == g_totalVoteOptions, means the 'keep current map' option.
+        // Then, here we keep the current map or extend current map, unless the 'cvar_extendmapAllowStay'
+        // is set to 0 or 'g_is_map_extension_allowed' is disallowed.
         if( winnerVoteMapIndex == g_totalVoteOptions
             && ( get_pcvar_num( cvar_extendmapAllowStay )
                  || g_is_map_extension_allowed ) )
         {
             if( ( g_voteStatus & VOTE_IS_EARLY ) // if it is a early vote, we just change map later
-                && !g_isTimeToRestart ) // but it must not be time to restart
+                && !g_isTimeToRestart ) // "stay here" won and the map mustn't be restarted.
             {
-                // "stay here" won
-                g_isTimeToChangeLevel = false;
-                g_isTimeToRestart     = false;
-            
             #if AMXX_VERSION_NUM < 183
                 get_players( g_colored_players_ids, g_colored_players_number, "ch" );
                 
@@ -3846,11 +3846,10 @@ public vote_expire()
                 // no longer is an early vote
                 g_voteStatus &= ~VOTE_IS_EARLY;
             }
-            else
+            else // "stay here" won and the map must be restarted or extended.
             {
                 if( g_isTimeToRestart )
                 {
-                    // "stay here" won
                     #if AMXX_VERSION_NUM < 183
                     get_players( g_colored_players_ids, g_colored_players_number, "ch" );
                     
@@ -3868,9 +3867,9 @@ public vote_expire()
                     
                     intermission_display()
                 }
-                else
+                else // "extend map" won and a restart isn't needed.
                 {
-                    if( g_is_final_voting ) // "extend map" won
+                    if( g_is_final_voting )
                     {
                         if( g_is_maxrounds_vote_map )
                         {
@@ -3912,7 +3911,7 @@ public vote_expire()
                         
                         map_extend();
                     }
-                    else // "stay here" won
+                    else // "stay here" won and a restart isn't needed.
                     {
                     #if AMXX_VERSION_NUM < 183
                         get_players( g_colored_players_ids, g_colored_players_number, "ch" );
@@ -3928,12 +3927,12 @@ public vote_expire()
                     #else
                         client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_STAY" );
                     #endif
-                    }
-                    
-                    g_isTimeToChangeLevel = false;
-                    g_isTimeToRestart     = false;
-                }
-            }
+                    } // end: "stay here" won and a restart isn't needed.
+                } // end: "extend map" won and a restart isn't needed.
+            } // end: "stay here" won and the map must be restarted.
+            
+            g_isTimeToChangeLevel = false;
+            g_isTimeToRestart     = false;
         }
         else // the execution flow gets here when the winner option is not keep/extend map
         {
@@ -4023,10 +4022,10 @@ stock Float:map_getMinutesElapsed()
     
     if( time_elapsed )
     {
-		return time_elapsed
+        return time_elapsed
     }
     
-    return float(g_total_rounds_played);
+    return float( g_total_rounds_played );
 }
 
 stock map_extend()
@@ -4037,7 +4036,8 @@ stock map_extend()
     // reset the "rtv wait" time, taking into consideration the map extension
     if( g_rtvWait )
     {
-        g_rtvWait = get_pcvar_float( g_timelimit_pointer ) + g_rtvWait;
+        g_rtvWait       += get_pcvar_float( g_timelimit_pointer );
+        g_rtvWaitRounds += get_pcvar_num( g_maxrounds_pointer );
     }
     
     save_time_limit()
@@ -4172,12 +4172,16 @@ public vote_rock( player_id )
     // if the player is the only one on the server, bring up the vote immediately
     if( get_realplayersnum() == 1 )
     {
+        g_isTimeToChangeLevel = true;
         vote_startDirector( true );
         return;
     }
     
     // make sure enough time has gone by on the current map
-    if( g_rtvWait && minutesElapsed < g_rtvWait )
+    if( ( g_rtvWait
+          || g_rtvWaitRounds )
+        && ( minutesElapsed < g_rtvWait
+             || minutesElapsed < g_rtvWaitRounds ) )
     {
         client_print_color_internal( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_TOOSOON",
                 floatround( g_rtvWait - minutesElapsed, floatround_ceil ) );
@@ -4240,6 +4244,7 @@ public vote_rock( player_id )
     #endif
         
         // start up the vote director
+        g_isTimeToChangeLevel = true;
         vote_startDirector( true );
     }
     else
