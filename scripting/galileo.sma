@@ -3869,7 +3869,7 @@ public vote_expire()
                 }
                 else // "extend map" won and a restart isn't needed.
                 {
-                    if( g_is_final_voting ) 
+                    if( g_is_final_voting )
                     {
                         if( g_is_maxrounds_vote_map )
                         {
