@@ -1815,41 +1815,36 @@ stock reset_rounds_scores()
         || g_srvTimelimitRestart )
     {
         save_time_limit()
-    }
-    else
-    {
-        g_is_maxrounds_vote_map = false;
-        g_is_maxrounds_extend   = false;
-    }
-    
-    if( g_srvTimelimitRestart )
-    {
-        new new_timelimit = floatround(
-                get_pcvar_num( g_timelimit_pointer ) - map_getMinutesElapsed(), floatround_floor )
         
-        if( new_timelimit > 0 )
+        if( g_srvTimelimitRestart )
         {
-            set_pcvar_num( g_timelimit_pointer, new_timelimit )
+            new new_timelimit = floatround(
+                    get_pcvar_num( g_timelimit_pointer ) - map_getMinutesElapsed(), floatround_floor )
+            
+            if( new_timelimit > 0 )
+            {
+                set_pcvar_num( g_timelimit_pointer, new_timelimit )
+            }
         }
-    }
-    
-    if( g_srvWinlimitRestart )
-    {
-        new new_winlimit = get_pcvar_num( g_winlimit_pointer ) - max( g_total_terrorists_wins, g_total_CT_wins )
         
-        if( new_winlimit > 0 )
+        if( g_srvWinlimitRestart )
         {
-            set_pcvar_num( g_winlimit_pointer, new_winlimit )
+            new new_winlimit = get_pcvar_num( g_winlimit_pointer ) - max( g_total_terrorists_wins, g_total_CT_wins )
+            
+            if( new_winlimit > 0 )
+            {
+                set_pcvar_num( g_winlimit_pointer, new_winlimit )
+            }
         }
-    }
-    
-    if( g_srvMaxroundsRestart )
-    {
-        new new_maxrounds = get_pcvar_num( g_maxrounds_pointer ) - g_total_rounds_played
         
-        if( new_maxrounds > 0 )
+        if( g_srvMaxroundsRestart )
         {
-            set_pcvar_num( g_maxrounds_pointer, new_maxrounds )
+            new new_maxrounds = get_pcvar_num( g_maxrounds_pointer ) - g_total_rounds_played
+            
+            if( new_maxrounds > 0 )
+            {
+                set_pcvar_num( g_maxrounds_pointer, new_maxrounds )
+            }
         }
     }
     
@@ -5091,8 +5086,10 @@ stock cancel_voting()
     remove_task( TASKID_PROCESS_LAST_ROUND )
     remove_task( TASKID_SHOW_LAST_ROUND_HUD )
     
-    g_is_voting_locked = false
-    g_voteStatus       = 0
+    g_is_maxrounds_vote_map = false;
+    g_is_maxrounds_extend   = false;
+    g_is_voting_locked      = false
+    g_voteStatus            = 0
     
     vote_resetStats()
 }
