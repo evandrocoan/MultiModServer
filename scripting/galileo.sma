@@ -34,7 +34,7 @@
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
  * and the variable 'g_debug_level' for more information. Default value: 0  - which is disabled.
  */
-#define IS_DEBUG_ENABLED 0
+#define IS_DEBUG_ENABLED 1
 
 #if IS_DEBUG_ENABLED > 0
     #define DEBUG_LOGGER(%1) debugMesssageLogger( %1 )
@@ -305,6 +305,9 @@ new cvar_voteAnnounceChoice
 new cvar_voteUniquePrefixes;
 new cvar_rtvReminder;
 new cvar_srvStart;
+new cvar_srvTimelimitRestart;
+new cvar_srvMaxroundsRestart;
+new cvar_srvWinlimitRestart;
 new cvar_runoffEnabled
 new cvar_runoffDuration;
 new cvar_voteStatus
@@ -333,6 +336,9 @@ new Array:g_fillerMap;
 new Float:g_rtvWait;
 new g_rtvWaitRounds
 new g_rockedVoteCnt;
+new bool:g_srvTimelimitRestart
+new bool:g_srvMaxroundsRestart
+new bool:g_srvWinlimitRestart
 
 new MENU_CHOOSEMAP[] = "gal_menuChooseMap";
 new DIR_CONFIGS[ 128 ];
@@ -415,6 +421,9 @@ public plugin_init()
     cvar_emptyWait               = register_cvar( "gal_emptyserver_wait", "0" );
     cvar_emptyMapFile            = register_cvar( "gal_emptyserver_mapfile", "" );
     cvar_srvStart                = register_cvar( "gal_srv_start", "0" );
+    cvar_srvTimelimitRestart     = register_cvar( "gal_srv_timelimit_restart", "0" );
+    cvar_srvMaxroundsRestart     = register_cvar( "gal_srv_maxrounds_restart", "0" );
+    cvar_srvWinlimitRestart      = register_cvar( "gal_srv_winlimit_restart", "0" );
     cvar_rtvCommands             = register_cvar( "gal_rtv_commands", "3" );
     cvar_rtvWait                 = register_cvar( "gal_rtv_wait", "10" );
     cvar_rtvWaitRounds           = register_cvar( "gal_rtv_wait_rounds", "5" );
@@ -439,11 +448,10 @@ public plugin_init()
     cvar_voteMinPlayers          = register_cvar( "gal_vote_minplayers", "0" );
     cvar_voteMinPlayersMapFile   = register_cvar( "gal_vote_minplayers_mapfile", "mapcycle.txt" );
     
-    register_logevent( "game_commencing_event", 2, "0=World triggered",
-            "1=Game_Commencing", "1&Restart_Round_" )
-    
-    register_logevent( "team_win_event", 6, "0=Team" )
-    register_logevent( "round_end_event", 2, "1=Round_End" )
+    register_logevent( "game_commencing_event",    2, "0=World triggered", "1=Game_Commencing" )
+    register_logevent( "game_round_restart_event", 2, "0=World triggered", "1&Restart_Round_" )
+    register_logevent( "team_win_event",           6, "0=Team" )
+    register_logevent( "round_end_event",          2, "1=Round_End" )
     
     nextmap_plugin_init()
     
@@ -735,10 +743,11 @@ public plugin_cfg()
         copy( CLR_GREY, 2, "\d" );
     }
     
-    
-    g_rtvWait       = get_pcvar_float( cvar_rtvWait );
-    g_rtvWaitRounds = get_pcvar_num( cvar_rtvWaitRounds );
-    g_choiceMax     = max( min( MAX_MAPS_IN_VOTE, get_pcvar_num( cvar_voteMapChoiceCnt ) ), 2 )
+    g_rtvWait             = get_pcvar_float( cvar_rtvWait );
+    g_rtvWaitRounds       = get_pcvar_num( cvar_rtvWaitRounds );
+    g_srvTimelimitRestart = bool:get_pcvar_num( cvar_srvTimelimitRestart );
+    g_srvMaxroundsRestart = bool:get_pcvar_num( cvar_srvMaxroundsRestart );
+    g_srvWinlimitRestart  = bool:get_pcvar_num( cvar_srvWinlimitRestart );
     
     get_pcvar_string( cvar_voteWeightFlags, g_voteWeightFlags, charsmax( g_voteWeightFlags ) );
     get_mapname( g_currentMap, charsmax( g_currentMap ) );
@@ -747,6 +756,7 @@ public plugin_cfg()
     
     g_fillerMap     = ArrayCreate( 32 );
     g_nominationMap = ArrayCreate( 32 );
+    g_choiceMax     = max( min( MAX_MAPS_IN_VOTE, get_pcvar_num( cvar_voteMapChoiceCnt ) ), 2 )
     
     // initialize nominations table
     nomination_clearAll();
@@ -1065,12 +1075,55 @@ public start_voting_by_rounds()
 
 stock reset_rounds_scores()
 {
-    g_is_maxrounds_vote_map = false;
-    g_is_maxrounds_extend   = false;
+    if( g_srvWinlimitRestart || g_srvMaxroundsRestart | g_srvTimelimitRestart )
+    {
+        save_time_limit()
+    }
+    else
+    {
+        g_is_maxrounds_vote_map = false;
+        g_is_maxrounds_extend   = false;
+    }
     
-    g_total_rounds_played   = -1
-    g_total_terrorists_wins = 0
-    g_total_CT_wins         = 0
+    if( g_srvTimelimitRestart )
+    {
+        new new_timelimit = floatround(
+                get_pcvar_num( g_timelimit_pointer ) - map_getMinutesElapsed(), floatround_floor )
+        
+        if( new_timelimit > 0 )
+        {
+            set_pcvar_num( g_timelimit_pointer, new_timelimit )
+        }
+    }
+    
+    if( g_srvWinlimitRestart )
+    {
+        new new_winlimit = get_pcvar_num( g_winlimit_pointer ) - max( g_total_terrorists_wins, g_total_CT_wins )
+        
+        if( new_winlimit > 0 )
+        {
+            set_pcvar_num( g_winlimit_pointer, new_winlimit )
+        }
+    }
+    else 
+    {
+        g_total_terrorists_wins = 0
+        g_total_CT_wins         = 0
+    }
+    
+    if( g_srvMaxroundsRestart )
+    {
+        new new_maxrounds = get_pcvar_num( g_maxrounds_pointer ) - g_total_rounds_played
+        
+        if( new_maxrounds > 0 )
+        {
+            set_pcvar_num( g_maxrounds_pointer, new_maxrounds )
+        }
+    }
+    else
+    {
+        g_total_rounds_played = -1
+    }
 }
 
 public plugin_end()
@@ -1773,23 +1826,40 @@ public map_loadPrefixList()
 }
 
 /**
+ * Reset rounds scores every game restart event.
+ */
+public game_round_restart_event()
+{
+    reset_rounds_scores()
+    reset_round_ending()
+}
+
+/**
  * Make sure the reset time is the original time limit, can be skewed if map was previously extended.
  * It is delayed because if we are at g_is_last_round, we need to wait the game restart.
  */
 public game_commencing_event()
 {
-    // reset the round ending, if it is in progress.
+    set_task( 10.0 + get_cvar_float( "sv_restartround" ), "map_restoreOriginalTimeLimit" )
+    
+    reset_rounds_scores()
+    reset_round_ending()
+    cancel_voting()
+    
+    DEBUG_LOGGER( 32, "^n AT: game_commencing_event" )
+}
+
+/**
+ * Reset the round ending, if it is in progress.
+ */
+stock reset_round_ending()
+{
     g_isTimeToChangeLevel = false
     g_is_last_round       = false
     
     remove_task( TASKID_SHOW_LAST_ROUND_HUD )
-    set_task( 10.0 + get_cvar_float( "sv_restartround" ), "map_restoreOriginalTimeLimit" )
+    
     client_cmd( 0, "-showscores" )
-    
-    reset_rounds_scores()
-    cancel_voting()
-    
-    DEBUG_LOGGER( 32, "^n AT: game_commencing_event" )
 }
 
 stock map_getIdx( text[] )
@@ -4183,7 +4253,7 @@ public vote_rock( player_id )
              && g_total_rounds_played < g_rtvWaitRounds )
     {
         client_print_color_internal( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_TOOSOON",
-                floatround( g_rtvWaitRounds - g_total_rounds_played, floatround_ceil ) );
+                g_rtvWaitRounds - g_total_rounds_played, floatround_ceil );
         return;
     }
     
