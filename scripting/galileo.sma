@@ -1810,7 +1810,9 @@ public start_voting_by_rounds()
 
 stock reset_rounds_scores()
 {
-    if( g_srvWinlimitRestart || g_srvMaxroundsRestart | g_srvTimelimitRestart )
+    if( g_srvWinlimitRestart
+        || g_srvMaxroundsRestart
+        || g_srvTimelimitRestart )
     {
         save_time_limit()
     }
@@ -4081,7 +4083,7 @@ stock Float:map_getMinutesElapsed()
 {
     DEBUG_LOGGER( 2, "%32s mp_timelimit: %f", "map_getMinutesElapsed( in/out )", \
             get_pcvar_float( g_timelimit_pointer ) )
-	
+    
     return get_pcvar_float( g_timelimit_pointer ) - ( float( get_timeleft() ) / 60.0 );
 }
 
@@ -4235,7 +4237,7 @@ public vote_rock( player_id )
     }
     
     // make sure enough time has gone by on the current map
-    if( g_rtvWait 
+    if( g_rtvWait
         && minutesElapsed
         && minutesElapsed < g_rtvWait )
     {
