@@ -1062,70 +1062,6 @@ public show_last_round_HUD()
     }
 }
 
-public start_voting_by_rounds()
-{
-    if( get_pcvar_num( cvar_endOfMapVote ) )
-    {
-        DEBUG_LOGGER( 1, "At start_voting_by_rounds --- The voting was canceled. \
-                get_pcvar_num( cvar_endOfMapVote ): %d", get_pcvar_num( cvar_endOfMapVote ) )
-        
-        vote_startDirector( false )
-    }
-}
-
-stock reset_rounds_scores()
-{
-    if( g_srvWinlimitRestart || g_srvMaxroundsRestart | g_srvTimelimitRestart )
-    {
-        save_time_limit()
-    }
-    else
-    {
-        g_is_maxrounds_vote_map = false;
-        g_is_maxrounds_extend   = false;
-    }
-    
-    if( g_srvTimelimitRestart )
-    {
-        new new_timelimit = floatround(
-                get_pcvar_num( g_timelimit_pointer ) - map_getMinutesElapsed(), floatround_floor )
-        
-        if( new_timelimit > 0 )
-        {
-            set_pcvar_num( g_timelimit_pointer, new_timelimit )
-        }
-    }
-    
-    if( g_srvWinlimitRestart )
-    {
-        new new_winlimit = get_pcvar_num( g_winlimit_pointer ) - max( g_total_terrorists_wins, g_total_CT_wins )
-        
-        if( new_winlimit > 0 )
-        {
-            set_pcvar_num( g_winlimit_pointer, new_winlimit )
-        }
-    }
-    else 
-    {
-        g_total_terrorists_wins = 0
-        g_total_CT_wins         = 0
-    }
-    
-    if( g_srvMaxroundsRestart )
-    {
-        new new_maxrounds = get_pcvar_num( g_maxrounds_pointer ) - g_total_rounds_played
-        
-        if( new_maxrounds > 0 )
-        {
-            set_pcvar_num( g_maxrounds_pointer, new_maxrounds )
-        }
-    }
-    else
-    {
-        g_total_rounds_played = -1
-    }
-}
-
 public plugin_end()
 {
     DEBUG_LOGGER( 32, "^n AT: plugin_end" )
@@ -1842,8 +1778,7 @@ public game_commencing_event()
 {
     set_task( 10.0 + get_cvar_float( "sv_restartround" ), "map_restoreOriginalTimeLimit" )
     
-    reset_rounds_scores()
-    reset_round_ending()
+    game_round_restart_event()
     cancel_voting()
     
     DEBUG_LOGGER( 32, "^n AT: game_commencing_event" )
@@ -1860,6 +1795,65 @@ stock reset_round_ending()
     remove_task( TASKID_SHOW_LAST_ROUND_HUD )
     
     client_cmd( 0, "-showscores" )
+}
+
+public start_voting_by_rounds()
+{
+    if( get_pcvar_num( cvar_endOfMapVote ) )
+    {
+        DEBUG_LOGGER( 1, "At start_voting_by_rounds --- The voting was canceled. \
+                get_pcvar_num( cvar_endOfMapVote ): %d", get_pcvar_num( cvar_endOfMapVote ) )
+        
+        vote_startDirector( false )
+    }
+}
+
+stock reset_rounds_scores()
+{
+    if( g_srvWinlimitRestart || g_srvMaxroundsRestart | g_srvTimelimitRestart )
+    {
+        save_time_limit()
+    }
+    else
+    {
+        g_is_maxrounds_vote_map = false;
+        g_is_maxrounds_extend   = false;
+    }
+    
+    if( g_srvTimelimitRestart )
+    {
+        new new_timelimit = floatround(
+                get_pcvar_num( g_timelimit_pointer ) - map_getMinutesElapsed(), floatround_floor )
+        
+        if( new_timelimit > 0 )
+        {
+            set_pcvar_num( g_timelimit_pointer, new_timelimit )
+        }
+    }
+    
+    if( g_srvWinlimitRestart )
+    {
+        new new_winlimit = get_pcvar_num( g_winlimit_pointer ) - max( g_total_terrorists_wins, g_total_CT_wins )
+        
+        if( new_winlimit > 0 )
+        {
+            set_pcvar_num( g_winlimit_pointer, new_winlimit )
+        }
+    }
+    
+    if( g_srvMaxroundsRestart )
+    {
+        new new_maxrounds = get_pcvar_num( g_maxrounds_pointer ) - g_total_rounds_played
+        
+        if( new_maxrounds > 0 )
+        {
+            set_pcvar_num( g_maxrounds_pointer, new_maxrounds )
+        }
+    }
+    
+    g_total_terrorists_wins = 0
+    g_total_CT_wins         = 0
+    g_total_rounds_played   = -1
 }
 
 stock map_getIdx( text[] )
