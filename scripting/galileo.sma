@@ -460,6 +460,7 @@ public plugin_init()
     register_clcmd( "listmaps", "cmd_HL1_listmaps" );
     
     register_concmd( "gal_startvote", "cmd_startVote", ADMIN_MAP );
+    register_concmd( "gal_cancelvote", "cmd_cancelVote", ADMIN_MAP );
     register_concmd( "gal_createmapfile", "cmd_createMapFile", ADMIN_RCON );
     
     g_maxrounds_pointer  = get_cvar_pointer( "mp_maxrounds" )
@@ -1459,8 +1460,18 @@ public cmd_listrecent_handler( player_id, menu, item )
     return PLUGIN_HANDLED;
 }
 
+public cmd_cancelVote( player_id, level, cid )
+{
+    if( !cmd_access( player_id, level, cid, 1 ) )
+    {
+        return PLUGIN_HANDLED;
+    }
+    
+    cancel_voting()
+}
+
 /**
- * Called when need to start a vote map, where the command line arg1:
+ * Called when need to start a vote map, where the command line arg1 could be:
  *    -nochange: extend the current map, aka, Keep Current Map, will to do the real extend.
  *    -restart: extend the current map, aka, Keep Current Map restart the server at the current map.
  */
@@ -1818,10 +1829,10 @@ stock reset_rounds_scores()
         
         if( g_srvTimelimitRestart )
         {
-            new new_timelimit = floatround(
-                    get_pcvar_num( g_timelimit_pointer ) 
-                    - map_getMinutesElapsed(), floatround_floor )
-                    + get_pcvar_num( cvar_srvTimelimitRestart ) - 1
+            new new_timelimit = ( floatround(
+                                          get_pcvar_num( g_timelimit_pointer )
+                                          - map_getMinutesElapsed(), floatround_floor )
+                                  + get_pcvar_num( cvar_srvTimelimitRestart ) - 1 )
             
             if( new_timelimit > 0 )
             {
@@ -1831,9 +1842,9 @@ stock reset_rounds_scores()
         
         if( g_srvWinlimitRestart )
         {
-            new new_winlimit = get_pcvar_num( g_winlimit_pointer )
-                    - max( g_total_terrorists_wins, g_total_CT_wins )
-                    + get_pcvar_num( cvar_srvWinlimitRestart ) - 1
+            new new_winlimit = ( get_pcvar_num( g_winlimit_pointer )
+                                 - max( g_total_terrorists_wins, g_total_CT_wins )
+                                 + get_pcvar_num( cvar_srvWinlimitRestart ) - 1 )
             
             if( new_winlimit > 0 )
             {
@@ -1843,8 +1854,8 @@ stock reset_rounds_scores()
         
         if( g_srvMaxroundsRestart )
         {
-            new new_maxrounds = get_pcvar_num( g_maxrounds_pointer ) - g_total_rounds_played
-                    + get_pcvar_num( cvar_srvMaxroundsRestart ) - 1
+            new new_maxrounds = ( get_pcvar_num( g_maxrounds_pointer ) - g_total_rounds_played
+                                  + get_pcvar_num( cvar_srvMaxroundsRestart ) - 1 )
             
             if( new_maxrounds > 0 )
             {
