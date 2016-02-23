@@ -4248,8 +4248,8 @@ public vote_rock( player_id )
     else if( g_rtvWaitRounds
              && g_total_rounds_played < g_rtvWaitRounds )
     {
-        client_print_color_internal( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_TOOSOON",
-                g_rtvWaitRounds - g_total_rounds_played, floatround_ceil );
+        client_print_color_internal( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_TOOSOON_ROUNDS",
+                g_rtvWaitRounds - g_total_rounds_played );
         return;
     }
     
