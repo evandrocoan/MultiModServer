@@ -4230,6 +4230,36 @@ stock map_isTooRecent( map[] )
     return false;
 }
 
+stock start_rtvVote()
+{
+    new minutes_left   = get_timeleft() / 60
+    new maxrounds_left = get_pcvar_num( g_maxrounds_pointer ) - g_total_rounds_played
+    new winlimit_left  = get_pcvar_num( g_winlimit_pointer ) - max( g_total_CT_wins, g_total_terrorists_wins )
+    
+    g_isTimeToChangeLevel = true;
+    
+    if( minutes_left < maxrounds_left
+        || minutes_left < winlimit_left  )
+    {
+        g_is_maxrounds_vote_map = true
+        
+        if( maxrounds_left > winlimit_left )
+        {
+            g_is_maxrounds_extend = true
+        }
+        else
+        {
+            g_is_maxrounds_extend = false
+        }
+    }
+    else
+    {
+        g_is_maxrounds_vote_map = false
+    }
+    
+    vote_startDirector( true );
+}
+
 public vote_rock( player_id )
 {
     // if an early vote is pending, don't allow any rocks
@@ -4244,8 +4274,7 @@ public vote_rock( player_id )
     // if the player is the only one on the server, bring up the vote immediately
     if( get_realplayersnum() == 1 )
     {
-        g_isTimeToChangeLevel = true;
-        vote_startDirector( true );
+        start_rtvVote();
         return;
     }
     
@@ -4322,8 +4351,7 @@ public vote_rock( player_id )
     #endif
         
         // start up the vote director
-        g_isTimeToChangeLevel = true;
-        vote_startDirector( true );
+        start_rtvVote()
     }
     else
     {
