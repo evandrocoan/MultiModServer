@@ -196,7 +196,7 @@ galileo.amxx
  * Fixed a bug, where 'gal_rtv_wait_rounds' has priority over 'gal_rtv_wait'.
  * Added new cvars 'gal_srv_timelimit_restart', 'gal_srv_maxrounds_restart' and
    'gal_srv_winlimit_restart' to control the sv_restart. If nonzero and the server is restarted, 
-   adds x - 1 rounds/minutes to mp_maxrounds/mp_winlimit/mp_timelimit.
+   adds x - 1 rounds/minutes to mp_maxrounds or mp_winlimit or mp_timelimit.
    Example, using mp_maxrounds: mp_maxrounds 40 and 20 rounds has already passed and admin used sv_restart.
    After the restart, if the cvar is 1, the rounds left will be 20.
    If the cvar is 0 the rounds left will 40.
@@ -407,9 +407,9 @@ Press enter to exit ...
 [B]Th3822[/B]: For find a error from map_nominate.
 [B]utaker[/B]: For suggesting and help testing the mp_maxrounds feature.
 [B]ConnorMcLeod[/B]: For the [Dyn Native] ColorChat v0.3.2 (04 jul 2013) register_dictionary_colored function.
-[URL="https://forums.alliedmods.net/member.php?u=263772"][B]Old.School[/B][/URL]: Bug report, rtv is not work always saying you have to wait x minutes to rock the vote and the time is always the same or the changing map.
+[URL="https://forums.alliedmods.net/member.php?u=263772"][B]Old.School[/B][/URL]: Various bug reports and featuare suggestions.
 
-[QUOTE=Brad;684848][COLOR=darkblue][SIZE=4][B]Donations to the Original Author[/B][/SIZE][/COLOR] 
+[QUOTE=Brad;684848][COLOR=darkblue][SIZE=4][B]Donations to the Original Author[/B][/SIZE][/COLOR]
 A lot of time and effort went into making this plugin, making features just right,
 making sure there were no bugs, making sure it was easy to use. If you are glad I made
 this plugin, and are able, I'd appreciate a token donation.
