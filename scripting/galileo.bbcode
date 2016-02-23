@@ -184,9 +184,6 @@ galileo.amxx
 [/QUOTE]
 ******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] *********************************
 [CODE]
- * Add two cvars the first one:
-   if 1 and the Cvar control sv_restart is 1 too next the sv restart he will add x rounds/time to mp_maxrounds /mp_timelimit
-   the second cvar is the x rounds/time if the first cvar is 1
  * Create a new LANG file to show 'rounds' instead of 'minutes', when you are using rounds.
  * Add an admin command 'gal_cancelvote' to cancel the current vote.
  * If an admin have the change map flag, is online and the cvar 'gal_rtv_wait_admin' is enabled, rtv will not work and will print 'cannot rock the vote when the admin is online'.
@@ -194,10 +191,12 @@ galileo.amxx
 [CODE]
 2016-02-XX | v1.2.X
  * Fixed a bug, where 'gal_rtv_wait_rounds' has priority over 'gal_rtv_wait'.
- * Added new cvars 'gal_srv_timelimit_restart', 'gal_srv_maxrounds_restart' and 'gal_srv_winlimit_restart' to control the sv_restart.
-   Example, using mp_maxrounds: mp_maxrounds 40 and 20 rounds has already passed and admin used sv_restart,
-   After the restart, if the cvar is 1, the rounds left will be 20
-   if the cvar is 0 the rounds left will 40
+ * Added new cvars 'gal_srv_timelimit_restart', 'gal_srv_maxrounds_restart' and
+   'gal_srv_winlimit_restart' to control the sv_restart. If nonzero and the server is restarted, 
+   adds x - 1 rounds/minutes to mp_maxrounds/mp_winlimit/mp_timelimit.
+   Example, using mp_maxrounds: mp_maxrounds 40 and 20 rounds has already passed and admin used sv_restart.
+   After the restart, if the cvar is 1, the rounds left will be 20.
+   If the cvar is 0 the rounds left will 40.
 
 2016-02-11 | v1.2.2
  * Add a new cvar 'gal_rtv_wait_rounds' for the RTV wait.
