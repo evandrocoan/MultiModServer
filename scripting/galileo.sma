@@ -1468,6 +1468,8 @@ public cmd_cancelVote( player_id, level, cid )
     }
     
     cancel_voting()
+    
+    return PLUGIN_HANDLED;
 }
 
 /**
