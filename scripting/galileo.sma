@@ -1819,7 +1819,9 @@ stock reset_rounds_scores()
         if( g_srvTimelimitRestart )
         {
             new new_timelimit = floatround(
-                    get_pcvar_num( g_timelimit_pointer ) - map_getMinutesElapsed(), floatround_floor )
+                    get_pcvar_num( g_timelimit_pointer ) 
+                    - map_getMinutesElapsed(), floatround_floor )
+                    + get_pcvar_num( cvar_srvTimelimitRestart ) - 1
             
             if( new_timelimit > 0 )
             {
@@ -1829,7 +1831,9 @@ stock reset_rounds_scores()
         
         if( g_srvWinlimitRestart )
         {
-            new new_winlimit = get_pcvar_num( g_winlimit_pointer ) - max( g_total_terrorists_wins, g_total_CT_wins )
+            new new_winlimit = get_pcvar_num( g_winlimit_pointer )
+                    - max( g_total_terrorists_wins, g_total_CT_wins )
+                    + get_pcvar_num( cvar_srvWinlimitRestart ) - 1
             
             if( new_winlimit > 0 )
             {
@@ -1840,6 +1844,7 @@ stock reset_rounds_scores()
         if( g_srvMaxroundsRestart )
         {
             new new_maxrounds = get_pcvar_num( g_maxrounds_pointer ) - g_total_rounds_played
+                    + get_pcvar_num( cvar_srvMaxroundsRestart ) - 1
             
             if( new_maxrounds > 0 )
             {
