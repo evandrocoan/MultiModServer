@@ -327,6 +327,8 @@ new bool:g_is_vote_blocked
 new bool:g_is_final_voting
 new g_is_colored_chat_enabled
 
+new g_isTimeToResetGame
+new g_isTimeToResetRounds
 new g_emptyMapCnt
 new g_cntRecentMap;
 new Array:g_nominationMap
@@ -451,6 +453,7 @@ public plugin_init()
     register_logevent( "game_commencing_event",    2, "0=World triggered", "1=Game_Commencing" )
     register_logevent( "game_round_restart_event", 2, "0=World triggered", "1&Restart_Round_" )
     register_logevent( "team_win_event",           6, "0=Team" )
+    register_logevent( "round_start_event",          2, "1=Round_Start" )
     register_logevent( "round_end_event",          2, "1=Round_End" )
     
     nextmap_plugin_init()
@@ -855,6 +858,21 @@ public team_win_event()
     DEBUG_LOGGER( 32, "Team_Win: string_team_winner = %s, winlimit_integer = %d, \
             wins_CT_trigger = %d, wins_Terrorist_trigger = %d", \
             string_team_winner, winlimit_integer, wins_CT_trigger, wins_Terrorist_trigger )
+}
+
+public round_start_event()
+{
+    if( g_isTimeToResetRounds )
+    {
+        g_isTimeToResetRounds = false
+        set_task( 1.0, "reset_rounds_scores" )
+    }
+    
+    if( g_isTimeToResetGame )
+    {
+        g_isTimeToResetGame = false
+        set_task( 1.0, "map_restoreOriginalTimeLimit" )
+    }
 }
 
 public round_end_event()
@@ -1779,7 +1797,7 @@ public map_loadPrefixList()
  */
 public game_round_restart_event()
 {
-    set_task( 10.0 + get_cvar_float( "sv_restartround" ), "reset_rounds_scores" )
+    g_isTimeToResetRounds = true
     reset_round_ending()
 }
 
@@ -1789,7 +1807,7 @@ public game_round_restart_event()
  */
 public game_commencing_event()
 {
-    set_task( 10.0 + get_cvar_float( "sv_restartround" ), "map_restoreOriginalTimeLimit" )
+    g_isTimeToResetGame = true
     
     game_round_restart_event()
     cancel_voting()
@@ -1812,11 +1830,11 @@ stock reset_round_ending()
 
 public start_voting_by_rounds()
 {
+    DEBUG_LOGGER( 1, "At start_voting_by_rounds --- get_pcvar_num( cvar_endOfMapVote ): %d", \
+            get_pcvar_num( cvar_endOfMapVote ) )
+    
     if( get_pcvar_num( cvar_endOfMapVote ) )
     {
-        DEBUG_LOGGER( 1, "At start_voting_by_rounds --- The voting was canceled. \
-                get_pcvar_num( cvar_endOfMapVote ): %d", get_pcvar_num( cvar_endOfMapVote ) )
-        
         vote_startDirector( false )
     }
 }
