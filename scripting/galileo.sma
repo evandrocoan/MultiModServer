@@ -450,11 +450,11 @@ public plugin_init()
     cvar_voteMinPlayers          = register_cvar( "gal_vote_minplayers", "0" );
     cvar_voteMinPlayersMapFile   = register_cvar( "gal_vote_minplayers_mapfile", "mapcycle.txt" );
     
-    register_logevent( "game_commencing_event",    2, "0=World triggered", "1=Game_Commencing" )
-    register_logevent( "game_round_restart_event", 2, "0=World triggered", "1&Restart_Round_" )
-    register_logevent( "team_win_event",           6, "0=Team" )
-    register_logevent( "round_start_event",          2, "1=Round_Start" )
-    register_logevent( "round_end_event",          2, "1=Round_End" )
+    register_logevent( "game_commencing_event", 2, "0=World triggered", "1=Game_Commencing" )
+    register_logevent( "team_win_event",        6, "0=Team" )
+    register_logevent( "round_restart_event",   2, "0=World triggered", "1&Restart_Round_" )
+    register_logevent( "round_start_event",     2, "1=Round_Start" )
+    register_logevent( "round_end_event",       2, "1=Round_End" )
     
     nextmap_plugin_init()
     
@@ -480,236 +480,6 @@ public plugin_init()
             MENU_KEY_3 | MENU_KEY_4 | MENU_KEY_5 | MENU_KEY_6 |
             MENU_KEY_7 | MENU_KEY_8 | MENU_KEY_9 | MENU_KEY_0,
             "vote_handleChoice" );
-}
-
-new plugin_nextmap_g_nextMap[ 128 ]
-new plugin_nextmap_g_mapCycle[ 128 ]
-new plugin_nextmap_g_pos
-new plugin_nextmap_g_currentMap[ 128 ]
-
-// pcvars
-new plugin_nextmap_g_friendlyfire, plugin_nextmap_g_chattime
-new plugin_nextmap_gp_nextmap
-
-public nextmap_plugin_init()
-{
-    pause( "acd", "nextmap.amxx" )
-    
-    register_dictionary( "nextmap.txt" )
-    register_event( "30", "changeMap", "a" )
-    register_clcmd( "say nextmap", "sayNextMap", 0, "- displays nextmap" )
-    register_clcmd( "say currentmap", "sayCurrentMap", 0, "- display current map" )
-    
-    plugin_nextmap_gp_nextmap     = register_cvar( "amx_nextmap", "", FCVAR_SERVER | FCVAR_EXTDLL | FCVAR_SPONLY )
-    plugin_nextmap_g_chattime     = get_cvar_pointer( "mp_chattime" )
-    plugin_nextmap_g_friendlyfire = get_cvar_pointer( "mp_friendlyfire" )
-    
-    if( plugin_nextmap_g_friendlyfire )
-    {
-        register_clcmd( "say ff", "sayFFStatus", 0, "- display friendly fire status" )
-    }
-    
-    get_mapname( plugin_nextmap_g_currentMap, charsmax( plugin_nextmap_g_currentMap ) )
-    
-    new szString[ 40 ], szString2[ 32 ], szString3[ 8 ]
-    
-    get_localinfo( "lastmapcycle", szString, charsmax( szString ) )
-    parse( szString, szString2, charsmax( szString2 ), szString3, charsmax( szString3 ) )
-    
-    get_cvar_string( "mapcyclefile", plugin_nextmap_g_mapCycle, charsmax( plugin_nextmap_g_mapCycle ) )
-    
-    if( !equal( plugin_nextmap_g_mapCycle, szString2 ) )
-    {
-        plugin_nextmap_g_pos = 0    // mapcyclefile has been changed - go from first
-    }
-    else
-    {
-        plugin_nextmap_g_pos = str_to_num( szString3 )
-    }
-    
-    readMapCycle( plugin_nextmap_g_mapCycle, plugin_nextmap_g_nextMap, charsmax( plugin_nextmap_g_nextMap ) )
-    set_pcvar_string( plugin_nextmap_gp_nextmap, plugin_nextmap_g_nextMap )
-    formatex( szString, charsmax( szString ), "%s %d", plugin_nextmap_g_mapCycle, plugin_nextmap_g_pos )
-    set_localinfo( "lastmapcycle", szString ) // save lastmapcycle settings
-}
-
-getNextMapName( szArg[], iMax )
-{
-    new len = get_pcvar_string( plugin_nextmap_gp_nextmap, szArg, iMax )
-    
-    if( ValidMap( szArg ) )
-    {
-        return len
-    }
-    len = copy( szArg, iMax, plugin_nextmap_g_nextMap )
-    set_pcvar_string( plugin_nextmap_gp_nextmap, plugin_nextmap_g_nextMap )
-    
-    return len
-}
-
-public sayNextMap()
-{
-    if( get_pcvar_num( cvar_gal_nextmap_change )
-        && !g_is_last_round
-        && !( g_voteStatus & VOTE_IS_OVER ) )
-    {
-        if( g_voteStatus & VOTE_IN_PROGRESS )
-        {
-        #if AMXX_VERSION_NUM < 183
-            get_players( g_colored_players_ids, g_colored_players_number, "ch" );
-            
-            for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
-                 g_colored_current_index++ )
-            {
-                g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
-                
-                client_print_color_internal( g_colored_player_id, "^1%L %L",
-                        g_colored_player_id, "NEXT_MAP",
-                        g_colored_player_id, "GAL_NEXTMAP_VOTING" )
-            }
-        #else
-            client_print_color_internal( 0, "^1%L %L", LANG_PLAYER, "NEXT_MAP",
-                    LANG_PLAYER, "GAL_NEXTMAP_VOTING" )
-        #endif
-        }
-        else
-        {
-        #if AMXX_VERSION_NUM < 183
-            get_players( g_colored_players_ids, g_colored_players_number, "ch" );
-            
-            for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
-                 g_colored_current_index++ )
-            {
-                g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
-                
-                client_print_color_internal( g_colored_player_id, "^1%L %L",
-                        g_colored_player_id, "NEXT_MAP",
-                        g_colored_player_id, "GAL_NEXTMAP_UNKNOWN" )
-            }
-        #else
-            client_print_color_internal( 0, "^1%L", LANG_PLAYER, "NEXT_MAP",
-                    LANG_PLAYER, "GAL_NEXTMAP_UNKNOWN" )
-        #endif
-        }
-    }
-    else
-    {
-        new name[ 32 ]
-        
-        getNextMapName( name, charsmax( name ) )
-        client_print( 0, print_chat, "%L %s", LANG_PLAYER, "NEXT_MAP", name )
-    }
-}
-
-public sayCurrentMap()
-{
-    client_print( 0, print_chat, "%L: %s", LANG_PLAYER, "PLAYED_MAP", plugin_nextmap_g_currentMap )
-}
-
-public sayFFStatus()
-{
-    client_print( 0, print_chat, "%L: %L", LANG_PLAYER, "FRIEND_FIRE", LANG_PLAYER,
-            get_pcvar_num( plugin_nextmap_g_friendlyfire ) ? "ON" : "OFF" )
-}
-
-public delayedChange( param[] )
-{
-    if( plugin_nextmap_g_chattime )
-    {
-        set_pcvar_float( plugin_nextmap_g_chattime, get_pcvar_float( plugin_nextmap_g_chattime ) - 2.0 )
-    }
-#if AMXX_VERSION_NUM < 183
-    server_cmd( "changelevel %s", param )
-#else
-    engine_changelevel( param )
-#endif
-}
-
-public changeMap()
-{
-    new string[ 32 ] // mp_chattime defaults to 10 in other mods
-    new Float:chattime = plugin_nextmap_g_chattime ? get_pcvar_float( plugin_nextmap_g_chattime ) : 10.0;
-    
-    if( plugin_nextmap_g_chattime )
-    {
-        set_pcvar_float( plugin_nextmap_g_chattime, chattime + 2.0 ) // make sure mp_chattime is long
-    }
-    new len = getNextMapName( string, charsmax( string ) ) + 1
-    set_task( chattime, "delayedChange", 0, string, len ) // change with 1.5 sec. delay
-}
-
-new g_warning[] = "WARNING: Couldn't find a valid map or the file doesn't exist (file ^"%s^")"
-
-stock bool:ValidMap( mapname[] )
-{
-    if( is_map_valid( mapname ) )
-    {
-        return true;
-    }
-    // If the is_map_valid check failed, check the end of the string
-    new len = strlen( mapname ) - 4;
-    
-    // The mapname was too short to possibly house the .bsp extension
-    if( len < 0 )
-    {
-        return false;
-    }
-    
-    if( equali( mapname[ len ], ".bsp" ) )
-    {
-        // If the ending was .bsp, then cut it off.
-        // the string is byref'ed, so this copies back to the loaded text.
-        mapname[ len ] = '^0';
-        
-        // recheck
-        if( is_map_valid( mapname ) )
-        {
-            return true;
-        }
-    }
-    
-    return false;
-}
-
-readMapCycle( szFileName[], szNext[], iNext )
-{
-    new b, i = 0, iMaps = 0
-    new szBuffer[ 32 ], szFirst[ 32 ]
-    
-    if( file_exists( szFileName ) )
-    {
-        while( read_file( szFileName, i++, szBuffer, charsmax( szBuffer ), b ) )
-        {
-            if( !isalnum( szBuffer[ 0 ] )
-                || !ValidMap( szBuffer ) )
-            {
-                continue
-            }
-            
-            if( !iMaps )
-            {
-                copy( szFirst, charsmax( szFirst ), szBuffer )
-            }
-            
-            if( ++iMaps > plugin_nextmap_g_pos )
-            {
-                copy( szNext, iNext, szBuffer )
-                plugin_nextmap_g_pos = iMaps
-                return
-            }
-        }
-    }
-    
-    if( !iMaps )
-    {
-        log_amx( g_warning, szFileName )
-        copy( szNext, iNext, plugin_nextmap_g_currentMap )
-    }
-    else
-    {
-        copy( szNext, iNext, szFirst )
-    }
-    plugin_nextmap_g_pos = 1
 }
 
 /**
@@ -1795,7 +1565,7 @@ public map_loadPrefixList()
 /**
  * Reset rounds scores every game restart event.
  */
-public game_round_restart_event()
+public round_restart_event()
 {
     g_isTimeToResetRounds = true
     reset_round_ending()
@@ -1809,7 +1579,7 @@ public game_commencing_event()
 {
     g_isTimeToResetGame = true
     
-    game_round_restart_event()
+    round_restart_event()
     cancel_voting()
     
     DEBUG_LOGGER( 32, "^n AT: game_commencing_event" )
@@ -5159,6 +4929,237 @@ stock cancel_voting()
     g_voteStatus            = 0
     
     vote_resetStats()
+}
+
+// ################################## AMX MOD X NEXTMAP PLUGIN ###################################
+new plugin_nextmap_g_nextMap[ 128 ]
+new plugin_nextmap_g_mapCycle[ 128 ]
+new plugin_nextmap_g_pos
+new plugin_nextmap_g_currentMap[ 128 ]
+
+// pcvars
+new plugin_nextmap_g_friendlyfire, plugin_nextmap_g_chattime
+new plugin_nextmap_gp_nextmap
+
+public nextmap_plugin_init()
+{
+    pause( "acd", "nextmap.amxx" )
+    
+    register_dictionary( "nextmap.txt" )
+    register_event( "30", "changeMap", "a" )
+    register_clcmd( "say nextmap", "sayNextMap", 0, "- displays nextmap" )
+    register_clcmd( "say currentmap", "sayCurrentMap", 0, "- display current map" )
+    
+    plugin_nextmap_gp_nextmap     = register_cvar( "amx_nextmap", "", FCVAR_SERVER | FCVAR_EXTDLL | FCVAR_SPONLY )
+    plugin_nextmap_g_chattime     = get_cvar_pointer( "mp_chattime" )
+    plugin_nextmap_g_friendlyfire = get_cvar_pointer( "mp_friendlyfire" )
+    
+    if( plugin_nextmap_g_friendlyfire )
+    {
+        register_clcmd( "say ff", "sayFFStatus", 0, "- display friendly fire status" )
+    }
+    
+    get_mapname( plugin_nextmap_g_currentMap, charsmax( plugin_nextmap_g_currentMap ) )
+    
+    new szString[ 40 ], szString2[ 32 ], szString3[ 8 ]
+    
+    get_localinfo( "lastmapcycle", szString, charsmax( szString ) )
+    parse( szString, szString2, charsmax( szString2 ), szString3, charsmax( szString3 ) )
+    
+    get_cvar_string( "mapcyclefile", plugin_nextmap_g_mapCycle, charsmax( plugin_nextmap_g_mapCycle ) )
+    
+    if( !equal( plugin_nextmap_g_mapCycle, szString2 ) )
+    {
+        plugin_nextmap_g_pos = 0    // mapcyclefile has been changed - go from first
+    }
+    else
+    {
+        plugin_nextmap_g_pos = str_to_num( szString3 )
+    }
+    
+    readMapCycle( plugin_nextmap_g_mapCycle, plugin_nextmap_g_nextMap, charsmax( plugin_nextmap_g_nextMap ) )
+    set_pcvar_string( plugin_nextmap_gp_nextmap, plugin_nextmap_g_nextMap )
+    formatex( szString, charsmax( szString ), "%s %d", plugin_nextmap_g_mapCycle, plugin_nextmap_g_pos )
+    set_localinfo( "lastmapcycle", szString ) // save lastmapcycle settings
+}
+
+getNextMapName( szArg[], iMax )
+{
+    new len = get_pcvar_string( plugin_nextmap_gp_nextmap, szArg, iMax )
+    
+    if( ValidMap( szArg ) )
+    {
+        return len
+    }
+    len = copy( szArg, iMax, plugin_nextmap_g_nextMap )
+    set_pcvar_string( plugin_nextmap_gp_nextmap, plugin_nextmap_g_nextMap )
+    
+    return len
+}
+
+public sayNextMap()
+{
+    if( get_pcvar_num( cvar_gal_nextmap_change )
+        && !g_is_last_round
+        && !( g_voteStatus & VOTE_IS_OVER ) )
+    {
+        if( g_voteStatus & VOTE_IN_PROGRESS )
+        {
+        #if AMXX_VERSION_NUM < 183
+            get_players( g_colored_players_ids, g_colored_players_number, "ch" );
+            
+            for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+                 g_colored_current_index++ )
+            {
+                g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
+                
+                client_print_color_internal( g_colored_player_id, "^1%L %L",
+                        g_colored_player_id, "NEXT_MAP",
+                        g_colored_player_id, "GAL_NEXTMAP_VOTING" )
+            }
+        #else
+            client_print_color_internal( 0, "^1%L %L", LANG_PLAYER, "NEXT_MAP",
+                    LANG_PLAYER, "GAL_NEXTMAP_VOTING" )
+        #endif
+        }
+        else
+        {
+        #if AMXX_VERSION_NUM < 183
+            get_players( g_colored_players_ids, g_colored_players_number, "ch" );
+            
+            for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
+                 g_colored_current_index++ )
+            {
+                g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
+                
+                client_print_color_internal( g_colored_player_id, "^1%L %L",
+                        g_colored_player_id, "NEXT_MAP",
+                        g_colored_player_id, "GAL_NEXTMAP_UNKNOWN" )
+            }
+        #else
+            client_print_color_internal( 0, "^1%L", LANG_PLAYER, "NEXT_MAP",
+                    LANG_PLAYER, "GAL_NEXTMAP_UNKNOWN" )
+        #endif
+        }
+    }
+    else
+    {
+        new name[ 32 ]
+        
+        getNextMapName( name, charsmax( name ) )
+        client_print( 0, print_chat, "%L %s", LANG_PLAYER, "NEXT_MAP", name )
+    }
+}
+
+public sayCurrentMap()
+{
+    client_print( 0, print_chat, "%L: %s", LANG_PLAYER, "PLAYED_MAP", plugin_nextmap_g_currentMap )
+}
+
+public sayFFStatus()
+{
+    client_print( 0, print_chat, "%L: %L", LANG_PLAYER, "FRIEND_FIRE", LANG_PLAYER,
+            get_pcvar_num( plugin_nextmap_g_friendlyfire ) ? "ON" : "OFF" )
+}
+
+public delayedChange( param[] )
+{
+    if( plugin_nextmap_g_chattime )
+    {
+        set_pcvar_float( plugin_nextmap_g_chattime, get_pcvar_float( plugin_nextmap_g_chattime ) - 2.0 )
+    }
+#if AMXX_VERSION_NUM < 183
+    server_cmd( "changelevel %s", param )
+#else
+    engine_changelevel( param )
+#endif
+}
+
+public changeMap()
+{
+    new string[ 32 ] // mp_chattime defaults to 10 in other mods
+    new Float:chattime = plugin_nextmap_g_chattime ? get_pcvar_float( plugin_nextmap_g_chattime ) : 10.0;
+    
+    if( plugin_nextmap_g_chattime )
+    {
+        set_pcvar_float( plugin_nextmap_g_chattime, chattime + 2.0 ) // make sure mp_chattime is long
+    }
+    new len = getNextMapName( string, charsmax( string ) ) + 1
+    set_task( chattime, "delayedChange", 0, string, len ) // change with 1.5 sec. delay
+}
+
+new g_warning[] = "WARNING: Couldn't find a valid map or the file doesn't exist (file ^"%s^")"
+
+stock bool:ValidMap( mapname[] )
+{
+    if( is_map_valid( mapname ) )
+    {
+        return true;
+    }
+    // If the is_map_valid check failed, check the end of the string
+    new len = strlen( mapname ) - 4;
+    
+    // The mapname was too short to possibly house the .bsp extension
+    if( len < 0 )
+    {
+        return false;
+    }
+    
+    if( equali( mapname[ len ], ".bsp" ) )
+    {
+        // If the ending was .bsp, then cut it off.
+        // the string is byref'ed, so this copies back to the loaded text.
+        mapname[ len ] = '^0';
+        
+        // recheck
+        if( is_map_valid( mapname ) )
+        {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+readMapCycle( szFileName[], szNext[], iNext )
+{
+    new b, i = 0, iMaps = 0
+    new szBuffer[ 32 ], szFirst[ 32 ]
+    
+    if( file_exists( szFileName ) )
+    {
+        while( read_file( szFileName, i++, szBuffer, charsmax( szBuffer ), b ) )
+        {
+            if( !isalnum( szBuffer[ 0 ] )
+                || !ValidMap( szBuffer ) )
+            {
+                continue
+            }
+            
+            if( !iMaps )
+            {
+                copy( szFirst, charsmax( szFirst ), szBuffer )
+            }
+            
+            if( ++iMaps > plugin_nextmap_g_pos )
+            {
+                copy( szNext, iNext, szBuffer )
+                plugin_nextmap_g_pos = iMaps
+                return
+            }
+        }
+    }
+    
+    if( !iMaps )
+    {
+        log_amx( g_warning, szFileName )
+        copy( szNext, iNext, plugin_nextmap_g_currentMap )
+    }
+    else
+    {
+        copy( szNext, iNext, szFirst )
+    }
+    plugin_nextmap_g_pos = 1
 }
 
 // ################################## BELOW HERE ONLY GOES DEBUG/TEST CODE ###################################
