@@ -1779,7 +1779,7 @@ public map_loadPrefixList()
  */
 public game_round_restart_event()
 {
-    reset_rounds_scores()
+    set_task( 10.0 + get_cvar_float( "sv_restartround" ), "reset_rounds_scores" )
     reset_round_ending()
 }
 
@@ -1821,15 +1821,16 @@ public start_voting_by_rounds()
     }
 }
 
-stock reset_rounds_scores()
+public reset_rounds_scores()
 {
-    if( g_srvWinlimitRestart
-        || g_srvMaxroundsRestart
-        || g_srvTimelimitRestart )
+    if( g_srvTimelimitRestart
+        || g_srvWinlimitRestart
+        || g_srvMaxroundsRestart )
     {
         save_time_limit()
         
-        if( g_srvTimelimitRestart )
+        if( get_pcvar_num( g_timelimit_pointer )
+            && g_srvTimelimitRestart )
         {
             new new_timelimit = ( floatround(
                                           get_pcvar_num( g_timelimit_pointer )
@@ -1842,7 +1843,8 @@ stock reset_rounds_scores()
             }
         }
         
-        if( g_srvWinlimitRestart )
+        if( get_pcvar_num( g_winlimit_pointer )
+            && g_srvWinlimitRestart )
         {
             new new_winlimit = ( get_pcvar_num( g_winlimit_pointer )
                                  - max( g_total_terrorists_wins, g_total_CT_wins )
@@ -1854,7 +1856,8 @@ stock reset_rounds_scores()
             }
         }
         
-        if( g_srvMaxroundsRestart )
+        if( get_pcvar_num( g_maxrounds_pointer )
+            && g_srvMaxroundsRestart )
         {
             new new_maxrounds = ( get_pcvar_num( g_maxrounds_pointer ) - g_total_rounds_played
                                   + get_pcvar_num( cvar_srvMaxroundsRestart ) - 1 )
