@@ -288,6 +288,7 @@ new cvar_emptyWait
 new cvar_emptyMapFile
 new cvar_rtvWait
 new cvar_rtvWaitRounds
+new cvar_rtvWaitAdmin
 new cvar_rtvRatio
 new cvar_rtvCommands;
 new cvar_cmdVotemap
@@ -329,8 +330,9 @@ new bool:g_is_vote_blocked
 new bool:g_is_final_voting
 new g_is_colored_chat_enabled
 
-new g_isTimeToResetGame
-new g_isTimeToResetRounds
+new g_rtv_wait_admin_number
+new bool:g_isTimeToResetGame
+new bool:g_isTimeToResetRounds
 new g_emptyMapCnt
 new g_cntRecentMap;
 new Array:g_nominationMap
@@ -340,9 +342,9 @@ new Array:g_fillerMap;
 new Float:g_rtvWait;
 new g_rtvWaitRounds
 new g_rockedVoteCnt;
-new bool:g_srvTimelimitRestart
-new bool:g_srvMaxroundsRestart
-new bool:g_srvWinlimitRestart
+new bool:g_is_srvTimelimitRestart
+new bool:g_is_srvMaxroundsRestart
+new bool:g_is_srvWinlimitRestart
 
 new MENU_CHOOSEMAP[] = "gal_menuChooseMap";
 new DIR_CONFIGS[ 128 ];
@@ -432,6 +434,7 @@ public plugin_init()
     cvar_rtvCommands             = register_cvar( "gal_rtv_commands", "3" );
     cvar_rtvWait                 = register_cvar( "gal_rtv_wait", "10" );
     cvar_rtvWaitRounds           = register_cvar( "gal_rtv_wait_rounds", "5" );
+    cvar_rtvWaitAdmin            = register_cvar( "gal_rtv_wait_admin", "0" );
     cvar_rtvRatio                = register_cvar( "gal_rtv_ratio", "0.60" );
     cvar_rtvReminder             = register_cvar( "gal_rtv_reminder", "2" );
     cvar_nomPlayerAllowance      = register_cvar( "gal_nom_playerallowance", "2" );
@@ -520,11 +523,11 @@ public plugin_cfg()
         copy( CLR_GREY, 2, "\d" );
     }
     
-    g_rtvWait             = get_pcvar_float( cvar_rtvWait );
-    g_rtvWaitRounds       = get_pcvar_num( cvar_rtvWaitRounds );
-    g_srvTimelimitRestart = bool:get_pcvar_num( cvar_srvTimelimitRestart );
-    g_srvMaxroundsRestart = bool:get_pcvar_num( cvar_srvMaxroundsRestart );
-    g_srvWinlimitRestart  = bool:get_pcvar_num( cvar_srvWinlimitRestart );
+    g_rtvWait                = get_pcvar_float( cvar_rtvWait );
+    g_rtvWaitRounds          = get_pcvar_num( cvar_rtvWaitRounds );
+    g_is_srvTimelimitRestart = bool:get_pcvar_num( cvar_srvTimelimitRestart );
+    g_is_srvMaxroundsRestart = bool:get_pcvar_num( cvar_srvMaxroundsRestart );
+    g_is_srvWinlimitRestart  = bool:get_pcvar_num( cvar_srvWinlimitRestart );
     
     get_pcvar_string( cvar_voteWeightFlags, g_voteWeightFlags, charsmax( g_voteWeightFlags ) );
     get_mapname( g_currentMap, charsmax( g_currentMap ) );
@@ -1625,14 +1628,14 @@ public start_voting_by_rounds()
 
 public reset_rounds_scores()
 {
-    if( g_srvTimelimitRestart
-        || g_srvWinlimitRestart
-        || g_srvMaxroundsRestart )
+    if( g_is_srvTimelimitRestart
+        || g_is_srvWinlimitRestart
+        || g_is_srvMaxroundsRestart )
     {
         save_time_limit()
         
         if( get_pcvar_num( g_timelimit_pointer )
-            && g_srvTimelimitRestart )
+            && g_is_srvTimelimitRestart )
         {
             new new_timelimit = ( floatround(
                                           get_pcvar_num( g_timelimit_pointer )
@@ -1646,7 +1649,7 @@ public reset_rounds_scores()
         }
         
         if( get_pcvar_num( g_winlimit_pointer )
-            && g_srvWinlimitRestart )
+            && g_is_srvWinlimitRestart )
         {
             new new_winlimit = ( get_pcvar_num( g_winlimit_pointer )
                                  - max( g_total_terrorists_wins, g_total_CT_wins )
@@ -1659,7 +1662,7 @@ public reset_rounds_scores()
         }
         
         if( get_pcvar_num( g_maxrounds_pointer )
-            && g_srvMaxroundsRestart )
+            && g_is_srvMaxroundsRestart )
         {
             new new_maxrounds = ( get_pcvar_num( g_maxrounds_pointer ) - g_total_rounds_played
                                   + get_pcvar_num( cvar_srvMaxroundsRestart ) - 1 )
@@ -4132,6 +4135,13 @@ public vote_rock( player_id )
         return;
     }
     
+    if( get_pcvar_num( cvar_rtvWaitAdmin )
+        && g_rtv_wait_admin_number > 0 )
+    {
+        client_print_color_internal( player_id, "^1%L", player_id, "GAL_ROCK_WAIT_ADMIN" );
+        return;
+    }
+    
     // determine how many total rocks are needed
     new rocksNeeded = vote_getRocksNeeded();
     
@@ -4409,6 +4419,16 @@ stock con_print( player_id, message[], { Float, Sql, Result, _ }: ... )
     server_print( consoleMessage );
 }
 
+public client_connect( player_id )
+{
+    set_pcvar_num( cvar_emptyCycle, 0 );
+    
+    if( has_flag( player_id, "f" ) )
+    {
+        g_rtv_wait_admin_number++
+    }
+}
+
 #if AMXX_VERSION_NUM < 183
 public client_disconnect( player_id )
 #else
@@ -4419,6 +4439,11 @@ public client_disconnected( player_id )
     
     // un-rock the vote
     vote_unrock( player_id );
+    
+    if( has_flag( player_id, "f" ) )
+    {
+        g_rtv_wait_admin_number--
+    }
     
     if( get_pcvar_num( cvar_unnominateDisconnected ) )
     {
@@ -4462,13 +4487,6 @@ public client_disconnected( player_id )
     {
         srv_handleEmpty();
     }
-}
-
-public client_connect( player_id )
-{
-    set_pcvar_num( cvar_emptyCycle, 0 );
-    
-    vote_unrock( player_id );
 }
 
 /**
