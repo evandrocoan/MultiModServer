@@ -264,6 +264,30 @@ Elite+PunchT Stone
 	VoicePitch = 86
 End
 
+Elite+Rifle Krieger
+	Skin = 2
+	VoicePitch = 98
+End
+
+Elite+RifleT Silvester
+	Skin = 1
+	VoicePitch = 96
+End
+
+Elite+Sniper Rambo
+	Skin = 3
+	VoicePitch = 105
+End
+
+Elite+RifleT Stallone
+	Skin = 1
+	VoicePitch = 84
+End
+
+Elite+PunchT Schwarzenegger
+	Skin = 4
+	VoicePitch = 86
+End
 
 //----------------------------------------
 
@@ -508,6 +532,45 @@ VeryHard+RifleT Vunny
 	VoicePitch = 86
 End
 
+VeryHard+Power Allan
+	Skin = 1
+	VoicePitch = 110
+End
+
+VeryHard+Sniper Turing
+	Skin = 3
+	VoicePitch = 93
+End
+
+VeryHard+Rifle Beth
+	Skin = 2
+	VoicePitch = 100
+End
+
+VeryHard+RifleT Tor
+	Skin = 4
+	VoicePitch = 86
+End
+
+VeryHard+Power Oran
+	Skin = 1
+	VoicePitch = 110
+End
+
+VeryHard+Sniper Cat
+	Skin = 3
+	VoicePitch = 93
+End
+
+VeryHard+Rifle Dog
+	Skin = 2
+	VoicePitch = 100
+End
+
+VeryHard+RifleT Machine
+	Skin = 4
+	VoicePitch = 86
+End
 
 //----------------------------------------
 
