@@ -1,11 +1,11 @@
 ![Addons zz](http://addons.zz.mu/Addons_zz.mu_600x107_github_painINmyASS5.png)
 
-The Addons zz is a Addons Multi-Mod and contains numerous mods and comes 
-standard configured for maximum performance and server control. 
+The Addons zz's Multi-Mod Server contains numerous mods and comes 
+standard configured for maximum performance and server control.
 Currently it is tested under Counter-Strike and Counter-Strike Condition Zero.
 
 It's differential are servers adjustments create to provide a customized 
-CS Server and a plugin called "multi-mod_core.sma" that in game 
+CS Server and a plugin called "multimod_manager.sma" that in game 
 (with server running) can switch between "usual game" and superheros 
 1.2.0.14, predator, knife arena, ultimate warcraft mod or deactivate any 
 of them. Once a mod like superheros is active, it continues active forever 
