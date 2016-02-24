@@ -194,8 +194,8 @@ galileo.amxx
  * Fixed a bug, where 'gal_rtv_wait_rounds' has priority over 'gal_rtv_wait'.
  * Added new cvars 'gal_srv_timelimit_restart', 'gal_srv_maxrounds_restart' and
    'gal_srv_winlimit_restart' to control the sv_restart. If nonzero and the server is restarted, 
-   adds x - 1 rounds/minutes to mp_maxrounds or mp_winlimit or mp_timelimit.
-   Example, using mp_maxrounds: mp_maxrounds 40 and 20 rounds has already passed and admin used sv_restart.
+   adds x - 1 rounds/minutes to mp_maxrounds or mp_winlimit or mp_timelimit. Example using mp_maxrounds:
+   If mp_maxrounds = 40 and 20 rounds has already passed and admin used sv_restart.
    After the restart, if the cvar is 1, the rounds left will be 20.
    If the cvar is 0 the rounds left will 40.
  * Create a new LANG file to show 'rounds' instead of 'minutes', when you are using mp_maxrounds.
