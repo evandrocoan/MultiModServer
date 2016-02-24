@@ -1496,27 +1496,27 @@ public cmd_startVote( player_id, level, cid )
         
         if( read_argc() == 2 )
         {
-            new vote_display_task_argument[ 32 ];
-            read_args( vote_display_task_argument, charsmax( vote_display_task_argument ) );
-            remove_quotes( vote_display_task_argument )
+            new argument[ 32 ];
+            read_args( argument, charsmax( argument ) );
+            remove_quotes( argument )
             
-            if( equali( vote_display_task_argument, "-nochange" ) )
+            if( equali( argument, "-nochange" ) )
             {
                 g_is_to_cancel_end_vote = true;
                 g_isTimeToChangeLevel   = false;
             }
             
-            DEBUG_LOGGER( 1, "( inside ) cmd_startVote()| vote_display_task_argument: %s", \
-                    vote_display_task_argument )
+            DEBUG_LOGGER( 1, "( inside ) cmd_startVote()| argument: %s", \
+                    argument )
             
-            if( equali( vote_display_task_argument, "-restart", 4 ) )
+            if( equali( argument, "-restart", 4 ) )
             {
                 g_isTimeToRestart = true;
             }
             
             DEBUG_LOGGER( 1, "( inside ) cmd_startVote() | \
-                    equal( vote_display_task_argument, ^"-restart^", 4 ): %d", \
-                    equal( vote_display_task_argument, "-restart", 4 ) )
+                    equal( argument, ^"-restart^", 4 ): %d", \
+                    equal( argument, "-restart", 4 ) )
         }
         
         DEBUG_LOGGER( 1, "( cmd_startVote ) g_isTimeToRestart: %d, g_isTimeToChangeLevel: %d \
@@ -2596,11 +2596,11 @@ public vote_startDirector( bool:forced )
         if( get_pcvar_num( cvar_voteStatus ) )
         {
             // indicates it's the end of vote display
-            new vote_display_task_argument[ 3 ] = { -1, -1, false };
+            new argument[ 3 ] = { -1, -1, false };
             
             set_task( 8.5 + float( voteDuration ) + 1.0, "block_vote", TASKID_VOTE_DISPLAY )
             set_task( 8.5 + float( voteDuration ) + 1.0, "vote_display", TASKID_VOTE_DISPLAY,
-                    vote_display_task_argument, 3 );
+                    argument, 3 );
             
             set_task( 8.5 + float( voteDuration ) + 6.0, "vote_expire", TASKID_VOTE_EXPIRE );
         }
@@ -2969,29 +2969,29 @@ public vote_handleDisplay()
     // ensure the vote status doesn't indicate expired
     g_voteStatus &= ~VOTE_HAS_EXPIRED;
     
-    new vote_display_task_argument[ 3 ];
-    vote_display_task_argument[ 0 ] = true;
-    vote_display_task_argument[ 1 ] = 0;
-    vote_display_task_argument[ 2 ] = false;
+    new argument[ 3 ];
+    argument[ 0 ] = true;
+    argument[ 1 ] = 0;
+    argument[ 2 ] = false;
     
     if( get_pcvar_num( cvar_voteStatus ) & SHOWSTATUS_VOTE )
     {
-        set_task( 1.0, "vote_display", TASKID_VOTE_DISPLAY, vote_display_task_argument,
-                sizeof( vote_display_task_argument ), "a", g_voteDuration );
+        set_task( 1.0, "vote_display", TASKID_VOTE_DISPLAY, argument,
+                sizeof( argument ), "a", g_voteDuration );
     }
     else
     {
-        set_task( 1.0, "vote_display", TASKID_VOTE_DISPLAY, vote_display_task_argument,
-                sizeof( vote_display_task_argument ) );
+        set_task( 1.0, "vote_display", TASKID_VOTE_DISPLAY, argument,
+                sizeof( argument ) );
     }
 }
 
-public vote_display( vote_display_task_argument[ 3 ] )
+public vote_display( argument[ 3 ] )
 {
     static keys, voteStatus[ 512 ], g_totalVoteAtMap[ 32 ];
     
-    new updateTimeRemaining = vote_display_task_argument[ 0 ];
-    new player_id           = vote_display_task_argument[ 1 ];
+    new updateTimeRemaining = argument[ 0 ];
+    new player_id           = argument[ 1 ];
 
 #if IS_DEBUG_ENABLED > 0
     new snuff = ( player_id > 0 ) ? g_snuffDisplay[ player_id ] : -1;
@@ -2999,15 +2999,15 @@ public vote_display( vote_display_task_argument[ 3 ] )
     DEBUG_LOGGER( 4, "   [votedisplay( )] player_id: %i  updateTimeRemaining: %i,  \
         unsnuffDisplay: %i  g_snuffDisplay: %i  g_refreshVoteStatus: %i,  \
         g_totalVoteOptions: %i  len( g_vote ): %i  len( voteStatus ): %i", \
-            vote_display_task_argument[ 1 ], vote_display_task_argument[ 0 ], \
-            vote_display_task_argument[ 2 ], snuff, g_refreshVoteStatus, \
+            argument[ 1 ], argument[ 0 ], \
+            argument[ 2 ], snuff, g_refreshVoteStatus, \
             g_totalVoteOptions, strlen( g_vote ), strlen( voteStatus ) )
 #endif
     
     if( player_id > 0
         && g_snuffDisplay[ player_id ] )
     {
-        new unsnuffDisplay = vote_display_task_argument[ 2 ];
+        new unsnuffDisplay = argument[ 2 ];
         
         if( unsnuffDisplay )
         {
@@ -3516,13 +3516,13 @@ public vote_handleChoice( player_id, key )
     // display the vote again, with status
     if( get_pcvar_num( cvar_voteStatus ) & SHOWSTATUS_VOTE )
     {
-        new vote_display_task_argument[ 3 ];
-        vote_display_task_argument[ 0 ] = false;
-        vote_display_task_argument[ 1 ] = player_id;
-        vote_display_task_argument[ 2 ] = true;
+        new argument[ 3 ];
+        argument[ 0 ] = false;
+        argument[ 1 ] = player_id;
+        argument[ 2 ] = true;
         
-        set_task( 0.1, "vote_display", TASKID_VOTE_DISPLAY, vote_display_task_argument,
-                sizeof( vote_display_task_argument ) );
+        set_task( 0.1, "vote_display", TASKID_VOTE_DISPLAY, argument,
+                sizeof( argument ) );
     }
 }
 
