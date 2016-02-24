@@ -2,7 +2,7 @@
 
 The Addons zz's Multi-Mod Server contains numerous mods and comes 
 standard configured for maximum performance and server control.
-Currently it is tested under Counter-Strike and Counter-Strike Condition Zero. 
+Currently it is tested under Counter-Strike and Counter-Strike Condition Zero.
 
 It's differential are servers adjustments create to provide a customized 
 CS Server and a plugin called "multimod_manager.sma" that in game 
