@@ -5,6 +5,19 @@ If you want to translate the 'Galileo Reloaded Mapchooser' to your language or i
 see some error or bad coloring tags positioning at the current translations, feel free 
 to correct and come here to [URL="https://forums.alliedmods.net/showthread.php?t=277636"]this translation request thread[/URL] to post your translation or fix.
 
+[SIZE="5"][COLOR="blue"][B]Contents' Table[/B][/COLOR][/SIZE] 
+
+[LIST]
+[*][goanchor=Introduction]Introduction[/goanchor]
+[*][goanchor=Requirements]Requirements and Commands[/goanchor]
+[*][goanchor=Installation]Installation[/goanchor]
+[*][goanchor=TODO]TODO[/goanchor]
+[*][goanchor=Change]Change Log[/goanchor]
+[*][goanchor=Credits]Credits[/goanchor]
+[*][goanchor=Sourcecode]Source Code and Support[/goanchor]
+[*][goanchor=Downloads]Downloads[/goanchor]
+[/LIST]
+
 [B]How to upgrade your Galileo?[/B]
 [LIST=1]
 [*]Download the "galileo.amxx"
@@ -24,28 +37,17 @@ lang file './data/lang/galileo.txt'.
 [*]You need to disable "nextmap.amxx".
 [*]You need to disable any other map choosing plugins, such as "mapchooser.amxx".
 [/LIST]
-[SIZE="5"][COLOR="blue"][B]Contents' Table[/B][/COLOR][/SIZE] 
 
-[LIST]
-[*][goanchor=Introduction]Introduction[/goanchor]
-[*][goanchor=Requirements]Requirements and Commands[/goanchor]
-[*][goanchor=Installation]Installation[/goanchor]
-[*][goanchor=TODO]TODO[/goanchor]
-[*][goanchor=Change]Change Log[/goanchor]
-[*][goanchor=Credits]Credits[/goanchor]
-[*][goanchor=Sourcecode]Source Code and Support[/goanchor]
-[*][goanchor=Downloads]Downloads[/goanchor]
-[/LIST]
-[B]See its current development at: [URL="https://github.com/addonszz/galileo"]Github
-[IMG]https://cdn3.iconfinder.com/data/icons/social-network-round-gloss-shine/128/GitHub_Social-Network-Communicate-Page-Curl-Effect-Circle-Glossy-Shadow-Shine.png[/IMG]
-https://github.com/addonszz/galileo[/URL][/B] 
+[B]See its current development at: [URL="https://github.com/addonszz/Galileo/commits/develop"]Github
+[IMG]http://i.imgur.com/TWUBJiH.png[/IMG]
+https://github.com/addonszz/Galileo/commits/develop[/URL][/B]
 [B][COLOR="Blue"](look for the developer and feature branches)[/COLOR][/B]
 
 The original plugin "[URL="https://forums.alliedmods.net/showthread.php?t=77391"]Galileo[/URL]" is written by [B]Brad[/B]. The "Galileo 1.2" works similarly as the original
 "[B]Galileo[/B]". But "[B][COLOR="Blue"]Galileo 1.2[/COLOR][/B]" has special features for the "[URL="https://forums.alliedmods.net/showthread.php?t=273020"]Multi-Mod Manager[/URL]" plugin, but it 
 still can be used alone. See the [goanchor=Change]Change Log[/goanchor] and [goanchor=Credits]Credits[/goanchor] for more info.
 [URL="http://www.gametracker.com/search/?search_by=server_variable&search_by2=gal_version&query=&loc=_all&sort=&order=&searchipp=50#search"]
-[SIZE=5][B][COLOR=DarkGreen]Click here to see all servers using this plugin.[/COLOR][/B][/SIZE][/URL]
+[SIZE=4][B][COLOR=DarkGreen]Click here to see all servers using this plugin.[/COLOR][/B][/SIZE][/URL]
 
 
 ********************** [anchor]Introduction[/anchor][B][SIZE="5"][COLOR="blue"]Introduction[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor]  *******************************
@@ -190,9 +192,16 @@ galileo.amxx
    // 0 - if the vote is started by RTV end immediately when time/rounds runs out
    // 1 - if the vote is started by RTV when time/rounds runs out, end after the current round
    gal_endonround_rtv 1
+ * using mp_maxrounds
+   
+   current map : de_dust2
+   mp_maxrounds = 60
+   47 rounds passed
+   admin used sv_restart 1 and the map have been changed to de_tuscan without any vote or round end.
 [/CODE]******************************** [anchor]Change[/anchor][B][SIZE="5"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
 [CODE]
 2016-02-XX | v1.2.X
+ * Added the Romanian [ro] and Italian [it] language translations.
  * Fixed a bug, where 'gal_rtv_wait_rounds' has priority over 'gal_rtv_wait'.
  * Added new cvars 'gal_srv_timelimit_restart', 'gal_srv_maxrounds_restart' and
    'gal_srv_winlimit_restart' to control the sv_restart. If nonzero and the server is restarted, 
@@ -408,6 +417,7 @@ Press enter to exit ...
 [B]utaker[/B]: For suggesting and help testing the mp_maxrounds feature.
 [B]ConnorMcLeod[/B]: For the [Dyn Native] ColorChat v0.3.2 (04 jul 2013) register_dictionary_colored function.
 [URL="https://forums.alliedmods.net/member.php?u=263772"][B]Old.School[/B][/URL]: Various bug reports and featuare suggestions.
+[URL="https://forums.alliedmods.net/member.php?u=259683"][B]iNdio[/B][/URL]: For the Romanian [ro] and Italian [it] language translations.
 
 [QUOTE=Brad;684848][COLOR=darkblue][SIZE=4][B]Donations to the Original Author[/B][/SIZE][/COLOR]
 A lot of time and effort went into making this plugin, making features just right,
@@ -466,7 +476,7 @@ And this is a direct link to always to download the latest changes you see on th
 And because it is the development version, the debugging is enabled. Go to around the 'line 37' and find:[PAWN]
 #define IS_DEBUG_ENABLED 1[/PAWN]and change it to:[PAWN]
 #define IS_DEBUG_ENABLED 0[/PAWN]
-Note that these versions above are probabibly not tested or maybe stable as the current official version below.
+Note that these versions above are probably not tested or not maybe stable as the current official version below.
 
 Old versions downloads:
 [LIST=1]
