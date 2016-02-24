@@ -252,14 +252,14 @@ new g_total_rounds_played;
 new g_total_terrorists_wins;
 new g_total_CT_wins;
 
-new g_is_maxrounds_extend
-new g_is_maxrounds_vote_map
-new g_is_RTV_last_round
-new g_is_last_round
-new g_isTimeToChangeLevel
-new g_isTimeToRestart
-new g_isTimeLimitChanged
-new g_is_map_extension_allowed
+new bool:g_is_maxrounds_extend
+new bool:g_is_maxrounds_vote_map
+new bool:g_is_RTV_last_round
+new bool:g_is_last_round
+new bool:g_is_timeToChangeLevel
+new bool:g_is_timeToRestart
+new bool:g_is_timeLimitChanged
+new bool:g_is_map_extension_allowed
 
 /**
  * Server cvars
@@ -676,18 +676,19 @@ public round_end_event()
     
     if( g_is_last_round )
     {
-        if( g_isTimeToChangeLevel || g_is_RTV_last_round ) // when time runs out, end map at the current round end
+        if( g_is_timeToChangeLevel
+            || g_is_RTV_last_round ) // when time runs out, end map at the current round end
         {
-            g_isTimeToChangeLevel = true
-            g_is_RTV_last_round   = false
-            g_is_last_round       = false
+            g_is_timeToChangeLevel = true
+            g_is_RTV_last_round    = false
+            g_is_last_round        = false
             
             remove_task( TASKID_SHOW_LAST_ROUND_HUD )
             set_task( 6.0, "process_last_round", TASKID_PROCESS_LAST_ROUND )
         }
         else // when time runs out, end map at the next round end
         {
-            g_isTimeToChangeLevel = true
+            g_is_timeToChangeLevel = true
             
             remove_task( TASKID_SHOW_LAST_ROUND_HUD )
             set_task( 5.0, "configure_last_round_HUD", TASKID_PROCESS_LAST_ROUND )
@@ -697,7 +698,7 @@ public round_end_event()
 
 public process_last_round()
 {
-    if( g_isTimeToChangeLevel )
+    if( g_is_timeToChangeLevel )
     {
         if( get_pcvar_num( cvar_endMapCountdown ) )
         {
@@ -739,8 +740,8 @@ public process_last_round_counting()
 
 stock intermission_display()
 {
-    if( g_isTimeToChangeLevel
-        || g_isTimeToRestart )
+    if( g_is_timeToChangeLevel
+        || g_is_timeToRestart )
     {
         new Float:mp_chattime = get_cvar_float( "mp_chattime" )
         
@@ -749,7 +750,7 @@ stock intermission_display()
             mp_chattime = 12.0
         }
         
-        if( g_isTimeToRestart )
+        if( g_is_timeToRestart )
         {
             set_task( mp_chattime, "map_change_stays", TASKID_MAP_CHANGE );
         }
@@ -806,7 +807,7 @@ public show_last_round_HUD()
 #endif
     last_round_message[ 0 ] = '^0'
     
-    if( g_isTimeToChangeLevel )
+    if( g_is_timeToChangeLevel )
     {
         // This is because the Amx Mod X 1.8.2 is not recognizing the player LANG_PLAYER when it is
         // formatted before with formatex(...)
@@ -1008,8 +1009,8 @@ public map_manageEnd()
     {
         case 1: // when time runs out, end at the current round end
         {
-            g_is_last_round       = true;
-            g_isTimeToChangeLevel = true;
+            g_is_last_round        = true;
+            g_is_timeToChangeLevel = true;
         
         #if AMXX_VERSION_NUM < 183
             get_players( g_colored_players_ids, g_colored_players_number, "ch" );
@@ -1038,7 +1039,7 @@ public map_manageEnd()
             // round timer.
             if( get_cvar_float( "mp_roundtime" ) > 8 )
             {
-                g_isTimeToChangeLevel = true;
+                g_is_timeToChangeLevel = true;
             
             #if AMXX_VERSION_NUM < 183
                 get_players( g_colored_players_ids, g_colored_players_number, "ch" );
@@ -1285,7 +1286,7 @@ public cmd_startVote( player_id, level, cid )
     }
     else
     {
-        g_isTimeToChangeLevel = true;
+        g_is_timeToChangeLevel = true;
         
         if( read_argc() == 2 )
         {
@@ -1296,7 +1297,7 @@ public cmd_startVote( player_id, level, cid )
             if( equali( argument, "-nochange" ) )
             {
                 g_is_to_cancel_end_vote = true;
-                g_isTimeToChangeLevel   = false;
+                g_is_timeToChangeLevel  = false;
             }
             
             DEBUG_LOGGER( 1, "( inside ) cmd_startVote()| argument: %s", \
@@ -1304,7 +1305,7 @@ public cmd_startVote( player_id, level, cid )
             
             if( equali( argument, "-restart", 4 ) )
             {
-                g_isTimeToRestart = true;
+                g_is_timeToRestart = true;
             }
             
             DEBUG_LOGGER( 1, "( inside ) cmd_startVote() | \
@@ -1312,9 +1313,9 @@ public cmd_startVote( player_id, level, cid )
                     equal( argument, "-restart", 4 ) )
         }
         
-        DEBUG_LOGGER( 1, "( cmd_startVote ) g_isTimeToRestart: %d, g_isTimeToChangeLevel: %d \
+        DEBUG_LOGGER( 1, "( cmd_startVote ) g_is_timeToRestart: %d, g_is_timeToChangeLevel: %d \
                 g_is_to_cancel_end_vote: %d", \
-                g_isTimeToRestart, g_isTimeToChangeLevel, g_is_to_cancel_end_vote )
+                g_is_timeToRestart, g_is_timeToChangeLevel, g_is_to_cancel_end_vote )
         
         vote_startDirector( true );
     }
@@ -1595,9 +1596,9 @@ public game_commencing_event()
  */
 stock reset_round_ending()
 {
-    g_isTimeToChangeLevel = false
-    g_is_RTV_last_round   = false
-    g_is_last_round       = false
+    g_is_timeToChangeLevel = false
+    g_is_RTV_last_round    = false
+    g_is_last_round        = false
     
     remove_task( TASKID_SHOW_LAST_ROUND_HUD )
     
@@ -2425,9 +2426,9 @@ public vote_startDirector( bool:forced )
     #endif
     }
     
-    DEBUG_LOGGER( 1, "( vote_startDirector ) g_isTimeToRestart: %d, g_isTimeToChangeLevel: %d \
+    DEBUG_LOGGER( 1, "( vote_startDirector ) g_is_timeToRestart: %d, g_is_timeToChangeLevel: %d \
             g_is_to_cancel_end_vote: %d", \
-            g_isTimeToRestart, g_isTimeToChangeLevel, g_is_to_cancel_end_vote )
+            g_is_timeToRestart, g_is_timeToChangeLevel, g_is_to_cancel_end_vote )
     
     DEBUG_LOGGER( 4, "" )
     DEBUG_LOGGER( 4, "   [PLAYER CHOICES]" )
@@ -3427,9 +3428,9 @@ public vote_expire()
             numberOfMapsAtSecondPosition: %d", \
             g_totalVoteOptions, numberOfMapsAtFirstPosition, numberOfMapsAtSecondPosition )
     
-    DEBUG_LOGGER( 1, "( vote_expire|middle ) g_isTimeToRestart: %d, g_isTimeToChangeLevel: %d \
+    DEBUG_LOGGER( 1, "( vote_expire|middle ) g_is_timeToRestart: %d, g_is_timeToChangeLevel: %d \
             g_is_to_cancel_end_vote: %d", \
-            g_isTimeToRestart, g_isTimeToChangeLevel, g_is_to_cancel_end_vote )
+            g_is_timeToRestart, g_is_timeToChangeLevel, g_is_to_cancel_end_vote )
     
     // announce the outcome
     new winnerVoteMapIndex;
@@ -3687,9 +3688,9 @@ public vote_expire()
             winnerVoteMapIndex = firstPlaceChoices[ 0 ];
         }
         
-        DEBUG_LOGGER( 1, "( vote_expire|moreover ) g_isTimeToRestart: %d, g_isTimeToChangeLevel: %d \
+        DEBUG_LOGGER( 1, "( vote_expire|moreover ) g_is_timeToRestart: %d, g_is_timeToChangeLevel: %d \
                 g_is_to_cancel_end_vote: %d", \
-                g_isTimeToRestart, g_isTimeToChangeLevel, g_is_to_cancel_end_vote )
+                g_is_timeToRestart, g_is_timeToChangeLevel, g_is_to_cancel_end_vote )
         
         // winnerVoteMapIndex == g_totalVoteOptions, means the 'keep current map' option.
         // Then, here we keep the current map or extend current map, unless the 'cvar_extendmapAllowStay'
@@ -3699,7 +3700,7 @@ public vote_expire()
                  || g_is_map_extension_allowed ) )
         {
             if( ( g_voteStatus & VOTE_IS_EARLY ) // if it is a early vote, we just change map later
-                && !g_isTimeToRestart ) // "stay here" won and the map mustn't be restarted.
+                && !g_is_timeToRestart ) // "stay here" won and the map mustn't be restarted.
             {
             #if AMXX_VERSION_NUM < 183
                 get_players( g_colored_players_ids, g_colored_players_number, "ch" );
@@ -3724,7 +3725,7 @@ public vote_expire()
             }
             else // "stay here" won and the map must be restarted or extended.
             {
-                if( g_isTimeToRestart )
+                if( g_is_timeToRestart )
                 {
                     #if AMXX_VERSION_NUM < 183
                     get_players( g_colored_players_ids, g_colored_players_number, "ch" );
@@ -3807,8 +3808,8 @@ public vote_expire()
                 } // end: "extend map" won and a restart isn't needed.
             } // end: "stay here" won and the map must be restarted.
             
-            g_isTimeToChangeLevel = false;
-            g_isTimeToRestart     = false;
+            g_is_timeToChangeLevel = false;
+            g_is_timeToRestart     = false;
         }
         else // the execution flow gets here when the winner option is not keep/extend map
         {
@@ -3874,9 +3875,9 @@ public vote_expire()
         g_voteStatus |= VOTE_IS_OVER;
     }
     
-    DEBUG_LOGGER( 1, "( vote_expire|out ) g_isTimeToRestart: %d, g_isTimeToChangeLevel: %d \
+    DEBUG_LOGGER( 1, "( vote_expire|out ) g_is_timeToRestart: %d, g_is_timeToChangeLevel: %d \
             g_is_to_cancel_end_vote: %d", \
-            g_isTimeToRestart, g_isTimeToChangeLevel, g_is_to_cancel_end_vote )
+            g_is_timeToRestart, g_is_timeToChangeLevel, g_is_to_cancel_end_vote )
     
     g_isRunOffNeedingKeepCurrentMap = false;
     g_refreshVoteStatus             = true;
@@ -3951,9 +3952,9 @@ stock map_extend()
 
 stock save_time_limit()
 {
-    if( !g_isTimeLimitChanged )
+    if( !g_is_timeLimitChanged )
     {
-        g_isTimeLimitChanged = true;
+        g_is_timeLimitChanged = true;
         
         g_originalTimelimit = get_pcvar_float( g_timelimit_pointer )
         g_originalMaxRounds = get_pcvar_num( g_maxrounds_pointer )
@@ -4041,7 +4042,7 @@ stock start_rtvVote()
     }
     else
     {
-        g_isTimeToChangeLevel = true;
+        g_is_timeToChangeLevel = true;
     }
     
     if( minutes_left < maxrounds_left
@@ -4205,8 +4206,8 @@ public map_change()
     new map[ MAX_MAPNAME_LEN + 1 ];
     get_cvar_string( "amx_nextmap", map, charsmax( map ) );
     
-    g_isTimeToChangeLevel = false;
-    g_isTimeToRestart     = false;
+    g_is_timeToChangeLevel = false;
+    g_is_timeToRestart     = false;
     
     // verify we're changing to a valid map
     if( !is_map_valid( map ) )
@@ -4225,8 +4226,8 @@ public map_change_stays()
     new map[ MAX_MAPNAME_LEN + 1 ];
     get_mapname( map, charsmax( map ) );
     
-    g_isTimeToRestart     = false;
-    g_isTimeToChangeLevel = false;
+    g_is_timeToRestart     = false;
+    g_is_timeToChangeLevel = false;
     
     DEBUG_LOGGER( 1, " ( inside ) map_change_stays()| map: %s, g_currentMap: %s", map, g_currentMap )
     
@@ -4902,14 +4903,14 @@ public map_restoreOriginalTimeLimit()
     DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "map_restoreOriginalTimeLimit( in )", \
             get_pcvar_float( g_timelimit_pointer ), g_originalTimelimit )
     
-    if( g_isTimeLimitChanged )
+    if( g_is_timeLimitChanged )
     {
         server_cmd( "mp_timelimit %f", g_originalTimelimit )
         server_cmd( "mp_maxrounds %d", g_originalMaxRounds )
         server_cmd( "mp_winlimit %d", g_originalWinLimit )
         
         server_exec();
-        g_isTimeLimitChanged = false;
+        g_is_timeLimitChanged = false;
     }
     
     if( get_cvar_float( "sv_maxspeed" ) == 0 )
