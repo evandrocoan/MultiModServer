@@ -691,9 +691,14 @@ public round_end_event()
             g_is_timeToChangeLevel = true
             
             remove_task( TASKID_SHOW_LAST_ROUND_HUD )
-            set_task( 5.0, "configure_last_round_HUD", TASKID_PROCESS_LAST_ROUND )
+            set_task( 5.0, "configure_last_round_HUD_public", TASKID_PROCESS_LAST_ROUND )
         }
     }
+}
+
+public configure_last_round_HUD_public()
+{
+    configure_last_round_HUD()
 }
 
 public process_last_round()
@@ -740,6 +745,8 @@ public process_last_round_counting()
 
 stock intermission_display()
 {
+    configure_last_round_HUD( g_is_RTV_last_round )
+    
     if( g_is_timeToChangeLevel
         || g_is_timeToRestart )
     {
@@ -785,9 +792,10 @@ stock intermission_display()
     }
 }
 
-public configure_last_round_HUD( bool:is_to_show )
+stock configure_last_round_HUD( bool:is_RTV_last_round = true )
 {
-    if( is_to_show )
+    if( bool:get_pcvar_num( cvar_endOnRound_msg )
+        && is_RTV_last_round )
     {
         set_task( 1.0, "show_last_round_HUD", TASKID_SHOW_LAST_ROUND_HUD, _, _, "b" )
     }
@@ -1081,7 +1089,7 @@ public map_manageEnd()
         }
     }
     
-    configure_last_round_HUD( bool:get_pcvar_num( cvar_endOnRound_msg ) )
+    configure_last_round_HUD()
     
     DEBUG_LOGGER( 2, "%32s mp_timelimit: %f", "map_manageEnd(out)", get_pcvar_float( g_timelimit_pointer ) )
 }
@@ -3719,6 +3727,7 @@ public vote_expire()
                 
                 // clear all the votes
                 vote_resetStats();
+                cancel_RTV_last_round()
                 
                 // no longer is an early vote
                 g_voteStatus &= ~VOTE_IS_EARLY;
@@ -3744,9 +3753,11 @@ public vote_expire()
                     
                     intermission_display()
                 }
-                else // "extend map" won and a restart isn't needed.
+                else // "extend map" or "stay here" won and a restart isn't needed.
                 {
-                    if( g_is_final_voting )
+                    cancel_RTV_last_round()
+                    
+                    if( g_is_final_voting ) // "extend map" won and a restart isn't needed.
                     {
                         if( g_is_maxrounds_vote_map )
                         {
@@ -3805,7 +3816,7 @@ public vote_expire()
                         client_print_color_internal( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_STAY" );
                     #endif
                     } // end: "stay here" won and a restart isn't needed.
-                } // end: "extend map" won and a restart isn't needed.
+                } // end: "extend map" or "stay here" won and a restart isn't needed.
             } // end: "stay here" won and the map must be restarted.
             
             g_is_timeToChangeLevel = false;
@@ -4028,6 +4039,15 @@ stock map_isTooRecent( map[] )
     return false;
 }
 
+stock cancel_RTV_last_round()
+{
+    if( g_is_RTV_last_round )
+    {
+        g_is_RTV_last_round = false
+        g_is_last_round     = false
+    }
+}
+
 stock start_rtvVote()
 {
     new minutes_left   = get_timeleft() / 60
@@ -4038,7 +4058,6 @@ stock start_rtvVote()
     {
         g_is_last_round     = true
         g_is_RTV_last_round = true
-        configure_last_round_HUD( bool:get_pcvar_num( cvar_endOnRound_msg ) )
     }
     else
     {
