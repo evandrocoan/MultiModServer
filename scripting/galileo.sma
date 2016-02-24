@@ -254,6 +254,7 @@ new g_total_CT_wins;
 
 new g_is_maxrounds_extend
 new g_is_maxrounds_vote_map
+new g_is_RTV_last_round
 new g_is_last_round
 new g_isTimeToChangeLevel
 new g_isTimeToRestart
@@ -273,6 +274,7 @@ new cvar_coloredChatEnabled
 new cvar_emptyCycle;
 new cvar_unnominateDisconnected;
 new cvar_endOnRound
+new cvar_endOnRound_rtv
 new cvar_endOnRound_msg
 new cvar_endOnRound_players
 new cvar_voteWeight
@@ -410,6 +412,7 @@ public plugin_init()
     cvar_emptyCycle              = register_cvar( "gal_in_empty_cycle", "0", FCVAR_SPONLY );
     cvar_unnominateDisconnected  = register_cvar( "gal_unnominate_disconnected", "0" );
     cvar_endOnRound              = register_cvar( "gal_endonround", "1" );
+    cvar_endOnRound_rtv          = register_cvar( "gal_endonround_rtv", "0" );
     cvar_endOnRound_msg          = register_cvar( "gal_endonround_msg", "0" );
     cvar_endOnRound_players      = register_cvar( "gal_endonround_players", "1" );
     cvar_voteWeight              = register_cvar( "gal_vote_weight", "1" );
@@ -673,9 +676,11 @@ public round_end_event()
     
     if( g_is_last_round )
     {
-        if( g_isTimeToChangeLevel ) // when time runs out, end map at the current round end
+        if( g_isTimeToChangeLevel || g_is_RTV_last_round ) // when time runs out, end map at the current round end
         {
-            g_is_last_round = false
+            g_isTimeToChangeLevel = true
+            g_is_RTV_last_round   = false
+            g_is_last_round       = false
             
             remove_task( TASKID_SHOW_LAST_ROUND_HUD )
             set_task( 6.0, "process_last_round", TASKID_PROCESS_LAST_ROUND )
@@ -1591,6 +1596,7 @@ public game_commencing_event()
 stock reset_round_ending()
 {
     g_isTimeToChangeLevel = false
+    g_is_RTV_last_round   = false
     g_is_last_round       = false
     
     remove_task( TASKID_SHOW_LAST_ROUND_HUD )
@@ -4027,7 +4033,16 @@ stock start_rtvVote()
     new maxrounds_left = get_pcvar_num( g_maxrounds_pointer ) - g_total_rounds_played
     new winlimit_left  = get_pcvar_num( g_winlimit_pointer ) - max( g_total_CT_wins, g_total_terrorists_wins )
     
-    g_isTimeToChangeLevel = true;
+    if( get_pcvar_num( cvar_endOnRound_rtv ) )
+    {
+        g_is_last_round     = true
+        g_is_RTV_last_round = true
+        configure_last_round_HUD( bool:get_pcvar_num( cvar_endOnRound_msg ) )
+    }
+    else
+    {
+        g_isTimeToChangeLevel = true;
+    }
     
     if( minutes_left < maxrounds_left
         || minutes_left < winlimit_left  )
