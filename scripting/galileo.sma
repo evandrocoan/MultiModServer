@@ -51,7 +51,7 @@
  * ( ... ) 128 execute the test units and print their out put results.
  * ( 11111111 ) 255 displays all debug logs levels at server console.
  */
-new g_debug_level = 5
+new g_debug_level = 1
 
 /**
  * Test unit variables related to debug level 128, displays basic debug messages.
@@ -703,16 +703,13 @@ public configure_last_round_HUD_public()
 
 public process_last_round()
 {
-    if( g_is_timeToChangeLevel )
+    if( get_pcvar_num( cvar_endMapCountdown ) )
     {
-        if( get_pcvar_num( cvar_endMapCountdown ) )
-        {
-            set_task( 1.0, "process_last_round_counting", TASKID_PROCESS_LAST_ROUND, _, _, "a", 5 );
-        }
-        else
-        {
-            intermission_display()
-        }
+        set_task( 1.0, "process_last_round_counting", TASKID_PROCESS_LAST_ROUND, _, _, "a", 5 );
+    }
+    else
+    {
+        intermission_display()
     }
 }
 
@@ -797,6 +794,7 @@ stock configure_last_round_HUD( bool:is_RTV_last_round = true )
     if( bool:get_pcvar_num( cvar_endOnRound_msg )
         && is_RTV_last_round )
     {
+        get_cvar_string( "amx_nextmap", g_nextmap, charsmax( g_nextmap ) );
         set_task( 1.0, "show_last_round_HUD", TASKID_SHOW_LAST_ROUND_HUD, _, _, "b" )
     }
 }
@@ -815,7 +813,8 @@ public show_last_round_HUD()
 #endif
     last_round_message[ 0 ] = '^0'
     
-    if( g_is_timeToChangeLevel )
+    if( g_is_timeToChangeLevel
+        || g_is_RTV_last_round )
     {
         // This is because the Amx Mod X 1.8.2 is not recognizing the player LANG_PLAYER when it is
         // formatted before with formatex(...)
