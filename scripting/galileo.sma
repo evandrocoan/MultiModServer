@@ -374,7 +374,7 @@ new g_nominationMatchesMenu[ MAX_PLAYER_CNT ];
 
 new g_vote[ 512 ];
 new g_arrayOfRunOffChoices[ 2 ];
-new bool:g_voted[ MAX_PLAYER_CNT + 1 ] = { true, ... }
+new bool:g_is_player_voted_array[ MAX_PLAYER_CNT + 1 ] = { true, ... }
 new g_arrayOfMapsWithVotesNumber[ MAX_MAPS_IN_VOTE + 1 ];
 
 new bool:g_rockedVote[ MAX_PLAYER_CNT + 1 ]
@@ -995,7 +995,8 @@ public vote_manageEnd()
     // are we managing the end of the map?
     if( secondsLeft < 30
         && secondsLeft > 0
-        && !g_is_last_round )
+        && !g_is_last_round
+        && get_realplayersnum() >= get_pcvar_num( cvar_endOnRound_msg ) )
     {
         map_manageEnd();
     }
@@ -1047,13 +1048,10 @@ public map_manageEnd()
 
 stock prevent_map_change()
 {
-    if( get_realplayersnum() >= get_pcvar_num( cvar_endOnRound_msg ) )
-    {
-        save_time_limit()
-        
-        // prevent the map from ending automatically
-        server_cmd( "mp_timelimit 0" );
-    }
+    save_time_limit()
+    
+    // prevent the map from ending automatically
+    server_cmd( "mp_timelimit 0" );
 }
 
 public map_loadRecentList()
@@ -2271,7 +2269,7 @@ public vote_startDirector( bool:is_forced_voting )
         
         for( new idxPlayer = 0; idxPlayer < playerCnt; ++idxPlayer )
         {
-            g_voted[ player[ idxPlayer ] ] = false;
+            g_is_player_voted_array[ player[ idxPlayer ] ] = false;
         }
         
         // make perfunctory announcement: "get ready to choose a map"
@@ -2323,7 +2321,7 @@ public vote_startDirector( bool:is_forced_voting )
 
 public block_vote()
 {
-    arrayset( g_voted, false, sizeof( g_voted ) )
+    arrayset( g_is_player_voted_array, false, sizeof( g_is_player_voted_array ) )
     g_is_vote_blocked = true
 }
 
@@ -2704,8 +2702,10 @@ public vote_display( argument[ 3 ] )
         }
     }
     
-    new isVoteOver = ( updateTimeRemaining == -1
-                       && player_id == -1 )
+    new showNoneOptionType = get_pcvar_num( cvar_voteShowNoneOptionType )
+    new showNoneOption     = get_pcvar_num( cvar_voteShowNoneOption )
+    new isVoteOver         = ( updateTimeRemaining == -1
+                               && player_id == -1 )
     new charCnt
     
     if( g_refreshVoteStatus
@@ -2717,7 +2717,7 @@ public vote_display( argument[ 3 ] )
         voteStatus[ 0 ] = 0;
         
         // register the 'None' option key
-        if( get_pcvar_num( cvar_voteShowNoneOption )
+        if( showNoneOption
             && !g_is_vote_blocked )
         {
             keys = MENU_KEY_0;
@@ -2849,8 +2849,9 @@ public vote_display( argument[ 3 ] )
     new cleanCharCnt = copy( g_vote, charsmax( g_vote ), voteStatus );
     
     // append a "None" option on for people to choose if they don't like any other choice
-    if( get_pcvar_num( cvar_voteShowNoneOption )
-        && !get_pcvar_num( cvar_voteShowNoneOptionType )
+    // to append it here because it to disappear after the player vote.
+    if( showNoneOption
+        && !showNoneOptionType
         && !g_is_vote_blocked )
     {
         formatex( g_vote[ cleanCharCnt ], charsmax( g_vote ) - cleanCharCnt,
@@ -2893,8 +2894,8 @@ public vote_display( argument[ 3 ] )
     menuDirty[ 0 ] = '^0';
     
     // append a "None" option on for people to choose if they don't like any other choice
-    if( get_pcvar_num( cvar_voteShowNoneOption )
-        && get_pcvar_num( cvar_voteShowNoneOptionType ) )
+    if( showNoneOption
+        && showNoneOptionType )
     {
         formatex( menuClean, charsmax( menuClean ), "%s^n^n%s0. %s%L%s", g_vote,
                 CLR_RED, CLR_WHITE, LANG_SERVER, "GAL_OPTION_NONE", voteFooter );
@@ -2906,8 +2907,8 @@ public vote_display( argument[ 3 ] )
     
     if( isVoteOver )
     {
-        if( get_pcvar_num( cvar_voteShowNoneOption )
-            && get_pcvar_num( cvar_voteShowNoneOptionType ) )
+        if( showNoneOption
+            && showNoneOptionType )
         {
             formatex( menuDirty, charsmax( menuDirty ), "%s^n^n%s0. %s%L^n^n%s%L", voteStatus,
                     CLR_RED, CLR_WHITE, LANG_SERVER, "GAL_OPTION_NONE",
@@ -2921,8 +2922,8 @@ public vote_display( argument[ 3 ] )
     }
     else
     {
-        if( get_pcvar_num( cvar_voteShowNoneOption )
-            && get_pcvar_num( cvar_voteShowNoneOptionType ) )
+        if( showNoneOption
+            && showNoneOptionType )
         {
             formatex( menuDirty, charsmax( menuDirty ), "%s^n^n%s0. %s%L%s", voteStatus,
                     CLR_RED, CLR_WHITE, LANG_SERVER, "GAL_OPTION_NONE", voteFooter );
@@ -2930,8 +2931,8 @@ public vote_display( argument[ 3 ] )
         else
         {
             // remove the extra space after the 'None' option is hidden
-            if( get_pcvar_num( cvar_voteShowNoneOption )
-                && !get_pcvar_num( cvar_voteShowNoneOptionType )
+            if( showNoneOption
+                && !showNoneOptionType
                 && !g_is_vote_blocked )
             {
                 voteFooter[ 0 ] = ' '
@@ -2978,7 +2979,7 @@ public vote_display( argument[ 3 ] )
         {
             player_id = players[ playerIdx ];
             
-            if( g_voted[ player_id ] == false
+            if( g_is_player_voted_array[ player_id ] == false
                 && !isVoteOver )
             {
             #if defined DEBUG
@@ -3004,7 +3005,7 @@ public vote_display( argument[ 3 ] )
                 if( ( isVoteOver
                       && showStatus )
                     || ( showStatus & SHOWSTATUS_VOTE
-                         && g_voted[ player_id ] ) )
+                         && g_is_player_voted_array[ player_id ] ) )
                 {
                     if( playerIdx == 0 )
                     {
@@ -3044,7 +3045,7 @@ public vote_handleChoice( player_id, key )
     
     g_snuffDisplay[ player_id ] = true;
     
-    if( g_voted[ player_id ] == false
+    if( g_is_player_voted_array[ player_id ] == false
         && !g_is_vote_blocked )
     {
         new name[ 32 ];
@@ -3078,7 +3079,7 @@ public vote_handleChoice( player_id, key )
             {
                 // only display the "none" vote if we haven't already voted
                 // ( we can make it here from the vote status menu too )
-                if( g_voted[ player_id ] == false )
+                if( g_is_player_voted_array[ player_id ] == false )
                 {
                     DEBUG_LOGGER( 4, "      %-32s ( extend )", name )
                     
@@ -3138,7 +3139,7 @@ public vote_handleChoice( player_id, key )
                 g_arrayOfMapsWithVotesNumber[ key ]++;
             }
         }
-        g_voted[ player_id ] = true;
+        g_is_player_voted_array[ player_id ] = true;
         g_refreshVoteStatus  = true;
     }
     else
@@ -3665,7 +3666,7 @@ stock vote_resetStats()
     g_rockedVoteCnt = 0;
     
     // reset everyones' votes
-    arrayset( g_voted, false, sizeof( g_voted ) );
+    arrayset( g_is_player_voted_array, false, sizeof( g_is_player_voted_array ) );
 }
 
 stock map_isInMenu( map[] )
@@ -3755,14 +3756,6 @@ stock start_rtvVote()
         {
             g_is_maxrounds_extend = true
         }
-        else
-        {
-            g_is_maxrounds_extend = false
-        }
-    }
-    else
-    {
-        g_is_maxrounds_vote_map = false
     }
     
     vote_startDirector( true );
@@ -4096,7 +4089,7 @@ public client_disconnect( player_id )
 public client_disconnected( player_id )
 #endif
 {
-    g_voted[ player_id ] = false;
+    g_is_player_voted_array[ player_id ] = false;
     
     // un-rock the vote
     vote_unrock( player_id );
