@@ -4080,7 +4080,7 @@ stock con_print( player_id, message[], { Float, Sql, Result, _ }: ... )
 
 public client_authorized( player_id )
 {
-    set_pcvar_num( cvar_emptyCycle, 0 );
+    srv_stopEmptyCheck()
     
     if( has_flag( player_id, "f" ) )
     {
@@ -4204,6 +4204,12 @@ stock srv_startEmptyCountdown()
     }
 }
 
+stock srv_stopEmptyCheck()
+{
+    set_pcvar_num( cvar_emptyCycle, 0 );
+    remove_task( TASKID_EMPTYSERVER )
+}
+
 public srv_startEmptyCycle()
 {
     // stop this system at the next map, due we already be at a popular map
@@ -4225,6 +4231,14 @@ public srv_startEmptyCycle()
     }
 }
 
+/**
+ * Given a mapArray list the currentMap, calculates the next map after the currentMap provided at 
+ * the mapArray.
+ * 
+ * @param nextMap       the string pointer which will receive the next map
+ * @param currentMap    the string printer to the current map name
+ * @param mapArray      the dynamic array with the map list to search
+ */
 stock map_getNext( Array:mapArray, currentMap[], nextMap[ 32 ] )
 {
     new thisMap[ 32 ]
