@@ -273,7 +273,6 @@ new cvar_unnominateDisconnected;
 new cvar_endOnRound
 new cvar_endOnRound_rtv
 new cvar_endOnRound_msg
-new cvar_endOnRound_players
 new cvar_voteWeight
 new cvar_voteWeightFlags
 new cvar_extendmapMax;
@@ -412,7 +411,6 @@ public plugin_init()
     cvar_endOnRound             = register_cvar( "gal_endonround", "1" );
     cvar_endOnRound_rtv         = register_cvar( "gal_endonround_rtv", "0" );
     cvar_endOnRound_msg         = register_cvar( "gal_endonround_msg", "0" );
-    cvar_endOnRound_players     = register_cvar( "gal_endonround_players", "1" );
     cvar_voteWeight             = register_cvar( "gal_vote_weight", "1" );
     cvar_voteWeightFlags        = register_cvar( "gal_vote_weightflags", "y" );
     cvar_cmdVotemap             = register_cvar( "gal_cmd_votemap", "0" );
@@ -1049,7 +1047,7 @@ public map_manageEnd()
 
 stock prevent_map_change()
 {
-    if( get_realplayersnum() >= get_pcvar_num( cvar_endOnRound_players ) )
+    if( get_realplayersnum() >= get_pcvar_num( cvar_endOnRound_msg ) )
     {
         save_time_limit()
         
