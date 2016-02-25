@@ -3734,7 +3734,8 @@ stock start_rtvVote()
     new maxrounds_left = get_pcvar_num( g_maxrounds_pointer ) - g_total_rounds_played
     new winlimit_left  = get_pcvar_num( g_winlimit_pointer ) - max( g_total_CT_wins, g_total_terrorists_wins )
     
-    if( get_pcvar_num( cvar_endOnRound_rtv ) )
+    if( bool:get_pcvar_num( cvar_endOnRound_rtv )
+        && get_realplayersnum() >= get_pcvar_num( cvar_endOnRound_rtv ) )
     {
         g_is_last_round     = true
         g_is_RTV_last_round = true
