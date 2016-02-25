@@ -192,18 +192,14 @@ galileo.amxx
 2016-02-XX | v2.X
  * Added the Romanian [ro] and Italian [it] language translations.
  * Fixed a bug, where 'gal_rtv_wait_rounds' has priority over 'gal_rtv_wait'.
- * Added new cvars 'gal_srv_timelimit_restart', 'gal_srv_maxrounds_restart' and
-    'gal_srv_winlimit_restart' to control the sv_restart. If nonzero and the server is restarted, 
-    adds x - 1 rounds/minutes to mp_maxrounds or mp_winlimit or mp_timelimit. Example using mp_maxrounds:
-    If mp_maxrounds = 40 and 20 rounds has already passed and admin used sv_restart.
-    After the restart, if the cvar is 1, the rounds left will be 20.
-    If the cvar is 0 the rounds left will 40.
+ * Added new cvars 'gal_srv_timelimit_restart', 'gal_srv_maxrounds_restart' and 'gal_srv_winlimit_restart' to control the sv_restart. 
+    If nonzero and the server is restarted, adds x - 1 rounds/minutes to mp_maxrounds or mp_winlimit or mp_timelimit. 
+    Example using mp_maxrounds: If mp_maxrounds = 40 and 20 rounds has already passed and admin used sv_restart.
+    After the restart, if the cvar is 1, the rounds left will be 20. If the cvar is 0 the rounds left will 40.
  * Create a new LANG file to show 'rounds' instead of 'minutes', when you are using mp_maxrounds.
  * Add an admin command 'gal_cancelvote' to cancel the current vote.
- * Fixed bug using mp_maxrounds:
-    if the vote started automatique and the result is extend its works fine and with mp_maxrounds.
-    if the vote started by rtv and the result is extend he will with extend with mp_timelimit.
-    It must use mp_maxrounds.
+ * Fixed bug using mp_maxrounds: if the vote started automatique and the result is extend its works fine and with mp_maxrounds.
+    if the vote started by rtv and the result is extend he will with extend with mp_timelimit. It must use mp_maxrounds.
  * Fixed 'sv_restartround' time dection.
  * Added new cvar 'gal_endonround_rtv' to Indicates when a map should end after the RTV voting is finished.
     0 - end immediately after the voting finished.
@@ -213,6 +209,7 @@ galileo.amxx
     1 - RTV will not work and will print 'Cannot rock the vote when an admin is online'.
  * Fixed bug where the handle empty server feature would change the map where there are players playing.
  * Integrated the cvar 'gal_endonround_players' features into the cvar 'gal_endonround_msg'.
+ * Added to the 'gal_endonround_rtv' cvar the players minimum number necessary to allow the last round to be finished when the time runs out.
 
 2016-02-11 | v1.2.2
  * Add a new cvar 'gal_rtv_wait_rounds' for the RTV wait.
