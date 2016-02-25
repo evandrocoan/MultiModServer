@@ -261,11 +261,11 @@ new bool:g_is_map_extension_allowed
 /**
  * Server cvars
  */
-new cvar_extendmap_allow_stay_type
-new cvar_gal_nextmap_change
-new cvar_gal_vote_show_counter
-new cvar_gal_vote_show_none
-new cvar_gal_vote_show_none_type
+new cvar_extendmapAllowStayType
+new cvar_nextMapChange
+new cvar_voteShowCounter
+new cvar_voteShowNoneOption
+new cvar_voteShowNoneOptionType
 new cvar_extendmapAllowOrder
 new cvar_coloredChatEnabled
 new cvar_emptyCycle;
@@ -395,62 +395,62 @@ public plugin_init()
     register_cvar( "gal_version", PLUGIN_VERSION, FCVAR_SERVER | FCVAR_SPONLY );
     register_cvar( "gal_server_starting", "1", FCVAR_SPONLY );
     
-    cvar_extendmapMax              = register_cvar( "amx_extendmap_max", "90" );
-    cvar_extendmapStep             = register_cvar( "amx_extendmap_step", "15" );
-    cvar_extendmapStepRounds       = register_cvar( "amx_extendmap_step_rounds", "30" );
-    cvar_extendmapAllowStay        = register_cvar( "amx_extendmap_allow_stay", "0" );
-    cvar_extendmapAllowOrder       = register_cvar( "amx_extendmap_allow_order", "0" );
-    cvar_extendmap_allow_stay_type = register_cvar( "amx_extendmap_allow_stay_type", "0" );
+    cvar_extendmapMax           = register_cvar( "amx_extendmap_max", "90" );
+    cvar_extendmapStep          = register_cvar( "amx_extendmap_step", "15" );
+    cvar_extendmapStepRounds    = register_cvar( "amx_extendmap_step_rounds", "30" );
+    cvar_extendmapAllowStay     = register_cvar( "amx_extendmap_allow_stay", "0" );
+    cvar_extendmapAllowOrder    = register_cvar( "amx_extendmap_allow_order", "0" );
+    cvar_extendmapAllowStayType = register_cvar( "amx_extendmap_allow_stay_type", "0" );
     
-    cvar_gal_nextmap_change      = register_cvar( "gal_nextmap_change", "1" );
-    cvar_gal_vote_show_counter   = register_cvar( "gal_vote_show_counter", "0" );
-    cvar_gal_vote_show_none      = register_cvar( "gal_vote_show_none", "0" );
-    cvar_gal_vote_show_none_type = register_cvar( "gal_vote_show_none_type", "0" );
-    cvar_coloredChatEnabled      = register_cvar( "gal_colored_chat_enabled", "0", FCVAR_SPONLY );
-    cvar_emptyCycle              = register_cvar( "gal_in_empty_cycle", "0", FCVAR_SPONLY );
-    cvar_unnominateDisconnected  = register_cvar( "gal_unnominate_disconnected", "0" );
-    cvar_endOnRound              = register_cvar( "gal_endonround", "1" );
-    cvar_endOnRound_rtv          = register_cvar( "gal_endonround_rtv", "0" );
-    cvar_endOnRound_msg          = register_cvar( "gal_endonround_msg", "0" );
-    cvar_endOnRound_players      = register_cvar( "gal_endonround_players", "1" );
-    cvar_voteWeight              = register_cvar( "gal_vote_weight", "1" );
-    cvar_voteWeightFlags         = register_cvar( "gal_vote_weightflags", "y" );
-    cvar_cmdVotemap              = register_cvar( "gal_cmd_votemap", "0" );
-    cvar_cmdListmaps             = register_cvar( "gal_cmd_listmaps", "2" );
-    cvar_listmapsPaginate        = register_cvar( "gal_listmaps_paginate", "10" );
-    cvar_banRecent               = register_cvar( "gal_banrecent", "3" );
-    cvar_banRecentStyle          = register_cvar( "gal_banrecentstyle", "1" );
-    cvar_endOfMapVote            = register_cvar( "gal_endofmapvote", "1" );
-    cvar_emptyWait               = register_cvar( "gal_emptyserver_wait", "0" );
-    cvar_emptyMapFile            = register_cvar( "gal_emptyserver_mapfile", "" );
-    cvar_srvStart                = register_cvar( "gal_srv_start", "0" );
-    cvar_srvTimelimitRestart     = register_cvar( "gal_srv_timelimit_restart", "0" );
-    cvar_srvMaxroundsRestart     = register_cvar( "gal_srv_maxrounds_restart", "0" );
-    cvar_srvWinlimitRestart      = register_cvar( "gal_srv_winlimit_restart", "0" );
-    cvar_rtvCommands             = register_cvar( "gal_rtv_commands", "3" );
-    cvar_rtvWait                 = register_cvar( "gal_rtv_wait", "10" );
-    cvar_rtvWaitRounds           = register_cvar( "gal_rtv_wait_rounds", "5" );
-    cvar_rtvWaitAdmin            = register_cvar( "gal_rtv_wait_admin", "0" );
-    cvar_rtvRatio                = register_cvar( "gal_rtv_ratio", "0.60" );
-    cvar_rtvReminder             = register_cvar( "gal_rtv_reminder", "2" );
-    cvar_nomPlayerAllowance      = register_cvar( "gal_nom_playerallowance", "2" );
-    cvar_nomMapFile              = register_cvar( "gal_nom_mapfile", "*" );
-    cvar_nomPrefixes             = register_cvar( "gal_nom_prefixes", "1" );
-    cvar_nomQtyUsed              = register_cvar( "gal_nom_qtyused", "0" );
-    cvar_voteDuration            = register_cvar( "gal_vote_duration", "15" );
-    cvar_voteExpCountdown        = register_cvar( "gal_vote_expirationcountdown", "1" );
-    cvar_endMapCountdown         = register_cvar( "gal_endonround_countdown", "0" );
-    cvar_voteMapChoiceCnt        = register_cvar( "gal_vote_mapchoices", "5" );
-    cvar_voteAnnounceChoice      = register_cvar( "gal_vote_announcechoice", "1" );
-    cvar_voteStatus              = register_cvar( "gal_vote_showstatus", "1" );
-    cvar_voteStatusType          = register_cvar( "gal_vote_showstatustype", "3" );
-    cvar_voteUniquePrefixes      = register_cvar( "gal_vote_uniqueprefixes", "0" );
-    cvar_runoffEnabled           = register_cvar( "gal_runoff_enabled", "0" );
-    cvar_runoffDuration          = register_cvar( "gal_runoff_duration", "10" );
-    cvar_soundsMute              = register_cvar( "gal_sounds_mute", "0" );
-    cvar_voteMapFile             = register_cvar( "gal_vote_mapfile", "*" );
-    cvar_voteMinPlayers          = register_cvar( "gal_vote_minplayers", "0" );
-    cvar_voteMinPlayersMapFile   = register_cvar( "gal_vote_minplayers_mapfile", "mapcycle.txt" );
+    cvar_nextMapChange          = register_cvar( "gal_nextmap_change", "1" );
+    cvar_voteShowCounter        = register_cvar( "gal_vote_show_counter", "0" );
+    cvar_voteShowNoneOption     = register_cvar( "gal_vote_show_none", "0" );
+    cvar_voteShowNoneOptionType = register_cvar( "gal_vote_show_none_type", "0" );
+    cvar_coloredChatEnabled     = register_cvar( "gal_colored_chat_enabled", "0", FCVAR_SPONLY );
+    cvar_emptyCycle             = register_cvar( "gal_in_empty_cycle", "0", FCVAR_SPONLY );
+    cvar_unnominateDisconnected = register_cvar( "gal_unnominate_disconnected", "0" );
+    cvar_endOnRound             = register_cvar( "gal_endonround", "1" );
+    cvar_endOnRound_rtv         = register_cvar( "gal_endonround_rtv", "0" );
+    cvar_endOnRound_msg         = register_cvar( "gal_endonround_msg", "0" );
+    cvar_endOnRound_players     = register_cvar( "gal_endonround_players", "1" );
+    cvar_voteWeight             = register_cvar( "gal_vote_weight", "1" );
+    cvar_voteWeightFlags        = register_cvar( "gal_vote_weightflags", "y" );
+    cvar_cmdVotemap             = register_cvar( "gal_cmd_votemap", "0" );
+    cvar_cmdListmaps            = register_cvar( "gal_cmd_listmaps", "2" );
+    cvar_listmapsPaginate       = register_cvar( "gal_listmaps_paginate", "10" );
+    cvar_banRecent              = register_cvar( "gal_banrecent", "3" );
+    cvar_banRecentStyle         = register_cvar( "gal_banrecentstyle", "1" );
+    cvar_endOfMapVote           = register_cvar( "gal_endofmapvote", "1" );
+    cvar_emptyWait              = register_cvar( "gal_emptyserver_wait", "0" );
+    cvar_emptyMapFile           = register_cvar( "gal_emptyserver_mapfile", "" );
+    cvar_srvStart               = register_cvar( "gal_srv_start", "0" );
+    cvar_srvTimelimitRestart    = register_cvar( "gal_srv_timelimit_restart", "0" );
+    cvar_srvMaxroundsRestart    = register_cvar( "gal_srv_maxrounds_restart", "0" );
+    cvar_srvWinlimitRestart     = register_cvar( "gal_srv_winlimit_restart", "0" );
+    cvar_rtvCommands            = register_cvar( "gal_rtv_commands", "3" );
+    cvar_rtvWait                = register_cvar( "gal_rtv_wait", "10" );
+    cvar_rtvWaitRounds          = register_cvar( "gal_rtv_wait_rounds", "5" );
+    cvar_rtvWaitAdmin           = register_cvar( "gal_rtv_wait_admin", "0" );
+    cvar_rtvRatio               = register_cvar( "gal_rtv_ratio", "0.60" );
+    cvar_rtvReminder            = register_cvar( "gal_rtv_reminder", "2" );
+    cvar_nomPlayerAllowance     = register_cvar( "gal_nom_playerallowance", "2" );
+    cvar_nomMapFile             = register_cvar( "gal_nom_mapfile", "*" );
+    cvar_nomPrefixes            = register_cvar( "gal_nom_prefixes", "1" );
+    cvar_nomQtyUsed             = register_cvar( "gal_nom_qtyused", "0" );
+    cvar_voteDuration           = register_cvar( "gal_vote_duration", "15" );
+    cvar_voteExpCountdown       = register_cvar( "gal_vote_expirationcountdown", "1" );
+    cvar_endMapCountdown        = register_cvar( "gal_endonround_countdown", "0" );
+    cvar_voteMapChoiceCnt       = register_cvar( "gal_vote_mapchoices", "5" );
+    cvar_voteAnnounceChoice     = register_cvar( "gal_vote_announcechoice", "1" );
+    cvar_voteStatus             = register_cvar( "gal_vote_showstatus", "1" );
+    cvar_voteStatusType         = register_cvar( "gal_vote_showstatustype", "3" );
+    cvar_voteUniquePrefixes     = register_cvar( "gal_vote_uniqueprefixes", "0" );
+    cvar_runoffEnabled          = register_cvar( "gal_runoff_enabled", "0" );
+    cvar_runoffDuration         = register_cvar( "gal_runoff_duration", "10" );
+    cvar_soundsMute             = register_cvar( "gal_sounds_mute", "0" );
+    cvar_voteMapFile            = register_cvar( "gal_vote_mapfile", "*" );
+    cvar_voteMinPlayers         = register_cvar( "gal_vote_minplayers", "0" );
+    cvar_voteMinPlayersMapFile  = register_cvar( "gal_vote_minplayers_mapfile", "mapcycle.txt" );
     
     register_logevent( "game_commencing_event", 2, "0=World triggered", "1=Game_Commencing" )
     register_logevent( "team_win_event",        6, "0=Team" )
@@ -578,7 +578,7 @@ public plugin_cfg()
     {
         g_emptyCycleMap = ArrayCreate( 32 );
         map_loadEmptyCycleList();
-        set_task( 60.0, "srv_initEmptyCheck" );
+        set_task( 60.0, "emptyServerPeriodicCheck" );
     }
     
     // setup the main task that schedules the end map voting and allow round finish feature.
@@ -2174,11 +2174,14 @@ public vote_startDirector( bool:is_forced_voting )
         || ( g_is_voting_locked
              && !( g_voteStatus & VOTE_IS_RUNOFF ) )
         || ( !is_forced_voting
-             && g_voteStatus & VOTE_IS_EARLY ) )
+             && g_voteStatus & VOTE_IS_EARLY )
+        || get_realplayersnum() == 0 )
     {
         DEBUG_LOGGER( 1, "At vote_startDirector --- The voting was canceled.^n  g_voteStatus: %d, \
-                g_is_voting_locked: %d, g_voteStatus & VOTE_IS_EARLY: %d, is_forced_voting: %d", \
-                g_voteStatus, g_is_voting_locked, g_voteStatus & VOTE_IS_EARLY, is_forced_voting )
+                g_is_voting_locked: %d, g_voteStatus & VOTE_IS_EARLY: %d, is_forced_voting: %d, \
+                get_realplayersnum(): %d", \
+                g_voteStatus, g_is_voting_locked, g_voteStatus & VOTE_IS_EARLY, is_forced_voting, \
+                get_realplayersnum() )
         return
     }
     
@@ -2716,7 +2719,7 @@ public vote_display( argument[ 3 ] )
         voteStatus[ 0 ] = 0;
         
         // register the 'None' option key
-        if( get_pcvar_num( cvar_gal_vote_show_none )
+        if( get_pcvar_num( cvar_voteShowNoneOption )
             && !g_is_vote_blocked )
         {
             keys = MENU_KEY_0;
@@ -2822,7 +2825,7 @@ public vote_display( argument[ 3 ] )
                 else
                 {
                     // add the "Stay Here" menu item
-                    if( get_pcvar_num( cvar_extendmap_allow_stay_type ) )
+                    if( get_pcvar_num( cvar_extendmapAllowStayType ) )
                     {
                         charCnt += formatex( voteStatus[ charCnt ], charsmax( voteStatus ) - charCnt,
                                 "^n%s%i. %s%L%s", CLR_RED, g_totalVoteOptions + 1,
@@ -2848,8 +2851,8 @@ public vote_display( argument[ 3 ] )
     new cleanCharCnt = copy( g_vote, charsmax( g_vote ), voteStatus );
     
     // append a "None" option on for people to choose if they don't like any other choice
-    if( get_pcvar_num( cvar_gal_vote_show_none )
-        && !get_pcvar_num( cvar_gal_vote_show_none_type )
+    if( get_pcvar_num( cvar_voteShowNoneOption )
+        && !get_pcvar_num( cvar_voteShowNoneOptionType )
         && !g_is_vote_blocked )
     {
         formatex( g_vote[ cleanCharCnt ], charsmax( g_vote ) - cleanCharCnt,
@@ -2869,7 +2872,7 @@ public vote_display( argument[ 3 ] )
         if( get_pcvar_num( cvar_voteExpCountdown ) )
         {
             if( ( g_voteDuration <= 10
-                  || get_pcvar_num( cvar_gal_vote_show_counter ) )
+                  || get_pcvar_num( cvar_voteShowCounter ) )
                 && !( get_pcvar_num( cvar_voteStatus ) == SHOWSTATUS_END ) )
             {
                 if( g_voteDuration > 0 )
@@ -2892,8 +2895,8 @@ public vote_display( argument[ 3 ] )
     menuDirty[ 0 ] = '^0';
     
     // append a "None" option on for people to choose if they don't like any other choice
-    if( get_pcvar_num( cvar_gal_vote_show_none )
-        && get_pcvar_num( cvar_gal_vote_show_none_type ) )
+    if( get_pcvar_num( cvar_voteShowNoneOption )
+        && get_pcvar_num( cvar_voteShowNoneOptionType ) )
     {
         formatex( menuClean, charsmax( menuClean ), "%s^n^n%s0. %s%L%s", g_vote,
                 CLR_RED, CLR_WHITE, LANG_SERVER, "GAL_OPTION_NONE", voteFooter );
@@ -2905,8 +2908,8 @@ public vote_display( argument[ 3 ] )
     
     if( isVoteOver )
     {
-        if( get_pcvar_num( cvar_gal_vote_show_none )
-            && get_pcvar_num( cvar_gal_vote_show_none_type ) )
+        if( get_pcvar_num( cvar_voteShowNoneOption )
+            && get_pcvar_num( cvar_voteShowNoneOptionType ) )
         {
             formatex( menuDirty, charsmax( menuDirty ), "%s^n^n%s0. %s%L^n^n%s%L", voteStatus,
                     CLR_RED, CLR_WHITE, LANG_SERVER, "GAL_OPTION_NONE",
@@ -2920,8 +2923,8 @@ public vote_display( argument[ 3 ] )
     }
     else
     {
-        if( get_pcvar_num( cvar_gal_vote_show_none )
-            && get_pcvar_num( cvar_gal_vote_show_none_type ) )
+        if( get_pcvar_num( cvar_voteShowNoneOption )
+            && get_pcvar_num( cvar_voteShowNoneOptionType ) )
         {
             formatex( menuDirty, charsmax( menuDirty ), "%s^n^n%s0. %s%L%s", voteStatus,
                     CLR_RED, CLR_WHITE, LANG_SERVER, "GAL_OPTION_NONE", voteFooter );
@@ -2929,8 +2932,8 @@ public vote_display( argument[ 3 ] )
         else
         {
             // remove the extra space after the 'None' option is hidden
-            if( get_pcvar_num( cvar_gal_vote_show_none )
-                && !get_pcvar_num( cvar_gal_vote_show_none_type )
+            if( get_pcvar_num( cvar_voteShowNoneOption )
+                && !get_pcvar_num( cvar_voteShowNoneOptionType )
                 && !g_is_vote_blocked )
             {
                 voteFooter[ 0 ] = ' '
@@ -4080,7 +4083,7 @@ stock con_print( player_id, message[], { Float, Sql, Result, _ }: ... )
 
 public client_authorized( player_id )
 {
-    srv_stopEmptyCheck()
+    stopEmptyServerChange()
     
     if( has_flag( player_id, "f" ) )
     {
@@ -4144,18 +4147,18 @@ public client_disconnected( player_id )
     
     if( dbg_playerCnt == 0 )
     {
-        srv_handleEmpty();
+        handleRecentlyEmptyServer();
     }
 }
 
 /**
  *  Called when the last server player disconnect. This changes the map even if we are at a
- *  map that is on the empty list. This function is different than srv_initEmptyCheck, which
+ *  map that is on the empty list. This function is different than emptyServerPeriodicCheck, which
  *  just change the map if it is not on a map at empty list.
  */
-stock srv_handleEmpty()
+stock handleRecentlyEmptyServer()
 {
-    DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "srv_handleEmpty(in)", \
+    DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "handleRecentlyEmptyServer(in)", \
             get_pcvar_float( g_timelimit_pointer ), g_originalTimelimit )
     
     if( g_originalTimelimit != get_pcvar_float( g_timelimit_pointer ) )
@@ -4171,12 +4174,12 @@ stock srv_handleEmpty()
     if( g_isUsingEmptyCycle
         && g_emptyMapCnt )
     {
-        srv_startEmptyCountdown();
+        startEmptyCountdown();
     }
     DEBUG_LOGGER( 2, "g_isUsingEmptyCycle = %d, g_emptyMapCnt = %d", g_isUsingEmptyCycle, \
             g_emptyMapCnt )
     
-    DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "srv_handleEmpty(out)", \
+    DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "handleRecentlyEmptyServer(out)", \
             get_pcvar_float( g_timelimit_pointer ), g_originalTimelimit )
 }
 
@@ -4184,33 +4187,33 @@ stock srv_handleEmpty()
  * Start a empty map count down just when the last player disconnect.
  * If the map just entered at the map at the empty list, stays at it.
  */
-public srv_initEmptyCheck()
+public emptyServerPeriodicCheck()
 {
     if( ( get_realplayersnum() ) == 0
         && !get_pcvar_num( cvar_emptyCycle ) )
     {
-        srv_startEmptyCountdown();
+        startEmptyCountdown();
     }
     g_isUsingEmptyCycle = true;
 }
 
-stock srv_startEmptyCountdown()
+stock startEmptyCountdown()
 {
     new waitMinutes = get_pcvar_num( cvar_emptyWait );
     
     if( waitMinutes )
     {
-        set_task( float( waitMinutes * 60 ), "srv_startEmptyCycle", TASKID_EMPTYSERVER );
+        set_task( float( waitMinutes * 60 ), "startEmptyServerCycle", TASKID_EMPTYSERVER );
     }
 }
 
-stock srv_stopEmptyCheck()
+stock stopEmptyServerChange()
 {
     set_pcvar_num( cvar_emptyCycle, 0 );
     remove_task( TASKID_EMPTYSERVER )
 }
 
-public srv_startEmptyCycle()
+public startEmptyServerCycle()
 {
     // stop this system at the next map, due we already be at a popular map
     set_pcvar_num( cvar_emptyCycle, 1 );
@@ -4232,12 +4235,14 @@ public srv_startEmptyCycle()
 }
 
 /**
- * Given a mapArray list the currentMap, calculates the next map after the currentMap provided at 
+ * Given a mapArray list the currentMap, calculates the next map after the currentMap provided at
  * the mapArray.
- * 
+ *
  * @param nextMap       the string pointer which will receive the next map
  * @param currentMap    the string printer to the current map name
  * @param mapArray      the dynamic array with the map list to search
+ *
+ * @return mapIndex     the nextMap index in the mapArray. -1 if not found a nextMap.
  */
 stock map_getNext( Array:mapArray, currentMap[], nextMap[ 32 ] )
 {
@@ -4703,7 +4708,7 @@ getNextMapName( szArg[], iMax )
 
 public sayNextMap()
 {
-    if( get_pcvar_num( cvar_gal_nextmap_change )
+    if( get_pcvar_num( cvar_nextMapChange )
         && !g_is_last_round
         && !( g_voteStatus & VOTE_IS_OVER ) )
     {
