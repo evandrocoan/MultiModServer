@@ -52,7 +52,7 @@
  * ( ... ) 128 execute the test units and print their out put results.
  * ( 11111111 ) 255 displays all debug logs levels at server console.
  */
-new g_debug_level = 65
+new g_debug_level = 5
 
 /**
  * Test unit variables related to debug level 128, displays basic debug messages.
@@ -375,15 +375,15 @@ new g_nominationMatchesMenu[ MAX_PLAYER_CNT ];
 
 new g_vote                              [ 512 ];
 new g_arrayOfRunOffChoices              [ 2 ];
-new bool:g_is_the_player_voted          [ MAX_PLAYER_CNT + 1 ] = { true, ... }
-new bool:g_is_the_player_cancelled_vote [ MAX_PLAYER_CNT + 1 ]
+new bool:g_is_player_voted          [ MAX_PLAYER_CNT + 1 ] = { true, ... }
+new bool:g_is_player_cancelled_vote [ MAX_PLAYER_CNT + 1 ]
 new g_arrayOfMapsWithVotesNumber        [ MAX_MAPS_IN_VOTE + 1 ];
 
 new bool:g_rockedVote   [ MAX_PLAYER_CNT + 1 ]
 new g_recentMap         [ MAX_RECENT_MAP_CNT ]  [ MAX_MAPNAME_LEN + 1 ]
 new g_mapsVoteMenuNames [ MAX_MAPS_IN_VOTE + 1 ][ MAX_MAPNAME_LEN + 1 ]
 
-new g_menuChooseMap;
+new g_chooseMapMenuId;
 new g_isRunOffNeedingKeepCurrentMap = false;
 
 public plugin_init()
@@ -476,9 +476,9 @@ public plugin_init()
 #if AMXX_VERSION_NUM < 183
     g_user_msgid = get_user_msgid( "SayText" )
 #endif
-    g_menuChooseMap = register_menuid( MENU_CHOOSEMAP );
+    g_chooseMapMenuId = register_menuid( MENU_CHOOSEMAP );
     
-    register_menucmd( g_menuChooseMap, MENU_KEY_1 | MENU_KEY_2 |
+    register_menucmd( g_chooseMapMenuId, MENU_KEY_1 | MENU_KEY_2 |
             MENU_KEY_3 | MENU_KEY_4 | MENU_KEY_5 | MENU_KEY_6 |
             MENU_KEY_7 | MENU_KEY_8 | MENU_KEY_9 | MENU_KEY_0,
             "vote_handleChoice" );
@@ -1220,6 +1220,7 @@ public cmd_startVote( player_id, level, cid )
     }
     else
     {
+        g_voteStatus          |= VOTE_IS_EARLY
         g_is_timeToChangeLevel = true;
         
         if( read_argc() == 2 )
@@ -1230,7 +1231,6 @@ public cmd_startVote( player_id, level, cid )
             
             if( equali( argument, "-nochange" ) )
             {
-                g_voteStatus          |= VOTE_IS_EARLY
                 g_is_timeToChangeLevel = false;
             }
             
@@ -2271,7 +2271,7 @@ public vote_startDirector( bool:is_forced_voting )
         
         for( new idxPlayer = 0; idxPlayer < playerCnt; ++idxPlayer )
         {
-            g_is_the_player_voted[ player[ idxPlayer ] ] = false;
+            g_is_player_voted[ player[ idxPlayer ] ] = false;
         }
         
         // make perfunctory announcement: "get ready to choose a map"
@@ -2703,10 +2703,10 @@ public vote_display( argument[ 3 ] )
         }
     }
     
-    new showNoneOptionType = get_pcvar_num( cvar_voteShowNoneOptionType )
-    new showNoneOption     = get_pcvar_num( cvar_voteShowNoneOption )
-    new isVoteOver         = ( updateTimeRemaining == -1
-                               && player_id == -1 )
+    new noneOptionType      = get_pcvar_num( cvar_voteShowNoneOptionType )
+    new bool:showNoneOption = bool: get_pcvar_num( cvar_voteShowNoneOption )
+    new bool:isVoteOver     = ( updateTimeRemaining == -1
+                                && player_id == -1 )
     new charCnt
     
     if( g_refreshVoteStatus
@@ -2849,11 +2849,13 @@ public vote_display( argument[ 3 ] )
     // make a copy of the virgin menu
     new cleanCharCnt = copy( g_vote, charsmax( g_vote ), voteStatus );
     
+    new bool:noneIsHidden = ( showNoneOption
+                              && !noneOptionType
+                              && !g_is_vote_blocked )
+    
     // append a "None" option on for people to choose if they don't like any other choice
-    // to append it here because it to disappear after the player vote.
-    if( showNoneOption
-        && !showNoneOptionType
-        && !g_is_vote_blocked )
+    // to append it here to let it to disappear after the player vote.
+    if( noneIsHidden )
     {
         formatex( g_vote[ cleanCharCnt ], charsmax( g_vote ) - cleanCharCnt,
                 "^n^n%s0. %s%L", CLR_RED, CLR_WHITE, LANG_SERVER, "GAL_OPTION_NONE" );
@@ -2889,176 +2891,190 @@ public vote_display( argument[ 3 ] )
         }
     }
     
-    // create the different displays
+    // menu showed while voting
     static menuClean     [ 512 ]
+    
+    // menu showed after voted
     static menuDirty     [ 512 ]
-    static noneOptionType[ 32 ]
+    
+    // display the vote
+    new showStatus = get_pcvar_num( cvar_voteStatus );
+    
+    // optionally display to single player that just voted
+    if( player_id > 0
+        && showStatus & SHOWSTATUS_VOTE )
+    {
+        calculate_menu_dirt( player_id, showNoneOption, noneOptionType, isVoteOver, voteFooter,
+                voteStatus, menuDirty, charsmax( menuDirty ), noneIsHidden )
+        
+        display_menu( false, false, player_id, menuDirty, keys, 1 )
+    }
+    else // display to everyone
+    {
+        new playerCnt
+        new players[ 32 ]
+        
+        get_players( players, playerCnt, "ch" ); // skip bots and hltv
+        
+        for( new playerIndex = 0; playerIndex < playerCnt; ++playerIndex )
+        {
+            player_id = players[ playerIndex ];
+            
+            if( !g_is_player_voted[ player_id ]
+                && !isVoteOver )
+            {
+                calculate_menu_clean( player_id, showNoneOption, noneOptionType, voteFooter,
+                        menuClean, charsmax( menuClean ) )
+                
+                display_menu( true, false, player_id, menuClean, keys, playerIndex )
+            }
+            else if( ( isVoteOver
+                       && showStatus )
+                     || ( showStatus & SHOWSTATUS_VOTE
+                          && g_is_player_voted[ player_id ] ) )
+            {
+                calculate_menu_dirt( player_id, showNoneOption, noneOptionType, isVoteOver, voteFooter,
+                        voteStatus, menuDirty, charsmax( menuDirty ), noneIsHidden )
+                
+                display_menu( false, isVoteOver, player_id, menuDirty, keys, playerIndex )
+            }
+        }
+    }
+}
+
+stock calculate_menu_clean( player_id, showNoneOption, noneOptionType, voteFooter[], menuClean[], menuCleanSize )
+{
+    static noneOption[ 32 ]
+    static bool:noneIsAlwaysShow
     
     menuClean     [ 0 ] = '^0';
-    menuDirty     [ 0 ] = '^0';
-    noneOptionType[ 0 ] = '^0';
+    noneOption    [ 0 ] = '^0';
+    noneIsAlwaysShow    = ( player_id > 0
+                            && noneOptionType == 2
+                            && g_is_player_voted[ player_id ]
+                            && !g_is_player_cancelled_vote[ player_id ] )
     
     // append a "None" option on for people to choose if they don't like any other choice
-    // to append it here to always shows it.
+    // to append it here to always shows it WHILE voting.
     if( showNoneOption
-        && showNoneOptionType )
+        && noneOptionType )
     {
-        formatex( menuClean, charsmax( menuClean ), "%s^n^n%s0. %s%L%s", g_vote,
-                CLR_RED, CLR_WHITE, LANG_SERVER, "GAL_OPTION_NONE", voteFooter );
+        if( noneIsAlwaysShow )
+        {
+            copy( noneOption, charsmax( noneOption ), "GAL_OPTION_CANCEL_VOTE" )
+        }
+        else
+        {
+            copy( noneOption, charsmax( noneOption ), "GAL_OPTION_NONE" )
+        }
+        
+        formatex( menuClean, menuCleanSize, "%s^n^n%s0. %s%L%s", g_vote,
+                CLR_RED, CLR_WHITE, LANG_SERVER, noneOption, voteFooter );
     }
     else
     {
-        formatex( menuClean, charsmax( menuClean ), "%s%s", g_vote, voteFooter );
+        formatex( menuClean, menuCleanSize, "%s%s", g_vote, voteFooter );
     }
+}
+
+stock calculate_menu_dirt( player_id, showNoneOption, noneOptionType, isVoteOver, voteFooter[],
+                           voteStatus[], menuDirty[], menuDirtySize, bool:noneIsHidden )
+{
+    static noneOption[ 32 ]
+    static bool:noneIsAlwaysShow
     
+    menuDirty     [ 0 ] = '^0';
+    noneOption    [ 0 ] = '^0';
+    noneIsAlwaysShow    = ( player_id > 0
+                            && noneOptionType == 2
+                            && g_is_player_voted[ player_id ]
+                            && !g_is_player_cancelled_vote[ player_id ] )
+    
+    // to append it here to always shows it AFTER voting.
     if( isVoteOver )
     {
         if( showNoneOption
-            && showNoneOptionType )
+            && noneOptionType )
         {
-            if( showNoneOptionType == 2
-                && !g_is_the_player_cancelled_vote[ player_id ] )
+            if( noneIsAlwaysShow )
             {
-                copy( noneOptionType, charsmax( noneOptionType ), "GAL_OPTION_CANCEL_VOTE" )
+                copy( noneOption, charsmax( noneOption ), "GAL_OPTION_CANCEL_VOTE" )
             }
             else
             {
-                copy( noneOptionType, charsmax( noneOptionType ), "GAL_OPTION_NONE" )
+                copy( noneOption, charsmax( noneOption ), "GAL_OPTION_NONE" )
             }
             
-            formatex( menuDirty, charsmax( menuDirty ), "%s^n^n%s0. %s%L^n^n%s%L", voteStatus,
-                    CLR_RED, CLR_WHITE, LANG_SERVER, noneOptionType, CLR_YELLOW, LANG_SERVER,
+            formatex( menuDirty, menuDirtySize, "%s^n^n%s0. %s%L^n^n%s%L", voteStatus,
+                    CLR_RED, CLR_WHITE, LANG_SERVER, noneOption, CLR_YELLOW, LANG_SERVER,
                     "GAL_VOTE_ENDED" )
         }
         else
         {
-            formatex( menuDirty, charsmax( menuDirty ), "%s^n^n%s%L", voteStatus, CLR_YELLOW,
+            formatex( menuDirty, menuDirtySize, "%s^n^n%s%L", voteStatus, CLR_YELLOW,
                     LANG_SERVER, "GAL_VOTE_ENDED" );
         }
     }
     else
     {
         if( showNoneOption
-            && showNoneOptionType )
+            && noneOptionType )
         {
-            if( showNoneOptionType == 2
-                && !g_is_the_player_voted[ player_id ]
-                && !g_is_the_player_cancelled_vote[ player_id ] )
+            if( noneIsAlwaysShow )
             {
-                copy( noneOptionType, charsmax( noneOptionType ), "GAL_OPTION_CANCEL_VOTE" )
+                copy( noneOption, charsmax( noneOption ), "GAL_OPTION_CANCEL_VOTE" )
             }
             else
             {
-                copy( noneOptionType, charsmax( noneOptionType ), "GAL_OPTION_NONE" )
+                copy( noneOption, charsmax( noneOption ), "GAL_OPTION_NONE" )
             }
             
-            formatex( menuDirty, charsmax( menuDirty ), "%s^n^n%s0. %s%L%s", voteStatus,
-                    CLR_RED, CLR_WHITE, LANG_SERVER, noneOptionType, voteFooter );
+            formatex( menuDirty, menuDirtySize, "%s^n^n%s0. %s%L%s", voteStatus,
+                    CLR_RED, CLR_WHITE, LANG_SERVER, noneOption, voteFooter );
         }
         else
         {
             // remove the extra space after the 'None' option is hidden
-            if( showNoneOption
-                && !showNoneOptionType
-                && !g_is_vote_blocked )
+            if( noneIsHidden )
             {
                 voteFooter[ 0 ] = ' '
                 voteFooter[ 1 ] = ' '
             }
             
-            formatex( menuDirty, charsmax( menuDirty ), "%s%s", voteStatus, voteFooter );
+            formatex( menuDirty, menuDirtySize, "%s%s", voteStatus, voteFooter );
         }
     }
-    
-    new menuid, menukeys;
-    
-    // display the vote
-    new showStatus = get_pcvar_num( cvar_voteStatus );
-    
-    if( player_id > 0 )
+}
+
+stock display_menu( bool:menuType, bool:isVoteOver, player_id, menuBody[], menuKeys, playerIndex )
+{
+    new menuid
+    new menukeys_unused
+
+#if defined DEBUG
+    if( playerIndex == 0 )
     {
-        // optionally display to single player that just voted
-        if( showStatus & SHOWSTATUS_VOTE )
-        {
-        #if defined DEBUG
-            new name[ 32 ];
-            get_user_name( player_id, name, 31 );
-            
-            DEBUG_LOGGER( 4, "    [%s ( dirty, just voted )]", name )
-            DEBUG_LOGGER( 4, "        %s", menuDirty )
-        #endif
-            get_user_menu( player_id, menuid, menukeys );
-            
-            if( menuid == 0
-                || menuid == g_menuChooseMap )
-            {
-                show_menu( player_id, keys, menuDirty, max( 1, g_voteDuration ), MENU_CHOOSEMAP );
-            }
-        }
-    }
-    else
-    {
-        // display to everyone
-        new players[ 32 ], playerCnt;
-        get_players( players, playerCnt, "ch" ); // skip bots and hltv
+        new name[ 32 ];
+        get_user_name( player_id, name, 31 );
         
-        for( new playerIdx = 0; playerIdx < playerCnt; ++playerIdx )
-        {
-            player_id = players[ playerIdx ];
-            
-            if( g_is_the_player_voted[ player_id ] == false
-                && !isVoteOver )
-            {
-            #if defined DEBUG
-                if( playerIdx == 0 )
-                {
-                    new name[ 32 ];
-                    get_user_name( player_id, name, 31 );
-                    
-                    DEBUG_LOGGER( 4, "    [%s ( clean )]", name )
-                    DEBUG_LOGGER( 4, "        %s", menuClean )
-                }
-            #endif
-                get_user_menu( player_id, menuid, menukeys );
-                
-                if( menuid == 0
-                    || menuid == g_menuChooseMap )
-                {
-                    show_menu( player_id, keys, menuClean, g_voteDuration, MENU_CHOOSEMAP );
-                }
-            }
-            else
-            {
-                if( ( isVoteOver
-                      && showStatus )
-                    || ( showStatus & SHOWSTATUS_VOTE
-                         && g_is_the_player_voted[ player_id ] ) )
-                {
-                    if( playerIdx == 0 )
-                    {
-                        new name[ 32 ];
-                        get_user_name( player_id, name, 31 );
-                        
-                        DEBUG_LOGGER( 4, "    [%s ( dirty )]", name )
-                        DEBUG_LOGGER( 4, "        %s", menuDirty )
-                    }
-                    
-                    get_user_menu( player_id, menuid, menukeys );
-                    
-                    if( menuid == 0
-                        || menuid == g_menuChooseMap )
-                    {
-                        show_menu( player_id, keys, menuDirty,
-                                ( isVoteOver ) ? 5 : max( 1, g_voteDuration ), MENU_CHOOSEMAP );
-                    }
-                }
-            }
-            
-            if( player_id == 1 )
-            {
-                DEBUG_LOGGER( 4, "" )
-            }
-        }
+        DEBUG_LOGGER( 4, "    [%s ( %s )]", name, ( menuType ? "clean" : "dirty" ) )
+        DEBUG_LOGGER( 4, "        %s", menuBody )
+    }
+#endif
+    
+    get_user_menu( player_id, menuid, menukeys_unused );
+    
+    if( menuid == 0
+        || menuid == g_chooseMapMenuId )
+    {
+        show_menu( player_id, menuKeys, menuBody, ( menuType ? g_voteDuration :
+                                                    ( isVoteOver ? 10 : max( 1, g_voteDuration ) ) ),
+                MENU_CHOOSEMAP )
+    }
+    
+    if( player_id == 1 )
+    {
+        DEBUG_LOGGER( 4, "" )
     }
 }
 
@@ -3072,7 +3088,7 @@ public vote_handleChoice( player_id, key )
     
     g_snuffDisplay[ player_id ] = true;
     
-    if( g_is_the_player_voted[ player_id ] == false
+    if( !g_is_player_voted[ player_id ]
         && !g_is_vote_blocked )
     {
         new name[ 32 ];
@@ -3106,7 +3122,7 @@ public vote_handleChoice( player_id, key )
             {
                 // only display the "none" vote if we haven't already voted
                 // ( we can make it here from the vote status menu too )
-                if( g_is_the_player_voted[ player_id ] == false )
+                if( g_is_player_voted[ player_id ] == false )
                 {
                     DEBUG_LOGGER( 4, "      %-32s ( extend )", name )
                     
@@ -3166,8 +3182,8 @@ public vote_handleChoice( player_id, key )
                 g_arrayOfMapsWithVotesNumber[ key ]++;
             }
         }
-        g_is_the_player_voted[ player_id ] = true;
-        g_refreshVoteStatus                = true;
+        g_is_player_voted[ player_id ] = true;
+        g_refreshVoteStatus            = true;
     }
     else
     {
@@ -3178,12 +3194,12 @@ public vote_handleChoice( player_id, key )
     if( get_pcvar_num( cvar_voteStatus ) & SHOWSTATUS_VOTE )
     {
         new argument[ 3 ];
+        
         argument[ 0 ] = false;
         argument[ 1 ] = player_id;
         argument[ 2 ] = true;
         
-        set_task( 0.1, "vote_display", TASKID_VOTE_DISPLAY, argument,
-                sizeof( argument ) );
+        set_task( 0.1, "vote_display", TASKID_VOTE_DISPLAY, argument, sizeof( argument ) );
     }
 }
 
@@ -3693,8 +3709,8 @@ stock vote_resetStats()
     g_rockedVoteCnt = 0;
     
     // reset everyones' votes
-    arrayset( g_is_the_player_voted, true, sizeof( g_is_the_player_voted ) );
-    arrayset( g_is_the_player_cancelled_vote, false, sizeof( g_is_the_player_voted ) );
+    arrayset( g_is_player_voted, true, sizeof( g_is_player_voted ) );
+    arrayset( g_is_player_cancelled_vote, false, sizeof( g_is_player_voted ) );
 }
 
 stock map_isInMenu( map[] )
@@ -4117,7 +4133,7 @@ public client_disconnect( player_id )
 public client_disconnected( player_id )
 #endif
 {
-    g_is_the_player_voted[ player_id ] = false;
+    g_is_player_voted[ player_id ] = false;
     
     // un-rock the vote
     vote_unrock( player_id );
