@@ -4385,7 +4385,7 @@ stock percent( is, of )
  */
 stock color_print( player_id, message[], any: ... )
 {
-    static formated_message[ COLOR_MESSAGE ]
+    new formated_message[ COLOR_MESSAGE ]
     
     formated_message[ 0 ] = '^0'
     
@@ -4402,8 +4402,8 @@ stock color_print( player_id, message[], any: ... )
         }
         else
         {
-            static players_array[ 32 ]
-            static players_number;
+            new players_number;
+            new players_array[ 32 ]
             
             get_players( players_array, players_number, "ch" );
             
@@ -4415,19 +4415,14 @@ stock color_print( player_id, message[], any: ... )
                 return;
             }
             
-            static player_id;
-            static string_index
-            static argument_index
-            static multi_lingual_constants_number
+            new player_id;
+            new string_index
+            new argument_index
+            new multi_lingual_constants_number
+            new params_number
+            new Array:multi_lingual_indexes_array
             
-            static params_number
-            static Array:multi_lingual_indexes_array
-            
-            if( !multi_lingual_indexes_array )
-            {
-                multi_lingual_indexes_array    = ArrayCreate();
-            }
-            
+            multi_lingual_indexes_array    = ArrayCreate();
             params_number                  = numargs();
             multi_lingual_constants_number = 0
             
@@ -4501,7 +4496,7 @@ stock color_print( player_id, message[], any: ... )
                 PRINT_COLORED_MESSAGE( player_id, formated_message )
             }
             
-            ArrayClear( multi_lingual_indexes_array );
+            ArrayDestroy( multi_lingual_indexes_array );
         }
 #else
         vformat( formated_message, charsmax( formated_message ), message, 3 )
