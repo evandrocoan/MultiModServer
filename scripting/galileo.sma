@@ -22,7 +22,9 @@
 *****************************************************************************************
 */
 
-#define PLUGIN_VERSION "1.2.X"
+new const PLUGIN_VERSION[]             = "1.2.X"
+new const LAST_EMPTY_CYCLE_FILE_NAME[] = "lastEmptyCycleMap.dat"
+new const MENU_CHOOSEMAP[]             = "gal_menuChooseMap"
 
 #include <amxmodx>
 #include <amxmisc>
@@ -150,6 +152,7 @@ stock debugMesssageLogger( mode, message[], any: ... )
 #define MAX_STANDARD_MAP_COUNT 25
 
 #define MAX_MAPNAME_LENGHT     64
+#define MAX_FILE_PATH_LENGHT   128
 #define MAX_PLAYER_NAME_LENGHT 48
 #define MAX_PLAYERS_COUNT      33
 #define MAX_NOM_MATCH_COUNT    1000
@@ -261,6 +264,7 @@ new bool:g_isTimeToResetGame
 new bool:g_isTimeToResetRounds
 new bool:g_isUsingEmptyCycle
 
+new bool:g_is_emptyCycleMapConfigured
 new bool:g_is_colored_chat_enabled
 new bool:g_is_maxrounds_extend
 new bool:g_is_maxrounds_vote_map
@@ -350,9 +354,8 @@ new Float:g_rtvWait;
 new g_rtvWaitRounds
 new g_rockedVoteCnt;
 
-new MENU_CHOOSEMAP[] = "gal_menuChooseMap";
-new DIR_CONFIGS[ 128 ];
-new DIR_DATA[ 128 ];
+new DIR_CONFIGS [ MAX_FILE_PATH_LENGHT ];
+new DIR_DATA    [ MAX_FILE_PATH_LENGHT ];
 
 new g_totalVoteOptions
 new g_totalVoteOptions_temp
@@ -911,7 +914,7 @@ public srv_handleStart()
         if( startAction == SRV_START_CURRENTMAP
             || startAction == SRV_START_NEXTMAP )
         {
-            new backupMapsFilePath[ 256 ];
+            new backupMapsFilePath[ MAX_FILE_PATH_LENGHT ];
             formatex( backupMapsFilePath, charsmax( backupMapsFilePath ), "%s/info.dat", DIR_DATA );
             
             new backupMapsFile = fopen( backupMapsFilePath, "rt" );
@@ -978,7 +981,8 @@ stock map_setNext( nextMap[] )
     copy( g_nextmap, charsmax( g_nextmap ), nextMap );
     
     // update our data file
-    new backupMapsFilePath[ 256 ];
+    new backupMapsFilePath[ MAX_FILE_PATH_LENGHT ];
+    
     formatex( backupMapsFilePath, charsmax( backupMapsFilePath ), "%s/info.dat", DIR_DATA );
     
     new backupMapsFile = fopen( backupMapsFilePath, "wt" );
@@ -988,10 +992,6 @@ stock map_setNext( nextMap[] )
         fprintf( backupMapsFile, "%s", g_currentMap );
         fprintf( backupMapsFile, "^n%s", nextMap );
         fclose( backupMapsFile );
-    }
-    else
-    {
-        //error
     }
 }
 
@@ -1072,7 +1072,7 @@ stock prevent_map_change()
 
 public map_loadRecentList()
 {
-    new recentMapsFilePath[ 256 ];
+    new recentMapsFilePath[ MAX_FILE_PATH_LENGHT ];
     formatex( recentMapsFilePath, charsmax( recentMapsFilePath ), "%s/recentmaps.dat", DIR_DATA );
     
     new recentMapsFile = fopen( recentMapsFilePath, "rt" );
@@ -1102,7 +1102,7 @@ public map_loadRecentList()
 
 public map_writeRecentList()
 {
-    new recentMapsFilePath[ 256 ];
+    new recentMapsFilePath[ MAX_FILE_PATH_LENGHT ];
     formatex( recentMapsFilePath, charsmax( recentMapsFilePath ), "%s/recentmaps.dat", DIR_DATA );
     
     new recentMapsFile = fopen( recentMapsFilePath, "wt" );
@@ -1385,7 +1385,7 @@ stock map_populateList( Array:mapArray, mapFilePath[] )
 
 public map_loadNominationList()
 {
-    new nomMapFilePath[ 256 ];
+    new nomMapFilePath[ MAX_FILE_PATH_LENGHT ];
     get_pcvar_string( cvar_nomMapFilePath, nomMapFilePath, charsmax( nomMapFilePath ) );
     
     DEBUG_LOGGER( 4, "( map_loadNominationList() ) cvar_nomMapFilePath nomMapFilePath: %s", nomMapFilePath )
@@ -1406,11 +1406,11 @@ public cmd_createMapFile( player_id, level, cid )
     {
         case 1:
         {
-            new mapFileName[ 256 ];
+            new mapFileName[ MAX_MAPNAME_LENGHT ];
             read_argv( 1, mapFileName, charsmax( mapFileName ) );
             remove_quotes( mapFileName );
             
-            // map name is 31 ( i.e. MAX_MAPNAME_LENGHT ), ".bsp" is 4, string terminator is 1.
+            // map name is MAX_MAPNAME_LENGHT ( i.e. MAX_MAPNAME_LENGHT ), ".bsp" is 4, string terminator is 1.
             new mapName[ MAX_MAPNAME_LENGHT + 5 ];
             
             new dir
@@ -1422,7 +1422,7 @@ public cmd_createMapFile( player_id, level, cid )
             
             if( dir )
             {
-                new mapFilePath[ 256 ];
+                new mapFilePath[ MAX_FILE_PATH_LENGHT ];
                 formatex( mapFilePath, charsmax( mapFilePath ), "%s/%s", DIR_CONFIGS, mapFileName );
                 
                 mapFile = fopen( mapFilePath, "wt" );
@@ -1474,7 +1474,7 @@ public cmd_createMapFile( player_id, level, cid )
 
 stock map_loadEmptyCycleList()
 {
-    new emptyCycleFilePath[ 256 ];
+    new emptyCycleFilePath[ MAX_FILE_PATH_LENGHT ];
     get_pcvar_string( cvar_emptyMapFilePath, emptyCycleFilePath, charsmax( emptyCycleFilePath ) );
     
     g_emptyCycleMapsNumber = map_populateList( g_emptyCycleMapList, emptyCycleFilePath );
@@ -1484,7 +1484,7 @@ stock map_loadEmptyCycleList()
 
 public map_loadPrefixList()
 {
-    new prefixesFilePath[ 256 ];
+    new prefixesFilePath[ MAX_FILE_PATH_LENGHT ];
     formatex( prefixesFilePath, charsmax( prefixesFilePath ), "%s/prefixes.ini", DIR_CONFIGS );
     
     new prefixesFile = fopen( prefixesFilePath, "rt" );
@@ -1784,7 +1784,7 @@ stock nomination_menu( player_id )
     new mapIndex
     
     new info[ 1 ]
-    new choice[ 64 ]
+    new choice[ MAX_MAPNAME_LENGHT + 32 ]
     new nominationMap[ MAX_MAPNAME_LENGHT ]
     new disabledReason[ 16 ]
     
@@ -1841,7 +1841,7 @@ stock nomination_attempt( player_id, nomination[] ) // ( playerName[], &phraseId
     new matchIdx = -1
     
     new info[ 1 ]
-    new choice[ 64 ]
+    new choice[ MAX_MAPNAME_LENGHT + 32 ]
     new nominationMap[ MAX_MAPNAME_LENGHT ]
     new disabledReason[ 16 ]
     
@@ -2101,7 +2101,7 @@ stock map_nominate( player_id, mapIndex, idNominator = -1 )
         if( nominationCount == maxPlayerNominations - 1 )
         {
             new nominatedMapName[ MAX_MAPNAME_LENGHT ]
-            new nominatedMaps[ 256 ]
+            new nominatedMaps[ COLOR_MESSAGE ]
             
             for( nominationIndex = 1; nominationIndex < maxPlayerNominations; ++nominationIndex )
             {
@@ -2456,7 +2456,7 @@ stock vote_addFiller()
     }
     
     // grab the name of the filler file
-    new mapFilerFilePath[ 256 ];
+    new mapFilerFilePath[ MAX_FILE_PATH_LENGHT ];
     
     get_pcvar_string( cvar_voteMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) )
     
@@ -2475,7 +2475,7 @@ stock vote_addFiller()
     new mapsPerGroup[ 8 ]
     
     // create an array of files that will be pulled from
-    new fillersFilePaths[ 8 ][ 256 ]
+    new fillersFilePaths[ 8 ][ MAX_FILE_PATH_LENGHT ]
     
     if( !equal( mapFilerFilePath, "*" ) )
     {
@@ -3106,8 +3106,8 @@ stock display_vote_menu( bool:menuType, bool:isVoteOver, player_id, menuBody[], 
     if( menuid == 0
         || menuid == g_chooseMapMenuId )
     {
-        show_menu( player_id, menuKeys, menuBody, ( menuType ? g_voteDuration :
-                                                    ( isVoteOver ? 10 : max( 1, g_voteDuration ) ) ),
+        show_menu( player_id, menuKeys, menuBody,
+                ( menuType ? g_voteDuration : ( isVoteOver ? 10 : max( 1, g_voteDuration ) ) ),
                 MENU_CHOOSEMAP )
     }
 }
@@ -4129,7 +4129,7 @@ public map_listAll( player_id )
     
     new nominator_id
     new player_name[ MAX_PLAYER_NAME_LENGHT ]
-    new nominated[ 64 ]
+    new nominated[ MAX_PLAYER_NAME_LENGHT + 32 ]
     
     new mapName[ MAX_MAPNAME_LENGHT ]
     new idx;
@@ -4167,7 +4167,7 @@ public map_listAll( player_id )
 
 stock con_print( player_id, message[], { Float, Sql, Result, _ }: ... )
 {
-    new consoleMessage[ 256 ];
+    new consoleMessage[ LONG_STRING ];
     vformat( consoleMessage, charsmax( consoleMessage ), message, 3 );
     
     if( player_id )
@@ -4227,7 +4227,7 @@ stock unnominatedDisconnectedPlayer( player_id )
         new maxPlayerNominations
         
         new mapName[ MAX_MAPNAME_LENGHT ]
-        new nominatedMaps[ 256 ]
+        new nominatedMaps[ COLOR_MESSAGE ]
         
         // cancel player's nominations
         maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), sizeof g_nomination[] );
@@ -4283,7 +4283,7 @@ stock isToHandleRecentlyEmptyServer()
         if( g_isUsingEmptyCycle
             && g_emptyCycleMapsNumber )
         {
-            startEmptyCountdown();
+            startEmptyCycleCountdown();
         }
     }
     
@@ -4300,16 +4300,20 @@ public inicializeEmptyCycleFeature()
 {
     if( get_realplayersnum() == 0 )
     {
-        if( !get_pcvar_num( cvar_isToStopEmptyCycle ) )
+        if( bool:get_pcvar_num( cvar_isToStopEmptyCycle ) )
         {
-            startEmptyCountdown();
+            configureNextEmptyCycleMap()
+        }
+        else
+        {
+            startEmptyCycleCountdown()
         }
     }
     
     g_isUsingEmptyCycle = true;
 }
 
-stock startEmptyCountdown()
+stock startEmptyCycleCountdown()
 {
     new waitMinutes = get_pcvar_num( cvar_emptyWait );
     
@@ -4319,22 +4323,72 @@ stock startEmptyCountdown()
     }
 }
 
+/**
+ * Set the next map from the empty cycle list, if and only if, it is not already configured.
+ *
+ * @return -1     if the current map is not on the empty cycle list. Otherwise anything else.
+ */
+stock configureNextEmptyCycleMap()
+{
+    new mapIndex
+    new nextMap[ MAX_MAPNAME_LENGHT ]
+    new lastEmptyCycleMap[ MAX_MAPNAME_LENGHT ]
+    
+    mapIndex = map_getNext( g_emptyCycleMapList, g_currentMap, nextMap );
+    
+    if( !g_is_emptyCycleMapConfigured )
+    {
+        g_is_emptyCycleMapConfigured = true
+        
+        getLastEmptyCycleMap( lastEmptyCycleMap )
+        map_getNext( g_emptyCycleMapList, lastEmptyCycleMap, nextMap );
+        
+        setLastEmptyCycleMap( nextMap )
+        map_setNext( nextMap )
+    }
+    
+    return mapIndex
+}
+
+stock getLastEmptyCycleMap( lastEmptyCycleMap[ MAX_MAPNAME_LENGHT ] )
+{
+    new lastEmptyCycleMapFilePath[ MAX_FILE_PATH_LENGHT ]
+    
+    formatex( lastEmptyCycleMapFilePath, charsmax( lastEmptyCycleMapFilePath ), "%s/%s",
+            DIR_DATA, LAST_EMPTY_CYCLE_FILE_NAME )
+    
+    new lastEmptyCycleMapFile = fopen( lastEmptyCycleMapFilePath, "rt" )
+    
+    if( lastEmptyCycleMapFile )
+    {
+        fgets( lastEmptyCycleMapFile, lastEmptyCycleMap, charsmax( lastEmptyCycleMap ) )
+    }
+}
+
+stock setLastEmptyCycleMap( lastEmptyCycleMap[ MAX_MAPNAME_LENGHT ] )
+{
+    new lastEmptyCycleMapFilePath[ MAX_FILE_PATH_LENGHT ]
+    
+    formatex( lastEmptyCycleMapFilePath, charsmax( lastEmptyCycleMapFilePath ), "%s/%s",
+            DIR_DATA, LAST_EMPTY_CYCLE_FILE_NAME );
+    
+    new lastEmptyCycleMapFile = fopen( lastEmptyCycleMapFilePath, "wt" );
+    
+    if( lastEmptyCycleMapFile )
+    {
+        fprintf( lastEmptyCycleMapFile, "%s", lastEmptyCycleMap )
+        fclose( lastEmptyCycleMapFile )
+    }
+}
+
 public startEmptyCycleSystem()
 {
     // stop this system at the next map, due we already be at a popular map
-    set_pcvar_num( cvar_isToStopEmptyCycle, 1 );
-    
-    // set the next map from the empty cycle list,
-    // or the first one, if the current map isn't part of the cycle
-    new nextMap[ MAX_MAPNAME_LENGHT ]
-    
-    new mapIndex = map_getNext( g_emptyCycleMapList, g_currentMap, nextMap );
-    
-    map_setNext( nextMap );
+    set_pcvar_num( cvar_isToStopEmptyCycle, 1 )
     
     // if the current map isn't part of the empty cycle,
     // immediately change to next map that is
-    if( mapIndex == -1 )
+    if( configureNextEmptyCycleMap() == -1 )
     {
         map_change();
     }
@@ -4656,22 +4710,28 @@ stock register_dictionary_colored( const dictionaryFile[] )
         return 0;
     }
     
-    new dictionaryFilePath[ 256 ];
+    new dictionaryFilePath[ MAX_FILE_PATH_LENGHT ];
+    
     get_localinfo( "amxx_datadir", dictionaryFilePath, charsmax( dictionaryFilePath ) );
     formatex( dictionaryFilePath, charsmax( dictionaryFilePath ), "%s/lang/%s", dictionaryFilePath, dictionaryFile );
-    new fp = fopen( dictionaryFilePath, "rt" );
     
-    if( !fp )
+    new dictionaryFile = fopen( dictionaryFilePath, "rt" );
+    
+    if( !dictionaryFile )
     {
         log_amx( "Failed to open %s", dictionaryFilePath );
         return 0;
     }
     
-    new szBuffer[ 512 ], szLang[ 3 ], szKey[ 64 ], szTranslation[ 256 ], TransKey:iKey;
+    new szBuffer[ 512 ]
+    new szLang[ 3 ]
+    new szKey[ 64 ]
+    new szTranslation[ LONG_STRING ]
+    new TransKey:iKey
     
-    while( !feof( fp ) )
+    while( !feof( dictionaryFile ) )
     {
-        fgets( fp, szBuffer, charsmax( szBuffer ) );
+        fgets( dictionaryFile, szBuffer, charsmax( szBuffer ) );
         trim( szBuffer );
         
         if( szBuffer[ 0 ] == '[' )
@@ -4695,7 +4755,7 @@ stock register_dictionary_colored( const dictionaryFile[] )
         }
     }
     
-    fclose( fp );
+    fclose( dictionaryFile );
     return 1;
 }
 
@@ -4747,10 +4807,10 @@ stock cancel_voting()
 }
 
 // ################################## AMX MOD X NEXTMAP PLUGIN ###################################
-new plugin_nextmap_g_nextMap[ 128 ]
-new plugin_nextmap_g_mapCycle[ 128 ]
+new plugin_nextmap_g_nextMap[ MAX_MAPNAME_LENGHT ]
+new plugin_nextmap_g_mapCycle[ MAX_FILE_PATH_LENGHT ]
 new plugin_nextmap_g_pos
-new plugin_nextmap_g_currentMap[ 128 ]
+new plugin_nextmap_g_currentMap[ MAX_MAPNAME_LENGHT ]
 
 // pcvars
 new plugin_nextmap_g_friendlyfire, plugin_nextmap_g_chattime
@@ -5119,7 +5179,7 @@ stock set_test_failure_internal( test_id, failure_reason[], any: ... )
     g_totalSuccessfulTests--
     g_totalFailureTests++
     
-    static formated_message[ 256 ]
+    static formated_message[ LONG_STRING ]
     
     vformat( formated_message, charsmax( formated_message ), failure_reason, 3 )
     
