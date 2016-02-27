@@ -145,7 +145,7 @@ stock debugMesssageLogger( mode, message[], any: ... )
 #define MAX_PREFIX_CNT     32
 #define MAX_RECENT_MAP_CNT 16
 
-#define MAX_MAPS_IN_VOTE     8
+#define MAX_MAPS_IN_VOTE     9
 #define MAX_NOMINATION_CNT   8
 #define MAX_STANDARD_MAP_CNT 25
 
@@ -303,7 +303,7 @@ new cvar_rtvCommands;
 new cvar_cmdVotemap
 new cvar_cmdListmaps
 new cvar_listmapsPaginate;
-new cvar_banRecent
+new cvar_recentMapsBannedNumber
 new cvar_banRecentStyle
 new cvar_voteDuration;
 new cvar_nomMapFile
@@ -376,7 +376,7 @@ new g_player_voted_weight        [ MAX_PLAYER_CNT ];
 new g_snuffDisplay               [ MAX_PLAYER_CNT ];
 new bool:g_rockedVote            [ MAX_PLAYER_CNT ]
 new g_nominationMatchesMenu      [ MAX_PLAYER_CNT ];
-new g_arrayOfMapsWithVotesNumber [ MAX_MAPS_IN_VOTE + 1 ];
+new g_arrayOfMapsWithVotesNumber [ MAX_MAPS_IN_VOTE ];
 
 new bool:g_is_player_voted          [ MAX_PLAYER_CNT ] = { true, ... }
 new bool:g_is_player_cancelled_vote [ MAX_PLAYER_CNT ]
@@ -384,7 +384,7 @@ new bool:g_is_player_cancelled_vote [ MAX_PLAYER_CNT ]
 new g_mapPrefix      [ MAX_PREFIX_CNT ][ 16 ]
 new g_nomination     [ MAX_PLAYER_CNT ][ MAX_NOMINATION_CNT ]
 new g_recentMap      [ MAX_RECENT_MAP_CNT ][ MAX_MAPNAME_LEN ]
-new g_votingMapNames [ MAX_MAPS_IN_VOTE + 1 ][ MAX_MAPNAME_LEN ]
+new g_votingMapNames [ MAX_MAPS_IN_VOTE ][ MAX_MAPNAME_LEN ]
 
 new g_nominationCount
 new g_chooseMapMenuId;
@@ -422,7 +422,7 @@ public plugin_init()
     cvar_cmdVotemap             = register_cvar( "gal_cmd_votemap", "0" );
     cvar_cmdListmaps            = register_cvar( "gal_cmd_listmaps", "2" );
     cvar_listmapsPaginate       = register_cvar( "gal_listmaps_paginate", "10" );
-    cvar_banRecent              = register_cvar( "gal_banrecent", "3" );
+    cvar_recentMapsBannedNumber        = register_cvar( "gal_banrecent", "3" );
     cvar_banRecentStyle         = register_cvar( "gal_banrecentstyle", "1" );
     cvar_endOfMapVote           = register_cvar( "gal_endofmapvote", "1" );
     cvar_emptyWait              = register_cvar( "gal_emptyserver_wait", "0" );
@@ -537,12 +537,12 @@ public plugin_cfg()
     
     g_fillerMap     = ArrayCreate( 32 );
     g_nominationMap = ArrayCreate( 32 );
-    g_choiceMax     = max( min( MAX_MAPS_IN_VOTE, get_pcvar_num( cvar_voteMapChoiceCnt ) ), 2 )
+    g_choiceMax     = max( min( sizeof g_votingMapNames, get_pcvar_num( cvar_voteMapChoiceCnt ) ), 2 )
     
     // initialize nominations table
     nomination_clearAll();
     
-    if( get_pcvar_num( cvar_banRecent ) )
+    if( get_pcvar_num( cvar_recentMapsBannedNumber ) )
     {
         register_clcmd( "say recentmaps", "cmd_listrecent", 0 );
         
@@ -1073,20 +1073,21 @@ public map_loadRecentList()
     
     if( file )
     {
-        new buffer[ 32 ];
+        new recentMapName[ 32 ];
+        new maxRecentMapsBans = min( get_pcvar_num( cvar_recentMapsBannedNumber ), sizeof g_recentMap )
         
         while( !feof( file ) )
         {
-            fgets( file, buffer, charsmax( buffer ) );
-            trim( buffer );
+            fgets( file, recentMapName, charsmax( recentMapName ) );
+            trim( recentMapName );
             
-            if( buffer[ 0 ] )
+            if( recentMapName[ 0 ] )
             {
-                if( g_cntRecentMap == get_pcvar_num( cvar_banRecent ) )
+                if( g_cntRecentMap == maxRecentMapsBans )
                 {
                     break;
                 }
-                copy( g_recentMap[ g_cntRecentMap++ ], charsmax( buffer ), buffer );
+                copy( g_recentMap[ g_cntRecentMap++ ], charsmax( recentMapName ), recentMapName );
             }
         }
         fclose( file );
@@ -1104,7 +1105,7 @@ public map_writeRecentList()
     {
         fprintf( file, "%s", g_currentMap );
         
-        for( new mapIndex = 0; mapIndex < get_pcvar_num( cvar_banRecent ) - 1; ++mapIndex )
+        for( new mapIndex = 0; mapIndex < get_pcvar_num( cvar_recentMapsBannedNumber ) - 1; ++mapIndex )
         {
             fprintf( file, "^n%s", g_recentMap[ mapIndex ] );
         }
@@ -1280,21 +1281,21 @@ stock map_populateList( Array:mapArray, mapFilename[] )
         
         if( file )
         {
-            new buffer[ 32 ];
+            new loadedMapName[ 32 ];
             
             while( !feof( file ) )
             {
-                fgets( file, buffer, charsmax( buffer ) );
-                trim( buffer );
+                fgets( file, loadedMapName, charsmax( loadedMapName ) );
+                trim( loadedMapName );
                 
-                if( buffer[ 0 ]
-                    && !equal( buffer, "//", 2 )
-                    && !equal( buffer, ";", 1 )
-                    && is_map_valid( buffer ) )
+                if( loadedMapName[ 0 ]
+                    && !equal( loadedMapName, "//", 2 )
+                    && !equal( loadedMapName, ";", 1 )
+                    && is_map_valid( loadedMapName ) )
                 {
-                    ArrayPushString( mapArray, buffer );
+                    ArrayPushString( mapArray, loadedMapName );
                     ++mapCount;
-                    DEBUG_LOGGER( 4, "map_populateList(...) buffer = %s", buffer )
+                    DEBUG_LOGGER( 4, "map_populateList(...) loadedMapName = %s", loadedMapName )
                 }
             }
             fclose( file );
@@ -1348,19 +1349,19 @@ stock map_populateList( Array:mapArray, mapFilename[] )
             
             if( file )
             {
-                new buffer[ 32 ];
+                new loadedMapName[ 32 ];
                 
                 while( !feof( file ) )
                 {
-                    fgets( file, buffer, charsmax( buffer ) );
-                    trim( buffer );
+                    fgets( file, loadedMapName, charsmax( loadedMapName ) );
+                    trim( loadedMapName );
                     
-                    if( buffer[ 0 ]
-                        && !equal( buffer, "//", 2 )
-                        && !equal( buffer, ";", 1 )
-                        && is_map_valid( buffer ) )
+                    if( loadedMapName[ 0 ]
+                        && !equal( loadedMapName, "//", 2 )
+                        && !equal( loadedMapName, ";", 1 )
+                        && is_map_valid( loadedMapName ) )
                     {
-                        ArrayPushString( mapArray, buffer );
+                        ArrayPushString( mapArray, loadedMapName );
                         ++mapCount;
                     }
                 }
@@ -1483,19 +1484,19 @@ public map_loadPrefixList()
     
     if( file )
     {
-        new buffer[ 16 ];
+        new loadedMapPrefix[ 16 ];
         
         while( !feof( file ) )
         {
-            fgets( file, buffer, charsmax( buffer ) );
+            fgets( file, loadedMapPrefix, charsmax( loadedMapPrefix ) );
             
-            if( buffer[ 0 ]
-                && !equal( buffer, "//", 2 ) )
+            if( loadedMapPrefix[ 0 ]
+                && !equal( loadedMapPrefix, "//", 2 ) )
             {
                 if( g_mapPrefixCnt <= MAX_PREFIX_CNT )
                 {
-                    trim( buffer );
-                    copy( g_mapPrefix[ g_mapPrefixCnt++ ], charsmax( buffer ), buffer );
+                    trim( loadedMapPrefix );
+                    copy( g_mapPrefix[ g_mapPrefixCnt++ ], charsmax( loadedMapPrefix ), loadedMapPrefix );
                 }
                 else
                 {
@@ -2092,15 +2093,16 @@ stock map_nominate( player_id, mapIndex, idNominator = -1 )
         
         if( nominationCount == maxPlayerNominations - 1 )
         {
-            new nominatedMaps[ 256 ], buffer[ 32 ];
+            new nominatedMapName[ 32 ]
+            new nominatedMaps[ 256 ]
             
             for( nominationIndex = 1; nominationIndex < maxPlayerNominations; ++nominationIndex )
             {
                 mapIndex = g_nomination[ player_id ][ nominationIndex ];
                 
-                ArrayGetString( g_nominationMap, mapIndex, buffer, charsmax( buffer ) );
-                formatex(         nominatedMaps, charsmax( nominatedMaps ), "%s%s%s", nominatedMaps,
-                        ( nominationIndex == 1 ) ? "" : ", ", buffer );
+                ArrayGetString( g_nominationMap, mapIndex, nominatedMapName, charsmax( nominatedMapName ) );
+                formatex( nominatedMaps, charsmax( nominatedMaps ), "%s%s%s", nominatedMaps,
+                        ( nominationIndex == 1 ) ? "" : ", ", nominatedMapName );
             }
             
             color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_TOOMANY",
@@ -2483,8 +2485,9 @@ stock vote_addFiller()
             {
                 DEBUG_LOGGER( 8, " " )
                 DEBUG_LOGGER( 8, "this is a [groups] file" )
+                
                 // read the filler file to determine how many groups there are ( max of 8 )
-                new groupIdx;
+                new groupIndex;
                 
                 file = fopen( filename, "rt" );
                 
@@ -2492,6 +2495,7 @@ stock vote_addFiller()
                 {
                     fgets( file, buffer, charsmax( buffer ) );
                     trim( buffer );
+                    
                     DEBUG_LOGGER( 8, "buffer: %s   isdigit: %i   groupCount: %i  ", buffer, \
                             isdigit( buffer[ 0 ] ), groupCount )
                     
@@ -2499,11 +2503,13 @@ stock vote_addFiller()
                     {
                         if( groupCount < 8 )
                         {
-                            groupIdx                 = groupCount++;
-                            mapsPerGroup[ groupIdx ] = str_to_num( buffer );
-                            formatex( fillerFile[ groupIdx ], charsmax( fillerFile[] ),
+                            groupIndex                 = groupCount++;
+                            mapsPerGroup[ groupIndex ] = str_to_num( buffer );
+                            
+                            formatex( fillerFile[ groupIndex ], charsmax( fillerFile[] ),
                                     "%s/%i.ini", DIR_CONFIGS, groupCount )
-                            DEBUG_LOGGER( 8, "fillerFile: %s", fillerFile[ groupIdx ] )
+                            
+                            DEBUG_LOGGER( 8, "fillerFile: %s", fillerFile[ groupIndex ] )
                         }
                         else
                         {
@@ -2551,22 +2557,22 @@ stock vote_addFiller()
     new mapName[ 32 ]
     
     // fill remaining slots with random maps from each filler file, as much as possible
-    for( new groupIdx = 0; groupIdx < groupCount; ++groupIdx )
+    for( new groupIndex = 0; groupIndex < groupCount; ++groupIndex )
     {
-        mapCount = map_loadFillerList( fillerFile[ groupIdx ] );
+        mapCount = map_loadFillerList( fillerFile[ groupIndex ] );
         DEBUG_LOGGER( 8, "[%i] groupCount:%i   mapCount: %i   g_totalVoteOptions: %i   \
-                g_choiceMax: %i   fillerFile: %s", groupIdx, groupCount, mapCount, \
-                g_totalVoteOptions, g_choiceMax, fillerFile[ groupIdx ] )
+                g_choiceMax: %i   fillerFile: %s", groupIndex, groupCount, mapCount, \
+                g_totalVoteOptions, g_choiceMax, fillerFile[ groupIndex ] )
         
         if( ( g_totalVoteOptions < g_choiceMax )
             && mapCount )
         {
             unsuccessfulCount = 0;
-            allowedCount      = min( min( mapsPerGroup[ groupIdx ], g_choiceMax - g_totalVoteOptions ),
+            allowedCount      = min( min( mapsPerGroup[ groupIndex ], g_choiceMax - g_totalVoteOptions ),
                     mapCount );
             
-            DEBUG_LOGGER( 8, "[%i] allowedCount: %i   mapsPerGroup: %i   Max-Cnt: %i", groupIdx, \
-                    allowedCount, mapsPerGroup[ groupIdx ], g_choiceMax - g_totalVoteOptions )
+            DEBUG_LOGGER( 8, "[%i] allowedCount: %i   mapsPerGroup: %i   Max-Cnt: %i", groupIndex, \
+                    allowedCount, mapsPerGroup[ groupIndex ], g_choiceMax - g_totalVoteOptions )
             
             for( choice_index = 0; choice_index < allowedCount; ++choice_index )
             {
@@ -2576,7 +2582,7 @@ stock vote_addFiller()
                 ArrayGetString( g_fillerMap, mapKey, mapName, charsmax( mapName ) );
                 
                 DEBUG_LOGGER( 8, "[%i] choice_index: %i   allowedCount: %i   mapKey: %i   mapName: %s", \
-                        groupIdx, choice_index, allowedCount, mapKey, mapName )
+                        groupIndex, choice_index, allowedCount, mapKey, mapName )
                 
                 while( ( map_isInMenu( mapName )
                          || equal( g_currentMap, mapName )
@@ -2602,14 +2608,14 @@ stock vote_addFiller()
                     break;
                 }
                 
-                DEBUG_LOGGER( 8, "groupIdx: %i  map: %s", groupIdx, mapName )
+                DEBUG_LOGGER( 8, "groupIndex: %i  map: %s", groupIndex, mapName )
                 
                 copy( g_votingMapNames[ g_totalVoteOptions++ ], charsmax( g_votingMapNames[] ),
                         mapName )
                 
                 DEBUG_LOGGER( 8, "[%i] mapName: %s   unsuccessfulCount: %i   mapCount: %i   \
                         g_totalVoteOptions: %i", \
-                        groupIdx, mapName, unsuccessfulCount, mapCount, g_totalVoteOptions )
+                        groupIndex, mapName, unsuccessfulCount, mapCount, g_totalVoteOptions )
             }
         }
     }
@@ -3320,7 +3326,7 @@ public vote_expire()
     DEBUG_LOGGER( 4, "" )
 #endif
     
-    // determine the number of votes for 1st and 2nd place
+    // determine the number of votes for 1st and 2nd places
     for( playerVoteMapChoiceIndex = 0; playerVoteMapChoiceIndex <= g_totalVoteOptions;
          ++playerVoteMapChoiceIndex )
     {
@@ -3335,10 +3341,14 @@ public vote_expire()
         }
     }
     
-    // determine which maps are in 1st and 2nd place
-    new firstPlaceChoices[ MAX_MAPS_IN_VOTE + 1 ], numberOfMapsAtFirstPosition;
-    new secondPlaceChoices[ MAX_MAPS_IN_VOTE + 1 ], numberOfMapsAtSecondPosition;
+    // retain the number of draw maps at first and second positions
+    new numberOfMapsAtFirstPosition
+    new numberOfMapsAtSecondPosition
     
+    new firstPlaceChoices[ MAX_MAPS_IN_VOTE ]
+    new secondPlaceChoices[ MAX_MAPS_IN_VOTE ]
+    
+    // determine which maps are in 1st and 2nd places
     for( playerVoteMapChoiceIndex = 0; playerVoteMapChoiceIndex <= g_totalVoteOptions;
          ++playerVoteMapChoiceIndex )
     {
@@ -3347,7 +3357,6 @@ public vote_expire()
         
         if( g_arrayOfMapsWithVotesNumber[ playerVoteMapChoiceIndex ] == numberOfVotesAtFirstPlace )
         {
-            // numberOfMapsAtFirstPosition retain the number of draw maps at first position
             firstPlaceChoices[ numberOfMapsAtFirstPosition++ ] = playerVoteMapChoiceIndex;
         }
         else if( g_arrayOfMapsWithVotesNumber[ playerVoteMapChoiceIndex ] == numberOfVotesAtSecondPlace )
@@ -3747,7 +3756,7 @@ stock vote_resetStats()
     g_totalVoteOptions  = 0;
     g_totalVotesCounted = 0;
     
-    arrayset( g_arrayOfMapsWithVotesNumber, 0, MAX_MAPS_IN_VOTE + 1 );
+    arrayset( g_arrayOfMapsWithVotesNumber, 0, sizeof g_arrayOfMapsWithVotesNumber );
     
     // reset everyones' rocks
     arrayset( g_rockedVote, false, sizeof( g_rockedVote ) );
@@ -3798,7 +3807,7 @@ stock prefix_isInMenu( map[] )
 
 stock map_isTooRecent( map[] )
 {
-    if( get_pcvar_num( cvar_banRecent ) )
+    if( get_pcvar_num( cvar_recentMapsBannedNumber ) )
     {
         for( new idxBannedMap = 0; idxBannedMap < g_cntRecentMap; ++idxBannedMap )
         {
