@@ -281,7 +281,7 @@ new cvar_voteShowNoneOption
 new cvar_voteShowNoneOptionType
 new cvar_extendmapAllowOrder
 new cvar_coloredChatEnabled
-new cvar_emptyCycle;
+new cvar_isOnEmptyCycle;
 new cvar_unnominateDisconnected;
 new cvar_endOnRound
 new cvar_endOnRound_rtv
@@ -294,7 +294,7 @@ new cvar_extendmapStepRounds;
 new cvar_extendmapAllowStay
 new cvar_endOfMapVote;
 new cvar_emptyWait
-new cvar_emptyMapFile
+new cvar_emptyMapFilePath
 new cvar_rtvWait
 new cvar_rtvWaitRounds
 new cvar_rtvWaitAdmin
@@ -306,7 +306,7 @@ new cvar_listmapsPaginate;
 new cvar_recentMapsBannedNumber
 new cvar_banRecentStyle
 new cvar_voteDuration;
-new cvar_nomMapFile
+new cvar_nomMapFilePath
 new cvar_nomPrefixes;
 new cvar_nomQtyUsed
 new cvar_nomPlayerAllowance;
@@ -325,16 +325,16 @@ new cvar_runoffDuration;
 new cvar_voteStatus
 new cvar_voteStatusType;
 new cvar_soundsMute;
-new cvar_voteMapFile
+new cvar_voteMapFilePath
 new cvar_voteMinPlayers
-new cvar_voteMinPlayersMapFile
+new cvar_voteMinPlayersMapFilePath
 
 
 /**
  * Various Artists
  */
 new g_rtv_wait_admin_number
-new g_emptyMapCnt
+new g_emptyCycleMapsNumber
 new g_cntRecentMap;
 new Array:g_nominationMap
 new g_nominationMapCnt;
@@ -412,7 +412,7 @@ public plugin_init()
     cvar_voteShowNoneOption     = register_cvar( "gal_vote_show_none", "0" );
     cvar_voteShowNoneOptionType = register_cvar( "gal_vote_show_none_type", "0" );
     cvar_coloredChatEnabled     = register_cvar( "gal_colored_chat_enabled", "0", FCVAR_SPONLY );
-    cvar_emptyCycle             = register_cvar( "gal_in_empty_cycle", "0", FCVAR_SPONLY );
+    cvar_isOnEmptyCycle             = register_cvar( "gal_in_empty_cycle", "0", FCVAR_SPONLY );
     cvar_unnominateDisconnected = register_cvar( "gal_unnominate_disconnected", "0" );
     cvar_endOnRound             = register_cvar( "gal_endonround", "1" );
     cvar_endOnRound_rtv         = register_cvar( "gal_endonround_rtv", "0" );
@@ -426,7 +426,7 @@ public plugin_init()
     cvar_banRecentStyle         = register_cvar( "gal_banrecentstyle", "1" );
     cvar_endOfMapVote           = register_cvar( "gal_endofmapvote", "1" );
     cvar_emptyWait              = register_cvar( "gal_emptyserver_wait", "0" );
-    cvar_emptyMapFile           = register_cvar( "gal_emptyserver_mapfile", "" );
+    cvar_emptyMapFilePath           = register_cvar( "gal_emptyserver_mapfile", "" );
     cvar_srvStart               = register_cvar( "gal_srv_start", "0" );
     cvar_srvTimelimitRestart    = register_cvar( "gal_srv_timelimit_restart", "0" );
     cvar_srvMaxroundsRestart    = register_cvar( "gal_srv_maxrounds_restart", "0" );
@@ -438,7 +438,7 @@ public plugin_init()
     cvar_rtvRatio               = register_cvar( "gal_rtv_ratio", "0.60" );
     cvar_rtvReminder            = register_cvar( "gal_rtv_reminder", "2" );
     cvar_nomPlayerAllowance     = register_cvar( "gal_nom_playerallowance", "2" );
-    cvar_nomMapFile             = register_cvar( "gal_nom_mapfile", "*" );
+    cvar_nomMapFilePath             = register_cvar( "gal_nom_mapfile", "*" );
     cvar_nomPrefixes            = register_cvar( "gal_nom_prefixes", "1" );
     cvar_nomQtyUsed             = register_cvar( "gal_nom_qtyused", "0" );
     cvar_voteDuration           = register_cvar( "gal_vote_duration", "15" );
@@ -452,9 +452,9 @@ public plugin_init()
     cvar_runoffEnabled          = register_cvar( "gal_runoff_enabled", "0" );
     cvar_runoffDuration         = register_cvar( "gal_runoff_duration", "10" );
     cvar_soundsMute             = register_cvar( "gal_sounds_mute", "0" );
-    cvar_voteMapFile            = register_cvar( "gal_vote_mapfile", "*" );
+    cvar_voteMapFilePath            = register_cvar( "gal_vote_mapfile", "*" );
     cvar_voteMinPlayers         = register_cvar( "gal_vote_minplayers", "0" );
-    cvar_voteMinPlayersMapFile  = register_cvar( "gal_vote_minplayers_mapfile", "mapcycle.txt" );
+    cvar_voteMinPlayersMapFilePath  = register_cvar( "gal_vote_minplayers_mapfile", "mapcycle.txt" );
     
     register_logevent( "game_commencing_event", 2, "0=World triggered", "1=Game_Commencing" )
     register_logevent( "team_win_event",        6, "0=Team" )
@@ -905,22 +905,22 @@ public srv_handleStart()
         if( startAction == SRV_START_CURRENTMAP
             || startAction == SRV_START_NEXTMAP )
         {
-            new filename[ 256 ];
-            formatex( filename, charsmax( filename ), "%s/info.dat", DIR_DATA );
+            new backupMapsFilePath[ 256 ];
+            formatex( backupMapsFilePath, charsmax( backupMapsFilePath ), "%s/info.dat", DIR_DATA );
             
-            new file = fopen( filename, "rt" );
+            new backupMapsFile = fopen( backupMapsFilePath, "rt" );
             
-            if( file )  // !feof( file )
+            if( backupMapsFile )
             {
-                fgets( file, nextMap, charsmax( nextMap ) );
+                fgets( backupMapsFile, nextMap, charsmax( nextMap ) );
                 
                 if( startAction == SRV_START_NEXTMAP )
                 {
                     nextMap[ 0 ] = '^0';
-                    fgets( file, nextMap, charsmax( nextMap )  );
+                    fgets( backupMapsFile, nextMap, charsmax( nextMap )  );
                 }
             }
-            fclose( file );
+            fclose( backupMapsFile );
         }
         else if( startAction == SRV_START_RANDOMMAP )
         {
@@ -972,16 +972,16 @@ stock map_setNext( nextMap[] )
     copy( g_nextmap, charsmax( g_nextmap ), nextMap );
     
     // update our data file
-    new filename[ 256 ];
-    formatex( filename, charsmax( filename ), "%s/info.dat", DIR_DATA );
+    new backupMapsFilePath[ 256 ];
+    formatex( backupMapsFilePath, charsmax( backupMapsFilePath ), "%s/info.dat", DIR_DATA );
     
-    new file = fopen( filename, "wt" );
+    new backupMapsFile = fopen( backupMapsFilePath, "wt" );
     
-    if( file )
+    if( backupMapsFile )
     {
-        fprintf( file, "%s", g_currentMap );
-        fprintf( file, "^n%s", nextMap );
-        fclose( file );
+        fprintf( backupMapsFile, "%s", g_currentMap );
+        fprintf( backupMapsFile, "^n%s", nextMap );
+        fclose( backupMapsFile );
     }
     else
     {
@@ -1066,19 +1066,19 @@ stock prevent_map_change()
 
 public map_loadRecentList()
 {
-    new filename[ 256 ];
-    formatex( filename, charsmax( filename ), "%s/recentmaps.dat", DIR_DATA );
+    new recentMapsFilePath[ 256 ];
+    formatex( recentMapsFilePath, charsmax( recentMapsFilePath ), "%s/recentmaps.dat", DIR_DATA );
     
-    new file = fopen( filename, "rt" );
+    new recentMapsFile = fopen( recentMapsFilePath, "rt" );
     
-    if( file )
+    if( recentMapsFile )
     {
         new recentMapName[ 32 ];
         new maxRecentMapsBans = min( get_pcvar_num( cvar_recentMapsBannedNumber ), sizeof g_recentMap )
         
-        while( !feof( file ) )
+        while( !feof( recentMapsFile ) )
         {
-            fgets( file, recentMapName, charsmax( recentMapName ) );
+            fgets( recentMapsFile, recentMapName, charsmax( recentMapName ) );
             trim( recentMapName );
             
             if( recentMapName[ 0 ] )
@@ -1090,33 +1090,33 @@ public map_loadRecentList()
                 copy( g_recentMap[ g_cntRecentMap++ ], charsmax( recentMapName ), recentMapName );
             }
         }
-        fclose( file );
+        fclose( recentMapsFile );
     }
 }
 
 public map_writeRecentList()
 {
-    new filename[ 256 ];
-    formatex( filename, charsmax( filename ), "%s/recentmaps.dat", DIR_DATA );
+    new recentMapsFilePath[ 256 ];
+    formatex( recentMapsFilePath, charsmax( recentMapsFilePath ), "%s/recentmaps.dat", DIR_DATA );
     
-    new file = fopen( filename, "wt" );
+    new recentMapsFile = fopen( recentMapsFilePath, "wt" );
     
-    if( file )
+    if( recentMapsFile )
     {
-        fprintf( file, "%s", g_currentMap );
+        fprintf( recentMapsFile, "%s", g_currentMap );
         
         for( new mapIndex = 0; mapIndex < get_pcvar_num( cvar_recentMapsBannedNumber ) - 1; ++mapIndex )
         {
-            fprintf( file, "^n%s", g_recentMap[ mapIndex ] );
+            fprintf( recentMapsFile, "^n%s", g_recentMap[ mapIndex ] );
         }
         
-        fclose( file );
+        fclose( recentMapsFile );
     }
 }
 
-public map_loadFillerList( filename[] )
+public map_loadFillerList( fillerFileNamePath[] )
 {
-    return map_populateList( g_fillerMap, filename );
+    return map_populateList( g_fillerMap, fillerFileNamePath );
 }
 
 public cmd_rockthevote( player_id )
@@ -1266,7 +1266,7 @@ public cmd_startVote( player_id, level, cid )
     return PLUGIN_HANDLED;
 }
 
-stock map_populateList( Array:mapArray, mapFilename[] )
+stock map_populateList( Array:mapArray, mapFilePath[] )
 {
     // clear the map array in case we're reusing it
     ArrayClear( mapArray );
@@ -1274,18 +1274,18 @@ stock map_populateList( Array:mapArray, mapFilename[] )
     // load the array with maps
     new mapCount;
     
-    if( !equal( mapFilename, "*" )
-        && !equal( mapFilename, "#" ) )
+    if( !equal( mapFilePath, "*" )
+        && !equal( mapFilePath, "#" ) )
     {
-        new file = fopen( mapFilename, "rt" );
+        new mapFile = fopen( mapFilePath, "rt" );
         
-        if( file )
+        if( mapFile )
         {
             new loadedMapName[ 32 ];
             
-            while( !feof( file ) )
+            while( !feof( mapFile ) )
             {
-                fgets( file, loadedMapName, charsmax( loadedMapName ) );
+                fgets( mapFile, loadedMapName, charsmax( loadedMapName ) );
                 trim( loadedMapName );
                 
                 if( loadedMapName[ 0 ]
@@ -1298,18 +1298,18 @@ stock map_populateList( Array:mapArray, mapFilename[] )
                     DEBUG_LOGGER( 4, "map_populateList(...) loadedMapName = %s", loadedMapName )
                 }
             }
-            fclose( file );
+            fclose( mapFile );
         }
         else
         {
-            log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilename );
+            log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilePath );
         }
     }
     else
     {
-        if( equal( mapFilename, "*" ) )
+        if( equal( mapFilePath, "*" ) )
         {
-            // no file provided, assuming contents of "maps" folder
+            // no mapFile provided, assuming contents of "maps" folder
             new dir, mapName[ 32 ];
             dir = open_dir( "maps", mapName, charsmax( mapName ) );
             
@@ -1343,17 +1343,17 @@ stock map_populateList( Array:mapArray, mapFilename[] )
         }
         else
         {
-            get_cvar_string( "mapcyclefile", mapFilename, strlen( mapFilename ) );
+            get_cvar_string( "mapcyclefile", mapFilePath, strlen( mapFilePath ) );
             
-            new file = fopen( mapFilename, "rt" );
+            new mapFile = fopen( mapFilePath, "rt" );
             
-            if( file )
+            if( mapFile )
             {
                 new loadedMapName[ 32 ];
                 
-                while( !feof( file ) )
+                while( !feof( mapFile ) )
                 {
-                    fgets( file, loadedMapName, charsmax( loadedMapName ) );
+                    fgets( mapFile, loadedMapName, charsmax( loadedMapName ) );
                     trim( loadedMapName );
                     
                     if( loadedMapName[ 0 ]
@@ -1365,11 +1365,11 @@ stock map_populateList( Array:mapArray, mapFilename[] )
                         ++mapCount;
                     }
                 }
-                fclose( file );
+                fclose( mapFile );
             }
             else
             {
-                log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilename );
+                log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilePath );
             }
         }
     }
@@ -1378,12 +1378,12 @@ stock map_populateList( Array:mapArray, mapFilename[] )
 
 public map_loadNominationList()
 {
-    new filename[ 256 ];
-    get_pcvar_string( cvar_nomMapFile, filename, charsmax( filename ) );
+    new nomMapFilePath[ 256 ];
+    get_pcvar_string( cvar_nomMapFilePath, nomMapFilePath, charsmax( nomMapFilePath ) );
     
-    DEBUG_LOGGER( 4, "( map_loadNominationList() ) cvar_nomMapFile filename: %s", filename )
+    DEBUG_LOGGER( 4, "( map_loadNominationList() ) cvar_nomMapFilePath nomMapFilePath: %s", nomMapFilePath )
     
-    g_nominationMapCnt = map_populateList( g_nominationMap, filename );
+    g_nominationMapCnt = map_populateList( g_nominationMap, nomMapFilePath );
 }
 
 public cmd_createMapFile( player_id, level, cid )
@@ -1393,21 +1393,21 @@ public cmd_createMapFile( player_id, level, cid )
         return PLUGIN_HANDLED;
     }
     
-    new cntArg = read_argc() - 1;
+    new argumentsNumber = read_argc() - 1
     
-    switch( cntArg )
+    switch( argumentsNumber )
     {
         case 1:
         {
-            new arg1[ 256 ];
-            read_argv( 1, arg1, charsmax( arg1 ) );
-            remove_quotes( arg1 );
+            new mapFileName[ 256 ];
+            read_argv( 1, mapFileName, charsmax( mapFileName ) );
+            remove_quotes( mapFileName );
             
             // map name is 31 ( i.e. MAX_MAPNAME_LEN ), ".bsp" is 4, string terminator is 1.
             new mapName[ MAX_MAPNAME_LEN + 5 ];
             
             new dir
-            new file
+            new mapFile
             new mapCount
             new lenMapName
             
@@ -1415,12 +1415,12 @@ public cmd_createMapFile( player_id, level, cid )
             
             if( dir )
             {
-                new filename[ 256 ];
-                formatex( filename, charsmax( filename ), "%s/%s", DIR_CONFIGS, arg1 );
+                new mapFilePath[ 256 ];
+                formatex( mapFilePath, charsmax( mapFilePath ), "%s/%s", DIR_CONFIGS, mapFileName );
                 
-                file = fopen( filename, "wt" );
+                mapFile = fopen( mapFilePath, "wt" );
                 
-                if( file )
+                if( mapFile )
                 {
                     mapCount = 0;
                     
@@ -1436,16 +1436,16 @@ public cmd_createMapFile( player_id, level, cid )
                             if( is_map_valid( mapName ) )
                             {
                                 mapCount++;
-                                fprintf( file, "%s^n", mapName );
+                                fprintf( mapFile, "%s^n", mapName );
                             }
                         }
                     }
-                    fclose( file );
-                    con_print( player_id, "%L", LANG_SERVER, "GAL_CREATIONSUCCESS", filename, mapCount );
+                    fclose( mapFile );
+                    con_print( player_id, "%L", LANG_SERVER, "GAL_CREATIONSUCCESS", mapFilePath, mapCount );
                 }
                 else
                 {
-                    con_print( player_id, "%L", LANG_SERVER, "GAL_CREATIONFAILED", filename );
+                    con_print( player_id, "%L", LANG_SERVER, "GAL_CREATIONFAILED", mapFilePath );
                 }
                 close_dir( dir );
             }
@@ -1467,28 +1467,28 @@ public cmd_createMapFile( player_id, level, cid )
 
 stock map_loadEmptyCycleList()
 {
-    new filename[ 256 ];
-    get_pcvar_string( cvar_emptyMapFile, filename, charsmax( filename ) );
+    new emptyCycleFilePath[ 256 ];
+    get_pcvar_string( cvar_emptyMapFilePath, emptyCycleFilePath, charsmax( emptyCycleFilePath ) );
     
-    g_emptyMapCnt = map_populateList( g_emptyCycleMap, filename );
+    g_emptyCycleMapsNumber = map_populateList( g_emptyCycleMap, emptyCycleFilePath );
     
-    DEBUG_LOGGER( 4, "( map_loadEmptyCycleList() ) g_emptyMapCnt = %d", g_emptyMapCnt )
+    DEBUG_LOGGER( 4, "( map_loadEmptyCycleList() ) g_emptyCycleMapsNumber = %d", g_emptyCycleMapsNumber )
 }
 
 public map_loadPrefixList()
 {
-    new filename[ 256 ];
-    formatex( filename, charsmax( filename ), "%s/prefixes.ini", DIR_CONFIGS );
+    new prefixesFilePath[ 256 ];
+    formatex( prefixesFilePath, charsmax( prefixesFilePath ), "%s/prefixes.ini", DIR_CONFIGS );
     
-    new file = fopen( filename, "rt" );
+    new prefixesFile = fopen( prefixesFilePath, "rt" );
     
-    if( file )
+    if( prefixesFile )
     {
         new loadedMapPrefix[ 16 ];
         
-        while( !feof( file ) )
+        while( !feof( prefixesFile ) )
         {
-            fgets( file, loadedMapPrefix, charsmax( loadedMapPrefix ) );
+            fgets( prefixesFile, loadedMapPrefix, charsmax( loadedMapPrefix ) );
             
             if( loadedMapPrefix[ 0 ]
                 && !equal( loadedMapPrefix, "//", 2 ) )
@@ -1501,16 +1501,16 @@ public map_loadPrefixList()
                 else
                 {
                     log_error( AMX_ERR_BOUNDS, "%L", LANG_SERVER, "GAL_PREFIXES_TOOMANY",
-                            MAX_PREFIX_CNT, filename );
+                            MAX_PREFIX_CNT, prefixesFilePath );
                     break;
                 }
             }
         }
-        fclose( file );
+        fclose( prefixesFile );
     }
     else
     {
-        log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_PREFIXES_NOTFOUND", filename );
+        log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_PREFIXES_NOTFOUND", prefixesFilePath );
     }
     return PLUGIN_HANDLED;
 }
@@ -2448,103 +2448,104 @@ stock vote_addFiller()
     }
     
     // grab the name of the filler file
-    new filename[ 256 ];
+    new mapFilerFilePath[ 256 ];
     
-    get_pcvar_string( cvar_voteMapFile, filename, charsmax( filename ) )
+    get_pcvar_string( cvar_voteMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) )
     
-    DEBUG_LOGGER( 4, "( vote_addFiller ) cvar_voteMapFile: %s", filename )
+    DEBUG_LOGGER( 4, "( vote_addFiller ) cvar_voteMapFilePath: %s", mapFilerFilePath )
     
     if( get_realplayersnum() < get_pcvar_num( cvar_voteMinPlayers ) )
     {
-        get_pcvar_string( cvar_voteMinPlayersMapFile, filename, charsmax( filename ) )
+        get_pcvar_string( cvar_voteMinPlayersMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) )
     }
-    else if( filename[ 0 ] == '*' )
+    else if( mapFilerFilePath[ 0 ] == '*' )
     {
-        get_cvar_string( "mapcyclefile", filename, charsmax( filename ) );
+        get_cvar_string( "mapcyclefile", mapFilerFilePath, charsmax( mapFilerFilePath ) );
     }
     
     new groupCount
     new mapsPerGroup[ 8 ]
     
     // create an array of files that will be pulled from
-    new fillerFile[ 8 ][ 256 ]
+    new fillersFilePaths[ 8 ][ 256 ]
     
-    if( !equal( filename, "*" ) )
+    if( !equal( mapFilerFilePath, "*" ) )
     {
         // determine what kind of file it's being used as
-        new file = fopen( filename, "rt" );
+        new mapFilerFile = fopen( mapFilerFilePath, "rt" );
         
-        if( file )
+        if( mapFilerFile )
         {
-            new buffer[ 16 ];
-            fgets( file, buffer, charsmax( buffer ) );
-            trim( buffer );
-            fclose( file );
+            new currentReadedLine[ 16 ]
             
-            if( equali( buffer, "[groups]" ) )
+            fgets( mapFilerFile, currentReadedLine, charsmax( currentReadedLine ) )
+            trim( currentReadedLine )
+            fclose( mapFilerFile )
+            
+            if( equali( currentReadedLine, "[groups]" ) )
             {
                 DEBUG_LOGGER( 8, " " )
-                DEBUG_LOGGER( 8, "this is a [groups] file" )
+                DEBUG_LOGGER( 8, "this is a [groups] mapFilerFile" )
                 
-                // read the filler file to determine how many groups there are ( max of 8 )
+                // read the filler mapFilerFile to determine how many groups there are ( max of 8 )
                 new groupIndex;
                 
-                file = fopen( filename, "rt" );
+                mapFilerFile = fopen( mapFilerFilePath, "rt" );
                 
-                while( !feof( file ) )
+                while( !feof( mapFilerFile ) )
                 {
-                    fgets( file, buffer, charsmax( buffer ) );
-                    trim( buffer );
+                    fgets( mapFilerFile, currentReadedLine, charsmax( currentReadedLine ) );
+                    trim( currentReadedLine );
                     
-                    DEBUG_LOGGER( 8, "buffer: %s   isdigit: %i   groupCount: %i  ", buffer, \
-                            isdigit( buffer[ 0 ] ), groupCount )
+                    DEBUG_LOGGER( 8, "currentReadedLine: %s   isdigit: %i   groupCount: %i  ", currentReadedLine, \
+                            isdigit( currentReadedLine[ 0 ] ), groupCount )
                     
-                    if( isdigit( buffer[ 0 ] ) )
+                    if( isdigit( currentReadedLine[ 0 ] ) )
                     {
                         if( groupCount < 8 )
                         {
                             groupIndex                 = groupCount++;
-                            mapsPerGroup[ groupIndex ] = str_to_num( buffer );
+                            mapsPerGroup[ groupIndex ] = str_to_num( currentReadedLine );
                             
-                            formatex( fillerFile[ groupIndex ], charsmax( fillerFile[] ),
+                            formatex( fillersFilePaths[ groupIndex ], charsmax( fillersFilePaths[] ),
                                     "%s/%i.ini", DIR_CONFIGS, groupCount )
                             
-                            DEBUG_LOGGER( 8, "fillerFile: %s", fillerFile[ groupIndex ] )
+                            DEBUG_LOGGER( 8, "fillersFilePaths: %s", fillersFilePaths[ groupIndex ] )
                         }
                         else
                         {
                             log_error( AMX_ERR_BOUNDS, "%L", LANG_SERVER, "GAL_GRP_FAIL_TOOMANY",
-                                    filename );
+                                    mapFilerFilePath );
                             break;
                         }
                     }
                 }
                 
-                fclose( file );
+                fclose( mapFilerFile );
                 
                 if( groupCount == 0 )
                 {
-                    log_error( AMX_ERR_GENERAL, "%L", LANG_SERVER, "GAL_GRP_FAIL_NOCOUNTS", filename );
+                    log_error( AMX_ERR_GENERAL, "%L", LANG_SERVER, "GAL_GRP_FAIL_NOCOUNTS", mapFilerFilePath );
                     return;
                 }
             }
             else
             {
                 // we presume it's a listing of maps, ala mapcycle.txt
-                copy( fillerFile[ 0 ], charsmax( filename ), filename );
+                copy( fillersFilePaths[ 0 ], charsmax( mapFilerFilePath ), mapFilerFilePath );
                 mapsPerGroup[ 0 ] = 8;
                 groupCount        = 1;
             }
         }
         else
         {
-            log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_FILLER_NOTFOUND", fillerFile );
+            log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_FILLER_NOTFOUND", fillersFilePaths );
         }
     }
     else
     {
         // we'll be loading all maps in the /maps folder
-        copy( fillerFile[ 0 ], charsmax( filename ), filename );
+        copy( fillersFilePaths[ 0 ], charsmax( mapFilerFilePath ), mapFilerFilePath );
         mapsPerGroup[ 0 ] = 8;
         groupCount        = 1;
     }
@@ -2559,10 +2560,10 @@ stock vote_addFiller()
     // fill remaining slots with random maps from each filler file, as much as possible
     for( new groupIndex = 0; groupIndex < groupCount; ++groupIndex )
     {
-        mapCount = map_loadFillerList( fillerFile[ groupIndex ] );
+        mapCount = map_loadFillerList( fillersFilePaths[ groupIndex ] );
         DEBUG_LOGGER( 8, "[%i] groupCount:%i   mapCount: %i   g_totalVoteOptions: %i   \
-                g_choiceMax: %i   fillerFile: %s", groupIndex, groupCount, mapCount, \
-                g_totalVoteOptions, g_choiceMax, fillerFile[ groupIndex ] )
+                g_choiceMax: %i   fillersFilePaths: %s", groupIndex, groupCount, mapCount, \
+                g_totalVoteOptions, g_choiceMax, fillersFilePaths[ groupIndex ] )
         
         if( ( g_totalVoteOptions < g_choiceMax )
             && mapCount )
@@ -4171,7 +4172,7 @@ stock con_print( player_id, message[], { Float, Sql, Result, _ }: ... )
 
 stock stopEmptyServerChange()
 {
-    set_pcvar_num( cvar_emptyCycle, 0 );
+    set_pcvar_num( cvar_isOnEmptyCycle, 0 );
     remove_task( TASKID_EMPTYSERVER )
 }
 
@@ -4255,6 +4256,8 @@ stock handleRecentlyEmptyServer()
             "handleRecentlyEmptyServer (in)", get_pcvar_float( g_timelimit_pointer ), g_originalTimelimit )
     DEBUG_LOGGER( 2, "%32s playerCount:%i", "client_disconnect()", playerCount )
     
+    emptyServerPeriodicCheck()
+    
     if( playerCount == 0 )
     {
         if( g_originalTimelimit != get_pcvar_float( g_timelimit_pointer ) )
@@ -4268,14 +4271,14 @@ stock handleRecentlyEmptyServer()
         
         // might be utilizing "empty server" feature
         if( g_isUsingEmptyCycle
-            && g_emptyMapCnt )
+            && g_emptyCycleMapsNumber )
         {
             startEmptyCountdown();
         }
     }
     
-    DEBUG_LOGGER( 2, "g_isUsingEmptyCycle = %d, g_emptyMapCnt = %d", \
-            g_isUsingEmptyCycle, g_emptyMapCnt )
+    DEBUG_LOGGER( 2, "g_isUsingEmptyCycle = %d, g_emptyCycleMapsNumber = %d", \
+            g_isUsingEmptyCycle, g_emptyCycleMapsNumber )
     
     DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "handleRecentlyEmptyServer (out)", \
             get_pcvar_float( g_timelimit_pointer ), g_originalTimelimit )
@@ -4288,7 +4291,7 @@ stock handleRecentlyEmptyServer()
 public emptyServerPeriodicCheck()
 {
     if( ( get_realplayersnum() ) == 0
-        && !get_pcvar_num( cvar_emptyCycle ) )
+        && !get_pcvar_num( cvar_isOnEmptyCycle ) )
     {
         startEmptyCountdown();
     }
@@ -4308,7 +4311,7 @@ stock startEmptyCountdown()
 public startEmptyServerCycle()
 {
     // stop this system at the next map, due we already be at a popular map
-    set_pcvar_num( cvar_emptyCycle, 1 );
+    set_pcvar_num( cvar_isOnEmptyCycle, 1 );
     
     // set the next map from the empty cycle list,
     // or the first one, if the current map isn't part of the cycle
@@ -4633,23 +4636,23 @@ stock color_print( player_id, message[], any: ... )
  * ConnorMcLeod's [Dyn Native] ColorChat v0.3.2 (04 jul 2013) register_dictionary_colored function:
  *   <a href="https://forums.alliedmods.net/showthread.php?p=851160">ColorChat v0.3.2</a>
  *
- * @param filename the dictionary file name including its file extension.
+ * @param dictionaryFile the dictionary file name including its file extension.
  */
-stock register_dictionary_colored( const filename[] )
+stock register_dictionary_colored( const dictionaryFile[] )
 {
-    if( !register_dictionary( filename ) )
+    if( !register_dictionary( dictionaryFile ) )
     {
         return 0;
     }
     
-    new szFileName[ 256 ];
-    get_localinfo( "amxx_datadir", szFileName, charsmax( szFileName ) );
-    formatex( szFileName, charsmax( szFileName ), "%s/lang/%s", szFileName, filename );
-    new fp = fopen( szFileName, "rt" );
+    new dictionaryFilePath[ 256 ];
+    get_localinfo( "amxx_datadir", dictionaryFilePath, charsmax( dictionaryFilePath ) );
+    formatex( dictionaryFilePath, charsmax( dictionaryFilePath ), "%s/lang/%s", dictionaryFilePath, dictionaryFile );
+    new fp = fopen( dictionaryFilePath, "rt" );
     
     if( !fp )
     {
-        log_amx( "Failed to open %s", szFileName );
+        log_amx( "Failed to open %s", dictionaryFilePath );
         return 0;
     }
     
@@ -4894,14 +4897,14 @@ stock bool:ValidMap( mapname[] )
     return false;
 }
 
-readMapCycle( szFileName[], szNext[], iNext )
+readMapCycle( mapcycleFilePath[], szNext[], iNext )
 {
     new b, i = 0, iMaps = 0
     new szBuffer[ 32 ], szFirst[ 32 ]
     
-    if( file_exists( szFileName ) )
+    if( file_exists( mapcycleFilePath ) )
     {
-        while( read_file( szFileName, i++, szBuffer, charsmax( szBuffer ), b ) )
+        while( read_file( mapcycleFilePath, i++, szBuffer, charsmax( szBuffer ), b ) )
         {
             if( !isalnum( szBuffer[ 0 ] )
                 || !ValidMap( szBuffer ) )
@@ -4925,7 +4928,7 @@ readMapCycle( szFileName[], szNext[], iNext )
     
     if( !iMaps )
     {
-        log_amx( g_warning, szFileName )
+        log_amx( g_warning, mapcycleFilePath )
         copy( szNext, iNext, plugin_nextmap_g_currentMap )
     }
     else
@@ -5136,28 +5139,28 @@ stock test_register_test()
 }
 
 /**
- * Test for client connect cvar_emptyCycle behavior.
+ * Test for client connect cvar_isOnEmptyCycle behavior.
  */
 stock test_gal_in_empty_cycle1()
 {
     new test_id = register_test( 0, "test_gal_in_empty_cycle1" )
     
-    set_pcvar_num( cvar_emptyCycle, 1 )
+    set_pcvar_num( cvar_isOnEmptyCycle, 1 )
     client_authorized( 1 )
     
-    if( get_pcvar_num( cvar_emptyCycle ) )
+    if( get_pcvar_num( cvar_isOnEmptyCycle ) )
     {
-        SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle1() cvar_emptyCycle must be 0 (it was %d)", \
-                get_pcvar_num( cvar_emptyCycle ) )
+        SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle1() cvar_isOnEmptyCycle must be 0 (it was %d)", \
+                get_pcvar_num( cvar_isOnEmptyCycle ) )
     }
     
-    set_pcvar_num( cvar_emptyCycle, 0 )
+    set_pcvar_num( cvar_isOnEmptyCycle, 0 )
     client_authorized( 1 )
     
-    if( get_pcvar_num( cvar_emptyCycle ) )
+    if( get_pcvar_num( cvar_isOnEmptyCycle ) )
     {
-        SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle1() cvar_emptyCycle must be 0 (it was %d)", \
-                get_pcvar_num( cvar_emptyCycle ) )
+        SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle1() cvar_isOnEmptyCycle must be 0 (it was %d)", \
+                get_pcvar_num( cvar_isOnEmptyCycle ) )
     }
 }
 

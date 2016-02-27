@@ -186,7 +186,12 @@ galileo.amxx
 [/QUOTE]
 ******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] *********************************
 [CODE]
-
+// When the server is empty, only change to an alternate empty-server
+// map cycle after timelimit, maxrounds or winlimit expiration.
+// This feature only works if the cvar 'gal_emptyserver_wait' is set to "0".
+// 0 - disabled this feature.
+// 1 - enable this feature.
+gal_emptyserver_change 0
 [/CODE]******************************** [anchor]Change[/anchor][B][SIZE="5"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
 [CODE]
 2016-02-XX | v2.X
@@ -213,6 +218,7 @@ galileo.amxx
  * Added new option 2 to the cvar 'gal_vote_show_none_type'. After the user voted, transform the '0 - None' option on 'one time cancel' vote opportunity.
  * Added support to 'engine_changelevel' from AMX Mod X 183.
  * Added correct documentation for the 'gal_srv_start' cvar to indicates which action to take when it is detected that the server has been 'externally restarted'.
+ * Improved 'gal_emptyserver_wait' cvar documentation on the configuration file.
  
 2016-02-11 | v1.2.2
  * Add a new cvar 'gal_rtv_wait_rounds' for the RTV wait.
