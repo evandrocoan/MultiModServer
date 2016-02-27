@@ -142,16 +142,17 @@ stock debugMesssageLogger( mode, message[], any: ... )
 #define ANNOUNCE_CHOICE_PLAYERS 1
 #define ANNOUNCE_CHOICE_ADMINS  2
 
-#define MAX_PREFIX_CNT     32
-#define MAX_RECENT_MAP_CNT 16
+#define MAX_PREFIX_COUNT     32
+#define MAX_RECENT_MAP_COUNT 16
 
-#define MAX_MAPS_IN_VOTE     9
-#define MAX_NOMINATION_CNT   8
-#define MAX_STANDARD_MAP_CNT 25
+#define MAX_MAPS_IN_VOTE       9
+#define MAX_NOMINATION_COUNT   8
+#define MAX_STANDARD_MAP_COUNT 25
 
-#define MAX_MAPNAME_LEN      31
-#define MAX_PLAYER_CNT       33
-#define MAX_NOM_MATCH_CNT    1000
+#define MAX_MAPNAME_LENGHT     64
+#define MAX_PLAYER_NAME_LENGHT 48
+#define MAX_PLAYERS_COUNT      33
+#define MAX_NOM_MATCH_COUNT    1000
 
 #define VOTE_IN_PROGRESS 1
 #define VOTE_FORCED      2
@@ -229,8 +230,13 @@ stock debugMesssageLogger( mode, message[], any: ... )
   && g_is_player_voted[ player_id ] \
   && !g_is_player_cancelled_vote[ player_id ] )
 
+
 #if AMXX_VERSION_NUM < 183
 new g_user_msgid
+#endif
+
+#if !defined MAX_PLAYERS
+    #define MAX_PLAYERS 32
 #endif
 
 
@@ -281,7 +287,7 @@ new cvar_voteShowNoneOption
 new cvar_voteShowNoneOptionType
 new cvar_extendmapAllowOrder
 new cvar_coloredChatEnabled
-new cvar_isOnEmptyCycle;
+new cvar_isToStopEmptyCycle;
 new cvar_unnominateDisconnected;
 new cvar_endOnRound
 new cvar_endOnRound_rtv
@@ -338,7 +344,7 @@ new g_emptyCycleMapsNumber
 new g_cntRecentMap;
 new Array:g_nominationMap
 new g_nominationMapCnt;
-new Array: g_emptyCycleMap
+new Array: g_emptyCycleMapList
 new Array:g_fillerMap;
 new Float:g_rtvWait;
 new g_rtvWaitRounds
@@ -369,22 +375,22 @@ new g_arrayOfRunOffChoices [ 2 ];
 new g_voteStatus_symbol    [ 3 ]
 new g_voteWeightFlags      [ 32 ];
 
-new g_nextmap                    [ MAX_MAPNAME_LEN ];
-new g_currentMap                 [ MAX_MAPNAME_LEN ]
-new g_player_voted_option        [ MAX_PLAYER_CNT ];
-new g_player_voted_weight        [ MAX_PLAYER_CNT ];
-new g_snuffDisplay               [ MAX_PLAYER_CNT ];
-new bool:g_rockedVote            [ MAX_PLAYER_CNT ]
-new g_nominationMatchesMenu      [ MAX_PLAYER_CNT ];
+new g_nextmap                    [ MAX_MAPNAME_LENGHT ];
+new g_currentMap                 [ MAX_MAPNAME_LENGHT ]
+new g_player_voted_option        [ MAX_PLAYERS_COUNT ];
+new g_player_voted_weight        [ MAX_PLAYERS_COUNT ];
+new g_snuffDisplay               [ MAX_PLAYERS_COUNT ];
+new bool:g_rockedVote            [ MAX_PLAYERS_COUNT ]
+new g_nominationMatchesMenu      [ MAX_PLAYERS_COUNT ];
 new g_arrayOfMapsWithVotesNumber [ MAX_MAPS_IN_VOTE ];
 
-new bool:g_is_player_voted          [ MAX_PLAYER_CNT ] = { true, ... }
-new bool:g_is_player_cancelled_vote [ MAX_PLAYER_CNT ]
+new bool:g_is_player_voted          [ MAX_PLAYERS_COUNT ] = { true, ... }
+new bool:g_is_player_cancelled_vote [ MAX_PLAYERS_COUNT ]
 
-new g_mapPrefix      [ MAX_PREFIX_CNT ][ 16 ]
-new g_nomination     [ MAX_PLAYER_CNT ][ MAX_NOMINATION_CNT ]
-new g_recentMap      [ MAX_RECENT_MAP_CNT ][ MAX_MAPNAME_LEN ]
-new g_votingMapNames [ MAX_MAPS_IN_VOTE ][ MAX_MAPNAME_LEN ]
+new g_mapPrefix      [ MAX_PREFIX_COUNT ][ 16 ]
+new g_nomination     [ MAX_PLAYERS_COUNT ][ MAX_NOMINATION_COUNT ]
+new g_recentMap      [ MAX_RECENT_MAP_COUNT ][ MAX_MAPNAME_LENGHT ]
+new g_votingMapNames [ MAX_MAPS_IN_VOTE ][ MAX_MAPNAME_LENGHT ]
 
 new g_nominationCount
 new g_chooseMapMenuId;
@@ -407,54 +413,54 @@ public plugin_init()
     cvar_extendmapAllowOrder    = register_cvar( "amx_extendmap_allow_order", "0" );
     cvar_extendmapAllowStayType = register_cvar( "amx_extendmap_allow_stay_type", "0" );
     
-    cvar_nextMapChange          = register_cvar( "gal_nextmap_change", "1" );
-    cvar_showVoteCounter        = register_cvar( "gal_vote_show_counter", "0" );
-    cvar_voteShowNoneOption     = register_cvar( "gal_vote_show_none", "0" );
-    cvar_voteShowNoneOptionType = register_cvar( "gal_vote_show_none_type", "0" );
-    cvar_coloredChatEnabled     = register_cvar( "gal_colored_chat_enabled", "0", FCVAR_SPONLY );
-    cvar_isOnEmptyCycle             = register_cvar( "gal_in_empty_cycle", "0", FCVAR_SPONLY );
-    cvar_unnominateDisconnected = register_cvar( "gal_unnominate_disconnected", "0" );
-    cvar_endOnRound             = register_cvar( "gal_endonround", "1" );
-    cvar_endOnRound_rtv         = register_cvar( "gal_endonround_rtv", "0" );
-    cvar_endOnRound_msg         = register_cvar( "gal_endonround_msg", "0" );
-    cvar_voteWeight             = register_cvar( "gal_vote_weight", "1" );
-    cvar_voteWeightFlags        = register_cvar( "gal_vote_weightflags", "y" );
-    cvar_cmdVotemap             = register_cvar( "gal_cmd_votemap", "0" );
-    cvar_cmdListmaps            = register_cvar( "gal_cmd_listmaps", "2" );
-    cvar_listmapsPaginate       = register_cvar( "gal_listmaps_paginate", "10" );
-    cvar_recentMapsBannedNumber        = register_cvar( "gal_banrecent", "3" );
-    cvar_banRecentStyle         = register_cvar( "gal_banrecentstyle", "1" );
-    cvar_endOfMapVote           = register_cvar( "gal_endofmapvote", "1" );
-    cvar_emptyWait              = register_cvar( "gal_emptyserver_wait", "0" );
-    cvar_emptyMapFilePath           = register_cvar( "gal_emptyserver_mapfile", "" );
-    cvar_srvStart               = register_cvar( "gal_srv_start", "0" );
-    cvar_srvTimelimitRestart    = register_cvar( "gal_srv_timelimit_restart", "0" );
-    cvar_srvMaxroundsRestart    = register_cvar( "gal_srv_maxrounds_restart", "0" );
-    cvar_srvWinlimitRestart     = register_cvar( "gal_srv_winlimit_restart", "0" );
-    cvar_rtvCommands            = register_cvar( "gal_rtv_commands", "3" );
-    cvar_rtvWait                = register_cvar( "gal_rtv_wait", "10" );
-    cvar_rtvWaitRounds          = register_cvar( "gal_rtv_wait_rounds", "5" );
-    cvar_rtvWaitAdmin           = register_cvar( "gal_rtv_wait_admin", "0" );
-    cvar_rtvRatio               = register_cvar( "gal_rtv_ratio", "0.60" );
-    cvar_rtvReminder            = register_cvar( "gal_rtv_reminder", "2" );
-    cvar_nomPlayerAllowance     = register_cvar( "gal_nom_playerallowance", "2" );
-    cvar_nomMapFilePath             = register_cvar( "gal_nom_mapfile", "*" );
-    cvar_nomPrefixes            = register_cvar( "gal_nom_prefixes", "1" );
-    cvar_nomQtyUsed             = register_cvar( "gal_nom_qtyused", "0" );
-    cvar_voteDuration           = register_cvar( "gal_vote_duration", "15" );
-    cvar_voteExpCountdown       = register_cvar( "gal_vote_expirationcountdown", "1" );
-    cvar_endMapCountdown        = register_cvar( "gal_endonround_countdown", "0" );
-    cvar_voteMapChoiceCnt       = register_cvar( "gal_vote_mapchoices", "5" );
-    cvar_voteAnnounceChoice     = register_cvar( "gal_vote_announcechoice", "1" );
-    cvar_voteStatus             = register_cvar( "gal_vote_showstatus", "1" );
-    cvar_voteStatusType         = register_cvar( "gal_vote_showstatustype", "3" );
-    cvar_voteUniquePrefixes     = register_cvar( "gal_vote_uniqueprefixes", "0" );
-    cvar_runoffEnabled          = register_cvar( "gal_runoff_enabled", "0" );
-    cvar_runoffDuration         = register_cvar( "gal_runoff_duration", "10" );
-    cvar_soundsMute             = register_cvar( "gal_sounds_mute", "0" );
-    cvar_voteMapFilePath            = register_cvar( "gal_vote_mapfile", "*" );
-    cvar_voteMinPlayers         = register_cvar( "gal_vote_minplayers", "0" );
-    cvar_voteMinPlayersMapFilePath  = register_cvar( "gal_vote_minplayers_mapfile", "mapcycle.txt" );
+    cvar_nextMapChange             = register_cvar( "gal_nextmap_change", "1" );
+    cvar_showVoteCounter           = register_cvar( "gal_vote_show_counter", "0" );
+    cvar_voteShowNoneOption        = register_cvar( "gal_vote_show_none", "0" );
+    cvar_voteShowNoneOptionType    = register_cvar( "gal_vote_show_none_type", "0" );
+    cvar_coloredChatEnabled        = register_cvar( "gal_colored_chat_enabled", "0", FCVAR_SPONLY );
+    cvar_isToStopEmptyCycle        = register_cvar( "gal_in_empty_cycle", "0", FCVAR_SPONLY );
+    cvar_unnominateDisconnected    = register_cvar( "gal_unnominate_disconnected", "0" );
+    cvar_endOnRound                = register_cvar( "gal_endonround", "1" );
+    cvar_endOnRound_rtv            = register_cvar( "gal_endonround_rtv", "0" );
+    cvar_endOnRound_msg            = register_cvar( "gal_endonround_msg", "0" );
+    cvar_voteWeight                = register_cvar( "gal_vote_weight", "1" );
+    cvar_voteWeightFlags           = register_cvar( "gal_vote_weightflags", "y" );
+    cvar_cmdVotemap                = register_cvar( "gal_cmd_votemap", "0" );
+    cvar_cmdListmaps               = register_cvar( "gal_cmd_listmaps", "2" );
+    cvar_listmapsPaginate          = register_cvar( "gal_listmaps_paginate", "10" );
+    cvar_recentMapsBannedNumber    = register_cvar( "gal_banrecent", "3" );
+    cvar_banRecentStyle            = register_cvar( "gal_banrecentstyle", "1" );
+    cvar_endOfMapVote              = register_cvar( "gal_endofmapvote", "1" );
+    cvar_emptyWait                 = register_cvar( "gal_emptyserver_wait", "0" );
+    cvar_emptyMapFilePath          = register_cvar( "gal_emptyserver_mapfile", "" );
+    cvar_srvStart                  = register_cvar( "gal_srv_start", "0" );
+    cvar_srvTimelimitRestart       = register_cvar( "gal_srv_timelimit_restart", "0" );
+    cvar_srvMaxroundsRestart       = register_cvar( "gal_srv_maxrounds_restart", "0" );
+    cvar_srvWinlimitRestart        = register_cvar( "gal_srv_winlimit_restart", "0" );
+    cvar_rtvCommands               = register_cvar( "gal_rtv_commands", "3" );
+    cvar_rtvWait                   = register_cvar( "gal_rtv_wait", "10" );
+    cvar_rtvWaitRounds             = register_cvar( "gal_rtv_wait_rounds", "5" );
+    cvar_rtvWaitAdmin              = register_cvar( "gal_rtv_wait_admin", "0" );
+    cvar_rtvRatio                  = register_cvar( "gal_rtv_ratio", "0.60" );
+    cvar_rtvReminder               = register_cvar( "gal_rtv_reminder", "2" );
+    cvar_nomPlayerAllowance        = register_cvar( "gal_nom_playerallowance", "2" );
+    cvar_nomMapFilePath            = register_cvar( "gal_nom_mapfile", "*" );
+    cvar_nomPrefixes               = register_cvar( "gal_nom_prefixes", "1" );
+    cvar_nomQtyUsed                = register_cvar( "gal_nom_qtyused", "0" );
+    cvar_voteDuration              = register_cvar( "gal_vote_duration", "15" );
+    cvar_voteExpCountdown          = register_cvar( "gal_vote_expirationcountdown", "1" );
+    cvar_endMapCountdown           = register_cvar( "gal_endonround_countdown", "0" );
+    cvar_voteMapChoiceCnt          = register_cvar( "gal_vote_mapchoices", "5" );
+    cvar_voteAnnounceChoice        = register_cvar( "gal_vote_announcechoice", "1" );
+    cvar_voteStatus                = register_cvar( "gal_vote_showstatus", "1" );
+    cvar_voteStatusType            = register_cvar( "gal_vote_showstatustype", "3" );
+    cvar_voteUniquePrefixes        = register_cvar( "gal_vote_uniqueprefixes", "0" );
+    cvar_runoffEnabled             = register_cvar( "gal_runoff_enabled", "0" );
+    cvar_runoffDuration            = register_cvar( "gal_runoff_duration", "10" );
+    cvar_soundsMute                = register_cvar( "gal_sounds_mute", "0" );
+    cvar_voteMapFilePath           = register_cvar( "gal_vote_mapfile", "*" );
+    cvar_voteMinPlayers            = register_cvar( "gal_vote_minplayers", "0" );
+    cvar_voteMinPlayersMapFilePath = register_cvar( "gal_vote_minplayers_mapfile", "mapcycle.txt" );
     
     register_logevent( "game_commencing_event", 2, "0=World triggered", "1=Game_Commencing" )
     register_logevent( "team_win_event",        6, "0=Team" )
@@ -535,8 +541,8 @@ public plugin_cfg()
     DEBUG_LOGGER( 4, "Current MAP [%s]", g_currentMap )
     DEBUG_LOGGER( 4, "" )
     
-    g_fillerMap     = ArrayCreate( 32 );
-    g_nominationMap = ArrayCreate( 32 );
+    g_fillerMap     = ArrayCreate( MAX_MAPNAME_LENGHT );
+    g_nominationMap = ArrayCreate( MAX_MAPNAME_LENGHT );
     g_choiceMax     = max( min( sizeof g_votingMapNames, get_pcvar_num( cvar_voteMapChoiceCnt ) ), 2 )
     
     // initialize nominations table
@@ -580,9 +586,9 @@ public plugin_cfg()
     
     if( get_pcvar_num( cvar_emptyWait ) )
     {
-        g_emptyCycleMap = ArrayCreate( 32 );
+        g_emptyCycleMapList = ArrayCreate( MAX_MAPNAME_LENGHT );
         map_loadEmptyCycleList();
-        set_task( 60.0, "emptyServerPeriodicCheck" );
+        set_task( 60.0, "inicializeEmptyCycleFeature" );
     }
     
     // setup the main task that schedules the end map voting and allow round finish feature.
@@ -806,9 +812,9 @@ public show_last_round_HUD()
 
 #if AMXX_VERSION_NUM < 183
     static player_id
-    static players_number
     static current_index
-    static players_ids[ 32 ]
+    static playersCount
+    static players[ MAX_PLAYERS ]
 #endif
     last_round_message[ 0 ] = '^0'
     
@@ -818,11 +824,11 @@ public show_last_round_HUD()
         // This is because the Amx Mod X 1.8.2 is not recognizing the player LANG_PLAYER when it is
         // formatted before with formatex(...)
     #if AMXX_VERSION_NUM < 183
-        get_players( players_ids, players_number, "ch" );
+        get_players( players, playersCount, "ch" );
         
-        for( current_index = 0; current_index < players_number; current_index++ )
+        for( current_index = 0; current_index < playersCount; current_index++ )
         {
-            player_id = players_ids[ current_index ]
+            player_id = players[ current_index ]
             
             formatex( last_round_message, charsmax( last_round_message ), "%L ^n%L",
                     player_id, "GAL_CHANGE_NEXTROUND",  player_id, "GAL_NEXTMAP", g_nextmap )
@@ -841,11 +847,11 @@ public show_last_round_HUD()
     else
     {
     #if AMXX_VERSION_NUM < 183
-        get_players( players_ids, players_number, "ch" );
+        get_players( players, playersCount, "ch" );
         
-        for( current_index = 0; current_index < players_number; current_index++ )
+        for( current_index = 0; current_index < playersCount; current_index++ )
         {
-            player_id = players_ids[ current_index ]
+            player_id = players[ current_index ]
             
             formatex( last_round_message, charsmax( last_round_message ), "%L", player_id,
                     "GAL_CHANGE_TIMEEXPIRED" )
@@ -900,7 +906,7 @@ public srv_handleStart()
     
     if( startAction )
     {
-        new nextMap[ 32 ];
+        new nextMap[ MAX_MAPNAME_LENGHT ];
         
         if( startAction == SRV_START_CURRENTMAP
             || startAction == SRV_START_NEXTMAP )
@@ -1073,7 +1079,7 @@ public map_loadRecentList()
     
     if( recentMapsFile )
     {
-        new recentMapName[ 32 ];
+        new recentMapName[ MAX_MAPNAME_LENGHT ];
         new maxRecentMapsBans = min( get_pcvar_num( cvar_recentMapsBannedNumber ), sizeof g_recentMap )
         
         while( !feof( recentMapsFile ) )
@@ -1281,7 +1287,7 @@ stock map_populateList( Array:mapArray, mapFilePath[] )
         
         if( mapFile )
         {
-            new loadedMapName[ 32 ];
+            new loadedMapName[ MAX_MAPNAME_LENGHT ];
             
             while( !feof( mapFile ) )
             {
@@ -1309,9 +1315,10 @@ stock map_populateList( Array:mapArray, mapFilePath[] )
     {
         if( equal( mapFilePath, "*" ) )
         {
+            new mapName[ MAX_MAPNAME_LENGHT ]
+            
             // no mapFile provided, assuming contents of "maps" folder
-            new dir, mapName[ 32 ];
-            dir = open_dir( "maps", mapName, charsmax( mapName ) );
+            new dir = open_dir( "maps", mapName, charsmax( mapName ) );
             
             if( dir )
             {
@@ -1349,7 +1356,7 @@ stock map_populateList( Array:mapArray, mapFilePath[] )
             
             if( mapFile )
             {
-                new loadedMapName[ 32 ];
+                new loadedMapName[ MAX_MAPNAME_LENGHT ];
                 
                 while( !feof( mapFile ) )
                 {
@@ -1390,7 +1397,7 @@ public cmd_createMapFile( player_id, level, cid )
 {
     if( !cmd_access( player_id, level, cid, 1 ) )
     {
-        return PLUGIN_HANDLED;
+        return PLUGIN_HANDLED
     }
     
     new argumentsNumber = read_argc() - 1
@@ -1403,8 +1410,8 @@ public cmd_createMapFile( player_id, level, cid )
             read_argv( 1, mapFileName, charsmax( mapFileName ) );
             remove_quotes( mapFileName );
             
-            // map name is 31 ( i.e. MAX_MAPNAME_LEN ), ".bsp" is 4, string terminator is 1.
-            new mapName[ MAX_MAPNAME_LEN + 5 ];
+            // map name is 31 ( i.e. MAX_MAPNAME_LENGHT ), ".bsp" is 4, string terminator is 1.
+            new mapName[ MAX_MAPNAME_LENGHT + 5 ];
             
             new dir
             new mapFile
@@ -1470,7 +1477,7 @@ stock map_loadEmptyCycleList()
     new emptyCycleFilePath[ 256 ];
     get_pcvar_string( cvar_emptyMapFilePath, emptyCycleFilePath, charsmax( emptyCycleFilePath ) );
     
-    g_emptyCycleMapsNumber = map_populateList( g_emptyCycleMap, emptyCycleFilePath );
+    g_emptyCycleMapsNumber = map_populateList( g_emptyCycleMapList, emptyCycleFilePath );
     
     DEBUG_LOGGER( 4, "( map_loadEmptyCycleList() ) g_emptyCycleMapsNumber = %d", g_emptyCycleMapsNumber )
 }
@@ -1493,7 +1500,7 @@ public map_loadPrefixList()
             if( loadedMapPrefix[ 0 ]
                 && !equal( loadedMapPrefix, "//", 2 ) )
             {
-                if( g_mapPrefixCnt <= MAX_PREFIX_CNT )
+                if( g_mapPrefixCnt <= MAX_PREFIX_COUNT )
                 {
                     trim( loadedMapPrefix );
                     copy( g_mapPrefix[ g_mapPrefixCnt++ ], charsmax( loadedMapPrefix ), loadedMapPrefix );
@@ -1501,7 +1508,7 @@ public map_loadPrefixList()
                 else
                 {
                     log_error( AMX_ERR_BOUNDS, "%L", LANG_SERVER, "GAL_PREFIXES_TOOMANY",
-                            MAX_PREFIX_CNT, prefixesFilePath );
+                            MAX_PREFIX_COUNT, prefixesFilePath );
                     break;
                 }
             }
@@ -1620,9 +1627,9 @@ public reset_rounds_scores()
 
 stock map_getIdx( text[] )
 {
-    new map[ MAX_MAPNAME_LEN ];
+    new map[ MAX_MAPNAME_LENGHT ];
     new mapIndex;
-    new nominationMap[ 32 ];
+    new nominationMap[ MAX_MAPNAME_LENGHT ];
     
     for( new prefixIdx = 0; prefixIdx < g_mapPrefixCnt; ++prefixIdx )
     {
@@ -1778,7 +1785,7 @@ stock nomination_menu( player_id )
     
     new info[ 1 ]
     new choice[ 64 ]
-    new nominationMap[ 32 ]
+    new nominationMap[ MAX_MAPNAME_LENGHT ]
     new disabledReason[ 16 ]
     
     for( mapIndex = 0; mapIndex < g_nominationMapCnt; mapIndex++ )
@@ -1835,11 +1842,11 @@ stock nomination_attempt( player_id, nomination[] ) // ( playerName[], &phraseId
     
     new info[ 1 ]
     new choice[ 64 ]
-    new nominationMap[ 32 ]
+    new nominationMap[ MAX_MAPNAME_LENGHT ]
     new disabledReason[ 16 ]
     
     for( mapIndex = 0; mapIndex < g_nominationMapCnt
-         && matchCnt <= MAX_NOM_MATCH_CNT; ++mapIndex )
+         && matchCnt <= MAX_NOM_MATCH_COUNT; ++mapIndex )
     {
         ArrayGetString( g_nominationMap, mapIndex, nominationMap, charsmax( nominationMap ) );
         
@@ -1897,10 +1904,10 @@ stock nomination_attempt( player_id, nomination[] ) // ( playerName[], &phraseId
             // this is kinda sexy; we put up a menu of the matches for them to pick the right one
             color_print( player_id, "^1%L", player_id, "GAL_NOM_MATCHES", nomination );
             
-            if( matchCnt >= MAX_NOM_MATCH_CNT )
+            if( matchCnt >= MAX_NOM_MATCH_COUNT )
             {
                 color_print( player_id, "^1%L", player_id, "GAL_NOM_MATCHES_MAX",
-                        MAX_NOM_MATCH_CNT, MAX_NOM_MATCH_CNT );
+                        MAX_NOM_MATCH_COUNT, MAX_NOM_MATCH_COUNT );
             }
             menu_display( player_id, g_nominationMatchesMenu[ player_id ] );
         }
@@ -1981,6 +1988,7 @@ stock nomination_cancel( player_id, mapIndex )
     
     new nominationIndex
     new bool:nominationFound
+    new mapName[ MAX_MAPNAME_LENGHT ];
     
     new maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), sizeof g_nomination[] );
     
@@ -1994,7 +2002,6 @@ stock nomination_cancel( player_id, mapIndex )
         }
     }
     
-    new mapName[ 32 ];
     ArrayGetString( g_nominationMap, mapIndex, mapName, charsmax( mapName ) );
     
     if( nominationFound )
@@ -2010,7 +2017,7 @@ stock nomination_cancel( player_id, mapIndex )
         
         if( idNominator )
         {
-            new player_name[ 32 ];
+            new player_name[ MAX_PLAYER_NAME_LENGHT ];
             get_user_name( idNominator, player_name, 31 );
             
             color_print( player_id, "^1%L", player_id, "GAL_CANCEL_FAIL_SOMEONEELSE",
@@ -2044,7 +2051,7 @@ stock map_nominate( player_id, mapIndex, idNominator = -1 )
     DEBUG_LOGGER( 4, "( map_nominate ) mapIndex: %d, ArraySize( g_nominationMap ): %d", \
             mapIndex, ArraySize( g_nominationMap ) )
     
-    new mapName[ 32 ]
+    new mapName[ MAX_MAPNAME_LENGHT ]
     
     ArrayGetString( g_nominationMap, mapIndex, mapName, charsmax( mapName ) )
     
@@ -2093,7 +2100,7 @@ stock map_nominate( player_id, mapIndex, idNominator = -1 )
         
         if( nominationCount == maxPlayerNominations - 1 )
         {
-            new nominatedMapName[ 32 ]
+            new nominatedMapName[ MAX_MAPNAME_LENGHT ]
             new nominatedMaps[ 256 ]
             
             for( nominationIndex = 1; nominationIndex < maxPlayerNominations; ++nominationIndex )
@@ -2126,7 +2133,7 @@ stock map_nominate( player_id, mapIndex, idNominator = -1 )
     }
     else
     {
-        new player_name[ 32 ];
+        new player_name[ MAX_PLAYER_NAME_LENGHT ];
         get_user_name( idNominator, player_name, 31 );
         
         color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_SOMEONEELSE",
@@ -2144,7 +2151,7 @@ public nomination_list( player_id )
     new maxPlayerNominations
     
     new msg[ 101 ]
-    new mapName[ 32 ]
+    new mapName[ MAX_MAPNAME_LENGHT ]
     
     maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), sizeof g_nomination[] );
     
@@ -2288,13 +2295,13 @@ public vote_startDirector( bool:is_forced_voting )
         
         // mark the players who are in this vote for use later
         new playerCount
-        new player[ 32 ]
+        new players[ MAX_PLAYERS ]
         
-        get_players( player, playerCount, "ch" ) // skip bots and hltv
+        get_players( players, playerCount, "ch" ) // skip bots and hltv
         
         for( new player_index = 0; player_index < playerCount; ++player_index )
         {
-            g_is_player_voted[ player[ player_index ] ] = false;
+            g_is_player_voted[ players[ player_index ] ] = false;
         }
         
         new Float:handleChoicesDelay
@@ -2379,7 +2386,7 @@ stock vote_addNominations()
     {
         new player_id
         new mapIndex
-        new mapName[ 32 ];
+        new mapName[ MAX_MAPNAME_LENGHT ];
         
         // set how many total nominations we can use in this vote
         new maxNominations    = get_pcvar_num( cvar_nomQtyUsed );
@@ -2388,9 +2395,10 @@ stock vote_addNominations()
         
         // set how many total nominations each player is allowed
         new maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), sizeof g_nomination[] );
-        
+
 #if defined DEBUG
-        new nominator_id, playerName[ 32 ];
+        new nominator_id
+        new playerName[ MAX_PLAYER_NAME_LENGHT ]
         
         for( new nominationIndex = maxPlayerNominations - 1; nominationIndex > 0; --nominationIndex )
         {
@@ -2555,7 +2563,7 @@ stock vote_addFiller()
     new allowedCount
     new unsuccessfulCount
     new choice_index
-    new mapName[ 32 ]
+    new mapName[ MAX_MAPNAME_LENGHT ]
     
     // fill remaining slots with random maps from each filler file, as much as possible
     for( new groupIndex = 0; groupIndex < groupCount; ++groupIndex )
@@ -2636,7 +2644,7 @@ stock vote_loadRunoffChoices()
             g_votingMapNames[ g_arrayOfRunOffChoices[ 0 ] ], \
             g_votingMapNames[ g_arrayOfRunOffChoices[ 1 ] ] )
     
-    new runOffNameChoices[ 2 ][ MAX_MAPNAME_LEN ];
+    new runOffNameChoices[ 2 ][ MAX_MAPNAME_LENGHT ];
     
     copy( runOffNameChoices[ 0 ], charsmax( runOffNameChoices[] ),
             g_votingMapNames[ g_arrayOfRunOffChoices[ 0 ] ] );
@@ -2942,7 +2950,7 @@ public vote_display( argument[ 3 ] )
     else // just display to everyone
     {
         new playerCount
-        new players[ 32 ]
+        new players[ MAX_PLAYERS ]
         
         get_players( players, playerCount, "ch" ); // skip bots and hltv
         
@@ -3080,7 +3088,7 @@ stock display_vote_menu( bool:menuType, bool:isVoteOver, player_id, menuBody[], 
 #if defined DEBUG
     if( playerIndex == 0 )
     {
-        new player_name[ 32 ];
+        new player_name[ MAX_PLAYER_NAME_LENGHT ];
         get_user_name( player_id, player_name, 31 );
         
         DEBUG_LOGGER( 4, "    [%s ( %s )]", player_name, ( menuType ? "clean" : "dirty" ) )
@@ -3158,7 +3166,7 @@ stock cancel_player_vote( player_id )
 stock register_vote( player_id, key )
 {
     new bool:isToAnnounceChoice = bool:get_pcvar_num( cvar_voteAnnounceChoice )
-    new player_name[ 32 ];
+    new player_name[ MAX_PLAYER_NAME_LENGHT ];
     
     g_player_voted_option[ player_id ] = key
     g_player_voted_weight[ player_id ] = 1
@@ -3645,7 +3653,7 @@ public vote_expire()
     else // the execution flow gets here when anybody voted for next map
     {
         // the initial nextmap
-        new initialNextMap[ MAX_MAPNAME_LEN ];
+        new initialNextMap[ MAX_MAPNAME_LENGHT ];
         
         if( get_pcvar_num( cvar_extendmapAllowOrder ) )
         {
@@ -3983,7 +3991,7 @@ public rtv_remind( param )
 public map_change()
 {
     // grab the name of the map we're changing to
-    new map[ MAX_MAPNAME_LEN ];
+    new map[ MAX_MAPNAME_LENGHT ];
     get_cvar_string( "amx_nextmap", map, charsmax( map ) );
     
     reset_round_ending()
@@ -4045,7 +4053,7 @@ public cmd_HL1_listmaps( player_id )
 
 public map_listAll( player_id )
 {
-    static lastMapDisplayed[ MAX_PLAYER_CNT ][ 2 ];
+    static lastMapDisplayed[ MAX_MAPNAME_LENGHT ][ 2 ];
     
     // determine if the player has requested a listing before
     new userid = get_user_userid( player_id );
@@ -4119,7 +4127,12 @@ public map_listAll( player_id )
     
     con_print( player_id, "^n----- %L -----", player_id, "GAL_LISTMAPS_TITLE", g_nominationMapCnt );
     
-    new nominated[ 64 ], nominator_id, player_name[ 32 ], mapName[ 32 ], idx;
+    new nominator_id
+    new player_name[ MAX_PLAYER_NAME_LENGHT ]
+    new nominated[ 64 ]
+    
+    new mapName[ MAX_MAPNAME_LENGHT ]
+    new idx;
     
     for( idx = start - 1; idx < end; idx++ )
     {
@@ -4132,7 +4145,7 @@ public map_listAll( player_id )
         }
         else
         {
-            nominated[ 0 ] = 0;
+            nominated[ 0 ] = '^0';
         }
         ArrayGetString( g_nominationMap, idx, mapName, charsmax( mapName ) );
         con_print( player_id, "%3i: %s  %s", idx + 1, mapName, nominated );
@@ -4170,15 +4183,15 @@ stock con_print( player_id, message[], { Float, Sql, Result, _ }: ... )
     server_print( consoleMessage );
 }
 
-stock stopEmptyServerChange()
+stock restartEmptyCycle()
 {
-    set_pcvar_num( cvar_isOnEmptyCycle, 0 );
+    set_pcvar_num( cvar_isToStopEmptyCycle, 0 );
     remove_task( TASKID_EMPTYSERVER )
 }
 
 public client_authorized( player_id )
 {
-    stopEmptyServerChange()
+    restartEmptyCycle()
     
     if( has_flag( player_id, "f" ) )
     {
@@ -4202,7 +4215,7 @@ public client_disconnected( player_id )
     vote_unrockTheVote( player_id )
     unnominatedDisconnectedPlayer( player_id )
     
-    handleRecentlyEmptyServer();
+    isToHandleRecentlyEmptyServer();
 }
 
 stock unnominatedDisconnectedPlayer( player_id )
@@ -4213,7 +4226,7 @@ stock unnominatedDisconnectedPlayer( player_id )
         new nominationCount
         new maxPlayerNominations
         
-        new mapName[ 32 ]
+        new mapName[ MAX_MAPNAME_LENGHT ]
         new nominatedMaps[ 256 ]
         
         // cancel player's nominations
@@ -4244,19 +4257,16 @@ stock unnominatedDisconnectedPlayer( player_id )
 }
 
 /**
- *  Called when the last server player disconnect. This changes the map even if we are at a
- *  map that is on the empty list. This function is different than emptyServerPeriodicCheck, which
- *  just change the map if it is not on a map at empty list.
+ * If the empty cycle feature was initialized by 'inicializeEmptyCycleFeature()' function, this
+ * function to start the empty cycle map change system, when the last server player disconnect.
  */
-stock handleRecentlyEmptyServer()
+stock isToHandleRecentlyEmptyServer()
 {
     new playerCount = get_realplayersnum();
     
     DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", \
-            "handleRecentlyEmptyServer (in)", get_pcvar_float( g_timelimit_pointer ), g_originalTimelimit )
+            "isToHandleRecentlyEmptyServer (in)", get_pcvar_float( g_timelimit_pointer ), g_originalTimelimit )
     DEBUG_LOGGER( 2, "%32s playerCount:%i", "client_disconnect()", playerCount )
-    
-    emptyServerPeriodicCheck()
     
     if( playerCount == 0 )
     {
@@ -4269,7 +4279,7 @@ stock handleRecentlyEmptyServer()
             map_restoreOriginalTimeLimit();
         }
         
-        // might be utilizing "empty server" feature
+        // if it is utilizing "empty server" feature, to start it.
         if( g_isUsingEmptyCycle
             && g_emptyCycleMapsNumber )
         {
@@ -4279,22 +4289,23 @@ stock handleRecentlyEmptyServer()
     
     DEBUG_LOGGER( 2, "g_isUsingEmptyCycle = %d, g_emptyCycleMapsNumber = %d", \
             g_isUsingEmptyCycle, g_emptyCycleMapsNumber )
-    
-    DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "handleRecentlyEmptyServer (out)", \
+    DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "isToHandleRecentlyEmptyServer (out)", \
             get_pcvar_float( g_timelimit_pointer ), g_originalTimelimit )
 }
 
 /**
- * Start a empty map count down just when the last player disconnect.
- * If the map just entered at the map at the empty list, stays at it.
+ * Inicializes the empty cycle server feature at map starting.
  */
-public emptyServerPeriodicCheck()
+public inicializeEmptyCycleFeature()
 {
-    if( ( get_realplayersnum() ) == 0
-        && !get_pcvar_num( cvar_isOnEmptyCycle ) )
+    if( get_realplayersnum() == 0 )
     {
-        startEmptyCountdown();
+        if( !get_pcvar_num( cvar_isToStopEmptyCycle ) )
+        {
+            startEmptyCountdown();
+        }
     }
+    
     g_isUsingEmptyCycle = true;
 }
 
@@ -4304,20 +4315,20 @@ stock startEmptyCountdown()
     
     if( waitMinutes )
     {
-        set_task( float( waitMinutes * 60 ), "startEmptyServerCycle", TASKID_EMPTYSERVER );
+        set_task( float( waitMinutes * 60 ), "startEmptyCycleSystem", TASKID_EMPTYSERVER );
     }
 }
 
-public startEmptyServerCycle()
+public startEmptyCycleSystem()
 {
     // stop this system at the next map, due we already be at a popular map
-    set_pcvar_num( cvar_isOnEmptyCycle, 1 );
+    set_pcvar_num( cvar_isToStopEmptyCycle, 1 );
     
     // set the next map from the empty cycle list,
     // or the first one, if the current map isn't part of the cycle
-    new nextMap[ 32 ]
+    new nextMap[ MAX_MAPNAME_LENGHT ]
     
-    new mapIndex = map_getNext( g_emptyCycleMap, g_currentMap, nextMap );
+    new mapIndex = map_getNext( g_emptyCycleMapList, g_currentMap, nextMap );
     
     map_setNext( nextMap );
     
@@ -4339,9 +4350,9 @@ public startEmptyServerCycle()
  *
  * @return mapIndex     the nextMap index in the mapArray. -1 if not found a nextMap.
  */
-stock map_getNext( Array:mapArray, currentMap[], nextMap[ 32 ] )
+stock map_getNext( Array:mapArray, currentMap[], nextMap[ MAX_MAPNAME_LENGHT ] )
 {
-    new thisMap[ 32 ]
+    new thisMap[ MAX_MAPNAME_LENGHT ]
     
     new nextmapIndex = 0
     new returnValue  = -1
@@ -4407,7 +4418,7 @@ stock nomination_clearAll()
 
 stock map_announceNomination( player_id, map[] )
 {
-    new player_name[ 32 ];
+    new player_name[ MAX_PLAYER_NAME_LENGHT ];
     get_user_name( player_id, player_name, charsmax( player_name ) );
     
     color_print( 0, "^1%L", LANG_PLAYER, "GAL_NOM_SUCCESS", player_name, map );
@@ -4428,7 +4439,7 @@ public sort_stringsi( const elem1[], const elem2[], const array[], data[], data_
 stock get_realplayersnum()
 {
     new playerCount
-    new players[ 32 ]
+    new players[ MAX_PLAYERS ]
     
     get_players( players, playerCount, "ch" );
     
@@ -4518,16 +4529,16 @@ stock color_print( player_id, message[], any: ... )
         }
         else
         {
-            new players_number;
-            new players_array[ 32 ]
+            new playersCount;
+            new players[ MAX_PLAYERS ]
             
-            get_players( players_array, players_number, "ch" );
+            get_players( players, playersCount, "ch" );
             
             // Figure out if at least 1 player is connected
             // so we don't execute useless code
-            if( !players_number )
+            if( !playersCount )
             {
-                DEBUG_LOGGER( 64, "!players_number. players_number = %d", players_number )
+                DEBUG_LOGGER( 64, "!playersCount. playersCount = %d", playersCount )
                 return;
             }
             
@@ -4542,7 +4553,7 @@ stock color_print( player_id, message[], any: ... )
             params_number                  = numargs();
             multi_lingual_constants_number = 0
             
-            DEBUG_LOGGER( 64, "players_number: %d, params_number: %d", players_number, params_number )
+            DEBUG_LOGGER( 64, "playersCount: %d, params_number: %d", playersCount, params_number )
             
             if( params_number >= 4 ) // ML can be used
             {
@@ -4588,9 +4599,9 @@ stock color_print( player_id, message[], any: ... )
             
             DEBUG_LOGGER( 64, "(multi_lingual_constants_number: %d", multi_lingual_constants_number )
             
-            for( --players_number; players_number >= 0; players_number-- )
+            for( --playersCount; playersCount >= 0; playersCount-- )
             {
-                player_id = players_array[ players_number ];
+                player_id = players[ playersCount ];
                 
                 if( multi_lingual_constants_number )
                 {
@@ -4765,7 +4776,9 @@ public nextmap_plugin_init()
     
     get_mapname( plugin_nextmap_g_currentMap, charsmax( plugin_nextmap_g_currentMap ) )
     
-    new szString[ 40 ], szString2[ 32 ], szString3[ 8 ]
+    new szString[ 40 ]
+    new szString2[ 32 ]
+    new szString3[ 8 ]
     
     get_localinfo( "lastmapcycle", szString, charsmax( szString ) )
     parse( szString, szString2, charsmax( szString2 ), szString3, charsmax( szString3 ) )
@@ -4820,7 +4833,7 @@ public sayNextMap()
     }
     else
     {
-        new player_name[ 32 ]
+        new player_name[ MAX_PLAYER_NAME_LENGHT ]
         
         getNextMapName( player_name, charsmax( player_name ) )
         client_print( 0, print_chat, "%L %s", LANG_PLAYER, "NEXT_MAP", player_name )
@@ -4899,8 +4912,12 @@ stock bool:ValidMap( mapname[] )
 
 readMapCycle( mapcycleFilePath[], szNext[], iNext )
 {
-    new b, i = 0, iMaps = 0
-    new szBuffer[ 32 ], szFirst[ 32 ]
+    new b
+    new szBuffer[ 32 ]
+    new szFirst[ 32 ]
+    
+    new i     = 0
+    new iMaps = 0
     
     if( file_exists( mapcycleFilePath ) )
     {
@@ -5139,28 +5156,28 @@ stock test_register_test()
 }
 
 /**
- * Test for client connect cvar_isOnEmptyCycle behavior.
+ * Test for client connect cvar_isToStopEmptyCycle behavior.
  */
 stock test_gal_in_empty_cycle1()
 {
     new test_id = register_test( 0, "test_gal_in_empty_cycle1" )
     
-    set_pcvar_num( cvar_isOnEmptyCycle, 1 )
+    set_pcvar_num( cvar_isToStopEmptyCycle, 1 )
     client_authorized( 1 )
     
-    if( get_pcvar_num( cvar_isOnEmptyCycle ) )
+    if( get_pcvar_num( cvar_isToStopEmptyCycle ) )
     {
-        SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle1() cvar_isOnEmptyCycle must be 0 (it was %d)", \
-                get_pcvar_num( cvar_isOnEmptyCycle ) )
+        SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle1() cvar_isToStopEmptyCycle must be 0 (it was %d)", \
+                get_pcvar_num( cvar_isToStopEmptyCycle ) )
     }
     
-    set_pcvar_num( cvar_isOnEmptyCycle, 0 )
+    set_pcvar_num( cvar_isToStopEmptyCycle, 0 )
     client_authorized( 1 )
     
-    if( get_pcvar_num( cvar_isOnEmptyCycle ) )
+    if( get_pcvar_num( cvar_isToStopEmptyCycle ) )
     {
-        SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle1() cvar_isOnEmptyCycle must be 0 (it was %d)", \
-                get_pcvar_num( cvar_isOnEmptyCycle ) )
+        SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle1() cvar_isToStopEmptyCycle must be 0 (it was %d)", \
+                get_pcvar_num( cvar_isToStopEmptyCycle ) )
     }
 }
 
@@ -5171,14 +5188,14 @@ stock test_gal_in_empty_cycle1()
 stock test_gal_in_empty_cycle2()
 {
     new test_id              = register_test( 0, "test_gal_in_empty_cycle2" )
-    new Array: emptyCycleMap = ArrayCreate( 32 );
+    new Array: emptyCycleMap = ArrayCreate( MAX_MAPNAME_LENGHT );
     
     ArrayPushString( emptyCycleMap, "de_dust2" )
     ArrayPushString( emptyCycleMap, "de_inferno" )
     
     // set the next map from the empty cycle list,
     // or the first one, if the current map isn't part of the cycle
-    new nextMap[ 32 ]
+    new nextMap[ MAX_MAPNAME_LENGHT ]
     
     new mapIndex = map_getNext( emptyCycleMap, "de_dust2", nextMap );
     
@@ -5204,7 +5221,7 @@ stock test_gal_in_empty_cycle2()
 stock test_gal_in_empty_cycle3()
 {
     new test_id              = register_test( 0, "test_gal_in_empty_cycle3" )
-    new Array: emptyCycleMap = ArrayCreate( 32 );
+    new Array: emptyCycleMap = ArrayCreate( MAX_MAPNAME_LENGHT );
     
     ArrayPushString( emptyCycleMap, "de_dust2" )
     ArrayPushString( emptyCycleMap, "de_inferno" )
@@ -5212,7 +5229,7 @@ stock test_gal_in_empty_cycle3()
     
     // set the next map from the empty cycle list,
     // or the first one, if the current map isn't part of the cycle
-    new nextMap[ 32 ]
+    new nextMap[ MAX_MAPNAME_LENGHT ]
     
     new mapIndex = map_getNext( emptyCycleMap, "de_inferno", nextMap );
     
@@ -5238,7 +5255,7 @@ stock test_gal_in_empty_cycle3()
 stock test_gal_in_empty_cycle4()
 {
     new test_id              = register_test( 0, "test_gal_in_empty_cycle4" )
-    new Array: emptyCycleMap = ArrayCreate( 32 );
+    new Array: emptyCycleMap = ArrayCreate( MAX_MAPNAME_LENGHT );
     
     ArrayPushString( emptyCycleMap, "de_dust2" )
     ArrayPushString( emptyCycleMap, "de_inferno" )
@@ -5246,7 +5263,7 @@ stock test_gal_in_empty_cycle4()
     
     // set the next map from the empty cycle list,
     // or the first one, if the current map isn't part of the cycle
-    new nextMap[ 32 ]
+    new nextMap[ MAX_MAPNAME_LENGHT ]
     
     new mapIndex = map_getNext( emptyCycleMap, "de_dust", nextMap );
     
