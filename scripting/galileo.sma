@@ -304,6 +304,7 @@ new cvar_extendmapStepRounds;
 new cvar_extendmapAllowStay
 new cvar_endOfMapVote;
 new cvar_emptyWait
+new cvar_emptyServerChange
 new cvar_emptyMapFilePath
 new cvar_rtvWait
 new cvar_rtvWaitRounds
@@ -435,6 +436,7 @@ public plugin_init()
     cvar_banRecentStyle            = register_cvar( "gal_banrecentstyle", "1" );
     cvar_endOfMapVote              = register_cvar( "gal_endofmapvote", "1" );
     cvar_emptyWait                 = register_cvar( "gal_emptyserver_wait", "0" );
+    cvar_emptyServerChange         = register_cvar( "gal_emptyserver_change", "0" );
     cvar_emptyMapFilePath          = register_cvar( "gal_emptyserver_mapfile", "" );
     cvar_srvStart                  = register_cvar( "gal_srv_start", "0" );
     cvar_srvTimelimitRestart       = register_cvar( "gal_srv_timelimit_restart", "0" );
@@ -2206,6 +2208,11 @@ public vote_startDirector( bool:is_forced_voting )
             && g_voteStatus & VOTE_IN_PROGRESS )
         {
             cancel_voting()
+        }
+        
+        if( bool:get_pcvar_num( cvar_emptyServerChange ) )
+        {
+            startEmptyCycleSystem()
         }
         
         DEBUG_LOGGER( 1, "( vote_startDirector|Cancel ) g_voteStatus: %d, \
