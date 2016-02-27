@@ -82,19 +82,26 @@ galileo.cfg contents.
 [/PHP]
 [COLOR="Blue"][B]Features' list:[/B][/COLOR]
 [QUOTE]
- * Ability to "[B]rock the vote[/B]".
+[LIST=1]
+ [*] Ability to "[B]rock the vote[/B]".
 
- * Map [B]nominations[/B] to be used in the next map vote.
+ 
+ [*] Map [B]nominations[/B] to be used in the next map vote.
 
- * [B]Runoff[/B] voting when no map gets more than 50% of the total vote.
+ 
+ [*] [B]Runoff[/B] voting when no map gets more than 50% of the total vote.
 
- * Auto Map Change [B]On Empty Server[/B].
+ 
+ [*] Auto Map Change [B]On Empty Server[/B].
 
- * [B]Nominate[/B] Map List Menu.
+ 
+ [*] [B]Nominate[/B] Map List Menu.
 
- * Allow last round finish when the map the [B]time runs out[/B].
+ 
+ [*] Allow last round finish when the map the [B]time runs out[/B].
 
- * Command '[COLOR="Blue"][B]gal_startvote -nochange or -restart[/B][/COLOR]', to forces a map vote to begin 
+ 
+ [*] Command '[COLOR="Blue"][B]gal_startvote -nochange or -restart[/B][/COLOR]', to forces a map vote to begin 
        and the map will be changed once the next map has been determined. 
             [LIST]
             [*]If the "[COLOR="blue"][B]-nochange[/B][/COLOR]" argument is supplied, the map will not be changed by [COLOR="Blue"]Galileo 1.2[/COLOR], 
@@ -102,9 +109,27 @@ galileo.cfg contents.
             [*]If the "[COLOR="blue"][B]-restart[/B][/COLOR]" argument is supplied and the voting opting "Keep the Current Map" wins, 
             the current map is restarted. This command is specially for the "[URL="https://forums.alliedmods.net/showthread.php?t=273020"]Multi-Mod Manager[/URL]" plugin. 
             [/LIST]
- * Command '[COLOR="Blue"][B]gal_createmapfile filename[/B][/COLOR]', Creates a file that contains a list of every valid 
+            
+            
+ [*] Command '[COLOR="Blue"][B]gal_createmapfile filename[/B][/COLOR]', Creates a file that contains a list of every valid 
        map in your maps folder. The [B]filename[/B] argument indicates specifies the name to be used for 
-       the new file.  It will be created in the [COLOR="Blue"][B].\configs\galileo[/B][/COLOR] folder.
+       the new file.  It will be created in the [COLOR="Blue"][B]./configs/galileo/[/B][/COLOR] folder.
+ 
+ 
+ [*] [COLOR="Blue"][B]The Map Groups Feature[/B][/COLOR]:
+     It uses whatever file you have set in the cvar '[B]gal_vote_mapfile[/B]'. Normally, in that file you would just have a listing of maps, one per line. But to use the groups feature, your '[B]gal_vote_mapfile[/B]' cvar would point to a '.txt' file looking something like this instead:
+     [code]
+     [groups]
+     2
+     1
+     1
+     3
+     [/code]The text "[groups]" has to be the very first line in the file, on a line by itself.  The numbers, on separate lines, specifies how many maps from each file to add to the voting menu.
+     
+     If you had a file within what was posted above, then you would have to create the files: '[B]1.ini[/B]', '[B]2.ini[/B]', '[B]3.ini[/B]', and '[B]4.ini[/B]' in the folder '[B]./configs/galileo/[/B]' folder. Each of those INI files would contain a list of maps, one per line.
+     
+     Galileo will first load any nominated maps into the vote. Then Galileo would pick 2 maps from '[B]1.ini[/B]', 1 from '[B]2.ini[/B]', 1 from '[B]3.ini[/B]', and 3 from '[B]4.ini[/B]' until the maximum value of 8 to be reached.
+[/LIST]
 [/QUOTE]
 
 ********************** [anchor]Requirements[/anchor][SIZE="5"][COLOR="Blue"][B]Requirements and Commands[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor]  ******
