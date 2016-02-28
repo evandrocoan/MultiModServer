@@ -2447,7 +2447,7 @@ public displayEndOfTheMapVoteMenu( player_id )
             menuKeys = MENU_KEY_0 | MENU_KEY_6;
             
             formatex( menu_counter, charsmax( menu_counter ),
-                    "%s( %s%d %L%s )",
+                    " %s( %s%d %L%s )",
                     COLOR_YELLOW, COLOR_GREY, g_pendingVoteCountdown, LANG_PLAYER, "GAL_TIMELEFT", COLOR_YELLOW )
         }
         else
@@ -3417,21 +3417,21 @@ stock computeVoteMapLine( voteMapLine[], voteMapLineLength, voteIndex )
         {
             case STATUS_TYPE_COUNT:
             {
-                formatex( voteMapLine, voteMapLineLength, " %s( %i%s )", COLOR_GREY,
-                        voteCountNumber, g_voteStatus_symbol );
+                formatex( voteMapLine, voteMapLineLength, " %s(%s%i%s%s)", 
+                        COLOR_YELLOW, COLOR_GREY, voteCountNumber, g_voteStatus_symbol, COLOR_YELLOW );
             }
             case STATUS_TYPE_PERCENTAGE:
             {
                 new votePercentNunber = percent( voteCountNumber, g_totalVotesCounted );
                 
-                formatex( voteMapLine, voteMapLineLength, " %s( %i%s )", COLOR_GREY,
-                        votePercentNunber, g_voteStatus_symbol );
+                formatex( voteMapLine, voteMapLineLength, " %s(%s%i%s%s)", 
+                        COLOR_YELLOW, COLOR_GREY, votePercentNunber, g_voteStatus_symbol, COLOR_YELLOW );
             }
             case STATUS_TYPE_PERCENTAGE | STATUS_TYPE_COUNT:
             {
                 new votePercentNunber = percent( voteCountNumber, g_totalVotesCounted );
                 
-                formatex( voteMapLine, voteMapLineLength, " %s(%s %i%s %s[%s%d%s] %s)",
+                formatex( voteMapLine, voteMapLineLength, " %s(%s%i%s %s[%s%d%s]%s)",
                         COLOR_RED, COLOR_GREY, votePercentNunber, g_voteStatus_symbol,
                         COLOR_YELLOW, COLOR_GREY, voteCountNumber, COLOR_YELLOW, COLOR_RED );
             }
