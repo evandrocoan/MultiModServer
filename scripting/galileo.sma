@@ -144,6 +144,10 @@ stock debugMesssageLogger( mode, message[], any: ... )
 #define STATUS_TYPE_COUNT      1
 #define STATUS_TYPE_PERCENTAGE 2
 
+#define HIDE_AFTER_USER_VOTE           0
+#define ALWAYS_KEEP_SHOWING            1
+#define CONVERT_IT_TO_CANCEL_LAST_VOTE 2
+
 #define ANNOUNCE_CHOICE_PLAYERS 1
 #define ANNOUNCE_CHOICE_ADMINS  2
 
@@ -230,12 +234,6 @@ stock debugMesssageLogger( mode, message[], any: ... )
     ( set_test_failure_internal( %1 ) ); \
     return; \
 }
-
-#define IS_ALWAYS_TO_SHOW_VOTE() \
-( player_id > 0 \
-  && noneOptionType == 2 \
-  && g_is_player_voted[ player_id ] \
-  && !g_is_player_cancelled_vote[ player_id ] )
 
 
 #if AMXX_VERSION_NUM < 183
@@ -2496,6 +2494,7 @@ public handleEndOfTheMapVoteChoice( player_id, pressedKeyCode )
     {
         case 9: // pressedKeyCode 9 means the keyboard key 0
         {
+            announceRegistedVote( player_id, pressedKeyCode )
             g_is_player_voted[ player_id ] = true
         }
         case 0: // pressedKeyCode 0 means the keyboard key 1
@@ -2877,10 +2876,10 @@ public vote_display( argument[ 3 ] )
         }
     }
     
-    new noneOptionType        = get_pcvar_num( cvar_voteShowNoneOptionType )
-    new bool:isShowNoneOption = bool: get_pcvar_num( cvar_voteShowNoneOption )
-    new bool:isVoteOver       = ( updateTimeRemaining == -1
-                                  && player_id == -1 )
+    new noneOptionType          = get_pcvar_num( cvar_voteShowNoneOptionType )
+    new bool:isToShowNoneOption = bool: get_pcvar_num( cvar_voteShowNoneOption )
+    new bool:isVoteOver         = ( updateTimeRemaining == -1
+                                    && player_id == -1 )
     new charCount
     
     if( g_refreshVoteStatus
@@ -2890,7 +2889,7 @@ public vote_display( argument[ 3 ] )
         voteStatus[ 0 ] = '^0';
         
         // register the 'None' option key
-        if( isShowNoneOption
+        if( isToShowNoneOption
             && !( g_voteStatus & VOTE_HAS_EXPIRED ) )
         {
             menuKeys = MENU_KEY_0;
@@ -3018,7 +3017,7 @@ public vote_display( argument[ 3 ] )
     // make a copy of the virgin menu
     new cleanCharCnt = copy( g_vote, charsmax( g_vote ), voteStatus );
     
-    new bool:noneIsHidden = ( isShowNoneOption
+    new bool:noneIsHidden = ( isToShowNoneOption
                               && !noneOptionType
                               && !( g_voteStatus & VOTE_HAS_EXPIRED ) )
     
@@ -3075,7 +3074,7 @@ public vote_display( argument[ 3 ] )
     if( player_id > 0
         && showStatus & SHOW_STATUS_AFTER_VOTE )
     {
-        calculate_menu_dirt( player_id, isShowNoneOption, noneOptionType, isVoteOver, voteFooter,
+        calculate_menu_dirt( player_id, isToShowNoneOption, noneOptionType, isVoteOver, voteFooter,
                 voteStatus, menuDirty, charsmax( menuDirty ), noneIsHidden )
         
         display_vote_menu( false, false, player_id, menuDirty, menuKeys )
@@ -3095,7 +3094,7 @@ public vote_display( argument[ 3 ] )
                 && !isVoteOver
                 && showStatus != SHOW_STATUS_ALWAYS )
             {
-                calculate_menu_clean( player_id, isShowNoneOption, noneOptionType, voteFooter,
+                calculate_menu_clean( player_id, isToShowNoneOption, noneOptionType, voteFooter,
                         menuClean, charsmax( menuClean ) )
                 
                 display_vote_menu( true, false, player_id, menuClean, menuKeys )
@@ -3106,7 +3105,7 @@ public vote_display( argument[ 3 ] )
                      || ( g_is_player_voted[ player_id ]
                           && showStatus == SHOW_STATUS_AFTER_VOTE ) )
             {
-                calculate_menu_dirt( player_id, isShowNoneOption, noneOptionType, isVoteOver, voteFooter,
+                calculate_menu_dirt( player_id, isToShowNoneOption, noneOptionType, isVoteOver, voteFooter,
                         voteStatus, menuDirty, charsmax( menuDirty ), noneIsHidden )
                 
                 display_vote_menu( false, isVoteOver, player_id, menuDirty, menuKeys )
@@ -3115,21 +3114,24 @@ public vote_display( argument[ 3 ] )
     }
 }
 
-stock calculate_menu_clean( player_id, isShowNoneOption, noneOptionType, voteFooter[], menuClean[], menuCleanSize )
+stock calculate_menu_clean( player_id, isToShowNoneOption, noneOptionType, voteFooter[], menuClean[], menuCleanSize )
 {
     static noneOption[ 32 ]
-    static bool:noneIsAlwaysShow
+    static bool:isToShowUndo
     
-    menuClean     [ 0 ] = '^0';
-    noneOption    [ 0 ] = '^0';
-    noneIsAlwaysShow    = IS_ALWAYS_TO_SHOW_VOTE()
+    menuClean  [ 0 ] = '^0';
+    noneOption [ 0 ] = '^0';
+    isToShowUndo     = ( player_id > 0 \
+                         && noneOptionType == CONVERT_IT_TO_CANCEL_LAST_VOTE \
+                         && g_is_player_voted[ player_id ] \
+                         && !g_is_player_cancelled_vote[ player_id ] )
     
     // append a "None" option on for people to choose if they don't like any other choice
     // to append it here to always shows it WHILE voting.
-    if( isShowNoneOption
+    if( isToShowNoneOption
         && noneOptionType )
     {
-        if( noneIsAlwaysShow )
+        if( isToShowUndo )
         {
             copy( noneOption, charsmax( noneOption ), "GAL_OPTION_CANCEL_VOTE" )
         }
@@ -3138,8 +3140,8 @@ stock calculate_menu_clean( player_id, isShowNoneOption, noneOptionType, voteFoo
             copy( noneOption, charsmax( noneOption ), "GAL_OPTION_NONE" )
         }
         
-        formatex( menuClean, menuCleanSize, "%s^n^n%s0. %s%L%s", g_vote,
-                COLOR_RED, COLOR_WHITE, LANG_SERVER, noneOption, voteFooter );
+        formatex( menuClean, menuCleanSize, "%s^n^n%s0. %s%L%s",
+                g_vote, COLOR_RED, COLOR_WHITE, LANG_SERVER, noneOption, voteFooter );
     }
     else
     {
@@ -3147,57 +3149,46 @@ stock calculate_menu_clean( player_id, isShowNoneOption, noneOptionType, voteFoo
     }
 }
 
-stock calculate_menu_dirt( player_id, isShowNoneOption, noneOptionType, isVoteOver, voteFooter[],
+stock calculate_menu_dirt( player_id, isToShowNoneOption, noneOptionType, isVoteOver, voteFooter[],
                            voteStatus[], menuDirty[], menuDirtySize, bool:noneIsHidden )
 {
     static noneOption[ 32 ]
-    static bool:noneIsAlwaysShow
+    static bool:isToShowUndo
     
-    menuDirty     [ 0 ] = '^0';
-    noneOption    [ 0 ] = '^0';
-    noneIsAlwaysShow    = IS_ALWAYS_TO_SHOW_VOTE()
+    menuDirty  [ 0 ] = '^0';
+    noneOption [ 0 ] = '^0';
+    isToShowUndo     = ( player_id > 0 \
+                         && noneOptionType == CONVERT_IT_TO_CANCEL_LAST_VOTE \
+                         && g_is_player_voted[ player_id ] \
+                         && !g_is_player_cancelled_vote[ player_id ] )
     
     // to append it here to always shows it AFTER voting.
     if( isVoteOver )
     {
-        if( isShowNoneOption
+        if( isToShowNoneOption
             && noneOptionType )
         {
-            if( noneIsAlwaysShow )
-            {
-                copy( noneOption, charsmax( noneOption ), "GAL_OPTION_CANCEL_VOTE" )
-            }
-            else
-            {
-                copy( noneOption, charsmax( noneOption ), "GAL_OPTION_NONE" )
-            }
+            computeUndoButton( player_id, isToShowUndo, noneOption, charsmax( noneOption ) )
             
-            formatex( menuDirty, menuDirtySize, "%s^n^n%s0. %s%L^n^n%s%L", voteStatus,
-                    COLOR_RED, COLOR_WHITE, LANG_SERVER, noneOption, COLOR_YELLOW, LANG_SERVER,
-                    "GAL_VOTE_ENDED" )
+            formatex( menuDirty, menuDirtySize, "%s^n^n%s0. %s%s^n^n%s%L",
+                    voteStatus, COLOR_RED, COLOR_WHITE, noneOption, COLOR_YELLOW,
+                    LANG_SERVER, "GAL_VOTE_ENDED" )
         }
         else
         {
-            formatex( menuDirty, menuDirtySize, "%s^n^n%s%L", voteStatus, COLOR_YELLOW,
-                    LANG_SERVER, "GAL_VOTE_ENDED" );
+            formatex( menuDirty, menuDirtySize, "%s^n^n%s%L",
+                    voteStatus, COLOR_YELLOW, LANG_SERVER, "GAL_VOTE_ENDED" )
         }
     }
     else
     {
-        if( isShowNoneOption
+        if( isToShowNoneOption
             && noneOptionType )
         {
-            if( noneIsAlwaysShow )
-            {
-                copy( noneOption, charsmax( noneOption ), "GAL_OPTION_CANCEL_VOTE" )
-            }
-            else
-            {
-                copy( noneOption, charsmax( noneOption ), "GAL_OPTION_NONE" )
-            }
+            computeUndoButton( player_id, isToShowUndo, noneOption, charsmax( noneOption ) )
             
-            formatex( menuDirty, menuDirtySize, "%s^n^n%s0. %s%L%s", voteStatus,
-                    COLOR_RED, COLOR_WHITE, LANG_SERVER, noneOption, voteFooter );
+            formatex( menuDirty, menuDirtySize, "%s^n^n%s0. %s%s%s",
+                    voteStatus, COLOR_RED, COLOR_WHITE, noneOption, voteFooter )
         }
         else
         {
@@ -3209,6 +3200,36 @@ stock calculate_menu_dirt( player_id, isShowNoneOption, noneOptionType, isVoteOv
             }
             
             formatex( menuDirty, menuDirtySize, "%s%s", voteStatus, voteFooter );
+        }
+    }
+}
+
+stock computeUndoButton( player_id, bool:isToShowUndo, noneOption[], noneOptionSize )
+{
+    if( isToShowUndo )
+    {
+        formatex( noneOption, noneOptionSize, "%L",
+                LANG_SERVER, "GAL_OPTION_CANCEL_VOTE" )
+    }
+    else
+    {
+        if( g_is_player_cancelled_vote[ player_id ] )
+        {
+            if( g_is_player_voted[ player_id ]  )
+            {
+                formatex( noneOption, noneOptionSize, "%s%L",
+                        COLOR_GREY, LANG_SERVER, "GAL_OPTION_CANCEL_VOTE" )
+            }
+            else
+            {
+                formatex( noneOption, noneOptionSize, "%L",
+                        LANG_SERVER, "GAL_OPTION_NONE" )
+            }
+        }
+        else
+        {
+            formatex( noneOption, noneOptionSize, "%L",
+                    LANG_SERVER, "GAL_OPTION_NONE" )
         }
     }
 }
@@ -3284,14 +3305,14 @@ stock cancel_player_vote( player_id )
 {
     new voteWeight = g_player_voted_weight[ player_id ]
     
+    g_is_player_voted[ player_id ]          = false;
+    g_is_player_cancelled_vote[ player_id ] = true;
+    
     g_totalVotesCounted                                                -= voteWeight
     g_arrayOfMapsWithVotesNumber[ g_player_voted_option[ player_id ] ] -= voteWeight
     
     g_player_voted_option[ player_id ] -= g_player_voted_option[ player_id ]
     g_player_voted_weight[ player_id ] -= g_player_voted_weight[ player_id ]
-    
-    g_is_player_voted[ player_id ]          = false;
-    g_is_player_cancelled_vote[ player_id ] = true;
 }
 
 /**
@@ -3299,16 +3320,24 @@ stock cancel_player_vote( player_id )
  */
 stock register_vote( player_id, pressedKeyCode )
 {
-    g_player_voted_option[ player_id ] = pressedKeyCode
-    g_player_voted_weight[ player_id ] = 1
+    if( pressedKeyCode == 9 )
+    {
+        g_player_voted_option[ player_id ] = 0 // the None option does not integrate vote counting
+        g_player_voted_weight[ player_id ] = 0 // the None option has no weight
+    }
+    else
+    {
+        g_player_voted_option[ player_id ] = pressedKeyCode
+        g_player_voted_weight[ player_id ] = 1
+    }
     
-    // pressedKeyCode 9 means the keyboard key 0 (the None option)
+    announceRegistedVote( player_id, pressedKeyCode )
+    
+    // pressedKeyCode 9 means the keyboard key 0 (the None option) and it does not integrate the vote
     if( pressedKeyCode != 9 )
     {
         // increment votes cast count
         g_totalVotesCounted++;
-        
-        announceRegistedVote( player_id, pressedKeyCode )
         
         new voteWeight = get_pcvar_num( cvar_voteWeight );
         
@@ -3417,14 +3446,14 @@ stock computeVoteMapLine( voteMapLine[], voteMapLineLength, voteIndex )
         {
             case STATUS_TYPE_COUNT:
             {
-                formatex( voteMapLine, voteMapLineLength, " %s(%s%i%s%s)", 
+                formatex( voteMapLine, voteMapLineLength, " %s(%s%i%s%s)",
                         COLOR_YELLOW, COLOR_GREY, voteCountNumber, g_voteStatus_symbol, COLOR_YELLOW );
             }
             case STATUS_TYPE_PERCENTAGE:
             {
                 new votePercentNunber = percent( voteCountNumber, g_totalVotesCounted );
                 
-                formatex( voteMapLine, voteMapLineLength, " %s(%s%i%s%s)", 
+                formatex( voteMapLine, voteMapLineLength, " %s(%s%i%s%s)",
                         COLOR_YELLOW, COLOR_GREY, votePercentNunber, g_voteStatus_symbol, COLOR_YELLOW );
             }
             case STATUS_TYPE_PERCENTAGE | STATUS_TYPE_COUNT:
@@ -3456,7 +3485,7 @@ public computeVotes()
     new playerVoteMapChoiceIndex
     new numberOfVotesAtFirstPlace
     new numberOfVotesAtSecondPlace
-    
+
 #if defined DEBUG
     new voteMapLine[ 32 ];
     
