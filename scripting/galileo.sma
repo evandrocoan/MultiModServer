@@ -262,6 +262,7 @@ new g_total_CT_wins;
 new bool:g_isTimeToResetGame
 new bool:g_isTimeToResetRounds
 new bool:g_isUsingEmptyCycle
+new bool:g_isRunOffNeedingKeepCurrentMap
 
 new bool:g_is_emptyCycleMapConfigured
 new bool:g_is_colored_chat_enabled
@@ -346,7 +347,7 @@ new cvar_voteMinPlayersMapFilePath
  */
 new const LAST_EMPTY_CYCLE_FILE_NAME[] = "lastEmptyCycleMap.dat"
 new const MENU_CHOOSEMAP[]             = "gal_menuChooseMap"
-new const MENU_CHOOSEMAP_QUESTION[]    = "gal_menuChooseMapQuestion"
+new const MENU_CHOOSEMAP_QUESTION[]    = "chooseMapQuestion"
 
 new g_rtv_wait_admin_number
 new g_emptyCycleMapsNumber
@@ -404,7 +405,6 @@ new g_votingMapNames [ MAX_OPTIONS_IN_VOTE ][ MAX_MAPNAME_LENGHT ]
 new g_nominationCount
 new g_chooseMapMenuId
 new g_chooseMapQuestionMenuId
-new g_isRunOffNeedingKeepCurrentMap = false;
 
 public plugin_init()
 {
@@ -2414,7 +2414,7 @@ stock displayEndOfTheMapVoteMenu( countdown )
     
     if( !g_answeredForEndOfMapVote[ player_id ] )
     {
-        menuKeys = MENU_KEY_0 | MENU_KEY_5;
+        menuKeys = MENU_KEY_0 | MENU_KEY_6;
     }
     
     get_players( players, playersCount, "ch" );
@@ -2447,13 +2447,18 @@ stock displayEndOfTheMapVoteMenu( countdown )
     }
 }
 
-public handleEndOfTheMapVoteChoice( player_id, menu, item )
+public handleEndOfTheMapVoteChoice( player_id, keyCode )
 {
-    g_answeredForEndOfMapVote[ player_id ] = true
-    
-    if( item == 9 )
+    switch( keyCode )
     {
-        g_is_player_voted[ player_id ] = true
+        case 6:
+        {
+            g_answeredForEndOfMapVote[ player_id ] = true
+        }
+        case 0:
+        {
+            g_is_player_voted[ player_id ] = true
+        }
     }
     
     return PLUGIN_CONTINUE;
@@ -3228,6 +3233,11 @@ public vote_handleChoice( player_id, key )
 
 stock cancel_player_vote( player_id )
 {
+    new voteWeight = g_player_voted_weight[ player_id ]
+    
+    g_totalVotesCounted                                                -= voteWeight
+    g_arrayOfMapsWithVotesNumber[ g_player_voted_option[ player_id ] ] -= voteWeight
+    
     g_player_voted_option[ player_id ] -= g_player_voted_option[ player_id ]
     g_player_voted_weight[ player_id ] -= g_player_voted_weight[ player_id ]
     
@@ -3238,21 +3248,52 @@ stock cancel_player_vote( player_id )
 /**
  * Register the player's choice giving extra weight to admin votes.
  */
-stock register_vote( player_id, key )
+stock register_vote( player_id, pressedKeyCode )
 {
-    new bool:isToAnnounceChoice = bool:get_pcvar_num( cvar_voteAnnounceChoice )
-    new player_name[ MAX_PLAYER_NAME_LENGHT ];
-    
-    g_player_voted_option[ player_id ] = key
+    g_player_voted_option[ player_id ] = pressedKeyCode
     g_player_voted_weight[ player_id ] = 1
+
+    // pressedKeyCode 9 means the keyboard key 0 (the None option)
+    if( pressedKeyCode != 9 )
+    {
+        // increment votes cast count
+        g_totalVotesCounted++;
+        
+        announceRegistedVote( player_id, pressedKeyCode )
+        
+        new voteWeight = get_pcvar_num( cvar_voteWeight );
+        
+        if( voteWeight > 1
+            && has_flag( player_id, g_voteWeightFlags ) )
+        {
+            g_player_voted_weight[ player_id ]              = voteWeight
+            g_arrayOfMapsWithVotesNumber[ pressedKeyCode ] += voteWeight;
+            g_totalVotesCounted                            += ( voteWeight - 1 );
+            
+            color_print( player_id, "^1L", player_id, "GAL_VOTE_WEIGHTED", voteWeight );
+        }
+        else
+        {
+            g_arrayOfMapsWithVotesNumber[ pressedKeyCode ]++;
+        }
+    }
+    
+    g_is_player_voted[ player_id ] = true;
+}
+
+
+stock announceRegistedVote( player_id, pressedKeyCode )
+{
+    new player_name[ MAX_PLAYER_NAME_LENGHT ]
+    new bool:isToAnnounceChoice = bool:get_pcvar_num( cvar_voteAnnounceChoice )
     
     if( isToAnnounceChoice )
     {
         get_user_name( player_id, player_name, charsmax( player_name ) );
     }
     
-    // confirm the player's choice (key = 9 means 0 on the keyboard, 8 is 7, etc)
-    if( key == 9 )
+    // confirm the player's choice (pressedKeyCode = 9 means 0 on the keyboard, 8 is 7, etc)
+    if( pressedKeyCode == 9 )
     {
         DEBUG_LOGGER( 4, "      %-32s ( none )", player_name )
         
@@ -3267,10 +3308,7 @@ stock register_vote( player_id, key )
     }
     else
     {
-        // increment votes cast count
-        g_totalVotesCounted++;
-        
-        if( key == g_totalVoteOptions )
+        if( pressedKeyCode == g_totalVoteOptions )
         {
             // only display the "none" vote if we haven't already voted
             // ( we can make it here from the vote status menu too )
@@ -3304,38 +3342,20 @@ stock register_vote( player_id, key )
         }
         else
         {
-            DEBUG_LOGGER( 4, "      %-32s %s", player_name, g_votingMapNames[ key ] )
+            DEBUG_LOGGER( 4, "      %-32s %s", player_name, g_votingMapNames[ pressedKeyCode ] )
             
             if( isToAnnounceChoice )
             {
                 color_print( 0, "^1%L", LANG_PLAYER, "GAL_CHOICE_MAP_ALL", player_name,
-                        g_votingMapNames[ key ] );
+                        g_votingMapNames[ pressedKeyCode ] );
             }
             else
             {
                 color_print( player_id, "^1%L", player_id, "GAL_CHOICE_MAP",
-                        g_votingMapNames[ key ] );
+                        g_votingMapNames[ pressedKeyCode ] );
             }
         }
-        
-        new voteWeight = get_pcvar_num( cvar_voteWeight );
-        
-        if( voteWeight > 1
-            && has_flag( player_id, g_voteWeightFlags ) )
-        {
-            g_player_voted_weight[ player_id ]   = voteWeight
-            g_arrayOfMapsWithVotesNumber[ key ] += voteWeight;
-            g_totalVotesCounted                 += ( voteWeight - 1 );
-            
-            color_print( player_id, "^1L", player_id, "GAL_VOTE_WEIGHTED", voteWeight );
-        }
-        else
-        {
-            g_arrayOfMapsWithVotesNumber[ key ]++;
-        }
     }
-    
-    g_is_player_voted[ player_id ] = true;
 }
 
 stock computeVoteMapLine( voteMapLine[], voteMapLineLength, voteIndex )
