@@ -32,10 +32,10 @@ new const PLUGIN_VERSION[] = "1.2.X"
  *
  * 0   - Disables this feature.
  * 1   - Normal debug.
- * 2   - To skip the 'vote_countdownPendingVote()' and set the vote and runoff time to 5, seconds
+ * 2   - To skip the 'pendingVoteCountdown()' and set the vote and runoff time to 5, seconds
  *       and to create fake votes.
  */
-#define IS_DEBUG_ENABLED 2
+#define IS_DEBUG_ENABLED 1
 
 #if IS_DEBUG_ENABLED > 0
     #define DEBUG
@@ -354,6 +354,7 @@ new const LAST_EMPTY_CYCLE_FILE_NAME[] = "lastEmptyCycleMap.dat"
 new const MENU_CHOOSEMAP[]             = "gal_menuChooseMap"
 new const MENU_CHOOSEMAP_QUESTION[]    = "chooseMapQuestion"
 
+new g_pendingVoteCountdown = 7
 new g_rtv_wait_admin_number
 new g_emptyCycleMapsNumber
 new g_cntRecentMap;
@@ -2343,7 +2344,7 @@ public vote_startDirector( bool:is_forced_voting )
         }
         
         // announce the pending vote countdown from 7 to 1
-        set_task( 1.0, "vote_countdownPendingVote", _, _, _, "a", 7 );
+        set_task( 1.0, "pendingVoteCountdown", _, _, _, "a", 7 );
     #endif
         
         // display the map choices
@@ -2383,62 +2384,59 @@ public closeVoting()
     set_task( 9.0, "computeVotes", TASKID_VOTE_EXPIRE )
 }
 
-public vote_countdownPendingVote()
+public pendingVoteCountdown()
 {
-    static countdown = 7;
-    
     if( bool:get_pcvar_num( cvar_isToAskForEndOfTheMapVote ) )
     {
-        displayEndOfTheMapVoteMenu( countdown )
+        displayEndOfTheMapVoteMenu( 0 )
     }
     
     // visual countdown
     set_hudmessage( 0, 222, 50, -1.0, 0.13, 0, 1.0, 0.94, 0.0, 0.0, -1 );
-    show_hudmessage( 0, "%L", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", countdown );
+    show_hudmessage( 0, "%L", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", g_pendingVoteCountdown );
     
     // audio countdown
     if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_COUNTDOWN ) )
     {
         new word[ 6 ];
-        num_to_word( countdown, word, 5 );
+        num_to_word( g_pendingVoteCountdown, word, 5 );
         
         client_cmd( 0, "spk ^"fvox/%s^"", word );
     }
     
     // decrement the countdown
-    countdown--;
+    g_pendingVoteCountdown--;
     
-    if( countdown == 0 )
+    if( g_pendingVoteCountdown == 0 )
     {
-        countdown = 7;
+        g_pendingVoteCountdown = 7;
     }
 }
 
-stock displayEndOfTheMapVoteMenu( countdown )
+public displayEndOfTheMapVoteMenu( player_id )
 {
-    new menu_counter[ 64 ]
-    new menu_body[ 256 ]
-    
     new menu_id
     new menuKeys
     new menuKeysUnused
-    
-    new bool:isVoting
-    new bool:playerAnswered
-    
-    new player_id
-    new current_index
     new playersCount
     new players[ MAX_PLAYERS ]
     
-    if( !playerAnswered )
+    new menu_body[ 256 ]
+    new menu_counter[ 64 ]
+    new bool:isVoting
+    new bool:playerAnswered
+    
+    if( player_id > 0 )
     {
-        menuKeys = MENU_KEY_0 | MENU_KEY_6;
+        playersCount = 1
+        players[ 0 ] = player_id
+    }
+    else
+    {
+        get_players( players, playersCount, "ch" )
     }
     
-    get_players( players, playersCount, "ch" );
-    
-    for( current_index = 0; current_index < playersCount; current_index++ )
+    for( new current_index = 0; current_index < playersCount; current_index++ )
     {
         player_id      = players[ current_index ]
         isVoting       = !g_is_player_voted[ player_id ]
@@ -2446,12 +2444,15 @@ stock displayEndOfTheMapVoteMenu( countdown )
         
         if( !playerAnswered )
         {
+            menuKeys = MENU_KEY_0 | MENU_KEY_6;
+            
             formatex( menu_counter, charsmax( menu_counter ),
                     "%s( %s%d %L%s )",
-                    COLOR_YELLOW, COLOR_GREY, countdown, LANG_PLAYER, "GAL_TIMELEFT", COLOR_YELLOW )
+                    COLOR_YELLOW, COLOR_GREY, g_pendingVoteCountdown, LANG_PLAYER, "GAL_TIMELEFT", COLOR_YELLOW )
         }
         else
         {
+            menuKeys          = MENU_KEY_1
             menu_counter[ 0 ] = '^0'
         }
         
@@ -2478,29 +2479,37 @@ stock displayEndOfTheMapVoteMenu( countdown )
             show_menu( player_id, menuKeys, menu_body, 2, MENU_CHOOSEMAP_QUESTION )
         }
         
-        DEBUG_LOGGER( 8, " ( displayEndOfTheMapVoteMenu| for ) menu_body: %s^n   menu_counter: %s, \
-                menu_id:%d, menuKeys: %d, isVoting: %d, playerAnswered:%d, player_id: %d, ^n   \
-                current_index: %d, playersCount: %d, countdown: %d", \
-                menu_body, menu_counter, menu_id, menuKeys, isVoting, playerAnswered, \
-                player_id, current_index, playersCount, countdown )
+        DEBUG_LOGGER( 8, " ( displayEndOfTheMapVoteMenu| for ) menu_body: %s^n menu_id:%d,   \
+                menuKeys: %d, isVoting: %d, playerAnswered:%d, player_id: %d, current_index: %d", \
+                menu_body, menu_id, menuKeys, isVoting, playerAnswered, player_id, current_index )
+        
+        DEBUG_LOGGER( 8, "   playersCount: %d, g_pendingVoteCountdown: %d, menu_counter: %s", \
+                playersCount, g_pendingVoteCountdown, menu_counter )
     }
     
     DEBUG_LOGGER( 8, "%48s", " ( displayEndOfTheMapVoteMenu| out )" )
 }
 
-public handleEndOfTheMapVoteChoice( player_id, keyCode )
+public handleEndOfTheMapVoteChoice( player_id, pressedKeyCode )
 {
-    switch( keyCode )
+    switch( pressedKeyCode )
     {
-        case 0:
+        case 9: // pressedKeyCode 9 means the keyboard key 0
         {
             g_is_player_voted[ player_id ] = true
+        }
+        case 0: // pressedKeyCode 0 means the keyboard key 1
+        {
+            set_task( 0.1, "displayEndOfTheMapVoteMenu", player_id )
+            return PLUGIN_CONTINUE;
         }
     }
     
     g_answeredForEndOfMapVote[ player_id ] = true
     
-    return PLUGIN_HANDLED;
+    set_task( 0.1, "displayEndOfTheMapVoteMenu", player_id )
+    
+    return PLUGIN_CONTINUE;
 }
 
 stock vote_addNominations()
@@ -3894,8 +3903,9 @@ stock save_time_limit()
 
 stock vote_resetStats()
 {
-    g_totalVoteOptions  = 0;
-    g_totalVotesCounted = 0;
+    g_totalVoteOptions     = 0;
+    g_totalVotesCounted    = 0;
+    g_pendingVoteCountdown = 7;
     
     arrayset( g_arrayOfMapsWithVotesNumber, 0, sizeof g_arrayOfMapsWithVotesNumber );
     
