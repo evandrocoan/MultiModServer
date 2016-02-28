@@ -816,6 +816,118 @@ stock intermission_display()
     }
 }
 
+/**
+ * Reset rounds scores every game restart event.
+ */
+public round_restart_event()
+{
+    if( g_is_timeLimitChanged )
+    {
+        g_isTimeToResetRounds = true
+        
+        cancel_voting()
+        reset_round_ending()
+    }
+    else
+    {
+        game_commencing_event()
+    }
+}
+
+/**
+ * Make sure the reset time is the original time limit, can be skewed if map was previously extended.
+ * It is delayed because if we are at g_is_last_round, we need to wait the game restart.
+ */
+public game_commencing_event()
+{
+    g_isTimeToResetGame   = true
+    g_isTimeToResetRounds = true
+    
+    cancel_voting()
+    reset_round_ending()
+    
+    DEBUG_LOGGER( 32, "^n AT: game_commencing_event" )
+}
+
+/**
+ * Reset the round ending, if it is in progress.
+ */
+stock reset_round_ending()
+{
+    g_is_timeToChangeLevel = false
+    g_is_timeToRestart     = false
+    g_is_RTV_last_round    = false
+    g_is_last_round        = false
+    
+    remove_task( TASKID_SHOW_LAST_ROUND_HUD )
+    
+    client_cmd( 0, "-showscores" )
+}
+
+public start_voting_by_rounds()
+{
+    DEBUG_LOGGER( 1, "At start_voting_by_rounds --- get_pcvar_num( cvar_endOfMapVote ): %d", \
+            get_pcvar_num( cvar_endOfMapVote ) )
+    
+    if( get_pcvar_num( cvar_endOfMapVote ) )
+    {
+        vote_startDirector( false )
+    }
+}
+
+public reset_rounds_scores()
+{
+    if( g_is_srvTimelimitRestart
+        || g_is_srvWinlimitRestart
+        || g_is_srvMaxroundsRestart )
+    {
+        save_time_limit()
+        
+        if( get_pcvar_num( g_timelimit_pointer )
+            && g_is_srvTimelimitRestart )
+        {
+            new new_timelimit = ( floatround(
+                                          get_pcvar_num( g_timelimit_pointer )
+                                          - map_getMinutesElapsed(), floatround_floor )
+                                  + get_pcvar_num( cvar_srvTimelimitRestart ) - 1 )
+            
+            if( new_timelimit > 0 )
+            {
+                set_pcvar_num( g_timelimit_pointer, new_timelimit )
+            }
+        }
+        
+        if( get_pcvar_num( g_winlimit_pointer )
+            && g_is_srvWinlimitRestart )
+        {
+            new new_winlimit = ( get_pcvar_num( g_winlimit_pointer )
+                                 - max( g_total_terrorists_wins, g_total_CT_wins )
+                                 + get_pcvar_num( cvar_srvWinlimitRestart ) - 1 )
+            
+            if( new_winlimit > 0 )
+            {
+                set_pcvar_num( g_winlimit_pointer, new_winlimit )
+            }
+        }
+        
+        if( get_pcvar_num( g_maxrounds_pointer )
+            && g_is_srvMaxroundsRestart )
+        {
+            new new_maxrounds = ( get_pcvar_num( g_maxrounds_pointer ) - g_total_rounds_played
+                                  + get_pcvar_num( cvar_srvMaxroundsRestart ) - 1 )
+            
+            if( new_maxrounds > 0 )
+            {
+                set_pcvar_num( g_maxrounds_pointer, new_maxrounds )
+            }
+        }
+    }
+    
+    g_total_terrorists_wins = 0
+    g_total_CT_wins         = 0
+    g_total_rounds_played   = -1
+}
+
 public configure_last_round_HUD()
 {
     if( bool:get_pcvar_num( cvar_endOnRound_msg ) )
@@ -1539,118 +1651,6 @@ public map_loadPrefixList()
         log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_PREFIXES_NOTFOUND", prefixesFilePath );
     }
     return PLUGIN_HANDLED;
-}
-
-/**
- * Reset rounds scores every game restart event.
- */
-public round_restart_event()
-{
-    if( g_is_timeLimitChanged )
-    {
-        g_isTimeToResetRounds = true
-        
-        cancel_voting()
-        reset_round_ending()
-    }
-    else
-    {
-        game_commencing_event()
-    }
-}
-
-/**
- * Make sure the reset time is the original time limit, can be skewed if map was previously extended.
- * It is delayed because if we are at g_is_last_round, we need to wait the game restart.
- */
-public game_commencing_event()
-{
-    g_isTimeToResetGame   = true
-    g_isTimeToResetRounds = true
-    
-    cancel_voting()
-    reset_round_ending()
-    
-    DEBUG_LOGGER( 32, "^n AT: game_commencing_event" )
-}
-
-/**
- * Reset the round ending, if it is in progress.
- */
-stock reset_round_ending()
-{
-    g_is_timeToChangeLevel = false
-    g_is_timeToRestart     = false
-    g_is_RTV_last_round    = false
-    g_is_last_round        = false
-    
-    remove_task( TASKID_SHOW_LAST_ROUND_HUD )
-    
-    client_cmd( 0, "-showscores" )
-}
-
-public start_voting_by_rounds()
-{
-    DEBUG_LOGGER( 1, "At start_voting_by_rounds --- get_pcvar_num( cvar_endOfMapVote ): %d", \
-            get_pcvar_num( cvar_endOfMapVote ) )
-    
-    if( get_pcvar_num( cvar_endOfMapVote ) )
-    {
-        vote_startDirector( false )
-    }
-}
-
-public reset_rounds_scores()
-{
-    if( g_is_srvTimelimitRestart
-        || g_is_srvWinlimitRestart
-        || g_is_srvMaxroundsRestart )
-    {
-        save_time_limit()
-        
-        if( get_pcvar_num( g_timelimit_pointer )
-            && g_is_srvTimelimitRestart )
-        {
-            new new_timelimit = ( floatround(
-                                          get_pcvar_num( g_timelimit_pointer )
-                                          - map_getMinutesElapsed(), floatround_floor )
-                                  + get_pcvar_num( cvar_srvTimelimitRestart ) - 1 )
-            
-            if( new_timelimit > 0 )
-            {
-                set_pcvar_num( g_timelimit_pointer, new_timelimit )
-            }
-        }
-        
-        if( get_pcvar_num( g_winlimit_pointer )
-            && g_is_srvWinlimitRestart )
-        {
-            new new_winlimit = ( get_pcvar_num( g_winlimit_pointer )
-                                 - max( g_total_terrorists_wins, g_total_CT_wins )
-                                 + get_pcvar_num( cvar_srvWinlimitRestart ) - 1 )
-            
-            if( new_winlimit > 0 )
-            {
-                set_pcvar_num( g_winlimit_pointer, new_winlimit )
-            }
-        }
-        
-        if( get_pcvar_num( g_maxrounds_pointer )
-            && g_is_srvMaxroundsRestart )
-        {
-            new new_maxrounds = ( get_pcvar_num( g_maxrounds_pointer ) - g_total_rounds_played
-                                  + get_pcvar_num( cvar_srvMaxroundsRestart ) - 1 )
-            
-            if( new_maxrounds > 0 )
-            {
-                set_pcvar_num( g_maxrounds_pointer, new_maxrounds )
-            }
-        }
-    }
-    
-    g_total_terrorists_wins = 0
-    g_total_CT_wins         = 0
-    g_total_rounds_played   = -1
 }
 
 stock map_getIndex( text[] )
