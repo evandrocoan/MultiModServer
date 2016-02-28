@@ -3026,33 +3026,9 @@ public vote_display( argument[ 3 ] )
     // display the vote
     new showStatus = get_pcvar_num( cvar_voteStatus );
     
-    static voteFooter[ 64 ];
-    
     if( updateTimeRemaining )
     {
         g_voteDuration--;
-        
-        charCount = copy( voteFooter, charsmax( voteFooter ), "^n^n" );
-        
-        if( get_pcvar_num( cvar_voteExpCountdown ) )
-        {
-            if( ( g_voteDuration <= 10
-                  || get_pcvar_num( cvar_showVoteCounter ) )
-                && showStatus != SHOW_STATUS_AT_END )
-            {
-                if( g_voteDuration >= 0 )
-                {
-                    formatex( voteFooter[ charCount ], charsmax( voteFooter ) - charCount, "%s%L: %s%i",
-                            COLOR_WHITE, LANG_SERVER, "GAL_TIMELEFT", COLOR_RED,
-                            ( g_voteDuration == 0 ? 1 : g_voteDuration ) )
-                }
-                else
-                {
-                    formatex( voteFooter[ charCount ], charsmax( voteFooter ) - charCount,
-                            "%s%L", COLOR_YELLOW, LANG_SERVER, "GAL_VOTE_ENDED" );
-                }
-            }
-        }
     }
     
     // menu showed while voting
@@ -3071,8 +3047,8 @@ public vote_display( argument[ 3 ] )
     if( player_id > 0
         && showStatus & SHOW_STATUS_AFTER_VOTE )
     {
-        calculate_menu_dirt( player_id, isToShowNoneOption, noneOptionType, isVoteOver, voteFooter,
-                voteStatus, menuDirty, charsmax( menuDirty ), noneIsHidden )
+        calculate_menu_dirt( player_id, isToShowNoneOption, noneOptionType, isVoteOver,
+                voteStatus, menuDirty, charsmax( menuDirty ), noneIsHidden, showStatus )
         
         display_vote_menu( false, false, player_id, menuDirty, menuKeys )
     }
@@ -3091,8 +3067,8 @@ public vote_display( argument[ 3 ] )
                 && !isVoteOver
                 && showStatus != SHOW_STATUS_ALWAYS )
             {
-                calculate_menu_clean( player_id, isToShowNoneOption, noneOptionType, voteFooter,
-                        menuClean, charsmax( menuClean ) )
+                calculate_menu_clean( player_id, isToShowNoneOption, noneOptionType,
+                        menuClean, charsmax( menuClean ), showStatus )
                 
                 display_vote_menu( true, false, player_id, menuClean, menuKeys )
             }
@@ -3102,8 +3078,8 @@ public vote_display( argument[ 3 ] )
                      || ( g_is_player_voted[ player_id ]
                           && showStatus == SHOW_STATUS_AFTER_VOTE ) )
             {
-                calculate_menu_dirt( player_id, isToShowNoneOption, noneOptionType, isVoteOver, voteFooter,
-                        voteStatus, menuDirty, charsmax( menuDirty ), noneIsHidden )
+                calculate_menu_dirt( player_id, isToShowNoneOption, noneOptionType, isVoteOver,
+                        voteStatus, menuDirty, charsmax( menuDirty ), noneIsHidden, showStatus )
                 
                 display_vote_menu( false, isVoteOver, player_id, menuDirty, menuKeys )
             }
@@ -3111,13 +3087,13 @@ public vote_display( argument[ 3 ] )
     }
 }
 
-stock calculate_menu_dirt( player_id, isToShowNoneOption, noneOptionType, bool:isVoteOver, voteFooter[],
-                           voteStatus[], menuDirty[], menuDirtySize, bool:noneIsHidden )
+stock calculate_menu_dirt( player_id, isToShowNoneOption, noneOptionType, bool:isVoteOver,
+                           voteStatus[], menuDirty[], menuDirtySize, bool:noneIsHidden, showStatus )
 {
+    static voteFooter[ 64 ];
     static menuHeader[ 32 ]
     static noneOption[ 32 ]
     static bool:isToShowUndo
-    
     
     menuDirty  [ 0 ] = '^0';
     noneOption [ 0 ] = '^0';
@@ -3125,6 +3101,8 @@ stock calculate_menu_dirt( player_id, isToShowNoneOption, noneOptionType, bool:i
                          && noneOptionType == CONVERT_IT_TO_CANCEL_LAST_VOTE \
                          && g_is_player_voted[ player_id ] \
                          && !g_is_player_cancelled_vote[ player_id ] )
+    
+    computeVoteMenuFooter( player_id, voteFooter, charsmax( voteFooter ), showStatus )
     
     // to append it here to always shows it AFTER voting.
     if( isVoteOver )
@@ -3178,6 +3156,33 @@ stock calculate_menu_dirt( player_id, isToShowNoneOption, noneOptionType, bool:i
     }
 }
 
+stock computeVoteMenuFooter( player_id, voteFooter[], voteFooterSize, showStatus )
+{
+    static charCount
+    
+    charCount = copy( voteFooter, voteFooterSize, "^n^n" );
+    
+    if( get_pcvar_num( cvar_voteExpCountdown ) )
+    {
+        if( ( g_voteDuration <= 10
+              || get_pcvar_num( cvar_showVoteCounter ) )
+            && showStatus != SHOW_STATUS_AT_END )
+        {
+            if( g_voteDuration >= 0 )
+            {
+                formatex( voteFooter[ charCount ], voteFooterSize - charCount, "%s%L: %s%i",
+                        COLOR_WHITE, player_id, "GAL_TIMELEFT", COLOR_RED,
+                        ( g_voteDuration == 0 ? 1 : g_voteDuration ) )
+            }
+            else
+            {
+                formatex( voteFooter[ charCount ], voteFooterSize - charCount,
+                        "%s%L", COLOR_YELLOW, player_id, "GAL_VOTE_ENDED" );
+            }
+        }
+    }
+}
+
 stock computeUndoButton( player_id, bool:isToShowUndo, bool:isVoteOver, noneOption[],
                          noneOptionType, noneOptionSize )
 {
@@ -3227,8 +3232,10 @@ stock computeUndoButton( player_id, bool:isToShowUndo, bool:isVoteOver, noneOpti
     }
 }
 
-stock calculate_menu_clean( player_id, isToShowNoneOption, noneOptionType, voteFooter[], menuClean[], menuCleanSize )
+stock calculate_menu_clean( player_id, isToShowNoneOption, noneOptionType,
+                            menuClean[], menuCleanSize, showStatus )
 {
+    static voteFooter[ 64 ];
     static menuHeader[ 32 ]
     static noneOption[ 32 ]
     static bool:isToShowUndo
@@ -3239,6 +3246,8 @@ stock calculate_menu_clean( player_id, isToShowNoneOption, noneOptionType, voteF
                          && noneOptionType == CONVERT_IT_TO_CANCEL_LAST_VOTE \
                          && g_is_player_voted[ player_id ] \
                          && !g_is_player_cancelled_vote[ player_id ] )
+    
+    computeVoteMenuFooter( player_id, voteFooter, charsmax( voteFooter ), showStatus )
     
     // add the header
     formatex( menuHeader, charsmax( menuHeader ), "%s%L",
@@ -3276,7 +3285,7 @@ stock display_vote_menu( bool:menuType, bool:isVoteOver, player_id, menuBody[], 
     if( player_id == 1 )
     {
         new player_name[ MAX_PLAYER_NAME_LENGHT ];
-        get_user_name( player_id, player_name, charsmax( player_name) );
+        get_user_name( player_id, player_name, charsmax( player_name ) );
         
         DEBUG_LOGGER( 4, "    [%s ( %s )]", player_name, ( menuType ? "clean" : "dirty" ) )
         DEBUG_LOGGER( 4, "        %s", menuBody )
