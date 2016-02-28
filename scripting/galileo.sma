@@ -3056,7 +3056,7 @@ public vote_display( argument[ 3 ] )
     
     new bool:noneIsHidden = ( isToShowNoneOption
                               && !noneOptionType
-                              && !( g_voteStatus & VOTE_HAS_EXPIRED ) )
+                              && !isVoteOver )
     
     // This function is only called 1 time with the correct player id, to optionally display
     // to single player that just voted.
@@ -3175,7 +3175,8 @@ stock calculate_menu_dirt( player_id, isToShowNoneOption, noneOptionType, isVote
             computeUndoButton( player_id, isToShowUndo, noneOption, noneOptionType, charsmax( noneOption ) )
             
             // remove the extra space between 'voteStatus' and 'voteFooter', after the 'None' option is hidden
-            if( noneIsHidden )
+            if( noneIsHidden
+                && g_is_player_voted[ player_id ] )
             {
                 voteFooter[ 0 ] = ' '
                 voteFooter[ 1 ] = ' '
@@ -3219,7 +3220,11 @@ stock computeUndoButton( player_id, bool:isToShowUndo, noneOption[], noneOptionT
             {
                 case HIDE_AFTER_USER_VOTE:
                 {
-                    if( !g_is_player_voted[ player_id ] )
+                    if( g_is_player_voted[ player_id ] )
+                    {
+                        noneOption[0] = '^0'
+                    }
+                    else
                     {
                         formatex( noneOption, noneOptionSize, "%s0. %s%L",
                                 COLOR_RED, COLOR_WHITE, LANG_SERVER, "GAL_OPTION_NONE" )
