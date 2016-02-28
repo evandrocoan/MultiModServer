@@ -601,7 +601,8 @@ public plugin_cfg()
     
     if( get_cvar_num( "gal_server_starting" ) )
     {
-        srv_handleStart();
+        // delay to start to handle the server start to avoid problems over crashing maps
+        set_task( 15.0, "handleServerStart" );
     }
     
     if( get_pcvar_num( cvar_emptyWait ) )
@@ -1028,7 +1029,7 @@ public plugin_end()
  * 3 - start an early map vote after the first two minutes
  * 4 - change to a randomly selected map from your nominatable map list
  */
-public srv_handleStart()
+public handleServerStart()
 {
     // this is the key that tells us if this server has been restarted or not
     set_cvar_num( "gal_server_starting", 0 );
@@ -1092,8 +1093,8 @@ public srv_handleStart()
 }
 
 /**
- * Action of srv_handleStart to take when it is detected that the server has been
- *   restarted. 3 - start an early map vote after the first two minutes.
+ * Action from handleServerStart to take when it is detected that the server has been
+ * restarted. 3 - start an early map vote after the first two minutes.
  */
 stock vote_manageEarlyStart()
 {
