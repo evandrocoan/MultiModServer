@@ -827,7 +827,6 @@ public round_restart_event()
         g_isTimeToResetRounds = true
         
         cancel_voting()
-        reset_round_ending()
     }
     else
     {
@@ -845,7 +844,6 @@ public game_commencing_event()
     g_isTimeToResetRounds = true
     
     cancel_voting()
-    reset_round_ending()
     
     DEBUG_LOGGER( 32, "^n AT: game_commencing_event" )
 }
@@ -2047,7 +2045,7 @@ stock nomination_cancel( player_id, mapIndex )
         if( idNominator )
         {
             new player_name[ MAX_PLAYER_NAME_LENGHT ];
-            get_user_name( idNominator, player_name, 31 );
+            get_user_name( idNominator, player_name, charsmax( player_name ) );
             
             color_print( player_id, "^1%L", player_id, "GAL_CANCEL_FAIL_SOMEONEELSE",
                     mapName, player_name );
@@ -2163,7 +2161,7 @@ stock map_nominate( player_id, mapIndex, idNominator = -1 )
     else
     {
         new player_name[ MAX_PLAYER_NAME_LENGHT ];
-        get_user_name( idNominator, player_name, 31 );
+        get_user_name( idNominator, player_name, charsmax( player_name );
         
         color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_SOMEONEELSE",
                 mapName, player_name );
@@ -2336,9 +2334,9 @@ public vote_startDirector( bool:is_forced_voting )
         get_players( players, playerCount, "ch" )
         
         // mark the players who are in this vote for use later
-        for( new player_index = 0; player_index < playerCount; ++player_index )
+        for( new playerIndex = 0; playerIndex < playerCount; ++playerIndex )
         {
-            player_id = players[ player_index ]
+            player_id = players[ playerIndex ]
             
             if( g_is_player_participating[ player_id ] )
             {
@@ -3181,7 +3179,7 @@ stock calculate_menu_dirt( player_id, isToShowNoneOption, noneOptionType, isVote
     }
 }
 
-stock computeUndoButton( player_id, bool:isToShowUndo, isVoteOver, noneOption[],
+stock computeUndoButton( player_id, bool:isToShowUndo, bool:isVoteOver, noneOption[],
                          noneOptionType, noneOptionSize )
 {
     if( isToShowUndo )
@@ -3273,7 +3271,7 @@ stock display_vote_menu( bool:menuType, bool:isVoteOver, player_id, menuBody[], 
     if( player_id == 1 )
     {
         new player_name[ MAX_PLAYER_NAME_LENGHT ];
-        get_user_name( player_id, player_name, 31 );
+        get_user_name( player_id, player_name, charsmax( player_name) );
         
         DEBUG_LOGGER( 4, "    [%s ( %s )]", player_name, ( menuType ? "clean" : "dirty" ) )
         DEBUG_LOGGER( 4, "        %s", menuBody )
@@ -4391,7 +4389,7 @@ stock con_print( player_id, message[], { Float, Sql, Result, _ }: ... )
     {
         new authid[ 32 ];
         
-        get_user_authid( player_id, authid, 31 );
+        get_user_authid( player_id, authid, charsmax( authid ) );
         console_print( player_id, consoleMessage );
         
         return;
@@ -4675,13 +4673,14 @@ stock nomination_announceCancellation( nominations[] )
 
 stock nomination_clearAll()
 {
-    for( new player_index = 1; player_index < sizeof g_nomination; player_index++ )
+    for( new playerIndex = 1; playerIndex < sizeof g_nomination; playerIndex++ )
     {
         for( new nominationIndex = 1; nominationIndex < sizeof g_nomination[]; nominationIndex++ )
         {
-            g_nomination[ player_index ][ nominationIndex ] = -1;
+            g_nomination[ playerIndex ][ nominationIndex ] = -1;
         }
     }
+    
     g_nominationCount = 0;
 }
 
@@ -5018,6 +5017,7 @@ stock cancel_voting()
     g_is_maxrounds_extend   = false;
     g_voteStatus            = 0
     
+    reset_round_ending()
     vote_resetStats()
 }
 
