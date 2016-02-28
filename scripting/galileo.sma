@@ -32,7 +32,7 @@ new const PLUGIN_VERSION[] = "1.2.X"
  *
  * 0   - Disables this feature.
  * 1   - Normal debug.
- * 2   - To skip the 'pendingVoteCountdown()' and set the vote and runoff time to 5, seconds
+ * 2   - To skip the 'pendingVoteCountdown()' and set the vote and runoff time to 5 seconds
  *       and to create fake votes.
  */
 #define IS_DEBUG_ENABLED 2
@@ -945,7 +945,7 @@ public show_last_round_HUD()
 
 #if AMXX_VERSION_NUM < 183
     static player_id
-    static current_index
+    static playerIndex
     static playersCount
     static players[ MAX_PLAYERS ]
 #endif
@@ -959,9 +959,9 @@ public show_last_round_HUD()
     #if AMXX_VERSION_NUM < 183
         get_players( players, playersCount, "ch" );
         
-        for( current_index = 0; current_index < playersCount; current_index++ )
+        for( playerIndex = 0; playerIndex < playersCount; playerIndex++ )
         {
-            player_id = players[ current_index ]
+            player_id = players[ playerIndex ]
             
             formatex( last_round_message, charsmax( last_round_message ), "%L ^n%L",
                     player_id, "GAL_CHANGE_NEXTROUND",  player_id, "GAL_NEXTMAP", g_nextmap )
@@ -982,9 +982,9 @@ public show_last_round_HUD()
     #if AMXX_VERSION_NUM < 183
         get_players( players, playersCount, "ch" );
         
-        for( current_index = 0; current_index < playersCount; current_index++ )
+        for( playerIndex = 0; playerIndex < playersCount; playerIndex++ )
         {
-            player_id = players[ current_index ]
+            player_id = players[ playerIndex ]
             
             formatex( last_round_message, charsmax( last_round_message ), "%L", player_id,
                     "GAL_CHANGE_TIMEEXPIRED" )
@@ -2310,7 +2310,7 @@ public vote_startDirector( bool:is_forced_voting )
         }
     }
 
-#if IS_DEBUG_ENABLED == 2
+#if IS_DEBUG_ENABLED >= 2
     voteDuration   = 5
     g_voteDuration = 5
 #endif
@@ -2346,7 +2346,7 @@ public vote_startDirector( bool:is_forced_voting )
             }
         }
     
-    #if IS_DEBUG_ENABLED == 2
+    #if IS_DEBUG_ENABLED >= 2
         handleChoicesDelay = 1.0
     
     #else
@@ -2452,9 +2452,9 @@ public displayEndOfTheMapVoteMenu( player_id )
         get_players( players, playersCount, "ch" )
     }
     
-    for( new current_index = 0; current_index < playersCount; current_index++ )
+    for( new playerIndex = 0; playerIndex < playersCount; playerIndex++ )
     {
-        player_id      = players[ current_index ]
+        player_id      = players[ playerIndex ]
         isVoting       = g_is_player_participating[ player_id ]
         playerAnswered = g_answeredForEndOfMapVote[ player_id ]
         
@@ -2496,8 +2496,8 @@ public displayEndOfTheMapVoteMenu( player_id )
         }
         
         DEBUG_LOGGER( 8, " ( displayEndOfTheMapVoteMenu| for ) menu_body: %s^n menu_id:%d,   \
-                menuKeys: %d, isVoting: %d, playerAnswered:%d, player_id: %d, current_index: %d", \
-                menu_body, menu_id, menuKeys, isVoting, playerAnswered, player_id, current_index )
+                menuKeys: %d, isVoting: %d, playerAnswered:%d, player_id: %d, playerIndex: %d", \
+                menu_body, menu_id, menuKeys, isVoting, playerAnswered, player_id, playerIndex )
         
         DEBUG_LOGGER( 8, "   playersCount: %d, g_pendingVoteCountdown: %d, menu_counter: %s", \
                 playersCount, g_pendingVoteCountdown, menu_counter )
@@ -2824,7 +2824,7 @@ public vote_handleDisplay()
         g_voteDuration = get_pcvar_num( cvar_voteDuration );
     }
 
-#if IS_DEBUG_ENABLED == 2
+#if IS_DEBUG_ENABLED >= 2
     g_voteDuration = 5
     
     if( g_debug_level & 4 )
