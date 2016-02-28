@@ -22,21 +22,15 @@
 *****************************************************************************************
 */
 
-new const PLUGIN_VERSION[]             = "1.2.X"
-new const LAST_EMPTY_CYCLE_FILE_NAME[] = "lastEmptyCycleMap.dat"
-new const MENU_CHOOSEMAP[]             = "gal_menuChooseMap"
+new const PLUGIN_VERSION[] = "1.2.X"
 
 #include <amxmodx>
 #include <amxmisc>
 
-#define LONG_STRING   256
-#define COLOR_MESSAGE 192
-#define SHORT_STRING  64
-
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
  * and the variable 'g_debug_level' for more information. Default value: 0  - which is disabled.
  */
-#define IS_DEBUG_ENABLED 1
+#define IS_DEBUG_ENABLED 0
 
 #if IS_DEBUG_ENABLED > 0
     #define DEBUG
@@ -84,7 +78,7 @@ stock debugMesssageLogger( mode, message[], any: ... )
 {
     if( mode & g_debug_level )
     {
-        static formated_message[ LONG_STRING ]
+        static formated_message[ 256 ]
         
         vformat( formated_message, charsmax( formated_message ), message, 3 )
         
@@ -125,6 +119,10 @@ stock debugMesssageLogger( mode, message[], any: ... )
 #define RTV_CMD_STANDARD  1
 #define RTV_CMD_SHORTHAND 2
 #define RTV_CMD_DYNAMIC   4
+
+#define LONG_STRING   256
+#define COLOR_MESSAGE 192
+#define SHORT_STRING  64
 
 #define SOUND_GETREADYTOCHOOSE 1
 #define SOUND_COUNTDOWN        2
@@ -304,6 +302,7 @@ new cvar_extendmapStep;
 new cvar_extendmapStepRounds;
 new cvar_extendmapAllowStay
 new cvar_endOfMapVote;
+new cvar_isToAskForEndOfTheMapVote
 new cvar_emptyWait
 new cvar_emptyServerChange
 new cvar_emptyMapFilePath
@@ -345,6 +344,10 @@ new cvar_voteMinPlayersMapFilePath
 /**
  * Various Artists
  */
+new const LAST_EMPTY_CYCLE_FILE_NAME[] = "lastEmptyCycleMap.dat"
+new const MENU_CHOOSEMAP[]             = "gal_menuChooseMap"
+new const MENU_CHOOSEMAP_QUESTION[]    = "gal_menuChooseMapQuestion"
+
 new g_rtv_wait_admin_number
 new g_emptyCycleMapsNumber
 new g_cntRecentMap;
@@ -367,10 +370,10 @@ new g_voteStatus
 new g_voteDuration
 new g_totalVotesCounted;
 
-new CLR_RED    [ 3 ];    // \r
-new CLR_WHITE  [ 3 ];  // \w
-new CLR_YELLOW [ 3 ]; // \y
-new CLR_GREY   [ 3 ];   // \d
+new COLOR_RED    [ 3 ]; // \r
+new COLOR_WHITE  [ 3 ]; // \w
+new COLOR_YELLOW [ 3 ]; // \y
+new COLOR_GREY   [ 3 ]; // \d
 
 new g_refreshVoteStatus = true
 new g_mapPrefixCnt      = 1;
@@ -385,12 +388,13 @@ new g_currentMap                 [ MAX_MAPNAME_LENGHT ]
 new g_player_voted_option        [ MAX_PLAYERS_COUNT ];
 new g_player_voted_weight        [ MAX_PLAYERS_COUNT ];
 new g_snuffDisplay               [ MAX_PLAYERS_COUNT ];
-new bool:g_rockedVote            [ MAX_PLAYERS_COUNT ]
 new g_nominationMatchesMenu      [ MAX_PLAYERS_COUNT ];
 new g_arrayOfMapsWithVotesNumber [ MAX_OPTIONS_IN_VOTE ];
 
 new bool:g_is_player_voted          [ MAX_PLAYERS_COUNT ] = { true, ... }
 new bool:g_is_player_cancelled_vote [ MAX_PLAYERS_COUNT ]
+new bool:g_answeredForEndOfMapVote  [ MAX_PLAYERS_COUNT ]
+new bool:g_rockedVote               [ MAX_PLAYERS_COUNT ]
 
 new g_mapPrefix      [ MAX_PREFIX_COUNT ][ 16 ]
 new g_nomination     [ MAX_PLAYERS_COUNT ][ MAX_NOMINATION_COUNT ]
@@ -398,7 +402,8 @@ new g_recentMap      [ MAX_RECENT_MAP_COUNT ][ MAX_MAPNAME_LENGHT ]
 new g_votingMapNames [ MAX_OPTIONS_IN_VOTE ][ MAX_MAPNAME_LENGHT ]
 
 new g_nominationCount
-new g_chooseMapMenuId;
+new g_chooseMapMenuId
+new g_chooseMapQuestionMenuId
 new g_isRunOffNeedingKeepCurrentMap = false;
 
 public plugin_init()
@@ -436,6 +441,7 @@ public plugin_init()
     cvar_recentMapsBannedNumber    = register_cvar( "gal_banrecent", "3" );
     cvar_banRecentStyle            = register_cvar( "gal_banrecentstyle", "1" );
     cvar_endOfMapVote              = register_cvar( "gal_endofmapvote", "1" );
+    cvar_isToAskForEndOfTheMapVote = register_cvar( "gal_endofmapvote_ask", "0" );
     cvar_emptyWait                 = register_cvar( "gal_emptyserver_wait", "0" );
     cvar_emptyServerChange         = register_cvar( "gal_emptyserver_change", "0" );
     cvar_emptyMapFilePath          = register_cvar( "gal_emptyserver_mapfile", "" );
@@ -492,12 +498,15 @@ public plugin_init()
 #if AMXX_VERSION_NUM < 183
     g_user_msgid = get_user_msgid( "SayText" )
 #endif
-    g_chooseMapMenuId = register_menuid( MENU_CHOOSEMAP );
+    g_chooseMapMenuId         = register_menuid( MENU_CHOOSEMAP );
+    g_chooseMapQuestionMenuId = register_menuid( MENU_CHOOSEMAP_QUESTION );
     
     register_menucmd( g_chooseMapMenuId, MENU_KEY_1 | MENU_KEY_2 |
             MENU_KEY_3 | MENU_KEY_4 | MENU_KEY_5 | MENU_KEY_6 |
             MENU_KEY_7 | MENU_KEY_8 | MENU_KEY_9 | MENU_KEY_0,
-            "vote_handleChoice" );
+            "vote_handleChoice" )
+    
+    register_menucmd( g_chooseMapQuestionMenuId, MENU_KEY_6 | MENU_KEY_0, "handleEndOfTheMapVoteChoice" )
 }
 
 /**
@@ -529,10 +538,10 @@ public plugin_cfg()
     
     if( colored_menus() )
     {
-        copy( CLR_RED, 2, "\r" );
-        copy( CLR_WHITE, 2, "\w" );
-        copy( CLR_YELLOW, 2, "\y" );
-        copy( CLR_GREY, 2, "\d" );
+        copy( COLOR_RED, 2, "\r" );
+        copy( COLOR_WHITE, 2, "\w" );
+        copy( COLOR_YELLOW, 2, "\y" );
+        copy( COLOR_GREY, 2, "\d" );
     }
     
     g_rtvWait                = get_pcvar_float( cvar_rtvWait );
@@ -2304,6 +2313,7 @@ public vote_startDirector( bool:is_forced_voting )
         // mark the players who are in this vote for use later
         new playerCount
         new players[ MAX_PLAYERS ]
+        new Float:handleChoicesDelay
         
         get_players( players, playerCount, "ch" ) // skip bots and hltv
         
@@ -2312,8 +2322,6 @@ public vote_startDirector( bool:is_forced_voting )
             g_is_player_voted[ players[ player_index ] ] = false;
         }
         
-        new Float:handleChoicesDelay
-    
     #if defined DEBUG
         handleChoicesDelay = 1.0
     
@@ -2328,7 +2336,7 @@ public vote_startDirector( bool:is_forced_voting )
         }
         
         // announce the pending vote countdown from 7 to 1
-        set_task( handleChoicesDelay, "vote_countdownPendingVote", _, _, _, "a", 7 );
+        set_task( 1.0, "vote_countdownPendingVote", _, _, _, "a", 7 );
     #endif
         
         // display the map choices
@@ -2342,7 +2350,7 @@ public vote_startDirector( bool:is_forced_voting )
             
             set_task( handleChoicesDelay + float( voteDuration ) + 6.0, "vote_expire", TASKID_VOTE_EXPIRE )
             set_task( handleChoicesDelay + float( voteDuration ) + 1.0, "vote_display", TASKID_VOTE_DISPLAY,
-                    argument, 3 )
+                    argument, sizeof argument )
         }
         else
         {
@@ -2364,6 +2372,11 @@ public vote_countdownPendingVote()
 {
     static countdown = 7;
     
+    if( bool:get_pcvar_num( cvar_isToAskForEndOfTheMapVote ) )
+    {
+        displayEndOfTheMapVoteMenu( countdown )
+    }
+    
     // visual countdown
     set_hudmessage( 0, 222, 50, -1.0, 0.13, 0, 1.0, 0.94, 0.0, 0.0, -1 );
     show_hudmessage( 0, "%L", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", countdown );
@@ -2384,6 +2397,59 @@ public vote_countdownPendingVote()
     {
         countdown = 7;
     }
+}
+
+stock displayEndOfTheMapVoteMenu( countdown )
+{
+    new menu_body[ 256 ]
+    
+    new menu_id
+    new menuKeys
+    new menuKeysUnused
+    
+    new player_id
+    new current_index
+    new playersCount
+    new players[ MAX_PLAYERS ]
+    
+    if( !g_answeredForEndOfMapVote[ player_id ] )
+    {
+        menuKeys = MENU_KEY_0 | MENU_KEY_5;
+    }
+    
+    get_players( players, playersCount, "ch" );
+    
+    for( current_index = 0; current_index < playersCount; current_index++ )
+    {
+        player_id = players[ current_index ]
+        
+        formatex( menu_body, charsmax( menu_body ), "%s%L^n^n%s6. %s%L^n%s0. %s%L",
+                COLOR_WHITE, player_id, "GAL_CHOOSE_QUESTION",
+                COLOR_RED, ( g_answeredForEndOfMapVote[ player_id ] ? COLOR_GREY : COLOR_WHITE ),
+                player_id, "GAL_CHOOSE_QUESTION_YES", countdown,
+                COLOR_RED, ( g_answeredForEndOfMapVote[ player_id ] ? COLOR_GREY : COLOR_WHITE ),
+                player_id, "GAL_CHOOSE_QUESTION_NO" )
+        
+        get_user_menu( player_id, menu_id, menuKeysUnused )
+        
+        if( menu_id == 0
+            || menu_id == g_chooseMapQuestionMenuId )
+        {
+            show_menu( player_id, menuKeys, menu_body, 1, MENU_CHOOSEMAP_QUESTION )
+        }
+    }
+}
+
+public handleEndOfTheMapVoteChoice( player_id, menu, item )
+{
+    g_answeredForEndOfMapVote[ player_id ] = true
+    
+    if( item == 9 )
+    {
+        g_is_player_voted[ player_id ] = true
+    }
+    
+    return PLUGIN_CONTINUE;
 }
 
 stock vote_addNominations()
@@ -2717,7 +2783,7 @@ public vote_handleDisplay()
 
 public vote_display( argument[ 3 ] )
 {
-    static keys
+    static menuKeys
     static voteStatus[ 512 ]
     static voteMapLine[ 32 ]
     
@@ -2727,8 +2793,8 @@ public vote_display( argument[ 3 ] )
 #if defined DEBUG
     new snuff = ( player_id > 0 ) ? g_snuffDisplay[ player_id ] : -1;
     
-    DEBUG_LOGGER( 4, "   [votedisplay( )] player_id: %i  updateTimeRemaining: %i,  \
-        unsnuffDisplay: %i  g_snuffDisplay: %i  g_refreshVoteStatus: %i,  \
+    DEBUG_LOGGER( 4, "   ( votedisplay ) player_id: %i  updateTimeRemaining: %i,  \
+        unsnuffDisplay: %i  g_snuffDisplay: %i  g_refreshVoteStatus: %i,^n   \
         g_totalVoteOptions: %i  len( g_vote ): %i  len( voteStatus ): %i", \
             argument[ 1 ], argument[ 0 ], \
             argument[ 2 ], snuff, g_refreshVoteStatus, \
@@ -2754,7 +2820,7 @@ public vote_display( argument[ 3 ] )
     new bool:isShowNoneOption = bool: get_pcvar_num( cvar_voteShowNoneOption )
     new bool:isVoteOver       = ( updateTimeRemaining == -1
                                   && player_id == -1 )
-    new charCnt
+    new charCount
     
     if( g_refreshVoteStatus
         || isVoteOver )
@@ -2766,18 +2832,18 @@ public vote_display( argument[ 3 ] )
         if( isShowNoneOption
             && !( g_voteStatus & VOTE_HAS_EXPIRED ) )
         {
-            keys = MENU_KEY_0;
+            menuKeys = MENU_KEY_0;
         }
         
         // add the header
         if( isVoteOver )
         {
-            charCnt = formatex( voteStatus, charsmax( voteStatus ), "%s%L^n", CLR_YELLOW,
+            charCount = formatex( voteStatus, charsmax( voteStatus ), "%s%L^n", COLOR_YELLOW,
                     LANG_SERVER, "GAL_RESULT" );
         }
         else
         {
-            charCnt = formatex( voteStatus, charsmax( voteStatus ), "%s%L^n", CLR_YELLOW,
+            charCount = formatex( voteStatus, charsmax( voteStatus ), "%s%L^n", COLOR_YELLOW,
                     LANG_SERVER, "GAL_CHOOSE" );
         }
         
@@ -2786,11 +2852,11 @@ public vote_display( argument[ 3 ] )
         {
             computeVoteMapLine( voteMapLine, charsmax( voteMapLine ), choice_index );
             
-            charCnt += formatex( voteStatus[ charCnt ], charsmax( voteStatus ) - charCnt,
-                    "^n%s%i. %s%s%s", CLR_RED, choice_index + 1, CLR_WHITE,
+            charCount += formatex( voteStatus[ charCount ], charsmax( voteStatus ) - charCount,
+                    "^n%s%i. %s%s%s", COLOR_RED, choice_index + 1, COLOR_WHITE,
                     g_votingMapNames[ choice_index ], voteMapLine );
             
-            keys |= ( 1 << choice_index );
+            menuKeys |= ( 1 << choice_index );
         }
         
         new allowStay        = ( g_voteStatus & VOTE_IS_EARLY );
@@ -2837,7 +2903,7 @@ public vote_display( argument[ 3 ] )
                 // if it's not a runoff vote, add a space between the maps and the additional option
                 if( g_voteStatus & VOTE_IS_RUNOFF == 0 )
                 {
-                    charCnt += formatex( voteStatus[ charCnt ], charsmax( voteStatus ) - charCnt, "^n" );
+                    charCount += formatex( voteStatus[ charCount ], charsmax( voteStatus ) - charCount, "^n" );
                 }
                 
                 computeVoteMapLine( voteMapLine, charsmax( voteMapLine ), g_totalVoteOptions );
@@ -2859,8 +2925,8 @@ public vote_display( argument[ 3 ] )
                         copy( extend_option_type, charsmax( extend_option_type ), "GAL_OPTION_EXTEND" )
                     }
                     
-                    charCnt += formatex( voteStatus[ charCnt ], charsmax( voteStatus ) - charCnt,
-                            "^n%s%i. %s%L%s", CLR_RED, g_totalVoteOptions + 1, CLR_WHITE, LANG_SERVER,
+                    charCount += formatex( voteStatus[ charCount ], charsmax( voteStatus ) - charCount,
+                            "^n%s%i. %s%L%s", COLOR_RED, g_totalVoteOptions + 1, COLOR_WHITE, LANG_SERVER,
                             extend_option_type, g_currentMap, extend_step, voteMapLine );
                 }
                 else
@@ -2868,20 +2934,20 @@ public vote_display( argument[ 3 ] )
                     // add the "Stay Here" menu item
                     if( get_pcvar_num( cvar_extendmapAllowStayType ) )
                     {
-                        charCnt += formatex( voteStatus[ charCnt ], charsmax( voteStatus ) - charCnt,
-                                "^n%s%i. %s%L%s", CLR_RED, g_totalVoteOptions + 1,
-                                CLR_WHITE, LANG_SERVER, "GAL_OPTION_STAY_MAP", g_currentMap, voteMapLine );
+                        charCount += formatex( voteStatus[ charCount ], charsmax( voteStatus ) - charCount,
+                                "^n%s%i. %s%L%s", COLOR_RED, g_totalVoteOptions + 1,
+                                COLOR_WHITE, LANG_SERVER, "GAL_OPTION_STAY_MAP", g_currentMap, voteMapLine );
                     }
                     else
                     {
-                        charCnt += formatex( voteStatus[ charCnt ], charsmax( voteStatus ) - charCnt,
-                                "^n%s%i. %s%L%s", CLR_RED, g_totalVoteOptions + 1,
-                                CLR_WHITE, LANG_SERVER, "GAL_OPTION_STAY", voteMapLine );
+                        charCount += formatex( voteStatus[ charCount ], charsmax( voteStatus ) - charCount,
+                                "^n%s%i. %s%L%s", COLOR_RED, g_totalVoteOptions + 1,
+                                COLOR_WHITE, LANG_SERVER, "GAL_OPTION_STAY", voteMapLine );
                     }
                 }
                 
                 // Added the extension/stay key option (1 << 2 = key 3, 1 << 3 = key 4, ...)
-                keys |= ( 1 << g_totalVoteOptions );
+                menuKeys |= ( 1 << g_totalVoteOptions );
             }
         }
         
@@ -2900,9 +2966,9 @@ public vote_display( argument[ 3 ] )
     if( noneIsHidden )
     {
         formatex( g_vote[ cleanCharCnt ], charsmax( g_vote ) - cleanCharCnt,
-                "^n^n%s0. %s%L", CLR_RED, CLR_WHITE, LANG_SERVER, "GAL_OPTION_NONE" );
+                "^n^n%s0. %s%L", COLOR_RED, COLOR_WHITE, LANG_SERVER, "GAL_OPTION_NONE" );
         
-        charCnt += formatex( voteStatus[ charCnt ], charsmax( voteStatus ) - charCnt, "^n^n" );
+        charCount += formatex( voteStatus[ charCount ], charsmax( voteStatus ) - charCount, "^n^n" );
     }
     
     // display the vote
@@ -2914,7 +2980,7 @@ public vote_display( argument[ 3 ] )
     {
         g_voteDuration--;
         
-        charCnt = copy( voteFooter, charsmax( voteFooter ), "^n^n" );
+        charCount = copy( voteFooter, charsmax( voteFooter ), "^n^n" );
         
         if( get_pcvar_num( cvar_voteExpCountdown ) )
         {
@@ -2924,23 +2990,23 @@ public vote_display( argument[ 3 ] )
             {
                 if( g_voteDuration > 0 )
                 {
-                    formatex( voteFooter[ charCnt ], charsmax( voteFooter ) - charCnt, "%s%L: %s%i",
-                            CLR_WHITE, LANG_SERVER, "GAL_TIMELEFT", CLR_RED, g_voteDuration );
+                    formatex( voteFooter[ charCount ], charsmax( voteFooter ) - charCount, "%s%L: %s%i",
+                            COLOR_WHITE, LANG_SERVER, "GAL_TIMELEFT", COLOR_RED, g_voteDuration );
                 }
                 else
                 {
-                    formatex( voteFooter[ charCnt ], charsmax( voteFooter ) - charCnt,
-                            "%s%L", CLR_YELLOW, LANG_SERVER, "GAL_VOTE_ENDED" );
+                    formatex( voteFooter[ charCount ], charsmax( voteFooter ) - charCount,
+                            "%s%L", COLOR_YELLOW, LANG_SERVER, "GAL_VOTE_ENDED" );
                 }
             }
         }
     }
     
     // menu showed while voting
-    static menuClean     [ 512 ]
+    static menuClean[ 512 ]
     
     // menu showed after voted
-    static menuDirty     [ 512 ]
+    static menuDirty[ 512 ]
     
     // This function is only called 1 time with the correct player id, to optionally display
     // to single player that just voted.
@@ -2951,7 +3017,7 @@ public vote_display( argument[ 3 ] )
         calculate_menu_dirt( player_id, isShowNoneOption, noneOptionType, isVoteOver, voteFooter,
                 voteStatus, menuDirty, charsmax( menuDirty ), noneIsHidden )
         
-        display_vote_menu( false, false, player_id, menuDirty, keys, 1 )
+        display_vote_menu( false, false, player_id, menuDirty, menuKeys )
     }
     else // just display to everyone
     {
@@ -2971,7 +3037,7 @@ public vote_display( argument[ 3 ] )
                 calculate_menu_clean( player_id, isShowNoneOption, noneOptionType, voteFooter,
                         menuClean, charsmax( menuClean ) )
                 
-                display_vote_menu( true, false, player_id, menuClean, keys, playerIndex )
+                display_vote_menu( true, false, player_id, menuClean, menuKeys )
             }
             else if( showStatus == SHOW_STATUS_ALWAYS
                      || ( isVoteOver
@@ -2982,7 +3048,7 @@ public vote_display( argument[ 3 ] )
                 calculate_menu_dirt( player_id, isShowNoneOption, noneOptionType, isVoteOver, voteFooter,
                         voteStatus, menuDirty, charsmax( menuDirty ), noneIsHidden )
                 
-                display_vote_menu( false, isVoteOver, player_id, menuDirty, keys, playerIndex )
+                display_vote_menu( false, isVoteOver, player_id, menuDirty, menuKeys )
             }
         }
     }
@@ -3012,7 +3078,7 @@ stock calculate_menu_clean( player_id, isShowNoneOption, noneOptionType, voteFoo
         }
         
         formatex( menuClean, menuCleanSize, "%s^n^n%s0. %s%L%s", g_vote,
-                CLR_RED, CLR_WHITE, LANG_SERVER, noneOption, voteFooter );
+                COLOR_RED, COLOR_WHITE, LANG_SERVER, noneOption, voteFooter );
     }
     else
     {
@@ -3046,12 +3112,12 @@ stock calculate_menu_dirt( player_id, isShowNoneOption, noneOptionType, isVoteOv
             }
             
             formatex( menuDirty, menuDirtySize, "%s^n^n%s0. %s%L^n^n%s%L", voteStatus,
-                    CLR_RED, CLR_WHITE, LANG_SERVER, noneOption, CLR_YELLOW, LANG_SERVER,
+                    COLOR_RED, COLOR_WHITE, LANG_SERVER, noneOption, COLOR_YELLOW, LANG_SERVER,
                     "GAL_VOTE_ENDED" )
         }
         else
         {
-            formatex( menuDirty, menuDirtySize, "%s^n^n%s%L", voteStatus, CLR_YELLOW,
+            formatex( menuDirty, menuDirtySize, "%s^n^n%s%L", voteStatus, COLOR_YELLOW,
                     LANG_SERVER, "GAL_VOTE_ENDED" );
         }
     }
@@ -3070,7 +3136,7 @@ stock calculate_menu_dirt( player_id, isShowNoneOption, noneOptionType, isVoteOv
             }
             
             formatex( menuDirty, menuDirtySize, "%s^n^n%s0. %s%L%s", voteStatus,
-                    CLR_RED, CLR_WHITE, LANG_SERVER, noneOption, voteFooter );
+                    COLOR_RED, COLOR_WHITE, LANG_SERVER, noneOption, voteFooter );
         }
         else
         {
@@ -3086,23 +3152,19 @@ stock calculate_menu_dirt( player_id, isShowNoneOption, noneOptionType, isVoteOv
     }
 }
 
-stock display_vote_menu( bool:menuType, bool:isVoteOver, player_id, menuBody[], menuKeys, playerIndex )
+stock display_vote_menu( bool:menuType, bool:isVoteOver, player_id, menuBody[], menuKeys )
 {
     new menuid
     new menukeys_unused
 
 #if defined DEBUG
-    if( playerIndex == 0 )
+    if( player_id == 1 )
     {
         new player_name[ MAX_PLAYER_NAME_LENGHT ];
         get_user_name( player_id, player_name, 31 );
         
         DEBUG_LOGGER( 4, "    [%s ( %s )]", player_name, ( menuType ? "clean" : "dirty" ) )
         DEBUG_LOGGER( 4, "        %s", menuBody )
-    }
-    
-    if( player_id == 1 )
-    {
         DEBUG_LOGGER( 4, "" )
     }
 #endif
@@ -3280,14 +3342,14 @@ stock computeVoteMapLine( voteMapLine[], voteMapLineLength, voteIndex )
         {
             case STATUS_TYPE_COUNT:
             {
-                formatex( voteMapLine, voteMapLineLength, " %s( %i%s )", CLR_GREY,
+                formatex( voteMapLine, voteMapLineLength, " %s( %i%s )", COLOR_GREY,
                         voteCountNumber, g_voteStatus_symbol );
             }
             case STATUS_TYPE_PERCENTAGE:
             {
                 new votePercentNunber = percent( voteCountNumber, g_totalVotesCounted );
                 
-                formatex( voteMapLine, voteMapLineLength, " %s( %i%s )", CLR_GREY,
+                formatex( voteMapLine, voteMapLineLength, " %s( %i%s )", COLOR_GREY,
                         votePercentNunber, g_voteStatus_symbol );
             }
             case STATUS_TYPE_PERCENTAGE | STATUS_TYPE_COUNT:
@@ -3295,8 +3357,8 @@ stock computeVoteMapLine( voteMapLine[], voteMapLineLength, voteIndex )
                 new votePercentNunber = percent( voteCountNumber, g_totalVotesCounted );
                 
                 formatex( voteMapLine, voteMapLineLength, " %s(%s %i%s %s[%s%d%s] %s)",
-                        CLR_RED, CLR_GREY, votePercentNunber, g_voteStatus_symbol,
-                        CLR_YELLOW, CLR_GREY, voteCountNumber, CLR_YELLOW, CLR_RED );
+                        COLOR_RED, COLOR_GREY, votePercentNunber, g_voteStatus_symbol,
+                        COLOR_YELLOW, COLOR_GREY, voteCountNumber, COLOR_YELLOW, COLOR_RED );
             }
             default:
             {
@@ -3779,7 +3841,10 @@ stock vote_resetStats()
     
     // reset everyones' votes
     arrayset( g_is_player_voted, true, sizeof( g_is_player_voted ) );
+    
     arrayset( g_is_player_cancelled_vote, false, sizeof( g_is_player_voted ) );
+    arrayset( g_answeredForEndOfMapVote, false, sizeof( g_answeredForEndOfMapVote ) );
+    
     arrayset( g_player_voted_option, 0, sizeof( g_player_voted_option ) );
     arrayset( g_player_voted_weight, 0, sizeof( g_player_voted_weight ) );
 }
