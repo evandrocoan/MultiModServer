@@ -3037,7 +3037,8 @@ public vote_display( argument[ 3 ] )
                 if( g_voteDuration >= 0 )
                 {
                     formatex( voteFooter[ charCount ], charsmax( voteFooter ) - charCount, "%s%L: %s%i",
-                            COLOR_WHITE, LANG_SERVER, "GAL_TIMELEFT", COLOR_RED, g_voteDuration );
+                            COLOR_WHITE, LANG_SERVER, "GAL_TIMELEFT", COLOR_RED,
+                            ( g_voteDuration == 0 ? 1 : g_voteDuration ) )
                 }
                 else
                 {
@@ -3101,40 +3102,6 @@ public vote_display( argument[ 3 ] )
                 display_vote_menu( false, isVoteOver, player_id, menuDirty, menuKeys )
             }
         }
-    }
-}
-
-stock calculate_menu_clean( player_id, isToShowNoneOption, noneOptionType, voteFooter[], menuClean[], menuCleanSize )
-{
-    static noneOption[ 32 ]
-    static bool:isToShowUndo
-    
-    menuClean  [ 0 ] = '^0';
-    noneOption [ 0 ] = '^0';
-    isToShowUndo     = ( player_id > 0 \
-                         && noneOptionType == CONVERT_IT_TO_CANCEL_LAST_VOTE \
-                         && g_is_player_voted[ player_id ] \
-                         && !g_is_player_cancelled_vote[ player_id ] )
-    
-    // append a "None" option on for people to choose if they don't like any other choice
-    // to append it here to always shows it WHILE voting.
-    if( isToShowNoneOption )
-    {
-        if( isToShowUndo )
-        {
-            copy( noneOption, charsmax( noneOption ), "GAL_OPTION_CANCEL_VOTE" )
-        }
-        else
-        {
-            copy( noneOption, charsmax( noneOption ), "GAL_OPTION_NONE" )
-        }
-        
-        formatex( menuClean, menuCleanSize, "%s^n^n%s%s",
-                g_vote, noneOption, voteFooter );
-    }
-    else
-    {
-        formatex( menuClean, menuCleanSize, "%s%s", g_vote, voteFooter );
     }
 }
 
@@ -3222,7 +3189,7 @@ stock computeUndoButton( player_id, bool:isToShowUndo, noneOption[], noneOptionT
                 {
                     if( g_is_player_voted[ player_id ] )
                     {
-                        noneOption[0] = '^0'
+                        noneOption[ 0 ] = '^0'
                     }
                     else
                     {
@@ -3230,13 +3197,47 @@ stock computeUndoButton( player_id, bool:isToShowUndo, noneOption[], noneOptionT
                                 COLOR_RED, COLOR_WHITE, LANG_SERVER, "GAL_OPTION_NONE" )
                     }
                 }
-                case ALWAYS_KEEP_SHOWING:
+                case ALWAYS_KEEP_SHOWING, CONVERT_IT_TO_CANCEL_LAST_VOTE:
                 {
                     formatex( noneOption, noneOptionSize, "%s0. %s%L",
                             COLOR_RED, COLOR_WHITE, LANG_SERVER, "GAL_OPTION_NONE" )
                 }
             }
         }
+    }
+}
+
+stock calculate_menu_clean( player_id, isToShowNoneOption, noneOptionType, voteFooter[], menuClean[], menuCleanSize )
+{
+    static noneOption[ 32 ]
+    static bool:isToShowUndo
+    
+    menuClean  [ 0 ] = '^0';
+    noneOption [ 0 ] = '^0';
+    isToShowUndo     = ( player_id > 0 \
+                         && noneOptionType == CONVERT_IT_TO_CANCEL_LAST_VOTE \
+                         && g_is_player_voted[ player_id ] \
+                         && !g_is_player_cancelled_vote[ player_id ] )
+    
+    // append a "None" option on for people to choose if they don't like any other choice
+    // to append it here to always shows it WHILE voting.
+    if( isToShowNoneOption )
+    {
+        if( isToShowUndo )
+        {
+            copy( noneOption, charsmax( noneOption ), "GAL_OPTION_CANCEL_VOTE" )
+        }
+        else
+        {
+            copy( noneOption, charsmax( noneOption ), "GAL_OPTION_NONE" )
+        }
+        
+        formatex( menuClean, menuCleanSize, "%s^n^n%s%s",
+                g_vote, noneOption, voteFooter );
+    }
+    else
+    {
+        formatex( menuClean, menuCleanSize, "%s%s", g_vote, voteFooter );
     }
 }
 
