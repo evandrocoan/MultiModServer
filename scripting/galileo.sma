@@ -397,6 +397,7 @@ new g_nominationMatchesMenu      [ MAX_PLAYERS_COUNT ];
 new g_arrayOfMapsWithVotesNumber [ MAX_OPTIONS_IN_VOTE ];
 
 new bool:g_is_player_voted          [ MAX_PLAYERS_COUNT ] = { true, ... }
+new bool:g_is_player_participating  [ MAX_PLAYERS_COUNT ] = { true, ... }
 new bool:g_is_player_cancelled_vote [ MAX_PLAYERS_COUNT ]
 new bool:g_answeredForEndOfMapVote  [ MAX_PLAYERS_COUNT ]
 new bool:g_rockedVote               [ MAX_PLAYERS_COUNT ]
@@ -2316,16 +2317,23 @@ public vote_startDirector( bool:is_forced_voting )
         }
     #endif
         
-        // mark the players who are in this vote for use later
+        new player_id
         new playerCount
         new players[ MAX_PLAYERS ]
         new Float:handleChoicesDelay
         
-        get_players( players, playerCount, "ch" ) // skip bots and hltv
+        // skip bots and hltv
+        get_players( players, playerCount, "ch" )
         
+        // mark the players who are in this vote for use later
         for( new player_index = 0; player_index < playerCount; ++player_index )
         {
-            g_is_player_voted[ players[ player_index ] ] = false;
+            player_id = players[ player_index ]
+            
+            if( g_is_player_participating[ player_id ] )
+            {
+                g_is_player_voted[ player_id ] = false;
+            }
         }
     
     #if IS_DEBUG_ENABLED == 2
@@ -2349,19 +2357,7 @@ public vote_startDirector( bool:is_forced_voting )
         set_task( handleChoicesDelay, "vote_handleDisplay", TASKID_VOTE_HANDLEDISPLAY );
         
         // display the vote outcome
-        if( get_pcvar_num( cvar_voteStatus ) )
-        {
-            // indicates it's the end of vote display
-            new argument[ 3 ] = { -1, -1, false };
-            
-            set_task( handleChoicesDelay + float( voteDuration ), "closeVoting", TASKID_VOTE_EXPIRE )
-            set_task( handleChoicesDelay + float( voteDuration ) + 1.0, "vote_display", TASKID_VOTE_DISPLAY,
-                    argument, sizeof argument )
-        }
-        else
-        {
-            set_task( handleChoicesDelay + float( voteDuration ), "closeVoting", TASKID_VOTE_EXPIRE );
-        }
+        set_task( handleChoicesDelay + float( voteDuration ), "closeVoting", TASKID_VOTE_EXPIRE )
     }
     else
     {
@@ -2374,10 +2370,22 @@ public vote_startDirector( bool:is_forced_voting )
             g_is_timeToRestart, g_is_timeToChangeLevel, g_voteStatus & VOTE_IS_EARLY )
 }
 
+/**
+ * Indicates it's the end of vote display.
+ */
+stock endOfVoteDisplay()
+{
+    new argument[ 3 ] = { -1, -1, false }
+    
+    set_task( 1.1, "vote_display", TASKID_VOTE_DISPLAY, argument, sizeof argument, "a", 5 )
+}
+
 public closeVoting()
 {
     g_vote[ 0 ]   = '^0'
     g_voteStatus |= VOTE_HAS_EXPIRED
+    
+    endOfVoteDisplay()
     
     set_task( 9.0, "computeVotes", TASKID_VOTE_EXPIRE )
 }
@@ -2437,7 +2445,7 @@ public displayEndOfTheMapVoteMenu( player_id )
     for( new current_index = 0; current_index < playersCount; current_index++ )
     {
         player_id      = players[ current_index ]
-        isVoting       = !g_is_player_voted[ player_id ]
+        isVoting       = g_is_player_participating[ player_id ]
         playerAnswered = g_answeredForEndOfMapVote[ player_id ]
         
         if( !playerAnswered )
@@ -2495,7 +2503,9 @@ public handleEndOfTheMapVoteChoice( player_id, pressedKeyCode )
         case 9: // pressedKeyCode 9 means the keyboard key 0
         {
             announceRegistedVote( player_id, pressedKeyCode )
-            g_is_player_voted[ player_id ] = true
+            
+            g_is_player_voted[ player_id ]         = true;
+            g_is_player_participating[ player_id ] = false;
         }
         case 0: // pressedKeyCode 0 means the keyboard key 1
         {
@@ -3315,6 +3325,7 @@ stock cancel_player_vote( player_id )
     new voteWeight = g_player_voted_weight[ player_id ]
     
     g_is_player_voted[ player_id ]          = false;
+    g_is_player_participating[ player_id ]  = true;
     g_is_player_cancelled_vote[ player_id ] = true;
     
     g_totalVotesCounted                                                -= voteWeight
@@ -3329,18 +3340,22 @@ stock cancel_player_vote( player_id )
  */
 stock register_vote( player_id, pressedKeyCode )
 {
+    announceRegistedVote( player_id, pressedKeyCode )
+    
+    g_is_player_voted[ player_id ]         = true;
+    
     if( pressedKeyCode == 9 )
     {
-        g_player_voted_option[ player_id ] = 0 // the None option does not integrate vote counting
-        g_player_voted_weight[ player_id ] = 0 // the None option has no weight
+        g_is_player_participating[ player_id ] = false // if is not interested now, at runoff wont also
+        g_player_voted_option[ player_id ]     = 0 // the None option does not integrate vote counting
+        g_player_voted_weight[ player_id ]     = 0 // the None option has no weight
     }
     else
     {
-        g_player_voted_option[ player_id ] = pressedKeyCode
-        g_player_voted_weight[ player_id ] = 1
+        g_is_player_participating[ player_id ] = true;
+        g_player_voted_option[ player_id ]     = pressedKeyCode
+        g_player_voted_weight[ player_id ]     = 1
     }
-    
-    announceRegistedVote( player_id, pressedKeyCode )
     
     // pressedKeyCode 9 means the keyboard key 0 (the None option) and it does not integrate the vote
     if( pressedKeyCode != 9 )
@@ -3364,8 +3379,6 @@ stock register_vote( player_id, pressedKeyCode )
             g_arrayOfMapsWithVotesNumber[ pressedKeyCode ]++;
         }
     }
-    
-    g_is_player_voted[ player_id ] = true;
 }
 
 stock announceRegistedVote( player_id, pressedKeyCode )
@@ -3739,6 +3752,7 @@ public computeVotes()
                 color_print( 0, "^1%L", LANG_PLAYER, "GAL_RESULT_TIED2",
                         numberOfMapsAtSecondPosition );
             }
+            
             // clear all the votes
             vote_resetStats();
             
@@ -3861,10 +3875,12 @@ public computeVotes()
     
     // vote is no longer in progress
     g_voteStatus &= ~VOTE_IN_PROGRESS;
-    vote_resetStats();
     
     // if we were in a runoff mode, get out of it
     g_voteStatus &= ~VOTE_IS_RUNOFF;
+    
+    // this must be called after 'g_voteStatus &= ~VOTE_IS_RUNOFF' above
+    vote_resetStats();
 }
 
 stock Float:map_getMinutesElapsed()
@@ -3954,7 +3970,12 @@ stock vote_resetStats()
     // reset everyones' votes
     arrayset( g_is_player_voted, true, sizeof( g_is_player_voted ) );
     
-    arrayset( g_is_player_cancelled_vote, false, sizeof( g_is_player_voted ) );
+    if( !( g_voteStatus & VOTE_IS_RUNOFF ) )
+    {
+        arrayset( g_is_player_participating, true, sizeof( g_is_player_participating ) );
+    }
+    
+    arrayset( g_is_player_cancelled_vote, false, sizeof( g_is_player_cancelled_vote ) );
     arrayset( g_answeredForEndOfMapVote, false, sizeof( g_answeredForEndOfMapVote ) );
     
     arrayset( g_player_voted_option, 0, sizeof( g_player_voted_option ) );
@@ -4388,8 +4409,6 @@ public client_disconnect( player_id )
 public client_disconnected( player_id )
 #endif
 {
-    g_is_player_voted[ player_id ] = false;
-    
     if( has_flag( player_id, "f" ) )
     {
         g_rtv_wait_admin_number--
