@@ -331,10 +331,10 @@ new cvar_voteMapChoiceCount
 new cvar_voteAnnounceChoice
 new cvar_voteUniquePrefixes;
 new cvar_rtvReminder;
-new cvar_srvStart;
-new cvar_srvTimelimitRestart;
-new cvar_srvMaxroundsRestart;
-new cvar_srvWinlimitRestart;
+new cvar_serverStartAction;
+new cvar_serverTimelimitRestart;
+new cvar_serverMaxroundsRestart;
+new cvar_serverWinlimitRestart;
 new cvar_runoffEnabled
 new cvar_runoffDuration;
 new cvar_voteStatus
@@ -450,10 +450,10 @@ public plugin_init()
     cvar_emptyWait                 = register_cvar( "gal_emptyserver_wait", "0" );
     cvar_emptyServerChange         = register_cvar( "gal_emptyserver_change", "0" );
     cvar_emptyMapFilePath          = register_cvar( "gal_emptyserver_mapfile", "" );
-    cvar_srvStart                  = register_cvar( "gal_srv_start", "0" );
-    cvar_srvTimelimitRestart       = register_cvar( "gal_srv_timelimit_restart", "0" );
-    cvar_srvMaxroundsRestart       = register_cvar( "gal_srv_maxrounds_restart", "0" );
-    cvar_srvWinlimitRestart        = register_cvar( "gal_srv_winlimit_restart", "0" );
+    cvar_serverStartAction         = register_cvar( "gal_srv_start", "0" );
+    cvar_serverTimelimitRestart    = register_cvar( "gal_srv_timelimit_restart", "0" );
+    cvar_serverMaxroundsRestart    = register_cvar( "gal_srv_maxrounds_restart", "0" );
+    cvar_serverWinlimitRestart     = register_cvar( "gal_srv_winlimit_restart", "0" );
     cvar_rtvCommands               = register_cvar( "gal_rtv_commands", "3" );
     cvar_rtvWait                   = register_cvar( "gal_rtv_wait", "10" );
     cvar_rtvWaitRounds             = register_cvar( "gal_rtv_wait_rounds", "5" );
@@ -551,9 +551,9 @@ public plugin_cfg()
     
     g_rtvWait                = get_pcvar_float( cvar_rtvWait );
     g_rtvWaitRounds          = get_pcvar_num( cvar_rtvWaitRounds );
-    g_is_srvTimelimitRestart = bool:get_pcvar_num( cvar_srvTimelimitRestart );
-    g_is_srvMaxroundsRestart = bool:get_pcvar_num( cvar_srvMaxroundsRestart );
-    g_is_srvWinlimitRestart  = bool:get_pcvar_num( cvar_srvWinlimitRestart );
+    g_is_srvTimelimitRestart = bool:get_pcvar_num( cvar_serverTimelimitRestart );
+    g_is_srvMaxroundsRestart = bool:get_pcvar_num( cvar_serverMaxroundsRestart );
+    g_is_srvWinlimitRestart  = bool:get_pcvar_num( cvar_serverWinlimitRestart );
     
     get_pcvar_string( cvar_voteWeightFlags, g_voteWeightFlags, charsmax( g_voteWeightFlags ) );
     get_cvar_string( "amx_nextmap", g_nextmap, charsmax( g_nextmap ) );
@@ -575,7 +575,7 @@ public plugin_cfg()
         map_loadRecentList();
         
         if( !( get_cvar_num( "gal_server_starting" )
-               && get_pcvar_num( cvar_srvStart ) ) )
+               && get_pcvar_num( cvar_serverStartAction ) ) )
         {
             map_writeRecentList();
         }
@@ -887,7 +887,7 @@ public reset_rounds_scores()
             new new_timelimit = ( floatround(
                                           get_pcvar_num( g_timelimit_pointer )
                                           - map_getMinutesElapsed(), floatround_floor )
-                                  + get_pcvar_num( cvar_srvTimelimitRestart ) - 1 )
+                                  + get_pcvar_num( cvar_serverTimelimitRestart ) - 1 )
             
             if( new_timelimit > 0 )
             {
@@ -900,7 +900,7 @@ public reset_rounds_scores()
         {
             new new_winlimit = ( get_pcvar_num( g_winlimit_pointer )
                                  - max( g_total_terrorists_wins, g_total_CT_wins )
-                                 + get_pcvar_num( cvar_srvWinlimitRestart ) - 1 )
+                                 + get_pcvar_num( cvar_serverWinlimitRestart ) - 1 )
             
             if( new_winlimit > 0 )
             {
@@ -912,7 +912,7 @@ public reset_rounds_scores()
             && g_is_srvMaxroundsRestart )
         {
             new new_maxrounds = ( get_pcvar_num( g_maxrounds_pointer ) - g_total_rounds_played
-                                  + get_pcvar_num( cvar_srvMaxroundsRestart ) - 1 )
+                                  + get_pcvar_num( cvar_serverMaxroundsRestart ) - 1 )
             
             if( new_maxrounds > 0 )
             {
@@ -1032,7 +1032,7 @@ public handleServerStart()
     set_cvar_num( "gal_server_starting", 0 );
     
     // take the defined "server start" action
-    new startAction = get_pcvar_num( cvar_srvStart );
+    new startAction = get_pcvar_num( cvar_serverStartAction );
     
     if( startAction )
     {
@@ -1080,7 +1080,7 @@ public handleServerStart()
         if( nextMap[ 0 ]
             && is_map_valid( nextMap ) )
         {
-            server_cmd( "changelevel %s", nextMap );
+            serverChangeLevel( nextMap );
         }
         else
         {
@@ -4248,11 +4248,16 @@ public map_change()
         // since the next map is unknown, just restart the current map.
         copy( map, charsmax( map ), g_currentMap );
     }
+    
+    serverChangeLevel( map )
+}
 
+stock serverChangeLevel( mapName[] )
+{
 #if AMXX_VERSION_NUM < 183
-    server_cmd( "changelevel %s", map )
+    server_cmd( "changelevel %s", mapName )
 #else
-    engine_changelevel( map )
+    engine_changelevel( mapName )
 #endif
 }
 
@@ -4262,7 +4267,7 @@ public map_change_stays()
     
     DEBUG_LOGGER( 1, " ( map_change_stays ) g_currentMap: %s", g_currentMap )
     
-    server_cmd( "restart" );
+    serverChangeLevel( g_currentMap )
 }
 
 public cmd_HL1_votemap( player_id )
@@ -5161,11 +5166,8 @@ public delayedChange( param[] )
     {
         set_pcvar_float( plugin_nextmap_g_chattime, get_pcvar_float( plugin_nextmap_g_chattime ) - 2.0 )
     }
-#if AMXX_VERSION_NUM < 183
-    server_cmd( "changelevel %s", param )
-#else
-    engine_changelevel( param )
-#endif
+    
+    serverChangeLevel( param )
 }
 
 public changeMap()
