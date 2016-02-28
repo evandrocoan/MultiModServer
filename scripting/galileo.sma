@@ -1546,9 +1546,17 @@ public map_loadPrefixList()
  */
 public round_restart_event()
 {
-    g_isTimeToResetRounds = true
-    
-    reset_round_ending()
+    if( g_is_timeLimitChanged )
+    {
+        g_isTimeToResetRounds = true
+        
+        cancel_voting()
+        reset_round_ending()
+    }
+    else
+    {
+        game_commencing_event()
+    }
 }
 
 /**
@@ -1557,10 +1565,11 @@ public round_restart_event()
  */
 public game_commencing_event()
 {
-    g_isTimeToResetGame = true
+    g_isTimeToResetGame   = true
+    g_isTimeToResetRounds = true
     
-    round_restart_event()
     cancel_voting()
+    reset_round_ending()
     
     DEBUG_LOGGER( 32, "^n AT: game_commencing_event" )
 }
@@ -1644,7 +1653,7 @@ public reset_rounds_scores()
     g_total_rounds_played   = -1
 }
 
-stock map_getIdx( text[] )
+stock map_getIndex( text[] )
 {
     new map[ MAX_MAPNAME_LENGHT ];
     new mapIndex;
@@ -1727,7 +1736,7 @@ public cmd_say( player_id )
                 }
                 else
                 {
-                    mapIndex = map_getIdx( arg1 )
+                    mapIndex = map_getIndex( arg1 )
                     
                     if( mapIndex >= 0 )
                     {
@@ -1776,7 +1785,7 @@ public cmd_say( player_id )
             else if( equali( arg1, "cancel" ) )
             {
                 // bpj -- allow ambiguous cancel in which case a menu of their nominations is shown
-                mapIndex = map_getIdx( arg2 );
+                mapIndex = map_getIndex( arg2 );
                 
                 if( mapIndex >= 0 )
                 {
