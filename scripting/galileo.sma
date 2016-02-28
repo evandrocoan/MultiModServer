@@ -1578,18 +1578,18 @@ public cmd_createMapFile( player_id, level, cid )
                         }
                     }
                     fclose( mapFile );
-                    con_print( player_id, "%L", LANG_SERVER, "GAL_CREATIONSUCCESS", mapFilePath, mapCount );
+                    con_print( player_id, "%L", player_id, "GAL_CREATIONSUCCESS", mapFilePath, mapCount );
                 }
                 else
                 {
-                    con_print( player_id, "%L", LANG_SERVER, "GAL_CREATIONFAILED", mapFilePath );
+                    con_print( player_id, "%L", player_id, "GAL_CREATIONFAILED", mapFilePath );
                 }
                 close_dir( dir );
             }
             else
             {
                 // directory not found, wtf?
-                con_print( player_id, "%L", LANG_SERVER, "GAL_MAPSFOLDERMISSING" );
+                con_print( player_id, "%L", player_id, "GAL_MAPSFOLDERMISSING" );
             }
         }
         default:
@@ -2161,7 +2161,7 @@ stock map_nominate( player_id, mapIndex, idNominator = -1 )
     else
     {
         new player_name[ MAX_PLAYER_NAME_LENGHT ];
-        get_user_name( idNominator, player_name, charsmax( player_name );
+        get_user_name( idNominator, player_name, charsmax( player_name ) );
         
         color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_SOMEONEELSE",
                 mapName, player_name );
@@ -2898,7 +2898,7 @@ public vote_display( argument[ 3 ] )
     new bool:isToShowNoneOption = bool: get_pcvar_num( cvar_voteShowNoneOption )
     new bool:isVoteOver         = ( updateTimeRemaining == -1
                                     && player_id == -1 )
-    new charCount
+    new charCount = 0
     
     if( g_refreshVoteStatus
         || isVoteOver )
@@ -2911,18 +2911,6 @@ public vote_display( argument[ 3 ] )
             && !( g_voteStatus & VOTE_HAS_EXPIRED ) )
         {
             menuKeys = MENU_KEY_0;
-        }
-        
-        // add the header
-        if( isVoteOver )
-        {
-            charCount = formatex( voteStatus, charsmax( voteStatus ), "%s%L^n", COLOR_YELLOW,
-                    LANG_SERVER, "GAL_RESULT" );
-        }
-        else
-        {
-            charCount = formatex( voteStatus, charsmax( voteStatus ), "%s%L^n", COLOR_YELLOW,
-                    LANG_SERVER, "GAL_CHOOSE" );
         }
         
         // add maps to the menu
@@ -3077,7 +3065,7 @@ public vote_display( argument[ 3 ] )
                               && !noneOptionType
                               && !isVoteOver )
     
-    // This function is only called 1 time with the correct player id, to optionally display
+    // This function is only called 1 time with the correct player id, this is to optionally display
     // to single player that just voted.
     // Such time is exactly after the player voted.
     if( player_id > 0
@@ -3123,11 +3111,13 @@ public vote_display( argument[ 3 ] )
     }
 }
 
-stock calculate_menu_dirt( player_id, isToShowNoneOption, noneOptionType, isVoteOver, voteFooter[],
+stock calculate_menu_dirt( player_id, isToShowNoneOption, noneOptionType, bool:isVoteOver, voteFooter[],
                            voteStatus[], menuDirty[], menuDirtySize, bool:noneIsHidden )
 {
+    static menuHeader[ 32 ]
     static noneOption[ 32 ]
     static bool:isToShowUndo
+    
     
     menuDirty  [ 0 ] = '^0';
     noneOption [ 0 ] = '^0';
@@ -3139,23 +3129,31 @@ stock calculate_menu_dirt( player_id, isToShowNoneOption, noneOptionType, isVote
     // to append it here to always shows it AFTER voting.
     if( isVoteOver )
     {
+        // add the header
+        formatex( menuHeader, charsmax( menuHeader ), "%s%L",
+                COLOR_YELLOW, player_id, "GAL_RESULT" );
+        
         if( isToShowNoneOption
             && noneOptionType )
         {
             computeUndoButton( player_id, isToShowUndo, isVoteOver, noneOption,
                     noneOptionType, charsmax( noneOption ) )
             
-            formatex( menuDirty, menuDirtySize, "%s^n^n%s%s^n^n%L",
-                    voteStatus, noneOption, COLOR_YELLOW, LANG_SERVER, "GAL_VOTE_ENDED" )
+            formatex( menuDirty, menuDirtySize, "%s^n%s^n^n%s%s^n^n%L",
+                    menuHeader, voteStatus, noneOption, COLOR_YELLOW, player_id, "GAL_VOTE_ENDED" )
         }
         else
         {
-            formatex( menuDirty, menuDirtySize, "%s^n^n%s%L",
-                    voteStatus, COLOR_YELLOW, LANG_SERVER, "GAL_VOTE_ENDED" )
+            formatex( menuDirty, menuDirtySize, "%s^n%s^n^n%s%L",
+                    menuHeader, voteStatus, COLOR_YELLOW, player_id, "GAL_VOTE_ENDED" )
         }
     }
     else
     {
+        // add the header
+        formatex( menuHeader, charsmax( menuHeader ), "%s%L",
+                COLOR_YELLOW, player_id, "GAL_CHOOSE" );
+        
         if( isToShowNoneOption )
         {
             computeUndoButton( player_id, isToShowUndo, isVoteOver, noneOption,
@@ -3169,12 +3167,13 @@ stock calculate_menu_dirt( player_id, isToShowNoneOption, noneOptionType, isVote
                 voteFooter[ 1 ] = ' '
             }
             
-            formatex( menuDirty, menuDirtySize, "%s^n^n%s%s",
-                    voteStatus, noneOption, voteFooter )
+            formatex( menuDirty, menuDirtySize, "%s^n%s^n^n%s%s",
+                    menuHeader, voteStatus, noneOption, voteFooter )
         }
         else
         {
-            formatex( menuDirty, menuDirtySize, "%s%s", voteStatus, voteFooter );
+            formatex( menuDirty, menuDirtySize, "%s^n%s%s",
+                    menuHeader, voteStatus, voteFooter )
         }
     }
 }
@@ -3185,7 +3184,7 @@ stock computeUndoButton( player_id, bool:isToShowUndo, bool:isVoteOver, noneOpti
     if( isToShowUndo )
     {
         formatex( noneOption, noneOptionSize, "%s0. %s%L",
-                COLOR_RED, ( isVoteOver ? COLOR_GREY : COLOR_WHITE ), LANG_SERVER, "GAL_OPTION_CANCEL_VOTE" )
+                COLOR_RED, ( isVoteOver ? COLOR_GREY : COLOR_WHITE ), player_id, "GAL_OPTION_CANCEL_VOTE" )
     }
     else
     {
@@ -3194,12 +3193,12 @@ stock computeUndoButton( player_id, bool:isToShowUndo, bool:isVoteOver, noneOpti
             if( g_is_player_voted[ player_id ]  )
             {
                 formatex( noneOption, noneOptionSize, "%s0. %s%L",
-                        COLOR_RED, COLOR_GREY, LANG_SERVER, "GAL_OPTION_CANCEL_VOTE" )
+                        COLOR_RED, COLOR_GREY, player_id, "GAL_OPTION_CANCEL_VOTE" )
             }
             else
             {
                 formatex( noneOption, noneOptionSize, "%s0. %s%L",
-                        COLOR_RED, COLOR_WHITE, LANG_SERVER, "GAL_OPTION_NONE" )
+                        COLOR_RED, COLOR_WHITE, player_id, "GAL_OPTION_NONE" )
             }
         }
         else
@@ -3215,13 +3214,13 @@ stock computeUndoButton( player_id, bool:isToShowUndo, bool:isVoteOver, noneOpti
                     else
                     {
                         formatex( noneOption, noneOptionSize, "%s0. %s%L",
-                                COLOR_RED, COLOR_WHITE, LANG_SERVER, "GAL_OPTION_NONE" )
+                                COLOR_RED, COLOR_WHITE, player_id, "GAL_OPTION_NONE" )
                     }
                 }
                 case ALWAYS_KEEP_SHOWING, CONVERT_IT_TO_CANCEL_LAST_VOTE:
                 {
                     formatex( noneOption, noneOptionSize, "%s0. %s%L",
-                            COLOR_RED, COLOR_WHITE, LANG_SERVER, "GAL_OPTION_NONE" )
+                            COLOR_RED, COLOR_WHITE, player_id, "GAL_OPTION_NONE" )
                 }
             }
         }
@@ -3230,6 +3229,7 @@ stock computeUndoButton( player_id, bool:isToShowUndo, bool:isVoteOver, noneOpti
 
 stock calculate_menu_clean( player_id, isToShowNoneOption, noneOptionType, voteFooter[], menuClean[], menuCleanSize )
 {
+    static menuHeader[ 32 ]
     static noneOption[ 32 ]
     static bool:isToShowUndo
     
@@ -3239,6 +3239,10 @@ stock calculate_menu_clean( player_id, isToShowNoneOption, noneOptionType, voteF
                          && noneOptionType == CONVERT_IT_TO_CANCEL_LAST_VOTE \
                          && g_is_player_voted[ player_id ] \
                          && !g_is_player_cancelled_vote[ player_id ] )
+    
+    // add the header
+    formatex( menuHeader, charsmax( menuHeader ), "%s%L",
+            COLOR_YELLOW, player_id, "GAL_CHOOSE" );
     
     // append a "None" option on for people to choose if they don't like any other choice
     // to append it here to always shows it WHILE voting.
@@ -3253,12 +3257,13 @@ stock calculate_menu_clean( player_id, isToShowNoneOption, noneOptionType, voteF
             copy( noneOption, charsmax( noneOption ), "GAL_OPTION_NONE" )
         }
         
-        formatex( menuClean, menuCleanSize, "%s^n^n%s%s",
-                g_vote, noneOption, voteFooter );
+        formatex( menuClean, menuCleanSize, "%^n%s^n^n%s%s",
+                menuHeader, g_vote, noneOption, voteFooter );
     }
     else
     {
-        formatex( menuClean, menuCleanSize, "%s%s", g_vote, voteFooter );
+        formatex( menuClean, menuCleanSize, "%s^n%s%s",
+                menuHeader, g_vote, voteFooter );
     }
 }
 
