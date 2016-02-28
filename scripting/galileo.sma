@@ -2326,7 +2326,7 @@ public vote_startDirector( bool:is_forced_voting )
         handleChoicesDelay = 1.0
     
     #else
-        handleChoicesDelay = 8.5
+        handleChoicesDelay = 9.5
         
         // make perfunctory announcement: "get ready to choose a map"
         if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_GETREADYTOCHOOSE ) )
@@ -2423,10 +2423,17 @@ stock displayEndOfTheMapVoteMenu( countdown )
     {
         player_id = players[ current_index ]
         
-        formatex( menu_body, charsmax( menu_body ), "%s%L^n^n%s6. %s%L^n%s0. %s%L",
-                COLOR_WHITE, player_id, "GAL_CHOOSE_QUESTION",
+        formatex( menu_body, charsmax( menu_body ),
+                "%s%L^n^n\
+                %s6. %s%L %s( %s%d %L%s )^n\
+                %s0. %s%L",
+                
+                COLOR_YELLOW, player_id, "GAL_CHOOSE_QUESTION",
+                
                 COLOR_RED, ( g_answeredForEndOfMapVote[ player_id ] ? COLOR_GREY : COLOR_WHITE ),
-                player_id, "GAL_CHOOSE_QUESTION_YES", countdown,
+                player_id, "GAL_CHOOSE_QUESTION_YES",
+                COLOR_YELLOW, COLOR_GREY, countdown, LANG_PLAYER, "GAL_TIMELEFT", COLOR_YELLOW,
+                
                 COLOR_RED, ( g_answeredForEndOfMapVote[ player_id ] ? COLOR_GREY : COLOR_WHITE ),
                 player_id, "GAL_CHOOSE_QUESTION_NO" )
         
@@ -2435,7 +2442,7 @@ stock displayEndOfTheMapVoteMenu( countdown )
         if( menu_id == 0
             || menu_id == g_chooseMapQuestionMenuId )
         {
-            show_menu( player_id, menuKeys, menu_body, 1, MENU_CHOOSEMAP_QUESTION )
+            show_menu( player_id, menuKeys, menu_body, 2, MENU_CHOOSEMAP_QUESTION )
         }
     }
 }
