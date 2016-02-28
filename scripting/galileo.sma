@@ -28,9 +28,14 @@ new const PLUGIN_VERSION[] = "1.2.X"
 #include <amxmisc>
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
- * and the variable 'g_debug_level' for more information. Default value: 0  - which is disabled.
+ * and the variable 'g_debug_level' for more information. Default value:
+ *
+ * 0   - Disables this feature.
+ * 1   - Normal debug.
+ * 2   - To skip the 'vote_countdownPendingVote()' and set the vote and runoff time to 5, seconds
+ *       and to create fake votes.
  */
-#define IS_DEBUG_ENABLED 0
+#define IS_DEBUG_ENABLED 1
 
 #if IS_DEBUG_ENABLED > 0
     #define DEBUG
@@ -46,9 +51,9 @@ new const PLUGIN_VERSION[] = "1.2.X"
  * ( ... ) 32 displays messages related to the rounds end map voting.
  * ( ... ) 64 displays messages related 'color_print'.
  * ( ... ) 128 execute the test units and print their out put results.
- * ( 11111111 ) 255 displays all debug logs levels at server console.
+ * ( 1.. ) 255 displays all debug logs levels at server console.
  */
-new g_debug_level = 5
+new g_debug_level = 14
 
 /**
  * Test unit variables related to debug level 128, displays basic debug messages.
@@ -83,7 +88,7 @@ stock debugMesssageLogger( mode, message[], any: ... )
         vformat( formated_message, charsmax( formated_message ), message, 3 )
         
         server_print( "%s",                      formated_message )
-        client_print( 0,    print_console, "%s", formated_message )
+        // client_print( 0,    print_console, "%s", formated_message )
     }
 }
 
@@ -1316,7 +1321,9 @@ stock map_populateList( Array:mapArray, mapFilePath[] )
                     DEBUG_LOGGER( 4, "map_populateList(...) loadedMapName = %s", loadedMapName )
                 }
             }
+            
             fclose( mapFile );
+            DEBUG_LOGGER( 4, "" )
         }
         else
         {
@@ -2284,7 +2291,7 @@ public vote_startDirector( bool:is_forced_voting )
         choicesLoaded = g_totalVoteOptions
         voteDuration  = get_pcvar_num( cvar_voteDuration );
         
-        DEBUG_LOGGER( 4, "( vote_startDirector|NormalVote ) choicesLoaded: %d", choicesLoaded )
+        DEBUG_LOGGER( 4, "^n ( vote_startDirector|NormalVote ) choicesLoaded: %d", choicesLoaded )
         
         if( choicesLoaded )
         {
@@ -2293,7 +2300,7 @@ public vote_startDirector( bool:is_forced_voting )
         }
     }
 
-#if defined DEBUG
+#if IS_DEBUG_ENABLED == 2
     voteDuration   = 5
     g_voteDuration = 5
 #endif
@@ -2321,8 +2328,8 @@ public vote_startDirector( bool:is_forced_voting )
         {
             g_is_player_voted[ players[ player_index ] ] = false;
         }
-        
-    #if defined DEBUG
+    
+    #if IS_DEBUG_ENABLED == 2
         handleChoicesDelay = 1.0
     
     #else
@@ -2363,7 +2370,7 @@ public vote_startDirector( bool:is_forced_voting )
     }
     
     DEBUG_LOGGER( 4, "   [PLAYER CHOICES]" )
-    DEBUG_LOGGER( 4, "( vote_startDirector|out ) g_is_timeToRestart: %d, \
+    DEBUG_LOGGER( 4, "^n ( vote_startDirector|out ) g_is_timeToRestart: %d, \
             g_is_timeToChangeLevel: %d, g_voteStatus & VOTE_IS_EARLY: %d^n", \
             g_is_timeToRestart, g_is_timeToChangeLevel, g_voteStatus & VOTE_IS_EARLY )
 }
@@ -2401,18 +2408,23 @@ public vote_countdownPendingVote()
 
 stock displayEndOfTheMapVoteMenu( countdown )
 {
+    new menu_counter[ 64 ]
     new menu_body[ 256 ]
     
+    new char_count
     new menu_id
     new menuKeys
     new menuKeysUnused
+    
+    new bool:isVoting
+    new bool:playerAnswered
     
     new player_id
     new current_index
     new playersCount
     new players[ MAX_PLAYERS ]
     
-    if( !g_answeredForEndOfMapVote[ player_id ] )
+    if( !playerAnswered )
     {
         menuKeys = MENU_KEY_0 | MENU_KEY_6;
     }
@@ -2421,20 +2433,35 @@ stock displayEndOfTheMapVoteMenu( countdown )
     
     for( current_index = 0; current_index < playersCount; current_index++ )
     {
-        player_id = players[ current_index ]
+        player_id      = players[ current_index ]
+        isVoting       = !g_is_player_voted[ player_id ]
+        playerAnswered = g_answeredForEndOfMapVote[ player_id ]
         
-        formatex( menu_body, charsmax( menu_body ),
+        if( !playerAnswered )
+        {
+            char_count = formatex( menu_counter, charsmax( menu_counter ),
+                    "%s( %s%d %L%s )",
+                    COLOR_YELLOW, COLOR_GREY, countdown, LANG_PLAYER, "GAL_TIMELEFT", COLOR_YELLOW )
+        }
+        else
+        {
+            char_count        = 0
+            menu_counter[ 0 ] = '^0'
+        }
+        
+        menu_body[ 0 ] = '^0'
+        
+        formatex( menu_body[ char_count ], charsmax( menu_body ) - char_count,
                 "%s%L^n^n\
-                %s6. %s%L %s( %s%d %L%s )^n\
+                %s6. %s%L %s^n\
                 %s0. %s%L",
                 
                 COLOR_YELLOW, player_id, "GAL_CHOOSE_QUESTION",
                 
-                COLOR_RED, ( g_answeredForEndOfMapVote[ player_id ] ? COLOR_GREY : COLOR_WHITE ),
-                player_id, "GAL_CHOOSE_QUESTION_YES",
-                COLOR_YELLOW, COLOR_GREY, countdown, LANG_PLAYER, "GAL_TIMELEFT", COLOR_YELLOW,
+                COLOR_RED, ( playerAnswered ? ( isVoting ? COLOR_YELLOW : COLOR_GREY ) : COLOR_WHITE ),
+                player_id, "GAL_CHOOSE_QUESTION_YES", menu_counter,
                 
-                COLOR_RED, ( g_answeredForEndOfMapVote[ player_id ] ? COLOR_GREY : COLOR_WHITE ),
+                COLOR_RED, ( playerAnswered ? ( !isVoting ? COLOR_YELLOW : COLOR_GREY ) : COLOR_WHITE ),
                 player_id, "GAL_CHOOSE_QUESTION_NO" )
         
         get_user_menu( player_id, menu_id, menuKeysUnused )
@@ -2444,29 +2471,35 @@ stock displayEndOfTheMapVoteMenu( countdown )
         {
             show_menu( player_id, menuKeys, menu_body, 2, MENU_CHOOSEMAP_QUESTION )
         }
+        
+        DEBUG_LOGGER( 8, " ( displayEndOfTheMapVoteMenu| for ) menu_body: %s^n^n   menu_counter: %s, \
+                char_count:%d, menu_id:%d, menuKeys: %d, isVoting: %d, playerAnswered:%d, ^n   \
+                player_id: %d, current_index: %d, playersCount: %d, countdown: %d", \
+                menu_body, menu_counter, char_count, menu_id, menuKeys, isVoting, playerAnswered, \
+                player_id, current_index, playersCount, countdown )
     }
+    
+    DEBUG_LOGGER( 8, "%48s", "( displayEndOfTheMapVoteMenu| out )" )
 }
 
 public handleEndOfTheMapVoteChoice( player_id, keyCode )
 {
     switch( keyCode )
     {
-        case 6:
-        {
-            g_answeredForEndOfMapVote[ player_id ] = true
-        }
         case 0:
         {
             g_is_player_voted[ player_id ] = true
         }
     }
     
-    return PLUGIN_CONTINUE;
+    g_answeredForEndOfMapVote[ player_id ] = true
+    
+    return PLUGIN_HANDLED;
 }
 
 stock vote_addNominations()
 {
-    DEBUG_LOGGER( 4, "   [NOMINATIONS ( %i )]", g_nominationCount )
+    DEBUG_LOGGER( 4, "^n   [NOMINATIONS ( %i )]", g_nominationCount )
     
     if( g_nominationCount )
     {
@@ -2757,7 +2790,7 @@ public vote_handleDisplay()
         g_voteDuration = get_pcvar_num( cvar_voteDuration );
     }
 
-#if defined DEBUG
+#if IS_DEBUG_ENABLED == 2
     g_voteDuration = 5
     
     if( g_debug_level & 4 )
@@ -2779,6 +2812,7 @@ public vote_handleDisplay()
     g_voteStatus &= ~VOTE_HAS_EXPIRED;
     
     new argument[ 3 ];
+    
     argument[ 0 ] = true;
     argument[ 1 ] = 0;
     argument[ 2 ] = false;
@@ -3187,7 +3221,7 @@ stock display_vote_menu( bool:menuType, bool:isVoteOver, player_id, menuBody[], 
         || menuid == g_chooseMapMenuId )
     {
         show_menu( player_id, menuKeys, menuBody,
-                ( menuType ? g_voteDuration : ( isVoteOver ? 10 : max( 1, g_voteDuration ) ) ),
+                ( menuType ? g_voteDuration : ( isVoteOver ? 7 : max( 1, g_voteDuration ) ) ),
                 MENU_CHOOSEMAP )
     }
 }
@@ -3252,7 +3286,7 @@ stock register_vote( player_id, pressedKeyCode )
 {
     g_player_voted_option[ player_id ] = pressedKeyCode
     g_player_voted_weight[ player_id ] = 1
-
+    
     // pressedKeyCode 9 means the keyboard key 0 (the None option)
     if( pressedKeyCode != 9 )
     {
@@ -3280,7 +3314,6 @@ stock register_vote( player_id, pressedKeyCode )
     
     g_is_player_voted[ player_id ] = true;
 }
-
 
 stock announceRegistedVote( player_id, pressedKeyCode )
 {
