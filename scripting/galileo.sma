@@ -2333,7 +2333,7 @@ public vote_startDirector( bool:is_forced_voting )
         handleChoicesDelay = 1.0
     
     #else
-        handleChoicesDelay = 9.5
+        handleChoicesDelay = 8.5
         
         // make perfunctory announcement: "get ready to choose a map"
         if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_GETREADYTOCHOOSE ) )
@@ -2355,13 +2355,13 @@ public vote_startDirector( bool:is_forced_voting )
             // indicates it's the end of vote display
             new argument[ 3 ] = { -1, -1, false };
             
-            set_task( handleChoicesDelay + float( voteDuration ) + 6.0, "vote_expire", TASKID_VOTE_EXPIRE )
+            set_task( handleChoicesDelay + float( voteDuration ), "closeVoting", TASKID_VOTE_EXPIRE )
             set_task( handleChoicesDelay + float( voteDuration ) + 1.0, "vote_display", TASKID_VOTE_DISPLAY,
                     argument, sizeof argument )
         }
         else
         {
-            set_task( handleChoicesDelay + float( voteDuration ) + 3.0, "vote_expire", TASKID_VOTE_EXPIRE );
+            set_task( handleChoicesDelay + float( voteDuration ), "closeVoting", TASKID_VOTE_EXPIRE );
         }
     }
     else
@@ -2373,6 +2373,14 @@ public vote_startDirector( bool:is_forced_voting )
     DEBUG_LOGGER( 4, "^n ( vote_startDirector|out ) g_is_timeToRestart: %d, \
             g_is_timeToChangeLevel: %d, g_voteStatus & VOTE_IS_EARLY: %d^n", \
             g_is_timeToRestart, g_is_timeToChangeLevel, g_voteStatus & VOTE_IS_EARLY )
+}
+
+public closeVoting()
+{
+    g_vote[ 0 ]   = '^0'
+    g_voteStatus |= VOTE_HAS_EXPIRED
+    
+    set_task( 9.0, "computeVotes", TASKID_VOTE_EXPIRE )
 }
 
 public vote_countdownPendingVote()
@@ -3434,15 +3442,12 @@ stock computeVoteMapLine( voteMapLine[], voteMapLineLength, voteIndex )
             get_pcvar_num( cvar_voteStatus ), get_pcvar_num( cvar_voteStatusType ), voteCountNumber )
 }
 
-public vote_expire()
+public computeVotes()
 {
     new playerVoteMapChoiceIndex
     new numberOfVotesAtFirstPlace
     new numberOfVotesAtSecondPlace
     
-    g_vote[ 0 ]   = '^0'
-    g_voteStatus |= VOTE_HAS_EXPIRED
-
 #if defined DEBUG
     new voteMapLine[ 32 ];
     
@@ -3505,7 +3510,7 @@ public vote_expire()
             numberOfMapsAtSecondPosition: %d", \
             g_totalVoteOptions, numberOfMapsAtFirstPosition, numberOfMapsAtSecondPosition )
     
-    DEBUG_LOGGER( 1, "( vote_expire|middle ) g_is_timeToRestart: %d, g_is_timeToChangeLevel: %d \
+    DEBUG_LOGGER( 1, "( computeVotes|middle ) g_is_timeToRestart: %d, g_is_timeToChangeLevel: %d \
             g_voteStatus & VOTE_IS_EARLY: %d", \
             g_is_timeToRestart, g_is_timeToChangeLevel, g_voteStatus & VOTE_IS_EARLY )
     
@@ -3708,7 +3713,7 @@ public vote_expire()
             winnerVoteMapIndex = firstPlaceChoices[ 0 ];
         }
         
-        DEBUG_LOGGER( 1, "( vote_expire|moreover ) g_is_timeToRestart: %d, g_is_timeToChangeLevel: %d \
+        DEBUG_LOGGER( 1, "( computeVotes|moreover ) g_is_timeToRestart: %d, g_is_timeToChangeLevel: %d \
                 g_voteStatus & VOTE_IS_EARLY: %d", \
                 g_is_timeToRestart, g_is_timeToChangeLevel, g_voteStatus & VOTE_IS_EARLY )
         
@@ -3799,7 +3804,7 @@ public vote_expire()
         g_voteStatus |= VOTE_IS_OVER;
     }
     
-    DEBUG_LOGGER( 1, "( vote_expire|out ) g_is_timeToRestart: %d, g_is_timeToChangeLevel: %d \
+    DEBUG_LOGGER( 1, "( computeVotes|out ) g_is_timeToRestart: %d, g_is_timeToChangeLevel: %d \
             g_voteStatus & VOTE_IS_EARLY: %d", \
             g_is_timeToRestart, g_is_timeToChangeLevel, g_voteStatus & VOTE_IS_EARLY )
     
