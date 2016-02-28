@@ -35,7 +35,7 @@ new const PLUGIN_VERSION[] = "1.2.X"
  * 2   - To skip the 'pendingVoteCountdown()' and set the vote and runoff time to 5, seconds
  *       and to create fake votes.
  */
-#define IS_DEBUG_ENABLED 1
+#define IS_DEBUG_ENABLED 2
 
 #if IS_DEBUG_ENABLED > 0
     #define DEBUG
@@ -3134,7 +3134,7 @@ stock calculate_menu_dirt( player_id, isToShowNoneOption, noneOptionType, isVote
         if( isToShowNoneOption
             && noneOptionType )
         {
-            computeUndoButton( player_id, isToShowUndo, noneOption, noneOptionType, charsmax( noneOption ) )
+            computeUndoButton( player_id, isToShowUndo, isVoteOver, noneOption, noneOptionType, charsmax( noneOption ) )
             
             formatex( menuDirty, menuDirtySize, "%s^n^n%s%s^n^n%L",
                     voteStatus, noneOption, COLOR_YELLOW, LANG_SERVER, "GAL_VOTE_ENDED" )
@@ -3149,7 +3149,7 @@ stock calculate_menu_dirt( player_id, isToShowNoneOption, noneOptionType, isVote
     {
         if( isToShowNoneOption )
         {
-            computeUndoButton( player_id, isToShowUndo, noneOption, noneOptionType, charsmax( noneOption ) )
+            computeUndoButton( player_id, isToShowUndo, isVoteOver, noneOption, noneOptionType, charsmax( noneOption ) )
             
             // remove the extra space between 'voteStatus' and 'voteFooter', after the 'None' option is hidden
             if( noneIsHidden
@@ -3169,12 +3169,12 @@ stock calculate_menu_dirt( player_id, isToShowNoneOption, noneOptionType, isVote
     }
 }
 
-stock computeUndoButton( player_id, bool:isToShowUndo, noneOption[], noneOptionType, noneOptionSize )
+stock computeUndoButton( player_id, bool:isToShowUndo, isVoteOver, noneOption[], noneOptionType, noneOptionSize )
 {
     if( isToShowUndo )
     {
         formatex( noneOption, noneOptionSize, "%s0. %s%L",
-                COLOR_RED, COLOR_WHITE, LANG_SERVER, "GAL_OPTION_CANCEL_VOTE" )
+                COLOR_RED, ( isVoteOver ? COLOR_GREY : COLOR_WHITE ), LANG_SERVER, "GAL_OPTION_CANCEL_VOTE" )
     }
     else
     {
