@@ -700,10 +700,6 @@ public round_end_event()
         }
     }
     
-    DEBUG_LOGGER( 32, "Round_End:  maxrounds_number = %d, \
-            g_total_rounds_played = %d, current_rounds_trigger = %d", \
-            maxrounds_number, g_total_rounds_played, current_rounds_trigger )
-    
     if( g_is_last_round )
     {
         if( g_is_timeToChangeLevel
@@ -724,6 +720,10 @@ public round_end_event()
             set_task( 5.0, "configure_last_round_HUD", TASKID_PROCESS_LAST_ROUND )
         }
     }
+    
+    DEBUG_LOGGER( 32, "Round_End:  maxrounds_number = %d, \
+            g_total_rounds_played = %d, current_rounds_trigger = %d", \
+            maxrounds_number, g_total_rounds_played, current_rounds_trigger )
 }
 
 public process_last_round()
@@ -2377,7 +2377,7 @@ stock endOfVoteDisplay()
 {
     new argument[ 3 ] = { -1, -1, false }
     
-    set_task( 1.1, "vote_display", TASKID_VOTE_DISPLAY, argument, sizeof argument, "a", 5 )
+    set_task( 1.1, "vote_display", TASKID_VOTE_DISPLAY, argument, sizeof argument, "a", 4 )
 }
 
 public closeVoting()
@@ -2854,8 +2854,8 @@ public vote_handleDisplay()
 public vote_display( argument[ 3 ] )
 {
     static menuKeys
-    static voteStatus[ 512 ]
-    static voteMapLine[ 32 ]
+    static voteStatus  [ 512 ]
+    static voteMapLine [ MAX_MAPNAME_LENGHT ]
     
     new updateTimeRemaining = argument[ 0 ];
     new player_id           = argument[ 1 ];
@@ -3134,7 +3134,8 @@ stock calculate_menu_dirt( player_id, isToShowNoneOption, noneOptionType, isVote
         if( isToShowNoneOption
             && noneOptionType )
         {
-            computeUndoButton( player_id, isToShowUndo, isVoteOver, noneOption, noneOptionType, charsmax( noneOption ) )
+            computeUndoButton( player_id, isToShowUndo, isVoteOver, noneOption,
+                    noneOptionType, charsmax( noneOption ) )
             
             formatex( menuDirty, menuDirtySize, "%s^n^n%s%s^n^n%L",
                     voteStatus, noneOption, COLOR_YELLOW, LANG_SERVER, "GAL_VOTE_ENDED" )
@@ -3149,7 +3150,8 @@ stock calculate_menu_dirt( player_id, isToShowNoneOption, noneOptionType, isVote
     {
         if( isToShowNoneOption )
         {
-            computeUndoButton( player_id, isToShowUndo, isVoteOver, noneOption, noneOptionType, charsmax( noneOption ) )
+            computeUndoButton( player_id, isToShowUndo, isVoteOver, noneOption,
+                    noneOptionType, charsmax( noneOption ) )
             
             // remove the extra space between 'voteStatus' and 'voteFooter', after the 'None' option is hidden
             if( noneIsHidden
@@ -3169,7 +3171,8 @@ stock calculate_menu_dirt( player_id, isToShowNoneOption, noneOptionType, isVote
     }
 }
 
-stock computeUndoButton( player_id, bool:isToShowUndo, isVoteOver, noneOption[], noneOptionType, noneOptionSize )
+stock computeUndoButton( player_id, bool:isToShowUndo, isVoteOver, noneOption[],
+                         noneOptionType, noneOptionSize )
 {
     if( isToShowUndo )
     {
@@ -3274,7 +3277,7 @@ stock display_vote_menu( bool:menuType, bool:isVoteOver, player_id, menuBody[], 
         || menuid == g_chooseMapMenuId )
     {
         show_menu( player_id, menuKeys, menuBody,
-                ( menuType ? g_voteDuration : ( isVoteOver ? 7 : max( 1, g_voteDuration ) ) ),
+                ( menuType ? g_voteDuration : ( isVoteOver ? 5 : max( 1, g_voteDuration ) ) ),
                 MENU_CHOOSEMAP )
     }
 }
@@ -3342,7 +3345,7 @@ stock register_vote( player_id, pressedKeyCode )
 {
     announceRegistedVote( player_id, pressedKeyCode )
     
-    g_is_player_voted[ player_id ]         = true;
+    g_is_player_voted[ player_id ] = true;
     
     if( pressedKeyCode == 9 )
     {
