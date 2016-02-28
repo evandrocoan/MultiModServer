@@ -35,7 +35,7 @@ new const PLUGIN_VERSION[] = "1.2.X"
  * 2   - To skip the 'vote_countdownPendingVote()' and set the vote and runoff time to 5, seconds
  *       and to create fake votes.
  */
-#define IS_DEBUG_ENABLED 1
+#define IS_DEBUG_ENABLED 2
 
 #if IS_DEBUG_ENABLED > 0
     #define DEBUG
@@ -3040,7 +3040,7 @@ public vote_display( argument[ 3 ] )
                   || get_pcvar_num( cvar_showVoteCounter ) )
                 && showStatus != SHOW_STATUS_AT_END )
             {
-                if( g_voteDuration > 0 )
+                if( g_voteDuration >= 0 )
                 {
                     formatex( voteFooter[ charCount ], charsmax( voteFooter ) - charCount, "%s%L: %s%i",
                             COLOR_WHITE, LANG_SERVER, "GAL_TIMELEFT", COLOR_RED, g_voteDuration );
@@ -3463,6 +3463,7 @@ public computeVotes()
                 g_arrayOfMapsWithVotesNumber[ playerVoteMapChoiceIndex ], voteMapLine, \
                 playerVoteMapChoiceIndex, g_votingMapNames[ playerVoteMapChoiceIndex ] )
     }
+    
     DEBUG_LOGGER( 4, "" )
 #endif
     
