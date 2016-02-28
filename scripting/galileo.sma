@@ -3015,21 +3015,7 @@ public vote_display( argument[ 3 ] )
     }
     
     // make a copy of the virgin menu
-    new cleanCharCnt = copy( g_vote, charsmax( g_vote ), voteStatus );
-    
-    new bool:noneIsHidden = ( isToShowNoneOption
-                              && !noneOptionType
-                              && !( g_voteStatus & VOTE_HAS_EXPIRED ) )
-    
-    // append a "None" option on for people to choose if they don't like any other choice
-    // to append it here to let it to disappear after the player vote.
-    if( noneIsHidden )
-    {
-        formatex( g_vote[ cleanCharCnt ], charsmax( g_vote ) - cleanCharCnt,
-                "^n^n%s0. %s%L", COLOR_RED, COLOR_WHITE, LANG_SERVER, "GAL_OPTION_NONE" );
-        
-        charCount += formatex( voteStatus[ charCount ], charsmax( voteStatus ) - charCount, "^n^n" );
-    }
+    copy( g_vote, charsmax( g_vote ), voteStatus )
     
     // display the vote
     new showStatus = get_pcvar_num( cvar_voteStatus );
@@ -3067,6 +3053,10 @@ public vote_display( argument[ 3 ] )
     
     // menu showed after voted
     static menuDirty[ 512 ]
+    
+    new bool:noneIsHidden = ( isToShowNoneOption
+                              && !noneOptionType
+                              && !( g_voteStatus & VOTE_HAS_EXPIRED ) )
     
     // This function is only called 1 time with the correct player id, to optionally display
     // to single player that just voted.
@@ -3128,8 +3118,7 @@ stock calculate_menu_clean( player_id, isToShowNoneOption, noneOptionType, voteF
     
     // append a "None" option on for people to choose if they don't like any other choice
     // to append it here to always shows it WHILE voting.
-    if( isToShowNoneOption
-        && noneOptionType )
+    if( isToShowNoneOption )
     {
         if( isToShowUndo )
         {
@@ -3140,8 +3129,8 @@ stock calculate_menu_clean( player_id, isToShowNoneOption, noneOptionType, voteF
             copy( noneOption, charsmax( noneOption ), "GAL_OPTION_NONE" )
         }
         
-        formatex( menuClean, menuCleanSize, "%s^n^n%s0. %s%L%s",
-                g_vote, COLOR_RED, COLOR_WHITE, LANG_SERVER, noneOption, voteFooter );
+        formatex( menuClean, menuCleanSize, "%s^n^n%s%s",
+                g_vote, noneOption, voteFooter );
     }
     else
     {
@@ -3168,11 +3157,10 @@ stock calculate_menu_dirt( player_id, isToShowNoneOption, noneOptionType, isVote
         if( isToShowNoneOption
             && noneOptionType )
         {
-            computeUndoButton( player_id, isToShowUndo, noneOption, charsmax( noneOption ) )
+            computeUndoButton( player_id, isToShowUndo, noneOption, noneOptionType, charsmax( noneOption ) )
             
-            formatex( menuDirty, menuDirtySize, "%s^n^n%s0. %s%s^n^n%s%L",
-                    voteStatus, COLOR_RED, COLOR_WHITE, noneOption, COLOR_YELLOW,
-                    LANG_SERVER, "GAL_VOTE_ENDED" )
+            formatex( menuDirty, menuDirtySize, "%s^n^n%s%s^n^n%L",
+                    voteStatus, noneOption, COLOR_YELLOW, LANG_SERVER, "GAL_VOTE_ENDED" )
         }
         else
         {
@@ -3182,34 +3170,33 @@ stock calculate_menu_dirt( player_id, isToShowNoneOption, noneOptionType, isVote
     }
     else
     {
-        if( isToShowNoneOption
-            && noneOptionType )
+        if( isToShowNoneOption )
         {
-            computeUndoButton( player_id, isToShowUndo, noneOption, charsmax( noneOption ) )
+            computeUndoButton( player_id, isToShowUndo, noneOption, noneOptionType, charsmax( noneOption ) )
             
-            formatex( menuDirty, menuDirtySize, "%s^n^n%s0. %s%s%s",
-                    voteStatus, COLOR_RED, COLOR_WHITE, noneOption, voteFooter )
-        }
-        else
-        {
-            // remove the extra space after the 'None' option is hidden
+            // remove the extra space between 'voteStatus' and 'voteFooter', after the 'None' option is hidden
             if( noneIsHidden )
             {
                 voteFooter[ 0 ] = ' '
                 voteFooter[ 1 ] = ' '
             }
             
+            formatex( menuDirty, menuDirtySize, "%s^n^n%s%s",
+                    voteStatus, noneOption, voteFooter )
+        }
+        else
+        {
             formatex( menuDirty, menuDirtySize, "%s%s", voteStatus, voteFooter );
         }
     }
 }
 
-stock computeUndoButton( player_id, bool:isToShowUndo, noneOption[], noneOptionSize )
+stock computeUndoButton( player_id, bool:isToShowUndo, noneOption[], noneOptionType, noneOptionSize )
 {
     if( isToShowUndo )
     {
-        formatex( noneOption, noneOptionSize, "%L",
-                LANG_SERVER, "GAL_OPTION_CANCEL_VOTE" )
+        formatex( noneOption, noneOptionSize, "%s0. %s%L",
+                COLOR_RED, COLOR_WHITE, LANG_SERVER, "GAL_OPTION_CANCEL_VOTE" )
     }
     else
     {
@@ -3217,19 +3204,33 @@ stock computeUndoButton( player_id, bool:isToShowUndo, noneOption[], noneOptionS
         {
             if( g_is_player_voted[ player_id ]  )
             {
-                formatex( noneOption, noneOptionSize, "%s%L",
-                        COLOR_GREY, LANG_SERVER, "GAL_OPTION_CANCEL_VOTE" )
+                formatex( noneOption, noneOptionSize, "%s0. %s%L",
+                        COLOR_RED, COLOR_GREY, LANG_SERVER, "GAL_OPTION_CANCEL_VOTE" )
             }
             else
             {
-                formatex( noneOption, noneOptionSize, "%L",
-                        LANG_SERVER, "GAL_OPTION_NONE" )
+                formatex( noneOption, noneOptionSize, "%s0. %s%L",
+                        COLOR_RED, COLOR_WHITE, LANG_SERVER, "GAL_OPTION_NONE" )
             }
         }
         else
         {
-            formatex( noneOption, noneOptionSize, "%L",
-                    LANG_SERVER, "GAL_OPTION_NONE" )
+            switch( noneOptionType )
+            {
+                case HIDE_AFTER_USER_VOTE:
+                {
+                    if( !g_is_player_voted[ player_id ] )
+                    {
+                        formatex( noneOption, noneOptionSize, "%s0. %s%L",
+                                COLOR_RED, COLOR_WHITE, LANG_SERVER, "GAL_OPTION_NONE" )
+                    }
+                }
+                case ALWAYS_KEEP_SHOWING:
+                {
+                    formatex( noneOption, noneOptionSize, "%s0. %s%L",
+                            COLOR_RED, COLOR_WHITE, LANG_SERVER, "GAL_OPTION_NONE" )
+                }
+            }
         }
     }
 }
@@ -3279,7 +3280,9 @@ public vote_handleChoice( player_id, key )
         g_refreshVoteStatus = true;
     }
     else if( key == 9
-             && !g_is_player_cancelled_vote[ player_id ] )
+             && !g_is_player_cancelled_vote[ player_id ]
+             && get_pcvar_num( cvar_voteShowNoneOptionType ) == CONVERT_IT_TO_CANCEL_LAST_VOTE
+             && get_pcvar_num( cvar_voteShowNoneOption ) )
     {
         cancel_player_vote( player_id )
     }
