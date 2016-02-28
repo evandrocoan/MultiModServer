@@ -2411,7 +2411,6 @@ stock displayEndOfTheMapVoteMenu( countdown )
     new menu_counter[ 64 ]
     new menu_body[ 256 ]
     
-    new char_count
     new menu_id
     new menuKeys
     new menuKeysUnused
@@ -2439,19 +2438,18 @@ stock displayEndOfTheMapVoteMenu( countdown )
         
         if( !playerAnswered )
         {
-            char_count = formatex( menu_counter, charsmax( menu_counter ),
+            formatex( menu_counter, charsmax( menu_counter ),
                     "%s( %s%d %L%s )",
                     COLOR_YELLOW, COLOR_GREY, countdown, LANG_PLAYER, "GAL_TIMELEFT", COLOR_YELLOW )
         }
         else
         {
-            char_count        = 0
             menu_counter[ 0 ] = '^0'
         }
         
         menu_body[ 0 ] = '^0'
         
-        formatex( menu_body[ char_count ], charsmax( menu_body ) - char_count,
+        formatex( menu_body, charsmax( menu_body ),
                 "%s%L^n^n\
                 %s6. %s%L %s^n\
                 %s0. %s%L",
@@ -2472,14 +2470,14 @@ stock displayEndOfTheMapVoteMenu( countdown )
             show_menu( player_id, menuKeys, menu_body, 2, MENU_CHOOSEMAP_QUESTION )
         }
         
-        DEBUG_LOGGER( 8, " ( displayEndOfTheMapVoteMenu| for ) menu_body: %s^n^n   menu_counter: %s, \
-                char_count:%d, menu_id:%d, menuKeys: %d, isVoting: %d, playerAnswered:%d, ^n   \
-                player_id: %d, current_index: %d, playersCount: %d, countdown: %d", \
-                menu_body, menu_counter, char_count, menu_id, menuKeys, isVoting, playerAnswered, \
+        DEBUG_LOGGER( 8, " ( displayEndOfTheMapVoteMenu| for ) menu_body: %s^n   menu_counter: %s, \
+                menu_id:%d, menuKeys: %d, isVoting: %d, playerAnswered:%d, player_id: %d, ^n   \
+                current_index: %d, playersCount: %d, countdown: %d", \
+                menu_body, menu_counter, menu_id, menuKeys, isVoting, playerAnswered, \
                 player_id, current_index, playersCount, countdown )
     }
     
-    DEBUG_LOGGER( 8, "%48s", "( displayEndOfTheMapVoteMenu| out )" )
+    DEBUG_LOGGER( 8, "%48s", " ( displayEndOfTheMapVoteMenu| out )" )
 }
 
 public handleEndOfTheMapVoteChoice( player_id, keyCode )
