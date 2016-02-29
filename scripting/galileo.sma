@@ -326,7 +326,7 @@ new cvar_nomPrefixes;
 new cvar_nomQtyUsed
 new cvar_nomPlayerAllowance;
 new cvar_voteExpCountdown
-new cvar_endMapCountdown
+new cvar_isEndMapCountdown
 new cvar_voteMapChoiceCount
 new cvar_voteAnnounceChoice
 new cvar_voteUniquePrefixes;
@@ -349,7 +349,7 @@ new cvar_voteMinPlayersMapFilePath
  * Various Artists
  */
 new const LAST_EMPTY_CYCLE_FILE_NAME[]    = "lastEmptyCycleMapName.dat"
-new conts CURRENT_AND_NEXTMAP_FILE_NAME[] = "currentAndNextmapNames.dat"
+new const CURRENT_AND_NEXTMAP_FILE_NAME[] = "currentAndNextmapNames.dat"
 new const MENU_CHOOSEMAP[]                = "gal_menuChooseMap"
 new const MENU_CHOOSEMAP_QUESTION[]       = "chooseMapQuestion"
 
@@ -477,7 +477,7 @@ public plugin_init()
     cvar_nomQtyUsed                = register_cvar( "gal_nom_qtyused", "0" );
     cvar_voteDuration              = register_cvar( "gal_vote_duration", "15" );
     cvar_voteExpCountdown          = register_cvar( "gal_vote_expirationcountdown", "1" );
-    cvar_endMapCountdown           = register_cvar( "gal_endonround_countdown", "0" );
+    cvar_isEndMapCountdown         = register_cvar( "gal_endonround_countdown", "0" );
     cvar_voteMapChoiceCount        = register_cvar( "gal_vote_mapchoices", "5" );
     cvar_voteAnnounceChoice        = register_cvar( "gal_vote_announcechoice", "1" );
     cvar_voteStatus                = register_cvar( "gal_vote_showstatus", "1" );
@@ -744,7 +744,7 @@ public process_last_round()
     {
         configure_last_round_HUD()
     }
-    else if( get_pcvar_num( cvar_endMapCountdown ) )
+    else if( bool:get_pcvar_num( cvar_isEndMapCountdown ) )
     {
         set_task( 1.0, "process_last_round_counting", TASKID_PROCESS_LAST_ROUND, _, _, "a", 5 );
     }
@@ -801,7 +801,7 @@ stock intermission_display()
             set_task( mp_chattime, "map_change", TASKID_MAP_CHANGE );
         }
         
-        if( get_pcvar_num( cvar_endMapCountdown ) )
+        if( bool:get_pcvar_num( cvar_isEndMapCountdown ) )
         {
             // freeze the game and show the scoreboard
             g_original_sv_maxspeed = get_cvar_float( "sv_maxspeed" )
