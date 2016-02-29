@@ -357,13 +357,15 @@ new g_pendingVoteCountdown = 7
 new g_rtv_wait_admin_number
 new g_emptyCycleMapsNumber
 new g_cntRecentMap;
-new Array:g_nominationMap
 new g_nominationMapCnt;
-new Array:g_emptyCycleMapList
-new Array:g_fillerMap;
-new Float:g_rtvWait;
 new g_rtvWaitRounds
 new g_rockedVoteCnt;
+
+new Float:g_rtvWait;
+
+new Array:g_emptyCycleMapList
+new Array:g_fillerMap;
+new Array:g_nominationMap
 
 new plugin_nextmap_g_nextMap[ MAX_MAPNAME_LENGHT ]
 new plugin_nextmap_g_mapCycle[ MAX_FILE_PATH_LENGHT ]
@@ -1013,6 +1015,10 @@ public plugin_end()
     DEBUG_LOGGER( 32, "^n AT: plugin_end" )
     
     map_restoreOriginalTimeLimit()
+    
+    ArrayDestroy( g_emptyCycleMapList )
+    ArrayDestroy( g_fillerMap )
+    ArrayDestroy( g_nominationMap )
 
 #if defined DEBUG
     restore_server_cvars_for_test()
@@ -1119,6 +1125,8 @@ stock configureTheMapcycleSystem( currentMap[] )
         map_setNext( possibleNextMap )
         saveCurrentMapCycleSetting()
     }
+    
+    ArrayDestroy( mapcycleFileList )
 }
 
 /**
@@ -5555,6 +5563,8 @@ stock test_gal_in_empty_cycle2()
         SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle2() mapIndex must NOT be '-1' \
                 (it was %d)", mapIndex )
     }
+    
+    ArrayDestroy( emptyCycleMapList )
 }
 
 /**
@@ -5589,6 +5599,8 @@ stock test_gal_in_empty_cycle3()
         SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle3() mapIndex must NOT be '-1' \
                 (it was %d)", mapIndex )
     }
+    
+    ArrayDestroy( emptyCycleMapList )
 }
 
 /**
@@ -5623,6 +5635,8 @@ stock test_gal_in_empty_cycle4()
         SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle4() mapIndex must be '-1' \
                 (it was %d)", mapIndex )
     }
+    
+    ArrayDestroy( emptyCycleMapList )
 }
 
 /**
