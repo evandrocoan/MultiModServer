@@ -226,35 +226,37 @@ galileo.amxx
  * Added the Romanian [ro] and Italian [it] language translations.
  * Fixed a bug, where 'gal_rtv_wait_rounds' has priority over 'gal_rtv_wait'.
  * Added new cvars 'gal_srv_timelimit_restart', 'gal_srv_maxrounds_restart' and 'gal_srv_winlimit_restart' to control the sv_restart. 
-    If nonzero and the server is restarted, adds x - 1 rounds/minutes to mp_maxrounds or mp_winlimit or mp_timelimit. 
-    Example using mp_maxrounds: If mp_maxrounds = 40 and 20 rounds has already passed and admin used sv_restart.
-    After the restart, if the cvar is 1, the rounds left will be 20. If the cvar is 0 the rounds left will 40.
+   If nonzero and the server is restarted, adds x - 1 rounds/minutes to mp_maxrounds or mp_winlimit or mp_timelimit. 
+   Example using mp_maxrounds: If mp_maxrounds = 40 and 20 rounds has already passed and admin used sv_restart.
+   After the restart, if the cvar is 1, the rounds left will be 20. If the cvar is 0 the rounds left will 40.
  * Create a new LANG file to show 'rounds' instead of 'minutes', when you are using mp_maxrounds.
  * Add an admin command 'gal_cancelvote' to cancel the current vote.
  * Fixed bug using mp_maxrounds: if the vote started automatique and the result is extend its works fine and with mp_maxrounds.
-    if the vote started by rtv and the result is extend he will with extend with mp_timelimit. It must use mp_maxrounds.
+   if the vote started by rtv and the result is extend he will with extend with mp_timelimit. It must use mp_maxrounds.
  * Fixed 'sv_restartround' time dection.
  * Added new cvar 'gal_endonround_rtv' to Indicates when a map should end after the RTV voting is finished.
-    0 - end immediately after the voting finished.
-    1 - end after the current round.
+   0 - end immediately after the voting finished.
+   1 - end after the current round.
  * Added new cvar 'gal_rtv_wait_admin'. If an admin have the change map flag is online:
-    0 - players can normally rock the vote.
-    1 - RTV will not work and will print 'Cannot rock the vote when an admin is online'.
+   0 - players can normally rock the vote.
+   1 - RTV will not work and will print 'Cannot rock the vote when an admin is online'.
  * Fixed bug where the handle empty server feature would change the map where there are players playing.
  * Integrated the cvar 'gal_endonround_players' features into the cvar 'gal_endonround_msg'.
  * Added to the 'gal_endonround_rtv' cvar the players minimum number necessary to allow the 
-    last round to be finished when the time runs out.
+   last round to be finished when the time runs out.
  * Added new option 2 to the cvar 'gal_vote_show_none_type'. After the user voted, transform 
-    the '0 - None' option on 'one time cancel' vote opportunity.
+   the '0 - None' option on 'one time cancel' vote opportunity.
  * Added support to 'engine_changelevel' from AMX Mod X 183.
  * Added correct documentation for the 'gal_srv_start' cvar to indicates which action to take 
-    when it is detected that the server has been 'externally restarted'.
+   when it is detected that the server has been 'externally restarted'.
  * Improved 'gal_emptyserver_wait' cvar documentation in the configuration file.
  * Fixed empty-server map cycle bug to always starting at its first map.
  * Added new cvar 'gal_emptyserver_change'. When the server is empty, only change to an alternate 
-    empty-server map cycle after timelimit, maxrounds or winlimit expiration.
+   empty-server map cycle after timelimit, maxrounds or winlimit expiration.
  * Added new cvar 'gal_endofmapvote_ask' to indicates whether there should be asked to the players 
-    if they want to participate the map vote to decide what the next map will be.
+   if they want to participate the map vote to decide what the next map will be.
+ * Added to the handle server start feature the abilitie to continues the mapcycle from the lastmap
+   played instead of the first map on the mapcycle list.
  
 2016-02-11 | v1.2.2
  * Add a new cvar 'gal_rtv_wait_rounds' for the RTV wait.
