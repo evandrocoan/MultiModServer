@@ -308,7 +308,7 @@ new cvar_extendmapAllowStay
 new cvar_endOfMapVote;
 new cvar_isToAskForEndOfTheMapVote
 new cvar_emptyWait
-new cvar_emptyServerChange
+new cvar_isEmptyCycleServerChange
 new cvar_emptyMapFilePath
 new cvar_rtvWait
 new cvar_rtvWaitRounds
@@ -348,9 +348,10 @@ new cvar_voteMinPlayersMapFilePath
 /**
  * Various Artists
  */
-new const LAST_EMPTY_CYCLE_FILE_NAME[] = "lastEmptyCycleMap.dat"
-new const MENU_CHOOSEMAP[]             = "gal_menuChooseMap"
-new const MENU_CHOOSEMAP_QUESTION[]    = "chooseMapQuestion"
+new const LAST_EMPTY_CYCLE_FILE_NAME[]    = "lastEmptyCycleMapName.dat"
+new conts CURRENT_AND_NEXTMAP_FILE_NAME[] = "currentAndNextmapNames.dat"
+new const MENU_CHOOSEMAP[]                = "gal_menuChooseMap"
+new const MENU_CHOOSEMAP_QUESTION[]       = "chooseMapQuestion"
 
 new g_pendingVoteCountdown = 7
 new g_rtv_wait_admin_number
@@ -373,7 +374,7 @@ new plugin_nextmap_g_friendlyfire, plugin_nextmap_g_chattime
 new plugin_nextmap_gp_nextmap
 
 new DIR_CONFIGS [ MAX_FILE_PATH_LENGHT ];
-new DIR_DATA    [ MAX_FILE_PATH_LENGHT ];
+new DATA_DIR_PATH    [ MAX_FILE_PATH_LENGHT ];
 
 new g_totalVoteOptions
 new g_totalVoteOptions_temp
@@ -456,7 +457,7 @@ public plugin_init()
     cvar_endOfMapVote              = register_cvar( "gal_endofmapvote", "1" );
     cvar_isToAskForEndOfTheMapVote = register_cvar( "gal_endofmapvote_ask", "0" );
     cvar_emptyWait                 = register_cvar( "gal_emptyserver_wait", "0" );
-    cvar_emptyServerChange         = register_cvar( "gal_emptyserver_change", "0" );
+    cvar_isEmptyCycleServerChange  = register_cvar( "gal_emptyserver_change", "0" );
     cvar_emptyMapFilePath          = register_cvar( "gal_emptyserver_mapfile", "" );
     cvar_serverStartAction         = register_cvar( "gal_srv_start", "0" );
     cvar_serverTimelimitRestart    = register_cvar( "gal_srv_timelimit_restart", "0" );
@@ -539,8 +540,8 @@ public plugin_cfg()
     copy( DIR_CONFIGS[ get_configsdir( DIR_CONFIGS, charsmax( DIR_CONFIGS ) ) ],
             charsmax( DIR_CONFIGS ), "/galileo" );
     
-    copy( DIR_DATA[ get_datadir( DIR_DATA, charsmax( DIR_DATA ) ) ],
-            charsmax( DIR_DATA ), "/galileo" );
+    copy( DATA_DIR_PATH[ get_datadir( DATA_DIR_PATH, charsmax( DATA_DIR_PATH ) ) ],
+            charsmax( DATA_DIR_PATH ), "/galileo" );
     
     server_cmd( "exec %s/galileo.cfg", DIR_CONFIGS );
     server_exec();
@@ -1050,7 +1051,9 @@ public handleServerStart()
             || startAction == SRV_START_NEXTMAP )
         {
             new backupMapsFilePath[ MAX_FILE_PATH_LENGHT ];
-            formatex( backupMapsFilePath, charsmax( backupMapsFilePath ), "%s/info.dat", DIR_DATA );
+            
+            formatex( backupMapsFilePath, charsmax( backupMapsFilePath ), "%s/%s",
+                    DATA_DIR_PATH, CURRENT_AND_NEXTMAP_FILE_NAME );
             
             new backupMapsFile = fopen( backupMapsFilePath, "rt" );
             
@@ -1139,7 +1142,8 @@ stock map_setNext( nextMap[] )
     // update our data file
     new backupMapsFilePath[ MAX_FILE_PATH_LENGHT ];
     
-    formatex( backupMapsFilePath, charsmax( backupMapsFilePath ), "%s/info.dat", DIR_DATA );
+    formatex( backupMapsFilePath, charsmax( backupMapsFilePath ), "%s/%s",
+            DATA_DIR_PATH, CURRENT_AND_NEXTMAP_FILE_NAME );
     
     new backupMapsFile = fopen( backupMapsFilePath, "wt" );
     
@@ -1229,7 +1233,7 @@ stock prevent_map_change()
 public map_loadRecentList()
 {
     new recentMapsFilePath[ MAX_FILE_PATH_LENGHT ];
-    formatex( recentMapsFilePath, charsmax( recentMapsFilePath ), "%s/recentmaps.dat", DIR_DATA );
+    formatex( recentMapsFilePath, charsmax( recentMapsFilePath ), "%s/recentmaps.dat", DATA_DIR_PATH );
     
     new recentMapsFile = fopen( recentMapsFilePath, "rt" );
     
@@ -1259,7 +1263,7 @@ public map_loadRecentList()
 public map_writeRecentList()
 {
     new recentMapsFilePath[ MAX_FILE_PATH_LENGHT ];
-    formatex( recentMapsFilePath, charsmax( recentMapsFilePath ), "%s/recentmaps.dat", DIR_DATA );
+    formatex( recentMapsFilePath, charsmax( recentMapsFilePath ), "%s/recentmaps.dat", DATA_DIR_PATH );
     
     new recentMapsFile = fopen( recentMapsFilePath, "wt" );
     
@@ -2263,7 +2267,7 @@ public vote_startDirector( bool:is_forced_voting )
             cancel_voting()
         }
         
-        if( bool:get_pcvar_num( cvar_emptyServerChange ) )
+        if( bool:get_pcvar_num( cvar_isEmptyCycleServerChange ) )
         {
             startEmptyCycleSystem()
         }
@@ -4631,7 +4635,7 @@ stock getLastEmptyCycleMap( lastEmptyCycleMap[ MAX_MAPNAME_LENGHT ] )
     new lastEmptyCycleMapFilePath[ MAX_FILE_PATH_LENGHT ]
     
     formatex( lastEmptyCycleMapFilePath, charsmax( lastEmptyCycleMapFilePath ), "%s/%s",
-            DIR_DATA, LAST_EMPTY_CYCLE_FILE_NAME )
+            DATA_DIR_PATH, LAST_EMPTY_CYCLE_FILE_NAME )
     
     new lastEmptyCycleMapFile = fopen( lastEmptyCycleMapFilePath, "rt" )
     
@@ -4646,7 +4650,7 @@ stock setLastEmptyCycleMap( lastEmptyCycleMap[ MAX_MAPNAME_LENGHT ] )
     new lastEmptyCycleMapFilePath[ MAX_FILE_PATH_LENGHT ]
     
     formatex( lastEmptyCycleMapFilePath, charsmax( lastEmptyCycleMapFilePath ), "%s/%s",
-            DIR_DATA, LAST_EMPTY_CYCLE_FILE_NAME );
+            DATA_DIR_PATH, LAST_EMPTY_CYCLE_FILE_NAME );
     
     new lastEmptyCycleMapFile = fopen( lastEmptyCycleMapFilePath, "wt" );
     
