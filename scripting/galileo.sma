@@ -358,11 +358,19 @@ new g_emptyCycleMapsNumber
 new g_cntRecentMap;
 new Array:g_nominationMap
 new g_nominationMapCnt;
-new Array: g_emptyCycleMapList
+new Array:g_emptyCycleMapList
 new Array:g_fillerMap;
 new Float:g_rtvWait;
 new g_rtvWaitRounds
 new g_rockedVoteCnt;
+
+new plugin_nextmap_g_nextMap[ MAX_MAPNAME_LENGHT ]
+new plugin_nextmap_g_mapCycle[ MAX_FILE_PATH_LENGHT ]
+new plugin_nextmap_g_pos
+new plugin_nextmap_g_currentMap[ MAX_MAPNAME_LENGHT ]
+
+new plugin_nextmap_g_friendlyfire, plugin_nextmap_g_chattime
+new plugin_nextmap_gp_nextmap
 
 new DIR_CONFIGS [ MAX_FILE_PATH_LENGHT ];
 new DIR_DATA    [ MAX_FILE_PATH_LENGHT ];
@@ -1036,7 +1044,7 @@ public handleServerStart()
     
     if( startAction )
     {
-        new nextMap[ MAX_MAPNAME_LENGHT ];
+        new mapToChange[ MAX_MAPNAME_LENGHT ];
         
         if( startAction == SRV_START_CURRENTMAP
             || startAction == SRV_START_NEXTMAP )
@@ -1048,14 +1056,15 @@ public handleServerStart()
             
             if( backupMapsFile )
             {
-                fgets( backupMapsFile, nextMap, charsmax( nextMap ) );
+                fgets( backupMapsFile, mapToChange, charsmax( mapToChange ) );
                 
                 if( startAction == SRV_START_NEXTMAP )
                 {
-                    nextMap[ 0 ] = '^0';
-                    fgets( backupMapsFile, nextMap, charsmax( nextMap )  );
+                    mapToChange[ 0 ] = '^0';
+                    fgets( backupMapsFile, mapToChange, charsmax( mapToChange )  );
                 }
             }
+            
             fclose( backupMapsFile );
         }
         else if( startAction == SRV_START_RANDOMMAP )
@@ -1070,22 +1079,42 @@ public handleServerStart()
             
             if( g_nominationMapCnt )
             {
-                ArrayGetString( g_nominationMap, random_num( 0, g_nominationMapCnt - 1 ), nextMap,
-                        charsmax( nextMap )  );
+                ArrayGetString( g_nominationMap, random_num( 0, g_nominationMapCnt - 1 ), mapToChange,
+                        charsmax( mapToChange )  );
             }
         }
         
-        trim( nextMap );
+        trim( mapToChange )
+        configureTheMapcycleSystem( mapToChange )
         
-        if( nextMap[ 0 ]
-            && is_map_valid( nextMap ) )
+        if( mapToChange[ 0 ]
+            && is_map_valid( mapToChange ) )
         {
-            serverChangeLevel( nextMap );
+            serverChangeLevel( mapToChange );
         }
         else
         {
             vote_manageEarlyStart();
         }
+    }
+}
+
+stock configureTheMapcycleSystem( currentMap[] )
+{
+    new possibleNextMapPosition
+    new possibleNextMap[ MAX_MAPNAME_LENGHT ]
+    new Array:mapcycleFileList = ArrayCreate( MAX_MAPNAME_LENGHT )
+    
+    map_populateList( mapcycleFileList, plugin_nextmap_g_mapCycle )
+    
+    possibleNextMapPosition = map_getNext( mapcycleFileList, currentMap, possibleNextMap )
+    
+    if( possibleNextMapPosition != -1 )
+    {
+        plugin_nextmap_g_pos = possibleNextMapPosition
+        
+        map_setNext( possibleNextMap )
+        saveCurrentMapCycleSetting()
     }
 }
 
@@ -5056,14 +5085,6 @@ stock cancel_voting()
 }
 
 // ################################## AMX MOD X NEXTMAP PLUGIN ###################################
-new plugin_nextmap_g_nextMap[ MAX_MAPNAME_LENGHT ]
-new plugin_nextmap_g_mapCycle[ MAX_FILE_PATH_LENGHT ]
-new plugin_nextmap_g_pos
-new plugin_nextmap_g_currentMap[ MAX_MAPNAME_LENGHT ]
-
-// pcvars
-new plugin_nextmap_g_friendlyfire, plugin_nextmap_g_chattime
-new plugin_nextmap_gp_nextmap
 
 public nextmap_plugin_init()
 {
@@ -5085,28 +5106,40 @@ public nextmap_plugin_init()
     
     get_mapname( plugin_nextmap_g_currentMap, charsmax( plugin_nextmap_g_currentMap ) )
     
-    new szString[ 40 ]
-    new szString2[ 32 ]
-    new szString3[ 8 ]
+    new tockenMapcycleAndPosion[ MAX_MAPNAME_LENGHT + MAX_FILE_PATH_LENGHT ]
+    new mapcycleFilePath[ MAX_FILE_PATH_LENGHT ]
+    new mapcycleCurrentIndex[ MAX_MAPNAME_LENGHT ]
     
-    get_localinfo( "lastmapcycle", szString, charsmax( szString ) )
-    parse( szString, szString2, charsmax( szString2 ), szString3, charsmax( szString3 ) )
+    get_localinfo( "lastmapcycle", tockenMapcycleAndPosion, charsmax( tockenMapcycleAndPosion ) )
+    
+    parse( tockenMapcycleAndPosion, mapcycleFilePath, charsmax( mapcycleFilePath ),
+            mapcycleCurrentIndex, charsmax( mapcycleCurrentIndex ) )
     
     get_cvar_string( "mapcyclefile", plugin_nextmap_g_mapCycle, charsmax( plugin_nextmap_g_mapCycle ) )
     
-    if( !equal( plugin_nextmap_g_mapCycle, szString2 ) )
+    if( !equal( plugin_nextmap_g_mapCycle, mapcycleFilePath ) )
     {
         plugin_nextmap_g_pos = 0    // mapcyclefile has been changed - go from first
     }
     else
     {
-        plugin_nextmap_g_pos = str_to_num( szString3 )
+        plugin_nextmap_g_pos = str_to_num( mapcycleCurrentIndex )
     }
     
     readMapCycle( plugin_nextmap_g_mapCycle, plugin_nextmap_g_nextMap, charsmax( plugin_nextmap_g_nextMap ) )
     set_pcvar_string( plugin_nextmap_gp_nextmap, plugin_nextmap_g_nextMap )
-    formatex( szString, charsmax( szString ), "%s %d", plugin_nextmap_g_mapCycle, plugin_nextmap_g_pos )
-    set_localinfo( "lastmapcycle", szString ) // save lastmapcycle settings
+    
+    saveCurrentMapCycleSetting()
+}
+
+stock saveCurrentMapCycleSetting()
+{
+    new tockenMapcycleAndPosion[ MAX_MAPNAME_LENGHT + MAX_FILE_PATH_LENGHT ]
+    
+    formatex( tockenMapcycleAndPosion, charsmax( tockenMapcycleAndPosion ), "%s %d",
+            plugin_nextmap_g_mapCycle, plugin_nextmap_g_pos )
+    
+    set_localinfo( "lastmapcycle", tockenMapcycleAndPosion ) // save lastmapcycle settings
 }
 
 getNextMapName( szArg[], iMax )
@@ -5493,17 +5526,17 @@ stock test_gal_in_empty_cycle1()
  */
 stock test_gal_in_empty_cycle2()
 {
-    new test_id              = register_test( 0, "test_gal_in_empty_cycle2" )
-    new Array: emptyCycleMap = ArrayCreate( MAX_MAPNAME_LENGHT );
+    new test_id                  = register_test( 0, "test_gal_in_empty_cycle2" )
+    new Array: emptyCycleMapList = ArrayCreate( MAX_MAPNAME_LENGHT );
     
-    ArrayPushString( emptyCycleMap, "de_dust2" )
-    ArrayPushString( emptyCycleMap, "de_inferno" )
+    ArrayPushString( emptyCycleMapList, "de_dust2" )
+    ArrayPushString( emptyCycleMapList, "de_inferno" )
     
     // set the next map from the empty cycle list,
     // or the first one, if the current map isn't part of the cycle
     new nextMap[ MAX_MAPNAME_LENGHT ]
     
-    new mapIndex = map_getNext( emptyCycleMap, "de_dust2", nextMap );
+    new mapIndex = map_getNext( emptyCycleMapList, "de_dust2", nextMap );
     
     if( !equal( nextMap, "de_inferno" ) )
     {
@@ -5526,18 +5559,18 @@ stock test_gal_in_empty_cycle2()
  */
 stock test_gal_in_empty_cycle3()
 {
-    new test_id              = register_test( 0, "test_gal_in_empty_cycle3" )
-    new Array: emptyCycleMap = ArrayCreate( MAX_MAPNAME_LENGHT );
+    new test_id                  = register_test( 0, "test_gal_in_empty_cycle3" )
+    new Array: emptyCycleMapList = ArrayCreate( MAX_MAPNAME_LENGHT );
     
-    ArrayPushString( emptyCycleMap, "de_dust2" )
-    ArrayPushString( emptyCycleMap, "de_inferno" )
-    ArrayPushString( emptyCycleMap, "de_dust4" )
+    ArrayPushString( emptyCycleMapList, "de_dust2" )
+    ArrayPushString( emptyCycleMapList, "de_inferno" )
+    ArrayPushString( emptyCycleMapList, "de_dust4" )
     
     // set the next map from the empty cycle list,
     // or the first one, if the current map isn't part of the cycle
     new nextMap[ MAX_MAPNAME_LENGHT ]
     
-    new mapIndex = map_getNext( emptyCycleMap, "de_inferno", nextMap );
+    new mapIndex = map_getNext( emptyCycleMapList, "de_inferno", nextMap );
     
     if( !equal( nextMap, "de_dust4" ) )
     {
@@ -5560,18 +5593,18 @@ stock test_gal_in_empty_cycle3()
  */
 stock test_gal_in_empty_cycle4()
 {
-    new test_id              = register_test( 0, "test_gal_in_empty_cycle4" )
-    new Array: emptyCycleMap = ArrayCreate( MAX_MAPNAME_LENGHT );
+    new test_id                  = register_test( 0, "test_gal_in_empty_cycle4" )
+    new Array: emptyCycleMapList = ArrayCreate( MAX_MAPNAME_LENGHT );
     
-    ArrayPushString( emptyCycleMap, "de_dust2" )
-    ArrayPushString( emptyCycleMap, "de_inferno" )
-    ArrayPushString( emptyCycleMap, "de_dust4" )
+    ArrayPushString( emptyCycleMapList, "de_dust2" )
+    ArrayPushString( emptyCycleMapList, "de_inferno" )
+    ArrayPushString( emptyCycleMapList, "de_dust4" )
     
     // set the next map from the empty cycle list,
     // or the first one, if the current map isn't part of the cycle
     new nextMap[ MAX_MAPNAME_LENGHT ]
     
-    new mapIndex = map_getNext( emptyCycleMap, "de_dust", nextMap );
+    new mapIndex = map_getNext( emptyCycleMapList, "de_dust", nextMap );
     
     if( !equal( nextMap, "de_dust2" ) )
     {
