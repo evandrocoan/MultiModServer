@@ -36,7 +36,7 @@ new const PLUGIN_VERSION[] = "1.2.X"
  *       fake votes and run the unit tests and print their out put results.
  * 3   - Levels 1 and 2.
  */
-#define DEBUG_LEVEL 3
+#define DEBUG_LEVEL 2
 
 #define NORMAL_DEBUG_LEVEL    1
 #define UNIT_TEST_DEBUG_LEVEL 2
@@ -92,11 +92,11 @@ stock debugMesssageLogger( mode, message[], any: ... )
 #define ALL_TESTS_TO_EXECUTE() \
 { \
     test_register_test(); \
-    test_gal_in_empty_cycle1(); \
-    test_gal_in_empty_cycle2(); \
-    test_gal_in_empty_cycle3(); \
-    test_gal_in_empty_cycle4(); \
-    test_is_map_extension_allowed1(); \
+    test_gal_in_empty_cycle_case1(); \
+    test_gal_in_empty_cycle_case2(); \
+    test_gal_in_empty_cycle_case3(); \
+    test_gal_in_empty_cycle_case4(); \
+    test_is_map_extension_allowed(); \
 }
 
 /**
@@ -107,10 +107,8 @@ new g_totalSuccessfulTests
 new g_totalFailureTests
 
 new Array: g_tests_idsAndNames
-new Array: g_tests_delayed_ids
 new Array: g_tests_failure_ids
-
-new bool:g_is_test_changed_cvars
+new bool: g_is_test_changed_cvars
 
 new Float:test_extendmap_max
 new Float:test_mp_timelimit
@@ -308,7 +306,7 @@ new cvar_endOnRound_rtv
 new cvar_endOnRound_msg
 new cvar_voteWeight
 new cvar_voteWeightFlags
-new cvar_extendmapMax;
+new cvar_maxMapExtendTime;
 new cvar_extendmapStep;
 new cvar_extendmapStepRounds;
 new cvar_extendmapAllowStay
@@ -439,7 +437,7 @@ public plugin_init()
     register_cvar( "gal_version", PLUGIN_VERSION, FCVAR_SERVER | FCVAR_SPONLY );
     register_cvar( "gal_server_starting", "1", FCVAR_SPONLY );
     
-    cvar_extendmapMax            = register_cvar( "amx_extendmap_max", "90" );
+    cvar_maxMapExtendTime        = register_cvar( "amx_extendmap_max", "90" );
     cvar_extendmapStep           = register_cvar( "amx_extendmap_step", "15" );
     cvar_extendmapStepRounds     = register_cvar( "amx_extendmap_step_rounds", "30" );
     cvar_extendmapAllowStay      = register_cvar( "amx_extendmap_allow_stay", "0" );
@@ -647,7 +645,6 @@ public plugin_cfg()
     set_task( 15.0, "vote_manageEnd", _, _, _, "b" );
 
 #if DEBUG_LEVEL & UNIT_TEST_DEBUG_LEVEL
-    g_tests_delayed_ids = ArrayCreate( 1 )
     g_tests_failure_ids = ArrayCreate( 1 )
     g_tests_idsAndNames = ArrayCreate( SHORT_STRING )
     
@@ -974,13 +971,14 @@ public show_last_round_HUD()
     set_hudmessage( 255, 255, 255, 0.15, 0.15, 0, 0.0, 1.0, 0.1, 0.1, 1 )
     
     static last_round_message[ COLOR_MESSAGE ]
-
+    
 #if AMXX_VERSION_NUM < 183
     static player_id
     static playerIndex
     static playersCount
     static players[ MAX_PLAYERS ]
 #endif
+
     last_round_message[ 0 ] = '^0'
     
     if( g_is_timeToChangeLevel
@@ -1047,7 +1045,6 @@ public plugin_end()
 #if DEBUG_LEVEL & UNIT_TEST_DEBUG_LEVEL
     restore_server_cvars_for_test()
     ArrayDestroy( g_tests_idsAndNames )
-    ArrayDestroy( g_tests_delayed_ids )
     ArrayDestroy( g_tests_failure_ids )
 #endif
 }
@@ -2311,7 +2308,7 @@ public vote_startDirector( bool:is_forced_voting )
                 g_voteStatus & VOTE_IS_EARLY: %d, is_forced_voting: %d, \
                 get_realplayersnum(): %d", g_voteStatus, g_voteStatus & VOTE_IS_EARLY, \
                 is_forced_voting, get_realplayersnum() )
-        
+    
     #if !( DEBUG_LEVEL & UNIT_TEST_DEBUG_LEVEL )
         return
     #endif
@@ -2351,7 +2348,7 @@ public vote_startDirector( bool:is_forced_voting )
         else
         {
             g_is_map_extension_allowed =
-                get_pcvar_float( g_timelimit_pointer ) < get_pcvar_float( cvar_extendmapMax )
+                get_pcvar_float( g_timelimit_pointer ) < get_pcvar_float( cvar_maxMapExtendTime )
         }
         
         g_is_final_voting = ( ( ( get_pcvar_float( g_timelimit_pointer ) * 60 ) < START_VOTEMAP_MIN_TIME )
@@ -2389,6 +2386,7 @@ public vote_startDirector( bool:is_forced_voting )
         SortCustom2D( g_votingMapNames, choicesLoaded, "sort_stringsi" );
     
     #if defined DEBUG
+        
         for( new dbgChoice = 0; dbgChoice < choicesLoaded; dbgChoice++ )
         {
             DEBUG_LOGGER( 4, "      %i. %s", dbgChoice + 1, g_votingMapNames[ dbgChoice ] )
@@ -2891,12 +2889,13 @@ public vote_handleDisplay()
     {
         g_voteDuration = get_pcvar_num( cvar_voteDuration );
     }
-    
+
 #if DEBUG_LEVEL & UNIT_TEST_DEBUG_LEVEL
     g_voteDuration = 5
 #endif
 
 #if defined DEBUG && !( DEBUG_LEVEL & UNIT_TEST_DEBUG_LEVEL )
+    
     if( g_debug_level & 4 )
     {
         set_task( 2.0, "create_fakeVotes", TASKID_DBG_FAKEVOTES );
@@ -3370,6 +3369,7 @@ stock display_vote_menu( bool:menuType, bool:isVoteOver, player_id, menuBody[], 
     new menukeys_unused
 
 #if defined DEBUG
+    
     if( player_id == 1 )
     {
         new player_name[ MAX_PLAYER_NAME_LENGHT ];
@@ -4886,6 +4886,7 @@ stock color_print( player_id, message[], any: ... )
         && g_is_colored_chat_enabled )
     {
 #if AMXX_VERSION_NUM < 183
+        
         if( player_id )
         {
             vformat( formated_message, charsmax( formated_message ), message, 3 )
@@ -5057,6 +5058,7 @@ stock register_dictionary_colored( const dictionaryFile[] )
         #else
             argbreak( szBuffer, szKey, charsmax( szKey ), szTranslation, charsmax( szTranslation ) );
         #endif
+            
             iKey = GetLangTransKey( szKey );
             
             if( iKey != TransKey_Bad )
@@ -5252,7 +5254,9 @@ public changeMap()
     {
         set_pcvar_float( plugin_nextmap_g_chattime, chattime + 2.0 ) // make sure mp_chattime is long
     }
+    
     new len = getNextMapName( string, charsmax( string ) ) + 1
+    
     set_task( chattime, "delayedChange", 0, string, len ) // change with 1.5 sec. delay
 }
 
@@ -5334,7 +5338,6 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
     plugin_nextmap_g_pos = 1
 }
 
-
 // ################################## BELOW HERE ONLY GOES DEBUG/TEST CODE ###################################
 #if DEBUG_LEVEL > 0
 public create_fakeVotes()
@@ -5364,10 +5367,12 @@ public create_fakeVotes()
         g_totalVotesCounted = g_arrayOfMapsWithVotesNumber[ 0 ] + g_arrayOfMapsWithVotesNumber[ 1 ];
     }
 }
+
 #endif
 
 
 #if DEBUG_LEVEL & UNIT_TEST_DEBUG_LEVEL
+
 /**
  * This function run all tests that are listed at it. Every test that is created must
  * to be called here to register itself at the Test System and perform the testing.
@@ -5376,7 +5381,7 @@ public runTests()
 {
     new test_name[ SHORT_STRING ]
     
-    server_print( "^n^n    Executing the 'Galileo' Tests: ^n" )
+    server_print( "^n^n    Executing the 'Galileo' Tests:^n" )
     
     save_server_cvasr_for_test()
     
@@ -5400,22 +5405,8 @@ public runTests()
     
     if( g_max_delay_result )
     {
-        server_print( "^n    The following tests are waiting until %d seconds to finish:", \
-                g_max_delay_result )
-    }
-    
-    for( new delayed_index = 0; delayed_index < ArraySize( g_tests_delayed_ids ); delayed_index++ )
-    {
-        ArrayGetString( g_tests_idsAndNames, ArrayGetCell( g_tests_delayed_ids, delayed_index ) - 1,
-                test_name, charsmax( test_name ) )
-        
-        server_print( "       %s", test_name )
-    }
-    
-    if( g_max_delay_result )
-    {
+        server_print( "^n^n    Executing the 'Galileo' delayed until %d seconds tests:^n", g_max_delay_result )
         set_task( g_max_delay_result + 1.0, "show_delayed_results" )
-        server_print( "^n    Finished Tests First Step Execution.^n^n" )
     }
     else
     {
@@ -5431,8 +5422,6 @@ public runTests()
 public show_delayed_results()
 {
     new test_name[ SHORT_STRING ]
-    
-    server_print( "^n^n    Showing 'Galileo' Tests Delayed Results..." )
     
     server_print( "^n    %d tests succeed.^n    %d tests failed.", g_totalSuccessfulTests, \
             g_totalFailureTests )
@@ -5462,10 +5451,10 @@ public show_delayed_results()
  * Test System know that the test exists and then know how to handle it using
  * the test_id.
  *
- * @param max_delay_result the max delay time to finish test execution.
- * @param test_name the test name to register
+ * @param max_delay_result        the max delay time to finish test execution.
+ * @param test_name               the test name to register
  *
- * @return test_id an integer that refers it at the Test System.
+ * @return test_id                an integer that refers it at the Test System.
  */
 stock register_test( max_delay_result, test_name[] )
 {
@@ -5474,17 +5463,12 @@ stock register_test( max_delay_result, test_name[] )
     new totalTests = g_totalSuccessfulTests + g_totalFailureTests
     
     ArrayPushString( g_tests_idsAndNames, test_name )
-    server_print( "    Executing test %d with %d delay - %s ", totalTests, max_delay_result, \
+    server_print( "    Executing test %d with %d seconds delay - %s ", totalTests, max_delay_result, \
             test_name )
     
     if( g_max_delay_result < max_delay_result )
     {
         g_max_delay_result = max_delay_result
-    }
-    
-    if( max_delay_result )
-    {
-        ArrayPushCell( g_tests_delayed_ids, totalTests )
     }
     
     return totalTests
@@ -5493,9 +5477,9 @@ stock register_test( max_delay_result, test_name[] )
 /**
  * Informs the Test System that the test failed and why.
  *
- * @test_id the test_id at the Test System
- * @failure_reason the reason why the test failed
- * @any a variable number of formatting parameters
+ * @param test_id              the test_id at the Test System
+ * @param failure_reason       the reason why the test failed
+ * @param any                  a variable number of formatting parameters
  */
 stock set_test_failure_internal( test_id, failure_reason[], any: ... )
 {
@@ -5515,6 +5499,8 @@ stock set_test_failure_internal( test_id, failure_reason[], any: ... )
  */
 stock test_register_test()
 {
+    new first_test_name[ 64 ]
+    
     new test_id = register_test( 0, "test_register_test" )
     
     if( g_totalSuccessfulTests != 1 )
@@ -5528,7 +5514,6 @@ stock test_register_test()
         SET_TEST_FAILURE( test_id, "test_id must be 1 (it was %d)", test_id )
     }
     
-    new first_test_name[ 64 ]
     ArrayGetString( g_tests_idsAndNames, 0, first_test_name, charsmax( first_test_name ) )
     
     if( !equal( first_test_name, "test_register_test" ) )
@@ -5541,16 +5526,16 @@ stock test_register_test()
 /**
  * Test for client connect cvar_isToStopEmptyCycle behavior.
  */
-stock test_gal_in_empty_cycle1()
+stock test_gal_in_empty_cycle_case1()
 {
-    new test_id = register_test( 0, "test_gal_in_empty_cycle1" )
+    new test_id = register_test( 0, "test_gal_in_empty_cycle_case1" )
     
     set_pcvar_num( cvar_isToStopEmptyCycle, 1 )
     client_authorized( 1 )
     
     if( get_pcvar_num( cvar_isToStopEmptyCycle ) )
     {
-        SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle1() cvar_isToStopEmptyCycle must be 0 (it was %d)", \
+        SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle_case1() cvar_isToStopEmptyCycle must be 0 (it was %d)", \
                 get_pcvar_num( cvar_isToStopEmptyCycle ) )
     }
     
@@ -5559,7 +5544,7 @@ stock test_gal_in_empty_cycle1()
     
     if( get_pcvar_num( cvar_isToStopEmptyCycle ) )
     {
-        SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle1() cvar_isToStopEmptyCycle must be 0 (it was %d)", \
+        SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle_case1() cvar_isToStopEmptyCycle must be 0 (it was %d)", \
                 get_pcvar_num( cvar_isToStopEmptyCycle ) )
     }
 }
@@ -5568,9 +5553,9 @@ stock test_gal_in_empty_cycle1()
  * This 1º case test if the current map isn't part of the empty cycle, immediately change to next map
  * that is.
  */
-stock test_gal_in_empty_cycle2()
+stock test_gal_in_empty_cycle_case2()
 {
-    new test_id                  = register_test( 0, "test_gal_in_empty_cycle2" )
+    new test_id                  = register_test( 0, "test_gal_in_empty_cycle_case2" )
     new Array: emptyCycleMapList = ArrayCreate( MAX_MAPNAME_LENGHT );
     
     ArrayPushString( emptyCycleMapList, "de_dust2" )
@@ -5584,7 +5569,7 @@ stock test_gal_in_empty_cycle2()
     
     if( !equal( nextMap, "de_inferno" ) )
     {
-        SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle2() nextMap must be 'de_inferno' \
+        SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle_case2() nextMap must be 'de_inferno' \
                 (it was %s)", nextMap )
     }
     
@@ -5592,7 +5577,7 @@ stock test_gal_in_empty_cycle2()
     // immediately change to next map that is
     if( mapIndex == -1 )
     {
-        SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle2() mapIndex must NOT be '-1' \
+        SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle_case2() mapIndex must NOT be '-1' \
                 (it was %d)", mapIndex )
     }
     
@@ -5603,9 +5588,9 @@ stock test_gal_in_empty_cycle2()
  * This 2º case test if the current map isn't part of the empty cycle, immediately change to next map
  * that is.
  */
-stock test_gal_in_empty_cycle3()
+stock test_gal_in_empty_cycle_case3()
 {
-    new test_id                  = register_test( 0, "test_gal_in_empty_cycle3" )
+    new test_id                  = register_test( 0, "test_gal_in_empty_cycle_case3" )
     new Array: emptyCycleMapList = ArrayCreate( MAX_MAPNAME_LENGHT );
     
     ArrayPushString( emptyCycleMapList, "de_dust2" )
@@ -5620,7 +5605,7 @@ stock test_gal_in_empty_cycle3()
     
     if( !equal( nextMap, "de_dust4" ) )
     {
-        SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle3() nextMap must be 'de_dust4' \
+        SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle_case3() nextMap must be 'de_dust4' \
                 (it was %s)", nextMap )
     }
     
@@ -5628,7 +5613,7 @@ stock test_gal_in_empty_cycle3()
     // immediately change to next map that is
     if( mapIndex == -1 )
     {
-        SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle3() mapIndex must NOT be '-1' \
+        SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle_case3() mapIndex must NOT be '-1' \
                 (it was %d)", mapIndex )
     }
     
@@ -5639,9 +5624,9 @@ stock test_gal_in_empty_cycle3()
  * This 3º case test if the current map isn't part of the empty cycle, immediately change to next map
  * that is.
  */
-stock test_gal_in_empty_cycle4()
+stock test_gal_in_empty_cycle_case4()
 {
-    new test_id                  = register_test( 0, "test_gal_in_empty_cycle4" )
+    new test_id                  = register_test( 0, "test_gal_in_empty_cycle_case4" )
     new Array: emptyCycleMapList = ArrayCreate( MAX_MAPNAME_LENGHT );
     
     ArrayPushString( emptyCycleMapList, "de_dust2" )
@@ -5656,7 +5641,7 @@ stock test_gal_in_empty_cycle4()
     
     if( !equal( nextMap, "de_dust2" ) )
     {
-        SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle4() nextMap must be 'de_dust2' \
+        SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle_case4() nextMap must be 'de_dust2' \
                 (it was %s)", nextMap )
     }
     
@@ -5664,7 +5649,7 @@ stock test_gal_in_empty_cycle4()
     // immediately change to next map that is
     if( !( mapIndex == -1 ) )
     {
-        SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle4() mapIndex must be '-1' \
+        SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle_case4() mapIndex must be '-1' \
                 (it was %d)", mapIndex )
     }
     
@@ -5673,17 +5658,18 @@ stock test_gal_in_empty_cycle4()
 
 /**
  * This is the vote_startDirector() tests chain beginning. Because the vote_startDirector() cannot
- * to be tested simultaneously.
+ * to be tested simultaneously. Then, all tests that involves the vote_startDirector() chain, must
+ * to be executed sequentially after this chain end.
  *
- * Then, all tests that involves the vote_startDirector() chain, must to be executed sequentially
- * after this chain end.
+ * This is the 1º chain test.
  *
- * This is the 1º chain test, and test if the cvar 'amx_extendmap_max' functionality is working
- * properly.
+ * Tests if the cvar 'amx_extendmap_max' functionality is working properly for a successful case.
  */
-stock test_is_map_extension_allowed1()
+stock test_is_map_extension_allowed()
 {
-    new test_id = register_test( 23, "test_is_map_extension_allowed1" )
+    new chainDelay = 2 + 2 + 1
+    
+    new test_id = register_test( chainDelay, "test_is_map_extension_allowed" )
     
     if( g_is_map_extension_allowed )
     {
@@ -5698,6 +5684,10 @@ stock test_is_map_extension_allowed1()
     }
     
     cancel_voting()
+    
+    set_pcvar_float( cvar_maxMapExtendTime, 20.0 )
+    set_pcvar_float( g_timelimit_pointer, 10.0 )
+    
     vote_startDirector( false )
     
     if( !g_is_map_extension_allowed )
@@ -5706,30 +5696,32 @@ stock test_is_map_extension_allowed1()
                 g_is_map_extension_allowed )
     }
     
-    set_task( 10.0, "test_is_map_extension_allowed2", test_id )
+    set_task( 2.0, "test_is_map_extension_allowed2", chainDelay )
     g_refreshVoteStatus = true;
 }
 
 /**
- * This is the 2º test at vote_startDirector() chain and must add 10.0 seconds to the total time
- * execution.
+ * This is the 2º test at vote_startDirector() chain.
  *
- * This 2º, test if the cvar 'amx_extendmap_max' functionality is working properly.
+ * Tests if the cvar 'amx_extendmap_max' functionality is working properly for a failure case.
  */
-public test_is_map_extension_allowed2( test_id )
+public test_is_map_extension_allowed2( chainDelay )
 {
-    if( g_refreshVoteStatus )
+    new test_id = register_test( chainDelay, "test_is_map_extension_allowed2" )
+    
+    if( !g_is_map_extension_allowed )
     {
-        SET_TEST_FAILURE( test_id, "g_refreshVoteStatus must be 0 (it was %d)", \
+        SET_TEST_FAILURE( test_id, "g_is_map_extension_allowed must be 1 (it was %d)", \
                 g_is_map_extension_allowed )
     }
-    
-    set_pcvar_float( cvar_extendmapMax, 10.0 )
-    set_pcvar_float( g_timelimit_pointer, 20.0 )
     
     color_print( 0, "^1%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED" );
     
     cancel_voting()
+    
+    set_pcvar_float( cvar_maxMapExtendTime, 10.0 )
+    set_pcvar_float( g_timelimit_pointer, 20.0 )
+    
     vote_startDirector( false )
     
     if( g_is_map_extension_allowed )
@@ -5738,44 +5730,45 @@ public test_is_map_extension_allowed2( test_id )
                 g_is_map_extension_allowed )
     }
     
-    set_task( 10.0, "test_is_map_extension_allowed3", test_id )
+    set_task( 2.0, "test_end_of_map_voting_start", chainDelay )
+    
     g_refreshVoteStatus = false;
 }
 
 /**
- * This is the 3º test at vote_startDirector() chain and must add 3 seconds to the total time
- * execution.
+ * This is the 3º test at vote_startDirector() chain.
  *
- * This 3º, tests if the end map voting is starting automatically at the end of map due time limit
- * expiration.
+ * Tests if the end map voting is starting automatically at the end of map due time limit expiration.
  */
-public test_is_map_extension_allowed3( test_id )
+public test_end_of_map_voting_start( chainDelay )
 {
-    if( !g_refreshVoteStatus )
+    new test_id = register_test( chainDelay, "test_end_of_map_voting_start" )
+    
+    if( g_is_map_extension_allowed )
     {
-        SET_TEST_FAILURE( test_id, "g_refreshVoteStatus must be 1 (it was %d)", \
+        SET_TEST_FAILURE( test_id, "g_is_map_extension_allowed must be 0 (it was %d)", \
                 g_is_map_extension_allowed )
     }
     
     cancel_voting()
     
-    set_task( 3.0, "test_is_map_extension_allowed4", test_id )
-}
-
-/**
- * This is the 4º test at vote_startDirector() chain and must add 0 seconds to the total time
- * execution.
- *
- * This 4º, tests if the end map voting is starting automatically at the end of map due time limit
- * expiration.
- */
-public test_is_map_extension_allowed4( test_id )
-{
     new secondsLeft = get_timeleft();
     
     set_pcvar_float( g_timelimit_pointer, (
                 ( get_pcvar_float( g_timelimit_pointer ) ) * 60 - secondsLeft
                 + START_VOTEMAP_MIN_TIME - 10 ) / 60 )
+    
+    set_task( 1.0, "test_end_of_map_voting_start_2", chainDelay )
+}
+
+/**
+ * This is the 4º test at vote_startDirector() chain.
+ *
+ * Tests if the end map voting is starting automatically at the end of map due time limit expiration.
+ */
+public test_end_of_map_voting_start_2( chainDelay )
+{
+    new test_id = register_test( chainDelay, "test_end_of_map_voting_start_2" )
     
     vote_manageEnd()
     
@@ -5788,13 +5781,15 @@ public test_is_map_extension_allowed4( test_id )
 /**
  * Every time a cvar is changed during the tests, it must be saved here to a global test variable
  * to be restored at the restore_server_cvars_for_test(), which is executed at the end of all
- * tests execution. This is executed before the first rest run.
+ * tests execution.
+ *
+ * This is executed before the first rest run.
  */
 stock save_server_cvasr_for_test()
 {
     g_is_test_changed_cvars = true
     
-    test_extendmap_max = get_pcvar_float( cvar_extendmapMax )
+    test_extendmap_max = get_pcvar_float( cvar_maxMapExtendTime )
     test_mp_timelimit  = get_pcvar_float( g_timelimit_pointer )
     
     DEBUG_LOGGER( 2, "    %42s mp_timelimit: %f  test_mp_timelimit: %f   g_originalTimelimit: %f",  \
@@ -5803,7 +5798,7 @@ stock save_server_cvasr_for_test()
 }
 
 /**
- * This is executed at the end of all tests execution to restore server variables changes.
+ * This is executed after all tests executions, to restore the server variables changes.
  */
 stock restore_server_cvars_for_test()
 {
@@ -5815,7 +5810,7 @@ stock restore_server_cvars_for_test()
     {
         g_is_test_changed_cvars = false
         
-        set_pcvar_float( cvar_extendmapMax, test_extendmap_max )
+        set_pcvar_float( cvar_maxMapExtendTime, test_extendmap_max )
         set_pcvar_float( g_timelimit_pointer, test_mp_timelimit )
     }
     
@@ -5823,4 +5818,5 @@ stock restore_server_cvars_for_test()
             "restore_server_cvars_for_test( out )", get_pcvar_float( g_timelimit_pointer ), \
             test_mp_timelimit, g_originalTimelimit )
 }
+
 #endif
