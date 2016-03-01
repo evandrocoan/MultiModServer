@@ -86,6 +86,7 @@ stock debugMesssageLogger( mode, message[], any: ... )
 
 
 #if DEBUG_LEVEL & UNIT_TEST_DEBUG_LEVEL
+
 /**
  * Contains all unit tests to execute.
  */
@@ -971,14 +972,14 @@ public show_last_round_HUD()
     set_hudmessage( 255, 255, 255, 0.15, 0.15, 0, 0.0, 1.0, 0.1, 0.1, 1 )
     
     static last_round_message[ COLOR_MESSAGE ]
-    
+
 #if AMXX_VERSION_NUM < 183
     static player_id
     static playerIndex
     static playersCount
     static players[ MAX_PLAYERS ]
 #endif
-
+    
     last_round_message[ 0 ] = '^0'
     
     if( g_is_timeToChangeLevel
@@ -4795,6 +4796,7 @@ stock has_flag( player_id, flags[] )
 {
     return ( get_user_flags( player_id ) & read_flags( flags ) );
 }
+
 #endif
 
 public sort_stringsi( const elem1[], const elem2[], const array[], data[], data_size )
