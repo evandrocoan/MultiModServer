@@ -36,7 +36,7 @@ new const PLUGIN_VERSION[] = "1.2.X"
  *       fake votes and run the unit tests and print their out put results.
  * 3   - Levels 1 and 2.
  */
-#define DEBUG_LEVEL 2
+#define DEBUG_LEVEL 1
 
 #define NORMAL_DEBUG_LEVEL    1
 #define UNIT_TEST_DEBUG_LEVEL 2
@@ -1039,14 +1039,33 @@ public plugin_end()
     
     map_restoreOriginalTimeLimit()
     
-    ArrayDestroy( g_emptyCycleMapList )
-    ArrayDestroy( g_fillerMap )
-    ArrayDestroy( g_nominationMap )
+    if( g_emptyCycleMapList )
+    {
+        ArrayDestroy( g_emptyCycleMapList )
+    }
+    
+    if( g_fillerMap )
+    {
+        ArrayDestroy( g_fillerMap )
+    }
+    
+    if( g_nominationMap )
+    {
+        ArrayDestroy( g_nominationMap )
+    }
 
 #if DEBUG_LEVEL & UNIT_TEST_DEBUG_LEVEL
     restore_server_cvars_for_test()
-    ArrayDestroy( g_tests_idsAndNames )
-    ArrayDestroy( g_tests_failure_ids )
+    
+    if( g_tests_idsAndNames )
+    {
+        ArrayDestroy( g_tests_idsAndNames )
+    }
+    
+    if( g_tests_failure_ids )
+    {
+        ArrayDestroy( g_tests_failure_ids )
+    }
 #endif
 }
 
@@ -2417,7 +2436,7 @@ public vote_startDirector( bool:is_forced_voting )
         handleChoicesDelay = 1.0
     
     #else
-        handleChoicesDelay = 8.5
+        handleChoicesDelay = 7.5
         
         // make perfunctory announcement: "get ready to choose a map"
         if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_GETREADYTOCHOOSE ) )
@@ -2454,7 +2473,7 @@ stock endOfVoteDisplay()
 {
     new argument[ 3 ] = { -1, -1, false }
     
-    set_task( 0.6, "vote_display", TASKID_VOTE_DISPLAY, argument, sizeof argument, "a", 10 )
+    set_task( 0.9, "vote_display", TASKID_VOTE_DISPLAY, argument, sizeof argument, "a", 4 )
 }
 
 public closeVoting()
@@ -2464,12 +2483,13 @@ public closeVoting()
     
     endOfVoteDisplay()
     
-    set_task( 10.0, "computeVotes", TASKID_VOTE_EXPIRE )
+    set_task( 5.0, "computeVotes", TASKID_VOTE_EXPIRE )
 }
 
 public pendingVoteCountdown()
 {
-    if( bool:get_pcvar_num( cvar_isToAskForEndOfTheMapVote ) )
+    if( bool:get_pcvar_num( cvar_isToAskForEndOfTheMapVote )
+        && !( g_voteStatus & VOTE_IS_RUNOFF ) )
     {
         displayEndOfTheMapVoteMenu( 0 )
     }
@@ -3170,7 +3190,10 @@ stock calculateExtensionOption( player_id, bool:isVoteOver, charCount, voteStatu
     }
     
     // make a copy of the virgin menu
-    copy( g_voteStatusClean, charsmax( g_voteStatusClean ), voteStatus )
+    if( g_voteStatusClean[ 0 ] == '^0' )
+    {
+        copy( g_voteStatusClean, charsmax( g_voteStatusClean ), voteStatus )
+    }
     
     return menuKeys
 }
@@ -3354,8 +3377,10 @@ stock calculate_menu_clean( player_id, isToShowNoneOption, noneOptionType,
             copy( noneOption, charsmax( noneOption ), "GAL_OPTION_NONE" )
         }
         
-        formatex( menuClean, menuCleanSize, "%^n%s^n^n%s%s",
-                menuHeader, g_voteStatusClean, noneOption, voteFooter );
+        formatex( menuClean, menuCleanSize, "%s^n%s^n^n\
+                %s0. %s%L%s",
+                menuHeader, g_voteStatusClean,
+                COLOR_RED, COLOR_WHITE, player_id, noneOption, voteFooter );
     }
     else
     {
@@ -3618,9 +3643,18 @@ stock computeVoteMapLine( voteMapLine[], voteMapLineLength, voteIndex )
 
 public computeVotes()
 {
+    new winnerVoteMapIndex;
     new playerVoteMapChoiceIndex
+    
     new numberOfVotesAtFirstPlace
     new numberOfVotesAtSecondPlace
+    
+    // retain the number of draw maps at first and second positions
+    new numberOfMapsAtFirstPosition
+    new numberOfMapsAtSecondPosition
+    
+    new firstPlaceChoices[ MAX_OPTIONS_IN_VOTE ]
+    new secondPlaceChoices[ MAX_OPTIONS_IN_VOTE ]
 
 #if defined DEBUG
     new voteMapLine[ 32 ];
@@ -3656,13 +3690,6 @@ public computeVotes()
         }
     }
     
-    // retain the number of draw maps at first and second positions
-    new numberOfMapsAtFirstPosition
-    new numberOfMapsAtSecondPosition
-    
-    new firstPlaceChoices[ MAX_OPTIONS_IN_VOTE ]
-    new secondPlaceChoices[ MAX_OPTIONS_IN_VOTE ]
-    
     // determine which maps are in 1st and 2nd places
     for( playerVoteMapChoiceIndex = 0; playerVoteMapChoiceIndex <= g_totalVoteOptions;
          ++playerVoteMapChoiceIndex )
@@ -3689,9 +3716,10 @@ public computeVotes()
             g_voteStatus & VOTE_IS_EARLY: %d", \
             g_is_timeToRestart, g_is_timeToChangeLevel, g_voteStatus & VOTE_IS_EARLY )
     
-    // announce the outcome
-    new winnerVoteMapIndex;
+    // clean the vote menu
+    g_voteStatusClean[ 0 ] = '^0'
     
+    // announce the outcome
     if( numberOfVotesAtFirstPlace )
     {
         // if the top vote getting map didn't receive over 50% of the votes cast, to start a runoff vote
