@@ -39,11 +39,11 @@ new const PLUGIN_VERSION[] = "1.2.X"
  */
 #define DEBUG_LEVEL 5
 
-#define NORMAL_DEBUG_LEVEL     1
-#define UNIT_TEST_DEBUG_LEVEL  2
-#define FAKE_VOTES_DEBUG_LEVEL 4
+#define DEBUG_LEVEL_NORMAL     1
+#define DEBUG_LEVEL_UNIT_TEST  2
+#define DEBUG_LEVEL_FAKE_VOTES 4
 
-#if DEBUG_LEVEL & NORMAL_DEBUG_LEVEL
+#if DEBUG_LEVEL & DEBUG_LEVEL_NORMAL
     #define DEBUG
     #define DEBUG_LOGGER(%1) debugMesssageLogger( %1 )
 
@@ -87,7 +87,7 @@ stock debugMesssageLogger( mode, message[], any: ... )
 #endif
 
 
-#if DEBUG_LEVEL & UNIT_TEST_DEBUG_LEVEL
+#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
 
 /**
  * Contains all unit tests to execute.
@@ -649,7 +649,7 @@ public plugin_cfg()
     // setup the main task that schedules the end map voting and allow round finish feature.
     set_task( 15.0, "vote_manageEnd", _, _, _, "b" );
 
-#if DEBUG_LEVEL & UNIT_TEST_DEBUG_LEVEL
+#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
     g_tests_failure_ids = ArrayCreate( 1 )
     g_tests_idsAndNames = ArrayCreate( SHORT_STRING )
     
@@ -1061,7 +1061,7 @@ public plugin_end()
         ArrayDestroy( g_nominationMap )
     }
 
-#if DEBUG_LEVEL & UNIT_TEST_DEBUG_LEVEL
+#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
     restore_server_cvars_for_test()
     
     if( g_tests_idsAndNames )
@@ -2336,7 +2336,7 @@ public vote_startDirector( bool:is_forced_voting )
                 get_realplayersnum(): %d", g_voteStatus, g_voteStatus & VOTE_IS_EARLY != 0, \
                 is_forced_voting, get_realplayersnum() )
     
-    #if !( DEBUG_LEVEL & UNIT_TEST_DEBUG_LEVEL )
+    #if !( DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST )
         return
     #endif
     }
@@ -2393,7 +2393,7 @@ public vote_startDirector( bool:is_forced_voting )
         }
     }
 
-#if DEBUG_LEVEL & UNIT_TEST_DEBUG_LEVEL
+#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
     voteDuration   = 5
     g_voteDuration = 5
 #endif
@@ -2430,7 +2430,7 @@ public vote_startDirector( bool:is_forced_voting )
             }
         }
     
-    #if DEBUG_LEVEL & UNIT_TEST_DEBUG_LEVEL
+    #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
         handleChoicesDelay = 1.0
     
     #else
@@ -2904,11 +2904,11 @@ public vote_handleDisplay()
         g_voteDuration = get_pcvar_num( cvar_voteDuration );
     }
 
-#if DEBUG_LEVEL & UNIT_TEST_DEBUG_LEVEL
+#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
     g_voteDuration = 5
 #endif
 
-#if DEBUG_LEVEL & FAKE_VOTES_DEBUG_LEVEL
+#if DEBUG_LEVEL & DEBUG_LEVEL_FAKE_VOTES
     set_task( 2.0, "create_fakeVotes", TASKID_DBG_FAKEVOTES );
 #endif
     
@@ -5374,7 +5374,7 @@ public create_fakeVotes()
 #endif
 
 
-#if DEBUG_LEVEL & UNIT_TEST_DEBUG_LEVEL
+#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
 
 /**
  * This function run all tests that are listed at it. Every test that is created must
