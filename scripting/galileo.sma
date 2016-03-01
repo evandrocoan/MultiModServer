@@ -400,7 +400,7 @@ new COLOR_GREY   [ 3 ]; // \d
 new g_refreshVoteStatus = true
 new g_mapPrefixCnt      = 1;
 
-new g_voteStatusClean                 [ 512 ];
+new g_voteStatusClean      [ 512 ];
 new g_arrayOfRunOffChoices [ 2 ];
 new g_voteStatus_symbol    [ 3 ]
 new g_voteWeightFlags      [ 32 ];
@@ -2478,7 +2478,6 @@ stock endOfVoteDisplay()
 
 public closeVoting()
 {
-    g_voteStatusClean[ 0 ] = '^0'
     g_voteStatus          |= VOTE_HAS_EXPIRED
     
     endOfVoteDisplay()
@@ -3716,9 +3715,6 @@ public computeVotes()
             g_voteStatus & VOTE_IS_EARLY: %d", \
             g_is_timeToRestart, g_is_timeToChangeLevel, g_voteStatus & VOTE_IS_EARLY )
     
-    // clean the vote menu
-    g_voteStatusClean[ 0 ] = '^0'
-    
     // announce the outcome
     if( numberOfVotesAtFirstPlace )
     {
@@ -3966,9 +3962,6 @@ public computeVotes()
             
             reset_round_ending()
             
-            // clear all the votes
-            vote_resetStats();
-            
             // no longer is an early vote
             g_voteStatus &= ~VOTE_IS_EARLY;
         }
@@ -4090,6 +4083,7 @@ stock save_time_limit()
 
 stock vote_resetStats()
 {
+    g_voteStatusClean[ 0 ] = '^0'
     g_totalVoteOptions     = 0;
     g_totalVotesCounted    = 0;
     g_pendingVoteCountdown = 7;
