@@ -509,18 +509,30 @@ from the [B]amxx cvars[/B] command. They will be grouped together.
 [/QUOTE]
 
 ******************************** [anchor]Downloads[/anchor][SIZE="5"][COLOR="Blue"][B]Downloads[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor] *************************
-Here you can see what is going on the latest unreleased version over development:
+Here you can see what is going on the latest [COLOR="Red"]unreleased[/COLOR] version over development:
 [URL="https://github.com/addonszz/Galileo/commits/develop"] https://github.com/addonszz/Galileo/commits/develop[/URL]
 
-And this is a direct link to always to download the latest changes you see on the above link:
+And this is a direct link to always to download the latest [COLOR="Red"]unreleased[/COLOR] changes you see on the above link:
 [URL="https://github.com/addonszz/Galileo/archive/develop.zip"] https://github.com/addonszz/Galileo/archive/develop.zip[/URL]
 
 And because it is the development version, the debugging is enabled. Go to around the 'line 39' and find:[PAWN]
 #define DEBUG_LEVEL SomeNumber(s)[/PAWN]and change it to:[PAWN]
 #define DEBUG_LEVEL 0[/PAWN]
-Note that these versions above are probably not tested or not maybe stable as the current official version below.
+Note that these versions above are probably not tested or maybe not stable as the current official version below.
 
-Old versions downloads:
+
+[QUOTE=azure;11799]hrrmm this is very interesting. Could I set this up to change the mapcycle possibly?
+
+like have mapcycle 1 from 9 till 23 and then mapcycle2 from 23 til 9?
+[/QUOTE]
+The plugin [URL="https://forums.alliedmods.net/showthread.php?p=12724"]Task Scheduler[/URL] can do that. See here [URL="https://forums.alliedmods.net/showthread.php?p=12724#post12724"]how to configure it[/URL]. You can use it to configure the cvars:[LIST=1]mapcyclefile
+[*]gal_vote_mapfile
+[*]gal_vote_minplayers_mapfile
+[*]gal_nom_mapfile
+[*]gal_emptyserver_mapfile[/LIST]To use another mapcycle files which does not contain the maps you do not want to use by early hours.
+
+
+[B]Old versions downloads[/B]:
 [LIST=1]
 [*]v1.2-alpha2.hotfix1: (galileo.sma - 111 views - 92.9 KB)
 [*]v1.2:                (galileo.sma - 70 views - 188.0 KB)
