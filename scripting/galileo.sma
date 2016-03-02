@@ -100,7 +100,9 @@ stock debugMesssageLogger( mode, message[], any: ... )
     test_gal_in_empty_cycle_case3(); \
     test_gal_in_empty_cycle_case4(); \
     test_is_map_extension_allowed(); \
-    test_loadCurrentBlackList(); \
+    test_loadCurrentBlackList_case1(); \
+    test_loadCurrentBlackList_case2(); \
+    test_loadCurrentBlackList_case3(); \
 }
 
 /**
@@ -130,6 +132,7 @@ new bool: g_is_test_changed_cvars
 new bool: g_current_test_evaluation
 
 new test_current_time
+new test_blackListFilePath[ 128 ]
 #endif
 
 #define TASKID_REMINDER               52691153
@@ -2954,7 +2957,8 @@ stock loadCurrentBlackList( Trie:blackList_trie )
             continue
         }
         
-        if( currentLine[ 0 ] == '[' )
+        if( currentLine[ 0 ] == '['
+            && isdigit( currentLine[ 1 ] ) )
         {
             isToSkipThisGroup = false
             
@@ -2975,7 +2979,9 @@ stock loadCurrentBlackList( Trie:blackList_trie )
                 || 0 > startHour > 24
                 || 0 > endHour > 24
                 || ( startHour == 24
-                     && endHour == 0 ) )
+                     && endHour == 0 )
+                || ( startHour == 0
+                     && endHour == 24 ) )
             {
                 isToSkipThisGroup = true
             }
@@ -5871,18 +5877,17 @@ stock test_gal_in_empty_cycle_case4()
 /**
  * This tests if the function 'loadCurrentBlackList()' is working properly.
  */
-public test_loadCurrentBlackList()
+public test_loadCurrentBlackList_case1()
 {
     new blackListFile
-    new blackListFilePath[ MAX_FILE_PATH_LENGHT ]
     
-    new test_id             = register_test( 0, "test_loadCurrentBlackList" )
+    new test_id             = register_test( 0, "test_loadCurrentBlackList_case1" )
     new Trie:blackList_trie = TrieCreate()
     
-    copy( blackListFilePath, charsmax( blackListFilePath ), "test_loadCurrentBlackList.txt" )
-    set_pcvar_string( cvar_voteWhiteListMapFilePath, blackListFilePath )
+    copy( test_blackListFilePath, charsmax( test_blackListFilePath ), "test_loadCurrentBlackList.txt" )
+    set_pcvar_string( cvar_voteWhiteListMapFilePath, test_blackListFilePath )
     
-    blackListFile = fopen( blackListFilePath, "wt" );
+    blackListFile = fopen( test_blackListFilePath, "wt" );
     
     if( blackListFile )
     {
@@ -5901,7 +5906,6 @@ public test_loadCurrentBlackList()
     
     test_current_time = 23
     loadCurrentBlackList( blackList_trie )
-    
     test_current_time = 0;
     
     SET_TEST_FAILURE( test_id, TrieKeyExists( blackList_trie, "de_dust1" ), \
@@ -5919,8 +5923,46 @@ public test_loadCurrentBlackList()
             "The map 'de_dust6' must to be present on the trie, but it was not!" )
     SET_TEST_FAILURE( test_id, !TrieKeyExists( blackList_trie, "de_dust7" ), \
             "The map 'de_dust7' must to be present on the trie, but it was not!" )
+}
+
+/**
+ * This tests if the function 'loadCurrentBlackList()' is working properly.
+ */
+public test_loadCurrentBlackList_case2()
+{
+    new test_id             = register_test( 0, "test_loadCurrentBlackList_case2" )
+    new Trie:blackList_trie = TrieCreate()
     
-    delete_file( blackListFilePath )
+    test_current_time = 22
+    loadCurrentBlackList( blackList_trie )
+    test_current_time = 0;
+    
+    SET_TEST_FAILURE( test_id, TrieKeyExists( blackList_trie, "de_dust4" ), \
+            "The map 'de_dust4' must NOT to be present on the trie, but it was!" )
+    
+    SET_TEST_FAILURE( test_id, !TrieKeyExists( blackList_trie, "de_dust5" ), \
+            "The map 'de_dust5' must to be present on the trie, but it was not!" )
+}
+
+/**
+ * This tests if the function 'loadCurrentBlackList()' is working properly.
+ */
+public test_loadCurrentBlackList_case3()
+{
+    new test_id             = register_test( 0, "test_loadCurrentBlackList_case3" )
+    new Trie:blackList_trie = TrieCreate()
+    
+    test_current_time = 12
+    loadCurrentBlackList( blackList_trie )
+    test_current_time = 0;
+    
+    SET_TEST_FAILURE( test_id, TrieKeyExists( blackList_trie, "de_dust7" ), \
+            "The map 'de_dust7' must NOT to be present on the trie, but it was!" )
+    
+    SET_TEST_FAILURE( test_id, !TrieKeyExists( blackList_trie, "de_dust2" ), \
+            "The map 'de_dust2' must to be present on the trie, but it was not!" )
+    
+    delete_file( test_blackListFilePath )
 }
 
 /**
