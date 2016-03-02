@@ -37,7 +37,7 @@ new const PLUGIN_VERSION[] = "1.2.X"
  * 4   - To create fake votes.
  * 7   - Levels 1, 2 and 4.
  */
-#define DEBUG_LEVEL 5
+#define DEBUG_LEVEL 7
 
 #define DEBUG_LEVEL_NORMAL     1
 #define DEBUG_LEVEL_UNIT_TEST  2
@@ -402,7 +402,7 @@ new COLOR_WHITE  [ 3 ]; // \w
 new COLOR_YELLOW [ 3 ]; // \y
 new COLOR_GREY   [ 3 ]; // \d
 
-new g_mapPrefixCnt      = 1;
+new g_mapPrefixCnt = 1;
 
 new g_voteStatusClean      [ 512 ];
 new g_arrayOfRunOffChoices [ 2 ];
@@ -2320,24 +2320,29 @@ public vote_startDirector( bool:is_forced_voting )
         || ( !is_forced_voting
              && g_voteStatus & VOTE_IS_OVER ) )
     {
-        if( get_realplayersnum() == 0
-            && g_voteStatus & VOTE_IN_PROGRESS )
-        {
-            cancel_voting()
-        }
-        
-        if( bool:get_pcvar_num( cvar_isEmptyCycleServerChange ) )
-        {
-            startEmptyCycleSystem()
-        }
-        
         DEBUG_LOGGER( 1, "    ( vote_startDirector|Cancel ) g_voteStatus: %d, \
                 g_voteStatus & VOTE_IS_EARLY: %d, is_forced_voting: %d, \
                 get_realplayersnum(): %d", g_voteStatus, g_voteStatus & VOTE_IS_EARLY != 0, \
                 is_forced_voting, get_realplayersnum() )
     
     #if !( DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST )
+        
+        if( bool:get_pcvar_num( cvar_isEmptyCycleServerChange ) )
+        {
+            startEmptyCycleSystem()
+        }
+        
+        if( get_realplayersnum() == 0
+            && g_voteStatus & VOTE_IN_PROGRESS )
+        {
+            cancel_voting()
+        }
+        
         return
+    #else
+        // stop the compiler warning 204: symbol is assigned a value that is never used
+        get_pcvar_num( cvar_isEmptyCycleServerChange )
+    
     #endif
     }
     
@@ -2346,7 +2351,9 @@ public vote_startDirector( bool:is_forced_voting )
         choicesLoaded      = g_totalVoteOptions_temp
         g_totalVoteOptions = g_totalVoteOptions_temp
         
-        vote_loadRunoffChoices();
+        // load runoff choices
+        copy( g_votingMapNames[ 0 ], charsmax( g_votingMapNames[] ), g_votingMapNames[ g_arrayOfRunOffChoices[ 0 ] ] );
+        copy( g_votingMapNames[ 1 ], charsmax( g_votingMapNames[] ), g_votingMapNames[ g_arrayOfRunOffChoices[ 1 ] ] );
         
         voteDuration = get_pcvar_num( cvar_runoffDuration )
         
@@ -2477,7 +2484,7 @@ stock endOfVoteDisplay()
 
 public closeVoting()
 {
-    g_voteStatus          |= VOTE_HAS_EXPIRED
+    g_voteStatus |= VOTE_HAS_EXPIRED
     
     endOfVoteDisplay()
     
@@ -2867,24 +2874,6 @@ stock vote_loadChoices()
     vote_addFiller();
     
     return g_totalVoteOptions;
-}
-
-stock vote_loadRunoffChoices()
-{
-    DEBUG_LOGGER( 16, "At vote_loadRunoffChoices --- Runoff map1: %s, Runoff map2: %s", \
-            g_votingMapNames[ g_arrayOfRunOffChoices[ 0 ] ], \
-            g_votingMapNames[ g_arrayOfRunOffChoices[ 1 ] ] )
-    
-    new runOffNameChoices[ 2 ][ MAX_MAPNAME_LENGHT ];
-    
-    copy( runOffNameChoices[ 0 ], charsmax( runOffNameChoices[] ),
-            g_votingMapNames[ g_arrayOfRunOffChoices[ 0 ] ] );
-    
-    copy( runOffNameChoices[ 1 ], charsmax( runOffNameChoices[] ),
-            g_votingMapNames[ g_arrayOfRunOffChoices[ 1 ] ] );
-    
-    copy( g_votingMapNames[ 0 ], charsmax( g_votingMapNames[] ), runOffNameChoices[ 0 ] );
-    copy( g_votingMapNames[ 1 ], charsmax( g_votingMapNames[] ), runOffNameChoices[ 1 ] );
 }
 
 public vote_handleDisplay()
@@ -3525,54 +3514,51 @@ stock announceRegistedVote( player_id, pressedKeyCode )
             color_print( player_id, "^1%L", player_id, "GAL_CHOICE_NONE" );
         }
     }
-    else
+    else if( pressedKeyCode == g_totalVoteOptions )
     {
-        if( pressedKeyCode == g_totalVoteOptions )
+        // only display the "none" vote if we haven't already voted
+        // ( we can make it here from the vote status menu too )
+        if( !g_is_player_voted[ player_id ] )
         {
-            // only display the "none" vote if we haven't already voted
-            // ( we can make it here from the vote status menu too )
-            if( !g_is_player_voted[ player_id ] )
+            DEBUG_LOGGER( 4, "      %-32s ( extend )", player_name )
+            
+            if( g_is_final_voting )
             {
-                DEBUG_LOGGER( 4, "      %-32s ( extend )", player_name )
-                
-                if( g_is_final_voting )
+                if( isToAnnounceChoice )
                 {
-                    if( isToAnnounceChoice )
-                    {
-                        color_print( 0, "^1%L", LANG_PLAYER, "GAL_CHOICE_EXTEND_ALL", player_name );
-                    }
-                    else
-                    {
-                        color_print( player_id, "^1%L", player_id, "GAL_CHOICE_EXTEND" );
-                    }
+                    color_print( 0, "^1%L", LANG_PLAYER, "GAL_CHOICE_EXTEND_ALL", player_name );
                 }
                 else
                 {
-                    if( isToAnnounceChoice )
-                    {
-                        color_print( 0, "^1%L", LANG_PLAYER, "GAL_CHOICE_STAY_ALL", player_name );
-                    }
-                    else
-                    {
-                        color_print( player_id, "^1%L", player_id, "GAL_CHOICE_STAY" );
-                    }
+                    color_print( player_id, "^1%L", player_id, "GAL_CHOICE_EXTEND" );
                 }
-            }
-        }
-        else
-        {
-            DEBUG_LOGGER( 4, "      %-32s %s", player_name, g_votingMapNames[ pressedKeyCode ] )
-            
-            if( isToAnnounceChoice )
-            {
-                color_print( 0, "^1%L", LANG_PLAYER, "GAL_CHOICE_MAP_ALL", player_name,
-                        g_votingMapNames[ pressedKeyCode ] );
             }
             else
             {
-                color_print( player_id, "^1%L", player_id, "GAL_CHOICE_MAP",
-                        g_votingMapNames[ pressedKeyCode ] );
+                if( isToAnnounceChoice )
+                {
+                    color_print( 0, "^1%L", LANG_PLAYER, "GAL_CHOICE_STAY_ALL", player_name );
+                }
+                else
+                {
+                    color_print( player_id, "^1%L", player_id, "GAL_CHOICE_STAY" );
+                }
             }
+        }
+    }
+    else
+    {
+        DEBUG_LOGGER( 4, "      %-32s %s", player_name, g_votingMapNames[ pressedKeyCode ] )
+        
+        if( isToAnnounceChoice )
+        {
+            color_print( 0, "^1%L", LANG_PLAYER, "GAL_CHOICE_MAP_ALL", player_name,
+                    g_votingMapNames[ pressedKeyCode ] );
+        }
+        else
+        {
+            color_print( player_id, "^1%L", player_id, "GAL_CHOICE_MAP",
+                    g_votingMapNames[ pressedKeyCode ] );
         }
     }
 }
@@ -3982,7 +3968,7 @@ public computeVotes()
     g_voteStatus &= ~VOTE_IN_PROGRESS;
     
     // if we were in a runoff mode, get out of it
-    g_voteStatus                    &= ~VOTE_IS_RUNOFF;
+    g_voteStatus                   &= ~VOTE_IS_RUNOFF;
     g_isRunOffNeedingKeepCurrentMap = false;
     
     // this must be called after 'g_voteStatus &= ~VOTE_IS_RUNOFF' above
@@ -5345,13 +5331,20 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
 #if DEBUG_LEVEL > 0
 public create_fakeVotes()
 {
-    if( !( g_voteStatus & VOTE_IS_RUNOFF ) )
+    if( g_voteStatus & VOTE_IS_RUNOFF )
     {
-        g_arrayOfMapsWithVotesNumber[ 0 ] += 2;     // map 1
-        g_arrayOfMapsWithVotesNumber[ 1 ] += 2;     // map 2
-        g_arrayOfMapsWithVotesNumber[ 2 ] += 0;     // map 3
+        g_arrayOfMapsWithVotesNumber[ 0 ] += 2;     // choice 1
+        g_arrayOfMapsWithVotesNumber[ 1 ] += 2;     // choice 2
+        
+        g_totalVotesCounted = g_arrayOfMapsWithVotesNumber[ 0 ] + g_arrayOfMapsWithVotesNumber[ 1 ];
+    }
+    else
+    {
+        g_arrayOfMapsWithVotesNumber[ 0 ] += 0;     // map 1
+        g_arrayOfMapsWithVotesNumber[ 1 ] += 1;     // map 2
+        g_arrayOfMapsWithVotesNumber[ 2 ] += 2;     // map 3
         g_arrayOfMapsWithVotesNumber[ 3 ] += 0;     // map 4
-        g_arrayOfMapsWithVotesNumber[ 4 ] += 0;     // map 5
+        g_arrayOfMapsWithVotesNumber[ 4 ] += 2;     // map 5
         
         if( get_pcvar_num( cvar_extendmapAllowStay ) || g_is_final_voting )
         {
@@ -5361,13 +5354,6 @@ public create_fakeVotes()
         g_totalVotesCounted = g_arrayOfMapsWithVotesNumber[ 0 ] + g_arrayOfMapsWithVotesNumber[ 1 ] +
                               g_arrayOfMapsWithVotesNumber[ 2 ] + g_arrayOfMapsWithVotesNumber[ 3 ] +
                               g_arrayOfMapsWithVotesNumber[ 4 ] + g_arrayOfMapsWithVotesNumber[ 5 ];
-    }
-    else if( g_voteStatus & VOTE_IS_RUNOFF )
-    {
-        g_arrayOfMapsWithVotesNumber[ 0 ] += 2;     // choice 1
-        g_arrayOfMapsWithVotesNumber[ 1 ] += 2;     // choice 2
-        
-        g_totalVotesCounted = g_arrayOfMapsWithVotesNumber[ 0 ] + g_arrayOfMapsWithVotesNumber[ 1 ];
     }
 }
 
