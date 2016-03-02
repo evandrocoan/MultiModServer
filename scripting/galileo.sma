@@ -52,7 +52,7 @@ new const PLUGIN_VERSION[] = "1.2.X"
  * ( 1 ) 1 displays basic debug messages as the Unit Tests run.
  * ( 10 ) 2 displays players disconnect, total number, multiple time limits changes and restores.
  * ( 100 ) 4 displays maps events, vote choices, votes, nominations, and the calls to 'map_populateList'.
- * ( ... ) 8 displays vote_loadChoices( ) and actions at vote_startDirector.
+ * ( ... ) 8 displays vote_loadChoices(), whitelist debug and actions at vote_startDirector.
  * ( ... ) 16 displays messages related to RunOff voting.
  * ( ... ) 32 displays messages related to the rounds end map voting.
  * ( ... ) 64 displays messages related 'color_print'.
@@ -104,7 +104,7 @@ stock debugMesssageLogger( mode, message[], any: ... )
 }
 
 /**
- * Test unit variables related to debug level 128, displays basic debug messages.
+ * Test unit variables related to the DEBUG_LEVEL_UNIT_TEST 2.
  */
 new g_max_delay_result
 new g_totalSuccessfulTests
@@ -114,8 +114,7 @@ new Array: g_tests_idsAndNames
 new Array: g_tests_failure_ids
 new bool: g_is_test_changed_cvars
 
-new Float:test_extendmap_max
-new Float:test_mp_timelimit
+new test_current_time
 #endif
 
 #define TASKID_REMINDER               52691153
@@ -2809,6 +2808,11 @@ stock vote_addFiller()
     new Trie:blackList_trie
     new bool:is_whitelistEnabled = get_pcvar_num( cvar_voteMinPlayers ) != 0
     
+#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
+    
+    is_whitelistEnabled = true;
+#endif
+    
     if( is_whitelistEnabled )
     {
         blackList_trie = TrieCreate()
@@ -2913,6 +2917,13 @@ stock loadCurrentBlackList( Trie:blackList_trie )
     new currentHour   = str_to_num( currentHourString )
     new whiteListFile = fopen( whiteListFilePath, "rt" )
     
+    DEBUG_LOGGER( 8, "( loadCurrentBlackList ) currentHour: %d, currentHourString: %s", currentHour, currentHourString )
+    
+#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
+    
+    currentHour = test_current_time
+#endif
+    
     while( !feof( whiteListFile ) )
     {
         fgets( whiteListFile, currentLine, charsmax( currentLine ) )
@@ -2952,7 +2963,7 @@ stock loadCurrentBlackList( Trie:blackList_trie )
             }
             else if( startHour > endHour )
             {
-                if( startHour >= currentHour >= endHour )
+                if( startHour >= currentHour > endHour )
                 {
                     isToSkipThisGroup = true
                 }
@@ -2963,7 +2974,7 @@ stock loadCurrentBlackList( Trie:blackList_trie )
             }
             else if( startHour < endHour )
             {
-                if( startHour <= currentHour <= endHour )
+                if( startHour <= currentHour < endHour )
                 {
                     isToSkipThisGroup = true
                 }
@@ -2985,6 +2996,7 @@ stock loadCurrentBlackList( Trie:blackList_trie )
             TrieSetCell( blackList_trie, currentLine, 0 )
         }
     }
+    
     fclose( whiteListFile )
 }
 
@@ -5492,7 +5504,7 @@ public runTests()
     
     server_print( "^n^n    Executing the 'Galileo' Tests:^n" )
     
-    save_server_cvasr_for_test()
+    save_server_cvars_for_test()
     
     ALL_TESTS_TO_EXECUTE()
     
@@ -5741,6 +5753,10 @@ public test_end_of_map_voting_start_2( chainDelay )
     {
         SET_TEST_FAILURE( test_id, "vote_startDirector() does not started!" )
     }
+    
+    // cancel the voting started by the timelimit expiration on test_end_of_map_voting_start()
+    set_pcvar_float( g_timelimit_pointer, 20.0 )
+    cancel_voting()
 }
 
 /**
@@ -5755,7 +5771,7 @@ stock test_gal_in_empty_cycle_case1()
     
     if( get_pcvar_num( cvar_isToStopEmptyCycle ) )
     {
-        SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle_case1() cvar_isToStopEmptyCycle must be 0 (it was %d)", \
+        SET_TEST_FAILURE( test_id, "cvar_isToStopEmptyCycle must be 0 (it was %d)", \
                 get_pcvar_num( cvar_isToStopEmptyCycle ) )
     }
     
@@ -5764,7 +5780,7 @@ stock test_gal_in_empty_cycle_case1()
     
     if( get_pcvar_num( cvar_isToStopEmptyCycle ) )
     {
-        SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle_case1() cvar_isToStopEmptyCycle must be 0 (it was %d)", \
+        SET_TEST_FAILURE( test_id, "cvar_isToStopEmptyCycle must be 0 (it was %d)", \
                 get_pcvar_num( cvar_isToStopEmptyCycle ) )
     }
 }
@@ -5789,16 +5805,14 @@ stock test_gal_in_empty_cycle_case2()
     
     if( !equal( nextMap, "de_inferno" ) )
     {
-        SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle_case2() nextMap must be 'de_inferno' \
-                (it was %s)", nextMap )
+        SET_TEST_FAILURE( test_id, "nextMap must be 'de_inferno' (it was %s)", nextMap )
     }
     
     // if the current map isn't part of the empty cycle,
     // immediately change to next map that is
     if( mapIndex == -1 )
     {
-        SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle_case2() mapIndex must NOT be '-1' \
-                (it was %d)", mapIndex )
+        SET_TEST_FAILURE( test_id, "mapIndex must NOT be '-1' (it was %d)", mapIndex )
     }
     
     ArrayDestroy( emptyCycleMapList )
@@ -5825,16 +5839,14 @@ stock test_gal_in_empty_cycle_case3()
     
     if( !equal( nextMap, "de_dust4" ) )
     {
-        SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle_case3() nextMap must be 'de_dust4' \
-                (it was %s)", nextMap )
+        SET_TEST_FAILURE( test_id, "nextMap must be 'de_dust4' (it was %s)", nextMap )
     }
     
     // if the current map isn't part of the empty cycle,
     // immediately change to next map that is
     if( mapIndex == -1 )
     {
-        SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle_case3() mapIndex must NOT be '-1' \
-                (it was %d)", mapIndex )
+        SET_TEST_FAILURE( test_id, "mapIndex must NOT be '-1' (it was %d)", mapIndex )
     }
     
     ArrayDestroy( emptyCycleMapList )
@@ -5861,37 +5873,70 @@ stock test_gal_in_empty_cycle_case4()
     
     if( !equal( nextMap, "de_dust2" ) )
     {
-        SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle_case4() nextMap must be 'de_dust2' \
-                (it was %s)", nextMap )
+        SET_TEST_FAILURE( test_id, "nextMap must be 'de_dust2' (it was %s)", nextMap )
     }
     
     // if the current map isn't part of the empty cycle,
     // immediately change to next map that is
     if( !( mapIndex == -1 ) )
     {
-        SET_TEST_FAILURE( test_id, "test_gal_in_empty_cycle_case4() mapIndex must be '-1' \
-                (it was %d)", mapIndex )
+        SET_TEST_FAILURE( test_id, "mapIndex must be '-1' (it was %d)", mapIndex )
     }
     
     ArrayDestroy( emptyCycleMapList )
 }
 
 /**
- * This is the 4º test at vote_startDirector() chain.
- *
- * Tests if the end map voting is starting automatically at the end of map due time limit expiration.
+ * This tests if the function 'loadCurrentBlackList()' is working properly.
  */
 public test_loadCurrentBlackList_case1()
 {
-    new test_id = register_test( chainDelay, "test_loadCurrentBlackList_case1" )
+    new blackListFile
+    new blackListFilePath[ MAX_FILE_PATH_LENGHT ]
     
-    vote_manageEnd()
+    new test_id             = register_test( 0, "test_loadCurrentBlackList_case1" )
+    new Trie:blackList_trie = TrieCreate()
     
-    if( !( g_voteStatus & VOTE_IN_PROGRESS ) )
+    copy( blackListFilePath, charsmax( blackListFilePath ), "test_loadCurrentBlackList_case1.txt" )
+    set_pcvar_string( cvar_voteWhiteListMapFilePath, blackListFilePath )
+    
+    blackListFile = fopen( blackListFilePath, "wt" );
+    
+    if( blackListFile )
     {
-        SET_TEST_FAILURE( test_id, "vote_startDirector() does not started!" )
+        fprintf( blackListFile, "%s^n", "[23-24]" );
+        fprintf( blackListFile, "%s^n", "de_dust1" );
+        fprintf( blackListFile, "%s^n", "de_dust2" );
+        fprintf( blackListFile, "%s^n", "de_dust3" );
+        fprintf( blackListFile, "%s^n", "[1-24]" );
+        fprintf( blackListFile, "%s^n", "de_dust4" );
+        fprintf( blackListFile, "%s^n", "[12-22]" );
+        fprintf( blackListFile, "%s^n", "de_dust5" );
+        fprintf( blackListFile, "%s^n", "de_dust6" );
+        fprintf( blackListFile, "%s^n", "de_dust7" );
+        fclose( blackListFile );
     }
+    
+    // the maps de_dust4, de_dust5, de_dust6 and de_dust7 must to be present on this blacklist
+    test_current_time = 24
+    loadCurrentBlackList( blackList_trie )
+    
+    if( !TrieKeyExists( blackList_trie, "de_dust4" ) )
+    {
+        SET_TEST_FAILURE( test_id, "The map 'de_dust4' must be present on the trie, but it was not!" )
+    }
+    
+    delete_file( blackListFilePath )
 }
+
+/**
+ * Server changed cvars backup to be restored after the unit tests end.
+ */
+new Float:test_extendmap_max
+new Float:test_mp_timelimit
+
+new test_whiteListFilePath[ MAX_FILE_PATH_LENGHT ]
+
 
 /**
  * Every time a cvar is changed during the tests, it must be saved here to a global test variable
@@ -5900,15 +5945,17 @@ public test_loadCurrentBlackList_case1()
  *
  * This is executed before the first rest run.
  */
-stock save_server_cvasr_for_test()
+stock save_server_cvars_for_test()
 {
     g_is_test_changed_cvars = true
     
     test_extendmap_max = get_pcvar_float( cvar_maxMapExtendTime )
     test_mp_timelimit  = get_pcvar_float( g_timelimit_pointer )
     
+    get_pcvar_string( cvar_voteWhiteListMapFilePath, test_whiteListFilePath, charsmax( test_whiteListFilePath ) )
+    
     DEBUG_LOGGER( 2, "    %42s mp_timelimit: %f  test_mp_timelimit: %f   g_originalTimelimit: %f",  \
-            "save_server_cvasr_for_test( out )", get_pcvar_float( g_timelimit_pointer ), \
+            "save_server_cvars_for_test( out )", get_pcvar_float( g_timelimit_pointer ), \
             test_mp_timelimit, g_originalTimelimit )
 }
 
@@ -5927,6 +5974,8 @@ stock restore_server_cvars_for_test()
         
         set_pcvar_float( cvar_maxMapExtendTime, test_extendmap_max )
         set_pcvar_float( g_timelimit_pointer, test_mp_timelimit )
+        
+        set_pcvar_string( cvar_voteWhiteListMapFilePath, test_whiteListFilePath )
     }
     
     DEBUG_LOGGER( 2, "    %42s mp_timelimit: %f  test_mp_timelimit: %f  g_originalTimelimit: %f",  \
