@@ -1,3 +1,8 @@
 de_dust2
+awp_ruins
 de_inferno
+awp_city
 de_dust2_cz
+aim_ak-colt
+de_dust2_fundo
+aim_headshot
