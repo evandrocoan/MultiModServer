@@ -100,6 +100,7 @@ stock debugMesssageLogger( mode, message[], any: ... )
     test_gal_in_empty_cycle_case3(); \
     test_gal_in_empty_cycle_case4(); \
     test_is_map_extension_allowed(); \
+    test_loadCurrentBlackList_case1(); \
 }
 
 /**
@@ -352,6 +353,7 @@ new cvar_soundsMute;
 new cvar_voteMapFilePath
 new cvar_voteMinPlayers
 new cvar_voteMinPlayersMapFilePath
+new cvar_voteWhiteListMapFilePath
 
 
 /**
@@ -499,6 +501,7 @@ public plugin_init()
     cvar_voteMapFilePath           = register_cvar( "gal_vote_mapfile", "*" );
     cvar_voteMinPlayers            = register_cvar( "gal_vote_minplayers", "0" );
     cvar_voteMinPlayersMapFilePath = register_cvar( "gal_vote_minplayers_mapfile", "mapcycle.txt" );
+    cvar_voteWhiteListMapFilePath  = register_cvar( "gal_vote_whitelist_mapfile", "mapcycle.txt" );
     
     register_logevent( "game_commencing_event", 2, "0=World triggered", "1=Game_Commencing" )
     register_logevent( "team_win_event",        6, "0=Team" )
@@ -2803,6 +2806,15 @@ stock vote_addFiller()
     new choice_index
     new mapName[ MAX_MAPNAME_LENGHT ]
     
+    new Trie:blackList_trie
+    new bool:is_whitelistEnabled = get_pcvar_num( cvar_voteMinPlayers ) != 0
+    
+    if( is_whitelistEnabled )
+    {
+        blackList_trie = TrieCreate()
+        loadCurrentBlackList( blackList_trie )
+    }
+    
     // fill remaining slots with random maps from each filler file, as much as possible
     for( new groupIndex = 0; groupIndex < groupCount; ++groupIndex )
     {
@@ -2851,22 +2863,129 @@ stock vote_addFiller()
                 if( unsuccessfulCount == filersMapCount )
                 {
                     DEBUG_LOGGER( 8, "unsuccessfulCount: %i  filersMapCount: %i", unsuccessfulCount, filersMapCount )
-                    
-                    // there aren't enough maps in this filler file to continue adding anymore
+                    DEBUG_LOGGER( 8, "    There aren't enough maps in this filler file to continue adding anymore" )
                     break;
                 }
                 
-                DEBUG_LOGGER( 8, "    groupIndex: %i  map: %s", groupIndex, mapName )
+                if( is_whitelistEnabled
+                    && TrieKeyExists( blackList_trie, mapName ) )
+                {
+                    DEBUG_LOGGER( 8, "    The map: %s, was blocked by the whitelist map.", mapName )
+                    break;
+                }
                 
                 copy( g_votingMapNames[ g_totalVoteOptions++ ], charsmax( g_votingMapNames[] ),
                         mapName )
                 
+                DEBUG_LOGGER( 8, "    groupIndex: %i  map: %s", groupIndex, mapName )
                 DEBUG_LOGGER( 8, "[%i] mapName: %s   unsuccessfulCount: %i   filersMapCount: %i   \
-                        g_totalVoteOptions: %i", \
-                        groupIndex, mapName, unsuccessfulCount, filersMapCount, g_totalVoteOptions )
+                        g_totalVoteOptions: %i", groupIndex, mapName, unsuccessfulCount, \
+                        filersMapCount, g_totalVoteOptions )
+                
+            } // end 'for choice_index < allowedFilersCount'
+            
+        } // end 'if g_totalVoteOptions < g_maxVotingChoices'
+        
+    } // end 'for groupIndex < groupCount'
+    
+    if( blackList_trie )
+    {
+        TrieDestroy( blackList_trie )
+    }
+    
+} // vote_addFiller()
+
+stock loadCurrentBlackList( Trie:blackList_trie )
+{
+    new startHour
+    new endHour
+    new bool:isToSkipThisGroup
+    
+    new currentHourString [ 8 ]
+    new currentLine       [ MAX_MAPNAME_LENGHT ]
+    new startHourString   [ MAX_MAPNAME_LENGHT / 2 ]
+    new endHourString     [ MAX_MAPNAME_LENGHT / 2 ]
+    new whiteListFilePath [ MAX_FILE_PATH_LENGHT ]
+    
+    get_time( "%H", currentHourString, charsmax( currentHourString ) )
+    get_pcvar_string( cvar_voteWhiteListMapFilePath, whiteListFilePath, charsmax( whiteListFilePath ) )
+    
+    new currentHour   = str_to_num( currentHourString )
+    new whiteListFile = fopen( whiteListFilePath, "rt" )
+    
+    while( !feof( whiteListFile ) )
+    {
+        fgets( whiteListFile, currentLine, charsmax( currentLine ) )
+        trim( currentLine )
+        
+        // skip commentaries while reading file
+        if( currentLine[ 0 ] == '^0'
+            || currentLine[ 0 ] == ';'
+            || ( currentLine[ 0 ] == '/'
+                 && currentLine[ 1 ] == '/' ) )
+        {
+            continue
+        }
+        
+        if( currentLine[ 0 ] == '[' )
+        {
+            isToSkipThisGroup = false
+            
+            // remove line delimiters [ and ]
+            replace_all( currentLine, charsmax( currentLine ), "[", "" )
+            replace_all( currentLine, charsmax( currentLine ), "]", "" )
+            
+            // broke the current line
+            strtok( currentLine, startHourString, charsmax( startHourString ), endHourString,
+                    charsmax( endHourString ), '-', 0 )
+            
+            startHour = str_to_num( startHourString )
+            endHour   = str_to_num( endHourString )
+            
+            if( startHour == endHour
+                || 0 > startHour > 24
+                || 0 > endHour > 24
+                || ( startHour == 24
+                     && endHour == 0 ) )
+            {
+                isToSkipThisGroup = true
             }
+            else if( startHour > endHour )
+            {
+                if( startHour >= currentHour >= endHour )
+                {
+                    isToSkipThisGroup = true
+                }
+                else
+                {
+                    isToSkipThisGroup = false
+                }
+            }
+            else if( startHour < endHour )
+            {
+                if( startHour <= currentHour <= endHour )
+                {
+                    isToSkipThisGroup = true
+                }
+                else
+                {
+                    isToSkipThisGroup = false
+                }
+            }
+            
+            goto proceed
+        }
+        else if( isToSkipThisGroup )
+        {
+            proceed:
+            continue
+        }
+        else
+        {
+            TrieSetCell( blackList_trie, currentLine, 0 )
         }
     }
+    fclose( whiteListFile )
 }
 
 stock vote_loadChoices()
@@ -5514,6 +5633,117 @@ stock test_register_test()
 }
 
 /**
+ * This is the vote_startDirector() tests chain beginning. Because the vote_startDirector() cannot
+ * to be tested simultaneously. Then, all tests that involves the vote_startDirector() chain, must
+ * to be executed sequentially after this chain end.
+ *
+ * This is the 1º chain test.
+ *
+ * Tests if the cvar 'amx_extendmap_max' functionality is working properly for a successful case.
+ */
+stock test_is_map_extension_allowed()
+{
+    new chainDelay = 2 + 2 + 1
+    
+    new test_id = register_test( chainDelay, "test_is_map_extension_allowed" )
+    
+    if( g_is_map_extension_allowed )
+    {
+        SET_TEST_FAILURE( test_id, "g_is_map_extension_allowed must be 0 (it was %d)", \
+                g_is_map_extension_allowed )
+    }
+    
+    set_pcvar_float( cvar_maxMapExtendTime, 20.0 )
+    set_pcvar_float( g_timelimit_pointer, 10.0 )
+    
+    vote_startDirector( false )
+    
+    if( !g_is_map_extension_allowed )
+    {
+        SET_TEST_FAILURE( test_id, "g_is_map_extension_allowed must be 1 (it was %d)", \
+                g_is_map_extension_allowed )
+    }
+    
+    set_task( 2.0, "test_is_map_extension_allowed2", chainDelay )
+}
+
+/**
+ * This is the 2º test at vote_startDirector() chain.
+ *
+ * Tests if the cvar 'amx_extendmap_max' functionality is working properly for a failure case.
+ */
+public test_is_map_extension_allowed2( chainDelay )
+{
+    new test_id = register_test( chainDelay, "test_is_map_extension_allowed2" )
+    
+    if( !g_is_map_extension_allowed )
+    {
+        SET_TEST_FAILURE( test_id, "g_is_map_extension_allowed must be 1 (it was %d)", \
+                g_is_map_extension_allowed )
+    }
+    
+    color_print( 0, "^1%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED" );
+    
+    cancel_voting()
+    
+    set_pcvar_float( cvar_maxMapExtendTime, 10.0 )
+    set_pcvar_float( g_timelimit_pointer, 20.0 )
+    
+    vote_startDirector( false )
+    
+    if( g_is_map_extension_allowed )
+    {
+        SET_TEST_FAILURE( test_id, "g_is_map_extension_allowed must be 0 (it was %d)", \
+                g_is_map_extension_allowed )
+    }
+    
+    set_task( 2.0, "test_end_of_map_voting_start", chainDelay )
+}
+
+/**
+ * This is the 3º test at vote_startDirector() chain.
+ *
+ * Tests if the end map voting is starting automatically at the end of map due time limit expiration.
+ */
+public test_end_of_map_voting_start( chainDelay )
+{
+    new test_id = register_test( chainDelay, "test_end_of_map_voting_start" )
+    
+    if( g_is_map_extension_allowed )
+    {
+        SET_TEST_FAILURE( test_id, "g_is_map_extension_allowed must be 0 (it was %d)", \
+                g_is_map_extension_allowed )
+    }
+    
+    cancel_voting()
+    
+    new secondsLeft = get_timeleft();
+    
+    set_pcvar_float( g_timelimit_pointer, (
+                ( get_pcvar_float( g_timelimit_pointer ) ) * 60 - secondsLeft
+                + START_VOTEMAP_MIN_TIME - 10 ) / 60 )
+    
+    set_task( 1.0, "test_end_of_map_voting_start_2", chainDelay )
+}
+
+/**
+ * This is the 4º test at vote_startDirector() chain.
+ *
+ * Tests if the end map voting is starting automatically at the end of map due time limit expiration.
+ */
+public test_end_of_map_voting_start_2( chainDelay )
+{
+    new test_id = register_test( chainDelay, "test_end_of_map_voting_start_2" )
+    
+    vote_manageEnd()
+    
+    if( !( g_voteStatus & VOTE_IN_PROGRESS ) )
+    {
+        SET_TEST_FAILURE( test_id, "vote_startDirector() does not started!" )
+    }
+}
+
+/**
  * Test for client connect cvar_isToStopEmptyCycle behavior.
  */
 stock test_gal_in_empty_cycle_case1()
@@ -5647,107 +5877,13 @@ stock test_gal_in_empty_cycle_case4()
 }
 
 /**
- * This is the vote_startDirector() tests chain beginning. Because the vote_startDirector() cannot
- * to be tested simultaneously. Then, all tests that involves the vote_startDirector() chain, must
- * to be executed sequentially after this chain end.
- *
- * This is the 1º chain test.
- *
- * Tests if the cvar 'amx_extendmap_max' functionality is working properly for a successful case.
- */
-stock test_is_map_extension_allowed()
-{
-    new chainDelay = 2 + 2 + 1
-    
-    new test_id = register_test( chainDelay, "test_is_map_extension_allowed" )
-    
-    if( g_is_map_extension_allowed )
-    {
-        SET_TEST_FAILURE( test_id, "g_is_map_extension_allowed must be 0 (it was %d)", \
-                g_is_map_extension_allowed )
-    }
-    
-    set_pcvar_float( cvar_maxMapExtendTime, 20.0 )
-    set_pcvar_float( g_timelimit_pointer, 10.0 )
-    
-    vote_startDirector( false )
-    
-    if( !g_is_map_extension_allowed )
-    {
-        SET_TEST_FAILURE( test_id, "g_is_map_extension_allowed must be 1 (it was %d)", \
-                g_is_map_extension_allowed )
-    }
-    
-    set_task( 2.0, "test_is_map_extension_allowed2", chainDelay )
-}
-
-/**
- * This is the 2º test at vote_startDirector() chain.
- *
- * Tests if the cvar 'amx_extendmap_max' functionality is working properly for a failure case.
- */
-public test_is_map_extension_allowed2( chainDelay )
-{
-    new test_id = register_test( chainDelay, "test_is_map_extension_allowed2" )
-    
-    if( !g_is_map_extension_allowed )
-    {
-        SET_TEST_FAILURE( test_id, "g_is_map_extension_allowed must be 1 (it was %d)", \
-                g_is_map_extension_allowed )
-    }
-    
-    color_print( 0, "^1%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED" );
-    
-    cancel_voting()
-    
-    set_pcvar_float( cvar_maxMapExtendTime, 10.0 )
-    set_pcvar_float( g_timelimit_pointer, 20.0 )
-    
-    vote_startDirector( false )
-    
-    if( g_is_map_extension_allowed )
-    {
-        SET_TEST_FAILURE( test_id, "g_is_map_extension_allowed must be 0 (it was %d)", \
-                g_is_map_extension_allowed )
-    }
-    
-    set_task( 2.0, "test_end_of_map_voting_start", chainDelay )
-}
-
-/**
- * This is the 3º test at vote_startDirector() chain.
- *
- * Tests if the end map voting is starting automatically at the end of map due time limit expiration.
- */
-public test_end_of_map_voting_start( chainDelay )
-{
-    new test_id = register_test( chainDelay, "test_end_of_map_voting_start" )
-    
-    if( g_is_map_extension_allowed )
-    {
-        SET_TEST_FAILURE( test_id, "g_is_map_extension_allowed must be 0 (it was %d)", \
-                g_is_map_extension_allowed )
-    }
-    
-    cancel_voting()
-    
-    new secondsLeft = get_timeleft();
-    
-    set_pcvar_float( g_timelimit_pointer, (
-                ( get_pcvar_float( g_timelimit_pointer ) ) * 60 - secondsLeft
-                + START_VOTEMAP_MIN_TIME - 10 ) / 60 )
-    
-    set_task( 1.0, "test_end_of_map_voting_start_2", chainDelay )
-}
-
-/**
  * This is the 4º test at vote_startDirector() chain.
  *
  * Tests if the end map voting is starting automatically at the end of map due time limit expiration.
  */
-public test_end_of_map_voting_start_2( chainDelay )
+public test_loadCurrentBlackList_case1()
 {
-    new test_id = register_test( chainDelay, "test_end_of_map_voting_start_2" )
+    new test_id = register_test( chainDelay, "test_loadCurrentBlackList_case1" )
     
     vote_manageEnd()
     
