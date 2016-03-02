@@ -2810,7 +2810,7 @@ stock vote_addFiller()
     }
     
     new filersMapCount
-    new mapKey
+    new mapIndex
     new allowedFilersCount
     new unsuccessfulCount
     new choice_index
@@ -2851,13 +2851,15 @@ stock vote_addFiller()
             
             for( choice_index = 0; choice_index < allowedFilersCount; ++choice_index )
             {
+                keepSearching:
+                
                 unsuccessfulCount = 0;
-                mapKey            = random_num( 0, filersMapCount - 1 );
+                mapIndex          = random_num( 0, filersMapCount - 1 );
                 
-                ArrayGetString( g_fillerMap, mapKey, mapName, charsmax( mapName ) );
+                ArrayGetString( g_fillerMap, mapIndex, mapName, charsmax( mapName ) );
                 
-                DEBUG_LOGGER( 8, "[%i] choice_index: %i   allowedFilersCount: %i   mapKey: %i   mapName: %s", \
-                        groupIndex, choice_index, allowedFilersCount, mapKey, mapName )
+                DEBUG_LOGGER( 8, "[%i] choice_index: %i   allowedFilersCount: %i   mapIndex: %i   mapName: %s", \
+                        groupIndex, choice_index, allowedFilersCount, mapIndex, mapName )
                 
                 while( ( map_isInMenu( mapName )
                          || equal( g_currentMap, mapName )
@@ -2867,12 +2869,12 @@ stock vote_addFiller()
                 {
                     unsuccessfulCount++;
                     
-                    if( ++mapKey == filersMapCount )
+                    if( ++mapIndex == filersMapCount )
                     {
-                        mapKey = 0;
+                        mapIndex = 0;
                     }
                     
-                    ArrayGetString( g_fillerMap, mapKey, mapName, charsmax( mapName ) );
+                    ArrayGetString( g_fillerMap, mapIndex, mapName, charsmax( mapName ) );
                 }
                 
                 if( unsuccessfulCount == filersMapCount )
@@ -2886,7 +2888,8 @@ stock vote_addFiller()
                     && TrieKeyExists( blackList_trie, mapName ) )
                 {
                     DEBUG_LOGGER( 8, "    The map: %s, was blocked by the whitelist maps settings.", mapName )
-                    continue;
+                    
+                    goto keepSearching
                 }
                 
                 copy( g_votingMapNames[ g_totalVoteOptions++ ], charsmax( g_votingMapNames[] ), mapName )
