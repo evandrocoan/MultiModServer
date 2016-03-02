@@ -100,7 +100,20 @@ stock debugMesssageLogger( mode, message[], any: ... )
     test_gal_in_empty_cycle_case3(); \
     test_gal_in_empty_cycle_case4(); \
     test_is_map_extension_allowed(); \
-    test_loadCurrentBlackList_case1(); \
+    test_loadCurrentBlackList(); \
+}
+
+/**
+ * Call the internal function to perform its task and stop the current test execution to avoid
+ * double failure at the test control system.
+ */
+#define SET_TEST_FAILURE(%1) \
+{ \
+    set_test_failure_private( %1 ); \
+    if( g_current_test_evaluation ) \
+    { \
+        return; \
+    } \
 }
 
 /**
@@ -112,7 +125,9 @@ new g_totalFailureTests
 
 new Array: g_tests_idsAndNames
 new Array: g_tests_failure_ids
+new Array: g_tests_failure_reasons
 new bool: g_is_test_changed_cvars
+new bool: g_current_test_evaluation
 
 new test_current_time
 #endif
@@ -191,6 +206,15 @@ new test_current_time
 #define START_VOTEMAP_MIN_TIME 151
 #define START_VOTEMAP_MAX_TIME 129
 
+
+#if AMXX_VERSION_NUM < 183
+new g_user_msgid
+#endif
+
+#if !defined MAX_PLAYERS
+    #define MAX_PLAYERS 32
+#endif
+
 /**
  * The rounds number before the mp_maxrounds/mp_winlimit to be reached to start the map voting.
  */
@@ -232,25 +256,6 @@ new test_current_time
     write_string( %2 ); \
     message_end(); \
 }
-
-/**
- * Call the internal function to perform its task and stop the current test execution to avoid
- * double failure at the test control system.
- */
-#define SET_TEST_FAILURE(%1) \
-{ \
-    ( set_test_failure_private( %1 ) ); \
-    return; \
-}
-
-
-#if AMXX_VERSION_NUM < 183
-new g_user_msgid
-#endif
-
-#if !defined MAX_PLAYERS
-    #define MAX_PLAYERS 32
-#endif
 
 
 /**
@@ -653,13 +658,14 @@ public plugin_cfg()
     set_task( 15.0, "vote_manageEnd", _, _, _, "b" );
 
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
-    g_tests_failure_ids = ArrayCreate( 1 )
-    g_tests_idsAndNames = ArrayCreate( SHORT_STRING )
+    g_tests_failure_ids     = ArrayCreate( 1 )
+    g_tests_failure_reasons = ArrayCreate( LONG_STRING )
+    g_tests_idsAndNames     = ArrayCreate( SHORT_STRING )
     
     // delayed needed to wait the 'server.cfg' run to save its cvars
     if( !get_cvar_num( "gal_server_starting" ) )
     {
-        set_task( 10.0, "runTests" )
+        set_task( 2.0, "runTests" )
     }
 #endif
 }
@@ -1075,6 +1081,11 @@ public plugin_end()
     if( g_tests_failure_ids )
     {
         ArrayDestroy( g_tests_failure_ids )
+    }
+    
+    if( g_tests_failure_reasons )
+    {
+        ArrayDestroy( g_tests_failure_reasons )
     }
 #endif
 }
@@ -2874,12 +2885,11 @@ stock vote_addFiller()
                 if( is_whitelistEnabled
                     && TrieKeyExists( blackList_trie, mapName ) )
                 {
-                    DEBUG_LOGGER( 8, "    The map: %s, was blocked by the whitelist map.", mapName )
-                    break;
+                    DEBUG_LOGGER( 8, "    The map: %s, was blocked by the whitelist maps settings.", mapName )
+                    continue;
                 }
                 
-                copy( g_votingMapNames[ g_totalVoteOptions++ ], charsmax( g_votingMapNames[] ),
-                        mapName )
+                copy( g_votingMapNames[ g_totalVoteOptions++ ], charsmax( g_votingMapNames[] ), mapName )
                 
                 DEBUG_LOGGER( 8, "    groupIndex: %i  map: %s", groupIndex, mapName )
                 DEBUG_LOGGER( 8, "[%i] mapName: %s   unsuccessfulCount: %i   filersMapCount: %i   \
@@ -2921,7 +2931,10 @@ stock loadCurrentBlackList( Trie:blackList_trie )
 
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
     
-    currentHour = test_current_time
+    if( test_current_time )
+    {
+        currentHour = test_current_time
+    }
 #endif
     
     while( !feof( whiteListFile ) )
@@ -2945,6 +2958,8 @@ stock loadCurrentBlackList( Trie:blackList_trie )
             // remove line delimiters [ and ]
             replace_all( currentLine, charsmax( currentLine ), "[", "" )
             replace_all( currentLine, charsmax( currentLine ), "]", "" )
+            
+            DEBUG_LOGGER( 8, "( loadCurrentBlackList ) currentLine: %s (currentHour: %d)", currentLine, currentHour )
             
             // broke the current line
             strtok( currentLine, startHourString, charsmax( startHourString ), endHourString,
@@ -2972,7 +2987,7 @@ stock loadCurrentBlackList( Trie:blackList_trie )
                     isToSkipThisGroup = false
                 }
             }
-            else if( startHour < endHour )
+            else // if( startHour < endHour )
             {
                 if( startHour <= currentHour < endHour )
                 {
@@ -2983,6 +2998,14 @@ stock loadCurrentBlackList( Trie:blackList_trie )
                     isToSkipThisGroup = false
                 }
             }
+            
+            DEBUG_LOGGER( 8, "( loadCurrentBlackList ) startHour > endHour: %d", startHour > endHour )
+            DEBUG_LOGGER( 8, "( loadCurrentBlackList ) startHour >= currentHour > endHour: %d, \
+                    isToSkipThisGroup: %d", startHour >= currentHour > endHour, isToSkipThisGroup )
+            
+            DEBUG_LOGGER( 8, "( loadCurrentBlackList ) startHour < endHour: %d", startHour < endHour )
+            DEBUG_LOGGER( 8, "( loadCurrentBlackList ) startHour <= currentHour < endHour: %d", \
+                    startHour <= currentHour < endHour )
             
             goto proceed
         }
@@ -5522,8 +5545,6 @@ public runTests()
         
         print_all_tests_executed()
         print_tests_failure()
-        
-        server_print( "^n    Finished 'Galileo' Tests Execution.^n^n" )
     }
 }
 
@@ -5533,32 +5554,36 @@ stock print_all_tests_executed()
     
     if( ArraySize( g_tests_idsAndNames ) )
     {
-        server_print( "^n    The following tests ware executed:" )
+        server_print( "^n^n    The following tests were executed:^n" )
     }
     
     for( new test_index = 0; test_index < ArraySize( g_tests_idsAndNames ); test_index++ )
     {
         ArrayGetString( g_tests_idsAndNames, test_index, test_name, charsmax( test_name ) )
         
-        server_print( "       %s", test_name )
+        server_print( "       %3d. %s", test_index + 1, test_name )
     }
 }
 
 stock print_tests_failure()
 {
+    new test_id
     new test_name[ SHORT_STRING ]
+    new failure_reason[ LONG_STRING ]
     
     if( ArraySize( g_tests_failure_ids ) )
     {
-        server_print( "^n    The following tests failed:" )
+        server_print( "^n^n    The following 'Galileo' unit tests failed:^n" )
     }
     
     for( new failure_index = 0; failure_index < ArraySize( g_tests_failure_ids ); failure_index++ )
     {
-        ArrayGetString( g_tests_idsAndNames, ArrayGetCell( g_tests_failure_ids, failure_index ) - 1,
-                test_name, charsmax( test_name ) )
+        test_id = ArrayGetCell( g_tests_failure_ids, failure_index )
         
-        server_print( "       %s", test_name )
+        ArrayGetString( g_tests_idsAndNames, test_id - 1, test_name, charsmax( test_name ) )
+        ArrayGetString( g_tests_failure_reasons, failure_index, failure_reason, charsmax( failure_reason ) )
+        
+        server_print( "       %3d. %s: %s", test_id, test_name, failure_reason )
     }
 }
 
@@ -5578,7 +5603,7 @@ public show_delayed_results()
     server_print( "^n    %d tests succeed.^n    %d tests failed.", g_totalSuccessfulTests, \
             g_totalFailureTests )
     
-    server_print( "^n    Finished 'Galileo' Tests Execution. ^n^n" )
+    server_print( "^n    Finished 'Galileo' Tests Execution.^n^n" )
 }
 
 /**
@@ -5597,8 +5622,9 @@ stock register_test( max_delay_result, test_name[] )
     new totalTests = g_totalSuccessfulTests + g_totalFailureTests
     
     ArrayPushString( g_tests_idsAndNames, test_name )
-    server_print( "    Executing test %d with %d seconds delay - %s ", totalTests, max_delay_result, \
-            test_name )
+    
+    server_print( "    EXECUTING TEST %d WITH %d SECONDS DELAY - %s ",
+            totalTests, max_delay_result, test_name )
     
     if( g_max_delay_result < max_delay_result )
     {
@@ -5612,20 +5638,27 @@ stock register_test( max_delay_result, test_name[] )
  * Informs the Test System that the test failed and why.
  *
  * @param test_id              the test_id at the Test System
+ * @param isFailure            a boolean value setting whether the failure status is true.
  * @param failure_reason       the reason why the test failed
  * @param any                  a variable number of formatting parameters
  */
-stock set_test_failure_private( test_id, failure_reason[], any: ... )
+stock set_test_failure_private( test_id, bool:isFailure, failure_reason[], any: ... )
 {
-    g_totalSuccessfulTests--
-    g_totalFailureTests++
+    g_current_test_evaluation = isFailure
     
-    static formated_message[ LONG_STRING ]
-    
-    vformat( formated_message, charsmax( formated_message ), failure_reason, 3 )
-    
-    ArrayPushCell( g_tests_failure_ids, test_id )
-    server_print( "       Test failure! %s", formated_message )
+    if( isFailure )
+    {
+        g_totalSuccessfulTests--
+        g_totalFailureTests++
+        
+        static formated_message[ LONG_STRING ]
+        
+        vformat( formated_message, charsmax( formated_message ), failure_reason, 3 )
+        
+        ArrayPushCell( g_tests_failure_ids, test_id )
+        ArrayPushString( g_tests_failure_reasons, formated_message )
+        server_print( "       TEST FAILURE! %s", formated_message )
+    }
 }
 
 /**
@@ -5637,24 +5670,15 @@ stock test_register_test()
     
     new test_id = register_test( 0, "test_register_test" )
     
-    if( g_totalSuccessfulTests != 1 )
-    {
-        SET_TEST_FAILURE( test_id, "g_totalSuccessfulTests must be 1 (it was %d)", \
-                g_totalSuccessfulTests )
-    }
+    SET_TEST_FAILURE( test_id, g_totalSuccessfulTests != 1, "g_totalSuccessfulTests must be 1 (it was %d)", \
+            g_totalSuccessfulTests )
     
-    if( test_id != 1 )
-    {
-        SET_TEST_FAILURE( test_id, "test_id must be 1 (it was %d)", test_id )
-    }
+    SET_TEST_FAILURE( test_id, test_id != 1, "test_id must be 1 (it was %d)", test_id )
     
     ArrayGetString( g_tests_idsAndNames, 0, first_test_name, charsmax( first_test_name ) )
     
-    if( !equal( first_test_name, "test_register_test" ) )
-    {
-        SET_TEST_FAILURE( test_id, "first_test_name must be 'test_register_test' (it was %s)", \
-                first_test_name )
-    }
+    SET_TEST_FAILURE( test_id, !equal( first_test_name, "test_register_test" ), \
+            "first_test_name must be 'test_register_test' (it was %s)", first_test_name )
 }
 
 /**
@@ -5669,25 +5693,18 @@ stock test_register_test()
 stock test_is_map_extension_allowed()
 {
     new chainDelay = 2 + 2 + 1
+    new test_id    = register_test( chainDelay, "test_is_map_extension_allowed" )
     
-    new test_id = register_test( chainDelay, "test_is_map_extension_allowed" )
-    
-    if( g_is_map_extension_allowed )
-    {
-        SET_TEST_FAILURE( test_id, "g_is_map_extension_allowed must be 0 (it was %d)", \
-                g_is_map_extension_allowed )
-    }
+    SET_TEST_FAILURE( test_id, g_is_map_extension_allowed, "g_is_map_extension_allowed must be 0 (it was %d)", \
+            g_is_map_extension_allowed )
     
     set_pcvar_float( cvar_maxMapExtendTime, 20.0 )
     set_pcvar_float( g_timelimit_pointer, 10.0 )
     
     vote_startDirector( false )
     
-    if( !g_is_map_extension_allowed )
-    {
-        SET_TEST_FAILURE( test_id, "g_is_map_extension_allowed must be 1 (it was %d)", \
-                g_is_map_extension_allowed )
-    }
+    SET_TEST_FAILURE( test_id, !g_is_map_extension_allowed, "g_is_map_extension_allowed must be 1 (it was %d)", \
+            g_is_map_extension_allowed )
     
     set_task( 2.0, "test_is_map_extension_allowed2", chainDelay )
 }
@@ -5701,11 +5718,8 @@ public test_is_map_extension_allowed2( chainDelay )
 {
     new test_id = register_test( chainDelay, "test_is_map_extension_allowed2" )
     
-    if( !g_is_map_extension_allowed )
-    {
-        SET_TEST_FAILURE( test_id, "g_is_map_extension_allowed must be 1 (it was %d)", \
-                g_is_map_extension_allowed )
-    }
+    SET_TEST_FAILURE( test_id, !g_is_map_extension_allowed, "g_is_map_extension_allowed must be 1 (it was %d)", \
+            g_is_map_extension_allowed )
     
     color_print( 0, "^1%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED" );
     
@@ -5716,11 +5730,8 @@ public test_is_map_extension_allowed2( chainDelay )
     
     vote_startDirector( false )
     
-    if( g_is_map_extension_allowed )
-    {
-        SET_TEST_FAILURE( test_id, "g_is_map_extension_allowed must be 0 (it was %d)", \
-                g_is_map_extension_allowed )
-    }
+    SET_TEST_FAILURE( test_id, g_is_map_extension_allowed, "g_is_map_extension_allowed must be 0 (it was %d)", \
+            g_is_map_extension_allowed )
     
     set_task( 2.0, "test_end_of_map_voting_start", chainDelay )
 }
@@ -5734,11 +5745,8 @@ public test_end_of_map_voting_start( chainDelay )
 {
     new test_id = register_test( chainDelay, "test_end_of_map_voting_start" )
     
-    if( g_is_map_extension_allowed )
-    {
-        SET_TEST_FAILURE( test_id, "g_is_map_extension_allowed must be 0 (it was %d)", \
-                g_is_map_extension_allowed )
-    }
+    SET_TEST_FAILURE( test_id, g_is_map_extension_allowed, "g_is_map_extension_allowed must be 0 (it was %d)", \
+            g_is_map_extension_allowed )
     
     cancel_voting()
     
@@ -5762,10 +5770,7 @@ public test_end_of_map_voting_start_2( chainDelay )
     
     vote_manageEnd()
     
-    if( !( g_voteStatus & VOTE_IN_PROGRESS ) )
-    {
-        SET_TEST_FAILURE( test_id, "vote_startDirector() does not started!" )
-    }
+    SET_TEST_FAILURE( test_id, !( g_voteStatus & VOTE_IN_PROGRESS ), "vote_startDirector() does not started!" )
     
     // cancel the voting started by the timelimit expiration on test_end_of_map_voting_start()
     set_pcvar_float( g_timelimit_pointer, 20.0 )
@@ -5782,20 +5787,14 @@ stock test_gal_in_empty_cycle_case1()
     set_pcvar_num( cvar_isToStopEmptyCycle, 1 )
     client_authorized( 1 )
     
-    if( get_pcvar_num( cvar_isToStopEmptyCycle ) )
-    {
-        SET_TEST_FAILURE( test_id, "cvar_isToStopEmptyCycle must be 0 (it was %d)", \
-                get_pcvar_num( cvar_isToStopEmptyCycle ) )
-    }
+    SET_TEST_FAILURE( test_id, bool:get_pcvar_num( cvar_isToStopEmptyCycle ), "cvar_isToStopEmptyCycle \
+            must be 0 (it was %d)", get_pcvar_num( cvar_isToStopEmptyCycle ) )
     
     set_pcvar_num( cvar_isToStopEmptyCycle, 0 )
     client_authorized( 1 )
     
-    if( get_pcvar_num( cvar_isToStopEmptyCycle ) )
-    {
-        SET_TEST_FAILURE( test_id, "cvar_isToStopEmptyCycle must be 0 (it was %d)", \
-                get_pcvar_num( cvar_isToStopEmptyCycle ) )
-    }
+    SET_TEST_FAILURE( test_id, bool:get_pcvar_num( cvar_isToStopEmptyCycle ), "cvar_isToStopEmptyCycle \
+            must be 0 (it was %d)", get_pcvar_num( cvar_isToStopEmptyCycle ) )
 }
 
 /**
@@ -5804,29 +5803,18 @@ stock test_gal_in_empty_cycle_case1()
  */
 stock test_gal_in_empty_cycle_case2()
 {
+    new nextMap[ MAX_MAPNAME_LENGHT ]
+    
     new test_id                  = register_test( 0, "test_gal_in_empty_cycle_case2" )
     new Array: emptyCycleMapList = ArrayCreate( MAX_MAPNAME_LENGHT );
     
     ArrayPushString( emptyCycleMapList, "de_dust2" )
     ArrayPushString( emptyCycleMapList, "de_inferno" )
     
-    // set the next map from the empty cycle list,
-    // or the first one, if the current map isn't part of the cycle
-    new nextMap[ MAX_MAPNAME_LENGHT ]
-    
     new mapIndex = map_getNext( emptyCycleMapList, "de_dust2", nextMap );
     
-    if( !equal( nextMap, "de_inferno" ) )
-    {
-        SET_TEST_FAILURE( test_id, "nextMap must be 'de_inferno' (it was %s)", nextMap )
-    }
-    
-    // if the current map isn't part of the empty cycle,
-    // immediately change to next map that is
-    if( mapIndex == -1 )
-    {
-        SET_TEST_FAILURE( test_id, "mapIndex must NOT be '-1' (it was %d)", mapIndex )
-    }
+    SET_TEST_FAILURE( test_id, !equal( nextMap, "de_inferno" ), "nextMap must be 'de_inferno' (it was %s)", nextMap )
+    SET_TEST_FAILURE( test_id, mapIndex == -1, "mapIndex must NOT be '-1' (it was %d)", mapIndex )
     
     ArrayDestroy( emptyCycleMapList )
 }
@@ -5837,6 +5825,8 @@ stock test_gal_in_empty_cycle_case2()
  */
 stock test_gal_in_empty_cycle_case3()
 {
+    new nextMap[ MAX_MAPNAME_LENGHT ]
+    
     new test_id                  = register_test( 0, "test_gal_in_empty_cycle_case3" )
     new Array: emptyCycleMapList = ArrayCreate( MAX_MAPNAME_LENGHT );
     
@@ -5844,23 +5834,10 @@ stock test_gal_in_empty_cycle_case3()
     ArrayPushString( emptyCycleMapList, "de_inferno" )
     ArrayPushString( emptyCycleMapList, "de_dust4" )
     
-    // set the next map from the empty cycle list,
-    // or the first one, if the current map isn't part of the cycle
-    new nextMap[ MAX_MAPNAME_LENGHT ]
-    
     new mapIndex = map_getNext( emptyCycleMapList, "de_inferno", nextMap );
     
-    if( !equal( nextMap, "de_dust4" ) )
-    {
-        SET_TEST_FAILURE( test_id, "nextMap must be 'de_dust4' (it was %s)", nextMap )
-    }
-    
-    // if the current map isn't part of the empty cycle,
-    // immediately change to next map that is
-    if( mapIndex == -1 )
-    {
-        SET_TEST_FAILURE( test_id, "mapIndex must NOT be '-1' (it was %d)", mapIndex )
-    }
+    SET_TEST_FAILURE( test_id, !equal( nextMap, "de_dust4" ), "nextMap must be 'de_dust4' (it was %s)", nextMap )
+    SET_TEST_FAILURE( test_id, mapIndex == -1, "mapIndex must NOT be '-1' (it was %d)", mapIndex )
     
     ArrayDestroy( emptyCycleMapList )
 }
@@ -5871,6 +5848,8 @@ stock test_gal_in_empty_cycle_case3()
  */
 stock test_gal_in_empty_cycle_case4()
 {
+    new nextMap[ MAX_MAPNAME_LENGHT ]
+    
     new test_id                  = register_test( 0, "test_gal_in_empty_cycle_case4" )
     new Array: emptyCycleMapList = ArrayCreate( MAX_MAPNAME_LENGHT );
     
@@ -5878,23 +5857,10 @@ stock test_gal_in_empty_cycle_case4()
     ArrayPushString( emptyCycleMapList, "de_inferno" )
     ArrayPushString( emptyCycleMapList, "de_dust4" )
     
-    // set the next map from the empty cycle list,
-    // or the first one, if the current map isn't part of the cycle
-    new nextMap[ MAX_MAPNAME_LENGHT ]
-    
     new mapIndex = map_getNext( emptyCycleMapList, "de_dust", nextMap );
     
-    if( !equal( nextMap, "de_dust2" ) )
-    {
-        SET_TEST_FAILURE( test_id, "nextMap must be 'de_dust2' (it was %s)", nextMap )
-    }
-    
-    // if the current map isn't part of the empty cycle,
-    // immediately change to next map that is
-    if( !( mapIndex == -1 ) )
-    {
-        SET_TEST_FAILURE( test_id, "mapIndex must be '-1' (it was %d)", mapIndex )
-    }
+    SET_TEST_FAILURE( test_id, !equal( nextMap, "de_dust2" ), "nextMap must be 'de_dust2' (it was %s)", nextMap )
+    SET_TEST_FAILURE( test_id, !( mapIndex == -1 ), "mapIndex must be '-1' (it was %d)", mapIndex )
     
     ArrayDestroy( emptyCycleMapList )
 }
@@ -5902,15 +5868,15 @@ stock test_gal_in_empty_cycle_case4()
 /**
  * This tests if the function 'loadCurrentBlackList()' is working properly.
  */
-public test_loadCurrentBlackList_case1()
+public test_loadCurrentBlackList()
 {
     new blackListFile
     new blackListFilePath[ MAX_FILE_PATH_LENGHT ]
     
-    new test_id             = register_test( 0, "test_loadCurrentBlackList_case1" )
+    new test_id             = register_test( 0, "test_loadCurrentBlackList" )
     new Trie:blackList_trie = TrieCreate()
     
-    copy( blackListFilePath, charsmax( blackListFilePath ), "test_loadCurrentBlackList_case1.txt" )
+    copy( blackListFilePath, charsmax( blackListFilePath ), "test_loadCurrentBlackList.txt" )
     set_pcvar_string( cvar_voteWhiteListMapFilePath, blackListFilePath )
     
     blackListFile = fopen( blackListFilePath, "wt" );
@@ -5921,7 +5887,7 @@ public test_loadCurrentBlackList_case1()
         fprintf( blackListFile, "%s^n", "de_dust1" );
         fprintf( blackListFile, "%s^n", "de_dust2" );
         fprintf( blackListFile, "%s^n", "de_dust3" );
-        fprintf( blackListFile, "%s^n", "[1-24]" );
+        fprintf( blackListFile, "%s^n", "[1-23]" );
         fprintf( blackListFile, "%s^n", "de_dust4" );
         fprintf( blackListFile, "%s^n", "[12-22]" );
         fprintf( blackListFile, "%s^n", "de_dust5" );
@@ -5930,44 +5896,26 @@ public test_loadCurrentBlackList_case1()
         fclose( blackListFile );
     }
     
-    test_current_time = 24
+    test_current_time = 23
     loadCurrentBlackList( blackList_trie )
     
-    // the maps de_dust4, de_dust5, de_dust6 and de_dust7 must to be present on this blacklist
-    if( !TrieKeyExists( blackList_trie, "de_dust4" ) )
-    {
-        SET_TEST_FAILURE( test_id, "The map 'de_dust4' must to be present on the trie, but it was not!" )
-    }
-    else if( !TrieKeyExists( blackList_trie, "de_dust5" ) )
-    {
-        SET_TEST_FAILURE( test_id, "The map 'de_dust5' must to be present on the trie, but it was not!" )
-    }
-    else if( !TrieKeyExists( blackList_trie, "de_dust6" ) )
-    {
-        SET_TEST_FAILURE( test_id, "The map 'de_dust6' must to be present on the trie, but it was not!" )
-    }
-    else if( !TrieKeyExists( blackList_trie, "de_dust7" ) )
-    {
-        SET_TEST_FAILURE( test_id, "The map 'de_dust7' must to be present on the trie, but it was not!" )
-    }
+    test_current_time = 0;
     
-    // the maps de_dust1, de_dust2, de_dust3 and de_dust4 must NOT to be present on this blacklist
-    if( TrieKeyExists( blackList_trie, "de_dust1" ) )
-    {
-        SET_TEST_FAILURE( test_id, "The map 'de_dust1' must NOT to be present on the trie, but it was!" )
-    }
-    else if( TrieKeyExists( blackList_trie, "de_dust2" ) )
-    {
-        SET_TEST_FAILURE( test_id, "The map 'de_dust2' must NOT to be present on the trie, but it was!" )
-    }
-    else if( TrieKeyExists( blackList_trie, "de_dust3" ) )
-    {
-        SET_TEST_FAILURE( test_id, "The map 'de_dust3' must NOT to be present on the trie, but it was!" )
-    }
-    else if( TrieKeyExists( blackList_trie, "de_dust4" ) )
-    {
-        SET_TEST_FAILURE( test_id, "The map 'de_dust4' must NOT to be present on the trie, but it was!" )
-    }
+    SET_TEST_FAILURE( test_id, TrieKeyExists( blackList_trie, "de_dust1" ), \
+            "The map 'de_dust1' must NOT to be present on the trie, but it was!" )
+    SET_TEST_FAILURE( test_id, TrieKeyExists( blackList_trie, "de_dust2" ), \
+            "The map 'de_dust2' must NOT to be present on the trie, but it was!" )
+    SET_TEST_FAILURE( test_id, TrieKeyExists( blackList_trie, "de_dust3" ), \
+            "The map 'de_dust3' must NOT to be present on the trie, but it was!" )
+    
+    SET_TEST_FAILURE( test_id, !TrieKeyExists( blackList_trie, "de_dust4" ), \
+            "The map 'de_dust4' must to be present on the trie, but it was not!" )
+    SET_TEST_FAILURE( test_id, !TrieKeyExists( blackList_trie, "de_dust5" ), \
+            "The map 'de_dust5' must to be present on the trie, but it was not!" )
+    SET_TEST_FAILURE( test_id, !TrieKeyExists( blackList_trie, "de_dust6" ), \
+            "The map 'de_dust6' must to be present on the trie, but it was not!" )
+    SET_TEST_FAILURE( test_id, !TrieKeyExists( blackList_trie, "de_dust7" ), \
+            "The map 'de_dust7' must to be present on the trie, but it was not!" )
     
     delete_file( blackListFilePath )
 }
