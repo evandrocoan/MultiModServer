@@ -42,8 +42,8 @@ at '[COLOR="Blue"]./data/lang/[/COLOR][B]galileo.txt[/B]' location.
 [IMG]http://i.imgur.com/TWUBJiH.png[/IMG]
 https://github.com/addonszz/Galileo/commits/develop[/URL][/B]
 
-Was tried the best to let they both to be 100% equivalent. And this isn't impossible or very
-hard. But as was every original code broke apart, this could let something sideways.
+Was tried the best to let they both to be 100% equivalent. And this isn't impossible or
+very hard. But as was every original code broke apart, this could let something sideways.
 This plugin is jumping from version '1.2.2' to '2.0' because there are major coding
 changes and new features.
 
@@ -125,7 +125,8 @@ galileo.cfg contents.
             
             
             [*]If the "[COLOR="blue"][B]-restart[/B][/COLOR]" argument is supplied and the voting opting "Stay Here" wins,
-            the current map is restarted. This command is for the "[URL="https://forums.alliedmods.net/showthread.php?t=273020"]Multi-Mod Manager[/URL]" plugin.
+            the current map is restarted. This command is for the "[URL="https://forums.alliedmods.net/showthread.php?t=273020"]Multi-Mod Manager[/URL]"
+            plugin.
             [/LIST]
             
             
@@ -137,8 +138,8 @@ galileo.cfg contents.
  [*] [COLOR="Blue"][B]The Map Groups Feature[/B][/COLOR]:
      It uses whatever file you have set in the cvar '[B]gal_vote_mapfile[/B]'. Normally, in that
      file you would just have a listing of maps, one per line. But to use the groups feature,
-     your '[B]gal_vote_mapfile[/B]' cvar would point to a '.txt' file looking something like
-     this instead:
+     your '[B]gal_vote_mapfile[/B]' cvar would point to a '.txt' file looking something like this
+     instead:
      [CODE]
 [groups]
 2
@@ -157,11 +158,33 @@ galileo.cfg contents.
      maps from '[B]1.ini[/B]', 1 from '[B]2.ini[/B]', 1 from '[B]3.ini[/B]', and 3 from '[B]4.ini[/B]' 'til the maximum
      value of 8 to be reached.
      
+     [B]Another example[/B]:
+     If you want to always show the map '[COLOR="Blue"]de_dust2[/COLOR]' on the map voting, just use:
+     [CODE]
+[groups]
+1
+7
+     [/CODE]This maps groups configuration means to load [COLOR="red"]up to 1 map[/COLOR] from the file '[B]1.ini[/B]'
+     (1º line after [groups]) and [COLOR="red"]up to 7 maps[/COLOR] from '[B]2.ini[/B]' (2º line after [groups]).
+
+     Then you only need to create the files '[B]1.ini[/B]' and '[B]2.ini[/B]' in the '[B]./configs/galileo/[/B]'
+     folder. And in the file '[B]1.ini[/B]' you put only the '[COLOR="Blue"]de_dust2[/COLOR]' map, and in the file '[B]2.ini[/B]'
+     you put your mapcycle or voting filler maps file list.
+
+     Hence the map '[COLOR="Blue"]de_dust2[/COLOR]' will always be available on any voting. It only will not be
+     displayed, if and only if, the nominations are enabled and there are [COLOR="Blue"][B]1 + 7[/B][/COLOR] map
+     nominations and none of them is '[COLOR="blue"]de_dust2[/COLOR]'. The map '[COLOR="Blue"]de_dust2[/COLOR]' will not be loaded
+     on this case because the maximum maps available on any voting is [COLOR="Blue"][B]1 + 7 = 8[/B][/COLOR].
+     And as the map nominations are loaded before filling the map voting list using the
+     map fillers from your map groups files '[B]1.ini[/B]' (1º line after [groups]) and '[B]2.ini[/B]'
+     (2º line after [groups]).
+
+     
      
  [*] [COLOR="Blue"][B]The mapcycle whitelist[/B][/COLOR]:
-     If uses whatever file you set on the cvar '[B]gal_vote_whitelist_mapfile[/B]' as the mapcycle
-     whitelist. It specifies the time where its listed maps are allowed to be added to the
-     voting list as fillers after the [B]nominations[/B] being loaded.
+     If uses whatever file you set on the cvar '[B]gal_vote_whitelist_mapfile[/B]' as the
+     mapcycle whitelist. It specifies the time where its listed maps are allowed to be
+     added to the voting list as fillers after the [B]nominations[/B] being loaded.
      
      The whitelist must follow this pattern:
      [CODE]
@@ -176,9 +199,9 @@ de_mirage
 [05-10]
 de_dust2_long
      [/CODE] The maps following '[B][10-22][/B]' will be only allowed to be vote map fillers between
-     10:00 and 22:00 o'clock. This feature should be helpful because some servers have about
-     only 10 players between 05:00 and 10:00 o'clock, so they will be needing [COLOR="Blue"]small maps[/COLOR] for
-     playing.
+     10:00 and 22:00 o'clock. This feature should be helpful because some servers have
+     about only 10 players between 05:00 and 10:00 o'clock, so they will be needing [COLOR="Blue"]small
+     maps[/COLOR] for playing.
 [/LIST]
 [/QUOTE]
 
@@ -247,8 +270,7 @@ The Default '[B]Amx Mod X[/B]' [COLOR="Red"]NextMap Plugin [B]Disabled[/B][/COLO
 
 ******************************** [anchor]Installation[/anchor][B][SIZE="5"][COLOR="Blue"]Installation[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor]  ***********************
 
-[B]1.[/B] Download the files "[B]galileo.sma[/B]" and "[B]configuration_files.zip[/B]" at [goanchor=Downloads]Downloads[/goanchor]
-section.
+[B]1.[/B] Download the files "[B]galileo.sma[/B]" and "[B]configuration_files.zip[/B]" at [goanchor=Downloads]Downloads[/goanchor] section.
 
 [B]2.[/B] Then take the contents of "[B]yourgamemod[/B]" folder from "[B]configuration_files.zip[/B]", to your
 gamemod folder. Example: czero, cstrike, ...
@@ -308,6 +330,10 @@ galileo.amxx
    if they want to participate the map vote to decide what the next map will be.
  * Added to the handle server start feature the abilitie to continues the mapcycle from the lastmap
    played instead of the first map on the mapcycle list.
+ * Added the Map Groups Feature feature documentation.
+ * Added new cvar 'gal_vote_whitelist_mapfile' which points a configuration file which specifies the
+   time where its listed maps are allowed to be added to the voting list as fillers after the nominations
+   being loaded.
  
 2016-02-11 | v1.2.2
  * Add a new cvar 'gal_rtv_wait_rounds' for the RTV wait.
