@@ -131,8 +131,8 @@ new Array: g_tests_failure_reasons
 new bool: g_is_test_changed_cvars
 new bool: g_current_test_evaluation
 
-new test_current_time
-new test_blackListFilePath[ 128 ]
+new g_test_current_time
+new g_test_blackListFilePath[ 128 ]
 #endif
 
 #define TASKID_REMINDER               52691153
@@ -2937,9 +2937,9 @@ stock loadCurrentBlackList( Trie:blackList_trie )
 
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
     
-    if( test_current_time )
+    if( g_test_current_time )
     {
-        currentHour = test_current_time
+        currentHour = g_test_current_time
     }
 #endif
     
@@ -5884,10 +5884,10 @@ public test_loadCurrentBlackList_case1()
     new test_id             = register_test( 0, "test_loadCurrentBlackList_case1" )
     new Trie:blackList_trie = TrieCreate()
     
-    copy( test_blackListFilePath, charsmax( test_blackListFilePath ), "test_loadCurrentBlackList.txt" )
-    set_pcvar_string( cvar_voteWhiteListMapFilePath, test_blackListFilePath )
+    copy( g_test_blackListFilePath, charsmax( g_test_blackListFilePath ), "test_loadCurrentBlackList.txt" )
+    set_pcvar_string( cvar_voteWhiteListMapFilePath, g_test_blackListFilePath )
     
-    blackListFile = fopen( test_blackListFilePath, "wt" );
+    blackListFile = fopen( g_test_blackListFilePath, "wt" );
     
     if( blackListFile )
     {
@@ -5904,9 +5904,9 @@ public test_loadCurrentBlackList_case1()
         fclose( blackListFile );
     }
     
-    test_current_time = 23
+    g_test_current_time = 23
     loadCurrentBlackList( blackList_trie )
-    test_current_time = 0;
+    g_test_current_time = 0;
     
     SET_TEST_FAILURE( test_id, TrieKeyExists( blackList_trie, "de_dust1" ), \
             "The map 'de_dust1' must NOT to be present on the trie, but it was!" )
@@ -5933,9 +5933,9 @@ public test_loadCurrentBlackList_case2()
     new test_id             = register_test( 0, "test_loadCurrentBlackList_case2" )
     new Trie:blackList_trie = TrieCreate()
     
-    test_current_time = 22
+    g_test_current_time = 22
     loadCurrentBlackList( blackList_trie )
-    test_current_time = 0;
+    g_test_current_time = 0;
     
     SET_TEST_FAILURE( test_id, TrieKeyExists( blackList_trie, "de_dust4" ), \
             "The map 'de_dust4' must NOT to be present on the trie, but it was!" )
@@ -5952,9 +5952,9 @@ public test_loadCurrentBlackList_case3()
     new test_id             = register_test( 0, "test_loadCurrentBlackList_case3" )
     new Trie:blackList_trie = TrieCreate()
     
-    test_current_time = 12
+    g_test_current_time = 12
     loadCurrentBlackList( blackList_trie )
-    test_current_time = 0;
+    g_test_current_time = 0;
     
     SET_TEST_FAILURE( test_id, TrieKeyExists( blackList_trie, "de_dust7" ), \
             "The map 'de_dust7' must NOT to be present on the trie, but it was!" )
@@ -5962,7 +5962,7 @@ public test_loadCurrentBlackList_case3()
     SET_TEST_FAILURE( test_id, !TrieKeyExists( blackList_trie, "de_dust2" ), \
             "The map 'de_dust2' must to be present on the trie, but it was not!" )
     
-    delete_file( test_blackListFilePath )
+    delete_file( g_test_blackListFilePath )
 }
 
 /**
