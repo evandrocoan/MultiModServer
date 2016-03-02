@@ -239,7 +239,7 @@ new test_current_time
  */
 #define SET_TEST_FAILURE(%1) \
 { \
-    ( set_test_failure_internal( %1 ) ); \
+    ( set_test_failure_private( %1 ) ); \
     return; \
 }
 
@@ -2807,7 +2807,7 @@ stock vote_addFiller()
     
     new Trie:blackList_trie
     new bool:is_whitelistEnabled = get_pcvar_num( cvar_voteMinPlayers ) != 0
-    
+
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
     
     is_whitelistEnabled = true;
@@ -2885,18 +2885,18 @@ stock vote_addFiller()
                 DEBUG_LOGGER( 8, "[%i] mapName: %s   unsuccessfulCount: %i   filersMapCount: %i   \
                         g_totalVoteOptions: %i", groupIndex, mapName, unsuccessfulCount, \
                         filersMapCount, g_totalVoteOptions )
-                
-            } // end 'for choice_index < allowedFilersCount'
             
-        } // end 'if g_totalVoteOptions < g_maxVotingChoices'
+            } // end 'for choice_index < allowedFilersCount'
         
+        } // end 'if g_totalVoteOptions < g_maxVotingChoices'
+    
     } // end 'for groupIndex < groupCount'
     
     if( blackList_trie )
     {
         TrieDestroy( blackList_trie )
     }
-    
+
 } // vote_addFiller()
 
 stock loadCurrentBlackList( Trie:blackList_trie )
@@ -2918,7 +2918,7 @@ stock loadCurrentBlackList( Trie:blackList_trie )
     new whiteListFile = fopen( whiteListFilePath, "rt" )
     
     DEBUG_LOGGER( 8, "( loadCurrentBlackList ) currentHour: %d, currentHourString: %s", currentHour, currentHourString )
-    
+
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
     
     currentHour = test_current_time
@@ -5495,13 +5495,11 @@ public create_fakeVotes()
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
 
 /**
- * This function run all tests that are listed at it. Every test that is created must
- * to be called here to register itself at the Test System and perform the testing.
+ * This function run all tests that are listed at it. Every test that is created must to be called
+ * here to register itself at the Test System and perform the testing.
  */
 public runTests()
 {
-    new test_name[ SHORT_STRING ]
-    
     server_print( "^n^n    Executing the 'Galileo' Tests:^n" )
     
     save_server_cvars_for_test()
@@ -5511,6 +5509,45 @@ public runTests()
     server_print( "^n    %d tests succeed.^n    %d tests failed.", g_totalSuccessfulTests, \
             g_totalFailureTests )
     
+    if( g_max_delay_result )
+    {
+        server_print( "^n^n    Executing the 'Galileo' delayed until %d seconds tests:^n", g_max_delay_result )
+        set_task( g_max_delay_result + 1.0, "show_delayed_results" )
+    }
+    else
+    {
+        // clean the testing
+        cancel_voting()
+        restore_server_cvars_for_test()
+        
+        print_all_tests_executed()
+        print_tests_failure()
+        
+        server_print( "^n    Finished 'Galileo' Tests Execution.^n^n" )
+    }
+}
+
+stock print_all_tests_executed()
+{
+    new test_name[ SHORT_STRING ]
+    
+    if( ArraySize( g_tests_idsAndNames ) )
+    {
+        server_print( "^n    The following tests ware executed:" )
+    }
+    
+    for( new test_index = 0; test_index < ArraySize( g_tests_idsAndNames ); test_index++ )
+    {
+        ArrayGetString( g_tests_idsAndNames, test_index, test_name, charsmax( test_name ) )
+        
+        server_print( "       %s", test_name )
+    }
+}
+
+stock print_tests_failure()
+{
+    new test_name[ SHORT_STRING ]
+    
     if( ArraySize( g_tests_failure_ids ) )
     {
         server_print( "^n    The following tests failed:" )
@@ -5522,17 +5559,6 @@ public runTests()
                 test_name, charsmax( test_name ) )
         
         server_print( "       %s", test_name )
-    }
-    
-    if( g_max_delay_result )
-    {
-        server_print( "^n^n    Executing the 'Galileo' delayed until %d seconds tests:^n", g_max_delay_result )
-        set_task( g_max_delay_result + 1.0, "show_delayed_results" )
-    }
-    else
-    {
-        restore_server_cvars_for_test()
-        server_print( "^n    Finished 'Galileo' Tests Execution.^n^n" )
     }
 }
 
@@ -5542,37 +5568,24 @@ public runTests()
  */
 public show_delayed_results()
 {
-    new test_name[ SHORT_STRING ]
+    // clean the testing
+    cancel_voting()
+    restore_server_cvars_for_test()
+    
+    print_all_tests_executed()
+    print_tests_failure()
     
     server_print( "^n    %d tests succeed.^n    %d tests failed.", g_totalSuccessfulTests, \
             g_totalFailureTests )
     
-    if( ArraySize( g_tests_failure_ids ) )
-    {
-        server_print( "^n    The following tests failed:" )
-    }
-    
-    for( new failure_index = 0; failure_index < ArraySize( g_tests_failure_ids ); failure_index++ )
-    {
-        ArrayGetString( g_tests_idsAndNames, ArrayGetCell( g_tests_failure_ids, failure_index ) - 1,
-                test_name, charsmax( test_name ) )
-        
-        server_print( "       %s", test_name )
-    }
-    
     server_print( "^n    Finished 'Galileo' Tests Execution. ^n^n" )
-    
-    // clean the testing
-    cancel_voting()
-    restore_server_cvars_for_test()
 }
 
 /**
- * This is the first thing called when a test begin running. It function is to let the
- * Test System know that the test exists and then know how to handle it using
- * the test_id.
+ * This is the first thing called when a test begin running. It function is to let the Test System
+ * know that the test exists and then know how to handle it using the test_id.
  *
- * @param max_delay_result        the max delay time to finish test execution.
+ * @param max_delay_result        the max delay time to finish the whole test chain execution.
  * @param test_name               the test name to register
  *
  * @return test_id                an integer that refers it at the Test System.
@@ -5602,7 +5615,7 @@ stock register_test( max_delay_result, test_name[] )
  * @param failure_reason       the reason why the test failed
  * @param any                  a variable number of formatting parameters
  */
-stock set_test_failure_internal( test_id, failure_reason[], any: ... )
+stock set_test_failure_private( test_id, failure_reason[], any: ... )
 {
     g_totalSuccessfulTests--
     g_totalFailureTests++
@@ -5917,13 +5930,43 @@ public test_loadCurrentBlackList_case1()
         fclose( blackListFile );
     }
     
-    // the maps de_dust4, de_dust5, de_dust6 and de_dust7 must to be present on this blacklist
     test_current_time = 24
     loadCurrentBlackList( blackList_trie )
     
+    // the maps de_dust4, de_dust5, de_dust6 and de_dust7 must to be present on this blacklist
     if( !TrieKeyExists( blackList_trie, "de_dust4" ) )
     {
-        SET_TEST_FAILURE( test_id, "The map 'de_dust4' must be present on the trie, but it was not!" )
+        SET_TEST_FAILURE( test_id, "The map 'de_dust4' must to be present on the trie, but it was not!" )
+    }
+    else if( !TrieKeyExists( blackList_trie, "de_dust5" ) )
+    {
+        SET_TEST_FAILURE( test_id, "The map 'de_dust5' must to be present on the trie, but it was not!" )
+    }
+    else if( !TrieKeyExists( blackList_trie, "de_dust6" ) )
+    {
+        SET_TEST_FAILURE( test_id, "The map 'de_dust6' must to be present on the trie, but it was not!" )
+    }
+    else if( !TrieKeyExists( blackList_trie, "de_dust7" ) )
+    {
+        SET_TEST_FAILURE( test_id, "The map 'de_dust7' must to be present on the trie, but it was not!" )
+    }
+    
+    // the maps de_dust1, de_dust2, de_dust3 and de_dust4 must NOT to be present on this blacklist
+    if( TrieKeyExists( blackList_trie, "de_dust1" ) )
+    {
+        SET_TEST_FAILURE( test_id, "The map 'de_dust1' must NOT to be present on the trie, but it was!" )
+    }
+    else if( TrieKeyExists( blackList_trie, "de_dust2" ) )
+    {
+        SET_TEST_FAILURE( test_id, "The map 'de_dust2' must NOT to be present on the trie, but it was!" )
+    }
+    else if( TrieKeyExists( blackList_trie, "de_dust3" ) )
+    {
+        SET_TEST_FAILURE( test_id, "The map 'de_dust3' must NOT to be present on the trie, but it was!" )
+    }
+    else if( TrieKeyExists( blackList_trie, "de_dust4" ) )
+    {
+        SET_TEST_FAILURE( test_id, "The map 'de_dust4' must NOT to be present on the trie, but it was!" )
     }
     
     delete_file( blackListFilePath )
