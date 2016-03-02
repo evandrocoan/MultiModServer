@@ -572,6 +572,7 @@ public plugin_cfg()
     g_is_srvWinlimitRestart  = get_pcvar_num( cvar_serverWinlimitRestart ) != 0;
     
     get_pcvar_string( cvar_voteWeightFlags, g_voteWeightFlags, charsmax( g_voteWeightFlags ) );
+    remove_quotes( g_voteWeightFlags )
     get_mapname( g_currentMap, charsmax( g_currentMap ) );
     
     DEBUG_LOGGER( 4, "Current MAP [%s]", g_currentMap )
