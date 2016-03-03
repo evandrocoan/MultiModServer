@@ -2427,7 +2427,7 @@ public vote_startDirector( bool:is_forced_voting )
     if( choicesLoaded )
     {
         new player_id
-        new playerCount
+        new playersCount
         new players[ MAX_PLAYERS ]
         new Float:handleChoicesDelay
         
@@ -2443,10 +2443,10 @@ public vote_startDirector( bool:is_forced_voting )
     #endif
         
         // skip bots and hltv
-        get_players( players, playerCount, "ch" )
+        get_players( players, playersCount, "ch" )
         
         // mark the players who are in this vote for use later
-        for( new playerIndex = 0; playerIndex < playerCount; ++playerIndex )
+        for( new playerIndex = 0; playerIndex < playersCount; ++playerIndex )
         {
             player_id = players[ playerIndex ]
             
@@ -3195,12 +3195,12 @@ public vote_display( argument[ 3 ] )
     }
     else // just display to everyone
     {
-        new playerCount
+        new playersCount
         new players[ MAX_PLAYERS ]
         
-        get_players( players, playerCount, "ch" ); // skip bots and hltv
+        get_players( players, playersCount, "ch" ); // skip bots and hltv
         
-        for( new playerIndex = 0; playerIndex < playerCount; ++playerIndex )
+        for( new playerIndex = 0; playerIndex < playersCount; ++playerIndex )
         {
             player_id = players[ playerIndex ];
             
@@ -3527,7 +3527,7 @@ stock calculate_menu_clean( player_id, isToShowNoneOption, noneOptionType,
 
 stock display_vote_menu( bool:menuType, bool:isVoteOver, player_id, menuBody[], menuKeys )
 {
-    new menuid
+    new menu_id
     new menukeys_unused
 
 #if defined DEBUG
@@ -3543,10 +3543,10 @@ stock display_vote_menu( bool:menuType, bool:isVoteOver, player_id, menuBody[], 
     }
 #endif
     
-    get_user_menu( player_id, menuid, menukeys_unused );
+    get_user_menu( player_id, menu_id, menukeys_unused );
     
-    if( menuid == 0
-        || menuid == g_chooseMapMenuId )
+    if( menu_id == 0
+        || menu_id == g_chooseMapMenuId )
     {
         show_menu( player_id, menuKeys, menuBody,
                 ( menuType ? g_voteDuration : ( isVoteOver ? 2 : max( 1, g_voteDuration ) ) ),
@@ -4213,34 +4213,6 @@ stock save_time_limit()
     }
 }
 
-stock vote_resetStats()
-{
-    g_voteStatusClean[ 0 ] = '^0'
-    g_totalVoteOptions     = 0;
-    g_totalVotesCounted    = 0;
-    g_pendingVoteCountdown = 7;
-    
-    arrayset( g_arrayOfMapsWithVotesNumber, 0, sizeof g_arrayOfMapsWithVotesNumber );
-    
-    // reset everyones' rocks
-    arrayset( g_rockedVote, false, sizeof( g_rockedVote ) );
-    g_rockedVoteCnt = 0;
-    
-    // reset everyones' votes
-    arrayset( g_is_player_voted, true, sizeof( g_is_player_voted ) );
-    
-    if( !( g_voteStatus & VOTE_IS_RUNOFF ) )
-    {
-        arrayset( g_is_player_participating, true, sizeof( g_is_player_participating ) );
-    }
-    
-    arrayset( g_is_player_cancelled_vote, false, sizeof( g_is_player_cancelled_vote ) );
-    arrayset( g_answeredForEndOfMapVote, false, sizeof( g_answeredForEndOfMapVote ) );
-    
-    arrayset( g_player_voted_option, 0, sizeof( g_player_voted_option ) );
-    arrayset( g_player_voted_weight, 0, sizeof( g_player_voted_weight ) );
-}
-
 stock map_isInMenu( map[] )
 {
     for( new playerVoteMapChoiceIndex = 0; playerVoteMapChoiceIndex < g_totalVoteOptions;
@@ -4728,13 +4700,13 @@ stock unnominatedDisconnectedPlayer( player_id )
  */
 stock isToHandleRecentlyEmptyServer()
 {
-    new playerCount = get_realplayersnum();
+    new playersCount = get_realplayersnum();
     
     DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", \
             "isToHandleRecentlyEmptyServer (in)", get_pcvar_float( g_timelimit_pointer ), g_originalTimelimit )
-    DEBUG_LOGGER( 2, "%32s playerCount:%i", "client_disconnect()", playerCount )
+    DEBUG_LOGGER( 2, "%32s playersCount:%i", "client_disconnect()", playersCount )
     
-    if( playerCount == 0 )
+    if( playersCount == 0 )
     {
         if( g_originalTimelimit != get_pcvar_float( g_timelimit_pointer ) )
         {
@@ -4960,12 +4932,12 @@ public sort_stringsi( const elem1[], const elem2[], const array[], data[], data_
 
 stock get_realplayersnum()
 {
-    new playerCount
+    new playersCount
     new players[ MAX_PLAYERS ]
     
-    get_players( players, playerCount, "ch" );
+    get_players( players, playersCount, "ch" );
     
-    return playerCount;
+    return playersCount;
 }
 
 stock percent( is, of )
@@ -5274,6 +5246,62 @@ stock cancel_voting()
     
     reset_round_ending()
     vote_resetStats()
+    delete_users_menus()
+}
+
+public vote_resetStats()
+{
+    g_voteStatusClean[ 0 ] = '^0'
+    g_totalVoteOptions     = 0;
+    g_totalVotesCounted    = 0;
+    g_pendingVoteCountdown = 7;
+    
+    arrayset( g_arrayOfMapsWithVotesNumber, 0, sizeof g_arrayOfMapsWithVotesNumber );
+    
+    // reset everyones' rocks
+    arrayset( g_rockedVote, false, sizeof( g_rockedVote ) );
+    g_rockedVoteCnt = 0;
+    
+    // reset everyones' votes
+    arrayset( g_is_player_voted, true, sizeof( g_is_player_voted ) );
+    
+    if( !( g_voteStatus & VOTE_IS_RUNOFF ) )
+    {
+        arrayset( g_is_player_participating, true, sizeof( g_is_player_participating ) );
+    }
+    
+    arrayset( g_is_player_cancelled_vote, false, sizeof( g_is_player_cancelled_vote ) );
+    arrayset( g_answeredForEndOfMapVote, false, sizeof( g_answeredForEndOfMapVote ) );
+    
+    arrayset( g_player_voted_option, 0, sizeof( g_player_voted_option ) );
+    arrayset( g_player_voted_weight, 0, sizeof( g_player_voted_weight ) );
+}
+
+stock delete_users_menus()
+{
+    new player_id
+    new menu_id
+    new playersCount
+    new menukeys_unused
+    new players[ MAX_PLAYERS ]
+    new failureMessage[ 128 ]
+    
+    get_players( players, playersCount, "ch" )
+    set_task( 6.0, "vote_resetStats" )
+    
+    for( new player_index; player_index < playersCount; ++player_index )
+    {
+        player_id = players[ player_index ]
+        
+        get_user_menu( player_id, menu_id, menukeys_unused );
+        
+        if( menu_id == g_chooseMapMenuId
+            || menu_id == g_chooseMapQuestionMenuId )
+        {
+            formatex( failureMessage, charsmax( failureMessage ), "%L", player_id, "GAL_VOTE_ENDED" )
+            show_menu( player_id, menukeys_unused, "Voting canceled!", 5, MENU_CHOOSEMAP )
+        }
+    }
 }
 
 // ################################## AMX MOD X NEXTMAP PLUGIN ###################################
