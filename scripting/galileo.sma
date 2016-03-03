@@ -22,7 +22,7 @@
 *****************************************************************************************
 */
 
-new const PLUGIN_VERSION[] = "1.2.X"
+new const PLUGIN_VERSION[] = "2.0"
 
 #include <amxmodx>
 #include <amxmisc>
@@ -37,7 +37,7 @@ new const PLUGIN_VERSION[] = "1.2.X"
  * 4   - To create fake votes.
  * 7   - Levels 1, 2 and 4.
  */
-#define DEBUG_LEVEL 7
+#define DEBUG_LEVEL 0
 
 #define DEBUG_LEVEL_NORMAL     1
 #define DEBUG_LEVEL_UNIT_TEST  2
@@ -509,8 +509,8 @@ public plugin_init()
     cvar_soundsMute                = register_cvar( "gal_sounds_mute", "0" );
     cvar_voteMapFilePath           = register_cvar( "gal_vote_mapfile", "*" );
     cvar_voteMinPlayers            = register_cvar( "gal_vote_minplayers", "0" );
-    cvar_voteMinPlayersMapFilePath = register_cvar( "gal_vote_minplayers_mapfile", "mapcycle.txt" );
-    cvar_voteWhiteListMapFilePath  = register_cvar( "gal_vote_whitelist_mapfile", "mapcycle.txt" );
+    cvar_voteMinPlayersMapFilePath = register_cvar( "gal_vote_minplayers_mapfile", "" );
+    cvar_voteWhiteListMapFilePath  = register_cvar( "gal_vote_whitelist_mapfile", "" );
     
     register_logevent( "game_commencing_event", 2, "0=World triggered", "1=Game_Commencing" )
     register_logevent( "team_win_event",        6, "0=Team" )
