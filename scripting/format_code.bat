@@ -1,9 +1,16 @@
+>compiled\uncrustify_log.txt 2>&1 (
+
 @echo off
 
 for %%i in (*.sma) do (
     echo.
     echo uncrustify.exe -c amxmodx.cfg --no-backup %%i
-    uncrustify.exe -c amxmodx.cfg --no-backup %%i
+    uncrustify.exe -c amxmodx.cfg --no-backup %%i || pause
+    
+    if %ERRORLEVEL% neq 0 (
+    echo 'Error!'
+    pause
+    )
     
     echo intend_empty_lines.lua %%i > temp_file.txt
     intend_empty_lines.lua %%i > temp_file.txt
@@ -16,4 +23,6 @@ for %%i in (*.sma) do (
 )
 
 echo.
-if "%1"=="" pause
+rem if "%1"=="" pause
+
+)
