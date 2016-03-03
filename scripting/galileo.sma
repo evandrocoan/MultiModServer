@@ -135,6 +135,16 @@ new g_test_current_time
 new g_test_blackListFilePath[ 128 ]
 #endif
 
+
+#if AMXX_VERSION_NUM < 183
+new g_user_msgid
+#endif
+
+#if !defined MAX_PLAYERS
+    #define MAX_PLAYERS 32
+#endif
+
+
 #define TASKID_REMINDER               52691153
 #define TASKID_SHOW_LAST_ROUND_HUD    52691052
 #define TASKID_EMPTYSERVER            98176977
@@ -188,8 +198,8 @@ new g_test_blackListFilePath[ 128 ]
 #define MAX_MAPNAME_LENGHT     64
 #define MAX_FILE_PATH_LENGHT   128
 #define MAX_PLAYER_NAME_LENGHT 48
-#define MAX_PLAYERS_COUNT      33
 #define MAX_NOM_MATCH_COUNT    1000
+#define MAX_PLAYERS_COUNT      MAX_PLAYERS + 1
 
 #define VOTE_IN_PROGRESS 1
 #define VOTE_FORCED      2
@@ -209,14 +219,6 @@ new g_test_blackListFilePath[ 128 ]
 #define START_VOTEMAP_MIN_TIME 151
 #define START_VOTEMAP_MAX_TIME 129
 
-
-#if AMXX_VERSION_NUM < 183
-new g_user_msgid
-#endif
-
-#if !defined MAX_PLAYERS
-    #define MAX_PLAYERS 32
-#endif
 
 /**
  * The rounds number before the mp_maxrounds/mp_winlimit to be reached to start the map voting.
