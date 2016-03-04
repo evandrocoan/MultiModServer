@@ -1,7 +1,7 @@
 [anchor]Top[/anchor][SIZE="6"][COLOR="Blue"][B]Galileo v2.0[/B][/COLOR][/SIZE] A feature rich map voting plugin
 [SIZE=1][COLOR=Red]Release: 12.09.2008 | Last Update: 03.03.2016[/SIZE][/COLOR]
 
-If you want to translate the 'Galileo' Mapchooser to your language or if you see some 
+If you want to translate the Galileo Mapchooser to your language or if you see some 
 error or bad coloring tags positioning at the current translations, feel free to correct
 and come here to [URL="https://forums.alliedmods.net/showthread.php?t=277636"]this translation request thread[/URL] to post your translation or fix.
 
@@ -12,6 +12,7 @@ and come here to [URL="https://forums.alliedmods.net/showthread.php?t=277636"]th
 [*][goanchor=Requirements]Requirements and Commands[/goanchor]
 [*][goanchor=Installation]Installation[/goanchor]
 [*][goanchor=TODO]TODO[/goanchor]
+[*][goanchor=Screen]Screenshots[/goanchor]
 [*][goanchor=Change]Change Log[/goanchor]
 [*][goanchor=Credits]Credits[/goanchor]
 [*][goanchor=Sourcecode]Source Code and Support[/goanchor]
@@ -23,22 +24,25 @@ and come here to [URL="https://forums.alliedmods.net/showthread.php?t=277636"]th
 [*]Download the "[B]galileo.amxx[/B]"
 [*]Replace your currenty installed version.
 [*]It is done.
-[/LIST][B]What will be the diference by upgrading your Galileo?[/B]
+[/LIST]
+
+[B]What will be the diference by upgrading your Galileo?[/B]
 [LIST=1]
-[*]You will get [B][COLOR="Red"]bug[/COLOR] fixes[/B].
+[*]You will get [B]bug [COLOR="Red"]fixes[/COLOR][/B].
 [*]You will have [B][COLOR="Blue"]new[/COLOR] features[/B].
 [/LIST]If you want use the new features, download the new configuration files and update yours
-using the new the cvars. If not, you will probably see anything new, because all new
+using the new the cvars. If not, you will probably see nothing new, because all new
 features are by default disabled. To keep everything new disabled, just do not install the
 new configurations file at the '[COLOR="Blue"].configs/galileo/[/COLOR][B]galileo.cfg[/B]' or the new colored lang file
 at '[COLOR="Blue"]./data/lang/[/COLOR][B]galileo.txt[/B]' location.
+
 
 [B]Miscellaneous:[/B][LIST=1]
 [*]You need to disable [B]nextmap.amxx[/B].
 [*]You need to disable any other map choosing plugins, such as [B]mapchooser.amxx[/B].
 [/LIST]
 Was tried the best to let this plugin to be 100% equivalent to its orignal version. Such thing
-isn't impossible or very hard. But as was every original code broke apart, this could let
+isn't impossible or very hard. But as was every original code was broken apart, this could let
 something sideways. This plugin is jumping from version '1.2.2' to '2.0' because there are
 major coding changes and new features.
 
@@ -77,7 +81,7 @@ very own [B]Map Chooser[/B].
 [*]configure to use all maps on maps folder to nominate maps.
 [*]nominate maps by a map list menu.
 [*]configure to allow the last round to finish before change to the next map.
-[*]configure to show the vote progress as porcetage and count.
+[*]configure to show the vote progress as percent and count.
 [*]configure to show the recent maps are displayed as a menu.
 [*]configure to always see the currently vote progress.
 [*]configure to always shows the voting option "None".
@@ -88,7 +92,9 @@ available at the [goanchor=Downloads]Downloads[/goanchor] section, and [B]here b
 [PHP]
 galileo.cfg contents.
 [/PHP]
-[COLOR="Blue"][B]Features' list:[/B][/COLOR]
+
+
+[COLOR="Blue"][B]Small / Brief Features' list:[/B][/COLOR]
 [QUOTE]
 [LIST=1]
  [*] Ability to "[B]rock the vote[/B]".
@@ -109,8 +115,12 @@ galileo.cfg contents.
  [*] Allow last round finish when the map the [B]time runs out[/B].
  
  
+ [*] To ask the players before the voting begins, if they [B]want to[/B] participate the map
+     voting [COLOR="blue"]to decide[/COLOR] which next map will be played. See the cvar 'gal_endofmapvote_ask'.
+ 
+ 
  [*] After the user voted, transform the '[B]0 - None[/B]' option to an '[COLOR="blue"]one time cancel[/COLOR]' vote
-     opportunity, configurated by cvar.
+     opportunity, configured by cvar.
 
  
  [*] Command '[COLOR="Blue"][B]gal_startvote -nochange or -restart[/B][/COLOR]', to forces a map vote to begin 
@@ -203,6 +213,7 @@ de_dust2_long
 [/LIST]
 [/QUOTE]
 
+
 ********************** [anchor]Requirements[/anchor][SIZE="5"][COLOR="Blue"][B]Requirements and Commands[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor]  ******
 
 Amx Mod X [B]1.8[/B] or [COLOR="Red"][B]higher only[/B][/COLOR]
@@ -266,6 +277,7 @@ The Default '[B]Amx Mod X[/B]' [COLOR="Red"]NextMap Plugin [B]Disabled[/B][/COLO
 [B]//[/B] Requires the CVAR "gal_nom_playerallowance" to be set to a value higher than 0.
 [COLOR="Blue"]say [B]mapname[/B][/COLOR]
 
+
 ******************************** [anchor]Installation[/anchor][B][SIZE="5"][COLOR="Blue"]Installation[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor]  ***********************
 
 [B]1.[/B] Download the files "[B]galileo.sma[/B]" and "[B]configuration_files.zip[/B]" at [goanchor=Downloads]Downloads[/goanchor] section.
@@ -276,20 +288,25 @@ gamemod folder. Example: czero, cstrike, ...
 [B]3.[/B] [B]Compile[/B] the 'galileo.sma' file and put the [B]compiled[/B] 'galileo.amxx' file to your plugins folder
 usually at "[COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]plugins[/B]".
 
-[B]4.[/B] Put the [B]next line[/B] to your "[B]plugins.ini[/B]" file at "yourgamemod/addons/amxmodx/[B]configs[/B]"
+[B]4.[/B] Put the [B]next line[/B] to your "[B]plugins.ini[/B]" file at "[COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]configs[/B]"
 folder and disable the original "[B]mapchooser.amxx[/B]" or any other [B]map manager plugin[/B], like
 the [B]deagsmapmanager.amxx[/B]: [QUOTE]
 ;deagsmapmanager.amxx
 ;mapchooser.amxx
 galileo.amxx
 [/QUOTE]
+
+
 ******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] *********************************
 
 [CODE]
 
-[/CODE]******************************** [anchor]Change[/anchor][B][SIZE="5"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
+[/CODE]
 
-[B]2016-03-03 | v2.0[/B]
+
+******************************** [anchor]Change[/anchor][B][SIZE="5"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
+
+[SPOILER][B]2016-03-03 | v2.0[/B]
 [LIST=1]
 [*]Fixed the language bug where the voting menu is always displayed on LANG_SERVER instead of LANG_PLAYER.
 [*]Added the Romanian [ro] and Italian [it] language translations.
@@ -301,10 +318,10 @@ mp_maxrounds or mp_winlimit or mp_timelimit. Example using mp_maxrounds: If mp_m
 rounds left will be 20. If the cvar is 0 the rounds left will 40.
 [*]Create a new LANG file to show 'rounds' instead of 'minutes', when you are using mp_maxrounds.
 [*]Add an admin command 'gal_cancelvote' to cancel the current vote.
-[*]Fixed bug using mp_maxrounds: if the vote started automatique and the result is extend its works fine 
+[*]Fixed bug using mp_maxrounds: if the vote started automatic and the result is extend its works fine 
 and with mp_maxrounds. If the vote started by rtv and the result is extend he will with extend with
 mp_timelimit. It must use mp_maxrounds.
-[*]Fixed 'sv_restartround' time dection.
+[*]Fixed 'sv_restartround' time detection.
 [*]Added new cvar 'gal_endonround_rtv' to Indicates when a map should end after the RTV voting is finished.
 0 - end immediately after the voting finished.
 1 - end after the current round.
@@ -326,12 +343,13 @@ when it is detected that the server has been 'externally restarted'.
 empty-server map cycle after timelimit, maxrounds or winlimit expiration.
 [*]Added new cvar 'gal_endofmapvote_ask' to indicates whether there should be asked to the players 
 if they want to participate the map vote to decide what the next map will be.
-[*]Added to the handle server start feature the abilitie to continues the mapcycle from the lastmap
+[*]Added to the handle server start feature the ability to continues the mapcycle from the lastmap
 played instead of the first map on the mapcycle list.
 [*]Added the Map Groups Feature feature documentation.
 [*]Added new cvar 'gal_vote_whitelist_mapfile' that points a configuration file which specifies the
 time where its listed maps are allowed to be added to the voting list as fillers after the nominations
 being loaded.
+[*]Fixed the voting menu being showed after the admin's vote cancel.
 [/LIST]
  
 [B]2016-02-11 | v1.2.2[/B]
@@ -487,135 +505,28 @@ GAL_STANDARD_UNKNOWNMOD
 [/LIST]
 
 
-[B]Compilations data at the Amx Mod X "1.8.3-dev+4964" between[/B]:
-[LIST=1]
-[*]Deagles' Map Manager v3.25Beta - [COLOR="Blue"]deagsmapmanager.sma[/COLOR], by DynamicBits: [url]https://forums.alliedmods.net/showthread.php?t=177180[/url]
-[*]DeRoiD's Mapchooser v2.33 - [COLOR="blue"]dmc233.sma[/COLOR], by DeRoiD: [url]https://forums.alliedmods.net/showthread.php?t=261412[/url]
-[*]Galileo 1.1.290 (a feature rich map voting plugin) - [COLOR="blue"]galileo1.1.sma[/COLOR], by Brad Jones: [url]https://forums.alliedmods.net/showthread.php?t=77391[/url]
-[*]Galileo v1.2-rc1 | Last Update: 12.01.2016 - [COLOR="blue"]galileo1.2.sma[/COLOR], by Brad Jones/Addons zz: [url]https://forums.alliedmods.net/showthread.php?t=273019[/url]
-[*]Nextmap Chooser (v1.8.2) - [COLOR="blue"]mapchooser.sma[/COLOR], by AMXX Team: [url='https://github.com/alliedmodders/amxmodx/blob/master/plugins/mapchooser.sma'] https://github.com/alliedmodders/amxmodx/blob/master/plugins/mapchooser.sma[/url]
-[/LIST]Table with all:[PAWN]
-Plugin name:  deagsmapmanager.sma     dmc233.sma   galileo1.1.sma    galileo1.2.sma  mapchooser.sma
-Header size:          3.648 bytes    2.480 bytes      3.384 bytes       3.876 bytes     1.064 bytes
-Code size:          111.044 bytes   50.864 bytes     66.260 bytes      78.196 bytes     8.412 bytes
-Data size:          405.296 bytes   71.288 bytes     45.228 bytes      47.312 bytes     3.592 bytes
-Stack/heap size:     16.384 bytes   16.384 bytes     16.384 bytes      16.384 bytes    16.384 bytes
-Total requirements: 536.372 bytes  141.016 bytes    131.256 bytes     145.768 bytes    29.452 bytes
-Compilation Time:      0,87 sec       0,52 sec         0,45 sec          0,59 sec        0,22 sec  
-[/PAWN]Table with just [COLOR="Blue"]galileo1.1.sma[/COLOR] and [COLOR="blue"]galileo1.2.sma[/COLOR][PAWN]
-Plugin name:       galileo1.1.sma     galileo1.2.sma        Diferences
-Header size:          3.384 bytes        3.876 bytes        +492 bytes
-Code size:           66.260 bytes       78.196 bytes     +11.936 bytes
-Data size:           45.228 bytes       47.312 bytes      +2.084 bytes
-Stack/heap size:     16.384 bytes       16.384 bytes        +0.0 bytes
-Total requirements: 131.256 bytes      145.768 bytes     +14.512 bytes
-Compilation Time:      0,45 sec          0,59 sec          +0,14 sec  
-[/PAWN]Source Data:[SPOILER] 
-[CODE]
-//AMXXPC compile.exe
-// by the AMX Mod X Dev Team
-
-
-//// deagsmapmanager.sma
-// 
-// D:\AmxModX_1.8.3_Compiler\deagsmapmanager.sma(284) : warning 233: symbol "client_disconnect" is marked as deprecated: Use client_disconnected() instead.
-// 
-// D:\AmxModX_1.8.3_Compiler\deagsmapmanager.sma(1527) : warning 233: symbol "strbreak" is marked as deprecated: Use argbreak() instead
-// D:\AmxModX_1.8.3_Compiler\deagsmapmanager.sma(2846) : warning 233: symbol "is_amd64_server" is marked as deprecated: AMXX is not shipping 64bits builds anymore. This native is basically guaranteed to return 0.
-// 
-// Header size:           3648 bytes
-// Code size:           111044 bytes
-// Data size:           405296 bytes
-// Stack/heap size:      16384 bytes
-// Total requirements:  536372 bytes
-// 
-// 3 Warnings.
-// Done.
-//
-// Compilation Time: 0,87 sec
-// ----------------------------------------
-
-//// dmc233.sma
-// 
-// D:\AmxModX_1.8.3_Compiler\dmc233.sma(1629) : warning 233: symbol "client_disconnect" is marked as deprecated: Use client_disconnected() instead.
-// 
-// Header size:           2480 bytes
-// Code size:            50864 bytes
-// Data size:            71288 bytes
-// Stack/heap size:      16384 bytes
-// Total requirements:  141016 bytes
-// 
-// 1 Warning.
-// Done.
-//
-// Compilation Time: 0,52 sec
-// ----------------------------------------
-
-//// galileo1.1.sma
-// 
-// D:\AmxModX_1.8.3_Compiler\galileo.sma(2688) : warning 233: symbol "client_disconnect" is marked as deprecated: Use client_disconnected() instead.
-// 
-// Header size:           3384 bytes
-// Code size:            66260 bytes
-// Data size:            45228 bytes
-// Stack/heap size:      16384 bytes
-// Total requirements:  131256 bytes
-// 
-// 1 Warning.
-// Done.
-//
-// Compilation Time: 0,45 sec
-// ----------------------------------------
-
-//// galileo1.2.sma
-// 
-// Header size:           3876 bytes
-// Code size:            78196 bytes
-// Data size:            47312 bytes
-// Stack/heap size:      16384 bytes
-// Total requirements:  145768 bytes
-// Done.
-//
-// Compilation Time: 0,59 sec
-// ----------------------------------------
-
-//// mapchooser.sma
-// 
-// Header size:           1064 bytes
-// Code size:             8412 bytes
-// Data size:             3592 bytes
-// Stack/heap size:      16384 bytes
-// Total requirements:   29452 bytes
-// Done.
-//
-// Compilation Time: 0,22 sec
-// ----------------------------------------
-
-Press enter to exit ...
-[/CODE]
-[/SPOILER]******************************** [anchor]Credits[/anchor][B][SIZE="5"][COLOR="blue"]Credits[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] *******************************
+******************************** [anchor]Credits[/anchor][B][SIZE="5"][COLOR="blue"]Credits[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] *******************************
 
 [B]Brad[/B]: The Original Galileo developer.
 [B]Addons zz[/B]: This Galileo developer.
 [B]Th3822[/B]: For find a error from map_nominate.
 [B]utaker[/B]: For suggesting and help testing the mp_maxrounds feature.
 [B]ConnorMcLeod[/B]: For the [Dyn Native] ColorChat v0.3.2 (04 jul 2013) register_dictionary_colored function.
-[URL="https://forums.alliedmods.net/member.php?u=263772"][B]Old.School[/B][/URL]: Various bug reports and featuare suggestions.
-[URL="https://forums.alliedmods.net/member.php?u=259683"][B]iNdio[/B][/URL]: For the Romanian [ro] and Italian [it] language translations.
-
-[QUOTE=Brad;684848][COLOR=darkblue][SIZE=4][B]Donations to the Original Author[/B][/SIZE][/COLOR]
+[B][URL="https://forums.alliedmods.net/member.php?u=263772"]Old.School[/URL][/B] ([B][NOPARSE][B][/NOPARSE]l@k ~ [R]Eed[/B]): For bug reports, testing and feature suggestions.
+[B][URL="https://forums.alliedmods.net/member.php?u=259683"]iNdio[/URL][/B]: For the Romanian [ro] and Italian [it] language translations.
+[QUOTE=Brad;684848]
 A lot of time and effort went into making this plugin, making features just right,
 making sure there were no bugs, making sure it was easy to use. If you are glad I made
-this plugin, and are able, I'd appreciate a token donation.
-[URL="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=brad%40mixedberry%2enet&item_name=Thank%20you%21&item_number=Galileo&amount=5%2e00&no_shipping=1&return=http%3a%2f%2fforums%2ealliedmods%2enet%2fshowthread%2ephp%3ft%3d77391%23files&cn=Optional%20Note&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8"]$5[/URL], 
-[URL="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=brad%40mixedberry%2enet&item_name=Thank%20you%21&item_number=Galileo&amount=10%2e00&no_shipping=1&return=http%3a%2f%2fforums%2ealliedmods%2enet%2fshowthread%2ephp%3ft%3d77391%23files&cn=Optional%20Note&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8"]$10[/URL], 
-or [URL="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=brad%40mixedberry%2enet&item_name=Thank%20you%21&item_number=Galileo&no_shipping=1&return=http%3a%2f%2fforums%2ealliedmods%2enet%2fshowthread%2ephp%3ft%3d77391%23files&cn=Optional%20Note&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8"]whatever works[/URL] for you.
+this plugin, and are able, I'd appreciate a token donation. [URL="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=brad%40mixedberry%2enet&item_name=Thank%20you%21&item_number=Galileo&amount=5%2e00&no_shipping=1&return=http%3a%2f%2fforums%2ealliedmods%2enet%2fshowthread%2ephp%3ft%3d77391%23files&cn=Optional%20Note&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8"]$5[/URL], [URL="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=brad%40mixedberry%2enet&item_name=Thank%20you%21&item_number=Galileo&amount=10%2e00&no_shipping=1&return=http%3a%2f%2fforums%2ealliedmods%2enet%2fshowthread%2ephp%3ft%3d77391%23files&cn=Optional%20Note&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8"]$10[/URL], or [URL="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=brad%40mixedberry%2enet&item_name=Thank%20you%21&item_number=Galileo&no_shipping=1&return=http%3a%2f%2fforums%2ealliedmods%2enet%2fshowthread%2ephp%3ft%3d77391%23files&cn=Optional%20Note&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8"]whatever works[/URL] for you.
 
 [URL="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=brad%40mixedberry%2enet&item_name=Thank%20you%21&item_number=Galileo&no_shipping=1&return=http%3a%2f%2fforums%2ealliedmods%2enet%2fshowthread%2ephp%3ft%3d77391%23files&cn=Optional%20Note&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8"][IMG]https://www.paypal.com/en_US/i/btn/btn_donateCC_LG.gif[/IMG][/URL]
 
 Thank you!  It means a lot to me. 
+
 --Brad
 [/QUOTE]
+
+
 ******************************** [anchor]Sourcecode[/anchor][SIZE="5"][COLOR="blue"][B]Source Code and Support[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor] ***
 
 You can [B]receive support[/B] for this plugin within this thread. Non-Steam servers are not supported.
@@ -651,42 +562,41 @@ from the [B]amxx cvars[/B] command. They will be grouped together.
 [/LIST]
 [/QUOTE]
 
+
 ******************************** [anchor]Downloads[/anchor][SIZE="5"][COLOR="Blue"][B]Downloads[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor] *************************
 
-[B]Development versions[/B]:
-
-[B]See its current development at: 
-
+[B]Development Versions[/B]:
 Here you can see what is going on the latest [COLOR="Red"]unreleased[/COLOR] version over development at: 
 [URL="https://github.com/addonszz/Galileo/commits/develop"]Github
 [IMG]http://i.imgur.com/TWUBJiH.png[/IMG]
-https://github.com/addonszz/Galileo/commits/develop[/URL][/B]
+https://github.com/addonszz/Galileo/commits/develop[/URL]
 
 And this is a direct link to always to download the latest [COLOR="Red"]unreleased[/COLOR] changes you see on the above link:
 [URL="https://github.com/addonszz/Galileo/archive/develop.zip"] https://github.com/addonszz/Galileo/archive/develop.zip[/URL]
 
 And because it is the development version, the debugging is enabled. Go to around the 'line 39' and find:[PAWN]
 #define DEBUG_LEVEL SomeNumber(s)[/PAWN]and change it to:[PAWN]
-#define DEBUG_LEVEL 0[/PAWN]
-Note that these versions above are probably not tested or maybe not stable as the current official version below.
+#define DEBUG_LEVEL 0[/PAWN]Note that these versions above are probably not tested or maybe not stable as the [B][COLOR="Blue"]current version[/COLOR]
+available [COLOR="Red"]below[/B][/COLOR].
 
 
-[B]Seting up a mapcycle[/B]:
-
+[B]Setting up a Mapcycle[/B]:
 [QUOTE=azure;11799]hrrmm this is very interesting. Could I set this up to change the mapcycle possibly?
 
 like have mapcycle 1 from 9 till 23 and then mapcycle2 from 23 til 9?
 [/QUOTE]
-The plugin [URL="https://forums.alliedmods.net/showthread.php?p=12724"]Task Scheduler[/URL] can do that. See here [URL="https://forums.alliedmods.net/showthread.php?p=12724#post12724"]how to configure it[/URL]. You can use it to configure the cvars:[LIST=1]mapcyclefile
+The plugin [URL="https://forums.alliedmods.net/showthread.php?p=12724"]Task Scheduler[/URL] can do that. See here [URL="https://forums.alliedmods.net/showthread.php?p=12724#post12724"]how to configure it[/URL]. You can use it to configure the
+cvars:[LIST=1]mapcyclefile
 [*]gal_vote_mapfile
 [*]gal_vote_minplayers_mapfile
 [*]gal_nom_mapfile
 [*]gal_emptyserver_mapfile[/LIST]To use another mapcycle files which does not contain the maps you do not want to use by early hours.
 
 
-[B]Old versions downloads[/B]:
-[LIST=1]
+[B]Old Versions Downloads[/B]:[LIST=1]
 [*]v1.2-alpha2.hotfix1: (galileo.sma - 111 views - 92.9 KB)
 [*]v1.2:                (galileo.sma - 70 views - 188.0 KB)
 [/LIST]
+
+[SIZE="3"][B][COLOR="Blue"]Current Version Available[/COLOR][/B][/SIZE]:
 
