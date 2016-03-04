@@ -22,7 +22,7 @@
 *****************************************************************************************
 */
 
-new const PLUGIN_VERSION[] = "2.0.1"
+new const PLUGIN_VERSION[] = "2.0.XXX"
 
 #include <amxmodx>
 #include <amxmisc>
@@ -147,6 +147,7 @@ new g_user_msgid
 
 #define TASKID_REMINDER               52691153
 #define TASKID_SHOW_LAST_ROUND_HUD    52691052
+#define TASKID_DELETE_USERS_MENUS     72748052
 #define TASKID_EMPTYSERVER            98176977
 #define TASKID_START_VOTING_BY_ROUNDS 52691160
 #define TASKID_PROCESS_LAST_ROUND     42691173
@@ -879,7 +880,7 @@ public round_restart_event()
     {
         g_isTimeToResetRounds = true
         
-        cancel_voting()
+        cancel_voting( true )
     }
     else
     {
@@ -896,7 +897,7 @@ public game_commencing_event()
     g_isTimeToResetGame   = true
     g_isTimeToResetRounds = true
     
-    cancel_voting()
+    cancel_voting( true )
     
     DEBUG_LOGGER( 32, "^n AT: game_commencing_event" )
 }
@@ -1448,7 +1449,7 @@ public cmd_cancelVote( player_id, level, cid )
         return PLUGIN_HANDLED;
     }
     
-    cancel_voting()
+    cancel_voting( true )
     
     return PLUGIN_HANDLED;
 }
@@ -5228,9 +5229,10 @@ public map_restoreOriginalTimeLimit()
 /**
  * Immediately stops any vote in progress.
  */
-stock cancel_voting()
+stock cancel_voting( bool:isToDoubleReset = false )
 {
     remove_task( TASKID_START_VOTING_BY_ROUNDS )
+    remove_task( TASKID_DELETE_USERS_MENUS )
     remove_task( TASKID_VOTE_DISPLAY )
     remove_task( TASKID_DBG_FAKEVOTES )
     remove_task( TASKID_VOTE_HANDLEDISPLAY )
@@ -5246,7 +5248,7 @@ stock cancel_voting()
     
     reset_round_ending()
     vote_resetStats()
-    delete_users_menus()
+    delete_users_menus( isToDoubleReset )
 }
 
 public vote_resetStats()
@@ -5277,7 +5279,7 @@ public vote_resetStats()
     arrayset( g_player_voted_weight, 0, sizeof( g_player_voted_weight ) );
 }
 
-stock delete_users_menus()
+stock delete_users_menus( bool:isToDoubleReset )
 {
     new player_id
     new menu_id
@@ -5287,7 +5289,11 @@ stock delete_users_menus()
     new failureMessage[ 128 ]
     
     get_players( players, playersCount, "ch" )
-    set_task( 6.0, "vote_resetStats" )
+    
+    if( isToDoubleReset )
+    {
+        set_task( 6.0, "vote_resetStats", TASKID_DELETE_USERS_MENUS )
+    }
     
     for( new player_index; player_index < playersCount; ++player_index )
     {
@@ -5299,7 +5305,7 @@ stock delete_users_menus()
             || menu_id == g_chooseMapQuestionMenuId )
         {
             formatex( failureMessage, charsmax( failureMessage ), "%L", player_id, "GAL_VOTE_ENDED" )
-            show_menu( player_id, menukeys_unused, "Voting canceled!", 5, MENU_CHOOSEMAP )
+            show_menu( player_id, menukeys_unused, "Voting canceled!", isToDoubleReset ? 5 : 1, MENU_CHOOSEMAP )
         }
     }
 }
