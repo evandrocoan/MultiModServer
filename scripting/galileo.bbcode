@@ -5,18 +5,25 @@ If you want to translate the Galileo Mapchooser to your language or if you see s
 error or bad coloring tags positioning at the current translations, feel free to correct
 and come here to [URL="https://forums.alliedmods.net/showthread.php?t=277636"]this translation request thread[/URL] to post your translation or fix.
 
-[SIZE="5"][COLOR="blue"][B]Contents' Table[/B][/COLOR][/SIZE] 
+[SIZE="5"][COLOR="blue"][B]Contents' Table[/B][/COLOR][/SIZE]
 
-[LIST]
+[LIST=1]
 [*][goanchor=Introduction]Introduction[/goanchor]
 [*][goanchor=Requirements]Requirements and Commands[/goanchor]
 [*][goanchor=Installation]Installation[/goanchor]
 [*][goanchor=TODO]TODO[/goanchor]
-[*][goanchor=Screen]Screenshots[/goanchor]
 [*][goanchor=Change]Change Log[/goanchor]
 [*][goanchor=Credits]Credits[/goanchor]
 [*][goanchor=Sourcecode]Source Code and Support[/goanchor]
-[*][goanchor=Downloads]Downloads[/goanchor]
+[*]Downloads:
+   [LIST=1]
+   [*][goanchor=Development]Development Versions[/goanchor]
+   [*][goanchor=Mapcycle]Setting up a Mapcycle[/goanchor]
+   [*][goanchor=Old]Old Versions Downloads[/goanchor]
+   [*][goanchor=LatestRelease]Latest Release Download[/goanchor]
+   [/LIST]
+[*][goanchor=Screen]Screenshots[/goanchor]
+[*][goanchor=Compilations]Compilations Data[/goanchor]
 [/LIST]
 
 [B]How to upgrade your Galileo?[/B]
@@ -569,7 +576,7 @@ from the [B]amxx cvars[/B] command. They will be grouped together.
 
 ******************************** [anchor]Downloads[/anchor][SIZE="5"][COLOR="Blue"][B]Downloads[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor] *************************
 
-[B]Development Versions[/B]:
+[anchor]Development[/anchor][SIZE="3"][B][COLOR="Blue"]Development Versions[/COLOR][/B][/SIZE]: [goanchor=Top]Go to top[/goanchor]
 Here you can see what is going on the latest [COLOR="Red"]unreleased[/COLOR] version over development at: 
 [URL="https://github.com/addonszz/Galileo/commits/develop"]Github
 [IMG]http://i.imgur.com/TWUBJiH.png[/IMG]
@@ -580,11 +587,10 @@ And this is a direct link to always to download the latest [COLOR="Red"]unreleas
 
 And because it is the development version, the debugging is enabled. Go to around the 'line 39' and find:[PAWN]
 #define DEBUG_LEVEL SomeNumber(s)[/PAWN]and change it to:[PAWN]
-#define DEBUG_LEVEL 0[/PAWN]Note that these versions above are probably not tested or maybe not stable as the [B][COLOR="Blue"]current version[/COLOR]
-available [COLOR="Red"]below[/B][/COLOR].
+#define DEBUG_LEVEL 0[/PAWN]Note that these versions above are probably not tested or maybe not stable as the [goanchor=LatestRelease]Latest Release Download [B][COLOR="Red"]below[/B][/COLOR].
 
 
-[B]Setting up a Mapcycle[/B]:
+[anchor]Mapcycle[/anchor][SIZE="3"][B][COLOR="Blue"]Setting up a Mapcycle[/COLOR][/B][/SIZE]: [goanchor=Top]Go to top[/goanchor]
 [QUOTE=azure;11799]hrrmm this is very interesting. Could I set this up to change the mapcycle possibly?
 
 like have mapcycle 1 from 9 till 23 and then mapcycle2 from 23 til 9?
@@ -597,14 +603,14 @@ cvars:[LIST=1]mapcyclefile
 [*]gal_emptyserver_mapfile[/LIST]To use another mapcycle files which does not contain the maps you do not want to use by early hours.
 
 
-[B]Old Versions Downloads[/B]:
+[anchor]Old[/anchor][SIZE="3"][B][COLOR="Blue"]Old Versions Downloads[/COLOR][/B][/SIZE]: [goanchor=Top]Go to top[/goanchor]
 
 [URL="https://github.com/addonszz/Galileo/releases"] https://github.com/addonszz/Galileo/releases[/URL]
-[LIST=1]
-[*]v1.2-alpha2.hotfix1: (galileo.sma - 111 views - 92.9 KB)
-[*]v1.2:                (galileo.sma - 70 views - 188.0 KB)
-[*]v1.1.290             (galileo_1_1_290.zip 29.8 KB, 42069 views)
-[/LIST]
+[CODE]
+v1.2                    (galileo.sma - 70 views - 188.0 KB)
+v1.2-alpha2.hotfix1     (galileo.sma - 111 views - 92.9 KB)
+v1.1.290                (galileo.zip - 42069 views - 29.8 KB)
+[/CODE]
 
-[SIZE="3"][B][COLOR="Blue"]Current Version Available[/COLOR][/B][/SIZE]:
+[anchor]LatestRelease[/anchor][SIZE="3"][B][COLOR="Blue"]Latest Release Download[/COLOR][/B][/SIZE]: [goanchor=Top]Go to top[/goanchor]
 
