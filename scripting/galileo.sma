@@ -2408,6 +2408,7 @@ public vote_startDirector( bool:is_forced_voting )
         }
         
         vote_loadChoices();
+        
         choicesLoaded = g_totalVoteOptions
         voteDuration  = get_pcvar_num( cvar_voteDuration );
         
@@ -3039,8 +3040,6 @@ stock vote_loadChoices()
 {
     vote_addNominations();
     vote_addFiller();
-    
-    return g_totalVoteOptions;
 }
 
 public vote_handleDisplay()
@@ -5560,7 +5559,6 @@ public runTests()
     server_print( "^n^n    Executing the 'Galileo' Tests:^n" )
     
     save_server_cvars_for_test()
-    
     ALL_TESTS_TO_EXECUTE()
     
     server_print( "^n    %d tests succeed.^n    %d tests failed.", g_totalSuccessfulTests, \
@@ -5900,7 +5898,7 @@ stock test_gal_in_empty_cycle_case4()
 }
 
 /**
- * This tests if the function 'loadCurrentBlackList()' is working properly.
+ * This tests if the function 'loadCurrentBlackList()' 1º case is working properly.
  */
 public test_loadCurrentBlackList_case1()
 {
@@ -5948,10 +5946,12 @@ public test_loadCurrentBlackList_case1()
             "The map 'de_dust6' must to be present on the trie, but it was not!" )
     SET_TEST_FAILURE( test_id, !TrieKeyExists( blackList_trie, "de_dust7" ), \
             "The map 'de_dust7' must to be present on the trie, but it was not!" )
+    
+    TrieDestroy( blackList_trie )
 }
 
 /**
- * This tests if the function 'loadCurrentBlackList()' is working properly.
+ * This tests if the function 'loadCurrentBlackList()' 2º case is working properly.
  */
 public test_loadCurrentBlackList_case2()
 {
@@ -5967,10 +5967,12 @@ public test_loadCurrentBlackList_case2()
     
     SET_TEST_FAILURE( test_id, !TrieKeyExists( blackList_trie, "de_dust5" ), \
             "The map 'de_dust5' must to be present on the trie, but it was not!" )
+    
+    TrieDestroy( blackList_trie )
 }
 
 /**
- * This tests if the function 'loadCurrentBlackList()' is working properly.
+ * This tests if the function 'loadCurrentBlackList()' 3º case is working properly.
  */
 public test_loadCurrentBlackList_case3()
 {
@@ -5987,6 +5989,7 @@ public test_loadCurrentBlackList_case3()
     SET_TEST_FAILURE( test_id, !TrieKeyExists( blackList_trie, "de_dust2" ), \
             "The map 'de_dust2' must to be present on the trie, but it was not!" )
     
+    TrieDestroy( blackList_trie )
     delete_file( g_test_blackListFilePath )
 }
 
