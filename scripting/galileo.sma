@@ -2333,7 +2333,7 @@ public vote_startDirector( bool:is_forced_voting )
     new voteDuration
     
     if( get_realplayersnum() == 0
-        || ( ( g_voteStatus & VOTE_IN_PROGRESS )
+        || ( g_voteStatus & VOTE_IN_PROGRESS
              && !( g_voteStatus & VOTE_IS_RUNOFF ) )
         || ( !is_forced_voting
              && g_voteStatus & VOTE_IS_EARLY )
@@ -4052,48 +4052,37 @@ public computeVotes()
                 g_voteStatus & VOTE_IS_EARLY: %d", \
                 g_is_timeToRestart, g_is_timeToChangeLevel, g_voteStatus & VOTE_IS_EARLY != 0 )
         
-        // winnerVoteMapIndex == g_totalVoteOptions, means the 'keep current map' option.
-        // Then, here we keep the current map or extend current map, unless the 'cvar_extendmapAllowStay'
-        // is set to 0 or 'g_is_map_extension_allowed' is disallowed.
+        // winnerVoteMapIndex == g_totalVoteOptions, means the 'Stay Here' option.
+        // Then, here we keep the current map or extend current map.
         if( winnerVoteMapIndex == g_totalVoteOptions )
         {
-            if( ( g_voteStatus & VOTE_IS_EARLY ) // if it is a early vote, we just change map later
-                && !g_is_timeToRestart ) // "stay here" won and the map mustn't be restarted.
+            if( !g_is_final_voting // "stay here" won and the map mustn't be restarted.
+                && !g_is_timeToRestart )
             {
-                color_print( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_STAY" );
+                color_print( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_STAY" )
             }
-            else // "stay here" won and the map must be restarted or extended.
+            else if( !g_is_final_voting // "stay here" won and the map must be restarted.
+                     && g_is_timeToRestart )
             {
-                if( ( g_voteStatus & VOTE_IS_EARLY )
-                    && g_is_timeToRestart )
+                color_print( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_STAY" )
+                
+                process_last_round()
+            }
+            else if( g_is_final_voting ) // "extend map" won
+            {
+                if( g_is_maxrounds_vote_map )
                 {
-                    color_print( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_STAY" );
-                    
-                    process_last_round()
+                    color_print( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_EXTEND_ROUND",
+                            get_pcvar_num( cvar_extendmapStepRounds ) )
                 }
-                else // "extend map" or "stay here" won and a restart isn't needed.
+                else
                 {
-                    if( g_is_final_voting ) // "extend map" won and a restart isn't needed.
-                    {
-                        if( g_is_maxrounds_vote_map )
-                        {
-                            color_print( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_EXTEND_ROUND",
-                                    get_pcvar_num( cvar_extendmapStepRounds ) );
-                        }
-                        else
-                        {
-                            color_print( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_EXTEND",
-                                    floatround( get_pcvar_float( cvar_extendmapStep ) ) );
-                        }
-                        
-                        map_extend();
-                    }
-                    else // "stay here" won and a restart isn't needed.
-                    {
-                        color_print( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_STAY" );
-                    }
-                } // end: "extend map" or "stay here" won and a restart isn't needed.
-            } // end: "stay here" won and the map must be restarted.
+                    color_print( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_EXTEND",
+                            floatround( get_pcvar_float( cvar_extendmapStep ) ) )
+                }
+                
+                map_extend();
+            }
             
             reset_round_ending()
             
