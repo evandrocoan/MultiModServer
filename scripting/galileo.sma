@@ -28,7 +28,7 @@ new const PLUGIN_VERSION[] = "2.0.XXX"
 #include <amxmisc>
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
- * and the variable 'g_debug_level' for more information. Default value:
+ * and the variable 'g_debug_level' for more information. Default value: 0
  *
  * 0   - Disables this feature.
  * 1   - Normal debug.
@@ -209,10 +209,10 @@ new g_user_msgid
 
 #define VOTE_IS_IN_PROGRESS 1
 #define VOTE_IS_FORCED      2
-#define VOTE_IS_RUNOFF   4
-#define VOTE_IS_OVER     8
-#define VOTE_IS_EARLY    16
-#define VOTE_IS_EXPIRED 32
+#define VOTE_IS_RUNOFF      4
+#define VOTE_IS_OVER        8
+#define VOTE_IS_EARLY       16
+#define VOTE_IS_EXPIRED     32
 
 #define SRV_START_CURRENTMAP 1
 #define SRV_START_NEXTMAP    2
@@ -234,7 +234,8 @@ new g_user_msgid
  * override.
  */
 #define VOTE_ROUND_START_DETECTION_DELAYED(%1) \
-    %1 < VOTE_ROUND_START_MAX_DELAY \
+    get_pcvar_num( cvar_endOnRoundStart ) \
+    && %1 < VOTE_ROUND_START_MAX_DELAY \
     && %1 > VOTE_ROUND_START_MIN_DELAY
 
 /**
@@ -249,7 +250,7 @@ new g_user_msgid
 #define VOTE_ROUND_START_SECONDS_DELAY() \
     get_pcvar_num( g_freezetime_pointer ) + 20.0
 
-    
+
 /**
  * Start a map voting delayed after the mp_maxrounds or mp_winlimit minimum to be reached.
  */
@@ -341,6 +342,7 @@ new cvar_coloredChatEnabled
 new cvar_isToStopEmptyCycle;
 new cvar_unnominateDisconnected;
 new cvar_endOnRound
+new cvar_endOnRoundStart
 new cvar_endOnRound_rtv
 new cvar_endOnRound_msg
 new cvar_voteWeight
@@ -493,6 +495,7 @@ public plugin_init()
     cvar_isToStopEmptyCycle        = register_cvar( "gal_in_empty_cycle", "0", FCVAR_SPONLY );
     cvar_unnominateDisconnected    = register_cvar( "gal_unnominate_disconnected", "0" );
     cvar_endOnRound                = register_cvar( "gal_endonround", "1" );
+    cvar_endOnRoundStart           = register_cvar( "gal_endofmapvote_start", "0" );
     cvar_endOnRound_rtv            = register_cvar( "gal_endonround_rtv", "0" );
     cvar_endOnRound_msg            = register_cvar( "gal_endonround_msg", "0" );
     cvar_voteWeight                = register_cvar( "gal_vote_weight", "1" );
@@ -2385,8 +2388,8 @@ stock vote_startDirector( bool:is_forced_voting )
              && g_voteStatus & VOTE_IS_OVER ) )
     {
         DEBUG_LOGGER( 1, "    ( vote_startDirector|Cancel ) g_voteStatus: %d, \
-                g_voteStatus & VOTE_IS_EARLY: %d, is_forced_voting: %d, \
-                get_realplayersnum(): %d", g_voteStatus, g_voteStatus & VOTE_IS_EARLY != 0, \
+                g_voteStatus & VOTE_IS_OVER: %d, is_forced_voting: %d, \
+                get_realplayersnum(): %d", g_voteStatus, g_voteStatus & VOTE_IS_OVER != 0, \
                 is_forced_voting, get_realplayersnum() )
     
     #if !( DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST )
@@ -2409,6 +2412,9 @@ stock vote_startDirector( bool:is_forced_voting )
     
     #endif
     }
+    
+    // the rounds start delay task could be running
+    remove_task( TASKID_START_VOTING_BY_TIMER )
     
     if( g_voteStatus & VOTE_IS_RUNOFF )
     {
