@@ -225,6 +225,17 @@ new g_user_msgid
 #define START_VOTEMAP_MIN_TIME 151
 #define START_VOTEMAP_MAX_TIME 129
 
+#define VOTE_ROUND_START_MIN_DELAY 2
+#define VOTE_ROUND_START_MAX_DELAY 7
+
+
+/**
+ * Give a 4 minutes range to try detecting the round start, to avoid buy old buy weapons menu
+ * override.
+ */
+#define VOTE_ROUND_START_DETECTION_DELAYED(%1) \
+    %1 < VOTE_ROUND_START_MAX_DELAY \
+    && %1 > VOTE_ROUND_START_MIN_DELAY
 
 /**
  * The rounds number before the mp_maxrounds/mp_winlimit to be reached to start the map voting.
@@ -235,7 +246,7 @@ new g_user_msgid
 /**
  * Specifies how much time to delay the voting start after the round start.
  */
-#define VOTE_START_ROUND_SECONDS_DELAY() \
+#define VOTE_ROUND_START_SECONDS_DELAY() \
     get_pcvar_num( g_freezetime_pointer ) + 20.0
 
     
@@ -245,7 +256,7 @@ new g_user_msgid
 #define VOTE_START_ROUND_DELAY() \
 { \
     g_is_maxrounds_vote_map = true; \
-    set_task( VOTE_START_ROUND_SECONDS_DELAY(), "start_voting_by_rounds", TASKID_START_VOTING_BY_ROUNDS ); \
+    set_task( VOTE_ROUND_START_SECONDS_DELAY(), "start_voting_by_rounds", TASKID_START_VOTING_BY_ROUNDS ); \
 }
 
 
@@ -744,10 +755,9 @@ public round_start_event()
 {
     new minutesLeft = get_timeleft() / 60;
     
-    if( minutesLeft < 7
-        && minutesLeft > 2 )
+    if( VOTE_ROUND_START_DETECTION_DELAYED( minutesLeft ) )
     {
-        set_task( VOTE_START_ROUND_SECONDS_DELAY(), "start_voting_by_timer", TASKID_START_VOTING_BY_TIMER )
+        set_task( VOTE_ROUND_START_SECONDS_DELAY(), "start_voting_by_timer", TASKID_START_VOTING_BY_TIMER )
     }
     
     if( g_isTimeToResetRounds )
