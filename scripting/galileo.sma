@@ -5378,6 +5378,7 @@ getNextMapName( szArg[], iMax )
 public sayNextMap()
 {
     if( get_pcvar_num( cvar_nextMapChangeAnnounce )
+        && get_pcvar_num( cvar_endOfMapVote )
         && !g_is_last_round
         && !( g_voteStatus & VOTE_IS_OVER ) )
     {
