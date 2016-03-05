@@ -53,7 +53,7 @@ new const PLUGIN_VERSION[] = "2.0.XXX"
  * ( 1 ) 1 displays basic debug messages as the Unit Tests run.
  * ( 10 ) 2 displays players disconnect, total number, multiple time limits changes and restores.
  * ( 100 ) 4 displays maps events, vote choices, votes, nominations, and the calls to 'map_populateList()'.
- * ( ... ) 8 displays vote_loadChoices(), whitelist debug and actions at 'vote_startDirector()'.
+ * ( ... ) 8 displays loaded vote choices, whitelist debug and actions at 'vote_startDirector()'.
  * ( ... ) 16 displays messages related to RunOff voting.
  * ( ... ) 32 displays messages related to the rounds end map voting.
  * ( ... ) 64 displays messages related 'color_print'.
@@ -214,10 +214,10 @@ new g_user_msgid
 #define VOTE_IS_EARLY       16
 #define VOTE_IS_EXPIRED     32
 
-#define SRV_START_CURRENTMAP 1
-#define SRV_START_NEXTMAP    2
-#define SRV_START_MAPVOTE    3
-#define SRV_START_RANDOMMAP  4
+#define SERVER_START_CURRENTMAP 1
+#define SERVER_START_NEXTMAP    2
+#define SERVER_START_MAPVOTE    3
+#define SERVER_START_RANDOMMAP  4
 
 #define LISTMAPS_USERID 0
 #define LISTMAPS_LAST   1
@@ -225,8 +225,8 @@ new g_user_msgid
 #define START_VOTEMAP_MIN_TIME 151
 #define START_VOTEMAP_MAX_TIME 129
 
-#define VOTE_ROUND_START_MIN_DELAY 2
-#define VOTE_ROUND_START_MAX_DELAY 7
+#define VOTE_ROUND_START_MIN_DELAY 720
+#define VOTE_ROUND_START_MAX_DELAY START_VOTEMAP_MIN_TIME
 
 
 /**
@@ -234,9 +234,17 @@ new g_user_msgid
  * override.
  */
 #define VOTE_ROUND_START_DETECTION_DELAYED(%1) \
-    get_pcvar_num( cvar_endOnRoundStart ) \
-    && %1 < VOTE_ROUND_START_MAX_DELAY \
-    && %1 > VOTE_ROUND_START_MIN_DELAY
+    %1 < VOTE_ROUND_START_MIN_DELAY \
+    && %1 > VOTE_ROUND_START_MAX_DELAY
+
+
+/**
+ * To start the end map voting near the map time limit expiration.
+ */
+#define VOTE_START_TIME(%1) \
+    %1 < START_VOTEMAP_MIN_TIME \
+    && %1 > START_VOTEMAP_MAX_TIME
+
 
 /**
  * The rounds number before the mp_maxrounds/mp_winlimit to be reached to start the map voting.
@@ -756,9 +764,8 @@ public start_voting_by_timer()
 
 public round_start_event()
 {
-    new minutesLeft = get_timeleft() / 60;
-    
-    if( VOTE_ROUND_START_DETECTION_DELAYED( minutesLeft ) )
+    if( VOTE_ROUND_START_DETECTION_DELAYED( get_timeleft() )
+        && get_pcvar_num( cvar_endOnRoundStart ) )
     {
         set_task( VOTE_ROUND_START_SECONDS_DELAY(), "start_voting_by_timer", TASKID_START_VOTING_BY_TIMER )
     }
@@ -1166,8 +1173,8 @@ public handleServerStart()
     {
         new mapToChange[ MAX_MAPNAME_LENGHT ];
         
-        if( startAction == SRV_START_CURRENTMAP
-            || startAction == SRV_START_NEXTMAP )
+        if( startAction == SERVER_START_CURRENTMAP
+            || startAction == SERVER_START_NEXTMAP )
         {
             new backupMapsFilePath[ MAX_FILE_PATH_LENGHT ];
             
@@ -1180,7 +1187,7 @@ public handleServerStart()
             {
                 fgets( backupMapsFile, mapToChange, charsmax( mapToChange ) );
                 
-                if( startAction == SRV_START_NEXTMAP )
+                if( startAction == SERVER_START_NEXTMAP )
                 {
                     mapToChange[ 0 ] = '^0';
                     fgets( backupMapsFile, mapToChange, charsmax( mapToChange )  );
@@ -1189,7 +1196,7 @@ public handleServerStart()
             
             fclose( backupMapsFile );
         }
-        else if( startAction == SRV_START_RANDOMMAP ) // pick a random map from allowable nominations
+        else if( startAction == SERVER_START_RANDOMMAP ) // pick a random map from allowable nominations
         {
             // if noms aren't allowed, the nomination list hasn't already been loaded
             if( get_pcvar_num( cvar_nomPlayerAllowance ) == 0 )
@@ -1289,8 +1296,7 @@ public vote_manageEnd()
     new secondsLeft = get_timeleft();
     
     // are we ready to start an "end of map" vote?
-    if( ( secondsLeft < START_VOTEMAP_MIN_TIME )
-        && ( secondsLeft > START_VOTEMAP_MAX_TIME )
+    if( VOTE_START_TIME( secondsLeft )
         && !g_is_maxrounds_vote_map
         && get_pcvar_num( cvar_endOfMapVote ) )
     {
@@ -2416,6 +2422,11 @@ stock vote_startDirector( bool:is_forced_voting )
     // the rounds start delay task could be running
     remove_task( TASKID_START_VOTING_BY_TIMER )
     
+    if( remove_task( TASKID_DELETE_USERS_MENUS ) )
+    {
+        vote_resetStats()
+    }
+    
     if( g_voteStatus & VOTE_IS_RUNOFF )
     {
         choicesLoaded      = g_totalVoteOptions_temp
@@ -2457,7 +2468,9 @@ stock vote_startDirector( bool:is_forced_voting )
             g_voteStatus |= VOTE_IS_FORCED;
         }
         
-        vote_loadChoices();
+        // to load vote choices
+        vote_addNominations();
+        vote_addFiller();
         
         choicesLoaded = g_totalVoteOptions
         voteDuration  = get_pcvar_num( cvar_voteDuration );
@@ -3084,12 +3097,6 @@ stock loadCurrentBlackList( Trie:blackList_trie )
     }
     
     fclose( whiteListFile )
-}
-
-stock vote_loadChoices()
-{
-    vote_addNominations();
-    vote_addFiller();
 }
 
 public vote_handleDisplay()
