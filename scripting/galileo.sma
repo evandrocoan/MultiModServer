@@ -47,18 +47,20 @@ new const PLUGIN_VERSION[] = "2.0.XXX"
     #define DEBUG
     #define DEBUG_LOGGER(%1) debugMesssageLogger( %1 )
 
+
 /**
  * ( 0 ) 0 disabled all debug.
  * ( 1 ) 1 displays basic debug messages as the Unit Tests run.
  * ( 10 ) 2 displays players disconnect, total number, multiple time limits changes and restores.
- * ( 100 ) 4 displays maps events, vote choices, votes, nominations, and the calls to 'map_populateList'.
- * ( ... ) 8 displays vote_loadChoices(), whitelist debug and actions at vote_startDirector.
+ * ( 100 ) 4 displays maps events, vote choices, votes, nominations, and the calls to 'map_populateList()'.
+ * ( ... ) 8 displays vote_loadChoices(), whitelist debug and actions at 'vote_startDirector()'.
  * ( ... ) 16 displays messages related to RunOff voting.
  * ( ... ) 32 displays messages related to the rounds end map voting.
  * ( ... ) 64 displays messages related 'color_print'.
  * ( 1.. ) 127 displays all debug logs levels at server console.
  */
 new g_debug_level = 1 + 4 + 8 + 16
+
 
 /**
  * Write debug messages to server's console accordantly with cvar gal_debug.
@@ -105,6 +107,7 @@ stock debugMesssageLogger( mode, message[], any: ... )
     test_loadCurrentBlackList_case3(); \
 }
 
+
 /**
  * Call the internal function to perform its task and stop the current test execution to avoid
  * double failure at the test control system.
@@ -117,6 +120,7 @@ stock debugMesssageLogger( mode, message[], any: ... )
         return; \
     } \
 }
+
 
 /**
  * Test unit variables related to the DEBUG_LEVEL_UNIT_TEST 2.
@@ -150,6 +154,7 @@ new g_user_msgid
 #define TASKID_DELETE_USERS_MENUS     72748052
 #define TASKID_EMPTYSERVER            98176977
 #define TASKID_START_VOTING_BY_ROUNDS 52691160
+#define TASKID_START_VOTING_BY_TIMER  72681180
 #define TASKID_PROCESS_LAST_ROUND     42691173
 #define TASKID_VOTE_HANDLEDISPLAY     52691264
 #define TASKID_VOTE_DISPLAY           52691165
@@ -202,12 +207,12 @@ new g_user_msgid
 #define MAX_NOM_MATCH_COUNT    1000
 #define MAX_PLAYERS_COUNT      MAX_PLAYERS + 1
 
-#define VOTE_IN_PROGRESS 1
-#define VOTE_FORCED      2
+#define VOTE_IS_IN_PROGRESS 1
+#define VOTE_IS_FORCED      2
 #define VOTE_IS_RUNOFF   4
 #define VOTE_IS_OVER     8
 #define VOTE_IS_EARLY    16
-#define VOTE_HAS_EXPIRED 32
+#define VOTE_IS_EXPIRED 32
 
 #define SRV_START_CURRENTMAP 1
 #define SRV_START_NEXTMAP    2
@@ -226,15 +231,23 @@ new g_user_msgid
  */
 #define VOTE_START_ROUNDS 4
 
+
+/**
+ * Specifies how much time to delay the voting start after the round start.
+ */
+#define VOTE_START_ROUND_SECONDS_DELAY() \
+    get_pcvar_num( g_freezetime_pointer ) + 20.0
+
+    
 /**
  * Start a map voting delayed after the mp_maxrounds or mp_winlimit minimum to be reached.
  */
-#define VOTE_START_ROUNDS_DELAY() \
+#define VOTE_START_ROUND_DELAY() \
 { \
     g_is_maxrounds_vote_map = true; \
-    set_task( get_pcvar_num( g_freezetime_pointer ) + 10.0, \
-            "start_voting_by_rounds", TASKID_START_VOTING_BY_ROUNDS ); \
+    set_task( VOTE_START_ROUND_SECONDS_DELAY(), "start_voting_by_rounds", TASKID_START_VOTING_BY_ROUNDS ); \
 }
+
 
 /**
  * Convert colored strings codes '!g for green', '!y for yellow', '!t for team'.
@@ -707,7 +720,7 @@ public team_win_event()
         {
             g_is_maxrounds_extend = false;
             
-            VOTE_START_ROUNDS_DELAY()
+            VOTE_START_ROUND_DELAY()
         }
     }
     
@@ -716,8 +729,27 @@ public team_win_event()
             string_team_winner, winlimit_integer, wins_CT_trigger, wins_Terrorist_trigger )
 }
 
+public start_voting_by_timer()
+{
+    DEBUG_LOGGER( 1, "At start_voting_by_timer --- get_pcvar_num( cvar_endOfMapVote ): %d", \
+            get_pcvar_num( cvar_endOfMapVote ) )
+    
+    if( get_pcvar_num( cvar_endOfMapVote ) )
+    {
+        vote_startDirector( false )
+    }
+}
+
 public round_start_event()
 {
+    new minutesLeft = get_timeleft() / 60;
+    
+    if( minutesLeft < 7
+        && minutesLeft > 2 )
+    {
+        set_task( VOTE_START_ROUND_SECONDS_DELAY(), "start_voting_by_timer", TASKID_START_VOTING_BY_TIMER )
+    }
+    
     if( g_isTimeToResetRounds )
     {
         g_isTimeToResetRounds = false
@@ -749,7 +781,7 @@ public round_end_event()
         {
             g_is_maxrounds_extend = true;
             
-            VOTE_START_ROUNDS_DELAY()
+            VOTE_START_ROUND_DELAY()
         }
     }
     
@@ -1203,7 +1235,12 @@ stock vote_manageEarlyStart()
 {
     g_voteStatus |= VOTE_IS_EARLY;
     
-    set_task( 120.0, "vote_startDirector", TASKID_VOTE_STARTDIRECTOR );
+    set_task( 120.0, "startEarlyVote", TASKID_VOTE_STARTDIRECTOR );
+}
+
+public startEarlyVote()
+{
+    vote_startDirector( false )
 }
 
 stock setNextMap( nextMap[] )
@@ -1468,13 +1505,12 @@ public cmd_startVote( player_id, level, cid )
         return PLUGIN_HANDLED;
     }
     
-    if( g_voteStatus & VOTE_IN_PROGRESS )
+    if( g_voteStatus & VOTE_IS_IN_PROGRESS )
     {
         color_print( player_id, "^1%L", player_id, "GAL_VOTE_INPROGRESS" );
     }
     else
     {
-        g_voteStatus          |= VOTE_IS_EARLY
         g_is_timeToChangeLevel = true;
         
         if( read_argc() == 2 )
@@ -1502,8 +1538,8 @@ public cmd_startVote( player_id, level, cid )
         }
         
         DEBUG_LOGGER( 1, "( cmd_startVote ) g_is_timeToRestart: %d, g_is_timeToChangeLevel: %d \
-                g_voteStatus & VOTE_IS_EARLY: %d", \
-                g_is_timeToRestart, g_is_timeToChangeLevel, g_voteStatus & VOTE_IS_EARLY != 0 )
+                g_voteStatus & VOTE_IS_FORCED: %d", \
+                g_is_timeToRestart, g_is_timeToChangeLevel, g_voteStatus & VOTE_IS_FORCED != 0 )
         
         vote_startDirector( true );
     }
@@ -2113,7 +2149,7 @@ stock nomination_toggle( player_id, mapIndex )
 stock nomination_cancel( player_id, mapIndex )
 {
     // cancellations can only be made if a vote isn't already in progress
-    if( g_voteStatus & VOTE_IN_PROGRESS )
+    if( g_voteStatus & VOTE_IS_IN_PROGRESS )
     {
         color_print( player_id, "^1%L", player_id, "GAL_CANCEL_FAIL_INPROGRESS" );
         return;
@@ -2172,7 +2208,7 @@ stock nomination_cancel( player_id, mapIndex )
 stock map_nominate( player_id, mapIndex, idNominator = -1 )
 {
     // nominations can only be made if a vote isn't already in progress
-    if( g_voteStatus & VOTE_IN_PROGRESS )
+    if( g_voteStatus & VOTE_IS_IN_PROGRESS )
     {
         color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_INPROGRESS" );
         return;
@@ -2327,16 +2363,14 @@ public nomination_list( player_id )
     }
 }
 
-public vote_startDirector( bool:is_forced_voting )
+stock vote_startDirector( bool:is_forced_voting )
 {
     new choicesLoaded
     new voteDuration
     
     if( get_realplayersnum() == 0
-        || ( g_voteStatus & VOTE_IN_PROGRESS
+        || ( g_voteStatus & VOTE_IS_IN_PROGRESS
              && !( g_voteStatus & VOTE_IS_RUNOFF ) )
-        || ( !is_forced_voting
-             && g_voteStatus & VOTE_IS_EARLY )
         || ( !is_forced_voting
              && g_voteStatus & VOTE_IS_OVER ) )
     {
@@ -2353,7 +2387,7 @@ public vote_startDirector( bool:is_forced_voting )
         }
         
         if( get_realplayersnum() == 0
-            && g_voteStatus & VOTE_IN_PROGRESS )
+            && g_voteStatus & VOTE_IS_IN_PROGRESS )
         {
             cancel_voting()
         }
@@ -2383,7 +2417,7 @@ public vote_startDirector( bool:is_forced_voting )
     else
     {
         // make it known that a vote is in progress
-        g_voteStatus |= VOTE_IN_PROGRESS;
+        g_voteStatus |= VOTE_IS_IN_PROGRESS;
         
         // Max rounds vote map does not have a max rounds extension limit as mp_timelimit
         if( g_is_maxrounds_vote_map )
@@ -2404,7 +2438,7 @@ public vote_startDirector( bool:is_forced_voting )
         
         if( is_forced_voting )
         {
-            g_voteStatus |= VOTE_FORCED;
+            g_voteStatus |= VOTE_IS_FORCED;
         }
         
         vote_loadChoices();
@@ -2489,8 +2523,8 @@ public vote_startDirector( bool:is_forced_voting )
     
     DEBUG_LOGGER( 4, "   [PLAYER CHOICES]" )
     DEBUG_LOGGER( 4, "^n    ( vote_startDirector|out ) g_is_timeToRestart: %d, \
-            g_is_timeToChangeLevel: %d, g_voteStatus & VOTE_IS_EARLY: %d^n", \
-            g_is_timeToRestart, g_is_timeToChangeLevel, g_voteStatus & VOTE_IS_EARLY != 0 )
+            g_is_timeToChangeLevel: %d, g_voteStatus & VOTE_IS_FORCED: %d^n", \
+            g_is_timeToRestart, g_is_timeToChangeLevel, g_voteStatus & VOTE_IS_FORCED != 0 )
 }
 
 /**
@@ -2505,7 +2539,7 @@ stock endOfVoteDisplay()
 
 public closeVoting()
 {
-    g_voteStatus |= VOTE_HAS_EXPIRED
+    g_voteStatus |= VOTE_IS_EXPIRED
     
     endOfVoteDisplay()
     
@@ -3077,7 +3111,7 @@ public vote_handleDisplay()
     g_refreshVoteStatus = true;
     
     // ensure the vote status doesn't indicate expired
-    g_voteStatus &= ~VOTE_HAS_EXPIRED;
+    g_voteStatus &= ~VOTE_IS_EXPIRED;
     
     new argument[ 3 ];
     
@@ -3157,7 +3191,7 @@ public vote_display( argument[ 3 ] )
         
         // register the 'None' option key
         if( isToShowNoneOption
-            && !( g_voteStatus & VOTE_HAS_EXPIRED ) )
+            && !( g_voteStatus & VOTE_IS_EXPIRED ) )
         {
             menuKeys = MENU_KEY_0;
         }
@@ -3239,7 +3273,8 @@ stock calculateExtensionOption( player_id, bool:isVoteOver, charCount, voteStatu
         new voteMapLine[ MAX_MAPNAME_LENGHT ]
         
         new bool:allowExtend = g_is_final_voting
-        new bool:allowStay   = ( g_voteStatus & VOTE_IS_EARLY
+        new bool:allowStay   = ( ( g_voteStatus & VOTE_IS_EARLY
+                                   || g_voteStatus & VOTE_IS_FORCED )
                                  && !( g_voteStatus & VOTE_IS_RUNOFF ) )
         
         if( g_isRunOffNeedingKeepCurrentMap )
@@ -3556,7 +3591,7 @@ stock display_vote_menu( bool:menuType, bool:isVoteOver, player_id, menuBody[], 
 
 public vote_handleChoice( player_id, key )
 {
-    if( g_voteStatus & VOTE_HAS_EXPIRED )
+    if( g_voteStatus & VOTE_IS_EXPIRED )
     {
         client_cmd( player_id, "^"slot%i^"", key + 1 );
         return;
@@ -3846,8 +3881,8 @@ public computeVotes()
             g_totalVoteOptions, numberOfMapsAtFirstPosition, numberOfMapsAtSecondPosition )
     
     DEBUG_LOGGER( 1, "    ( computeVotes|middle ) g_is_timeToRestart: %d, g_is_timeToChangeLevel: %d \
-            g_voteStatus & VOTE_IS_EARLY: %d", \
-            g_is_timeToRestart, g_is_timeToChangeLevel, g_voteStatus & VOTE_IS_EARLY != 0 )
+            g_voteStatus & VOTE_IS_FORCED: %d", \
+            g_is_timeToRestart, g_is_timeToChangeLevel, g_voteStatus & VOTE_IS_FORCED != 0 )
     
     // announce the outcome
     if( numberOfVotesAtFirstPlace )
@@ -4029,7 +4064,7 @@ public computeVotes()
             vote_resetStats();
             
             // start the runoff vote
-            set_task( 3.0, "vote_startDirector", TASKID_VOTE_STARTDIRECTOR );
+            set_task( 3.0, "startEarlyVote", TASKID_VOTE_STARTDIRECTOR );
             
             return;
         }
@@ -4048,8 +4083,8 @@ public computeVotes()
         }
         
         DEBUG_LOGGER( 1, "    ( computeVotes|moreover ) g_is_timeToRestart: %d, g_is_timeToChangeLevel: %d \
-                g_voteStatus & VOTE_IS_EARLY: %d", \
-                g_is_timeToRestart, g_is_timeToChangeLevel, g_voteStatus & VOTE_IS_EARLY != 0 )
+                g_voteStatus & VOTE_IS_FORCED: %d", \
+                g_is_timeToRestart, g_is_timeToChangeLevel, g_voteStatus & VOTE_IS_FORCED != 0 )
         
         // winnerVoteMapIndex == g_totalVoteOptions, means the 'Stay Here' option.
         // Then, here we keep the current map or extend current map.
@@ -4087,6 +4122,7 @@ public computeVotes()
             
             // no longer is an early vote
             g_voteStatus &= ~VOTE_IS_EARLY;
+            g_voteStatus &= ~VOTE_IS_FORCED;
         }
         else // the execution flow gets here when the winner option is not keep/extend map
         {
@@ -4116,11 +4152,11 @@ public computeVotes()
     }
     
     DEBUG_LOGGER( 1, "    ( computeVotes|out ) g_is_timeToRestart: %d, g_is_timeToChangeLevel: %d \
-            g_voteStatus & VOTE_IS_EARLY: %d", \
-            g_is_timeToRestart, g_is_timeToChangeLevel, g_voteStatus & VOTE_IS_EARLY != 0 )
+            g_voteStatus & VOTE_IS_FORCED: %d", \
+            g_is_timeToRestart, g_is_timeToChangeLevel, g_voteStatus & VOTE_IS_FORCED != 0 )
     
     // vote is no longer in progress
-    g_voteStatus &= ~VOTE_IN_PROGRESS;
+    g_voteStatus &= ~VOTE_IS_IN_PROGRESS;
     
     // if we were in a runoff mode, get out of it
     g_voteStatus                   &= ~VOTE_IS_RUNOFF;
@@ -4264,7 +4300,6 @@ stock start_rtvVote()
     {
         g_is_last_round     = true
         g_is_RTV_last_round = true
-        g_voteStatus       |= VOTE_IS_EARLY
     }
     else
     {
@@ -4321,7 +4356,7 @@ public vote_rock( player_id )
     }
     
     // rocks can only be made if a vote isn't already in progress
-    if( g_voteStatus & VOTE_IN_PROGRESS )
+    if( g_voteStatus & VOTE_IS_IN_PROGRESS )
     {
         color_print( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_INPROGRESS" );
         return;
@@ -5220,6 +5255,7 @@ public map_restoreOriginalTimeLimit()
 stock cancel_voting( bool:isToDoubleReset = false )
 {
     remove_task( TASKID_START_VOTING_BY_ROUNDS )
+    remove_task( TASKID_START_VOTING_BY_TIMER )
     remove_task( TASKID_DELETE_USERS_MENUS )
     remove_task( TASKID_VOTE_DISPLAY )
     remove_task( TASKID_DBG_FAKEVOTES )
@@ -5382,7 +5418,7 @@ public sayNextMap()
         && !g_is_last_round
         && !( g_voteStatus & VOTE_IS_OVER ) )
     {
-        if( g_voteStatus & VOTE_IN_PROGRESS )
+        if( g_voteStatus & VOTE_IS_IN_PROGRESS )
         {
             color_print( 0, "^1%L %L", LANG_PLAYER, "NEXT_MAP",
                     LANG_PLAYER, "GAL_NEXTMAP_VOTING" )
@@ -5803,7 +5839,7 @@ public test_end_of_map_voting_start_2( chainDelay )
     
     vote_manageEnd()
     
-    SET_TEST_FAILURE( test_id, !( g_voteStatus & VOTE_IN_PROGRESS ), "vote_startDirector() does not started!" )
+    SET_TEST_FAILURE( test_id, !( g_voteStatus & VOTE_IS_IN_PROGRESS ), "vote_startDirector() does not started!" )
     
     // cancel the voting started by the timelimit expiration on test_end_of_map_voting_start()
     set_pcvar_float( g_timelimit_pointer, 20.0 )
