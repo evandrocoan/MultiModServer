@@ -1251,10 +1251,10 @@ stock vote_manageEarlyStart()
 {
     g_voteStatus |= VOTE_IS_EARLY;
     
-    set_task( 120.0, "startEarlyVote", TASKID_VOTE_STARTDIRECTOR );
+    set_task( 120.0, "startNonForcedVoting", TASKID_VOTE_STARTDIRECTOR );
 }
 
-public startEarlyVote()
+public startNonForcedVoting()
 {
     vote_startDirector( false )
 }
@@ -2818,15 +2818,17 @@ stock vote_startDirector( bool:is_forced_voting )
     
     #if !( DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST )
         
-        if( get_pcvar_num( cvar_isEmptyCycleServerChange ) )
+        if( get_realplayersnum() == 0 )
         {
-            startEmptyCycleSystem()
-        }
-        
-        if( get_realplayersnum() == 0
-            && g_voteStatus & VOTE_IS_IN_PROGRESS )
-        {
-            cancel_voting()
+            if( get_pcvar_num( cvar_isEmptyCycleServerChange ) )
+            {
+                startEmptyCycleSystem()
+            }
+            
+            if( g_voteStatus & VOTE_IS_IN_PROGRESS )
+            {
+                cancel_voting()
+            }
         }
         
         return
@@ -4050,8 +4052,8 @@ public computeVotes()
             // clear all the votes
             vote_resetStats();
             
-            // start the runoff vote
-            set_task( 3.0, "startEarlyVote", TASKID_VOTE_STARTDIRECTOR );
+            // start the runoff vote, vote_startDirector
+            set_task( 3.0, "startNonForcedVoting", TASKID_VOTE_STARTDIRECTOR ); 
             
             return;
         }
