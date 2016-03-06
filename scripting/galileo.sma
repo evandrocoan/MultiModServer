@@ -423,14 +423,14 @@ new Array:g_emptyCycleMapList
 new Array:g_fillerMap;
 new Array:g_nominationMap
 
+new NP_cvar_chattime
+new NP_cvar_nextMap
+new NP_cvar_friendlyFire
+
 new NP_g_currentMapCyclePosition
 new NP_g_nextMapName      [ MAX_MAPNAME_LENGHT ]
 new NP_g_currentMapName   [ MAX_MAPNAME_LENGHT ]
 new NP_g_mapCycleFilePath [ MAX_FILE_PATH_LENGHT ]
-
-new plugin_nextmap_g_chattime
-new plugin_nextmap_gp_nextmap
-new plugin_nextmap_g_friendlyfire
 
 new DIR_CONFIGS   [ MAX_FILE_PATH_LENGHT ];
 new DATA_DIR_PATH [ MAX_FILE_PATH_LENGHT ];
@@ -674,7 +674,7 @@ public plugin_cfg()
         
         if( file_exists( backupMapsFilePath ) )
         {
-            set_task( 15.0, "handleServerStart" );
+            set_task( 15.0, "handleServerStart", _, backupMapsFilePath, sizeof backupMapsFilePath );
         }
         else
         {
@@ -1161,7 +1161,7 @@ public plugin_end()
  * 3 - start an early map vote after the first two minutes
  * 4 - change to a randomly selected map from your nominatable map list
  */
-public handleServerStart()
+public handleServerStart( backupMapsFilePath[] )
 {
     // this is the key that tells us if this server has been restarted or not
     set_cvar_num( "gal_server_starting", 0 );
@@ -1176,11 +1176,6 @@ public handleServerStart()
         if( startAction == SERVER_START_CURRENTMAP
             || startAction == SERVER_START_NEXTMAP )
         {
-            new backupMapsFilePath[ MAX_FILE_PATH_LENGHT ];
-            
-            formatex( backupMapsFilePath, charsmax( backupMapsFilePath ), "%s/%s",
-                    DATA_DIR_PATH, CURRENT_AND_NEXTMAP_FILE_NAME );
-            
             new backupMapsFile = fopen( backupMapsFilePath, "rt" );
             
             if( backupMapsFile )
@@ -1238,7 +1233,7 @@ stock configureTheMapcycleSystem( currentMap[] )
     
     if( possibleNextMapPosition != -1 )
     {
-        NP_g_currentMapCyclePosition = possibleNextMapPosition
+        NP_g_currentMapCyclePosition = possibleNextMapPosition - 1
         
         setNextMap( possibleNextMap )
         saveCurrentMapCycleSetting()
@@ -5369,11 +5364,11 @@ public nextmap_plugin_init()
     register_clcmd( "say nextmap", "sayNextMap", 0, "- displays nextmap" )
     register_clcmd( "say currentmap", "sayCurrentMap", 0, "- display current map" )
     
-    plugin_nextmap_gp_nextmap     = register_cvar( "amx_nextmap", "", FCVAR_SERVER | FCVAR_EXTDLL | FCVAR_SPONLY )
-    plugin_nextmap_g_chattime     = get_cvar_pointer( "mp_chattime" )
-    plugin_nextmap_g_friendlyfire = get_cvar_pointer( "mp_friendlyfire" )
+    NP_cvar_nextMap     = register_cvar( "amx_nextmap", "", FCVAR_SERVER | FCVAR_EXTDLL | FCVAR_SPONLY )
+    NP_cvar_chattime     = get_cvar_pointer( "mp_chattime" )
+    NP_cvar_friendlyFire = get_cvar_pointer( "mp_friendlyfire" )
     
-    if( plugin_nextmap_g_friendlyfire )
+    if( NP_cvar_friendlyFire )
     {
         register_clcmd( "say ff", "sayFFStatus", 0, "- display friendly fire status" )
     }
@@ -5401,7 +5396,7 @@ public nextmap_plugin_init()
     }
     
     readMapCycle( NP_g_mapCycleFilePath, NP_g_nextMapName, charsmax( NP_g_nextMapName ) )
-    set_pcvar_string( plugin_nextmap_gp_nextmap, NP_g_nextMapName )
+    set_pcvar_string( NP_cvar_nextMap, NP_g_nextMapName )
     
     saveCurrentMapCycleSetting()
 }
@@ -5422,14 +5417,14 @@ stock saveCurrentMapCycleSetting()
 
 getNextMapName( szArg[], iMax )
 {
-    new len = get_pcvar_string( plugin_nextmap_gp_nextmap, szArg, iMax )
+    new len = get_pcvar_string( NP_cvar_nextMap, szArg, iMax )
     
     if( ValidMap( szArg ) )
     {
         return len
     }
     len = copy( szArg, iMax, NP_g_nextMapName )
-    set_pcvar_string( plugin_nextmap_gp_nextmap, NP_g_nextMapName )
+    set_pcvar_string( NP_cvar_nextMap, NP_g_nextMapName )
     
     return len
 }
@@ -5471,14 +5466,14 @@ public sayCurrentMap()
 public sayFFStatus()
 {
     client_print( 0, print_chat, "%L: %L", LANG_PLAYER, "FRIEND_FIRE", LANG_PLAYER,
-            get_pcvar_num( plugin_nextmap_g_friendlyfire ) ? "ON" : "OFF" )
+            get_pcvar_num( NP_cvar_friendlyFire ) ? "ON" : "OFF" )
 }
 
 public delayedChange( param[] )
 {
-    if( plugin_nextmap_g_chattime )
+    if( NP_cvar_chattime )
     {
-        set_pcvar_float( plugin_nextmap_g_chattime, get_pcvar_float( plugin_nextmap_g_chattime ) - 2.0 )
+        set_pcvar_float( NP_cvar_chattime, get_pcvar_float( NP_cvar_chattime ) - 2.0 )
     }
     
     serverChangeLevel( param )
@@ -5487,11 +5482,11 @@ public delayedChange( param[] )
 public changeMap()
 {
     new nextmap_name[ MAX_MAPNAME_LENGHT ] // mp_chattime defaults to 10 in other mods
-    new Float:chattime = plugin_nextmap_g_chattime ? get_pcvar_float( plugin_nextmap_g_chattime ) : 10.0;
+    new Float:chattime = NP_cvar_chattime ? get_pcvar_float( NP_cvar_chattime ) : 10.0;
     
-    if( plugin_nextmap_g_chattime )
+    if( NP_cvar_chattime )
     {
-        set_pcvar_float( plugin_nextmap_g_chattime, chattime + 2.0 ) // make sure mp_chattime is long
+        set_pcvar_float( NP_cvar_chattime, chattime + 2.0 ) // make sure mp_chattime is long
     }
     
     new len = getNextMapName( nextmap_name, charsmax( nextmap_name ) ) + 1
