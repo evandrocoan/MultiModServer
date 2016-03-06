@@ -22,7 +22,7 @@
 *****************************************************************************************
 */
 
-new const PLUGIN_VERSION[] = "2.1.1"
+new const PLUGIN_VERSION[] = "2.1.2"
 
 #include <amxmodx>
 #include <amxmisc>
@@ -5364,7 +5364,7 @@ public nextmap_plugin_init()
     register_clcmd( "say nextmap", "sayNextMap", 0, "- displays nextmap" )
     register_clcmd( "say currentmap", "sayCurrentMap", 0, "- display current map" )
     
-    NP_cvar_nextMap     = register_cvar( "amx_nextmap", "", FCVAR_SERVER | FCVAR_EXTDLL | FCVAR_SPONLY )
+    NP_cvar_nextMap      = register_cvar( "amx_nextmap", "", FCVAR_SERVER | FCVAR_EXTDLL | FCVAR_SPONLY )
     NP_cvar_chattime     = get_cvar_pointer( "mp_chattime" )
     NP_cvar_friendlyFire = get_cvar_pointer( "mp_friendlyfire" )
     
