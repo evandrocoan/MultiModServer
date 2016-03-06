@@ -37,7 +37,7 @@ new const PLUGIN_VERSION[] = "2.1.2"
  * 4   - To create fake votes.
  * 7   - Levels 1, 2 and 4.
  */
-#define DEBUG_LEVEL 3
+#define DEBUG_LEVEL 1
 
 #define DEBUG_LEVEL_NORMAL     1
 #define DEBUG_LEVEL_UNIT_TEST  2
@@ -3108,15 +3108,15 @@ public vote_handleDisplay()
         set_task( 1.0, "vote_display", TASKID_VOTE_DISPLAY, argument, sizeof( argument ) );
     }
     
-    // display the vote outcome
-    set_task( float( g_voteDuration ), "closeVoting", TASKID_VOTE_EXPIRE )
+    // display the vote outcome + 1.0 from 'vote_display' initial delay
+    set_task( float( g_voteDuration ) + 1.0, "closeVoting", TASKID_VOTE_EXPIRE )
 }
 
 public closeVoting()
 {
     new argument[ 3 ] = { -1, -1, false }
     
-    // waits the last voting second to finish
+    // waits until the last voting second to finish
     set_task( 0.9, "voteExpire" )
     
     set_task( 1.0, "vote_display", TASKID_VOTE_DISPLAY, argument, sizeof argument, "a", 5 )
@@ -3207,7 +3207,7 @@ public vote_display( argument[ 3 ] )
         calculate_menu_dirt( player_id, isToShowNoneOption, noneOptionType, isVoteOver,
                 voteStatus, menuDirty, charsmax( menuDirty ), noneIsHidden, showStatus )
         
-        display_vote_menu( false, false, player_id, menuDirty, menuKeys )
+        display_vote_menu( false, player_id, menuDirty, menuKeys )
     }
     else // just display to everyone
     {
@@ -3230,7 +3230,7 @@ public vote_display( argument[ 3 ] )
                 calculate_menu_clean( player_id, isToShowNoneOption, noneOptionType,
                         menuClean, charsmax( menuClean ), showStatus )
                 
-                display_vote_menu( true, false, player_id, menuClean, menuKeys )
+                display_vote_menu( true, player_id, menuClean, menuKeys )
             }
             else if( showStatus == SHOW_STATUS_ALWAYS
                      || ( isVoteOver
@@ -3241,7 +3241,7 @@ public vote_display( argument[ 3 ] )
                 calculate_menu_dirt( player_id, isToShowNoneOption, noneOptionType, isVoteOver,
                         voteStatus, menuDirty, charsmax( menuDirty ), noneIsHidden, showStatus )
                 
-                display_vote_menu( false, isVoteOver, player_id, menuDirty, menuKeys )
+                display_vote_menu( false, player_id, menuDirty, menuKeys )
             }
         }
     }
@@ -3540,7 +3540,7 @@ stock calculate_menu_clean( player_id, isToShowNoneOption, noneOptionType,
     }
 }
 
-stock display_vote_menu( bool:menuType, bool:isVoteOver, player_id, menuBody[], menuKeys )
+stock display_vote_menu( bool:menuType, player_id, menuBody[], menuKeys )
 {
     new menu_id
     new menukeys_unused
@@ -3564,7 +3564,7 @@ stock display_vote_menu( bool:menuType, bool:isVoteOver, player_id, menuBody[], 
         || menu_id == g_chooseMapMenuId )
     {
         show_menu( player_id, menuKeys, menuBody,
-                ( menuType ? g_voteDuration : ( isVoteOver ? 2 : max( 2, g_voteDuration ) ) ),
+                ( menuType ? g_voteDuration : max( 2, g_voteDuration ) ),
                 MENU_CHOOSEMAP )
     }
 }
