@@ -22,7 +22,7 @@
 *****************************************************************************************
 */
 
-new const PLUGIN_VERSION[] = "2.1.2"
+new const PLUGIN_VERSION[] = "2.1.3"
 
 #include <amxmodx>
 #include <amxmisc>
@@ -234,16 +234,16 @@ new g_user_msgid
  * override.
  */
 #define VOTE_ROUND_START_DETECTION_DELAYED(%1) \
-    %1 < VOTE_ROUND_START_MIN_DELAY \
-    && %1 > VOTE_ROUND_START_MAX_DELAY
+    ( %1 < VOTE_ROUND_START_MIN_DELAY \
+      && %1 > VOTE_ROUND_START_MAX_DELAY )
 
 
 /**
  * To start the end map voting near the map time limit expiration.
  */
 #define VOTE_START_TIME(%1) \
-    %1 < START_VOTEMAP_MIN_TIME \
-    && %1 > START_VOTEMAP_MAX_TIME
+    ( %1 < START_VOTEMAP_MIN_TIME \
+      && %1 > START_VOTEMAP_MAX_TIME )
 
 
 /**
@@ -255,8 +255,7 @@ new g_user_msgid
 /**
  * Specifies how much time to delay the voting start after the round start.
  */
-#define VOTE_ROUND_START_SECONDS_DELAY() \
-    get_pcvar_num( g_freezetime_pointer ) + 20.0
+#define VOTE_ROUND_START_SECONDS_DELAY() ( get_pcvar_num( g_freezetime_pointer ) + 20.0 )
 
 
 /**
@@ -459,7 +458,6 @@ new g_nextmap                    [ MAX_MAPNAME_LENGHT ];
 new g_currentMap                 [ MAX_MAPNAME_LENGHT ];
 new g_player_voted_option        [ MAX_PLAYERS_COUNT ];
 new g_player_voted_weight        [ MAX_PLAYERS_COUNT ];
-new g_snuffDisplay               [ MAX_PLAYERS_COUNT ];
 new g_nominationMatchesMenu      [ MAX_PLAYERS_COUNT ];
 new g_arrayOfMapsWithVotesNumber [ MAX_OPTIONS_IN_VOTE ];
 
@@ -837,7 +835,7 @@ public process_last_round()
     {
         configure_last_round_HUD()
     }
-    else if( bool:get_pcvar_num( cvar_isEndMapCountdown ) )
+    else if( get_pcvar_num( cvar_isEndMapCountdown ) )
     {
         g_last_round_countdown = 6;
         set_task( 1.0, "process_last_round_counting", TASKID_PROCESS_LAST_ROUND, _, _, "a", 6 );
@@ -897,10 +895,12 @@ stock intermission_display()
             set_task( mp_chattime, "map_change", TASKID_MAP_CHANGE );
         }
         
-        if( bool:get_pcvar_num( cvar_isEndMapCountdown ) )
+        if( get_pcvar_num( cvar_isEndMapCountdown ) )
         {
             // freeze the game and show the scoreboard
+            g_isTimeToResetGame    = true
             g_original_sv_maxspeed = get_cvar_float( "sv_maxspeed" )
+            
             set_cvar_float( "sv_maxspeed", 0.0 )
             
             client_cmd( 0, "slot1" )
@@ -1035,7 +1035,7 @@ public reset_rounds_scores()
 
 public configure_last_round_HUD()
 {
-    if( bool:get_pcvar_num( cvar_endOnRound_msg ) )
+    if( get_pcvar_num( cvar_endOnRound_msg ) )
     {
         set_task( 1.0, "show_last_round_HUD", TASKID_SHOW_LAST_ROUND_HUD, _, _, "b" )
     }
@@ -1891,7 +1891,6 @@ public cmd_say( player_id )
                     || equali( arg1, "nominations" ) )
                 {
                     nomination_list( player_id );
-                    
                     return PLUGIN_HANDLED;
                 }
                 else
@@ -1901,7 +1900,6 @@ public cmd_say( player_id )
                     if( mapIndex >= 0 )
                     {
                         nomination_toggle( player_id, mapIndex );
-                        
                         return PLUGIN_HANDLED;
                     }
                     else if( strlen( arg1 ) > 5
@@ -1909,6 +1907,7 @@ public cmd_say( player_id )
                              && equali( arg1[ strlen( arg1 ) - 4 ], "menu" ) )
                     {
                         nomination_menu( player_id )
+                        return PLUGIN_HANDLED;
                     }
                     else // if contains a prefix
                     {
@@ -1923,14 +1922,14 @@ public cmd_say( player_id )
                             if( contain( arg1, g_mapPrefix[ prefix_index ] ) > -1 )
                             {
                                 nomination_menu( player_id )
-                                break;
+                                return PLUGIN_HANDLED;
                             }
                         }
                     }
                     
                     DEBUG_LOGGER( 4, "( cmd_say ) equali( arg1, 'nom', 3 ): %d, \
-                            strlen( arg1 ) > 5: %d", \
-                            equali( arg1, "nom", 3 ), strlen( arg1 ) > 5 )
+                            strlen( arg1 ) > 5: %d", equali( arg1, "nom", 3 ), \
+                            strlen( arg1 ) > 5 )
                 }
             }
         }
@@ -1955,6 +1954,7 @@ public cmd_say( player_id )
             }
         }
     }
+    
     return PLUGIN_CONTINUE;
 }
 
@@ -2377,326 +2377,6 @@ public nomination_list( player_id )
     }
 }
 
-stock vote_startDirector( bool:is_forced_voting )
-{
-    new choicesLoaded
-    new voteDuration
-    
-    if( get_realplayersnum() == 0
-        || ( g_voteStatus & VOTE_IS_IN_PROGRESS
-             && !( g_voteStatus & VOTE_IS_RUNOFF ) )
-        || ( !is_forced_voting
-             && g_voteStatus & VOTE_IS_OVER ) )
-    {
-        DEBUG_LOGGER( 1, "    ( vote_startDirector|Cancel ) g_voteStatus: %d, \
-                g_voteStatus & VOTE_IS_OVER: %d, is_forced_voting: %d, \
-                get_realplayersnum(): %d", g_voteStatus, g_voteStatus & VOTE_IS_OVER != 0, \
-                is_forced_voting, get_realplayersnum() )
-    
-    #if !( DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST )
-        
-        if( bool:get_pcvar_num( cvar_isEmptyCycleServerChange ) )
-        {
-            startEmptyCycleSystem()
-        }
-        
-        if( get_realplayersnum() == 0
-            && g_voteStatus & VOTE_IS_IN_PROGRESS )
-        {
-            cancel_voting()
-        }
-        
-        return
-    #else
-        // stop the compiler warning 204: symbol is assigned a value that is never used
-        get_pcvar_num( cvar_isEmptyCycleServerChange )
-    
-    #endif
-    }
-    
-    // the rounds start delay task could be running
-    remove_task( TASKID_START_VOTING_BY_TIMER )
-    
-    if( remove_task( TASKID_DELETE_USERS_MENUS ) )
-    {
-        vote_resetStats()
-    }
-    
-    if( g_voteStatus & VOTE_IS_RUNOFF )
-    {
-        choicesLoaded      = g_totalVoteOptions_temp
-        g_totalVoteOptions = g_totalVoteOptions_temp
-        
-        // load runoff choices
-        copy( g_votingMapNames[ 0 ], charsmax( g_votingMapNames[] ), g_votingMapNames[ g_arrayOfRunOffChoices[ 0 ] ] );
-        copy( g_votingMapNames[ 1 ], charsmax( g_votingMapNames[] ), g_votingMapNames[ g_arrayOfRunOffChoices[ 1 ] ] );
-        
-        voteDuration = get_pcvar_num( cvar_runoffDuration )
-        
-        DEBUG_LOGGER( 16, "( vote_startDirector|Runoff ) map1: %s, map2: %s, choicesLoaded: %d", \
-                g_votingMapNames[ 0 ], g_votingMapNames[ 1 ], choicesLoaded )
-    }
-    else
-    {
-        // make it known that a vote is in progress
-        g_voteStatus |= VOTE_IS_IN_PROGRESS;
-        
-        // Max rounds vote map does not have a max rounds extension limit as mp_timelimit
-        if( g_is_maxrounds_vote_map )
-        {
-            g_is_map_extension_allowed = true
-        }
-        else
-        {
-            g_is_map_extension_allowed =
-                get_pcvar_float( g_timelimit_pointer ) < get_pcvar_float( cvar_maxMapExtendTime )
-        }
-        
-        g_is_final_voting = ( ( ( get_pcvar_float( g_timelimit_pointer ) * 60 ) < START_VOTEMAP_MIN_TIME )
-                              || ( g_is_maxrounds_vote_map ) )
-        
-        // stop RTV reminders
-        remove_task( TASKID_REMINDER );
-        
-        if( is_forced_voting )
-        {
-            g_voteStatus |= VOTE_IS_FORCED;
-        }
-        
-        // to load vote choices
-        vote_addNominations();
-        vote_addFiller();
-        
-        choicesLoaded = g_totalVoteOptions
-        voteDuration  = get_pcvar_num( cvar_voteDuration );
-        
-        DEBUG_LOGGER( 4, "^n( vote_startDirector|NormalVote ) choicesLoaded: %d", choicesLoaded )
-        
-        if( choicesLoaded )
-        {
-            // clear all nominations
-            nomination_clearAll();
-        }
-    }
-
-#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
-    voteDuration   = 5
-    g_voteDuration = 5
-#endif
-    
-    if( choicesLoaded )
-    {
-        new player_id
-        new playersCount
-        new players[ MAX_PLAYERS ]
-        new Float:handleChoicesDelay
-        
-        // alphabetize the maps
-        SortCustom2D( g_votingMapNames, choicesLoaded, "sort_stringsi" );
-    
-    #if defined DEBUG
-        
-        for( new dbgChoice = 0; dbgChoice < choicesLoaded; dbgChoice++ )
-        {
-            DEBUG_LOGGER( 4, "      %i. %s", dbgChoice + 1, g_votingMapNames[ dbgChoice ] )
-        }
-    #endif
-        
-        // skip bots and hltv
-        get_players( players, playersCount, "ch" )
-        
-        // mark the players who are in this vote for use later
-        for( new playerIndex = 0; playerIndex < playersCount; ++playerIndex )
-        {
-            player_id = players[ playerIndex ]
-            
-            if( g_is_player_participating[ player_id ] )
-            {
-                g_is_player_voted[ player_id ] = false;
-            }
-        }
-    
-    #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
-        handleChoicesDelay = 1.0
-    
-    #else
-        handleChoicesDelay = 7.5
-        
-        // make perfunctory announcement: "get ready to choose a map"
-        if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_GETREADYTOCHOOSE ) )
-        {
-            client_cmd( 0, "spk ^"get red( e80 ) ninety( s45 ) to check( e20 ) \
-                    use bay( s18 ) mass( e42 ) cap( s50 )^"" );
-        }
-        
-        // announce the pending vote countdown from 7 to 1
-        g_pendingVoteCountdown = 7
-        set_task( 1.0, "pendingVoteCountdown", _, _, _, "a", 7 );
-    #endif
-        
-        // display the map choices
-        set_task( handleChoicesDelay, "vote_handleDisplay", TASKID_VOTE_HANDLEDISPLAY );
-        
-        // display the vote outcome
-        set_task( handleChoicesDelay + float( voteDuration ), "closeVoting", TASKID_VOTE_EXPIRE )
-    }
-    else
-    {
-        color_print( 0, "^1%L", LANG_PLAYER, "GAL_VOTE_NOMAPS" );
-    }
-    
-    DEBUG_LOGGER( 4, "   [PLAYER CHOICES]" )
-    DEBUG_LOGGER( 4, "^n    ( vote_startDirector|out ) g_is_timeToRestart: %d, \
-            g_is_timeToChangeLevel: %d, g_voteStatus & VOTE_IS_FORCED: %d^n", \
-            g_is_timeToRestart, g_is_timeToChangeLevel, g_voteStatus & VOTE_IS_FORCED != 0 )
-}
-
-/**
- * Indicates it's the end of vote display.
- */
-stock endOfVoteDisplay()
-{
-    new argument[ 3 ] = { -1, -1, false }
-    
-    set_task( 0.9, "vote_display", TASKID_VOTE_DISPLAY, argument, sizeof argument, "a", 4 )
-}
-
-public closeVoting()
-{
-    g_voteStatus |= VOTE_IS_EXPIRED
-    
-    endOfVoteDisplay()
-    
-    set_task( 5.0, "computeVotes", TASKID_VOTE_EXPIRE )
-}
-
-public pendingVoteCountdown()
-{
-    if( bool:get_pcvar_num( cvar_isToAskForEndOfTheMapVote )
-        && !( g_voteStatus & VOTE_IS_RUNOFF ) )
-    {
-        displayEndOfTheMapVoteMenu( 0 )
-    }
-    
-    // visual countdown
-    set_hudmessage( 0, 222, 50, -1.0, 0.13, 0, 1.0, 0.94, 0.0, 0.0, -1 );
-    show_hudmessage( 0, "%L", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", g_pendingVoteCountdown );
-    
-    // audio countdown
-    if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_COUNTDOWN ) )
-    {
-        new word[ 6 ];
-        num_to_word( g_pendingVoteCountdown, word, 5 );
-        
-        client_cmd( 0, "spk ^"fvox/%s^"", word );
-    }
-    
-    // decrement the countdown
-    g_pendingVoteCountdown--;
-}
-
-public displayEndOfTheMapVoteMenu( player_id )
-{
-    new menu_id
-    new menuKeys
-    new menuKeysUnused
-    new playersCount
-    new players[ MAX_PLAYERS ]
-    
-    new menu_body[ 256 ]
-    new menu_counter[ 64 ]
-    new bool:isVoting
-    new bool:playerAnswered
-    
-    if( player_id > 0 )
-    {
-        playersCount = 1
-        players[ 0 ] = player_id
-    }
-    else
-    {
-        get_players( players, playersCount, "ch" )
-    }
-    
-    for( new playerIndex = 0; playerIndex < playersCount; playerIndex++ )
-    {
-        player_id      = players[ playerIndex ]
-        isVoting       = g_is_player_participating[ player_id ]
-        playerAnswered = g_answeredForEndOfMapVote[ player_id ]
-        
-        if( !playerAnswered )
-        {
-            menuKeys = MENU_KEY_0 | MENU_KEY_6;
-            
-            formatex( menu_counter, charsmax( menu_counter ),
-                    " %s( %s%d %L%s )",
-                    COLOR_YELLOW, COLOR_GREY, g_pendingVoteCountdown, LANG_PLAYER, "GAL_TIMELEFT", COLOR_YELLOW )
-        }
-        else
-        {
-            menuKeys          = MENU_KEY_1
-            menu_counter[ 0 ] = '^0'
-        }
-        
-        menu_body[ 0 ] = '^0'
-        
-        formatex( menu_body, charsmax( menu_body ),
-                "%s%L^n^n\
-                %s6. %s%L %s^n\
-                %s0. %s%L",
-                
-                COLOR_YELLOW, player_id, "GAL_CHOOSE_QUESTION",
-                
-                COLOR_RED, ( playerAnswered ? ( isVoting ? COLOR_YELLOW : COLOR_GREY ) : COLOR_WHITE ),
-                player_id, "GAL_CHOOSE_QUESTION_YES", menu_counter,
-                
-                COLOR_RED, ( playerAnswered ? ( !isVoting ? COLOR_YELLOW : COLOR_GREY ) : COLOR_WHITE ),
-                player_id, "GAL_CHOOSE_QUESTION_NO" )
-        
-        get_user_menu( player_id, menu_id, menuKeysUnused )
-        
-        if( menu_id == 0
-            || menu_id == g_chooseMapQuestionMenuId )
-        {
-            show_menu( player_id, menuKeys, menu_body, 2, MENU_CHOOSEMAP_QUESTION )
-        }
-        
-        DEBUG_LOGGER( 8, " ( displayEndOfTheMapVoteMenu| for ) menu_body: %s^n menu_id:%d,   \
-                menuKeys: %d, isVoting: %d, playerAnswered:%d, player_id: %d, playerIndex: %d", \
-                menu_body, menu_id, menuKeys, isVoting, playerAnswered, player_id, playerIndex )
-        
-        DEBUG_LOGGER( 8, "   playersCount: %d, g_pendingVoteCountdown: %d, menu_counter: %s", \
-                playersCount, g_pendingVoteCountdown, menu_counter )
-    }
-    
-    DEBUG_LOGGER( 8, "%48s", " ( displayEndOfTheMapVoteMenu| out )" )
-}
-
-public handleEndOfTheMapVoteChoice( player_id, pressedKeyCode )
-{
-    switch( pressedKeyCode )
-    {
-        case 9: // pressedKeyCode 9 means the keyboard key 0
-        {
-            announceRegistedVote( player_id, pressedKeyCode )
-            
-            g_is_player_voted[ player_id ]         = true;
-            g_is_player_participating[ player_id ] = false;
-        }
-        case 0: // pressedKeyCode 0 means the keyboard key 1
-        {
-            set_task( 0.1, "displayEndOfTheMapVoteMenu", player_id )
-            return PLUGIN_CONTINUE;
-        }
-    }
-    
-    g_answeredForEndOfMapVote[ player_id ] = true
-    
-    set_task( 0.1, "displayEndOfTheMapVoteMenu", player_id )
-    
-    return PLUGIN_CONTINUE;
-}
-
 stock vote_addNominations()
 {
     DEBUG_LOGGER( 4, "^n   [NOMINATIONS ( %i )]", g_nominationCount )
@@ -3094,21 +2774,104 @@ stock loadCurrentBlackList( Trie:blackList_trie )
     fclose( whiteListFile )
 }
 
-public vote_handleDisplay()
+stock vote_startDirector( bool:is_forced_voting )
 {
-    // announce: "time to choose"
-    if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_TIMETOCHOOSE ) )
+    new choicesLoaded
+    
+    if( get_realplayersnum() == 0
+        || ( g_voteStatus & VOTE_IS_IN_PROGRESS
+             && !( g_voteStatus & VOTE_IS_RUNOFF ) )
+        || ( !is_forced_voting
+             && g_voteStatus & VOTE_IS_OVER ) )
     {
-        client_cmd( 0, "spk Gman/Gman_Choose%i", random_num( 1, 2 ) );
+        DEBUG_LOGGER( 1, "    ( vote_startDirector|Cancel ) g_voteStatus: %d, \
+                g_voteStatus & VOTE_IS_OVER: %d, is_forced_voting: %d, \
+                get_realplayersnum(): %d", g_voteStatus, g_voteStatus & VOTE_IS_OVER != 0, \
+                is_forced_voting, get_realplayersnum() )
+    
+    #if !( DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST )
+        
+        if( get_pcvar_num( cvar_isEmptyCycleServerChange ) )
+        {
+            startEmptyCycleSystem()
+        }
+        
+        if( get_realplayersnum() == 0
+            && g_voteStatus & VOTE_IS_IN_PROGRESS )
+        {
+            cancel_voting()
+        }
+        
+        return
+    #else
+        // stop the compiler warning 204: symbol is assigned a value that is never used
+        get_pcvar_num( cvar_isEmptyCycleServerChange )
+    
+    #endif
+    }
+    
+    // the rounds start delay task could be running
+    remove_task( TASKID_START_VOTING_BY_TIMER )
+    
+    if( remove_task( TASKID_DELETE_USERS_MENUS ) )
+    {
+        vote_resetStats()
     }
     
     if( g_voteStatus & VOTE_IS_RUNOFF )
     {
-        g_voteDuration = get_pcvar_num( cvar_runoffDuration );
+        choicesLoaded      = g_totalVoteOptions_temp
+        g_totalVoteOptions = g_totalVoteOptions_temp
+        g_voteDuration     = get_pcvar_num( cvar_runoffDuration )
+        
+        // load runoff choices
+        copy( g_votingMapNames[ 0 ], charsmax( g_votingMapNames[] ), g_votingMapNames[ g_arrayOfRunOffChoices[ 0 ] ] );
+        copy( g_votingMapNames[ 1 ], charsmax( g_votingMapNames[] ), g_votingMapNames[ g_arrayOfRunOffChoices[ 1 ] ] );
+        
+        DEBUG_LOGGER( 16, "( vote_startDirector|Runoff ) map1: %s, map2: %s, choicesLoaded: %d", \
+                g_votingMapNames[ 0 ], g_votingMapNames[ 1 ], choicesLoaded )
     }
     else
     {
-        g_voteDuration = get_pcvar_num( cvar_voteDuration );
+        // make it known that a vote is in progress
+        g_voteStatus |= VOTE_IS_IN_PROGRESS;
+        
+        // Max rounds vote map does not have a max rounds extension limit as mp_timelimit
+        if( g_is_maxrounds_vote_map )
+        {
+            g_is_map_extension_allowed = true
+        }
+        else
+        {
+            g_is_map_extension_allowed =
+                get_pcvar_float( g_timelimit_pointer ) < get_pcvar_float( cvar_maxMapExtendTime )
+        }
+        
+        g_is_final_voting = ( ( ( get_pcvar_float( g_timelimit_pointer ) * 60 ) < START_VOTEMAP_MIN_TIME )
+                              || ( g_is_maxrounds_vote_map ) )
+        
+        // stop RTV reminders
+        remove_task( TASKID_REMINDER );
+        
+        if( is_forced_voting )
+        {
+            g_voteStatus |= VOTE_IS_FORCED;
+        }
+        
+        // to load vote choices
+        vote_addNominations();
+        vote_addFiller();
+        
+        choicesLoaded  = g_totalVoteOptions
+        g_voteDuration = get_pcvar_num( cvar_voteDuration )
+        
+        DEBUG_LOGGER( 4, "^n( vote_startDirector|NormalVote ) choicesLoaded: %d", choicesLoaded )
+        
+        if( choicesLoaded )
+        {
+            // clear all nominations
+            nomination_clearAll();
+        }
     }
 
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
@@ -3118,6 +2881,206 @@ public vote_handleDisplay()
 #if DEBUG_LEVEL & DEBUG_LEVEL_FAKE_VOTES
     set_task( 2.0, "create_fakeVotes", TASKID_DBG_FAKEVOTES );
 #endif
+    
+    if( choicesLoaded )
+    {
+        new player_id
+        new playersCount
+        new players[ MAX_PLAYERS ]
+        new Float:handleChoicesDelay
+        
+        // alphabetize the maps
+        SortCustom2D( g_votingMapNames, choicesLoaded, "sort_stringsi" );
+    
+    #if defined DEBUG
+        
+        for( new dbgChoice = 0; dbgChoice < choicesLoaded; dbgChoice++ )
+        {
+            DEBUG_LOGGER( 4, "      %i. %s", dbgChoice + 1, g_votingMapNames[ dbgChoice ] )
+        }
+    #endif
+        
+        // skip bots and hltv
+        get_players( players, playersCount, "ch" )
+        
+        // mark the players who are in this vote for use later
+        for( new playerIndex = 0; playerIndex < playersCount; ++playerIndex )
+        {
+            player_id = players[ playerIndex ]
+            
+            if( g_is_player_participating[ player_id ] )
+            {
+                g_is_player_voted[ player_id ] = false;
+            }
+        }
+    
+    #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
+        handleChoicesDelay = 0.1
+    
+    #else
+        handleChoicesDelay = 7.0 + 1.0 + 1.0 // set_task 1.0 + pendingVoteCountdown 1.0
+        
+        // make perfunctory announcement: "get ready to choose a map"
+        if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_GETREADYTOCHOOSE ) )
+        {
+            client_cmd( 0, "spk ^"get red( e80 ) ninety( s45 ) to check( e20 ) \
+                    use bay( s18 ) mass( e42 ) cap( s50 )^"" );
+        }
+        
+        // announce the pending vote countdown from 7 to 1
+        g_pendingVoteCountdown = 7
+        set_task( 1.0, "pendingVoteCountdown", _, _, _, "a", 7 );
+    #endif
+        
+        // display the map choices, 1 second from now
+        set_task( handleChoicesDelay, "vote_handleDisplay", TASKID_VOTE_HANDLEDISPLAY );
+    }
+    else
+    {
+        color_print( 0, "^1%L", LANG_PLAYER, "GAL_VOTE_NOMAPS" );
+    }
+    
+    DEBUG_LOGGER( 4, "   [PLAYER CHOICES]" )
+    DEBUG_LOGGER( 4, "^n    ( vote_startDirector|out ) g_is_timeToRestart: %d, \
+            g_is_timeToChangeLevel: %d, g_voteStatus & VOTE_IS_FORCED: %d^n", \
+            g_is_timeToRestart, g_is_timeToChangeLevel, g_voteStatus & VOTE_IS_FORCED != 0 )
+}
+
+public pendingVoteCountdown()
+{
+    if( get_pcvar_num( cvar_isToAskForEndOfTheMapVote )
+        && !( g_voteStatus & VOTE_IS_RUNOFF ) )
+    {
+        displayEndOfTheMapVoteMenu( 0 )
+    }
+    
+    // visual countdown
+    set_hudmessage( 0, 222, 50, -1.0, 0.13, 0, 1.0, 0.94, 0.0, 0.0, -1 );
+    show_hudmessage( 0, "%L", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", g_pendingVoteCountdown );
+    
+    // audio countdown
+    if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_COUNTDOWN ) )
+    {
+        new word[ 6 ];
+        num_to_word( g_pendingVoteCountdown, word, 5 );
+        
+        client_cmd( 0, "spk ^"fvox/%s^"", word );
+    }
+    
+    // decrement the countdown
+    g_pendingVoteCountdown--;
+}
+
+public displayEndOfTheMapVoteMenu( player_id )
+{
+    new menu_id
+    new menuKeys
+    new menuKeysUnused
+    new playersCount
+    new players[ MAX_PLAYERS ]
+    
+    new menu_body[ 256 ]
+    new menu_counter[ 64 ]
+    new bool:isVoting
+    new bool:playerAnswered
+    
+    if( player_id > 0 )
+    {
+        playersCount = 1
+        players[ 0 ] = player_id
+    }
+    else
+    {
+        get_players( players, playersCount, "ch" )
+    }
+    
+    for( new playerIndex = 0; playerIndex < playersCount; playerIndex++ )
+    {
+        player_id      = players[ playerIndex ]
+        isVoting       = g_is_player_participating[ player_id ]
+        playerAnswered = g_answeredForEndOfMapVote[ player_id ]
+        
+        if( !playerAnswered )
+        {
+            menuKeys = MENU_KEY_0 | MENU_KEY_6;
+            
+            formatex( menu_counter, charsmax( menu_counter ),
+                    " %s(%s%d %L%s)",
+                    COLOR_YELLOW, COLOR_GREY, g_pendingVoteCountdown, LANG_PLAYER, "GAL_TIMELEFT", COLOR_YELLOW )
+        }
+        else
+        {
+            menuKeys          = MENU_KEY_1
+            menu_counter[ 0 ] = '^0'
+        }
+        
+        menu_body[ 0 ] = '^0'
+        
+        formatex( menu_body, charsmax( menu_body ),
+                "%s%L^n^n\
+                %s6. %s%L %s^n\
+                %s0. %s%L",
+                
+                COLOR_YELLOW, player_id, "GAL_CHOOSE_QUESTION",
+                
+                COLOR_RED, ( playerAnswered ? ( isVoting ? COLOR_YELLOW : COLOR_GREY ) : COLOR_WHITE ),
+                player_id, "GAL_CHOOSE_QUESTION_YES", menu_counter,
+                
+                COLOR_RED, ( playerAnswered ? ( !isVoting ? COLOR_YELLOW : COLOR_GREY ) : COLOR_WHITE ),
+                player_id, "GAL_CHOOSE_QUESTION_NO" )
+        
+        get_user_menu( player_id, menu_id, menuKeysUnused )
+        
+        if( menu_id == 0
+            || menu_id == g_chooseMapQuestionMenuId )
+        {
+            show_menu( player_id, menuKeys, menu_body, ( g_pendingVoteCountdown == 1 ? 1 : 2 ),
+                    MENU_CHOOSEMAP_QUESTION )
+        }
+        
+        DEBUG_LOGGER( 8, " ( displayEndOfTheMapVoteMenu| for ) menu_body: %s^n menu_id:%d,   \
+                menuKeys: %d, isVoting: %d, playerAnswered:%d, player_id: %d, playerIndex: %d", \
+                menu_body, menu_id, menuKeys, isVoting, playerAnswered, player_id, playerIndex )
+        
+        DEBUG_LOGGER( 8, "   playersCount: %d, g_pendingVoteCountdown: %d, menu_counter: %s", \
+                playersCount, g_pendingVoteCountdown, menu_counter )
+    }
+    
+    DEBUG_LOGGER( 8, "%48s", " ( displayEndOfTheMapVoteMenu| out )" )
+}
+
+public handleEndOfTheMapVoteChoice( player_id, pressedKeyCode )
+{
+    switch( pressedKeyCode )
+    {
+        case 9: // pressedKeyCode 9 means the keyboard key 0
+        {
+            announceRegistedVote( player_id, pressedKeyCode )
+            
+            g_is_player_voted[ player_id ]         = true;
+            g_is_player_participating[ player_id ] = false;
+        }
+        case 0: // pressedKeyCode 0 means the keyboard key 1
+        {
+            set_task( 0.1, "displayEndOfTheMapVoteMenu", player_id )
+            return PLUGIN_CONTINUE;
+        }
+    }
+    
+    g_answeredForEndOfMapVote[ player_id ] = true
+    
+    set_task( 0.1, "displayEndOfTheMapVoteMenu", player_id )
+    
+    return PLUGIN_CONTINUE;
+}
+
+public vote_handleDisplay()
+{
+    // announce: "time to choose"
+    if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_TIMETOCHOOSE ) )
+    {
+        client_cmd( 0, "spk Gman/Gman_Choose%i", random_num( 1, 2 ) );
+    }
     
     if( get_pcvar_num( cvar_voteStatus )
         && get_pcvar_num( cvar_voteStatusType ) & STATUS_TYPE_PERCENTAGE )
@@ -3131,13 +3094,9 @@ public vote_handleDisplay()
     // ensure the vote status doesn't indicate expired
     g_voteStatus &= ~VOTE_IS_EXPIRED;
     
-    new argument[ 3 ];
+    new argument[ 2 ] = { true, 0 }
     
-    argument[ 0 ] = true;
-    argument[ 1 ] = 0;
-    argument[ 2 ] = false;
-    
-    // If cvar_voteStatus == SHOW_STATUS_ALWAYS || cvar_voteStatus == SHOW_STATUS_AFTER_VOTE
+    // Same as if cvar_voteStatus == SHOW_STATUS_ALWAYS or cvar_voteStatus == SHOW_STATUS_AFTER_VOTE
     if( get_pcvar_num( cvar_voteStatus ) & SHOW_STATUS_AFTER_VOTE )
     {
         set_task( 1.0, "vote_display", TASKID_VOTE_DISPLAY, argument, sizeof( argument ), "a", g_voteDuration );
@@ -3146,60 +3105,54 @@ public vote_handleDisplay()
     {
         set_task( 1.0, "vote_display", TASKID_VOTE_DISPLAY, argument, sizeof( argument ) );
     }
+    
+    // display the vote outcome
+    set_task( float( g_voteDuration ), "closeVoting", TASKID_VOTE_EXPIRE )
 }
 
-public vote_display( argument[ 3 ] )
+public closeVoting()
 {
-#if defined DEBUG
-    new snuff = ( argument[ 1 ] > 0 ) ? g_snuffDisplay[ argument[ 1 ] ] : -1;
+    new argument[ 2 ] = { -1, -1 }
     
-    DEBUG_LOGGER( 4, "  ( votedisplay ) player_id: %i  updateTimeRemaining: %i, \
-            unsnuffDisplay: %i  g_snuffDisplay: %i  g_refreshVoteStatus: %i,^n  \
-            g_totalVoteOptions: %i  len( g_voteStatusClean ): %i", \
-            argument[ 1 ], argument[ 0 ], argument[ 2 ], snuff, g_refreshVoteStatus, \
-            g_totalVoteOptions, strlen( g_voteStatusClean )  )
-#endif
+    // waits until the last voting second to finish
+    set_task( 0.9, "voteExpire" )
     
-    new player_id = argument[ 1 ]
+    set_task( 1.0, "vote_display", TASKID_VOTE_DISPLAY, argument, sizeof argument, "a", 3 )
+    set_task( 5.5, "computeVotes", TASKID_VOTE_EXPIRE )
+}
+
+public voteExpire()
+{
+    g_voteStatus |= VOTE_IS_EXPIRED
+}
+
+public vote_display( argument[ 2 ] )
+{
+    new player_id           = argument[ 1 ]
+    new showStatus          = get_pcvar_num( cvar_voteStatus )
+    new charCount           = 0
+    new updateTimeRemaining = argument[ 0 ]
+    new noneOptionType      = get_pcvar_num( cvar_voteShowNoneOptionType )
     
-    // exists this function if necessary
-    if( player_id > 0
-        && g_snuffDisplay[ player_id ] )
-    {
-        new unsnuffDisplay = argument[ 2 ]
-        
-        if( unsnuffDisplay )
-        {
-            g_snuffDisplay[ player_id ] = false;
-        }
-        else
-        {
-            return
-        }
-    }
-    
-    // display the vote
-    new showStatus = get_pcvar_num( cvar_voteStatus )
-    
+    new bool:isToShowNoneOption = get_pcvar_num( cvar_voteShowNoneOption ) != 0
+    new bool:isVoteOver         = g_voteStatus & VOTE_IS_EXPIRED != 0
+    new bool:noneIsHidden       = ( isToShowNoneOption
+                                    && !noneOptionType
+                                    && !isVoteOver )
     static menuKeys
     static voteStatus  [ 512 ]
     static voteMapLine [ MAX_MAPNAME_LENGHT ]
+    static menuClean   [ 512 ] // menu showed while voting
+    static menuDirty   [ 512 ] // menu showed after voted
     
-    // menu showed while voting
-    static menuClean[ 512 ]
+    if( updateTimeRemaining )
+    {
+        g_voteDuration--;
+    }
     
-    // menu showed after voted
-    static menuDirty[ 512 ]
-    
-    new charCount               = 0
-    new updateTimeRemaining     = argument[ 0 ]
-    new noneOptionType          = get_pcvar_num( cvar_voteShowNoneOptionType )
-    new bool:isToShowNoneOption = get_pcvar_num( cvar_voteShowNoneOption ) != 0
-    new bool:isVoteOver         = ( updateTimeRemaining == -1
-                                    && player_id == -1 )
-    new bool:noneIsHidden = ( isToShowNoneOption
-                              && !noneOptionType
-                              && !isVoteOver )
+    DEBUG_LOGGER( 4, "  ( votedisplay ) player_id: %i, updateTimeRemaining: %i, g_refreshVoteStatus: \
+            %i,^n  g_totalVoteOptions: %i, len( g_voteStatusClean ): %i", argument[ 1 ], \
+            argument[ 0 ], g_refreshVoteStatus, g_totalVoteOptions, strlen( g_voteStatusClean )  )
     
     if( g_refreshVoteStatus
         || isVoteOver )
@@ -3227,11 +3180,6 @@ public vote_display( argument[ 3 ] )
         }
     }
     
-    if( updateTimeRemaining )
-    {
-        g_voteDuration--;
-    }
-    
     // This is to optionally display to single player that just voted.
     // Exactly after the player voted this function is only called with the correct player id.
     if( player_id > 0
@@ -3243,7 +3191,7 @@ public vote_display( argument[ 3 ] )
         calculate_menu_dirt( player_id, isToShowNoneOption, noneOptionType, isVoteOver,
                 voteStatus, menuDirty, charsmax( menuDirty ), noneIsHidden, showStatus )
         
-        display_vote_menu( false, false, player_id, menuDirty, menuKeys )
+        display_vote_menu( false, player_id, menuDirty, menuKeys )
     }
     else // just display to everyone
     {
@@ -3266,7 +3214,7 @@ public vote_display( argument[ 3 ] )
                 calculate_menu_clean( player_id, isToShowNoneOption, noneOptionType,
                         menuClean, charsmax( menuClean ), showStatus )
                 
-                display_vote_menu( true, false, player_id, menuClean, menuKeys )
+                display_vote_menu( true, player_id, menuClean, menuKeys )
             }
             else if( showStatus == SHOW_STATUS_ALWAYS
                      || ( isVoteOver
@@ -3277,7 +3225,7 @@ public vote_display( argument[ 3 ] )
                 calculate_menu_dirt( player_id, isToShowNoneOption, noneOptionType, isVoteOver,
                         voteStatus, menuDirty, charsmax( menuDirty ), noneIsHidden, showStatus )
                 
-                display_vote_menu( false, isVoteOver, player_id, menuDirty, menuKeys )
+                display_vote_menu( false, player_id, menuDirty, menuKeys )
             }
         }
     }
@@ -3290,10 +3238,12 @@ stock calculateExtensionOption( player_id, bool:isVoteOver, charCount, voteStatu
     {
         new voteMapLine[ MAX_MAPNAME_LENGHT ]
         
-        new bool:allowExtend = g_is_final_voting
-        new bool:allowStay   = ( ( g_voteStatus & VOTE_IS_EARLY
-                                   || g_voteStatus & VOTE_IS_FORCED )
+        new bool:allowExtend = ( g_is_final_voting
                                  && !( g_voteStatus & VOTE_IS_RUNOFF ) )
+        
+        new bool:allowStay = ( ( g_voteStatus & VOTE_IS_EARLY
+                                 || g_voteStatus & VOTE_IS_FORCED )
+                               && !( g_voteStatus & VOTE_IS_RUNOFF ) )
         
         if( g_isRunOffNeedingKeepCurrentMap )
         {
@@ -3404,9 +3354,7 @@ stock calculate_menu_dirt( player_id, isToShowNoneOption, noneOptionType, bool:i
     computeVoteMenuFooter( player_id, voteFooter, charsmax( voteFooter ), showStatus )
     
     // to append it here to always shows it AFTER voting.
-    if( isVoteOver
-        || ( showStatus != SHOW_STATUS_AT_END
-             && g_voteDuration < 1 ) )
+    if( isVoteOver )
     {
         // add the header
         formatex( menuHeader, charsmax( menuHeader ), "%s%L",
@@ -3435,8 +3383,8 @@ stock calculate_menu_dirt( player_id, isToShowNoneOption, noneOptionType, bool:i
         
         if( isToShowNoneOption )
         {
-            computeUndoButton( player_id, isToShowUndo, isVoteOver, noneOption,
-                    noneOptionType, charsmax( noneOption ) )
+            computeUndoButton( player_id, isToShowUndo, isVoteOver,
+                    noneOption, noneOptionType, charsmax( noneOption ) )
             
             // remove the extra space between 'voteStatus' and 'voteFooter', after the 'None' option is hidden
             if( noneIsHidden
@@ -3465,14 +3413,14 @@ stock computeVoteMenuFooter( player_id, voteFooter[], voteFooterSize, showStatus
     
     if( get_pcvar_num( cvar_voteExpCountdown ) )
     {
-        if( ( g_voteDuration <= 10
+        if( ( g_voteDuration < 10
               || get_pcvar_num( cvar_showVoteCounter ) )
             && showStatus != SHOW_STATUS_AT_END )
         {
-            if( g_voteDuration > 0 )
+            if( g_voteDuration >= 0 )
             {
                 formatex( voteFooter[ charCount ], voteFooterSize - charCount, "%s%L: %s%i",
-                        COLOR_WHITE, player_id, "GAL_TIMELEFT", COLOR_RED, g_voteDuration )
+                        COLOR_WHITE, player_id, "GAL_TIMELEFT", COLOR_RED, g_voteDuration + 1 )
             }
             else
             {
@@ -3578,7 +3526,7 @@ stock calculate_menu_clean( player_id, isToShowNoneOption, noneOptionType,
     }
 }
 
-stock display_vote_menu( bool:menuType, bool:isVoteOver, player_id, menuBody[], menuKeys )
+stock display_vote_menu( bool:menuType, player_id, menuBody[], menuKeys )
 {
     new menu_id
     new menukeys_unused
@@ -3602,7 +3550,7 @@ stock display_vote_menu( bool:menuType, bool:isVoteOver, player_id, menuBody[], 
         || menu_id == g_chooseMapMenuId )
     {
         show_menu( player_id, menuKeys, menuBody,
-                ( menuType ? g_voteDuration : ( isVoteOver ? 2 : max( 1, g_voteDuration ) ) ),
+                ( menuType ? g_voteDuration : max( 2, g_voteDuration ) ),
                 MENU_CHOOSEMAP )
     }
 }
@@ -3614,8 +3562,6 @@ public vote_handleChoice( player_id, key )
         client_cmd( player_id, "^"slot%i^"", key + 1 );
         return;
     }
-    
-    g_snuffDisplay[ player_id ] = true;
     
     if( !g_is_player_voted[ player_id ] )
     {
@@ -3638,11 +3584,7 @@ public vote_handleChoice( player_id, key )
     // display the vote again, with status
     if( get_pcvar_num( cvar_voteStatus ) & SHOW_STATUS_AFTER_VOTE )
     {
-        new argument[ 3 ];
-        
-        argument[ 0 ] = false;
-        argument[ 1 ] = player_id;
-        argument[ 2 ] = true;
+        new argument[ 2 ] = { false, -1 }
         
         set_task( 0.1, "vote_display", TASKID_VOTE_DISPLAY, argument, sizeof( argument ) );
     }
@@ -3712,7 +3654,7 @@ stock register_vote( player_id, pressedKeyCode )
 stock announceRegistedVote( player_id, pressedKeyCode )
 {
     new player_name[ MAX_PLAYER_NAME_LENGHT ]
-    new bool:isToAnnounceChoice = bool:get_pcvar_num( cvar_voteAnnounceChoice )
+    new bool:isToAnnounceChoice = get_pcvar_num( cvar_voteAnnounceChoice ) != 0
     
     if( isToAnnounceChoice )
     {
@@ -4156,7 +4098,7 @@ public computeVotes()
     }
     else // the execution flow gets here when anybody voted for next map
     {
-        if( !bool:get_pcvar_num( cvar_isExtendmapOrderAllowed ) )
+        if( !get_pcvar_num( cvar_isExtendmapOrderAllowed ) )
         {
             winnerVoteMapIndex = random_num( 0, g_totalVoteOptions - 1 );
             
@@ -4313,7 +4255,7 @@ stock start_rtvVote()
     new maxrounds_left = get_pcvar_num( g_maxrounds_pointer ) - g_total_rounds_played
     new winlimit_left  = get_pcvar_num( g_winlimit_pointer ) - max( g_total_CT_wins, g_total_terrorists_wins )
     
-    if( bool:get_pcvar_num( cvar_endOnRound_rtv )
+    if( get_pcvar_num( cvar_endOnRound_rtv )
         && get_realplayersnum() >= get_pcvar_num( cvar_endOnRound_rtv ) )
     {
         g_is_last_round     = true
@@ -4780,7 +4722,7 @@ public inicializeEmptyCycleFeature()
 {
     if( get_realplayersnum() == 0 )
     {
-        if( bool:get_pcvar_num( cvar_isToStopEmptyCycle ) )
+        if( get_pcvar_num( cvar_isToStopEmptyCycle ) )
         {
             configureNextEmptyCycleMap()
         }
@@ -5258,7 +5200,7 @@ public map_restoreOriginalTimeLimit()
         g_is_timeLimitChanged = false;
     }
     
-    if( get_cvar_float( "sv_maxspeed" ) == 0 )
+    if( g_original_sv_maxspeed )
     {
         set_cvar_float( "sv_maxspeed", g_original_sv_maxspeed )
     }
@@ -5781,7 +5723,7 @@ stock test_register_test()
  */
 stock test_is_map_extension_allowed()
 {
-    new chainDelay = 2 + 2 + 1
+    new chainDelay = 2 + 2 + 1 + 1 + 1
     new test_id    = register_test( chainDelay, "test_is_map_extension_allowed" )
     
     SET_TEST_FAILURE( test_id, g_is_map_extension_allowed, "g_is_map_extension_allowed must be 0 (it was %d)", \
@@ -5822,7 +5764,7 @@ public test_is_map_extension_allowed2( chainDelay )
     SET_TEST_FAILURE( test_id, g_is_map_extension_allowed, "g_is_map_extension_allowed must be 0 (it was %d)", \
             g_is_map_extension_allowed )
     
-    set_task( 2.0, "test_end_of_map_voting_start", chainDelay )
+    set_task( 2.0, "test_end_of_map_voting_start_1", chainDelay )
 }
 
 /**
@@ -5830,9 +5772,9 @@ public test_is_map_extension_allowed2( chainDelay )
  *
  * Tests if the end map voting is starting automatically at the end of map due time limit expiration.
  */
-public test_end_of_map_voting_start( chainDelay )
+public test_end_of_map_voting_start_1( chainDelay )
 {
-    new test_id = register_test( chainDelay, "test_end_of_map_voting_start" )
+    new test_id = register_test( chainDelay, "test_end_of_map_voting_start_1" )
     
     SET_TEST_FAILURE( test_id, g_is_map_extension_allowed, "g_is_map_extension_allowed must be 0 (it was %d)", \
             g_is_map_extension_allowed )
@@ -5841,9 +5783,11 @@ public test_end_of_map_voting_start( chainDelay )
     
     new secondsLeft = get_timeleft();
     
-    set_pcvar_float( g_timelimit_pointer, (
-                ( get_pcvar_float( g_timelimit_pointer ) ) * 60 - secondsLeft
-                + START_VOTEMAP_MIN_TIME - 10 ) / 60 )
+    set_pcvar_float( g_timelimit_pointer,
+            ( get_pcvar_float( g_timelimit_pointer ) * 60
+              - secondsLeft
+              + START_VOTEMAP_MAX_TIME + 15 )
+            / 60 )
     
     set_task( 1.0, "test_end_of_map_voting_start_2", chainDelay )
 }
@@ -5861,9 +5805,48 @@ public test_end_of_map_voting_start_2( chainDelay )
     
     SET_TEST_FAILURE( test_id, !( g_voteStatus & VOTE_IS_IN_PROGRESS ), "vote_startDirector() does not started!" )
     
-    // cancel the voting started by the timelimit expiration on test_end_of_map_voting_start()
     set_pcvar_float( g_timelimit_pointer, 20.0 )
     cancel_voting()
+    
+    set_task( 1.0, "test_end_of_map_voting_stop_1", chainDelay )
+}
+
+/**
+ * This is the 5º test at vote_startDirector() chain.
+ *
+ * Tests if the end map voting is NOT starting automatically at the end of map due time limit expiration.
+ */
+public test_end_of_map_voting_stop_1( chainDelay )
+{
+    new test_id = register_test( chainDelay, "test_end_of_map_voting_stop_1" )
+    
+    vote_manageEnd()
+    
+    SET_TEST_FAILURE( test_id, ( g_voteStatus & VOTE_IS_IN_PROGRESS ) != 0, "vote_startDirector() does started!" )
+    
+    set_pcvar_float( g_timelimit_pointer, 1.0 )
+    cancel_voting()
+    
+    set_task( 1.0, "test_end_of_map_voting_stop_2", chainDelay )
+}
+
+/**
+ * This is the 6º test at vote_startDirector() chain.
+ *
+ * Tests if the end map voting is NOT starting automatically at the end of map due time limit expiration.
+ */
+public test_end_of_map_voting_stop_2( chainDelay )
+{
+    new test_id = register_test( chainDelay, "test_end_of_map_voting_stop_2" )
+    
+    vote_manageEnd()
+    
+    SET_TEST_FAILURE( test_id, ( g_voteStatus & VOTE_IS_IN_PROGRESS ) != 0, "vote_startDirector() does started!" )
+    
+    set_pcvar_float( g_timelimit_pointer, 20.0 )
+    cancel_voting()
+    
+    //set_task( 1.0, "test_end_of_map_voting_stop_____", chainDelay )
 }
 
 /**
@@ -5876,13 +5859,13 @@ stock test_gal_in_empty_cycle_case1()
     set_pcvar_num( cvar_isToStopEmptyCycle, 1 )
     client_authorized( 1 )
     
-    SET_TEST_FAILURE( test_id, bool:get_pcvar_num( cvar_isToStopEmptyCycle ), "cvar_isToStopEmptyCycle \
+    SET_TEST_FAILURE( test_id, get_pcvar_num( cvar_isToStopEmptyCycle ) != 0, "cvar_isToStopEmptyCycle \
             must be 0 (it was %d)", get_pcvar_num( cvar_isToStopEmptyCycle ) )
     
     set_pcvar_num( cvar_isToStopEmptyCycle, 0 )
     client_authorized( 1 )
     
-    SET_TEST_FAILURE( test_id, bool:get_pcvar_num( cvar_isToStopEmptyCycle ), "cvar_isToStopEmptyCycle \
+    SET_TEST_FAILURE( test_id, get_pcvar_num( cvar_isToStopEmptyCycle ) != 0, "cvar_isToStopEmptyCycle \
             must be 0 (it was %d)", get_pcvar_num( cvar_isToStopEmptyCycle ) )
 }
 
