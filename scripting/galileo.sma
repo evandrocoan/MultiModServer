@@ -3111,7 +3111,7 @@ public vote_handleDisplay()
     }
     
     // display the vote outcome + 1.0 from 'vote_display' initial delay
-    set_task( float( g_voteDuration ) + 1.0, "closeVoting", TASKID_VOTE_EXPIRE )
+    set_task( float( g_voteDuration ), "closeVoting", TASKID_VOTE_EXPIRE )
 }
 
 public closeVoting()
@@ -3121,8 +3121,8 @@ public closeVoting()
     // waits until the last voting second to finish
     set_task( 0.9, "voteExpire" )
     
-    set_task( 1.0, "vote_display", TASKID_VOTE_DISPLAY, argument, sizeof argument, "a", 5 )
-    set_task( 6.0, "computeVotes", TASKID_VOTE_EXPIRE )
+    set_task( 1.0, "vote_display", TASKID_VOTE_DISPLAY, argument, sizeof argument, "a", 3 )
+    set_task( 5.5, "computeVotes", TASKID_VOTE_EXPIRE )
 }
 
 public voteExpire()
@@ -3256,10 +3256,12 @@ stock calculateExtensionOption( player_id, bool:isVoteOver, charCount, voteStatu
     {
         new voteMapLine[ MAX_MAPNAME_LENGHT ]
         
-        new bool:allowExtend = g_is_final_voting
-        new bool:allowStay   = ( ( g_voteStatus & VOTE_IS_EARLY
-                                   || g_voteStatus & VOTE_IS_FORCED )
+        new bool:allowExtend = ( g_is_final_voting
                                  && !( g_voteStatus & VOTE_IS_RUNOFF ) )
+        
+        new bool:allowStay = ( ( g_voteStatus & VOTE_IS_EARLY
+                                 || g_voteStatus & VOTE_IS_FORCED )
+                               && !( g_voteStatus & VOTE_IS_RUNOFF ) )
         
         if( g_isRunOffNeedingKeepCurrentMap )
         {
@@ -5806,10 +5808,10 @@ public test_end_of_map_voting_start_1( chainDelay )
     new secondsLeft = get_timeleft();
     
     set_pcvar_float( g_timelimit_pointer,
-                ( get_pcvar_float( g_timelimit_pointer ) * 60
-                - secondsLeft
-                + START_VOTEMAP_MAX_TIME + 15 )
-                / 60 )
+            ( get_pcvar_float( g_timelimit_pointer ) * 60
+              - secondsLeft
+              + START_VOTEMAP_MAX_TIME + 15 )
+            / 60 )
     
     set_task( 1.0, "test_end_of_map_voting_start_2", chainDelay )
 }
