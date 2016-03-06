@@ -899,7 +899,9 @@ stock intermission_display()
         if( get_pcvar_num( cvar_isEndMapCountdown ) )
         {
             // freeze the game and show the scoreboard
+            g_isTimeToResetGame    = true
             g_original_sv_maxspeed = get_cvar_float( "sv_maxspeed" )
+            
             set_cvar_float( "sv_maxspeed", 0.0 )
             
             client_cmd( 0, "slot1" )
