@@ -837,7 +837,7 @@ public process_last_round()
     {
         configure_last_round_HUD()
     }
-    else if( bool:get_pcvar_num( cvar_isEndMapCountdown ) )
+    else if( get_pcvar_num( cvar_isEndMapCountdown ) )
     {
         g_last_round_countdown = 6;
         set_task( 1.0, "process_last_round_counting", TASKID_PROCESS_LAST_ROUND, _, _, "a", 6 );
@@ -897,7 +897,7 @@ stock intermission_display()
             set_task( mp_chattime, "map_change", TASKID_MAP_CHANGE );
         }
         
-        if( bool:get_pcvar_num( cvar_isEndMapCountdown ) )
+        if( get_pcvar_num( cvar_isEndMapCountdown ) )
         {
             // freeze the game and show the scoreboard
             g_original_sv_maxspeed = get_cvar_float( "sv_maxspeed" )
@@ -1035,7 +1035,7 @@ public reset_rounds_scores()
 
 public configure_last_round_HUD()
 {
-    if( bool:get_pcvar_num( cvar_endOnRound_msg ) )
+    if( get_pcvar_num( cvar_endOnRound_msg ) )
     {
         set_task( 1.0, "show_last_round_HUD", TASKID_SHOW_LAST_ROUND_HUD, _, _, "b" )
     }
@@ -2395,7 +2395,7 @@ stock vote_startDirector( bool:is_forced_voting )
     
     #if !( DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST )
         
-        if( bool:get_pcvar_num( cvar_isEmptyCycleServerChange ) )
+        if( get_pcvar_num( cvar_isEmptyCycleServerChange ) )
         {
             startEmptyCycleSystem()
         }
@@ -2572,7 +2572,7 @@ public closeVoting()
 
 public pendingVoteCountdown()
 {
-    if( bool:get_pcvar_num( cvar_isToAskForEndOfTheMapVote )
+    if( get_pcvar_num( cvar_isToAskForEndOfTheMapVote )
         && !( g_voteStatus & VOTE_IS_RUNOFF ) )
     {
         displayEndOfTheMapVoteMenu( 0 )
@@ -3712,7 +3712,7 @@ stock register_vote( player_id, pressedKeyCode )
 stock announceRegistedVote( player_id, pressedKeyCode )
 {
     new player_name[ MAX_PLAYER_NAME_LENGHT ]
-    new bool:isToAnnounceChoice = bool:get_pcvar_num( cvar_voteAnnounceChoice )
+    new bool:isToAnnounceChoice = get_pcvar_num( cvar_voteAnnounceChoice ) != 0
     
     if( isToAnnounceChoice )
     {
@@ -4156,7 +4156,7 @@ public computeVotes()
     }
     else // the execution flow gets here when anybody voted for next map
     {
-        if( !bool:get_pcvar_num( cvar_isExtendmapOrderAllowed ) )
+        if( !get_pcvar_num( cvar_isExtendmapOrderAllowed ) )
         {
             winnerVoteMapIndex = random_num( 0, g_totalVoteOptions - 1 );
             
@@ -4313,7 +4313,7 @@ stock start_rtvVote()
     new maxrounds_left = get_pcvar_num( g_maxrounds_pointer ) - g_total_rounds_played
     new winlimit_left  = get_pcvar_num( g_winlimit_pointer ) - max( g_total_CT_wins, g_total_terrorists_wins )
     
-    if( bool:get_pcvar_num( cvar_endOnRound_rtv )
+    if( get_pcvar_num( cvar_endOnRound_rtv )
         && get_realplayersnum() >= get_pcvar_num( cvar_endOnRound_rtv ) )
     {
         g_is_last_round     = true
@@ -4780,7 +4780,7 @@ public inicializeEmptyCycleFeature()
 {
     if( get_realplayersnum() == 0 )
     {
-        if( bool:get_pcvar_num( cvar_isToStopEmptyCycle ) )
+        if( get_pcvar_num( cvar_isToStopEmptyCycle ) )
         {
             configureNextEmptyCycleMap()
         }
@@ -5876,13 +5876,13 @@ stock test_gal_in_empty_cycle_case1()
     set_pcvar_num( cvar_isToStopEmptyCycle, 1 )
     client_authorized( 1 )
     
-    SET_TEST_FAILURE( test_id, bool:get_pcvar_num( cvar_isToStopEmptyCycle ), "cvar_isToStopEmptyCycle \
+    SET_TEST_FAILURE( test_id, get_pcvar_num( cvar_isToStopEmptyCycle ), "cvar_isToStopEmptyCycle \
             must be 0 (it was %d)", get_pcvar_num( cvar_isToStopEmptyCycle ) )
     
     set_pcvar_num( cvar_isToStopEmptyCycle, 0 )
     client_authorized( 1 )
     
-    SET_TEST_FAILURE( test_id, bool:get_pcvar_num( cvar_isToStopEmptyCycle ), "cvar_isToStopEmptyCycle \
+    SET_TEST_FAILURE( test_id, get_pcvar_num( cvar_isToStopEmptyCycle ), "cvar_isToStopEmptyCycle \
             must be 0 (it was %d)", get_pcvar_num( cvar_isToStopEmptyCycle ) )
 }
 
