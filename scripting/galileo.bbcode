@@ -1,32 +1,40 @@
-[anchor]Top[/anchor][SIZE="6"][COLOR="Blue"][B]Galileo v2.0.1[/B][/COLOR][/SIZE] A feature rich map voting plugin
-[SIZE=1][COLOR=Red]Release: 12.09.2008 | Last Update: 03.03.2016[/SIZE][/COLOR]
+[anchor]Top[/anchor][SIZE="6"][COLOR="Blue"][B]Galileo v2.1[/B][/COLOR][/SIZE] A feature rich map voting plugin
+[SIZE=1][COLOR=Red]Release: 12.09.2008 | Last Update: 05.03.2016[/SIZE][/COLOR]
 
 If you want to translate the Galileo Mapchooser to your language or if you see some 
 error or bad coloring tags positioning at the current translations, feel free to correct
 and come here to [URL="https://forums.alliedmods.net/showthread.php?t=277636"]this translation request thread[/URL] to post your translation or fix.
 
-[SIZE="5"][COLOR="blue"][B]Contents' Table[/B][/COLOR][/SIZE] 
+[SIZE="5"][COLOR="blue"][B]Contents' Table[/B][/COLOR][/SIZE]
 
-[LIST]
+[LIST=1]
 [*][goanchor=Introduction]Introduction[/goanchor]
+[*][goanchor=Brief]Small/Brief Features' list[/goanchor]
 [*][goanchor=Requirements]Requirements and Commands[/goanchor]
 [*][goanchor=Installation]Installation[/goanchor]
 [*][goanchor=TODO]TODO[/goanchor]
-[*][goanchor=Screen]Screenshots[/goanchor]
 [*][goanchor=Change]Change Log[/goanchor]
 [*][goanchor=Credits]Credits[/goanchor]
 [*][goanchor=Sourcecode]Source Code and Support[/goanchor]
-[*][goanchor=Downloads]Downloads[/goanchor]
+[*][B]Downloads[/B]:
+   [LIST=1]
+   [*][goanchor=Development]Development Versions[/goanchor]
+   [*][goanchor=Mapcycle]Setting up a Mapcycle[/goanchor]
+   [*][goanchor=Old]Old Versions Downloads[/goanchor]
+   [*][goanchor=LatestRelease]Latest Release Download[/goanchor]
+   [/LIST]
+[*][goanchor=Screen]Screenshots[/goanchor]
+[*][goanchor=Compilations]Compilations Data[/goanchor]
 [/LIST]
 
-[B]How to upgrade your Galileo?[/B]
+[SIZE="3"][B]How to upgrade your Galileo?[/B][/SIZE]
 [LIST=1]
 [*]Download the "[B]galileo.amxx[/B]"
 [*]Replace your currenty installed version.
 [*]It is done.
 [/LIST]
 
-[B]What will be the diference by upgrading your Galileo?[/B]
+[SIZE="3"][B]What will be the diference by upgrading your Galileo?[/B][/SIZE]
 [LIST=1]
 [*]You will get [B]bug [COLOR="Red"]fixes[/COLOR][/B].
 [*]You will have [B][COLOR="Blue"]new[/COLOR] features[/B].
@@ -37,7 +45,8 @@ new configurations file at the '[COLOR="Blue"].configs/galileo/[/COLOR][B]galile
 at '[COLOR="Blue"]./data/lang/[/COLOR][B]galileo.txt[/B]' location.
 
 
-[B]Miscellaneous:[/B][LIST=1]
+[SIZE="3"][B]Miscellaneous:[/B][/SIZE]
+[LIST=1]
 [*]You need to disable [B]nextmap.amxx[/B].
 [*]You need to disable any other map choosing plugins, such as [B]mapchooser.amxx[/B].
 [/LIST]
@@ -94,7 +103,7 @@ galileo.cfg contents.
 [/PHP]
 
 
-[COLOR="Blue"][B]Small / Brief Features' list:[/B][/COLOR]
+********************** [anchor]Brief[/anchor][SIZE="5"][COLOR="Blue"][B]Small / Brief Features' list:[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor] ******
 [QUOTE]
 [LIST=1]
  [*] Ability to "[B]rock the vote[/B]".
@@ -174,7 +183,7 @@ galileo.cfg contents.
 1
 7
      [/CODE]This maps groups configuration means to load [COLOR="red"]up to 1 map[/COLOR] from the file '[B]1.ini[/B]'
-     (1º line after [groups]) and [COLOR="red"]up to 7 maps[/COLOR] from '[B]2.ini[/B]' (2º line after [groups]).
+     (1? line after [groups]) and [COLOR="red"]up to 7 maps[/COLOR] from '[B]2.ini[/B]' (2? line after [groups]).
 
      Then you only need to create the files '[B]1.ini[/B]' and '[B]2.ini[/B]' in the '[B]./configs/galileo/[/B]'
      folder. And in the file '[B]1.ini[/B]' you put only the '[COLOR="Blue"]de_dust2[/COLOR]' map, and in the file '[B]2.ini[/B]'
@@ -185,8 +194,9 @@ galileo.cfg contents.
      nominations and none of them is '[COLOR="blue"]de_dust2[/COLOR]'. The map '[COLOR="Blue"]de_dust2[/COLOR]' will not be loaded
      on this case because the maximum maps available on any voting is [COLOR="Blue"][B]1 + 7 = 8[/B][/COLOR].
      And as the map nominations are loaded before filling the map voting list using the
-     map fillers from your map groups files '[B]1.ini[/B]' (1º line after [groups]) and '[B]2.ini[/B]'
-     (2º line after [groups]).
+     map fillers from your map groups files '[B]1.ini[/B]' (1? line after [groups]) and '[B]2.ini[/B]'
+     (2? line after [groups]), the map '[COLOR="blue"]de_dust2[/COLOR]' will not be added because there is not
+     enough space.
      
      
  [*] [COLOR="Blue"][B]The mapcycle whitelist[/B][/COLOR]:
@@ -216,10 +226,15 @@ de_dust2_long
 
 ********************** [anchor]Requirements[/anchor][SIZE="5"][COLOR="Blue"][B]Requirements and Commands[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor]  ******
 
-Amx Mod X [B]1.8[/B] or [COLOR="Red"][B]higher only[/B][/COLOR]
-The Default '[B]Amx Mod X[/B]' [COLOR="Red"]NextMap Plugin [B]Disabled[/B][/COLOR] (nextmap.amxx)
+[SIZE="3"][B]Server's Requirements:[/B][/SIZE]
+[LIST=1]
+[*]Amx Mod X [B]1.8[/B] or [COLOR="Red"][B]higher only[/B][/COLOR]
+[*]The Default '[B]Amx Mod X[/B]' [COLOR="Red"]NextMap Plugin [B]Disabled[/B][/COLOR] (nextmap.amxx)
+[*]Any other [B]mapchooser[/B] plugin [B]disabled[/B].
+[/LIST]
 
-[B]Client's Commands:[/B]
+[SIZE="3"][B]Client's Commands:[/B][/SIZE]
+
 [B]//[/B] Displays, to all players, the next map that will be played.  This is
 [B]//[/B] a replacement for AMXX's command of the same name.
 [B]//[/B] When using end of map voting (CVAR "gal_endofmapvote" and
@@ -306,6 +321,16 @@ galileo.amxx
 
 ******************************** [anchor]Change[/anchor][B][SIZE="5"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
 
+[SPOILER][B]2016-03-05 | v2.1[/B]
+[LIST=1]
+[*]Improved the 'vote_startDirector()' Unit Tests sequencial running.
+[*]Fixed the cvar 'gal_nextmap_change' working when the cvar 'gal_endofmapvote' is disabled.
+[*]Created a voting round start detection delay, to give time to buy weapons before the voting to start.
+[*]Added new cvar 'gal_endofmapvote_start' to enable or disabled the voting round start detection delay.
+[*]Fixed to start an early map vote after the first two minutes bad behavior.
+[*]Fixed a new voting reset after the 'gal_cancelvote' command.
+[/LIST]
+
 [SPOILER][B]2016-03-03 | v2.0.1[/B]
 [LIST=1]
 [*]Fixed the voting menu being showed after the admin's vote cancel.
@@ -383,7 +408,7 @@ being loaded.
 [*]Fixed 'None' vote map option blink at the last second.
 [*]Fixed voting on option none after the voting end.
 [*]Fixed remainning time showing 0 seconds instead of 'vote has ended'.
-[*]Added new cvar 'gal_vote_show_none_type', to control the 'None' option should behavior when it is active.
+[*]Added new cvar 'gal_vote_show_none_type', to control the 'None' option behavior when it is active.
 [*]Fixed 'gal_vote_showstatus' option 2, causing the voting to show the countdown timer freezed.
 [/LIST]
 
@@ -569,9 +594,10 @@ from the [B]amxx cvars[/B] command. They will be grouped together.
 
 ******************************** [anchor]Downloads[/anchor][SIZE="5"][COLOR="Blue"][B]Downloads[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor] *************************
 
-[B]Development Versions[/B]:
+[anchor]Development[/anchor][SIZE="3"][B]Development Versions[/B][/SIZE]: [goanchor=Top]Go to top[/goanchor]
+
 Here you can see what is going on the latest [COLOR="Red"]unreleased[/COLOR] version over development at: 
-[URL="https://github.com/addonszz/Galileo/commits/develop"]Github
+[URL="https://github.com/addonszz/Galileo/commits/develop"][B]Github[/B]
 [IMG]http://i.imgur.com/TWUBJiH.png[/IMG]
 https://github.com/addonszz/Galileo/commits/develop[/URL]
 
@@ -580,11 +606,12 @@ And this is a direct link to always to download the latest [COLOR="Red"]unreleas
 
 And because it is the development version, the debugging is enabled. Go to around the 'line 39' and find:[PAWN]
 #define DEBUG_LEVEL SomeNumber(s)[/PAWN]and change it to:[PAWN]
-#define DEBUG_LEVEL 0[/PAWN]Note that these versions above are probably not tested or maybe not stable as the [B][COLOR="Blue"]current version[/COLOR]
-available [COLOR="Red"]below[/B][/COLOR].
+#define DEBUG_LEVEL 0[/PAWN]Note that these versions above are probably not tested or maybe not stable as the [goanchor=LatestRelease]Latest Release
+Download[/goanchor] [B][COLOR="Red"]below[/B][/COLOR].
 
 
-[B]Setting up a Mapcycle[/B]:
+[anchor]Mapcycle[/anchor][SIZE="3"][B]Setting up a Mapcycle[/B][/SIZE]: [goanchor=Top]Go to top[/goanchor]
+
 [QUOTE=azure;11799]hrrmm this is very interesting. Could I set this up to change the mapcycle possibly?
 
 like have mapcycle 1 from 9 till 23 and then mapcycle2 from 23 til 9?
@@ -597,13 +624,14 @@ cvars:[LIST=1]mapcyclefile
 [*]gal_emptyserver_mapfile[/LIST]To use another mapcycle files which does not contain the maps you do not want to use by early hours.
 
 
-[B]Old Versions Downloads[/B]:
+[anchor]Old[/anchor][SIZE="3"][B]Old Versions Downloads[/B][/SIZE]: [goanchor=Top]Go to top[/goanchor]
 
 [URL="https://github.com/addonszz/Galileo/releases"] https://github.com/addonszz/Galileo/releases[/URL]
-[LIST=1]
-[*]v1.2-alpha2.hotfix1: (galileo.sma - 111 views - 92.9 KB)
-[*]v1.2:                (galileo.sma - 70 views - 188.0 KB)
-[/LIST]
+[CODE]
+v1.2                    (galileo.sma - 70 views - 188.0 KB)
+v1.2-alpha2.hotfix1     (galileo.sma - 111 views - 92.9 KB)
+v1.1.290                (galileo.zip - 42069 views - 29.8 KB)
+[/CODE]
 
-[SIZE="3"][B][COLOR="Blue"]Current Version Available[/COLOR][/B][/SIZE]:
+[anchor]LatestRelease[/anchor][SIZE="7"][B][COLOR="Blue"]Latest Release Download[/COLOR][/B][/SIZE]: [goanchor=Top]Go to top[/goanchor]
 
