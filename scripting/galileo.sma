@@ -22,7 +22,7 @@
 *****************************************************************************************
 */
 
-new const PLUGIN_VERSION[] = "2.1.2"
+new const PLUGIN_VERSION[] = "2.1.3"
 
 #include <amxmodx>
 #include <amxmisc>
@@ -37,7 +37,7 @@ new const PLUGIN_VERSION[] = "2.1.2"
  * 4   - To create fake votes.
  * 7   - Levels 1, 2 and 4.
  */
-#define DEBUG_LEVEL 1 + 4 + 2
+#define DEBUG_LEVEL 0
 
 #define DEBUG_LEVEL_NORMAL     1
 #define DEBUG_LEVEL_UNIT_TEST  2
