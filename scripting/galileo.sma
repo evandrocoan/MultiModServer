@@ -22,7 +22,7 @@
 *****************************************************************************************
 */
 
-new const PLUGIN_VERSION[] = "2.1.3"
+new const PLUGIN_VERSION[] = "2.1.4"
 
 #include <amxmodx>
 #include <amxmisc>
@@ -411,10 +411,10 @@ new g_pendingVoteCountdown
 new g_last_round_countdown
 new g_rtv_wait_admin_number
 new g_emptyCycleMapsNumber
-new g_cntRecentMap;
-new g_nominationMapCnt;
+new g_recentMapCount;
+new g_nominationMapCount;
 new g_rtvWaitRounds
-new g_rockedVoteCnt;
+new g_rockedVoteCount;
 
 new Float:g_rtvWait;
 
@@ -467,10 +467,10 @@ new bool:g_is_player_cancelled_vote [ MAX_PLAYERS_COUNT ]
 new bool:g_answeredForEndOfMapVote  [ MAX_PLAYERS_COUNT ]
 new bool:g_rockedVote               [ MAX_PLAYERS_COUNT ]
 
-new g_mapPrefix      [ MAX_PREFIX_COUNT ][ 16 ]
-new g_nomination     [ MAX_PLAYERS_COUNT ][ MAX_NOMINATION_COUNT ]
-new g_recentMap      [ MAX_RECENT_MAP_COUNT ][ MAX_MAPNAME_LENGHT ]
-new g_votingMapNames [ MAX_OPTIONS_IN_VOTE ][ MAX_MAPNAME_LENGHT ]
+new g_mapPrefixes        [ MAX_PREFIX_COUNT ][ 16 ]
+new g_playersNominations [ MAX_PLAYERS_COUNT ][ MAX_NOMINATION_COUNT ]
+new g_recentMaps         [ MAX_RECENT_MAP_COUNT ][ MAX_MAPNAME_LENGHT ]
+new g_votingMapNames     [ MAX_OPTIONS_IN_VOTE ][ MAX_MAPNAME_LENGHT ]
 
 new g_nominationCount
 new g_chooseMapMenuId
@@ -1199,9 +1199,9 @@ public handleServerStart( backupMapsFilePath[] )
                 map_loadNominationList();
             }
             
-            if( g_nominationMapCnt )
+            if( g_nominationMapCount )
             {
-                ArrayGetString( g_nominationMap, random_num( 0, g_nominationMapCnt - 1 ), mapToChange,
+                ArrayGetString( g_nominationMap, random_num( 0, g_nominationMapCount - 1 ), mapToChange,
                         charsmax( mapToChange )  );
             }
         }
@@ -1370,7 +1370,7 @@ public map_loadRecentList()
     if( recentMapsFile )
     {
         new recentMapName[ MAX_MAPNAME_LENGHT ];
-        new maxRecentMapsBans = min( get_pcvar_num( cvar_recentMapsBannedNumber ), sizeof g_recentMap )
+        new maxRecentMapsBans = min( get_pcvar_num( cvar_recentMapsBannedNumber ), sizeof g_recentMaps )
         
         while( !feof( recentMapsFile ) )
         {
@@ -1379,11 +1379,11 @@ public map_loadRecentList()
             
             if( recentMapName[ 0 ] )
             {
-                if( g_cntRecentMap == maxRecentMapsBans )
+                if( g_recentMapCount == maxRecentMapsBans )
                 {
                     break;
                 }
-                copy( g_recentMap[ g_cntRecentMap++ ], charsmax( recentMapName ), recentMapName );
+                copy( g_recentMaps[ g_recentMapCount++ ], charsmax( recentMapName ), recentMapName );
             }
         }
         fclose( recentMapsFile );
@@ -1403,7 +1403,7 @@ public map_writeRecentList()
         
         for( new mapIndex = 0; mapIndex < get_pcvar_num( cvar_recentMapsBannedNumber ) - 1; ++mapIndex )
         {
-            fprintf( recentMapsFile, "^n%s", g_recentMap[ mapIndex ] );
+            fprintf( recentMapsFile, "^n%s", g_recentMaps[ mapIndex ] );
         }
         
         fclose( recentMapsFile );
@@ -1437,21 +1437,23 @@ public cmd_listrecent( player_id )
     {
         case 1:
         {
-            new msg[ 101 ], msgIdx;
+            new charCount
+            new recentMaps[ 101 ]
             
-            for( new idx = 0; idx < g_cntRecentMap; ++idx )
+            for( new map_index = 0; map_index < g_recentMapCount; ++map_index )
             {
-                msgIdx += formatex( msg[ msgIdx ], charsmax( msg ) - msgIdx, ", %s", g_recentMap[ idx ] );
+                charCount += formatex( recentMaps[ charCount ],
+                        charsmax( recentMaps ) - charCount, ", %s", g_recentMaps[ map_index ] );
             }
             
-            color_print( 0, "^1%L: %s", LANG_PLAYER, "GAL_MAP_RECENTMAPS", msg[ 2 ] );
+            color_print( 0, "^1%L: %s", LANG_PLAYER, "GAL_MAP_RECENTMAPS", recentMaps[ 2 ] );
         }
         case 2:
         {
-            for( new idx = 0; idx < g_cntRecentMap; ++idx )
+            for( new map_index = 0; map_index < g_recentMapCount; ++map_index )
             {
                 color_print( 0, "^1%L ( %i ): %s", LANG_PLAYER, "GAL_MAP_RECENTMAP",
-                        idx + 1, g_recentMap[ idx ] );
+                        map_index + 1, g_recentMaps[ map_index ] );
             }
         }
         case 3:
@@ -1469,9 +1471,9 @@ public cmd_listrecent( player_id )
             
             g_nominationMatchesMenu[ player_id ] = menu_create( "Nominate Map", "cmd_listrecent_handler" );
             
-            for( new idx = 0; idx < g_cntRecentMap; ++idx )
+            for( new map_index = 0; map_index < g_recentMapCount; ++map_index )
             {
-                menu_additem( g_nominationMatchesMenu[ player_id ], g_recentMap[ idx ] )
+                menu_additem( g_nominationMatchesMenu[ player_id ], g_recentMaps[ map_index ] )
             }
             
             menu_display( player_id, g_nominationMatchesMenu[ player_id ] )
@@ -1681,7 +1683,7 @@ public map_loadNominationList()
     
     DEBUG_LOGGER( 4, "( map_loadNominationList() ) cvar_nomMapFilePath nomMapFilePath: %s", nomMapFilePath )
     
-    g_nominationMapCnt = map_populateList( g_nominationMap, nomMapFilePath );
+    g_nominationMapCount = map_populateList( g_nominationMap, nomMapFilePath );
 }
 
 public cmd_createMapFile( player_id, level, cid )
@@ -1794,7 +1796,7 @@ public map_loadPrefixList()
                 if( g_mapPrefixCnt <= MAX_PREFIX_COUNT )
                 {
                     trim( loadedMapPrefix );
-                    copy( g_mapPrefix[ g_mapPrefixCnt++ ], charsmax( loadedMapPrefix ), loadedMapPrefix );
+                    copy( g_mapPrefixes[ g_mapPrefixCnt++ ], charsmax( loadedMapPrefix ), loadedMapPrefix );
                 }
                 else
                 {
@@ -1821,9 +1823,9 @@ stock map_getIndex( text[] )
     
     for( new prefixIdx = 0; prefixIdx < g_mapPrefixCnt; ++prefixIdx )
     {
-        formatex( map, charsmax( map ), "%s%s", g_mapPrefix[ prefixIdx ], text );
+        formatex( map, charsmax( map ), "%s%s", g_mapPrefixes[ prefixIdx ], text );
         
-        for( mapIndex = 0; mapIndex < g_nominationMapCnt; ++mapIndex )
+        for( mapIndex = 0; mapIndex < g_nominationMapCount; ++mapIndex )
         {
             ArrayGetString( g_nominationMap, mapIndex, nominationMap, charsmax( nominationMap ) );
             
@@ -1914,12 +1916,12 @@ public cmd_say( player_id )
                         for( prefix_index = 0; prefix_index < g_mapPrefixCnt; prefix_index++ )
                         {
                             DEBUG_LOGGER( 4, "( cmd_say ) arg1: %s, prefix_index: %d, \
-                                    g_mapPrefix[ prefix_index ]: %s, \
-                                    contain( arg1, g_mapPrefix[ prefix_index ] ): %d", \
-                                    arg1, prefix_index, g_mapPrefix[ prefix_index ], \
-                                    contain( arg1, g_mapPrefix[ prefix_index ] ) )
+                                    g_mapPrefixes[ prefix_index ]: %s, \
+                                    contain( arg1, g_mapPrefixes[ prefix_index ] ): %d", \
+                                    arg1, prefix_index, g_mapPrefixes[ prefix_index ], \
+                                    contain( arg1, g_mapPrefixes[ prefix_index ] ) )
                             
-                            if( contain( arg1, g_mapPrefix[ prefix_index ] ) > -1 )
+                            if( contain( arg1, g_mapPrefixes[ prefix_index ] ) > -1 )
                             {
                                 nomination_menu( player_id )
                                 return PLUGIN_HANDLED;
@@ -1976,7 +1978,7 @@ stock nomination_menu( player_id )
     new nominationMap[ MAX_MAPNAME_LENGHT ]
     new disabledReason[ 16 ]
     
-    for( mapIndex = 0; mapIndex < g_nominationMapCnt; mapIndex++ )
+    for( mapIndex = 0; mapIndex < g_nominationMapCount; mapIndex++ )
     {
         ArrayGetString( g_nominationMap, mapIndex, nominationMap, charsmax( nominationMap ) );
         
@@ -2033,7 +2035,7 @@ stock nomination_attempt( player_id, nomination[] ) // ( playerName[], &phraseId
     new nominationMap[ MAX_MAPNAME_LENGHT ]
     new disabledReason[ 16 ]
     
-    for( mapIndex = 0; mapIndex < g_nominationMapCnt
+    for( mapIndex = 0; mapIndex < g_nominationMapCount
          && matchCnt <= MAX_NOM_MATCH_COUNT; ++mapIndex )
     {
         ArrayGetString( g_nominationMap, mapIndex, nominationMap, charsmax( nominationMap ) );
@@ -2131,15 +2133,15 @@ stock nomination_getPlayer( mapIndex )
 {
     // check if the map has already been nominated
     new nominationIndex;
-    new maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), sizeof g_nomination[] );
+    new maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), sizeof g_playersNominations[] ) + 1;
     
-    for( new idPlayer = 1; idPlayer < sizeof g_nomination; ++idPlayer )
+    for( new player_id = 1; player_id < sizeof g_playersNominations; ++player_id )
     {
         for( nominationIndex = 1; nominationIndex < maxPlayerNominations; ++nominationIndex )
         {
-            if( mapIndex == g_nomination[ idPlayer ][ nominationIndex ] )
+            if( mapIndex == g_playersNominations[ player_id ][ nominationIndex ] )
             {
-                return idPlayer;
+                return player_id;
             }
         }
     }
@@ -2178,11 +2180,11 @@ stock nomination_cancel( player_id, mapIndex )
     new bool:nominationFound
     new mapName[ MAX_MAPNAME_LENGHT ];
     
-    new maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), sizeof g_nomination[] );
+    new maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), sizeof g_playersNominations[] ) + 1;
     
     for( nominationIndex = 1; nominationIndex < maxPlayerNominations; ++nominationIndex )
     {
-        if( g_nomination[ player_id ][ nominationIndex ] == mapIndex )
+        if( g_playersNominations[ player_id ][ nominationIndex ] == mapIndex )
         {
             nominationFound = true;
             
@@ -2194,8 +2196,8 @@ stock nomination_cancel( player_id, mapIndex )
     
     if( nominationFound )
     {
-        g_nominationCount                            = g_nominationCount - 1;
-        g_nomination[ player_id ][ nominationIndex ] = -1;
+        g_nominationCount                                    = g_nominationCount - 1;
+        g_playersNominations[ player_id ][ nominationIndex ] = -1;
         
         nomination_announceCancellation( mapName );
     }
@@ -2270,13 +2272,13 @@ stock map_nominate( player_id, mapIndex, idNominator = -1 )
         new nominationIndex
         new nominationCount
         
-        new maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), sizeof g_nomination[] );
+        new maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), sizeof g_playersNominations[] ) + 1;
         
         // determine the number of nominations the player already made
         // and grab an open slot with the presumption that the player can make the nomination
         for( nominationIndex = 1; nominationIndex < maxPlayerNominations; ++nominationIndex )
         {
-            if( g_nomination[ player_id ][ nominationIndex ] >= 0 )
+            if( g_playersNominations[ player_id ][ nominationIndex ] >= 0 )
             {
                 nominationCount++;
             }
@@ -2288,27 +2290,35 @@ stock map_nominate( player_id, mapIndex, idNominator = -1 )
         
         if( nominationCount == maxPlayerNominations - 1 )
         {
-            new nominatedMapName[ MAX_MAPNAME_LENGHT ]
-            new nominatedMaps[ COLOR_MESSAGE ]
+            new copiedChars
+            new nominatedMapName [ MAX_MAPNAME_LENGHT ]
+            new nominatedMaps    [ COLOR_MESSAGE ]
             
             for( nominationIndex = 1; nominationIndex < maxPlayerNominations; ++nominationIndex )
             {
-                mapIndex = g_nomination[ player_id ][ nominationIndex ];
+                mapIndex = g_playersNominations[ player_id ][ nominationIndex ];
                 
                 ArrayGetString( g_nominationMap, mapIndex, nominatedMapName, charsmax( nominatedMapName ) );
-                formatex( nominatedMaps, charsmax( nominatedMaps ), "%s%s%s", nominatedMaps,
-                        ( nominationIndex == 1 ) ? "" : ", ", nominatedMapName );
+                
+                if( copiedChars )
+                {
+                    copiedChars += copy( nominatedMaps[ copiedChars ],
+                            charsmax( nominatedMaps ) - copiedChars, ", " )
+                }
+                
+                copiedChars += copy( nominatedMaps[ copiedChars ],
+                        charsmax( nominatedMaps ) - copiedChars, nominatedMapName )
             }
             
             color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_TOOMANY",
-                    maxPlayerNominations, nominatedMaps );
+                    maxPlayerNominations - 1, nominatedMaps )
             
-            color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_TOOMANY_HLP" );
+            color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_TOOMANY_HLP" )
         }
         else
         {
             // otherwise, allow the nomination
-            g_nomination[ player_id ][ nominationOpenIndex ] = mapIndex;
+            g_playersNominations[ player_id ][ nominationOpenIndex ] = mapIndex;
             g_nominationCount++;
             map_announceNomination( player_id, mapName );
             
@@ -2337,38 +2347,44 @@ public nomination_list( player_id )
     new mapIndex
     new nomMapCount
     new maxPlayerNominations
+    new copiedChars
     
-    new msg[ 101 ]
+    new mapsList[ 101 ]
     new mapName[ MAX_MAPNAME_LENGHT ]
     
-    maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), sizeof g_nomination[] );
+    maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), sizeof g_playersNominations[] ) + 1;
     
-    for( new idPlayer = 1; idPlayer < sizeof g_nomination; ++idPlayer )
+    for( new player_id = 1; player_id < sizeof g_playersNominations; ++player_id )
     {
         for( nominationIndex = 1; nominationIndex < maxPlayerNominations; ++nominationIndex )
         {
-            mapIndex = g_nomination[ idPlayer ][ nominationIndex ];
+            mapIndex = g_playersNominations[ player_id ][ nominationIndex ];
             
             if( mapIndex >= 0 )
             {
                 ArrayGetString( g_nominationMap, mapIndex, mapName, charsmax( mapName ) );
-                formatex( msg, charsmax( msg ), "%s, %s", msg, mapName );
+                
+                if( copiedChars )
+                {
+                    copiedChars += copy( mapsList[ copiedChars ], charsmax( mapsList ) - copiedChars, ", " );
+                }
+                
+                copiedChars += copy( mapsList[ copiedChars ], charsmax( mapsList ) - copiedChars, mapName )
                 
                 if( ++nomMapCount == 4 )     // list 4 maps per chat line
                 {
-                    color_print( 0, "^1%L: %s", LANG_PLAYER, "GAL_NOMINATIONS",
-                            msg[ 2 ] );
+                    color_print( 0, "^1%L: %s", LANG_PLAYER, "GAL_NOMINATIONS", mapsList );
                     
-                    nomMapCount = 0;
-                    msg[ 0 ]    = 0;
+                    nomMapCount   = 0;
+                    mapsList[ 0 ] = '^0';
                 }
             }
         }
     }
     
-    if( msg[ 0 ] )
+    if( mapsList[ 0 ] )
     {
-        color_print( 0, "^1%L: %s", LANG_PLAYER, "GAL_NOMINATIONS", msg[ 2 ] );
+        color_print( 0, "^1%L: %s", LANG_PLAYER, "GAL_NOMINATIONS", mapsList );
     }
     else
     {
@@ -2393,7 +2409,7 @@ stock vote_addNominations()
         new voteNominationMax = ( maxNominations ) ? min( maxNominations, slotsAvailable ) : slotsAvailable;
         
         // set how many total nominations each player is allowed
-        new maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), sizeof g_nomination[] );
+        new maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), sizeof g_playersNominations[] ) + 1;
 
 #if defined DEBUG
         new nominator_id
@@ -2401,9 +2417,9 @@ stock vote_addNominations()
         
         for( new nominationIndex = maxPlayerNominations - 1; nominationIndex > 0; --nominationIndex )
         {
-            for( player_id = 1; player_id < sizeof g_nomination; ++player_id )
+            for( player_id = 1; player_id < sizeof g_playersNominations; ++player_id )
             {
-                mapIndex = g_nomination[ player_id ][ nominationIndex ];
+                mapIndex = g_playersNominations[ player_id ][ nominationIndex ];
                 
                 if( mapIndex >= 0 )
                 {
@@ -2422,13 +2438,14 @@ stock vote_addNominations()
         // better method of determining which nominations make the cut; either FIFO or random]
         for( new nominationIndex = maxPlayerNominations - 1; nominationIndex > 0; --nominationIndex )
         {
-            for( player_id = 1; player_id < sizeof g_nomination; ++player_id )
+            for( player_id = 1; player_id < sizeof g_playersNominations; ++player_id )
             {
-                mapIndex = g_nomination[ player_id ][ nominationIndex ];
+                mapIndex = g_playersNominations[ player_id ][ nominationIndex ];
                 
                 if( mapIndex >= 0 )
                 {
                     ArrayGetString( g_nominationMap, mapIndex, mapName, charsmax( mapName ) );
+                    
                     copy( g_votingMapNames[ g_totalVoteOptions++ ],
                             charsmax( g_votingMapNames[] ), mapName );
                     
@@ -4238,9 +4255,9 @@ stock map_isTooRecent( map[] )
 {
     if( get_pcvar_num( cvar_recentMapsBannedNumber ) )
     {
-        for( new idxBannedMap = 0; idxBannedMap < g_cntRecentMap; ++idxBannedMap )
+        for( new idxBannedMap = 0; idxBannedMap < g_recentMapCount; ++idxBannedMap )
         {
-            if( equal( map, g_recentMap[ idxBannedMap ] ) )
+            if( equal( map, g_recentMaps[ idxBannedMap ] ) )
             {
                 return true;
             }
@@ -4341,7 +4358,7 @@ public vote_rock( player_id )
     if( g_rockedVote[ player_id ] )
     {
         color_print( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_ALREADY",
-                rocksNeeded - g_rockedVoteCnt );
+                rocksNeeded - g_rockedVoteCount );
         
         rtv_remind( TASKID_REMINDER + player_id );
         return;
@@ -4359,7 +4376,7 @@ public vote_rock( player_id )
     }
     
     // determine if there have been enough rocks for a vote yet
-    if( ++g_rockedVoteCnt >= rocksNeeded )
+    if( ++g_rockedVoteCount >= rocksNeeded )
     {
         // announce that the vote has been rocked
         color_print( 0, "^1%L", LANG_PLAYER, "GAL_ROCK_ENOUGH" );
@@ -4387,7 +4404,7 @@ stock vote_unrockTheVote( player_id )
     if( g_rockedVote[ player_id ] )
     {
         g_rockedVote[ player_id ] = false;
-        g_rockedVoteCnt--;
+        g_rockedVoteCount--;
         // and such
     }
 }
@@ -4403,7 +4420,7 @@ public rtv_remind( param )
     
     // let the players know how many more rocks are needed
     color_print( player_id, "^1%L", LANG_PLAYER, "GAL_ROCK_NEEDMORE",
-            vote_getRocksNeeded() - g_rockedVoteCnt );
+            vote_getRocksNeeded() - g_rockedVoteCount );
 }
 
 // change to the map
@@ -4533,34 +4550,34 @@ public map_listAll( player_id )
         start = 1;
     }
     
-    if( start >= g_nominationMapCnt )
+    if( start >= g_nominationMapCount )
     {
-        start = g_nominationMapCnt - 1;
+        start = g_nominationMapCount - 1;
     }
     
-    new end = mapPerPage ? start + mapPerPage - 1 : g_nominationMapCnt;
+    new end = mapPerPage ? start + mapPerPage - 1 : g_nominationMapCount;
     
-    if( end > g_nominationMapCnt )
+    if( end > g_nominationMapCount )
     {
-        end = g_nominationMapCnt;
+        end = g_nominationMapCount;
     }
     
     // this enables us to use 'command *' to get the next group of maps, when paginated
     lastMapDisplayed[ player_id ][ LISTMAPS_USERID ] = userid;
     lastMapDisplayed[ player_id ][ LISTMAPS_LAST ]   = end - 1;
     
-    con_print( player_id, "^n----- %L -----", player_id, "GAL_LISTMAPS_TITLE", g_nominationMapCnt );
+    con_print( player_id, "^n----- %L -----", player_id, "GAL_LISTMAPS_TITLE", g_nominationMapCount );
     
     new nominator_id
     new player_name[ MAX_PLAYER_NAME_LENGHT ]
     new nominated[ MAX_PLAYER_NAME_LENGHT + 32 ]
     
     new mapName[ MAX_MAPNAME_LENGHT ]
-    new idx;
+    new map_index;
     
-    for( idx = start - 1; idx < end; idx++ )
+    for( map_index = start - 1; map_index < end; map_index++ )
     {
-        nominator_id = nomination_getPlayer( idx );
+        nominator_id = nomination_getPlayer( map_index );
         
         if( nominator_id )
         {
@@ -4571,17 +4588,18 @@ public map_listAll( player_id )
         {
             nominated[ 0 ] = '^0';
         }
-        ArrayGetString( g_nominationMap, idx, mapName, charsmax( mapName ) );
-        con_print( player_id, "%3i: %s  %s", idx + 1, mapName, nominated );
+        
+        ArrayGetString( g_nominationMap, map_index, mapName, charsmax( mapName ) );
+        con_print( player_id, "%3i: %s  %s", map_index + 1, mapName, nominated );
     }
     
     if( mapPerPage
-        && mapPerPage < g_nominationMapCnt )
+        && mapPerPage < g_nominationMapCount )
     {
         con_print( player_id, "----- %L -----", player_id, "GAL_LISTMAPS_SHOWING",
-                start, idx, g_nominationMapCnt );
+                start, map_index, g_nominationMapCount );
         
-        if( end < g_nominationMapCnt )
+        if( end < g_nominationMapCount )
         {
             con_print( player_id, "----- %L -----", player_id, "GAL_LISTMAPS_MORE",
                     command, end + 1, command );
@@ -4647,31 +4665,36 @@ stock unnominatedDisconnectedPlayer( player_id )
         new mapIndex
         new nominationCount
         new maxPlayerNominations
+        new copiedChars
         
         new mapName[ MAX_MAPNAME_LENGHT ]
         new nominatedMaps[ COLOR_MESSAGE ]
         
         // cancel player's nominations
-        maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), sizeof g_nomination[] );
+        maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), sizeof g_playersNominations[] ) + 1;
         
         for( new nominationIndex = 1; nominationIndex < maxPlayerNominations; ++nominationIndex )
         {
-            mapIndex = g_nomination[ player_id ][ nominationIndex ];
+            mapIndex = g_playersNominations[ player_id ][ nominationIndex ];
             
             if( mapIndex >= 0 )
             {
+                ++nominationCount;
+                g_playersNominations[ player_id ][ nominationIndex ] = -1;
+                
                 ArrayGetString( g_nominationMap, mapIndex, mapName, charsmax( mapName ) );
-                nominationCount++;
-                formatex( nominatedMaps, charsmax( nominatedMaps ), "%s%s, ", nominatedMaps, mapName );
-                g_nomination[ player_id ][ nominationIndex ] = -1;
+                
+                if( copiedChars )
+                {
+                    copiedChars += copy( nominatedMaps[ copiedChars ], charsmax( nominatedMaps ) - copiedChars, ", " );
+                }
+                
+                copiedChars += copy( nominatedMaps[ copiedChars ], charsmax( nominatedMaps ) - copiedChars, mapName )
             }
         }
         
         if( nominationCount )
         {
-            // strip the extraneous ", " from the string
-            nominatedMaps[ strlen( nominatedMaps ) - 2 ] = 0;
-            
             // inform the masses that the maps are no longer nominated
             nomination_announceCancellation( nominatedMaps );
         }
@@ -4882,11 +4905,11 @@ stock nomination_announceCancellation( nominations[] )
 
 stock nomination_clearAll()
 {
-    for( new playerIndex = 1; playerIndex < sizeof g_nomination; playerIndex++ )
+    for( new playerIndex = 1; playerIndex < sizeof g_playersNominations; playerIndex++ )
     {
-        for( new nominationIndex = 1; nominationIndex < sizeof g_nomination[]; nominationIndex++ )
+        for( new nominationIndex = 1; nominationIndex < sizeof g_playersNominations[]; nominationIndex++ )
         {
-            g_nomination[ playerIndex ][ nominationIndex ] = -1;
+            g_playersNominations[ playerIndex ][ nominationIndex ] = -1;
         }
     }
     
@@ -5246,7 +5269,7 @@ public vote_resetStats()
     
     // reset everyones' rocks
     arrayset( g_rockedVote, false, sizeof( g_rockedVote ) );
-    g_rockedVoteCnt = 0;
+    g_rockedVoteCount = 0;
     
     // reset everyones' votes
     arrayset( g_is_player_voted, true, sizeof( g_is_player_voted ) );
