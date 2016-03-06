@@ -37,7 +37,7 @@ new const PLUGIN_VERSION[] = "2.1.2"
  * 4   - To create fake votes.
  * 7   - Levels 1, 2 and 4.
  */
-#define DEBUG_LEVEL 1
+#define DEBUG_LEVEL 1 + 4 + 2
 
 #define DEBUG_LEVEL_NORMAL     1
 #define DEBUG_LEVEL_UNIT_TEST  2
@@ -242,8 +242,8 @@ new g_user_msgid
  * To start the end map voting near the map time limit expiration.
  */
 #define VOTE_START_TIME(%1) \
-    ( %1 > START_VOTEMAP_MIN_TIME \
-      && %1 < START_VOTEMAP_MAX_TIME )
+    ( %1 < START_VOTEMAP_MIN_TIME \
+      && %1 > START_VOTEMAP_MAX_TIME )
 
 
 /**
@@ -5743,7 +5743,7 @@ stock test_register_test()
  */
 stock test_is_map_extension_allowed()
 {
-    new chainDelay = 2 + 2 + 1
+    new chainDelay = 2 + 2 + 1 + 1 + 1
     new test_id    = register_test( chainDelay, "test_is_map_extension_allowed" )
     
     SET_TEST_FAILURE( test_id, g_is_map_extension_allowed, "g_is_map_extension_allowed must be 0 (it was %d)", \
@@ -5784,7 +5784,7 @@ public test_is_map_extension_allowed2( chainDelay )
     SET_TEST_FAILURE( test_id, g_is_map_extension_allowed, "g_is_map_extension_allowed must be 0 (it was %d)", \
             g_is_map_extension_allowed )
     
-    set_task( 2.0, "test_end_of_map_voting_start", chainDelay )
+    set_task( 2.0, "test_end_of_map_voting_start_1", chainDelay )
 }
 
 /**
@@ -5792,9 +5792,9 @@ public test_is_map_extension_allowed2( chainDelay )
  *
  * Tests if the end map voting is starting automatically at the end of map due time limit expiration.
  */
-public test_end_of_map_voting_start( chainDelay )
+public test_end_of_map_voting_start_1( chainDelay )
 {
-    new test_id = register_test( chainDelay, "test_end_of_map_voting_start" )
+    new test_id = register_test( chainDelay, "test_end_of_map_voting_start_1" )
     
     SET_TEST_FAILURE( test_id, g_is_map_extension_allowed, "g_is_map_extension_allowed must be 0 (it was %d)", \
             g_is_map_extension_allowed )
@@ -5803,9 +5803,11 @@ public test_end_of_map_voting_start( chainDelay )
     
     new secondsLeft = get_timeleft();
     
-    set_pcvar_float( g_timelimit_pointer, (
-                ( get_pcvar_float( g_timelimit_pointer ) ) * 60 - secondsLeft
-                + START_VOTEMAP_MIN_TIME - 10 ) / 60 )
+    set_pcvar_float( g_timelimit_pointer,
+                ( get_pcvar_float( g_timelimit_pointer ) * 60
+                - secondsLeft
+                + START_VOTEMAP_MAX_TIME + 15 )
+                / 60 )
     
     set_task( 1.0, "test_end_of_map_voting_start_2", chainDelay )
 }
@@ -5823,9 +5825,48 @@ public test_end_of_map_voting_start_2( chainDelay )
     
     SET_TEST_FAILURE( test_id, !( g_voteStatus & VOTE_IS_IN_PROGRESS ), "vote_startDirector() does not started!" )
     
-    // cancel the voting started by the timelimit expiration on test_end_of_map_voting_start()
     set_pcvar_float( g_timelimit_pointer, 20.0 )
     cancel_voting()
+    
+    set_task( 1.0, "test_end_of_map_voting_stop_1", chainDelay )
+}
+
+/**
+ * This is the 5º test at vote_startDirector() chain.
+ *
+ * Tests if the end map voting is NOT starting automatically at the end of map due time limit expiration.
+ */
+public test_end_of_map_voting_stop_1( chainDelay )
+{
+    new test_id = register_test( chainDelay, "test_end_of_map_voting_stop_1" )
+    
+    vote_manageEnd()
+    
+    SET_TEST_FAILURE( test_id, ( g_voteStatus & VOTE_IS_IN_PROGRESS ) != 0, "vote_startDirector() does started!" )
+    
+    set_pcvar_float( g_timelimit_pointer, 1.0 )
+    cancel_voting()
+    
+    set_task( 1.0, "test_end_of_map_voting_stop_2", chainDelay )
+}
+
+/**
+ * This is the 6º test at vote_startDirector() chain.
+ *
+ * Tests if the end map voting is NOT starting automatically at the end of map due time limit expiration.
+ */
+public test_end_of_map_voting_stop_2( chainDelay )
+{
+    new test_id = register_test( chainDelay, "test_end_of_map_voting_stop_2" )
+    
+    vote_manageEnd()
+    
+    SET_TEST_FAILURE( test_id, ( g_voteStatus & VOTE_IS_IN_PROGRESS ) != 0, "vote_startDirector() does started!" )
+    
+    set_pcvar_float( g_timelimit_pointer, 20.0 )
+    cancel_voting()
+    
+    //set_task( 1.0, "test_end_of_map_voting_stop_____", chainDelay )
 }
 
 /**
