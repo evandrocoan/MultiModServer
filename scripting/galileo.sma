@@ -79,7 +79,6 @@ stock debugMesssageLogger( mode, message[], any: ... )
         vformat( formated_message, charsmax( formated_message ), message, 3 )
         
         server_print( "%s",                      formated_message )
-        // client_print( 0,    print_console, "%s", formated_message )
     }
 }
 
@@ -448,7 +447,7 @@ new COLOR_WHITE  [ 3 ]; // \w
 new COLOR_YELLOW [ 3 ]; // \y
 new COLOR_GREY   [ 3 ]; // \d
 
-new g_mapPrefixCnt = 1;
+new g_mapPrefixCount = 1;
 
 new g_voteStatusClean      [ 512 ];
 new g_arrayOfRunOffChoices [ 2 ];
@@ -1510,7 +1509,7 @@ public cmd_cancelVote( player_id, level, cid )
 }
 
 /**
- * Called when need to start a vote map, where the command line arg1 could be:
+ * Called when need to start a vote map, where the command line first argument could be:
  *    -nochange: extend the current map, aka, Keep Current Map, will to do the real extend.
  *    -restart: extend the current map, aka, Keep Current Map restart the server at the current map.
  */
@@ -1795,10 +1794,10 @@ public map_loadPrefixList()
             if( loadedMapPrefix[ 0 ]
                 && !equal( loadedMapPrefix, "//", 2 ) )
             {
-                if( g_mapPrefixCnt <= MAX_PREFIX_COUNT )
+                if( g_mapPrefixCount <= MAX_PREFIX_COUNT )
                 {
                     trim( loadedMapPrefix );
-                    copy( g_mapPrefixes[ g_mapPrefixCnt++ ], charsmax( loadedMapPrefix ), loadedMapPrefix );
+                    copy( g_mapPrefixes[ g_mapPrefixCount++ ], charsmax( loadedMapPrefix ), loadedMapPrefix );
                 }
                 else
                 {
@@ -1817,15 +1816,15 @@ public map_loadPrefixList()
     return PLUGIN_HANDLED;
 }
 
-stock map_getIndex( text[] )
+stock getSurMapNameIndex( mapSurName[] )
 {
     new map[ MAX_MAPNAME_LENGHT ];
     new mapIndex;
     new nominationMap[ MAX_MAPNAME_LENGHT ];
     
-    for( new prefixIdx = 0; prefixIdx < g_mapPrefixCnt; ++prefixIdx )
+    for( new prefixIndex = 0; prefixIndex < g_mapPrefixCount; ++prefixIndex )
     {
-        formatex( map, charsmax( map ), "%s%s", g_mapPrefixes[ prefixIdx ], text );
+        formatex( map, charsmax( map ), "%s%s", g_mapPrefixes[ prefixIndex ], mapSurName );
         
         for( mapIndex = 0; mapIndex < g_nominationMapCount; ++mapIndex )
         {
@@ -1845,115 +1844,123 @@ stock map_getIndex( text[] )
  */
 public cmd_say( player_id )
 {
-    static text[ 70 ]
-    static arg1[ 32 ]
-    static arg2[ 32 ]
-    static arg3[ 2 ]
+    static sentence   [ 70 ]
+    static firstWord  [ 32 ]
+    static secondWord [ 32 ]
+    static thirdWord  [ 2 ]
     
     static prefix_index
     
-    text[ 0 ] = '^0'
-    arg1[ 0 ] = '^0'
-    arg2[ 0 ] = '^0'
-    arg3[ 0 ] = '^0'
+    sentence   [ 0 ] = '^0'
+    firstWord  [ 0 ] = '^0'
+    secondWord [ 0 ] = '^0'
+    thirdWord  [ 0 ] = '^0'
     
-    read_args( text, charsmax( text ) );
-    remove_quotes( text );
+    read_args( sentence, charsmax( sentence ) );
+    remove_quotes( sentence );
     
-    parse( text, arg1, charsmax( arg1 ), arg2, charsmax( arg2 ), arg3, charsmax( arg3 ) )
+    parse( sentence, firstWord, charsmax( firstWord ),
+            secondWord, charsmax( secondWord ), thirdWord, charsmax( thirdWord ) )
     
-    DEBUG_LOGGER( 4, "( cmd_say ) text: %s, arg1: %s, arg2: %s, arg3: %s", text, arg1, arg2, arg3 )
+    DEBUG_LOGGER( 4, "( cmd_say ) sentence: %s, firstWord: %s, secondWord: %s, thirdWord: %s", \
+            sentence, firstWord, secondWord, thirdWord )
     
     // if the chat line has more than 2 words, we're not interested at all
-    if( arg3[ 0 ] == '^0' )
+    if( thirdWord[ 0 ] == '^0' )
     {
         new mapIndex;
         
-        DEBUG_LOGGER( 4, "( cmd_say ) On: arg3[ 0 ] == '^0'" )
+        DEBUG_LOGGER( 4, "( cmd_say ) On: thirdWord[ 0 ] == '^0'" )
         
         // if the chat line contains 1 word, it could be a map or a one-word command
-        if( arg2[ 0 ] == '^0' ) // "say [rtv|rockthe<anything>vote]"
+        if( secondWord[ 0 ] == '^0' ) // "say [rtv|rockthe<anything>vote]"
         {
-            DEBUG_LOGGER( 4, "( cmd_say ) On: arg2[ 0 ] == '^0'" )
+            DEBUG_LOGGER( 4, "( cmd_say ) On: secondWord[ 0 ] == '^0'" )
             
             if( ( g_rtvCommands & RTV_CMD_SHORTHAND
-                  && equali( arg1, "rtv" ) )
+                  && equali( firstWord, "rtv" ) )
                 || ( g_rtvCommands & RTV_CMD_DYNAMIC
-                     && equali( arg1, "rockthe", 7 )
-                     && equali( arg1[ strlen( arg1 ) - 4 ], "vote" )
+                     && equali( firstWord, "rockthe", 7 )
+                     && equali( firstWord[ strlen( firstWord ) - 4 ], "vote" )
                      && !( g_rtvCommands & RTV_CMD_STANDARD ) ) )
             {
                 DEBUG_LOGGER( 4, "( cmd_say ) On: vote_rock( player_id );'" )
-                
                 vote_rock( player_id );
+                
                 return PLUGIN_HANDLED;
             }
             else if( get_pcvar_num( cvar_nomPlayerAllowance ) )
             {
                 DEBUG_LOGGER( 4, "( cmd_say ) On: else if( get_pcvar_num( cvar_nomPlayerAllowance ) ) " )
                 
-                if( equali( arg1, "noms" )
-                    || equali( arg1, "nominations" ) )
+                if( equali( firstWord, "noms" )
+                    || equali( firstWord, "nominations" ) )
                 {
                     nomination_list( player_id );
+                    
                     return PLUGIN_HANDLED;
                 }
                 else
                 {
-                    mapIndex = map_getIndex( arg1 )
+                    mapIndex = getSurMapNameIndex( firstWord )
                     
                     if( mapIndex >= 0 )
                     {
                         nomination_toggle( player_id, mapIndex );
+                        
                         return PLUGIN_HANDLED;
                     }
-                    else if( strlen( arg1 ) > 5
-                             && equali( arg1, "nom", 3 )
-                             && equali( arg1[ strlen( arg1 ) - 4 ], "menu" ) )
+                    else if( strlen( firstWord ) > 5
+                             && equali( firstWord, "nom", 3 )
+                             && equali( firstWord[ strlen( firstWord ) - 4 ], "menu" ) )
                     {
                         nomination_menu( player_id )
+                        
                         return PLUGIN_HANDLED;
                     }
                     else // if contains a prefix
                     {
-                        for( prefix_index = 0; prefix_index < g_mapPrefixCnt; prefix_index++ )
+                        for( prefix_index = 0; prefix_index < g_mapPrefixCount; prefix_index++ )
                         {
-                            DEBUG_LOGGER( 4, "( cmd_say ) arg1: %s, prefix_index: %d, \
+                            DEBUG_LOGGER( 4, "( cmd_say ) firstWord: %s, prefix_index: %d, \
                                     g_mapPrefixes[ prefix_index ]: %s, \
-                                    contain( arg1, g_mapPrefixes[ prefix_index ] ): %d", \
-                                    arg1, prefix_index, g_mapPrefixes[ prefix_index ], \
-                                    contain( arg1, g_mapPrefixes[ prefix_index ] ) )
+                                    contain( firstWord, g_mapPrefixes[ prefix_index ] ): %d", \
+                                    firstWord, prefix_index, g_mapPrefixes[ prefix_index ], \
+                                    contain( firstWord, g_mapPrefixes[ prefix_index ] ) )
                             
-                            if( contain( arg1, g_mapPrefixes[ prefix_index ] ) > -1 )
+                            if( contain( firstWord, g_mapPrefixes[ prefix_index ] ) > -1 )
                             {
                                 nomination_menu( player_id )
+                                
                                 return PLUGIN_HANDLED;
                             }
                         }
                     }
                     
-                    DEBUG_LOGGER( 4, "( cmd_say ) equali( arg1, 'nom', 3 ): %d, \
-                            strlen( arg1 ) > 5: %d", equali( arg1, "nom", 3 ), \
-                            strlen( arg1 ) > 5 )
+                    DEBUG_LOGGER( 4, "( cmd_say ) equali( firstWord, 'nom', 3 ): %d, \
+                            strlen( firstWord ) > 5: %d", equali( firstWord, "nom", 3 ), \
+                            strlen( firstWord ) > 5 )
                 }
             }
         }
         else if( get_pcvar_num( cvar_nomPlayerAllowance ) )  // "say <nominate|nom|cancel> <map>"
         {
-            if( equali( arg1, "nominate" )
-                || equali( arg1, "nom" ) )
+            if( equali( firstWord, "nominate" )
+                || equali( firstWord, "nom" ) )
             {
-                nomination_attempt( player_id, arg2 );
+                nomination_attempt( player_id, secondWord );
+                
                 return PLUGIN_HANDLED;
             }
-            else if( equali( arg1, "cancel" ) )
+            else if( equali( firstWord, "cancel" ) )
             {
                 // bpj -- allow ambiguous cancel in which case a menu of their nominations is shown
-                mapIndex = map_getIndex( arg2 );
+                mapIndex = getSurMapNameIndex( secondWord );
                 
                 if( mapIndex >= 0 )
                 {
                     nomination_cancel( player_id, mapIndex );
+                    
                     return PLUGIN_HANDLED;
                 }
             }
