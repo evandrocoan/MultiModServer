@@ -312,36 +312,14 @@ new g_total_rounds_played;
 new g_total_terrorists_wins;
 new g_total_CT_wins;
 
-new bool:g_isTimeToResetGame
-new bool:g_isTimeToResetRounds
-new bool:g_isUsingEmptyCycle
-new bool:g_isRunOffNeedingKeepCurrentMap
-
-new bool:g_refreshVoteStatus
-new bool:g_is_emptyCycleMapConfigured
-new bool:g_is_colored_chat_enabled
-new bool:g_is_maxrounds_extend
-new bool:g_is_maxrounds_vote_map
-new bool:g_is_RTV_last_round
-new bool:g_is_last_round
-new bool:g_is_timeToChangeLevel
-new bool:g_is_timeToRestart
-new bool:g_is_timeLimitChanged
-new bool:g_is_map_extension_allowed
-new bool:g_is_srvTimelimitRestart
-new bool:g_is_srvMaxroundsRestart
-new bool:g_is_srvWinlimitRestart
-new bool:g_is_color_chat_supported
-new bool:g_is_final_voting
-
 
 /**
  * Server cvars
  */
 new cvar_extendmapAllowStayType
 new cvar_nextMapChangeAnnounce
-new cvar_showVoteCounter
-new cvar_voteShowNoneOption
+new cvar_isToShowVoteCounter
+new cvar_isToShowNoneOption
 new cvar_voteShowNoneOptionType
 new cvar_isExtendmapOrderAllowed
 new cvar_coloredChatEnabled
@@ -354,7 +332,7 @@ new cvar_endOnRound_msg
 new cvar_voteWeight
 new cvar_voteWeightFlags
 new cvar_maxMapExtendTime;
-new cvar_extendmapStep;
+new cvar_extendmapStepMinutes;
 new cvar_extendmapStepRounds;
 new cvar_extendmapAllowStay
 new cvar_endOfMapVote;
@@ -377,7 +355,7 @@ new cvar_nomMapFilePath
 new cvar_nomPrefixes;
 new cvar_nomQtyUsed
 new cvar_nomPlayerAllowance;
-new cvar_voteExpCountdown
+new cvar_isToShowExpCountdown
 new cvar_isEndMapCountdown
 new cvar_voteMapChoiceCount
 new cvar_voteAnnounceChoice
@@ -389,8 +367,8 @@ new cvar_serverMaxroundsRestart;
 new cvar_serverWinlimitRestart;
 new cvar_runoffEnabled
 new cvar_runoffDuration;
-new cvar_voteStatus
-new cvar_voteStatusType;
+new cvar_showVoteStatus
+new cvar_showVoteStatusType;
 new cvar_soundsMute;
 new cvar_voteMapFilePath
 new cvar_voteMinPlayers
@@ -406,6 +384,38 @@ new const CURRENT_AND_NEXTMAP_FILE_NAME[] = "currentAndNextmapNames.dat"
 new const MENU_CHOOSEMAP[]                = "gal_menuChooseMap"
 new const MENU_CHOOSEMAP_QUESTION[]       = "chooseMapQuestion"
 
+new bool:g_isTimeToResetGame
+new bool:g_isTimeToResetRounds
+new bool:g_isUsingEmptyCycle
+new bool:g_isRunOffNeedingKeepCurrentMap
+new bool:g_isExtendmapAllowStay
+new bool:g_isToShowNoneOption
+new bool:g_isToShowExpCountdown
+new bool:g_isToShowVoteCounter
+
+new bool:g_refreshVoteStatus
+new bool:g_is_emptyCycleMapConfigured
+new bool:g_is_colored_chat_enabled
+new bool:g_is_maxrounds_extend
+new bool:g_is_maxrounds_vote_map
+new bool:g_is_RTV_last_round
+new bool:g_is_last_round
+new bool:g_is_timeToChangeLevel
+new bool:g_is_timeToRestart
+new bool:g_is_timeLimitChanged
+new bool:g_is_map_extension_allowed
+new bool:g_is_srvTimelimitRestart
+new bool:g_is_srvMaxroundsRestart
+new bool:g_is_srvWinlimitRestart
+new bool:g_is_color_chat_supported
+new bool:g_is_final_voting
+
+new g_showVoteStatusType
+new g_extendmapStepRounds
+new g_extendmapStepMinutes
+new g_extendmapAllowStayType
+new g_showVoteStatus
+new g_voteShowNoneOptionType
 new g_pendingVoteCountdown
 new g_last_round_countdown
 new g_rtv_wait_admin_number
@@ -487,15 +497,15 @@ public plugin_init()
     register_cvar( "gal_server_starting", "1", FCVAR_SPONLY );
     
     cvar_maxMapExtendTime        = register_cvar( "amx_extendmap_max", "90" );
-    cvar_extendmapStep           = register_cvar( "amx_extendmap_step", "15" );
+    cvar_extendmapStepMinutes    = register_cvar( "amx_extendmap_step", "15" );
     cvar_extendmapStepRounds     = register_cvar( "amx_extendmap_step_rounds", "30" );
     cvar_extendmapAllowStay      = register_cvar( "amx_extendmap_allow_stay", "0" );
     cvar_isExtendmapOrderAllowed = register_cvar( "amx_extendmap_allow_order", "0" );
     cvar_extendmapAllowStayType  = register_cvar( "amx_extendmap_allow_stay_type", "0" );
     
     cvar_nextMapChangeAnnounce     = register_cvar( "gal_nextmap_change", "1" );
-    cvar_showVoteCounter           = register_cvar( "gal_vote_show_counter", "0" );
-    cvar_voteShowNoneOption        = register_cvar( "gal_vote_show_none", "0" );
+    cvar_isToShowVoteCounter       = register_cvar( "gal_vote_show_counter", "0" );
+    cvar_isToShowNoneOption        = register_cvar( "gal_vote_show_none", "0" );
     cvar_voteShowNoneOptionType    = register_cvar( "gal_vote_show_none_type", "0" );
     cvar_coloredChatEnabled        = register_cvar( "gal_colored_chat_enabled", "0", FCVAR_SPONLY );
     cvar_isToStopEmptyCycle        = register_cvar( "gal_in_empty_cycle", "0", FCVAR_SPONLY );
@@ -531,12 +541,12 @@ public plugin_init()
     cvar_nomPrefixes               = register_cvar( "gal_nom_prefixes", "1" );
     cvar_nomQtyUsed                = register_cvar( "gal_nom_qtyused", "0" );
     cvar_voteDuration              = register_cvar( "gal_vote_duration", "15" );
-    cvar_voteExpCountdown          = register_cvar( "gal_vote_expirationcountdown", "1" );
+    cvar_isToShowExpCountdown      = register_cvar( "gal_vote_expirationcountdown", "1" );
     cvar_isEndMapCountdown         = register_cvar( "gal_endonround_countdown", "0" );
     cvar_voteMapChoiceCount        = register_cvar( "gal_vote_mapchoices", "5" );
     cvar_voteAnnounceChoice        = register_cvar( "gal_vote_announcechoice", "1" );
-    cvar_voteStatus                = register_cvar( "gal_vote_showstatus", "1" );
-    cvar_voteStatusType            = register_cvar( "gal_vote_showstatustype", "3" );
+    cvar_showVoteStatus            = register_cvar( "gal_vote_showstatus", "1" );
+    cvar_showVoteStatusType        = register_cvar( "gal_vote_showstatustype", "3" );
     cvar_voteUniquePrefixes        = register_cvar( "gal_vote_uniqueprefixes", "0" );
     cvar_runoffEnabled             = register_cvar( "gal_runoff_enabled", "0" );
     cvar_runoffDuration            = register_cvar( "gal_runoff_duration", "10" );
@@ -609,8 +619,8 @@ public plugin_cfg()
     DEBUG_LOGGER( 4, "Current MAP [%s]", g_currentMap )
     DEBUG_LOGGER( 4, "" )
     
-    g_fillerMap        = ArrayCreate( MAX_MAPNAME_LENGHT );
-    g_nominationMap    = ArrayCreate( MAX_MAPNAME_LENGHT );
+    g_fillerMap     = ArrayCreate( MAX_MAPNAME_LENGHT );
+    g_nominationMap = ArrayCreate( MAX_MAPNAME_LENGHT );
     
     // initialize nominations table
     nomination_clearAll();
@@ -661,13 +671,24 @@ stock cacheCvarsValues()
     g_rtvCommands            = get_pcvar_num( cvar_rtvCommands )
     g_rtvWait                = get_pcvar_float( cvar_rtvWait );
     g_rtvWaitRounds          = get_pcvar_num( cvar_rtvWaitRounds );
-    g_is_srvTimelimitRestart = get_pcvar_num( cvar_serverTimelimitRestart ) != 0;
-    g_is_srvMaxroundsRestart = get_pcvar_num( cvar_serverMaxroundsRestart ) != 0;
-    g_is_srvWinlimitRestart  = get_pcvar_num( cvar_serverWinlimitRestart ) != 0;
+    g_extendmapStepRounds    = get_pcvar_num( cvar_extendmapStepRounds )
+    g_extendmapStepMinutes   = get_pcvar_num( cvar_extendmapStepMinutes )
+    g_extendmapAllowStayType = get_pcvar_num( cvar_extendmapAllowStayType )
+    g_showVoteStatus         = get_pcvar_num( cvar_showVoteStatus )
+    g_voteShowNoneOptionType = get_pcvar_num( cvar_voteShowNoneOptionType )
+    g_showVoteStatusType     = get_pcvar_num( cvar_showVoteStatusType )
+    
+    g_is_srvTimelimitRestart  = get_pcvar_num( cvar_serverTimelimitRestart ) != 0;
+    g_is_srvMaxroundsRestart  = get_pcvar_num( cvar_serverMaxroundsRestart ) != 0;
+    g_is_srvWinlimitRestart   = get_pcvar_num( cvar_serverWinlimitRestart ) != 0;
+    g_is_colored_chat_enabled = get_pcvar_num( cvar_coloredChatEnabled ) != 0
+    
+    g_isExtendmapAllowStay = get_pcvar_num( cvar_extendmapAllowStay ) != 0
+    g_isToShowNoneOption   = get_pcvar_num( cvar_isToShowNoneOption ) != 0
+    g_isToShowExpCountdown = get_pcvar_num( cvar_isToShowExpCountdown ) != 0
+    g_isToShowVoteCounter  = get_pcvar_num( cvar_isToShowVoteCounter ) != 0
     
     g_maxVotingChoices = max( min( sizeof g_votingMapNames, get_pcvar_num( cvar_voteMapChoiceCount ) ), 2 )
-    
-    g_is_colored_chat_enabled = get_pcvar_num( cvar_coloredChatEnabled ) != 0
 }
 
 stock loadPluginSetttings()
@@ -2867,6 +2888,9 @@ stock vote_startDirector( bool:is_forced_voting )
         vote_resetStats()
     }
     
+    // update cached data for the new voting.
+    cacheCvarsValues()
+    
     if( g_voteStatus & VOTE_IS_RUNOFF )
     {
         choicesLoaded      = g_totalVoteOptions_temp
@@ -3131,8 +3155,8 @@ public vote_handleDisplay()
         client_cmd( 0, "spk Gman/Gman_Choose%i", random_num( 1, 2 ) );
     }
     
-    if( get_pcvar_num( cvar_voteStatus )
-        && get_pcvar_num( cvar_voteStatusType ) & STATUS_TYPE_PERCENTAGE )
+    if( g_showVoteStatus
+        && g_showVoteStatusType & STATUS_TYPE_PERCENTAGE )
     {
         copy( g_voteStatus_symbol, charsmax( g_voteStatus_symbol ), "%" );
     }
@@ -3145,8 +3169,8 @@ public vote_handleDisplay()
     
     new argument[ 2 ] = { true, 0 }
     
-    // Same as if cvar_voteStatus == SHOW_STATUS_ALWAYS or cvar_voteStatus == SHOW_STATUS_AFTER_VOTE
-    if( get_pcvar_num( cvar_voteStatus ) & SHOW_STATUS_AFTER_VOTE )
+    // Same as if g_showVoteStatus == SHOW_STATUS_ALWAYS || g_showVoteStatus == SHOW_STATUS_AFTER_VOTE
+    if( g_showVoteStatus & SHOW_STATUS_AFTER_VOTE )
     {
         set_task( 1.0, "vote_display", TASKID_VOTE_DISPLAY, argument, sizeof( argument ), "a", g_voteDuration );
     }
@@ -3178,16 +3202,13 @@ public voteExpire()
 public vote_display( argument[ 2 ] )
 {
     new player_id           = argument[ 1 ]
-    new showStatus          = get_pcvar_num( cvar_voteStatus )
     new charCount           = 0
     new updateTimeRemaining = argument[ 0 ]
-    new noneOptionType      = get_pcvar_num( cvar_voteShowNoneOptionType )
     
-    new bool:isToShowNoneOption = get_pcvar_num( cvar_voteShowNoneOption ) != 0
-    new bool:isVoteOver         = g_voteStatus & VOTE_IS_EXPIRED != 0
-    new bool:noneIsHidden       = ( isToShowNoneOption
-                                    && !noneOptionType
-                                    && !isVoteOver )
+    new bool:isVoteOver   = g_voteStatus & VOTE_IS_EXPIRED != 0
+    new bool:noneIsHidden = ( g_isToShowNoneOption
+                              && !g_voteShowNoneOptionType
+                              && !isVoteOver )
     static menuKeys
     static voteStatus  [ 512 ]
     static voteMapLine [ MAX_MAPNAME_LENGHT ]
@@ -3210,8 +3231,8 @@ public vote_display( argument[ 2 ] )
         voteStatus[ 0 ] = '^0';
         
         // register the 'None' option key
-        if( isToShowNoneOption
-            && !( g_voteStatus & VOTE_IS_EXPIRED ) )
+        if( g_isToShowNoneOption
+            && !isVoteOver )
         {
             menuKeys = MENU_KEY_0;
         }
@@ -3232,14 +3253,12 @@ public vote_display( argument[ 2 ] )
     // This is to optionally display to single player that just voted.
     // Exactly after the player voted this function is only called with the correct player id.
     if( player_id > 0
-        && showStatus & SHOW_STATUS_AFTER_VOTE )
+        && g_showVoteStatus & SHOW_STATUS_AFTER_VOTE )
     {
-        menuKeys = calculateExtensionOption( player_id, isVoteOver, charCount, voteStatus,
-                charsmax( voteStatus ), menuKeys )
+        menuKeys = calculateExtensionOption( player_id, isVoteOver,
+                charCount, voteStatus, charsmax( voteStatus ), menuKeys )
         
-        calculate_menu_dirt( player_id, isToShowNoneOption, noneOptionType, isVoteOver,
-                voteStatus, menuDirty, charsmax( menuDirty ), noneIsHidden, showStatus )
-        
+        calculate_menu_dirt( player_id, isVoteOver, voteStatus, menuDirty, charsmax( menuDirty ), noneIsHidden )
         display_vote_menu( false, player_id, menuDirty, menuKeys )
     }
     else // just display to everyone
@@ -3253,27 +3272,23 @@ public vote_display( argument[ 2 ] )
         {
             player_id = players[ playerIndex ];
             
-            menuKeys = calculateExtensionOption( player_id, isVoteOver, charCount, voteStatus,
-                    charsmax( voteStatus ), menuKeys )
+            menuKeys = calculateExtensionOption( player_id, isVoteOver,
+                    charCount, voteStatus, charsmax( voteStatus ), menuKeys )
             
             if( !g_is_player_voted[ player_id ]
                 && !isVoteOver
-                && showStatus != SHOW_STATUS_ALWAYS )
+                && g_showVoteStatus != SHOW_STATUS_ALWAYS )
             {
-                calculate_menu_clean( player_id, isToShowNoneOption, noneOptionType,
-                        menuClean, charsmax( menuClean ), showStatus )
-                
+                calculate_menu_clean( player_id, menuClean, charsmax( menuClean ) )
                 display_vote_menu( true, player_id, menuClean, menuKeys )
             }
-            else if( showStatus == SHOW_STATUS_ALWAYS
+            else if( g_showVoteStatus == SHOW_STATUS_ALWAYS
                      || ( isVoteOver
-                          && showStatus )
+                          && g_showVoteStatus )
                      || ( g_is_player_voted[ player_id ]
-                          && showStatus == SHOW_STATUS_AFTER_VOTE ) )
+                          && g_showVoteStatus == SHOW_STATUS_AFTER_VOTE ) )
             {
-                calculate_menu_dirt( player_id, isToShowNoneOption, noneOptionType, isVoteOver,
-                        voteStatus, menuDirty, charsmax( menuDirty ), noneIsHidden, showStatus )
-                
+                calculate_menu_dirt( player_id, isVoteOver, voteStatus, menuDirty, charsmax( menuDirty ), noneIsHidden )
                 display_vote_menu( false, player_id, menuDirty, menuKeys )
             }
         }
@@ -3309,14 +3324,14 @@ stock calculateExtensionOption( player_id, bool:isVoteOver, charCount, voteStatu
             }
         }
         
-        if( !get_pcvar_num( cvar_extendmapAllowStay ) )
+        if( !g_isExtendmapAllowStay )
         {
             allowStay = false;
         }
         
         DEBUG_LOGGER( 1, "    ( vote_handleDisplay ) Add optional menu item| \
-                allowStay: %d, allowExtend: %d, get_pcvar_num( cvar_extendmapAllowStay ): %d", \
-                allowStay, allowExtend, get_pcvar_num( cvar_extendmapAllowStay ) )
+                allowStay: %d, allowExtend: %d, g_isExtendmapAllowStay: %d", \
+                allowStay, allowExtend, g_isExtendmapAllowStay )
         
         // add optional menu item
         if( g_is_map_extension_allowed
@@ -3339,12 +3354,12 @@ stock calculateExtensionOption( player_id, bool:isVoteOver, charCount, voteStatu
                 // add the "Extend Map" menu item.
                 if( g_is_maxrounds_vote_map )
                 {
-                    extend_step = get_pcvar_num( cvar_extendmapStepRounds )
+                    extend_step = g_extendmapStepRounds
                     copy( extend_option_type, charsmax( extend_option_type ), "GAL_OPTION_EXTEND_ROUND" )
                 }
                 else
                 {
-                    extend_step = floatround( get_pcvar_float( cvar_extendmapStep ) )
+                    extend_step = g_extendmapStepMinutes
                     copy( extend_option_type, charsmax( extend_option_type ), "GAL_OPTION_EXTEND" )
                 }
                 
@@ -3355,7 +3370,7 @@ stock calculateExtensionOption( player_id, bool:isVoteOver, charCount, voteStatu
             else
             {
                 // add the "Stay Here" menu item
-                if( get_pcvar_num( cvar_extendmapAllowStayType ) )
+                if( g_extendmapAllowStayType )
                 {
                     charCount += formatex( voteStatus[ charCount ], voteStatusLenght - charCount,
                             "^n%s%i. %s%L%s", COLOR_RED, g_totalVoteOptions + 1,
@@ -3373,7 +3388,7 @@ stock calculateExtensionOption( player_id, bool:isVoteOver, charCount, voteStatu
             menuKeys |= ( 1 << g_totalVoteOptions );
         }
         
-        g_refreshVoteStatus =  get_pcvar_num( cvar_voteStatus ) & 3 != 0;
+        g_refreshVoteStatus =  g_showVoteStatus & 3 != 0;
     }
     
     // make a copy of the virgin menu
@@ -3385,8 +3400,7 @@ stock calculateExtensionOption( player_id, bool:isVoteOver, charCount, voteStatu
     return menuKeys
 }
 
-stock calculate_menu_dirt( player_id, isToShowNoneOption, noneOptionType, bool:isVoteOver,
-                           voteStatus[], menuDirty[], menuDirtySize, bool:noneIsHidden, showStatus )
+stock calculate_menu_dirt( player_id, bool:isVoteOver, voteStatus[], menuDirty[], menuDirtySize, bool:noneIsHidden )
 {
     static voteFooter[ 64 ];
     static menuHeader[ 32 ]
@@ -3396,11 +3410,11 @@ stock calculate_menu_dirt( player_id, isToShowNoneOption, noneOptionType, bool:i
     menuDirty  [ 0 ] = '^0';
     noneOption [ 0 ] = '^0';
     isToShowUndo     = ( player_id > 0 \
-                         && noneOptionType == CONVERT_IT_TO_CANCEL_LAST_VOTE \
+                         && g_voteShowNoneOptionType == CONVERT_IT_TO_CANCEL_LAST_VOTE \
                          && g_is_player_voted[ player_id ] \
                          && !g_is_player_cancelled_vote[ player_id ] )
     
-    computeVoteMenuFooter( player_id, voteFooter, charsmax( voteFooter ), showStatus )
+    computeVoteMenuFooter( player_id, voteFooter, charsmax( voteFooter ) )
     
     // to append it here to always shows it AFTER voting.
     if( isVoteOver )
@@ -3409,11 +3423,10 @@ stock calculate_menu_dirt( player_id, isToShowNoneOption, noneOptionType, bool:i
         formatex( menuHeader, charsmax( menuHeader ), "%s%L",
                 COLOR_YELLOW, player_id, "GAL_RESULT" );
         
-        if( isToShowNoneOption
-            && noneOptionType )
+        if( g_isToShowNoneOption
+            && g_voteShowNoneOptionType )
         {
-            computeUndoButton( player_id, isToShowUndo, isVoteOver, noneOption,
-                    noneOptionType, charsmax( noneOption ) )
+            computeUndoButton( player_id, isToShowUndo, isVoteOver, noneOption, charsmax( noneOption ) )
             
             formatex( menuDirty, menuDirtySize, "%s^n%s^n^n%s%s^n^n%L",
                     menuHeader, voteStatus, noneOption, COLOR_YELLOW, player_id, "GAL_VOTE_ENDED" )
@@ -3430,10 +3443,9 @@ stock calculate_menu_dirt( player_id, isToShowNoneOption, noneOptionType, bool:i
         formatex( menuHeader, charsmax( menuHeader ), "%s%L",
                 COLOR_YELLOW, player_id, "GAL_CHOOSE" );
         
-        if( isToShowNoneOption )
+        if( g_isToShowNoneOption )
         {
-            computeUndoButton( player_id, isToShowUndo, isVoteOver,
-                    noneOption, noneOptionType, charsmax( noneOption ) )
+            computeUndoButton( player_id, isToShowUndo, isVoteOver, noneOption, charsmax( noneOption ) )
             
             // remove the extra space between 'voteStatus' and 'voteFooter', after the 'None' option is hidden
             if( noneIsHidden
@@ -3454,17 +3466,17 @@ stock calculate_menu_dirt( player_id, isToShowNoneOption, noneOptionType, bool:i
     }
 }
 
-stock computeVoteMenuFooter( player_id, voteFooter[], voteFooterSize, showStatus )
+stock computeVoteMenuFooter( player_id, voteFooter[], voteFooterSize )
 {
     static charCount
     
     charCount = copy( voteFooter, voteFooterSize, "^n^n" );
     
-    if( get_pcvar_num( cvar_voteExpCountdown ) )
+    if( g_isToShowExpCountdown )
     {
         if( ( g_voteDuration < 10
-              || get_pcvar_num( cvar_showVoteCounter ) )
-            && showStatus != SHOW_STATUS_AT_END )
+              || g_isToShowVoteCounter )
+            && g_showVoteStatus != SHOW_STATUS_AT_END )
         {
             if( g_voteDuration >= 0 )
             {
@@ -3480,8 +3492,7 @@ stock computeVoteMenuFooter( player_id, voteFooter[], voteFooterSize, showStatus
     }
 }
 
-stock computeUndoButton( player_id, bool:isToShowUndo, bool:isVoteOver, noneOption[],
-                         noneOptionType, noneOptionSize )
+stock computeUndoButton( player_id, bool:isToShowUndo, bool:isVoteOver, noneOption[], noneOptionSize )
 {
     if( isToShowUndo )
     {
@@ -3505,7 +3516,7 @@ stock computeUndoButton( player_id, bool:isToShowUndo, bool:isVoteOver, noneOpti
         }
         else
         {
-            switch( noneOptionType )
+            switch( g_voteShowNoneOptionType )
             {
                 case HIDE_AFTER_USER_VOTE:
                 {
@@ -3529,8 +3540,7 @@ stock computeUndoButton( player_id, bool:isToShowUndo, bool:isVoteOver, noneOpti
     }
 }
 
-stock calculate_menu_clean( player_id, isToShowNoneOption, noneOptionType,
-                            menuClean[], menuCleanSize, showStatus )
+stock calculate_menu_clean( player_id, menuClean[], menuCleanSize )
 {
     static voteFooter[ 64 ];
     static menuHeader[ 32 ]
@@ -3540,11 +3550,11 @@ stock calculate_menu_clean( player_id, isToShowNoneOption, noneOptionType,
     menuClean  [ 0 ] = '^0';
     noneOption [ 0 ] = '^0';
     isToShowUndo     = ( player_id > 0 \
-                         && noneOptionType == CONVERT_IT_TO_CANCEL_LAST_VOTE \
+                         && g_voteShowNoneOptionType == CONVERT_IT_TO_CANCEL_LAST_VOTE \
                          && g_is_player_voted[ player_id ] \
                          && !g_is_player_cancelled_vote[ player_id ] )
     
-    computeVoteMenuFooter( player_id, voteFooter, charsmax( voteFooter ), showStatus )
+    computeVoteMenuFooter( player_id, voteFooter, charsmax( voteFooter ) )
     
     // add the header
     formatex( menuHeader, charsmax( menuHeader ), "%s%L",
@@ -3552,7 +3562,7 @@ stock calculate_menu_clean( player_id, isToShowNoneOption, noneOptionType,
     
     // append a "None" option on for people to choose if they don't like any other choice
     // to append it here to always shows it WHILE voting.
-    if( isToShowNoneOption )
+    if( g_isToShowNoneOption )
     {
         if( isToShowUndo )
         {
@@ -3620,8 +3630,8 @@ public vote_handleChoice( player_id, key )
     }
     else if( key == 9
              && !g_is_player_cancelled_vote[ player_id ]
-             && get_pcvar_num( cvar_voteShowNoneOptionType ) == CONVERT_IT_TO_CANCEL_LAST_VOTE
-             && get_pcvar_num( cvar_voteShowNoneOption ) )
+             && g_voteShowNoneOptionType == CONVERT_IT_TO_CANCEL_LAST_VOTE
+             && g_isToShowNoneOption )
     {
         cancel_player_vote( player_id )
     }
@@ -3631,7 +3641,7 @@ public vote_handleChoice( player_id, key )
     }
     
     // display the vote again, with status
-    if( get_pcvar_num( cvar_voteStatus ) & SHOW_STATUS_AFTER_VOTE )
+    if( g_showVoteStatus & SHOW_STATUS_AFTER_VOTE )
     {
         new argument[ 2 ] = { false, -1 }
         
@@ -3703,6 +3713,7 @@ stock register_vote( player_id, pressedKeyCode )
 stock announceRegistedVote( player_id, pressedKeyCode )
 {
     new player_name[ MAX_PLAYER_NAME_LENGHT ]
+    
     new bool:isToAnnounceChoice = get_pcvar_num( cvar_voteAnnounceChoice ) != 0
     
     if( isToAnnounceChoice )
@@ -3778,9 +3789,9 @@ stock computeVoteMapLine( voteMapLine[], voteMapLineLength, voteIndex )
     new voteCountNumber = g_arrayOfMapsWithVotesNumber[ voteIndex ]
     
     if( voteCountNumber
-        && get_pcvar_num( cvar_voteStatus ) )
+        && g_showVoteStatus )
     {
-        switch( get_pcvar_num( cvar_voteStatusType ) )
+        switch( g_showVoteStatusType )
         {
             case STATUS_TYPE_COUNT:
             {
@@ -3813,9 +3824,9 @@ stock computeVoteMapLine( voteMapLine[], voteMapLineLength, voteIndex )
         voteMapLine[ 0 ] = '^0';
     }
     
-    DEBUG_LOGGER( 0, " ( computeVoteMapLine ) | get_pcvar_num( cvar_voteStatus ): %d, \
-            get_pcvar_num( cvar_voteStatusType ): %d, voteCountNumber: %d", \
-            get_pcvar_num( cvar_voteStatus ), get_pcvar_num( cvar_voteStatusType ), voteCountNumber )
+    DEBUG_LOGGER( 0, " ( computeVoteMapLine ) | g_showVoteStatus: %d, \
+            g_showVoteStatusType: %d, voteCountNumber: %d", \
+            g_showVoteStatus, g_showVoteStatusType, voteCountNumber )
 }
 
 public computeVotes()
@@ -4073,7 +4084,7 @@ public computeVotes()
             vote_resetStats();
             
             // start the runoff vote, vote_startDirector
-            set_task( 3.0, "startNonForcedVoting", TASKID_VOTE_STARTDIRECTOR ); 
+            set_task( 3.0, "startNonForcedVoting", TASKID_VOTE_STARTDIRECTOR );
             
             return;
         }
@@ -4116,12 +4127,11 @@ public computeVotes()
                 if( g_is_maxrounds_vote_map )
                 {
                     color_print( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_EXTEND_ROUND",
-                            get_pcvar_num( cvar_extendmapStepRounds ) )
+                            g_extendmapStepRounds )
                 }
                 else
                 {
-                    color_print( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_EXTEND",
-                            floatround( get_pcvar_float( cvar_extendmapStep ) ) )
+                    color_print( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_EXTEND", g_extendmapStepMinutes )
                 }
                 
                 map_extend();
@@ -4185,8 +4195,8 @@ stock Float:map_getMinutesElapsed()
 
 stock map_extend()
 {
-    DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_rtvWait: %f  extendmapStep: %f", "map_extend( in )", \
-            get_pcvar_float( g_timelimit_pointer ), g_rtvWait, get_pcvar_float( cvar_extendmapStep ) )
+    DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_rtvWait: %f  extendmapStep: %d", "map_extend( in )", \
+            get_pcvar_float( g_timelimit_pointer ), g_rtvWait, g_extendmapStepMinutes )
     
     // reset the "rtv wait" time, taking into consideration the map extension
     if( g_rtvWait )
@@ -4200,7 +4210,7 @@ stock map_extend()
     // do that actual map extension
     if( g_is_maxrounds_vote_map )
     {
-        new extendmap_step_rounds = get_pcvar_num( cvar_extendmapStepRounds )
+        new extendmap_step_rounds = g_extendmapStepRounds
         
         if( g_is_maxrounds_extend )
         {
@@ -4223,7 +4233,7 @@ stock map_extend()
         set_cvar_num( "mp_maxrounds", 0 );
         set_cvar_num( "mp_winlimit", 0 );
         set_pcvar_float( g_timelimit_pointer, get_pcvar_float( g_timelimit_pointer )
-                + get_pcvar_float( cvar_extendmapStep ) );
+                + g_extendmapStepMinutes );
     }
     
     server_exec()
@@ -4231,8 +4241,8 @@ stock map_extend()
     // clear vote stats
     vote_resetStats();
     
-    DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_rtvWait: %f  extendmapStep: %f", "map_extend( out )", \
-            get_pcvar_float( g_timelimit_pointer ), g_rtvWait, get_pcvar_float( cvar_extendmapStep ) )
+    DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_rtvWait: %f  extendmapStep: %d", "map_extend( out )", \
+            get_pcvar_float( g_timelimit_pointer ), g_rtvWait, g_extendmapStepMinutes )
 }
 
 stock save_time_limit()
@@ -5588,7 +5598,7 @@ public create_fakeVotes()
         g_arrayOfMapsWithVotesNumber[ 3 ] += 0;     // map 4
         g_arrayOfMapsWithVotesNumber[ 4 ] += 2;     // map 5
         
-        if( get_pcvar_num( cvar_extendmapAllowStay ) || g_is_final_voting )
+        if( g_isExtendmapAllowStay || g_is_final_voting )
         {
             g_arrayOfMapsWithVotesNumber[ 5 ] += 1;    // extend option
         }
