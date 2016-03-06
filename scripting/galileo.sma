@@ -413,6 +413,7 @@ new g_rtv_wait_admin_number
 new g_emptyCycleMapsNumber
 new g_recentMapCount;
 new g_nominationMapCount;
+new g_rtvCommands
 new g_rtvWaitRounds
 new g_rockedVoteCount;
 
@@ -611,6 +612,7 @@ public plugin_cfg()
         copy( COLOR_GREY, 2, "\d" );
     }
     
+    g_rtvCommands            = get_pcvar_num( cvar_rtvCommands )
     g_rtvWait                = get_pcvar_float( cvar_rtvWait );
     g_rtvWaitRounds          = get_pcvar_num( cvar_rtvWaitRounds );
     g_is_srvTimelimitRestart = get_pcvar_num( cvar_serverTimelimitRestart ) != 0;
@@ -644,7 +646,7 @@ public plugin_cfg()
         }
     }
     
-    if( get_pcvar_num( cvar_rtvCommands ) & RTV_CMD_STANDARD )
+    if( g_rtvCommands & RTV_CMD_STANDARD )
     {
         register_clcmd( "say rockthevote", "cmd_rockthevote", 0 );
     }
@@ -1418,9 +1420,9 @@ public map_loadFillerList( fillerFileNamePath[] )
 public cmd_rockthevote( player_id )
 {
     color_print( player_id, "^1%L", player_id, "GAL_CMD_RTV" );
-    
     vote_rock( player_id );
-    return PLUGIN_CONTINUE;
+    
+    return PLUGIN_HANDLED;
 }
 
 public cmd_nominations( player_id )
@@ -1874,11 +1876,12 @@ public cmd_say( player_id )
         {
             DEBUG_LOGGER( 4, "( cmd_say ) On: arg2[ 0 ] == '^0'" )
             
-            if( ( get_pcvar_num( cvar_rtvCommands ) & RTV_CMD_SHORTHAND
+            if( ( g_rtvCommands & RTV_CMD_SHORTHAND
                   && equali( arg1, "rtv" ) )
-                || ( get_pcvar_num( cvar_rtvCommands ) & RTV_CMD_DYNAMIC
+                || ( g_rtvCommands & RTV_CMD_DYNAMIC
                      && equali( arg1, "rockthe", 7 )
-                     && equali( arg1[ strlen( arg1 ) - 4 ], "vote" ) ) )
+                     && equali( arg1[ strlen( arg1 ) - 4 ], "vote" )
+                     && !( g_rtvCommands & RTV_CMD_STANDARD ) ) )
             {
                 DEBUG_LOGGER( 4, "( cmd_say ) On: vote_rock( player_id );'" )
                 
