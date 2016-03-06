@@ -2131,15 +2131,15 @@ stock nomination_getPlayer( mapIndex )
 {
     // check if the map has already been nominated
     new nominationIndex;
-    new maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), sizeof g_nomination[] );
+    new maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), sizeof g_nomination[] ) + 1;
     
-    for( new idPlayer = 1; idPlayer < sizeof g_nomination; ++idPlayer )
+    for( new player_id = 1; player_id < sizeof g_nomination; ++player_id )
     {
         for( nominationIndex = 1; nominationIndex < maxPlayerNominations; ++nominationIndex )
         {
-            if( mapIndex == g_nomination[ idPlayer ][ nominationIndex ] )
+            if( mapIndex == g_nomination[ player_id ][ nominationIndex ] )
             {
-                return idPlayer;
+                return player_id;
             }
         }
     }
@@ -2178,7 +2178,7 @@ stock nomination_cancel( player_id, mapIndex )
     new bool:nominationFound
     new mapName[ MAX_MAPNAME_LENGHT ];
     
-    new maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), sizeof g_nomination[] );
+    new maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), sizeof g_nomination[] ) + 1;
     
     for( nominationIndex = 1; nominationIndex < maxPlayerNominations; ++nominationIndex )
     {
@@ -2270,7 +2270,7 @@ stock map_nominate( player_id, mapIndex, idNominator = -1 )
         new nominationIndex
         new nominationCount
         
-        new maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), sizeof g_nomination[] );
+        new maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), sizeof g_nomination[] ) + 1;
         
         // determine the number of nominations the player already made
         // and grab an open slot with the presumption that the player can make the nomination
@@ -2288,22 +2288,30 @@ stock map_nominate( player_id, mapIndex, idNominator = -1 )
         
         if( nominationCount == maxPlayerNominations - 1 )
         {
-            new nominatedMapName[ MAX_MAPNAME_LENGHT ]
-            new nominatedMaps[ COLOR_MESSAGE ]
+            new copiedChars
+            new nominatedMapName [ MAX_MAPNAME_LENGHT ]
+            new nominatedMaps    [ COLOR_MESSAGE ]
             
             for( nominationIndex = 1; nominationIndex < maxPlayerNominations; ++nominationIndex )
             {
                 mapIndex = g_nomination[ player_id ][ nominationIndex ];
                 
                 ArrayGetString( g_nominationMap, mapIndex, nominatedMapName, charsmax( nominatedMapName ) );
-                formatex( nominatedMaps, charsmax( nominatedMaps ), "%s%s%s", nominatedMaps,
-                        ( nominationIndex == 1 ) ? "" : ", ", nominatedMapName );
+                
+                if( copiedChars )
+                {
+                    copiedChars += copy( nominatedMaps[ copiedChars ],
+                            charsmax( nominatedMaps ) - copiedChars, ", " )
+                }
+                
+                copiedChars += copy( nominatedMaps[ copiedChars ],
+                        charsmax( nominatedMaps ) - copiedChars, nominatedMapName )
             }
             
             color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_TOOMANY",
-                    maxPlayerNominations, nominatedMaps );
+                    maxPlayerNominations - 1, nominatedMaps )
             
-            color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_TOOMANY_HLP" );
+            color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_TOOMANY_HLP" )
         }
         else
         {
@@ -2337,38 +2345,44 @@ public nomination_list( player_id )
     new mapIndex
     new nomMapCount
     new maxPlayerNominations
+    new copiedChars
     
-    new msg[ 101 ]
+    new mapsList[ 101 ]
     new mapName[ MAX_MAPNAME_LENGHT ]
     
-    maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), sizeof g_nomination[] );
+    maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), sizeof g_nomination[] ) + 1;
     
-    for( new idPlayer = 1; idPlayer < sizeof g_nomination; ++idPlayer )
+    for( new player_id = 1; player_id < sizeof g_nomination; ++player_id )
     {
         for( nominationIndex = 1; nominationIndex < maxPlayerNominations; ++nominationIndex )
         {
-            mapIndex = g_nomination[ idPlayer ][ nominationIndex ];
+            mapIndex = g_nomination[ player_id ][ nominationIndex ];
             
             if( mapIndex >= 0 )
             {
                 ArrayGetString( g_nominationMap, mapIndex, mapName, charsmax( mapName ) );
-                formatex( msg, charsmax( msg ), "%s, %s", msg, mapName );
+                
+                if( copiedChars )
+                {
+                    copiedChars += copy( mapsList[ copiedChars ], charsmax( mapsList ) - copiedChars, ", " );
+                }
+                
+                copiedChars += copy( mapsList[ copiedChars ], charsmax( mapsList ) - copiedChars, mapName )
                 
                 if( ++nomMapCount == 4 )     // list 4 maps per chat line
                 {
-                    color_print( 0, "^1%L: %s", LANG_PLAYER, "GAL_NOMINATIONS",
-                            msg[ 2 ] );
+                    color_print( 0, "^1%L: %s", LANG_PLAYER, "GAL_NOMINATIONS", mapsList );
                     
-                    nomMapCount = 0;
-                    msg[ 0 ]    = 0;
+                    nomMapCount   = 0;
+                    mapsList[ 0 ] = '^0';
                 }
             }
         }
     }
     
-    if( msg[ 0 ] )
+    if( mapsList[ 0 ] )
     {
-        color_print( 0, "^1%L: %s", LANG_PLAYER, "GAL_NOMINATIONS", msg[ 2 ] );
+        color_print( 0, "^1%L: %s", LANG_PLAYER, "GAL_NOMINATIONS", mapsList );
     }
     else
     {
@@ -2393,7 +2407,7 @@ stock vote_addNominations()
         new voteNominationMax = ( maxNominations ) ? min( maxNominations, slotsAvailable ) : slotsAvailable;
         
         // set how many total nominations each player is allowed
-        new maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), sizeof g_nomination[] );
+        new maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), sizeof g_nomination[] ) + 1;
 
 #if defined DEBUG
         new nominator_id
@@ -2429,6 +2443,7 @@ stock vote_addNominations()
                 if( mapIndex >= 0 )
                 {
                     ArrayGetString( g_nominationMap, mapIndex, mapName, charsmax( mapName ) );
+                    
                     copy( g_votingMapNames[ g_totalVoteOptions++ ],
                             charsmax( g_votingMapNames[] ), mapName );
                     
@@ -4647,12 +4662,13 @@ stock unnominatedDisconnectedPlayer( player_id )
         new mapIndex
         new nominationCount
         new maxPlayerNominations
+        new copiedChars
         
         new mapName[ MAX_MAPNAME_LENGHT ]
         new nominatedMaps[ COLOR_MESSAGE ]
         
         // cancel player's nominations
-        maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), sizeof g_nomination[] );
+        maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), sizeof g_nomination[] ) + 1;
         
         for( new nominationIndex = 1; nominationIndex < maxPlayerNominations; ++nominationIndex )
         {
@@ -4660,18 +4676,22 @@ stock unnominatedDisconnectedPlayer( player_id )
             
             if( mapIndex >= 0 )
             {
-                ArrayGetString( g_nominationMap, mapIndex, mapName, charsmax( mapName ) );
-                nominationCount++;
-                formatex( nominatedMaps, charsmax( nominatedMaps ), "%s%s, ", nominatedMaps, mapName );
+                ++nominationCount;
                 g_nomination[ player_id ][ nominationIndex ] = -1;
+                
+                ArrayGetString( g_nominationMap, mapIndex, mapName, charsmax( mapName ) );
+                
+                if( copiedChars )
+                {
+                    copiedChars += copy( nominatedMaps[ copiedChars ], charsmax( nominatedMaps ) - copiedChars, ", " );
+                }
+                
+                copiedChars += copy( nominatedMaps[ copiedChars ], charsmax( nominatedMaps ) - copiedChars, mapName )
             }
         }
         
         if( nominationCount )
         {
-            // strip the extraneous ", " from the string
-            nominatedMaps[ strlen( nominatedMaps ) - 2 ] = 0;
-            
             // inform the masses that the maps are no longer nominated
             nomination_announceCancellation( nominatedMaps );
         }
