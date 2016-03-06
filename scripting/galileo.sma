@@ -1891,7 +1891,6 @@ public cmd_say( player_id )
                     || equali( arg1, "nominations" ) )
                 {
                     nomination_list( player_id );
-                    
                     return PLUGIN_HANDLED;
                 }
                 else
@@ -1901,7 +1900,6 @@ public cmd_say( player_id )
                     if( mapIndex >= 0 )
                     {
                         nomination_toggle( player_id, mapIndex );
-                        
                         return PLUGIN_HANDLED;
                     }
                     else if( strlen( arg1 ) > 5
@@ -1909,6 +1907,7 @@ public cmd_say( player_id )
                              && equali( arg1[ strlen( arg1 ) - 4 ], "menu" ) )
                     {
                         nomination_menu( player_id )
+                        return PLUGIN_HANDLED;
                     }
                     else // if contains a prefix
                     {
@@ -1923,14 +1922,14 @@ public cmd_say( player_id )
                             if( contain( arg1, g_mapPrefix[ prefix_index ] ) > -1 )
                             {
                                 nomination_menu( player_id )
-                                break;
+                                return PLUGIN_HANDLED;
                             }
                         }
                     }
                     
                     DEBUG_LOGGER( 4, "( cmd_say ) equali( arg1, 'nom', 3 ): %d, \
-                            strlen( arg1 ) > 5: %d", \
-                            equali( arg1, "nom", 3 ), strlen( arg1 ) > 5 )
+                            strlen( arg1 ) > 5: %d", equali( arg1, "nom", 3 ), \
+                            strlen( arg1 ) > 5 )
                 }
             }
         }
@@ -1955,6 +1954,7 @@ public cmd_say( player_id )
             }
         }
     }
+    
     return PLUGIN_CONTINUE;
 }
 
