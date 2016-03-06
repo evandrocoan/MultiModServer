@@ -37,7 +37,7 @@ new const PLUGIN_VERSION[] = "2.1.2"
  * 4   - To create fake votes.
  * 7   - Levels 1, 2 and 4.
  */
-#define DEBUG_LEVEL 1 + 4
+#define DEBUG_LEVEL 1 + 4 + 2
 
 #define DEBUG_LEVEL_NORMAL     1
 #define DEBUG_LEVEL_UNIT_TEST  2
@@ -2873,6 +2873,14 @@ stock vote_startDirector( bool:is_forced_voting )
             nomination_clearAll();
         }
     }
+
+#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
+    g_voteDuration = 5
+#endif
+
+#if DEBUG_LEVEL & DEBUG_LEVEL_FAKE_VOTES
+    set_task( 2.0, "create_fakeVotes", TASKID_DBG_FAKEVOTES );
+#endif
     
     if( choicesLoaded )
     {
@@ -3073,14 +3081,6 @@ public vote_handleDisplay()
     {
         client_cmd( 0, "spk Gman/Gman_Choose%i", random_num( 1, 2 ) );
     }
-
-#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
-    g_voteDuration = 5
-#endif
-
-#if DEBUG_LEVEL & DEBUG_LEVEL_FAKE_VOTES
-    set_task( 2.0, "create_fakeVotes", TASKID_DBG_FAKEVOTES );
-#endif
     
     if( get_pcvar_num( cvar_voteStatus )
         && get_pcvar_num( cvar_voteStatusType ) & STATUS_TYPE_PERCENTAGE )
@@ -3128,25 +3128,8 @@ public voteExpire()
 
 public vote_display( argument[ 2 ] )
 {
-    DEBUG_LOGGER( 4, "  ( votedisplay ) player_id: %i, updateTimeRemaining: %i, g_refreshVoteStatus: \
-            %i,^n  g_totalVoteOptions: %i, len( g_voteStatusClean ): %i", argument[ 1 ], \
-            argument[ 0 ], g_refreshVoteStatus, g_totalVoteOptions, strlen( g_voteStatusClean )  )
-    
-    new player_id = argument[ 1 ]
-    
-    // display the vote
-    new showStatus = get_pcvar_num( cvar_voteStatus )
-    
-    static menuKeys
-    static voteStatus  [ 512 ]
-    static voteMapLine [ MAX_MAPNAME_LENGHT ]
-    
-    // menu showed while voting
-    static menuClean[ 512 ]
-    
-    // menu showed after voted
-    static menuDirty[ 512 ]
-    
+    new player_id           = argument[ 1 ]
+    new showStatus          = get_pcvar_num( cvar_voteStatus )
     new charCount           = 0
     new updateTimeRemaining = argument[ 0 ]
     new noneOptionType      = get_pcvar_num( cvar_voteShowNoneOptionType )
@@ -3156,6 +3139,20 @@ public vote_display( argument[ 2 ] )
     new bool:noneIsHidden       = ( isToShowNoneOption
                                     && !noneOptionType
                                     && !isVoteOver )
+    static menuKeys
+    static voteStatus  [ 512 ]
+    static voteMapLine [ MAX_MAPNAME_LENGHT ]
+    static menuClean   [ 512 ] // menu showed while voting
+    static menuDirty   [ 512 ] // menu showed after voted
+    
+    if( updateTimeRemaining )
+    {
+        g_voteDuration--;
+    }
+    
+    DEBUG_LOGGER( 4, "  ( votedisplay ) player_id: %i, updateTimeRemaining: %i, g_refreshVoteStatus: \
+            %i,^n  g_totalVoteOptions: %i, len( g_voteStatusClean ): %i", argument[ 1 ], \
+            argument[ 0 ], g_refreshVoteStatus, g_totalVoteOptions, strlen( g_voteStatusClean )  )
     
     if( g_refreshVoteStatus
         || isVoteOver )
@@ -3181,11 +3178,6 @@ public vote_display( argument[ 2 ] )
             
             menuKeys |= ( 1 << choice_index );
         }
-    }
-    
-    if( updateTimeRemaining )
-    {
-        g_voteDuration--;
     }
     
     // This is to optionally display to single player that just voted.
