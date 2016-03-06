@@ -37,7 +37,7 @@ new const PLUGIN_VERSION[] = "2.1.2"
  * 4   - To create fake votes.
  * 7   - Levels 1, 2 and 4.
  */
-#define DEBUG_LEVEL 1 + 4 + 2
+#define DEBUG_LEVEL 1 + 4
 
 #define DEBUG_LEVEL_NORMAL     1
 #define DEBUG_LEVEL_UNIT_TEST  2
@@ -2601,7 +2601,7 @@ public displayEndOfTheMapVoteMenu( player_id )
             menuKeys = MENU_KEY_0 | MENU_KEY_6;
             
             formatex( menu_counter, charsmax( menu_counter ),
-                    " %s( %s%d %L%s )",
+                    " %s(%s%d %L%s)",
                     COLOR_YELLOW, COLOR_GREY, g_pendingVoteCountdown, LANG_PLAYER, "GAL_TIMELEFT", COLOR_YELLOW )
         }
         else
@@ -2630,7 +2630,8 @@ public displayEndOfTheMapVoteMenu( player_id )
         if( menu_id == 0
             || menu_id == g_chooseMapQuestionMenuId )
         {
-            show_menu( player_id, menuKeys, menu_body, 2, MENU_CHOOSEMAP_QUESTION )
+            show_menu( player_id, menuKeys, menu_body, ( g_pendingVoteCountdown == 1 ? 1 : 2 ),
+                    MENU_CHOOSEMAP_QUESTION )
         }
         
         DEBUG_LOGGER( 8, " ( displayEndOfTheMapVoteMenu| for ) menu_body: %s^n menu_id:%d,   \
@@ -3110,7 +3111,7 @@ public vote_handleDisplay()
         set_task( 1.0, "vote_display", TASKID_VOTE_DISPLAY, argument, sizeof( argument ) );
     }
     
-    // display the vote outcome + 1.0 from 'vote_display' initial delay
+    // display the vote outcome
     set_task( float( g_voteDuration ), "closeVoting", TASKID_VOTE_EXPIRE )
 }
 
