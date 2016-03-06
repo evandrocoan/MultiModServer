@@ -589,17 +589,8 @@ public plugin_init()
 public plugin_cfg()
 {
     reset_rounds_scores()
+    loadPluginSetttings()
     
-    copy( DIR_CONFIGS[ get_configsdir( DIR_CONFIGS, charsmax( DIR_CONFIGS ) ) ],
-            charsmax( DIR_CONFIGS ), "/galileo" );
-    
-    copy( DATA_DIR_PATH[ get_datadir( DATA_DIR_PATH, charsmax( DATA_DIR_PATH ) ) ],
-            charsmax( DATA_DIR_PATH ), "/galileo" );
-    
-    server_cmd( "exec %s/galileo.cfg", DIR_CONFIGS );
-    server_exec();
-    
-    g_is_colored_chat_enabled = get_pcvar_num( cvar_coloredChatEnabled ) != 0
     g_is_color_chat_supported = ( is_running( "czero" )
                                   || is_running( "cstrike" ) )
     
@@ -611,23 +602,15 @@ public plugin_cfg()
         copy( COLOR_GREY, 2, "\d" );
     }
     
-    g_rtvCommands            = get_pcvar_num( cvar_rtvCommands )
-    g_rtvWait                = get_pcvar_float( cvar_rtvWait );
-    g_rtvWaitRounds          = get_pcvar_num( cvar_rtvWaitRounds );
-    g_is_srvTimelimitRestart = get_pcvar_num( cvar_serverTimelimitRestart ) != 0;
-    g_is_srvMaxroundsRestart = get_pcvar_num( cvar_serverMaxroundsRestart ) != 0;
-    g_is_srvWinlimitRestart  = get_pcvar_num( cvar_serverWinlimitRestart ) != 0;
-    
     get_pcvar_string( cvar_voteWeightFlags, g_voteWeightFlags, charsmax( g_voteWeightFlags ) );
     remove_quotes( g_voteWeightFlags )
-    get_mapname( g_currentMap, charsmax( g_currentMap ) );
     
+    get_mapname( g_currentMap, charsmax( g_currentMap ) );
     DEBUG_LOGGER( 4, "Current MAP [%s]", g_currentMap )
     DEBUG_LOGGER( 4, "" )
     
     g_fillerMap        = ArrayCreate( MAX_MAPNAME_LENGHT );
     g_nominationMap    = ArrayCreate( MAX_MAPNAME_LENGHT );
-    g_maxVotingChoices = max( min( sizeof g_votingMapNames, get_pcvar_num( cvar_voteMapChoiceCount ) ), 2 )
     
     // initialize nominations table
     nomination_clearAll();
@@ -645,46 +628,9 @@ public plugin_cfg()
         }
     }
     
-    if( g_rtvCommands & RTV_CMD_STANDARD )
-    {
-        register_clcmd( "say rockthevote", "cmd_rockthevote", 0 );
-    }
-    
-    if( get_pcvar_num( cvar_nomPlayerAllowance ) )
-    {
-        register_concmd( "gal_listmaps", "map_listAll" );
-        register_clcmd( "say nominations", "cmd_nominations", 0, "- displays current \
-                nominations for next map" );
-        
-        if( get_pcvar_num( cvar_nomPrefixes ) )
-        {
-            map_loadPrefixList();
-        }
-        map_loadNominationList();
-    }
-    
-    // delay to start to handle the server start to avoid problems over crashing maps
-    if( get_cvar_num( "gal_server_starting" ) )
-    {
-        new backupMapsFilePath[ MAX_FILE_PATH_LENGHT ];
-        
-        formatex( backupMapsFilePath, charsmax( backupMapsFilePath ), "%s/%s",
-                DATA_DIR_PATH, CURRENT_AND_NEXTMAP_FILE_NAME );
-        
-        if( file_exists( backupMapsFilePath ) )
-        {
-            set_task( 15.0, "handleServerStart", _, backupMapsFilePath, sizeof backupMapsFilePath );
-        }
-        else
-        {
-            saveCurrentAndNextMapNames( g_nextmap )
-        }
-    }
-    else // update the current and next map names every server start
-    {
-        get_cvar_string( "amx_nextmap", g_nextmap, charsmax( g_nextmap ) );
-        saveCurrentAndNextMapNames( g_nextmap )
-    }
+    cacheCvarsValues()
+    configureRTV()
+    configureServerStart()
     
     if( get_pcvar_num( cvar_emptyWait ) )
     {
@@ -708,6 +654,80 @@ public plugin_cfg()
         set_task( 2.0, "runTests" )
     }
 #endif
+}
+
+stock cacheCvarsValues()
+{
+    g_rtvCommands            = get_pcvar_num( cvar_rtvCommands )
+    g_rtvWait                = get_pcvar_float( cvar_rtvWait );
+    g_rtvWaitRounds          = get_pcvar_num( cvar_rtvWaitRounds );
+    g_is_srvTimelimitRestart = get_pcvar_num( cvar_serverTimelimitRestart ) != 0;
+    g_is_srvMaxroundsRestart = get_pcvar_num( cvar_serverMaxroundsRestart ) != 0;
+    g_is_srvWinlimitRestart  = get_pcvar_num( cvar_serverWinlimitRestart ) != 0;
+    
+    g_maxVotingChoices = max( min( sizeof g_votingMapNames, get_pcvar_num( cvar_voteMapChoiceCount ) ), 2 )
+    
+    g_is_colored_chat_enabled = get_pcvar_num( cvar_coloredChatEnabled ) != 0
+}
+
+stock loadPluginSetttings()
+{
+    copy( DIR_CONFIGS[ get_configsdir( DIR_CONFIGS, charsmax( DIR_CONFIGS ) ) ],
+            charsmax( DIR_CONFIGS ), "/galileo" );
+    
+    copy( DATA_DIR_PATH[ get_datadir( DATA_DIR_PATH, charsmax( DATA_DIR_PATH ) ) ],
+            charsmax( DATA_DIR_PATH ), "/galileo" );
+    
+    server_cmd( "exec %s/galileo.cfg", DIR_CONFIGS );
+    server_exec();
+}
+
+stock configureServerStart()
+{
+    // delay to start to handle the server start to avoid problems over crashing maps
+    if( get_cvar_num( "gal_server_starting" ) )
+    {
+        new backupMapsFilePath[ MAX_FILE_PATH_LENGHT ];
+        
+        formatex( backupMapsFilePath, charsmax( backupMapsFilePath ), "%s/%s",
+                DATA_DIR_PATH, CURRENT_AND_NEXTMAP_FILE_NAME );
+        
+        if( file_exists( backupMapsFilePath ) )
+        {
+            set_task( 15.0, "handleServerStart", _, backupMapsFilePath, sizeof backupMapsFilePath );
+        }
+        else
+        {
+            saveCurrentAndNextMapNames( g_nextmap )
+        }
+    }
+    else // update the current and next map names every server start
+    {
+        get_cvar_string( "amx_nextmap", g_nextmap, charsmax( g_nextmap ) );
+        saveCurrentAndNextMapNames( g_nextmap )
+    }
+}
+
+stock configureRTV()
+{
+    if( g_rtvCommands & RTV_CMD_STANDARD )
+    {
+        register_clcmd( "say rockthevote", "cmd_rockthevote", 0 );
+    }
+    
+    if( get_pcvar_num( cvar_nomPlayerAllowance ) )
+    {
+        register_concmd( "gal_listmaps", "map_listAll" );
+        register_clcmd( "say nominations", "cmd_nominations", 0, "- displays current \
+                nominations for next map" );
+        
+        if( get_pcvar_num( cvar_nomPrefixes ) )
+        {
+            map_loadPrefixList();
+        }
+        
+        map_loadNominationList();
+    }
 }
 
 public team_win_event()
