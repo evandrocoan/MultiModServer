@@ -22,7 +22,7 @@
 *****************************************************************************************
 */
 
-new const PLUGIN_VERSION[] = "2.1"
+new const PLUGIN_VERSION[] = "2.1.1"
 
 #include <amxmodx>
 #include <amxmisc>
@@ -423,10 +423,10 @@ new Array:g_emptyCycleMapList
 new Array:g_fillerMap;
 new Array:g_nominationMap
 
-new plugin_nextmap_g_nextMap    [ MAX_MAPNAME_LENGHT ]
-new plugin_nextmap_g_currentMap [ MAX_MAPNAME_LENGHT ]
-new plugin_nextmap_g_mapCycle   [ MAX_FILE_PATH_LENGHT ]
-new plugin_nextmap_g_pos
+new NP_g_currentMapCyclePosition
+new NP_g_nextMapName      [ MAX_MAPNAME_LENGHT ]
+new NP_g_currentMapName   [ MAX_MAPNAME_LENGHT ]
+new NP_g_mapCycleFilePath [ MAX_FILE_PATH_LENGHT ]
 
 new plugin_nextmap_g_chattime
 new plugin_nextmap_gp_nextmap
@@ -1232,13 +1232,13 @@ stock configureTheMapcycleSystem( currentMap[] )
     new possibleNextMap[ MAX_MAPNAME_LENGHT ]
     new Array:mapcycleFileList = ArrayCreate( MAX_MAPNAME_LENGHT )
     
-    map_populateList( mapcycleFileList, plugin_nextmap_g_mapCycle )
+    map_populateList( mapcycleFileList, NP_g_mapCycleFilePath )
     
     possibleNextMapPosition = map_getNext( mapcycleFileList, currentMap, possibleNextMap )
     
     if( possibleNextMapPosition != -1 )
     {
-        plugin_nextmap_g_pos = possibleNextMapPosition
+        NP_g_currentMapCyclePosition = possibleNextMapPosition
         
         setNextMap( possibleNextMap )
         saveCurrentMapCycleSetting()
@@ -5378,7 +5378,7 @@ public nextmap_plugin_init()
         register_clcmd( "say ff", "sayFFStatus", 0, "- display friendly fire status" )
     }
     
-    get_mapname( plugin_nextmap_g_currentMap, charsmax( plugin_nextmap_g_currentMap ) )
+    get_mapname( NP_g_currentMapName, charsmax( NP_g_currentMapName ) )
     
     new tockenMapcycleAndPosion[ MAX_MAPNAME_LENGHT + MAX_FILE_PATH_LENGHT ]
     new mapcycleFilePath[ MAX_FILE_PATH_LENGHT ]
@@ -5389,25 +5389,25 @@ public nextmap_plugin_init()
     parse( tockenMapcycleAndPosion, mapcycleFilePath, charsmax( mapcycleFilePath ),
             mapcycleCurrentIndex, charsmax( mapcycleCurrentIndex ) )
     
-    get_cvar_string( "mapcyclefile", plugin_nextmap_g_mapCycle, charsmax( plugin_nextmap_g_mapCycle ) )
+    get_cvar_string( "mapcyclefile", NP_g_mapCycleFilePath, charsmax( NP_g_mapCycleFilePath ) )
     
-    if( !equal( plugin_nextmap_g_mapCycle, mapcycleFilePath ) )
+    if( !equal( NP_g_mapCycleFilePath, mapcycleFilePath ) )
     {
-        plugin_nextmap_g_pos = 0    // mapcyclefile has been changed - go from first
+        NP_g_currentMapCyclePosition = 0    // mapcyclefile has been changed - go from first
     }
     else
     {
-        plugin_nextmap_g_pos = str_to_num( mapcycleCurrentIndex )
+        NP_g_currentMapCyclePosition = str_to_num( mapcycleCurrentIndex )
     }
     
-    readMapCycle( plugin_nextmap_g_mapCycle, plugin_nextmap_g_nextMap, charsmax( plugin_nextmap_g_nextMap ) )
-    set_pcvar_string( plugin_nextmap_gp_nextmap, plugin_nextmap_g_nextMap )
+    readMapCycle( NP_g_mapCycleFilePath, NP_g_nextMapName, charsmax( NP_g_nextMapName ) )
+    set_pcvar_string( plugin_nextmap_gp_nextmap, NP_g_nextMapName )
     
     saveCurrentMapCycleSetting()
 }
 
 /**
- * The variable 'plugin_nextmap_g_pos' is updated at 'handleServerStart()' 15 seconds delayed task,
+ * The variable 'NP_g_currentMapCyclePosition' is updated at 'handleServerStart()' 15 seconds delayed task,
  * which happens before this function is recalled to update the new settings.
  */
 stock saveCurrentMapCycleSetting()
@@ -5415,7 +5415,7 @@ stock saveCurrentMapCycleSetting()
     new tockenMapcycleAndPosion[ MAX_MAPNAME_LENGHT + MAX_FILE_PATH_LENGHT ]
     
     formatex( tockenMapcycleAndPosion, charsmax( tockenMapcycleAndPosion ), "%s %d",
-            plugin_nextmap_g_mapCycle, plugin_nextmap_g_pos )
+            NP_g_mapCycleFilePath, NP_g_currentMapCyclePosition )
     
     set_localinfo( "lastmapcycle", tockenMapcycleAndPosion ) // save lastmapcycle settings
 }
@@ -5428,8 +5428,8 @@ getNextMapName( szArg[], iMax )
     {
         return len
     }
-    len = copy( szArg, iMax, plugin_nextmap_g_nextMap )
-    set_pcvar_string( plugin_nextmap_gp_nextmap, plugin_nextmap_g_nextMap )
+    len = copy( szArg, iMax, NP_g_nextMapName )
+    set_pcvar_string( plugin_nextmap_gp_nextmap, NP_g_nextMapName )
     
     return len
 }
@@ -5438,7 +5438,6 @@ public sayNextMap()
 {
     if( get_pcvar_num( cvar_nextMapChangeAnnounce )
         && get_pcvar_num( cvar_endOfMapVote )
-        && !g_is_last_round
         && !( g_voteStatus & VOTE_IS_OVER ) )
     {
         if( g_voteStatus & VOTE_IS_IN_PROGRESS )
@@ -5448,22 +5447,25 @@ public sayNextMap()
         }
         else
         {
-            color_print( 0, "^1%L", LANG_PLAYER, "NEXT_MAP",
+            color_print( 0, "^1%L %L", LANG_PLAYER, "NEXT_MAP",
                     LANG_PLAYER, "GAL_NEXTMAP_UNKNOWN" )
         }
     }
     else
     {
-        new player_name[ MAX_PLAYER_NAME_LENGHT ]
-        
-        getNextMapName( player_name, charsmax( player_name ) )
-        client_print( 0, print_chat, "%L %s", LANG_PLAYER, "NEXT_MAP", player_name )
+        color_print( 0, "^1%L ^4%s", LANG_PLAYER, "NEXT_MAP", g_nextmap )
     }
+    
+    DEBUG_LOGGER( 1, "%L %s -- cvar_endOfMapVote: %d, cvar_nextMapChangeAnnounce: %d", \
+            LANG_SERVER, "NEXT_MAP", g_nextmap, get_pcvar_num( cvar_endOfMapVote ), \
+            get_pcvar_num( cvar_endOfMapVote ) )
+    
+    return PLUGIN_HANDLED
 }
 
 public sayCurrentMap()
 {
-    client_print( 0, print_chat, "%L: %s", LANG_PLAYER, "PLAYED_MAP", plugin_nextmap_g_currentMap )
+    client_print( 0, print_chat, "%L: %s", LANG_PLAYER, "PLAYED_MAP", NP_g_currentMapName )
 }
 
 public sayFFStatus()
@@ -5484,7 +5486,7 @@ public delayedChange( param[] )
 
 public changeMap()
 {
-    new string[ 32 ] // mp_chattime defaults to 10 in other mods
+    new nextmap_name[ MAX_MAPNAME_LENGHT ] // mp_chattime defaults to 10 in other mods
     new Float:chattime = plugin_nextmap_g_chattime ? get_pcvar_float( plugin_nextmap_g_chattime ) : 10.0;
     
     if( plugin_nextmap_g_chattime )
@@ -5492,9 +5494,9 @@ public changeMap()
         set_pcvar_float( plugin_nextmap_g_chattime, chattime + 2.0 ) // make sure mp_chattime is long
     }
     
-    new len = getNextMapName( string, charsmax( string ) ) + 1
+    new len = getNextMapName( nextmap_name, charsmax( nextmap_name ) ) + 1
     
-    set_task( chattime, "delayedChange", 0, string, len ) // change with 1.5 sec. delay
+    set_task( chattime, "delayedChange", 0, nextmap_name, len ) // change with 1.5 sec. delay
 }
 
 new g_warning[] = "WARNING: Couldn't find a valid map or the file doesn't exist (file ^"%s^")"
@@ -5554,10 +5556,10 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
                 copy( szFirst, charsmax( szFirst ), szBuffer )
             }
             
-            if( ++iMaps > plugin_nextmap_g_pos )
+            if( ++iMaps > NP_g_currentMapCyclePosition )
             {
                 copy( szNext, iNext, szBuffer )
-                plugin_nextmap_g_pos = iMaps
+                NP_g_currentMapCyclePosition = iMaps
                 return
             }
         }
@@ -5566,13 +5568,13 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
     if( !iMaps )
     {
         log_amx( g_warning, mapcycleFilePath )
-        copy( szNext, iNext, plugin_nextmap_g_currentMap )
+        copy( szNext, iNext, NP_g_currentMapName )
     }
     else
     {
         copy( szNext, iNext, szFirst )
     }
-    plugin_nextmap_g_pos = 1
+    NP_g_currentMapCyclePosition = 1
 }
 
 // ################################## BELOW HERE ONLY GOES DEBUG/TEST CODE ###################################
