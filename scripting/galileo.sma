@@ -22,7 +22,7 @@
 *****************************************************************************************
 */
 
-new const PLUGIN_VERSION[] = "2.2"
+new const PLUGIN_VERSION[] = "2.2d"
 
 #include <amxmodx>
 #include <amxmisc>
