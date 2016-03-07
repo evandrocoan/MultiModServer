@@ -22,7 +22,7 @@
 *****************************************************************************************
 */
 
-new const PLUGIN_VERSION[] = "2.1.6"
+new const PLUGIN_VERSION[] = "2.2"
 
 #include <amxmodx>
 #include <amxmisc>
@@ -5264,6 +5264,10 @@ public map_restoreOriginalTimeLimit()
         server_cmd( "mp_timelimit %f", g_originalTimelimit )
         server_cmd( "mp_maxrounds %d", g_originalMaxRounds )
         server_cmd( "mp_winlimit %d", g_originalWinLimit )
+        
+        // restore to the right values
+        g_rtvMinutesWait = get_pcvar_float( cvar_rtvMinutesWait );
+        g_rtvWaitRounds  = get_pcvar_num( cvar_rtvWaitRounds );
         
         server_exec();
         g_is_timeLimitChanged = false;
