@@ -70,7 +70,7 @@ new g_debug_level = 1 + 4 + 8 + 16
  * @param text the debug message, if omitted its default value is ""
  * @param any the variable number of formatting parameters
  */
-stock debugMesssageLogger( mode, message[], any: ... )
+stock debugMesssageLogger( mode, message[] = "", any: ... )
 {
     if( mode & g_debug_level )
     {
@@ -340,7 +340,7 @@ new cvar_isToAskForEndOfTheMapVote
 new cvar_emptyWait
 new cvar_isEmptyCycleServerChange
 new cvar_emptyMapFilePath
-new cvar_rtvWait
+new cvar_rtvMinutesWait
 new cvar_rtvWaitRounds
 new cvar_rtvWaitAdmin
 new cvar_rtvRatio
@@ -410,6 +410,12 @@ new bool:g_is_srvWinlimitRestart
 new bool:g_is_color_chat_supported
 new bool:g_is_final_voting
 
+new Float:g_rtvMinutesWait;
+
+new Array:g_emptyCycleMapList
+new Array:g_fillerMap;
+new Array:g_nominationMap
+
 new g_showVoteStatusType
 new g_extendmapStepRounds
 new g_extendmapStepMinutes
@@ -425,12 +431,6 @@ new g_nominationMapCount;
 new g_rtvCommands
 new g_rtvWaitRounds
 new g_rockedVoteCount;
-
-new Float:g_rtvWait;
-
-new Array:g_emptyCycleMapList
-new Array:g_fillerMap;
-new Array:g_nominationMap
 
 new NP_cvar_chattime
 new NP_cvar_nextMap
@@ -531,7 +531,7 @@ public plugin_init()
     cvar_serverMaxroundsRestart    = register_cvar( "gal_srv_maxrounds_restart", "0" );
     cvar_serverWinlimitRestart     = register_cvar( "gal_srv_winlimit_restart", "0" );
     cvar_rtvCommands               = register_cvar( "gal_rtv_commands", "3" );
-    cvar_rtvWait                   = register_cvar( "gal_rtv_wait", "10" );
+    cvar_rtvMinutesWait            = register_cvar( "gal_rtv_wait", "10" );
     cvar_rtvWaitRounds             = register_cvar( "gal_rtv_wait_rounds", "5" );
     cvar_rtvWaitAdmin              = register_cvar( "gal_rtv_wait_admin", "0" );
     cvar_rtvRatio                  = register_cvar( "gal_rtv_ratio", "0.60" );
@@ -615,8 +615,9 @@ public plugin_cfg()
     get_pcvar_string( cvar_voteWeightFlags, g_voteWeightFlags, charsmax( g_voteWeightFlags ) );
     remove_quotes( g_voteWeightFlags )
     
+    get_cvar_string( "amx_nextmap", g_nextmap, charsmax( g_nextmap ) );
     get_mapname( g_currentMap, charsmax( g_currentMap ) );
-    DEBUG_LOGGER( 4, "Current MAP [%s]", g_currentMap )
+    DEBUG_LOGGER( 4, "Current MAP [%s]  nextmap: [%s]", g_currentMap, g_nextmap )
     DEBUG_LOGGER( 4, "" )
     
     g_fillerMap     = ArrayCreate( MAX_MAPNAME_LENGHT );
@@ -669,8 +670,6 @@ public plugin_cfg()
 stock cacheCvarsValues()
 {
     g_rtvCommands            = get_pcvar_num( cvar_rtvCommands )
-    g_rtvWait                = get_pcvar_float( cvar_rtvWait );
-    g_rtvWaitRounds          = get_pcvar_num( cvar_rtvWaitRounds );
     g_extendmapStepRounds    = get_pcvar_num( cvar_extendmapStepRounds )
     g_extendmapStepMinutes   = get_pcvar_num( cvar_extendmapStepMinutes )
     g_extendmapAllowStayType = get_pcvar_num( cvar_extendmapAllowStayType )
@@ -724,13 +723,15 @@ stock configureServerStart()
     }
     else // update the current and next map names every server start
     {
-        get_cvar_string( "amx_nextmap", g_nextmap, charsmax( g_nextmap ) );
         saveCurrentAndNextMapNames( g_nextmap )
     }
 }
 
 stock configureRTV()
 {
+    g_rtvMinutesWait = get_pcvar_float( cvar_rtvMinutesWait );
+    g_rtvWaitRounds  = get_pcvar_num( cvar_rtvWaitRounds );
+    
     if( g_rtvCommands & RTV_CMD_STANDARD )
     {
         register_clcmd( "say rockthevote", "cmd_rockthevote", 0 );
@@ -1231,6 +1232,7 @@ public handleServerStart( backupMapsFilePath[] )
                 }
             }
             
+            trim( mapToChange )
             fclose( backupMapsFile );
         }
         else if( startAction == SERVER_START_RANDOMMAP ) // pick a random map from allowable nominations
@@ -1248,13 +1250,15 @@ public handleServerStart( backupMapsFilePath[] )
             }
         }
         
-        trim( mapToChange )
         configureTheMapcycleSystem( mapToChange )
         
         if( mapToChange[ 0 ]
             && is_map_valid( mapToChange ) )
         {
-            serverChangeLevel( mapToChange );
+            if( !equali( mapToChange, g_currentMap ) )
+            {
+                serverChangeLevel( mapToChange );
+            }
         }
         else
         {
@@ -4195,14 +4199,14 @@ stock Float:map_getMinutesElapsed()
 
 stock map_extend()
 {
-    DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_rtvWait: %f  extendmapStep: %d", "map_extend( in )", \
-            get_pcvar_float( g_timelimit_pointer ), g_rtvWait, g_extendmapStepMinutes )
+    DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_rtvMinutesWait: %f  extendmapStep: %d", "map_extend( in )", \
+            get_pcvar_float( g_timelimit_pointer ), g_rtvMinutesWait, g_extendmapStepMinutes )
     
     // reset the "rtv wait" time, taking into consideration the map extension
-    if( g_rtvWait )
+    if( g_rtvMinutesWait )
     {
-        g_rtvWait       += get_pcvar_float( g_timelimit_pointer );
-        g_rtvWaitRounds += get_pcvar_num( g_maxrounds_pointer );
+        g_rtvMinutesWait += get_pcvar_float( g_timelimit_pointer );
+        g_rtvWaitRounds  += get_pcvar_num( g_maxrounds_pointer );
     }
     
     save_time_limit()
@@ -4241,8 +4245,8 @@ stock map_extend()
     // clear vote stats
     vote_resetStats();
     
-    DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_rtvWait: %f  extendmapStep: %d", "map_extend( out )", \
-            get_pcvar_float( g_timelimit_pointer ), g_rtvWait, g_extendmapStepMinutes )
+    DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_rtvMinutesWait: %f  extendmapStep: %d", "map_extend( out )", \
+            get_pcvar_float( g_timelimit_pointer ), g_rtvMinutesWait, g_extendmapStepMinutes )
 }
 
 stock save_time_limit()
@@ -4358,12 +4362,12 @@ public vote_rock( player_id )
     }
     
     // make sure enough time has gone by on the current map
-    if( g_rtvWait
+    if( g_rtvMinutesWait
         && minutesElapsed
-        && minutesElapsed < g_rtvWait )
+        && minutesElapsed < g_rtvMinutesWait )
     {
         color_print( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_TOOSOON",
-                floatround( g_rtvWait - minutesElapsed, floatround_ceil ) );
+                floatround( g_rtvMinutesWait - minutesElapsed, floatround_ceil ) );
         return;
     }
     else if( g_rtvWaitRounds
