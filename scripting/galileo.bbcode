@@ -1,4 +1,4 @@
-[anchor]Top[/anchor][SIZE="6"][COLOR="Blue"][B]Galileo v2.1.6[/B][/COLOR][/SIZE] A feature rich map voting plugin
+[anchor]Top[/anchor][SIZE="6"][COLOR="Blue"][B]Galileo v2.1.7[/B][/COLOR][/SIZE] A feature rich map voting plugin
 [SIZE=1][COLOR=Red]Release: 12.09.2008 | Last Update: 07.03.2016[/SIZE][/COLOR]
 
 If you want to translate the Galileo Mapchooser to your language or if you see some 
@@ -317,7 +317,8 @@ galileo.amxx
 
 [CODE]
 [SUG]
-add cvar maintenance Mode if the owner of the server is fixing something or updating the server and doesn't wanna the map to be changed he will enable the cvar maintenance  so the map will can't be changed by any method like gal_startvote/rtv/timeleft or maxrounds ended... and he will display print chat some thing like that : you cannot chane the map when the server is en mode maintenance
+The Maintenance Mode
+If the owner of the server is fixing something or updating the server and doesn't wanna the map to be changed he will enable the cvar maintenance so the map will can't be changed by any method like gal_startvote/rtv/timeleft or maxrounds ended... and he will display print chat some thing like that : you cannot chane the map when the server is en mode maintenance
 
 [SUG]
 first you need enable cvar to this feature...
@@ -329,6 +330,11 @@ if the enable cvar is 3 the server will start a vote after the half of the timel
 
 
 ******************************** [anchor]Change[/anchor][B][SIZE="5"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
+
+[B]2016-03-07 | v2.1.7[/B]
+[LIST=1]
+[*]Added to restore RTV original values on 'sv_restartround' event.
+[/LIST]
 
 [B]2016-03-07 | v2.1.6[/B]
 [LIST=1]
