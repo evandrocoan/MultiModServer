@@ -4970,14 +4970,6 @@ stock map_announceNomination( player_id, map[] )
     color_print( 0, "^1%L", LANG_PLAYER, "GAL_NOM_SUCCESS", player_name, map );
 }
 
-#if AMXX_VERSION_NUM < 180
-stock has_flag( player_id, flags[] )
-{
-    return ( get_user_flags( player_id ) & read_flags( flags ) );
-}
-
-#endif
-
 public sort_stringsi( const elem1[], const elem2[], const array[], data[], data_size )
 {
     return strcmp( elem1, elem2, 1 );
