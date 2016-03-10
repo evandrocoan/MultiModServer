@@ -404,9 +404,6 @@ new bool:g_is_timeToChangeLevel
 new bool:g_is_timeToRestart
 new bool:g_is_timeLimitChanged
 new bool:g_is_map_extension_allowed
-new bool:g_is_srvTimelimitRestart
-new bool:g_is_srvMaxroundsRestart
-new bool:g_is_srvWinlimitRestart
 new bool:g_is_color_chat_supported
 new bool:g_is_final_voting
 
@@ -677,9 +674,6 @@ stock cacheCvarsValues()
     g_voteShowNoneOptionType = get_pcvar_num( cvar_voteShowNoneOptionType )
     g_showVoteStatusType     = get_pcvar_num( cvar_showVoteStatusType )
     
-    g_is_srvTimelimitRestart  = get_pcvar_num( cvar_serverTimelimitRestart ) != 0;
-    g_is_srvMaxroundsRestart  = get_pcvar_num( cvar_serverMaxroundsRestart ) != 0;
-    g_is_srvWinlimitRestart   = get_pcvar_num( cvar_serverWinlimitRestart ) != 0;
     g_is_colored_chat_enabled = get_pcvar_num( cvar_coloredChatEnabled ) != 0
     
     g_isExtendmapAllowStay = get_pcvar_num( cvar_extendmapAllowStay ) != 0
@@ -1025,14 +1019,14 @@ public start_voting_by_rounds()
 
 public reset_rounds_scores()
 {
-    if( g_is_srvTimelimitRestart
-        || g_is_srvWinlimitRestart
-        || g_is_srvMaxroundsRestart )
+    if( get_pcvar_num( cvar_serverTimelimitRestart )
+        || get_pcvar_num( cvar_serverWinlimitRestart )
+        || get_pcvar_num( cvar_serverMaxroundsRestart ) )
     {
         save_time_limit()
         
         if( get_pcvar_num( g_timelimit_pointer )
-            && g_is_srvTimelimitRestart )
+            && get_pcvar_num( cvar_serverTimelimitRestart ) )
         {
             new new_timelimit = ( floatround(
                                           get_pcvar_num( g_timelimit_pointer )
@@ -1046,7 +1040,7 @@ public reset_rounds_scores()
         }
         
         if( get_pcvar_num( g_winlimit_pointer )
-            && g_is_srvWinlimitRestart )
+            && get_pcvar_num( cvar_serverWinlimitRestart ) )
         {
             new new_winlimit = ( get_pcvar_num( g_winlimit_pointer )
                                  - max( g_total_terrorists_wins, g_total_CT_wins )
@@ -1059,7 +1053,7 @@ public reset_rounds_scores()
         }
         
         if( get_pcvar_num( g_maxrounds_pointer )
-            && g_is_srvMaxroundsRestart )
+            && get_pcvar_num( cvar_serverMaxroundsRestart ) )
         {
             new new_maxrounds = ( get_pcvar_num( g_maxrounds_pointer ) - g_total_rounds_played
                                   + get_pcvar_num( cvar_serverMaxroundsRestart ) - 1 )
