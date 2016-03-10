@@ -438,8 +438,8 @@ new NP_g_nextMapName      [ MAX_MAPNAME_LENGHT ]
 new NP_g_currentMapName   [ MAX_MAPNAME_LENGHT ]
 new NP_g_mapCycleFilePath [ MAX_FILE_PATH_LENGHT ]
 
-new DIR_CONFIGS_PATH   [ MAX_FILE_PATH_LENGHT ];
-new DATA_DIR_PATH [ MAX_FILE_PATH_LENGHT ];
+new DIR_CONFIGS_PATH [ MAX_FILE_PATH_LENGHT ];
+new DATA_DIR_PATH    [ MAX_FILE_PATH_LENGHT ];
 
 new g_totalVoteOptions
 new g_totalVoteOptions_temp
@@ -692,7 +692,11 @@ stock loadPluginSetttings()
     copy( DATA_DIR_PATH[ get_datadir( DATA_DIR_PATH, charsmax( DATA_DIR_PATH ) ) ],
             charsmax( DATA_DIR_PATH ), "/galileo" );
     
-
+    if( !dir_exists( DATA_DIR_PATH )
+        && mkdir( DATA_DIR_PATH ) )
+    {
+        log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_CREATIONFAILED", DATA_DIR_PATH )
+    }
     
     server_cmd( "exec %s/galileo.cfg", DIR_CONFIGS_PATH );
     server_exec();
