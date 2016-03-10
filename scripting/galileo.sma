@@ -438,7 +438,7 @@ new NP_g_nextMapName      [ MAX_MAPNAME_LENGHT ]
 new NP_g_currentMapName   [ MAX_MAPNAME_LENGHT ]
 new NP_g_mapCycleFilePath [ MAX_FILE_PATH_LENGHT ]
 
-new DIR_CONFIGS   [ MAX_FILE_PATH_LENGHT ];
+new DIR_CONFIGS_PATH   [ MAX_FILE_PATH_LENGHT ];
 new DATA_DIR_PATH [ MAX_FILE_PATH_LENGHT ];
 
 new g_totalVoteOptions
@@ -686,13 +686,15 @@ stock cacheCvarsValues()
 
 stock loadPluginSetttings()
 {
-    copy( DIR_CONFIGS[ get_configsdir( DIR_CONFIGS, charsmax( DIR_CONFIGS ) ) ],
-            charsmax( DIR_CONFIGS ), "/galileo" );
+    copy( DIR_CONFIGS_PATH[ get_configsdir( DIR_CONFIGS_PATH, charsmax( DIR_CONFIGS_PATH ) ) ],
+            charsmax( DIR_CONFIGS_PATH ), "/galileo" );
     
     copy( DATA_DIR_PATH[ get_datadir( DATA_DIR_PATH, charsmax( DATA_DIR_PATH ) ) ],
             charsmax( DATA_DIR_PATH ), "/galileo" );
     
-    server_cmd( "exec %s/galileo.cfg", DIR_CONFIGS );
+
+    
+    server_cmd( "exec %s/galileo.cfg", DIR_CONFIGS_PATH );
     server_exec();
 }
 
@@ -1756,7 +1758,7 @@ public cmd_createMapFile( player_id, level, cid )
             if( dir )
             {
                 new mapFilePath[ MAX_FILE_PATH_LENGHT ];
-                formatex( mapFilePath, charsmax( mapFilePath ), "%s/%s", DIR_CONFIGS, mapFileName );
+                formatex( mapFilePath, charsmax( mapFilePath ), "%s/%s", DIR_CONFIGS_PATH, mapFileName );
                 
                 mapFile = fopen( mapFilePath, "wt" );
                 
@@ -1809,6 +1811,7 @@ stock map_loadEmptyCycleList()
 {
     new emptyCycleFilePath[ MAX_FILE_PATH_LENGHT ];
     get_pcvar_string( cvar_emptyMapFilePath, emptyCycleFilePath, charsmax( emptyCycleFilePath ) );
+    remove_quotes( emptyCycleFilePath )
     
     g_emptyCycleMapsNumber = map_populateList( g_emptyCycleMapList, emptyCycleFilePath );
     
@@ -1818,7 +1821,7 @@ stock map_loadEmptyCycleList()
 public map_loadPrefixList()
 {
     new prefixesFilePath[ MAX_FILE_PATH_LENGHT ];
-    formatex( prefixesFilePath, charsmax( prefixesFilePath ), "%s/prefixes.ini", DIR_CONFIGS );
+    formatex( prefixesFilePath, charsmax( prefixesFilePath ), "%s/prefixes.ini", DIR_CONFIGS_PATH );
     
     new prefixesFile = fopen( prefixesFilePath, "rt" );
     
@@ -2525,6 +2528,7 @@ stock vote_addFiller()
     
     get_pcvar_string( cvar_voteMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) )
     DEBUG_LOGGER( 4, "( vote_addFiller ) cvar_voteMapFilePath: %s", mapFilerFilePath )
+    remove_quotes( mapFilerFilePath )
     
     if( get_realplayersnum() < get_pcvar_num( cvar_voteMinPlayers ) )
     {
@@ -2577,7 +2581,7 @@ stock vote_addFiller()
                             mapsPerGroup[ groupIndex ] = str_to_num( currentReadedLine );
                             
                             formatex( fillersFilePaths[ groupIndex ], charsmax( fillersFilePaths[] ),
-                                    "%s/%i.ini", DIR_CONFIGS, groupCount )
+                                    "%s/%i.ini", DIR_CONFIGS_PATH, groupCount )
                             
                             DEBUG_LOGGER( 8, "fillersFilePaths: %s", fillersFilePaths[ groupIndex ] )
                         }
