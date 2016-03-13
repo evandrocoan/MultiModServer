@@ -599,9 +599,8 @@ public plugin_init()
 }
 
 /**
- * Called when all plugins went through plugin_init( ).
- * When this forward is called, most plugins should have registered their
- * cvars and commands already.
+ * Called when all plugins went through plugin_init(). When this forward is called, most plugins
+ * should have registered their cvars and commands already.
  */
 public plugin_cfg()
 {
