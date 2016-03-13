@@ -135,7 +135,7 @@ new bool: g_is_test_changed_cvars
 new bool: g_current_test_evaluation
 
 new g_test_current_time
-new g_test_blackListFilePath[ 128 ]
+new g_test_whiteListFilePath[ 128 ]
 #endif
 
 
@@ -6060,29 +6060,29 @@ stock test_gal_in_empty_cycle_case4()
  */
 public test_loadCurrentBlackList_case1()
 {
-    new blackListFile
+    new whiteListFile
     
     new test_id             = register_test( 0, "test_loadCurrentBlackList_case1" )
     new Trie:blackList_trie = TrieCreate()
     
-    copy( g_test_blackListFilePath, charsmax( g_test_blackListFilePath ), "test_loadCurrentBlackList.txt" )
-    set_pcvar_string( cvar_voteWhiteListMapFilePath, g_test_blackListFilePath )
+    copy( g_test_whiteListFilePath, charsmax( g_test_whiteListFilePath ), "test_loadCurrentBlackList.txt" )
+    set_pcvar_string( cvar_voteWhiteListMapFilePath, g_test_whiteListFilePath )
     
-    blackListFile = fopen( g_test_blackListFilePath, "wt" );
+    whiteListFile = fopen( g_test_whiteListFilePath, "wt" );
     
-    if( blackListFile )
+    if( whiteListFile )
     {
-        fprintf( blackListFile, "%s^n", "[23-24]" );
-        fprintf( blackListFile, "%s^n", "de_dust1" );
-        fprintf( blackListFile, "%s^n", "de_dust2" );
-        fprintf( blackListFile, "%s^n", "de_dust3" );
-        fprintf( blackListFile, "%s^n", "[1-23]" );
-        fprintf( blackListFile, "%s^n", "de_dust4" );
-        fprintf( blackListFile, "%s^n", "[12-22]" );
-        fprintf( blackListFile, "%s^n", "de_dust5" );
-        fprintf( blackListFile, "%s^n", "de_dust6" );
-        fprintf( blackListFile, "%s^n", "de_dust7" );
-        fclose( blackListFile );
+        fprintf( whiteListFile, "%s^n", "[23-24]" );
+        fprintf( whiteListFile, "%s^n", "de_dust1" );
+        fprintf( whiteListFile, "%s^n", "de_dust2" );
+        fprintf( whiteListFile, "%s^n", "de_dust3" );
+        fprintf( whiteListFile, "%s^n", "[1-23]" );
+        fprintf( whiteListFile, "%s^n", "de_dust4" );
+        fprintf( whiteListFile, "%s^n", "[12-22]" );
+        fprintf( whiteListFile, "%s^n", "de_dust5" );
+        fprintf( whiteListFile, "%s^n", "de_dust6" );
+        fprintf( whiteListFile, "%s^n", "de_dust7" );
+        fclose( whiteListFile );
     }
     
     g_test_current_time = 23
@@ -6148,7 +6148,7 @@ public test_loadCurrentBlackList_case3()
             "The map 'de_dust2' must to be present on the trie, but it was not!" )
     
     TrieDestroy( blackList_trie )
-    delete_file( g_test_blackListFilePath )
+    delete_file( g_test_whiteListFilePath )
 }
 
 /**
