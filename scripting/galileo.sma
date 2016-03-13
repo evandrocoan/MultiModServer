@@ -1027,7 +1027,13 @@ stock isThereGameCommencing()
 public round_restart_event()
 {
     if( g_is_timeLimitChanged
-        && isThereGameCommencing() )
+        && isThereGameCommencing()
+        && ( ( get_pcvar_num( g_timelimit_pointer )
+               && get_pcvar_num( cvar_serverTimelimitRestart ) )
+             || ( get_pcvar_num( g_maxrounds_pointer )
+                  && get_pcvar_num( cvar_serverMaxroundsRestart ) )
+             || ( get_pcvar_num( g_winlimit_pointer )
+                  && get_pcvar_num( cvar_serverWinlimitRestart ) ) ) )
     {
         g_isTimeToResetRounds = true
         
