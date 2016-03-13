@@ -263,7 +263,6 @@ new g_user_msgid
  */
 #define VOTE_START_ROUND_DELAY() \
 { \
-    g_isVotingByRounds = true; \
     set_task( VOTE_ROUND_START_SECONDS_DELAY(), "start_voting_by_rounds", TASKID_START_VOTING_BY_ROUNDS ); \
 }
 
@@ -805,6 +804,18 @@ public team_win_event()
             string_team_winner, winlimit_integer, wins_CT_trigger, wins_Terrorist_trigger )
 }
 
+public start_voting_by_rounds()
+{
+    DEBUG_LOGGER( 1, "At start_voting_by_rounds --- get_pcvar_num( cvar_endOfMapVote ): %d", \
+            get_pcvar_num( cvar_endOfMapVote ) )
+    
+    if( get_pcvar_num( cvar_endOfMapVote ) )
+    {
+        g_isVotingByRounds = true;
+        vote_startDirector( false )
+    }
+}
+
 public start_voting_by_timer()
 {
     DEBUG_LOGGER( 1, "At start_voting_by_timer --- get_pcvar_num( cvar_endOfMapVote ): %d", \
@@ -1073,17 +1084,6 @@ stock reset_round_ending()
     remove_task( TASKID_SHOW_LAST_ROUND_HUD )
     
     client_cmd( 0, "-showscores" )
-}
-
-public start_voting_by_rounds()
-{
-    DEBUG_LOGGER( 1, "At start_voting_by_rounds --- get_pcvar_num( cvar_endOfMapVote ): %d", \
-            get_pcvar_num( cvar_endOfMapVote ) )
-    
-    if( get_pcvar_num( cvar_endOfMapVote ) )
-    {
-        vote_startDirector( false )
-    }
 }
 
 public reset_rounds_scores()
@@ -2970,8 +2970,9 @@ stock vote_startDirector( bool:is_forced_voting )
                 get_pcvar_float( g_timelimit_pointer ) < get_pcvar_float( cvar_maxMapExtendTime )
         }
         
-        g_is_final_voting = ( g_isVotingByRounds
-                              || g_isVotingByTimer )
+        g_is_final_voting = ( ( g_isVotingByRounds
+                                || g_isVotingByTimer )
+                              && !is_forced_voting )
         
         // stop RTV reminders
         remove_task( TASKID_REMINDER );
