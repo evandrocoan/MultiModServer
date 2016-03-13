@@ -240,7 +240,7 @@ new g_user_msgid
 /**
  * To start the end map voting near the map time limit expiration.
  */
-#define VOTE_START_TIME(%1) \
+#define IS_TIME_TO_START_THE_END_OF_MAP_VOTING(%1) \
     ( %1 < START_VOTEMAP_MIN_TIME \
       && %1 > START_VOTEMAP_MAX_TIME )
 
@@ -262,9 +262,17 @@ new g_user_msgid
  */
 #define VOTE_START_ROUND_DELAY() \
 { \
-    g_is_maxrounds_vote_map = true; \
+    g_isVotingByRounds = true; \
     set_task( VOTE_ROUND_START_SECONDS_DELAY(), "start_voting_by_rounds", TASKID_START_VOTING_BY_ROUNDS ); \
 }
+
+
+/**
+ * Verifies if a voting is or was already processed.
+ */
+#define IS_END_OF_MAP_VOTING_GOING_ON() \
+    ( g_voteStatus & VOTE_IS_IN_PROGRESS \
+      || g_voteStatus & VOTE_IS_OVER )
 
 
 /**
@@ -384,6 +392,7 @@ new const CURRENT_AND_NEXTMAP_FILE_NAME[] = "currentAndNextmapNames.dat"
 new const MENU_CHOOSEMAP[]                = "gal_menuChooseMap"
 new const MENU_CHOOSEMAP_QUESTION[]       = "chooseMapQuestion"
 
+new bool:g_isVotingByTimer
 new bool:g_isTimeToResetGame
 new bool:g_isTimeToResetRounds
 new bool:g_isUsingEmptyCycle
@@ -397,7 +406,7 @@ new bool:g_refreshVoteStatus
 new bool:g_is_emptyCycleMapConfigured
 new bool:g_is_colored_chat_enabled
 new bool:g_is_maxrounds_extend
-new bool:g_is_maxrounds_vote_map
+new bool:g_isVotingByRounds
 new bool:g_is_RTV_last_round
 new bool:g_is_last_round
 new bool:g_is_timeToChangeLevel
@@ -779,7 +788,7 @@ public team_win_event()
         
         if( ( ( wins_CT_trigger > winlimit_integer )
               || ( wins_Terrorist_trigger > winlimit_integer ) )
-            && !g_is_maxrounds_vote_map )
+            && !IS_END_OF_MAP_VOTING_GOING_ON() )
         {
             g_is_maxrounds_extend = false;
             
@@ -799,6 +808,7 @@ public start_voting_by_timer()
     
     if( get_pcvar_num( cvar_endOfMapVote ) )
     {
+        g_isVotingByTimer = true
         vote_startDirector( false )
     }
 }
@@ -838,7 +848,7 @@ public round_end_event()
         current_rounds_trigger = g_total_rounds_played + VOTE_START_ROUNDS
         
         if( ( current_rounds_trigger > maxrounds_number )
-            && !g_is_maxrounds_vote_map )
+            && !IS_END_OF_MAP_VOTING_GOING_ON() )
         {
             g_is_maxrounds_extend = true;
             
@@ -1337,11 +1347,10 @@ public vote_manageEnd()
     new secondsLeft = get_timeleft();
     
     // are we ready to start an "end of map" vote?
-    if( VOTE_START_TIME( secondsLeft )
-        && !g_is_maxrounds_vote_map
-        && get_pcvar_num( cvar_endOfMapVote ) )
+    if( IS_TIME_TO_START_THE_END_OF_MAP_VOTING( secondsLeft )
+        && !IS_END_OF_MAP_VOTING_GOING_ON() )
     {
-        vote_startDirector( false );
+        start_voting_by_timer()
     }
     
     // are we managing the end of the map?
@@ -2916,7 +2925,7 @@ stock vote_startDirector( bool:is_forced_voting )
         g_voteStatus |= VOTE_IS_IN_PROGRESS;
         
         // Max rounds vote map does not have a max rounds extension limit as mp_timelimit
-        if( g_is_maxrounds_vote_map )
+        if( g_isVotingByRounds )
         {
             g_is_map_extension_allowed = true
         }
@@ -2926,8 +2935,8 @@ stock vote_startDirector( bool:is_forced_voting )
                 get_pcvar_float( g_timelimit_pointer ) < get_pcvar_float( cvar_maxMapExtendTime )
         }
         
-        g_is_final_voting = ( ( ( get_pcvar_float( g_timelimit_pointer ) * 60 ) < START_VOTEMAP_MIN_TIME )
-                              || ( g_is_maxrounds_vote_map ) )
+        g_is_final_voting = ( g_isVotingByRounds
+                              || g_isVotingByTimer )
         
         // stop RTV reminders
         remove_task( TASKID_REMINDER );
@@ -3358,7 +3367,7 @@ stock calculateExtensionOption( player_id, bool:isVoteOver, charCount, voteStatu
                 new extend_option_type[ 32 ]
                 
                 // add the "Extend Map" menu item.
-                if( g_is_maxrounds_vote_map )
+                if( g_isVotingByRounds )
                 {
                     extend_step = g_extendmapStepRounds
                     copy( extend_option_type, charsmax( extend_option_type ), "GAL_OPTION_EXTEND_ROUND" )
@@ -4130,7 +4139,7 @@ public computeVotes()
             }
             else if( g_is_final_voting ) // "extend map" won
             {
-                if( g_is_maxrounds_vote_map )
+                if( g_isVotingByRounds )
                 {
                     color_print( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_EXTEND_ROUND",
                             g_extendmapStepRounds )
@@ -4180,17 +4189,27 @@ public computeVotes()
             g_voteStatus & VOTE_IS_FORCED: %d", \
             g_is_timeToRestart, g_is_timeToChangeLevel, g_voteStatus & VOTE_IS_FORCED != 0 )
     
+    finalizeVoting()
+}
+
+/**
+ * Restore global variables to is default state. This is to be ready for a new voting.
+ */
+stock finalizeVoting()
+{
+    g_isVotingByTimer               = false
+    g_isVotingByRounds              = false
+    g_isRunOffNeedingKeepCurrentMap = false;
+    
     // vote is no longer in progress
     g_voteStatus &= ~VOTE_IS_IN_PROGRESS;
     
     // if we were in a runoff mode, get out of it
-    g_voteStatus                   &= ~VOTE_IS_RUNOFF;
-    g_isRunOffNeedingKeepCurrentMap = false;
+    g_voteStatus &= ~VOTE_IS_RUNOFF;
     
     // this must be called after 'g_voteStatus &= ~VOTE_IS_RUNOFF' above
     vote_resetStats();
 }
-
 stock Float:map_getMinutesElapsed()
 {
     DEBUG_LOGGER( 2, "%32s mp_timelimit: %f", "map_getMinutesElapsed( in/out )", \
@@ -4214,7 +4233,7 @@ stock map_extend()
     save_time_limit()
     
     // do that actual map extension
-    if( g_is_maxrounds_vote_map )
+    if( g_isVotingByRounds )
     {
         new extendmap_step_rounds = g_extendmapStepRounds
         
@@ -4222,17 +4241,14 @@ stock map_extend()
         {
             set_cvar_num( "mp_maxrounds", get_pcvar_num( g_maxrounds_pointer ) + extendmap_step_rounds );
             set_cvar_num( "mp_winlimit", 0 );
-            
-            g_is_maxrounds_extend = false;
         }
         else
         {
             set_cvar_num( "mp_maxrounds", 0 );
             set_cvar_num( "mp_winlimit", get_pcvar_num( g_winlimit_pointer ) + extendmap_step_rounds );
         }
-        set_pcvar_float( g_timelimit_pointer, 0.0 );
         
-        g_is_maxrounds_vote_map = false
+        set_pcvar_float( g_timelimit_pointer, 0.0 );
     }
     else
     {
@@ -4243,9 +4259,6 @@ stock map_extend()
     }
     
     server_exec()
-    
-    // clear vote stats
-    vote_resetStats();
     
     DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_rtvMinutesWait: %f  extendmapStep: %d", "map_extend( out )", \
             get_pcvar_float( g_timelimit_pointer ), g_rtvMinutesWait, g_extendmapStepMinutes )
@@ -4314,12 +4327,30 @@ stock map_isTooRecent( map[] )
     return false;
 }
 
-stock start_rtvVote()
+stock configureRTV_votingType()
 {
     new minutes_left   = get_timeleft() / 60
     new maxrounds_left = get_pcvar_num( g_maxrounds_pointer ) - g_total_rounds_played
     new winlimit_left  = get_pcvar_num( g_winlimit_pointer ) - max( g_total_CT_wins, g_total_terrorists_wins )
     
+    if( minutes_left > maxrounds_left
+        || minutes_left > winlimit_left  )
+    {
+        g_isVotingByRounds = true
+        
+        if( maxrounds_left >= winlimit_left )
+        {
+            g_is_maxrounds_extend = true
+        }
+        else
+        {
+            g_is_maxrounds_extend = false
+        }
+    }
+}
+
+stock start_rtvVote()
+{
     if( get_pcvar_num( cvar_endOnRound_rtv )
         && get_realplayersnum() >= get_pcvar_num( cvar_endOnRound_rtv ) )
     {
@@ -4331,17 +4362,7 @@ stock start_rtvVote()
         g_is_timeToChangeLevel = true;
     }
     
-    if( minutes_left < maxrounds_left
-        || minutes_left < winlimit_left  )
-    {
-        g_is_maxrounds_vote_map = true
-        
-        if( maxrounds_left > winlimit_left )
-        {
-            g_is_maxrounds_extend = true
-        }
-    }
-    
+    configureRTV_votingType()
     vote_startDirector( true );
 }
 
@@ -4351,32 +4372,6 @@ public vote_rock( player_id )
     if( g_voteStatus & VOTE_IS_EARLY )
     {
         color_print( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_PENDINGVOTE" );
-        return;
-    }
-    
-    new Float:minutesElapsed = map_getMinutesElapsed();
-    
-    // if the player is the only one on the server, bring up the vote immediately
-    if( get_realplayersnum() == 1 )
-    {
-        start_rtvVote();
-        return;
-    }
-    
-    // make sure enough time has gone by on the current map
-    if( g_rtvMinutesWait
-        && minutesElapsed
-        && minutesElapsed < g_rtvMinutesWait )
-    {
-        color_print( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_TOOSOON",
-                floatround( g_rtvMinutesWait - minutesElapsed, floatround_ceil ) );
-        return;
-    }
-    else if( g_rtvWaitRounds
-             && g_total_rounds_played < g_rtvWaitRounds )
-    {
-        color_print( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_TOOSOON_ROUNDS",
-                g_rtvWaitRounds - g_total_rounds_played );
         return;
     }
     
@@ -4396,6 +4391,32 @@ public vote_rock( player_id )
         && g_rtv_wait_admin_number > 0 )
     {
         color_print( player_id, "^1%L", player_id, "GAL_ROCK_WAIT_ADMIN" );
+        return;
+    }
+    
+    // if the player is the only one on the server, bring up the vote immediately
+    if( get_realplayersnum() == 1 )
+    {
+        start_rtvVote();
+        return;
+    }
+    
+    new Float:minutesElapsed = map_getMinutesElapsed();
+    
+    // make sure enough time has gone by on the current map
+    if( g_rtvMinutesWait
+        && minutesElapsed
+        && minutesElapsed < g_rtvMinutesWait )
+    {
+        color_print( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_TOOSOON",
+                floatround( g_rtvMinutesWait - minutesElapsed, floatround_ceil ) );
+        return;
+    }
+    else if( g_rtvWaitRounds
+             && g_total_rounds_played < g_rtvWaitRounds )
+    {
+        color_print( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_TOOSOON_ROUNDS",
+                g_rtvWaitRounds - g_total_rounds_played );
         return;
     }
     
@@ -5293,15 +5314,17 @@ stock cancel_voting( bool:isToDoubleReset = false )
     remove_task( TASKID_PROCESS_LAST_ROUND )
     remove_task( TASKID_SHOW_LAST_ROUND_HUD )
     
-    g_is_maxrounds_vote_map = false;
-    g_is_maxrounds_extend   = false;
-    g_voteStatus            = 0
-    
+    finalizeVoting()
     reset_round_ending()
-    vote_resetStats()
     delete_users_menus( isToDoubleReset )
+    
+    g_voteStatus = 0
 }
 
+/**
+ * To prepare for a new runoff voting or partially to prepare for a complete new voting. If it is
+ * not a runoff voting, 'finalizeVoting()' must be called before this.
+ */
 public vote_resetStats()
 {
     g_voteStatusClean[ 0 ] = '^0'
