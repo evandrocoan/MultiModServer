@@ -158,6 +158,7 @@ new g_user_msgid
 #define TASKID_VOTE_HANDLEDISPLAY     52691264
 #define TASKID_VOTE_DISPLAY           52691165
 #define TASKID_VOTE_EXPIRE            52691166
+#define TASKID_PENDING_VOTE_COUNTDOWN 13464364
 #define TASKID_DBG_FAKEVOTES          52691167
 #define TASKID_VOTE_STARTDIRECTOR     52691168
 #define TASKID_MAP_CHANGE             52691169
@@ -3042,7 +3043,7 @@ stock vote_startDirector( bool:is_forced_voting )
         
         // announce the pending vote countdown from 7 to 1
         g_pendingVoteCountdown = 7
-        set_task( 1.0, "pendingVoteCountdown", _, _, _, "a", 7 );
+        set_task( 1.0, "pendingVoteCountdown", TASKID_PENDING_VOTE_COUNTDOWN, _, _, "a", 7 );
     #endif
         
         // display the map choices, 1 second from now
@@ -5336,6 +5337,7 @@ stock cancel_voting( bool:isToDoubleReset = false )
     remove_task( TASKID_VOTE_HANDLEDISPLAY )
     remove_task( TASKID_VOTE_EXPIRE )
     remove_task( TASKID_VOTE_STARTDIRECTOR )
+    remove_task( TASKID_PENDING_VOTE_COUNTDOWN )
     remove_task( TASKID_MAP_CHANGE )
     remove_task( TASKID_PROCESS_LAST_ROUND )
     remove_task( TASKID_SHOW_LAST_ROUND_HUD )
