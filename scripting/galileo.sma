@@ -37,7 +37,7 @@ new const PLUGIN_VERSION[] = "2.1.9d"
  * 4   - To create fake votes.
  * 7   - Levels 1, 2 and 4.
  */
-#define DEBUG_LEVEL 0
+#define DEBUG_LEVEL 1 + 2
 
 #define DEBUG_LEVEL_NORMAL     1
 #define DEBUG_LEVEL_UNIT_TEST  2
@@ -224,7 +224,7 @@ new g_user_msgid
 #define START_VOTEMAP_MIN_TIME 151
 #define START_VOTEMAP_MAX_TIME 129
 
-#define VOTE_ROUND_START_MIN_DELAY 720
+#define VOTE_ROUND_START_MIN_DELAY 500
 #define VOTE_ROUND_START_MAX_DELAY START_VOTEMAP_MIN_TIME
 
 
@@ -240,7 +240,7 @@ new g_user_msgid
 /**
  * To start the end map voting near the map time limit expiration.
  */
-#define VOTE_START_TIME(%1) \
+#define IS_TIME_TO_START_THE_END_OF_MAP_VOTING(%1) \
     ( %1 < START_VOTEMAP_MIN_TIME \
       && %1 > START_VOTEMAP_MAX_TIME )
 
@@ -262,9 +262,17 @@ new g_user_msgid
  */
 #define VOTE_START_ROUND_DELAY() \
 { \
-    g_is_maxrounds_vote_map = true; \
+    g_isVotingByRounds = true; \
     set_task( VOTE_ROUND_START_SECONDS_DELAY(), "start_voting_by_rounds", TASKID_START_VOTING_BY_ROUNDS ); \
 }
+
+
+/**
+ * Verifies if a voting is or was already processed.
+ */
+#define IS_END_OF_MAP_VOTING_GOING_ON() \
+    ( g_voteStatus & VOTE_IS_IN_PROGRESS \
+      || g_voteStatus & VOTE_IS_OVER )
 
 
 /**
@@ -326,7 +334,7 @@ new cvar_coloredChatEnabled
 new cvar_isToStopEmptyCycle;
 new cvar_unnominateDisconnected;
 new cvar_endOnRound
-new cvar_endOnRoundStart
+new cvar_endOfMapVoteStart
 new cvar_endOnRound_rtv
 new cvar_endOnRound_msg
 new cvar_voteWeight
@@ -384,6 +392,7 @@ new const CURRENT_AND_NEXTMAP_FILE_NAME[] = "currentAndNextmapNames.dat"
 new const MENU_CHOOSEMAP[]                = "gal_menuChooseMap"
 new const MENU_CHOOSEMAP_QUESTION[]       = "chooseMapQuestion"
 
+new bool:g_isVotingByTimer
 new bool:g_isTimeToResetGame
 new bool:g_isTimeToResetRounds
 new bool:g_isUsingEmptyCycle
@@ -397,7 +406,7 @@ new bool:g_refreshVoteStatus
 new bool:g_is_emptyCycleMapConfigured
 new bool:g_is_colored_chat_enabled
 new bool:g_is_maxrounds_extend
-new bool:g_is_maxrounds_vote_map
+new bool:g_isVotingByRounds
 new bool:g_is_RTV_last_round
 new bool:g_is_last_round
 new bool:g_is_timeToChangeLevel
@@ -438,8 +447,8 @@ new NP_g_nextMapName      [ MAX_MAPNAME_LENGHT ]
 new NP_g_currentMapName   [ MAX_MAPNAME_LENGHT ]
 new NP_g_mapCycleFilePath [ MAX_FILE_PATH_LENGHT ]
 
-new DIR_CONFIGS   [ MAX_FILE_PATH_LENGHT ];
-new DATA_DIR_PATH [ MAX_FILE_PATH_LENGHT ];
+new DIR_CONFIGS_PATH [ MAX_FILE_PATH_LENGHT ];
+new DATA_DIR_PATH    [ MAX_FILE_PATH_LENGHT ];
 
 new g_totalVoteOptions
 new g_totalVoteOptions_temp
@@ -508,7 +517,7 @@ public plugin_init()
     cvar_isToStopEmptyCycle        = register_cvar( "gal_in_empty_cycle", "0", FCVAR_SPONLY );
     cvar_unnominateDisconnected    = register_cvar( "gal_unnominate_disconnected", "0" );
     cvar_endOnRound                = register_cvar( "gal_endonround", "1" );
-    cvar_endOnRoundStart           = register_cvar( "gal_endofmapvote_start", "0" );
+    cvar_endOfMapVoteStart         = register_cvar( "gal_endofmapvote_start", "0" );
     cvar_endOnRound_rtv            = register_cvar( "gal_endonround_rtv", "0" );
     cvar_endOnRound_msg            = register_cvar( "gal_endonround_msg", "0" );
     cvar_voteWeight                = register_cvar( "gal_vote_weight", "1" );
@@ -610,7 +619,6 @@ public plugin_cfg()
     }
     
     get_pcvar_string( cvar_voteWeightFlags, g_voteWeightFlags, charsmax( g_voteWeightFlags ) );
-    remove_quotes( g_voteWeightFlags )
     
     get_cvar_string( "amx_nextmap", g_nextmap, charsmax( g_nextmap ) );
     get_mapname( g_currentMap, charsmax( g_currentMap ) );
@@ -661,6 +669,11 @@ public plugin_cfg()
     {
         set_task( 2.0, "runTests" )
     }
+    else
+    {
+        server_print( "^n    The Unit Tests are going to run only after the first server start.\
+                ^n    gal_server_starting: %d^n", get_cvar_num( "gal_server_starting" ) )
+    }
 #endif
 }
 
@@ -686,13 +699,19 @@ stock cacheCvarsValues()
 
 stock loadPluginSetttings()
 {
-    copy( DIR_CONFIGS[ get_configsdir( DIR_CONFIGS, charsmax( DIR_CONFIGS ) ) ],
-            charsmax( DIR_CONFIGS ), "/galileo" );
+    copy( DIR_CONFIGS_PATH[ get_configsdir( DIR_CONFIGS_PATH, charsmax( DIR_CONFIGS_PATH ) ) ],
+            charsmax( DIR_CONFIGS_PATH ), "/galileo" );
     
     copy( DATA_DIR_PATH[ get_datadir( DATA_DIR_PATH, charsmax( DATA_DIR_PATH ) ) ],
             charsmax( DATA_DIR_PATH ), "/galileo" );
     
-    server_cmd( "exec %s/galileo.cfg", DIR_CONFIGS );
+    if( !dir_exists( DATA_DIR_PATH )
+        && mkdir( DATA_DIR_PATH ) )
+    {
+        log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_CREATIONFAILED", DATA_DIR_PATH )
+    }
+    
+    server_cmd( "exec %s/galileo.cfg", DIR_CONFIGS_PATH );
     server_exec();
 }
 
@@ -773,7 +792,7 @@ public team_win_event()
         
         if( ( ( wins_CT_trigger > winlimit_integer )
               || ( wins_Terrorist_trigger > winlimit_integer ) )
-            && !g_is_maxrounds_vote_map )
+            && !IS_END_OF_MAP_VOTING_GOING_ON() )
         {
             g_is_maxrounds_extend = false;
             
@@ -793,6 +812,7 @@ public start_voting_by_timer()
     
     if( get_pcvar_num( cvar_endOfMapVote ) )
     {
+        g_isVotingByTimer = true
         vote_startDirector( false )
     }
 }
@@ -800,7 +820,7 @@ public start_voting_by_timer()
 public round_start_event()
 {
     if( VOTE_ROUND_START_DETECTION_DELAYED( get_timeleft() )
-        && get_pcvar_num( cvar_endOnRoundStart ) )
+        && get_pcvar_num( cvar_endOfMapVoteStart ) )
     {
         set_task( VOTE_ROUND_START_SECONDS_DELAY(), "start_voting_by_timer", TASKID_START_VOTING_BY_TIMER )
     }
@@ -832,7 +852,7 @@ public round_end_event()
         current_rounds_trigger = g_total_rounds_played + VOTE_START_ROUNDS
         
         if( ( current_rounds_trigger > maxrounds_number )
-            && !g_is_maxrounds_vote_map )
+            && !IS_END_OF_MAP_VOTING_GOING_ON() )
         {
             g_is_maxrounds_extend = true;
             
@@ -1331,11 +1351,10 @@ public vote_manageEnd()
     new secondsLeft = get_timeleft();
     
     // are we ready to start an "end of map" vote?
-    if( VOTE_START_TIME( secondsLeft )
-        && !g_is_maxrounds_vote_map
-        && get_pcvar_num( cvar_endOfMapVote ) )
+    if( IS_TIME_TO_START_THE_END_OF_MAP_VOTING( secondsLeft )
+        && !IS_END_OF_MAP_VOTING_GOING_ON() )
     {
-        vote_startDirector( false );
+        start_voting_by_timer()
     }
     
     // are we managing the end of the map?
@@ -1448,11 +1467,6 @@ public map_writeRecentList()
         
         fclose( recentMapsFile );
     }
-}
-
-public map_loadFillerList( fillerFileNamePath[] )
-{
-    return map_populateList( g_fillerMap, fillerFileNamePath );
 }
 
 public cmd_rockthevote( player_id )
@@ -1614,106 +1628,97 @@ stock map_populateList( Array:mapArray, mapFilePath[] )
     if( !equal( mapFilePath, "*" )
         && !equal( mapFilePath, "#" ) )
     {
-        new mapFile = fopen( mapFilePath, "rt" );
-        
-        if( mapFile )
-        {
-            new loadedMapName[ MAX_MAPNAME_LENGHT ];
-            
-            while( !feof( mapFile ) )
-            {
-                fgets( mapFile, loadedMapName, charsmax( loadedMapName ) );
-                trim( loadedMapName );
-                
-                if( loadedMapName[ 0 ]
-                    && !equal( loadedMapName, "//", 2 )
-                    && !equal( loadedMapName, ";", 1 )
-                    && is_map_valid( loadedMapName ) )
-                {
-                    ArrayPushString( mapArray, loadedMapName );
-                    ++mapCount;
-                    DEBUG_LOGGER( 4, "map_populateList(...) loadedMapName = %s", loadedMapName )
-                }
-            }
-            
-            fclose( mapFile );
-            DEBUG_LOGGER( 4, "" )
-        }
-        else
-        {
-            log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilePath );
-        }
+        DEBUG_LOGGER( 4, "^n    map_populateList(...) Loading the mapFilePath: %s", mapFilePath )
+        mapCount = loadMapFileList( mapArray, mapCount, mapFilePath )
+    }
+    else if( equal( mapFilePath, "*" ) )
+    {
+        mapCount = loadMapsFolderDirectory( mapArray, mapCount )
+        DEBUG_LOGGER( 4, "^n    map_populateList(...) Loading the MAP FOLDER! mapFilePath: %s", mapFilePath )
     }
     else
     {
-        if( equal( mapFilePath, "*" ) )
-        {
-            new mapName[ MAX_MAPNAME_LENGHT ]
-            
-            // no mapFile provided, assuming contents of "maps" folder
-            new dir = open_dir( "maps", mapName, charsmax( mapName ) );
-            
-            if( dir )
-            {
-                new lenMapName;
-                
-                while( next_file( dir, mapName, charsmax( mapName ) ) )
-                {
-                    lenMapName = strlen( mapName );
-                    
-                    if( lenMapName > 4
-                        && equali( mapName[ lenMapName - 4 ], ".bsp", 4 ) )
-                    {
-                        mapName[ lenMapName - 4 ] = '^0';
-                        
-                        if( is_map_valid( mapName ) )
-                        {
-                            ArrayPushString( mapArray, mapName );
-                            ++mapCount;
-                        }
-                    }
-                }
-                close_dir( dir );
-            }
-            else
-            {
-                // directory not found, wtf?
-                log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FOLDERMISSING" );
-            }
-        }
-        else
-        {
-            get_cvar_string( "mapcyclefile", mapFilePath, strlen( mapFilePath ) );
-            
-            new mapFile = fopen( mapFilePath, "rt" );
-            
-            if( mapFile )
-            {
-                new loadedMapName[ MAX_MAPNAME_LENGHT ];
-                
-                while( !feof( mapFile ) )
-                {
-                    fgets( mapFile, loadedMapName, charsmax( loadedMapName ) );
-                    trim( loadedMapName );
-                    
-                    if( loadedMapName[ 0 ]
-                        && !equal( loadedMapName, "//", 2 )
-                        && !equal( loadedMapName, ";", 1 )
-                        && is_map_valid( loadedMapName ) )
-                    {
-                        ArrayPushString( mapArray, loadedMapName );
-                        ++mapCount;
-                    }
-                }
-                fclose( mapFile );
-            }
-            else
-            {
-                log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilePath );
-            }
-        }
+        get_cvar_string( "mapcyclefile", mapFilePath, strlen( mapFilePath ) );
+        DEBUG_LOGGER( 4, "^n    map_populateList(...) Loading the MAPCYCLE! mapFilePath: %s", mapFilePath )
+        
+        mapCount = loadMapFileList( mapArray, mapCount, mapFilePath )
     }
+    
     return mapCount;
+}
+
+stock loadMapFileList( Array:mapArray, mapCount, mapFilePath[] )
+{
+    new mapFile = fopen( mapFilePath, "rt" );
+    
+    if( mapFile )
+    {
+        new loadedMapName[ MAX_MAPNAME_LENGHT ];
+        
+        while( !feof( mapFile ) )
+        {
+            fgets( mapFile, loadedMapName, charsmax( loadedMapName ) );
+            trim( loadedMapName );
+            
+            if( loadedMapName[ 0 ]
+                && !equal( loadedMapName, "//", 2 )
+                && !equal( loadedMapName, ";", 1 )
+                && is_map_valid( loadedMapName ) )
+            {
+                DEBUG_LOGGER( 4, "map_populateList(...) loadedMapName = %s", loadedMapName )
+                ArrayPushString( mapArray, loadedMapName );
+                
+                ++mapCount;
+            }
+        }
+        
+        fclose( mapFile );
+        DEBUG_LOGGER( 4, "" )
+    }
+    else
+    {
+        log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilePath );
+    }
+    
+    return mapCount
+}
+
+stock loadMapsFolderDirectory( Array:mapArray, mapCount )
+{
+    new mapName[ MAX_MAPNAME_LENGHT ]
+    
+    new dir = open_dir( "maps", mapName, charsmax( mapName ) );
+    
+    if( dir )
+    {
+        new mapNameLength;
+        
+        while( next_file( dir, mapName, charsmax( mapName ) ) )
+        {
+            mapNameLength = strlen( mapName );
+            
+            if( mapNameLength > 4
+                && equali( mapName[ mapNameLength - 4 ], ".bsp", 4 ) )
+            {
+                mapName[ mapNameLength - 4 ] = '^0';
+                
+                if( is_map_valid( mapName ) )
+                {
+                    ArrayPushString( mapArray, mapName );
+                    ++mapCount;
+                }
+            }
+        }
+        
+        close_dir( dir );
+    }
+    else
+    {
+        // directory not found, wtf?
+        log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FOLDERMISSING" );
+    }
+    
+    return mapCount
 }
 
 public map_loadNominationList()
@@ -1749,14 +1754,14 @@ public cmd_createMapFile( player_id, level, cid )
             new dir
             new mapFile
             new mapCount
-            new lenMapName
+            new mapNameLength
             
             dir = open_dir( "maps", mapName, charsmax( mapName )  );
             
             if( dir )
             {
                 new mapFilePath[ MAX_FILE_PATH_LENGHT ];
-                formatex( mapFilePath, charsmax( mapFilePath ), "%s/%s", DIR_CONFIGS, mapFileName );
+                formatex( mapFilePath, charsmax( mapFilePath ), "%s/%s", DIR_CONFIGS_PATH, mapFileName );
                 
                 mapFile = fopen( mapFilePath, "wt" );
                 
@@ -1766,12 +1771,12 @@ public cmd_createMapFile( player_id, level, cid )
                     
                     while( next_file( dir, mapName, charsmax( mapName ) ) )
                     {
-                        lenMapName = strlen( mapName );
+                        mapNameLength = strlen( mapName );
                         
-                        if( lenMapName > 4
-                            && equali( mapName[ lenMapName - 4 ], ".bsp", 4 ) )
+                        if( mapNameLength > 4
+                            && equali( mapName[ mapNameLength - 4 ], ".bsp", 4 ) )
                         {
-                            mapName[ lenMapName - 4 ] = '^0';
+                            mapName[ mapNameLength - 4 ] = '^0';
                             
                             if( is_map_valid( mapName ) )
                             {
@@ -1818,7 +1823,7 @@ stock map_loadEmptyCycleList()
 public map_loadPrefixList()
 {
     new prefixesFilePath[ MAX_FILE_PATH_LENGHT ];
-    formatex( prefixesFilePath, charsmax( prefixesFilePath ), "%s/prefixes.ini", DIR_CONFIGS );
+    formatex( prefixesFilePath, charsmax( prefixesFilePath ), "%s/prefixes.ini", DIR_CONFIGS_PATH );
     
     new prefixesFile = fopen( prefixesFilePath, "rt" );
     
@@ -2520,28 +2525,22 @@ stock vote_addFiller()
         return;
     }
     
-    // grab the name of the filler file
-    new mapFilerFilePath[ MAX_FILE_PATH_LENGHT ];
-    
-    get_pcvar_string( cvar_voteMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) )
-    DEBUG_LOGGER( 4, "( vote_addFiller ) cvar_voteMapFilePath: %s", mapFilerFilePath )
+    new groupCount
+    new mapsPerGroup     [ MAX_MAPS_IN_VOTE ]
+    new mapFilerFilePath [ MAX_FILE_PATH_LENGHT ]
+    new fillersFilePaths [ MAX_MAPS_IN_VOTE ][ MAX_FILE_PATH_LENGHT ]
     
     if( get_realplayersnum() < get_pcvar_num( cvar_voteMinPlayers ) )
     {
         get_pcvar_string( cvar_voteMinPlayersMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) )
     }
-    else if( mapFilerFilePath[ 0 ] == '*' )
+    else
     {
-        get_cvar_string( "mapcyclefile", mapFilerFilePath, charsmax( mapFilerFilePath ) );
+        get_pcvar_string( cvar_voteMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) )
     }
     
-    new groupCount
-    new mapsPerGroup[ MAX_MAPS_IN_VOTE ]
-    
-    // create an array of files that will be pulled from
-    new fillersFilePaths[ MAX_MAPS_IN_VOTE ][ MAX_FILE_PATH_LENGHT ]
-    
-    if( !equal( mapFilerFilePath, "*" ) )
+    if( !equal( mapFilerFilePath[ 0 ], "*" )
+        && !equal( mapFilerFilePath[ 0 ], "#" ) )
     {
         // determine what kind of file it's being used as
         new mapFilerFile = fopen( mapFilerFilePath, "rt" );
@@ -2577,7 +2576,7 @@ stock vote_addFiller()
                             mapsPerGroup[ groupIndex ] = str_to_num( currentReadedLine );
                             
                             formatex( fillersFilePaths[ groupIndex ], charsmax( fillersFilePaths[] ),
-                                    "%s/%i.ini", DIR_CONFIGS, groupCount )
+                                    "%s/%i.ini", DIR_CONFIGS_PATH, groupCount )
                             
                             DEBUG_LOGGER( 8, "fillersFilePaths: %s", fillersFilePaths[ groupIndex ] )
                         }
@@ -2612,13 +2611,16 @@ stock vote_addFiller()
         
         fclose( mapFilerFile )
     }
-    else
+    else // we'll be loading all maps in the /maps folder or the current mapcycle file
     {
-        // we'll be loading all maps in the /maps folder
-        copy( fillersFilePaths[ 0 ], charsmax( mapFilerFilePath ), mapFilerFilePath );
         mapsPerGroup[ 0 ] = MAX_MAPS_IN_VOTE;
         groupCount        = 1;
+        
+        // the options '*' and '#' will be handled by 'map_populateList()' later.
+        copy( fillersFilePaths[ 0 ], charsmax( mapFilerFilePath ), mapFilerFilePath );
     }
+    
+    DEBUG_LOGGER( 4, "( vote_addFiller ) mapFilerFilePath: %s", mapFilerFilePath )
     
     new filersMapCount
     new mapIndex
@@ -2644,7 +2646,7 @@ stock vote_addFiller()
     // fill remaining slots with random maps from each filler file, as much as possible
     for( new groupIndex = 0; groupIndex < groupCount; ++groupIndex )
     {
-        filersMapCount = map_loadFillerList( fillersFilePaths[ groupIndex ] );
+        filersMapCount = map_populateList( g_fillerMap, fillersFilePaths[ groupIndex ] )
         
         DEBUG_LOGGER( 8, "[%i] groupCount:%i   filersMapCount: %i   g_totalVoteOptions: %i   \
                 g_maxVotingChoices: %i^n   fillersFilePaths: %s", groupIndex, groupCount, filersMapCount, \
@@ -2657,7 +2659,7 @@ stock vote_addFiller()
             allowedFilersCount = min( min( mapsPerGroup[ groupIndex ], g_maxVotingChoices - g_totalVoteOptions ),
                     filersMapCount );
             
-            DEBUG_LOGGER( 8, "[%i] allowedFilersCount: %i   mapsPerGroup: %i   Max-Cnt: %i", groupIndex, \
+            DEBUG_LOGGER( 8, "[%i] allowedFilersCount: %i   mapsPerGroup: %i   MaxCount: %i", groupIndex, \
                     allowedFilersCount, mapsPerGroup[ groupIndex ], g_maxVotingChoices - g_totalVoteOptions )
             
             for( choice_index = 0; choice_index < allowedFilersCount; ++choice_index )
@@ -2774,6 +2776,7 @@ stock loadCurrentBlackList( Trie:blackList_trie )
             replace_all( currentLine, charsmax( currentLine ), "[", "" )
             replace_all( currentLine, charsmax( currentLine ), "]", "" )
             
+            DEBUG_LOGGER( 8, "( loadCurrentBlackList ) " )
             DEBUG_LOGGER( 8, "( loadCurrentBlackList ) currentLine: %s (currentHour: %d)", currentLine, currentHour )
             
             // broke the current line
@@ -2817,12 +2820,12 @@ stock loadCurrentBlackList( Trie:blackList_trie )
             }
             
             DEBUG_LOGGER( 8, "( loadCurrentBlackList ) startHour > endHour: %d", startHour > endHour )
-            DEBUG_LOGGER( 8, "( loadCurrentBlackList ) startHour >= currentHour > endHour: %d, \
-                    isToSkipThisGroup: %d", startHour >= currentHour > endHour, isToSkipThisGroup )
+            DEBUG_LOGGER( 8, "( loadCurrentBlackList ) startHour >= currentHour > endHour: %d", \
+                    startHour >= currentHour > endHour )
             
             DEBUG_LOGGER( 8, "( loadCurrentBlackList ) startHour < endHour: %d", startHour < endHour )
-            DEBUG_LOGGER( 8, "( loadCurrentBlackList ) startHour <= currentHour < endHour: %d", \
-                    startHour <= currentHour < endHour )
+            DEBUG_LOGGER( 8, "( loadCurrentBlackList ) startHour <= currentHour < endHour: %d, \
+                    isToSkipThisGroup: %d", startHour <= currentHour < endHour, isToSkipThisGroup )
             
             goto proceed
         }
@@ -2908,7 +2911,7 @@ stock vote_startDirector( bool:is_forced_voting )
         g_voteStatus |= VOTE_IS_IN_PROGRESS;
         
         // Max rounds vote map does not have a max rounds extension limit as mp_timelimit
-        if( g_is_maxrounds_vote_map )
+        if( g_isVotingByRounds )
         {
             g_is_map_extension_allowed = true
         }
@@ -2918,8 +2921,8 @@ stock vote_startDirector( bool:is_forced_voting )
                 get_pcvar_float( g_timelimit_pointer ) < get_pcvar_float( cvar_maxMapExtendTime )
         }
         
-        g_is_final_voting = ( ( ( get_pcvar_float( g_timelimit_pointer ) * 60 ) < START_VOTEMAP_MIN_TIME )
-                              || ( g_is_maxrounds_vote_map ) )
+        g_is_final_voting = ( g_isVotingByRounds
+                              || g_isVotingByTimer )
         
         // stop RTV reminders
         remove_task( TASKID_REMINDER );
@@ -2937,12 +2940,6 @@ stock vote_startDirector( bool:is_forced_voting )
         g_voteDuration = get_pcvar_num( cvar_voteDuration )
         
         DEBUG_LOGGER( 4, "^n( vote_startDirector|NormalVote ) choicesLoaded: %d", choicesLoaded )
-        
-        if( choicesLoaded )
-        {
-            // clear all nominations
-            nomination_clearAll();
-        }
     }
 
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
@@ -2959,6 +2956,9 @@ stock vote_startDirector( bool:is_forced_voting )
         new playersCount
         new players[ MAX_PLAYERS ]
         new Float:handleChoicesDelay
+        
+        // clear all nominations
+        nomination_clearAll();
         
         // alphabetize the maps
         SortCustom2D( g_votingMapNames, choicesLoaded, "sort_stringsi" );
@@ -3350,7 +3350,7 @@ stock calculateExtensionOption( player_id, bool:isVoteOver, charCount, voteStatu
                 new extend_option_type[ 32 ]
                 
                 // add the "Extend Map" menu item.
-                if( g_is_maxrounds_vote_map )
+                if( g_isVotingByRounds )
                 {
                     extend_step = g_extendmapStepRounds
                     copy( extend_option_type, charsmax( extend_option_type ), "GAL_OPTION_EXTEND_ROUND" )
@@ -4122,7 +4122,7 @@ public computeVotes()
             }
             else if( g_is_final_voting ) // "extend map" won
             {
-                if( g_is_maxrounds_vote_map )
+                if( g_isVotingByRounds )
                 {
                     color_print( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_EXTEND_ROUND",
                             g_extendmapStepRounds )
@@ -4172,12 +4172,23 @@ public computeVotes()
             g_voteStatus & VOTE_IS_FORCED: %d", \
             g_is_timeToRestart, g_is_timeToChangeLevel, g_voteStatus & VOTE_IS_FORCED != 0 )
     
+    finalizeVoting()
+}
+
+/**
+ * Restore global variables to is default state. This is to be ready for a new voting.
+ */
+stock finalizeVoting()
+{
+    g_isVotingByTimer               = false
+    g_isVotingByRounds              = false
+    g_isRunOffNeedingKeepCurrentMap = false;
+    
     // vote is no longer in progress
     g_voteStatus &= ~VOTE_IS_IN_PROGRESS;
     
     // if we were in a runoff mode, get out of it
-    g_voteStatus                   &= ~VOTE_IS_RUNOFF;
-    g_isRunOffNeedingKeepCurrentMap = false;
+    g_voteStatus &= ~VOTE_IS_RUNOFF;
     
     // this must be called after 'g_voteStatus &= ~VOTE_IS_RUNOFF' above
     vote_resetStats();
@@ -4206,7 +4217,7 @@ stock map_extend()
     save_time_limit()
     
     // do that actual map extension
-    if( g_is_maxrounds_vote_map )
+    if( g_isVotingByRounds )
     {
         new extendmap_step_rounds = g_extendmapStepRounds
         
@@ -4214,17 +4225,14 @@ stock map_extend()
         {
             set_cvar_num( "mp_maxrounds", get_pcvar_num( g_maxrounds_pointer ) + extendmap_step_rounds );
             set_cvar_num( "mp_winlimit", 0 );
-            
-            g_is_maxrounds_extend = false;
         }
         else
         {
             set_cvar_num( "mp_maxrounds", 0 );
             set_cvar_num( "mp_winlimit", get_pcvar_num( g_winlimit_pointer ) + extendmap_step_rounds );
         }
-        set_pcvar_float( g_timelimit_pointer, 0.0 );
         
-        g_is_maxrounds_vote_map = false
+        set_pcvar_float( g_timelimit_pointer, 0.0 );
     }
     else
     {
@@ -4235,9 +4243,6 @@ stock map_extend()
     }
     
     server_exec()
-    
-    // clear vote stats
-    vote_resetStats();
     
     DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_rtvMinutesWait: %f  extendmapStep: %d", "map_extend( out )", \
             get_pcvar_float( g_timelimit_pointer ), g_rtvMinutesWait, g_extendmapStepMinutes )
@@ -4306,12 +4311,30 @@ stock map_isTooRecent( map[] )
     return false;
 }
 
-stock start_rtvVote()
+stock configureRTV_votingType()
 {
     new minutes_left   = get_timeleft() / 60
     new maxrounds_left = get_pcvar_num( g_maxrounds_pointer ) - g_total_rounds_played
     new winlimit_left  = get_pcvar_num( g_winlimit_pointer ) - max( g_total_CT_wins, g_total_terrorists_wins )
     
+    if( minutes_left > maxrounds_left
+        || minutes_left > winlimit_left  )
+    {
+        g_isVotingByRounds = true
+        
+        if( maxrounds_left >= winlimit_left )
+        {
+            g_is_maxrounds_extend = true
+        }
+        else
+        {
+            g_is_maxrounds_extend = false
+        }
+    }
+}
+
+stock start_rtvVote()
+{
     if( get_pcvar_num( cvar_endOnRound_rtv )
         && get_realplayersnum() >= get_pcvar_num( cvar_endOnRound_rtv ) )
     {
@@ -4323,17 +4346,7 @@ stock start_rtvVote()
         g_is_timeToChangeLevel = true;
     }
     
-    if( minutes_left < maxrounds_left
-        || minutes_left < winlimit_left  )
-    {
-        g_is_maxrounds_vote_map = true
-        
-        if( maxrounds_left > winlimit_left )
-        {
-            g_is_maxrounds_extend = true
-        }
-    }
-    
+    configureRTV_votingType()
     vote_startDirector( true );
 }
 
@@ -4343,32 +4356,6 @@ public vote_rock( player_id )
     if( g_voteStatus & VOTE_IS_EARLY )
     {
         color_print( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_PENDINGVOTE" );
-        return;
-    }
-    
-    new Float:minutesElapsed = map_getMinutesElapsed();
-    
-    // if the player is the only one on the server, bring up the vote immediately
-    if( get_realplayersnum() == 1 )
-    {
-        start_rtvVote();
-        return;
-    }
-    
-    // make sure enough time has gone by on the current map
-    if( g_rtvMinutesWait
-        && minutesElapsed
-        && minutesElapsed < g_rtvMinutesWait )
-    {
-        color_print( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_TOOSOON",
-                floatround( g_rtvMinutesWait - minutesElapsed, floatround_ceil ) );
-        return;
-    }
-    else if( g_rtvWaitRounds
-             && g_total_rounds_played < g_rtvWaitRounds )
-    {
-        color_print( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_TOOSOON_ROUNDS",
-                g_rtvWaitRounds - g_total_rounds_played );
         return;
     }
     
@@ -4388,6 +4375,32 @@ public vote_rock( player_id )
         && g_rtv_wait_admin_number > 0 )
     {
         color_print( player_id, "^1%L", player_id, "GAL_ROCK_WAIT_ADMIN" );
+        return;
+    }
+    
+    // if the player is the only one on the server, bring up the vote immediately
+    if( get_realplayersnum() == 1 )
+    {
+        start_rtvVote();
+        return;
+    }
+    
+    new Float:minutesElapsed = map_getMinutesElapsed();
+    
+    // make sure enough time has gone by on the current map
+    if( g_rtvMinutesWait
+        && minutesElapsed
+        && minutesElapsed < g_rtvMinutesWait )
+    {
+        color_print( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_TOOSOON",
+                floatround( g_rtvMinutesWait - minutesElapsed, floatround_ceil ) );
+        return;
+    }
+    else if( g_rtvWaitRounds
+             && g_total_rounds_played < g_rtvWaitRounds )
+    {
+        color_print( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_TOOSOON_ROUNDS",
+                g_rtvWaitRounds - g_total_rounds_played );
         return;
     }
     
@@ -5285,15 +5298,17 @@ stock cancel_voting( bool:isToDoubleReset = false )
     remove_task( TASKID_PROCESS_LAST_ROUND )
     remove_task( TASKID_SHOW_LAST_ROUND_HUD )
     
-    g_is_maxrounds_vote_map = false;
-    g_is_maxrounds_extend   = false;
-    g_voteStatus            = 0
-    
+    finalizeVoting()
     reset_round_ending()
-    vote_resetStats()
     delete_users_menus( isToDoubleReset )
+    
+    g_voteStatus = 0
 }
 
+/**
+ * To prepare for a new runoff voting or partially to prepare for a complete new voting. If it is
+ * not a runoff voting, 'finalizeVoting()' must be called before this.
+ */
 public vote_resetStats()
 {
     g_voteStatusClean[ 0 ] = '^0'

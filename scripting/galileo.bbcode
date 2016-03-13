@@ -1,5 +1,5 @@
-[anchor]Top[/anchor][SIZE="6"][COLOR="Blue"][B]Galileo v2.1.9[/B][/COLOR][/SIZE] A feature rich map voting plugin
-[SIZE=1][COLOR=Red]Release: 12.09.2008 | Last Update: 09.03.2016[/SIZE][/COLOR]
+[anchor]Top[/anchor][SIZE="6"][COLOR="Blue"][B]Galileo v2.1.9d[/B][/COLOR][/SIZE] A feature rich map voting plugin
+[SIZE=1][COLOR=Red]Release: 12.09.2008 | Last Update: XX.03.2016[/SIZE][/COLOR]
 
 If you want to translate the Galileo Mapchooser to your language or if you see some 
 error or bad coloring tags positioning at the current translations, feel free to correct
@@ -108,6 +108,9 @@ galileo.cfg contents.
 [LIST=1]
  [*] Ability to "[B]rock the vote[/B]".
 
+ 
+ [*] Perfectly working for small or big servers within more than [B]2000 maps[/B].
+ 
  
  [*] Map [B]nominations[/B] to be used in the next map vote.
 
@@ -330,6 +333,15 @@ if the enable cvar is 3 the server will start a vote after the half of the timel
 
 
 ******************************** [anchor]Change[/anchor][B][SIZE="5"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
+
+[B]2016-03-09 | v2.1.9d[/B]
+[LIST=1]
+[*]Added to the cvar 'gal_vote_mapfile', the option '*' to use all maps in the server's maps folder as map fillers.
+[*]Fixed map extension now showing up.
+[*]Implemented the 'Galileo' data directory auto-creation.
+[*]Updated the cvar 'gal_nom_mapfile' documentation.
+[*]Fixed the possibility to start rock the vote after a map voting.
+[/LIST]
 
 [B]2016-03-09 | v2.1.9[/B]
 [LIST=1]
@@ -600,6 +612,8 @@ GAL_STANDARD_UNKNOWNMOD
 [B][URL="https://forums.alliedmods.net/member.php?u=263772"]Old.School[/URL][/B] ([B][NOPARSE][B][/NOPARSE]l@k ~ [R]Eed[/B]): For bug reports, testing and feature suggestions.
 [B][URL="https://forums.alliedmods.net/member.php?u=259683"]iNdio[/URL][/B]: For the Romanian [ro] and Italian [it] language translations.
 [B][URL="https://github.com/Ni3znajomy"]Ni3znajomy[/URL][/B]: For contributions/work over project on the GitHub.
+[B][URL="https://forums.alliedmods.net/member.php?u=119830"]Shattered Heart Lynx[/URL][/B]: For the custom 'amxx_datadir' directory bug report.
+[B][URL="https://forums.alliedmods.net/member.php?u=267675"]wombad321[/URL][/B]: For the 'map extend' not showing up bug report.
 [QUOTE=Brad;684848]
 A lot of time and effort went into making this plugin, making features just right,
 making sure there were no bugs, making sure it was easy to use. If you are glad I made
