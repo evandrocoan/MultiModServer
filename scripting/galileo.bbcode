@@ -135,6 +135,15 @@ galileo.cfg contents.
  
  [*] After the user voted, transform the '[B]0 - None[/B]' option to an '[COLOR="blue"]one time cancel[/COLOR]' vote
      opportunity, configured by cvar.
+     
+     
+ [*] If you are using only '[B]mp_timelimit[/B]' the map extension will be in minutes.
+     If you are using '[B]mp_maxrounds[/B]/[B]mp_winlimit[/B]' the map extension will be in rounds.
+     If you are using both '[B]mp_timelimit[/B]/[B]mp_maxrounds[/B]/[B]mp_winlimit[/B]', it gives you the
+     first to get close to finish the map. For example, suppose that there are [COLOR="Blue"]3 minutes[/COLOR] left
+     and [COLOR="Blue"]10 rounds[/COLOR] remaining. It will give you by minutes, and not by rounds. And to avoid
+     re-voting when those [COLOR="Blue"]10 rounds[/COLOR] end up, it will [COLOR="Blue"]temporarily[/COLOR] disables the rounds voting
+     when the remaining rounds end up.
 
  
  [*] Command '[COLOR="Blue"][B]gal_startvote -nochange or -restart[/B][/COLOR]', to forces a map vote to begin 
