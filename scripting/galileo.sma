@@ -1628,108 +1628,97 @@ stock map_populateList( Array:mapArray, mapFilePath[] )
     if( !equal( mapFilePath, "*" )
         && !equal( mapFilePath, "#" ) )
     {
-        new mapFile = fopen( mapFilePath, "rt" );
-        
-        if( mapFile )
-        {
-            new loadedMapName[ MAX_MAPNAME_LENGHT ];
-            
-            while( !feof( mapFile ) )
-            {
-                fgets( mapFile, loadedMapName, charsmax( loadedMapName ) );
-                trim( loadedMapName );
-                
-                if( loadedMapName[ 0 ]
-                    && !equal( loadedMapName, "//", 2 )
-                    && !equal( loadedMapName, ";", 1 )
-                    && is_map_valid( loadedMapName ) )
-                {
-                    ArrayPushString( mapArray, loadedMapName );
-                    ++mapCount;
-                    DEBUG_LOGGER( 4, "map_populateList(...) loadedMapName = %s", loadedMapName )
-                }
-            }
-            
-            fclose( mapFile );
-            DEBUG_LOGGER( 4, "" )
-        }
-        else
-        {
-            log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilePath );
-        }
+        DEBUG_LOGGER( 4, "^n    map_populateList(...) Loading the mapFilePath: %s", mapFilePath )
+        mapCount = loadMapFileList( mapArray, mapCount, mapFilePath )
     }
     else if( equal( mapFilePath, "*" ) )
     {
-        new mapName[ MAX_MAPNAME_LENGHT ]
-        
-        // no mapFile provided, assuming contents of "maps" folder
-        new dir = open_dir( "maps", mapName, charsmax( mapName ) );
-        
-        if( dir )
-        {
-            new mapNameLength;
-            
-            while( next_file( dir, mapName, charsmax( mapName ) ) )
-            {
-                mapNameLength = strlen( mapName );
-                
-                if( mapNameLength > 4
-                    && equali( mapName[ mapNameLength - 4 ], ".bsp", 4 ) )
-                {
-                    mapName[ mapNameLength - 4 ] = '^0';
-                    
-                    if( is_map_valid( mapName ) )
-                    {
-                        ArrayPushString( mapArray, mapName );
-                        ++mapCount;
-                    }
-                }
-            }
-            close_dir( dir );
-        }
-        else
-        {
-            // directory not found, wtf?
-            log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FOLDERMISSING" );
-        }
-        
+        mapCount = loadMapsFolderDirectory( mapArray, mapCount )
         DEBUG_LOGGER( 4, "^n    map_populateList(...) Loading the MAP FOLDER! mapFilePath: %s", mapFilePath )
     }
     else
     {
         get_cvar_string( "mapcyclefile", mapFilePath, strlen( mapFilePath ) );
-        
-        new mapFile = fopen( mapFilePath, "rt" );
-        
-        if( mapFile )
-        {
-            new loadedMapName[ MAX_MAPNAME_LENGHT ];
-            
-            while( !feof( mapFile ) )
-            {
-                fgets( mapFile, loadedMapName, charsmax( loadedMapName ) );
-                trim( loadedMapName );
-                
-                if( loadedMapName[ 0 ]
-                    && !equal( loadedMapName, "//", 2 )
-                    && !equal( loadedMapName, ";", 1 )
-                    && is_map_valid( loadedMapName ) )
-                {
-                    ArrayPushString( mapArray, loadedMapName );
-                    ++mapCount;
-                }
-            }
-            fclose( mapFile );
-        }
-        else
-        {
-            log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilePath );
-        }
-        
         DEBUG_LOGGER( 4, "^n    map_populateList(...) Loading the MAPCYCLE! mapFilePath: %s", mapFilePath )
+        
+        mapCount = loadMapFileList( mapArray, mapCount, mapFilePath )
     }
     
     return mapCount;
+}
+
+stock loadMapFileList( Array:mapArray, mapCount, mapFilePath[] )
+{
+    new mapFile = fopen( mapFilePath, "rt" );
+    
+    if( mapFile )
+    {
+        new loadedMapName[ MAX_MAPNAME_LENGHT ];
+        
+        while( !feof( mapFile ) )
+        {
+            fgets( mapFile, loadedMapName, charsmax( loadedMapName ) );
+            trim( loadedMapName );
+            
+            if( loadedMapName[ 0 ]
+                && !equal( loadedMapName, "//", 2 )
+                && !equal( loadedMapName, ";", 1 )
+                && is_map_valid( loadedMapName ) )
+            {
+                DEBUG_LOGGER( 4, "map_populateList(...) loadedMapName = %s", loadedMapName )
+                ArrayPushString( mapArray, loadedMapName );
+                
+                ++mapCount;
+            }
+        }
+        
+        fclose( mapFile );
+        DEBUG_LOGGER( 4, "" )
+    }
+    else
+    {
+        log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilePath );
+    }
+    
+    return mapCount
+}
+
+stock loadMapsFolderDirectory( Array:mapArray, mapCount )
+{
+    new mapName[ MAX_MAPNAME_LENGHT ]
+    
+    new dir = open_dir( "maps", mapName, charsmax( mapName ) );
+    
+    if( dir )
+    {
+        new mapNameLength;
+        
+        while( next_file( dir, mapName, charsmax( mapName ) ) )
+        {
+            mapNameLength = strlen( mapName );
+            
+            if( mapNameLength > 4
+                && equali( mapName[ mapNameLength - 4 ], ".bsp", 4 ) )
+            {
+                mapName[ mapNameLength - 4 ] = '^0';
+                
+                if( is_map_valid( mapName ) )
+                {
+                    ArrayPushString( mapArray, mapName );
+                    ++mapCount;
+                }
+            }
+        }
+        
+        close_dir( dir );
+    }
+    else
+    {
+        // directory not found, wtf?
+        log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FOLDERMISSING" );
+    }
+    
+    return mapCount
 }
 
 public map_loadNominationList()
@@ -2670,7 +2659,7 @@ stock vote_addFiller()
             allowedFilersCount = min( min( mapsPerGroup[ groupIndex ], g_maxVotingChoices - g_totalVoteOptions ),
                     filersMapCount );
             
-            DEBUG_LOGGER( 8, "[%i] allowedFilersCount: %i   mapsPerGroup: %i   Max-Cnt: %i", groupIndex, \
+            DEBUG_LOGGER( 8, "[%i] allowedFilersCount: %i   mapsPerGroup: %i   MaxCount: %i", groupIndex, \
                     allowedFilersCount, mapsPerGroup[ groupIndex ], g_maxVotingChoices - g_totalVoteOptions )
             
             for( choice_index = 0; choice_index < allowedFilersCount; ++choice_index )
@@ -2951,12 +2940,6 @@ stock vote_startDirector( bool:is_forced_voting )
         g_voteDuration = get_pcvar_num( cvar_voteDuration )
         
         DEBUG_LOGGER( 4, "^n( vote_startDirector|NormalVote ) choicesLoaded: %d", choicesLoaded )
-        
-        if( choicesLoaded )
-        {
-            // clear all nominations
-            nomination_clearAll();
-        }
     }
 
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
@@ -2973,6 +2956,9 @@ stock vote_startDirector( bool:is_forced_voting )
         new playersCount
         new players[ MAX_PLAYERS ]
         new Float:handleChoicesDelay
+        
+        // clear all nominations
+        nomination_clearAll();
         
         // alphabetize the maps
         SortCustom2D( g_votingMapNames, choicesLoaded, "sort_stringsi" );
