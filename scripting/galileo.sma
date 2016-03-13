@@ -37,7 +37,7 @@ new const PLUGIN_VERSION[] = "2.1.9d"
  * 4   - To create fake votes.
  * 7   - Levels 1, 2 and 4.
  */
-#define DEBUG_LEVEL 0
+#define DEBUG_LEVEL 1 + 2
 
 #define DEBUG_LEVEL_NORMAL     1
 #define DEBUG_LEVEL_UNIT_TEST  2
@@ -619,7 +619,6 @@ public plugin_cfg()
     }
     
     get_pcvar_string( cvar_voteWeightFlags, g_voteWeightFlags, charsmax( g_voteWeightFlags ) );
-    remove_quotes( g_voteWeightFlags )
     
     get_cvar_string( "amx_nextmap", g_nextmap, charsmax( g_nextmap ) );
     get_mapname( g_currentMap, charsmax( g_currentMap ) );
@@ -1824,7 +1823,6 @@ stock map_loadEmptyCycleList()
 {
     new emptyCycleFilePath[ MAX_FILE_PATH_LENGHT ];
     get_pcvar_string( cvar_emptyMapFilePath, emptyCycleFilePath, charsmax( emptyCycleFilePath ) );
-    remove_quotes( emptyCycleFilePath )
     
     g_emptyCycleMapsNumber = map_populateList( g_emptyCycleMapList, emptyCycleFilePath );
     
@@ -2540,8 +2538,7 @@ stock vote_addFiller()
     new mapFilerFilePath[ MAX_FILE_PATH_LENGHT ];
     
     get_pcvar_string( cvar_voteMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) )
-    DEBUG_LOGGER( 4, "( vote_addFiller ) cvar_voteMapFilePath: %s", mapFilerFilePath )
-    remove_quotes( mapFilerFilePath )
+    DEBUG_LOGGER( 4, "( vote_addFiller ) mapFilerFilePath: %s", mapFilerFilePath )
     
     if( get_realplayersnum() < get_pcvar_num( cvar_voteMinPlayers ) )
     {
