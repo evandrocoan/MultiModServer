@@ -1653,75 +1653,77 @@ stock map_populateList( Array:mapArray, mapFilePath[] )
             log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilePath );
         }
     }
-    else
+    else if( equal( mapFilePath, "*" ) )
     {
-        if( equal( mapFilePath, "*" ) )
+        new mapName[ MAX_MAPNAME_LENGHT ]
+        
+        // no mapFile provided, assuming contents of "maps" folder
+        new dir = open_dir( "maps", mapName, charsmax( mapName ) );
+        
+        if( dir )
         {
-            new mapName[ MAX_MAPNAME_LENGHT ]
+            new mapNameLength;
             
-            // no mapFile provided, assuming contents of "maps" folder
-            new dir = open_dir( "maps", mapName, charsmax( mapName ) );
-            
-            if( dir )
+            while( next_file( dir, mapName, charsmax( mapName ) ) )
             {
-                new lenMapName;
+                mapNameLength = strlen( mapName );
                 
-                while( next_file( dir, mapName, charsmax( mapName ) ) )
+                if( mapNameLength > 4
+                    && equali( mapName[ mapNameLength - 4 ], ".bsp", 4 ) )
                 {
-                    lenMapName = strlen( mapName );
+                    mapName[ mapNameLength - 4 ] = '^0';
                     
-                    if( lenMapName > 4
-                        && equali( mapName[ lenMapName - 4 ], ".bsp", 4 ) )
+                    if( is_map_valid( mapName ) )
                     {
-                        mapName[ lenMapName - 4 ] = '^0';
-                        
-                        if( is_map_valid( mapName ) )
-                        {
-                            ArrayPushString( mapArray, mapName );
-                            ++mapCount;
-                        }
-                    }
-                }
-                close_dir( dir );
-            }
-            else
-            {
-                // directory not found, wtf?
-                log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FOLDERMISSING" );
-            }
-        }
-        else
-        {
-            get_cvar_string( "mapcyclefile", mapFilePath, strlen( mapFilePath ) );
-            
-            new mapFile = fopen( mapFilePath, "rt" );
-            
-            if( mapFile )
-            {
-                new loadedMapName[ MAX_MAPNAME_LENGHT ];
-                
-                while( !feof( mapFile ) )
-                {
-                    fgets( mapFile, loadedMapName, charsmax( loadedMapName ) );
-                    trim( loadedMapName );
-                    
-                    if( loadedMapName[ 0 ]
-                        && !equal( loadedMapName, "//", 2 )
-                        && !equal( loadedMapName, ";", 1 )
-                        && is_map_valid( loadedMapName ) )
-                    {
-                        ArrayPushString( mapArray, loadedMapName );
+                        ArrayPushString( mapArray, mapName );
                         ++mapCount;
                     }
                 }
-                fclose( mapFile );
             }
-            else
-            {
-                log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilePath );
-            }
+            close_dir( dir );
         }
+        else
+        {
+            // directory not found, wtf?
+            log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FOLDERMISSING" );
+        }
+        
+        DEBUG_LOGGER( 4, "^n    map_populateList(...) Loading the MAP FOLDER! mapFilePath: %s", mapFilePath )
     }
+    else
+    {
+        get_cvar_string( "mapcyclefile", mapFilePath, strlen( mapFilePath ) );
+        
+        new mapFile = fopen( mapFilePath, "rt" );
+        
+        if( mapFile )
+        {
+            new loadedMapName[ MAX_MAPNAME_LENGHT ];
+            
+            while( !feof( mapFile ) )
+            {
+                fgets( mapFile, loadedMapName, charsmax( loadedMapName ) );
+                trim( loadedMapName );
+                
+                if( loadedMapName[ 0 ]
+                    && !equal( loadedMapName, "//", 2 )
+                    && !equal( loadedMapName, ";", 1 )
+                    && is_map_valid( loadedMapName ) )
+                {
+                    ArrayPushString( mapArray, loadedMapName );
+                    ++mapCount;
+                }
+            }
+            fclose( mapFile );
+        }
+        else
+        {
+            log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilePath );
+        }
+        
+        DEBUG_LOGGER( 4, "^n    map_populateList(...) Loading the MAPCYCLE! mapFilePath: %s", mapFilePath )
+    }
+        
     return mapCount;
 }
 
@@ -1758,7 +1760,7 @@ public cmd_createMapFile( player_id, level, cid )
             new dir
             new mapFile
             new mapCount
-            new lenMapName
+            new mapNameLength
             
             dir = open_dir( "maps", mapName, charsmax( mapName )  );
             
@@ -1775,12 +1777,12 @@ public cmd_createMapFile( player_id, level, cid )
                     
                     while( next_file( dir, mapName, charsmax( mapName ) ) )
                     {
-                        lenMapName = strlen( mapName );
+                        mapNameLength = strlen( mapName );
                         
-                        if( lenMapName > 4
-                            && equali( mapName[ lenMapName - 4 ], ".bsp", 4 ) )
+                        if( mapNameLength > 4
+                            && equali( mapName[ mapNameLength - 4 ], ".bsp", 4 ) )
                         {
-                            mapName[ lenMapName - 4 ] = '^0';
+                            mapName[ mapNameLength - 4 ] = '^0';
                             
                             if( is_map_valid( mapName ) )
                             {
@@ -2780,6 +2782,7 @@ stock loadCurrentBlackList( Trie:blackList_trie )
             replace_all( currentLine, charsmax( currentLine ), "[", "" )
             replace_all( currentLine, charsmax( currentLine ), "]", "" )
             
+            DEBUG_LOGGER( 8, "( loadCurrentBlackList ) " )
             DEBUG_LOGGER( 8, "( loadCurrentBlackList ) currentLine: %s (currentHour: %d)", currentLine, currentHour )
             
             // broke the current line
@@ -2823,12 +2826,12 @@ stock loadCurrentBlackList( Trie:blackList_trie )
             }
             
             DEBUG_LOGGER( 8, "( loadCurrentBlackList ) startHour > endHour: %d", startHour > endHour )
-            DEBUG_LOGGER( 8, "( loadCurrentBlackList ) startHour >= currentHour > endHour: %d, \
-                    isToSkipThisGroup: %d", startHour >= currentHour > endHour, isToSkipThisGroup )
+            DEBUG_LOGGER( 8, "( loadCurrentBlackList ) startHour >= currentHour > endHour: %d", \
+                    startHour >= currentHour > endHour )
             
             DEBUG_LOGGER( 8, "( loadCurrentBlackList ) startHour < endHour: %d", startHour < endHour )
-            DEBUG_LOGGER( 8, "( loadCurrentBlackList ) startHour <= currentHour < endHour: %d", \
-                    startHour <= currentHour < endHour )
+            DEBUG_LOGGER( 8, "( loadCurrentBlackList ) startHour <= currentHour < endHour: %d, \
+                    isToSkipThisGroup: %d", startHour <= currentHour < endHour, isToSkipThisGroup )
             
             goto proceed
         }
