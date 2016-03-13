@@ -1464,11 +1464,6 @@ public map_writeRecentList()
     }
 }
 
-public map_loadFillerList( fillerFileNamePath[] )
-{
-    return map_populateList( g_fillerMap, fillerFileNamePath );
-}
-
 public cmd_rockthevote( player_id )
 {
     color_print( player_id, "^1%L", player_id, "GAL_CMD_RTV" );
@@ -2534,28 +2529,22 @@ stock vote_addFiller()
         return;
     }
     
-    // grab the name of the filler file
-    new mapFilerFilePath[ MAX_FILE_PATH_LENGHT ];
-    
-    get_pcvar_string( cvar_voteMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) )
-    DEBUG_LOGGER( 4, "( vote_addFiller ) mapFilerFilePath: %s", mapFilerFilePath )
+    new groupCount
+    new mapsPerGroup     [ MAX_MAPS_IN_VOTE ]
+    new mapFilerFilePath [ MAX_FILE_PATH_LENGHT ]
+    new fillersFilePaths [ MAX_MAPS_IN_VOTE ][ MAX_FILE_PATH_LENGHT ]
     
     if( get_realplayersnum() < get_pcvar_num( cvar_voteMinPlayers ) )
     {
         get_pcvar_string( cvar_voteMinPlayersMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) )
     }
-    else if( mapFilerFilePath[ 0 ] == '*' )
+    else
     {
-        get_cvar_string( "mapcyclefile", mapFilerFilePath, charsmax( mapFilerFilePath ) );
+        get_pcvar_string( cvar_voteMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) )
     }
     
-    new groupCount
-    new mapsPerGroup[ MAX_MAPS_IN_VOTE ]
-    
-    // create an array of files that will be pulled from
-    new fillersFilePaths[ MAX_MAPS_IN_VOTE ][ MAX_FILE_PATH_LENGHT ]
-    
-    if( !equal( mapFilerFilePath, "*" ) )
+    if( !equal( mapFilerFilePath[ 0 ], "*" )
+        && !equal( mapFilerFilePath[ 0 ], "#" ) )
     {
         // determine what kind of file it's being used as
         new mapFilerFile = fopen( mapFilerFilePath, "rt" );
@@ -2626,13 +2615,16 @@ stock vote_addFiller()
         
         fclose( mapFilerFile )
     }
-    else
+    else // we'll be loading all maps in the /maps folder or the current mapcycle file
     {
-        // we'll be loading all maps in the /maps folder
-        copy( fillersFilePaths[ 0 ], charsmax( mapFilerFilePath ), mapFilerFilePath );
         mapsPerGroup[ 0 ] = MAX_MAPS_IN_VOTE;
         groupCount        = 1;
+        
+        // the options '*' and '#' will be handled by 'map_populateList()' later.
+        copy( fillersFilePaths[ 0 ], charsmax( mapFilerFilePath ), mapFilerFilePath );
     }
+    
+    DEBUG_LOGGER( 4, "( vote_addFiller ) mapFilerFilePath: %s", mapFilerFilePath )
     
     new filersMapCount
     new mapIndex
@@ -2658,7 +2650,7 @@ stock vote_addFiller()
     // fill remaining slots with random maps from each filler file, as much as possible
     for( new groupIndex = 0; groupIndex < groupCount; ++groupIndex )
     {
-        filersMapCount = map_loadFillerList( fillersFilePaths[ groupIndex ] );
+        filersMapCount = map_populateList( g_fillerMap, fillersFilePaths[ groupIndex ] )
         
         DEBUG_LOGGER( 8, "[%i] groupCount:%i   filersMapCount: %i   g_totalVoteOptions: %i   \
                 g_maxVotingChoices: %i^n   fillersFilePaths: %s", groupIndex, groupCount, filersMapCount, \
