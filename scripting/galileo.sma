@@ -892,7 +892,8 @@ public process_last_round()
     {
         configure_last_round_HUD()
     }
-    else if( get_pcvar_num( cvar_isEndMapCountdown ) )
+    else if( get_pcvar_num( cvar_isEndMapCountdown )
+             && g_is_timeToChangeLevel )
     {
         g_last_round_countdown = 6;
         set_task( 1.0, "process_last_round_counting", TASKID_PROCESS_LAST_ROUND, _, _, "a", 6 );
@@ -981,11 +982,51 @@ stock intermission_display()
 }
 
 /**
- * Reset rounds scores every game restart event.
+ * Return whether the gaming is on going.
+ */
+stock isThereGameCommencing()
+{
+    new players[ 32 ]
+    
+    new players_count
+    new CT_count = 0
+    new TR_count = 0
+    
+    get_players( players, players_count )
+    
+    for( new player_index = 0; player_index < players_count; player_index++ )
+    {
+        switch( get_user_team( players[ player_index ] ) )
+        {
+            case 1:
+            {
+                TR_count++ // terror
+            }
+            case 2:
+            {
+                CT_count++ // ct
+            }
+        }
+        
+        if( CT_count && TR_count )
+        {
+            return true
+        }
+    }
+    
+    return false
+}
+
+/**
+ * Reset rounds scores every game restart event. This relies on that the 'game_commencing_event()'
+ * is not triggered by the 'round_restart_event()'. This use 'isThereGameCommencing()' to determine
+ * if it must restore the time limit by calling 'game_commencing_event()', when there is none game
+ * on going, to avoid the infinity time limit due the allow last round finish feature.
  */
 public round_restart_event()
 {
-    if( g_is_timeLimitChanged )
+    if( g_is_timeLimitChanged
+        && isThereGameCommencing() )
     {
         g_isTimeToResetRounds = true
         
@@ -995,11 +1036,12 @@ public round_restart_event()
     {
         game_commencing_event()
     }
+    
+    DEBUG_LOGGER( 32, "^n AT: round_restart_event()" )
 }
 
 /**
- * Make sure the reset time is the original time limit, can be skewed if map was previously extended.
- * It is delayed because if we are at g_is_last_round, we need to wait the game restart.
+ * Make sure the reset time is the original time limit.
  */
 public game_commencing_event()
 {
@@ -1008,7 +1050,7 @@ public game_commencing_event()
     
     cancel_voting( true )
     
-    DEBUG_LOGGER( 32, "^n AT: game_commencing_event" )
+    DEBUG_LOGGER( 32, "^n AT: game_commencing_event()" )
 }
 
 /**
