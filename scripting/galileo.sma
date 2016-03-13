@@ -224,7 +224,7 @@ new g_user_msgid
 #define START_VOTEMAP_MIN_TIME 151
 #define START_VOTEMAP_MAX_TIME 129
 
-#define VOTE_ROUND_START_MIN_DELAY 720
+#define VOTE_ROUND_START_MIN_DELAY 500
 #define VOTE_ROUND_START_MAX_DELAY START_VOTEMAP_MIN_TIME
 
 
@@ -334,7 +334,7 @@ new cvar_coloredChatEnabled
 new cvar_isToStopEmptyCycle;
 new cvar_unnominateDisconnected;
 new cvar_endOnRound
-new cvar_endOnRoundStart
+new cvar_endOfMapVoteStart
 new cvar_endOnRound_rtv
 new cvar_endOnRound_msg
 new cvar_voteWeight
@@ -517,7 +517,7 @@ public plugin_init()
     cvar_isToStopEmptyCycle        = register_cvar( "gal_in_empty_cycle", "0", FCVAR_SPONLY );
     cvar_unnominateDisconnected    = register_cvar( "gal_unnominate_disconnected", "0" );
     cvar_endOnRound                = register_cvar( "gal_endonround", "1" );
-    cvar_endOnRoundStart           = register_cvar( "gal_endofmapvote_start", "0" );
+    cvar_endOfMapVoteStart         = register_cvar( "gal_endofmapvote_start", "0" );
     cvar_endOnRound_rtv            = register_cvar( "gal_endonround_rtv", "0" );
     cvar_endOnRound_msg            = register_cvar( "gal_endonround_msg", "0" );
     cvar_voteWeight                = register_cvar( "gal_vote_weight", "1" );
@@ -669,6 +669,11 @@ public plugin_cfg()
     {
         set_task( 2.0, "runTests" )
     }
+    else
+    {
+        server_print( "^n    The Unit Tests are going to run only after the first server start.\
+                ^n    gal_server_starting: %d^n", get_cvar_num( "gal_server_starting" ) )
+    }
 #endif
 }
 
@@ -815,7 +820,7 @@ public start_voting_by_timer()
 public round_start_event()
 {
     if( VOTE_ROUND_START_DETECTION_DELAYED( get_timeleft() )
-        && get_pcvar_num( cvar_endOnRoundStart ) )
+        && get_pcvar_num( cvar_endOfMapVoteStart ) )
     {
         set_task( VOTE_ROUND_START_SECONDS_DELAY(), "start_voting_by_timer", TASKID_START_VOTING_BY_TIMER )
     }
@@ -1723,7 +1728,7 @@ stock map_populateList( Array:mapArray, mapFilePath[] )
         
         DEBUG_LOGGER( 4, "^n    map_populateList(...) Loading the MAPCYCLE! mapFilePath: %s", mapFilePath )
     }
-        
+    
     return mapCount;
 }
 
@@ -4202,6 +4207,7 @@ stock finalizeVoting()
     // this must be called after 'g_voteStatus &= ~VOTE_IS_RUNOFF' above
     vote_resetStats();
 }
+
 stock Float:map_getMinutesElapsed()
 {
     DEBUG_LOGGER( 2, "%32s mp_timelimit: %f", "map_getMinutesElapsed( in/out )", \
