@@ -821,7 +821,8 @@ public start_voting_by_timer()
 public round_start_event()
 {
     if( VOTE_ROUND_START_DETECTION_DELAYED( get_timeleft() )
-        && get_pcvar_num( cvar_endOfMapVoteStart ) )
+        && get_pcvar_num( cvar_endOfMapVoteStart )
+        && !task_exists( TASKID_START_VOTING_BY_TIMER ) )
     {
         set_task( VOTE_ROUND_START_SECONDS_DELAY(), "start_voting_by_timer", TASKID_START_VOTING_BY_TIMER )
     }
