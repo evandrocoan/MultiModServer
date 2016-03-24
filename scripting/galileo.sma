@@ -179,6 +179,7 @@ new g_user_msgid
 #define MAPFILETYPE_SINGLE 1
 #define MAPFILETYPE_GROUPS 2
 
+#define SHOW_STATUS_NEVER      0
 #define SHOW_STATUS_AFTER_VOTE 1
 #define SHOW_STATUS_AT_END     2
 #define SHOW_STATUS_ALWAYS     3
@@ -477,11 +478,12 @@ new g_playerVotedWeight          [ MAX_PLAYERS_COUNT ];
 new g_nominationMatchesMenu      [ MAX_PLAYERS_COUNT ];
 new g_arrayOfMapsWithVotesNumber [ MAX_OPTIONS_IN_VOTE ];
 
-new bool:g_isPlayerVoted           [ MAX_PLAYERS_COUNT ] = { true, ... }
-new bool:g_isPlayerParticipating   [ MAX_PLAYERS_COUNT ] = { true, ... }
-new bool:g_isPlayerCancelledVote   [ MAX_PLAYERS_COUNT ]
-new bool:g_answeredForEndOfMapVote [ MAX_PLAYERS_COUNT ]
-new bool:g_rockedVote              [ MAX_PLAYERS_COUNT ]
+new bool:g_isPlayerVoted             [ MAX_PLAYERS_COUNT ] = { true, ... }
+new bool:g_isPlayerParticipating     [ MAX_PLAYERS_COUNT ] = { true, ... }
+new bool:g_isPlayerSeeingTheVoteMenu [ MAX_PLAYERS_COUNT ]
+new bool:g_isPlayerCancelledVote     [ MAX_PLAYERS_COUNT ]
+new bool:g_answeredForEndOfMapVote   [ MAX_PLAYERS_COUNT ]
+new bool:g_rockedVote                [ MAX_PLAYERS_COUNT ]
 
 new g_mapPrefixes        [ MAX_PREFIX_COUNT ][ 16 ]
 new g_playersNominations [ MAX_PLAYERS_COUNT ][ MAX_NOMINATION_COUNT ]
@@ -3030,7 +3032,6 @@ stock vote_startDirector( bool:is_forced_voting )
 
 #endif
     
-    
     if( choicesLoaded )
     {
         new       player_id
@@ -3247,23 +3248,49 @@ public vote_handleDisplay()
     
     new argument[ 2 ] = { true, 0 }
     
-    // Same as if g_showVoteStatus == SHOW_STATUS_ALWAYS || g_showVoteStatus == SHOW_STATUS_AFTER_VOTE
-    if( g_showVoteStatus & SHOW_STATUS_AFTER_VOTE )
+    if( g_showVoteStatus == SHOW_STATUS_ALWAYS
+        || g_showVoteStatus == SHOW_STATUS_AFTER_VOTE )
     {
-        set_task( 1.0, "vote_display", TASKID_VOTE_DISPLAY, argument, sizeof( argument ), "a", g_voteDuration );
+        set_task( 1.0, "vote_display", TASKID_VOTE_DISPLAY, argument, sizeof( argument ), "a",
+                g_voteDuration );
     }
-    else
+    else // g_showVoteStatus == SHOW_STATUS_AT_END || g_showVoteStatus == SHOW_STATUS_NEVER
     {
-        set_task( 1.0, "vote_display", TASKID_VOTE_DISPLAY, argument, sizeof( argument ) );
+        set_task( 1.0, "tryToShowTheVotingMenu", TASKID_VOTE_DISPLAY, _, _, "a", g_voteDuration );
     }
     
     // display the vote outcome
-    set_task( float( g_voteDuration ), "closeVoting", TASKID_VOTE_EXPIRE )
+    set_task( float( g_voteDuration ), "closeVoting", TASKID_VOTE_EXPIRE );
+}
+
+public tryToShowTheVotingMenu()
+{
+    new player_id;
+    new playersCount;
+    new players[ MAX_PLAYERS ];
+    
+    new argument[ 2 ] = { false, 0 };
+    
+    get_players( players, playersCount, "ch" ); // skip bots and hltv
+    
+    for( new player_index; player_index < playersCount; ++player_index )
+    {
+        player_id = players[ player_index ];
+        
+        if( !g_isPlayerSeeingTheVoteMenu[ player_id ]
+            && isPlayerAbleToSeeTheVoteMenu( player_id ) )
+        {
+            argument[ 1 ]                            = player_id;
+            g_isPlayerSeeingTheVoteMenu[ player_id ] = true;
+            
+            vote_display( argument );
+        }
+    }
 }
 
 public closeVoting()
 {
-    new argument[ 2 ] = { -1, -1 }
+    new argument[ 2 ] = { false, -1 }
     
     // waits until the last voting second to finish
     set_task( 0.9, "voteExpire" )
@@ -3328,16 +3355,27 @@ public vote_display( argument[ 2 ] )
         }
     }
     
-    // This is to optionally display to single player that just voted.
-    // Exactly after the player voted this function is only called with the correct player id.
-    if( player_id > 0
-        && g_showVoteStatus & SHOW_STATUS_AFTER_VOTE )
+    // This is to optionally display to single player that just voted or never saw the menu.
+    // This function is called with the correct player id only after the player voted or by the
+    // 'tryToShowTheVotingMenu()' function call.
+    if( player_id > 0 )
     {
         menuKeys = calculateExtensionOption( player_id, isVoteOver,
                 charCount, voteStatus, charsmax( voteStatus ), menuKeys )
         
-        calculate_menu_dirt( player_id, isVoteOver, voteStatus, menuDirty, charsmax( menuDirty ), noneIsHidden )
-        display_vote_menu( false, player_id, menuDirty, menuKeys )
+        if( g_showVoteStatus == SHOW_STATUS_ALWAYS
+            || g_showVoteStatus == SHOW_STATUS_AFTER_VOTE )
+        {
+            calculate_menu_dirt( player_id, isVoteOver, voteStatus, menuDirty, charsmax( menuDirty ),
+                    noneIsHidden )
+            
+            display_vote_menu( false, player_id, menuDirty, menuKeys )
+        }
+        else // g_showVoteStatus == SHOW_STATUS_NEVER || g_showVoteStatus == SHOW_STATUS_AT_END
+        {
+            calculate_menu_clean( player_id, menuClean, charsmax( menuClean ) )
+            display_vote_menu( true, player_id, menuClean, menuKeys )
+        }
     }
     else // just display to everyone
     {
@@ -3366,14 +3404,17 @@ public vote_display( argument[ 2 ] )
                      || ( g_isPlayerVoted[ player_id ]
                           && g_showVoteStatus == SHOW_STATUS_AFTER_VOTE ) )
             {
-                calculate_menu_dirt( player_id, isVoteOver, voteStatus, menuDirty, charsmax( menuDirty ), noneIsHidden )
+                calculate_menu_dirt( player_id, isVoteOver, voteStatus, menuDirty, charsmax( menuDirty ),
+                        noneIsHidden )
+                
                 display_vote_menu( false, player_id, menuDirty, menuKeys )
             }
         }
     }
 }
 
-stock calculateExtensionOption( player_id, bool:isVoteOver, charCount, voteStatus[], voteStatusLenght, menuKeys )
+stock calculateExtensionOption( player_id, bool:isVoteOver, charCount, voteStatus[], voteStatusLenght,
+                                menuKeys )
 {
     if( g_isToRefreshVoteStatus
         || isVoteOver )
@@ -3665,14 +3706,12 @@ stock calculate_menu_clean( player_id, menuClean[], menuCleanSize )
 
 stock display_vote_menu( bool:menuType, player_id, menuBody[], menuKeys )
 {
-    new menu_id
-    new menukeys_unused
-
 #if defined DEBUG
     
     if( player_id == 1 )
     {
         new player_name[ MAX_PLAYER_NAME_LENGHT ];
+        
         get_user_name( player_id, player_name, charsmax( player_name ) );
         
         DEBUG_LOGGER( 4, "    [%s ( %s )]", player_name, ( menuType ? "clean" : "dirty" ) )
@@ -3681,15 +3720,23 @@ stock display_vote_menu( bool:menuType, player_id, menuBody[], menuKeys )
     }
 #endif
     
-    get_user_menu( player_id, menu_id, menukeys_unused );
-    
-    if( menu_id == 0
-        || menu_id == g_chooseMapMenuId )
+    if( isPlayerAbleToSeeTheVoteMenu( player_id ) )
     {
         show_menu( player_id, menuKeys, menuBody,
                 ( menuType ? g_voteDuration : max( 2, g_voteDuration ) ),
                 MENU_CHOOSEMAP )
     }
+}
+
+stock isPlayerAbleToSeeTheVoteMenu( player_id )
+{
+    new menu_id;
+    new menukeys_unused;
+    
+    get_user_menu( player_id, menu_id, menukeys_unused );
+    
+    return ( menu_id == 0
+             || menu_id == g_chooseMapMenuId );
 }
 
 public vote_handleChoice( player_id, key )
@@ -3719,7 +3766,8 @@ public vote_handleChoice( player_id, key )
     }
     
     // display the vote again, with status
-    if( g_showVoteStatus & SHOW_STATUS_AFTER_VOTE )
+    if( g_showVoteStatus == SHOW_STATUS_ALWAYS
+        || g_showVoteStatus == SHOW_STATUS_AFTER_VOTE )
     {
         new argument[ 2 ] = { false, -1 }
         
@@ -4397,7 +4445,7 @@ stock map_isTooRecent( map[] )
  * 1.1) Is by mp_winlimit expiration proximity?
  * 1.2) Is by mp_maxrounds expiration proximity?
  * 2) Per minutes.
- * 
+ *
  * These data are used to display the voting menu and proper set the voting flow. This use the
  * default voting type to timer if the rounds ending are disabled.
  */
@@ -5425,6 +5473,7 @@ public vote_resetStats()
     
     arrayset( g_isPlayerCancelledVote, false, sizeof( g_isPlayerCancelledVote ) );
     arrayset( g_answeredForEndOfMapVote, false, sizeof( g_answeredForEndOfMapVote ) );
+    arrayset( g_isPlayerSeeingTheVoteMenu, false, sizeof( g_isPlayerSeeingTheVoteMenu ) );
     
     arrayset( g_playerVotedOption, 0, sizeof( g_playerVotedOption ) );
     arrayset( g_playerVotedWeight, 0, sizeof( g_playerVotedWeight ) );
