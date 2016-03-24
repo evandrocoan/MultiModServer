@@ -350,6 +350,9 @@ to get to play on. Which is why I'm using gal_banrecent to ban these 1000+ maps.
 players can't nominate maps for few days . My proposition is adding a file to the plug in, in which 
 will be saved map history and a bunch of recent maps won't be able to get voted (but still be able 
 to get nominated).
+
+[*]Added a new cvar 'gal_vote_replace_menu' to always replace any open menu by the galileo voting menu.
+[*]Fixed the voting menu not showing when the cvar 'gal_vote_showstatus' is set to 0, 1 or 2.
 [/CODE]
 
 
@@ -357,6 +360,7 @@ to get nominated).
 
 [B]2016-03-XXXX | v2.2.1d[/B]
 [LIST=1]
+[*]Fixed RTV voting not startting on some game mods as 'Sven Co-op'.
 [*]Fixed the End Map Countdown showing after a common voting.
 [*]Fixed not restoring the time limit after a restart round on the server.
 [*]Fixed the cancel voting feature not stopping the 'pending vote countdown' announcement.
@@ -613,8 +617,9 @@ GAL_STANDARD_UNKNOWNMOD
 [B][URL="https://forums.alliedmods.net/member.php?u=263772"]Old.School[/URL][/B] ([B][NOPARSE][B][/NOPARSE]l@k ~ [R]Eed[/B]): For bug reports, testing and feature suggestions.
 [B][URL="https://forums.alliedmods.net/member.php?u=259683"]iNdio[/URL][/B]: For the Romanian [ro] and Italian [it] language translations.
 [B][URL="https://github.com/Ni3znajomy"]Ni3znajomy[/URL][/B]: For contributions/work over project on the GitHub.
-[B][URL="https://forums.alliedmods.net/member.php?u=119830"]Shattered Heart Lynx[/URL][/B]: For the custom 'amxx_datadir' directory bug report.
-[B][URL="https://forums.alliedmods.net/member.php?u=267675"]wombad321[/URL][/B]: For the 'map extend' not showing up bug report.
+[B][URL="https://forums.alliedmods.net/member.php?u=119830"]Shattered Heart Lynx[/URL][/B]: For the custom 'amxx_datadir' directory and RTV 'Sven Co-op' fix and bug report.
+[B][URL="https://forums.alliedmods.net/member.php?u=267675"]wombad321[/URL][/B]: For the 'map extend' not showing bug report.
+[B][URL="https://forums.alliedmods.net/member.php?u=165954"]WaSaAa1[/URL][/B]: For the voting menu not showing bug report.
 [QUOTE=Brad;684848]
 A lot of time and effort went into making this plugin, making features just right,
 making sure there were no bugs, making sure it was easy to use. If you are glad I made

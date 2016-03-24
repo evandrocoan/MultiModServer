@@ -326,6 +326,7 @@ new g_total_CT_wins;
  */
 new cvar_extendmapAllowStayType
 new cvar_nextMapChangeAnnounce
+new cvar_disabledValuePointer
 new cvar_isToShowVoteCounter
 new cvar_isToShowNoneOption
 new cvar_voteShowNoneOptionType
@@ -495,19 +496,13 @@ public plugin_init()
 {
     register_plugin( "Galileo", PLUGIN_VERSION, "Brad Jones/Addons zz" );
     
-    register_dictionary( "common.txt" );
-    register_dictionary_colored( "galileo.txt" );
-    
-    register_cvar( "gal_version", PLUGIN_VERSION, FCVAR_SERVER | FCVAR_SPONLY );
-    register_cvar( "gal_server_starting", "1", FCVAR_SPONLY );
-    
-    cvar_maxMapExtendTime        = register_cvar( "amx_extendmap_max", "90" );
-    cvar_extendmapStepMinutes    = register_cvar( "amx_extendmap_step", "15" );
-    cvar_extendmapStepRounds     = register_cvar( "amx_extendmap_step_rounds", "30" );
-    cvar_extendmapAllowStay      = register_cvar( "amx_extendmap_allow_stay", "0" );
-    cvar_isExtendmapOrderAllowed = register_cvar( "amx_extendmap_allow_order", "0" );
-    cvar_extendmapAllowStayType  = register_cvar( "amx_extendmap_allow_stay_type", "0" );
-    
+    cvar_maxMapExtendTime          = register_cvar( "amx_extendmap_max", "90" );
+    cvar_extendmapStepMinutes      = register_cvar( "amx_extendmap_step", "15" );
+    cvar_extendmapStepRounds       = register_cvar( "amx_extendmap_step_rounds", "30" );
+    cvar_extendmapAllowStay        = register_cvar( "amx_extendmap_allow_stay", "0" );
+    cvar_isExtendmapOrderAllowed   = register_cvar( "amx_extendmap_allow_order", "0" );
+    cvar_extendmapAllowStayType    = register_cvar( "amx_extendmap_allow_stay_type", "0" );
+    cvar_disabledValuePointer      = register_cvar( "gal_disabled_value_pointer", "0", FCVAR_SPONLY );
     cvar_nextMapChangeAnnounce     = register_cvar( "gal_nextmap_change", "1" );
     cvar_isToShowVoteCounter       = register_cvar( "gal_vote_show_counter", "0" );
     cvar_isToShowNoneOption        = register_cvar( "gal_vote_show_none", "0" );
@@ -561,13 +556,21 @@ public plugin_init()
     cvar_voteMinPlayersMapFilePath = register_cvar( "gal_vote_minplayers_mapfile", "" );
     cvar_voteWhiteListMapFilePath  = register_cvar( "gal_vote_whitelist_mapfile", "" );
     
+    nextmap_plugin_init();
+    configureEndGameCvars();
+    configureTheVotingMenus();
+    
+    register_dictionary( "common.txt" );
+    register_dictionary_colored( "galileo.txt" );
+    
+    register_cvar( "gal_version", PLUGIN_VERSION, FCVAR_SERVER | FCVAR_SPONLY );
+    register_cvar( "gal_server_starting", "1", FCVAR_SPONLY );
+    
     register_logevent( "game_commencing_event", 2, "0=World triggered", "1=Game_Commencing" )
     register_logevent( "team_win_event",        6, "0=Team" )
     register_logevent( "round_restart_event",   2, "0=World triggered", "1&Restart_Round_" )
     register_logevent( "round_start_event",     2, "1=Round_Start" )
     register_logevent( "round_end_event",       2, "1=Round_End" )
-    
-    nextmap_plugin_init()
     
     register_clcmd( "say", "cmd_say", -1 );
     register_clcmd( "votemap", "cmd_HL1_votemap" );
@@ -576,15 +579,33 @@ public plugin_init()
     register_concmd( "gal_startvote", "cmd_startVote", ADMIN_MAP );
     register_concmd( "gal_cancelvote", "cmd_cancelVote", ADMIN_MAP );
     register_concmd( "gal_createmapfile", "cmd_createMapFile", ADMIN_RCON );
-    
-    cvar_mp_maxrounds  = get_cvar_pointer( "mp_maxrounds" )
-    cvar_mp_winlimit   = get_cvar_pointer( "mp_winlimit" )
-    cvar_mp_freezetime = get_cvar_pointer( "mp_freezetime" )
-    cvar_mp_timelimit  = get_cvar_pointer( "mp_timelimit" )
+}
 
-#if AMXX_VERSION_NUM < 183
-    g_user_msgid = get_user_msgid( "SayText" )
-#endif
+stock configureEndGameCvars()
+{
+    if( !( cvar_mp_maxrounds = get_cvar_pointer( "mp_maxrounds" ) ) )
+    {
+        cvar_mp_maxrounds = cvar_disabledValuePointer;
+    }
+    
+    if( !( cvar_mp_winlimit = get_cvar_pointer( "mp_winlimit" ) ) )
+    {
+        cvar_mp_winlimit = cvar_disabledValuePointer;
+    }
+    
+    if( !( cvar_mp_freezetime = get_cvar_pointer( "mp_freezetime" ) ) )
+    {
+        cvar_mp_freezetime = cvar_disabledValuePointer;
+    }
+    
+    if( !( cvar_mp_timelimit = get_cvar_pointer( "mp_timelimit" ) ) )
+    {
+        cvar_mp_timelimit = cvar_disabledValuePointer;
+    }
+}
+
+stock configureTheVotingMenus()
+{
     g_chooseMapMenuId         = register_menuid( MENU_CHOOSEMAP );
     g_chooseMapQuestionMenuId = register_menuid( MENU_CHOOSEMAP_QUESTION );
     
@@ -656,6 +677,12 @@ public plugin_cfg()
     
     // setup the main task that schedules the end map voting and allow round finish feature.
     set_task( 15.0, "vote_manageEnd", _, _, _, "b" );
+
+#if AMXX_VERSION_NUM < 183
+    g_user_msgid = get_user_msgid( "SayText" )
+
+#endif
+
 
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
     g_tests_failure_ids     = ArrayCreate( 1 )
@@ -2991,19 +3018,24 @@ stock vote_startDirector( bool:is_forced_voting )
         DEBUG_LOGGER( 4, "^n( vote_startDirector|NormalVote ) choicesLoaded: %d", choicesLoaded )
     }
 
+
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
     g_voteDuration = 5
+
 #endif
+
 
 #if DEBUG_LEVEL & DEBUG_LEVEL_FAKE_VOTES
     set_task( 2.0, "create_fakeVotes", TASKID_DBG_FAKEVOTES );
+
 #endif
+    
     
     if( choicesLoaded )
     {
-        new player_id
-        new playersCount
-        new players[ MAX_PLAYERS ]
+        new       player_id
+        new       playersCount
+        new       players            [ MAX_PLAYERS ]
         new Float:handleChoicesDelay
         
         // clear all nominations
@@ -3140,7 +3172,6 @@ public displayEndOfTheMapVoteMenu( player_id )
                 "%s%L^n^n\
                 %s6. %s%L %s^n\
                 %s0. %s%L",
-                
                 COLOR_YELLOW, player_id, "GAL_CHOOSE_QUESTION",
                 
                 COLOR_RED, ( playerAnswered ? ( isVoting ? COLOR_YELLOW : COLOR_GREY ) : COLOR_WHITE ),
@@ -4366,7 +4397,9 @@ stock map_isTooRecent( map[] )
  * 1.1) Is by mp_winlimit expiration proximity?
  * 1.2) Is by mp_maxrounds expiration proximity?
  * 2) Per minutes.
- * These data are used to display the voting menu and proper set the voting flow.
+ * 
+ * These data are used to display the voting menu and proper set the voting flow. This use the
+ * default voting type to timer if the rounds ending are disabled.
  */
 stock configureRtvVotingType()
 {
@@ -4374,8 +4407,10 @@ stock configureRtvVotingType()
     new maxrounds_left = get_pcvar_num( cvar_mp_maxrounds ) - g_total_rounds_played
     new winlimit_left  = get_pcvar_num( cvar_mp_winlimit ) - max( g_total_CT_wins, g_total_terrorists_wins )
     
-    if( minutes_left > maxrounds_left
-        || minutes_left > winlimit_left  )
+    if( ( minutes_left > maxrounds_left
+          && maxrounds_left > 0 )
+        || ( minutes_left > winlimit_left
+             && winlimit_left > 0 ) )
     {
         g_isVotingByRounds = true
         
