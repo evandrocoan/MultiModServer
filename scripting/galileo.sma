@@ -3595,7 +3595,8 @@ stock computeVoteMenuFooter( player_id, voteFooter[], voteFooterSize )
     {
         if( ( g_voteDuration < 10
               || g_isToShowVoteCounter )
-            && g_showVoteStatus != SHOW_STATUS_AT_END )
+            && ( g_showVoteStatus == SHOW_STATUS_ALWAYS
+                 || g_showVoteStatus == SHOW_STATUS_AFTER_VOTE ) )
         {
             if( g_voteDuration >= 0 )
             {
