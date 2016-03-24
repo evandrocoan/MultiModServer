@@ -379,6 +379,7 @@ new cvar_runoffEnabled
 new cvar_runoffDuration;
 new cvar_showVoteStatus
 new cvar_showVoteStatusType;
+new cvar_isToReplaceByVoteMenu;
 new cvar_soundsMute;
 new cvar_voteMapFilePath
 new cvar_voteMinPlayers
@@ -548,6 +549,7 @@ public plugin_init()
     cvar_voteMapChoiceCount        = register_cvar( "gal_vote_mapchoices", "5" );
     cvar_voteAnnounceChoice        = register_cvar( "gal_vote_announcechoice", "1" );
     cvar_showVoteStatus            = register_cvar( "gal_vote_showstatus", "1" );
+    cvar_isToReplaceByVoteMenu     = register_cvar( "gal_vote_replace_menu", "0" );
     cvar_showVoteStatusType        = register_cvar( "gal_vote_showstatustype", "3" );
     cvar_voteUniquePrefixes        = register_cvar( "gal_vote_uniqueprefixes", "0" );
     cvar_runoffEnabled             = register_cvar( "gal_runoff_enabled", "0" );
@@ -3737,7 +3739,8 @@ stock isPlayerAbleToSeeTheVoteMenu( player_id )
     get_user_menu( player_id, menu_id, menukeys_unused );
     
     return ( menu_id == 0
-             || menu_id == g_chooseMapMenuId );
+             || menu_id == g_chooseMapMenuId
+             || get_pcvar_num( cvar_isToReplaceByVoteMenu ) != 0 );
 }
 
 public vote_handleChoice( player_id, key )
