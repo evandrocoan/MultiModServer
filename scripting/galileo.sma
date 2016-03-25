@@ -151,6 +151,7 @@ new g_user_msgid
 #define TASKID_REMINDER               52691153
 #define TASKID_SHOW_LAST_ROUND_HUD    52691052
 #define TASKID_DELETE_USERS_MENUS     72748052
+#define TASKID_PREVENT_INFITY_GAME    82448699
 #define TASKID_EMPTYSERVER            98176977
 #define TASKID_START_VOTING_BY_ROUNDS 52691160
 #define TASKID_START_VOTING_BY_TIMER  72681180
@@ -363,7 +364,7 @@ new cvar_voteAnnounceChoice
 new cvar_voteUniquePrefixes;
 new cvar_rtvReminder;
 new cvar_serverStartAction;
-new cvar_serverTimelimitRestart;
+new cvar_serverTimeLimitRestart;
 new cvar_serverMaxroundsRestart;
 new cvar_serverWinlimitRestart;
 new cvar_runoffEnabled
@@ -528,7 +529,7 @@ public plugin_init()
     cvar_isEmptyCycleServerChange  = register_cvar( "gal_emptyserver_change", "0" );
     cvar_emptyMapFilePath          = register_cvar( "gal_emptyserver_mapfile", "" );
     cvar_serverStartAction         = register_cvar( "gal_srv_start", "0" );
-    cvar_serverTimelimitRestart    = register_cvar( "gal_srv_timelimit_restart", "0" );
+    cvar_serverTimeLimitRestart    = register_cvar( "gal_srv_timelimit_restart", "0" );
     cvar_serverMaxroundsRestart    = register_cvar( "gal_srv_maxrounds_restart", "0" );
     cvar_serverWinlimitRestart     = register_cvar( "gal_srv_winlimit_restart", "0" );
     cvar_rtvCommands               = register_cvar( "gal_rtv_commands", "3" );
@@ -1068,7 +1069,7 @@ public round_restart_event()
     if( g_isTimeLimitChanged
         && isThereGameCommencing()
         && ( ( get_pcvar_num( cvar_mp_timelimit )
-               && get_pcvar_num( cvar_serverTimelimitRestart ) )
+               && get_pcvar_num( cvar_serverTimeLimitRestart ) )
              || ( get_pcvar_num( cvar_mp_maxrounds )
                   && get_pcvar_num( cvar_serverMaxroundsRestart ) )
              || ( get_pcvar_num( cvar_mp_winlimit )
@@ -1116,19 +1117,19 @@ stock reset_round_ending()
 
 public reset_rounds_scores()
 {
-    if( get_pcvar_num( cvar_serverTimelimitRestart )
+    if( get_pcvar_num( cvar_serverTimeLimitRestart )
         || get_pcvar_num( cvar_serverWinlimitRestart )
         || get_pcvar_num( cvar_serverMaxroundsRestart ) )
     {
         save_time_limit()
         
         if( get_pcvar_num( cvar_mp_timelimit )
-            && get_pcvar_num( cvar_serverTimelimitRestart ) )
+            && get_pcvar_num( cvar_serverTimeLimitRestart ) )
         {
             new new_timelimit = ( floatround(
                                           get_pcvar_num( cvar_mp_timelimit )
                                           - map_getMinutesElapsed(), floatround_floor )
-                                  + get_pcvar_num( cvar_serverTimelimitRestart ) - 1 )
+                                  + get_pcvar_num( cvar_serverTimeLimitRestart ) - 1 )
             
             if( new_timelimit > 0 )
             {
@@ -1490,10 +1491,20 @@ public map_manageEnd()
 
 stock prevent_map_change()
 {
-    save_time_limit()
+    new Float:roundTime;
     
-    // prevent the map from ending automatically
+    save_time_limit();
+    
+    // Prevent the map from ending automatically.
     server_cmd( "mp_timelimit 0" );
+    
+    // Prevent the map from being played indefinitely.
+    if( ( roundTime = get_cvar_float( "mp_roundtime" ) ) < 8.0 )
+    {
+        roundTime = 9.0;
+    }
+    
+    set_task( roundTime, "map_restoreOriginalTimeLimit", TASKID_PREVENT_INFITY_GAME );
 }
 
 public map_loadRecentList()
