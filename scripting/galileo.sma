@@ -22,7 +22,7 @@
 *****************************************************************************************
 */
 
-new const PLUGIN_VERSION[] = "v2.2.1"
+new const PLUGIN_VERSION[] = "v2.3"
 
 #include <amxmodx>
 #include <amxmisc>
@@ -135,7 +135,7 @@ new bool: g_is_test_changed_cvars
 new bool: g_current_test_evaluation
 
 new g_test_current_time
-new g_test_blackListFilePath[ 128 ]
+new g_test_whiteListFilePath[ 128 ]
 #endif
 
 
@@ -158,6 +158,7 @@ new g_user_msgid
 #define TASKID_VOTE_HANDLEDISPLAY     52691264
 #define TASKID_VOTE_DISPLAY           52691165
 #define TASKID_VOTE_EXPIRE            52691166
+#define TASKID_PENDING_VOTE_COUNTDOWN 13464364
 #define TASKID_DBG_FAKEVOTES          52691167
 #define TASKID_VOTE_STARTDIRECTOR     52691168
 #define TASKID_MAP_CHANGE             52691169
@@ -178,6 +179,7 @@ new g_user_msgid
 #define MAPFILETYPE_SINGLE 1
 #define MAPFILETYPE_GROUPS 2
 
+#define SHOW_STATUS_NEVER      0
 #define SHOW_STATUS_AFTER_VOTE 1
 #define SHOW_STATUS_AT_END     2
 #define SHOW_STATUS_ALWAYS     3
@@ -254,7 +256,7 @@ new g_user_msgid
 /**
  * Specifies how much time to delay the voting start after the round start.
  */
-#define VOTE_ROUND_START_SECONDS_DELAY() ( get_pcvar_num( g_freezetime_pointer ) + 20.0 )
+#define VOTE_ROUND_START_SECONDS_DELAY() ( get_pcvar_num( cvar_mp_freezetime ) + 20.0 )
 
 
 /**
@@ -262,7 +264,6 @@ new g_user_msgid
  */
 #define VOTE_START_ROUND_DELAY() \
 { \
-    g_isVotingByRounds = true; \
     set_task( VOTE_ROUND_START_SECONDS_DELAY(), "start_voting_by_rounds", TASKID_START_VOTING_BY_ROUNDS ); \
 }
 
@@ -311,10 +312,10 @@ new g_originalWinLimit
 new Float:g_originalTimelimit
 new Float:g_original_sv_maxspeed
 
-new g_freezetime_pointer
-new g_winlimit_pointer;
-new g_maxrounds_pointer;
-new g_timelimit_pointer;
+new cvar_mp_freezetime
+new cvar_mp_winlimit;
+new cvar_mp_maxrounds;
+new cvar_mp_timelimit;
 
 new g_total_rounds_played;
 new g_total_terrorists_wins;
@@ -326,6 +327,7 @@ new g_total_CT_wins;
  */
 new cvar_extendmapAllowStayType
 new cvar_nextMapChangeAnnounce
+new cvar_disabledValuePointer
 new cvar_isToShowVoteCounter
 new cvar_isToShowNoneOption
 new cvar_voteShowNoneOptionType
@@ -335,7 +337,7 @@ new cvar_isToStopEmptyCycle;
 new cvar_unnominateDisconnected;
 new cvar_endOnRound
 new cvar_endOfMapVoteStart
-new cvar_endOnRound_rtv
+new cvar_endOnRoundRtv
 new cvar_endOnRound_msg
 new cvar_voteWeight
 new cvar_voteWeightFlags
@@ -377,6 +379,7 @@ new cvar_runoffEnabled
 new cvar_runoffDuration;
 new cvar_showVoteStatus
 new cvar_showVoteStatusType;
+new cvar_isToReplaceByVoteMenu;
 new cvar_soundsMute;
 new cvar_voteMapFilePath
 new cvar_voteMinPlayers
@@ -401,20 +404,19 @@ new bool:g_isExtendmapAllowStay
 new bool:g_isToShowNoneOption
 new bool:g_isToShowExpCountdown
 new bool:g_isToShowVoteCounter
-
-new bool:g_refreshVoteStatus
-new bool:g_is_emptyCycleMapConfigured
-new bool:g_is_colored_chat_enabled
-new bool:g_is_maxrounds_extend
+new bool:g_isToRefreshVoteStatus
+new bool:g_isEmptyCycleMapConfigured
+new bool:g_isColoredChatEnabled
+new bool:g_isMaxroundsExtend
 new bool:g_isVotingByRounds
-new bool:g_is_RTV_last_round
-new bool:g_is_last_round
-new bool:g_is_timeToChangeLevel
-new bool:g_is_timeToRestart
-new bool:g_is_timeLimitChanged
-new bool:g_is_map_extension_allowed
-new bool:g_is_color_chat_supported
-new bool:g_is_final_voting
+new bool:g_isRtvLastRound
+new bool:g_isLastGameRound
+new bool:g_isTimeToChangeLevel
+new bool:g_isTimeToRestart
+new bool:g_isTimeLimitChanged
+new bool:g_isMapExtensionAllowed
+new bool:g_isColorChatSupported
+new bool:g_isGameFinalVoting
 
 new Float:g_rtvMinutesWait;
 
@@ -430,7 +432,7 @@ new g_showVoteStatus
 new g_voteShowNoneOptionType
 new g_pendingVoteCountdown
 new g_last_round_countdown
-new g_rtv_wait_admin_number
+new g_rtvWaitAdminNumber
 new g_emptyCycleMapsNumber
 new g_recentMapCount;
 new g_nominationMapCount;
@@ -438,9 +440,9 @@ new g_rtvCommands
 new g_rtvWaitRounds
 new g_rockedVoteCount;
 
-new NP_cvar_chattime
-new NP_cvar_nextMap
-new NP_cvar_friendlyFire
+new NP_cvar_mp_chattime
+new NP_cvar_amx_nextmap
+new NP_cvar_mp_friendlyfire
 
 new NP_g_currentMapCyclePosition
 new NP_g_nextMapName      [ MAX_MAPNAME_LENGHT ]
@@ -472,16 +474,17 @@ new g_voteWeightFlags      [ 32 ];
 
 new g_nextmap                    [ MAX_MAPNAME_LENGHT ];
 new g_currentMap                 [ MAX_MAPNAME_LENGHT ];
-new g_player_voted_option        [ MAX_PLAYERS_COUNT ];
-new g_player_voted_weight        [ MAX_PLAYERS_COUNT ];
+new g_playerVotedOption          [ MAX_PLAYERS_COUNT ];
+new g_playerVotedWeight          [ MAX_PLAYERS_COUNT ];
 new g_nominationMatchesMenu      [ MAX_PLAYERS_COUNT ];
 new g_arrayOfMapsWithVotesNumber [ MAX_OPTIONS_IN_VOTE ];
 
-new bool:g_is_player_voted          [ MAX_PLAYERS_COUNT ] = { true, ... }
-new bool:g_is_player_participating  [ MAX_PLAYERS_COUNT ] = { true, ... }
-new bool:g_is_player_cancelled_vote [ MAX_PLAYERS_COUNT ]
-new bool:g_answeredForEndOfMapVote  [ MAX_PLAYERS_COUNT ]
-new bool:g_rockedVote               [ MAX_PLAYERS_COUNT ]
+new bool:g_isPlayerVoted             [ MAX_PLAYERS_COUNT ] = { true, ... }
+new bool:g_isPlayerParticipating     [ MAX_PLAYERS_COUNT ] = { true, ... }
+new bool:g_isPlayerSeeingTheVoteMenu [ MAX_PLAYERS_COUNT ]
+new bool:g_isPlayerCancelledVote     [ MAX_PLAYERS_COUNT ]
+new bool:g_answeredForEndOfMapVote   [ MAX_PLAYERS_COUNT ]
+new bool:g_rockedVote                [ MAX_PLAYERS_COUNT ]
 
 new g_mapPrefixes        [ MAX_PREFIX_COUNT ][ 16 ]
 new g_playersNominations [ MAX_PLAYERS_COUNT ][ MAX_NOMINATION_COUNT ]
@@ -496,19 +499,13 @@ public plugin_init()
 {
     register_plugin( "Galileo", PLUGIN_VERSION, "Brad Jones/Addons zz" );
     
-    register_dictionary( "common.txt" );
-    register_dictionary_colored( "galileo.txt" );
-    
-    register_cvar( "gal_version", PLUGIN_VERSION, FCVAR_SERVER | FCVAR_SPONLY );
-    register_cvar( "gal_server_starting", "1", FCVAR_SPONLY );
-    
-    cvar_maxMapExtendTime        = register_cvar( "amx_extendmap_max", "90" );
-    cvar_extendmapStepMinutes    = register_cvar( "amx_extendmap_step", "15" );
-    cvar_extendmapStepRounds     = register_cvar( "amx_extendmap_step_rounds", "30" );
-    cvar_extendmapAllowStay      = register_cvar( "amx_extendmap_allow_stay", "0" );
-    cvar_isExtendmapOrderAllowed = register_cvar( "amx_extendmap_allow_order", "0" );
-    cvar_extendmapAllowStayType  = register_cvar( "amx_extendmap_allow_stay_type", "0" );
-    
+    cvar_maxMapExtendTime          = register_cvar( "amx_extendmap_max", "90" );
+    cvar_extendmapStepMinutes      = register_cvar( "amx_extendmap_step", "15" );
+    cvar_extendmapStepRounds       = register_cvar( "amx_extendmap_step_rounds", "30" );
+    cvar_extendmapAllowStay        = register_cvar( "amx_extendmap_allow_stay", "0" );
+    cvar_isExtendmapOrderAllowed   = register_cvar( "amx_extendmap_allow_order", "0" );
+    cvar_extendmapAllowStayType    = register_cvar( "amx_extendmap_allow_stay_type", "0" );
+    cvar_disabledValuePointer      = register_cvar( "gal_disabled_value_pointer", "0", FCVAR_SPONLY );
     cvar_nextMapChangeAnnounce     = register_cvar( "gal_nextmap_change", "1" );
     cvar_isToShowVoteCounter       = register_cvar( "gal_vote_show_counter", "0" );
     cvar_isToShowNoneOption        = register_cvar( "gal_vote_show_none", "0" );
@@ -518,7 +515,7 @@ public plugin_init()
     cvar_unnominateDisconnected    = register_cvar( "gal_unnominate_disconnected", "0" );
     cvar_endOnRound                = register_cvar( "gal_endonround", "1" );
     cvar_endOfMapVoteStart         = register_cvar( "gal_endofmapvote_start", "0" );
-    cvar_endOnRound_rtv            = register_cvar( "gal_endonround_rtv", "0" );
+    cvar_endOnRoundRtv             = register_cvar( "gal_endonround_rtv", "0" );
     cvar_endOnRound_msg            = register_cvar( "gal_endonround_msg", "0" );
     cvar_voteWeight                = register_cvar( "gal_vote_weight", "1" );
     cvar_voteWeightFlags           = register_cvar( "gal_vote_weightflags", "y" );
@@ -552,6 +549,7 @@ public plugin_init()
     cvar_voteMapChoiceCount        = register_cvar( "gal_vote_mapchoices", "5" );
     cvar_voteAnnounceChoice        = register_cvar( "gal_vote_announcechoice", "1" );
     cvar_showVoteStatus            = register_cvar( "gal_vote_showstatus", "1" );
+    cvar_isToReplaceByVoteMenu     = register_cvar( "gal_vote_replace_menu", "0" );
     cvar_showVoteStatusType        = register_cvar( "gal_vote_showstatustype", "3" );
     cvar_voteUniquePrefixes        = register_cvar( "gal_vote_uniqueprefixes", "0" );
     cvar_runoffEnabled             = register_cvar( "gal_runoff_enabled", "0" );
@@ -562,13 +560,21 @@ public plugin_init()
     cvar_voteMinPlayersMapFilePath = register_cvar( "gal_vote_minplayers_mapfile", "" );
     cvar_voteWhiteListMapFilePath  = register_cvar( "gal_vote_whitelist_mapfile", "" );
     
+    nextmap_plugin_init();
+    configureEndGameCvars();
+    configureTheVotingMenus();
+    
+    register_dictionary( "common.txt" );
+    register_dictionary_colored( "galileo.txt" );
+    
+    register_cvar( "gal_version", PLUGIN_VERSION, FCVAR_SERVER | FCVAR_SPONLY );
+    register_cvar( "gal_server_starting", "1", FCVAR_SPONLY );
+    
     register_logevent( "game_commencing_event", 2, "0=World triggered", "1=Game_Commencing" )
     register_logevent( "team_win_event",        6, "0=Team" )
     register_logevent( "round_restart_event",   2, "0=World triggered", "1&Restart_Round_" )
     register_logevent( "round_start_event",     2, "1=Round_Start" )
     register_logevent( "round_end_event",       2, "1=Round_End" )
-    
-    nextmap_plugin_init()
     
     register_clcmd( "say", "cmd_say", -1 );
     register_clcmd( "votemap", "cmd_HL1_votemap" );
@@ -577,15 +583,33 @@ public plugin_init()
     register_concmd( "gal_startvote", "cmd_startVote", ADMIN_MAP );
     register_concmd( "gal_cancelvote", "cmd_cancelVote", ADMIN_MAP );
     register_concmd( "gal_createmapfile", "cmd_createMapFile", ADMIN_RCON );
-    
-    g_maxrounds_pointer  = get_cvar_pointer( "mp_maxrounds" )
-    g_winlimit_pointer   = get_cvar_pointer( "mp_winlimit" )
-    g_freezetime_pointer = get_cvar_pointer( "mp_freezetime" )
-    g_timelimit_pointer  = get_cvar_pointer( "mp_timelimit" )
+}
 
-#if AMXX_VERSION_NUM < 183
-    g_user_msgid = get_user_msgid( "SayText" )
-#endif
+stock configureEndGameCvars()
+{
+    if( !( cvar_mp_maxrounds = get_cvar_pointer( "mp_maxrounds" ) ) )
+    {
+        cvar_mp_maxrounds = cvar_disabledValuePointer;
+    }
+    
+    if( !( cvar_mp_winlimit = get_cvar_pointer( "mp_winlimit" ) ) )
+    {
+        cvar_mp_winlimit = cvar_disabledValuePointer;
+    }
+    
+    if( !( cvar_mp_freezetime = get_cvar_pointer( "mp_freezetime" ) ) )
+    {
+        cvar_mp_freezetime = cvar_disabledValuePointer;
+    }
+    
+    if( !( cvar_mp_timelimit = get_cvar_pointer( "mp_timelimit" ) ) )
+    {
+        cvar_mp_timelimit = cvar_disabledValuePointer;
+    }
+}
+
+stock configureTheVotingMenus()
+{
     g_chooseMapMenuId         = register_menuid( MENU_CHOOSEMAP );
     g_chooseMapQuestionMenuId = register_menuid( MENU_CHOOSEMAP_QUESTION );
     
@@ -598,17 +622,16 @@ public plugin_init()
 }
 
 /**
- * Called when all plugins went through plugin_init( ).
- * When this forward is called, most plugins should have registered their
- * cvars and commands already.
+ * Called when all plugins went through plugin_init(). When this forward is called, most plugins
+ * should have registered their cvars and commands already.
  */
 public plugin_cfg()
 {
     reset_rounds_scores()
     loadPluginSetttings()
     
-    g_is_color_chat_supported = ( is_running( "czero" )
-                                  || is_running( "cstrike" ) )
+    g_isColorChatSupported = ( is_running( "czero" )
+                               || is_running( "cstrike" ) )
     
     if( colored_menus() )
     {
@@ -659,6 +682,12 @@ public plugin_cfg()
     // setup the main task that schedules the end map voting and allow round finish feature.
     set_task( 15.0, "vote_manageEnd", _, _, _, "b" );
 
+#if AMXX_VERSION_NUM < 183
+    g_user_msgid = get_user_msgid( "SayText" )
+
+#endif
+
+
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
     g_tests_failure_ids     = ArrayCreate( 1 )
     g_tests_failure_reasons = ArrayCreate( LONG_STRING )
@@ -687,7 +716,7 @@ stock cacheCvarsValues()
     g_voteShowNoneOptionType = get_pcvar_num( cvar_voteShowNoneOptionType )
     g_showVoteStatusType     = get_pcvar_num( cvar_showVoteStatusType )
     
-    g_is_colored_chat_enabled = get_pcvar_num( cvar_coloredChatEnabled ) != 0
+    g_isColoredChatEnabled = get_pcvar_num( cvar_coloredChatEnabled ) != 0
     
     g_isExtendmapAllowStay = get_pcvar_num( cvar_extendmapAllowStay ) != 0
     g_isToShowNoneOption   = get_pcvar_num( cvar_isToShowNoneOption ) != 0
@@ -783,7 +812,7 @@ public team_win_event()
         g_total_CT_wins++
     }
     
-    winlimit_integer = get_pcvar_num( g_winlimit_pointer )
+    winlimit_integer = get_pcvar_num( cvar_mp_winlimit )
     
     if( winlimit_integer )
     {
@@ -794,7 +823,7 @@ public team_win_event()
               || ( wins_Terrorist_trigger > winlimit_integer ) )
             && !IS_END_OF_MAP_VOTING_GOING_ON() )
         {
-            g_is_maxrounds_extend = false;
+            g_isMaxroundsExtend = false;
             
             VOTE_START_ROUND_DELAY()
         }
@@ -803,6 +832,18 @@ public team_win_event()
     DEBUG_LOGGER( 32, "Team_Win: string_team_winner = %s, winlimit_integer = %d, \
             wins_CT_trigger = %d, wins_Terrorist_trigger = %d", \
             string_team_winner, winlimit_integer, wins_CT_trigger, wins_Terrorist_trigger )
+}
+
+public start_voting_by_rounds()
+{
+    DEBUG_LOGGER( 1, "At start_voting_by_rounds --- get_pcvar_num( cvar_endOfMapVote ): %d", \
+            get_pcvar_num( cvar_endOfMapVote ) )
+    
+    if( get_pcvar_num( cvar_endOfMapVote ) )
+    {
+        g_isVotingByRounds = true;
+        vote_startDirector( false )
+    }
 }
 
 public start_voting_by_timer()
@@ -820,7 +861,8 @@ public start_voting_by_timer()
 public round_start_event()
 {
     if( VOTE_ROUND_START_DETECTION_DELAYED( get_timeleft() )
-        && get_pcvar_num( cvar_endOfMapVoteStart ) )
+        && get_pcvar_num( cvar_endOfMapVoteStart )
+        && !task_exists( TASKID_START_VOTING_BY_TIMER ) )
     {
         set_task( VOTE_ROUND_START_SECONDS_DELAY(), "start_voting_by_timer", TASKID_START_VOTING_BY_TIMER )
     }
@@ -845,7 +887,7 @@ public round_end_event()
     
     g_total_rounds_played++
     
-    maxrounds_number = get_pcvar_num( g_maxrounds_pointer )
+    maxrounds_number = get_pcvar_num( cvar_mp_maxrounds )
     
     if( maxrounds_number )
     {
@@ -854,27 +896,27 @@ public round_end_event()
         if( ( current_rounds_trigger > maxrounds_number )
             && !IS_END_OF_MAP_VOTING_GOING_ON() )
         {
-            g_is_maxrounds_extend = true;
+            g_isMaxroundsExtend = true;
             
             VOTE_START_ROUND_DELAY()
         }
     }
     
-    if( g_is_last_round )
+    if( g_isLastGameRound )
     {
-        if( g_is_timeToChangeLevel
-            || g_is_RTV_last_round ) // when time runs out, end map at the current round end
+        if( g_isTimeToChangeLevel
+            || g_isRtvLastRound ) // when time runs out, end map at the current round end
         {
-            g_is_timeToChangeLevel = true
-            g_is_RTV_last_round    = false
-            g_is_last_round        = false
+            g_isTimeToChangeLevel = true
+            g_isRtvLastRound      = false
+            g_isLastGameRound     = false
             
             remove_task( TASKID_SHOW_LAST_ROUND_HUD )
             set_task( 6.0, "process_last_round", TASKID_PROCESS_LAST_ROUND )
         }
         else // when time runs out, end map at the next round end
         {
-            g_is_timeToChangeLevel = true
+            g_isTimeToChangeLevel = true
             
             remove_task( TASKID_SHOW_LAST_ROUND_HUD )
             set_task( 5.0, "configure_last_round_HUD", TASKID_PROCESS_LAST_ROUND )
@@ -888,11 +930,12 @@ public round_end_event()
 
 public process_last_round()
 {
-    if( g_is_RTV_last_round )
+    if( g_isRtvLastRound )
     {
         configure_last_round_HUD()
     }
-    else if( get_pcvar_num( cvar_isEndMapCountdown ) )
+    else if( get_pcvar_num( cvar_isEndMapCountdown )
+             && g_isTimeToChangeLevel )
     {
         g_last_round_countdown = 6;
         set_task( 1.0, "process_last_round_counting", TASKID_PROCESS_LAST_ROUND, _, _, "a", 6 );
@@ -934,7 +977,7 @@ public process_last_round_counting()
 
 stock intermission_display()
 {
-    if( g_is_timeToChangeLevel )
+    if( g_isTimeToChangeLevel )
     {
         new Float:mp_chattime = get_cvar_float( "mp_chattime" )
         
@@ -943,7 +986,7 @@ stock intermission_display()
             mp_chattime = 12.0
         }
         
-        if( g_is_timeToRestart )
+        if( g_isTimeToRestart )
         {
             set_task( mp_chattime, "map_change_stays", TASKID_MAP_CHANGE );
         }
@@ -981,11 +1024,57 @@ stock intermission_display()
 }
 
 /**
- * Reset rounds scores every game restart event.
+ * Return whether the gaming is on going.
+ */
+stock isThereGameCommencing()
+{
+    new players[ 32 ]
+    
+    new players_count
+    new CT_count = 0
+    new TR_count = 0
+    
+    get_players( players, players_count )
+    
+    for( new player_index = 0; player_index < players_count; player_index++ )
+    {
+        switch( get_user_team( players[ player_index ] ) )
+        {
+            case 1:
+            {
+                TR_count++ // terror
+            }
+            case 2:
+            {
+                CT_count++ // ct
+            }
+        }
+        
+        if( CT_count && TR_count )
+        {
+            return true
+        }
+    }
+    
+    return false
+}
+
+/**
+ * Reset rounds scores every game restart event. This relies on that the 'game_commencing_event()'
+ * is not triggered by the 'round_restart_event()'. This use 'isThereGameCommencing()' to determine
+ * if it must restore the time limit by calling 'game_commencing_event()', when there is none game
+ * on going, to avoid the infinity time limit due the allow last round finish feature.
  */
 public round_restart_event()
 {
-    if( g_is_timeLimitChanged )
+    if( g_isTimeLimitChanged
+        && isThereGameCommencing()
+        && ( ( get_pcvar_num( cvar_mp_timelimit )
+               && get_pcvar_num( cvar_serverTimelimitRestart ) )
+             || ( get_pcvar_num( cvar_mp_maxrounds )
+                  && get_pcvar_num( cvar_serverMaxroundsRestart ) )
+             || ( get_pcvar_num( cvar_mp_winlimit )
+                  && get_pcvar_num( cvar_serverWinlimitRestart ) ) ) )
     {
         g_isTimeToResetRounds = true
         
@@ -995,11 +1084,12 @@ public round_restart_event()
     {
         game_commencing_event()
     }
+    
+    DEBUG_LOGGER( 32, "^n AT: round_restart_event()" )
 }
 
 /**
- * Make sure the reset time is the original time limit, can be skewed if map was previously extended.
- * It is delayed because if we are at g_is_last_round, we need to wait the game restart.
+ * Make sure the reset time is the original time limit.
  */
 public game_commencing_event()
 {
@@ -1008,7 +1098,7 @@ public game_commencing_event()
     
     cancel_voting( true )
     
-    DEBUG_LOGGER( 32, "^n AT: game_commencing_event" )
+    DEBUG_LOGGER( 32, "^n AT: game_commencing_event()" )
 }
 
 /**
@@ -1016,25 +1106,14 @@ public game_commencing_event()
  */
 stock reset_round_ending()
 {
-    g_is_timeToChangeLevel = false
-    g_is_timeToRestart     = false
-    g_is_RTV_last_round    = false
-    g_is_last_round        = false
+    g_isTimeToChangeLevel = false
+    g_isTimeToRestart     = false
+    g_isRtvLastRound      = false
+    g_isLastGameRound     = false
     
     remove_task( TASKID_SHOW_LAST_ROUND_HUD )
     
     client_cmd( 0, "-showscores" )
-}
-
-public start_voting_by_rounds()
-{
-    DEBUG_LOGGER( 1, "At start_voting_by_rounds --- get_pcvar_num( cvar_endOfMapVote ): %d", \
-            get_pcvar_num( cvar_endOfMapVote ) )
-    
-    if( get_pcvar_num( cvar_endOfMapVote ) )
-    {
-        vote_startDirector( false )
-    }
 }
 
 public reset_rounds_scores()
@@ -1045,42 +1124,42 @@ public reset_rounds_scores()
     {
         save_time_limit()
         
-        if( get_pcvar_num( g_timelimit_pointer )
+        if( get_pcvar_num( cvar_mp_timelimit )
             && get_pcvar_num( cvar_serverTimelimitRestart ) )
         {
             new new_timelimit = ( floatround(
-                                          get_pcvar_num( g_timelimit_pointer )
+                                          get_pcvar_num( cvar_mp_timelimit )
                                           - map_getMinutesElapsed(), floatround_floor )
                                   + get_pcvar_num( cvar_serverTimelimitRestart ) - 1 )
             
             if( new_timelimit > 0 )
             {
-                set_pcvar_num( g_timelimit_pointer, new_timelimit )
+                set_pcvar_num( cvar_mp_timelimit, new_timelimit )
             }
         }
         
-        if( get_pcvar_num( g_winlimit_pointer )
+        if( get_pcvar_num( cvar_mp_winlimit )
             && get_pcvar_num( cvar_serverWinlimitRestart ) )
         {
-            new new_winlimit = ( get_pcvar_num( g_winlimit_pointer )
+            new new_winlimit = ( get_pcvar_num( cvar_mp_winlimit )
                                  - max( g_total_terrorists_wins, g_total_CT_wins )
                                  + get_pcvar_num( cvar_serverWinlimitRestart ) - 1 )
             
             if( new_winlimit > 0 )
             {
-                set_pcvar_num( g_winlimit_pointer, new_winlimit )
+                set_pcvar_num( cvar_mp_winlimit, new_winlimit )
             }
         }
         
-        if( get_pcvar_num( g_maxrounds_pointer )
+        if( get_pcvar_num( cvar_mp_maxrounds )
             && get_pcvar_num( cvar_serverMaxroundsRestart ) )
         {
-            new new_maxrounds = ( get_pcvar_num( g_maxrounds_pointer ) - g_total_rounds_played
+            new new_maxrounds = ( get_pcvar_num( cvar_mp_maxrounds ) - g_total_rounds_played
                                   + get_pcvar_num( cvar_serverMaxroundsRestart ) - 1 )
             
             if( new_maxrounds > 0 )
             {
-                set_pcvar_num( g_maxrounds_pointer, new_maxrounds )
+                set_pcvar_num( cvar_mp_maxrounds, new_maxrounds )
             }
         }
     }
@@ -1113,8 +1192,8 @@ public show_last_round_HUD()
     
     last_round_message[ 0 ] = '^0'
     
-    if( g_is_timeToChangeLevel
-        || g_is_RTV_last_round )
+    if( g_isTimeToChangeLevel
+        || g_isRtvLastRound )
     {
         // This is because the Amx Mod X 1.8.2 is not recognizing the player LANG_PLAYER when it is
         // formatted before with formatex(...)
@@ -1360,7 +1439,7 @@ public vote_manageEnd()
     // are we managing the end of the map?
     if( secondsLeft < 30
         && secondsLeft > 0
-        && !g_is_last_round
+        && !g_isLastGameRound
         && get_realplayersnum() >= get_pcvar_num( cvar_endOnRound_msg ) )
     {
         map_manageEnd();
@@ -1369,14 +1448,14 @@ public vote_manageEnd()
 
 public map_manageEnd()
 {
-    DEBUG_LOGGER( 2, "%32s mp_timelimit: %f", "map_manageEnd(in)", get_pcvar_float( g_timelimit_pointer ) )
+    DEBUG_LOGGER( 2, "%32s mp_timelimit: %f", "map_manageEnd(in)", get_pcvar_float( cvar_mp_timelimit ) )
     
     switch( get_pcvar_num( cvar_endOnRound ) )
     {
         case 1: // when time runs out, end at the current round end
         {
-            g_is_last_round        = true;
-            g_is_timeToChangeLevel = true;
+            g_isLastGameRound     = true;
+            g_isTimeToChangeLevel = true;
             
             color_print( 0, "^1%L %L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED",
                     LANG_PLAYER, "GAL_CHANGE_NEXTROUND", LANG_PLAYER, "GAL_NEXTMAP", g_nextmap )
@@ -1385,13 +1464,13 @@ public map_manageEnd()
         }
         case 2: // when time runs out, end at the next round end
         {
-            g_is_last_round = true;
+            g_isLastGameRound = true;
             
             // This is to avoid have a extra round at special mods where time limit is equal the
             // round timer.
             if( get_cvar_float( "mp_roundtime" ) > 8 )
             {
-                g_is_timeToChangeLevel = true;
+                g_isTimeToChangeLevel = true;
                 
                 color_print( 0, "^1%L %L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED",
                         LANG_PLAYER, "GAL_CHANGE_NEXTROUND", LANG_PLAYER, "GAL_NEXTMAP", g_nextmap )
@@ -1408,7 +1487,7 @@ public map_manageEnd()
     
     configure_last_round_HUD()
     
-    DEBUG_LOGGER( 2, "%32s mp_timelimit: %f", "map_manageEnd(out)", get_pcvar_float( g_timelimit_pointer ) )
+    DEBUG_LOGGER( 2, "%32s mp_timelimit: %f", "map_manageEnd(out)", get_pcvar_float( cvar_mp_timelimit ) )
 }
 
 stock prevent_map_change()
@@ -1581,7 +1660,7 @@ public cmd_startVote( player_id, level, cid )
     }
     else
     {
-        g_is_timeToChangeLevel = true;
+        g_isTimeToChangeLevel = true;
         
         if( read_argc() == 2 )
         {
@@ -1591,7 +1670,7 @@ public cmd_startVote( player_id, level, cid )
             
             if( equali( argument, "-nochange" ) )
             {
-                g_is_timeToChangeLevel = false;
+                g_isTimeToChangeLevel = false;
             }
             
             DEBUG_LOGGER( 1, "( inside ) cmd_startVote()| argument: %s", \
@@ -1599,7 +1678,7 @@ public cmd_startVote( player_id, level, cid )
             
             if( equali( argument, "-restart", 4 ) )
             {
-                g_is_timeToRestart = true;
+                g_isTimeToRestart = true;
             }
             
             DEBUG_LOGGER( 1, "( inside ) cmd_startVote() | \
@@ -1607,9 +1686,9 @@ public cmd_startVote( player_id, level, cid )
                     equal( argument, "-restart", 4 ) )
         }
         
-        DEBUG_LOGGER( 1, "( cmd_startVote ) g_is_timeToRestart: %d, g_is_timeToChangeLevel: %d \
+        DEBUG_LOGGER( 1, "( cmd_startVote ) g_isTimeToRestart: %d, g_isTimeToChangeLevel: %d \
                 g_voteStatus & VOTE_IS_FORCED: %d", \
-                g_is_timeToRestart, g_is_timeToChangeLevel, g_voteStatus & VOTE_IS_FORCED != 0 )
+                g_isTimeToRestart, g_isTimeToChangeLevel, g_voteStatus & VOTE_IS_FORCED != 0 )
         
         vote_startDirector( true );
     }
@@ -2913,16 +2992,17 @@ stock vote_startDirector( bool:is_forced_voting )
         // Max rounds vote map does not have a max rounds extension limit as mp_timelimit
         if( g_isVotingByRounds )
         {
-            g_is_map_extension_allowed = true
+            g_isMapExtensionAllowed = true
         }
         else
         {
-            g_is_map_extension_allowed =
-                get_pcvar_float( g_timelimit_pointer ) < get_pcvar_float( cvar_maxMapExtendTime )
+            g_isMapExtensionAllowed =
+                get_pcvar_float( cvar_mp_timelimit ) < get_pcvar_float( cvar_maxMapExtendTime )
         }
         
-        g_is_final_voting = ( g_isVotingByRounds
-                              || g_isVotingByTimer )
+        g_isGameFinalVoting = ( ( g_isVotingByRounds
+                                  || g_isVotingByTimer )
+                                && !is_forced_voting )
         
         // stop RTV reminders
         remove_task( TASKID_REMINDER );
@@ -2942,19 +3022,23 @@ stock vote_startDirector( bool:is_forced_voting )
         DEBUG_LOGGER( 4, "^n( vote_startDirector|NormalVote ) choicesLoaded: %d", choicesLoaded )
     }
 
+
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
     g_voteDuration = 5
+
 #endif
+
 
 #if DEBUG_LEVEL & DEBUG_LEVEL_FAKE_VOTES
     set_task( 2.0, "create_fakeVotes", TASKID_DBG_FAKEVOTES );
+
 #endif
     
     if( choicesLoaded )
     {
-        new player_id
-        new playersCount
-        new players[ MAX_PLAYERS ]
+        new       player_id
+        new       playersCount
+        new       players            [ MAX_PLAYERS ]
         new Float:handleChoicesDelay
         
         // clear all nominations
@@ -2979,9 +3063,9 @@ stock vote_startDirector( bool:is_forced_voting )
         {
             player_id = players[ playerIndex ]
             
-            if( g_is_player_participating[ player_id ] )
+            if( g_isPlayerParticipating[ player_id ] )
             {
-                g_is_player_voted[ player_id ] = false;
+                g_isPlayerVoted[ player_id ] = false;
             }
         }
     
@@ -3000,7 +3084,7 @@ stock vote_startDirector( bool:is_forced_voting )
         
         // announce the pending vote countdown from 7 to 1
         g_pendingVoteCountdown = 7
-        set_task( 1.0, "pendingVoteCountdown", _, _, _, "a", 7 );
+        set_task( 1.0, "pendingVoteCountdown", TASKID_PENDING_VOTE_COUNTDOWN, _, _, "a", 7 );
     #endif
         
         // display the map choices, 1 second from now
@@ -3012,9 +3096,9 @@ stock vote_startDirector( bool:is_forced_voting )
     }
     
     DEBUG_LOGGER( 4, "   [PLAYER CHOICES]" )
-    DEBUG_LOGGER( 4, "^n    ( vote_startDirector|out ) g_is_timeToRestart: %d, \
-            g_is_timeToChangeLevel: %d, g_voteStatus & VOTE_IS_FORCED: %d^n", \
-            g_is_timeToRestart, g_is_timeToChangeLevel, g_voteStatus & VOTE_IS_FORCED != 0 )
+    DEBUG_LOGGER( 4, "^n    ( vote_startDirector|out ) g_isTimeToRestart: %d, \
+            g_isTimeToChangeLevel: %d, g_voteStatus & VOTE_IS_FORCED: %d^n", \
+            g_isTimeToRestart, g_isTimeToChangeLevel, g_voteStatus & VOTE_IS_FORCED != 0 )
 }
 
 public pendingVoteCountdown()
@@ -3068,7 +3152,7 @@ public displayEndOfTheMapVoteMenu( player_id )
     for( new playerIndex = 0; playerIndex < playersCount; playerIndex++ )
     {
         player_id      = players[ playerIndex ]
-        isVoting       = g_is_player_participating[ player_id ]
+        isVoting       = g_isPlayerParticipating[ player_id ]
         playerAnswered = g_answeredForEndOfMapVote[ player_id ]
         
         if( !playerAnswered )
@@ -3091,7 +3175,6 @@ public displayEndOfTheMapVoteMenu( player_id )
                 "%s%L^n^n\
                 %s6. %s%L %s^n\
                 %s0. %s%L",
-                
                 COLOR_YELLOW, player_id, "GAL_CHOOSE_QUESTION",
                 
                 COLOR_RED, ( playerAnswered ? ( isVoting ? COLOR_YELLOW : COLOR_GREY ) : COLOR_WHITE ),
@@ -3128,8 +3211,8 @@ public handleEndOfTheMapVoteChoice( player_id, pressedKeyCode )
         {
             announceRegistedVote( player_id, pressedKeyCode )
             
-            g_is_player_voted[ player_id ]         = true;
-            g_is_player_participating[ player_id ] = false;
+            g_isPlayerVoted[ player_id ]         = true;
+            g_isPlayerParticipating[ player_id ] = false;
         }
         case 0: // pressedKeyCode 0 means the keyboard key 1
         {
@@ -3160,30 +3243,56 @@ public vote_handleDisplay()
     }
     
     // make sure the display is constructed from scratch
-    g_refreshVoteStatus = true;
+    g_isToRefreshVoteStatus = true;
     
     // ensure the vote status doesn't indicate expired
     g_voteStatus &= ~VOTE_IS_EXPIRED;
     
     new argument[ 2 ] = { true, 0 }
     
-    // Same as if g_showVoteStatus == SHOW_STATUS_ALWAYS || g_showVoteStatus == SHOW_STATUS_AFTER_VOTE
-    if( g_showVoteStatus & SHOW_STATUS_AFTER_VOTE )
+    if( g_showVoteStatus == SHOW_STATUS_ALWAYS
+        || g_showVoteStatus == SHOW_STATUS_AFTER_VOTE )
     {
-        set_task( 1.0, "vote_display", TASKID_VOTE_DISPLAY, argument, sizeof( argument ), "a", g_voteDuration );
+        set_task( 1.0, "vote_display", TASKID_VOTE_DISPLAY, argument, sizeof( argument ), "a",
+                g_voteDuration );
     }
-    else
+    else // g_showVoteStatus == SHOW_STATUS_AT_END || g_showVoteStatus == SHOW_STATUS_NEVER
     {
-        set_task( 1.0, "vote_display", TASKID_VOTE_DISPLAY, argument, sizeof( argument ) );
+        set_task( 1.0, "tryToShowTheVotingMenu", TASKID_VOTE_DISPLAY, _, _, "a", g_voteDuration );
     }
     
     // display the vote outcome
-    set_task( float( g_voteDuration ), "closeVoting", TASKID_VOTE_EXPIRE )
+    set_task( float( g_voteDuration ), "closeVoting", TASKID_VOTE_EXPIRE );
+}
+
+public tryToShowTheVotingMenu()
+{
+    new player_id;
+    new playersCount;
+    new players[ MAX_PLAYERS ];
+    
+    new argument[ 2 ] = { false, 0 };
+    
+    get_players( players, playersCount, "ch" ); // skip bots and hltv
+    
+    for( new player_index; player_index < playersCount; ++player_index )
+    {
+        player_id = players[ player_index ];
+        
+        if( !g_isPlayerSeeingTheVoteMenu[ player_id ]
+            && isPlayerAbleToSeeTheVoteMenu( player_id ) )
+        {
+            argument[ 1 ]                            = player_id;
+            g_isPlayerSeeingTheVoteMenu[ player_id ] = true;
+            
+            vote_display( argument );
+        }
+    }
 }
 
 public closeVoting()
 {
-    new argument[ 2 ] = { -1, -1 }
+    new argument[ 2 ] = { false, -1 }
     
     // waits until the last voting second to finish
     set_task( 0.9, "voteExpire" )
@@ -3218,11 +3327,11 @@ public vote_display( argument[ 2 ] )
         g_voteDuration--;
     }
     
-    DEBUG_LOGGER( 4, "  ( votedisplay ) player_id: %i, updateTimeRemaining: %i, g_refreshVoteStatus: \
+    DEBUG_LOGGER( 4, "  ( votedisplay ) player_id: %i, updateTimeRemaining: %i, g_isToRefreshVoteStatus: \
             %i,^n  g_totalVoteOptions: %i, len( g_voteStatusClean ): %i", argument[ 1 ], \
-            argument[ 0 ], g_refreshVoteStatus, g_totalVoteOptions, strlen( g_voteStatusClean )  )
+            argument[ 0 ], g_isToRefreshVoteStatus, g_totalVoteOptions, strlen( g_voteStatusClean )  )
     
-    if( g_refreshVoteStatus
+    if( g_isToRefreshVoteStatus
         || isVoteOver )
     {
         // wipe the previous vote status clean
@@ -3248,16 +3357,27 @@ public vote_display( argument[ 2 ] )
         }
     }
     
-    // This is to optionally display to single player that just voted.
-    // Exactly after the player voted this function is only called with the correct player id.
-    if( player_id > 0
-        && g_showVoteStatus & SHOW_STATUS_AFTER_VOTE )
+    // This is to optionally display to single player that just voted or never saw the menu.
+    // This function is called with the correct player id only after the player voted or by the
+    // 'tryToShowTheVotingMenu()' function call.
+    if( player_id > 0 )
     {
         menuKeys = calculateExtensionOption( player_id, isVoteOver,
                 charCount, voteStatus, charsmax( voteStatus ), menuKeys )
         
-        calculate_menu_dirt( player_id, isVoteOver, voteStatus, menuDirty, charsmax( menuDirty ), noneIsHidden )
-        display_vote_menu( false, player_id, menuDirty, menuKeys )
+        if( g_showVoteStatus == SHOW_STATUS_ALWAYS
+            || g_showVoteStatus == SHOW_STATUS_AFTER_VOTE )
+        {
+            calculate_menu_dirt( player_id, isVoteOver, voteStatus, menuDirty, charsmax( menuDirty ),
+                    noneIsHidden )
+            
+            display_vote_menu( false, player_id, menuDirty, menuKeys )
+        }
+        else // g_showVoteStatus == SHOW_STATUS_NEVER || g_showVoteStatus == SHOW_STATUS_AT_END
+        {
+            calculate_menu_clean( player_id, menuClean, charsmax( menuClean ) )
+            display_vote_menu( true, player_id, menuClean, menuKeys )
+        }
     }
     else // just display to everyone
     {
@@ -3273,7 +3393,7 @@ public vote_display( argument[ 2 ] )
             menuKeys = calculateExtensionOption( player_id, isVoteOver,
                     charCount, voteStatus, charsmax( voteStatus ), menuKeys )
             
-            if( !g_is_player_voted[ player_id ]
+            if( !g_isPlayerVoted[ player_id ]
                 && !isVoteOver
                 && g_showVoteStatus != SHOW_STATUS_ALWAYS )
             {
@@ -3283,24 +3403,27 @@ public vote_display( argument[ 2 ] )
             else if( g_showVoteStatus == SHOW_STATUS_ALWAYS
                      || ( isVoteOver
                           && g_showVoteStatus )
-                     || ( g_is_player_voted[ player_id ]
+                     || ( g_isPlayerVoted[ player_id ]
                           && g_showVoteStatus == SHOW_STATUS_AFTER_VOTE ) )
             {
-                calculate_menu_dirt( player_id, isVoteOver, voteStatus, menuDirty, charsmax( menuDirty ), noneIsHidden )
+                calculate_menu_dirt( player_id, isVoteOver, voteStatus, menuDirty, charsmax( menuDirty ),
+                        noneIsHidden )
+                
                 display_vote_menu( false, player_id, menuDirty, menuKeys )
             }
         }
     }
 }
 
-stock calculateExtensionOption( player_id, bool:isVoteOver, charCount, voteStatus[], voteStatusLenght, menuKeys )
+stock calculateExtensionOption( player_id, bool:isVoteOver, charCount, voteStatus[], voteStatusLenght,
+                                menuKeys )
 {
-    if( g_refreshVoteStatus
+    if( g_isToRefreshVoteStatus
         || isVoteOver )
     {
         new voteMapLine[ MAX_MAPNAME_LENGHT ]
         
-        new bool:allowExtend = ( g_is_final_voting
+        new bool:allowExtend = ( g_isGameFinalVoting
                                  && !( g_voteStatus & VOTE_IS_RUNOFF ) )
         
         new bool:allowStay = ( ( g_voteStatus & VOTE_IS_EARLY
@@ -3310,7 +3433,7 @@ stock calculateExtensionOption( player_id, bool:isVoteOver, charCount, voteStatu
         if( g_isRunOffNeedingKeepCurrentMap )
         {
             // if it is a end map RunOff, then it is a extend button, not a keep current map button
-            if( g_is_final_voting )
+            if( g_isGameFinalVoting )
             {
                 allowExtend = true;
                 allowStay   = false;
@@ -3332,7 +3455,7 @@ stock calculateExtensionOption( player_id, bool:isVoteOver, charCount, voteStatu
                 allowStay, allowExtend, g_isExtendmapAllowStay )
         
         // add optional menu item
-        if( g_is_map_extension_allowed
+        if( g_isMapExtensionAllowed
             && ( allowExtend
                  || allowStay ) )
         {
@@ -3386,7 +3509,7 @@ stock calculateExtensionOption( player_id, bool:isVoteOver, charCount, voteStatu
             menuKeys |= ( 1 << g_totalVoteOptions );
         }
         
-        g_refreshVoteStatus =  g_showVoteStatus & 3 != 0;
+        g_isToRefreshVoteStatus =  g_showVoteStatus & 3 != 0;
     }
     
     // make a copy of the virgin menu
@@ -3409,8 +3532,8 @@ stock calculate_menu_dirt( player_id, bool:isVoteOver, voteStatus[], menuDirty[]
     noneOption [ 0 ] = '^0';
     isToShowUndo     = ( player_id > 0 \
                          && g_voteShowNoneOptionType == CONVERT_IT_TO_CANCEL_LAST_VOTE \
-                         && g_is_player_voted[ player_id ] \
-                         && !g_is_player_cancelled_vote[ player_id ] )
+                         && g_isPlayerVoted[ player_id ] \
+                         && !g_isPlayerCancelledVote[ player_id ] )
     
     computeVoteMenuFooter( player_id, voteFooter, charsmax( voteFooter ) )
     
@@ -3447,7 +3570,7 @@ stock calculate_menu_dirt( player_id, bool:isVoteOver, voteStatus[], menuDirty[]
             
             // remove the extra space between 'voteStatus' and 'voteFooter', after the 'None' option is hidden
             if( noneIsHidden
-                && g_is_player_voted[ player_id ] )
+                && g_isPlayerVoted[ player_id ] )
             {
                 voteFooter[ 0 ] = ' '
                 voteFooter[ 1 ] = ' '
@@ -3474,7 +3597,8 @@ stock computeVoteMenuFooter( player_id, voteFooter[], voteFooterSize )
     {
         if( ( g_voteDuration < 10
               || g_isToShowVoteCounter )
-            && g_showVoteStatus != SHOW_STATUS_AT_END )
+            && ( g_showVoteStatus == SHOW_STATUS_ALWAYS
+                 || g_showVoteStatus == SHOW_STATUS_AFTER_VOTE ) )
         {
             if( g_voteDuration >= 0 )
             {
@@ -3499,9 +3623,9 @@ stock computeUndoButton( player_id, bool:isToShowUndo, bool:isVoteOver, noneOpti
     }
     else
     {
-        if( g_is_player_cancelled_vote[ player_id ] )
+        if( g_isPlayerCancelledVote[ player_id ] )
         {
-            if( g_is_player_voted[ player_id ]  )
+            if( g_isPlayerVoted[ player_id ]  )
             {
                 formatex( noneOption, noneOptionSize, "%s0. %s%L",
                         COLOR_RED, COLOR_GREY, player_id, "GAL_OPTION_CANCEL_VOTE" )
@@ -3518,7 +3642,7 @@ stock computeUndoButton( player_id, bool:isToShowUndo, bool:isVoteOver, noneOpti
             {
                 case HIDE_AFTER_USER_VOTE:
                 {
-                    if( g_is_player_voted[ player_id ] )
+                    if( g_isPlayerVoted[ player_id ] )
                     {
                         noneOption[ 0 ] = '^0'
                     }
@@ -3549,8 +3673,8 @@ stock calculate_menu_clean( player_id, menuClean[], menuCleanSize )
     noneOption [ 0 ] = '^0';
     isToShowUndo     = ( player_id > 0 \
                          && g_voteShowNoneOptionType == CONVERT_IT_TO_CANCEL_LAST_VOTE \
-                         && g_is_player_voted[ player_id ] \
-                         && !g_is_player_cancelled_vote[ player_id ] )
+                         && g_isPlayerVoted[ player_id ] \
+                         && !g_isPlayerCancelledVote[ player_id ] )
     
     computeVoteMenuFooter( player_id, voteFooter, charsmax( voteFooter ) )
     
@@ -3585,14 +3709,12 @@ stock calculate_menu_clean( player_id, menuClean[], menuCleanSize )
 
 stock display_vote_menu( bool:menuType, player_id, menuBody[], menuKeys )
 {
-    new menu_id
-    new menukeys_unused
-
 #if defined DEBUG
     
     if( player_id == 1 )
     {
         new player_name[ MAX_PLAYER_NAME_LENGHT ];
+        
         get_user_name( player_id, player_name, charsmax( player_name ) );
         
         DEBUG_LOGGER( 4, "    [%s ( %s )]", player_name, ( menuType ? "clean" : "dirty" ) )
@@ -3601,15 +3723,24 @@ stock display_vote_menu( bool:menuType, player_id, menuBody[], menuKeys )
     }
 #endif
     
-    get_user_menu( player_id, menu_id, menukeys_unused );
-    
-    if( menu_id == 0
-        || menu_id == g_chooseMapMenuId )
+    if( isPlayerAbleToSeeTheVoteMenu( player_id ) )
     {
         show_menu( player_id, menuKeys, menuBody,
                 ( menuType ? g_voteDuration : max( 2, g_voteDuration ) ),
                 MENU_CHOOSEMAP )
     }
+}
+
+stock isPlayerAbleToSeeTheVoteMenu( player_id )
+{
+    new menu_id;
+    new menukeys_unused;
+    
+    get_user_menu( player_id, menu_id, menukeys_unused );
+    
+    return ( menu_id == 0
+             || menu_id == g_chooseMapMenuId
+             || get_pcvar_num( cvar_isToReplaceByVoteMenu ) != 0 );
 }
 
 public vote_handleChoice( player_id, key )
@@ -3620,14 +3751,14 @@ public vote_handleChoice( player_id, key )
         return;
     }
     
-    if( !g_is_player_voted[ player_id ] )
+    if( !g_isPlayerVoted[ player_id ] )
     {
         register_vote( player_id, key )
         
-        g_refreshVoteStatus = true;
+        g_isToRefreshVoteStatus = true;
     }
     else if( key == 9
-             && !g_is_player_cancelled_vote[ player_id ]
+             && !g_isPlayerCancelledVote[ player_id ]
              && g_voteShowNoneOptionType == CONVERT_IT_TO_CANCEL_LAST_VOTE
              && g_isToShowNoneOption )
     {
@@ -3639,7 +3770,8 @@ public vote_handleChoice( player_id, key )
     }
     
     // display the vote again, with status
-    if( g_showVoteStatus & SHOW_STATUS_AFTER_VOTE )
+    if( g_showVoteStatus == SHOW_STATUS_ALWAYS
+        || g_showVoteStatus == SHOW_STATUS_AFTER_VOTE )
     {
         new argument[ 2 ] = { false, -1 }
         
@@ -3649,17 +3781,17 @@ public vote_handleChoice( player_id, key )
 
 stock cancel_player_vote( player_id )
 {
-    new voteWeight = g_player_voted_weight[ player_id ]
+    new voteWeight = g_playerVotedWeight[ player_id ]
     
-    g_is_player_voted[ player_id ]          = false;
-    g_is_player_participating[ player_id ]  = true;
-    g_is_player_cancelled_vote[ player_id ] = true;
+    g_isPlayerVoted[ player_id ]         = false;
+    g_isPlayerParticipating[ player_id ] = true;
+    g_isPlayerCancelledVote[ player_id ] = true;
     
-    g_totalVotesCounted                                                -= voteWeight
-    g_arrayOfMapsWithVotesNumber[ g_player_voted_option[ player_id ] ] -= voteWeight
+    g_totalVotesCounted                                              -= voteWeight
+    g_arrayOfMapsWithVotesNumber[ g_playerVotedOption[ player_id ] ] -= voteWeight
     
-    g_player_voted_option[ player_id ] -= g_player_voted_option[ player_id ]
-    g_player_voted_weight[ player_id ] -= g_player_voted_weight[ player_id ]
+    g_playerVotedOption[ player_id ] -= g_playerVotedOption[ player_id ]
+    g_playerVotedWeight[ player_id ] -= g_playerVotedWeight[ player_id ]
 }
 
 /**
@@ -3669,19 +3801,19 @@ stock register_vote( player_id, pressedKeyCode )
 {
     announceRegistedVote( player_id, pressedKeyCode )
     
-    g_is_player_voted[ player_id ] = true;
+    g_isPlayerVoted[ player_id ] = true;
     
     if( pressedKeyCode == 9 )
     {
-        g_is_player_participating[ player_id ] = false // if is not interested now, at runoff wont also
-        g_player_voted_option[ player_id ]     = 0 // the None option does not integrate vote counting
-        g_player_voted_weight[ player_id ]     = 0 // the None option has no weight
+        g_isPlayerParticipating[ player_id ] = false // if is not interested now, at runoff wont also
+        g_playerVotedOption[ player_id ]     = 0 // the None option does not integrate vote counting
+        g_playerVotedWeight[ player_id ]     = 0 // the None option has no weight
     }
     else
     {
-        g_is_player_participating[ player_id ] = true;
-        g_player_voted_option[ player_id ]     = pressedKeyCode
-        g_player_voted_weight[ player_id ]     = 1
+        g_isPlayerParticipating[ player_id ] = true;
+        g_playerVotedOption[ player_id ]     = pressedKeyCode
+        g_playerVotedWeight[ player_id ]     = 1
     }
     
     // pressedKeyCode 9 means the keyboard key 0 (the None option) and it does not integrate the vote
@@ -3695,7 +3827,7 @@ stock register_vote( player_id, pressedKeyCode )
         if( voteWeight > 1
             && has_flag( player_id, g_voteWeightFlags ) )
         {
-            g_player_voted_weight[ player_id ]              = voteWeight
+            g_playerVotedWeight[ player_id ]                = voteWeight
             g_arrayOfMapsWithVotesNumber[ pressedKeyCode ] += voteWeight;
             g_totalVotesCounted                            += ( voteWeight - 1 );
             
@@ -3737,11 +3869,11 @@ stock announceRegistedVote( player_id, pressedKeyCode )
     {
         // only display the "none" vote if we haven't already voted
         // ( we can make it here from the vote status menu too )
-        if( !g_is_player_voted[ player_id ] )
+        if( !g_isPlayerVoted[ player_id ] )
         {
             DEBUG_LOGGER( 4, "      %-32s ( extend )", player_name )
             
-            if( g_is_final_voting )
+            if( g_isGameFinalVoting )
             {
                 if( isToAnnounceChoice )
                 {
@@ -3898,9 +4030,9 @@ public computeVotes()
             numberOfMapsAtSecondPosition: %d", \
             g_totalVoteOptions, numberOfMapsAtFirstPosition, numberOfMapsAtSecondPosition )
     
-    DEBUG_LOGGER( 1, "    ( computeVotes|middle ) g_is_timeToRestart: %d, g_is_timeToChangeLevel: %d \
+    DEBUG_LOGGER( 1, "    ( computeVotes|middle ) g_isTimeToRestart: %d, g_isTimeToChangeLevel: %d \
             g_voteStatus & VOTE_IS_FORCED: %d", \
-            g_is_timeToRestart, g_is_timeToChangeLevel, g_voteStatus & VOTE_IS_FORCED != 0 )
+            g_isTimeToRestart, g_isTimeToChangeLevel, g_voteStatus & VOTE_IS_FORCED != 0 )
     
     // announce the outcome
     if( numberOfVotesAtFirstPlace )
@@ -4100,27 +4232,27 @@ public computeVotes()
             winnerVoteMapIndex = firstPlaceChoices[ 0 ];
         }
         
-        DEBUG_LOGGER( 1, "    ( computeVotes|moreover ) g_is_timeToRestart: %d, g_is_timeToChangeLevel: %d \
+        DEBUG_LOGGER( 1, "    ( computeVotes|moreover ) g_isTimeToRestart: %d, g_isTimeToChangeLevel: %d \
                 g_voteStatus & VOTE_IS_FORCED: %d", \
-                g_is_timeToRestart, g_is_timeToChangeLevel, g_voteStatus & VOTE_IS_FORCED != 0 )
+                g_isTimeToRestart, g_isTimeToChangeLevel, g_voteStatus & VOTE_IS_FORCED != 0 )
         
         // winnerVoteMapIndex == g_totalVoteOptions, means the 'Stay Here' option.
         // Then, here we keep the current map or extend current map.
         if( winnerVoteMapIndex == g_totalVoteOptions )
         {
-            if( !g_is_final_voting // "stay here" won and the map mustn't be restarted.
-                && !g_is_timeToRestart )
+            if( !g_isGameFinalVoting // "stay here" won and the map mustn't be restarted.
+                && !g_isTimeToRestart )
             {
                 color_print( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_STAY" )
             }
-            else if( !g_is_final_voting // "stay here" won and the map must be restarted.
-                     && g_is_timeToRestart )
+            else if( !g_isGameFinalVoting // "stay here" won and the map must be restarted.
+                     && g_isTimeToRestart )
             {
                 color_print( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_STAY" )
                 
                 process_last_round()
             }
-            else if( g_is_final_voting ) // "extend map" won
+            else if( g_isGameFinalVoting ) // "extend map" won
             {
                 if( g_isVotingByRounds )
                 {
@@ -4168,9 +4300,9 @@ public computeVotes()
         g_voteStatus |= VOTE_IS_OVER;
     }
     
-    DEBUG_LOGGER( 1, "    ( computeVotes|out ) g_is_timeToRestart: %d, g_is_timeToChangeLevel: %d \
+    DEBUG_LOGGER( 1, "    ( computeVotes|out ) g_isTimeToRestart: %d, g_isTimeToChangeLevel: %d \
             g_voteStatus & VOTE_IS_FORCED: %d", \
-            g_is_timeToRestart, g_is_timeToChangeLevel, g_voteStatus & VOTE_IS_FORCED != 0 )
+            g_isTimeToRestart, g_isTimeToChangeLevel, g_voteStatus & VOTE_IS_FORCED != 0 )
     
     finalizeVoting()
 }
@@ -4197,21 +4329,21 @@ stock finalizeVoting()
 stock Float:map_getMinutesElapsed()
 {
     DEBUG_LOGGER( 2, "%32s mp_timelimit: %f", "map_getMinutesElapsed( in/out )", \
-            get_pcvar_float( g_timelimit_pointer ) )
+            get_pcvar_float( cvar_mp_timelimit ) )
     
-    return get_pcvar_float( g_timelimit_pointer ) - ( float( get_timeleft() ) / 60.0 );
+    return get_pcvar_float( cvar_mp_timelimit ) - ( float( get_timeleft() ) / 60.0 );
 }
 
 stock map_extend()
 {
     DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_rtvMinutesWait: %f  extendmapStep: %d", "map_extend( in )", \
-            get_pcvar_float( g_timelimit_pointer ), g_rtvMinutesWait, g_extendmapStepMinutes )
+            get_pcvar_float( cvar_mp_timelimit ), g_rtvMinutesWait, g_extendmapStepMinutes )
     
     // reset the "rtv wait" time, taking into consideration the map extension
     if( g_rtvMinutesWait )
     {
-        g_rtvMinutesWait += get_pcvar_float( g_timelimit_pointer );
-        g_rtvWaitRounds  += get_pcvar_num( g_maxrounds_pointer );
+        g_rtvMinutesWait += get_pcvar_float( cvar_mp_timelimit );
+        g_rtvWaitRounds  += get_pcvar_num( cvar_mp_maxrounds );
     }
     
     save_time_limit()
@@ -4221,42 +4353,42 @@ stock map_extend()
     {
         new extendmap_step_rounds = g_extendmapStepRounds
         
-        if( g_is_maxrounds_extend )
+        if( g_isMaxroundsExtend )
         {
-            set_cvar_num( "mp_maxrounds", get_pcvar_num( g_maxrounds_pointer ) + extendmap_step_rounds );
+            set_cvar_num( "mp_maxrounds", get_pcvar_num( cvar_mp_maxrounds ) + extendmap_step_rounds );
             set_cvar_num( "mp_winlimit", 0 );
         }
         else
         {
             set_cvar_num( "mp_maxrounds", 0 );
-            set_cvar_num( "mp_winlimit", get_pcvar_num( g_winlimit_pointer ) + extendmap_step_rounds );
+            set_cvar_num( "mp_winlimit", get_pcvar_num( cvar_mp_winlimit ) + extendmap_step_rounds );
         }
         
-        set_pcvar_float( g_timelimit_pointer, 0.0 );
+        set_pcvar_float( cvar_mp_timelimit, 0.0 );
     }
     else
     {
         set_cvar_num( "mp_maxrounds", 0 );
         set_cvar_num( "mp_winlimit", 0 );
-        set_pcvar_float( g_timelimit_pointer, get_pcvar_float( g_timelimit_pointer )
+        set_pcvar_float( cvar_mp_timelimit, get_pcvar_float( cvar_mp_timelimit )
                 + g_extendmapStepMinutes );
     }
     
     server_exec()
     
     DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_rtvMinutesWait: %f  extendmapStep: %d", "map_extend( out )", \
-            get_pcvar_float( g_timelimit_pointer ), g_rtvMinutesWait, g_extendmapStepMinutes )
+            get_pcvar_float( cvar_mp_timelimit ), g_rtvMinutesWait, g_extendmapStepMinutes )
 }
 
 stock save_time_limit()
 {
-    if( !g_is_timeLimitChanged )
+    if( !g_isTimeLimitChanged )
     {
-        g_is_timeLimitChanged = true;
+        g_isTimeLimitChanged = true;
         
-        g_originalTimelimit = get_pcvar_float( g_timelimit_pointer )
-        g_originalMaxRounds = get_pcvar_num( g_maxrounds_pointer )
-        g_originalWinLimit  = get_pcvar_num( g_winlimit_pointer )
+        g_originalTimelimit = get_pcvar_float( cvar_mp_timelimit )
+        g_originalMaxRounds = get_pcvar_num( cvar_mp_maxrounds )
+        g_originalWinLimit  = get_pcvar_num( cvar_mp_winlimit )
     }
 }
 
@@ -4311,42 +4443,54 @@ stock map_isTooRecent( map[] )
     return false;
 }
 
-stock configureRTV_votingType()
+/**
+ * This function choose what RTV's type will be used to 'rock the vote'. The types are:
+ * 1) Per rounds.
+ * 1.1) Is by mp_winlimit expiration proximity?
+ * 1.2) Is by mp_maxrounds expiration proximity?
+ * 2) Per minutes.
+ *
+ * These data are used to display the voting menu and proper set the voting flow. This use the
+ * default voting type to timer if the rounds ending are disabled.
+ */
+stock configureRtvVotingType()
 {
     new minutes_left   = get_timeleft() / 60
-    new maxrounds_left = get_pcvar_num( g_maxrounds_pointer ) - g_total_rounds_played
-    new winlimit_left  = get_pcvar_num( g_winlimit_pointer ) - max( g_total_CT_wins, g_total_terrorists_wins )
+    new maxrounds_left = get_pcvar_num( cvar_mp_maxrounds ) - g_total_rounds_played
+    new winlimit_left  = get_pcvar_num( cvar_mp_winlimit ) - max( g_total_CT_wins, g_total_terrorists_wins )
     
-    if( minutes_left > maxrounds_left
-        || minutes_left > winlimit_left  )
+    if( ( minutes_left > maxrounds_left
+          && maxrounds_left > 0 )
+        || ( minutes_left > winlimit_left
+             && winlimit_left > 0 ) )
     {
         g_isVotingByRounds = true
         
         if( maxrounds_left >= winlimit_left )
         {
-            g_is_maxrounds_extend = true
+            g_isMaxroundsExtend = true
         }
         else
         {
-            g_is_maxrounds_extend = false
+            g_isMaxroundsExtend = false
         }
     }
 }
 
 stock start_rtvVote()
 {
-    if( get_pcvar_num( cvar_endOnRound_rtv )
-        && get_realplayersnum() >= get_pcvar_num( cvar_endOnRound_rtv ) )
+    if( get_pcvar_num( cvar_endOnRoundRtv )
+        && get_realplayersnum() >= get_pcvar_num( cvar_endOnRoundRtv ) )
     {
-        g_is_last_round     = true
-        g_is_RTV_last_round = true
+        g_isLastGameRound = true
+        g_isRtvLastRound  = true
     }
     else
     {
-        g_is_timeToChangeLevel = true;
+        g_isTimeToChangeLevel = true;
     }
     
-    configureRTV_votingType()
+    configureRtvVotingType()
     vote_startDirector( true );
 }
 
@@ -4372,7 +4516,7 @@ public vote_rock( player_id )
     }
     
     if( get_pcvar_num( cvar_rtvWaitAdmin )
-        && g_rtv_wait_admin_number > 0 )
+        && g_rtvWaitAdminNumber > 0 )
     {
         color_print( player_id, "^1%L", player_id, "GAL_ROCK_WAIT_ADMIN" );
         return;
@@ -4690,7 +4834,7 @@ public client_authorized( player_id )
     
     if( has_flag( player_id, "f" ) )
     {
-        g_rtv_wait_admin_number++
+        g_rtvWaitAdminNumber++
     }
 }
 
@@ -4702,7 +4846,7 @@ public client_disconnected( player_id )
 {
     if( has_flag( player_id, "f" ) )
     {
-        g_rtv_wait_admin_number--
+        g_rtvWaitAdminNumber--
     }
     
     vote_unrockTheVote( player_id )
@@ -4763,12 +4907,12 @@ stock isToHandleRecentlyEmptyServer()
     new playersCount = get_realplayersnum();
     
     DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", \
-            "isToHandleRecentlyEmptyServer (in)", get_pcvar_float( g_timelimit_pointer ), g_originalTimelimit )
+            "isToHandleRecentlyEmptyServer (in)", get_pcvar_float( cvar_mp_timelimit ), g_originalTimelimit )
     DEBUG_LOGGER( 2, "%32s playersCount:%i", "client_disconnect()", playersCount )
     
     if( playersCount == 0 )
     {
-        if( g_originalTimelimit != get_pcvar_float( g_timelimit_pointer ) )
+        if( g_originalTimelimit != get_pcvar_float( cvar_mp_timelimit ) )
         {
             // it's possible that the map has been extended at least once. that
             // means that if someone comes into the server, the time limit will
@@ -4788,7 +4932,7 @@ stock isToHandleRecentlyEmptyServer()
     DEBUG_LOGGER( 2, "g_isUsingEmptyCycle = %d, g_emptyCycleMapsNumber = %d", \
             g_isUsingEmptyCycle, g_emptyCycleMapsNumber )
     DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "isToHandleRecentlyEmptyServer (out)", \
-            get_pcvar_float( g_timelimit_pointer ), g_originalTimelimit )
+            get_pcvar_float( cvar_mp_timelimit ), g_originalTimelimit )
 }
 
 /**
@@ -4834,9 +4978,9 @@ stock configureNextEmptyCycleMap()
     
     mapIndex = map_getNext( g_emptyCycleMapList, g_currentMap, nextMap );
     
-    if( !g_is_emptyCycleMapConfigured )
+    if( !g_isEmptyCycleMapConfigured )
     {
-        g_is_emptyCycleMapConfigured = true
+        g_isEmptyCycleMapConfigured = true
         
         getLastEmptyCycleMap( lastEmptyCycleMap )
         map_getNext( g_emptyCycleMapList, lastEmptyCycleMap, nextMap );
@@ -5062,8 +5206,8 @@ stock color_print( player_id, message[], any: ... )
     
     formated_message[ 0 ] = '^0'
     
-    if( g_is_color_chat_supported
-        && g_is_colored_chat_enabled )
+    if( g_isColorChatSupported
+        && g_isColoredChatEnabled )
     {
 #if AMXX_VERSION_NUM < 183
         
@@ -5256,9 +5400,9 @@ stock register_dictionary_colored( const dictionaryFile[] )
 public map_restoreOriginalTimeLimit()
 {
     DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "map_restoreOriginalTimeLimit( in )", \
-            get_pcvar_float( g_timelimit_pointer ), g_originalTimelimit )
+            get_pcvar_float( cvar_mp_timelimit ), g_originalTimelimit )
     
-    if( g_is_timeLimitChanged )
+    if( g_isTimeLimitChanged )
     {
         server_cmd( "mp_timelimit %f", g_originalTimelimit )
         server_cmd( "mp_maxrounds %d", g_originalMaxRounds )
@@ -5269,7 +5413,7 @@ public map_restoreOriginalTimeLimit()
         g_rtvWaitRounds  = get_pcvar_num( cvar_rtvWaitRounds );
         
         server_exec();
-        g_is_timeLimitChanged = false;
+        g_isTimeLimitChanged = false;
     }
     
     if( g_original_sv_maxspeed )
@@ -5278,7 +5422,7 @@ public map_restoreOriginalTimeLimit()
     }
     
     DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "map_restoreOriginalTimeLimit( out )", \
-            get_pcvar_float( g_timelimit_pointer ), g_originalTimelimit )
+            get_pcvar_float( cvar_mp_timelimit ), g_originalTimelimit )
 }
 
 /**
@@ -5294,6 +5438,7 @@ stock cancel_voting( bool:isToDoubleReset = false )
     remove_task( TASKID_VOTE_HANDLEDISPLAY )
     remove_task( TASKID_VOTE_EXPIRE )
     remove_task( TASKID_VOTE_STARTDIRECTOR )
+    remove_task( TASKID_PENDING_VOTE_COUNTDOWN )
     remove_task( TASKID_MAP_CHANGE )
     remove_task( TASKID_PROCESS_LAST_ROUND )
     remove_task( TASKID_SHOW_LAST_ROUND_HUD )
@@ -5323,18 +5468,19 @@ public vote_resetStats()
     g_rockedVoteCount = 0;
     
     // reset everyones' votes
-    arrayset( g_is_player_voted, true, sizeof( g_is_player_voted ) );
+    arrayset( g_isPlayerVoted, true, sizeof( g_isPlayerVoted ) );
     
     if( !( g_voteStatus & VOTE_IS_RUNOFF ) )
     {
-        arrayset( g_is_player_participating, true, sizeof( g_is_player_participating ) );
+        arrayset( g_isPlayerParticipating, true, sizeof( g_isPlayerParticipating ) );
     }
     
-    arrayset( g_is_player_cancelled_vote, false, sizeof( g_is_player_cancelled_vote ) );
+    arrayset( g_isPlayerCancelledVote, false, sizeof( g_isPlayerCancelledVote ) );
     arrayset( g_answeredForEndOfMapVote, false, sizeof( g_answeredForEndOfMapVote ) );
+    arrayset( g_isPlayerSeeingTheVoteMenu, false, sizeof( g_isPlayerSeeingTheVoteMenu ) );
     
-    arrayset( g_player_voted_option, 0, sizeof( g_player_voted_option ) );
-    arrayset( g_player_voted_weight, 0, sizeof( g_player_voted_weight ) );
+    arrayset( g_playerVotedOption, 0, sizeof( g_playerVotedOption ) );
+    arrayset( g_playerVotedWeight, 0, sizeof( g_playerVotedWeight ) );
 }
 
 stock delete_users_menus( bool:isToDoubleReset )
@@ -5380,11 +5526,11 @@ public nextmap_plugin_init()
     register_clcmd( "say nextmap", "sayNextMap", 0, "- displays nextmap" )
     register_clcmd( "say currentmap", "sayCurrentMap", 0, "- display current map" )
     
-    NP_cvar_nextMap      = register_cvar( "amx_nextmap", "", FCVAR_SERVER | FCVAR_EXTDLL | FCVAR_SPONLY )
-    NP_cvar_chattime     = get_cvar_pointer( "mp_chattime" )
-    NP_cvar_friendlyFire = get_cvar_pointer( "mp_friendlyfire" )
+    NP_cvar_amx_nextmap     = register_cvar( "amx_nextmap", "", FCVAR_SERVER | FCVAR_EXTDLL | FCVAR_SPONLY )
+    NP_cvar_mp_chattime     = get_cvar_pointer( "mp_chattime" )
+    NP_cvar_mp_friendlyfire = get_cvar_pointer( "mp_friendlyfire" )
     
-    if( NP_cvar_friendlyFire )
+    if( NP_cvar_mp_friendlyfire )
     {
         register_clcmd( "say ff", "sayFFStatus", 0, "- display friendly fire status" )
     }
@@ -5412,7 +5558,7 @@ public nextmap_plugin_init()
     }
     
     readMapCycle( NP_g_mapCycleFilePath, NP_g_nextMapName, charsmax( NP_g_nextMapName ) )
-    set_pcvar_string( NP_cvar_nextMap, NP_g_nextMapName )
+    set_pcvar_string( NP_cvar_amx_nextmap, NP_g_nextMapName )
     
     saveCurrentMapCycleSetting()
 }
@@ -5433,14 +5579,14 @@ stock saveCurrentMapCycleSetting()
 
 getNextMapName( szArg[], iMax )
 {
-    new len = get_pcvar_string( NP_cvar_nextMap, szArg, iMax )
+    new len = get_pcvar_string( NP_cvar_amx_nextmap, szArg, iMax )
     
     if( ValidMap( szArg ) )
     {
         return len
     }
     len = copy( szArg, iMax, NP_g_nextMapName )
-    set_pcvar_string( NP_cvar_nextMap, NP_g_nextMapName )
+    set_pcvar_string( NP_cvar_amx_nextmap, NP_g_nextMapName )
     
     return len
 }
@@ -5482,14 +5628,14 @@ public sayCurrentMap()
 public sayFFStatus()
 {
     client_print( 0, print_chat, "%L: %L", LANG_PLAYER, "FRIEND_FIRE", LANG_PLAYER,
-            get_pcvar_num( NP_cvar_friendlyFire ) ? "ON" : "OFF" )
+            get_pcvar_num( NP_cvar_mp_friendlyfire ) ? "ON" : "OFF" )
 }
 
 public delayedChange( param[] )
 {
-    if( NP_cvar_chattime )
+    if( NP_cvar_mp_chattime )
     {
-        set_pcvar_float( NP_cvar_chattime, get_pcvar_float( NP_cvar_chattime ) - 2.0 )
+        set_pcvar_float( NP_cvar_mp_chattime, get_pcvar_float( NP_cvar_mp_chattime ) - 2.0 )
     }
     
     serverChangeLevel( param )
@@ -5498,11 +5644,11 @@ public delayedChange( param[] )
 public changeMap()
 {
     new nextmap_name[ MAX_MAPNAME_LENGHT ] // mp_chattime defaults to 10 in other mods
-    new Float:chattime = NP_cvar_chattime ? get_pcvar_float( NP_cvar_chattime ) : 10.0;
+    new Float:chattime = NP_cvar_mp_chattime ? get_pcvar_float( NP_cvar_mp_chattime ) : 10.0;
     
-    if( NP_cvar_chattime )
+    if( NP_cvar_mp_chattime )
     {
-        set_pcvar_float( NP_cvar_chattime, chattime + 2.0 ) // make sure mp_chattime is long
+        set_pcvar_float( NP_cvar_mp_chattime, chattime + 2.0 ) // make sure mp_chattime is long
     }
     
     new len = getNextMapName( nextmap_name, charsmax( nextmap_name ) ) + 1
@@ -5607,7 +5753,7 @@ public create_fakeVotes()
         g_arrayOfMapsWithVotesNumber[ 3 ] += 0;     // map 4
         g_arrayOfMapsWithVotesNumber[ 4 ] += 2;     // map 5
         
-        if( g_isExtendmapAllowStay || g_is_final_voting )
+        if( g_isExtendmapAllowStay || g_isGameFinalVoting )
         {
             g_arrayOfMapsWithVotesNumber[ 5 ] += 1;    // extend option
         }
@@ -5800,16 +5946,16 @@ stock test_is_map_extension_allowed()
     new chainDelay = 2 + 2 + 1 + 1 + 1
     new test_id    = register_test( chainDelay, "test_is_map_extension_allowed" )
     
-    SET_TEST_FAILURE( test_id, g_is_map_extension_allowed, "g_is_map_extension_allowed must be 0 (it was %d)", \
-            g_is_map_extension_allowed )
+    SET_TEST_FAILURE( test_id, g_isMapExtensionAllowed, "g_isMapExtensionAllowed must be 0 (it was %d)", \
+            g_isMapExtensionAllowed )
     
     set_pcvar_float( cvar_maxMapExtendTime, 20.0 )
-    set_pcvar_float( g_timelimit_pointer, 10.0 )
+    set_pcvar_float( cvar_mp_timelimit, 10.0 )
     
     vote_startDirector( false )
     
-    SET_TEST_FAILURE( test_id, !g_is_map_extension_allowed, "g_is_map_extension_allowed must be 1 (it was %d)", \
-            g_is_map_extension_allowed )
+    SET_TEST_FAILURE( test_id, !g_isMapExtensionAllowed, "g_isMapExtensionAllowed must be 1 (it was %d)", \
+            g_isMapExtensionAllowed )
     
     set_task( 2.0, "test_is_map_extension_allowed2", chainDelay )
 }
@@ -5823,20 +5969,20 @@ public test_is_map_extension_allowed2( chainDelay )
 {
     new test_id = register_test( chainDelay, "test_is_map_extension_allowed2" )
     
-    SET_TEST_FAILURE( test_id, !g_is_map_extension_allowed, "g_is_map_extension_allowed must be 1 (it was %d)", \
-            g_is_map_extension_allowed )
+    SET_TEST_FAILURE( test_id, !g_isMapExtensionAllowed, "g_isMapExtensionAllowed must be 1 (it was %d)", \
+            g_isMapExtensionAllowed )
     
     color_print( 0, "^1%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED" );
     
     cancel_voting()
     
     set_pcvar_float( cvar_maxMapExtendTime, 10.0 )
-    set_pcvar_float( g_timelimit_pointer, 20.0 )
+    set_pcvar_float( cvar_mp_timelimit, 20.0 )
     
     vote_startDirector( false )
     
-    SET_TEST_FAILURE( test_id, g_is_map_extension_allowed, "g_is_map_extension_allowed must be 0 (it was %d)", \
-            g_is_map_extension_allowed )
+    SET_TEST_FAILURE( test_id, g_isMapExtensionAllowed, "g_isMapExtensionAllowed must be 0 (it was %d)", \
+            g_isMapExtensionAllowed )
     
     set_task( 2.0, "test_end_of_map_voting_start_1", chainDelay )
 }
@@ -5850,15 +5996,15 @@ public test_end_of_map_voting_start_1( chainDelay )
 {
     new test_id = register_test( chainDelay, "test_end_of_map_voting_start_1" )
     
-    SET_TEST_FAILURE( test_id, g_is_map_extension_allowed, "g_is_map_extension_allowed must be 0 (it was %d)", \
-            g_is_map_extension_allowed )
+    SET_TEST_FAILURE( test_id, g_isMapExtensionAllowed, "g_isMapExtensionAllowed must be 0 (it was %d)", \
+            g_isMapExtensionAllowed )
     
     cancel_voting()
     
     new secondsLeft = get_timeleft();
     
-    set_pcvar_float( g_timelimit_pointer,
-            ( get_pcvar_float( g_timelimit_pointer ) * 60
+    set_pcvar_float( cvar_mp_timelimit,
+            ( get_pcvar_float( cvar_mp_timelimit ) * 60
               - secondsLeft
               + START_VOTEMAP_MAX_TIME + 15 )
             / 60 )
@@ -5879,7 +6025,7 @@ public test_end_of_map_voting_start_2( chainDelay )
     
     SET_TEST_FAILURE( test_id, !( g_voteStatus & VOTE_IS_IN_PROGRESS ), "vote_startDirector() does not started!" )
     
-    set_pcvar_float( g_timelimit_pointer, 20.0 )
+    set_pcvar_float( cvar_mp_timelimit, 20.0 )
     cancel_voting()
     
     set_task( 1.0, "test_end_of_map_voting_stop_1", chainDelay )
@@ -5898,7 +6044,7 @@ public test_end_of_map_voting_stop_1( chainDelay )
     
     SET_TEST_FAILURE( test_id, ( g_voteStatus & VOTE_IS_IN_PROGRESS ) != 0, "vote_startDirector() does started!" )
     
-    set_pcvar_float( g_timelimit_pointer, 1.0 )
+    set_pcvar_float( cvar_mp_timelimit, 1.0 )
     cancel_voting()
     
     set_task( 1.0, "test_end_of_map_voting_stop_2", chainDelay )
@@ -5917,7 +6063,7 @@ public test_end_of_map_voting_stop_2( chainDelay )
     
     SET_TEST_FAILURE( test_id, ( g_voteStatus & VOTE_IS_IN_PROGRESS ) != 0, "vote_startDirector() does started!" )
     
-    set_pcvar_float( g_timelimit_pointer, 20.0 )
+    set_pcvar_float( cvar_mp_timelimit, 20.0 )
     cancel_voting()
     
     //set_task( 1.0, "test_end_of_map_voting_stop_____", chainDelay )
@@ -6016,29 +6162,29 @@ stock test_gal_in_empty_cycle_case4()
  */
 public test_loadCurrentBlackList_case1()
 {
-    new blackListFile
+    new whiteListFile
     
     new test_id             = register_test( 0, "test_loadCurrentBlackList_case1" )
     new Trie:blackList_trie = TrieCreate()
     
-    copy( g_test_blackListFilePath, charsmax( g_test_blackListFilePath ), "test_loadCurrentBlackList.txt" )
-    set_pcvar_string( cvar_voteWhiteListMapFilePath, g_test_blackListFilePath )
+    copy( g_test_whiteListFilePath, charsmax( g_test_whiteListFilePath ), "test_loadCurrentBlackList.txt" )
+    set_pcvar_string( cvar_voteWhiteListMapFilePath, g_test_whiteListFilePath )
     
-    blackListFile = fopen( g_test_blackListFilePath, "wt" );
+    whiteListFile = fopen( g_test_whiteListFilePath, "wt" );
     
-    if( blackListFile )
+    if( whiteListFile )
     {
-        fprintf( blackListFile, "%s^n", "[23-24]" );
-        fprintf( blackListFile, "%s^n", "de_dust1" );
-        fprintf( blackListFile, "%s^n", "de_dust2" );
-        fprintf( blackListFile, "%s^n", "de_dust3" );
-        fprintf( blackListFile, "%s^n", "[1-23]" );
-        fprintf( blackListFile, "%s^n", "de_dust4" );
-        fprintf( blackListFile, "%s^n", "[12-22]" );
-        fprintf( blackListFile, "%s^n", "de_dust5" );
-        fprintf( blackListFile, "%s^n", "de_dust6" );
-        fprintf( blackListFile, "%s^n", "de_dust7" );
-        fclose( blackListFile );
+        fprintf( whiteListFile, "%s^n", "[23-24]" );
+        fprintf( whiteListFile, "%s^n", "de_dust1" );
+        fprintf( whiteListFile, "%s^n", "de_dust2" );
+        fprintf( whiteListFile, "%s^n", "de_dust3" );
+        fprintf( whiteListFile, "%s^n", "[1-23]" );
+        fprintf( whiteListFile, "%s^n", "de_dust4" );
+        fprintf( whiteListFile, "%s^n", "[12-22]" );
+        fprintf( whiteListFile, "%s^n", "de_dust5" );
+        fprintf( whiteListFile, "%s^n", "de_dust6" );
+        fprintf( whiteListFile, "%s^n", "de_dust7" );
+        fclose( whiteListFile );
     }
     
     g_test_current_time = 23
@@ -6104,7 +6250,7 @@ public test_loadCurrentBlackList_case3()
             "The map 'de_dust2' must to be present on the trie, but it was not!" )
     
     TrieDestroy( blackList_trie )
-    delete_file( g_test_blackListFilePath )
+    delete_file( g_test_whiteListFilePath )
 }
 
 /**
@@ -6128,12 +6274,12 @@ stock save_server_cvars_for_test()
     g_is_test_changed_cvars = true
     
     test_extendmap_max = get_pcvar_float( cvar_maxMapExtendTime )
-    test_mp_timelimit  = get_pcvar_float( g_timelimit_pointer )
+    test_mp_timelimit  = get_pcvar_float( cvar_mp_timelimit )
     
     get_pcvar_string( cvar_voteWhiteListMapFilePath, test_whiteListFilePath, charsmax( test_whiteListFilePath ) )
     
     DEBUG_LOGGER( 2, "    %42s mp_timelimit: %f  test_mp_timelimit: %f   g_originalTimelimit: %f",  \
-            "save_server_cvars_for_test( out )", get_pcvar_float( g_timelimit_pointer ), \
+            "save_server_cvars_for_test( out )", get_pcvar_float( cvar_mp_timelimit ), \
             test_mp_timelimit, g_originalTimelimit )
 }
 
@@ -6143,7 +6289,7 @@ stock save_server_cvars_for_test()
 stock restore_server_cvars_for_test()
 {
     DEBUG_LOGGER( 2, "    %42s mp_timelimit: %f  test_mp_timelimit: %f  g_originalTimelimit: %f",  \
-            "restore_server_cvars_for_test( in )", get_pcvar_float( g_timelimit_pointer ), \
+            "restore_server_cvars_for_test( in )", get_pcvar_float( cvar_mp_timelimit ), \
             test_mp_timelimit, g_originalTimelimit )
     
     if( g_is_test_changed_cvars )
@@ -6151,13 +6297,13 @@ stock restore_server_cvars_for_test()
         g_is_test_changed_cvars = false
         
         set_pcvar_float( cvar_maxMapExtendTime, test_extendmap_max )
-        set_pcvar_float( g_timelimit_pointer, test_mp_timelimit )
+        set_pcvar_float( cvar_mp_timelimit, test_mp_timelimit )
         
         set_pcvar_string( cvar_voteWhiteListMapFilePath, test_whiteListFilePath )
     }
     
     DEBUG_LOGGER( 2, "    %42s mp_timelimit: %f  test_mp_timelimit: %f  g_originalTimelimit: %f",  \
-            "restore_server_cvars_for_test( out )", get_pcvar_float( g_timelimit_pointer ), \
+            "restore_server_cvars_for_test( out )", get_pcvar_float( cvar_mp_timelimit ), \
             test_mp_timelimit, g_originalTimelimit )
 }
 

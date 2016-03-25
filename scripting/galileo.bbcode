@@ -1,5 +1,5 @@
-[anchor]Top[/anchor][SIZE="6"][COLOR="Blue"][B]Galileo v2.2.1[/B][/COLOR][/SIZE] A feature rich map voting plugin
-[SIZE=1][COLOR=Red]Release: 12.09.2008 | Last Update: 13.03.2016[/SIZE][/COLOR]
+[anchor]Top[/anchor][SIZE="6"][COLOR="Blue"][B]Galileo v2.3[/B][/COLOR][/SIZE] A feature rich map voting plugin
+[SIZE=1][COLOR=Red]Release: 12.09.2008 | Last Update: 24.03.2016[/SIZE][/COLOR]
 
 If you want to translate the Galileo Mapchooser to your language or if you see some 
 error or bad coloring tags positioning at the current translations, feel free to correct
@@ -98,12 +98,14 @@ very own [B]Map Chooser[/B].
 It is [COLOR="Red"][B]highly recommended[/B][/COLOR] you to review the well-commented "[B]galileo.cfg[/B]" to see
 all the cvars' options you have with this plugin.  It's located in the [B]Attached ZIP[/B]
 available at the [goanchor=Downloads]Downloads[/goanchor] section, and [B]here below[/B] clicking on the [COLOR="Red"]show[/COLOR] button:
+[SPOILER]
 [PHP]
 galileo.cfg contents.
 [/PHP]
+[/SPOILER]
 
 
-********************** [anchor]Brief[/anchor][SIZE="5"][COLOR="Blue"][B]Small / Brief Features' list:[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor] ******
+********************** [anchor]Brief[/anchor][SIZE="5"][COLOR="Blue"][B]Small / Brief Features' list[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor] ******
 [QUOTE]
 [LIST=1]
  [*] Ability to "[B]rock the vote[/B]".
@@ -133,6 +135,15 @@ galileo.cfg contents.
  
  [*] After the user voted, transform the '[B]0 - None[/B]' option to an '[COLOR="blue"]one time cancel[/COLOR]' vote
      opportunity, configured by cvar.
+     
+     
+ [*] If you are using only '[B]mp_timelimit[/B]' the map extension will be in minutes.
+     If you are using '[B]mp_maxrounds[/B]/[B]mp_winlimit[/B]' the map extension will be in rounds.
+     If you are using both '[B]mp_timelimit[/B]/[B]mp_maxrounds[/B]/[B]mp_winlimit[/B]', it gives you the
+     first to get close to finish the map. For example, suppose that there are [COLOR="Blue"]3 minutes[/COLOR] left
+     and [COLOR="Blue"]10 rounds[/COLOR] remaining. It will give you by minutes, and not by rounds. And to avoid
+     re-voting when those [COLOR="Blue"]10 rounds[/COLOR] end up, it will [COLOR="Blue"]temporarily[/COLOR] disables the rounds voting
+     when the remaining rounds end up.
 
  
  [*] Command '[COLOR="Blue"][B]gal_startvote -nochange or -restart[/B][/COLOR]', to forces a map vote to begin 
@@ -321,7 +332,10 @@ galileo.amxx
 [CODE]
 [SUG]
 The Maintenance Mode
-If the owner of the server is fixing something or updating the server and doesn't wanna the map to be changed he will enable the cvar maintenance so the map will can't be changed by any method like gal_startvote/rtv/timeleft or maxrounds ended... and he will display print chat some thing like that: you cannot change the map when the server is in mode maintenance
+If the owner of the server is fixing something or updating the server and doesn't wanna the map 
+to be changed he will enable the cvar maintenance so the map will can't be changed by any method 
+like gal_startvote/rtv/timeleft or maxrounds ended... and he will display print chat some thing 
+like that: you cannot change the map when the server is in mode maintenance
 
 [SUG]
 first you need enable cvar to this feature...
@@ -329,12 +343,32 @@ if the half of the timeleft/roundsleft passed  and the server crashed
 if the enable cvar is 1 the server will not change to the last map
 if the enable cvar is 2 the server will start a vote without changing the map
 if the enable cvar is 3 the server will start a vote after the half of the timeleft/roundsleft passed
+
+[SUG]
+Maps are commonly repeated on the vote and there is no chance for all of them I've got on server 
+to get to play on. Which is why I'm using gal_banrecent to ban these 1000+ maps. Because of this, 
+players can't nominate maps for few days . My proposition is adding a file to the plug in, in which 
+will be saved map history and a bunch of recent maps won't be able to get voted (but still be able 
+to get nominated).
+
 [/CODE]
 
 
 ******************************** [anchor]Change[/anchor][B][SIZE="5"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
 
-[B]2016-03-09 | v2.2.1[/B]
+[B]2016-03-24 | v2.3[/B]
+[LIST=1]
+[*]Added a new cvar 'gal_vote_replace_menu' to always replace any open menu by the Galileo voting menu.
+[*]Fixed the voting menu not showing when the cvar 'gal_vote_showstatus' is set to 0 or 2.
+[*]Fixed the cvar 'gal_vote_showstatus' option 0 showing a froze countdown timer.
+[*]Fixed RTV voting not starting on some game mods as 'Sven Co-op'.
+[*]Fixed the End Map Countdown showing after a common voting.
+[*]Fixed not restoring the time limit after a restart round on the server.
+[*]Fixed the cancel voting feature not stopping the 'pending vote countdown' announcement.
+[*]Fixed RTV voting showing Extend Map Option on early votes.
+[/LIST]
+
+[B]2016-03-13 | v2.2.1[/B]
 [LIST=1]
 [*]Fixed wrong version number on files.
 [/LIST]
@@ -348,49 +382,16 @@ if the enable cvar is 3 the server will start a vote after the half of the timel
 [*]Fixed the possibility to start rock the vote after a map voting.
 [/LIST]
 
-[B]2016-03-09 | v2.1.9[/B]
+[B]2016-03-05 | v2.1.1[/B] ~ [B]2016-03-09 | v2.1.9[/B]
 [LIST=1]
 [*]Fixed wrong version number on files.
-[/LIST]
-
-[B]2016-03-09 | v2.1.8[/B]
-[LIST=1]
 [*]Corrected "pl" translations misspellings.
 [*]Fixed do not reset the round limiters feature.
-[/LIST]
-
-[B]2016-03-07 | v2.1.7[/B]
-[LIST=1]
 [*]Added to restore RTV original values on 'sv_restartround' event.
-[/LIST]
-
-[B]2016-03-07 | v2.1.6[/B]
-[LIST=1]
-[*]Fixed wrong version number on files.
-[/LIST]
-
-[B]2016-03-07 | v2.1.5[/B]
-[LIST=1]
 [*]Fixed extra map restart the on 'gal_srv_start' cvar feature.
-[/LIST]
-
-[B]2016-03-06 | v2.1.4[/B]
-[LIST=1]
 [*]Fixed nominations not showing/allowing all nominated maps.
-[/LIST]
-
-[B]2016-03-05 | v2.1.3[/B]
-[LIST=1]
 [*]Fixed bad vote start timer.
-[/LIST]
-
-[B]2016-03-05 | v2.1.2[/B]
-[LIST=1]
 [*]Fixed start on the last map feature, cvar 'gal_srv_start', using a wrong next map position.
-[/LIST]
-
-[B]2016-03-05 | v2.1.1[/B]
-[LIST=1]
 [*]Fixed the 'say nextmap' command not showing the next map.
 [/LIST]
 
@@ -617,8 +618,9 @@ GAL_STANDARD_UNKNOWNMOD
 [B][URL="https://forums.alliedmods.net/member.php?u=263772"]Old.School[/URL][/B] ([B][NOPARSE][B][/NOPARSE]l@k ~ [R]Eed[/B]): For bug reports, testing and feature suggestions.
 [B][URL="https://forums.alliedmods.net/member.php?u=259683"]iNdio[/URL][/B]: For the Romanian [ro] and Italian [it] language translations.
 [B][URL="https://github.com/Ni3znajomy"]Ni3znajomy[/URL][/B]: For contributions/work over project on the GitHub.
-[B][URL="https://forums.alliedmods.net/member.php?u=119830"]Shattered Heart Lynx[/URL][/B]: For the custom 'amxx_datadir' directory bug report.
-[B][URL="https://forums.alliedmods.net/member.php?u=267675"]wombad321[/URL][/B]: For the 'map extend' not showing up bug report.
+[B][URL="https://forums.alliedmods.net/member.php?u=119830"]Shattered Heart Lynx[/URL][/B]: For the custom 'amxx_datadir' directory and RTV 'Sven Co-op' fix and bug report.
+[B][URL="https://forums.alliedmods.net/member.php?u=267675"]wombad321[/URL][/B]: For the 'map extend' not showing bug report.
+[B][URL="https://forums.alliedmods.net/member.php?u=165954"]WaSaAa1[/URL][/B]: For the voting menu not showing bug report.
 [QUOTE=Brad;684848]
 A lot of time and effort went into making this plugin, making features just right,
 making sure there were no bugs, making sure it was easy to use. If you are glad I made
