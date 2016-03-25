@@ -305,21 +305,12 @@ new g_user_msgid
 
 
 /**
- * Variables related to debug level 32: displays messages related to the rounds end map voting
+ * Game cvars.
  */
-new g_originalMaxRounds
-new g_originalWinLimit
-new Float:g_originalTimelimit
-new Float:g_original_sv_maxspeed
-
 new cvar_mp_freezetime
 new cvar_mp_winlimit;
 new cvar_mp_maxrounds;
 new cvar_mp_timelimit;
-
-new g_total_rounds_played;
-new g_total_terrorists_wins;
-new g_total_CT_wins;
 
 
 /**
@@ -419,11 +410,15 @@ new bool:g_isColorChatSupported
 new bool:g_isGameFinalVoting
 
 new Float:g_rtvMinutesWait;
+new Float:g_originalTimelimit
+new Float:g_original_sv_maxspeed
 
 new Array:g_emptyCycleMapList
 new Array:g_fillerMap;
 new Array:g_nominationMap
 
+new g_originalMaxRounds
+new g_originalWinLimit
 new g_showVoteStatusType
 new g_extendmapStepRounds
 new g_extendmapStepMinutes
@@ -452,6 +447,9 @@ new NP_g_mapCycleFilePath [ MAX_FILE_PATH_LENGHT ]
 new DIR_CONFIGS_PATH [ MAX_FILE_PATH_LENGHT ];
 new DATA_DIR_PATH    [ MAX_FILE_PATH_LENGHT ];
 
+new g_totalRoundsPlayed;
+new g_totalTerroristsWins;
+new g_totalCtWins;
 new g_totalVoteOptions
 new g_totalVoteOptions_temp
 
@@ -805,19 +803,19 @@ public team_win_event()
     
     if( string_team_winner[ 0 ] == 'T' )
     {
-        g_total_terrorists_wins++
+        g_totalTerroristsWins++
     }
     else if( string_team_winner[ 0 ] == 'C' )
     {
-        g_total_CT_wins++
+        g_totalCtWins++
     }
     
     winlimit_integer = get_pcvar_num( cvar_mp_winlimit )
     
     if( winlimit_integer )
     {
-        wins_CT_trigger        = g_total_CT_wins + VOTE_START_ROUNDS
-        wins_Terrorist_trigger = g_total_terrorists_wins + VOTE_START_ROUNDS
+        wins_CT_trigger        = g_totalCtWins + VOTE_START_ROUNDS
+        wins_Terrorist_trigger = g_totalTerroristsWins + VOTE_START_ROUNDS
         
         if( ( ( wins_CT_trigger > winlimit_integer )
               || ( wins_Terrorist_trigger > winlimit_integer ) )
@@ -885,13 +883,13 @@ public round_end_event()
     new maxrounds_number;
     new current_rounds_trigger
     
-    g_total_rounds_played++
+    g_totalRoundsPlayed++
     
     maxrounds_number = get_pcvar_num( cvar_mp_maxrounds )
     
     if( maxrounds_number )
     {
-        current_rounds_trigger = g_total_rounds_played + VOTE_START_ROUNDS
+        current_rounds_trigger = g_totalRoundsPlayed + VOTE_START_ROUNDS
         
         if( ( current_rounds_trigger > maxrounds_number )
             && !IS_END_OF_MAP_VOTING_GOING_ON() )
@@ -924,8 +922,8 @@ public round_end_event()
     }
     
     DEBUG_LOGGER( 32, "Round_End:  maxrounds_number = %d, \
-            g_total_rounds_played = %d, current_rounds_trigger = %d", \
-            maxrounds_number, g_total_rounds_played, current_rounds_trigger )
+            g_totalRoundsPlayed = %d, current_rounds_trigger = %d", \
+            maxrounds_number, g_totalRoundsPlayed, current_rounds_trigger )
 }
 
 public process_last_round()
@@ -1142,7 +1140,7 @@ public reset_rounds_scores()
             && get_pcvar_num( cvar_serverWinlimitRestart ) )
         {
             new new_winlimit = ( get_pcvar_num( cvar_mp_winlimit )
-                                 - max( g_total_terrorists_wins, g_total_CT_wins )
+                                 - max( g_totalTerroristsWins, g_totalCtWins )
                                  + get_pcvar_num( cvar_serverWinlimitRestart ) - 1 )
             
             if( new_winlimit > 0 )
@@ -1154,7 +1152,7 @@ public reset_rounds_scores()
         if( get_pcvar_num( cvar_mp_maxrounds )
             && get_pcvar_num( cvar_serverMaxroundsRestart ) )
         {
-            new new_maxrounds = ( get_pcvar_num( cvar_mp_maxrounds ) - g_total_rounds_played
+            new new_maxrounds = ( get_pcvar_num( cvar_mp_maxrounds ) - g_totalRoundsPlayed
                                   + get_pcvar_num( cvar_serverMaxroundsRestart ) - 1 )
             
             if( new_maxrounds > 0 )
@@ -1164,9 +1162,9 @@ public reset_rounds_scores()
         }
     }
     
-    g_total_terrorists_wins = 0
-    g_total_CT_wins         = 0
-    g_total_rounds_played   = -1
+    g_totalTerroristsWins = 0
+    g_totalCtWins         = 0
+    g_totalRoundsPlayed   = -1
 }
 
 public configure_last_round_HUD()
@@ -4456,8 +4454,8 @@ stock map_isTooRecent( map[] )
 stock configureRtvVotingType()
 {
     new minutes_left   = get_timeleft() / 60
-    new maxrounds_left = get_pcvar_num( cvar_mp_maxrounds ) - g_total_rounds_played
-    new winlimit_left  = get_pcvar_num( cvar_mp_winlimit ) - max( g_total_CT_wins, g_total_terrorists_wins )
+    new maxrounds_left = get_pcvar_num( cvar_mp_maxrounds ) - g_totalRoundsPlayed
+    new winlimit_left  = get_pcvar_num( cvar_mp_winlimit ) - max( g_totalCtWins, g_totalTerroristsWins )
     
     if( ( minutes_left > maxrounds_left
           && maxrounds_left > 0 )
@@ -4541,10 +4539,10 @@ public vote_rock( player_id )
         return;
     }
     else if( g_rtvWaitRounds
-             && g_total_rounds_played < g_rtvWaitRounds )
+             && g_totalRoundsPlayed < g_rtvWaitRounds )
     {
         color_print( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_TOOSOON_ROUNDS",
-                g_rtvWaitRounds - g_total_rounds_played );
+                g_rtvWaitRounds - g_totalRoundsPlayed );
         return;
     }
     
