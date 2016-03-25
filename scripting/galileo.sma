@@ -22,7 +22,7 @@
 *****************************************************************************************
 */
 
-new const PLUGIN_VERSION[] = "v2.3.1d"
+new const PLUGIN_VERSION[] = "v2.3.2"
 
 #include <amxmodx>
 #include <amxmisc>
@@ -312,6 +312,9 @@ new cvar_mp_freezetime
 new cvar_mp_winlimit;
 new cvar_mp_maxrounds;
 new cvar_mp_timelimit;
+new cvar_mp_roundtime;
+new cvar_mp_chattime;
+new cvar_sv_maxspeed;
 
 
 /**
@@ -604,6 +607,21 @@ stock configureEndGameCvars()
     if( !( cvar_mp_timelimit = get_cvar_pointer( "mp_timelimit" ) ) )
     {
         cvar_mp_timelimit = cvar_disabledValuePointer;
+    }
+    
+    if( !( cvar_mp_roundtime = get_cvar_pointer( "mp_roundtime" ) ) )
+    {
+        cvar_mp_roundtime = cvar_disabledValuePointer;
+    }
+    
+    if( !( cvar_mp_chattime = get_cvar_pointer( "mp_chattime" ) ) )
+    {
+        cvar_mp_chattime = cvar_disabledValuePointer;
+    }
+    
+    if( !( cvar_sv_maxspeed = get_cvar_pointer( "sv_maxspeed" ) ) )
+    {
+        cvar_sv_maxspeed = cvar_disabledValuePointer;
     }
 }
 
@@ -978,7 +996,7 @@ stock intermission_display()
 {
     if( g_isTimeToChangeLevel )
     {
-        new Float:mp_chattime = get_cvar_float( "mp_chattime" )
+        new Float:mp_chattime = get_pcvar_float( cvar_mp_chattime );
         
         if( mp_chattime > 12 )
         {
@@ -998,7 +1016,7 @@ stock intermission_display()
         {
             // freeze the game and show the scoreboard
             g_isTimeToResetGame    = true
-            g_original_sv_maxspeed = get_cvar_float( "sv_maxspeed" )
+            g_original_sv_maxspeed = get_pcvar_float( cvar_sv_maxspeed )
             
             set_cvar_float( "sv_maxspeed", 0.0 )
             
@@ -1467,7 +1485,7 @@ public map_manageEnd()
             
             // This is to avoid have a extra round at special mods where time limit is equal the
             // round timer.
-            if( get_cvar_float( "mp_roundtime" ) > 8 )
+            if( get_pcvar_float( cvar_mp_roundtime ) > 8.0 )
             {
                 g_isTimeToChangeLevel = true;
                 
@@ -1499,9 +1517,20 @@ stock prevent_map_change()
     server_cmd( "mp_timelimit 0" );
     
     // Prevent the map from being played indefinitely.
-    if( ( roundTimeMinutes = get_cvar_float( "mp_roundtime" ) ) < 8.0 )
+    if( g_isTimeToChangeLevel )
     {
         roundTimeMinutes = 9.0;
+    }
+    else
+    {
+        if( ( roundTimeMinutes = get_pcvar_float( cvar_mp_roundtime ) ) > 0 )
+        {
+            roundTimeMinutes *= 3.0;
+        }
+        else
+        {
+            roundTimeMinutes = 9.0;
+        }
     }
     
     set_task( roundTimeMinutes * 60, "map_restoreOriginalTimeLimit", TASKID_PREVENT_INFITY_GAME );
@@ -5443,6 +5472,7 @@ stock cancel_voting( bool:isToDoubleReset = false )
     remove_task( TASKID_START_VOTING_BY_TIMER )
     remove_task( TASKID_DELETE_USERS_MENUS )
     remove_task( TASKID_VOTE_DISPLAY )
+    remove_task( TASKID_PREVENT_INFITY_GAME )
     remove_task( TASKID_DBG_FAKEVOTES )
     remove_task( TASKID_VOTE_HANDLEDISPLAY )
     remove_task( TASKID_VOTE_EXPIRE )
@@ -5527,35 +5557,35 @@ stock delete_users_menus( bool:isToDoubleReset )
 
 public nextmap_plugin_init()
 {
-    pause( "acd", "nextmap.amxx" )
+    pause( "acd", "nextmap.amxx" );
     
-    register_dictionary( "nextmap.txt" )
-    register_event( "30", "changeMap", "a" )
+    register_dictionary( "nextmap.txt" );
+    register_event( "30", "changeMap", "a" );
     
-    register_clcmd( "say nextmap", "sayNextMap", 0, "- displays nextmap" )
-    register_clcmd( "say currentmap", "sayCurrentMap", 0, "- display current map" )
+    register_clcmd( "say nextmap", "sayNextMap", 0, "- displays nextmap" );
+    register_clcmd( "say currentmap", "sayCurrentMap", 0, "- display current map" );
     
-    NP_cvar_amx_nextmap     = register_cvar( "amx_nextmap", "", FCVAR_SERVER | FCVAR_EXTDLL | FCVAR_SPONLY )
-    NP_cvar_mp_chattime     = get_cvar_pointer( "mp_chattime" )
-    NP_cvar_mp_friendlyfire = get_cvar_pointer( "mp_friendlyfire" )
+    NP_cvar_amx_nextmap     = register_cvar( "amx_nextmap", "", FCVAR_SERVER | FCVAR_EXTDLL | FCVAR_SPONLY );
+    NP_cvar_mp_chattime     = get_cvar_pointer( "mp_chattime" );
+    NP_cvar_mp_friendlyfire = get_cvar_pointer( "mp_friendlyfire" );
     
     if( NP_cvar_mp_friendlyfire )
     {
-        register_clcmd( "say ff", "sayFFStatus", 0, "- display friendly fire status" )
+        register_clcmd( "say ff", "sayFFStatus", 0, "- display friendly fire status" );
     }
     
-    get_mapname( NP_g_currentMapName, charsmax( NP_g_currentMapName ) )
+    get_mapname( NP_g_currentMapName, charsmax( NP_g_currentMapName ) );
     
-    new tockenMapcycleAndPosion[ MAX_MAPNAME_LENGHT + MAX_FILE_PATH_LENGHT ]
-    new mapcycleFilePath[ MAX_FILE_PATH_LENGHT ]
-    new mapcycleCurrentIndex[ MAX_MAPNAME_LENGHT ]
+    new tockenMapcycleAndPosion[ MAX_MAPNAME_LENGHT + MAX_FILE_PATH_LENGHT ];
+    new mapcycleFilePath[ MAX_FILE_PATH_LENGHT ];
+    new mapcycleCurrentIndex[ MAX_MAPNAME_LENGHT ];
     
-    get_localinfo( "lastmapcycle", tockenMapcycleAndPosion, charsmax( tockenMapcycleAndPosion ) )
+    get_localinfo( "lastmapcycle", tockenMapcycleAndPosion, charsmax( tockenMapcycleAndPosion ) );
     
     parse( tockenMapcycleAndPosion, mapcycleFilePath, charsmax( mapcycleFilePath ),
-            mapcycleCurrentIndex, charsmax( mapcycleCurrentIndex ) )
+            mapcycleCurrentIndex, charsmax( mapcycleCurrentIndex ) );
     
-    get_cvar_string( "mapcyclefile", NP_g_mapCycleFilePath, charsmax( NP_g_mapCycleFilePath ) )
+    get_cvar_string( "mapcyclefile", NP_g_mapCycleFilePath, charsmax( NP_g_mapCycleFilePath ) );
     
     if( !equal( NP_g_mapCycleFilePath, mapcycleFilePath ) )
     {
@@ -5563,13 +5593,13 @@ public nextmap_plugin_init()
     }
     else
     {
-        NP_g_currentMapCyclePosition = str_to_num( mapcycleCurrentIndex )
+        NP_g_currentMapCyclePosition = str_to_num( mapcycleCurrentIndex );
     }
     
-    readMapCycle( NP_g_mapCycleFilePath, NP_g_nextMapName, charsmax( NP_g_nextMapName ) )
-    set_pcvar_string( NP_cvar_amx_nextmap, NP_g_nextMapName )
+    readMapCycle( NP_g_mapCycleFilePath, NP_g_nextMapName, charsmax( NP_g_nextMapName ) );
+    set_pcvar_string( NP_cvar_amx_nextmap, NP_g_nextMapName );
     
-    saveCurrentMapCycleSetting()
+    saveCurrentMapCycleSetting();
 }
 
 /**
