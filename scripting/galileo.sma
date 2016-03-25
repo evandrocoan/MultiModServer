@@ -1491,7 +1491,7 @@ public map_manageEnd()
 
 stock prevent_map_change()
 {
-    new Float:roundTime;
+    new Float:roundTimeMinutes;
     
     save_time_limit();
     
@@ -1499,12 +1499,12 @@ stock prevent_map_change()
     server_cmd( "mp_timelimit 0" );
     
     // Prevent the map from being played indefinitely.
-    if( ( roundTime = get_cvar_float( "mp_roundtime" ) ) < 8.0 )
+    if( ( roundTimeMinutes = get_cvar_float( "mp_roundtime" ) ) < 8.0 )
     {
-        roundTime = 9.0;
+        roundTimeMinutes = 9.0;
     }
     
-    set_task( roundTime, "map_restoreOriginalTimeLimit", TASKID_PREVENT_INFITY_GAME );
+    set_task( roundTimeMinutes * 60, "map_restoreOriginalTimeLimit", TASKID_PREVENT_INFITY_GAME );
 }
 
 public map_loadRecentList()
