@@ -1,15 +1,17 @@
 @echo off
 
+for /f %%i in ('date /T') do set CURRENT_DATE=%%i
+
 SET ERROR_LOG_FILE=uncrustify_log.txt
 SET CONFIG_FILE=..\..\MyUncrustifyConfigs\amxmodx.cfg
 
 echo.
-echo Parsing file...
+echo Parsing file... Current time is: %time% - %CURRENT_DATE%
 
 >compiled\%ERROR_LOG_FILE% 2>&1 (
 for %%i in (*.sma) do (
     echo.
-    echo uncrustify.exe -c %CONFIG_FILE% --no-backup %%i
+    echo uncrustify.exe -c %CONFIG_FILE% --no-backup %%i... Current time is: %time% - %CURRENT_DATE%
     uncrustify.exe -c %CONFIG_FILE% --no-backup %%i || goto error
     
     echo intend_empty_lines.lua %%i > temp_file.txt
