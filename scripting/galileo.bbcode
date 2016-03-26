@@ -197,7 +197,7 @@ galileo.cfg contents.
 1
 7
      [/CODE]This maps groups configuration means to load [COLOR="red"]up to 1 map[/COLOR] from the file '[B]1.ini[/B]'
-     (1? line after [groups]) and [COLOR="red"]up to 7 maps[/COLOR] from '[B]2.ini[/B]' (2? line after [groups]).
+     (1st line after [groups]) and [COLOR="red"]up to 7 maps[/COLOR] from '[B]2.ini[/B]' (2nd line after [groups]).
 
      Then you only need to create the files '[B]1.ini[/B]' and '[B]2.ini[/B]' in the '[B]./configs/galileo/[/B]'
      folder. And in the file '[B]1.ini[/B]' you put only the '[COLOR="Blue"]de_dust2[/COLOR]' map, and in the file '[B]2.ini[/B]'
@@ -208,8 +208,8 @@ galileo.cfg contents.
      nominations and none of them is '[COLOR="blue"]de_dust2[/COLOR]'. The map '[COLOR="Blue"]de_dust2[/COLOR]' will not be loaded
      on this case because the maximum maps available on any voting is [COLOR="Blue"][B]1 + 7 = 8[/B][/COLOR].
      And as the map nominations are loaded before filling the map voting list using the
-     map fillers from your map groups files '[B]1.ini[/B]' (1? line after [groups]) and '[B]2.ini[/B]'
-     (2? line after [groups]), the map '[COLOR="blue"]de_dust2[/COLOR]' will not be added because there is not
+     map fillers from your map groups files '[B]1.ini[/B]' (1st line after [groups]) and '[B]2.ini[/B]'
+     (2nd line after [groups]), the map '[COLOR="blue"]de_dust2[/COLOR]' will not be added because there is not
      enough space.
      
      
