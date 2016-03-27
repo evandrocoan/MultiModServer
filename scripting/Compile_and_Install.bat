@@ -6,7 +6,7 @@ for %%i in (*.sma) do (
     echo.
     echo // Compiling %%i ... Current time is: %time% - %CURRENT_DATE% 
     echo.
-
+    
     amxxpc.exe "%%i" -ocompiled/"%%~ni.amxx"
 )
 

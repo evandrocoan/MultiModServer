@@ -22,7 +22,7 @@
 *****************************************************************************************
 */
 
-new const PLUGIN_VERSION[] = "v2.3.2"
+new const PLUGIN_VERSION[] = "v2.3.3"
 
 #include <amxmodx>
 #include <amxmisc>
@@ -33,7 +33,7 @@ new const PLUGIN_VERSION[] = "v2.3.2"
  * 0   - Disables this feature.
  * 1   - Normal debug.
  * 2   - To skip the 'pendingVoteCountdown()' and set the vote and runoff time to 5 seconds, and run
- *       the unit tests and print their out put results.
+ *       the Unit Tests and print their out put results.
  * 4   - To create fake votes.
  * 7   - Levels 1, 2 and 4.
  */
@@ -61,6 +61,11 @@ new const PLUGIN_VERSION[] = "v2.3.2"
  */
 new g_debug_level = 1 + 4 + 8 + 16
 
+/**
+ * Dummy value used to use the do...while() statements to allow the semicolon ';' use at macros endings.
+ */
+new g_dummy_value = 0;
+
 
 /**
  * Write debug messages to server's console accordantly with cvar gal_debug.
@@ -83,7 +88,7 @@ stock debugMesssageLogger( mode, message[] = "", any: ... )
 }
 
 #else
-    #define DEBUG_LOGGER(%1) //
+    #define DEBUG_LOGGER(%1)
 
 #endif
 
@@ -94,6 +99,7 @@ stock debugMesssageLogger( mode, message[] = "", any: ... )
  * Contains all unit tests to execute.
  */
 #define ALL_TESTS_TO_EXECUTE() \
+do \
 { \
     test_register_test(); \
     test_gal_in_empty_cycle_case1(); \
@@ -104,7 +110,7 @@ stock debugMesssageLogger( mode, message[] = "", any: ... )
     test_loadCurrentBlackList_case1(); \
     test_loadCurrentBlackList_case2(); \
     test_loadCurrentBlackList_case3(); \
-}
+} while( g_dummy_value )
 
 
 /**
@@ -112,13 +118,14 @@ stock debugMesssageLogger( mode, message[] = "", any: ... )
  * double failure at the test control system.
  */
 #define SET_TEST_FAILURE(%1) \
+do \
 { \
     set_test_failure_private( %1 ); \
     if( g_current_test_evaluation ) \
     { \
         return; \
     } \
-}
+} while( g_dummy_value )
 
 
 /**
@@ -133,6 +140,7 @@ new Array: g_tests_failure_ids
 new Array: g_tests_failure_reasons
 new bool: g_is_test_changed_cvars
 new bool: g_current_test_evaluation
+new bool: g_areTheUnitTestsRunning
 
 new g_test_current_time
 new g_test_whiteListFilePath[ 128 ]
@@ -387,8 +395,8 @@ new cvar_voteWhiteListMapFilePath
  */
 new const LAST_EMPTY_CYCLE_FILE_NAME[]    = "lastEmptyCycleMapName.dat"
 new const CURRENT_AND_NEXTMAP_FILE_NAME[] = "currentAndNextmapNames.dat"
-new const MENU_CHOOSEMAP[]                = "gal_menuChooseMap"
-new const MENU_CHOOSEMAP_QUESTION[]       = "chooseMapQuestion"
+new const CHOOSE_MAP_MENU_NAME[]          = "gal_menuChooseMap"
+new const CHOOSE_MAP_MENU_QUESTION[]      = "chooseMapQuestion"
 
 new bool:g_isVotingByTimer
 new bool:g_isTimeToResetGame
@@ -455,7 +463,7 @@ new g_totalRoundsPlayed;
 new g_totalTerroristsWins;
 new g_totalCtWins;
 new g_totalVoteOptions
-new g_totalVoteOptions_temp
+new g_totalVoteOptionsTemp
 
 new g_maxVotingChoices;
 new g_voteStatus
@@ -627,8 +635,8 @@ stock configureEndGameCvars()
 
 stock configureTheVotingMenus()
 {
-    g_chooseMapMenuId         = register_menuid( MENU_CHOOSEMAP );
-    g_chooseMapQuestionMenuId = register_menuid( MENU_CHOOSEMAP_QUESTION );
+    g_chooseMapMenuId         = register_menuid( CHOOSE_MAP_MENU_NAME );
+    g_chooseMapQuestionMenuId = register_menuid( CHOOSE_MAP_MENU_QUESTION );
     
     register_menucmd( g_chooseMapMenuId, MENU_KEY_1 | MENU_KEY_2 |
             MENU_KEY_3 | MENU_KEY_4 | MENU_KEY_5 | MENU_KEY_6 |
@@ -734,11 +742,10 @@ stock cacheCvarsValues()
     g_showVoteStatusType     = get_pcvar_num( cvar_showVoteStatusType )
     
     g_isColoredChatEnabled = get_pcvar_num( cvar_coloredChatEnabled ) != 0
-    
     g_isExtendmapAllowStay = get_pcvar_num( cvar_extendmapAllowStay ) != 0
     g_isToShowNoneOption   = get_pcvar_num( cvar_isToShowNoneOption ) != 0
-    g_isToShowExpCountdown = get_pcvar_num( cvar_isToShowExpCountdown ) != 0
     g_isToShowVoteCounter  = get_pcvar_num( cvar_isToShowVoteCounter ) != 0
+    g_isToShowExpCountdown = get_pcvar_num( cvar_isToShowExpCountdown ) != 0
     
     g_maxVotingChoices = max( min( sizeof g_votingMapNames, get_pcvar_num( cvar_voteMapChoiceCount ) ), 2 )
 }
@@ -1012,13 +1019,13 @@ stock intermission_display()
             set_task( mp_chattime, "map_change", TASKID_MAP_CHANGE );
         }
         
+        // freeze the game and show the scoreboard
         if( get_pcvar_num( cvar_isEndMapCountdown ) )
         {
-            // freeze the game and show the scoreboard
-            g_isTimeToResetGame    = true
-            g_original_sv_maxspeed = get_pcvar_float( cvar_sv_maxspeed )
+            g_isTimeToResetGame    = true; // reset the game ending if there is a restart round.
+            g_original_sv_maxspeed = get_pcvar_float( cvar_sv_maxspeed );
             
-            set_cvar_float( "sv_maxspeed", 0.0 )
+            set_pcvar_float( cvar_sv_maxspeed, 0.0 );
             
             client_cmd( 0, "slot1" )
             client_cmd( 0, "drop weapon_c4" )
@@ -1033,7 +1040,6 @@ stock intermission_display()
         }
         else
         {
-            // freeze the game and show the scoreboard
             message_begin( MSG_ALL, SVC_INTERMISSION );
             message_end();
         }
@@ -1131,6 +1137,22 @@ stock reset_round_ending()
     remove_task( TASKID_SHOW_LAST_ROUND_HUD )
     
     client_cmd( 0, "-showscores" )
+}
+
+stock save_round_ending( roundEndStatus[] )
+{
+    roundEndStatus[ 0 ] = g_isTimeToChangeLevel;
+    roundEndStatus[ 1 ] = g_isTimeToRestart;
+    roundEndStatus[ 2 ] = g_isRtvLastRound;
+    roundEndStatus[ 3 ] = g_isLastGameRound;
+}
+
+stock restore_round_ending( roundEndStatus[] )
+{
+    g_isTimeToChangeLevel = bool:roundEndStatus[ 0 ];
+    g_isTimeToRestart     = bool:roundEndStatus[ 1 ];
+    g_isRtvLastRound      = bool:roundEndStatus[ 2 ];
+    g_isLastGameRound     = bool:roundEndStatus[ 3 ];
 }
 
 public reset_rounds_scores()
@@ -2975,7 +2997,16 @@ stock vote_startDirector( bool:is_forced_voting )
                 get_realplayersnum(): %d", g_voteStatus, g_voteStatus & VOTE_IS_OVER != 0, \
                 is_forced_voting, get_realplayersnum() )
     
-    #if !( DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST )
+    #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
+        
+        // stop the compiler warning 204: symbol is assigned a value that is never used
+        get_pcvar_num( cvar_isEmptyCycleServerChange )
+        
+        if( !g_areTheUnitTestsRunning )
+        {
+            return;
+        }
+    #else
         
         if( get_realplayersnum() == 0 )
         {
@@ -2991,11 +3022,18 @@ stock vote_startDirector( bool:is_forced_voting )
         }
         
         return
-    #else
-        // stop the compiler warning 204: symbol is assigned a value that is never used
-        get_pcvar_num( cvar_isEmptyCycleServerChange )
-    
     #endif
+    }
+    
+    if( is_forced_voting
+        && g_voteStatus & VOTE_IS_OVER )
+    {
+        new bool:roundEndStatus[ 4 ]
+        
+        save_round_ending( roundEndStatus );
+        cancel_voting();
+        restore_round_ending( roundEndStatus );
+        restoreOriginalServerMaxSpeed();
     }
     
     // the rounds start delay task could be running
@@ -3006,24 +3044,29 @@ stock vote_startDirector( bool:is_forced_voting )
         vote_resetStats()
     }
     
-    // update cached data for the new voting.
-    cacheCvarsValues()
-    
     if( g_voteStatus & VOTE_IS_RUNOFF )
     {
-        choicesLoaded      = g_totalVoteOptions_temp
-        g_totalVoteOptions = g_totalVoteOptions_temp
+        new runoffChoice[ 2 ][ MAX_MAPNAME_LENGHT ];
+        
+        choicesLoaded      = g_totalVoteOptionsTemp
+        g_totalVoteOptions = g_totalVoteOptionsTemp
         g_voteDuration     = get_pcvar_num( cvar_runoffDuration )
         
         // load runoff choices
-        copy( g_votingMapNames[ 0 ], charsmax( g_votingMapNames[] ), g_votingMapNames[ g_arrayOfRunOffChoices[ 0 ] ] );
-        copy( g_votingMapNames[ 1 ], charsmax( g_votingMapNames[] ), g_votingMapNames[ g_arrayOfRunOffChoices[ 1 ] ] );
+        copy( runoffChoice[ 0 ], charsmax( runoffChoice[] ), g_votingMapNames[ g_arrayOfRunOffChoices[ 0 ] ] );
+        copy( runoffChoice[ 1 ], charsmax( runoffChoice[] ), g_votingMapNames[ g_arrayOfRunOffChoices[ 1 ] ] );
+        
+        copy( g_votingMapNames[ 0 ], charsmax( g_votingMapNames[] ), runoffChoice[ 0 ] );
+        copy( g_votingMapNames[ 1 ], charsmax( g_votingMapNames[] ), runoffChoice[ 1 ] );
         
         DEBUG_LOGGER( 16, "( vote_startDirector|Runoff ) map1: %s, map2: %s, choicesLoaded: %d", \
                 g_votingMapNames[ 0 ], g_votingMapNames[ 1 ], choicesLoaded )
     }
     else
     {
+        // update cached data for the new voting.
+        cacheCvarsValues()
+        
         // make it known that a vote is in progress
         g_voteStatus |= VOTE_IS_IN_PROGRESS;
         
@@ -3227,7 +3270,7 @@ public displayEndOfTheMapVoteMenu( player_id )
             || menu_id == g_chooseMapQuestionMenuId )
         {
             show_menu( player_id, menuKeys, menu_body, ( g_pendingVoteCountdown == 1 ? 1 : 2 ),
-                    MENU_CHOOSEMAP_QUESTION )
+                    CHOOSE_MAP_MENU_QUESTION )
         }
         
         DEBUG_LOGGER( 8, " ( displayEndOfTheMapVoteMenu| for ) menu_body: %s^n menu_id:%d,   \
@@ -3765,7 +3808,7 @@ stock display_vote_menu( bool:menuType, player_id, menuBody[], menuKeys )
     {
         show_menu( player_id, menuKeys, menuBody,
                 ( menuType ? g_voteDuration : max( 2, g_voteDuration ) ),
-                MENU_CHOOSEMAP )
+                CHOOSE_MAP_MENU_NAME )
     }
 }
 
@@ -4126,17 +4169,17 @@ public computeVotes()
                 {
                     g_isRunOffNeedingKeepCurrentMap = true
                     firstChoiceIndex--
-                    g_totalVoteOptions_temp = 1;
+                    g_totalVoteOptionsTemp = 1;
                 }
                 else if( firstPlaceChoices[ secondChoiceIndex ] == g_totalVoteOptions )
                 {
                     g_isRunOffNeedingKeepCurrentMap = true
                     secondChoiceIndex--
-                    g_totalVoteOptions_temp = 1;
+                    g_totalVoteOptionsTemp = 1;
                 }
                 else
                 {
-                    g_totalVoteOptions_temp = 2;
+                    g_totalVoteOptionsTemp = 2;
                 }
                 
                 if( firstChoiceIndex == secondChoiceIndex )
@@ -4170,17 +4213,17 @@ public computeVotes()
                 {
                     g_isRunOffNeedingKeepCurrentMap = true
                     g_arrayOfRunOffChoices[ 0 ]     = firstPlaceChoices[ 1 ];
-                    g_totalVoteOptions_temp         = 1;
+                    g_totalVoteOptionsTemp          = 1;
                 }
                 else if( firstPlaceChoices[ 1 ] == g_totalVoteOptions )
                 {
                     g_isRunOffNeedingKeepCurrentMap = true
                     g_arrayOfRunOffChoices[ 0 ]     = firstPlaceChoices[ 0 ];
-                    g_totalVoteOptions_temp         = 1;
+                    g_totalVoteOptionsTemp          = 1;
                 }
                 else
                 {
-                    g_totalVoteOptions_temp     = 2;
+                    g_totalVoteOptionsTemp      = 2;
                     g_arrayOfRunOffChoices[ 0 ] = firstPlaceChoices[ 0 ];
                     g_arrayOfRunOffChoices[ 1 ] = firstPlaceChoices[ 1 ];
                 }
@@ -4196,17 +4239,17 @@ public computeVotes()
                 {
                     g_isRunOffNeedingKeepCurrentMap = true
                     g_arrayOfRunOffChoices[ 0 ]     = secondPlaceChoices[ 0 ];
-                    g_totalVoteOptions_temp         = 1;
+                    g_totalVoteOptionsTemp          = 1;
                 }
                 else if( secondPlaceChoices[ 0 ] == g_totalVoteOptions )
                 {
                     g_isRunOffNeedingKeepCurrentMap = true
                     g_arrayOfRunOffChoices[ 0 ]     = firstPlaceChoices[ 0 ];
-                    g_totalVoteOptions_temp         = 1;
+                    g_totalVoteOptionsTemp          = 1;
                 }
                 else
                 {
-                    g_totalVoteOptions_temp     = 2;
+                    g_totalVoteOptionsTemp      = 2;
                     g_arrayOfRunOffChoices[ 0 ] = firstPlaceChoices[ 0 ];
                     g_arrayOfRunOffChoices[ 1 ] = secondPlaceChoices[ 0 ];
                 }
@@ -4216,7 +4259,7 @@ public computeVotes()
                         g_votingMapNames[ g_arrayOfRunOffChoices[ 0 ] ], \
                         g_votingMapNames[ g_arrayOfRunOffChoices[ 1 ] ] )
             }
-            else
+            else // numberOfMapsAtFirstPosition == 1 && numberOfMapsAtSecondPosition > 1
             {
                 new randonNumber = random_num( 0, numberOfMapsAtSecondPosition - 1 )
                 
@@ -4224,17 +4267,17 @@ public computeVotes()
                 {
                     g_isRunOffNeedingKeepCurrentMap = true
                     g_arrayOfRunOffChoices[ 0 ]     = secondPlaceChoices[ randonNumber ];
-                    g_totalVoteOptions_temp         = 1;
+                    g_totalVoteOptionsTemp          = 1;
                 }
                 else if( secondPlaceChoices[ randonNumber ] == g_totalVoteOptions )
                 {
                     g_isRunOffNeedingKeepCurrentMap = true
                     g_arrayOfRunOffChoices[ 0 ]     = firstPlaceChoices[ 0 ];
-                    g_totalVoteOptions_temp         = 1;
+                    g_totalVoteOptionsTemp          = 1;
                 }
                 else
                 {
-                    g_totalVoteOptions_temp     = 2;
+                    g_totalVoteOptionsTemp      = 2;
                     g_arrayOfRunOffChoices[ 0 ] = firstPlaceChoices[ 0 ];
                     g_arrayOfRunOffChoices[ 1 ] = secondPlaceChoices[ randonNumber ];
                 }
@@ -4244,8 +4287,7 @@ public computeVotes()
                         g_votingMapNames[ g_arrayOfRunOffChoices[ 0 ] ], \
                         g_votingMapNames[ g_arrayOfRunOffChoices[ 1 ] ] )
                 
-                color_print( 0, "^1%L", LANG_PLAYER, "GAL_RESULT_TIED2",
-                        numberOfMapsAtSecondPosition );
+                color_print( 0, "^1%L", LANG_PLAYER, "GAL_RESULT_TIED2", numberOfMapsAtSecondPosition );
             }
             
             // clear all the votes
@@ -4393,21 +4435,21 @@ stock map_extend()
         
         if( g_isMaxroundsExtend )
         {
-            set_cvar_num( "mp_maxrounds", get_pcvar_num( cvar_mp_maxrounds ) + extendmap_step_rounds );
-            set_cvar_num( "mp_winlimit", 0 );
+            set_pcvar_num( cvar_mp_maxrounds, get_pcvar_num( cvar_mp_maxrounds ) + extendmap_step_rounds );
+            set_pcvar_num( cvar_mp_winlimit, 0 );
         }
         else
         {
-            set_cvar_num( "mp_maxrounds", 0 );
-            set_cvar_num( "mp_winlimit", get_pcvar_num( cvar_mp_winlimit ) + extendmap_step_rounds );
+            set_pcvar_num( cvar_mp_maxrounds, 0 );
+            set_pcvar_num( cvar_mp_winlimit, get_pcvar_num( cvar_mp_winlimit ) + extendmap_step_rounds );
         }
         
         set_pcvar_float( cvar_mp_timelimit, 0.0 );
     }
     else
     {
-        set_cvar_num( "mp_maxrounds", 0 );
-        set_cvar_num( "mp_winlimit", 0 );
+        set_pcvar_num( cvar_mp_maxrounds, 0 );
+        set_pcvar_num( cvar_mp_winlimit, 0 );
         set_pcvar_float( cvar_mp_timelimit, get_pcvar_float( cvar_mp_timelimit )
                 + g_extendmapStepMinutes );
     }
@@ -5454,13 +5496,19 @@ public map_restoreOriginalTimeLimit()
         g_isTimeLimitChanged = false;
     }
     
-    if( g_original_sv_maxspeed )
-    {
-        set_cvar_float( "sv_maxspeed", g_original_sv_maxspeed )
-    }
+    restoreOriginalServerMaxSpeed();
     
     DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "map_restoreOriginalTimeLimit( out )", \
             get_pcvar_float( cvar_mp_timelimit ), g_originalTimelimit )
+}
+
+stock restoreOriginalServerMaxSpeed()
+{
+    if( g_original_sv_maxspeed )
+    {
+        set_pcvar_float( cvar_sv_maxspeed, g_original_sv_maxspeed );
+        g_original_sv_maxspeed = 0.0;
+    }
 }
 
 /**
@@ -5548,7 +5596,7 @@ stock delete_users_menus( bool:isToDoubleReset )
             || menu_id == g_chooseMapQuestionMenuId )
         {
             formatex( failureMessage, charsmax( failureMessage ), "%L", player_id, "GAL_VOTE_ENDED" )
-            show_menu( player_id, menukeys_unused, "Voting canceled!", isToDoubleReset ? 5 : 1, MENU_CHOOSEMAP )
+            show_menu( player_id, menukeys_unused, "Voting canceled!", isToDoubleReset ? 5 : 1, CHOOSE_MAP_MENU_NAME )
         }
     }
 }
@@ -5774,7 +5822,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
 }
 
 // ################################## BELOW HERE ONLY GOES DEBUG/TEST CODE ###################################
-#if DEBUG_LEVEL > 0
+#if DEBUG_LEVEL & DEBUG_LEVEL_FAKE_VOTES
 public create_fakeVotes()
 {
     if( g_voteStatus & VOTE_IS_RUNOFF )
@@ -5786,15 +5834,15 @@ public create_fakeVotes()
     }
     else
     {
-        g_arrayOfMapsWithVotesNumber[ 0 ] += 0;     // map 1
+        g_arrayOfMapsWithVotesNumber[ 0 ] += 1;     // map 1
         g_arrayOfMapsWithVotesNumber[ 1 ] += 1;     // map 2
-        g_arrayOfMapsWithVotesNumber[ 2 ] += 2;     // map 3
-        g_arrayOfMapsWithVotesNumber[ 3 ] += 0;     // map 4
-        g_arrayOfMapsWithVotesNumber[ 4 ] += 2;     // map 5
+        g_arrayOfMapsWithVotesNumber[ 2 ] += 1;     // map 3
+        g_arrayOfMapsWithVotesNumber[ 3 ] += 1;     // map 4
+        g_arrayOfMapsWithVotesNumber[ 4 ] += 1;     // map 5
         
         if( g_isExtendmapAllowStay || g_isGameFinalVoting )
         {
-            g_arrayOfMapsWithVotesNumber[ 5 ] += 1;    // extend option
+            g_arrayOfMapsWithVotesNumber[ 5 ] += 0;    // extend option
         }
         
         g_totalVotesCounted = g_arrayOfMapsWithVotesNumber[ 0 ] + g_arrayOfMapsWithVotesNumber[ 1 ] +
@@ -5816,8 +5864,9 @@ public runTests()
 {
     server_print( "^n^n    Executing the 'Galileo' Tests:^n" )
     
-    save_server_cvars_for_test()
-    ALL_TESTS_TO_EXECUTE()
+    g_areTheUnitTestsRunning = true;
+    save_server_cvars_for_test();
+    ALL_TESTS_TO_EXECUTE();
     
     server_print( "^n    %d tests succeed.^n    %d tests failed.", g_totalSuccessfulTests, \
             g_totalFailureTests )
@@ -5835,6 +5884,8 @@ public runTests()
         
         print_all_tests_executed()
         print_tests_failure()
+        
+        g_areTheUnitTestsRunning = false;
     }
 }
 
@@ -5894,6 +5945,8 @@ public show_delayed_results()
             g_totalFailureTests )
     
     server_print( "^n    Finished 'Galileo' Tests Execution.^n^n" )
+    
+    g_areTheUnitTestsRunning = false;
 }
 
 /**

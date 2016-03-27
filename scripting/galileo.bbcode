@@ -1,5 +1,5 @@
-[anchor]Top[/anchor][SIZE="7"][COLOR="Blue"][B]Galileo v2.3.2[/B][/COLOR][/SIZE] A feature rich map voting plugin
-[SIZE=1][COLOR=Red]Release: 12.09.2008 | Last Update: 25.03.2016[/SIZE][/COLOR]
+[anchor]Top[/anchor][SIZE="7"][COLOR="Blue"][B]Galileo v2.3.3[/B][/COLOR][/SIZE] A feature rich map voting plugin
+[SIZE=1][COLOR=Red]Release: 12.09.2008 | Last Update: 27.03.2016[/SIZE][/COLOR]
 
 If you want to translate the Galileo Mapchooser to your language or if you see some 
 error or bad coloring tags positioning at the current translations, feel free to correct
@@ -197,7 +197,7 @@ galileo.cfg contents.
 1
 7
      [/CODE]This maps groups configuration means to load [COLOR="red"]up to 1 map[/COLOR] from the file '[B]1.ini[/B]'
-     (1? line after [groups]) and [COLOR="red"]up to 7 maps[/COLOR] from '[B]2.ini[/B]' (2? line after [groups]).
+     (1st line after [groups]) and [COLOR="red"]up to 7 maps[/COLOR] from '[B]2.ini[/B]' (2nd line after [groups]).
 
      Then you only need to create the files '[B]1.ini[/B]' and '[B]2.ini[/B]' in the '[B]./configs/galileo/[/B]'
      folder. And in the file '[B]1.ini[/B]' you put only the '[COLOR="Blue"]de_dust2[/COLOR]' map, and in the file '[B]2.ini[/B]'
@@ -208,8 +208,8 @@ galileo.cfg contents.
      nominations and none of them is '[COLOR="blue"]de_dust2[/COLOR]'. The map '[COLOR="Blue"]de_dust2[/COLOR]' will not be loaded
      on this case because the maximum maps available on any voting is [COLOR="Blue"][B]1 + 7 = 8[/B][/COLOR].
      And as the map nominations are loaded before filling the map voting list using the
-     map fillers from your map groups files '[B]1.ini[/B]' (1? line after [groups]) and '[B]2.ini[/B]'
-     (2? line after [groups]), the map '[COLOR="blue"]de_dust2[/COLOR]' will not be added because there is not
+     map fillers from your map groups files '[B]1.ini[/B]' (1st line after [groups]) and '[B]2.ini[/B]'
+     (2nd line after [groups]), the map '[COLOR="blue"]de_dust2[/COLOR]' will not be added because there is not
      enough space.
      
      
@@ -357,6 +357,13 @@ to get nominated).
 
 ******************************** [anchor]Change[/anchor][B][SIZE="6"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
 
+[B]2016-03-27 | v2.3.3[/B]
+[LIST=1]
+[*]Fixed the runoff voting showing two identical maps on some votings.
+[*]Fixed the DEBUG_LEVEL 2 doing doubled voting when using the cvar 'gal_endofmapvote_start'.
+[*]Added the ability to cancel the round ending when forcing a new voting.
+[/LIST]
+
 [B]2016-03-24 | v2.3[/B] ~ [B]2016-03-25 | v2.3.2[/B]
 [LIST=1]
 [*]Prevented the map from being played indefinitely when using the allow last round to be finished feature.
@@ -370,13 +377,9 @@ to get nominated).
 [*]Fixed RTV voting showing Extend Map Option on early votes.
 [/LIST]
 
-[B]2016-03-13 | v2.2.1[/B]
+[B]2016-03-13 | v2.2[/B] ~ [B]2016-03-13 | v2.2.1[/B]
 [LIST=1]
 [*]Fixed wrong version number on files.
-[/LIST]
-
-[B]2016-03-13 | v2.2[/B]
-[LIST=1]
 [*]Added to the cvar 'gal_vote_mapfile', the option '*' to use all maps in the server's maps folder as map fillers.
 [*]Fixed map extension now showing up.
 [*]Implemented the 'Galileo' data directory auto-creation.
@@ -407,74 +410,62 @@ to get nominated).
 [*]Fixed a new voting reset after the 'gal_cancelvote' command.
 [/LIST]
 
-[B]2016-03-03 | v2.0.1[/B]
+[B]2016-03-03 | v2.0[/B] ~ [B]2016-03-03 | v2.0.1[/B]
 [LIST=1]
 [*]Fixed the voting menu being showed after the admin's vote cancel.
-[/LIST]
-
-[B]2016-03-03 | v2.0[/B]
-[LIST=1]
 [*]Fixed the language bug where the voting menu is always displayed on LANG_SERVER instead of LANG_PLAYER.
 [*]Added the Romanian [ro] and Italian [it] language translations.
 [*]Fixed a bug, where 'gal_rtv_wait_rounds' has priority over 'gal_rtv_wait'.
 [*]Added new cvars 'gal_srv_timelimit_restart', 'gal_srv_maxrounds_restart' and 'gal_srv_winlimit_restart'
-to control the sv_restart. If nonzero and the server is restarted, adds x - 1 rounds/minutes to 
-mp_maxrounds or mp_winlimit or mp_timelimit. Example using mp_maxrounds: If mp_maxrounds = 40 and
-20 rounds has already passed and admin used sv_restart. After the restart, if the cvar is 1, the 
-rounds left will be 20. If the cvar is 0 the rounds left will 40.
+    to control the sv_restart. If nonzero and the server is restarted, adds x - 1 rounds/minutes to 
+    mp_maxrounds or mp_winlimit or mp_timelimit. Example using mp_maxrounds: If mp_maxrounds = 40 and
+    20 rounds has already passed and admin used sv_restart. After the restart, if the cvar is 1, the 
+    rounds left will be 20. If the cvar is 0 the rounds left will 40.
 [*]Create a new LANG file to show 'rounds' instead of 'minutes', when you are using mp_maxrounds.
 [*]Add an admin command 'gal_cancelvote' to cancel the current vote.
 [*]Fixed bug using mp_maxrounds: if the vote started automatic and the result is extend its works fine 
-and with mp_maxrounds. If the vote started by rtv and the result is extend he will with extend with
-mp_timelimit. It must use mp_maxrounds.
+    and with mp_maxrounds. If the vote started by rtv and the result is extend he will with extend with
+    mp_timelimit. It must use mp_maxrounds.
 [*]Fixed 'sv_restartround' time detection.
 [*]Added new cvar 'gal_endonround_rtv' to Indicates when a map should end after the RTV voting is finished.
-0 - end immediately after the voting finished.
-1 - end after the current round.
+    0 - end immediately after the voting finished.
+    1 - end after the current round.
 [*]Added new cvar 'gal_rtv_wait_admin'. If an admin have the change map flag is online:
-0 - players can normally rock the vote.
-1 - RTV will not work and will print 'Cannot rock the vote when an admin is online'.
+    0 - players can normally rock the vote.
+    1 - RTV will not work and will print 'Cannot rock the vote when an admin is online'.
 [*]Fixed bug where the handle empty server feature would change the map when there are players playing.
 [*]Integrated the cvar 'gal_endonround_players' features into the cvar 'gal_endonround_msg'.
 [*]Added to the 'gal_endonround_rtv' cvar the players minimum number necessary to allow the 
-last round to be finished when the time runs out.
+    last round to be finished when the time runs out.
 [*]Added new option 2 to the cvar 'gal_vote_show_none_type'. After the user voted, transform 
-the '0 - None' option on 'one time cancel' vote opportunity.
+    the '0 - None' option on 'one time cancel' vote opportunity.
 [*]Added support to 'engine_changelevel' from AMX Mod X 183.
 [*]Added correct documentation for the 'gal_srv_start' cvar to indicates which action to take 
-when it is detected that the server has been 'externally restarted'.
+    when it is detected that the server has been 'externally restarted'.
 [*]Improved 'gal_emptyserver_wait' cvar documentation in the configuration file.
 [*]Fixed empty-server map cycle bug to always starting at its first map.
 [*]Added new cvar 'gal_emptyserver_change'. When the server is empty, only change to an alternate 
-empty-server map cycle after timelimit, maxrounds or winlimit expiration.
+    empty-server map cycle after timelimit, maxrounds or winlimit expiration.
 [*]Added new cvar 'gal_endofmapvote_ask' to indicates whether there should be asked to the players 
-if they want to participate the map vote to decide what the next map will be.
+    if they want to participate the map vote to decide what the next map will be.
 [*]Added to the handle server start feature the ability to continues the mapcycle from the lastmap
-played instead of the first map on the mapcycle list.
+    played instead of the first map on the mapcycle list.
 [*]Added the Map Groups Feature feature documentation.
 [*]Added new cvar 'gal_vote_whitelist_mapfile' that points a configuration file which specifies the
-time where its listed maps are allowed to be added to the voting list as fillers after the nominations
-being loaded.
+    time where its listed maps are allowed to be added to the voting list as fillers after the nominations
+    being loaded.
 [/LIST]
- 
-[B]2016-02-11 | v1.2.2[/B]
+
+[B]2016-01-17 | v1.2[/B] ~ [B]2016-02-11 | v1.2.2[/B]
 [LIST=1]
 [*]Add a new cvar 'gal_rtv_wait_rounds' for the RTV wait.
 [*]Fixed bug when the vote started by rtv vote work but the map didn't change.
-[/LIST]
-
-[B]2016-02-11 | v1.2.1[/B]
-[LIST=1]
 [*]Added RTV support to 'mp_maxrounds' and 'mp_winlimit'.
-[/LIST]
-
-[B]2016-01-17 | v1.2[/B]
-[LIST=1]
 [*]Fixed the command 'gal_startvote' handler not ignoring double quotes.
 [*]Added new cvar 'gal_vote_minplayers_mapfile' to specifiy the mapcycle file to use when 
-'gal_vote_minplayers' is activated.
+    'gal_vote_minplayers' is activated.
 [*]Added new cvar 'gal_vote_minplayers' to specify the minimum players number to use the 
-'gal_vote_minplayers_mapfile'.
+    'gal_vote_minplayers_mapfile'.
 [/LIST]
 
 [B]2016-01-17 | v1.2-release_candidate1.hotfix1[/B]
@@ -497,11 +488,11 @@ being loaded.
 [*]Fixed 'gal_startvote' [-restart] argument not working.
 [*]Fixed showing that the player chose extend map, instead of stay on map.
 [*]Added new cvar 'amx_extendmap_allow_order' to follow the map cycle map order, when anyone vote
-for next map.
+    for next map.
 [*]Added support to the old cvar variable 'gal_vote_mapfile', and a new option '*' to choose use
-the mapcycle instead.
+    the mapcycle instead.
 [*]Added the 'gal_vote_show_none' cvar to shows the voting option "None" for people to choose if
-they don't like any other choice.
+    they don't like any other choice.
 [*]Added a new cvar 'gal_vote_show_counter', to show only the last 10 seconds remaining to end the voting.
 [*]Added an option to 'gal_vote_showstatustype', to show the vote progress as porcetage and count.
 [*]Added an option to 'gal_banrecentstyle', to show the recent maps are displayed as a menu.
@@ -517,7 +508,7 @@ they don't like any other choice.
 [*]Removed automatic vote map, after forcing votemap using '-nochange' argument.
 [*]Replaced the command 'gal_startvote2' with 'gal_startvote' and options '-nochange' and '-restart'.
 [*]Added new cvar "gal_endonround_players" which indicates the players minimum number necessary to
-allow the last round to be finished when time runs out.
+    allow the last round to be finished when time runs out.
 [*]Added new cvar option "gal_rtv_commands 7" to enable 7 the options 1, 2 and 4 at the same time.
 [*]Added new cvar "amx_extendmap_step_rounds" to the config file.
 [*]Added new cvar "amx_extendmap_max" which limits the max extension time.
@@ -534,13 +525,9 @@ allow the last round to be finished when time runs out.
 [*]Added display colored text messages support.
 [/LIST]
 
-[B]2015-10-21 | v1.2-alpha2.hotfix1[/B]
+[B]2015-10-14 | v1.2-alpha2[/B] ~ [B]2015-10-21 | v1.2-alpha2.hotfix1[/B]
 [LIST=1]
-[*]Improved some variables meaning 
-[/LIST]
-
-[B]2015-10-14 | v1.2-alpha2[/B]
-[LIST=1]
+[*]Improved some variables meaning.
 [*]Fixed broken re-opt (RunOff) vote. 
 [*]Fixed automatic changelevel at normal vote map, after a successful 'Stay Here' option wins. 
 [*]Improved code readability and added some new code documentation. 
@@ -575,32 +562,32 @@ allow the last round to be finished when time runs out.
 [*]Added a check for valid map when populating the various map listings from map list files.
 [*]Fixed error whem empty server map file doesn't exist.
 [*]Fixed issue whereas Galileo would set the time limit to 0 in the course of it's regular
-activities but then sometimes not reset it to the original time limit afterwards.
+    activities but then sometimes not reset it to the original time limit afterwards.
 [*]No longer tries to print menus in color if the game mod doesn't support colored menus.
 [*]Fixed possible RTV exploit by introducing a delay before a single player can RTV after a
- map change. It's the lesser of either 2 minutes or the value of gal_rtv_wait.
+    map change. It's the lesser of either 2 minutes or the value of gal_rtv_wait.
 [*]Added additional information to comments for gal_nom_mapfile, gal_vote_mapfile, and
- gal_emptyserver_mapfile in galileo.cfg.
+    gal_emptyserver_mapfile in galileo.cfg.
 [*]Changed default for gal_nom_prefixes from 1 to 0. In other words, the prefix functionality
- will be turned off by default.
+    will be turned off by default.
 [*]Will no longer overwrite an existing menu. This means if a player has another menu open when
-the map vote starts, they won't see the map vote until the other menu is closed. It also means
-that, after a player voted and if the server is showing the vote progress, if another menu
-overwrites Galileo's, the progress won't be shown again until the other menu has been closed.
-This only affects people that show the in-progress vote status.
+    the map vote starts, they won't see the map vote until the other menu is closed. It also means
+    that, after a player voted and if the server is showing the vote progress, if another menu
+    overwrites Galileo's, the progress won't be shown again until the other menu has been closed.
+    This only affects people that show the in-progress vote status.
 [*]Now obeys a setting of "0" for gal_endofmapvote. Would previously erroneously present a vote
-regardless of the setting.
+    regardless of the setting.
 [*]New CVAR, gal_sounds_mute, to indicate if any of the sentences spoken during various events are
-muted. See galileo.cfg for more information.
+    muted. See galileo.cfg for more information.
 [*]Added code to handle automated version info from SVN. This is of no consequence to anyone but
-me really, but I wanted to include it in the change log since it actually involves a change
-to the code.
+    me really, but I wanted to include it in the change log since it actually involves a change
+    to the code.
 [*]Removed benign code that was prepped for feature utilizing standard maps of each mod. There
-is no longer any plans to add any information regarding standard maps as I see no use for it.
+    is no longer any plans to add any information regarding standard maps as I see no use for it.
 [*]Removed the following language keys:
-GAL_STANDARD_NOTFOUND
-GAL_STANDARD_TOOMANY
-GAL_STANDARD_UNKNOWNMOD
+    GAL_STANDARD_NOTFOUND
+    GAL_STANDARD_TOOMANY
+    GAL_STANDARD_UNKNOWNMOD
 [*]Fixed the "vote filler groups" feature that was previously working incorrectly.
 [/LIST]
 
@@ -640,21 +627,21 @@ Thank you!  It means a lot to me.
 
 You can [B]receive support[/B] for this plugin within this thread. Non-Steam servers are not supported.
 
-For any problems with this plugin visit this own page for support: 
+For any problems with this plugin visit this own page for support:
 [url="https://forums.alliedmods.net/showthread.php?t=273019"] https://forums.alliedmods.net/showthread.php?t=273019[/url]
 
-If you are [B]posting[/B] because the plugin or a [B]feature[/B] of the plugin isn't working for you, [B]please[/B] do 
-all of the following, so we can [COLOR="Blue"]more efficiently[/COLOR] figure out what's going on: 
-[QUOTE] 
-If you have access to your game server's console, type the [COLOR="Blue"][B]following[/B][/COLOR] in the server console: 
-[LIST] 
-[*]status 
-[*]meta list 
-[*]amxx list 
-[*]amxx cvars 
-[/LIST] 
-If you don't have access the your [COLOR="Blue"][B]game server's console[/B][/COLOR], join your server and type the 
-following in your game console: 
+If you are [B]posting[/B] because the plugin or a [B]feature[/B] of the plugin isn't working for you, [B]please[/B] do
+all of the following, so we can [COLOR="Blue"]more efficiently[/COLOR] figure out what's going on:
+[QUOTE]
+If you have access to your game server's console, type the [COLOR="Blue"][B]following[/B][/COLOR] in the server console:
+[LIST]
+[*]status
+[*]meta list
+[*]amxx list
+[*]amxx cvars
+[/LIST]
+If you don't have access the your [COLOR="Blue"][B]game server's console[/B][/COLOR], join your server and type the
+following in your game console:
 
 [LIST]
 [*]status
