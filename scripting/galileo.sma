@@ -65,7 +65,7 @@ new g_debug_level = 1 + 4 + 8 + 16
  * Dummy value used to use the do...while() statements to allow the semicolon ';' use at macros endings.
  */
 new g_dummy_value = 0;
- 
+
 
 /**
  * Write debug messages to server's console accordantly with cvar gal_debug.
@@ -463,7 +463,7 @@ new g_totalRoundsPlayed;
 new g_totalTerroristsWins;
 new g_totalCtWins;
 new g_totalVoteOptions
-new g_totalVoteOptions_temp
+new g_totalVoteOptionsTemp
 
 new g_maxVotingChoices;
 new g_voteStatus
@@ -3028,7 +3028,7 @@ stock vote_startDirector( bool:is_forced_voting )
     if( is_forced_voting
         && g_voteStatus & VOTE_IS_OVER )
     {
-        new bool:roundEndStatus[4]
+        new bool:roundEndStatus[ 4 ]
         
         save_round_ending( roundEndStatus );
         cancel_voting();
@@ -3046,13 +3046,18 @@ stock vote_startDirector( bool:is_forced_voting )
     
     if( g_voteStatus & VOTE_IS_RUNOFF )
     {
-        choicesLoaded      = g_totalVoteOptions_temp
-        g_totalVoteOptions = g_totalVoteOptions_temp
+        new runoffChoice[ 2 ][ MAX_MAPNAME_LENGHT ];
+        
+        choicesLoaded      = g_totalVoteOptionsTemp
+        g_totalVoteOptions = g_totalVoteOptionsTemp
         g_voteDuration     = get_pcvar_num( cvar_runoffDuration )
         
         // load runoff choices
-        copy( g_votingMapNames[ 0 ], charsmax( g_votingMapNames[] ), g_votingMapNames[ g_arrayOfRunOffChoices[ 0 ] ] );
-        copy( g_votingMapNames[ 1 ], charsmax( g_votingMapNames[] ), g_votingMapNames[ g_arrayOfRunOffChoices[ 1 ] ] );
+        copy( runoffChoice[ 0 ], charsmax( runoffChoice[] ), g_votingMapNames[ g_arrayOfRunOffChoices[ 0 ] ] );
+        copy( runoffChoice[ 1 ], charsmax( runoffChoice[] ), g_votingMapNames[ g_arrayOfRunOffChoices[ 1 ] ] );
+        
+        copy( g_votingMapNames[ 0 ], charsmax( g_votingMapNames[] ), runoffChoice[ 0 ] );
+        copy( g_votingMapNames[ 1 ], charsmax( g_votingMapNames[] ), runoffChoice[ 1 ] );
         
         DEBUG_LOGGER( 16, "( vote_startDirector|Runoff ) map1: %s, map2: %s, choicesLoaded: %d", \
                 g_votingMapNames[ 0 ], g_votingMapNames[ 1 ], choicesLoaded )
@@ -4164,17 +4169,17 @@ public computeVotes()
                 {
                     g_isRunOffNeedingKeepCurrentMap = true
                     firstChoiceIndex--
-                    g_totalVoteOptions_temp = 1;
+                    g_totalVoteOptionsTemp = 1;
                 }
                 else if( firstPlaceChoices[ secondChoiceIndex ] == g_totalVoteOptions )
                 {
                     g_isRunOffNeedingKeepCurrentMap = true
                     secondChoiceIndex--
-                    g_totalVoteOptions_temp = 1;
+                    g_totalVoteOptionsTemp = 1;
                 }
                 else
                 {
-                    g_totalVoteOptions_temp = 2;
+                    g_totalVoteOptionsTemp = 2;
                 }
                 
                 if( firstChoiceIndex == secondChoiceIndex )
@@ -4208,17 +4213,17 @@ public computeVotes()
                 {
                     g_isRunOffNeedingKeepCurrentMap = true
                     g_arrayOfRunOffChoices[ 0 ]     = firstPlaceChoices[ 1 ];
-                    g_totalVoteOptions_temp         = 1;
+                    g_totalVoteOptionsTemp          = 1;
                 }
                 else if( firstPlaceChoices[ 1 ] == g_totalVoteOptions )
                 {
                     g_isRunOffNeedingKeepCurrentMap = true
                     g_arrayOfRunOffChoices[ 0 ]     = firstPlaceChoices[ 0 ];
-                    g_totalVoteOptions_temp         = 1;
+                    g_totalVoteOptionsTemp          = 1;
                 }
                 else
                 {
-                    g_totalVoteOptions_temp     = 2;
+                    g_totalVoteOptionsTemp      = 2;
                     g_arrayOfRunOffChoices[ 0 ] = firstPlaceChoices[ 0 ];
                     g_arrayOfRunOffChoices[ 1 ] = firstPlaceChoices[ 1 ];
                 }
@@ -4234,17 +4239,17 @@ public computeVotes()
                 {
                     g_isRunOffNeedingKeepCurrentMap = true
                     g_arrayOfRunOffChoices[ 0 ]     = secondPlaceChoices[ 0 ];
-                    g_totalVoteOptions_temp         = 1;
+                    g_totalVoteOptionsTemp          = 1;
                 }
                 else if( secondPlaceChoices[ 0 ] == g_totalVoteOptions )
                 {
                     g_isRunOffNeedingKeepCurrentMap = true
                     g_arrayOfRunOffChoices[ 0 ]     = firstPlaceChoices[ 0 ];
-                    g_totalVoteOptions_temp         = 1;
+                    g_totalVoteOptionsTemp          = 1;
                 }
                 else
                 {
-                    g_totalVoteOptions_temp     = 2;
+                    g_totalVoteOptionsTemp      = 2;
                     g_arrayOfRunOffChoices[ 0 ] = firstPlaceChoices[ 0 ];
                     g_arrayOfRunOffChoices[ 1 ] = secondPlaceChoices[ 0 ];
                 }
@@ -4262,17 +4267,17 @@ public computeVotes()
                 {
                     g_isRunOffNeedingKeepCurrentMap = true
                     g_arrayOfRunOffChoices[ 0 ]     = secondPlaceChoices[ randonNumber ];
-                    g_totalVoteOptions_temp         = 1;
+                    g_totalVoteOptionsTemp          = 1;
                 }
                 else if( secondPlaceChoices[ randonNumber ] == g_totalVoteOptions )
                 {
                     g_isRunOffNeedingKeepCurrentMap = true
                     g_arrayOfRunOffChoices[ 0 ]     = firstPlaceChoices[ 0 ];
-                    g_totalVoteOptions_temp         = 1;
+                    g_totalVoteOptionsTemp          = 1;
                 }
                 else
                 {
-                    g_totalVoteOptions_temp     = 2;
+                    g_totalVoteOptionsTemp      = 2;
                     g_arrayOfRunOffChoices[ 0 ] = firstPlaceChoices[ 0 ];
                     g_arrayOfRunOffChoices[ 1 ] = secondPlaceChoices[ randonNumber ];
                 }
@@ -5829,11 +5834,11 @@ public create_fakeVotes()
     }
     else
     {
-        g_arrayOfMapsWithVotesNumber[ 0 ] += 0;     // map 1
-        g_arrayOfMapsWithVotesNumber[ 1 ] += 0;     // map 2
-        g_arrayOfMapsWithVotesNumber[ 2 ] += 4;     // map 3
-        g_arrayOfMapsWithVotesNumber[ 3 ] += 3;     // map 4
-        g_arrayOfMapsWithVotesNumber[ 4 ] += 3;     // map 5
+        g_arrayOfMapsWithVotesNumber[ 0 ] += 1;     // map 1
+        g_arrayOfMapsWithVotesNumber[ 1 ] += 1;     // map 2
+        g_arrayOfMapsWithVotesNumber[ 2 ] += 1;     // map 3
+        g_arrayOfMapsWithVotesNumber[ 3 ] += 1;     // map 4
+        g_arrayOfMapsWithVotesNumber[ 4 ] += 1;     // map 5
         
         if( g_isExtendmapAllowStay || g_isGameFinalVoting )
         {
