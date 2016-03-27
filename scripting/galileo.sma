@@ -1025,7 +1025,7 @@ stock intermission_display()
             g_isTimeToResetGame    = true
             g_original_sv_maxspeed = get_pcvar_float( cvar_sv_maxspeed )
             
-            set_cvar_float( "sv_maxspeed", 0.0 )
+            set_pcvar_float( cvar_sv_maxspeed, 0.0 )
             
             client_cmd( 0, "slot1" )
             client_cmd( 0, "drop weapon_c4" )
@@ -3034,6 +3034,7 @@ stock vote_startDirector( bool:is_forced_voting )
         save_round_ending( roundEndStatus );
         cancel_voting();
         restore_round_ending( roundEndStatus );
+        restoreOriginalServerMaxSpeed();
     }
     
     // the rounds start delay task could be running
@@ -5491,13 +5492,19 @@ public map_restoreOriginalTimeLimit()
         g_isTimeLimitChanged = false;
     }
     
-    if( g_original_sv_maxspeed )
-    {
-        set_cvar_float( "sv_maxspeed", g_original_sv_maxspeed )
-    }
+    restoreOriginalServerMaxSpeed();
     
     DEBUG_LOGGER( 2, "%32s mp_timelimit: %f  g_originalTimelimit: %f", "map_restoreOriginalTimeLimit( out )", \
             get_pcvar_float( cvar_mp_timelimit ), g_originalTimelimit )
+}
+
+stock restoreOriginalServerMaxSpeed()
+{
+    if( g_original_sv_maxspeed )
+    {
+        set_pcvar_float( cvar_sv_maxspeed, g_original_sv_maxspeed );
+        g_original_sv_maxspeed = 0.0;
+    }
 }
 
 /**
