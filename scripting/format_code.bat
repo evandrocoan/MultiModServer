@@ -29,7 +29,7 @@ goto successfully
 
 :error
 echo.
-echo There is an ERROR pausing the program! See the error log file on:
+echo There is an ERROR! See the error log file on:
 echo scripting\compiled\%ERROR_LOG_FILE%
 echo.
 pause
