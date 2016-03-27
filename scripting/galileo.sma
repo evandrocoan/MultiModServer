@@ -37,7 +37,7 @@ new const PLUGIN_VERSION[] = "v2.3.2d"
  * 4   - To create fake votes.
  * 7   - Levels 1, 2 and 4.
  */
-#define DEBUG_LEVEL 0
+#define DEBUG_LEVEL 7
 
 #define DEBUG_LEVEL_NORMAL     1
 #define DEBUG_LEVEL_UNIT_TEST  2
@@ -387,8 +387,8 @@ new cvar_voteWhiteListMapFilePath
  */
 new const LAST_EMPTY_CYCLE_FILE_NAME[]    = "lastEmptyCycleMapName.dat"
 new const CURRENT_AND_NEXTMAP_FILE_NAME[] = "currentAndNextmapNames.dat"
-new const MENU_CHOOSEMAP[]                = "gal_menuChooseMap"
-new const MENU_CHOOSEMAP_QUESTION[]       = "chooseMapQuestion"
+new const CHOOSE_MAP_MENU_NAME[]          = "gal_menuChooseMap"
+new const CHOOSE_MAP_MENU_QUESTION[]      = "chooseMapQuestion"
 
 new bool:g_isVotingByTimer
 new bool:g_isTimeToResetGame
@@ -627,8 +627,8 @@ stock configureEndGameCvars()
 
 stock configureTheVotingMenus()
 {
-    g_chooseMapMenuId         = register_menuid( MENU_CHOOSEMAP );
-    g_chooseMapQuestionMenuId = register_menuid( MENU_CHOOSEMAP_QUESTION );
+    g_chooseMapMenuId         = register_menuid( CHOOSE_MAP_MENU_NAME );
+    g_chooseMapQuestionMenuId = register_menuid( CHOOSE_MAP_MENU_QUESTION );
     
     register_menucmd( g_chooseMapMenuId, MENU_KEY_1 | MENU_KEY_2 |
             MENU_KEY_3 | MENU_KEY_4 | MENU_KEY_5 | MENU_KEY_6 |
@@ -734,11 +734,10 @@ stock cacheCvarsValues()
     g_showVoteStatusType     = get_pcvar_num( cvar_showVoteStatusType )
     
     g_isColoredChatEnabled = get_pcvar_num( cvar_coloredChatEnabled ) != 0
-    
     g_isExtendmapAllowStay = get_pcvar_num( cvar_extendmapAllowStay ) != 0
     g_isToShowNoneOption   = get_pcvar_num( cvar_isToShowNoneOption ) != 0
-    g_isToShowExpCountdown = get_pcvar_num( cvar_isToShowExpCountdown ) != 0
     g_isToShowVoteCounter  = get_pcvar_num( cvar_isToShowVoteCounter ) != 0
+    g_isToShowExpCountdown = get_pcvar_num( cvar_isToShowExpCountdown ) != 0
     
     g_maxVotingChoices = max( min( sizeof g_votingMapNames, get_pcvar_num( cvar_voteMapChoiceCount ) ), 2 )
 }
@@ -3006,9 +3005,6 @@ stock vote_startDirector( bool:is_forced_voting )
         vote_resetStats()
     }
     
-    // update cached data for the new voting.
-    cacheCvarsValues()
-    
     if( g_voteStatus & VOTE_IS_RUNOFF )
     {
         choicesLoaded      = g_totalVoteOptions_temp
@@ -3024,6 +3020,9 @@ stock vote_startDirector( bool:is_forced_voting )
     }
     else
     {
+        // update cached data for the new voting.
+        cacheCvarsValues()
+        
         // make it known that a vote is in progress
         g_voteStatus |= VOTE_IS_IN_PROGRESS;
         
@@ -3227,7 +3226,7 @@ public displayEndOfTheMapVoteMenu( player_id )
             || menu_id == g_chooseMapQuestionMenuId )
         {
             show_menu( player_id, menuKeys, menu_body, ( g_pendingVoteCountdown == 1 ? 1 : 2 ),
-                    MENU_CHOOSEMAP_QUESTION )
+                    CHOOSE_MAP_MENU_QUESTION )
         }
         
         DEBUG_LOGGER( 8, " ( displayEndOfTheMapVoteMenu| for ) menu_body: %s^n menu_id:%d,   \
@@ -3765,7 +3764,7 @@ stock display_vote_menu( bool:menuType, player_id, menuBody[], menuKeys )
     {
         show_menu( player_id, menuKeys, menuBody,
                 ( menuType ? g_voteDuration : max( 2, g_voteDuration ) ),
-                MENU_CHOOSEMAP )
+                CHOOSE_MAP_MENU_NAME )
     }
 }
 
@@ -4216,7 +4215,7 @@ public computeVotes()
                         g_votingMapNames[ g_arrayOfRunOffChoices[ 0 ] ], \
                         g_votingMapNames[ g_arrayOfRunOffChoices[ 1 ] ] )
             }
-            else
+            else // numberOfMapsAtFirstPosition == 1 && numberOfMapsAtSecondPosition > 1
             {
                 new randonNumber = random_num( 0, numberOfMapsAtSecondPosition - 1 )
                 
@@ -4244,8 +4243,7 @@ public computeVotes()
                         g_votingMapNames[ g_arrayOfRunOffChoices[ 0 ] ], \
                         g_votingMapNames[ g_arrayOfRunOffChoices[ 1 ] ] )
                 
-                color_print( 0, "^1%L", LANG_PLAYER, "GAL_RESULT_TIED2",
-                        numberOfMapsAtSecondPosition );
+                color_print( 0, "^1%L", LANG_PLAYER, "GAL_RESULT_TIED2", numberOfMapsAtSecondPosition );
             }
             
             // clear all the votes
@@ -5548,7 +5546,7 @@ stock delete_users_menus( bool:isToDoubleReset )
             || menu_id == g_chooseMapQuestionMenuId )
         {
             formatex( failureMessage, charsmax( failureMessage ), "%L", player_id, "GAL_VOTE_ENDED" )
-            show_menu( player_id, menukeys_unused, "Voting canceled!", isToDoubleReset ? 5 : 1, MENU_CHOOSEMAP )
+            show_menu( player_id, menukeys_unused, "Voting canceled!", isToDoubleReset ? 5 : 1, CHOOSE_MAP_MENU_NAME )
         }
     }
 }
