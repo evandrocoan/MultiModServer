@@ -22,7 +22,7 @@
 *****************************************************************************************
 */
 
-new const PLUGIN_VERSION[] = "v2.3.3"
+new const PLUGIN_VERSION[] = "v2.3.4"
 
 #include <amxmodx>
 #include <amxmisc>
@@ -37,7 +37,7 @@ new const PLUGIN_VERSION[] = "v2.3.3"
  * 4   - To create fake votes.
  * 7   - Levels 1, 2 and 4.
  */
-#define DEBUG_LEVEL 0
+#define DEBUG_LEVEL 7
 
 #define DEBUG_LEVEL_NORMAL     1
 #define DEBUG_LEVEL_UNIT_TEST  2
@@ -79,11 +79,10 @@ stock debugMesssageLogger( mode, message[] = "", any: ... )
 {
     if( mode & g_debug_level )
     {
-        static formated_message[ 256 ]
+        static formated_message[ 256 ];
         
-        vformat( formated_message, charsmax( formated_message ), message, 3 )
-        
-        server_print( "%s",                      formated_message )
+        vformat( formated_message, charsmax( formated_message ), message, 3 );
+        server_print( "%s",                      formated_message );
     }
 }
 
@@ -3048,8 +3047,8 @@ stock vote_startDirector( bool:is_forced_voting )
     {
         new runoffChoice[ 2 ][ MAX_MAPNAME_LENGHT ];
         
-        choicesLoaded      = g_totalVoteOptionsTemp
-        g_totalVoteOptions = g_totalVoteOptionsTemp
+        choicesLoaded      = g_totalVoteOptionsTemp;
+        g_totalVoteOptions = g_totalVoteOptionsTemp;
         g_voteDuration     = get_pcvar_num( cvar_runoffDuration )
         
         // load runoff choices
@@ -4093,7 +4092,8 @@ public computeVotes()
     for( playerVoteMapChoiceIndex = 0; playerVoteMapChoiceIndex <= g_totalVoteOptions;
          ++playerVoteMapChoiceIndex )
     {
-        DEBUG_LOGGER( 16, "At g_arrayOfMapsWithVotesNumber[%d] = %d ", playerVoteMapChoiceIndex, \
+        DEBUG_LOGGER( 16, "After for to determine which maps are in 1st and 2nd places, \
+                g_arrayOfMapsWithVotesNumber[%d] = %d ", playerVoteMapChoiceIndex, \
                 g_arrayOfMapsWithVotesNumber[ playerVoteMapChoiceIndex ] )
         
         if( g_arrayOfMapsWithVotesNumber[ playerVoteMapChoiceIndex ] == numberOfVotesAtFirstPlace )
@@ -4107,7 +4107,8 @@ public computeVotes()
     }
     
     // At for: g_totalVoteOptions: 5, numberOfMapsAtFirstPosition: 3, numberOfMapsAtSecondPosition: 0
-    DEBUG_LOGGER( 16, "At for: g_totalVoteOptions: %d, numberOfMapsAtFirstPosition: %d, \
+    DEBUG_LOGGER( 16, "After for to determine which maps are in 1st and 2nd places, \
+            g_totalVoteOptions: %d, numberOfMapsAtFirstPosition: %d, \
             numberOfMapsAtSecondPosition: %d", \
             g_totalVoteOptions, numberOfMapsAtFirstPosition, numberOfMapsAtSecondPosition )
     
@@ -4137,7 +4138,8 @@ public computeVotes()
             
             if( numberOfMapsAtFirstPosition > 2 )
             {
-                DEBUG_LOGGER( 16, "0 - firstPlaceChoices[ numberOfMapsAtFirstPosition - 1 ] : %d", \
+                DEBUG_LOGGER( 16, "( numberOfMapsAtFirstPosition > 2 ) --- \
+                        firstPlaceChoices[ numberOfMapsAtFirstPosition - 1 ] : %d", \
                         firstPlaceChoices[ numberOfMapsAtFirstPosition - 1 ] )
                 
                 // determine the two choices that will be facing off
@@ -4147,77 +4149,72 @@ public computeVotes()
                 firstChoiceIndex  = random_num( 0, numberOfMapsAtFirstPosition - 1 );
                 secondChoiceIndex = random_num( 0, numberOfMapsAtFirstPosition - 1 );
                 
-                DEBUG_LOGGER( 16, "1 - At: firstChoiceIndex: %d, secondChoiceIndex: %d", \
+                DEBUG_LOGGER( 16, "( numberOfMapsAtFirstPosition > 2 ) --- \
+                        firstChoiceIndex: %d, secondChoiceIndex: %d", \
                         firstChoiceIndex, secondChoiceIndex )
                 
                 if( firstChoiceIndex == secondChoiceIndex )
                 {
                     if( secondChoiceIndex - 1 < 0 )
                     {
-                        secondChoiceIndex = secondChoiceIndex + 1;
+                        ++secondChoiceIndex;
                     }
                     else
                     {
-                        secondChoiceIndex = secondChoiceIndex - 1;
+                        --secondChoiceIndex;
                     }
                 }
                 
-                // if firstPlaceChoices[ numberOfMapsAtFirstPosition - 1 ]  is equal to g_totalVoteOptions
-                // then it option is not a valid map, it is the keep current map option, and must be informed
-                // it to the vote_display function, to show the 1 map options and the keep current map.
+                /**
+                 * If firstPlaceChoices[ numberOfMapsAtFirstPosition - 1 ]  is equal to
+                 * g_totalVoteOptions then it option is not a valid map, it is the keep current
+                 * map option, and must be informed it to the vote_display function, to show the
+                 * 1 map options and the keep current map.
+                 *
+                 * This is a very tricky code to understand. The variables 'firstChoiceIndex' and
+                 * 'secondChoiceIndex' are decremented because they do not point to any valid map
+                 * as they are on the edge of the MAX_MAPS_IN_VOTE.
+                 */
                 if( firstPlaceChoices[ firstChoiceIndex ] == g_totalVoteOptions )
                 {
-                    g_isRunOffNeedingKeepCurrentMap = true
-                    firstChoiceIndex--
-                    g_totalVoteOptionsTemp = 1;
+                    g_totalVoteOptionsTemp          = 1;
+                    g_arrayOfRunOffChoices[ 0 ]     = firstPlaceChoices[ secondChoiceIndex ];
+                    g_isRunOffNeedingKeepCurrentMap = true;
                 }
                 else if( firstPlaceChoices[ secondChoiceIndex ] == g_totalVoteOptions )
                 {
-                    g_isRunOffNeedingKeepCurrentMap = true
-                    secondChoiceIndex--
-                    g_totalVoteOptionsTemp = 1;
+                    g_totalVoteOptionsTemp          = 1;
+                    g_arrayOfRunOffChoices[ 0 ]     = firstPlaceChoices[ firstChoiceIndex ];
+                    g_isRunOffNeedingKeepCurrentMap = true;
                 }
                 else
                 {
-                    g_totalVoteOptionsTemp = 2;
+                    g_totalVoteOptionsTemp      = 2;
+                    g_arrayOfRunOffChoices[ 0 ] = firstPlaceChoices[ firstChoiceIndex ];
+                    g_arrayOfRunOffChoices[ 1 ] = firstPlaceChoices[ secondChoiceIndex ];
                 }
                 
-                if( firstChoiceIndex == secondChoiceIndex )
-                {
-                    if( secondChoiceIndex - 1 < 0 )
-                    {
-                        secondChoiceIndex = secondChoiceIndex + 1;
-                    }
-                    else
-                    {
-                        secondChoiceIndex = secondChoiceIndex - 1;
-                    }
-                }
-                
-                DEBUG_LOGGER( 16, "2 - At: firstChoiceIndex: %d, secondChoiceIndex: %d", \
+                DEBUG_LOGGER( 16, "( numberOfMapsAtFirstPosition > 2 ) --- \
+                        firstChoiceIndex: %d, secondChoiceIndex: %d", \
                         firstChoiceIndex, secondChoiceIndex )
-                
-                g_arrayOfRunOffChoices[ 0 ] = firstPlaceChoices[ firstChoiceIndex ];
-                g_arrayOfRunOffChoices[ 1 ] = firstPlaceChoices[ secondChoiceIndex ];
-                
-                DEBUG_LOGGER( 16, "At GAL_RESULT_TIED1 --- Runoff map1: %s, Runoff map2: %s", \
+                DEBUG_LOGGER( 16, "( numberOfMapsAtFirstPosition > 2 ) --- \
+                        GAL_RESULT_TIED1 --- Runoff map1: %s, Runoff map2: %s", \
                         g_votingMapNames[ g_arrayOfRunOffChoices[ 0 ] ], \
                         g_votingMapNames[ g_arrayOfRunOffChoices[ 1 ] ] )
                 
-                color_print( 0, "^1%L", LANG_PLAYER, "GAL_RESULT_TIED1", \
-                        numberOfMapsAtFirstPosition )
+                color_print( 0, "^1%L", LANG_PLAYER, "GAL_RESULT_TIED1", numberOfMapsAtFirstPosition );
             }
             else if( numberOfMapsAtFirstPosition == 2 )
             {
                 if( firstPlaceChoices[ 0 ] == g_totalVoteOptions )
                 {
-                    g_isRunOffNeedingKeepCurrentMap = true
+                    g_isRunOffNeedingKeepCurrentMap = true;
                     g_arrayOfRunOffChoices[ 0 ]     = firstPlaceChoices[ 1 ];
                     g_totalVoteOptionsTemp          = 1;
                 }
                 else if( firstPlaceChoices[ 1 ] == g_totalVoteOptions )
                 {
-                    g_isRunOffNeedingKeepCurrentMap = true
+                    g_isRunOffNeedingKeepCurrentMap = true;
                     g_arrayOfRunOffChoices[ 0 ]     = firstPlaceChoices[ 0 ];
                     g_totalVoteOptionsTemp          = 1;
                 }
@@ -4228,7 +4225,7 @@ public computeVotes()
                     g_arrayOfRunOffChoices[ 1 ] = firstPlaceChoices[ 1 ];
                 }
                 
-                DEBUG_LOGGER( 16, "At numberOfMapsAtFirstPosition == 2 --- Runoff map1: %s, \
+                DEBUG_LOGGER( 16, "( numberOfMapsAtFirstPosition == 2 ) --- Runoff map1: %s, \
                         Runoff map2: %s, g_totalVoteOptions: %d", \
                         g_votingMapNames[ g_arrayOfRunOffChoices[ 0 ] ], \
                         g_votingMapNames[ g_arrayOfRunOffChoices[ 1 ] ], g_totalVoteOptions )
@@ -4237,13 +4234,13 @@ public computeVotes()
             {
                 if( firstPlaceChoices[ 0 ] == g_totalVoteOptions )
                 {
-                    g_isRunOffNeedingKeepCurrentMap = true
+                    g_isRunOffNeedingKeepCurrentMap = true;
                     g_arrayOfRunOffChoices[ 0 ]     = secondPlaceChoices[ 0 ];
                     g_totalVoteOptionsTemp          = 1;
                 }
                 else if( secondPlaceChoices[ 0 ] == g_totalVoteOptions )
                 {
-                    g_isRunOffNeedingKeepCurrentMap = true
+                    g_isRunOffNeedingKeepCurrentMap = true;
                     g_arrayOfRunOffChoices[ 0 ]     = firstPlaceChoices[ 0 ];
                     g_totalVoteOptionsTemp          = 1;
                 }
@@ -4254,7 +4251,7 @@ public computeVotes()
                     g_arrayOfRunOffChoices[ 1 ] = secondPlaceChoices[ 0 ];
                 }
                 
-                DEBUG_LOGGER( 16, "At numberOfMapsAtSecondPosition == 1 --- Runoff map1: %s, \
+                DEBUG_LOGGER( 16, "( numberOfMapsAtSecondPosition == 1 ) --- Runoff map1: %s, \
                         Runoff map2: %s", \
                         g_votingMapNames[ g_arrayOfRunOffChoices[ 0 ] ], \
                         g_votingMapNames[ g_arrayOfRunOffChoices[ 1 ] ] )
@@ -4265,13 +4262,13 @@ public computeVotes()
                 
                 if( firstPlaceChoices[ 0 ] == g_totalVoteOptions )
                 {
-                    g_isRunOffNeedingKeepCurrentMap = true
+                    g_isRunOffNeedingKeepCurrentMap = true;
                     g_arrayOfRunOffChoices[ 0 ]     = secondPlaceChoices[ randonNumber ];
                     g_totalVoteOptionsTemp          = 1;
                 }
                 else if( secondPlaceChoices[ randonNumber ] == g_totalVoteOptions )
                 {
-                    g_isRunOffNeedingKeepCurrentMap = true
+                    g_isRunOffNeedingKeepCurrentMap = true;
                     g_arrayOfRunOffChoices[ 0 ]     = firstPlaceChoices[ 0 ];
                     g_totalVoteOptionsTemp          = 1;
                 }
@@ -4282,8 +4279,8 @@ public computeVotes()
                     g_arrayOfRunOffChoices[ 1 ] = secondPlaceChoices[ randonNumber ];
                 }
                 
-                DEBUG_LOGGER( 16, "At numberOfMapsAtSecondPosition == 1 ELSE --- Runoff map1: %s, \
-                        Runoff map2: %s", \
+                DEBUG_LOGGER( 16, "( numberOfMapsAtFirstPosition == 1 && \
+                        numberOfMapsAtSecondPosition > 1 ) --- Runoff map1: %s, Runoff map2: %s", \
                         g_votingMapNames[ g_arrayOfRunOffChoices[ 0 ] ], \
                         g_votingMapNames[ g_arrayOfRunOffChoices[ 1 ] ] )
                 
@@ -4304,8 +4301,7 @@ public computeVotes()
         {
             winnerVoteMapIndex = firstPlaceChoices[ random_num( 0, numberOfMapsAtFirstPosition - 1 ) ];
             
-            color_print( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_TIED",
-                    numberOfMapsAtFirstPosition );
+            color_print( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_TIED", numberOfMapsAtFirstPosition );
         }
         else
         {
