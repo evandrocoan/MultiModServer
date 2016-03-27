@@ -1019,13 +1019,13 @@ stock intermission_display()
             set_task( mp_chattime, "map_change", TASKID_MAP_CHANGE );
         }
         
+        // freeze the game and show the scoreboard
         if( get_pcvar_num( cvar_isEndMapCountdown ) )
         {
-            // freeze the game and show the scoreboard
-            g_isTimeToResetGame    = true
-            g_original_sv_maxspeed = get_pcvar_float( cvar_sv_maxspeed )
+            g_isTimeToResetGame    = true; // reset the game ending if there is a restart round.
+            g_original_sv_maxspeed = get_pcvar_float( cvar_sv_maxspeed );
             
-            set_pcvar_float( cvar_sv_maxspeed, 0.0 )
+            set_pcvar_float( cvar_sv_maxspeed, 0.0 );
             
             client_cmd( 0, "slot1" )
             client_cmd( 0, "drop weapon_c4" )
@@ -1040,7 +1040,6 @@ stock intermission_display()
         }
         else
         {
-            // freeze the game and show the scoreboard
             message_begin( MSG_ALL, SVC_INTERMISSION );
             message_end();
         }
@@ -4431,21 +4430,21 @@ stock map_extend()
         
         if( g_isMaxroundsExtend )
         {
-            set_cvar_num( "mp_maxrounds", get_pcvar_num( cvar_mp_maxrounds ) + extendmap_step_rounds );
-            set_cvar_num( "mp_winlimit", 0 );
+            set_pcvar_num( cvar_mp_maxrounds, get_pcvar_num( cvar_mp_maxrounds ) + extendmap_step_rounds );
+            set_pcvar_num( cvar_mp_winlimit, 0 );
         }
         else
         {
-            set_cvar_num( "mp_maxrounds", 0 );
-            set_cvar_num( "mp_winlimit", get_pcvar_num( cvar_mp_winlimit ) + extendmap_step_rounds );
+            set_pcvar_num( cvar_mp_maxrounds, 0 );
+            set_pcvar_num( cvar_mp_winlimit, get_pcvar_num( cvar_mp_winlimit ) + extendmap_step_rounds );
         }
         
         set_pcvar_float( cvar_mp_timelimit, 0.0 );
     }
     else
     {
-        set_cvar_num( "mp_maxrounds", 0 );
-        set_cvar_num( "mp_winlimit", 0 );
+        set_pcvar_num( cvar_mp_maxrounds, 0 );
+        set_pcvar_num( cvar_mp_winlimit, 0 );
         set_pcvar_float( cvar_mp_timelimit, get_pcvar_float( cvar_mp_timelimit )
                 + g_extendmapStepMinutes );
     }
