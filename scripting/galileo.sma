@@ -33,7 +33,7 @@ new const PLUGIN_VERSION[] = "v2.3.2d"
  * 0   - Disables this feature.
  * 1   - Normal debug.
  * 2   - To skip the 'pendingVoteCountdown()' and set the vote and runoff time to 5 seconds, and run
- *       the unit tests and print their out put results.
+ *       the Unit Tests and print their out put results.
  * 4   - To create fake votes.
  * 7   - Levels 1, 2 and 4.
  */
@@ -133,6 +133,7 @@ new Array: g_tests_failure_ids
 new Array: g_tests_failure_reasons
 new bool: g_is_test_changed_cvars
 new bool: g_current_test_evaluation
+new bool: g_areTheUnitTestsRunning
 
 new g_test_current_time
 new g_test_whiteListFilePath[ 128 ]
@@ -2990,7 +2991,16 @@ stock vote_startDirector( bool:is_forced_voting )
                 get_realplayersnum(): %d", g_voteStatus, g_voteStatus & VOTE_IS_OVER != 0, \
                 is_forced_voting, get_realplayersnum() )
     
-    #if !( DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST )
+    #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
+        
+        // stop the compiler warning 204: symbol is assigned a value that is never used
+        get_pcvar_num( cvar_isEmptyCycleServerChange )
+        
+        if( !g_areTheUnitTestsRunning )
+        {
+            return;
+        }
+    #else
         
         if( get_realplayersnum() == 0 )
         {
@@ -3006,10 +3016,6 @@ stock vote_startDirector( bool:is_forced_voting )
         }
         
         return
-    #else
-        // stop the compiler warning 204: symbol is assigned a value that is never used
-        get_pcvar_num( cvar_isEmptyCycleServerChange )
-    
     #endif
     }
     
@@ -5811,14 +5817,14 @@ public create_fakeVotes()
     else
     {
         g_arrayOfMapsWithVotesNumber[ 0 ] += 0;     // map 1
-        g_arrayOfMapsWithVotesNumber[ 1 ] += 1;     // map 2
-        g_arrayOfMapsWithVotesNumber[ 2 ] += 2;     // map 3
-        g_arrayOfMapsWithVotesNumber[ 3 ] += 0;     // map 4
-        g_arrayOfMapsWithVotesNumber[ 4 ] += 2;     // map 5
+        g_arrayOfMapsWithVotesNumber[ 1 ] += 0;     // map 2
+        g_arrayOfMapsWithVotesNumber[ 2 ] += 4;     // map 3
+        g_arrayOfMapsWithVotesNumber[ 3 ] += 3;     // map 4
+        g_arrayOfMapsWithVotesNumber[ 4 ] += 3;     // map 5
         
         if( g_isExtendmapAllowStay || g_isGameFinalVoting )
         {
-            g_arrayOfMapsWithVotesNumber[ 5 ] += 1;    // extend option
+            g_arrayOfMapsWithVotesNumber[ 5 ] += 0;    // extend option
         }
         
         g_totalVotesCounted = g_arrayOfMapsWithVotesNumber[ 0 ] + g_arrayOfMapsWithVotesNumber[ 1 ] +
@@ -5840,8 +5846,9 @@ public runTests()
 {
     server_print( "^n^n    Executing the 'Galileo' Tests:^n" )
     
-    save_server_cvars_for_test()
-    ALL_TESTS_TO_EXECUTE()
+    g_areTheUnitTestsRunning = true;
+    save_server_cvars_for_test();
+    ALL_TESTS_TO_EXECUTE();
     
     server_print( "^n    %d tests succeed.^n    %d tests failed.", g_totalSuccessfulTests, \
             g_totalFailureTests )
@@ -5859,6 +5866,8 @@ public runTests()
         
         print_all_tests_executed()
         print_tests_failure()
+        
+        g_areTheUnitTestsRunning = false;
     }
 }
 
@@ -5918,6 +5927,8 @@ public show_delayed_results()
             g_totalFailureTests )
     
     server_print( "^n    Finished 'Galileo' Tests Execution.^n^n" )
+    
+    g_areTheUnitTestsRunning = false;
 }
 
 /**
