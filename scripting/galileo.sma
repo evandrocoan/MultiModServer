@@ -1132,6 +1132,22 @@ stock reset_round_ending()
     client_cmd( 0, "-showscores" )
 }
 
+stock save_round_ending( roundEndStatus[] )
+{
+    roundEndStatus[ 0 ] = g_isTimeToChangeLevel;
+    roundEndStatus[ 1 ] = g_isTimeToRestart;
+    roundEndStatus[ 2 ] = g_isRtvLastRound;
+    roundEndStatus[ 3 ] = g_isLastGameRound;
+}
+
+stock restore_round_ending( roundEndStatus[] )
+{
+    g_isTimeToChangeLevel = bool:roundEndStatus[ 0 ];
+    g_isTimeToRestart     = bool:roundEndStatus[ 1 ];
+    g_isRtvLastRound      = bool:roundEndStatus[ 2 ];
+    g_isLastGameRound     = bool:roundEndStatus[ 3 ];
+}
+
 public reset_rounds_scores()
 {
     if( get_pcvar_num( cvar_serverTimeLimitRestart )
@@ -2995,6 +3011,16 @@ stock vote_startDirector( bool:is_forced_voting )
         get_pcvar_num( cvar_isEmptyCycleServerChange )
     
     #endif
+    }
+    
+    if( is_forced_voting
+        && g_voteStatus & VOTE_IS_OVER )
+    {
+        new bool:roundEndStatus[4]
+        
+        save_round_ending( roundEndStatus );
+        cancel_voting();
+        restore_round_ending( roundEndStatus );
     }
     
     // the rounds start delay task could be running
@@ -5772,7 +5798,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
 }
 
 // ################################## BELOW HERE ONLY GOES DEBUG/TEST CODE ###################################
-#if DEBUG_LEVEL > 0
+#if DEBUG_LEVEL & DEBUG_LEVEL_FAKE_VOTES
 public create_fakeVotes()
 {
     if( g_voteStatus & VOTE_IS_RUNOFF )
