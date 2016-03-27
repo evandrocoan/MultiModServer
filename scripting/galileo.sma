@@ -61,6 +61,11 @@ new const PLUGIN_VERSION[] = "v2.3.2d"
  */
 new g_debug_level = 1 + 4 + 8 + 16
 
+/**
+ * Dummy value used to use the do...while() statements to allow the semicolon ';' use at macros endings.
+ */
+new g_dummy_value = 0;
+ 
 
 /**
  * Write debug messages to server's console accordantly with cvar gal_debug.
@@ -83,7 +88,7 @@ stock debugMesssageLogger( mode, message[] = "", any: ... )
 }
 
 #else
-    #define DEBUG_LOGGER(%1) //
+    #define DEBUG_LOGGER(%1)
 
 #endif
 
@@ -94,6 +99,7 @@ stock debugMesssageLogger( mode, message[] = "", any: ... )
  * Contains all unit tests to execute.
  */
 #define ALL_TESTS_TO_EXECUTE() \
+do \
 { \
     test_register_test(); \
     test_gal_in_empty_cycle_case1(); \
@@ -104,7 +110,7 @@ stock debugMesssageLogger( mode, message[] = "", any: ... )
     test_loadCurrentBlackList_case1(); \
     test_loadCurrentBlackList_case2(); \
     test_loadCurrentBlackList_case3(); \
-}
+} while( g_dummy_value )
 
 
 /**
@@ -112,13 +118,14 @@ stock debugMesssageLogger( mode, message[] = "", any: ... )
  * double failure at the test control system.
  */
 #define SET_TEST_FAILURE(%1) \
+do \
 { \
     set_test_failure_private( %1 ); \
     if( g_current_test_evaluation ) \
     { \
         return; \
     } \
-}
+} while( g_dummy_value )
 
 
 /**
