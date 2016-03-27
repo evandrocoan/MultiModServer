@@ -37,7 +37,7 @@ new const PLUGIN_VERSION[] = "v2.3.4"
  * 4   - To create fake votes.
  * 7   - Levels 1, 2 and 4.
  */
-#define DEBUG_LEVEL 7
+#define DEBUG_LEVEL 0
 
 #define DEBUG_LEVEL_NORMAL     1
 #define DEBUG_LEVEL_UNIT_TEST  2
@@ -79,7 +79,7 @@ stock debugMesssageLogger( mode, message[] = "", any: ... )
 {
     if( mode & g_debug_level )
     {
-        static formated_message[ 256 ];
+        static formated_message[ 384 ];
         
         vformat( formated_message, charsmax( formated_message ), message, 3 );
         server_print( "%s",                      formated_message );
@@ -3853,7 +3853,10 @@ public vote_handleChoice( player_id, key )
     if( g_showVoteStatus == SHOW_STATUS_ALWAYS
         || g_showVoteStatus == SHOW_STATUS_AFTER_VOTE )
     {
-        new argument[ 2 ] = { false, -1 }
+        new argument[ 2 ];
+        
+        argument[ 0 ] = false;
+        argument[ 1 ] = player_id;
         
         set_task( 0.1, "vote_display", TASKID_VOTE_DISPLAY, argument, sizeof( argument ) );
     }
@@ -4066,7 +4069,7 @@ public computeVotes()
         computeVoteMapLine( voteMapLine, charsmax( voteMapLine ), playerVoteMapChoiceIndex )
         
         DEBUG_LOGGER( 4, "      %2i/%3i  %i. %s", \
-                g_arrayOfMapsWithVotesNumber[ playerVoteMapChoiceIndex ], voteMapLine, \
+                g_arrayOfMapsWithVotesNumber[ playerVoteMapChoiceIndex ], g_totalVotesCounted, \
                 playerVoteMapChoiceIndex, g_votingMapNames[ playerVoteMapChoiceIndex ] )
     }
     
@@ -4092,7 +4095,7 @@ public computeVotes()
     for( playerVoteMapChoiceIndex = 0; playerVoteMapChoiceIndex <= g_totalVoteOptions;
          ++playerVoteMapChoiceIndex )
     {
-        DEBUG_LOGGER( 16, "After for to determine which maps are in 1st and 2nd places, \
+        DEBUG_LOGGER( 16, "Inside the for to determine which maps are in 1st and 2nd places, \
                 g_arrayOfMapsWithVotesNumber[%d] = %d ", playerVoteMapChoiceIndex, \
                 g_arrayOfMapsWithVotesNumber[ playerVoteMapChoiceIndex ] )
         
@@ -5830,15 +5833,15 @@ public create_fakeVotes()
     }
     else
     {
-        g_arrayOfMapsWithVotesNumber[ 0 ] += 1;     // map 1
-        g_arrayOfMapsWithVotesNumber[ 1 ] += 1;     // map 2
-        g_arrayOfMapsWithVotesNumber[ 2 ] += 1;     // map 3
-        g_arrayOfMapsWithVotesNumber[ 3 ] += 1;     // map 4
-        g_arrayOfMapsWithVotesNumber[ 4 ] += 1;     // map 5
+        g_arrayOfMapsWithVotesNumber[ 0 ] += 0;     // map 1
+        g_arrayOfMapsWithVotesNumber[ 1 ] += 3;     // map 2
+        g_arrayOfMapsWithVotesNumber[ 2 ] += 0;     // map 3
+        g_arrayOfMapsWithVotesNumber[ 3 ] += 0;     // map 4
+        g_arrayOfMapsWithVotesNumber[ 4 ] += 0;     // map 5
         
         if( g_isExtendmapAllowStay || g_isGameFinalVoting )
         {
-            g_arrayOfMapsWithVotesNumber[ 5 ] += 0;    // extend option
+            g_arrayOfMapsWithVotesNumber[ 5 ] += 3;    // extend option
         }
         
         g_totalVotesCounted = g_arrayOfMapsWithVotesNumber[ 0 ] + g_arrayOfMapsWithVotesNumber[ 1 ] +
