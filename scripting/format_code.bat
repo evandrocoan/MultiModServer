@@ -40,6 +40,7 @@ goto exit
 echo.
 echo Successfully parsed the file! See the file logs on:
 echo scripting\compiled\%ERROR_LOG_FILE%
-goto exit
+if "%1"=="" goto exit
+pause
 
 :exit

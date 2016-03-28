@@ -4173,10 +4173,6 @@ public computeVotes()
                  * g_totalVoteOptions then it option is not a valid map, it is the keep current
                  * map option, and must be informed it to the vote_display function, to show the
                  * 1 map options and the keep current map.
-                 *
-                 * This is a very tricky code to understand. The variables 'firstChoiceIndex' and
-                 * 'secondChoiceIndex' are decremented because they do not point to any valid map
-                 * as they are on the edge of the MAX_MAPS_IN_VOTE.
                  */
                 if( firstPlaceChoices[ firstChoiceIndex ] == g_totalVoteOptions )
                 {
@@ -6369,7 +6365,7 @@ stock save_server_cvars_for_test()
     
     get_pcvar_string( cvar_voteWhiteListMapFilePath, test_whiteListFilePath, charsmax( test_whiteListFilePath ) )
     
-    DEBUG_LOGGER( 2, "    %42s mp_timelimit: %f  test_mp_timelimit: %f   g_originalTimelimit: %f",  \
+    DEBUG_LOGGER( 2, "    %42s mp_timelimit: %f  test_mp_timelimit: %f   g_originalTimelimit: %f", \
             "save_server_cvars_for_test( out )", get_pcvar_float( cvar_mp_timelimit ), \
             test_mp_timelimit, g_originalTimelimit )
 }
@@ -6379,7 +6375,7 @@ stock save_server_cvars_for_test()
  */
 stock restore_server_cvars_for_test()
 {
-    DEBUG_LOGGER( 2, "    %42s mp_timelimit: %f  test_mp_timelimit: %f  g_originalTimelimit: %f",  \
+    DEBUG_LOGGER( 2, "    %42s mp_timelimit: %f  test_mp_timelimit: %f  g_originalTimelimit: %f", \
             "restore_server_cvars_for_test( in )", get_pcvar_float( cvar_mp_timelimit ), \
             test_mp_timelimit, g_originalTimelimit )
     
@@ -6393,7 +6389,7 @@ stock restore_server_cvars_for_test()
         set_pcvar_string( cvar_voteWhiteListMapFilePath, test_whiteListFilePath )
     }
     
-    DEBUG_LOGGER( 2, "    %42s mp_timelimit: %f  test_mp_timelimit: %f  g_originalTimelimit: %f",  \
+    DEBUG_LOGGER( 2, "    %42s mp_timelimit: %f  test_mp_timelimit: %f  g_originalTimelimit: %f", \
             "restore_server_cvars_for_test( out )", get_pcvar_float( cvar_mp_timelimit ), \
             test_mp_timelimit, g_originalTimelimit )
 }
