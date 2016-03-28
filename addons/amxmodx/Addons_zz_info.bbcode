@@ -9,7 +9,6 @@
 [*][goanchor=Introduction]Introduction[/goanchor]
 [*][goanchor=Requirements]Requirements and Commands[/goanchor]
 [*][goanchor=Installation]Installation[/goanchor]
-[*][goanchor=Configuration]Configuration[/goanchor]
 [*][goanchor=Profiler]Profiler Benchmark[/goanchor]
 [*][goanchor=Change]Change Log[/goanchor]
 [*][goanchor=Credits]Credits[/goanchor]
@@ -36,8 +35,8 @@ section for features that are [B]planned[/B] for the final version.
 
 ********************** [anchor]Introduction[/anchor][B][SIZE="6"][COLOR="blue"]Introduction[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor]  *******************************
 
-You will have a new plugins list beyond you own "[B]plugins.ini[/B]" at "[COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]configs[/B]".
-This will be "[URL="https://github.com/addonszz/Multi-Mod_Plugin/blob/develop/addons/amxmodx/configs/plugins-ultra.ini"]plugins-ultra.ini[/URL]", too at "[COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]configs[/B]". It contains the descriptions
+You will have a new plugins list beyond you own "[B]plugins.ini[/B]" at "[COLOR="Blue"]yourGameMod/addons/amxmodx/[/COLOR][B]configs[/B]".
+This will be "[URL="https://github.com/addonszz/Multi-Mod_Plugin/blob/develop/addons/amxmodx/configs/plugins-ultra.ini"]plugins-ultra.ini[/URL]", too at "[COLOR="Blue"]yourGameMod/addons/amxmodx/[/COLOR][B]configs[/B]". It contains the descriptions
 of all plugins at this Multi-Mod_Plugin. There you can active or deactivate then as you usually do
 at your own "[B]plugins.ini[/B].
 
@@ -63,14 +62,16 @@ This Multi-Mod_Plugin comes with the following Mods [B]installed[/B] and configu
 
 ********************** [anchor]Requirements[/anchor][SIZE="6"][COLOR="Blue"][B]Requirements and Commands[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor]  ******
 
-[B]Amx Mod X 1.8.2[/B]
-Tested under [B]Counter-Strike[/B] and Counter-Strike: [B]Condition Zero[/B]
+[SIZE="3"][B]Server's Requirements:[/B][/SIZE]
+[LIST=1]
+[*][B]Amx Mod X 1.8.2[/B]
+[*]Tested under [B]Counter-Strike[/B] and Counter-Strike: [B]Condition Zero[/B]
+[/LIST]
 
-[B]Cvars[/B]
-You can see and configure the [B]default cvars[/B] at "[COLOR="Blue"]yougamemod/addons/amxmodx/[B]configs/[/B][/COLOR][URL="https://github.com/addonszz/Multi-Mod_Plugin/blob/develop/addons/amxmodx/configs/amxx_ultra.cfg"]amxx_ultra.cfg[/URL]"
-file.
+[SIZE="3"][B]Cvars:[/B][/SIZE]
+You can see and configure the [B]default cvars[/B] at "[COLOR="Blue"]yourGameMod/addons/amxmodx/[B]configs/[/B][/COLOR][URL="https://github.com/addonszz/Multi-Mod_Plugin/blob/develop/addons/amxmodx/configs/amxx_ultra.cfg"]amxx_ultra.cfg[/URL]" file.
 
-[B]Commands[/B]
+[SIZE="3"][B]Commands:[/B][/SIZE]
 See [URL="https://github.com/addonszz/Multi-Mod_Plugin/blob/develop/Commands.txt"]here[/URL] the big list of commands actually activated. To see the new ones after active a plugin, just type
 "[B]amx_help[/B]" or "[B]amxx cvars[/B]" without quotos at your server's console, to see the commands and cvars of all
 plugins activated.
@@ -81,7 +82,7 @@ the "[B]zm_*[/B]" map, the Zombie Mod is deactivated automatically, and you last
 if there was [B]an active[/B] mod before you enter at the "[B]zm_*[/B]" map.
 
 The same happens to "[B]catch_*[/B]" and "[B]surf_*[/B]" maps. If want [B][COLOR="Red"]to disable that feature[/COLOR][/B], go to the folder
-"[COLOR="Blue"]yourgamemod/addons/amxmodx/configs/[/COLOR][B]maps/[/B]" and rename the files [B]"plugins-catch.ini"[/B], [B]"plugins-surf.ini"[/B]
+"[COLOR="Blue"]yourGameMod/addons/amxmodx/configs/[/COLOR][B]maps/[/B]" and rename the files [B]"plugins-catch.ini"[/B], [B]"plugins-surf.ini"[/B]
 and [B]"plugins-zm.ini"[/B] to [B]"old_plugins-catch.ini"[/B], [B]"old_plugins-surf.ini"[/B] and [B]"old_plugins-zm.ini"[/B],
 respectively. If you want to enable that feature again, "[COLOR="Blue"]rename them[/COLOR]" back.
 
@@ -113,22 +114,21 @@ amx_setmod deathrun 1            | to use Deathrun Mod
 
 
 ******************************** [anchor]Installation[/anchor][B][SIZE="6"][COLOR="Blue"]Installation[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor]  **********************
-[B]1.[/B] Download the files "[B]Multi-Mod_Plugin-master.zip[/B]" and "[B]plugin_resources.zip[/B]" at
-[goanchor=Downloads]Downloads[/goanchor] section.
 
-[B]2.[/B] Then take the contents at the folder "[B]Multi-Mod_Plugin-master[/B]" inside "[B]Multi-Mod_Plugin-master.zip[/B]"
-and the contents at "[B]plugin_resources.zip[/B]" to your gamemod folder, replacing the existents
-files.
+[B]1.[/B] Download the files "[B]Multi-Mod_Plugin-XXX.zip[/B]" and "[B]plugin_resources.zip[/B]" at [goanchor=Downloads]Downloads[/goanchor] section.
 
-[B]3.[/B] Go to [COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]scripting/[/B] and compile all files and take the [B]compiled files[/B]
-at the folder [COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]scripting/compiled/[/B] to your plugins folder at
-[COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]plugins/[/B].
-[B]Note:[/B] To compile all files at your [B]scripting/[/B] folder, just run "[B]compile.exe[/B]" (windows) or [B]compile.sh[/B]
-(linux/mac).
+[B]2.[/B] Then take the contents at the folder "[B]Multi-Mod_Plugin-XXX[/B]" inside "[B]Multi-Mod_Plugin-XXX.zip[/B]"
+and the contents at "[B]plugin_resources.zip[/B]" to your GameMod folder, replacing the existents files.
+GameMod Examples: czero, cstrike, ...
 
-[anchor]Configuration[/anchor][B]4.[/B] [SIZE="4"]Edit[/SIZE] the "[URL="https://github.com/addonszz/Multi-Mod_Plugin/blob/develop/addons/amxmodx/configs/plugins-ultra.ini"]plugins-ultra.ini[/URL]" file at [COLOR="Blue"]yourgamemod/addons/amxmodx/[/COLOR][B]configs/[/B] folder, to your own taste.
+[B]3.[/B] Go to [COLOR="Blue"]yourGameMod/addons/amxmodx/[/COLOR][B]scripting/[/B] and compile all files and take the [B]compiled files[/B]
+at the folder [COLOR="Blue"]yourGameMod/addons/amxmodx/[/COLOR][B]scripting/compiled/[/B] to your plugins' folder usually at
+[COLOR="Blue"]yourGameMod/addons/amxmodx/[/COLOR][B]plugins/[/B]. [B]Note:[/B] To compile all files at your [B]scripting/[/B] folder, just
+run "[B]compile.exe[/B]" (windows) or [B]compile.sh[/B] (linux/mac).
 
-[B]5.[/B] If you want, [SIZE="4"][COLOR="red"]learn how to configure[/COLOR][/SIZE] your [URL="https://forums.alliedmods.net/showthread.php?t=273020#Configuration"]own mods here[/URL].
+[B]4.[/B] [B]Edit[/B] the "[URL="https://github.com/addonszz/Multi-Mod_Plugin/blob/develop/addons/amxmodx/configs/plugins-ultra.ini"]plugins-ultra.ini[/URL]" file at [COLOR="Blue"]yourGameMod/addons/amxmodx/[/COLOR][B]configs/[/B] folder, to your own taste.
+
+[B]5.[/B] If you want to, [COLOR="red"]learn how to configure[/COLOR] your [URL="https://forums.alliedmods.net/showthread.php?t=273020#Configuration"]own mods here[/URL].
 
 
 ******************************** [anchor]Profiler[/anchor][B] Profiler Benchmark [/B] *****************************************
@@ -213,3 +213,4 @@ v1.0-alpha1.hotfix3: Multi-Mod_Plugin-master.zip (2.82 MB, 43 views)
 [LIST]
 [*][URL="https://github.com/addonszz/Multi-Mod_Plugin/releases/download/v1.0-alpha2/plugin_resources.zip"]plugin_resources.zip[/URL] (131.49 MB)
 [/LIST]
+
