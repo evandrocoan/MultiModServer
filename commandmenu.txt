@@ -208,7 +208,7 @@
 		}
 		"1" "Freeze CSBots"				"amx_cvar bot_stop 1"
 		"2" "Unfreeze CSBots"			"amx_cvar bot_stop 0"
-		"1" "Kill All"							"amx_cvar bot_kill"
+		"1" "Kill All"							"amx_cfg admin/csbot/matarBots.cfg"
 		"2" "Kick All"							"amx_cfg admin/csbot/kickarBots.cfg"
 	}
 	"2" "PODBot"
@@ -344,30 +344,30 @@
 		"1" "Kill All"									"amx_cfg admin/podbot/matarBots.cfg"
 		"2" "Kick All"									"amx_cfg admin/podbot/kickarBots.cfg"
 	}
-	"1" "Activate Mod"
-	{
-		"1" "More 1"
-		{
-			"1" "Dragon Ball Mod"					"amx_multimods dragon 1"
-			"1" "Warcraft Mod"						"amx_multimods warcraft 1"
-			"1" "Knife Arena Mod"					"amx_multimods knife 1"
-			"1" "Predator Mod"						"amx_multimods predator 1"
-			"1" "JCTF - Capture Flag"			"amx_multimods jctf 1"
-			"1" "Catch Mod"							"amx_multimods catch 1"
-			"1" "Hide N seek Mod"				"amx_multimods hiden 1"
-		}
-		"1" "More 2"
-		{
-			"1" "Surf Mod"						"amx_multimods surf 1"
-		}
-		"1" "Zombie Mod Ammo"			"amx_multimods zp50Ammo 1"
-		"1" "Zombie Mod Money"			"amx_multimods zp50Money 1"
-		"1" "CS Deathmatch Mod"			"amx_multimods csdm 1"
-		"1" "Super Hero Mod"					"amx_multimods shero 1"
-		"1" "Gun-Game Mod"					"amx_multimods gungame 1"
-	}
 	"1" "Configs 1"
 	{
+		"1" "Activate Mod"
+		{
+			"1" "More 1"
+			{
+				"1" "Dragon Ball Mod"					"amx_setmods dragon 1"
+				"1" "Warcraft Mod"						"amx_setmods warcraft 1"
+				"1" "Knife Arena Mod"					"amx_setmods knife 1"
+				"1" "Predator Mod"						"amx_setmods predator 1"
+				"1" "JCTF - Capture Flag"			"amx_setmods jctf 1"
+				"1" "Catch Mod"							"amx_setmods catch 1"
+				"1" "Hide N seek Mod"				"amx_setmods hiden 1"
+			}
+			"1" "More 2"
+			{
+				"1" "Surf Mod"						"amx_setmods surf 1"
+			}
+			"1" "Zombie Mod Ammo"			"amx_setmods zp50Ammo 1"
+			"1" "Zombie Mod Money"			"amx_setmods zp50Money 1"
+			"1" "CS Deathmatch Mod"			"amx_setmods csdm 1"
+			"1" "Super Hero Mod"					"amx_setmods shero 1"
+			"1" "Gun-Game Mod"					"amx_setmods gungame 1"
+		}
 		"2" "Gravity"
 		{
 			"1" "Gravity -"
@@ -443,38 +443,60 @@
 	}
 	"4" "Configs 2"
 	{
-		"2" "Freeze Time"
+		"1" "Part 1"
 		{
-					"3" "0 seconds"		"amx_cvar mp_freezetime 0"
-					"4" "2 seconds"		"amx_cvar mp_freezetime 2"
-					"4" "4 seconds"		"amx_cvar mp_freezetime 4"
-					"4" "6 seconds"		"amx_cvar mp_freezetime 6"
-					"4" "8 seconds"		"amx_cvar mp_freezetime 8"
+			"2" "Freeze Time"
+			{
+				"3" "0 seconds"		"amx_cvar mp_freezetime 0"
+				"4" "2 seconds"		"amx_cvar mp_freezetime 2"
+				"4" "4 seconds"		"amx_cvar mp_freezetime 4"
+				"4" "6 seconds"		"amx_cvar mp_freezetime 6"
+				"4" "8 seconds"		"amx_cvar mp_freezetime 8"
+				"4" "12 seconds"		"amx_cvar mp_freezetime 12"
+			}
+			"2" "Time Limit"
+			{
+				"3" "Deactivate"		"amx_cvar mp_timelimit 0"
+				"4" "20 minutes"		"amx_cvar mp_timelimit 20"
+				"4" "45 minutes"		"amx_cvar mp_timelimit 45"
+				"4" "90 minutes"		"amx_cvar mp_timelimit 90"
+				"4" "180 minutes"		"amx_cvar mp_timelimit 180"
+			}
+			"2" "AutoBalance Teams"
+			{
+				"3" "Deactivate"				"amx_cvar mp_autoteambalance 0"
+				"4" "1"								"amx_cvar mp_autoteambalance 1"
+				"4" "2"								"amx_cvar mp_autoteambalance 2"
+				"4" "3"								"amx_cvar mp_autoteambalance 3"
+			}
+			"1" "Limit Teams"
+			{
+				  "1" "Deactivated"				"amx_cvar mp_limitteams 0"
+				  "2" "Limit Teams 2"					"amx_cvar mp_limitteams 2"
+				  "2" "Limit Teams 3"					"amx_cvar mp_limitteams 3"
+			}
+			"1.5" "AirAccelerate"
+			{	
+				"1" "100 (Surf)" 			"amx_cvar sv_airaccelerate 100"
+				"2" "10 (Padrao) " 		"amx_cvar sv_airaccelerate 10"
+			}
 		}
-		"2" "Time Limit"
+		"2" "Round Time"
 		{
-					"3" "Deactivate"		"amx_cvar mp_timelimit 0"
-					"4" "20 minutes"		"amx_cvar mp_timelimit 20"
-					"4" "45 minutes"		"amx_cvar mp_timelimit 45"
-					"4" "90 minutes"		"amx_cvar mp_timelimit 90"
-					"4" "180 minutes"		"amx_cvar mp_timelimit 180"
+			"3" "1 minute"		"amx_cvar mp_roundtime 1"
+			"4" "2 minutes"		"amx_cvar mp_roundtime 2"
+			"4" "3 minutes"		"amx_cvar mp_roundtime 3"
+			"4" "5 minutes"		"amx_cvar mp_roundtime 5"
+			"4" "7 minutes"		"amx_cvar mp_roundtime 7"
+			"4" "9 minutes"		"amx_cvar mp_roundtime 9"
 		}
-		"2" "AutoBalance Teams"
+		"2" "Buy Time"
 		{
-					"3" "Deactivate"				"amx_cvar mp_autoteambalance 0"
-					"4" "1"								"amx_cvar mp_autoteambalance 1"
-					"4" "2"								"amx_cvar mp_autoteambalance 2"
-					"4" "3"								"amx_cvar mp_autoteambalance 3"
-		}
-		"1" "Limit Teams"
-		{
-				  "1" "Des..."				"amx_cvar mp_limitteams 0"
-				  "2" "Ati..."					"amx_cvar mp_limitteams 2"
-		}
-		"1.5" "AirAccelerate"
-		{	
-			"1" "100 (Surf)" 			"amx_cvar sv_airaccelerate 100"
-			"2" "10 (Padrao) " 		"amx_cvar sv_airaccelerate 10"
+			"3" "15 seconds"		"amx_cvar mp_buytime 15"
+			"4" "45 seconds"		"amx_cvar mp_buytime 45"
+			"4" "90 seconds"		"amx_cvar mp_buytime 90"
+			"4" "150 seconds"		"amx_cvar mp_buytime 180"
+			"4" "300 seconds"		"amx_cvar mp_buytime 300"
 		}
 	}
 	"1" "Configs Mods"
@@ -483,7 +505,7 @@
 		"2" "Force Vote Map"						"gal_startvote;mapchooser_startvote"
 		"2" "Ask Vote MOD"						"say votemod"
 		"2" "Ask Vote Map"						"say rtv"
-		"2" "Deactivate Mods"					"amx_multimods disableMods 1"
+		"2" "Deactivate Mods"					"amx_setmods disable 1"
 	}
 	"1" "CT's Win" 					"terminate_round ct au;exec admin/ctwin.cfg"
 	"1" "TR's Win" 					"terminate_round ob t;exec admin/terwin.cfg"
@@ -531,11 +553,11 @@
 		"5" "Draw" 								"exec admin/ndwin.cfg"
 		"6" "2-out-of-3 Series" 			"exec admin/md3.cfg"
 	}
-	"3" "MIX" 							"exec admin/mix.cfg"
-	"4" "CPL" 							"exec admin/cpl.cfg"
-	"5" "4FUN" 						"exec admin/4fun.cfg"
-	"2" "ClanBase(cf)"				"exec admin/cb_cs.cfg"
-	"3" "Addons [CFG] "			"exec admin/game_o.cfg"
+	"3" "MIX" 							"amx_cfg admin/mix.cfg"
+	"4" "CPL" 							"amx_cfg admin/cpl.cfg"
+	"5" "4FUN" 						"amx_cfg admin/4fun.cfg"
+	"2" "ClanBase(cf)"				"amx_cfg admin/cb_cs.cfg"
+	"3" "Addons [CFG] "			"amx_cfg admin/game_o.cfg"
 }
 "1.3" "Player"
 {

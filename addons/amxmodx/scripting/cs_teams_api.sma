@@ -109,8 +109,11 @@ stock fm_cs_set_user_team(id, CsTeams:team, send_message)
 // Send User Team Message (Note: this next message can be received by other plugins)
 public fm_cs_set_user_team_msg(taskid)
 {
+	if(!is_user_connected(taskid-TASK_TEAMMSG))
+		return;
+
 	// Tell everyone my new team
-	emessage_begin(MSG_ALL, g_MsgTeamInfo)
+	emessage_begin(MSG_BROADCAST, g_MsgTeamInfo)
 	ewrite_byte(ID_TEAMMSG) // player
 	ewrite_string(CS_TEAM_NAMES[_:cs_get_user_team(ID_TEAMMSG)]) // team
 	emessage_end()
@@ -127,7 +130,10 @@ public fm_cs_set_user_team_msg(taskid)
 
 // Update Player's Team on all clients (adding needed delays)
 stock fm_user_team_update(id)
-{	
+{
+	if(!is_user_connected(id))
+		return;
+
 	new Float:current_time
 	current_time = get_gametime()
 	

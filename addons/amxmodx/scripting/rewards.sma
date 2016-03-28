@@ -55,7 +55,6 @@ public plugin_init() {
    register_event("DeathMsg","hs_kill","ade","3=1","5=0")
    register_event("DeathMsg","knife_kill","ade","3=1","5=0")
    register_cvar("amx_hsreward", "1")
-   register_cvar("", "1")
    return PLUGIN_CONTINUE
 }
 
