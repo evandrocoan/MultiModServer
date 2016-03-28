@@ -19,7 +19,7 @@
 #include <amxmisc>
 
 #define PLUGIN "Addons zz Info"
-#define VERSION "1.0-alpha1.4"
+#define VERSION "1.0-alpha2"
 #define AUTHOR "Addons zz"
 
 #define LONG_STRING 256
