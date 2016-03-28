@@ -72,3 +72,5 @@ include/amxmod_compat/VexdUM_const.inc
 include/amxmod_compat/VexdUM_stock.inc
 include/amxmod_compat/Vexd_Utilities.inc
 include/amxmod_compat/xtrafun.inc
+
+!intentionally_initally_empty.txt
