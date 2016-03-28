@@ -1,6 +1,6 @@
 @echo off
 
-SET MULTIMOD_FOLDER=D:\Evandro\Archives\Dropbox\Aplicativos\SoftwareVersioning\MultiMod_Manager
+SET MULTIMOD_FOLDER=D:\User\Archives\Dropbox\Applications\SoftwareVersioning\MultiMod_Manager
 
 echo.
 echo xcopy /E /S /Y ".\multimod" "%MULTIMOD_FOLDER%\configs\multimod"

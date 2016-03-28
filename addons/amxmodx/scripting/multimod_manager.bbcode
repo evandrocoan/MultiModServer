@@ -1,6 +1,22 @@
+[anchor]Top[/anchor]
+[SIZE="6"][COLOR="Blue"][B]Multi-Mod Manager v1.1-release_candidate1.hotfix1[/B][/COLOR][/SIZE]
+[B]Release: 10.10.2015 | Last Update: 21.01.2016[/B]
 
-[SIZE="6"][COLOR="Blue"][B]Multi-Mod Manager v1.1-release-candidate1[/B][/COLOR][/SIZE]
-[B]Release: 10.10.2015 | Last Update: 16.01.2016[/B]
+[SIZE="5"][COLOR="blue"][B]Contents' Table[/B][/COLOR][/SIZE] 
+
+[LIST]
+[*][goanchor=Introduction]Introduction[/goanchor]
+[*][goanchor=Requirements]Requirements and Commands[/goanchor]
+[*][goanchor=MyMultiModServer]My Multi-Mod Server[/goanchor]
+[*][goanchor=Installation]Installation[/goanchor]
+[*][goanchor=Explanations]Explanations[/goanchor]
+[*][goanchor=Configuration]Configuration[/goanchor]
+[*][goanchor=TODO]TODO[/goanchor]
+[*][goanchor=Change]Change Log[/goanchor]
+[*][goanchor=Credits]Credits[/goanchor]
+[*][goanchor=Sourcecode]Source Code and Support[/goanchor]
+[*][goanchor=Downloads]Downloads[/goanchor]
+[/LIST]
 
 [SIZE="4"]Basic differences between the original [B]Joropito's MultiMod[/B] and [B]addons_zz's Multi-Mod Manager[/B][/SIZE]
 
@@ -42,24 +58,10 @@
 [*]receive a clear and self-explanatory error message when you mis-configure the mod plugins file name/location.
 [*]server's admins with right flag can change the server's current mod without needing direct access like ftp, to the server's files.
 [/LIST]
-[anchor]Top[/anchor][SIZE="5"][COLOR="blue"][B]Contents' Table[/B][/COLOR][/SIZE] 
 
-[LIST]
-[*][goanchor=Introduction]Introduction[/goanchor]
-[*][goanchor=Requirements]Requirements and Commands[/goanchor]
-[*][goanchor=MyMultiModServer]My Multi-Mod Server[/goanchor]
-[*][goanchor=Installation]Installation[/goanchor]
-[*][goanchor=Explanations]Explanations[/goanchor]
-[*][goanchor=Configuration]Configuration[/goanchor]
-[*][goanchor=TODO]TODO[/goanchor]
-[*][goanchor=Change]Change Log[/goanchor]
-[*][goanchor=Credits]Credits[/goanchor]
-[*][goanchor=Sourcecode]Source Code and Support[/goanchor]
-[*][goanchor=Downloads]Downloads[/goanchor]
-[/LIST]
-[B]See its current development at: [URL="https://github.com/addonszz/MultiMod_Manager"]Github
-[IMG]https://cdn3.iconfinder.com/data/icons/social-network-round-gloss-shine/128/GitHub_Social-Network-Communicate-Page-Curl-Effect-Circle-Glossy-Shadow-Shine.png[/IMG]
-https://github.com/addonszz/MultiMod_Manager[/URL][/B] 
+[B]See its current development at: [URL="https://github.com/addonszz/Multi-Mod_Manager/commits/develop"]Github
+[IMG]http://i.imgur.com/TWUBJiH.png[/IMG]
+https://github.com/addonszz/Multi-Mod_Manager/commits/develop[/URL][/B] 
 [B][COLOR="Blue"](look for the developer and feature branches)[/COLOR][/B]
 
 The original plugin "[URL="https://forums.alliedmods.net/showthread.php?t=95568"]multimod.sma[/URL]" is originally written by [URL="https://forums.alliedmods.net/member.php?u=48840"][B]JoRoPiTo[/B][/URL]. This "[B]Multi-Mod Manager[/B]" works 
@@ -80,7 +82,8 @@ only active when you are not using any mod, or your current mod does not specifi
 "[B]mapcycles[/B]" and "[B]server cfg[/B]" files respectively, are located at "[COLOR="Blue"]yourgamemod/mapcycles/[/COLOR][B]day[/B]" and 
 "[COLOR="Blue"]yourgamemod/mapcycles/[/COLOR][B]day/cfg[/B]". 
 [URL="http://www.gametracker.com/search/?search_by=server_variable&search_by2=MultiModManager&query=&loc=_all&sort=&order="]
-[SIZE=5][B][COLOR=DarkGreen]Click here to see all servers using this plugin.[/COLOR][/B][/SIZE][/URL] 
+[SIZE=4][B][COLOR=DarkGreen]Click here to see all servers using this plugin.[/COLOR][/B][/SIZE][/URL] 
+
 [anchor]Introduction[/anchor]
 ********************** [B][SIZE="5"][COLOR="blue"]Introduction[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor]  *******************************
 This is a multi-mod server manager, that controls which mod is, or will be activated. 
@@ -294,48 +297,13 @@ exec addons/amxmodx/configs/multimod/votingfinished.cfg
 [COLOR="Blue"]gungame mod[/COLOR]  is active.
 
 ******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *********************************
- * Create a new folder called cvars, to list the cvars to autosave to the latecfg file name.
-
-******************************** [anchor]Change[/anchor][B][SIZE="5"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] ***********************
-[QUOTE]
-2015-10-10 | v1.0-release_candidate1
- * Initial release candidate. 
-
-2015-10-10 | v1.0-release_candidate1.hotfix1
- * Add exception handle when the currentmod_id.ini or currentmod_shortname.ini is not found. 
-
-2015-10-12 | v1.0-release_candidate2
- * Removed unused function get_firstmap() and variable g_nextmap. 
- * Replaced unnecessary functions configMapManager and configDailyMaps. 
- * Removed unnecessary MULTIMOD_MAPCHOOSER compiler constant. 
- * Added to multimod_daily_changer.sma compatibility with Galileo.
-
-2015-10-13 | v1.0-release_candidate2.hotfix1
- * Added missing format parameter at messageModActivated function.
-
-2015-10-13 | v1.0-release_candidate2.hotfix2
- * Added missing MM_CHOOSE line at multilingual file.
-
-2015-10-19 | v1.0-release_candidate2.hotfix3
- * Translated to english lost code variables. 
- * Replaced a implemented switch by a native switch. 
- * Replaced another implemented switch by a native switch. 
- * Improved variables names meaningful. 
-
-2015-10-21 | v1.0-release_candidate2.hotfix4
- * Fixed mapcycle not setting when a mod was activated by command line or voting.  
-
-2015-10-25 | v1.1-alpha1
- * Added late configuration file execution to built-in AMXX per map configurations. 
- * Added to restaure the first mapcycle used. 
- * Improved code clearness. 
- * Added path coders to every multi-generated string. 
- * Added immutable strings paths as global variables. 
- * Removed passing an integer value to a function by string. 
- * Removed unnecessary variables like g_messageFileNames and g_pluginsFileNames. 
-
-2015-10-30 | v1.1-alpha1.hotfix1
- * Fixed the mod map cycle not changing. 
+[CODE]
+ * Create a new folder called cvars, to list the cvars to autosave to the latecfg file name. An give an option to autodetect the changed cvars from the './multimod/cfg' folder.
+ * Create a option to automatically create a file at '.configs/maps' folder, to autoload a mod on its maps types, as deathrun on deathrun_/zm_ prefixes maps names. To do this, add at the voting_list, a last parameter specifing the map_prefix where that mod must be autoloaded.
+[/CODE]******************************** [anchor]Change[/anchor][B][SIZE="5"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] ***********************
+[CODE]
+2016-01-21 | v1.1-release_candidate1.hotfix1
+ * Fixed voting reset bug.
 
 2016-01-16 | v1.1-release_candidate1
  * Replaced wrong color chat system with correct one.
@@ -346,9 +314,46 @@ exec addons/amxmodx/configs/multimod/votingfinished.cfg
  * Fixed printing info to the client in a for loop can cause an overflow.
  * Implemented dynamic arrays, to have unlimited models.
  * Fixed bug, where was enabled to set a invalid mapcycle.
-[/QUOTE]
 
-******************************** [anchor]Credits[/anchor][B][SIZE="5"][COLOR="blue"]Credits[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *******************************
+2015-10-30 | v1.1-alpha1.hotfix1
+ * Fixed the mod map cycle not changing.
+
+2015-10-25 | v1.1-alpha1
+ * Added late configuration file execution to built-in AMXX per map configurations.
+ * Added to restaure the first mapcycle used.
+ * Improved code clearness.
+ * Added path coders to every multi-generated string.
+ * Added immutable strings paths as global variables.
+ * Removed passing an integer value to a function by string.
+ * Removed unnecessary variables like g_messageFileNames and g_pluginsFileNames.
+
+2015-10-21 | v1.0-release_candidate2.hotfix4
+ * Fixed mapcycle not setting when a mod was activated by command line or voting.
+
+2015-10-19 | v1.0-release_candidate2.hotfix3
+ * Translated to english lost code variables.
+ * Replaced a implemented switch by a native switch.
+ * Replaced another implemented switch by a native switch.
+ * Improved variables names meaningful.
+
+2015-10-13 | v1.0-release_candidate2.hotfix2
+ * Added missing MM_CHOOSE line at multilingual file.
+
+2015-10-13 | v1.0-release_candidate2.hotfix1
+ * Added missing format parameter at messageModActivated function.
+
+2015-10-12 | v1.0-release_candidate2
+ * Removed unused function get_firstmap() and variable g_nextmap.
+ * Replaced unnecessary functions configMapManager and configDailyMaps.
+ * Removed unnecessary MULTIMOD_MAPCHOOSER compiler constant.
+ * Added to multimod_daily_changer.sma compatibility with Galileo.
+
+2015-10-10 | v1.0-release_candidate1.hotfix1
+ * Add exception handle when the currentmod_id.ini or currentmod_shortname.ini is not found.
+
+2015-10-10 | v1.0-release_candidate1
+ * Initial release candidate.
+[/CODE]******************************** [anchor]Credits[/anchor][B][SIZE="5"][COLOR="blue"]Credits[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *******************************
 [B]fysiks[/B]: The first to realize the idea of "multimod.sma" and various code improvements. 
 [B]joropito[/B]: The idea/program developer of "[URL="https://forums.alliedmods.net/showthread.php?t=95568"]multimod.sma[/URL]". 
 [B]crazyeffect[/B]: Colaborate with multilangual support of "multimod.sma". 
@@ -392,18 +397,13 @@ from the [B]amxx cvars[/B] command. They will be grouped together.
 [/LIST]
 [/QUOTE]
 
-***************************************************************************************    
-[SIZE="6"]BRAZIL (South America) Testing Server[/SIZE]
-[URL="http://www.gametracker.com/server_info/jacks.noip.me:27015/"][IMG]http://www.gametracker.com/server_info/jacks.noip.me:27015/b_560_95_1.png[/IMG][/URL]
-
-[SIZE="6"]GERMANY (Europe) Testing Server[/SIZE]
-[URL="http://www.gametracker.com/server_info/vipersnake.net:27030/"][IMG]http://www.gametracker.com/server_info/vipersnake.net:27030/b_560_95_1.png[/IMG][/URL]
-
 ******************************** [anchor]Downloads[/anchor][SIZE="6"][COLOR="Blue"][B]Downloads[/B][/COLOR][/SIZE] [goanchor=Top]Go Top[/goanchor] ********************
-Old versions downloads:
+[LIST=0]
+[*]Old versions downloads:
 [LIST=1]
-[*]v1.0-alpha2.hotfix1: (multimod_manager.sma - 72 views - 66.8 KB)
+[*]v1.1-alpha1.hotfix1: (multimod_manager.sma - 72 views - 66.8 KB)
 [/LIST]
-[LIST]
+
+
 [*][URL="https://forums.alliedmods.net/showthread.php?t=273019#Downloads"]galileo.sma[/URL]
 [/LIST]
