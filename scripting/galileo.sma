@@ -22,7 +22,7 @@
 *****************************************************************************************
 */
 
-new const PLUGIN_VERSION[] = "v2.3.5"
+new const PLUGIN_VERSION[] = "v2.3.5d"
 
 #include <amxmodx>
 #include <amxmisc>
@@ -1661,7 +1661,7 @@ public cmd_listrecent( player_id )
             formatex( recent_maps_menu_name, charsmax( recent_maps_menu_name ), "%L",
                     player_id, "GAL_MAP_RECENTMAPS" )
             
-            g_nominationMatchesMenu[ player_id ] = menu_create( "Nominate Map", "cmd_listrecent_handler" );
+            g_nominationMatchesMenu[ player_id ] = menu_create( recent_maps_menu_name, "cmd_listrecent_handler" );
             
             for( new map_index = 0; map_index < g_recentMapCount; ++map_index )
             {
@@ -2212,7 +2212,10 @@ stock nomination_attempt( player_id, nomination[] ) // ( playerName[], &phraseId
     strtolower( nomination );
     
     // assume there'll be more than one match ( because we're lazy ) and starting building the match menu
-    menu_destroy( g_nominationMatchesMenu[ player_id ] );
+    if( g_nominationMatchesMenu[ player_id ] )
+    {
+        menu_destroy( g_nominationMatchesMenu[ player_id ] );
+    }
     
     g_nominationMatchesMenu[ player_id ] = menu_create( "Nominate Map", "nomination_handleMatchChoice" );
     
