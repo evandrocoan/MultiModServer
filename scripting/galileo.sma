@@ -770,7 +770,6 @@ stock loadPluginSetttings()
 
 stock configureServerStart()
 {
-    // delay to start to handle the server start to avoid problems over crashing maps
     if( get_cvar_num( "gal_server_starting" ) )
     {
         new backupMapsFilePath[ MAX_FILE_PATH_LENGHT ];
@@ -780,7 +779,7 @@ stock configureServerStart()
         
         if( file_exists( backupMapsFilePath ) )
         {
-            set_task( 5.0, "handleServerStart", _, backupMapsFilePath, sizeof backupMapsFilePath );
+            handleServerStart( backupMapsFilePath );
         }
         else
         {
