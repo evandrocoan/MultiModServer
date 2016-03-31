@@ -485,7 +485,7 @@ new g_nextmap                    [ MAX_MAPNAME_LENGHT ];
 new g_currentMap                 [ MAX_MAPNAME_LENGHT ];
 new g_playerVotedOption          [ MAX_PLAYERS_COUNT ];
 new g_playerVotedWeight          [ MAX_PLAYERS_COUNT ];
-new g_nominationMatchesMenu      [ MAX_PLAYERS_COUNT ];
+new g_generalPlayersMenusIdsUse  [ MAX_PLAYERS_COUNT ];
 new g_arrayOfMapsWithVotesNumber [ MAX_OPTIONS_IN_VOTE ];
 
 new bool:g_isPlayerVoted             [ MAX_PLAYERS_COUNT ] = { true, ... }
@@ -1398,6 +1398,9 @@ public handleServerStart( backupMapsFilePath[] )
     }
 }
 
+/**
+ * Detect here if the last 10 restart was to the same map.
+ */
 stock configureTheMapcycleSystem( currentMap[] )
 {
     new possibleNextMapPosition
@@ -1651,9 +1654,9 @@ public cmd_listrecent( player_id )
         case 3:
         {
             // assume there'll be more than one match ( because we're lazy ) and starting building the match menu
-            if( g_nominationMatchesMenu[ player_id ] )
+            if( g_generalPlayersMenusIdsUse[ player_id ] )
             {
-                menu_destroy( g_nominationMatchesMenu[ player_id ] );
+                menu_destroy( g_generalPlayersMenusIdsUse[ player_id ] );
             }
             
             new recent_maps_menu_name[ 64 ]
@@ -1661,14 +1664,14 @@ public cmd_listrecent( player_id )
             formatex( recent_maps_menu_name, charsmax( recent_maps_menu_name ), "%L",
                     player_id, "GAL_MAP_RECENTMAPS" )
             
-            g_nominationMatchesMenu[ player_id ] = menu_create( recent_maps_menu_name, "cmd_listrecent_handler" );
+            g_generalPlayersMenusIdsUse[ player_id ] = menu_create( recent_maps_menu_name, "cmd_listrecent_handler" );
             
             for( new map_index = 0; map_index < g_recentMapCount; ++map_index )
             {
-                menu_additem( g_nominationMatchesMenu[ player_id ], g_recentMaps[ map_index ] )
+                menu_additem( g_generalPlayersMenusIdsUse[ player_id ], g_recentMaps[ map_index ] )
             }
             
-            menu_display( player_id, g_nominationMatchesMenu[ player_id ] )
+            menu_display( player_id, g_generalPlayersMenusIdsUse[ player_id ] )
         }
     }
     
@@ -1682,7 +1685,7 @@ public cmd_listrecent_handler( player_id, menu, item )
         return PLUGIN_CONTINUE;
     }
     
-    menu_display( player_id, g_nominationMatchesMenu[ player_id ] )
+    menu_display( player_id, g_generalPlayersMenusIdsUse[ player_id ] )
     
     return PLUGIN_HANDLED;
 }
@@ -2155,12 +2158,12 @@ public cmd_say( player_id )
 stock nomination_menu( player_id )
 {
     // assume there'll be more than one match ( because we're lazy ) and starting building the match menu
-    if( g_nominationMatchesMenu[ player_id ] )
+    if( g_generalPlayersMenusIdsUse[ player_id ] )
     {
-        menu_destroy( g_nominationMatchesMenu[ player_id ] );
+        menu_destroy( g_generalPlayersMenusIdsUse[ player_id ] );
     }
     
-    g_nominationMatchesMenu[ player_id ] = menu_create( "Nominate Map", "nomination_handleMatchChoice" );
+    g_generalPlayersMenusIdsUse[ player_id ] = menu_create( "Nominate Map", "nomination_handleMatchChoice" );
     
     // gather all maps that match the nomination
     new mapIndex
@@ -2197,13 +2200,13 @@ stock nomination_menu( player_id )
         
         formatex( choice, charsmax( choice ), "%s %s", nominationMap, disabledReason )
         
-        menu_additem( g_nominationMatchesMenu[ player_id ], choice, info,
+        menu_additem( g_generalPlayersMenusIdsUse[ player_id ], choice, info,
                 ( disabledReason[ 0 ] == '^0' ? 0 : ( 1 << 26 ) ) )
         
         DEBUG_LOGGER( 0, "( nomination_menu ) choice: %s, info[0]: %d", choice, info[ 0 ] )
     }
     
-    menu_display( player_id, g_nominationMatchesMenu[ player_id ] )
+    menu_display( player_id, g_generalPlayersMenusIdsUse[ player_id ] )
 }
 
 stock nomination_attempt( player_id, nomination[] ) // ( playerName[], &phraseIdx, matchingSegment[] )
@@ -2212,12 +2215,12 @@ stock nomination_attempt( player_id, nomination[] ) // ( playerName[], &phraseId
     strtolower( nomination );
     
     // assume there'll be more than one match ( because we're lazy ) and starting building the match menu
-    if( g_nominationMatchesMenu[ player_id ] )
+    if( g_generalPlayersMenusIdsUse[ player_id ] )
     {
-        menu_destroy( g_nominationMatchesMenu[ player_id ] );
+        menu_destroy( g_generalPlayersMenusIdsUse[ player_id ] );
     }
     
-    g_nominationMatchesMenu[ player_id ] = menu_create( "Nominate Map", "nomination_handleMatchChoice" );
+    g_generalPlayersMenusIdsUse[ player_id ] = menu_create( "Nominate Map", "nomination_handleMatchChoice" );
     
     // gather all maps that match the nomination
     new mapIndex
@@ -2265,7 +2268,7 @@ stock nomination_attempt( player_id, nomination[] ) // ( playerName[], &phraseId
             
             formatex( choice, charsmax( choice ), "%s %s", nominationMap, disabledReason );
             
-            menu_additem( g_nominationMatchesMenu[ player_id ], choice, info,
+            menu_additem( g_generalPlayersMenusIdsUse[ player_id ], choice, info,
                     ( disabledReason[ 0 ] == '^0' ? 0 : ( 1 << 26 ) ) );
         }
     }
@@ -2294,7 +2297,7 @@ stock nomination_attempt( player_id, nomination[] ) // ( playerName[], &phraseId
                 color_print( player_id, "^1%L", player_id, "GAL_NOM_MATCHES_MAX",
                         MAX_NOM_MATCH_COUNT, MAX_NOM_MATCH_COUNT );
             }
-            menu_display( player_id, g_nominationMatchesMenu[ player_id ] );
+            menu_display( player_id, g_generalPlayersMenusIdsUse[ player_id ] );
         }
     }
 }
@@ -2313,11 +2316,11 @@ public nomination_handleMatchChoice( player_id, menu, item )
     DEBUG_LOGGER( 4, "( nomination_handleMatchChoice ) item: %d - %s, player_id: %d, menu: %d", \
             item, item, player_id, menu )
     
-    menu_item_getinfo( g_nominationMatchesMenu[ player_id ], item, access, info, 1, _, _, callback );
+    menu_item_getinfo( g_generalPlayersMenusIdsUse[ player_id ], item, access, info, 1, _, _, callback );
     
     DEBUG_LOGGER( 4, "( nomination_handleMatchChoice ) info[ 0 ]: %d - %s, access: %d, \
-            g_nominationMatchesMenu[ player_id ]: %d", \
-            info[ 0 ], info[ 0 ], access, g_nominationMatchesMenu[ player_id ] )
+            g_generalPlayersMenusIdsUse[ player_id ]: %d", \
+            info[ 0 ], info[ 0 ], access, g_generalPlayersMenusIdsUse[ player_id ] )
 #endif
     map_nominate( player_id, item );
     
