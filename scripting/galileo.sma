@@ -779,7 +779,7 @@ stock configureServerStart()
         
         if( file_exists( backupMapsFilePath ) )
         {
-            set_task( 15.0, "handleServerStart", _, backupMapsFilePath, sizeof backupMapsFilePath );
+            set_task( 5.0, "handleServerStart", _, backupMapsFilePath, sizeof backupMapsFilePath );
         }
         else
         {
