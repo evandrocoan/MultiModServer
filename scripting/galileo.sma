@@ -508,12 +508,16 @@ public plugin_init()
 {
     register_plugin( "Galileo", PLUGIN_VERSION, "Brad Jones/Addons zz" );
     
-    cvar_maxMapExtendTime          = register_cvar( "amx_extendmap_max", "90" );
-    cvar_extendmapStepMinutes      = register_cvar( "amx_extendmap_step", "15" );
-    cvar_extendmapStepRounds       = register_cvar( "amx_extendmap_step_rounds", "30" );
-    cvar_extendmapAllowStay        = register_cvar( "amx_extendmap_allow_stay", "0" );
-    cvar_isExtendmapOrderAllowed   = register_cvar( "amx_extendmap_allow_order", "0" );
-    cvar_extendmapAllowStayType    = register_cvar( "amx_extendmap_allow_stay_type", "0" );
+    cvar_maxMapExtendTime        = register_cvar( "amx_extendmap_max", "90" );
+    cvar_extendmapStepMinutes    = register_cvar( "amx_extendmap_step", "15" );
+    cvar_extendmapStepRounds     = register_cvar( "amx_extendmap_step_rounds", "30" );
+    cvar_extendmapAllowStay      = register_cvar( "amx_extendmap_allow_stay", "0" );
+    cvar_isExtendmapOrderAllowed = register_cvar( "amx_extendmap_allow_order", "0" );
+    cvar_extendmapAllowStayType  = register_cvar( "amx_extendmap_allow_stay_type", "0" );
+    
+    register_cvar( "gal_version", PLUGIN_VERSION, FCVAR_SERVER | FCVAR_SPONLY );
+    register_cvar( "gal_server_starting", "1", FCVAR_SPONLY );
+    
     cvar_disabledValuePointer      = register_cvar( "gal_disabled_value_pointer", "0", FCVAR_SPONLY );
     cvar_nextMapChangeAnnounce     = register_cvar( "gal_nextmap_change", "1" );
     cvar_isToShowVoteCounter       = register_cvar( "gal_vote_show_counter", "0" );
@@ -575,9 +579,6 @@ public plugin_init()
     
     register_dictionary( "common.txt" );
     register_dictionary_colored( "galileo.txt" );
-    
-    register_cvar( "gal_version", PLUGIN_VERSION, FCVAR_SERVER | FCVAR_SPONLY );
-    register_cvar( "gal_server_starting", "1", FCVAR_SPONLY );
     
     register_logevent( "game_commencing_event", 2, "0=World triggered", "1=Game_Commencing" )
     register_logevent( "team_win_event",        6, "0=Team" )
