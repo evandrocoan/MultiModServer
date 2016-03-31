@@ -1361,9 +1361,10 @@ public handleServerStart( backupMapsFilePath[] )
                     mapToChange[ 0 ] = '^0';
                     fgets( backupMapsFile, mapToChange, charsmax( mapToChange )  );
                 }
+                
+                trim( mapToChange )
             }
             
-            trim( mapToChange )
             fclose( backupMapsFile );
         }
         else if( startAction == SERVER_START_RANDOMMAP ) // pick a random map from allowable nominations
@@ -1398,9 +1399,6 @@ public handleServerStart( backupMapsFilePath[] )
     }
 }
 
-/**
- * Detect here if the last 10 restart was to the same map.
- */
 stock configureTheMapcycleSystem( currentMap[] )
 {
     new possibleNextMapPosition
@@ -2133,7 +2131,7 @@ public cmd_say( player_id )
             if( equali( firstWord, "nominate" )
                 || equali( firstWord, "nom" ) )
             {
-                nomination_attempt( player_id, secondWord );
+                nominationAttemptWithNamePart( player_id, secondWord );
                 
                 return PLUGIN_HANDLED;
             }
@@ -2209,10 +2207,11 @@ stock nomination_menu( player_id )
     menu_display( player_id, g_generalPlayersMenusIdsUse[ player_id ] )
 }
 
-stock nomination_attempt( player_id, nomination[] ) // ( playerName[], &phraseIdx, matchingSegment[] )
+// ( playerName[], &phraseIdx, matchingSegment[] )
+stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] ) 
 {
-    // all map names are stored as lowercase, so normalize the nomination
-    strtolower( nomination );
+    // all map names are stored as lowercase, so normalize the partialNameAttempt
+    strtolower( partialNameAttempt );
     
     // assume there'll be more than one match ( because we're lazy ) and starting building the match menu
     if( g_generalPlayersMenusIdsUse[ player_id ] )
@@ -2222,7 +2221,7 @@ stock nomination_attempt( player_id, nomination[] ) // ( playerName[], &phraseId
     
     g_generalPlayersMenusIdsUse[ player_id ] = menu_create( "Nominate Map", "nomination_handleMatchChoice" );
     
-    // gather all maps that match the nomination
+    // gather all maps that match the partialNameAttempt
     new mapIndex
     
     new matchCnt = 0
@@ -2238,7 +2237,7 @@ stock nomination_attempt( player_id, nomination[] ) // ( playerName[], &phraseId
     {
         ArrayGetString( g_nominationMap, mapIndex, nominationMap, charsmax( nominationMap ) );
         
-        if( contain( nominationMap, nomination ) > -1 )
+        if( contain( nominationMap, partialNameAttempt ) > -1 )
         {
             matchCnt++;
             matchIdx = mapIndex;    // store in case this is the only match
@@ -2280,7 +2279,7 @@ stock nomination_attempt( player_id, nomination[] ) // ( playerName[], &phraseId
         {
             // no matches; pity the poor fool
             color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_NOMATCHES",
-                    nomination );
+                    partialNameAttempt );
         }
         case 1:
         {
@@ -2290,7 +2289,7 @@ stock nomination_attempt( player_id, nomination[] ) // ( playerName[], &phraseId
         default:
         {
             // this is kinda sexy; we put up a menu of the matches for them to pick the right one
-            color_print( player_id, "^1%L", player_id, "GAL_NOM_MATCHES", nomination );
+            color_print( player_id, "^1%L", player_id, "GAL_NOM_MATCHES", partialNameAttempt );
             
             if( matchCnt >= MAX_NOM_MATCH_COUNT )
             {
