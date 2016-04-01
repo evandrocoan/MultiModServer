@@ -24,9 +24,6 @@
 
 new const PLUGIN_VERSION[] = "v2.4.1";
 
-#pragma semicolon 1
-#include <amxmodx>
-#include <amxmisc>
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
  * and the variable 'g_debug_level' for more information. Default value: 0
@@ -40,9 +37,24 @@ new const PLUGIN_VERSION[] = "v2.4.1";
  */
 #define DEBUG_LEVEL 0
 
+
 #define DEBUG_LEVEL_NORMAL     1
 #define DEBUG_LEVEL_UNIT_TEST  2
 #define DEBUG_LEVEL_FAKE_VOTES 4
+
+#include <amxmodx>
+#include <amxmisc>
+
+#pragma semicolon 1
+
+/**
+ * Dummy value used to use the do...while() statements to allow the semicolon ';' use at macros endings.
+ */
+new g_dummy_value = 0;
+
+stock allowToUseSemicolonOnMacrosEnd()
+{
+}
 
 #if DEBUG_LEVEL & DEBUG_LEVEL_NORMAL
     #define DEBUG
@@ -86,15 +98,6 @@ stock debugMesssageLogger( mode, message[] = "", any: ... )
 
 #endif
 
-
-/**
- * Dummy value used to use the do...while() statements to allow the semicolon ';' use at macros endings.
- */
-new g_dummy_value = 0;
-
-stock allowToUseSemicolonOnMacrosEnd()
-{
-}
 
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
 
