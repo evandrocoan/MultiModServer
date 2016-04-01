@@ -37,7 +37,7 @@ new const PLUGIN_VERSION[] = "v2.4"
  * 4   - To create fake votes.
  * 7   - Levels 1, 2 and 4.
  */
-#define DEBUG_LEVEL 1
+#define DEBUG_LEVEL 0
 
 #define DEBUG_LEVEL_NORMAL     1
 #define DEBUG_LEVEL_UNIT_TEST  2
@@ -82,7 +82,8 @@ stock debugMesssageLogger( mode, message[] = "", any: ... )
 }
 
 #else
-    #define DEBUG_LOGGER(%1)
+    stock nothing() {} // to allow the semicolon ';' use at macros endings.
+    #define DEBUG_LOGGER(%1) nothing()
 
 #endif
 
