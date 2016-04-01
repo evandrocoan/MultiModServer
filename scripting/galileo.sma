@@ -453,7 +453,7 @@ new NP_cvar_mp_chattime
 new NP_cvar_amx_nextmap
 new NP_cvar_mp_friendlyfire
 
-new NP_g_currentMapCyclePosition
+new NP_g_nextMapCyclePosition
 new NP_g_nextMapName      [ MAX_MAPNAME_LENGHT ]
 new NP_g_currentMapName   [ MAX_MAPNAME_LENGHT ]
 new NP_g_mapCycleFilePath [ MAX_FILE_PATH_LENGHT ]
@@ -1388,7 +1388,7 @@ public handleServerStart( backupMapsFilePath[] )
         }
         
         restartsOnTheCurrentMap = getRestartsOnTheCurrentMap( mapToChange );
-        configureTheMapcycleSystem( mapToChange, restartsOnTheCurrentMap );
+        configureTheMapcycleSystem( mapToChange, restartsOnTheCurrentMap, charsmax( mapToChange ) );
         
         if( mapToChange[ 0 ]
             && is_map_valid( mapToChange ) )
@@ -1471,7 +1471,7 @@ stock getRestartsOnTheCurrentMap( mapToChange[] )
  * To configure the mapcycle system and to detect if the last MAX_SERVER_RESTART_ACCEPTABLE restarts
  * was to the same map. If so, change to the next map right after it.
  */
-stock configureTheMapcycleSystem( currentMap[], restartsOnTheCurrentMap )
+stock configureTheMapcycleSystem( currentMap[], restartsOnTheCurrentMap, currentMapCharsMax )
 {
     new possibleNextMapPosition
     
@@ -1491,25 +1491,31 @@ stock configureTheMapcycleSystem( currentMap[], restartsOnTheCurrentMap )
     {
         if( restartsOnTheCurrentMap > MAX_SERVER_RESTART_ACCEPTABLE )
         {
-            new possibleNextMapCopy[ MAX_MAPNAME_LENGHT ]
+            new possibleCurrentMap[ MAX_MAPNAME_LENGHT ]
             
-            copy( possibleNextMapCopy, charsmax( possibleNextMapCopy ), possibleNextMap );
-            possibleNextMapPosition = map_getNext( mapcycleFileList, possibleNextMapCopy, possibleNextMap );
+            copy( possibleCurrentMap, charsmax( possibleCurrentMap ), possibleNextMap );
+            possibleNextMapPosition = map_getNext( mapcycleFileList, possibleCurrentMap, possibleNextMap );
             
             if( possibleNextMapPosition != -1 )
             {
                 configureTheNextMapPlugin( possibleNextMapPosition, possibleNextMap );
             }
             
+            copy( currentMap, currentMapCharsMax, possibleCurrentMap );
             server_print( "^nThe server is jumping to the next map after the current map \
-                    due more than %d.", MAX_SERVER_RESTART_ACCEPTABLE );
+                    due more than %d.^n", MAX_SERVER_RESTART_ACCEPTABLE );
         }
         else
         {
             configureTheNextMapPlugin( possibleNextMapPosition, possibleNextMap );
             DEBUG_LOGGER( 4, "( configureTheMapcycleSystem ) restartsOnTheCurrentMap < \
-                    MAX_SERVER_RESTART_ACCEPTABLE" );
+                    MAX_SERVER_RESTART_ACCEPTABLE^n" );
         }
+    }
+    else
+    {
+        configureTheNextMapPlugin( 0, possibleNextMap );
+        DEBUG_LOGGER( 4, "( configureTheMapcycleSystem ) configureTheNextMapPlugin( 0, possibleNextMap )^n" );
     }
     
     ArrayDestroy( mapcycleFileList )
@@ -1517,10 +1523,10 @@ stock configureTheMapcycleSystem( currentMap[], restartsOnTheCurrentMap )
 
 stock configureTheNextMapPlugin( possibleNextMapPosition, possibleNextMap[] )
 {
-    NP_g_currentMapCyclePosition = possibleNextMapPosition - 1;
+    NP_g_nextMapCyclePosition = possibleNextMapPosition;
     
-    DEBUG_LOGGER( 4, "( configureTheNextMapPlugin ) NP_g_currentMapCyclePosition: %d, \
-            possibleNextMap: %s", NP_g_currentMapCyclePosition, possibleNextMap );
+    DEBUG_LOGGER( 4, "( configureTheNextMapPlugin ) NP_g_nextMapCyclePosition: %d, \
+            possibleNextMap: %s", NP_g_nextMapCyclePosition, possibleNextMap );
     
     setNextMap( possibleNextMap );
     saveCurrentMapCycleSetting();
@@ -1896,6 +1902,11 @@ stock loadMapFileList( Array:mapArray, mapCount, mapFilePath[] )
 {
     new mapFile = fopen( mapFilePath, "rt" );
     
+#if defined DEBUG
+    new current_index = -1;
+    
+#endif
+    
     if( mapFile )
     {
         new loadedMapName[ MAX_MAPNAME_LENGHT ];
@@ -1910,7 +1921,7 @@ stock loadMapFileList( Array:mapArray, mapCount, mapFilePath[] )
                 && !equal( loadedMapName, ";", 1 )
                 && is_map_valid( loadedMapName ) )
             {
-                DEBUG_LOGGER( 4, "map_populateList(...) loadedMapName = %s", loadedMapName )
+                DEBUG_LOGGER( 4, "map_populateList() %d, loadedMapName = %s", ++current_index, loadedMapName )
                 ArrayPushString( mapArray, loadedMapName );
                 
                 ++mapCount;
@@ -5224,7 +5235,7 @@ public startEmptyCycleSystem()
 
 /**
  * Given a mapArray list the currentMap, calculates the next map after the currentMap provided at
- * the mapArray.
+ * the mapArray. The map list to start on 0 as the first map.
  *
  * @param nextMap       the string pointer which will receive the next map
  * @param currentMap    the string printer to the current map name
@@ -5730,9 +5741,9 @@ public nextmap_plugin_init()
     
     get_mapname( NP_g_currentMapName, charsmax( NP_g_currentMapName ) );
     
+    new mapcycleFilePath       [ MAX_FILE_PATH_LENGHT ];
+    new mapcycleCurrentIndex   [ MAX_MAPNAME_LENGHT ];
     new tockenMapcycleAndPosion[ MAX_MAPNAME_LENGHT + MAX_FILE_PATH_LENGHT ];
-    new mapcycleFilePath[ MAX_FILE_PATH_LENGHT ];
-    new mapcycleCurrentIndex[ MAX_MAPNAME_LENGHT ];
     
     get_localinfo( "lastmapcycle", tockenMapcycleAndPosion, charsmax( tockenMapcycleAndPosion ) );
     
@@ -5743,11 +5754,11 @@ public nextmap_plugin_init()
     
     if( !equal( NP_g_mapCycleFilePath, mapcycleFilePath ) )
     {
-        NP_g_currentMapCyclePosition = 0    // mapcyclefile has been changed - go from first
+        NP_g_nextMapCyclePosition = 0    // mapcyclefile has been changed - go from first
     }
     else
     {
-        NP_g_currentMapCyclePosition = str_to_num( mapcycleCurrentIndex );
+        NP_g_nextMapCyclePosition = str_to_num( mapcycleCurrentIndex );
     }
     
     readMapCycle( NP_g_mapCycleFilePath, NP_g_nextMapName, charsmax( NP_g_nextMapName ) );
@@ -5757,7 +5768,7 @@ public nextmap_plugin_init()
 }
 
 /**
- * The variable 'NP_g_currentMapCyclePosition' is updated at 'handleServerStart()' 15 seconds delayed task,
+ * The variable 'NP_g_nextMapCyclePosition' is updated at 'handleServerStart()' 15 seconds delayed task,
  * which happens before this function is recalled to update the new settings.
  */
 stock saveCurrentMapCycleSetting()
@@ -5765,7 +5776,7 @@ stock saveCurrentMapCycleSetting()
     new tockenMapcycleAndPosion[ MAX_MAPNAME_LENGHT + MAX_FILE_PATH_LENGHT ]
     
     formatex( tockenMapcycleAndPosion, charsmax( tockenMapcycleAndPosion ), "%s %d",
-            NP_g_mapCycleFilePath, NP_g_currentMapCyclePosition )
+            NP_g_mapCycleFilePath, NP_g_nextMapCyclePosition )
     
     set_localinfo( "lastmapcycle", tockenMapcycleAndPosion ) // save lastmapcycle settings
 }
@@ -5906,10 +5917,10 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
                 copy( szFirst, charsmax( szFirst ), szBuffer );
             }
             
-            if( ++iMaps > NP_g_currentMapCyclePosition )
+            if( ++iMaps > NP_g_nextMapCyclePosition )
             {
                 copy( szNext, iNext, szBuffer );
-                NP_g_currentMapCyclePosition = iMaps;
+                NP_g_nextMapCyclePosition = iMaps;
                 
                 return;
             }
@@ -5926,7 +5937,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
         copy( szNext, iNext, szFirst );
     }
     
-    NP_g_currentMapCyclePosition = 1;
+    NP_g_nextMapCyclePosition = 1;
 }
 
 // ################################## BELOW HERE ONLY GOES DEBUG/TEST CODE ###################################
