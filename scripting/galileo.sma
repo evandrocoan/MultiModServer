@@ -2204,7 +2204,8 @@ public cmd_say( player_id )
             }
             else if( get_pcvar_num( cvar_nomPlayerAllowance ) )
             {
-                DEBUG_LOGGER( 4, "( cmd_say ) on: else if( get_pcvar_num( cvar_nomPlayerAllowance ) ) " )
+                DEBUG_LOGGER( 4, "( cmd_say ) on the 1 word else \
+                        if( get_pcvar_num( cvar_nomPlayerAllowance ) ) " )
                 
                 if( equali( firstWord, "noms" )
                     || equali( firstWord, "nominations" ) )
@@ -2455,6 +2456,14 @@ public nomination_handleMatchChoice( player_id, menu, item )
         return PLUGIN_CONTINUE;
     }
     
+    // Due the first menu option to be 'Cancel all your Nominations', take on times less 'item - 1 '.
+    if( --item == -1 )
+    {
+        unnominatedDisconnectedPlayer( player_id );
+        
+        return PLUGIN_HANDLED;
+    }
+    
     if( g_currentMenuMapIndexForPlayers[ player_id ] )
     {
         item = ArrayGetCell( g_currentMenuMapIndexForPlayers[ player_id ], item );
@@ -2466,26 +2475,18 @@ public nomination_handleMatchChoice( player_id, menu, item )
     new info[ 1 ];
     new access, callback;
     
-    DEBUG_LOGGER( 4, "( nomination_handleMatchChoice ) item: %d - %s, player_id: %d, menu: %d, \
+    DEBUG_LOGGER( 4, "( nomination_handleMatchChoice ) item: %d, player_id: %d, menu: %d, \
             g_currentMenuMapIndexForPlayers[ player_id ]: %d", \
-            item, item, player_id, menu, g_currentMenuMapIndexForPlayers[ player_id ] )
+            item + 1, player_id, menu, g_currentMenuMapIndexForPlayers[ player_id ] )
     
-    menu_item_getinfo( g_generalUsePlayersMenuId[ player_id ], item, access, info, 1, _, _, callback );
+    menu_item_getinfo( g_generalUsePlayersMenuId[ player_id ], item + 1, access, info, 1, _, _, callback );
     
-    DEBUG_LOGGER( 4, "( nomination_handleMatchChoice ) info[ 0 ]: %d - %s, access: %d, \
+    DEBUG_LOGGER( 4, "( nomination_handleMatchChoice ) info[ 0 ]: %d, access: %d, \
             g_generalUsePlayersMenuId[ player_id ]: %d", \
-            info[ 0 ], info[ 0 ], access, g_generalUsePlayersMenuId[ player_id ] )
+            info[ 0 ], access, g_generalUsePlayersMenuId[ player_id ] )
 #endif
     
-    // Due the first menu option to be 'Cancel all your Nominations', take on time less 'item - 1 '.
-    if( --item == 0 )
-    {
-        unnominatedDisconnectedPlayer( player_id );
-    }
-    else
-    {
-        map_nominate( player_id, item );
-    }
+    map_nominate( player_id, item );
     
     if( g_currentMenuMapIndexForPlayers[ player_id ] )
     {
@@ -5099,51 +5100,52 @@ public client_disconnected( player_id )
     }
     
     vote_unrockTheVote( player_id )
-    unnominatedDisconnectedPlayer( player_id )
+    
+    if( get_pcvar_num( cvar_unnominateDisconnected ) )
+    {
+        unnominatedDisconnectedPlayer( player_id )
+    }
     
     isToHandleRecentlyEmptyServer();
 }
 
 stock unnominatedDisconnectedPlayer( player_id )
 {
-    if( get_pcvar_num( cvar_unnominateDisconnected ) )
+    new mapIndex
+    new nominationCount
+    new maxPlayerNominations
+    new copiedChars
+    
+    new mapName[ MAX_MAPNAME_LENGHT ]
+    new nominatedMaps[ COLOR_MESSAGE ]
+    
+    // cancel player's nominations
+    maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), sizeof g_playersNominations[] ) + 1;
+    
+    for( new nominationIndex = 1; nominationIndex < maxPlayerNominations; ++nominationIndex )
     {
-        new mapIndex
-        new nominationCount
-        new maxPlayerNominations
-        new copiedChars
+        mapIndex = g_playersNominations[ player_id ][ nominationIndex ];
         
-        new mapName[ MAX_MAPNAME_LENGHT ]
-        new nominatedMaps[ COLOR_MESSAGE ]
-        
-        // cancel player's nominations
-        maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), sizeof g_playersNominations[] ) + 1;
-        
-        for( new nominationIndex = 1; nominationIndex < maxPlayerNominations; ++nominationIndex )
+        if( mapIndex >= 0 )
         {
-            mapIndex = g_playersNominations[ player_id ][ nominationIndex ];
+            ++nominationCount;
+            g_playersNominations[ player_id ][ nominationIndex ] = -1;
             
-            if( mapIndex >= 0 )
+            ArrayGetString( g_nominationMap, mapIndex, mapName, charsmax( mapName ) );
+            
+            if( copiedChars )
             {
-                ++nominationCount;
-                g_playersNominations[ player_id ][ nominationIndex ] = -1;
-                
-                ArrayGetString( g_nominationMap, mapIndex, mapName, charsmax( mapName ) );
-                
-                if( copiedChars )
-                {
-                    copiedChars += copy( nominatedMaps[ copiedChars ], charsmax( nominatedMaps ) - copiedChars, ", " );
-                }
-                
-                copiedChars += copy( nominatedMaps[ copiedChars ], charsmax( nominatedMaps ) - copiedChars, mapName )
+                copiedChars += copy( nominatedMaps[ copiedChars ], charsmax( nominatedMaps ) - copiedChars, ", " );
             }
+            
+            copiedChars += copy( nominatedMaps[ copiedChars ], charsmax( nominatedMaps ) - copiedChars, mapName )
         }
-        
-        if( nominationCount )
-        {
-            // inform the masses that the maps are no longer nominated
-            nomination_announceCancellation( nominatedMaps );
-        }
+    }
+    
+    if( nominationCount )
+    {
+        // inform the masses that the maps are no longer nominated
+        nomination_announceCancellation( nominatedMaps );
     }
 }
 
