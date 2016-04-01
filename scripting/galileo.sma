@@ -484,12 +484,13 @@ new g_arrayOfRunOffChoices [ 2 ];
 new g_voteStatus_symbol    [ 3 ]
 new g_voteWeightFlags      [ 32 ];
 
-new g_nextmap                    [ MAX_MAPNAME_LENGHT ];
-new g_currentMap                 [ MAX_MAPNAME_LENGHT ];
-new g_playerVotedOption          [ MAX_PLAYERS_COUNT ];
-new g_playerVotedWeight          [ MAX_PLAYERS_COUNT ];
-new g_generalUsePlayersMenuId    [ MAX_PLAYERS_COUNT ];
-new g_arrayOfMapsWithVotesNumber [ MAX_OPTIONS_IN_VOTE ];
+new g_nextmap                          [ MAX_MAPNAME_LENGHT ];
+new g_currentMap                       [ MAX_MAPNAME_LENGHT ];
+new g_playerVotedOption                [ MAX_PLAYERS_COUNT ];
+new g_playerVotedWeight                [ MAX_PLAYERS_COUNT ];
+new g_generalUsePlayersMenuId          [ MAX_PLAYERS_COUNT ];
+new g_arrayOfMapsWithVotesNumber       [ MAX_OPTIONS_IN_VOTE ];
+new Array:g_currentMenuPositionMapIndex[ MAX_PLAYERS_COUNT ];
 
 new bool:g_isPlayerVoted             [ MAX_PLAYERS_COUNT ] = { true, ... }
 new bool:g_isPlayerParticipating     [ MAX_PLAYERS_COUNT ] = { true, ... }
@@ -2338,6 +2339,17 @@ stock nomination_menu( player_id )
 // ( playerName[], &phraseIdx, matchingSegment[] )
 stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] ) 
 {
+    // gather all maps that match the partialNameAttempt
+    new mapIndex
+    
+    new matchCnt = 0
+    new matchIdx = -1
+    
+    new info          [ 1 ]
+    new choice        [ MAX_MAPNAME_LENGHT + 32 ]
+    new nominationMap [ MAX_MAPNAME_LENGHT ]
+    new disabledReason[ 16 ]
+    
     // all map names are stored as lowercase, so normalize the partialNameAttempt
     strtolower( partialNameAttempt );
     
@@ -2346,19 +2358,12 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
     {
         menu_destroy( g_generalUsePlayersMenuId[ player_id ] );
     }
+    if( !g_currentMenuPositionMapIndex[ player_id ] )
+    {
+        g_currentMenuPositionMapIndex[ player_id ] = ArrayCreate( 1 );
+    }
     
     g_generalUsePlayersMenuId[ player_id ] = menu_create( "Nominate Map", "nomination_handleMatchChoice" );
-    
-    // gather all maps that match the partialNameAttempt
-    new mapIndex
-    
-    new matchCnt = 0
-    new matchIdx = -1
-    
-    new info[ 1 ]
-    new choice[ MAX_MAPNAME_LENGHT + 32 ]
-    new nominationMap[ MAX_MAPNAME_LENGHT ]
-    new disabledReason[ 16 ]
     
     for( mapIndex = 0; mapIndex < g_nominationMapCount
          && matchCnt <= MAX_NOM_MATCH_COUNT; ++mapIndex )
@@ -2367,8 +2372,13 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
         
         if( contain( nominationMap, partialNameAttempt ) > -1 )
         {
-            matchCnt++;
-            matchIdx = mapIndex;    // store in case this is the only match
+            // Store in case this is the only match
+            matchIdx = mapIndex;
+            
+            // Save the map index for the current menu position
+            ArrayPushCell( g_currentMenuPositionMapIndex[ player_id ], mapIndex )
+            
+            ++matchCnt;
             
             // there may be a much better way of doing this, but I didn't feel like
             // storing the matches and mapIndex's only to loop through them again
@@ -2417,16 +2427,18 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
         default:
         {
             // this is kinda sexy; we put up a menu of the matches for them to pick the right one
-            color_print( player_id, "^1%L", player_id, "GAL_NOM_MATCHES", partialNameAttempt );
-            
             if( matchCnt >= MAX_NOM_MATCH_COUNT )
             {
                 color_print( player_id, "^1%L", player_id, "GAL_NOM_MATCHES_MAX",
                         MAX_NOM_MATCH_COUNT, MAX_NOM_MATCH_COUNT );
             }
+            
+            color_print( player_id, "^1%L", player_id, "GAL_NOM_MATCHES", partialNameAttempt );
             menu_display( player_id, g_generalUsePlayersMenuId[ player_id ] );
         }
     }
+    
+    ArrayDestroy( g_currentMenuPositionMapIndex[ player_id ] );
 }
 
 public nomination_handleMatchChoice( player_id, menu, item )
@@ -2435,13 +2447,21 @@ public nomination_handleMatchChoice( player_id, menu, item )
     {
         return PLUGIN_CONTINUE;
     }
+    
+    if( g_currentMenuPositionMapIndex[ player_id ] )
+    {
+        item = ArrayGetCell( g_currentMenuPositionMapIndex[ player_id ], item );
+    }
+    
 #if defined DEBUG
+    
     // Get item info
     new info[ 1 ];
     new access, callback;
     
-    DEBUG_LOGGER( 4, "( nomination_handleMatchChoice ) item: %d - %s, player_id: %d, menu: %d", \
-            item, item, player_id, menu )
+    DEBUG_LOGGER( 4, "( nomination_handleMatchChoice ) item: %d - %s, player_id: %d, menu: %d, \
+            g_currentMenuPositionMapIndex[ player_id ]: %d", \
+            item, item, player_id, menu, g_currentMenuPositionMapIndex[ player_id ] )
     
     menu_item_getinfo( g_generalUsePlayersMenuId[ player_id ], item, access, info, 1, _, _, callback );
     
@@ -2449,6 +2469,7 @@ public nomination_handleMatchChoice( player_id, menu, item )
             g_generalUsePlayersMenuId[ player_id ]: %d", \
             info[ 0 ], info[ 0 ], access, g_generalUsePlayersMenuId[ player_id ] )
 #endif
+    
     map_nominate( player_id, item );
     
     return PLUGIN_HANDLED;
