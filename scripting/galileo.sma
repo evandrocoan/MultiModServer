@@ -2301,18 +2301,28 @@ public cmd_say( player_id )
     return PLUGIN_CONTINUE;
 }
 
-stock nomination_menu( player_id )
+stock buildTheNominationsMenu( player_id )
 {
+    new nominations_menu_name[ 64 ];
+    
     // assume there'll be more than one match ( because we're lazy ) and starting building the match menu
     if( g_generalUsePlayersMenuId[ player_id ] )
     {
         menu_destroy( g_generalUsePlayersMenuId[ player_id ] );
     }
     
-    g_generalUsePlayersMenuId[ player_id ] = menu_create( "Nominate Map", "nomination_handleMatchChoice" );
+    formatex( nominations_menu_name, charsmax( nominations_menu_name ), "%L",
+            player_id, "GAL_LISTMAPS_TITLE" );
+    
+    g_generalUsePlayersMenuId[ player_id ] = menu_create( nominations_menu_name,
+            "nomination_handleMatchChoice" );
+    
     menu_additem( g_generalUsePlayersMenuId[ player_id ], "Cancel all your Nominations", { 0 }, 0 );
     menu_addblank( g_generalUsePlayersMenuId[ player_id ], 0 );
-    
+}
+
+stock nomination_menu( player_id )
+{
     // gather all maps that match the nomination
     new mapIndex;
     
@@ -2320,6 +2330,8 @@ stock nomination_menu( player_id )
     new choice[ MAX_MAPNAME_LENGHT + 32 ];
     new nominationMap[ MAX_MAPNAME_LENGHT ];
     new disabledReason[ 16 ];
+    
+    buildTheNominationsMenu( player_id );
     
     for( mapIndex = 0; mapIndex < g_nominationMapCount; mapIndex++ )
     {
@@ -2373,12 +2385,7 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
     
     // all map names are stored as lowercase, so normalize the partialNameAttempt
     strtolower( partialNameAttempt );
-    
-    // assume there'll be more than one match ( because we're lazy ) and starting building the match menu
-    if( g_generalUsePlayersMenuId[ player_id ] )
-    {
-        menu_destroy( g_generalUsePlayersMenuId[ player_id ] );
-    }
+    buildTheNominationsMenu( player_id );
     
     if( !g_currentMenuMapIndexForPlayers[ player_id ] )
     {
@@ -2388,10 +2395,6 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
     {
         ArrayClear( g_currentMenuMapIndexForPlayers[ player_id ] );
     }
-    
-    g_generalUsePlayersMenuId[ player_id ] = menu_create( "Nominate Map", "nomination_handleMatchChoice" );
-    menu_additem( g_generalUsePlayersMenuId[ player_id ], "Cancel all your Nominations", { 0 }, 0 );
-    menu_addblank( g_generalUsePlayersMenuId[ player_id ], 0 );
     
     for( mapIndex = 0; mapIndex < g_nominationMapCount
          && matchCnt <= MAX_NOM_MATCH_COUNT; ++mapIndex )
@@ -2476,7 +2479,7 @@ public nomination_handleMatchChoice( player_id, menu, item )
         return PLUGIN_CONTINUE;
     }
     
-    // Due the first menu option to be 'Cancel all your Nominations', take one item less 'item - 1 '.
+    // Due the first menu option to be 'Cancel all your Nominations', take one item less 'item - 1'.
     if( --item == -1 )
     {
         unnominatedDisconnectedPlayer( player_id );
@@ -2664,7 +2667,8 @@ stock map_nominate( player_id, mapIndex, idNominator = -1 )
         new nominationIndex;
         new nominationCount;
         
-        new maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), sizeof g_playersNominations[] ) + 1;
+        new maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ),
+                sizeof g_playersNominations[] ) + 1;
         
         // determine the number of nominations the player already made
         // and grab an open slot with the presumption that the player can make the nomination
