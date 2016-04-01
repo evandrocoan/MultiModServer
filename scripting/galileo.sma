@@ -2183,12 +2183,12 @@ public cmd_say( player_id )
     {
         new mapIndex;
         
-        DEBUG_LOGGER( 4, "( cmd_say ) On: thirdWord[ 0 ] == '^0'" )
+        DEBUG_LOGGER( 4, "( cmd_say ) thirdWord is empty'" )
         
         // if the chat line contains 1 word, it could be a map or a one-word command
         if( secondWord[ 0 ] == '^0' ) // "say [rtv|rockthe<anything>vote]"
         {
-            DEBUG_LOGGER( 4, "( cmd_say ) On: secondWord[ 0 ] == '^0'" )
+            DEBUG_LOGGER( 4, "( cmd_say ) secondWord is empty" )
             
             if( ( g_rtvCommands & RTV_CMD_SHORTHAND
                   && equali( firstWord, "rtv" ) )
@@ -2197,14 +2197,14 @@ public cmd_say( player_id )
                      && equali( firstWord[ strlen( firstWord ) - 4 ], "vote" )
                      && !( g_rtvCommands & RTV_CMD_STANDARD ) ) )
             {
-                DEBUG_LOGGER( 4, "( cmd_say ) On: vote_rock( player_id );'" )
+                DEBUG_LOGGER( 4, "( cmd_say ) running vote_rock( player_id );" )
                 vote_rock( player_id );
                 
                 return PLUGIN_HANDLED;
             }
             else if( get_pcvar_num( cvar_nomPlayerAllowance ) )
             {
-                DEBUG_LOGGER( 4, "( cmd_say ) On: else if( get_pcvar_num( cvar_nomPlayerAllowance ) ) " )
+                DEBUG_LOGGER( 4, "( cmd_say ) on: else if( get_pcvar_num( cvar_nomPlayerAllowance ) ) " )
                 
                 if( equali( firstWord, "noms" )
                     || equali( firstWord, "nominations" ) )
@@ -2292,6 +2292,8 @@ stock nomination_menu( player_id )
     }
     
     g_generalUsePlayersMenuId[ player_id ] = menu_create( "Nominate Map", "nomination_handleMatchChoice" );
+    menu_additem( g_generalUsePlayersMenuId[ player_id ], "Cancel all your Nominations", { 0 }, 0 );
+    menu_addblank( g_generalUsePlayersMenuId[ player_id ], 0 );
     
     // gather all maps that match the nomination
     new mapIndex
@@ -2369,6 +2371,8 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
     }
     
     g_generalUsePlayersMenuId[ player_id ] = menu_create( "Nominate Map", "nomination_handleMatchChoice" );
+    menu_additem( g_generalUsePlayersMenuId[ player_id ], "Cancel all your Nominations", { 0 }, 0 );
+    menu_addblank( g_generalUsePlayersMenuId[ player_id ], 0 );
     
     for( mapIndex = 0; mapIndex < g_nominationMapCount
          && matchCnt <= MAX_NOM_MATCH_COUNT; ++mapIndex )
@@ -2473,8 +2477,20 @@ public nomination_handleMatchChoice( player_id, menu, item )
             info[ 0 ], info[ 0 ], access, g_generalUsePlayersMenuId[ player_id ] )
 #endif
     
-    map_nominate( player_id, item );
-    ArrayDestroy( g_currentMenuMapIndexForPlayers[ player_id ] );
+    // Due the first menu option to be 'Cancel all your Nominations', take on time less 'item - 1 '.
+    if( --item == 0 )
+    {
+        unnominatedDisconnectedPlayer( player_id );
+    }
+    else
+    {
+        map_nominate( player_id, item );
+    }
+    
+    if( g_currentMenuMapIndexForPlayers[ player_id ] )
+    {
+        ArrayDestroy( g_currentMenuMapIndexForPlayers[ player_id ] );
+    }
     
     return PLUGIN_HANDLED;
 }
