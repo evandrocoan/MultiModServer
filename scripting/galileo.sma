@@ -82,8 +82,8 @@ stock debugMesssageLogger( mode, message[] = "", any: ... )
 }
 
 #else
-    stock nothing() {} // to allow the semicolon ';' use at macros endings.
-    #define DEBUG_LOGGER(%1) nothing()
+    stock allowToUseSemicolonOnMacrosEnd() {}
+    #define DEBUG_LOGGER(%1) allowToUseSemicolonOnMacrosEnd()
 
 #endif
 
