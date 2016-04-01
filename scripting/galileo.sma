@@ -22,8 +22,9 @@
 *****************************************************************************************
 */
 
-new const PLUGIN_VERSION[] = "v2.4";
+new const PLUGIN_VERSION[] = "v2.4.1";
 
+#pragma semicolon 1
 #include <amxmodx>
 #include <amxmisc>
 
@@ -2311,6 +2312,8 @@ stock buildTheNominationsMenu( player_id )
         menu_destroy( g_generalUsePlayersMenuId[ player_id ] );
     }
     
+    clearMenuMapIndexForPlayers( player_id );
+    
     formatex( nominations_menu_name, charsmax( nominations_menu_name ), "%L",
             player_id, "GAL_LISTMAPS_TITLE" );
     
@@ -2396,6 +2399,9 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
         ArrayClear( g_currentMenuMapIndexForPlayers[ player_id ] );
     }
     
+    // Add a dummy value due the first map option to be 'Cancel all your Nominations'.
+    ArrayPushCell( g_currentMenuMapIndexForPlayers[ player_id ], 0 );
+    
     for( mapIndex = 0; mapIndex < g_nominationMapCount
          && matchCnt <= MAX_NOM_MATCH_COUNT; ++mapIndex )
     {
@@ -2479,8 +2485,8 @@ public nomination_handleMatchChoice( player_id, menu, item )
         return PLUGIN_CONTINUE;
     }
     
-    // Due the first menu option to be 'Cancel all your Nominations', take one item less 'item - 1'.
-    if( --item == -1 )
+    // Due the first menu option to be 'Cancel all your Nominations'.
+    if( item == 0 )
     {
         unnominatedDisconnectedPlayer( player_id );
         clearMenuMapIndexForPlayers( player_id );
@@ -2488,9 +2494,15 @@ public nomination_handleMatchChoice( player_id, menu, item )
         return PLUGIN_HANDLED;
     }
     
+    // If we are using the nominationAttemptWithNamePart().
     if( g_currentMenuMapIndexForPlayers[ player_id ] )
     {
         item = ArrayGetCell( g_currentMenuMapIndexForPlayers[ player_id ], item );
+    }
+    else // we are using the nomination_menu()
+    {
+        // Due the first menu option to be 'Cancel all your Nominations', take one item less 'item - 1'.
+        item--;
     }
 
 #if defined DEBUG
