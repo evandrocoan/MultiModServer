@@ -591,6 +591,7 @@ public plugin_init()
     register_logevent( "round_end_event",       2, "1=Round_End" )
     
     register_clcmd( "say", "cmd_say", -1 );
+    register_clcmd( "say_team", "cmd_say", -1 );
     register_clcmd( "votemap", "cmd_HL1_votemap" );
     register_clcmd( "listmaps", "cmd_HL1_listmaps" );
     
