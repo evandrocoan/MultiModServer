@@ -5828,8 +5828,8 @@ public nextmap_plugin_init()
 }
 
 /**
- * The variable 'NP_g_nextMapCyclePosition' is updated at 'handleServerStart()' 15 seconds delayed task,
- * which happens before this function is recalled to update the new settings.
+ * The variable 'NP_g_nextMapCyclePosition' is updated at 'handleServerStart()', to update the
+ * new settings.
  */
 stock saveCurrentMapCycleSetting()
 {
