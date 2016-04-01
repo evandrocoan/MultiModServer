@@ -37,7 +37,7 @@ new const PLUGIN_VERSION[] = "v2.3.5d"
  * 4   - To create fake votes.
  * 7   - Levels 1, 2 and 4.
  */
-#define DEBUG_LEVEL 0
+#define DEBUG_LEVEL 1
 
 #define DEBUG_LEVEL_NORMAL     1
 #define DEBUG_LEVEL_UNIT_TEST  2
@@ -60,11 +60,6 @@ new const PLUGIN_VERSION[] = "v2.3.5d"
  * ( 1.. ) 127 displays all debug logs levels at server console.
  */
 new g_debug_level = 1 + 4 + 8 + 16
-
-/**
- * Dummy value used to use the do...while() statements to allow the semicolon ';' use at macros endings.
- */
-new g_dummy_value = 0;
 
 
 /**
@@ -93,6 +88,12 @@ stock debugMesssageLogger( mode, message[] = "", any: ... )
 
 
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
+
+/**
+ * Dummy value used to use the do...while() statements to allow the semicolon ';' use at macros endings.
+ */
+new g_dummy_value = 0;
+
 
 /**
  * Contains all unit tests to execute.
@@ -205,10 +206,11 @@ new g_user_msgid
 #define MAX_PREFIX_COUNT     32
 #define MAX_RECENT_MAP_COUNT 16
 
-#define MAX_MAPS_IN_VOTE       8
-#define MAX_NOMINATION_COUNT   8
-#define MAX_OPTIONS_IN_VOTE    9
-#define MAX_STANDARD_MAP_COUNT 25
+#define MAX_MAPS_IN_VOTE              8
+#define MAX_NOMINATION_COUNT          8
+#define MAX_OPTIONS_IN_VOTE           9
+#define MAX_STANDARD_MAP_COUNT        25
+#define MAX_SERVER_RESTART_ACCEPTABLE 1
 
 #define MAX_MAPNAME_LENGHT     64
 #define MAX_FILE_PATH_LENGHT   128
@@ -394,6 +396,7 @@ new cvar_voteWhiteListMapFilePath
  */
 new const LAST_EMPTY_CYCLE_FILE_NAME[]    = "lastEmptyCycleMapName.dat"
 new const CURRENT_AND_NEXTMAP_FILE_NAME[] = "currentAndNextmapNames.dat"
+new const LAST_CHANGE_MAP_FILE_NAME[]     = "lastChangedMapName.dat"
 new const CHOOSE_MAP_MENU_NAME[]          = "gal_menuChooseMap"
 new const CHOOSE_MAP_MENU_QUESTION[]      = "chooseMapQuestion"
 
@@ -1337,14 +1340,17 @@ public plugin_end()
  */
 public handleServerStart( backupMapsFilePath[] )
 {
+    new startAction;
+    
     // this is the key that tells us if this server has been restarted or not
     set_cvar_num( "gal_server_starting", 0 );
     
     // take the defined "server start" action
-    new startAction = get_pcvar_num( cvar_serverStartAction );
+    startAction = get_pcvar_num( cvar_serverStartAction );
     
     if( startAction )
     {
+        new restartsOnTheCurrentMap;
         new mapToChange[ MAX_MAPNAME_LENGHT ];
         
         if( startAction == SERVER_START_CURRENTMAP
@@ -1362,10 +1368,9 @@ public handleServerStart( backupMapsFilePath[] )
                     fgets( backupMapsFile, mapToChange, charsmax( mapToChange )  );
                 }
                 
-                trim( mapToChange )
+                trim( mapToChange );
+                fclose( backupMapsFile );
             }
-            
-            fclose( backupMapsFile );
         }
         else if( startAction == SERVER_START_RANDOMMAP ) // pick a random map from allowable nominations
         {
@@ -1382,7 +1387,8 @@ public handleServerStart( backupMapsFilePath[] )
             }
         }
         
-        configureTheMapcycleSystem( mapToChange )
+        restartsOnTheCurrentMap = getRestartsOnTheCurrentMap( mapToChange );
+        configureTheMapcycleSystem( mapToChange, restartsOnTheCurrentMap );
         
         if( mapToChange[ 0 ]
             && is_map_valid( mapToChange ) )
@@ -1399,25 +1405,125 @@ public handleServerStart( backupMapsFilePath[] )
     }
 }
 
-stock configureTheMapcycleSystem( currentMap[] )
+stock getRestartsOnTheCurrentMap( mapToChange[] )
+{
+    new lastMapChangedFile;
+    new lastMapChangedCount;
+    
+    new lastMapChangedName       [ MAX_MAPNAME_LENGHT ];
+    new lastMapChangedFilePath   [ MAX_FILE_PATH_LENGHT ];
+    new lastMapChangedCountString[ 10 ];
+    
+    formatex( lastMapChangedFilePath, charsmax( lastMapChangedFilePath ), "%s/%s",
+            DATA_DIR_PATH, LAST_CHANGE_MAP_FILE_NAME );
+    
+    if( !( lastMapChangedFile = fopen( lastMapChangedFilePath, "rt" ) ) )
+    {
+        if( file_exists( lastMapChangedFilePath ) )
+        {
+            delete_file( lastMapChangedFilePath )
+        }
+        
+        write_file( lastMapChangedFilePath, "nothing_to_be_added_by^n0" );
+    }
+    
+    DEBUG_LOGGER( 4, "( getRestartsOnTheCurrentMap ) lastMapChangedFilePath: %s, mapToChange: %s", \
+            lastMapChangedFilePath, mapToChange );
+    
+    if( lastMapChangedFile )
+    {
+        fgets( lastMapChangedFile, lastMapChangedName, charsmax( lastMapChangedName ) );
+        fgets( lastMapChangedFile, lastMapChangedCountString, charsmax( lastMapChangedCountString ) );
+        
+        fclose( lastMapChangedFile );
+        trim( lastMapChangedName );
+        trim( lastMapChangedCountString );
+        
+        lastMapChangedCount = str_to_num( lastMapChangedCountString );
+        lastMapChangedFile  = fopen( lastMapChangedFilePath, "wt" );
+        
+        DEBUG_LOGGER( 4, "( getRestartsOnTheCurrentMap ) lastMapChangedName: %s, \
+                lastMapChangedCountString: %s, lastMapChangedCount: %d", \
+                lastMapChangedName, lastMapChangedCountString, lastMapChangedCount );
+        
+        if( equal( mapToChange, lastMapChangedName ) )
+        {
+            ++lastMapChangedCount;
+            
+            fprintf( lastMapChangedFile, "%s", mapToChange );
+            fprintf( lastMapChangedFile, "^n%d", lastMapChangedCount );
+            DEBUG_LOGGER( 4, "( getRestartsOnTheCurrentMap ) mapToChange is equal to lastMapChangedName." );
+        }
+        else
+        {
+            fprintf( lastMapChangedFile, "nothing_to_be_added_by" );
+            fprintf( lastMapChangedFile, "^n0" );
+            DEBUG_LOGGER( 4, "( getRestartsOnTheCurrentMap ) mapToChange is NOT equal to lastMapChangedName." );
+        }
+        
+        fclose( lastMapChangedFile );
+    }
+    
+    return lastMapChangedCount;
+}
+
+/**
+ * To configure the mapcycle system and to detect if the last MAX_SERVER_RESTART_ACCEPTABLE restarts
+ * was to the same map. If so, change to the next map right after it.
+ */
+stock configureTheMapcycleSystem( currentMap[], restartsOnTheCurrentMap )
 {
     new possibleNextMapPosition
+    
+    new Array:mapcycleFileList;
     new possibleNextMap[ MAX_MAPNAME_LENGHT ]
-    new Array:mapcycleFileList = ArrayCreate( MAX_MAPNAME_LENGHT )
+
+    mapcycleFileList = ArrayCreate( MAX_MAPNAME_LENGHT )
+    map_populateList( mapcycleFileList, NP_g_mapCycleFilePath );
     
-    map_populateList( mapcycleFileList, NP_g_mapCycleFilePath )
+    possibleNextMapPosition = map_getNext( mapcycleFileList, currentMap, possibleNextMap );
     
-    possibleNextMapPosition = map_getNext( mapcycleFileList, currentMap, possibleNextMap )
+    DEBUG_LOGGER( 4, "( configureTheMapcycleSystem ) possibleNextMapPosition: %d, \
+            restartsOnTheCurrentMap: %d, currentMap: %s, possibleNextMap: %s", \
+            possibleNextMapPosition, restartsOnTheCurrentMap, currentMap, possibleNextMap );
     
     if( possibleNextMapPosition != -1 )
     {
-        NP_g_currentMapCyclePosition = possibleNextMapPosition - 1
-        
-        setNextMap( possibleNextMap )
-        saveCurrentMapCycleSetting()
+        if( restartsOnTheCurrentMap > MAX_SERVER_RESTART_ACCEPTABLE )
+        {
+            new possibleNextMapCopy[ MAX_MAPNAME_LENGHT ]
+            
+            copy( possibleNextMapCopy, charsmax( possibleNextMapCopy ), possibleNextMap );
+            possibleNextMapPosition = map_getNext( mapcycleFileList, possibleNextMapCopy, possibleNextMap );
+            
+            if( possibleNextMapPosition != -1 )
+            {
+                configureTheNextMapPlugin( possibleNextMapPosition, possibleNextMap );
+            }
+            
+            server_print( "^nThe server is jumping to the next map after the current map \
+                    due more than %d.", MAX_SERVER_RESTART_ACCEPTABLE );
+        }
+        else
+        {
+            configureTheNextMapPlugin( possibleNextMapPosition, possibleNextMap );
+            DEBUG_LOGGER( 4, "( configureTheMapcycleSystem ) restartsOnTheCurrentMap < \
+                    MAX_SERVER_RESTART_ACCEPTABLE" );
+        }
     }
     
     ArrayDestroy( mapcycleFileList )
+}
+
+stock configureTheNextMapPlugin( possibleNextMapPosition, possibleNextMap[] )
+{
+    NP_g_currentMapCyclePosition = possibleNextMapPosition - 1;
+    
+    DEBUG_LOGGER( 4, "( configureTheNextMapPlugin ) NP_g_currentMapCyclePosition: %d, \
+            possibleNextMap: %s", NP_g_currentMapCyclePosition, possibleNextMap );
+    
+    setNextMap( possibleNextMap );
+    saveCurrentMapCycleSetting();
 }
 
 /**
@@ -5782,8 +5888,8 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
     new szBuffer[ MAX_MAPNAME_LENGHT ]
     new szFirst[ MAX_MAPNAME_LENGHT ]
     
-    new i     = 0
-    new iMaps = 0
+    new i     = 0;
+    new iMaps = 0;
     
     if( file_exists( mapcycleFilePath ) )
     {
@@ -5792,33 +5898,35 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
             if( !isalnum( szBuffer[ 0 ] )
                 || !ValidMap( szBuffer ) )
             {
-                continue
+                continue;
             }
             
             if( !iMaps )
             {
-                copy( szFirst, charsmax( szFirst ), szBuffer )
+                copy( szFirst, charsmax( szFirst ), szBuffer );
             }
             
             if( ++iMaps > NP_g_currentMapCyclePosition )
             {
-                copy( szNext, iNext, szBuffer )
-                NP_g_currentMapCyclePosition = iMaps
-                return
+                copy( szNext, iNext, szBuffer );
+                NP_g_currentMapCyclePosition = iMaps;
+                
+                return;
             }
         }
     }
     
     if( !iMaps )
     {
-        log_amx( g_warning, mapcycleFilePath )
-        copy( szNext, iNext, NP_g_currentMapName )
+        log_amx( g_warning, mapcycleFilePath );
+        copy( szNext, iNext, NP_g_currentMapName );
     }
     else
     {
-        copy( szNext, iNext, szFirst )
+        copy( szNext, iNext, szFirst );
     }
-    NP_g_currentMapCyclePosition = 1
+    
+    NP_g_currentMapCyclePosition = 1;
 }
 
 // ################################## BELOW HERE ONLY GOES DEBUG/TEST CODE ###################################
