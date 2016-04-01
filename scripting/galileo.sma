@@ -47,7 +47,6 @@ new const PLUGIN_VERSION[] = "v2.4"
     #define DEBUG
     #define DEBUG_LOGGER(%1) debugMesssageLogger( %1 )
 
-
 /**
  * ( 0 ) 0 disabled all debug.
  * ( 1 ) 1 displays basic debug messages as the Unit Tests run.
@@ -82,19 +81,21 @@ stock debugMesssageLogger( mode, message[] = "", any: ... )
 }
 
 #else
-    stock allowToUseSemicolonOnMacrosEnd() {}
     #define DEBUG_LOGGER(%1) allowToUseSemicolonOnMacrosEnd()
 
 #endif
 
-
-#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
 
 /**
  * Dummy value used to use the do...while() statements to allow the semicolon ';' use at macros endings.
  */
 new g_dummy_value = 0;
 
+stock allowToUseSemicolonOnMacrosEnd()
+{
+}
+
+#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
 
 /**
  * Contains all unit tests to execute.
@@ -274,9 +275,10 @@ new g_user_msgid
  * Start a map voting delayed after the mp_maxrounds or mp_winlimit minimum to be reached.
  */
 #define VOTE_START_ROUND_DELAY() \
+do \
 { \
     set_task( VOTE_ROUND_START_SECONDS_DELAY(), "start_voting_by_rounds", TASKID_START_VOTING_BY_ROUNDS ); \
-}
+} while( g_dummy_value )
 
 
 /**
@@ -1417,7 +1419,7 @@ stock configureTheMapcycleSystem( currentMap[], currentMapCharsMax )
     
     new Array:mapcycleFileList;
     new possibleNextMap[ MAX_MAPNAME_LENGHT ]
-
+    
     mapcycleFileList        = ArrayCreate( MAX_MAPNAME_LENGHT );
     restartsOnTheCurrentMap = getRestartsOnTheCurrentMap( currentMap );
     
@@ -1445,7 +1447,7 @@ stock configureTheMapcycleSystem( currentMap[], currentMapCharsMax )
             
             copy( currentMap, currentMapCharsMax, possibleCurrentMap );
             
-            // Clear the old data 
+            // Clear the old data
             formatex( lastMapChangedFilePath, charsmax( lastMapChangedFilePath ), "%s/%s",
                     DATA_DIR_PATH, LAST_CHANGE_MAP_FILE_NAME );
             
@@ -1916,10 +1918,10 @@ stock map_populateList( Array:mapArray, mapFilePath[] )
 stock loadMapFileList( Array:mapArray, mapCount, mapFilePath[] )
 {
     new mapFile = fopen( mapFilePath, "rt" );
-    
+
 #if defined DEBUG
     new current_index = -1;
-    
+
 #endif
     
     if( mapFile )
@@ -2343,7 +2345,7 @@ stock nomination_menu( player_id )
 }
 
 // ( playerName[], &phraseIdx, matchingSegment[] )
-stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] ) 
+stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
 {
     // gather all maps that match the partialNameAttempt
     new mapIndex
@@ -2364,6 +2366,7 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
     {
         menu_destroy( g_generalUsePlayersMenuId[ player_id ] );
     }
+    
     if( !g_currentMenuMapIndexForPlayers[ player_id ] )
     {
         g_currentMenuMapIndexForPlayers[ player_id ] = ArrayCreate( 1 );
@@ -2390,7 +2393,7 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
             // Save the map index for the current menu position
             ArrayPushCell( g_currentMenuMapIndexForPlayers[ player_id ], mapIndex )
             
-            ++matchCnt;
+            matchCnt++;
             
             // there may be a much better way of doing this, but I didn't feel like
             // storing the matches and mapIndex's only to loop through them again
@@ -2470,7 +2473,7 @@ public nomination_handleMatchChoice( player_id, menu, item )
     {
         item = ArrayGetCell( g_currentMenuMapIndexForPlayers[ player_id ], item );
     }
-    
+
 #if defined DEBUG
     
     // Get item info
