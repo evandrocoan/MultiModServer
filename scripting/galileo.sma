@@ -2476,7 +2476,7 @@ public nomination_handleMatchChoice( player_id, menu, item )
         return PLUGIN_CONTINUE;
     }
     
-    // Due the first menu option to be 'Cancel all your Nominations', take on times less 'item - 1 '.
+    // Due the first menu option to be 'Cancel all your Nominations', take one item less 'item - 1 '.
     if( --item == -1 )
     {
         unnominatedDisconnectedPlayer( player_id );
