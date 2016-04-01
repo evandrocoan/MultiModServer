@@ -1456,7 +1456,7 @@ stock getRestartsOnTheCurrentMap( mapToChange[] )
         }
         else
         {
-            fprintf( lastMapChangedFile, "nothing_to_be_added_by" );
+            fprintf( lastMapChangedFile, "%s", mapToChange );
             fprintf( lastMapChangedFile, "^n0" );
             DEBUG_LOGGER( 4, "( getRestartsOnTheCurrentMap ) mapToChange is NOT equal to lastMapChangedName." );
         }
@@ -1502,8 +1502,8 @@ stock configureTheMapcycleSystem( currentMap[], restartsOnTheCurrentMap, current
             }
             
             copy( currentMap, currentMapCharsMax, possibleCurrentMap );
-            server_print( "^nThe server is jumping to the next map after the current map \
-                    due more than %d.^n", MAX_SERVER_RESTART_ACCEPTABLE );
+            server_print( "^nThe server is jumping to the next map after the current map due more \
+                    than %d restart on the map %s.^n", MAX_SERVER_RESTART_ACCEPTABLE, currentMap );
         }
         else
         {
