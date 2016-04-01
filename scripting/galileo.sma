@@ -1313,10 +1313,7 @@ public plugin_end()
     // Clear the dynamic array menus, just to be sure.
     for( new currentIndex = 0; currentIndex < sizeof g_currentMenuMapIndexForPlayers; ++currentIndex )
     {
-        if( g_currentMenuMapIndexForPlayers[ currentIndex ] )
-        {
-            ArrayDestroy( g_currentMenuMapIndexForPlayers[ currentIndex ] );
-        }
+        clearMenuMapIndexForPlayers( currentIndex );
     }
 
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
@@ -2468,10 +2465,7 @@ public nomination_handleMatchChoice( player_id, menu, item )
 {
     if( item < 0 )
     {
-        if( g_currentMenuMapIndexForPlayers[ player_id ] )
-        {
-            ArrayDestroy( g_currentMenuMapIndexForPlayers[ player_id ] );
-        }
+        clearMenuMapIndexForPlayers( player_id );
         
         return PLUGIN_CONTINUE;
     }
@@ -2480,6 +2474,7 @@ public nomination_handleMatchChoice( player_id, menu, item )
     if( --item == -1 )
     {
         unnominatedDisconnectedPlayer( player_id );
+        clearMenuMapIndexForPlayers( player_id );
         
         return PLUGIN_HANDLED;
     }
@@ -2507,13 +2502,17 @@ public nomination_handleMatchChoice( player_id, menu, item )
 #endif
     
     map_nominate( player_id, item );
+    clearMenuMapIndexForPlayers( player_id );
     
+    return PLUGIN_HANDLED;
+}
+
+stock clearMenuMapIndexForPlayers( player_id )
+{
     if( g_currentMenuMapIndexForPlayers[ player_id ] )
     {
         ArrayDestroy( g_currentMenuMapIndexForPlayers[ player_id ] );
     }
-    
-    return PLUGIN_HANDLED;
 }
 
 stock nomination_getPlayer( mapIndex )
