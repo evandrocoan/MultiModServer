@@ -484,13 +484,13 @@ new g_arrayOfRunOffChoices [ 2 ];
 new g_voteStatus_symbol    [ 3 ]
 new g_voteWeightFlags      [ 32 ];
 
-new g_nextmap                          [ MAX_MAPNAME_LENGHT ];
-new g_currentMap                       [ MAX_MAPNAME_LENGHT ];
-new g_playerVotedOption                [ MAX_PLAYERS_COUNT ];
-new g_playerVotedWeight                [ MAX_PLAYERS_COUNT ];
-new g_generalUsePlayersMenuId          [ MAX_PLAYERS_COUNT ];
-new g_arrayOfMapsWithVotesNumber       [ MAX_OPTIONS_IN_VOTE ];
-new Array:g_currentMenuPositionMapIndex[ MAX_PLAYERS_COUNT ];
+new g_nextmap                            [ MAX_MAPNAME_LENGHT ];
+new g_currentMap                         [ MAX_MAPNAME_LENGHT ];
+new g_playerVotedOption                  [ MAX_PLAYERS_COUNT ];
+new g_playerVotedWeight                  [ MAX_PLAYERS_COUNT ];
+new g_generalUsePlayersMenuId            [ MAX_PLAYERS_COUNT ];
+new g_arrayOfMapsWithVotesNumber         [ MAX_OPTIONS_IN_VOTE ];
+new Array:g_currentMenuMapIndexForPlayers[ MAX_PLAYERS_COUNT ];
 
 new bool:g_isPlayerVoted             [ MAX_PLAYERS_COUNT ] = { true, ... }
 new bool:g_isPlayerParticipating     [ MAX_PLAYERS_COUNT ] = { true, ... }
@@ -2358,9 +2358,13 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
     {
         menu_destroy( g_generalUsePlayersMenuId[ player_id ] );
     }
-    if( !g_currentMenuPositionMapIndex[ player_id ] )
+    if( !g_currentMenuMapIndexForPlayers[ player_id ] )
     {
-        g_currentMenuPositionMapIndex[ player_id ] = ArrayCreate( 1 );
+        g_currentMenuMapIndexForPlayers[ player_id ] = ArrayCreate( 1 );
+    }
+    else
+    {
+        ArrayClear( g_currentMenuMapIndexForPlayers[ player_id ] );
     }
     
     g_generalUsePlayersMenuId[ player_id ] = menu_create( "Nominate Map", "nomination_handleMatchChoice" );
@@ -2376,7 +2380,7 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
             matchIdx = mapIndex;
             
             // Save the map index for the current menu position
-            ArrayPushCell( g_currentMenuPositionMapIndex[ player_id ], mapIndex )
+            ArrayPushCell( g_currentMenuMapIndexForPlayers[ player_id ], mapIndex )
             
             ++matchCnt;
             
@@ -2437,8 +2441,6 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
             menu_display( player_id, g_generalUsePlayersMenuId[ player_id ] );
         }
     }
-    
-    ArrayDestroy( g_currentMenuPositionMapIndex[ player_id ] );
 }
 
 public nomination_handleMatchChoice( player_id, menu, item )
@@ -2448,9 +2450,9 @@ public nomination_handleMatchChoice( player_id, menu, item )
         return PLUGIN_CONTINUE;
     }
     
-    if( g_currentMenuPositionMapIndex[ player_id ] )
+    if( g_currentMenuMapIndexForPlayers[ player_id ] )
     {
-        item = ArrayGetCell( g_currentMenuPositionMapIndex[ player_id ], item );
+        item = ArrayGetCell( g_currentMenuMapIndexForPlayers[ player_id ], item );
     }
     
 #if defined DEBUG
@@ -2460,8 +2462,8 @@ public nomination_handleMatchChoice( player_id, menu, item )
     new access, callback;
     
     DEBUG_LOGGER( 4, "( nomination_handleMatchChoice ) item: %d - %s, player_id: %d, menu: %d, \
-            g_currentMenuPositionMapIndex[ player_id ]: %d", \
-            item, item, player_id, menu, g_currentMenuPositionMapIndex[ player_id ] )
+            g_currentMenuMapIndexForPlayers[ player_id ]: %d", \
+            item, item, player_id, menu, g_currentMenuMapIndexForPlayers[ player_id ] )
     
     menu_item_getinfo( g_generalUsePlayersMenuId[ player_id ], item, access, info, 1, _, _, callback );
     
@@ -2471,6 +2473,7 @@ public nomination_handleMatchChoice( player_id, menu, item )
 #endif
     
     map_nominate( player_id, item );
+    ArrayDestroy( g_currentMenuMapIndexForPlayers[ player_id ] );
     
     return PLUGIN_HANDLED;
 }
