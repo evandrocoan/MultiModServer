@@ -1309,6 +1309,15 @@ public plugin_end()
     {
         ArrayDestroy( g_nominationMap )
     }
+    
+    // Clear the dynamic array menus, just to be sure.
+    for( new currentIndex = 0; currentIndex < sizeof g_currentMenuMapIndexForPlayers; ++currentIndex )
+    {
+        if( g_currentMenuMapIndexForPlayers[ currentIndex ] )
+        {
+            ArrayDestroy( g_currentMenuMapIndexForPlayers[ currentIndex ] );
+        }
+    }
 
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
     restore_server_cvars_for_test()
@@ -1327,6 +1336,7 @@ public plugin_end()
     {
         ArrayDestroy( g_tests_failure_reasons )
     }
+    
 #endif
 }
 
@@ -2458,6 +2468,11 @@ public nomination_handleMatchChoice( player_id, menu, item )
 {
     if( item < 0 )
     {
+        if( g_currentMenuMapIndexForPlayers[ player_id ] )
+        {
+            ArrayDestroy( g_currentMenuMapIndexForPlayers[ player_id ] );
+        }
+        
         return PLUGIN_CONTINUE;
     }
     
