@@ -1566,8 +1566,7 @@ public startNonForcedVoting()
 stock setNextMap( nextMap[] )
 {
     // set the queryable cvar
-    set_cvar_string( "amx_nextmap", nextMap );
-    
+    set_pcvar_string( NP_cvar_amx_nextmap, nextMap );
     copy( g_nextmap, charsmax( g_nextmap ), nextMap );
     
     // update our data file
@@ -3204,20 +3203,21 @@ stock vote_startDirector( bool:is_forced_voting )
     if( is_forced_voting
         && g_voteStatus & VOTE_IS_OVER )
     {
-        new bool:roundEndStatus[ 4 ]
+        new bool:roundEndStatus[ 4 ];
         
         save_round_ending( roundEndStatus );
         cancel_voting();
+        
         restore_round_ending( roundEndStatus );
         restoreOriginalServerMaxSpeed();
     }
     
     // the rounds start delay task could be running
-    remove_task( TASKID_START_VOTING_BY_TIMER )
+    remove_task( TASKID_START_VOTING_BY_TIMER );
     
     if( remove_task( TASKID_DELETE_USERS_MENUS ) )
     {
-        vote_resetStats()
+        vote_resetStats();
     }
     
     if( g_voteStatus & VOTE_IS_RUNOFF )
@@ -5924,6 +5924,7 @@ stock bool:ValidMap( mapname[] )
     {
         return true;
     }
+    
     // If the is_map_valid check failed, check the end of the string
     new len = strlen( mapname ) - 4;
     
@@ -5936,7 +5937,7 @@ stock bool:ValidMap( mapname[] )
     if( equali( mapname[ len ], ".bsp" ) )
     {
         // If the ending was .bsp, then cut it off.
-        // the string is byref'ed, so this copies back to the loaded text.
+        // the string is by reference, so this copies back to the loaded text.
         mapname[ len ] = '^0';
         
         // recheck
@@ -5962,8 +5963,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
     {
         while( read_file( mapcycleFilePath, i++, szBuffer, charsmax( szBuffer ), b ) )
         {
-            if( !isalnum( szBuffer[ 0 ] )
-                || !ValidMap( szBuffer ) )
+            if( !ValidMap( szBuffer ) )
             {
                 continue;
             }
