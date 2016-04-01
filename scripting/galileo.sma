@@ -1520,8 +1520,8 @@ stock getRestartsOnTheCurrentMap( mapToChange[] )
         
         lastMapChangedCount = str_to_num( lastMapChangedCountString );
         lastMapChangedFile  = fopen( lastMapChangedFilePath, "wt" );
-        fprintf( lastMapChangedFile, "%s", mapToChange );
         
+        fprintf( lastMapChangedFile, "%s", mapToChange );
         DEBUG_LOGGER( 4, "( getRestartsOnTheCurrentMap ) lastMapChangedName: %s, \
                 lastMapChangedCountString: %s, lastMapChangedCount: %d", \
                 lastMapChangedName, lastMapChangedCountString, lastMapChangedCount );
@@ -1535,6 +1535,8 @@ stock getRestartsOnTheCurrentMap( mapToChange[] )
         }
         else
         {
+            lastMapChangedCount = 0;
+            
             fprintf( lastMapChangedFile, "^n0" );
             DEBUG_LOGGER( 4, "( getRestartsOnTheCurrentMap ) mapToChange is NOT equal to lastMapChangedName." );
         }
