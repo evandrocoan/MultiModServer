@@ -3038,7 +3038,10 @@ stock vote_addFiller( blockedFillerMaps[][], blockedFillerMapsCharsmax = 0, bloc
     
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
     
-    is_whitelistEnabled = true;
+    if( g_areTheUnitTestsRunning )
+    {
+        is_whitelistEnabled = true;
+    }
 #endif
     
     if( is_whitelistEnabled )
@@ -3397,10 +3400,23 @@ stock vote_startDirector( bool:is_forced_voting )
             
             vote_addFiller( blockedFillerMaps, charsmax( blockedFillerMaps[] ), blockedCount );
         }
+        else if( get_pcvar_num( cvar_voteMinPlayers ) )
+        {
+            new blockedWhitelistMaps[ MAX_NOMINATION_COUNT ][ MAX_MAPNAME_LENGHT ];
+            
+            vote_addNominations( blockedWhitelistMaps );
+            vote_addFiller( blockedWhitelistMaps );
+        }
         else
         {
-            new dummyArray[][] = { { 0 } };
+        #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
             
+            new dummyArray[ MAX_NOMINATION_COUNT ][ MAX_MAPNAME_LENGHT ];
+        #else
+            
+            new dummyArray[][] = { { 0 } };
+        #endif
+        
             vote_addNominations( dummyArray );
             vote_addFiller( dummyArray );
         }
