@@ -2837,7 +2837,7 @@ stock vote_addNominations( blockedFillerMaps[][], blockedFillerMapsCharsmax = 0 
             new mapFilerFilePath[ MAX_FILE_PATH_LENGHT ];
             
             get_pcvar_string( cvar_voteMinPlayersMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) );
-
+            
             g_isFillersMapUsingMinplayers = true;
             blackFillerMapTrie            = TrieCreate();
             
@@ -3035,7 +3035,7 @@ stock vote_addFiller( blockedFillerMaps[][], blockedFillerMapsCharsmax = 0, bloc
     new Trie:  blackListTrie;
     
     new bool:is_whitelistEnabled = get_pcvar_num( cvar_voteMinPlayers ) != 0;
-    
+
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
     
     if( g_areTheUnitTestsRunning )
@@ -3391,12 +3391,12 @@ stock vote_startDirector( bool:is_forced_voting )
         {
             new blockedCount;
             new blockedFillerMaps[ MAX_NOMINATION_COUNT ][ MAX_MAPNAME_LENGHT ];
-                
+            
             blockedCount = vote_addNominations( blockedFillerMaps, charsmax( blockedFillerMaps[] ) );
             
             DEBUG_LOGGER( 8, "( vote_startDirector|blockedFiller ) blockedFillerMaps[0]: %s, \
                     charsmax( blockedFillerMaps[] ): %d, blockedCount: %d", \
-                    blockedFillerMaps[0], charsmax( blockedFillerMaps[] ), blockedCount );
+                    blockedFillerMaps[ 0 ], charsmax( blockedFillerMaps[] ), blockedCount );
             
             vote_addFiller( blockedFillerMaps, charsmax( blockedFillerMaps[] ), blockedCount );
         }
@@ -3416,7 +3416,7 @@ stock vote_startDirector( bool:is_forced_voting )
             
             new dummyArray[][] = { { 0 } };
         #endif
-        
+            
             vote_addNominations( dummyArray );
             vote_addFiller( dummyArray );
         }
@@ -3714,7 +3714,7 @@ public voteExpire()
 public vote_display( argument[ 2 ] )
 {
     new player_id           = argument[ 1 ];
-    new copiedChars           = 0;
+    new copiedChars         = 0;
     new updateTimeRemaining = argument[ 0 ];
     
     new bool:isVoteOver   = g_voteStatus & VOTE_IS_EXPIRED != 0;
@@ -6580,7 +6580,7 @@ public test_loadCurrentBlackList_case1()
 {
     new whiteListFile;
     
-    new test_id             = register_test( 0, "test_loadCurrentBlackList_case1" );
+    new test_id            = register_test( 0, "test_loadCurrentBlackList_case1" );
     new Trie:blackListTrie = TrieCreate();
     
     copy( g_test_whiteListFilePath, charsmax( g_test_whiteListFilePath ), "test_loadCurrentBlackList.txt" );
@@ -6631,7 +6631,7 @@ public test_loadCurrentBlackList_case1()
  */
 public test_loadCurrentBlackList_case2()
 {
-    new test_id             = register_test( 0, "test_loadCurrentBlackList_case2" );
+    new test_id            = register_test( 0, "test_loadCurrentBlackList_case2" );
     new Trie:blackListTrie = TrieCreate();
     
     g_test_current_time = 22;
@@ -6652,7 +6652,7 @@ public test_loadCurrentBlackList_case2()
  */
 public test_loadCurrentBlackList_case3()
 {
-    new test_id             = register_test( 0, "test_loadCurrentBlackList_case3" );
+    new test_id            = register_test( 0, "test_loadCurrentBlackList_case3" );
     new Trie:blackListTrie = TrieCreate();
     
     g_test_current_time = 12;
