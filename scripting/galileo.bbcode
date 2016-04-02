@@ -1,5 +1,5 @@
-[anchor]Top[/anchor][SIZE="7"][COLOR="Blue"][B]Galileo v2.4.1[/B][/COLOR][/SIZE] A feature rich map voting plugin
-[SIZE=1][COLOR=Red]Release: 12.09.2008 | Last Update: 01.04.2016[/SIZE][/COLOR]
+[anchor]Top[/anchor][SIZE="7"][COLOR="Blue"][B]Galileo v2.5[/B][/COLOR][/SIZE] A feature rich map voting plugin
+[SIZE=1][COLOR=Red]Release: 12.09.2008 | Last Update: 02.04.2016[/SIZE][/COLOR]
 
 If you want to translate the Galileo Mapchooser to your language or if you see some
 error or bad coloring tags positioning at the current translations, feel free to correct
@@ -352,27 +352,28 @@ players can't nominate maps for few days . My proposition is adding a file to th
 will be saved map history and a bunch of recent maps won't be able to get voted (but still be able
 to get nominated).
 
-[SUG]
-Add new cvar 'gal_nom_minplayers' to dynamically change between the cvar 'gal_nom_mapfile' and
-'gal_vote_minplayers_mapfile' depending the server players number. 
-
 [/CODE]
 
 
 ******************************** [anchor]Change[/anchor][B][SIZE="6"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
 
-[B]2016-04-01 | v2.4[/B] ~ [B]v2.4.1[/B]
+[B]2016-04-02 | v2.4.1[/B] ~ [B]v2.5[/B]
 [LIST=1]
-[*]Added to the nomination's menu, it's LANG constant.
+[*]Add new cvar 'gal_nom_minplayers_control' to control the nominations voting map list behavior.
+[*]Added to the nomination's menu title, it's LANG constant.
 [*]Fixed the 'nomenu' using the wrong map selection.
+[/LIST]
+
+[B]2016-04-01 | v2.4[/B]
+[LIST=1]
 [*]Fixed the "recentmaps" function title menu to appear on the screen as 'nominate map'.
 [*]Fixed the nomination menu does showing run time error 10 some times.
 [*]Fixed the next map manager ignoring some map cycle maps.
 [*]Fixed the 'nom partialMapName' menu choosing wrong maps.
 [*]Added the player menus to be used with 'say_team' beyond 'say'.
 [*]Added a first nomination's menu option to cancel all your nominations.
-[*]When the server is (crash maybe) restarted 10 times on the same map, added to the handle
-server start feature, to stop the changing to that map and to use the its next map.
+[*]When the server is (crash maybe) restarted 10 times on the same map, added to the server start feature,
+to stop the changing to that map and to use the its next map.
 [*]Removed the 15 seconds delay on the server start feature.
 [/LIST]
 
