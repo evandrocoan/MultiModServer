@@ -22,7 +22,7 @@
 *****************************************************************************************
 */
 
-new const PLUGIN_VERSION[] = "v2.4.1";
+new const PLUGIN_VERSION[] = "v2.5";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -400,6 +400,7 @@ new cvar_isToReplaceByVoteMenu;
 new cvar_soundsMute;
 new cvar_voteMapFilePath;
 new cvar_voteMinPlayers;
+new cvar_NomMinPlayersControl;
 new cvar_voteMinPlayersMapFilePath;
 new cvar_voteWhiteListMapFilePath;
 
@@ -588,6 +589,7 @@ public plugin_init()
     cvar_soundsMute                = register_cvar( "gal_sounds_mute", "0" );
     cvar_voteMapFilePath           = register_cvar( "gal_vote_mapfile", "*" );
     cvar_voteMinPlayers            = register_cvar( "gal_vote_minplayers", "0" );
+    cvar_NomMinPlayersControl      = register_cvar( "gal_nom_minplayers_control", "0" );
     cvar_voteMinPlayersMapFilePath = register_cvar( "gal_vote_minplayers_mapfile", "" );
     cvar_voteWhiteListMapFilePath  = register_cvar( "gal_vote_whitelist_mapfile", "" );
     
@@ -2900,7 +2902,11 @@ stock vote_addFiller()
     
     if( get_realplayersnum() < get_pcvar_num( cvar_voteMinPlayers ) )
     {
-        g_isFillersMapUsingMinplayers = true;
+        if( get_pcvar_num( cvar_NomMinPlayersControl ) )
+        {
+            g_isFillersMapUsingMinplayers = true;
+        }
+        
         get_pcvar_string( cvar_voteMinPlayersMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) );
     }
     else
