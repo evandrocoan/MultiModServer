@@ -35,7 +35,7 @@ new const PLUGIN_VERSION[] = "v2.5";
  * 4   - To create fake votes.
  * 7   - Levels 1, 2 and 4.
  */
-#define DEBUG_LEVEL 0
+#define DEBUG_LEVEL 1
 
 
 #define DEBUG_LEVEL_NORMAL     1
@@ -71,7 +71,7 @@ stock allowToUseSemicolonOnMacrosEnd()
  * ( ... ) 64 displays messages related 'color_print'.
  * ( 1.. ) 127 displays all debug logs levels at server console.
  */
-new g_debug_level = 1 + 4 + 8 + 16;
+new g_debug_level = 1 + 4 + 8 + 16 + 64;
 
 
 /**
@@ -2817,15 +2817,32 @@ public nomination_list( player_id )
     }
 }
 
-stock vote_addNominations()
+stock vote_addNominations( blockedFillerMaps[][], blockedFillerMapsCharsmax = 0 )
 {
     DEBUG_LOGGER( 4, "^n   [NOMINATIONS ( %i )]", g_nominationCount );
+    
+    new blockedCount;
     
     if( g_nominationCount )
     {
         new player_id;
         new mapIndex;
-        new mapName[ MAX_MAPNAME_LENGHT ];
+        
+        new Trie:blackFillerMapTrie;
+        new      mapName[ MAX_MAPNAME_LENGHT ];
+        
+        if( get_realplayersnum() < get_pcvar_num( cvar_voteMinPlayers )
+            && get_pcvar_num( cvar_NomMinPlayersControl ) )
+        {
+            new mapFilerFilePath[ MAX_FILE_PATH_LENGHT ];
+            
+            get_pcvar_string( cvar_voteMinPlayersMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) );
+
+            g_isFillersMapUsingMinplayers = true;
+            blackFillerMapTrie            = TrieCreate();
+            
+            map_populateList( g_fillerMap, mapFilerFilePath, _:blackFillerMapTrie );
+        }
         
         // set how many total nominations we can use in this vote
         new maxNominations    = get_pcvar_num( cvar_nomQtyUsed );
@@ -2858,8 +2875,8 @@ stock vote_addNominations()
         DEBUG_LOGGER( 4, "" );
 #endif
         
-        // add as many nominations as we can [TODO: develop a
-        // better method of determining which nominations make the cut; either FIFO or random]
+        // add as many nominations as we can [TODO: develop a better method of determining which
+        // nominations make the cut; either FIFO or random].
         for( new nominationIndex = maxPlayerNominations - 1; nominationIndex > 0; --nominationIndex )
         {
             for( player_id = 1; player_id < sizeof g_playersNominations; ++player_id )
@@ -2870,25 +2887,41 @@ stock vote_addNominations()
                 {
                     ArrayGetString( g_nominationMap, mapIndex, mapName, charsmax( mapName ) );
                     
-                    copy( g_votingMapNames[ g_totalVoteOptions++ ],
-                            charsmax( g_votingMapNames[] ), mapName );
+                    if( g_isFillersMapUsingMinplayers
+                        && !TrieKeyExists( blackFillerMapTrie, mapName ) )
+                    {
+                        DEBUG_LOGGER( 8, "    The map: %s, was blocked by the minimum players map setting.", mapName );
+                        copy( blockedFillerMaps[ blockedCount ], blockedFillerMapsCharsmax, mapName );
+                        blockedCount++;
+                        
+                        continue;
+                    }
+                    
+                    copy( g_votingMapNames[ g_totalVoteOptions++ ], charsmax( g_votingMapNames[] ), mapName );
                     
                     if( g_totalVoteOptions == voteNominationMax )
                     {
                         break;
                     }
                 }
-            }
+            } // end players nominations looking for
             
             if( g_totalVoteOptions == voteNominationMax )
             {
                 break;
             }
+        } // end nominations players looking for
+        
+        if( blackFillerMapTrie )
+        {
+            TrieDestroy( blackFillerMapTrie );
         }
-    }
+    } // end if nominations
+    
+    return blockedCount;
 }
 
-stock vote_addFiller()
+stock vote_addFiller( blockedFillerMaps[][], blockedFillerMapsCharsmax = 0, blockedCount = 0 )
 {
     if( g_totalVoteOptions >= g_maxVotingChoices )
     {
@@ -2902,11 +2935,6 @@ stock vote_addFiller()
     
     if( get_realplayersnum() < get_pcvar_num( cvar_voteMinPlayers ) )
     {
-        if( get_pcvar_num( cvar_NomMinPlayersControl ) )
-        {
-            g_isFillersMapUsingMinplayers = true;
-        }
-        
         get_pcvar_string( cvar_voteMinPlayersMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) );
     }
     else
@@ -2995,23 +3023,19 @@ stock vote_addFiller()
         copy( fillersFilePaths[ 0 ], charsmax( mapFilerFilePath ), mapFilerFilePath );
     }
     
-    DEBUG_LOGGER( 4, "( vote_addFiller ) MapsGroups Loaded, mapFilerFilePath: %s", mapFilerFilePath );
+    DEBUG_LOGGER( 4, "( vote_addFiller ) MapsGroups Loaded, mapFilerFilePath: %s^n^n", mapFilerFilePath );
     
     new mapIndex;
-    new blockedCount;
     new choice_index;
     new filersMapCount;
     new allowedFilersCount;
     new unsuccessfulCount;
-
-    new mapName          [ MAX_MAPNAME_LENGHT ];
-    new blockedFillerMaps[ MAX_NOMINATION_COUNT ][ MAX_MAPNAME_LENGHT ];
     
-    new Trie:blackListTrie;
-    new Trie:blackFillerMapTrie;
+    new mapName[ MAX_MAPNAME_LENGHT ];
+    new Trie:  blackListTrie;
     
     new bool:is_whitelistEnabled = get_pcvar_num( cvar_voteMinPlayers ) != 0;
-
+    
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
     
     is_whitelistEnabled = true;
@@ -3026,16 +3050,7 @@ stock vote_addFiller()
     // fill remaining slots with random maps from each filler file, as much as possible
     for( new groupIndex = 0; groupIndex < groupCount; ++groupIndex )
     {
-        if( g_isFillersMapUsingMinplayers )
-        {
-            blackFillerMapTrie = TrieCreate();
-            filersMapCount     = map_populateList( g_fillerMap, fillersFilePaths[ groupIndex ],
-                    _:blackFillerMapTrie );
-        }
-        else
-        {
-            filersMapCount = map_populateList( g_fillerMap, fillersFilePaths[ groupIndex ] );
-        }
+        filersMapCount = map_populateList( g_fillerMap, fillersFilePaths[ groupIndex ] );
         
         DEBUG_LOGGER( 8, "[%i] groupCount:%i   filersMapCount: %i   g_totalVoteOptions: %i   \
                 g_maxVotingChoices: %i^n   fillersFilePaths: %s", groupIndex, groupCount, filersMapCount, \
@@ -3090,17 +3105,7 @@ stock vote_addFiller()
                     && TrieKeyExists( blackListTrie, mapName ) )
                 {
                     DEBUG_LOGGER( 8, "    The map: %s, was blocked by the whitelist map setting.", mapName );
-                    copy( blockedFillerMaps[ blockedCount ], charsmax( blockedFillerMaps[] ), mapName );
-                    blockedCount++;
-                    
-                    goto keepSearching;
-                }
-                
-                if( g_isFillersMapUsingMinplayers
-                    && !TrieKeyExists( blackFillerMapTrie, mapName ) )
-                {
-                    DEBUG_LOGGER( 8, "    The map: %s, was blocked by the minimum players map setting.", mapName );
-                    copy( blockedFillerMaps[ blockedCount ], charsmax( blockedFillerMaps[] ), mapName );
+                    copy( blockedFillerMaps[ blockedCount ], blockedFillerMapsCharsmax, mapName );
                     blockedCount++;
                     
                     goto keepSearching;
@@ -3125,7 +3130,7 @@ stock vote_addFiller()
         new copiedChars;
         new mapListToPrint[ MAX_COLOR_MESSAGE ];
         
-        color_print( 0, "^1%L", LANG_PLAYER, "GAL_FILLER_WHITELIST_BLOCKED" );
+        color_print( 0, "^1%L^1...", LANG_PLAYER, "GAL_FILLER_WHITELIST_BLOCKED" );
         
         for( new currentIndex = 0; currentIndex < blockedCount; ++currentIndex )
         {
@@ -3134,12 +3139,12 @@ stock vote_addFiller()
                     blockedFillerMaps[ currentIndex ] );
         }
         
-        color_print( 0, "%L^1.", mapListToPrint[ 2 ] );
-    }
-    
-    if( blackFillerMapTrie )
-    {
-        TrieDestroy( blackFillerMapTrie );
+        mapListToPrint[ copiedChars ] = '^0';
+        
+        color_print( 0, "^1%L^1.", LANG_PLAYER, "GAL_MATCHING", mapListToPrint[ 3 ] );
+        DEBUG_LOGGER( 8, "( vote_addFiller ) blockedFillerMaps[0]: %s, blockedCount: %d, \
+                copiedChars: %d, mapListToPrint: %s", \
+                blockedFillerMaps[ 0 ], blockedCount, copiedChars, mapListToPrint[ 3 ] );
     }
     
     if( blackListTrie )
@@ -3380,8 +3385,27 @@ stock vote_startDirector( bool:is_forced_voting )
         }
         
         // to load vote choices
-        vote_addNominations();
-        vote_addFiller();
+        if( get_realplayersnum() < get_pcvar_num( cvar_voteMinPlayers )
+            && get_pcvar_num( cvar_NomMinPlayersControl ) )
+        {
+            new blockedCount;
+            new blockedFillerMaps[ MAX_NOMINATION_COUNT ][ MAX_MAPNAME_LENGHT ];
+                
+            blockedCount = vote_addNominations( blockedFillerMaps, charsmax( blockedFillerMaps[] ) );
+            
+            DEBUG_LOGGER( 8, "( vote_startDirector|blockedFiller ) blockedFillerMaps[0]: %s, \
+                    charsmax( blockedFillerMaps[] ): %d, blockedCount: %d", \
+                    blockedFillerMaps[0], charsmax( blockedFillerMaps[] ), blockedCount );
+            
+            vote_addFiller( blockedFillerMaps, charsmax( blockedFillerMaps[] ), blockedCount );
+        }
+        else
+        {
+            new dummyArray[][] = { { 0 } };
+            
+            vote_addNominations( dummyArray );
+            vote_addFiller( dummyArray );
+        }
         
         choicesLoaded  = g_totalVoteOptions;
         g_voteDuration = get_pcvar_num( cvar_voteDuration );
@@ -5593,7 +5617,7 @@ stock color_print( player_id, message[], any: ... )
             // so we don't execute useless code
             if( !playersCount )
             {
-                DEBUG_LOGGER( 64, "!playersCount. playersCount = %d", playersCount );
+                DEBUG_LOGGER( 64, "   !playersCount. playersCount = %d", playersCount );
                 return;
             }
             
@@ -5608,13 +5632,13 @@ stock color_print( player_id, message[], any: ... )
             params_number                  = numargs();
             multi_lingual_constants_number = 0;
             
-            DEBUG_LOGGER( 64, "playersCount: %d, params_number: %d", playersCount, params_number );
+            DEBUG_LOGGER( 64, "   playersCount: %d, params_number: %d", playersCount, params_number );
             
-            if( params_number >= 4 ) // ML can be used
+            if( params_number > 3 ) // ML can be used
             {
                 for( argument_index = 2; argument_index < params_number; argument_index++ )
                 {
-                    DEBUG_LOGGER( 64, "argument_index: %d, getarg(argument_index): %d / %s", \
+                    DEBUG_LOGGER( 64, "   argument_index: %d, getarg( argument_index ): %s / %d", \
                             argument_index, getarg( argument_index ), getarg( argument_index ) );
                     
                     // retrieve original param value and check if it's LANG_PLAYER value
@@ -5627,14 +5651,14 @@ stock color_print( player_id, message[], any: ... )
                                      getarg( argument_index + 1, string_index++ ) ) )
                         {
                         }
-                        formated_message[ string_index ] = 0;
+                        formated_message[ string_index ] = '^0';
                         
-                        DEBUG_LOGGER( 64, "Player_Id: %d, formated_message: %s, \
+                        DEBUG_LOGGER( 64, "^n   Player_Id: %d, formated_message: %s, \
                                 GetLangTransKey( formated_message ) != TransKey_Bad: %d", \
                                 player_id, formated_message, \
                                 GetLangTransKey( formated_message ) != TransKey_Bad );
                         
-                        DEBUG_LOGGER( 64, "(multi_lingual_constants_number: %d, string_index: %d", \
+                        DEBUG_LOGGER( 64, "   multi_lingual_constants_number: %d, string_index: %d", \
                                 multi_lingual_constants_number, string_index );
                         
                         if( GetLangTransKey( formated_message ) != TransKey_Bad )
@@ -5647,22 +5671,23 @@ stock color_print( player_id, message[], any: ... )
                             multi_lingual_constants_number++;
                         }
                         
-                        DEBUG_LOGGER( 64, "argument_index (after ArrayPushCell): %d", argument_index );
+                        DEBUG_LOGGER( 64, "   argument_index (after ArrayPushCell): %d", argument_index );
                     }
                 }
             }
             
-            DEBUG_LOGGER( 64, "(multi_lingual_constants_number: %d", multi_lingual_constants_number );
+            DEBUG_LOGGER( 64, "   multi_lingual_constants_number: %d", multi_lingual_constants_number );
             
             for( --playersCount; playersCount >= 0; playersCount-- )
             {
-                player_id = players[ playersCount ];
+                player_id             = players[ playersCount ];
+                formated_message[ 0 ] = '^0';
                 
                 if( multi_lingual_constants_number )
                 {
                     for( argument_index = 0; argument_index < multi_lingual_constants_number; argument_index++ )
                     {
-                        DEBUG_LOGGER( 64, "(argument_index: %d, player_id: %d, \
+                        DEBUG_LOGGER( 64, "   argument_index: %d, player_id: %d, \
                                 ArrayGetCell( %d, %d ): %d", \
                                 argument_index, player_id, multi_lingual_indexes_array, argument_index, \
                                 ArrayGetCell( multi_lingual_indexes_array, argument_index ) );
@@ -5671,8 +5696,9 @@ stock color_print( player_id, message[], any: ... )
                         // so we can format the text for that specific player
                         setarg( ArrayGetCell( multi_lingual_indexes_array, argument_index ), _, player_id );
                     }
-                    vformat( formated_message, charsmax( formated_message ), message, 3 );
                 }
+                
+                formated_message[ vformat( formated_message, charsmax( formated_message ), message, 3 ) ] = '^0';
                 
                 DEBUG_LOGGER( 64, "( in ) Player_Id: %d, Chat printed: %s", player_id, formated_message );
                 PRINT_COLORED_MESSAGE( player_id, formated_message );
