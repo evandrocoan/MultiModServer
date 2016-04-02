@@ -35,7 +35,7 @@ new const PLUGIN_VERSION[] = "v2.5";
  * 4   - To create fake votes.
  * 7   - Levels 1, 2 and 4.
  */
-#define DEBUG_LEVEL 1
+#define DEBUG_LEVEL 0
 
 
 #define DEBUG_LEVEL_NORMAL     1
@@ -65,13 +65,13 @@ stock allowToUseSemicolonOnMacrosEnd()
  * ( 1 ) 1 displays basic debug messages as the Unit Tests run.
  * ( 10 ) 2 displays players disconnect, total number, multiple time limits changes and restores.
  * ( 100 ) 4 displays maps events, vote choices, votes, nominations, and the calls to 'map_populateList()'.
- * ( ... ) 8 displays loaded vote choices, whitelist debug and actions at 'vote_startDirector()'.
+ * ( ... ) 8 displays loaded vote choices, minplayers-whitelist debug and actions at 'vote_startDirector()'.
  * ( ... ) 16 displays messages related to RunOff voting.
  * ( ... ) 32 displays messages related to the rounds end map voting.
  * ( ... ) 64 displays messages related 'color_print'.
  * ( 1.. ) 127 displays all debug logs levels at server console.
  */
-new g_debug_level = 1 + 4 + 8 + 16 + 64;
+new g_debug_level = 1 + 8 + 16 + 64;
 
 
 /**
@@ -3130,7 +3130,7 @@ stock vote_addFiller( blockedFillerMaps[][], blockedFillerMapsCharsmax = 0, bloc
         new copiedChars;
         new mapListToPrint[ MAX_COLOR_MESSAGE ];
         
-        color_print( 0, "^1%L^1...", LANG_PLAYER, "GAL_FILLER_WHITELIST_BLOCKED" );
+        color_print( 0, "^1%L", LANG_PLAYER, "GAL_FILLER_BLOCKED" );
         
         for( new currentIndex = 0; currentIndex < blockedCount; ++currentIndex )
         {
@@ -3138,8 +3138,6 @@ stock vote_addFiller( blockedFillerMaps[][], blockedFillerMapsCharsmax = 0, bloc
                     charsmax( mapListToPrint ) - copiedChars, "^1, ^4%s",
                     blockedFillerMaps[ currentIndex ] );
         }
-        
-        mapListToPrint[ copiedChars ] = '^0';
         
         color_print( 0, "^1%L^1.", LANG_PLAYER, "GAL_MATCHING", mapListToPrint[ 3 ] );
         DEBUG_LOGGER( 8, "( vote_addFiller ) blockedFillerMaps[0]: %s, blockedCount: %d, \
@@ -3583,15 +3581,15 @@ public displayEndOfTheMapVoteMenu( player_id )
                     CHOOSE_MAP_MENU_QUESTION );
         }
         
-        DEBUG_LOGGER( 8, " ( displayEndOfTheMapVoteMenu| for ) menu_body: %s^n menu_id:%d,   \
+        DEBUG_LOGGER( 4, " ( displayEndOfTheMapVoteMenu| for ) menu_body: %s^n menu_id:%d,   \
                 menuKeys: %d, isVoting: %d, playerAnswered:%d, player_id: %d, playerIndex: %d", \
                 menu_body, menu_id, menuKeys, isVoting, playerAnswered, player_id, playerIndex );
         
-        DEBUG_LOGGER( 8, "   playersCount: %d, g_pendingVoteCountdown: %d, menu_counter: %s", \
+        DEBUG_LOGGER( 4, "   playersCount: %d, g_pendingVoteCountdown: %d, menu_counter: %s", \
                 playersCount, g_pendingVoteCountdown, menu_counter );
     }
     
-    DEBUG_LOGGER( 8, "%48s", " ( displayEndOfTheMapVoteMenu| out )" );
+    DEBUG_LOGGER( 4, "%48s", " ( displayEndOfTheMapVoteMenu| out )" );
 }
 
 public handleEndOfTheMapVoteChoice( player_id, pressedKeyCode )
@@ -3841,7 +3839,7 @@ stock calculateExtensionOption( player_id, bool:isVoteOver, copiedChars, voteSta
             allowStay = false;
         }
         
-        DEBUG_LOGGER( 1, "    ( vote_handleDisplay ) Add optional menu item| \
+        DEBUG_LOGGER( 4, "    ( vote_handleDisplay ) Add optional menu item| \
                 allowStay: %d, allowExtend: %d, g_isExtendmapAllowStay: %d", \
                 allowStay, allowExtend, g_isExtendmapAllowStay );
         
@@ -5680,8 +5678,7 @@ stock color_print( player_id, message[], any: ... )
             
             for( --playersCount; playersCount >= 0; playersCount-- )
             {
-                player_id             = players[ playersCount ];
-                formated_message[ 0 ] = '^0';
+                player_id = players[ playersCount ];
                 
                 if( multi_lingual_constants_number )
                 {
@@ -5698,8 +5695,7 @@ stock color_print( player_id, message[], any: ... )
                     }
                 }
                 
-                formated_message[ vformat( formated_message, charsmax( formated_message ), message, 3 ) ] = '^0';
-                
+                vformat( formated_message, charsmax( formated_message ), message, 3 );
                 DEBUG_LOGGER( 64, "( in ) Player_Id: %d, Chat printed: %s", player_id, formated_message );
                 PRINT_COLORED_MESSAGE( player_id, formated_message );
             }
