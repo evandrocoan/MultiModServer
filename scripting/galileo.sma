@@ -22,7 +22,7 @@
 *****************************************************************************************
 */
 
-new const PLUGIN_VERSION[] = "v2.5";
+new const PLUGIN_VERSION[] = "v2.5d";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -2321,6 +2321,7 @@ public cmd_say( player_id )
 stock buildTheNominationsMenu( player_id )
 {
     new nominations_menu_name[ 64 ];
+    new nomination_cancel_option[ 64 ];
     
     // assume there'll be more than one match ( because we're lazy ) and starting building the match menu
     if( g_generalUsePlayersMenuId[ player_id ] )
@@ -2332,11 +2333,13 @@ stock buildTheNominationsMenu( player_id )
     
     formatex( nominations_menu_name, charsmax( nominations_menu_name ), "%L",
             player_id, "GAL_LISTMAPS_TITLE" );
+    formatex( nomination_cancel_option, charsmax( nomination_cancel_option ), "%L",
+            player_id, "GAL_NOM_CANCEL_OPTION" );
     
     g_generalUsePlayersMenuId[ player_id ] = menu_create( nominations_menu_name,
             "nomination_handleMatchChoice" );
     
-    menu_additem( g_generalUsePlayersMenuId[ player_id ], "Cancel all your Nominations", { 0 }, 0 );
+    menu_additem( g_generalUsePlayersMenuId[ player_id ], nomination_cancel_option, { 0 }, 0 );
     menu_addblank( g_generalUsePlayersMenuId[ player_id ], 0 );
 }
 
