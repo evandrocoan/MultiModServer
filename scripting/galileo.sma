@@ -22,7 +22,7 @@
 *****************************************************************************************
 */
 
-new const PLUGIN_VERSION[] = "v2.5";
+new const PLUGIN_VERSION[] = "v2.5.1";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -1905,7 +1905,7 @@ public cmd_startVote( player_id, level, cid )
     return PLUGIN_HANDLED;
 }
 
-stock map_populateList( Array:mapArray, mapFilePath[], _:fillerMapTrie = 0 )
+stock map_populateList( Array:mapArray, mapFilePath[], Trie:fillerMapTrie = Invalid_Trie )
 {
     // load the array with maps
     new mapCount;
@@ -1935,7 +1935,7 @@ stock map_populateList( Array:mapArray, mapFilePath[], _:fillerMapTrie = 0 )
     return mapCount;
 }
 
-stock loadMapFileList( Array:mapArray, mapCount, mapFilePath[], _:fillerMapTrie )
+stock loadMapFileList( Array:mapArray, mapCount, mapFilePath[], Trie:fillerMapTrie )
 {
     new mapFile = fopen( mapFilePath, "rt" );
 
@@ -1960,7 +1960,7 @@ stock loadMapFileList( Array:mapArray, mapCount, mapFilePath[], _:fillerMapTrie 
             {
                 if( fillerMapTrie )
                 {
-                    TrieSetCell( Trie:fillerMapTrie, loadedMapName, 0 );
+                    TrieSetCell( fillerMapTrie, loadedMapName, 0 );
                 }
                 
                 DEBUG_LOGGER( 4, "map_populateList() %d, loadedMapName: %s", ++current_index, loadedMapName );
@@ -1981,7 +1981,7 @@ stock loadMapFileList( Array:mapArray, mapCount, mapFilePath[], _:fillerMapTrie 
     return mapCount;
 }
 
-stock loadMapsFolderDirectory( Array:mapArray, mapCount, _:fillerMapTrie )
+stock loadMapsFolderDirectory( Array:mapArray, mapCount, Trie:fillerMapTrie )
 {
     new loadedMapName[ MAX_MAPNAME_LENGHT ];
     
@@ -2004,7 +2004,7 @@ stock loadMapsFolderDirectory( Array:mapArray, mapCount, _:fillerMapTrie )
                 {
                     if( fillerMapTrie )
                     {
-                        TrieSetCell( Trie:fillerMapTrie, loadedMapName, 0 );
+                        TrieSetCell( fillerMapTrie, loadedMapName, 0 );
                     }
                     
                     ArrayPushString( mapArray, loadedMapName );
@@ -2321,6 +2321,7 @@ public cmd_say( player_id )
 stock buildTheNominationsMenu( player_id )
 {
     new nominations_menu_name[ 64 ];
+    new nomination_cancel_option[ 64 ];
     
     // assume there'll be more than one match ( because we're lazy ) and starting building the match menu
     if( g_generalUsePlayersMenuId[ player_id ] )
@@ -2332,11 +2333,13 @@ stock buildTheNominationsMenu( player_id )
     
     formatex( nominations_menu_name, charsmax( nominations_menu_name ), "%L",
             player_id, "GAL_LISTMAPS_TITLE" );
+    formatex( nomination_cancel_option, charsmax( nomination_cancel_option ), "%L",
+            player_id, "GAL_NOM_CANCEL_OPTION" );
     
     g_generalUsePlayersMenuId[ player_id ] = menu_create( nominations_menu_name,
             "nomination_handleMatchChoice" );
     
-    menu_additem( g_generalUsePlayersMenuId[ player_id ], "Cancel all your Nominations", { 0 }, 0 );
+    menu_additem( g_generalUsePlayersMenuId[ player_id ], nomination_cancel_option, { 0 }, 0 );
     menu_addblank( g_generalUsePlayersMenuId[ player_id ], 0 );
 }
 
@@ -2837,11 +2840,18 @@ stock vote_addNominations( blockedFillerMaps[][], blockedFillerMapsCharsmax = 0 
             new mapFilerFilePath[ MAX_FILE_PATH_LENGHT ];
             
             get_pcvar_string( cvar_voteMinPlayersMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) );
-
-            g_isFillersMapUsingMinplayers = true;
-            blackFillerMapTrie            = TrieCreate();
             
-            map_populateList( g_fillerMap, mapFilerFilePath, _:blackFillerMapTrie );
+            if( equal( mapFilerFilePath, "*" ) )
+            {
+                log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilerFilePath );
+            }
+            else
+            {
+                g_isFillersMapUsingMinplayers = true;
+                blackFillerMapTrie            = TrieCreate();
+                
+                map_populateList( g_fillerMap, mapFilerFilePath, blackFillerMapTrie );
+            }
         }
         
         // set how many total nominations we can use in this vote
@@ -3035,7 +3045,7 @@ stock vote_addFiller( blockedFillerMaps[][], blockedFillerMapsCharsmax = 0, bloc
     new Trie:  blackListTrie;
     
     new bool:is_whitelistEnabled = get_pcvar_num( cvar_voteMinPlayers ) != 0;
-    
+
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
     
     if( g_areTheUnitTestsRunning )
@@ -3391,12 +3401,12 @@ stock vote_startDirector( bool:is_forced_voting )
         {
             new blockedCount;
             new blockedFillerMaps[ MAX_NOMINATION_COUNT ][ MAX_MAPNAME_LENGHT ];
-                
+            
             blockedCount = vote_addNominations( blockedFillerMaps, charsmax( blockedFillerMaps[] ) );
             
             DEBUG_LOGGER( 8, "( vote_startDirector|blockedFiller ) blockedFillerMaps[0]: %s, \
                     charsmax( blockedFillerMaps[] ): %d, blockedCount: %d", \
-                    blockedFillerMaps[0], charsmax( blockedFillerMaps[] ), blockedCount );
+                    blockedFillerMaps[ 0 ], charsmax( blockedFillerMaps[] ), blockedCount );
             
             vote_addFiller( blockedFillerMaps, charsmax( blockedFillerMaps[] ), blockedCount );
         }
@@ -3416,7 +3426,7 @@ stock vote_startDirector( bool:is_forced_voting )
             
             new dummyArray[][] = { { 0 } };
         #endif
-        
+            
             vote_addNominations( dummyArray );
             vote_addFiller( dummyArray );
         }
@@ -3714,7 +3724,7 @@ public voteExpire()
 public vote_display( argument[ 2 ] )
 {
     new player_id           = argument[ 1 ];
-    new copiedChars           = 0;
+    new copiedChars         = 0;
     new updateTimeRemaining = argument[ 0 ];
     
     new bool:isVoteOver   = g_voteStatus & VOTE_IS_EXPIRED != 0;
@@ -6580,7 +6590,7 @@ public test_loadCurrentBlackList_case1()
 {
     new whiteListFile;
     
-    new test_id             = register_test( 0, "test_loadCurrentBlackList_case1" );
+    new test_id            = register_test( 0, "test_loadCurrentBlackList_case1" );
     new Trie:blackListTrie = TrieCreate();
     
     copy( g_test_whiteListFilePath, charsmax( g_test_whiteListFilePath ), "test_loadCurrentBlackList.txt" );
@@ -6631,7 +6641,7 @@ public test_loadCurrentBlackList_case1()
  */
 public test_loadCurrentBlackList_case2()
 {
-    new test_id             = register_test( 0, "test_loadCurrentBlackList_case2" );
+    new test_id            = register_test( 0, "test_loadCurrentBlackList_case2" );
     new Trie:blackListTrie = TrieCreate();
     
     g_test_current_time = 22;
@@ -6652,7 +6662,7 @@ public test_loadCurrentBlackList_case2()
  */
 public test_loadCurrentBlackList_case3()
 {
-    new test_id             = register_test( 0, "test_loadCurrentBlackList_case3" );
+    new test_id            = register_test( 0, "test_loadCurrentBlackList_case3" );
     new Trie:blackListTrie = TrieCreate();
     
     g_test_current_time = 12;
