@@ -22,7 +22,7 @@
 *****************************************************************************************
 */
 
-new const PLUGIN_VERSION[] = "v2.5d";
+new const PLUGIN_VERSION[] = "v2.5.1";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
