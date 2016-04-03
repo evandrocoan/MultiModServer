@@ -30,8 +30,8 @@ new const PLUGIN_VERSION[] = "v2.5.1";
  *
  * 0   - Disables this feature.
  * 1   - Normal debug.
- * 2   - To skip the 'pendingVoteCountdown()' and set the vote and runoff time to 5 seconds, and run
- *       the Unit Tests and print their out put results.
+ * 2   - To skip the 'pendingVoteCountdown()', set the vote runoff time to 5 seconds, run the Unit
+ *       Tests and print their out put results.
  * 4   - To create fake votes.
  * 7   - Levels 1, 2 and 4.
  */
@@ -46,6 +46,7 @@ new const PLUGIN_VERSION[] = "v2.5.1";
 #include <amxmisc>
 
 #pragma semicolon 1
+
 
 /**
  * Dummy value used to use the do...while() statements to allow the semicolon ';' use at macros endings.
@@ -487,17 +488,17 @@ new g_voteStatus;
 new g_voteDuration;
 new g_totalVotesCounted;
 
-new COLOR_RED    [ 3 ]; // \r
-new COLOR_WHITE  [ 3 ]; // \w
-new COLOR_YELLOW [ 3 ]; // \y
-new COLOR_GREY   [ 3 ]; // \d
+new COLOR_RED   [ 3 ]; // \r
+new COLOR_WHITE [ 3 ]; // \w
+new COLOR_YELLOW[ 3 ]; // \y
+new COLOR_GREY  [ 3 ]; // \d
 
 new g_mapPrefixCount = 1;
 
-new g_voteStatusClean      [ 512 ];
-new g_arrayOfRunOffChoices [ 2 ];
-new g_voteStatus_symbol    [ 3 ];
-new g_voteWeightFlags      [ 32 ];
+new g_voteStatusClean     [ 512 ];
+new g_arrayOfRunOffChoices[ 2 ];
+new g_voteStatus_symbol   [ 3 ];
+new g_voteWeightFlags     [ 32 ];
 
 new g_nextmap                            [ MAX_MAPNAME_LENGHT ];
 new g_currentMap                         [ MAX_MAPNAME_LENGHT ];
@@ -507,17 +508,17 @@ new g_generalUsePlayersMenuId            [ MAX_PLAYERS_COUNT ];
 new g_arrayOfMapsWithVotesNumber         [ MAX_OPTIONS_IN_VOTE ];
 new Array:g_currentMenuMapIndexForPlayers[ MAX_PLAYERS_COUNT ];
 
-new bool:g_isPlayerVoted             [ MAX_PLAYERS_COUNT ] = { true, ... };
-new bool:g_isPlayerParticipating     [ MAX_PLAYERS_COUNT ] = { true, ... };
-new bool:g_isPlayerSeeingTheVoteMenu [ MAX_PLAYERS_COUNT ];
-new bool:g_isPlayerCancelledVote     [ MAX_PLAYERS_COUNT ];
-new bool:g_answeredForEndOfMapVote   [ MAX_PLAYERS_COUNT ];
-new bool:g_rockedVote                [ MAX_PLAYERS_COUNT ];
+new bool:g_isPlayerVoted            [ MAX_PLAYERS_COUNT ] = { true, ... };
+new bool:g_isPlayerParticipating    [ MAX_PLAYERS_COUNT ] = { true, ... };
+new bool:g_isPlayerSeeingTheVoteMenu[ MAX_PLAYERS_COUNT ];
+new bool:g_isPlayerCancelledVote    [ MAX_PLAYERS_COUNT ];
+new bool:g_answeredForEndOfMapVote  [ MAX_PLAYERS_COUNT ];
+new bool:g_rockedVote               [ MAX_PLAYERS_COUNT ];
 
-new g_mapPrefixes        [ MAX_PREFIX_COUNT ][ 16 ];
-new g_playersNominations [ MAX_PLAYERS_COUNT ][ MAX_NOMINATION_COUNT ];
-new g_recentMaps         [ MAX_RECENT_MAP_COUNT ][ MAX_MAPNAME_LENGHT ];
-new g_votingMapNames     [ MAX_OPTIONS_IN_VOTE ][ MAX_MAPNAME_LENGHT ];
+new g_mapPrefixes       [ MAX_PREFIX_COUNT ][ 16 ];
+new g_playersNominations[ MAX_PLAYERS_COUNT ][ MAX_NOMINATION_COUNT ];
+new g_recentMaps        [ MAX_RECENT_MAP_COUNT ][ MAX_MAPNAME_LENGHT ];
+new g_votingMapNames    [ MAX_OPTIONS_IN_VOTE ][ MAX_MAPNAME_LENGHT ];
 
 new g_nominationCount;
 new g_chooseMapMenuId;
