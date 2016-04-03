@@ -1905,7 +1905,7 @@ public cmd_startVote( player_id, level, cid )
     return PLUGIN_HANDLED;
 }
 
-stock map_populateList( Array:mapArray, mapFilePath[], _:fillerMapTrie = 0 )
+stock map_populateList( Array:mapArray, mapFilePath[], Trie:fillerMapTrie = Invalid_Trie )
 {
     // load the array with maps
     new mapCount;
@@ -1935,7 +1935,7 @@ stock map_populateList( Array:mapArray, mapFilePath[], _:fillerMapTrie = 0 )
     return mapCount;
 }
 
-stock loadMapFileList( Array:mapArray, mapCount, mapFilePath[], _:fillerMapTrie )
+stock loadMapFileList( Array:mapArray, mapCount, mapFilePath[], Trie:fillerMapTrie )
 {
     new mapFile = fopen( mapFilePath, "rt" );
 
@@ -1960,7 +1960,7 @@ stock loadMapFileList( Array:mapArray, mapCount, mapFilePath[], _:fillerMapTrie 
             {
                 if( fillerMapTrie )
                 {
-                    TrieSetCell( Trie:fillerMapTrie, loadedMapName, 0 );
+                    TrieSetCell( fillerMapTrie, loadedMapName, 0 );
                 }
                 
                 DEBUG_LOGGER( 4, "map_populateList() %d, loadedMapName: %s", ++current_index, loadedMapName );
@@ -1981,7 +1981,7 @@ stock loadMapFileList( Array:mapArray, mapCount, mapFilePath[], _:fillerMapTrie 
     return mapCount;
 }
 
-stock loadMapsFolderDirectory( Array:mapArray, mapCount, _:fillerMapTrie )
+stock loadMapsFolderDirectory( Array:mapArray, mapCount, Trie:fillerMapTrie )
 {
     new loadedMapName[ MAX_MAPNAME_LENGHT ];
     
@@ -2004,7 +2004,7 @@ stock loadMapsFolderDirectory( Array:mapArray, mapCount, _:fillerMapTrie )
                 {
                     if( fillerMapTrie )
                     {
-                        TrieSetCell( Trie:fillerMapTrie, loadedMapName, 0 );
+                        TrieSetCell( fillerMapTrie, loadedMapName, 0 );
                     }
                     
                     ArrayPushString( mapArray, loadedMapName );
@@ -2841,7 +2841,7 @@ stock vote_addNominations( blockedFillerMaps[][], blockedFillerMapsCharsmax = 0 
             g_isFillersMapUsingMinplayers = true;
             blackFillerMapTrie            = TrieCreate();
             
-            map_populateList( g_fillerMap, mapFilerFilePath, _:blackFillerMapTrie );
+            map_populateList( g_fillerMap, mapFilerFilePath, blackFillerMapTrie );
         }
         
         // set how many total nominations we can use in this vote
