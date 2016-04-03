@@ -2838,10 +2838,17 @@ stock vote_addNominations( blockedFillerMaps[][], blockedFillerMapsCharsmax = 0 
             
             get_pcvar_string( cvar_voteMinPlayersMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) );
             
-            g_isFillersMapUsingMinplayers = true;
-            blackFillerMapTrie            = TrieCreate();
-            
-            map_populateList( g_fillerMap, mapFilerFilePath, blackFillerMapTrie );
+            if( equal( mapFilerFilePath, "*" ) )
+            {
+                log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilerFilePath );
+            }
+            else
+            {
+                g_isFillersMapUsingMinplayers = true;
+                blackFillerMapTrie            = TrieCreate();
+                
+                map_populateList( g_fillerMap, mapFilerFilePath, blackFillerMapTrie );
+            }
         }
         
         // set how many total nominations we can use in this vote
