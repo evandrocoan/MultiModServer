@@ -32,7 +32,8 @@ new const PLUGIN_VERSION[] = "v2.5.1";
  * 1   - Normal debug.
  * 2   - To skip the 'pendingVoteCountdown()', set the vote runoff time to 5 seconds, run the Unit
  *       Tests and print their out put results.
- * 4   - To create fake votes.
+ * 4   - To create fake votes and fake real players count. See the functions 'get_realplayersnum()'
+ *       and 'create_fakeVotes()'.
  * 7   - Levels 1, 2 and 4.
  */
 #define DEBUG_LEVEL 0
@@ -3045,8 +3046,9 @@ stock vote_addFiller( blockedFillerMaps[][], blockedFillerMapsCharsmax = 0, bloc
     new mapName[ MAX_MAPNAME_LENGHT ];
     new Trie:  blackListTrie;
     
+    //new bool:is_whitelistEnabled = get_realplayersnum() < get_pcvar_num( cvar_voteMinPlayers );
     new bool:is_whitelistEnabled = get_pcvar_num( cvar_voteMinPlayers ) != 0;
-
+    
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
     
     if( g_areTheUnitTestsRunning )
@@ -5545,8 +5547,14 @@ stock get_realplayersnum()
     new players[ MAX_PLAYERS ];
     
     get_players( players, playersCount, "ch" );
+
+#if DEBUG_LEVEL & DEBUG_LEVEL_FAKE_VOTES
     
+    return 3;
+#else
     return playersCount;
+    
+#endif
 }
 
 stock percent( is, of )
