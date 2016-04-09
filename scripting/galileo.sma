@@ -36,7 +36,7 @@ new const PLUGIN_VERSION[] = "v2.6";
  *       and 'create_fakeVotes()'.
  * 7   - Levels 1, 2 and 4.
  */
-#define DEBUG_LEVEL 7
+#define DEBUG_LEVEL 0
 
 
 #define DEBUG_LEVEL_NORMAL     1
@@ -2937,19 +2937,18 @@ stock vote_addNominations( blockedFillerMaps[][], blockedFillerMapsCharsmax = 0 
     return blockedCount;
 }
 
-stock loadMapGroupsFeature( mapFilerFilePath[], mapFilerFilePathMaxChars,
-                            mapsPerGroup[],
-                            fillersFilePaths[][], fillersFilePathsMaxChars )
+stock loadMapGroupsFeature( mapsPerGroup[], fillersFilePaths[][], fillersFilePathsMaxChars )
 {
     new groupCount;
+    new mapFilerFilePath[ MAX_FILE_PATH_LENGHT ];
     
     if( get_realplayersnum() < get_pcvar_num( cvar_voteMinPlayers ) )
     {
-        get_pcvar_string( cvar_voteMinPlayersMapFilePath, mapFilerFilePath, mapFilerFilePathMaxChars );
+        get_pcvar_string( cvar_voteMinPlayersMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) );
     }
     else
     {
-        get_pcvar_string( cvar_voteMapFilePath, mapFilerFilePath, mapFilerFilePathMaxChars );
+        get_pcvar_string( cvar_voteMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) );
     }
     
     if( !equal( mapFilerFilePath[ 0 ], "*" )
@@ -3038,28 +3037,16 @@ stock loadMapGroupsFeature( mapFilerFilePath[], mapFilerFilePathMaxChars,
     return groupCount;
 }
 
-stock vote_addFiller( blockedFillerMaps[][], bool:is_whitelistEnabled = false,
-                      blockedFillerMapsCharsmax = 0, blockedCount = 0 )
+stock processLoadedMapsFile( mapsPerGroup[],
+                             groupCount, blockedCount, bool:is_whitelistEnabled,
+                             blockedFillerMaps[][], blockedFillerMapsCharsmax,
+                             fillersFilePaths[][], fillersFilePathsMaxChars )
 {
-    if( g_totalVoteOptions >= g_maxVotingChoices )
-    {
-        return;
-    }
-    
-    new groupCount;
-    new mapsPerGroup     [ MAX_MAPS_IN_VOTE ];
-    new mapFilerFilePath [ MAX_FILE_PATH_LENGHT ];
-    new fillersFilePaths [ MAX_MAPS_IN_VOTE ][ MAX_FILE_PATH_LENGHT ];
-    
-    groupCount = loadMapGroupsFeature( mapFilerFilePath, charsmax( mapFilerFilePath ),
-            mapsPerGroup,
-            fillersFilePaths, charsmax( fillersFilePaths[] ) );
-    
     new mapIndex;
     new choice_index;
     new filersMapCount;
-    new allowedFilersCount;
     new unsuccessfulCount;
+    new allowedFilersCount;
     
     new Trie:   blackListTrie;
     new Trie:   blockedFillerMapsTrie;
@@ -3070,14 +3057,11 @@ stock vote_addFiller( blockedFillerMaps[][], bool:is_whitelistEnabled = false,
     if( g_areTheUnitTestsRunning )
     {
         is_whitelistEnabled       = true;
-        blockedFillerMapsCharsmax = true;
+        blockedFillerMapsCharsmax = MAX_FILE_PATH_LENGHT;
     }
 #endif
     
-    if( blockedFillerMapsCharsmax )
-    {
-        blockedFillerMapsTrie = TrieCreate();
-    }
+    blockedFillerMapsTrie = TrieCreate();
     
     if( is_whitelistEnabled )
     {
@@ -3089,7 +3073,7 @@ stock vote_addFiller( blockedFillerMaps[][], bool:is_whitelistEnabled = false,
     // fill remaining slots with random maps from each filler file, as much as possible
     for( new groupIndex = 0; groupIndex < groupCount; ++groupIndex )
     {
-        filersMapCount = map_populateList( g_fillerMap, fillersFilePaths[ groupIndex ], charsmax( fillersFilePaths[] ) );
+        filersMapCount = map_populateList( g_fillerMap, fillersFilePaths[ groupIndex ], fillersFilePathsMaxChars );
         
         DEBUG_LOGGER( 8, "[%i] groupCount:%i   filersMapCount: %i   g_totalVoteOptions: %i   \
                 g_maxVotingChoices: %i^n   fillersFilePaths: %s^n", groupIndex, groupCount, filersMapCount, \
@@ -3102,8 +3086,9 @@ stock vote_addFiller( blockedFillerMaps[][], bool:is_whitelistEnabled = false,
                     min( mapsPerGroup[ groupIndex ], g_maxVotingChoices - g_totalVoteOptions ),
                     filersMapCount );
             
-            DEBUG_LOGGER( 8, "[%i] allowedFilersCount: %i   mapsPerGroup[%i]: %i   MaxCount: %i", groupIndex, \
-                    allowedFilersCount, groupIndex, mapsPerGroup[ groupIndex ], g_maxVotingChoices - g_totalVoteOptions );
+            DEBUG_LOGGER( 8, "[%i] allowedFilersCount: %i   mapsPerGroup[%i]: %i   MaxCount: %i", \
+                    groupIndex, allowedFilersCount, groupIndex, mapsPerGroup[ groupIndex ], \
+                    g_maxVotingChoices - g_totalVoteOptions );
             
             for( choice_index = 0; choice_index < allowedFilersCount; ++choice_index )
             {
@@ -3189,6 +3174,37 @@ stock vote_addFiller( blockedFillerMaps[][], bool:is_whitelistEnabled = false,
     
     } // end 'for groupIndex < groupCount'
     
+    if( blackListTrie )
+    {
+        TrieDestroy( blackListTrie );
+    }
+    
+    if( blockedFillerMapsTrie )
+    {
+        TrieDestroy( blockedFillerMapsTrie );
+    }
+    
+    return blockedCount;
+}
+
+stock vote_addFiller( blockedFillerMaps[][], bool:is_whitelistEnabled = false,
+                      blockedFillerMapsCharsmax = 0, blockedCount = 0 )
+{
+    if( g_totalVoteOptions >= g_maxVotingChoices )
+    {
+        return;
+    }
+    
+    new groupCount;
+    new mapsPerGroup     [ MAX_MAPS_IN_VOTE ];
+    new fillersFilePaths [ MAX_MAPS_IN_VOTE ][ MAX_FILE_PATH_LENGHT ];
+    
+    groupCount   = loadMapGroupsFeature( mapsPerGroup, fillersFilePaths, charsmax( fillersFilePaths[] ) );
+    blockedCount = processLoadedMapsFile( mapsPerGroup,
+            groupCount, blockedCount, is_whitelistEnabled,
+            blockedFillerMaps, blockedFillerMapsCharsmax,
+            fillersFilePaths, charsmax( fillersFilePaths[] ) );
+    
     // If there is/are blocked maps, to announce them to everybody.
     if( blockedCount )
     {
@@ -3208,16 +3224,6 @@ stock vote_addFiller( blockedFillerMaps[][], bool:is_whitelistEnabled = false,
         DEBUG_LOGGER( 8, "( vote_addFiller ) blockedFillerMaps[0]: %s, blockedCount: %d, \
                 copiedChars: %d, mapListToPrint: %s", \
                 blockedFillerMaps[ 0 ], blockedCount, copiedChars, mapListToPrint[ 3 ] );
-    }
-    
-    if( blackListTrie )
-    {
-        TrieDestroy( blackListTrie );
-    }
-    
-    if( blockedFillerMapsTrie )
-    {
-        TrieDestroy( blockedFillerMapsTrie );
     }
 
 } // end 'vote_addFiller()'
