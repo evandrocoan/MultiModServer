@@ -22,7 +22,7 @@
 *****************************************************************************************
 */
 
-new const PLUGIN_VERSION[] = "v2.5.2d";
+new const PLUGIN_VERSION[] = "v2.5.2";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -36,7 +36,7 @@ new const PLUGIN_VERSION[] = "v2.5.2d";
  *       and 'create_fakeVotes()'.
  * 7   - Levels 1, 2 and 4.
  */
-#define DEBUG_LEVEL 5
+#define DEBUG_LEVEL 0
 
 
 #define DEBUG_LEVEL_NORMAL     1
