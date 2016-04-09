@@ -36,7 +36,7 @@ new const PLUGIN_VERSION[] = "v2.6";
  *       and 'create_fakeVotes()'.
  * 7   - Levels 1, 2 and 4.
  */
-#define DEBUG_LEVEL 0
+#define DEBUG_LEVEL 7
 
 
 #define DEBUG_LEVEL_NORMAL     1
@@ -3093,8 +3093,7 @@ stock vote_addFiller( blockedFillerMaps[][], blockedFillerMapsCharsmax = 0, bloc
             {
                 keepSearching:
                 
-                unsuccessfulCount = 0;
-                mapIndex          = random_num( 0, filersMapCount - 1 );
+                mapIndex = random_num( 0, filersMapCount - 1 );
                 
                 ArrayGetString( g_fillerMap, mapIndex, mapName, charsmax( mapName ) );
                 
@@ -3117,7 +3116,8 @@ stock vote_addFiller( blockedFillerMaps[][], blockedFillerMapsCharsmax = 0, bloc
                     ArrayGetString( g_fillerMap, mapIndex, mapName, charsmax( mapName ) );
                 }
                 
-                if( unsuccessfulCount == filersMapCount )
+                if( unsuccessfulCount >= filersMapCount
+                    || allowedFilersCount < 0 )
                 {
                     DEBUG_LOGGER( 8, "unsuccessfulCount: %i  filersMapCount: %i", unsuccessfulCount, filersMapCount );
                     DEBUG_LOGGER( 8, "    There aren't enough maps in this filler file to continue adding anymore" );
@@ -3129,7 +3129,10 @@ stock vote_addFiller( blockedFillerMaps[][], blockedFillerMapsCharsmax = 0, bloc
                 {
                     DEBUG_LOGGER( 8, "    The map: %s, was blocked by the whitelist map setting.", mapName );
                     copy( blockedFillerMaps[ blockedCount ], blockedFillerMapsCharsmax, mapName );
+                    
+                    unsuccessfulCount++;
                     blockedCount++;
+                    allowedFilersCount--;
                     
                     goto keepSearching;
                 }
