@@ -22,7 +22,7 @@
 *****************************************************************************************
 */
 
-new const PLUGIN_VERSION[] = "v2.5.2";
+new const PLUGIN_VERSION[] = "v2.6";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -404,6 +404,7 @@ new cvar_voteMapFilePath;
 new cvar_voteMinPlayers;
 new cvar_NomMinPlayersControl;
 new cvar_voteMinPlayersMapFilePath;
+new cvar_whitelistMinPlayers;
 new cvar_voteWhiteListMapFilePath;
 
 
@@ -593,6 +594,7 @@ public plugin_init()
     cvar_voteMinPlayers            = register_cvar( "gal_vote_minplayers", "0" );
     cvar_NomMinPlayersControl      = register_cvar( "gal_nom_minplayers_control", "0" );
     cvar_voteMinPlayersMapFilePath = register_cvar( "gal_vote_minplayers_mapfile", "" );
+    cvar_whitelistMinPlayers       = register_cvar( "gal_whitelist_minplayers", "0" );
     cvar_voteWhiteListMapFilePath  = register_cvar( "gal_vote_whitelist_mapfile", "" );
     
     nextmap_plugin_init();
@@ -3045,25 +3047,28 @@ stock vote_addFiller( blockedFillerMaps[][], blockedFillerMapsCharsmax = 0, bloc
     new allowedFilersCount;
     new unsuccessfulCount;
     
-    new mapName[ MAX_MAPNAME_LENGHT ];
-    new Trie:  blackListTrie;
+    new Trie:   blackListTrie;
+    new bool:   is_whitelistEnabled;
+    new mapName [ MAX_MAPNAME_LENGHT ];
     
-    //new bool:is_whitelistEnabled = get_realplayersnum() < get_pcvar_num( cvar_voteMinPlayers );
-    new bool:is_whitelistEnabled = get_pcvar_num( cvar_voteMinPlayers ) != 0;
+    if( ( is_whitelistEnabled = get_pcvar_num( cvar_whitelistMinPlayers ) == 1
+                                || get_realplayersnum() < get_pcvar_num( cvar_voteMinPlayers ) ) )
+    {
+        blackListTrie = TrieCreate();
+        
+        loadCurrentBlackList( blackListTrie );
+    }
     
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
     
     if( g_areTheUnitTestsRunning )
     {
         is_whitelistEnabled = true;
-    }
-#endif
-    
-    if( is_whitelistEnabled )
-    {
-        blackListTrie = TrieCreate();
+        blackListTrie       = TrieCreate();
+
         loadCurrentBlackList( blackListTrie );
     }
+#endif
     
     // fill remaining slots with random maps from each filler file, as much as possible
     for( new groupIndex = 0; groupIndex < groupCount; ++groupIndex )
