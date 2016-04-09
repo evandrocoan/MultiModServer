@@ -2937,25 +2937,19 @@ stock vote_addNominations( blockedFillerMaps[][], blockedFillerMapsCharsmax = 0 
     return blockedCount;
 }
 
-stock vote_addFiller( blockedFillerMaps[][], bool:is_whitelistEnabled = false, blockedFillerMapsCharsmax = 0, blockedCount = 0 )
+stock loadMapGroupsFeature( mapFilerFilePath[], mapFilerFilePathMaxChars,
+                            mapsPerGroup[],
+                            fillersFilePaths[][], fillersFilePathsMaxChars )
 {
-    if( g_totalVoteOptions >= g_maxVotingChoices )
-    {
-        return;
-    }
-    
     new groupCount;
-    new mapsPerGroup     [ MAX_MAPS_IN_VOTE ];
-    new mapFilerFilePath [ MAX_FILE_PATH_LENGHT ];
-    new fillersFilePaths [ MAX_MAPS_IN_VOTE ][ MAX_FILE_PATH_LENGHT ];
     
     if( get_realplayersnum() < get_pcvar_num( cvar_voteMinPlayers ) )
     {
-        get_pcvar_string( cvar_voteMinPlayersMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) );
+        get_pcvar_string( cvar_voteMinPlayersMapFilePath, mapFilerFilePath, mapFilerFilePathMaxChars );
     }
     else
     {
-        get_pcvar_string( cvar_voteMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) );
+        get_pcvar_string( cvar_voteMapFilePath, mapFilerFilePath, mapFilerFilePathMaxChars );
     }
     
     if( !equal( mapFilerFilePath[ 0 ], "*" )
@@ -2977,8 +2971,6 @@ stock vote_addFiller( blockedFillerMaps[][], bool:is_whitelistEnabled = false, b
                 DEBUG_LOGGER( 8, "this is a [groups] mapFilerFile" );
                 
                 // read the filler mapFilerFile to determine how many groups there are ( max of MAX_MAPS_IN_VOTE )
-                new groupIndex;
-                
                 while( !feof( mapFilerFile ) )
                 {
                     fgets( mapFilerFile, currentReadedLine, charsmax( currentReadedLine ) );
@@ -2991,13 +2983,14 @@ stock vote_addFiller( blockedFillerMaps[][], bool:is_whitelistEnabled = false, b
                     {
                         if( groupCount < MAX_MAPS_IN_VOTE )
                         {
-                            groupIndex                 = groupCount++;
-                            mapsPerGroup[ groupIndex ] = str_to_num( currentReadedLine );
+                            mapsPerGroup[ groupCount ] = str_to_num( currentReadedLine );
                             
-                            formatex( fillersFilePaths[ groupIndex ], charsmax( fillersFilePaths[] ),
+                            formatex( fillersFilePaths[ groupCount ], fillersFilePathsMaxChars,
                                     "%s/%i.ini", DIR_CONFIGS_PATH, groupCount );
                             
-                            DEBUG_LOGGER( 8, "fillersFilePaths: %s", fillersFilePaths[ groupIndex ] );
+                            DEBUG_LOGGER( 8, "fillersFilePaths: %s", fillersFilePaths[ groupCount ] );
+                            
+                            groupCount++;
                         }
                         else
                         {
@@ -3012,20 +3005,21 @@ stock vote_addFiller( blockedFillerMaps[][], bool:is_whitelistEnabled = false, b
                 {
                     fclose( mapFilerFile );
                     log_error( AMX_ERR_GENERAL, "%L", LANG_SERVER, "GAL_GRP_FAIL_NOCOUNTS", mapFilerFilePath );
-                    return;
+                    
+                    return groupCount;
                 }
             }
             else
             {
                 // we presume it's a listing of maps, ala mapcycle.txt
-                copy( fillersFilePaths[ 0 ], charsmax( fillersFilePaths[] ), mapFilerFilePath );
+                copy( fillersFilePaths[ 0 ], fillersFilePathsMaxChars, mapFilerFilePath );
                 mapsPerGroup[ 0 ] = MAX_MAPS_IN_VOTE;
                 groupCount        = 1;
             }
         }
         else
         {
-            log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_FILLER_NOTFOUND", fillersFilePaths );
+            log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_FILLER_NOTFOUND", mapFilerFilePath );
         }
         
         fclose( mapFilerFile );
@@ -3036,10 +3030,30 @@ stock vote_addFiller( blockedFillerMaps[][], bool:is_whitelistEnabled = false, b
         groupCount        = 1;
         
         // the options '*' and '#' will be handled by 'map_populateList()' later.
-        copy( fillersFilePaths[ 0 ], charsmax( fillersFilePaths[] ), mapFilerFilePath );
+        copy( fillersFilePaths[ 0 ], fillersFilePathsMaxChars, mapFilerFilePath );
     }
     
     DEBUG_LOGGER( 4, "( vote_addFiller ) MapsGroups Loaded, mapFilerFilePath: %s^n^n", mapFilerFilePath );
+    
+    return groupCount;
+}
+
+stock vote_addFiller( blockedFillerMaps[][], bool:is_whitelistEnabled = false,
+                      blockedFillerMapsCharsmax = 0, blockedCount = 0 )
+{
+    if( g_totalVoteOptions >= g_maxVotingChoices )
+    {
+        return;
+    }
+    
+    new groupCount;
+    new mapsPerGroup     [ MAX_MAPS_IN_VOTE ];
+    new mapFilerFilePath [ MAX_FILE_PATH_LENGHT ];
+    new fillersFilePaths [ MAX_MAPS_IN_VOTE ][ MAX_FILE_PATH_LENGHT ];
+    
+    groupCount = loadMapGroupsFeature( mapFilerFilePath, charsmax( mapFilerFilePath ),
+                 mapsPerGroup,
+                 fillersFilePaths, charsmax( fillersFilePaths[] ) );
     
     new mapIndex;
     new choice_index;
@@ -3078,7 +3092,7 @@ stock vote_addFiller( blockedFillerMaps[][], bool:is_whitelistEnabled = false, b
         filersMapCount = map_populateList( g_fillerMap, fillersFilePaths[ groupIndex ], charsmax( fillersFilePaths[] ) );
         
         DEBUG_LOGGER( 8, "[%i] groupCount:%i   filersMapCount: %i   g_totalVoteOptions: %i   \
-                g_maxVotingChoices: %i^n   fillersFilePaths: %s", groupIndex, groupCount, filersMapCount, \
+                g_maxVotingChoices: %i^n   fillersFilePaths: %s^n", groupIndex, groupCount, filersMapCount, \
                 g_totalVoteOptions, g_maxVotingChoices, fillersFilePaths[ groupIndex ] );
         
         if( ( g_totalVoteOptions < g_maxVotingChoices )
@@ -3088,8 +3102,8 @@ stock vote_addFiller( blockedFillerMaps[][], bool:is_whitelistEnabled = false, b
             allowedFilersCount = min( min( mapsPerGroup[ groupIndex ], g_maxVotingChoices - g_totalVoteOptions ),
                     filersMapCount );
             
-            DEBUG_LOGGER( 8, "[%i] allowedFilersCount: %i   mapsPerGroup: %i   MaxCount: %i", groupIndex, \
-                    allowedFilersCount, mapsPerGroup[ groupIndex ], g_maxVotingChoices - g_totalVoteOptions );
+            DEBUG_LOGGER( 8, "[%i] allowedFilersCount: %i   mapsPerGroup[%i]: %i   MaxCount: %i", groupIndex, \
+                    allowedFilersCount, groupIndex, mapsPerGroup[ groupIndex ], g_maxVotingChoices - g_totalVoteOptions );
             
             for( choice_index = 0; choice_index < allowedFilersCount; ++choice_index )
             {
@@ -3099,7 +3113,7 @@ stock vote_addFiller( blockedFillerMaps[][], bool:is_whitelistEnabled = false, b
                 
                 ArrayGetString( g_fillerMap, mapIndex, mapName, charsmax( mapName ) );
                 
-                DEBUG_LOGGER( 8, "[%i] choice_index: %i   allowedFilersCount: %i   mapIndex: %i   mapName: %s", \
+                DEBUG_LOGGER( 8, "  ( in ) [%i] choice_index: %i   allowedFilersCount: %i   mapIndex: %i   mapName: %s", \
                         groupIndex, choice_index, allowedFilersCount, mapIndex, mapName );
                 
                 while( ( map_isInMenu( mapName )
@@ -3121,7 +3135,7 @@ stock vote_addFiller( blockedFillerMaps[][], bool:is_whitelistEnabled = false, b
                 if( unsuccessfulCount >= filersMapCount
                     || allowedFilersCount < 0 )
                 {
-                    DEBUG_LOGGER( 8, "unsuccessfulCount: %i  filersMapCount: %i", unsuccessfulCount, filersMapCount );
+                    DEBUG_LOGGER( 8, "    unsuccessfulCount: %i  filersMapCount: %i", unsuccessfulCount, filersMapCount );
                     DEBUG_LOGGER( 8, "    There aren't enough maps in this filler file to continue adding anymore" );
                     
                     break;
@@ -3147,8 +3161,8 @@ stock vote_addFiller( blockedFillerMaps[][], bool:is_whitelistEnabled = false, b
                 
                 copy( g_votingMapNames[ g_totalVoteOptions++ ], charsmax( g_votingMapNames[] ), mapName );
                 
-                DEBUG_LOGGER( 8, "    groupIndex: %i  map: %s", groupIndex, mapName );
-                DEBUG_LOGGER( 8, "    [%i] mapName: %s   unsuccessfulCount: %i   filersMapCount: %i   \
+                DEBUG_LOGGER( 8, "  ( out ) groupIndex: %i  map: %s", groupIndex, mapName );
+                DEBUG_LOGGER( 8, "  ( out ) [%i] mapName: %s   unsuccessfulCount: %i   filersMapCount: %i   \
                         g_totalVoteOptions: %i", groupIndex, mapName, unsuccessfulCount, \
                         filersMapCount, g_totalVoteOptions );
             
