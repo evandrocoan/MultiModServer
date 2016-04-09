@@ -2937,7 +2937,7 @@ stock vote_addNominations( blockedFillerMaps[][], blockedFillerMapsCharsmax = 0 
     return blockedCount;
 }
 
-stock vote_addFiller( blockedFillerMaps[][], blockedFillerMapsCharsmax = 0, blockedCount = 0 )
+stock vote_addFiller( blockedFillerMaps[][], bool:is_whitelistEnabled = false, blockedFillerMapsCharsmax = 0, blockedCount = 0 )
 {
     if( g_totalVoteOptions >= g_maxVotingChoices )
     {
@@ -3048,27 +3048,29 @@ stock vote_addFiller( blockedFillerMaps[][], blockedFillerMapsCharsmax = 0, bloc
     new unsuccessfulCount;
     
     new Trie:   blackListTrie;
-    new bool:   is_whitelistEnabled;
+    new Trie:   blockedFillerMapsTrie;
     new mapName [ MAX_MAPNAME_LENGHT ];
-    
-    if( ( is_whitelistEnabled = get_pcvar_num( cvar_whitelistMinPlayers ) == 1
-                                || get_realplayersnum() < get_pcvar_num( cvar_voteMinPlayers ) ) )
-    {
-        blackListTrie = TrieCreate();
-        
-        loadCurrentBlackList( blackListTrie );
-    }
     
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
     
     if( g_areTheUnitTestsRunning )
     {
-        is_whitelistEnabled = true;
-        blackListTrie       = TrieCreate();
-
-        loadCurrentBlackList( blackListTrie );
+        is_whitelistEnabled       = true;
+        blockedFillerMapsCharsmax = true;
     }
 #endif
+
+    if( blockedFillerMapsCharsmax )
+    {
+        blockedFillerMapsTrie = TrieCreate();
+    }
+
+    if( is_whitelistEnabled )
+    {
+        blackListTrie = TrieCreate();
+        
+        loadCurrentBlackList( blackListTrie );
+    }
     
     // fill remaining slots with random maps from each filler file, as much as possible
     for( new groupIndex = 0; groupIndex < groupCount; ++groupIndex )
@@ -3121,18 +3123,24 @@ stock vote_addFiller( blockedFillerMaps[][], blockedFillerMapsCharsmax = 0, bloc
                 {
                     DEBUG_LOGGER( 8, "unsuccessfulCount: %i  filersMapCount: %i", unsuccessfulCount, filersMapCount );
                     DEBUG_LOGGER( 8, "    There aren't enough maps in this filler file to continue adding anymore" );
+                    
                     break;
                 }
                 
                 if( is_whitelistEnabled
                     && TrieKeyExists( blackListTrie, mapName ) )
                 {
-                    DEBUG_LOGGER( 8, "    The map: %s, was blocked by the whitelist map setting.", mapName );
-                    copy( blockedFillerMaps[ blockedCount ], blockedFillerMapsCharsmax, mapName );
-                    
-                    unsuccessfulCount++;
-                    blockedCount++;
-                    allowedFilersCount--;
+                    if( !TrieKeyExists( blockedFillerMapsTrie, mapName ) )
+                    {
+                        DEBUG_LOGGER( 8, "    The map: %s, was blocked by the whitelist map setting.", mapName );
+                        
+                        copy( blockedFillerMaps[ blockedCount ], blockedFillerMapsCharsmax, mapName );
+                        TrieSetCell( blockedFillerMapsTrie, mapName, 0 );
+                        
+                        unsuccessfulCount++;
+                        blockedCount++;
+                        allowedFilersCount--;
+                    }
                     
                     goto keepSearching;
                 }
@@ -3140,7 +3148,7 @@ stock vote_addFiller( blockedFillerMaps[][], blockedFillerMapsCharsmax = 0, bloc
                 copy( g_votingMapNames[ g_totalVoteOptions++ ], charsmax( g_votingMapNames[] ), mapName );
                 
                 DEBUG_LOGGER( 8, "    groupIndex: %i  map: %s", groupIndex, mapName );
-                DEBUG_LOGGER( 8, "[%i] mapName: %s   unsuccessfulCount: %i   filersMapCount: %i   \
+                DEBUG_LOGGER( 8, "    [%i] mapName: %s   unsuccessfulCount: %i   filersMapCount: %i   \
                         g_totalVoteOptions: %i", groupIndex, mapName, unsuccessfulCount, \
                         filersMapCount, g_totalVoteOptions );
             
@@ -3174,6 +3182,11 @@ stock vote_addFiller( blockedFillerMaps[][], blockedFillerMapsCharsmax = 0, bloc
     if( blackListTrie )
     {
         TrieDestroy( blackListTrie );
+    }
+    
+    if( blockedFillerMapsTrie )
+    {
+        TrieDestroy( blockedFillerMapsTrie );
     }
 
 } // end 'vote_addFiller()'
@@ -3421,14 +3434,15 @@ stock vote_startDirector( bool:is_forced_voting )
                     charsmax( blockedFillerMaps[] ): %d, blockedCount: %d", \
                     blockedFillerMaps[ 0 ], charsmax( blockedFillerMaps[] ), blockedCount );
             
-            vote_addFiller( blockedFillerMaps, charsmax( blockedFillerMaps[] ), blockedCount );
+            vote_addFiller( blockedFillerMaps, false, charsmax( blockedFillerMaps[] ), blockedCount );
         }
-        else if( get_pcvar_num( cvar_voteMinPlayers ) )
+        else if( get_pcvar_num( cvar_whitelistMinPlayers ) == 1
+                 || get_realplayersnum() < get_pcvar_num( cvar_whitelistMinPlayers ) )
         {
             new blockedWhitelistMaps[ MAX_NOMINATION_COUNT ][ MAX_MAPNAME_LENGHT ];
             
             vote_addNominations( blockedWhitelistMaps );
-            vote_addFiller( blockedWhitelistMaps );
+            vote_addFiller( blockedWhitelistMaps, true, charsmax( blockedWhitelistMaps[] ), 0 );
         }
         else
         {
