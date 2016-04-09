@@ -22,7 +22,7 @@
 *****************************************************************************************
 */
 
-new const PLUGIN_VERSION[] = "v2.5.1";
+new const PLUGIN_VERSION[] = "v2.5.2";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -30,9 +30,10 @@ new const PLUGIN_VERSION[] = "v2.5.1";
  *
  * 0   - Disables this feature.
  * 1   - Normal debug.
- * 2   - To skip the 'pendingVoteCountdown()' and set the vote and runoff time to 5 seconds, and run
- *       the Unit Tests and print their out put results.
- * 4   - To create fake votes.
+ * 2   - To skip the 'pendingVoteCountdown()', set the vote runoff time to 5 seconds, run the Unit
+ *       Tests and print their out put results.
+ * 4   - To create fake votes and fake real players count. See the functions 'get_realplayersnum()'
+ *       and 'create_fakeVotes()'.
  * 7   - Levels 1, 2 and 4.
  */
 #define DEBUG_LEVEL 0
@@ -46,6 +47,7 @@ new const PLUGIN_VERSION[] = "v2.5.1";
 #include <amxmisc>
 
 #pragma semicolon 1
+
 
 /**
  * Dummy value used to use the do...while() statements to allow the semicolon ';' use at macros endings.
@@ -71,7 +73,7 @@ stock allowToUseSemicolonOnMacrosEnd()
  * ( ... ) 64 displays messages related 'color_print'.
  * ( 1.. ) 127 displays all debug logs levels at server console.
  */
-new g_debug_level = 1 + 8 + 16 + 64;
+new g_debug_level = 1 + 4 + 8 + 16 + 64;
 
 
 /**
@@ -487,17 +489,17 @@ new g_voteStatus;
 new g_voteDuration;
 new g_totalVotesCounted;
 
-new COLOR_RED    [ 3 ]; // \r
-new COLOR_WHITE  [ 3 ]; // \w
-new COLOR_YELLOW [ 3 ]; // \y
-new COLOR_GREY   [ 3 ]; // \d
+new COLOR_RED   [ 3 ]; // \r
+new COLOR_WHITE [ 3 ]; // \w
+new COLOR_YELLOW[ 3 ]; // \y
+new COLOR_GREY  [ 3 ]; // \d
 
 new g_mapPrefixCount = 1;
 
-new g_voteStatusClean      [ 512 ];
-new g_arrayOfRunOffChoices [ 2 ];
-new g_voteStatus_symbol    [ 3 ];
-new g_voteWeightFlags      [ 32 ];
+new g_voteStatusClean     [ 512 ];
+new g_arrayOfRunOffChoices[ 2 ];
+new g_voteStatus_symbol   [ 3 ];
+new g_voteWeightFlags     [ 32 ];
 
 new g_nextmap                            [ MAX_MAPNAME_LENGHT ];
 new g_currentMap                         [ MAX_MAPNAME_LENGHT ];
@@ -507,17 +509,17 @@ new g_generalUsePlayersMenuId            [ MAX_PLAYERS_COUNT ];
 new g_arrayOfMapsWithVotesNumber         [ MAX_OPTIONS_IN_VOTE ];
 new Array:g_currentMenuMapIndexForPlayers[ MAX_PLAYERS_COUNT ];
 
-new bool:g_isPlayerVoted             [ MAX_PLAYERS_COUNT ] = { true, ... };
-new bool:g_isPlayerParticipating     [ MAX_PLAYERS_COUNT ] = { true, ... };
-new bool:g_isPlayerSeeingTheVoteMenu [ MAX_PLAYERS_COUNT ];
-new bool:g_isPlayerCancelledVote     [ MAX_PLAYERS_COUNT ];
-new bool:g_answeredForEndOfMapVote   [ MAX_PLAYERS_COUNT ];
-new bool:g_rockedVote                [ MAX_PLAYERS_COUNT ];
+new bool:g_isPlayerVoted            [ MAX_PLAYERS_COUNT ] = { true, ... };
+new bool:g_isPlayerParticipating    [ MAX_PLAYERS_COUNT ] = { true, ... };
+new bool:g_isPlayerSeeingTheVoteMenu[ MAX_PLAYERS_COUNT ];
+new bool:g_isPlayerCancelledVote    [ MAX_PLAYERS_COUNT ];
+new bool:g_answeredForEndOfMapVote  [ MAX_PLAYERS_COUNT ];
+new bool:g_rockedVote               [ MAX_PLAYERS_COUNT ];
 
-new g_mapPrefixes        [ MAX_PREFIX_COUNT ][ 16 ];
-new g_playersNominations [ MAX_PLAYERS_COUNT ][ MAX_NOMINATION_COUNT ];
-new g_recentMaps         [ MAX_RECENT_MAP_COUNT ][ MAX_MAPNAME_LENGHT ];
-new g_votingMapNames     [ MAX_OPTIONS_IN_VOTE ][ MAX_MAPNAME_LENGHT ];
+new g_mapPrefixes       [ MAX_PREFIX_COUNT ][ 16 ];
+new g_playersNominations[ MAX_PLAYERS_COUNT ][ MAX_NOMINATION_COUNT ];
+new g_recentMaps        [ MAX_RECENT_MAP_COUNT ][ MAX_MAPNAME_LENGHT ];
+new g_votingMapNames    [ MAX_OPTIONS_IN_VOTE ][ MAX_MAPNAME_LENGHT ];
 
 new g_nominationCount;
 new g_chooseMapMenuId;
@@ -1443,7 +1445,7 @@ stock configureTheMapcycleSystem( currentMap[], currentMapCharsMax )
     mapcycleFileList        = ArrayCreate( MAX_MAPNAME_LENGHT );
     restartsOnTheCurrentMap = getRestartsOnTheCurrentMap( currentMap );
     
-    map_populateList( mapcycleFileList, NP_g_mapCycleFilePath );
+    map_populateList( mapcycleFileList, NP_g_mapCycleFilePath, charsmax( NP_g_mapCycleFilePath ) );
     possibleNextMapPosition = map_getNext( mapcycleFileList, currentMap, possibleNextMap );
     
     DEBUG_LOGGER( 4, "( configureTheMapcycleSystem ) possibleNextMapPosition: %d, \
@@ -1905,7 +1907,7 @@ public cmd_startVote( player_id, level, cid )
     return PLUGIN_HANDLED;
 }
 
-stock map_populateList( Array:mapArray, mapFilePath[], Trie:fillerMapTrie = Invalid_Trie )
+stock map_populateList( Array:mapArray, mapFilePath[], mapFilePathMaxChars, Trie:fillerMapTrie = Invalid_Trie )
 {
     // load the array with maps
     new mapCount;
@@ -1917,26 +1919,27 @@ stock map_populateList( Array:mapArray, mapFilePath[], Trie:fillerMapTrie = Inva
         && !equal( mapFilePath, "#" ) )
     {
         DEBUG_LOGGER( 4, "^n    map_populateList(...) Loading the mapFilePath: %s", mapFilePath );
-        mapCount = loadMapFileList( mapArray, mapCount, mapFilePath, fillerMapTrie );
+        mapCount = loadMapFileList( mapArray, mapFilePath, fillerMapTrie );
     }
     else if( equal( mapFilePath, "*" ) )
     {
         DEBUG_LOGGER( 4, "^n    map_populateList(...) Loading the MAP FOLDER! mapFilePath: %s", mapFilePath );
-        mapCount = loadMapsFolderDirectory( mapArray, mapCount, fillerMapTrie );
+        mapCount = loadMapsFolderDirectory( mapArray, fillerMapTrie );
     }
     else
     {
-        get_cvar_string( "mapcyclefile", mapFilePath, strlen( mapFilePath ) );
+        get_cvar_string( "mapcyclefile", mapFilePath, mapFilePathMaxChars );
         
         DEBUG_LOGGER( 4, "^n    map_populateList(...) Loading the MAPCYCLE! mapFilePath: %s", mapFilePath );
-        mapCount = loadMapFileList( mapArray, mapCount, mapFilePath, fillerMapTrie );
+        mapCount = loadMapFileList( mapArray, mapFilePath, fillerMapTrie );
     }
     
     return mapCount;
 }
 
-stock loadMapFileList( Array:mapArray, mapCount, mapFilePath[], Trie:fillerMapTrie )
+stock loadMapFileList( Array:mapArray, mapFilePath[], Trie:fillerMapTrie )
 {
+    new mapCount;
     new mapFile = fopen( mapFilePath, "rt" );
 
 #if defined DEBUG
@@ -1981,8 +1984,9 @@ stock loadMapFileList( Array:mapArray, mapCount, mapFilePath[], Trie:fillerMapTr
     return mapCount;
 }
 
-stock loadMapsFolderDirectory( Array:mapArray, mapCount, Trie:fillerMapTrie )
+stock loadMapsFolderDirectory( Array:mapArray, Trie:fillerMapTrie )
 {
+    new mapCount;
     new loadedMapName[ MAX_MAPNAME_LENGHT ];
     
     new dir = open_dir( "maps", loadedMapName, charsmax( loadedMapName ) );
@@ -2031,7 +2035,7 @@ public map_loadNominationList()
     
     DEBUG_LOGGER( 4, "( map_loadNominationList() ) cvar_nomMapFilePath nomMapFilePath: %s", nomMapFilePath );
     
-    g_nominationMapCount = map_populateList( g_nominationMap, nomMapFilePath );
+    g_nominationMapCount = map_populateList( g_nominationMap, nomMapFilePath, charsmax( nomMapFilePath ) );
 }
 
 public cmd_createMapFile( player_id, level, cid )
@@ -2118,7 +2122,7 @@ stock map_loadEmptyCycleList()
     new emptyCycleFilePath[ MAX_FILE_PATH_LENGHT ];
     get_pcvar_string( cvar_emptyMapFilePath, emptyCycleFilePath, charsmax( emptyCycleFilePath ) );
     
-    g_emptyCycleMapsNumber = map_populateList( g_emptyCycleMapList, emptyCycleFilePath );
+    g_emptyCycleMapsNumber = map_populateList( g_emptyCycleMapList, emptyCycleFilePath, charsmax( emptyCycleFilePath ) );
     
     DEBUG_LOGGER( 4, "( map_loadEmptyCycleList() ) g_emptyCycleMapsNumber = %d", g_emptyCycleMapsNumber );
 }
@@ -2850,7 +2854,7 @@ stock vote_addNominations( blockedFillerMaps[][], blockedFillerMapsCharsmax = 0 
                 g_isFillersMapUsingMinplayers = true;
                 blackFillerMapTrie            = TrieCreate();
                 
-                map_populateList( g_fillerMap, mapFilerFilePath, blackFillerMapTrie );
+                map_populateList( g_fillerMap, mapFilerFilePath, charsmax( mapFilerFilePath), blackFillerMapTrie );
             }
         }
         
@@ -3012,7 +3016,7 @@ stock vote_addFiller( blockedFillerMaps[][], blockedFillerMapsCharsmax = 0, bloc
             else
             {
                 // we presume it's a listing of maps, ala mapcycle.txt
-                copy( fillersFilePaths[ 0 ], charsmax( mapFilerFilePath ), mapFilerFilePath );
+                copy( fillersFilePaths[ 0 ], charsmax( fillersFilePaths[] ), mapFilerFilePath );
                 mapsPerGroup[ 0 ] = MAX_MAPS_IN_VOTE;
                 groupCount        = 1;
             }
@@ -3030,7 +3034,7 @@ stock vote_addFiller( blockedFillerMaps[][], blockedFillerMapsCharsmax = 0, bloc
         groupCount        = 1;
         
         // the options '*' and '#' will be handled by 'map_populateList()' later.
-        copy( fillersFilePaths[ 0 ], charsmax( mapFilerFilePath ), mapFilerFilePath );
+        copy( fillersFilePaths[ 0 ], charsmax( fillersFilePaths[] ), mapFilerFilePath );
     }
     
     DEBUG_LOGGER( 4, "( vote_addFiller ) MapsGroups Loaded, mapFilerFilePath: %s^n^n", mapFilerFilePath );
@@ -3044,8 +3048,9 @@ stock vote_addFiller( blockedFillerMaps[][], blockedFillerMapsCharsmax = 0, bloc
     new mapName[ MAX_MAPNAME_LENGHT ];
     new Trie:  blackListTrie;
     
+    //new bool:is_whitelistEnabled = get_realplayersnum() < get_pcvar_num( cvar_voteMinPlayers );
     new bool:is_whitelistEnabled = get_pcvar_num( cvar_voteMinPlayers ) != 0;
-
+    
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
     
     if( g_areTheUnitTestsRunning )
@@ -3063,7 +3068,7 @@ stock vote_addFiller( blockedFillerMaps[][], blockedFillerMapsCharsmax = 0, bloc
     // fill remaining slots with random maps from each filler file, as much as possible
     for( new groupIndex = 0; groupIndex < groupCount; ++groupIndex )
     {
-        filersMapCount = map_populateList( g_fillerMap, fillersFilePaths[ groupIndex ] );
+        filersMapCount = map_populateList( g_fillerMap, fillersFilePaths[ groupIndex ], charsmax( fillersFilePaths[] ) );
         
         DEBUG_LOGGER( 8, "[%i] groupCount:%i   filersMapCount: %i   g_totalVoteOptions: %i   \
                 g_maxVotingChoices: %i^n   fillersFilePaths: %s", groupIndex, groupCount, filersMapCount, \
@@ -5544,8 +5549,14 @@ stock get_realplayersnum()
     new players[ MAX_PLAYERS ];
     
     get_players( players, playersCount, "ch" );
+
+#if DEBUG_LEVEL & DEBUG_LEVEL_FAKE_VOTES
     
+    return 3;
+#else
     return playersCount;
+    
+#endif
 }
 
 stock percent( is, of )
