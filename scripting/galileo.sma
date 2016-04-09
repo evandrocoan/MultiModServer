@@ -3054,7 +3054,7 @@ stock processLoadedMapsFile( mapsPerGroup[],
 
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
     
-    if( g_areTheUnitTestsRunning )
+    if( g_areTheUnitTestsRunning && g_test_current_time )
     {
         is_whitelistEnabled       = true;
         blockedFillerMapsCharsmax = MAX_FILE_PATH_LENGHT;
@@ -3079,7 +3079,7 @@ stock processLoadedMapsFile( mapsPerGroup[],
                 g_maxVotingChoices: %i^n   fillersFilePaths: %s^n", groupIndex, groupCount, filersMapCount, \
                 g_totalVoteOptions, g_maxVotingChoices, fillersFilePaths[ groupIndex ] );
         
-        if( ( g_totalVoteOptions < g_maxVotingChoices )
+        if( g_totalVoteOptions < g_maxVotingChoices
             && filersMapCount )
         {
             allowedFilersCount = min(
