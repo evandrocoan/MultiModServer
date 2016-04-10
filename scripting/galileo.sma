@@ -3360,17 +3360,58 @@ stock loadCurrentBlackList( Trie:blackListTrie )
     fclose( whiteListFile );
 }
 
-stock vote_startDirector( bool:is_forced_voting )
+stock loadNormalVoteChoices()
 {
-    new choicesLoaded;
+    if( get_realplayersnum() < get_pcvar_num( cvar_voteMinPlayers )
+        && get_pcvar_num( cvar_NomMinPlayersControl ) )
+    {
+        new blockedCount;
+        new blockedFillerMaps[ MAX_NOMINATION_COUNT ][ MAX_MAPNAME_LENGHT ];
+        
+        blockedCount = vote_addNominations( blockedFillerMaps, charsmax( blockedFillerMaps[] ) );
+        
+        DEBUG_LOGGER( 8, "( vote_startDirector|blockedFiller ) blockedFillerMaps[0]: %s, \
+                charsmax( blockedFillerMaps[] ): %d, blockedCount: %d", \
+                blockedFillerMaps[ 0 ], charsmax( blockedFillerMaps[] ), blockedCount );
+        
+        vote_addFiller( blockedFillerMaps, charsmax( blockedFillerMaps[] ), blockedCount );
+    }
+    else if( IS_WHITELIST_ENABLED() )
+    {
+        new blockedWhitelistMaps[ MAX_NOMINATION_COUNT ][ MAX_MAPNAME_LENGHT ];
+        
+        vote_addNominations( blockedWhitelistMaps );
+        vote_addFiller( blockedWhitelistMaps, charsmax( blockedWhitelistMaps[] ), 0 );
+    }
+    else
+    {
+    #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
+        
+        // We need to provide a valid array
+        new dummyArray[ MAX_NOMINATION_COUNT ][ MAX_MAPNAME_LENGHT ];
+    #else
+        
+        new dummyArray[][] = { { 0 } };
+    #endif
+        
+        vote_addNominations( dummyArray );
+        vote_addFiller( dummyArray );
+    }
     
+    g_voteDuration = get_pcvar_num( cvar_voteDuration );
+    
+    DEBUG_LOGGER( 4, "^n( loadNormalVoteChoices ) g_totalVoteOptions: %d", g_totalVoteOptions );
+}
+
+stock approveTheVotingStart( bool:is_forced_voting )
+{
     if( get_realplayersnum() == 0
         || ( g_voteStatus & VOTE_IS_IN_PROGRESS
              && !( g_voteStatus & VOTE_IS_RUNOFF ) )
         || ( !is_forced_voting
              && g_voteStatus & VOTE_IS_OVER ) )
     {
-        DEBUG_LOGGER( 1, "    ( vote_startDirector|Cancel ) g_voteStatus: %d, \
+        DEBUG_LOGGER( 1, "    ( approveTheVotingStart ) g_voteStatus: %d, \
                 g_voteStatus & VOTE_IS_OVER: %d, is_forced_voting: %d, \
                 get_realplayersnum(): %d", g_voteStatus, g_voteStatus & VOTE_IS_OVER != 0, \
                 is_forced_voting, get_realplayersnum() );
@@ -3382,7 +3423,7 @@ stock vote_startDirector( bool:is_forced_voting )
         
         if( !g_areTheUnitTestsRunning )
         {
-            return;
+            return false;
         }
     #else
         
@@ -3399,7 +3440,7 @@ stock vote_startDirector( bool:is_forced_voting )
             }
         }
         
-        return;
+        return false;
     #endif
     }
     
@@ -3423,164 +3464,84 @@ stock vote_startDirector( bool:is_forced_voting )
         vote_resetStats();
     }
     
-    if( g_voteStatus & VOTE_IS_RUNOFF )
+    return true;
+}
+
+stock loadRunOffVoteChoices()
+{
+    new runoffChoice[ 2 ][ MAX_MAPNAME_LENGHT ];
+    
+    g_totalVoteOptions = g_totalVoteOptionsTemp;
+    g_voteDuration     = get_pcvar_num( cvar_runoffDuration );
+    
+    // load runoff choices
+    copy( runoffChoice[ 0 ], charsmax( runoffChoice[] ), g_votingMapNames[ g_arrayOfRunOffChoices[ 0 ] ] );
+    copy( runoffChoice[ 1 ], charsmax( runoffChoice[] ), g_votingMapNames[ g_arrayOfRunOffChoices[ 1 ] ] );
+    
+    copy( g_votingMapNames[ 0 ], charsmax( g_votingMapNames[] ), runoffChoice[ 0 ] );
+    copy( g_votingMapNames[ 1 ], charsmax( g_votingMapNames[] ), runoffChoice[ 1 ] );
+    
+    DEBUG_LOGGER( 16, "( loadRunOffVoteChoices ) map1: %s, map2: %s, g_totalVoteOptions: %d", \
+            g_votingMapNames[ 0 ], g_votingMapNames[ 1 ], g_totalVoteOptions );
+}
+
+stock configureVotingStart( bool:is_forced_voting )
+{
+    // update cached data for the new voting.
+    cacheCvarsValues();
+    
+    // make it known that a vote is in progress
+    g_voteStatus |= VOTE_IS_IN_PROGRESS;
+    
+    // Set the voting status to forced
+    if( is_forced_voting )
     {
-        new runoffChoice[ 2 ][ MAX_MAPNAME_LENGHT ];
-        
-        choicesLoaded      = g_totalVoteOptionsTemp;
-        g_totalVoteOptions = g_totalVoteOptionsTemp;
-        g_voteDuration     = get_pcvar_num( cvar_runoffDuration );
-        
-        // load runoff choices
-        copy( runoffChoice[ 0 ], charsmax( runoffChoice[] ), g_votingMapNames[ g_arrayOfRunOffChoices[ 0 ] ] );
-        copy( runoffChoice[ 1 ], charsmax( runoffChoice[] ), g_votingMapNames[ g_arrayOfRunOffChoices[ 1 ] ] );
-        
-        copy( g_votingMapNames[ 0 ], charsmax( g_votingMapNames[] ), runoffChoice[ 0 ] );
-        copy( g_votingMapNames[ 1 ], charsmax( g_votingMapNames[] ), runoffChoice[ 1 ] );
-        
-        DEBUG_LOGGER( 16, "( vote_startDirector|Runoff ) map1: %s, map2: %s, choicesLoaded: %d", \
-                g_votingMapNames[ 0 ], g_votingMapNames[ 1 ], choicesLoaded );
+        g_voteStatus |= VOTE_IS_FORCED;
+    }
+    
+    // Max rounds vote map does not have a max rounds extension limit as mp_timelimit
+    if( g_isVotingByRounds )
+    {
+        g_isMapExtensionAllowed = true;
     }
     else
     {
-        // update cached data for the new voting.
-        cacheCvarsValues();
-        
-        // make it known that a vote is in progress
-        g_voteStatus |= VOTE_IS_IN_PROGRESS;
-        
-        // Max rounds vote map does not have a max rounds extension limit as mp_timelimit
-        if( g_isVotingByRounds )
-        {
-            g_isMapExtensionAllowed = true;
-        }
-        else
-        {
-            g_isMapExtensionAllowed =
-                get_pcvar_float( cvar_mp_timelimit ) < get_pcvar_float( cvar_maxMapExtendTime );
-        }
-        
-        g_isGameFinalVoting = ( ( g_isVotingByRounds
-                                  || g_isVotingByTimer )
-                                && !is_forced_voting );
-        
-        // stop RTV reminders
-        remove_task( TASKID_REMINDER );
-        
-        if( is_forced_voting )
-        {
-            g_voteStatus |= VOTE_IS_FORCED;
-        }
+        g_isMapExtensionAllowed =
+            get_pcvar_float( cvar_mp_timelimit ) < get_pcvar_float( cvar_maxMapExtendTime );
+    }
+    
+    // configure the end voting type
+    g_isGameFinalVoting = ( ( g_isVotingByRounds
+                              || g_isVotingByTimer )
+                            && !is_forced_voting );
+    
+    // stop RTV reminders
+    remove_task( TASKID_REMINDER );
+}
+
+stock vote_startDirector( bool:is_forced_voting )
+{
+    if( !approveTheVotingStart( is_forced_voting ) )
+    {
+        return;
+    }
+    
+    if( g_voteStatus & VOTE_IS_RUNOFF )
+    {
+        loadRunOffVoteChoices();
+    }
+    else
+    {
+        // to prepare the initial voting state
+        configureVotingStart( is_forced_voting );
         
         // to load vote choices
-        if( get_realplayersnum() < get_pcvar_num( cvar_voteMinPlayers )
-            && get_pcvar_num( cvar_NomMinPlayersControl ) )
-        {
-            new blockedCount;
-            new blockedFillerMaps[ MAX_NOMINATION_COUNT ][ MAX_MAPNAME_LENGHT ];
-            
-            blockedCount = vote_addNominations( blockedFillerMaps, charsmax( blockedFillerMaps[] ) );
-            
-            DEBUG_LOGGER( 8, "( vote_startDirector|blockedFiller ) blockedFillerMaps[0]: %s, \
-                    charsmax( blockedFillerMaps[] ): %d, blockedCount: %d", \
-                    blockedFillerMaps[ 0 ], charsmax( blockedFillerMaps[] ), blockedCount );
-            
-            vote_addFiller( blockedFillerMaps, charsmax( blockedFillerMaps[] ), blockedCount );
-        }
-        else if( IS_WHITELIST_ENABLED() )
-        {
-            new blockedWhitelistMaps[ MAX_NOMINATION_COUNT ][ MAX_MAPNAME_LENGHT ];
-            
-            vote_addNominations( blockedWhitelistMaps );
-            vote_addFiller( blockedWhitelistMaps, charsmax( blockedWhitelistMaps[] ), 0 );
-        }
-        else
-        {
-        #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
-            
-            new dummyArray[ MAX_NOMINATION_COUNT ][ MAX_MAPNAME_LENGHT ];
-        #else
-            
-            new dummyArray[][] = { { 0 } };
-        #endif
-            
-            vote_addNominations( dummyArray );
-            vote_addFiller( dummyArray );
-        }
-        
-        choicesLoaded  = g_totalVoteOptions;
-        g_voteDuration = get_pcvar_num( cvar_voteDuration );
-        
-        DEBUG_LOGGER( 4, "^n( vote_startDirector|NormalVote ) choicesLoaded: %d", choicesLoaded );
+        loadNormalVoteChoices();
     }
-
-
-#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
-    g_voteDuration = 5;
-
-#endif
-
-
-#if DEBUG_LEVEL & DEBUG_LEVEL_FAKE_VOTES
-    set_task( 2.0, "create_fakeVotes", TASKID_DBG_FAKEVOTES );
-
-#endif
     
-    if( choicesLoaded )
+    if( g_totalVoteOptions )
     {
-        new       player_id;
-        new       playersCount;
-        new       players            [ MAX_PLAYERS ];
-        new Float:handleChoicesDelay;
-        
-        // clear all nominations
-        nomination_clearAll();
-        
-        // alphabetize the maps
-        SortCustom2D( g_votingMapNames, choicesLoaded, "sort_stringsi" );
-    
-    #if defined DEBUG
-        
-        for( new dbgChoice = 0; dbgChoice < choicesLoaded; dbgChoice++ )
-        {
-            DEBUG_LOGGER( 4, "      %i. %s", dbgChoice + 1, g_votingMapNames[ dbgChoice ] );
-        }
-    #endif
-        
-        // skip bots and hltv
-        get_players( players, playersCount, "ch" );
-        
-        // mark the players who are in this vote for use later
-        for( new playerIndex = 0; playerIndex < playersCount; ++playerIndex )
-        {
-            player_id = players[ playerIndex ];
-            
-            if( g_isPlayerParticipating[ player_id ] )
-            {
-                g_isPlayerVoted[ player_id ] = false;
-            }
-        }
-    
-    #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
-        handleChoicesDelay = 0.1;
-    
-    #else
-        handleChoicesDelay = 7.0 + 1.0 + 1.0; // set_task 1.0 + pendingVoteCountdown 1.0
-        
-        // make perfunctory announcement: "get ready to choose a map"
-        if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_GETREADYTOCHOOSE ) )
-        {
-            client_cmd( 0, "spk ^"get red( e80 ) ninety( s45 ) to check( e20 ) \
-                    use bay( s18 ) mass( e42 ) cap( s50 )^"" );
-        }
-        
-        // announce the pending vote countdown from 7 to 1
-        g_pendingVoteCountdown = 7;
-        set_task( 1.0, "pendingVoteCountdown", TASKID_PENDING_VOTE_COUNTDOWN, _, _, "a", 7 );
-    #endif
-        
-        // display the map choices, 1 second from now
-        set_task( handleChoicesDelay, "vote_handleDisplay", TASKID_VOTE_HANDLEDISPLAY );
+        initializeTheVoteDisplay();
     }
     else
     {
@@ -3591,6 +3552,76 @@ stock vote_startDirector( bool:is_forced_voting )
     DEBUG_LOGGER( 4, "^n    ( vote_startDirector|out ) g_isTimeToRestart: %d, \
             g_isTimeToChangeLevel: %d, g_voteStatus & VOTE_IS_FORCED: %d^n", \
             g_isTimeToRestart, g_isTimeToChangeLevel, g_voteStatus & VOTE_IS_FORCED != 0 );
+}
+
+stock initializeTheVoteDisplay()
+{
+    new       player_id;
+    new       playersCount;
+    new       players            [ MAX_PLAYERS ];
+    new Float:handleChoicesDelay;
+    
+    // clear all nominations
+    nomination_clearAll();
+    
+    // alphabetize the maps
+    SortCustom2D( g_votingMapNames, g_totalVoteOptions, "sort_stringsi" );
+
+#if defined DEBUG
+    
+    for( new dbgChoice = 0; dbgChoice < g_totalVoteOptions; dbgChoice++ )
+    {
+        DEBUG_LOGGER( 4, "      %i. %s", dbgChoice + 1, g_votingMapNames[ dbgChoice ] );
+    }
+#endif
+
+
+#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
+    
+    g_voteDuration = 5;
+#endif
+
+
+#if DEBUG_LEVEL & DEBUG_LEVEL_FAKE_VOTES
+    set_task( 2.0, "create_fakeVotes", TASKID_DBG_FAKEVOTES );
+
+#endif
+    
+    // skip bots and hltv
+    get_players( players, playersCount, "ch" );
+    
+    // mark the players who are in this vote for use later
+    for( new playerIndex = 0; playerIndex < playersCount; ++playerIndex )
+    {
+        player_id = players[ playerIndex ];
+        
+        if( g_isPlayerParticipating[ player_id ] )
+        {
+            g_isPlayerVoted[ player_id ] = false;
+        }
+    }
+
+#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
+    
+    handleChoicesDelay = 0.1;
+#else
+    
+    handleChoicesDelay = 7.0 + 1.0 + 1.0; // set_task 1.0 + pendingVoteCountdown 1.0
+    
+    // make perfunctory announcement: "get ready to choose a map"
+    if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_GETREADYTOCHOOSE ) )
+    {
+        client_cmd( 0, "spk ^"get red( e80 ) ninety( s45 ) to check( e20 ) \
+                use bay( s18 ) mass( e42 ) cap( s50 )^"" );
+    }
+    
+    // announce the pending vote countdown from 7 to 1
+    g_pendingVoteCountdown = 7;
+    set_task( 1.0, "pendingVoteCountdown", TASKID_PENDING_VOTE_COUNTDOWN, _, _, "a", 7 );
+#endif
+    
+    // display the map choices, 1 second from now
+    set_task( handleChoicesDelay, "vote_handleDisplay", TASKID_VOTE_HANDLEDISPLAY );
 }
 
 public pendingVoteCountdown()

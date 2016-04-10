@@ -1,9 +1,13 @@
 @echo off
 
-for /f %%i in ('date /T') do set CURRENT_DATE=%%i
 
 SET ERROR_LOG_FILE=uncrustify_log.txt
 SET CONFIG_FILE=..\..\MyUncrustifyConfigs\amxmodx.cfg
+
+
+
+
+for /f %%i in ('date /T') do set CURRENT_DATE=%%i
 
 echo.
 echo Parsing file... Current time is: %time% - %CURRENT_DATE%
