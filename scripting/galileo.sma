@@ -22,7 +22,7 @@
 *****************************************************************************************
 */
 
-new const PLUGIN_VERSION[] = "v2.6";
+new const PLUGIN_VERSION[] = "v2.6d";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -2826,7 +2826,7 @@ public nomination_list( player_id )
     }
 }
 
-stock vote_addNominations( blockedFillerMaps[][], blockedFillerMapsCharsmax = 0 )
+stock vote_addNominations( blockedFillerMaps[][], blockedFillerMapsMaxChars = 0 )
 {
     DEBUG_LOGGER( 4, "^n   [NOMINATIONS ( %i )]", g_nominationCount );
     
@@ -2907,7 +2907,7 @@ stock vote_addNominations( blockedFillerMaps[][], blockedFillerMapsCharsmax = 0 
                         && !TrieKeyExists( blackFillerMapTrie, mapName ) )
                     {
                         DEBUG_LOGGER( 8, "    The map: %s, was blocked by the minimum players map setting.", mapName );
-                        copy( blockedFillerMaps[ blockedCount ], blockedFillerMapsCharsmax, mapName );
+                        copy( blockedFillerMaps[ blockedCount ], blockedFillerMapsMaxChars, mapName );
                         blockedCount++;
                         
                         continue;
@@ -3038,8 +3038,8 @@ stock loadMapGroupsFeature( mapsPerGroup[], fillersFilePaths[][], fillersFilePat
 }
 
 stock processLoadedMapsFile( mapsPerGroup[],
-                             groupCount, blockedCount, bool:is_whitelistEnabled,
-                             blockedFillerMaps[][], blockedFillerMapsCharsmax,
+                             groupCount, blockedCount, bool:isWhitelistEnabled,
+                             blockedFillerMaps[][], blockedFillerMapsMaxChars,
                              fillersFilePaths[][], fillersFilePathsMaxChars )
 {
     new mapIndex;
@@ -3056,14 +3056,17 @@ stock processLoadedMapsFile( mapsPerGroup[],
     
     if( g_areTheUnitTestsRunning && g_test_current_time )
     {
-        is_whitelistEnabled       = true;
-        blockedFillerMapsCharsmax = MAX_FILE_PATH_LENGHT;
+        isWhitelistEnabled        = true;
+        blockedFillerMapsMaxChars = MAX_FILE_PATH_LENGHT;
     }
 #endif
     
-    blockedFillerMapsTrie = TrieCreate();
+    if( blockedFillerMapsMaxChars )
+    {
+        blockedFillerMapsTrie = TrieCreate();
+    }
     
-    if( is_whitelistEnabled )
+    if( isWhitelistEnabled )
     {
         blackListTrie = TrieCreate();
         
@@ -3107,7 +3110,8 @@ stock processLoadedMapsFile( mapsPerGroup[],
                          || equal( g_currentMap, mapName )
                          || map_isTooRecent( mapName )
                          || isPrefixInMenu( mapName )
-                         || TrieKeyExists( blockedFillerMapsTrie, mapName ) )
+                         || ( blockedFillerMapsMaxChars
+                              && TrieKeyExists( blockedFillerMapsTrie, mapName ) ) )
                        && unsuccessfulCount < allowedFilersCount )
                 {
                     DEBUG_LOGGER( 8, "    LOADING a new MAP! map_isInMenu: %d, mapName %s \
@@ -3142,7 +3146,7 @@ stock processLoadedMapsFile( mapsPerGroup[],
                     break;
                 }
                 
-                if( is_whitelistEnabled
+                if( isWhitelistEnabled
                     && TrieKeyExists( blackListTrie, mapName ) )
                 {
                     DEBUG_LOGGER( 8, "    Trying to block: %s, by the whitelist map setting.", mapName );
@@ -3151,7 +3155,7 @@ stock processLoadedMapsFile( mapsPerGroup[],
                     {
                         DEBUG_LOGGER( 8, "    The map: %s, was blocked by the whitelist map setting.", mapName );
                         
-                        copy( blockedFillerMaps[ blockedCount ], blockedFillerMapsCharsmax, mapName );
+                        copy( blockedFillerMaps[ blockedCount ], blockedFillerMapsMaxChars, mapName );
                         TrieSetCell( blockedFillerMapsTrie, mapName, 0 );
                         
                         blockedCount++;
@@ -3187,8 +3191,8 @@ stock processLoadedMapsFile( mapsPerGroup[],
     return blockedCount;
 }
 
-stock vote_addFiller( blockedFillerMaps[][], blockedFillerMapsCharsmax = 0,
-                      bool:is_whitelistEnabled = false, blockedCount = 0 )
+stock vote_addFiller( blockedFillerMaps[][], blockedFillerMapsMaxChars = 0,
+                      bool:isWhitelistEnabled = false, blockedCount = 0 )
 {
     if( g_totalVoteOptions >= g_maxVotingChoices )
     {
@@ -3201,8 +3205,8 @@ stock vote_addFiller( blockedFillerMaps[][], blockedFillerMapsCharsmax = 0,
     
     groupCount   = loadMapGroupsFeature( mapsPerGroup, fillersFilePaths, charsmax( fillersFilePaths[] ) );
     blockedCount = processLoadedMapsFile( mapsPerGroup,
-            groupCount, blockedCount, is_whitelistEnabled,
-            blockedFillerMaps, blockedFillerMapsCharsmax,
+            groupCount, blockedCount, isWhitelistEnabled,
+            blockedFillerMaps, blockedFillerMapsMaxChars,
             fillersFilePaths, charsmax( fillersFilePaths[] ) );
     
     // If there is/are blocked maps, to announce them to everybody.
@@ -3429,6 +3433,9 @@ stock vote_startDirector( bool:is_forced_voting )
     }
     else
     {
+        new bool:isWhitelistEnabled = ( get_pcvar_num( cvar_whitelistMinPlayers ) == 1
+                                        || get_realplayersnum() < get_pcvar_num( cvar_whitelistMinPlayers ) );
+        
         // update cached data for the new voting.
         cacheCvarsValues();
         
@@ -3471,15 +3478,14 @@ stock vote_startDirector( bool:is_forced_voting )
                     charsmax( blockedFillerMaps[] ): %d, blockedCount: %d", \
                     blockedFillerMaps[ 0 ], charsmax( blockedFillerMaps[] ), blockedCount );
             
-            vote_addFiller( blockedFillerMaps, charsmax( blockedFillerMaps[] ), false, blockedCount );
+            vote_addFiller( blockedFillerMaps, charsmax( blockedFillerMaps[] ), isWhitelistEnabled, blockedCount );
         }
-        else if( get_pcvar_num( cvar_whitelistMinPlayers ) == 1
-                 || get_realplayersnum() < get_pcvar_num( cvar_whitelistMinPlayers ) )
+        else if( isWhitelistEnabled )
         {
             new blockedWhitelistMaps[ MAX_NOMINATION_COUNT ][ MAX_MAPNAME_LENGHT ];
             
             vote_addNominations( blockedWhitelistMaps );
-            vote_addFiller( blockedWhitelistMaps, charsmax( blockedWhitelistMaps[] ), true, 0 );
+            vote_addFiller( blockedWhitelistMaps, charsmax( blockedWhitelistMaps[] ), isWhitelistEnabled, 0 );
         }
         else
         {
