@@ -3187,8 +3187,8 @@ stock processLoadedMapsFile( mapsPerGroup[],
     return blockedCount;
 }
 
-stock vote_addFiller( blockedFillerMaps[][], bool:is_whitelistEnabled = false,
-                      blockedFillerMapsCharsmax = 0, blockedCount = 0 )
+stock vote_addFiller( blockedFillerMaps[][], blockedFillerMapsCharsmax = 0,
+                      bool:is_whitelistEnabled = false, blockedCount = 0 )
 {
     if( g_totalVoteOptions >= g_maxVotingChoices )
     {
@@ -3471,7 +3471,7 @@ stock vote_startDirector( bool:is_forced_voting )
                     charsmax( blockedFillerMaps[] ): %d, blockedCount: %d", \
                     blockedFillerMaps[ 0 ], charsmax( blockedFillerMaps[] ), blockedCount );
             
-            vote_addFiller( blockedFillerMaps, false, charsmax( blockedFillerMaps[] ), blockedCount );
+            vote_addFiller( blockedFillerMaps, charsmax( blockedFillerMaps[] ), false, blockedCount );
         }
         else if( get_pcvar_num( cvar_whitelistMinPlayers ) == 1
                  || get_realplayersnum() < get_pcvar_num( cvar_whitelistMinPlayers ) )
@@ -3479,7 +3479,7 @@ stock vote_startDirector( bool:is_forced_voting )
             new blockedWhitelistMaps[ MAX_NOMINATION_COUNT ][ MAX_MAPNAME_LENGHT ];
             
             vote_addNominations( blockedWhitelistMaps );
-            vote_addFiller( blockedWhitelistMaps, true, charsmax( blockedWhitelistMaps[] ), 0 );
+            vote_addFiller( blockedWhitelistMaps, charsmax( blockedWhitelistMaps[] ), true, 0 );
         }
         else
         {
