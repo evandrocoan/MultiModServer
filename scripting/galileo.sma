@@ -2889,6 +2889,7 @@ stock vote_addNominations( blockedFillerMaps[][], blockedFillerMapsMaxChars = 0 
                 if( mapIndex >= 0 )
                 {
                     ArrayGetString( g_nominationMap, mapIndex, mapName, charsmax( mapName ) );
+                    
                     nominator_id = nomination_getPlayer( mapIndex );
                     get_user_name( nominator_id, playerName, charsmax( playerName ) );
                     
@@ -3528,6 +3529,7 @@ stock vote_startDirector( bool:is_forced_voting )
     
     if( g_voteStatus & VOTE_IS_RUNOFF )
     {
+        // to load runoff vote choices
         loadRunOffVoteChoices();
     }
     else
@@ -3545,6 +3547,7 @@ stock vote_startDirector( bool:is_forced_voting )
     }
     else
     {
+        // Vote creation failed; no maps found.
         color_print( 0, "^1%L", LANG_PLAYER, "GAL_VOTE_NOMAPS" );
     }
     
@@ -5351,7 +5354,7 @@ public client_authorized( player_id )
 {
     restartEmptyCycle();
     
-    if( has_flag( player_id, "f" ) )
+    if( get_user_flags( player_id ) & ADMIN_MAP )
     {
         g_rtvWaitAdminNumber++;
     }
@@ -5363,7 +5366,7 @@ public client_disconnect( player_id )
 public client_disconnected( player_id )
 #endif
 {
-    if( has_flag( player_id, "f" ) )
+    if( get_user_flags( player_id ) & ADMIN_MAP )
     {
         g_rtvWaitAdminNumber--;
     }
