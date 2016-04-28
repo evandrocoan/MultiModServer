@@ -447,7 +447,6 @@ new bool:g_isTimeLimitChanged;
 new bool:g_isMapExtensionAllowed;
 new bool:g_isColorChatSupported;
 new bool:g_isGameFinalVoting;
-new bool:g_isFillersMapUsingMinplayers;
 
 new Float:g_rtvMinutesWait;
 new Float:g_originalTimelimit;
@@ -2838,7 +2837,8 @@ stock vote_addNominations( blockedFillerMaps[][], blockedFillerMapsMaxChars = 0 
 {
     DEBUG_LOGGER( 4, "^n   [NOMINATIONS ( %i )]", g_nominationCount );
     
-    new blockedCount;
+    new      blockedCount;
+    new bool:isFillersMapUsingMinplayers;
     
     if( g_nominationCount )
     {
@@ -2857,12 +2857,13 @@ stock vote_addNominations( blockedFillerMaps[][], blockedFillerMapsMaxChars = 0 
             
             if( equal( mapFilerFilePath, "*" ) )
             {
+                // '*' is and invalid blacklist for voting, because it would block all server maps.
                 log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilerFilePath );
             }
             else
             {
-                g_isFillersMapUsingMinplayers = true;
-                blackFillerMapTrie            = TrieCreate();
+                isFillersMapUsingMinplayers = true;
+                blackFillerMapTrie          = TrieCreate();
                 
                 map_populateList( g_fillerMap, mapFilerFilePath, charsmax( mapFilerFilePath ), blackFillerMapTrie );
             }
@@ -2912,7 +2913,7 @@ stock vote_addNominations( blockedFillerMaps[][], blockedFillerMapsMaxChars = 0 
                 {
                     ArrayGetString( g_nominationMap, mapIndex, mapName, charsmax( mapName ) );
                     
-                    if( g_isFillersMapUsingMinplayers
+                    if( isFillersMapUsingMinplayers
                         && !TrieKeyExists( blackFillerMapTrie, mapName ) )
                     {
                         DEBUG_LOGGER( 8, "    The map: %s, was blocked by the minimum players map setting.", mapName );
@@ -4836,7 +4837,6 @@ stock finalizeVoting()
     g_isVotingByTimer               = false;
     g_isVotingByRounds              = false;
     g_isRunOffNeedingKeepCurrentMap = false;
-    g_isFillersMapUsingMinplayers   = false;
     
     // vote is no longer in progress
     g_voteStatus &= ~VOTE_IS_IN_PROGRESS;
