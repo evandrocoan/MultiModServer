@@ -352,6 +352,77 @@ players can't nominate maps for few days . My proposition is adding a file to th
 will be saved map history and a bunch of recent maps won't be able to get voted (but still be able
 to get nominated).
 
+
+[QUOTE=chaves;2410389]tested version and it worked, the problem is noticed something in the limited vote function "gal_vote_minplayers" it blocks the appointment of maps even when the list itself, it ends up diminishing the options contained in it, it should just show the list "gal_vote_minplayers_mapfile" so when "gal_vote_minplayers" would only nominate maps allowed list[/QUOTE]
+I think the development version has this already fixed, but I will recheck and fix it, if it is not working properly.
+
+
+[QUOTE=waynesmith15;2413085]Hi,
+
+A few problems I have had in the last few weeks of running this is below.
+
+1. The Map Vote Functions fail to run when the Player Kill count mp_fraglimit  is reached.
+- My suggestion to fix this would be to have the Vote start at the start a few mins after the start of a new map. Or for the Mod to read mp_fraglimit and when it gets within say a set number of kills auto start the voting system.
+
+2. When extending the map time it fails to do another vote. When the time limit expires it will then changes to the default next map. May have a bad setting here.
+
+3. I would like to be able to disable the "Time Limit Expired" and just end the map when the timer is up. ( Really not an important thing and can cope with it TBH ) May be again I have a setting wrong for this.
+
+Thanks for your time with this.
+
+Way.[/QUOTE]
+1) The 'mp_fraglimit' was not supported (half-life), but I will provide support to it on the next version.
+2) Bad settings must not block the second voting after an map extension. I will look into the code and see what is happening.
+3) You are using Half-Life and the setting "gal_endonround" is set to 1 or 2 and is it ending the map when the time runs out, instead of waiting to finish the map after the current round end?
+
+
+
+[QUOTE=vase070;2413168]i thing i noticed something 
+
+so when using 
+
+"gal_vote_minplayers_mapfile"
+
+when vote comes and no one chooses any map the plugin will choose a completely random map that is not on the "gal_vote_minplayers_mapfile" is this supposed to be like this ? is the plugin not supposed to choose a random map from the vote itself and set it as next when no one votes or am i wrong ? 
+
+pictures : 
+
+when vote comes : [url]http://i.imgur.com/a4U950P.jpg[/url]
+when vote ended and no one choose any map : [url]http://i.imgur.com/XbFwXl4.jpg[/url]
+
+as you can see de_train was not on the vote :) 
+
+the same thing is with "gal_emptyserver_mapfile" when no one is on the server and vote prob comes plugin still chooses random map that is not on the "gal_emptyserver_mapfile" :)[/QUOTE]
+1) When there is anyone in the server, the voting do not comes up.
+2) It just says "will choose a completely random map", when you have this setting below "amx_extendmap_allow_order" set to 1, it is actually following the map cycle. It shows "will choose a completely random map", for the setting set to 1 because I did not to write a new LANG (language) for this. But, to end this confusion, I will to add a new language constant saying that it is following the map cycle, when it  is following the map cycle, instead of just saying "will choose a completely random map":
+[code]
+// If 0, choose a random map as next map, when anyone vote for next map.
+// If 1, follow the map cycle map order, when anyone vote for next map.
+amx_extendmap_allow_order 1
+[/code]
+3) When your server is on the empty cycle mode, it does not start a map vote, and it does not follow you map cycle, despite the setting "amx_extendmap_allow_order " above. It starts following your empty cycle map file list.
+
+
+
+[QUOTE=chaves;2413886]Another error, you can name the same map 1 for 2 different players and it appears in the list of 2x "noms"[/QUOTE]
+So, 2 different players can nominate the map1, and it will display 2 times the map1 as nominated. Later on it will be fixed.
+
+
+
+[QUOTE=eryk172;2414077][CODE]
+L 04/25/2016 - 04:33:26: Start of error session.
+L 04/25/2016 - 04:33:26: Info (map "de_dust2") (file "addons/amxmodx/logs/error_20160425.log")
+L 04/25/2016 - 04:33:26: Invalid cellvector handle provided (25:0:0)
+L 04/25/2016 - 04:33:42: [AMXX] Run time error 10 (plugin "galileo.amxx") (native "ArrayGetString") - debug not enabled!
+L 04/25/2016 - 04:33:42: [AMXX] To enable debug mode, add "debug" after the plugin name in plugins.ini (without quotes).
+[/CODE][/QUOTE]
+"Invalid cellvector handle provided (25:0:0)" means the string vector id 25, has size 0 and It was trying to access the 0 position while the map is starting.
+May be I can find it, but if you enable the debug mode, that is for sure mostly. 
+This is happening always?
+Could you enable the debug mode?
+To enable debug mode, just edit plugins.ini and find where is the "galileo.amxx" line and change it to "galileo.amxx debug ;"
+
+
 [/CODE]
 
 
