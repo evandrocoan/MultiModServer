@@ -305,6 +305,14 @@ do \
 
 
 /**
+ * Boolean check for the nominations minimum players controlling feature.
+ */
+#define IS_NOMINATION_MININUM_PLAYERS_CONTROL_ENABLED() \
+    ( get_realplayersnum() < get_pcvar_num( cvar_voteMinPlayers ) \
+      && get_pcvar_num( cvar_NomMinPlayersControl ) )
+
+
+/**
  * Convert colored strings codes '!g for green', '!y for yellow', '!t for team'.
  */
 #define INSERT_COLOR_TAGS(%1) \
@@ -2848,8 +2856,8 @@ stock vote_addNominations( blockedFillerMaps[][], blockedFillerMapsMaxChars = 0 
         new Trie:blackFillerMapTrie;
         new      mapName[ MAX_MAPNAME_LENGHT ];
         
-        if( get_realplayersnum() < get_pcvar_num( cvar_voteMinPlayers )
-            && get_pcvar_num( cvar_NomMinPlayersControl ) )
+        if( IS_NOMINATION_MININUM_PLAYERS_CONTROL_ENABLED()
+            && blockedFillerMapsMaxChars )
         {
             new mapFilerFilePath[ MAX_FILE_PATH_LENGHT ];
             
@@ -2862,9 +2870,10 @@ stock vote_addNominations( blockedFillerMaps[][], blockedFillerMapsMaxChars = 0 
             }
             else
             {
-                isFillersMapUsingMinplayers = true;
                 blackFillerMapTrie          = TrieCreate();
+                isFillersMapUsingMinplayers = true;
                 
+                // This call is only to load the blackFillerMapTrie, the g_fillerMap is ignored.
                 map_populateList( g_fillerMap, mapFilerFilePath, charsmax( mapFilerFilePath ), blackFillerMapTrie );
             }
         }
@@ -2929,19 +2938,23 @@ stock vote_addNominations( blockedFillerMaps[][], blockedFillerMapsMaxChars = 0 
                     {
                         break;
                     }
+                    
                 }
-            } // end players nominations looking for
+                
+            } // end player's nominations looking
             
             if( g_totalVoteOptions == voteNominationMax )
             {
                 break;
             }
-        } // end nominations players looking for
+            
+        } // end nomination's players looking
         
         if( blackFillerMapTrie )
         {
             TrieDestroy( blackFillerMapTrie );
         }
+        
     } // end if nominations
     
     return blockedCount;
@@ -3060,8 +3073,12 @@ stock processLoadedMapsFile( mapsPerGroup[],
     new isWhitelistEnabled;
     
     new Trie:   blackListTrie;
-    new Trie:   blockedFillerMapsTrie;
     new mapName [ MAX_MAPNAME_LENGHT ];
+    
+    /**
+     * This variable is to block double blocking which lead to the algorithm corruption and errors.
+     */
+    new Trie:blockedFillerMapsTrie;
     
     isWhitelistEnabled = IS_WHITELIST_ENABLED();
 
@@ -3364,8 +3381,7 @@ stock loadCurrentBlackList( Trie:blackListTrie )
 
 stock loadNormalVoteChoices()
 {
-    if( get_realplayersnum() < get_pcvar_num( cvar_voteMinPlayers )
-        && get_pcvar_num( cvar_NomMinPlayersControl ) )
+    if( IS_NOMINATION_MININUM_PLAYERS_CONTROL_ENABLED() )
     {
         new blockedCount;
         new blockedFillerMaps[ MAX_NOMINATION_COUNT ][ MAX_MAPNAME_LENGHT ];
