@@ -36,7 +36,7 @@ new const PLUGIN_VERSION[] = "v2.6d";
  *       and 'create_fakeVotes()'.
  * 7   - Levels 1, 2 and 4.
  */
-#define DEBUG_LEVEL 0
+#define DEBUG_LEVEL 7
 
 
 #define DEBUG_LEVEL_NORMAL     1
@@ -3074,8 +3074,7 @@ stock loadMapGroupsFeature( mapsPerGroup[], fillersFilePaths[][], fillersFilePat
     return groupCount;
 }
 
-stock processLoadedMapsFile( mapsPerGroup[],
-                             groupCount, blockedCount,
+stock processLoadedMapsFile( mapsPerGroup[], groupCount, blockedCount,
                              blockedFillerMaps[][], blockedFillerMapsMaxChars,
                              fillersFilePaths[][], fillersFilePathsMaxChars )
 {
@@ -3090,20 +3089,11 @@ stock processLoadedMapsFile( mapsPerGroup[],
     new mapName [ MAX_MAPNAME_LENGHT ];
     
     /**
-     * This variable is to block double blocking which lead to the algorithm corruption and errors.
+     * This variable is to avoid double blocking which lead to the algorithm corruption and errors.
      */
     new Trie:blockedFillerMapsTrie;
     
     isWhitelistEnabled = IS_WHITELIST_ENABLED();
-
-#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
-    
-    if( g_areTheUnitTestsRunning && g_test_current_time )
-    {
-        isWhitelistEnabled        = true;
-        blockedFillerMapsMaxChars = MAX_FILE_PATH_LENGHT;
-    }
-#endif
     
     if( blockedFillerMapsMaxChars )
     {
@@ -3395,36 +3385,23 @@ stock loadCurrentBlackList( Trie:blackListTrie )
 
 stock loadNormalVoteChoices()
 {
-    if( IS_NOMINATION_MININUM_PLAYERS_CONTROL_ENABLED() )
+    if( IS_NOMINATION_MININUM_PLAYERS_CONTROL_ENABLED()
+        || IS_WHITELIST_ENABLED() )
     {
         new blockedCount;
         new blockedFillerMaps[ MAX_NOMINATION_COUNT ][ MAX_MAPNAME_LENGHT ];
         
         blockedCount = vote_addNominations( blockedFillerMaps, charsmax( blockedFillerMaps[] ) );
         
-        DEBUG_LOGGER( 8, "( vote_startDirector|blockedFiller ) blockedFillerMaps[0]: %s, \
-                charsmax( blockedFillerMaps[] ): %d, blockedCount: %d", \
-                blockedFillerMaps[ 0 ], charsmax( blockedFillerMaps[] ), blockedCount );
+        DEBUG_LOGGER( 8, "( loadNormalVoteChoices|blockedFillerMaps ) blockedFillerMaps[0]: %s, \
+                charsmax( blockedFillerMaps[] ): %d, blockedCount: %d", blockedFillerMaps[ 0 ], \
+                charsmax( blockedFillerMaps[] ), blockedCount );
         
         vote_addFiller( blockedFillerMaps, charsmax( blockedFillerMaps[] ), blockedCount );
     }
-    else if( IS_WHITELIST_ENABLED() )
-    {
-        new blockedWhitelistMaps[ MAX_NOMINATION_COUNT ][ MAX_MAPNAME_LENGHT ];
-        
-        vote_addNominations( blockedWhitelistMaps );
-        vote_addFiller( blockedWhitelistMaps, charsmax( blockedWhitelistMaps[] ), 0 );
-    }
     else
     {
-    #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
-        
-        // We need to provide a valid array
-        new dummyArray[ MAX_NOMINATION_COUNT ][ MAX_MAPNAME_LENGHT ];
-    #else
-        
         new dummyArray[][] = { { 0 } };
-    #endif
         
         vote_addNominations( dummyArray );
         vote_addFiller( dummyArray );
