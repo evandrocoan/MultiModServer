@@ -257,7 +257,6 @@ new g_user_msgid;
     ( %1 < VOTE_ROUND_START_MIN_DELAY \
       && %1 > VOTE_ROUND_START_MAX_DELAY )
 
-
 /**
  * To start the end map voting near the map time limit expiration.
  */
@@ -265,18 +264,20 @@ new g_user_msgid;
     ( %1 < START_VOTEMAP_MIN_TIME \
       && %1 > START_VOTEMAP_MAX_TIME )
 
-
 /**
  * The rounds number before the mp_maxrounds/mp_winlimit to be reached to start the map voting.
  */
 #define VOTE_START_ROUNDS 4
 
+/**
+ * The frags/kills number before the mp_fraglimit to be reached to start the map voting.
+ */
+#define VOTE_START_FRAGS 15
 
 /**
  * Specifies how much time to delay the voting start after the round start.
  */
 #define VOTE_ROUND_START_SECONDS_DELAY() ( get_pcvar_num( cvar_mp_freezetime ) + 20.0 )
-
 
 /**
  * Start a map voting delayed after the mp_maxrounds or mp_winlimit minimum to be reached.
@@ -287,14 +288,12 @@ do \
     set_task( VOTE_ROUND_START_SECONDS_DELAY(), "start_voting_by_rounds", TASKID_START_VOTING_BY_ROUNDS ); \
 } while( g_dummy_value )
 
-
 /**
  * Verifies if a voting is or was already processed.
  */
 #define IS_END_OF_MAP_VOTING_GOING_ON() \
     ( g_voteStatus & VOTE_IS_IN_PROGRESS \
       || g_voteStatus & VOTE_IS_OVER )
-
 
 /**
  * Boolean check for the whitelist feature.
@@ -303,14 +302,12 @@ do \
     ( get_pcvar_num( cvar_whitelistMinPlayers ) == 1 \
       || get_realplayersnum() < get_pcvar_num( cvar_whitelistMinPlayers ) )
 
-
 /**
  * Boolean check for the nominations minimum players controlling feature.
  */
 #define IS_NOMINATION_MININUM_PLAYERS_CONTROL_ENABLED() \
     ( get_realplayersnum() < get_pcvar_num( cvar_voteMinPlayers ) \
       && get_pcvar_num( cvar_NomMinPlayersControl ) )
-
 
 /**
  * Convert colored strings codes '!g for green', '!y for yellow', '!t for team'.
@@ -324,7 +321,6 @@ do \
     replace_all( %1, charsmax( %1 ), "!y", "^1" ); \
 } while( g_dummy_value )
 
-
 #define REMOVE_COLOR_TAGS(%1) \
 do \
 { \
@@ -333,7 +329,6 @@ do \
     replace_all( %1, charsmax( %1 ), "^3", "" ); \
     replace_all( %1, charsmax( %1 ), "^4", "" ); \
 } while( g_dummy_value )
-
 
 #define PRINT_COLORED_MESSAGE(%1,%2) \
 do \
@@ -446,6 +441,7 @@ new bool:g_isToShowVoteCounter;
 new bool:g_isToRefreshVoteStatus;
 new bool:g_isEmptyCycleMapConfigured;
 new bool:g_isColoredChatEnabled;
+new bool:g_isMaxfragsExtend;
 new bool:g_isMaxroundsExtend;
 new bool:g_isVotingByRounds;
 new bool:g_isRtvLastRound;
@@ -523,7 +519,9 @@ new g_currentMap                         [ MAX_MAPNAME_LENGHT ];
 new g_playerVotedOption                  [ MAX_PLAYERS_COUNT ];
 new g_playerVotedWeight                  [ MAX_PLAYERS_COUNT ];
 new g_generalUsePlayersMenuId            [ MAX_PLAYERS_COUNT ];
+new g_playersKills                       [ MAX_PLAYERS_COUNT ];
 new g_arrayOfMapsWithVotesNumber         [ MAX_OPTIONS_IN_VOTE ];
+
 new Array:g_currentMenuMapIndexForPlayers[ MAX_PLAYERS_COUNT ];
 
 new bool:g_isPlayerVoted            [ MAX_PLAYERS_COUNT ] = { true, ... };
@@ -648,6 +646,10 @@ stock configureEndGameCvars()
     if( !( cvar_mp_fraglimit = get_cvar_pointer( "mp_fraglimit" ) ) )
     {
         cvar_mp_fraglimit = cvar_disabledValuePointer;
+    }
+    else
+    {
+        register_event( "DeathMsg" , "client_death_event" , "a" );
     }
     
     // mp_winlimit
@@ -954,6 +956,22 @@ public round_start_event()
     {
         g_isTimeToResetGame = false;
         set_task( 1.0, "map_restoreOriginalTimeLimit" );
+    }
+}
+
+public client_death_event()
+{
+    new killerId = read_data( 1 ); 
+    
+    if( killerId )
+    {
+        if( ( ( ++g_playersKills[ killerId ] + VOTE_START_FRAGS ) > get_pcvar_num( cvar_mp_fraglimit ) )
+               && !IS_END_OF_MAP_VOTING_GOING_ON() )
+        {
+            g_isMaxfragsExtend = true;
+            
+            VOTE_START_ROUND_DELAY();
+        }
     }
 }
 
