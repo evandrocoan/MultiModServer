@@ -350,6 +350,7 @@ do \
  */
 new cvar_mp_freezetime;
 new cvar_mp_winlimit;
+new cvar_mp_fraglimit;
 new cvar_mp_maxrounds;
 new cvar_mp_timelimit;
 new cvar_mp_roundtime;
@@ -637,36 +638,49 @@ public plugin_init()
 
 stock configureEndGameCvars()
 {
+    // mp_maxrounds
     if( !( cvar_mp_maxrounds = get_cvar_pointer( "mp_maxrounds" ) ) )
     {
         cvar_mp_maxrounds = cvar_disabledValuePointer;
     }
     
+    // mp_fraglimit
+    if( !( cvar_mp_fraglimit = get_cvar_pointer( "mp_fraglimit" ) ) )
+    {
+        cvar_mp_fraglimit = cvar_disabledValuePointer;
+    }
+    
+    // mp_winlimit
     if( !( cvar_mp_winlimit = get_cvar_pointer( "mp_winlimit" ) ) )
     {
         cvar_mp_winlimit = cvar_disabledValuePointer;
     }
     
+    // mp_freezetime
     if( !( cvar_mp_freezetime = get_cvar_pointer( "mp_freezetime" ) ) )
     {
         cvar_mp_freezetime = cvar_disabledValuePointer;
     }
     
+    // mp_timelimit
     if( !( cvar_mp_timelimit = get_cvar_pointer( "mp_timelimit" ) ) )
     {
         cvar_mp_timelimit = cvar_disabledValuePointer;
     }
     
+    // mp_roundtime
     if( !( cvar_mp_roundtime = get_cvar_pointer( "mp_roundtime" ) ) )
     {
         cvar_mp_roundtime = cvar_disabledValuePointer;
     }
     
+    // mp_chattime
     if( !( cvar_mp_chattime = get_cvar_pointer( "mp_chattime" ) ) )
     {
         cvar_mp_chattime = cvar_disabledValuePointer;
     }
     
+    // sv_maxspeed
     if( !( cvar_sv_maxspeed = get_cvar_pointer( "sv_maxspeed" ) ) )
     {
         cvar_sv_maxspeed = cvar_disabledValuePointer;
