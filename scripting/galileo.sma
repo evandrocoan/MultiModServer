@@ -22,7 +22,7 @@
 *****************************************************************************************
 */
 
-new const PLUGIN_VERSION[] = "v2.6d";
+new const PLUGIN_VERSION[] = "v2.6.0.0";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -3187,7 +3187,7 @@ stock processLoadedMapsFile( mapsPerGroup[], groupCount, blockedCount,
                             TrieKeyExists( blockedFillerMapsTrie, mapName ): %d", \
                             map_isInMenu( mapName ), mapName, equal( g_currentMap, mapName ), \
                             map_isTooRecent( mapName ), isPrefixInMenu( mapName ), \
-                            TrieKeyExists( blockedFillerMapsTrie, mapName ) );
+                            ( blockedFillerMapsMaxChars ? TrieKeyExists( blockedFillerMapsTrie, mapName ) : false ) );
                 }
                 
                 if( unsuccessfulCount >= allowedFilersCount )
@@ -5683,7 +5683,7 @@ stock get_realplayersnum()
 
 #if DEBUG_LEVEL & DEBUG_LEVEL_FAKE_VOTES
     
-    return 3;
+    return 1;
 #else
     return playersCount;
 
