@@ -28,7 +28,7 @@
 #
 
 
-versionFileName=githooks/VERSION.txt
+versionFileName=githooks/GALILEO_VERSION.txt
 fileToUpdate=scripting/galileo.sma
 
 
