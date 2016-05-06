@@ -9,9 +9,19 @@
 
 
 
+echo "Running the pre-commit hook..."
+
+
 GIT_DIR_="$(git rev-parse --git-dir)"
 
 currentVersion=$(git diff --name-only --cached)
+
+
+# to clean any old missed file
+if [ -f $GIT_DIR_/isToUpdateTheGalileoFile.txt ]
+then
+    rm $GIT_DIR_/isToUpdateTheGalileoFile.txt
+fi
 
 
 if [[ $currentVersion == *"galileo.sma"* ]]
@@ -20,7 +30,6 @@ then
     then
         echo "isToUpdateTheGalileoFile" > $GIT_DIR_/isToUpdateTheGalileoFile.txt
         echo "Successfully ran updateVersion.sh"
-        exit 0
     else
         echo "Could not update updateVersion.sh right!"
         exit 1
@@ -30,6 +39,7 @@ else
 fi
 
 
+echo "Successfully executed the pre-commit hook."
 exit 0
 
 

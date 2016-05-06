@@ -9,7 +9,8 @@
 
 
 
-echo "Running the post commit hook..."
+echo "Running the post-commit hook..."
+
 
 GIT_DIR_="$(git rev-parse --git-dir)"
 
@@ -21,11 +22,11 @@ then
     git reset scripting/galileo.sma
     rm $GIT_DIR_/isToUpdateTheGalileoFile.txt
 else
-    echo "It is not time to updated the 'galileo.sma' file."
+    echo "It is not time to update the 'galileo.sma' file."
 fi
 
 
-
-echo "Successfully executed the post commit hook."
+echo "Successfully executed the post-commit hook."
+exit 0
 
 
