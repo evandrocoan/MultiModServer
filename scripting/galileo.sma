@@ -258,6 +258,8 @@ new g_user_msgid;
 /**
  * Give a 4 minutes range to try detecting the round start, to avoid buy old buy weapons menu
  * override.
+ * 
+ * @param seconds     how many seconds are reaming to the map end.
  */
 #define VOTE_ROUND_START_DETECTION_DELAYED(%1) \
     ( %1 < VOTE_ROUND_START_MIN_DELAY \
@@ -276,7 +278,7 @@ new g_user_msgid;
 #define VOTE_START_ROUNDS 4
 
 /**
- * The frags/kills number before the mp_fraglimit to be reached to start the map voting.
+ * The frags/kills number before the mp_fraglimit to be reached and to start the map voting.
  */
 #define VOTE_START_FRAGS 15
 
@@ -317,6 +319,8 @@ do \
 
 /**
  * Convert colored strings codes '!g for green', '!y for yellow', '!t for team'.
+ * 
+ * @param string[]       a string pointer to be converted.
  */
 #define INSERT_COLOR_TAGS(%1) \
 do \
@@ -327,6 +331,12 @@ do \
     replace_all( %1, charsmax( %1 ), "!y", "^1" ); \
 } while( g_dummy_value )
 
+/**
+ * Remove the colored strings codes '^4 for green', '^1 for yellow', '^3 for team' and
+ * '^2 for unknown'.
+ * 
+ * @param string[]       a string pointer to be formatted.
+ */
 #define REMOVE_COLOR_TAGS(%1) \
 do \
 { \
@@ -336,6 +346,14 @@ do \
     replace_all( %1, charsmax( %1 ), "^4", "" ); \
 } while( g_dummy_value )
 
+/**
+ * Print to the users chat, a colored chat message. 
+ * 
+ * @param player_id     a player id from 1 to MAX_PLAYERS
+ * @param message       a colored formatted string message. At the AMXX 182 it must start within
+ *                      one color code as found on REMOVE_COLOR_TAGS(1) above macro. Example: 
+ *                      "^1Hi! I am a ^3 colored message".
+ */
 #define PRINT_COLORED_MESSAGE(%1,%2) \
 do \
 { \
