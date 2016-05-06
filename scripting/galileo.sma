@@ -31,7 +31,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1.42";
+new const PLUGIN_VERSION[] = "v2.6.1.47";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -2296,8 +2296,9 @@ public cmd_say( player_id )
         
         DEBUG_LOGGER( 4, "( cmd_say ) thirdWord is empty'" );
         
-        // if the chat line contains 1 word, it could be a map or a one-word command
-        if( secondWord[ 0 ] == '^0' ) // "say [rtv|rockthe<anything>vote]"
+        // if the chat line contains 1 word, it could be a map or a one-word command as
+        // "say [rtv|rockthe<anything>vote]"
+        if( secondWord[ 0 ] == '^0' ) 
         {
             DEBUG_LOGGER( 4, "( cmd_say ) secondWord is empty" );
             
