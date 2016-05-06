@@ -66,17 +66,14 @@ build=$(expr $build + 1)
 currentVersion=$major.$minor.$patch.$build
 
 
-echo "Updating files version..."
-echo $currentVersion > $versionFileName
-
-
 # sed -i -- 's/v2.6.0.0/v2.6.0.1/g' scripting/galileo.sma
 #
 echo "Replacing the version v$originalVersion -> v$currentVersion in $filesToUpdate"
+echo $currentVersion > $versionFileName
 sed -i -- "s/v$originalVersion/v$currentVersion/g" $filesToUpdate
 
 
-echo "Staging and committing the new changes"
+echo "Staging $versionFileName and $filesToUpdate..."
 git add $versionFileName
 git add $filesToUpdate
 

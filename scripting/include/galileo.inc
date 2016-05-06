@@ -36,7 +36,7 @@
  * To update it automatically, use:
  * ./updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.0.12";
+new const PLUGIN_VERSION[] = "v2.6.0.26";
 
 
 
