@@ -22,7 +22,7 @@
 *****************************************************************************************
 */
 
-new const PLUGIN_VERSION[] = "v2.6";
+new const PLUGIN_VERSION[] = "v2.6.1";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -5513,7 +5513,7 @@ public startEmptyCycleSystem()
 }
 
 /**
- * Given a mapArray list the currentMap, calculates the next map after the currentMap provided at
+ * Given a mapArray list and the currentMap, calculates the next map after the currentMap provided at
  * the mapArray. The map list to start on 0 as the first map.
  *
  * @param nextMap       the string pointer which will receive the next map
@@ -5548,7 +5548,16 @@ stock map_getNext( Array:mapArray, currentMap[], nextMap[ MAX_MAPNAME_LENGHT ] )
             break;
         }
     }
-    ArrayGetString( mapArray, nextmapIndex, nextMap, charsmax( nextMap ) );
+    
+    if( mapCount > 0 )
+    {
+        ArrayGetString( mapArray, nextmapIndex, nextMap, charsmax( nextMap ) );
+    }
+    else
+    {
+        log_amx( "WARNING: Your 'mapcyclefile' server variable '%s' is invalid!", NP_g_mapCycleFilePath );
+        copy( nextMap, charsmax( nextMap ), "your_mapcycle_file_is_empty" );
+    }
     
     return returnValue;
 }
@@ -6145,8 +6154,6 @@ public changeMap()
     set_task( chattime, "delayedChange", 0, nextmap_name, len ); // change with 1.5 sec. delay
 }
 
-new g_warning[] = "WARNING: Couldn't find a valid map or the file doesn't exist (file ^"%s^")";
-
 stock bool:ValidMap( mapname[] )
 {
     if( is_map_valid( mapname ) )
@@ -6214,7 +6221,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
     
     if( !iMaps )
     {
-        log_amx( g_warning, mapcycleFilePath );
+        log_amx( "WARNING: Couldn't find a valid map or the file doesn't exist (file ^"%s^")", mapcycleFilePath );
         copy( szNext, iNext, NP_g_currentMapName );
     }
     else
