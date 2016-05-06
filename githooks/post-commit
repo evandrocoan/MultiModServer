@@ -18,7 +18,7 @@ GIT_DIR_="$(git rev-parse --git-dir)"
 if [ -f $GIT_DIR_/isToUpdateTheGalileoFile.txt ]
 then
     echo "Applying git reset to VERSION.txt and scripting/galileo.sma..."
-    git reset VERSION.txt
+    git reset githooks/VERSION.txt
     git reset scripting/galileo.sma
     rm $GIT_DIR_/isToUpdateTheGalileoFile.txt
 else

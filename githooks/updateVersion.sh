@@ -13,7 +13,8 @@
 # 
 
 
-versionFileName=VERSION.txt
+cd ..
+versionFileName=githooks/VERSION.txt
 filesToUpdate=scripting/galileo.sma
 
 currentVersion=$(cat $versionFileName)

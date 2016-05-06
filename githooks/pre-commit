@@ -17,6 +17,8 @@ GIT_DIR_="$(git rev-parse --git-dir)"
 currentBranch=$(basename $(git symbolic-ref HEAD))
 currentVersion=$(git diff --name-only --cached)
 
+updateVersionProgram=githooks/updateVersion.sh
+
 
 # To clean any old missed file
 if [ -f $GIT_DIR_/isToUpdateTheGalileoFile.txt ]
@@ -28,12 +30,12 @@ fi
 # Only updates whether the current branch the develop and the file being changed is "galileo.sma".
 if [[ $currentVersion == *"galileo.sma"* ]] && [[ $currentBranch == "develop" ]]
 then
-    if sh $GIT_DIR_/../updateVersion.sh build
+    if sh $GIT_DIR_/../$updateVersionProgram build
     then
         echo "isToUpdateTheGalileoFile" > $GIT_DIR_/isToUpdateTheGalileoFile.txt
-        echo "Successfully ran updateVersion.sh"
+        echo "Successfully ran $updateVersionProgram"
     else
-        echo "Could not update updateVersion.sh right!"
+        echo "Could not update $updateVersionProgram right!"
         exit 1
     fi
 else
