@@ -423,15 +423,6 @@ Could you enable the debug mode?
 To enable debug mode, just edit plugins.ini and find where is the "galileo.amxx" line and change it to "galileo.amxx debug ;"
 
 v2.6 probably
-L 05/05/2016 - 16:25:33: Info (map "de_dust2") (file "addons/amxmodx/logs/error_20160505.log")
-L 05/05/2016 - 16:25:33: Invalid cellvector handle provided (25:0:0)
-L 05/05/2016 - 16:25:33: [AMXX] Displaying debug trace (plugin "galileo.amxx")
-L 05/05/2016 - 16:25:33: [AMXX] Run time error 10: native error (native "ArrayGetString")
-L 05/05/2016 - 16:25:33: [AMXX]    [0] galileo.sma::map_getNext (line 5551)
-L 05/05/2016 - 16:25:33: [AMXX]    [1] galileo.sma::configureTheMapcycleSystem (line 1451)
-L 05/05/2016 - 16:25:33: [AMXX]    [2] galileo.sma::handleServerStart (line 1418)
-L 05/05/2016 - 16:25:33: [AMXX]    [3] galileo.sma::configureServerStart (line 807)
-L 05/05/2016 - 16:25:33: [AMXX]    [4] galileo.sma::plugin_cfg (line 721)
 L 05/05/2016 - 16:43:23: Plugin called message_begin with an invalid message id (0).
 L 05/05/2016 - 16:43:23: [AMXX] Displaying debug trace (plugin "galileo.amxx")
 L 05/05/2016 - 16:43:23: [AMXX] Run time error 10: native error (native "message_begin")
@@ -623,6 +614,7 @@ L 05/05/2016 - 16:43:46: [AMXX]    [1] galileo.sma::computeVotes (line 4771)
 [LIST=1]
 [*]Fixed the minplayers list priority over the whitelist feature.
 [*]Allowed the whitelist feature to be used with the minimum players nominations control feature.
+[*]Fixed ArrayGetString native error when the mapcyclefile is invalid.
 [/LIST]
 
 [B]2016-04-09 | v2.6[/B]
