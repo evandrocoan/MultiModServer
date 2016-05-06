@@ -22,7 +22,10 @@
 *****************************************************************************************
 */
 
-new const PLUGIN_VERSION[] = "v2.6.0.1"; 
+
+#include <amxmodx>
+#include <amxmisc>
+#include <galileo>
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -42,9 +45,6 @@ new const PLUGIN_VERSION[] = "v2.6.0.1";
 #define DEBUG_LEVEL_NORMAL     1
 #define DEBUG_LEVEL_UNIT_TEST  2
 #define DEBUG_LEVEL_FAKE_VOTES 4
-
-#include <amxmodx>
-#include <amxmisc>
 
 #pragma semicolon 1
 
@@ -3171,7 +3171,7 @@ stock processLoadedMapsFile( mapsPerGroup[], groupCount, blockedCount,
                             TrieKeyExists( blockedFillerMapsTrie, mapName ): %d", \
                             map_isInMenu( mapName ), mapName, equal( g_currentMap, mapName ), \
                             map_isTooRecent( mapName ), isPrefixInMenu( mapName ), \
-                            TrieKeyExists( blockedFillerMapsTrie, mapName ) );
+                            ( blockedFillerMapsMaxChars ? TrieKeyExists( blockedFillerMapsTrie, mapName ) : false ) );
                     
                     unsuccessfulCount++;
                     

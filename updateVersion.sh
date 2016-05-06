@@ -1,8 +1,20 @@
 #!/usr/bin/env bash
 
+# 
+# Change log:
+# v1.1
+#  Implemented build incrementing number.
+#  Created variables to hold the used files names.
+#  Added file search and replace to update the version numbers.
+# 
+# v1.0
+#  Downloaded from: https://github.com/cloudfoundry/cli/blob/master/bin/bump-version
+# 
+# 
+
 
 versionFileName=VERSION.txt
-filesToUpdate=scripting/galileo.sma
+filesToUpdate=scripting/include/galileo.inc
 
 currentVersion=$(cat $versionFileName)
 originalVersion=$currentVersion
@@ -16,7 +28,8 @@ build=$(echo $currentVersion | cut -d'.' -f 4)
 
 
 
-if [ -z "${major}" ]; then
+if [ -z "${major}" ]
+then
     echo "VAR major is unset or set to the empty string"
     exit 1
 fi
@@ -53,10 +66,8 @@ build=$(expr $build + 1)
 currentVersion=$major.$minor.$patch.$build
 
 
-
-echo "Updating $versionFileName file to $currentVersion"
+echo "Updating files version..."
 echo $currentVersion > $versionFileName
-
 
 
 # sed -i -- 's/v2.6.0.0/v2.6.0.1/g' scripting/galileo.sma
@@ -68,6 +79,7 @@ sed -i -- "s/v$originalVersion/v$currentVersion/g" $filesToUpdate
 echo "Staging and committing the new changes"
 git add $versionFileName
 git add $filesToUpdate
+
 
 exit 0
 
