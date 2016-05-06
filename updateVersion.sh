@@ -14,7 +14,7 @@
 
 
 versionFileName=VERSION.txt
-filesToUpdate=scripting/include/galileo.inc
+filesToUpdate=scripting/galileo.sma
 
 currentVersion=$(cat $versionFileName)
 originalVersion=$currentVersion

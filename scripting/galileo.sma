@@ -28,6 +28,14 @@
 #include <galileo>
 
 
+/**
+ * This version number must be synced with "VERSION.txt" for manual edition.
+ * To update them automatically, use:
+ * ./updateVersion.sh [major | minor | patch | build]
+ */
+new const PLUGIN_VERSION[] = "v2.6.0.27";
+
+
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
  * and the variable 'g_debug_level' for more information. Default value: 0
  *
