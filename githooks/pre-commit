@@ -35,7 +35,7 @@ then
         echo "isToUpdateTheGalileoFile" > $GIT_DIR_/isToUpdateTheGalileoFile.txt
         echo "Successfully ran $updateVersionProgram"
     else
-        echo "Could not update $updateVersionProgram right!"
+        echo "Could not run the update program $updateVersionProgram properly!"
         exit 1
     fi
 else

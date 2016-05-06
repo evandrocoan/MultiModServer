@@ -1,21 +1,36 @@
 #!/usr/bin/env bash
 
-# 
+
+#
+# This file must be ran from the main repository folder. It updates the software version number
+# indicated at "fileToUpdate" and "versionFileName". The versions at these two files must to be
+# synchronized for a correct version update. 
+#
+# You can also update the version manually, but you must to update both files: "./githooks/VERSION.txt"
+# and "./scripting/galileo.sma" using the same version number.
+#
+# Program usage: updateVersion [major | minor | patch | build]
+# Example: ./updateVersion build
+#
+#
 # Change log:
+# v1.1.1
+# Placed this file within the repository sub-folder "./githooks".
+#
 # v1.1
 #  Implemented build incrementing number.
 #  Created variables to hold the used files names.
 #  Added file search and replace to update the version numbers.
-# 
+#
 # v1.0
 #  Downloaded from: https://github.com/cloudfoundry/cli/blob/master/bin/bump-version
-# 
-# 
+#
+#
 
 
-cd ..
 versionFileName=githooks/VERSION.txt
-filesToUpdate=scripting/galileo.sma
+fileToUpdate=scripting/galileo.sma
+
 
 currentVersion=$(cat $versionFileName)
 originalVersion=$currentVersion
@@ -69,14 +84,23 @@ currentVersion=$major.$minor.$patch.$build
 
 # sed -i -- 's/v2.6.0.0/v2.6.0.1/g' scripting/galileo.sma
 #
-echo "Replacing the version v$originalVersion -> v$currentVersion in $filesToUpdate"
+echo "Replacing the version v$originalVersion -> v$currentVersion in $fileToUpdate"
 echo $currentVersion > $versionFileName
-sed -i -- "s/v$originalVersion/v$currentVersion/g" $filesToUpdate
 
 
-echo "Staging $versionFileName and $filesToUpdate..."
+# To prints a error message when it does not find the version number on the files.
+if ! sed -i -- "s/v$originalVersion/v$currentVersion/g" $fileToUpdate
+then
+    echo "Error! Could not find $originalVersion and update the file $fileToUpdate."
+    echo "The current version number on this file must be v$originalVersion!"
+    exit 1
+fi
+
+
+# To add the recent updated files to the commit
+echo "Staging $versionFileName and $fileToUpdate..."
 git add $versionFileName
-git add $filesToUpdate
+git add $fileToUpdate
 
 
 exit 0
