@@ -14,15 +14,18 @@ echo "Running the post-commit hook..."
 
 GIT_DIR_="$(git rev-parse --git-dir)"
 
+versionFileName=githooks/GALILEO_VERSION.txt
+fileToUpdate=scripting/galileo.sma
+
 
 if [ -f $GIT_DIR_/isToUpdateTheGalileoFile.txt ]
 then
-    echo "Applying git reset to VERSION.txt and scripting/galileo.sma..."
-    git reset githooks/GALILEO_VERSION.txt
-    git reset scripting/galileo.sma
+    echo "Applying git reset to $versionFileName and $fileToUpdate..."
+    git reset $versionFileName
+    git reset $fileToUpdate
     rm $GIT_DIR_/isToUpdateTheGalileoFile.txt
 else
-    echo "It is not time to update the 'galileo.sma' file."
+    echo "It is not time to update the $fileToUpdate file."
 fi
 
 
