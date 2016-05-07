@@ -29,9 +29,9 @@
 
 /**
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
- * To update them automatically, use: ./updateVersion.sh [major | minor | patch | build]
+ * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-52";
+new const PLUGIN_VERSION[] = "v2.6.1-54";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -63,7 +63,6 @@ new g_dummy_value = 0;
 stock allowToUseSemicolonOnMacrosEnd()
 {
 }
-
 
 #if DEBUG_LEVEL & DEBUG_LEVEL_NORMAL
     #define DEBUG
@@ -259,7 +258,7 @@ new g_user_msgid;
 /**
  * Give a 4 minutes range to try detecting the round start, to avoid buy old buy weapons menu
  * override.
- * 
+ *
  * @param seconds     how many seconds are reaming to the map end.
  */
 #define VOTE_ROUND_START_DETECTION_DELAYED(%1) \
@@ -320,7 +319,7 @@ do \
 
 /**
  * Convert colored strings codes '!g for green', '!y for yellow', '!t for team'.
- * 
+ *
  * @param string[]       a string pointer to be converted.
  */
 #define INSERT_COLOR_TAGS(%1) \
@@ -335,7 +334,7 @@ do \
 /**
  * Remove the colored strings codes '^4 for green', '^1 for yellow', '^3 for team' and
  * '^2 for unknown'.
- * 
+ *
  * @param string[]       a string pointer to be formatted.
  */
 #define REMOVE_COLOR_TAGS(%1) \
@@ -348,11 +347,11 @@ do \
 } while( g_dummy_value )
 
 /**
- * Print to the users chat, a colored chat message. 
- * 
+ * Print to the users chat, a colored chat message.
+ *
  * @param player_id     a player id from 1 to MAX_PLAYERS
  * @param message       a colored formatted string message. At the AMXX 182 it must start within
- *                      one color code as found on REMOVE_COLOR_TAGS(1) above macro. Example: 
+ *                      one color code as found on REMOVE_COLOR_TAGS(1) above macro. Example:
  *                      "^1Hi! I am a ^3 colored message".
  */
 #define PRINT_COLORED_MESSAGE(%1,%2) \
@@ -674,7 +673,7 @@ stock configureEndGameCvars()
     }
     else
     {
-        register_event( "DeathMsg" , "client_death_event" , "a" );
+        register_event( "DeathMsg", "client_death_event", "a" );
     }
     
     // mp_winlimit
@@ -988,12 +987,12 @@ public round_start_event()
 
 public client_death_event()
 {
-    new killerId = read_data( 1 ); 
+    new killerId = read_data( 1 );
     
     if( killerId )
     {
         if( ( ( ++g_playersKills[ killerId ] + VOTE_START_FRAGS ) > get_pcvar_num( cvar_mp_fraglimit ) )
-               && !IS_END_OF_MAP_VOTING_GOING_ON() )
+            && !IS_END_OF_MAP_VOTING_GOING_ON() )
         {
             g_isMaxfragsExtend = true;
             
@@ -2301,7 +2300,7 @@ public cmd_say( player_id )
         
         // if the chat line contains 1 word, it could be a map or a one-word command as
         // "say [rtv|rockthe<anything>vote]"
-        if( secondWord[ 0 ] == '^0' ) 
+        if( secondWord[ 0 ] == '^0' )
         {
             DEBUG_LOGGER( 4, "( cmd_say ) secondWord is empty" );
             
@@ -2998,23 +2997,23 @@ stock vote_addNominations( blockedFillerMaps[][], blockedFillerMapsMaxChars = 0 
                     {
                         break;
                     }
-                    
-                }
                 
+                }
+            
             } // end player's nominations looking
             
             if( g_totalVoteOptions == voteNominationMax )
             {
                 break;
             }
-            
+        
         } // end nomination's players looking
         
         if( blackFillerMapTrie )
         {
             TrieDestroy( blackFillerMapTrie );
         }
-        
+    
     } // end if nominations
     
     return blockedCount;

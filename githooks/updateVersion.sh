@@ -86,7 +86,7 @@ build=$(expr $build + 1)
 currentVersion=$major.$minor.$patch-$build
 
 
-# To prints a error message when it does not find the version number on the files.
+# To prints a error message when it does not find the version number on the file.
 #
 # 'F' affects how PATTERN is interpreted (fixed string instead of a regex).
 # 'q' shhhhh... minimal printing.
