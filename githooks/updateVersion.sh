@@ -100,8 +100,6 @@ then
 fi
 
 
-# sed -i -- 's/v2.6.0.0/v2.6.0.1/g' scripting/galileo.sma
-#
 echo "Replacing the version v$originalVersion -> v$currentVersion in $fileToUpdate"
 echo $currentVersion > $versionFileName
 
