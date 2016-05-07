@@ -44,9 +44,9 @@ build=$(echo $currentVersion | cut -d'.' -f 4)
 
 
 
-if [ -z "${major}" ]
+if [ -z "${major}" ] || [ -z "${minor}" ] || [ -z "${patch}" ] || [ -z "${build}" ]
 then
-    echo "VAR major is unset or set to the empty string"
+    echo "VAR $major.$minor.$patch.$build is bad set or set to the empty string"
     exit 1
 fi
 
@@ -82,19 +82,28 @@ build=$(expr $build + 1)
 currentVersion=$major.$minor.$patch.$build
 
 
+# To prints a error message when it does not find the version number on the files.
+#
+# 'F' affects how PATTERN is interpreted (fixed string instead of a regex).
+# 'q' shhhhh... minimal printing.
+#
+if ! grep -F "v$originalVersion" "$fileToUpdate"
+then
+    echo "Error! Could not find $originalVersion and update the file $fileToUpdate."
+    echo "The current version number on this file must be v$originalVersion!"
+    echo "Or fix the file $versionFileName to the correct value."
+    exit 1
+fi
+
+
 # sed -i -- 's/v2.6.0.0/v2.6.0.1/g' scripting/galileo.sma
 #
 echo "Replacing the version v$originalVersion -> v$currentVersion in $fileToUpdate"
 echo $currentVersion > $versionFileName
 
 
-# To prints a error message when it does not find the version number on the files.
-if ! sed -i -- "s/v$originalVersion/v$currentVersion/g" $fileToUpdate
-then
-    echo "Error! Could not find $originalVersion and update the file $fileToUpdate."
-    echo "The current version number on this file must be v$originalVersion!"
-    exit 1
-fi
+# Replace the file with the $originalVersion with the $currentVersion.
+sed -i -- "s/v$originalVersion/v$currentVersion/g" $fileToUpdate
 
 
 # To add the recent updated files to the commit
