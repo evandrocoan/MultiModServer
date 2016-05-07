@@ -37,16 +37,20 @@ originalVersion=$currentVersion
 component=$1
 
 
+# 'cut' Print selected parts of lines from each FILE to standard output
+# 
+# '-d' use another delimiter instead of TAB for field delimiter.
+# '-f' select only these fields.
+#
 major=$(echo $currentVersion | cut -d'.' -f 1)
 minor=$(echo $currentVersion | cut -d'.' -f 2)
-patch=$(echo $currentVersion | cut -d'.' -f 3)
-build=$(echo $currentVersion | cut -d'.' -f 4)
-
+patch=$(echo $currentVersion | cut -d'.' -f 3 | cut -d'-' -f 1)
+build=$(echo $currentVersion | cut -d'-' -f 2)
 
 
 if [ -z "${major}" ] || [ -z "${minor}" ] || [ -z "${patch}" ] || [ -z "${build}" ]
 then
-    echo "VAR $major.$minor.$patch.$build is bad set or set to the empty string"
+    echo "VAR <$major>.<$minor>.<$patch>-<$build> is bad set or set to the empty string"
     exit 1
 fi
 
@@ -79,7 +83,7 @@ esac
 
 
 build=$(expr $build + 1)
-currentVersion=$major.$minor.$patch.$build
+currentVersion=$major.$minor.$patch-$build
 
 
 # To prints a error message when it does not find the version number on the files.
