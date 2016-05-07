@@ -72,6 +72,7 @@ case "$component" in
         ;;
         
     build )
+        build=$(expr $build + 1)
         ;;
         
     * )
@@ -82,7 +83,6 @@ case "$component" in
 esac
 
 
-build=$(expr $build + 1)
 currentVersion=$major.$minor.$patch-$build
 
 

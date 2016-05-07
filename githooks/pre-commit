@@ -15,7 +15,7 @@ echo "Running the pre-commit hook..."
 GIT_DIR_="$(git rev-parse --git-dir)"
 
 currentBranch=$(basename $(git symbolic-ref HEAD))
-currentVersion=$(git diff --name-only --cached)
+currentFiles=$(git diff --name-only --cached)
 
 updateVersionProgram=githooks/updateVersion.sh
 
@@ -28,7 +28,7 @@ fi
 
 
 # Only updates whether the current branch the develop and the file being changed is "galileo.sma".
-if [[ $currentVersion == *"galileo.sma"* ]] && [[ $currentBranch == "develop" ]]
+if [[ $currentFiles == *"galileo.sma"* ]] && [[ $currentBranch == "develop" ]]
 then
     if sh $GIT_DIR_/../$updateVersionProgram build
     then
