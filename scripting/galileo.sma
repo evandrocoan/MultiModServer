@@ -31,7 +31,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-51";
+new const PLUGIN_VERSION[] = "v2.6.1-52";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -63,6 +63,7 @@ new g_dummy_value = 0;
 stock allowToUseSemicolonOnMacrosEnd()
 {
 }
+
 
 #if DEBUG_LEVEL & DEBUG_LEVEL_NORMAL
     #define DEBUG
@@ -732,6 +733,14 @@ stock configureTheVotingMenus()
  */
 public plugin_cfg()
 {
+    // If some exception happened before this, all color_print(...) messages will cause native
+    // error 10, on the AMXX 182. It is because, the execution flow will not reach here, then
+    // the player "g_user_msgid" will be be initialized.
+#if AMXX_VERSION_NUM < 183
+    g_user_msgid = get_user_msgid( "SayText" );
+
+#endif
+    
     reset_rounds_scores();
     loadPluginSetttings();
     
@@ -786,12 +795,6 @@ public plugin_cfg()
     
     // setup the main task that schedules the end map voting and allow round finish feature.
     set_task( 15.0, "vote_manageEnd", _, _, _, "b" );
-
-#if AMXX_VERSION_NUM < 183
-    g_user_msgid = get_user_msgid( "SayText" );
-
-#endif
-
 
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
     g_tests_failure_ids     = ArrayCreate( 1 );
