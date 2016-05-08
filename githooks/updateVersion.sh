@@ -98,7 +98,7 @@ currentVersion=$major.$minor.$patch-$build
 # 'F' affects how PATTERN is interpreted (fixed string instead of a regex).
 # 'q' shhhhh... minimal printing.
 #
-if ! grep -F "v$originalVersion" "$filePathToUpdate"
+if ! grep -Fq "v$originalVersion" "$filePathToUpdate"
 then
     echo "Error! Could not find v$originalVersion and update the file '$filePathToUpdate'."
     echo "The current version number on this file must be v$originalVersion!"
