@@ -1,0 +1,69 @@
+#!/bin/sh
+#
+# An example hook script to prepare the commit log message.
+# Called by "git commit" with the name of the file that has the
+# commit message, followed by the description of the commit
+# message's source.  The hook's purpose is to edit the commit
+# message file.  If the hook fails with a non-zero status,
+# the commit is aborted.
+#
+# To enable this hook, rename this file to "prepare-commit-msg".
+#
+# The prepare-commit-msg hook is run before the commit message
+# editor is fired up but after the default message is created.
+# It lets you edit the default message before the commit author
+# sees it. This hook takes a few parameters:
+# $1 - the path to the file that holds the commit message so far, (as .git/MERGE_MSG)
+# $2 - the type of commit, (as message or merge)
+# $3 - the commit SHA-1 if this is an amended commit.
+# echo "1 = $1, 2 = $2, 3 = $3"
+
+
+
+echo "Running the prepare-commmit-message hook..."
+
+
+GIT_DIR_="$(git rev-parse --git-dir)"
+
+versionFileName=githooks/GALILEO_VERSION.txt
+fileToUpdate=scripting/galileo.sma
+
+currentBranch=$(basename $(git symbolic-ref HEAD))
+currentFiles=$(git diff --name-only --cached)
+
+updateVersionProgram=githooks/updateVersion.sh
+
+
+# When the file "isToUpdateTheGalileoFile.txt" exits, we must not to recreate it, as we just did
+# that. This happens because the file "isToUpdateTheGalileoFile.txt" is created to indicate that
+# the version number already updated and doing it again would create an infinite loop.
+if [ -f $GIT_DIR_/isToUpdateTheGalileoFile.txt ]
+then
+    rm $GIT_DIR_/isToUpdateTheGalileoFile.txt
+    exit 0
+fi
+
+
+# Only updates whether the current branch the develop and the file being changed is "galileo.sma".
+if [[ $currentFiles == *"galileo.sma"* ]] && [[ $currentBranch == "develop" ]]
+then
+    if sh $GIT_DIR_/../$updateVersionProgram build
+    then
+        echo "isToUpdateTheGalileoFile" > $GIT_DIR_/isToUpdateTheGalileoFile.txt
+        git add $versionFileName
+        git add $fileToUpdate
+        echo "Successfully ran $updateVersionProgram"
+    else
+        echo "Could not run the update program $updateVersionProgram properly!"
+        exit 1
+    fi
+else
+    echo "The 'galileo.sma' file is not being committed/updated right now."
+fi
+
+
+echo "Successfully executed the pre-commit hook."
+exit 0
+
+
+

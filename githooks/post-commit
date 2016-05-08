@@ -20,12 +20,19 @@ fileToUpdate=scripting/galileo.sma
 
 if [ -f $GIT_DIR_/isToUpdateTheGalileoFile.txt ]
 then
-    echo "Applying git reset to $versionFileName and $fileToUpdate..."
-    git reset $versionFileName
-    git reset $fileToUpdate
-    rm $GIT_DIR_/isToUpdateTheGalileoFile.txt
+    echo "Amending $versionFileName and $fileToUpdate..."
+    git add $versionFileName
+    git add $fileToUpdate
+    git commit --amend
 else
     echo "It is not time to update the $fileToUpdate file."
+fi
+
+
+# To clean any old missed file
+if [ -f $GIT_DIR_/isToUpdateTheGalileoFile.txt ]
+then
+    rm $GIT_DIR_/isToUpdateTheGalileoFile.txt
 fi
 
 
