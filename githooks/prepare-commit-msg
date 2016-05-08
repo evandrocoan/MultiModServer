@@ -23,10 +23,13 @@
 echo "Running the prepare-commmit-message hook..."
 
 
-fileToUpdate=galileo.sma
-
 GIT_DIR_="$(git rev-parse --git-dir)"
 updateFlagFile=$GIT_DIR_/isToUpdateTheGalileoFile.txt
+
+githooksConfig=$(cat $GIT_DIR_/../githooks/githooksConfig.txt)
+
+# $fileToUpdate example: galileo.sma
+fileToUpdate=$(echo $githooksConfig | cut -d',' -f 3)
 
 currentFile=$(git diff --name-only --cached)
 currentBranch=$(basename $(git symbolic-ref HEAD))

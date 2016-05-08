@@ -28,9 +28,14 @@
 #
 
 
-versionFileName=githooks/GALILEO_VERSION.txt
-fileToUpdate=scripting/galileo.sma
 
+githooksConfig=$(cat githooks/githooksConfig.txt)
+
+# $fileToUpdate example: githooks/GALILEO_VERSION.txt
+fileToUpdate=$(echo $githooksConfig | cut -d',' -f 2)
+
+# $versionFileName example: scripting/galileo.sma
+versionFileName=$(echo $githooksConfig | cut -d',' -f 1)
 
 currentVersion=$(cat $versionFileName)
 originalVersion=$currentVersion
