@@ -1,4 +1,4 @@
-githooks/GALILEO_VERSION.txt,scripting/galileo.sma,galileo.sma,
+githooks/GALILEO_SMA_VERSION.txt,scripting/galileo.sma,galileo.sma,
 
 This is the 'updateVersion.sh' configuration file.
 It is important do not include any spaces on the above configuration line or remove the last comma.
