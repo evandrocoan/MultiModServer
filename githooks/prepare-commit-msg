@@ -26,38 +26,60 @@ echo "Running the prepare-commmit-message hook..."
 GIT_DIR_="$(git rev-parse --git-dir)"
 githooksConfig=$(cat $GIT_DIR_/../githooks/githooksConfig.txt)
 
-# $fileToUpdate example: galileo.sma
-fileToUpdate=$(echo $githooksConfig | cut -d',' -f 3)
+# $versionFilePath example: githooks/GALILEO_SMA_VERSION.txt
+versionFilePath=$GIT_DIR_/../$(echo $githooksConfig | cut -d',' -f 1)
 
-# $updateFlagFile example: isToUpdateTheGalileoFile.txt
-updateFlagFile=$GIT_DIR_/$(echo $githooksConfig | cut -d',' -f 4)
+# $filePathToUpdate example: scripting/galileo.sma
+filePathToUpdate=$GIT_DIR_/../$(echo $githooksConfig | cut -d',' -f 2)
 
-currentFile=$(git diff --name-only --cached)
+# $fileNameToUpdate example: galileo.sma
+fileNameToUpdate=$GIT_DIR_/../$(echo $githooksConfig | cut -d',' -f 3)
+
+# $updateFlagFileName example: isToUpdateTheGalileoFile.txt
+updateFlagFileName=$GIT_DIR_/$(echo $githooksConfig | cut -d',' -f 4)
+
+currentGitFiles=$(git diff --name-only --cached)
 currentBranch=$(basename $(git symbolic-ref HEAD))
 
+currentVersion=$(cat $versionFilePath)
 
-# When the file "$updateFlagFile" exits, we must not to recreate it, as we just did
-# that. This happens because the file "$updateFlagFile" is created to indicate that
+
+# When the file "$updateFlagFileName" exits, we must not to recreate it, as we just did
+# that. This happens because the file "$updateFlagFileName" is created to indicate that
 # the version number already updated and doing it again would create an infinite loop.
 # Because this is a recursive shell script, hence this file is recalled later and it
 # must to be stopped right here.
-if [ -f $updateFlagFile ]
+if [ -f $updateFlagFileName ]
 then
-    echo "Removing old prepare-commmit-message configuration file '$updateFlagFile'..."
-    rm $updateFlagFile
+    echo "Removing old prepare-commmit-message configuration file '$updateFlagFileName'..."
+    rm $updateFlagFileName
     exit 0
 fi
 
 
-# This creates the flag file '$updateFlagFile' to indicate that 'post-checkout' and
-# 'post-commit' hooks must to update the version number. It only updates whether the current
-# branch the develop and the file being changed is "$fileToUpdate".
-if [[ $currentFile == *"$fileToUpdate"* ]] && [[ $currentBranch == "develop" ]]
+# To prints a error message when it does not find the version number on the file.
+#
+# 'F' affects how PATTERN is interpreted (fixed string instead of a regex).
+# 'q' shhhhh... minimal printing.
+#
+if [[ $currentGitFiles == *"$fileNameToUpdate"* ]] && !grep -F "v$currentVersion" "$filePathToUpdate"
 then
-    echo "true" > $updateFlagFile
-    echo "Successfully created the flag file '$updateFlagFile'"
+    echo "Error! Could not find v$currentVersion and update the file '$filePathToUpdate'."
+    echo "The current version number on this file must be v$currentVersion."
+    echo "Or fix the file '$versionFilePath' to the correct value."
+    exit 1
+fi
+
+
+# This creates the flag file '$updateFlagFileName' to indicate that 'post-checkout' and
+# 'post-commit' hooks must to update the version number. It only updates whether the current
+# branch the develop and the file being changed is "$fileNameToUpdate".
+if [[ $currentGitFiles == *"$fileNameToUpdate"* ]] && [[ $currentBranch == "develop" ]]
+then
+    echo "true" > $updateFlagFileName
+    echo "Successfully created the flag file '$updateFlagFileName'"
 else
-    echo "The '$fileToUpdate' file is not being updated right now."
+    echo "The '$fileNameToUpdate' file is not being updated right now."
 fi
 
 

@@ -3,7 +3,7 @@
 
 #
 # This file must be ran from the main repository folder. It updates the software version number
-# indicated at "fileToUpdate" and "versionFileName". The versions at these two files must to be
+# indicated at "filePathToUpdate" and "versionFilePath". The versions at these two files must to be
 # synchronized for a correct version update. 
 #
 # You can also update the version manually, but you must to update both files: "./githooks/VERSION.txt"
@@ -32,14 +32,15 @@
 GIT_DIR_="$(git rev-parse --git-dir)"
 githooksConfig=$(cat $GIT_DIR_/../githooks/githooksConfig.txt)
 
-# $fileToUpdate example: githooks/GALILEO_VERSION.txt
-fileToUpdate=$(echo $githooksConfig | cut -d',' -f 2)
+# $versionFilePath example: githooks/GALILEO_SMA_VERSION.txt
+versionFilePath=$GIT_DIR_/../$(echo $githooksConfig | cut -d',' -f 1)
 
-# $versionFileName example: scripting/galileo.sma
-versionFileName=$(echo $githooksConfig | cut -d',' -f 1)
+# $filePathToUpdate example: scripting/galileo.sma
+filePathToUpdate=$GIT_DIR_/../$(echo $githooksConfig | cut -d',' -f 2)
 
-currentVersion=$(cat $versionFileName)
+currentVersion=$(cat $versionFilePath)
 originalVersion=$currentVersion
+
 component=$1
 
 
@@ -97,27 +98,27 @@ currentVersion=$major.$minor.$patch-$build
 # 'F' affects how PATTERN is interpreted (fixed string instead of a regex).
 # 'q' shhhhh... minimal printing.
 #
-if ! grep -F "v$originalVersion" "$fileToUpdate"
+if ! grep -F "v$originalVersion" "$filePathToUpdate"
 then
-    echo "Error! Could not find $originalVersion and update the file '$fileToUpdate'."
+    echo "Error! Could not find v$originalVersion and update the file '$filePathToUpdate'."
     echo "The current version number on this file must be v$originalVersion!"
-    echo "Or fix the file '$versionFileName' to the correct value."
+    echo "Or fix the file '$versionFilePath' to the correct value."
     exit 1
 fi
 
 
-echo "Replacing the version v$originalVersion -> v$currentVersion in '$fileToUpdate'"
-echo $currentVersion > $versionFileName
+# Replace the file with the $versionFilePath with the $currentVersion.
+echo $currentVersion > $versionFilePath
 
 
-# Replace the file with the $originalVersion with the $currentVersion.
-sed -i -- "s/v$originalVersion/v$currentVersion/g" $fileToUpdate
+echo "Replacing the version v$originalVersion -> v$currentVersion in '$filePathToUpdate'"
+sed -i -- "s/v$originalVersion/v$currentVersion/g" $filePathToUpdate
 
 
 # To add the recent updated files to the commit
-echo "Staging '$versionFileName' and '$fileToUpdate'..."
-git add $versionFileName
-git add $fileToUpdate
+echo "Staging '$versionFilePath' and '$filePathToUpdate'..."
+git add $versionFilePath
+git add $filePathToUpdate
 
 
 # Exits the program using a successful exit status code.
