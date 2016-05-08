@@ -39,6 +39,8 @@ currentBranch=$(basename $(git symbolic-ref HEAD))
 # When the file "$updateFlagFile" exits, we must not to recreate it, as we just did
 # that. This happens because the file "$updateFlagFile" is created to indicate that
 # the version number already updated and doing it again would create an infinite loop.
+# Because this is a recursive shell script, hence this file is recalled later and it
+# must to be stopped right here.
 if [ -f $updateFlagFile ]
 then
     echo "Removing old prepare-commmit-message configuration file '$updateFlagFile'..."

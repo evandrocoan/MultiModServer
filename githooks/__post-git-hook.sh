@@ -7,14 +7,22 @@
 
 
 GIT_DIR_="$(git rev-parse --git-dir)"
+
 githooksConfig=$(cat $GIT_DIR_/../githooks/githooksConfig.txt)
-
 updateVersionProgram=$GIT_DIR_/../githooks/updateVersion.sh
-updateFlagFile=$GIT_DIR_/isToUpdateTheGalileoFile.txt
-
 
 # $updateFlagFile example: isToUpdateTheGalileoFile.txt
 updateFlagFile=$GIT_DIR_/$(echo $githooksConfig | cut -d',' -f 4)
+
+
+cleanUpdateFlagFile()
+{
+    if [ -f $updateFlagFile ]
+    then
+        echo "Removing old post-commit or checkout configuration file '$updateFlagFile'..."
+        rm $updateFlagFile
+    fi
+}
 
 
 # Updates and changes the files if the flag file exits.
@@ -27,6 +35,7 @@ then
         echo "Successfully ran '$updateVersionProgram'"
     else
         echo "Could not run the update program '$updateVersionProgram' properly!"
+        cleanUpdateFlagFile
         exit 1
     fi
     echo "Amending commits..."
@@ -37,11 +46,7 @@ fi
 
 
 # To clean any old missed file
-if [ -f $updateFlagFile ]
-then
-    echo "Removing old post-commit configuration file '$updateFlagFile'..."
-    rm $updateFlagFile
-fi
+cleanUpdateFlagFile
 
 
 # Exits the program using a successful exit status code.
