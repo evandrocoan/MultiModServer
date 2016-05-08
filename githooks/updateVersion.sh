@@ -29,7 +29,8 @@
 
 
 
-githooksConfig=$(cat githooks/githooksConfig.txt)
+GIT_DIR_="$(git rev-parse --git-dir)"
+githooksConfig=$(cat $GIT_DIR_/../githooks/githooksConfig.txt)
 
 # $fileToUpdate example: githooks/GALILEO_VERSION.txt
 fileToUpdate=$(echo $githooksConfig | cut -d',' -f 2)
@@ -98,14 +99,14 @@ currentVersion=$major.$minor.$patch-$build
 #
 if ! grep -F "v$originalVersion" "$fileToUpdate"
 then
-    echo "Error! Could not find $originalVersion and update the file $fileToUpdate."
+    echo "Error! Could not find $originalVersion and update the file '$fileToUpdate'."
     echo "The current version number on this file must be v$originalVersion!"
-    echo "Or fix the file $versionFileName to the correct value."
+    echo "Or fix the file '$versionFileName' to the correct value."
     exit 1
 fi
 
 
-echo "Replacing the version v$originalVersion -> v$currentVersion in $fileToUpdate"
+echo "Replacing the version v$originalVersion -> v$currentVersion in '$fileToUpdate'"
 echo $currentVersion > $versionFileName
 
 
@@ -114,7 +115,7 @@ sed -i -- "s/v$originalVersion/v$currentVersion/g" $fileToUpdate
 
 
 # To add the recent updated files to the commit
-echo "Staging $versionFileName and $fileToUpdate..."
+echo "Staging '$versionFileName' and '$fileToUpdate'..."
 git add $versionFileName
 git add $fileToUpdate
 

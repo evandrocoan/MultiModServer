@@ -19,9 +19,9 @@ updateVersionScript=$GIT_DIR_/../githooks/__post-git-hook.sh
 # Run the version update script.
 if sh $updateVersionScript
 then
-    echo "The post-commit hook successfully ran $updateVersionScript."
+    echo "The post-commit hook successfully ran '$updateVersionScript'."
 else
-    echo "Could not run the update program $updateVersionScript properly!"
+    echo "Could not run the update program '$updateVersionScript' properly!"
     exit 1
 fi
 

@@ -7,9 +7,14 @@
 
 
 GIT_DIR_="$(git rev-parse --git-dir)"
+githooksConfig=$(cat $GIT_DIR_/../githooks/githooksConfig.txt)
 
 updateVersionProgram=$GIT_DIR_/../githooks/updateVersion.sh
 updateFlagFile=$GIT_DIR_/isToUpdateTheGalileoFile.txt
+
+
+# $updateFlagFile example: isToUpdateTheGalileoFile.txt
+updateFlagFile=$GIT_DIR_/$(echo $githooksConfig | cut -d',' -f 4)
 
 
 # Updates and changes the files if the flag file exits.
@@ -19,9 +24,9 @@ if [ -f $updateFlagFile ]
 then
     if sh $updateVersionProgram build
     then
-        echo "Successfully ran $updateVersionProgram"
+        echo "Successfully ran '$updateVersionProgram'"
     else
-        echo "Could not run the update program $updateVersionProgram properly!"
+        echo "Could not run the update program '$updateVersionProgram' properly!"
         exit 1
     fi
     echo "Amending commits..."

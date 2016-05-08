@@ -31,16 +31,16 @@ commitsBehindDevelop=$(git rev-list --count $currentBranch..develop)
 # Alert the user when his checkout branch is behind the develop branch.
 if [ $commitsBehindDevelop -gt 0 ]
 then
-    printf "ATTENTION: Your branch $currentBranch is $commitsBehindDevelop commits behind develop\n"
+    echo "ATTENTION: Your branch '$currentBranch' is $commitsBehindDevelop commits behind develop"
     exit 1
 fi
 
 # Run the version update script.
 if sh $updateVersionScript
 then
-    echo "The post-checkout hook successfully ran $updateVersionScript."
+    echo "The post-checkout hook successfully ran '$updateVersionScript'."
 else
-    echo "Could not run the update program $updateVersionScript properly!"
+    echo "Could not run the update program '$updateVersionScript' properly!"
     exit 1
 fi
 
