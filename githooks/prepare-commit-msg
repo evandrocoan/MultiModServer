@@ -24,14 +24,9 @@ echo "Running the prepare-commmit-message hook..."
 
 
 GIT_DIR_="$(git rev-parse --git-dir)"
-
-versionFileName=githooks/GALILEO_VERSION.txt
-fileToUpdate=scripting/galileo.sma
-
+currentFile=$(git diff --name-only --cached)
 currentBranch=$(basename $(git symbolic-ref HEAD))
-currentFiles=$(git diff --name-only --cached)
 
-updateVersionProgram=githooks/updateVersion.sh
 
 
 # When the file "isToUpdateTheGalileoFile.txt" exits, we must not to recreate it, as we just did
@@ -39,26 +34,19 @@ updateVersionProgram=githooks/updateVersion.sh
 # the version number already updated and doing it again would create an infinite loop.
 if [ -f $GIT_DIR_/isToUpdateTheGalileoFile.txt ]
 then
+    echo "Removing old prepare-commmit-message configuration file 'isToUpdateTheGalileoFile.txt'..."
     rm $GIT_DIR_/isToUpdateTheGalileoFile.txt
     exit 0
 fi
 
 
 # Only updates whether the current branch the develop and the file being changed is "galileo.sma".
-if [[ $currentFiles == *"galileo.sma"* ]] && [[ $currentBranch == "develop" ]]
+if [[ $currentFile == *"galileo.sma"* ]] && [[ $currentBranch == "develop" ]]
 then
-    if sh $GIT_DIR_/../$updateVersionProgram build
-    then
-        echo "isToUpdateTheGalileoFile" > $GIT_DIR_/isToUpdateTheGalileoFile.txt
-        git add $versionFileName
-        git add $fileToUpdate
-        echo "Successfully ran $updateVersionProgram"
-    else
-        echo "Could not run the update program $updateVersionProgram properly!"
-        exit 1
-    fi
+    echo "isToUpdateTheGalileoFile" > $GIT_DIR_/isToUpdateTheGalileoFile.txt
+    echo "Successfully created the flag 'file isToUpdateTheGalileoFile.txt'"
 else
-    echo "The 'galileo.sma' file is not being committed/updated right now."
+    echo "The 'galileo.sma' file is not being updated right now."
 fi
 
 

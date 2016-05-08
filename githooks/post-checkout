@@ -24,12 +24,35 @@ currentBranch=$(basename $(git symbolic-ref HEAD))
 commitsBehindDevelop=$(git rev-list --count $currentBranch..develop)
 
 
+GIT_DIR_="$(git rev-parse --git-dir)"
+updateVersionProgram=githooks/updateVersion.sh
+
+
+
 if [ $commitsBehindDevelop -gt 0 ]
 then
     printf "ATTENTION: Your branch $currentBranch is $commitsBehindDevelop commits behind develop\n"
     exit 1
 fi
 
+
+# Updates and changes the files if the flag file exits.
+if [ -f $GIT_DIR_/isToUpdateTheGalileoFile.txt ]
+then
+    sh $GIT_DIR_/../$updateVersionProgram build
+    echo "Amending commits..."
+    git commit --amend -C HEAD --no-verify
+else
+    echo "It is not time amend as the file 'isToUpdateTheGalileoFile.txt' does not exist."
+fi
+
+
+# To clean any old missed file
+if [ -f $GIT_DIR_/isToUpdateTheGalileoFile.txt ]
+then
+    echo "Removing old post-commit configuration file 'isToUpdateTheGalileoFile.txt'..."
+    rm $GIT_DIR_/isToUpdateTheGalileoFile.txt
+fi
 
 exit 0
 
