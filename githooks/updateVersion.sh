@@ -114,10 +114,7 @@ git add $versionFileName
 git add $fileToUpdate
 
 
+# Exits the program using a successful exit status code.
 exit 0
-
-
-
-
 
 

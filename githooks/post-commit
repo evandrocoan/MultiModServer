@@ -13,29 +13,19 @@ echo "Running the post-commit hook..."
 
 
 GIT_DIR_="$(git rev-parse --git-dir)"
-updateVersionProgram=githooks/updateVersion.sh
+updateVersionScript=$GIT_DIR_/../githooks/__post-git-hook.sh
 
 
-
-# Updates and changes the files if the flag file exits.
-if [ -f $GIT_DIR_/isToUpdateTheGalileoFile.txt ]
+# Run the version update script.
+if sh $updateVersionScript
 then
-    sh $GIT_DIR_/../$updateVersionProgram build
-    echo "Amending commits..."
-    git commit --amend -C HEAD --no-verify
+    echo "The post-commit hook successfully ran $updateVersionScript."
 else
-    echo "It is not time amend as the file 'isToUpdateTheGalileoFile.txt' does not exist."
+    echo "Could not run the update program $updateVersionScript properly!"
+    exit 1
 fi
 
 
-# To clean any old missed file
-if [ -f $GIT_DIR_/isToUpdateTheGalileoFile.txt ]
-then
-    echo "Removing old post-commit configuration file 'isToUpdateTheGalileoFile.txt'..."
-    rm $GIT_DIR_/isToUpdateTheGalileoFile.txt
-fi
-
-
+# Exits the program using a successful exit status code.
 exit 0
-
 

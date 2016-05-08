@@ -23,34 +23,39 @@
 echo "Running the prepare-commmit-message hook..."
 
 
+fileToUpdate=galileo.sma
+
 GIT_DIR_="$(git rev-parse --git-dir)"
+updateFlagFile=$GIT_DIR_/isToUpdateTheGalileoFile.txt
+
 currentFile=$(git diff --name-only --cached)
 currentBranch=$(basename $(git symbolic-ref HEAD))
 
 
-
-# When the file "isToUpdateTheGalileoFile.txt" exits, we must not to recreate it, as we just did
-# that. This happens because the file "isToUpdateTheGalileoFile.txt" is created to indicate that
+# When the file "$updateFlagFile" exits, we must not to recreate it, as we just did
+# that. This happens because the file "$updateFlagFile" is created to indicate that
 # the version number already updated and doing it again would create an infinite loop.
-if [ -f $GIT_DIR_/isToUpdateTheGalileoFile.txt ]
+if [ -f $updateFlagFile ]
 then
-    echo "Removing old prepare-commmit-message configuration file 'isToUpdateTheGalileoFile.txt'..."
-    rm $GIT_DIR_/isToUpdateTheGalileoFile.txt
+    echo "Removing old prepare-commmit-message configuration file '$updateFlagFile'..."
+    rm $updateFlagFile
     exit 0
 fi
 
 
-# Only updates whether the current branch the develop and the file being changed is "galileo.sma".
-if [[ $currentFile == *"galileo.sma"* ]] && [[ $currentBranch == "develop" ]]
+# This creates the flag file '$updateFlagFile' to indicate that 'post-checkout' and
+# 'post-commit' hooks must to update the version number. It only updates whether the current
+# branch the develop and the file being changed is "$fileToUpdate".
+if [[ $currentFile == *"$fileToUpdate"* ]] && [[ $currentBranch == "develop" ]]
 then
-    echo "isToUpdateTheGalileoFile" > $GIT_DIR_/isToUpdateTheGalileoFile.txt
-    echo "Successfully created the flag 'file isToUpdateTheGalileoFile.txt'"
+    echo "true" > $updateFlagFile
+    echo "Successfully created the flag file '$updateFlagFile'"
 else
-    echo "The 'galileo.sma' file is not being updated right now."
+    echo "The $fileToUpdate file is not being updated right now."
 fi
 
 
+# Exits the program using a successful exit status code.
 exit 0
-
 
 
