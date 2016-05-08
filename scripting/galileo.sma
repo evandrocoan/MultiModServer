@@ -31,7 +31,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-55";
+new const PLUGIN_VERSION[] = "v2.6.1-56";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -2651,20 +2651,21 @@ stock nomination_getPlayer( mapIndex )
             }
         }
     }
+    
     return 0;
 }
 
 stock nomination_toggle( player_id, mapIndex )
 {
-    new idNominator = nomination_getPlayer( mapIndex );
+    new nominatorPlayerId = nomination_getPlayer( mapIndex );
     
-    if( idNominator == player_id )
+    if( nominatorPlayerId == player_id )
     {
         nomination_cancel( player_id, mapIndex );
     }
     else
     {
-        map_nominate( player_id, mapIndex, idNominator );
+        map_nominate( player_id, mapIndex, nominatorPlayerId );
     }
 }
 
@@ -2709,13 +2710,13 @@ stock nomination_cancel( player_id, mapIndex )
     }
     else
     {
-        new idNominator = nomination_getPlayer( mapIndex );
+        new nominatorPlayerId = nomination_getPlayer( mapIndex );
         
-        if( idNominator )
+        if( nominatorPlayerId )
         {
             new player_name[ MAX_PLAYER_NAME_LENGHT ];
-            get_user_name( idNominator, player_name, charsmax( player_name ) );
             
+            get_user_name( nominatorPlayerId, player_name, charsmax( player_name ) );
             color_print( player_id, "^1%L", player_id, "GAL_CANCEL_FAIL_SOMEONEELSE",
                     mapName, player_name );
         }
@@ -2727,7 +2728,7 @@ stock nomination_cancel( player_id, mapIndex )
     }
 }
 
-stock map_nominate( player_id, mapIndex, idNominator = -1 )
+stock map_nominate( player_id, mapIndex, nominatorPlayerId = -1 )
 {
     // nominations can only be made if a vote isn't already in progress
     if( g_voteStatus & VOTE_IS_IN_PROGRESS )
@@ -2755,6 +2756,7 @@ stock map_nominate( player_id, mapIndex, idNominator = -1 )
     if( equal( g_currentMap, mapName ) )
     {
         color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_CURRENTMAP", g_currentMap );
+        
         return;
     }
     
@@ -2763,16 +2765,17 @@ stock map_nominate( player_id, mapIndex, idNominator = -1 )
     {
         color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_TOORECENT", mapName );
         color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_TOORECENT_HLP" );
+        
         return;
     }
     
     // check if the map has already been nominated
-    if( idNominator == -1 )
+    if( nominatorPlayerId == -1 )
     {
-        idNominator = nomination_getPlayer( mapIndex );
+        nominatorPlayerId = nomination_getPlayer( mapIndex );
     }
     
-    if( idNominator == 0 )
+    if( nominatorPlayerId == 0 )
     {
         new nominationOpenIndex;
         new nominationIndex;
@@ -2832,14 +2835,14 @@ stock map_nominate( player_id, mapIndex, idNominator = -1 )
             color_print( player_id, "^1%L", player_id, "GAL_NOM_GOOD_HLP" );
         }
     }
-    else if( idNominator == player_id )
+    else if( nominatorPlayerId == player_id )
     {
         color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_ALREADY", mapName );
     }
     else
     {
         new player_name[ MAX_PLAYER_NAME_LENGHT ];
-        get_user_name( idNominator, player_name, charsmax( player_name ) );
+        get_user_name( nominatorPlayerId, player_name, charsmax( player_name ) );
         
         color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_SOMEONEELSE",
                 mapName, player_name );
@@ -5700,8 +5703,8 @@ stock nomination_clearAll()
 stock map_announceNomination( player_id, map[] )
 {
     new player_name[ MAX_PLAYER_NAME_LENGHT ];
-    get_user_name( player_id, player_name, charsmax( player_name ) );
     
+    get_user_name( player_id, player_name, charsmax( player_name ) );
     color_print( 0, "^1%L", LANG_PLAYER, "GAL_NOM_SUCCESS", player_name, map );
 }
 
