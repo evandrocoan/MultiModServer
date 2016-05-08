@@ -62,7 +62,6 @@ else
 fi
 
 
-echo "Successfully executed the pre-commit hook."
 exit 0
 
 
