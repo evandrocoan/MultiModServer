@@ -24,7 +24,7 @@ echo "Running the post-checkout hook..."
 GIT_DIR_="$(git rev-parse --git-dir)"
 updateVersionScript=$GIT_DIR_/../githooks/__post-git-hook.sh
 
-currentBranch=$(basename $(git symbolic-ref HEAD))
+currentBranch=$(git rev-parse --symbolic-full-name --abbrev-ref HEAD)
 commitsBehindDevelop=$(git rev-list --count $currentBranch..develop)
 
 

@@ -39,7 +39,7 @@ updateFlagFilePath=$GIT_DIR_/$(echo $githooksConfig | cut -d',' -f 4)
 fileNameToUpdate=$(echo $githooksConfig | cut -d',' -f 3)
 
 currentGitFiles=$(git diff --name-only --cached)
-currentBranch=$(basename $(git symbolic-ref HEAD))
+currentBranch=$(git rev-parse --symbolic-full-name --abbrev-ref HEAD)
 
 currentVersion=$(cat $versionFilePath)
 
