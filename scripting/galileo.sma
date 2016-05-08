@@ -31,7 +31,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-58";
+new const PLUGIN_VERSION[] = "v2.6.1-59";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -363,6 +363,24 @@ do \
     message_end(); \
 } while( g_dummy_value )
 
+/**
+ * Get the player name. If the player is not connected, uses "Unknown Dude" as its name.
+ * 
+ * @param player_id          the player id
+ * @param name_string        a string pointer to hold the player name.
+ */
+#define GET_USER_NAME(%1,%2) \
+do \
+{ \
+    if( is_user_connected( %1 ) ) \
+    { \
+        get_user_name( %1, %2, charsmax( %2 ) ); \
+    } \
+    else \
+    { \
+        copy( %2, charsmax( %2 ), "Unknown Dude" ); \
+    } \
+} while( g_dummy_value )
 
 /**
  * Game cvars.
@@ -2721,7 +2739,7 @@ stock nomination_cancel( player_id, mapIndex )
         {
             new player_name[ MAX_PLAYER_NAME_LENGHT ];
             
-            get_user_name( nominatorPlayerId, player_name, charsmax( player_name ) );
+            GET_USER_NAME( nominatorPlayerId, player_name );
             color_print( player_id, "^1%L", player_id, "GAL_CANCEL_FAIL_SOMEONEELSE",
                     mapName, player_name );
         }
@@ -2853,7 +2871,7 @@ stock map_nominate( player_id, mapIndex, nominatorPlayerId = -1 )
     else
     {
         new player_name[ MAX_PLAYER_NAME_LENGHT ];
-        get_user_name( nominatorPlayerId, player_name, charsmax( player_name ) );
+        GET_USER_NAME( nominatorPlayerId, player_name );
         
         color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_SOMEONEELSE",
                 mapName, player_name );
@@ -2974,7 +2992,7 @@ stock vote_addNominations( blockedFillerMaps[][], blockedFillerMapsMaxChars = 0 
                     ArrayGetString( g_nominationMaps, mapIndex, mapName, charsmax( mapName ) );
                     
                     nominator_id = nomination_getPlayer( mapIndex );
-                    get_user_name( nominator_id, playerName, charsmax( playerName ) );
+                    GET_USER_NAME( nominator_id, playerName );
                     
                     DEBUG_LOGGER( 4, "      %-32s %s", mapName, playerName );
                 }
@@ -4308,7 +4326,7 @@ stock display_vote_menu( bool:menuType, player_id, menuBody[], menuKeys )
     {
         new player_name[ MAX_PLAYER_NAME_LENGHT ];
         
-        get_user_name( player_id, player_name, charsmax( player_name ) );
+        GET_USER_NAME( player_id, player_name );
         
         DEBUG_LOGGER( 4, "    [%s ( %s )]", player_name, ( menuType ? "clean" : "dirty" ) );
         DEBUG_LOGGER( 4, "        %s", menuBody );
@@ -4444,7 +4462,7 @@ stock announceRegistedVote( player_id, pressedKeyCode )
     
     if( isToAnnounceChoice )
     {
-        get_user_name( player_id, player_name, charsmax( player_name ) );
+        GET_USER_NAME( player_id, player_name );
     }
     
     // confirm the player's choice (pressedKeyCode = 9 means 0 on the keyboard, 8 is 7, etc)
@@ -5366,7 +5384,7 @@ public map_listAll( player_id )
         
         if( nominator_id )
         {
-            get_user_name( nominator_id, player_name, charsmax( player_name ) );
+            GET_USER_NAME( nominator_id, player_name );
             formatex( nominated, charsmax( nominated ), "%L", player_id, "GAL_NOMINATEDBY", player_name );
         }
         else
@@ -5715,7 +5733,7 @@ stock map_announceNomination( player_id, map[] )
 {
     new player_name[ MAX_PLAYER_NAME_LENGHT ];
     
-    get_user_name( player_id, player_name, charsmax( player_name ) );
+    GET_USER_NAME( player_id, player_name );
     color_print( 0, "^1%L", LANG_PLAYER, "GAL_NOM_SUCCESS", player_name, map );
 }
 
