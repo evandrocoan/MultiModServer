@@ -32,11 +32,11 @@ versionFilePath=$GIT_DIR_/../$(echo $githooksConfig | cut -d',' -f 1)
 # $filePathToUpdate example: scripting/galileo.sma
 filePathToUpdate=$GIT_DIR_/../$(echo $githooksConfig | cut -d',' -f 2)
 
-# $updateFlagFilePath example: isToUpdateTheGalileoFile.txt
-updateFlagFilePath=$GIT_DIR_/$(echo $githooksConfig | cut -d',' -f 4)
-
 # $fileNameToUpdate example: galileo.sma
 fileNameToUpdate=$(echo $githooksConfig | cut -d',' -f 3)
+
+# $updateFlagFilePath example: isToUpdateTheGalileoFile.txt
+updateFlagFilePath=$GIT_DIR_/$(echo $githooksConfig | cut -d',' -f 4)
 
 currentGitFiles=$(git diff --name-only --cached)
 currentBranch=$(git rev-parse --symbolic-full-name --abbrev-ref HEAD)
@@ -81,7 +81,7 @@ then
         echo "true" > $updateFlagFilePath
         echo "Successfully created the flag file '$updateFlagFilePath'"
     else
-        echo "The '$fileNameToUpdate' file is not being updated we are not on the 'develop' branch."
+        echo "The '$fileNameToUpdate' file is not being updated, because we are not on the 'develop' branch."
     fi
 else
     echo "The '$fileNameToUpdate' file is not being committed right now."

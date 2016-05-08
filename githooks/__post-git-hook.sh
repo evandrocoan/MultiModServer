@@ -12,7 +12,7 @@ githooksConfig=$(cat $GIT_DIR_/../githooks/githooksConfig.txt)
 # $updateFlagFilePath example: isToUpdateTheGalileoFile.txt
 updateFlagFilePath=$GIT_DIR_/$(echo $githooksConfig | cut -d',' -f 4)
 
-currentBranch=$(basename $(git symbolic-ref HEAD))
+currentBranch=$(git rev-parse --symbolic-full-name --abbrev-ref HEAD)
 updateVersionProgram=$GIT_DIR_/../githooks/updateVersion.sh
 
 
