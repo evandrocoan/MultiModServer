@@ -2322,7 +2322,7 @@ public cmd_say( player_id )
             secondWord, charsmax( secondWord ),
             thirdWord, charsmax( thirdWord ) );
     
-    DEBUG_LOGGER( 4, "( cmd_say ) sentence: %s, firstWord: %s, secondWord: %s, thirdWord: %s", \
+    DEBUG_LOGGER( 4, "( cmd_say ) sentence: %s, firstWord: %s, secondWord: %s, thirdWord: %s, ", \
             sentence, firstWord, secondWord, thirdWord );
     
     // if the chat line has more than 2 words, we're not interested at all
@@ -2620,8 +2620,10 @@ public nomination_handleMatchChoice( player_id, menu, item )
 #if defined DEBUG
     
     // Get item info
+    new access;
+    new callback;
+    
     new info[ 1 ];
-    new access, callback;
     
     DEBUG_LOGGER( 4, "( nomination_handleMatchChoice ) item: %d, player_id: %d, menu: %d, g_currentMenuMapIndexForPlayers[player_id]: %d", \
             item + 1, player_id, menu, g_currentMenuMapIndexForPlayers[ player_id ] );
@@ -2657,7 +2659,7 @@ stock nomination_getPlayer( mapIndex )
     new mapNominationData[ MapNominationsType ];
     
     num_to_str( mapIndex, trieKey, charsmax( trieKey ) );
-    DEBUG_LOGGER( 1, "( nomination_getPlayer ) trieKey: %s", trieKey );
+    DEBUG_LOGGER( 4, "( nomination_getPlayer ) trieKey: %s", trieKey );
     
     if( TrieKeyExists( g_mapNominations, trieKey ) )
     {
@@ -2693,18 +2695,31 @@ stock getPlayerNominationMapIndex( player_id, nominationIndex )
     return playerNominationData[ nominationIndex ];
 }
 
+/**
+ * Changes the player nomination. When there is no nominations, it creates the player entry to the
+ * the server nominations tables "g_mapNominations" and "g_playersNominations".
+ * 
+ * @param player_id             the nominator player id.
+ * @param nominationIndex       @see the updateNominationsReverseSearch's nominationIndex function parameter.
+ * @param mapIndex              @see the updateNominationsReverseSearch's mapIndex function parameter.
+ */
 stock setPlayerNominationMapIndex( player_id, nominationIndex, mapIndex )
 {
+    new originalMapIndex;
+    
     new trieKey             [ MAX_NOMINATION_TRIE_KEY_SIZE ];
-    new mapNominationData   [ MapNominationsType ];
     new playerNominationData[ MAX_NOMINATION_COUNT ];
-
+    
     createPlayerNominationKey( player_id, trieKey, charsmax( trieKey ) );
     
     if( TrieKeyExists( g_playersNominations, trieKey ) )
     {
         TrieGetArray( g_playersNominations, trieKey, playerNominationData, sizeof playerNominationData );
+        
+        originalMapIndex                        = playerNominationData[ nominationIndex ];
         playerNominationData[ nominationIndex ] = mapIndex;
+        
+        TrieSetArray( g_playersNominations, trieKey, playerNominationData, sizeof playerNominationData );
     }
     else
     {
@@ -2712,25 +2727,38 @@ stock setPlayerNominationMapIndex( player_id, nominationIndex, mapIndex )
              currentNominationIndex < MAX_NOMINATION_COUNT; ++currentNominationIndex )
         {
             playerNominationData[ currentNominationIndex ] = -1;
-            DEBUG_LOGGER( 4, "( setPlayerNominationMapIndex ) playerNominationData[ %d ]: %d", currentNominationIndex, playerNominationData[ currentNominationIndex ] );
+            DEBUG_LOGGER( 4, "( setPlayerNominationMapIndex ) playerNominationData[%d]: %d", currentNominationIndex, playerNominationData[ currentNominationIndex ] );
         }
         
         playerNominationData[ nominationIndex ] = mapIndex;
         TrieSetArray( g_playersNominations, trieKey, playerNominationData, sizeof playerNominationData );
     }
     
-    DEBUG_LOGGER( 1, "( setPlayerNominationMapIndex ) trieKey: %s", trieKey );
+    updateNominationsReverseSearch( player_id, nominationIndex, mapIndex, originalMapIndex );
+}
+
+/**
+ * Update the reverse search, i.e., to find the nominator player id given the nominated map index.
+ * Each map has one, and only one nomination index.
+ * 
+ * @param player_id             the nominator player game id.
+ * @param nominationIndex       the player's personal nominations array index.
+ * @param mapIndex              the server's nomination index. Uses -1 to disable the current 
+ *                                  player's personal nomination index.
+ * @param originalMapIndex      the correct server's nomination index. Do not accept the wild card
+ *                                  -1 as the mapIndex parameter just above.
+ */
+stock updateNominationsReverseSearch( player_id, nominationIndex, mapIndex, originalMapIndex )
+{
+    new trieKey          [ MAX_NOMINATION_TRIE_KEY_SIZE ];
+    new mapNominationData[ MapNominationsType ];
     
-    // Update the reverse search, i.e., to find the nominator player id given the nominated map index.
-    // Each map has one, and only one nomination index.
     num_to_str( mapIndex, trieKey, charsmax( trieKey ) );
     
-    if( TrieKeyExists( g_mapNominations, trieKey ) )
+    if( mapIndex < 0 )
     {
-        TrieGetArray( g_mapNominations, trieKey, mapNominationData, sizeof mapNominationData );
-        
-        mapNominationData[ MapNominationsPlayerId ]        = player_id;
-        mapNominationData[ MapNominationsNominationIndex ] = nominationIndex;
+        num_to_str( originalMapIndex, trieKey, charsmax( trieKey ) );
+        TrieDeleteKey( g_mapNominations, trieKey );
     }
     else
     {
@@ -2757,7 +2785,7 @@ stock countPlayerNominations( player_id, &nominationOpenIndex )
         
         for( new nominationIndex = 0; nominationIndex < MAX_NOMINATION_COUNT; ++nominationIndex )
         {
-            DEBUG_LOGGER( 4, "( countPlayerNominations ) playerNominationData[ %d ]: %d", nominationIndex, playerNominationData[ nominationIndex ] );
+            DEBUG_LOGGER( 4, "( countPlayerNominations ) playerNominationData[%d]: %d", nominationIndex, playerNominationData[ nominationIndex ] );
             
             if( playerNominationData[ nominationIndex ] >= 0 )
             {
@@ -2775,7 +2803,7 @@ stock countPlayerNominations( player_id, &nominationOpenIndex )
         return 0;
     }
     
-    DEBUG_LOGGER( 1, "( countPlayerNominations ) nominationCount: %d, trieKey: %s", nominationCount, trieKey );
+    DEBUG_LOGGER( 4, "( countPlayerNominations ) nominationCount: %d, trieKey: %s", nominationCount, trieKey );
     return nominationCount;
 }
 
@@ -2786,7 +2814,7 @@ stock createPlayerNominationKey( player_id, trieKey[], trieKeyMaxChars )
     ipSize = get_user_ip( player_id, trieKey, trieKeyMaxChars );
     get_user_authid( player_id, trieKey[ ipSize ], trieKeyMaxChars - ipSize );
     
-    DEBUG_LOGGER( 1, "( createPlayerNominationKey ) player_id: %d, trieKey: %s,", player_id, trieKey );
+    DEBUG_LOGGER( 4, "( createPlayerNominationKey ) player_id: %d, trieKey: %s,", player_id, trieKey );
 }
 
 stock nomination_toggle( player_id, mapIndex )
@@ -2869,10 +2897,9 @@ stock map_nominate( player_id, mapIndex, nominatorPlayerId = -1 )
     }
     
     new mapName[ MAX_MAPNAME_LENGHT ];
-    DEBUG_LOGGER( 4, "( map_nominate ) mapIndex: %d, ArraySize( g_nominationMaps ): %d", mapIndex, ArraySize( g_nominationMaps ) );
     
-    // get the nominated map name
-    ArrayGetString( g_nominationMaps, mapIndex, mapName, charsmax( mapName ) );
+    ArrayGetString( g_nominationMaps, mapIndex, mapName, charsmax( mapName ) ); // get the nominated map name
+    DEBUG_LOGGER( 4, "( map_nominate ) mapIndex: %d, mapName: %s, ArraySize( g_nominationMaps ): %d,", mapIndex, mapName, ArraySize( g_nominationMaps ) );
     
     // players can not nominate the current map
     if( equali( g_currentMap, mapName ) )
@@ -2942,6 +2969,8 @@ stock map_nominate( player_id, mapIndex, nominatorPlayerId = -1 )
             
             color_print( player_id, "^1%L", player_id, "GAL_NOM_GOOD_HLP" );
         }
+        
+        DEBUG_LOGGER( 4, "( map_nominate ) nominationOpenIndex: %d, mapName: %s", nominationOpenIndex, mapName );
     }
     // If the nominatorPlayerId is equal to the current player_id, the player is trying to nominate
     // the same map again. And it is not allowed.
@@ -2975,6 +3004,8 @@ public nomination_list()
     
     for( new player_id = 1; player_id < MAX_PLAYERS_COUNT; ++player_id )
     {
+        DEBUG_LOGGER( 4, "( nomination_list ) player_id: %d,", player_id, MAX_PLAYERS_COUNT );
+        
         for( nominationIndex = 0; nominationIndex < maxPlayerNominations; ++nominationIndex )
         {
             mapIndex = getPlayerNominationMapIndex( player_id, nominationIndex );
@@ -3061,6 +3092,8 @@ stock vote_addNominations( blockedFillerMaps[][], blockedFillerMapsMaxChars = 0 
         
         for( nominationIndex = 0; nominationIndex < maxPlayerNominations; ++nominationIndex )
         {
+            DEBUG_LOGGER( 4, "( vote_addNominations ) nominationIndex: %d, maxPlayerNominations: %d", nominationIndex, maxPlayerNominations );
+            
             for( player_id = 1; player_id < MAX_PLAYERS_COUNT; ++player_id )
             {
                 mapIndex = getPlayerNominationMapIndex( player_id, nominationIndex );
@@ -3083,6 +3116,8 @@ stock vote_addNominations( blockedFillerMaps[][], blockedFillerMapsMaxChars = 0 
         // nominations make the cut; either FIFO or random].
         for( nominationIndex = 0; nominationIndex < maxPlayerNominations; ++nominationIndex )
         {
+            DEBUG_LOGGER( 4, "( vote_addNominations ) nominationIndex: %d, maxPlayerNominations: %d", nominationIndex, maxPlayerNominations );
+            
             for( player_id = 1; player_id < MAX_PLAYERS_COUNT; ++player_id )
             {
                 mapIndex = getPlayerNominationMapIndex( player_id, nominationIndex );
