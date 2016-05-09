@@ -2711,46 +2711,57 @@ stock nomination_getPlayer( mapIndex )
 stock getPlayerNominationMapIndex( player_id, nominationIndex )
 {
     new trieKey[ 48 ];
-    new nominationData[ MAX_NOMINATION_COUNT ];
+    new playerNominationData[ MAX_NOMINATION_COUNT ];
     
     createPlayerNominationKey( player_id, trieKey, charsmax( trieKey ) );
     
     if( TrieKeyExists( g_playersNominations, trieKey ) )
     {
-        TrieGetArray( g_playersNominations, trieKey, nominationData, sizeof nominationData );
+        TrieGetArray( g_playersNominations, trieKey, playerNominationData, sizeof playerNominationData );
     }
     else
     {
         return -1;
     }
     
-    return nominationData[ nominationIndex ];
+    return playerNominationData[ nominationIndex ];
 }
 
 stock setPlayerNominationMapIndex( player_id, nominationIndex, mapIndex )
 {
     new trieKey[ 48 ];
-    new nominationData[ MAX_NOMINATION_COUNT ];
+    new playerNominationData[ MAX_NOMINATION_COUNT ];
+    new mapNominationData   [ 2 ];
 
     createPlayerNominationKey( player_id, trieKey, charsmax( trieKey ) );
     
     if( TrieKeyExists( g_playersNominations, trieKey ) )
     {
-        TrieGetArray( g_playersNominations, trieKey, nominationData, sizeof nominationData );
-        nominationData[ nominationIndex ] = mapIndex;
+        TrieGetArray( g_playersNominations, trieKey, playerNominationData, sizeof playerNominationData );
+        playerNominationData[ nominationIndex ] = mapIndex;
     }
     else
     {
-        nominationData[ nominationIndex ] = mapIndex;
-        TrieSetArray( g_playersNominations, trieKey, nominationData, sizeof nominationData );
+        playerNominationData[ nominationIndex ] = mapIndex;
+        TrieSetArray( g_playersNominations, trieKey, playerNominationData, sizeof playerNominationData );
     }
     
-    // updated the reverse search
+    // updated the reverse search, i.e., to find the nominator player id given the nominated map index.
     num_to_str( mapIndex, trieKey, charsmax( trieKey ) );
     
-    if( !TrieKeyExists( g_mapsNominations, trieKey ) )
+    if( TrieKeyExists( g_mapsNominations, trieKey ) )
     {
-        TrieSetCell( g_mapsNominations, trieKey, player_id );
+        TrieGetArray( g_mapsNominations, trieKey, mapNominationData, sizeof mapNominationData );
+        
+        mapNominationData[ 0 ] = player_id;
+        mapNominationData[ 1 ] = nominationIndex;
+    }
+    else
+    {
+        mapNominationData[ 0 ] = player_id;
+        mapNominationData[ 1 ] = nominationIndex;
+        
+        TrieSetArray( g_mapsNominations, trieKey, mapNominationData, sizeof mapNominationData );
     }
 }
 
@@ -2796,26 +2807,17 @@ stock nomination_cancel( player_id, mapIndex )
     }
     
     new nominationIndex;
-    new bool:nominationFound;
+    
+    new trieKey[48];
     new mapName[ MAX_MAPNAME_LENGHT ];
     
-    new maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), MAX_NOMINATION_COUNT ) + 1;
-    
-    for( nominationIndex = 1; nominationIndex < maxPlayerNominations; ++nominationIndex )
-    {
-        if( getPlayerNominationMapIndex( player_id, nominationIndex ) == mapIndex )
-        {
-            nominationFound = true;
-            
-            break;
-        }
-    }
-    
+    num_to_str( mapIndex, trieKey, charsmax( trieKey ) );
     ArrayGetString( g_nominationMaps, mapIndex, mapName, charsmax( mapName ) );
     
-    if( nominationFound )
+    // nomination found, then delete it
+    if( TrieKeyExists( g_mapsNominations, trieKey ) )
     {
-        g_nominationCount = g_nominationCount - 1;
+        g_nominationCount--;
         
         setPlayerNominationMapIndex( player_id, nominationIndex, -1 );
         nomination_announceCancellation( mapName );
