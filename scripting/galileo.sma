@@ -512,6 +512,11 @@ new Array:g_emptyCycleMapsList;
  */
 new Trie:g_playersNominations;
 
+/**
+ * Stores the players nominators id, to find the nominator player id given the nominated map index.
+ */
+new Trie:g_mapsNominations;
+
 new Array:g_fillerMaps;
 new Array:g_nominationMaps;
 
@@ -791,6 +796,7 @@ public plugin_cfg()
     DEBUG_LOGGER( 4, "Current MAP [%s]  nextmap: [%s]", g_currentMap, g_nextmap );
     DEBUG_LOGGER( 4, "" );
     
+    g_mapsNominations    = TrieCreate();
     g_playersNominations = TrieCreate();
     g_fillerMaps         = ArrayCreate( MAX_MAPNAME_LENGHT );
     g_nominationMaps     = ArrayCreate( MAX_MAPNAME_LENGHT );
@@ -1438,6 +1444,11 @@ public plugin_end()
     if( g_playersNominations )
     {
         TrieDestroy( g_playersNominations );
+    }
+    
+    if( g_mapsNominations )
+    {
+        TrieDestroy( g_mapsNominations );
     }
     
     // Clear the dynamic array menus, just to be sure.
@@ -2675,21 +2686,23 @@ stock clearMenuMapIndexForPlayers( player_id )
     }
 }
 
+/**
+ * Check if the map has already been nominated.
+ * 
+ * @return 0 when the map is not nominated, or the player nominator id.
+ */
 stock nomination_getPlayer( mapIndex )
 {
-    // check if the map has already been nominated
-    new nominationIndex;
-    new maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), MAX_NOMINATION_COUNT ) + 1;
+    new player_id;
+    new trieKey[ 48 ];
     
-    for( new player_id = 1; player_id < MAX_PLAYERS_COUNT; ++player_id )
+    num_to_str( mapIndex, trieKey, charsmax( trieKey ) );
+    
+    if( TrieKeyExists( g_mapsNominations, trieKey ) )
     {
-        for( nominationIndex = 1; nominationIndex < maxPlayerNominations; ++nominationIndex )
-        {
-            if( mapIndex == getPlayerNominationMapIndex( player_id, nominationIndex ) )
-            {
-                return player_id;
-            }
-        }
+        TrieGetCell( g_playersNominations, trieKey, player_id );
+        
+        return player_id;
     }
     
     return 0;
@@ -2700,8 +2713,16 @@ stock getPlayerNominationMapIndex( player_id, nominationIndex )
     new trieKey[ 48 ];
     new nominationData[ MAX_NOMINATION_COUNT ];
     
-    createMapNominationKey( player_id, trieKey, charsmax( trieKey ) );
-    TrieGetArray( g_playersNominations, trieKey, nominationData, sizeof nominationData );
+    createPlayerNominationKey( player_id, trieKey, charsmax( trieKey ) );
+    
+    if( TrieKeyExists( g_playersNominations, trieKey ) )
+    {
+        TrieGetArray( g_playersNominations, trieKey, nominationData, sizeof nominationData );
+    }
+    else
+    {
+        return -1;
+    }
     
     return nominationData[ nominationIndex ];
 }
@@ -2711,13 +2732,29 @@ stock setPlayerNominationMapIndex( player_id, nominationIndex, mapIndex )
     new trieKey[ 48 ];
     new nominationData[ MAX_NOMINATION_COUNT ];
 
-    nominationData[ nominationIndex ] = mapIndex;
+    createPlayerNominationKey( player_id, trieKey, charsmax( trieKey ) );
     
-    createMapNominationKey( player_id, trieKey, charsmax( trieKey ) );
-    TrieSetArray( g_playersNominations, trieKey, nominationData, sizeof nominationData );
+    if( TrieKeyExists( g_playersNominations, trieKey ) )
+    {
+        TrieGetArray( g_playersNominations, trieKey, nominationData, sizeof nominationData );
+        nominationData[ nominationIndex ] = mapIndex;
+    }
+    else
+    {
+        nominationData[ nominationIndex ] = mapIndex;
+        TrieSetArray( g_playersNominations, trieKey, nominationData, sizeof nominationData );
+    }
+    
+    // updated the reverse search
+    num_to_str( mapIndex, trieKey, charsmax( trieKey ) );
+    
+    if( !TrieKeyExists( g_mapsNominations, trieKey ) )
+    {
+        TrieSetCell( g_mapsNominations, trieKey, player_id );
+    }
 }
 
-stock createMapNominationKey( player_id, trieKey[], trieKeyMaxChars )
+stock createPlayerNominationKey( player_id, trieKey[], trieKeyMaxChars )
 {
     new ipSize;
     new steamId[ 32 ];
@@ -2727,7 +2764,7 @@ stock createMapNominationKey( player_id, trieKey[], trieKeyMaxChars )
     
     copy( trieKey[ ipSize ], trieKeyMaxChars - ipSize, steamId );
     
-    DEBUG_LOGGER( 1, "( createMapNominationKey ) player_id: %d, trieKey: %s,", player_id, trieKey );
+    DEBUG_LOGGER( 1, "( createPlayerNominationKey ) player_id: %d, trieKey: %s,", player_id, trieKey );
 }
 
 stock nomination_toggle( player_id, mapIndex )
