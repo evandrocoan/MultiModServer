@@ -789,17 +789,6 @@ public plugin_cfg()
     reset_rounds_scores();
     loadPluginSetttings();
     
-    g_isColorChatSupported = ( is_running( "czero" )
-                               || is_running( "cstrike" ) );
-    
-    if( colored_menus() )
-    {
-        copy( COLOR_RED, 2, "\r" );
-        copy( COLOR_WHITE, 2, "\w" );
-        copy( COLOR_YELLOW, 2, "\y" );
-        copy( COLOR_GREY, 2, "\d" );
-    }
-    
     get_pcvar_string( cvar_voteWeightFlags, g_voteWeightFlags, charsmax( g_voteWeightFlags ) );
     
     get_cvar_string( "amx_nextmap", g_nextmap, charsmax( g_nextmap ) );
@@ -807,7 +796,7 @@ public plugin_cfg()
     DEBUG_LOGGER( 4, "Current MAP [%s]  nextmap: [%s]", g_currentMap, g_nextmap );
     DEBUG_LOGGER( 4, "" );
     
-    g_mapNominations    = TrieCreate();
+    g_mapNominations     = TrieCreate();
     g_playersNominations = TrieCreate();
     g_fillerMaps         = ArrayCreate( MAX_MAPNAME_LENGHT );
     g_nominationMaps     = ArrayCreate( MAX_MAPNAME_LENGHT );
@@ -883,6 +872,17 @@ stock cacheCvarsValues()
 stock loadPluginSetttings()
 {
     new writtenSize;
+    
+    g_isColorChatSupported = ( is_running( "czero" )
+                               || is_running( "cstrike" ) );
+    
+    if( colored_menus() )
+    {
+        copy( COLOR_RED, 2, "\r" );
+        copy( COLOR_WHITE, 2, "\w" );
+        copy( COLOR_YELLOW, 2, "\y" );
+        copy( COLOR_GREY, 2, "\d" );
+    }
     
     writtenSize = get_configsdir( dir_configs_path, charsmax( dir_configs_path ) );
     copy( dir_configs_path[ writtenSize ], charsmax( dir_configs_path ) - writtenSize, "/galileo" );
@@ -2807,12 +2807,9 @@ stock countPlayerNominations( player_id, &nominationOpenIndex )
 stock createPlayerNominationKey( player_id, trieKey[], trieKeyMaxChars )
 {
     new ipSize;
-    new steamId[ 32 ];
     
     ipSize = get_user_ip( player_id, trieKey, trieKeyMaxChars );
-    get_user_authid( player_id, steamId, charsmax( steamId ) );
-    
-    copy( trieKey[ ipSize ], trieKeyMaxChars - ipSize, steamId );
+    get_user_authid( player_id, trieKey[ ipSize ], trieKeyMaxChars - ipSize );
     
     DEBUG_LOGGER( 1, "( createPlayerNominationKey ) player_id: %d, trieKey: %s,", player_id, trieKey );
 }
