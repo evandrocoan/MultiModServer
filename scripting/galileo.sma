@@ -2708,6 +2708,7 @@ stock nomination_getPlayer( mapIndex )
     new mapNominationData[ MapNominationsType ];
     
     num_to_str( mapIndex, trieKey, charsmax( trieKey ) );
+    DEBUG_LOGGER( 1, "( nomination_getPlayer ) trieKey: %s", trieKey );
     
     if( TrieKeyExists( g_mapNominations, trieKey ) )
     {
@@ -2863,9 +2864,7 @@ stock nomination_cancel( player_id, mapIndex )
         return;
     }
     
-    new nominationIndex;
-    
-    new trieKey[48];
+    new trieKey[ MAX_NOMINATION_TRIE_KEY_SIZE ];
     new mapName[ MAX_MAPNAME_LENGHT ];
     
     num_to_str( mapIndex, trieKey, charsmax( trieKey ) );
@@ -2876,7 +2875,9 @@ stock nomination_cancel( player_id, mapIndex )
     {
         g_nominationCount--;
         
-        setPlayerNominationMapIndex( player_id, nominationIndex, -1 );
+        TrieGetArray( g_mapNominations, trieKey, mapNominationData, sizeof mapNominationData );
+        setPlayerNominationMapIndex( player_id, mapNominationData[ MapNominationsNominationIndex ], -1 );
+        
         nomination_announceCancellation( mapName );
     }
     else
@@ -5605,9 +5606,9 @@ stock unnominatedDisconnectedPlayer( player_id )
     new nominatedMaps[ MAX_COLOR_MESSAGE ];
     
     // cancel player's nominations
-    maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), MAX_NOMINATION_COUNT ) + 1;
+    maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), MAX_NOMINATION_COUNT );
     
-    for( new nominationIndex = 1; nominationIndex < maxPlayerNominations; ++nominationIndex )
+    for( new nominationIndex = 0; nominationIndex < maxPlayerNominations; ++nominationIndex )
     {
         mapIndex = getPlayerNominationMapIndex( player_id, nominationIndex );
         
