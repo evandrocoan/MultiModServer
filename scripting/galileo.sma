@@ -2753,6 +2753,12 @@ stock setPlayerNominationMapIndex( player_id, nominationIndex, mapIndex )
     }
     else
     {
+        for( new currentNominationIndex = 0;
+             currentNominationIndex < MAX_NOMINATION_COUNT; ++currentNominationIndex )
+        {
+            playerNominationData[ nominationIndex ] = -1;
+        }
+        
         playerNominationData[ nominationIndex ] = mapIndex;
         TrieSetArray( g_playersNominations, trieKey, playerNominationData, sizeof playerNominationData );
     }
@@ -5826,13 +5832,8 @@ stock nomination_announceCancellation( nominations[] )
 
 stock nomination_clearAll()
 {
-    for( new playerIndex = 1; playerIndex < MAX_PLAYERS_COUNT; playerIndex++ )
-    {
-        for( new nominationIndex = 1; nominationIndex < MAX_NOMINATION_COUNT; nominationIndex++ )
-        {
-            setPlayerNominationMapIndex( playerIndex, nominationIndex, -1);
-        }
-    }
+    TrieClear( g_mapNominations );
+    TrieClear( g_playersNominations );
     
     g_nominationCount = 0;
 }
