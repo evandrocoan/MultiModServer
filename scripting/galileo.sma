@@ -193,9 +193,10 @@ stock allowToUseSemicolonOnMacrosEnd()
 #define RTV_CMD_SHORTHAND 2
 #define RTV_CMD_DYNAMIC   4
 
-#define MAX_LONG_STRING   256
-#define MAX_COLOR_MESSAGE 192
-#define MAX_SHORT_STRING  64
+#define MAX_LONG_STRING              256
+#define MAX_COLOR_MESSAGE            192
+#define MAX_SHORT_STRING             64
+#define MAX_NOMINATION_TRIE_KEY_SIZE 48
 
 #define SOUND_GETREADYTOCHOOSE 1
 #define SOUND_COUNTDOWN        2
@@ -515,8 +516,17 @@ new Trie:g_playersNominations;
 /**
  * Stores the players nominators id, to find the nominator player id given the nominated map index.
  */
-new Trie:g_mapsNominations;
+new Trie:g_mapNominations;
 
+/**
+ * Enumeration used to create access the "g_mapNominations" values. It is untagged to be able to
+ * pass it throw an TrieSetArray.
+ */
+enum _:MapNominationsType
+{
+	MapNominationsPlayerId,
+	MapNominationsNominationIndex
+}
 
 new Array:g_fillerMaps;
 new Array:g_nominationMaps;
@@ -797,7 +807,7 @@ public plugin_cfg()
     DEBUG_LOGGER( 4, "Current MAP [%s]  nextmap: [%s]", g_currentMap, g_nextmap );
     DEBUG_LOGGER( 4, "" );
     
-    g_mapsNominations    = TrieCreate();
+    g_mapNominations    = TrieCreate();
     g_playersNominations = TrieCreate();
     g_fillerMaps         = ArrayCreate( MAX_MAPNAME_LENGHT );
     g_nominationMaps     = ArrayCreate( MAX_MAPNAME_LENGHT );
@@ -1447,9 +1457,9 @@ public plugin_end()
         TrieDestroy( g_playersNominations );
     }
     
-    if( g_mapsNominations )
+    if( g_mapNominations )
     {
-        TrieDestroy( g_mapsNominations );
+        TrieDestroy( g_mapNominations );
     }
     
     // Clear the dynamic array menus, just to be sure.
@@ -2694,16 +2704,16 @@ stock clearMenuMapIndexForPlayers( player_id )
  */
 stock nomination_getPlayer( mapIndex )
 {
-    new player_id;
-    new trieKey[ 48 ];
+    new trieKey          [ MAX_NOMINATION_TRIE_KEY_SIZE ];
+    new mapNominationData[ MapNominationsType ];
     
     num_to_str( mapIndex, trieKey, charsmax( trieKey ) );
     
-    if( TrieKeyExists( g_mapsNominations, trieKey ) )
+    if( TrieKeyExists( g_mapNominations, trieKey ) )
     {
-        TrieGetCell( g_playersNominations, trieKey, player_id );
+        TrieGetArray( g_mapNominations, trieKey, mapNominationData, sizeof mapNominationData );
         
-        return player_id;
+        return mapNominationData[ MapNominationsPlayerId ];
     }
     
     return 0;
@@ -2711,7 +2721,7 @@ stock nomination_getPlayer( mapIndex )
 
 stock getPlayerNominationMapIndex( player_id, nominationIndex )
 {
-    new trieKey[ 48 ];
+    new trieKey             [ MAX_NOMINATION_TRIE_KEY_SIZE ];
     new playerNominationData[ MAX_NOMINATION_COUNT ];
     
     createPlayerNominationKey( player_id, trieKey, charsmax( trieKey ) );
@@ -2730,9 +2740,9 @@ stock getPlayerNominationMapIndex( player_id, nominationIndex )
 
 stock setPlayerNominationMapIndex( player_id, nominationIndex, mapIndex )
 {
-    new trieKey[ 48 ];
+    new trieKey             [ MAX_NOMINATION_TRIE_KEY_SIZE ];
     new playerNominationData[ MAX_NOMINATION_COUNT ];
-    new mapNominationData   [ 2 ];
+    new mapNominationData   [ MapNominationsType ];
 
     createPlayerNominationKey( player_id, trieKey, charsmax( trieKey ) );
     
@@ -2751,46 +2761,25 @@ stock setPlayerNominationMapIndex( player_id, nominationIndex, mapIndex )
     // Each map has one, and only one nomination index.
     num_to_str( mapIndex, trieKey, charsmax( trieKey ) );
     
-    if( TrieKeyExists( g_mapsNominations, trieKey ) )
+    if( TrieKeyExists( g_mapNominations, trieKey ) )
     {
-        TrieGetArray( g_mapsNominations, trieKey, mapNominationData, sizeof mapNominationData );
+        TrieGetArray( g_mapNominations, trieKey, mapNominationData, sizeof mapNominationData );
         
-        mapNominationData[ 0 ] = player_id;
-        mapNominationData[ 1 ] = nominationIndex;
+        mapNominationData[ MapNominationsPlayerId ]        = player_id;
+        mapNominationData[ MapNominationsNominationIndex ] = nominationIndex;
     }
     else
     {
-        mapNominationData[ 0 ] = player_id;
-        mapNominationData[ 1 ] = nominationIndex;
+        mapNominationData[ MapNominationsPlayerId ]        = player_id;
+        mapNominationData[ MapNominationsNominationIndex ] = nominationIndex;
         
-        TrieSetArray( g_mapsNominations, trieKey, mapNominationData, sizeof mapNominationData );
+        TrieSetArray( g_mapNominations, trieKey, mapNominationData, sizeof mapNominationData );
     }
 }
 
-stock addPlayerNomination( player_id, mapIndex )
+stock countPlayerNominations( player_id, &nominationOpenIndex )
 {
-    new trieKey[ 48 ];
-    
-    new nominationOpenIndex;
-    new playerNominationData[ MAX_NOMINATION_COUNT ];
-    
-    createPlayerNominationKey( player_id, trieKey, charsmax( trieKey ) );
-    TrieGetArray( g_playersNominations, trieKey, playerNominationData, sizeof playerNominationData );
-    
-    for( nominationOpenIndex = 0; nominationOpenIndex < MAX_NOMINATION_COUNT; ++nominationOpenIndex )
-    {
-        if( playerNominationData[ nominationOpenIndex ] < 0 )
-        {
-            break;
-        }
-    }
-    
-    setPlayerNominationMapIndex( player_id, nominationOpenIndex, mapIndex );
-}
-
-stock countPlayerNominations( player_id )
-{
-    new trieKey[ 48 ];
+    new trieKey[ MAX_NOMINATION_TRIE_KEY_SIZE ];
     
     new nominationCount;
     new playerNominationData[ MAX_NOMINATION_COUNT ];
@@ -2803,6 +2792,12 @@ stock countPlayerNominations( player_id )
         if( playerNominationData[ nominationIndex ] >= 0 )
         {
             nominationCount++;
+        }
+        else
+        {
+            nominationOpenIndex = nominationCount;
+            
+            break;
         }
     }
     
@@ -2859,7 +2854,7 @@ stock nomination_cancel( player_id, mapIndex )
     ArrayGetString( g_nominationMaps, mapIndex, mapName, charsmax( mapName ) );
     
     // nomination found, then delete it
-    if( TrieKeyExists( g_mapsNominations, trieKey ) )
+    if( TrieKeyExists( g_mapNominations, trieKey ) )
     {
         g_nominationCount--;
         
@@ -2928,24 +2923,26 @@ stock map_nominate( player_id, mapIndex, nominatorPlayerId = -1 )
     // check if the map has already been nominated
     if( nominatorPlayerId == -1 )
     {
-        // TODO - remove this "nominatorPlayerId" variable switching.
-        nominatorPlayerId = 1 nomination_getPlayer( mapIndex );
+        nominatorPlayerId = nomination_getPlayer( mapIndex );
     }
     
     // When no one nominated this map, the variable 'nominatorPlayerId' will be 0. Then here we
     // to nominate it.
     if( nominatorPlayerId == 0 )
     {
-        new maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), MAX_NOMINATION_COUNT ) + 1;
+        new nominationOpenIndex;
+        new maxPlayerNominations;
+        
+        maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), MAX_NOMINATION_COUNT );
         
         // The max nomination limit is reached, then we must not to allow this nomination.
-        if( countPlayerNominations( player_id ) >= maxPlayerNominations - 1 )
+        if( countPlayerNominations( player_id, nominationOpenIndex ) >= maxPlayerNominations )
         {
             new copiedChars;
             new nominatedMapName[ MAX_MAPNAME_LENGHT ];
             new nominatedMaps   [ MAX_COLOR_MESSAGE ];
             
-            for( new nominationIndex = 1; nominationIndex < maxPlayerNominations; ++nominationIndex )
+            for( new nominationIndex = 0; nominationIndex < maxPlayerNominations; ++nominationIndex )
             {
                 mapIndex = getPlayerNominationMapIndex( player_id, nominationIndex );
                 
@@ -2962,7 +2959,7 @@ stock map_nominate( player_id, mapIndex, nominatorPlayerId = -1 )
             }
             
             color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_TOOMANY",
-                    maxPlayerNominations - 1, nominatedMaps );
+                    maxPlayerNominations, nominatedMaps );
             
             color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_TOOMANY_HLP" );
         }
@@ -2971,7 +2968,7 @@ stock map_nominate( player_id, mapIndex, nominatorPlayerId = -1 )
         {
             g_nominationCount++;
             
-            addPlayerNomination( player_id, mapIndex );
+            setPlayerNominationMapIndex( player_id, nominationOpenIndex, mapIndex );
             map_announceNomination( player_id, mapName );
             
             color_print( player_id, "^1%L", player_id, "GAL_NOM_GOOD_HLP" );
@@ -2989,9 +2986,7 @@ stock map_nominate( player_id, mapIndex, nominatorPlayerId = -1 )
         new player_name[ MAX_PLAYER_NAME_LENGHT ];
         GET_USER_NAME( nominatorPlayerId, player_name );
         
-        color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_SOMEONEELSE",
-                mapName, player_name );
-        
+        color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_SOMEONEELSE", mapName, player_name );
         color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_SOMEONEELSE_HLP" );
     }
 }
