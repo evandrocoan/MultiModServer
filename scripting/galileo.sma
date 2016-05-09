@@ -517,6 +517,7 @@ new Trie:g_playersNominations;
  */
 new Trie:g_mapsNominations;
 
+
 new Array:g_fillerMaps;
 new Array:g_nominationMaps;
 
@@ -2746,7 +2747,8 @@ stock setPlayerNominationMapIndex( player_id, nominationIndex, mapIndex )
         TrieSetArray( g_playersNominations, trieKey, playerNominationData, sizeof playerNominationData );
     }
     
-    // updated the reverse search, i.e., to find the nominator player id given the nominated map index.
+    // Update the reverse search, i.e., to find the nominator player id given the nominated map index.
+    // Each map has one, and only one nomination index.
     num_to_str( mapIndex, trieKey, charsmax( trieKey ) );
     
     if( TrieKeyExists( g_mapsNominations, trieKey ) )
@@ -2763,6 +2765,48 @@ stock setPlayerNominationMapIndex( player_id, nominationIndex, mapIndex )
         
         TrieSetArray( g_mapsNominations, trieKey, mapNominationData, sizeof mapNominationData );
     }
+}
+
+stock addPlayerNomination( player_id, mapIndex )
+{
+    new trieKey[ 48 ];
+    
+    new nominationOpenIndex;
+    new playerNominationData[ MAX_NOMINATION_COUNT ];
+    
+    createPlayerNominationKey( player_id, trieKey, charsmax( trieKey ) );
+    TrieGetArray( g_playersNominations, trieKey, playerNominationData, sizeof playerNominationData );
+    
+    for( nominationOpenIndex = 0; nominationOpenIndex < MAX_NOMINATION_COUNT; ++nominationOpenIndex )
+    {
+        if( playerNominationData[ nominationOpenIndex ] < 0 )
+        {
+            break;
+        }
+    }
+    
+    setPlayerNominationMapIndex( player_id, nominationOpenIndex, mapIndex );
+}
+
+stock countPlayerNominations( player_id )
+{
+    new trieKey[ 48 ];
+    
+    new nominationCount;
+    new playerNominationData[ MAX_NOMINATION_COUNT ];
+    
+    createPlayerNominationKey( player_id, trieKey, charsmax( trieKey ) );
+    TrieGetArray( g_playersNominations, trieKey, playerNominationData, sizeof playerNominationData );
+    
+    for( new nominationIndex = 0; nominationIndex < MAX_NOMINATION_COUNT; ++nominationIndex )
+    {
+        if( playerNominationData[ nominationIndex ] >= 0 )
+        {
+            nominationCount++;
+        }
+    }
+    
+    return nominationCount;
 }
 
 stock createPlayerNominationKey( player_id, trieKey[], trieKeyMaxChars )
@@ -2884,41 +2928,24 @@ stock map_nominate( player_id, mapIndex, nominatorPlayerId = -1 )
     // check if the map has already been nominated
     if( nominatorPlayerId == -1 )
     {
-        nominatorPlayerId = nomination_getPlayer( mapIndex );
+        // TODO - remove this "nominatorPlayerId" variable switching.
+        nominatorPlayerId = 1 nomination_getPlayer( mapIndex );
     }
     
     // When no one nominated this map, the variable 'nominatorPlayerId' will be 0. Then here we
     // to nominate it.
     if( nominatorPlayerId == 0 )
     {
-        new nominationOpenIndex;
-        new nominationIndex;
-        new nominationCount;
-        
         new maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), MAX_NOMINATION_COUNT ) + 1;
         
-        // determine the number of nominations the player already made
-        // and grab an open slot with the presumption that the player can make the nomination
-        for( nominationIndex = 1; nominationIndex < maxPlayerNominations; ++nominationIndex )
-        {
-            if( getPlayerNominationMapIndex( player_id, nominationIndex ) >= 0 )
-            {
-                nominationCount++;
-            }
-            else
-            {
-                nominationOpenIndex = nominationIndex;
-            }
-        }
-        
         // The max nomination limit is reached, then we must not to allow this nomination.
-        if( nominationCount >= maxPlayerNominations - 1 )
+        if( countPlayerNominations( player_id ) >= maxPlayerNominations - 1 )
         {
             new copiedChars;
-            new nominatedMapName [ MAX_MAPNAME_LENGHT ];
-            new nominatedMaps    [ MAX_COLOR_MESSAGE ];
+            new nominatedMapName[ MAX_MAPNAME_LENGHT ];
+            new nominatedMaps   [ MAX_COLOR_MESSAGE ];
             
-            for( nominationIndex = 1; nominationIndex < maxPlayerNominations; ++nominationIndex )
+            for( new nominationIndex = 1; nominationIndex < maxPlayerNominations; ++nominationIndex )
             {
                 mapIndex = getPlayerNominationMapIndex( player_id, nominationIndex );
                 
@@ -2944,7 +2971,7 @@ stock map_nominate( player_id, mapIndex, nominatorPlayerId = -1 )
         {
             g_nominationCount++;
             
-            setPlayerNominationMapIndex( player_id, nominationOpenIndex, mapIndex );
+            addPlayerNomination( player_id, mapIndex );
             map_announceNomination( player_id, mapName );
             
             color_print( player_id, "^1%L", player_id, "GAL_NOM_GOOD_HLP" );
