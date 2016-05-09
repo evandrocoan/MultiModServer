@@ -23,10 +23,6 @@
 */
 
 
-#include <amxmodx>
-#include <amxmisc>
-
-
 /**
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
@@ -45,24 +41,19 @@ new const PLUGIN_VERSION[] = "v2.6.1-59";
  *       and 'create_fakeVotes()'.
  * 7   - Levels 1, 2 and 4.
  */
-#define DEBUG_LEVEL 0
+#define DEBUG_LEVEL 1
 
 
 #define DEBUG_LEVEL_NORMAL     1
 #define DEBUG_LEVEL_UNIT_TEST  2
 #define DEBUG_LEVEL_FAKE_VOTES 4
 
+
+#include <amxmodx>
+#include <amxmisc>
+
 #pragma semicolon 1
 
-
-/**
- * Dummy value used to use the do...while() statements to allow the semicolon ';' use at macros endings.
- */
-new g_dummy_value = 0;
-
-stock allowToUseSemicolonOnMacrosEnd()
-{
-}
 
 #if DEBUG_LEVEL & DEBUG_LEVEL_NORMAL
     #define DEBUG
@@ -166,9 +157,20 @@ new g_test_whiteListFilePath[ 128 ];
 new g_user_msgid;
 #endif
 
+
 #if !defined MAX_PLAYERS
     #define MAX_PLAYERS 32
 #endif
+
+
+/**
+ * Dummy value used to use the do...while() statements to allow the semicolon ';' use at macros endings.
+ */
+new g_dummy_value = 0;
+
+stock allowToUseSemicolonOnMacrosEnd()
+{
+}
 
 
 #define TASKID_REMINDER               52691153
@@ -505,6 +507,11 @@ new Float:g_original_sv_maxspeed;
  */
 new Array:g_emptyCycleMapsList;
 
+/**
+ * Stores the players nominations until MAX_NOMINATION_COUNT for each player.
+ */
+new Trie:g_playersNominations;
+
 new Array:g_fillerMaps;
 new Array:g_nominationMaps;
 
@@ -526,18 +533,6 @@ new g_rtvCommands;
 new g_rtvWaitRounds;
 new g_rockedVoteCount;
 
-new NP_cvar_mp_chattime;
-new NP_cvar_amx_nextmap;
-new NP_cvar_mp_friendlyfire;
-
-new NP_g_nextMapCyclePosition;
-new NP_g_nextMapName      [ MAX_MAPNAME_LENGHT ];
-new NP_g_currentMapName   [ MAX_MAPNAME_LENGHT ];
-new NP_g_mapCycleFilePath [ MAX_FILE_PATH_LENGHT ];
-
-new DIR_CONFIGS_PATH [ MAX_FILE_PATH_LENGHT ];
-new DATA_DIR_PATH    [ MAX_FILE_PATH_LENGHT ];
-
 new g_totalRoundsPlayed;
 new g_totalTerroristsWins;
 new g_totalCtWins;
@@ -556,18 +551,31 @@ new COLOR_GREY  [ 3 ]; // \d
 
 new g_mapPrefixCount = 1;
 
-new g_voteStatusClean     [ 512 ];
+new NP_cvar_mp_chattime;
+new NP_cvar_amx_nextmap;
+new NP_cvar_mp_friendlyfire;
+new NP_g_nextMapCyclePosition;
+
 new g_arrayOfRunOffChoices[ 2 ];
 new g_voteStatus_symbol   [ 3 ];
 new g_voteWeightFlags     [ 32 ];
+new g_voteStatusClean     [ 512 ];
 
-new g_nextmap                            [ MAX_MAPNAME_LENGHT ];
-new g_currentMap                         [ MAX_MAPNAME_LENGHT ];
-new g_playerVotedOption                  [ MAX_PLAYERS_COUNT ];
-new g_playerVotedWeight                  [ MAX_PLAYERS_COUNT ];
-new g_generalUsePlayersMenuId            [ MAX_PLAYERS_COUNT ];
-new g_playersKills                       [ MAX_PLAYERS_COUNT ];
-new g_arrayOfMapsWithVotesNumber         [ MAX_OPTIONS_IN_VOTE ];
+new dir_configs_path [ MAX_FILE_PATH_LENGHT ];
+new data_dir_path    [ MAX_FILE_PATH_LENGHT ];
+
+new NP_g_nextMapName      [ MAX_MAPNAME_LENGHT ];
+new NP_g_currentMapName   [ MAX_MAPNAME_LENGHT ];
+new NP_g_mapCycleFilePath [ MAX_FILE_PATH_LENGHT ];
+
+new g_nextmap                   [ MAX_MAPNAME_LENGHT ];
+new g_currentMap                [ MAX_MAPNAME_LENGHT ];
+new g_playerVotedOption         [ MAX_PLAYERS_COUNT ];
+new g_playerVotedWeight         [ MAX_PLAYERS_COUNT ];
+new g_generalUsePlayersMenuId   [ MAX_PLAYERS_COUNT ];
+new g_playersKills              [ MAX_PLAYERS_COUNT ];
+new g_arrayOfMapsWithVotesNumber[ MAX_OPTIONS_IN_VOTE ];
+
 
 new Array:g_currentMenuMapIndexForPlayers[ MAX_PLAYERS_COUNT ];
 
@@ -579,7 +587,6 @@ new bool:g_answeredForEndOfMapVote  [ MAX_PLAYERS_COUNT ];
 new bool:g_rockedVote               [ MAX_PLAYERS_COUNT ];
 
 new g_mapPrefixes       [ MAX_PREFIX_COUNT ][ 16 ];
-new g_playersNominations[ MAX_PLAYERS_COUNT ][ MAX_NOMINATION_COUNT ];
 new g_recentMaps        [ MAX_RECENT_MAP_COUNT ][ MAX_MAPNAME_LENGHT ];
 new g_votingMapNames    [ MAX_OPTIONS_IN_VOTE ][ MAX_MAPNAME_LENGHT ];
 
@@ -784,8 +791,9 @@ public plugin_cfg()
     DEBUG_LOGGER( 4, "Current MAP [%s]  nextmap: [%s]", g_currentMap, g_nextmap );
     DEBUG_LOGGER( 4, "" );
     
-    g_fillerMaps     = ArrayCreate( MAX_MAPNAME_LENGHT );
-    g_nominationMaps = ArrayCreate( MAX_MAPNAME_LENGHT );
+    g_playersNominations = TrieCreate();
+    g_fillerMaps         = ArrayCreate( MAX_MAPNAME_LENGHT );
+    g_nominationMaps     = ArrayCreate( MAX_MAPNAME_LENGHT );
     
     // initialize nominations table
     nomination_clearAll();
@@ -857,19 +865,23 @@ stock cacheCvarsValues()
 
 stock loadPluginSetttings()
 {
-    copy( DIR_CONFIGS_PATH[ get_configsdir( DIR_CONFIGS_PATH, charsmax( DIR_CONFIGS_PATH ) ) ],
-            charsmax( DIR_CONFIGS_PATH ), "/galileo" );
+    new writtenSize;
     
-    copy( DATA_DIR_PATH[ get_datadir( DATA_DIR_PATH, charsmax( DATA_DIR_PATH ) ) ],
-            charsmax( DATA_DIR_PATH ), "/galileo" );
+    writtenSize = get_configsdir( dir_configs_path, charsmax( dir_configs_path ) );
+    copy( dir_configs_path[ writtenSize ], charsmax( dir_configs_path ) - writtenSize, "/galileo" );
     
-    if( !dir_exists( DATA_DIR_PATH )
-        && mkdir( DATA_DIR_PATH ) )
+    writtenSize = get_datadir( data_dir_path, charsmax( data_dir_path ) );
+    copy( data_dir_path[ writtenSize ], charsmax( data_dir_path ) - writtenSize, "/galileo" );
+    
+    if( !dir_exists( data_dir_path )
+        && mkdir( data_dir_path ) )
     {
-        log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_CREATIONFAILED", DATA_DIR_PATH );
+        log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_CREATIONFAILED", data_dir_path );
     }
     
-    server_cmd( "exec %s/galileo.cfg", DIR_CONFIGS_PATH );
+    DEBUG_LOGGER( 1, "( loadPluginSetttings ) get_configsdir: %s, get_datadir: %s,", dir_configs_path, data_dir_path );
+    
+    server_cmd( "exec %s/galileo.cfg", dir_configs_path );
     server_exec();
 }
 
@@ -880,7 +892,7 @@ stock configureServerStart()
         new backupMapsFilePath[ MAX_FILE_PATH_LENGHT ];
         
         formatex( backupMapsFilePath, charsmax( backupMapsFilePath ), "%s/%s",
-                DATA_DIR_PATH, CURRENT_AND_NEXTMAP_FILE_NAME );
+                data_dir_path, CURRENT_AND_NEXTMAP_FILE_NAME );
         
         if( file_exists( backupMapsFilePath ) )
         {
@@ -1423,6 +1435,11 @@ public plugin_end()
         ArrayDestroy( g_nominationMaps );
     }
     
+    if( g_playersNominations )
+    {
+        TrieDestroy( g_playersNominations );
+    }
+    
     // Clear the dynamic array menus, just to be sure.
     for( new currentIndex = 0; currentIndex < MAX_PLAYERS_COUNT; ++currentIndex )
     {
@@ -1569,7 +1586,7 @@ stock configureTheMapcycleSystem( currentMap[], currentMapCharsMax )
             
             // Clear the old data
             formatex( lastMapChangedFilePath, charsmax( lastMapChangedFilePath ), "%s/%s",
-                    DATA_DIR_PATH, LAST_CHANGE_MAP_FILE_NAME );
+                    data_dir_path, LAST_CHANGE_MAP_FILE_NAME );
             
             if( file_exists( lastMapChangedFilePath ) )
             {
@@ -1617,7 +1634,7 @@ stock getRestartsOnTheCurrentMap( mapToChange[] )
     new lastMapChangedCountString[ 10 ];
     
     formatex( lastMapChangedFilePath, charsmax( lastMapChangedFilePath ), "%s/%s",
-            DATA_DIR_PATH, LAST_CHANGE_MAP_FILE_NAME );
+            data_dir_path, LAST_CHANGE_MAP_FILE_NAME );
     
     if( !( lastMapChangedFile = fopen( lastMapChangedFilePath, "rt" ) ) )
     {
@@ -1701,7 +1718,7 @@ stock saveCurrentAndNextMapNames( nextMap[] )
     new backupMapsFilePath[ MAX_FILE_PATH_LENGHT ];
     
     formatex( backupMapsFilePath, charsmax( backupMapsFilePath ), "%s/%s",
-            DATA_DIR_PATH, CURRENT_AND_NEXTMAP_FILE_NAME );
+            data_dir_path, CURRENT_AND_NEXTMAP_FILE_NAME );
     
     new backupMapsFile = fopen( backupMapsFilePath, "wt" );
     
@@ -1810,7 +1827,7 @@ stock prevent_map_change()
 public map_loadRecentList()
 {
     new recentMapsFilePath[ MAX_FILE_PATH_LENGHT ];
-    formatex( recentMapsFilePath, charsmax( recentMapsFilePath ), "%s/recentmaps.dat", DATA_DIR_PATH );
+    formatex( recentMapsFilePath, charsmax( recentMapsFilePath ), "%s/recentmaps.dat", data_dir_path );
     
     new recentMapsFile = fopen( recentMapsFilePath, "rt" );
     
@@ -1840,7 +1857,7 @@ public map_loadRecentList()
 public map_writeRecentList()
 {
     new recentMapsFilePath[ MAX_FILE_PATH_LENGHT ];
-    formatex( recentMapsFilePath, charsmax( recentMapsFilePath ), "%s/recentmaps.dat", DATA_DIR_PATH );
+    formatex( recentMapsFilePath, charsmax( recentMapsFilePath ), "%s/recentmaps.dat", data_dir_path );
     
     new recentMapsFile = fopen( recentMapsFilePath, "wt" );
     
@@ -2166,7 +2183,7 @@ public cmd_createMapFile( player_id, level, cid )
             if( dir )
             {
                 new mapFilePath[ MAX_FILE_PATH_LENGHT ];
-                formatex( mapFilePath, charsmax( mapFilePath ), "%s/%s", DIR_CONFIGS_PATH, mapFileName );
+                formatex( mapFilePath, charsmax( mapFilePath ), "%s/%s", dir_configs_path, mapFileName );
                 
                 mapFile = fopen( mapFilePath, "wt" );
                 
@@ -2228,7 +2245,7 @@ stock map_loadEmptyCycleList()
 public map_loadPrefixList()
 {
     new prefixesFilePath[ MAX_FILE_PATH_LENGHT ];
-    formatex( prefixesFilePath, charsmax( prefixesFilePath ), "%s/prefixes.ini", DIR_CONFIGS_PATH );
+    formatex( prefixesFilePath, charsmax( prefixesFilePath ), "%s/prefixes.ini", dir_configs_path );
     
     new prefixesFile = fopen( prefixesFilePath, "rt" );
     
@@ -2680,12 +2697,37 @@ stock nomination_getPlayer( mapIndex )
 
 stock getPlayerNominationMapIndex( player_id, nominationIndex )
 {
-    return g_playersNominations[ player_id ][ nominationIndex ];
+    new trieKey[ 48 ];
+    new nominationData[ MAX_NOMINATION_COUNT ];
+    
+    createMapNominationKey( player_id, trieKey, charsmax( trieKey ) );
+    TrieGetArray( g_playersNominations, trieKey, nominationData, sizeof nominationData );
+    
+    return nominationData[ nominationIndex ];
 }
 
 stock setPlayerNominationMapIndex( player_id, nominationIndex, mapIndex )
 {
-    g_playersNominations[ player_id ][ nominationIndex ] = mapIndex;
+    new trieKey[ 48 ];
+    new nominationData[ MAX_NOMINATION_COUNT ];
+
+    nominationData[ nominationIndex ] = mapIndex;
+    
+    createMapNominationKey( player_id, trieKey, charsmax( trieKey ) );
+    TrieSetArray( g_playersNominations, trieKey, nominationData, sizeof nominationData );
+}
+
+stock createMapNominationKey( player_id, trieKey[], trieKeyMaxChars )
+{
+    new ipSize;
+    new steamId[ 32 ];
+    
+    ipSize = get_user_ip( player_id, trieKey, trieKeyMaxChars );
+    get_user_authid( player_id, steamId, charsmax( steamId ) );
+    
+    copy( trieKey[ ipSize ], trieKeyMaxChars - ipSize, steamId );
+    
+    DEBUG_LOGGER( 1, "( createMapNominationKey ) player_id: %d, trieKey: %s,", player_id, trieKey );
 }
 
 stock nomination_toggle( player_id, mapIndex )
@@ -3107,7 +3149,7 @@ stock loadMapGroupsFeature( mapsPerGroup[], fillersFilePaths[][], fillersFilePat
                             mapsPerGroup[ groupCount ] = str_to_num( currentReadedLine );
                             
                             formatex( fillersFilePaths[ groupCount ], fillersFilePathsMaxChars,
-                                    "%s/%i.ini", DIR_CONFIGS_PATH, groupCount );
+                                    "%s/%i.ini", dir_configs_path, groupCount );
                             
                             DEBUG_LOGGER( 8, "fillersFilePaths: %s", fillersFilePaths[ groupCount ] );
                             
@@ -5612,7 +5654,7 @@ stock getLastEmptyCycleMap( lastEmptyCycleMap[ MAX_MAPNAME_LENGHT ] )
     new lastEmptyCycleMapFilePath[ MAX_FILE_PATH_LENGHT ];
     
     formatex( lastEmptyCycleMapFilePath, charsmax( lastEmptyCycleMapFilePath ), "%s/%s",
-            DATA_DIR_PATH, LAST_EMPTY_CYCLE_FILE_NAME );
+            data_dir_path, LAST_EMPTY_CYCLE_FILE_NAME );
     
     new lastEmptyCycleMapFile = fopen( lastEmptyCycleMapFilePath, "rt" );
     
@@ -5627,7 +5669,7 @@ stock setLastEmptyCycleMap( lastEmptyCycleMap[ MAX_MAPNAME_LENGHT ] )
     new lastEmptyCycleMapFilePath[ MAX_FILE_PATH_LENGHT ];
     
     formatex( lastEmptyCycleMapFilePath, charsmax( lastEmptyCycleMapFilePath ), "%s/%s",
-            DATA_DIR_PATH, LAST_EMPTY_CYCLE_FILE_NAME );
+            data_dir_path, LAST_EMPTY_CYCLE_FILE_NAME );
     
     new lastEmptyCycleMapFile = fopen( lastEmptyCycleMapFilePath, "wt" );
     
