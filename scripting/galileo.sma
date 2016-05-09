@@ -1668,7 +1668,7 @@ stock getRestartsOnTheCurrentMap( mapToChange[] )
         DEBUG_LOGGER( 4, "( getRestartsOnTheCurrentMap ) lastMapChangedName: %s, lastMapChangedCountString: %s, lastMapChangedCount: %d", \
                 lastMapChangedName, lastMapChangedCountString, lastMapChangedCount );
         
-        if( equal( mapToChange, lastMapChangedName ) )
+        if( equali( mapToChange, lastMapChangedName ) )
         {
             ++lastMapChangedCount;
             
@@ -1969,7 +1969,7 @@ public cmd_cancelVote( player_id, level, cid )
  */
 public cmd_startVote( player_id, level, cid )
 {
-    DEBUG_LOGGER( 1, "( in ) cmd_startVote()| player_id: %d, level: %d, cid: %d", player_id, level, cid );
+    DEBUG_LOGGER( 1, "( cmd_startVote ) player_id: %d, level: %d, cid: %d", player_id, level, cid );
     
     if( !cmd_access( player_id, level, cid, 1 ) )
     {
@@ -1987,6 +1987,7 @@ public cmd_startVote( player_id, level, cid )
         if( read_argc() == 2 )
         {
             new argument[ 32 ];
+            
             read_args( argument, charsmax( argument ) );
             remove_quotes( argument );
             
@@ -1995,19 +1996,15 @@ public cmd_startVote( player_id, level, cid )
                 g_isTimeToChangeLevel = false;
             }
             
-            DEBUG_LOGGER( 1, "( inside ) cmd_startVote()| argument: %s", argument );
-            
             if( equali( argument, "-restart", 4 ) )
             {
                 g_isTimeToRestart = true;
             }
             
-            DEBUG_LOGGER( 1, "( inside ) cmd_startVote() | equal( argument, ^"-restart^", 4 ): %d", \
-                    equal( argument, "-restart", 4 ) );
+            DEBUG_LOGGER( 1, "( cmd_startVote ) equal( %s, '-restart', 4 )? %d", argument, equal( argument, "-restart", 4 ) );
         }
         
-        DEBUG_LOGGER( 1, "( cmd_startVote ) g_isTimeToRestart: %d, g_isTimeToChangeLevel: %d g_voteStatus & VOTE_IS_FORCED: %d", \
-                g_isTimeToRestart, g_isTimeToChangeLevel, g_voteStatus & VOTE_IS_FORCED != 0 );
+        DEBUG_LOGGER( 1, "( cmd_startVote ) g_isTimeToRestart? %d, g_isTimeToChangeLevel? %d, g_voteStatus & VOTE_IS_FORCED: %d", g_isTimeToRestart, g_isTimeToChangeLevel, g_voteStatus & VOTE_IS_FORCED != 0 );
         
         vote_startDirector( true );
     }
@@ -2290,7 +2287,7 @@ stock getSurMapNameIndex( mapSurName[] )
         {
             ArrayGetString( g_nominationMaps, mapIndex, nominationMap, charsmax( nominationMap ) );
             
-            if( equal( map, nominationMap ) )
+            if( equali( map, nominationMap ) )
             {
                 return mapIndex;
             }
@@ -2383,14 +2380,14 @@ public cmd_say( player_id )
                     {
                         for( prefix_index = 0; prefix_index < g_mapPrefixCount; prefix_index++ )
                         {
-                            DEBUG_LOGGER( 4, "( cmd_say ) firstWord: %s, prefix_index: %d, \
-                                    g_mapPrefixes[ prefix_index ]: %s, \
-                                    contain( firstWord, g_mapPrefixes[ prefix_index ] ): %d", \
-                                    firstWord, prefix_index, \
-                                    g_mapPrefixes[ prefix_index ], \
-                                    contain( firstWord, g_mapPrefixes[ prefix_index ] ) );
+                            DEBUG_LOGGER( 4, "( cmd_say ) firstWord: %s, \
+                                    g_mapPrefixes[%d]: %s, \
+                                    containi( %s, %s )? %d", \
+                                    firstWord, \
+                                    prefix_index, g_mapPrefixes[ prefix_index ], \
+                                    firstWord, g_mapPrefixes[ prefix_index ], containi( firstWord, g_mapPrefixes[ prefix_index ] ) );
                             
-                            if( contain( firstWord, g_mapPrefixes[ prefix_index ] ) > -1 )
+                            if( containi( firstWord, g_mapPrefixes[ prefix_index ] ) > -1 )
                             {
                                 nomination_menu( player_id );
                                 return PLUGIN_HANDLED;
@@ -2398,9 +2395,9 @@ public cmd_say( player_id )
                         }
                     }
                     
-                    DEBUG_LOGGER( 4, "( cmd_say ) equali( firstWord, 'nom', 3 ): %d, strlen( firstWord ) > 5: %d", \
-                            equali( firstWord, "nom", 3 ), \
-                            strlen( firstWord ) > 5 );
+                    DEBUG_LOGGER( 4, "( cmd_say ) equali(%s, 'nom', 3)? %d, strlen(%s) > 5? %d", \
+                            firstWord, equali( firstWord, "nom", 3 ), \
+                            firstWord, strlen( firstWord ) > 5 );
                 }
             }
         }
@@ -2479,7 +2476,7 @@ stock nomination_menu( player_id )
         {
             formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_TOORECENT" );
         }
-        else if( equal( g_currentMap, nominationMap ) ) // disable if the map is the current map
+        else if( equali( g_currentMap, nominationMap ) ) // disable if the map is the current map
         {
             formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_CURRENTMAP" );
         }
@@ -2529,7 +2526,7 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
     {
         ArrayGetString( g_nominationMaps, mapIndex, nominationMap, charsmax( nominationMap ) );
         
-        if( contain( nominationMap, partialNameAttempt ) > -1 )
+        if( containi( nominationMap, partialNameAttempt ) > -1 )
         {
             // Store in case this is the only match
             matchIdx = mapIndex;
@@ -2554,7 +2551,7 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
             {
                 formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_TOORECENT" );
             }
-            else if( equal( g_currentMap, nominationMap ) ) // disable if the map is the current map
+            else if( equali( g_currentMap, nominationMap ) ) // disable if the map is the current map
             {
                 formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_CURRENTMAP" );
             }
@@ -2878,7 +2875,7 @@ stock map_nominate( player_id, mapIndex, nominatorPlayerId = -1 )
     ArrayGetString( g_nominationMaps, mapIndex, mapName, charsmax( mapName ) );
     
     // players can not nominate the current map
-    if( equal( g_currentMap, mapName ) )
+    if( equali( g_currentMap, mapName ) )
     {
         color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_CURRENTMAP", g_currentMap );
         return;
@@ -3289,7 +3286,7 @@ stock processLoadedMapsFile( mapsPerGroup[], groupCount, blockedCount,
                         groupIndex, choice_index, allowedFilersCount, mapIndex, mapName );
                 
                 while( ( map_isInMenu( mapName )
-                         || equal( g_currentMap, mapName )
+                         || equali( g_currentMap, mapName )
                          || map_isTooRecent( mapName )
                          || isPrefixInMenu( mapName )
                          || ( blockedFillerMapsMaxChars
@@ -3300,7 +3297,7 @@ stock processLoadedMapsFile( mapsPerGroup[], groupCount, blockedCount,
                             is the current map? %d, map_isTooRecent: %d,^n      \
                             isPrefixInMenu: %d, TrieKeyExists( blockedFillerMapsTrie, mapName ): %d", \
                             map_isInMenu( mapName ), mapName, \
-                            equal( g_currentMap, mapName ), map_isTooRecent( mapName ), \
+                            equali( g_currentMap, mapName ), map_isTooRecent( mapName ), \
                             isPrefixInMenu( mapName ), \
                             ( blockedFillerMapsMaxChars ? TrieKeyExists( blockedFillerMapsTrie, mapName ) : false ) );
                     
@@ -3317,7 +3314,7 @@ stock processLoadedMapsFile( mapsPerGroup[], groupCount, blockedCount,
                             is the current map? %d, map_isTooRecent: %d,^n      \
                             isPrefixInMenu: %d, TrieKeyExists( blockedFillerMapsTrie, mapName ): %d", \
                             map_isInMenu( mapName ), mapName, \
-                            equal( g_currentMap, mapName ), map_isTooRecent( mapName ), \
+                            equali( g_currentMap, mapName ), map_isTooRecent( mapName ), \
                             isPrefixInMenu( mapName ), \
                             ( blockedFillerMapsMaxChars ? TrieKeyExists( blockedFillerMapsTrie, mapName ) : false ) );
                 }
@@ -5098,10 +5095,10 @@ stock save_time_limit()
 
 stock map_isInMenu( map[] )
 {
-    for( new playerVoteMapChoiceIndex = 0; playerVoteMapChoiceIndex < g_totalVoteOptions;
-         ++playerVoteMapChoiceIndex )
+    for( new playerVoteMapChoiceIndex = 0;
+         playerVoteMapChoiceIndex < g_totalVoteOptions; ++playerVoteMapChoiceIndex )
     {
-        if( equal( map, g_votingMapNames[ playerVoteMapChoiceIndex ] ) )
+        if( equali( map, g_votingMapNames[ playerVoteMapChoiceIndex ] ) )
         {
             return true;
         }
@@ -5114,17 +5111,21 @@ stock isPrefixInMenu( map[] )
 {
     if( get_pcvar_num( cvar_voteUniquePrefixes ) )
     {
-        new possiblePrefix[ 8 ], existingPrefix[ 8 ], junk[ 8 ];
+        new junk[ 8 ];
+        new possiblePrefix[ 8 ];
+        new existingPrefix[ 8 ]; 
         
         strtok( map, possiblePrefix, charsmax( possiblePrefix ), junk, charsmax( junk ), '_', 1 );
         
-        for( new playerVoteMapChoiceIndex = 0; playerVoteMapChoiceIndex < g_totalVoteOptions;
-             ++playerVoteMapChoiceIndex )
+        for( new playerVoteMapChoiceIndex = 0;
+             playerVoteMapChoiceIndex < g_totalVoteOptions; ++playerVoteMapChoiceIndex )
         {
-            strtok( g_votingMapNames[ playerVoteMapChoiceIndex ], existingPrefix,
-                    charsmax( existingPrefix ), junk, charsmax( junk ), '_', 1 );
+            strtok( g_votingMapNames[ playerVoteMapChoiceIndex ],
+                    existingPrefix, charsmax( existingPrefix ),
+                    junk, charsmax( junk ),
+                    '_', 1 );
             
-            if( equal( possiblePrefix, existingPrefix ) )
+            if( equali( possiblePrefix, existingPrefix ) )
             {
                 return true;
             }
@@ -5138,9 +5139,9 @@ stock map_isTooRecent( map[] )
 {
     if( get_pcvar_num( cvar_recentMapsBannedNumber ) )
     {
-        for( new idxBannedMap = 0; idxBannedMap < g_recentMapCount; ++idxBannedMap )
+        for( new bannedMapIndex = 0; bannedMapIndex < g_recentMapCount; ++bannedMapIndex )
         {
-            if( equal( map, g_recentMaps[ idxBannedMap ] ) )
+            if( equali( map, g_recentMaps[ bannedMapIndex ] ) )
             {
                 return true;
             }
@@ -5766,7 +5767,7 @@ stock map_getNext( Array:mapArray, currentMap[], nextMap[ MAX_MAPNAME_LENGHT ] )
     {
         ArrayGetString( mapArray, mapIndex, thisMap, charsmax( thisMap ) );
         
-        if( equal( currentMap, thisMap ) )
+        if( equali( currentMap, thisMap ) )
         {
             if( mapIndex == mapCount - 1 )
             {
@@ -5776,6 +5777,7 @@ stock map_getNext( Array:mapArray, currentMap[], nextMap[ MAX_MAPNAME_LENGHT ] )
             {
                 nextmapIndex = mapIndex + 1;
             }
+            
             returnValue = nextmapIndex;
             break;
         }
@@ -6277,7 +6279,7 @@ public nextmap_plugin_init()
     
     get_cvar_string( "mapcyclefile", NP_g_mapCycleFilePath, charsmax( NP_g_mapCycleFilePath ) );
     
-    if( !equal( NP_g_mapCycleFilePath, mapcycleFilePath ) )
+    if( !equali( NP_g_mapCycleFilePath, mapcycleFilePath ) )
     {
         NP_g_nextMapCyclePosition = 0;    // mapcyclefile has been changed - go from first
     }
