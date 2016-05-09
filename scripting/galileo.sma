@@ -1907,8 +1907,8 @@ public cmd_rockthevote( player_id )
 public cmd_nominations( player_id )
 {
     color_print( player_id, "^1%L", player_id, "GAL_CMD_NOMS" );
+    nomination_list();
     
-    nomination_list( player_id );
     return PLUGIN_CONTINUE;
 }
 
@@ -2386,7 +2386,7 @@ public cmd_say( player_id )
                 if( equali( firstWord, "noms" )
                     || equali( firstWord, "nominations" ) )
                 {
-                    nomination_list( player_id );
+                    nomination_list();
                     
                     return PLUGIN_HANDLED;
                 }
@@ -2720,6 +2720,11 @@ stock nomination_getPlayer( mapIndex )
     return 0;
 }
 
+/**
+ * Gets the nominated map index, given the player id and the nomination index.
+ * 
+ * @return -1 when there is no nomination, or the map nomination index.
+ */
 stock getPlayerNominationMapIndex( player_id, nominationIndex )
 {
     new trieKey             [ MAX_NOMINATION_TRIE_KEY_SIZE ];
@@ -2742,8 +2747,8 @@ stock getPlayerNominationMapIndex( player_id, nominationIndex )
 stock setPlayerNominationMapIndex( player_id, nominationIndex, mapIndex )
 {
     new trieKey             [ MAX_NOMINATION_TRIE_KEY_SIZE ];
-    new playerNominationData[ MAX_NOMINATION_COUNT ];
     new mapNominationData   [ MapNominationsType ];
+    new playerNominationData[ MAX_NOMINATION_COUNT ];
 
     createPlayerNominationKey( player_id, trieKey, charsmax( trieKey ) );
     
@@ -2789,11 +2794,12 @@ stock setPlayerNominationMapIndex( player_id, nominationIndex, mapIndex )
 
 stock countPlayerNominations( player_id, &nominationOpenIndex )
 {
-    new trieKey[ MAX_NOMINATION_TRIE_KEY_SIZE ];
-    
     new nominationCount;
+    
+    new trieKey[ MAX_NOMINATION_TRIE_KEY_SIZE ];
     new playerNominationData[ MAX_NOMINATION_COUNT ];
     
+    nominationOpenIndex = 0;
     createPlayerNominationKey( player_id, trieKey, charsmax( trieKey ) );
     
     if( TrieKeyExists( g_playersNominations, trieKey ) )
@@ -2864,8 +2870,9 @@ stock nomination_cancel( player_id, mapIndex )
         return;
     }
     
-    new trieKey[ MAX_NOMINATION_TRIE_KEY_SIZE ];
-    new mapName[ MAX_MAPNAME_LENGHT ];
+    new trieKey          [ MAX_NOMINATION_TRIE_KEY_SIZE ];
+    new mapName          [ MAX_MAPNAME_LENGHT ];
+    new mapNominationData[ MapNominationsType ];
     
     num_to_str( mapIndex, trieKey, charsmax( trieKey ) );
     ArrayGetString( g_nominationMaps, mapIndex, mapName, charsmax( mapName ) );
@@ -2977,9 +2984,7 @@ stock map_nominate( player_id, mapIndex, nominatorPlayerId = -1 )
                         charsmax( nominatedMaps ) - copiedChars, nominatedMapName );
             }
             
-            color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_TOOMANY",
-                    maxPlayerNominations, nominatedMaps );
-            
+            color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_TOOMANY", maxPlayerNominations, nominatedMaps );
             color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_TOOMANY_HLP" );
         }
         // otherwise, allow the nomination
@@ -3010,7 +3015,7 @@ stock map_nominate( player_id, mapIndex, nominatorPlayerId = -1 )
     }
 }
 
-public nomination_list( player_id )
+public nomination_list()
 {
     new nominationIndex;
     new mapIndex;
@@ -3021,11 +3026,11 @@ public nomination_list( player_id )
     new mapsList[ 101 ];
     new mapName[ MAX_MAPNAME_LENGHT ];
     
-    maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), MAX_NOMINATION_COUNT ) + 1;
+    maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), MAX_NOMINATION_COUNT );
     
     for( new player_id = 1; player_id < MAX_PLAYERS_COUNT; ++player_id )
     {
-        for( nominationIndex = 1; nominationIndex < maxPlayerNominations; ++nominationIndex )
+        for( nominationIndex = 0; nominationIndex < maxPlayerNominations; ++nominationIndex )
         {
             mapIndex = getPlayerNominationMapIndex( player_id, nominationIndex );
             
@@ -3073,6 +3078,7 @@ stock vote_addNominations( blockedFillerMaps[][], blockedFillerMapsMaxChars = 0 
     {
         new player_id;
         new mapIndex;
+        new nominationIndex;
         
         new Trie:blackFillerMapTrie;
         new      mapName[ MAX_MAPNAME_LENGHT ];
@@ -3081,7 +3087,6 @@ stock vote_addNominations( blockedFillerMaps[][], blockedFillerMapsMaxChars = 0 
             && blockedFillerMapsMaxChars )
         {
             new mapFilerFilePath[ MAX_FILE_PATH_LENGHT ];
-            
             get_pcvar_string( cvar_voteMinPlayersMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) );
             
             if( equal( mapFilerFilePath, "*" ) )
@@ -3105,13 +3110,13 @@ stock vote_addNominations( blockedFillerMaps[][], blockedFillerMapsMaxChars = 0 
         new voteNominationMax = ( maxNominations ) ? min( maxNominations, slotsAvailable ) : slotsAvailable;
         
         // set how many total nominations each player is allowed
-        new maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), MAX_NOMINATION_COUNT ) + 1;
+        new maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), MAX_NOMINATION_COUNT );
 
 #if defined DEBUG
         new nominator_id;
         new playerName[ MAX_PLAYER_NAME_LENGHT ];
         
-        for( new nominationIndex = maxPlayerNominations - 1; nominationIndex > 0; --nominationIndex )
+        for( nominationIndex = 0; nominationIndex < maxPlayerNominations; ++nominationIndex )
         {
             for( player_id = 1; player_id < MAX_PLAYERS_COUNT; ++player_id )
             {
@@ -3133,7 +3138,7 @@ stock vote_addNominations( blockedFillerMaps[][], blockedFillerMapsMaxChars = 0 
         
         // add as many nominations as we can [TODO: develop a better method of determining which
         // nominations make the cut; either FIFO or random].
-        for( new nominationIndex = maxPlayerNominations - 1; nominationIndex > 0; --nominationIndex )
+        for( nominationIndex = 0; nominationIndex < maxPlayerNominations; ++nominationIndex )
         {
             for( player_id = 1; player_id < MAX_PLAYERS_COUNT; ++player_id )
             {
@@ -3159,7 +3164,6 @@ stock vote_addNominations( blockedFillerMaps[][], blockedFillerMapsMaxChars = 0 
                     {
                         break;
                     }
-                
                 }
             
             } // end player's nominations looking
@@ -3326,8 +3330,8 @@ stock processLoadedMapsFile( mapsPerGroup[], groupCount, blockedCount,
         if( g_totalVoteOptions < g_maxVotingChoices
             && filersMapCount )
         {
-            allowedFilersCount = min(
-                    min( mapsPerGroup[ groupIndex ], g_maxVotingChoices - g_totalVoteOptions ),
+            allowedFilersCount = 
+                    min( min( mapsPerGroup[ groupIndex ], g_maxVotingChoices - g_totalVoteOptions ),
                     filersMapCount );
             
             DEBUG_LOGGER( 8, "[%i] allowedFilersCount: %i   mapsPerGroup[%i]: %i   MaxCount: %i", \
