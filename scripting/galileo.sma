@@ -70,7 +70,7 @@ new const PLUGIN_VERSION[] = "v2.6.1-59";
  * ( ... ) 64 displays messages related 'color_print'.
  * ( 1.. ) 127 displays all debug logs levels at server console.
  */
-new g_debug_level = 1 + 4 + 8 + 16 + 64;
+new g_debug_level = 1 + 4 + 8 + 16;
 
 
 /**
@@ -2756,12 +2756,15 @@ stock setPlayerNominationMapIndex( player_id, nominationIndex, mapIndex )
         for( new currentNominationIndex = 0;
              currentNominationIndex < MAX_NOMINATION_COUNT; ++currentNominationIndex )
         {
-            playerNominationData[ nominationIndex ] = -1;
+            playerNominationData[ currentNominationIndex ] = -1;
+            DEBUG_LOGGER( 4, "( setPlayerNominationMapIndex ) playerNominationData[ %d ]: %d", currentNominationIndex, playerNominationData[ currentNominationIndex ] );
         }
         
         playerNominationData[ nominationIndex ] = mapIndex;
         TrieSetArray( g_playersNominations, trieKey, playerNominationData, sizeof playerNominationData );
     }
+    
+    DEBUG_LOGGER( 1, "( setPlayerNominationMapIndex ) trieKey: %s", trieKey );
     
     // Update the reverse search, i.e., to find the nominator player id given the nominated map index.
     // Each map has one, and only one nomination index.
@@ -2791,21 +2794,33 @@ stock countPlayerNominations( player_id, &nominationOpenIndex )
     new playerNominationData[ MAX_NOMINATION_COUNT ];
     
     createPlayerNominationKey( player_id, trieKey, charsmax( trieKey ) );
-    TrieGetArray( g_playersNominations, trieKey, playerNominationData, sizeof playerNominationData );
     
-    for( new nominationIndex = 0; nominationIndex < MAX_NOMINATION_COUNT; ++nominationIndex )
+    if( TrieKeyExists( g_playersNominations, trieKey ) )
     {
-        if( playerNominationData[ nominationIndex ] >= 0 )
+        TrieGetArray( g_playersNominations, trieKey, playerNominationData, sizeof playerNominationData );
+        
+        for( new nominationIndex = 0; nominationIndex < MAX_NOMINATION_COUNT; ++nominationIndex )
         {
-            nominationCount++;
-        }
-        else
-        {
-            nominationOpenIndex = nominationCount;
+            DEBUG_LOGGER( 4, "( countPlayerNominations ) playerNominationData[ %d ]: %d", nominationIndex, playerNominationData[ nominationIndex ] );
             
-            break;
+            if( playerNominationData[ nominationIndex ] >= 0 )
+            {
+                nominationCount++;
+            }
+            else
+            {
+                nominationOpenIndex = nominationCount;
+                
+                break;
+            }
         }
     }
+    else
+    {
+        return 0;
+    }
+    
+    DEBUG_LOGGER( 1, "( countPlayerNominations ) nominationCount: %d, trieKey: %s", nominationCount, trieKey );
     
     return nominationCount;
 }
@@ -2938,7 +2953,7 @@ stock map_nominate( player_id, mapIndex, nominatorPlayerId = -1 )
         
         maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), MAX_NOMINATION_COUNT );
         
-        // The max nomination limit is reached, then we must not to allow this nomination.
+        // When max nomination limit is reached, then we must not to allow this nomination.
         if( countPlayerNominations( player_id, nominationOpenIndex ) >= maxPlayerNominations )
         {
             new copiedChars;
