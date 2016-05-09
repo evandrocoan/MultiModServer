@@ -403,11 +403,14 @@ amx_extendmap_allow_order 1
 3) When your server is on the empty cycle mode, it does not start a map vote, and it does not follow you map cycle, despite the setting "amx_extendmap_allow_order " above. It starts following your empty cycle map file list.
 
 
+Replace:
+enum (+= 100000) // task ids are 100000 apart
+{
+    TASK_ID_1 = 100000, // start with 100000
+    TASK_ID_2,
+    TASK_ID_3
+}
 
-[QUOTE=chaves;2413886]Another error, you can name the same map 1 for 2 different players and it appears in the list of 2x "noms"[/QUOTE]
-So, 2 different players can nominate the map1, and it will display 2 times the map1 as nominated. Later on it will be fixed.
-Change the player nomination being registred by id to ip, because now they can disconnect and reconnect getting a new id and nominate maps again.
-Try to use an try to store an string as key holding the map nominated as value.
 
 
 Replace:
@@ -430,6 +433,7 @@ enum (+= 100000) // task ids are 100000 apart
 [*]Allowed the whitelist feature to be used with the minimum players nominations control feature.
 [*]Fixed ArrayGetString native error when the mapcyclefile is invalid.
 [*]Fixed displaying an empty name when showing the user names some times.
+[*]Fixed allowing multiple nominations when an player disconnect and reconnect again.
 [/LIST]
 
 [B]2016-04-09 | v2.6[/B]
