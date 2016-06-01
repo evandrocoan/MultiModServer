@@ -330,22 +330,23 @@ galileo.amxx
 
 ******************************** [anchor]TODO[/anchor][B][SIZE="6"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] *********************************
 
-[CODE]
-[SUG]
+[LIST=1]
+
+[*][SUG]
 The Maintenance Mode
 If the owner of the server is fixing something or updating the server and doesn't wanna the map
 to be changed he will enable the cvar maintenance so the map will can't be changed by any method
 like gal_startvote/rtv/timeleft or maxrounds ended... and he will display print chat some thing
 like that: you cannot change the map when the server is in mode maintenance
 
-[SUG]
+[*][SUG]
 first you need enable cvar to this feature...
 if the half of the timeleft/roundsleft passed  and the server crashed
 if the enable cvar is 1 the server will not change to the last map
 if the enable cvar is 2 the server will start a vote without changing the map
 if the enable cvar is 3 the server will start a vote after the half of the timeleft/roundsleft passed
 
-[SUG]
+[*][SUG]
 Maps are commonly repeated on the vote and there is no chance for all of them I've got on server
 to get to play on. Which is why I'm using gal_banrecent to ban these 1000+ maps. Because of this,
 players can't nominate maps for few days . My proposition is adding a file to the plug in, in which
@@ -353,16 +354,20 @@ will be saved map history and a bunch of recent maps won't be able to get voted 
 to get nominated).
 
 
-[QUOTE=waynesmith15;2413085]Hi,
+[*][QUOTE=waynesmith15;2413085]Hi,
 
 A few problems I have had in the last few weeks of running this is below.
 
 1. The Map Vote Functions fail to run when the Player Kill count mp_fraglimit  is reached.
-- My suggestion to fix this would be to have the Vote start at the start a few mins after the start of a new map. Or for the Mod to read mp_fraglimit and when it gets within say a set number of kills auto start the voting system.
+- My suggestion to fix this would be to have the Vote start at the start a few mins after the start
+of a new map. Or for the Mod to read mp_fraglimit and when it gets within say a set number of kills
+auto start the voting system.
 
-2. When extending the map time it fails to do another vote. When the time limit expires it will then changes to the default next map. May have a bad setting here.
+2. When extending the map time it fails to do another vote. When the time limit expires it will then
+changes to the default next map. May have a bad setting here.
 
-3. I would like to be able to disable the "Time Limit Expired" and just end the map when the timer is up. ( Really not an important thing and can cope with it TBH ) May be again I have a setting wrong for this.
+3. I would like to be able to disable the "Time Limit Expired" and just end the map when the timer is
+up. ( Really not an important thing and can cope with it TBH ) May be again I have a setting wrong for this.
 
 Thanks for your time with this.
 
@@ -372,18 +377,22 @@ Done: Implemented the 'mp_fraglimit' core functionning.
 TODO: Eliminate the variables g_isMaxfragsExtend, g_isMaxroundsExtend, and others like and to replace it by an enum.
 TODO: Add credits from each report.
 
-2) Bad settings must not block the second voting after an map extension. I will look into the code and see what is happening.
-3) You are using Half-Life and the setting "gal_endonround" is set to 1 or 2 and is it ending the map when the time runs out, instead of waiting to finish the map after the current round end?
+2) Bad settings must not block the second voting after an map extension. I will look into the code and
+see what is happening.
+3) You are using Half-Life and the setting "gal_endonround" is set to 1 or 2 and is it ending the map
+when the time runs out, instead of waiting to finish the map after the current round end?
 
 
 
-[QUOTE=vase070;2413168]i thing i noticed something 
+[*][QUOTE=vase070;2413168]i thing i noticed something 
 
 so when using 
 
 "gal_vote_minplayers_mapfile"
 
-when vote comes and no one chooses any map the plugin will choose a completely random map that is not on the "gal_vote_minplayers_mapfile" is this supposed to be like this ? is the plugin not supposed to choose a random map from the vote itself and set it as next when no one votes or am i wrong ? 
+when vote comes and no one chooses any map the plugin will choose a completely random map that is not
+on the "gal_vote_minplayers_mapfile" is this supposed to be like this ? is the plugin not supposed to
+choose a random map from the vote itself and set it as next when no one votes or am i wrong ? 
 
 pictures : 
 
@@ -392,18 +401,24 @@ when vote ended and no one choose any map : [url]http://i.imgur.com/XbFwXl4.jpg[
 
 as you can see de_train was not on the vote :) 
 
-the same thing is with "gal_emptyserver_mapfile" when no one is on the server and vote prob comes plugin still chooses random map that is not on the "gal_emptyserver_mapfile" :)[/QUOTE]
+the same thing is with "gal_emptyserver_mapfile" when no one is on the server and vote prob comes plugin
+still chooses random map that is not on the "gal_emptyserver_mapfile" :)[/QUOTE]
 1) When there is anyone in the server, the voting do not comes up.
-2) It just says "will choose a completely random map", when you have this setting below "amx_extendmap_allow_order" set to 1, it is actually following the map cycle. It shows "will choose a completely random map", for the setting set to 1 because I did not to write a new LANG (language) for this. But, to end this confusion, I will to add a new language constant saying that it is following the map cycle, when it  is following the map cycle, instead of just saying "will choose a completely random map":
+2) It just says "will choose a completely random map", when you have this setting below "amx_extendmap_allow_order"
+set to 1, it is actually following the map cycle. It shows "will choose a completely random map", for
+the setting set to 1 because I did not to write a new LANG (language) for this. But, to end this confusion,
+I will to add a new language constant saying that it is following the map cycle, when it  is following the
+map cycle, instead of just saying "will choose a completely random map":
 [code]
 // If 0, choose a random map as next map, when anyone vote for next map.
 // If 1, follow the map cycle map order, when anyone vote for next map.
 amx_extendmap_allow_order 1
 [/code]
-3) When your server is on the empty cycle mode, it does not start a map vote, and it does not follow you map cycle, despite the setting "amx_extendmap_allow_order " above. It starts following your empty cycle map file list.
+3) When your server is on the empty cycle mode, it does not start a map vote, and it does not follow you map
+cycle, despite the setting "amx_extendmap_allow_order " above. It starts following your empty cycle map file list.
 
 
-Replace:
+[*]Replace:
 enum (+= 100000) // task ids are 100000 apart
 {
     TASK_ID_1 = 100000, // start with 100000
@@ -413,11 +428,21 @@ enum (+= 100000) // task ids are 100000 apart
 
 
 
-[QUOTE=chaves;2419468]I found another bug, can just be with my server but I am coming to pass, sometimes the server does not obey "gal_emptyserver_wait 5" keeping empty server random maps[/QUOTE]
-Thanks for sharing. I think it is not possible this bug happens just with you. So, I will add it up to the TODO list to be verified and fixed until the next version release.
+[*][QUOTE=chaves;2419468]I found another bug, can just be with my server but I am coming to pass, sometimes
+the server does not obey "gal_emptyserver_wait 5" keeping empty server random maps[/QUOTE]
+Thanks for sharing. I think it is not possible this bug happens just with you. So, I will add it up to the
+TODO list to be verified and fixed until the next version release.
 
 
-[/CODE]
+[*]Quote:
+Originally Posted by addons_zz
+If you want to, I can add a configuration to the whitelist feature, to also block all maps that are not
+included on the 'gal_vote_minplayers_mapfile' map file list hourly rule, at the next plugin version.
+Yes.
+
+
+[*]Also distribute the original v1.1.290 configuration file as optional for download.
+[/LIST]
 
 
 ******************************** [anchor]Change[/anchor][B][SIZE="6"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
