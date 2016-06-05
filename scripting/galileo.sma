@@ -27,7 +27,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-60";
+new const PLUGIN_VERSION[] = "v2.6.1-62";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -39,14 +39,17 @@ new const PLUGIN_VERSION[] = "v2.6.1-60";
  *       Tests and print their out put results.
  * 4   - To create fake votes and fake real players count. See the functions 'get_realplayersnum()'
  *       and 'create_fakeVotes()'.
- * 7   - Levels 1, 2 and 4.
+ * 8   - Enable all debugging/depuration available.
+ * 
+ * 15  - Levels 1, 2, 4 and 8.
  */
-#define DEBUG_LEVEL 7
+#define DEBUG_LEVEL 9
 
 
-#define DEBUG_LEVEL_NORMAL     1
-#define DEBUG_LEVEL_UNIT_TEST  2
-#define DEBUG_LEVEL_FAKE_VOTES 4
+#define DEBUG_LEVEL_NORMAL        1
+#define DEBUG_LEVEL_UNIT_TEST     2
+#define DEBUG_LEVEL_FAKE_VOTES    4
+#define DEBUG_LEVEL_CRITICAL_MODE 8
 
 
 #include <amxmodx>
@@ -58,7 +61,6 @@ new const PLUGIN_VERSION[] = "v2.6.1-60";
 #if DEBUG_LEVEL & DEBUG_LEVEL_NORMAL
     #define DEBUG
     #define DEBUG_LOGGER(%1) debugMesssageLogger( %1 )
-
 /**
  * ( 0 ) 0 disabled all debug.
  * ( 1 ) 1 displays basic debug messages as the Unit Tests run.
@@ -99,7 +101,6 @@ stock debugMesssageLogger( mode, message[] = "", any: ... )
 
 
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
-
 /**
  * Contains all unit tests to execute.
  */
@@ -159,7 +160,7 @@ new g_user_msgid;
 
 
 #if !defined MAX_PLAYERS
-    #define MAX_PLAYERS 32
+#define MAX_PLAYERS 32
 #endif
 
 
@@ -614,6 +615,11 @@ public plugin_init()
 {
     register_plugin( "Galileo", PLUGIN_VERSION, "Brad Jones/Addons zz" );
     
+#if DEBUG_LEVEL & DEBUG_LEVEL_CRITICAL_MODE
+    g_debug_level = 1048575;
+    DEBUG_LOGGER( 1, "^n^n^nGALILEO PLUGIN VERSION %s INITIATING...", PLUGIN_VERSION );
+#endif
+    
     cvar_maxMapExtendTime        = register_cvar( "amx_extendmap_max", "90" );
     cvar_extendmapStepMinutes    = register_cvar( "amx_extendmap_step", "15" );
     cvar_extendmapStepRounds     = register_cvar( "amx_extendmap_step_rounds", "30" );
@@ -621,8 +627,15 @@ public plugin_init()
     cvar_isExtendmapOrderAllowed = register_cvar( "amx_extendmap_allow_order", "0" );
     cvar_extendmapAllowStayType  = register_cvar( "amx_extendmap_allow_stay_type", "0" );
     
-    register_cvar( "gal_version", PLUGIN_VERSION, FCVAR_SERVER | FCVAR_SPONLY );
     register_cvar( "gal_server_starting", "1", FCVAR_SPONLY );
+    register_cvar( "gal_version", PLUGIN_VERSION, FCVAR_SERVER | FCVAR_SPONLY );
+    
+#if DEBUG_LEVEL >= DEBUG_LEVEL_NORMAL
+    new debug_level[128];
+    
+    formatex( debug_level, charsmax( debug_level ), "%d | %d", g_debug_level, DEBUG_LEVEL );
+    register_cvar( "gal_debug_level", debug_level, FCVAR_SERVER | FCVAR_SPONLY );
+#endif
     
     cvar_disabledValuePointer      = register_cvar( "gal_disabled_value_pointer", "0", FCVAR_SPONLY );
     cvar_nextMapChangeAnnounce     = register_cvar( "gal_nextmap_change", "1" );
@@ -783,7 +796,6 @@ public plugin_cfg()
     // the player "g_user_msgid" will be be initialized.
 #if AMXX_VERSION_NUM < 183
     g_user_msgid = get_user_msgid( "SayText" );
-
 #endif
     
     reset_rounds_scores();
@@ -1472,7 +1484,6 @@ public plugin_end()
     {
         ArrayDestroy( g_tests_failure_reasons );
     }
-
 #endif
 }
 
@@ -2049,7 +2060,6 @@ stock loadMapFileList( Array:mapArray, mapFilePath[], Trie:fillerMapTrie )
 
 #if defined DEBUG
     new current_index = -1;
-
 #endif
     
     if( mapFile )
@@ -2618,7 +2628,6 @@ public nomination_handleMatchChoice( player_id, menu, item )
     }
 
 #if defined DEBUG
-    
     // Get item info
     new access;
     new callback;
@@ -3086,7 +3095,7 @@ stock vote_addNominations( blockedFillerMaps[][], blockedFillerMapsMaxChars = 0 
         // set how many total nominations each player is allowed
         new maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), MAX_NOMINATION_COUNT );
 
-#if defined DEBUG
+    #if defined DEBUG
         new nominator_id;
         new playerName[ MAX_PLAYER_NAME_LENGHT ];
         
@@ -3110,7 +3119,7 @@ stock vote_addNominations( blockedFillerMaps[][], blockedFillerMapsMaxChars = 0 
             }
         }
         DEBUG_LOGGER( 4, "" );
-#endif
+    #endif
         
         // add as many nominations as we can [TODO: develop a better method of determining which
         // nominations make the cut; either FIFO or random].
@@ -3466,7 +3475,6 @@ stock loadCurrentBlackList( Trie:blackListTrie )
     DEBUG_LOGGER( 8, "( loadCurrentBlackList ) currentHour: %d, currentHourString: %s", currentHour, currentHourString );
 
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
-    
     if( g_test_current_time )
     {
         currentHour = g_test_current_time;
@@ -3609,7 +3617,6 @@ stock approveTheVotingStart( bool:is_forced_voting )
                 get_realplayersnum() );
     
     #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
-        
         // stop the compiler warning 204: symbol is assigned a value that is never used
         get_pcvar_num( cvar_isEmptyCycleServerChange );
         
@@ -3762,7 +3769,6 @@ stock initializeTheVoteDisplay()
     SortCustom2D( g_votingMapNames, g_totalVoteOptions, "sort_stringsi" );
 
 #if defined DEBUG
-    
     for( new dbgChoice = 0; dbgChoice < g_totalVoteOptions; dbgChoice++ )
     {
         DEBUG_LOGGER( 4, "      %i. %s", dbgChoice + 1, g_votingMapNames[ dbgChoice ] );
@@ -3771,14 +3777,12 @@ stock initializeTheVoteDisplay()
 
 
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
-    
     g_voteDuration = 5;
 #endif
 
 
 #if DEBUG_LEVEL & DEBUG_LEVEL_FAKE_VOTES
     set_task( 2.0, "create_fakeVotes", TASKID_DBG_FAKEVOTES );
-
 #endif
     
     // skip bots and hltv
@@ -3796,7 +3800,6 @@ stock initializeTheVoteDisplay()
     }
 
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
-    
     handleChoicesDelay = 0.1;
 #else
     
@@ -4438,7 +4441,6 @@ stock calculate_menu_clean( player_id, menuClean[], menuCleanSize )
 stock display_vote_menu( bool:menuType, player_id, menuBody[], menuKeys )
 {
 #if defined DEBUG
-    
     if( player_id == 1 )
     {
         new player_name[ MAX_PLAYER_NAME_LENGHT ];
@@ -5385,10 +5387,8 @@ stock serverChangeLevel( mapName[] )
 {
 #if AMXX_VERSION_NUM < 183
     server_cmd( "changelevel %s", mapName );
-    
 #else
     engine_changelevel( mapName );
-
 #endif
 }
 
@@ -5884,10 +5884,8 @@ stock get_realplayersnum()
 
 #if DEBUG_LEVEL & DEBUG_LEVEL_FAKE_VOTES
     return 1;
-    
 #else
     return playersCount;
-
 #endif
 }
 
@@ -5965,7 +5963,6 @@ stock color_print( player_id, message[], any: ... )
         && g_isColoredChatEnabled )
     {
 #if AMXX_VERSION_NUM < 183
-        
         if( player_id )
         {
             vformat( formated_message, charsmax( formated_message ), message, 3 );
@@ -6137,10 +6134,8 @@ stock register_dictionary_colored( const dictionaryFile[] )
         {
         #if AMXX_VERSION_NUM < 183
             strbreak( szBuffer, szKey, charsmax( szKey ), szTranslation, charsmax( szTranslation ) );
-            
         #else
             argbreak( szBuffer, szKey, charsmax( szKey ), szTranslation, charsmax( szTranslation ) );
-        
         #endif
             
             iKey = GetLangTransKey( szKey );
@@ -6532,12 +6527,10 @@ public create_fakeVotes()
                               g_arrayOfMapsWithVotesNumber[ 4 ] + g_arrayOfMapsWithVotesNumber[ 5 ];
     }
 }
-
 #endif
 
 
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
-
 /**
  * This function run all tests that are listed at it. Every test that is created must to be called
  * here to register itself at the Test System and perform the testing.
