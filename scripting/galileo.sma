@@ -27,7 +27,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-70";
+new const PLUGIN_VERSION[] = "v2.6.1-71";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -66,11 +66,13 @@ new const PLUGIN_VERSION[] = "v2.6.1-70";
  * ( 1 ) 1 displays basic debug messages as the Unit Tests run.
  * ( 10 ) 2 displays players disconnect, total number, multiple time limits changes and restores.
  * ( 100 ) 4 displays maps events, vote choices, votes, nominations, and the calls to 'map_populateList()'.
- * ( ... ) 8 displays loaded vote choices, minplayers-whitelist debug and actions at 'vote_startDirector()'.
- * ( ... ) 16 displays messages related to RunOff voting.
- * ( ... ) 32 displays messages related to the rounds end map voting.
- * ( ... ) 64 displays messages related 'color_print'.
- * ( 1.. ) 127 displays all debug logs levels at server console.
+ *         8 displays loaded vote choices, minplayers-whitelist debug and actions at 'vote_startDirector()'.
+ *         16 displays messages related to RunOff voting.
+ *         32 displays messages related to the rounds end map voting.
+ *         64 displays messages related 'color_print'.
+ *         128 displays functions entrances.
+ *
+ * ( 1.. ) 255 displays all debug logs levels at server console.
  */
 new g_debug_level = 1 + 4 + 8 + 16;
 
@@ -725,6 +727,8 @@ public plugin_init()
 
 stock configureEndGameCvars()
 {
+    DEBUG_LOGGER( 128, "I AM ENTERING ON configureEndGameCvars(0)" );
+    
     // mp_maxrounds
     if( !( cvar_mp_maxrounds = get_cvar_pointer( "mp_maxrounds" ) ) )
     {
@@ -780,6 +784,8 @@ stock configureEndGameCvars()
 
 stock configureTheVotingMenus()
 {
+    DEBUG_LOGGER( 128, "I AM ENTERING ON configureTheVotingMenus(0)" );
+    
     g_chooseMapMenuId         = register_menuid( CHOOSE_MAP_MENU_NAME );
     g_chooseMapQuestionMenuId = register_menuid( CHOOSE_MAP_MENU_QUESTION );
     
@@ -797,6 +803,8 @@ stock configureTheVotingMenus()
  */
 public plugin_cfg()
 {
+    DEBUG_LOGGER( 128, "I AM ENTERING ON plugin_cfg(0)" );
+    
     // If some exception happened before this, all color_print(...) messages will cause native
     // error 10, on the AMXX 182. It is because, the execution flow will not reach here, then
     // the player "g_user_msgid" will be be initialized.
@@ -889,8 +897,9 @@ stock cacheCvarsValues()
 
 stock loadPluginSetttings()
 {
-    new writtenSize;
+    DEBUG_LOGGER( 128, "I AM ENTERING ON loadPluginSetttings(0)" );
     
+    new writtenSize;
     g_isColorChatSupported = ( is_running( "czero" )
                                || is_running( "cstrike" ) );
     
@@ -1319,6 +1328,8 @@ stock restore_round_ending( roundEndStatus[] )
 
 public reset_rounds_scores()
 {
+    DEBUG_LOGGER( 128, "I AM ENTERING ON reset_rounds_scores(0)" );
+    
     if( get_pcvar_num( cvar_serverTimeLimitRestart )
         || get_pcvar_num( cvar_serverWinlimitRestart )
         || get_pcvar_num( cvar_serverMaxroundsRestart ) )
@@ -6112,6 +6123,8 @@ stock color_print( player_id, message[], any: ... )
  */
 stock register_dictionary_colored( const dictionaryFile[] )
 {
+    DEBUG_LOGGER( 128, "I AM ENTERING ON register_dictionary_colored(1) | dictionaryFile: %s", dictionaryFile );
+    
     if( !register_dictionary( dictionaryFile ) )
     {
         return 0;
@@ -6295,6 +6308,8 @@ stock delete_users_menus( bool:isToDoubleReset )
 
 public nextmap_plugin_init()
 {
+    DEBUG_LOGGER( 128, "I AM ENTERING ON nextmap_plugin_init(0)" );
+    
     pause( "acd", "nextmap.amxx" );
     
     register_dictionary( "nextmap.txt" );
