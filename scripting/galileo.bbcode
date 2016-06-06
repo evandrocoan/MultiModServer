@@ -18,6 +18,7 @@ and come here to [URL="https://forums.alliedmods.net/showthread.php?t=277636"]th
 [*][goanchor=Sourcecode]Source Code and Support[/goanchor]
 [*][goanchor=Screen]Screenshots[/goanchor]
 [*][goanchor=Compilations]Compilations Data[/goanchor]
+[*][URL="https://forums.alliedmods.net/showthread.php?t=172936#Compiling"]How to compile plugins[/URL]
 [*][B]Downloads[/B]:
    [LIST=1]
    [*][goanchor=Development]Development Versions[/goanchor]
@@ -41,7 +42,7 @@ and come here to [URL="https://forums.alliedmods.net/showthread.php?t=277636"]th
 [/LIST]If you want use the new features, download the new configuration files and update yours
 using the new the cvars. If not, you will probably see nothing new, because all new
 features are by default disabled. To keep everything new disabled, just do not install the
-new configurations file at the '[COLOR="Blue"].configs/galileo/[/COLOR][B]galileo.cfg[/B]' or the new colored lang file
+new configurations file at the '[COLOR="Blue"].configs/galileo/[/COLOR][B]galileo.cfg[/B]' and the new colored lang file
 at '[COLOR="Blue"]./data/lang/[/COLOR][B]galileo.txt[/B]' location.
 
 
@@ -455,8 +456,33 @@ changet to: no time limit permanently! Now i use gal_srv_start 0 and no have pro
     server_exec();
 [/PHP]
 plugins have no time limit bug above.
-[/QUOTE]
-His credits are already added.
++++2 Fixed small code lines for show messages for admin voting:
+[PHP]color_print( player_id, "^1L", player_id, "GAL_VOTE_WEIGHTED", voteWeight );[/PHP]
+--->
+[PHP]color_print( player_id, "^1%L", player_id, "GAL_VOTE_WEIGHTED", voteWeight );[/PHP]
+[/QUOTE] 
+Note: His credits are already added.
+
+Thank you for you efforts and sharing your work. The LANG misspelling is fixed on the dev version.
+
+When I can, I will take a close look on this 'gal_srv_start' and when change cvar options in .sma and remove this code lines:
+[PHP]
+    server_cmd( "exec %s/galileo.cfg", DIR_CONFIGS_PATH );
+    server_exec();
+[/PHP]
+plugins have no time limit bug above.
+
+
+
+[*] Insert the new debug level 128 for function entrances: "I AM ENTERING ON 'function_name(0)' | parameter1: %s",
+And add it to all plugin functions. Also add to its proper levels, where the plugin is changing the game cvars, i.e.,
+track all cvars changes by this plugins and print out to its debugging level
+"( function_name ) | IS CHANGING THE CVAR 'cvars_name' to 'value'".
+
+
+
+[*]Fix the code formatter 'format_code.bat' not formatting properly anymore.
+
 
 [/LIST]
 
@@ -832,7 +858,7 @@ And this is a direct link to always to download the latest [COLOR="Red"]unreleas
 And because it is the development version, the debugging is enabled. Go to around the 'line 39' and find:[PAWN]
 #define DEBUG_LEVEL SomeNumber(s)[/PAWN]and change it to:[PAWN]
 #define DEBUG_LEVEL 0[/PAWN]Note that these versions above are probably not tested or maybe not stable as the [goanchor=LatestRelease]Latest Release
-Download[/goanchor] [B][COLOR="Red"]below[/B][/COLOR].
+Download[/goanchor] [B][COLOR="Red"]below[/B][/COLOR]. See here how to compile plugins: [URL="https://forums.alliedmods.net/showthread.php?t=172936#Compiling"][HOW TO] Compiling plugins[/URL].
 
 
 [anchor]Mapcycle[/anchor][SIZE="4"][B]Setting up a Mapcycle[/B][/SIZE]: [goanchor=Top]Go to top[/goanchor]
