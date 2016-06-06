@@ -27,7 +27,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-78";
+new const PLUGIN_VERSION[] = "v2.6.1-79";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -64,46 +64,48 @@ new const PLUGIN_VERSION[] = "v2.6.1-78";
 
 
 #if DEBUG_LEVEL & ( DEBUG_LEVEL_NORMAL | DEBUG_LEVEL_CRITICAL_MODE )
+
     #define DEBUG
     #define LOGGER(%1) debugMesssageLogger( %1 )
-/**
- * ( 0 ) 0 disabled all debug.
- * ( 1 ) 1 displays basic debug messages as the Unit Tests run.
- * ( 10 ) 2 displays players disconnect, total number, multiple time limits changes and restores.
- * ( 100 ) 4 displays maps events, vote choices, votes, nominations, and the calls to 'map_populateList()'.
- *         8 displays loaded vote choices, minplayers-whitelist debug and actions at 'vote_startDirector()'.
- *         16 displays messages related to RunOff voting.
- *         32 displays messages related to the rounds end map voting.
- *         64 displays messages related 'color_print'.
- *         128 displays functions entrances.
- *
- * ( 1.. ) 255 displays all debug logs levels at server console.
- */
-new g_debug_level = 1 + 4 + 8 + 16;
-
-
-/**
- * Write debug messages to server's console accordantly with cvar gal_debug.
- * If gal_debug 1 or more higher, the voting and runoff times are set to 5 seconds.
- *
- * @param mode the debug mode level, see the variable 'g_debug_level' for the levels.
- * @param text the debug message, if omitted its default value is ""
- * @param any the variable number of formatting parameters
- */
-stock debugMesssageLogger( mode, message[] = "", any: ... )
-{
-    if( mode & g_debug_level )
+    
+    /**
+     * ( 0 ) 0 disabled all debug.
+     * ( 1 ) 1 displays basic debug messages as the Unit Tests run.
+     * ( 10 ) 2 displays players disconnect, total number, multiple time limits changes and restores.
+     * ( 100 ) 4 displays maps events, vote choices, votes, nominations, and the calls to 'map_populateList()'.
+     *         8 displays loaded vote choices, minplayers-whitelist debug and actions at 'vote_startDirector()'.
+     *         16 displays messages related to RunOff voting.
+     *         32 displays messages related to the rounds end map voting.
+     *         64 displays messages related 'color_print'.
+     *         128 displays functions entrances.
+     *
+     * ( 1.. ) 255 displays all debug logs levels at server console.
+     */
+    new g_debug_level = 1 + 4 + 8 + 16;
+    
+    
+    /**
+     * Write debug messages to server's console accordantly with cvar gal_debug.
+     * If gal_debug 1 or more higher, the voting and runoff times are set to 5 seconds.
+     *
+     * @param mode the debug mode level, see the variable 'g_debug_level' for the levels.
+     * @param text the debug message, if omitted its default value is ""
+     * @param any the variable number of formatting parameters
+     */
+    stock debugMesssageLogger( mode, message[] = "", any: ... )
     {
-        static Float:gameTime;
-        static formated_message[ 384 ];
-        
-        gameTime = get_gametime();
-        vformat( formated_message, charsmax( formated_message ), message, 3 );
-        
-        // log text to file
-        log_to_file( "_galileo.log", "{%3.4f} %s", gameTime, formated_message );
+        if( mode & g_debug_level )
+        {
+            static Float:gameTime;
+            static formated_message[ 384 ];
+            
+            gameTime = get_gametime();
+            vformat( formated_message, charsmax( formated_message ), message, 3 );
+            
+            // log text to file
+            log_to_file( "_galileo.log", "{%3.4f} %s", gameTime, formated_message );
+        }
     }
-}
 
 #else
     #define LOGGER(%1) allowToUseSemicolonOnMacrosEnd()
@@ -111,67 +113,68 @@ stock debugMesssageLogger( mode, message[] = "", any: ... )
 #endif
 
 
+
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
-/**
- * Contains all unit tests to execute.
- */
-#define ALL_TESTS_TO_EXECUTE() \
-do \
-{ \
-    test_register_test(); \
-    test_gal_in_empty_cycle_case1(); \
-    test_gal_in_empty_cycle_case2(); \
-    test_gal_in_empty_cycle_case3(); \
-    test_gal_in_empty_cycle_case4(); \
-    test_is_map_extension_allowed(); \
-    test_loadCurrentBlackList_case1(); \
-    test_loadCurrentBlackList_case2(); \
-    test_loadCurrentBlackList_case3(); \
-} while( g_dummy_value )
-
-
-/**
- * Call the internal function to perform its task and stop the current test execution to avoid
- * double failure at the test control system.
- */
-#define SET_TEST_FAILURE(%1) \
-do \
-{ \
-    set_test_failure_private( %1 ); \
-    if( g_current_test_evaluation ) \
+    /**
+     * Contains all unit tests to execute.
+     */
+    #define ALL_TESTS_TO_EXECUTE() \
+    do \
     { \
-        return; \
-    } \
-} while( g_dummy_value )
+        test_register_test(); \
+        test_gal_in_empty_cycle_case1(); \
+        test_gal_in_empty_cycle_case2(); \
+        test_gal_in_empty_cycle_case3(); \
+        test_gal_in_empty_cycle_case4(); \
+        test_is_map_extension_allowed(); \
+        test_loadCurrentBlackList_case1(); \
+        test_loadCurrentBlackList_case2(); \
+        test_loadCurrentBlackList_case3(); \
+    } while( g_dummy_value )
 
 
-/**
- * Test unit variables related to the DEBUG_LEVEL_UNIT_TEST 2.
- */
-new g_max_delay_result;
-new g_totalSuccessfulTests;
-new g_totalFailureTests;
+    /**
+     * Call the internal function to perform its task and stop the current test execution to avoid
+     * double failure at the test control system.
+     */
+    #define SET_TEST_FAILURE(%1) \
+    do \
+    { \
+        set_test_failure_private( %1 ); \
+        if( g_current_test_evaluation ) \
+        { \
+            return; \
+        } \
+    } while( g_dummy_value )
 
-new Array: g_tests_idsAndNames;
-new Array: g_tests_failure_ids;
-new Array: g_tests_failure_reasons;
 
-new bool: g_is_test_changed_cvars;
-new bool: g_current_test_evaluation;
-new bool: g_areTheUnitTestsRunning;
+    /**
+     * Test unit variables related to the DEBUG_LEVEL_UNIT_TEST 2.
+     */
+    new g_max_delay_result;
+    new g_totalSuccessfulTests;
+    new g_totalFailureTests;
 
-new g_test_current_time;
-new g_test_whiteListFilePath[ 128 ];
+    new Array: g_tests_idsAndNames;
+    new Array: g_tests_failure_ids;
+    new Array: g_tests_failure_reasons;
+
+    new bool: g_is_test_changed_cvars;
+    new bool: g_current_test_evaluation;
+    new bool: g_areTheUnitTestsRunning;
+
+    new g_test_current_time;
+    new g_test_whiteListFilePath[ 128 ];
 #endif
 
 
 #if AMXX_VERSION_NUM < 183
-new g_user_msgid;
+    new g_user_msgid;
 #endif
 
 
 #if !defined MAX_PLAYERS
-#define MAX_PLAYERS 32
+    #define MAX_PLAYERS 32
 #endif
 
 
@@ -811,10 +814,10 @@ public plugin_cfg()
 {
     LOGGER( 128, "I AM ENTERING ON plugin_cfg(0)" );
     
+#if AMXX_VERSION_NUM < 183
     // If some exception happened before this, all color_print(...) messages will cause native
     // error 10, on the AMXX 182. It is because, the execution flow will not reach here, then
     // the player "g_user_msgid" will be be initialized.
-#if AMXX_VERSION_NUM < 183
     g_user_msgid = get_user_msgid( "SayText" );
 #endif
     
@@ -3660,6 +3663,7 @@ stock approveTheVotingStart( bool:is_forced_voting )
         
         if( !g_areTheUnitTestsRunning )
         {
+            LOGGER( 1, "Returning false on if( !g_areTheUnitTestsRunning )" );
             return false;
         }
     #else
@@ -3677,6 +3681,7 @@ stock approveTheVotingStart( bool:is_forced_voting )
             }
         }
         
+        LOGGER( 1, "Returning false on if( ... ( g_voteStatus & VOTE_IS_IN_PROGRESS ... ) ... )" );
         return false;
     #endif
     }
@@ -5624,9 +5629,9 @@ public client_authorized( player_id )
 }
 
 #if AMXX_VERSION_NUM < 183
-public client_disconnect( player_id )
+    public client_disconnect( player_id )
 #else
-public client_disconnected( player_id )
+    public client_disconnected( player_id )
 #endif
 {
     if( get_user_flags( player_id ) & ADMIN_MAP )
@@ -6002,7 +6007,7 @@ stock color_print( player_id, message[], any: ... )
     if( g_isColorChatSupported
         && g_isColoredChatEnabled )
     {
-#if AMXX_VERSION_NUM < 183
+    #if AMXX_VERSION_NUM < 183
         if( player_id )
         {
             vformat( formated_message, charsmax( formated_message ), message, 3 );
@@ -6109,12 +6114,12 @@ stock color_print( player_id, message[], any: ... )
             
             ArrayDestroy( multi_lingual_indexes_array );
         }
-#else
+    #else
         vformat( formated_message, charsmax( formated_message ), message, 3 );
         LOGGER( 64, "( in ) Player_Id: %d, Chat printed: %s", player_id, formated_message );
         
         client_print_color( player_id, print_team_default, formated_message );
-#endif
+    #endif
     }
     else
     {
@@ -6547,57 +6552,113 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
 
 // ################################## BELOW HERE ONLY GOES DEBUG/TEST CODE ###################################
 #if DEBUG_LEVEL & DEBUG_LEVEL_FAKE_VOTES
-public create_fakeVotes()
-{
-    if( g_voteStatus & VOTE_IS_RUNOFF )
+    public create_fakeVotes()
     {
-        g_arrayOfMapsWithVotesNumber[ 0 ] += 2;     // choice 1
-        g_arrayOfMapsWithVotesNumber[ 1 ] += 2;     // choice 2
-        
-        g_totalVotesCounted = g_arrayOfMapsWithVotesNumber[ 0 ] + g_arrayOfMapsWithVotesNumber[ 1 ];
-    }
-    else
-    {
-        g_arrayOfMapsWithVotesNumber[ 0 ] += 0;     // map 1
-        g_arrayOfMapsWithVotesNumber[ 1 ] += 3;     // map 2
-        g_arrayOfMapsWithVotesNumber[ 2 ] += 0;     // map 3
-        g_arrayOfMapsWithVotesNumber[ 3 ] += 0;     // map 4
-        g_arrayOfMapsWithVotesNumber[ 4 ] += 0;     // map 5
-        
-        if( g_isExtendmapAllowStay || g_isGameFinalVoting )
+        if( g_voteStatus & VOTE_IS_RUNOFF )
         {
-            g_arrayOfMapsWithVotesNumber[ 5 ] += 3;    // extend option
+            g_arrayOfMapsWithVotesNumber[ 0 ] += 2;     // choice 1
+            g_arrayOfMapsWithVotesNumber[ 1 ] += 2;     // choice 2
+            
+            g_totalVotesCounted = g_arrayOfMapsWithVotesNumber[ 0 ] + g_arrayOfMapsWithVotesNumber[ 1 ];
         }
-        
-        g_totalVotesCounted = g_arrayOfMapsWithVotesNumber[ 0 ] + g_arrayOfMapsWithVotesNumber[ 1 ] +
-                              g_arrayOfMapsWithVotesNumber[ 2 ] + g_arrayOfMapsWithVotesNumber[ 3 ] +
-                              g_arrayOfMapsWithVotesNumber[ 4 ] + g_arrayOfMapsWithVotesNumber[ 5 ];
+        else
+        {
+            g_arrayOfMapsWithVotesNumber[ 0 ] += 0;     // map 1
+            g_arrayOfMapsWithVotesNumber[ 1 ] += 3;     // map 2
+            g_arrayOfMapsWithVotesNumber[ 2 ] += 0;     // map 3
+            g_arrayOfMapsWithVotesNumber[ 3 ] += 0;     // map 4
+            g_arrayOfMapsWithVotesNumber[ 4 ] += 0;     // map 5
+            
+            if( g_isExtendmapAllowStay || g_isGameFinalVoting )
+            {
+                g_arrayOfMapsWithVotesNumber[ 5 ] += 3;    // extend option
+            }
+            
+            g_totalVotesCounted = g_arrayOfMapsWithVotesNumber[ 0 ] + g_arrayOfMapsWithVotesNumber[ 1 ] +
+                                  g_arrayOfMapsWithVotesNumber[ 2 ] + g_arrayOfMapsWithVotesNumber[ 3 ] +
+                                  g_arrayOfMapsWithVotesNumber[ 4 ] + g_arrayOfMapsWithVotesNumber[ 5 ];
+        }
     }
-}
 #endif
 
 
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
-/**
- * This function run all tests that are listed at it. Every test that is created must to be called
- * here to register itself at the Test System and perform the testing.
- */
-public runTests()
-{
-    server_print( "^n^n    Executing the 'Galileo' Tests:^n" );
-    
-    g_areTheUnitTestsRunning = true;
-    save_server_cvars_for_test();
-    ALL_TESTS_TO_EXECUTE();
-    
-    server_print( "^n    %d tests succeed.^n    %d tests failed.", g_totalSuccessfulTests, g_totalFailureTests );
-    
-    if( g_max_delay_result )
+    /**
+     * This function run all tests that are listed at it. Every test that is created must to be called
+     * here to register itself at the Test System and perform the testing.
+     */
+    public runTests()
     {
-        server_print( "^n^n    Executing the 'Galileo' delayed until %d seconds tests:^n", g_max_delay_result );
-        set_task( g_max_delay_result + 1.0, "show_delayed_results" );
+        server_print( "^n^n    Executing the 'Galileo' Tests:^n" );
+        
+        g_areTheUnitTestsRunning = true;
+        save_server_cvars_for_test();
+        ALL_TESTS_TO_EXECUTE();
+        
+        server_print( "^n    %d tests succeed.^n    %d tests failed.", g_totalSuccessfulTests, g_totalFailureTests );
+        
+        if( g_max_delay_result )
+        {
+            server_print( "^n^n    Executing the 'Galileo' delayed until %d seconds tests:^n", g_max_delay_result );
+            set_task( g_max_delay_result + 1.0, "show_delayed_results" );
+        }
+        else
+        {
+            // clean the testing
+            cancel_voting();
+            restore_server_cvars_for_test();
+            
+            print_all_tests_executed();
+            print_tests_failure();
+            
+            g_areTheUnitTestsRunning = false;
+        }
     }
-    else
+
+    stock print_all_tests_executed()
+    {
+        new test_name[ MAX_SHORT_STRING ];
+        
+        if( ArraySize( g_tests_idsAndNames ) )
+        {
+            server_print( "^n^n    The following tests were executed:^n" );
+        }
+        
+        for( new test_index = 0; test_index < ArraySize( g_tests_idsAndNames ); test_index++ )
+        {
+            ArrayGetString( g_tests_idsAndNames, test_index, test_name, charsmax( test_name ) );
+            
+            server_print( "       %3d. %s", test_index + 1, test_name );
+        }
+    }
+
+    stock print_tests_failure()
+    {
+        new test_id;
+        new test_name[ MAX_SHORT_STRING ];
+        new failure_reason[ MAX_LONG_STRING ];
+        
+        if( ArraySize( g_tests_failure_ids ) )
+        {
+            server_print( "^n^n    The following 'Galileo' unit tests failed:^n" );
+        }
+        
+        for( new failure_index = 0; failure_index < ArraySize( g_tests_failure_ids ); failure_index++ )
+        {
+            test_id = ArrayGetCell( g_tests_failure_ids, failure_index );
+            
+            ArrayGetString( g_tests_idsAndNames, test_id - 1, test_name, charsmax( test_name ) );
+            ArrayGetString( g_tests_failure_reasons, failure_index, failure_reason, charsmax( failure_reason ) );
+            
+            server_print( "       %3d. %s: %s", test_id, test_name, failure_reason );
+        }
+    }
+
+    /**
+     * This is executed at the end of the delayed tests execution to show its results and restore any
+     * cvars variable change.
+     */
+    public show_delayed_results()
     {
         // clean the testing
         cancel_voting();
@@ -6606,506 +6667,450 @@ public runTests()
         print_all_tests_executed();
         print_tests_failure();
         
+        server_print( "^n    %d tests succeed.^n    %d tests failed.", g_totalSuccessfulTests, g_totalFailureTests );
+        server_print( "^n    Finished 'Galileo' Tests Execution.^n^n" );
+        
         g_areTheUnitTestsRunning = false;
     }
-}
 
-stock print_all_tests_executed()
-{
-    new test_name[ MAX_SHORT_STRING ];
-    
-    if( ArraySize( g_tests_idsAndNames ) )
+    /**
+     * This is the first thing called when a test begin running. It function is to let the Test System
+     * know that the test exists and then know how to handle it using the test_id.
+     *
+     * @param max_delay_result        the max delay time to finish the whole test chain execution.
+     * @param test_name               the test name to register
+     *
+     * @return test_id                an integer that refers it at the Test System.
+     */
+    stock register_test( max_delay_result, test_name[] )
     {
-        server_print( "^n^n    The following tests were executed:^n" );
+        new totalTests;
+        
+        g_totalSuccessfulTests++;
+        totalTests = g_totalSuccessfulTests + g_totalFailureTests;
+        
+        ArrayPushString( g_tests_idsAndNames, test_name );
+        server_print( "    EXECUTING TEST %d WITH %d SECONDS DELAY - %s ", totalTests, max_delay_result, test_name );
+        
+        if( g_max_delay_result < max_delay_result )
+        {
+            g_max_delay_result = max_delay_result;
+        }
+        
+        return totalTests;
     }
-    
-    for( new test_index = 0; test_index < ArraySize( g_tests_idsAndNames ); test_index++ )
+
+    /**
+     * Informs the Test System that the test failed and why.
+     *
+     * @param test_id              the test_id at the Test System
+     * @param isFailure            a boolean value setting whether the failure status is true.
+     * @param failure_reason       the reason why the test failed
+     * @param any                  a variable number of formatting parameters
+     */
+    stock set_test_failure_private( test_id, bool:isFailure, failure_reason[], any: ... )
     {
-        ArrayGetString( g_tests_idsAndNames, test_index, test_name, charsmax( test_name ) );
+        g_current_test_evaluation = isFailure;
         
-        server_print( "       %3d. %s", test_index + 1, test_name );
+        if( isFailure )
+        {
+            static formated_message[ MAX_LONG_STRING ];
+            
+            g_totalSuccessfulTests--;
+            g_totalFailureTests++;
+            
+            vformat( formated_message, charsmax( formated_message ), failure_reason, 3 );
+            ArrayPushCell( g_tests_failure_ids, test_id );
+            
+            ArrayPushString( g_tests_failure_reasons, formated_message );
+            server_print( "       TEST FAILURE! %s", formated_message );
+        }
     }
-}
 
-stock print_tests_failure()
-{
-    new test_id;
-    new test_name[ MAX_SHORT_STRING ];
-    new failure_reason[ MAX_LONG_STRING ];
-    
-    if( ArraySize( g_tests_failure_ids ) )
+    /**
+     * This is a simple test to verify the basic registering test functionality.
+     */
+    stock test_register_test()
     {
-        server_print( "^n^n    The following 'Galileo' unit tests failed:^n" );
+        new test_id;
+        new first_test_name[ 64 ];
+        
+        test_id = register_test( 0, "test_register_test" );
+        
+        SET_TEST_FAILURE( test_id, g_totalSuccessfulTests != 1, \
+                "g_totalSuccessfulTests must be 1 (it was %d)", g_totalSuccessfulTests );
+        
+        SET_TEST_FAILURE( test_id, test_id != 1, "test_id must be 1 (it was %d)", test_id );
+        ArrayGetString( g_tests_idsAndNames, 0, first_test_name, charsmax( first_test_name ) );
+        
+        SET_TEST_FAILURE( test_id, !equal( first_test_name, "test_register_test" ), \
+                "first_test_name must be 'test_register_test' (it was %s)", first_test_name );
     }
-    
-    for( new failure_index = 0; failure_index < ArraySize( g_tests_failure_ids ); failure_index++ )
+
+    /**
+     * This is the vote_startDirector() tests chain beginning. Because the vote_startDirector() cannot
+     * to be tested simultaneously. Then, all tests that involves the vote_startDirector() chain, must
+     * to be executed sequentially after this chain end.
+     *
+     * This is the 1º chain test.
+     *
+     * Tests if the cvar 'amx_extendmap_max' functionality is working properly for a successful case.
+     */
+    stock test_is_map_extension_allowed()
     {
-        test_id = ArrayGetCell( g_tests_failure_ids, failure_index );
+        new chainDelay = 2 + 2 + 1 + 1 + 1;
+        new test_id    = register_test( chainDelay, "test_is_map_extension_allowed" );
         
-        ArrayGetString( g_tests_idsAndNames, test_id - 1, test_name, charsmax( test_name ) );
-        ArrayGetString( g_tests_failure_reasons, failure_index, failure_reason, charsmax( failure_reason ) );
+        SET_TEST_FAILURE( test_id, g_isMapExtensionAllowed, "g_isMapExtensionAllowed must be 0 (it was %d)", \
+                g_isMapExtensionAllowed );
         
-        server_print( "       %3d. %s: %s", test_id, test_name, failure_reason );
+        set_pcvar_float( cvar_maxMapExtendTime, 20.0 );
+        set_pcvar_float( cvar_mp_timelimit, 10.0 );
+        
+        vote_startDirector( false );
+        
+        SET_TEST_FAILURE( test_id, !g_isMapExtensionAllowed, "g_isMapExtensionAllowed must be 1 (it was %d)", \
+                g_isMapExtensionAllowed );
+        
+        set_task( 2.0, "test_is_map_extension_allowed2", chainDelay );
     }
-}
 
-/**
- * This is executed at the end of the delayed tests execution to show its results and restore any
- * cvars variable change.
- */
-public show_delayed_results()
-{
-    // clean the testing
-    cancel_voting();
-    restore_server_cvars_for_test();
-    
-    print_all_tests_executed();
-    print_tests_failure();
-    
-    server_print( "^n    %d tests succeed.^n    %d tests failed.", g_totalSuccessfulTests, g_totalFailureTests );
-    server_print( "^n    Finished 'Galileo' Tests Execution.^n^n" );
-    
-    g_areTheUnitTestsRunning = false;
-}
-
-/**
- * This is the first thing called when a test begin running. It function is to let the Test System
- * know that the test exists and then know how to handle it using the test_id.
- *
- * @param max_delay_result        the max delay time to finish the whole test chain execution.
- * @param test_name               the test name to register
- *
- * @return test_id                an integer that refers it at the Test System.
- */
-stock register_test( max_delay_result, test_name[] )
-{
-    new totalTests;
-    
-    g_totalSuccessfulTests++;
-    totalTests = g_totalSuccessfulTests + g_totalFailureTests;
-    
-    ArrayPushString( g_tests_idsAndNames, test_name );
-    server_print( "    EXECUTING TEST %d WITH %d SECONDS DELAY - %s ", totalTests, max_delay_result, test_name );
-    
-    if( g_max_delay_result < max_delay_result )
+    /**
+     * This is the 2º test at vote_startDirector() chain.
+     *
+     * Tests if the cvar 'amx_extendmap_max' functionality is working properly for a failure case.
+     */
+    public test_is_map_extension_allowed2( chainDelay )
     {
-        g_max_delay_result = max_delay_result;
+        new test_id = register_test( chainDelay, "test_is_map_extension_allowed2" );
+        
+        SET_TEST_FAILURE( test_id, !g_isMapExtensionAllowed, \
+                "g_isMapExtensionAllowed must be 1 (it was %d)", g_isMapExtensionAllowed );
+        
+        color_print( 0, "^1%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED" );
+        cancel_voting();
+        
+        set_pcvar_float( cvar_maxMapExtendTime, 10.0 );
+        set_pcvar_float( cvar_mp_timelimit, 20.0 );
+        
+        vote_startDirector( false );
+        SET_TEST_FAILURE( test_id, g_isMapExtensionAllowed, "g_isMapExtensionAllowed must be 0 (it was %d)", g_isMapExtensionAllowed );
+        
+        set_task( 2.0, "test_end_of_map_voting_start_1", chainDelay );
     }
-    
-    return totalTests;
-}
 
-/**
- * Informs the Test System that the test failed and why.
- *
- * @param test_id              the test_id at the Test System
- * @param isFailure            a boolean value setting whether the failure status is true.
- * @param failure_reason       the reason why the test failed
- * @param any                  a variable number of formatting parameters
- */
-stock set_test_failure_private( test_id, bool:isFailure, failure_reason[], any: ... )
-{
-    g_current_test_evaluation = isFailure;
-    
-    if( isFailure )
+    /**
+     * This is the 3º test at vote_startDirector() chain.
+     *
+     * Tests if the end map voting is starting automatically at the end of map due time limit expiration.
+     */
+    public test_end_of_map_voting_start_1( chainDelay )
     {
-        static formated_message[ MAX_LONG_STRING ];
+        new test_id;
+        new secondsLeft;
         
-        g_totalSuccessfulTests--;
-        g_totalFailureTests++;
+        test_id = register_test( chainDelay, "test_end_of_map_voting_start_1" );
+        SET_TEST_FAILURE( test_id, g_isMapExtensionAllowed, "g_isMapExtensionAllowed must be 0 (it was %d)", g_isMapExtensionAllowed );
         
-        vformat( formated_message, charsmax( formated_message ), failure_reason, 3 );
-        ArrayPushCell( g_tests_failure_ids, test_id );
+        cancel_voting();
+        secondsLeft = get_timeleft();
         
-        ArrayPushString( g_tests_failure_reasons, formated_message );
-        server_print( "       TEST FAILURE! %s", formated_message );
+        set_pcvar_float( cvar_mp_timelimit,
+                ( get_pcvar_float( cvar_mp_timelimit ) * 60
+                  - secondsLeft
+                  + START_VOTEMAP_MAX_TIME + 15 )
+                / 60 );
+        
+        set_task( 1.0, "test_end_of_map_voting_start_2", chainDelay );
     }
-}
 
-/**
- * This is a simple test to verify the basic registering test functionality.
- */
-stock test_register_test()
-{
-    new test_id;
-    new first_test_name[ 64 ];
-    
-    test_id = register_test( 0, "test_register_test" );
-    
-    SET_TEST_FAILURE( test_id, g_totalSuccessfulTests != 1, \
-            "g_totalSuccessfulTests must be 1 (it was %d)", g_totalSuccessfulTests );
-    
-    SET_TEST_FAILURE( test_id, test_id != 1, "test_id must be 1 (it was %d)", test_id );
-    ArrayGetString( g_tests_idsAndNames, 0, first_test_name, charsmax( first_test_name ) );
-    
-    SET_TEST_FAILURE( test_id, !equal( first_test_name, "test_register_test" ), \
-            "first_test_name must be 'test_register_test' (it was %s)", first_test_name );
-}
-
-/**
- * This is the vote_startDirector() tests chain beginning. Because the vote_startDirector() cannot
- * to be tested simultaneously. Then, all tests that involves the vote_startDirector() chain, must
- * to be executed sequentially after this chain end.
- *
- * This is the 1º chain test.
- *
- * Tests if the cvar 'amx_extendmap_max' functionality is working properly for a successful case.
- */
-stock test_is_map_extension_allowed()
-{
-    new chainDelay = 2 + 2 + 1 + 1 + 1;
-    new test_id    = register_test( chainDelay, "test_is_map_extension_allowed" );
-    
-    SET_TEST_FAILURE( test_id, g_isMapExtensionAllowed, "g_isMapExtensionAllowed must be 0 (it was %d)", \
-            g_isMapExtensionAllowed );
-    
-    set_pcvar_float( cvar_maxMapExtendTime, 20.0 );
-    set_pcvar_float( cvar_mp_timelimit, 10.0 );
-    
-    vote_startDirector( false );
-    
-    SET_TEST_FAILURE( test_id, !g_isMapExtensionAllowed, "g_isMapExtensionAllowed must be 1 (it was %d)", \
-            g_isMapExtensionAllowed );
-    
-    set_task( 2.0, "test_is_map_extension_allowed2", chainDelay );
-}
-
-/**
- * This is the 2º test at vote_startDirector() chain.
- *
- * Tests if the cvar 'amx_extendmap_max' functionality is working properly for a failure case.
- */
-public test_is_map_extension_allowed2( chainDelay )
-{
-    new test_id = register_test( chainDelay, "test_is_map_extension_allowed2" );
-    
-    SET_TEST_FAILURE( test_id, !g_isMapExtensionAllowed, \
-            "g_isMapExtensionAllowed must be 1 (it was %d)", g_isMapExtensionAllowed );
-    
-    color_print( 0, "^1%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED" );
-    cancel_voting();
-    
-    set_pcvar_float( cvar_maxMapExtendTime, 10.0 );
-    set_pcvar_float( cvar_mp_timelimit, 20.0 );
-    
-    vote_startDirector( false );
-    SET_TEST_FAILURE( test_id, g_isMapExtensionAllowed, "g_isMapExtensionAllowed must be 0 (it was %d)", g_isMapExtensionAllowed );
-    
-    set_task( 2.0, "test_end_of_map_voting_start_1", chainDelay );
-}
-
-/**
- * This is the 3º test at vote_startDirector() chain.
- *
- * Tests if the end map voting is starting automatically at the end of map due time limit expiration.
- */
-public test_end_of_map_voting_start_1( chainDelay )
-{
-    new test_id;
-    new secondsLeft;
-    
-    test_id = register_test( chainDelay, "test_end_of_map_voting_start_1" );
-    SET_TEST_FAILURE( test_id, g_isMapExtensionAllowed, "g_isMapExtensionAllowed must be 0 (it was %d)", g_isMapExtensionAllowed );
-    
-    cancel_voting();
-    secondsLeft = get_timeleft();
-    
-    set_pcvar_float( cvar_mp_timelimit,
-            ( get_pcvar_float( cvar_mp_timelimit ) * 60
-              - secondsLeft
-              + START_VOTEMAP_MAX_TIME + 15 )
-            / 60 );
-    
-    set_task( 1.0, "test_end_of_map_voting_start_2", chainDelay );
-}
-
-/**
- * This is the 4º test at vote_startDirector() chain.
- *
- * Tests if the end map voting is starting automatically at the end of map due time limit expiration.
- */
-public test_end_of_map_voting_start_2( chainDelay )
-{
-    new test_id = register_test( chainDelay, "test_end_of_map_voting_start_2" );
-    
-    vote_manageEnd();
-    SET_TEST_FAILURE( test_id, !( g_voteStatus & VOTE_IS_IN_PROGRESS ), "vote_startDirector() does not started!" );
-    
-    set_pcvar_float( cvar_mp_timelimit, 20.0 );
-    cancel_voting();
-    
-    set_task( 1.0, "test_end_of_map_voting_stop_1", chainDelay );
-}
-
-/**
- * This is the 5º test at vote_startDirector() chain.
- *
- * Tests if the end map voting is NOT starting automatically at the end of map due time limit expiration.
- */
-public test_end_of_map_voting_stop_1( chainDelay )
-{
-    new test_id = register_test( chainDelay, "test_end_of_map_voting_stop_1" );
-    
-    vote_manageEnd();
-    SET_TEST_FAILURE( test_id, ( g_voteStatus & VOTE_IS_IN_PROGRESS ) != 0, "vote_startDirector() does started!" );
-    
-    set_pcvar_float( cvar_mp_timelimit, 1.0 );
-    cancel_voting();
-    
-    set_task( 1.0, "test_end_of_map_voting_stop_2", chainDelay );
-}
-
-/**
- * This is the 6º test at vote_startDirector() chain.
- *
- * Tests if the end map voting is NOT starting automatically at the end of map due time limit expiration.
- */
-public test_end_of_map_voting_stop_2( chainDelay )
-{
-    new test_id = register_test( chainDelay, "test_end_of_map_voting_stop_2" );
-    
-    vote_manageEnd();
-    SET_TEST_FAILURE( test_id, ( g_voteStatus & VOTE_IS_IN_PROGRESS ) != 0, "vote_startDirector() does started!" );
-    
-    set_pcvar_float( cvar_mp_timelimit, 20.0 );
-    cancel_voting();
-    
-    //set_task( 1.0, "test_end_of_map_voting_stop_____", chainDelay )
-}
-
-/**
- * Test for client connect cvar_isToStopEmptyCycle behavior.
- */
-stock test_gal_in_empty_cycle_case1()
-{
-    new test_id = register_test( 0, "test_gal_in_empty_cycle_case1" );
-    
-    set_pcvar_num( cvar_isToStopEmptyCycle, 1 );
-    client_authorized( 1 );
-    
-    SET_TEST_FAILURE( test_id, get_pcvar_num( cvar_isToStopEmptyCycle ) != 0, \
-            "cvar_isToStopEmptyCycle must be 0 (it was %d)", get_pcvar_num( cvar_isToStopEmptyCycle ) );
-    
-    set_pcvar_num( cvar_isToStopEmptyCycle, 0 );
-    client_authorized( 1 );
-    
-    SET_TEST_FAILURE( test_id, get_pcvar_num( cvar_isToStopEmptyCycle ) != 0, \
-            "cvar_isToStopEmptyCycle must be 0 (it was %d)", get_pcvar_num( cvar_isToStopEmptyCycle ) );
-}
-
-/**
- * This 1º case test if the current map isn't part of the empty cycle, immediately change to next map
- * that is.
- */
-stock test_gal_in_empty_cycle_case2()
-{
-    new nextMap[ MAX_MAPNAME_LENGHT ];
-    
-    new test_id                  = register_test( 0, "test_gal_in_empty_cycle_case2" );
-    new Array: emptyCycleMapList = ArrayCreate( MAX_MAPNAME_LENGHT );
-    
-    ArrayPushString( emptyCycleMapList, "de_dust2" );
-    ArrayPushString( emptyCycleMapList, "de_inferno" );
-    
-    new mapIndex = map_getNext( emptyCycleMapList, "de_dust2", nextMap );
-    
-    SET_TEST_FAILURE( test_id, !equal( nextMap, "de_inferno" ), "nextMap must be 'de_inferno' (it was %s)", nextMap );
-    SET_TEST_FAILURE( test_id, mapIndex == -1, "mapIndex must NOT be '-1' (it was %d)", mapIndex );
-    
-    ArrayDestroy( emptyCycleMapList );
-}
-
-/**
- * This 2º case test if the current map isn't part of the empty cycle, immediately change to next map
- * that is.
- */
-stock test_gal_in_empty_cycle_case3()
-{
-    new nextMap[ MAX_MAPNAME_LENGHT ];
-    
-    new test_id                  = register_test( 0, "test_gal_in_empty_cycle_case3" );
-    new Array: emptyCycleMapList = ArrayCreate( MAX_MAPNAME_LENGHT );
-    
-    ArrayPushString( emptyCycleMapList, "de_dust2" );
-    ArrayPushString( emptyCycleMapList, "de_inferno" );
-    ArrayPushString( emptyCycleMapList, "de_dust4" );
-    
-    new mapIndex = map_getNext( emptyCycleMapList, "de_inferno", nextMap );
-    
-    SET_TEST_FAILURE( test_id, !equal( nextMap, "de_dust4" ), "nextMap must be 'de_dust4' (it was %s)", nextMap );
-    SET_TEST_FAILURE( test_id, mapIndex == -1, "mapIndex must NOT be '-1' (it was %d)", mapIndex );
-    
-    ArrayDestroy( emptyCycleMapList );
-}
-
-/**
- * This 3º case test if the current map isn't part of the empty cycle, immediately change to next map
- * that is.
- */
-stock test_gal_in_empty_cycle_case4()
-{
-    new nextMap[ MAX_MAPNAME_LENGHT ];
-    
-    new test_id                  = register_test( 0, "test_gal_in_empty_cycle_case4" );
-    new Array: emptyCycleMapList = ArrayCreate( MAX_MAPNAME_LENGHT );
-    
-    ArrayPushString( emptyCycleMapList, "de_dust2" );
-    ArrayPushString( emptyCycleMapList, "de_inferno" );
-    ArrayPushString( emptyCycleMapList, "de_dust4" );
-    
-    new mapIndex = map_getNext( emptyCycleMapList, "de_dust", nextMap );
-    
-    SET_TEST_FAILURE( test_id, !equal( nextMap, "de_dust2" ), "nextMap must be 'de_dust2' (it was %s)", nextMap );
-    SET_TEST_FAILURE( test_id, !( mapIndex == -1 ), "mapIndex must be '-1' (it was %d)", mapIndex );
-    
-    ArrayDestroy( emptyCycleMapList );
-}
-
-/**
- * This tests if the function 'loadCurrentBlackList()' 1º case is working properly.
- */
-public test_loadCurrentBlackList_case1()
-{
-    new whiteListFile;
-    
-    new test_id            = register_test( 0, "test_loadCurrentBlackList_case1" );
-    new Trie:blackListTrie = TrieCreate();
-    
-    copy( g_test_whiteListFilePath, charsmax( g_test_whiteListFilePath ), "test_loadCurrentBlackList.txt" );
-    set_pcvar_string( cvar_voteWhiteListMapFilePath, g_test_whiteListFilePath );
-    
-    whiteListFile = fopen( g_test_whiteListFilePath, "wt" );
-    
-    if( whiteListFile )
+    /**
+     * This is the 4º test at vote_startDirector() chain.
+     *
+     * Tests if the end map voting is starting automatically at the end of map due time limit expiration.
+     */
+    public test_end_of_map_voting_start_2( chainDelay )
     {
-        fprintf( whiteListFile, "%s^n", "[23-24]" );
-        fprintf( whiteListFile, "%s^n", "de_dust1" );
-        fprintf( whiteListFile, "%s^n", "de_dust2" );
-        fprintf( whiteListFile, "%s^n", "de_dust3" );
-        fprintf( whiteListFile, "%s^n", "[1-23]" );
-        fprintf( whiteListFile, "%s^n", "de_dust4" );
-        fprintf( whiteListFile, "%s^n", "[12-22]" );
-        fprintf( whiteListFile, "%s^n", "de_dust5" );
-        fprintf( whiteListFile, "%s^n", "de_dust6" );
-        fprintf( whiteListFile, "%s^n", "de_dust7" );
-        fclose( whiteListFile );
+        new test_id = register_test( chainDelay, "test_end_of_map_voting_start_2" );
+        
+        vote_manageEnd();
+        SET_TEST_FAILURE( test_id, !( g_voteStatus & VOTE_IS_IN_PROGRESS ), "vote_startDirector() does not started!" );
+        
+        set_pcvar_float( cvar_mp_timelimit, 20.0 );
+        cancel_voting();
+        
+        set_task( 1.0, "test_end_of_map_voting_stop_1", chainDelay );
     }
-    
-    g_test_current_time = 23;
-    loadCurrentBlackList( blackListTrie );
-    g_test_current_time = 0;
-    
-    SET_TEST_FAILURE( test_id, TrieKeyExists( blackListTrie, "de_dust1" ), \
-            "The map 'de_dust1' must NOT to be present on the trie, but it was!" );
-    SET_TEST_FAILURE( test_id, TrieKeyExists( blackListTrie, "de_dust2" ), \
-            "The map 'de_dust2' must NOT to be present on the trie, but it was!" );
-    SET_TEST_FAILURE( test_id, TrieKeyExists( blackListTrie, "de_dust3" ), \
-            "The map 'de_dust3' must NOT to be present on the trie, but it was!" );
-    
-    SET_TEST_FAILURE( test_id, !TrieKeyExists( blackListTrie, "de_dust4" ), \
-            "The map 'de_dust4' must to be present on the trie, but it was not!" );
-    SET_TEST_FAILURE( test_id, !TrieKeyExists( blackListTrie, "de_dust5" ), \
-            "The map 'de_dust5' must to be present on the trie, but it was not!" );
-    SET_TEST_FAILURE( test_id, !TrieKeyExists( blackListTrie, "de_dust6" ), \
-            "The map 'de_dust6' must to be present on the trie, but it was not!" );
-    SET_TEST_FAILURE( test_id, !TrieKeyExists( blackListTrie, "de_dust7" ), \
-            "The map 'de_dust7' must to be present on the trie, but it was not!" );
-    
-    TrieDestroy( blackListTrie );
-}
 
-/**
- * This tests if the function 'loadCurrentBlackList()' 2º case is working properly.
- */
-public test_loadCurrentBlackList_case2()
-{
-    new test_id            = register_test( 0, "test_loadCurrentBlackList_case2" );
-    new Trie:blackListTrie = TrieCreate();
-    
-    g_test_current_time = 22;
-    loadCurrentBlackList( blackListTrie );
-    g_test_current_time = 0;
-    
-    SET_TEST_FAILURE( test_id, TrieKeyExists( blackListTrie, "de_dust4" ), \
-            "The map 'de_dust4' must NOT to be present on the trie, but it was!" );
-    
-    SET_TEST_FAILURE( test_id, !TrieKeyExists( blackListTrie, "de_dust5" ), \
-            "The map 'de_dust5' must to be present on the trie, but it was not!" );
-    
-    TrieDestroy( blackListTrie );
-}
-
-/**
- * This tests if the function 'loadCurrentBlackList()' 3º case is working properly.
- */
-public test_loadCurrentBlackList_case3()
-{
-    new test_id            = register_test( 0, "test_loadCurrentBlackList_case3" );
-    new Trie:blackListTrie = TrieCreate();
-    
-    g_test_current_time = 12;
-    loadCurrentBlackList( blackListTrie );
-    g_test_current_time = 0;
-    
-    SET_TEST_FAILURE( test_id, TrieKeyExists( blackListTrie, "de_dust7" ), \
-            "The map 'de_dust7' must NOT to be present on the trie, but it was!" );
-    
-    SET_TEST_FAILURE( test_id, !TrieKeyExists( blackListTrie, "de_dust2" ), \
-            "The map 'de_dust2' must to be present on the trie, but it was not!" );
-    
-    TrieDestroy( blackListTrie );
-    delete_file( g_test_whiteListFilePath );
-}
-
-/**
- * Server changed cvars backup to be restored after the unit tests end.
- */
-new Float:test_extendmap_max;
-new Float:test_mp_timelimit;
-
-new test_whiteListFilePath[ MAX_FILE_PATH_LENGHT ];
-
-
-/**
- * Every time a cvar is changed during the tests, it must be saved here to a global test variable
- * to be restored at the restore_server_cvars_for_test(), which is executed at the end of all
- * tests execution.
- *
- * This is executed before the first rest run.
- */
-stock save_server_cvars_for_test()
-{
-    g_is_test_changed_cvars = true;
-    
-    test_extendmap_max = get_pcvar_float( cvar_maxMapExtendTime );
-    test_mp_timelimit  = get_pcvar_float( cvar_mp_timelimit );
-    
-    get_pcvar_string( cvar_voteWhiteListMapFilePath, test_whiteListFilePath, charsmax( test_whiteListFilePath ) );
-    
-    LOGGER( 2, "    %42s cvar_mp_timelimit: %f  test_mp_timelimit: %f   g_originalTimelimit: %f", "save_server_cvars_for_test( out )", \
-            get_pcvar_float( cvar_mp_timelimit ), test_mp_timelimit, g_originalTimelimit );
-}
-
-/**
- * This is executed after all tests executions, to restore the server variables changes.
- */
-stock restore_server_cvars_for_test()
-{
-    LOGGER( 2, "    %42s cvar_mp_timelimit: %f  test_mp_timelimit: %f  g_originalTimelimit: %f", "restore_server_cvars_for_test( in )", \
-            get_pcvar_float( cvar_mp_timelimit ), test_mp_timelimit, g_originalTimelimit );
-    
-    if( g_is_test_changed_cvars )
+    /**
+     * This is the 5º test at vote_startDirector() chain.
+     *
+     * Tests if the end map voting is NOT starting automatically at the end of map due time limit expiration.
+     */
+    public test_end_of_map_voting_stop_1( chainDelay )
     {
-        g_is_test_changed_cvars = false;
+        new test_id = register_test( chainDelay, "test_end_of_map_voting_stop_1" );
         
-        set_pcvar_float( cvar_maxMapExtendTime, test_extendmap_max );
-        set_pcvar_float( cvar_mp_timelimit, test_mp_timelimit );
+        vote_manageEnd();
+        SET_TEST_FAILURE( test_id, ( g_voteStatus & VOTE_IS_IN_PROGRESS ) != 0, "vote_startDirector() does started!" );
         
-        set_pcvar_string( cvar_voteWhiteListMapFilePath, test_whiteListFilePath );
+        set_pcvar_float( cvar_mp_timelimit, 1.0 );
+        cancel_voting();
+        
+        set_task( 1.0, "test_end_of_map_voting_stop_2", chainDelay );
     }
-    
-    LOGGER( 2, "    %42s cvar_mp_timelimit: %f  test_mp_timelimit: %f  g_originalTimelimit: %f", "restore_server_cvars_for_test( out )", \
-            get_pcvar_float( cvar_mp_timelimit ), test_mp_timelimit, g_originalTimelimit );
-}
 
+    /**
+     * This is the 6º test at vote_startDirector() chain.
+     *
+     * Tests if the end map voting is NOT starting automatically at the end of map due time limit expiration.
+     */
+    public test_end_of_map_voting_stop_2( chainDelay )
+    {
+        new test_id = register_test( chainDelay, "test_end_of_map_voting_stop_2" );
+        
+        vote_manageEnd();
+        SET_TEST_FAILURE( test_id, ( g_voteStatus & VOTE_IS_IN_PROGRESS ) != 0, "vote_startDirector() does started!" );
+        
+        set_pcvar_float( cvar_mp_timelimit, 20.0 );
+        cancel_voting();
+        
+        //set_task( 1.0, "test_end_of_map_voting_stop_____", chainDelay )
+    }
+
+    /**
+     * Test for client connect cvar_isToStopEmptyCycle behavior.
+     */
+    stock test_gal_in_empty_cycle_case1()
+    {
+        new test_id = register_test( 0, "test_gal_in_empty_cycle_case1" );
+        
+        set_pcvar_num( cvar_isToStopEmptyCycle, 1 );
+        client_authorized( 1 );
+        
+        SET_TEST_FAILURE( test_id, get_pcvar_num( cvar_isToStopEmptyCycle ) != 0, \
+                "cvar_isToStopEmptyCycle must be 0 (it was %d)", get_pcvar_num( cvar_isToStopEmptyCycle ) );
+        
+        set_pcvar_num( cvar_isToStopEmptyCycle, 0 );
+        client_authorized( 1 );
+        
+        SET_TEST_FAILURE( test_id, get_pcvar_num( cvar_isToStopEmptyCycle ) != 0, \
+                "cvar_isToStopEmptyCycle must be 0 (it was %d)", get_pcvar_num( cvar_isToStopEmptyCycle ) );
+    }
+
+    /**
+     * This 1º case test if the current map isn't part of the empty cycle, immediately change to next map
+     * that is.
+     */
+    stock test_gal_in_empty_cycle_case2()
+    {
+        new nextMap[ MAX_MAPNAME_LENGHT ];
+        
+        new test_id                  = register_test( 0, "test_gal_in_empty_cycle_case2" );
+        new Array: emptyCycleMapList = ArrayCreate( MAX_MAPNAME_LENGHT );
+        
+        ArrayPushString( emptyCycleMapList, "de_dust2" );
+        ArrayPushString( emptyCycleMapList, "de_inferno" );
+        
+        new mapIndex = map_getNext( emptyCycleMapList, "de_dust2", nextMap );
+        
+        SET_TEST_FAILURE( test_id, !equal( nextMap, "de_inferno" ), "nextMap must be 'de_inferno' (it was %s)", nextMap );
+        SET_TEST_FAILURE( test_id, mapIndex == -1, "mapIndex must NOT be '-1' (it was %d)", mapIndex );
+        
+        ArrayDestroy( emptyCycleMapList );
+    }
+
+    /**
+     * This 2º case test if the current map isn't part of the empty cycle, immediately change to next map
+     * that is.
+     */
+    stock test_gal_in_empty_cycle_case3()
+    {
+        new nextMap[ MAX_MAPNAME_LENGHT ];
+        
+        new test_id                  = register_test( 0, "test_gal_in_empty_cycle_case3" );
+        new Array: emptyCycleMapList = ArrayCreate( MAX_MAPNAME_LENGHT );
+        
+        ArrayPushString( emptyCycleMapList, "de_dust2" );
+        ArrayPushString( emptyCycleMapList, "de_inferno" );
+        ArrayPushString( emptyCycleMapList, "de_dust4" );
+        
+        new mapIndex = map_getNext( emptyCycleMapList, "de_inferno", nextMap );
+        
+        SET_TEST_FAILURE( test_id, !equal( nextMap, "de_dust4" ), "nextMap must be 'de_dust4' (it was %s)", nextMap );
+        SET_TEST_FAILURE( test_id, mapIndex == -1, "mapIndex must NOT be '-1' (it was %d)", mapIndex );
+        
+        ArrayDestroy( emptyCycleMapList );
+    }
+
+    /**
+     * This 3º case test if the current map isn't part of the empty cycle, immediately change to next map
+     * that is.
+     */
+    stock test_gal_in_empty_cycle_case4()
+    {
+        new nextMap[ MAX_MAPNAME_LENGHT ];
+        
+        new test_id                  = register_test( 0, "test_gal_in_empty_cycle_case4" );
+        new Array: emptyCycleMapList = ArrayCreate( MAX_MAPNAME_LENGHT );
+        
+        ArrayPushString( emptyCycleMapList, "de_dust2" );
+        ArrayPushString( emptyCycleMapList, "de_inferno" );
+        ArrayPushString( emptyCycleMapList, "de_dust4" );
+        
+        new mapIndex = map_getNext( emptyCycleMapList, "de_dust", nextMap );
+        
+        SET_TEST_FAILURE( test_id, !equal( nextMap, "de_dust2" ), "nextMap must be 'de_dust2' (it was %s)", nextMap );
+        SET_TEST_FAILURE( test_id, !( mapIndex == -1 ), "mapIndex must be '-1' (it was %d)", mapIndex );
+        
+        ArrayDestroy( emptyCycleMapList );
+    }
+
+    /**
+     * This tests if the function 'loadCurrentBlackList()' 1º case is working properly.
+     */
+    public test_loadCurrentBlackList_case1()
+    {
+        new whiteListFile;
+        
+        new test_id            = register_test( 0, "test_loadCurrentBlackList_case1" );
+        new Trie:blackListTrie = TrieCreate();
+        
+        copy( g_test_whiteListFilePath, charsmax( g_test_whiteListFilePath ), "test_loadCurrentBlackList.txt" );
+        set_pcvar_string( cvar_voteWhiteListMapFilePath, g_test_whiteListFilePath );
+        
+        whiteListFile = fopen( g_test_whiteListFilePath, "wt" );
+        
+        if( whiteListFile )
+        {
+            fprintf( whiteListFile, "%s^n", "[23-24]" );
+            fprintf( whiteListFile, "%s^n", "de_dust1" );
+            fprintf( whiteListFile, "%s^n", "de_dust2" );
+            fprintf( whiteListFile, "%s^n", "de_dust3" );
+            fprintf( whiteListFile, "%s^n", "[1-23]" );
+            fprintf( whiteListFile, "%s^n", "de_dust4" );
+            fprintf( whiteListFile, "%s^n", "[12-22]" );
+            fprintf( whiteListFile, "%s^n", "de_dust5" );
+            fprintf( whiteListFile, "%s^n", "de_dust6" );
+            fprintf( whiteListFile, "%s^n", "de_dust7" );
+            fclose( whiteListFile );
+        }
+        
+        g_test_current_time = 23;
+        loadCurrentBlackList( blackListTrie );
+        g_test_current_time = 0;
+        
+        SET_TEST_FAILURE( test_id, TrieKeyExists( blackListTrie, "de_dust1" ), \
+                "The map 'de_dust1' must NOT to be present on the trie, but it was!" );
+        SET_TEST_FAILURE( test_id, TrieKeyExists( blackListTrie, "de_dust2" ), \
+                "The map 'de_dust2' must NOT to be present on the trie, but it was!" );
+        SET_TEST_FAILURE( test_id, TrieKeyExists( blackListTrie, "de_dust3" ), \
+                "The map 'de_dust3' must NOT to be present on the trie, but it was!" );
+        
+        SET_TEST_FAILURE( test_id, !TrieKeyExists( blackListTrie, "de_dust4" ), \
+                "The map 'de_dust4' must to be present on the trie, but it was not!" );
+        SET_TEST_FAILURE( test_id, !TrieKeyExists( blackListTrie, "de_dust5" ), \
+                "The map 'de_dust5' must to be present on the trie, but it was not!" );
+        SET_TEST_FAILURE( test_id, !TrieKeyExists( blackListTrie, "de_dust6" ), \
+                "The map 'de_dust6' must to be present on the trie, but it was not!" );
+        SET_TEST_FAILURE( test_id, !TrieKeyExists( blackListTrie, "de_dust7" ), \
+                "The map 'de_dust7' must to be present on the trie, but it was not!" );
+        
+        TrieDestroy( blackListTrie );
+    }
+
+    /**
+     * This tests if the function 'loadCurrentBlackList()' 2º case is working properly.
+     */
+    public test_loadCurrentBlackList_case2()
+    {
+        new test_id            = register_test( 0, "test_loadCurrentBlackList_case2" );
+        new Trie:blackListTrie = TrieCreate();
+        
+        g_test_current_time = 22;
+        loadCurrentBlackList( blackListTrie );
+        g_test_current_time = 0;
+        
+        SET_TEST_FAILURE( test_id, TrieKeyExists( blackListTrie, "de_dust4" ), \
+                "The map 'de_dust4' must NOT to be present on the trie, but it was!" );
+        
+        SET_TEST_FAILURE( test_id, !TrieKeyExists( blackListTrie, "de_dust5" ), \
+                "The map 'de_dust5' must to be present on the trie, but it was not!" );
+        
+        TrieDestroy( blackListTrie );
+    }
+
+    /**
+     * This tests if the function 'loadCurrentBlackList()' 3º case is working properly.
+     */
+    public test_loadCurrentBlackList_case3()
+    {
+        new test_id            = register_test( 0, "test_loadCurrentBlackList_case3" );
+        new Trie:blackListTrie = TrieCreate();
+        
+        g_test_current_time = 12;
+        loadCurrentBlackList( blackListTrie );
+        g_test_current_time = 0;
+        
+        SET_TEST_FAILURE( test_id, TrieKeyExists( blackListTrie, "de_dust7" ), \
+                "The map 'de_dust7' must NOT to be present on the trie, but it was!" );
+        
+        SET_TEST_FAILURE( test_id, !TrieKeyExists( blackListTrie, "de_dust2" ), \
+                "The map 'de_dust2' must to be present on the trie, but it was not!" );
+        
+        TrieDestroy( blackListTrie );
+        delete_file( g_test_whiteListFilePath );
+    }
+
+    /**
+     * Server changed cvars backup to be restored after the unit tests end.
+     */
+    new Float:test_extendmap_max;
+    new Float:test_mp_timelimit;
+
+    new test_whiteListFilePath[ MAX_FILE_PATH_LENGHT ];
+
+
+    /**
+     * Every time a cvar is changed during the tests, it must be saved here to a global test variable
+     * to be restored at the restore_server_cvars_for_test(), which is executed at the end of all
+     * tests execution.
+     *
+     * This is executed before the first rest run.
+     */
+    stock save_server_cvars_for_test()
+    {
+        g_is_test_changed_cvars = true;
+        
+        test_extendmap_max = get_pcvar_float( cvar_maxMapExtendTime );
+        test_mp_timelimit  = get_pcvar_float( cvar_mp_timelimit );
+        
+        get_pcvar_string( cvar_voteWhiteListMapFilePath, test_whiteListFilePath, charsmax( test_whiteListFilePath ) );
+        
+        LOGGER( 2, "    %42s cvar_mp_timelimit: %f  test_mp_timelimit: %f   g_originalTimelimit: %f", "save_server_cvars_for_test( out )", \
+                get_pcvar_float( cvar_mp_timelimit ), test_mp_timelimit, g_originalTimelimit );
+    }
+
+    /**
+     * This is executed after all tests executions, to restore the server variables changes.
+     */
+    stock restore_server_cvars_for_test()
+    {
+        LOGGER( 2, "    %42s cvar_mp_timelimit: %f  test_mp_timelimit: %f  g_originalTimelimit: %f", "restore_server_cvars_for_test( in )", \
+                get_pcvar_float( cvar_mp_timelimit ), test_mp_timelimit, g_originalTimelimit );
+        
+        if( g_is_test_changed_cvars )
+        {
+            g_is_test_changed_cvars = false;
+            
+            set_pcvar_float( cvar_maxMapExtendTime, test_extendmap_max );
+            set_pcvar_float( cvar_mp_timelimit, test_mp_timelimit );
+            
+            set_pcvar_string( cvar_voteWhiteListMapFilePath, test_whiteListFilePath );
+        }
+        
+        LOGGER( 2, "    %42s cvar_mp_timelimit: %f  test_mp_timelimit: %f  g_originalTimelimit: %f", "restore_server_cvars_for_test( out )", \
+                get_pcvar_float( cvar_mp_timelimit ), test_mp_timelimit, g_originalTimelimit );
+    }
 #endif
+
