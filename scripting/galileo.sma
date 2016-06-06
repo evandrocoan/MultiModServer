@@ -27,7 +27,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-79";
+new const PLUGIN_VERSION[] = "v2.6.1-80";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -48,7 +48,7 @@ new const PLUGIN_VERSION[] = "v2.6.1-79";
  *
  * 15  - Levels 1, 2, 4 and 8.
  */
-#define DEBUG_LEVEL 8
+#define DEBUG_LEVEL 8 + 2
 
 
 #define DEBUG_LEVEL_NORMAL        1
@@ -96,14 +96,10 @@ new const PLUGIN_VERSION[] = "v2.6.1-79";
     {
         if( mode & g_debug_level )
         {
-            static Float:gameTime;
             static formated_message[ 384 ];
-            
-            gameTime = get_gametime();
             vformat( formated_message, charsmax( formated_message ), message, 3 );
             
-            // log text to file
-            log_to_file( "_galileo.log", "{%3.4f} %s", gameTime, formated_message );
+            writeToTheDebugFile( formated_message );
         }
     }
 
@@ -131,8 +127,7 @@ new const PLUGIN_VERSION[] = "v2.6.1-79";
         test_loadCurrentBlackList_case2(); \
         test_loadCurrentBlackList_case3(); \
     } while( g_dummy_value )
-
-
+    
     /**
      * Call the internal function to perform its task and stop the current test execution to avoid
      * double failure at the test control system.
@@ -146,25 +141,56 @@ new const PLUGIN_VERSION[] = "v2.6.1-79";
             return; \
         } \
     } while( g_dummy_value )
-
-
+    
+    /**
+     * Write debug messages to server's console accordantly with cvar gal_debug.
+     *
+     * @param text the debug message, if omitted its default value is ""
+     * @param any the variable number of formatting parameters
+     */
+    stock printMesssageLogger( message[] = "", any: ... )
+    {
+        static formated_message[ 384 ];
+        vformat( formated_message, charsmax( formated_message ), message, 2 );
+        
+        writeToTheDebugFile( formated_message );
+    }
+    
+    
     /**
      * Test unit variables related to the DEBUG_LEVEL_UNIT_TEST 2.
      */
     new g_max_delay_result;
     new g_totalSuccessfulTests;
     new g_totalFailureTests;
-
+    
     new Array: g_tests_idsAndNames;
     new Array: g_tests_failure_ids;
     new Array: g_tests_failure_reasons;
-
+    
     new bool: g_is_test_changed_cvars;
     new bool: g_current_test_evaluation;
     new bool: g_areTheUnitTestsRunning;
-
+    
     new g_test_current_time;
     new g_test_whiteListFilePath[ 128 ];
+#endif
+
+
+
+/**
+ * Write messages to the debug log file '_galileo.log' on 'addons/amxmodx/logs'.
+ * 
+ * @param formated_message       the formatted message to write down to the debug log file.
+ */
+#if DEBUG_LEVEL >= DEBUG_LEVEL_NORMAL
+    stock writeToTheDebugFile( formated_message[] )
+    {
+        static Float:gameTime;
+        
+        gameTime = get_gametime();
+        log_to_file( "_galileo.log", "{%3.4f} %s", gameTime, formated_message );
+    }
 #endif
 
 
@@ -883,7 +909,7 @@ public plugin_cfg()
     }
     else
     {
-        server_print( "^n    The Unit Tests are going to run only after the first server start. \
+        printMesssageLogger( "^n    The Unit Tests are going to run only after the first server start. \
                 ^n    gal_server_starting: %d^n", get_cvar_num( "gal_server_starting" ) );
     }
 #endif
@@ -6589,17 +6615,17 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
      */
     public runTests()
     {
-        server_print( "^n^n    Executing the 'Galileo' Tests:^n" );
+        printMesssageLogger( "^n^n    Executing the 'Galileo' Tests:^n" );
         
         g_areTheUnitTestsRunning = true;
         save_server_cvars_for_test();
         ALL_TESTS_TO_EXECUTE();
         
-        server_print( "^n    %d tests succeed.^n    %d tests failed.", g_totalSuccessfulTests, g_totalFailureTests );
+        printMesssageLogger( "^n    %d tests succeed.^n    %d tests failed.", g_totalSuccessfulTests, g_totalFailureTests );
         
         if( g_max_delay_result )
         {
-            server_print( "^n^n    Executing the 'Galileo' delayed until %d seconds tests:^n", g_max_delay_result );
+            printMesssageLogger( "^n^n    Executing the 'Galileo' delayed until %d seconds tests:^n", g_max_delay_result );
             set_task( g_max_delay_result + 1.0, "show_delayed_results" );
         }
         else
@@ -6621,14 +6647,14 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
         
         if( ArraySize( g_tests_idsAndNames ) )
         {
-            server_print( "^n^n    The following tests were executed:^n" );
+            printMesssageLogger( "^n^n    The following tests were executed:^n" );
         }
         
         for( new test_index = 0; test_index < ArraySize( g_tests_idsAndNames ); test_index++ )
         {
             ArrayGetString( g_tests_idsAndNames, test_index, test_name, charsmax( test_name ) );
             
-            server_print( "       %3d. %s", test_index + 1, test_name );
+            printMesssageLogger( "       %3d. %s", test_index + 1, test_name );
         }
     }
 
@@ -6640,7 +6666,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
         
         if( ArraySize( g_tests_failure_ids ) )
         {
-            server_print( "^n^n    The following 'Galileo' unit tests failed:^n" );
+            printMesssageLogger( "^n^n    The following 'Galileo' unit tests failed:^n" );
         }
         
         for( new failure_index = 0; failure_index < ArraySize( g_tests_failure_ids ); failure_index++ )
@@ -6650,7 +6676,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
             ArrayGetString( g_tests_idsAndNames, test_id - 1, test_name, charsmax( test_name ) );
             ArrayGetString( g_tests_failure_reasons, failure_index, failure_reason, charsmax( failure_reason ) );
             
-            server_print( "       %3d. %s: %s", test_id, test_name, failure_reason );
+            printMesssageLogger( "       %3d. %s: %s", test_id, test_name, failure_reason );
         }
     }
 
@@ -6667,8 +6693,8 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
         print_all_tests_executed();
         print_tests_failure();
         
-        server_print( "^n    %d tests succeed.^n    %d tests failed.", g_totalSuccessfulTests, g_totalFailureTests );
-        server_print( "^n    Finished 'Galileo' Tests Execution.^n^n" );
+        printMesssageLogger( "^n    %d tests succeed.^n    %d tests failed.", g_totalSuccessfulTests, g_totalFailureTests );
+        printMesssageLogger( "^n    Finished 'Galileo' Tests Execution.^n^n" );
         
         g_areTheUnitTestsRunning = false;
     }
@@ -6690,7 +6716,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
         totalTests = g_totalSuccessfulTests + g_totalFailureTests;
         
         ArrayPushString( g_tests_idsAndNames, test_name );
-        server_print( "    EXECUTING TEST %d WITH %d SECONDS DELAY - %s ", totalTests, max_delay_result, test_name );
+        printMesssageLogger( "    EXECUTING TEST %d WITH %d SECONDS DELAY - %s ", totalTests, max_delay_result, test_name );
         
         if( g_max_delay_result < max_delay_result )
         {
@@ -6723,7 +6749,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
             ArrayPushCell( g_tests_failure_ids, test_id );
             
             ArrayPushString( g_tests_failure_reasons, formated_message );
-            server_print( "       TEST FAILURE! %s", formated_message );
+            printMesssageLogger( "       TEST FAILURE! %s", formated_message );
         }
     }
 
