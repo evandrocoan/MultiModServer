@@ -27,7 +27,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-69";
+new const PLUGIN_VERSION[] = "v2.6.1-70";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -39,11 +39,11 @@ new const PLUGIN_VERSION[] = "v2.6.1-69";
  *       Tests and print their out put results.
  * 4   - To create fake votes and fake real players count. See the functions 'get_realplayersnum()'
  *       and 'create_fakeVotes()'.
- * 8   - Enable all debugging/depuration available.
+ * 8   - Enable DEBUG_LEVEL 1 and all its debugging/depuration available.
  * 
  * 15  - Levels 1, 2, 4 and 8.
  */
-#define DEBUG_LEVEL 9
+#define DEBUG_LEVEL 8
 
 
 #define DEBUG_LEVEL_NORMAL        1
@@ -58,7 +58,7 @@ new const PLUGIN_VERSION[] = "v2.6.1-69";
 #pragma semicolon 1
 
 
-#if DEBUG_LEVEL & DEBUG_LEVEL_NORMAL
+#if DEBUG_LEVEL & ( DEBUG_LEVEL_NORMAL | DEBUG_LEVEL_CRITICAL_MODE )
     #define DEBUG
     #define DEBUG_LOGGER(%1) debugMesssageLogger( %1 )
 /**
