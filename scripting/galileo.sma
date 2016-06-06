@@ -27,7 +27,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-76";
+new const PLUGIN_VERSION[] = "v2.6.1-77";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -853,12 +853,16 @@ public plugin_cfg()
     configureRTV();
     configureServerStart();
     
-    if( get_pcvar_num( cvar_emptyWait ) )
+    if( get_pcvar_num( cvar_emptyWait )
+        || get_pcvar_num( cvar_isEmptyCycleServerChange ) )
     {
         g_emptyCycleMapsList = ArrayCreate( MAX_MAPNAME_LENGHT );
-        
         map_loadEmptyCycleList();
-        set_task( 60.0, "inicializeEmptyCycleFeature" );
+        
+        if( get_pcvar_num( cvar_emptyWait ) )
+        {
+            set_task( 60.0, "inicializeEmptyCycleFeature" );
+        }
     }
     
     // setup the main task that schedules the end map voting and allow round finish feature.
@@ -5859,6 +5863,8 @@ stock map_getNext( Array:mapArray, currentMap[], nextMap[ MAX_MAPNAME_LENGHT ] )
     else
     {
         log_amx( "WARNING: Your 'mapcyclefile' server variable '%s' is invalid!", NP_g_mapCycleFilePath );
+        DEBUG_LOGGER( 1, "WARNING: Your 'mapcyclefile' server variable '%s' is invalid!", NP_g_mapCycleFilePath );
+        
         copy( nextMap, charsmax( nextMap ), "your_mapcycle_file_is_empty" );
     }
     
