@@ -27,7 +27,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-67";
+new const PLUGIN_VERSION[] = "v2.6.1-68";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -1268,7 +1268,8 @@ public round_restart_event()
         game_commencing_event();
     }
     
-    DEBUG_LOGGER( 32, "^n AT: round_restart_event()" );
+    DEBUG_LOGGER( 32, "" );
+    DEBUG_LOGGER( 32, " AT: round_restart_event()" );
 }
 
 /**
@@ -1281,7 +1282,8 @@ public game_commencing_event()
     
     cancel_voting( true );
     
-    DEBUG_LOGGER( 32, "^n AT: game_commencing_event()" );
+    DEBUG_LOGGER( 32, "" );
+    DEBUG_LOGGER( 32, " AT: game_commencing_event()" );
 }
 
 /**
@@ -1438,7 +1440,8 @@ public show_last_round_HUD()
 
 public plugin_end()
 {
-    DEBUG_LOGGER( 32, "^n AT: plugin_end" );
+    DEBUG_LOGGER( 32, "" );
+    DEBUG_LOGGER( 32, " AT: plugin_end" );
     
     map_restoreOriginalTimeLimit();
     
@@ -1618,7 +1621,8 @@ stock configureTheMapcycleSystem( currentMap[], currentMapCharsMax )
             }
             
             write_file( lastMapChangedFilePath, "nothing_to_be_added_by^n0" );
-            log_message( "^nThe server is jumping to the next map after the current map due more than %d restart on the map %s.^n",
+            log_message( " " );
+            log_message( "The server is jumping to the next map after the current map due more than %d restart on the map %s.^n",
                     MAX_SERVER_RESTART_ACCEPTABLE, currentMap );
         }
         else
@@ -2040,19 +2044,22 @@ stock map_populateList( Array:mapArray, mapFilePath[], mapFilePathMaxChars, Trie
     if( !equal( mapFilePath, "*" )
         && !equal( mapFilePath, "#" ) )
     {
-        DEBUG_LOGGER( 4, "^n    map_populateList(...) Loading the mapFilePath: %s", mapFilePath );
+        DEBUG_LOGGER( 4, "" );
+        DEBUG_LOGGER( 4, "    map_populateList(...) Loading the mapFilePath: %s", mapFilePath );
         mapCount = loadMapFileList( mapArray, mapFilePath, fillerMapTrie );
     }
     else if( equal( mapFilePath, "*" ) )
     {
-        DEBUG_LOGGER( 4, "^n    map_populateList(...) Loading the MAP FOLDER! mapFilePath: %s", mapFilePath );
+        DEBUG_LOGGER( 4, "" );
+        DEBUG_LOGGER( 4, "    map_populateList(...) Loading the MAP FOLDER! mapFilePath: %s", mapFilePath );
         mapCount = loadMapsFolderDirectory( mapArray, fillerMapTrie );
     }
     else
     {
         get_cvar_string( "mapcyclefile", mapFilePath, mapFilePathMaxChars );
         
-        DEBUG_LOGGER( 4, "^n    map_populateList(...) Loading the MAPCYCLE! mapFilePath: %s", mapFilePath );
+        DEBUG_LOGGER( 4, "" );
+        DEBUG_LOGGER( 4, "    map_populateList(...) Loading the MAPCYCLE! mapFilePath: %s", mapFilePath );
         mapCount = loadMapFileList( mapArray, mapFilePath, fillerMapTrie );
     }
     
@@ -3058,7 +3065,8 @@ public nomination_list()
 
 stock vote_addNominations( blockedFillerMaps[][], blockedFillerMapsMaxChars = 0 )
 {
-    DEBUG_LOGGER( 4, "^n   [NOMINATIONS ( %i )]", g_nominationCount );
+    DEBUG_LOGGER( 4, "" );
+    DEBUG_LOGGER( 4, "   [NOMINATIONS ( %i )]", g_nominationCount );
     
     new      blockedCount;
     new bool:isFillersMapUsingMinplayers;
@@ -3207,7 +3215,8 @@ stock loadMapGroupsFeature( mapsPerGroup[], fillersFilePaths[][], fillersFilePat
             
             if( equali( currentReadedLine, "[groups]" ) )
             {
-                DEBUG_LOGGER( 8, "^nthis is a [groups] mapFilerFile" );
+                DEBUG_LOGGER( 8, "" );
+                DEBUG_LOGGER( 8, "this is a [groups] mapFilerFile" );
                 
                 // read the filler mapFilerFile to determine how many groups there are ( max of MAX_MAPS_IN_VOTE )
                 while( !feof( mapFilerFile ) )
@@ -3604,7 +3613,8 @@ stock loadNormalVoteChoices()
     
     g_voteDuration = get_pcvar_num( cvar_voteDuration );
     
-    DEBUG_LOGGER( 4, "^n( loadNormalVoteChoices ) g_totalVoteOptions: %d", g_totalVoteOptions );
+    DEBUG_LOGGER( 4, "" );
+    DEBUG_LOGGER( 4, "( loadNormalVoteChoices ) g_totalVoteOptions: %d", g_totalVoteOptions );
 }
 
 stock approveTheVotingStart( bool:is_forced_voting )
@@ -3756,7 +3766,8 @@ stock vote_startDirector( bool:is_forced_voting )
     }
     
     DEBUG_LOGGER( 4, "   [PLAYER CHOICES]" );
-    DEBUG_LOGGER( 4, "^n    ( vote_startDirector|out ) g_isTimeToRestart: %d, \
+    DEBUG_LOGGER( 4, "" );
+    DEBUG_LOGGER( 4, "    ( vote_startDirector|out ) g_isTimeToRestart: %d, \
             g_isTimeToChangeLevel: %d, g_voteStatus & VOTE_IS_FORCED: %d^n", \
             g_isTimeToRestart, g_isTimeToChangeLevel, g_voteStatus & VOTE_IS_FORCED != 0 );
 }
