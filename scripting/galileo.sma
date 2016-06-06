@@ -27,7 +27,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-63";
+new const PLUGIN_VERSION[] = "v2.6.1-67";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -1618,7 +1618,7 @@ stock configureTheMapcycleSystem( currentMap[], currentMapCharsMax )
             }
             
             write_file( lastMapChangedFilePath, "nothing_to_be_added_by^n0" );
-            server_print( "^nThe server is jumping to the next map after the current map due more than %d restart on the map %s.^n",
+            log_message( "^nThe server is jumping to the next map after the current map due more than %d restart on the map %s.^n",
                     MAX_SERVER_RESTART_ACCEPTABLE, currentMap );
         }
         else
@@ -5114,8 +5114,7 @@ stock map_extend()
     {
         set_pcvar_num( cvar_mp_maxrounds, 0 );
         set_pcvar_num( cvar_mp_winlimit, 0 );
-        set_pcvar_float( cvar_mp_timelimit, get_pcvar_float( cvar_mp_timelimit )
-                + g_extendmapStepMinutes );
+        set_pcvar_float( cvar_mp_timelimit, get_pcvar_float( cvar_mp_timelimit ) + g_extendmapStepMinutes );
     }
     
     server_exec();
@@ -6168,7 +6167,7 @@ public map_restoreOriginalTimeLimit()
         server_cmd( "mp_maxrounds %d", g_originalMaxRounds );
         server_cmd( "mp_winlimit %d", g_originalWinLimit );
         
-        // restore to the right values
+        // restore to the original/right values
         g_rtvMinutesWait = get_pcvar_float( cvar_rtvMinutesWait );
         g_rtvWaitRounds  = get_pcvar_num( cvar_rtvWaitRounds );
         
