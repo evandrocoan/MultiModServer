@@ -27,7 +27,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-68";
+new const PLUGIN_VERSION[] = "v2.6.1-69";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -1667,6 +1667,7 @@ stock getRestartsOnTheCurrentMap( mapToChange[] )
         {
             delete_file( lastMapChangedFilePath );
         }
+        
         write_file( lastMapChangedFilePath, "nothing_to_be_added_by^n0" );
     }
     
@@ -4581,7 +4582,7 @@ stock register_vote( player_id, pressedKeyCode )
             g_arrayOfMapsWithVotesNumber[ pressedKeyCode ] += voteWeight;
             g_totalVotesCounted                            += ( voteWeight - 1 );
             
-            color_print( player_id, "^1L", player_id, "GAL_VOTE_WEIGHTED", voteWeight );
+            color_print( player_id, "^1%L", player_id, "GAL_VOTE_WEIGHTED", voteWeight );
         }
         else
         {

@@ -442,6 +442,23 @@ Yes.
 
 
 [*]Also distribute the original v1.1.290 configuration file as optional for download.
+
+
+[*][QUOTE=emoto2;2425204]Hello, i use 2.6 version of plugin.. but i know whats is the my problem..
+this cvar gal_srv_start when 1 the plugin not working correctly and change timeleft to: no time limit...
+I tested .. server start and work normally when stopped or server crash next time timeleft is
+changet to: no time limit permanently! Now i use gal_srv_start 0 and no have problems. :)
+
++++ Tested new bug ... when change cvar options in .sma and remove this code lines:
+[PHP]
+    server_cmd( "exec %s/galileo.cfg", DIR_CONFIGS_PATH );
+    server_exec();
+[/PHP]
+plugins have no time limit bug above.
+[/QUOTE]
+His credits are already added.
+
+
 [/LIST]
 
 
@@ -749,6 +766,7 @@ to stop the changing to that map and to use the its next map.
 [B][URL="https://forums.alliedmods.net/member.php?u=156477"]chaves[/URL][/B]: For the wrong 'recent maps' menu title bug report.
 [B][URL="https://forums.alliedmods.net/member.php?u=269274"]YParushev[/URL][/B]: For the partial nominations menu coding and bug report.
 [B][URL="https://forums.alliedmods.net/member.php?u=236706"]eryk172[/URL][/B]: For the ArrayGetString native error when the mapcyclefile is invalid bug report.
+[B][URL="https://forums.alliedmods.net/member.php?u=270638"]emoto2[/URL][/B]: For the 'gal_srv_start' and 'GAL_VOTE_WEIGHTED' misspelling bugs report.
 [QUOTE=Brad;684848]
 A lot of time and effort went into making this plugin, making features just right,
 making sure there were no bugs, making sure it was easy to use. If you are glad I made
