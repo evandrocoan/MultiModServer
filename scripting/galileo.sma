@@ -27,7 +27,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-71";
+new const PLUGIN_VERSION[] = "v2.6.1-75";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -709,20 +709,43 @@ public plugin_init()
     register_dictionary( "common.txt" );
     register_dictionary_colored( "galileo.txt" );
     
+    DEBUG_LOGGER( 1, "Before: game_commencing_event" );
     register_logevent( "game_commencing_event", 2, "0=World triggered", "1=Game_Commencing" );
+    
+    DEBUG_LOGGER( 1, "Before: team_win_event" );
     register_logevent( "team_win_event",        6, "0=Team" );
+    
+    DEBUG_LOGGER( 1, "Before: round_restart_event" );
     register_logevent( "round_restart_event",   2, "0=World triggered", "1&Restart_Round_" );
+    
+    DEBUG_LOGGER( 1, "Before: round_start_event" );
     register_logevent( "round_start_event",     2, "1=Round_Start" );
+    
+    DEBUG_LOGGER( 1, "Before: round_end_event" );
     register_logevent( "round_end_event",       2, "1=Round_End" );
     
+    DEBUG_LOGGER( 1, "Before: say" );
     register_clcmd( "say", "cmd_say", -1 );
+    
+    DEBUG_LOGGER( 1, "Before: say_team" );
     register_clcmd( "say_team", "cmd_say", -1 );
+    
+    DEBUG_LOGGER( 1, "Before: votemap" );
     register_clcmd( "votemap", "cmd_HL1_votemap" );
+    
+    DEBUG_LOGGER( 1, "Before: listmaps" );
     register_clcmd( "listmaps", "cmd_HL1_listmaps" );
     
+    DEBUG_LOGGER( 1, "Before: gal_startvote" );
     register_concmd( "gal_startvote", "cmd_startVote", ADMIN_MAP );
+    
+    DEBUG_LOGGER( 1, "Before: gal_cancelvote" );
     register_concmd( "gal_cancelvote", "cmd_cancelVote", ADMIN_MAP );
+    
+    DEBUG_LOGGER( 1, "Before: gal_createmapfile" );
     register_concmd( "gal_createmapfile", "cmd_createMapFile", ADMIN_RCON );
+    
+    DEBUG_LOGGER( 1, "after: plugin_init(0) end." );
 }
 
 stock configureEndGameCvars()
@@ -6130,14 +6153,19 @@ stock register_dictionary_colored( const dictionaryFile[] )
         return 0;
     }
     
-    new dictionaryFile;
     new dictionaryFilePath[ MAX_FILE_PATH_LENGHT ];
     
+    DEBUG_LOGGER( 1, "Before: register_dictionary_colored get_localinfo" );
     get_localinfo( "amxx_datadir", dictionaryFilePath, charsmax( dictionaryFilePath ) );
     
+    DEBUG_LOGGER( 1, "Before: register_dictionary_colored formatex" );
     formatex( dictionaryFilePath, charsmax( dictionaryFilePath ), "%s/lang/%s", dictionaryFilePath, dictionaryFile );
-    dictionaryFile = fopen( dictionaryFilePath, "rt" );
     
+    DEBUG_LOGGER( 1, "Before: register_dictionary_colored dictionaryFile" );
+    // DO NOT SEPARE THIS DECLARATION in new var; var = fopen... or it just do not works
+    new dictionaryFile = fopen( dictionaryFilePath, "rt" );
+    
+    DEBUG_LOGGER( 1, "Before: register_dictionary_colored if" );
     if( !dictionaryFile )
     {
         log_amx( "Failed to open %s", dictionaryFilePath );
@@ -6151,6 +6179,7 @@ stock register_dictionary_colored( const dictionaryFile[] )
     new szKey        [ 64 ];
     new szTranslation[ MAX_LONG_STRING ];
     
+    DEBUG_LOGGER( 1, "Before: register_dictionary_colored while" );
     while( !feof( dictionaryFile ) )
     {
         fgets( dictionaryFile, szBuffer, charsmax( szBuffer ) );
@@ -6178,7 +6207,10 @@ stock register_dictionary_colored( const dictionaryFile[] )
         }
     }
     
+    DEBUG_LOGGER( 1, "Before: register_dictionary_colored fclose" );
     fclose( dictionaryFile );
+    
+    DEBUG_LOGGER( 1, "Before: register_dictionary_colored(1) return 1" );
     return 1;
 }
 
