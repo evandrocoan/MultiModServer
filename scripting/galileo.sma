@@ -27,7 +27,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-62";
+new const PLUGIN_VERSION[] = "v2.6.1-63";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -87,10 +87,14 @@ stock debugMesssageLogger( mode, message[] = "", any: ... )
 {
     if( mode & g_debug_level )
     {
+        static Float:gameTime;
         static formated_message[ 384 ];
         
+        gameTime = get_gametime();
         vformat( formated_message, charsmax( formated_message ), message, 3 );
-        server_print( "%s",                      formated_message );
+        
+        // log text to file
+        log_to_file( "_galileo.log", "{%3.4f} %s", gameTime, formated_message );
     }
 }
 
@@ -525,8 +529,8 @@ new Trie:g_mapNominations;
  */
 enum _:MapNominationsType
 {
-	MapNominationsPlayerId,
-	MapNominationsNominationIndex
+    MapNominationsPlayerId,
+    MapNominationsNominationIndex
 }
 
 new Array:g_fillerMaps;
@@ -631,9 +635,11 @@ public plugin_init()
     register_cvar( "gal_version", PLUGIN_VERSION, FCVAR_SERVER | FCVAR_SPONLY );
     
 #if DEBUG_LEVEL >= DEBUG_LEVEL_NORMAL
-    new debug_level[128];
+    new debug_level[ 128 ];
     
     formatex( debug_level, charsmax( debug_level ), "%d | %d", g_debug_level, DEBUG_LEVEL );
+    DEBUG_LOGGER( 1, "gal_debug_level: %s", debug_level );
+    
     register_cvar( "gal_debug_level", debug_level, FCVAR_SERVER | FCVAR_SPONLY );
 #endif
     
