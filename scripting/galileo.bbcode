@@ -478,6 +478,21 @@ plugins have no time limit bug above.
 And add it to all plugin functions. Also add to its proper levels, where the plugin is changing the game cvars, i.e.,
 track all cvars changes by this plugins and print out to its debugging level
 "( function_name ) | IS CHANGING THE CVAR 'cvars_name' to 'value'".
+Added also, debuggin information to all return statements inside functions. Example:
+...
+                else
+                {
+                    mapIndex = getSurMapNameIndex( firstWord );
+                    
+                    if( mapIndex >= 0 )
+                    {
+                        nomination_toggle( player_id, mapIndex );
+                        
+                        DEBUG_LOGGER( 1, "Returning PLUGIN_HANDLED on 'mapIndex >= 0'." );
+                        return PLUGIN_HANDLED;
+                    }
+                    else if( strlen( firstWord ) > 5
+...
 
 
 

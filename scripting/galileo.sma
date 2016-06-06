@@ -27,20 +27,25 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-75";
+new const PLUGIN_VERSION[] = "v2.6.1-76";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
  * and the variable 'g_debug_level' for more information. Default value: 0
  *
  * 0   - Disables this feature.
- * 1   - Normal debug.
- * 2   - To skip the 'pendingVoteCountdown()', set the vote runoff time to 5 seconds, run the Unit
- *       Tests and print their out put results.
- * 4   - To create fake votes and fake real players count. See the functions 'get_realplayersnum()'
- *       and 'create_fakeVotes()'.
+ *
+ * 1   - Normal/basic debugging/depuration.
+ *
+ * 2   - a) To skip the 'pendingVoteCountdown()'.
+ *       b) Set the vote runoff time to 5 seconds.
+ *       c) Run the Unit Tests and print their out put results.
+ *
+ * 4   - a) To create fake votes. See the function 'create_fakeVotes()'.
+ *       b) To create fake players count. See the function 'get_realplayersnum()'.
+ *
  * 8   - Enable DEBUG_LEVEL 1 and all its debugging/depuration available.
- * 
+ *
  * 15  - Levels 1, 2, 4 and 8.
  */
 #define DEBUG_LEVEL 8
@@ -619,12 +624,12 @@ new g_chooseMapQuestionMenuId;
 
 public plugin_init()
 {
-    register_plugin( "Galileo", PLUGIN_VERSION, "Brad Jones/Addons zz" );
-    
 #if DEBUG_LEVEL & DEBUG_LEVEL_CRITICAL_MODE
     g_debug_level = 1048575;
-    DEBUG_LOGGER( 1, "^n^n^nGALILEO PLUGIN VERSION %s INITIATING...", PLUGIN_VERSION );
 #endif
+    
+    register_plugin( "Galileo", PLUGIN_VERSION, "Brad Jones/Addons zz" );
+    DEBUG_LOGGER( 1, "^n^n^nGALILEO PLUGIN VERSION %s INITIATING...", PLUGIN_VERSION );
     
     cvar_maxMapExtendTime        = register_cvar( "amx_extendmap_max", "90" );
     cvar_extendmapStepMinutes    = register_cvar( "amx_extendmap_step", "15" );
@@ -638,10 +643,9 @@ public plugin_init()
     
 #if DEBUG_LEVEL >= DEBUG_LEVEL_NORMAL
     new debug_level[ 128 ];
-    
     formatex( debug_level, charsmax( debug_level ), "%d | %d", g_debug_level, DEBUG_LEVEL );
-    DEBUG_LOGGER( 1, "gal_debug_level: %s", debug_level );
     
+    DEBUG_LOGGER( 1, "gal_debug_level: %s", debug_level );
     register_cvar( "gal_debug_level", debug_level, FCVAR_SERVER | FCVAR_SPONLY );
 #endif
     
@@ -709,43 +713,22 @@ public plugin_init()
     register_dictionary( "common.txt" );
     register_dictionary_colored( "galileo.txt" );
     
-    DEBUG_LOGGER( 1, "Before: game_commencing_event" );
     register_logevent( "game_commencing_event", 2, "0=World triggered", "1=Game_Commencing" );
-    
-    DEBUG_LOGGER( 1, "Before: team_win_event" );
     register_logevent( "team_win_event",        6, "0=Team" );
-    
-    DEBUG_LOGGER( 1, "Before: round_restart_event" );
     register_logevent( "round_restart_event",   2, "0=World triggered", "1&Restart_Round_" );
-    
-    DEBUG_LOGGER( 1, "Before: round_start_event" );
     register_logevent( "round_start_event",     2, "1=Round_Start" );
-    
-    DEBUG_LOGGER( 1, "Before: round_end_event" );
     register_logevent( "round_end_event",       2, "1=Round_End" );
     
-    DEBUG_LOGGER( 1, "Before: say" );
     register_clcmd( "say", "cmd_say", -1 );
-    
-    DEBUG_LOGGER( 1, "Before: say_team" );
     register_clcmd( "say_team", "cmd_say", -1 );
-    
-    DEBUG_LOGGER( 1, "Before: votemap" );
     register_clcmd( "votemap", "cmd_HL1_votemap" );
-    
-    DEBUG_LOGGER( 1, "Before: listmaps" );
     register_clcmd( "listmaps", "cmd_HL1_listmaps" );
     
-    DEBUG_LOGGER( 1, "Before: gal_startvote" );
     register_concmd( "gal_startvote", "cmd_startVote", ADMIN_MAP );
-    
-    DEBUG_LOGGER( 1, "Before: gal_cancelvote" );
     register_concmd( "gal_cancelvote", "cmd_cancelVote", ADMIN_MAP );
-    
-    DEBUG_LOGGER( 1, "Before: gal_createmapfile" );
     register_concmd( "gal_createmapfile", "cmd_createMapFile", ADMIN_RCON );
     
-    DEBUG_LOGGER( 1, "after: plugin_init(0) end." );
+    DEBUG_LOGGER( 1, "EXITING PLUGIN_INIT()..." );
 }
 
 stock configureEndGameCvars()
@@ -6150,25 +6133,23 @@ stock register_dictionary_colored( const dictionaryFile[] )
     
     if( !register_dictionary( dictionaryFile ) )
     {
+        DEBUG_LOGGER( 1, "Returning 0 on if( !register_dictionary(%s) )", dictionaryFile );
         return 0;
     }
     
     new dictionaryFilePath[ MAX_FILE_PATH_LENGHT ];
     
-    DEBUG_LOGGER( 1, "Before: register_dictionary_colored get_localinfo" );
     get_localinfo( "amxx_datadir", dictionaryFilePath, charsmax( dictionaryFilePath ) );
-    
-    DEBUG_LOGGER( 1, "Before: register_dictionary_colored formatex" );
     formatex( dictionaryFilePath, charsmax( dictionaryFilePath ), "%s/lang/%s", dictionaryFilePath, dictionaryFile );
     
-    DEBUG_LOGGER( 1, "Before: register_dictionary_colored dictionaryFile" );
-    // DO NOT SEPARE THIS DECLARATION in new var; var = fopen... or it just do not works
+    // DO NOT SEPARE/SPLIT THIS DECLARATION in: new var; var = fopen... or it can crash some servers.
     new dictionaryFile = fopen( dictionaryFilePath, "rt" );
     
-    DEBUG_LOGGER( 1, "Before: register_dictionary_colored if" );
     if( !dictionaryFile )
     {
         log_amx( "Failed to open %s", dictionaryFilePath );
+        DEBUG_LOGGER( 1, "Returning 0 on if( !dictionaryFile ), Failed to open: %s", dictionaryFilePath );
+        
         return 0;
     }
     
@@ -6179,7 +6160,6 @@ stock register_dictionary_colored( const dictionaryFile[] )
     new szKey        [ 64 ];
     new szTranslation[ MAX_LONG_STRING ];
     
-    DEBUG_LOGGER( 1, "Before: register_dictionary_colored while" );
     while( !feof( dictionaryFile ) )
     {
         fgets( dictionaryFile, szBuffer, charsmax( szBuffer ) );
@@ -6207,10 +6187,7 @@ stock register_dictionary_colored( const dictionaryFile[] )
         }
     }
     
-    DEBUG_LOGGER( 1, "Before: register_dictionary_colored fclose" );
     fclose( dictionaryFile );
-    
-    DEBUG_LOGGER( 1, "Before: register_dictionary_colored(1) return 1" );
     return 1;
 }
 
