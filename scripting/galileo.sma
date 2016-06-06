@@ -27,7 +27,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-80";
+new const PLUGIN_VERSION[] = "v2.6.1-82";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -48,7 +48,7 @@ new const PLUGIN_VERSION[] = "v2.6.1-80";
  *
  * 15  - Levels 1, 2, 4 and 8.
  */
-#define DEBUG_LEVEL 8 + 2
+#define DEBUG_LEVEL 8
 
 
 #define DEBUG_LEVEL_NORMAL        1
@@ -148,7 +148,7 @@ new const PLUGIN_VERSION[] = "v2.6.1-80";
      * @param text the debug message, if omitted its default value is ""
      * @param any the variable number of formatting parameters
      */
-    stock printMesssageLogger( message[] = "", any: ... )
+    stock print_logger( message[] = "", any: ... )
     {
         static formated_message[ 384 ];
         vformat( formated_message, charsmax( formated_message ), message, 2 );
@@ -658,7 +658,7 @@ public plugin_init()
 #endif
     
     register_plugin( "Galileo", PLUGIN_VERSION, "Brad Jones/Addons zz" );
-    LOGGER( 1, "^n^n^nGALILEO PLUGIN VERSION %s INITIATING...", PLUGIN_VERSION );
+    LOGGER( 1, "^n^n^n^nGALILEO PLUGIN VERSION %s INITIATING...", PLUGIN_VERSION );
     
     cvar_maxMapExtendTime        = register_cvar( "amx_extendmap_max", "90" );
     cvar_extendmapStepMinutes    = register_cvar( "amx_extendmap_step", "15" );
@@ -909,7 +909,7 @@ public plugin_cfg()
     }
     else
     {
-        printMesssageLogger( "^n    The Unit Tests are going to run only after the first server start. \
+        print_logger( "^n    The Unit Tests are going to run only after the first server start. \
                 ^n    gal_server_starting: %d^n", get_cvar_num( "gal_server_starting" ) );
     }
 #endif
@@ -6615,17 +6615,26 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
      */
     public runTests()
     {
-        printMesssageLogger( "^n^n    Executing the 'Galileo' Tests:^n" );
+        print_logger( "" );
+        print_logger( "" );
+        print_logger( "    Executing the 'Galileo' Tests: " );
+        print_logger( "" );
         
         g_areTheUnitTestsRunning = true;
         save_server_cvars_for_test();
         ALL_TESTS_TO_EXECUTE();
         
-        printMesssageLogger( "^n    %d tests succeed.^n    %d tests failed.", g_totalSuccessfulTests, g_totalFailureTests );
+        print_logger( "" );
+        print_logger( "    %d tests succeed.", g_totalSuccessfulTests );
+        print_logger( "    %d tests failed.", g_totalFailureTests );
         
         if( g_max_delay_result )
         {
-            printMesssageLogger( "^n^n    Executing the 'Galileo' delayed until %d seconds tests:^n", g_max_delay_result );
+            print_logger( "" );
+            print_logger( "" );
+            print_logger( "    Executing the 'Galileo' delayed until %d seconds tests: ", g_max_delay_result );
+            print_logger( "" );
+            
             set_task( g_max_delay_result + 1.0, "show_delayed_results" );
         }
         else
@@ -6647,14 +6656,17 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
         
         if( ArraySize( g_tests_idsAndNames ) )
         {
-            printMesssageLogger( "^n^n    The following tests were executed:^n" );
+            print_logger( "" );
+            print_logger( "" );
+            print_logger( "    The following tests were executed: " );
+            print_logger( "" );
         }
         
         for( new test_index = 0; test_index < ArraySize( g_tests_idsAndNames ); test_index++ )
         {
             ArrayGetString( g_tests_idsAndNames, test_index, test_name, charsmax( test_name ) );
             
-            printMesssageLogger( "       %3d. %s", test_index + 1, test_name );
+            print_logger( "       %3d. %s", test_index + 1, test_name );
         }
     }
 
@@ -6666,7 +6678,10 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
         
         if( ArraySize( g_tests_failure_ids ) )
         {
-            printMesssageLogger( "^n^n    The following 'Galileo' unit tests failed:^n" );
+            print_logger( "" );
+            print_logger( "" );
+            print_logger( "    The following 'Galileo' unit tests failed: " );
+            print_logger( "" );
         }
         
         for( new failure_index = 0; failure_index < ArraySize( g_tests_failure_ids ); failure_index++ )
@@ -6676,7 +6691,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
             ArrayGetString( g_tests_idsAndNames, test_id - 1, test_name, charsmax( test_name ) );
             ArrayGetString( g_tests_failure_reasons, failure_index, failure_reason, charsmax( failure_reason ) );
             
-            printMesssageLogger( "       %3d. %s: %s", test_id, test_name, failure_reason );
+            print_logger( "       %3d. %s: %s", test_id, test_name, failure_reason );
         }
     }
 
@@ -6693,8 +6708,13 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
         print_all_tests_executed();
         print_tests_failure();
         
-        printMesssageLogger( "^n    %d tests succeed.^n    %d tests failed.", g_totalSuccessfulTests, g_totalFailureTests );
-        printMesssageLogger( "^n    Finished 'Galileo' Tests Execution.^n^n" );
+        print_logger( "" );
+        print_logger( "    %d tests succeed.", g_totalSuccessfulTests );
+        print_logger( "    %d tests failed.", g_totalFailureTests );
+        print_logger( "" );
+        print_logger( "    Finished 'Galileo' Tests Execution." );
+        print_logger( "" );
+        print_logger( "" );
         
         g_areTheUnitTestsRunning = false;
     }
@@ -6716,7 +6736,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
         totalTests = g_totalSuccessfulTests + g_totalFailureTests;
         
         ArrayPushString( g_tests_idsAndNames, test_name );
-        printMesssageLogger( "    EXECUTING TEST %d WITH %d SECONDS DELAY - %s ", totalTests, max_delay_result, test_name );
+        print_logger( "    EXECUTING TEST %d WITH %d SECONDS DELAY - %s ", totalTests, max_delay_result, test_name );
         
         if( g_max_delay_result < max_delay_result )
         {
@@ -6749,7 +6769,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
             ArrayPushCell( g_tests_failure_ids, test_id );
             
             ArrayPushString( g_tests_failure_reasons, formated_message );
-            printMesssageLogger( "       TEST FAILURE! %s", formated_message );
+            print_logger( "       TEST FAILURE! %s", formated_message );
         }
     }
 
