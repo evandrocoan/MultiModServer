@@ -474,11 +474,18 @@ plugins have no time limit bug above.
 
 
 
-[*] Insert the new debug level 128 for function entrances: "I AM ENTERING ON 'function_name(0)' | parameter1: %s",
-And add it to all plugin functions. Also add to its proper levels, where the plugin is changing the game cvars, i.e.,
+[*] a) Insert the new debug level 128 for function entrances: "I AM ENTERING ON 'function_name(0)' | parameter1: %s",
+And add it to all plugin functions. 
+
+b) Also add to its proper levels, where the plugin is changing the game cvars, i.e.,
 track all cvars changes by this plugins and print out to its debugging level
 "( function_name ) | IS CHANGING THE CVAR 'cvars_name' to 'value'".
-Added also, debuggin information to all return statements inside functions. Example:
+
+c) Replace all server_cmd's by set_pcvar's. Example:
+>server_cmd( "mp_timelimit %f", g_originalTimelimit );
+>>set_pcvar_float( cvar_mp_timelimit, g_originalTimelimit );
+
+d) Added also, debuggin information to all return statements inside functions. Example:
 ...
                 else
                 {
@@ -488,7 +495,7 @@ Added also, debuggin information to all return statements inside functions. Exam
                     {
                         nomination_toggle( player_id, mapIndex );
                         
-                        DEBUG_LOGGER( 1, "Returning PLUGIN_HANDLED on 'mapIndex >= 0'." );
+                        DEBUG_LOGGER( 1, "    Returning PLUGIN_HANDLED on 'mapIndex >= 0'." );
                         return PLUGIN_HANDLED;
                     }
                     else if( strlen( firstWord ) > 5
