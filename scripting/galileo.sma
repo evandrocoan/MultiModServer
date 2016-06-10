@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-89";
+new const PLUGIN_VERSION[] = "v2.6.1-90";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -766,7 +766,7 @@ public plugin_init()
     register_concmd( "gal_cancelvote", "cmd_cancelVote", ADMIN_MAP );
     register_concmd( "gal_createmapfile", "cmd_createMapFile", ADMIN_RCON );
     
-    LOGGER( 1, "EXITING PLUGIN_INIT()..." );
+    LOGGER( 1, "I AM EXITING PLUGIN_INIT(0)..." );
     LOGGER( 1, "" );
 }
 
@@ -874,6 +874,9 @@ public plugin_cfg()
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
     configureTheUnitTests();
 #endif
+
+    LOGGER( 1, "I AM EXITING PLUGIN_CFG(0)..." );
+    LOGGER( 1, "" );
 }
 
 stock initializeGlobalArrays()
