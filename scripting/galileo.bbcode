@@ -506,6 +506,24 @@ d) Added also, debuggin information to all return statements inside functions. E
 [*]Fix the code formatter 'format_code.bat' not formatting properly anymore.
 
 
+
+[*][QUOTE=Shattered Heart Lynx;2427240]Hello addons_zz
+
+I have some suggestions for the "recent maps" feature.
+
+Is it possible to increase the recent maps limit? Currently the limit is 16 maps.
+Also, there's no check when adding maps to the recent map list, if a map is played twice, it will be added two times in the list. And if a map doesn't belong in the mapcycle, it will be added to the recent map list anyway.
+
+Thanks in advance.[/QUOTE]
+
+Sure, I added it to the TODO list. On the next version this will be fixed and that will be unlimited. For now, I think you can change the constant:
+[PAWN]
+#define MAX_RECENT_MAP_COUNT 16
+[/PAWN]
+Without any problems.
+
+
+
 [/LIST]
 
 
