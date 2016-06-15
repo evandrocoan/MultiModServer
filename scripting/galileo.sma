@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-93";
+new const PLUGIN_VERSION[] = "v2.6.1-95";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -591,7 +591,7 @@ new g_extendmapAllowStayType;
 new g_showVoteStatus;
 new g_voteShowNoneOptionType;
 new g_pendingVoteCountdown;
-new g_last_round_countdown;
+new g_lastRroundCountdown;
 new g_rtvWaitAdminNumber;
 new g_emptyCycleMapsNumber;
 new g_recentMapCount;
@@ -864,7 +864,7 @@ public plugin_cfg()
     g_user_msgid = get_user_msgid( "SayText" );
 #endif
     
-    reset_rounds_scores();
+    resetRoundsScores();
     loadPluginSetttings();
     initializeGlobalArrays();
     
@@ -884,6 +884,42 @@ public plugin_cfg()
 
     LOGGER( 1, "I AM EXITING PLUGIN_CFG(0)..." );
     LOGGER( 1, "" );
+}
+
+stock loadPluginSetttings()
+{
+    LOGGER( 128, "I AM ENTERING ON loadPluginSetttings(0)" );
+    
+    new writtenSize;
+    g_isColorChatSupported = ( is_running( "czero" )
+                               || is_running( "cstrike" ) );
+    
+    if( colored_menus() )
+    {
+        copy( COLOR_RED, 2, "\r" );
+        copy( COLOR_WHITE, 2, "\w" );
+        copy( COLOR_YELLOW, 2, "\y" );
+        copy( COLOR_GREY, 2, "\d" );
+    }
+    
+    writtenSize = get_configsdir( g_configsDirPath, charsmax( g_configsDirPath ) );
+    copy( g_configsDirPath[ writtenSize ], charsmax( g_configsDirPath ) - writtenSize, "/galileo" );
+    
+    writtenSize = get_datadir( g_dataDirPath, charsmax( g_dataDirPath ) );
+    copy( g_dataDirPath[ writtenSize ], charsmax( g_dataDirPath ) - writtenSize, "/galileo" );
+    
+    if( !dir_exists( g_dataDirPath )
+        && mkdir( g_dataDirPath ) )
+    {
+        LOGGER( 1, "AMX_ERR_NOTFOUND, %L", LANG_SERVER, "GAL_CREATIONFAILED", g_dataDirPath );
+        log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_CREATIONFAILED", g_dataDirPath );
+    }
+    
+    LOGGER( 1, "( loadPluginSetttings ) g_configsDirPath: %s, g_dataDirPath: %s,", \
+                                        g_configsDirPath,     g_dataDirPath );
+    
+    server_cmd( "exec %s/galileo.cfg", g_configsDirPath );
+    server_exec();
 }
 
 stock initializeGlobalArrays()
@@ -937,66 +973,6 @@ stock cacheCvarsValues()
     g_maxVotingChoices = max( min( MAX_OPTIONS_IN_VOTE, get_pcvar_num( cvar_voteMapChoiceCount ) ), 2 );
 }
 
-stock loadPluginSetttings()
-{
-    LOGGER( 128, "I AM ENTERING ON loadPluginSetttings(0)" );
-    
-    new writtenSize;
-    g_isColorChatSupported = ( is_running( "czero" )
-                               || is_running( "cstrike" ) );
-    
-    if( colored_menus() )
-    {
-        copy( COLOR_RED, 2, "\r" );
-        copy( COLOR_WHITE, 2, "\w" );
-        copy( COLOR_YELLOW, 2, "\y" );
-        copy( COLOR_GREY, 2, "\d" );
-    }
-    
-    writtenSize = get_configsdir( g_configsDirPath, charsmax( g_configsDirPath ) );
-    copy( g_configsDirPath[ writtenSize ], charsmax( g_configsDirPath ) - writtenSize, "/galileo" );
-    
-    writtenSize = get_datadir( g_dataDirPath, charsmax( g_dataDirPath ) );
-    copy( g_dataDirPath[ writtenSize ], charsmax( g_dataDirPath ) - writtenSize, "/galileo" );
-    
-    if( !dir_exists( g_dataDirPath )
-        && mkdir( g_dataDirPath ) )
-    {
-        LOGGER( 1, "AMX_ERR_NOTFOUND, %L", LANG_SERVER, "GAL_CREATIONFAILED", g_dataDirPath );
-        log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_CREATIONFAILED", g_dataDirPath );
-    }
-    
-    LOGGER( 1, "( loadPluginSetttings ) g_configsDirPath: %s, g_dataDirPath: %s,", \
-                                        g_configsDirPath,     g_dataDirPath );
-    
-    server_cmd( "exec %s/galileo.cfg", g_configsDirPath );
-    server_exec();
-}
-
-stock configureServerStart()
-{
-    LOGGER( 128, "I AM ENTERING ON configureServerStart(0)" );
-    
-    if( get_cvar_num( "gal_server_starting" ) )
-    {
-        new backupMapsFilePath[ MAX_FILE_PATH_LENGHT ];
-        formatex( backupMapsFilePath, charsmax( backupMapsFilePath ), "%s/%s", g_dataDirPath, CURRENT_AND_NEXTMAP_FILE_NAME );
-        
-        if( file_exists( backupMapsFilePath ) )
-        {
-            handleServerStart( backupMapsFilePath );
-        }
-        else
-        {
-            saveCurrentAndNextMapNames( g_nextMap );
-        }
-    }
-    else // update the current and next map names every server start
-    {
-        saveCurrentAndNextMapNames( g_nextMap );
-    }
-}
-
 stock configureRTV()
 {
     LOGGER( 128, "I AM ENTERING ON configureRTV(0)" );
@@ -1020,6 +996,30 @@ stock configureRTV()
         }
         
         map_loadNominationList();
+    }
+}
+
+stock configureServerStart()
+{
+    LOGGER( 128, "I AM ENTERING ON configureServerStart(0)" );
+    
+    if( get_cvar_num( "gal_server_starting" ) )
+    {
+        new backupMapsFilePath[ MAX_FILE_PATH_LENGHT ];
+        formatex( backupMapsFilePath, charsmax( backupMapsFilePath ), "%s/%s", g_dataDirPath, CURRENT_AND_NEXTMAP_FILE_NAME );
+        
+        if( file_exists( backupMapsFilePath ) )
+        {
+            handleServerStart( backupMapsFilePath );
+        }
+        else
+        {
+            saveCurrentAndNextMapNames( g_nextMap );
+        }
+    }
+    else // update the current and next map names every server start
+    {
+        saveCurrentAndNextMapNames( g_nextMap );
     }
 }
 
@@ -1122,7 +1122,7 @@ public round_start_event()
     if( g_isTimeToResetRounds )
     {
         g_isTimeToResetRounds = false;
-        set_task( 1.0, "reset_rounds_scores" );
+        set_task( 1.0, "resetRoundsScores" );
     }
     
     if( g_isTimeToResetGame )
@@ -1206,7 +1206,7 @@ public process_last_round()
     else if( get_pcvar_num( cvar_isEndMapCountdown )
              && g_isTimeToChangeLevel )
     {
-        g_last_round_countdown = 6;
+        g_lastRroundCountdown = 6;
         set_task( 1.0, "process_last_round_counting", TASKID_PROCESS_LAST_ROUND, _, _, "a", 6 );
     }
     else
@@ -1217,7 +1217,7 @@ public process_last_round()
 
 public process_last_round_counting()
 {
-    new real_number = g_last_round_countdown - 1;
+    new real_number = g_lastRroundCountdown - 1;
     
     if( real_number )
     {
@@ -1236,9 +1236,9 @@ public process_last_round_counting()
     }
     
     // decrement the countdown
-    g_last_round_countdown--;
+    g_lastRroundCountdown--;
     
-    if( g_last_round_countdown == 0 )
+    if( g_lastRroundCountdown == 0 )
     {
         intermission_display();
     }
@@ -1294,7 +1294,7 @@ stock intermission_display()
 /**
  * Return whether the gaming is on going.
  */
-stock isThereGameCommencing()
+stock is_there_game_commencing()
 {
     new players[ 32 ];
     
@@ -1329,7 +1329,7 @@ stock isThereGameCommencing()
 
 /**
  * Reset rounds scores every game restart event. This relies on that the 'game_commencing_event()'
- * is not triggered by the 'round_restart_event()'. This use 'isThereGameCommencing()' to determine
+ * is not triggered by the 'round_restart_event()'. This use 'is_there_game_commencing()' to determine
  * if it must restore the time limit by calling 'game_commencing_event()', when there is none game
  * on going, to avoid the infinity time limit due the allow last round finish feature.
  */
@@ -1338,7 +1338,7 @@ public round_restart_event()
     LOGGER( 128, "I AM ENTERING ON round_restart_event(0)" );
     
     if( g_isTimeLimitChanged
-        && isThereGameCommencing()
+        && is_there_game_commencing()
         && ( ( get_pcvar_num( cvar_mp_timelimit )
                && get_pcvar_num( cvar_serverTimeLimitRestart ) )
              || ( get_pcvar_num( cvar_mp_maxrounds )
@@ -1348,7 +1348,7 @@ public round_restart_event()
     {
         g_isTimeToResetRounds = true;
         
-        cancel_voting( true );
+        cancelVoting( true );
     }
     else
     {
@@ -1366,13 +1366,13 @@ public game_commencing_event()
     g_isTimeToResetGame   = true;
     g_isTimeToResetRounds = true;
     
-    cancel_voting( true );
+    cancelVoting( true );
 }
 
 /**
  * Reset the round ending, if it is in progress.
  */
-stock reset_round_ending()
+stock resetRoundEnding()
 {
     g_isTimeToChangeLevel = false;
     g_isTimeToRestart     = false;
@@ -1384,7 +1384,7 @@ stock reset_round_ending()
     client_cmd( 0, "-showscores" );
 }
 
-stock save_round_ending( roundEndStatus[] )
+stock saveRoundEnding( roundEndStatus[] )
 {
     roundEndStatus[ 0 ] = g_isTimeToChangeLevel;
     roundEndStatus[ 1 ] = g_isTimeToRestart;
@@ -1392,7 +1392,7 @@ stock save_round_ending( roundEndStatus[] )
     roundEndStatus[ 3 ] = g_isLastGameRound;
 }
 
-stock restore_round_ending( roundEndStatus[] )
+stock restoreRoundEnding( roundEndStatus[] )
 {
     g_isTimeToChangeLevel = bool:roundEndStatus[ 0 ];
     g_isTimeToRestart     = bool:roundEndStatus[ 1 ];
@@ -1400,9 +1400,9 @@ stock restore_round_ending( roundEndStatus[] )
     g_isLastGameRound     = bool:roundEndStatus[ 3 ];
 }
 
-public reset_rounds_scores()
+public resetRoundsScores()
 {
-    LOGGER( 128, "I AM ENTERING ON reset_rounds_scores(0)" );
+    LOGGER( 128, "I AM ENTERING ON resetRoundsScores(0)" );
     
     if( get_pcvar_num( cvar_serverTimeLimitRestart )
         || get_pcvar_num( cvar_serverWinlimitRestart )
@@ -2087,7 +2087,7 @@ public cmd_cancelVote( player_id, level, cid )
         return PLUGIN_HANDLED;
     }
     
-    cancel_voting( true );
+    cancelVoting( true );
     return PLUGIN_HANDLED;
 }
 
@@ -3800,7 +3800,7 @@ stock approveTheVotingStart( bool:is_forced_voting )
             
             if( g_voteStatus & VOTE_IS_IN_PROGRESS )
             {
-                cancel_voting();
+                cancelVoting();
             }
         }
         
@@ -3814,10 +3814,10 @@ stock approveTheVotingStart( bool:is_forced_voting )
     {
         new bool:roundEndStatus[ 4 ];
         
-        save_round_ending( roundEndStatus );
-        cancel_voting();
+        saveRoundEnding( roundEndStatus );
+        cancelVoting();
         
-        restore_round_ending( roundEndStatus );
+        restoreRoundEnding( roundEndStatus );
         restoreOriginalServerMaxSpeed();
     }
     
@@ -5181,7 +5181,7 @@ public computeVotes()
                 map_extend();
             }
             
-            reset_round_ending();
+            resetRoundEnding();
             
             // no longer is an early vote
             g_voteStatus &= ~VOTE_IS_EARLY;
@@ -5547,7 +5547,7 @@ public map_change()
     new map[ MAX_MAPNAME_LENGHT ];
     get_cvar_string( "amx_nextmap", map, charsmax( map ) );
     
-    reset_round_ending();
+    resetRoundEnding();
     
     // verify we're changing to a valid map
     if( !is_map_valid( map ) )
@@ -5572,7 +5572,7 @@ stock serverChangeLevel( mapName[] )
 
 public map_change_stays()
 {
-    reset_round_ending();
+    resetRoundEnding();
     LOGGER( 1, " ( map_change_stays ) g_currentMap: %s", g_currentMap );
     
     serverChangeLevel( g_currentMap );
@@ -6373,7 +6373,7 @@ stock restoreOriginalServerMaxSpeed()
 /**
  * Immediately stops any vote in progress.
  */
-stock cancel_voting( bool:isToDoubleReset = false )
+stock cancelVoting( bool:isToDoubleReset = false )
 {
     remove_task( TASKID_START_VOTING_BY_ROUNDS );
     remove_task( TASKID_START_VOTING_BY_TIMER );
@@ -6390,7 +6390,7 @@ stock cancel_voting( bool:isToDoubleReset = false )
     remove_task( TASKID_SHOW_LAST_ROUND_HUD );
     
     finalizeVoting();
-    reset_round_ending();
+    resetRoundEnding();
     delete_users_menus( isToDoubleReset );
     
     g_voteStatus = 0;
@@ -6772,7 +6772,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
         else
         {
             // clean the testing
-            cancel_voting();
+            cancelVoting();
             restore_server_cvars_for_test();
             
             print_all_tests_executed();
@@ -6834,7 +6834,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
     public show_delayed_results()
     {
         // clean the testing
-        cancel_voting();
+        cancelVoting();
         restore_server_cvars_for_test();
         
         print_all_tests_executed();
@@ -6966,7 +6966,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
                 "g_isMapExtensionAllowed must be 1 (it was %d)", g_isMapExtensionAllowed );
         
         color_print( 0, "^1%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED" );
-        cancel_voting();
+        cancelVoting();
         
         set_pcvar_float( cvar_maxMapExtendTime, 10.0 );
         set_pcvar_float( cvar_mp_timelimit, 20.0 );
@@ -6990,7 +6990,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
         test_id = register_test( chainDelay, "test_end_of_map_voting_start_1" );
         SET_TEST_FAILURE( test_id, g_isMapExtensionAllowed, "g_isMapExtensionAllowed must be 0 (it was %d)", g_isMapExtensionAllowed );
         
-        cancel_voting();
+        cancelVoting();
         secondsLeft = get_timeleft();
         
         set_pcvar_float( cvar_mp_timelimit,
@@ -7015,7 +7015,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
         SET_TEST_FAILURE( test_id, !( g_voteStatus & VOTE_IS_IN_PROGRESS ), "vote_startDirector() does not started!" );
         
         set_pcvar_float( cvar_mp_timelimit, 20.0 );
-        cancel_voting();
+        cancelVoting();
         
         set_task( 1.0, "test_end_of_map_voting_stop_1", chainDelay );
     }
@@ -7033,7 +7033,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
         SET_TEST_FAILURE( test_id, ( g_voteStatus & VOTE_IS_IN_PROGRESS ) != 0, "vote_startDirector() does started!" );
         
         set_pcvar_float( cvar_mp_timelimit, 1.0 );
-        cancel_voting();
+        cancelVoting();
         
         set_task( 1.0, "test_end_of_map_voting_stop_2", chainDelay );
     }
@@ -7051,7 +7051,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
         SET_TEST_FAILURE( test_id, ( g_voteStatus & VOTE_IS_IN_PROGRESS ) != 0, "vote_startDirector() does started!" );
         
         set_pcvar_float( cvar_mp_timelimit, 20.0 );
-        cancel_voting();
+        cancelVoting();
         
         //set_task( 1.0, "test_end_of_map_voting_stop_____", chainDelay )
     }
