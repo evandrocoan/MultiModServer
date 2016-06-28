@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-95";
+new const PLUGIN_VERSION[] = "v2.6.1-97";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -95,12 +95,13 @@ new const PLUGIN_VERSION[] = "v2.6.1-95";
     
     
     /**
-     * Write debug messages to server's console accordantly with cvar gal_debug.
-     * If gal_debug 1 or more higher, the voting and runoff times are set to 5 seconds.
+     * Write debug messages accordantly with the gal_debug level.
      *
      * @param mode the debug mode level, see the variable 'g_debug_level' for the levels.
      * @param text the debug message, if omitted its default value is ""
      * @param any the variable number of formatting parameters
+     * 
+     * @see the stock writeToTheDebugFile( log_file[], formated_message[] ) for the output log "_galileo.log".
      */
     stock debugMesssageLogger( mode, message[] = "", any: ... )
     {
@@ -109,7 +110,7 @@ new const PLUGIN_VERSION[] = "v2.6.1-95";
             static formated_message[ 384 ];
             vformat( formated_message, charsmax( formated_message ), message, 3 );
             
-            writeToTheDebugFile( formated_message );
+            writeToTheDebugFile( "_galileo.log", formated_message );
         }
     }
 #else
@@ -152,7 +153,7 @@ new const PLUGIN_VERSION[] = "v2.6.1-95";
     } while( g_dummy_value )
     
     /**
-     * Write debug messages to server's console accordantly with cvar gal_debug.
+     * Write debug messages to server's console and log file.
      *
      * @param text the debug message, if omitted its default value is ""
      * @param any the variable number of formatting parameters
@@ -162,7 +163,7 @@ new const PLUGIN_VERSION[] = "v2.6.1-95";
         static formated_message[ 384 ];
         vformat( formated_message, charsmax( formated_message ), message, 2 );
         
-        writeToTheDebugFile( formated_message );
+        writeToTheDebugFile( "_galileo.log", formated_message );
     }
     
     
@@ -188,17 +189,18 @@ new const PLUGIN_VERSION[] = "v2.6.1-95";
 
 
 /**
- * Write messages to the debug log file '_galileo.log' on 'addons/amxmodx/logs'.
+ * Write messages to the debug log file on 'addons/amxmodx/logs'.
  * 
+ * @param log_file               the log file name.
  * @param formated_message       the formatted message to write down to the debug log file.
  */
 #if DEBUG_LEVEL >= DEBUG_LEVEL_NORMAL
-    stock writeToTheDebugFile( formated_message[] )
+    stock writeToTheDebugFile( log_file[], formated_message[] )
     {
         static Float:gameTime;
         
         gameTime = get_gametime();
-        log_to_file( "_galileo.log", "{%3.4f} %s", gameTime, formated_message );
+        log_to_file( log_file, "{%3.4f} %s", gameTime, formated_message );
     }
 #endif
 
