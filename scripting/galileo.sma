@@ -549,6 +549,7 @@ new bool:g_isTimeLimitChanged;
 new bool:g_isMapExtensionAllowed;
 new bool:g_isColorChatSupported;
 new bool:g_isGameFinalVoting;
+new bool:g_isOnMaintenanceMode;
 
 new Float:g_rtvMinutesWait;
 new Float:g_originalTimelimit;
@@ -774,6 +775,7 @@ public plugin_init()
     register_concmd( "gal_startvote", "cmd_startVote", ADMIN_MAP );
     register_concmd( "gal_cancelvote", "cmd_cancelVote", ADMIN_MAP );
     register_concmd( "gal_createmapfile", "cmd_createMapFile", ADMIN_RCON );
+    register_concmd( "gal_command_maintenance", "cmd_maintenanceMode", ADMIN_RCON );
     
     LOGGER( 1, "I AM EXITING PLUGIN_INIT(0)..." );
     LOGGER( 1, "" );
@@ -2147,6 +2149,117 @@ public cmd_startVote( player_id, level, cid )
     return PLUGIN_HANDLED;
 }
 
+public cmd_createMapFile( player_id, level, cid )
+{
+    LOGGER( 128, "I AM ENTERING ON cmd_createMapFile(3) | player_id: %d, level: %d, cid: %d", \
+                                                          player_id,     level,     cid );
+    
+    if( !cmd_access( player_id, level, cid, 1 ) )
+    {
+        return PLUGIN_HANDLED;
+    }
+    
+    new argumentsNumber = read_argc() - 1;
+    
+    switch( argumentsNumber )
+    {
+        case 1:
+        {
+            new mapFileName[ MAX_MAPNAME_LENGHT ];
+            read_argv( 1, mapFileName, charsmax( mapFileName ) );
+            remove_quotes( mapFileName );
+            
+            // map name is MAX_MAPNAME_LENGHT, .bsp: 4 + string terminator: 1 = 5
+            new loadedMapName[ MAX_MAPNAME_LENGHT + 5 ];
+            
+            new dir;
+            new mapFile;
+            new mapCount;
+            new mapNameLength;
+            
+            dir = open_dir( "maps", loadedMapName, charsmax( loadedMapName )  );
+            
+            if( dir )
+            {
+                new mapFilePath[ MAX_FILE_PATH_LENGHT ];
+                formatex( mapFilePath, charsmax( mapFilePath ), "%s/%s", g_configsDirPath, mapFileName );
+                
+                mapFile = fopen( mapFilePath, "wt" );
+                
+                if( mapFile )
+                {
+                    mapCount = 0;
+                    
+                    while( next_file( dir, loadedMapName, charsmax( loadedMapName ) ) )
+                    {
+                        mapNameLength = strlen( loadedMapName );
+                        
+                        if( mapNameLength > 4
+                            && equali( loadedMapName[ mapNameLength - 4 ], ".bsp", 4 ) )
+                        {
+                            loadedMapName[ mapNameLength - 4 ] = '^0';
+                            
+                            if( is_map_valid( loadedMapName ) )
+                            {
+                                mapCount++;
+                                fprintf( mapFile, "%s^n", loadedMapName );
+                            }
+                        }
+                    }
+                    fclose( mapFile );
+                    con_print( player_id, "%L", player_id, "GAL_CREATIONSUCCESS", mapFilePath, mapCount );
+                }
+                else
+                {
+                    con_print( player_id, "%L", player_id, "GAL_CREATIONFAILED", mapFilePath );
+                }
+                close_dir( dir );
+            }
+            else
+            {
+                // directory not found, wtf?
+                con_print( player_id, "%L", player_id, "GAL_MAPSFOLDERMISSING" );
+            }
+        }
+        default:
+        {
+            // inform of correct usage
+            con_print( player_id, "%L", player_id, "GAL_CMD_CREATEFILE_USAGE1" );
+            con_print( player_id, "%L", player_id, "GAL_CMD_CREATEFILE_USAGE2" );
+        }
+    }
+    
+    return PLUGIN_HANDLED;
+}
+
+/**
+ * Called when need to start a vote map, where the command line first argument could be:
+ *    -nochange: extend the current map, aka, Keep Current Map, will to do the real extend.
+ *    -restart: extend the current map, aka, Keep Current Map restart the server at the current map.
+ */
+public cmd_maintenanceMode( player_id, level, cid )
+{
+    LOGGER( 1, "( cmd_maintenanceMode ) player_id: %d, level: %d, cid: %d", player_id, level, cid );
+    
+    if( !cmd_access( player_id, level, cid, 1 ) )
+    {
+        return PLUGIN_HANDLED;
+    }
+    
+    if( g_isOnMaintenanceMode )
+    {
+        g_isOnMaintenanceMode = false;
+        color_print( player_id, "^1%L", player_id, "GAL_CHANGE_MAINTENANCE_STATE", player_id, "GAL_CHANGE_MAINTENANCE_OFF" );
+    }
+    else
+    {
+        g_isOnMaintenanceMode = true;
+        color_print( player_id, "^1%L", player_id, "GAL_CHANGE_MAINTENANCE_STATE", player_id, "GAL_CHANGE_MAINTENANCE_ON" );
+    }
+    
+    return PLUGIN_HANDLED;
+}
+
 stock map_populateList( Array:mapArray, mapFilePath[], mapFilePathMaxChars, Trie:fillerMapTrie = Invalid_Trie )
 {
     // load the array with maps
@@ -2281,89 +2394,6 @@ public map_loadNominationList()
     
     LOGGER( 4, "( map_loadNominationList() ) cvar_nomMapFilePath: %s", nomMapFilePath );
     g_nominationMapCount = map_populateList( g_nominationMapsArray, nomMapFilePath, charsmax( nomMapFilePath ) );
-}
-
-public cmd_createMapFile( player_id, level, cid )
-{
-    LOGGER( 128, "I AM ENTERING ON cmd_createMapFile(3) | player_id: %d, level: %d, cid: %d", \
-                                                          player_id,     level,     cid );
-    
-    if( !cmd_access( player_id, level, cid, 1 ) )
-    {
-        return PLUGIN_HANDLED;
-    }
-    
-    new argumentsNumber = read_argc() - 1;
-    
-    switch( argumentsNumber )
-    {
-        case 1:
-        {
-            new mapFileName[ MAX_MAPNAME_LENGHT ];
-            read_argv( 1, mapFileName, charsmax( mapFileName ) );
-            remove_quotes( mapFileName );
-            
-            // map name is MAX_MAPNAME_LENGHT, .bsp: 4 + string terminator: 1 = 5
-            new loadedMapName[ MAX_MAPNAME_LENGHT + 5 ];
-            
-            new dir;
-            new mapFile;
-            new mapCount;
-            new mapNameLength;
-            
-            dir = open_dir( "maps", loadedMapName, charsmax( loadedMapName )  );
-            
-            if( dir )
-            {
-                new mapFilePath[ MAX_FILE_PATH_LENGHT ];
-                formatex( mapFilePath, charsmax( mapFilePath ), "%s/%s", g_configsDirPath, mapFileName );
-                
-                mapFile = fopen( mapFilePath, "wt" );
-                
-                if( mapFile )
-                {
-                    mapCount = 0;
-                    
-                    while( next_file( dir, loadedMapName, charsmax( loadedMapName ) ) )
-                    {
-                        mapNameLength = strlen( loadedMapName );
-                        
-                        if( mapNameLength > 4
-                            && equali( loadedMapName[ mapNameLength - 4 ], ".bsp", 4 ) )
-                        {
-                            loadedMapName[ mapNameLength - 4 ] = '^0';
-                            
-                            if( is_map_valid( loadedMapName ) )
-                            {
-                                mapCount++;
-                                fprintf( mapFile, "%s^n", loadedMapName );
-                            }
-                        }
-                    }
-                    fclose( mapFile );
-                    con_print( player_id, "%L", player_id, "GAL_CREATIONSUCCESS", mapFilePath, mapCount );
-                }
-                else
-                {
-                    con_print( player_id, "%L", player_id, "GAL_CREATIONFAILED", mapFilePath );
-                }
-                close_dir( dir );
-            }
-            else
-            {
-                // directory not found, wtf?
-                con_print( player_id, "%L", player_id, "GAL_MAPSFOLDERMISSING" );
-            }
-        }
-        default:
-        {
-            // inform of correct usage
-            con_print( player_id, "%L", player_id, "GAL_CMD_CREATEFILE_USAGE1" );
-            con_print( player_id, "%L", player_id, "GAL_CMD_CREATEFILE_USAGE2" );
-        }
-    }
-    
-    return PLUGIN_HANDLED;
 }
 
 stock map_loadEmptyCycleList()
