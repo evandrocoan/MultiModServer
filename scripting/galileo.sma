@@ -5593,6 +5593,14 @@ public map_change()
     serverChangeLevel( map );
 }
 
+public map_change_stays()
+{
+    resetRoundEnding();
+    LOGGER( 1, " ( map_change_stays ) g_currentMap: %s", g_currentMap );
+    
+    serverChangeLevel( g_currentMap );
+}
+
 stock serverChangeLevel( mapName[] )
 {
 #if AMXX_VERSION_NUM < 183
@@ -5600,14 +5608,6 @@ stock serverChangeLevel( mapName[] )
 #else
     engine_changelevel( mapName );
 #endif
-}
-
-public map_change_stays()
-{
-    resetRoundEnding();
-    LOGGER( 1, " ( map_change_stays ) g_currentMap: %s", g_currentMap );
-    
-    serverChangeLevel( g_currentMap );
 }
 
 public cmd_HL1_votemap( player_id )
