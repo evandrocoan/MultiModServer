@@ -225,21 +225,22 @@ stock allowToUseSemicolonOnMacrosEnd()
 }
 
 
-#define TASKID_REMINDER               52691153
-#define TASKID_SHOW_LAST_ROUND_HUD    52691052
-#define TASKID_DELETE_USERS_MENUS     72748052
-#define TASKID_PREVENT_INFITY_GAME    82448699
-#define TASKID_EMPTYSERVER            98176977
-#define TASKID_START_VOTING_BY_ROUNDS 52691160
-#define TASKID_START_VOTING_BY_TIMER  72681180
-#define TASKID_PROCESS_LAST_ROUND     42691173
-#define TASKID_VOTE_HANDLEDISPLAY     52691264
-#define TASKID_VOTE_DISPLAY           52691165
-#define TASKID_VOTE_EXPIRE            52691166
-#define TASKID_PENDING_VOTE_COUNTDOWN 13464364
-#define TASKID_DBG_FAKEVOTES          52691167
-#define TASKID_VOTE_STARTDIRECTOR     52691168
-#define TASKID_MAP_CHANGE             52691169
+#define TASKID_REMINDER                   52691153
+#define TASKID_SHOW_LAST_ROUND_HUD        52691052
+#define TASKID_DELETE_USERS_MENUS         72748052
+#define TASKID_PREVENT_INFITY_GAME        82448699
+#define TASKID_EMPTYSERVER                98176977
+#define TASKID_START_VOTING_BY_ROUNDS     52691160
+#define TASKID_START_VOTING_BY_TIMER      72681180
+#define TASKID_PROCESS_LAST_ROUND         42691173
+#define TASKID_VOTE_HANDLEDISPLAY         52691264
+#define TASKID_VOTE_DISPLAY               52691165
+#define TASKID_VOTE_EXPIRE                52691166
+#define TASKID_PENDING_VOTE_COUNTDOWN     13464364
+#define TASKID_DBG_FAKEVOTES              52691167
+#define TASKID_VOTE_STARTDIRECTOR         52691168
+#define TASKID_MAP_CHANGE                 52691169
+#define TASKID_FINISH_GAME_WITH_HALF_TIME 52559169
 
 #define RTV_CMD_STANDARD  1
 #define RTV_CMD_SHORTHAND 2
@@ -295,10 +296,11 @@ stock allowToUseSemicolonOnMacrosEnd()
 #define VOTE_IS_EARLY       16
 #define VOTE_IS_EXPIRED     32
 
-#define SERVER_START_CURRENTMAP 1
-#define SERVER_START_NEXTMAP    2
-#define SERVER_START_MAPVOTE    3
-#define SERVER_START_RANDOMMAP  4
+#define SERVER_START_CURRENTMAP                1
+#define SERVER_START_NEXTMAP                   2
+#define SERVER_START_MAPVOTE                   3
+#define SERVER_START_RANDOMMAP                 4
+#define SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR 2
 
 #define LISTMAPS_USERID 0
 #define LISTMAPS_LAST   1
@@ -521,11 +523,12 @@ new cvar_voteWhiteListMapFilePath;
 /**
  * Various Artists
  */
-new const LAST_EMPTY_CYCLE_FILE_NAME[]    = "lastEmptyCycleMapName.dat";
-new const CURRENT_AND_NEXTMAP_FILE_NAME[] = "currentAndNextmapNames.dat";
-new const LAST_CHANGE_MAP_FILE_NAME[]     = "lastChangedMapName.dat";
-new const CHOOSE_MAP_MENU_NAME[]          = "gal_menuChooseMap";
-new const CHOOSE_MAP_MENU_QUESTION[]      = "chooseMapQuestion";
+new const LAST_EMPTY_CYCLE_FILE_NAME[]      = "lastEmptyCycleMapName.dat";
+new const CURRENT_AND_NEXTMAP_FILE_NAME[]   = "currentAndNextmapNames.dat";
+new const LAST_CHANGE_MAP_FILE_NAME[]       = "lastChangedMapName.dat";
+new const CHOOSE_MAP_MENU_NAME[]            = "gal_menuChooseMap";
+new const CHOOSE_MAP_MENU_QUESTION[]        = "chooseMapQuestion";
+new const GAME_CRASH_RECREATION_FLAG_FILE[] = "gameCrashRecreationAction.txt";
 
 new bool:g_isVotingByTimer;
 new bool:g_isTimeToResetGame;
@@ -543,14 +546,15 @@ new bool:g_isMaxfragsExtend;
 new bool:g_isMaxroundsExtend;
 new bool:g_isVotingByRounds;
 new bool:g_isRtvLastRound;
-new bool:g_isLastGameRound;
+new bool:g_isTheLastGameRound;
 new bool:g_isTimeToChangeLevel;
 new bool:g_isTimeToRestart;
-new bool:g_isTimeLimitChanged;
+new bool:g_isEndGameLimitsChanged;
 new bool:g_isMapExtensionAllowed;
 new bool:g_isColorChatSupported;
 new bool:g_isGameFinalVoting;
 new bool:g_isOnMaintenanceMode;
+new bool:g_isToCreateGameCrashFlag;
 
 new Float:g_rtvMinutesWait;
 new Float:g_originalTimelimit;
@@ -588,6 +592,7 @@ new Array:g_nominationMapsArray;
 
 new g_originalMaxRounds;
 new g_originalWinLimit;
+new g_originalFragLimit;
 new g_showVoteStatusType;
 new g_extendmapStepRounds;
 new g_extendmapStepMinutes;
@@ -603,8 +608,13 @@ new g_nominationMapCount;
 new g_rtvCommands;
 new g_rtvWaitRounds;
 new g_rockedVoteCount;
+new g_winLimitInteger;
+new g_maxRoundsNumber;
+new g_fragLimitNumber;
+new g_greatestKillerFrags;
+new g_timeLimitNumber;
 
-new g_totalRoundsPlayed;
+new g_roundsPlayedNumber;
 new g_totalTerroristsWins;
 new g_totalCtWins;
 new g_totalVoteOptions;
@@ -1009,6 +1019,15 @@ stock configureServerStart()
 {
     LOGGER( 128, "I AM ENTERING ON configureServerStart(0)" );
     
+    if( get_pcvar_num( cvar_gameCrashRecreationAction ) )
+    {
+        g_isToCreateGameCrashFlag = true;
+    }
+    else
+    {
+        g_isToCreateGameCrashFlag = false;
+    }
+    
     if( get_cvar_num( "gal_server_starting" ) )
     {
         new backupMapsFilePath[ MAX_FILE_PATH_LENGHT ];
@@ -1053,7 +1072,6 @@ stock configureServerMapChange()
 
 public team_win_event()
 {
-    new winlimit_integer;
     new wins_Terrorist_trigger;
     new wins_CT_trigger;
     new string_team_winner[ 16 ];
@@ -1069,15 +1087,15 @@ public team_win_event()
         g_totalCtWins++;
     }
     
-    winlimit_integer = get_pcvar_num( cvar_mp_winlimit );
+    g_winLimitInteger = get_pcvar_num( cvar_mp_winlimit );
     
-    if( winlimit_integer )
+    if( g_winLimitInteger )
     {
         wins_CT_trigger        = g_totalCtWins + VOTE_START_ROUNDS;
         wins_Terrorist_trigger = g_totalTerroristsWins + VOTE_START_ROUNDS;
         
-        if( ( ( wins_CT_trigger > winlimit_integer )
-              || ( wins_Terrorist_trigger > winlimit_integer ) )
+        if( ( ( wins_CT_trigger > g_winLimitInteger )
+              || ( wins_Terrorist_trigger > g_winLimitInteger ) )
             && !IS_END_OF_MAP_VOTING_GOING_ON() )
         {
             g_isMaxroundsExtend = false;
@@ -1087,9 +1105,9 @@ public team_win_event()
     }
     
     LOGGER( 32, "( team_win_event ) | string_team_winner = %s, \
-            winlimit_integer = %d, wins_CT_trigger = %d, wins_Terrorist_trigger = %d", \
+            g_winLimitInteger = %d, wins_CT_trigger = %d, wins_Terrorist_trigger = %d", \
                                       string_team_winner, \
-            winlimit_integer,      wins_CT_trigger,      wins_Terrorist_trigger );
+            g_winLimitInteger,      wins_CT_trigger,      wins_Terrorist_trigger );
 }
 
 public start_voting_by_rounds()
@@ -1134,40 +1152,45 @@ public round_start_event()
     if( g_isTimeToResetGame )
     {
         g_isTimeToResetGame = false;
-        set_task( 1.0, "map_restoreOriginalTimeLimit" );
+        set_task( 1.0, "map_restoreEndGameCvars" );
     }
 }
 
 public client_death_event()
 {
-    new killerId = read_data( 1 );
+    static frags;
+    static killerId;
+    
+    killerId = read_data( 1 );
     
     if( killerId )
     {
-        if( ( ( ++g_playersKills[ killerId ] + VOTE_START_FRAGS ) > get_pcvar_num( cvar_mp_fraglimit ) )
+        if( ( ( ( frags = ++g_playersKills[ killerId ] ) + VOTE_START_FRAGS ) > g_fragLimitNumber )
             && !IS_END_OF_MAP_VOTING_GOING_ON() )
         {
             g_isMaxfragsExtend = true;
-            
             VOTE_START_ROUND_DELAY();
+        }
+        
+        if( frags > g_greatestKillerFrags )
+        {
+            g_greatestKillerFrags = frags;
         }
     }
 }
 
 public round_end_event()
 {
-    new maxrounds_number;
     new current_rounds_trigger;
     
-    g_totalRoundsPlayed++;
+    g_roundsPlayedNumber++;
+    g_maxRoundsNumber = get_pcvar_num( cvar_mp_maxrounds );
     
-    maxrounds_number = get_pcvar_num( cvar_mp_maxrounds );
-    
-    if( maxrounds_number )
+    if( g_maxRoundsNumber )
     {
-        current_rounds_trigger = g_totalRoundsPlayed + VOTE_START_ROUNDS;
+        current_rounds_trigger = g_roundsPlayedNumber + VOTE_START_ROUNDS;
         
-        if( ( current_rounds_trigger > maxrounds_number )
+        if( ( current_rounds_trigger > g_maxRoundsNumber )
             && !IS_END_OF_MAP_VOTING_GOING_ON() )
         {
             g_isMaxroundsExtend = true;
@@ -1176,14 +1199,26 @@ public round_end_event()
         }
     }
     
-    if( g_isLastGameRound )
+    endGameWatchdog();
+    LOGGER( 32, "( round_end_event ) | g_maxRoundsNumber = %d, \
+            g_roundsPlayedNumber = %d, current_rounds_trigger = %d", \
+                                       g_maxRoundsNumber, \
+            g_roundsPlayedNumber,      current_rounds_trigger );
+}
+
+stock endGameWatchdog()
+{
+    g_fragLimitNumber = get_pcvar_num( cvar_mp_fraglimit );
+    g_timeLimitNumber = get_pcvar_num( cvar_mp_timelimit );
+    
+    if( g_isTheLastGameRound )
     {
         if( g_isTimeToChangeLevel
             || g_isRtvLastRound ) // when time runs out, end map at the current round end
         {
             g_isTimeToChangeLevel = true;
             g_isRtvLastRound      = false;
-            g_isLastGameRound     = false;
+            g_isTheLastGameRound     = false;
             
             remove_task( TASKID_SHOW_LAST_ROUND_HUD );
             set_task( 6.0, "process_last_round", TASKID_PROCESS_LAST_ROUND );
@@ -1196,11 +1231,6 @@ public round_end_event()
             set_task( 5.0, "configure_last_round_HUD", TASKID_PROCESS_LAST_ROUND );
         }
     }
-    
-    LOGGER( 32, "( round_end_event ) | maxrounds_number = %d, \
-            g_totalRoundsPlayed = %d, current_rounds_trigger = %d", \
-                                       maxrounds_number, \
-            g_totalRoundsPlayed,      current_rounds_trigger );
 }
 
 public process_last_round()
@@ -1343,7 +1373,7 @@ public round_restart_event()
 {
     LOGGER( 128, "I AM ENTERING ON round_restart_event(0)" );
     
-    if( g_isTimeLimitChanged
+    if( g_isEndGameLimitsChanged
         && is_there_game_commencing()
         && ( ( get_pcvar_num( cvar_mp_timelimit )
                && get_pcvar_num( cvar_serverTimeLimitRestart ) )
@@ -1383,7 +1413,7 @@ stock resetRoundEnding()
     g_isTimeToChangeLevel = false;
     g_isTimeToRestart     = false;
     g_isRtvLastRound      = false;
-    g_isLastGameRound     = false;
+    g_isTheLastGameRound     = false;
     
     remove_task( TASKID_SHOW_LAST_ROUND_HUD );
     
@@ -1395,7 +1425,7 @@ stock saveRoundEnding( roundEndStatus[] )
     roundEndStatus[ 0 ] = g_isTimeToChangeLevel;
     roundEndStatus[ 1 ] = g_isTimeToRestart;
     roundEndStatus[ 2 ] = g_isRtvLastRound;
-    roundEndStatus[ 3 ] = g_isLastGameRound;
+    roundEndStatus[ 3 ] = g_isTheLastGameRound;
 }
 
 stock restoreRoundEnding( roundEndStatus[] )
@@ -1403,7 +1433,7 @@ stock restoreRoundEnding( roundEndStatus[] )
     g_isTimeToChangeLevel = bool:roundEndStatus[ 0 ];
     g_isTimeToRestart     = bool:roundEndStatus[ 1 ];
     g_isRtvLastRound      = bool:roundEndStatus[ 2 ];
-    g_isLastGameRound     = bool:roundEndStatus[ 3 ];
+    g_isTheLastGameRound     = bool:roundEndStatus[ 3 ];
 }
 
 public resetRoundsScores()
@@ -1414,7 +1444,7 @@ public resetRoundsScores()
         || get_pcvar_num( cvar_serverWinlimitRestart )
         || get_pcvar_num( cvar_serverMaxroundsRestart ) )
     {
-        save_time_limit();
+        saveEndGameLimits();
         
         if( get_pcvar_num( cvar_mp_timelimit )
             && get_pcvar_num( cvar_serverTimeLimitRestart ) )
@@ -1452,7 +1482,7 @@ public resetRoundsScores()
         if( get_pcvar_num( cvar_mp_maxrounds )
             && get_pcvar_num( cvar_serverMaxroundsRestart ) )
         {
-            new new_maxrounds = ( get_pcvar_num( cvar_mp_maxrounds ) - g_totalRoundsPlayed
+            new new_maxrounds = ( get_pcvar_num( cvar_mp_maxrounds ) - g_roundsPlayedNumber
                                   + get_pcvar_num( cvar_serverMaxroundsRestart ) - 1 );
             
             if( new_maxrounds > 0 )
@@ -1464,7 +1494,7 @@ public resetRoundsScores()
     
     g_totalTerroristsWins = 0;
     g_totalCtWins         = 0;
-    g_totalRoundsPlayed   = -1;
+    g_roundsPlayedNumber   = -1;
 }
 
 public configure_last_round_HUD()
@@ -1545,7 +1575,7 @@ public plugin_end()
     LOGGER( 32, "" );
     LOGGER( 32, "I AM ENTERING ON plugin_end(0). THE END OF THE PLUGIN LIFE!" );
     
-    map_restoreOriginalTimeLimit();
+    map_restoreEndGameCvars();
     
     if( g_emptyCycleMapsList )
     {
@@ -1621,7 +1651,8 @@ public handleServerStart( backupMapsFilePath[] )
     // take the defined "server start" action
     startAction = get_pcvar_num( cvar_serverStartAction );
     
-    if( startAction )
+    if( startAction
+        && !isHandledGameCrashAction( startAction ) )
     {
         new mapToChange[ MAX_MAPNAME_LENGHT ];
         
@@ -1672,11 +1703,63 @@ public handleServerStart( backupMapsFilePath[] )
                 serverChangeLevel( mapToChange );
             }
         }
-        else
+        else // startAction == SERVER_START_MAPVOTE
         {
             vote_manageEarlyStart();
         }
     }
+}
+
+/**
+ * 
+ * @return true when the crashing was properly handled, false otherwise.
+ */
+public isHandledGameCrashAction( &startAction )
+{
+    new gameCrashAction;
+    new gameCrashActionFilePath[ MAX_FILE_PATH_LENGHT ];
+    
+    gameCrashAction = get_pcvar_num( cvar_gameCrashRecreationAction );
+    formatex( gameCrashActionFilePath, charsmax( gameCrashActionFilePath ), "%s/%s", g_dataDirPath, GAME_CRASH_RECREATION_FLAG_FILE );
+    
+    if( gameCrashAction
+        && file_exists( gameCrashActionFilePath ) )
+    {
+        delete_file( gameCrashActionFilePath );
+        
+        switch( gameCrashAction )
+        {
+            case 1: // The server will not change to the last map.
+            {
+                return true;
+            }
+            case 2: // The server will start a vote changing the map.
+            {
+                startAction = SERVER_START_MAPVOTE;
+            }
+            case 3: // The server will start a vote after the half of the time-left.
+            {
+                // Wait until the mp_timelimit, etc cvars, to be loaded from the configuration file.
+                set_task( 10.0, "setGameToFinishAtHalfTime", TASKID_FINISH_GAME_WITH_HALF_TIME );
+            }
+        }
+    }
+    
+    return false;
+}
+
+/**
+ * Save the mp_maxrounds, etc and set them to half of it.
+ */
+public setGameToFinishAtHalfTime()
+{
+    saveEndGameLimits();
+    g_isToCreateGameCrashFlag = false; // force to use only the '1/SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR' time.
+    
+    set_pcvar_float( cvar_mp_timelimit, g_originalTimelimit / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR );
+    set_pcvar_num(   cvar_mp_maxrounds, g_originalMaxRounds / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR );
+    set_pcvar_num(   cvar_mp_winlimit,  g_originalWinLimit  / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR );
+    set_pcvar_num(   cvar_mp_fraglimit, g_originalFragLimit / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR );
 }
 
 /**
@@ -1877,10 +1960,23 @@ public vote_manageEnd()
         start_voting_by_timer();
     }
     
+    if( g_isToCreateGameCrashFlag
+        && (  g_timeLimitNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR > secondsLeft / 60
+           || g_fragLimitNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR > g_greatestKillerFrags
+           || g_maxRoundsNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR > g_roundsPlayedNumber
+           || g_winLimitInteger / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR > g_totalTerroristsWins + g_totalCtWins ) )
+    {
+        new gameCrashActionFilePath[ MAX_FILE_PATH_LENGHT ];
+        g_isToCreateGameCrashFlag = false;
+        
+        formatex( gameCrashActionFilePath, charsmax( gameCrashActionFilePath ), "%s/%s", g_dataDirPath, GAME_CRASH_RECREATION_FLAG_FILE );
+        write_file( gameCrashActionFilePath, "gameCrashActionFilePath^n^nSee the cvar 'gal_game_crash_recreation'." );
+    }
+    
     // are we managing the end of the map?
     if( secondsLeft < 30
         && secondsLeft > 0
-        && !g_isLastGameRound
+        && !g_isTheLastGameRound
         && get_realplayersnum() >= get_pcvar_num( cvar_endOnRound_msg ) )
     {
         map_manageEnd();
@@ -1895,7 +1991,7 @@ public map_manageEnd()
     {
         case 1: // when time runs out, end at the current round end
         {
-            g_isLastGameRound     = true;
+            g_isTheLastGameRound     = true;
             g_isTimeToChangeLevel = true;
             
             color_print( 0, "^1%L %L %L",
@@ -1905,7 +2001,7 @@ public map_manageEnd()
         }
         case 2: // when time runs out, end at the next round end
         {
-            g_isLastGameRound = true;
+            g_isTheLastGameRound = true;
             
             // This is to avoid have a extra round at special mods where time limit is equal the
             // round timer.
@@ -1933,7 +2029,7 @@ public map_manageEnd()
 stock prevent_map_change()
 {
     new Float:roundTimeMinutes;
-    save_time_limit();
+    saveEndGameLimits();
     
     // Prevent the map from ending automatically.
     server_cmd( "mp_timelimit 0" );
@@ -1955,7 +2051,7 @@ stock prevent_map_change()
         }
     }
     
-    set_task( roundTimeMinutes * 60, "map_restoreOriginalTimeLimit", TASKID_PREVENT_INFITY_GAME );
+    set_task( roundTimeMinutes * 60, "map_restoreEndGameCvars", TASKID_PREVENT_INFITY_GAME );
 }
 
 public map_loadRecentList()
@@ -5296,7 +5392,7 @@ stock map_extend()
         g_rtvWaitRounds  += get_pcvar_num( cvar_mp_maxrounds );
     }
     
-    save_time_limit();
+    saveEndGameLimits();
     
     // do that actual map extension
     if( g_isVotingByRounds )
@@ -5330,15 +5426,16 @@ stock map_extend()
             get_pcvar_float( cvar_mp_timelimit ), g_rtvMinutesWait, g_extendmapStepMinutes );
 }
 
-stock save_time_limit()
+stock saveEndGameLimits()
 {
-    if( !g_isTimeLimitChanged )
+    if( !g_isEndGameLimitsChanged )
     {
-        g_isTimeLimitChanged = true;
+        g_isEndGameLimitsChanged = true;
         
         g_originalTimelimit = get_pcvar_float( cvar_mp_timelimit );
-        g_originalMaxRounds = get_pcvar_num( cvar_mp_maxrounds );
-        g_originalWinLimit  = get_pcvar_num( cvar_mp_winlimit );
+        g_originalMaxRounds = get_pcvar_num(   cvar_mp_maxrounds );
+        g_originalWinLimit  = get_pcvar_num(   cvar_mp_winlimit );
+        g_originalFragLimit = get_pcvar_num(   cvar_mp_fraglimit );
     }
 }
 
@@ -5413,7 +5510,7 @@ stock map_isTooRecent( map[] )
 stock configureRtvVotingType()
 {
     new minutes_left   = get_timeleft() / 60;
-    new maxrounds_left = get_pcvar_num( cvar_mp_maxrounds ) - g_totalRoundsPlayed;
+    new maxrounds_left = get_pcvar_num( cvar_mp_maxrounds ) - g_roundsPlayedNumber;
     new winlimit_left  = get_pcvar_num( cvar_mp_winlimit ) - max( g_totalCtWins, g_totalTerroristsWins );
     
     if( ( minutes_left > maxrounds_left
@@ -5439,7 +5536,7 @@ stock start_rtvVote()
     if( get_pcvar_num( cvar_endOnRoundRtv )
         && get_realplayersnum() >= get_pcvar_num( cvar_endOnRoundRtv ) )
     {
-        g_isLastGameRound = true;
+        g_isTheLastGameRound = true;
         g_isRtvLastRound  = true;
     }
     else
@@ -5498,9 +5595,9 @@ public vote_rock( player_id )
         return;
     }
     else if( g_rtvWaitRounds
-             && g_totalRoundsPlayed < g_rtvWaitRounds )
+             && g_roundsPlayedNumber < g_rtvWaitRounds )
     {
-        color_print( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_TOOSOON_ROUNDS", g_rtvWaitRounds - g_totalRoundsPlayed );
+        color_print( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_TOOSOON_ROUNDS", g_rtvWaitRounds - g_roundsPlayedNumber );
         
         return;
     }
@@ -5887,7 +5984,7 @@ stock isToHandleRecentlyEmptyServer()
             // means that if someone comes into the server, the time limit will
             // be the extended time limit rather than the normal time limit. bad.
             // reset the original time limit
-            map_restoreOriginalTimeLimit();
+            map_restoreEndGameCvars();
         }
         
         // if it is utilizing "empty server" feature, to start it.
@@ -6380,27 +6477,28 @@ stock register_dictionary_colored( const dictionaryFile[] )
     return 1;
 }
 
-public map_restoreOriginalTimeLimit()
+public map_restoreEndGameCvars()
 {
-    LOGGER( 128 + 2, "I AM ENTERING ON map_restoreOriginalTimeLimit(0) | mp_timelimit: %f, \
+    LOGGER( 128 + 2, "I AM ENTERING ON map_restoreEndGameCvars(0) | mp_timelimit: %f, \
             g_originalTimelimit: %f", get_pcvar_float( cvar_mp_timelimit ), g_originalTimelimit );
     
-    if( g_isTimeLimitChanged )
+    if( g_isEndGameLimitsChanged )
     {
         server_cmd( "mp_timelimit %f", g_originalTimelimit );
         server_cmd( "mp_maxrounds %d", g_originalMaxRounds );
-        server_cmd( "mp_winlimit %d", g_originalWinLimit );
+        server_cmd( "mp_winlimit %d",  g_originalWinLimit );
+        server_cmd( "mp_fraglimit %d", g_originalFragLimit );
         
         // restore to the original/right values
         g_rtvMinutesWait = get_pcvar_float( cvar_rtvMinutesWait );
         g_rtvWaitRounds  = get_pcvar_num( cvar_rtvWaitRounds );
         
         server_exec();
-        g_isTimeLimitChanged = false;
+        g_isEndGameLimitsChanged = false;
     }
     
     restoreOriginalServerMaxSpeed();
-    LOGGER( 2, "I AM EXITING ON map_restoreOriginalTimeLimit(0) | mp_timelimit: %f, \
+    LOGGER( 2, "I AM EXITING ON map_restoreEndGameCvars(0) | mp_timelimit: %f, \
             g_originalTimelimit: %f", get_pcvar_float( cvar_mp_timelimit ), g_originalTimelimit );
 }
 
@@ -6431,6 +6529,7 @@ stock cancelVoting( bool:isToDoubleReset = false )
     remove_task( TASKID_MAP_CHANGE );
     remove_task( TASKID_PROCESS_LAST_ROUND );
     remove_task( TASKID_SHOW_LAST_ROUND_HUD );
+    remove_task( TASKID_FINISH_GAME_WITH_HALF_TIME );
     
     finalizeVoting();
     resetRoundEnding();

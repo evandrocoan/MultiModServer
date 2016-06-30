@@ -341,13 +341,6 @@ galileo.amxx
 [LIST=1]
 
 [*][SUG]
-first you need enable cvar to this feature... Use the 'gal_srv_start' cvar.
-if the half of the timeleft/roundsleft passed  and the server crashed
-if the enable cvar is 1 the server will not change to the last map
-if the enable cvar is 2 the server will start a vote without changing the map
-if the enable cvar is 3 the server will start a vote after the half of the timeleft/roundsleft passed
-
-[*][SUG]
 Maps are commonly repeated on the vote and there is no chance for all of them I've got on server
 to get to play on. Which is why I'm using gal_banrecent to ban these 1000+ maps. Because of this,
 players can't nominate maps for few days . My proposition is adding a file to the plug in, in which
@@ -564,7 +557,8 @@ Thank you!  It means a lot to me.
 
 [B]2016-04-10 | v3.0.0-60[/B]
 [LIST=1]
-[*]Implemented/added the server maintenance mode feature. Use 'gal_command_maintenance' to enable it.
+[*]Added the server maintenance mode feature. Use 'gal_command_maintenance' to enable it.
+[*]Added the new cvar 'gal_game_crash_recreation' configure the game crash actions.
 [*]Allowed the whitelist feature to be used with the minimum players nominations control feature.
 [*]Fixed the minplayers list priority over the whitelist feature.
 [*]Fixed ArrayGetString native error when the mapcyclefile is invalid.
