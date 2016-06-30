@@ -1601,7 +1601,10 @@ public plugin_end()
     LOGGER( 32, "I AM ENTERING ON plugin_end(0). THE END OF THE PLUGIN LIFE!" );
     
     map_restoreEndGameCvars();
-    deletegameCrashActionFlagFile();
+    new gameCrashActionFilePath[ MAX_FILE_PATH_LENGHT ];
+    
+    generateGameCrashActionFilePath( gameCrashActionFilePath, charsmax( gameCrashActionFilePath ) );
+    delete_file( gameCrashActionFilePath );
     
     if( g_emptyCycleMapsList )
     {
@@ -1633,7 +1636,8 @@ public plugin_end()
     {
         clearMenuMapIndexForPlayers( currentIndex );
     }
-
+    
+    // Clean the unit tests data 
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
     restore_server_cvars_for_test();
     
@@ -1754,7 +1758,7 @@ public isHandledGameCrashAction( &startAction )
     if( gameCrashAction
         && file_exists( gameCrashActionFilePath ) )
     {
-        deletegameCrashActionFlagFile();
+        delete_file( gameCrashActionFilePath );
         
         switch( gameCrashAction )
         {
@@ -1779,18 +1783,8 @@ public isHandledGameCrashAction( &startAction )
 
 stock generateGameCrashActionFilePath( gameCrashActionFilePath[], charsmaxGameCrashActionFilePath )
 {
+    LOGGER( 128, "I AM ENTERING ON gameCrashActionFilePath(2) | gameCrashActionFilePath: %s", gameCrashActionFilePath );
     formatex( gameCrashActionFilePath, charsmaxGameCrashActionFilePath, "%s/%s", g_dataDirPath, GAME_CRASH_RECREATION_FLAG_FILE );
-}
-
-stock deletegameCrashActionFlagFile()
-{
-    new gameCrashActionFilePath[ MAX_FILE_PATH_LENGHT ];
-    generateGameCrashActionFilePath( gameCrashActionFilePath, charsmax( gameCrashActionFilePath ) );
-    
-    if( file_exists( gameCrashActionFilePath ) )
-    {
-        delete_file( gameCrashActionFilePath );
-    }
 }
 
 /**
@@ -2815,6 +2809,8 @@ stock buildTheNominationsMenu( player_id )
 
 stock nomination_menu( player_id )
 {
+    
+    
     // gather all maps that match the nomination
     new mapIndex;
     
