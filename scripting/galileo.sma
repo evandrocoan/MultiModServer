@@ -5603,11 +5603,20 @@ public map_change_stays()
 
 stock serverChangeLevel( mapName[] )
 {
-#if AMXX_VERSION_NUM < 183
-    server_cmd( "changelevel %s", mapName );
-#else
-    engine_changelevel( mapName );
-#endif
+    if( g_isOnMaintenanceMode )
+    {
+        color_print( 0, "^1%L", LANG_PLAYER, "GAL_CHANGE_MAINTENANCE" );
+        restoreOriginalServerMaxSpeed();
+        cancelVoting();
+    }
+    else
+    {
+    #if AMXX_VERSION_NUM < 183
+        server_cmd( "changelevel %s", mapName );
+    #else
+        engine_changelevel( mapName );
+    #endif
+    }
 }
 
 public cmd_HL1_votemap( player_id )

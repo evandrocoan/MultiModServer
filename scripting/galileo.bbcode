@@ -235,6 +235,13 @@ de_dust2_long
      10:00 and 22:00 o'clock. This feature should be helpful because some servers have
      about only 10 players between 05:00 and 10:00 o'clock, so they will be needing [COLOR="Blue"]small
      maps[/COLOR] for playing. Basically, the Whitelist is a filter to your mapcycle/filler list.
+     
+     
+ [*] [COLOR="Blue"][B]The Maintenance Mode[/B][/COLOR]:
+     If the owner of the server is fixing something or updating the server and doesn't wanna the map
+     to be changed, he will enable the cvar maintenance so the map will can't be changed by any method
+     like gal_startvote/rtv/timeleft or maxrounds ended... and he will display print chat with something
+     like that: You cannot change the map when the server is in mode maintenance.
 [/LIST]
 [/QUOTE]
 
@@ -332,13 +339,6 @@ galileo.amxx
 ******************************** [anchor]TODO[/anchor][B][SIZE="6"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] *********************************
 
 [LIST=1]
-
-[*][SUG]
-The Maintenance Mode
-If the owner of the server is fixing something or updating the server and doesn't wanna the map
-to be changed he will enable the cvar maintenance so the map will can't be changed by any method
-like gal_startvote/rtv/timeleft or maxrounds ended... and he will display print chat some thing
-like that: you cannot change the map when the server is in mode maintenance
 
 [*][SUG]
 first you need enable cvar to this feature...
@@ -564,8 +564,9 @@ Thank you!  It means a lot to me.
 
 [B]2016-04-10 | v3.0.0-60[/B]
 [LIST=1]
-[*]Fixed the minplayers list priority over the whitelist feature.
+[*]Implemented/added the server maintenance mode feature. Use 'gal_command_maintenance' to enable it.
 [*]Allowed the whitelist feature to be used with the minimum players nominations control feature.
+[*]Fixed the minplayers list priority over the whitelist feature.
 [*]Fixed ArrayGetString native error when the mapcyclefile is invalid.
 [*]Fixed displaying an empty name when showing the user names some times.
 [*]Fixed allowing multiple nominations when a player disconnect and reconnect again.
