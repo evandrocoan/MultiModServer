@@ -1783,8 +1783,10 @@ public isHandledGameCrashAction( &startAction )
 
 stock generateGameCrashActionFilePath( gameCrashActionFilePath[], charsmaxGameCrashActionFilePath )
 {
-    LOGGER( 128, "I AM ENTERING ON gameCrashActionFilePath(2) | gameCrashActionFilePath: %s", gameCrashActionFilePath );
+    LOGGER( 128, "I AM ENTERING ON gameCrashActionFilePath(2) | charsmaxGameCrashActionFilePath: %d", charsmaxGameCrashActionFilePath );
+    
     formatex( gameCrashActionFilePath, charsmaxGameCrashActionFilePath, "%s/%s", g_dataDirPath, GAME_CRASH_RECREATION_FLAG_FILE );
+    LOGGER( 1, "( generateGameCrashActionFilePath ) | gameCrashActionFilePath: %s", gameCrashActionFilePath );
 }
 
 /**
@@ -7220,7 +7222,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
             g_areTheUnitTestsRunning = false;
         }
     }
-
+    
     stock print_all_tests_executed()
     {
         LOGGER( 128, "I AM ENTERING ON print_all_tests_executed(0)" );
@@ -7241,7 +7243,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
             print_logger( "       %3d. %s", test_index + 1, test_name );
         }
     }
-
+    
     stock print_tests_failure()
     {
         LOGGER( 128, "I AM ENTERING ON print_tests_failure(0)" );
@@ -7268,7 +7270,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
             print_logger( "       %3d. %s: %s", test_id, test_name, failure_reason );
         }
     }
-
+    
     /**
      * This is executed at the end of the delayed tests execution to show its results and restore any
      * cvars variable change.
@@ -7294,7 +7296,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
         
         g_areTheUnitTestsRunning = false;
     }
-
+    
     /**
      * This is the first thing called when a test begin running. It function is to let the Test System
      * know that the test exists and then know how to handle it using the test_id.
@@ -7322,7 +7324,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
         
         return totalTests;
     }
-
+    
     /**
      * Informs the Test System that the test failed and why.
      *
@@ -7333,8 +7335,8 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
      */
     stock set_test_failure_private( test_id, bool:isFailure, failure_reason[], any: ... )
     {
-        LOGGER( 128, "I AM ENTERING ON set_test_failure_private(...) | test_id: %d, isFailure: %d, \
-                failure_reason: %s",                                   test_id,     isFailure, \
+        LOGGER( 0, "I AM ENTERING ON set_test_failure_private(...) | test_id: %d, isFailure: %d, \
+                failure_reason: %s",                                 test_id,     isFailure, \
                 failure_reason );
         
         g_current_test_evaluation = isFailure;
@@ -7353,7 +7355,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
             print_logger( "       TEST FAILURE! %s", formated_message );
         }
     }
-
+    
     /**
      * This is a simple test to verify the basic registering test functionality.
      */
@@ -7373,7 +7375,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
         SET_TEST_FAILURE( test_id, !equal( first_test_name, "test_register_test" ), \
                 "first_test_name must be 'test_register_test' (it was %s)", first_test_name );
     }
-
+    
     /**
      * This is the vote_startDirector() tests chain beginning. Because the vote_startDirector() cannot
      * to be tested simultaneously. Then, all tests that involves the vote_startDirector() chain, must
@@ -7401,7 +7403,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
         
         set_task( 2.0, "test_is_map_extension_allowed2", chainDelay );
     }
-
+    
     /**
      * This is the 2º test at vote_startDirector() chain.
      *
@@ -7425,7 +7427,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
         
         set_task( 2.0, "test_end_of_map_voting_start_1", chainDelay );
     }
-
+    
     /**
      * This is the 3º test at vote_startDirector() chain.
      *
@@ -7450,7 +7452,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
         
         set_task( 1.0, "test_end_of_map_voting_start_2", chainDelay );
     }
-
+    
     /**
      * This is the 4º test at vote_startDirector() chain.
      *
@@ -7468,7 +7470,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
         
         set_task( 1.0, "test_end_of_map_voting_stop_1", chainDelay );
     }
-
+    
     /**
      * This is the 5º test at vote_startDirector() chain.
      *
@@ -7486,7 +7488,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
         
         set_task( 1.0, "test_end_of_map_voting_stop_2", chainDelay );
     }
-
+    
     /**
      * This is the 6º test at vote_startDirector() chain.
      *
@@ -7504,7 +7506,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
         
         //set_task( 1.0, "test_end_of_map_voting_stop_____", chainDelay )
     }
-
+    
     /**
      * Test for client connect cvar_isToStopEmptyCycle behavior.
      */
@@ -7524,7 +7526,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
         SET_TEST_FAILURE( test_id, get_pcvar_num( cvar_isToStopEmptyCycle ) != 0, \
                 "cvar_isToStopEmptyCycle must be 0 (it was %d)", get_pcvar_num( cvar_isToStopEmptyCycle ) );
     }
-
+    
     /**
      * This 1º case test if the current map isn't part of the empty cycle, immediately change to next map
      * that is.
@@ -7546,7 +7548,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
         
         ArrayDestroy( emptyCycleMapList );
     }
-
+    
     /**
      * This 2º case test if the current map isn't part of the empty cycle, immediately change to next map
      * that is.
@@ -7569,7 +7571,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
         
         ArrayDestroy( emptyCycleMapList );
     }
-
+    
     /**
      * This 3º case test if the current map isn't part of the empty cycle, immediately change to next map
      * that is.
@@ -7592,7 +7594,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
         
         ArrayDestroy( emptyCycleMapList );
     }
-
+    
     /**
      * This tests if the function 'loadCurrentBlackList()' 1º case is working properly.
      */
@@ -7645,7 +7647,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
         
         TrieDestroy( blackListTrie );
     }
-
+    
     /**
      * This tests if the function 'loadCurrentBlackList()' 2º case is working properly.
      */
@@ -7666,7 +7668,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
         
         TrieDestroy( blackListTrie );
     }
-
+    
     /**
      * This tests if the function 'loadCurrentBlackList()' 3º case is working properly.
      */
@@ -7688,16 +7690,17 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
         TrieDestroy( blackListTrie );
         delete_file( g_test_whiteListFilePath );
     }
-
+    
+    
+    
     /**
      * Server changed cvars backup to be restored after the unit tests end.
      */
     new Float:test_extendmap_max;
     new Float:test_mp_timelimit;
-
+    
     new test_whiteListFilePath[ MAX_FILE_PATH_LENGHT ];
-
-
+    
     /**
      * Every time a cvar is changed during the tests, it must be saved here to a global test variable
      * to be restored at the restore_server_cvars_for_test(), which is executed at the end of all
@@ -7707,6 +7710,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
      */
     stock save_server_cvars_for_test()
     {
+        LOGGER( 128, "I AM ENTERING ON save_server_cvars_for_test(0)" );
         g_is_test_changed_cvars = true;
         
         test_extendmap_max = get_pcvar_float( cvar_maxMapExtendTime );
@@ -7718,12 +7722,13 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
                 "save_server_cvars_for_test( out )", \
                 get_pcvar_float( cvar_mp_timelimit ), test_mp_timelimit, g_originalTimelimit );
     }
-
+    
     /**
      * This is executed after all tests executions, to restore the server variables changes.
      */
     stock restore_server_cvars_for_test()
     {
+        LOGGER( 128, "I AM ENTERING ON restore_server_cvars_for_test(0)" );
         LOGGER( 2, "    %42s cvar_mp_timelimit: %f  test_mp_timelimit: %f  g_originalTimelimit: %f", \
                 "restore_server_cvars_for_test( in )", \
                 get_pcvar_float( cvar_mp_timelimit ), test_mp_timelimit, g_originalTimelimit );
