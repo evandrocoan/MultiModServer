@@ -239,9 +239,9 @@ de_dust2_long
      
  [*] [COLOR="Blue"][B]The Maintenance Mode[/B][/COLOR]:
      If the owner of the server is fixing something or updating the server and doesn't wanna the map
-     to be changed, he will enable the cvar maintenance so the map will can't be changed by any method
-     like gal_startvote/rtv/timeleft or maxrounds ended... and he will display print chat with something
-     like that: You cannot change the map when the server is in mode maintenance.
+     to be changed, he will enable the maintenance command '[B]gal_command_maintenance[/B]', so the map will can't
+     be changed by any method like gal_startvote/rtv/timeleft or maxrounds ended... and he will display
+     print chat with something like that: You cannot change the map when the server is in mode maintenance.
 [/LIST]
 [/QUOTE]
 
@@ -339,13 +339,6 @@ galileo.amxx
 ******************************** [anchor]TODO[/anchor][B][SIZE="6"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] *********************************
 
 [LIST=1]
-
-[*][SUG]
-first you need enable cvar to this feature... Use the 'gal_srv_start' cvar.
-if the half of the timeleft/roundsleft passed  and the server crashed
-if the enable cvar is 1 the server will not change to the last map
-if the enable cvar is 2 the server will start a vote without changing the map
-if the enable cvar is 3 the server will start a vote after the half of the timeleft/roundsleft passed
 
 [*][SUG]
 Maps are commonly repeated on the vote and there is no chance for all of them I've got on server
@@ -564,7 +557,8 @@ Thank you!  It means a lot to me.
 
 [B]2016-04-10 | v3.0.0-60[/B]
 [LIST=1]
-[*]Implemented/added the server maintenance mode feature. Use 'gal_command_maintenance' to enable it.
+[*]Added the server maintenance mode feature. Use 'gal_command_maintenance' to enable it.
+[*]Added the new cvar 'gal_game_crash_recreation' configure the game crash actions.
 [*]Allowed the whitelist feature to be used with the minimum players nominations control feature.
 [*]Fixed the minplayers list priority over the whitelist feature.
 [*]Fixed ArrayGetString native error when the mapcyclefile is invalid.
