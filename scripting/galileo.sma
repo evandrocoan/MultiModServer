@@ -7228,6 +7228,10 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
         LOGGER( 128, "I AM ENTERING ON print_all_tests_executed(0)" );
         new test_name[ MAX_SHORT_STRING ];
         
+        // displays the last test OK.
+        print_logger( "OK!");
+        print_logger( "");
+        
         if( ArraySize( g_tests_idsAndNames ) )
         {
             print_logger( "" );
@@ -7314,8 +7318,15 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
         g_totalSuccessfulTests++;
         totalTests = g_totalSuccessfulTests + g_totalFailureTests;
         
+        // displays the tests OK.
+        if( totalTests > 0 )
+        {
+            print_logger( "OK!");
+            print_logger( "");
+        }
+        
         ArrayPushString( g_tests_idsAndNames, test_name );
-        print_logger( "    EXECUTING TEST %d WITH %d SECONDS DELAY - %s ", totalTests, max_delay_result, test_name );
+        print_logger( "        EXECUTING TEST %d WITH %d SECONDS DELAY - %s ", totalTests, max_delay_result, test_name );
         
         if( g_max_delay_result < max_delay_result )
         {
