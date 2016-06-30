@@ -296,11 +296,12 @@ stock allowToUseSemicolonOnMacrosEnd()
 #define VOTE_IS_EARLY       16
 #define VOTE_IS_EXPIRED     32
 
-#define SERVER_START_CURRENTMAP                1
-#define SERVER_START_NEXTMAP                   2
-#define SERVER_START_MAPVOTE                   3
-#define SERVER_START_RANDOMMAP                 4
-#define SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR 2
+#define SERVER_START_CURRENTMAP                     1
+#define SERVER_START_NEXTMAP                        2
+#define SERVER_START_MAPVOTE                        3
+#define SERVER_START_RANDOMMAP                      4
+#define SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR      2
+#define DELAY_TO_WAIT_THE_SERVER_CVARS_TO_BE_LOADED 50.0
 
 #define LISTMAPS_USERID 0
 #define LISTMAPS_LAST   1
@@ -1030,7 +1031,7 @@ stock configureServerStart()
     }
     
     // cache server cvars later, to wait load the server configurations
-    set_task( 50.0, "cacheCvarsValues" );
+    set_task( DELAY_TO_WAIT_THE_SERVER_CVARS_TO_BE_LOADED, "cacheCvarsValues" );
     
     if( get_cvar_num( "gal_server_starting" ) )
     {
@@ -1776,8 +1777,15 @@ public isHandledGameCrashAction( &startAction )
             }
             case 3: // The server will start a vote after the half of the time-left.
             {
+                // disable any other server start action
+                startAction = 0;
+                
+                // force to use only the '1/SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR' time, i.e.,
+                // stop creating an infinity loop of half of half...
+                g_isToCreateGameCrashFlag = false; 
+                
                 // Wait until the mp_timelimit, etc cvars, to be loaded from the configuration file.
-                set_task( 10.0, "setGameToFinishAtHalfTime", TASKID_FINISH_GAME_WITH_HALF_TIME );
+                set_task( DELAY_TO_WAIT_THE_SERVER_CVARS_TO_BE_LOADED + 10.0, "setGameToFinishAtHalfTime", TASKID_FINISH_GAME_WITH_HALF_TIME );
             }
         }
     }
@@ -1797,9 +1805,7 @@ stock generateGameCrashActionFilePath( gameCrashActionFilePath[], charsmaxGameCr
 public setGameToFinishAtHalfTime()
 {
     LOGGER( 128, "I AM ENTERING ON setGameToFinishAtHalfTime(0)" );
-    
     saveEndGameLimits();
-    g_isToCreateGameCrashFlag = false; // force to use only the '1/SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR' time.
     
     set_pcvar_float( cvar_mp_timelimit, g_originalTimelimit / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR );
     set_pcvar_num(   cvar_mp_maxrounds, g_originalMaxRounds / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR );
@@ -2024,7 +2030,7 @@ public vote_manageEnd()
            || g_winLimitInteger / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_totalTerroristsWins + g_totalCtWins ) )
     {
         new gameCrashActionFilePath[ MAX_FILE_PATH_LENGHT ];
-        g_isToCreateGameCrashFlag = false;
+        g_isToCreateGameCrashFlag = false; // stop creating this file unnecessarily
         
         LOGGER( 1, "( vote_manageEnd )  %d/%d < %d: %d", \
                 g_timeLimitNumber, SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR, g_timeLimitNumber - secondsLeft / 60, \
