@@ -500,6 +500,7 @@ new cvar_voteAnnounceChoice;
 new cvar_voteUniquePrefixes;
 new cvar_rtvReminder;
 new cvar_serverStartAction;
+new cvar_gameCrashRecreationAction;
 new cvar_serverTimeLimitRestart;
 new cvar_serverMaxroundsRestart;
 new cvar_serverWinlimitRestart;
@@ -722,6 +723,7 @@ public plugin_init()
     cvar_isEmptyCycleServerChange  = register_cvar( "gal_emptyserver_change", "0" );
     cvar_emptyMapFilePath          = register_cvar( "gal_emptyserver_mapfile", "" );
     cvar_serverStartAction         = register_cvar( "gal_srv_start", "0" );
+    cvar_gameCrashRecreationAction = register_cvar( "gal_game_crash_recreation", "0" );
     cvar_serverTimeLimitRestart    = register_cvar( "gal_srv_timelimit_restart", "0" );
     cvar_serverMaxroundsRestart    = register_cvar( "gal_srv_maxrounds_restart", "0" );
     cvar_serverWinlimitRestart     = register_cvar( "gal_srv_winlimit_restart", "0" );
