@@ -889,7 +889,6 @@ public plugin_cfg()
     LOGGER( 4, " The next map is [%s]", g_nextMap );
     LOGGER( 4, "" );
     
-    cacheCvarsValues();
     configureRTV();
     configureServerStart();
     configureServerMapChange();
@@ -968,7 +967,7 @@ stock initializeGlobalArrays()
     }
 }
 
-stock cacheCvarsValues()
+public cacheCvarsValues()
 {
     LOGGER( 128, "I AM ENTERING ON cacheCvarsValues(0)" );
     
@@ -979,6 +978,8 @@ stock cacheCvarsValues()
     g_showVoteStatus         = get_pcvar_num( cvar_showVoteStatus );
     g_voteShowNoneOptionType = get_pcvar_num( cvar_voteShowNoneOptionType );
     g_showVoteStatusType     = get_pcvar_num( cvar_showVoteStatusType );
+    g_fragLimitNumber        = get_pcvar_num( cvar_mp_fraglimit );
+    g_timeLimitNumber        = get_pcvar_num( cvar_mp_timelimit );
     
     g_isColoredChatEnabled = get_pcvar_num( cvar_coloredChatEnabled ) != 0;
     g_isExtendmapAllowStay = get_pcvar_num( cvar_extendmapAllowStay ) != 0;
@@ -1027,6 +1028,9 @@ stock configureServerStart()
     {
         g_isToCreateGameCrashFlag = false;
     }
+    
+    // cache server cvars later, to wait load the server configurations
+    set_task( 50.0, "cacheCvarsValues" );
     
     if( get_cvar_num( "gal_server_starting" ) )
     {
@@ -1430,7 +1434,7 @@ stock resetRoundEnding()
     g_isTimeToChangeLevel = false;
     g_isTimeToRestart     = false;
     g_isRtvLastRound      = false;
-    g_isTheLastGameRound     = false;
+    g_isTheLastGameRound  = false;
     
     remove_task( TASKID_SHOW_LAST_ROUND_HUD );
     client_cmd( 0, "-showscores" );
@@ -1516,7 +1520,7 @@ public resetRoundsScores()
     
     g_totalTerroristsWins = 0;
     g_totalCtWins         = 0;
-    g_roundsPlayedNumber   = -1;
+    g_roundsPlayedNumber  = -1;
 }
 
 public configure_last_round_HUD()
@@ -1681,9 +1685,9 @@ public handleServerStart( backupMapsFilePath[] )
     
     // take the defined "server start" action
     startAction = get_pcvar_num( cvar_serverStartAction );
+    isHandledGameCrashAction( startAction );
     
-    if( !isHandledGameCrashAction( startAction )
-        && startAction )
+    if( startAction )
     {
         new mapToChange[ MAX_MAPNAME_LENGHT ];
         
@@ -1777,8 +1781,6 @@ public isHandledGameCrashAction( &startAction )
             }
         }
     }
-    
-    return false;
 }
 
 stock generateGameCrashActionFilePath( gameCrashActionFilePath[], charsmaxGameCrashActionFilePath )
@@ -2016,13 +2018,26 @@ public vote_manageEnd()
     }
     
     if( g_isToCreateGameCrashFlag
-        && (  g_timeLimitNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR > secondsLeft / 60
-           || g_fragLimitNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR > g_greatestKillerFrags
-           || g_maxRoundsNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR > g_roundsPlayedNumber
-           || g_winLimitInteger / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR > g_totalTerroristsWins + g_totalCtWins ) )
+        && (  g_timeLimitNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_timeLimitNumber - secondsLeft / 60
+           || g_fragLimitNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_greatestKillerFrags
+           || g_maxRoundsNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_roundsPlayedNumber + 1
+           || g_winLimitInteger / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_totalTerroristsWins + g_totalCtWins ) )
     {
         new gameCrashActionFilePath[ MAX_FILE_PATH_LENGHT ];
         g_isToCreateGameCrashFlag = false;
+        
+        LOGGER( 1, "( vote_manageEnd )  %d/%d < %d: %d", \
+                g_timeLimitNumber, SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR, g_timeLimitNumber - secondsLeft / 60, \
+                g_timeLimitNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_timeLimitNumber - secondsLeft / 60);
+        LOGGER( 1, "( vote_manageEnd )  %d/%d < %d: %d", \
+                g_fragLimitNumber, SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR, g_greatestKillerFrags, \
+                g_fragLimitNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_greatestKillerFrags );
+        LOGGER( 1, "( vote_manageEnd )  %d/%d < %d: %d", \
+                g_maxRoundsNumber, SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR, g_roundsPlayedNumber + 1, \
+                g_maxRoundsNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_roundsPlayedNumber + 1 );
+        LOGGER( 1, "( vote_manageEnd )  %d/%d < %d: %d", \
+                g_winLimitInteger, SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR, g_totalTerroristsWins + g_totalCtWins, \
+                g_winLimitInteger / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_totalTerroristsWins + g_totalCtWins );
         
         generateGameCrashActionFilePath( gameCrashActionFilePath, charsmax( gameCrashActionFilePath ) );
         write_file( gameCrashActionFilePath, "Game Crash Action Flag File^n^nSee the cvar 'gal_game_crash_recreation'.^nDo not delete it." );
@@ -2030,11 +2045,18 @@ public vote_manageEnd()
     
     // are we managing the end of the map?
     if( secondsLeft < 30
-        && secondsLeft > 0
-        && !g_isTheLastGameRound
-        && get_realplayersnum() >= get_pcvar_num( cvar_endOnRound_msg ) )
+        && secondsLeft > 0 )
     {
-        map_manageEnd();
+        if( g_isOnMaintenanceMode )
+        {
+            prevent_map_change();
+            color_print( 0, "^1%L", LANG_PLAYER, "GAL_CHANGE_MAINTENANCE" );
+        }
+        else if( !g_isTheLastGameRound
+                 && get_realplayersnum() >= get_pcvar_num( cvar_endOnRound_msg ) )
+        {
+            map_manageEnd();
+        }
     }
 }
 
@@ -4035,6 +4057,7 @@ stock approveTheVotingStart( bool:is_forced_voting )
 {
     LOGGER( 128, "I AM ENTERING ON approveTheVotingStart(1) | is_forced_voting: %d", is_forced_voting );
     
+    // block the voting on now allowed situations/cases
     if( get_realplayersnum() == 0
         || ( g_voteStatus & VOTE_IS_IN_PROGRESS
              && !( g_voteStatus & VOTE_IS_RUNOFF ) )
@@ -4077,6 +4100,7 @@ stock approveTheVotingStart( bool:is_forced_voting )
     #endif
     }
     
+    // allow a new forced voting while the map is ending
     if( is_forced_voting
         && g_voteStatus & VOTE_IS_OVER )
     {
@@ -5928,20 +5952,11 @@ stock serverChangeLevel( mapName[] )
 {
     LOGGER( 128, "I AM ENTERING ON serverChangeLevel(1) | mapName: %s", mapName );
     
-    if( g_isOnMaintenanceMode )
-    {
-        color_print( 0, "^1%L", LANG_PLAYER, "GAL_CHANGE_MAINTENANCE" );
-        restoreOriginalServerMaxSpeed();
-        cancelVoting();
-    }
-    else
-    {
-    #if AMXX_VERSION_NUM < 183
-        server_cmd( "changelevel %s", mapName );
-    #else
-        engine_changelevel( mapName );
-    #endif
-    }
+#if AMXX_VERSION_NUM < 183
+    server_cmd( "changelevel %s", mapName );
+#else
+    engine_changelevel( mapName );
+#endif
 }
 
 public cmd_HL1_votemap( player_id )
