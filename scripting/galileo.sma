@@ -1072,6 +1072,8 @@ stock configureServerMapChange()
 
 public team_win_event()
 {
+    LOGGER( 128, "I AM ENTERING ON team_win_event(0)" );
+    
     new wins_Terrorist_trigger;
     new wins_CT_trigger;
     new string_team_winner[ 16 ];
@@ -1136,6 +1138,8 @@ public start_voting_by_timer()
 
 public round_start_event()
 {
+    LOGGER( 128, "I AM ENTERING ON round_start_event(0)" );
+    
     if( VOTE_ROUND_START_DETECTION_DELAYED( get_timeleft() )
         && get_pcvar_num( cvar_endOfMapVoteStart )
         && !task_exists( TASKID_START_VOTING_BY_TIMER ) )
@@ -1158,6 +1162,8 @@ public round_start_event()
 
 public client_death_event()
 {
+    LOGGER( 128, "I AM ENTERING ON client_death_event(0)" );
+    
     static frags;
     static killerId;
     
@@ -1181,6 +1187,7 @@ public client_death_event()
 
 public round_end_event()
 {
+    LOGGER( 128, "I AM ENTERING ON round_end_event(0)" );
     new current_rounds_trigger;
     
     g_roundsPlayedNumber++;
@@ -1208,6 +1215,8 @@ public round_end_event()
 
 stock endGameWatchdog()
 {
+    LOGGER( 128, "I AM ENTERING ON endGameWatchdog(0)" );
+    
     g_fragLimitNumber = get_pcvar_num( cvar_mp_fraglimit );
     g_timeLimitNumber = get_pcvar_num( cvar_mp_timelimit );
     
@@ -1235,6 +1244,8 @@ stock endGameWatchdog()
 
 public process_last_round()
 {
+    LOGGER( 128, "I AM ENTERING ON process_last_round(0)" );
+    
     if( g_isRtvLastRound )
     {
         configure_last_round_HUD();
@@ -1253,6 +1264,7 @@ public process_last_round()
 
 public process_last_round_counting()
 {
+    LOGGER( 128, "I AM ENTERING ON process_last_round_counting(0)" );
     new real_number = g_lastRroundCountdown - 1;
     
     if( real_number )
@@ -1282,6 +1294,8 @@ public process_last_round_counting()
 
 stock intermission_display()
 {
+    LOGGER( 128, "I AM ENTERING ON intermission_display(0)" );
+    
     if( g_isTimeToChangeLevel )
     {
         new Float:mp_chattime = get_pcvar_float( cvar_mp_chattime );
@@ -1332,6 +1346,7 @@ stock intermission_display()
  */
 stock is_there_game_commencing()
 {
+    LOGGER( 128, "I AM ENTERING ON is_there_game_commencing(0)" );
     new players[ 32 ];
     
     new players_count;
@@ -1410,18 +1425,22 @@ public game_commencing_event()
  */
 stock resetRoundEnding()
 {
+    LOGGER( 128, "I AM ENTERING ON resetRoundEnding(0)" );
+    
     g_isTimeToChangeLevel = false;
     g_isTimeToRestart     = false;
     g_isRtvLastRound      = false;
     g_isTheLastGameRound     = false;
     
     remove_task( TASKID_SHOW_LAST_ROUND_HUD );
-    
     client_cmd( 0, "-showscores" );
 }
 
 stock saveRoundEnding( roundEndStatus[] )
 {
+    LOGGER( 128, "I AM ENTERING ON saveRoundEnding(1) | roundEndStatus: %d, %d, %d, %d", \
+            roundEndStatus[ 0 ], roundEndStatus[ 1 ], roundEndStatus[ 2 ], roundEndStatus[ 3 ] );
+    
     roundEndStatus[ 0 ] = g_isTimeToChangeLevel;
     roundEndStatus[ 1 ] = g_isTimeToRestart;
     roundEndStatus[ 2 ] = g_isRtvLastRound;
@@ -1430,10 +1449,13 @@ stock saveRoundEnding( roundEndStatus[] )
 
 stock restoreRoundEnding( roundEndStatus[] )
 {
+    LOGGER( 128, "I AM ENTERING ON restoreRoundEnding(1) | roundEndStatus: %d, %d, %d, %d", \
+            roundEndStatus[ 0 ], roundEndStatus[ 1 ], roundEndStatus[ 2 ], roundEndStatus[ 3 ] );
+    
     g_isTimeToChangeLevel = bool:roundEndStatus[ 0 ];
     g_isTimeToRestart     = bool:roundEndStatus[ 1 ];
     g_isRtvLastRound      = bool:roundEndStatus[ 2 ];
-    g_isTheLastGameRound     = bool:roundEndStatus[ 3 ];
+    g_isTheLastGameRound  = bool:roundEndStatus[ 3 ];
 }
 
 public resetRoundsScores()
@@ -1499,6 +1521,8 @@ public resetRoundsScores()
 
 public configure_last_round_HUD()
 {
+    LOGGER( 128, "I AM ENTERING ON configure_last_round_HUD(0)" );
+    
     if( get_pcvar_num( cvar_endOnRound_msg ) )
     {
         set_task( 1.0, "show_last_round_HUD", TASKID_SHOW_LAST_ROUND_HUD, _, _, "b" );
@@ -1507,8 +1531,9 @@ public configure_last_round_HUD()
 
 public show_last_round_HUD()
 {
-    set_hudmessage( 255, 255, 255, 0.15, 0.15, 0, 0.0, 1.0, 0.1, 0.1, 1 );
+    LOGGER( 128, "I AM ENTERING ON show_last_round_HUD(0)" );
     
+    set_hudmessage( 255, 255, 255, 0.15, 0.15, 0, 0.0, 1.0, 0.1, 0.1, 1 );
     static last_round_message[ MAX_COLOR_MESSAGE ];
 
 #if AMXX_VERSION_NUM < 183
@@ -1576,6 +1601,7 @@ public plugin_end()
     LOGGER( 32, "I AM ENTERING ON plugin_end(0). THE END OF THE PLUGIN LIFE!" );
     
     map_restoreEndGameCvars();
+    deletegameCrashActionFlagFile();
     
     if( g_emptyCycleMapsList )
     {
@@ -1643,6 +1669,7 @@ public plugin_end()
  */
 public handleServerStart( backupMapsFilePath[] )
 {
+    LOGGER( 128, "I AM ENTERING ON handleServerStart(1) | backupMapsFilePath: %s", backupMapsFilePath );
     new startAction;
     
     // this is the key that tells us if this server has been restarted or not
@@ -1651,8 +1678,8 @@ public handleServerStart( backupMapsFilePath[] )
     // take the defined "server start" action
     startAction = get_pcvar_num( cvar_serverStartAction );
     
-    if( startAction
-        && !isHandledGameCrashAction( startAction ) )
+    if( !isHandledGameCrashAction( startAction )
+        && startAction )
     {
         new mapToChange[ MAX_MAPNAME_LENGHT ];
         
@@ -1716,22 +1743,24 @@ public handleServerStart( backupMapsFilePath[] )
  */
 public isHandledGameCrashAction( &startAction )
 {
+    LOGGER( 128, "I AM ENTERING ON isHandledGameCrashAction(1) | startAction: %d", startAction );
+    
     new gameCrashAction;
     new gameCrashActionFilePath[ MAX_FILE_PATH_LENGHT ];
     
     gameCrashAction = get_pcvar_num( cvar_gameCrashRecreationAction );
-    formatex( gameCrashActionFilePath, charsmax( gameCrashActionFilePath ), "%s/%s", g_dataDirPath, GAME_CRASH_RECREATION_FLAG_FILE );
+    generateGameCrashActionFilePath( gameCrashActionFilePath, charsmax( gameCrashActionFilePath ) );
     
     if( gameCrashAction
         && file_exists( gameCrashActionFilePath ) )
     {
-        delete_file( gameCrashActionFilePath );
+        deletegameCrashActionFlagFile();
         
         switch( gameCrashAction )
         {
             case 1: // The server will not change to the last map.
             {
-                return true;
+                startAction = SERVER_START_NEXTMAP;
             }
             case 2: // The server will start a vote changing the map.
             {
@@ -1748,11 +1777,29 @@ public isHandledGameCrashAction( &startAction )
     return false;
 }
 
+stock generateGameCrashActionFilePath( gameCrashActionFilePath[], charsmaxGameCrashActionFilePath )
+{
+    formatex( gameCrashActionFilePath, charsmaxGameCrashActionFilePath, "%s/%s", g_dataDirPath, GAME_CRASH_RECREATION_FLAG_FILE );
+}
+
+stock deletegameCrashActionFlagFile()
+{
+    new gameCrashActionFilePath[ MAX_FILE_PATH_LENGHT ];
+    generateGameCrashActionFilePath( gameCrashActionFilePath, charsmax( gameCrashActionFilePath ) );
+    
+    if( file_exists( gameCrashActionFilePath ) )
+    {
+        delete_file( gameCrashActionFilePath );
+    }
+}
+
 /**
  * Save the mp_maxrounds, etc and set them to half of it.
  */
 public setGameToFinishAtHalfTime()
 {
+    LOGGER( 128, "I AM ENTERING ON setGameToFinishAtHalfTime(0)" );
+    
     saveEndGameLimits();
     g_isToCreateGameCrashFlag = false; // force to use only the '1/SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR' time.
     
@@ -1768,6 +1815,8 @@ public setGameToFinishAtHalfTime()
  */
 stock configureTheMapcycleSystem( currentMap[], currentMapCharsMax )
 {
+    LOGGER( 128, "I AM ENTERING ON configureTheMapcycleSystem(2) | currentMap: %s", currentMap );
+    
     new possibleNextMapPosition;
     new restartsOnTheCurrentMap;
     
@@ -1835,10 +1884,11 @@ stock configureTheMapcycleSystem( currentMap[], currentMapCharsMax )
 
 stock configureTheNextMapPlugin( possibleNextMapPosition, possibleNextMap[] )
 {
-    g_nextMapCyclePosition = possibleNextMapPosition;
+    LOGGER( 128 + 4, "I AM ENTERING ON configureTheNextMapPlugin(2) | \
+            possibleNextMapPosition: %d, possibleNextMap: %s", \
+            possibleNextMapPosition,     possibleNextMap );
     
-    LOGGER( 4, "( configureTheNextMapPlugin ) g_nextMapCyclePosition: %d, possibleNextMap: %s", \
-                                              g_nextMapCyclePosition,     possibleNextMap );
+    g_nextMapCyclePosition = possibleNextMapPosition;
     
     setNextMap( possibleNextMap );
     saveCurrentMapCycleSetting();
@@ -1846,6 +1896,8 @@ stock configureTheNextMapPlugin( possibleNextMapPosition, possibleNextMap[] )
 
 stock getRestartsOnTheCurrentMap( mapToChange[] )
 {
+    LOGGER( 128, "I AM ENTERING ON getRestartsOnTheCurrentMap(1) | mapToChange: %s", mapToChange );
+    
     new lastMapChangedFile;
     new lastMapChangedCount;
     
@@ -1913,18 +1965,22 @@ stock getRestartsOnTheCurrentMap( mapToChange[] )
  */
 stock vote_manageEarlyStart()
 {
-    g_voteStatus |= VOTE_IS_EARLY;
+    LOGGER( 128, "I AM ENTERING ON vote_manageEarlyStart(0)" );
     
+    g_voteStatus |= VOTE_IS_EARLY;
     set_task( 120.0, "startNonForcedVoting", TASKID_VOTE_STARTDIRECTOR );
 }
 
 public startNonForcedVoting()
 {
+    LOGGER( 128, "I AM ENTERING ON startNonForcedVoting(0)" );
     vote_startDirector( false );
 }
 
 stock setNextMap( nextMap[] )
 {
+    LOGGER( 128, "I AM ENTERING ON setNextMap(1) | nextMap: %s", nextMap );
+    
     // set the queryable cvar
     set_pcvar_string( g_cvar_amx_nextmap, nextMap );
     copy( g_nextMap, charsmax( g_nextMap ), nextMap );
@@ -1935,6 +1991,8 @@ stock setNextMap( nextMap[] )
 
 stock saveCurrentAndNextMapNames( nextMap[] )
 {
+    LOGGER( 128, "I AM ENTERING ON saveCurrentAndNextMapNames(1) | nextMap: %s", nextMap );
+    
     new backupMapsFile;
     new backupMapsFilePath[ MAX_FILE_PATH_LENGHT ];
     
@@ -1951,6 +2009,7 @@ stock saveCurrentAndNextMapNames( nextMap[] )
 
 public vote_manageEnd()
 {
+    LOGGER( 0, "I AM ENTERING ON vote_manageEnd(0)" );
     new secondsLeft = get_timeleft();
     
     // are we ready to start an "end of map" vote?
@@ -1969,8 +2028,8 @@ public vote_manageEnd()
         new gameCrashActionFilePath[ MAX_FILE_PATH_LENGHT ];
         g_isToCreateGameCrashFlag = false;
         
-        formatex( gameCrashActionFilePath, charsmax( gameCrashActionFilePath ), "%s/%s", g_dataDirPath, GAME_CRASH_RECREATION_FLAG_FILE );
-        write_file( gameCrashActionFilePath, "gameCrashActionFilePath^n^nSee the cvar 'gal_game_crash_recreation'." );
+        generateGameCrashActionFilePath( gameCrashActionFilePath, charsmax( gameCrashActionFilePath ) );
+        write_file( gameCrashActionFilePath, "Game Crash Action Flag File^n^nSee the cvar 'gal_game_crash_recreation'.^nDo not delete it." );
     }
     
     // are we managing the end of the map?
@@ -1985,6 +2044,7 @@ public vote_manageEnd()
 
 public map_manageEnd()
 {
+    LOGGER( 128, "I AM ENTERING ON map_manageEnd(0)" );
     LOGGER( 2, "%32s mp_timelimit: %f", "map_manageEnd(in)", get_pcvar_float( cvar_mp_timelimit ) );
     
     switch( get_pcvar_num( cvar_endOnRound ) )
@@ -2028,6 +2088,8 @@ public map_manageEnd()
 
 stock prevent_map_change()
 {
+    LOGGER( 128, "I AM ENTERING ON prevent_map_change(0)" );
+    
     new Float:roundTimeMinutes;
     saveEndGameLimits();
     
@@ -2056,6 +2118,8 @@ stock prevent_map_change()
 
 public map_loadRecentList()
 {
+    LOGGER( 128, "I AM ENTERING ON map_loadRecentList(0)" );
+    
     new recentMapsFilePath[ MAX_FILE_PATH_LENGHT ];
     formatex( recentMapsFilePath, charsmax( recentMapsFilePath ), "%s/recentmaps.dat", g_dataDirPath );
     
@@ -2086,6 +2150,8 @@ public map_loadRecentList()
 
 public map_writeRecentList()
 {
+    LOGGER( 128, "I AM ENTERING ON map_writeRecentList(0)" );
+    
     new recentMapsFile;
     new recentMapsFilePath[ MAX_FILE_PATH_LENGHT ];
     
@@ -2107,6 +2173,8 @@ public map_writeRecentList()
 
 public cmd_rockthevote( player_id )
 {
+    LOGGER( 128, "I AM ENTERING ON cmd_rockthevote(1) | player_id: %d", player_id );
+    
     color_print( player_id, "^1%L", player_id, "GAL_CMD_RTV" );
     vote_rock( player_id );
     
@@ -2115,6 +2183,8 @@ public cmd_rockthevote( player_id )
 
 public cmd_nominations( player_id )
 {
+    LOGGER( 128, "I AM ENTERING ON cmd_nominations(1) | player_id: %d", player_id );
+    
     color_print( player_id, "^1%L", player_id, "GAL_CMD_NOMS" );
     nomination_list();
     
@@ -2123,6 +2193,8 @@ public cmd_nominations( player_id )
 
 public cmd_listrecent( player_id )
 {
+    LOGGER( 128, "I AM ENTERING ON cmd_listrecent(1) | player_id: %d", player_id );
+    
     switch( get_pcvar_num( cvar_banRecentStyle ) )
     {
         case 1:
@@ -2173,6 +2245,8 @@ public cmd_listrecent( player_id )
 
 public cmd_listrecent_handler( player_id, menu, item )
 {
+    LOGGER( 1, "( cmd_listrecent_handler ) | player_id: %d, menu: %d, item: %d", player_id, menu, item );
+    
     if( item < 0 )
     {
         return PLUGIN_CONTINUE;
@@ -2184,6 +2258,8 @@ public cmd_listrecent_handler( player_id, menu, item )
 
 public cmd_cancelVote( player_id, level, cid )
 {
+    LOGGER( 1, "( cmd_cancelVote ) player_id: %d, level: %d, cid: %d", player_id, level, cid );
+    
     if( !cmd_access( player_id, level, cid, 1 ) )
     {
         return PLUGIN_HANDLED;
@@ -2249,8 +2325,7 @@ public cmd_startVote( player_id, level, cid )
 
 public cmd_createMapFile( player_id, level, cid )
 {
-    LOGGER( 128, "I AM ENTERING ON cmd_createMapFile(3) | player_id: %d, level: %d, cid: %d", \
-                                                          player_id,     level,     cid );
+    LOGGER( 1, "( cmd_createMapFile ) | player_id: %d, level: %d, cid: %d", player_id, level, cid );
     
     if( !cmd_access( player_id, level, cid, 1 ) )
     {
@@ -2360,6 +2435,8 @@ public cmd_maintenanceMode( player_id, level, cid )
 
 stock map_populateList( Array:mapArray, mapFilePath[], mapFilePathMaxChars, Trie:fillerMapTrie = Invalid_Trie )
 {
+    LOGGER( 128, "I AM ENTERING ON map_populateList(4) | mapFilePath: %s", mapFilePath );
+    
     // load the array with maps
     new mapCount;
     
@@ -2393,6 +2470,8 @@ stock map_populateList( Array:mapArray, mapFilePath[], mapFilePathMaxChars, Trie
 
 stock loadMapFileList( Array:mapArray, mapFilePath[], Trie:fillerMapTrie )
 {
+    LOGGER( 128, "I AM ENTERING ON loadMapFileList(3) | mapFilePath: %s", mapFilePath );
+    
     new mapCount;
     new mapFile = fopen( mapFilePath, "rt" );
 
@@ -2440,6 +2519,8 @@ stock loadMapFileList( Array:mapArray, mapFilePath[], Trie:fillerMapTrie )
 
 stock loadMapsFolderDirectory( Array:mapArray, Trie:fillerMapTrie )
 {
+    LOGGER( 128, "I AM ENTERING ON map_populateList(2) | Array:mapArray: %d", mapArray );
+    
     new mapCount;
     new loadedMapName[ MAX_MAPNAME_LENGHT ];
     
@@ -2507,6 +2588,8 @@ stock map_loadEmptyCycleList()
 
 public map_loadPrefixList()
 {
+    LOGGER( 128, "I AM ENTERING ON map_loadPrefixList(0)" );
+    
     new prefixesFile;
     new prefixesFilePath[ MAX_FILE_PATH_LENGHT ];
     
@@ -2551,6 +2634,8 @@ public map_loadPrefixList()
 
 stock getSurMapNameIndex( mapSurName[] )
 {
+    LOGGER( 128, "I AM ENTERING ON getSurMapNameIndex(1) | mapSurName: %s", mapSurName );
+    
     new mapIndex;
     new map          [ MAX_MAPNAME_LENGHT ];
     new nominationMap[ MAX_MAPNAME_LENGHT ];
@@ -2578,6 +2663,8 @@ stock getSurMapNameIndex( mapSurName[] )
  */
 public cmd_say( player_id )
 {
+    LOGGER( 128, "I AM ENTERING ON cmd_say(1) | player_id: %s", player_id );
+    
     static sentence   [ 70 ];
     static firstWord  [ 32 ];
     static secondWord [ 32 ];
@@ -2705,6 +2792,8 @@ public cmd_say( player_id )
 
 stock buildTheNominationsMenu( player_id )
 {
+    LOGGER( 128, "I AM ENTERING ON buildTheNominationsMenu(1) | player_id: %d", player_id );
+    
     new nominations_menu_name[ 64 ];
     new nomination_cancel_option[ 64 ];
     
