@@ -249,10 +249,10 @@ de_dust2_long
      to get to play on, you need the use the '[B]gal_banrecent[/B]' to ban these 1000+ maps. Because of this,
      players can't nominate maps for few days. [COLOR="Red"]The proposition[/COLOR] is adding a file to the plugin, in which
      will save map history and a bunch of recent maps won't be able to get automatically displayed on
-     the voting menu (but still be able to get nominated).
+     the voting menu, but still be able to get nominated.
      
      This is automatically done, it will not allow to repeat maps on the voting list until all them to be
-     showed at least once. The cvar '[B]gal_recent_maps[/B]' control whether this feature is activated on not.
+     showed at least once. The cvar '[B]gal_recent_nom_maps[/B]' control whether this feature is activated on not.
      See it on the 'galileo.cfg' file.
 [/LIST]
 [/QUOTE]
@@ -561,6 +561,7 @@ Thank you!  It means a lot to me.
 
 [B]2016-04-10 | v3.0.0-xx[/B]
 [LIST=1]
+[*]Added new cvar 'gal_recent_nom_maps' to allow the recent maps to be nominated.
 [*]Fixed double adding maps entries into the recent maps list.
 [*]Removed the maximum maps limit from the cvar 'gal_banrecent' maps.
 [*]Added the server maintenance mode feature. Use 'gal_command_maintenance' to enable it.

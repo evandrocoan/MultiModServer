@@ -488,7 +488,7 @@ new cvar_cmdVotemap;
 new cvar_cmdListmaps;
 new cvar_listmapsPaginate;
 new cvar_recentMapsBannedNumber;
-new cvar_recentMapsFilter;
+new cvar_recentNomMapsAllowance;
 new cvar_banRecentStyle;
 new cvar_voteDuration;
 new cvar_nomMapFilePath;
@@ -733,7 +733,7 @@ public plugin_init()
     cvar_cmdListmaps               = register_cvar( "gal_cmd_listmaps", "2" );
     cvar_listmapsPaginate          = register_cvar( "gal_listmaps_paginate", "10" );
     cvar_recentMapsBannedNumber    = register_cvar( "gal_banrecent", "3" );
-    cvar_recentMapsFilter          = register_cvar( "gal_recent_maps", "0" );
+    cvar_recentNomMapsAllowance    = register_cvar( "gal_recent_nom_maps", "0" );
     cvar_banRecentStyle            = register_cvar( "gal_banrecentstyle", "1" );
     cvar_endOfMapVote              = register_cvar( "gal_endofmapvote", "1" );
     cvar_isToAskForEndOfTheMapVote = register_cvar( "gal_endofmapvote_ask", "0" );
@@ -2902,7 +2902,8 @@ stock nomination_menu( player_id )
         {
             formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_NOMINATED" );
         }
-        else if( map_isTooRecent( nominationMap ) ) // disable if the map is too recent
+        else if( map_isTooRecent( nominationMap )
+                 && !get_pcvar_num( cvar_recentNomMapsAllowance ) ) // disable if the map is too recent
         {
             formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_TOORECENT" );
         }
