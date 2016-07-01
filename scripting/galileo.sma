@@ -526,6 +526,7 @@ new cvar_voteWhiteListMapFilePath;
 new const LAST_EMPTY_CYCLE_FILE_NAME[]      = "lastEmptyCycleMapName.dat";
 new const CURRENT_AND_NEXTMAP_FILE_NAME[]   = "currentAndNextmapNames.dat";
 new const LAST_CHANGE_MAP_FILE_NAME[]       = "lastChangedMapName.dat";
+new const RECENT_BAN_MAPS_FILE_NAME[]       = "recentMaps.dat";
 new const CHOOSE_MAP_MENU_NAME[]            = "gal_menuChooseMap";
 new const CHOOSE_MAP_MENU_QUESTION[]        = "chooseMapQuestion";
 new const GAME_CRASH_RECREATION_FLAG_FILE[] = "gameCrashRecreationAction.txt";
@@ -2167,7 +2168,7 @@ public map_loadRecentList()
     LOGGER( 128, "I AM ENTERING ON map_loadRecentList(0)" );
     
     new recentMapsFilePath[ MAX_FILE_PATH_LENGHT ];
-    formatex( recentMapsFilePath, charsmax( recentMapsFilePath ), "%s/recentmaps.dat", g_dataDirPath );
+    formatex( recentMapsFilePath, charsmax( recentMapsFilePath ), "%s/%s", g_dataDirPath, RECENT_BAN_MAPS_FILE_NAME );
     
     new recentMapsFile = fopen( recentMapsFilePath, "rt" );
     
@@ -2209,7 +2210,7 @@ public map_writeRecentList()
     new recentMapName     [ MAX_MAPNAME_LENGHT ];
     new recentMapsFilePath[ MAX_FILE_PATH_LENGHT ];
     
-    formatex( recentMapsFilePath, charsmax( recentMapsFilePath ), "%s/recentmaps.dat", g_dataDirPath );
+    formatex( recentMapsFilePath, charsmax( recentMapsFilePath ), "%s/%s", g_dataDirPath, RECENT_BAN_MAPS_FILE_NAME );
     recentMapsFile = fopen( recentMapsFilePath, "wt" );
     
     if( recentMapsFile )
@@ -3576,6 +3577,7 @@ stock vote_addNominations( blockedFillerMaps[][], blockedFillerMapsMaxChars = 0 
                 }
             }
         }
+        
         LOGGER( 4, "" );
     #endif
         
