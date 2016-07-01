@@ -182,11 +182,11 @@ galileo.cfg contents.
      [/CODE]The text "[B][groups][/B]" has to be the very first line in the file, on a line by itself. The
      numbers, on separate lines, specifies how many maps from each file to add to the
      voting menu.
-
+     
      If you had a file within what was posted above, then you would have to create the
      files: '[B]1.ini[/B]', '[B]2.ini[/B]', '[B]3.ini[/B]', and '[B]4.ini[/B]' in the '[B]./configs/galileo/[/B]' folder. Each of
      those INI files would contain a list of maps, one per line.
-
+     
      Galileo will first load any nominated maps into the vote. Then Galileo would pick 2
      maps from '[B]1.ini[/B]', 1 from '[B]2.ini[/B]', 1 from '[B]3.ini[/B]', and 3 from '[B]4.ini[/B]' 'til the maximum
      value of 8 to be reached.
@@ -212,8 +212,8 @@ galileo.cfg contents.
      map fillers from your map groups files '[B]1.ini[/B]' (1st line after [groups]) and '[B]2.ini[/B]'
      (2nd line after [groups]), the map '[COLOR="blue"]de_dust2[/COLOR]' will not be added because there is not
      enough space.
-
-
+     
+     
  [*] [COLOR="Blue"][B]The Whitelist Feature[/B][/COLOR]:
      If uses whatever file you set on the cvar '[B]gal_vote_whitelist_mapfile[/B]' as the
      Whitelist. It specifies the time where its listed maps are allowed to be added to
@@ -242,6 +242,21 @@ de_dust2_long
      to be changed, he will enable the maintenance command '[B]gal_command_maintenance[/B]', so the map will can't
      be changed by any method like gal_startvote/rtv/timeleft or maxrounds ended... and he will display
      print chat with something like that: You cannot change the map when the server is in mode maintenance.
+     
+     
+ [*] [COLOR="Blue"][B]New Recent Maps List[/B][/COLOR]:
+     Maps are commonly repeated on the vote and there is no chance for all of them. Hence on server
+     to get to play on, you need the use the '[B]gal_banrecent[/B]' to ban these 1000+ maps. Because of this,
+     players can't nominate maps for few days. [COLOR="Red"]The proposition[/COLOR] is adding a file to the plugin, in which
+     will save map history and a bunch of recent maps won't be able to get automatically displayed on
+     the voting menu, but still be able to get nominated.
+     
+     This is automatically done, it will not allow to repeat maps on the voting list until all them to be
+     showed at least once. The cvar '[B]gal_recent_nom_maps[/B]' control whether this feature is activated on not.
+     See it on the 'galileo.cfg' file.
+     
+     When the banned maps list is bigger than all maps on the server, what happens?
+     It stops counting/using the recent banned list maps and randonly to start adding banned maps.
 [/LIST]
 [/QUOTE]
 
@@ -340,12 +355,7 @@ galileo.amxx
 
 [LIST=1]
 
-[*][SUG]
-Maps are commonly repeated on the vote and there is no chance for all of them I've got on server
-to get to play on. Which is why I'm using gal_banrecent to ban these 1000+ maps. Because of this,
-players can't nominate maps for few days . My proposition is adding a file to the plug in, in which
-will be saved map history and a bunch of recent maps won't be able to get voted (but still be able
-to get nominated).
+
 
 
 [*][QUOTE=waynesmith15;2413085]Hi,
@@ -531,7 +541,7 @@ Without any problems.
 [B][URL="https://forums.alliedmods.net/member.php?u=259683"]iNdio[/URL][/B]: For the Romanian [ro] and Italian [it] language translations.
 [B][URL="https://github.com/Ni3znajomy"]Ni3znajomy[/URL][/B]: For contributions/work over project on the GitHub.
 [B][URL="https://forums.alliedmods.net/member.php?u=119830"]Shattered Heart Lynx[/URL][/B]: For the custom 'amxx_datadir' directory and RTV 'Sven Co-op' fix and bug report.
-[B][URL="https://forums.alliedmods.net/member.php?u=267675"]wombad321[/URL][/B]: For the 'map extend' not showing bug report.
+[B][URL="https://forums.alliedmods.net/member.php?u=267675"]wombad321[/URL][/B]: For the 'map extend' not showing bug report and the new recent list feature suggestion.
 [B][URL="https://forums.alliedmods.net/member.php?u=165954"]WaSaAa1[/URL][/B]: For the voting menu not showing bug report.
 [B][URL="https://forums.alliedmods.net/member.php?u=267332"]feruchio[/URL][/B]: For the runoff voting showing two identical maps on some votings bug report.
 [B][URL="https://forums.alliedmods.net/member.php?u=156477"]chaves[/URL][/B]: For the wrong 'recent maps' menu title bug report.
@@ -555,8 +565,12 @@ Thank you!  It means a lot to me.
 
 ******************************** [anchor]Change[/anchor][B][SIZE="6"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
 
-[B]2016-04-10 | v3.0.0-60[/B]
+[B]2016-04-10 | v3.0.0-xx[/B]
 [LIST=1]
+[*]Added hierarchical maps list filling ignoring, after go throw all available maps.
+[*]Added new cvar 'gal_recent_nom_maps' to allow the recent maps to be nominated.
+[*]Fixed double adding maps entries into the recent maps list.
+[*]Removed the maximum maps limit from the cvar 'gal_banrecent' maps.
 [*]Added the server maintenance mode feature. Use 'gal_command_maintenance' to enable it.
 [*]Added the new cvar 'gal_game_crash_recreation' configure the game crash actions.
 [*]Allowed the whitelist feature to be used with the minimum players nominations control feature.
