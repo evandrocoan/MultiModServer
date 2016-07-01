@@ -2980,7 +2980,8 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
             {
                 formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_NOMINATED" );
             }
-            else if( map_isTooRecent( nominationMap ) ) // disable if the map is too recent
+            else if( map_isTooRecent( nominationMap )
+                     && !get_pcvar_num( cvar_recentNomMapsAllowance ) ) // disable if the map is too recent
             {
                 formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_TOORECENT" );
             }
@@ -3371,7 +3372,8 @@ stock map_nominate( player_id, mapIndex, nominatorPlayerId = -1 )
     }
     
     // players may not be able to nominate recently played maps
-    if( map_isTooRecent( mapName ) )
+    if( map_isTooRecent( mapName )
+        && !get_pcvar_num( cvar_recentNomMapsAllowance ) )
     {
         color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_TOORECENT", mapName );
         color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_TOORECENT_HLP" );
@@ -3757,17 +3759,21 @@ stock processLoadedMapsFile( mapsPerGroup[], groupCount, blockedCount,
     new filersMapCount;
     new unsuccessfulCount;
     new allowedFilersCount;
-    new isWhitelistEnabled;
+    
     
     new Trie:   blackListTrie;
     new mapName [ MAX_MAPNAME_LENGHT ];
+    
+    new      isWhitelistEnabled    = IS_WHITELIST_ENABLED();
+    new      currentBlokerStrategy = 0;
+    new bool:useMapIsTooRecent     = true;
+    new bool:useIsPrefixInMenu     = true;
+    new bool:useEqualiCurrentMap   = true;
     
     /**
      * This variable is to avoid double blocking which lead to the algorithm corruption and errors.
      */
     new Trie:blockedFillerMapsTrie;
-    
-    isWhitelistEnabled = IS_WHITELIST_ENABLED();
     
     if( blockedFillerMapsMaxChars )
     {
@@ -3777,7 +3783,6 @@ stock processLoadedMapsFile( mapsPerGroup[], groupCount, blockedCount,
     if( isWhitelistEnabled )
     {
         blackListTrie = TrieCreate();
-        
         loadCurrentBlackList( blackListTrie );
     }
     
@@ -3807,22 +3812,23 @@ stock processLoadedMapsFile( mapsPerGroup[], groupCount, blockedCount,
             for( choice_index = 0; choice_index < allowedFilersCount; ++choice_index )
             {
                 keepSearching:
-                
                 unsuccessfulCount = 0;
-                mapIndex          = random_num( 0, filersMapCount - 1 );
                 
+                mapIndex = random_num( 0, filersMapCount - 1 );
                 ArrayGetString( g_fillerMapsArray, mapIndex, mapName, charsmax( mapName ) );
                 
                 LOGGER( 8, "  ( in ) [%i] choice_index: %i   allowedFilersCount: %i   mapIndex: %i   mapName: %s", \
                         groupIndex, choice_index, allowedFilersCount, mapIndex, mapName );
                 
-                while( ( map_isInMenu( mapName )
-                         || equali( g_currentMap, mapName )
-                         || map_isTooRecent( mapName )
-                         || isPrefixInMenu( mapName )
-                         || ( blockedFillerMapsMaxChars
-                              && TrieKeyExists( blockedFillerMapsTrie, mapName ) ) )
-                       && unsuccessfulCount < allowedFilersCount )
+                while( map_isInMenu( mapName )
+                       || ( useEqualiCurrentMap
+                            && equali( g_currentMap, mapName ) )
+                       || ( useMapIsTooRecent 
+                            && map_isTooRecent( mapName ) )
+                       || ( useIsPrefixInMenu
+                            && isPrefixInMenu( mapName ) )
+                       || ( blockedFillerMapsMaxChars
+                            && TrieKeyExists( blockedFillerMapsTrie, mapName ) ) )
                 {
                     LOGGER( 8, "    LOADING a new MAP! map_isInMenu: %d, mapName %s \
                             is the current map? %d, map_isTooRecent: %d,      \
@@ -3832,13 +3838,38 @@ stock processLoadedMapsFile( mapsPerGroup[], groupCount, blockedCount,
                             isPrefixInMenu( mapName ), \
                             ( blockedFillerMapsMaxChars ? TrieKeyExists( blockedFillerMapsTrie, mapName ) : false ) );
                     
-                    unsuccessfulCount++;
+                    if( unsuccessfulCount < allowedFilersCount )
+                    {
+                        switch( currentBlokerStrategy++ )
+                        {
+                            case 0:
+                            {
+                                useMapIsTooRecent = false;
+                            }
+                            case 1:
+                            {
+                                useIsPrefixInMenu = false;
+                            }
+                            case 2:
+                            {
+                                useEqualiCurrentMap = false;
+                            }
+                            default:
+                            {
+                                LOGGER( 8, "    There aren't enough maps in this filler file to continue adding anymore." );
+                                break;
+                            }
+                        }
+                        
+                        unsuccessfulCount = 0;
+                    }
                     
                     if( ++mapIndex == filersMapCount )
                     {
                         mapIndex = 0;
                     }
                     
+                    unsuccessfulCount++;
                     ArrayGetString( g_fillerMapsArray, mapIndex, mapName, charsmax( mapName ) );
                     
                     LOGGER( 8, "    LOADED a new MAP! map_isInMenu: %d, mapName %s \
@@ -3855,7 +3886,6 @@ stock processLoadedMapsFile( mapsPerGroup[], groupCount, blockedCount,
                     LOGGER( 8, "    unsuccessfulCount: %i  filersMapCount: %i \
                             There aren't enough maps in this filler file to continue adding anymore.", \
                                     unsuccessfulCount,     filersMapCount );
-                    
                     break;
                 }
                 
@@ -3881,7 +3911,6 @@ stock processLoadedMapsFile( mapsPerGroup[], groupCount, blockedCount,
                 }
                 
                 copy( g_votingMapNames[ g_totalVoteOptions ], charsmax( g_votingMapNames[] ), mapName );
-                
                 g_totalVoteOptions++;
                 
                 LOGGER( 8, "  ( out ) groupIndex: %i  map: %s, unsuccessfulCount: %i, filersMapCount: %i, g_totalVoteOptions: %i", \

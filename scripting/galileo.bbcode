@@ -254,6 +254,9 @@ de_dust2_long
      This is automatically done, it will not allow to repeat maps on the voting list until all them to be
      showed at least once. The cvar '[B]gal_recent_nom_maps[/B]' control whether this feature is activated on not.
      See it on the 'galileo.cfg' file.
+     
+     When the banned maps list is bigger than all maps on the server, what happens?
+     It stops counting/using the recent banned list maps and randonly to start adding banned maps.
 [/LIST]
 [/QUOTE]
 
@@ -351,6 +354,9 @@ galileo.amxx
 ******************************** [anchor]TODO[/anchor][B][SIZE="6"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] *********************************
 
 [LIST=1]
+
+
+
 
 [*][QUOTE=waynesmith15;2413085]Hi,
 
@@ -561,6 +567,7 @@ Thank you!  It means a lot to me.
 
 [B]2016-04-10 | v3.0.0-xx[/B]
 [LIST=1]
+[*]Added hierarchical maps list filling ignoring, after go throw all available maps.
 [*]Added new cvar 'gal_recent_nom_maps' to allow the recent maps to be nominated.
 [*]Fixed double adding maps entries into the recent maps list.
 [*]Removed the maximum maps limit from the cvar 'gal_banrecent' maps.
