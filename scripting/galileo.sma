@@ -474,14 +474,16 @@ new cvar_voteWeightFlags;
 new cvar_maxMapExtendTime;
 new cvar_extendmapStepMinutes;
 new cvar_extendmapStepRounds;
+new cvar_extendmapStepFrags;
 new cvar_extendmapAllowStay;
 new cvar_endOfMapVote;
 new cvar_isToAskForEndOfTheMapVote;
 new cvar_emptyWait;
 new cvar_isEmptyCycleServerChange;
 new cvar_emptyMapFilePath;
-new cvar_rtvMinutesWait;
+new cvar_rtvWaitMinutes;
 new cvar_rtvWaitRounds;
+new cvar_rtvWaitFrags;
 new cvar_rtvWaitAdmin;
 new cvar_rtvRatio;
 new cvar_rtvCommands;
@@ -507,6 +509,7 @@ new cvar_gameCrashRecreationAction;
 new cvar_serverTimeLimitRestart;
 new cvar_serverMaxroundsRestart;
 new cvar_serverWinlimitRestart;
+new cvar_serverFraglimitRestart;
 new cvar_runoffEnabled;
 new cvar_runoffDuration;
 new cvar_showVoteStatus;
@@ -558,7 +561,7 @@ new bool:g_isGameFinalVoting;
 new bool:g_isOnMaintenanceMode;
 new bool:g_isToCreateGameCrashFlag;
 
-new Float:g_rtvMinutesWait;
+new Float:g_rtvWaitMinutes;
 new Float:g_originalTimelimit;
 new Float:g_original_sv_maxspeed;
 
@@ -604,6 +607,7 @@ new g_originalWinLimit;
 new g_originalFragLimit;
 new g_showVoteStatusType;
 new g_extendmapStepRounds;
+new g_extendmapStepFrags;
 new g_extendmapStepMinutes;
 new g_extendmapAllowStayType;
 new g_showVoteStatus;
@@ -616,14 +620,15 @@ new g_recentMapCount;
 new g_nominationMapCount;
 new g_rtvCommands;
 new g_rtvWaitRounds;
+new g_rtvWaitFrags;
 new g_rockedVoteCount;
 new g_winLimitInteger;
 new g_maxRoundsNumber;
 new g_fragLimitNumber;
 new g_greatestKillerFrags;
 new g_timeLimitNumber;
-
 new g_roundsPlayedNumber;
+
 new g_totalTerroristsWins;
 new g_totalCtWins;
 new g_totalVoteOptions;
@@ -701,6 +706,7 @@ public plugin_init()
     cvar_maxMapExtendTime        = register_cvar( "amx_extendmap_max", "90" );
     cvar_extendmapStepMinutes    = register_cvar( "amx_extendmap_step", "15" );
     cvar_extendmapStepRounds     = register_cvar( "amx_extendmap_step_rounds", "30" );
+    cvar_extendmapStepFrags      = register_cvar( "amx_extendmap_step_frags", "60" );
     cvar_extendmapAllowStay      = register_cvar( "amx_extendmap_allow_stay", "0" );
     cvar_isExtendmapOrderAllowed = register_cvar( "amx_extendmap_allow_order", "0" );
     cvar_extendmapAllowStayType  = register_cvar( "amx_extendmap_allow_stay_type", "0" );
@@ -746,9 +752,11 @@ public plugin_init()
     cvar_serverTimeLimitRestart    = register_cvar( "gal_srv_timelimit_restart", "0" );
     cvar_serverMaxroundsRestart    = register_cvar( "gal_srv_maxrounds_restart", "0" );
     cvar_serverWinlimitRestart     = register_cvar( "gal_srv_winlimit_restart", "0" );
+    cvar_serverFraglimitRestart    = register_cvar( "gal_srv_fraglimit_restart", "0" );
     cvar_rtvCommands               = register_cvar( "gal_rtv_commands", "3" );
-    cvar_rtvMinutesWait            = register_cvar( "gal_rtv_wait", "10" );
+    cvar_rtvWaitMinutes            = register_cvar( "gal_rtv_wait", "10" );
     cvar_rtvWaitRounds             = register_cvar( "gal_rtv_wait_rounds", "5" );
+    cvar_rtvWaitFrags              = register_cvar( "gal_rtv_wait_frags", "20" );
     cvar_rtvWaitAdmin              = register_cvar( "gal_rtv_wait_admin", "0" );
     cvar_rtvRatio                  = register_cvar( "gal_rtv_ratio", "0.60" );
     cvar_rtvReminder               = register_cvar( "gal_rtv_reminder", "2" );
@@ -984,6 +992,7 @@ public cacheCvarsValues()
     
     g_rtvCommands            = get_pcvar_num( cvar_rtvCommands );
     g_extendmapStepRounds    = get_pcvar_num( cvar_extendmapStepRounds );
+    g_extendmapStepFrags     = get_pcvar_num( cvar_extendmapStepFrags );
     g_extendmapStepMinutes   = get_pcvar_num( cvar_extendmapStepMinutes );
     g_extendmapAllowStayType = get_pcvar_num( cvar_extendmapAllowStayType );
     g_showVoteStatus         = get_pcvar_num( cvar_showVoteStatus );
@@ -1005,8 +1014,9 @@ stock configureRTV()
 {
     LOGGER( 128, "I AM ENTERING ON configureRTV(0)" );
     
-    g_rtvMinutesWait = get_pcvar_float( cvar_rtvMinutesWait );
+    g_rtvWaitMinutes = get_pcvar_float( cvar_rtvWaitMinutes );
     g_rtvWaitRounds  = get_pcvar_num( cvar_rtvWaitRounds );
+    g_rtvWaitFrags   = get_pcvar_num( cvar_rtvWaitFrags );
     
     if( g_rtvCommands & RTV_CMD_STANDARD )
     {
@@ -1417,7 +1427,9 @@ public round_restart_event()
              || ( get_pcvar_num( cvar_mp_maxrounds )
                   && get_pcvar_num( cvar_serverMaxroundsRestart ) )
              || ( get_pcvar_num( cvar_mp_winlimit )
-                  && get_pcvar_num( cvar_serverWinlimitRestart ) ) ) )
+                  && get_pcvar_num( cvar_serverWinlimitRestart ) )
+             || ( get_pcvar_num( cvar_mp_fraglimit )
+                  && get_pcvar_num( cvar_serverFraglimitRestart ) ) ) )
     {
         g_isTimeToResetRounds = true;
         cancelVoting( true );
@@ -1485,10 +1497,13 @@ public resetRoundsScores()
     
     if( get_pcvar_num( cvar_serverTimeLimitRestart )
         || get_pcvar_num( cvar_serverWinlimitRestart )
-        || get_pcvar_num( cvar_serverMaxroundsRestart ) )
+        || get_pcvar_num( cvar_serverMaxroundsRestart )
+        || get_pcvar_num( cvar_serverFraglimitRestart ) )
     {
         saveEndGameLimits();
         
+        // cvar_mp_timelimit
+        // ########################################################################################
         if( get_pcvar_num( cvar_mp_timelimit )
             && get_pcvar_num( cvar_serverTimeLimitRestart ) )
         {
@@ -1506,6 +1521,8 @@ public resetRoundsScores()
             }
         }
         
+        // cvar_mp_winlimit
+        // ########################################################################################
         if( get_pcvar_num( cvar_mp_winlimit )
             && get_pcvar_num( cvar_serverWinlimitRestart ) )
         {
@@ -1522,6 +1539,8 @@ public resetRoundsScores()
             }
         }
         
+        // cvar_mp_maxrounds
+        // ########################################################################################
         if( get_pcvar_num( cvar_mp_maxrounds )
             && get_pcvar_num( cvar_serverMaxroundsRestart ) )
         {
@@ -1533,11 +1552,26 @@ public resetRoundsScores()
                 set_pcvar_num( cvar_mp_maxrounds, new_maxrounds );
             }
         }
+        
+        // cvar_mp_fraglimit
+        // ########################################################################################
+        if( get_pcvar_num( cvar_mp_fraglimit )
+            && get_pcvar_num( cvar_serverFraglimitRestart ) )
+        {
+            new new_fraglimit = ( get_pcvar_num( cvar_mp_fraglimit ) - g_greatestKillerFrags
+                                  + get_pcvar_num( cvar_serverFraglimitRestart ) - 1 );
+            
+            if( new_fraglimit > 0 )
+            {
+                set_pcvar_num( cvar_mp_fraglimit, new_fraglimit );
+            }
+        }
     }
     
     g_totalTerroristsWins = 0;
     g_totalCtWins         = 0;
     g_roundsPlayedNumber  = -1;
+    g_greatestKillerFrags = 0;
 }
 
 public configure_last_round_HUD()
@@ -4284,8 +4318,9 @@ stock configureVotingStart( bool:is_forced_voting )
         g_voteStatus |= VOTE_IS_FORCED;
     }
     
-    // Max rounds vote map does not have a max rounds extension limit as mp_timelimit
-    if( g_isVotingByRounds )
+    // Max rounds/frags vote map does not have a max rounds extension limit as mp_timelimit
+    if( g_isVotingByRounds
+        || g_isVotingByFrags )
     {
         g_isMapExtensionAllowed = true;
     }
@@ -4297,7 +4332,8 @@ stock configureVotingStart( bool:is_forced_voting )
     
     // configure the end voting type
     g_isGameFinalVoting = ( ( g_isVotingByRounds
-                              || g_isVotingByTimer )
+                              || g_isVotingByTimer
+                              || g_isVotingByFrags )
                             && !is_forced_voting );
     
     // stop RTV reminders
@@ -4817,6 +4853,11 @@ stock calculateExtensionOption( player_id, bool:isVoteOver, copiedChars, voteSta
                 {
                     extend_step = g_extendmapStepRounds;
                     copy( extend_option_type, charsmax( extend_option_type ), "GAL_OPTION_EXTEND_ROUND" );
+                }
+                else if( g_isVotingByFrags )
+                {
+                    extend_step = g_extendmapStepFrags;
+                    copy( extend_option_type, charsmax( extend_option_type ), "GAL_OPTION_EXTEND_FRAGS" );
                 }
                 else
                 {
@@ -5655,6 +5696,10 @@ public computeVotes()
                 {
                     color_print( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_EXTEND_ROUND", g_extendmapStepRounds );
                 }
+                else if( g_isVotingByFrags )
+                {
+                    color_print( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_EXTEND_FRAGS", g_extendmapStepFrags );
+                }
                 else
                 {
                     color_print( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_EXTEND", g_extendmapStepMinutes );
@@ -5715,6 +5760,7 @@ stock finalizeVoting()
     
     g_isVotingByTimer               = false;
     g_isVotingByRounds              = false;
+    g_isVotingByFrags               = false;
     g_isRunOffNeedingKeepCurrentMap = false;
     
     // vote is no longer in progress
@@ -5738,15 +5784,16 @@ stock Float:map_getMinutesElapsed()
 stock map_extend()
 {
     LOGGER( 128, "I AM ENTERING ON map_extend(0)" );
-    LOGGER( 2, "%32s mp_timelimit: %f  g_rtvMinutesWait: %f  extendmapStep: %d", \
+    LOGGER( 2, "%32s mp_timelimit: %f  g_rtvWaitMinutes: %f  extendmapStep: %d", \
             "map_extend( in )", \
-            get_pcvar_float( cvar_mp_timelimit ), g_rtvMinutesWait, g_extendmapStepMinutes );
+            get_pcvar_float( cvar_mp_timelimit ), g_rtvWaitMinutes, g_extendmapStepMinutes );
     
     // reset the "rtv wait" time, taking into consideration the map extension
-    if( g_rtvMinutesWait )
+    if( g_rtvWaitMinutes )
     {
-        g_rtvMinutesWait += get_pcvar_float( cvar_mp_timelimit );
+        g_rtvWaitMinutes += get_pcvar_float( cvar_mp_timelimit );
         g_rtvWaitRounds  += get_pcvar_num( cvar_mp_maxrounds );
+        g_rtvWaitFrags   += get_pcvar_num( cvar_mp_fraglimit );
     }
     
     saveEndGameLimits();
@@ -5754,32 +5801,41 @@ stock map_extend()
     // do that actual map extension
     if( g_isVotingByRounds )
     {
-        new extendmap_step_rounds = g_extendmapStepRounds;
+        set_pcvar_num( cvar_mp_fraglimit, 0 );
+        set_pcvar_float( cvar_mp_timelimit, 0.0 );
         
         if( g_isMaxroundsExtend )
         {
-            set_pcvar_num( cvar_mp_maxrounds, get_pcvar_num( cvar_mp_maxrounds ) + extendmap_step_rounds );
+            set_pcvar_num( cvar_mp_maxrounds, get_pcvar_num( cvar_mp_maxrounds ) + g_extendmapStepRounds );
             set_pcvar_num( cvar_mp_winlimit, 0 );
         }
         else
         {
             set_pcvar_num( cvar_mp_maxrounds, 0 );
-            set_pcvar_num( cvar_mp_winlimit, get_pcvar_num( cvar_mp_winlimit ) + extendmap_step_rounds );
+            set_pcvar_num( cvar_mp_winlimit, get_pcvar_num( cvar_mp_winlimit ) + g_extendmapStepRounds );
         }
-        
-        set_pcvar_float( cvar_mp_timelimit, 0.0 );
     }
-    else
+    else if( g_isVotingByFrags )
     {
         set_pcvar_num( cvar_mp_maxrounds, 0 );
         set_pcvar_num( cvar_mp_winlimit, 0 );
+        set_pcvar_float( cvar_mp_timelimit, 0.0 );
+        
+        set_pcvar_num( cvar_mp_fraglimit, get_pcvar_num( cvar_mp_fraglimit ) + g_extendmapStepFrags );
+    }
+    else
+    {
+        set_pcvar_num( cvar_mp_fraglimit, 0 );
+        set_pcvar_num( cvar_mp_maxrounds, 0 );
+        set_pcvar_num( cvar_mp_winlimit, 0 );
+        
         set_pcvar_float( cvar_mp_timelimit, get_pcvar_float( cvar_mp_timelimit ) + g_extendmapStepMinutes );
     }
     
     server_exec();
-    LOGGER( 2, "%32s mp_timelimit: %f  g_rtvMinutesWait: %f  extendmapStep: %d", \
+    LOGGER( 2, "%32s mp_timelimit: %f  g_rtvWaitMinutes: %f  extendmapStep: %d", \
             "map_extend( out )", \
-            get_pcvar_float( cvar_mp_timelimit ), g_rtvMinutesWait, g_extendmapStepMinutes );
+            get_pcvar_float( cvar_mp_timelimit ), g_rtvWaitMinutes, g_extendmapStepMinutes );
 }
 
 stock saveEndGameLimits()
@@ -5875,7 +5931,7 @@ stock configureRtvVotingType()
 {
     LOGGER( 128, "I AM ENTERING ON configureRtvVotingType(0)" );
     
-    new minutes_left    = get_timeleft() / 30; // Uses 30 instead of 60 to be a fair amount
+    new minutes_left    = get_timeleft() / 20; // Uses 20 instead of 60 to be more a fair amount
     new maxrounds_left  = get_pcvar_num( cvar_mp_maxrounds ) - g_roundsPlayedNumber;
     new winlimit_left   = get_pcvar_num( cvar_mp_winlimit ) - max( g_totalCtWins, g_totalTerroristsWins );
     new fragslimit_left = get_pcvar_num( cvar_mp_fraglimit ) - g_greatestKillerFrags;
@@ -5887,6 +5943,7 @@ stock configureRtvVotingType()
     {
         g_isVotingByRounds = true;
         
+        // the variable 'g_isMaxroundsExtend' is forced to false because it could not be always false.
         if( maxrounds_left >= winlimit_left )
         {
             g_isMaxroundsExtend = true;
@@ -5969,14 +6026,15 @@ public vote_rock( player_id )
         return;
     }
     
+    // if time-limit is 0, minutesElapsed will always be 0.
     new Float:minutesElapsed = map_getMinutesElapsed();
     
     // make sure enough time has gone by on the current map
-    if( g_rtvMinutesWait
+    if( g_rtvWaitMinutes
         && minutesElapsed
-        && minutesElapsed < g_rtvMinutesWait )
+        && minutesElapsed < g_rtvWaitMinutes )
     {
-        color_print( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_TOOSOON", floatround( g_rtvMinutesWait - minutesElapsed, floatround_ceil ) );
+        color_print( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_TOOSOON", floatround( g_rtvWaitMinutes - minutesElapsed, floatround_ceil ) );
         
         LOGGER( 1, "    ( vote_rock ) Just Returning/blocking, too soon to rock by minutes." );
         return;
@@ -5987,6 +6045,14 @@ public vote_rock( player_id )
         color_print( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_TOOSOON_ROUNDS", g_rtvWaitRounds - g_roundsPlayedNumber );
         
         LOGGER( 1, "    ( vote_rock ) Just Returning/blocking, too soon to rock by rounds." );
+        return;
+    }
+    else if( g_rtvWaitFrags
+             && g_greatestKillerFrags < g_rtvWaitFrags )
+    {
+        color_print( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_TOOSOON_FRAGS", g_rtvWaitFrags - g_greatestKillerFrags );
+        
+        LOGGER( 1, "    ( vote_rock ) Just Returning/blocking, too soon to rock by frags." );
         return;
     }
     
@@ -6928,8 +6994,9 @@ public map_restoreEndGameCvars()
         server_cmd( "mp_fraglimit %d", g_originalFragLimit );
         
         // restore to the original/right values
-        g_rtvMinutesWait = get_pcvar_float( cvar_rtvMinutesWait );
+        g_rtvWaitMinutes = get_pcvar_float( cvar_rtvWaitMinutes );
         g_rtvWaitRounds  = get_pcvar_num( cvar_rtvWaitRounds );
+        g_rtvWaitFrags   = get_pcvar_num( cvar_rtvWaitFrags );
         
         server_exec();
         g_isEndGameLimitsChanged = false;
@@ -7275,7 +7342,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
                 copy( szNext, iNext, szBuffer );
                 g_nextMapCyclePosition = iMaps;
                 
-                LOGGER( 1, "    ( readMapCycle ) Just returning/blocking." );
+                LOGGER( 1, "    ( readMapCycle ) Just returning/blocking on 'iMaps > g_nextMapCyclePosition'." );
                 return;
             }
         }
@@ -7332,8 +7399,8 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
 
 
 
+// The Unit Tests execution
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
-    
     stock configureTheUnitTests()
     {
         LOGGER( 128, "I AM ENTERING ON configureTheUnitTests(0)" );

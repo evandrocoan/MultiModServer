@@ -364,10 +364,6 @@ A few problems I have had in the last few weeks of running this is below.
 of a new map. Or for the Mod to read mp_fraglimit and when it gets within say a set number of kills
 auto start the voting system.
 
-
-3. I would like to be able to disable the "Time Limit Expired" and just end the map when the timer is
-up. ( Really not an important thing and can cope with it TBH ) May be again I have a setting wrong for this.
-
 Thanks for your time with this.
 
 Way.[/QUOTE]
@@ -377,8 +373,6 @@ TODO: Add credits from each report.
 
 2) Bad settings must not block the second voting after an map extension. I will look into the code and
 see what is happening.
-3) You are using Half-Life and the setting "gal_endonround" is set to 1 or 2 and is it ending the map
-when the time runs out, instead of waiting to finish the map after the current round end?
 
 
 
@@ -442,38 +436,7 @@ Yes.
 [*]Also distribute the original v1.1.290 configuration file as optional for download.
 
 
-[*][QUOTE=emoto2;2425204]Hello, i use 2.6 version of plugin.. but i know whats is the my problem..
-this cvar gal_srv_start when 1 the plugin not working correctly and change timeleft to: no time limit...
-I tested .. server start and work normally when stopped or server crash next time timeleft is
-changet to: no time limit permanently! Now i use gal_srv_start 0 and no have problems. :)
-
-+++ Tested new bug ... when change cvar options in .sma and remove this code lines:
-[PHP]
-    server_cmd( "exec %s/galileo.cfg", DIR_CONFIGS_PATH );
-    server_exec();
-[/PHP]
-plugins have no time limit bug above.
-+++2 Fixed small code lines for show messages for admin voting:
-[PHP]color_print( player_id, "^1L", player_id, "GAL_VOTE_WEIGHTED", voteWeight );[/PHP]
---->
-[PHP]color_print( player_id, "^1%L", player_id, "GAL_VOTE_WEIGHTED", voteWeight );[/PHP]
-[/QUOTE] 
-Note: His credits are already added.
-
-Thank you for you efforts and sharing your work. The LANG misspelling is fixed on the dev version.
-
-When I can, I will take a close look on this 'gal_srv_start' and when change cvar options in .sma and remove this code lines:
-[PHP]
-    server_cmd( "exec %s/galileo.cfg", DIR_CONFIGS_PATH );
-    server_exec();
-[/PHP]
-plugins have no time limit bug above.
-
-
-
-[*] a) Insert the new debug level 128 for function entrances: "I AM ENTERING ON 'function_name(0)' | parameter1: %s",
-And add it to all plugin functions. 
-
+[*] 
 b) Also add to its proper levels, where the plugin is changing the game cvars, i.e.,
 track all cvars changes by this plugins and print out to its debugging level
 "( function_name ) | IS CHANGING THE CVAR 'cvars_name' to 'value'".
@@ -532,6 +495,8 @@ gal_whitelist_nom_block 1
 
 
 
+
+
 [/LIST]
 
 
@@ -552,7 +517,7 @@ gal_whitelist_nom_block 1
 [B][URL="https://forums.alliedmods.net/member.php?u=156477"]chaves[/URL][/B]: For the wrong 'recent maps' menu title bug report.
 [B][URL="https://forums.alliedmods.net/member.php?u=269274"]YParushev[/URL][/B]: For the partial nominations menu coding and bug report.
 [B][URL="https://forums.alliedmods.net/member.php?u=236706"]eryk172[/URL][/B]: For the ArrayGetString native error when the mapcyclefile is invalid bug report.
-[B][URL="https://forums.alliedmods.net/member.php?u=270638"]emoto2[/URL][/B]: For the 'gal_srv_start' and 'GAL_VOTE_WEIGHTED' misspelling bugs report.
+[B][URL="https://forums.alliedmods.net/member.php?u=270638"]emoto2[/URL][/B]: For the 'gal_srv_start' and 'GAL_VOTE_WEIGHTED' misspelling and bug report.
 [B][URL="https://forums.alliedmods.net/member.php?u=49801"]BeNq![/URL][/B]: For the server crash report, testing and the cvar 'gal_emptyserver_wait' bug report.
 [B][URL="https://forums.alliedmods.net/member.php?u=149700"]Napoleon_be[/URL][/B]: For the Dutch [nl] language translation.
 [B][URL="https://forums.alliedmods.net/member.php?u=269887"]waynesmith15[/URL][/B]: For the Half-Life 'mp_fraglimit' feature support request.
@@ -573,6 +538,7 @@ Thank you!  It means a lot to me.
 
 [B]2016-04-10 | v3.0.0-xx[/B]
 [LIST=1]
+[*]Added support to the Half-File cvar 'mp_fraglimit' for change map limiter as the 'mp_timelimit'.
 [*]Added hierarchical maps list filling ignoring, after go throw all available maps.
 [*]Added new cvar 'gal_recent_nom_maps' to allow the recent maps to be nominated.
 [*]Fixed double adding maps entries into the recent maps list.
