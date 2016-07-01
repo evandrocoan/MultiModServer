@@ -182,11 +182,11 @@ galileo.cfg contents.
      [/CODE]The text "[B][groups][/B]" has to be the very first line in the file, on a line by itself. The
      numbers, on separate lines, specifies how many maps from each file to add to the
      voting menu.
-
+     
      If you had a file within what was posted above, then you would have to create the
      files: '[B]1.ini[/B]', '[B]2.ini[/B]', '[B]3.ini[/B]', and '[B]4.ini[/B]' in the '[B]./configs/galileo/[/B]' folder. Each of
      those INI files would contain a list of maps, one per line.
-
+     
      Galileo will first load any nominated maps into the vote. Then Galileo would pick 2
      maps from '[B]1.ini[/B]', 1 from '[B]2.ini[/B]', 1 from '[B]3.ini[/B]', and 3 from '[B]4.ini[/B]' 'til the maximum
      value of 8 to be reached.
@@ -212,8 +212,8 @@ galileo.cfg contents.
      map fillers from your map groups files '[B]1.ini[/B]' (1st line after [groups]) and '[B]2.ini[/B]'
      (2nd line after [groups]), the map '[COLOR="blue"]de_dust2[/COLOR]' will not be added because there is not
      enough space.
-
-
+     
+     
  [*] [COLOR="Blue"][B]The Whitelist Feature[/B][/COLOR]:
      If uses whatever file you set on the cvar '[B]gal_vote_whitelist_mapfile[/B]' as the
      Whitelist. It specifies the time where its listed maps are allowed to be added to
@@ -561,6 +561,8 @@ Thank you!  It means a lot to me.
 
 [B]2016-04-10 | v3.0.0-xx[/B]
 [LIST=1]
+[*]Fixed double adding maps entries into the recent maps list.
+[*]Removed the maximum maps limit from the cvar 'gal_banrecent' maps.
 [*]Added the server maintenance mode feature. Use 'gal_command_maintenance' to enable it.
 [*]Added the new cvar 'gal_game_crash_recreation' configure the game crash actions.
 [*]Allowed the whitelist feature to be used with the minimum players nominations control feature.
