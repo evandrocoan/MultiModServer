@@ -355,9 +355,6 @@ galileo.amxx
 
 [LIST=1]
 
-
-
-
 [*][QUOTE=waynesmith15;2413085]Hi,
 
 A few problems I have had in the last few weeks of running this is below.
@@ -367,8 +364,6 @@ A few problems I have had in the last few weeks of running this is below.
 of a new map. Or for the Mod to read mp_fraglimit and when it gets within say a set number of kills
 auto start the voting system.
 
-2. When extending the map time it fails to do another vote. When the time limit expires it will then
-changes to the default next map. May have a bad setting here.
 
 3. I would like to be able to disable the "Time Limit Expired" and just end the map when the timer is
 up. ( Really not an important thing and can cope with it TBH ) May be again I have a setting wrong for this.
@@ -378,7 +373,6 @@ Thanks for your time with this.
 Way.[/QUOTE]
 1) The 'mp_fraglimit' was not supported (half-life), but I will provide support to it on the next version.
 Done: Implemented the 'mp_fraglimit' core functionning.
-TODO: Eliminate the variables g_isMaxfragsExtend, g_isMaxroundsExtend, and others like and to replace it by an enum.
 TODO: Add credits from each report.
 
 2) Bad settings must not block the second voting after an map extension. I will look into the code and

@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-100";
+new const PLUGIN_VERSION[] = "v2.6.1-102";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -3848,11 +3848,21 @@ stock processLoadedMapsFile( mapsPerGroup[], groupCount, blockedCount,
                             }
                             case 1:
                             {
+                                useMapIsTooRecent = true;
                                 useIsPrefixInMenu = false;
                             }
                             case 2:
                             {
+                                useIsPrefixInMenu   = true;
                                 useEqualiCurrentMap = false;
+                            }
+                            case 3:
+                            {
+                                useMapIsTooRecent = false;
+                            }
+                            case 4:
+                            {
+                                useIsPrefixInMenu = false;
                             }
                             default:
                             {
@@ -6630,7 +6640,7 @@ stock percent( is, of )
  */
 stock color_print( player_id, message[], any: ... )
 {
-    LOGGER( 128, "I AM ENTERING ON color_print(...) | player_id: %d, message: %s", player_id, message );
+    LOGGER( 128, "I AM ENTERING ON color_print(...) | player_id: %d, message: %s...", player_id, message );
     
     new formated_message[ MAX_COLOR_MESSAGE ];
     formated_message[ 0 ] = '^0';
@@ -6642,7 +6652,7 @@ stock color_print( player_id, message[], any: ... )
         if( player_id )
         {
             vformat( formated_message, charsmax( formated_message ), message, 3 );
-            LOGGER( 64, "( in ) Player_Id: %d, Chat printed: %s", player_id, formated_message );
+            LOGGER( 64, "( in ) Player_Id: %d, Chat printed: %s...", player_id, formated_message );
             
             PRINT_COLORED_MESSAGE( player_id, formated_message );
         }
@@ -6657,7 +6667,7 @@ stock color_print( player_id, message[], any: ... )
             // so we don't execute useless code
             if( !playersCount )
             {
-                LOGGER( 64, "   !playersCount. playersCount = %d", playersCount );
+                LOGGER( 64, "   !playersCount. playersCount = %d...", playersCount );
                 return;
             }
             
@@ -6672,13 +6682,13 @@ stock color_print( player_id, message[], any: ... )
             params_number                  = numargs();
             multi_lingual_constants_number = 0;
             
-            LOGGER( 64, "   playersCount: %d, params_number: %d", playersCount, params_number );
+            LOGGER( 64, "   playersCount: %d, params_number: %d...", playersCount, params_number );
             
             if( params_number > 3 ) // ML can be used
             {
                 for( argument_index = 2; argument_index < params_number; argument_index++ )
                 {
-                    LOGGER( 64, "   argument_index: %d, getarg( argument_index ): %s / %d", \
+                    LOGGER( 64, "   argument_index: %d, getarg( argument_index ): %s / %d...", \
                             argument_index, getarg( argument_index ), getarg( argument_index ) );
                     
                     // retrieve original param value and check if it's LANG_PLAYER value
@@ -6695,7 +6705,7 @@ stock color_print( player_id, message[], any: ... )
                         
                         LOGGER( 64, "   Player_Id: %d, formated_message: %s, \
                                 GetLangTransKey( formated_message ) != TransKey_Bad: %d, \
-                                multi_lingual_constants_number: %d, string_index: %d", \
+                                multi_lingual_constants_number: %d, string_index: %d...", \
                                 player_id, formated_message, \
                                 GetLangTransKey( formated_message ) != TransKey_Bad, \
                                 multi_lingual_constants_number, string_index );
@@ -6710,12 +6720,12 @@ stock color_print( player_id, message[], any: ... )
                             multi_lingual_constants_number++;
                         }
                         
-                        LOGGER( 64, "   argument_index (after ArrayPushCell): %d", argument_index );
+                        LOGGER( 64, "   argument_index (after ArrayPushCell): %d...", argument_index );
                     }
                 }
             }
             
-            LOGGER( 64, "   multi_lingual_constants_number: %d", multi_lingual_constants_number );
+            LOGGER( 64, "   multi_lingual_constants_number: %d...", multi_lingual_constants_number );
             
             for( --playersCount; playersCount >= 0; playersCount-- )
             {
@@ -6726,7 +6736,7 @@ stock color_print( player_id, message[], any: ... )
                     for( argument_index = 0; argument_index < multi_lingual_constants_number; argument_index++ )
                     {
                         LOGGER( 64, "   argument_index: %d, player_id: %d, \
-                                ArrayGetCell( %d, %d ): %d", \
+                                ArrayGetCell( %d, %d ): %d...", \
                                 argument_index, player_id, \
                                 multi_lingual_indexes_array, argument_index, \
                                 ArrayGetCell( multi_lingual_indexes_array, argument_index ) );
@@ -6738,7 +6748,7 @@ stock color_print( player_id, message[], any: ... )
                 }
                 vformat( formated_message, charsmax( formated_message ), message, 3 );
                 
-                LOGGER( 64, "( in ) Player_Id: %d, Chat printed: %s", player_id, formated_message );
+                LOGGER( 64, "( in ) Player_Id: %d, Chat printed: %s...", player_id, formated_message );
                 PRINT_COLORED_MESSAGE( player_id, formated_message );
             }
             
@@ -6746,7 +6756,7 @@ stock color_print( player_id, message[], any: ... )
         }
     #else
         vformat( formated_message, charsmax( formated_message ), message, 3 );
-        LOGGER( 64, "( in ) Player_Id: %d, Chat printed: %s", player_id, formated_message );
+        LOGGER( 64, "( in ) Player_Id: %d, Chat printed: %s...", player_id, formated_message );
         
         client_print_color( player_id, print_team_default, formated_message );
     #endif
@@ -6754,12 +6764,12 @@ stock color_print( player_id, message[], any: ... )
     else
     {
         vformat( formated_message, charsmax( formated_message ), message, 3 );
-        LOGGER( 64, "( in ) Player_Id: %d, Chat printed: %s", player_id, formated_message );
+        LOGGER( 64, "( in ) Player_Id: %d, Chat printed: %s...", player_id, formated_message );
         
         REMOVE_COLOR_TAGS( formated_message );
         client_print( player_id, print_chat, formated_message );
     }
-    LOGGER( 64, "( out ) Player_Id: %d, Chat printed: %s", player_id, formated_message );
+    LOGGER( 64, "( out ) Player_Id: %d, Chat printed: %s...", player_id, formated_message );
 }
 
 /**
