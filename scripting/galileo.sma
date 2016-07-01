@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-103";
+new const PLUGIN_VERSION[] = "v2.6.1-104";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -544,9 +544,9 @@ new bool:g_isToShowVoteCounter;
 new bool:g_isToRefreshVoteStatus;
 new bool:g_isEmptyCycleMapConfigured;
 new bool:g_isColoredChatEnabled;
-new bool:g_isMaxfragsExtend;
 new bool:g_isMaxroundsExtend;
 new bool:g_isVotingByRounds;
+new bool:g_isVotingByFrags;
 new bool:g_isRtvLastRound;
 new bool:g_isTheLastGameRound;
 new bool:g_isTimeToChangeLevel;
@@ -1116,7 +1116,6 @@ public team_win_event()
             && !IS_END_OF_MAP_VOTING_GOING_ON() )
         {
             g_isMaxroundsExtend = false;
-            
             VOTE_START_ROUND_DELAY();
         }
     }
@@ -1189,8 +1188,15 @@ public client_death_event()
         if( ( ( ( frags = ++g_playersKills[ killerId ] ) + VOTE_START_FRAGS ) > g_fragLimitNumber )
             && !IS_END_OF_MAP_VOTING_GOING_ON() )
         {
-            g_isMaxfragsExtend = true;
-            VOTE_START_ROUND_DELAY();
+            LOGGER( 128, "( client_death_event ) frags: %d", frags );
+            
+            if( get_pcvar_num( cvar_endOfMapVote ) )
+            {
+                LOGGER( 128, "( client_death_event ) Starting voting by frags.");
+                
+                g_isVotingByFrags = true;
+                vote_startDirector( false );
+            }
         }
         
         if( frags > g_greatestKillerFrags )
@@ -1216,7 +1222,6 @@ public round_end_event()
             && !IS_END_OF_MAP_VOTING_GOING_ON() )
         {
             g_isMaxroundsExtend = true;
-            
             VOTE_START_ROUND_DELAY();
         }
     }
@@ -1415,7 +1420,6 @@ public round_restart_event()
                   && get_pcvar_num( cvar_serverWinlimitRestart ) ) ) )
     {
         g_isTimeToResetRounds = true;
-        
         cancelVoting( true );
     }
     else
@@ -5871,9 +5875,10 @@ stock configureRtvVotingType()
 {
     LOGGER( 128, "I AM ENTERING ON configureRtvVotingType(0)" );
     
-    new minutes_left   = get_timeleft() / 60;
-    new maxrounds_left = get_pcvar_num( cvar_mp_maxrounds ) - g_roundsPlayedNumber;
-    new winlimit_left  = get_pcvar_num( cvar_mp_winlimit ) - max( g_totalCtWins, g_totalTerroristsWins );
+    new minutes_left    = get_timeleft() / 30; // Uses 30 instead of 60 to be a fair amount
+    new maxrounds_left  = get_pcvar_num( cvar_mp_maxrounds ) - g_roundsPlayedNumber;
+    new winlimit_left   = get_pcvar_num( cvar_mp_winlimit ) - max( g_totalCtWins, g_totalTerroristsWins );
+    new fragslimit_left = get_pcvar_num( cvar_mp_fraglimit ) - g_greatestKillerFrags;
     
     if( ( minutes_left > maxrounds_left
           && maxrounds_left > 0 )
@@ -5890,6 +5895,11 @@ stock configureRtvVotingType()
         {
             g_isMaxroundsExtend = false;
         }
+        
+    } else if( minutes_left > fragslimit_left
+               && fragslimit_left > 0 )
+    {
+        g_isVotingByFrags = true;
     }
 }
 
