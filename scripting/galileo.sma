@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-102";
+new const PLUGIN_VERSION[] = "v2.6.1-103";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -148,6 +148,7 @@ new const PLUGIN_VERSION[] = "v2.6.1-102";
         set_test_failure_private( %1 ); \
         if( g_current_test_evaluation ) \
         { \
+            LOGGER( 1, "( SET_TEST_FAILURE ) Just returning/bloking." ); \
             return; \
         } \
     } while( g_dummy_value )
@@ -1385,10 +1386,12 @@ stock is_there_game_commencing()
         
         if( CT_count && TR_count )
         {
+            LOGGER( 1, "( is_there_game_commencing ) Returning true." );
             return true;
         }
     }
     
+    LOGGER( 1, "( is_there_game_commencing ) Returning false." );
     return false;
 }
 
@@ -2312,10 +2315,13 @@ public cmd_listrecent_handler( player_id, menu, item )
     
     if( item < 0 )
     {
+        LOGGER( 1, "    ( cmd_listrecent_handler ) Just Returning PLUGIN_CONTINUE." );
         return PLUGIN_CONTINUE;
     }
     
     menu_display( player_id, g_generalUsePlayersMenuId[ player_id ] );
+    LOGGER( 1, "    ( cmd_listrecent_handler ) Just Returning PLUGIN_HANDLED." );
+    
     return PLUGIN_HANDLED;
 }
 
@@ -2691,8 +2697,6 @@ public map_loadPrefixList()
         LOGGER( 1, "AMX_ERR_NOTFOUND, %L", LANG_SERVER, "GAL_PREFIXES_NOTFOUND", prefixesFilePath );
         log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_PREFIXES_NOTFOUND", prefixesFilePath );
     }
-    
-    return PLUGIN_HANDLED;
 }
 
 stock getSurMapNameIndex( mapSurName[] )
@@ -2773,6 +2777,8 @@ public cmd_say( player_id )
                 LOGGER( 4, "( cmd_say ) running vote_rock( player_id ); player_id: %s", player_id );
                 
                 vote_rock( player_id );
+                
+                LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED." );
                 return PLUGIN_HANDLED;
             }
             else if( get_pcvar_num( cvar_nomPlayerAllowance ) )
@@ -2785,6 +2791,8 @@ public cmd_say( player_id )
                     || equali( firstWord, "nominations" ) )
                 {
                     nomination_list();
+                    
+                    LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED." );
                     return PLUGIN_HANDLED;
                 }
                 else
@@ -2794,6 +2802,8 @@ public cmd_say( player_id )
                     if( mapIndex >= 0 )
                     {
                         nomination_toggle( player_id, mapIndex );
+                        
+                        LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED." );
                         return PLUGIN_HANDLED;
                     }
                     else if( strlen( firstWord ) > 5
@@ -2801,6 +2811,8 @@ public cmd_say( player_id )
                              && equali( firstWord[ strlen( firstWord ) - 4 ], "menu" ) )
                     {
                         nomination_menu( player_id );
+                        
+                        LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED." );
                         return PLUGIN_HANDLED;
                     }
                     else // if contains a prefix
@@ -2817,6 +2829,8 @@ public cmd_say( player_id )
                             if( containi( firstWord, g_mapPrefixes[ prefix_index ] ) > -1 )
                             {
                                 nomination_menu( player_id );
+                                
+                                LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED." );
                                 return PLUGIN_HANDLED;
                             }
                         }
@@ -2834,6 +2848,8 @@ public cmd_say( player_id )
                 || equali( firstWord, "nom" ) )
             {
                 nominationAttemptWithNamePart( player_id, secondWord );
+                
+                LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED." );
                 return PLUGIN_HANDLED;
             }
             else if( equali( firstWord, "cancel" ) )
@@ -2844,12 +2860,15 @@ public cmd_say( player_id )
                 if( mapIndex >= 0 )
                 {
                     nomination_cancel( player_id, mapIndex );
+                    
+                    LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED." );
                     return PLUGIN_HANDLED;
                 }
             }
         }
     }
     
+    LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_CONTINUE." );
     return PLUGIN_CONTINUE;
 }
 
@@ -3030,6 +3049,8 @@ public nomination_handleMatchChoice( player_id, menu, item )
     if( item < 0 )
     {
         clearMenuMapIndexForPlayers( player_id );
+        
+        LOGGER( 1, "    ( nomination_handleMatchChoice ) Just Returning PLUGIN_CONTINUE." );
         return PLUGIN_CONTINUE;
     }
     
@@ -3039,6 +3060,7 @@ public nomination_handleMatchChoice( player_id, menu, item )
         unnominatedDisconnectedPlayer( player_id );
         clearMenuMapIndexForPlayers( player_id );
         
+        LOGGER( 1, "    ( nomination_handleMatchChoice ) Just Returning PLUGIN_HANDLED." );
         return PLUGIN_HANDLED;
     }
     
@@ -3074,6 +3096,7 @@ public nomination_handleMatchChoice( player_id, menu, item )
     map_nominate( player_id, item );
     clearMenuMapIndexForPlayers( player_id );
     
+    LOGGER( 1, "    ( nomination_handleMatchChoice ) Just Returning PLUGIN_HANDLED." );
     return PLUGIN_HANDLED;
 }
 
@@ -3252,7 +3275,7 @@ stock countPlayerNominations( player_id, &nominationOpenIndex )
     }
     else
     {
-        return 0;
+        nominationCount = 0;
     }
     
     LOGGER( 4, "( countPlayerNominations ) nominationCount: %d, trieKey: %s, nominationOpenIndex: %d", \
@@ -3296,11 +3319,15 @@ stock nomination_cancel( player_id, mapIndex )
     if( g_voteStatus & VOTE_IS_IN_PROGRESS )
     {
         color_print( player_id, "^1%L", player_id, "GAL_CANCEL_FAIL_INPROGRESS" );
+        
+        LOGGER( 1, "    ( nomination_cancel ) Just Returning/blocking, the voting is in progress." );
         return;
     }
-    else if( g_voteStatus & VOTE_IS_OVER ) // and if the outcome of the vote hasn't already been determined
+    else if( g_voteStatus & VOTE_IS_OVER ) // and if the outcome of the vote has already been determined
     {
         color_print( player_id, "^1%L", player_id, "GAL_CANCEL_FAIL_VOTEOVER" );
+        
+        LOGGER( 1, "    ( nomination_cancel ) Just Returning/blocking, the voting is over." );
         return;
     }
     
@@ -3330,13 +3357,11 @@ stock nomination_cancel( player_id, mapIndex )
             new player_name[ MAX_PLAYER_NAME_LENGHT ];
             
             GET_USER_NAME( nominatorPlayerId, player_name );
-            color_print( player_id, "^1%L", player_id, "GAL_CANCEL_FAIL_SOMEONEELSE",
-                    mapName, player_name );
+            color_print( player_id, "^1%L", player_id, "GAL_CANCEL_FAIL_SOMEONEELSE", mapName, player_name );
         }
         else
         {
-            color_print( player_id, "^1%L", player_id, "GAL_CANCEL_FAIL_WASNOTYOU",
-                    mapName );
+            color_print( player_id, "^1%L", player_id, "GAL_CANCEL_FAIL_WASNOTYOU", mapName );
         }
     }
 }
@@ -3350,11 +3375,15 @@ stock map_nominate( player_id, mapIndex, nominatorPlayerId = -1 )
     if( g_voteStatus & VOTE_IS_IN_PROGRESS )
     {
         color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_INPROGRESS" );
+        
+        LOGGER( 1, "    ( map_nominate ) Just Returning/blocking, the voting is in progress." );
         return;
     }
     else if( g_voteStatus & VOTE_IS_OVER ) // and if the outcome of the vote hasn't already been determined
     {
         color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_VOTEOVER" );
+        
+        LOGGER( 1, "    ( map_nominate ) Just Returning/blocking, the voting is over." );
         return;
     }
     
@@ -3368,6 +3397,8 @@ stock map_nominate( player_id, mapIndex, nominatorPlayerId = -1 )
     if( equali( g_currentMap, mapName ) )
     {
         color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_CURRENTMAP", g_currentMap );
+        
+        LOGGER( 1, "    ( map_nominate ) Just Returning/blocking, cannot nominate the current map." );
         return;
     }
     
@@ -3378,6 +3409,7 @@ stock map_nominate( player_id, mapIndex, nominatorPlayerId = -1 )
         color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_TOORECENT", mapName );
         color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_TOORECENT_HLP" );
         
+        LOGGER( 1, "    ( map_nominate ) Just Returning/blocking, cannot nominate recent maps." );
         return;
     }
     
@@ -3925,7 +3957,7 @@ stock processLoadedMapsFile( mapsPerGroup[], groupCount, blockedCount,
                 
                 LOGGER( 8, "  ( out ) groupIndex: %i  map: %s, unsuccessfulCount: %i, filersMapCount: %i, g_totalVoteOptions: %i", \
                         groupIndex, mapName, unsuccessfulCount, filersMapCount, g_totalVoteOptions );
-            
+                
             } // end 'for choice_index < allowedFilersCount'
         
         } // end 'if g_totalVoteOptions < g_maxVotingChoices'
@@ -3943,15 +3975,16 @@ stock processLoadedMapsFile( mapsPerGroup[], groupCount, blockedCount,
     }
     
     return blockedCount;
-}
+    
+} // end processLoadedMapsFile(7)
 
 stock vote_addFiller( blockedFillerMaps[][], blockedFillerMapsMaxChars = 0, blockedCount = 0 )
 {
     LOGGER( 128, "I AM ENTERING ON vote_addFiller(3) | blockedFillerMapsMaxChars: %d, blockedCount: %d", \
                                                        blockedFillerMapsMaxChars,     blockedCount );
-    
     if( g_totalVoteOptions >= g_maxVotingChoices )
     {
+        LOGGER( 1, "    ( vote_addFiller ) Just Returning/blocking, the voting list is filled." );
         return;
     }
     
@@ -4164,7 +4197,7 @@ stock approveTheVotingStart( bool:is_forced_voting )
         
         if( !g_areTheUnitTestsRunning )
         {
-            LOGGER( 1, "    Returning false on if( !g_areTheUnitTestsRunning )" );
+            LOGGER( 1, "    ( approveTheVotingStart ) Returning false on the if !g_areTheUnitTestsRunning" );
             return false;
         }
     #else
@@ -4182,7 +4215,7 @@ stock approveTheVotingStart( bool:is_forced_voting )
             }
         }
         
-        LOGGER( 1, "    Returning false on if( ... ( g_voteStatus & VOTE_IS_IN_PROGRESS ... ) ... )" );
+        LOGGER( 1, "    ( approveTheVotingStart ) Returning false on the big blocker." );
         return false;
     #endif
     }
@@ -4208,6 +4241,7 @@ stock approveTheVotingStart( bool:is_forced_voting )
         vote_resetStats();
     }
     
+    LOGGER( 1, "    ( approveTheVotingStart ) Returning true." );
     return true;
 }
 
@@ -4272,6 +4306,7 @@ stock vote_startDirector( bool:is_forced_voting )
     
     if( !approveTheVotingStart( is_forced_voting ) )
     {
+        LOGGER( 1, "    ( vote_startDirector ) Just Returning/blocking, the voting was not approved." );
         return;
     }
     
@@ -5081,6 +5116,8 @@ public vote_handleChoice( player_id, key )
     if( g_voteStatus & VOTE_IS_EXPIRED )
     {
         client_cmd( player_id, "^"slot%i^"", key + 1 );
+        
+        LOGGER( 1, "    ( vote_handleChoice ) Just Returning/blocking, slot key pressed." );
         return;
     }
     
@@ -5569,6 +5606,7 @@ public computeVotes()
             // start the runoff vote, vote_startDirector
             set_task( 3.0, "startNonForcedVoting", TASKID_VOTE_STARTDIRECTOR );
             
+            LOGGER( 1, "    ( computeVotes ) Just Returning/blocking, its runoff time." );
             return;
         }
         
@@ -5688,8 +5726,8 @@ stock finalizeVoting()
 stock Float:map_getMinutesElapsed()
 {
     LOGGER( 128, "I AM ENTERING ON Float:map_getMinutesElapsed(0)" );
-    
     LOGGER( 2, "%32s mp_timelimit: %f", "map_getMinutesElapsed( in/out )", get_pcvar_float( cvar_mp_timelimit ) );
+    
     return get_pcvar_float( cvar_mp_timelimit ) - ( float( get_timeleft() ) / 60.0 );
 }
 
@@ -5764,10 +5802,12 @@ stock map_isInMenu( map[] )
     {
         if( equali( map, g_votingMapNames[ playerVoteMapChoiceIndex ] ) )
         {
+            LOGGER( 1, "    ( map_isInMenu ) Returning true." );
             return true;
         }
     }
     
+    LOGGER( 1, "    ( map_isInMenu ) Returning false." );
     return false;
 }
 
@@ -5793,11 +5833,13 @@ stock isPrefixInMenu( map[] )
             
             if( equali( possiblePrefix, existingPrefix ) )
             {
+                LOGGER( 1, "    ( isPrefixInMenu ) Returning true." );
                 return true;
             }
         }
     }
     
+    LOGGER( 1, "    ( isPrefixInMenu ) Returning false." );
     return false;
 }
 
@@ -5807,9 +5849,11 @@ stock map_isTooRecent( map[] )
     
     if( get_pcvar_num( cvar_recentMapsBannedNumber ) )
     {
+        LOGGER( 1, "    ( map_isTooRecent ) Returning if map TrieKeyExists on g_recentMapsTrie." );
         return TrieKeyExists( g_recentMapsTrie, map );
     }
     
+    LOGGER( 1, "    ( map_isTooRecent ) Returning false." );
     return false;
 }
 
@@ -5876,6 +5920,8 @@ public vote_rock( player_id )
     if( g_voteStatus & VOTE_IS_EARLY )
     {
         color_print( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_PENDINGVOTE" );
+        
+        LOGGER( 1, "    ( vote_rock ) Just Returning/blocking, the early voting is pending." );
         return;
     }
     
@@ -5883,11 +5929,15 @@ public vote_rock( player_id )
     if( g_voteStatus & VOTE_IS_IN_PROGRESS )
     {
         color_print( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_INPROGRESS" );
+        
+        LOGGER( 1, "    ( vote_rock ) Just Returning/blocking, the voting is in progress." );
         return;
     }
-    else if( g_voteStatus & VOTE_IS_OVER ) // and if the outcome of the vote hasn't already been determined
+    else if( g_voteStatus & VOTE_IS_OVER ) // and if the outcome of the vote has already been determined
     {
         color_print( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_VOTEOVER" );
+        
+        LOGGER( 1, "    ( vote_rock ) Just Returning/blocking, the voting is over." );
         return;
     }
     
@@ -5895,6 +5945,8 @@ public vote_rock( player_id )
         && g_rtvWaitAdminNumber > 0 )
     {
         color_print( player_id, "^1%L", player_id, "GAL_ROCK_WAIT_ADMIN" );
+        
+        LOGGER( 1, "    ( vote_rock ) Just Returning/blocking, cannot rock when admins are online." );
         return;
     }
     
@@ -5902,6 +5954,8 @@ public vote_rock( player_id )
     if( get_realplayersnum() == 1 )
     {
         start_rtvVote();
+        
+        LOGGER( 1, "    ( vote_rock ) Just Returning/blocking, the voting started." );
         return;
     }
     
@@ -5914,6 +5968,7 @@ public vote_rock( player_id )
     {
         color_print( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_TOOSOON", floatround( g_rtvMinutesWait - minutesElapsed, floatround_ceil ) );
         
+        LOGGER( 1, "    ( vote_rock ) Just Returning/blocking, too soon to rock by minutes." );
         return;
     }
     else if( g_rtvWaitRounds
@@ -5921,6 +5976,7 @@ public vote_rock( player_id )
     {
         color_print( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_TOOSOON_ROUNDS", g_rtvWaitRounds - g_roundsPlayedNumber );
         
+        LOGGER( 1, "    ( vote_rock ) Just Returning/blocking, too soon to rock by rounds." );
         return;
     }
     
@@ -5931,8 +5987,9 @@ public vote_rock( player_id )
     if( g_rockedVote[ player_id ] )
     {
         color_print( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_ALREADY", rocksNeeded - g_rockedVoteCount );
-        
         rtv_remind( TASKID_REMINDER + player_id );
+        
+        LOGGER( 1, "    ( vote_rock ) Just Returning/blocking, already rocked the vote." );
         return;
     }
     
@@ -6047,9 +6104,12 @@ public cmd_HL1_votemap( player_id )
     if( get_pcvar_num( cvar_cmdVotemap ) == 0 )
     {
         con_print( player_id, "%L", player_id, "GAL_DISABLED" );
+        
+        LOGGER( 1, "    ( cmd_HL1_votemap ) Returning PLUGIN_HANDLED" );
         return PLUGIN_HANDLED;
     }
     
+    LOGGER( 1, "    ( cmd_HL1_votemap ) Returning PLUGIN_CONTINUE" );
     return PLUGIN_CONTINUE;
 }
 
@@ -6069,10 +6129,12 @@ public cmd_HL1_listmaps( player_id )
         }
         default:
         {
+            LOGGER( 1, "    ( cmd_HL1_listmaps ) Returning PLUGIN_CONTINUE" );
             return PLUGIN_CONTINUE;
         }
     }
     
+    LOGGER( 1, "    ( cmd_HL1_listmaps ) Returning PLUGIN_HANDLED" );
     return PLUGIN_HANDLED;
 }
 
@@ -6211,6 +6273,7 @@ stock con_print( player_id, message[], { Float, Sql, Result, _ }: ... )
         get_user_authid( player_id, authid, charsmax( authid ) );
         console_print( player_id, consoleMessage );
         
+        LOGGER( 1, "    ( con_print ) Just Returning/blocking" );
         return;
     }
     
@@ -6652,7 +6715,7 @@ stock color_print( player_id, message[], any: ... )
         if( player_id )
         {
             vformat( formated_message, charsmax( formated_message ), message, 3 );
-            LOGGER( 64, "( in ) Player_Id: %d, Chat printed: %s...", player_id, formated_message );
+            LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message );
             
             PRINT_COLORED_MESSAGE( player_id, formated_message );
         }
@@ -6667,7 +6730,7 @@ stock color_print( player_id, message[], any: ... )
             // so we don't execute useless code
             if( !playersCount )
             {
-                LOGGER( 64, "   !playersCount. playersCount = %d...", playersCount );
+                LOGGER( 64, "    ( color_print ) Returning on playersCount: %d...", playersCount );
                 return;
             }
             
@@ -6682,13 +6745,13 @@ stock color_print( player_id, message[], any: ... )
             params_number                  = numargs();
             multi_lingual_constants_number = 0;
             
-            LOGGER( 64, "   playersCount: %d, params_number: %d...", playersCount, params_number );
+            LOGGER( 64, "( color_print ) playersCount: %d, params_number: %d...", playersCount, params_number );
             
             if( params_number > 3 ) // ML can be used
             {
                 for( argument_index = 2; argument_index < params_number; argument_index++ )
                 {
-                    LOGGER( 64, "   argument_index: %d, getarg( argument_index ): %s / %d...", \
+                    LOGGER( 64, "( color_print ) argument_index: %d, getarg( argument_index ): %s / %d...", \
                             argument_index, getarg( argument_index ), getarg( argument_index ) );
                     
                     // retrieve original param value and check if it's LANG_PLAYER value
@@ -6703,7 +6766,7 @@ stock color_print( player_id, message[], any: ... )
                         }
                         formated_message[ string_index ] = '^0';
                         
-                        LOGGER( 64, "   Player_Id: %d, formated_message: %s, \
+                        LOGGER( 64, "( color_print ) player_id: %d, formated_message: %s, \
                                 GetLangTransKey( formated_message ) != TransKey_Bad: %d, \
                                 multi_lingual_constants_number: %d, string_index: %d...", \
                                 player_id, formated_message, \
@@ -6720,12 +6783,12 @@ stock color_print( player_id, message[], any: ... )
                             multi_lingual_constants_number++;
                         }
                         
-                        LOGGER( 64, "   argument_index (after ArrayPushCell): %d...", argument_index );
+                        LOGGER( 64, "( color_print ) argument_index (after ArrayPushCell): %d...", argument_index );
                     }
                 }
             }
             
-            LOGGER( 64, "   multi_lingual_constants_number: %d...", multi_lingual_constants_number );
+            LOGGER( 64, "( color_print ) multi_lingual_constants_number: %d...", multi_lingual_constants_number );
             
             for( --playersCount; playersCount >= 0; playersCount-- )
             {
@@ -6735,7 +6798,7 @@ stock color_print( player_id, message[], any: ... )
                 {
                     for( argument_index = 0; argument_index < multi_lingual_constants_number; argument_index++ )
                     {
-                        LOGGER( 64, "   argument_index: %d, player_id: %d, \
+                        LOGGER( 64, "( color_print ) argument_index: %d, player_id: %d, \
                                 ArrayGetCell( %d, %d ): %d...", \
                                 argument_index, player_id, \
                                 multi_lingual_indexes_array, argument_index, \
@@ -6748,7 +6811,7 @@ stock color_print( player_id, message[], any: ... )
                 }
                 vformat( formated_message, charsmax( formated_message ), message, 3 );
                 
-                LOGGER( 64, "( in ) Player_Id: %d, Chat printed: %s...", player_id, formated_message );
+                LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message );
                 PRINT_COLORED_MESSAGE( player_id, formated_message );
             }
             
@@ -6756,7 +6819,7 @@ stock color_print( player_id, message[], any: ... )
         }
     #else
         vformat( formated_message, charsmax( formated_message ), message, 3 );
-        LOGGER( 64, "( in ) Player_Id: %d, Chat printed: %s...", player_id, formated_message );
+        LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message );
         
         client_print_color( player_id, print_team_default, formated_message );
     #endif
@@ -6764,12 +6827,12 @@ stock color_print( player_id, message[], any: ... )
     else
     {
         vformat( formated_message, charsmax( formated_message ), message, 3 );
-        LOGGER( 64, "( in ) Player_Id: %d, Chat printed: %s...", player_id, formated_message );
+        LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message );
         
         REMOVE_COLOR_TAGS( formated_message );
         client_print( player_id, print_chat, formated_message );
     }
-    LOGGER( 64, "( out ) Player_Id: %d, Chat printed: %s...", player_id, formated_message );
+    LOGGER( 64, "( color_print ) [out] player_id: %d, Chat printed: %s...", player_id, formated_message );
 }
 
 /**
@@ -7035,25 +7098,26 @@ stock saveCurrentMapCycleSetting()
     new tockenMapcycleAndPosion[ MAX_MAPNAME_LENGHT + MAX_FILE_PATH_LENGHT ];
     
     formatex( tockenMapcycleAndPosion, charsmax( tockenMapcycleAndPosion ),
-            "%s %d",
-            g_mapCycleFilePath, g_nextMapCyclePosition );
+            "%s %d", g_mapCycleFilePath, g_nextMapCyclePosition );
     
     set_localinfo( "lastmapcycle", tockenMapcycleAndPosion ); // save lastmapcycle settings
 }
 
-getNextMapName( szArg[], iMax )
+stock getNextMapName( szArg[], iMax )
 {
     LOGGER( 128, "I AM ENTERING ON getNextMapName(2) | szArg: %s, iMax: %d", szArg, iMax );
     new len = get_pcvar_string( g_cvar_amx_nextmap, szArg, iMax );
     
     if( ValidMap( szArg ) )
     {
+        LOGGER( 1, "    ( getNextMapName ) Returning len: %d", len );
         return len;
     }
     
     len = copy( szArg, iMax, g_nextMapName );
     set_pcvar_string( g_cvar_amx_nextmap, g_nextMapName );
     
+    LOGGER( 1, "    ( getNextMapName ) Returning len: %d", len );
     return len;
 }
 
@@ -7079,7 +7143,7 @@ public sayNextMap()
         color_print( 0, "^1%L ^4%s", LANG_PLAYER, "NEXT_MAP", g_nextMap );
     }
     
-    LOGGER( 1, "( sayNextMap ) %L %s, cvar_endOfMapVote: %d, cvar_nextMapChangeAnnounce: %d", \
+    LOGGER( 4, "( sayNextMap ) %L %s, cvar_endOfMapVote: %d, cvar_nextMapChangeAnnounce: %d", \
             LANG_SERVER, "NEXT_MAP", g_nextMap, \
             get_pcvar_num( cvar_endOfMapVote ), \
             get_pcvar_num( cvar_nextMapChangeAnnounce ) );
@@ -7139,6 +7203,7 @@ stock bool:ValidMap( mapname[] )
     
     if( is_map_valid( mapname ) )
     {
+        LOGGER( 1, "    ( bool:ValidMap ) Returning true. [is_map_valid]" );
         return true;
     }
     
@@ -7148,6 +7213,7 @@ stock bool:ValidMap( mapname[] )
     // The mapname was too short to possibly house the .bsp extension
     if( len < 0 )
     {
+        LOGGER( 1, "    ( bool:ValidMap ) Returning false. [len < 0]" );
         return false;
     }
     
@@ -7160,17 +7226,19 @@ stock bool:ValidMap( mapname[] )
         // recheck
         if( is_map_valid( mapname ) )
         {
+            LOGGER( 1, "    ( bool:ValidMap ) Returning true. [is_map_valid]" );
             return true;
         }
     }
     
+    LOGGER( 1, "    ( bool:ValidMap ) Returning false." );
     return false;
 }
 
 readMapCycle( mapcycleFilePath[], szNext[], iNext )
 {
-    LOGGER( 128, "I AM ENTERING ON mapcycleFilePath(3) | mapcycleFilePath: %s, szNext: %s, iNext: %d", \
-                                                         mapcycleFilePath,     szNext,     iNext );
+    LOGGER( 128, "I AM ENTERING ON readMapCycle(3) | mapcycleFilePath: %s", mapcycleFilePath );
+    
     new b;
     new szBuffer[ MAX_MAPNAME_LENGHT ];
     new szFirst[ MAX_MAPNAME_LENGHT ];
@@ -7197,6 +7265,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
                 copy( szNext, iNext, szBuffer );
                 g_nextMapCyclePosition = iMaps;
                 
+                LOGGER( 1, "    ( readMapCycle ) Just returning/blocking." );
                 return;
             }
         }
@@ -7212,6 +7281,7 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
         copy( szNext, iNext, szFirst );
     }
     
+    LOGGER( 4, "( readMapCycle ) | szNext: %s, iNext: %d", szNext, iNext );
     g_nextMapCyclePosition = 1;
 }
 
