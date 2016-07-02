@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-108";
+new const PLUGIN_VERSION[] = "v2.6.1-109";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -6999,36 +6999,36 @@ stock register_dictionary_colored( const dictionaryFile[] )
         return 0;
     }
     
-    new TransKey:iKey;
+    new TransKey:translationKeyId;
     
-    new szBuffer     [ 512 ];
-    new szLang       [ 3 ];
-    new szKey        [ 64 ];
-    new szTranslation[ MAX_LONG_STRING ];
+    new currentReadLine    [ 512 ];
+    new langTypeAcronym    [ 3 ];
+    new langConstantName   [ 64 ];
+    new langTranslationText[ MAX_LONG_STRING ];
     
     while( !feof( dictionaryFile ) )
     {
-        fgets( dictionaryFile, szBuffer, charsmax( szBuffer ) );
-        trim( szBuffer );
+        fgets( dictionaryFile, currentReadLine, charsmax( currentReadLine ) );
+        trim( currentReadLine );
         
-        if( szBuffer[ 0 ] == '[' )
+        if( currentReadLine[ 0 ] == '[' )
         {
-            strtok( szBuffer[ 1 ], szLang, charsmax( szLang ), szBuffer, 1, ']' );
+            strtok( currentReadLine[ 1 ], langTypeAcronym, charsmax( langTypeAcronym ), currentReadLine, 1, ']' );
         }
-        else if( szBuffer[ 0 ] )
+        else if( currentReadLine[ 0 ] )
         {
         #if AMXX_VERSION_NUM < 183
-            strbreak( szBuffer, szKey, charsmax( szKey ), szTranslation, charsmax( szTranslation ) );
+            strbreak( currentReadLine, langConstantName, charsmax( langConstantName ), langTranslationText, charsmax( langTranslationText ) );
         #else
-            argbreak( szBuffer, szKey, charsmax( szKey ), szTranslation, charsmax( szTranslation ) );
+            argbreak( currentReadLine, langConstantName, charsmax( langConstantName ), langTranslationText, charsmax( langTranslationText ) );
         #endif
             
-            iKey = GetLangTransKey( szKey );
+            translationKeyId = GetLangTransKey( langConstantName );
             
-            if( iKey != TransKey_Bad )
+            if( translationKeyId != TransKey_Bad )
             {
-                INSERT_COLOR_TAGS( szTranslation );
-                AddTranslation( szLang, iKey, szTranslation[ 2 ] );
+                INSERT_COLOR_TAGS( langTranslationText );
+                AddTranslation( langTypeAcronym, translationKeyId, langTranslationText[ 2 ] );
             }
         }
     }
@@ -7379,55 +7379,55 @@ stock bool:ValidMap( mapname[] )
     return false;
 }
 
-readMapCycle( mapcycleFilePath[], szNext[], iNext )
+readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
 {
     LOGGER( 128, "I AM ENTERING ON readMapCycle(3) | mapcycleFilePath: %s", mapcycleFilePath );
+    new textLength;
     
-    new b;
-    new szBuffer[ MAX_MAPNAME_LENGHT ];
-    new szFirst[ MAX_MAPNAME_LENGHT ];
+    new currentReadLine [ MAX_MAPNAME_LENGHT ];
+    new firstMapcycleMap[ MAX_MAPNAME_LENGHT ];
     
-    new i     = 0;
-    new iMaps = 0;
+    new mapsProcessedNumber    = 0;
+    new currentLineToReadIndex = 0;
     
     if( file_exists( mapcycleFilePath ) )
     {
-        while( read_file( mapcycleFilePath, i++, szBuffer, charsmax( szBuffer ), b ) )
+        while( read_file( mapcycleFilePath, currentLineToReadIndex++, currentReadLine, charsmax( currentReadLine ), textLength ) )
         {
-            if( !ValidMap( szBuffer ) )
+            if( !ValidMap( currentReadLine ) )
             {
                 continue;
             }
             
-            if( !iMaps )
+            if( !mapsProcessedNumber )
             {
-                copy( szFirst, charsmax( szFirst ), szBuffer );
+                copy( firstMapcycleMap, charsmax( firstMapcycleMap ), currentReadLine );
             }
             
-            if( ++iMaps > g_nextMapCyclePosition )
+            if( ++mapsProcessedNumber > g_nextMapCyclePosition )
             {
-                copy( szNext, iNext, szBuffer );
-                g_nextMapCyclePosition = iMaps;
+                copy( nextMapName, nextMapNameMaxchars, currentReadLine );
+                g_nextMapCyclePosition = mapsProcessedNumber;
                 
-                LOGGER( 1, "    ( readMapCycle ) Just returning/blocking on 'iMaps > g_nextMapCyclePosition'." );
+                LOGGER( 1, "    ( readMapCycle ) Just returning/blocking on 'mapsProcessedNumber > g_nextMapCyclePosition'." );
                 return;
             }
         }
     }
     
-    if( !iMaps )
+    if( !mapsProcessedNumber )
     {
         LOGGER( 1, "WARNING: Couldn't find a valid map or the file doesn't exist (file ^"%s^")", mapcycleFilePath );
         log_amx( "WARNING: Couldn't find a valid map or the file doesn't exist (file ^"%s^")", mapcycleFilePath );
         
-        copy( szNext, iNext, g_currentMapName );
+        copy( nextMapName, nextMapNameMaxchars, g_currentMapName );
     }
     else
     {
-        copy( szNext, iNext, szFirst );
+        copy( nextMapName, nextMapNameMaxchars, firstMapcycleMap );
     }
     
-    LOGGER( 4, "( readMapCycle ) | szNext: %s, iNext: %d", szNext, iNext );
+    LOGGER( 4, "( readMapCycle ) | nextMapName: %s, nextMapNameMaxchars: %d", nextMapName, nextMapNameMaxchars );
     g_nextMapCyclePosition = 1;
 }
 
