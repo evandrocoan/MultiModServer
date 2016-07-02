@@ -720,6 +720,7 @@ public plugin_init()
     cvar_extendmapAllowStay      = register_cvar( "amx_extendmap_allow_stay", "0" );
     cvar_isExtendmapOrderAllowed = register_cvar( "amx_extendmap_allow_order", "0" );
     cvar_extendmapAllowStayType  = register_cvar( "amx_extendmap_allow_stay_type", "0" );
+    cvar_disabledValuePointer    = register_cvar( "gal_disabled_value_pointer", "0", FCVAR_SPONLY );
     
     register_cvar( "gal_server_starting", "1", FCVAR_SPONLY );
     register_cvar( "gal_version", PLUGIN_VERSION, FCVAR_SERVER | FCVAR_SPONLY );
@@ -732,7 +733,6 @@ public plugin_init()
     register_cvar( "gal_debug_level", debug_level, FCVAR_SERVER | FCVAR_SPONLY );
 #endif
     
-    cvar_disabledValuePointer      = register_cvar( "gal_disabled_value_pointer", "0", FCVAR_SPONLY );
     cvar_nextMapChangeAnnounce     = register_cvar( "gal_nextmap_change", "1" );
     cvar_isToShowVoteCounter       = register_cvar( "gal_vote_show_counter", "0" );
     cvar_isToShowNoneOption        = register_cvar( "gal_vote_show_none", "0" );
@@ -987,22 +987,32 @@ stock initializeGlobalArrays()
     }
 }
 
+/**
+ * The cvars 'mp_fraglimit' is registered only the first time the server starts.
+ */
 stock mp_fraglimit_virtual_support()
 {
-    // mp_fraglimit
-    cvar_mp_fraglimit = get_cvar_pointer( "mp_fraglimit" );
+    LOGGER( 128, "I AM ENTERING ON mp_fraglimit_virtual_support(0)" );
     
-    if( !cvar_mp_fraglimit
-        && !get_pcvar_num( cvar_fragLimitSupport ) )
+    // mp_fraglimit
+    new exists_mp_fraglimit_cvar = cvar_exists( "mp_fraglimit" );
+    LOGGER( 1, "( mp_fraglimit_virtual_support ) exists_mp_fraglimit_cvar: %d", exists_mp_fraglimit_cvar );
+    
+    if( !exists_mp_fraglimit_cvar
+        && !get_pcvar_num( cvar_fragLimitSupport )
+        && get_cvar_num( "gal_server_starting" ) )
     {
         cvar_mp_fraglimit = cvar_disabledValuePointer;
     }
     else
     {
-        if( !cvar_mp_fraglimit )
+        if( exists_mp_fraglimit_cvar )
         {
-            cvar_mp_fraglimit           = register_cvar( "mp_fraglimit", "0" );
-            g_isVirtualFragLimitSupport = true;
+            cvar_mp_fraglimit = get_cvar_pointer( "mp_fraglimit" );
+        }
+        else
+        {
+            cvar_mp_fraglimit = register_cvar( "mp_fraglimit", "0" );
         }
         
         register_event( "DeathMsg", "client_death_event", "a" );
@@ -1090,11 +1100,13 @@ public cacheCvarsValues()
     g_fragLimitNumber        = get_pcvar_num( cvar_mp_fraglimit );
     g_timeLimitNumber        = get_pcvar_num( cvar_mp_timelimit );
     
-    g_isColoredChatEnabled = get_pcvar_num( cvar_coloredChatEnabled ) != 0;
-    g_isExtendmapAllowStay = get_pcvar_num( cvar_extendmapAllowStay ) != 0;
-    g_isToShowNoneOption   = get_pcvar_num( cvar_isToShowNoneOption ) != 0;
-    g_isToShowVoteCounter  = get_pcvar_num( cvar_isToShowVoteCounter ) != 0;
-    g_isToShowExpCountdown = get_pcvar_num( cvar_isToShowExpCountdown ) != 0;
+    
+    g_isColoredChatEnabled      = get_pcvar_num( cvar_coloredChatEnabled ) != 0;
+    g_isExtendmapAllowStay      = get_pcvar_num( cvar_extendmapAllowStay ) != 0;
+    g_isToShowNoneOption        = get_pcvar_num( cvar_isToShowNoneOption ) != 0;
+    g_isToShowVoteCounter       = get_pcvar_num( cvar_isToShowVoteCounter ) != 0;
+    g_isToShowExpCountdown      = get_pcvar_num( cvar_isToShowExpCountdown ) != 0;
+    g_isVirtualFragLimitSupport = get_pcvar_num( cvar_fragLimitSupport ) != 0;
     
     g_maxVotingChoices = max( min( MAX_OPTIONS_IN_VOTE, get_pcvar_num( cvar_voteMapChoiceCount ) ), 2 );
 }
@@ -1212,7 +1224,7 @@ public round_start_event()
 
 public client_death_event()
 {
-    LOGGER( 128, "I AM ENTERING ON client_death_event(0)" );
+    LOGGER( 0, "I AM ENTERING ON client_death_event(0)" );
     
     static frags;
     static killerId;
@@ -1224,13 +1236,8 @@ public client_death_event()
         if( ( ( ( frags = ++g_playersKills[ killerId ] ) + VOTE_START_FRAGS() ) > g_fragLimitNumber )
             && !IS_END_OF_MAP_VOTING_GOING_ON() )
         {
-            LOGGER( 128, "( client_death_event ) killerId: %d, frags: %d, g_fragLimitNumber: %d", \
-                                                 killerId,     frags,     g_fragLimitNumber );
-            
             if( get_pcvar_num( cvar_endOfMapVote ) )
             {
-                LOGGER( 128, "( client_death_event ) Starting voting by frags.");
-                
                 g_isVotingByFrags = true;
                 vote_startDirector( false );
             }
@@ -1241,10 +1248,11 @@ public client_death_event()
             g_greatestKillerFrags = frags;
             
             if( g_isVirtualFragLimitSupport
-                && g_greatestKillerFrags => g_fragLimitNumber )
+                && g_greatestKillerFrags >= g_fragLimitNumber
+                && !g_isTimeToChangeLevel )
             {
                 g_isTimeToChangeLevel = true;
-                intermission_display();
+                process_last_round();
             }
         }
     }
@@ -2387,7 +2395,7 @@ public cmd_listrecent( player_id )
 
 public cmd_listrecent_handler( player_id, menu, item )
 {
-    LOGGER( 1, "( cmd_listrecent_handler ) | player_id: %d, menu: %d, item: %d", player_id, menu, item );
+    LOGGER( 128, "( cmd_listrecent_handler ) | player_id: %d, menu: %d, item: %d", player_id, menu, item );
     
     if( item < 0 )
     {
@@ -2403,7 +2411,7 @@ public cmd_listrecent_handler( player_id, menu, item )
 
 public cmd_cancelVote( player_id, level, cid )
 {
-    LOGGER( 1, "( cmd_cancelVote ) player_id: %d, level: %d, cid: %d", player_id, level, cid );
+    LOGGER( 128, "( cmd_cancelVote ) player_id: %d, level: %d, cid: %d", player_id, level, cid );
     
     if( !cmd_access( player_id, level, cid, 1 ) )
     {
@@ -2421,7 +2429,7 @@ public cmd_cancelVote( player_id, level, cid )
  */
 public cmd_startVote( player_id, level, cid )
 {
-    LOGGER( 1, "( cmd_startVote ) player_id: %d, level: %d, cid: %d", player_id, level, cid );
+    LOGGER( 128, "( cmd_startVote ) player_id: %d, level: %d, cid: %d", player_id, level, cid );
     
     if( !cmd_access( player_id, level, cid, 1 ) )
     {
@@ -2470,7 +2478,7 @@ public cmd_startVote( player_id, level, cid )
 
 public cmd_createMapFile( player_id, level, cid )
 {
-    LOGGER( 1, "( cmd_createMapFile ) | player_id: %d, level: %d, cid: %d", player_id, level, cid );
+    LOGGER( 128, "( cmd_createMapFile ) | player_id: %d, level: %d, cid: %d", player_id, level, cid );
     
     if( !cmd_access( player_id, level, cid, 1 ) )
     {
@@ -2557,7 +2565,7 @@ public cmd_createMapFile( player_id, level, cid )
  */
 public cmd_maintenanceMode( player_id, level, cid )
 {
-    LOGGER( 1, "( cmd_maintenanceMode ) player_id: %d, level: %d, cid: %d", player_id, level, cid );
+    LOGGER( 128, "( cmd_maintenanceMode ) player_id: %d, level: %d, cid: %d", player_id, level, cid );
     
     if( !cmd_access( player_id, level, cid, 1 ) )
     {
@@ -4737,10 +4745,10 @@ public vote_display( argument[ 2 ] )
         g_voteDuration--;
     }
     
-    LOGGER( 4, "  ( votedisplay ) player_id: %i, updateTimeRemaining: %i, \
-            g_isToRefreshVoteStatus: %i,  g_totalVoteOptions: %i, len( g_voteStatusClean ): %i", \
-                                  argument[ 1 ], argument[ 0 ], \
-            g_isToRefreshVoteStatus,      g_totalVoteOptions,  strlen( g_voteStatusClean )  );
+    LOGGER( 4, "  ( votedisplay ) player_id: %i, updateTimeRemaining: %i", \
+                                  argument[ 1 ], argument[ 0 ]  );
+    LOGGER( 4, "  ( votedisplay ) g_isToRefreshVoteStatus: %i,  g_totalVoteOptions: %i, strlen( g_voteStatusClean ): %i", \
+                                  g_isToRefreshVoteStatus,      g_totalVoteOptions,     strlen( g_voteStatusClean )  );
     
     if( g_isToRefreshVoteStatus
         || isVoteOver )
@@ -5378,9 +5386,9 @@ stock announceRegistedVote( player_id, pressedKeyCode )
 
 stock computeVoteMapLine( voteMapLine[], voteMapLineLength, voteIndex )
 {
-    LOGGER( 128, "I AM ENTERING ON computeVoteMapLine(3) | voteMapLine: %s, voteMapLineLength: %d, \
-    voteIndex: %d",                                        voteMapLine,     voteMapLineLength, \
-    voteIndex );
+    LOGGER( 0, "I AM ENTERING ON computeVoteMapLine(3) | voteMapLine: %s, voteMapLineLength: %d, \
+            voteIndex: %d",                                      voteMapLine,     voteMapLineLength, \
+            voteIndex );
     
     new voteCountNumber = g_arrayOfMapsWithVotesNumber[ voteIndex ];
     
@@ -5507,8 +5515,8 @@ public computeVotes()
     }
     
     // At for: g_totalVoteOptions: 5, numberOfMapsAtFirstPosition: 3, numberOfMapsAtSecondPosition: 0
-    LOGGER( 16, "After for to determine which maps are in 1st and 2nd places, \
-            g_totalVoteOptions: %d, \
+    LOGGER( 16, "After for to determine which maps are in 1st and 2nd places." );
+    LOGGER( 16, "g_totalVoteOptions: %d, \
             numberOfMapsAtFirstPosition: %d, \
             numberOfMapsAtSecondPosition: %d", \
             g_totalVoteOptions, numberOfMapsAtFirstPosition, numberOfMapsAtSecondPosition );
@@ -6755,7 +6763,7 @@ stock get_realplayersnum()
 
 stock percent( is, of )
 {
-    LOGGER( 128, "I AM ENTERING ON percent(2) | is: %d, of: %d", is, of );
+    LOGGER( 0, "I AM ENTERING ON percent(2) | is: %d, of: %d", is, of );
     return ( of != 0 ) ? floatround( floatmul( float( is ) / float( of ), 100.0 ) ) : 0;
 }
 
@@ -6868,8 +6876,7 @@ stock color_print( player_id, message[], any: ... )
             {
                 for( argument_index = 2; argument_index < params_number; argument_index++ )
                 {
-                    LOGGER( 64, "( color_print ) argument_index: %d, getarg( argument_index ): %s / %d...", \
-                            argument_index, getarg( argument_index ), getarg( argument_index ) );
+                    LOGGER( 64, "( color_print ) getarg(%d): %s", argument_index, getarg( argument_index ) );
                     
                     // retrieve original param value and check if it's LANG_PLAYER value
                     if( getarg( argument_index ) == LANG_PLAYER )
@@ -6883,12 +6890,12 @@ stock color_print( player_id, message[], any: ... )
                         }
                         formated_message[ string_index ] = '^0';
                         
-                        LOGGER( 64, "( color_print ) player_id: %d, formated_message: %s, \
-                                GetLangTransKey( formated_message ) != TransKey_Bad: %d, \
-                                multi_lingual_constants_number: %d, string_index: %d...", \
-                                player_id, formated_message, \
-                                GetLangTransKey( formated_message ) != TransKey_Bad, \
-                                multi_lingual_constants_number, string_index );
+                        LOGGER( 64, "( color_print ) player_id: %d, formated_message: %s", \
+                                player_id, formated_message );
+                        LOGGER( 64, "( color_print ) GetLangTransKey( formated_message ) != TransKey_Bad: %d, \
+                              multi_lingual_constants_number: %d, string_index: %d...", \
+                              GetLangTransKey( formated_message ) != TransKey_Bad, \
+                              multi_lingual_constants_number, string_index );
                         
                         if( GetLangTransKey( formated_message ) != TransKey_Bad )
                         {
@@ -7321,7 +7328,7 @@ stock bool:ValidMap( mapname[] )
     
     if( is_map_valid( mapname ) )
     {
-        LOGGER( 1, "    ( bool:ValidMap ) Returning true. [is_map_valid]" );
+        LOGGER( 1, "    ( ValidMap ) Returning true. [is_map_valid]" );
         return true;
     }
     
@@ -7331,7 +7338,7 @@ stock bool:ValidMap( mapname[] )
     // The mapname was too short to possibly house the .bsp extension
     if( len < 0 )
     {
-        LOGGER( 1, "    ( bool:ValidMap ) Returning false. [len < 0]" );
+        LOGGER( 1, "    ( ValidMap ) Returning false. [len < 0]" );
         return false;
     }
     
@@ -7344,12 +7351,12 @@ stock bool:ValidMap( mapname[] )
         // recheck
         if( is_map_valid( mapname ) )
         {
-            LOGGER( 1, "    ( bool:ValidMap ) Returning true. [is_map_valid]" );
+            LOGGER( 1, "    ( ValidMap ) Returning true. [is_map_valid]" );
             return true;
         }
     }
     
-    LOGGER( 1, "    ( bool:ValidMap ) Returning false." );
+    LOGGER( 1, "    ( ValidMap ) Returning false." );
     return false;
 }
 
