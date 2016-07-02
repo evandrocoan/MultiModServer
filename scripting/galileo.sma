@@ -953,6 +953,10 @@ stock loadPluginSetttings()
     
     server_cmd( "exec %s/galileo.cfg", g_configsDirPath );
     server_exec();
+    
+    // cache server cvars later, to wait load the server configurations
+    cacheCvarsValues();
+    set_task( DELAY_TO_WAIT_THE_SERVER_CVARS_TO_BE_LOADED, "cacheCvarsValues" );
 }
 
 stock initializeGlobalArrays()
@@ -1058,9 +1062,6 @@ stock configureServerStart()
     {
         g_isToCreateGameCrashFlag = false;
     }
-    
-    // cache server cvars later, to wait load the server configurations
-    set_task( DELAY_TO_WAIT_THE_SERVER_CVARS_TO_BE_LOADED, "cacheCvarsValues" );
     
     if( get_cvar_num( "gal_server_starting" ) )
     {
