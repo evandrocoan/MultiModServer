@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-117";
+new const PLUGIN_VERSION[] = "v2.6.1-119";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -226,22 +226,28 @@ stock allowToUseSemicolonOnMacrosEnd()
 }
 
 
-#define TASKID_REMINDER                   52691153
-#define TASKID_SHOW_LAST_ROUND_HUD        52691052
-#define TASKID_DELETE_USERS_MENUS         72748052
-#define TASKID_PREVENT_INFITY_GAME        82448699
-#define TASKID_EMPTYSERVER                98176977
-#define TASKID_START_VOTING_BY_ROUNDS     52691160
-#define TASKID_START_VOTING_BY_TIMER      72681180
-#define TASKID_PROCESS_LAST_ROUND         42691173
-#define TASKID_VOTE_HANDLEDISPLAY         52691264
-#define TASKID_VOTE_DISPLAY               52691165
-#define TASKID_VOTE_EXPIRE                52691166
-#define TASKID_PENDING_VOTE_COUNTDOWN     13464364
-#define TASKID_DBG_FAKEVOTES              52691167
-#define TASKID_VOTE_STARTDIRECTOR         52691168
-#define TASKID_MAP_CHANGE                 52691169
-#define TASKID_FINISH_GAME_WITH_HALF_TIME 52559169
+/**
+ * Task ids are 100000 apart.
+ */
+enum (+= 100000)
+{
+    TASKID_RTV_REMINDER = 100000, // start with 100000
+    TASKID_SHOW_LAST_ROUND_HUD,
+    TASKID_DELETE_USERS_MENUS,
+    TASKID_PREVENT_INFITY_GAME,
+    TASKID_EMPTYSERVER,
+    TASKID_START_VOTING_BY_ROUNDS,
+    TASKID_START_VOTING_BY_TIMER,
+    TASKID_PROCESS_LAST_ROUND,
+    TASKID_VOTE_HANDLEDISPLAY,
+    TASKID_VOTE_DISPLAY,
+    TASKID_VOTE_EXPIRE,
+    TASKID_PENDING_VOTE_COUNTDOWN,
+    TASKID_DBG_FAKEVOTES,
+    TASKID_VOTE_STARTDIRECTOR,
+    TASKID_MAP_CHANGE,
+    TASKID_FINISH_GAME_TIME_BY_HALF,
+}
 
 #define RTV_CMD_STANDARD  1
 #define RTV_CMD_SHORTHAND 2
@@ -1261,7 +1267,7 @@ public isHandledGameCrashAction( &startAction )
                 g_isToCreateGameCrashFlag = false; 
                 
                 // Wait until the mp_timelimit, etc cvars, to be loaded from the configuration file.
-                set_task( DELAY_TO_WAIT_THE_SERVER_CVARS_TO_BE_LOADED + 10.0, "setGameToFinishAtHalfTime", TASKID_FINISH_GAME_WITH_HALF_TIME );
+                set_task( DELAY_TO_WAIT_THE_SERVER_CVARS_TO_BE_LOADED + 10.0, "setGameToFinishAtHalfTime", TASKID_FINISH_GAME_TIME_BY_HALF );
             }
         }
     }
@@ -4312,7 +4318,7 @@ stock configureVotingStart( bool:is_forced_voting )
                             && !is_forced_voting );
     
     // stop RTV reminders
-    remove_task( TASKID_REMINDER );
+    remove_task( TASKID_RTV_REMINDER );
 }
 
 stock vote_startDirector( bool:is_forced_voting )
@@ -6038,7 +6044,7 @@ public vote_rock( player_id )
     if( g_rockedVote[ player_id ] )
     {
         color_print( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_ALREADY", rocksNeeded - g_rockedVoteCount );
-        rtv_remind( TASKID_REMINDER + player_id );
+        rtv_remind( TASKID_RTV_REMINDER + player_id );
         
         LOGGER( 1, "    ( vote_rock ) Just Returning/blocking, already rocked the vote." );
         return;
@@ -6050,9 +6056,9 @@ public vote_rock( player_id )
     color_print( player_id, "^1%L", player_id, "GAL_ROCK_SUCCESS" );
     
     // make sure the rtv reminder timer has stopped
-    if( task_exists( TASKID_REMINDER ) )
+    if( task_exists( TASKID_RTV_REMINDER ) )
     {
-        remove_task( TASKID_REMINDER );
+        remove_task( TASKID_RTV_REMINDER );
     }
     
     // determine if there have been enough rocks for a vote yet
@@ -6067,13 +6073,13 @@ public vote_rock( player_id )
     else
     {
         // let the players know how many more rocks are needed
-        rtv_remind( TASKID_REMINDER );
+        rtv_remind( TASKID_RTV_REMINDER );
         
         if( get_pcvar_num( cvar_rtvReminder ) )
         {
             // initialize the rtv reminder timer to repeat how many
             // rocks are still needed, at regular intervals
-            set_task( get_pcvar_float( cvar_rtvReminder ) * 60.0, "rtv_remind", TASKID_REMINDER, _, _, "b" );
+            set_task( get_pcvar_float( cvar_rtvReminder ) * 60.0, "rtv_remind", TASKID_RTV_REMINDER, _, _, "b" );
         }
     }
 }
@@ -6099,7 +6105,7 @@ stock vote_getRocksNeeded()
 public rtv_remind( param )
 {
     LOGGER( 128, "I AM ENTERING ON rtv_remind(1) | param: %d", param );
-    new player_id = param - TASKID_REMINDER;
+    new player_id = param - TASKID_RTV_REMINDER;
     
     // let the players know how many more rocks are needed
     color_print( player_id, "^1%L", LANG_PLAYER, "GAL_ROCK_NEEDMORE", vote_getRocksNeeded() - g_rockedVoteCount );
@@ -6573,7 +6579,7 @@ public startEmptyCycleSystem()
  */
 stock map_getNext( Array:mapArray, currentMap[], nextMap[ MAX_MAPNAME_LENGHT ] )
 {
-    LOGGER( 128, "I AM ENTERING ON cmd_HL1_votemap(3) | currentMap: %s, nextMap: %s", currentMap, nextMap );
+    LOGGER( 128, "I AM ENTERING ON map_getNext(3) | currentMap: %s", currentMap );
     new thisMap[ MAX_MAPNAME_LENGHT ];
     
     new nextmapIndex = 0;
@@ -7012,7 +7018,7 @@ stock cancelVoting( bool:isToDoubleReset = false )
     remove_task( TASKID_MAP_CHANGE );
     remove_task( TASKID_PROCESS_LAST_ROUND );
     remove_task( TASKID_SHOW_LAST_ROUND_HUD );
-    remove_task( TASKID_FINISH_GAME_WITH_HALF_TIME );
+    remove_task( TASKID_FINISH_GAME_TIME_BY_HALF );
     
     finalizeVoting();
     resetRoundEnding();
