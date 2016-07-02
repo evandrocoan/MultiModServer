@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-105";
+new const PLUGIN_VERSION[] = "v2.6.1-106";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -5709,7 +5709,6 @@ public computeVotes()
         if( numberOfMapsAtFirstPosition > 1 )
         {
             winnerVoteMapIndex = firstPlaceChoices[ random_num( 0, numberOfMapsAtFirstPosition - 1 ) ];
-            
             color_print( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_TIED", numberOfMapsAtFirstPosition );
         }
         else
@@ -5737,7 +5736,6 @@ public computeVotes()
                      && g_isTimeToRestart )
             {
                 color_print( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_STAY" );
-                
                 process_last_round();
             }
             else if( g_isGameFinalVoting ) // "extend map" won
@@ -5770,7 +5768,6 @@ public computeVotes()
             server_exec();
             
             color_print( 0, "^1%L", LANG_PLAYER, "GAL_NEXTMAP", g_nextMap );
-            
             process_last_round();
             
             g_voteStatus |= VOTE_IS_OVER;
@@ -5781,13 +5778,16 @@ public computeVotes()
         if( !get_pcvar_num( cvar_isExtendmapOrderAllowed ) )
         {
             winnerVoteMapIndex = random_num( 0, g_totalVoteOptions - 1 );
-            
             setNextMap( g_votingMapNames[ winnerVoteMapIndex ] );
+            
+            color_print( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_RANDOM", g_nextMap );
+        }
+        else
+        {
+            color_print( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_ORDERED", g_nextMap );
         }
         
-        color_print( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_RANDOM", g_nextMap );
         process_last_round();
-        
         g_voteStatus |= VOTE_IS_OVER;
     }
     
