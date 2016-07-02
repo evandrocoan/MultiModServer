@@ -536,6 +536,7 @@ new cvar_voteMinPlayers;
 new cvar_NomMinPlayersControl;
 new cvar_voteMinPlayersMapFilePath;
 new cvar_whitelistMinPlayers;
+new cvar_whitelistNomBlock;
 new cvar_voteWhiteListMapFilePath;
 
 
@@ -613,6 +614,7 @@ enum _:MapNominationsType
  */
 new Array:g_recentListMapsArray;
 new Trie: g_recentMapsTrie;
+new Trie: g_blackListTrieForWhitelist;
 
 
 new Array:g_fillerMapsArray;
@@ -644,6 +646,8 @@ new g_fragLimitNumber;
 new g_greatestKillerFrags;
 new g_timeLimitNumber;
 new g_roundsPlayedNumber;
+new g_whitelistNomBlockTime;
+
 
 new g_totalTerroristsWins;
 new g_totalCtWins;
@@ -799,6 +803,7 @@ public plugin_init()
     cvar_NomMinPlayersControl      = register_cvar( "gal_nom_minplayers_control", "0" );
     cvar_voteMinPlayersMapFilePath = register_cvar( "gal_vote_minplayers_mapfile", "" );
     cvar_whitelistMinPlayers       = register_cvar( "gal_whitelist_minplayers", "0" );
+    cvar_whitelistNomBlock         = register_cvar( "gal_whitelist_nom_block", "0" );
     cvar_voteWhiteListMapFilePath  = register_cvar( "gal_vote_whitelist_mapfile", "" );
     
     nextmap_plugin_init();
@@ -925,6 +930,16 @@ public plugin_cfg()
     configureRTV();
     configureServerStart();
     configureServerMapChange();
+    
+    if( IS_WHITELIST_ENABLED()
+        && get_pcvar_num( cvar_whitelistNomBlock ) )
+    {
+        g_blackListTrieForWhitelist = TrieCreate();
+        loadCurrentBlackList( g_blackListTrieForWhitelist );
+        
+        new secondsLeft = get_timeleft();
+        computeNextWhiteListLoadTime( secondsLeft );
+    }
     
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
     configureTheUnitTests();
@@ -1111,7 +1126,6 @@ public cacheCvarsValues()
     g_showVoteStatusType     = get_pcvar_num( cvar_showVoteStatusType );
     g_fragLimitNumber        = get_pcvar_num( cvar_mp_fraglimit );
     g_timeLimitNumber        = get_pcvar_num( cvar_mp_timelimit );
-    
     
     g_isColoredChatEnabled      = get_pcvar_num( cvar_coloredChatEnabled ) != 0;
     g_isExtendmapAllowStay      = get_pcvar_num( cvar_extendmapAllowStay ) != 0;
@@ -1492,10 +1506,41 @@ stock saveCurrentAndNextMapNames( nextMap[] )
     }
 }
 
+stock computeNextWhiteListLoadTime( secondsLeft )
+{
+    new currentHour;
+    new currentMinute;
+    new currentSecond;
+    new secondsLeftForReload;
+    
+    time( currentHour, currentMinute, currentSecond );
+    secondsLeftForReload = ( 3600 - ( currentMinute * 60 + currentSecond ) );
+    
+    // When the 'secondsLeftForReload' is greater than 'secondsLeft', we will change map before
+    // the next reload, then when do not need to reload on this current server session.
+    if( secondsLeft < secondsLeftForReload )
+    {
+        g_whitelistNomBlockTime = 0;
+    }
+    else
+    {
+        g_whitelistNomBlockTime = secondsLeft - secondsLeftForReload + 1;
+    }
+}
+
 public vote_manageEnd()
 {
     LOGGER( 0, "I AM ENTERING ON vote_manageEnd(0)" );
-    new secondsLeft = get_timeleft();
+    
+    static secondsLeft;
+    secondsLeft = get_timeleft();
+    
+    if( g_whitelistNomBlockTime
+        && g_whitelistNomBlockTime > secondsLeft )
+    {
+        computeNextWhiteListLoadTime( secondsLeft );
+        loadCurrentBlackList( g_blackListTrieForWhitelist );
+    }
     
     // are we ready to start an "end of map" vote?
     if( IS_TIME_TO_START_THE_END_OF_MAP_VOTING( secondsLeft )
@@ -3808,8 +3853,6 @@ stock processLoadedMapsFile( mapsPerGroup[], groupCount, blockedCount,
     new unsuccessfulCount;
     new allowedFilersCount;
     
-    
-    new Trie:   blackListTrie;
     new mapName [ MAX_MAPNAME_LENGHT ];
     
     new      isWhitelistEnabled    = IS_WHITELIST_ENABLED();
@@ -3828,10 +3871,12 @@ stock processLoadedMapsFile( mapsPerGroup[], groupCount, blockedCount,
         blockedFillerMapsTrie = TrieCreate();
     }
     
-    if( isWhitelistEnabled )
+    if( isWhitelistEnabled
+        && !g_blackListTrieForWhitelist
+        && !get_pcvar_num( cvar_whitelistNomBlock ) )
     {
-        blackListTrie = TrieCreate();
-        loadCurrentBlackList( blackListTrie );
+        g_blackListTrieForWhitelist = TrieCreate();
+        loadCurrentBlackList( g_blackListTrieForWhitelist );
     }
     
     // fill remaining slots with random maps from each filler file, as much as possible
@@ -3948,7 +3993,7 @@ stock processLoadedMapsFile( mapsPerGroup[], groupCount, blockedCount,
                 }
                 
                 if( isWhitelistEnabled
-                    && TrieKeyExists( blackListTrie, mapName ) )
+                    && TrieKeyExists( g_blackListTrieForWhitelist, mapName ) )
                 {
                     LOGGER( 8, "    Trying to block: %s, by the whitelist map setting.", mapName );
                     
@@ -3979,11 +4024,6 @@ stock processLoadedMapsFile( mapsPerGroup[], groupCount, blockedCount,
         } // end 'if g_totalVoteOptions < g_maxVotingChoices'
     
     } // end 'for groupIndex < groupCount'
-    
-    if( blackListTrie )
-    {
-        TrieDestroy( blackListTrie );
-    }
     
     if( blockedFillerMapsTrie )
     {
@@ -4036,9 +4076,9 @@ stock vote_addFiller( blockedFillerMaps[][], blockedFillerMapsMaxChars = 0, bloc
 
 } // end 'vote_addFiller()'
 
-stock loadCurrentBlackList( Trie:blackListTrie )
+stock loadCurrentBlackList( Trie:g_blackListTrieForWhitelist )
 {
-    LOGGER( 128, "I AM ENTERING ON loadCurrentBlackList(1) | Trie:blackListTrie: %d", blackListTrie );
+    LOGGER( 128, "I AM ENTERING ON loadCurrentBlackList(1) | Trie:g_blackListTrieForWhitelist: %d", g_blackListTrieForWhitelist );
     
     new startHour;
     new endHour;
@@ -4150,7 +4190,7 @@ stock loadCurrentBlackList( Trie:blackListTrie )
         }
         else
         {
-            TrieSetCell( blackListTrie, currentLine, 0 );
+            TrieSetCell( g_blackListTrieForWhitelist, currentLine, 0 );
         }
     }
     
@@ -7147,6 +7187,11 @@ public plugin_end()
         TrieDestroy( g_recentMapsTrie );
     }
     
+    if( g_blackListTrieForWhitelist )
+    {
+        TrieDestroy( g_blackListTrieForWhitelist );
+    }
+    
     // Clear the dynamic array menus, just to be sure.
     for( new currentIndex = 0; currentIndex < MAX_PLAYERS_COUNT; ++currentIndex )
     {
@@ -7908,8 +7953,8 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     {
         new nextMap[ MAX_MAPNAME_LENGHT ];
         
-        new test_id                  = register_test( 0, "test_gal_in_empty_cycle_case4" );
-        new Array: emptyCycleMapList = ArrayCreate( MAX_MAPNAME_LENGHT );
+        new test_id                 = register_test( 0, "test_gal_in_empty_cycle_case4" );
+        new Array:emptyCycleMapList = ArrayCreate( MAX_MAPNAME_LENGHT );
         
         ArrayPushString( emptyCycleMapList, "de_dust2" );
         ArrayPushString( emptyCycleMapList, "de_inferno" );
