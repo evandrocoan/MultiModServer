@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-106";
+new const PLUGIN_VERSION[] = "v2.6.1-107";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -897,10 +897,17 @@ public plugin_cfg()
     g_user_msgid = get_user_msgid( "SayText" );
 #endif
     
+    // setup some server settings
     resetRoundsScores();
     loadPluginSetttings();
     initializeGlobalArrays();
+    
+    // the 'mp_fraglimit_virtual_support(0)' could register a new cvar, hence only cache them after it.
     mp_fraglimit_virtual_support();
+    cacheCvarsValues();
+    
+    // re-cache later to wait load some late server configurations, as the per-map configs.
+    set_task( DELAY_TO_WAIT_THE_SERVER_CVARS_TO_BE_LOADED, "cacheCvarsValues" );
     
     LOGGER( 4, "" );
     LOGGER( 4, " The current map is [%s].", g_currentMap );
@@ -953,10 +960,6 @@ stock loadPluginSetttings()
     
     server_cmd( "exec %s/galileo.cfg", g_configsDirPath );
     server_exec();
-    
-    // cache server cvars later, to wait load the server configurations
-    cacheCvarsValues();
-    set_task( DELAY_TO_WAIT_THE_SERVER_CVARS_TO_BE_LOADED, "cacheCvarsValues" );
 }
 
 stock initializeGlobalArrays()
@@ -1014,9 +1017,13 @@ stock mp_fraglimit_virtual_support()
         {
             cvar_mp_fraglimit = get_cvar_pointer( "mp_fraglimit" );
         }
-        else
+        else if( get_pcvar_num( cvar_fragLimitSupport ) )
         {
             cvar_mp_fraglimit = register_cvar( "mp_fraglimit", "0" );
+        }
+        else
+        {
+            cvar_mp_fraglimit = cvar_disabledValuePointer;
         }
         
         register_event( "DeathMsg", "client_death_event", "a" );
