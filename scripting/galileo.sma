@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-107";
+new const PLUGIN_VERSION[] = "v2.6.1-108";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -7176,8 +7176,12 @@ stock delete_users_menus( bool:isToDoubleReset )
 public nextmap_plugin_init()
 {
     LOGGER( 128, "I AM ENTERING ON nextmap_plugin_init(0)" );
-    pause( "acd", "nextmap.amxx" );
     
+    new mapcycleFilePath       [ MAX_FILE_PATH_LENGHT ];
+    new mapcycleCurrentIndex   [ MAX_MAPNAME_LENGHT ];
+    new tockenMapcycleAndPosion[ MAX_MAPNAME_LENGHT + MAX_FILE_PATH_LENGHT ];
+    
+    pause( "acd", "nextmap.amxx" );
     register_dictionary( "nextmap.txt" );
     register_event( "30", "changeMap", "a" );
     
@@ -7194,11 +7198,6 @@ public nextmap_plugin_init()
     }
     
     get_mapname( g_currentMapName, charsmax( g_currentMapName ) );
-    
-    new mapcycleFilePath       [ MAX_FILE_PATH_LENGHT ];
-    new mapcycleCurrentIndex   [ MAX_MAPNAME_LENGHT ];
-    new tockenMapcycleAndPosion[ MAX_MAPNAME_LENGHT + MAX_FILE_PATH_LENGHT ];
-    
     get_localinfo( "lastmapcycle", tockenMapcycleAndPosion, charsmax( tockenMapcycleAndPosion ) );
     
     parse( tockenMapcycleAndPosion,
@@ -7213,11 +7212,21 @@ public nextmap_plugin_init()
     }
     else
     {
+        new lastMap[ MAX_MAPNAME_LENGHT ];
+        
         g_nextMapCyclePosition = str_to_num( mapcycleCurrentIndex );
+        get_localinfo( "galileo_lastmap", lastMap, charsmax( lastMap ) );
+        
+        if( equali( g_currentMapName, lastMap ) )
+        {
+            g_nextMapCyclePosition--;
+        }
     }
-    readMapCycle( g_mapCycleFilePath, g_nextMapName, charsmax( g_nextMapName ) );
     
+    // Increments by 1, the global variable 'g_nextMapCyclePosition', or set its to 1.
+    readMapCycle( g_mapCycleFilePath, g_nextMapName, charsmax( g_nextMapName ) );
     set_pcvar_string( g_cvar_amx_nextmap, g_nextMapName );
+    
     saveCurrentMapCycleSetting();
 }
 
@@ -7230,10 +7239,12 @@ stock saveCurrentMapCycleSetting()
     LOGGER( 128, "I AM ENTERING ON saveCurrentMapCycleSetting(0)" );
     new tockenMapcycleAndPosion[ MAX_MAPNAME_LENGHT + MAX_FILE_PATH_LENGHT ];
     
-    formatex( tockenMapcycleAndPosion, charsmax( tockenMapcycleAndPosion ),
-            "%s %d", g_mapCycleFilePath, g_nextMapCyclePosition );
+    formatex( tockenMapcycleAndPosion, charsmax( tockenMapcycleAndPosion ), "%s %d",
+            g_mapCycleFilePath, g_nextMapCyclePosition );
     
-    set_localinfo( "lastmapcycle", tockenMapcycleAndPosion ); // save lastmapcycle settings
+    // save lastmapcycle settings
+    set_localinfo( "lastmapcycle", tockenMapcycleAndPosion );
+    set_localinfo( "galileo_lastmap", g_currentMapName );
 }
 
 stock getNextMapName( szArg[], iMax )
@@ -7406,7 +7417,9 @@ readMapCycle( mapcycleFilePath[], szNext[], iNext )
     
     if( !iMaps )
     {
+        LOGGER( 1, "WARNING: Couldn't find a valid map or the file doesn't exist (file ^"%s^")", mapcycleFilePath );
         log_amx( "WARNING: Couldn't find a valid map or the file doesn't exist (file ^"%s^")", mapcycleFilePath );
+        
         copy( szNext, iNext, g_currentMapName );
     }
     else

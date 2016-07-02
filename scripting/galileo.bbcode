@@ -363,35 +363,6 @@ galileo.amxx
 [LIST=1]
 
 [*][QUOTE=vase070;2413168]i thing i noticed something 
-
-so when using 
-
-"gal_vote_minplayers_mapfile"
-
-when vote comes and no one chooses any map the plugin will choose a completely random map that is not
-on the "gal_vote_minplayers_mapfile" is this supposed to be like this ? is the plugin not supposed to
-choose a random map from the vote itself and set it as next when no one votes or am i wrong ? 
-
-pictures : 
-
-when vote comes : [url]http://i.imgur.com/a4U950P.jpg[/url]
-when vote ended and no one choose any map : [url]http://i.imgur.com/XbFwXl4.jpg[/url]
-
-as you can see de_train was not on the vote :) 
-
-the same thing is with "gal_emptyserver_mapfile" when no one is on the server and vote prob comes plugin
-still chooses random map that is not on the "gal_emptyserver_mapfile" :)[/QUOTE]
-1) When there is anyone in the server, the voting do not comes up.
-2) It just says "will choose a completely random map", when you have this setting below "amx_extendmap_allow_order"
-set to 1, it is actually following the map cycle. It shows "will choose a completely random map", for
-the setting set to 1 because I did not to write a new LANG (language) for this. But, to end this confusion,
-I will to add a new language constant saying that it is following the map cycle, when it  is following the
-map cycle, instead of just saying "will choose a completely random map":
-[code]
-// If 0, choose a random map as next map, when anyone vote for next map.
-// If 1, follow the map cycle map order, when anyone vote for next map.
-amx_extendmap_allow_order 1
-[/code]
 3) When your server is on the empty cycle mode, it does not start a map vote, and it does not follow you map
 cycle, despite the setting "amx_extendmap_allow_order " above. It starts following your empty cycle map file list.
 
@@ -507,6 +478,7 @@ gal_whitelist_nom_block 1
 [B][URL="https://forums.alliedmods.net/member.php?u=49801"]BeNq![/URL][/B]: For the server crash report, testing and the cvar 'gal_emptyserver_wait' bug report.
 [B][URL="https://forums.alliedmods.net/member.php?u=149700"]Napoleon_be[/URL][/B]: For the Dutch [nl] language translation.
 [B][URL="https://forums.alliedmods.net/member.php?u=269887"]waynesmith15[/URL][/B]: For the Half-Life 'mp_fraglimit' feature support request.
+[B][URL="https://forums.alliedmods.net/member.php?u=144216"]vase070[/URL][/B]: For the missing 'GAL_WINNER_ORDERED' bug report.
 [QUOTE=Brad;684848]
 A lot of time and effort went into making this plugin, making features just right,
 making sure there were no bugs, making sure it was easy to use. If you are glad I made
@@ -524,6 +496,7 @@ Thank you!  It means a lot to me.
 
 [B]2016-04-10 | v3.0.0-xx[/B]
 [LIST=1]
+[*]Added new LANG constant 'GAL_WINNER_ORDERED' to be used when anyone voted and is to follow the map cycle.
 [*]Added new cvar 'gal_mp_fraglimit_support', to enable the cvar 'mp_fraglimit' on game modes as 'Counter-Strike'.
 [*]Added support to the Half-File cvar 'mp_fraglimit' for change map limiter as the 'mp_timelimit'.
 [*]Added hierarchical maps list filling ignoring, after go throw all available maps.
@@ -533,6 +506,7 @@ Thank you!  It means a lot to me.
 [*]Added the server maintenance mode feature. Use 'gal_command_maintenance' to enable it.
 [*]Added the new cvar 'gal_game_crash_recreation' configure the game crash actions.
 [*]Allowed the whitelist feature to be used with the minimum players nominations control feature.
+[*]Fixed the mapcycle increasing the nextmap index on server restart.
 [*]Fixed the minplayers list priority over the whitelist feature.
 [*]Fixed ArrayGetString native error when the mapcyclefile is invalid.
 [*]Fixed displaying an empty name when showing the user names some times.
