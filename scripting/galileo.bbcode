@@ -257,6 +257,13 @@ de_dust2_long
      
      When the banned maps list is bigger than all maps on the server, what happens?
      It stops counting/using the recent banned list maps and randonly to start adding banned maps.
+     
+     
+ [*] [COLOR="Blue"][B]The Half-File cvar 'mp_fraglimit' Support[/B][/COLOR]:
+     Enable virtual support for the [COLOR="Blue"]Half-File[/COLOR] cvar '[B]mp_fraglimit[/B]' on game modes as '[COLOR="Red"]Counter-Strike[/COLOR]' which do
+     not support the cvar 'mp_fraglimit'. You need to configure the 'mp_fraglimit' as you configure the
+     'mp_timelimit' cvar on you 'server.cfg' file. See the cvar '[B]gal_mp_fraglimit_support[/B]' on the 'galileo.cfg'
+     configuration file.
 [/LIST]
 [/QUOTE]
 
@@ -354,27 +361,6 @@ galileo.amxx
 ******************************** [anchor]TODO[/anchor][B][SIZE="6"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] *********************************
 
 [LIST=1]
-
-[*][QUOTE=waynesmith15;2413085]Hi,
-
-A few problems I have had in the last few weeks of running this is below.
-
-1. The Map Vote Functions fail to run when the Player Kill count mp_fraglimit  is reached.
-- My suggestion to fix this would be to have the Vote start at the start a few mins after the start
-of a new map. Or for the Mod to read mp_fraglimit and when it gets within say a set number of kills
-auto start the voting system.
-
-Thanks for your time with this.
-
-Way.[/QUOTE]
-1) The 'mp_fraglimit' was not supported (half-life), but I will provide support to it on the next version.
-Done: Implemented the 'mp_fraglimit' core functionning.
-TODO: Add credits from each report.
-
-2) Bad settings must not block the second voting after an map extension. I will look into the code and
-see what is happening.
-
-
 
 [*][QUOTE=vase070;2413168]i thing i noticed something 
 
@@ -538,6 +524,7 @@ Thank you!  It means a lot to me.
 
 [B]2016-04-10 | v3.0.0-xx[/B]
 [LIST=1]
+[*]Added new cvar 'gal_mp_fraglimit_support', to enable the cvar 'mp_fraglimit' on game modes as 'Counter-Strike'.
 [*]Added support to the Half-File cvar 'mp_fraglimit' for change map limiter as the 'mp_timelimit'.
 [*]Added hierarchical maps list filling ignoring, after go throw all available maps.
 [*]Added new cvar 'gal_recent_nom_maps' to allow the recent maps to be nominated.
