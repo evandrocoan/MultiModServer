@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-110";
+new const PLUGIN_VERSION[] = "v2.6.1-114";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -465,7 +465,7 @@ new cvar_sv_maxspeed;
 new cvar_extendmapAllowStayType;
 new cvar_nextMapChangeAnnounce;
 new cvar_disabledValuePointer;
-new cvar_firstServerStartFlag;
+new cvar_isFirstServerStart;
 new cvar_isToShowVoteCounter;
 new cvar_isToShowNoneOption;
 new cvar_voteShowNoneOptionType;
@@ -722,7 +722,7 @@ public plugin_init()
     cvar_isExtendmapOrderAllowed = register_cvar( "amx_extendmap_allow_order", "0" );
     cvar_extendmapAllowStayType  = register_cvar( "amx_extendmap_allow_stay_type", "0" );
     cvar_disabledValuePointer    = register_cvar( "gal_disabled_value_pointer", "0", FCVAR_SPONLY );
-    cvar_firstServerStartFlag    = register_cvar( "gal_server_starting", "1", FCVAR_SPONLY );
+    cvar_isFirstServerStart    = register_cvar( "gal_server_starting", "1", FCVAR_SPONLY );
     
     // print the current used debug information
 #if DEBUG_LEVEL >= DEBUG_LEVEL_NORMAL
@@ -988,7 +988,7 @@ stock initializeGlobalArrays()
         map_loadRecentList();
         register_clcmd( "say recentmaps", "cmd_listrecent", 0 );
         
-        if( !( get_pcvar_num( cvar_firstServerStartFlag )
+        if( !( get_pcvar_num( cvar_isFirstServerStart )
                && get_pcvar_num( cvar_serverStartAction ) ) )
         {
             map_writeRecentList();
@@ -1009,7 +1009,7 @@ stock mp_fraglimit_virtual_support()
     
     if( !exists_mp_fraglimit_cvar
         && !get_pcvar_num( cvar_fragLimitSupport )
-        && get_pcvar_num( cvar_firstServerStartFlag ) )
+        && get_pcvar_num( cvar_isFirstServerStart ) )
     {
         cvar_mp_fraglimit = cvar_disabledValuePointer;
     }
@@ -1067,12 +1067,8 @@ stock configureServerStart()
     {
         g_isToCreateGameCrashFlag = true;
     }
-    else
-    {
-        g_isToCreateGameCrashFlag = false;
-    }
     
-    if( get_pcvar_num( cvar_firstServerStartFlag ) )
+    if( get_pcvar_num( cvar_isFirstServerStart ) )
     {
         new backupMapsFilePath[ MAX_FILE_PATH_LENGHT ];
         formatex( backupMapsFilePath, charsmax( backupMapsFilePath ), "%s/%s", g_dataDirPath, CURRENT_AND_NEXTMAP_FILE_NAME );
@@ -1802,7 +1798,7 @@ public handleServerStart( backupMapsFilePath[] )
     new startAction;
     
     // this is the key that tells us if this server has been restarted or not
-    set_pcvar_num( cvar_firstServerStartFlag, 0 );
+    set_pcvar_num( cvar_isFirstServerStart, 0 );
     
     // take the defined "server start" action
     startAction = get_pcvar_num( cvar_serverStartAction );
@@ -6757,7 +6753,7 @@ public sort_stringsi( const elem1[], const elem2[], const array[], data[], data_
 
 stock get_realplayersnum()
 {
-    LOGGER( 128, "I AM ENTERING ON get_realplayersnum(0)" );
+    LOGGER( 0, "I AM ENTERING ON get_realplayersnum(0)" );
     
     new playersCount;
     new players[ MAX_PLAYERS ];
@@ -7251,20 +7247,20 @@ stock saveCurrentMapCycleSetting()
 
 stock getNextMapName( szArg[], iMax )
 {
-    LOGGER( 128, "I AM ENTERING ON getNextMapName(2) | szArg: %s, iMax: %d", szArg, iMax );
-    new len = get_pcvar_string( g_cvar_amx_nextmap, szArg, iMax );
+    LOGGER( 128, "I AM ENTERING ON getNextMapName(2) | iMax: %d", iMax );
+    new lenght = get_pcvar_string( g_cvar_amx_nextmap, szArg, iMax );
     
     if( ValidMap( szArg ) )
     {
-        LOGGER( 1, "    ( getNextMapName ) Returning len: %d", len );
-        return len;
+        LOGGER( 1, "    ( getNextMapName ) Returning lenght: %d, szArg: %s", lenght, szArg );
+        return lenght;
     }
     
-    len = copy( szArg, iMax, g_nextMapName );
+    lenght = copy( szArg, iMax, g_nextMapName );
     set_pcvar_string( g_cvar_amx_nextmap, g_nextMapName );
     
-    LOGGER( 1, "    ( getNextMapName ) Returning len: %d", len );
-    return len;
+    LOGGER( 1, "    ( getNextMapName ) Returning lenght: %d, szArg: %s", lenght, szArg );
+    return lenght;
 }
 
 public sayNextMap()
@@ -7339,8 +7335,8 @@ public changeMap()
         set_pcvar_float( g_cvar_mp_chattime, chattime + 2.0 ); // make sure mp_chattime is long
     }
     
-    new len = getNextMapName( nextmap_name, charsmax( nextmap_name ) ) + 1;
-    set_task( chattime, "delayedChange", 0, nextmap_name, len ); // change with 1.5 sec. delay
+    new lenght = getNextMapName( nextmap_name, charsmax( nextmap_name ) ) + 1;
+    set_task( chattime, "delayedChange", 0, nextmap_name, lenght ); // change with 1.5 sec. delay
 }
 
 stock bool:ValidMap( mapname[] )
@@ -7354,20 +7350,20 @@ stock bool:ValidMap( mapname[] )
     }
     
     // If the is_map_valid check failed, check the end of the string
-    new len = strlen( mapname ) - 4;
+    new lenght = strlen( mapname ) - 4;
     
     // The mapname was too short to possibly house the .bsp extension
-    if( len < 0 )
+    if( lenght < 0 )
     {
-        LOGGER( 0, "    ( ValidMap ) Returning false. [len < 0]" );
+        LOGGER( 0, "    ( ValidMap ) Returning false. [lenght < 0]" );
         return false;
     }
     
-    if( equali( mapname[ len ], ".bsp" ) )
+    if( equali( mapname[ lenght ], ".bsp" ) )
     {
         // If the ending was .bsp, then cut it off.
         // the string is by reference, so this copies back to the loaded text.
-        mapname[ len ] = '^0';
+        mapname[ lenght ] = '^0';
         
         // recheck
         if( is_map_valid( mapname ) )
@@ -7481,7 +7477,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         g_tests_idsAndNames     = ArrayCreate( MAX_SHORT_STRING );
         
         // delay needed to wait the 'server.cfg' run to load its saved cvars
-        if( !get_pcvar_num( cvar_firstServerStartFlag ) )
+        if( !get_pcvar_num( cvar_isFirstServerStart ) )
         {
             set_task( 2.0, "runTests" );
         }
@@ -7489,7 +7485,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         {
             print_logger( "" );
             print_logger( "    The Unit Tests are going to run only after the first server start." );
-            print_logger( "    gal_server_starting: %d", get_pcvar_num( cvar_firstServerStartFlag ) );
+            print_logger( "    gal_server_starting: %d", get_pcvar_num( cvar_isFirstServerStart ) );
             print_logger( "" );
         }
     }
