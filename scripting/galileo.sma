@@ -216,6 +216,7 @@ new const PLUGIN_VERSION[] = "v2.6.1-119";
 #endif
 
 
+
 /**
  * Dummy value used to use the do...while() statements to allow the semicolon ';' use at macros endings.
  */
@@ -224,7 +225,6 @@ new g_dummy_value = 0;
 stock allowToUseSemicolonOnMacrosEnd()
 {
 }
-
 
 /**
  * Task ids are 100000 apart.
@@ -311,6 +311,7 @@ enum (+= 100000)
 #define LISTMAPS_USERID 0
 #define LISTMAPS_LAST   1
 
+
 /**
  * The periodic task created on 'configureServerMapChange(0)' use this intervals in seconds to
  * start checking for an end map voting start.
@@ -320,16 +321,21 @@ enum (+= 100000)
 
 /**
  * The macro 'VOTE_ROUND_START_DETECTION_DELAYED(0)' use this second intervals. The default time
- * intervals range is 4 minutes.
+ * interval range is 4 minutes.
  */
 #define VOTE_ROUND_START_MIN_DELAY 500
 #define VOTE_ROUND_START_MAX_DELAY START_VOTEMAP_MIN_TIME
 
+/**
+ * The rounds number before the mp_maxrounds/mp_winlimit to be reached to start the map voting.
+ */
+#define VOTE_START_ROUNDS 4
+
 
 /**
- * Give time range to try detecting the round start, to avoid old buy weapons menu override.
+ * Give time range to try detecting the round start, to avoid the old buy weapons menu override.
  *
- * @param seconds     how many seconds are reaming to the map end.
+ * @param seconds     how many seconds are remaining to the map end.
  */
 #define VOTE_ROUND_START_DETECTION_DELAYED(%1) \
     ( %1 < VOTE_ROUND_START_MIN_DELAY \
@@ -337,15 +343,12 @@ enum (+= 100000)
 
 /**
  * To start the end map voting near the map time limit expiration.
+ * 
+ * @param seconds     how many seconds are remaining to the map end.
  */
 #define IS_TIME_TO_START_THE_END_OF_MAP_VOTING(%1) \
     ( %1 < START_VOTEMAP_MIN_TIME \
       && %1 > START_VOTEMAP_MAX_TIME )
-
-/**
- * The rounds number before the mp_maxrounds/mp_winlimit to be reached to start the map voting.
- */
-#define VOTE_START_ROUNDS 4
 
 /**
  * The frags/kills number before the mp_fraglimit to be reached and to start the map voting.
@@ -374,14 +377,18 @@ do \
       || g_voteStatus & VOTE_IS_OVER )
 
 /**
- * Boolean check for the whitelist feature.
+ * Boolean check for the Whitelist feature. The Whitelist feature specifies the time where the maps
+ * are allowed to be added to the voting list as fillers after the nominations being loaded.
  */
 #define IS_WHITELIST_ENABLED() \
     ( get_pcvar_num( cvar_whitelistMinPlayers ) == 1 \
       || get_realplayersnum() < get_pcvar_num( cvar_whitelistMinPlayers ) )
 
 /**
- * Boolean check for the nominations minimum players controlling feature.
+ * Boolean check for the nominations minimum players controlling feature. When there are less
+ * players than cvar 'cvar_voteMinPlayers' value on the server, use a different map file list
+ * specified at the cvar 'gal_vote_minplayers_mapfile' to fill the map voting as map fillers
+ * instead of the cvar 'gal_vote_mapfile' map file list.
  */
 #define IS_NOMINATION_MININUM_PLAYERS_CONTROL_ENABLED() \
     ( get_realplayersnum() < get_pcvar_num( cvar_voteMinPlayers ) \
@@ -451,6 +458,8 @@ do \
         copy( %2, charsmax( %2 ), "Unknown Dude" ); \
     } \
 } while( g_dummy_value )
+
+
 
 /**
  * Game cvars.
@@ -582,6 +591,7 @@ new Float:g_rtvWaitMinutes;
 new Float:g_originalTimelimit;
 new Float:g_original_sv_maxspeed;
 
+
 /**
  * Holds the Empty Cycle Map List feature maps used when the server is empty for some time to
  * change the map to a popular one.
@@ -648,7 +658,6 @@ new g_timeLimitNumber;
 new g_roundsPlayedNumber;
 new g_whitelistNomBlockTime;
 
-
 new g_totalTerroristsWins;
 new g_totalCtWins;
 new g_totalVoteOptions;
@@ -666,6 +675,7 @@ new COLOR_GREY  [ 3 ]; // \d
 
 new g_mapPrefixCount = 1;
 
+
 /**
  * Nextmap sub-plugin global variables.
  */
@@ -682,6 +692,7 @@ new g_voteStatusClean     [ 512 ];
 new g_configsDirPath [ MAX_FILE_PATH_LENGHT ];
 new g_dataDirPath    [ MAX_FILE_PATH_LENGHT ];
 
+
 /**
  * Nextmap sub-plugin global variables.
  */
@@ -696,7 +707,6 @@ new g_playerVotedWeight         [ MAX_PLAYERS_COUNT ];
 new g_generalUsePlayersMenuId   [ MAX_PLAYERS_COUNT ];
 new g_playersKills              [ MAX_PLAYERS_COUNT ];
 new g_arrayOfMapsWithVotesNumber[ MAX_OPTIONS_IN_VOTE ];
-
 
 new Array:g_currentMenuMapIndexForPlayers[ MAX_PLAYERS_COUNT ];
 
@@ -713,6 +723,7 @@ new g_votingMapNames [ MAX_OPTIONS_IN_VOTE ][ MAX_MAPNAME_LENGHT ];
 new g_nominationCount;
 new g_chooseMapMenuId;
 new g_chooseMapQuestionMenuId;
+
 
 public plugin_init()
 {
@@ -3384,7 +3395,7 @@ stock nomination_cancel( player_id, mapIndex )
         LOGGER( 1, "    ( nomination_cancel ) Just Returning/blocking, the voting is in progress." );
         return;
     }
-    else if( g_voteStatus & VOTE_IS_OVER ) // and if the outcome of the vote has already been determined
+    else if( g_voteStatus & VOTE_IS_OVER ) // and if the outcome of the vote hasn't already been determined
     {
         color_print( player_id, "^1%L", player_id, "GAL_CANCEL_FAIL_VOTEOVER" );
         
@@ -3450,9 +3461,19 @@ stock map_nominate( player_id, mapIndex, nominatorPlayerId = -1 )
     
     new mapName[ MAX_MAPNAME_LENGHT ];
     
-    ArrayGetString( g_nominationMapsArray, mapIndex, mapName, charsmax( mapName ) ); // get the nominated map name
-    LOGGER( 4, "( map_nominate ) mapIndex: %d, mapName: %s, ArraySize( g_nominationMapsArray ): %d,", \
-            mapIndex, mapName, ArraySize( g_nominationMapsArray ) );
+    // get the nominated map name
+    ArrayGetString( g_nominationMapsArray, mapIndex, mapName, charsmax( mapName ) ); 
+    LOGGER( 4, "( map_nominate ) mapIndex: %d, mapName: %s", mapIndex, mapName );
+    
+    if( IS_WHITELIST_ENABLED()
+        && get_pcvar_num( cvar_whitelistNomBlock )
+        && TrieKeyExists( g_blackListTrieForWhitelist, mapName ) )
+    {
+        color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_WHITELIST", mapName );
+        
+        LOGGER( 1, "    ( map_nominate ) The map: %s, was blocked by the whitelist map setting.", mapName );
+        return;
+    }
     
     // players can not nominate the current map
     if( equali( g_currentMap, mapName ) )
@@ -6021,7 +6042,7 @@ public vote_rock( player_id )
         LOGGER( 1, "    ( vote_rock ) Just Returning/blocking, the voting is in progress." );
         return;
     }
-    else if( g_voteStatus & VOTE_IS_OVER ) // and if the outcome of the vote has already been determined
+    else if( g_voteStatus & VOTE_IS_OVER ) // and if the outcome of the vote hasn't already been determined
     {
         color_print( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_VOTEOVER" );
         
