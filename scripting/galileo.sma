@@ -545,7 +545,8 @@ new cvar_voteMinPlayers;
 new cvar_NomMinPlayersControl;
 new cvar_voteMinPlayersMapFilePath;
 new cvar_whitelistMinPlayers;
-new cvar_whitelistNomBlock;
+new cvar_isWhiteListNomBlock;
+new cvar_isWhiteListBlockOut;
 new cvar_voteWhiteListMapFilePath;
 
 
@@ -624,7 +625,8 @@ enum _:MapNominationsType
  */
 new Array:g_recentListMapsArray;
 new Trie: g_recentMapsTrie;
-new Trie: g_blackListTrieForWhitelist;
+new Trie: g_whitelistTrie;
+new Trie: g_blackListTrieForWhiteList;
 
 
 new Array:g_fillerMapsArray;
@@ -814,7 +816,8 @@ public plugin_init()
     cvar_NomMinPlayersControl      = register_cvar( "gal_nom_minplayers_control", "0" );
     cvar_voteMinPlayersMapFilePath = register_cvar( "gal_vote_minplayers_mapfile", "" );
     cvar_whitelistMinPlayers       = register_cvar( "gal_whitelist_minplayers", "0" );
-    cvar_whitelistNomBlock         = register_cvar( "gal_whitelist_nom_block", "0" );
+    cvar_isWhiteListNomBlock       = register_cvar( "gal_whitelist_nom_block", "0" );
+    cvar_isWhiteListBlockOut       = register_cvar( "gal_whitelist_block_out", "0" );
     cvar_voteWhiteListMapFilePath  = register_cvar( "gal_vote_whitelist_mapfile", "" );
     
     nextmap_plugin_init();
@@ -926,8 +929,8 @@ public plugin_cfg()
     loadPluginSetttings();
     initializeGlobalArrays();
     
-    // the 'mp_fraglimit_virtual_support(0)' could register a new cvar, hence only cache them after it.
-    mp_fraglimit_virtual_support();
+    // the 'mp_fraglimitCvarSupport(0)' could register a new cvar, hence only cache them after it.
+    mp_fraglimitCvarSupport();
     cacheCvarsValues();
     
     // re-cache later to wait load some late server configurations, as the per-map configs.
@@ -938,19 +941,10 @@ public plugin_cfg()
     LOGGER( 4, " The next map is [%s]", g_nextMap );
     LOGGER( 4, "" );
     
-    configureRTV();
+    configureTheRTVFeature();
+    configureTheWhiteListFeature();
     configureServerStart();
     configureServerMapChange();
-    
-    if( IS_WHITELIST_ENABLED()
-        && get_pcvar_num( cvar_whitelistNomBlock ) )
-    {
-        g_blackListTrieForWhitelist = TrieCreate();
-        loadCurrentBlackList( g_blackListTrieForWhitelist );
-        
-        new secondsLeft = get_timeleft();
-        computeNextWhiteListLoadTime( secondsLeft );
-    }
     
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
     configureTheUnitTests();
@@ -1031,13 +1025,13 @@ stock initializeGlobalArrays()
 /**
  * The cvars 'mp_fraglimit' is registered only the first time the server starts.
  */
-stock mp_fraglimit_virtual_support()
+stock mp_fraglimitCvarSupport()
 {
-    LOGGER( 128, "I AM ENTERING ON mp_fraglimit_virtual_support(0)" );
+    LOGGER( 128, "I AM ENTERING ON mp_fraglimitCvarSupport(0)" );
     
     // mp_fraglimit
     new exists_mp_fraglimit_cvar = cvar_exists( "mp_fraglimit" );
-    LOGGER( 1, "( mp_fraglimit_virtual_support ) exists_mp_fraglimit_cvar: %d", exists_mp_fraglimit_cvar );
+    LOGGER( 1, "( mp_fraglimitCvarSupport ) exists_mp_fraglimit_cvar: %d", exists_mp_fraglimit_cvar );
     
     if( !exists_mp_fraglimit_cvar
         && !get_pcvar_num( cvar_fragLimitSupport )
@@ -1064,9 +1058,9 @@ stock mp_fraglimit_virtual_support()
     }
 }
 
-stock configureRTV()
+stock configureTheRTVFeature()
 {
-    LOGGER( 128, "I AM ENTERING ON configureRTV(0)" );
+    LOGGER( 128, "I AM ENTERING ON configureTheRTVFeature(0)" );
     
     g_rtvWaitMinutes = get_pcvar_float( cvar_rtvWaitMinutes );
     g_rtvWaitRounds  = get_pcvar_num( cvar_rtvWaitRounds );
@@ -1088,6 +1082,28 @@ stock configureRTV()
         }
         
         map_loadNominationList();
+    }
+}
+
+stock configureTheWhiteListFeature()
+{
+    LOGGER( 128, "I AM ENTERING ON configureTheWhiteListFeature(0)" );
+    
+    if( IS_WHITELIST_ENABLED()
+        && get_pcvar_num( cvar_isWhiteListNomBlock ) )
+    {
+        g_whitelistTrie             = TrieCreate();
+        g_blackListTrieForWhiteList = TrieCreate();
+        
+        loadWhiteListFile( g_blackListTrieForWhiteList );
+        
+        if( get_pcvar_num( cvar_isWhiteListBlockOut ) )
+        {
+            loadWhiteListFile( g_whitelistTrie, true );
+        }
+        
+        new secondsLeft = get_timeleft();
+        computeNextWhiteListLoadTime( secondsLeft );
     }
 }
 
@@ -1519,6 +1535,8 @@ stock saveCurrentAndNextMapNames( nextMap[] )
 
 stock computeNextWhiteListLoadTime( secondsLeft )
 {
+    LOGGER( 128, "I AM ENTERING ON computeNextWhiteListLoadTime(1) | secondsLeft: %d", secondsLeft );
+    
     new currentHour;
     new currentMinute;
     new currentSecond;
@@ -1550,7 +1568,12 @@ public vote_manageEnd()
         && g_whitelistNomBlockTime > secondsLeft )
     {
         computeNextWhiteListLoadTime( secondsLeft );
-        loadCurrentBlackList( g_blackListTrieForWhitelist );
+        loadWhiteListFile( g_blackListTrieForWhiteList );
+        
+        if( get_pcvar_num( cvar_isWhiteListBlockOut ) )
+        {
+            loadWhiteListFile( g_whitelistTrie, true );
+        }
     }
     
     // are we ready to start an "end of map" vote?
@@ -3466,8 +3489,16 @@ stock map_nominate( player_id, mapIndex, nominatorPlayerId = -1 )
     LOGGER( 4, "( map_nominate ) mapIndex: %d, mapName: %s", mapIndex, mapName );
     
     if( IS_WHITELIST_ENABLED()
-        && get_pcvar_num( cvar_whitelistNomBlock )
-        && TrieKeyExists( g_blackListTrieForWhitelist, mapName ) )
+        && get_pcvar_num( cvar_isWhiteListNomBlock )
+        && (
+               TrieKeyExists( g_blackListTrieForWhiteList, mapName )
+               ||
+               (
+                   get_pcvar_num( cvar_isWhiteListBlockOut )
+                   && !TrieKeyExists( g_whitelistTrie, mapName )
+               )
+           )
+      )
     {
         color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_WHITELIST", mapName );
         
@@ -3874,13 +3905,14 @@ stock processLoadedMapsFile( mapsPerGroup[], groupCount, blockedCount,
     new unsuccessfulCount;
     new allowedFilersCount;
     
-    new mapName [ MAX_MAPNAME_LENGHT ];
+    new mapName[ MAX_MAPNAME_LENGHT ];
     
     new      isWhitelistEnabled    = IS_WHITELIST_ENABLED();
     new      currentBlokerStrategy = 0;
     new bool:useMapIsTooRecent     = true;
     new bool:useIsPrefixInMenu     = true;
     new bool:useEqualiCurrentMap   = true;
+    new bool:isWhiteListOutBlock   = get_pcvar_num( cvar_isWhiteListBlockOut ) != 0;
     
     /**
      * This variable is to avoid double blocking which lead to the algorithm corruption and errors.
@@ -3893,11 +3925,23 @@ stock processLoadedMapsFile( mapsPerGroup[], groupCount, blockedCount,
     }
     
     if( isWhitelistEnabled
-        && !g_blackListTrieForWhitelist
-        && !get_pcvar_num( cvar_whitelistNomBlock ) )
+        && (
+                !g_blackListTrieForWhiteList
+                ||
+                (
+                    isWhiteListOutBlock
+                    && !g_whitelistTrie
+                )
+           )
+      )
     {
-        g_blackListTrieForWhitelist = TrieCreate();
-        loadCurrentBlackList( g_blackListTrieForWhitelist );
+        g_blackListTrieForWhiteList = TrieCreate();
+        loadWhiteListFile( g_blackListTrieForWhiteList );
+        
+        if( isWhiteListOutBlock )
+        {
+            loadWhiteListFile( g_whitelistTrie, true );
+        }
     }
     
     // fill remaining slots with random maps from each filler file, as much as possible
@@ -4014,7 +4058,15 @@ stock processLoadedMapsFile( mapsPerGroup[], groupCount, blockedCount,
                 }
                 
                 if( isWhitelistEnabled
-                    && TrieKeyExists( g_blackListTrieForWhitelist, mapName ) )
+                    && (
+                            TrieKeyExists( g_blackListTrieForWhiteList, mapName )
+                            ||
+                            (
+                                isWhiteListOutBlock
+                                && !TrieKeyExists( g_whitelistTrie, mapName )
+                            )
+                       )
+                  )
                 {
                     LOGGER( 8, "    Trying to block: %s, by the whitelist map setting.", mapName );
                     
@@ -4095,11 +4147,11 @@ stock vote_addFiller( blockedFillerMaps[][], blockedFillerMapsMaxChars = 0, bloc
                 blockedFillerMaps[ 0 ], blockedCount, copiedChars, mapListToPrint[ 3 ] );
     }
 
-} // end 'vote_addFiller()'
+} // end 'vote_addFiller(3)'
 
-stock loadCurrentBlackList( Trie:g_blackListTrieForWhitelist )
+stock loadWhiteListFile( Trie:listTrie, bool:isWhiteList = false )
 {
-    LOGGER( 128, "I AM ENTERING ON loadCurrentBlackList(1) | Trie:g_blackListTrieForWhitelist: %d", g_blackListTrieForWhitelist );
+    LOGGER( 128, "I AM ENTERING ON loadWhiteListFile(2) | listTrie: %d, isWhiteList: %d", listTrie, isWhiteList );
     
     new startHour;
     new endHour;
@@ -4117,7 +4169,7 @@ stock loadCurrentBlackList( Trie:g_blackListTrieForWhitelist )
     new currentHour   = str_to_num( currentHourString );
     new whiteListFile = fopen( whiteListFilePath, "rt" );
     
-    LOGGER( 8, "( loadCurrentBlackList ) currentHour: %d, currentHourString: %s", currentHour, currentHourString );
+    LOGGER( 8, "( loadWhiteListFile ) currentHour: %d, currentHourString: %s", currentHour, currentHourString );
 
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
     if( g_test_current_time )
@@ -4149,8 +4201,8 @@ stock loadCurrentBlackList( Trie:g_blackListTrieForWhitelist )
             replace_all( currentLine, charsmax( currentLine ), "[", "" );
             replace_all( currentLine, charsmax( currentLine ), "]", "" );
             
-            LOGGER( 8, "( loadCurrentBlackList ) " );
-            LOGGER( 8, "( loadCurrentBlackList ) currentLine: %s (currentHour: %d)", currentLine, currentHour );
+            LOGGER( 8, "( loadWhiteListFile ) " );
+            LOGGER( 8, "( loadWhiteListFile ) currentLine: %s (currentHour: %d)", currentLine, currentHour );
             
             // broke the current line
             strtok( currentLine,
@@ -4175,32 +4227,33 @@ stock loadCurrentBlackList( Trie:g_blackListTrieForWhitelist )
             {
                 if( startHour >= currentHour > endHour )
                 {
-                    isToSkipThisGroup = true;
+                    isToSkipThisGroup = ( isWhiteList? false : true );
                 }
                 else
                 {
-                    isToSkipThisGroup = false;
+                    isToSkipThisGroup = ( isWhiteList? true : false );
                 }
             }
             else // if( startHour < endHour )
             {
                 if( startHour <= currentHour < endHour )
                 {
-                    isToSkipThisGroup = true;
+                    isToSkipThisGroup = ( isWhiteList? false : true );
                 }
                 else
                 {
-                    isToSkipThisGroup = false;
+                    isToSkipThisGroup = ( isWhiteList? true : false );
                 }
             }
             
-            LOGGER( 8, "( loadCurrentBlackList ) startHour > endHour: %d", startHour > endHour );
-            LOGGER( 8, "( loadCurrentBlackList ) startHour >= currentHour > endHour: %d", \
-                    startHour >= currentHour > endHour );
+            LOGGER( 8, "( loadWhiteListFile ) %d > %d: %d", startHour, endHour, startHour > endHour );
+            LOGGER( 8, "( loadWhiteListFile ) %d >= %d > %d: %d", \
+                    startHour, currentHour, endHour, startHour >= currentHour > endHour );
             
-            LOGGER( 8, "( loadCurrentBlackList ) startHour < endHour: %d", startHour < endHour );
-            LOGGER( 8, "( loadCurrentBlackList ) startHour <= currentHour < endHour: %d, \
-                    isToSkipThisGroup: %d", startHour <= currentHour < endHour, isToSkipThisGroup );
+            LOGGER( 8, "( loadWhiteListFile ) %d < %d: %d", startHour, endHour, startHour < endHour );
+            LOGGER( 8, "( loadWhiteListFile ) %d <= %d < %d: %d, isToSkipThisGroup: %d", \
+                    startHour, currentHour, endHour, \
+                    startHour <= currentHour < endHour, isToSkipThisGroup );
             
             goto proceed;
         }
@@ -4211,12 +4264,13 @@ stock loadCurrentBlackList( Trie:g_blackListTrieForWhitelist )
         }
         else
         {
-            TrieSetCell( g_blackListTrieForWhitelist, currentLine, 0 );
+            TrieSetCell( listTrie, currentLine, 0 );
         }
     }
     
     fclose( whiteListFile );
-}
+    
+} // end loadWhiteListFile(2)
 
 stock loadNormalVoteChoices()
 {
@@ -7208,9 +7262,14 @@ public plugin_end()
         TrieDestroy( g_recentMapsTrie );
     }
     
-    if( g_blackListTrieForWhitelist )
+    if( g_blackListTrieForWhiteList )
     {
-        TrieDestroy( g_blackListTrieForWhitelist );
+        TrieDestroy( g_blackListTrieForWhiteList );
+    }
+    
+    if( g_whitelistTrie )
+    {
+        TrieDestroy( g_whitelistTrie );
     }
     
     // Clear the dynamic array menus, just to be sure.
@@ -7990,7 +8049,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     }
     
     /**
-     * This tests if the function 'loadCurrentBlackList()' 1º case is working properly.
+     * This tests if the function 'loadWhiteListFile()' 1º case is working properly.
      */
     public test_loadCurrentBlackList_case1()
     {
@@ -8020,7 +8079,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         }
         
         g_test_current_time = 23;
-        loadCurrentBlackList( blackListTrie );
+        loadWhiteListFile( blackListTrie );
         g_test_current_time = 0;
         
         SET_TEST_FAILURE( test_id, TrieKeyExists( blackListTrie, "de_dust1" ), \
@@ -8043,7 +8102,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     }
     
     /**
-     * This tests if the function 'loadCurrentBlackList()' 2º case is working properly.
+     * This tests if the function 'loadWhiteListFile()' 2º case is working properly.
      */
     public test_loadCurrentBlackList_case2()
     {
@@ -8051,7 +8110,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         new Trie:blackListTrie = TrieCreate();
         
         g_test_current_time = 22;
-        loadCurrentBlackList( blackListTrie );
+        loadWhiteListFile( blackListTrie );
         g_test_current_time = 0;
         
         SET_TEST_FAILURE( test_id, TrieKeyExists( blackListTrie, "de_dust4" ), \
@@ -8064,7 +8123,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     }
     
     /**
-     * This tests if the function 'loadCurrentBlackList()' 3º case is working properly.
+     * This tests if the function 'loadWhiteListFile()' 3º case is working properly.
      */
     public test_loadCurrentBlackList_case3()
     {
@@ -8072,7 +8131,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         new Trie:blackListTrie = TrieCreate();
         
         g_test_current_time = 12;
-        loadCurrentBlackList( blackListTrie );
+        loadWhiteListFile( blackListTrie );
         g_test_current_time = 0;
         
         SET_TEST_FAILURE( test_id, TrieKeyExists( blackListTrie, "de_dust7" ), \
