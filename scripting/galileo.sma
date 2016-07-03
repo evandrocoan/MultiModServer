@@ -3942,7 +3942,7 @@ stock processLoadedMapsFile( maxMapsPerGroupToUse[], groupCount, blockedCount,
     new filersMapCount;
     new unsuccessfulCount;
     new allowedFilersCount;
-    new currentBlokerStrategy;
+    new currentBlockerStrategy;
     
     new mapName[ MAX_MAPNAME_LENGHT ];
     
@@ -3979,25 +3979,46 @@ stock processLoadedMapsFile( maxMapsPerGroupToUse[], groupCount, blockedCount,
     // The Whitelist out block feature, disables The Map Groups Feature.
     if( isWhiteListOutBlock )
     {
-        filersMapCount = ArraySize( g_whitelistArray );
-        
-    #if defined DEBUG
-        new currentMapIndex;
-        
-        LOGGER( 8, "" );
-        LOGGER( 8, "( processLoadedMapsFile|FOR in)" );
-        for( currentMapIndex = 0; currentMapIndex < filersMapCount; ++currentMapIndex )
+        blockedFillerMapsMaxChars = 0;
+        groupCount                = 1;
+    }
+    
+    // fill remaining slots with random maps from each filler file, as much as possible
+    for( new groupIndex = 0; groupIndex < groupCount; ++groupIndex )
+    {
+        if( isWhiteListOutBlock )
         {
-            ArrayGetString( g_whitelistArray, currentMapIndex, mapName, charsmax( mapName ) );
-            LOGGER( 8, "( processLoadedMapsFile|FOR ) g_whitelistArray[%d]: %s", currentMapIndex, mapName );
+            maxMapsPerGroupToUse[ groupIndex ] = MAX_MAPS_IN_VOTE;
+            filersMapCount                     = ArraySize( g_whitelistArray );
+        }
+        else
+        {
+            filersMapCount = map_populateList( g_fillerMapsArray, fillersFilePaths[ groupIndex ], fillersFilePathsMaxChars );
         }
         
-        LOGGER( 8, "( processLoadedMapsFile|FOR out)" );
+    #if defined DEBUG
+        if( isWhiteListOutBlock )
+        {
+            new currentMapIndex;
+            
+            LOGGER( 8, "" );
+            LOGGER( 8, "( processLoadedMapsFile|FOR in)" );
+            for( currentMapIndex = 0; currentMapIndex < filersMapCount; ++currentMapIndex )
+            {
+                ArrayGetString( g_whitelistArray, currentMapIndex, mapName, charsmax( mapName ) );
+                LOGGER( 8, "( processLoadedMapsFile|FOR ) g_whitelistArray[%d]: %s", currentMapIndex, mapName );
+            }
+            
+            LOGGER( 8, "( processLoadedMapsFile|FOR out)" );
+        }
     #endif
         
-        LOGGER( 8, "( processLoadedMapsFile|isWhiteListOutBlock ) filersMapCount: %i, \
-                g_totalVoteOptions: %i, g_maxVotingChoices: %i", \
-                filersMapCount, g_totalVoteOptions, g_maxVotingChoices );
+        LOGGER( 8, "[%i] groupCount:%i, filersMapCount: %i,  g_totalVoteOptions: %i, \
+                g_maxVotingChoices: %i", \
+                groupIndex, groupCount, filersMapCount, g_totalVoteOptions, \
+                g_maxVotingChoices );
+        LOGGER( 8, "    fillersFilePaths[%i]: %s", groupIndex, fillersFilePaths[ groupIndex ] );
+        LOGGER( 8, "" );
         
         if( g_totalVoteOptions < g_maxVotingChoices
             && filersMapCount )
@@ -4005,30 +4026,40 @@ stock processLoadedMapsFile( maxMapsPerGroupToUse[], groupCount, blockedCount,
             allowedFilersCount =
                     min(
                             min(
-                                    MAX_MAPS_IN_VOTE,
+                                    maxMapsPerGroupToUse[ groupIndex ],
                                     g_maxVotingChoices - g_totalVoteOptions
-                               ),
+                                ),
                             filersMapCount
-                       );
+                        );
             
-            LOGGER( 8, "( processLoadedMapsFile|isWhiteListOutBlock ) allowedFilersCount: %i, MaxCount: %i", \
-                    allowedFilersCount, g_maxVotingChoices - g_totalVoteOptions );
+            LOGGER( 8, "[%i] allowedFilersCount: %i   maxMapsPerGroupToUse[%i]: %i   MaxCount: %i", \
+                    groupIndex, allowedFilersCount, groupIndex, maxMapsPerGroupToUse[ groupIndex ], \
+                    g_maxVotingChoices - g_totalVoteOptions );
             
             for( choice_index = 0; choice_index < allowedFilersCount; ++choice_index )
             {
+                keepSearching:
+                
             #if defined DEBUG
                 new currentMapIndex = 0;
             #endif
                 
-                unsuccessfulCount     = 0;
-                currentBlokerStrategy = 0;
+                mapIndex               = random_num( 0, filersMapCount - 1 );
+                unsuccessfulCount      = 0;
+                currentBlockerStrategy = -1;
                 
-                mapIndex = random_num( 0, filersMapCount - 1 );
-                ArrayGetString( g_whitelistArray, mapIndex, mapName, charsmax( mapName ) );
+                if( isWhiteListOutBlock )
+                {
+                    ArrayGetString( g_whitelistArray, mapIndex, mapName, charsmax( mapName ) );
+                }
+                else
+                {
+                    ArrayGetString( g_fillerMapsArray, mapIndex, mapName, charsmax( mapName ) );
+                }
                 
                 LOGGER( 8, "" );
-                LOGGER( 8, "( processLoadedMapsFile|isWhiteListOutBlock ) choice_index: %i, mapIndex: %i, mapName: %s", \
-                        choice_index, mapIndex, mapName );
+                LOGGER( 8, "( in ) [%i] choice_index: %i, mapIndex: %i, mapName: %s", \
+                        groupIndex, choice_index, mapIndex, mapName );
                 
                 while( map_isInMenu( mapName )
                        || (
@@ -4043,27 +4074,31 @@ stock processLoadedMapsFile( maxMapsPerGroupToUse[], groupCount, blockedCount,
                             useIsPrefixInMenu
                             && isPrefixInMenu( mapName )
                           )
+                       || (
+                            blockedFillerMapsMaxChars
+                            && TrieKeyExists( blockedFillerMapsTrie, mapName )
+                          )
                      )
                 {
                     LOGGER( 8, "%d. ( processLoadedMapsFile|while_in ) mapName: %s, map_isInMenu: %d, \
                             is_theCurrentMap: %d, map_isTooRecent: %d", \
                             ++currentMapIndex, mapName, map_isInMenu( mapName ), \
                             equali( g_currentMap, mapName ), map_isTooRecent( mapName ) );
-                    LOGGER( 8, "          isPrefixInMenu: %d, TrieKeyExists( blockedFillerMapsTrie, mapName ): %d, \
-                                          !TrieKeyExists( g_whitelistTrie, mapName ): %d", \
-                            isPrefixInMenu( mapName ), \
+                    LOGGER( 8, "          isPrefixInMenu: %d, TrieKeyExists( blockedFillerMapsTrie ): %d, \
+                                                              !TrieKeyExists( g_whitelistTrie ): %d", \
+                                          isPrefixInMenu( mapName ), \
                             ( blockedFillerMapsMaxChars ? TrieKeyExists( blockedFillerMapsTrie, mapName ) : false ), \
                             ( isWhiteListOutBlock ? !TrieKeyExists( g_whitelistTrie, mapName ) : false ) );
-                    LOGGER( 8, "          currentBlokerStrategy: %d, useMapIsTooRecent: %d, useIsPrefixInMenu: %d, \
-                                          useEqualiCurrentMap: %d, unsuccessfulCount:%d", \
-                                          currentBlokerStrategy,     useMapIsTooRecent,     useIsPrefixInMenu, \
-                                          useEqualiCurrentMap,     unsuccessfulCount );
+                    LOGGER( 8, "          useMapIsTooRecent: %d, useIsPrefixInMenu: %d, useEqualiCurrentMap: %d", \
+                                          useMapIsTooRecent,     useIsPrefixInMenu,     useEqualiCurrentMap );
+                    LOGGER( 8, "          currentBlockerStrategy: %d, unsuccessfulCount:%d, blockedFillerMapsMaxChars: %d", \
+                                          currentBlockerStrategy,     unsuccessfulCount,    blockedFillerMapsMaxChars );
                     
                     // Heuristics to try to approximate the maximum menu map numbers, when there are just
                     // a few maps to fill the voting menu and there are a lot of filler restrictions.
                     if( unsuccessfulCount >= filersMapCount )
                     {
-                        switch( currentBlokerStrategy++ )
+                        switch( ++currentBlockerStrategy )
                         {
                             case 0:
                             {
@@ -4087,12 +4122,28 @@ stock processLoadedMapsFile( maxMapsPerGroupToUse[], groupCount, blockedCount,
                             {
                                 useIsPrefixInMenu = false;
                             }
+                            case 5:
+                            {
+                                if( isWhiteListOutBlock )
+                                {
+                                    LOGGER( 8, "WARNING! The BlockerStrategy case 5 is not used by the WhiteListOutBlock." );
+                                    
+                                    currentBlockerStrategy++;
+                                    goto defaultSwitchCase;
+                                }
+
+                                blockedFillerMapsMaxChars = 0;
+                            }
                             default:
                             {
+                                defaultSwitchCase:
                                 LOGGER( 8, "WARNING! unsuccessfulCount: %i, filersMapCount: %i", unsuccessfulCount, filersMapCount );
+                                
                                 goto exitSearch;
                             }
                         }
+                        
+                        unsuccessfulCount = 0;
                     }
                     
                     if( ++mapIndex >= filersMapCount )
@@ -4100,22 +4151,31 @@ stock processLoadedMapsFile( maxMapsPerGroupToUse[], groupCount, blockedCount,
                         mapIndex = 0;
                     }
                     
+                    LOGGER( 8, "" );
                     unsuccessfulCount++;
-                    ArrayGetString( g_whitelistArray, mapIndex, mapName, charsmax( mapName ) );
+                    
+                    if( isWhiteListOutBlock )
+                    {
+                        ArrayGetString( g_whitelistArray, mapIndex, mapName, charsmax( mapName ) );
+                    }
+                    else
+                    {
+                        ArrayGetString( g_fillerMapsArray, mapIndex, mapName, charsmax( mapName ) );
+                    }
                     
                     LOGGER( 8, "%d. ( processLoadedMapsFile|while_out ) mapName: %s, map_isInMenu: %d, \
                             is_theCurrentMap: %d, map_isTooRecent: %d", \
                             currentMapIndex, mapName, map_isInMenu( mapName ), \
                             equali( g_currentMap, mapName ), map_isTooRecent( mapName ) );
-                    LOGGER( 8, "          isPrefixInMenu: %d, TrieKeyExists( blockedFillerMapsTrie, mapName ): %d, \
-                                                             !TrieKeyExists( g_whitelistTrie, mapName ): %d", \
-                            isPrefixInMenu( mapName ), \
+                    LOGGER( 8, "          isPrefixInMenu: %d, TrieKeyExists( blockedFillerMapsTrie ): %d, \
+                                                             !TrieKeyExists( g_whitelistTrie ): %d", \
+                                          isPrefixInMenu( mapName ), \
                             ( blockedFillerMapsMaxChars ? TrieKeyExists( blockedFillerMapsTrie, mapName ) : false ), \
                             ( isWhiteListOutBlock ? !TrieKeyExists( g_whitelistTrie, mapName ) : false ) );
-                    LOGGER( 8, "          currentBlokerStrategy: %d, useMapIsTooRecent: %d, useIsPrefixInMenu: %d, \
-                                          useEqualiCurrentMap: %d, unsuccessfulCount:%d", \
-                                          currentBlokerStrategy,     useMapIsTooRecent,     useIsPrefixInMenu, \
-                                          useEqualiCurrentMap,     unsuccessfulCount );
+                    LOGGER( 8, "          useMapIsTooRecent: %d, useIsPrefixInMenu: %d, useEqualiCurrentMap: %d", \
+                                          useMapIsTooRecent,     useIsPrefixInMenu,     useEqualiCurrentMap );
+                    LOGGER( 8, "          currentBlockerStrategy: %d, unsuccessfulCount:%d, blockedFillerMapsMaxChars: %d", \
+                                          currentBlockerStrategy,     unsuccessfulCount,    blockedFillerMapsMaxChars );
                 }
                 
                 if( g_dummy_value )
@@ -4126,199 +4186,41 @@ stock processLoadedMapsFile( maxMapsPerGroupToUse[], groupCount, blockedCount,
                     break;
                 }
                 
+                if( isWhitelistEnabled
+                    && !isWhiteListOutBlock
+                    && TrieKeyExists( g_blackListTrieForWhiteList, mapName ) )
+                {
+                    LOGGER( 8, "    Trying to block: %s, by the whitelist map setting...", mapName );
+                    
+                    if( !TrieKeyExists( blockedFillerMapsTrie, mapName ) )
+                    {
+                        LOGGER( 8, "    BLOCKED!" );
+                        
+                        if( blockedCount < MAX_NOMINATION_COUNT )
+                        {
+                            copy( blockedFillerMaps[ blockedCount ], blockedFillerMapsMaxChars, mapName );
+                        }
+                        
+                        TrieSetCell( blockedFillerMapsTrie, mapName, 0 );
+                        blockedCount++;
+                    }
+                    
+                    goto keepSearching;
+                }
+                
                 copy( g_votingMapNames[ g_totalVoteOptions ], charsmax( g_votingMapNames[] ), mapName );
                 g_totalVoteOptions++;
                 
-                LOGGER( 8, "( out ) mapName: %s, unsuccessfulCount: %i, filersMapCount: %i, g_totalVoteOptions: %i", \
-                        mapName, unsuccessfulCount, filersMapCount, g_totalVoteOptions );
+                LOGGER( 8, "( out ) [%i] choice_index: %i, mapIndex: %i, mapName: %s, unsuccessfulCount: %i, g_totalVoteOptions: %i", \
+                        groupIndex, choice_index, mapIndex, mapName, unsuccessfulCount, g_totalVoteOptions );
+                LOGGER( 8, "" );
+                LOGGER( 8, "" );
                 
             } // end 'for choice_index < allowedFilersCount'
         
         } // end 'if g_totalVoteOptions < g_maxVotingChoices'
-        
-    }
-    else
-    {
-        // fill remaining slots with random maps from each filler file, as much as possible
-        for( new groupIndex = 0; groupIndex < groupCount; ++groupIndex )
-        {
-            filersMapCount = map_populateList( g_fillerMapsArray, fillersFilePaths[ groupIndex ], fillersFilePathsMaxChars );
-            
-            LOGGER( 8, "[%i] groupCount:%i      filersMapCount: %i   g_totalVoteOptions: %i   \
-                    g_maxVotingChoices: %i", \
-                    groupIndex, groupCount,     filersMapCount,      g_totalVoteOptions, \
-                    g_maxVotingChoices );
-            LOGGER( 8, "    fillersFilePaths[%i]: %s", groupIndex, fillersFilePaths[ groupIndex ] );
-            LOGGER( 8, "" );
-            
-            if( g_totalVoteOptions < g_maxVotingChoices
-                && filersMapCount )
-            {
-                allowedFilersCount =
-                        min(
-                                min(
-                                        maxMapsPerGroupToUse[ groupIndex ],
-                                        g_maxVotingChoices - g_totalVoteOptions
-                                    ),
-                                filersMapCount
-                            );
-                
-                LOGGER( 8, "[%i] allowedFilersCount: %i   maxMapsPerGroupToUse[%i]: %i   MaxCount: %i", \
-                        groupIndex, allowedFilersCount, groupIndex, maxMapsPerGroupToUse[ groupIndex ], \
-                        g_maxVotingChoices - g_totalVoteOptions );
-                
-                for( choice_index = 0; choice_index < allowedFilersCount; ++choice_index )
-                {
-                    keepSearching:
-                    
-                    unsuccessfulCount     = 0;
-                    currentBlokerStrategy = 0;
-                    
-                    mapIndex = random_num( 0, filersMapCount - 1 );
-                    ArrayGetString( g_fillerMapsArray, mapIndex, mapName, charsmax( mapName ) );
-                    
-                    LOGGER( 8, "" );
-                    LOGGER( 8, "  ( in ) [%i] choice_index: %i   allowedFilersCount: %i   mapIndex: %i   mapName: %s", \
-                            groupIndex, choice_index, allowedFilersCount, mapIndex, mapName );
-                    
-                    while( map_isInMenu( mapName )
-                           || (
-                                useEqualiCurrentMap
-                                && equali( g_currentMap, mapName )
-                              )
-                           || (
-                                useMapIsTooRecent 
-                                && map_isTooRecent( mapName )
-                              )
-                           || (
-                                useIsPrefixInMenu
-                                && isPrefixInMenu( mapName )
-                              )
-                           || (
-                                blockedFillerMapsMaxChars
-                                && TrieKeyExists( blockedFillerMapsTrie, mapName )
-                              )
-                         )
-                    {
-                        LOGGER( 8, "    LOADED a new MAP! mapName: %s, map_isInMenu: %d, \
-                                is_theCurrentMap: %d, map_isTooRecent: %d", \
-                                mapName, map_isInMenu( mapName ), \
-                                equali( g_currentMap, mapName ), map_isTooRecent( mapName ) );
-                        LOGGER( 8, "      isPrefixInMenu: %d, TrieKeyExists( blockedFillerMapsTrie, mapName ): %d, \
-                                          !TrieKeyExists( g_whitelistTrie, mapName ): %d", \
-                                isPrefixInMenu( mapName ), \
-                                ( blockedFillerMapsMaxChars ? TrieKeyExists( blockedFillerMapsTrie, mapName ) : false ), \
-                                ( isWhiteListOutBlock ? !TrieKeyExists( g_whitelistTrie, mapName ) : false ) );
-                        LOGGER( 8, "      currentBlokerStrategy: %d, useMapIsTooRecent: %d, useIsPrefixInMenu: %d, \
-                                          useEqualiCurrentMap: %d, unsuccessfulCount:%d, blockedFillerMapsMaxChars: %d", \
-                                          currentBlokerStrategy,     useMapIsTooRecent,     useIsPrefixInMenu, \
-                                          useEqualiCurrentMap,     unsuccessfulCount,    blockedFillerMapsMaxChars );
-                        
-                        // Heuristics to try to approximate the maximum menu map numbers, when there are just
-                        // a few maps to fill the voting menu and there are a lot of filler restrictions.
-                        if( unsuccessfulCount >= filersMapCount )
-                        {
-                            switch( currentBlokerStrategy++ )
-                            {
-                                case 0:
-                                {
-                                    useMapIsTooRecent = false;
-                                }
-                                case 1:
-                                {
-                                    useMapIsTooRecent = true;
-                                    useIsPrefixInMenu = false;
-                                }
-                                case 2:
-                                {
-                                    useIsPrefixInMenu   = true;
-                                    useEqualiCurrentMap = false;
-                                }
-                                case 3:
-                                {
-                                    useMapIsTooRecent = false;
-                                }
-                                case 4:
-                                {
-                                    useIsPrefixInMenu = false;
-                                }
-                                case 5:
-                                {
-                                    blockedFillerMapsMaxChars = 0;
-                                }
-                                default:
-                                {
-                                    goto exitSearch;
-                                }
-                            }
-                        }
-                        
-                        if( ++mapIndex >= filersMapCount )
-                        {
-                            mapIndex = 0;
-                        }
-                        
-                        unsuccessfulCount++;
-                        ArrayGetString( g_fillerMapsArray, mapIndex, mapName, charsmax( mapName ) );
-                        
-                        LOGGER( 8, "    LOADED a new MAP! mapName: %s, map_isInMenu: %d, \
-                                is_theCurrentMap: %d, map_isTooRecent: %d", \
-                                mapName, map_isInMenu( mapName ), \
-                                equali( g_currentMap, mapName ), map_isTooRecent( mapName ) );
-                        LOGGER( 8, "      isPrefixInMenu: %d, TrieKeyExists( blockedFillerMapsTrie, mapName ): %d, \
-                                          !TrieKeyExists( g_whitelistTrie, mapName ): %d", \
-                                isPrefixInMenu( mapName ), \
-                                ( blockedFillerMapsMaxChars ? TrieKeyExists( blockedFillerMapsTrie, mapName ) : false ), \
-                                ( isWhiteListOutBlock ? !TrieKeyExists( g_whitelistTrie, mapName ) : false ) );
-                        LOGGER( 8, "      currentBlokerStrategy: %d, useMapIsTooRecent: %d, useIsPrefixInMenu: %d, \
-                                          useEqualiCurrentMap: %d, unsuccessfulCount:%d, blockedFillerMapsMaxChars: %d", \
-                                          currentBlokerStrategy,     useMapIsTooRecent,     useIsPrefixInMenu, \
-                                          useEqualiCurrentMap,     unsuccessfulCount,    blockedFillerMapsMaxChars );
-                    }
-                    
-                    if( unsuccessfulCount >= filersMapCount )
-                    {
-                        exitSearch:
-                        LOGGER( 8, "    unsuccessfulCount: %i  filersMapCount: %i \
-                                There aren't enough maps in this filler file to continue adding anymore.", \
-                                        unsuccessfulCount,     filersMapCount );
-                        break;
-                    }
-                    
-                    if( isWhitelistEnabled
-                        && TrieKeyExists( g_blackListTrieForWhiteList, mapName ) )
-                    {
-                        LOGGER( 8, "    Trying to block: %s, by the whitelist map setting.", mapName );
-                        
-                        if( !TrieKeyExists( blockedFillerMapsTrie, mapName ) )
-                        {
-                            LOGGER( 8, "    The map: %s, was blocked by the whitelist map setting.", mapName );
-                            
-                            if( blockedCount < MAX_NOMINATION_COUNT )
-                            {
-                                copy( blockedFillerMaps[ blockedCount ], blockedFillerMapsMaxChars, mapName );
-                            }
-                            
-                            TrieSetCell( blockedFillerMapsTrie, mapName, 0 );
-                            blockedCount++;
-                        }
-                        
-                        goto keepSearching;
-                    }
-                    
-                    copy( g_votingMapNames[ g_totalVoteOptions ], charsmax( g_votingMapNames[] ), mapName );
-                    g_totalVoteOptions++;
-                    
-                    LOGGER( 8, "  ( out ) groupIndex: %i  map: %s, unsuccessfulCount: %i, filersMapCount: %i, g_totalVoteOptions: %i", \
-                            groupIndex, mapName, unsuccessfulCount, filersMapCount, g_totalVoteOptions );
-                    
-                } // end 'for choice_index < allowedFilersCount'
-            
-            } // end 'if g_totalVoteOptions < g_maxVotingChoices'
-        
-        } // end 'for groupIndex < groupCount'
     
-    } // end 'if( isWhiteListOutBlock )'
+    } // end 'for groupIndex < groupCount'
     
     if( blockedFillerMapsTrie )
     {
@@ -4611,7 +4513,6 @@ stock approveTheVotingStart( bool:is_forced_voting )
         }
         
     #else
-        
         if( get_realplayersnum() == 0 )
         {
             if( get_pcvar_num( cvar_isEmptyCycleByMapChange ) )
@@ -4627,6 +4528,7 @@ stock approveTheVotingStart( bool:is_forced_voting )
         
         LOGGER( 1, "    ( approveTheVotingStart ) Returning false on the big blocker." );
         return false;
+        
     #endif
     }
     
@@ -7061,8 +6963,8 @@ stock map_announceNomination( player_id, map[] )
 
 public sort_stringsi( const elem1[], const elem2[], const array[], data[], data_size )
 {
-    LOGGER( 128, "I AM ENTERING ON sort_stringsi(5) | elem1: %s, elem2: %s, array: %s, data: %s, \
-            data_size: %d",                           elem1,     elem2,     array,     data, \
+    LOGGER( 128, "I AM ENTERING ON sort_stringsi(5) | elem1: %15s, elem2: %15s, array: %10s, data: %10s, \
+            data_size: %3d",                          elem1,       elem2,       array,       data, \
             data_size );
     
     return strcmp( elem1, elem2, 1 );
