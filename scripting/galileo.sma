@@ -49,7 +49,7 @@ new const PLUGIN_VERSION[] = "v2.6.1-119";
  *
  * 15  - Levels 1, 2, 4 and 8.
  */
-#define DEBUG_LEVEL 15
+#define DEBUG_LEVEL 2
 
 
 
@@ -755,7 +755,7 @@ public plugin_init()
     cvar_isFirstServerStart    = register_cvar( "gal_server_starting", "1", FCVAR_SPONLY );
     
     // print the current used debug information
-#if DEBUG_LEVEL >= DEBUG_LEVEL_NORMAL
+#if DEBUG_LEVEL & ( DEBUG_LEVEL_NORMAL | DEBUG_LEVEL_CRITICAL_MODE )
     new debug_level[ 128 ];
     formatex( debug_level, charsmax( debug_level ), "%d | %d", g_debug_level, DEBUG_LEVEL );
     
@@ -850,7 +850,7 @@ public plugin_init()
     register_concmd( "gal_createmapfile", "cmd_createMapFile", ADMIN_RCON );
     register_concmd( "gal_command_maintenance", "cmd_maintenanceMode", ADMIN_RCON );
     
-    LOGGER( 1, "I AM EXITING PLUGIN_INIT(0)..." );
+    LOGGER( 1, "I AM EXITING plugin_init(0)..." );
     LOGGER( 1, "" );
 }
 
@@ -957,7 +957,7 @@ public plugin_cfg()
     configureTheUnitTests();
 #endif
 
-    LOGGER( 1, "I AM EXITING PLUGIN_CFG(0)..." );
+    LOGGER( 1, "I AM EXITING plugin_cfg(0)..." );
     LOGGER( 1, "" );
 }
 
@@ -3839,88 +3839,96 @@ stock loadMapGroupsFeature( maxMapsPerGroupToUse[], fillersFilePaths[][], filler
         get_pcvar_string( cvar_voteMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) );
     }
     
-    if( !equal( mapFilerFilePath[ 0 ], "*" )
-        && !equal( mapFilerFilePath[ 0 ], "#" ) )
+    // The Whitelist out block feature, disables The Map Groups Feature.
+    if( get_pcvar_num( cvar_isWhiteListBlockOut ) )
     {
-        // determine what kind of file it's being used as
-        new mapFilerFile = fopen( mapFilerFilePath, "rt" );
-        
-        if( mapFilerFile )
+        groupCount = 1;
+    }
+    else
+    {
+        if( !equal( mapFilerFilePath[ 0 ], "*" )
+            && !equal( mapFilerFilePath[ 0 ], "#" ) )
         {
-            new currentReadedLine[ 16 ];
+            // determine what kind of file it's being used as
+            new mapFilerFile = fopen( mapFilerFilePath, "rt" );
             
-            fgets( mapFilerFile, currentReadedLine, charsmax( currentReadedLine ) );
-            trim( currentReadedLine );
-            
-            if( equali( currentReadedLine, "[groups]" ) )
+            if( mapFilerFile )
             {
-                LOGGER( 8, "" );
-                LOGGER( 8, "this is a [groups] mapFilerFile" );
+                new currentReadedLine[ 16 ];
                 
-                // read the filler mapFilerFile to determine how many groups there are ( max of MAX_MAPS_IN_VOTE )
-                while( !feof( mapFilerFile ) )
+                fgets( mapFilerFile, currentReadedLine, charsmax( currentReadedLine ) );
+                trim( currentReadedLine );
+                
+                if( equali( currentReadedLine, "[groups]" ) )
                 {
-                    fgets( mapFilerFile, currentReadedLine, charsmax( currentReadedLine ) );
-                    trim( currentReadedLine );
+                    LOGGER( 8, "" );
+                    LOGGER( 8, "this is a [groups] mapFilerFile" );
                     
-                    LOGGER( 8, "currentReadedLine: %s   isdigit: %i   groupCount: %i  ", \
-                            currentReadedLine, isdigit( currentReadedLine[ 0 ] ), groupCount );
-                    
-                    if( isdigit( currentReadedLine[ 0 ] ) )
+                    // read the filler mapFilerFile to determine how many groups there are ( max of MAX_MAPS_IN_VOTE )
+                    while( !feof( mapFilerFile ) )
                     {
-                        if( groupCount < MAX_MAPS_IN_VOTE )
+                        fgets( mapFilerFile, currentReadedLine, charsmax( currentReadedLine ) );
+                        trim( currentReadedLine );
+                        
+                        LOGGER( 8, "currentReadedLine: %s   isdigit: %i   groupCount: %i  ", \
+                                currentReadedLine, isdigit( currentReadedLine[ 0 ] ), groupCount );
+                        
+                        if( isdigit( currentReadedLine[ 0 ] ) )
                         {
-                            maxMapsPerGroupToUse[ groupCount ] = str_to_num( currentReadedLine );
-                            formatex( fillersFilePaths[ groupCount ], fillersFilePathsMaxChars, \
-                                    "%s/%i.ini", g_configsDirPath, groupCount );
-                            
-                            LOGGER( 8, "fillersFilePaths: %s", fillersFilePaths[ groupCount ] );
-                            groupCount++;
-                        }
-                        else
-                        {
-                            LOGGER( 1, "AMX_ERR_BOUNDS, %L", LANG_SERVER, "GAL_GRP_FAIL_TOOMANY", mapFilerFilePath );
-                            log_error( AMX_ERR_BOUNDS, "%L", LANG_SERVER, "GAL_GRP_FAIL_TOOMANY", mapFilerFilePath );
-                            
-                            break;
+                            if( groupCount < MAX_MAPS_IN_VOTE )
+                            {
+                                maxMapsPerGroupToUse[ groupCount ] = str_to_num( currentReadedLine );
+                                formatex( fillersFilePaths[ groupCount ], fillersFilePathsMaxChars, \
+                                        "%s/%i.ini", g_configsDirPath, groupCount );
+                                
+                                LOGGER( 8, "fillersFilePaths: %s", fillersFilePaths[ groupCount ] );
+                                groupCount++;
+                            }
+                            else
+                            {
+                                LOGGER( 1, "AMX_ERR_BOUNDS, %L", LANG_SERVER, "GAL_GRP_FAIL_TOOMANY", mapFilerFilePath );
+                                log_error( AMX_ERR_BOUNDS, "%L", LANG_SERVER, "GAL_GRP_FAIL_TOOMANY", mapFilerFilePath );
+                                
+                                break;
+                            }
                         }
                     }
+                    
+                    if( groupCount == 0 )
+                    {
+                        fclose( mapFilerFile );
+                        
+                        LOGGER( 1, "AMX_ERR_GENERAL, %L", LANG_SERVER, "GAL_GRP_FAIL_NOCOUNTS", mapFilerFilePath );
+                        log_error( AMX_ERR_GENERAL, "%L", LANG_SERVER, "GAL_GRP_FAIL_NOCOUNTS", mapFilerFilePath );
+                        
+                        return groupCount;
+                    }
                 }
-                
-                if( groupCount == 0 )
+                else
                 {
-                    fclose( mapFilerFile );
+                    // we presume it's a listing of maps, ala mapcycle.txt
+                    copy( fillersFilePaths[ 0 ], fillersFilePathsMaxChars, mapFilerFilePath );
                     
-                    LOGGER( 1, "AMX_ERR_GENERAL, %L", LANG_SERVER, "GAL_GRP_FAIL_NOCOUNTS", mapFilerFilePath );
-                    log_error( AMX_ERR_GENERAL, "%L", LANG_SERVER, "GAL_GRP_FAIL_NOCOUNTS", mapFilerFilePath );
-                    
-                    return groupCount;
+                    groupCount                = 1;
+                    maxMapsPerGroupToUse[ 0 ] = MAX_MAPS_IN_VOTE;
                 }
             }
             else
             {
-                // we presume it's a listing of maps, ala mapcycle.txt
-                copy( fillersFilePaths[ 0 ], fillersFilePathsMaxChars, mapFilerFilePath );
-                
-                groupCount                = 1;
-                maxMapsPerGroupToUse[ 0 ] = MAX_MAPS_IN_VOTE;
+                LOGGER( 1, "AMX_ERR_NOTFOUND, %L", LANG_SERVER, "GAL_FILLER_NOTFOUND", mapFilerFilePath );
+                log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_FILLER_NOTFOUND", mapFilerFilePath );
             }
+        
+            fclose( mapFilerFile );
         }
-        else
+        else // we'll be loading all maps in the /maps folder or the current mapcycle file
         {
-            LOGGER( 1, "AMX_ERR_NOTFOUND, %L", LANG_SERVER, "GAL_FILLER_NOTFOUND", mapFilerFilePath );
-            log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_FILLER_NOTFOUND", mapFilerFilePath );
+            groupCount                = 1;
+            maxMapsPerGroupToUse[ 0 ] = MAX_MAPS_IN_VOTE;
+            
+            // the options '*' and '#' will be handled by 'map_populateList()' later.
+            copy( fillersFilePaths[ 0 ], fillersFilePathsMaxChars, mapFilerFilePath );
         }
-        
-        fclose( mapFilerFile );
-    }
-    else // we'll be loading all maps in the /maps folder or the current mapcycle file
-    {
-        groupCount                = 1;
-        maxMapsPerGroupToUse[ 0 ] = MAX_MAPS_IN_VOTE;
-        
-        // the options '*' and '#' will be handled by 'map_populateList()' later.
-        copy( fillersFilePaths[ 0 ], fillersFilePathsMaxChars, mapFilerFilePath );
     }
     
     LOGGER( 4, "( vote_addFiller ) MapsGroups Loaded, mapFilerFilePath: %s", mapFilerFilePath );
@@ -3980,7 +3988,6 @@ stock processLoadedMapsFile( maxMapsPerGroupToUse[], groupCount, blockedCount,
     if( isWhiteListOutBlock )
     {
         blockedFillerMapsMaxChars = 0;
-        groupCount                = 1;
     }
     
     // fill remaining slots with random maps from each filler file, as much as possible
@@ -4287,7 +4294,7 @@ loadTheWhiteListFeature()
 stock loadWhiteListFile( &Trie:listTrie, bool:isWhiteList = false, &Array:listArray = Invalid_Array )
 {
     LOGGER( 1, "" );
-    LOGGER( 128, "I AM ENTERING ON loadWhiteListFile(2) | listTrie: %d, isWhiteList: %d", listTrie, isWhiteList );
+    LOGGER( 128, "I AM ENTERING ON loadWhiteListFile(3) | listTrie: %d, isWhiteList: %d", listTrie, isWhiteList );
     
     if( listTrie )
     {
@@ -4446,7 +4453,7 @@ stock loadWhiteListFile( &Trie:listTrie, bool:isWhiteList = false, &Array:listAr
     }
     
     fclose( whiteListFile );
-    LOGGER( 1, "I AM EXITING loadWhiteListFile(2) | listTrie: %d", listTrie );
+    LOGGER( 1, "I AM EXITING loadWhiteListFile(3) | listTrie: %d", listTrie );
     
 } // end loadWhiteListFile(2)
 
@@ -4479,7 +4486,7 @@ stock loadNormalVoteChoices()
     g_voteDuration = get_pcvar_num( cvar_voteDuration );
     
     LOGGER( 4, "" );
-    LOGGER( 4, "( loadNormalVoteChoices ) g_totalVoteOptions: %d", g_totalVoteOptions );
+    LOGGER( 4, "I AM EXITING ON loadNormalVoteChoices(0) | g_totalVoteOptions: %d", g_totalVoteOptions );
 }
 
 stock approveTheVotingStart( bool:is_forced_voting )
@@ -4646,6 +4653,7 @@ stock vote_startDirector( bool:is_forced_voting )
     {
         // Vote creation failed; no maps found.
         color_print( 0, "^1%L", LANG_PLAYER, "GAL_VOTE_NOMAPS" );
+        finalizeVoting();
     }
     
     LOGGER( 4, "   [PLAYER CHOICES]" );
@@ -4674,7 +4682,9 @@ stock initializeTheVoteDisplay()
     
     // print the voting map options
 #if defined DEBUG
-    for( new dbgChoice = 0; dbgChoice < g_totalVoteOptions; dbgChoice++ )
+    new voteOptions = ( g_totalVoteOptions == 1? 2 : g_totalVoteOptions );
+    
+    for( new dbgChoice = 0; dbgChoice < voteOptions; dbgChoice++ )
     {
         LOGGER( 4, "      %i. %s", dbgChoice + 1, g_votingMapNames[ dbgChoice ] );
     }
@@ -6723,8 +6733,7 @@ stock isToHandleRecentlyEmptyServer()
     LOGGER( 128, "I AM ENTERING ON isToHandleRecentlyEmptyServer(0)" );
     new playersCount = get_realplayersnum();
     
-    LOGGER( 128, "I AM ENTERING ON isToHandleRecentlyEmptyServer(0) | mp_timelimit: %d, \
-            g_originalTimelimit: %d, playersCount: %d", \
+    LOGGER( 128, "( isToHandleRecentlyEmptyServer ) mp_timelimit: %f, g_originalTimelimit: %f, playersCount: %d", \
             get_pcvar_float( cvar_mp_timelimit ), g_originalTimelimit, playersCount );
     
     if( playersCount == 0 )
