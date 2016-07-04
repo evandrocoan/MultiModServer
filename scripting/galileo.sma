@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-132";
+new const PLUGIN_VERSION[] = "v2.6.1-133";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -698,8 +698,8 @@ new g_voteStatus_symbol   [ 3 ];
 new g_voteWeightFlags     [ 32 ];
 new g_voteStatusClean     [ 512 ];
 
-new g_configsDirPath [ MAX_FILE_PATH_LENGHT ];
-new g_dataDirPath    [ MAX_FILE_PATH_LENGHT ];
+new g_configsDirPath[ MAX_FILE_PATH_LENGHT ];
+new g_dataDirPath   [ MAX_FILE_PATH_LENGHT ];
 
 
 /**
@@ -3014,62 +3014,16 @@ stock buildTheNominationsMenu( player_id )
     menu_addblank( g_generalUsePlayersMenuId[ player_id ], 0 );
 }
 
+/**
+ * Gather all maps that match the nomination.
+ */
 stock nomination_menu( player_id )
 {
     LOGGER( 128, "I AM ENTERING ON nomination_menu(1) | player_id: %d", player_id );
-    
-    // gather all maps that match the nomination
-    new mapIndex;
-    
-    new info          [ 1 ];
-    new choice        [ MAX_MAPNAME_LENGHT + 32 ];
-    new nominationMap [ MAX_MAPNAME_LENGHT ];
-    new disabledReason[ 16 ];
-    
     buildTheNominationsMenu( player_id );
     
-    for( mapIndex = 0; mapIndex < g_nominationMapCount; mapIndex++ )
-    {
-        info[ 0 ] = mapIndex;
-        ArrayGetString( g_nominationMapsArray, mapIndex, nominationMap, charsmax( nominationMap ) );
-        
-        // in most cases, the map will be available for selection, so assume that's the case here
-        disabledReason[ 0 ] = '^0';
-        
-        if( nomination_getPlayer( mapIndex ) ) // disable if the map has already been nominated
-        {
-            formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_NOMINATED" );
-        }
-        else if( map_isTooRecent( nominationMap )
-                 && !get_pcvar_num( cvar_recentNomMapsAllowance ) ) // disable if the map is too recent
-        {
-            formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_TOORECENT" );
-        }
-        else if( equali( g_currentMap, nominationMap ) ) // disable if the map is the current map
-        {
-            formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_CURRENTMAP" );
-        }
-        
-        formatex( choice, charsmax( choice ), "%s %s", nominationMap, disabledReason );
-        LOGGER( 0, "( nomination_menu ) choice: %s, info[0]: %d", choice, info[ 0 ] );
-        
-        menu_additem( g_generalUsePlayersMenuId[ player_id ], choice, info,
-                ( disabledReason[ 0 ] == '^0' ? 0 : ( 1 << 26 ) ) );
-    }
-    
-    menu_display( player_id, g_generalUsePlayersMenuId[ player_id ] );
-}
-
-// ( playerName[], &phraseIdx, matchingSegment[] )
-stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
-{
-    LOGGER( 128, "I AM ENTERING ON nominationAttemptWithNamePart(1) | player_id: %d, partialNameAttempt: %s", player_id, partialNameAttempt );
-    
-    // gather all maps that match the partialNameAttempt
+    // Start nomination menu variables
     new      mapIndex;
-    new      matchCount;
-    new      matchIndex;
-    new bool:isTheCurrentMap;
     new bool:isMapTooRecent;
     new bool:isWhiteListBlockOut;
     
@@ -3078,17 +3032,91 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
     new nominationMap [ MAX_MAPNAME_LENGHT ];
     new disabledReason[ 16 ];
     
-    matchCount          = 0;
-    matchIndex          = -1;
-    isTheCurrentMap     = equali( g_currentMap, nominationMap ) != 0;
     isMapTooRecent      = ( map_isTooRecent( nominationMap )
                             && !get_pcvar_num( cvar_recentNomMapsAllowance ) );
-    isWhiteListBlockOut = ( IS_WHITELIST_ENABLED() 
+    isWhiteListBlockOut = ( IS_WHITELIST_ENABLED()
                             && get_pcvar_num( cvar_isWhiteListBlockOut ) );
+    // end nomination menu variables
+    
+    for( mapIndex = 0; mapIndex < g_nominationMapCount; mapIndex++ )
+    {
+        ArrayGetString( g_nominationMapsArray, mapIndex, nominationMap, charsmax( nominationMap ) );
+        
+        // Start the menu entry item calculation:
+        // 'nomination_menu(1)' and 'nominationAttemptWithNamePart(2)'.
+        {
+            // there may be a much better way of doing this, but I didn't feel like
+            // storing the matches and mapIndex's only to loop through them again
+            info[ 0 ] = mapIndex;
+            
+            // in most cases, the map will be available for selection, so assume that's the case here
+            disabledReason[ 0 ] = '^0';
+            
+            // disable if the map has already been nominated
+            if( nomination_getPlayer( mapIndex ) ) 
+            {
+                formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_NOMINATED" );
+            }
+            else if( isMapTooRecent ) 
+            {
+                formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_TOORECENT" );
+            }
+            else if( equali( g_currentMap, nominationMap ) )
+            {
+                formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_CURRENTMAP" );
+            }
+            else if( isWhiteListBlockOut )
+            {
+                formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_WHITELIST" );
+            }
+            
+            formatex( choice, charsmax( choice ), "%s %s", nominationMap, disabledReason );
+            LOGGER( 0, "( nomination_menu ) choice: %s, info[0]: %d", choice, info[ 0 ] );
+            
+            menu_additem( g_generalUsePlayersMenuId[ player_id ], choice, info,
+                    ( disabledReason[ 0 ] == '^0' ? 0 : ( 1 << 26 ) ) );
+            
+        } // end the menu entry item calculation.
+        
+    } // end for 'mapIndex'.
+    
+    menu_display( player_id, g_generalUsePlayersMenuId[ player_id ] );
+}
+
+/**
+ * Gather all maps that match the partialNameAttempt.
+ * 
+ * @note ( playerName[], &phraseIdx, matchingSegment[] )
+ */
+stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
+{
+    LOGGER( 128, "I AM ENTERING ON nominationAttemptWithNamePart(1) | player_id: %d, partialNameAttempt: %s", player_id, partialNameAttempt );
+    
+    new matchCount;
+    new matchIndex;
+    
+    matchCount = 0;
+    matchIndex = -1;
     
     // all map names are stored as lowercase, so normalize the partialNameAttempt
     strtolower( partialNameAttempt );
     buildTheNominationsMenu( player_id );
+    
+    // Start nomination menu variables
+    new      mapIndex;
+    new bool:isMapTooRecent;
+    new bool:isWhiteListBlockOut;
+    
+    new info          [ 1 ];
+    new choice        [ MAX_MAPNAME_LENGHT + 32 ];
+    new nominationMap [ MAX_MAPNAME_LENGHT ];
+    new disabledReason[ 16 ];
+    
+    isMapTooRecent      = ( map_isTooRecent( nominationMap )
+                            && !get_pcvar_num( cvar_recentNomMapsAllowance ) );
+    isWhiteListBlockOut = ( IS_WHITELIST_ENABLED()
+                            && get_pcvar_num( cvar_isWhiteListBlockOut ) );
+    // end nomination menu variables
     
     if( !g_currentMenuMapIndexForPlayers[ player_id ] )
     {
@@ -3102,8 +3130,7 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
     // Add a dummy value due the first map option to be 'Cancel all your Nominations'.
     ArrayPushCell( g_currentMenuMapIndexForPlayers[ player_id ], 0 );
     
-    for( mapIndex = 0; mapIndex < g_nominationMapCount
-         && matchCount <= MAX_NOM_MATCH_COUNT; ++mapIndex )
+    for( mapIndex = 0; mapIndex < g_nominationMapCount && matchCount <= MAX_NOM_MATCH_COUNT; ++mapIndex )
     {
         ArrayGetString( g_nominationMapsArray, mapIndex, nominationMap, charsmax( nominationMap ) );
         
@@ -3116,36 +3143,45 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
             ArrayPushCell( g_currentMenuMapIndexForPlayers[ player_id ], mapIndex );
             matchCount++;
             
-            // there may be a much better way of doing this, but I didn't feel like
-            // storing the matches and mapIndex's only to loop through them again
-            info[ 0 ] = mapIndex;
-            
-            // in most cases, the map will be available for selection, so assume that's the case here
-            disabledReason[ 0 ] = '^0';
-            
-            if( nomination_getPlayer( mapIndex ) ) // disable if the map has already been nominated
+            // Start the menu entry item calculation:
+            // 'nomination_menu(1)' and 'nominationAttemptWithNamePart(2)'.
             {
-                formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_NOMINATED" );
-            }
-            else if( isMapTooRecent ) // disable if the map is too recent
-            {
-                formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_TOORECENT" );
-            }
-            else if( isTheCurrentMap ) // disable if the map is the current map
-            {
-                formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_CURRENTMAP" );
-            }
-            else if( isWhiteListBlockOut )
-            {
-                formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_WHITELIST" );
-            }
+                // there may be a much better way of doing this, but I didn't feel like
+                // storing the matches and mapIndex's only to loop through them again
+                info[ 0 ] = mapIndex;
+                
+                // in most cases, the map will be available for selection, so assume that's the case here
+                disabledReason[ 0 ] = '^0';
+                
+                // disable if the map has already been nominated
+                if( nomination_getPlayer( mapIndex ) ) 
+                {
+                    formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_NOMINATED" );
+                }
+                else if( isMapTooRecent ) 
+                {
+                    formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_TOORECENT" );
+                }
+                else if( equali( g_currentMap, nominationMap ) )
+                {
+                    formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_CURRENTMAP" );
+                }
+                else if( isWhiteListBlockOut )
+                {
+                    formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_WHITELIST" );
+                }
+                
+                formatex( choice, charsmax( choice ), "%s %s", nominationMap, disabledReason );
+                LOGGER( 0, "( nomination_menu ) choice: %s, info[0]: %d", choice, info[ 0 ] );
+                
+                menu_additem( g_generalUsePlayersMenuId[ player_id ], choice, info,
+                        ( disabledReason[ 0 ] == '^0' ? 0 : ( 1 << 26 ) ) );
+                
+            } // end the menu entry item calculation.
             
-            formatex( choice, charsmax( choice ), "%s %s", nominationMap, disabledReason );
-            
-            menu_additem( g_generalUsePlayersMenuId[ player_id ], choice, info,
-                    ( disabledReason[ 0 ] == '^0' ? 0 : ( 1 << 26 ) ) );
-        }
-    }
+        }  // end if 'containi'.
+        
+    } // end for 'mapIndex'.
     
     // handle the number of matches
     switch( matchCount )
@@ -3238,7 +3274,7 @@ stock clearMenuMapIndexForPlayers( player_id )
     
     if( g_currentMenuMapIndexForPlayers[ player_id ] )
     {
-        ArrayDestroy( g_currentMenuMapIndexForPlayers[ player_id ] );
+        ArrayClear( g_currentMenuMapIndexForPlayers[ player_id ] );
     }
 }
 
