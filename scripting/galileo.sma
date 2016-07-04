@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-130";
+new const PLUGIN_VERSION[] = "v2.6.1-131";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -3066,15 +3066,25 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
     LOGGER( 128, "I AM ENTERING ON nominationAttemptWithNamePart(1) | player_id: %d, partialNameAttempt: %s", player_id, partialNameAttempt );
     
     // gather all maps that match the partialNameAttempt
-    new mapIndex;
-    
-    new matchCnt = 0;
-    new matchIdx = -1;
+    new      mapIndex;
+    new      matchCount;
+    new      matchIndex;
+    new bool:isTheCurrentMap;
+    new bool:isMapTooRecent;
+    new bool:isWhiteListBlockOut;
     
     new info          [ 1 ];
     new choice        [ MAX_MAPNAME_LENGHT + 32 ];
     new nominationMap [ MAX_MAPNAME_LENGHT ];
     new disabledReason[ 16 ];
+    
+    matchCount          = 0;
+    matchIndex          = -1;
+    isTheCurrentMap     = equali( g_currentMap, nominationMap ) != 0;
+    isMapTooRecent      = ( map_isTooRecent( nominationMap )
+                            && !get_pcvar_num( cvar_recentNomMapsAllowance ) );
+    isWhiteListBlockOut = ( IS_WHITELIST_ENABLED() 
+                            && get_pcvar_num( cvar_isWhiteListBlockOut ) );
     
     // all map names are stored as lowercase, so normalize the partialNameAttempt
     strtolower( partialNameAttempt );
@@ -3093,19 +3103,18 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
     ArrayPushCell( g_currentMenuMapIndexForPlayers[ player_id ], 0 );
     
     for( mapIndex = 0; mapIndex < g_nominationMapCount
-         && matchCnt <= MAX_NOM_MATCH_COUNT; ++mapIndex )
+         && matchCount <= MAX_NOM_MATCH_COUNT; ++mapIndex )
     {
         ArrayGetString( g_nominationMapsArray, mapIndex, nominationMap, charsmax( nominationMap ) );
         
         if( containi( nominationMap, partialNameAttempt ) > -1 )
         {
             // Store in case this is the only match
-            matchIdx = mapIndex;
+            matchIndex = mapIndex;
             
             // Save the map index for the current menu position
             ArrayPushCell( g_currentMenuMapIndexForPlayers[ player_id ], mapIndex );
-            
-            matchCnt++;
+            matchCount++;
             
             // there may be a much better way of doing this, but I didn't feel like
             // storing the matches and mapIndex's only to loop through them again
@@ -3118,15 +3127,19 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
             {
                 formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_NOMINATED" );
             }
-            else if( map_isTooRecent( nominationMap )
-                     && !get_pcvar_num( cvar_recentNomMapsAllowance ) ) // disable if the map is too recent
+            else if( isMapTooRecent ) // disable if the map is too recent
             {
                 formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_TOORECENT" );
             }
-            else if( equali( g_currentMap, nominationMap ) ) // disable if the map is the current map
+            else if( isTheCurrentMap ) // disable if the map is the current map
             {
                 formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_CURRENTMAP" );
             }
+            else if( isWhiteListBlockOut )
+            {
+                formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_WHITELIST" );
+            }
+            
             formatex( choice, charsmax( choice ), "%s %s", nominationMap, disabledReason );
             
             menu_additem( g_generalUsePlayersMenuId[ player_id ], choice, info,
@@ -3135,7 +3148,7 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
     }
     
     // handle the number of matches
-    switch( matchCnt )
+    switch( matchCount )
     {
         case 0:
         {
@@ -3145,12 +3158,12 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
         case 1:
         {
             // one match?! omg, this is just like awesome
-            map_nominate( player_id, matchIdx );
+            map_nominate( player_id, matchIndex );
         }
         default:
         {
             // this is kinda sexy; we put up a menu of the matches for them to pick the right one
-            if( matchCnt >= MAX_NOM_MATCH_COUNT )
+            if( matchCount >= MAX_NOM_MATCH_COUNT )
             {
                 color_print( player_id, "^1%L", player_id, "GAL_NOM_MATCHES_MAX", MAX_NOM_MATCH_COUNT, MAX_NOM_MATCH_COUNT );
             }
