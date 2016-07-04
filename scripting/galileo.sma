@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-138";
+new const PLUGIN_VERSION[] = "v2.6.1-139";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -2802,17 +2802,25 @@ stock nomination_menu( player_id )
     // Start nomination menu variables
     new      mapIndex;
     new bool:isMapTooRecent;
-    new bool:isWhiteListBlockOut;
+    new bool:isWhiteListNomBlock;
     
     new info          [ 1 ];
     new choice        [ MAX_MAPNAME_LENGHT + 32 ];
     new nominationMap [ MAX_MAPNAME_LENGHT ];
-    new disabledReason[ 16 ];
+    new disabledReason[ 48 ];
     
     isMapTooRecent      = ( map_isTooRecent( nominationMap )
                             && !get_pcvar_num( cvar_recentNomMapsAllowance ) );
-    isWhiteListBlockOut = ( IS_WHITELIST_ENABLED()
-                            && get_pcvar_num( cvar_isWhiteListBlockOut ) );
+    isWhiteListNomBlock = ( IS_WHITELIST_ENABLED()
+                            && get_pcvar_num( cvar_isWhiteListNomBlock ) );
+    
+    if( isWhiteListNomBlock
+        && !g_blackListTrieForWhiteList )
+    {
+        // 'g_whitelistTrie' is not loaded?
+        // Depending on 'get_pcvar_num( cvar_isWhiteListNomBlock )', will or not be loaded.
+        loadTheWhiteListFeature();
+    }
     // end nomination menu variables
     
     for( mapIndex = 0; mapIndex < g_nominationMapCount; mapIndex++ )
@@ -2842,7 +2850,10 @@ stock nomination_menu( player_id )
             {
                 formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_CURRENTMAP" );
             }
-            else if( isWhiteListBlockOut )
+            else if( isWhiteListNomBlock
+                     && ( TrieKeyExists( g_blackListTrieForWhiteList, nominationMap )
+                          || ( g_whitelistTrie
+                               && !TrieKeyExists( g_whitelistTrie, nominationMap ) ) ) )
             {
                 formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_WHITELIST" );
             }
@@ -2882,17 +2893,25 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
     // Start nomination menu variables
     new      mapIndex;
     new bool:isMapTooRecent;
-    new bool:isWhiteListBlockOut;
+    new bool:isWhiteListNomBlock;
     
     new info          [ 1 ];
     new choice        [ MAX_MAPNAME_LENGHT + 32 ];
     new nominationMap [ MAX_MAPNAME_LENGHT ];
-    new disabledReason[ 16 ];
+    new disabledReason[ 48 ];
     
     isMapTooRecent      = ( map_isTooRecent( nominationMap )
                             && !get_pcvar_num( cvar_recentNomMapsAllowance ) );
-    isWhiteListBlockOut = ( IS_WHITELIST_ENABLED()
-                            && get_pcvar_num( cvar_isWhiteListBlockOut ) );
+    isWhiteListNomBlock = ( IS_WHITELIST_ENABLED()
+                            && get_pcvar_num( cvar_isWhiteListNomBlock ) );
+    
+    if( isWhiteListNomBlock
+        && !g_blackListTrieForWhiteList )
+    {
+        // 'g_whitelistTrie' is not loaded?
+        // Depending on 'get_pcvar_num( cvar_isWhiteListNomBlock )', will or not be loaded.
+        loadTheWhiteListFeature();
+    }
     // end nomination menu variables
     
     if( !g_currentMenuMapIndexForPlayers[ player_id ] )
@@ -2943,7 +2962,10 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
                 {
                     formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_CURRENTMAP" );
                 }
-                else if( isWhiteListBlockOut )
+                else if( isWhiteListNomBlock
+                         && ( TrieKeyExists( g_blackListTrieForWhiteList, nominationMap )
+                              || ( g_whitelistTrie
+                                   && !TrieKeyExists( g_whitelistTrie, nominationMap ) ) ) )
                 {
                     formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_WHITELIST" );
                 }
