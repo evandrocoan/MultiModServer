@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-124";
+new const PLUGIN_VERSION[] = "v2.6.1-130";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -1099,7 +1099,8 @@ stock configureTheWhiteListFeature()
     if( IS_WHITELIST_ENABLED()
         && get_pcvar_num( cvar_isWhiteListNomBlock ) )
     {
-        g_whitelistNomBlockTime = 20;
+        computeNextWhiteListLoadTime( 1, false );
+        loadTheWhiteListFeature();
     }
 }
 
@@ -1584,13 +1585,6 @@ public vote_manageEnd()
     
     if( secondsLeft )
     {
-        if( g_whitelistNomBlockTime
-            && g_whitelistNomBlockTime > secondsLeft )
-        {
-            computeNextWhiteListLoadTime( secondsLeft );
-            loadTheWhiteListFeature();
-        }
-        
         // are we ready to start an "end of map" vote?
         if( IS_TIME_TO_START_THE_END_OF_MAP_VOTING( secondsLeft )
             && !IS_END_OF_MAP_VOTING_GOING_ON() )
@@ -1614,13 +1608,13 @@ public vote_manageEnd()
             }
         }
     }
-    else
+    
+    if( g_whitelistNomBlockTime )
     {
         static secondsElapsed;
         secondsElapsed = floatround( get_gametime(), floatround_ceil );
         
-        if( g_whitelistNomBlockTime
-            && g_whitelistNomBlockTime < secondsElapsed )
+        if( g_whitelistNomBlockTime < secondsElapsed )
         {
             computeNextWhiteListLoadTime( secondsElapsed, false );
             loadTheWhiteListFeature();
@@ -3519,21 +3513,24 @@ stock map_nominate( player_id, mapIndex, nominatorPlayerId = -1 )
     LOGGER( 4, "( map_nominate ) mapIndex: %d, mapName: %s", mapIndex, mapName );
     
     if( IS_WHITELIST_ENABLED()
-        && get_pcvar_num( cvar_isWhiteListNomBlock )
-        && (
-               TrieKeyExists( g_blackListTrieForWhiteList, mapName )
-               ||
-               (
-                   get_pcvar_num( cvar_isWhiteListBlockOut )
-                   && !TrieKeyExists( g_whitelistTrie, mapName )
-               )
-           )
-      )
+        && get_pcvar_num( cvar_isWhiteListNomBlock ) )
     {
-        color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_WHITELIST", mapName );
+        // Not loaded?
+        if( !g_blackListTrieForWhiteList )
+        {
+            // Depending on 'get_pcvar_num( cvar_isWhiteListNomBlock )', will or not be loaded.
+            loadTheWhiteListFeature();
+        }
         
-        LOGGER( 1, "    ( map_nominate ) The map: %s, was blocked by the whitelist map setting.", mapName );
-        return;
+        if( TrieKeyExists( g_blackListTrieForWhiteList, mapName )
+            || ( g_whitelistTrie
+                 && !TrieKeyExists( g_whitelistTrie, mapName ) ) )
+        {
+            color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_WHITELIST", mapName );
+            
+            LOGGER( 1, "    ( map_nominate ) The map: %s, was blocked by the whitelist map setting.", mapName );
+            return;
+        }
     }
     
     // players can not nominate the current map
