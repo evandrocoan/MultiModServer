@@ -236,6 +236,22 @@ de_dust2_long
      about only 10 players between 05:00 and 10:00 o'clock, so they will be needing [COLOR="Blue"]small
      maps[/COLOR] for playing. Basically, the Whitelist is a filter to your mapcycle/filler list.
      
+     So,
+     [LIST=1]
+     [*]If you try to play 'de_dust' / 'de_inferno' when it is [B]09[/B] hours, you will be [COLOR="Red"]blocked[/COLOR].
+     [*]If you try to play 'de_dust' / 'de_inferno' when it is [B]10[/B] hours, you will be [COLOR="Blue"]allowed[/COLOR].
+     [*]If you try to play 'de_dust' / 'de_inferno' when it is [B]21[/B] hours, you will be [COLOR="Blue"]allowed[/COLOR].
+     [*]If you try to play 'de_dust' / 'de_inferno' when it is [B]22[/B] hours, you will be [COLOR="Red"]blocked[/COLOR].
+     [*]and so on...
+     [/LIST]
+     
+     To block them between 10-22, change your config file to:
+     [code]
+[22-10]
+de_dust2
+de_inferno
+     [/code]
+     
      
  [*] [COLOR="Blue"][B]The Maintenance Mode[/B][/COLOR]:
      If the owner of the server is fixing something or updating the server and doesn't wanna the map
