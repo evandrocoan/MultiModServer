@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-133";
+new const PLUGIN_VERSION[] = "v2.6.1-134";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -3784,7 +3784,7 @@ stock vote_addNominations( blockedFillerMaps[][], blockedFillerMapsMaxChars = 0 
         for( nominationIndex = 0; nominationIndex < maxPlayerNominations; ++nominationIndex )
         {
             LOGGER( 4, "( vote_addNominations ) nominationIndex: %d, maxPlayerNominations: %d", \
-                    nominationIndex, maxPlayerNominations );
+                                                nominationIndex,     maxPlayerNominations );
             
             for( player_id = 1; player_id < MAX_PLAYERS_COUNT; ++player_id )
             {
@@ -3810,7 +3810,7 @@ stock vote_addNominations( blockedFillerMaps[][], blockedFillerMapsMaxChars = 0 
         for( nominationIndex = 0; nominationIndex < maxPlayerNominations; ++nominationIndex )
         {
             LOGGER( 4, "( vote_addNominations ) nominationIndex: %d, maxPlayerNominations: %d", \
-                    nominationIndex, maxPlayerNominations );
+                                                nominationIndex,     maxPlayerNominations );
             
             for( player_id = 1; player_id < MAX_PLAYERS_COUNT; ++player_id )
             {
