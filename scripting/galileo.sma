@@ -49,7 +49,7 @@ new const PLUGIN_VERSION[] = "v2.6.1-119";
  *
  * 15  - Levels 1, 2, 4 and 8.
  */
-#define DEBUG_LEVEL 2
+#define DEBUG_LEVEL 8
 
 
 
@@ -1541,7 +1541,7 @@ stock saveCurrentAndNextMapNames( nextMap[] )
 
 stock computeNextWhiteListLoadTime( seconds, bool:isSecondsLeft = true )
 {
-    LOGGER( 128, "I AM ENTERING ON computeNextWhiteListLoadTime(1) | seconds: %d", seconds );
+    LOGGER( 128, "I AM ENTERING ON computeNextWhiteListLoadTime(2) | seconds: %d, isSecondsLeft: %d", seconds, isSecondsLeft );
     
     // This is tricky as 'seconds' could be 0, when there is no time-limit.
     if( seconds )
@@ -1560,7 +1560,7 @@ stock computeNextWhiteListLoadTime( seconds, bool:isSecondsLeft = true )
             // the next reload, then when do not need to reload on this current server session.
             if( seconds < secondsForReload )
             {
-                g_whitelistNomBlockTime = 0;
+                g_whitelistNomBlockTime = secondsForReload + 1;
             }
             else
             {
@@ -1581,6 +1581,8 @@ stock computeNextWhiteListLoadTime( seconds, bool:isSecondsLeft = true )
         LOGGER( 1, "ERROR: The seconds parameter on 'computeNextWhiteListLoadTime(1)' function is zero!" );
         log_amx( "ERROR: The seconds parameter on 'computeNextWhiteListLoadTime(1)' function is zero!" );
     }
+    
+    LOGGER( 1, "I AM EXITING computeNextWhiteListLoadTime(2) | g_whitelistNomBlockTime: %d", g_whitelistNomBlockTime );
 }
 
 public vote_manageEnd()
@@ -3976,7 +3978,11 @@ stock processLoadedMapsFile( maxMapsPerGroupToUse[], groupCount, blockedCount,
                 ||
                 (
                     isWhiteListOutBlock
-                    && !g_whitelistTrie
+                    && (
+                            !g_whitelistTrie
+                            ||
+                            !ArraySize( g_whitelistArray )
+                       )
                 )
            )
       )
@@ -4254,9 +4260,9 @@ stock vote_addFiller( blockedFillerMaps[][], blockedFillerMapsMaxChars = 0, bloc
     
     groupCount   = loadMapGroupsFeature( maxMapsPerGroupToUse, fillersFilePaths, charsmax( fillersFilePaths[] ) );
     blockedCount = processLoadedMapsFile( maxMapsPerGroupToUse,
-            groupCount, blockedCount,
-            blockedFillerMaps, blockedFillerMapsMaxChars,
-            fillersFilePaths, charsmax( fillersFilePaths[] ) );
+                                          groupCount, blockedCount,
+                                          blockedFillerMaps, blockedFillerMapsMaxChars,
+                                          fillersFilePaths, charsmax( fillersFilePaths[] ) );
     
     // If there is/are blocked maps, to announce them to everybody.
     if( blockedCount )
@@ -4283,15 +4289,18 @@ stock vote_addFiller( blockedFillerMaps[][], blockedFillerMapsMaxChars = 0, bloc
 loadTheWhiteListFeature()
 {
     LOGGER( 128, "I AM ENTERING ON loadTheWhiteListFeature(0)" );
-    loadWhiteListFile( g_blackListTrieForWhiteList );
+    new whiteListFilePath [ MAX_FILE_PATH_LENGHT ];
+    
+    get_pcvar_string( cvar_voteWhiteListMapFilePath, whiteListFilePath, charsmax( whiteListFilePath ) );
+    loadWhiteListFile( g_blackListTrieForWhiteList, whiteListFilePath );
     
     if( get_pcvar_num( cvar_isWhiteListBlockOut ) )
     {
-        loadWhiteListFile( g_whitelistTrie, true, g_whitelistArray );
+        loadWhiteListFile( g_whitelistTrie, whiteListFilePath, true, g_whitelistArray );
     }
 }
 
-stock loadWhiteListFile( &Trie:listTrie, bool:isWhiteList = false, &Array:listArray = Invalid_Array )
+stock loadWhiteListFile( &Trie:listTrie, whiteListFilePath[], bool:isWhiteList = false, &Array:listArray = Invalid_Array )
 {
     LOGGER( 1, "" );
     LOGGER( 128, "I AM ENTERING ON loadWhiteListFile(3) | listTrie: %d, isWhiteList: %d", listTrie, isWhiteList );
@@ -4319,19 +4328,16 @@ stock loadWhiteListFile( &Trie:listTrie, bool:isWhiteList = false, &Array:listAr
     
     new      startHour;
     new      endHour;
+    new      whiteListFileDescriptor;
     new bool:isToLoadTheseMaps;
     
     new currentHourString [ 8 ];
     new currentLine       [ MAX_MAPNAME_LENGHT ];
     new startHourString   [ MAX_MAPNAME_LENGHT / 2 ];
     new endHourString     [ MAX_MAPNAME_LENGHT / 2 ];
-    new whiteListFilePath [ MAX_FILE_PATH_LENGHT ];
     
     get_time( "%H", currentHourString, charsmax( currentHourString ) );
-    get_pcvar_string( cvar_voteWhiteListMapFilePath, whiteListFilePath, charsmax( whiteListFilePath ) );
-    
-    new currentHour   = str_to_num( currentHourString );
-    new whiteListFile = fopen( whiteListFilePath, "rt" );
+    new currentHour = str_to_num( currentHourString );
     
     // While the Unit Tests are running, to force a specific time.
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
@@ -4341,9 +4347,14 @@ stock loadWhiteListFile( &Trie:listTrie, bool:isWhiteList = false, &Array:listAr
     }
 #endif
     
-    while( !feof( whiteListFile ) )
+    if( !( whiteListFileDescriptor = fopen( whiteListFilePath, "rt" ) ) )
     {
-        fgets( whiteListFile, currentLine, charsmax( currentLine ) );
+        LOGGER( 8, "ERROR! Invalid file descriptor. whiteListFileDescriptor: %d, whiteListFilePath: %s", whiteListFileDescriptor, whiteListFilePath );
+    }
+    
+    while( !feof( whiteListFileDescriptor ) )
+    {
+        fgets( whiteListFileDescriptor, currentLine, charsmax( currentLine ) );
         trim( currentLine );
         
         // skip commentaries while reading file
@@ -4452,7 +4463,7 @@ stock loadWhiteListFile( &Trie:listTrie, bool:isWhiteList = false, &Array:listAr
         }
     }
     
-    fclose( whiteListFile );
+    fclose( whiteListFileDescriptor );
     LOGGER( 1, "I AM EXITING loadWhiteListFile(3) | listTrie: %d", listTrie );
     
 } // end loadWhiteListFile(2)
@@ -8267,33 +8278,31 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
      */
     public test_loadCurrentBlackList_case1()
     {
-        new whiteListFile;
+        new whiteListFileDescriptor;
         
         new test_id            = register_test( 0, "test_loadCurrentBlackList_case1" );
         new Trie:blackListTrie = TrieCreate();
         
         copy( g_test_whiteListFilePath, charsmax( g_test_whiteListFilePath ), "test_loadCurrentBlackList.txt" );
-        set_pcvar_string( cvar_voteWhiteListMapFilePath, g_test_whiteListFilePath );
+        whiteListFileDescriptor = fopen( g_test_whiteListFilePath, "wt" );
         
-        whiteListFile = fopen( g_test_whiteListFilePath, "wt" );
-        
-        if( whiteListFile )
+        if( whiteListFileDescriptor )
         {
-            fprintf( whiteListFile, "%s^n", "[23-24]" );
-            fprintf( whiteListFile, "%s^n", "de_dust1" );
-            fprintf( whiteListFile, "%s^n", "de_dust2" );
-            fprintf( whiteListFile, "%s^n", "de_dust3" );
-            fprintf( whiteListFile, "%s^n", "[1-23]" );
-            fprintf( whiteListFile, "%s^n", "de_dust4" );
-            fprintf( whiteListFile, "%s^n", "[12-22]" );
-            fprintf( whiteListFile, "%s^n", "de_dust5" );
-            fprintf( whiteListFile, "%s^n", "de_dust6" );
-            fprintf( whiteListFile, "%s^n", "de_dust7" );
-            fclose( whiteListFile );
+            fprintf( whiteListFileDescriptor, "%s^n", "[23-24]" );
+            fprintf( whiteListFileDescriptor, "%s^n", "de_dust1" );
+            fprintf( whiteListFileDescriptor, "%s^n", "de_dust2" );
+            fprintf( whiteListFileDescriptor, "%s^n", "de_dust3" );
+            fprintf( whiteListFileDescriptor, "%s^n", "[1-23]" );
+            fprintf( whiteListFileDescriptor, "%s^n", "de_dust4" );
+            fprintf( whiteListFileDescriptor, "%s^n", "[12-22]" );
+            fprintf( whiteListFileDescriptor, "%s^n", "de_dust5" );
+            fprintf( whiteListFileDescriptor, "%s^n", "de_dust6" );
+            fprintf( whiteListFileDescriptor, "%s^n", "de_dust7" );
+            fclose( whiteListFileDescriptor );
         }
         
         g_test_current_time = 23;
-        loadWhiteListFile( blackListTrie );
+        loadWhiteListFile( blackListTrie, g_test_whiteListFilePath );
         g_test_current_time = 0;
         
         SET_TEST_FAILURE( test_id, TrieKeyExists( blackListTrie, "de_dust1" ), \
@@ -8324,7 +8333,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         new Trie:blackListTrie = TrieCreate();
         
         g_test_current_time = 22;
-        loadWhiteListFile( blackListTrie );
+        loadWhiteListFile( blackListTrie, g_test_whiteListFilePath );
         g_test_current_time = 0;
         
         SET_TEST_FAILURE( test_id, TrieKeyExists( blackListTrie, "de_dust4" ), \
@@ -8345,7 +8354,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         new Trie:blackListTrie = TrieCreate();
         
         g_test_current_time = 12;
-        loadWhiteListFile( blackListTrie );
+        loadWhiteListFile( blackListTrie, g_test_whiteListFilePath );
         g_test_current_time = 0;
         
         SET_TEST_FAILURE( test_id, TrieKeyExists( blackListTrie, "de_dust7" ), \
@@ -8366,8 +8375,6 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     new Float:test_extendmap_max;
     new Float:test_mp_timelimit;
     
-    new test_whiteListFilePath[ MAX_FILE_PATH_LENGHT ];
-    
     /**
      * Every time a cvar is changed during the tests, it must be saved here to a global test variable
      * to be restored at the restore_server_cvars_for_test(), which is executed at the end of all
@@ -8382,8 +8389,6 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         
         test_extendmap_max = get_pcvar_float( cvar_maxMapExtendTime );
         test_mp_timelimit  = get_pcvar_float( cvar_mp_timelimit );
-        
-        get_pcvar_string( cvar_voteWhiteListMapFilePath, test_whiteListFilePath, charsmax( test_whiteListFilePath ) );
         
         LOGGER( 2, "    %42s cvar_mp_timelimit: %f  test_mp_timelimit: %f   g_originalTimelimit: %f", \
                 "save_server_cvars_for_test( out )", \
@@ -8406,8 +8411,6 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
             
             set_pcvar_float( cvar_maxMapExtendTime, test_extendmap_max );
             set_pcvar_float( cvar_mp_timelimit, test_mp_timelimit );
-            
-            set_pcvar_string( cvar_voteWhiteListMapFilePath, test_whiteListFilePath );
         }
         
         LOGGER( 2, "    %42s cvar_mp_timelimit: %f  test_mp_timelimit: %f  g_originalTimelimit: %f", \
