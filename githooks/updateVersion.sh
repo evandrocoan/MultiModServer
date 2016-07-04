@@ -14,6 +14,10 @@
 #
 #
 # Change log:
+# 
+# v1.1.2
+# Added error message when the 'sed' operation fails.
+# 
 # v1.1.1
 # Placed this file within the repository sub-folder "./githooks".
 #
@@ -107,12 +111,16 @@ then
 fi
 
 
-# Replace the file with the $versionFilePath with the $currentVersion.
-echo $currentVersion > $versionFilePath
-
-
-echo "Replacing the version v$originalVersion -> v$currentVersion in '$filePathToUpdate'"
-sed -i -- "s/v$originalVersion/v$currentVersion/g" $filePathToUpdate
+if sed -i -- "s/v$originalVersion/v$currentVersion/g" $filePathToUpdate
+then
+    echo "Replacing the version v$originalVersion -> v$currentVersion in '$filePathToUpdate'"
+    
+    # Replace the file with the $versionFilePath with the $currentVersion.
+    echo $currentVersion > $versionFilePath
+else
+    echo "ERRO! Could not replace the version v$originalVersion -> v$currentVersion in '$filePathToUpdate'"
+    exit 1
+fi
 
 
 # To add the recent updated files to the commit

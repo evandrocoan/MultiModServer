@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-137";
+new const PLUGIN_VERSION[] = "v2.6.1-138";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -3505,7 +3505,7 @@ public nomination_list()
     }
 }
 
-stock getSurMapNameIndex( mapSurName[] ) 
+stock getSurMapNameIndex( mapSurName[] )
 {
     LOGGER( 128, "I AM ENTERING ON getSurMapNameIndex(1) | mapSurName: %s", mapSurName );
     
