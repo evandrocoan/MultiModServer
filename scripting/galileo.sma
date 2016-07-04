@@ -1984,7 +1984,7 @@ public configure_last_round_HUD()
 
 public show_last_round_HUD()
 {
-    LOGGER( 128, "I AM ENTERING ON show_last_round_HUD(0)" );
+    LOGGER( 0, "I AM ENTERING ON show_last_round_HUD(0)" );
     
     set_hudmessage( 255, 255, 255, 0.15, 0.15, 0, 0.0, 1.0, 0.1, 0.1, 1 );
     static last_round_message[ MAX_COLOR_MESSAGE ];
