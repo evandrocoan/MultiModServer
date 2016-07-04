@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-134";
+new const PLUGIN_VERSION[] = "v2.6.1-137";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -705,9 +705,9 @@ new g_dataDirPath   [ MAX_FILE_PATH_LENGHT ];
 /**
  * Nextmap sub-plugin global variables.
  */
-new g_nextMapName      [ MAX_MAPNAME_LENGHT ];
-new g_currentMapName   [ MAX_MAPNAME_LENGHT ];
-new g_mapCycleFilePath [ MAX_FILE_PATH_LENGHT ];
+new g_nextMapName     [ MAX_MAPNAME_LENGHT ];
+new g_currentMapName  [ MAX_MAPNAME_LENGHT ];
+new g_mapCycleFilePath[ MAX_FILE_PATH_LENGHT ];
 
 new g_nextMap                   [ MAX_MAPNAME_LENGHT ];
 new g_currentMap                [ MAX_MAPNAME_LENGHT ];
@@ -2621,229 +2621,6 @@ public cmd_maintenanceMode( player_id, level, cid )
     return PLUGIN_HANDLED;
 }
 
-stock map_populateList( Array:mapArray, mapFilePath[], mapFilePathMaxChars, Trie:fillerMapTrie = Invalid_Trie )
-{
-    LOGGER( 128, "I AM ENTERING ON map_populateList(4) | mapFilePath: %s", mapFilePath );
-    
-    // load the array with maps
-    new mapCount;
-    
-    // clear the map array in case we're reusing it
-    ArrayClear( mapArray );
-    
-    if( !equal( mapFilePath, "*" )
-        && !equal( mapFilePath, "#" ) )
-    {
-        LOGGER( 4, "" );
-        LOGGER( 4, "    map_populateList(...) Loading the PASSED FILE! mapFilePath: %s", mapFilePath );
-        mapCount = loadMapFileList( mapArray, mapFilePath, fillerMapTrie );
-    }
-    else if( equal( mapFilePath, "*" ) )
-    {
-        LOGGER( 4, "" );
-        LOGGER( 4, "    map_populateList(...) Loading the MAP FOLDER! mapFilePath: %s", mapFilePath );
-        mapCount = loadMapsFolderDirectory( mapArray, fillerMapTrie );
-    }
-    else
-    {
-        get_cvar_string( "mapcyclefile", mapFilePath, mapFilePathMaxChars );
-        
-        LOGGER( 4, "" );
-        LOGGER( 4, "    map_populateList(...) Loading the MAPCYCLE! mapFilePath: %s", mapFilePath );
-        mapCount = loadMapFileList( mapArray, mapFilePath, fillerMapTrie );
-    }
-    
-    return mapCount;
-}
-
-stock loadMapFileList( Array:mapArray, mapFilePath[], Trie:fillerMapTrie )
-{
-    LOGGER( 128, "I AM ENTERING ON loadMapFileList(3) | mapFilePath: %s", mapFilePath );
-    
-    new mapCount;
-    new mapFile = fopen( mapFilePath, "rt" );
-
-#if defined DEBUG
-    new current_index = -1;
-#endif
-    
-    if( mapFile )
-    {
-        new loadedMapName[ MAX_MAPNAME_LENGHT ];
-        
-        while( !feof( mapFile ) )
-        {
-            fgets( mapFile, loadedMapName, charsmax( loadedMapName ) );
-            trim( loadedMapName );
-            
-            if( loadedMapName[ 0 ]
-                && !equal( loadedMapName, "//", 2 )
-                && !equal( loadedMapName, ";", 1 )
-                && is_map_valid( loadedMapName ) )
-            {
-                if( fillerMapTrie )
-                {
-                    TrieSetCell( fillerMapTrie, loadedMapName, 0 );
-                }
-                
-                LOGGER( 4, "map_populateList() %d, loadedMapName: %s", ++current_index, loadedMapName );
-                ArrayPushString( mapArray, loadedMapName );
-                
-                ++mapCount;
-            }
-        }
-        
-        fclose( mapFile );
-        LOGGER( 4, "" );
-    }
-    else
-    {
-        LOGGER( 1, "AMX_ERR_NOTFOUND, %L", LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilePath );
-        log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilePath );
-    }
-    
-    return mapCount;
-}
-
-stock loadMapsFolderDirectory( Array:mapArray, Trie:fillerMapTrie )
-{
-    LOGGER( 128, "I AM ENTERING ON map_populateList(2) | Array:mapArray: %d", mapArray );
-    
-    new mapCount;
-    new loadedMapName[ MAX_MAPNAME_LENGHT ];
-    
-    new dir = open_dir( "maps", loadedMapName, charsmax( loadedMapName ) );
-    
-    if( dir )
-    {
-        new mapNameLength;
-        
-        while( next_file( dir, loadedMapName, charsmax( loadedMapName ) ) )
-        {
-            mapNameLength = strlen( loadedMapName );
-            
-            if( mapNameLength > 4
-                && equali( loadedMapName[ mapNameLength - 4 ], ".bsp", 4 ) )
-            {
-                loadedMapName[ mapNameLength - 4 ] = '^0';
-                
-                if( is_map_valid( loadedMapName ) )
-                {
-                    if( fillerMapTrie )
-                    {
-                        TrieSetCell( fillerMapTrie, loadedMapName, 0 );
-                    }
-                    
-                    ArrayPushString( mapArray, loadedMapName );
-                    ++mapCount;
-                }
-            }
-        }
-        
-        close_dir( dir );
-    }
-    else
-    {
-        // directory not found, wtf?
-        LOGGER( 1, "AMX_ERR_NOTFOUND, %L", LANG_SERVER, "GAL_MAPS_FOLDERMISSING" );
-        log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FOLDERMISSING" );
-    }
-    
-    return mapCount;
-}
-
-public map_loadNominationList()
-{
-    LOGGER( 128, "I AM ENTERING ON map_loadNominationList(0)" );
-    
-    new nomMapFilePath[ MAX_FILE_PATH_LENGHT ];
-    get_pcvar_string( cvar_nomMapFilePath, nomMapFilePath, charsmax( nomMapFilePath ) );
-    
-    LOGGER( 4, "( map_loadNominationList() ) cvar_nomMapFilePath: %s", nomMapFilePath );
-    g_nominationMapCount = map_populateList( g_nominationMapsArray, nomMapFilePath, charsmax( nomMapFilePath ) );
-}
-
-stock map_loadEmptyCycleList()
-{
-    LOGGER( 128, "I AM ENTERING ON map_loadEmptyCycleList(0)" );
-    
-    new emptyCycleFilePath[ MAX_FILE_PATH_LENGHT ];
-    get_pcvar_string( cvar_emptyMapFilePath, emptyCycleFilePath, charsmax( emptyCycleFilePath ) );
-    
-    g_emptyCycleMapsNumber = map_populateList( g_emptyCycleMapsArray, emptyCycleFilePath, charsmax( emptyCycleFilePath ) );
-    LOGGER( 4, "( map_loadEmptyCycleList ) g_emptyCycleMapsNumber = %d", g_emptyCycleMapsNumber );
-}
-
-public map_loadPrefixList()
-{
-    LOGGER( 128, "I AM ENTERING ON map_loadPrefixList(0)" );
-    
-    new prefixesFile;
-    new prefixesFilePath[ MAX_FILE_PATH_LENGHT ];
-    
-    formatex( prefixesFilePath, charsmax( prefixesFilePath ), "%s/prefixes.ini", g_configsDirPath );
-    prefixesFile = fopen( prefixesFilePath, "rt" );
-    
-    if( prefixesFile )
-    {
-        new loadedMapPrefix[ 16 ];
-        
-        while( !feof( prefixesFile ) )
-        {
-            fgets( prefixesFile, loadedMapPrefix, charsmax( loadedMapPrefix ) );
-            
-            if( loadedMapPrefix[ 0 ]
-                && !equal( loadedMapPrefix, "//", 2 ) )
-            {
-                if( g_mapPrefixCount <= MAX_PREFIX_COUNT )
-                {
-                    trim( loadedMapPrefix );
-                    copy( g_mapPrefixes[ g_mapPrefixCount++ ], charsmax( loadedMapPrefix ), loadedMapPrefix );
-                }
-                else
-                {
-                    LOGGER( 1, "AMX_ERR_BOUNDS, %L", LANG_SERVER, "GAL_PREFIXES_TOOMANY", MAX_PREFIX_COUNT, prefixesFilePath );
-                    log_error( AMX_ERR_BOUNDS, "%L", LANG_SERVER, "GAL_PREFIXES_TOOMANY", MAX_PREFIX_COUNT, prefixesFilePath );
-                    
-                    break;
-                }
-            }
-        }
-        fclose( prefixesFile );
-    }
-    else
-    {
-        LOGGER( 1, "AMX_ERR_NOTFOUND, %L", LANG_SERVER, "GAL_PREFIXES_NOTFOUND", prefixesFilePath );
-        log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_PREFIXES_NOTFOUND", prefixesFilePath );
-    }
-}
-
-stock getSurMapNameIndex( mapSurName[] )
-{
-    LOGGER( 128, "I AM ENTERING ON getSurMapNameIndex(1) | mapSurName: %s", mapSurName );
-    
-    new mapIndex;
-    new map          [ MAX_MAPNAME_LENGHT ];
-    new nominationMap[ MAX_MAPNAME_LENGHT ];
-    
-    for( new prefixIndex = 0; prefixIndex < g_mapPrefixCount; ++prefixIndex )
-    {
-        formatex( map, charsmax( map ), "%s%s", g_mapPrefixes[ prefixIndex ], mapSurName );
-        
-        for( mapIndex = 0; mapIndex < g_nominationMapCount; ++mapIndex )
-        {
-            ArrayGetString( g_nominationMapsArray, mapIndex, nominationMap, charsmax( nominationMap ) );
-            
-            if( equali( map, nominationMap ) )
-            {
-                return mapIndex;
-            }
-        }
-    }
-    
-    return -1;
-}
-
 /**
  * Generic say handler to determine if we need to act on what was said.
  */
@@ -3725,6 +3502,229 @@ public nomination_list()
     else
     {
         color_print( 0, "^1%L: %L", LANG_PLAYER, "GAL_NOMINATIONS", LANG_PLAYER, "NONE" );
+    }
+}
+
+stock getSurMapNameIndex( mapSurName[] ) 
+{
+    LOGGER( 128, "I AM ENTERING ON getSurMapNameIndex(1) | mapSurName: %s", mapSurName );
+    
+    new mapIndex;
+    new map          [ MAX_MAPNAME_LENGHT ];
+    new nominationMap[ MAX_MAPNAME_LENGHT ];
+    
+    for( new prefixIndex = 0; prefixIndex < g_mapPrefixCount; ++prefixIndex )
+    {
+        formatex( map, charsmax( map ), "%s%s", g_mapPrefixes[ prefixIndex ], mapSurName );
+        
+        for( mapIndex = 0; mapIndex < g_nominationMapCount; ++mapIndex )
+        {
+            ArrayGetString( g_nominationMapsArray, mapIndex, nominationMap, charsmax( nominationMap ) );
+            
+            if( equali( map, nominationMap ) )
+            {
+                return mapIndex;
+            }
+        }
+    }
+    
+    return -1;
+}
+
+stock map_populateList( Array:mapArray, mapFilePath[], mapFilePathMaxChars, Trie:fillerMapTrie = Invalid_Trie )
+{
+    LOGGER( 128, "I AM ENTERING ON map_populateList(4) | mapFilePath: %s", mapFilePath );
+    
+    // load the array with maps
+    new mapCount;
+    
+    // clear the map array in case we're reusing it
+    ArrayClear( mapArray );
+    
+    if( !equal( mapFilePath, "*" )
+        && !equal( mapFilePath, "#" ) )
+    {
+        LOGGER( 4, "" );
+        LOGGER( 4, "    map_populateList(...) Loading the PASSED FILE! mapFilePath: %s", mapFilePath );
+        mapCount = loadMapFileList( mapArray, mapFilePath, fillerMapTrie );
+    }
+    else if( equal( mapFilePath, "*" ) )
+    {
+        LOGGER( 4, "" );
+        LOGGER( 4, "    map_populateList(...) Loading the MAP FOLDER! mapFilePath: %s", mapFilePath );
+        mapCount = loadMapsFolderDirectory( mapArray, fillerMapTrie );
+    }
+    else
+    {
+        get_cvar_string( "mapcyclefile", mapFilePath, mapFilePathMaxChars );
+        
+        LOGGER( 4, "" );
+        LOGGER( 4, "    map_populateList(...) Loading the MAPCYCLE! mapFilePath: %s", mapFilePath );
+        mapCount = loadMapFileList( mapArray, mapFilePath, fillerMapTrie );
+    }
+    
+    return mapCount;
+}
+
+stock loadMapFileList( Array:mapArray, mapFilePath[], Trie:fillerMapTrie )
+{
+    LOGGER( 128, "I AM ENTERING ON loadMapFileList(3) | mapFilePath: %s", mapFilePath );
+    
+    new mapCount;
+    new mapFile = fopen( mapFilePath, "rt" );
+
+#if defined DEBUG
+    new current_index = -1;
+#endif
+    
+    if( mapFile )
+    {
+        new loadedMapName[ MAX_MAPNAME_LENGHT ];
+        
+        while( !feof( mapFile ) )
+        {
+            fgets( mapFile, loadedMapName, charsmax( loadedMapName ) );
+            trim( loadedMapName );
+            
+            if( loadedMapName[ 0 ]
+                && !equal( loadedMapName, "//", 2 )
+                && !equal( loadedMapName, ";", 1 )
+                && is_map_valid( loadedMapName ) )
+            {
+                if( fillerMapTrie )
+                {
+                    TrieSetCell( fillerMapTrie, loadedMapName, 0 );
+                }
+                
+                LOGGER( 4, "map_populateList() %d, loadedMapName: %s", ++current_index, loadedMapName );
+                ArrayPushString( mapArray, loadedMapName );
+                
+                ++mapCount;
+            }
+        }
+        
+        fclose( mapFile );
+        LOGGER( 4, "" );
+    }
+    else
+    {
+        LOGGER( 1, "AMX_ERR_NOTFOUND, %L", LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilePath );
+        log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilePath );
+    }
+    
+    return mapCount;
+}
+
+stock loadMapsFolderDirectory( Array:mapArray, Trie:fillerMapTrie )
+{
+    LOGGER( 128, "I AM ENTERING ON map_populateList(2) | Array:mapArray: %d", mapArray );
+    
+    new mapCount;
+    new loadedMapName[ MAX_MAPNAME_LENGHT ];
+    
+    new dir = open_dir( "maps", loadedMapName, charsmax( loadedMapName ) );
+    
+    if( dir )
+    {
+        new mapNameLength;
+        
+        while( next_file( dir, loadedMapName, charsmax( loadedMapName ) ) )
+        {
+            mapNameLength = strlen( loadedMapName );
+            
+            if( mapNameLength > 4
+                && equali( loadedMapName[ mapNameLength - 4 ], ".bsp", 4 ) )
+            {
+                loadedMapName[ mapNameLength - 4 ] = '^0';
+                
+                if( is_map_valid( loadedMapName ) )
+                {
+                    if( fillerMapTrie )
+                    {
+                        TrieSetCell( fillerMapTrie, loadedMapName, 0 );
+                    }
+                    
+                    ArrayPushString( mapArray, loadedMapName );
+                    ++mapCount;
+                }
+            }
+        }
+        
+        close_dir( dir );
+    }
+    else
+    {
+        // directory not found, wtf?
+        LOGGER( 1, "AMX_ERR_NOTFOUND, %L", LANG_SERVER, "GAL_MAPS_FOLDERMISSING" );
+        log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FOLDERMISSING" );
+    }
+    
+    return mapCount;
+}
+
+public map_loadNominationList()
+{
+    LOGGER( 128, "I AM ENTERING ON map_loadNominationList(0)" );
+    
+    new nomMapFilePath[ MAX_FILE_PATH_LENGHT ];
+    get_pcvar_string( cvar_nomMapFilePath, nomMapFilePath, charsmax( nomMapFilePath ) );
+    
+    LOGGER( 4, "( map_loadNominationList() ) cvar_nomMapFilePath: %s", nomMapFilePath );
+    g_nominationMapCount = map_populateList( g_nominationMapsArray, nomMapFilePath, charsmax( nomMapFilePath ) );
+}
+
+stock map_loadEmptyCycleList()
+{
+    LOGGER( 128, "I AM ENTERING ON map_loadEmptyCycleList(0)" );
+    
+    new emptyCycleFilePath[ MAX_FILE_PATH_LENGHT ];
+    get_pcvar_string( cvar_emptyMapFilePath, emptyCycleFilePath, charsmax( emptyCycleFilePath ) );
+    
+    g_emptyCycleMapsNumber = map_populateList( g_emptyCycleMapsArray, emptyCycleFilePath, charsmax( emptyCycleFilePath ) );
+    LOGGER( 4, "( map_loadEmptyCycleList ) g_emptyCycleMapsNumber = %d", g_emptyCycleMapsNumber );
+}
+
+public map_loadPrefixList()
+{
+    LOGGER( 128, "I AM ENTERING ON map_loadPrefixList(0)" );
+    
+    new prefixesFile;
+    new prefixesFilePath[ MAX_FILE_PATH_LENGHT ];
+    
+    formatex( prefixesFilePath, charsmax( prefixesFilePath ), "%s/prefixes.ini", g_configsDirPath );
+    prefixesFile = fopen( prefixesFilePath, "rt" );
+    
+    if( prefixesFile )
+    {
+        new loadedMapPrefix[ 16 ];
+        
+        while( !feof( prefixesFile ) )
+        {
+            fgets( prefixesFile, loadedMapPrefix, charsmax( loadedMapPrefix ) );
+            
+            if( loadedMapPrefix[ 0 ]
+                && !equal( loadedMapPrefix, "//", 2 ) )
+            {
+                if( g_mapPrefixCount <= MAX_PREFIX_COUNT )
+                {
+                    trim( loadedMapPrefix );
+                    copy( g_mapPrefixes[ g_mapPrefixCount++ ], charsmax( loadedMapPrefix ), loadedMapPrefix );
+                }
+                else
+                {
+                    LOGGER( 1, "AMX_ERR_BOUNDS, %L", LANG_SERVER, "GAL_PREFIXES_TOOMANY", MAX_PREFIX_COUNT, prefixesFilePath );
+                    log_error( AMX_ERR_BOUNDS, "%L", LANG_SERVER, "GAL_PREFIXES_TOOMANY", MAX_PREFIX_COUNT, prefixesFilePath );
+                    
+                    break;
+                }
+            }
+        }
+        fclose( prefixesFile );
+    }
+    else
+    {
+        LOGGER( 1, "AMX_ERR_NOTFOUND, %L", LANG_SERVER, "GAL_PREFIXES_NOTFOUND", prefixesFilePath );
+        log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_PREFIXES_NOTFOUND", prefixesFilePath );
     }
 }
 
