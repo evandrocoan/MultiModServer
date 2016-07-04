@@ -1,10 +1,17 @@
 [10-22]
 de_dust2
 de_inferno
+de_vegas
+de_train
 
 [23-05]
-de_tuscan_mgc
+de_survivor
 de_mirage
+de_tikal
+de_rats
+de_nuke_32
 
 [05-10]
 de_dust2_long
+de_vertigo
+de_olan
