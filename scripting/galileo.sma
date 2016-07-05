@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-139";
+new const PLUGIN_VERSION[] = "v2.6.1-141";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -40,7 +40,9 @@ new const PLUGIN_VERSION[] = "v2.6.1-139";
  *
  * 2   - a) To skip the 'pendingVoteCountdown()'.
  *       b) Set the vote runoff time to 5 seconds.
- *       c) Run the Unit Tests and print their out put results.
+ *       c) Run the NORMAL Unit Tests.
+ *
+ * 4   - Run the DELAYED Unit Tests.
  *
  * 4   - a) To create fake votes. See the function 'create_fakeVotes()'.
  *       b) To create fake players count. See the function 'get_realplayersnum()'.
@@ -49,14 +51,15 @@ new const PLUGIN_VERSION[] = "v2.6.1-139";
  *
  * 15  - Levels 1, 2, 4 and 8.
  */
-#define DEBUG_LEVEL 8
+#define DEBUG_LEVEL 27
 
 
 
-#define DEBUG_LEVEL_NORMAL        1
-#define DEBUG_LEVEL_UNIT_TEST     2
-#define DEBUG_LEVEL_FAKE_VOTES    4
-#define DEBUG_LEVEL_CRITICAL_MODE 8
+#define DEBUG_LEVEL_NORMAL            1
+#define DEBUG_LEVEL_UNIT_TEST_NORMAL  2
+#define DEBUG_LEVEL_UNIT_TEST_DELAYED 4
+#define DEBUG_LEVEL_FAKE_VOTES        8
+#define DEBUG_LEVEL_CRITICAL_MODE     16
 
 
 #include <amxmodx>
@@ -120,11 +123,11 @@ new const PLUGIN_VERSION[] = "v2.6.1-139";
 
 
 
-#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
+#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
     /**
      * Contains all unit tests to execute.
      */
-    #define ALL_TESTS_TO_EXECUTE() \
+    #define NORNAL_TESTS_TO_EXECUTE() \
     do \
     { \
         test_register_test(); \
@@ -132,10 +135,19 @@ new const PLUGIN_VERSION[] = "v2.6.1-139";
         test_gal_in_empty_cycle_case2(); \
         test_gal_in_empty_cycle_case3(); \
         test_gal_in_empty_cycle_case4(); \
-        test_is_map_extension_allowed(); \
         test_loadCurrentBlackList_case1(); \
         test_loadCurrentBlackList_case2(); \
         test_loadCurrentBlackList_case3(); \
+        test_loadCurrentBlackList_case4(); \
+    } while( g_dummy_value )
+    
+    /**
+     * Contains all unit tests to execute.
+     */
+    #define DALAYED_TESTS_TO_EXECUTE() \
+    do \
+    { \
+        test_is_map_extension_allowed(); \
     } while( g_dummy_value )
     
     /**
@@ -148,7 +160,7 @@ new const PLUGIN_VERSION[] = "v2.6.1-139";
         set_test_failure_private( %1 ); \
         if( g_current_test_evaluation ) \
         { \
-            LOGGER( 1, "( SET_TEST_FAILURE ) Just returning/bloking." ); \
+            LOGGER( 1, "    ( SET_TEST_FAILURE ) Just returning/bloking." ); \
             print_logger( "FALILED!" ); \
             print_logger( "" ); \
             return; \
@@ -171,7 +183,7 @@ new const PLUGIN_VERSION[] = "v2.6.1-139";
     
     
     /**
-     * Test unit variables related to the DEBUG_LEVEL_UNIT_TEST 2.
+     * Test unit variables related to the DEBUG_LEVEL_UNIT_TEST_NORMAL 2.
      */
     new g_max_delay_result;
     new g_totalSuccessfulTests;
@@ -953,7 +965,7 @@ public plugin_cfg()
     configureServerStart();
     configureServerMapChange();
     
-#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
+#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
     configureTheUnitTests();
 #endif
 
@@ -1473,7 +1485,7 @@ stock getRestartsOnTheCurrentMap( mapToChange[] )
             lastMapChangedCount = 0;
             
             fprintf( lastMapChangedFile, "^n0" );
-            LOGGER( 4, "( getRestartsOnTheCurrentMap ) mapToChange is NOT equal to lastMapChangedName." );
+            LOGGER( 4, "( getRestartsOnTheCurrentMap ) mapToChange is not equal to lastMapChangedName." );
         }
         
         fclose( lastMapChangedFile );
@@ -4341,7 +4353,20 @@ loadTheWhiteListFeature()
 stock loadWhiteListFile( &Trie:listTrie, whiteListFilePath[], bool:isWhiteList = false, &Array:listArray = Invalid_Array )
 {
     LOGGER( 1, "" );
-    LOGGER( 128, "I AM ENTERING ON loadWhiteListFile(3) | listTrie: %d, isWhiteList: %d", listTrie, isWhiteList );
+    LOGGER( 128, "I AM ENTERING ON loadWhiteListFile(4) | listTrie: %d, isWhiteList: %d", listTrie, isWhiteList );
+    
+    new      startHour;
+    new      endHour;
+    new      whiteListFileDescriptor;
+    new bool:isToLoadTheseMaps;
+    
+    new currentHourString [ 8 ];
+    new currentLine       [ MAX_MAPNAME_LENGHT ];
+    new startHourString   [ MAX_MAPNAME_LENGHT / 2 ];
+    new endHourString     [ MAX_MAPNAME_LENGHT / 2 ];
+    
+    get_time( "%H", currentHourString, charsmax( currentHourString ) );
+    new currentHour = str_to_num( currentHourString );
     
     if( listTrie )
     {
@@ -4364,21 +4389,8 @@ stock loadWhiteListFile( &Trie:listTrie, whiteListFilePath[], bool:isWhiteList =
         }
     }
     
-    new      startHour;
-    new      endHour;
-    new      whiteListFileDescriptor;
-    new bool:isToLoadTheseMaps;
-    
-    new currentHourString [ 8 ];
-    new currentLine       [ MAX_MAPNAME_LENGHT ];
-    new startHourString   [ MAX_MAPNAME_LENGHT / 2 ];
-    new endHourString     [ MAX_MAPNAME_LENGHT / 2 ];
-    
-    get_time( "%H", currentHourString, charsmax( currentHourString ) );
-    new currentHour = str_to_num( currentHourString );
-    
     // While the Unit Tests are running, to force a specific time.
-#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
+#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
     if( g_test_current_time )
     {
         currentHour = g_test_current_time;
@@ -4407,8 +4419,6 @@ stock loadWhiteListFile( &Trie:listTrie, whiteListFilePath[], bool:isWhiteList =
         if( currentLine[ 0 ] == '['
             && isdigit( currentLine[ 1 ] ) )
         {
-            isToLoadTheseMaps = true;
-            
             // remove line delimiters [ and ]
             replace_all( currentLine, charsmax( currentLine ), "[", "" );
             replace_all( currentLine, charsmax( currentLine ), "]", "" );
@@ -4427,51 +4437,7 @@ stock loadWhiteListFile( &Trie:listTrie, whiteListFilePath[], bool:isWhiteList =
             startHour = str_to_num( startHourString );
             endHour   = str_to_num( endHourString );
             
-            if( startHour == endHour
-                || 0 > startHour > 24
-                || 0 > endHour > 24
-                || ( startHour == 24
-                     && endHour == 0 )
-                || ( startHour == 0
-                     && endHour == 24 ) )
-            {
-                isToLoadTheseMaps = false;
-            }
-            else if( startHour > endHour )
-            {
-                if( startHour >= currentHour
-                    && currentHour > endHour )
-                {
-                    isToLoadTheseMaps = !isWhiteList;
-                }
-                else
-                {
-                    isToLoadTheseMaps = isWhiteList;
-                }
-            }
-            else // if( startHour < endHour )
-            {
-                if( startHour <= currentHour 
-                    && currentHour < endHour )
-                {
-                    isToLoadTheseMaps = isWhiteList;
-                }
-                else
-                {
-                    isToLoadTheseMaps = !isWhiteList;
-                }
-            }
-            
-            LOGGER( 8, "( loadWhiteListFile ) %2d >  %2d     : %2d", startHour, endHour, startHour > endHour );
-            LOGGER( 8, "( loadWhiteListFile ) %2d >= %2d > %2d: %2d, isToLoadTheseMaps: %d", \
-                    startHour, currentHour, endHour, \
-                    startHour >= currentHour && currentHour > endHour, isToLoadTheseMaps );
-            
-            LOGGER( 8, "( loadWhiteListFile ) %2d <  %2d     : %2d", startHour, endHour, startHour < endHour );
-            LOGGER( 8, "( loadWhiteListFile ) %2d <= %2d < %2d: %2d, isToLoadTheseMaps: %d", \
-                    startHour, currentHour, endHour, \
-                    startHour <= currentHour && currentHour < endHour, isToLoadTheseMaps );
-            
+            isToLoadTheNextWhiteListGroup( isToLoadTheseMaps, currentHour, startHour, endHour, isWhiteList );
             goto proceed;
         }
         else if( !isToLoadTheseMaps )
@@ -4483,7 +4449,7 @@ stock loadWhiteListFile( &Trie:listTrie, whiteListFilePath[], bool:isWhiteList =
         {
             LOGGER( 8, "( loadWhiteListFile ) Trying to add: %s", currentLine );
             
-        #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
+        #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
             if( is_map_valid( currentLine )
                 || g_areTheUnitTestsRunning )
         #else
@@ -4505,6 +4471,57 @@ stock loadWhiteListFile( &Trie:listTrie, whiteListFilePath[], bool:isWhiteList =
     LOGGER( 1, "I AM EXITING loadWhiteListFile(3) | listTrie: %d", listTrie );
     
 } // end loadWhiteListFile(2)
+
+stock isToLoadTheNextWhiteListGroup( &isToLoadTheseMaps, currentHour, startHour, endHour, isWhiteList )
+{
+    LOGGER( 0, "I AM ENTERING ON isToLoadTheNextWhiteListGroup(1)" );
+    isToLoadTheseMaps = true;
+    
+    if( startHour == endHour
+        || 0 > startHour > 24
+        || 0 > endHour > 24
+        || ( startHour == 24
+             && endHour == 0 )
+        || ( startHour == 0
+             && endHour == 24 ) )
+    {
+        isToLoadTheseMaps = false;
+    }
+    else if( startHour > endHour )
+    {
+        if( startHour >= currentHour
+            && currentHour > endHour )
+        {
+            isToLoadTheseMaps = !isWhiteList;
+        }
+        else
+        {
+            isToLoadTheseMaps = isWhiteList;
+        }
+    }
+    else // if( startHour < endHour )
+    {
+        if( startHour <= currentHour 
+            && currentHour < endHour )
+        {
+            isToLoadTheseMaps = isWhiteList;
+        }
+        else
+        {
+            isToLoadTheseMaps = !isWhiteList;
+        }
+    }
+    
+    LOGGER( 8, "( loadWhiteListFile ) %2d >  %2d     : %2d", startHour, endHour, startHour > endHour );
+    LOGGER( 8, "( loadWhiteListFile ) %2d >= %2d > %2d: %2d, isToLoadTheseMaps: %d", \
+            startHour, currentHour, endHour, \
+            startHour >= currentHour && currentHour > endHour, isToLoadTheseMaps );
+    
+    LOGGER( 8, "( loadWhiteListFile ) %2d <  %2d     : %2d", startHour, endHour, startHour < endHour );
+    LOGGER( 8, "( loadWhiteListFile ) %2d <= %2d < %2d: %2d, isToLoadTheseMaps: %d", \
+            startHour, currentHour, endHour, \
+            startHour <= currentHour && currentHour < endHour, isToLoadTheseMaps );
+}
 
 stock loadNormalVoteChoices()
 {
@@ -4559,7 +4576,7 @@ stock approveTheVotingStart( bool:is_forced_voting )
     /**
      * Stops the empty cycle from starting when running the Unit Tests.
      */
-    #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
+    #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
         if( !g_areTheUnitTestsRunning )
         {
             LOGGER( 1, "    ( approveTheVotingStart ) Returning false on the if \
@@ -4740,7 +4757,7 @@ stock initializeTheVoteDisplay()
 #endif
     
     // force a right vote duration for the Unit Tests run
-#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
+#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
     g_voteDuration = 5;
 #endif
 
@@ -4764,7 +4781,7 @@ stock initializeTheVoteDisplay()
     }
     
     // adjust the choices delay for the Unit Tests run or normal work flow
-#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
+#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
     handleChoicesDelay = 0.1;
 #else
     
@@ -7263,7 +7280,7 @@ stock register_dictionary_colored( const dictionaryFile[] )
     get_localinfo( "amxx_datadir", dictionaryFilePath, charsmax( dictionaryFilePath ) );
     formatex( dictionaryFilePath, charsmax( dictionaryFilePath ), "%s/lang/%s", dictionaryFilePath, dictionaryFile );
     
-    // DO NOT SEPARE/SPLIT THIS DECLARATION in: new var; var = fopen... or it can crash some servers.
+    // DO not SEPARE/SPLIT THIS DECLARATION in: new var; var = fopen... or it can crash some servers.
     new dictionaryFile = fopen( dictionaryFilePath, "rt" );
     
     if( !dictionaryFile )
@@ -7520,7 +7537,7 @@ public plugin_end()
     }
     
     // Clean the unit tests data 
-#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
+#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
     restore_server_cvars_for_test();
     
     if( g_tests_idsAndNames )
@@ -7840,7 +7857,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
 
 
 // The Unit Tests execution
-#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST
+#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
     stock configureTheUnitTests()
     {
         LOGGER( 128, "I AM ENTERING ON configureTheUnitTests(0)" );
@@ -7879,7 +7896,14 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         g_areTheUnitTestsRunning = true;
         save_server_cvars_for_test();
         
-        ALL_TESTS_TO_EXECUTE();
+    #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
+        NORNAL_TESTS_TO_EXECUTE();
+    #endif
+        
+    #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_DELAYED
+        DALAYED_TESTS_TO_EXECUTE();
+    #endif
+        
         displaysTheLastTestOk();
         
         if( g_max_delay_result )
@@ -8191,7 +8215,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     /**
      * This is the 5º test at vote_startDirector() chain.
      *
-     * Tests if the end map voting is NOT starting automatically at the end of map due time limit expiration.
+     * Tests if the end map voting is not starting automatically at the end of map due time limit expiration.
      */
     public test_end_of_map_voting_stop_1( chainDelay )
     {
@@ -8209,7 +8233,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     /**
      * This is the 6º test at vote_startDirector() chain.
      *
-     * Tests if the end map voting is NOT starting automatically at the end of map due time limit expiration.
+     * Tests if the end map voting is not starting automatically at the end of map due time limit expiration.
      */
     public test_end_of_map_voting_stop_2( chainDelay )
     {
@@ -8261,7 +8285,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         new mapIndex = map_getNext( emptyCycleMapList, "de_dust2", nextMap );
         
         SET_TEST_FAILURE( test_id, !equal( nextMap, "de_inferno" ), "nextMap must be 'de_inferno' (it was %s)", nextMap );
-        SET_TEST_FAILURE( test_id, mapIndex == -1, "mapIndex must NOT be '-1' (it was %d)", mapIndex );
+        SET_TEST_FAILURE( test_id, mapIndex == -1, "mapIndex must not be '-1' (it was %d)", mapIndex );
         
         ArrayDestroy( emptyCycleMapList );
     }
@@ -8284,7 +8308,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         new mapIndex = map_getNext( emptyCycleMapList, "de_inferno", nextMap );
         
         SET_TEST_FAILURE( test_id, !equal( nextMap, "de_dust4" ), "nextMap must be 'de_dust4' (it was %s)", nextMap );
-        SET_TEST_FAILURE( test_id, mapIndex == -1, "mapIndex must NOT be '-1' (it was %d)", mapIndex );
+        SET_TEST_FAILURE( test_id, mapIndex == -1, "mapIndex must not be '-1' (it was %d)", mapIndex );
         
         ArrayDestroy( emptyCycleMapList );
     }
@@ -8337,6 +8361,10 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
             fprintf( whiteListFileDescriptor, "%s^n", "de_dust5" );
             fprintf( whiteListFileDescriptor, "%s^n", "de_dust6" );
             fprintf( whiteListFileDescriptor, "%s^n", "de_dust7" );
+            fprintf( whiteListFileDescriptor, "%s^n", "[23-05]" );
+            fprintf( whiteListFileDescriptor, "%s^n", "de_dust8" );
+            fprintf( whiteListFileDescriptor, "%s^n", "de_dust9" );
+            fprintf( whiteListFileDescriptor, "%s^n", "de_dust10" );
             fclose( whiteListFileDescriptor );
         }
         
@@ -8345,11 +8373,11 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         g_test_current_time = 0;
         
         SET_TEST_FAILURE( test_id, TrieKeyExists( blackListTrie, "de_dust1" ), \
-                "The map 'de_dust1' must NOT to be present on the trie, but it was!" );
+                "The map 'de_dust1' must not to be present on the trie, but it was!" );
         SET_TEST_FAILURE( test_id, TrieKeyExists( blackListTrie, "de_dust2" ), \
-                "The map 'de_dust2' must NOT to be present on the trie, but it was!" );
+                "The map 'de_dust2' must not to be present on the trie, but it was!" );
         SET_TEST_FAILURE( test_id, TrieKeyExists( blackListTrie, "de_dust3" ), \
-                "The map 'de_dust3' must NOT to be present on the trie, but it was!" );
+                "The map 'de_dust3' must not to be present on the trie, but it was!" );
         
         SET_TEST_FAILURE( test_id, !TrieKeyExists( blackListTrie, "de_dust4" ), \
                 "The map 'de_dust4' must to be present on the trie, but it was not!" );
@@ -8376,7 +8404,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         g_test_current_time = 0;
         
         SET_TEST_FAILURE( test_id, TrieKeyExists( blackListTrie, "de_dust4" ), \
-                "The map 'de_dust4' must NOT to be present on the trie, but it was!" );
+                "The map 'de_dust4' must not to be present on the trie, but it was!" );
         
         SET_TEST_FAILURE( test_id, !TrieKeyExists( blackListTrie, "de_dust5" ), \
                 "The map 'de_dust5' must to be present on the trie, but it was not!" );
@@ -8397,13 +8425,33 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         g_test_current_time = 0;
         
         SET_TEST_FAILURE( test_id, TrieKeyExists( blackListTrie, "de_dust7" ), \
-                "The map 'de_dust7' must NOT to be present on the trie, but it was!" );
+                "The map 'de_dust7' must not to be present on the trie, but it was!" );
         
         SET_TEST_FAILURE( test_id, !TrieKeyExists( blackListTrie, "de_dust2" ), \
                 "The map 'de_dust2' must to be present on the trie, but it was not!" );
         
         TrieDestroy( blackListTrie );
-        delete_file( g_test_whiteListFilePath );
+    }
+    
+    /**
+     * This tests if the function 'loadWhiteListFile()' 3º case is working properly.
+     */
+    public test_loadCurrentBlackList_case4()
+    {
+        new test_id            = register_test( 0, "test_loadCurrentBlackList_case4" );
+        new Trie:blackListTrie = TrieCreate();
+        
+        g_test_current_time = 23;
+        loadWhiteListFile( blackListTrie, g_test_whiteListFilePath );
+        g_test_current_time = 0;
+        
+        SET_TEST_FAILURE( test_id, !TrieKeyExists( blackListTrie, "de_dust7" ), \
+                "The map 'de_dust7' must to be present on the trie, but it was not!" );
+        
+        SET_TEST_FAILURE( test_id, TrieKeyExists( blackListTrie, "de_dust2" ), \
+                "The map 'de_dust2' must not to be present on the trie, but it was!" );
+        
+        TrieDestroy( blackListTrie );
     }
     
     
@@ -8451,6 +8499,8 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
             set_pcvar_float( cvar_maxMapExtendTime, test_extendmap_max );
             set_pcvar_float( cvar_mp_timelimit, test_mp_timelimit );
         }
+        
+        delete_file( g_test_whiteListFilePath );
         
         LOGGER( 2, "    %42s cvar_mp_timelimit: %f  test_mp_timelimit: %f  g_originalTimelimit: %f", \
                 "restore_server_cvars_for_test( out )", \
