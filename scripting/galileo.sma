@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-141";
+new const PLUGIN_VERSION[] = "v2.6.1-144";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -135,10 +135,9 @@ new const PLUGIN_VERSION[] = "v2.6.1-141";
         test_gal_in_empty_cycle_case2(); \
         test_gal_in_empty_cycle_case3(); \
         test_gal_in_empty_cycle_case4(); \
-        test_loadCurrentBlackList_case1(); \
-        test_loadCurrentBlackList_case2(); \
-        test_loadCurrentBlackList_case3(); \
-        test_loadCurrentBlackList_case4(); \
+        test_loadCurrentBlackList_load(); \
+        test_loadCurrentBlackList_case0(); \
+        test_loadCurrentBlackList_cases(); \
     } while( g_dummy_value )
     
     /**
@@ -4478,8 +4477,10 @@ stock isToLoadTheNextWhiteListGroup( &isToLoadTheseMaps, currentHour, startHour,
     isToLoadTheseMaps = true;
     
     if( startHour == endHour
-        || 0 > startHour > 24
-        || 0 > endHour > 24
+        || ( 0 > startHour
+             || startHour > 24 )
+        || ( 0 > endHour
+             || endHour > 24 )
         || ( startHour == 24
              && endHour == 0 )
         || ( startHour == 0
@@ -4492,11 +4493,11 @@ stock isToLoadTheNextWhiteListGroup( &isToLoadTheseMaps, currentHour, startHour,
         if( startHour >= currentHour
             && currentHour > endHour )
         {
-            isToLoadTheseMaps = !isWhiteList;
+            isToLoadTheseMaps = isWhiteList;
         }
         else
         {
-            isToLoadTheseMaps = isWhiteList;
+            isToLoadTheseMaps = !isWhiteList;
         }
     }
     else // if( startHour < endHour )
@@ -8339,12 +8340,10 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     /**
      * This tests if the function 'loadWhiteListFile()' 1º case is working properly.
      */
-    public test_loadCurrentBlackList_case1()
+    public test_loadCurrentBlackList_load()
     {
         new whiteListFileDescriptor;
-        
-        new test_id            = register_test( 0, "test_loadCurrentBlackList_case1" );
-        new Trie:blackListTrie = TrieCreate();
+        register_test( 0, "test_loadCurrentBlackList_load" );
         
         copy( g_test_whiteListFilePath, charsmax( g_test_whiteListFilePath ), "test_loadCurrentBlackList.txt" );
         whiteListFileDescriptor = fopen( g_test_whiteListFilePath, "wt" );
@@ -8367,6 +8366,58 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
             fprintf( whiteListFileDescriptor, "%s^n", "de_dust10" );
             fclose( whiteListFileDescriptor );
         }
+    }
+    
+    /**
+     * This tests if the function 'loadWhiteListFile()' 2º case is working properly.
+     */
+    public test_loadCurrentBlackList_cases()
+    {
+        test_loadCurrentBlacklist_case( 12, "de_dust2", "de_dust7" );
+        test_loadCurrentBlacklist_case( 22, "de_dust5", "de_dust4" );
+        test_loadCurrentBlacklist_case( 23, "de_dust7", "de_dust2" );
+        test_loadCurrentBlacklist_case( 23, "de_dust4", "de_dust1" );
+        test_loadCurrentBlacklist_case( 23, "de_dust7", "de_dust8" );
+        test_loadCurrentBlacklist_case( 22, "de_dust8", "de_dust7" );
+    }
+    
+    /**
+     * This tests if the function 'loadWhiteListFile()' is working properly.
+     *
+     * @param hour             the current hour.
+     * @param map_existent     the map name to exist.
+     * @param not_existent     the map name to does not exist.
+     */
+    stock test_loadCurrentBlacklist_case( hour, map_existent[], not_existent[] )
+    {
+        static currentCaseNumber = 0;
+        currentCaseNumber++;
+        
+        new testName    [ 64 ];
+        new errorMessage[ MAX_COLOR_MESSAGE ];
+        
+        formatex( testName, charsmax( testName ), "test_loadCurrentBlacklist_case%d", currentCaseNumber );
+        
+        new test_id            = register_test( 0, testName );
+        new Trie:blackListTrie = TrieCreate();
+        
+        g_test_current_time = hour;
+        loadWhiteListFile( blackListTrie, g_test_whiteListFilePath );
+        g_test_current_time = 0;
+        
+        formatex( errorMessage, charsmax( errorMessage ), "The map '%s' must to be present on the trie, but it was not!", map_existent );
+        SET_TEST_FAILURE( test_id, !TrieKeyExists( blackListTrie, map_existent ), errorMessage );
+        
+        formatex( errorMessage, charsmax( errorMessage ), "The map '%s' must not to be present on the trie, but it was!", not_existent );
+        SET_TEST_FAILURE( test_id, TrieKeyExists( blackListTrie, not_existent ), errorMessage );
+        
+        TrieDestroy( blackListTrie );
+    }
+    
+    public test_loadCurrentBlackList_case0()
+    {
+        new test_id            = register_test( 0, "test_loadCurrentBlackList_case0" );
+        new Trie:blackListTrie = TrieCreate();
         
         g_test_current_time = 23;
         loadWhiteListFile( blackListTrie, g_test_whiteListFilePath );
@@ -8387,69 +8438,6 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
                 "The map 'de_dust6' must to be present on the trie, but it was not!" );
         SET_TEST_FAILURE( test_id, !TrieKeyExists( blackListTrie, "de_dust7" ), \
                 "The map 'de_dust7' must to be present on the trie, but it was not!" );
-        
-        TrieDestroy( blackListTrie );
-    }
-    
-    /**
-     * This tests if the function 'loadWhiteListFile()' 2º case is working properly.
-     */
-    public test_loadCurrentBlackList_case2()
-    {
-        new test_id            = register_test( 0, "test_loadCurrentBlackList_case2" );
-        new Trie:blackListTrie = TrieCreate();
-        
-        g_test_current_time = 22;
-        loadWhiteListFile( blackListTrie, g_test_whiteListFilePath );
-        g_test_current_time = 0;
-        
-        SET_TEST_FAILURE( test_id, TrieKeyExists( blackListTrie, "de_dust4" ), \
-                "The map 'de_dust4' must not to be present on the trie, but it was!" );
-        
-        SET_TEST_FAILURE( test_id, !TrieKeyExists( blackListTrie, "de_dust5" ), \
-                "The map 'de_dust5' must to be present on the trie, but it was not!" );
-        
-        TrieDestroy( blackListTrie );
-    }
-    
-    /**
-     * This tests if the function 'loadWhiteListFile()' 3º case is working properly.
-     */
-    public test_loadCurrentBlackList_case3()
-    {
-        new test_id            = register_test( 0, "test_loadCurrentBlackList_case3" );
-        new Trie:blackListTrie = TrieCreate();
-        
-        g_test_current_time = 12;
-        loadWhiteListFile( blackListTrie, g_test_whiteListFilePath );
-        g_test_current_time = 0;
-        
-        SET_TEST_FAILURE( test_id, TrieKeyExists( blackListTrie, "de_dust7" ), \
-                "The map 'de_dust7' must not to be present on the trie, but it was!" );
-        
-        SET_TEST_FAILURE( test_id, !TrieKeyExists( blackListTrie, "de_dust2" ), \
-                "The map 'de_dust2' must to be present on the trie, but it was not!" );
-        
-        TrieDestroy( blackListTrie );
-    }
-    
-    /**
-     * This tests if the function 'loadWhiteListFile()' 3º case is working properly.
-     */
-    public test_loadCurrentBlackList_case4()
-    {
-        new test_id            = register_test( 0, "test_loadCurrentBlackList_case4" );
-        new Trie:blackListTrie = TrieCreate();
-        
-        g_test_current_time = 23;
-        loadWhiteListFile( blackListTrie, g_test_whiteListFilePath );
-        g_test_current_time = 0;
-        
-        SET_TEST_FAILURE( test_id, !TrieKeyExists( blackListTrie, "de_dust7" ), \
-                "The map 'de_dust7' must to be present on the trie, but it was not!" );
-        
-        SET_TEST_FAILURE( test_id, TrieKeyExists( blackListTrie, "de_dust2" ), \
-                "The map 'de_dust2' must not to be present on the trie, but it was!" );
         
         TrieDestroy( blackListTrie );
     }
