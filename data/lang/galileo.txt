@@ -782,7 +782,7 @@ GAL_WINNER_ORDERED = !tNiemand heeft gestemd.!y De volgende kaart!y is namelijk 
 GAL_WINNER_STAY = We !gblijven hier!y.
 GAL_WINNER_TIED = De gewonnen keuze is willekeurig geselecteerd van de !g%i!t evenveel gekozen keuzes.
 
-[rs]
+[sr]
 GAL_CANCEL_FAIL_INPROGRESS = !tPoništenje!g neuspešno; glasanje je!y u toku.
 GAL_CANCEL_FAIL_SOMEONEELSE = Poništenje neuspešno; '!g%s!y' je nominovana od strane!g %s!y.
 GAL_CANCEL_FAIL_VOTEOVER = Poništenje !tneuspešno;!y glasanje!g je već!t gotovo.
