@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-152";
+new const PLUGIN_VERSION[] = "v2.6.1-154";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -8394,7 +8394,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     }
     
     /**
-     * This tests if the function 'loadWhiteListFile()' 1º case is working properly.
+     * This is a configuration loader for the 'loadWhiteListFile(4)' function testing.
      */
     public test_loadCurrentBlackList_load()
     {
@@ -8425,20 +8425,21 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     }
     
     /**
-     * This tests if the function 'loadWhiteListFile()' 2º case is working properly.
+     * To call the general test handler 'test_loadCurrentBlacklist_case(3)' using test scenario
+     * cases.
      */
     public test_loadCurrentBlackList_cases()
     {
-        test_loadCurrentBlacklist_case( 12, "de_dust2", "de_dust7" ); // 1
-        test_loadCurrentBlacklist_case( 23, "de_dust5", "de_dust4" ); // 2
-        test_loadCurrentBlacklist_case( 23, "de_dust7", "de_dust2" ); // 3
-        test_loadCurrentBlacklist_case( 24, "de_dust4", "de_dust1" ); // 4
-        test_loadCurrentBlacklist_case( 23, "de_dust7", "de_dust8" ); // 5
-        test_loadCurrentBlacklist_case( 22, "de_dust8", "de_dust7" ); // 6
+        test_loadCurrentBlacklist_case( 12, "de_dust2", "de_dust7" ); // case 1
+        test_loadCurrentBlacklist_case( 23, "de_dust5", "de_dust4" ); // case 2
+        test_loadCurrentBlacklist_case( 23, "de_dust7", "de_dust2" ); // case 3
+        test_loadCurrentBlacklist_case( 24, "de_dust4", "de_dust1" ); // case 4
+        test_loadCurrentBlacklist_case( 23, "de_dust7", "de_dust8" ); // case 5
+        test_loadCurrentBlacklist_case( 22, "de_dust8", "de_dust7" ); // case 6
     }
     
     /**
-     * This tests if the function 'loadWhiteListFile()' is working properly.
+     * This is a general test handler for the function 'loadWhiteListFile(4)'.
      *
      * @param hour             the current hour.
      * @param map_existent     the map name to exist.
@@ -8470,6 +8471,9 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         TrieDestroy( blackListTrie );
     }
     
+    /**
+     * This is the first case manual test for the 'loadWhiteListFile(4)' is working properly.
+     */
     public test_loadCurrentBlackList_case0()
     {
         new test_id            = register_test( 0, "test_loadCurrentBlackList_case0" );
