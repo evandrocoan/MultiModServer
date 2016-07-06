@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-149";
+new const PLUGIN_VERSION[] = "v2.6.1-152";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -1945,16 +1945,16 @@ public round_end_event()
         }
     }
     
-    endGameWatchdog();
+    endRoundWatchdog();
     LOGGER( 32, "( round_end_event ) | g_maxRoundsNumber = %d, \
             g_roundsPlayedNumber = %d, current_rounds_trigger = %d", \
                                        g_maxRoundsNumber, \
             g_roundsPlayedNumber,      current_rounds_trigger );
 }
 
-stock endGameWatchdog()
+stock endRoundWatchdog()
 {
-    LOGGER( 128, "I AM ENTERING ON endGameWatchdog(0)" );
+    LOGGER( 128, "I AM ENTERING ON endRoundWatchdog(0)" );
     
     g_fragLimitNumber = get_pcvar_num( cvar_mp_fraglimit );
     g_timeLimitNumber = get_pcvar_num( cvar_mp_timelimit );
@@ -4467,9 +4467,9 @@ stock loadWhiteListFile( &Trie:listTrie, whiteListFilePath[], bool:isWhiteList =
     
 } // end loadWhiteListFile(2)
 
-stock isToLoadTheNextWhiteListGroup( &isToLoadTheseMaps, currentHour, startHour, endHour, isWhiteList )
+stock isToLoadTheNextWhiteListGroup( &isToLoadTheseMaps, currentHour, startHour, endHour, isWhiteList = false )
 {
-    LOGGER( 0, "I AM ENTERING ON isToLoadTheNextWhiteListGroup(1)" );
+    LOGGER( 0, "I AM ENTERING ON isToLoadTheNextWhiteListGroup(5)" );
     
     // Standardize the hours from 0 until 23.
     if( startHour > 23 )
@@ -4484,17 +4484,20 @@ stock isToLoadTheNextWhiteListGroup( &isToLoadTheseMaps, currentHour, startHour,
         endHour = 0;
     }
     
-    if( 0 > startHour
-        || startHour > 23 
-        || 0 > endHour
-        || endHour > 23 )
+    if( startHour < 0 )
     {
-        LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) isToLoadTheseMaps will became false, \
-                                                startHour: %d, endHour: %d", startHour, endHour );
-        isToLoadTheseMaps = false;
+        LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) startHour: %d, will became 0.", startHour );
+        startHour = 0;
     }
-    else if( startHour == endHour
-             && endHour == currentHour )
+    
+    if( endHour < 0 )
+    {
+        LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) endHour: %d, will became 0.", endHour );
+        endHour = 0;
+    }
+    
+    if( startHour == endHour
+        && endHour == currentHour )
     {
         LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) startHour == endHour: %d", startHour );
         isToLoadTheseMaps = !isWhiteList;
