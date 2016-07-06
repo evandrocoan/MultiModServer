@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-154";
+new const PLUGIN_VERSION[] = "v2.6.1-155";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -1711,7 +1711,7 @@ stock prevent_map_change()
     saveEndGameLimits();
     
     // Prevent the map from ending automatically.
-    server_cmd( "mp_timelimit 0" );
+    set_pcvar_float( cvar_mp_timelimit, 0.0 );
     
     // Prevent the map from being played indefinitely.
     if( g_isTimeToChangeLevel )
@@ -7384,10 +7384,10 @@ public map_restoreEndGameCvars()
     
     if( g_isEndGameLimitsChanged )
     {
-        server_cmd( "mp_timelimit %f", g_originalTimelimit );
-        server_cmd( "mp_maxrounds %d", g_originalMaxRounds );
-        server_cmd( "mp_winlimit %d",  g_originalWinLimit );
-        server_cmd( "mp_fraglimit %d", g_originalFragLimit );
+        set_pcvar_float( cvar_mp_timelimit, g_originalTimelimit );
+        set_pcvar_num(   cvar_mp_maxrounds, g_originalMaxRounds );
+        set_pcvar_num(   cvar_mp_winlimit,  g_originalWinLimit );
+        set_pcvar_num(   cvar_mp_fraglimit, g_originalFragLimit );
         
         // restore to the original/right values
         g_rtvWaitMinutes = get_pcvar_float( cvar_rtvWaitMinutes );
