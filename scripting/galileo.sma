@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-155";
+new const PLUGIN_VERSION[] = "v2.6.1-161";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -528,6 +528,7 @@ new cvar_cmdListmaps;
 new cvar_listmapsPaginate;
 new cvar_recentMapsBannedNumber;
 new cvar_recentNomMapsAllowance;
+new cvar_isOnlyRecentMapcycleMaps;
 new cvar_banRecentStyle;
 new cvar_voteDuration;
 new cvar_nomMapFilePath;
@@ -793,6 +794,7 @@ public plugin_init()
     cvar_listmapsPaginate          = register_cvar( "gal_listmaps_paginate", "10" );
     cvar_recentMapsBannedNumber    = register_cvar( "gal_banrecent", "3" );
     cvar_recentNomMapsAllowance    = register_cvar( "gal_recent_nom_maps", "0" );
+    cvar_isOnlyRecentMapcycleMaps  = register_cvar( "gal_banrecent_mapcycle", "0" );
     cvar_banRecentStyle            = register_cvar( "gal_banrecentstyle", "1" );
     cvar_endOfMapVote              = register_cvar( "gal_endofmapvote", "1" );
     cvar_isToAskForEndOfTheMapVote = register_cvar( "gal_endofmapvote_ask", "0" );
@@ -1745,10 +1747,9 @@ stock prevent_map_change()
 public map_loadRecentList()
 {
     LOGGER( 128, "I AM ENTERING ON map_loadRecentList(0)" );
-    
     new recentMapsFilePath[ MAX_FILE_PATH_LENGHT ];
-    formatex( recentMapsFilePath, charsmax( recentMapsFilePath ), "%s/%s", g_dataDirPath, RECENT_BAN_MAPS_FILE_NAME );
     
+    formatex( recentMapsFilePath, charsmax( recentMapsFilePath ), "%s/%s", g_dataDirPath, RECENT_BAN_MAPS_FILE_NAME );
     new recentMapsFile = fopen( recentMapsFilePath, "rt" );
     
     if( recentMapsFile )
@@ -1777,6 +1778,7 @@ public map_loadRecentList()
                 }
             }
         }
+        
         fclose( recentMapsFile );
     }
 }
@@ -1785,27 +1787,76 @@ public map_writeRecentList()
 {
     LOGGER( 128, "I AM ENTERING ON map_writeRecentList(0)" );
     
-    new recentMapsFile;
-    new recentMapName     [ MAX_MAPNAME_LENGHT ];
-    new recentMapsFilePath[ MAX_FILE_PATH_LENGHT ];
+    new Trie:mapCycleMapsTrie;
+    new bool:isOnlyRecentMapcycleMaps;
+    new      recentMapsFile;
+    new      voteMapsFilerFilePath  [ MAX_FILE_PATH_LENGHT ];
+    new      recentMapName          [ MAX_MAPNAME_LENGHT ];
+    new      recentMapsFilePath     [ MAX_FILE_PATH_LENGHT ];
     
     formatex( recentMapsFilePath, charsmax( recentMapsFilePath ), "%s/%s", g_dataDirPath, RECENT_BAN_MAPS_FILE_NAME );
+    isOnlyRecentMapcycleMaps = get_pcvar_num( cvar_isOnlyRecentMapcycleMaps ) != 0;
+    
+    if( isOnlyRecentMapcycleMaps )
+    {
+        get_pcvar_string( cvar_voteMapFilePath, voteMapsFilerFilePath, charsmax( voteMapsFilerFilePath ) );
+        
+        // '*' is and invalid because it already allow all server maps.
+        if( !equal( voteMapsFilerFilePath, "*" ) )
+        {
+            mapCycleMapsTrie = TrieCreate();
+            
+            // This call is only to load the 'mapCycleMapsTrie', the parameter 'g_fillerMapsArray' is ignored.
+            map_populateList( g_fillerMapsArray, voteMapsFilerFilePath, charsmax( voteMapsFilerFilePath ), mapCycleMapsTrie );
+        }
+        else
+        {
+            isOnlyRecentMapcycleMaps = false;
+        }
+    }
+    
     recentMapsFile = fopen( recentMapsFilePath, "wt" );
     
     if( recentMapsFile )
     {
         if( !TrieKeyExists( g_recentMapsTrie, g_currentMap ) )
         {
-            fprintf( recentMapsFile, "%s^n", g_currentMap );
+            if( isOnlyRecentMapcycleMaps )
+            {
+                if( TrieKeyExists( mapCycleMapsTrie, g_currentMap ) )
+                {
+                    fprintf( recentMapsFile, "%s^n", g_currentMap );
+                }
+            }
+            else
+            {
+                fprintf( recentMapsFile, "%s^n", g_currentMap );
+            }
         }
         
         for( new mapIndex = 0; mapIndex < g_recentMapCount; ++mapIndex )
         {
             ArrayGetString( g_recentListMapsArray, mapIndex, recentMapName, charsmax( recentMapName ) );
-            fprintf( recentMapsFile, "%s^n", recentMapName );
+            
+            if( isOnlyRecentMapcycleMaps )
+            {
+                if( TrieKeyExists( mapCycleMapsTrie, recentMapName ) )
+                {
+                    fprintf( recentMapsFile, "%s^n", recentMapName );
+                }
+            }
+            else
+            {
+                fprintf( recentMapsFile, "%s^n", recentMapName );
+            }
         }
         
         fclose( recentMapsFile );
+    }
+    
+    if( mapCycleMapsTrie )
+    {
+        TrieDestroy( mapCycleMapsTrie );
     }
 }
 
@@ -2556,25 +2607,25 @@ public cmd_createMapFile( player_id, level, cid )
             // map name is MAX_MAPNAME_LENGHT, .bsp: 4 + string terminator: 1 = 5
             new loadedMapName[ MAX_MAPNAME_LENGHT + 5 ];
             
-            new dir;
+            new directoryDescriptor;
             new mapFile;
             new mapCount;
             new mapNameLength;
             
-            dir = open_dir( "maps", loadedMapName, charsmax( loadedMapName )  );
+            directoryDescriptor = open_dir( "maps", loadedMapName, charsmax( loadedMapName )  );
             
-            if( dir )
+            if( directoryDescriptor )
             {
                 new mapFilePath[ MAX_FILE_PATH_LENGHT ];
-                formatex( mapFilePath, charsmax( mapFilePath ), "%s/%s", g_configsDirPath, mapFileName );
                 
+                formatex( mapFilePath, charsmax( mapFilePath ), "%s/%s", g_configsDirPath, mapFileName );
                 mapFile = fopen( mapFilePath, "wt" );
                 
                 if( mapFile )
                 {
                     mapCount = 0;
                     
-                    while( next_file( dir, loadedMapName, charsmax( loadedMapName ) ) )
+                    while( next_file( directoryDescriptor, loadedMapName, charsmax( loadedMapName ) ) )
                     {
                         mapNameLength = strlen( loadedMapName );
                         
@@ -2590,6 +2641,7 @@ public cmd_createMapFile( player_id, level, cid )
                             }
                         }
                     }
+                    
                     fclose( mapFile );
                     con_print( player_id, "%L", player_id, "GAL_CREATIONSUCCESS", mapFilePath, mapCount );
                 }
@@ -2597,7 +2649,8 @@ public cmd_createMapFile( player_id, level, cid )
                 {
                     con_print( player_id, "%L", player_id, "GAL_CREATIONFAILED", mapFilePath );
                 }
-                close_dir( dir );
+                
+                close_dir( directoryDescriptor );
             }
             else
             {
@@ -2837,10 +2890,10 @@ stock nomination_menu( player_id )
     isWhiteListNomBlock = ( IS_WHITELIST_ENABLED()
                             && get_pcvar_num( cvar_isWhiteListNomBlock ) );
     
+    // 'g_whitelistTrie' is not loaded?
     if( isWhiteListNomBlock
         && !g_blackListTrieForWhiteList )
     {
-        // 'g_whitelistTrie' is not loaded?
         // Depending on 'get_pcvar_num( cvar_isWhiteListNomBlock )', will or not be loaded.
         loadTheWhiteListFeature();
     }
@@ -2928,10 +2981,10 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
     isWhiteListNomBlock = ( IS_WHITELIST_ENABLED()
                             && get_pcvar_num( cvar_isWhiteListNomBlock ) );
     
+    // 'g_whitelistTrie' is not loaded?
     if( isWhiteListNomBlock
         && !g_blackListTrieForWhiteList )
     {
-        // 'g_whitelistTrie' is not loaded?
         // Depending on 'get_pcvar_num( cvar_isWhiteListNomBlock )', will or not be loaded.
         loadTheWhiteListFeature();
     }
@@ -3507,7 +3560,7 @@ public nomination_list()
     new copiedChars;
     
     new mapsList[ 101 ];
-    new mapName[ MAX_MAPNAME_LENGHT ];
+    new mapName [ MAX_MAPNAME_LENGHT ];
     
     maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), MAX_NOMINATION_COUNT );
     
@@ -3608,19 +3661,16 @@ stock map_populateList( Array:mapArray, mapFilePath[], mapFilePathMaxChars, Trie
         mapCount = loadMapFileList( mapArray, mapFilePath, fillerMapTrie );
     }
     
+    LOGGER( 1, "I AM EXITING map_populateList(4) mapCount: %d", mapCount );
     return mapCount;
 }
 
-stock loadMapFileList( Array:mapArray, mapFilePath[], Trie:fillerMapTrie )
+stock loadMapFileList( Array:mapArray, mapFilePath[], Trie:fillerMapTrie = Invalid_Trie )
 {
     LOGGER( 128, "I AM ENTERING ON loadMapFileList(3) | mapFilePath: %s", mapFilePath );
     
     new mapCount;
     new mapFile = fopen( mapFilePath, "rt" );
-
-#if defined DEBUG
-    new current_index = -1;
-#endif
     
     if( mapFile )
     {
@@ -3641,9 +3691,16 @@ stock loadMapFileList( Array:mapArray, mapFilePath[], Trie:fillerMapTrie )
                     TrieSetCell( fillerMapTrie, loadedMapName, 0 );
                 }
                 
-                LOGGER( 4, "map_populateList() %d, loadedMapName: %s", ++current_index, loadedMapName );
-                ArrayPushString( mapArray, loadedMapName );
+                #if defined DEBUG
+                    static currentIndex = 0;
+                    
+                    if( currentIndex < 100 )
+                    {
+                        LOGGER( 4, "( loadMapFileList ) %d, loadedMapName: %s", ++currentIndex, loadedMapName );
+                    }
+                #endif
                 
+                ArrayPushString( mapArray, loadedMapName );
                 ++mapCount;
             }
         }
@@ -3653,27 +3710,28 @@ stock loadMapFileList( Array:mapArray, mapFilePath[], Trie:fillerMapTrie )
     }
     else
     {
-        LOGGER( 1, "AMX_ERR_NOTFOUND, %L", LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilePath );
+        LOGGER( 1, "( loadMapFileList ) Error %d, %L", AMX_ERR_NOTFOUND, LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilePath );
         log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilePath );
     }
     
     return mapCount;
 }
 
-stock loadMapsFolderDirectory( Array:mapArray, Trie:fillerMapTrie )
+stock loadMapsFolderDirectory( Array:mapArray, Trie:fillerMapTrie = Invalid_Trie )
 {
-    LOGGER( 128, "I AM ENTERING ON map_populateList(2) | Array:mapArray: %d", mapArray );
+    LOGGER( 128, "I AM ENTERING ON loadMapsFolderDirectory(2) | Array:mapArray: %d", mapArray );
     
+    new directoryDescriptor;
     new mapCount;
     new loadedMapName[ MAX_MAPNAME_LENGHT ];
     
-    new dir = open_dir( "maps", loadedMapName, charsmax( loadedMapName ) );
+    directoryDescriptor = open_dir( "maps", loadedMapName, charsmax( loadedMapName ) );
     
-    if( dir )
+    if( directoryDescriptor )
     {
         new mapNameLength;
         
-        while( next_file( dir, loadedMapName, charsmax( loadedMapName ) ) )
+        while( next_file( directoryDescriptor, loadedMapName, charsmax( loadedMapName ) ) )
         {
             mapNameLength = strlen( loadedMapName );
             
@@ -3689,18 +3747,27 @@ stock loadMapsFolderDirectory( Array:mapArray, Trie:fillerMapTrie )
                         TrieSetCell( fillerMapTrie, loadedMapName, 0 );
                     }
                     
+                #if defined DEBUG
+                    static currentIndex = 0;
+                    
+                    if( currentIndex < 30 )
+                    {
+                        LOGGER( 4, "( loadMapsFolderDirectory ) %d, loadedMapName: %s", ++currentIndex, loadedMapName );
+                    }
+                #endif
+                    
                     ArrayPushString( mapArray, loadedMapName );
                     ++mapCount;
                 }
             }
         }
         
-        close_dir( dir );
+        close_dir( directoryDescriptor );
     }
     else
     {
         // directory not found, wtf?
-        LOGGER( 1, "AMX_ERR_NOTFOUND, %L", LANG_SERVER, "GAL_MAPS_FOLDERMISSING" );
+        LOGGER( 1, "( loadMapsFolderDirectory ) Error %d, %L", AMX_ERR_NOTFOUND, LANG_SERVER, "GAL_MAPS_FOLDERMISSING" );
         log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FOLDERMISSING" );
     }
     
@@ -3808,7 +3875,7 @@ stock vote_addNominations( blockedFillerMaps[][], blockedFillerMapsMaxChars = 0 
                 blackFillerMapTrie          = TrieCreate();
                 isFillersMapUsingMinplayers = true;
                 
-                // This call is only to load the blackFillerMapTrie, the parameter 'g_fillerMapsArray' is ignored.
+                // This call is only to load the 'blackFillerMapTrie', the parameter 'g_fillerMapsArray' is ignored.
                 map_populateList( g_fillerMapsArray, mapFilerFilePath, charsmax( mapFilerFilePath ), blackFillerMapTrie );
             }
         }
@@ -4392,6 +4459,7 @@ stock loadWhiteListFile( &Trie:listTrie, whiteListFilePath[], bool:isWhiteList =
     {
         if( listArray )
         {
+            // clear the map array in case we're reusing it
             ArrayClear( listArray );
         }
         else

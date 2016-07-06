@@ -388,37 +388,6 @@ galileo.amxx
 [*]Fix the code formatter 'format_code.bat' not formatting properly anymore.
 
 
-
-[*][QUOTE=Shattered Heart Lynx;2427240]Hello addons_zz
-
-I have some suggestions for the "recent maps" feature.
-
-Is it possible to increase the recent maps limit? Currently the limit is 16 maps.
-Also, there's no check when adding maps to the recent map list, if a map is played twice, it will be added two times in the list. And if a map doesn't belong in the mapcycle, it will be added to the recent map list anyway.
-
-Thanks in advance.[/QUOTE]
-
-Sure, I added it to the TODO list. On the next version this will be fixed and that will be unlimited. For now, I think you can change the constant:
-[PAWN]
-#define MAX_RECENT_MAP_COUNT 16
-[/PAWN]
-Without any problems.
-
-
-Originally Posted by BeNq!  View Post
-Please add full-whitelist and info on chat: "This map can't be nominated, because it is in whitelist".
-
-// The Whitelist feature specifies the time where the maps are allowed
-// to be added to the voting list as fillers after the nominations being
-// loaded.
-// 0 - Do not block map nominations.
-// 1 - Block map nomination not allowed on the Whitelist.
-gal_whitelist_nom_block 1
-
-
-
-
-
 [/LIST]
 
 
@@ -432,7 +401,7 @@ gal_whitelist_nom_block 1
 [B][URL="https://forums.alliedmods.net/member.php?u=263772"]Old.School[/URL][/B] ([B][NOPARSE][B][/NOPARSE]l@k ~ [R]Eed[/B]): For bug reports, testing and feature suggestions.
 [B][URL="https://forums.alliedmods.net/member.php?u=259683"]iNdio[/URL][/B]: For the Romanian [ro] and Italian [it] language translations.
 [B][URL="https://github.com/Ni3znajomy"]Ni3znajomy[/URL][/B]: For contributions/work over project on the GitHub.
-[B][URL="https://forums.alliedmods.net/member.php?u=119830"]Shattered Heart Lynx[/URL][/B]: For the custom 'amxx_datadir' directory and RTV 'Sven Co-op' fix and bug report.
+[B][URL="https://forums.alliedmods.net/member.php?u=119830"]Shattered Heart Lynx[/URL][/B]: For the custom 'amxx_datadir' directory, the cvar 'gal_banrecent_mapcycle' suggestion and RTV 'Sven Co-op' fix and bug report.
 [B][URL="https://forums.alliedmods.net/member.php?u=267675"]wombad321[/URL][/B]: For the 'map extend' not showing bug report and the new recent list feature suggestion.
 [B][URL="https://forums.alliedmods.net/member.php?u=165954"]WaSaAa1[/URL][/B]: For the voting menu not showing bug report.
 [B][URL="https://forums.alliedmods.net/member.php?u=267332"]feruchio[/URL][/B]: For the runoff voting showing two identical maps on some votings bug report.
@@ -469,6 +438,7 @@ Thank you!  It means a lot to me.
 [*]Added new cvar 'gal_mp_fraglimit_support', to enable the cvar 'mp_fraglimit' on game modes as 'Counter-Strike'.
 [*]Added new cvar 'gal_recent_nom_maps' to allow the recent maps to be nominated.
 [*]Added new cvar 'gal_game_crash_recreation' configure the game crash actions.
+[*]Added new cvar 'gal_banrecent_mapcycle' to mark as recent played maps only the map-cycle maps.
 [*]Added the server maintenance mode feature. Use 'gal_command_maintenance' to enable it.
 [*]Allowed the whitelist feature to be used with the minimum players nominations control feature.
 [*]Removed the maximum maps limit from the cvar 'gal_banrecent' maps.
