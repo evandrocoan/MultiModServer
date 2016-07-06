@@ -78,6 +78,7 @@ new const PLUGIN_VERSION[] = "v2.6.1-155";
      *
      * 2    - a) Players disconnecting and total number.
      *        b) Multiple time limits changes and restores.
+     *        c) Cvars changes (mp_chattime, mp_timelimit, etc)
      *
      * 4    - a) Maps events.
      *        b) Vote choices.
@@ -761,7 +762,7 @@ public plugin_init()
     cvar_isExtendmapOrderAllowed = register_cvar( "amx_extendmap_allow_order", "0" );
     cvar_extendmapAllowStayType  = register_cvar( "amx_extendmap_allow_stay_type", "0" );
     cvar_disabledValuePointer    = register_cvar( "gal_disabled_value_pointer", "0", FCVAR_SPONLY );
-    cvar_isFirstServerStart    = register_cvar( "gal_server_starting", "1", FCVAR_SPONLY );
+    cvar_isFirstServerStart      = register_cvar( "gal_server_starting", "1", FCVAR_SPONLY );
     
     // print the current used debug information
 #if DEBUG_LEVEL & ( DEBUG_LEVEL_NORMAL | DEBUG_LEVEL_CRITICAL_MODE )
@@ -1212,6 +1213,7 @@ public handleServerStart( backupMapsFilePath[] )
     
     // this is the key that tells us if this server has been restarted or not
     set_pcvar_num( cvar_isFirstServerStart, 0 );
+    LOGGER( 2, "( handleServerStart ) IS CHANGING THE CVAR 'gal_server_starting' to '%d'", 0 );
     
     // take the defined "server start" action
     startAction = get_pcvar_num( cvar_serverStartAction );
@@ -1340,6 +1342,11 @@ public setGameToFinishAtHalfTime()
     set_pcvar_num(   cvar_mp_maxrounds, g_originalMaxRounds / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR );
     set_pcvar_num(   cvar_mp_winlimit,  g_originalWinLimit  / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR );
     set_pcvar_num(   cvar_mp_fraglimit, g_originalFragLimit / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR );
+    
+    LOGGER( 2, "( setGameToFinishAtHalfTime ) IS CHANGING THE CVAR 'mp_timelimit' to '%f'", get_pcvar_float( cvar_mp_timelimit ) );
+    LOGGER( 2, "( setGameToFinishAtHalfTime ) IS CHANGING THE CVAR 'mp_fraglimit' to '%d'", get_pcvar_num( cvar_mp_fraglimit ) );
+    LOGGER( 2, "( setGameToFinishAtHalfTime ) IS CHANGING THE CVAR 'mp_maxrounds' to '%d'", get_pcvar_num( cvar_mp_maxrounds ) );
+    LOGGER( 2, "( setGameToFinishAtHalfTime ) IS CHANGING THE CVAR 'mp_winlimit' to '%d'", get_pcvar_num( cvar_mp_winlimit ) );
 }
 
 /**
@@ -1519,6 +1526,7 @@ stock setNextMap( nextMap[] )
     
     // update our data file
     saveCurrentAndNextMapNames( nextMap );
+    LOGGER( 2, "( setNextMap ) IS CHANGING THE CVAR 'amx_nextmap' to '%s'", nextMap );
 }
 
 stock saveCurrentAndNextMapNames( nextMap[] )
@@ -1712,6 +1720,7 @@ stock prevent_map_change()
     
     // Prevent the map from ending automatically.
     set_pcvar_float( cvar_mp_timelimit, 0.0 );
+    LOGGER( 2, "( prevent_map_change ) IS CHANGING THE CVAR 'mp_timelimit' to '%f'", get_pcvar_float( cvar_mp_timelimit ) );
     
     // Prevent the map from being played indefinitely.
     if( g_isTimeToChangeLevel )
@@ -2136,6 +2145,7 @@ stock intermission_display()
             g_original_sv_maxspeed = get_pcvar_float( cvar_sv_maxspeed );
             
             set_pcvar_float( cvar_sv_maxspeed, 0.0 );
+            LOGGER( 2, "( intermission_display ) IS CHANGING THE CVAR 'sv_maxspeed' to '%f'", get_pcvar_float( cvar_sv_maxspeed ) );
             
             client_cmd( 0, "slot1" );
             client_cmd( 0, "drop weapon_c4" );
@@ -2305,6 +2315,7 @@ public resetRoundsScores()
             if( new_timelimit > 0 )
             {
                 set_pcvar_num( cvar_mp_timelimit, new_timelimit );
+                LOGGER( 2, "( resetRoundsScores ) IS CHANGING THE CVAR 'mp_timelimit' to '%f'.", get_pcvar_float( cvar_mp_timelimit ) );
             }
         }
         
@@ -2323,6 +2334,7 @@ public resetRoundsScores()
             if( new_winlimit > 0 )
             {
                 set_pcvar_num( cvar_mp_winlimit, new_winlimit );
+                LOGGER( 2, "( resetRoundsScores ) IS CHANGING THE CVAR 'mp_winlimit' to '%d'", get_pcvar_num( cvar_mp_winlimit ) );
             }
         }
         
@@ -2337,6 +2349,7 @@ public resetRoundsScores()
             if( new_maxrounds > 0 )
             {
                 set_pcvar_num( cvar_mp_maxrounds, new_maxrounds );
+                LOGGER( 2, "( resetRoundsScores ) IS CHANGING THE CVAR 'mp_maxrounds' to '%d'", get_pcvar_num( cvar_mp_maxrounds ) );
             }
         }
         
@@ -2351,6 +2364,7 @@ public resetRoundsScores()
             if( new_fraglimit > 0 )
             {
                 set_pcvar_num( cvar_mp_fraglimit, new_fraglimit );
+                LOGGER( 2, "( resetRoundsScores ) IS CHANGING THE CVAR 'mp_fraglimit' to '%d'", get_pcvar_num( cvar_mp_fraglimit ) );
             }
         }
     }
@@ -2439,7 +2453,7 @@ public cmd_listrecent( player_id )
 
 public cmd_listrecent_handler( player_id, menu, item )
 {
-    LOGGER( 128, "( cmd_listrecent_handler ) | player_id: %d, menu: %d, item: %d", player_id, menu, item );
+    LOGGER( 128, "I AM ENTERING ON cmd_listrecent_handler(3) | player_id: %d, menu: %d, item: %d", player_id, menu, item );
     
     if( item < 0 )
     {
@@ -2455,7 +2469,7 @@ public cmd_listrecent_handler( player_id, menu, item )
 
 public cmd_cancelVote( player_id, level, cid )
 {
-    LOGGER( 128, "( cmd_cancelVote ) player_id: %d, level: %d, cid: %d", player_id, level, cid );
+    LOGGER( 128, "I AM ENTERING ON cmd_cancelVote(3) | player_id: %d, level: %d, cid: %d", player_id, level, cid );
     
     if( !cmd_access( player_id, level, cid, 1 ) )
     {
@@ -2473,7 +2487,7 @@ public cmd_cancelVote( player_id, level, cid )
  */
 public cmd_startVote( player_id, level, cid )
 {
-    LOGGER( 128, "( cmd_startVote ) player_id: %d, level: %d, cid: %d", player_id, level, cid );
+    LOGGER( 128, "I AM ENTERING ON cmd_startVote(3) | player_id: %d, level: %d, cid: %d", player_id, level, cid );
     
     if( !cmd_access( player_id, level, cid, 1 ) )
     {
@@ -2522,7 +2536,7 @@ public cmd_startVote( player_id, level, cid )
 
 public cmd_createMapFile( player_id, level, cid )
 {
-    LOGGER( 128, "( cmd_createMapFile ) | player_id: %d, level: %d, cid: %d", player_id, level, cid );
+    LOGGER( 128, "I AM ENTERING ON cmd_createMapFile(3) | player_id: %d, level: %d, cid: %d", player_id, level, cid );
     
     if( !cmd_access( player_id, level, cid, 1 ) )
     {
@@ -2609,7 +2623,7 @@ public cmd_createMapFile( player_id, level, cid )
  */
 public cmd_maintenanceMode( player_id, level, cid )
 {
-    LOGGER( 128, "( cmd_maintenanceMode ) player_id: %d, level: %d, cid: %d", player_id, level, cid );
+    LOGGER( 128, "I AM ENTERING ON cmd_maintenanceMode(3) | player_id: %d, level: %d, cid: %d", player_id, level, cid );
     
     if( !cmd_access( player_id, level, cid, 1 ) )
     {
@@ -6182,8 +6196,7 @@ stock Float:map_getMinutesElapsed()
 stock map_extend()
 {
     LOGGER( 128, "I AM ENTERING ON map_extend(0)" );
-    LOGGER( 2, "%32s mp_timelimit: %f  g_rtvWaitMinutes: %f  extendmapStep: %d", \
-            "map_extend( in )", \
+    LOGGER( 2, "%32s mp_timelimit: %f, g_rtvWaitMinutes: %f, extendmapStep: %d", "map_extend( in )", \
             get_pcvar_float( cvar_mp_timelimit ), g_rtvWaitMinutes, g_extendmapStepMinutes );
     
     // reset the "rtv wait" time, taking into consideration the map extension
@@ -6218,7 +6231,6 @@ stock map_extend()
         set_pcvar_num( cvar_mp_maxrounds, 0 );
         set_pcvar_num( cvar_mp_winlimit, 0 );
         set_pcvar_float( cvar_mp_timelimit, 0.0 );
-        
         set_pcvar_num( cvar_mp_fraglimit, get_pcvar_num( cvar_mp_fraglimit ) + g_extendmapStepFrags );
     }
     else
@@ -6226,14 +6238,14 @@ stock map_extend()
         set_pcvar_num( cvar_mp_fraglimit, 0 );
         set_pcvar_num( cvar_mp_maxrounds, 0 );
         set_pcvar_num( cvar_mp_winlimit, 0 );
-        
         set_pcvar_float( cvar_mp_timelimit, get_pcvar_float( cvar_mp_timelimit ) + g_extendmapStepMinutes );
     }
     
-    server_exec();
-    LOGGER( 2, "%32s mp_timelimit: %f  g_rtvWaitMinutes: %f  extendmapStep: %d", \
-            "map_extend( out )", \
-            get_pcvar_float( cvar_mp_timelimit ), g_rtvWaitMinutes, g_extendmapStepMinutes );
+    LOGGER( 2, "( map_extend ) IS CHANGING THE CVAR 'mp_timelimit' to '%f'", get_pcvar_float( cvar_mp_timelimit ) );
+    LOGGER( 2, "( map_extend ) IS CHANGING THE CVAR 'mp_fraglimit' to '%d'", get_pcvar_num( cvar_mp_fraglimit ) );
+    LOGGER( 2, "( map_extend ) IS CHANGING THE CVAR 'mp_maxrounds' to '%d'", get_pcvar_num( cvar_mp_maxrounds ) );
+    LOGGER( 2, "( map_extend ) IS CHANGING THE CVAR 'mp_winlimit' to '%d'", get_pcvar_num( cvar_mp_winlimit ) );
+    LOGGER( 2, "%32s g_rtvWaitMinutes: %f, g_extendmapStepMinutes: %d", "map_extend( out )", g_rtvWaitMinutes, g_extendmapStepMinutes );
 }
 
 stock saveEndGameLimits()
@@ -6757,8 +6769,9 @@ stock con_print( player_id, message[], { Float, Sql, Result, _ }: ... )
 stock restartEmptyCycle()
 {
     LOGGER( 128, "I AM ENTERING ON restartEmptyCycle(0)" );
-    
     set_pcvar_num( cvar_isToStopEmptyCycle, 0 );
+    
+    LOGGER( 2, "( restartEmptyCycle ) IS CHANGING THE CVAR 'gal_in_empty_cycle' to '%d'", 0 );
     remove_task( TASKID_EMPTYSERVER );
 }
 
@@ -6847,7 +6860,7 @@ stock isToHandleRecentlyEmptyServer()
     LOGGER( 128, "I AM ENTERING ON isToHandleRecentlyEmptyServer(0)" );
     new playersCount = get_realplayersnum();
     
-    LOGGER( 128, "( isToHandleRecentlyEmptyServer ) mp_timelimit: %f, g_originalTimelimit: %f, playersCount: %d", \
+    LOGGER( 2, "( isToHandleRecentlyEmptyServer ) mp_timelimit: %f, g_originalTimelimit: %f, playersCount: %d", \
             get_pcvar_float( cvar_mp_timelimit ), g_originalTimelimit, playersCount );
     
     if( playersCount == 0 )
@@ -6974,6 +6987,7 @@ public startEmptyCycleSystem()
     
     // stop this system at the next map, due we already be at a popular map
     set_pcvar_num( cvar_isToStopEmptyCycle, 1 );
+    LOGGER( 2, "( startEmptyCycleSystem ) IS CHANGING THE CVAR 'gal_in_empty_cycle' to '%d'", 1 );
     
     // if the current map isn't part of the empty cycle,
     // immediately change to next map that is
@@ -7389,10 +7403,15 @@ public map_restoreEndGameCvars()
         set_pcvar_num(   cvar_mp_winlimit,  g_originalWinLimit );
         set_pcvar_num(   cvar_mp_fraglimit, g_originalFragLimit );
         
+        LOGGER( 2, "( map_restoreEndGameCvars ) IS CHANGING THE CVAR 'mp_timelimit' to '%f'", g_originalTimelimit );
+        LOGGER( 2, "( map_restoreEndGameCvars ) IS CHANGING THE CVAR 'mp_maxrounds' to '%d'", g_originalMaxRounds );
+        LOGGER( 2, "( map_restoreEndGameCvars ) IS CHANGING THE CVAR 'mp_winlimit' to '%d'", g_originalWinLimit );
+        LOGGER( 2, "( map_restoreEndGameCvars ) IS CHANGING THE CVAR 'mp_fraglimit' to '%d'", g_originalFragLimit );
+        
         // restore to the original/right values
         g_rtvWaitMinutes = get_pcvar_float( cvar_rtvWaitMinutes );
-        g_rtvWaitRounds  = get_pcvar_num( cvar_rtvWaitRounds );
-        g_rtvWaitFrags   = get_pcvar_num( cvar_rtvWaitFrags );
+        g_rtvWaitRounds  = get_pcvar_num(   cvar_rtvWaitRounds );
+        g_rtvWaitFrags   = get_pcvar_num(   cvar_rtvWaitFrags );
         
         server_exec();
         g_isEndGameLimitsChanged = false;
@@ -7410,6 +7429,8 @@ stock restoreOriginalServerMaxSpeed()
     if( g_original_sv_maxspeed )
     {
         set_pcvar_float( cvar_sv_maxspeed, g_original_sv_maxspeed );
+        
+        LOGGER( 2, "( restoreOriginalServerMaxSpeed ) IS CHANGING THE CVAR 'sv_maxspeed' to '%f'", g_original_sv_maxspeed );
         g_original_sv_maxspeed = 0.0;
     }
 }
@@ -7633,14 +7654,13 @@ public nextmap_plugin_init()
         register_clcmd( "say ff", "sayFFStatus", 0, "- display friendly fire status" );
     }
     
+    get_cvar_string( "mapcyclefile", g_mapCycleFilePath, charsmax( g_mapCycleFilePath ) );
     get_mapname( g_currentMapName, charsmax( g_currentMapName ) );
     get_localinfo( "lastmapcycle", tockenMapcycleAndPosion, charsmax( tockenMapcycleAndPosion ) );
     
     parse( tockenMapcycleAndPosion,
             mapcycleFilePath, charsmax( mapcycleFilePath ),
             mapcycleCurrentIndex, charsmax( mapcycleCurrentIndex ) );
-    
-    get_cvar_string( "mapcyclefile", g_mapCycleFilePath, charsmax( g_mapCycleFilePath ) );
     
     if( !equali( g_mapCycleFilePath, mapcycleFilePath ) )
     {
@@ -7663,6 +7683,7 @@ public nextmap_plugin_init()
     readMapCycle( g_mapCycleFilePath, g_nextMapName, charsmax( g_nextMapName ) );
     set_pcvar_string( g_cvar_amx_nextmap, g_nextMapName );
     
+    LOGGER( 2, "( nextmap_plugin_init ) IS CHANGING THE CVAR 'amx_nextmap' to '%s'", g_nextMapName );
     saveCurrentMapCycleSetting();
 }
 
@@ -7696,6 +7717,7 @@ stock getNextMapName( szArg[], iMax )
     
     lenght = copy( szArg, iMax, g_nextMapName );
     set_pcvar_string( g_cvar_amx_nextmap, g_nextMapName );
+    LOGGER( 2, "( getNextMapName ) IS CHANGING THE CVAR 'amx_nextmap' to '%s'", g_nextMapName );
     
     LOGGER( 1, "    ( getNextMapName ) Returning lenght: %d, szArg: %s", lenght, szArg );
     return lenght;
@@ -7753,6 +7775,7 @@ public delayedChange( param[] )
     if( g_cvar_mp_chattime )
     {
         set_pcvar_float( g_cvar_mp_chattime, get_pcvar_float( g_cvar_mp_chattime ) - 2.0 );
+        LOGGER( 2, "( delayedChange ) IS CHANGING THE CVAR 'mp_chattime' to '%f'", get_pcvar_float( g_cvar_mp_chattime ) );
     }
     
     serverChangeLevel( param );
@@ -7771,6 +7794,7 @@ public changeMap()
     if( g_cvar_mp_chattime )
     {
         set_pcvar_float( g_cvar_mp_chattime, chattime + 2.0 ); // make sure mp_chattime is long
+        LOGGER( 2, "( changeMap ) IS CHANGING THE CVAR 'mp_chattime' to '%f'", chattime + 2.0 );
     }
     
     new lenght = getNextMapName( nextmap_name, charsmax( nextmap_name ) ) + 1;
