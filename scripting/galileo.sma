@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-144";
+new const PLUGIN_VERSION[] = "v2.6.1-149";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -44,14 +44,14 @@ new const PLUGIN_VERSION[] = "v2.6.1-144";
  *
  * 4   - Run the DELAYED Unit Tests.
  *
- * 4   - a) To create fake votes. See the function 'create_fakeVotes()'.
+ * 8   - a) To create fake votes. See the function 'create_fakeVotes()'.
  *       b) To create fake players count. See the function 'get_realplayersnum()'.
  *
- * 8   - Enable DEBUG_LEVEL 1 and all its debugging/depuration available.
+ * 16   - Enable DEBUG_LEVEL 1 and all its debugging/depuration available.
  *
- * 15  - Levels 1, 2, 4 and 8.
+ * 31  - Levels 1, 2, 4 and 8.
  */
-#define DEBUG_LEVEL 27
+#define DEBUG_LEVEL 16
 
 
 
@@ -157,11 +157,9 @@ new const PLUGIN_VERSION[] = "v2.6.1-144";
     do \
     { \
         set_test_failure_private( %1 ); \
-        if( g_current_test_evaluation ) \
+        if( g_isTheCurrentTestAFailure ) \
         { \
             LOGGER( 1, "    ( SET_TEST_FAILURE ) Just returning/bloking." ); \
-            print_logger( "FALILED!" ); \
-            print_logger( "" ); \
             return; \
         } \
     } while( g_dummy_value )
@@ -193,7 +191,7 @@ new const PLUGIN_VERSION[] = "v2.6.1-144";
     new Array: g_tests_failure_reasons;
     
     new bool: g_is_test_changed_cvars;
-    new bool: g_current_test_evaluation;
+    new bool: g_isTheCurrentTestAFailure;
     new bool: g_areTheUnitTestsRunning;
     
     new g_test_current_time;
@@ -4414,9 +4412,8 @@ stock loadWhiteListFile( &Trie:listTrie, whiteListFilePath[], bool:isWhiteList =
         {
             continue;
         }
-        
-        if( currentLine[ 0 ] == '['
-            && isdigit( currentLine[ 1 ] ) )
+        else if( currentLine[ 0 ] == '['
+                 && isdigit( currentLine[ 1 ] ) )
         {
             // remove line delimiters [ and ]
             replace_all( currentLine, charsmax( currentLine ), "[", "" );
@@ -4437,11 +4434,10 @@ stock loadWhiteListFile( &Trie:listTrie, whiteListFilePath[], bool:isWhiteList =
             endHour   = str_to_num( endHourString );
             
             isToLoadTheNextWhiteListGroup( isToLoadTheseMaps, currentHour, startHour, endHour, isWhiteList );
-            goto proceed;
+            continue;
         }
         else if( !isToLoadTheseMaps )
         {
-            proceed:
             continue;
         }
         else
@@ -4474,42 +4470,92 @@ stock loadWhiteListFile( &Trie:listTrie, whiteListFilePath[], bool:isWhiteList =
 stock isToLoadTheNextWhiteListGroup( &isToLoadTheseMaps, currentHour, startHour, endHour, isWhiteList )
 {
     LOGGER( 0, "I AM ENTERING ON isToLoadTheNextWhiteListGroup(1)" );
-    isToLoadTheseMaps = true;
     
-    if( startHour == endHour
-        || ( 0 > startHour
-             || startHour > 24 )
-        || ( 0 > endHour
-             || endHour > 24 )
-        || ( startHour == 24
-             && endHour == 0 )
-        || ( startHour == 0
-             && endHour == 24 ) )
+    // Standardize the hours from 0 until 23.
+    if( startHour > 23 )
     {
+        LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) startHour: %d, will became 0.", startHour );
+        startHour = 0;
+    }
+    
+    if( endHour > 23 )
+    {
+        LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) endHour: %d, will became 0.", endHour );
+        endHour = 0;
+    }
+    
+    if( 0 > startHour
+        || startHour > 23 
+        || 0 > endHour
+        || endHour > 23 )
+    {
+        LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) isToLoadTheseMaps will became false, \
+                                                startHour: %d, endHour: %d", startHour, endHour );
         isToLoadTheseMaps = false;
     }
+    else if( startHour == endHour
+             && endHour == currentHour )
+    {
+        LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) startHour == endHour: %d", startHour );
+        isToLoadTheseMaps = !isWhiteList;
+    }
+    //           5          3
     else if( startHour > endHour )
     {
-        if( startHour >= currentHour
-            && currentHour > endHour )
+        // 5  > 3 
+        // 23 > 1 
+        // 22 > 12
+        // 24 > 23
+        // 
+        // On this cases, we to go from one day to another, always. So we need to be able to
+        // calculate whether the current hour is between these. Doing ( 24 - startHour - endHour )
+        // here, we got how much hours there are between them.
+        // 
+        // On 5-3, the possible value(s) for current hour: 4
+        // 
+        //      4             5
+        if( currentHour < startHour )
         {
-            isToLoadTheseMaps = isWhiteList;
-        }
-        else
-        {
+            LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) startHour > endHour && currentHour < startHour" );
             isToLoadTheseMaps = !isWhiteList;
+        }
+        //               6           5
+        else // if( currentHour > startHour )
+        {
+            LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) startHour > endHour && currentHour > startHour" );
+            isToLoadTheseMaps = isWhiteList;
         }
     }
+    //             3          5
     else // if( startHour < endHour )
     {
-        if( startHour <= currentHour 
-            && currentHour < endHour )
+        // 3  < 5
+        // 1  < 23
+        // 12 < 22
+        // 23 < 24
+        //
+        // On this cases, we to go from the same day to the same day, always. So we need to be able
+        // to calculate whether the current hour is between these.
+        //
+        // On 3-5, the possible value(s) for current hour: 6, 7, ..., 1, 2
+        //
+        //      6            5
+        if( currentHour > endHour )
         {
-            isToLoadTheseMaps = isWhiteList;
-        }
-        else
-        {
+            LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) startHour < endHour && currentHour > endHour" );
             isToLoadTheseMaps = !isWhiteList;
+        } 
+        //            2           3
+        else if( currentHour < startHour )
+        {
+            LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) currentHour > endHour && currentHour < startHour" );
+            isToLoadTheseMaps = !isWhiteList;
+        }
+        //              4            3
+        else // if( currentHour > startHour )
+        {
+            LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) currentHour > endHour && currentHour > startHour" );
+            isToLoadTheseMaps = isWhiteList;
         }
     }
     
@@ -4586,7 +4632,7 @@ stock approveTheVotingStart( bool:is_forced_voting )
             return false;
         }
         
-    #else
+    #endif
         if( get_realplayersnum() == 0 )
         {
             if( get_pcvar_num( cvar_isEmptyCycleByMapChange ) )
@@ -4602,8 +4648,6 @@ stock approveTheVotingStart( bool:is_forced_voting )
         
         LOGGER( 1, "    ( approveTheVotingStart ) Returning false on the big blocker." );
         return false;
-        
-    #endif
     }
     
     // allow a new forced voting while the map is ending
@@ -7901,11 +7945,12 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         NORNAL_TESTS_TO_EXECUTE();
     #endif
         
+        // displays the OK to the last test.
+        displaysLastTestOk();
+        
     #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_DELAYED
         DALAYED_TESTS_TO_EXECUTE();
     #endif
-        
-        displaysTheLastTestOk();
         
         if( g_max_delay_result )
         {
@@ -7940,17 +7985,23 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         }
     }
     
-    stock displaysTheLastTestOk()
+    stock displaysLastTestOk()
     {
         if( g_totalSuccessfulTests + g_totalFailureTests > 1 )
         {
-            if( !ArraySize( g_tests_failure_ids )
-                || ( g_totalSuccessfulTests + g_totalFailureTests ) != ArrayGetCell( g_tests_failure_ids, ArraySize( g_tests_failure_ids ) - 1 ) )
+            new numberOfFailures = ArraySize( g_tests_failure_ids );
+            new lastFailure      = ( numberOfFailures? ArrayGetCell( g_tests_failure_ids, numberOfFailures - 1 ) : 0 );
+            new lastTestId       = ( g_totalSuccessfulTests + g_totalFailureTests - 1 );
+            
+            LOGGER( 1, "( displaysLastTestOk ) numberOfFailures: %d, lastFailure: %d, lastTestId: %d", numberOfFailures, lastFailure, lastTestId );
+            
+            if( !numberOfFailures
+                || lastFailure != lastTestId )
             {
                 print_logger( "OK!" );
                 print_logger( "" );
             }
-            else if( ( g_totalSuccessfulTests + g_totalFailureTests ) == ArrayGetCell( g_tests_failure_ids, ArraySize( g_tests_failure_ids ) - 1 ) )
+            else if( lastFailure == lastTestId  )
             {
                 print_logger( "FALILED!" );
                 print_logger( "" );
@@ -8016,7 +8067,9 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     public show_delayed_results()
     {
         LOGGER( 128, "I AM ENTERING ON show_delayed_results(0)" );
-        displaysTheLastTestOk();
+        
+        // displays the OK to the last test.
+        displaysLastTestOk();
         
         // clean the testing
         cancelVoting();
@@ -8053,8 +8106,8 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         g_totalSuccessfulTests++;
         totalTests = g_totalSuccessfulTests + g_totalFailureTests;
         
-        // displays the tests OK.
-        displaysTheLastTestOk();
+        // displays the OK to the last test.
+        displaysLastTestOk();
         
         ArrayPushString( g_tests_idsAndNames, test_name );
         print_logger( "        EXECUTING TEST %d WITH %d SECONDS DELAY - %s ", totalTests, max_delay_result, test_name );
@@ -8081,7 +8134,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
                 failure_reason: %s",                                 test_id,     isFailure, \
                 failure_reason );
         
-        g_current_test_evaluation = isFailure;
+        g_isTheCurrentTestAFailure = isFailure;
         
         if( isFailure )
         {
@@ -8373,12 +8426,12 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
      */
     public test_loadCurrentBlackList_cases()
     {
-        test_loadCurrentBlacklist_case( 12, "de_dust2", "de_dust7" );
-        test_loadCurrentBlacklist_case( 22, "de_dust5", "de_dust4" );
-        test_loadCurrentBlacklist_case( 23, "de_dust7", "de_dust2" );
-        test_loadCurrentBlacklist_case( 23, "de_dust4", "de_dust1" );
-        test_loadCurrentBlacklist_case( 23, "de_dust7", "de_dust8" );
-        test_loadCurrentBlacklist_case( 22, "de_dust8", "de_dust7" );
+        test_loadCurrentBlacklist_case( 12, "de_dust2", "de_dust7" ); // 1
+        test_loadCurrentBlacklist_case( 23, "de_dust5", "de_dust4" ); // 2
+        test_loadCurrentBlacklist_case( 23, "de_dust7", "de_dust2" ); // 3
+        test_loadCurrentBlacklist_case( 24, "de_dust4", "de_dust1" ); // 4
+        test_loadCurrentBlacklist_case( 23, "de_dust7", "de_dust8" ); // 5
+        test_loadCurrentBlacklist_case( 22, "de_dust8", "de_dust7" ); // 6
     }
     
     /**
@@ -8429,9 +8482,9 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
                 "The map 'de_dust2' must not to be present on the trie, but it was!" );
         SET_TEST_FAILURE( test_id, TrieKeyExists( blackListTrie, "de_dust3" ), \
                 "The map 'de_dust3' must not to be present on the trie, but it was!" );
+        SET_TEST_FAILURE( test_id, TrieKeyExists( blackListTrie, "de_dust4" ), \
+                "The map 'de_dust4' must not to be present on the trie, but it was!" );
         
-        SET_TEST_FAILURE( test_id, !TrieKeyExists( blackListTrie, "de_dust4" ), \
-                "The map 'de_dust4' must to be present on the trie, but it was not!" );
         SET_TEST_FAILURE( test_id, !TrieKeyExists( blackListTrie, "de_dust5" ), \
                 "The map 'de_dust5' must to be present on the trie, but it was not!" );
         SET_TEST_FAILURE( test_id, !TrieKeyExists( blackListTrie, "de_dust6" ), \
