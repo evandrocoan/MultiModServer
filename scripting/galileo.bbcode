@@ -1,5 +1,5 @@
-[anchor]Top[/anchor][SIZE="7"][COLOR="Blue"][B]Galileo v2.6[/B][/COLOR][/SIZE] A feature rich map voting plugin
-[SIZE=1][COLOR=Red]Release: 12.09.2008 | Last Update: 09.04.2016[/SIZE][/COLOR]
+[anchor]Top[/anchor][SIZE="7"][COLOR="Blue"][B]Galileo v3.0.0-162[/B][/COLOR][/SIZE] A feature rich map voting plugin
+[SIZE=1][COLOR=Red]Release: 12.09.2008 | Last Update: 07.07.2016[/SIZE][/COLOR]
 
 If you want to translate the Galileo Mapchooser to your language or if you see some
 error or bad coloring tags positioning at the current translations, feel free to correct
@@ -18,6 +18,7 @@ and come here to [URL="https://forums.alliedmods.net/showthread.php?t=277636"]th
 [*][goanchor=Sourcecode]Source Code and Support[/goanchor]
 [*][goanchor=Screen]Screenshots[/goanchor]
 [*][goanchor=Compilations]Compilations Data[/goanchor]
+[*][URL="https://forums.alliedmods.net/showthread.php?t=172936#Compiling"]How to compile plugins[/URL]
 [*][B]Downloads[/B]:
    [LIST=1]
    [*][goanchor=Development]Development Versions[/goanchor]
@@ -41,8 +42,7 @@ and come here to [URL="https://forums.alliedmods.net/showthread.php?t=277636"]th
 [/LIST]If you want use the new features, download the new configuration files and update yours
 using the new the cvars. If not, you will probably see nothing new, because all new
 features are by default disabled. To keep everything new disabled, just do not install the
-new configurations file at the '[COLOR="Blue"].configs/galileo/[/COLOR][B]galileo.cfg[/B]' or the new colored lang file
-at '[COLOR="Blue"]./data/lang/[/COLOR][B]galileo.txt[/B]' location.
+new configurations file at the '[COLOR="Blue"].configs/galileo/[/COLOR][B]galileo.cfg[/B]'.
 
 
 [SIZE="4"][B]Miscellaneous:[/B][/SIZE]
@@ -181,11 +181,11 @@ galileo.cfg contents.
      [/CODE]The text "[B][groups][/B]" has to be the very first line in the file, on a line by itself. The
      numbers, on separate lines, specifies how many maps from each file to add to the
      voting menu.
-
+     
      If you had a file within what was posted above, then you would have to create the
      files: '[B]1.ini[/B]', '[B]2.ini[/B]', '[B]3.ini[/B]', and '[B]4.ini[/B]' in the '[B]./configs/galileo/[/B]' folder. Each of
      those INI files would contain a list of maps, one per line.
-
+     
      Galileo will first load any nominated maps into the vote. Then Galileo would pick 2
      maps from '[B]1.ini[/B]', 1 from '[B]2.ini[/B]', 1 from '[B]3.ini[/B]', and 3 from '[B]4.ini[/B]' 'til the maximum
      value of 8 to be reached.
@@ -211,14 +211,14 @@ galileo.cfg contents.
      map fillers from your map groups files '[B]1.ini[/B]' (1st line after [groups]) and '[B]2.ini[/B]'
      (2nd line after [groups]), the map '[COLOR="blue"]de_dust2[/COLOR]' will not be added because there is not
      enough space.
-
-
- [*] [COLOR="Blue"][B]The mapcycle whitelist[/B][/COLOR]:
+     
+     
+ [*] [COLOR="Blue"][B]The Whitelist Feature[/B][/COLOR]:
      If uses whatever file you set on the cvar '[B]gal_vote_whitelist_mapfile[/B]' as the
-     mapcycle whitelist. It specifies the time where its listed maps are allowed to be
-     added to the voting list as fillers after the [B]nominations[/B] being loaded.
+     Whitelist. It specifies the time where its listed maps are allowed to be added to
+     the voting list as fillers after the [B]nominations[/B] being loaded.
 
-     The whitelist must follow this pattern:
+     The Whitelist must follow this pattern:
      [CODE]
 [10-22]
 de_dust2
@@ -231,9 +231,62 @@ de_mirage
 [05-10]
 de_dust2_long
      [/CODE] The maps following '[B][10-22][/B]' will be only allowed to be vote map fillers between
-     10:00 and 22:00 o'clock. This feature should be helpful because some servers have
+     10:00:00 and 22:59:59 o'clock. This feature should be helpful because some servers have
      about only 10 players between 05:00 and 10:00 o'clock, so they will be needing [COLOR="Blue"]small
-     maps[/COLOR] for playing.
+     maps[/COLOR] for playing. Basically, the Whitelist is a filter to your mapcycle/filler list.
+     
+     So,
+     [LIST=1]
+     [*]If you try to play 'de_dust' / 'de_inferno' when it is [B]09[/B] hours, you will be [COLOR="Red"]blocked[/COLOR].
+     [*]If you try to play 'de_dust' / 'de_inferno' when it is [B]10[/B] hours, you will be [COLOR="Blue"]allowed[/COLOR].
+     [*]If you try to play 'de_dust' / 'de_inferno' when it is [B]21[/B] hours, you will be [COLOR="Blue"]allowed[/COLOR].
+     [*]If you try to play 'de_dust' / 'de_inferno' when it is [B]22[/B] hours, you will be [COLOR="Blue"]allowed[/COLOR].
+     [*]If you try to play 'de_dust' / 'de_inferno' when it is [B]23[/B] hours, you will be [COLOR="Red"]blocked[/COLOR].
+     [*]and so on...
+     [/LIST]
+     
+     To block them between 10-22, change your config file to:
+     [code]
+[22-10]
+de_dust2
+de_inferno
+     [/code]
+     Now [10-10] stands for from 10:00:00 until 10:59:59.
+     Now [10-11] stands for from 10:00:00 until 11:59:59.
+     Now [5-3] stands for from 5:00:00 (yesterday/today) until 3:59:59 (today/tomorrow).
+     Now [1-23] stands for from 1:00:00 until 23:59:59.
+     Now [1-22] stands for from 1:00:00 until 22:59:59.
+     Now [0-23] stands for from 0:00:00 until 23:59:59.
+     And so on...
+     
+     
+ [*] [COLOR="Blue"][B]The Maintenance Mode[/B][/COLOR]:
+     If the owner of the server is fixing something or updating the server and doesn't wanna the map
+     to be changed, he will enable the maintenance command '[B]gal_command_maintenance[/B]', so the map
+     can't be changed by any method like gal_startvote/rtv/timeleft or maxrounds ended... and will displayed
+     a print chat with something like that: You cannot change the map when the server is in mode maintenance.
+     
+     
+ [*] [COLOR="Blue"][B]New Recent Maps List[/B][/COLOR]:
+     Maps are commonly repeated on the vote and there is no chance for all of them. Hence on server
+     to get to play on, you need the use the '[B]gal_banrecent[/B]' to ban these 1000+ maps. Because of this,
+     players can't nominate maps for few days. [COLOR="Red"]The proposition[/COLOR] is adding a file to the plugin, in which
+     will save map history and a bunch of recent maps won't be able to get automatically displayed on
+     the voting menu, but still be able to get nominated.
+     
+     This is automatically done, it will not allow to repeat maps on the voting list until all them to be
+     showed at least once. The cvar '[B]gal_recent_nom_maps[/B]' control whether this feature is activated
+     or not. See it on the 'galileo.cfg' file.
+     
+     When the banned maps list is bigger than all maps on the server, what happens?
+     It stops counting/using the recent banned list maps and randonly to start adding banned maps.
+     
+     
+ [*] [COLOR="Blue"][B]The Half-File cvar 'mp_fraglimit' Support[/B][/COLOR]:
+     Enable virtual support for the [COLOR="Blue"]Half-File[/COLOR] cvar '[B]mp_fraglimit[/B]' on game modes as '[COLOR="Red"]Counter-Strike[/COLOR]' which
+     do not support the cvar 'mp_fraglimit'. You need to configure the 'mp_fraglimit' as you configure the
+     'mp_timelimit' cvar on you 'server.cfg' file. See the cvar '[B]gal_mp_fraglimit_support[/B]' on the 
+     'galileo.cfg' configuration file.
 [/LIST]
 [/QUOTE]
 
@@ -330,38 +383,80 @@ galileo.amxx
 
 ******************************** [anchor]TODO[/anchor][B][SIZE="6"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] *********************************
 
-[CODE]
-[SUG]
-The Maintenance Mode
-If the owner of the server is fixing something or updating the server and doesn't wanna the map
-to be changed he will enable the cvar maintenance so the map will can't be changed by any method
-like gal_startvote/rtv/timeleft or maxrounds ended... and he will display print chat some thing
-like that: you cannot change the map when the server is in mode maintenance
+[LIST=1]
 
-[SUG]
-first you need enable cvar to this feature...
-if the half of the timeleft/roundsleft passed  and the server crashed
-if the enable cvar is 1 the server will not change to the last map
-if the enable cvar is 2 the server will start a vote without changing the map
-if the enable cvar is 3 the server will start a vote after the half of the timeleft/roundsleft passed
+[*]Fix the code formatter 'format_code.bat' not formatting properly anymore.
 
-[SUG]
-Maps are commonly repeated on the vote and there is no chance for all of them I've got on server
-to get to play on. Which is why I'm using gal_banrecent to ban these 1000+ maps. Because of this,
-players can't nominate maps for few days . My proposition is adding a file to the plug in, in which
-will be saved map history and a bunch of recent maps won't be able to get voted (but still be able
-to get nominated).
 
-[/CODE]
+[/LIST]
+
+
+******************************** [anchor]Credits[/anchor][B][SIZE="6"][COLOR="blue"]Credits[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] *******************************
+
+[B]Brad[/B]: The Original Galileo developer.
+[B]Addons zz[/B]: This Galileo developer.
+[B]Th3822[/B]: For find a error from map_nominate.
+[B]utaker[/B]: For suggesting and help testing the mp_maxrounds feature.
+[B]ConnorMcLeod[/B]: For the [Dyn Native] ColorChat v0.3.2 (04 jul 2013) register_dictionary_colored function.
+[B][URL="https://forums.alliedmods.net/member.php?u=263772"]Old.School[/URL][/B] ([B][NOPARSE][B][/NOPARSE]l@k ~ [R]Eed[/B]): For bug reports, testing and feature suggestions.
+[B][URL="https://forums.alliedmods.net/member.php?u=259683"]iNdio[/URL][/B]: For the Romanian [ro] and Italian [it] language translations.
+[B][URL="https://github.com/Ni3znajomy"]Ni3znajomy[/URL][/B]: For contributions/work over project on the GitHub.
+[B][URL="https://forums.alliedmods.net/member.php?u=119830"]Shattered Heart Lynx[/URL][/B]: For the custom 'amxx_datadir' directory, the cvar 'gal_banrecent_mapcycle' suggestion and RTV 'Sven Co-op' fix and bug report.
+[B][URL="https://forums.alliedmods.net/member.php?u=267675"]wombad321[/URL][/B]: For the 'map extend' not showing bug report and the new recent list feature suggestion.
+[B][URL="https://forums.alliedmods.net/member.php?u=165954"]WaSaAa1[/URL][/B]: For the voting menu not showing bug report.
+[B][URL="https://forums.alliedmods.net/member.php?u=267332"]feruchio[/URL][/B]: For the runoff voting showing two identical maps on some votings bug report.
+[B][URL="https://forums.alliedmods.net/member.php?u=156477"]chaves[/URL][/B]: For the wrong 'recent maps' menu title bug report.
+[B][URL="https://forums.alliedmods.net/member.php?u=269274"]YParushev[/URL][/B]: For the partial nominations menu coding and bug report.
+[B][URL="https://forums.alliedmods.net/member.php?u=236706"]eryk172[/URL][/B]: For the ArrayGetString native error when the mapcyclefile is invalid bug report.
+[B][URL="https://forums.alliedmods.net/member.php?u=270638"]emoto2[/URL][/B]: For the 'gal_srv_start' and 'GAL_VOTE_WEIGHTED' misspelling and bug report.
+[B][URL="https://forums.alliedmods.net/member.php?u=49801"]BeNq![/URL][/B]: For server crash report, testing, the cvar 'gal_emptyserver_wait' bug report and feature requests.
+[B][URL="https://forums.alliedmods.net/member.php?u=149700"]Napoleon_be[/URL][/B]: For the Dutch [nl] language translation.
+[B][URL="https://forums.alliedmods.net/member.php?u=269887"]waynesmith15[/URL][/B]: For the Half-Life 'mp_fraglimit' feature support request.
+[B][URL="https://forums.alliedmods.net/member.php?u=144216"]vase070[/URL][/B]: For the missing 'GAL_WINNER_ORDERED' bug report.
+[B][URL="https://forums.alliedmods.net/member.php?u=235274"]MihailoZ[/URL][/B]: For the 'galileo.txt' lang file misspellings report and the Serbian [sr] language translation.
+[QUOTE=Brad;684848]
+A lot of time and effort went into making this plugin, making features just right,
+making sure there were no bugs, making sure it was easy to use. If you are glad I made
+this plugin, and are able, I'd appreciate a token donation. [URL="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=brad%40mixedberry%2enet&item_name=Thank%20you%21&item_number=Galileo&amount=5%2e00&no_shipping=1&return=http%3a%2f%2fforums%2ealliedmods%2enet%2fshowthread%2ephp%3ft%3d77391%23files&cn=Optional%20Note&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8"]$5[/URL], [URL="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=brad%40mixedberry%2enet&item_name=Thank%20you%21&item_number=Galileo&amount=10%2e00&no_shipping=1&return=http%3a%2f%2fforums%2ealliedmods%2enet%2fshowthread%2ephp%3ft%3d77391%23files&cn=Optional%20Note&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8"]$10[/URL], or [URL="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=brad%40mixedberry%2enet&item_name=Thank%20you%21&item_number=Galileo&no_shipping=1&return=http%3a%2f%2fforums%2ealliedmods%2enet%2fshowthread%2ephp%3ft%3d77391%23files&cn=Optional%20Note&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8"]whatever works[/URL] for you.
+
+[URL="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=brad%40mixedberry%2enet&item_name=Thank%20you%21&item_number=Galileo&no_shipping=1&return=http%3a%2f%2fforums%2ealliedmods%2enet%2fshowthread%2ephp%3ft%3d77391%23files&cn=Optional%20Note&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8"][IMG]https://www.paypal.com/en_US/i/btn/btn_donateCC_LG.gif[/IMG][/URL]
+
+Thank you!  It means a lot to me.
+
+--Brad
+[/QUOTE]
 
 
 ******************************** [anchor]Change[/anchor][B][SIZE="6"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
+
+[B]2016-07-07 | v3.0.0-162[/B]
+[LIST=1]
+[*]Added new LANG constant 'GAL_WINNER_ORDERED' to be used when anyone voted and is to follow the map cycle.
+[*]Added support to the Half-File cvar 'mp_fraglimit' for change map limiter as the 'mp_timelimit'.
+[*]Added hierarchical maps list filling ignoring, after go throw all available maps.
+[*]Added new cvar 'gal_whitelist_block_out' to allow to block maps not included on the 'Whitelist' rules.
+[*]Added new cvar 'gal_mp_fraglimit_support', to enable the cvar 'mp_fraglimit' on game modes as 'Counter-Strike'.
+[*]Added new cvar 'gal_recent_nom_maps' to allow the recent maps to be nominated.
+[*]Added new cvar 'gal_game_crash_recreation' configure the game crash actions.
+[*]Added new cvar 'gal_banrecent_mapcycle' to mark as recent played maps only the map-cycle maps.
+[*]Added the server maintenance mode feature. Use 'gal_command_maintenance' to enable it.
+[*]Allowed the whitelist feature to be used with the minimum players nominations control feature.
+[*]Removed the maximum maps limit from the cvar 'gal_banrecent' maps.
+[*]Fixed the Whitelist feature ignoring/adding some/extra hours.
+[*]Fixed double adding maps entries into the recent maps list.
+[*]Fixed the mapcycle increasing the nextmap index on server restart.
+[*]Fixed the minplayers list priority over the whitelist feature.
+[*]Fixed ArrayGetString native error when the mapcyclefile is invalid.
+[*]Fixed displaying an empty name when showing the user names some times.
+[*]Fixed allowing multiple nominations when a player disconnect and reconnect again.
+[*]Fixed the cvar 'gal_emptyserver_change' not working when the cvar 'gal_emptyserver_wait' is disabled.
+[/LIST]
 
 [B]2016-04-09 | v2.6[/B]
 [LIST=1]
 [*]Added new cvar 'gal_whitelist_minplayers' to control the Whitelist feature behavior.
 [*]Fixed server crash when there are less maps than the minimum voting required.
-[*]Fixed the Whitelist feature not showing a empty blocked map list.
+[*]Fixed the Whitelist feature showing an empty blocked map list.
 [/LIST]
 
 [B]2016-04-09 | v2.5.2[/B]
@@ -633,35 +728,6 @@ to stop the changing to that map and to use the its next map.
 [/LIST]
 
 
-******************************** [anchor]Credits[/anchor][B][SIZE="6"][COLOR="blue"]Credits[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] *******************************
-
-[B]Brad[/B]: The Original Galileo developer.
-[B]Addons zz[/B]: This Galileo developer.
-[B]Th3822[/B]: For find a error from map_nominate.
-[B]utaker[/B]: For suggesting and help testing the mp_maxrounds feature.
-[B]ConnorMcLeod[/B]: For the [Dyn Native] ColorChat v0.3.2 (04 jul 2013) register_dictionary_colored function.
-[B][URL="https://forums.alliedmods.net/member.php?u=263772"]Old.School[/URL][/B] ([B][NOPARSE][B][/NOPARSE]l@k ~ [R]Eed[/B]): For bug reports, testing and feature suggestions.
-[B][URL="https://forums.alliedmods.net/member.php?u=259683"]iNdio[/URL][/B]: For the Romanian [ro] and Italian [it] language translations.
-[B][URL="https://github.com/Ni3znajomy"]Ni3znajomy[/URL][/B]: For contributions/work over project on the GitHub.
-[B][URL="https://forums.alliedmods.net/member.php?u=119830"]Shattered Heart Lynx[/URL][/B]: For the custom 'amxx_datadir' directory and RTV 'Sven Co-op' fix and bug report.
-[B][URL="https://forums.alliedmods.net/member.php?u=267675"]wombad321[/URL][/B]: For the 'map extend' not showing bug report.
-[B][URL="https://forums.alliedmods.net/member.php?u=165954"]WaSaAa1[/URL][/B]: For the voting menu not showing bug report.
-[B][URL="https://forums.alliedmods.net/member.php?u=267332"]feruchio[/URL][/B]: For the runoff voting showing two identical maps on some votings bug report.
-[B][URL="https://forums.alliedmods.net/member.php?u=156477"]chaves[/URL][/B]: For the wrong 'recent maps' menu title bug report.
-[B][URL="https://forums.alliedmods.net/member.php?u=269274"]YParushev[/URL][/B]: For the partial nominations menu coding and bug report.
-[QUOTE=Brad;684848]
-A lot of time and effort went into making this plugin, making features just right,
-making sure there were no bugs, making sure it was easy to use. If you are glad I made
-this plugin, and are able, I'd appreciate a token donation. [URL="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=brad%40mixedberry%2enet&item_name=Thank%20you%21&item_number=Galileo&amount=5%2e00&no_shipping=1&return=http%3a%2f%2fforums%2ealliedmods%2enet%2fshowthread%2ephp%3ft%3d77391%23files&cn=Optional%20Note&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8"]$5[/URL], [URL="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=brad%40mixedberry%2enet&item_name=Thank%20you%21&item_number=Galileo&amount=10%2e00&no_shipping=1&return=http%3a%2f%2fforums%2ealliedmods%2enet%2fshowthread%2ephp%3ft%3d77391%23files&cn=Optional%20Note&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8"]$10[/URL], or [URL="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=brad%40mixedberry%2enet&item_name=Thank%20you%21&item_number=Galileo&no_shipping=1&return=http%3a%2f%2fforums%2ealliedmods%2enet%2fshowthread%2ephp%3ft%3d77391%23files&cn=Optional%20Note&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8"]whatever works[/URL] for you.
-
-[URL="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=brad%40mixedberry%2enet&item_name=Thank%20you%21&item_number=Galileo&no_shipping=1&return=http%3a%2f%2fforums%2ealliedmods%2enet%2fshowthread%2ephp%3ft%3d77391%23files&cn=Optional%20Note&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8"][IMG]https://www.paypal.com/en_US/i/btn/btn_donateCC_LG.gif[/IMG][/URL]
-
-Thank you!  It means a lot to me.
-
---Brad
-[/QUOTE]
-
-
 ******************************** [anchor]Sourcecode[/anchor][SIZE="6"][COLOR="blue"][B]Source Code and Support[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor] ***
 
 You can [B]receive support[/B] for this plugin within this thread. Non-Steam servers are not supported.
@@ -712,10 +778,10 @@ https://github.com/addonszz/Galileo/commits/develop[/URL]
 And this is a direct link to always to download the latest [COLOR="Red"]unreleased[/COLOR] changes you see on the above link:
 [URL="https://github.com/addonszz/Galileo/archive/develop.zip"] https://github.com/addonszz/Galileo/archive/develop.zip[/URL]
 
-And because it is the development version, the debugging is enabled. Go to around the 'line 39' and find:[PAWN]
+And because it is the development version, the debugging is enabled. Go to around the 'line 51' and find:[PAWN]
 #define DEBUG_LEVEL SomeNumber(s)[/PAWN]and change it to:[PAWN]
 #define DEBUG_LEVEL 0[/PAWN]Note that these versions above are probably not tested or maybe not stable as the [goanchor=LatestRelease]Latest Release
-Download[/goanchor] [B][COLOR="Red"]below[/B][/COLOR].
+Download[/goanchor] [B][COLOR="Red"]below[/B][/COLOR]. See here how to compile plugins: [URL="https://forums.alliedmods.net/showthread.php?t=172936#Compiling"][HOW TO] Compiling plugins[/URL].
 
 
 [anchor]Mapcycle[/anchor][SIZE="4"][B]Setting up a Mapcycle[/B][/SIZE]: [goanchor=Top]Go to top[/goanchor]
@@ -736,9 +802,10 @@ cvars:[LIST=1]mapcyclefile
 
 [URL="https://github.com/addonszz/Galileo/releases"] https://github.com/addonszz/Galileo/releases[/URL]
 [CODE]
-v1.2                    (galileo.sma - 70 views - 188.0 KB)
-v1.2-alpha2.hotfix1     (galileo.sma - 111 views - 92.9 KB)
-v1.1.290                (galileo.zip - 42069 views - 29.8 KB)
+v1.1.290             (galileo.zip     - 42069 views -  29.8 KB)
+v1.2-alpha2.hotfix1  (galileo.sma     - 111 views   -  92.9 KB)
+v1.2                 (galileo.sma     - 70 views    - 188.0 KB)
+v2.6                 (Galileo-2.6.zip - 299 views   -  91.1 KB)
 [/CODE]
 
 [anchor]LatestRelease[/anchor][SIZE="7"][B][COLOR="Blue"]Latest Release Download[/COLOR][/B][/SIZE]: [goanchor=Top]Go to top[/goanchor]
