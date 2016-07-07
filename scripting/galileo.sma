@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v2.6.1-161";
+new const PLUGIN_VERSION[] = "v3.0.0-162";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -51,7 +51,7 @@ new const PLUGIN_VERSION[] = "v2.6.1-161";
  *
  * 31  - Levels 1, 2, 4 and 8.
  */
-#define DEBUG_LEVEL 16
+#define DEBUG_LEVEL 0
 
 
 

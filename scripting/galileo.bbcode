@@ -1,5 +1,5 @@
-[anchor]Top[/anchor][SIZE="7"][COLOR="Blue"][B]Galileo v3.0.0-60[/B][/COLOR][/SIZE] A feature rich map voting plugin
-[SIZE=1][COLOR=Red]Release: 12.09.2008 | Last Update: 09.04.2016[/SIZE][/COLOR]
+[anchor]Top[/anchor][SIZE="7"][COLOR="Blue"][B]Galileo v3.0.0-162[/B][/COLOR][/SIZE] A feature rich map voting plugin
+[SIZE=1][COLOR=Red]Release: 12.09.2008 | Last Update: 07.07.2016[/SIZE][/COLOR]
 
 If you want to translate the Galileo Mapchooser to your language or if you see some
 error or bad coloring tags positioning at the current translations, feel free to correct
@@ -262,9 +262,9 @@ de_inferno
      
  [*] [COLOR="Blue"][B]The Maintenance Mode[/B][/COLOR]:
      If the owner of the server is fixing something or updating the server and doesn't wanna the map
-     to be changed, he will enable the maintenance command '[B]gal_command_maintenance[/B]', so the map will can't
-     be changed by any method like gal_startvote/rtv/timeleft or maxrounds ended... and he will display
-     print chat with something like that: You cannot change the map when the server is in mode maintenance.
+     to be changed, he will enable the maintenance command '[B]gal_command_maintenance[/B]', so the map
+     can't be changed by any method like gal_startvote/rtv/timeleft or maxrounds ended... and will displayed
+     a print chat with something like that: You cannot change the map when the server is in mode maintenance.
      
      
  [*] [COLOR="Blue"][B]New Recent Maps List[/B][/COLOR]:
@@ -275,18 +275,18 @@ de_inferno
      the voting menu, but still be able to get nominated.
      
      This is automatically done, it will not allow to repeat maps on the voting list until all them to be
-     showed at least once. The cvar '[B]gal_recent_nom_maps[/B]' control whether this feature is activated on not.
-     See it on the 'galileo.cfg' file.
+     showed at least once. The cvar '[B]gal_recent_nom_maps[/B]' control whether this feature is activated
+     or not. See it on the 'galileo.cfg' file.
      
      When the banned maps list is bigger than all maps on the server, what happens?
      It stops counting/using the recent banned list maps and randonly to start adding banned maps.
      
      
  [*] [COLOR="Blue"][B]The Half-File cvar 'mp_fraglimit' Support[/B][/COLOR]:
-     Enable virtual support for the [COLOR="Blue"]Half-File[/COLOR] cvar '[B]mp_fraglimit[/B]' on game modes as '[COLOR="Red"]Counter-Strike[/COLOR]' which do
-     not support the cvar 'mp_fraglimit'. You need to configure the 'mp_fraglimit' as you configure the
-     'mp_timelimit' cvar on you 'server.cfg' file. See the cvar '[B]gal_mp_fraglimit_support[/B]' on the 'galileo.cfg'
-     configuration file.
+     Enable virtual support for the [COLOR="Blue"]Half-File[/COLOR] cvar '[B]mp_fraglimit[/B]' on game modes as '[COLOR="Red"]Counter-Strike[/COLOR]' which
+     do not support the cvar 'mp_fraglimit'. You need to configure the 'mp_fraglimit' as you configure the
+     'mp_timelimit' cvar on you 'server.cfg' file. See the cvar '[B]gal_mp_fraglimit_support[/B]' on the 
+     'galileo.cfg' configuration file.
 [/LIST]
 [/QUOTE]
 
@@ -413,7 +413,7 @@ galileo.amxx
 [B][URL="https://forums.alliedmods.net/member.php?u=149700"]Napoleon_be[/URL][/B]: For the Dutch [nl] language translation.
 [B][URL="https://forums.alliedmods.net/member.php?u=269887"]waynesmith15[/URL][/B]: For the Half-Life 'mp_fraglimit' feature support request.
 [B][URL="https://forums.alliedmods.net/member.php?u=144216"]vase070[/URL][/B]: For the missing 'GAL_WINNER_ORDERED' bug report.
-[B][URL="https://forums.alliedmods.net/member.php?u=235274"]MihailoZ[/URL][/B]: For the 'galileo.txt' lang file misspellings report and the Serbian [rs] language translation.
+[B][URL="https://forums.alliedmods.net/member.php?u=235274"]MihailoZ[/URL][/B]: For the 'galileo.txt' lang file misspellings report and the Serbian [sr] language translation.
 [QUOTE=Brad;684848]
 A lot of time and effort went into making this plugin, making features just right,
 making sure there were no bugs, making sure it was easy to use. If you are glad I made
@@ -429,7 +429,7 @@ Thank you!  It means a lot to me.
 
 ******************************** [anchor]Change[/anchor][B][SIZE="6"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
 
-[B]2016-04-10 | v3.0.0-xx[/B]
+[B]2016-07-07 | v3.0.0-162[/B]
 [LIST=1]
 [*]Added new LANG constant 'GAL_WINNER_ORDERED' to be used when anyone voted and is to follow the map cycle.
 [*]Added support to the Half-File cvar 'mp_fraglimit' for change map limiter as the 'mp_timelimit'.
@@ -805,8 +805,8 @@ cvars:[LIST=1]mapcyclefile
 v1.1.290             (galileo.zip     - 42069 views -  29.8 KB)
 v1.2-alpha2.hotfix1  (galileo.sma     - 111 views   -  92.9 KB)
 v1.2                 (galileo.sma     - 70 views    - 188.0 KB)
-v2.6                 (Galileo-2.6.zip - 294 views   -  91.1 KB)
-[/COE]
+v2.6                 (Galileo-2.6.zip - 299 views   -  91.1 KB)
+[/CODE]
 
 [anchor]LatestRelease[/anchor][SIZE="7"][B][COLOR="Blue"]Latest Release Download[/COLOR][/B][/SIZE]: [goanchor=Top]Go to top[/goanchor]
 
