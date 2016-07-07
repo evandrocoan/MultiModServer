@@ -1052,28 +1052,19 @@ stock mp_fraglimitCvarSupport()
     new exists_mp_fraglimit_cvar = cvar_exists( "mp_fraglimit" );
     LOGGER( 1, "( mp_fraglimitCvarSupport ) exists_mp_fraglimit_cvar: %d", exists_mp_fraglimit_cvar );
     
-    if( !exists_mp_fraglimit_cvar
-        && !get_pcvar_num( cvar_fragLimitSupport )
-        && get_pcvar_num( cvar_isFirstServerStart ) )
+    if( exists_mp_fraglimit_cvar )
     {
-        cvar_mp_fraglimit = cvar_disabledValuePointer;
+        register_event( "DeathMsg", "client_death_event", "a" );
+        cvar_mp_fraglimit = get_cvar_pointer( "mp_fraglimit" );
+    }
+    else if( get_pcvar_num( cvar_fragLimitSupport ) )
+    {
+        register_event( "DeathMsg", "client_death_event", "a" );
+        cvar_mp_fraglimit = register_cvar( "mp_fraglimit", "0", FCVAR_SERVER );
     }
     else
     {
-        if( exists_mp_fraglimit_cvar )
-        {
-            cvar_mp_fraglimit = get_cvar_pointer( "mp_fraglimit" );
-        }
-        else if( get_pcvar_num( cvar_fragLimitSupport ) )
-        {
-            cvar_mp_fraglimit = register_cvar( "mp_fraglimit", "0", FCVAR_SERVER );
-        }
-        else
-        {
-            cvar_mp_fraglimit = cvar_disabledValuePointer;
-        }
-        
-        register_event( "DeathMsg", "client_death_event", "a" );
+        cvar_mp_fraglimit = cvar_disabledValuePointer;
     }
 }
 
@@ -1958,7 +1949,8 @@ public client_death_event()
     
     killerId = read_data( 1 );
     
-    if( killerId )
+    if( g_fragLimitNumber
+        && killerId )
     {
         if( ( ( ( frags = ++g_playersKills[ killerId ] ) + VOTE_START_FRAGS() ) > g_fragLimitNumber )
             && !IS_END_OF_MAP_VOTING_GOING_ON() )
@@ -2877,7 +2869,7 @@ stock nomination_menu( player_id )
     
     // Start nomination menu variables
     new      mapIndex;
-    new bool:isMapTooRecent;
+    new bool:isRecentMapNomAllowed;
     new bool:isWhiteListNomBlock;
     
     new info          [ 1 ];
@@ -2885,10 +2877,9 @@ stock nomination_menu( player_id )
     new nominationMap [ MAX_MAPNAME_LENGHT ];
     new disabledReason[ 48 ];
     
-    isMapTooRecent      = ( map_isTooRecent( nominationMap )
-                            && !get_pcvar_num( cvar_recentNomMapsAllowance ) );
-    isWhiteListNomBlock = ( IS_WHITELIST_ENABLED()
-                            && get_pcvar_num( cvar_isWhiteListNomBlock ) );
+    isRecentMapNomAllowed = get_pcvar_num( cvar_recentNomMapsAllowance ) == 0;
+    isWhiteListNomBlock   = ( IS_WHITELIST_ENABLED()
+                              && get_pcvar_num( cvar_isWhiteListNomBlock ) );
     
     // 'g_whitelistTrie' is not loaded?
     if( isWhiteListNomBlock
@@ -2918,7 +2909,8 @@ stock nomination_menu( player_id )
             {
                 formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_NOMINATED" );
             }
-            else if( isMapTooRecent ) 
+            else if( isRecentMapNomAllowed
+                     && map_isTooRecent( nominationMap ) )
             {
                 formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_TOORECENT" );
             }
@@ -2968,7 +2960,7 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
     
     // Start nomination menu variables
     new      mapIndex;
-    new bool:isMapTooRecent;
+    new bool:isRecentMapNomAllowed;
     new bool:isWhiteListNomBlock;
     
     new info          [ 1 ];
@@ -2976,10 +2968,9 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
     new nominationMap [ MAX_MAPNAME_LENGHT ];
     new disabledReason[ 48 ];
     
-    isMapTooRecent      = ( map_isTooRecent( nominationMap )
-                            && !get_pcvar_num( cvar_recentNomMapsAllowance ) );
-    isWhiteListNomBlock = ( IS_WHITELIST_ENABLED()
-                            && get_pcvar_num( cvar_isWhiteListNomBlock ) );
+    isRecentMapNomAllowed = get_pcvar_num( cvar_recentNomMapsAllowance ) == 0;
+    isWhiteListNomBlock   = ( IS_WHITELIST_ENABLED()
+                              && get_pcvar_num( cvar_isWhiteListNomBlock ) );
     
     // 'g_whitelistTrie' is not loaded?
     if( isWhiteListNomBlock
@@ -3030,7 +3021,8 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
                 {
                     formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_NOMINATED" );
                 }
-                else if( isMapTooRecent ) 
+                else if( isRecentMapNomAllowed
+                         && map_isTooRecent( nominationMap ) )
                 {
                     formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_TOORECENT" );
                 }
@@ -8647,4 +8639,5 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
                 get_pcvar_float( cvar_mp_timelimit ), test_mp_timelimit, g_originalTimelimit );
     }
 #endif
+
 
