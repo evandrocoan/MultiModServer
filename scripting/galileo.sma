@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v3.0.1-164";
+new const PLUGIN_VERSION[] = "v3.0.1-167";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -2637,11 +2637,11 @@ public cmd_createMapFile( player_id, level, cid )
                     }
                     
                     fclose( mapFile );
-                    con_print( player_id, "%L", player_id, "GAL_CREATIONSUCCESS", mapFilePath, mapCount );
+                    console_print( player_id, "%L", player_id, "GAL_CREATIONSUCCESS", mapFilePath, mapCount );
                 }
                 else
                 {
-                    con_print( player_id, "%L", player_id, "GAL_CREATIONFAILED", mapFilePath );
+                    console_print( player_id, "%L", player_id, "GAL_CREATIONFAILED", mapFilePath );
                 }
                 
                 close_dir( directoryDescriptor );
@@ -2649,14 +2649,14 @@ public cmd_createMapFile( player_id, level, cid )
             else
             {
                 // directory not found, wtf?
-                con_print( player_id, "%L", player_id, "GAL_MAPSFOLDERMISSING" );
+                console_print( player_id, "%L", player_id, "GAL_MAPSFOLDERMISSING" );
             }
         }
         default:
         {
             // inform of correct usage
-            con_print( player_id, "%L", player_id, "GAL_CMD_CREATEFILE_USAGE1" );
-            con_print( player_id, "%L", player_id, "GAL_CMD_CREATEFILE_USAGE2" );
+            console_print( player_id, "%L", player_id, "GAL_CMD_CREATEFILE_USAGE1" );
+            console_print( player_id, "%L", player_id, "GAL_CMD_CREATEFILE_USAGE2" );
         }
     }
     
@@ -2677,15 +2677,20 @@ public cmd_maintenanceMode( player_id, level, cid )
         return PLUGIN_HANDLED;
     }
     
+    // Always print to the console for logging, because it is a important event.
     if( g_isOnMaintenanceMode )
     {
         g_isOnMaintenanceMode = false;
-        color_print( player_id, "^1%L", player_id, "GAL_CHANGE_MAINTENANCE_STATE", player_id, "GAL_CHANGE_MAINTENANCE_OFF" );
+        
+        color_print( 0, "^1%L", LANG_PLAYER, "GAL_CHANGE_MAINTENANCE_STATE", LANG_PLAYER, "GAL_CHANGE_MAINTENANCE_OFF" );
+        no_color_print( player_id, "^1%L", player_id, "GAL_CHANGE_MAINTENANCE_STATE", player_id, "GAL_CHANGE_MAINTENANCE_OFF" );
     }
     else
     {
         g_isOnMaintenanceMode = true;
-        color_print( player_id, "^1%L", player_id, "GAL_CHANGE_MAINTENANCE_STATE", player_id, "GAL_CHANGE_MAINTENANCE_ON" );
+        
+        color_print( 0, "^1%L", LANG_PLAYER, "GAL_CHANGE_MAINTENANCE_STATE", LANG_PLAYER, "GAL_CHANGE_MAINTENANCE_ON" );
+        no_color_print( player_id, "^1%L", player_id, "GAL_CHANGE_MAINTENANCE_STATE", player_id, "GAL_CHANGE_MAINTENANCE_ON" );
     }
     
     return PLUGIN_HANDLED;
@@ -6651,7 +6656,7 @@ public cmd_HL1_votemap( player_id )
     
     if( get_pcvar_num( cvar_cmdVotemap ) == 0 )
     {
-        con_print( player_id, "%L", player_id, "GAL_DISABLED" );
+        console_print( player_id, "%L", player_id, "GAL_DISABLED" );
         
         LOGGER( 1, "    ( cmd_HL1_votemap ) Returning PLUGIN_HANDLED" );
         return PLUGIN_HANDLED;
@@ -6669,7 +6674,7 @@ public cmd_HL1_listmaps( player_id )
     {
         case 0:
         {
-            con_print( player_id, "%L", player_id, "GAL_DISABLED" );
+            console_print( player_id, "%L", player_id, "GAL_DISABLED" );
         }
         case 2:
         {
@@ -6765,7 +6770,7 @@ public map_listAll( player_id )
     lastMapDisplayed[ player_id ][ LISTMAPS_LAST ]   = end - 1;
     lastMapDisplayed[ player_id ][ LISTMAPS_USERID ] = userid;
     
-    con_print( player_id, "^n----- %L -----", player_id, "GAL_LISTMAPS_TITLE", g_nominationMapCount );
+    console_print( player_id, "^n----- %L -----", player_id, "GAL_LISTMAPS_TITLE", g_nominationMapCount );
     
     // Second part start
     new mapIndex;
@@ -6790,42 +6795,39 @@ public map_listAll( player_id )
         }
         
         ArrayGetString( g_nominationMapsArray, mapIndex, mapName, charsmax( mapName ) );
-        con_print( player_id, "%3i: %s  %s", mapIndex + 1, mapName, nominated );
+        console_print( player_id, "%3i: %s  %s", mapIndex + 1, mapName, nominated );
     }
     
     if( mapPerPage
         && mapPerPage < g_nominationMapCount )
     {
-        con_print( player_id, "----- %L -----", player_id, "GAL_LISTMAPS_SHOWING",
+        console_print( player_id, "----- %L -----", player_id, "GAL_LISTMAPS_SHOWING",
                 start, mapIndex, g_nominationMapCount );
         
         if( end < g_nominationMapCount )
         {
-            con_print( player_id, "----- %L -----", player_id, "GAL_LISTMAPS_MORE",
+            console_print( player_id, "----- %L -----", player_id, "GAL_LISTMAPS_MORE",
                     command, end + 1, command );
         }
     }
 }
 
-stock con_print( player_id, message[], { Float, Sql, Result, _ }: ... )
+/**
+ * Remove the color tags form the message before print it to the given player console.
+ * 
+ * @param player_id         the player id.
+ * @param message[]         the text formatting rules to display.
+ * @param any               the variable number of formatting parameters.
+ */
+stock no_color_print( player_id, message[], any: ... )
 {
-    LOGGER( 128, "I AM ENTERING ON con_print(...) | player_id: %d, message: %s", player_id, message );
+    LOGGER( 128, "I AM ENTERING ON color_console_print(...) | player_id: %d, message: %s...", player_id, message );
+    new formated_message[ MAX_COLOR_MESSAGE ];
     
-    new consoleMessage[ MAX_LONG_STRING ];
-    vformat( consoleMessage, charsmax( consoleMessage ), message, 3 );
+    vformat( formated_message, charsmax( formated_message ), message, 3 );
+    REMOVE_COLOR_TAGS( formated_message );
     
-    if( player_id )
-    {
-        new authid[ 32 ];
-        
-        get_user_authid( player_id, authid, charsmax( authid ) );
-        console_print( player_id, consoleMessage );
-        
-        LOGGER( 1, "    ( con_print ) Just Returning/blocking" );
-        return;
-    }
-    
-    server_print( consoleMessage );
+    console_print( player_id, formated_message );
 }
 
 stock restartEmptyCycle()
@@ -7243,9 +7245,9 @@ stock percent( is, of )
  * This allow you to use '!g for green', '!y for yellow', '!t for team' color with LANGs at a
  * register_dictionary_colored file. Otherwise use '^1', '^2', '^3' and '^4'.
  *
- * @param player_id the player id.
- * @param message[] the text formatting rules to display.
- * @param any the variable number of formatting parameters.
+ * @param player_id          the player id.
+ * @param message[]          the text formatting rules to display.
+ * @param any                the variable number of formatting parameters.
  *
  * @see <a href="https://www.amxmodx.org/api/amxmodx/client_print_color">client_print_color</a>
  * for Amx Mod X 1.8.3 or superior.
@@ -7253,9 +7255,7 @@ stock percent( is, of )
 stock color_print( player_id, message[], any: ... )
 {
     LOGGER( 128, "I AM ENTERING ON color_print(...) | player_id: %d, message: %s...", player_id, message );
-    
     new formated_message[ MAX_COLOR_MESSAGE ];
-    formated_message[ 0 ] = '^0';
     
     if( g_isColorChatSupported
         && g_isColoredChatEnabled )
