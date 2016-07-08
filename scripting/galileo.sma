@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v3.0.1-163";
+new const PLUGIN_VERSION[] = "v3.0.1-164";
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -1943,35 +1943,37 @@ public round_start_event()
 public client_death_event()
 {
     LOGGER( 0, "I AM ENTERING ON client_death_event(0)" );
-    
-    static frags;
-    static killerId;
-    
-    killerId = read_data( 1 );
-    
-    if( g_fragLimitNumber
-        && killerId )
+
+    if( g_fragLimitNumber )
     {
-        if( ( ( ( frags = ++g_playersKills[ killerId ] ) + VOTE_START_FRAGS() ) > g_fragLimitNumber )
-            && !IS_END_OF_MAP_VOTING_GOING_ON() )
-        {
-            if( get_pcvar_num( cvar_endOfMapVote ) )
-            {
-                g_isVotingByFrags = true;
-                vote_startDirector( false );
-            }
-        }
+        static killerId;
+        killerId = read_data( 1 );
         
-        if( frags > g_greatestKillerFrags )
+        if( killerId )
         {
-            g_greatestKillerFrags = frags;
+            static frags;
             
-            if( g_isVirtualFragLimitSupport
-                && g_greatestKillerFrags >= g_fragLimitNumber
-                && !g_isTimeToChangeLevel )
+            if( ( ( ( frags = ++g_playersKills[ killerId ] ) + VOTE_START_FRAGS() ) > g_fragLimitNumber )
+                && !IS_END_OF_MAP_VOTING_GOING_ON() )
             {
-                g_isTimeToChangeLevel = true;
-                process_last_round();
+                if( get_pcvar_num( cvar_endOfMapVote ) )
+                {
+                    g_isVotingByFrags = true;
+                    vote_startDirector( false );
+                }
+            }
+            
+            if( frags > g_greatestKillerFrags )
+            {
+                g_greatestKillerFrags = frags;
+                
+                if( g_isVirtualFragLimitSupport
+                    && g_greatestKillerFrags >= g_fragLimitNumber
+                    && !g_isTimeToChangeLevel )
+                {
+                    g_isTimeToChangeLevel = true;
+                    process_last_round();
+                }
             }
         }
     }
