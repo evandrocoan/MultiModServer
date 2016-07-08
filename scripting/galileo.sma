@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v3.1.1-169";
+new const PLUGIN_VERSION[] = "v3.1.1-173";
 
 
 /**
@@ -57,7 +57,7 @@ new const PLUGIN_VERSION[] = "v3.1.1-169";
  *
  * 31  - Levels 1, 2, 4 and 8.
  */
-#define DEBUG_LEVEL 31
+#define DEBUG_LEVEL 27
 
 
 
@@ -189,7 +189,7 @@ new const PLUGIN_VERSION[] = "v3.1.1-169";
      * Test unit variables related to the DEBUG_LEVEL_UNIT_TEST_NORMAL 2.
      */
     new g_max_delay_result;
-    new g_totalSuccessfulTests;
+    new g_totalTestsNumber;
     new g_totalFailureTests;
     
     new Array: g_tests_idsAndNames;
@@ -4629,13 +4629,13 @@ stock isToLoadTheNextWhiteListGroup( &isToLoadTheseMaps, currentHour, startHour,
         //         4           3
             && currentHour > endHour )
         {
-            LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) startHour > endHour | currentHour < startHour && currentHour > endHour." );
+            LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) startHour > endHour && ( currentHour < startHour && currentHour > endHour )" );
             isToLoadTheseMaps = !isWhiteList;
         }
         //               6           5
         else // if( currentHour > startHour )
         {
-            LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) startHour > endHour | currentHour > startHour || currentHour < endHour." );
+            LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) startHour > endHour && ( currentHour > startHour || currentHour < endHour )" );
             isToLoadTheseMaps = isWhiteList;
         }
     }
@@ -4653,21 +4653,17 @@ stock isToLoadTheNextWhiteListGroup( &isToLoadTheseMaps, currentHour, startHour,
         // On 3-5, the possible value(s) for current hour: 6, 7, ..., 1, 2
         //
         //      6            5
-        if( currentHour > endHour )
+        if( currentHour > endHour
+        //          2           3
+            || currentHour < startHour )
         {
-            LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) startHour < endHour && currentHour > endHour" );
-            isToLoadTheseMaps = !isWhiteList;
-        } 
-        //            2           3
-        else if( currentHour < startHour )
-        {
-            LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) currentHour > endHour && currentHour < startHour" );
+            LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) startHour < endHour && ( currentHour > endHour || currentHour < startHour )" );
             isToLoadTheseMaps = !isWhiteList;
         }
         //              4            3
         else // if( currentHour > startHour )
         {
-            LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) currentHour > endHour && currentHour > startHour" );
+            LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) startHour < endHour && ( currentHour < endHour || currentHour > startHour )" );
             isToLoadTheseMaps = isWhiteList;
         }
     }
@@ -8073,7 +8069,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         if( g_max_delay_result )
         {
             print_logger( "" );
-            print_logger( "    %d tests succeed.", g_totalSuccessfulTests );
+            print_logger( "    %d tests succeed.", g_totalTestsNumber - g_totalFailureTests );
             print_logger( "    %d tests failed.", g_totalFailureTests );
             print_logger( "" );
             print_logger( "" );
@@ -8092,7 +8088,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
             print_tests_failure();
             
             print_logger( "" );
-            print_logger( "    %d tests succeed.", g_totalSuccessfulTests );
+            print_logger( "    %d tests succeed.", g_totalTestsNumber - g_totalFailureTests );
             print_logger( "    %d tests failed.", g_totalFailureTests );
             print_logger( "" );
             print_logger( "    Finished 'Galileo' Tests Execution." );
@@ -8105,11 +8101,11 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     
     stock displaysLastTestOk()
     {
-        if( g_totalSuccessfulTests + g_totalFailureTests > 1 )
+        if( g_totalTestsNumber > 1 )
         {
             new numberOfFailures = ArraySize( g_tests_failure_ids );
             new lastFailure      = ( numberOfFailures? ArrayGetCell( g_tests_failure_ids, numberOfFailures - 1 ) : 0 );
-            new lastTestId       = ( g_totalSuccessfulTests + g_totalFailureTests );
+            new lastTestId       = ( g_totalTestsNumber );
             
             LOGGER( 1, "( displaysLastTestOk ) numberOfFailures: %d, lastFailure: %d, lastTestId: %d", numberOfFailures, lastFailure, lastTestId );
             
@@ -8197,7 +8193,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         print_tests_failure();
         
         print_logger( "" );
-        print_logger( "    %d tests succeed.", g_totalSuccessfulTests );
+        print_logger( "    %d tests succeed.", g_totalTestsNumber - g_totalFailureTests );
         print_logger( "    %d tests failed.", g_totalFailureTests );
         print_logger( "" );
         print_logger( "    Finished 'Galileo' Tests Execution." );
@@ -8219,23 +8215,20 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     stock register_test( max_delay_result, test_name[] )
     {
         LOGGER( 0, "I AM ENTERING ON register_test(2) | max_delay_result: %d, test_name: %s", max_delay_result, test_name );
-        new totalTests;
-        
-        g_totalSuccessfulTests++;
-        totalTests = g_totalSuccessfulTests + g_totalFailureTests;
         
         // displays the OK to the last test.
         displaysLastTestOk();
+        g_totalTestsNumber++;
         
         ArrayPushString( g_tests_idsAndNames, test_name );
-        print_logger( "        EXECUTING TEST %d WITH %d SECONDS DELAY - %s ", totalTests, max_delay_result, test_name );
+        print_logger( "        EXECUTING TEST %d WITH %d SECONDS DELAY - %s ", g_totalTestsNumber, max_delay_result, test_name );
         
         if( g_max_delay_result < max_delay_result )
         {
             g_max_delay_result = max_delay_result;
         }
         
-        return totalTests;
+        return g_totalTestsNumber;
     }
     
     /**
@@ -8258,7 +8251,6 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         {
             static formated_message[ MAX_LONG_STRING ];
             
-            g_totalSuccessfulTests--;
             g_totalFailureTests++;
             
             vformat( formated_message, charsmax( formated_message ), failure_reason, 3 );
@@ -8279,8 +8271,8 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         
         test_id = register_test( 0, "test_register_test" );
         
-        SET_TEST_FAILURE( test_id, g_totalSuccessfulTests != 1, \
-                "g_totalSuccessfulTests must be 1 (it was %d)", g_totalSuccessfulTests );
+        SET_TEST_FAILURE( test_id, g_totalTestsNumber != 1, \
+                "g_totalTestsNumber must be 1 (it was %d)", g_totalTestsNumber );
         
         SET_TEST_FAILURE( test_id, test_id != 1, "test_id must be 1 (it was %d)", test_id );
         ArrayGetString( g_tests_idsAndNames, 0, first_test_name, charsmax( first_test_name ) );
@@ -8535,6 +8527,10 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
             fprintf( whiteListFileDescriptor, "%s^n", "de_dust8" );
             fprintf( whiteListFileDescriptor, "%s^n", "de_dust9" );
             fprintf( whiteListFileDescriptor, "%s^n", "de_dust10" );
+            fprintf( whiteListFileDescriptor, "%s^n", "[5-3]" );
+            fprintf( whiteListFileDescriptor, "%s^n", "de_dust11" );
+            fprintf( whiteListFileDescriptor, "%s^n", "de_dust12" );
+            fprintf( whiteListFileDescriptor, "%s^n", "de_dust13" );
             fclose( whiteListFileDescriptor );
         }
     }
@@ -8555,6 +8551,8 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         test_loadCurrentBlacklist_case( 23, "de_dust6", "de_dust2" ); // case 8
         test_loadCurrentBlacklist_case( 23, "de_dust7", "de_dust3" ); // case 9
         test_loadCurrentBlacklist_case( 23, "de_dust5", "de_dust4" ); // case 10
+        test_loadCurrentBlacklist_case( 2, "de_dust6", "de_dust11" ); // case 11
+        test_loadCurrentBlacklist_case( 4, "de_dust13", "de_dust4" ); // case 12
     }
     
     /**
