@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v3.1.0-177";
+new const PLUGIN_VERSION[] = "v3.1.0-178";
 
 
 /**
@@ -1104,6 +1104,7 @@ stock configureTheWhiteListFeature()
 {
     LOGGER( 128, "I AM ENTERING ON configureTheWhiteListFeature(0)" );
     
+    // The 'cvar_isWhiteListNomBlock' cvar needs the Whitelist always to be on memory.
     if( IS_WHITELIST_ENABLED()
         && get_pcvar_num( cvar_isWhiteListNomBlock ) )
     {
@@ -1624,6 +1625,7 @@ public vote_manageEnd()
         }
     }
     
+    // Update the Whitelist maps when its the right time, configured by 'computeNextWhiteListLoadTime(2)'.
     if( g_whitelistNomBlockTime )
     {
         static secondsElapsed;
@@ -2893,12 +2895,10 @@ stock nomination_menu( player_id )
     isWhiteListNomBlock   = ( IS_WHITELIST_ENABLED()
                               && get_pcvar_num( cvar_isWhiteListNomBlock ) );
     
-    // 'g_whitelistTrie' is not loaded?
-    if( isWhiteListNomBlock
-        && !g_blackListTrieForWhiteList )
+    // Not loaded?
+    if( isWhiteListNomBlock )
     {
-        // Depending on 'get_pcvar_num( cvar_isWhiteListNomBlock )', will or not be loaded.
-        loadTheWhiteListFeature();
+        tryToLoadTheWhiteListFeature();
     }
     // end nomination menu variables
     
@@ -2931,7 +2931,8 @@ stock nomination_menu( player_id )
                 formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_CURRENTMAP" );
             }
             else if( isWhiteListNomBlock
-                     && ( TrieKeyExists( g_blackListTrieForWhiteList, nominationMap )
+                     && ( ( g_blackListTrieForWhiteList
+                            && TrieKeyExists( g_blackListTrieForWhiteList, nominationMap ) )
                           || ( g_whitelistTrie
                                && !TrieKeyExists( g_whitelistTrie, nominationMap ) ) ) )
             {
@@ -2984,12 +2985,10 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
     isWhiteListNomBlock   = ( IS_WHITELIST_ENABLED()
                               && get_pcvar_num( cvar_isWhiteListNomBlock ) );
     
-    // 'g_whitelistTrie' is not loaded?
-    if( isWhiteListNomBlock
-        && !g_blackListTrieForWhiteList )
+    // Not loaded?
+    if( isWhiteListNomBlock )
     {
-        // Depending on 'get_pcvar_num( cvar_isWhiteListNomBlock )', will or not be loaded.
-        loadTheWhiteListFeature();
+        tryToLoadTheWhiteListFeature();
     }
     // end nomination menu variables
     
@@ -3043,7 +3042,8 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
                     formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_CURRENTMAP" );
                 }
                 else if( isWhiteListNomBlock
-                         && ( TrieKeyExists( g_blackListTrieForWhiteList, nominationMap )
+                         && ( ( g_blackListTrieForWhiteList
+                                && TrieKeyExists( g_blackListTrieForWhiteList, nominationMap ) )
                               || ( g_whitelistTrie
                                    && !TrieKeyExists( g_whitelistTrie, nominationMap ) ) ) )
                 {
@@ -3444,13 +3444,10 @@ stock map_nominate( player_id, mapIndex, nominatorPlayerId = -1 )
         && get_pcvar_num( cvar_isWhiteListNomBlock ) )
     {
         // Not loaded?
-        if( !g_blackListTrieForWhiteList )
-        {
-            // Depending on 'get_pcvar_num( cvar_isWhiteListNomBlock )', will or not be loaded.
-            loadTheWhiteListFeature();
-        }
+        tryToLoadTheWhiteListFeature();
         
-        if( TrieKeyExists( g_blackListTrieForWhiteList, mapName )
+        if( ( g_blackListTrieForWhiteList
+              && TrieKeyExists( g_blackListTrieForWhiteList, mapName ) )
             || ( g_whitelistTrie
                  && !TrieKeyExists( g_whitelistTrie, mapName ) ) )
         {
@@ -3996,7 +3993,8 @@ stock loadMapGroupsFeature( maxMapsPerGroupToUse[], fillersFilePaths[][], filler
     // The Whitelist Out Block feature, mapFilerFilePaths '*' and '#', disables The Map Groups Feature.
     if( !equal( mapFilerFilePath[ 0 ], "*" )
         && !equal( mapFilerFilePath[ 0 ], "#" )
-        && !get_pcvar_num( cvar_isWhiteListBlockOut ) )
+        && !( IS_WHITELIST_ENABLED()
+              && get_pcvar_num( cvar_isWhiteListBlockOut ) ) )
     {
         // determine what kind of file it's being used as
         new mapFilerFile = fopen( mapFilerFilePath, "rt" );
@@ -4102,12 +4100,13 @@ stock processLoadedMapsFile( maxMapsPerGroupToUse[], groupCount, blockedCount,
     
     new mapName[ MAX_MAPNAME_LENGHT ];
     
-    new Array:fillerMapsArray       = g_fillerMapsArray;
-    new       isWhitelistEnabled    = IS_WHITELIST_ENABLED();
-    new bool: useMapIsTooRecent     = true;
-    new bool: useIsPrefixInMenu     = true;
-    new bool: useEqualiCurrentMap   = true;
-    new bool: isWhiteListOutBlock   = get_pcvar_num( cvar_isWhiteListBlockOut ) != 0;
+    new Array:fillerMapsArray     = g_fillerMapsArray;
+    new       isWhitelistEnabled  = IS_WHITELIST_ENABLED();
+    new bool: useMapIsTooRecent   = true;
+    new bool: useIsPrefixInMenu   = true;
+    new bool: useEqualiCurrentMap = true;
+    new bool: isWhiteListOutBlock = ( isWhitelistEnabled
+                                      && get_pcvar_num( cvar_isWhiteListBlockOut ) != 0 );
     
     /**
      * This variable is to avoid double blocking which lead to the algorithm corruption and errors.
@@ -4119,29 +4118,17 @@ stock processLoadedMapsFile( maxMapsPerGroupToUse[], groupCount, blockedCount,
         blockedFillerMapsTrie = TrieCreate();
     }
     
-    if( isWhitelistEnabled
-        && (
-                !g_blackListTrieForWhiteList
-                ||
-                (
-                    isWhiteListOutBlock
-                    && (
-                            !g_whitelistTrie
-                            ||
-                            !ArraySize( g_whitelistArray )
-                       )
-                )
-           )
-      )
+    if( isWhitelistEnabled )
     {
-        loadTheWhiteListFeature();
-    }
-    
-    // The Whitelist out block feature, disables The Map Groups Feature.
-    if( isWhiteListOutBlock )
-    {
-        fillerMapsArray           = g_whitelistArray;
-        blockedFillerMapsMaxChars = 0;
+        // Not loaded?
+        tryToLoadTheWhiteListFeature();
+        
+        if( isWhiteListOutBlock )
+        {
+            // The Whitelist out block feature, disables The Map Groups Feature.
+            fillerMapsArray           = g_whitelistArray;
+            blockedFillerMapsMaxChars = 0;
+        }
     }
     
     // fill remaining slots with random maps from each filler file, as much as possible
@@ -4418,17 +4405,50 @@ stock vote_addFiller( blockedFillerMaps[][], blockedFillerMapsMaxChars = 0, bloc
 
 } // end 'vote_addFiller(3)'
 
+/**
+ * This must to be called only when is possible that the Whitelist feature is not loaded by its
+ * first time.
+ * 
+ * @note It must to be protected by an 'IS_WHITELIST_ENABLED()' evaluation.
+ */
+stock tryToLoadTheWhiteListFeature()
+{
+    if( get_pcvar_num( cvar_isWhiteListBlockOut ) )
+    {
+        if( !g_whitelistTrie )
+        {
+            loadTheWhiteListFeature();
+        }
+    }
+    else
+    {
+        if( !g_blackListTrieForWhiteList )
+        {
+            loadTheWhiteListFeature();
+        }
+    }
+}
+
+/**
+ * This must to be called always is needed to update the Whitelist loaded maps, or when it is the
+ * first time the Whitelist feature is loaded.
+ * 
+ * @note It must to be protected by an 'IS_WHITELIST_ENABLED()' evaluation.
+ */
 loadTheWhiteListFeature()
 {
     LOGGER( 128, "I AM ENTERING ON loadTheWhiteListFeature(0)" );
-    new whiteListFilePath [ MAX_FILE_PATH_LENGHT ];
     
+    new whiteListFilePath [ MAX_FILE_PATH_LENGHT ];
     get_pcvar_string( cvar_voteWhiteListMapFilePath, whiteListFilePath, charsmax( whiteListFilePath ) );
-    loadWhiteListFile( g_blackListTrieForWhiteList, whiteListFilePath );
     
     if( get_pcvar_num( cvar_isWhiteListBlockOut ) )
     {
         loadWhiteListFile( g_whitelistTrie, whiteListFilePath, true, g_whitelistArray );
+    }
+    else
+    {
+        loadWhiteListFile( g_blackListTrieForWhiteList, whiteListFilePath );
     }
 }
 
