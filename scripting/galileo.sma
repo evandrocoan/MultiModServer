@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v3.1.0-179";
+new const PLUGIN_VERSION[] = "v3.1.0-180";
 
 
 /**
@@ -134,26 +134,24 @@ new const PLUGIN_VERSION[] = "v3.1.0-179";
     /**
      * Contains all unit tests to execute.
      */
-    #define NORNAL_TESTS_TO_EXECUTE() \
-    do \
-    { \
-        test_register_test(); \
-        test_gal_in_empty_cycle_case1(); \
-        test_gal_in_empty_cycle_case2(); \
-        test_gal_in_empty_cycle_case3(); \
-        test_gal_in_empty_cycle_case4(); \
-        test_loadCurrentBlackList_load(); \
-        test_loadCurrentBlackList_cases(); \
-    } while( g_dummy_value )
+    stock nornal_tests_to_execute()
+    {
+        test_register_test();
+        test_gal_in_empty_cycle_case1();
+        test_gal_in_empty_cycle_case2();
+        test_gal_in_empty_cycle_case3();
+        test_gal_in_empty_cycle_case4();
+        test_loadCurrentBlackList_load();
+        test_loadCurrentBlackList_cases();
+    }
     
     /**
      * Contains all unit tests to execute.
      */
-    #define DALAYED_TESTS_TO_EXECUTE() \
-    do \
-    { \
-        test_is_map_extension_allowed(); \
-    } while( g_dummy_value )
+    stock dalayed_tests_to_execute()
+    {
+        test_is_map_extension_allowed();
+    }
     
     /**
      * Call the internal function to perform its task and stop the current test execution to avoid
@@ -8101,14 +8099,14 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         save_server_cvars_for_test();
         
     #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
-        NORNAL_TESTS_TO_EXECUTE();
+        nornal_tests_to_execute();
     #endif
         
         // displays the OK to the last test.
         displaysLastTestOk();
         
     #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_DELAYED
-        DALAYED_TESTS_TO_EXECUTE();
+        dalayed_tests_to_execute();
     #endif
         
         // displays the OK to the first delayed test.
