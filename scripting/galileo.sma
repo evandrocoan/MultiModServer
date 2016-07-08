@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v3.1.0-178";
+new const PLUGIN_VERSION[] = "v3.1.0-179";
 
 
 /**
@@ -57,7 +57,7 @@ new const PLUGIN_VERSION[] = "v3.1.0-178";
  *
  * 31  - Levels 1, 2, 4 and 8.
  */
-#define DEBUG_LEVEL 0
+#define DEBUG_LEVEL 23
 
 
 
@@ -970,7 +970,7 @@ public plugin_cfg()
     configureServerStart();
     configureServerMapChange();
     
-#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
+#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_UNIT_TEST_DELAYED )
     configureTheUnitTests();
 #endif
 
@@ -4597,7 +4597,7 @@ stock loadWhiteListFile( &Trie:listTrie, whiteListFilePath[], bool:isWhiteList =
 //                                     3         0
 stock convertWhitelistToBlacklist( &startHour, &endHour )
 {
-    LOGGER( 128, "I AM ENTERING ON convertWhitelistToBlacklist(2) | startHour: %d, endHour: %d", startHour, endHour );
+    LOGGER( 0, "I AM ENTERING ON convertWhitelistToBlacklist(2) | startHour: %d, endHour: %d", startHour, endHour );
     new backup;
     
     backup    = ( endHour + 1 > 23? 0 : endHour + 1 );
@@ -4610,6 +4610,8 @@ stock convertWhitelistToBlacklist( &startHour, &endHour )
  */
 stock standardizeTheHoursForWhitelist( &currentHour, &startHour, &endHour )
 {
+    LOGGER( 0, "I AM ENTERING ON standardizeTheHoursForWhitelist(3) | currentHour: %d, startHour: %d, endHour: %d", currentHour, startHour, endHour );
+    
     if( startHour > 23
         || startHour < 0 )
     {
@@ -4634,7 +4636,7 @@ stock standardizeTheHoursForWhitelist( &currentHour, &startHour, &endHour )
 
 stock isToLoadTheNextWhiteListGroup( &isToLoadTheseMaps, currentHour, startHour, endHour, isWhiteList = false )
 {
-    LOGGER( 128, "I AM ENTERING ON isToLoadTheNextWhiteListGroup(5) | startHour: %d, endHour: %d", startHour, endHour );
+    LOGGER( 0, "I AM ENTERING ON isToLoadTheNextWhiteListGroup(5) | startHour: %d, endHour: %d", startHour, endHour );
     
     if( startHour == endHour
         && endHour == currentHour )
@@ -4778,8 +4780,8 @@ stock approveTheVotingStart( bool:is_forced_voting )
                                 get_pcvar_num( cvar_isEmptyCycleByMapChange ) );
             return false;
         }
-        
     #endif
+        
         if( get_realplayersnum() == 0 )
         {
             if( get_pcvar_num( cvar_isEmptyCycleByMapChange ) )
@@ -7242,9 +7244,14 @@ stock get_realplayersnum()
     new players[ MAX_PLAYERS ];
     
     get_players( players, playersCount, "ch" );
-
-#if DEBUG_LEVEL & DEBUG_LEVEL_FAKE_VOTES
-    return 1;
+    
+#if DEBUG_LEVEL & ( DEBUG_LEVEL_FAKE_VOTES | DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_UNIT_TEST_DELAYED )
+    if( g_areTheUnitTestsRunning )
+    {
+        return 1; // exclusively to run with the Unit Tests.
+    }
+    
+    return 1; // for anything else needed.
 #else
     return playersCount;
 #endif
@@ -8104,7 +8111,9 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         DALAYED_TESTS_TO_EXECUTE();
     #endif
         
-        if( g_max_delay_result )
+        // displays the OK to the first delayed test.
+        if( g_max_delay_result
+            && displaysLastTestOk() )
         {
             print_logger( "" );
             print_logger( "    %d tests succeed.", g_totalTestsNumber - g_totalFailureTests );
@@ -8139,7 +8148,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     
     stock displaysLastTestOk()
     {
-        if( g_totalTestsNumber > 1 )
+        if( g_totalTestsNumber > 0 )
         {
             new numberOfFailures = ArraySize( g_tests_failure_ids );
             new lastFailure      = ( numberOfFailures? ArrayGetCell( g_tests_failure_ids, numberOfFailures - 1 ) : 0 );
@@ -8160,8 +8169,13 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
                 print_logger( "" );
                 print_logger( "" );
                 print_logger( "" );
+                
+                // Blocks the delayed Unit Tests to run, because the chain is broke.
+                return false;
             }
         }
+        
+        return true;
     }
     
     stock print_all_tests_executed()
