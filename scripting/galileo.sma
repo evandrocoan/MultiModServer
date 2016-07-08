@@ -28,13 +28,13 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v3.1.1-173";
+new const PLUGIN_VERSION[] = "v3.1.0-175";
 
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist.
  */
-#define USE_BLACK_LIST_INSTEAD_OF_WHITELIST 0
+#define IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST 0
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -57,7 +57,7 @@ new const PLUGIN_VERSION[] = "v3.1.1-173";
  *
  * 31  - Levels 1, 2, 4 and 8.
  */
-#define DEBUG_LEVEL 27
+#define DEBUG_LEVEL 0
 
 
 
@@ -4505,6 +4505,11 @@ stock loadWhiteListFile( &Trie:listTrie, whiteListFilePath[], bool:isWhiteList =
             replace_all( currentLine, charsmax( currentLine ), "[", "" );
             replace_all( currentLine, charsmax( currentLine ), "]", "" );
             
+            // Invert it to change the 'If we are %s these hours...' LOGGER(...) message accordantly.
+        #if IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST > 0
+            isWhiteList = !isWhiteList;
+        #endif
+            
             LOGGER( 8, "( loadWhiteListFile ) " );
             LOGGER( 8, "( loadWhiteListFile ) If we are %s these hours, we must load these maps:", \
                                 ( isWhiteList? "between" : "outside" ) );
@@ -4519,7 +4524,11 @@ stock loadWhiteListFile( &Trie:listTrie, whiteListFilePath[], bool:isWhiteList =
             startHour = str_to_num( startHourString );
             endHour   = str_to_num( endHourString );
             
-        #if USE_BLACK_LIST_INSTEAD_OF_WHITELIST > 0
+            standardizeTheHoursForWhitelist( currentHour, startHour, endHour );
+            
+            // Revert the variable 'isWhiteList' change and calculates whether to load the Blacklist/Whitelist or not.
+        #if IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST > 0
+            isWhiteList = !isWhiteList;
             convertWhitelistToBlacklist( startHour, endHour );
         #endif
             isToLoadTheNextWhiteListGroup( isToLoadTheseMaps, currentHour, startHour, endHour, isWhiteList );
@@ -4568,6 +4577,7 @@ stock loadWhiteListFile( &Trie:listTrie, whiteListFilePath[], bool:isWhiteList =
 //                                     3         0
 stock convertWhitelistToBlacklist( &startHour, &endHour )
 {
+    LOGGER( 128, "I AM ENTERING ON convertWhitelistToBlacklist(2) | startHour: %d, endHour: %d", startHour, endHour );
     new backup;
     
     backup    = ( endHour + 1 > 23? 0 : endHour + 1 );
@@ -4575,40 +4585,48 @@ stock convertWhitelistToBlacklist( &startHour, &endHour )
     startHour = backup;
 }
 
+/**
+ * Standardize the hours from 0 until 23.
+ */
+stock standardizeTheHoursForWhitelist( &currentHour, &startHour, &endHour )
+{
+    if( startHour > 23
+        || startHour < 0 )
+    {
+        LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) startHour: %d, will became 0.", startHour );
+        startHour = 0;
+    }
+    
+    if( endHour > 23
+        || endHour < 0 )
+    {
+        LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) endHour: %d, will became 0.", endHour );
+        endHour = 0;
+    }
+    
+    if( currentHour > 23
+        || currentHour < 0 )
+    {
+        LOGGER( 1, "( loadWhiteListFile ) currentHour: %d, will became 0.", currentHour );
+        currentHour = 0;
+    }
+}
+
 stock isToLoadTheNextWhiteListGroup( &isToLoadTheseMaps, currentHour, startHour, endHour, isWhiteList = false )
 {
-    LOGGER( 0, "I AM ENTERING ON isToLoadTheNextWhiteListGroup(5)" );
-    
-    // Standardize the hours from 0 until 23.
-    if( startHour > 23 )
-    {
-        LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) startHour: %d, will became 0.", startHour );
-        startHour = 0;
-    }
-    
-    if( endHour > 23 )
-    {
-        LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) endHour: %d, will became 0.", endHour );
-        endHour = 0;
-    }
-    
-    if( startHour < 0 )
-    {
-        LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) startHour: %d, will became 0.", startHour );
-        startHour = 0;
-    }
-    
-    if( endHour < 0 )
-    {
-        LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) endHour: %d, will became 0.", endHour );
-        endHour = 0;
-    }
+    LOGGER( 128, "I AM ENTERING ON isToLoadTheNextWhiteListGroup(5) | startHour: %d, endHour: %d", startHour, endHour );
     
     if( startHour == endHour
         && endHour == currentHour )
     {
         LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) startHour == endHour: %d", startHour );
+        
+        // Manual fix needed to convert 5-5 to 05:00:00 until 05:59:59, instead of all day long.
+    #if IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST > 0
+        isToLoadTheseMaps = isWhiteList;
+    #else
         isToLoadTheseMaps = !isWhiteList;
+    #endif
     }
     //           5          3
     else if( startHour > endHour )
@@ -8114,10 +8132,13 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
             {
                 print_logger( "OK!" );
                 print_logger( "" );
+                print_logger( "" );
             }
             else if( lastFailure == lastTestId  )
             {
                 print_logger( "FALILED!" );
+                print_logger( "" );
+                print_logger( "" );
                 print_logger( "" );
             }
         }
@@ -8562,7 +8583,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
      * @param map_existent     the map name to exist.
      * @param not_existent     the map name to does not exist.
      */
-#if USE_BLACK_LIST_INSTEAD_OF_WHITELIST > 0
+#if IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST > 0
     stock test_loadCurrentBlacklist_case( hour, not_existent[], map_existent[] )
 #else
     stock test_loadCurrentBlacklist_case( hour, map_existent[], not_existent[] )
