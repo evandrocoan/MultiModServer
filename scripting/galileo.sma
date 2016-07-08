@@ -28,7 +28,13 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v3.0.1-167";
+new const PLUGIN_VERSION[] = "v3.1.1-168";
+
+
+/**
+ * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist.
+ */
+#define USE_BLACK_LIST_INSTEAD_OF_WHITELIST 0
 
 
 /** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -4514,6 +4520,9 @@ stock loadWhiteListFile( &Trie:listTrie, whiteListFilePath[], bool:isWhiteList =
             startHour = str_to_num( startHourString );
             endHour   = str_to_num( endHourString );
             
+        #if USE_BLACK_LIST_INSTEAD_OF_WHITELIST > 0
+            convertWhitelistToBlacklist( startHour, endHour );
+        #endif
             isToLoadTheNextWhiteListGroup( isToLoadTheseMaps, currentHour, startHour, endHour, isWhiteList );
             continue;
         }
@@ -4547,6 +4556,24 @@ stock loadWhiteListFile( &Trie:listTrie, whiteListFilePath[], bool:isWhiteList =
     LOGGER( 1, "I AM EXITING loadWhiteListFile(3) | listTrie: %d", listTrie );
     
 } // end loadWhiteListFile(2)
+
+/**
+ * Now it specifies the time you want to block them. [10-22] to block them from 22:00 until 10:59.
+ * 
+ * From 1:00 until 2:59
+ * to
+ * From 3:00 until 0:59
+ */
+//                                     1         2
+//                                     3         0
+stock convertWhitelistToBlacklist( &startHour, &endHour )
+{
+    new backup;
+    
+    backup    = ( endHour + 1 > 23? 0 : endHour + 1 );
+    endHour   = ( startHour - 1 < 0? 23 : startHour - 1 );
+    startHour = backup;
+}
 
 stock isToLoadTheNextWhiteListGroup( &isToLoadTheseMaps, currentHour, startHour, endHour, isWhiteList = false )
 {
@@ -4598,15 +4625,17 @@ stock isToLoadTheNextWhiteListGroup( &isToLoadTheseMaps, currentHour, startHour,
         // On 5-3, the possible value(s) for current hour: 4
         // 
         //      4             5
-        if( currentHour < startHour )
+        if( currentHour < startHour
+        //         4           3
+            && currentHour > endHour )
         {
-            LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) startHour > endHour && currentHour < startHour" );
+            LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) startHour > endHour | currentHour < startHour && currentHour > endHour." );
             isToLoadTheseMaps = !isWhiteList;
         }
         //               6           5
         else // if( currentHour > startHour )
         {
-            LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) startHour > endHour && currentHour > startHour" );
+            LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) startHour > endHour | currentHour > startHour || currentHour < endHour." );
             isToLoadTheseMaps = isWhiteList;
         }
     }
