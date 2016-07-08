@@ -28,11 +28,11 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v3.1.0-175";
+new const PLUGIN_VERSION[] = "v3.1.0-177";
 
 
 /**
- * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist.
+ * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
  */
 #define IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST 0
 
@@ -4566,7 +4566,7 @@ stock loadWhiteListFile( &Trie:listTrie, whiteListFilePath[], bool:isWhiteList =
 } // end loadWhiteListFile(2)
 
 /**
- * Now [1-2] specifies the time you want to block them from 1:00 (am) until 2:59 (am).
+ * Now [1-2] specifies the time you want to block them; from 1:00 (am) until 2:59 (am).
  * 
  * This changes:
  * From 1:00 until 2:59

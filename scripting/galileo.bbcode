@@ -454,10 +454,10 @@ Thank you!  It means a lot to me.
 
 ******************************** [anchor]Change[/anchor][B][SIZE="6"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
 
-[B]2016-07-07 | v3.1.0-175[/B]
+[B]2016-07-08 | v3.1.0-175[/B]
 [LIST=1]
-[*]Fixed the 'Whitelist' feature missing hourly rule check.
-[*]Added preprocessor constant 'USE_BLACK_LIST_INSTEAD_OF_WHITELIST' to convert the Whitelist feature to a Blacklist.
+[*]Fixed the 'Whitelist' feature missing one hourly rule check.
+[*]Added preprocessor constant 'USE_BLACK_LIST_INSTEAD_OF_WHITELIST' to convert the Whitelist feature to a Blacklist feature.
 [/LIST]
 
 [B]2016-07-07 | v3.0.1-162[/B]
@@ -817,9 +817,11 @@ https://github.com/addonszz/Galileo/commits/develop[/URL]
 And this is a direct link to always to download the latest [COLOR="Red"]unreleased[/COLOR] changes you see on the above link:
 [URL="https://github.com/addonszz/Galileo/archive/develop.zip"] https://github.com/addonszz/Galileo/archive/develop.zip[/URL]
 
-And because it is the development version, the debugging is enabled. Go to around the 'line 51' and find:[PAWN]
+And because it is the development version, the debugging is enabled. Go to around the 'line 60' and find:[PAWN]
 #define DEBUG_LEVEL SomeNumber(s)[/PAWN]and change it to:[PAWN]
-#define DEBUG_LEVEL 0[/PAWN]Note that these versions above are probably not tested or maybe not stable as the [goanchor=LatestRelease]Latest Release
+#define DEBUG_LEVEL 0[/PAWN][IMG]http://i.imgur.com/lbWQaiO.png[/IMG]
+
+Note that these versions above are probably not tested or maybe not stable as the [goanchor=LatestRelease]Latest Release
 Download[/goanchor] [B][COLOR="Red"]below[/B][/COLOR]. See here how to compile plugins: [URL="https://forums.alliedmods.net/showthread.php?t=172936#Compiling"][HOW TO] Compiling plugins[/URL].
 
 
