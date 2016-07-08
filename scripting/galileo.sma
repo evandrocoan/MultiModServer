@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v3.1.1-168";
+new const PLUGIN_VERSION[] = "v3.1.1-169";
 
 
 /**
@@ -57,7 +57,7 @@ new const PLUGIN_VERSION[] = "v3.1.1-168";
  *
  * 31  - Levels 1, 2, 4 and 8.
  */
-#define DEBUG_LEVEL 0
+#define DEBUG_LEVEL 31
 
 
 
@@ -143,7 +143,6 @@ new const PLUGIN_VERSION[] = "v3.1.1-168";
         test_gal_in_empty_cycle_case3(); \
         test_gal_in_empty_cycle_case4(); \
         test_loadCurrentBlackList_load(); \
-        test_loadCurrentBlackList_case0(); \
         test_loadCurrentBlackList_cases(); \
     } while( g_dummy_value )
     
@@ -4558,8 +4557,9 @@ stock loadWhiteListFile( &Trie:listTrie, whiteListFilePath[], bool:isWhiteList =
 } // end loadWhiteListFile(2)
 
 /**
- * Now it specifies the time you want to block them. [10-22] to block them from 22:00 until 10:59.
+ * Now [1-2] specifies the time you want to block them from 1:00 (am) until 2:59 (am).
  * 
+ * This changes:
  * From 1:00 until 2:59
  * to
  * From 3:00 until 0:59
@@ -5238,7 +5238,7 @@ public vote_display( argument[ 2 ] )
     
     // This is to optionally display to single player that just voted or never saw the menu.
     // This function is called with the correct player id only after the player voted or by the
-    // 'tryToShowTheVotingMenu()' function call.
+    // 'tryToShowTheVotingMenu(0)' function call.
     if( player_id > 0 )
     {
         menuKeys = calculateExtensionOption( player_id, isVoteOver,
@@ -8109,7 +8109,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         {
             new numberOfFailures = ArraySize( g_tests_failure_ids );
             new lastFailure      = ( numberOfFailures? ArrayGetCell( g_tests_failure_ids, numberOfFailures - 1 ) : 0 );
-            new lastTestId       = ( g_totalSuccessfulTests + g_totalFailureTests - 1 );
+            new lastTestId       = ( g_totalSuccessfulTests + g_totalFailureTests );
             
             LOGGER( 1, "( displaysLastTestOk ) numberOfFailures: %d, lastFailure: %d, lastTestId: %d", numberOfFailures, lastFailure, lastTestId );
             
@@ -8551,6 +8551,10 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         test_loadCurrentBlacklist_case( 24, "de_dust4", "de_dust1" ); // case 4
         test_loadCurrentBlacklist_case( 23, "de_dust7", "de_dust8" ); // case 5
         test_loadCurrentBlacklist_case( 22, "de_dust8", "de_dust7" ); // case 6
+        test_loadCurrentBlacklist_case( 23, "de_dust5", "de_dust1" ); // case 7
+        test_loadCurrentBlacklist_case( 23, "de_dust6", "de_dust2" ); // case 8
+        test_loadCurrentBlacklist_case( 23, "de_dust7", "de_dust3" ); // case 9
+        test_loadCurrentBlacklist_case( 23, "de_dust5", "de_dust4" ); // case 10
     }
     
     /**
@@ -8560,7 +8564,11 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
      * @param map_existent     the map name to exist.
      * @param not_existent     the map name to does not exist.
      */
+#if USE_BLACK_LIST_INSTEAD_OF_WHITELIST > 0
+    stock test_loadCurrentBlacklist_case( hour, not_existent[], map_existent[] )
+#else
     stock test_loadCurrentBlacklist_case( hour, map_existent[], not_existent[] )
+#endif
     {
         static currentCaseNumber = 0;
         currentCaseNumber++;
@@ -8582,37 +8590,6 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         
         formatex( errorMessage, charsmax( errorMessage ), "The map '%s' must not to be present on the trie, but it was!", not_existent );
         SET_TEST_FAILURE( test_id, TrieKeyExists( blackListTrie, not_existent ), errorMessage );
-        
-        TrieDestroy( blackListTrie );
-    }
-    
-    /**
-     * This is the first case manual test for the 'loadWhiteListFile(4)' is working properly.
-     */
-    public test_loadCurrentBlackList_case0()
-    {
-        new test_id            = register_test( 0, "test_loadCurrentBlackList_case0" );
-        new Trie:blackListTrie = TrieCreate();
-        
-        g_test_current_time = 23;
-        loadWhiteListFile( blackListTrie, g_test_whiteListFilePath );
-        g_test_current_time = 0;
-        
-        SET_TEST_FAILURE( test_id, TrieKeyExists( blackListTrie, "de_dust1" ), \
-                "The map 'de_dust1' must not to be present on the trie, but it was!" );
-        SET_TEST_FAILURE( test_id, TrieKeyExists( blackListTrie, "de_dust2" ), \
-                "The map 'de_dust2' must not to be present on the trie, but it was!" );
-        SET_TEST_FAILURE( test_id, TrieKeyExists( blackListTrie, "de_dust3" ), \
-                "The map 'de_dust3' must not to be present on the trie, but it was!" );
-        SET_TEST_FAILURE( test_id, TrieKeyExists( blackListTrie, "de_dust4" ), \
-                "The map 'de_dust4' must not to be present on the trie, but it was!" );
-        
-        SET_TEST_FAILURE( test_id, !TrieKeyExists( blackListTrie, "de_dust5" ), \
-                "The map 'de_dust5' must to be present on the trie, but it was not!" );
-        SET_TEST_FAILURE( test_id, !TrieKeyExists( blackListTrie, "de_dust6" ), \
-                "The map 'de_dust6' must to be present on the trie, but it was not!" );
-        SET_TEST_FAILURE( test_id, !TrieKeyExists( blackListTrie, "de_dust7" ), \
-                "The map 'de_dust7' must to be present on the trie, but it was not!" );
         
         TrieDestroy( blackListTrie );
     }
