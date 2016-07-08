@@ -1,5 +1,5 @@
-[anchor]Top[/anchor][SIZE="7"][COLOR="Blue"][B]Galileo v3.0.1-162[/B][/COLOR][/SIZE] A feature rich map voting plugin
-[SIZE=1][COLOR=Red]Release: 12.09.2008 | Last Update: 07.07.2016[/SIZE][/COLOR]
+[anchor]Top[/anchor][SIZE="7"][COLOR="Blue"][B]Galileo v3.1.0-175[/B][/COLOR][/SIZE] A feature rich map voting plugin
+[SIZE=1][COLOR=Red]Release: 2008.09.12 | Last Update: 2016.07.08[/SIZE][/COLOR]
 
 If you want to translate the Galileo Mapchooser to your language or if you see some
 error or bad coloring tags positioning at the current translations, feel free to correct
@@ -244,6 +244,22 @@ de_dust2_long
      about only 10 players between 05:00 and 10:00 o'clock, so they will be needing [COLOR="Blue"]small
      maps[/COLOR] for playing. Basically, the Whitelist is a filter to your mapcycle/filler list.
      
+     It is an whitelist:
+     [URL="https://en.wikipedia.org/wiki/Whitelist"] https://en.wikipedia.org/wiki/Whitelist[/URL]
+     
+     It is a list to specifies the time where the maps are [B][COLOR="Blue"]allowed[/COLOR][/B].
+     It is not a list to specifies the time where the maps are [B][COLOR="red"]blocked[/COLOR][/B] (directly).
+     
+     So, instead of to think on which time you want to [B][COLOR="red"]block[/COLOR][/B] them.
+     To think on which time you want to [B][COLOR="Blue"]allow[/COLOR][/B] them.
+     
+     Using [10-21], means:
+     
+     1) You want to [B][COLOR="Blue"]allow[/COLOR][/B] them between 10:00:00 hours (morning) until 21:59:59 (night).
+     2) Doing it, will cause to [B][COLOR="red"]block[/COLOR][/B] them between 22:00:00 (today night), until 09:59:59 (tomorrow morning).
+     3) If the cvar 'gal_whitelist_block_out' = 1, it will always [B][COLOR="red"]block[/COLOR][/B] all maps not following any rules as [10-21], [3-11], etc.
+     4) If the cvar 'gal_whitelist_block_out' = 0, it will always [B][COLOR="Blue"]allow[/COLOR][/B] all maps not following any rules as [10-21], [3-11], etc.
+     
      So,
      [LIST=1]
      [*]If you try to play 'de_dust' / 'de_inferno' when it is [B]09[/B] hours, you will be [COLOR="Red"]blocked[/COLOR].
@@ -437,6 +453,12 @@ Thank you!  It means a lot to me.
 
 
 ******************************** [anchor]Change[/anchor][B][SIZE="6"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
+
+[B]2016-07-07 | v3.1.0-175[/B]
+[LIST=1]
+[*]Fixed the 'Whitelist' feature missing hourly rule check.
+[*]Added preprocessor constant 'USE_BLACK_LIST_INSTEAD_OF_WHITELIST' to convert the Whitelist feature to a Blacklist.
+[/LIST]
 
 [B]2016-07-07 | v3.0.1-162[/B]
 [LIST=1]
