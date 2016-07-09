@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v3.1.0-188";
+new const PLUGIN_VERSION[] = "v3.1.0-191";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -654,7 +654,7 @@ new Array:g_emptyCycleMapsArray;
 /**
  * Stores the players nominations until MAX_NOMINATION_COUNT for each player.
  */
-new Trie:g_playersNominations;
+new Trie:g_playersNominationsTrie;
 
 /**
  * Stores the nominators id by a given map index. It is to find out the player id given the nominated
@@ -663,7 +663,7 @@ new Trie:g_playersNominations;
 new Trie:g_nominationMapsTrie;
 
 /**
- * Enumeration used to create access the "g_nominationMapsTrie" values. It is untagged to be able to
+ * Enumeration used to create access to "g_nominationMapsTrie" values. It is untagged to be able to
  * pass it throw an TrieSetArray.
  */
 enum _:MapNominationsType
@@ -1071,7 +1071,7 @@ stock initializeGlobalArrays()
     get_mapname( g_currentMap, charsmax( g_currentMap ) );
     
     g_nominationMapsTrie  = TrieCreate();
-    g_playersNominations  = TrieCreate();
+    g_playersNominationsTrie  = TrieCreate();
     g_fillerMapsArray     = ArrayCreate( MAX_MAPNAME_LENGHT );
     g_nominationMapsArray = ArrayCreate( MAX_MAPNAME_LENGHT );
     
@@ -1651,7 +1651,7 @@ public vote_manageEnd()
 {
     LOGGER( 0, "I AM ENTERING ON vote_manageEnd(0)" );
     
-    static secondsLeft;
+    new secondsLeft;
     secondsLeft = get_timeleft();
     
     if( secondsLeft )
@@ -1683,7 +1683,7 @@ public vote_manageEnd()
     // Update the Whitelist maps when its the right time, configured by 'computeNextWhiteListLoadTime(2)'.
     if( g_whitelistNomBlockTime )
     {
-        static secondsElapsed;
+        new secondsElapsed;
         secondsElapsed = floatround( get_gametime(), floatround_ceil );
         
         if( g_whitelistNomBlockTime < secondsElapsed )
@@ -2764,13 +2764,12 @@ public cmd_maintenanceMode( player_id, level, cid )
 public cmd_say( player_id )
 {
     LOGGER( 128, "I AM ENTERING ON cmd_say(1) | player_id: %s", player_id );
-    
-    static sentence   [ 70 ];
-    static firstWord  [ 32 ];
-    static secondWord [ 32 ];
-    static thirdWord  [ 2 ];
-    
     static prefix_index;
+    
+    static sentence  [ 70 ];
+    static firstWord [ 32 ];
+    static secondWord[ 32 ];
+    static thirdWord [ 2 ];
     
     sentence   [ 0 ] = '^0';
     firstWord  [ 0 ] = '^0';
@@ -3240,7 +3239,7 @@ stock nomination_getPlayer( mapIndex )
 /**
  * Gets the nominated map index, given the player id and the nomination index.
  * 
- * @return -1 when there is no nomination, or the map nomination index.
+ * @return -1 when there is no nomination, otherwise the map nomination index.
  */
 stock getPlayerNominationMapIndex( player_id, nominationIndex )
 {
@@ -3251,9 +3250,9 @@ stock getPlayerNominationMapIndex( player_id, nominationIndex )
     
     createPlayerNominationKey( player_id, trieKey, charsmax( trieKey ) );
     
-    if( TrieKeyExists( g_playersNominations, trieKey ) )
+    if( TrieKeyExists( g_playersNominationsTrie, trieKey ) )
     {
-        TrieGetArray( g_playersNominations, trieKey, playerNominationData, sizeof playerNominationData );
+        TrieGetArray( g_playersNominationsTrie, trieKey, playerNominationData, sizeof playerNominationData );
     }
     else
     {
@@ -3265,7 +3264,7 @@ stock getPlayerNominationMapIndex( player_id, nominationIndex )
 
 /**
  * Changes the player nomination. When there is no nominations, it creates the player entry to the
- * the server nominations tables "g_nominationMapsTrie" and "g_playersNominations".
+ * the server nominations tables "g_nominationMapsTrie" and "g_playersNominationsTrie".
  * 
  * @param player_id             the nominator player id.
  * @param nominationIndex       @see the updateNominationsReverseSearch's nominationIndex function parameter.
@@ -3281,14 +3280,14 @@ stock setPlayerNominationMapIndex( player_id, nominationIndex, mapIndex )
     
     createPlayerNominationKey( player_id, trieKey, charsmax( trieKey ) );
     
-    if( TrieKeyExists( g_playersNominations, trieKey ) )
+    if( TrieKeyExists( g_playersNominationsTrie, trieKey ) )
     {
-        TrieGetArray( g_playersNominations, trieKey, playerNominationData, sizeof playerNominationData );
+        TrieGetArray( g_playersNominationsTrie, trieKey, playerNominationData, sizeof playerNominationData );
         
         originalMapIndex                        = playerNominationData[ nominationIndex ];
         playerNominationData[ nominationIndex ] = mapIndex;
         
-        TrieSetArray( g_playersNominations, trieKey, playerNominationData, sizeof playerNominationData );
+        TrieSetArray( g_playersNominationsTrie, trieKey, playerNominationData, sizeof playerNominationData );
     }
     else
     {
@@ -3301,7 +3300,7 @@ stock setPlayerNominationMapIndex( player_id, nominationIndex, mapIndex )
         }
         
         playerNominationData[ nominationIndex ] = mapIndex;
-        TrieSetArray( g_playersNominations, trieKey, playerNominationData, sizeof playerNominationData );
+        TrieSetArray( g_playersNominationsTrie, trieKey, playerNominationData, sizeof playerNominationData );
     }
     
     updateNominationsReverseSearch( player_id, nominationIndex, mapIndex, originalMapIndex );
@@ -3355,9 +3354,9 @@ stock countPlayerNominations( player_id, &nominationOpenIndex )
     nominationOpenIndex = 0;
     createPlayerNominationKey( player_id, trieKey, charsmax( trieKey ) );
     
-    if( TrieKeyExists( g_playersNominations, trieKey ) )
+    if( TrieKeyExists( g_playersNominationsTrie, trieKey ) )
     {
-        TrieGetArray( g_playersNominations, trieKey, playerNominationData, sizeof playerNominationData );
+        TrieGetArray( g_playersNominationsTrie, trieKey, playerNominationData, sizeof playerNominationData );
         
         for( new nominationIndex = 0; nominationIndex < MAX_NOMINATION_COUNT; ++nominationIndex )
         {
@@ -3605,6 +3604,9 @@ stock map_nominate( player_id, mapIndex, nominatorPlayerId = -1 )
     }
 }
 
+/**
+ * Print to chat all players nominations available. This is usually called by 'say noms'.
+ */
 public nomination_list()
 {
     LOGGER( 128, "I AM ENTERING ON nomination_list(0)" );
@@ -5081,14 +5083,15 @@ public displayEndOfTheMapVoteMenu( player_id )
 {
     LOGGER( 128, "I AM ENTERING ON displayEndOfTheMapVoteMenu(1) | player_id: %d", player_id );
     
+    static menu_body   [ 256 ];
+    static menu_counter[ 64 ];
+    
     new menu_id;
     new menuKeys;
     new menuKeysUnused;
     new playersCount;
     new players[ MAX_PLAYERS ];
     
-    new menu_body[ 256 ];
-    new menu_counter[ 64 ];
     new bool:isVoting;
     new bool:playerAnswered;
     
@@ -5104,6 +5107,9 @@ public displayEndOfTheMapVoteMenu( player_id )
     
     for( new playerIndex = 0; playerIndex < playersCount; playerIndex++ )
     {
+        menu_body   [ 0 ] = '^0';
+        menu_counter[ 0 ] = '^0';
+        
         player_id      = players[ playerIndex ];
         isVoting       = g_isPlayerParticipating[ player_id ];
         playerAnswered = g_answeredForEndOfMapVote[ player_id ];
@@ -5118,11 +5124,8 @@ public displayEndOfTheMapVoteMenu( player_id )
         }
         else
         {
-            menuKeys          = MENU_KEY_1;
-            menu_counter[ 0 ] = '^0';
+            menuKeys = MENU_KEY_1;
         }
-        
-        menu_body[ 0 ] = '^0';
         
         formatex( menu_body, charsmax( menu_body ),
                 "%s%L^n^n\
@@ -5272,6 +5275,12 @@ public voteExpire()
 public vote_display( argument[ 2 ] )
 {
     LOGGER( 0, "I AM ENTERING ON vote_display(1) | argument[0]: %d, argument[1]: %d", argument[ 0 ], argument[ 1 ] );
+    new menuKeys;
+    
+    static voteStatus  [ 412 ];
+    static menuClean   [ 512 ]; // menu showed while voting
+    static menuDirty   [ 512 ]; // menu showed after voted
+    static voteMapLine [ MAX_MAPNAME_LENGHT + 32 ];
     
     new player_id           = argument[ 1 ];
     new copiedChars         = 0;
@@ -5281,11 +5290,6 @@ public vote_display( argument[ 2 ] )
     new bool:noneIsHidden = ( g_isToShowNoneOption
                               && !g_voteShowNoneOptionType
                               && !isVoteOver );
-    static menuKeys;
-    static voteStatus  [ 512 ];
-    static voteMapLine [ MAX_MAPNAME_LENGHT ];
-    static menuClean   [ 512 ]; // menu showed while voting
-    static menuDirty   [ 512 ]; // menu showed after voted
     
     if( updateTimeRemaining )
     {
@@ -5511,10 +5515,10 @@ stock calculate_menu_dirt( player_id, bool:isVoteOver, voteStatus[], menuDirty[]
             voteStatus: %s, ^nmenuDirty: %s, menuDirtySize: %d, noneIsHidden: %d", player_id, isVoteOver, \
             voteStatus,       menuDirty,     menuDirtySize,     noneIsHidden );
     
-    static voteFooter[ 64 ];
-    static menuHeader[ 32 ];
-    static noneOption[ 32 ];
-    static bool:isToShowUndo;
+    new bool:isToShowUndo;
+    static   voteFooter[ 64 ];
+    static   menuHeader[ 32 ];
+    static   noneOption[ 32 ];
     
     menuDirty  [ 0 ] = '^0';
     noneOption [ 0 ] = '^0';
@@ -5581,7 +5585,7 @@ stock computeVoteMenuFooter( player_id, voteFooter[], voteFooterSize )
             voteFooterSize: %d",                            player_id,     voteFooter, \
             voteFooterSize );
     
-    static copiedChars;
+    new copiedChars;
     copiedChars = copy( voteFooter, voteFooterSize, "^n^n" );
     
     if( g_isToShowExpCountdown )
@@ -5664,10 +5668,10 @@ stock calculate_menu_clean( player_id, menuClean[], menuCleanSize )
             menuCleanSize: %d",                            player_id,     menuClean, \
             menuCleanSize );
     
-    static voteFooter[ 64 ];
-    static menuHeader[ 32 ];
-    static noneOption[ 32 ];
-    static bool:isToShowUndo;
+    new bool:isToShowUndo;
+    static   voteFooter[ 64 ];
+    static   menuHeader[ 32 ];
+    static   noneOption[ 32 ];
     
     menuClean  [ 0 ] = '^0';
     noneOption [ 0 ] = '^0';
@@ -7265,7 +7269,7 @@ stock nomination_clearAll()
     LOGGER( 128, "I AM ENTERING ON nomination_clearAll(0)" );
     
     TrieClear( g_nominationMapsTrie );
-    TrieClear( g_playersNominations );
+    TrieClear( g_playersNominationsTrie );
     
     g_nominationCount = 0;
 }
@@ -7812,9 +7816,9 @@ public plugin_end()
     
     // Clear Dynamic Tries
     // ############################################################################################
-    if( g_playersNominations )
+    if( g_playersNominationsTrie )
     {
-        TrieDestroy( g_playersNominations );
+        TrieDestroy( g_playersNominationsTrie );
     }
     
     if( g_nominationMapsTrie )
