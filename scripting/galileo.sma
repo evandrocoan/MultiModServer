@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v3.2.0-195";
+new const PLUGIN_VERSION[] = "v3.2.0-198";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -36,7 +36,7 @@ new const PLUGIN_VERSION[] = "v3.2.0-195";
 #define IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST 0
 
 /**
- * Change this value from 0 to 1, to use disable the colored text message (chat messages).
+ * Change this value from 0 to 1, to disable the colored text message (chat messages).
  */
 #define IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES 0
 
@@ -146,7 +146,7 @@ new const PLUGIN_VERSION[] = "v3.2.0-195";
     
     
     /**
-     * Write debug messages accordantly with the gal_debug level.
+     * Write debug messages accordantly with the 'g_debug_level' variable.
      *
      * @param mode the debug mode level, see the variable 'g_debug_level' for the levels.
      * @param text the debug message, if omitted its default value is ""
@@ -175,7 +175,7 @@ new const PLUGIN_VERSION[] = "v3.2.0-195";
  */
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
     /**
-     * Contains all unit tests to execute.
+     * Contains all imediates unit tests to execute.
      */
     stock nornal_tests_to_execute()
     {
@@ -189,7 +189,7 @@ new const PLUGIN_VERSION[] = "v3.2.0-195";
     }
     
     /**
-     * Contains all unit tests to execute.
+     * Contains all delayed unit tests to execute.
      */
     stock dalayed_tests_to_execute()
     {
