@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v3.2.0-193";
+new const PLUGIN_VERSION[] = "v3.2.0-194";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -43,7 +43,8 @@ new const PLUGIN_VERSION[] = "v3.2.0-193";
 
 /**
  * This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
- * and the variable 'g_debug_level' for more information.
+ * and the variable 'g_debug_level' for more information. Usage example, to enables several levels:
+ * #define DEBUG_LEVEL 1+2+4+16
  *
  * @note when the 'DEBUG_LEVEL_FAKE_VOTES' is activated, usually the voting will be approved
  * because it creates also a fake players count. So, do not enable 'DEBUG_LEVEL_FAKE_VOTES'
@@ -71,11 +72,11 @@ new const PLUGIN_VERSION[] = "v3.2.0-193";
 #define DEBUG_LEVEL 0
 
 
+
 /**
  * How much players use when the debugging level 'DEBUG_LEVEL_FAKE_VOTES' is enabled.
  */
 #define FAKE_PLAYERS_NUMBER_FOR_DEBUGGING 1
-
 
 /**
  * Debugging level configurations.
@@ -86,12 +87,33 @@ new const PLUGIN_VERSION[] = "v3.2.0-193";
 #define DEBUG_LEVEL_FAKE_VOTES        8
 #define DEBUG_LEVEL_CRITICAL_MODE     16
 
+/**
+ * Common strings sizes used around the plugin.
+ */
+#define MAX_LONG_STRING              256
+#define MAX_COLOR_MESSAGE            192
+#define MAX_SHORT_STRING             64
+#define MAX_BIG_BOSS_STRING          512
+#define MAX_NOMINATION_TRIE_KEY_SIZE 48
+#define MAX_MAPNAME_LENGHT           64
+#define MAX_FILE_PATH_LENGHT         128
+#define MAX_PLAYER_NAME_LENGHT       48
 
+/**
+ * Necessary modules.
+ */
 #include <amxmodx>
 #include <amxmisc>
+
+/**
+ * Force the use of semicolons on every statement.
+ */
 #pragma semicolon 1
 
 
+/**
+ * Setup the debugging tools when they are used/necessary.
+ */
 #if DEBUG_LEVEL & ( DEBUG_LEVEL_NORMAL | DEBUG_LEVEL_CRITICAL_MODE )
     #define DEBUG
     #define LOGGER(%1) debugMesssageLogger( %1 )
@@ -136,7 +158,7 @@ new const PLUGIN_VERSION[] = "v3.2.0-193";
     {
         if( mode & g_debug_level )
         {
-            static formated_message[ 384 ];
+            static formated_message[ MAX_BIG_BOSS_STRING ];
             vformat( formated_message, charsmax( formated_message ), message, 3 );
             
             writeToTheDebugFile( "_galileo.log", formated_message );
@@ -148,7 +170,9 @@ new const PLUGIN_VERSION[] = "v3.2.0-193";
 #endif
 
 
-
+/**
+ * Setup the Unit Tests when they are used/necessary.
+ */
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
     /**
      * Contains all unit tests to execute.
@@ -195,7 +219,7 @@ new const PLUGIN_VERSION[] = "v3.2.0-193";
      */
     stock print_logger( message[] = "", any: ... )
     {
-        static formated_message[ 384 ];
+        static formated_message[ MAX_BIG_BOSS_STRING ];
         vformat( formated_message, charsmax( formated_message ), message, 2 );
         
         writeToTheDebugFile( "_galileo.log", formated_message );
@@ -221,6 +245,7 @@ new const PLUGIN_VERSION[] = "v3.2.0-193";
     new g_test_whiteListFilePath[ 128 ];
 #endif
 
+
 /**
  * Write messages to the debug log file on 'addons/amxmodx/logs'.
  * 
@@ -236,6 +261,7 @@ new const PLUGIN_VERSION[] = "v3.2.0-193";
         log_to_file( log_file, "{%3.4f} %s", gameTime, formated_message );
     }
 #endif
+
 
 /**
  * Defines the maximum players number, when it is not specified for olders AMXX versions.
@@ -280,11 +306,6 @@ enum (+= 100000)
 #define RTV_CMD_SHORTHAND 2
 #define RTV_CMD_DYNAMIC   4
 
-#define MAX_LONG_STRING              256
-#define MAX_COLOR_MESSAGE            192
-#define MAX_SHORT_STRING             64
-#define MAX_NOMINATION_TRIE_KEY_SIZE 48
-
 #define SOUND_GETREADYTOCHOOSE 1
 #define SOUND_COUNTDOWN        2
 #define SOUND_TIMETOCHOOSE     4
@@ -314,12 +335,8 @@ enum (+= 100000)
 #define MAX_OPTIONS_IN_VOTE           9
 #define MAX_STANDARD_MAP_COUNT        25
 #define MAX_SERVER_RESTART_ACCEPTABLE 10
-
-#define MAX_MAPNAME_LENGHT     64
-#define MAX_FILE_PATH_LENGHT   128
-#define MAX_PLAYER_NAME_LENGHT 48
-#define MAX_NOM_MATCH_COUNT    1000
-#define MAX_PLAYERS_COUNT      MAX_PLAYERS + 1
+#define MAX_NOM_MATCH_COUNT           1000
+#define MAX_PLAYERS_COUNT             MAX_PLAYERS + 1
 
 #define VOTE_IS_IN_PROGRESS 1
 #define VOTE_IS_FORCED      2
@@ -746,7 +763,7 @@ new g_nextMapCyclePosition;
 new g_arrayOfRunOffChoices[ 2 ];
 new g_voteStatus_symbol   [ 3 ];
 new g_voteWeightFlags     [ 32 ];
-new g_voteStatusClean     [ 512 ];
+new g_voteStatusClean     [ MAX_BIG_BOSS_STRING ];
 
 new g_configsDirPath[ MAX_FILE_PATH_LENGHT ];
 new g_dataDirPath   [ MAX_FILE_PATH_LENGHT ];
@@ -806,7 +823,7 @@ public plugin_init()
     
     // print the current used debug information
 #if DEBUG_LEVEL & ( DEBUG_LEVEL_NORMAL | DEBUG_LEVEL_CRITICAL_MODE )
-    new debug_level[ 128 ];
+    new debug_level[ MAX_SHORT_STRING ];
     formatex( debug_level, charsmax( debug_level ), "%d | %d", g_debug_level, DEBUG_LEVEL );
     
     LOGGER( 1, "gal_debug_level: %s", debug_level );
@@ -1649,7 +1666,7 @@ stock computeNextWhiteListLoadTime( seconds, bool:isSecondsLeft = true )
 
 public vote_manageEnd()
 {
-    LOGGER( 0, "I AM ENTERING ON vote_manageEnd(0)" );
+    LOGGER( 0, "I AM ENTERING ON vote_manageEnd(0) | get_realplayersnum: %d", get_realplayersnum() );
     
     new secondsLeft;
     secondsLeft = get_timeleft();
@@ -1725,7 +1742,7 @@ public vote_manageEnd()
 public map_manageEnd()
 {
     LOGGER( 128, "I AM ENTERING ON map_manageEnd(0)" );
-    LOGGER( 2, "%32s mp_timelimit: %f", "map_manageEnd(in)", get_pcvar_float( cvar_mp_timelimit ) );
+    LOGGER( 2, "%32s mp_timelimit: %f, get_realplayersnum: %d", "map_manageEnd(in)", get_pcvar_float( cvar_mp_timelimit ), get_realplayersnum() );
     
     switch( get_pcvar_num( cvar_endOnRound ) )
     {
@@ -1763,7 +1780,7 @@ public map_manageEnd()
     }
     
     configure_last_round_HUD();
-    LOGGER( 2, "%32s mp_timelimit: %f", "map_manageEnd(out)", get_pcvar_float( cvar_mp_timelimit ) );
+    LOGGER( 2, "%32s mp_timelimit: %f, get_realplayersnum: %d", "map_manageEnd(out)", get_pcvar_float( cvar_mp_timelimit ), get_realplayersnum() );
 }
 
 stock prevent_map_change()
@@ -2657,6 +2674,7 @@ public cmd_createMapFile( player_id, level, cid )
         case 1:
         {
             new mapFileName[ MAX_MAPNAME_LENGHT ];
+            
             read_argv( 1, mapFileName, charsmax( mapFileName ) );
             remove_quotes( mapFileName );
             
@@ -2908,8 +2926,8 @@ stock buildTheNominationsMenu( player_id )
 {
     LOGGER( 128, "I AM ENTERING ON buildTheNominationsMenu(1) | player_id: %d", player_id );
     
-    new nominations_menu_name[ 64 ];
-    new nomination_cancel_option[ 64 ];
+    new nominations_menu_name   [ MAX_SHORT_STRING ];
+    new nomination_cancel_option[ MAX_SHORT_STRING ];
     
     // assume there'll be more than one match ( because we're lazy ) and starting building the match menu
     if( g_generalUsePlayersMenuId[ player_id ] )
@@ -2943,7 +2961,7 @@ stock nomination_menu( player_id )
     new info          [ 1 ];
     new choice        [ MAX_MAPNAME_LENGHT + 32 ];
     new nominationMap [ MAX_MAPNAME_LENGHT ];
-    new disabledReason[ 48 ];
+    new disabledReason[ MAX_SHORT_STRING ];
     
     isRecentMapNomAllowed = get_pcvar_num( cvar_recentNomMapsAllowance ) == 0;
     isWhiteListNomBlock   = ( IS_WHITELIST_ENABLED()
@@ -3033,7 +3051,7 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
     new info          [ 1 ];
     new choice        [ MAX_MAPNAME_LENGHT + 32 ];
     new nominationMap [ MAX_MAPNAME_LENGHT ];
-    new disabledReason[ 48 ];
+    new disabledReason[ MAX_SHORT_STRING ];
     
     isRecentMapNomAllowed = get_pcvar_num( cvar_recentNomMapsAllowance ) == 0;
     isWhiteListNomBlock   = ( IS_WHITELIST_ENABLED()
@@ -4810,7 +4828,7 @@ stock loadNormalVoteChoices()
 
 stock approveTheVotingStart( bool:is_forced_voting )
 {
-    LOGGER( 128, "I AM ENTERING ON approveTheVotingStart(1) | is_forced_voting: %d", is_forced_voting );
+    LOGGER( 128, "I AM ENTERING ON approveTheVotingStart(1) | is_forced_voting: %d, get_realplayersnum: %d", is_forced_voting, get_realplayersnum() );
     
     // block the voting on now allowed situations/cases
     if( get_realplayersnum() == 0
@@ -4820,11 +4838,8 @@ stock approveTheVotingStart( bool:is_forced_voting )
              && g_voteStatus & VOTE_IS_OVER ) )
     {
         LOGGER( 1, "    ( approveTheVotingStart ) g_voteStatus: %d, \
-                g_voteStatus & VOTE_IS_OVER: %d, is_forced_voting: %d, \
-                get_realplayersnum(): %d", \
-                g_voteStatus, \
-                g_voteStatus & VOTE_IS_OVER != 0, is_forced_voting, \
-                get_realplayersnum() );
+                g_voteStatus & VOTE_IS_OVER: %d", g_voteStatus, \
+                g_voteStatus & VOTE_IS_OVER != 0 );
         
     #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
         if( g_areTheUnitTestsRunning )
@@ -4874,7 +4889,7 @@ stock approveTheVotingStart( bool:is_forced_voting )
         vote_resetStats();
     }
     
-    LOGGER( 1, "    ( approveTheVotingStart ) Returning true." );
+    LOGGER( 1, "    ( approveTheVotingStart ) Returning true, due passed by all requirements." );
     return true;
 }
 
@@ -5083,8 +5098,8 @@ public displayEndOfTheMapVoteMenu( player_id )
 {
     LOGGER( 128, "I AM ENTERING ON displayEndOfTheMapVoteMenu(1) | player_id: %d", player_id );
     
-    static menu_body   [ 256 ];
-    static menu_counter[ 64 ];
+    static menu_body   [ MAX_LONG_STRING ];
+    static menu_counter[ MAX_SHORT_STRING ];
     
     new menu_id;
     new menuKeys;
@@ -5277,9 +5292,9 @@ public vote_display( argument[ 2 ] )
     LOGGER( 0, "I AM ENTERING ON vote_display(1) | argument[0]: %d, argument[1]: %d", argument[ 0 ], argument[ 1 ] );
     new menuKeys;
     
-    static voteStatus  [ 412 ];
-    static menuClean   [ 512 ]; // menu showed while voting
-    static menuDirty   [ 512 ]; // menu showed after voted
+    static voteStatus  [ MAX_BIG_BOSS_STRING - 100 ];
+    static menuClean   [ MAX_BIG_BOSS_STRING ]; // menu showed while voting
+    static menuDirty   [ MAX_BIG_BOSS_STRING ]; // menu showed after voted
     static voteMapLine [ MAX_MAPNAME_LENGHT + 32 ];
     
     new player_id           = argument[ 1 ];
@@ -5516,9 +5531,9 @@ stock calculate_menu_dirt( player_id, bool:isVoteOver, voteStatus[], menuDirty[]
             voteStatus,       menuDirty,     menuDirtySize,     noneIsHidden );
     
     new bool:isToShowUndo;
-    static   voteFooter[ 64 ];
-    static   menuHeader[ 32 ];
-    static   noneOption[ 32 ];
+    static   voteFooter[ MAX_SHORT_STRING ];
+    static   menuHeader[ MAX_SHORT_STRING / 2 ];
+    static   noneOption[ MAX_SHORT_STRING / 2 ];
     
     menuDirty  [ 0 ] = '^0';
     noneOption [ 0 ] = '^0';
@@ -5669,9 +5684,9 @@ stock calculate_menu_clean( player_id, menuClean[], menuCleanSize )
             menuCleanSize );
     
     new bool:isToShowUndo;
-    static   voteFooter[ 64 ];
-    static   menuHeader[ 32 ];
-    static   noneOption[ 32 ];
+    static   voteFooter[ MAX_SHORT_STRING ];
+    static   menuHeader[ MAX_SHORT_STRING / 2 ];
+    static   noneOption[ MAX_SHORT_STRING / 2 ];
     
     menuClean  [ 0 ] = '^0';
     noneOption [ 0 ] = '^0';
@@ -7592,9 +7607,9 @@ stock register_dictionary_colored( const dictionaryFile[] )
     
     new TransKey:translationKeyId;
     
-    new currentReadLine    [ 512 ];
     new langTypeAcronym    [ 3 ];
-    new langConstantName   [ 64 ];
+    new currentReadLine    [ MAX_BIG_BOSS_STRING ];
+    new langConstantName   [ MAX_SHORT_STRING ];
     new langTranslationText[ MAX_LONG_STRING ];
     
     while( !feof( dictionaryFile ) )
@@ -7624,6 +7639,7 @@ stock register_dictionary_colored( const dictionaryFile[] )
                 INSERT_COLOR_TAGS( langTranslationText );
             #endif
                 
+                LOGGER( 0, "lang: %s, Id: %d, Text: %s", langTypeAcronym, translationKeyId, langTranslationText );
                 AddTranslation( langTypeAcronym, translationKeyId, langTranslationText[ 2 ] );
             }
         }
@@ -8436,7 +8452,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     stock test_register_test()
     {
         new test_id;
-        new first_test_name[ 64 ];
+        new first_test_name[ MAX_SHORT_STRING ];
         
         test_id = register_test( 0, "test_register_test" );
         
