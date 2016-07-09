@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v3.1.0-187";
+new const PLUGIN_VERSION[] = "v3.1.0-188";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -4262,16 +4262,16 @@ stock processLoadedMapsFile( maxMapsPerGroupToUse[], groupCount, blockedCount,
                             && equali( g_currentMap, mapName )
                           )
                        || (
+                            blockedFillerMapsMaxChars
+                            && TrieKeyExists( blockedFillerMapsTrie, mapName )
+                          )
+                       || (
                             useMapIsTooRecent 
                             && map_isTooRecent( mapName )
                           )
                        || (
                             useIsPrefixInMenu
                             && isPrefixInMenu( mapName )
-                          )
-                       || (
-                            blockedFillerMapsMaxChars
-                            && TrieKeyExists( blockedFillerMapsTrie, mapName )
                           )
                      )
                 {
@@ -4297,43 +4297,32 @@ stock processLoadedMapsFile( maxMapsPerGroupToUse[], groupCount, blockedCount,
                         {
                             case 0:
                             {
-                                useMapIsTooRecent = false;
+                                useIsPrefixInMenu = false;
                             }
                             case 1:
                             {
-                                useMapIsTooRecent = true;
-                                useIsPrefixInMenu = false;
+                                useMapIsTooRecent = false;
                             }
                             case 2:
                             {
-                                useIsPrefixInMenu   = true;
-                                useEqualiCurrentMap = false;
+                                if( isWhiteListOutBlock )
+                                {
+                                    LOGGER( 8, "WARNING! This BlockerStrategy case is not used by the isWhiteListOutBlock." );
+                                    
+                                    currentBlockerStrategy++;
+                                    goto isWhiteListOutBlockExitCase;
+                                }
+                                
+                                blockedFillerMapsMaxChars = 0;
                             }
                             case 3:
                             {
-                                useMapIsTooRecent = false;
-                            }
-                            case 4:
-                            {
-                                useIsPrefixInMenu = false;
-                            }
-                            case 5:
-                            {
-                                if( isWhiteListOutBlock )
-                                {
-                                    LOGGER( 8, "WARNING! The BlockerStrategy case 5 is not used by the WhiteListOutBlock." );
-                                    
-                                    currentBlockerStrategy++;
-                                    goto defaultSwitchCase;
-                                }
-
-                                blockedFillerMapsMaxChars = 0;
+                                isWhiteListOutBlockExitCase:
+                                useEqualiCurrentMap = false;
                             }
                             default:
                             {
-                                defaultSwitchCase:
                                 LOGGER( 8, "WARNING! unsuccessfulCount: %i, filersMapCount: %i", unsuccessfulCount, filersMapCount );
-                                
                                 goto exitSearch;
                             }
                         }
@@ -4491,7 +4480,7 @@ stock tryToLoadTheWhiteListFeature()
     
     if( get_pcvar_num( cvar_isWhiteListNomBlock ) )
     {
-        computeNextWhiteListLoadTime( get_gametime(), false );
+        computeNextWhiteListLoadTime( floatround( get_gametime(), floatround_ceil ), false );
     }
 }
 
