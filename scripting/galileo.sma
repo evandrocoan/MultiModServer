@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v3.1.0-191";
+new const PLUGIN_VERSION[] = "v3.2.0-193";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -68,7 +68,7 @@ new const PLUGIN_VERSION[] = "v3.1.0-191";
  * 
  * Default value: 0
  */
-#define DEBUG_LEVEL 1 + 2 + 4 + 16
+#define DEBUG_LEVEL 0
 
 
 /**
