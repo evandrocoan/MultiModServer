@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v3.1.0-180";
+new const PLUGIN_VERSION[] = "v3.1.0-181";
 
 
 /**
@@ -36,12 +36,26 @@ new const PLUGIN_VERSION[] = "v3.1.0-180";
  */
 #define IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST 0
 
+/**
+ * Change this value from 0 to 1, to use disable the colored text message (chat messages).
+ */
+#define IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES 1
 
-/** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
- * and the variable 'g_debug_level' for more information. Default value: 0
+/**
+ * How much players use when the debugging level 'DEBUG_LEVEL_FAKE_VOTES' is enabled.
+ */
+#define FAKE_PLAYERS_NUMBER_FOR_DEBUGGING 1
+
+/**
+ * This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
+ * and the variable 'g_debug_level' for more information.
+ *
+ * @note when the 'DEBUG_LEVEL_FAKE_VOTES' is activated, usually the voting will be approved
+ * because it creates also a fake players count. So, do not enable 'DEBUG_LEVEL_FAKE_VOTES'
+ * if you do not want the map voting starting on an empty server.
  *
  * 0   - Disables this feature.
- *
+ * 
  * 1   - Normal/basic debugging/depuration.
  *
  * 2   - a) To skip the 'pendingVoteCountdown()'.
@@ -56,11 +70,15 @@ new const PLUGIN_VERSION[] = "v3.1.0-180";
  * 16   - Enable DEBUG_LEVEL 1 and all its debugging/depuration available.
  *
  * 31  - Levels 1, 2, 4 and 8.
+ * 
+ * Default value: 0
  */
-#define DEBUG_LEVEL 23
+#define DEBUG_LEVEL 1 + 2 + 4 + 16
 
 
-
+/**
+ * Debugging level configurations.
+ */
 #define DEBUG_LEVEL_NORMAL            1
 #define DEBUG_LEVEL_UNIT_TEST_NORMAL  2
 #define DEBUG_LEVEL_UNIT_TEST_DELAYED 4
@@ -78,7 +96,7 @@ new const PLUGIN_VERSION[] = "v3.1.0-180";
     #define LOGGER(%1) debugMesssageLogger( %1 )
     
     /**
-     * 0    - Disabled all debug.
+     * 0    - Disabled all debug output print.
      *
      * 1    - Displays basic debug messages.
      *
@@ -202,8 +220,6 @@ new const PLUGIN_VERSION[] = "v3.1.0-180";
     new g_test_whiteListFilePath[ 128 ];
 #endif
 
-
-
 /**
  * Write messages to the debug log file on 'addons/amxmodx/logs'.
  * 
@@ -220,17 +236,12 @@ new const PLUGIN_VERSION[] = "v3.1.0-180";
     }
 #endif
 
-
-#if AMXX_VERSION_NUM < 183
-    new g_user_msgid;
-#endif
-
-
+/**
+ * Defines the maximum players number, when it is not specified for olders AMXX versions.
+ */
 #if !defined MAX_PLAYERS
     #define MAX_PLAYERS 32
 #endif
-
-
 
 /**
  * Dummy value used to use the do...while() statements to allow the semicolon ';' use at macros endings.
@@ -429,7 +440,7 @@ do \
  *
  * @param string[]       a string pointer to be formatted.
  */
-#define REMOVE_COLOR_TAGS(%1) \
+#define REMOVE_CODE_COLOR_TAGS(%1) \
 do \
 { \
     replace_all( %1, charsmax( %1 ), "^1", "" ); \
@@ -439,11 +450,26 @@ do \
 } while( g_dummy_value )
 
 /**
+ * Remove the colored strings codes '!g for green', '!y for yellow', '!t for team' and
+ * '!n for unknown'.
+ *
+ * @param string[]       a string pointer to be formatted.
+ */
+#define REMOVE_LETTER_COLOR_TAGS(%1) \
+do \
+{ \
+    replace_all( %1, charsmax( %1 ), "!g", "" ); \
+    replace_all( %1, charsmax( %1 ), "!t", "" ); \
+    replace_all( %1, charsmax( %1 ), "!n", "" ); \
+    replace_all( %1, charsmax( %1 ), "!y", "" ); \
+} while( g_dummy_value )
+
+/**
  * Print to the users chat, a colored chat message.
  *
  * @param player_id     a player id from 1 to MAX_PLAYERS
  * @param message       a colored formatted string message. At the AMXX 182 it must start within
- *                      one color code as found on REMOVE_COLOR_TAGS(1) above macro. Example:
+ *                      one color code as found on REMOVE_CODE_COLOR_TAGS(1) above macro. Example:
  *                      "^1Hi! I am a ^3 colored message".
  */
 #define PRINT_COLORED_MESSAGE(%1,%2) \
@@ -474,6 +500,18 @@ do \
     } \
 } while( g_dummy_value )
 
+/**
+ * Register the color chat necessary variables, if it is enabled.
+ */
+#if IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES == 0
+    new bool:g_isColorChatSupported;
+    new bool:g_isColoredChatEnabled;
+    
+#if AMXX_VERSION_NUM < 183
+    new g_user_msgid;
+#endif
+    new cvar_coloredChatEnabled;
+#endif
 
 
 /**
@@ -500,7 +538,6 @@ new cvar_isToShowVoteCounter;
 new cvar_isToShowNoneOption;
 new cvar_voteShowNoneOptionType;
 new cvar_isExtendmapOrderAllowed;
-new cvar_coloredChatEnabled;
 new cvar_isToStopEmptyCycle;
 new cvar_unnominateDisconnected;
 new cvar_endOnRound;
@@ -588,7 +625,6 @@ new bool:g_isToShowExpCountdown;
 new bool:g_isToShowVoteCounter;
 new bool:g_isToRefreshVoteStatus;
 new bool:g_isEmptyCycleMapConfigured;
-new bool:g_isColoredChatEnabled;
 new bool:g_isMaxroundsExtend;
 new bool:g_isVotingByRounds;
 new bool:g_isVotingByFrags;
@@ -599,7 +635,6 @@ new bool:g_isVirtualFragLimitSupport;
 new bool:g_isTimeToRestart;
 new bool:g_isEndGameLimitsChanged;
 new bool:g_isMapExtensionAllowed;
-new bool:g_isColorChatSupported;
 new bool:g_isGameFinalVoting;
 new bool:g_isOnMaintenanceMode;
 new bool:g_isToCreateGameCrashFlag;
@@ -777,13 +812,17 @@ public plugin_init()
     register_cvar( "gal_debug_level", debug_level, FCVAR_SERVER | FCVAR_SPONLY );
 #endif
     
+    // Enables the colored chat control cvar.
+#if IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES == 0
+    cvar_coloredChatEnabled = register_cvar( "gal_colored_chat_enabled", "0", FCVAR_SPONLY );
+#endif
+    
     register_cvar( "gal_version", PLUGIN_VERSION, FCVAR_SERVER | FCVAR_SPONLY );
     
     cvar_nextMapChangeAnnounce     = register_cvar( "gal_nextmap_change", "1" );
     cvar_isToShowVoteCounter       = register_cvar( "gal_vote_show_counter", "0" );
     cvar_isToShowNoneOption        = register_cvar( "gal_vote_show_none", "0" );
     cvar_voteShowNoneOptionType    = register_cvar( "gal_vote_show_none_type", "0" );
-    cvar_coloredChatEnabled        = register_cvar( "gal_colored_chat_enabled", "0", FCVAR_SPONLY );
     cvar_isToStopEmptyCycle        = register_cvar( "gal_in_empty_cycle", "0", FCVAR_SPONLY );
     cvar_unnominateDisconnected    = register_cvar( "gal_unnominate_disconnected", "0" );
     cvar_endOnRound                = register_cvar( "gal_endonround", "1" );
@@ -939,11 +978,16 @@ public plugin_cfg()
 {
     LOGGER( 128, "I AM ENTERING ON plugin_cfg(0)" );
     
+    /**
+     * Register the color chat 'g_user_msgid' variable, if it is enabled.
+     */
+#if IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES == 0
 #if AMXX_VERSION_NUM < 183
     // If some exception happened before this, all color_print(...) messages will cause native
     // error 10, on the AMXX 182. It is because, the execution flow will not reach here, then
     // the player "g_user_msgid" will be be initialized.
     g_user_msgid = get_user_msgid( "SayText" );
+#endif
 #endif
     
     // setup some server settings
@@ -968,7 +1012,7 @@ public plugin_cfg()
     configureServerStart();
     configureServerMapChange();
     
-#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_UNIT_TEST_DELAYED )
+#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
     configureTheUnitTests();
 #endif
 
@@ -979,10 +1023,15 @@ public plugin_cfg()
 stock loadPluginSetttings()
 {
     LOGGER( 128, "I AM ENTERING ON loadPluginSetttings(0)" );
-    
     new writtenSize;
+    
+    /**
+     * If it is enabled, Load whether the color chat is supported by the current Game Modification.
+     */
+#if IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES == 0
     g_isColorChatSupported = ( is_running( "czero" )
                                || is_running( "cstrike" ) );
+#endif
     
     if( colored_menus() )
     {
@@ -1158,7 +1207,13 @@ public cacheCvarsValues()
     g_fragLimitNumber        = get_pcvar_num( cvar_mp_fraglimit );
     g_timeLimitNumber        = get_pcvar_num( cvar_mp_timelimit );
     
-    g_isColoredChatEnabled      = get_pcvar_num( cvar_coloredChatEnabled ) != 0;
+    /**
+     * If it is enabled, cache whether the coloring is enabled by its cvar.
+     */
+#if IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES == 0
+    g_isColoredChatEnabled = get_pcvar_num( cvar_coloredChatEnabled ) != 0;
+#endif
+    
     g_isExtendmapAllowStay      = get_pcvar_num( cvar_extendmapAllowStay ) != 0;
     g_isToShowNoneOption        = get_pcvar_num( cvar_isToShowNoneOption ) != 0;
     g_isToShowVoteCounter       = get_pcvar_num( cvar_isToShowVoteCounter ) != 0;
@@ -2081,14 +2136,14 @@ public show_last_round_HUD()
             formatex( last_round_message, charsmax( last_round_message ), "%L ^n%L",
                     player_id, "GAL_CHANGE_NEXTROUND",  player_id, "GAL_NEXTMAP", g_nextMap );
             
-            REMOVE_COLOR_TAGS( last_round_message );
+            REMOVE_CODE_COLOR_TAGS( last_round_message );
             show_hudmessage( player_id, last_round_message );
         }
     #else
         formatex( last_round_message, charsmax( last_round_message ), "%L ^n%L",
                 LANG_PLAYER, "GAL_CHANGE_NEXTROUND",  LANG_PLAYER, "GAL_NEXTMAP", g_nextMap );
         
-        REMOVE_COLOR_TAGS( last_round_message );
+        REMOVE_CODE_COLOR_TAGS( last_round_message );
         show_hudmessage( 0, last_round_message );
     #endif
     }
@@ -2102,13 +2157,13 @@ public show_last_round_HUD()
             player_id = players[ playerIndex ];
             formatex( last_round_message, charsmax( last_round_message ), "%L", player_id, "GAL_CHANGE_TIMEEXPIRED" );
             
-            REMOVE_COLOR_TAGS( last_round_message );
+            REMOVE_CODE_COLOR_TAGS( last_round_message );
             show_hudmessage( player_id, last_round_message );
         }
     #else
         formatex( last_round_message, charsmax( last_round_message ), "%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED" );
         
-        REMOVE_COLOR_TAGS( last_round_message );
+        REMOVE_CODE_COLOR_TAGS( last_round_message );
         show_hudmessage( 0, last_round_message );
     #endif
     }
@@ -4667,13 +4722,13 @@ stock isToLoadTheNextWhiteListGroup( &isToLoadTheseMaps, currentHour, startHour,
         //         4           3
             && currentHour > endHour )
         {
-            LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) startHour > endHour && ( currentHour < startHour && currentHour > endHour )" );
+            LOGGER( 0, "( isToLoadTheNextWhiteListGroup ) startHour > endHour && ( currentHour < startHour && currentHour > endHour )" );
             isToLoadTheseMaps = !isWhiteList;
         }
         //               6           5
         else // if( currentHour > startHour )
         {
-            LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) startHour > endHour && ( currentHour > startHour || currentHour < endHour )" );
+            LOGGER( 0, "( isToLoadTheNextWhiteListGroup ) startHour > endHour && ( currentHour > startHour || currentHour < endHour )" );
             isToLoadTheseMaps = isWhiteList;
         }
     }
@@ -4695,13 +4750,13 @@ stock isToLoadTheNextWhiteListGroup( &isToLoadTheseMaps, currentHour, startHour,
         //          2           3
             || currentHour < startHour )
         {
-            LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) startHour < endHour && ( currentHour > endHour || currentHour < startHour )" );
+            LOGGER( 0, "( isToLoadTheNextWhiteListGroup ) startHour < endHour && ( currentHour > endHour || currentHour < startHour )" );
             isToLoadTheseMaps = !isWhiteList;
         }
         //              4            3
         else // if( currentHour > startHour )
         {
-            LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) startHour < endHour && ( currentHour < endHour || currentHour > startHour )" );
+            LOGGER( 0, "( isToLoadTheNextWhiteListGroup ) startHour < endHour && ( currentHour < endHour || currentHour > startHour )" );
             isToLoadTheseMaps = isWhiteList;
         }
     }
@@ -4766,17 +4821,14 @@ stock approveTheVotingStart( bool:is_forced_voting )
                 g_voteStatus, \
                 g_voteStatus & VOTE_IS_OVER != 0, is_forced_voting, \
                 get_realplayersnum() );
-    
-    /**
-     * Stops the empty cycle from starting when running the Unit Tests.
-     */
+        
     #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
-        if( !g_areTheUnitTestsRunning )
+        if( g_areTheUnitTestsRunning )
         {
-            LOGGER( 1, "    ( approveTheVotingStart ) Returning false on the if \
+            LOGGER( 1, "    ( approveTheVotingStart ) Returning true on the if \
                     !g_areTheUnitTestsRunning, cvar_isEmptyCycleByMapChange: %d.", \
                                 get_pcvar_num( cvar_isEmptyCycleByMapChange ) );
-            return false;
+            return true;
         }
     #endif
         
@@ -6888,7 +6940,7 @@ stock no_color_print( player_id, message[], any: ... )
     new formated_message[ MAX_COLOR_MESSAGE ];
     
     vformat( formated_message, charsmax( formated_message ), message, 3 );
-    REMOVE_COLOR_TAGS( formated_message );
+    REMOVE_CODE_COLOR_TAGS( formated_message );
     
     console_print( player_id, formated_message );
 }
@@ -7243,13 +7295,8 @@ stock get_realplayersnum()
     
     get_players( players, playersCount, "ch" );
     
-#if DEBUG_LEVEL & ( DEBUG_LEVEL_FAKE_VOTES | DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_UNIT_TEST_DELAYED )
-    if( g_areTheUnitTestsRunning )
-    {
-        return 1; // exclusively to run with the Unit Tests.
-    }
-    
-    return 1; // for anything else needed.
+#if DEBUG_LEVEL & DEBUG_LEVEL_FAKE_VOTES
+    return FAKE_PLAYERS_NUMBER_FOR_DEBUGGING;
 #else
     return playersCount;
 #endif
@@ -7325,6 +7372,13 @@ stock color_print( player_id, message[], any: ... )
     LOGGER( 128, "I AM ENTERING ON color_print(...) | player_id: %d, message: %s...", player_id, message );
     new formated_message[ MAX_COLOR_MESSAGE ];
     
+#if IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES > 0
+    vformat( formated_message, charsmax( formated_message ), message, 3 );
+    LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message );
+    
+    client_print( player_id, print_chat, formated_message );
+    
+#else
     if( g_isColorChatSupported
         && g_isColoredChatEnabled )
     {
@@ -7438,6 +7492,7 @@ stock color_print( player_id, message[], any: ... )
         LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message );
         
         client_print_color( player_id, print_team_default, formated_message );
+        
     #endif
     }
     else
@@ -7445,9 +7500,11 @@ stock color_print( player_id, message[], any: ... )
         vformat( formated_message, charsmax( formated_message ), message, 3 );
         LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message );
         
-        REMOVE_COLOR_TAGS( formated_message );
+        REMOVE_CODE_COLOR_TAGS( formated_message );
         client_print( player_id, print_chat, formated_message );
     }
+#endif
+    
     LOGGER( 64, "( color_print ) [out] player_id: %d, Chat printed: %s...", player_id, formated_message );
 }
 
@@ -7511,7 +7568,12 @@ stock register_dictionary_colored( const dictionaryFile[] )
             
             if( translationKeyId != TransKey_Bad )
             {
+            #if IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES > 0
+                REMOVE_LETTER_COLOR_TAGS( langTranslationText );
+            #else
                 INSERT_COLOR_TAGS( langTranslationText );
+            #endif
+                
                 AddTranslation( langTypeAcronym, translationKeyId, langTranslationText[ 2 ] );
             }
         }
