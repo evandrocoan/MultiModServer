@@ -28,8 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v3.1.0-181";
-
+new const PLUGIN_VERSION[] = "v3.1.0-182";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -41,10 +40,6 @@ new const PLUGIN_VERSION[] = "v3.1.0-181";
  */
 #define IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES 1
 
-/**
- * How much players use when the debugging level 'DEBUG_LEVEL_FAKE_VOTES' is enabled.
- */
-#define FAKE_PLAYERS_NUMBER_FOR_DEBUGGING 1
 
 /**
  * This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -74,6 +69,12 @@ new const PLUGIN_VERSION[] = "v3.1.0-181";
  * Default value: 0
  */
 #define DEBUG_LEVEL 1 + 2 + 4 + 16
+
+
+/**
+ * How much players use when the debugging level 'DEBUG_LEVEL_FAKE_VOTES' is enabled.
+ */
+#define FAKE_PLAYERS_NUMBER_FOR_DEBUGGING 1
 
 
 /**
