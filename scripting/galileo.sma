@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v3.2.0-194";
+new const PLUGIN_VERSION[] = "v3.2.0-195";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -930,43 +930,50 @@ stock configureEndGameCvars()
 {
     LOGGER( 128, "I AM ENTERING ON configureEndGameCvars(0)" );
     
-    // mp_maxrounds
+    // mp_maxrounds 
+    // ########################################################################################
     if( !( cvar_mp_maxrounds = get_cvar_pointer( "mp_maxrounds" ) ) )
     {
         cvar_mp_maxrounds = cvar_disabledValuePointer;
     }
     
     // mp_winlimit
+    // ########################################################################################
     if( !( cvar_mp_winlimit = get_cvar_pointer( "mp_winlimit" ) ) )
     {
         cvar_mp_winlimit = cvar_disabledValuePointer;
     }
     
     // mp_freezetime
+    // ########################################################################################
     if( !( cvar_mp_freezetime = get_cvar_pointer( "mp_freezetime" ) ) )
     {
         cvar_mp_freezetime = cvar_disabledValuePointer;
     }
     
     // mp_timelimit
+    // ########################################################################################
     if( !( cvar_mp_timelimit = get_cvar_pointer( "mp_timelimit" ) ) )
     {
         cvar_mp_timelimit = cvar_disabledValuePointer;
     }
     
     // mp_roundtime
+    // ########################################################################################
     if( !( cvar_mp_roundtime = get_cvar_pointer( "mp_roundtime" ) ) )
     {
         cvar_mp_roundtime = cvar_disabledValuePointer;
     }
     
     // mp_chattime
+    // ########################################################################################
     if( !( cvar_mp_chattime = get_cvar_pointer( "mp_chattime" ) ) )
     {
         cvar_mp_chattime = cvar_disabledValuePointer;
     }
     
     // sv_maxspeed
+    // ########################################################################################
     if( !( cvar_sv_maxspeed = get_cvar_pointer( "sv_maxspeed" ) ) )
     {
         cvar_sv_maxspeed = cvar_disabledValuePointer;
@@ -1013,7 +1020,7 @@ public plugin_cfg()
     loadPluginSetttings();
     initializeGlobalArrays();
     
-    // the 'mp_fraglimitCvarSupport(0)' could register a new cvar, hence only cache them after it.
+    // the 'mp_fraglimitCvarSupport(0)' could register a new cvar, hence only call 'cacheCvarsValues' them after it.
     mp_fraglimitCvarSupport();
     cacheCvarsValues();
     
@@ -1033,7 +1040,7 @@ public plugin_cfg()
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
     configureTheUnitTests();
 #endif
-
+    
     LOGGER( 1, "I AM EXITING plugin_cfg(0)..." );
     LOGGER( 1, "" );
 }
@@ -1087,10 +1094,10 @@ stock initializeGlobalArrays()
     get_cvar_string( "amx_nextmap", g_nextMap, charsmax( g_nextMap ) );
     get_mapname( g_currentMap, charsmax( g_currentMap ) );
     
-    g_nominationMapsTrie  = TrieCreate();
-    g_playersNominationsTrie  = TrieCreate();
-    g_fillerMapsArray     = ArrayCreate( MAX_MAPNAME_LENGHT );
-    g_nominationMapsArray = ArrayCreate( MAX_MAPNAME_LENGHT );
+    g_nominationMapsTrie     = TrieCreate();
+    g_playersNominationsTrie = TrieCreate();
+    g_fillerMapsArray        = ArrayCreate( MAX_MAPNAME_LENGHT );
+    g_nominationMapsArray    = ArrayCreate( MAX_MAPNAME_LENGHT );
     
     // initialize nominations table
     nomination_clearAll();
