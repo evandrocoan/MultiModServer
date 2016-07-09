@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v3.1.0-182";
+new const PLUGIN_VERSION[] = "v3.1.0-183";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -444,10 +444,10 @@ do \
 #define REMOVE_CODE_COLOR_TAGS(%1) \
 do \
 { \
-    replace_all( %1, charsmax( %1 ), "^1", "" ); \
-    replace_all( %1, charsmax( %1 ), "^2", "" ); \
-    replace_all( %1, charsmax( %1 ), "^3", "" ); \
     replace_all( %1, charsmax( %1 ), "^4", "" ); \
+    replace_all( %1, charsmax( %1 ), "^3", "" ); \
+    replace_all( %1, charsmax( %1 ), "^2", "" ); \
+    replace_all( %1, charsmax( %1 ), "^1", "" ); \
 } while( g_dummy_value )
 
 /**
@@ -4448,10 +4448,15 @@ stock vote_addFiller( blockedFillerMaps[][], blockedFillerMapsMaxChars = 0, bloc
         for( new currentIndex = 0; currentIndex < blockedCount; ++currentIndex )
         {
             copiedChars += formatex( mapListToPrint[ copiedChars ],
-                    charsmax( mapListToPrint ) - copiedChars, "^1, ^4%s",
-                    blockedFillerMaps[ currentIndex ] );
+                                    charsmax( mapListToPrint ) - copiedChars,
+                                    "^1, ^4%s",
+                                    blockedFillerMaps[ currentIndex ] );
         }
-        color_print( 0, "^1%L^1.", LANG_PLAYER, "GAL_MATCHING", mapListToPrint[ 3 ] );
+        
+    #if IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES > 0
+        REMOVE_CODE_COLOR_TAGS( mapListToPrint );
+    #endif
+        color_print( 0, "%L", LANG_PLAYER, "GAL_MATCHING", mapListToPrint[ 3 ] );
         
         LOGGER( 8, "( vote_addFiller ) blockedFillerMaps[0]: %s, blockedCount: %d, copiedChars: %d, mapListToPrint: %s", \
                 blockedFillerMaps[ 0 ], blockedCount, copiedChars, mapListToPrint[ 3 ] );
@@ -7249,7 +7254,7 @@ public srv_announceEarlyVote( player_id )
     
     if( is_user_connected( player_id ) )
     {
-        color_print( player_id, "^4%L", player_id, "GAL_VOTE_EARLY" );
+        color_print( player_id, "%L", player_id, "GAL_VOTE_EARLY" );
     }
 }
 
@@ -7386,9 +7391,10 @@ stock color_print( player_id, message[], any: ... )
     #if AMXX_VERSION_NUM < 183
         if( player_id )
         {
-            vformat( formated_message, charsmax( formated_message ), message, 3 );
-            LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message );
+            formated_message[ 0 ] = "^1";
+            vformat( formated_message[ 1 ], charsmax( formated_message ) - 1, message, 3 );
             
+            LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message );
             PRINT_COLORED_MESSAGE( player_id, formated_message );
         }
         else
@@ -7480,7 +7486,9 @@ stock color_print( player_id, message[], any: ... )
                         setarg( ArrayGetCell( multi_lingual_indexes_array, argument_index ), _, player_id );
                     }
                 }
-                vformat( formated_message, charsmax( formated_message ), message, 3 );
+                
+                formated_message[ 0 ] = "^1";
+                vformat( formated_message[ 1 ], charsmax( formated_message ) - 1, message, 3 );
                 
                 LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message );
                 PRINT_COLORED_MESSAGE( player_id, formated_message );
@@ -7935,7 +7943,11 @@ public sayNextMap()
     }
     else
     {
+    #if IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES > 0
+        color_print( 0, "%L %s", LANG_PLAYER, "NEXT_MAP", g_nextMap );
+    #else
         color_print( 0, "^1%L ^4%s", LANG_PLAYER, "NEXT_MAP", g_nextMap );
+    #endif
     }
     
     LOGGER( 4, "( sayNextMap ) %L %s, cvar_endOfMapVote: %d, cvar_nextMapChangeAnnounce: %d", \
