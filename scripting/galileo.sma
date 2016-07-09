@@ -28,20 +28,30 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v3.1.0-175";
-
+new const PLUGIN_VERSION[] = "v3.2.0-195";
 
 /**
- * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist.
+ * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
  */
 #define IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST 0
 
+/**
+ * Change this value from 0 to 1, to use disable the colored text message (chat messages).
+ */
+#define IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES 0
 
-/** This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
- * and the variable 'g_debug_level' for more information. Default value: 0
+
+/**
+ * This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
+ * and the variable 'g_debug_level' for more information. Usage example, to enables several levels:
+ * #define DEBUG_LEVEL 1+2+4+16
+ *
+ * @note when the 'DEBUG_LEVEL_FAKE_VOTES' is activated, usually the voting will be approved
+ * because it creates also a fake players count. So, do not enable 'DEBUG_LEVEL_FAKE_VOTES'
+ * if you do not want the map voting starting on an empty server.
  *
  * 0   - Disables this feature.
- *
+ * 
  * 1   - Normal/basic debugging/depuration.
  *
  * 2   - a) To skip the 'pendingVoteCountdown()'.
@@ -56,29 +66,60 @@ new const PLUGIN_VERSION[] = "v3.1.0-175";
  * 16   - Enable DEBUG_LEVEL 1 and all its debugging/depuration available.
  *
  * 31  - Levels 1, 2, 4 and 8.
+ * 
+ * Default value: 0
  */
 #define DEBUG_LEVEL 0
 
 
 
+/**
+ * How much players use when the debugging level 'DEBUG_LEVEL_FAKE_VOTES' is enabled.
+ */
+#define FAKE_PLAYERS_NUMBER_FOR_DEBUGGING 1
+
+/**
+ * Debugging level configurations.
+ */
 #define DEBUG_LEVEL_NORMAL            1
 #define DEBUG_LEVEL_UNIT_TEST_NORMAL  2
 #define DEBUG_LEVEL_UNIT_TEST_DELAYED 4
 #define DEBUG_LEVEL_FAKE_VOTES        8
 #define DEBUG_LEVEL_CRITICAL_MODE     16
 
+/**
+ * Common strings sizes used around the plugin.
+ */
+#define MAX_LONG_STRING              256
+#define MAX_COLOR_MESSAGE            192
+#define MAX_SHORT_STRING             64
+#define MAX_BIG_BOSS_STRING          512
+#define MAX_NOMINATION_TRIE_KEY_SIZE 48
+#define MAX_MAPNAME_LENGHT           64
+#define MAX_FILE_PATH_LENGHT         128
+#define MAX_PLAYER_NAME_LENGHT       48
 
+/**
+ * Necessary modules.
+ */
 #include <amxmodx>
 #include <amxmisc>
+
+/**
+ * Force the use of semicolons on every statement.
+ */
 #pragma semicolon 1
 
 
+/**
+ * Setup the debugging tools when they are used/necessary.
+ */
 #if DEBUG_LEVEL & ( DEBUG_LEVEL_NORMAL | DEBUG_LEVEL_CRITICAL_MODE )
     #define DEBUG
     #define LOGGER(%1) debugMesssageLogger( %1 )
     
     /**
-     * 0    - Disabled all debug.
+     * 0    - Disabled all debug output print.
      *
      * 1    - Displays basic debug messages.
      *
@@ -117,7 +158,7 @@ new const PLUGIN_VERSION[] = "v3.1.0-175";
     {
         if( mode & g_debug_level )
         {
-            static formated_message[ 384 ];
+            static formated_message[ MAX_BIG_BOSS_STRING ];
             vformat( formated_message, charsmax( formated_message ), message, 3 );
             
             writeToTheDebugFile( "_galileo.log", formated_message );
@@ -129,31 +170,31 @@ new const PLUGIN_VERSION[] = "v3.1.0-175";
 #endif
 
 
-
+/**
+ * Setup the Unit Tests when they are used/necessary.
+ */
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
     /**
      * Contains all unit tests to execute.
      */
-    #define NORNAL_TESTS_TO_EXECUTE() \
-    do \
-    { \
-        test_register_test(); \
-        test_gal_in_empty_cycle_case1(); \
-        test_gal_in_empty_cycle_case2(); \
-        test_gal_in_empty_cycle_case3(); \
-        test_gal_in_empty_cycle_case4(); \
-        test_loadCurrentBlackList_load(); \
-        test_loadCurrentBlackList_cases(); \
-    } while( g_dummy_value )
+    stock nornal_tests_to_execute()
+    {
+        test_register_test();
+        test_gal_in_empty_cycle_case1();
+        test_gal_in_empty_cycle_case2();
+        test_gal_in_empty_cycle_case3();
+        test_gal_in_empty_cycle_case4();
+        test_loadCurrentBlackList_load();
+        test_loadCurrentBlackList_cases();
+    }
     
     /**
      * Contains all unit tests to execute.
      */
-    #define DALAYED_TESTS_TO_EXECUTE() \
-    do \
-    { \
-        test_is_map_extension_allowed(); \
-    } while( g_dummy_value )
+    stock dalayed_tests_to_execute()
+    {
+        test_is_map_extension_allowed();
+    }
     
     /**
      * Call the internal function to perform its task and stop the current test execution to avoid
@@ -178,7 +219,7 @@ new const PLUGIN_VERSION[] = "v3.1.0-175";
      */
     stock print_logger( message[] = "", any: ... )
     {
-        static formated_message[ 384 ];
+        static formated_message[ MAX_BIG_BOSS_STRING ];
         vformat( formated_message, charsmax( formated_message ), message, 2 );
         
         writeToTheDebugFile( "_galileo.log", formated_message );
@@ -205,7 +246,6 @@ new const PLUGIN_VERSION[] = "v3.1.0-175";
 #endif
 
 
-
 /**
  * Write messages to the debug log file on 'addons/amxmodx/logs'.
  * 
@@ -223,16 +263,12 @@ new const PLUGIN_VERSION[] = "v3.1.0-175";
 #endif
 
 
-#if AMXX_VERSION_NUM < 183
-    new g_user_msgid;
-#endif
-
-
+/**
+ * Defines the maximum players number, when it is not specified for olders AMXX versions.
+ */
 #if !defined MAX_PLAYERS
     #define MAX_PLAYERS 32
 #endif
-
-
 
 /**
  * Dummy value used to use the do...while() statements to allow the semicolon ';' use at macros endings.
@@ -270,11 +306,6 @@ enum (+= 100000)
 #define RTV_CMD_SHORTHAND 2
 #define RTV_CMD_DYNAMIC   4
 
-#define MAX_LONG_STRING              256
-#define MAX_COLOR_MESSAGE            192
-#define MAX_SHORT_STRING             64
-#define MAX_NOMINATION_TRIE_KEY_SIZE 48
-
 #define SOUND_GETREADYTOCHOOSE 1
 #define SOUND_COUNTDOWN        2
 #define SOUND_TIMETOCHOOSE     4
@@ -304,12 +335,8 @@ enum (+= 100000)
 #define MAX_OPTIONS_IN_VOTE           9
 #define MAX_STANDARD_MAP_COUNT        25
 #define MAX_SERVER_RESTART_ACCEPTABLE 10
-
-#define MAX_MAPNAME_LENGHT     64
-#define MAX_FILE_PATH_LENGHT   128
-#define MAX_PLAYER_NAME_LENGHT 48
-#define MAX_NOM_MATCH_COUNT    1000
-#define MAX_PLAYERS_COUNT      MAX_PLAYERS + 1
+#define MAX_NOM_MATCH_COUNT           1000
+#define MAX_PLAYERS_COUNT             MAX_PLAYERS + 1
 
 #define VOTE_IS_IN_PROGRESS 1
 #define VOTE_IS_FORCED      2
@@ -431,13 +458,28 @@ do \
  *
  * @param string[]       a string pointer to be formatted.
  */
-#define REMOVE_COLOR_TAGS(%1) \
+#define REMOVE_CODE_COLOR_TAGS(%1) \
 do \
 { \
-    replace_all( %1, charsmax( %1 ), "^1", "" ); \
-    replace_all( %1, charsmax( %1 ), "^2", "" ); \
-    replace_all( %1, charsmax( %1 ), "^3", "" ); \
     replace_all( %1, charsmax( %1 ), "^4", "" ); \
+    replace_all( %1, charsmax( %1 ), "^3", "" ); \
+    replace_all( %1, charsmax( %1 ), "^2", "" ); \
+    replace_all( %1, charsmax( %1 ), "^1", "" ); \
+} while( g_dummy_value )
+
+/**
+ * Remove the colored strings codes '!g for green', '!y for yellow', '!t for team' and
+ * '!n for unknown'.
+ *
+ * @param string[]       a string pointer to be formatted.
+ */
+#define REMOVE_LETTER_COLOR_TAGS(%1) \
+do \
+{ \
+    replace_all( %1, charsmax( %1 ), "!g", "" ); \
+    replace_all( %1, charsmax( %1 ), "!t", "" ); \
+    replace_all( %1, charsmax( %1 ), "!n", "" ); \
+    replace_all( %1, charsmax( %1 ), "!y", "" ); \
 } while( g_dummy_value )
 
 /**
@@ -445,7 +487,7 @@ do \
  *
  * @param player_id     a player id from 1 to MAX_PLAYERS
  * @param message       a colored formatted string message. At the AMXX 182 it must start within
- *                      one color code as found on REMOVE_COLOR_TAGS(1) above macro. Example:
+ *                      one color code as found on REMOVE_CODE_COLOR_TAGS(1) above macro. Example:
  *                      "^1Hi! I am a ^3 colored message".
  */
 #define PRINT_COLORED_MESSAGE(%1,%2) \
@@ -476,6 +518,18 @@ do \
     } \
 } while( g_dummy_value )
 
+/**
+ * Register the color chat necessary variables, if it is enabled.
+ */
+#if IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES == 0
+    new bool:g_isColorChatSupported;
+    new bool:g_isColoredChatEnabled;
+    
+#if AMXX_VERSION_NUM < 183
+    new g_user_msgid;
+#endif
+    new cvar_coloredChatEnabled;
+#endif
 
 
 /**
@@ -502,7 +556,6 @@ new cvar_isToShowVoteCounter;
 new cvar_isToShowNoneOption;
 new cvar_voteShowNoneOptionType;
 new cvar_isExtendmapOrderAllowed;
-new cvar_coloredChatEnabled;
 new cvar_isToStopEmptyCycle;
 new cvar_unnominateDisconnected;
 new cvar_endOnRound;
@@ -590,7 +643,6 @@ new bool:g_isToShowExpCountdown;
 new bool:g_isToShowVoteCounter;
 new bool:g_isToRefreshVoteStatus;
 new bool:g_isEmptyCycleMapConfigured;
-new bool:g_isColoredChatEnabled;
 new bool:g_isMaxroundsExtend;
 new bool:g_isVotingByRounds;
 new bool:g_isVotingByFrags;
@@ -601,7 +653,6 @@ new bool:g_isVirtualFragLimitSupport;
 new bool:g_isTimeToRestart;
 new bool:g_isEndGameLimitsChanged;
 new bool:g_isMapExtensionAllowed;
-new bool:g_isColorChatSupported;
 new bool:g_isGameFinalVoting;
 new bool:g_isOnMaintenanceMode;
 new bool:g_isToCreateGameCrashFlag;
@@ -620,7 +671,7 @@ new Array:g_emptyCycleMapsArray;
 /**
  * Stores the players nominations until MAX_NOMINATION_COUNT for each player.
  */
-new Trie:g_playersNominations;
+new Trie:g_playersNominationsTrie;
 
 /**
  * Stores the nominators id by a given map index. It is to find out the player id given the nominated
@@ -629,7 +680,7 @@ new Trie:g_playersNominations;
 new Trie:g_nominationMapsTrie;
 
 /**
- * Enumeration used to create access the "g_nominationMapsTrie" values. It is untagged to be able to
+ * Enumeration used to create access to "g_nominationMapsTrie" values. It is untagged to be able to
  * pass it throw an TrieSetArray.
  */
 enum _:MapNominationsType
@@ -712,7 +763,7 @@ new g_nextMapCyclePosition;
 new g_arrayOfRunOffChoices[ 2 ];
 new g_voteStatus_symbol   [ 3 ];
 new g_voteWeightFlags     [ 32 ];
-new g_voteStatusClean     [ 512 ];
+new g_voteStatusClean     [ MAX_BIG_BOSS_STRING ];
 
 new g_configsDirPath[ MAX_FILE_PATH_LENGHT ];
 new g_dataDirPath   [ MAX_FILE_PATH_LENGHT ];
@@ -772,11 +823,16 @@ public plugin_init()
     
     // print the current used debug information
 #if DEBUG_LEVEL & ( DEBUG_LEVEL_NORMAL | DEBUG_LEVEL_CRITICAL_MODE )
-    new debug_level[ 128 ];
+    new debug_level[ MAX_SHORT_STRING ];
     formatex( debug_level, charsmax( debug_level ), "%d | %d", g_debug_level, DEBUG_LEVEL );
     
     LOGGER( 1, "gal_debug_level: %s", debug_level );
     register_cvar( "gal_debug_level", debug_level, FCVAR_SERVER | FCVAR_SPONLY );
+#endif
+    
+    // Enables the colored chat control cvar.
+#if IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES == 0
+    cvar_coloredChatEnabled = register_cvar( "gal_colored_chat_enabled", "0", FCVAR_SPONLY );
 #endif
     
     register_cvar( "gal_version", PLUGIN_VERSION, FCVAR_SERVER | FCVAR_SPONLY );
@@ -785,7 +841,6 @@ public plugin_init()
     cvar_isToShowVoteCounter       = register_cvar( "gal_vote_show_counter", "0" );
     cvar_isToShowNoneOption        = register_cvar( "gal_vote_show_none", "0" );
     cvar_voteShowNoneOptionType    = register_cvar( "gal_vote_show_none_type", "0" );
-    cvar_coloredChatEnabled        = register_cvar( "gal_colored_chat_enabled", "0", FCVAR_SPONLY );
     cvar_isToStopEmptyCycle        = register_cvar( "gal_in_empty_cycle", "0", FCVAR_SPONLY );
     cvar_unnominateDisconnected    = register_cvar( "gal_unnominate_disconnected", "0" );
     cvar_endOnRound                = register_cvar( "gal_endonround", "1" );
@@ -875,43 +930,50 @@ stock configureEndGameCvars()
 {
     LOGGER( 128, "I AM ENTERING ON configureEndGameCvars(0)" );
     
-    // mp_maxrounds
+    // mp_maxrounds 
+    // ########################################################################################
     if( !( cvar_mp_maxrounds = get_cvar_pointer( "mp_maxrounds" ) ) )
     {
         cvar_mp_maxrounds = cvar_disabledValuePointer;
     }
     
     // mp_winlimit
+    // ########################################################################################
     if( !( cvar_mp_winlimit = get_cvar_pointer( "mp_winlimit" ) ) )
     {
         cvar_mp_winlimit = cvar_disabledValuePointer;
     }
     
     // mp_freezetime
+    // ########################################################################################
     if( !( cvar_mp_freezetime = get_cvar_pointer( "mp_freezetime" ) ) )
     {
         cvar_mp_freezetime = cvar_disabledValuePointer;
     }
     
     // mp_timelimit
+    // ########################################################################################
     if( !( cvar_mp_timelimit = get_cvar_pointer( "mp_timelimit" ) ) )
     {
         cvar_mp_timelimit = cvar_disabledValuePointer;
     }
     
     // mp_roundtime
+    // ########################################################################################
     if( !( cvar_mp_roundtime = get_cvar_pointer( "mp_roundtime" ) ) )
     {
         cvar_mp_roundtime = cvar_disabledValuePointer;
     }
     
     // mp_chattime
+    // ########################################################################################
     if( !( cvar_mp_chattime = get_cvar_pointer( "mp_chattime" ) ) )
     {
         cvar_mp_chattime = cvar_disabledValuePointer;
     }
     
     // sv_maxspeed
+    // ########################################################################################
     if( !( cvar_sv_maxspeed = get_cvar_pointer( "sv_maxspeed" ) ) )
     {
         cvar_sv_maxspeed = cvar_disabledValuePointer;
@@ -941,11 +1003,16 @@ public plugin_cfg()
 {
     LOGGER( 128, "I AM ENTERING ON plugin_cfg(0)" );
     
+    /**
+     * Register the color chat 'g_user_msgid' variable, if it is enabled.
+     */
+#if IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES == 0
 #if AMXX_VERSION_NUM < 183
     // If some exception happened before this, all color_print(...) messages will cause native
     // error 10, on the AMXX 182. It is because, the execution flow will not reach here, then
     // the player "g_user_msgid" will be be initialized.
     g_user_msgid = get_user_msgid( "SayText" );
+#endif
 #endif
     
     // setup some server settings
@@ -953,7 +1020,7 @@ public plugin_cfg()
     loadPluginSetttings();
     initializeGlobalArrays();
     
-    // the 'mp_fraglimitCvarSupport(0)' could register a new cvar, hence only cache them after it.
+    // the 'mp_fraglimitCvarSupport(0)' could register a new cvar, hence only call 'cacheCvarsValues' them after it.
     mp_fraglimitCvarSupport();
     cacheCvarsValues();
     
@@ -973,7 +1040,7 @@ public plugin_cfg()
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
     configureTheUnitTests();
 #endif
-
+    
     LOGGER( 1, "I AM EXITING plugin_cfg(0)..." );
     LOGGER( 1, "" );
 }
@@ -981,10 +1048,15 @@ public plugin_cfg()
 stock loadPluginSetttings()
 {
     LOGGER( 128, "I AM ENTERING ON loadPluginSetttings(0)" );
-    
     new writtenSize;
+    
+    /**
+     * If it is enabled, Load whether the color chat is supported by the current Game Modification.
+     */
+#if IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES == 0
     g_isColorChatSupported = ( is_running( "czero" )
                                || is_running( "cstrike" ) );
+#endif
     
     if( colored_menus() )
     {
@@ -1022,10 +1094,10 @@ stock initializeGlobalArrays()
     get_cvar_string( "amx_nextmap", g_nextMap, charsmax( g_nextMap ) );
     get_mapname( g_currentMap, charsmax( g_currentMap ) );
     
-    g_nominationMapsTrie  = TrieCreate();
-    g_playersNominations  = TrieCreate();
-    g_fillerMapsArray     = ArrayCreate( MAX_MAPNAME_LENGHT );
-    g_nominationMapsArray = ArrayCreate( MAX_MAPNAME_LENGHT );
+    g_nominationMapsTrie     = TrieCreate();
+    g_playersNominationsTrie = TrieCreate();
+    g_fillerMapsArray        = ArrayCreate( MAX_MAPNAME_LENGHT );
+    g_nominationMapsArray    = ArrayCreate( MAX_MAPNAME_LENGHT );
     
     // initialize nominations table
     nomination_clearAll();
@@ -1047,7 +1119,8 @@ stock initializeGlobalArrays()
 }
 
 /**
- * The cvars 'mp_fraglimit' is registered only the first time the server starts.
+ * The cvars as 'mp_fraglimit' is registered only the first time the server starts. This function
+ * setup the 'mp_fraglimit' support on all Game Modifications.
  */
 stock mp_fraglimitCvarSupport()
 {
@@ -1104,6 +1177,7 @@ stock configureTheWhiteListFeature()
 {
     LOGGER( 128, "I AM ENTERING ON configureTheWhiteListFeature(0)" );
     
+    // The 'cvar_isWhiteListNomBlock' cvar needs the Whitelist always to be on memory.
     if( IS_WHITELIST_ENABLED()
         && get_pcvar_num( cvar_isWhiteListNomBlock ) )
     {
@@ -1159,7 +1233,13 @@ public cacheCvarsValues()
     g_fragLimitNumber        = get_pcvar_num( cvar_mp_fraglimit );
     g_timeLimitNumber        = get_pcvar_num( cvar_mp_timelimit );
     
-    g_isColoredChatEnabled      = get_pcvar_num( cvar_coloredChatEnabled ) != 0;
+    /**
+     * If it is enabled, cache whether the coloring is enabled by its cvar.
+     */
+#if IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES == 0
+    g_isColoredChatEnabled = get_pcvar_num( cvar_coloredChatEnabled ) != 0;
+#endif
+    
     g_isExtendmapAllowStay      = get_pcvar_num( cvar_extendmapAllowStay ) != 0;
     g_isToShowNoneOption        = get_pcvar_num( cvar_isToShowNoneOption ) != 0;
     g_isToShowVoteCounter       = get_pcvar_num( cvar_isToShowVoteCounter ) != 0;
@@ -1593,9 +1673,9 @@ stock computeNextWhiteListLoadTime( seconds, bool:isSecondsLeft = true )
 
 public vote_manageEnd()
 {
-    LOGGER( 0, "I AM ENTERING ON vote_manageEnd(0)" );
+    LOGGER( 0, "I AM ENTERING ON vote_manageEnd(0) | get_realplayersnum: %d", get_realplayersnum() );
     
-    static secondsLeft;
+    new secondsLeft;
     secondsLeft = get_timeleft();
     
     if( secondsLeft )
@@ -1614,7 +1694,7 @@ public vote_manageEnd()
             if( g_isOnMaintenanceMode )
             {
                 prevent_map_change();
-                color_print( 0, "^1%L", LANG_PLAYER, "GAL_CHANGE_MAINTENANCE" );
+                color_print( 0, "%L", LANG_PLAYER, "GAL_CHANGE_MAINTENANCE" );
             }
             else if( !g_isTheLastGameRound
                      && get_realplayersnum() >= get_pcvar_num( cvar_endOnRound_msg ) )
@@ -1624,9 +1704,10 @@ public vote_manageEnd()
         }
     }
     
+    // Update the Whitelist maps when its the right time, configured by 'computeNextWhiteListLoadTime(2)'.
     if( g_whitelistNomBlockTime )
     {
-        static secondsElapsed;
+        new secondsElapsed;
         secondsElapsed = floatround( get_gametime(), floatround_ceil );
         
         if( g_whitelistNomBlockTime < secondsElapsed )
@@ -1668,7 +1749,7 @@ public vote_manageEnd()
 public map_manageEnd()
 {
     LOGGER( 128, "I AM ENTERING ON map_manageEnd(0)" );
-    LOGGER( 2, "%32s mp_timelimit: %f", "map_manageEnd(in)", get_pcvar_float( cvar_mp_timelimit ) );
+    LOGGER( 2, "%32s mp_timelimit: %f, get_realplayersnum: %d", "map_manageEnd(in)", get_pcvar_float( cvar_mp_timelimit ), get_realplayersnum() );
     
     switch( get_pcvar_num( cvar_endOnRound ) )
     {
@@ -1677,7 +1758,7 @@ public map_manageEnd()
             g_isTheLastGameRound  = true;
             g_isTimeToChangeLevel = true;
             
-            color_print( 0, "^1%L %L %L",
+            color_print( 0, "%L %L %L",
                     LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED", LANG_PLAYER, "GAL_CHANGE_NEXTROUND", LANG_PLAYER, "GAL_NEXTMAP", g_nextMap );
             
             prevent_map_change();
@@ -1692,12 +1773,12 @@ public map_manageEnd()
             {
                 g_isTimeToChangeLevel = true;
                 
-                color_print( 0, "^1%L %L %L",
+                color_print( 0, "%L %L %L",
                         LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED", LANG_PLAYER, "GAL_CHANGE_NEXTROUND", LANG_PLAYER, "GAL_NEXTMAP", g_nextMap );
             }
             else
             {
-                color_print( 0, "^1%L %L",
+                color_print( 0, "%L %L",
                         LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED", LANG_PLAYER, "GAL_NEXTMAP", g_nextMap );
             }
             
@@ -1706,7 +1787,7 @@ public map_manageEnd()
     }
     
     configure_last_round_HUD();
-    LOGGER( 2, "%32s mp_timelimit: %f", "map_manageEnd(out)", get_pcvar_float( cvar_mp_timelimit ) );
+    LOGGER( 2, "%32s mp_timelimit: %f, get_realplayersnum: %d", "map_manageEnd(out)", get_pcvar_float( cvar_mp_timelimit ), get_realplayersnum() );
 }
 
 stock prevent_map_change()
@@ -2081,14 +2162,14 @@ public show_last_round_HUD()
             formatex( last_round_message, charsmax( last_round_message ), "%L ^n%L",
                     player_id, "GAL_CHANGE_NEXTROUND",  player_id, "GAL_NEXTMAP", g_nextMap );
             
-            REMOVE_COLOR_TAGS( last_round_message );
+            REMOVE_CODE_COLOR_TAGS( last_round_message );
             show_hudmessage( player_id, last_round_message );
         }
     #else
         formatex( last_round_message, charsmax( last_round_message ), "%L ^n%L",
                 LANG_PLAYER, "GAL_CHANGE_NEXTROUND",  LANG_PLAYER, "GAL_NEXTMAP", g_nextMap );
         
-        REMOVE_COLOR_TAGS( last_round_message );
+        REMOVE_CODE_COLOR_TAGS( last_round_message );
         show_hudmessage( 0, last_round_message );
     #endif
     }
@@ -2102,13 +2183,13 @@ public show_last_round_HUD()
             player_id = players[ playerIndex ];
             formatex( last_round_message, charsmax( last_round_message ), "%L", player_id, "GAL_CHANGE_TIMEEXPIRED" );
             
-            REMOVE_COLOR_TAGS( last_round_message );
+            REMOVE_CODE_COLOR_TAGS( last_round_message );
             show_hudmessage( player_id, last_round_message );
         }
     #else
         formatex( last_round_message, charsmax( last_round_message ), "%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED" );
         
-        REMOVE_COLOR_TAGS( last_round_message );
+        REMOVE_CODE_COLOR_TAGS( last_round_message );
         show_hudmessage( 0, last_round_message );
     #endif
     }
@@ -2429,7 +2510,7 @@ public cmd_rockthevote( player_id )
 {
     LOGGER( 128, "I AM ENTERING ON cmd_rockthevote(1) | player_id: %d", player_id );
     
-    color_print( player_id, "^1%L", player_id, "GAL_CMD_RTV" );
+    color_print( player_id, "%L", player_id, "GAL_CMD_RTV" );
     vote_rock( player_id );
     
     return PLUGIN_HANDLED;
@@ -2439,7 +2520,7 @@ public cmd_nominations( player_id )
 {
     LOGGER( 128, "I AM ENTERING ON cmd_nominations(1) | player_id: %d", player_id );
     
-    color_print( player_id, "^1%L", player_id, "GAL_CMD_NOMS" );
+    color_print( player_id, "%L", player_id, "GAL_CMD_NOMS" );
     nomination_list();
     
     return PLUGIN_CONTINUE;
@@ -2463,7 +2544,7 @@ public cmd_listrecent( player_id )
                 copiedChars += formatex( recentMapsMessage[ copiedChars ], charsmax( recentMapsMessage ) - copiedChars, ", %s", recentMapName );
             }
             
-            color_print( 0, "^1%L: %s", LANG_PLAYER, "GAL_MAP_RECENTMAPS", recentMapsMessage[ 2 ] );
+            color_print( 0, "%L: %s", LANG_PLAYER, "GAL_MAP_RECENTMAPS", recentMapsMessage[ 2 ] );
         }
         case 2:
         {
@@ -2471,7 +2552,7 @@ public cmd_listrecent( player_id )
             {
                 ArrayGetString( g_recentListMapsArray, mapIndex, recentMapName, charsmax( recentMapName ) );
                 
-                color_print( 0, "^1%L ( %i ): %s",
+                color_print( 0, "%L ( %i ): %s",
                         LANG_PLAYER, "GAL_MAP_RECENTMAP", mapIndex + 1, recentMapName );
             }
         }
@@ -2546,7 +2627,7 @@ public cmd_startVote( player_id, level, cid )
     
     if( g_voteStatus & VOTE_IS_IN_PROGRESS )
     {
-        color_print( player_id, "^1%L", player_id, "GAL_VOTE_INPROGRESS" );
+        color_print( player_id, "%L", player_id, "GAL_VOTE_INPROGRESS" );
     }
     else
     {
@@ -2600,6 +2681,7 @@ public cmd_createMapFile( player_id, level, cid )
         case 1:
         {
             new mapFileName[ MAX_MAPNAME_LENGHT ];
+            
             read_argv( 1, mapFileName, charsmax( mapFileName ) );
             remove_quotes( mapFileName );
             
@@ -2687,15 +2769,15 @@ public cmd_maintenanceMode( player_id, level, cid )
     {
         g_isOnMaintenanceMode = false;
         
-        color_print( 0, "^1%L", LANG_PLAYER, "GAL_CHANGE_MAINTENANCE_STATE", LANG_PLAYER, "GAL_CHANGE_MAINTENANCE_OFF" );
-        no_color_print( player_id, "^1%L", player_id, "GAL_CHANGE_MAINTENANCE_STATE", player_id, "GAL_CHANGE_MAINTENANCE_OFF" );
+        color_print( 0, "%L", LANG_PLAYER, "GAL_CHANGE_MAINTENANCE_STATE", LANG_PLAYER, "GAL_CHANGE_MAINTENANCE_OFF" );
+        no_color_print( player_id, "%L", player_id, "GAL_CHANGE_MAINTENANCE_STATE", player_id, "GAL_CHANGE_MAINTENANCE_OFF" );
     }
     else
     {
         g_isOnMaintenanceMode = true;
         
-        color_print( 0, "^1%L", LANG_PLAYER, "GAL_CHANGE_MAINTENANCE_STATE", LANG_PLAYER, "GAL_CHANGE_MAINTENANCE_ON" );
-        no_color_print( player_id, "^1%L", player_id, "GAL_CHANGE_MAINTENANCE_STATE", player_id, "GAL_CHANGE_MAINTENANCE_ON" );
+        color_print( 0, "%L", LANG_PLAYER, "GAL_CHANGE_MAINTENANCE_STATE", LANG_PLAYER, "GAL_CHANGE_MAINTENANCE_ON" );
+        no_color_print( player_id, "%L", player_id, "GAL_CHANGE_MAINTENANCE_STATE", player_id, "GAL_CHANGE_MAINTENANCE_ON" );
     }
     
     return PLUGIN_HANDLED;
@@ -2707,13 +2789,12 @@ public cmd_maintenanceMode( player_id, level, cid )
 public cmd_say( player_id )
 {
     LOGGER( 128, "I AM ENTERING ON cmd_say(1) | player_id: %s", player_id );
-    
-    static sentence   [ 70 ];
-    static firstWord  [ 32 ];
-    static secondWord [ 32 ];
-    static thirdWord  [ 2 ];
-    
     static prefix_index;
+    
+    static sentence  [ 70 ];
+    static firstWord [ 32 ];
+    static secondWord[ 32 ];
+    static thirdWord [ 2 ];
     
     sentence   [ 0 ] = '^0';
     firstWord  [ 0 ] = '^0';
@@ -2852,8 +2933,8 @@ stock buildTheNominationsMenu( player_id )
 {
     LOGGER( 128, "I AM ENTERING ON buildTheNominationsMenu(1) | player_id: %d", player_id );
     
-    new nominations_menu_name[ 64 ];
-    new nomination_cancel_option[ 64 ];
+    new nominations_menu_name   [ MAX_SHORT_STRING ];
+    new nomination_cancel_option[ MAX_SHORT_STRING ];
     
     // assume there'll be more than one match ( because we're lazy ) and starting building the match menu
     if( g_generalUsePlayersMenuId[ player_id ] )
@@ -2887,18 +2968,16 @@ stock nomination_menu( player_id )
     new info          [ 1 ];
     new choice        [ MAX_MAPNAME_LENGHT + 32 ];
     new nominationMap [ MAX_MAPNAME_LENGHT ];
-    new disabledReason[ 48 ];
+    new disabledReason[ MAX_SHORT_STRING ];
     
     isRecentMapNomAllowed = get_pcvar_num( cvar_recentNomMapsAllowance ) == 0;
     isWhiteListNomBlock   = ( IS_WHITELIST_ENABLED()
                               && get_pcvar_num( cvar_isWhiteListNomBlock ) );
     
-    // 'g_whitelistTrie' is not loaded?
-    if( isWhiteListNomBlock
-        && !g_blackListTrieForWhiteList )
+    // Not loaded?
+    if( isWhiteListNomBlock )
     {
-        // Depending on 'get_pcvar_num( cvar_isWhiteListNomBlock )', will or not be loaded.
-        loadTheWhiteListFeature();
+        tryToLoadTheWhiteListFeature();
     }
     // end nomination menu variables
     
@@ -2931,7 +3010,8 @@ stock nomination_menu( player_id )
                 formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_CURRENTMAP" );
             }
             else if( isWhiteListNomBlock
-                     && ( TrieKeyExists( g_blackListTrieForWhiteList, nominationMap )
+                     && ( ( g_blackListTrieForWhiteList
+                            && TrieKeyExists( g_blackListTrieForWhiteList, nominationMap ) )
                           || ( g_whitelistTrie
                                && !TrieKeyExists( g_whitelistTrie, nominationMap ) ) ) )
             {
@@ -2978,18 +3058,16 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
     new info          [ 1 ];
     new choice        [ MAX_MAPNAME_LENGHT + 32 ];
     new nominationMap [ MAX_MAPNAME_LENGHT ];
-    new disabledReason[ 48 ];
+    new disabledReason[ MAX_SHORT_STRING ];
     
     isRecentMapNomAllowed = get_pcvar_num( cvar_recentNomMapsAllowance ) == 0;
     isWhiteListNomBlock   = ( IS_WHITELIST_ENABLED()
                               && get_pcvar_num( cvar_isWhiteListNomBlock ) );
     
-    // 'g_whitelistTrie' is not loaded?
-    if( isWhiteListNomBlock
-        && !g_blackListTrieForWhiteList )
+    // Not loaded?
+    if( isWhiteListNomBlock )
     {
-        // Depending on 'get_pcvar_num( cvar_isWhiteListNomBlock )', will or not be loaded.
-        loadTheWhiteListFeature();
+        tryToLoadTheWhiteListFeature();
     }
     // end nomination menu variables
     
@@ -3043,7 +3121,8 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
                     formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_CURRENTMAP" );
                 }
                 else if( isWhiteListNomBlock
-                         && ( TrieKeyExists( g_blackListTrieForWhiteList, nominationMap )
+                         && ( ( g_blackListTrieForWhiteList
+                                && TrieKeyExists( g_blackListTrieForWhiteList, nominationMap ) )
                               || ( g_whitelistTrie
                                    && !TrieKeyExists( g_whitelistTrie, nominationMap ) ) ) )
                 {
@@ -3068,7 +3147,7 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
         case 0:
         {
             // no matches; pity the poor fool
-            color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_NOMATCHES", partialNameAttempt );
+            color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_NOMATCHES", partialNameAttempt );
         }
         case 1:
         {
@@ -3080,10 +3159,10 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
             // this is kinda sexy; we put up a menu of the matches for them to pick the right one
             if( matchCount >= MAX_NOM_MATCH_COUNT )
             {
-                color_print( player_id, "^1%L", player_id, "GAL_NOM_MATCHES_MAX", MAX_NOM_MATCH_COUNT, MAX_NOM_MATCH_COUNT );
+                color_print( player_id, "%L", player_id, "GAL_NOM_MATCHES_MAX", MAX_NOM_MATCH_COUNT, MAX_NOM_MATCH_COUNT );
             }
             
-            color_print( player_id, "^1%L", player_id, "GAL_NOM_MATCHES", partialNameAttempt );
+            color_print( player_id, "%L", player_id, "GAL_NOM_MATCHES", partialNameAttempt );
             menu_display( player_id, g_generalUsePlayersMenuId[ player_id ] );
         }
     }
@@ -3185,7 +3264,7 @@ stock nomination_getPlayer( mapIndex )
 /**
  * Gets the nominated map index, given the player id and the nomination index.
  * 
- * @return -1 when there is no nomination, or the map nomination index.
+ * @return -1 when there is no nomination, otherwise the map nomination index.
  */
 stock getPlayerNominationMapIndex( player_id, nominationIndex )
 {
@@ -3196,9 +3275,9 @@ stock getPlayerNominationMapIndex( player_id, nominationIndex )
     
     createPlayerNominationKey( player_id, trieKey, charsmax( trieKey ) );
     
-    if( TrieKeyExists( g_playersNominations, trieKey ) )
+    if( TrieKeyExists( g_playersNominationsTrie, trieKey ) )
     {
-        TrieGetArray( g_playersNominations, trieKey, playerNominationData, sizeof playerNominationData );
+        TrieGetArray( g_playersNominationsTrie, trieKey, playerNominationData, sizeof playerNominationData );
     }
     else
     {
@@ -3210,7 +3289,7 @@ stock getPlayerNominationMapIndex( player_id, nominationIndex )
 
 /**
  * Changes the player nomination. When there is no nominations, it creates the player entry to the
- * the server nominations tables "g_nominationMapsTrie" and "g_playersNominations".
+ * the server nominations tables "g_nominationMapsTrie" and "g_playersNominationsTrie".
  * 
  * @param player_id             the nominator player id.
  * @param nominationIndex       @see the updateNominationsReverseSearch's nominationIndex function parameter.
@@ -3226,14 +3305,14 @@ stock setPlayerNominationMapIndex( player_id, nominationIndex, mapIndex )
     
     createPlayerNominationKey( player_id, trieKey, charsmax( trieKey ) );
     
-    if( TrieKeyExists( g_playersNominations, trieKey ) )
+    if( TrieKeyExists( g_playersNominationsTrie, trieKey ) )
     {
-        TrieGetArray( g_playersNominations, trieKey, playerNominationData, sizeof playerNominationData );
+        TrieGetArray( g_playersNominationsTrie, trieKey, playerNominationData, sizeof playerNominationData );
         
         originalMapIndex                        = playerNominationData[ nominationIndex ];
         playerNominationData[ nominationIndex ] = mapIndex;
         
-        TrieSetArray( g_playersNominations, trieKey, playerNominationData, sizeof playerNominationData );
+        TrieSetArray( g_playersNominationsTrie, trieKey, playerNominationData, sizeof playerNominationData );
     }
     else
     {
@@ -3246,7 +3325,7 @@ stock setPlayerNominationMapIndex( player_id, nominationIndex, mapIndex )
         }
         
         playerNominationData[ nominationIndex ] = mapIndex;
-        TrieSetArray( g_playersNominations, trieKey, playerNominationData, sizeof playerNominationData );
+        TrieSetArray( g_playersNominationsTrie, trieKey, playerNominationData, sizeof playerNominationData );
     }
     
     updateNominationsReverseSearch( player_id, nominationIndex, mapIndex, originalMapIndex );
@@ -3300,9 +3379,9 @@ stock countPlayerNominations( player_id, &nominationOpenIndex )
     nominationOpenIndex = 0;
     createPlayerNominationKey( player_id, trieKey, charsmax( trieKey ) );
     
-    if( TrieKeyExists( g_playersNominations, trieKey ) )
+    if( TrieKeyExists( g_playersNominationsTrie, trieKey ) )
     {
-        TrieGetArray( g_playersNominations, trieKey, playerNominationData, sizeof playerNominationData );
+        TrieGetArray( g_playersNominationsTrie, trieKey, playerNominationData, sizeof playerNominationData );
         
         for( new nominationIndex = 0; nominationIndex < MAX_NOMINATION_COUNT; ++nominationIndex )
         {
@@ -3365,14 +3444,14 @@ stock nomination_cancel( player_id, mapIndex )
     // cancellations can only be made if a vote isn't already in progress
     if( g_voteStatus & VOTE_IS_IN_PROGRESS )
     {
-        color_print( player_id, "^1%L", player_id, "GAL_CANCEL_FAIL_INPROGRESS" );
+        color_print( player_id, "%L", player_id, "GAL_CANCEL_FAIL_INPROGRESS" );
         
         LOGGER( 1, "    ( nomination_cancel ) Just Returning/blocking, the voting is in progress." );
         return;
     }
     else if( g_voteStatus & VOTE_IS_OVER ) // and if the outcome of the vote hasn't already been determined
     {
-        color_print( player_id, "^1%L", player_id, "GAL_CANCEL_FAIL_VOTEOVER" );
+        color_print( player_id, "%L", player_id, "GAL_CANCEL_FAIL_VOTEOVER" );
         
         LOGGER( 1, "    ( nomination_cancel ) Just Returning/blocking, the voting is over." );
         return;
@@ -3404,11 +3483,11 @@ stock nomination_cancel( player_id, mapIndex )
             new player_name[ MAX_PLAYER_NAME_LENGHT ];
             
             GET_USER_NAME( nominatorPlayerId, player_name );
-            color_print( player_id, "^1%L", player_id, "GAL_CANCEL_FAIL_SOMEONEELSE", mapName, player_name );
+            color_print( player_id, "%L", player_id, "GAL_CANCEL_FAIL_SOMEONEELSE", mapName, player_name );
         }
         else
         {
-            color_print( player_id, "^1%L", player_id, "GAL_CANCEL_FAIL_WASNOTYOU", mapName );
+            color_print( player_id, "%L", player_id, "GAL_CANCEL_FAIL_WASNOTYOU", mapName );
         }
     }
 }
@@ -3421,14 +3500,14 @@ stock map_nominate( player_id, mapIndex, nominatorPlayerId = -1 )
     // nominations can only be made if a vote isn't already in progress
     if( g_voteStatus & VOTE_IS_IN_PROGRESS )
     {
-        color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_INPROGRESS" );
+        color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_INPROGRESS" );
         
         LOGGER( 1, "    ( map_nominate ) Just Returning/blocking, the voting is in progress." );
         return;
     }
     else if( g_voteStatus & VOTE_IS_OVER ) // and if the outcome of the vote hasn't already been determined
     {
-        color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_VOTEOVER" );
+        color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_VOTEOVER" );
         
         LOGGER( 1, "    ( map_nominate ) Just Returning/blocking, the voting is over." );
         return;
@@ -3444,17 +3523,14 @@ stock map_nominate( player_id, mapIndex, nominatorPlayerId = -1 )
         && get_pcvar_num( cvar_isWhiteListNomBlock ) )
     {
         // Not loaded?
-        if( !g_blackListTrieForWhiteList )
-        {
-            // Depending on 'get_pcvar_num( cvar_isWhiteListNomBlock )', will or not be loaded.
-            loadTheWhiteListFeature();
-        }
+        tryToLoadTheWhiteListFeature();
         
-        if( TrieKeyExists( g_blackListTrieForWhiteList, mapName )
+        if( ( g_blackListTrieForWhiteList
+              && TrieKeyExists( g_blackListTrieForWhiteList, mapName ) )
             || ( g_whitelistTrie
                  && !TrieKeyExists( g_whitelistTrie, mapName ) ) )
         {
-            color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_WHITELIST", mapName );
+            color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_WHITELIST", mapName );
             
             LOGGER( 1, "    ( map_nominate ) The map: %s, was blocked by the whitelist map setting.", mapName );
             return;
@@ -3464,7 +3540,7 @@ stock map_nominate( player_id, mapIndex, nominatorPlayerId = -1 )
     // players can not nominate the current map
     if( equali( g_currentMap, mapName ) )
     {
-        color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_CURRENTMAP", g_currentMap );
+        color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_CURRENTMAP", g_currentMap );
         
         LOGGER( 1, "    ( map_nominate ) Just Returning/blocking, cannot nominate the current map." );
         return;
@@ -3474,8 +3550,8 @@ stock map_nominate( player_id, mapIndex, nominatorPlayerId = -1 )
     if( map_isTooRecent( mapName )
         && !get_pcvar_num( cvar_recentNomMapsAllowance ) )
     {
-        color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_TOORECENT", mapName );
-        color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_TOORECENT_HLP" );
+        color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_TOORECENT", mapName );
+        color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_TOORECENT_HLP" );
         
         LOGGER( 1, "    ( map_nominate ) Just Returning/blocking, cannot nominate recent maps." );
         return;
@@ -3520,8 +3596,8 @@ stock map_nominate( player_id, mapIndex, nominatorPlayerId = -1 )
                         charsmax( nominatedMaps ) - copiedChars, nominatedMapName );
             }
             
-            color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_TOOMANY", maxPlayerNominations, nominatedMaps );
-            color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_TOOMANY_HLP" );
+            color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_TOOMANY", maxPlayerNominations, nominatedMaps );
+            color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_TOOMANY_HLP" );
         }
         // otherwise, allow the nomination
         else
@@ -3531,7 +3607,7 @@ stock map_nominate( player_id, mapIndex, nominatorPlayerId = -1 )
             setPlayerNominationMapIndex( player_id, nominationOpenIndex, mapIndex );
             map_announceNomination( player_id, mapName );
             
-            color_print( player_id, "^1%L", player_id, "GAL_NOM_GOOD_HLP" );
+            color_print( player_id, "%L", player_id, "GAL_NOM_GOOD_HLP" );
         }
         
         LOGGER( 4, "( map_nominate ) nominationOpenIndex: %d, mapName: %s", nominationOpenIndex, mapName );
@@ -3540,7 +3616,7 @@ stock map_nominate( player_id, mapIndex, nominatorPlayerId = -1 )
     // the same map again. And it is not allowed.
     else if( nominatorPlayerId == player_id )
     {
-        color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_ALREADY", mapName );
+        color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_ALREADY", mapName );
     }
     // The player nomination is the same as some other player before. And it is not allowed.
     else
@@ -3548,11 +3624,14 @@ stock map_nominate( player_id, mapIndex, nominatorPlayerId = -1 )
         new player_name[ MAX_PLAYER_NAME_LENGHT ];
         GET_USER_NAME( nominatorPlayerId, player_name );
         
-        color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_SOMEONEELSE", mapName, player_name );
-        color_print( player_id, "^1%L", player_id, "GAL_NOM_FAIL_SOMEONEELSE_HLP" );
+        color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_SOMEONEELSE", mapName, player_name );
+        color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_SOMEONEELSE_HLP" );
     }
 }
 
+/**
+ * Print to chat all players nominations available. This is usually called by 'say noms'.
+ */
 public nomination_list()
 {
     LOGGER( 128, "I AM ENTERING ON nomination_list(0)" );
@@ -3588,7 +3667,7 @@ public nomination_list()
                 
                 if( ++nomMapCount == 4 )     // list 4 maps per chat line
                 {
-                    color_print( 0, "^1%L: %s", LANG_PLAYER, "GAL_NOMINATIONS", mapsList );
+                    color_print( 0, "%L: %s", LANG_PLAYER, "GAL_NOMINATIONS", mapsList );
                     
                     nomMapCount   = 0;
                     mapsList[ 0 ] = '^0';
@@ -3599,11 +3678,11 @@ public nomination_list()
     
     if( mapsList[ 0 ] )
     {
-        color_print( 0, "^1%L: %s", LANG_PLAYER, "GAL_NOMINATIONS", mapsList );
+        color_print( 0, "%L: %s", LANG_PLAYER, "GAL_NOMINATIONS", mapsList );
     }
     else
     {
-        color_print( 0, "^1%L: %L", LANG_PLAYER, "GAL_NOMINATIONS", LANG_PLAYER, "NONE" );
+        color_print( 0, "%L: %L", LANG_PLAYER, "GAL_NOMINATIONS", LANG_PLAYER, "NONE" );
     }
 }
 
@@ -3996,7 +4075,8 @@ stock loadMapGroupsFeature( maxMapsPerGroupToUse[], fillersFilePaths[][], filler
     // The Whitelist Out Block feature, mapFilerFilePaths '*' and '#', disables The Map Groups Feature.
     if( !equal( mapFilerFilePath[ 0 ], "*" )
         && !equal( mapFilerFilePath[ 0 ], "#" )
-        && !get_pcvar_num( cvar_isWhiteListBlockOut ) )
+        && !( IS_WHITELIST_ENABLED()
+              && get_pcvar_num( cvar_isWhiteListBlockOut ) ) )
     {
         // determine what kind of file it's being used as
         new mapFilerFile = fopen( mapFilerFilePath, "rt" );
@@ -4102,12 +4182,13 @@ stock processLoadedMapsFile( maxMapsPerGroupToUse[], groupCount, blockedCount,
     
     new mapName[ MAX_MAPNAME_LENGHT ];
     
-    new Array:fillerMapsArray       = g_fillerMapsArray;
-    new       isWhitelistEnabled    = IS_WHITELIST_ENABLED();
-    new bool: useMapIsTooRecent     = true;
-    new bool: useIsPrefixInMenu     = true;
-    new bool: useEqualiCurrentMap   = true;
-    new bool: isWhiteListOutBlock   = get_pcvar_num( cvar_isWhiteListBlockOut ) != 0;
+    new Array:fillerMapsArray     = g_fillerMapsArray;
+    new       isWhitelistEnabled  = IS_WHITELIST_ENABLED();
+    new bool: useMapIsTooRecent   = true;
+    new bool: useIsPrefixInMenu   = true;
+    new bool: useEqualiCurrentMap = true;
+    new bool: isWhiteListOutBlock = ( isWhitelistEnabled
+                                      && get_pcvar_num( cvar_isWhiteListBlockOut ) != 0 );
     
     /**
      * This variable is to avoid double blocking which lead to the algorithm corruption and errors.
@@ -4119,29 +4200,17 @@ stock processLoadedMapsFile( maxMapsPerGroupToUse[], groupCount, blockedCount,
         blockedFillerMapsTrie = TrieCreate();
     }
     
-    if( isWhitelistEnabled
-        && (
-                !g_blackListTrieForWhiteList
-                ||
-                (
-                    isWhiteListOutBlock
-                    && (
-                            !g_whitelistTrie
-                            ||
-                            !ArraySize( g_whitelistArray )
-                       )
-                )
-           )
-      )
+    if( isWhitelistEnabled )
     {
-        loadTheWhiteListFeature();
-    }
-    
-    // The Whitelist out block feature, disables The Map Groups Feature.
-    if( isWhiteListOutBlock )
-    {
-        fillerMapsArray           = g_whitelistArray;
-        blockedFillerMapsMaxChars = 0;
+        // Not loaded?
+        tryToLoadTheWhiteListFeature();
+        
+        if( isWhiteListOutBlock )
+        {
+            // The Whitelist out block feature, disables The Map Groups Feature.
+            fillerMapsArray           = g_whitelistArray;
+            blockedFillerMapsMaxChars = 0;
+        }
     }
     
     // fill remaining slots with random maps from each filler file, as much as possible
@@ -4220,16 +4289,16 @@ stock processLoadedMapsFile( maxMapsPerGroupToUse[], groupCount, blockedCount,
                             && equali( g_currentMap, mapName )
                           )
                        || (
+                            blockedFillerMapsMaxChars
+                            && TrieKeyExists( blockedFillerMapsTrie, mapName )
+                          )
+                       || (
                             useMapIsTooRecent 
                             && map_isTooRecent( mapName )
                           )
                        || (
                             useIsPrefixInMenu
                             && isPrefixInMenu( mapName )
-                          )
-                       || (
-                            blockedFillerMapsMaxChars
-                            && TrieKeyExists( blockedFillerMapsTrie, mapName )
                           )
                      )
                 {
@@ -4255,43 +4324,32 @@ stock processLoadedMapsFile( maxMapsPerGroupToUse[], groupCount, blockedCount,
                         {
                             case 0:
                             {
-                                useMapIsTooRecent = false;
+                                useIsPrefixInMenu = false;
                             }
                             case 1:
                             {
-                                useMapIsTooRecent = true;
-                                useIsPrefixInMenu = false;
+                                useMapIsTooRecent = false;
                             }
                             case 2:
                             {
-                                useIsPrefixInMenu   = true;
-                                useEqualiCurrentMap = false;
+                                if( isWhiteListOutBlock )
+                                {
+                                    LOGGER( 8, "WARNING! This BlockerStrategy case is not used by the isWhiteListOutBlock." );
+                                    
+                                    currentBlockerStrategy++;
+                                    goto isWhiteListOutBlockExitCase;
+                                }
+                                
+                                blockedFillerMapsMaxChars = 0;
                             }
                             case 3:
                             {
-                                useMapIsTooRecent = false;
-                            }
-                            case 4:
-                            {
-                                useIsPrefixInMenu = false;
-                            }
-                            case 5:
-                            {
-                                if( isWhiteListOutBlock )
-                                {
-                                    LOGGER( 8, "WARNING! The BlockerStrategy case 5 is not used by the WhiteListOutBlock." );
-                                    
-                                    currentBlockerStrategy++;
-                                    goto defaultSwitchCase;
-                                }
-
-                                blockedFillerMapsMaxChars = 0;
+                                isWhiteListOutBlockExitCase:
+                                useEqualiCurrentMap = false;
                             }
                             default:
                             {
-                                defaultSwitchCase:
                                 LOGGER( 8, "WARNING! unsuccessfulCount: %i, filersMapCount: %i", unsuccessfulCount, filersMapCount );
-                                
                                 goto exitSearch;
                             }
                         }
@@ -4402,15 +4460,20 @@ stock vote_addFiller( blockedFillerMaps[][], blockedFillerMapsMaxChars = 0, bloc
         new copiedChars;
         new mapListToPrint[ MAX_COLOR_MESSAGE ];
         
-        color_print( 0, "^1%L", LANG_PLAYER, "GAL_FILLER_BLOCKED" );
+        color_print( 0, "%L", LANG_PLAYER, "GAL_FILLER_BLOCKED" );
         
         for( new currentIndex = 0; currentIndex < blockedCount; ++currentIndex )
         {
             copiedChars += formatex( mapListToPrint[ copiedChars ],
-                    charsmax( mapListToPrint ) - copiedChars, "^1, ^4%s",
-                    blockedFillerMaps[ currentIndex ] );
+                                    charsmax( mapListToPrint ) - copiedChars,
+                                    "^1, ^4%s",
+                                    blockedFillerMaps[ currentIndex ] );
         }
-        color_print( 0, "^1%L^1.", LANG_PLAYER, "GAL_MATCHING", mapListToPrint[ 3 ] );
+        
+    #if IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES > 0
+        REMOVE_CODE_COLOR_TAGS( mapListToPrint );
+    #endif
+        color_print( 0, "%L", LANG_PLAYER, "GAL_MATCHING", mapListToPrint[ 3 ] );
         
         LOGGER( 8, "( vote_addFiller ) blockedFillerMaps[0]: %s, blockedCount: %d, copiedChars: %d, mapListToPrint: %s", \
                 blockedFillerMaps[ 0 ], blockedCount, copiedChars, mapListToPrint[ 3 ] );
@@ -4418,17 +4481,56 @@ stock vote_addFiller( blockedFillerMaps[][], blockedFillerMapsMaxChars = 0, bloc
 
 } // end 'vote_addFiller(3)'
 
+/**
+ * This must to be called only when is possible that the Whitelist feature is not loaded by its
+ * first time. For example, when the cvar 'cvar_isWhiteListNomBlock' is enabled after the server
+ * start.
+ * 
+ * @note It must to be protected by an 'IS_WHITELIST_ENABLED()' evaluation.
+ */
+stock tryToLoadTheWhiteListFeature()
+{
+    if( get_pcvar_num( cvar_isWhiteListBlockOut ) )
+    {
+        if( !g_whitelistTrie )
+        {
+            loadTheWhiteListFeature();
+        }
+    }
+    else
+    {
+        if( !g_blackListTrieForWhiteList )
+        {
+            loadTheWhiteListFeature();
+        }
+    }
+    
+    if( get_pcvar_num( cvar_isWhiteListNomBlock ) )
+    {
+        computeNextWhiteListLoadTime( floatround( get_gametime(), floatround_ceil ), false );
+    }
+}
+
+/**
+ * This must to be called always is needed to update the Whitelist loaded maps, or when it is the
+ * first time the Whitelist feature is loaded.
+ * 
+ * @note It must to be protected by an 'IS_WHITELIST_ENABLED()' evaluation.
+ */
 loadTheWhiteListFeature()
 {
     LOGGER( 128, "I AM ENTERING ON loadTheWhiteListFeature(0)" );
-    new whiteListFilePath [ MAX_FILE_PATH_LENGHT ];
     
+    new whiteListFilePath [ MAX_FILE_PATH_LENGHT ];
     get_pcvar_string( cvar_voteWhiteListMapFilePath, whiteListFilePath, charsmax( whiteListFilePath ) );
-    loadWhiteListFile( g_blackListTrieForWhiteList, whiteListFilePath );
     
     if( get_pcvar_num( cvar_isWhiteListBlockOut ) )
     {
         loadWhiteListFile( g_whitelistTrie, whiteListFilePath, true, g_whitelistArray );
+    }
+    else
+    {
+        loadWhiteListFile( g_blackListTrieForWhiteList, whiteListFilePath );
     }
 }
 
@@ -4566,7 +4668,7 @@ stock loadWhiteListFile( &Trie:listTrie, whiteListFilePath[], bool:isWhiteList =
 } // end loadWhiteListFile(2)
 
 /**
- * Now [1-2] specifies the time you want to block them from 1:00 (am) until 2:59 (am).
+ * Now [1-2] specifies the time you want to block them; from 1:00 (am) until 2:59 (am).
  * 
  * This changes:
  * From 1:00 until 2:59
@@ -4577,7 +4679,7 @@ stock loadWhiteListFile( &Trie:listTrie, whiteListFilePath[], bool:isWhiteList =
 //                                     3         0
 stock convertWhitelistToBlacklist( &startHour, &endHour )
 {
-    LOGGER( 128, "I AM ENTERING ON convertWhitelistToBlacklist(2) | startHour: %d, endHour: %d", startHour, endHour );
+    LOGGER( 0, "I AM ENTERING ON convertWhitelistToBlacklist(2) | startHour: %d, endHour: %d", startHour, endHour );
     new backup;
     
     backup    = ( endHour + 1 > 23? 0 : endHour + 1 );
@@ -4590,6 +4692,8 @@ stock convertWhitelistToBlacklist( &startHour, &endHour )
  */
 stock standardizeTheHoursForWhitelist( &currentHour, &startHour, &endHour )
 {
+    LOGGER( 0, "I AM ENTERING ON standardizeTheHoursForWhitelist(3) | currentHour: %d, startHour: %d, endHour: %d", currentHour, startHour, endHour );
+    
     if( startHour > 23
         || startHour < 0 )
     {
@@ -4614,7 +4718,7 @@ stock standardizeTheHoursForWhitelist( &currentHour, &startHour, &endHour )
 
 stock isToLoadTheNextWhiteListGroup( &isToLoadTheseMaps, currentHour, startHour, endHour, isWhiteList = false )
 {
-    LOGGER( 128, "I AM ENTERING ON isToLoadTheNextWhiteListGroup(5) | startHour: %d, endHour: %d", startHour, endHour );
+    LOGGER( 0, "I AM ENTERING ON isToLoadTheNextWhiteListGroup(5) | startHour: %d, endHour: %d", startHour, endHour );
     
     if( startHour == endHour
         && endHour == currentHour )
@@ -4647,13 +4751,13 @@ stock isToLoadTheNextWhiteListGroup( &isToLoadTheseMaps, currentHour, startHour,
         //         4           3
             && currentHour > endHour )
         {
-            LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) startHour > endHour && ( currentHour < startHour && currentHour > endHour )" );
+            LOGGER( 0, "( isToLoadTheNextWhiteListGroup ) startHour > endHour && ( currentHour < startHour && currentHour > endHour )" );
             isToLoadTheseMaps = !isWhiteList;
         }
         //               6           5
         else // if( currentHour > startHour )
         {
-            LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) startHour > endHour && ( currentHour > startHour || currentHour < endHour )" );
+            LOGGER( 0, "( isToLoadTheNextWhiteListGroup ) startHour > endHour && ( currentHour > startHour || currentHour < endHour )" );
             isToLoadTheseMaps = isWhiteList;
         }
     }
@@ -4675,13 +4779,13 @@ stock isToLoadTheNextWhiteListGroup( &isToLoadTheseMaps, currentHour, startHour,
         //          2           3
             || currentHour < startHour )
         {
-            LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) startHour < endHour && ( currentHour > endHour || currentHour < startHour )" );
+            LOGGER( 0, "( isToLoadTheNextWhiteListGroup ) startHour < endHour && ( currentHour > endHour || currentHour < startHour )" );
             isToLoadTheseMaps = !isWhiteList;
         }
         //              4            3
         else // if( currentHour > startHour )
         {
-            LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) startHour < endHour && ( currentHour < endHour || currentHour > startHour )" );
+            LOGGER( 0, "( isToLoadTheNextWhiteListGroup ) startHour < endHour && ( currentHour < endHour || currentHour > startHour )" );
             isToLoadTheseMaps = isWhiteList;
         }
     }
@@ -4731,7 +4835,7 @@ stock loadNormalVoteChoices()
 
 stock approveTheVotingStart( bool:is_forced_voting )
 {
-    LOGGER( 128, "I AM ENTERING ON approveTheVotingStart(1) | is_forced_voting: %d", is_forced_voting );
+    LOGGER( 128, "I AM ENTERING ON approveTheVotingStart(1) | is_forced_voting: %d, get_realplayersnum: %d", is_forced_voting, get_realplayersnum() );
     
     // block the voting on now allowed situations/cases
     if( get_realplayersnum() == 0
@@ -4741,25 +4845,19 @@ stock approveTheVotingStart( bool:is_forced_voting )
              && g_voteStatus & VOTE_IS_OVER ) )
     {
         LOGGER( 1, "    ( approveTheVotingStart ) g_voteStatus: %d, \
-                g_voteStatus & VOTE_IS_OVER: %d, is_forced_voting: %d, \
-                get_realplayersnum(): %d", \
-                g_voteStatus, \
-                g_voteStatus & VOTE_IS_OVER != 0, is_forced_voting, \
-                get_realplayersnum() );
-    
-    /**
-     * Stops the empty cycle from starting when running the Unit Tests.
-     */
+                g_voteStatus & VOTE_IS_OVER: %d", g_voteStatus, \
+                g_voteStatus & VOTE_IS_OVER != 0 );
+        
     #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
-        if( !g_areTheUnitTestsRunning )
+        if( g_areTheUnitTestsRunning )
         {
-            LOGGER( 1, "    ( approveTheVotingStart ) Returning false on the if \
+            LOGGER( 1, "    ( approveTheVotingStart ) Returning true on the if \
                     !g_areTheUnitTestsRunning, cvar_isEmptyCycleByMapChange: %d.", \
                                 get_pcvar_num( cvar_isEmptyCycleByMapChange ) );
-            return false;
+            return true;
         }
-        
     #endif
+        
         if( get_realplayersnum() == 0 )
         {
             if( get_pcvar_num( cvar_isEmptyCycleByMapChange ) )
@@ -4798,7 +4896,7 @@ stock approveTheVotingStart( bool:is_forced_voting )
         vote_resetStats();
     }
     
-    LOGGER( 1, "    ( approveTheVotingStart ) Returning true." );
+    LOGGER( 1, "    ( approveTheVotingStart ) Returning true, due passed by all requirements." );
     return true;
 }
 
@@ -4890,7 +4988,7 @@ stock vote_startDirector( bool:is_forced_voting )
     else
     {
         // Vote creation failed; no maps found.
-        color_print( 0, "^1%L", LANG_PLAYER, "GAL_VOTE_NOMAPS" );
+        color_print( 0, "%L", LANG_PLAYER, "GAL_VOTE_NOMAPS" );
         finalizeVoting();
     }
     
@@ -5007,14 +5105,15 @@ public displayEndOfTheMapVoteMenu( player_id )
 {
     LOGGER( 128, "I AM ENTERING ON displayEndOfTheMapVoteMenu(1) | player_id: %d", player_id );
     
+    static menu_body   [ MAX_LONG_STRING ];
+    static menu_counter[ MAX_SHORT_STRING ];
+    
     new menu_id;
     new menuKeys;
     new menuKeysUnused;
     new playersCount;
     new players[ MAX_PLAYERS ];
     
-    new menu_body[ 256 ];
-    new menu_counter[ 64 ];
     new bool:isVoting;
     new bool:playerAnswered;
     
@@ -5030,6 +5129,9 @@ public displayEndOfTheMapVoteMenu( player_id )
     
     for( new playerIndex = 0; playerIndex < playersCount; playerIndex++ )
     {
+        menu_body   [ 0 ] = '^0';
+        menu_counter[ 0 ] = '^0';
+        
         player_id      = players[ playerIndex ];
         isVoting       = g_isPlayerParticipating[ player_id ];
         playerAnswered = g_answeredForEndOfMapVote[ player_id ];
@@ -5044,11 +5146,8 @@ public displayEndOfTheMapVoteMenu( player_id )
         }
         else
         {
-            menuKeys          = MENU_KEY_1;
-            menu_counter[ 0 ] = '^0';
+            menuKeys = MENU_KEY_1;
         }
-        
-        menu_body[ 0 ] = '^0';
         
         formatex( menu_body, charsmax( menu_body ),
                 "%s%L^n^n\
@@ -5198,6 +5297,12 @@ public voteExpire()
 public vote_display( argument[ 2 ] )
 {
     LOGGER( 0, "I AM ENTERING ON vote_display(1) | argument[0]: %d, argument[1]: %d", argument[ 0 ], argument[ 1 ] );
+    new menuKeys;
+    
+    static voteStatus  [ MAX_BIG_BOSS_STRING - 100 ];
+    static menuClean   [ MAX_BIG_BOSS_STRING ]; // menu showed while voting
+    static menuDirty   [ MAX_BIG_BOSS_STRING ]; // menu showed after voted
+    static voteMapLine [ MAX_MAPNAME_LENGHT + 32 ];
     
     new player_id           = argument[ 1 ];
     new copiedChars         = 0;
@@ -5207,11 +5312,6 @@ public vote_display( argument[ 2 ] )
     new bool:noneIsHidden = ( g_isToShowNoneOption
                               && !g_voteShowNoneOptionType
                               && !isVoteOver );
-    static menuKeys;
-    static voteStatus  [ 512 ];
-    static voteMapLine [ MAX_MAPNAME_LENGHT ];
-    static menuClean   [ 512 ]; // menu showed while voting
-    static menuDirty   [ 512 ]; // menu showed after voted
     
     if( updateTimeRemaining )
     {
@@ -5437,10 +5537,10 @@ stock calculate_menu_dirt( player_id, bool:isVoteOver, voteStatus[], menuDirty[]
             voteStatus: %s, ^nmenuDirty: %s, menuDirtySize: %d, noneIsHidden: %d", player_id, isVoteOver, \
             voteStatus,       menuDirty,     menuDirtySize,     noneIsHidden );
     
-    static voteFooter[ 64 ];
-    static menuHeader[ 32 ];
-    static noneOption[ 32 ];
-    static bool:isToShowUndo;
+    new bool:isToShowUndo;
+    static   voteFooter[ MAX_SHORT_STRING ];
+    static   menuHeader[ MAX_SHORT_STRING / 2 ];
+    static   noneOption[ MAX_SHORT_STRING / 2 ];
     
     menuDirty  [ 0 ] = '^0';
     noneOption [ 0 ] = '^0';
@@ -5507,7 +5607,7 @@ stock computeVoteMenuFooter( player_id, voteFooter[], voteFooterSize )
             voteFooterSize: %d",                            player_id,     voteFooter, \
             voteFooterSize );
     
-    static copiedChars;
+    new copiedChars;
     copiedChars = copy( voteFooter, voteFooterSize, "^n^n" );
     
     if( g_isToShowExpCountdown )
@@ -5590,10 +5690,10 @@ stock calculate_menu_clean( player_id, menuClean[], menuCleanSize )
             menuCleanSize: %d",                            player_id,     menuClean, \
             menuCleanSize );
     
-    static voteFooter[ 64 ];
-    static menuHeader[ 32 ];
-    static noneOption[ 32 ];
-    static bool:isToShowUndo;
+    new bool:isToShowUndo;
+    static   voteFooter[ MAX_SHORT_STRING ];
+    static   menuHeader[ MAX_SHORT_STRING / 2 ];
+    static   noneOption[ MAX_SHORT_STRING / 2 ];
     
     menuClean  [ 0 ] = '^0';
     noneOption [ 0 ] = '^0';
@@ -5773,7 +5873,7 @@ stock register_vote( player_id, pressedKeyCode )
             g_arrayOfMapsWithVotesNumber[ pressedKeyCode ] += voteWeight;
             g_totalVotesCounted                            += ( voteWeight - 1 );
             
-            color_print( player_id, "^1%L", player_id, "GAL_VOTE_WEIGHTED", voteWeight );
+            color_print( player_id, "%L", player_id, "GAL_VOTE_WEIGHTED", voteWeight );
         }
         else
         {
@@ -5801,11 +5901,11 @@ stock announceRegistedVote( player_id, pressedKeyCode )
         
         if( isToAnnounceChoice )
         {
-            color_print( 0, "^1%L", LANG_PLAYER, "GAL_CHOICE_NONE_ALL", player_name );
+            color_print( 0, "%L", LANG_PLAYER, "GAL_CHOICE_NONE_ALL", player_name );
         }
         else
         {
-            color_print( player_id, "^1%L", player_id, "GAL_CHOICE_NONE" );
+            color_print( player_id, "%L", player_id, "GAL_CHOICE_NONE" );
         }
     }
     else if( pressedKeyCode == g_totalVoteOptions )
@@ -5820,22 +5920,22 @@ stock announceRegistedVote( player_id, pressedKeyCode )
             {
                 if( isToAnnounceChoice )
                 {
-                    color_print( 0, "^1%L", LANG_PLAYER, "GAL_CHOICE_EXTEND_ALL", player_name );
+                    color_print( 0, "%L", LANG_PLAYER, "GAL_CHOICE_EXTEND_ALL", player_name );
                 }
                 else
                 {
-                    color_print( player_id, "^1%L", player_id, "GAL_CHOICE_EXTEND" );
+                    color_print( player_id, "%L", player_id, "GAL_CHOICE_EXTEND" );
                 }
             }
             else
             {
                 if( isToAnnounceChoice )
                 {
-                    color_print( 0, "^1%L", LANG_PLAYER, "GAL_CHOICE_STAY_ALL", player_name );
+                    color_print( 0, "%L", LANG_PLAYER, "GAL_CHOICE_STAY_ALL", player_name );
                 }
                 else
                 {
-                    color_print( player_id, "^1%L", player_id, "GAL_CHOICE_STAY" );
+                    color_print( player_id, "%L", player_id, "GAL_CHOICE_STAY" );
                 }
             }
         }
@@ -5846,12 +5946,12 @@ stock announceRegistedVote( player_id, pressedKeyCode )
         
         if( isToAnnounceChoice )
         {
-            color_print( 0, "^1%L", LANG_PLAYER, "GAL_CHOICE_MAP_ALL",
+            color_print( 0, "%L", LANG_PLAYER, "GAL_CHOICE_MAP_ALL",
                     player_name, g_votingMapNames[ pressedKeyCode ] );
         }
         else
         {
-            color_print( player_id, "^1%L", player_id, "GAL_CHOICE_MAP",
+            color_print( player_id, "%L", player_id, "GAL_CHOICE_MAP",
                     g_votingMapNames[ pressedKeyCode ] );
         }
     }
@@ -6008,7 +6108,7 @@ public computeVotes()
             && numberOfVotesAtFirstPlace <= g_totalVotesCounted / 2 )
         {
             // announce runoff voting requirement
-            color_print( 0, "^1%L", LANG_PLAYER, "GAL_RUNOFF_REQUIRED" );
+            color_print( 0, "%L", LANG_PLAYER, "GAL_RUNOFF_REQUIRED" );
             
             if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_RUNOFFREQUIRED ) )
             {
@@ -6081,7 +6181,7 @@ public computeVotes()
                         g_votingMapNames[ g_arrayOfRunOffChoices[ 0 ] ], \
                         g_votingMapNames[ g_arrayOfRunOffChoices[ 1 ] ] );
                 
-                color_print( 0, "^1%L", LANG_PLAYER, "GAL_RESULT_TIED1", numberOfMapsAtFirstPosition );
+                color_print( 0, "%L", LANG_PLAYER, "GAL_RESULT_TIED1", numberOfMapsAtFirstPosition );
             }
             else if( numberOfMapsAtFirstPosition == 2 )
             {
@@ -6164,7 +6264,7 @@ public computeVotes()
                         g_votingMapNames[ g_arrayOfRunOffChoices[ 0 ] ], \
                         g_votingMapNames[ g_arrayOfRunOffChoices[ 1 ] ] );
                 
-                color_print( 0, "^1%L", LANG_PLAYER, "GAL_RESULT_TIED2", numberOfMapsAtSecondPosition );
+                color_print( 0, "%L", LANG_PLAYER, "GAL_RESULT_TIED2", numberOfMapsAtSecondPosition );
             }
             
             // clear all the votes
@@ -6181,7 +6281,7 @@ public computeVotes()
         if( numberOfMapsAtFirstPosition > 1 )
         {
             winnerVoteMapIndex = firstPlaceChoices[ random_num( 0, numberOfMapsAtFirstPosition - 1 ) ];
-            color_print( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_TIED", numberOfMapsAtFirstPosition );
+            color_print( 0, "%L", LANG_PLAYER, "GAL_WINNER_TIED", numberOfMapsAtFirstPosition );
         }
         else
         {
@@ -6202,27 +6302,27 @@ public computeVotes()
             if( !g_isGameFinalVoting // "stay here" won and the map mustn't be restarted.
                 && !g_isTimeToRestart )
             {
-                color_print( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_STAY" );
+                color_print( 0, "%L", LANG_PLAYER, "GAL_WINNER_STAY" );
             }
             else if( !g_isGameFinalVoting // "stay here" won and the map must be restarted.
                      && g_isTimeToRestart )
             {
-                color_print( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_STAY" );
+                color_print( 0, "%L", LANG_PLAYER, "GAL_WINNER_STAY" );
                 process_last_round();
             }
             else if( g_isGameFinalVoting ) // "extend map" won
             {
                 if( g_isVotingByRounds )
                 {
-                    color_print( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_EXTEND_ROUND", g_extendmapStepRounds );
+                    color_print( 0, "%L", LANG_PLAYER, "GAL_WINNER_EXTEND_ROUND", g_extendmapStepRounds );
                 }
                 else if( g_isVotingByFrags )
                 {
-                    color_print( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_EXTEND_FRAGS", g_extendmapStepFrags );
+                    color_print( 0, "%L", LANG_PLAYER, "GAL_WINNER_EXTEND_FRAGS", g_extendmapStepFrags );
                 }
                 else
                 {
-                    color_print( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_EXTEND", g_extendmapStepMinutes );
+                    color_print( 0, "%L", LANG_PLAYER, "GAL_WINNER_EXTEND", g_extendmapStepMinutes );
                 }
                 
                 map_extend();
@@ -6239,7 +6339,7 @@ public computeVotes()
             setNextMap( g_votingMapNames[ winnerVoteMapIndex ] );
             server_exec();
             
-            color_print( 0, "^1%L", LANG_PLAYER, "GAL_NEXTMAP", g_nextMap );
+            color_print( 0, "%L", LANG_PLAYER, "GAL_NEXTMAP", g_nextMap );
             process_last_round();
             
             g_voteStatus |= VOTE_IS_OVER;
@@ -6252,11 +6352,11 @@ public computeVotes()
             winnerVoteMapIndex = random_num( 0, g_totalVoteOptions - 1 );
             setNextMap( g_votingMapNames[ winnerVoteMapIndex ] );
             
-            color_print( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_RANDOM", g_nextMap );
+            color_print( 0, "%L", LANG_PLAYER, "GAL_WINNER_RANDOM", g_nextMap );
         }
         else
         {
-            color_print( 0, "^1%L", LANG_PLAYER, "GAL_WINNER_ORDERED", g_nextMap );
+            color_print( 0, "%L", LANG_PLAYER, "GAL_WINNER_ORDERED", g_nextMap );
         }
         
         process_last_round();
@@ -6506,7 +6606,7 @@ public vote_rock( player_id )
     // if an early vote is pending, don't allow any rocks
     if( g_voteStatus & VOTE_IS_EARLY )
     {
-        color_print( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_PENDINGVOTE" );
+        color_print( player_id, "%L", player_id, "GAL_ROCK_FAIL_PENDINGVOTE" );
         
         LOGGER( 1, "    ( vote_rock ) Just Returning/blocking, the early voting is pending." );
         return;
@@ -6515,14 +6615,14 @@ public vote_rock( player_id )
     // rocks can only be made if a vote isn't already in progress
     if( g_voteStatus & VOTE_IS_IN_PROGRESS )
     {
-        color_print( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_INPROGRESS" );
+        color_print( player_id, "%L", player_id, "GAL_ROCK_FAIL_INPROGRESS" );
         
         LOGGER( 1, "    ( vote_rock ) Just Returning/blocking, the voting is in progress." );
         return;
     }
     else if( g_voteStatus & VOTE_IS_OVER ) // and if the outcome of the vote hasn't already been determined
     {
-        color_print( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_VOTEOVER" );
+        color_print( player_id, "%L", player_id, "GAL_ROCK_FAIL_VOTEOVER" );
         
         LOGGER( 1, "    ( vote_rock ) Just Returning/blocking, the voting is over." );
         return;
@@ -6531,7 +6631,7 @@ public vote_rock( player_id )
     if( get_pcvar_num( cvar_rtvWaitAdmin )
         && g_rtvWaitAdminNumber > 0 )
     {
-        color_print( player_id, "^1%L", player_id, "GAL_ROCK_WAIT_ADMIN" );
+        color_print( player_id, "%L", player_id, "GAL_ROCK_WAIT_ADMIN" );
         
         LOGGER( 1, "    ( vote_rock ) Just Returning/blocking, cannot rock when admins are online." );
         return;
@@ -6554,7 +6654,7 @@ public vote_rock( player_id )
         && minutesElapsed
         && minutesElapsed < g_rtvWaitMinutes )
     {
-        color_print( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_TOOSOON", floatround( g_rtvWaitMinutes - minutesElapsed, floatround_ceil ) );
+        color_print( player_id, "%L", player_id, "GAL_ROCK_FAIL_TOOSOON", floatround( g_rtvWaitMinutes - minutesElapsed, floatround_ceil ) );
         
         LOGGER( 1, "    ( vote_rock ) Just Returning/blocking, too soon to rock by minutes." );
         return;
@@ -6562,7 +6662,7 @@ public vote_rock( player_id )
     else if( g_rtvWaitRounds
              && g_roundsPlayedNumber < g_rtvWaitRounds )
     {
-        color_print( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_TOOSOON_ROUNDS", g_rtvWaitRounds - g_roundsPlayedNumber );
+        color_print( player_id, "%L", player_id, "GAL_ROCK_FAIL_TOOSOON_ROUNDS", g_rtvWaitRounds - g_roundsPlayedNumber );
         
         LOGGER( 1, "    ( vote_rock ) Just Returning/blocking, too soon to rock by rounds." );
         return;
@@ -6570,7 +6670,7 @@ public vote_rock( player_id )
     else if( g_rtvWaitFrags
              && g_greatestKillerFrags < g_rtvWaitFrags )
     {
-        color_print( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_TOOSOON_FRAGS", g_rtvWaitFrags - g_greatestKillerFrags );
+        color_print( player_id, "%L", player_id, "GAL_ROCK_FAIL_TOOSOON_FRAGS", g_rtvWaitFrags - g_greatestKillerFrags );
         
         LOGGER( 1, "    ( vote_rock ) Just Returning/blocking, too soon to rock by frags." );
         return;
@@ -6582,7 +6682,7 @@ public vote_rock( player_id )
     // make sure player hasn't already rocked the vote
     if( g_rockedVote[ player_id ] )
     {
-        color_print( player_id, "^1%L", player_id, "GAL_ROCK_FAIL_ALREADY", rocksNeeded - g_rockedVoteCount );
+        color_print( player_id, "%L", player_id, "GAL_ROCK_FAIL_ALREADY", rocksNeeded - g_rockedVoteCount );
         rtv_remind( TASKID_RTV_REMINDER + player_id );
         
         LOGGER( 1, "    ( vote_rock ) Just Returning/blocking, already rocked the vote." );
@@ -6592,7 +6692,7 @@ public vote_rock( player_id )
     // allow the player to rock the vote
     g_rockedVote[ player_id ] = true;
     
-    color_print( player_id, "^1%L", player_id, "GAL_ROCK_SUCCESS" );
+    color_print( player_id, "%L", player_id, "GAL_ROCK_SUCCESS" );
     
     // make sure the rtv reminder timer has stopped
     if( task_exists( TASKID_RTV_REMINDER ) )
@@ -6604,7 +6704,7 @@ public vote_rock( player_id )
     if( ++g_rockedVoteCount >= rocksNeeded )
     {
         // announce that the vote has been rocked
-        color_print( 0, "^1%L", LANG_PLAYER, "GAL_ROCK_ENOUGH" );
+        color_print( 0, "%L", LANG_PLAYER, "GAL_ROCK_ENOUGH" );
         
         // start up the vote director
         start_rtvVote();
@@ -6647,7 +6747,7 @@ public rtv_remind( param )
     new player_id = param - TASKID_RTV_REMINDER;
     
     // let the players know how many more rocks are needed
-    color_print( player_id, "^1%L", LANG_PLAYER, "GAL_ROCK_NEEDMORE", vote_getRocksNeeded() - g_rockedVoteCount );
+    color_print( player_id, "%L", LANG_PLAYER, "GAL_ROCK_NEEDMORE", vote_getRocksNeeded() - g_rockedVoteCount );
 }
 
 // change to the map
@@ -6868,7 +6968,7 @@ stock no_color_print( player_id, message[], any: ... )
     new formated_message[ MAX_COLOR_MESSAGE ];
     
     vformat( formated_message, charsmax( formated_message ), message, 3 );
-    REMOVE_COLOR_TAGS( formated_message );
+    REMOVE_CODE_COLOR_TAGS( formated_message );
     
     console_print( player_id, formated_message );
 }
@@ -7176,14 +7276,14 @@ public srv_announceEarlyVote( player_id )
     
     if( is_user_connected( player_id ) )
     {
-        color_print( player_id, "^4%L", player_id, "GAL_VOTE_EARLY" );
+        color_print( player_id, "%L", player_id, "GAL_VOTE_EARLY" );
     }
 }
 
 stock nomination_announceCancellation( nominations[] )
 {
     LOGGER( 128, "I AM ENTERING ON nomination_announceCancellation(1) | nominations: %s", nominations );
-    color_print( 0, "^1%L", LANG_PLAYER, "GAL_CANCEL_SUCCESS", nominations );
+    color_print( 0, "%L", LANG_PLAYER, "GAL_CANCEL_SUCCESS", nominations );
 }
 
 stock nomination_clearAll()
@@ -7191,7 +7291,7 @@ stock nomination_clearAll()
     LOGGER( 128, "I AM ENTERING ON nomination_clearAll(0)" );
     
     TrieClear( g_nominationMapsTrie );
-    TrieClear( g_playersNominations );
+    TrieClear( g_playersNominationsTrie );
     
     g_nominationCount = 0;
 }
@@ -7202,7 +7302,7 @@ stock map_announceNomination( player_id, map[] )
     new player_name[ MAX_PLAYER_NAME_LENGHT ];
     
     GET_USER_NAME( player_id, player_name );
-    color_print( 0, "^1%L", LANG_PLAYER, "GAL_NOM_SUCCESS", player_name, map );
+    color_print( 0, "%L", LANG_PLAYER, "GAL_NOM_SUCCESS", player_name, map );
 }
 
 public sort_stringsi( const elem1[], const elem2[], const array[], data[], data_size )
@@ -7222,9 +7322,9 @@ stock get_realplayersnum()
     new players[ MAX_PLAYERS ];
     
     get_players( players, playersCount, "ch" );
-
+    
 #if DEBUG_LEVEL & DEBUG_LEVEL_FAKE_VOTES
-    return 1;
+    return FAKE_PLAYERS_NUMBER_FOR_DEBUGGING;
 #else
     return playersCount;
 #endif
@@ -7267,12 +7367,12 @@ stock percent( is, of )
  *     {
  *         g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
  *
- *         color_print( g_colored_player_id, "^1%L %L %L",
+ *         color_print( g_colored_player_id, "%L %L %L",
  *                 g_colored_player_id, "LANG_A", g_colored_player_id, "LANG_B",
  *                 g_colored_player_id, "LANG_C", any_variable_used_on_LANG_C )
  *     }
  * #else
- *     color_print( 0, "^1%L %L %L", LANG_PLAYER, "LANG_A",
+ *     color_print( 0, "%L %L %L", LANG_PLAYER, "LANG_A",
  *             LANG_PLAYER, "LANG_B", LANG_PLAYER, "LANG_C", any_variable_used_on_LANG_C );
  * #endif
  *     ... some code
@@ -7300,129 +7400,183 @@ stock color_print( player_id, message[], any: ... )
     LOGGER( 128, "I AM ENTERING ON color_print(...) | player_id: %d, message: %s...", player_id, message );
     new formated_message[ MAX_COLOR_MESSAGE ];
     
-    if( g_isColorChatSupported
-        && g_isColoredChatEnabled )
+    /**
+     * Bug; On AMXX 1.8.2, disabling the color chat, make all messages to all players being on the
+     * server language, instead of the player language. This is a AMXX 1.8.2 bug only. There is a
+     * way to over come this. It is to print a message to each player, as the colored print does.
+     */
+#if IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES > 0 && AMXX_VERSION_NUM > 182
+    vformat( formated_message, charsmax( formated_message ), message, 3 );
+    LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message );
+    
+    client_print( player_id, print_chat, formated_message );
+    
+#else
+#if AMXX_VERSION_NUM < 183
+    if( player_id )
     {
-    #if AMXX_VERSION_NUM < 183
-        if( player_id )
+    #if IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES > 0
+        vformat( formated_message, charsmax( formated_message ), message, 3 );
+        LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message );
+        
+        client_print( player_id, print_chat, formated_message );
+    #else
+        if( g_isColorChatSupported
+            && g_isColoredChatEnabled )
         {
-            vformat( formated_message, charsmax( formated_message ), message, 3 );
-            LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message );
+            formated_message[ 0 ] = '^1';
+            vformat( formated_message[ 1 ], charsmax( formated_message ) - 1, message, 3 );
             
+            LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message );
             PRINT_COLORED_MESSAGE( player_id, formated_message );
         }
         else
         {
-            new playersCount;
-            new players[ MAX_PLAYERS ];
+            vformat( formated_message, charsmax( formated_message ), message, 3 );
+            LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message );
             
-            get_players( players, playersCount, "ch" );
-            
-            // Figure out if at least 1 player is connected
-            // so we don't execute useless code
-            if( !playersCount )
-            {
-                LOGGER( 64, "    ( color_print ) Returning on playersCount: %d...", playersCount );
-                return;
-            }
-            
-            new player_id;
-            new string_index;
-            new argument_index;
-            new multi_lingual_constants_number;
-            new params_number;
-            new Array:multi_lingual_indexes_array;
-            
-            multi_lingual_indexes_array    = ArrayCreate();
-            params_number                  = numargs();
-            multi_lingual_constants_number = 0;
-            
-            LOGGER( 64, "( color_print ) playersCount: %d, params_number: %d...", playersCount, params_number );
-            
-            if( params_number > 3 ) // ML can be used
-            {
-                for( argument_index = 2; argument_index < params_number; argument_index++ )
-                {
-                    LOGGER( 64, "( color_print ) getarg(%d): %s", argument_index, getarg( argument_index ) );
-                    
-                    // retrieve original param value and check if it's LANG_PLAYER value
-                    if( getarg( argument_index ) == LANG_PLAYER )
-                    {
-                        string_index = 0;
-                        
-                        // as LANG_PLAYER == -1, check if next param string is a registered language translation
-                        while( ( formated_message[ string_index ] =
-                                     getarg( argument_index + 1, string_index++ ) ) )
-                        {
-                        }
-                        formated_message[ string_index ] = '^0';
-                        
-                        LOGGER( 64, "( color_print ) player_id: %d, formated_message: %s", \
-                                player_id, formated_message );
-                        LOGGER( 64, "( color_print ) GetLangTransKey( formated_message ) != TransKey_Bad: %d, \
-                              multi_lingual_constants_number: %d, string_index: %d...", \
-                              GetLangTransKey( formated_message ) != TransKey_Bad, \
-                              multi_lingual_constants_number, string_index );
-                        
-                        if( GetLangTransKey( formated_message ) != TransKey_Bad )
-                        {
-                            // Store that argument as LANG_PLAYER so we can alter it later
-                            ArrayPushCell( multi_lingual_indexes_array, argument_index++ );
-                            
-                            // Update ML array, so we'll know 1st if ML is used,
-                            // 2nd how many arguments we have to change
-                            multi_lingual_constants_number++;
-                        }
-                        
-                        LOGGER( 64, "( color_print ) argument_index (after ArrayPushCell): %d...", argument_index );
-                    }
-                }
-            }
-            
-            LOGGER( 64, "( color_print ) multi_lingual_constants_number: %d...", multi_lingual_constants_number );
-            
-            for( --playersCount; playersCount >= 0; playersCount-- )
-            {
-                player_id = players[ playersCount ];
-                
-                if( multi_lingual_constants_number )
-                {
-                    for( argument_index = 0; argument_index < multi_lingual_constants_number; argument_index++ )
-                    {
-                        LOGGER( 64, "( color_print ) argument_index: %d, player_id: %d, \
-                                ArrayGetCell( %d, %d ): %d...", \
-                                argument_index, player_id, \
-                                multi_lingual_indexes_array, argument_index, \
-                                ArrayGetCell( multi_lingual_indexes_array, argument_index ) );
-                        
-                        // Set all LANG_PLAYER args to player index ( = player_id )
-                        // so we can format the text for that specific player
-                        setarg( ArrayGetCell( multi_lingual_indexes_array, argument_index ), _, player_id );
-                    }
-                }
-                vformat( formated_message, charsmax( formated_message ), message, 3 );
-                
-                LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message );
-                PRINT_COLORED_MESSAGE( player_id, formated_message );
-            }
-            
-            ArrayDestroy( multi_lingual_indexes_array );
+            REMOVE_CODE_COLOR_TAGS( formated_message );
+            client_print( player_id, print_chat, formated_message );
         }
-    #else
-        vformat( formated_message, charsmax( formated_message ), message, 3 );
-        LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message );
-        
-        client_print_color( player_id, print_team_default, formated_message );
     #endif
     }
     else
     {
-        vformat( formated_message, charsmax( formated_message ), message, 3 );
-        LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message );
+        new playersCount;
+        new players[ MAX_PLAYERS ];
         
-        REMOVE_COLOR_TAGS( formated_message );
+        get_players( players, playersCount, "ch" );
+        
+        // Figure out if at least 1 player is connected
+        // so we don't execute useless code
+        if( !playersCount )
+        {
+            LOGGER( 64, "    ( color_print ) Returning on playersCount: %d...", playersCount );
+            return;
+        }
+        
+        new player_id;
+        new string_index;
+        new argument_index;
+        new multi_lingual_constants_number;
+        new params_number;
+        new Array:multi_lingual_indexes_array;
+        
+        multi_lingual_indexes_array    = ArrayCreate();
+        params_number                  = numargs();
+        multi_lingual_constants_number = 0;
+        
+        LOGGER( 64, "( color_print ) playersCount: %d, params_number: %d...", playersCount, params_number );
+        
+        // ML can be used
+        if( params_number > 3 )
+        {
+            for( argument_index = 2; argument_index < params_number; argument_index++ )
+            {
+                LOGGER( 64, "( color_print ) getarg(%d): %s", argument_index, getarg( argument_index ) );
+                
+                // retrieve original param value and check if it's LANG_PLAYER value
+                if( getarg( argument_index ) == LANG_PLAYER )
+                {
+                    string_index = 0;
+                    
+                    // as LANG_PLAYER == -1, check if next param string is a registered language translation
+                    while( ( formated_message[ string_index ] =
+                                 getarg( argument_index + 1, string_index++ ) ) )
+                    {
+                    }
+                    formated_message[ string_index ] = '^0';
+                    
+                    LOGGER( 64, "( color_print ) player_id: %d, formated_message: %s", \
+                            player_id, formated_message );
+                    LOGGER( 64, "( color_print ) GetLangTransKey( formated_message ) != TransKey_Bad: %d, \
+                          multi_lingual_constants_number: %d, string_index: %d...", \
+                          GetLangTransKey( formated_message ) != TransKey_Bad, \
+                          multi_lingual_constants_number, string_index );
+                    
+                    if( GetLangTransKey( formated_message ) != TransKey_Bad )
+                    {
+                        // Store that argument as LANG_PLAYER so we can alter it later
+                        ArrayPushCell( multi_lingual_indexes_array, argument_index++ );
+                        
+                        // Update ML array, so we'll know 1st if ML is used,
+                        // 2nd how many arguments we have to change
+                        multi_lingual_constants_number++;
+                    }
+                    
+                    LOGGER( 64, "( color_print ) argument_index (after ArrayPushCell): %d...", argument_index );
+                }
+            }
+        }
+        
+        LOGGER( 64, "( color_print ) multi_lingual_constants_number: %d...", multi_lingual_constants_number );
+        
+        for( --playersCount; playersCount >= 0; --playersCount )
+        {
+            player_id = players[ playersCount ];
+            
+            if( multi_lingual_constants_number )
+            {
+                for( argument_index = 0; argument_index < multi_lingual_constants_number; argument_index++ )
+                {
+                    LOGGER( 64, "( color_print ) argument_index: %d, player_id: %d, \
+                            ArrayGetCell( %d, %d ): %d...", \
+                            argument_index, player_id, \
+                            multi_lingual_indexes_array, argument_index, \
+                            ArrayGetCell( multi_lingual_indexes_array, argument_index ) );
+                    
+                    // Set all LANG_PLAYER args to player index ( = player_id )
+                    // so we can format the text for that specific player
+                    setarg( ArrayGetCell( multi_lingual_indexes_array, argument_index ), _, player_id );
+                }
+            }
+            
+        #if IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES > 0
+            vformat( formated_message, charsmax( formated_message ), message, 3 );
+            LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message );
+            
+            client_print( player_id, print_chat, formated_message );
+        #else
+            if( g_isColorChatSupported
+                && g_isColoredChatEnabled )
+            {
+                formated_message[ 0 ] = '^1';
+                vformat( formated_message[ 1 ], charsmax( formated_message ) - 1, message, 3 );
+                
+                LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message );
+                PRINT_COLORED_MESSAGE( player_id, formated_message );
+            }
+            else
+            {
+                vformat( formated_message, charsmax( formated_message ), message, 3 );
+                LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message );
+                
+                REMOVE_CODE_COLOR_TAGS( formated_message );
+                client_print( player_id, print_chat, formated_message );
+            }
+        #endif
+        }
+        
+        ArrayDestroy( multi_lingual_indexes_array );
+    }
+#else // this else only works for AMXX 183 or superior, due noted bug above.
+    
+    vformat( formated_message, charsmax( formated_message ), message, 3 );
+    LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message );
+    
+    if( g_isColorChatSupported
+        && g_isColoredChatEnabled )
+    {
+        client_print_color( player_id, print_team_default, formated_message );
+    }
+    else
+    {
+        REMOVE_CODE_COLOR_TAGS( formated_message );
         client_print( player_id, print_chat, formated_message );
     }
+#endif
+#endif
+    
     LOGGER( 64, "( color_print ) [out] player_id: %d, Chat printed: %s...", player_id, formated_message );
 }
 
@@ -7460,9 +7614,9 @@ stock register_dictionary_colored( const dictionaryFile[] )
     
     new TransKey:translationKeyId;
     
-    new currentReadLine    [ 512 ];
     new langTypeAcronym    [ 3 ];
-    new langConstantName   [ 64 ];
+    new currentReadLine    [ MAX_BIG_BOSS_STRING ];
+    new langConstantName   [ MAX_SHORT_STRING ];
     new langTranslationText[ MAX_LONG_STRING ];
     
     while( !feof( dictionaryFile ) )
@@ -7486,7 +7640,13 @@ stock register_dictionary_colored( const dictionaryFile[] )
             
             if( translationKeyId != TransKey_Bad )
             {
+            #if IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES > 0
+                REMOVE_LETTER_COLOR_TAGS( langTranslationText );
+            #else
                 INSERT_COLOR_TAGS( langTranslationText );
+            #endif
+                
+                LOGGER( 0, "lang: %s, Id: %d, Text: %s", langTypeAcronym, translationKeyId, langTranslationText );
                 AddTranslation( langTypeAcronym, translationKeyId, langTranslationText[ 2 ] );
             }
         }
@@ -7679,9 +7839,9 @@ public plugin_end()
     
     // Clear Dynamic Tries
     // ############################################################################################
-    if( g_playersNominations )
+    if( g_playersNominationsTrie )
     {
-        TrieDestroy( g_playersNominations );
+        TrieDestroy( g_playersNominationsTrie );
     }
     
     if( g_nominationMapsTrie )
@@ -7838,16 +7998,20 @@ public sayNextMap()
     {
         if( g_voteStatus & VOTE_IS_IN_PROGRESS )
         {
-            color_print( 0, "^1%L %L", LANG_PLAYER, "NEXT_MAP", LANG_PLAYER, "GAL_NEXTMAP_VOTING" );
+            color_print( 0, "%L %L", LANG_PLAYER, "NEXT_MAP", LANG_PLAYER, "GAL_NEXTMAP_VOTING" );
         }
         else
         {
-            color_print( 0, "^1%L %L", LANG_PLAYER, "NEXT_MAP", LANG_PLAYER, "GAL_NEXTMAP_UNKNOWN" );
+            color_print( 0, "%L %L", LANG_PLAYER, "NEXT_MAP", LANG_PLAYER, "GAL_NEXTMAP_UNKNOWN" );
         }
     }
     else
     {
-        color_print( 0, "^1%L ^4%s", LANG_PLAYER, "NEXT_MAP", g_nextMap );
+    #if IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES > 0
+        color_print( 0, "%L %s", LANG_PLAYER, "NEXT_MAP", g_nextMap );
+    #else
+        color_print( 0, "%L ^4%s", LANG_PLAYER, "NEXT_MAP", g_nextMap );
+    #endif
     }
     
     LOGGER( 4, "( sayNextMap ) %L %s, cvar_endOfMapVote: %d, cvar_nextMapChangeAnnounce: %d", \
@@ -8074,17 +8238,19 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         save_server_cvars_for_test();
         
     #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
-        NORNAL_TESTS_TO_EXECUTE();
+        nornal_tests_to_execute();
     #endif
         
         // displays the OK to the last test.
         displaysLastTestOk();
         
     #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_DELAYED
-        DALAYED_TESTS_TO_EXECUTE();
+        dalayed_tests_to_execute();
     #endif
         
-        if( g_max_delay_result )
+        // displays the OK to the first delayed test.
+        if( g_max_delay_result
+            && displaysLastTestOk() )
         {
             print_logger( "" );
             print_logger( "    %d tests succeed.", g_totalTestsNumber - g_totalFailureTests );
@@ -8119,7 +8285,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     
     stock displaysLastTestOk()
     {
-        if( g_totalTestsNumber > 1 )
+        if( g_totalTestsNumber > 0 )
         {
             new numberOfFailures = ArraySize( g_tests_failure_ids );
             new lastFailure      = ( numberOfFailures? ArrayGetCell( g_tests_failure_ids, numberOfFailures - 1 ) : 0 );
@@ -8140,8 +8306,13 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
                 print_logger( "" );
                 print_logger( "" );
                 print_logger( "" );
+                
+                // Blocks the delayed Unit Tests to run, because the chain is broke.
+                return false;
             }
         }
+        
+        return true;
     }
     
     stock print_all_tests_executed()
@@ -8288,7 +8459,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     stock test_register_test()
     {
         new test_id;
-        new first_test_name[ 64 ];
+        new first_test_name[ MAX_SHORT_STRING ];
         
         test_id = register_test( 0, "test_register_test" );
         
@@ -8342,7 +8513,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         SET_TEST_FAILURE( test_id, !g_isMapExtensionAllowed, \
                 "g_isMapExtensionAllowed must be 1 (it was %d)", g_isMapExtensionAllowed );
         
-        color_print( 0, "^1%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED" );
+        color_print( 0, "%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED" );
         cancelVoting();
         
         set_pcvar_float( cvar_maxMapExtendTime, 10.0 );
