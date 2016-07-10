@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v3.2.0-198";
+new const PLUGIN_VERSION[] = "v3.2.0-200";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -69,7 +69,7 @@ new const PLUGIN_VERSION[] = "v3.2.0-198";
  * 
  * Default value: 0
  */
-#define DEBUG_LEVEL 0
+#define DEBUG_LEVEL 4+1+16+2
 
 
 
@@ -930,53 +930,22 @@ stock configureEndGameCvars()
 {
     LOGGER( 128, "I AM ENTERING ON configureEndGameCvars(0)" );
     
-    // mp_maxrounds 
-    // ########################################################################################
-    if( !( cvar_mp_maxrounds = get_cvar_pointer( "mp_maxrounds" ) ) )
-    {
-        cvar_mp_maxrounds = cvar_disabledValuePointer;
-    }
+    tryToGetGameModCvar( cvar_mp_maxrounds,  "mp_maxrounds" );
+    tryToGetGameModCvar( cvar_mp_winlimit,   "mp_winlimit" );
+    tryToGetGameModCvar( cvar_mp_freezetime, "mp_freezetime" );
+    tryToGetGameModCvar( cvar_mp_timelimit,  "mp_timelimit" );
+    tryToGetGameModCvar( cvar_mp_roundtime,  "mp_roundtime" );
+    tryToGetGameModCvar( cvar_mp_chattime,   "mp_chattime" );
+    tryToGetGameModCvar( cvar_sv_maxspeed,   "sv_maxspeed" );
+}
+
+stock tryToGetGameModCvar( &cvar_to_get, cvar_name[] )
+{
+    LOGGER( 0, "I AM ENTERING ON tryToGetGameModCvar(2) | cvar_to_get: %d, cvar_name: %s", cvar_to_get, cvar_name );
     
-    // mp_winlimit
-    // ########################################################################################
-    if( !( cvar_mp_winlimit = get_cvar_pointer( "mp_winlimit" ) ) )
+    if( !( cvar_to_get = get_cvar_pointer( cvar_name ) ) )
     {
-        cvar_mp_winlimit = cvar_disabledValuePointer;
-    }
-    
-    // mp_freezetime
-    // ########################################################################################
-    if( !( cvar_mp_freezetime = get_cvar_pointer( "mp_freezetime" ) ) )
-    {
-        cvar_mp_freezetime = cvar_disabledValuePointer;
-    }
-    
-    // mp_timelimit
-    // ########################################################################################
-    if( !( cvar_mp_timelimit = get_cvar_pointer( "mp_timelimit" ) ) )
-    {
-        cvar_mp_timelimit = cvar_disabledValuePointer;
-    }
-    
-    // mp_roundtime
-    // ########################################################################################
-    if( !( cvar_mp_roundtime = get_cvar_pointer( "mp_roundtime" ) ) )
-    {
-        cvar_mp_roundtime = cvar_disabledValuePointer;
-    }
-    
-    // mp_chattime
-    // ########################################################################################
-    if( !( cvar_mp_chattime = get_cvar_pointer( "mp_chattime" ) ) )
-    {
-        cvar_mp_chattime = cvar_disabledValuePointer;
-    }
-    
-    // sv_maxspeed
-    // ########################################################################################
-    if( !( cvar_sv_maxspeed = get_cvar_pointer( "sv_maxspeed" ) ) )
-    {
-        cvar_sv_maxspeed = cvar_disabledValuePointer;
+        cvar_to_get = cvar_disabledValuePointer;
     }
 }
 
@@ -2397,7 +2366,7 @@ stock resetRoundEnding()
     client_cmd( 0, "-showscores" );
 }
 
-stock saveRoundEnding( roundEndStatus[] )
+stock saveRoundEnding( bool:roundEndStatus[] )
 {
     LOGGER( 128, "I AM ENTERING ON saveRoundEnding(1) | roundEndStatus: %d, %d, %d, %d", \
             roundEndStatus[ 0 ], roundEndStatus[ 1 ], roundEndStatus[ 2 ], roundEndStatus[ 3 ] );
@@ -2408,15 +2377,15 @@ stock saveRoundEnding( roundEndStatus[] )
     roundEndStatus[ 3 ] = g_isTheLastGameRound;
 }
 
-stock restoreRoundEnding( roundEndStatus[] )
+stock restoreRoundEnding( bool:roundEndStatus[] )
 {
     LOGGER( 128, "I AM ENTERING ON restoreRoundEnding(1) | roundEndStatus: %d, %d, %d, %d", \
             roundEndStatus[ 0 ], roundEndStatus[ 1 ], roundEndStatus[ 2 ], roundEndStatus[ 3 ] );
     
-    g_isTimeToChangeLevel = bool:roundEndStatus[ 0 ];
-    g_isTimeToRestart     = bool:roundEndStatus[ 1 ];
-    g_isRtvLastRound      = bool:roundEndStatus[ 2 ];
-    g_isTheLastGameRound  = bool:roundEndStatus[ 3 ];
+    g_isTimeToChangeLevel = roundEndStatus[ 0 ];
+    g_isTimeToRestart     = roundEndStatus[ 1 ];
+    g_isRtvLastRound      = roundEndStatus[ 2 ];
+    g_isTheLastGameRound  = roundEndStatus[ 3 ];
 }
 
 public resetRoundsScores()
