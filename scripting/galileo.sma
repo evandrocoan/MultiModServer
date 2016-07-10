@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v3.2.0-200";
+new const PLUGIN_VERSION[] = "v3.2.0-204";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -2908,6 +2908,7 @@ stock buildTheNominationsMenu( player_id )
     // assume there'll be more than one match ( because we're lazy ) and starting building the match menu
     if( g_generalUsePlayersMenuId[ player_id ] )
     {
+        LOGGER( 4, "( buildTheNominationsMenu ) | menu_destroy, g_generalUsePlayersMenuId[%d]: %d", player_id, g_generalUsePlayersMenuId[ player_id ] );
         menu_destroy( g_generalUsePlayersMenuId[ player_id ] );
     }
     
@@ -3202,6 +3203,12 @@ stock clearMenuMapIndexForPlayers( player_id )
     if( g_currentMenuMapIndexForPlayers[ player_id ] )
     {
         ArrayClear( g_currentMenuMapIndexForPlayers[ player_id ] );
+    }
+    
+    if( g_generalUsePlayersMenuId[ player_id ] )
+    {
+        menu_destroy( g_generalUsePlayersMenuId[ player_id ] );
+        g_generalUsePlayersMenuId[ player_id ] = 0;
     }
 }
 
