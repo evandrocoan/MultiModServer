@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v3.2.0-204";
+new const PLUGIN_VERSION[] = "v3.2.0-205";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -780,11 +780,11 @@ new g_nextMap                   [ MAX_MAPNAME_LENGHT ];
 new g_currentMap                [ MAX_MAPNAME_LENGHT ];
 new g_playerVotedOption         [ MAX_PLAYERS_COUNT ];
 new g_playerVotedWeight         [ MAX_PLAYERS_COUNT ];
-new g_generalUsePlayersMenuId   [ MAX_PLAYERS_COUNT ];
+new g_generalUsePlayersMenuIds   [ MAX_PLAYERS_COUNT ];
 new g_playersKills              [ MAX_PLAYERS_COUNT ];
 new g_arrayOfMapsWithVotesNumber[ MAX_OPTIONS_IN_VOTE ];
 
-new Array:g_currentMenuMapIndexForPlayers[ MAX_PLAYERS_COUNT ];
+new Array:g_menuMapIndexForPlayerArrays[ MAX_PLAYERS_COUNT ];
 
 new bool:g_isPlayerVoted            [ MAX_PLAYERS_COUNT ] = { true, ... };
 new bool:g_isPlayerParticipating    [ MAX_PLAYERS_COUNT ] = { true, ... };
@@ -2527,24 +2527,32 @@ public cmd_listrecent( player_id )
         }
         case 3:
         {
-            new recent_maps_menu_name[ 64 ];
+            new menuOptionString[ 64 ];
             
-            // assume there'll be more than one match ( because we're lazy ) and starting building the match menu
-            if( g_generalUsePlayersMenuId[ player_id ] )
+            // We starting building the menu
+            if( g_generalUsePlayersMenuIds[ player_id ] )
             {
-                menu_destroy( g_generalUsePlayersMenuId[ player_id ] );
+                menu_destroy( g_generalUsePlayersMenuIds[ player_id ] );
             }
             
-            formatex( recent_maps_menu_name, charsmax( recent_maps_menu_name ), "%L", player_id, "GAL_MAP_RECENTMAPS" );
-            g_generalUsePlayersMenuId[ player_id ] = menu_create( recent_maps_menu_name, "cmd_listrecent_handler" );
+            // To create the menu
+            formatex( menuOptionString, charsmax( menuOptionString ), "%L", player_id, "GAL_MAP_RECENTMAPS" );
+            g_generalUsePlayersMenuIds[ player_id ] = menu_create( menuOptionString, "cmd_listrecent_handler" );
             
+            // Configure the menu buttons.
+            setMenuProperty( MPROP_EXITNAME, player_id, g_generalUsePlayersMenuIds[ player_id ], "EXIT" );
+            setMenuProperty( MPROP_NEXTNAME, player_id, g_generalUsePlayersMenuIds[ player_id ], "MORE" );
+            setMenuProperty( MPROP_BACKNAME, player_id, g_generalUsePlayersMenuIds[ player_id ], "BACK" );
+            
+            // Add the menu items.
             for( new mapIndex = 0; mapIndex < g_recentMapCount; ++mapIndex )
             {
                 ArrayGetString( g_recentListMapsArray, mapIndex, recentMapName, charsmax( recentMapName ) );
-                menu_additem( g_generalUsePlayersMenuId[ player_id ], recentMapName );
+                menu_additem( g_generalUsePlayersMenuIds[ player_id ], recentMapName );
             }
             
-            menu_display( player_id, g_generalUsePlayersMenuId[ player_id ] );
+            // To display the menu.
+            menu_display( player_id, g_generalUsePlayersMenuIds[ player_id ] );
         }
     }
     
@@ -2555,15 +2563,20 @@ public cmd_listrecent_handler( player_id, menu, item )
 {
     LOGGER( 128, "I AM ENTERING ON cmd_listrecent_handler(3) | player_id: %d, menu: %d, item: %d", player_id, menu, item );
     
+    // Let go to destroy the menu and clean some memory.
     if( item < 0 )
     {
+        menu_destroy( g_generalUsePlayersMenuIds[ player_id ] );
+        g_generalUsePlayersMenuIds[ player_id ] = 0;
+        
         LOGGER( 1, "    ( cmd_listrecent_handler ) Just Returning PLUGIN_CONTINUE." );
         return PLUGIN_CONTINUE;
     }
     
-    menu_display( player_id, g_generalUsePlayersMenuId[ player_id ] );
-    LOGGER( 1, "    ( cmd_listrecent_handler ) Just Returning PLUGIN_HANDLED." );
+    // Just keep showing the menu until the exit button is pressed.
+    menu_display( player_id, g_generalUsePlayersMenuIds[ player_id ] );
     
+    LOGGER( 1, "    ( cmd_listrecent_handler ) Just Returning PLUGIN_HANDLED." );
     return PLUGIN_HANDLED;
 }
 
@@ -2901,25 +2914,34 @@ public cmd_say( player_id )
 stock buildTheNominationsMenu( player_id )
 {
     LOGGER( 128, "I AM ENTERING ON buildTheNominationsMenu(1) | player_id: %d", player_id );
+    new menuOptionString[ MAX_SHORT_STRING ];
     
-    new nominations_menu_name   [ MAX_SHORT_STRING ];
-    new nomination_cancel_option[ MAX_SHORT_STRING ];
-    
-    // assume there'll be more than one match ( because we're lazy ) and starting building the match menu
-    if( g_generalUsePlayersMenuId[ player_id ] )
-    {
-        LOGGER( 4, "( buildTheNominationsMenu ) | menu_destroy, g_generalUsePlayersMenuId[%d]: %d", player_id, g_generalUsePlayersMenuId[ player_id ] );
-        menu_destroy( g_generalUsePlayersMenuId[ player_id ] );
-    }
-    
+    // Clear the last menu, if exists
     clearMenuMapIndexForPlayers( player_id );
-    formatex( nominations_menu_name, charsmax( nominations_menu_name ), "%L", player_id, "GAL_LISTMAPS_TITLE" );
     
-    formatex( nomination_cancel_option, charsmax( nomination_cancel_option ), "%L", player_id, "GAL_NOM_CANCEL_OPTION" );
-    g_generalUsePlayersMenuId[ player_id ] = menu_create( nominations_menu_name, "nomination_handleMatchChoice" );
+    // To create the menu
+    formatex( menuOptionString, charsmax( menuOptionString ), "%L", player_id, "GAL_LISTMAPS_TITLE" );
+    g_generalUsePlayersMenuIds[ player_id ] = menu_create( menuOptionString, "nomination_handleMatchChoice" );
+    
+    // The first menu item, 'Cancel All Your Nominations.
+    formatex( menuOptionString, charsmax( menuOptionString ), "%L", player_id, "GAL_NOM_CANCEL_OPTION" );
+    menu_additem( g_generalUsePlayersMenuIds[ player_id ], menuOptionString, { 0 }, 0 );
+    
+    // Add some space from the cancel option.
+    menu_addblank( g_generalUsePlayersMenuIds[ player_id ], 0 );
+    
+    // Configure the menu buttons.
+    setMenuProperty( MPROP_EXITNAME, player_id, g_generalUsePlayersMenuIds[ player_id ], "EXIT" );
+    setMenuProperty( MPROP_NEXTNAME, player_id, g_generalUsePlayersMenuIds[ player_id ], "MORE" );
+    setMenuProperty( MPROP_BACKNAME, player_id, g_generalUsePlayersMenuIds[ player_id ], "BACK" );
+}
 
-    menu_additem( g_generalUsePlayersMenuId[ player_id ], nomination_cancel_option, { 0 }, 0 );
-    menu_addblank( g_generalUsePlayersMenuId[ player_id ], 0 );
+stock setMenuProperty( propertyConstant, player_id, menuId, langConstantName[] )
+{
+    new menuOptionString[ MAX_SHORT_STRING ];
+    
+    formatex( menuOptionString, charsmax( menuOptionString ), "%L", player_id, langConstantName );
+    menu_setprop( menuId, propertyConstant, menuOptionString );
 }
 
 /**
@@ -2991,14 +3013,14 @@ stock nomination_menu( player_id )
             formatex( choice, charsmax( choice ), "%s %s", nominationMap, disabledReason );
             LOGGER( 0, "( nomination_menu ) choice: %s, info[0]: %d", choice, info[ 0 ] );
             
-            menu_additem( g_generalUsePlayersMenuId[ player_id ], choice, info,
+            menu_additem( g_generalUsePlayersMenuIds[ player_id ], choice, info,
                     ( disabledReason[ 0 ] == '^0' ? 0 : ( 1 << 26 ) ) );
             
         } // end the menu entry item calculation.
         
     } // end for 'mapIndex'.
     
-    menu_display( player_id, g_generalUsePlayersMenuId[ player_id ] );
+    menu_display( player_id, g_generalUsePlayersMenuIds[ player_id ] );
 }
 
 /**
@@ -3041,17 +3063,14 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
     }
     // end nomination menu variables
     
-    if( !g_currentMenuMapIndexForPlayers[ player_id ] )
+    // To create the map indexes array, for a menu display if it does not exists yet.
+    if( !g_menuMapIndexForPlayerArrays[ player_id ] )
     {
-        g_currentMenuMapIndexForPlayers[ player_id ] = ArrayCreate( 1 );
-    }
-    else
-    {
-        ArrayClear( g_currentMenuMapIndexForPlayers[ player_id ] );
+        g_menuMapIndexForPlayerArrays[ player_id ] = ArrayCreate( 1 );
     }
     
     // Add a dummy value due the first map option to be 'Cancel all your Nominations'.
-    ArrayPushCell( g_currentMenuMapIndexForPlayers[ player_id ], 0 );
+    ArrayPushCell( g_menuMapIndexForPlayerArrays[ player_id ], 0 );
     
     for( mapIndex = 0; mapIndex < g_nominationMapCount && matchCount <= MAX_NOM_MATCH_COUNT; ++mapIndex )
     {
@@ -3063,7 +3082,7 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
             matchIndex = mapIndex;
             
             // Save the map index for the current menu position
-            ArrayPushCell( g_currentMenuMapIndexForPlayers[ player_id ], mapIndex );
+            ArrayPushCell( g_menuMapIndexForPlayerArrays[ player_id ], mapIndex );
             matchCount++;
             
             // Start the menu entry item calculation:
@@ -3102,7 +3121,7 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
                 formatex( choice, charsmax( choice ), "%s %s", nominationMap, disabledReason );
                 LOGGER( 0, "( nomination_menu ) choice: %s, info[0]: %d", choice, info[ 0 ] );
                 
-                menu_additem( g_generalUsePlayersMenuId[ player_id ], choice, info,
+                menu_additem( g_generalUsePlayersMenuIds[ player_id ], choice, info,
                         ( disabledReason[ 0 ] == '^0' ? 0 : ( 1 << 26 ) ) );
                 
             } // end the menu entry item calculation.
@@ -3118,11 +3137,17 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
         {
             // no matches; pity the poor fool
             color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_NOMATCHES", partialNameAttempt );
+            
+            // Destroys the menu, as is was not used.
+            clearMenuMapIndexForPlayers( player_id );
         }
         case 1:
         {
             // one match?! omg, this is just like awesome
             map_nominate( player_id, matchIndex );
+            
+            // Destroys the menu, as is was not used.
+            clearMenuMapIndexForPlayers( player_id );
         }
         default:
         {
@@ -3133,15 +3158,21 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
             }
             
             color_print( player_id, "%L", player_id, "GAL_NOM_MATCHES", partialNameAttempt );
-            menu_display( player_id, g_generalUsePlayersMenuId[ player_id ] );
+            menu_display( player_id, g_generalUsePlayersMenuIds[ player_id ] );
         }
     }
 }
 
+/**
+ * This menu handler is a little different because it handles two similar menus. The
+ * 'nomination_menu(1)' and the 'nominationAttemptWithNamePart(2)'. They would be very similar
+ * handlers, then was just build one function instead of two alike.
+ */
 public nomination_handleMatchChoice( player_id, menu, item )
 {
     LOGGER( 128, "I AM ENTERING ON nomination_handleMatchChoice(1) | player_id: %d, menu: %d, item: %d", player_id, menu, item );
     
+    // Let go to destroy the menu and clean some memory.
     if( item < 0 )
     {
         clearMenuMapIndexForPlayers( player_id );
@@ -3160,12 +3191,15 @@ public nomination_handleMatchChoice( player_id, menu, item )
         return PLUGIN_HANDLED;
     }
     
-    // If we are using the nominationAttemptWithNamePart().
-    if( g_currentMenuMapIndexForPlayers[ player_id ] )
+    // If we are using the 'nominationAttemptWithNamePart(2)'.
+    // Just because it exists, does not mean it is being used. One case is when
+    // 'nominationAttemptWithNamePart(2)' is called, and later the 'nomination_menu(1)' is called.
+    if( g_menuMapIndexForPlayerArrays[ player_id ]
+        && ArraySize( g_menuMapIndexForPlayerArrays[ player_id ] ) )
     {
-        item = ArrayGetCell( g_currentMenuMapIndexForPlayers[ player_id ], item );
+        item = ArrayGetCell( g_menuMapIndexForPlayerArrays[ player_id ], item );
     }
-    else // we are using the nomination_menu()
+    else // Then we are using the 'nomination_menu(1)'.
     {
         // Due the first menu option to be 'Cancel all your Nominations', take one item less 'item - 1'.
         item--;
@@ -3178,15 +3212,15 @@ public nomination_handleMatchChoice( player_id, menu, item )
     
     new info[ 1 ];
     LOGGER( 4, "( nomination_handleMatchChoice ) item: %d, player_id: %d, menu: %d, \
-            g_currentMenuMapIndexForPlayers[player_id]: %d", \
-            item + 1, player_id, menu, g_currentMenuMapIndexForPlayers[ player_id ] );
+            g_menuMapIndexForPlayerArrays[player_id]: %d", \
+            item + 1, player_id, menu, g_menuMapIndexForPlayerArrays[ player_id ] );
     
     // Get item info
-    menu_item_getinfo( g_generalUsePlayersMenuId[ player_id ], item + 1, access, info, 1, _, _, callback );
+    menu_item_getinfo( g_generalUsePlayersMenuIds[ player_id ], item + 1, access, info, 1, _, _, callback );
     
     LOGGER( 4, "( nomination_handleMatchChoice ) info[0]: %d, access: %d, \
-            g_generalUsePlayersMenuId[player_id]: %d", \
-            info[ 0 ], access, g_generalUsePlayersMenuId[ player_id ] );
+            g_generalUsePlayersMenuIds[player_id]: %d", \
+            info[ 0 ], access, g_generalUsePlayersMenuIds[ player_id ] );
 #endif
     
     map_nominate( player_id, item );
@@ -3196,19 +3230,27 @@ public nomination_handleMatchChoice( player_id, menu, item )
     return PLUGIN_HANDLED;
 }
 
-stock clearMenuMapIndexForPlayers( player_id )
+stock clearMenuMapIndexForPlayers( player_id, isToDestroyEverything = false )
 {
     LOGGER( 128, "I AM ENTERING ON clearMenuMapIndexForPlayers(1) | player_id: %d", player_id );
     
-    if( g_currentMenuMapIndexForPlayers[ player_id ] )
+    if( g_menuMapIndexForPlayerArrays[ player_id ] )
     {
-        ArrayClear( g_currentMenuMapIndexForPlayers[ player_id ] );
+        if( isToDestroyEverything )
+        {
+            ArrayDestroy( g_menuMapIndexForPlayerArrays[ player_id ] );
+        }
+        else
+        {
+            ArrayClear( g_menuMapIndexForPlayerArrays[ player_id ] );
+        }
     }
     
-    if( g_generalUsePlayersMenuId[ player_id ] )
+    // Let go to destroy the menu and clean some memory.
+    if( g_generalUsePlayersMenuIds[ player_id ] )
     {
-        menu_destroy( g_generalUsePlayersMenuId[ player_id ] );
-        g_generalUsePlayersMenuId[ player_id ] = 0;
+        menu_destroy( g_generalUsePlayersMenuIds[ player_id ] );
+        g_generalUsePlayersMenuIds[ player_id ] = 0;
     }
 }
 
@@ -7843,7 +7885,7 @@ public plugin_end()
     // Clear the dynamic array menus, just to be sure.
     for( new currentIndex = 0; currentIndex < MAX_PLAYERS_COUNT; ++currentIndex )
     {
-        clearMenuMapIndexForPlayers( currentIndex );
+        clearMenuMapIndexForPlayers( currentIndex, true );
     }
     
     // Clean the unit tests data 
