@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v3.2.0-205";
+new const PLUGIN_VERSION[] = "v3.2.0-206";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -2391,88 +2391,58 @@ stock restoreRoundEnding( bool:roundEndStatus[] )
 public resetRoundsScores()
 {
     LOGGER( 128, "I AM ENTERING ON resetRoundsScores(0)" );
+    new serverLimiterValue;
     
-    if( get_pcvar_num( cvar_serverTimeLimitRestart )
-        || get_pcvar_num( cvar_serverWinlimitRestart )
-        || get_pcvar_num( cvar_serverMaxroundsRestart )
-        || get_pcvar_num( cvar_serverFraglimitRestart ) )
-    {
-        saveEndGameLimits();
-        
-        // cvar_mp_timelimit
-        // ########################################################################################
-        if( get_pcvar_num( cvar_mp_timelimit )
-            && get_pcvar_num( cvar_serverTimeLimitRestart ) )
-        {
-            new new_timelimit =
-            (
-                floatround( get_pcvar_num( cvar_mp_timelimit ) - map_getMinutesElapsed(),
-                            floatround_floor )
-                +
-                get_pcvar_num( cvar_serverTimeLimitRestart ) - 1
-            );
-            
-            if( new_timelimit > 0 )
-            {
-                set_pcvar_num( cvar_mp_timelimit, new_timelimit );
-                LOGGER( 2, "( resetRoundsScores ) IS CHANGING THE CVAR 'mp_timelimit' to '%f'.", get_pcvar_float( cvar_mp_timelimit ) );
-            }
-        }
-        
-        // cvar_mp_winlimit
-        // ########################################################################################
-        if( get_pcvar_num( cvar_mp_winlimit )
-            && get_pcvar_num( cvar_serverWinlimitRestart ) )
-        {
-            new new_winlimit =
-            (
-                get_pcvar_num( cvar_mp_winlimit ) - max( g_totalTerroristsWins, g_totalCtWins )
-                +
-                get_pcvar_num( cvar_serverWinlimitRestart ) - 1
-            );
-            
-            if( new_winlimit > 0 )
-            {
-                set_pcvar_num( cvar_mp_winlimit, new_winlimit );
-                LOGGER( 2, "( resetRoundsScores ) IS CHANGING THE CVAR 'mp_winlimit' to '%d'", get_pcvar_num( cvar_mp_winlimit ) );
-            }
-        }
-        
-        // cvar_mp_maxrounds
-        // ########################################################################################
-        if( get_pcvar_num( cvar_mp_maxrounds )
-            && get_pcvar_num( cvar_serverMaxroundsRestart ) )
-        {
-            new new_maxrounds = ( get_pcvar_num( cvar_mp_maxrounds ) - g_roundsPlayedNumber
-                                  + get_pcvar_num( cvar_serverMaxroundsRestart ) - 1 );
-            
-            if( new_maxrounds > 0 )
-            {
-                set_pcvar_num( cvar_mp_maxrounds, new_maxrounds );
-                LOGGER( 2, "( resetRoundsScores ) IS CHANGING THE CVAR 'mp_maxrounds' to '%d'", get_pcvar_num( cvar_mp_maxrounds ) );
-            }
-        }
-        
-        // cvar_mp_fraglimit
-        // ########################################################################################
-        if( get_pcvar_num( cvar_mp_fraglimit )
-            && get_pcvar_num( cvar_serverFraglimitRestart ) )
-        {
-            new new_fraglimit = ( get_pcvar_num( cvar_mp_fraglimit ) - g_greatestKillerFrags
-                                  + get_pcvar_num( cvar_serverFraglimitRestart ) - 1 );
-            
-            if( new_fraglimit > 0 )
-            {
-                set_pcvar_num( cvar_mp_fraglimit, new_fraglimit );
-                LOGGER( 2, "( resetRoundsScores ) IS CHANGING THE CVAR 'mp_fraglimit' to '%d'", get_pcvar_num( cvar_mp_fraglimit ) );
-            }
-        }
-    }
+    // mp_timelimit
+    LOGGER( 2, "( resetRoundsScores ) Is going to try to touch the cvar: %s.", "mp_timelimit" );
+    serverLimiterValue = get_pcvar_num( cvar_serverTimeLimitRestart );
+    calculateNewGameLimit( serverLimiterValue, cvar_mp_timelimit, map_getMinutesElapsedInteger() );
     
+    // mp_winlimit
+    LOGGER( 2, "( resetRoundsScores ) Is going to try to touch the cvar: %s.", "mp_winlimit" );
+    serverLimiterValue = get_pcvar_num( cvar_serverWinlimitRestart );
+    calculateNewGameLimit( serverLimiterValue, cvar_mp_winlimit, max( g_totalTerroristsWins, g_totalCtWins ) );
+    
+    // mp_maxrounds
+    LOGGER( 2, "( resetRoundsScores ) Is going to try to touch the cvar: %s.", "mp_maxrounds" );
+    serverLimiterValue = get_pcvar_num( cvar_serverMaxroundsRestart );
+    calculateNewGameLimit( serverLimiterValue, cvar_mp_maxrounds, g_roundsPlayedNumber );
+    
+    // mp_fraglimit
+    LOGGER( 2, "( resetRoundsScores ) Is going to try to touch the cvar: %s.", "mp_fraglimit" );
+    serverLimiterValue = get_pcvar_num( cvar_serverFraglimitRestart );
+    calculateNewGameLimit( serverLimiterValue, cvar_mp_fraglimit, g_greatestKillerFrags );
+    
+    // Reset the plugin internal limiter counters.
     g_totalTerroristsWins = 0;
     g_totalCtWins         = 0;
     g_roundsPlayedNumber  = -1;
     g_greatestKillerFrags = 0;
+    
+    LOGGER( 2, "I AM EXITING ON resetRoundsScores(0)" );
+}
+
+stock calculateNewGameLimit( serverLimiterValue, serverCvarPointer, limitOffset )
+{
+    LOGGER( 128, "I AM ENTERING ON calculateNewGameLimit(3) | serverLimiterValue: %d, limitOffset: %d", serverLimiterValue, limitOffset );
+    
+    if( serverLimiterValue )
+    {
+        new serverCvarValue = get_pcvar_num( serverCvarPointer );
+        
+        if( serverCvarValue )
+        {
+            serverCvarValue = serverCvarValue - limitOffset + serverLimiterValue - 1;
+            
+            if( serverCvarValue > 0 )
+            {
+                saveEndGameLimits();
+                set_pcvar_num( serverCvarPointer, serverCvarValue );
+                
+                LOGGER( 2, "( calculateNewGameLimit ) IS CHANGING A CVAR to '%d'.", serverCvarValue );
+            }
+        }
+    }
 }
 
 public cmd_rockthevote( player_id )
@@ -6415,10 +6385,14 @@ stock finalizeVoting()
 
 stock Float:map_getMinutesElapsed()
 {
-    LOGGER( 128, "I AM ENTERING ON Float:map_getMinutesElapsed(0)" );
-    LOGGER( 2, "%32s mp_timelimit: %f", "map_getMinutesElapsed( in/out )", get_pcvar_float( cvar_mp_timelimit ) );
-    
+    LOGGER( 128, "I AM ENTERING ON Float:map_getMinutesElapsed(0) | mp_timelimit: %f", get_pcvar_float( cvar_mp_timelimit ) );
     return get_pcvar_float( cvar_mp_timelimit ) - ( float( get_timeleft() ) / 60.0 );
+}
+
+stock map_getMinutesElapsedInteger()
+{
+    LOGGER( 128, "I AM ENTERING ON Float:map_getMinutesElapsed(0) | mp_timelimit: %f", get_pcvar_float( cvar_mp_timelimit ) );
+    return get_pcvar_num( cvar_mp_timelimit ) - ( get_timeleft() / 60 );
 }
 
 stock map_extend()
