@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v3.2.0-206";
+new const PLUGIN_VERSION[] = "v3.2.0-207";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -273,7 +273,7 @@ new const PLUGIN_VERSION[] = "v3.2.0-206";
 /**
  * Dummy value used to use the do...while() statements to allow the semicolon ';' use at macros endings.
  */
-new g_dummy_value = 0;
+new const g_dummy_value = 0;
 
 stock allowToUseSemicolonOnMacrosEnd()
 {
@@ -2388,6 +2388,32 @@ stock restoreRoundEnding( bool:roundEndStatus[] )
     g_isTheLastGameRound  = roundEndStatus[ 3 ];
 }
 
+/**
+ * Try to set the new game limits as specified by the cvars 'gal_srv_..._restart' feature.
+ * 
+ * @param limiterCvarPointer      the 'gal_srv_..._restart' pointer
+ * @param serverCvarPointer       the game cvar pointer as 'cvar_mp_timelimit'.
+ * @param limiterOffset           the current game limit as an integer. Example: 'map_getMinutesElapsedInteger(0)'.
+ */
+#define CALCULATE_NEW_GAME_LIMIT(%1,%2,%3) \
+do \
+{ \
+    serverLimiterValue = get_pcvar_num( %1 ); \
+    if( serverLimiterValue ) \
+    { \
+        new serverCvarValue = get_pcvar_num( %2 ); \
+        if( serverCvarValue ) \
+        { \
+            serverCvarValue = serverCvarValue - %3 + serverLimiterValue - 1; \
+            if( serverCvarValue > 0 ) \
+            { \
+                saveEndGameLimits(); \
+                set_pcvar_num( %2, serverCvarValue ); \
+            } \
+        } \
+    } \
+} while( g_dummy_value )
+
 public resetRoundsScores()
 {
     LOGGER( 128, "I AM ENTERING ON resetRoundsScores(0)" );
@@ -2395,23 +2421,19 @@ public resetRoundsScores()
     
     // mp_timelimit
     LOGGER( 2, "( resetRoundsScores ) Is going to try to touch the cvar: %s.", "mp_timelimit" );
-    serverLimiterValue = get_pcvar_num( cvar_serverTimeLimitRestart );
-    calculateNewGameLimit( serverLimiterValue, cvar_mp_timelimit, map_getMinutesElapsedInteger() );
+    CALCULATE_NEW_GAME_LIMIT( cvar_serverTimeLimitRestart, cvar_mp_timelimit, map_getMinutesElapsedInteger() );
     
     // mp_winlimit
     LOGGER( 2, "( resetRoundsScores ) Is going to try to touch the cvar: %s.", "mp_winlimit" );
-    serverLimiterValue = get_pcvar_num( cvar_serverWinlimitRestart );
-    calculateNewGameLimit( serverLimiterValue, cvar_mp_winlimit, max( g_totalTerroristsWins, g_totalCtWins ) );
+    CALCULATE_NEW_GAME_LIMIT( cvar_serverWinlimitRestart, cvar_mp_winlimit, max( g_totalTerroristsWins, g_totalCtWins ) );
     
     // mp_maxrounds
     LOGGER( 2, "( resetRoundsScores ) Is going to try to touch the cvar: %s.", "mp_maxrounds" );
-    serverLimiterValue = get_pcvar_num( cvar_serverMaxroundsRestart );
-    calculateNewGameLimit( serverLimiterValue, cvar_mp_maxrounds, g_roundsPlayedNumber );
+    CALCULATE_NEW_GAME_LIMIT( cvar_serverMaxroundsRestart, cvar_mp_maxrounds, g_roundsPlayedNumber );
     
     // mp_fraglimit
     LOGGER( 2, "( resetRoundsScores ) Is going to try to touch the cvar: %s.", "mp_fraglimit" );
-    serverLimiterValue = get_pcvar_num( cvar_serverFraglimitRestart );
-    calculateNewGameLimit( serverLimiterValue, cvar_mp_fraglimit, g_greatestKillerFrags );
+    CALCULATE_NEW_GAME_LIMIT( cvar_serverFraglimitRestart, cvar_mp_fraglimit, g_greatestKillerFrags );
     
     // Reset the plugin internal limiter counters.
     g_totalTerroristsWins = 0;
@@ -2420,29 +2442,6 @@ public resetRoundsScores()
     g_greatestKillerFrags = 0;
     
     LOGGER( 2, "I AM EXITING ON resetRoundsScores(0)" );
-}
-
-stock calculateNewGameLimit( serverLimiterValue, serverCvarPointer, limitOffset )
-{
-    LOGGER( 128, "I AM ENTERING ON calculateNewGameLimit(3) | serverLimiterValue: %d, limitOffset: %d", serverLimiterValue, limitOffset );
-    
-    if( serverLimiterValue )
-    {
-        new serverCvarValue = get_pcvar_num( serverCvarPointer );
-        
-        if( serverCvarValue )
-        {
-            serverCvarValue = serverCvarValue - limitOffset + serverLimiterValue - 1;
-            
-            if( serverCvarValue > 0 )
-            {
-                saveEndGameLimits();
-                set_pcvar_num( serverCvarPointer, serverCvarValue );
-                
-                LOGGER( 2, "( calculateNewGameLimit ) IS CHANGING A CVAR to '%d'.", serverCvarValue );
-            }
-        }
-    }
 }
 
 public cmd_rockthevote( player_id )
