@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v3.2.0-212";
+new const PLUGIN_VERSION[] = "v3.2.0-213";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -2443,7 +2443,8 @@ stock restoreRoundEnding( bool:roundEndStatus[] )
 }
 
 /**
- * Try to set the new game limits as specified by the cvars 'gal_srv_..._restart' feature.
+ * Try to set the new game limits as specified by the cvars 'gal_srv_..._restart' feature. This
+ * macro requires the integer variable 'serverLimiterValue' defined before the use of this macro.
  * 
  * @param limiterCvarPointer      the 'gal_srv_..._restart' pointer
  * @param serverCvarPointer       the game cvar pointer as 'cvar_mp_timelimit'.
