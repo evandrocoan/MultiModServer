@@ -180,10 +180,8 @@ new const PLUGIN_VERSION[] = "v3.2.0-207";
     stock nornal_tests_to_execute()
     {
         test_register_test();
-        test_gal_in_empty_cycle_case1();
-        test_gal_in_empty_cycle_case2();
-        test_gal_in_empty_cycle_case3();
-        test_gal_in_empty_cycle_case4();
+        test_gal_in_empty_cycle_base();
+        test_mapGetNext_cases();
         test_loadCurrentBlackList_cases();
         test_resetRoundsScores_cases();
     }
@@ -534,6 +532,22 @@ do \
 #endif
     new cvar_coloredChatEnabled;
 #endif
+
+/**
+ * Helper to adjust the menus options 'back', 'next' and exit. This requires prior definition of
+ * the variables 'menuOptionString[ MAX_SHORT_STRING ] and 'player_id', where the player id must
+ * point to the player identification number which will see the menu.
+ * 
+ * @param propertyConstant        one of the new menu property constants
+ * @param menuId                  the menu identification number
+ * @param langConstantName        the dictionary registered LANG constant
+ */
+#define SET_MENU_PROPERTY(%1,%2,%3) \
+do \
+{ \
+    formatex( menuOptionString, charsmax( menuOptionString ), "%L", player_id, %3 ); \
+    menu_setprop( %2, %1, menuOptionString ); \
+} while( g_dummy_value ) 
 
 
 /**
@@ -2518,9 +2532,9 @@ public cmd_listrecent( player_id )
             g_generalUsePlayersMenuIds[ player_id ] = menu_create( menuOptionString, "cmd_listrecent_handler" );
             
             // Configure the menu buttons.
-            setMenuProperty( MPROP_EXITNAME, player_id, g_generalUsePlayersMenuIds[ player_id ], "EXIT" );
-            setMenuProperty( MPROP_NEXTNAME, player_id, g_generalUsePlayersMenuIds[ player_id ], "MORE" );
-            setMenuProperty( MPROP_BACKNAME, player_id, g_generalUsePlayersMenuIds[ player_id ], "BACK" );
+            SET_MENU_PROPERTY( MPROP_EXITNAME, g_generalUsePlayersMenuIds[ player_id ], "EXIT" );
+            SET_MENU_PROPERTY( MPROP_NEXTNAME, g_generalUsePlayersMenuIds[ player_id ], "MORE" );
+            SET_MENU_PROPERTY( MPROP_BACKNAME, g_generalUsePlayersMenuIds[ player_id ], "BACK" );
             
             // Add the menu items.
             for( new mapIndex = 0; mapIndex < g_recentMapCount; ++mapIndex )
@@ -2909,17 +2923,9 @@ stock buildTheNominationsMenu( player_id )
     menu_addblank( g_generalUsePlayersMenuIds[ player_id ], 0 );
     
     // Configure the menu buttons.
-    setMenuProperty( MPROP_EXITNAME, player_id, g_generalUsePlayersMenuIds[ player_id ], "EXIT" );
-    setMenuProperty( MPROP_NEXTNAME, player_id, g_generalUsePlayersMenuIds[ player_id ], "MORE" );
-    setMenuProperty( MPROP_BACKNAME, player_id, g_generalUsePlayersMenuIds[ player_id ], "BACK" );
-}
-
-stock setMenuProperty( propertyConstant, player_id, menuId, langConstantName[] )
-{
-    new menuOptionString[ MAX_SHORT_STRING ];
-    
-    formatex( menuOptionString, charsmax( menuOptionString ), "%L", player_id, langConstantName );
-    menu_setprop( menuId, propertyConstant, menuOptionString );
+    SET_MENU_PROPERTY( MPROP_EXITNAME, g_generalUsePlayersMenuIds[ player_id ], "EXIT" );
+    SET_MENU_PROPERTY( MPROP_NEXTNAME, g_generalUsePlayersMenuIds[ player_id ], "MORE" );
+    SET_MENU_PROPERTY( MPROP_BACKNAME, g_generalUsePlayersMenuIds[ player_id ], "BACK" );
 }
 
 /**
@@ -8350,35 +8356,6 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         }
     }
     
-    stock print_tests_failure()
-    {
-        LOGGER( 128, "I AM ENTERING ON print_tests_failure(0)" );
-        
-        new test_id;
-        new test_name[ MAX_SHORT_STRING ];
-        new failure_reason[ MAX_LONG_STRING ];
-        
-        new failureTestsNumber = ArraySize( g_tests_failure_idsArray );
-        
-        if( failureTestsNumber )
-        {
-            print_logger( "" );
-            print_logger( "" );
-            print_logger( "    The following 'Galileo' unit tests failed: " );
-            print_logger( "" );
-            
-            for( new failure_index = 0; failure_index < failureTestsNumber; failure_index++ )
-            {
-                test_id = ArrayGetCell( g_tests_failure_idsArray, failure_index );
-                
-                ArrayGetString( g_tests_idsAndNames, test_id - 1, test_name, charsmax( test_name ) );
-                ArrayGetString( g_tests_failure_reasons, failure_index, failure_reason, charsmax( failure_reason ) );
-                
-                print_logger( "       %3d. %s: %s", test_id, test_name, failure_reason );
-            }
-        }
-    }
-    
     /**
      * This is executed at the end of the delayed tests execution to show its results and restore any
      * cvars variable change.
@@ -8406,6 +8383,35 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         print_logger( "" );
         
         g_areTheUnitTestsRunning = false;
+    }
+    
+    stock print_tests_failure()
+    {
+        LOGGER( 0, "I AM ENTERING ON print_tests_failure(0)" );
+        
+        new test_id;
+        new test_name[ MAX_SHORT_STRING ];
+        new failure_reason[ MAX_LONG_STRING ];
+        
+        new failureTestsNumber = ArraySize( g_tests_failure_idsArray );
+        
+        if( failureTestsNumber )
+        {
+            print_logger( "" );
+            print_logger( "" );
+            print_logger( "    The following 'Galileo' unit tests failed: " );
+            print_logger( "" );
+            
+            for( new failure_index = 0; failure_index < failureTestsNumber; failure_index++ )
+            {
+                test_id = ArrayGetCell( g_tests_failure_idsArray, failure_index );
+                
+                ArrayGetString( g_tests_idsAndNames, test_id - 1, test_name, charsmax( test_name ) );
+                ArrayGetString( g_tests_failure_reasons, failure_index, failure_reason, charsmax( failure_reason ) );
+                
+                print_logger( "       %3d. %s: %s", test_id, test_name, failure_reason );
+            }
+        }
     }
     
     /**
@@ -8456,7 +8462,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         if( isFailure
             && !TrieKeyExists( g_tests_failure_idsTrie, trieKey ) )
         {
-            static formated_message[ MAX_LONG_STRING ];
+            new formated_message[ MAX_LONG_STRING ];
             
             g_totalFailureTests++;
             g_isTheCurrentTestAFailure = true;
@@ -8628,9 +8634,9 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     /**
      * Test for client connect cvar_isToStopEmptyCycle behavior.
      */
-    stock test_gal_in_empty_cycle_case1()
+    stock test_gal_in_empty_cycle_base()
     {
-        new test_id = register_test( 0, "test_gal_in_empty_cycle_case1" );
+        new test_id = register_test( 0, "test_gal_in_empty_cycle_base" );
         
         set_pcvar_num( cvar_isToStopEmptyCycle, 1 );
         client_authorized( 1 );
@@ -8646,71 +8652,53 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     }
     
     /**
-     * This 1º case test if the current map isn't part of the empty cycle, immediately change to next map
-     * that is.
+     * To call the general test handler 'test_maGetNext_case(4)' using test scenario cases.
      */
-    stock test_gal_in_empty_cycle_case2()
+    stock test_mapGetNext_cases()
     {
-        new nextMap[ MAX_MAPNAME_LENGHT ];
+        new Array:testMapListArray = ArrayCreate( MAX_MAPNAME_LENGHT );
         
-        new test_id                  = register_test( 0, "test_gal_in_empty_cycle_case2" );
-        new Array: emptyCycleMapList = ArrayCreate( MAX_MAPNAME_LENGHT );
+        ArrayPushString( testMapListArray, "de_dust2" );
+        ArrayPushString( testMapListArray, "de_inferno" );
+        ArrayPushString( testMapListArray, "de_dust4" );
+        ArrayPushString( testMapListArray, "de_dust" );
         
-        ArrayPushString( emptyCycleMapList, "de_dust2" );
-        ArrayPushString( emptyCycleMapList, "de_inferno" );
+        test_maGetNext_case( testMapListArray, "de_dust", "de_dust2", 0 );    // case 1
+        test_maGetNext_case( testMapListArray, "de_dust2", "de_inferno", 1 ); // case 2
+        test_maGetNext_case( testMapListArray, "de_inferno", "de_dust4", 2 ); // case 3
         
-        new mapIndex = map_getNext( emptyCycleMapList, "de_dust2", nextMap );
-        
-        SET_TEST_FAILURE( test_id, !equal( nextMap, "de_inferno" ), "nextMap must be 'de_inferno' (it was %s)", nextMap );
-        SET_TEST_FAILURE( test_id, mapIndex == -1, "mapIndex must not be '-1' (it was %d)", mapIndex );
-        
-        ArrayDestroy( emptyCycleMapList );
+        ArrayDestroy( testMapListArray );
     }
     
     /**
-     * This 2º case test if the current map isn't part of the empty cycle, immediately change to next map
-     * that is.
+     * This is a general test handler for the function 'map_getNext(3)'.
+     *
+     * @param testMapListArray        an Array with a map-cycle for loading
+     * @param currentMap              an string as the current map
+     * @param nextMapAim              an string as the desired next map
+     * @param mapIndexAim             the desired next map index
      */
-    stock test_gal_in_empty_cycle_case3()
+    stock test_maGetNext_case( Array:testMapListArray, currentMap[], nextMapAim[], mapIndexAim )
     {
-        new nextMap[ MAX_MAPNAME_LENGHT ];
+        static currentCaseNumber = 0;
+        currentCaseNumber++;
         
-        new test_id                  = register_test( 0, "test_gal_in_empty_cycle_case3" );
-        new Array: emptyCycleMapList = ArrayCreate( MAX_MAPNAME_LENGHT );
+        new test_id;
+        new mapIndex;
+        new nextMap     [ MAX_MAPNAME_LENGHT ];
+        new testName    [ MAX_SHORT_STRING ];
+        new errorMessage[ MAX_LONG_STRING ];
         
-        ArrayPushString( emptyCycleMapList, "de_dust2" );
-        ArrayPushString( emptyCycleMapList, "de_inferno" );
-        ArrayPushString( emptyCycleMapList, "de_dust4" );
+        formatex( testName, charsmax( testName ), "test_maGetNext_case%d", currentCaseNumber );
         
-        new mapIndex = map_getNext( emptyCycleMapList, "de_inferno", nextMap );
+        test_id  = register_test( 0, testName );
+        mapIndex = map_getNext( testMapListArray, currentMap, nextMap );
         
-        SET_TEST_FAILURE( test_id, !equal( nextMap, "de_dust4" ), "nextMap must be 'de_dust4' (it was %s)", nextMap );
-        SET_TEST_FAILURE( test_id, mapIndex == -1, "mapIndex must not be '-1' (it was %d)", mapIndex );
+        formatex( errorMessage, charsmax( errorMessage ), "The nextMap must to be '%s'! But it was %s.", nextMapAim, nextMap );
+        SET_TEST_FAILURE( test_id, !equal( nextMap, nextMapAim ), errorMessage );
         
-        ArrayDestroy( emptyCycleMapList );
-    }
-    
-    /**
-     * This 3º case test if the current map isn't part of the empty cycle, immediately change to next map
-     * that is.
-     */
-    stock test_gal_in_empty_cycle_case4()
-    {
-        new nextMap[ MAX_MAPNAME_LENGHT ];
-        
-        new test_id                 = register_test( 0, "test_gal_in_empty_cycle_case4" );
-        new Array:emptyCycleMapList = ArrayCreate( MAX_MAPNAME_LENGHT );
-        
-        ArrayPushString( emptyCycleMapList, "de_dust2" );
-        ArrayPushString( emptyCycleMapList, "de_inferno" );
-        ArrayPushString( emptyCycleMapList, "de_dust4" );
-        
-        new mapIndex = map_getNext( emptyCycleMapList, "de_dust", nextMap );
-        
-        SET_TEST_FAILURE( test_id, !equal( nextMap, "de_dust2" ), "nextMap must be 'de_dust2' (it was %s)", nextMap );
-        SET_TEST_FAILURE( test_id, !( mapIndex == -1 ), "mapIndex must be '-1' (it was %d)", mapIndex );
-        
-        ArrayDestroy( emptyCycleMapList );
+        formatex( errorMessage, charsmax( errorMessage ), "The mapIndex must to be %d! But it was %d.", mapIndexAim, mapIndex );
+        SET_TEST_FAILURE( test_id, mapIndex != mapIndexAim, errorMessage );
     }
     
     /**
@@ -8786,7 +8774,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         currentCaseNumber++;
         
         new testName    [ 64 ];
-        new errorMessage[ MAX_COLOR_MESSAGE ];
+        new errorMessage[ MAX_LONG_STRING ];
         
         formatex( testName, charsmax( testName ), "test_loadCurrentBlacklist_case%d", currentCaseNumber );
         
@@ -8859,7 +8847,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     stock test_resetRoundsScores_case( test_id, limiterCvarPointer, serverCvarPointer, elapsedValue, aimResult, defaultCvarValue, defaultLimiterValue )
     {
         new changeResult;
-        new errorMessage[ MAX_COLOR_MESSAGE ];
+        new errorMessage[ MAX_LONG_STRING ];
         
         g_test_elapsed_time   = elapsedValue;
         g_totalTerroristsWins = elapsedValue;
