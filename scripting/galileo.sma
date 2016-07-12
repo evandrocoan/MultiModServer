@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v3.2.0-210";
+new const PLUGIN_VERSION[] = "v3.2.0-211";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -197,6 +197,8 @@ new const PLUGIN_VERSION[] = "v3.2.0-210";
     /**
      * Call the internal function to perform its task and stop the current test execution to avoid
      * double failure at the test control system.
+     * 
+     * @see the stock 'set_test_failure_private(3)'.
      */
     #define SET_TEST_FAILURE(%1) \
     do \
@@ -8393,9 +8395,8 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
      * @param test_id              the test_id at the Test System
      * @param isFailure            a boolean value setting whether the failure status is true.
      * @param failure_reason       the reason why the test failed
-     * @param any                  a variable number of formatting parameters
      */
-    stock set_test_failure_private( test_id, bool:isFailure, failure_reason[], any: ... )
+    stock set_test_failure_private( test_id, bool:isFailure, failure_reason[] )
     {
         LOGGER( 0, "I AM ENTERING ON set_test_failure_private(...) | test_id: %d, isFailure: %d, \
                 failure_reason: %s",                                 test_id,     isFailure, \
@@ -8407,17 +8408,14 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         if( isFailure
             && !TrieKeyExists( g_tests_failureIdsTrie, trieKey ) )
         {
-            new formated_message[ MAX_LONG_STRING ];
-            
             g_totalFailureTests++;
             g_isTheCurrentTestAFailure = true;
             
-            vformat( formated_message, charsmax( formated_message ), failure_reason, 3 );
             ArrayPushCell( g_tests_failureIdsArray, test_id );
             TrieSetCell( g_tests_failureIdsTrie, trieKey, 0 );
             
-            ArrayPushString( g_tests_failureReasonsArray, formated_message );
-            print_logger( "       TEST FAILURE! %s", formated_message );
+            ArrayPushString( g_tests_failureReasonsArray, failure_reason );
+            print_logger( "       TEST FAILURE! %s", failure_reason );
         }
         else
         {
@@ -8431,18 +8429,21 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     stock test_register_test()
     {
         new test_id;
+        new errorMessage   [ MAX_LONG_STRING ];
         new first_test_name[ MAX_SHORT_STRING ];
         
         test_id = register_test( 0, "test_register_test" );
         
-        SET_TEST_FAILURE( test_id, g_totalTestsNumber != 1, \
-                "g_totalTestsNumber must be 1 (it was %d)", g_totalTestsNumber );
+        formatex( errorMessage, charsmax( errorMessage ), "g_totalTestsNumber must be 1 (it was %d)", g_totalTestsNumber );
+        SET_TEST_FAILURE( test_id, g_totalTestsNumber != 1, errorMessage );
         
-        SET_TEST_FAILURE( test_id, test_id != 1, "test_id must be 1 (it was %d)", test_id );
+        formatex( errorMessage, charsmax( errorMessage ), "test_id must be 1 (it was %d)", test_id );
+        SET_TEST_FAILURE( test_id, test_id != 1, errorMessage );
+        
         ArrayGetString( g_tests_idsAndNamesArray, 0, first_test_name, charsmax( first_test_name ) );
         
-        SET_TEST_FAILURE( test_id, !equal( first_test_name, "test_register_test" ), \
-                "first_test_name must be 'test_register_test' (it was %s)", first_test_name );
+        formatex( errorMessage, charsmax( errorMessage ), "first_test_name must be 'test_register_test' (it was %s)", first_test_name );
+        SET_TEST_FAILURE( test_id, !equal( first_test_name, "test_register_test" ), errorMessage );
     }
     
     /**
@@ -8456,19 +8457,21 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
      */
     stock test_is_map_extension_allowed()
     {
+        new errorMessage[ MAX_LONG_STRING ];
+        
         new chainDelay = 2 + 2 + 1 + 1 + 1;
         new test_id    = register_test( chainDelay, "test_is_map_extension_allowed" );
         
-        SET_TEST_FAILURE( test_id, g_isMapExtensionAllowed, "g_isMapExtensionAllowed must be 0 (it was %d)", \
-                g_isMapExtensionAllowed );
+        formatex( errorMessage, charsmax( errorMessage ), "g_isMapExtensionAllowed must be 0 (it was %d)", g_isMapExtensionAllowed );
+        SET_TEST_FAILURE( test_id, g_isMapExtensionAllowed, errorMessage );
         
         set_pcvar_float( cvar_maxMapExtendTime, 20.0 );
         set_pcvar_float( cvar_mp_timelimit, 10.0 );
         
         vote_startDirector( false );
         
-        SET_TEST_FAILURE( test_id, !g_isMapExtensionAllowed, "g_isMapExtensionAllowed must be 1 (it was %d)", \
-                g_isMapExtensionAllowed );
+        formatex( errorMessage, charsmax( errorMessage ), "g_isMapExtensionAllowed must be 1 (it was %d)", g_isMapExtensionAllowed );
+        SET_TEST_FAILURE( test_id, !g_isMapExtensionAllowed, errorMessage );
         
         set_task( 2.0, "test_is_map_extension_allowed2", chainDelay );
     }
@@ -8480,10 +8483,11 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
      */
     public test_is_map_extension_allowed2( chainDelay )
     {
+        new errorMessage[ MAX_LONG_STRING ];
         new test_id = register_test( chainDelay, "test_is_map_extension_allowed2" );
         
-        SET_TEST_FAILURE( test_id, !g_isMapExtensionAllowed, \
-                "g_isMapExtensionAllowed must be 1 (it was %d)", g_isMapExtensionAllowed );
+        formatex( errorMessage, charsmax( errorMessage ), "g_isMapExtensionAllowed must be 1 (it was %d)", g_isMapExtensionAllowed );
+        SET_TEST_FAILURE( test_id, !g_isMapExtensionAllowed, errorMessage );
         
         color_print( 0, "%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED" );
         cancelVoting();
@@ -8492,7 +8496,9 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         set_pcvar_float( cvar_mp_timelimit, 20.0 );
         
         vote_startDirector( false );
-        SET_TEST_FAILURE( test_id, g_isMapExtensionAllowed, "g_isMapExtensionAllowed must be 0 (it was %d)", g_isMapExtensionAllowed );
+
+        formatex( errorMessage, charsmax( errorMessage ), "g_isMapExtensionAllowed must be 0 (it was %d)", g_isMapExtensionAllowed );
+        SET_TEST_FAILURE( test_id, g_isMapExtensionAllowed, errorMessage );
         
         set_task( 2.0, "test_end_of_map_voting_start_1", chainDelay );
     }
@@ -8507,8 +8513,11 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         new test_id;
         new secondsLeft;
         
+        new errorMessage[ MAX_LONG_STRING ];
         test_id = register_test( chainDelay, "test_end_of_map_voting_start_1" );
-        SET_TEST_FAILURE( test_id, g_isMapExtensionAllowed, "g_isMapExtensionAllowed must be 0 (it was %d)", g_isMapExtensionAllowed );
+        
+        formatex( errorMessage, charsmax( errorMessage ), "g_isMapExtensionAllowed must be 0 (it was %d)", g_isMapExtensionAllowed );
+        SET_TEST_FAILURE( test_id, g_isMapExtensionAllowed, errorMessage );
         
         cancelVoting();
         secondsLeft = get_timeleft();
@@ -8572,8 +8581,6 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         
         set_pcvar_float( cvar_mp_timelimit, 20.0 );
         cancelVoting();
-        
-        //set_task( 1.0, "test_end_of_map_voting_stop_____", chainDelay )
     }
     
     /**
@@ -8581,19 +8588,20 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
      */
     stock test_gal_in_empty_cycle_base()
     {
+        new errorMessage[ MAX_LONG_STRING ];
         new test_id = register_test( 0, "test_gal_in_empty_cycle_base" );
         
         set_pcvar_num( cvar_isToStopEmptyCycle, 1 );
         client_authorized( 1 );
         
-        SET_TEST_FAILURE( test_id, get_pcvar_num( cvar_isToStopEmptyCycle ) != 0, \
-                "cvar_isToStopEmptyCycle must be 0 (it was %d)", get_pcvar_num( cvar_isToStopEmptyCycle ) );
+        formatex( errorMessage, charsmax( errorMessage ), "cvar_isToStopEmptyCycle must be 0 (it was %d)", get_pcvar_num( cvar_isToStopEmptyCycle ) );
+        SET_TEST_FAILURE( test_id, get_pcvar_num( cvar_isToStopEmptyCycle ) != 0, errorMessage );
         
         set_pcvar_num( cvar_isToStopEmptyCycle, 0 );
         client_authorized( 1 );
         
-        SET_TEST_FAILURE( test_id, get_pcvar_num( cvar_isToStopEmptyCycle ) != 0, \
-                "cvar_isToStopEmptyCycle must be 0 (it was %d)", get_pcvar_num( cvar_isToStopEmptyCycle ) );
+        formatex( errorMessage, charsmax( errorMessage ), "cvar_isToStopEmptyCycle must be 0 (it was %d)", get_pcvar_num( cvar_isToStopEmptyCycle ) );
+        SET_TEST_FAILURE( test_id, get_pcvar_num( cvar_isToStopEmptyCycle ) != 0, errorMessage );
     }
     
     /**
