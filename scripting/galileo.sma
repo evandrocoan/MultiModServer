@@ -2470,11 +2470,11 @@ do \
 
 public resetRoundsScores()
 {
-    LOGGER( 128, "I AM ENTERING ON resetRoundsScores(0)" );
-    LOGGER( 2, "( resetRoundsScores ) Is going to try to change the cvar 'mp_timelimit' '%f'", get_pcvar_float( cvar_mp_timelimit ) );
-    LOGGER( 2, "( resetRoundsScores ) Is going to try to change the cvar 'mp_fraglimit' '%d'", get_pcvar_num( cvar_mp_fraglimit ) );
-    LOGGER( 2, "( resetRoundsScores ) Is going to try to change the cvar 'mp_maxrounds' '%d'", get_pcvar_num( cvar_mp_maxrounds ) );
-    LOGGER( 2, "( resetRoundsScores ) Is going to try to change the cvar 'mp_winlimit' '%d'", get_pcvar_num( cvar_mp_winlimit ) );
+    LOGGER( 128 + 2, "I AM ENTERING ON resetRoundsScores(0)" );
+    LOGGER( 2, "( resetRoundsScores ) TRYING to change the cvar %15s = '%f'", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) );
+    LOGGER( 2, "( resetRoundsScores ) TRYING to change the cvar %15s = '%d'", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) );
+    LOGGER( 2, "( resetRoundsScores ) TRYING to change the cvar %15s = '%d'", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) );
+    LOGGER( 2, "( resetRoundsScores ) TRYING to change the cvar %15s = '%d'", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) );
     
     new serverLimiterValue;
     
@@ -2489,10 +2489,10 @@ public resetRoundsScores()
     g_roundsPlayedNumber  = -1;
     g_greatestKillerFrags = 0;
     
-    LOGGER( 2, "( resetRoundsScores ) May be changed the cvar 'mp_timelimit' '%f'", get_pcvar_float( cvar_mp_timelimit ) );
-    LOGGER( 2, "( resetRoundsScores ) May be changed the cvar 'mp_fraglimit' '%d'", get_pcvar_num( cvar_mp_fraglimit ) );
-    LOGGER( 2, "( resetRoundsScores ) May be changed the cvar 'mp_maxrounds' '%d'", get_pcvar_num( cvar_mp_maxrounds ) );
-    LOGGER( 2, "( resetRoundsScores ) May be changed the cvar 'mp_winlimit' '%d'", get_pcvar_num( cvar_mp_winlimit ) );
+    LOGGER( 2, "( resetRoundsScores ) CHECKOUT the cvar %23s is '%f'", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) );
+    LOGGER( 2, "( resetRoundsScores ) CHECKOUT the cvar %23s is '%d'", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) );
+    LOGGER( 2, "( resetRoundsScores ) CHECKOUT the cvar %23s is '%d'", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) );
+    LOGGER( 2, "( resetRoundsScores ) CHECKOUT the cvar %23s is '%d'", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) );
     LOGGER( 1, "I AM EXITING ON resetRoundsScores(0)" );
 }
 
@@ -6438,8 +6438,11 @@ stock map_getMinutesElapsedInteger()
 stock map_extend()
 {
     LOGGER( 128, "I AM ENTERING ON map_extend(0)" );
-    LOGGER( 2, "%32s mp_timelimit: %f, g_rtvWaitMinutes: %f, extendmapStep: %d", "map_extend( in )", \
-            get_pcvar_float( cvar_mp_timelimit ), g_rtvWaitMinutes, g_extendmapStepMinutes );
+    LOGGER( 2, "%32s g_rtvWaitMinutes: %f, g_extendmapStepMinutes: %d", "map_extend( in )", g_rtvWaitMinutes, g_extendmapStepMinutes );
+    LOGGER( 2, "( map_extend ) TRYING to change the cvar %15s = '%f'", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) );
+    LOGGER( 2, "( map_extend ) TRYING to change the cvar %15s = '%d'", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) );
+    LOGGER( 2, "( map_extend ) TRYING to change the cvar %15s = '%d'", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) );
+    LOGGER( 2, "( map_extend ) TRYING to change the cvar %15s = '%d'", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) );
     
     // reset the "rtv wait" time, taking into consideration the map extension
     if( g_rtvWaitMinutes )
@@ -6483,10 +6486,10 @@ stock map_extend()
         set_pcvar_float( cvar_mp_timelimit, get_pcvar_float( cvar_mp_timelimit ) + g_extendmapStepMinutes );
     }
     
-    LOGGER( 2, "( map_extend ) TRIED TO CHANGE THE CVAR 'mp_timelimit' to '%f'", get_pcvar_float( cvar_mp_timelimit ) );
-    LOGGER( 2, "( map_extend ) TRIED TO CHANGE THE CVAR 'mp_fraglimit' to '%d'", get_pcvar_num( cvar_mp_fraglimit ) );
-    LOGGER( 2, "( map_extend ) TRIED TO CHANGE THE CVAR 'mp_maxrounds' to '%d'", get_pcvar_num( cvar_mp_maxrounds ) );
-    LOGGER( 2, "( map_extend ) TRIED TO CHANGE THE CVAR 'mp_winlimit' to '%d'", get_pcvar_num( cvar_mp_winlimit ) );
+    LOGGER( 2, "( map_extend ) CHECKOUT the cvar %23s is '%f'", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) );
+    LOGGER( 2, "( map_extend ) CHECKOUT the cvar %23s is '%d'", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) );
+    LOGGER( 2, "( map_extend ) CHECKOUT the cvar %23s is '%d'", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) );
+    LOGGER( 2, "( map_extend ) CHECKOUT the cvar %23s is '%d'", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) );
     LOGGER( 2, "%32s g_rtvWaitMinutes: %f, g_extendmapStepMinutes: %d", "map_extend( out )", g_rtvWaitMinutes, g_extendmapStepMinutes );
 }
 
@@ -6502,13 +6505,21 @@ stock saveEndGameLimits()
         g_originalMaxRounds = get_pcvar_num(   cvar_mp_maxrounds );
         g_originalWinLimit  = get_pcvar_num(   cvar_mp_winlimit );
         g_originalFragLimit = get_pcvar_num(   cvar_mp_fraglimit );
+        
+        LOGGER( 2, "( saveEndGameLimits ) SAVING the cvar %15s = '%f'", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) );
+        LOGGER( 2, "( saveEndGameLimits ) SAVING the cvar %15s = '%d'", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) );
+        LOGGER( 2, "( saveEndGameLimits ) SAVING the cvar %15s = '%d'", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) );
+        LOGGER( 2, "( saveEndGameLimits ) SAVING the cvar %15s = '%d'", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) );
     }
 }
 
 public map_restoreEndGameCvars()
 {
-    LOGGER( 128 + 2, "I AM ENTERING ON map_restoreEndGameCvars(0) | mp_timelimit: %f, \
-            g_originalTimelimit: %f", get_pcvar_float( cvar_mp_timelimit ), g_originalTimelimit );
+    LOGGER( 128 + 2, "I AM ENTERING ON map_restoreEndGameCvars(0)" );
+    LOGGER( 2, "( map_restoreEndGameCvars ) TRYING to change the cvar %15s = '%f'", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) );
+    LOGGER( 2, "( map_restoreEndGameCvars ) TRYING to change the cvar %15s = '%d'", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) );
+    LOGGER( 2, "( map_restoreEndGameCvars ) TRYING to change the cvar %15s = '%d'", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) );
+    LOGGER( 2, "( map_restoreEndGameCvars ) TRYING to change the cvar %15s = '%d'", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) );
     
     if( g_isEndGameLimitsChanged )
     {
@@ -6519,10 +6530,10 @@ public map_restoreEndGameCvars()
         set_pcvar_num(   cvar_mp_winlimit,  g_originalWinLimit );
         set_pcvar_num(   cvar_mp_fraglimit, g_originalFragLimit );
         
-        LOGGER( 2, "( map_restoreEndGameCvars ) IS CHANGING SOME CVAR 'mp_timelimit' to '%f'", g_originalTimelimit );
-        LOGGER( 2, "( map_restoreEndGameCvars ) IS CHANGING SOME CVAR 'mp_maxrounds' to '%d'", g_originalMaxRounds );
-        LOGGER( 2, "( map_restoreEndGameCvars ) IS CHANGING SOME CVAR 'mp_winlimit' to '%d'", g_originalWinLimit );
-        LOGGER( 2, "( map_restoreEndGameCvars ) IS CHANGING SOME CVAR 'mp_fraglimit' to '%d'", g_originalFragLimit );
+        LOGGER( 2, "( map_restoreEndGameCvars ) RESTORING the cvar %22s = '%f'", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) );
+        LOGGER( 2, "( map_restoreEndGameCvars ) RESTORING the cvar %22s = '%d'", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) );
+        LOGGER( 2, "( map_restoreEndGameCvars ) RESTORING the cvar %22s = '%d'", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) );
+        LOGGER( 2, "( map_restoreEndGameCvars ) RESTORING the cvar %22s = '%d'", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) );
         
         // restore to the original/right values
         g_rtvWaitMinutes = get_pcvar_float( cvar_rtvWaitMinutes );
@@ -6531,8 +6542,7 @@ public map_restoreEndGameCvars()
     }
     
     restoreOriginalServerMaxSpeed();
-    LOGGER( 2, "I AM EXITING ON map_restoreEndGameCvars(0) | mp_timelimit: %f, \
-            g_originalTimelimit: %f", get_pcvar_float( cvar_mp_timelimit ), g_originalTimelimit );
+    LOGGER( 1, "I AM EXITING ON map_restoreEndGameCvars(0)" );
 }
 
 stock restoreOriginalServerMaxSpeed()
