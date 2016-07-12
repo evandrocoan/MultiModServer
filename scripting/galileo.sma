@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v3.2.0-207";
+new const PLUGIN_VERSION[] = "v3.2.0-209";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -547,7 +547,25 @@ do \
 { \
     formatex( menuOptionString, charsmax( menuOptionString ), "%L", player_id, %3 ); \
     menu_setprop( %2, %1, menuOptionString ); \
-} while( g_dummy_value ) 
+} while( g_dummy_value )
+
+/**
+ * General destroyer handler to assist object destruction and keep the code clear. This only need
+ * to be used with destructors which does not support uninitialized handlers, requiring an if
+ * pre-checking.
+ * 
+ * @param destroyerHandler        the object destructor handler to be called.
+ * @param objectIndentifation     the object identification number to be destroyed.
+ */
+#define DESTROY(%1,%2) \
+do \
+{ \
+    if( %2 ) \
+    { \
+        %1( %2 ); \
+    } \
+} while( g_dummy_value )
+//
 
 
 /**
@@ -1425,14 +1443,14 @@ stock configureTheMapcycleSystem( currentMap[], currentMapCharsMax )
     new possibleNextMapPosition;
     new restartsOnTheCurrentMap;
     
-    new Array:mapcycleFileList;
+    new Array:mapcycleFileListArray;
     new possibleNextMap[ MAX_MAPNAME_LENGHT ];
     
-    mapcycleFileList        = ArrayCreate( MAX_MAPNAME_LENGHT );
+    mapcycleFileListArray   = ArrayCreate( MAX_MAPNAME_LENGHT );
     restartsOnTheCurrentMap = getRestartsOnTheCurrentMap( currentMap );
     
-    map_populateList( mapcycleFileList, g_mapCycleFilePath, charsmax( g_mapCycleFilePath ) );
-    possibleNextMapPosition = map_getNext( mapcycleFileList, currentMap, possibleNextMap );
+    map_populateList( mapcycleFileListArray, g_mapCycleFilePath, charsmax( g_mapCycleFilePath ) );
+    possibleNextMapPosition = map_getNext( mapcycleFileListArray, currentMap, possibleNextMap );
     
     LOGGER( 4, "( configureTheMapcycleSystem ) possibleNextMapPosition: %d, \
             restartsOnTheCurrentMap: %d, currentMap: %s, possibleNextMap: %s", \
@@ -1447,7 +1465,7 @@ stock configureTheMapcycleSystem( currentMap[], currentMapCharsMax )
             new lastMapChangedFilePath[ MAX_FILE_PATH_LENGHT ];
             
             copy( possibleCurrentMap, charsmax( possibleCurrentMap ), possibleNextMap );
-            possibleNextMapPosition = map_getNext( mapcycleFileList, possibleCurrentMap, possibleNextMap );
+            possibleNextMapPosition = map_getNext( mapcycleFileListArray, possibleCurrentMap, possibleNextMap );
             
             if( possibleNextMapPosition != -1 )
             {
@@ -1483,7 +1501,7 @@ stock configureTheMapcycleSystem( currentMap[], currentMapCharsMax )
         LOGGER( 4, "" );
     }
     
-    ArrayDestroy( mapcycleFileList );
+    ArrayDestroy( mapcycleFileListArray );
 }
 
 stock configureTheNextMapPlugin( possibleNextMapPosition, possibleNextMap[] )
@@ -1918,10 +1936,7 @@ public map_writeRecentList()
         fclose( recentMapsFile );
     }
     
-    if( mapCycleMapsTrie )
-    {
-        TrieDestroy( mapCycleMapsTrie );
-    }
+    DESTROY( TrieDestroy, mapCycleMapsTrie );
 }
 
 public team_win_event()
@@ -2435,23 +2450,16 @@ do \
 public resetRoundsScores()
 {
     LOGGER( 128, "I AM ENTERING ON resetRoundsScores(0)" );
-    new serverLimiterValue;
-    
     LOGGER( 2, "( resetRoundsScores ) Is going to try to change the cvar 'mp_timelimit' '%f'", get_pcvar_float( cvar_mp_timelimit ) );
     LOGGER( 2, "( resetRoundsScores ) Is going to try to change the cvar 'mp_fraglimit' '%d'", get_pcvar_num( cvar_mp_fraglimit ) );
     LOGGER( 2, "( resetRoundsScores ) Is going to try to change the cvar 'mp_maxrounds' '%d'", get_pcvar_num( cvar_mp_maxrounds ) );
     LOGGER( 2, "( resetRoundsScores ) Is going to try to change the cvar 'mp_winlimit' '%d'", get_pcvar_num( cvar_mp_winlimit ) );
     
-    // mp_timelimit
+    new serverLimiterValue;
+    
     CALCULATE_NEW_GAME_LIMIT( cvar_serverTimeLimitRestart, cvar_mp_timelimit, map_getMinutesElapsedInteger() );
-    
-    // mp_winlimit
     CALCULATE_NEW_GAME_LIMIT( cvar_serverWinlimitRestart, cvar_mp_winlimit, max( g_totalTerroristsWins, g_totalCtWins ) );
-    
-    // mp_maxrounds
     CALCULATE_NEW_GAME_LIMIT( cvar_serverMaxroundsRestart, cvar_mp_maxrounds, g_roundsPlayedNumber );
-    
-    // mp_fraglimit
     CALCULATE_NEW_GAME_LIMIT( cvar_serverFraglimitRestart, cvar_mp_fraglimit, g_greatestKillerFrags );
     
     // Reset the plugin internal limiter counters.
@@ -2464,7 +2472,7 @@ public resetRoundsScores()
     LOGGER( 2, "( resetRoundsScores ) May be changed the cvar 'mp_fraglimit' '%d'", get_pcvar_num( cvar_mp_fraglimit ) );
     LOGGER( 2, "( resetRoundsScores ) May be changed the cvar 'mp_maxrounds' '%d'", get_pcvar_num( cvar_mp_maxrounds ) );
     LOGGER( 2, "( resetRoundsScores ) May be changed the cvar 'mp_winlimit' '%d'", get_pcvar_num( cvar_mp_winlimit ) );
-    LOGGER( 2, "I AM EXITING ON resetRoundsScores(0)" );
+    LOGGER( 1, "I AM EXITING ON resetRoundsScores(0)" );
 }
 
 public cmd_rockthevote( player_id )
@@ -2522,10 +2530,7 @@ public cmd_listrecent( player_id )
             new menuOptionString[ 64 ];
             
             // We starting building the menu
-            if( g_generalUsePlayersMenuIds[ player_id ] )
-            {
-                menu_destroy( g_generalUsePlayersMenuIds[ player_id ] );
-            }
+            DESTROY( menu_destroy, g_generalUsePlayersMenuIds[ player_id ] );
             
             // To create the menu
             formatex( menuOptionString, charsmax( menuOptionString ), "%L", player_id, "GAL_MAP_RECENTMAPS" );
@@ -2561,7 +2566,7 @@ public cmd_listrecent_handler( player_id, menu, item )
         menu_destroy( g_generalUsePlayersMenuIds[ player_id ] );
         g_generalUsePlayersMenuIds[ player_id ] = 0;
         
-        LOGGER( 1, "    ( cmd_listrecent_handler ) Just Returning PLUGIN_CONTINUE." );
+        LOGGER( 1, "    ( cmd_listrecent_handler ) Just Returning PLUGIN_CONTINUE, as menu is destroyed." );
         return PLUGIN_CONTINUE;
     }
     
@@ -2806,10 +2811,9 @@ public cmd_say( player_id )
                      && !( g_rtvCommands & RTV_CMD_STANDARD ) ) )
             {
                 LOGGER( 4, "( cmd_say ) running vote_rock( player_id ); player_id: %s", player_id );
-                
                 vote_rock( player_id );
                 
-                LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED." );
+                LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, vote_rock(1) chosen." );
                 return PLUGIN_HANDLED;
             }
             else if( get_pcvar_num( cvar_nomPlayerAllowance ) )
@@ -2823,7 +2827,7 @@ public cmd_say( player_id )
                 {
                     nomination_list();
                     
-                    LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED." );
+                    LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, nomination_list(0) chosen." );
                     return PLUGIN_HANDLED;
                 }
                 else
@@ -2834,7 +2838,7 @@ public cmd_say( player_id )
                     {
                         nomination_toggle( player_id, mapIndex );
                         
-                        LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED." );
+                        LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, nomination_toggle(2) chosen." );
                         return PLUGIN_HANDLED;
                     }
                     else if( strlen( firstWord ) > 5
@@ -2843,7 +2847,7 @@ public cmd_say( player_id )
                     {
                         nomination_menu( player_id );
                         
-                        LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED." );
+                        LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, nomination_menu(1) chosen." );
                         return PLUGIN_HANDLED;
                     }
                     else // if contains a prefix
@@ -2861,7 +2865,7 @@ public cmd_say( player_id )
                             {
                                 nomination_menu( player_id );
                                 
-                                LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED." );
+                                LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, nomination_menu(1) chosen." );
                                 return PLUGIN_HANDLED;
                             }
                         }
@@ -2880,7 +2884,7 @@ public cmd_say( player_id )
             {
                 nominationAttemptWithNamePart( player_id, secondWord );
                 
-                LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED." );
+                LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, nominationAttemptWithNamePart(2) chosen." );
                 return PLUGIN_HANDLED;
             }
             else if( equali( firstWord, "cancel" ) )
@@ -2892,14 +2896,14 @@ public cmd_say( player_id )
                 {
                     nomination_cancel( player_id, mapIndex );
                     
-                    LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED." );
+                    LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, nomination cancel option chosen." );
                     return PLUGIN_HANDLED;
                 }
             }
         }
     }
     
-    LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_CONTINUE." );
+    LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_CONTINUE, as reached the handler end." );
     return PLUGIN_CONTINUE;
 }
 
@@ -3161,7 +3165,7 @@ public nomination_handleMatchChoice( player_id, menu, item )
     {
         clearMenuMapIndexForPlayers( player_id );
         
-        LOGGER( 1, "    ( nomination_handleMatchChoice ) Just Returning PLUGIN_CONTINUE." );
+        LOGGER( 1, "    ( nomination_handleMatchChoice ) Just Returning PLUGIN_CONTINUE, the menu is destroyed." );
         return PLUGIN_CONTINUE;
     }
     
@@ -3171,7 +3175,7 @@ public nomination_handleMatchChoice( player_id, menu, item )
         unnominatedDisconnectedPlayer( player_id );
         clearMenuMapIndexForPlayers( player_id );
         
-        LOGGER( 1, "    ( nomination_handleMatchChoice ) Just Returning PLUGIN_HANDLED." );
+        LOGGER( 1, "    ( nomination_handleMatchChoice ) Just Returning PLUGIN_HANDLED, the nominations were cancelled." );
         return PLUGIN_HANDLED;
     }
     
@@ -3210,7 +3214,7 @@ public nomination_handleMatchChoice( player_id, menu, item )
     map_nominate( player_id, item );
     clearMenuMapIndexForPlayers( player_id );
     
-    LOGGER( 1, "    ( nomination_handleMatchChoice ) Just Returning PLUGIN_HANDLED." );
+    LOGGER( 1, "    ( nomination_handleMatchChoice ) Just Returning PLUGIN_HANDLED, successful nomination." );
     return PLUGIN_HANDLED;
 }
 
@@ -3222,7 +3226,7 @@ stock clearMenuMapIndexForPlayers( player_id, isToDestroyEverything = false )
     {
         if( isToDestroyEverything )
         {
-            ArrayDestroy( g_menuMapIndexForPlayerArrays[ player_id ] );
+            DESTROY( ArrayDestroy, g_menuMapIndexForPlayerArrays[ player_id ] );
         }
         else
         {
@@ -4045,14 +4049,11 @@ stock vote_addNominations( blockedFillerMaps[][], blockedFillerMapsMaxChars = 0 
             {
                 break;
             }
-        
+            
         } // end nomination's players looking
         
-        if( blackFillerMapTrie )
-        {
-            TrieDestroy( blackFillerMapTrie );
-        }
-    
+        DESTROY( TrieDestroy, blackFillerMapTrie );
+        
     } // end if nominations
     
     return blockedCount;
@@ -4427,11 +4428,7 @@ stock processLoadedMapsFile( maxMapsPerGroupToUse[], groupCount, blockedCount,
         
     } // end 'for groupIndex < groupCount'
     
-    if( blockedFillerMapsTrie )
-    {
-        TrieDestroy( blockedFillerMapsTrie );
-    }
-    
+    DESTROY( TrieDestroy, blockedFillerMapsTrie );
     return blockedCount;
     
 } // end processLoadedMapsFile(7)
@@ -7820,62 +7817,21 @@ public plugin_end()
     map_restoreEndGameCvars();
     new gameCrashActionFilePath[ MAX_FILE_PATH_LENGHT ];
     
-    generateGameCrashActionFilePath( gameCrashActionFilePath, charsmax( gameCrashActionFilePath ) );
-    delete_file( gameCrashActionFilePath );
-    
     // Clear Dynamic Arrays
     // ############################################################################################
-    if( g_emptyCycleMapsArray )
-    {
-        ArrayDestroy( g_emptyCycleMapsArray );
-    }
-    
-    if( g_fillerMapsArray )
-    {
-        ArrayDestroy( g_fillerMapsArray );
-    }
-    
-    if( g_nominationMapsArray )
-    {
-        ArrayDestroy( g_nominationMapsArray );
-    }
-    
-    if( g_recentListMapsArray )
-    {
-        ArrayDestroy( g_recentListMapsArray );
-    }
-    
-    if( g_whitelistArray )
-    {
-        ArrayDestroy( g_whitelistArray );
-    }
+    DESTROY( ArrayDestroy, g_emptyCycleMapsArray );
+    DESTROY( ArrayDestroy, g_fillerMapsArray );
+    DESTROY( ArrayDestroy, g_nominationMapsArray );
+    DESTROY( ArrayDestroy, g_recentListMapsArray );
+    DESTROY( ArrayDestroy, g_whitelistArray );
     
     // Clear Dynamic Tries
     // ############################################################################################
-    if( g_playersNominationsTrie )
-    {
-        TrieDestroy( g_playersNominationsTrie );
-    }
-    
-    if( g_nominationMapsTrie )
-    {
-        TrieDestroy( g_nominationMapsTrie );
-    }
-    
-    if( g_recentMapsTrie )
-    {
-        TrieDestroy( g_recentMapsTrie );
-    }
-    
-    if( g_blackListTrieForWhiteList )
-    {
-        TrieDestroy( g_blackListTrieForWhiteList );
-    }
-    
-    if( g_whitelistTrie )
-    {
-        TrieDestroy( g_whitelistTrie );
-    }
+    DESTROY( TrieDestroy, g_playersNominationsTrie );
+    DESTROY( TrieDestroy, g_nominationMapsTrie );
+    DESTROY( TrieDestroy, g_recentMapsTrie );
+    DESTROY( TrieDestroy, g_blackListTrieForWhiteList );
+    DESTROY( TrieDestroy, g_whitelistTrie );
     
     // Clear the dynamic array menus, just to be sure.
     for( new currentIndex = 0; currentIndex < MAX_PLAYERS_COUNT; ++currentIndex )
@@ -7883,29 +7839,18 @@ public plugin_end()
         clearMenuMapIndexForPlayers( currentIndex, true );
     }
     
+    // Clear game crash action flag file for a new game.
+    generateGameCrashActionFilePath( gameCrashActionFilePath, charsmax( gameCrashActionFilePath ) );
+    delete_file( gameCrashActionFilePath );
+    
     // Clean the unit tests data 
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
     restore_server_cvars_for_test();
     
-    if( g_tests_idsAndNames )
-    {
-        ArrayDestroy( g_tests_idsAndNames );
-    }
-    
-    if( g_tests_failure_idsArray )
-    {
-        ArrayDestroy( g_tests_failure_idsArray );
-    }
-    
-    if( g_tests_failure_reasons )
-    {
-        ArrayDestroy( g_tests_failure_reasons );
-    }
-    
-    if( g_tests_failure_idsTrie )
-    {
-        TrieDestroy( g_tests_failure_idsTrie );
-    }
+    DESTROY( ArrayDestroy, g_tests_idsAndNames );
+    DESTROY( ArrayDestroy, g_tests_failure_idsArray );
+    DESTROY( ArrayDestroy, g_tests_failure_reasons );
+    DESTROY( TrieDestroy, g_tests_failure_idsTrie );
 #endif
 }
 
