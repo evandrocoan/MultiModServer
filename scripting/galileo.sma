@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v3.2.0-211";
+new const PLUGIN_VERSION[] = "v3.2.0-212";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -170,6 +170,7 @@ new const PLUGIN_VERSION[] = "v3.2.0-211";
 #endif
 
 
+
 /**
  * Setup the Unit Tests when they are used/necessary.
  */
@@ -274,37 +275,20 @@ new const PLUGIN_VERSION[] = "v3.2.0-211";
     #define MAX_PLAYERS 32
 #endif
 
-/**
- * Dummy value used to use the do...while() statements to allow the semicolon ';' use at macros endings.
- */
-new const bool:g_dummy_value = false;
-
-stock allowToUseSemicolonOnMacrosEnd()
-{
-}
 
 /**
- * Task ids are 100000 apart.
+ * Register the color chat necessary variables, if it is enabled.
  */
-enum (+= 100000)
-{
-    TASKID_RTV_REMINDER = 100000, // start with 100000
-    TASKID_SHOW_LAST_ROUND_HUD,
-    TASKID_DELETE_USERS_MENUS,
-    TASKID_PREVENT_INFITY_GAME,
-    TASKID_EMPTYSERVER,
-    TASKID_START_VOTING_BY_ROUNDS,
-    TASKID_START_VOTING_BY_TIMER,
-    TASKID_PROCESS_LAST_ROUND,
-    TASKID_VOTE_HANDLEDISPLAY,
-    TASKID_VOTE_DISPLAY,
-    TASKID_VOTE_EXPIRE,
-    TASKID_PENDING_VOTE_COUNTDOWN,
-    TASKID_DBG_FAKEVOTES,
-    TASKID_VOTE_STARTDIRECTOR,
-    TASKID_MAP_CHANGE,
-    TASKID_FINISH_GAME_TIME_BY_HALF,
-}
+#if IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES == 0
+    new bool:g_isColorChatSupported;
+    new bool:g_isColoredChatEnabled;
+    
+#if AMXX_VERSION_NUM < 183
+    new g_user_msgid;
+#endif
+    new cvar_coloredChatEnabled;
+#endif
+
 
 #define RTV_CMD_STANDARD  1
 #define RTV_CMD_SHORTHAND 2
@@ -359,7 +343,6 @@ enum (+= 100000)
 #define LISTMAPS_USERID 0
 #define LISTMAPS_LAST   1
 
-
 /**
  * The periodic task created on 'configureServerMapChange(0)' use this intervals in seconds to
  * start checking for an end map voting start.
@@ -380,6 +363,7 @@ enum (+= 100000)
 #define VOTE_START_ROUNDS 4
 
 
+
 /**
  * Give time range to try detecting the round start, to avoid the old buy weapons menu override.
  *
@@ -388,6 +372,7 @@ enum (+= 100000)
 #define VOTE_ROUND_START_DETECTION_DELAYED(%1) \
     ( %1 < VOTE_ROUND_START_MIN_DELAY \
       && %1 > VOTE_ROUND_START_MAX_DELAY )
+//
 
 /**
  * To start the end map voting near the map time limit expiration.
@@ -397,16 +382,19 @@ enum (+= 100000)
 #define IS_TIME_TO_START_THE_END_OF_MAP_VOTING(%1) \
     ( %1 < START_VOTEMAP_MIN_TIME \
       && %1 > START_VOTEMAP_MAX_TIME )
+//
 
 /**
  * The frags/kills number before the mp_fraglimit to be reached and to start the map voting.
  */
 #define VOTE_START_FRAGS() ( g_fragLimitNumber > 50 ? 30 : 15 )
+//
 
 /**
  * Specifies how much time to delay the voting start after the round start.
  */
 #define VOTE_ROUND_START_SECONDS_DELAY() ( get_pcvar_num( cvar_mp_freezetime ) + 20.0 )
+//
 
 /**
  * Start a map voting delayed after the mp_maxrounds or mp_winlimit minimum to be reached.
@@ -416,6 +404,7 @@ do \
 { \
     set_task( VOTE_ROUND_START_SECONDS_DELAY(), "start_voting_by_rounds", TASKID_START_VOTING_BY_ROUNDS ); \
 } while( g_dummy_value )
+//
 
 /**
  * Verifies if a voting is or was already processed.
@@ -423,6 +412,7 @@ do \
 #define IS_END_OF_MAP_VOTING_GOING_ON() \
     ( g_voteStatus & VOTE_IS_IN_PROGRESS \
       || g_voteStatus & VOTE_IS_OVER )
+//
 
 /**
  * Boolean check for the Whitelist feature. The Whitelist feature specifies the time where the maps
@@ -431,6 +421,7 @@ do \
 #define IS_WHITELIST_ENABLED() \
     ( get_pcvar_num( cvar_whitelistMinPlayers ) == 1 \
       || get_realplayersnum() < get_pcvar_num( cvar_whitelistMinPlayers ) )
+//
 
 /**
  * Boolean check for the nominations minimum players controlling feature. When there are less
@@ -441,6 +432,7 @@ do \
 #define IS_NOMINATION_MININUM_PLAYERS_CONTROL_ENABLED() \
     ( get_realplayersnum() < get_pcvar_num( cvar_voteMinPlayers ) \
       && get_pcvar_num( cvar_NomMinPlayersControl ) )
+//
 
 /**
  * Convert colored strings codes '!g for green', '!y for yellow', '!t for team'.
@@ -455,6 +447,7 @@ do \
     replace_all( %1, charsmax( %1 ), "!n", "^1" ); \
     replace_all( %1, charsmax( %1 ), "!y", "^1" ); \
 } while( g_dummy_value )
+//
 
 /**
  * Remove the colored strings codes '^4 for green', '^1 for yellow', '^3 for team' and
@@ -470,6 +463,7 @@ do \
     replace_all( %1, charsmax( %1 ), "^2", "" ); \
     replace_all( %1, charsmax( %1 ), "^1", "" ); \
 } while( g_dummy_value )
+//
 
 /**
  * Remove the colored strings codes '!g for green', '!y for yellow', '!t for team' and
@@ -485,6 +479,7 @@ do \
     replace_all( %1, charsmax( %1 ), "!n", "" ); \
     replace_all( %1, charsmax( %1 ), "!y", "" ); \
 } while( g_dummy_value )
+//
 
 /**
  * Print to the users chat, a colored chat message.
@@ -502,6 +497,7 @@ do \
     write_string( %2 ); \
     message_end(); \
 } while( g_dummy_value )
+//
 
 /**
  * Get the player name. If the player is not connected, uses "Unknown Dude" as its name.
@@ -521,19 +517,7 @@ do \
         copy( %2, charsmax( %2 ), "Unknown Dude" ); \
     } \
 } while( g_dummy_value )
-
-/**
- * Register the color chat necessary variables, if it is enabled.
- */
-#if IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES == 0
-    new bool:g_isColorChatSupported;
-    new bool:g_isColoredChatEnabled;
-    
-#if AMXX_VERSION_NUM < 183
-    new g_user_msgid;
-#endif
-    new cvar_coloredChatEnabled;
-#endif
+//
 
 /**
  * Helper to adjust the menus options 'back', 'next' and exit. This requires prior definition of
@@ -550,6 +534,7 @@ do \
     formatex( menuOptionString, charsmax( menuOptionString ), "%L", player_id, %3 ); \
     menu_setprop( %2, %1, menuOptionString ); \
 } while( g_dummy_value )
+//
 
 /**
  * General destroyer handler to assist object destruction and keep the code clear. This only need
@@ -562,12 +547,46 @@ do \
 #define DESTROY(%1,%2) \
 do \
 { \
+    LOGGER( 128, "I AM ENTERING ON DESTROY(2) | objectIndentifation: %d", %2 ); \
     if( %2 ) \
     { \
         %1( %2 ); \
     } \
 } while( g_dummy_value )
 //
+
+
+/**
+ * Dummy value used to use the do...while() statements to allow the semicolon ';' use at macros endings.
+ */
+new const bool:g_dummy_value = false;
+
+stock allowToUseSemicolonOnMacrosEnd()
+{
+}
+
+/**
+ * Task ids are 100000 apart.
+ */
+enum (+= 100000)
+{
+    TASKID_RTV_REMINDER = 100000, // start with 100000
+    TASKID_SHOW_LAST_ROUND_HUD,
+    TASKID_DELETE_USERS_MENUS,
+    TASKID_PREVENT_INFITY_GAME,
+    TASKID_EMPTYSERVER,
+    TASKID_START_VOTING_BY_ROUNDS,
+    TASKID_START_VOTING_BY_TIMER,
+    TASKID_PROCESS_LAST_ROUND,
+    TASKID_VOTE_HANDLEDISPLAY,
+    TASKID_VOTE_DISPLAY,
+    TASKID_VOTE_EXPIRE,
+    TASKID_PENDING_VOTE_COUNTDOWN,
+    TASKID_DBG_FAKEVOTES,
+    TASKID_VOTE_STARTDIRECTOR,
+    TASKID_MAP_CHANGE,
+    TASKID_FINISH_GAME_TIME_BY_HALF,
+}
 
 
 /**
