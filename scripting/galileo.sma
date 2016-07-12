@@ -69,7 +69,7 @@ new const PLUGIN_VERSION[] = "v3.2.0-207";
  * 
  * Default value: 0
  */
-#define DEBUG_LEVEL 4+1+16+2
+#define DEBUG_LEVEL 1+16+2
 
 
 
@@ -180,12 +180,10 @@ new const PLUGIN_VERSION[] = "v3.2.0-207";
     stock nornal_tests_to_execute()
     {
         test_register_test();
-        test_gal_in_empty_cycle_case1();
-        test_gal_in_empty_cycle_case2();
-        test_gal_in_empty_cycle_case3();
-        test_gal_in_empty_cycle_case4();
-        test_loadCurrentBlackList_load();
+        test_gal_in_empty_cycle_base();
+        test_mapGetNext_cases();
         test_loadCurrentBlackList_cases();
+        test_resetRoundsScores_cases();
     }
     
     /**
@@ -216,6 +214,8 @@ new const PLUGIN_VERSION[] = "v3.2.0-207";
      *
      * @param text the debug message, if omitted its default value is ""
      * @param any the variable number of formatting parameters
+     * 
+     * @see the stock writeToTheDebugFile( log_file[], formated_message[] ) for the output log "_galileo.log".
      */
     stock print_logger( message[] = "", any: ... )
     {
@@ -233,15 +233,17 @@ new const PLUGIN_VERSION[] = "v3.2.0-207";
     new g_totalTestsNumber;
     new g_totalFailureTests;
     
-    new Array: g_tests_idsAndNames;
-    new Array: g_tests_failure_ids;
-    new Array: g_tests_failure_reasons;
+    new Trie: g_tests_failure_idsTrie;
+    new Array:g_tests_failure_idsArray;
+    new Array:g_tests_idsAndNames;
+    new Array:g_tests_failure_reasons;
     
-    new bool: g_is_test_changed_cvars;
-    new bool: g_isTheCurrentTestAFailure;
-    new bool: g_areTheUnitTestsRunning;
+    new bool:g_is_test_changed_cvars;
+    new bool:g_isTheCurrentTestAFailure;
+    new bool:g_areTheUnitTestsRunning;
     
     new g_test_current_time;
+    new g_test_elapsed_time;
     new g_test_whiteListFilePath[ 128 ];
 #endif
 
@@ -273,7 +275,7 @@ new const PLUGIN_VERSION[] = "v3.2.0-207";
 /**
  * Dummy value used to use the do...while() statements to allow the semicolon ';' use at macros endings.
  */
-new const g_dummy_value = 0;
+new const bool:g_dummy_value = false;
 
 stock allowToUseSemicolonOnMacrosEnd()
 {
@@ -530,6 +532,22 @@ do \
 #endif
     new cvar_coloredChatEnabled;
 #endif
+
+/**
+ * Helper to adjust the menus options 'back', 'next' and exit. This requires prior definition of
+ * the variables 'menuOptionString[ MAX_SHORT_STRING ] and 'player_id', where the player id must
+ * point to the player identification number which will see the menu.
+ * 
+ * @param propertyConstant        one of the new menu property constants
+ * @param menuId                  the menu identification number
+ * @param langConstantName        the dictionary registered LANG constant
+ */
+#define SET_MENU_PROPERTY(%1,%2,%3) \
+do \
+{ \
+    formatex( menuOptionString, charsmax( menuOptionString ), "%L", player_id, %3 ); \
+    menu_setprop( %2, %1, menuOptionString ); \
+} while( g_dummy_value ) 
 
 
 /**
@@ -985,13 +1003,13 @@ public plugin_cfg()
 #endif
     
     // setup some server settings
-    resetRoundsScores();
     loadPluginSetttings();
     initializeGlobalArrays();
     
     // the 'mp_fraglimitCvarSupport(0)' could register a new cvar, hence only call 'cacheCvarsValues' them after it.
     mp_fraglimitCvarSupport();
     cacheCvarsValues();
+    resetRoundsScores();
     
     // re-cache later to wait load some late server configurations, as the per-map configs.
     set_task( DELAY_TO_WAIT_THE_SERVER_CVARS_TO_BE_LOADED, "cacheCvarsValues" );
@@ -2419,20 +2437,21 @@ public resetRoundsScores()
     LOGGER( 128, "I AM ENTERING ON resetRoundsScores(0)" );
     new serverLimiterValue;
     
+    LOGGER( 2, "( resetRoundsScores ) Is going to try to change the cvar 'mp_timelimit' '%f'", get_pcvar_float( cvar_mp_timelimit ) );
+    LOGGER( 2, "( resetRoundsScores ) Is going to try to change the cvar 'mp_fraglimit' '%d'", get_pcvar_num( cvar_mp_fraglimit ) );
+    LOGGER( 2, "( resetRoundsScores ) Is going to try to change the cvar 'mp_maxrounds' '%d'", get_pcvar_num( cvar_mp_maxrounds ) );
+    LOGGER( 2, "( resetRoundsScores ) Is going to try to change the cvar 'mp_winlimit' '%d'", get_pcvar_num( cvar_mp_winlimit ) );
+    
     // mp_timelimit
-    LOGGER( 2, "( resetRoundsScores ) Is going to try to touch the cvar: %s.", "mp_timelimit" );
     CALCULATE_NEW_GAME_LIMIT( cvar_serverTimeLimitRestart, cvar_mp_timelimit, map_getMinutesElapsedInteger() );
     
     // mp_winlimit
-    LOGGER( 2, "( resetRoundsScores ) Is going to try to touch the cvar: %s.", "mp_winlimit" );
     CALCULATE_NEW_GAME_LIMIT( cvar_serverWinlimitRestart, cvar_mp_winlimit, max( g_totalTerroristsWins, g_totalCtWins ) );
     
     // mp_maxrounds
-    LOGGER( 2, "( resetRoundsScores ) Is going to try to touch the cvar: %s.", "mp_maxrounds" );
     CALCULATE_NEW_GAME_LIMIT( cvar_serverMaxroundsRestart, cvar_mp_maxrounds, g_roundsPlayedNumber );
     
     // mp_fraglimit
-    LOGGER( 2, "( resetRoundsScores ) Is going to try to touch the cvar: %s.", "mp_fraglimit" );
     CALCULATE_NEW_GAME_LIMIT( cvar_serverFraglimitRestart, cvar_mp_fraglimit, g_greatestKillerFrags );
     
     // Reset the plugin internal limiter counters.
@@ -2441,6 +2460,10 @@ public resetRoundsScores()
     g_roundsPlayedNumber  = -1;
     g_greatestKillerFrags = 0;
     
+    LOGGER( 2, "( resetRoundsScores ) May be changed the cvar 'mp_timelimit' '%f'", get_pcvar_float( cvar_mp_timelimit ) );
+    LOGGER( 2, "( resetRoundsScores ) May be changed the cvar 'mp_fraglimit' '%d'", get_pcvar_num( cvar_mp_fraglimit ) );
+    LOGGER( 2, "( resetRoundsScores ) May be changed the cvar 'mp_maxrounds' '%d'", get_pcvar_num( cvar_mp_maxrounds ) );
+    LOGGER( 2, "( resetRoundsScores ) May be changed the cvar 'mp_winlimit' '%d'", get_pcvar_num( cvar_mp_winlimit ) );
     LOGGER( 2, "I AM EXITING ON resetRoundsScores(0)" );
 }
 
@@ -2509,9 +2532,9 @@ public cmd_listrecent( player_id )
             g_generalUsePlayersMenuIds[ player_id ] = menu_create( menuOptionString, "cmd_listrecent_handler" );
             
             // Configure the menu buttons.
-            setMenuProperty( MPROP_EXITNAME, player_id, g_generalUsePlayersMenuIds[ player_id ], "EXIT" );
-            setMenuProperty( MPROP_NEXTNAME, player_id, g_generalUsePlayersMenuIds[ player_id ], "MORE" );
-            setMenuProperty( MPROP_BACKNAME, player_id, g_generalUsePlayersMenuIds[ player_id ], "BACK" );
+            SET_MENU_PROPERTY( MPROP_EXITNAME, g_generalUsePlayersMenuIds[ player_id ], "EXIT" );
+            SET_MENU_PROPERTY( MPROP_NEXTNAME, g_generalUsePlayersMenuIds[ player_id ], "MORE" );
+            SET_MENU_PROPERTY( MPROP_BACKNAME, g_generalUsePlayersMenuIds[ player_id ], "BACK" );
             
             // Add the menu items.
             for( new mapIndex = 0; mapIndex < g_recentMapCount; ++mapIndex )
@@ -2900,17 +2923,9 @@ stock buildTheNominationsMenu( player_id )
     menu_addblank( g_generalUsePlayersMenuIds[ player_id ], 0 );
     
     // Configure the menu buttons.
-    setMenuProperty( MPROP_EXITNAME, player_id, g_generalUsePlayersMenuIds[ player_id ], "EXIT" );
-    setMenuProperty( MPROP_NEXTNAME, player_id, g_generalUsePlayersMenuIds[ player_id ], "MORE" );
-    setMenuProperty( MPROP_BACKNAME, player_id, g_generalUsePlayersMenuIds[ player_id ], "BACK" );
-}
-
-stock setMenuProperty( propertyConstant, player_id, menuId, langConstantName[] )
-{
-    new menuOptionString[ MAX_SHORT_STRING ];
-    
-    formatex( menuOptionString, charsmax( menuOptionString ), "%L", player_id, langConstantName );
-    menu_setprop( menuId, propertyConstant, menuOptionString );
+    SET_MENU_PROPERTY( MPROP_EXITNAME, g_generalUsePlayersMenuIds[ player_id ], "EXIT" );
+    SET_MENU_PROPERTY( MPROP_NEXTNAME, g_generalUsePlayersMenuIds[ player_id ], "MORE" );
+    SET_MENU_PROPERTY( MPROP_BACKNAME, g_generalUsePlayersMenuIds[ player_id ], "BACK" );
 }
 
 /**
@@ -6391,6 +6406,14 @@ stock Float:map_getMinutesElapsed()
 stock map_getMinutesElapsedInteger()
 {
     LOGGER( 128, "I AM ENTERING ON Float:map_getMinutesElapsed(0) | mp_timelimit: %f", get_pcvar_float( cvar_mp_timelimit ) );
+    
+    // While the Unit Tests are running, to force a specific time.
+#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
+    if( g_areTheUnitTestsRunning )
+    {
+        return g_test_elapsed_time;
+    }
+#endif
     return get_pcvar_num( cvar_mp_timelimit ) - ( get_timeleft() / 60 );
 }
 
@@ -6442,10 +6465,10 @@ stock map_extend()
         set_pcvar_float( cvar_mp_timelimit, get_pcvar_float( cvar_mp_timelimit ) + g_extendmapStepMinutes );
     }
     
-    LOGGER( 2, "( map_extend ) IS CHANGING THE CVAR 'mp_timelimit' to '%f'", get_pcvar_float( cvar_mp_timelimit ) );
-    LOGGER( 2, "( map_extend ) IS CHANGING THE CVAR 'mp_fraglimit' to '%d'", get_pcvar_num( cvar_mp_fraglimit ) );
-    LOGGER( 2, "( map_extend ) IS CHANGING THE CVAR 'mp_maxrounds' to '%d'", get_pcvar_num( cvar_mp_maxrounds ) );
-    LOGGER( 2, "( map_extend ) IS CHANGING THE CVAR 'mp_winlimit' to '%d'", get_pcvar_num( cvar_mp_winlimit ) );
+    LOGGER( 2, "( map_extend ) TRIED TO CHANGE THE CVAR 'mp_timelimit' to '%f'", get_pcvar_float( cvar_mp_timelimit ) );
+    LOGGER( 2, "( map_extend ) TRIED TO CHANGE THE CVAR 'mp_fraglimit' to '%d'", get_pcvar_num( cvar_mp_fraglimit ) );
+    LOGGER( 2, "( map_extend ) TRIED TO CHANGE THE CVAR 'mp_maxrounds' to '%d'", get_pcvar_num( cvar_mp_maxrounds ) );
+    LOGGER( 2, "( map_extend ) TRIED TO CHANGE THE CVAR 'mp_winlimit' to '%d'", get_pcvar_num( cvar_mp_winlimit ) );
     LOGGER( 2, "%32s g_rtvWaitMinutes: %f, g_extendmapStepMinutes: %d", "map_extend( out )", g_rtvWaitMinutes, g_extendmapStepMinutes );
 }
 
@@ -6461,6 +6484,49 @@ stock saveEndGameLimits()
         g_originalMaxRounds = get_pcvar_num(   cvar_mp_maxrounds );
         g_originalWinLimit  = get_pcvar_num(   cvar_mp_winlimit );
         g_originalFragLimit = get_pcvar_num(   cvar_mp_fraglimit );
+    }
+}
+
+public map_restoreEndGameCvars()
+{
+    LOGGER( 128 + 2, "I AM ENTERING ON map_restoreEndGameCvars(0) | mp_timelimit: %f, \
+            g_originalTimelimit: %f", get_pcvar_float( cvar_mp_timelimit ), g_originalTimelimit );
+    
+    if( g_isEndGameLimitsChanged )
+    {
+        g_isEndGameLimitsChanged = false;
+        
+        set_pcvar_float( cvar_mp_timelimit, g_originalTimelimit );
+        set_pcvar_num(   cvar_mp_maxrounds, g_originalMaxRounds );
+        set_pcvar_num(   cvar_mp_winlimit,  g_originalWinLimit );
+        set_pcvar_num(   cvar_mp_fraglimit, g_originalFragLimit );
+        
+        LOGGER( 2, "( map_restoreEndGameCvars ) IS CHANGING SOME CVAR 'mp_timelimit' to '%f'", g_originalTimelimit );
+        LOGGER( 2, "( map_restoreEndGameCvars ) IS CHANGING SOME CVAR 'mp_maxrounds' to '%d'", g_originalMaxRounds );
+        LOGGER( 2, "( map_restoreEndGameCvars ) IS CHANGING SOME CVAR 'mp_winlimit' to '%d'", g_originalWinLimit );
+        LOGGER( 2, "( map_restoreEndGameCvars ) IS CHANGING SOME CVAR 'mp_fraglimit' to '%d'", g_originalFragLimit );
+        
+        // restore to the original/right values
+        g_rtvWaitMinutes = get_pcvar_float( cvar_rtvWaitMinutes );
+        g_rtvWaitRounds  = get_pcvar_num(   cvar_rtvWaitRounds );
+        g_rtvWaitFrags   = get_pcvar_num(   cvar_rtvWaitFrags );
+    }
+    
+    restoreOriginalServerMaxSpeed();
+    LOGGER( 2, "I AM EXITING ON map_restoreEndGameCvars(0) | mp_timelimit: %f, \
+            g_originalTimelimit: %f", get_pcvar_float( cvar_mp_timelimit ), g_originalTimelimit );
+}
+
+stock restoreOriginalServerMaxSpeed()
+{
+    LOGGER( 128, "I AM ENTERING ON restoreOriginalServerMaxSpeed(0)" );
+    
+    if( g_original_sv_maxspeed )
+    {
+        set_pcvar_float( cvar_sv_maxspeed, g_original_sv_maxspeed );
+        
+        LOGGER( 2, "( restoreOriginalServerMaxSpeed ) IS CHANGING THE CVAR 'sv_maxspeed' to '%f'", g_original_sv_maxspeed );
+        g_original_sv_maxspeed = 0.0;
     }
 }
 
@@ -7647,50 +7713,6 @@ stock register_dictionary_colored( const dictionaryFile[] )
     return 1;
 }
 
-public map_restoreEndGameCvars()
-{
-    LOGGER( 128 + 2, "I AM ENTERING ON map_restoreEndGameCvars(0) | mp_timelimit: %f, \
-            g_originalTimelimit: %f", get_pcvar_float( cvar_mp_timelimit ), g_originalTimelimit );
-    
-    if( g_isEndGameLimitsChanged )
-    {
-        set_pcvar_float( cvar_mp_timelimit, g_originalTimelimit );
-        set_pcvar_num(   cvar_mp_maxrounds, g_originalMaxRounds );
-        set_pcvar_num(   cvar_mp_winlimit,  g_originalWinLimit );
-        set_pcvar_num(   cvar_mp_fraglimit, g_originalFragLimit );
-        
-        LOGGER( 2, "( map_restoreEndGameCvars ) IS CHANGING THE CVAR 'mp_timelimit' to '%f'", g_originalTimelimit );
-        LOGGER( 2, "( map_restoreEndGameCvars ) IS CHANGING THE CVAR 'mp_maxrounds' to '%d'", g_originalMaxRounds );
-        LOGGER( 2, "( map_restoreEndGameCvars ) IS CHANGING THE CVAR 'mp_winlimit' to '%d'", g_originalWinLimit );
-        LOGGER( 2, "( map_restoreEndGameCvars ) IS CHANGING THE CVAR 'mp_fraglimit' to '%d'", g_originalFragLimit );
-        
-        // restore to the original/right values
-        g_rtvWaitMinutes = get_pcvar_float( cvar_rtvWaitMinutes );
-        g_rtvWaitRounds  = get_pcvar_num(   cvar_rtvWaitRounds );
-        g_rtvWaitFrags   = get_pcvar_num(   cvar_rtvWaitFrags );
-        
-        server_exec();
-        g_isEndGameLimitsChanged = false;
-    }
-    
-    restoreOriginalServerMaxSpeed();
-    LOGGER( 2, "I AM EXITING ON map_restoreEndGameCvars(0) | mp_timelimit: %f, \
-            g_originalTimelimit: %f", get_pcvar_float( cvar_mp_timelimit ), g_originalTimelimit );
-}
-
-stock restoreOriginalServerMaxSpeed()
-{
-    LOGGER( 128, "I AM ENTERING ON restoreOriginalServerMaxSpeed(0)" );
-    
-    if( g_original_sv_maxspeed )
-    {
-        set_pcvar_float( cvar_sv_maxspeed, g_original_sv_maxspeed );
-        
-        LOGGER( 2, "( restoreOriginalServerMaxSpeed ) IS CHANGING THE CVAR 'sv_maxspeed' to '%f'", g_original_sv_maxspeed );
-        g_original_sv_maxspeed = 0.0;
-    }
-}
-
 /**
  * Immediately stops any vote in progress.
  */
@@ -7870,14 +7892,19 @@ public plugin_end()
         ArrayDestroy( g_tests_idsAndNames );
     }
     
-    if( g_tests_failure_ids )
+    if( g_tests_failure_idsArray )
     {
-        ArrayDestroy( g_tests_failure_ids );
+        ArrayDestroy( g_tests_failure_idsArray );
     }
     
     if( g_tests_failure_reasons )
     {
         ArrayDestroy( g_tests_failure_reasons );
+    }
+    
+    if( g_tests_failure_idsTrie )
+    {
+        TrieDestroy( g_tests_failure_idsTrie );
     }
 #endif
 }
@@ -8194,9 +8221,10 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     {
         LOGGER( 128, "I AM ENTERING ON configureTheUnitTests(0)" );
         
-        g_tests_failure_ids     = ArrayCreate( 1 );
-        g_tests_failure_reasons = ArrayCreate( MAX_LONG_STRING );
-        g_tests_idsAndNames     = ArrayCreate( MAX_SHORT_STRING );
+        g_tests_failure_idsTrie  = TrieCreate();
+        g_tests_failure_idsArray = ArrayCreate( 1 );
+        g_tests_failure_reasons  = ArrayCreate( MAX_LONG_STRING );
+        g_tests_idsAndNames      = ArrayCreate( MAX_SHORT_STRING );
         
         // delay needed to wait the 'server.cfg' run to load its saved cvars
         if( !get_pcvar_num( cvar_isFirstServerStart ) )
@@ -8278,8 +8306,8 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     {
         if( g_totalTestsNumber > 0 )
         {
-            new numberOfFailures = ArraySize( g_tests_failure_ids );
-            new lastFailure      = ( numberOfFailures? ArrayGetCell( g_tests_failure_ids, numberOfFailures - 1 ) : 0 );
+            new numberOfFailures = ArraySize( g_tests_failure_idsArray );
+            new lastFailure      = ( numberOfFailures? ArrayGetCell( g_tests_failure_idsArray, numberOfFailures - 1 ) : 0 );
             new lastTestId       = ( g_totalTestsNumber );
             
             LOGGER( 1, "( displaysLastTestOk ) numberOfFailures: %d, lastFailure: %d, lastTestId: %d", numberOfFailures, lastFailure, lastTestId );
@@ -8328,35 +8356,6 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         }
     }
     
-    stock print_tests_failure()
-    {
-        LOGGER( 128, "I AM ENTERING ON print_tests_failure(0)" );
-        
-        new test_id;
-        new test_name[ MAX_SHORT_STRING ];
-        new failure_reason[ MAX_LONG_STRING ];
-        
-        new failureTestsNumber = ArraySize( g_tests_failure_ids );
-        
-        if( failureTestsNumber )
-        {
-            print_logger( "" );
-            print_logger( "" );
-            print_logger( "    The following 'Galileo' unit tests failed: " );
-            print_logger( "" );
-            
-            for( new failure_index = 0; failure_index < failureTestsNumber; failure_index++ )
-            {
-                test_id = ArrayGetCell( g_tests_failure_ids, failure_index );
-                
-                ArrayGetString( g_tests_idsAndNames, test_id - 1, test_name, charsmax( test_name ) );
-                ArrayGetString( g_tests_failure_reasons, failure_index, failure_reason, charsmax( failure_reason ) );
-                
-                print_logger( "       %3d. %s: %s", test_id, test_name, failure_reason );
-            }
-        }
-    }
-    
     /**
      * This is executed at the end of the delayed tests execution to show its results and restore any
      * cvars variable change.
@@ -8384,6 +8383,35 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         print_logger( "" );
         
         g_areTheUnitTestsRunning = false;
+    }
+    
+    stock print_tests_failure()
+    {
+        LOGGER( 0, "I AM ENTERING ON print_tests_failure(0)" );
+        
+        new test_id;
+        new test_name[ MAX_SHORT_STRING ];
+        new failure_reason[ MAX_LONG_STRING ];
+        
+        new failureTestsNumber = ArraySize( g_tests_failure_idsArray );
+        
+        if( failureTestsNumber )
+        {
+            print_logger( "" );
+            print_logger( "" );
+            print_logger( "    The following 'Galileo' unit tests failed: " );
+            print_logger( "" );
+            
+            for( new failure_index = 0; failure_index < failureTestsNumber; failure_index++ )
+            {
+                test_id = ArrayGetCell( g_tests_failure_idsArray, failure_index );
+                
+                ArrayGetString( g_tests_idsAndNames, test_id - 1, test_name, charsmax( test_name ) );
+                ArrayGetString( g_tests_failure_reasons, failure_index, failure_reason, charsmax( failure_reason ) );
+                
+                print_logger( "       %3d. %s: %s", test_id, test_name, failure_reason );
+            }
+        }
     }
     
     /**
@@ -8428,19 +8456,27 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
                 failure_reason: %s",                                 test_id,     isFailure, \
                 failure_reason );
         
-        g_isTheCurrentTestAFailure = isFailure;
+        new trieKey[ 10 ];
+        num_to_str( test_id, trieKey, charsmax( trieKey ) );
         
-        if( isFailure )
+        if( isFailure
+            && !TrieKeyExists( g_tests_failure_idsTrie, trieKey ) )
         {
-            static formated_message[ MAX_LONG_STRING ];
+            new formated_message[ MAX_LONG_STRING ];
             
             g_totalFailureTests++;
+            g_isTheCurrentTestAFailure = true;
             
             vformat( formated_message, charsmax( formated_message ), failure_reason, 3 );
-            ArrayPushCell( g_tests_failure_ids, test_id );
+            ArrayPushCell( g_tests_failure_idsArray, test_id );
+            TrieSetCell( g_tests_failure_idsTrie, trieKey, 0 );
             
             ArrayPushString( g_tests_failure_reasons, formated_message );
             print_logger( "       TEST FAILURE! %s", formated_message );
+        }
+        else
+        {
+            g_isTheCurrentTestAFailure = false;
         }
     }
     
@@ -8598,9 +8634,9 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     /**
      * Test for client connect cvar_isToStopEmptyCycle behavior.
      */
-    stock test_gal_in_empty_cycle_case1()
+    stock test_gal_in_empty_cycle_base()
     {
-        new test_id = register_test( 0, "test_gal_in_empty_cycle_case1" );
+        new test_id = register_test( 0, "test_gal_in_empty_cycle_base" );
         
         set_pcvar_num( cvar_isToStopEmptyCycle, 1 );
         client_authorized( 1 );
@@ -8616,71 +8652,53 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     }
     
     /**
-     * This 1º case test if the current map isn't part of the empty cycle, immediately change to next map
-     * that is.
+     * To call the general test handler 'test_maGetNext_case(4)' using test scenario cases.
      */
-    stock test_gal_in_empty_cycle_case2()
+    stock test_mapGetNext_cases()
     {
-        new nextMap[ MAX_MAPNAME_LENGHT ];
+        new Array:testMapListArray = ArrayCreate( MAX_MAPNAME_LENGHT );
         
-        new test_id                  = register_test( 0, "test_gal_in_empty_cycle_case2" );
-        new Array: emptyCycleMapList = ArrayCreate( MAX_MAPNAME_LENGHT );
+        ArrayPushString( testMapListArray, "de_dust2" );
+        ArrayPushString( testMapListArray, "de_inferno" );
+        ArrayPushString( testMapListArray, "de_dust4" );
+        ArrayPushString( testMapListArray, "de_dust" );
         
-        ArrayPushString( emptyCycleMapList, "de_dust2" );
-        ArrayPushString( emptyCycleMapList, "de_inferno" );
+        test_maGetNext_case( testMapListArray, "de_dust", "de_dust2", 0 );    // case 1
+        test_maGetNext_case( testMapListArray, "de_dust2", "de_inferno", 1 ); // case 2
+        test_maGetNext_case( testMapListArray, "de_inferno", "de_dust4", 2 ); // case 3
         
-        new mapIndex = map_getNext( emptyCycleMapList, "de_dust2", nextMap );
-        
-        SET_TEST_FAILURE( test_id, !equal( nextMap, "de_inferno" ), "nextMap must be 'de_inferno' (it was %s)", nextMap );
-        SET_TEST_FAILURE( test_id, mapIndex == -1, "mapIndex must not be '-1' (it was %d)", mapIndex );
-        
-        ArrayDestroy( emptyCycleMapList );
+        ArrayDestroy( testMapListArray );
     }
     
     /**
-     * This 2º case test if the current map isn't part of the empty cycle, immediately change to next map
-     * that is.
+     * This is a general test handler for the function 'map_getNext(3)'.
+     *
+     * @param testMapListArray        an Array with a map-cycle for loading
+     * @param currentMap              an string as the current map
+     * @param nextMapAim              an string as the desired next map
+     * @param mapIndexAim             the desired next map index
      */
-    stock test_gal_in_empty_cycle_case3()
+    stock test_maGetNext_case( Array:testMapListArray, currentMap[], nextMapAim[], mapIndexAim )
     {
-        new nextMap[ MAX_MAPNAME_LENGHT ];
+        static currentCaseNumber = 0;
+        currentCaseNumber++;
         
-        new test_id                  = register_test( 0, "test_gal_in_empty_cycle_case3" );
-        new Array: emptyCycleMapList = ArrayCreate( MAX_MAPNAME_LENGHT );
+        new test_id;
+        new mapIndex;
+        new nextMap     [ MAX_MAPNAME_LENGHT ];
+        new testName    [ MAX_SHORT_STRING ];
+        new errorMessage[ MAX_LONG_STRING ];
         
-        ArrayPushString( emptyCycleMapList, "de_dust2" );
-        ArrayPushString( emptyCycleMapList, "de_inferno" );
-        ArrayPushString( emptyCycleMapList, "de_dust4" );
+        formatex( testName, charsmax( testName ), "test_maGetNext_case%d", currentCaseNumber );
         
-        new mapIndex = map_getNext( emptyCycleMapList, "de_inferno", nextMap );
+        test_id  = register_test( 0, testName );
+        mapIndex = map_getNext( testMapListArray, currentMap, nextMap );
         
-        SET_TEST_FAILURE( test_id, !equal( nextMap, "de_dust4" ), "nextMap must be 'de_dust4' (it was %s)", nextMap );
-        SET_TEST_FAILURE( test_id, mapIndex == -1, "mapIndex must not be '-1' (it was %d)", mapIndex );
+        formatex( errorMessage, charsmax( errorMessage ), "The nextMap must to be '%s'! But it was %s.", nextMapAim, nextMap );
+        SET_TEST_FAILURE( test_id, !equal( nextMap, nextMapAim ), errorMessage );
         
-        ArrayDestroy( emptyCycleMapList );
-    }
-    
-    /**
-     * This 3º case test if the current map isn't part of the empty cycle, immediately change to next map
-     * that is.
-     */
-    stock test_gal_in_empty_cycle_case4()
-    {
-        new nextMap[ MAX_MAPNAME_LENGHT ];
-        
-        new test_id                 = register_test( 0, "test_gal_in_empty_cycle_case4" );
-        new Array:emptyCycleMapList = ArrayCreate( MAX_MAPNAME_LENGHT );
-        
-        ArrayPushString( emptyCycleMapList, "de_dust2" );
-        ArrayPushString( emptyCycleMapList, "de_inferno" );
-        ArrayPushString( emptyCycleMapList, "de_dust4" );
-        
-        new mapIndex = map_getNext( emptyCycleMapList, "de_dust", nextMap );
-        
-        SET_TEST_FAILURE( test_id, !equal( nextMap, "de_dust2" ), "nextMap must be 'de_dust2' (it was %s)", nextMap );
-        SET_TEST_FAILURE( test_id, !( mapIndex == -1 ), "mapIndex must be '-1' (it was %d)", mapIndex );
-        
-        ArrayDestroy( emptyCycleMapList );
+        formatex( errorMessage, charsmax( errorMessage ), "The mapIndex must to be %d! But it was %d.", mapIndexAim, mapIndex );
+        SET_TEST_FAILURE( test_id, mapIndex != mapIndexAim, errorMessage );
     }
     
     /**
@@ -8719,11 +8737,12 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     }
     
     /**
-     * To call the general test handler 'test_loadCurrentBlacklist_case(3)' using test scenario
-     * cases.
+     * To call the general test handler 'test_loadCurrentBlacklist_case(3)' using test scenario cases.
      */
     public test_loadCurrentBlackList_cases()
     {
+        test_loadCurrentBlackList_load();
+        
         test_loadCurrentBlacklist_case( 12, "de_dust2", "de_dust7" ); // case 1
         test_loadCurrentBlacklist_case( 23, "de_dust5", "de_dust4" ); // case 2
         test_loadCurrentBlacklist_case( 23, "de_dust7", "de_dust2" ); // case 3
@@ -8755,7 +8774,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         currentCaseNumber++;
         
         new testName    [ 64 ];
-        new errorMessage[ MAX_COLOR_MESSAGE ];
+        new errorMessage[ MAX_LONG_STRING ];
         
         formatex( testName, charsmax( testName ), "test_loadCurrentBlacklist_case%d", currentCaseNumber );
         
@@ -8775,6 +8794,78 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         TrieDestroy( blackListTrie );
     }
     
+    /**
+     * To call the general test handler 'test_resetRoundsScores_case(4)' using test scenario cases.
+     */
+    stock test_resetRoundsScores_cases()
+    {
+        test_resetRoundsScores_loader( 90, 60, 31, 60  ); // case 1, 90 - 60 + 31 - 1 = 60
+        test_resetRoundsScores_loader( 90, 20, 31, 100 ); // case 2, 90 - 20 + 31 - 1 = 100
+        test_resetRoundsScores_loader( 20, 15, 11, 15  ); // case 3, 20 - 15 + 11 - 1 = 15
+        test_resetRoundsScores_loader( 60, 50, 1, 10 );   // case 4, 60 - 50 + 1  - 1 = 10
+        test_resetRoundsScores_loader( 60, 59, 1, 1 );    // case 5, 60 - 59 + 1  - 1 = 1
+        test_resetRoundsScores_loader( 60, 60, 1, 60 );   // case 6, 60 - 60 + 1  - 1 = 60
+        test_resetRoundsScores_loader( 60, 59, 0, 60 );   // case 7, 60 - 59 + 0  - 1 = 60
+        test_resetRoundsScores_loader( 60, 20, 0, 60 );   // case 8, 60 - 20 + 0  - 1 = 60
+        test_resetRoundsScores_loader( 60, 80, 10, 60 );  // case 9, 60 - 80 + 10 - 1 = 60
+    }
+    
+    /**
+     * Load the test to all cvars on range.
+     * 
+     * @param defaultCvarValue        the default game cvar value to be used.
+     * @param elapsedValue            an elapsed game integer value.
+     * @param defaultLimiterValue     the default limiter cvar value to be used.
+     * @param aimResult               the expected result after the operation to complete.
+     */
+    stock test_resetRoundsScores_loader( defaultCvarValue, elapsedValue, defaultLimiterValue, aimResult )
+    {
+        static currentCaseNumber = 0;
+        currentCaseNumber++;
+        
+        new test_id;
+        new testName[ 64 ];
+        
+        formatex( testName, charsmax( testName ), "test_resetRoundsScores_case%d", currentCaseNumber );
+        test_id  = register_test( 0, testName );
+        
+        test_resetRoundsScores_case( test_id, cvar_serverTimeLimitRestart, cvar_mp_timelimit, elapsedValue, aimResult, defaultCvarValue, defaultLimiterValue );
+        test_resetRoundsScores_case( test_id, cvar_serverWinlimitRestart,  cvar_mp_winlimit, elapsedValue, aimResult, defaultCvarValue, defaultLimiterValue );
+        test_resetRoundsScores_case( test_id, cvar_serverMaxroundsRestart, cvar_mp_maxrounds, elapsedValue, aimResult, defaultCvarValue, defaultLimiterValue );
+        test_resetRoundsScores_case( test_id, cvar_serverFraglimitRestart, cvar_mp_fraglimit, elapsedValue, aimResult, defaultCvarValue, defaultLimiterValue );
+    }
+    
+    /**
+     * This is a general test handler for the function 'resetRoundsScores(0)'.
+     * 
+     * @param test_id                 the current case, test identification number.
+     * @param limiterCvarPointer      the 'gal_srv_..._restart' pointer
+     * @param serverCvarPointer       the game cvar pointer as 'cvar_mp_timelimit'.
+     * 
+     * @note see the stock test_resetRoundsScores_loader(4) for the other parameters.
+     */
+    stock test_resetRoundsScores_case( test_id, limiterCvarPointer, serverCvarPointer, elapsedValue, aimResult, defaultCvarValue, defaultLimiterValue )
+    {
+        new changeResult;
+        new errorMessage[ MAX_LONG_STRING ];
+        
+        g_test_elapsed_time   = elapsedValue;
+        g_totalTerroristsWins = elapsedValue;
+        g_totalCtWins         = elapsedValue;
+        g_roundsPlayedNumber  = elapsedValue;
+        g_greatestKillerFrags = elapsedValue;
+        
+        set_pcvar_num( limiterCvarPointer, defaultLimiterValue );
+        set_pcvar_num( serverCvarPointer, defaultCvarValue );
+        
+        // It is expected the 'changeResult' to be 'defaultCvarValue' - 'elapsedValue' + 'defaultLimiterValue' - 1
+        resetRoundsScores();
+        changeResult = get_pcvar_num( serverCvarPointer );
+        
+        formatex( errorMessage, charsmax( errorMessage ), "The aim result '%d' was not achieved! The result was %d.", aimResult, changeResult );
+        SET_TEST_FAILURE( test_id, changeResult != aimResult, errorMessage );
+    }
+    
     
     
     /**
@@ -8782,6 +8873,13 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
      */
     new Float:test_extendmap_max;
     new Float:test_mp_timelimit;
+    new       test_mp_winlimit;
+    new       test_mp_maxrounds;
+    new       test_mp_fraglimit;
+    new       test_serverTimeLimitRestart;
+    new       test_serverWinlimitRestart;
+    new       test_serverMaxroundsRestart;
+    new       test_serverFraglimitRestart;
     
     /**
      * Every time a cvar is changed during the tests, it must be saved here to a global test variable
@@ -8795,8 +8893,16 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         LOGGER( 128, "I AM ENTERING ON save_server_cvars_for_test(0)" );
         g_is_test_changed_cvars = true;
         
-        test_extendmap_max = get_pcvar_float( cvar_maxMapExtendTime );
-        test_mp_timelimit  = get_pcvar_float( cvar_mp_timelimit );
+        test_extendmap_max           = get_pcvar_float( cvar_maxMapExtendTime       );
+        test_mp_timelimit            = get_pcvar_float( cvar_mp_timelimit           );
+        
+        test_mp_winlimit             = get_pcvar_num(   cvar_mp_winlimit            );
+        test_mp_maxrounds            = get_pcvar_num(   cvar_mp_maxrounds           );
+        test_mp_fraglimit            = get_pcvar_num(   cvar_mp_fraglimit           );
+        test_serverTimeLimitRestart  = get_pcvar_num(   cvar_serverTimeLimitRestart );
+        test_serverWinlimitRestart   = get_pcvar_num(   cvar_serverWinlimitRestart  );
+        test_serverMaxroundsRestart  = get_pcvar_num(   cvar_serverMaxroundsRestart );
+        test_serverFraglimitRestart  = get_pcvar_num(   cvar_serverFraglimitRestart );
         
         LOGGER( 2, "    %42s cvar_mp_timelimit: %f  test_mp_timelimit: %f   g_originalTimelimit: %f", \
                 "save_server_cvars_for_test( out )", \
@@ -8816,9 +8922,23 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         if( g_is_test_changed_cvars )
         {
             g_is_test_changed_cvars = false;
+            map_restoreEndGameCvars();
             
-            set_pcvar_float( cvar_maxMapExtendTime, test_extendmap_max );
-            set_pcvar_float( cvar_mp_timelimit, test_mp_timelimit );
+            g_originalTimelimit = 0.0;
+            g_originalMaxRounds = 0;
+            g_originalWinLimit  = 0;
+            g_originalFragLimit = 0;
+            
+            set_pcvar_float( cvar_maxMapExtendTime      , test_extendmap_max          );
+            set_pcvar_float( cvar_mp_timelimit          , test_mp_timelimit           );
+            
+            set_pcvar_num(   cvar_mp_winlimit           , test_mp_winlimit            );
+            set_pcvar_num(   cvar_mp_maxrounds          , test_mp_maxrounds           );
+            set_pcvar_num(   cvar_mp_fraglimit          , test_mp_fraglimit           );
+            set_pcvar_num(   cvar_serverTimeLimitRestart, test_serverTimeLimitRestart );
+            set_pcvar_num(   cvar_serverWinlimitRestart , test_serverWinlimitRestart  );
+            set_pcvar_num(   cvar_serverMaxroundsRestart, test_serverMaxroundsRestart );
+            set_pcvar_num(   cvar_serverFraglimitRestart, test_serverFraglimitRestart );
         }
         
         delete_file( g_test_whiteListFilePath );
