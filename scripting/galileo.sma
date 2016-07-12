@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v3.2.0-209";
+new const PLUGIN_VERSION[] = "v3.2.0-210";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -233,10 +233,10 @@ new const PLUGIN_VERSION[] = "v3.2.0-209";
     new g_totalTestsNumber;
     new g_totalFailureTests;
     
-    new Trie: g_tests_failure_idsTrie;
-    new Array:g_tests_failure_idsArray;
-    new Array:g_tests_idsAndNames;
-    new Array:g_tests_failure_reasons;
+    new Trie: g_tests_failureIdsTrie;
+    new Array:g_tests_failureIdsArray;
+    new Array:g_tests_idsAndNamesArray;
+    new Array:g_tests_failureReasonsArray;
     
     new bool:g_is_test_changed_cvars;
     new bool:g_isTheCurrentTestAFailure;
@@ -7847,10 +7847,10 @@ public plugin_end()
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
     restore_server_cvars_for_test();
     
-    DESTROY( ArrayDestroy, g_tests_idsAndNames );
-    DESTROY( ArrayDestroy, g_tests_failure_idsArray );
-    DESTROY( ArrayDestroy, g_tests_failure_reasons );
-    DESTROY( TrieDestroy, g_tests_failure_idsTrie );
+    DESTROY( ArrayDestroy, g_tests_idsAndNamesArray );
+    DESTROY( ArrayDestroy, g_tests_failureIdsArray );
+    DESTROY( ArrayDestroy, g_tests_failureReasonsArray );
+    DESTROY( TrieDestroy, g_tests_failureIdsTrie );
 #endif
 }
 
@@ -8166,10 +8166,10 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     {
         LOGGER( 128, "I AM ENTERING ON configureTheUnitTests(0)" );
         
-        g_tests_failure_idsTrie  = TrieCreate();
-        g_tests_failure_idsArray = ArrayCreate( 1 );
-        g_tests_failure_reasons  = ArrayCreate( MAX_LONG_STRING );
-        g_tests_idsAndNames      = ArrayCreate( MAX_SHORT_STRING );
+        g_tests_failureIdsTrie  = TrieCreate();
+        g_tests_failureIdsArray = ArrayCreate( 1 );
+        g_tests_failureReasonsArray  = ArrayCreate( MAX_LONG_STRING );
+        g_tests_idsAndNamesArray      = ArrayCreate( MAX_SHORT_STRING );
         
         // delay needed to wait the 'server.cfg' run to load its saved cvars
         if( !get_pcvar_num( cvar_isFirstServerStart ) )
@@ -8251,8 +8251,8 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     {
         if( g_totalTestsNumber > 0 )
         {
-            new numberOfFailures = ArraySize( g_tests_failure_idsArray );
-            new lastFailure      = ( numberOfFailures? ArrayGetCell( g_tests_failure_idsArray, numberOfFailures - 1 ) : 0 );
+            new numberOfFailures = ArraySize( g_tests_failureIdsArray );
+            new lastFailure      = ( numberOfFailures? ArrayGetCell( g_tests_failureIdsArray, numberOfFailures - 1 ) : 0 );
             new lastTestId       = ( g_totalTestsNumber );
             
             LOGGER( 1, "( displaysLastTestOk ) numberOfFailures: %d, lastFailure: %d, lastTestId: %d", numberOfFailures, lastFailure, lastTestId );
@@ -8284,7 +8284,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         LOGGER( 128, "I AM ENTERING ON print_all_tests_executed(0)" );
         
         new test_name[ MAX_SHORT_STRING ];
-        new testsNumber = ArraySize( g_tests_idsAndNames );
+        new testsNumber = ArraySize( g_tests_idsAndNamesArray );
         
         if( testsNumber )
         {
@@ -8296,7 +8296,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         
         for( new test_index = 0; test_index < testsNumber; test_index++ )
         {
-            ArrayGetString( g_tests_idsAndNames, test_index, test_name, charsmax( test_name ) );
+            ArrayGetString( g_tests_idsAndNamesArray, test_index, test_name, charsmax( test_name ) );
             print_logger( "       %3d. %s", test_index + 1, test_name );
         }
     }
@@ -8338,7 +8338,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         new test_name[ MAX_SHORT_STRING ];
         new failure_reason[ MAX_LONG_STRING ];
         
-        new failureTestsNumber = ArraySize( g_tests_failure_idsArray );
+        new failureTestsNumber = ArraySize( g_tests_failureIdsArray );
         
         if( failureTestsNumber )
         {
@@ -8349,10 +8349,10 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
             
             for( new failure_index = 0; failure_index < failureTestsNumber; failure_index++ )
             {
-                test_id = ArrayGetCell( g_tests_failure_idsArray, failure_index );
+                test_id = ArrayGetCell( g_tests_failureIdsArray, failure_index );
                 
-                ArrayGetString( g_tests_idsAndNames, test_id - 1, test_name, charsmax( test_name ) );
-                ArrayGetString( g_tests_failure_reasons, failure_index, failure_reason, charsmax( failure_reason ) );
+                ArrayGetString( g_tests_idsAndNamesArray, test_id - 1, test_name, charsmax( test_name ) );
+                ArrayGetString( g_tests_failureReasonsArray, failure_index, failure_reason, charsmax( failure_reason ) );
                 
                 print_logger( "       %3d. %s: %s", test_id, test_name, failure_reason );
             }
@@ -8376,7 +8376,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         displaysLastTestOk();
         g_totalTestsNumber++;
         
-        ArrayPushString( g_tests_idsAndNames, test_name );
+        ArrayPushString( g_tests_idsAndNamesArray, test_name );
         print_logger( "        EXECUTING TEST %d WITH %d SECONDS DELAY - %s ", g_totalTestsNumber, max_delay_result, test_name );
         
         if( g_max_delay_result < max_delay_result )
@@ -8405,7 +8405,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         num_to_str( test_id, trieKey, charsmax( trieKey ) );
         
         if( isFailure
-            && !TrieKeyExists( g_tests_failure_idsTrie, trieKey ) )
+            && !TrieKeyExists( g_tests_failureIdsTrie, trieKey ) )
         {
             new formated_message[ MAX_LONG_STRING ];
             
@@ -8413,10 +8413,10 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
             g_isTheCurrentTestAFailure = true;
             
             vformat( formated_message, charsmax( formated_message ), failure_reason, 3 );
-            ArrayPushCell( g_tests_failure_idsArray, test_id );
-            TrieSetCell( g_tests_failure_idsTrie, trieKey, 0 );
+            ArrayPushCell( g_tests_failureIdsArray, test_id );
+            TrieSetCell( g_tests_failureIdsTrie, trieKey, 0 );
             
-            ArrayPushString( g_tests_failure_reasons, formated_message );
+            ArrayPushString( g_tests_failureReasonsArray, formated_message );
             print_logger( "       TEST FAILURE! %s", formated_message );
         }
         else
@@ -8439,7 +8439,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
                 "g_totalTestsNumber must be 1 (it was %d)", g_totalTestsNumber );
         
         SET_TEST_FAILURE( test_id, test_id != 1, "test_id must be 1 (it was %d)", test_id );
-        ArrayGetString( g_tests_idsAndNames, 0, first_test_name, charsmax( first_test_name ) );
+        ArrayGetString( g_tests_idsAndNamesArray, 0, first_test_name, charsmax( first_test_name ) );
         
         SET_TEST_FAILURE( test_id, !equal( first_test_name, "test_register_test" ), \
                 "first_test_name must be 'test_register_test' (it was %s)", first_test_name );
