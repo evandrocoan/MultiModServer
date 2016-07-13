@@ -28,7 +28,7 @@
  * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v3.2.0-215";
+new const PLUGIN_VERSION[] = "v3.2.0-216";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -190,7 +190,7 @@ new const PLUGIN_VERSION[] = "v3.2.0-215";
     /**
      * Contains all delayed unit tests to execute.
      */
-    stock dalayedTestsToExecute()
+    public dalayedTestsToExecute()
     {
         test_isMapExtensionAvowed_case1();
     }
@@ -204,8 +204,7 @@ new const PLUGIN_VERSION[] = "v3.2.0-215";
     #define SET_TEST_FAILURE(%1) \
     do \
     { \
-        setTestFailure( %1 ); \
-        if( g_test_isTheCurrentTestAFailure ) \
+        if( setTestFailure( %1 ) ) \
         { \
             LOGGER( 1, "    ( SET_TEST_FAILURE ) Just returning/bloking." ); \
             return; \
@@ -230,20 +229,19 @@ new const PLUGIN_VERSION[] = "v3.2.0-215";
     
     
     /**
-     * Test unit variables related to the DEBUG_LEVEL_UNIT_TEST_NORMAL 2.
+     * Test unit variables related to the DEBUG_LEVEL_UNIT_TEST's.
      */
     new g_test_maxDelayResult;
     new g_test_testsNumber;
     new g_test_failureNumber;
+    new g_test_lastMaxDelayResult;
     
     new Trie: g_test_failureIdsTrie;
+    new bool: g_test_isTheCvarsChanged;
+    new bool: g_test_isTheUnitTestsRunning;
     new Array:g_test_failureIdsArray;
     new Array:g_test_idsAndNamesArray;
     new Array:g_test_failureReasonsArray;
-    
-    new bool:g_test_isTheCvarsChanged;
-    new bool:g_test_isTheCurrentTestAFailure;
-    new bool:g_test_isTheUnitTestsRunning;
     
     new g_test_currentTime;
     new g_test_elapsedTime;
@@ -2490,10 +2488,10 @@ public resetRoundsScores()
     g_roundsPlayedNumber  = -1;
     g_greatestKillerFrags = 0;
     
-    LOGGER( 2, "( resetRoundsScores ) CHECKOUT the cvar %23s is '%f'", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) );
-    LOGGER( 2, "( resetRoundsScores ) CHECKOUT the cvar %23s is '%d'", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) );
-    LOGGER( 2, "( resetRoundsScores ) CHECKOUT the cvar %23s is '%d'", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) );
-    LOGGER( 2, "( resetRoundsScores ) CHECKOUT the cvar %23s is '%d'", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) );
+    LOGGER( 2, "( resetRoundsScores ) CHECKOUT the cvar %-23s is '%f'", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) );
+    LOGGER( 2, "( resetRoundsScores ) CHECKOUT the cvar %-23s is '%d'", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) );
+    LOGGER( 2, "( resetRoundsScores ) CHECKOUT the cvar %-23s is '%d'", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) );
+    LOGGER( 2, "( resetRoundsScores ) CHECKOUT the cvar %-23s is '%d'", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) );
     LOGGER( 1, "I AM EXITING ON resetRoundsScores(0)" );
 }
 
@@ -6531,10 +6529,10 @@ public map_restoreEndGameCvars()
         set_pcvar_num(   cvar_mp_winlimit,  g_originalWinLimit );
         set_pcvar_num(   cvar_mp_fraglimit, g_originalFragLimit );
         
-        LOGGER( 2, "( map_restoreEndGameCvars ) RESTORING the cvar %22s = '%f'", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) );
-        LOGGER( 2, "( map_restoreEndGameCvars ) RESTORING the cvar %22s = '%d'", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) );
-        LOGGER( 2, "( map_restoreEndGameCvars ) RESTORING the cvar %22s = '%d'", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) );
-        LOGGER( 2, "( map_restoreEndGameCvars ) RESTORING the cvar %22s = '%d'", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) );
+        LOGGER( 2, "( map_restoreEndGameCvars ) RESTORING the cvar %-22s = '%f'", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) );
+        LOGGER( 2, "( map_restoreEndGameCvars ) RESTORING the cvar %-22s = '%d'", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) );
+        LOGGER( 2, "( map_restoreEndGameCvars ) RESTORING the cvar %-22s = '%d'", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) );
+        LOGGER( 2, "( map_restoreEndGameCvars ) RESTORING the cvar %-22s = '%d'", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) );
         
         // restore to the original/right values
         g_rtvWaitMinutes = get_pcvar_float( cvar_rtvWaitMinutes );
@@ -8211,8 +8209,11 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         else
         {
             print_logger( "" );
+            print_logger( "" );
+            print_logger( "" );
             print_logger( "    The Unit Tests are going to run only after the first server start." );
             print_logger( "    gal_server_starting: %d", get_pcvar_num( cvar_isFirstServerStart ) );
+            print_logger( "" );
             print_logger( "" );
         }
     }
@@ -8227,55 +8228,91 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         
         print_logger( "" );
         print_logger( "" );
+        print_logger( "" );
         print_logger( "    Executing the 'Galileo' Tests: " );
         print_logger( "" );
         
         g_test_isTheUnitTestsRunning = true;
         saveServerCvarsForTesting();
         
+        // Run the normal tests.
     #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
         normalTestsToExecute();
+    #endif
+        
+        // Run the delayed tests.
+    #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_DELAYED
+        g_test_maxDelayResult = 1;
+        set_task( 0.5, "dalayedTestsToExecute" );
     #endif
         
         // displays the OK to the last test.
         displaysLastTestOk();
         
-    #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_DELAYED
-        dalayedTestsToExecute();
-    #endif
-        
-        // displays the OK to the first delayed test.
-        if( g_test_maxDelayResult
-            && displaysLastTestOk() )
+        if( g_test_maxDelayResult )
         {
             print_logger( "" );
             print_logger( "    %d tests succeed.", g_test_testsNumber - g_test_failureNumber );
             print_logger( "    %d tests failed.", g_test_failureNumber );
+            print_logger( "" );
             print_logger( "" );
             print_logger( "" );
             print_logger( "    Executing the 'Galileo' delayed until %d seconds tests: ", g_test_maxDelayResult );
             print_logger( "" );
             
+            g_test_lastMaxDelayResult = g_test_maxDelayResult;
             set_task( g_test_maxDelayResult + 1.0, "show_delayed_results" );
         }
         else
         {
             // clean the testing
-            cancelVoting();
             restoreServerCvarsFromTesting();
             
             print_all_tests_executed();
             print_tests_failure();
-            
-            print_logger( "" );
-            print_logger( "    %d tests succeed.", g_test_testsNumber - g_test_failureNumber );
-            print_logger( "    %d tests failed.", g_test_failureNumber );
-            print_logger( "" );
-            print_logger( "    Finished 'Galileo' Tests Execution." );
-            print_logger( "" );
-            print_logger( "" );
+            print_tests_results_count();
             
             g_test_isTheUnitTestsRunning = false;
+        }
+    }
+    
+    stock print_tests_results_count()
+    {
+        print_logger( "" );
+        print_logger( "    %d tests succeed.", g_test_testsNumber - g_test_failureNumber );
+        print_logger( "    %d tests failed.", g_test_failureNumber );
+        print_logger( "" );
+        print_logger( "    Finished 'Galileo' Tests Execution." );
+        print_logger( "" );
+        print_logger( "" );
+    }
+    
+    /**
+     * This is executed at the end of the delayed tests execution to show its results and restore any
+     * cvars variable change.
+     */
+    public show_delayed_results()
+    {
+        LOGGER( 128, "I AM ENTERING ON show_delayed_results(0)" );
+        new nextCheckTime = g_test_maxDelayResult - g_test_lastMaxDelayResult;
+        
+        // All delayed tests finished.
+        if( nextCheckTime < 1 )
+        {
+            // clean the testing
+            restoreServerCvarsFromTesting();
+            
+            print_all_tests_executed();
+            print_tests_failure();
+            print_tests_results_count();
+            
+            g_test_isTheUnitTestsRunning = false;
+        }
+        else
+        {
+            // There are new tests waiting to be performed, then reschedule a new result output.
+            g_test_lastMaxDelayResult = g_test_maxDelayResult;
+            set_task( nextCheckTime + 1.0, "show_delayed_results" );
         }
     }
     
@@ -8322,6 +8359,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         {
             print_logger( "" );
             print_logger( "" );
+            print_logger( "" );
             print_logger( "    The following tests were executed: " );
             print_logger( "" );
         }
@@ -8331,35 +8369,6 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
             ArrayGetString( g_test_idsAndNamesArray, test_index, test_name, charsmax( test_name ) );
             print_logger( "       %3d. %s", test_index + 1, test_name );
         }
-    }
-    
-    /**
-     * This is executed at the end of the delayed tests execution to show its results and restore any
-     * cvars variable change.
-     */
-    public show_delayed_results()
-    {
-        LOGGER( 128, "I AM ENTERING ON show_delayed_results(0)" );
-        
-        // displays the OK to the last test.
-        displaysLastTestOk();
-        
-        // clean the testing
-        cancelVoting();
-        restoreServerCvarsFromTesting();
-        
-        print_all_tests_executed();
-        print_tests_failure();
-        
-        print_logger( "" );
-        print_logger( "    %d tests succeed.", g_test_testsNumber - g_test_failureNumber );
-        print_logger( "    %d tests failed.", g_test_failureNumber );
-        print_logger( "" );
-        print_logger( "    Finished 'Galileo' Tests Execution." );
-        print_logger( "" );
-        print_logger( "" );
-        
-        g_test_isTheUnitTestsRunning = false;
     }
     
     stock print_tests_failure()
@@ -8403,12 +8412,15 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     stock register_test( max_delay_result, test_name[] )
     {
         LOGGER( 0, "I AM ENTERING ON register_test(2) | max_delay_result: %d, test_name: %s", max_delay_result, test_name );
-        
-        // displays the OK to the last test.
-        displaysLastTestOk();
-        g_test_testsNumber++;
-        
         ArrayPushString( g_test_idsAndNamesArray, test_name );
+        
+        // All the normal Unit Tests will be finished when the Delayed Unit Test begin.
+        if( !g_test_maxDelayResult )
+        {
+            displaysLastTestOk();
+        }
+        
+        g_test_testsNumber++;
         print_logger( "        EXECUTING TEST %d WITH %d SECONDS DELAY - %s ", g_test_testsNumber, max_delay_result, test_name );
         
         if( g_test_maxDelayResult < max_delay_result )
@@ -8439,42 +8451,22 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
             && !TrieKeyExists( g_test_failureIdsTrie, trieKey ) )
         {
             g_test_failureNumber++;
-            g_test_isTheCurrentTestAFailure = true;
             
             ArrayPushCell( g_test_failureIdsArray, test_id );
             TrieSetCell( g_test_failureIdsTrie, trieKey, 0 );
             
             ArrayPushString( g_test_failureReasonsArray, failure_reason );
             print_logger( "       TEST FAILURE! %s", failure_reason );
+            
+            return true;
         }
-        else
-        {
-            g_test_isTheCurrentTestAFailure = false;
-        }
+        
+        return false;
     }
     
-    /**
-     * This is a simple test to verify the basic registering test functionality.
-     */
-    stock test_registerTest()
-    {
-        new test_id;
-        new errorMessage   [ MAX_LONG_STRING ];
-        new first_test_name[ MAX_SHORT_STRING ];
-        
-        test_id = register_test( 0, "test_registerTest" );
-        
-        formatex( errorMessage, charsmax( errorMessage ), "g_test_testsNumber must be 1 (it was %d)", g_test_testsNumber );
-        SET_TEST_FAILURE( test_id, g_test_testsNumber != 1, errorMessage );
-        
-        formatex( errorMessage, charsmax( errorMessage ), "test_id must be 1 (it was %d)", test_id );
-        SET_TEST_FAILURE( test_id, test_id != 1, errorMessage );
-        
-        ArrayGetString( g_test_idsAndNamesArray, 0, first_test_name, charsmax( first_test_name ) );
-        
-        formatex( errorMessage, charsmax( errorMessage ), "first_test_name must be 'test_registerTest' (it was %s)", first_test_name );
-        SET_TEST_FAILURE( test_id, !equal( first_test_name, "test_registerTest" ), errorMessage );
-    }
+    
+    // Here below to start the Unit Tests code.
+    // ###########################################################################################
     
     /**
      * This is the vote_startDirector() tests chain beginning. Because the vote_startDirector() cannot
@@ -8503,6 +8495,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         formatex( errorMessage, charsmax( errorMessage ), "g_isMapExtensionAllowed must be 1 (it was %d)", g_isMapExtensionAllowed );
         SET_TEST_FAILURE( test_id, !g_isMapExtensionAllowed, errorMessage );
         
+        displaysLastTestOk();
         set_task( 2.0, "test_isMapExtensionAvowed_case2", chainDelay );
     }
     
@@ -8530,6 +8523,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         formatex( errorMessage, charsmax( errorMessage ), "g_isMapExtensionAllowed must be 0 (it was %d)", g_isMapExtensionAllowed );
         SET_TEST_FAILURE( test_id, g_isMapExtensionAllowed, errorMessage );
         
+        displaysLastTestOk();
         set_task( 2.0, "test_endOfMapVotingStart_case1", chainDelay );
     }
     
@@ -8558,6 +8552,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
                   + START_VOTEMAP_MAX_TIME + 15 )
                 / 60 );
         
+        displaysLastTestOk();
         set_task( 1.0, "test_endOfMapVotingStart_case2", chainDelay );
     }
     
@@ -8576,6 +8571,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         set_pcvar_float( cvar_mp_timelimit, 20.0 );
         cancelVoting();
         
+        displaysLastTestOk();
         set_task( 1.0, "test_endOfMapVotingStop_case1", chainDelay );
     }
     
@@ -8594,6 +8590,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         set_pcvar_float( cvar_mp_timelimit, 1.0 );
         cancelVoting();
         
+        displaysLastTestOk();
         set_task( 1.0, "test_endOfMapVotingStop_case2", chainDelay );
     }
     
@@ -8610,8 +8607,9 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         SET_TEST_FAILURE( test_id, ( g_voteStatus & VOTE_IS_IN_PROGRESS ) != 0, "vote_startDirector() does started!" );
         
         set_pcvar_float( cvar_mp_timelimit, 20.0 );
-        cancelVoting();
+        //cancelVoting();
         
+        displaysLastTestOk();
         //set_task( 1.0, "test_exampleModel_case1", chainDelay );
     }
     
@@ -8620,6 +8618,8 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
      *
      * Tests if the ... this is model to create new tests. Duplicate this example code and
      * uncomment the test code body and its caller on the last test chain case just above here.
+     * You need also to to go the first test and add to the variable 'chainDelay' how much time
+     * this and its consecutives tests will take to execute.
      */
     /*public test_exampleModel_case1( chainDelay )
     {
@@ -8628,14 +8628,41 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         // Teste coding here...
         
         // Clear the voting for a new test to begin.
-        cancelVoting();
+        // cancelVoting();
+        
+        // Displays this test OK here, because if it gets until this instruction, it was successful.
+        displaysLastTestOk();
         
         // Call the next chain test.
-        //set_task( 1.0, "test_exampleModel_case2", chainDelay );
+        set_task( 1.0, "test_exampleModel_case2", chainDelay );
     }*/
+    
     
     // Place new 'vote_startDirector(1)' chain tests above here.
     // ############################################################################################
+    
+    /**
+     * This is a simple test to verify the basic registering test functionality.
+     */
+    stock test_registerTest()
+    {
+        new test_id;
+        new errorMessage   [ MAX_LONG_STRING ];
+        new first_test_name[ MAX_SHORT_STRING ];
+        
+        test_id = register_test( 0, "test_registerTest" );
+        
+        formatex( errorMessage, charsmax( errorMessage ), "g_test_testsNumber must be 1 (it was %d)", g_test_testsNumber );
+        SET_TEST_FAILURE( test_id, g_test_testsNumber != 1, errorMessage );
+        
+        formatex( errorMessage, charsmax( errorMessage ), "test_id must be 1 (it was %d)", test_id );
+        SET_TEST_FAILURE( test_id, test_id != 1, errorMessage );
+        
+        ArrayGetString( g_test_idsAndNamesArray, 0, first_test_name, charsmax( first_test_name ) );
+        
+        formatex( errorMessage, charsmax( errorMessage ), "first_test_name must be 'test_registerTest' (it was %s)", first_test_name );
+        SET_TEST_FAILURE( test_id, !equal( first_test_name, "test_registerTest" ), errorMessage );
+    }
     
     /**
      * Test for client connect cvar_isToStopEmptyCycle behavior.
@@ -8670,9 +8697,10 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         ArrayPushString( testMapListArray, "de_dust4" );
         ArrayPushString( testMapListArray, "de_dust" );
         
-        test_mapGetNext_case( testMapListArray, "de_dust", "de_dust2", 0 );    // case 1
+        test_mapGetNext_case( testMapListArray, "de_dust", "de_dust2", 0 ); // case 1
         test_mapGetNext_case( testMapListArray, "de_dust2", "de_inferno", 1 ); // case 2
         test_mapGetNext_case( testMapListArray, "de_inferno", "de_dust4", 2 ); // case 3
+        test_mapGetNext_case( testMapListArray, "de_inferno2", "de_dust2", -1 ); // case 4
         
         ArrayDestroy( testMapListArray );
     }
@@ -8935,9 +8963,8 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
             g_originalWinLimit  = 0;
             g_originalFragLimit = 0;
             
-            set_pcvar_float( cvar_maxMapExtendTime      , test_extendMapMaximum          );
+            set_pcvar_float( cvar_maxMapExtendTime      , test_extendMapMaximum       );
             set_pcvar_float( cvar_mp_timelimit          , test_mp_timelimit           );
-            
             set_pcvar_num(   cvar_mp_winlimit           , test_mp_winlimit            );
             set_pcvar_num(   cvar_mp_maxrounds          , test_mp_maxrounds           );
             set_pcvar_num(   cvar_mp_fraglimit          , test_mp_fraglimit           );
@@ -8948,6 +8975,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         }
         
         resetRoundsScores();
+        cancelVoting();
         delete_file( g_test_whiteListFilePath );
         
         LOGGER( 2, "    %42s cvar_mp_timelimit: %f  test_mp_timelimit: %f  g_originalTimelimit: %f", \
