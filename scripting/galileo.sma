@@ -25,10 +25,12 @@
 
 
 /**
- * This version number must be synced with "githooks/GALILEO_VERSION.txt" for manual edition.
+ * This version number must be synced with "githooks/GALILEO_SMA_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
-new const PLUGIN_VERSION[] = "v3.2.0-216";
+new const PLUGIN_NAME[]    = "Galileo";
+new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
+new const PLUGIN_VERSION[] = "v3.2.0-217";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -862,8 +864,8 @@ public plugin_init()
     g_debug_level = 1048575;
 #endif
     
-    register_plugin( "Galileo", PLUGIN_VERSION, "Brad Jones/Addons zz" );
-    LOGGER( 1, "^n^n^n^nGALILEO PLUGIN VERSION %s INITIATING...", PLUGIN_VERSION );
+    register_plugin( PLUGIN_NAME, PLUGIN_VERSION, PLUGIN_AUTHOR );
+    LOGGER( 1, "^n^n^n^n%s PLUGIN VERSION %s INITIATING...", PLUGIN_NAME, PLUGIN_VERSION );
     
     cvar_maxMapExtendTime        = register_cvar( "amx_extendmap_max", "90" );
     cvar_extendmapStepMinutes    = register_cvar( "amx_extendmap_step", "15" );
@@ -8229,7 +8231,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         print_logger( "" );
         print_logger( "" );
         print_logger( "" );
-        print_logger( "    Executing the 'Galileo' Tests: " );
+        print_logger( "    Executing the %s's Unit Tests: ", PLUGIN_NAME );
         print_logger( "" );
         
         g_test_isTheUnitTestsRunning = true;
@@ -8257,7 +8259,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
             print_logger( "" );
             print_logger( "" );
             print_logger( "" );
-            print_logger( "    Executing the 'Galileo' delayed until %d seconds tests: ", g_test_maxDelayResult );
+            print_logger( "    Executing the %s's Unit Tests delayed until %d seconds: ", PLUGIN_NAME, g_test_maxDelayResult );
             print_logger( "" );
             
             g_test_lastMaxDelayResult = g_test_maxDelayResult;
@@ -8282,7 +8284,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         print_logger( "    %d tests succeed.", g_test_testsNumber - g_test_failureNumber );
         print_logger( "    %d tests failed.", g_test_failureNumber );
         print_logger( "" );
-        print_logger( "    Finished 'Galileo' Tests Execution." );
+        print_logger( "    Finished the %s's Unit Tests execution.", PLUGIN_NAME );
         print_logger( "" );
         print_logger( "" );
     }
@@ -8385,7 +8387,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         {
             print_logger( "" );
             print_logger( "" );
-            print_logger( "    The following 'Galileo' unit tests failed: " );
+            print_logger( "    The following %s's Unit Tests failed: ", PLUGIN_NAME );
             print_logger( "" );
             
             for( new failure_index = 0; failure_index < failureTestsNumber; failure_index++ )
