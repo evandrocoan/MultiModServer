@@ -21,29 +21,32 @@
  0.2b	Changed hud messages to use sync huds to avoid overlapping.
  0.2b	Added glow when aiming at an item. The glow color will change when item is selected.
  0.2b	Fixed permission issue. While players without the flag could not enable/disable the editor, they could manipulate entities while it is enabled.
- 0.2c   Added multi-player support. Multiple players can now edit/create armoury entities at the same time. It was never actually documented that this wasn't possible--but now it is.
- 0.2c   Made all huds disappear instantly once the manager is disabled. Previously, they would remain for 1~2 seconds while the holdtime expired.
- 0.2c   Fixed rendering issue for when the manager is enabled and a deleted entity is hovered over and glows. When the glow is removed, it was rendering back to normal instead of semi-transparent.
+ 0.2c	Added multi-player support. Multiple players can now edit/create armoury entities at the same time. It was never actually documented that this wasn't possible--but now it is.
+ 0.2c	Made all huds disappear instantly once the manager is disabled. Previously, they would remain for 1~2 seconds while the holdtime expired.
+ 0.2c	Fixed rendering issue for when the manager is enabled and a deleted entity is hovered over and glows. When the glow is removed, it was rendering back to normal instead of semi-transparent.
  0.2c	Fixed invalid player error in traceline forward. 
  0.2c	Fixed bug when a created entity was deleted. The weapon deletion was not restored on map change.
  0.2c	Fixed bug that was breaking the aim origin returned in traceline. When the user selected to create an entity and exited out of the menu, I was not first checking if the user had an 
 	existing entity selected before performing actions on the entity index. This was allowing actions to be taken on an entity index of 0 which was breaking traceline.	
  0.2c	Removed some redundant code.	
- 0.3	Changed am_info to make it able to display all entities by allowing the user to specify the starting index as an optional parameter. 12 are displayed per cmd/MOTD.
+ 0.3	Changed am_info to make it able to display all entities by allowing the user to specify the starting index as an optional parameter. AM_EntitiesPerInfoPage are displayed per cmd/MOTD.
  0.3	Fixed issue where after an entity was deleted and Armoury Manager disabled, the entity would be invisible but could still be picked up if walked over.
  0.3a	Fixed issue where if a non-armoury_entity existed where the player was aiming, it would not give the HUD to allow a weapon to be created.
  0.3a	Made plugin check all players status when attempting to disable the Armoury Manager to make sure nobody is in the middle of an edit. Previously, only the disable-requester was checked.
  0.3a	Misc code cleanup.
+ 0.3b	More code cleanup.
+ 0.3b	Changed number of entities displayed per page to 10 in am_info command. I found this to be a safer value when there are multi long-length weapon names displayed (smoke grenade, vest helmet).
+ 0.3b	Fixed issue where if a player picked up the last of an armoury item and then the armourmy manager was enabled then disabled, this entity would re-appear with a count of 1. 
 */
 
-new const Version[] = "0.3a";
+new const Version[] = "0.3b";
 
 #define MAX_PLAYERS 32
 
 const MaxEntities = 100;
-const Armoury_NotChanged = -1;
-const AM_Permission = ADMIN_RCON;
-const AM_EntitiesPerInfoPage = 12;
+const Entity_NotChanged = -1;
+const Manager_Permission = ADMIN_RCON;
+const EntitiesPerInfoPage = 10;
 
 enum ArmouryInfo
 {
@@ -60,7 +63,57 @@ enum ArmouryInfo
 enum ArmouryData
 {
 	WeaponIndex,
-	WeaponName[ 17 ]
+	WeaponName[ 14 ]
+}
+
+enum ChangeType
+{
+	ctNone,
+	ctCreate,
+	ctBase,
+	ctCount,
+	ctWeaponType
+}
+
+enum BaseMenuItems
+{
+	bmiChange,
+	bmiCount,
+	bmiDelete
+}
+
+enum MenuTypes
+{
+	mtNone,
+	mtType,
+	mtCount
+}
+
+enum MenuInfo
+{
+	ChangeType:ctChangeType,
+	MenuTypes:mtMenuType
+}
+
+enum GlowType
+{
+	ItemAiming,
+	ItemSelected
+}
+
+enum ColorRGB
+{
+	rgbRed,
+	rgbGreen,
+	rgbBlue
+}
+
+enum PlayerInfo
+{
+	miMenuInfo[ MenuInfo ],
+	SelectedEntity,
+	AimedEntity,
+	Float:fCurrentOrigin[ 3 ]
 }
 
 new const g_ArmouryTypes[][ ArmouryData ] = 
@@ -97,49 +150,14 @@ new const g_szChangeValues[][] =
 	"100"
 };
 
-enum ChangeType
-{
-	ctNone,
-	ctCreate,
-	ctBase,
-	ctCount,
-	ctWeaponType
-}
-
-enum MenuTypes
-{
-	mtNone,
-	mtType,
-	mtCount
-}
-
-enum MenuInfo
-{
-	ChangeType:ctChangeType,
-	MenuTypes:mtMenuType
-}
-
-enum GlowType
-{
-	ItemAiming,
-	ItemSelected
-}
-
-enum ColorRGB
-{
-	rgbRed,
-	rgbGreen,
-	rgbBlue
-}
-
 new const g_iItemGlowColor[ GlowType ][ ColorRGB ] = 
 {
 	{ 255 , 255 , 255 },
-	{   0 , 255 ,   0 }
-}
+	{ 000 , 255 , 000 }
+};
 
-new g_EntityData[ MaxEntities ][ ArmouryInfo ] , g_SelectedEntity[ MAX_PLAYERS + 1 ] , Float:g_fCurrentOrigin[ MAX_PLAYERS + 1 ][ 3 ] , g_iMapEntityCount , g_AimedEntity[ MAX_PLAYERS + 1 ];
-new g_TL_Forward , g_szMapFile[ 64 ] , g_iMenuInfo[ MAX_PLAYERS + 1 ][ MenuInfo ] , g_HUDSyncObj_Action , g_HUDSyncObj_Weapon , g_MaxPlayers;
+new g_EntityData[ MaxEntities ][ ArmouryInfo ] , g_piPlayerInfo[ MAX_PLAYERS + 1 ][ PlayerInfo ];
+new g_TL_Forward , g_MaxPlayers , g_iMapEntityCount , g_szMapFile[ 64 ] , g_HUDSyncObj_Action , g_HUDSyncObj_Weapon;
 
 const m_iType = 34;
 const m_iCount = 35;
@@ -147,17 +165,17 @@ const XO_Armoury = 4;
 
 #define IsPlayer(%1)		(1<=%1<=g_MaxPlayers)
 #define IsArmoury(%1)		(%1[0]=='a'&&%1[1]=='r'&&%1[7]=='_'&&%1[8]=='e'&&%1[12]=='t'&&%1[13]=='y')
-#define GetArmouryType(%1)	(g_EntityData[%1][aiChangeWeaponType]==Armoury_NotChanged?g_EntityData[%1][aiOriginalWeaponType]:g_EntityData[%1][aiChangeWeaponType])
-#define GetArmouryCount(%1)	(g_EntityData[%1][aiChangeWeaponCount]==Armoury_NotChanged?g_EntityData[%1][aiOriginalWeaponCount]:g_EntityData[%1][aiChangeWeaponCount])
+#define GetArmouryType(%1)	(g_EntityData[%1][aiChangeWeaponType]==Entity_NotChanged?g_EntityData[%1][aiOriginalWeaponType]:g_EntityData[%1][aiChangeWeaponType])
+#define GetArmouryCount(%1)	(g_EntityData[%1][aiChangeWeaponCount]==Entity_NotChanged?g_EntityData[%1][aiOriginalWeaponCount]:g_EntityData[%1][aiChangeWeaponCount])
 
 public plugin_init() 
 {
 	register_plugin( "Armoury Manager" , Version , "bugsy" );
-
-	register_clcmd( "am_enable" , "EnableManager" , AM_Permission , "- Enable Armoury Manager" );
-	register_clcmd( "am_disable" , "DisableManager" , AM_Permission , "- Disable Armoury Manager" );
-	register_clcmd( "am_deletemapconfig" , "DeleteConfig" , AM_Permission , "- Delete Armoury Manager config for current map" );
-	register_clcmd( "am_info" , "DisplayInfo" , AM_Permission , "<optional start index> - Show armoury_entity details" );
+	
+	register_clcmd( "am_enable" , "EnableManager" , Manager_Permission , "- Enable Armoury Manager" );
+	register_clcmd( "am_disable" , "DisableManager" , Manager_Permission , "- Disable Armoury Manager" );
+	register_clcmd( "am_deletemapconfig" , "DeleteConfig" , Manager_Permission , "- Delete Armoury Manager config for current map" );
+	register_clcmd( "am_info" , "DisplayInfo" , Manager_Permission , "<optional start index> - Show armoury_entity details" );
 	
 	register_logevent( "RoundStart" , 2 , "1=Round_Start" ); 
 	
@@ -166,15 +184,15 @@ public plugin_init()
 	g_HUDSyncObj_Action = CreateHudSyncObj();
 	g_HUDSyncObj_Weapon = CreateHudSyncObj();
 	
-	//Create file name/location to store map entity data (original status and changes).
+	//Create config file name.
 	new iPos;
 	iPos = get_configsdir( g_szMapFile , charsmax( g_szMapFile ) );
-	iPos += copy( g_szMapFile[ iPos ] , charsmax( g_szMapFile ) - iPos  , "/ArmouryManager/" ); 
+	iPos += copy( g_szMapFile[ iPos ] , charsmax( g_szMapFile ) - iPos , "/ArmouryManager/" ); 
 	mkdir( g_szMapFile );
 	get_mapname( g_szMapFile[ iPos ] , charsmax( g_szMapFile ) - iPos );
 	
-	//If a file exists then this data has already been saved. Load all data into the entity array
-	//and then process the changes to the entities that are saved in the file/array.
+	//If a config file exists then this data has already been saved. Load all data into the entity array
+	//and then process the changes (and create entities) to the entities that are saved in the file/array.
 	if ( file_exists( g_szMapFile ) )
 	{
 		//Load all entity data into array and return the number of entities loaded.
@@ -193,16 +211,16 @@ public plugin_init()
 		set_fail_state( "Max entities reached, you must increase MaxEntities to a larger value." );
 	}
 }
-	
+
 public client_disconnect( id )
 {
-	g_SelectedEntity[ id ] = 0;
-	g_AimedEntity[ id ] = 0;
-	g_fCurrentOrigin[ id ][ 0 ] = 0.0;
-	g_fCurrentOrigin[ id ][ 1 ] = 0.0;
-	g_fCurrentOrigin[ id ][ 2 ] = 0.0;
-	g_iMenuInfo[ id ][ ctChangeType ] = _:ctNone;
-	g_iMenuInfo[ id ][ mtMenuType ] = _:mtNone;
+	g_piPlayerInfo[ id ][ SelectedEntity ] = 0;
+	g_piPlayerInfo[ id ][ AimedEntity ] = 0;
+	g_piPlayerInfo[ id ][ fCurrentOrigin ][ 0 ] = _:0.0;
+	g_piPlayerInfo[ id ][ fCurrentOrigin ][ 1 ] = _:0.0;
+	g_piPlayerInfo[ id ][ fCurrentOrigin ][ 2 ] = _:0.0;
+	g_piPlayerInfo[ id ][ miMenuInfo ][ ctChangeType ] = _:ctNone;
+	g_piPlayerInfo[ id ][ miMenuInfo ][ mtMenuType ] = _:mtNone;
 }
 
 //This finds any entities in the area where the user is aiming. If an entity is found, the user can select the entity to 
@@ -211,9 +229,11 @@ public TraceLine( Float:fStartOrigin[ 3 ] , Float:fEndOrigin[ 3 ] , trConditions
 {
 	static iEntity , szClassname[ 15 ] , iMenu , szWeapon[ 21 ] , iArrayIndex , iSelectedBy , bool:bArmouryFound;
 	
-	if ( !IsPlayer( id ) || ( IsPlayer( id ) && ( ( get_user_flags( id ) & AM_Permission ) != AM_Permission ) ) || ( g_iMenuInfo[ id ][ ctChangeType ] != ctNone ) )
+	//If is not a player OR is a player but doesn't have permission OR the player is currently making a change.
+	if ( !IsPlayer( id ) || ( IsPlayer( id ) && ( ( get_user_flags( id ) & Manager_Permission ) != Manager_Permission ) ) || ( g_piPlayerInfo[ id ][ miMenuInfo ][ ctChangeType ] != ctNone ) )
 		return;
 	
+	//Max entities reached so cannot do anything.
 	if ( g_iMapEntityCount == MaxEntities )
 	{
 		set_hudmessage( 255 , 255 , 255 , -1.0 , 0.25 , .holdtime=0.4 , .channel=-1 );
@@ -223,17 +243,6 @@ public TraceLine( Float:fStartOrigin[ 3 ] , Float:fEndOrigin[ 3 ] , trConditions
 	
 	//Get end origin of traceline.
 	get_tr2( trResult , TR_vecEndPos , fEndOrigin );
-	
-	//Used to debug error discovered in 0.2c where I was calling pev() on an entity index of 0 which was making the end origin outside the 
-	//confines of the map. I will leave this here to see if it somehow comes back.
-	if ( engfunc( EngFunc_PointContents , fEndOrigin ) == CONTENTS_SOLID )
-	{
-		ClearSyncHud( id , g_HUDSyncObj_Action );
-		ClearSyncHud( id , g_HUDSyncObj_Weapon );
-		set_hudmessage( 255 , 0 , 0 , -1.0 , 0.25 , .holdtime=0.4 , .channel=-1 );
-		ShowSyncHudMsg( id , g_HUDSyncObj_Action , "Something broke, tell bugsy." );
-		return;
-	}
 	
 	//Look for armoury_entity's within a sphere of the end origin, within 15 units.
 	iEntity = -1;
@@ -248,20 +257,21 @@ public TraceLine( Float:fStartOrigin[ 3 ] , Float:fEndOrigin[ 3 ] , trConditions
 		}
 	}
 	
-	//If not currently aiming at an entity and menu not currently open, allow user to create an entity in this location.
+	//If not currently aiming at an armoury_entity, allow user to create one in this location.
 	if ( !bArmouryFound )
-	{		
+	{
 		//User currently not aiming at an entity but was previously aiming at an entity. Remove selected glow and make it 
 		//appear as it should.
-		if ( g_AimedEntity[ id ] )
+		if ( g_piPlayerInfo[ id ][ AimedEntity ] )
 		{
-			iArrayIndex = pev( g_AimedEntity[ id ] , pev_iuser4 );
-			set_pev( g_AimedEntity[ id ] , pev_renderfx , kRenderFxNone );
-			set_pev( g_AimedEntity[ id ] , pev_renderamt , g_EntityData[ iArrayIndex ][ aiDeleted ] ? 100.0 : 255.0 );
-			set_pev( g_AimedEntity[ id ] , pev_rendermode , g_EntityData[ iArrayIndex ][ aiDeleted ] ? kRenderTransColor : kRenderNormal );
-			g_AimedEntity[ id ] = 0;
+			iArrayIndex = pev( g_piPlayerInfo[ id ][ AimedEntity ] , pev_iuser4 );
+			set_pev( g_piPlayerInfo[ id ][ AimedEntity ] , pev_renderfx , kRenderFxNone );
+			set_pev( g_piPlayerInfo[ id ][ AimedEntity ] , pev_renderamt , g_EntityData[ iArrayIndex ][ aiDeleted ] ? 100.0 : 255.0 );
+			set_pev( g_piPlayerInfo[ id ][ AimedEntity ] , pev_rendermode , g_EntityData[ iArrayIndex ][ aiDeleted ] ? kRenderTransColor : kRenderNormal );
+			g_piPlayerInfo[ id ][ AimedEntity ] = 0;
 		}
 		
+		//Refresh HUD
 		ClearSyncHud( id , g_HUDSyncObj_Action );
 		ClearSyncHud( id , g_HUDSyncObj_Weapon );
 		set_hudmessage( 255 , 255 , 0 , -1.0 , 0.25 , .holdtime=0.4 , .channel=-1 );
@@ -270,60 +280,67 @@ public TraceLine( Float:fStartOrigin[ 3 ] , Float:fEndOrigin[ 3 ] , trConditions
 		//Player pressing Use button
 		if ( ( pev( id , pev_button ) | pev( id , pev_oldbuttons ) ) & IN_USE )
 		{
+			//Remove HUD
 			ClearSyncHud( id , g_HUDSyncObj_Action );
 			
 			//Get origin of where selection was made so it can be used as location to create entity
-			g_fCurrentOrigin[ id ][ 0 ] = fEndOrigin[ 0 ];
-			g_fCurrentOrigin[ id ][ 1 ] = fEndOrigin[ 1 ];
-			g_fCurrentOrigin[ id ][ 2 ] = fEndOrigin[ 2 ];
-				
-			g_iMenuInfo[ id ][ ctChangeType ] = _:ctCreate;
-			g_iMenuInfo[ id ][ mtMenuType ] = _:mtType;
+			g_piPlayerInfo[ id ][ fCurrentOrigin ][ 0 ] = _:fEndOrigin[ 0 ];
+			g_piPlayerInfo[ id ][ fCurrentOrigin ][ 1 ] = _:fEndOrigin[ 1 ];
+			g_piPlayerInfo[ id ][ fCurrentOrigin ][ 2 ] = _:fEndOrigin[ 2 ];
+			
+			//Display create menu
+			g_piPlayerInfo[ id ][ miMenuInfo ][ ctChangeType ] = _:ctCreate;
+			g_piPlayerInfo[ id ][ miMenuInfo ][ mtMenuType ] = _:mtType;
 			ShowTypeMenu( id );
 		}
-	}//User is hovering over an existing entity and menu not currently open, allow user to edit entity.
-	else
+	}
+	else //User is aiming at an existing entity, allow user to edit entity.
 	{
 		//If an entity is not currently being edited.
-		if( !g_SelectedEntity[ id ] )
+		if( !g_piPlayerInfo[ id ][ SelectedEntity ] )
 		{
+			//Get array index and player id, if any, of who has this selected.
 			iArrayIndex = pev( iEntity , pev_iuser4 );
 			iSelectedBy = pev( iEntity , pev_iuser3 );
 			
+			//If entity not already selected, select it.
 			if ( !iSelectedBy )
 			{
-				if ( ( g_AimedEntity[ id ] != iEntity ) )
+				//Make entity glow
+				if ( g_piPlayerInfo[ id ][ AimedEntity ] != iEntity )
 				{
-					set_pev( g_AimedEntity[ id ] , pev_renderfx , kRenderFxNone );
-					set_pev( g_AimedEntity[ id ] , pev_renderamt , g_EntityData[ iArrayIndex ][ aiDeleted ] ? 100.0 : 255.0 );
-					set_pev( g_AimedEntity[ id ] , pev_rendermode , g_EntityData[ iArrayIndex ][ aiDeleted ] ? kRenderTransColor : kRenderNormal );
+					set_pev( g_piPlayerInfo[ id ][ AimedEntity ] , pev_renderfx , kRenderFxNone );
+					set_pev( g_piPlayerInfo[ id ][ AimedEntity ] , pev_renderamt , g_EntityData[ iArrayIndex ][ aiDeleted ] ? 100.0 : 255.0 );
+					set_pev( g_piPlayerInfo[ id ][ AimedEntity ] , pev_rendermode , g_EntityData[ iArrayIndex ][ aiDeleted ] ? kRenderTransColor : kRenderNormal );
 					set_rendering( iEntity , kRenderFxGlowShell , g_iItemGlowColor[ ItemAiming ][ rgbRed ] , g_iItemGlowColor[ ItemAiming ][ rgbGreen ] , g_iItemGlowColor[ ItemAiming ][ rgbBlue ] , kRenderTransColor, 100 );
-					g_AimedEntity[ id ] = iEntity;
+					g_piPlayerInfo[ id ][ AimedEntity ] = iEntity;
 				}
-			
+				
+				//Refresh HUD
 				ClearSyncHud( id , g_HUDSyncObj_Action );
 				set_hudmessage( 255 , 255 , 0 , -1.0 , 0.25 , .holdtime=0.4 , .channel=-1 );
 				ShowSyncHudMsg( id , g_HUDSyncObj_Action , "Hold 'Use' to select this item" );
 				GetWeaponName( cs_get_armoury_type( iEntity ) , szWeapon , charsmax( szWeapon ) );
 				set_hudmessage( 255 , 255 , 255 , -1.0 , 0.30 , .holdtime=0.4 , .channel=-1 );
 				ShowSyncHudMsg( id , g_HUDSyncObj_Weapon , "Item Type: %s^nCurrent Item Count: %d%s" , szWeapon[ 7 ] , get_pdata_int( iEntity , m_iCount , XO_Armoury ) , g_EntityData[ iArrayIndex ][ aiDeleted ] ? "^n^nItem Deleted" : "");
-			
+				
 				//User is aiming at entity and holding 'Use' button to select the entity.
 				if ( ( pev( id , pev_button ) | pev( id , pev_oldbuttons ) ) & IN_USE )
 				{
+					//Clear HUD
 					ClearSyncHud( id , g_HUDSyncObj_Action );
 					ClearSyncHud( id , g_HUDSyncObj_Weapon );
 					
 					//Set users selected entity as this entity.
-					g_SelectedEntity[ id ] = iEntity;
+					g_piPlayerInfo[ id ][ SelectedEntity ] = iEntity;
 					set_pev( iEntity , pev_iuser3 , id );
 					
 					//Make entity glow the selected color
 					set_rendering( iEntity , kRenderFxGlowShell , g_iItemGlowColor[ ItemSelected ][ rgbRed ] , g_iItemGlowColor[ ItemSelected ][ rgbGreen ] , g_iItemGlowColor[ ItemSelected ][ rgbBlue ] , kRenderTransColor, 100 );
 					
 					//Set menu info.
-					g_iMenuInfo[ id ][ ctChangeType ] = _:ctBase;
-					g_iMenuInfo[ id ][ mtMenuType ] = _:mtNone;
+					g_piPlayerInfo[ id ][ miMenuInfo ][ ctChangeType ] = _:ctBase;
+					g_piPlayerInfo[ id ][ miMenuInfo ][ mtMenuType ] = _:mtNone;
 					
 					new iCallback = menu_makecallback( "MenuBaseCallBack" );
 					
@@ -347,57 +364,59 @@ public MenuHandler( id , iMenu , iItem )
 		menu_destroy( iMenu );
 		
 		//User exitted out of change menu, re-apply appropriate changes to entity that was selected (if any).
-		if ( g_SelectedEntity[ id ] )
+		if ( g_piPlayerInfo[ id ][ SelectedEntity ] )
 		{
-			if ( g_EntityData[ pev( g_SelectedEntity[ id ] , pev_iuser4 ) ][ aiDeleted ] )
+			if ( g_EntityData[ pev( g_piPlayerInfo[ id ][ SelectedEntity ] , pev_iuser4 ) ][ aiDeleted ] )
 			{
-				SetDeleted( g_SelectedEntity[ id ] , true );
+				SetDeleted( g_piPlayerInfo[ id ][ SelectedEntity ] , true );
 			}
 			else
 			{
-				set_pev( g_SelectedEntity[ id ] , pev_rendermode , kRenderNormal );
-				set_pev( g_SelectedEntity[ id ] , pev_renderfx , kRenderFxNone );
+				set_pev( g_piPlayerInfo[ id ][ SelectedEntity ] , pev_rendermode , kRenderNormal );
+				set_pev( g_piPlayerInfo[ id ][ SelectedEntity ] , pev_renderfx , kRenderFxNone );
 			}
 		
-			set_pev( g_SelectedEntity[ id ] , pev_iuser3 , 0 );
+			set_pev( g_piPlayerInfo[ id ][ SelectedEntity ] , pev_iuser3 , 0 );
 		}
 		
-		g_iMenuInfo[ id ][ ctChangeType ] = _:ctNone;
-		g_iMenuInfo[ id ][ mtMenuType ] = _:mtNone;
-		g_SelectedEntity[ id ] = 0;
-		g_AimedEntity[ id ] = 0;
+		//Reset stuff.
+		g_piPlayerInfo[ id ][ miMenuInfo ][ ctChangeType ] = _:ctNone;
+		g_piPlayerInfo[ id ][ miMenuInfo ][ mtMenuType ] = _:mtNone;
+		g_piPlayerInfo[ id ][ SelectedEntity ] = 0;
+		g_piPlayerInfo[ id ][ AimedEntity ] = 0;
 		
 		return PLUGIN_HANDLED;
 	}
 	
+	//Get array index of selected entity.
 	new iArrayIndex;
-	if ( g_SelectedEntity[ id ] )
+	if ( g_piPlayerInfo[ id ][ SelectedEntity ] )
 	{
-		iArrayIndex = pev( g_SelectedEntity[ id ] , pev_iuser4 );
+		iArrayIndex = pev( g_piPlayerInfo[ id ][ SelectedEntity ] , pev_iuser4 );
 	}
 	
-	//User selected item on base menu
-	if ( g_iMenuInfo[ id ][ ctChangeType ] == ctBase )
+	//User selected item on base menu.
+	if ( g_piPlayerInfo[ id ][ miMenuInfo ][ ctChangeType ] == ctBase )
 	{
 		switch ( iItem )
 		{
-			case 0: //Show Item Change menu
+			case bmiChange: //Show Item Change menu
 			{
-				g_iMenuInfo[ id ][ ctChangeType ] = _:ctWeaponType;
-				g_iMenuInfo[ id ][ mtMenuType ] = _:mtType;
+				g_piPlayerInfo[ id ][ miMenuInfo ][ ctChangeType ] = _:ctWeaponType;
+				g_piPlayerInfo[ id ][ miMenuInfo ][ mtMenuType ] = _:mtType;
 				ShowTypeMenu( id );
 			}
-			case 1: //Show Count menu
+			case bmiCount: //Show Count menu
 			{
-				g_iMenuInfo[ id ][ ctChangeType ] = _:ctCount;
-				g_iMenuInfo[ id ][ mtMenuType ] = _:mtCount;
+				g_piPlayerInfo[ id ][ miMenuInfo ][ ctChangeType ] = _:ctCount;
+				g_piPlayerInfo[ id ][ miMenuInfo ][ mtMenuType ] = _:mtCount;
 				ShowCountMenu( id );
 			}
-			case 2: //Delete complete
+			case bmiDelete: //Delete complete
 			{
 				g_EntityData[ iArrayIndex ][ aiDeleted ] = !g_EntityData[ iArrayIndex ][ aiDeleted ];
-				SetDeleted( g_SelectedEntity[ id ] , g_EntityData[ iArrayIndex ][ aiDeleted ] );
-				set_pev( g_SelectedEntity[ id ] , pev_iuser3 , 0 );
+				SetDeleted( g_piPlayerInfo[ id ][ SelectedEntity ] , g_EntityData[ iArrayIndex ][ aiDeleted ] );
+				set_pev( g_piPlayerInfo[ id ][ SelectedEntity ] , pev_iuser3 , 0 );
 				SaveAndResetVars( id );
 			}
 		}
@@ -405,23 +424,24 @@ public MenuHandler( id , iMenu , iItem )
 	else
 	{
 		//User made a selection on the Count or Item Type menu
-		switch ( g_iMenuInfo[ id ][ mtMenuType ] )
+		switch ( g_piPlayerInfo[ id ][ miMenuInfo ][ mtMenuType ] )
 		{
 			case mtCount:
 			{
-				switch ( g_iMenuInfo[ id ][ ctChangeType ] )
+				switch ( g_piPlayerInfo[ id ][ miMenuInfo ][ ctChangeType ] )
 				{
 					case ctCreate:
 					{
 						//Weapon creation complete.
-						g_EntityData[ g_iMapEntityCount ][ aiEntityIndex ] = CreateEntity( g_EntityData[ g_iMapEntityCount ][ aiOriginalWeaponType ] , str_to_num( g_szChangeValues[ iItem ] ) , g_fCurrentOrigin[ id ] , true );
+						g_piPlayerInfo[ id ][ fCurrentOrigin ][ 2 ] += 15.0; //Create entity a few units in the air.
+						g_EntityData[ g_iMapEntityCount ][ aiEntityIndex ] = CreateEntity( g_EntityData[ g_iMapEntityCount ][ aiOriginalWeaponType ] , str_to_num( g_szChangeValues[ iItem ] ) , g_piPlayerInfo[ id ][ fCurrentOrigin ] , true );
 						g_EntityData[ g_iMapEntityCount ][ aiOriginalWeaponCount ] = str_to_num( g_szChangeValues[ iItem ] );
-						g_EntityData[ g_iMapEntityCount ][ aiOrigin ][ 0 ] = _:g_fCurrentOrigin[ id ][ 0 ];
-						g_EntityData[ g_iMapEntityCount ][ aiOrigin ][ 1 ] = _:g_fCurrentOrigin[ id ][ 1 ];
-						g_EntityData[ g_iMapEntityCount ][ aiOrigin ][ 2 ] = _:g_fCurrentOrigin[ id ][ 2 ];
+						g_EntityData[ g_iMapEntityCount ][ aiOrigin ][ 0 ] = _:g_piPlayerInfo[ id ][ fCurrentOrigin ][ 0 ];
+						g_EntityData[ g_iMapEntityCount ][ aiOrigin ][ 1 ] = _:g_piPlayerInfo[ id ][ fCurrentOrigin ][ 1 ];
+						g_EntityData[ g_iMapEntityCount ][ aiOrigin ][ 2 ] = _:g_piPlayerInfo[ id ][ fCurrentOrigin ][ 2 ];
 						g_EntityData[ g_iMapEntityCount ][ aiCreated ] = true;
-						g_EntityData[ g_iMapEntityCount ][ aiChangeWeaponType ] = Armoury_NotChanged;
-						g_EntityData[ g_iMapEntityCount ][ aiChangeWeaponCount ] = Armoury_NotChanged;
+						g_EntityData[ g_iMapEntityCount ][ aiChangeWeaponType ] = Entity_NotChanged;
+						g_EntityData[ g_iMapEntityCount ][ aiChangeWeaponCount ] = Entity_NotChanged;
 						set_pev( g_EntityData[ g_iMapEntityCount ][ aiEntityIndex ] , pev_iuser4 , g_iMapEntityCount );
 						g_iMapEntityCount++;
 						SaveAndResetVars( id );
@@ -430,31 +450,31 @@ public MenuHandler( id , iMenu , iItem )
 					{
 						//Weapon count change complete
 						new iChangeCount = str_to_num( g_szChangeValues[ iItem ] );
-						g_EntityData[ iArrayIndex ][ aiChangeWeaponCount ] = ( g_EntityData[ iArrayIndex ][ aiOriginalWeaponCount ] == iChangeCount ) ? Armoury_NotChanged : iChangeCount;
-						ChangeCount( g_SelectedEntity[ id ] , GetArmouryCount( iArrayIndex ) , true );
-						set_pev( g_SelectedEntity[ id ] , pev_iuser3 , 0 );
-						SaveAndResetVars( id )
+						g_EntityData[ iArrayIndex ][ aiChangeWeaponCount ] = ( g_EntityData[ iArrayIndex ][ aiOriginalWeaponCount ] == iChangeCount ) ? Entity_NotChanged : iChangeCount;
+						ChangeCount( g_piPlayerInfo[ id ][ SelectedEntity ] , GetArmouryCount( iArrayIndex ) , true );
+						set_pev( g_piPlayerInfo[ id ][ SelectedEntity ] , pev_iuser3 , 0 );
+						SaveAndResetVars( id );
 					}
 				}
 			}
 			case mtType:
 			{
-				switch ( g_iMenuInfo[ id ][ ctChangeType ] )
+				switch ( g_piPlayerInfo[ id ][ miMenuInfo ][ ctChangeType ] )
 				{
 					case ctCreate:
 					{
 						//Type selected for Create entity, show count menu
 						g_EntityData[ g_iMapEntityCount ][ aiOriginalWeaponType ] = iItem; 
-						g_iMenuInfo[ id ][ mtMenuType ] = _:mtCount;
+						g_piPlayerInfo[ id ][ miMenuInfo ][ mtMenuType ] = _:mtCount;
 						ShowCountMenu( id );
 					}
 					case ctWeaponType:
 					{
 						//Weapon type change complete
-						g_EntityData[ iArrayIndex ][ aiChangeWeaponType ] = ( iItem == g_EntityData[ iArrayIndex ][ aiOriginalWeaponType ] ) ? Armoury_NotChanged : iItem;
-						ChangeWeapon( g_SelectedEntity[ id ] , GetArmouryType( iArrayIndex ) , true );
-						set_pev( g_SelectedEntity[ id ] , pev_iuser3 , 0 );
-						SaveAndResetVars( id )
+						g_EntityData[ iArrayIndex ][ aiChangeWeaponType ] = ( iItem == g_EntityData[ iArrayIndex ][ aiOriginalWeaponType ] ) ? Entity_NotChanged : iItem;
+						ChangeWeapon( g_piPlayerInfo[ id ][ SelectedEntity ] , GetArmouryType( iArrayIndex ) , true );
+						set_pev( g_piPlayerInfo[ id ][ SelectedEntity ] , pev_iuser3 , 0 );
+						SaveAndResetVars( id );
 					}
 				}	
 			}
@@ -467,19 +487,19 @@ public MenuHandler( id , iMenu , iItem )
 //Disable menu item if it is already the current state.
 public MenuBaseCallBack( id , iMenu , iItem )
 {
-	return g_EntityData[ pev( g_SelectedEntity[ id ] , pev_iuser4 ) ][ aiDeleted ] ? ITEM_DISABLED : ITEM_ENABLED;
+	return g_EntityData[ pev( g_piPlayerInfo[ id ][ SelectedEntity ] , pev_iuser4 ) ][ aiDeleted ] ? ITEM_DISABLED : ITEM_ENABLED;
 }
 
 //Disable menu item if it is already the current state.
 public MenuTypeCallBack( id , iMenu , iItem )
 {
-	return ( g_SelectedEntity[ id ] && ( get_pdata_int( g_SelectedEntity[ id ] , m_iType , XO_Armoury ) == iItem ) ) ? ITEM_DISABLED : ITEM_ENABLED;
+	return ( g_piPlayerInfo[ id ][ SelectedEntity ] && ( get_pdata_int( g_piPlayerInfo[ id ][ SelectedEntity ] , m_iType , XO_Armoury ) == iItem ) ) ? ITEM_DISABLED : ITEM_ENABLED;
 }
 
 //Disable menu item if it is already the current state.
 public MenuCountCallBack( id , iMenu , iItem )
 {
-	return ( g_SelectedEntity[ id ] && ( GetArmouryCount( pev( g_SelectedEntity[ id ] , pev_iuser4 ) ) == str_to_num( g_szChangeValues[ iItem ] ) ) ) ? ITEM_DISABLED : ITEM_ENABLED;
+	return ( g_piPlayerInfo[ id ][ SelectedEntity ] && ( GetArmouryCount( pev( g_piPlayerInfo[ id ][ SelectedEntity ] , pev_iuser4 ) ) == str_to_num( g_szChangeValues[ iItem ] ) ) ) ? ITEM_DISABLED : ITEM_ENABLED;
 }
 
  //Reset all entities to their appropriate count and make sure they are visible.
@@ -498,16 +518,16 @@ public EnableManager( id , level , cid )
 {
 	if( !cmd_access( id , level , cid , 1 ) )
 		return PLUGIN_HANDLED;
-
+	
 	if ( g_TL_Forward )
 	{
 		client_print( id , print_console , "* Armoury Manager is already enabled." );
 		return PLUGIN_HANDLED;
 	}
-
+	
 	//Enable forward.
 	g_TL_Forward = register_forward( FM_TraceLine , "TraceLine" , true );
-
+	
 	//Set all armoury_entity's as visible so they can be edited.
 	for ( new i = 0 , iEntity ; i < g_iMapEntityCount ; i++ )
 	{
@@ -528,7 +548,7 @@ public DisableManager( id , level , cid )
 {
 	if( !cmd_access( id , level , cid , 1 ) )
 		return PLUGIN_HANDLED;
-		
+	
 	if ( !g_TL_Forward )
 	{
 		client_print( id , print_console , "* Armoury Manager is not currently enabled." );
@@ -543,18 +563,18 @@ public DisableManager( id , level , cid )
 		iPlayer = iPlayers[ i ];
 		
 		//A player is currently doing something. They must finish before the Armoury Manager can be disabled.
-		if ( g_SelectedEntity[ iPlayer ] || g_iMenuInfo[ iPlayer ][ mtMenuType ] || g_iMenuInfo[ iPlayer ][ ctChangeType ] )
+		if ( g_piPlayerInfo[ iPlayer ][ SelectedEntity ] || g_piPlayerInfo[ iPlayer ][ miMenuInfo ][ mtMenuType ] || g_piPlayerInfo[ iPlayer ][ miMenuInfo ][ ctChangeType ] )
 		{
 			client_print( id , print_console , "* A player is currently editing or creating an entity. Please have them complete this before disabling the Armoury Manager." );
 			return PLUGIN_HANDLED;
 		}
 		
 		//If player currently aiming at an entity, 
-		if ( g_AimedEntity[ iPlayer ] )
+		if ( g_piPlayerInfo[ iPlayer ][ AimedEntity ] )
 		{
-			set_pev( g_AimedEntity[ iPlayer ] , pev_rendermode , kRenderNormal );
-			set_pev( g_AimedEntity[ iPlayer ] , pev_renderfx , kRenderFxNone );
-			g_AimedEntity[ iPlayer ] = 0;
+			set_pev( g_piPlayerInfo[ iPlayer ][ AimedEntity ] , pev_rendermode , kRenderNormal );
+			set_pev( g_piPlayerInfo[ iPlayer ][ AimedEntity ] , pev_renderfx , kRenderFxNone );
+			g_piPlayerInfo[ iPlayer ][ AimedEntity ] = 0;
 		}
 		
 		//Clear hud for all players.
@@ -571,11 +591,11 @@ public DisableManager( id , level , cid )
 	{
 		iEntity = g_EntityData[ i ][ aiEntityIndex ];
 		
-		if ( g_EntityData[ i ][ aiCreated ] )
-			dllfunc( DLLFunc_Spawn , iEntity );
-			
 		if ( !get_pdata_int( iEntity , m_iCount , XO_Armoury ) ) 
 			set_pev( iEntity , pev_effects , pev( iEntity , pev_effects ) | EF_NODRAW );
+		
+		if ( get_pdata_int( iEntity , m_iCount , XO_Armoury ) ) 
+			dllfunc( DLLFunc_Spawn , iEntity );
 			
 		if ( g_EntityData[ i ][ aiDeleted ] )
 		{
@@ -651,32 +671,32 @@ public DisplayInfo( id , level , cid )
 	
 	//Build MOTD
 	iPos = copy( szBuffer , charsmax( szBuffer ) , "<html><head><style>table,th,td {border:1px solid black;border-collapse:collapse;} \
-							th,td {padding:3px;text-align:center;}</style></head><body><font face=^"Arial^"><table>" );									
+							th,td {padding:3px;text-align:center;font-size:15pt;}</style></head><body><font face=^"Arial^" size=^"4^"><table>" );
 	iPos += copy( szBuffer[ iPos ] , charsmax( szBuffer ) - iPos ,"<tr><td>#</td><td><b>Orig Type</b></td><td><b>Orig #</b></td><td><b>Chg Type</b></td> \
 									<td><b>Chg #</b></td><td><b>Deleted</b></td><td><b>Created</b></td></tr>" );
 	
 	//Add armoury info
-	for ( ; i < g_iMapEntityCount && iProcessed < AM_EntitiesPerInfoPage ; i++ , iProcessed++ )
+	for ( ; i < g_iMapEntityCount && ( iProcessed < EntitiesPerInfoPage ) ; i++ , iProcessed++ )
 	{	
-		GetWeaponName( g_ArmouryTypes[ g_EntityData[ i ][ aiOriginalWeaponType ] ][ WeaponIndex ]  , szWeapon , charsmax( szWeapon ) );
+		GetWeaponName( g_ArmouryTypes[ g_EntityData[ i ][ aiOriginalWeaponType ] ][ WeaponIndex ] , szWeapon , charsmax( szWeapon ) );
 		
-		if ( g_EntityData[ i ][ aiChangeWeaponType ] != Armoury_NotChanged )
+		if ( g_EntityData[ i ][ aiChangeWeaponType ] != Entity_NotChanged )
 			GetWeaponName( g_ArmouryTypes[ g_EntityData[ i ][ aiChangeWeaponType ] ][ WeaponIndex ] , szChangeWeapon , charsmax( szChangeWeapon ) );
 		else
 			szChangeWeapon[ 7 ] = EOS;
 		
-		if ( g_EntityData[ i ][ aiChangeWeaponCount ] != Armoury_NotChanged )
+		if ( g_EntityData[ i ][ aiChangeWeaponCount ] != Entity_NotChanged )
 			num_to_str( g_EntityData[ i ][ aiChangeWeaponCount ] , szCount , charsmax( szCount ) );
 		else
 			szCount[ 0 ] = EOS;
 			
 		iPos += formatex( szBuffer[ iPos ] , charsmax( szBuffer ) - iPos , "<tr><td>%d</td><td>%s</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>" , 
 										i + 1 , szWeapon[ 7 ] , g_EntityData[ i ][ aiOriginalWeaponCount ] , szChangeWeapon[ 7 ] , szCount ,
-										g_EntityData[ i ][ aiDeleted ] ? "Yes" : "No" , g_EntityData[ i ][ aiCreated ] ? "Yes" : "No" ); 								
+										g_EntityData[ i ][ aiDeleted ] ? "Yes" : "No" , g_EntityData[ i ][ aiCreated ] ? "Yes" : "No" );
 	}
 	
-	//If there are more than 14 then let user know they can see items in the 15+ range by specifying the starting index.
-	if ( g_iMapEntityCount > 14 )
+	//If there are more than AM_EntitiesPerInfoPage then let user know they can see items in the 15+ range by specifying the starting index.
+	if ( g_iMapEntityCount > EntitiesPerInfoPage )
 		iPos += formatex( szBuffer[ iPos ] , charsmax( szBuffer ) - iPos , "</table><br>Total Entities: %d<br>To see more, use <b>am_info [start #]</b> command.</font></body></html>" , g_iMapEntityCount );
 	else
 		iPos += formatex( szBuffer[ iPos ] , charsmax( szBuffer ) - iPos , "</table><br>Total Entities: %d</font></body></html>" , g_iMapEntityCount );
@@ -689,10 +709,10 @@ public DisplayInfo( id , level , cid )
 //Save map config file and reset players values to 0/nothing
 SaveAndResetVars( id )
 {
-	g_iMenuInfo[ id ][ mtMenuType ] = _:mtNone;
-	g_iMenuInfo[ id ][ ctChangeType ] = _:ctNone;
-	g_SelectedEntity[ id ] = 0;
-	g_AimedEntity[ id ] = 0;
+	g_piPlayerInfo[ id ][ miMenuInfo ][ mtMenuType ] = _:mtNone;
+	g_piPlayerInfo[ id ][ miMenuInfo ][ ctChangeType ] = _:ctNone;
+	g_piPlayerInfo[ id ][ SelectedEntity ] = 0;
+	g_piPlayerInfo[ id ][ AimedEntity ] = 0;
 	SaveFile();
 }
 
@@ -713,10 +733,10 @@ ShowCountMenu( id )
 {
 	new iMenu = menu_create( "Select Item Count" , "MenuHandler" );
 	new iCallback = menu_makecallback( "MenuCountCallBack" );
-
+	
 	for ( new iChangeOptions = 0 ; iChangeOptions < sizeof( g_szChangeValues ) ; iChangeOptions++ )
 		menu_additem( iMenu , g_szChangeValues[ iChangeOptions ] , .callback=iCallback );
-
+	
 	menu_display( id , iMenu );
 }
 
@@ -750,7 +770,7 @@ ProcessEntities()
 			fOrigin[ 0 ] = g_EntityData[ iCurrent ][ aiOrigin ][ 0 ];
 			fOrigin[ 1 ] = g_EntityData[ iCurrent ][ aiOrigin ][ 1 ];
 			fOrigin[ 2 ] = g_EntityData[ iCurrent ][ aiOrigin ][ 2 ];
-
+			
 			//Reset everything for a new entity search.
 			iEntity = -1;
 			fNearestDistance = 0.0;
@@ -761,7 +781,7 @@ ProcessEntities()
 			{
 				//Get the classname of current entity.
 				pev( iEntity , pev_classname , szClassname , charsmax( szClassname ) );
-		
+				
 				//If is it an armoury_entity, check if its the same weapon type as the current array item and get the closest one
 				//to the saved origin location. There is a possibility that armoury_entity's are very close together so extra work
 				//is needed to make sure the correct one is selected.
@@ -795,14 +815,14 @@ ProcessEntities()
 				
 				//Set pev_iuser4 value to the entity array index so it can be referenced later.
 				set_pev( iClosestEnt , pev_iuser4 , iCurrent );
-
+				
 				//Apply changes to entities.
-				if ( g_EntityData[ iCurrent ][ aiChangeWeaponType ] != Armoury_NotChanged )
+				if ( g_EntityData[ iCurrent ][ aiChangeWeaponType ] != Entity_NotChanged )
 				{
 					ChangeWeapon( iClosestEnt , g_EntityData[ iCurrent ][ aiChangeWeaponType ] , false );
 				}
 				
-				if ( g_EntityData[ iCurrent ][ aiChangeWeaponCount ] != Armoury_NotChanged )
+				if ( g_EntityData[ iCurrent ][ aiChangeWeaponCount ] != Entity_NotChanged )
 				{
 					ChangeCount( iClosestEnt , g_EntityData[ iCurrent ][ aiChangeWeaponCount ] , false );
 				}
@@ -829,8 +849,8 @@ LoadEntities()
 		pev( iEntity , pev_origin , g_EntityData[ iArrayIndex ][ aiOrigin ] );
 		g_EntityData[ iArrayIndex ][ aiOriginalWeaponType ] = get_pdata_int( iEntity , m_iType , XO_Armoury );
 		g_EntityData[ iArrayIndex ][ aiOriginalWeaponCount ] = get_pdata_int( iEntity , m_iCount , XO_Armoury );
-		g_EntityData[ iArrayIndex ][ aiChangeWeaponType ] = Armoury_NotChanged;
-		g_EntityData[ iArrayIndex ][ aiChangeWeaponCount ] = Armoury_NotChanged;
+		g_EntityData[ iArrayIndex ][ aiChangeWeaponType ] = Entity_NotChanged;
+		g_EntityData[ iArrayIndex ][ aiChangeWeaponCount ] = Entity_NotChanged;
 		g_EntityData[ iArrayIndex ][ aiDeleted ] = false;
 		g_EntityData[ iArrayIndex ][ aiCreated ] = false;
 		g_EntityData[ iArrayIndex ][ aiEntityIndex ] = iEntity;
@@ -846,7 +866,7 @@ LoadEntities()
 SaveFile()
 {
 	new iFile;
-		
+	
 	if ( ( iFile = fopen( g_szMapFile , "w+b" ) ) )
 	{
 		for ( new iArrayIndex = 0 ; ( iArrayIndex < g_iMapEntityCount ) && ( iArrayIndex < MaxEntities ) ; iArrayIndex++ )
@@ -868,7 +888,7 @@ LoadFile()
 	
 	if ( !( iSize = filesize( g_szMapFile ) ) ) 
 		return 0;
-		
+	
 	if ( ( iFile = fopen( g_szMapFile , "rb" ) ) )
 	{
 		while ( ( iLoaded < MaxEntities ) && ( ( iBytesRead * BLOCK_INT ) < iSize ) )
@@ -898,10 +918,10 @@ GetWeaponName( iWeaponIndex , szWeapon[] , len )
 CreateEntity( iWeaponType , iCount , Float:fOrigin[] , bool:bBlockPickup )
 {
 	new iEntity = create_entity( "armoury_entity" );
-
+	
 	if( !iEntity )
 		set_fail_state( "Error creating entity" );
-    
+	
 	set_pev( iEntity , pev_origin , fOrigin );
 	set_pdata_int( iEntity , m_iType , iWeaponType , XO_Armoury );
 	set_pdata_int( iEntity , m_iCount , iCount , XO_Armoury );
@@ -939,6 +959,3 @@ SetDeleted( iEntity , bool:bDeleted )
 	set_pev( iEntity , pev_renderfx , kRenderFxNone );
 	set_pev( iEntity , pev_solid , bDeleted ? SOLID_NOT : SOLID_TRIGGER );
 }
-/* AMXX-Studio Notes - DO NOT MODIFY BELOW HERE
-*{\\ rtf1\\ ansi\\ deff0{\\ fonttbl{\\ f0\\ fnil Tahoma;}}\n\\ viewkind4\\ uc1\\ pard\\ lang1033\\ f0\\ fs16 \n\\ par }
-*/
