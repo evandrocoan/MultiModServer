@@ -30,7 +30,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.0-217";
+new const PLUGIN_VERSION[] = "v3.2.0-218";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -260,7 +260,7 @@ new const PLUGIN_VERSION[] = "v3.2.0-217";
 #if DEBUG_LEVEL >= DEBUG_LEVEL_NORMAL
     stock writeToTheDebugFile( log_file[], formated_message[] )
     {
-        static Float:gameTime;
+        new Float:gameTime;
         
         gameTime = get_gametime();
         log_to_file( log_file, "{%3.4f} %s", gameTime, formated_message );
@@ -2055,12 +2055,11 @@ public client_death_event()
 
     if( g_fragLimitNumber )
     {
-        static killerId;
-        killerId = read_data( 1 );
+        new killerId = read_data( 1 );
         
         if( killerId )
         {
-            static frags;
+            new frags;
             
             if( ( ( ( frags = ++g_playersKills[ killerId ] ) + VOTE_START_FRAGS() ) > g_fragLimitNumber )
                 && !IS_END_OF_MAP_VOTING_GOING_ON() )
@@ -2160,11 +2159,11 @@ public show_last_round_HUD()
     
     set_hudmessage( 255, 255, 255, 0.15, 0.15, 0, 0.0, 1.0, 0.1, 0.1, 1 );
     static last_round_message[ MAX_COLOR_MESSAGE ];
-
+    
 #if AMXX_VERSION_NUM < 183
-    static player_id;
-    static playerIndex;
-    static playersCount;
+    new    player_id;
+    new    playerIndex;
+    new    playersCount;
     static players[ MAX_PLAYERS ];
 #endif
     
@@ -2790,12 +2789,13 @@ public cmd_maintenanceMode( player_id, level, cid )
 public cmd_say( player_id )
 {
     LOGGER( 128, "I AM ENTERING ON cmd_say(1) | player_id: %s", player_id );
-    static prefix_index;
+    
+    new prefix_index;
+    new thirdWord [ 2 ];
     
     static sentence  [ 70 ];
     static firstWord [ 32 ];
     static secondWord[ 32 ];
-    static thirdWord [ 2 ];
     
     sentence   [ 0 ] = '^0';
     firstWord  [ 0 ] = '^0';
