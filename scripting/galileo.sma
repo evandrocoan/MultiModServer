@@ -30,7 +30,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.0-218";
+new const PLUGIN_VERSION[] = "v3.2.0-219";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -2791,16 +2791,15 @@ public cmd_say( player_id )
     LOGGER( 128, "I AM ENTERING ON cmd_say(1) | player_id: %s", player_id );
     
     new prefix_index;
-    new thirdWord [ 2 ];
+    new thirdWord[ 2 ];
     
     static sentence  [ 70 ];
     static firstWord [ 32 ];
     static secondWord[ 32 ];
     
-    sentence   [ 0 ] = '^0';
-    firstWord  [ 0 ] = '^0';
-    secondWord [ 0 ] = '^0';
-    thirdWord  [ 0 ] = '^0';
+    sentence  [ 0 ] = '^0';
+    firstWord [ 0 ] = '^0';
+    secondWord[ 0 ] = '^0';
     
     read_args( sentence, charsmax( sentence ) );
     remove_quotes( sentence );
