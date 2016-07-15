@@ -30,7 +30,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.0-219";
+new const PLUGIN_VERSION[] = "v3.2.0-220";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -2971,7 +2971,8 @@ stock nomination_menu( player_id )
     new nominationMap [ MAX_MAPNAME_LENGHT ];
     new disabledReason[ MAX_SHORT_STRING ];
     
-    isRecentMapNomAllowed = get_pcvar_num( cvar_recentNomMapsAllowance ) == 0;
+    isRecentMapNomAllowed = ( g_recentMapCount
+                              && get_pcvar_num( cvar_recentNomMapsAllowance ) == 0 );
     isWhiteListNomBlock   = ( IS_WHITELIST_ENABLED()
                               && get_pcvar_num( cvar_isWhiteListNomBlock ) );
     
@@ -3061,7 +3062,8 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
     new nominationMap [ MAX_MAPNAME_LENGHT ];
     new disabledReason[ MAX_SHORT_STRING ];
     
-    isRecentMapNomAllowed = get_pcvar_num( cvar_recentNomMapsAllowance ) == 0;
+    isRecentMapNomAllowed = ( g_recentMapCount
+                              && get_pcvar_num( cvar_recentNomMapsAllowance ) == 0 );
     isWhiteListNomBlock   = ( IS_WHITELIST_ENABLED()
                               && get_pcvar_num( cvar_isWhiteListNomBlock ) );
     
@@ -3574,7 +3576,8 @@ stock map_nominate( player_id, mapIndex, nominatorPlayerId = -1 )
     }
     
     // players may not be able to nominate recently played maps
-    if( map_isTooRecent( mapName )
+    if( g_recentMapCount
+        && map_isTooRecent( mapName )
         && !get_pcvar_num( cvar_recentNomMapsAllowance ) )
     {
         color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_TOORECENT", mapName );
@@ -4207,10 +4210,11 @@ stock processLoadedMapsFile( maxMapsPerGroupToUse[], groupCount, blockedCount,
     new mapName[ MAX_MAPNAME_LENGHT ];
     
     new Array:fillerMapsArray     = g_fillerMapsArray;
-    new       isWhitelistEnabled  = IS_WHITELIST_ENABLED();
-    new bool: useMapIsTooRecent   = true;
-    new bool: useIsPrefixInMenu   = true;
     new bool: useEqualiCurrentMap = true;
+    new bool: isWhitelistEnabled  = IS_WHITELIST_ENABLED();
+    new bool: useIsPrefixInMenu   = get_pcvar_num( cvar_voteUniquePrefixes ) != 0;
+    new bool: useMapIsTooRecent   = ( g_recentMapCount
+                                      && get_pcvar_num( cvar_recentMapsBannedNumber ) != 0 );
     new bool: isWhiteListOutBlock = ( isWhitelistEnabled
                                       && get_pcvar_num( cvar_isWhiteListBlockOut ) != 0 );
     
@@ -4329,7 +4333,8 @@ stock processLoadedMapsFile( maxMapsPerGroupToUse[], groupCount, blockedCount,
                     LOGGER( 8, "%d. ( processLoadedMapsFile|while_in ) mapName: %s, map_isInMenu: %d, \
                             is_theCurrentMap: %d, map_isTooRecent: %d", \
                             ++currentMapIndex, mapName, map_isInMenu( mapName ), \
-                            equali( g_currentMap, mapName ), map_isTooRecent( mapName ) );
+                            equali( g_currentMap, mapName ), \
+                            ( g_recentMapCount? map_isTooRecent( mapName ) : 0 ) );
                     LOGGER( 8, "          isPrefixInMenu: %d, TrieKeyExists( blockedFillerMapsTrie ): %d, \
                                                               !TrieKeyExists( g_whitelistTrie ): %d", \
                                           isPrefixInMenu( mapName ), \
@@ -4395,7 +4400,8 @@ stock processLoadedMapsFile( maxMapsPerGroupToUse[], groupCount, blockedCount,
                     LOGGER( 8, "%d. ( processLoadedMapsFile|while_out ) mapName: %s, map_isInMenu: %d, \
                             is_theCurrentMap: %d, map_isTooRecent: %d", \
                             currentMapIndex, mapName, map_isInMenu( mapName ), \
-                            equali( g_currentMap, mapName ), map_isTooRecent( mapName ) );
+                            equali( g_currentMap, mapName ), \
+                            ( g_recentMapCount? map_isTooRecent( mapName ) : 0 ) );
                     LOGGER( 8, "          isPrefixInMenu: %d, TrieKeyExists( blockedFillerMapsTrie ): %d, \
                                                              !TrieKeyExists( g_whitelistTrie ): %d", \
                                           isPrefixInMenu( mapName ), \
@@ -6580,27 +6586,24 @@ stock isPrefixInMenu( map[] )
 {
     LOGGER( 0, "I AM ENTERING ON isPrefixInMenu(1) | map: %s", map );
     
-    if( get_pcvar_num( cvar_voteUniquePrefixes ) )
+    new junk[ 8 ];
+    new possiblePrefix[ 8 ];
+    new existingPrefix[ 8 ]; 
+    
+    strtok( map, possiblePrefix, charsmax( possiblePrefix ), junk, charsmax( junk ), '_', 1 );
+    
+    for( new playerVoteMapChoiceIndex = 0;
+         playerVoteMapChoiceIndex < g_totalVoteOptions; ++playerVoteMapChoiceIndex )
     {
-        new junk[ 8 ];
-        new possiblePrefix[ 8 ];
-        new existingPrefix[ 8 ]; 
+        strtok( g_votingMapNames[ playerVoteMapChoiceIndex ],
+                existingPrefix, charsmax( existingPrefix ),
+                junk, charsmax( junk ),
+                '_', 1 );
         
-        strtok( map, possiblePrefix, charsmax( possiblePrefix ), junk, charsmax( junk ), '_', 1 );
-        
-        for( new playerVoteMapChoiceIndex = 0;
-             playerVoteMapChoiceIndex < g_totalVoteOptions; ++playerVoteMapChoiceIndex )
+        if( equali( possiblePrefix, existingPrefix ) )
         {
-            strtok( g_votingMapNames[ playerVoteMapChoiceIndex ],
-                    existingPrefix, charsmax( existingPrefix ),
-                    junk, charsmax( junk ),
-                    '_', 1 );
-            
-            if( equali( possiblePrefix, existingPrefix ) )
-            {
-                LOGGER( 0, "    ( isPrefixInMenu ) Returning true." );
-                return true;
-            }
+            LOGGER( 0, "    ( isPrefixInMenu ) Returning true." );
+            return true;
         }
     }
     
@@ -6608,18 +6611,16 @@ stock isPrefixInMenu( map[] )
     return false;
 }
 
+/**
+ * Everybody who call this, must to check whether the recent maps are loaded or not. To do so, just
+ * do 'if(g_recentMapCount)'.
+ */
 stock map_isTooRecent( map[] )
 {
     LOGGER( 0, "I AM ENTERING ON map_isTooRecent(1) | map: %s", map );
+    LOGGER( 0, "    ( map_isTooRecent ) Returning TrieKeyExists: %d", TrieKeyExists( g_recentMapsTrie, map ) );
     
-    if( get_pcvar_num( cvar_recentMapsBannedNumber ) )
-    {
-        LOGGER( 0, "    ( map_isTooRecent ) Returning if map TrieKeyExists on g_recentMapsTrie: %d", TrieKeyExists( g_recentMapsTrie, map ) );
-        return TrieKeyExists( g_recentMapsTrie, map );
-    }
-    
-    LOGGER( 0, "    ( map_isTooRecent ) Returning false." );
-    return false;
+    return TrieKeyExists( g_recentMapsTrie, map );
 }
 
 /**
