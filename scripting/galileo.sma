@@ -30,7 +30,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.0-220";
+new const PLUGIN_VERSION[] = "v3.2.0-222";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -421,6 +421,13 @@ do \
 #define IS_WHITELIST_ENABLED() \
     ( get_pcvar_num( cvar_whitelistMinPlayers ) == 1 \
       || get_realplayersnum() < get_pcvar_num( cvar_whitelistMinPlayers ) )
+//
+
+/**
+ * Boolean check to know whether the Whitelist should be loaded every hour.
+ */
+#define IS_TO_HOURLY_LOAD_THE_WHITELIST() \
+    ( get_pcvar_num( cvar_isWhiteListNomBlock ) )
 //
 
 /**
@@ -1203,9 +1210,8 @@ stock configureTheWhiteListFeature()
 {
     LOGGER( 128, "I AM ENTERING ON configureTheWhiteListFeature(0)" );
     
-    // The 'cvar_isWhiteListNomBlock' cvar needs the Whitelist always to be on memory.
     if( IS_WHITELIST_ENABLED()
-        && get_pcvar_num( cvar_isWhiteListNomBlock ) )
+        && IS_TO_HOURLY_LOAD_THE_WHITELIST() )
     {
         computeNextWhiteListLoadTime( 1, false );
         loadTheWhiteListFeature();
@@ -2974,7 +2980,7 @@ stock nomination_menu( player_id )
     isRecentMapNomAllowed = ( g_recentMapCount
                               && get_pcvar_num( cvar_recentNomMapsAllowance ) == 0 );
     isWhiteListNomBlock   = ( IS_WHITELIST_ENABLED()
-                              && get_pcvar_num( cvar_isWhiteListNomBlock ) );
+                              && IS_TO_HOURLY_LOAD_THE_WHITELIST() );
     
     // Not loaded?
     if( isWhiteListNomBlock )
@@ -3065,7 +3071,7 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
     isRecentMapNomAllowed = ( g_recentMapCount
                               && get_pcvar_num( cvar_recentNomMapsAllowance ) == 0 );
     isWhiteListNomBlock   = ( IS_WHITELIST_ENABLED()
-                              && get_pcvar_num( cvar_isWhiteListNomBlock ) );
+                              && IS_TO_HOURLY_LOAD_THE_WHITELIST() );
     
     // Not loaded?
     if( isWhiteListNomBlock )
@@ -3549,7 +3555,7 @@ stock map_nominate( player_id, mapIndex, nominatorPlayerId = -1 )
     LOGGER( 4, "( map_nominate ) mapIndex: %d, mapName: %s", mapIndex, mapName );
     
     if( IS_WHITELIST_ENABLED()
-        && get_pcvar_num( cvar_isWhiteListNomBlock ) )
+        && IS_TO_HOURLY_LOAD_THE_WHITELIST() )
     {
         // Not loaded?
         tryToLoadTheWhiteListFeature();
@@ -4186,7 +4192,7 @@ stock loadMapGroupsFeature( maxMapsPerGroupToUse[], fillersFilePaths[][], filler
         copy( fillersFilePaths[ 0 ], fillersFilePathsMaxChars, mapFilerFilePath );
     }
     
-    LOGGER( 4, "( vote_addFiller ) MapsGroups Loaded, mapFilerFilePath: %s", mapFilerFilePath );
+    LOGGER( 4, "( loadMapGroupsFeature ) MapsGroups Loaded, mapFilerFilePath: %s", mapFilerFilePath );
     LOGGER( 4, "" );
     LOGGER( 4, "" );
     
@@ -4475,8 +4481,7 @@ stock vote_addFiller( blockedFillerMaps[][], blockedFillerMapsMaxChars = 0, bloc
     new fillersFilePaths    [ MAX_MAPS_IN_VOTE ][ MAX_FILE_PATH_LENGHT ];
     
     groupCount   = loadMapGroupsFeature( maxMapsPerGroupToUse, fillersFilePaths, charsmax( fillersFilePaths[] ) );
-    blockedCount = processLoadedMapsFile( maxMapsPerGroupToUse,
-                                          groupCount, blockedCount,
+    blockedCount = processLoadedMapsFile( maxMapsPerGroupToUse, groupCount, blockedCount,
                                           blockedFillerMaps, blockedFillerMapsMaxChars,
                                           fillersFilePaths, charsmax( fillersFilePaths[] ) );
     
@@ -4531,7 +4536,7 @@ stock tryToLoadTheWhiteListFeature()
         }
     }
     
-    if( get_pcvar_num( cvar_isWhiteListNomBlock ) )
+    if( IS_TO_HOURLY_LOAD_THE_WHITELIST() )
     {
         computeNextWhiteListLoadTime( floatround( get_gametime(), floatround_ceil ), false );
     }
