@@ -30,7 +30,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.0-231";
+new const PLUGIN_VERSION[] = "v3.2.0-232";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -71,7 +71,7 @@ new const PLUGIN_VERSION[] = "v3.2.0-231";
  * 
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+16+2
+#define DEBUG_LEVEL 0//1+16+2
 
 
 
@@ -8529,14 +8529,11 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         new test_name[ MAX_SHORT_STRING ];
         new testsNumber = ArraySize( g_test_idsAndNamesArray );
         
-        if( testsNumber )
-        {
-            print_logger( "" );
-            print_logger( "" );
-            print_logger( "" );
-            print_logger( "    The following tests were executed: " );
-            print_logger( "" );
-        }
+        print_logger( "" );
+        print_logger( "" );
+        print_logger( "" );
+        print_logger( "    The following tests were executed: " );
+        print_logger( "" );
         
         for( new test_index = 0; test_index < testsNumber; test_index++ )
         {
