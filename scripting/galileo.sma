@@ -30,7 +30,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.0-233";
+new const PLUGIN_VERSION[] = "v3.2.0-234";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -71,7 +71,7 @@ new const PLUGIN_VERSION[] = "v3.2.0-233";
  * 
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+16+2
+#define DEBUG_LEVEL 31//1+16+2
 
 
 
@@ -267,10 +267,12 @@ new const PLUGIN_VERSION[] = "v3.2.0-233";
     new Array:g_test_idsAndNamesArray;
     new Array:g_test_failureReasonsArray;
     
-    new g_test_currentTimeStamp;
+    new g_test_lastTimeStamp;
     new g_test_aimedPlayersNumber;
     new g_test_aimedCurrentHour;
     new g_test_gameElapsedTime;
+    new g_test_startDayInteger;
+    
     new g_test_printedMessage[ MAX_COLOR_MESSAGE ];
     
     new g_test_voteMapFilePath[]    = "voteFilePathTestFile.txt";
@@ -8332,6 +8334,14 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     }
     
     /**
+     * Compute how many day are elapsed since 1st January of 2000.
+     * 
+     * @param currentDayInteger     the current day from this year (1-366).
+     * @param currentYearInteger    the current year (2016).
+     */
+    #define GET_CURRENT_BASED_DAY(%1,%2) ( ( %2 - 2000 ) * 366 + %1 )
+    
+    /**
      * Calculates how much time took to run the Unit Tests. For this to work, the stock
      * 'saveCurrentTestsTimeStamp(0)' must to be called on the beginning of the tests.
      * 
@@ -8339,19 +8349,38 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
      */
     stock computeTheTestElapsedTime()
     {
-        if( g_test_currentTimeStamp )
+        if( g_test_lastTimeStamp )
         {
             new hour;
             new minute;
             new second;
-            new currentDayInteger;
-            new currentDayString[ 10 ];
-            
-            get_time("%j", currentDayString, charsmax( currentDayString ) );
-            currentDayInteger = str_to_num( currentDayString );
+            new delayResulted;
             
             time( hour, minute, second );
-            return ( currentDayInteger * 86400 + hour * 3600 + minute * 60 + second ) - g_test_currentTimeStamp;
+            
+            new currentDayInteger;
+            new currentYearInteger;
+            new rawTimeData[ 10 ];
+            
+            get_time("%j", rawTimeData, charsmax( rawTimeData ) );
+            currentDayInteger  = str_to_num( rawTimeData );
+            
+            get_time("%Y", rawTimeData, charsmax( rawTimeData ) );
+            currentYearInteger = str_to_num( rawTimeData );
+            
+            delayResulted     = hour * 3600 + minute * 60 + second - g_test_lastTimeStamp + 1;
+            currentDayInteger = GET_CURRENT_BASED_DAY( currentDayInteger, currentYearInteger );
+            
+            if( g_test_startDayInteger != currentDayInteger )
+            {
+                // end  - start = delay
+                // 1:59 - 1:55  =   4
+                // 2:05 - 1:59  = -54 plus + 1 * 60 =  6 seconds (correct)
+                // 3:05 - 1:59  = -54 plus + 2 * 60 = 66 seconds (correct)
+                return delayResulted + ( currentDayInteger - g_test_startDayInteger ) * 86400;
+            }
+            
+            return delayResulted;
         }
         
         return -1;
@@ -8362,19 +8391,26 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
      */
     stock saveCurrentTestsTimeStamp()
     {
-        if( !g_test_currentTimeStamp )
+        if( !g_test_lastTimeStamp )
         {
             new hour;
             new minute;
             new second;
-            new currentDayInteger;
-            new currentDayString[ 10 ];
-            
-            get_time("%j", currentDayString, charsmax( currentDayString ) );
-            currentDayInteger = str_to_num( currentDayString );
             
             time( hour, minute, second );
-            g_test_currentTimeStamp = currentDayInteger * 86400 + hour * 3600 + minute * 60 + second - 1;
+            
+            new currentDayInteger;
+            new currentYearInteger;
+            new rawTimeData[ 10 ];
+            
+            get_time("%j", rawTimeData, charsmax( rawTimeData ) );
+            currentDayInteger  = str_to_num( rawTimeData );
+            
+            get_time("%Y", rawTimeData, charsmax( rawTimeData ) );
+            currentYearInteger = str_to_num( rawTimeData );
+            
+            g_test_lastTimeStamp   = hour * 3600 + minute * 60 + second;
+            g_test_startDayInteger = GET_CURRENT_BASED_DAY( currentDayInteger, currentYearInteger );
         }
     }
     
@@ -8456,7 +8492,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         print_logger( "" );
         
         // Clear the time-stamp.
-        g_test_currentTimeStamp = 0;
+        g_test_lastTimeStamp = 0;
     }
     
     /**
