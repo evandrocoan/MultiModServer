@@ -30,7 +30,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.0-232";
+new const PLUGIN_VERSION[] = "v3.2.0-233";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -71,7 +71,7 @@ new const PLUGIN_VERSION[] = "v3.2.0-232";
  * 
  * Default value: 0
  */
-#define DEBUG_LEVEL 0//1+16+2
+#define DEBUG_LEVEL 1+16+2
 
 
 
@@ -156,7 +156,7 @@ new const PLUGIN_VERSION[] = "v3.2.0-232";
      * 
      * @see the stock writeToTheDebugFile( log_file[], formated_message[] ) for the output log "_galileo.log".
      */
-    stock debugMesssageLogger( mode, message[] = "", any: ... )
+    stock debugMesssageLogger( const mode, const message[] = "", any:... )
     {
         if( mode & g_debug_level )
         {
@@ -206,7 +206,8 @@ new const PLUGIN_VERSION[] = "v3.2.0-232";
         // Save the game cvars
         saveServerCvarsForTesting();
         
-        test_unnominatedDisconnected( player_id );
+        test_colorChatLimits( player_id );
+        //test_unnominatedDisconnected( player_id );
         //test_announceVoteBlockedMap_a();
         //test_announceVoteBlockedMap_c();
         
@@ -243,7 +244,7 @@ new const PLUGIN_VERSION[] = "v3.2.0-232";
      * 
      * @see the stock writeToTheDebugFile( log_file[], formated_message[] ) for the output log "_galileo.log".
      */
-    stock print_logger( message[] = "", any: ... )
+    stock print_logger( const message[] = "", any:... )
     {
         static formated_message[ MAX_BIG_BOSS_STRING ];
         vformat( formated_message, charsmax( formated_message ), message, 2 );
@@ -7131,7 +7132,7 @@ public map_listAll( player_id )
  * @param message[]         the text formatting rules to display.
  * @param any               the variable number of formatting parameters.
  */
-stock no_color_print( player_id, message[], any: ... )
+stock no_color_print( const player_id, const message[], any:... )
 {
     LOGGER( 128, "I AM ENTERING ON color_console_print(...) | player_id: %d, message: %s...", player_id, message );
     new formated_message[ MAX_COLOR_MESSAGE ];
@@ -7570,7 +7571,7 @@ stock percent( is, of )
  * @see <a href="https://www.amxmodx.org/api/amxmodx/client_print_color">client_print_color</a>
  * for Amx Mod X 1.8.3 or superior.
  */
-stock color_print( player_id, message[], any: ... )
+stock color_print( const player_id, const message[], any:... )
 {
     LOGGER( 128, "I AM ENTERING ON color_print(...) | player_id: %d, message: %s...", player_id, message );
     new formated_message[ MAX_COLOR_MESSAGE ];
@@ -9374,6 +9375,23 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
                                               "de_dust2002v2005_forEver2015", "de_dust2002v2005_forEver2016" );
         
         unnominatedDisconnectedPlayer( player_id );
+    }
+    
+    /**
+     * Manual test for the maximum chat message send to the server players.
+     */
+    stock test_colorChatLimits( player_id )
+    {
+        new const string[] = "ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ";
+        
+        color_print( 0, string );
+        color_print( player_id, string );
+        
+        new formats[ MAX_BIG_BOSS_STRING ];
+        copy( formats, charsmax( formats ), "My big formatter: %s" );
+        
+        color_print( 0, formats, string );
+        color_print( player_id, formats, string );
     }
     
     /**
