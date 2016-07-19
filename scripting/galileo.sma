@@ -30,7 +30,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.0-234";
+new const PLUGIN_VERSION[] = "v3.2.0-235";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -8737,8 +8737,8 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     // ###########################################################################################
     
     /**
-     * This is the vote_startDirector() tests chain beginning. Because the vote_startDirector() cannot
-     * to be tested simultaneously. Then, all tests that involves the vote_startDirector() chain, must
+     * This is the 'vote_startDirector(1)' tests chain beginning. Because the 'vote_startDirector(1)' cannot
+     * to be tested simultaneously. Then, all tests that involves the 'vote_startDirector(1)' chain, must
      * to be executed sequentially after this chain end.
      *
      * This is the 1º chain test.
@@ -8751,9 +8751,6 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         
         new chainDelay = 2 + 2 + 1 + 1 + 1;
         new test_id    = register_test( chainDelay, "test_isMapExtensionAvowed_case1" );
-        
-        formatex( errorMessage, charsmax( errorMessage ), "g_isMapExtensionAllowed must be 0 (it was %d)", g_isMapExtensionAllowed );
-        SET_TEST_FAILURE( test_id, g_isMapExtensionAllowed, errorMessage );
         
         set_pcvar_float( cvar_maxMapExtendTime, 20.0 );
         set_pcvar_float( cvar_mp_timelimit, 10.0 );
