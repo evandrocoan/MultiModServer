@@ -30,7 +30,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.0-229";
+new const PLUGIN_VERSION[] = "v3.2.0-230";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -206,9 +206,9 @@ new const PLUGIN_VERSION[] = "v3.2.0-229";
         // Save the game cvars
         saveServerCvarsForTesting();
         
-        //test_unnominatedDisconnected( player_id );
+        test_unnominatedDisconnected( player_id );
         //test_announceVoteBlockedMap_a();
-        test_announceVoteBlockedMap_c();
+        //test_announceVoteBlockedMap_c();
         
         // Restore the game cvars
         printTheUnitTestsResults();
@@ -4666,7 +4666,7 @@ stock processLoadedMapsFile( groupCount, maxMapsPerGroupToUse[], fillersFilePath
                         LOGGER( 8, "    BLOCKED!" );
                         
                         TrieSetCell( blockedFillersMapTrie, mapName, 0 );
-                        announceVoteBlockedMap( mapName, blockedMapsBuffer, announcementShowedTimes );
+                        announceVoteBlockedMap( mapName, blockedMapsBuffer, "GAL_FILLER_BLOCKED", announcementShowedTimes );
                     }
                     
                     goto keepSearching;
@@ -4721,9 +4721,9 @@ stock vote_addFillers( blockedMapsBuffer[], &announcementShowedTimes = 0 )
  * 
  * @note It does not immediately print the called map. The output occurs when the buffer is full.
  */
-stock announceVoteBlockedMap( mapToAnnounce[], blockedMapsBuffer[], &announcementShowedTimes )
+stock announceVoteBlockedMap( mapToAnnounce[], blockedMapsBuffer[], flushAnnouncement[], &announcementShowedTimes )
 {
-    LOGGER( 128, "I AM ENTERING ON announceVoteBlockedMap(3) | announcementShowedTimes: %d, \
+    LOGGER( 128, "I AM ENTERING ON announceVoteBlockedMap(4) | announcementShowedTimes: %d, \
             mapToAnnounce: %s, ", announcementShowedTimes, mapToAnnounce );
     
     if( announcementShowedTimes
@@ -4741,9 +4741,9 @@ stock announceVoteBlockedMap( mapToAnnounce[], blockedMapsBuffer[], &announcemen
         copiedChars += copy( blockedMapsBuffer[ copiedChars ], MAX_COLOR_MESSAGE - 1 - copiedChars, mapToAnnounce );
         
         // Calculate whether to flush now or not.
-        if( copiedChars > MAX_COLOR_MESSAGE - ( MAX_MAPNAME_LENGHT + 30 ) )
+        if( copiedChars > MAX_COLOR_MESSAGE - MAX_MAPNAME_LENGHT )
         {
-            flushVoteBlockedMaps( blockedMapsBuffer, announcementShowedTimes );
+            flushVoteBlockedMaps( blockedMapsBuffer, flushAnnouncement, announcementShowedTimes );
         }
     }
 }
@@ -4753,16 +4753,16 @@ stock announceVoteBlockedMap( mapToAnnounce[], blockedMapsBuffer[], &announcemen
  * 
  * @param blockedMapsBuffer     the formatted maps list to be printed.
  */
-stock flushVoteBlockedMaps( blockedMapsBuffer[], &announcementShowedTimes )
+stock flushVoteBlockedMaps( blockedMapsBuffer[], flushAnnouncement[], &announcementShowedTimes )
 {
-    LOGGER( 128, "I AM ENTERING ON flushVoteBlockedMaps(2) | announcementShowedTimes: %d, ", announcementShowedTimes );
+    LOGGER( 128, "I AM ENTERING ON flushVoteBlockedMaps(3) | announcementShowedTimes: %d, ", announcementShowedTimes );
     LOGGER( 128, "blockedMapsBuffer: %s",  blockedMapsBuffer );
     
     if( blockedMapsBuffer[ 0 ] )
     {
         if( announcementShowedTimes == 1 )
         {
-            color_print( 0, "%L", LANG_PLAYER, "GAL_FILLER_BLOCKED" );
+            color_print( 0, "%L", LANG_PLAYER, flushAnnouncement, 0, 0 );
         }
         
     #if IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES > 0
@@ -4882,7 +4882,7 @@ stock vote_addNominations( blockedMapsBuffer[], &announcementShowedTimes = 0 )
                     {
                         LOGGER( 8, "    The map: %s, was blocked by the minimum players map setting.", mapName );
                         
-                        announceVoteBlockedMap( mapName, blockedMapsBuffer, announcementShowedTimes );
+                        announceVoteBlockedMap( mapName, blockedMapsBuffer, "GAL_FILLER_BLOCKED", announcementShowedTimes );
                         continue;
                     }
                     
@@ -4926,7 +4926,7 @@ stock loadNormalVoteChoices()
         vote_addNominations( blockedMapsBuffer, announcementShowedTimes );
         vote_addFillers( blockedMapsBuffer, announcementShowedTimes );
         
-        flushVoteBlockedMaps( blockedMapsBuffer, announcementShowedTimes );
+        flushVoteBlockedMaps( blockedMapsBuffer, "GAL_FILLER_BLOCKED", announcementShowedTimes );
     }
     else
     {
@@ -7188,22 +7188,17 @@ public client_authorized( player_id )
 stock unnominatedDisconnectedPlayer( player_id )
 {
     LOGGER( 128, "I AM ENTERING ON unnominatedDisconnectedPlayer(1) | player_id: %d", player_id );
-    new const extraCharsPerMap = 2;
     
     new mapIndex;
-    new copiedChars;
-    new unnominationCount;
     new maxPlayerNominations;
+    new announcementShowedTimes;
     
-    new howMuchCharsRemaining;
-    new howMuchCharsRemainingOriginal;
-    new mapName      [ MAX_MAPNAME_LENGHT ];
-    new nominatedMaps[ MAX_COLOR_MESSAGE ];
+    new mapName          [ MAX_MAPNAME_LENGHT ];
+    new blockedMapsBuffer[ MAX_COLOR_MESSAGE ];
     
-    // cancel player's nominations
-    maxPlayerNominations          = min( get_pcvar_num( cvar_nomPlayerAllowance ), MAX_NOMINATION_COUNT );
-    howMuchCharsRemaining         = sizeof nominatedMaps - ( sizeof mapName + howMuchCharsAreOutPutted( extraCharsPerMap, "GAL_CANCEL_SUCCESS" ) );
-    howMuchCharsRemainingOriginal = howMuchCharsRemaining;
+    // cancel player's nominations and print what was cancelled.
+    maxPlayerNominations    = min( get_pcvar_num( cvar_nomPlayerAllowance ), MAX_NOMINATION_COUNT );
+    announcementShowedTimes = 1;
     
     for( new nominationIndex = 0; nominationIndex < maxPlayerNominations; ++nominationIndex )
     {
@@ -7211,75 +7206,14 @@ stock unnominatedDisconnectedPlayer( player_id )
         
         if( mapIndex >= 0 )
         {
-            ++unnominationCount;
-            
             setPlayerNominationMapIndex( player_id, nominationIndex, -1 );
             ArrayGetString( g_nominationMapsArray, mapIndex, mapName, charsmax( mapName ) );
             
-            if( howMuchCharsRemaining < 0 )
-            {
-                copiedChars           = 0;
-                unnominationCount     = 0;
-                nominatedMaps[ 0 ]    = '^0';
-                howMuchCharsRemaining = howMuchCharsRemainingOriginal;
-                
-                nomination_announceCancellation( nominatedMaps );
-            }
-            
-            if( copiedChars )
-            {
-                copiedChars += copy( nominatedMaps[ copiedChars ], charsmax( nominatedMaps ) - copiedChars, ", " );
-            }
-            
-            howMuchCharsRemaining -= ( strlen( mapName ) + extraCharsPerMap );
-            copiedChars += copy( nominatedMaps[ copiedChars ], charsmax( nominatedMaps ) - copiedChars, mapName );
+            announceVoteBlockedMap( mapName, blockedMapsBuffer, "GAL_FILLER_BLOCKED", announcementShowedTimes );
         }
     }
     
-    if( unnominationCount )
-    {
-        // inform the masses that the maps are no longer nominated
-        nomination_announceCancellation( nominatedMaps );
-    }
-}
-
-/**
- * Calculate how much chars can be printed at one time.
- * 
- * @param extraChasPerItem      the number of extra characters required for each map.
- * @param langConstantName     a variable number of dictionary registered LANG constants names.
- */
-stock howMuchCharsAreOutPutted( extraChasPerItem, ... )
-{
-    LOGGER( 128, "I AM ENTERING ON howMuchCharsAreOutPutted(...) | extraChasPerItem: %d", extraChasPerItem );
-    new argumentsNumber = numargs();
-    
-    new stringIndex;
-    new numberOfChars;
-    new currentLang    [ MAX_SHORT_STRING ];
-    new formattedString[ MAX_COLOR_MESSAGE ];
-    
-    // To load the maps passed as arguments
-    for( new currentIndex = 1; currentIndex < argumentsNumber; ++currentIndex )
-    {
-        stringIndex = 0;
-        
-        while( ( currentLang[ stringIndex ] = getarg( currentIndex, stringIndex++ ) ) )
-        {
-        }
-        
-        currentLang[ stringIndex ] = '^0';
-        LOGGER( 1, "( howMuchCharsAreOutPutted ) | currentLang: %s", currentLang );
-        
-        // Use extra 'extraChasPerItem' because the lack broke the LANG interpretation.
-        numberOfChars += formatex( formattedString, charsmax( formattedString ),"%L", LANG_SERVER,
-                currentLang, extraChasPerItem, extraChasPerItem, extraChasPerItem, extraChasPerItem , extraChasPerItem );
-        
-        numberOfChars += extraChasPerItem;
-        LOGGER( 1, "( howMuchCharsAreOutPutted ) | numberOfChars: %d, formattedString: %s", numberOfChars, formattedString );
-    }
-    
-    return numberOfChars;
+    flushVoteBlockedMaps( blockedMapsBuffer, "GAL_CANCEL_SUCCESS", announcementShowedTimes );
 }
 
 /**
@@ -9409,7 +9343,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     
     /**
      * Calls the 'test_loadVoteChoices_load(1)' series case 'a' for manual testing, and seeing the
-     * outputted string by 'announceVoteBlockedMap(3)'.
+     * outputted string by 'announceVoteBlockedMap(4)'.
      */
     stock test_announceVoteBlockedMap_a()
     {
