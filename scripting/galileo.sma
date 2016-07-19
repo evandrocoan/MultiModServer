@@ -30,7 +30,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.0-224";
+new const PLUGIN_VERSION[] = "v3.2.0-227";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -71,7 +71,7 @@ new const PLUGIN_VERSION[] = "v3.2.0-224";
  * 
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+16+2+4
+#define DEBUG_LEVEL 1+16+2
 
 
 
@@ -93,7 +93,7 @@ new const PLUGIN_VERSION[] = "v3.2.0-224";
  * Common strings sizes used around the plugin.
  */
 #define MAX_LONG_STRING              256
-#define MAX_COLOR_MESSAGE            192
+#define MAX_COLOR_MESSAGE            190
 #define MAX_SHORT_STRING             64
 #define MAX_BIG_BOSS_STRING          512
 #define MAX_NOMINATION_TRIE_KEY_SIZE 48
@@ -199,6 +199,20 @@ new const PLUGIN_VERSION[] = "v3.2.0-224";
     }
     
     /**
+     * Run the manual call Unit Tests, by 'say run' and 'say_team run'.
+     */
+    public inGameTestsToExecute( player_id )
+    {
+        // Save the game cvars
+        saveServerCvarsForTesting();
+        
+        test_unnominatedDisconnected( player_id );
+        
+        // Restore the game cvars
+        restoreServerCvarsFromTesting();
+    }
+    
+    /**
      * Accept all maps as valid while running the unit tests.
      */
     #define IS_MAP_VALID(%1) ( g_test_isTheUnitTestsRunning || is_map_valid( %1 ) )
@@ -255,6 +269,7 @@ new const PLUGIN_VERSION[] = "v3.2.0-224";
     new g_test_playersNumber;
     new g_test_currentTime;
     new g_test_elapsedTime;
+    new g_test_printedMessage[ MAX_COLOR_MESSAGE ];
     
     new g_test_voteMapFilePath[]    = "voteFilePathTestFile.txt";
     new g_test_whiteListFilePath[]  = "test_loadCurrentBlackList.txt";
@@ -1085,7 +1100,14 @@ public plugin_cfg()
     configureServerStart();
     configureServerMapChange();
     
+    // Configure the Unit Tests, when they are activate.
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
+    register_clcmd( "say run", "inGameTestsToExecute", -1 );
+    register_clcmd( "say_team run", "inGameTestsToExecute", -1 );
+    
+    register_clcmd( "say runall", "runTests", -1 );
+    register_clcmd( "say_team runall", "runTests", -1 );
+    
     saveCurrentTestsTimeStamp();
     configureTheUnitTests();
 #endif
@@ -3349,37 +3371,45 @@ stock getPlayerNominationMapIndex( player_id, nominationIndex )
 stock setPlayerNominationMapIndex( player_id, nominationIndex, mapIndex )
 {
     LOGGER( 128, "I AM ENTERING ON setPlayerNominationMapIndex(3) | player_id: %d, nominationIndex: %d, mapIndex: %d", player_id, nominationIndex, mapIndex );
-    new originalMapIndex;
     
-    new trieKey             [ MAX_NOMINATION_TRIE_KEY_SIZE ];
-    new playerNominationData[ MAX_NOMINATION_COUNT ];
-    
-    createPlayerNominationKey( player_id, trieKey, charsmax( trieKey ) );
-    
-    if( TrieKeyExists( g_playersNominationsTrie, trieKey ) )
+    if( nominationIndex < MAX_NOMINATION_COUNT )
     {
-        TrieGetArray( g_playersNominationsTrie, trieKey, playerNominationData, sizeof playerNominationData );
+        new originalMapIndex;
+        new trieKey             [ MAX_NOMINATION_TRIE_KEY_SIZE ];
+        new playerNominationData[ MAX_NOMINATION_COUNT ];
         
-        originalMapIndex                        = playerNominationData[ nominationIndex ];
-        playerNominationData[ nominationIndex ] = mapIndex;
+        createPlayerNominationKey( player_id, trieKey, charsmax( trieKey ) );
         
-        TrieSetArray( g_playersNominationsTrie, trieKey, playerNominationData, sizeof playerNominationData );
+        if( TrieKeyExists( g_playersNominationsTrie, trieKey ) )
+        {
+            TrieGetArray( g_playersNominationsTrie, trieKey, playerNominationData, sizeof playerNominationData );
+            
+            originalMapIndex                        = playerNominationData[ nominationIndex ];
+            playerNominationData[ nominationIndex ] = mapIndex;
+            
+            TrieSetArray( g_playersNominationsTrie, trieKey, playerNominationData, sizeof playerNominationData );
+        }
+        else
+        {
+            for( new currentNominationIndex = 0; currentNominationIndex < MAX_NOMINATION_COUNT; ++currentNominationIndex )
+            {
+                playerNominationData[ currentNominationIndex ] = -1;
+                
+                LOGGER( 4, "( setPlayerNominationMapIndex ) playerNominationData[%d]: %d", \
+                        currentNominationIndex, playerNominationData[ currentNominationIndex ] );
+            }
+            
+            playerNominationData[ nominationIndex ] = mapIndex;
+            TrieSetArray( g_playersNominationsTrie, trieKey, playerNominationData, sizeof playerNominationData );
+        }
+        
+        updateNominationsReverseSearch( player_id, nominationIndex, mapIndex, originalMapIndex );
     }
     else
     {
-        for( new currentNominationIndex = 0; currentNominationIndex < MAX_NOMINATION_COUNT; ++currentNominationIndex )
-        {
-            playerNominationData[ currentNominationIndex ] = -1;
-            
-            LOGGER( 4, "( setPlayerNominationMapIndex ) playerNominationData[%d]: %d", \
-                    currentNominationIndex, playerNominationData[ currentNominationIndex ] );
-        }
-        
-        playerNominationData[ nominationIndex ] = mapIndex;
-        TrieSetArray( g_playersNominationsTrie, trieKey, playerNominationData, sizeof playerNominationData );
+        LOGGER( 1, "AMX_ERR_BOUNDS: %d. Was tried to set a wrong nomination bound index: %d", AMX_ERR_BOUNDS, nominationIndex );
+        log_error( AMX_ERR_BOUNDS, "Was tried to set a wrong nomination bound index: %d", nominationIndex );
     }
-    
-    updateNominationsReverseSearch( player_id, nominationIndex, mapIndex, originalMapIndex );
 }
 
 /**
@@ -7142,17 +7172,22 @@ public client_authorized( player_id )
 stock unnominatedDisconnectedPlayer( player_id )
 {
     LOGGER( 128, "I AM ENTERING ON unnominatedDisconnectedPlayer(1) | player_id: %d", player_id );
+    new const extraCharsPerMap = 2;
     
     new mapIndex;
+    new copiedChars;
     new unnominationCount;
     new maxPlayerNominations;
-    new copiedChars;
     
+    new howMuchCharsRemaining;
+    new howMuchCharsRemainingOriginal;
     new mapName      [ MAX_MAPNAME_LENGHT ];
     new nominatedMaps[ MAX_COLOR_MESSAGE ];
     
     // cancel player's nominations
-    maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), MAX_NOMINATION_COUNT );
+    maxPlayerNominations          = min( get_pcvar_num( cvar_nomPlayerAllowance ), MAX_NOMINATION_COUNT );
+    howMuchCharsRemaining         = sizeof nominatedMaps - ( sizeof mapName + howMuchCharsAreOutPutted( extraCharsPerMap, "GAL_CANCEL_SUCCESS" ) );
+    howMuchCharsRemainingOriginal = howMuchCharsRemaining;
     
     for( new nominationIndex = 0; nominationIndex < maxPlayerNominations; ++nominationIndex )
     {
@@ -7165,13 +7200,14 @@ stock unnominatedDisconnectedPlayer( player_id )
             setPlayerNominationMapIndex( player_id, nominationIndex, -1 );
             ArrayGetString( g_nominationMapsArray, mapIndex, mapName, charsmax( mapName ) );
             
-            if( ( strlen( mapName ) + copiedChars ) > sizeof nominatedMaps )
+            if( howMuchCharsRemaining < 0 )
             {
-                nomination_announceCancellation( nominatedMaps );
+                copiedChars           = 0;
+                unnominationCount     = 0;
+                nominatedMaps[ 0 ]    = '^0';
+                howMuchCharsRemaining = howMuchCharsRemainingOriginal;
                 
-                copiedChars        = 0;
-                unnominationCount  = 0;
-                nominatedMaps[ 0 ] = '^0';
+                nomination_announceCancellation( nominatedMaps );
             }
             
             if( copiedChars )
@@ -7179,6 +7215,7 @@ stock unnominatedDisconnectedPlayer( player_id )
                 copiedChars += copy( nominatedMaps[ copiedChars ], charsmax( nominatedMaps ) - copiedChars, ", " );
             }
             
+            howMuchCharsRemaining -= ( strlen( mapName ) + extraCharsPerMap );
             copiedChars += copy( nominatedMaps[ copiedChars ], charsmax( nominatedMaps ) - copiedChars, mapName );
         }
     }
@@ -7188,6 +7225,45 @@ stock unnominatedDisconnectedPlayer( player_id )
         // inform the masses that the maps are no longer nominated
         nomination_announceCancellation( nominatedMaps );
     }
+}
+
+/**
+ * Calculate how much chars can be printed at one time.
+ * 
+ * @param extraChasPerItem      the number of extra characters required for each map.
+ * @param langConstantName     a variable number of dictionary registered LANG constants names.
+ */
+stock howMuchCharsAreOutPutted( extraChasPerItem, ... )
+{
+    LOGGER( 128, "I AM ENTERING ON howMuchCharsAreOutPutted(...) | extraChasPerItem: %d", extraChasPerItem );
+    new argumentsNumber = numargs();
+    
+    new stringIndex;
+    new numberOfChars;
+    new currentLang    [ MAX_SHORT_STRING ];
+    new formattedString[ MAX_COLOR_MESSAGE ];
+    
+    // To load the maps passed as arguments
+    for( new currentIndex = 1; currentIndex < argumentsNumber; ++currentIndex )
+    {
+        stringIndex = 0;
+        
+        while( ( currentLang[ stringIndex ] = getarg( currentIndex, stringIndex++ ) ) )
+        {
+        }
+        
+        currentLang[ stringIndex ] = '^0';
+        LOGGER( 1, "( howMuchCharsAreOutPutted ) | currentLang: %s", currentLang );
+        
+        // Use extra 'extraChasPerItem' because the lack broke the LANG interpretation.
+        numberOfChars += formatex( formattedString, charsmax( formattedString ),"%L", LANG_SERVER,
+                currentLang, extraChasPerItem, extraChasPerItem, extraChasPerItem, extraChasPerItem , extraChasPerItem );
+        
+        numberOfChars += extraChasPerItem;
+        LOGGER( 1, "( howMuchCharsAreOutPutted ) | numberOfChars: %d, formattedString: %s", numberOfChars, formattedString );
+    }
+    
+    return numberOfChars;
 }
 
 /**
@@ -7549,10 +7625,17 @@ stock color_print( player_id, message[], any: ... )
     LOGGER( 128, "I AM ENTERING ON color_print(...) | player_id: %d, message: %s...", player_id, message );
     new formated_message[ MAX_COLOR_MESSAGE ];
     
+#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
+    g_test_printedMessage[ 0 ] = '^0';
+    
+    vformat( g_test_printedMessage, charsmax( g_test_printedMessage ), message, 3 );
+    LOGGER( 64, "( color_print ) player_id: %d, g_test_printedMessage: %s", player_id, g_test_printedMessage );
+#endif
+    
     /**
      * Bug; On AMXX 1.8.2, disabling the color chat, make all messages to all players being on the
      * server language, instead of the player language. This is a AMXX 1.8.2 bug only. There is a
-     * way to over come this. It is to print a message to each player, as the colored print does.
+     * way to overcome this. It is to print a message to each player, as the colored print does.
      */
 #if IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES > 0 && AMXX_VERSION_NUM > 182
     vformat( formated_message, charsmax( formated_message ), message, 3 );
@@ -8269,10 +8352,10 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     {
         LOGGER( 128, "I AM ENTERING ON configureTheUnitTests(0)" );
         
-        g_test_failureIdsTrie  = TrieCreate();
-        g_test_failureIdsArray = ArrayCreate( 1 );
-        g_test_failureReasonsArray  = ArrayCreate( MAX_LONG_STRING );
-        g_test_idsAndNamesArray      = ArrayCreate( MAX_SHORT_STRING );
+        g_test_failureIdsTrie      = TrieCreate();
+        g_test_failureIdsArray     = ArrayCreate( 1 );
+        g_test_failureReasonsArray = ArrayCreate( MAX_LONG_STRING );
+        g_test_idsAndNamesArray    = ArrayCreate( MAX_SHORT_STRING );
         
         // delay needed to wait the 'server.cfg' run to load its saved cvars
         if( !get_pcvar_num( cvar_isFirstServerStart ) )
@@ -8324,14 +8407,17 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         
         if( g_test_maxDelayResult )
         {
+            print_all_tests_executed();
+            print_tests_failure();
+            
             print_logger( "" );
             print_logger( "    %d tests succeed.", g_test_testsNumber - g_test_failureNumber );
             print_logger( "    %d tests failed.", g_test_failureNumber );
             print_logger( "" );
             print_logger( "" );
             print_logger( "" );
-            print_logger( "    After of '%s' runtime seconds... Executing the %s's Unit Tests delayed until %d seconds: ",
-                                        computeTheTestElapsedTime(),          PLUGIN_NAME,          g_test_maxDelayResult );
+            print_logger( "    After '%d' runtime seconds... Executing the %s's Unit Tests delayed until at least %d seconds: ",
+                                     computeTheTestElapsedTime(),          PLUGIN_NAME,          g_test_maxDelayResult );
             print_logger( "" );
             
             g_test_lastMaxDelayResult = g_test_maxDelayResult;
@@ -8989,12 +9075,6 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         set_pcvar_num( cvar_nomQtyUsed           , 0 );
         
         cacheCvarsValues();
-        
-        if( g_nominationMapsArray )
-        {
-            ArrayClear( g_nominationMapsArray );
-            g_nominationCount = 0;
-        }
     }
     
     /**
@@ -9019,17 +9099,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     stock test_loadVoteChoices_serie( currentSerie )
     {
         // Clear all loaded maps.
-        g_totalVoteOptions   = 0;
-        g_nominationMapCount = 0;
-        
-        if( !g_nominationMapsArray )
-        {
-            g_nominationMapsArray = ArrayCreate( MAX_MAPNAME_LENGHT );
-        }
-        
-        clearTheVotingMenu();
-        nomination_clearAll();
-        ArrayClear( g_nominationMapsArray );
+        test_clearNominationsData();
         
         switch( currentSerie )
         {
@@ -9065,9 +9135,9 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     {
         test_loadVoteChoices_nomsLoad( "de_rain", "de_inferno", "as_trunda" );
         
-        test_mapFileList_load( g_test_voteMapFilePath, "de_dust1", "de_dust2" );
-        test_mapFileList_load( g_test_minPlayersFilePath, "de_rain", "de_nuke" );
-        test_mapFileList_load( g_test_whiteListFilePath, "[0-23]", "de_rain", "de_nuke" );
+        test_mapFileList_load( g_test_voteMapFilePath   , "de_dust1", "de_dust2" );
+        test_mapFileList_load( g_test_minPlayersFilePath, "de_rain" , "de_nuke" );
+        test_mapFileList_load( g_test_whiteListFilePath , "[0-23]"  , "de_rain", "de_nuke" );
         
         // Enables the minimum players feature.
         g_test_playersNumber = 0; 
@@ -9087,9 +9157,9 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     {
         test_loadVoteChoices_nomsLoad( "de_rain", "de_inferno", "as_trunda" );
         
-        test_mapFileList_load( g_test_voteMapFilePath, "de_dust1", "de_dust2" );
-        test_mapFileList_load( g_test_minPlayersFilePath, "de_rain", "de_nuke" );
-        test_mapFileList_load( g_test_whiteListFilePath, "[0-23]", "de_rain", "de_nuke" );
+        test_mapFileList_load( g_test_voteMapFilePath   , "de_dust1", "de_dust2" );
+        test_mapFileList_load( g_test_minPlayersFilePath, "de_rain" , "de_nuke" );
+        test_mapFileList_load( g_test_whiteListFilePath , "[0-23]"  , "de_rain", "de_nuke" );
         
         // Disables the minimum players feature.
         g_test_playersNumber = 5;
@@ -9098,9 +9168,9 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         loadTheWhiteListFeature();
         loadNormalVoteChoices();
         
-        test_loadVoteChoices_case( "de_rain", "de_nuke", 'b' ); // case 1
-        test_loadVoteChoices_case( "de_inferno", "de_nuke" );   // case 2
-        test_loadVoteChoices_case( "as_trunda", "de_nuke" );    // case 3
+        test_loadVoteChoices_case( "de_rain"   , "de_nuke", 'b' ); // case 1
+        test_loadVoteChoices_case( "de_inferno", "de_nuke" );      // case 2
+        test_loadVoteChoices_case( "as_trunda" , "de_nuke" );      // case 3
     }
     
     /**
@@ -9108,13 +9178,13 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
      */
     stock test_loadVoteChoices_serie_c()
     {
-        test_loadVoteChoices_nomsLoad( "de_rain", "de_inferno", "as_trunda",
-                                       "de_rain2", "de_inferno2", "as_trunda2",
-                                       "de_rain3", "de_inferno3", "as_trunda3" );
+        test_loadVoteChoices_nomsLoad( "de_dust2002v2005_forEver2009", "de_dust2002v2005_forEver2010", "de_dust2002v2005_forEver2011",
+                                       "de_dust2002v2005_forEver2012", "de_dust2002v2005_forEver2013", "de_dust2002v2005_forEver2014",
+                                       "de_dust2002v2005_forEver2015", "de_dust2002v2005_forEver2016", "de_dust2002v2005_forEver2017" );
         
-        test_mapFileList_load( g_test_voteMapFilePath, "de_dust1", "de_dust2" );
-        test_mapFileList_load( g_test_minPlayersFilePath, "de_rats", "de_train" );
-        test_mapFileList_load( g_test_whiteListFilePath, "[0-23]", "de_rats", "de_train" );
+        test_mapFileList_load( g_test_voteMapFilePath   , "de_dust1", "de_dust2" );
+        test_mapFileList_load( g_test_minPlayersFilePath, "de_rats" , "de_train" );
+        test_mapFileList_load( g_test_whiteListFilePath , "[0-23]"  , "de_rats", "de_train" );
         
         // Enables the minimum players feature.
         g_test_playersNumber = 0;
@@ -9123,10 +9193,10 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         loadTheWhiteListFeature();
         loadNormalVoteChoices();
         
-        test_loadVoteChoices_case( "de_rats", "de_inferno2", 'c' ); // case 1
-        test_loadVoteChoices_case( "de_train", "as_trunda3" );      // case 2
-        test_loadVoteChoices_case( "de_train", "de_dust1" );        // case 3
-        test_loadVoteChoices_case( "de_rats", "de_dust2" );         // case 4
+        test_loadVoteChoices_case( "de_rats" , "de_dust2002v2005_forEver2009", 'c' ); // case 1
+        test_loadVoteChoices_case( "de_train", "de_dust2002v2005_forEver2010" );      // case 2
+        test_loadVoteChoices_case( "de_train", "de_dust2002v2005_forEver2011" );      // case 3
+        test_loadVoteChoices_case( "de_rats" , "de_dust2002v2005_forEver2012" );      // case 4
     }
     
     /**
@@ -9136,9 +9206,9 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     {
         test_loadVoteChoices_nomsLoad( "de_rain", "de_inferno", "as_trunda" );
         
-        test_mapFileList_load( g_test_voteMapFilePath, "de_dust1", "de_dust2" );
-        test_mapFileList_load( g_test_minPlayersFilePath, "de_rain", "de_nuke" );
-        test_mapFileList_load( g_test_whiteListFilePath, "[0-23]", "de_rain", "de_nuke" );
+        test_mapFileList_load( g_test_voteMapFilePath   , "de_dust1", "de_dust2" );
+        test_mapFileList_load( g_test_minPlayersFilePath, "de_rain" , "de_nuke" );
+        test_mapFileList_load( g_test_whiteListFilePath , "[0-23]"  , "de_rain", "de_nuke" );
         
         // Disables the minimum players feature.
         g_test_playersNumber = 5;
@@ -9147,9 +9217,9 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         loadTheWhiteListFeature();
         loadNormalVoteChoices();
         
-        test_loadVoteChoices_case( "de_rain", "", 'd' );      // case 1
+        test_loadVoteChoices_case( "de_rain"   , "", 'd' );   // case 1
         test_loadVoteChoices_case( "de_inferno", "de_nuke" ); // case 2
-        test_loadVoteChoices_case( "as_trunda", "de_nuke" );  // case 3
+        test_loadVoteChoices_case( "as_trunda" , "de_nuke" ); // case 3
     }
     
     /**
@@ -9326,6 +9396,78 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
             }
             
             fclose( fileDescriptor );
+        }
+    }
+    
+    /**
+     * Create some nominations the force to remove them by the 'unnominatedDisconnectedPlayer(1)'.
+     */
+    stock test_unnominatedDisconnected( player_id )
+    {
+        test_clearNominationsData();
+        set_pcvar_num( cvar_nomPlayerAllowance, 9 );
+        
+        test_unnominated_nomsLoad( player_id, "de_dust2002v2005_forEver2009", "de_dust2002v2005_forEver2010",
+                                              "de_dust2002v2005_forEver2011", "de_dust2002v2005_forEver2012",
+                                              "de_dust2002v2005_forEver2013", "de_dust2002v2005_forEver2014",
+                                              "de_dust2002v2005_forEver2015", "de_dust2002v2005_forEver2016" );
+        unnominatedDisconnectedPlayer( player_id );
+    }
+    
+    /**
+     * To clear the normal game nominations.
+     */
+    stock test_clearNominationsData()
+    {
+        g_nominationCount    = 0;
+        g_totalVoteOptions   = 0;
+        g_nominationMapCount = 0;
+        
+        if( g_nominationMapsArray )
+        {
+            ArrayClear( g_nominationMapsArray );
+        }
+        else
+        {
+            g_nominationMapsArray = ArrayCreate( MAX_MAPNAME_LENGHT );
+        }
+        
+        clearTheVotingMenu();
+        nomination_clearAll();
+    }
+    
+    /**
+     * Load the specified nominations into a specific player.
+     * 
+     * @param player_id        the player id to receive the nominations.
+     * @param nominations      the variable number of maps nominations.
+     */
+    stock test_unnominated_nomsLoad( player_id, ... )
+    {
+        new stringIndex;
+        new argumentsNumber;
+        new currentMap[ MAX_MAPNAME_LENGHT ];
+        
+        argumentsNumber = numargs() - 1;
+        
+        // To load the maps passed as arguments
+        for( new currentIndex = 0; currentIndex < argumentsNumber; ++currentIndex )
+        {
+            stringIndex = 0;
+            
+            while( ( currentMap[ stringIndex ] = getarg( currentIndex + 1, stringIndex++ ) ) )
+            {
+            }
+            
+            currentMap[ stringIndex ] = '^0';
+            ArrayPushString( g_nominationMapsArray, currentMap );
+            
+            if( currentIndex < MAX_NOMINATION_COUNT )
+            {
+                g_nominationCount++;
+                g_nominationMapCount++;
+                setPlayerNominationMapIndex( player_id, currentIndex, currentIndex );
+            }
         }
     }
     
