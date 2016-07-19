@@ -30,7 +30,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.0-230";
+new const PLUGIN_VERSION[] = "v3.2.0-231";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -4713,68 +4713,6 @@ stock vote_addFillers( blockedMapsBuffer[], &announcementShowedTimes = 0 )
     processLoadedMapsFile( groupCount, maxMapsPerGroupToUse, fillersFilePaths, blockedMapsBuffer, announcementShowedTimes );
 }
 
-/**
- * Announce the Minplayers-Whitelist blocked maps.
- * 
- * @param mapToAnnounce          a map which was blocked.
- * @param blockedMapsBuffer      the output string to be printed.
- * 
- * @note It does not immediately print the called map. The output occurs when the buffer is full.
- */
-stock announceVoteBlockedMap( mapToAnnounce[], blockedMapsBuffer[], flushAnnouncement[], &announcementShowedTimes )
-{
-    LOGGER( 128, "I AM ENTERING ON announceVoteBlockedMap(4) | announcementShowedTimes: %d, \
-            mapToAnnounce: %s, ", announcementShowedTimes, mapToAnnounce );
-    
-    if( announcementShowedTimes
-        && announcementShowedTimes < 3 )
-    {
-        static copiedChars;
-        
-        // Reset the characters counter for the output flush.
-        if( !blockedMapsBuffer[ 0 ] )
-        {
-            copiedChars = 0;
-        }
-        
-        copiedChars += copy( blockedMapsBuffer[ copiedChars ], MAX_COLOR_MESSAGE - 1 - copiedChars, "^1, ^4" );
-        copiedChars += copy( blockedMapsBuffer[ copiedChars ], MAX_COLOR_MESSAGE - 1 - copiedChars, mapToAnnounce );
-        
-        // Calculate whether to flush now or not.
-        if( copiedChars > MAX_COLOR_MESSAGE - MAX_MAPNAME_LENGHT )
-        {
-            flushVoteBlockedMaps( blockedMapsBuffer, flushAnnouncement, announcementShowedTimes );
-        }
-    }
-}
-
-/**
- * Print the current blocked maps buffer, if there are any maps on it.
- * 
- * @param blockedMapsBuffer     the formatted maps list to be printed.
- */
-stock flushVoteBlockedMaps( blockedMapsBuffer[], flushAnnouncement[], &announcementShowedTimes )
-{
-    LOGGER( 128, "I AM ENTERING ON flushVoteBlockedMaps(3) | announcementShowedTimes: %d, ", announcementShowedTimes );
-    LOGGER( 128, "blockedMapsBuffer: %s",  blockedMapsBuffer );
-    
-    if( blockedMapsBuffer[ 0 ] )
-    {
-        if( announcementShowedTimes == 1 )
-        {
-            color_print( 0, "%L", LANG_PLAYER, flushAnnouncement, 0, 0 );
-        }
-        
-    #if IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES > 0
-        REMOVE_CODE_COLOR_TAGS( blockedMapsBuffer );
-    #endif
-        color_print( 0, "%L", LANG_PLAYER, "GAL_MATCHING", blockedMapsBuffer[ 3 ] );
-        
-        announcementShowedTimes++;
-        blockedMapsBuffer[ 0 ] = '^0';
-    }
-}
-
 stock vote_addNominations( blockedMapsBuffer[], &announcementShowedTimes = 0 )
 {
     LOGGER( 128, "I AM ENTERING ON vote_addNominations(2) | announcementShowedTimes: %d", announcementShowedTimes );
@@ -4940,6 +4878,68 @@ stock loadNormalVoteChoices()
     
     LOGGER( 4, "" );
     LOGGER( 4, "I AM EXITING ON loadNormalVoteChoices(0) | g_totalVoteOptions: %d", g_totalVoteOptions );
+}
+
+/**
+ * Announce the Minplayers-Whitelist blocked maps.
+ * 
+ * @param mapToAnnounce          a map which was blocked.
+ * @param blockedMapsBuffer      the output string to be printed.
+ * 
+ * @note It does not immediately print the called map. The output occurs when the buffer is full.
+ */
+stock announceVoteBlockedMap( mapToAnnounce[], blockedMapsBuffer[], flushAnnouncement[], &announcementShowedTimes )
+{
+    LOGGER( 128, "I AM ENTERING ON announceVoteBlockedMap(4) | announcementShowedTimes: %d, \
+            mapToAnnounce: %s, ", announcementShowedTimes, mapToAnnounce );
+    
+    if( announcementShowedTimes
+        && announcementShowedTimes < 3 )
+    {
+        static copiedChars;
+        
+        // Reset the characters counter for the output flush.
+        if( !blockedMapsBuffer[ 0 ] )
+        {
+            copiedChars = 0;
+        }
+        
+        copiedChars += copy( blockedMapsBuffer[ copiedChars ], MAX_COLOR_MESSAGE - 1 - copiedChars, "^1, ^4" );
+        copiedChars += copy( blockedMapsBuffer[ copiedChars ], MAX_COLOR_MESSAGE - 1 - copiedChars, mapToAnnounce );
+        
+        // Calculate whether to flush now or not.
+        if( copiedChars > MAX_COLOR_MESSAGE - MAX_MAPNAME_LENGHT )
+        {
+            flushVoteBlockedMaps( blockedMapsBuffer, flushAnnouncement, announcementShowedTimes );
+        }
+    }
+}
+
+/**
+ * Print the current blocked maps buffer, if there are any maps on it.
+ * 
+ * @param blockedMapsBuffer     the formatted maps list to be printed.
+ */
+stock flushVoteBlockedMaps( blockedMapsBuffer[], flushAnnouncement[], &announcementShowedTimes )
+{
+    LOGGER( 128, "I AM ENTERING ON flushVoteBlockedMaps(3) | announcementShowedTimes: %d, ", announcementShowedTimes );
+    LOGGER( 128, "blockedMapsBuffer: %s",  blockedMapsBuffer );
+    
+    if( blockedMapsBuffer[ 0 ] )
+    {
+        if( announcementShowedTimes == 1 )
+        {
+            color_print( 0, "%L", LANG_PLAYER, flushAnnouncement, 0, 0 );
+        }
+        
+    #if IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES > 0
+        REMOVE_CODE_COLOR_TAGS( blockedMapsBuffer );
+    #endif
+        color_print( 0, "%L", LANG_PLAYER, "GAL_MATCHING", blockedMapsBuffer[ 3 ] );
+        
+        announcementShowedTimes++;
+        blockedMapsBuffer[ 0 ] = '^0';
+    }
 }
 
 stock approveTheVotingStart( bool:is_forced_voting )
