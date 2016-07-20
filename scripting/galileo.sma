@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.1-243";
+new const PLUGIN_VERSION[] = "v3.2.2-248";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -270,8 +270,8 @@ new const PLUGIN_VERSION[] = "v3.2.1-243";
     /**
      * Write debug messages to server's console and log file.
      *
-     * @param text the debug message, if omitted its default value is ""
-     * @param any the variable number of formatting parameters
+     * @param message      the debug message, if omitted its default value is ""
+     * @param any          the variable number of formatting parameters
      * 
      * @see the stock writeToTheDebugFile( log_file[], formated_message[] ) for the output log 
      *      'DEBUGGER_OUTPUT_LOG_FILE_NAME'.
@@ -657,7 +657,7 @@ new cvar_sv_maxspeed;
 
 
 /**
- * Server cvars
+ * Server cvars.
  */
 new cvar_extendmapAllowStayType;
 new cvar_nextMapChangeAnnounce;
@@ -733,7 +733,7 @@ new cvar_voteWhiteListMapFilePath;
 
 
 /**
- * Various Artists
+ * Various Artists.
  */
 new const LAST_EMPTY_CYCLE_FILE_NAME[]      = "lastEmptyCycleMapName.dat";
 new const CURRENT_AND_NEXTMAP_FILE_NAME[]   = "currentAndNextmapNames.dat";
@@ -801,7 +801,7 @@ enum _:MapNominationsType
 }
 
 /**
- * The ban recent maps variables
+ * The ban recent maps variables.
  */
 new Array:g_recentListMapsArray;
 new Trie: g_recentMapsTrie;
@@ -1679,13 +1679,21 @@ stock setNextMap( nextMap[] )
 {
     LOGGER( 128, "I AM ENTERING ON setNextMap(1) | nextMap: %s", nextMap )
     
-    // set the queryable cvar
-    set_pcvar_string( g_cvar_amx_nextmap, nextMap );
-    copy( g_nextMap, charsmax( g_nextMap ), nextMap );
-    
-    // update our data file
-    saveCurrentAndNextMapNames( nextMap );
-    LOGGER( 2, "( setNextMap ) IS CHANGING THE CVAR 'amx_nextmap' to '%s'", nextMap )
+    if( IS_MAP_VALID( nextMap ) )
+    {
+        // set the queryable cvar
+        set_pcvar_string( g_cvar_amx_nextmap, nextMap );
+        copy( g_nextMap, charsmax( g_nextMap ), nextMap );
+        
+        // update our data file
+        saveCurrentAndNextMapNames( nextMap );
+        LOGGER( 2, "( setNextMap ) IS CHANGING THE CVAR 'amx_nextmap' to '%s'", nextMap )
+    }
+    else
+    {
+        LOGGER( 1, "AMX_ERR_PARAMS, %s, was tried to set a invalid next-map!", nextMap )
+        log_error( AMX_ERR_PARAMS, "%s, was tried to set a invalid next-map!", nextMap );
+    }
 }
 
 stock saveCurrentAndNextMapNames( nextMap[] )
@@ -7895,18 +7903,17 @@ public vote_resetStats()
     g_totalVotesCounted    = 0;
     g_pendingVoteCountdown = 7;
     
-    clearTheVotingMenu();
-    arrayset( g_arrayOfMapsWithVotesNumber, 0, sizeof g_arrayOfMapsWithVotesNumber );
-    
     // reset everyones' rocks.
     g_rockedVoteCount = 0;
     arrayset( g_rockedVote, false, sizeof g_rockedVote );
     
     // reset everyones' votes
     arrayset( g_isPlayerVoted, true, sizeof g_isPlayerVoted );
+    arrayset( g_arrayOfMapsWithVotesNumber, 0, sizeof g_arrayOfMapsWithVotesNumber );
     
     if( !( g_voteStatus & VOTE_IS_RUNOFF ) )
     {
+        clearTheVotingMenu();
         arrayset( g_isPlayerParticipating, true, sizeof g_isPlayerParticipating );
     }
     
@@ -8281,6 +8288,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     public create_fakeVotes()
     {
         LOGGER( 128, "I AM ENTERING ON create_fakeVotes(0)" )
+        writeToTheDebugFile( DEBUGGER_OUTPUT_LOG_FILE_NAME, "Creating fake votes..." );
         
         if( g_voteStatus & VOTE_IS_RUNOFF )
         {
@@ -8292,14 +8300,14 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         else
         {
             g_arrayOfMapsWithVotesNumber[ 0 ] += 0;     // map 1
-            g_arrayOfMapsWithVotesNumber[ 1 ] += 3;     // map 2
-            g_arrayOfMapsWithVotesNumber[ 2 ] += 0;     // map 3
+            g_arrayOfMapsWithVotesNumber[ 1 ] += 2;     // map 2
+            g_arrayOfMapsWithVotesNumber[ 2 ] += 2;     // map 3
             g_arrayOfMapsWithVotesNumber[ 3 ] += 0;     // map 4
             g_arrayOfMapsWithVotesNumber[ 4 ] += 0;     // map 5
             
             if( g_isExtendmapAllowStay || g_isGameFinalVoting )
             {
-                g_arrayOfMapsWithVotesNumber[ 5 ] += 3;    // extend option
+                g_arrayOfMapsWithVotesNumber[ 5 ] += 0;    // extend option
             }
             
             g_totalVotesCounted = g_arrayOfMapsWithVotesNumber[ 0 ] + g_arrayOfMapsWithVotesNumber[ 1 ] +
@@ -8346,7 +8354,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     }
     
     /**
-     * Compute how many day are elapsed since 1st January of 2000.
+     * Compute how many days are elapsed since 1st January of 2000.
      * 
      * @param currentDayInteger     the current day from this year (1-366).
      * @param currentYearInteger    the current year (2016).
@@ -8543,9 +8551,9 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     {
         if( g_test_testsNumber > 0 )
         {
+            new lastTestId       = ( g_test_testsNumber );
             new numberOfFailures = ArraySize( g_test_failureIdsArray );
             new lastFailure      = ( numberOfFailures? ArrayGetCell( g_test_failureIdsArray, numberOfFailures - 1 ) : 0 );
-            new lastTestId       = ( g_test_testsNumber );
             
             LOGGER( 1, "( displaysLastTestOk ) numberOfFailures: %d, lastFailure: %d, lastTestId: %d", numberOfFailures, lastFailure, lastTestId )
             
@@ -8655,7 +8663,6 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         
         return false;
     }
-    
     
     /**
      * This is the first thing called when a test begin running. It function is to let the Test System
