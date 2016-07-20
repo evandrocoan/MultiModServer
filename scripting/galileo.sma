@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.1-243";
+new const PLUGIN_VERSION[] = "v3.2.1-247";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -270,8 +270,8 @@ new const PLUGIN_VERSION[] = "v3.2.1-243";
     /**
      * Write debug messages to server's console and log file.
      *
-     * @param text the debug message, if omitted its default value is ""
-     * @param any the variable number of formatting parameters
+     * @param message      the debug message, if omitted its default value is ""
+     * @param any          the variable number of formatting parameters
      * 
      * @see the stock writeToTheDebugFile( log_file[], formated_message[] ) for the output log 
      *      'DEBUGGER_OUTPUT_LOG_FILE_NAME'.
@@ -657,7 +657,7 @@ new cvar_sv_maxspeed;
 
 
 /**
- * Server cvars
+ * Server cvars.
  */
 new cvar_extendmapAllowStayType;
 new cvar_nextMapChangeAnnounce;
@@ -733,7 +733,7 @@ new cvar_voteWhiteListMapFilePath;
 
 
 /**
- * Various Artists
+ * Various Artists.
  */
 new const LAST_EMPTY_CYCLE_FILE_NAME[]      = "lastEmptyCycleMapName.dat";
 new const CURRENT_AND_NEXTMAP_FILE_NAME[]   = "currentAndNextmapNames.dat";
@@ -801,7 +801,7 @@ enum _:MapNominationsType
 }
 
 /**
- * The ban recent maps variables
+ * The ban recent maps variables.
  */
 new Array:g_recentListMapsArray;
 new Trie: g_recentMapsTrie;
@@ -8346,7 +8346,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     }
     
     /**
-     * Compute how many day are elapsed since 1st January of 2000.
+     * Compute how many days are elapsed since 1st January of 2000.
      * 
      * @param currentDayInteger     the current day from this year (1-366).
      * @param currentYearInteger    the current year (2016).
@@ -8543,9 +8543,9 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     {
         if( g_test_testsNumber > 0 )
         {
+            new lastTestId       = ( g_test_testsNumber );
             new numberOfFailures = ArraySize( g_test_failureIdsArray );
             new lastFailure      = ( numberOfFailures? ArrayGetCell( g_test_failureIdsArray, numberOfFailures - 1 ) : 0 );
-            new lastTestId       = ( g_test_testsNumber );
             
             LOGGER( 1, "( displaysLastTestOk ) numberOfFailures: %d, lastFailure: %d, lastTestId: %d", numberOfFailures, lastFailure, lastTestId )
             
@@ -8655,7 +8655,6 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         
         return false;
     }
-    
     
     /**
      * This is the first thing called when a test begin running. It function is to let the Test System
