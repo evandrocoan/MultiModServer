@@ -24,13 +24,16 @@
 
 
 
+// Configuration Main Definitions
+// ###############################################################################################
+
 /**
  * This version number must be synced with "githooks/GALILEO_SMA_VERSION.txt" for manual edition.
  * To update them automatically, use: ./githooks/updateVersion.sh [major | minor | patch | build]
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.0-237";
+new const PLUGIN_VERSION[] = "v3.2.1-243";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -42,6 +45,10 @@ new const PLUGIN_VERSION[] = "v3.2.0-237";
  */
 #define IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES 0
 
+
+
+// Debugger Main Definitions
+// ###############################################################################################
 
 /**
  * This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
@@ -72,7 +79,6 @@ new const PLUGIN_VERSION[] = "v3.2.0-237";
  * Default value: 0
  */
 #define DEBUG_LEVEL 0//1+16+2
-
 
 
 /**
@@ -108,10 +114,33 @@ new const PLUGIN_VERSION[] = "v3.2.0-237";
 #include <amxmisc>
 
 /**
- * Force the use of semicolons on every statement.
+ * Force the use of semicolons on every statements.
  */
 #pragma semicolon 1
 
+/**
+ * Global Debugging tools used on any 'DEBUG_LEVEL'.
+ */
+#if DEBUG_LEVEL >= DEBUG_LEVEL_NORMAL
+    /**
+     * The file on the './addons/amxmodx/logs' folder, to save the debugging text output.
+     */
+    new const DEBUGGER_OUTPUT_LOG_FILE_NAME[] = "_galileo.log";
+    
+    /**
+     * Write messages to the debug log file on 'addons/amxmodx/logs'.
+     * 
+     * @param log_file               the log file name.
+     * @param formated_message       the formatted message to write down to the debug log file.
+     */
+    stock writeToTheDebugFile( const log_file[], const formated_message[] )
+    {
+        new Float:gameTime;
+        
+        gameTime = get_gametime();
+        log_to_file( log_file, "{%3.4f} %s", gameTime, formated_message );
+    }
+#endif
 
 /**
  * Setup the debugging tools when they are used/necessary.
@@ -146,7 +175,6 @@ new const PLUGIN_VERSION[] = "v3.2.0-237";
      */
     new g_debug_level = 1 + 4 + 8 + 16;
     
-    
     /**
      * Write debug messages accordantly with the 'g_debug_level' variable.
      *
@@ -154,7 +182,8 @@ new const PLUGIN_VERSION[] = "v3.2.0-237";
      * @param text the debug message, if omitted its default value is ""
      * @param any the variable number of formatting parameters
      * 
-     * @see the stock writeToTheDebugFile( log_file[], formated_message[] ) for the output log "_galileo.log".
+     * @see the stock writeToTheDebugFile( log_file[], formated_message[] ) for the output log
+     *      'DEBUGGER_OUTPUT_LOG_FILE_NAME'.
      */
     stock debugMesssageLogger( const mode, const message[] = "", any:... )
     {
@@ -163,7 +192,7 @@ new const PLUGIN_VERSION[] = "v3.2.0-237";
             static formated_message[ MAX_BIG_BOSS_STRING ];
             vformat( formated_message, charsmax( formated_message ), message, 3 );
             
-            writeToTheDebugFile( "_galileo.log", formated_message );
+            writeToTheDebugFile( DEBUGGER_OUTPUT_LOG_FILE_NAME, formated_message );
         }
     }
 #else
@@ -172,6 +201,9 @@ new const PLUGIN_VERSION[] = "v3.2.0-237";
 #endif
 
 
+
+// Unit Tests Main Definitions
+// ###############################################################################################
 
 /**
  * Setup the Unit Tests when they are used/necessary.
@@ -241,16 +273,16 @@ new const PLUGIN_VERSION[] = "v3.2.0-237";
      * @param text the debug message, if omitted its default value is ""
      * @param any the variable number of formatting parameters
      * 
-     * @see the stock writeToTheDebugFile( log_file[], formated_message[] ) for the output log "_galileo.log".
+     * @see the stock writeToTheDebugFile( log_file[], formated_message[] ) for the output log 
+     *      'DEBUGGER_OUTPUT_LOG_FILE_NAME'.
      */
     stock print_logger( const message[] = "", any:... )
     {
         static formated_message[ MAX_BIG_BOSS_STRING ];
         vformat( formated_message, charsmax( formated_message ), message, 2 );
         
-        writeToTheDebugFile( "_galileo.log", formated_message );
+        writeToTheDebugFile( DEBUGGER_OUTPUT_LOG_FILE_NAME, formated_message );
     }
-    
     
     /**
      * Test unit variables related to the DEBUG_LEVEL_UNIT_TESTs.
@@ -277,29 +309,16 @@ new const PLUGIN_VERSION[] = "v3.2.0-237";
     new g_test_voteMapFilePath[]    = "voteFilePathTestFile.txt";
     new g_test_whiteListFilePath[]  = "test_loadCurrentBlackList.txt";
     new g_test_minPlayersFilePath[] = "minimumPlayersTestFile.txt";
-//
+    
 #else
     #define IS_MAP_VALID(%1) ( is_map_valid( %1 ) )
     
 #endif
 
 
-/**
- * Write messages to the debug log file on 'addons/amxmodx/logs'.
- * 
- * @param log_file               the log file name.
- * @param formated_message       the formatted message to write down to the debug log file.
- */
-#if DEBUG_LEVEL >= DEBUG_LEVEL_NORMAL
-    stock writeToTheDebugFile( log_file[], formated_message[] )
-    {
-        new Float:gameTime;
-        
-        gameTime = get_gametime();
-        log_to_file( log_file, "{%3.4f} %s", gameTime, formated_message );
-    }
-#endif
 
+// In-place Main Constants
+// ###############################################################################################
 
 /**
  * Defines the maximum players number, when it is not specified for olders AMXX versions.
@@ -308,7 +327,6 @@ new const PLUGIN_VERSION[] = "v3.2.0-237";
     #define MAX_PLAYERS 32
 #endif
 
-
 /**
  * Register the color chat necessary variables, if it is enabled.
  */
@@ -316,24 +334,37 @@ new const PLUGIN_VERSION[] = "v3.2.0-237";
     new bool:g_isColorChatSupported;
     new bool:g_isColoredChatEnabled;
     
-#if AMXX_VERSION_NUM < 183
-    new g_user_msgid;
-#endif
+    #if AMXX_VERSION_NUM < 183
+        new g_user_msgid;
+    #endif
+    
     new cvar_coloredChatEnabled;
 #endif
 
+/**
+ * General Constants.
+ */
+#define LISTMAPS_USERID   0
+#define LISTMAPS_LAST_MAP 1
 
 #define RTV_CMD_STANDARD  1
 #define RTV_CMD_SHORTHAND 2
 #define RTV_CMD_DYNAMIC   4
 
+#define MAPFILETYPE_SINGLE 1
+#define MAPFILETYPE_GROUPS 2
+
+#define VOTE_IS_IN_PROGRESS 1
+#define VOTE_IS_FORCED      2
+#define VOTE_IS_RUNOFF      4
+#define VOTE_IS_OVER        8
+#define VOTE_IS_EARLY       16
+#define VOTE_IS_EXPIRED     32
+
 #define SOUND_GETREADYTOCHOOSE 1
 #define SOUND_COUNTDOWN        2
 #define SOUND_TIMETOCHOOSE     4
 #define SOUND_RUNOFFREQUIRED   8
-
-#define MAPFILETYPE_SINGLE 1
-#define MAPFILETYPE_GROUPS 2
 
 #define SHOW_STATUS_NEVER      0
 #define SHOW_STATUS_AFTER_VOTE 1
@@ -343,12 +374,12 @@ new const PLUGIN_VERSION[] = "v3.2.0-237";
 #define STATUS_TYPE_COUNT      1
 #define STATUS_TYPE_PERCENTAGE 2
 
-#define HIDE_AFTER_USER_VOTE           0
-#define ALWAYS_KEEP_SHOWING            1
-#define CONVERT_IT_TO_CANCEL_LAST_VOTE 2
-
 #define ANNOUNCE_CHOICE_PLAYERS 1
 #define ANNOUNCE_CHOICE_ADMINS  2
+
+#define NONE_OPTION_HIDE_AFTER_USER_VOTE           0
+#define NONE_OPTION_ALWAYS_KEEP_SHOWING            1
+#define NONE_OPTION_CONVERT_IT_TO_CANCEL_LAST_VOTE 2
 
 #define MAX_PREFIX_COUNT              32
 #define MAX_MAPS_IN_VOTE              8
@@ -359,13 +390,6 @@ new const PLUGIN_VERSION[] = "v3.2.0-237";
 #define MAX_NOM_MATCH_COUNT           1000
 #define MAX_PLAYERS_COUNT             MAX_PLAYERS + 1
 
-#define VOTE_IS_IN_PROGRESS 1
-#define VOTE_IS_FORCED      2
-#define VOTE_IS_RUNOFF      4
-#define VOTE_IS_OVER        8
-#define VOTE_IS_EARLY       16
-#define VOTE_IS_EXPIRED     32
-
 #define SERVER_START_CURRENTMAP                     1
 #define SERVER_START_NEXTMAP                        2
 #define SERVER_START_MAPVOTE                        3
@@ -373,8 +397,10 @@ new const PLUGIN_VERSION[] = "v3.2.0-237";
 #define SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR      2
 #define DELAY_TO_WAIT_THE_SERVER_CVARS_TO_BE_LOADED 50.0
 
-#define LISTMAPS_USERID 0
-#define LISTMAPS_LAST   1
+/**
+ * The rounds number before the mp_maxrounds/mp_winlimit to be reached to start the map voting.
+ */
+#define VOTE_START_ROUNDS 4
 
 /**
  * The periodic task created on 'configureServerMapChange(0)' use this intervals in seconds to
@@ -390,12 +416,31 @@ new const PLUGIN_VERSION[] = "v3.2.0-237";
 #define VOTE_ROUND_START_MIN_DELAY 500
 #define VOTE_ROUND_START_MAX_DELAY START_VOTEMAP_MIN_TIME
 
+
+
+// In-place Macros
+// ###############################################################################################
+
 /**
- * The rounds number before the mp_maxrounds/mp_winlimit to be reached to start the map voting.
+ * The frags/kills number before the mp_fraglimit to be reached and to start the map voting.
  */
-#define VOTE_START_ROUNDS 4
+#define VOTE_START_FRAGS() \
+    ( g_fragLimitNumber > 50 ? 30 : 15 )
+//
 
+/**
+ * Specifies how much time to delay the voting start after the round start.
+ */
+#define VOTE_ROUND_START_SECONDS_DELAY() \
+    ( get_pcvar_num( cvar_mp_freezetime ) + 20.0 )
+//
 
+/**
+ * Start a map voting delayed after the mp_maxrounds or mp_winlimit minimum to be reached.
+ */
+#define VOTE_START_ROUND_DELAY() \
+    set_task( VOTE_ROUND_START_SECONDS_DELAY(), "start_voting_by_rounds", TASKID_START_VOTING_BY_ROUNDS ); \
+//
 
 /**
  * Give time range to try detecting the round start, to avoid the old buy weapons menu override.
@@ -415,25 +460,6 @@ new const PLUGIN_VERSION[] = "v3.2.0-237";
 #define IS_TIME_TO_START_THE_END_OF_MAP_VOTING(%1) \
     ( %1 < START_VOTEMAP_MIN_TIME \
       && %1 > START_VOTEMAP_MAX_TIME )
-//
-
-/**
- * The frags/kills number before the mp_fraglimit to be reached and to start the map voting.
- */
-#define VOTE_START_FRAGS() ( g_fragLimitNumber > 50 ? 30 : 15 )
-//
-
-/**
- * Specifies how much time to delay the voting start after the round start.
- */
-#define VOTE_ROUND_START_SECONDS_DELAY() ( get_pcvar_num( cvar_mp_freezetime ) + 20.0 )
-//
-
-/**
- * Start a map voting delayed after the mp_maxrounds or mp_winlimit minimum to be reached.
- */
-#define VOTE_START_ROUND_DELAY() \
-    set_task( VOTE_ROUND_START_SECONDS_DELAY(), "start_voting_by_rounds", TASKID_START_VOTING_BY_ROUNDS ); \
 //
 
 /**
@@ -472,6 +498,9 @@ new const PLUGIN_VERSION[] = "v3.2.0-237";
 //
 
 
+
+// Global Macro Expansions
+// ###############################################################################################
 
 /**
  * Convert colored strings codes '!g for green', '!y for yellow', '!t for team'.
@@ -581,6 +610,9 @@ new const PLUGIN_VERSION[] = "v3.2.0-237";
 }
 
 
+
+// General Global Variables
+// ###############################################################################################
 
 /**
  * Dummy value used on conditional statements to allow statements as always true or false.
@@ -1672,202 +1704,6 @@ stock saveCurrentAndNextMapNames( nextMap[] )
         fprintf( backupMapsFile, "^n%s", nextMap );
         fclose( backupMapsFile );
     }
-}
-
-stock computeNextWhiteListLoadTime( seconds, bool:isSecondsLeft = true )
-{
-    LOGGER( 128, "I AM ENTERING ON computeNextWhiteListLoadTime(2) | seconds: %d, isSecondsLeft: %d", seconds, isSecondsLeft )
-    new secondsForReload;
-    
-    // This is tricky as 'seconds' could be 0, when there is no time-limit.
-    if( seconds )
-    {
-        new currentHour;
-        new currentMinute;
-        new currentSecond;
-        
-        time( currentHour, currentMinute, currentSecond );
-        secondsForReload = ( 3600 - ( currentMinute * 60 + currentSecond ) );
-        
-        if( isSecondsLeft )
-        {
-            // Here, when the 'secondsForReload' is greater than 'seconds', we will change map before
-            // the next reload, then when do not need to reload on this current server session.
-            if( seconds < secondsForReload )
-            {
-                g_whitelistNomBlockTime = 0;
-            }
-            else
-            {
-                g_whitelistNomBlockTime = seconds - secondsForReload + 1;
-            }
-        }
-        else
-        {
-            // Here on '!isSecondsLeft', we do not know when there will be a map change, then we 
-            // just set the next time where the current hour will end.
-            g_whitelistNomBlockTime = secondsForReload + seconds;
-        }
-    }
-    else
-    {
-        g_whitelistNomBlockTime = 1000;
-        
-        LOGGER( 1, "ERROR: The seconds parameter on 'computeNextWhiteListLoadTime(1)' function is zero!" )
-        log_amx( "ERROR: The seconds parameter on 'computeNextWhiteListLoadTime(1)' function is zero!" );
-    }
-    
-    LOGGER( 1, "I AM EXITING computeNextWhiteListLoadTime(2) | g_whitelistNomBlockTime: %d, secondsForReload: %d", g_whitelistNomBlockTime, secondsForReload )
-}
-
-public vote_manageEnd()
-{
-    LOGGER( 0, "I AM ENTERING ON vote_manageEnd(0) | get_realplayersnum: %d", get_realplayersnum() )
-    
-    new secondsLeft;
-    secondsLeft = get_timeleft();
-    
-    if( secondsLeft )
-    {
-        // are we ready to start an "end of map" vote?
-        if( IS_TIME_TO_START_THE_END_OF_MAP_VOTING( secondsLeft )
-            && !IS_END_OF_MAP_VOTING_GOING_ON() )
-        {
-            start_voting_by_timer();
-        }
-        
-        // are we managing the end of the map?
-        if( secondsLeft < 30
-            && secondsLeft > 0 )
-        {
-            if( g_isOnMaintenanceMode )
-            {
-                prevent_map_change();
-                color_print( 0, "%L", LANG_PLAYER, "GAL_CHANGE_MAINTENANCE" );
-            }
-            else if( !g_isTheLastGameRound
-                     && get_realplayersnum() >= get_pcvar_num( cvar_endOnRound_msg ) )
-            {
-                map_manageEnd();
-            }
-        }
-    }
-    
-    // Update the Whitelist maps when its the right time, configured by 'computeNextWhiteListLoadTime(2)'.
-    if( g_whitelistNomBlockTime )
-    {
-        new secondsElapsed;
-        secondsElapsed = floatround( get_gametime(), floatround_ceil );
-        
-        if( g_whitelistNomBlockTime < secondsElapsed )
-        {
-            computeNextWhiteListLoadTime( secondsElapsed, false );
-            loadTheWhiteListFeature();
-        }
-    }
-    
-    // Handle the action to take immediately after half of the time-left or rounds-left passed
-    // when using the 'Game Server Crash Recreation' Feature.
-    if( g_isToCreateGameCrashFlag
-        && (  g_timeLimitNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_timeLimitNumber - secondsLeft / 60
-           || g_fragLimitNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_greatestKillerFrags
-           || g_maxRoundsNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_roundsPlayedNumber + 1
-           || g_winLimitInteger / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_totalTerroristsWins + g_totalCtWins ) )
-    {
-        new gameCrashActionFilePath[ MAX_FILE_PATH_LENGHT ];
-        g_isToCreateGameCrashFlag = false; // stop creating this file unnecessarily
-        
-        LOGGER( 1, "( vote_manageEnd )  %d/%d < %d: %d", \
-                g_timeLimitNumber, SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR, g_timeLimitNumber - secondsLeft / 60, \
-                g_timeLimitNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_timeLimitNumber - secondsLeft / 60)
-        LOGGER( 1, "( vote_manageEnd )  %d/%d < %d: %d", \
-                g_fragLimitNumber, SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR, g_greatestKillerFrags, \
-                g_fragLimitNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_greatestKillerFrags )
-        LOGGER( 1, "( vote_manageEnd )  %d/%d < %d: %d", \
-                g_maxRoundsNumber, SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR, g_roundsPlayedNumber + 1, \
-                g_maxRoundsNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_roundsPlayedNumber + 1 )
-        LOGGER( 1, "( vote_manageEnd )  %d/%d < %d: %d", \
-                g_winLimitInteger, SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR, g_totalTerroristsWins + g_totalCtWins, \
-                g_winLimitInteger / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_totalTerroristsWins + g_totalCtWins )
-        
-        generateGameCrashActionFilePath( gameCrashActionFilePath, charsmax( gameCrashActionFilePath ) );
-        write_file( gameCrashActionFilePath, "Game Crash Action Flag File^n^nSee the cvar 'gal_game_crash_recreation'.^nDo not delete it." );
-    }
-}
-
-public map_manageEnd()
-{
-    LOGGER( 128, "I AM ENTERING ON map_manageEnd(0)" )
-    LOGGER( 2, "%32s mp_timelimit: %f, get_realplayersnum: %d", "map_manageEnd(in)", get_pcvar_float( cvar_mp_timelimit ), get_realplayersnum() )
-    
-    switch( get_pcvar_num( cvar_endOnRound ) )
-    {
-        case 1: // when time runs out, end at the current round end
-        {
-            g_isTheLastGameRound  = true;
-            g_isTimeToChangeLevel = true;
-            
-            color_print( 0, "%L %L %L",
-                    LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED", LANG_PLAYER, "GAL_CHANGE_NEXTROUND", LANG_PLAYER, "GAL_NEXTMAP", g_nextMap );
-            
-            prevent_map_change();
-        }
-        case 2: // when time runs out, end at the next round end
-        {
-            g_isTheLastGameRound = true;
-            
-            // This is to avoid have a extra round at special mods where time limit is equal the
-            // round timer.
-            if( get_pcvar_float( cvar_mp_roundtime ) > 8.0 )
-            {
-                g_isTimeToChangeLevel = true;
-                
-                color_print( 0, "%L %L %L",
-                        LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED", LANG_PLAYER, "GAL_CHANGE_NEXTROUND", LANG_PLAYER, "GAL_NEXTMAP", g_nextMap );
-            }
-            else
-            {
-                color_print( 0, "%L %L",
-                        LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED", LANG_PLAYER, "GAL_NEXTMAP", g_nextMap );
-            }
-            
-            prevent_map_change();
-        }
-    }
-    
-    configure_last_round_HUD();
-    LOGGER( 2, "%32s mp_timelimit: %f, get_realplayersnum: %d", "map_manageEnd(out)", get_pcvar_float( cvar_mp_timelimit ), get_realplayersnum() )
-}
-
-stock prevent_map_change()
-{
-    LOGGER( 128, "I AM ENTERING ON prevent_map_change(0)" )
-    
-    new Float:roundTimeMinutes;
-    saveEndGameLimits();
-    
-    // Prevent the map from ending automatically.
-    set_pcvar_float( cvar_mp_timelimit, 0.0 );
-    LOGGER( 2, "( prevent_map_change ) IS CHANGING THE CVAR 'mp_timelimit' to '%f'", get_pcvar_float( cvar_mp_timelimit ) )
-    
-    // Prevent the map from being played indefinitely.
-    if( g_isTimeToChangeLevel )
-    {
-        roundTimeMinutes = 9.0;
-    }
-    else
-    {
-        if( ( roundTimeMinutes = get_pcvar_float( cvar_mp_roundtime ) ) > 0 )
-        {
-            roundTimeMinutes *= 3.0;
-        }
-        else
-        {
-            roundTimeMinutes = 9.0;
-        }
-    }
-    
-    set_task( roundTimeMinutes * 60, "map_restoreEndGameCvars", TASKID_PREVENT_INFITY_GAME );
 }
 
 public map_loadRecentList()
@@ -4925,6 +4761,202 @@ stock flushVoteBlockedMaps( blockedMapsBuffer[], flushAnnouncement[], &announcem
     }
 }
 
+stock computeNextWhiteListLoadTime( seconds, bool:isSecondsLeft = true )
+{
+    LOGGER( 128, "I AM ENTERING ON computeNextWhiteListLoadTime(2) | seconds: %d, isSecondsLeft: %d", seconds, isSecondsLeft )
+    new secondsForReload;
+    
+    // This is tricky as 'seconds' could be 0, when there is no time-limit.
+    if( seconds )
+    {
+        new currentHour;
+        new currentMinute;
+        new currentSecond;
+        
+        time( currentHour, currentMinute, currentSecond );
+        secondsForReload = ( 3600 - ( currentMinute * 60 + currentSecond ) );
+        
+        if( isSecondsLeft )
+        {
+            // Here, when the 'secondsForReload' is greater than 'seconds', we will change map before
+            // the next reload, then when do not need to reload on this current server session.
+            if( seconds < secondsForReload )
+            {
+                g_whitelistNomBlockTime = 0;
+            }
+            else
+            {
+                g_whitelistNomBlockTime = seconds - secondsForReload + 1;
+            }
+        }
+        else
+        {
+            // Here on '!isSecondsLeft', we do not know when there will be a map change, then we 
+            // just set the next time where the current hour will end.
+            g_whitelistNomBlockTime = secondsForReload + seconds;
+        }
+    }
+    else
+    {
+        g_whitelistNomBlockTime = 1000;
+        
+        LOGGER( 1, "ERROR: The seconds parameter on 'computeNextWhiteListLoadTime(1)' function is zero!" )
+        log_amx( "ERROR: The seconds parameter on 'computeNextWhiteListLoadTime(1)' function is zero!" );
+    }
+    
+    LOGGER( 1, "I AM EXITING computeNextWhiteListLoadTime(2) | g_whitelistNomBlockTime: %d, secondsForReload: %d", g_whitelistNomBlockTime, secondsForReload )
+}
+
+public vote_manageEnd()
+{
+    LOGGER( 0, "I AM ENTERING ON vote_manageEnd(0) | get_realplayersnum: %d", get_realplayersnum() )
+    
+    new secondsLeft;
+    secondsLeft = get_timeleft();
+    
+    if( secondsLeft )
+    {
+        // are we ready to start an "end of map" vote?
+        if( IS_TIME_TO_START_THE_END_OF_MAP_VOTING( secondsLeft )
+            && !IS_END_OF_MAP_VOTING_GOING_ON() )
+        {
+            start_voting_by_timer();
+        }
+        
+        // are we managing the end of the map?
+        if( secondsLeft < 30
+            && secondsLeft > 0 )
+        {
+            if( g_isOnMaintenanceMode )
+            {
+                prevent_map_change();
+                color_print( 0, "%L", LANG_PLAYER, "GAL_CHANGE_MAINTENANCE" );
+            }
+            else if( !g_isTheLastGameRound
+                     && get_realplayersnum() >= get_pcvar_num( cvar_endOnRound_msg ) )
+            {
+                map_manageEnd();
+            }
+        }
+    }
+    
+    // Update the Whitelist maps when its the right time, configured by 'computeNextWhiteListLoadTime(2)'.
+    if( g_whitelistNomBlockTime )
+    {
+        new secondsElapsed;
+        secondsElapsed = floatround( get_gametime(), floatround_ceil );
+        
+        if( g_whitelistNomBlockTime < secondsElapsed )
+        {
+            computeNextWhiteListLoadTime( secondsElapsed, false );
+            loadTheWhiteListFeature();
+        }
+    }
+    
+    // Handle the action to take immediately after half of the time-left or rounds-left passed
+    // when using the 'Game Server Crash Recreation' Feature.
+    if( g_isToCreateGameCrashFlag
+        && (  g_timeLimitNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_timeLimitNumber - secondsLeft / 60
+           || g_fragLimitNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_greatestKillerFrags
+           || g_maxRoundsNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_roundsPlayedNumber + 1
+           || g_winLimitInteger / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_totalTerroristsWins + g_totalCtWins ) )
+    {
+        new gameCrashActionFilePath[ MAX_FILE_PATH_LENGHT ];
+        g_isToCreateGameCrashFlag = false; // stop creating this file unnecessarily
+        
+        LOGGER( 1, "( vote_manageEnd )  %d/%d < %d: %d", \
+                g_timeLimitNumber, SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR, g_timeLimitNumber - secondsLeft / 60, \
+                g_timeLimitNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_timeLimitNumber - secondsLeft / 60)
+        LOGGER( 1, "( vote_manageEnd )  %d/%d < %d: %d", \
+                g_fragLimitNumber, SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR, g_greatestKillerFrags, \
+                g_fragLimitNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_greatestKillerFrags )
+        LOGGER( 1, "( vote_manageEnd )  %d/%d < %d: %d", \
+                g_maxRoundsNumber, SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR, g_roundsPlayedNumber + 1, \
+                g_maxRoundsNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_roundsPlayedNumber + 1 )
+        LOGGER( 1, "( vote_manageEnd )  %d/%d < %d: %d", \
+                g_winLimitInteger, SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR, g_totalTerroristsWins + g_totalCtWins, \
+                g_winLimitInteger / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_totalTerroristsWins + g_totalCtWins )
+        
+        generateGameCrashActionFilePath( gameCrashActionFilePath, charsmax( gameCrashActionFilePath ) );
+        write_file( gameCrashActionFilePath, "Game Crash Action Flag File^n^nSee the cvar 'gal_game_crash_recreation'.^nDo not delete it." );
+    }
+}
+
+public map_manageEnd()
+{
+    LOGGER( 128, "I AM ENTERING ON map_manageEnd(0)" )
+    LOGGER( 2, "%32s mp_timelimit: %f, get_realplayersnum: %d", "map_manageEnd(in)", get_pcvar_float( cvar_mp_timelimit ), get_realplayersnum() )
+    
+    switch( get_pcvar_num( cvar_endOnRound ) )
+    {
+        case 1: // when time runs out, end at the current round end
+        {
+            g_isTheLastGameRound  = true;
+            g_isTimeToChangeLevel = true;
+            
+            color_print( 0, "%L %L %L",
+                    LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED", LANG_PLAYER, "GAL_CHANGE_NEXTROUND", LANG_PLAYER, "GAL_NEXTMAP", g_nextMap );
+            
+            prevent_map_change();
+        }
+        case 2: // when time runs out, end at the next round end
+        {
+            g_isTheLastGameRound = true;
+            
+            // This is to avoid have a extra round at special mods where time limit is equal the
+            // round timer.
+            if( get_pcvar_float( cvar_mp_roundtime ) > 8.0 )
+            {
+                g_isTimeToChangeLevel = true;
+                
+                color_print( 0, "%L %L %L",
+                        LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED", LANG_PLAYER, "GAL_CHANGE_NEXTROUND", LANG_PLAYER, "GAL_NEXTMAP", g_nextMap );
+            }
+            else
+            {
+                color_print( 0, "%L %L",
+                        LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED", LANG_PLAYER, "GAL_NEXTMAP", g_nextMap );
+            }
+            
+            prevent_map_change();
+        }
+    }
+    
+    configure_last_round_HUD();
+    LOGGER( 2, "%32s mp_timelimit: %f, get_realplayersnum: %d", "map_manageEnd(out)", get_pcvar_float( cvar_mp_timelimit ), get_realplayersnum() )
+}
+
+stock prevent_map_change()
+{
+    LOGGER( 128, "I AM ENTERING ON prevent_map_change(0)" )
+    
+    new Float:roundTimeMinutes;
+    saveEndGameLimits();
+    
+    // Prevent the map from ending automatically.
+    set_pcvar_float( cvar_mp_timelimit, 0.0 );
+    LOGGER( 2, "( prevent_map_change ) IS CHANGING THE CVAR 'mp_timelimit' to '%f'", get_pcvar_float( cvar_mp_timelimit ) )
+    
+    // Prevent the map from being played indefinitely.
+    if( g_isTimeToChangeLevel )
+    {
+        roundTimeMinutes = 9.0;
+    }
+    else
+    {
+        if( ( roundTimeMinutes = get_pcvar_float( cvar_mp_roundtime ) ) > 0 )
+        {
+            roundTimeMinutes *= 3.0;
+        }
+        else
+        {
+            roundTimeMinutes = 9.0;
+        }
+    }
+    
+    set_task( roundTimeMinutes * 60, "map_restoreEndGameCvars", TASKID_PREVENT_INFITY_GAME );
+}
+
 stock approveTheVotingStart( bool:is_forced_voting )
 {
     LOGGER( 128, "I AM ENTERING ON approveTheVotingStart(1) | is_forced_voting: %d, get_realplayersnum: %d", is_forced_voting, get_realplayersnum() )
@@ -5637,7 +5669,7 @@ stock calculate_menu_dirt( player_id, bool:isVoteOver, voteStatus[], menuDirty[]
     menuDirty  [ 0 ] = '^0';
     noneOption [ 0 ] = '^0';
     isToShowUndo     = ( player_id > 0 \
-                         && g_voteShowNoneOptionType == CONVERT_IT_TO_CANCEL_LAST_VOTE \
+                         && g_voteShowNoneOptionType == NONE_OPTION_CONVERT_IT_TO_CANCEL_LAST_VOTE \
                          && g_isPlayerVoted[ player_id ] \
                          && !g_isPlayerCancelledVote[ player_id ] );
     
@@ -5754,7 +5786,7 @@ stock computeUndoButton( player_id, bool:isToShowUndo, bool:isVoteOver, noneOpti
         {
             switch( g_voteShowNoneOptionType )
             {
-                case HIDE_AFTER_USER_VOTE:
+                case NONE_OPTION_HIDE_AFTER_USER_VOTE:
                 {
                     if( g_isPlayerVoted[ player_id ] )
                     {
@@ -5766,7 +5798,7 @@ stock computeUndoButton( player_id, bool:isToShowUndo, bool:isVoteOver, noneOpti
                                 COLOR_RED, COLOR_WHITE, player_id, "GAL_OPTION_NONE" );
                     }
                 }
-                case ALWAYS_KEEP_SHOWING, CONVERT_IT_TO_CANCEL_LAST_VOTE:
+                case NONE_OPTION_ALWAYS_KEEP_SHOWING, NONE_OPTION_CONVERT_IT_TO_CANCEL_LAST_VOTE:
                 {
                     formatex( noneOption, noneOptionSize, "%s0. %s%L",
                             COLOR_RED, COLOR_WHITE, player_id, "GAL_OPTION_NONE" );
@@ -5790,7 +5822,7 @@ stock calculate_menu_clean( player_id, menuClean[], menuCleanSize )
     menuClean  [ 0 ] = '^0';
     noneOption [ 0 ] = '^0';
     isToShowUndo     = ( player_id > 0 \
-                         && g_voteShowNoneOptionType == CONVERT_IT_TO_CANCEL_LAST_VOTE \
+                         && g_voteShowNoneOptionType == NONE_OPTION_CONVERT_IT_TO_CANCEL_LAST_VOTE \
                          && g_isPlayerVoted[ player_id ] \
                          && !g_isPlayerCancelledVote[ player_id ] );
     
@@ -5888,7 +5920,7 @@ public vote_handleChoice( player_id, key )
     }
     else if( key == 9
              && !g_isPlayerCancelledVote[ player_id ]
-             && g_voteShowNoneOptionType == CONVERT_IT_TO_CANCEL_LAST_VOTE
+             && g_voteShowNoneOptionType == NONE_OPTION_CONVERT_IT_TO_CANCEL_LAST_VOTE
              && g_isToShowNoneOption )
     {
         cancel_player_vote( player_id );
@@ -7019,7 +7051,7 @@ public map_listAll( player_id )
                 // start them off there, otherwise, start them at 1
                 if( lastMapDisplayed[ player_id ][ LISTMAPS_USERID ] )
                 {
-                    start = lastMapDisplayed[ player_id ][ LISTMAPS_LAST ] + 1;
+                    start = lastMapDisplayed[ player_id ][ LISTMAPS_LAST_MAP ] + 1;
                 }
                 else
                 {
@@ -7062,7 +7094,7 @@ public map_listAll( player_id )
     }
     
     // this enables us to use 'command *' to get the next group of maps, when paginated
-    lastMapDisplayed[ player_id ][ LISTMAPS_LAST ]   = end - 1;
+    lastMapDisplayed[ player_id ][ LISTMAPS_LAST_MAP ]   = end - 1;
     lastMapDisplayed[ player_id ][ LISTMAPS_USERID ] = userid;
     
     console_print( player_id, "^n----- %L -----", player_id, "GAL_LISTMAPS_TITLE", g_nominationMapCount );
