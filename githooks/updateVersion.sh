@@ -118,7 +118,7 @@ then
     # Replace the file with the $versionFilePath with the $currentVersion.
     echo $currentVersion > $versionFilePath
 else
-    echo "ERRO! Could not replace the version v$originalVersion -> v$currentVersion in '$filePathToUpdate'"
+    echo "ERROR! Could not replace the version v$originalVersion -> v$currentVersion in '$filePathToUpdate'"
     exit 1
 fi
 
