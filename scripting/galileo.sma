@@ -30,7 +30,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.0-236";
+new const PLUGIN_VERSION[] = "v3.2.0-237";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -71,7 +71,7 @@ new const PLUGIN_VERSION[] = "v3.2.0-236";
  * 
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+16+2
+#define DEBUG_LEVEL 0//1+16+2
 
 
 
@@ -227,14 +227,13 @@ new const PLUGIN_VERSION[] = "v3.2.0-236";
      * @see the stock 'setTestFailure(3)'.
      */
     #define SET_TEST_FAILURE(%1) \
-    do \
     { \
         if( setTestFailure( %1 ) ) \
         { \
             LOGGER( 1, "    ( SET_TEST_FAILURE ) Just returning/bloking." ) \
             return; \
         } \
-    } while( g_dummy_value );
+    }
     
     /**
      * Write debug messages to server's console and log file.
@@ -434,10 +433,7 @@ new const PLUGIN_VERSION[] = "v3.2.0-236";
  * Start a map voting delayed after the mp_maxrounds or mp_winlimit minimum to be reached.
  */
 #define VOTE_START_ROUND_DELAY() \
-do \
-{ \
     set_task( VOTE_ROUND_START_SECONDS_DELAY(), "start_voting_by_rounds", TASKID_START_VOTING_BY_ROUNDS ); \
-} while( g_dummy_value )
 //
 
 /**
@@ -475,20 +471,20 @@ do \
       && get_pcvar_num( cvar_nomMinPlayersControl ) )
 //
 
+
+
 /**
  * Convert colored strings codes '!g for green', '!y for yellow', '!t for team'.
  *
  * @param string[]       a string pointer to be converted.
  */
 #define INSERT_COLOR_TAGS(%1) \
-do \
 { \
     replace_all( %1, charsmax( %1 ), "!g", "^4" ); \
     replace_all( %1, charsmax( %1 ), "!t", "^3" ); \
     replace_all( %1, charsmax( %1 ), "!n", "^1" ); \
     replace_all( %1, charsmax( %1 ), "!y", "^1" ); \
-} while( g_dummy_value )
-//
+}
 
 /**
  * Remove the colored strings codes '^4 for green', '^1 for yellow', '^3 for team' and
@@ -497,14 +493,12 @@ do \
  * @param string[]       a string pointer to be formatted.
  */
 #define REMOVE_CODE_COLOR_TAGS(%1) \
-do \
 { \
     replace_all( %1, charsmax( %1 ), "^4", "" ); \
     replace_all( %1, charsmax( %1 ), "^3", "" ); \
     replace_all( %1, charsmax( %1 ), "^2", "" ); \
     replace_all( %1, charsmax( %1 ), "^1", "" ); \
-} while( g_dummy_value )
-//
+}
 
 /**
  * Remove the colored strings codes '!g for green', '!y for yellow', '!t for team' and
@@ -513,14 +507,12 @@ do \
  * @param string[]       a string pointer to be formatted.
  */
 #define REMOVE_LETTER_COLOR_TAGS(%1) \
-do \
 { \
     replace_all( %1, charsmax( %1 ), "!g", "" ); \
     replace_all( %1, charsmax( %1 ), "!t", "" ); \
     replace_all( %1, charsmax( %1 ), "!n", "" ); \
     replace_all( %1, charsmax( %1 ), "!y", "" ); \
-} while( g_dummy_value )
-//
+}
 
 /**
  * Print to the users chat, a colored chat message.
@@ -531,14 +523,12 @@ do \
  *                      "^1Hi! I am a ^3 colored message".
  */
 #define PRINT_COLORED_MESSAGE(%1,%2) \
-do \
 { \
     message_begin( MSG_ONE_UNRELIABLE, g_user_msgid, _, %1 ); \
     write_byte( %1 ); \
     write_string( %2 ); \
     message_end(); \
-} while( g_dummy_value )
-//
+}
 
 /**
  * Get the player name. If the player is not connected, uses "Unknown Dude" as its name.
@@ -547,7 +537,6 @@ do \
  * @param name_string        a string pointer to hold the player name.
  */
 #define GET_USER_NAME(%1,%2) \
-do \
 { \
     if( is_user_connected( %1 ) ) \
     { \
@@ -557,8 +546,7 @@ do \
     { \
         copy( %2, charsmax( %2 ), "Unknown Dude" ); \
     } \
-} while( g_dummy_value )
-//
+}
 
 /**
  * Helper to adjust the menus options 'back', 'next' and exit. This requires prior definition of
@@ -570,12 +558,10 @@ do \
  * @param langConstantName        the dictionary registered LANG constant
  */
 #define SET_MENU_PROPERTY(%1,%2,%3) \
-do \
 { \
     formatex( menuOptionString, charsmax( menuOptionString ), "%L", player_id, %3 ); \
     menu_setprop( %2, %1, menuOptionString ); \
-} while( g_dummy_value )
-//
+}
 
 /**
  * General handler to assist object property applying and keep the code clear. This only need
@@ -586,23 +572,20 @@ do \
  * @param objectIndentifation     the object identification number to be destroyed.
  */
 #define TRY_TO_APPLY(%1,%2) \
-do \
 { \
     LOGGER( 128, "I AM ENTERING ON TRY_TO_APPLY(2) | objectIndentifation: %d", %2 ) \
     if( %2 ) \
     { \
         %1( %2 ); \
     } \
-} while( g_dummy_value )
-//
+}
+
 
 
 /**
- * Dummy value used to use the do...while() statements to allow the semicolon ';' use at macros endings.
+ * Dummy value used on conditional statements to allow statements as always true or false.
  */
 new const bool:g_dummy_value = false;
-
-
 
 /**
  * Task ids are 100000 apart.
@@ -1997,7 +1980,7 @@ public map_writeRecentList()
         fclose( recentMapsFile );
     }
     
-    TRY_TO_APPLY( TrieDestroy, mapCycleMapsTrie );
+    TRY_TO_APPLY( TrieDestroy, mapCycleMapsTrie )
 }
 
 public team_win_event()
@@ -2031,7 +2014,7 @@ public team_win_event()
             && !IS_END_OF_MAP_VOTING_GOING_ON() )
         {
             g_isMaxroundsExtend = false;
-            VOTE_START_ROUND_DELAY();
+            VOTE_START_ROUND_DELAY()
         }
     }
     
@@ -2143,7 +2126,7 @@ public round_end_event()
             && !IS_END_OF_MAP_VOTING_GOING_ON() )
         {
             g_isMaxroundsExtend = true;
-            VOTE_START_ROUND_DELAY();
+            VOTE_START_ROUND_DELAY()
         }
     }
     
@@ -2224,14 +2207,14 @@ public show_last_round_HUD()
             formatex( last_round_message, charsmax( last_round_message ), "%L ^n%L",
                     player_id, "GAL_CHANGE_NEXTROUND",  player_id, "GAL_NEXTMAP", g_nextMap );
             
-            REMOVE_CODE_COLOR_TAGS( last_round_message );
+            REMOVE_CODE_COLOR_TAGS( last_round_message )
             show_hudmessage( player_id, last_round_message );
         }
     #else
         formatex( last_round_message, charsmax( last_round_message ), "%L ^n%L",
                 LANG_PLAYER, "GAL_CHANGE_NEXTROUND",  LANG_PLAYER, "GAL_NEXTMAP", g_nextMap );
         
-        REMOVE_CODE_COLOR_TAGS( last_round_message );
+        REMOVE_CODE_COLOR_TAGS( last_round_message )
         show_hudmessage( 0, last_round_message );
     #endif
     }
@@ -2245,13 +2228,13 @@ public show_last_round_HUD()
             player_id = players[ playerIndex ];
             formatex( last_round_message, charsmax( last_round_message ), "%L", player_id, "GAL_CHANGE_TIMEEXPIRED" );
             
-            REMOVE_CODE_COLOR_TAGS( last_round_message );
+            REMOVE_CODE_COLOR_TAGS( last_round_message )
             show_hudmessage( player_id, last_round_message );
         }
     #else
         formatex( last_round_message, charsmax( last_round_message ), "%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED" );
         
-        REMOVE_CODE_COLOR_TAGS( last_round_message );
+        REMOVE_CODE_COLOR_TAGS( last_round_message )
         show_hudmessage( 0, last_round_message );
     #endif
     }
@@ -2490,7 +2473,6 @@ stock restoreRoundEnding( bool:roundEndStatus[] )
  * @param limiterOffset           the current game limit as an integer. Example: 'map_getMinutesElapsedInteger(0)'.
  */
 #define CALCULATE_NEW_GAME_LIMIT(%1,%2,%3) \
-do \
 { \
     serverLimiterValue = get_pcvar_num( %1 ); \
     if( serverLimiterValue ) \
@@ -2506,7 +2488,7 @@ do \
             } \
         } \
     } \
-} while( g_dummy_value )
+}
 
 public resetRoundsScores()
 {
@@ -2518,10 +2500,10 @@ public resetRoundsScores()
     
     new serverLimiterValue;
     
-    CALCULATE_NEW_GAME_LIMIT( cvar_serverTimeLimitRestart, cvar_mp_timelimit, map_getMinutesElapsedInteger() );
-    CALCULATE_NEW_GAME_LIMIT( cvar_serverWinlimitRestart, cvar_mp_winlimit, max( g_totalTerroristsWins, g_totalCtWins ) );
-    CALCULATE_NEW_GAME_LIMIT( cvar_serverMaxroundsRestart, cvar_mp_maxrounds, g_roundsPlayedNumber );
-    CALCULATE_NEW_GAME_LIMIT( cvar_serverFraglimitRestart, cvar_mp_fraglimit, g_greatestKillerFrags );
+    CALCULATE_NEW_GAME_LIMIT( cvar_serverTimeLimitRestart, cvar_mp_timelimit, map_getMinutesElapsedInteger() )
+    CALCULATE_NEW_GAME_LIMIT( cvar_serverWinlimitRestart, cvar_mp_winlimit, max( g_totalTerroristsWins, g_totalCtWins ) )
+    CALCULATE_NEW_GAME_LIMIT( cvar_serverMaxroundsRestart, cvar_mp_maxrounds, g_roundsPlayedNumber )
+    CALCULATE_NEW_GAME_LIMIT( cvar_serverFraglimitRestart, cvar_mp_fraglimit, g_greatestKillerFrags )
     
     // Reset the plugin internal limiter counters.
     g_totalTerroristsWins = 0;
@@ -2591,16 +2573,16 @@ public cmd_listrecent( player_id )
             new menuOptionString[ 64 ];
             
             // We starting building the menu
-            TRY_TO_APPLY( menu_destroy, g_generalUsePlayersMenuIds[ player_id ] );
+            TRY_TO_APPLY( menu_destroy, g_generalUsePlayersMenuIds[ player_id ] )
             
             // To create the menu
             formatex( menuOptionString, charsmax( menuOptionString ), "%L", player_id, "GAL_MAP_RECENTMAPS" );
             g_generalUsePlayersMenuIds[ player_id ] = menu_create( menuOptionString, "cmd_listrecent_handler" );
             
             // Configure the menu buttons.
-            SET_MENU_PROPERTY( MPROP_EXITNAME, g_generalUsePlayersMenuIds[ player_id ], "EXIT" );
-            SET_MENU_PROPERTY( MPROP_NEXTNAME, g_generalUsePlayersMenuIds[ player_id ], "MORE" );
-            SET_MENU_PROPERTY( MPROP_BACKNAME, g_generalUsePlayersMenuIds[ player_id ], "BACK" );
+            SET_MENU_PROPERTY( MPROP_EXITNAME, g_generalUsePlayersMenuIds[ player_id ], "EXIT" )
+            SET_MENU_PROPERTY( MPROP_NEXTNAME, g_generalUsePlayersMenuIds[ player_id ], "MORE" )
+            SET_MENU_PROPERTY( MPROP_BACKNAME, g_generalUsePlayersMenuIds[ player_id ], "BACK" )
             
             // Add the menu items.
             for( new mapIndex = 0; mapIndex < g_recentMapCount; ++mapIndex )
@@ -2988,9 +2970,9 @@ stock buildTheNominationsMenu( player_id )
     menu_addblank( g_generalUsePlayersMenuIds[ player_id ], 0 );
     
     // Configure the menu buttons.
-    SET_MENU_PROPERTY( MPROP_EXITNAME, g_generalUsePlayersMenuIds[ player_id ], "EXIT" );
-    SET_MENU_PROPERTY( MPROP_NEXTNAME, g_generalUsePlayersMenuIds[ player_id ], "MORE" );
-    SET_MENU_PROPERTY( MPROP_BACKNAME, g_generalUsePlayersMenuIds[ player_id ], "BACK" );
+    SET_MENU_PROPERTY( MPROP_EXITNAME, g_generalUsePlayersMenuIds[ player_id ], "EXIT" )
+    SET_MENU_PROPERTY( MPROP_NEXTNAME, g_generalUsePlayersMenuIds[ player_id ], "MORE" )
+    SET_MENU_PROPERTY( MPROP_BACKNAME, g_generalUsePlayersMenuIds[ player_id ], "BACK" )
 }
 
 /**
@@ -3289,7 +3271,7 @@ stock clearMenuMapIndexForPlayers( player_id, isToDestroyEverything = false )
     {
         if( isToDestroyEverything )
         {
-            TRY_TO_APPLY( ArrayDestroy, g_menuMapIndexForPlayerArrays[ player_id ] );
+            TRY_TO_APPLY( ArrayDestroy, g_menuMapIndexForPlayerArrays[ player_id ] )
         }
         else
         {
@@ -3561,7 +3543,7 @@ stock nomination_cancel( player_id, mapIndex )
         {
             new player_name[ MAX_PLAYER_NAME_LENGHT ];
             
-            GET_USER_NAME( nominatorPlayerId, player_name );
+            GET_USER_NAME( nominatorPlayerId, player_name )
             color_print( player_id, "%L", player_id, "GAL_CANCEL_FAIL_SOMEONEELSE", mapName, player_name );
         }
         else
@@ -3702,7 +3684,7 @@ stock map_nominate( player_id, mapIndex, nominatorPlayerId = -1 )
     else
     {
         new player_name[ MAX_PLAYER_NAME_LENGHT ];
-        GET_USER_NAME( nominatorPlayerId, player_name );
+        GET_USER_NAME( nominatorPlayerId, player_name )
         
         color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_SOMEONEELSE", mapName, player_name );
         color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_SOMEONEELSE_HLP" );
@@ -3801,7 +3783,7 @@ stock map_populateList( Array:mapArray, mapFilePath[], mapFilePathMaxChars, Trie
     
     // clear the map array in case we're reusing it
     ArrayClear( mapArray );
-    TRY_TO_APPLY( TrieClear, fillerMapTrie );
+    TRY_TO_APPLY( TrieClear, fillerMapTrie )
     
     if( !equal( mapFilePath, "*" )
         && !equal( mapFilePath, "#" ) )
@@ -4693,7 +4675,7 @@ stock processLoadedMapsFile( groupCount, maxMapsPerGroupToUse[], fillersFilePath
         
     } // end 'for groupIndex < groupCount'
     
-    TRY_TO_APPLY( TrieDestroy, blockedFillersMapTrie );
+    TRY_TO_APPLY( TrieDestroy, blockedFillersMapTrie )
 } // end processLoadedMapsFile(7)
 
 stock vote_addFillers( blockedMapsBuffer[], &announcementShowedTimes = 0 )
@@ -4789,7 +4771,7 @@ stock vote_addNominations( blockedMapsBuffer[], &announcementShowedTimes = 0 )
                     ArrayGetString( g_nominationMapsArray, mapIndex, mapName, charsmax( mapName ) );
                     
                     nominator_id = nomination_getPlayer( mapIndex );
-                    GET_USER_NAME( nominator_id, playerName );
+                    GET_USER_NAME( nominator_id, playerName )
                     
                     LOGGER( 4, "      %-32s %s", mapName, playerName )
                 }
@@ -4843,7 +4825,7 @@ stock vote_addNominations( blockedMapsBuffer[], &announcementShowedTimes = 0 )
             
         } // end nomination's players looking
         
-        TRY_TO_APPLY( TrieDestroy, whitelistMapTrie );
+        TRY_TO_APPLY( TrieDestroy, whitelistMapTrie )
         
     } // end if nominations
     
@@ -4934,7 +4916,7 @@ stock flushVoteBlockedMaps( blockedMapsBuffer[], flushAnnouncement[], &announcem
         }
         
     #if IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES > 0
-        REMOVE_CODE_COLOR_TAGS( blockedMapsBuffer );
+        REMOVE_CODE_COLOR_TAGS( blockedMapsBuffer )
     #endif
         color_print( 0, "%L", LANG_PLAYER, "GAL_MATCHING", blockedMapsBuffer[ 3 ] );
         
@@ -5856,7 +5838,7 @@ stock display_vote_menu( bool:menuType, player_id, menuBody[], menuKeys )
     {
         new player_name[ MAX_PLAYER_NAME_LENGHT ];
         
-        GET_USER_NAME( player_id, player_name );
+        GET_USER_NAME( player_id, player_name )
         
         LOGGER( 4, "    [%s ( %s )]", player_name, ( menuType ? "clean" : "dirty" ) )
         LOGGER( 4, "        %s", menuBody )
@@ -6001,7 +5983,7 @@ stock announceRegistedVote( player_id, pressedKeyCode )
     
     if( isToAnnounceChoice )
     {
-        GET_USER_NAME( player_id, player_name );
+        GET_USER_NAME( player_id, player_name )
     }
     
     // confirm the player's choice (pressedKeyCode = 9 means 0 on the keyboard, 8 is 7, etc)
@@ -7099,7 +7081,7 @@ public map_listAll( player_id )
         
         if( nominator_id )
         {
-            GET_USER_NAME( nominator_id, player_name );
+            GET_USER_NAME( nominator_id, player_name )
             formatex( nominated, charsmax( nominated ), "%L", player_id, "GAL_NOMINATEDBY", player_name );
         }
         else
@@ -7138,7 +7120,7 @@ stock no_color_print( const player_id, const message[], any:... )
     new formated_message[ MAX_COLOR_MESSAGE ];
     
     vformat( formated_message, charsmax( formated_message ), message, 3 );
-    REMOVE_CODE_COLOR_TAGS( formated_message );
+    REMOVE_CODE_COLOR_TAGS( formated_message )
     
     console_print( player_id, formated_message );
 }
@@ -7460,7 +7442,7 @@ stock map_announceNomination( player_id, map[] )
     LOGGER( 128, "I AM ENTERING ON map_announceNomination(2) | player_id: %d, map: %s", player_id, map )
     new player_name[ MAX_PLAYER_NAME_LENGHT ];
     
-    GET_USER_NAME( player_id, player_name );
+    GET_USER_NAME( player_id, player_name )
     color_print( 0, "%L", LANG_PLAYER, "GAL_NOM_SUCCESS", player_name, map );
 }
 
@@ -7611,14 +7593,14 @@ stock color_print( const player_id, const message[], any:... )
                 vformat( formated_message[ 1 ], charsmax( formated_message ) - 1, message, 3 );
                 
                 LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
-                PRINT_COLORED_MESSAGE( player_id, formated_message );
+                PRINT_COLORED_MESSAGE( player_id, formated_message )
             }
             else
             {
                 vformat( formated_message, charsmax( formated_message ), message, 3 );
                 LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
                 
-                REMOVE_CODE_COLOR_TAGS( formated_message );
+                REMOVE_CODE_COLOR_TAGS( formated_message )
                 client_print( player_id, print_chat, formated_message );
             }
         #endif
@@ -7727,14 +7709,14 @@ stock color_print( const player_id, const message[], any:... )
                     vformat( formated_message[ 1 ], charsmax( formated_message ) - 1, message, 3 );
                     
                     LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
-                    PRINT_COLORED_MESSAGE( player_id, formated_message );
+                    PRINT_COLORED_MESSAGE( player_id, formated_message )
                 }
                 else
                 {
                     vformat( formated_message, charsmax( formated_message ), message, 3 );
                     LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
                     
-                    REMOVE_CODE_COLOR_TAGS( formated_message );
+                    REMOVE_CODE_COLOR_TAGS( formated_message )
                     client_print( player_id, print_chat, formated_message );
                 }
             #endif
@@ -7754,7 +7736,7 @@ stock color_print( const player_id, const message[], any:... )
         }
         else
         {
-            REMOVE_CODE_COLOR_TAGS( formated_message );
+            REMOVE_CODE_COLOR_TAGS( formated_message )
             client_print( player_id, print_chat, formated_message );
         }
     #endif
@@ -7824,9 +7806,9 @@ stock register_dictionary_colored( const dictionaryFile[] )
             if( translationKeyId != TransKey_Bad )
             {
             #if IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES > 0
-                REMOVE_LETTER_COLOR_TAGS( langTranslationText );
+                REMOVE_LETTER_COLOR_TAGS( langTranslationText )
             #else
-                INSERT_COLOR_TAGS( langTranslationText );
+                INSERT_COLOR_TAGS( langTranslationText )
             #endif
                 
                 LOGGER( 0, "lang: %s, Id: %d, Text: %s", langTypeAcronym, translationKeyId, langTranslationText )
@@ -7955,10 +7937,10 @@ public plugin_end()
     
     // Clean the unit tests data
 #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
-    TRY_TO_APPLY( ArrayDestroy, g_test_idsAndNamesArray );
-    TRY_TO_APPLY( ArrayDestroy, g_test_failureIdsArray );
-    TRY_TO_APPLY( ArrayDestroy, g_test_failureReasonsArray );
-    TRY_TO_APPLY( TrieDestroy, g_test_failureIdsTrie );
+    TRY_TO_APPLY( ArrayDestroy, g_test_idsAndNamesArray )
+    TRY_TO_APPLY( ArrayDestroy, g_test_failureIdsArray )
+    TRY_TO_APPLY( ArrayDestroy, g_test_failureReasonsArray )
+    TRY_TO_APPLY( TrieDestroy, g_test_failureIdsTrie )
 #endif
     
     map_restoreEndGameCvars();
@@ -7966,19 +7948,19 @@ public plugin_end()
     
     // Clear Dynamic Arrays
     // ############################################################################################
-    TRY_TO_APPLY( ArrayDestroy, g_emptyCycleMapsArray );
-    TRY_TO_APPLY( ArrayDestroy, g_fillerMapsArray );
-    TRY_TO_APPLY( ArrayDestroy, g_nominationMapsArray );
-    TRY_TO_APPLY( ArrayDestroy, g_recentListMapsArray );
-    TRY_TO_APPLY( ArrayDestroy, g_whitelistArray );
+    TRY_TO_APPLY( ArrayDestroy, g_emptyCycleMapsArray )
+    TRY_TO_APPLY( ArrayDestroy, g_fillerMapsArray )
+    TRY_TO_APPLY( ArrayDestroy, g_nominationMapsArray )
+    TRY_TO_APPLY( ArrayDestroy, g_recentListMapsArray )
+    TRY_TO_APPLY( ArrayDestroy, g_whitelistArray )
     
     // Clear Dynamic Tries
     // ############################################################################################
-    TRY_TO_APPLY( TrieDestroy, g_playersNominationsTrie );
-    TRY_TO_APPLY( TrieDestroy, g_nominationMapsTrie );
-    TRY_TO_APPLY( TrieDestroy, g_recentMapsTrie );
-    TRY_TO_APPLY( TrieDestroy, g_blackListTrieForWhiteList );
-    TRY_TO_APPLY( TrieDestroy, g_whitelistTrie );
+    TRY_TO_APPLY( TrieDestroy, g_playersNominationsTrie )
+    TRY_TO_APPLY( TrieDestroy, g_nominationMapsTrie )
+    TRY_TO_APPLY( TrieDestroy, g_recentMapsTrie )
+    TRY_TO_APPLY( TrieDestroy, g_blackListTrieForWhiteList )
+    TRY_TO_APPLY( TrieDestroy, g_whitelistTrie )
     
     // Clear the dynamic array menus, just to be sure.
     for( new currentIndex = 0; currentIndex < MAX_PLAYERS_COUNT; ++currentIndex )
