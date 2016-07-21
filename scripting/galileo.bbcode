@@ -825,12 +825,12 @@ gal_colored_chat_enabled 1
 
  [*] To ask the players before the voting begins, if they [B]want to[/B] participate the map
      voting [COLOR="blue"]to decide[/COLOR] which next map will be played. See the cvar 'gal_endofmapvote_ask'.
-
-
+     
+     
  [*] After the user voted, transform the '[B]0 - None[/B]' option to an '[COLOR="blue"]one time cancel[/COLOR]' vote
      opportunity, configured by cvar.
-
-
+     
+     
  [*] If you are using only '[B]mp_timelimit[/B]' the map extension will be in minutes.
      If you are using '[B]mp_maxrounds[/B]/[B]mp_winlimit[/B]' the map extension will be in rounds.
      If you are using both '[B]mp_timelimit[/B]/[B]mp_maxrounds[/B]/[B]mp_winlimit[/B]', it gives you the
@@ -838,12 +838,12 @@ gal_colored_chat_enabled 1
      and [COLOR="Blue"]10 rounds[/COLOR] remaining. It will give you by minutes, and not by rounds. And to avoid
      re-voting when those [COLOR="Blue"]10 rounds[/COLOR] end up, it will [COLOR="Blue"]temporarily[/COLOR] disables the rounds voting
      when the remaining rounds end up.
-
-
+     
+     
  [*] Command '[COLOR="Blue"][B]gal_startvote -nochange or -restart[/B][/COLOR]', to forces a map vote to begin
      and the map will be changed once the next map has been determined.
-
-
+     
+     
             [LIST]
             [*]If the "[COLOR="blue"][B]-nochange[/B][/COLOR]" argument is supplied, the map will not be changed by
             [COLOR="Blue"]Galileo[/COLOR], which is useful when you have a different plugin handling the actual
@@ -854,13 +854,42 @@ gal_colored_chat_enabled 1
             the current map is restarted. This command is for the "[URL="https://forums.alliedmods.net/showthread.php?t=273020"]Multi-Mod Manager[/URL]"
             plugin.
             [/LIST]
-
-
+            
+            
  [*] Command '[COLOR="Blue"][B]gal_createmapfile filename[/B][/COLOR]', Creates a file that contains a list of every
      valid map in your maps folder. The [B]filename[/B] argument indicates specifies the name
      to be used for the new file.  It will be created in the [COLOR="Blue"][B]./configs/galileo/[/B][/COLOR] folder.
-
-
+     
+     
+ [*] [COLOR="Blue"][B]The Maintenance Mode[/B][/COLOR]:
+     If the owner of the server is fixing something or updating the server and doesn't wanna the map
+     to be changed, he will enable the maintenance command '[B]gal_command_maintenance[/B]', so the map
+     can't be changed by any method like gal_startvote/rtv/timeleft or maxrounds ended... and will displayed
+     a print chat with something like that: You cannot change the map when the server is in mode maintenance.
+     
+     
+ [*] [COLOR="Blue"][B]New Recent Maps List[/B][/COLOR]:
+     Maps are commonly repeated on the vote and there is no chance for all of them. Hence on server
+     to get to play on, you need the use the '[B]gal_banrecent[/B]' to ban these 1000+ maps. Because of this,
+     players can't nominate maps for few days. [COLOR="Red"]The proposition[/COLOR] is adding a file to the plugin, in which
+     will save map history and a bunch of recent maps won't be able to get automatically displayed on
+     the voting menu, but still be able to get nominated.
+     
+     This is automatically done, it will not allow to repeat maps on the voting list until all them to be
+     showed at least once. The cvar '[B]gal_recent_nom_maps[/B]' control whether this feature is activated
+     or not. See it on the 'galileo.cfg' file.
+     
+     When the banned maps list is bigger than all maps on the server, what happens?
+     It stops counting/using the recent banned list maps and randonly to start adding banned maps.
+     
+     
+ [*] [COLOR="Blue"][B]The Half-File cvar 'mp_fraglimit' Support[/B][/COLOR]:
+     Enable virtual support for the [COLOR="Blue"]Half-File[/COLOR] cvar '[B]mp_fraglimit[/B]' on game modes as '[COLOR="Red"]Counter-Strike[/COLOR]' which
+     do not support the cvar 'mp_fraglimit'. You need to configure the 'mp_fraglimit' as you configure the
+     'mp_timelimit' cvar on you 'server.cfg' file. See the cvar '[B]gal_mp_fraglimit_support[/B]' on the 
+     'galileo.cfg' configuration file.
+     
+     
  [*] [COLOR="Blue"][B]The Map Groups Feature[/B][/COLOR]:
      It uses whatever file you have set in the cvar '[B]gal_vote_mapfile[/B]'. Normally, in that
      file you would just have a listing of maps, one per line. But to use the groups feature,
@@ -891,7 +920,7 @@ gal_colored_chat_enabled 1
 1
 7
      [/CODE]This maps groups configuration means to load [COLOR="red"]up to 1 map[/COLOR] from the file '[B]1.ini[/B]'
-     (1st line after [groups]) and [COLOR="red"]up to 7 maps[/COLOR] from '[B]2.ini[/B]' (2nd line after [groups]).
+     (1st line after [B][groups][/B]) and [COLOR="red"]up to 7 maps[/COLOR] from '[B]2.ini[/B]' (2nd line after [B][groups][/B]).
 
      Then you only need to create the files '[B]1.ini[/B]' and '[B]2.ini[/B]' in the '[B]./configs/galileo/[/B]'
      folder. And in the file '[B]1.ini[/B]' you put only the '[COLOR="Blue"]de_dust2[/COLOR]' map, and in the file '[B]2.ini[/B]'
@@ -902,8 +931,8 @@ gal_colored_chat_enabled 1
      nominations and none of them is '[COLOR="blue"]de_dust2[/COLOR]'. The map '[COLOR="Blue"]de_dust2[/COLOR]' will not be loaded
      on this case because the maximum maps available on any voting is [COLOR="Blue"][B]1 + 7 = 8[/B][/COLOR].
      And as the map nominations are loaded before filling the map voting list using the
-     map fillers from your map groups files '[B]1.ini[/B]' (1st line after [groups]) and '[B]2.ini[/B]'
-     (2nd line after [groups]), the map '[COLOR="blue"]de_dust2[/COLOR]' will not be added because there is not
+     map fillers from your map groups files '[B]1.ini[/B]' (1st line after [B][groups][/B]) and '[B]2.ini[/B]'
+     (2nd line after [B][groups][/B]), the map '[COLOR="blue"]de_dust2[/COLOR]' will not be added because there is not
      enough space.
      
      
@@ -968,35 +997,6 @@ de_inferno
      Now [1-22] stands for from 1:00:00 until 22:59:59.
      Now [0-23] stands for from 0:00:00 until 23:59:59.
      And so on...
-     
-     
- [*] [COLOR="Blue"][B]The Maintenance Mode[/B][/COLOR]:
-     If the owner of the server is fixing something or updating the server and doesn't wanna the map
-     to be changed, he will enable the maintenance command '[B]gal_command_maintenance[/B]', so the map
-     can't be changed by any method like gal_startvote/rtv/timeleft or maxrounds ended... and will displayed
-     a print chat with something like that: You cannot change the map when the server is in mode maintenance.
-     
-     
- [*] [COLOR="Blue"][B]New Recent Maps List[/B][/COLOR]:
-     Maps are commonly repeated on the vote and there is no chance for all of them. Hence on server
-     to get to play on, you need the use the '[B]gal_banrecent[/B]' to ban these 1000+ maps. Because of this,
-     players can't nominate maps for few days. [COLOR="Red"]The proposition[/COLOR] is adding a file to the plugin, in which
-     will save map history and a bunch of recent maps won't be able to get automatically displayed on
-     the voting menu, but still be able to get nominated.
-     
-     This is automatically done, it will not allow to repeat maps on the voting list until all them to be
-     showed at least once. The cvar '[B]gal_recent_nom_maps[/B]' control whether this feature is activated
-     or not. See it on the 'galileo.cfg' file.
-     
-     When the banned maps list is bigger than all maps on the server, what happens?
-     It stops counting/using the recent banned list maps and randonly to start adding banned maps.
-     
-     
- [*] [COLOR="Blue"][B]The Half-File cvar 'mp_fraglimit' Support[/B][/COLOR]:
-     Enable virtual support for the [COLOR="Blue"]Half-File[/COLOR] cvar '[B]mp_fraglimit[/B]' on game modes as '[COLOR="Red"]Counter-Strike[/COLOR]' which
-     do not support the cvar 'mp_fraglimit'. You need to configure the 'mp_fraglimit' as you configure the
-     'mp_timelimit' cvar on you 'server.cfg' file. See the cvar '[B]gal_mp_fraglimit_support[/B]' on the 
-     'galileo.cfg' configuration file.
 [/LIST]
 [/QUOTE]
 
@@ -1778,7 +1778,7 @@ v2.6                 (Galileo-2.6.zip - 299 views   -  91.1 KB)
 
 [anchor]LatestRelease[/anchor]******************************** [SIZE="6"][B][COLOR="Blue"]Latest Release Download[/COLOR][/B][/SIZE]: [goanchor=Top]Go to top[/goanchor] **
 [SIZE="1"]
-* Click [URL="https://github.com/addonszz/Galileo/blob/develop/scripting/galileo.sma"][B]here[/B][/URL] to see its main source code file 'galileo.sma'.
+* Click [URL="https://github.com/addonszz/Galileo/blob/develop/scripting/galileo.sma"]here[/URL] to see its main source code file 'galileo.sma'.
 And [URL="https://github.com/addonszz/Galileo/commits/develop"]here[/URL] to see what is changed/new on it.
 ___________________________________________________________________________________________________________________________________[/SIZE]
 
