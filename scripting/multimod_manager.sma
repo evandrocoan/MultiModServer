@@ -73,7 +73,7 @@ new const PLUGIN_AUTHOR_NAME[] = "Addons zz"
 
 #define TASK_VOTEMOD      2487002
 #define TASK_CHVOMOD      2487004
-#define TASKIS_PRINT_HELP 648215
+#define TASKID_PRINT_HELP 648215
 
 #define LONG_STRING   256
 #define COLOR_MESSAGE 192
@@ -398,11 +398,11 @@ public primitiveFunctions( player_id, firstCommand_lineArgument[], isTimeToResta
  */
 public printHelp( player_id )
 {
-    static formatted_string[ 32 ]
+    new formatted_string[ 32 ]
     
     if( player_id )
     {
-        player_id = player_id - TASKIS_PRINT_HELP
+        player_id = player_id - TASKID_PRINT_HELP
         
         new current_print_page_total      = g_current_print_page[ player_id ] * LINES_PER_PAGE
         g_current_print_page[ player_id ] = g_current_print_page[ player_id ] + 1
@@ -419,7 +419,7 @@ public printHelp( player_id )
                 DEBUG_LOGGER( 1, g_cmdsAvailables[ i ] )
             }
             
-            set_task( 1.0, "printHelp", player_id )
+            set_task( 1.0, "printHelp", player_id + TASKID_PRINT_HELP )
             return
         }
         
@@ -460,13 +460,13 @@ public printHelp( player_id )
                 if( internal_current_page_limit++ >= ( LINES_PER_PAGE - 1 )
                     && i < g_modCounter )
                 {
-                    set_task( 0.5, "printHelp", player_id + TASKIS_PRINT_HELP )
+                    set_task( 0.5, "printHelp", player_id + TASKID_PRINT_HELP )
                     break
                 }
             }
         }
         
-        // print the page bottom
+        // Resets the page number as we finished printing everything.
         if( current_print_page_total > g_modCounter )
         {
             g_current_print_page[ player_id ] = 0
@@ -498,7 +498,7 @@ public client_disconnect( player_id )
 public client_disconnected( player_id )
 #endif
 {
-    remove_task( player_id + TASKIS_PRINT_HELP )
+    remove_task( player_id + TASKID_PRINT_HELP )
 }
 
 /**
