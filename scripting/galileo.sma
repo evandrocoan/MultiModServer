@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.2-248";
+new const PLUGIN_VERSION[] = "v3.2.2-249";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -43,7 +43,7 @@ new const PLUGIN_VERSION[] = "v3.2.2-248";
 /**
  * Change this value from 0 to 1, to disable the colored text message (chat messages).
  */
-#define IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES 0
+#define IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES 1
 
 
 
@@ -330,7 +330,7 @@ new const PLUGIN_VERSION[] = "v3.2.2-248";
 /**
  * Register the color chat necessary variables, if it is enabled.
  */
-#if IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES == 0
+#if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
     new bool:g_isColorChatSupported;
     new bool:g_isColoredChatEnabled;
     
@@ -942,7 +942,7 @@ public plugin_init()
 #endif
     
     // Enables the colored chat control cvar.
-#if IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES == 0
+#if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
     cvar_coloredChatEnabled = register_cvar( "gal_colored_chat_enabled", "0", FCVAR_SPONLY );
 #endif
     
@@ -1086,7 +1086,7 @@ public plugin_cfg()
     /**
      * Register the color chat 'g_user_msgid' variable, if it is enabled.
      */
-#if IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES == 0
+#if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
 #if AMXX_VERSION_NUM < 183
     // If some exception happened before this, all color_print(...) messages will cause native
     // error 10, on the AMXX 182. It is because, the execution flow will not reach here, then
@@ -1135,7 +1135,7 @@ stock loadPluginSetttings()
     /**
      * If it is enabled, Load whether the color chat is supported by the current Game Modification.
      */
-#if IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES == 0
+#if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
     g_isColorChatSupported = ( is_running( "czero" )
                                || is_running( "cstrike" ) );
 #endif
@@ -1317,7 +1317,7 @@ public cacheCvarsValues()
     /**
      * If it is enabled, cache whether the coloring is enabled by its cvar.
      */
-#if IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES == 0
+#if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
     g_isColoredChatEnabled = get_pcvar_num( cvar_coloredChatEnabled ) != 0;
 #endif
     
@@ -4759,7 +4759,7 @@ stock flushVoteBlockedMaps( blockedMapsBuffer[], flushAnnouncement[], &announcem
             color_print( 0, "%L", LANG_PLAYER, flushAnnouncement, 0, 0 );
         }
         
-    #if IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES > 0
+    #if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES == 0
         REMOVE_CODE_COLOR_TAGS( blockedMapsBuffer )
     #endif
         color_print( 0, "%L", LANG_PLAYER, "GAL_MATCHING", blockedMapsBuffer[ 3 ] );
@@ -7610,7 +7610,7 @@ stock color_print( const player_id, const message[], any:... )
      * server language, instead of the player language. This is a AMXX 1.8.2 bug only. There is a
      * way to overcome this. It is to print a message to each player, as the colored print does.
      */
-#if IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES > 0 && AMXX_VERSION_NUM > 182
+#if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES == 0 && AMXX_VERSION_NUM > 182
     vformat( formated_message, charsmax( formated_message ), message, 3 );
     LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
     
@@ -7620,12 +7620,7 @@ stock color_print( const player_id, const message[], any:... )
     #if AMXX_VERSION_NUM < 183
         if( player_id )
         {
-        #if IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES > 0
-            vformat( formated_message, charsmax( formated_message ), message, 3 );
-            LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
-            
-            client_print( player_id, print_chat, formated_message );
-        #else
+        #if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
             if( g_isColorChatSupported
                 && g_isColoredChatEnabled )
             {
@@ -7643,6 +7638,11 @@ stock color_print( const player_id, const message[], any:... )
                 REMOVE_CODE_COLOR_TAGS( formated_message )
                 client_print( player_id, print_chat, formated_message );
             }
+        #else
+            vformat( formated_message, charsmax( formated_message ), message, 3 );
+            LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
+            
+            client_print( player_id, print_chat, formated_message );
         #endif
         }
         else
@@ -7736,12 +7736,7 @@ stock color_print( const player_id, const message[], any:... )
                     }
                 }
                 
-            #if IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES > 0
-                vformat( formated_message, charsmax( formated_message ), message, 3 );
-                LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
-                
-                client_print( player_id, print_chat, formated_message );
-            #else
+            #if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
                 if( g_isColorChatSupported
                     && g_isColoredChatEnabled )
                 {
@@ -7759,6 +7754,11 @@ stock color_print( const player_id, const message[], any:... )
                     REMOVE_CODE_COLOR_TAGS( formated_message )
                     client_print( player_id, print_chat, formated_message );
                 }
+            #else
+                vformat( formated_message, charsmax( formated_message ), message, 3 );
+                LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
+                
+                client_print( player_id, print_chat, formated_message );
             #endif
             }
             
@@ -7845,10 +7845,10 @@ stock register_dictionary_colored( const dictionaryFile[] )
             
             if( translationKeyId != TransKey_Bad )
             {
-            #if IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES > 0
-                REMOVE_LETTER_COLOR_TAGS( langTranslationText )
-            #else
+            #if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
                 INSERT_COLOR_TAGS( langTranslationText )
+            #else
+                REMOVE_LETTER_COLOR_TAGS( langTranslationText )
             #endif
                 
                 LOGGER( 0, "lang: %s, Id: %d, Text: %s", langTypeAcronym, translationKeyId, langTranslationText )
@@ -8128,10 +8128,10 @@ public sayNextMap()
     }
     else
     {
-    #if IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES > 0
-        color_print( 0, "%L %s", LANG_PLAYER, "NEXT_MAP", g_nextMap );
-    #else
+    #if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
         color_print( 0, "%L ^4%s", LANG_PLAYER, "NEXT_MAP", g_nextMap );
+    #else
+        color_print( 0, "%L %s", LANG_PLAYER, "NEXT_MAP", g_nextMap );
     #endif
     }
     
