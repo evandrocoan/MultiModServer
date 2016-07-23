@@ -34,10 +34,6 @@ for %%i in (*.sma) do (
 rem Run the files installer.
 start /min install.bat 1
 
-rem Pause the script for result reading, when it is run without any command line parameters.
-echo.
-if "%1"=="" pause
-
 
 
 rem Here ends the command you want to measure.
@@ -67,3 +63,12 @@ if %DURATIONHS% LSS 10 set DURATIONHS=0%DURATIONHS%
 
 rem Outputting.
 echo Took %DURATIONH%:%DURATIONM%:%DURATIONS%,%DURATIONHS% seconds to run this script.
+
+
+
+rem Pause the script for result reading, when it is run without any command line parameters.
+echo.
+if "%1"=="" pause
+
+
+
