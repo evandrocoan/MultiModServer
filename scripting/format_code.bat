@@ -2,7 +2,7 @@
 
 
 SET ERROR_LOG_FILE=uncrustify_log.txt
-SET CONFIG_FILE=..\..\MyUncrustifyConfigs\amxmodx.cfg
+SET CONFIG_FILE=D:\User\Dropbox\Applications\SoftwareVersioning\MyUncrustifyConfigs\amxmodx.cfg
 
 
 

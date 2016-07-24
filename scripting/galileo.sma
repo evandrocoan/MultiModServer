@@ -33,12 +33,18 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.2-249";
+new const PLUGIN_VERSION[] = "v3.2.2-252";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
  */
 #define IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST 0
+
+/**
+ * Enables the support the Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
+ * "game_end". It will require the '<hamsandwich>' module.
+ */
+#define IS_TO_ENABLE_SVEN_COOP_SUPPPORT 1
 
 /**
  * Change this value from 0 to 1, to disable the colored text message (chat messages).
@@ -74,11 +80,11 @@ new const PLUGIN_VERSION[] = "v3.2.2-249";
  *
  * 16   - Enable DEBUG_LEVEL 1 and all its debugging/depuration available.
  *
- * 31  - Levels 1, 2, 4 and 8.
+ * 31  - Enable the levels 1, 2, 4, 8 and 16.
  * 
  * Default value: 0
  */
-#define DEBUG_LEVEL 0//1+16+2
+#define DEBUG_LEVEL 16//1+16+2
 
 
 /**
@@ -325,6 +331,13 @@ new const PLUGIN_VERSION[] = "v3.2.2-249";
  */
 #if !defined MAX_PLAYERS
     #define MAX_PLAYERS 32
+#endif
+
+/**
+ * Includes the Sven Coop required module for support.
+ */
+#if IS_TO_ENABLE_SVEN_COOP_SUPPPORT > 0
+    #include <hamsandwich>
 #endif
 
 /**
@@ -1013,6 +1026,7 @@ public plugin_init()
     nextmap_plugin_init();
     configureEndGameCvars();
     configureTheVotingMenus();
+    configureSpecificGameModFeature();
     
     register_dictionary( "common.txt" );
     register_dictionary_colored( "galileo.txt" );
@@ -1035,6 +1049,35 @@ public plugin_init()
     
     LOGGER( 1, "I AM EXITING plugin_init(0)..." )
     LOGGER( 1, "" )
+}
+
+stock configureSpecificGameModFeature()
+{
+    /**
+     * If it is enabled, Load whether the color chat is supported by the current Game Modification.
+     */
+#if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
+    g_isColorChatSupported = ( is_running( "czero" )
+                               || is_running( "cstrike" ) );
+#endif
+    
+    /**
+     * Register the voting start call from the Sven Coop game.
+     */
+#if IS_TO_ENABLE_SVEN_COOP_SUPPPORT > 0
+    if( is_running("svencoop") )
+    {
+        RegisterHam( Ham_Use, "game_end", "startVotingByGameEngineCall", false );
+    }
+#endif
+    
+    if( colored_menus() )
+    {
+        copy( COLOR_RED, 2, "\r" );
+        copy( COLOR_WHITE, 2, "\w" );
+        copy( COLOR_YELLOW, 2, "\y" );
+        copy( COLOR_GREY, 2, "\d" );
+    }
 }
 
 stock configureEndGameCvars()
@@ -1131,22 +1174,6 @@ stock loadPluginSetttings()
 {
     LOGGER( 128, "I AM ENTERING ON loadPluginSetttings(0)" )
     new writtenSize;
-    
-    /**
-     * If it is enabled, Load whether the color chat is supported by the current Game Modification.
-     */
-#if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
-    g_isColorChatSupported = ( is_running( "czero" )
-                               || is_running( "cstrike" ) );
-#endif
-    
-    if( colored_menus() )
-    {
-        copy( COLOR_RED, 2, "\r" );
-        copy( COLOR_WHITE, 2, "\w" );
-        copy( COLOR_YELLOW, 2, "\y" );
-        copy( COLOR_GREY, 2, "\d" );
-    }
     
     writtenSize = get_configsdir( g_configsDirPath, charsmax( g_configsDirPath ) );
     copy( g_configsDirPath[ writtenSize ], charsmax( g_configsDirPath ) - writtenSize, "/galileo" );
@@ -1720,16 +1747,16 @@ public map_loadRecentList()
     new recentMapsFilePath[ MAX_FILE_PATH_LENGHT ];
     
     formatex( recentMapsFilePath, charsmax( recentMapsFilePath ), "%s/%s", g_dataDirPath, RECENT_BAN_MAPS_FILE_NAME );
-    new recentMapsFile = fopen( recentMapsFilePath, "rt" );
+    new recentMapsFileDescriptor = fopen( recentMapsFilePath, "rt" );
     
-    if( recentMapsFile )
+    if( recentMapsFileDescriptor )
     {
         new recentMapName[ MAX_MAPNAME_LENGHT ];
         new maxRecentMapsBans = get_pcvar_num( cvar_recentMapsBannedNumber );
         
-        while( !feof( recentMapsFile ) )
+        while( !feof( recentMapsFileDescriptor ) )
         {
-            fgets( recentMapsFile, recentMapName, charsmax( recentMapName ) );
+            fgets( recentMapsFileDescriptor, recentMapName, charsmax( recentMapName ) );
             trim( recentMapName );
             
             if( recentMapName[ 0 ] )
@@ -1749,7 +1776,7 @@ public map_loadRecentList()
             }
         }
         
-        fclose( recentMapsFile );
+        fclose( recentMapsFileDescriptor );
     }
 }
 
@@ -1759,7 +1786,7 @@ public map_writeRecentList()
     
     new Trie:mapCycleMapsTrie;
     new bool:isOnlyRecentMapcycleMaps;
-    new      recentMapsFile;
+    new      recentMapsFileDescriptor;
     new      voteMapsFilerFilePath  [ MAX_FILE_PATH_LENGHT ];
     new      recentMapName          [ MAX_MAPNAME_LENGHT ];
     new      recentMapsFilePath     [ MAX_FILE_PATH_LENGHT ];
@@ -1785,9 +1812,9 @@ public map_writeRecentList()
         }
     }
     
-    recentMapsFile = fopen( recentMapsFilePath, "wt" );
+    recentMapsFileDescriptor = fopen( recentMapsFilePath, "wt" );
     
-    if( recentMapsFile )
+    if( recentMapsFileDescriptor )
     {
         if( !TrieKeyExists( g_recentMapsTrie, g_currentMap ) )
         {
@@ -1795,12 +1822,12 @@ public map_writeRecentList()
             {
                 if( TrieKeyExists( mapCycleMapsTrie, g_currentMap ) )
                 {
-                    fprintf( recentMapsFile, "%s^n", g_currentMap );
+                    fprintf( recentMapsFileDescriptor, "%s^n", g_currentMap );
                 }
             }
             else
             {
-                fprintf( recentMapsFile, "%s^n", g_currentMap );
+                fprintf( recentMapsFileDescriptor, "%s^n", g_currentMap );
             }
         }
         
@@ -1812,16 +1839,16 @@ public map_writeRecentList()
             {
                 if( TrieKeyExists( mapCycleMapsTrie, recentMapName ) )
                 {
-                    fprintf( recentMapsFile, "%s^n", recentMapName );
+                    fprintf( recentMapsFileDescriptor, "%s^n", recentMapName );
                 }
             }
             else
             {
-                fprintf( recentMapsFile, "%s^n", recentMapName );
+                fprintf( recentMapsFileDescriptor, "%s^n", recentMapName );
             }
         }
         
-        fclose( recentMapsFile );
+        fclose( recentMapsFileDescriptor );
     }
     
     TRY_TO_APPLY( TrieDestroy, mapCycleMapsTrie )
@@ -1889,6 +1916,20 @@ public start_voting_by_timer()
     {
         g_isVotingByTimer = true;
         vote_startDirector( false );
+    }
+}
+
+public startVotingByGameEngineCall()
+{
+    LOGGER( 128, "I AM ENTERING ON startVotingByGameEngineCall(0) | get_pcvar_num( cvar_endOfMapVote ): %d", \
+            get_pcvar_num( cvar_endOfMapVote ) )
+    
+    if( get_pcvar_num( cvar_endOfMapVote ) )
+    {
+        g_isTimeToChangeLevel = true;
+        vote_startDirector( false );
+        
+        //return 
     }
 }
 
@@ -4965,9 +5006,9 @@ stock prevent_map_change()
     set_task( roundTimeMinutes * 60, "map_restoreEndGameCvars", TASKID_PREVENT_INFITY_GAME );
 }
 
-stock approveTheVotingStart( bool:is_forced_voting )
+stock approvedTheVotingStart( bool:is_forced_voting )
 {
-    LOGGER( 128, "I AM ENTERING ON approveTheVotingStart(1) | is_forced_voting: %d, get_realplayersnum: %d", is_forced_voting, get_realplayersnum() )
+    LOGGER( 128, "I AM ENTERING ON approvedTheVotingStart(1) | is_forced_voting: %d, get_realplayersnum: %d", is_forced_voting, get_realplayersnum() )
     
     // block the voting on now allowed situations/cases
     if( get_realplayersnum() == 0
@@ -4976,14 +5017,14 @@ stock approveTheVotingStart( bool:is_forced_voting )
         || ( !is_forced_voting
              && g_voteStatus & VOTE_IS_OVER ) )
     {
-        LOGGER( 1, "    ( approveTheVotingStart ) g_voteStatus: %d, \
+        LOGGER( 1, "    ( approvedTheVotingStart ) g_voteStatus: %d, \
                 g_voteStatus & VOTE_IS_OVER: %d", g_voteStatus, \
                 g_voteStatus & VOTE_IS_OVER != 0 )
         
     #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
         if( g_test_isTheUnitTestsRunning )
         {
-            LOGGER( 1, "    ( approveTheVotingStart ) Returning true on the if \
+            LOGGER( 1, "    ( approvedTheVotingStart ) Returning true on the if \
                     !g_test_isTheUnitTestsRunning, cvar_isEmptyCycleByMapChange: %d.", \
                                 get_pcvar_num( cvar_isEmptyCycleByMapChange ) )
             return true;
@@ -5003,7 +5044,7 @@ stock approveTheVotingStart( bool:is_forced_voting )
             }
         }
         
-        LOGGER( 1, "    ( approveTheVotingStart ) Returning false on the big blocker." )
+        LOGGER( 1, "    ( approvedTheVotingStart ) Returning false on the big blocker." )
         return false;
     }
     
@@ -5028,7 +5069,7 @@ stock approveTheVotingStart( bool:is_forced_voting )
         vote_resetStats();
     }
     
-    LOGGER( 1, "    ( approveTheVotingStart ) Returning true, due passed by all requirements." )
+    LOGGER( 1, "    ( approvedTheVotingStart ) Returning true, due passed by all requirements." )
     return true;
 }
 
@@ -5093,7 +5134,7 @@ stock vote_startDirector( bool:is_forced_voting )
 {
     LOGGER( 128, "I AM ENTERING ON vote_startDirector(1) | is_forced_voting: %d", is_forced_voting )
     
-    if( !approveTheVotingStart( is_forced_voting ) )
+    if( !approvedTheVotingStart( is_forced_voting ) )
     {
         LOGGER( 1, "    ( vote_startDirector ) Just Returning/blocking, the voting was not approved." )
         return;
@@ -6495,11 +6536,9 @@ public computeVotes()
         g_voteStatus |= VOTE_IS_OVER;
     }
     
-    LOGGER( 1, "    ( computeVotes|out ) g_isTimeToRestart: %d, \
-            g_isTimeToChangeLevel: %d \
+    LOGGER( 1, "    ( computeVotes|out ) g_isTimeToRestart: %d, g_isTimeToChangeLevel: %d \
             g_voteStatus & VOTE_IS_FORCED: %d", \
-                                         g_isTimeToRestart, \
-            g_isTimeToChangeLevel, \
+                                         g_isTimeToRestart,     g_isTimeToChangeLevel, \
             g_voteStatus & VOTE_IS_FORCED != 0 )
     
     finalizeVoting();
