@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.2-252";
+new const PLUGIN_VERSION[] = "v3.2.2-255";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -666,6 +666,7 @@ new cvar_mp_maxrounds;
 new cvar_mp_timelimit;
 new cvar_mp_roundtime;
 new cvar_mp_chattime;
+new cvar_mp_friendlyfire;
 new cvar_sv_maxspeed;
 
 
@@ -875,15 +876,6 @@ new COLOR_GREY  [ 3 ]; // \d
 
 new g_mapPrefixCount = 1;
 
-
-/**
- * Nextmap sub-plugin global variables.
- */
-new g_cvar_mp_chattime;
-new g_cvar_amx_nextmap;
-new g_cvar_mp_friendlyfire;
-new g_nextMapCyclePosition;
-
 new g_arrayOfRunOffChoices[ 2 ];
 new g_voteStatus_symbol   [ 3 ];
 new g_voteWeightFlags     [ 32 ];
@@ -896,6 +888,8 @@ new g_dataDirPath   [ MAX_FILE_PATH_LENGHT ];
 /**
  * Nextmap sub-plugin global variables.
  */
+new cvar_amx_nextmap;
+new g_nextMapCyclePosition;
 new g_nextMapName     [ MAX_MAPNAME_LENGHT ];
 new g_currentMapName  [ MAX_MAPNAME_LENGHT ];
 new g_mapCycleFilePath[ MAX_FILE_PATH_LENGHT ];
@@ -1709,7 +1703,7 @@ stock setNextMap( nextMap[] )
     if( IS_MAP_VALID( nextMap ) )
     {
         // set the queryable cvar
-        set_pcvar_string( g_cvar_amx_nextmap, nextMap );
+        set_pcvar_string( cvar_amx_nextmap, nextMap );
         copy( g_nextMap, charsmax( g_nextMap ), nextMap );
         
         // update our data file
@@ -8070,11 +8064,11 @@ public nextmap_plugin_init()
     register_clcmd( "say nextmap", "sayNextMap", 0, "- displays nextmap" );
     register_clcmd( "say currentmap", "sayCurrentMap", 0, "- display current map" );
     
-    g_cvar_amx_nextmap     = register_cvar( "amx_nextmap", "", FCVAR_SERVER | FCVAR_EXTDLL | FCVAR_SPONLY );
-    g_cvar_mp_chattime     = get_cvar_pointer( "mp_chattime" );
-    g_cvar_mp_friendlyfire = get_cvar_pointer( "mp_friendlyfire" );
+    cvar_amx_nextmap     = register_cvar( "amx_nextmap", "", FCVAR_SERVER | FCVAR_EXTDLL | FCVAR_SPONLY );
+    cvar_mp_chattime     = get_cvar_pointer( "mp_chattime" );
+    cvar_mp_friendlyfire = get_cvar_pointer( "mp_friendlyfire" );
     
-    if( g_cvar_mp_friendlyfire )
+    if( cvar_mp_friendlyfire )
     {
         register_clcmd( "say ff", "sayFFStatus", 0, "- display friendly fire status" );
     }
@@ -8106,7 +8100,7 @@ public nextmap_plugin_init()
     
     // Increments by 1, the global variable 'g_nextMapCyclePosition', or set its to 1.
     readMapCycle( g_mapCycleFilePath, g_nextMapName, charsmax( g_nextMapName ) );
-    set_pcvar_string( g_cvar_amx_nextmap, g_nextMapName );
+    set_pcvar_string( cvar_amx_nextmap, g_nextMapName );
     
     LOGGER( 2, "( nextmap_plugin_init ) IS CHANGING THE CVAR 'amx_nextmap' to '%s'", g_nextMapName )
     saveCurrentMapCycleSetting();
@@ -8132,16 +8126,16 @@ stock saveCurrentMapCycleSetting()
 stock getNextMapName( szArg[], iMax )
 {
     LOGGER( 128, "I AM ENTERING ON getNextMapName(2) | iMax: %d", iMax )
-    new lenght = get_pcvar_string( g_cvar_amx_nextmap, szArg, iMax );
+    new lenght = get_pcvar_string( cvar_amx_nextmap, szArg, iMax );
     
-    if( ValidMap( szArg ) )
+    if( isAValidMap( szArg ) )
     {
         LOGGER( 1, "    ( getNextMapName ) Returning lenght: %d, szArg: %s", lenght, szArg )
         return lenght;
     }
     
     lenght = copy( szArg, iMax, g_nextMapName );
-    set_pcvar_string( g_cvar_amx_nextmap, g_nextMapName );
+    set_pcvar_string( cvar_amx_nextmap, g_nextMapName );
     LOGGER( 2, "( getNextMapName ) IS CHANGING THE CVAR 'amx_nextmap' to '%s'", g_nextMapName )
     
     LOGGER( 1, "    ( getNextMapName ) Returning lenght: %d, szArg: %s", lenght, szArg )
@@ -8194,17 +8188,17 @@ public sayFFStatus()
     
     client_print( 0, print_chat, "%L: %L",
             LANG_PLAYER, "FRIEND_FIRE",
-            LANG_PLAYER, get_pcvar_num( g_cvar_mp_friendlyfire ) ? "ON" : "OFF" );
+            LANG_PLAYER, get_pcvar_num( cvar_mp_friendlyfire ) ? "ON" : "OFF" );
 }
 
 public delayedChange( param[] )
 {
     LOGGER( 128, "I AM ENTERING ON delayedChange(1) | param: %s", param )
     
-    if( g_cvar_mp_chattime )
+    if( cvar_mp_chattime )
     {
-        set_pcvar_float( g_cvar_mp_chattime, get_pcvar_float( g_cvar_mp_chattime ) - 2.0 );
-        LOGGER( 2, "( delayedChange ) IS CHANGING THE CVAR 'mp_chattime' to '%f'", get_pcvar_float( g_cvar_mp_chattime ) )
+        set_pcvar_float( cvar_mp_chattime, get_pcvar_float( cvar_mp_chattime ) - 2.0 );
+        LOGGER( 2, "( delayedChange ) IS CHANGING THE CVAR 'mp_chattime' to '%f'", get_pcvar_float( cvar_mp_chattime ) )
     }
     
     serverChangeLevel( param );
@@ -8218,11 +8212,11 @@ public changeMap()
     new       nextmap_name[ MAX_MAPNAME_LENGHT ]; 
     
     // mp_chattime defaults to 10 in other mods
-    chattime = g_cvar_mp_chattime ? get_pcvar_float( g_cvar_mp_chattime ) : 10.0;
+    chattime = cvar_mp_chattime ? get_pcvar_float( cvar_mp_chattime ) : 10.0;
     
-    if( g_cvar_mp_chattime )
+    if( cvar_mp_chattime )
     {
-        set_pcvar_float( g_cvar_mp_chattime, chattime + 2.0 ); // make sure mp_chattime is long
+        set_pcvar_float( cvar_mp_chattime, chattime + 2.0 ); // make sure mp_chattime is long
         LOGGER( 2, "( changeMap ) IS CHANGING THE CVAR 'mp_chattime' to '%f'", chattime + 2.0 )
     }
     
@@ -8230,13 +8224,13 @@ public changeMap()
     set_task( chattime, "delayedChange", 0, nextmap_name, lenght ); // change with 1.5 sec. delay
 }
 
-stock bool:ValidMap( mapname[] )
+stock bool:isAValidMap( mapname[] )
 {
-    LOGGER( 128, "I AM ENTERING ON ValidMap(1) | mapname: %s", mapname )
+    LOGGER( 128, "I AM ENTERING ON isAValidMap(1) | mapname: %s", mapname )
     
     if( IS_MAP_VALID( mapname ) )
     {
-        LOGGER( 0, "    ( ValidMap ) Returning true. [IS_MAP_VALID]" )
+        LOGGER( 0, "    ( isAValidMap ) Returning true. [IS_MAP_VALID]" )
         return true;
     }
     
@@ -8246,7 +8240,7 @@ stock bool:ValidMap( mapname[] )
     // The mapname was too short to possibly house the .bsp extension
     if( lenght < 0 )
     {
-        LOGGER( 0, "    ( ValidMap ) Returning false. [lenght < 0]" )
+        LOGGER( 0, "    ( isAValidMap ) Returning false. [lenght < 0]" )
         return false;
     }
     
@@ -8259,12 +8253,12 @@ stock bool:ValidMap( mapname[] )
         // recheck
         if( IS_MAP_VALID( mapname ) )
         {
-            LOGGER( 0, "    ( ValidMap ) Returning true. [IS_MAP_VALID]" )
+            LOGGER( 0, "    ( isAValidMap ) Returning true. [IS_MAP_VALID]" )
             return true;
         }
     }
     
-    LOGGER( 0, "    ( ValidMap ) Returning false." )
+    LOGGER( 0, "    ( isAValidMap ) Returning false." )
     return false;
 }
 
@@ -8283,7 +8277,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     {
         while( read_file( mapcycleFilePath, currentLineToReadIndex++, currentReadLine, charsmax( currentReadLine ), textLength ) )
         {
-            if( !ValidMap( currentReadLine ) )
+            if( !isAValidMap( currentReadLine ) )
             {
                 continue;
             }
@@ -8304,16 +8298,16 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         }
     }
     
-    if( !mapsProcessedNumber )
+    if( mapsProcessedNumber )
+    {
+        copy( nextMapName, nextMapNameMaxchars, firstMapcycleMap );
+    }
+    else
     {
         LOGGER( 1, "WARNING: Couldn't find a valid map or the file doesn't exist (file ^"%s^")", mapcycleFilePath )
         log_amx( "WARNING: Couldn't find a valid map or the file doesn't exist (file ^"%s^")", mapcycleFilePath );
         
         copy( nextMapName, nextMapNameMaxchars, g_currentMapName );
-    }
-    else
-    {
-        copy( nextMapName, nextMapNameMaxchars, firstMapcycleMap );
     }
     
     LOGGER( 4, "( readMapCycle ) | nextMapName: %s, nextMapNameMaxchars: %d", nextMapName, nextMapNameMaxchars )
