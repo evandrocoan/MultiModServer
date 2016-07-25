@@ -32,6 +32,7 @@ for %%i in (*.sma) do (
 )
 
 rem Run the files installer.
+echo.
 start /min install.bat 1
 
 
@@ -40,8 +41,8 @@ rem Here ends the command you want to measure.
 set ENDTIME=%TIME%
 
 rem Convert STARTTIME and ENDTIME to centiseconds.
-set /A STARTTIME=(1%STARTTIME:~0,2%-100)*360000 + (1%STARTTIME:~3,2%-100)*6000 + (1%STARTTIME:~6,2%-100)*100 + (1%STARTTIME:~9,2%-100)
-set /A ENDTIME=(1%ENDTIME:~0,2%-100)*360000 + (1%ENDTIME:~3,2%-100)*6000 + (1%ENDTIME:~6,2%-100)*100 + (1%ENDTIME:~9,2%-100)
+set /A STARTTIME=(%STARTTIME:~0,2%-100)*360000 + (%STARTTIME:~3,2%-100)*6000 + (%STARTTIME:~6,2%-100)*100 + (%STARTTIME:~9,2%-100)
+set /A ENDTIME=(%ENDTIME:~0,2%-100)*360000 + (%ENDTIME:~3,2%-100)*6000 + (%ENDTIME:~6,2%-100)*100 + (%ENDTIME:~9,2%-100)
 
 rem Calculating the duration is easy.
 set /A DURATION=%ENDTIME%-%STARTTIME%
