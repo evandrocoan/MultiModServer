@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.2-255";
+new const PLUGIN_VERSION[] = "v3.2.2-256";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -2397,1262 +2397,6 @@ public resetRoundsScores()
     LOGGER( 1, "I AM EXITING ON resetRoundsScores(0)" )
 }
 
-public cmd_rockthevote( player_id )
-{
-    LOGGER( 128, "I AM ENTERING ON cmd_rockthevote(1) | player_id: %d", player_id )
-    
-    color_print( player_id, "%L", player_id, "GAL_CMD_RTV" );
-    vote_rock( player_id );
-    
-    return PLUGIN_HANDLED;
-}
-
-public cmd_nominations( player_id )
-{
-    LOGGER( 128, "I AM ENTERING ON cmd_nominations(1) | player_id: %d", player_id )
-    
-    color_print( player_id, "%L", player_id, "GAL_CMD_NOMS" );
-    nomination_list();
-    
-    return PLUGIN_CONTINUE;
-}
-
-public cmd_listrecent( player_id )
-{
-    LOGGER( 128, "I AM ENTERING ON cmd_listrecent(1) | player_id: %d", player_id )
-    new recentMapName[ MAX_MAPNAME_LENGHT ];
-    
-    switch( get_pcvar_num( cvar_banRecentStyle ) )
-    {
-        case 1:
-        {
-            new copiedChars;
-            new recentMapsMessage[ MAX_COLOR_MESSAGE ];
-            
-            for( new mapIndex = 0; mapIndex < g_recentMapCount; ++mapIndex )
-            {
-                ArrayGetString( g_recentListMapsArray, mapIndex, recentMapName, charsmax( recentMapName ) );
-                copiedChars += formatex( recentMapsMessage[ copiedChars ], charsmax( recentMapsMessage ) - copiedChars, ", %s", recentMapName );
-            }
-            
-            color_print( 0, "%L: %s", LANG_PLAYER, "GAL_MAP_RECENTMAPS", recentMapsMessage[ 2 ] );
-        }
-        case 2:
-        {
-            for( new mapIndex = 0; mapIndex < g_recentMapCount; ++mapIndex )
-            {
-                ArrayGetString( g_recentListMapsArray, mapIndex, recentMapName, charsmax( recentMapName ) );
-                
-                color_print( 0, "%L ( %i ): %s",
-                        LANG_PLAYER, "GAL_MAP_RECENTMAP", mapIndex + 1, recentMapName );
-            }
-        }
-        case 3:
-        {
-            new menuOptionString[ 64 ];
-            
-            // We starting building the menu
-            TRY_TO_APPLY( menu_destroy, g_generalUsePlayersMenuIds[ player_id ] )
-            
-            // To create the menu
-            formatex( menuOptionString, charsmax( menuOptionString ), "%L", player_id, "GAL_MAP_RECENTMAPS" );
-            g_generalUsePlayersMenuIds[ player_id ] = menu_create( menuOptionString, "cmd_listrecent_handler" );
-            
-            // Configure the menu buttons.
-            SET_MENU_PROPERTY( MPROP_EXITNAME, g_generalUsePlayersMenuIds[ player_id ], "EXIT" )
-            SET_MENU_PROPERTY( MPROP_NEXTNAME, g_generalUsePlayersMenuIds[ player_id ], "MORE" )
-            SET_MENU_PROPERTY( MPROP_BACKNAME, g_generalUsePlayersMenuIds[ player_id ], "BACK" )
-            
-            // Add the menu items.
-            for( new mapIndex = 0; mapIndex < g_recentMapCount; ++mapIndex )
-            {
-                ArrayGetString( g_recentListMapsArray, mapIndex, recentMapName, charsmax( recentMapName ) );
-                menu_additem( g_generalUsePlayersMenuIds[ player_id ], recentMapName );
-            }
-            
-            // To display the menu.
-            menu_display( player_id, g_generalUsePlayersMenuIds[ player_id ] );
-        }
-    }
-    
-    return PLUGIN_HANDLED;
-}
-
-public cmd_listrecent_handler( player_id, menu, item )
-{
-    LOGGER( 128, "I AM ENTERING ON cmd_listrecent_handler(3) | player_id: %d, menu: %d, item: %d", player_id, menu, item )
-    
-    // Let go to destroy the menu and clean some memory.
-    if( item < 0 )
-    {
-        menu_destroy( g_generalUsePlayersMenuIds[ player_id ] );
-        g_generalUsePlayersMenuIds[ player_id ] = 0;
-        
-        LOGGER( 1, "    ( cmd_listrecent_handler ) Just Returning PLUGIN_CONTINUE, as menu is destroyed." )
-        return PLUGIN_CONTINUE;
-    }
-    
-    // Just keep showing the menu until the exit button is pressed.
-    menu_display( player_id, g_generalUsePlayersMenuIds[ player_id ] );
-    
-    LOGGER( 1, "    ( cmd_listrecent_handler ) Just Returning PLUGIN_HANDLED." )
-    return PLUGIN_HANDLED;
-}
-
-public cmd_cancelVote( player_id, level, cid )
-{
-    LOGGER( 128, "I AM ENTERING ON cmd_cancelVote(3) | player_id: %d, level: %d, cid: %d", player_id, level, cid )
-    
-    if( !cmd_access( player_id, level, cid, 1 ) )
-    {
-        return PLUGIN_HANDLED;
-    }
-    
-    cancelVoting( true );
-    return PLUGIN_HANDLED;
-}
-
-/**
- * Called when need to start a vote map, where the command line first argument could be:
- *    -nochange: extend the current map, aka, Keep Current Map, will to do the real extend.
- *    -restart: extend the current map, aka, Keep Current Map restart the server at the current map.
- */
-public cmd_startVote( player_id, level, cid )
-{
-    LOGGER( 128, "I AM ENTERING ON cmd_startVote(3) | player_id: %d, level: %d, cid: %d", player_id, level, cid )
-    
-    if( !cmd_access( player_id, level, cid, 1 ) )
-    {
-        return PLUGIN_HANDLED;
-    }
-    
-    if( g_voteStatus & VOTE_IS_IN_PROGRESS )
-    {
-        color_print( player_id, "%L", player_id, "GAL_VOTE_INPROGRESS" );
-    }
-    else
-    {
-        g_isTimeToChangeLevel = true;
-        
-        if( read_argc() == 2 )
-        {
-            new argument[ 32 ];
-            
-            read_args( argument, charsmax( argument ) );
-            remove_quotes( argument );
-            
-            if( equali( argument, "-nochange" ) )
-            {
-                g_isTimeToChangeLevel = false;
-            }
-            
-            if( equali( argument, "-restart", 4 ) )
-            {
-                g_isTimeToRestart = true;
-            }
-            
-            LOGGER( 1, "( cmd_startVote ) equal( %s, '-restart', 4 )? %d", \
-                                argument, equal( argument, "-restart", 4 ) )
-        }
-        
-        LOGGER( 1, "( cmd_startVote ) g_isTimeToRestart? %d, \
-                g_isTimeToChangeLevel? %d, g_voteStatus & VOTE_IS_FORCED: %d", \
-                                      g_isTimeToRestart, \
-                g_isTimeToChangeLevel,     g_voteStatus & VOTE_IS_FORCED != 0 )
-        
-        vote_startDirector( true );
-    }
-    
-    return PLUGIN_HANDLED;
-}
-
-public cmd_createMapFile( player_id, level, cid )
-{
-    LOGGER( 128, "I AM ENTERING ON cmd_createMapFile(3) | player_id: %d, level: %d, cid: %d", player_id, level, cid )
-    
-    if( !cmd_access( player_id, level, cid, 1 ) )
-    {
-        return PLUGIN_HANDLED;
-    }
-    
-    new argumentsNumber = read_argc() - 1;
-    
-    switch( argumentsNumber )
-    {
-        case 1:
-        {
-            new mapFileName[ MAX_MAPNAME_LENGHT ];
-            
-            read_argv( 1, mapFileName, charsmax( mapFileName ) );
-            remove_quotes( mapFileName );
-            
-            // map name is MAX_MAPNAME_LENGHT, .bsp: 4 + string terminator: 1 = 5
-            new loadedMapName[ MAX_MAPNAME_LENGHT + 5 ];
-            
-            new directoryDescriptor;
-            new mapFile;
-            new mapCount;
-            new mapNameLength;
-            
-            directoryDescriptor = open_dir( "maps", loadedMapName, charsmax( loadedMapName )  );
-            
-            if( directoryDescriptor )
-            {
-                new mapFilePath[ MAX_FILE_PATH_LENGHT ];
-                
-                formatex( mapFilePath, charsmax( mapFilePath ), "%s/%s", g_configsDirPath, mapFileName );
-                mapFile = fopen( mapFilePath, "wt" );
-                
-                if( mapFile )
-                {
-                    mapCount = 0;
-                    
-                    while( next_file( directoryDescriptor, loadedMapName, charsmax( loadedMapName ) ) )
-                    {
-                        mapNameLength = strlen( loadedMapName );
-                        
-                        if( mapNameLength > 4
-                            && equali( loadedMapName[ mapNameLength - 4 ], ".bsp", 4 ) )
-                        {
-                            loadedMapName[ mapNameLength - 4 ] = '^0';
-                            
-                            if( IS_MAP_VALID( loadedMapName ) )
-                            {
-                                mapCount++;
-                                fprintf( mapFile, "%s^n", loadedMapName );
-                            }
-                        }
-                    }
-                    
-                    fclose( mapFile );
-                    console_print( player_id, "%L", player_id, "GAL_CREATIONSUCCESS", mapFilePath, mapCount );
-                }
-                else
-                {
-                    console_print( player_id, "%L", player_id, "GAL_CREATIONFAILED", mapFilePath );
-                }
-                
-                close_dir( directoryDescriptor );
-            }
-            else
-            {
-                // directory not found, wtf?
-                console_print( player_id, "%L", player_id, "GAL_MAPSFOLDERMISSING" );
-            }
-        }
-        default:
-        {
-            // inform of correct usage
-            console_print( player_id, "%L", player_id, "GAL_CMD_CREATEFILE_USAGE1" );
-            console_print( player_id, "%L", player_id, "GAL_CMD_CREATEFILE_USAGE2" );
-        }
-    }
-    
-    return PLUGIN_HANDLED;
-}
-
-/**
- * Called when need to start a vote map, where the command line first argument could be:
- *    -nochange: extend the current map, aka, Keep Current Map, will to do the real extend.
- *    -restart: extend the current map, aka, Keep Current Map restart the server at the current map.
- */
-public cmd_maintenanceMode( player_id, level, cid )
-{
-    LOGGER( 128, "I AM ENTERING ON cmd_maintenanceMode(3) | player_id: %d, level: %d, cid: %d", player_id, level, cid )
-    
-    if( !cmd_access( player_id, level, cid, 1 ) )
-    {
-        return PLUGIN_HANDLED;
-    }
-    
-    // Always print to the console for logging, because it is a important event.
-    if( g_isOnMaintenanceMode )
-    {
-        g_isOnMaintenanceMode = false;
-        
-        color_print( 0, "%L", LANG_PLAYER, "GAL_CHANGE_MAINTENANCE_STATE", LANG_PLAYER, "GAL_CHANGE_MAINTENANCE_OFF" );
-        no_color_print( player_id, "%L", player_id, "GAL_CHANGE_MAINTENANCE_STATE", player_id, "GAL_CHANGE_MAINTENANCE_OFF" );
-    }
-    else
-    {
-        g_isOnMaintenanceMode = true;
-        
-        color_print( 0, "%L", LANG_PLAYER, "GAL_CHANGE_MAINTENANCE_STATE", LANG_PLAYER, "GAL_CHANGE_MAINTENANCE_ON" );
-        no_color_print( player_id, "%L", player_id, "GAL_CHANGE_MAINTENANCE_STATE", player_id, "GAL_CHANGE_MAINTENANCE_ON" );
-    }
-    
-    return PLUGIN_HANDLED;
-}
-
-/**
- * Generic say handler to determine if we need to act on what was said.
- */
-public cmd_say( player_id )
-{
-    LOGGER( 128, "I AM ENTERING ON cmd_say(1) | player_id: %s", player_id )
-    
-    new prefix_index;
-    new thirdWord[ 2 ];
-    
-    static sentence  [ 70 ];
-    static firstWord [ 32 ];
-    static secondWord[ 32 ];
-    
-    sentence  [ 0 ] = '^0';
-    firstWord [ 0 ] = '^0';
-    secondWord[ 0 ] = '^0';
-    
-    read_args( sentence, charsmax( sentence ) );
-    remove_quotes( sentence );
-    
-    parse( sentence,
-            firstWord, charsmax( firstWord ),
-            secondWord, charsmax( secondWord ),
-            thirdWord, charsmax( thirdWord ) );
-    
-    LOGGER( 4, "( cmd_say ) sentence: %s, firstWord: %s, secondWord: %s, thirdWord: %s", \
-                            sentence,     firstWord,     secondWord,     thirdWord )
-    
-    // if the chat line has more than 2 words, we're not interested at all
-    if( thirdWord[ 0 ] == '^0' )
-    {
-        LOGGER( 4, "( cmd_say ) the thirdWord is empty." )
-        new mapIndex;
-        
-        // if the chat line contains 1 word, it could be a map or a one-word command as
-        // "say [rtv|rockthe<anything>vote]"
-        if( secondWord[ 0 ] == '^0' )
-        {
-            LOGGER( 4, "( cmd_say ) the secondWord is empty." )
-            
-            if( ( g_rtvCommands & RTV_CMD_SHORTHAND
-                  && equali( firstWord, "rtv" ) )
-                || ( g_rtvCommands & RTV_CMD_DYNAMIC
-                     && equali( firstWord, "rockthe", 7 )
-                     && equali( firstWord[ strlen( firstWord ) - 4 ], "vote" )
-                     && !( g_rtvCommands & RTV_CMD_STANDARD ) ) )
-            {
-                LOGGER( 4, "( cmd_say ) running vote_rock( player_id ); player_id: %s", player_id )
-                vote_rock( player_id );
-                
-                LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, vote_rock(1) chosen." )
-                return PLUGIN_HANDLED;
-            }
-            else if( get_pcvar_num( cvar_nomPlayerAllowance ) )
-            {
-                LOGGER( 4, "( cmd_say ) on the 1 word: else if( cvar_nomPlayerAllowance ), \
-                        get_pcvar_num( cvar_nomPlayerAllowance ): %d", \
-                        get_pcvar_num( cvar_nomPlayerAllowance ) )
-                
-                if( equali( firstWord, "noms" )
-                    || equali( firstWord, "nominations" ) )
-                {
-                    nomination_list();
-                    
-                    LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, nomination_list(0) chosen." )
-                    return PLUGIN_HANDLED;
-                }
-                else
-                {
-                    mapIndex = getSurMapNameIndex( firstWord );
-                    
-                    if( mapIndex >= 0 )
-                    {
-                        nomination_toggle( player_id, mapIndex );
-                        
-                        LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, nomination_toggle(2) chosen." )
-                        return PLUGIN_HANDLED;
-                    }
-                    else if( strlen( firstWord ) > 5
-                             && equali( firstWord, "nom", 3 )
-                             && equali( firstWord[ strlen( firstWord ) - 4 ], "menu" ) )
-                    {
-                        nomination_menu( player_id );
-                        
-                        LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, nomination_menu(1) chosen." )
-                        return PLUGIN_HANDLED;
-                    }
-                    else // if contains a prefix
-                    {
-                        for( prefix_index = 0; prefix_index < g_mapPrefixCount; prefix_index++ )
-                        {
-                            LOGGER( 4, "( cmd_say ) firstWord: %s, \
-                                    g_mapPrefixes[%d]: %s, \
-                                    containi( %s, %s )? %d", \
-                                    firstWord, \
-                                    prefix_index, g_mapPrefixes[ prefix_index ], \
-                                    firstWord, g_mapPrefixes[ prefix_index ], containi( firstWord, g_mapPrefixes[ prefix_index ] ) )
-                            
-                            if( containi( firstWord, g_mapPrefixes[ prefix_index ] ) > -1 )
-                            {
-                                nomination_menu( player_id );
-                                
-                                LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, nomination_menu(1) chosen." )
-                                return PLUGIN_HANDLED;
-                            }
-                        }
-                    }
-                    
-                    LOGGER( 4, "( cmd_say ) equali(%s, 'nom', 3)? %d, strlen(%s) > 5? %d", \
-                                 firstWord, equali( firstWord, "nom", 3 ), \
-                                 firstWord, strlen( firstWord ) > 5 )
-                }
-            }
-        }
-        else if( get_pcvar_num( cvar_nomPlayerAllowance ) )  // "say <nominate|nom|cancel> <map>"
-        {
-            if( equali( firstWord, "nominate" )
-                || equali( firstWord, "nom" ) )
-            {
-                nominationAttemptWithNamePart( player_id, secondWord );
-                
-                LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, nominationAttemptWithNamePart(2) chosen." )
-                return PLUGIN_HANDLED;
-            }
-            else if( equali( firstWord, "cancel" ) )
-            {
-                // bpj -- allow ambiguous cancel in which case a menu of their nominations is shown
-                mapIndex = getSurMapNameIndex( secondWord );
-                
-                if( mapIndex >= 0 )
-                {
-                    nomination_cancel( player_id, mapIndex );
-                    
-                    LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, nomination cancel option chosen." )
-                    return PLUGIN_HANDLED;
-                }
-            }
-        }
-    }
-    
-    LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_CONTINUE, as reached the handler end." )
-    return PLUGIN_CONTINUE;
-}
-
-stock buildTheNominationsMenu( player_id )
-{
-    LOGGER( 128, "I AM ENTERING ON buildTheNominationsMenu(1) | player_id: %d", player_id )
-    new menuOptionString[ MAX_SHORT_STRING ];
-    
-    // Clear the last menu, if exists
-    clearMenuMapIndexForPlayers( player_id );
-    
-    // To create the menu
-    formatex( menuOptionString, charsmax( menuOptionString ), "%L", player_id, "GAL_LISTMAPS_TITLE" );
-    g_generalUsePlayersMenuIds[ player_id ] = menu_create( menuOptionString, "nomination_handleMatchChoice" );
-    
-    // The first menu item, 'Cancel All Your Nominations.
-    formatex( menuOptionString, charsmax( menuOptionString ), "%L", player_id, "GAL_NOM_CANCEL_OPTION" );
-    menu_additem( g_generalUsePlayersMenuIds[ player_id ], menuOptionString, { 0 }, 0 );
-    
-    // Add some space from the cancel option.
-    menu_addblank( g_generalUsePlayersMenuIds[ player_id ], 0 );
-    
-    // Configure the menu buttons.
-    SET_MENU_PROPERTY( MPROP_EXITNAME, g_generalUsePlayersMenuIds[ player_id ], "EXIT" )
-    SET_MENU_PROPERTY( MPROP_NEXTNAME, g_generalUsePlayersMenuIds[ player_id ], "MORE" )
-    SET_MENU_PROPERTY( MPROP_BACKNAME, g_generalUsePlayersMenuIds[ player_id ], "BACK" )
-}
-
-/**
- * Gather all maps that match the nomination.
- */
-stock nomination_menu( player_id )
-{
-    LOGGER( 128, "I AM ENTERING ON nomination_menu(1) | player_id: %d", player_id )
-    buildTheNominationsMenu( player_id );
-    
-    // Start nomination menu variables
-    new      mapIndex;
-    new bool:isRecentMapNomAllowed;
-    new bool:isWhiteListNomBlock;
-    
-    new info          [ 1 ];
-    new choice        [ MAX_MAPNAME_LENGHT + 32 ];
-    new nominationMap [ MAX_MAPNAME_LENGHT ];
-    new disabledReason[ MAX_SHORT_STRING ];
-    
-    isRecentMapNomAllowed = ( g_recentMapCount
-                              && get_pcvar_num( cvar_recentNomMapsAllowance ) == 0 );
-    isWhiteListNomBlock   = ( IS_WHITELIST_ENABLED()
-                              && IS_TO_HOURLY_LOAD_THE_WHITELIST() );
-    
-    // Not loaded?
-    if( isWhiteListNomBlock )
-    {
-        tryToLoadTheWhiteListFeature();
-    }
-    // end nomination menu variables
-    
-    for( mapIndex = 0; mapIndex < g_nominationMapCount; mapIndex++ )
-    {
-        ArrayGetString( g_nominationMapsArray, mapIndex, nominationMap, charsmax( nominationMap ) );
-        
-        // Start the menu entry item calculation:
-        // 'nomination_menu(1)' and 'nominationAttemptWithNamePart(2)'.
-        {
-            // there may be a much better way of doing this, but I didn't feel like
-            // storing the matches and mapIndex's only to loop through them again
-            info[ 0 ] = mapIndex;
-            
-            // in most cases, the map will be available for selection, so assume that's the case here
-            disabledReason[ 0 ] = '^0';
-            
-            // disable if the map has already been nominated
-            if( nomination_getPlayer( mapIndex ) ) 
-            {
-                formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_NOMINATED" );
-            }
-            else if( isRecentMapNomAllowed
-                     && map_isTooRecent( nominationMap ) )
-            {
-                formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_TOORECENT" );
-            }
-            else if( equali( g_currentMap, nominationMap ) )
-            {
-                formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_CURRENTMAP" );
-            }
-            else if( isWhiteListNomBlock
-                     && ( ( g_blackListTrieForWhiteList
-                            && TrieKeyExists( g_blackListTrieForWhiteList, nominationMap ) )
-                          || ( g_whitelistTrie
-                               && !TrieKeyExists( g_whitelistTrie, nominationMap ) ) ) )
-            {
-                formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_WHITELIST" );
-            }
-            
-            formatex( choice, charsmax( choice ), "%s %s", nominationMap, disabledReason );
-            LOGGER( 0, "( nomination_menu ) choice: %s, info[0]: %d", choice, info[ 0 ] )
-            
-            menu_additem( g_generalUsePlayersMenuIds[ player_id ], choice, info,
-                    ( disabledReason[ 0 ] == '^0' ? 0 : ( 1 << 26 ) ) );
-            
-        } // end the menu entry item calculation.
-        
-    } // end for 'mapIndex'.
-    
-    menu_display( player_id, g_generalUsePlayersMenuIds[ player_id ] );
-}
-
-/**
- * Gather all maps that match the partialNameAttempt.
- * 
- * @note ( playerName[], &phraseIdx, matchingSegment[] )
- */
-stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
-{
-    LOGGER( 128, "I AM ENTERING ON nominationAttemptWithNamePart(1) | player_id: %d, partialNameAttempt: %s", player_id, partialNameAttempt )
-    
-    new matchCount;
-    new matchIndex;
-    
-    matchCount = 0;
-    matchIndex = -1;
-    
-    // all map names are stored as lowercase, so normalize the partialNameAttempt
-    strtolower( partialNameAttempt );
-    buildTheNominationsMenu( player_id );
-    
-    // Start nomination menu variables
-    new      mapIndex;
-    new bool:isRecentMapNomAllowed;
-    new bool:isWhiteListNomBlock;
-    
-    new info          [ 1 ];
-    new choice        [ MAX_MAPNAME_LENGHT + 32 ];
-    new nominationMap [ MAX_MAPNAME_LENGHT ];
-    new disabledReason[ MAX_SHORT_STRING ];
-    
-    isRecentMapNomAllowed = ( g_recentMapCount
-                              && get_pcvar_num( cvar_recentNomMapsAllowance ) == 0 );
-    isWhiteListNomBlock   = ( IS_WHITELIST_ENABLED()
-                              && IS_TO_HOURLY_LOAD_THE_WHITELIST() );
-    
-    // Not loaded?
-    if( isWhiteListNomBlock )
-    {
-        tryToLoadTheWhiteListFeature();
-    }
-    // end nomination menu variables
-    
-    // To create the map indexes array, for a menu display if it does not exists yet.
-    if( !g_menuMapIndexForPlayerArrays[ player_id ] )
-    {
-        g_menuMapIndexForPlayerArrays[ player_id ] = ArrayCreate( 1 );
-    }
-    
-    // Add a dummy value due the first map option to be 'Cancel all your Nominations'.
-    ArrayPushCell( g_menuMapIndexForPlayerArrays[ player_id ], 0 );
-    
-    for( mapIndex = 0; mapIndex < g_nominationMapCount && matchCount <= MAX_NOM_MATCH_COUNT; ++mapIndex )
-    {
-        ArrayGetString( g_nominationMapsArray, mapIndex, nominationMap, charsmax( nominationMap ) );
-        
-        if( containi( nominationMap, partialNameAttempt ) > -1 )
-        {
-            // Store in case this is the only match
-            matchIndex = mapIndex;
-            
-            // Save the map index for the current menu position
-            ArrayPushCell( g_menuMapIndexForPlayerArrays[ player_id ], mapIndex );
-            matchCount++;
-            
-            // Start the menu entry item calculation:
-            // 'nomination_menu(1)' and 'nominationAttemptWithNamePart(2)'.
-            {
-                // there may be a much better way of doing this, but I didn't feel like
-                // storing the matches and mapIndex's only to loop through them again
-                info[ 0 ] = mapIndex;
-                
-                // in most cases, the map will be available for selection, so assume that's the case here
-                disabledReason[ 0 ] = '^0';
-                
-                // disable if the map has already been nominated
-                if( nomination_getPlayer( mapIndex ) ) 
-                {
-                    formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_NOMINATED" );
-                }
-                else if( isRecentMapNomAllowed
-                         && map_isTooRecent( nominationMap ) )
-                {
-                    formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_TOORECENT" );
-                }
-                else if( equali( g_currentMap, nominationMap ) )
-                {
-                    formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_CURRENTMAP" );
-                }
-                else if( isWhiteListNomBlock
-                         && ( ( g_blackListTrieForWhiteList
-                                && TrieKeyExists( g_blackListTrieForWhiteList, nominationMap ) )
-                              || ( g_whitelistTrie
-                                   && !TrieKeyExists( g_whitelistTrie, nominationMap ) ) ) )
-                {
-                    formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_WHITELIST" );
-                }
-                
-                formatex( choice, charsmax( choice ), "%s %s", nominationMap, disabledReason );
-                LOGGER( 0, "( nomination_menu ) choice: %s, info[0]: %d", choice, info[ 0 ] )
-                
-                menu_additem( g_generalUsePlayersMenuIds[ player_id ], choice, info,
-                        ( disabledReason[ 0 ] == '^0' ? 0 : ( 1 << 26 ) ) );
-                
-            } // end the menu entry item calculation.
-            
-        }  // end if 'containi'.
-        
-    } // end for 'mapIndex'.
-    
-    // handle the number of matches
-    switch( matchCount )
-    {
-        case 0:
-        {
-            // no matches; pity the poor fool
-            color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_NOMATCHES", partialNameAttempt );
-            
-            // Destroys the menu, as is was not used.
-            clearMenuMapIndexForPlayers( player_id );
-        }
-        case 1:
-        {
-            // one match?! omg, this is just like awesome
-            map_nominate( player_id, matchIndex );
-            
-            // Destroys the menu, as is was not used.
-            clearMenuMapIndexForPlayers( player_id );
-        }
-        default:
-        {
-            // this is kinda sexy; we put up a menu of the matches for them to pick the right one
-            if( matchCount >= MAX_NOM_MATCH_COUNT )
-            {
-                color_print( player_id, "%L", player_id, "GAL_NOM_MATCHES_MAX", MAX_NOM_MATCH_COUNT, MAX_NOM_MATCH_COUNT );
-            }
-            
-            color_print( player_id, "%L", player_id, "GAL_NOM_MATCHES", partialNameAttempt );
-            menu_display( player_id, g_generalUsePlayersMenuIds[ player_id ] );
-        }
-    }
-}
-
-/**
- * This menu handler is a little different because it handles two similar menus. The
- * 'nomination_menu(1)' and the 'nominationAttemptWithNamePart(2)'. They would be very similar
- * handlers, then was just build one function instead of two alike.
- */
-public nomination_handleMatchChoice( player_id, menu, item )
-{
-    LOGGER( 128, "I AM ENTERING ON nomination_handleMatchChoice(1) | player_id: %d, menu: %d, item: %d", player_id, menu, item )
-    
-    // Let go to destroy the menu and clean some memory.
-    if( item < 0 )
-    {
-        clearMenuMapIndexForPlayers( player_id );
-        
-        LOGGER( 1, "    ( nomination_handleMatchChoice ) Just Returning PLUGIN_CONTINUE, the menu is destroyed." )
-        return PLUGIN_CONTINUE;
-    }
-    
-    // Due the first menu option to be 'Cancel all your Nominations'.
-    if( item == 0 )
-    {
-        unnominatedDisconnectedPlayer( player_id );
-        clearMenuMapIndexForPlayers( player_id );
-        
-        LOGGER( 1, "    ( nomination_handleMatchChoice ) Just Returning PLUGIN_HANDLED, the nominations were cancelled." )
-        return PLUGIN_HANDLED;
-    }
-    
-    // If we are using the 'nominationAttemptWithNamePart(2)'.
-    // Just because it exists, does not mean it is being used. One case is when
-    // 'nominationAttemptWithNamePart(2)' is called, and later the 'nomination_menu(1)' is called.
-    if( g_menuMapIndexForPlayerArrays[ player_id ]
-        && ArraySize( g_menuMapIndexForPlayerArrays[ player_id ] ) )
-    {
-        item = ArrayGetCell( g_menuMapIndexForPlayerArrays[ player_id ], item );
-    }
-    else // Then we are using the 'nomination_menu(1)'.
-    {
-        // Due the first menu option to be 'Cancel all your Nominations', take one item less 'item - 1'.
-        item--;
-    }
-    
-    // debugging menu info tracker
-#if defined DEBUG
-    new access;
-    new callback;
-    
-    new info[ 1 ];
-    LOGGER( 4, "( nomination_handleMatchChoice ) item: %d, player_id: %d, menu: %d, \
-            g_menuMapIndexForPlayerArrays[player_id]: %d", \
-            item + 1, player_id, menu, g_menuMapIndexForPlayerArrays[ player_id ] )
-    
-    // Get item info
-    menu_item_getinfo( g_generalUsePlayersMenuIds[ player_id ], item + 1, access, info, 1, _, _, callback );
-    
-    LOGGER( 4, "( nomination_handleMatchChoice ) info[0]: %d, access: %d, \
-            g_generalUsePlayersMenuIds[player_id]: %d", \
-            info[ 0 ], access, g_generalUsePlayersMenuIds[ player_id ] )
-#endif
-    
-    map_nominate( player_id, item );
-    clearMenuMapIndexForPlayers( player_id );
-    
-    LOGGER( 1, "    ( nomination_handleMatchChoice ) Just Returning PLUGIN_HANDLED, successful nomination." )
-    return PLUGIN_HANDLED;
-}
-
-stock clearMenuMapIndexForPlayers( player_id, isToDestroyEverything = false )
-{
-    LOGGER( 128, "I AM ENTERING ON clearMenuMapIndexForPlayers(1) | player_id: %d", player_id )
-    
-    if( g_menuMapIndexForPlayerArrays[ player_id ] )
-    {
-        if( isToDestroyEverything )
-        {
-            TRY_TO_APPLY( ArrayDestroy, g_menuMapIndexForPlayerArrays[ player_id ] )
-        }
-        else
-        {
-            ArrayClear( g_menuMapIndexForPlayerArrays[ player_id ] );
-        }
-    }
-    
-    // Let go to destroy the menu and clean some memory.
-    if( g_generalUsePlayersMenuIds[ player_id ] )
-    {
-        menu_destroy( g_generalUsePlayersMenuIds[ player_id ] );
-        g_generalUsePlayersMenuIds[ player_id ] = 0;
-    }
-}
-
-/**
- * Check if the map has already been nominated.
- * 
- * @return 0 when the map is not nominated, or the player nominator id.
- */
-stock nomination_getPlayer( mapIndex )
-{
-    LOGGER( 128, "I AM ENTERING ON nomination_getPlayer(1) | mapIndex: %d", mapIndex )
-    
-    new trieKey          [ MAX_NOMINATION_TRIE_KEY_SIZE ];
-    new mapNominationData[ MapNominationsType ];
-    
-    num_to_str( mapIndex, trieKey, charsmax( trieKey ) );
-    LOGGER( 4, "( nomination_getPlayer ) trieKey: %s", trieKey )
-    
-    if( TrieKeyExists( g_nominationMapsTrie, trieKey ) )
-    {
-        TrieGetArray( g_nominationMapsTrie, trieKey, mapNominationData, sizeof mapNominationData );
-        
-        return mapNominationData[ MapNominationsPlayerId ];
-    }
-    
-    return 0;
-}
-
-/**
- * Gets the nominated map index, given the player id and the nomination index.
- * 
- * @return -1 when there is no nomination, otherwise the map nomination index.
- */
-stock getPlayerNominationMapIndex( player_id, nominationIndex )
-{
-    LOGGER( 0, "I AM ENTERING ON getPlayerNominationMapIndex(2) | player_id: %d, nominationIndex: %d", player_id, nominationIndex )
-    
-    new trieKey             [ MAX_NOMINATION_TRIE_KEY_SIZE ];
-    new playerNominationData[ MAX_NOMINATION_COUNT ];
-    
-    createPlayerNominationKey( player_id, trieKey, charsmax( trieKey ) );
-    
-    if( TrieKeyExists( g_playersNominationsTrie, trieKey ) )
-    {
-        TrieGetArray( g_playersNominationsTrie, trieKey, playerNominationData, sizeof playerNominationData );
-    }
-    else
-    {
-        return -1;
-    }
-    
-    return playerNominationData[ nominationIndex ];
-}
-
-/**
- * Changes the player nomination. When there is no nominations, it creates the player entry to the
- * the server nominations tables "g_nominationMapsTrie" and "g_playersNominationsTrie".
- * 
- * @param player_id             the nominator player id.
- * @param nominationIndex       @see the updateNominationsReverseSearch's nominationIndex function parameter.
- * @param mapIndex              @see the updateNominationsReverseSearch's mapIndex function parameter.
- */
-stock setPlayerNominationMapIndex( player_id, nominationIndex, mapIndex )
-{
-    LOGGER( 128, "I AM ENTERING ON setPlayerNominationMapIndex(3) | player_id: %d, nominationIndex: %d, mapIndex: %d", player_id, nominationIndex, mapIndex )
-    
-    if( nominationIndex < MAX_NOMINATION_COUNT )
-    {
-        new originalMapIndex;
-        new trieKey             [ MAX_NOMINATION_TRIE_KEY_SIZE ];
-        new playerNominationData[ MAX_NOMINATION_COUNT ];
-        
-        createPlayerNominationKey( player_id, trieKey, charsmax( trieKey ) );
-        
-        if( TrieKeyExists( g_playersNominationsTrie, trieKey ) )
-        {
-            TrieGetArray( g_playersNominationsTrie, trieKey, playerNominationData, sizeof playerNominationData );
-            
-            originalMapIndex                        = playerNominationData[ nominationIndex ];
-            playerNominationData[ nominationIndex ] = mapIndex;
-            
-            TrieSetArray( g_playersNominationsTrie, trieKey, playerNominationData, sizeof playerNominationData );
-        }
-        else
-        {
-            for( new currentNominationIndex = 0; currentNominationIndex < MAX_NOMINATION_COUNT; ++currentNominationIndex )
-            {
-                playerNominationData[ currentNominationIndex ] = -1;
-                
-                LOGGER( 4, "( setPlayerNominationMapIndex ) playerNominationData[%d]: %d", \
-                        currentNominationIndex, playerNominationData[ currentNominationIndex ] )
-            }
-            
-            playerNominationData[ nominationIndex ] = mapIndex;
-            TrieSetArray( g_playersNominationsTrie, trieKey, playerNominationData, sizeof playerNominationData );
-        }
-        
-        updateNominationsReverseSearch( player_id, nominationIndex, mapIndex, originalMapIndex );
-    }
-    else
-    {
-        LOGGER( 1, "AMX_ERR_BOUNDS: %d. Was tried to set a wrong nomination bound index: %d", AMX_ERR_BOUNDS, nominationIndex )
-        log_error( AMX_ERR_BOUNDS, "Was tried to set a wrong nomination bound index: %d", nominationIndex );
-    }
-}
-
-/**
- * Update the reverse search, i.e., to find the nominator player id given the nominated map index.
- * Each map has one, and only one nomination index.
- * 
- * @param player_id             the nominator player game id.
- * @param nominationIndex       the player's personal nominations array index.
- * @param mapIndex              the server's nomination index. Uses -1 to disable the current 
- *                                  player's personal nomination index.
- * @param originalMapIndex      the correct server's nomination index. Do not accept the wild card
- *                                  -1 as the mapIndex parameter just above.
- */
-stock updateNominationsReverseSearch( player_id, nominationIndex, mapIndex, originalMapIndex )
-{
-    LOGGER( 128, "I AM ENTERING ON updateNominationsReverseSearch(4) | player_id: %d, \
-            nominationIndex: %d, mapIndex: %d, originalMapIndex: %d",  player_id, \
-            nominationIndex,     mapIndex,     originalMapIndex )
-    
-    new trieKey          [ MAX_NOMINATION_TRIE_KEY_SIZE ];
-    new mapNominationData[ MapNominationsType ];
-    
-    num_to_str( mapIndex, trieKey, charsmax( trieKey ) );
-    
-    if( mapIndex < 0 )
-    {
-        num_to_str( originalMapIndex, trieKey, charsmax( trieKey ) );
-        TrieDeleteKey( g_nominationMapsTrie, trieKey );
-    }
-    else
-    {
-        mapNominationData[ MapNominationsPlayerId ]        = player_id;
-        mapNominationData[ MapNominationsNominationIndex ] = nominationIndex;
-        
-        TrieSetArray( g_nominationMapsTrie, trieKey, mapNominationData, sizeof mapNominationData );
-    }
-}
-
-stock countPlayerNominations( player_id, &nominationOpenIndex )
-{
-    LOGGER( 128, "I AM ENTERING ON countPlayerNominations(2) | player_id: %d, nominationOpenIndex: %d", \
-                                                               player_id,     nominationOpenIndex )
-    new nominationCount;
-    
-    new trieKey[ MAX_NOMINATION_TRIE_KEY_SIZE ];
-    new playerNominationData[ MAX_NOMINATION_COUNT ];
-    
-    nominationOpenIndex = 0;
-    createPlayerNominationKey( player_id, trieKey, charsmax( trieKey ) );
-    
-    if( TrieKeyExists( g_playersNominationsTrie, trieKey ) )
-    {
-        TrieGetArray( g_playersNominationsTrie, trieKey, playerNominationData, sizeof playerNominationData );
-        
-        for( new nominationIndex = 0; nominationIndex < MAX_NOMINATION_COUNT; ++nominationIndex )
-        {
-            LOGGER( 4, "( countPlayerNominations ) playerNominationData[%d]: %d", \
-                    nominationIndex, playerNominationData[ nominationIndex ] )
-            
-            if( playerNominationData[ nominationIndex ] >= 0 )
-            {
-                nominationCount++;
-            }
-            else
-            {
-                nominationOpenIndex = nominationCount;
-                break;
-            }
-        }
-    }
-    else
-    {
-        nominationCount = 0;
-    }
-    
-    LOGGER( 4, "( countPlayerNominations ) nominationCount: %d, trieKey: %s, nominationOpenIndex: %d", \
-                                           nominationCount,     trieKey,     nominationOpenIndex )
-    return nominationCount;
-}
-
-stock createPlayerNominationKey( player_id, trieKey[], trieKeyMaxChars )
-{
-    LOGGER( 0, "I AM ENTERING ON createPlayerNominationKey(3) | player_id: %d, trieKeyMaxChars: %d", \
-            player_id, trieKeyMaxChars )
-    
-    new ipSize;
-    ipSize = get_user_ip( player_id, trieKey, trieKeyMaxChars );
-    
-#if defined DEBUG
-    ipSize += formatex( trieKey[ ipSize ], trieKeyMaxChars - ipSize, "player_id%d-", player_id );
-#endif
-    get_user_authid( player_id, trieKey[ ipSize ], trieKeyMaxChars - ipSize );
-    LOGGER( 0, "( createPlayerNominationKey ) player_id: %d, trieKey: %s,", player_id, trieKey )
-}
-
-stock nomination_toggle( player_id, mapIndex )
-{
-    LOGGER( 128, "I AM ENTERING ON nomination_toggle(2) | player_id: %d, mapIndex: %d", player_id, mapIndex )
-    new nominatorPlayerId = nomination_getPlayer( mapIndex );
-    
-    if( nominatorPlayerId == player_id )
-    {
-        nomination_cancel( player_id, mapIndex );
-    }
-    else
-    {
-        map_nominate( player_id, mapIndex, nominatorPlayerId );
-    }
-}
-
-stock nomination_cancel( player_id, mapIndex )
-{
-    LOGGER( 128, "I AM ENTERING ON nomination_cancel(2) | player_id: %d, mapIndex: %d", player_id, mapIndex )
-    
-    // cancellations can only be made if a vote isn't already in progress
-    if( g_voteStatus & VOTE_IS_IN_PROGRESS )
-    {
-        color_print( player_id, "%L", player_id, "GAL_CANCEL_FAIL_INPROGRESS" );
-        
-        LOGGER( 1, "    ( nomination_cancel ) Just Returning/blocking, the voting is in progress." )
-        return;
-    }
-    else if( g_voteStatus & VOTE_IS_OVER ) // and if the outcome of the vote hasn't already been determined
-    {
-        color_print( player_id, "%L", player_id, "GAL_CANCEL_FAIL_VOTEOVER" );
-        
-        LOGGER( 1, "    ( nomination_cancel ) Just Returning/blocking, the voting is over." )
-        return;
-    }
-    
-    new trieKey          [ MAX_NOMINATION_TRIE_KEY_SIZE ];
-    new mapName          [ MAX_MAPNAME_LENGHT ];
-    new mapNominationData[ MapNominationsType ];
-    
-    num_to_str( mapIndex, trieKey, charsmax( trieKey ) );
-    ArrayGetString( g_nominationMapsArray, mapIndex, mapName, charsmax( mapName ) );
-    
-    // nomination found, then delete it
-    if( TrieKeyExists( g_nominationMapsTrie, trieKey ) )
-    {
-        g_nominationCount--;
-        
-        TrieGetArray( g_nominationMapsTrie, trieKey, mapNominationData, sizeof mapNominationData );
-        setPlayerNominationMapIndex( player_id, mapNominationData[ MapNominationsNominationIndex ], -1 );
-        
-        nomination_announceCancellation( mapName );
-    }
-    else
-    {
-        new nominatorPlayerId = nomination_getPlayer( mapIndex );
-        
-        if( nominatorPlayerId )
-        {
-            new player_name[ MAX_PLAYER_NAME_LENGHT ];
-            
-            GET_USER_NAME( nominatorPlayerId, player_name )
-            color_print( player_id, "%L", player_id, "GAL_CANCEL_FAIL_SOMEONEELSE", mapName, player_name );
-        }
-        else
-        {
-            color_print( player_id, "%L", player_id, "GAL_CANCEL_FAIL_WASNOTYOU", mapName );
-        }
-    }
-}
-
-stock map_nominate( player_id, mapIndex, nominatorPlayerId = -1 )
-{
-    LOGGER( 128, "I AM ENTERING ON map_nominate(3) | player_id: %d, mapIndex: %d, nominatorPlayerId: %d", \
-                                                     player_id,     mapIndex,     nominatorPlayerId )
-    
-    // nominations can only be made if a vote isn't already in progress
-    if( g_voteStatus & VOTE_IS_IN_PROGRESS )
-    {
-        color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_INPROGRESS" );
-        
-        LOGGER( 1, "    ( map_nominate ) Just Returning/blocking, the voting is in progress." )
-        return;
-    }
-    else if( g_voteStatus & VOTE_IS_OVER ) // and if the outcome of the vote hasn't already been determined
-    {
-        color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_VOTEOVER" );
-        
-        LOGGER( 1, "    ( map_nominate ) Just Returning/blocking, the voting is over." )
-        return;
-    }
-    
-    new mapName[ MAX_MAPNAME_LENGHT ];
-    
-    // get the nominated map name
-    ArrayGetString( g_nominationMapsArray, mapIndex, mapName, charsmax( mapName ) ); 
-    LOGGER( 4, "( map_nominate ) mapIndex: %d, mapName: %s", mapIndex, mapName )
-    
-    if( IS_WHITELIST_ENABLED()
-        && IS_TO_HOURLY_LOAD_THE_WHITELIST() )
-    {
-        // Not loaded?
-        tryToLoadTheWhiteListFeature();
-        
-        if( ( g_blackListTrieForWhiteList
-              && TrieKeyExists( g_blackListTrieForWhiteList, mapName ) )
-            || ( g_whitelistTrie
-                 && !TrieKeyExists( g_whitelistTrie, mapName ) ) )
-        {
-            color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_WHITELIST", mapName );
-            
-            LOGGER( 1, "    ( map_nominate ) The map: %s, was blocked by the whitelist map setting.", mapName )
-            return;
-        }
-    }
-    
-    // players can not nominate the current map
-    if( equali( g_currentMap, mapName ) )
-    {
-        color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_CURRENTMAP", g_currentMap );
-        
-        LOGGER( 1, "    ( map_nominate ) Just Returning/blocking, cannot nominate the current map." )
-        return;
-    }
-    
-    // players may not be able to nominate recently played maps
-    if( g_recentMapCount
-        && map_isTooRecent( mapName )
-        && !get_pcvar_num( cvar_recentNomMapsAllowance ) )
-    {
-        color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_TOORECENT", mapName );
-        color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_TOORECENT_HLP" );
-        
-        LOGGER( 1, "    ( map_nominate ) Just Returning/blocking, cannot nominate recent maps." )
-        return;
-    }
-    
-    // check if the map has already been nominated
-    if( nominatorPlayerId == -1 )
-    {
-        nominatorPlayerId = nomination_getPlayer( mapIndex );
-    }
-    
-    // When no one nominated this map, the variable 'nominatorPlayerId' will be 0. Then here we
-    // to nominate it.
-    if( nominatorPlayerId == 0 )
-    {
-        new nominationOpenIndex;
-        new maxPlayerNominations;
-        
-        maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), MAX_NOMINATION_COUNT );
-        
-        // When max nomination limit is reached, then we must not to allow this nomination.
-        if( countPlayerNominations( player_id, nominationOpenIndex ) >= maxPlayerNominations )
-        {
-            new copiedChars;
-            
-            new nominatedMapName[ MAX_MAPNAME_LENGHT ];
-            new nominatedMaps   [ MAX_COLOR_MESSAGE ];
-            
-            for( new nominationIndex = 0; nominationIndex < maxPlayerNominations; ++nominationIndex )
-            {
-                mapIndex = getPlayerNominationMapIndex( player_id, nominationIndex );
-                
-                ArrayGetString( g_nominationMapsArray, mapIndex, nominatedMapName, charsmax( nominatedMapName ) );
-                
-                if( copiedChars )
-                {
-                    copiedChars += copy( nominatedMaps[ copiedChars ],
-                            charsmax( nominatedMaps ) - copiedChars, ", " );
-                }
-                
-                copiedChars += copy( nominatedMaps[ copiedChars ],
-                        charsmax( nominatedMaps ) - copiedChars, nominatedMapName );
-            }
-            
-            color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_TOOMANY", maxPlayerNominations, nominatedMaps );
-            color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_TOOMANY_HLP" );
-        }
-        // otherwise, allow the nomination
-        else
-        {
-            g_nominationCount++;
-            
-            setPlayerNominationMapIndex( player_id, nominationOpenIndex, mapIndex );
-            map_announceNomination( player_id, mapName );
-            
-            color_print( player_id, "%L", player_id, "GAL_NOM_GOOD_HLP" );
-        }
-        
-        LOGGER( 4, "( map_nominate ) nominationOpenIndex: %d, mapName: %s", nominationOpenIndex, mapName )
-    }
-    // If the nominatorPlayerId is equal to the current player_id, the player is trying to nominate
-    // the same map again. And it is not allowed.
-    else if( nominatorPlayerId == player_id )
-    {
-        color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_ALREADY", mapName );
-    }
-    // The player nomination is the same as some other player before. And it is not allowed.
-    else
-    {
-        new player_name[ MAX_PLAYER_NAME_LENGHT ];
-        GET_USER_NAME( nominatorPlayerId, player_name )
-        
-        color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_SOMEONEELSE", mapName, player_name );
-        color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_SOMEONEELSE_HLP" );
-    }
-}
-
-/**
- * Print to chat all players nominations available. This is usually called by 'say noms'.
- */
-public nomination_list()
-{
-    LOGGER( 128, "I AM ENTERING ON nomination_list(0)" )
-    
-    new nominationIndex;
-    new mapIndex;
-    new nomMapCount;
-    new maxPlayerNominations;
-    new copiedChars;
-    
-    new mapsList[ 101 ];
-    new mapName [ MAX_MAPNAME_LENGHT ];
-    
-    maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), MAX_NOMINATION_COUNT );
-    
-    for( new player_id = 1; player_id < MAX_PLAYERS_COUNT; ++player_id )
-    {
-        LOGGER( 4, "( nomination_list ) player_id: %d,", player_id, MAX_PLAYERS_COUNT )
-        
-        for( nominationIndex = 0; nominationIndex < maxPlayerNominations; ++nominationIndex )
-        {
-            mapIndex = getPlayerNominationMapIndex( player_id, nominationIndex );
-            
-            if( mapIndex >= 0 )
-            {
-                ArrayGetString( g_nominationMapsArray, mapIndex, mapName, charsmax( mapName ) );
-                
-                if( copiedChars )
-                {
-                    copiedChars += copy( mapsList[ copiedChars ], charsmax( mapsList ) - copiedChars, ", " );
-                }
-                copiedChars += copy( mapsList[ copiedChars ], charsmax( mapsList ) - copiedChars, mapName );
-                
-                if( ++nomMapCount == 4 )     // list 4 maps per chat line
-                {
-                    color_print( 0, "%L: %s", LANG_PLAYER, "GAL_NOMINATIONS", mapsList );
-                    
-                    nomMapCount   = 0;
-                    mapsList[ 0 ] = '^0';
-                }
-            }
-        }
-    }
-    
-    if( mapsList[ 0 ] )
-    {
-        color_print( 0, "%L: %s", LANG_PLAYER, "GAL_NOMINATIONS", mapsList );
-    }
-    else
-    {
-        color_print( 0, "%L: %L", LANG_PLAYER, "GAL_NOMINATIONS", LANG_PLAYER, "NONE" );
-    }
-}
-
-stock getSurMapNameIndex( mapSurName[] )
-{
-    LOGGER( 128, "I AM ENTERING ON getSurMapNameIndex(1) | mapSurName: %s", mapSurName )
-    
-    new mapIndex;
-    new map          [ MAX_MAPNAME_LENGHT ];
-    new nominationMap[ MAX_MAPNAME_LENGHT ];
-    
-    for( new prefixIndex = 0; prefixIndex < g_mapPrefixCount; ++prefixIndex )
-    {
-        formatex( map, charsmax( map ), "%s%s", g_mapPrefixes[ prefixIndex ], mapSurName );
-        
-        for( mapIndex = 0; mapIndex < g_nominationMapCount; ++mapIndex )
-        {
-            ArrayGetString( g_nominationMapsArray, mapIndex, nominationMap, charsmax( nominationMap ) );
-            
-            if( equali( map, nominationMap ) )
-            {
-                return mapIndex;
-            }
-        }
-    }
-    
-    return -1;
-}
-
 stock map_populateList( Array:mapArray, mapFilePath[], mapFilePathMaxChars, Trie:fillerMapTrie = Invalid_Trie )
 {
     LOGGER( 128, "I AM ENTERING ON map_populateList(4) | mapFilePath: %s", mapFilePath )
@@ -5459,6 +4203,15 @@ public voteExpire()
 {
     LOGGER( 128, "I AM ENTERING ON voteExpire(0)" )
     g_voteStatus |= VOTE_IS_EXPIRED;
+}
+
+public sort_stringsi( const elem1[], const elem2[], const array[], data[], data_size )
+{
+    LOGGER( 128, "I AM ENTERING ON sort_stringsi(5) | elem1: %15s, elem2: %15s, array: %10s, data: %10s, \
+            data_size: %3d",                          elem1,       elem2,       array,       data, \
+            data_size )
+    
+    return strcmp( elem1, elem2, 1 );
 }
 
 public vote_display( argument[ 2 ] )
@@ -7519,13 +6272,1260 @@ stock map_announceNomination( player_id, map[] )
     color_print( 0, "%L", LANG_PLAYER, "GAL_NOM_SUCCESS", player_name, map );
 }
 
-public sort_stringsi( const elem1[], const elem2[], const array[], data[], data_size )
+public cmd_rockthevote( player_id )
 {
-    LOGGER( 128, "I AM ENTERING ON sort_stringsi(5) | elem1: %15s, elem2: %15s, array: %10s, data: %10s, \
-            data_size: %3d",                          elem1,       elem2,       array,       data, \
-            data_size )
+    LOGGER( 128, "I AM ENTERING ON cmd_rockthevote(1) | player_id: %d", player_id )
     
-    return strcmp( elem1, elem2, 1 );
+    color_print( player_id, "%L", player_id, "GAL_CMD_RTV" );
+    vote_rock( player_id );
+    
+    return PLUGIN_HANDLED;
+}
+
+public cmd_nominations( player_id )
+{
+    LOGGER( 128, "I AM ENTERING ON cmd_nominations(1) | player_id: %d", player_id )
+    
+    color_print( player_id, "%L", player_id, "GAL_CMD_NOMS" );
+    nomination_list();
+    
+    return PLUGIN_CONTINUE;
+}
+
+public cmd_listrecent( player_id )
+{
+    LOGGER( 128, "I AM ENTERING ON cmd_listrecent(1) | player_id: %d", player_id )
+    new recentMapName[ MAX_MAPNAME_LENGHT ];
+    
+    switch( get_pcvar_num( cvar_banRecentStyle ) )
+    {
+        case 1:
+        {
+            new copiedChars;
+            new recentMapsMessage[ MAX_COLOR_MESSAGE ];
+            
+            for( new mapIndex = 0; mapIndex < g_recentMapCount; ++mapIndex )
+            {
+                ArrayGetString( g_recentListMapsArray, mapIndex, recentMapName, charsmax( recentMapName ) );
+                copiedChars += formatex( recentMapsMessage[ copiedChars ], charsmax( recentMapsMessage ) - copiedChars, ", %s", recentMapName );
+            }
+            
+            color_print( 0, "%L: %s", LANG_PLAYER, "GAL_MAP_RECENTMAPS", recentMapsMessage[ 2 ] );
+        }
+        case 2:
+        {
+            for( new mapIndex = 0; mapIndex < g_recentMapCount; ++mapIndex )
+            {
+                ArrayGetString( g_recentListMapsArray, mapIndex, recentMapName, charsmax( recentMapName ) );
+                
+                color_print( 0, "%L ( %i ): %s",
+                        LANG_PLAYER, "GAL_MAP_RECENTMAP", mapIndex + 1, recentMapName );
+            }
+        }
+        case 3:
+        {
+            new menuOptionString[ 64 ];
+            
+            // We starting building the menu
+            TRY_TO_APPLY( menu_destroy, g_generalUsePlayersMenuIds[ player_id ] )
+            
+            // To create the menu
+            formatex( menuOptionString, charsmax( menuOptionString ), "%L", player_id, "GAL_MAP_RECENTMAPS" );
+            g_generalUsePlayersMenuIds[ player_id ] = menu_create( menuOptionString, "cmd_listrecent_handler" );
+            
+            // Configure the menu buttons.
+            SET_MENU_PROPERTY( MPROP_EXITNAME, g_generalUsePlayersMenuIds[ player_id ], "EXIT" )
+            SET_MENU_PROPERTY( MPROP_NEXTNAME, g_generalUsePlayersMenuIds[ player_id ], "MORE" )
+            SET_MENU_PROPERTY( MPROP_BACKNAME, g_generalUsePlayersMenuIds[ player_id ], "BACK" )
+            
+            // Add the menu items.
+            for( new mapIndex = 0; mapIndex < g_recentMapCount; ++mapIndex )
+            {
+                ArrayGetString( g_recentListMapsArray, mapIndex, recentMapName, charsmax( recentMapName ) );
+                menu_additem( g_generalUsePlayersMenuIds[ player_id ], recentMapName );
+            }
+            
+            // To display the menu.
+            menu_display( player_id, g_generalUsePlayersMenuIds[ player_id ] );
+        }
+    }
+    
+    return PLUGIN_HANDLED;
+}
+
+public cmd_listrecent_handler( player_id, menu, item )
+{
+    LOGGER( 128, "I AM ENTERING ON cmd_listrecent_handler(3) | player_id: %d, menu: %d, item: %d", player_id, menu, item )
+    
+    // Let go to destroy the menu and clean some memory.
+    if( item < 0 )
+    {
+        menu_destroy( g_generalUsePlayersMenuIds[ player_id ] );
+        g_generalUsePlayersMenuIds[ player_id ] = 0;
+        
+        LOGGER( 1, "    ( cmd_listrecent_handler ) Just Returning PLUGIN_CONTINUE, as menu is destroyed." )
+        return PLUGIN_CONTINUE;
+    }
+    
+    // Just keep showing the menu until the exit button is pressed.
+    menu_display( player_id, g_generalUsePlayersMenuIds[ player_id ] );
+    
+    LOGGER( 1, "    ( cmd_listrecent_handler ) Just Returning PLUGIN_HANDLED." )
+    return PLUGIN_HANDLED;
+}
+
+public cmd_cancelVote( player_id, level, cid )
+{
+    LOGGER( 128, "I AM ENTERING ON cmd_cancelVote(3) | player_id: %d, level: %d, cid: %d", player_id, level, cid )
+    
+    if( !cmd_access( player_id, level, cid, 1 ) )
+    {
+        return PLUGIN_HANDLED;
+    }
+    
+    cancelVoting( true );
+    return PLUGIN_HANDLED;
+}
+
+/**
+ * Called when need to start a vote map, where the command line first argument could be:
+ *    -nochange: extend the current map, aka, Keep Current Map, will to do the real extend.
+ *    -restart: extend the current map, aka, Keep Current Map restart the server at the current map.
+ */
+public cmd_startVote( player_id, level, cid )
+{
+    LOGGER( 128, "I AM ENTERING ON cmd_startVote(3) | player_id: %d, level: %d, cid: %d", player_id, level, cid )
+    
+    if( !cmd_access( player_id, level, cid, 1 ) )
+    {
+        return PLUGIN_HANDLED;
+    }
+    
+    if( g_voteStatus & VOTE_IS_IN_PROGRESS )
+    {
+        color_print( player_id, "%L", player_id, "GAL_VOTE_INPROGRESS" );
+    }
+    else
+    {
+        g_isTimeToChangeLevel = true;
+        
+        if( read_argc() == 2 )
+        {
+            new argument[ 32 ];
+            
+            read_args( argument, charsmax( argument ) );
+            remove_quotes( argument );
+            
+            if( equali( argument, "-nochange" ) )
+            {
+                g_isTimeToChangeLevel = false;
+            }
+            
+            if( equali( argument, "-restart", 4 ) )
+            {
+                g_isTimeToRestart = true;
+            }
+            
+            LOGGER( 1, "( cmd_startVote ) equal( %s, '-restart', 4 )? %d", \
+                                argument, equal( argument, "-restart", 4 ) )
+        }
+        
+        LOGGER( 1, "( cmd_startVote ) g_isTimeToRestart? %d, \
+                g_isTimeToChangeLevel? %d, g_voteStatus & VOTE_IS_FORCED: %d", \
+                                      g_isTimeToRestart, \
+                g_isTimeToChangeLevel,     g_voteStatus & VOTE_IS_FORCED != 0 )
+        
+        vote_startDirector( true );
+    }
+    
+    return PLUGIN_HANDLED;
+}
+
+public cmd_createMapFile( player_id, level, cid )
+{
+    LOGGER( 128, "I AM ENTERING ON cmd_createMapFile(3) | player_id: %d, level: %d, cid: %d", player_id, level, cid )
+    
+    if( !cmd_access( player_id, level, cid, 1 ) )
+    {
+        return PLUGIN_HANDLED;
+    }
+    
+    new argumentsNumber = read_argc() - 1;
+    
+    switch( argumentsNumber )
+    {
+        case 1:
+        {
+            new mapFileName[ MAX_MAPNAME_LENGHT ];
+            
+            read_argv( 1, mapFileName, charsmax( mapFileName ) );
+            remove_quotes( mapFileName );
+            
+            // map name is MAX_MAPNAME_LENGHT, .bsp: 4 + string terminator: 1 = 5
+            new loadedMapName[ MAX_MAPNAME_LENGHT + 5 ];
+            
+            new directoryDescriptor;
+            new mapFile;
+            new mapCount;
+            new mapNameLength;
+            
+            directoryDescriptor = open_dir( "maps", loadedMapName, charsmax( loadedMapName )  );
+            
+            if( directoryDescriptor )
+            {
+                new mapFilePath[ MAX_FILE_PATH_LENGHT ];
+                
+                formatex( mapFilePath, charsmax( mapFilePath ), "%s/%s", g_configsDirPath, mapFileName );
+                mapFile = fopen( mapFilePath, "wt" );
+                
+                if( mapFile )
+                {
+                    mapCount = 0;
+                    
+                    while( next_file( directoryDescriptor, loadedMapName, charsmax( loadedMapName ) ) )
+                    {
+                        mapNameLength = strlen( loadedMapName );
+                        
+                        if( mapNameLength > 4
+                            && equali( loadedMapName[ mapNameLength - 4 ], ".bsp", 4 ) )
+                        {
+                            loadedMapName[ mapNameLength - 4 ] = '^0';
+                            
+                            if( IS_MAP_VALID( loadedMapName ) )
+                            {
+                                mapCount++;
+                                fprintf( mapFile, "%s^n", loadedMapName );
+                            }
+                        }
+                    }
+                    
+                    fclose( mapFile );
+                    console_print( player_id, "%L", player_id, "GAL_CREATIONSUCCESS", mapFilePath, mapCount );
+                }
+                else
+                {
+                    console_print( player_id, "%L", player_id, "GAL_CREATIONFAILED", mapFilePath );
+                }
+                
+                close_dir( directoryDescriptor );
+            }
+            else
+            {
+                // directory not found, wtf?
+                console_print( player_id, "%L", player_id, "GAL_MAPSFOLDERMISSING" );
+            }
+        }
+        default:
+        {
+            // inform of correct usage
+            console_print( player_id, "%L", player_id, "GAL_CMD_CREATEFILE_USAGE1" );
+            console_print( player_id, "%L", player_id, "GAL_CMD_CREATEFILE_USAGE2" );
+        }
+    }
+    
+    return PLUGIN_HANDLED;
+}
+
+/**
+ * Called when need to start a vote map, where the command line first argument could be:
+ *    -nochange: extend the current map, aka, Keep Current Map, will to do the real extend.
+ *    -restart: extend the current map, aka, Keep Current Map restart the server at the current map.
+ */
+public cmd_maintenanceMode( player_id, level, cid )
+{
+    LOGGER( 128, "I AM ENTERING ON cmd_maintenanceMode(3) | player_id: %d, level: %d, cid: %d", player_id, level, cid )
+    
+    if( !cmd_access( player_id, level, cid, 1 ) )
+    {
+        return PLUGIN_HANDLED;
+    }
+    
+    // Always print to the console for logging, because it is a important event.
+    if( g_isOnMaintenanceMode )
+    {
+        g_isOnMaintenanceMode = false;
+        
+        color_print( 0, "%L", LANG_PLAYER, "GAL_CHANGE_MAINTENANCE_STATE", LANG_PLAYER, "GAL_CHANGE_MAINTENANCE_OFF" );
+        no_color_print( player_id, "%L", player_id, "GAL_CHANGE_MAINTENANCE_STATE", player_id, "GAL_CHANGE_MAINTENANCE_OFF" );
+    }
+    else
+    {
+        g_isOnMaintenanceMode = true;
+        
+        color_print( 0, "%L", LANG_PLAYER, "GAL_CHANGE_MAINTENANCE_STATE", LANG_PLAYER, "GAL_CHANGE_MAINTENANCE_ON" );
+        no_color_print( player_id, "%L", player_id, "GAL_CHANGE_MAINTENANCE_STATE", player_id, "GAL_CHANGE_MAINTENANCE_ON" );
+    }
+    
+    return PLUGIN_HANDLED;
+}
+
+/**
+ * Generic say handler to determine if we need to act on what was said.
+ */
+public cmd_say( player_id )
+{
+    LOGGER( 128, "I AM ENTERING ON cmd_say(1) | player_id: %s", player_id )
+    
+    new prefix_index;
+    new thirdWord[ 2 ];
+    
+    static sentence  [ 70 ];
+    static firstWord [ 32 ];
+    static secondWord[ 32 ];
+    
+    sentence  [ 0 ] = '^0';
+    firstWord [ 0 ] = '^0';
+    secondWord[ 0 ] = '^0';
+    
+    read_args( sentence, charsmax( sentence ) );
+    remove_quotes( sentence );
+    
+    parse( sentence,
+            firstWord, charsmax( firstWord ),
+            secondWord, charsmax( secondWord ),
+            thirdWord, charsmax( thirdWord ) );
+    
+    LOGGER( 4, "( cmd_say ) sentence: %s, firstWord: %s, secondWord: %s, thirdWord: %s", \
+                            sentence,     firstWord,     secondWord,     thirdWord )
+    
+    // if the chat line has more than 2 words, we're not interested at all
+    if( thirdWord[ 0 ] == '^0' )
+    {
+        LOGGER( 4, "( cmd_say ) the thirdWord is empty." )
+        new mapIndex;
+        
+        // if the chat line contains 1 word, it could be a map or a one-word command as
+        // "say [rtv|rockthe<anything>vote]"
+        if( secondWord[ 0 ] == '^0' )
+        {
+            LOGGER( 4, "( cmd_say ) the secondWord is empty." )
+            
+            if( ( g_rtvCommands & RTV_CMD_SHORTHAND
+                  && equali( firstWord, "rtv" ) )
+                || ( g_rtvCommands & RTV_CMD_DYNAMIC
+                     && equali( firstWord, "rockthe", 7 )
+                     && equali( firstWord[ strlen( firstWord ) - 4 ], "vote" )
+                     && !( g_rtvCommands & RTV_CMD_STANDARD ) ) )
+            {
+                LOGGER( 4, "( cmd_say ) running vote_rock( player_id ); player_id: %s", player_id )
+                vote_rock( player_id );
+                
+                LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, vote_rock(1) chosen." )
+                return PLUGIN_HANDLED;
+            }
+            else if( get_pcvar_num( cvar_nomPlayerAllowance ) )
+            {
+                LOGGER( 4, "( cmd_say ) on the 1 word: else if( cvar_nomPlayerAllowance ), \
+                        get_pcvar_num( cvar_nomPlayerAllowance ): %d", \
+                        get_pcvar_num( cvar_nomPlayerAllowance ) )
+                
+                if( equali( firstWord, "noms" )
+                    || equali( firstWord, "nominations" ) )
+                {
+                    nomination_list();
+                    
+                    LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, nomination_list(0) chosen." )
+                    return PLUGIN_HANDLED;
+                }
+                else
+                {
+                    mapIndex = getSurMapNameIndex( firstWord );
+                    
+                    if( mapIndex >= 0 )
+                    {
+                        nomination_toggle( player_id, mapIndex );
+                        
+                        LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, nomination_toggle(2) chosen." )
+                        return PLUGIN_HANDLED;
+                    }
+                    else if( strlen( firstWord ) > 5
+                             && equali( firstWord, "nom", 3 )
+                             && equali( firstWord[ strlen( firstWord ) - 4 ], "menu" ) )
+                    {
+                        nomination_menu( player_id );
+                        
+                        LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, nomination_menu(1) chosen." )
+                        return PLUGIN_HANDLED;
+                    }
+                    else // if contains a prefix
+                    {
+                        for( prefix_index = 0; prefix_index < g_mapPrefixCount; prefix_index++ )
+                        {
+                            LOGGER( 4, "( cmd_say ) firstWord: %s, \
+                                    g_mapPrefixes[%d]: %s, \
+                                    containi( %s, %s )? %d", \
+                                    firstWord, \
+                                    prefix_index, g_mapPrefixes[ prefix_index ], \
+                                    firstWord, g_mapPrefixes[ prefix_index ], containi( firstWord, g_mapPrefixes[ prefix_index ] ) )
+                            
+                            if( containi( firstWord, g_mapPrefixes[ prefix_index ] ) > -1 )
+                            {
+                                nomination_menu( player_id );
+                                
+                                LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, nomination_menu(1) chosen." )
+                                return PLUGIN_HANDLED;
+                            }
+                        }
+                    }
+                    
+                    LOGGER( 4, "( cmd_say ) equali(%s, 'nom', 3)? %d, strlen(%s) > 5? %d", \
+                                 firstWord, equali( firstWord, "nom", 3 ), \
+                                 firstWord, strlen( firstWord ) > 5 )
+                }
+            }
+        }
+        else if( get_pcvar_num( cvar_nomPlayerAllowance ) )  // "say <nominate|nom|cancel> <map>"
+        {
+            if( equali( firstWord, "nominate" )
+                || equali( firstWord, "nom" ) )
+            {
+                nominationAttemptWithNamePart( player_id, secondWord );
+                
+                LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, nominationAttemptWithNamePart(2) chosen." )
+                return PLUGIN_HANDLED;
+            }
+            else if( equali( firstWord, "cancel" ) )
+            {
+                // bpj -- allow ambiguous cancel in which case a menu of their nominations is shown
+                mapIndex = getSurMapNameIndex( secondWord );
+                
+                if( mapIndex >= 0 )
+                {
+                    nomination_cancel( player_id, mapIndex );
+                    
+                    LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, nomination cancel option chosen." )
+                    return PLUGIN_HANDLED;
+                }
+            }
+        }
+    }
+    
+    LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_CONTINUE, as reached the handler end." )
+    return PLUGIN_CONTINUE;
+}
+
+stock buildTheNominationsMenu( player_id )
+{
+    LOGGER( 128, "I AM ENTERING ON buildTheNominationsMenu(1) | player_id: %d", player_id )
+    new menuOptionString[ MAX_SHORT_STRING ];
+    
+    // Clear the last menu, if exists
+    clearMenuMapIndexForPlayers( player_id );
+    
+    // To create the menu
+    formatex( menuOptionString, charsmax( menuOptionString ), "%L", player_id, "GAL_LISTMAPS_TITLE" );
+    g_generalUsePlayersMenuIds[ player_id ] = menu_create( menuOptionString, "nomination_handleMatchChoice" );
+    
+    // The first menu item, 'Cancel All Your Nominations.
+    formatex( menuOptionString, charsmax( menuOptionString ), "%L", player_id, "GAL_NOM_CANCEL_OPTION" );
+    menu_additem( g_generalUsePlayersMenuIds[ player_id ], menuOptionString, { 0 }, 0 );
+    
+    // Add some space from the cancel option.
+    menu_addblank( g_generalUsePlayersMenuIds[ player_id ], 0 );
+    
+    // Configure the menu buttons.
+    SET_MENU_PROPERTY( MPROP_EXITNAME, g_generalUsePlayersMenuIds[ player_id ], "EXIT" )
+    SET_MENU_PROPERTY( MPROP_NEXTNAME, g_generalUsePlayersMenuIds[ player_id ], "MORE" )
+    SET_MENU_PROPERTY( MPROP_BACKNAME, g_generalUsePlayersMenuIds[ player_id ], "BACK" )
+}
+
+/**
+ * Gather all maps that match the nomination.
+ */
+stock nomination_menu( player_id )
+{
+    LOGGER( 128, "I AM ENTERING ON nomination_menu(1) | player_id: %d", player_id )
+    buildTheNominationsMenu( player_id );
+    
+    // Start nomination menu variables
+    new      mapIndex;
+    new bool:isRecentMapNomAllowed;
+    new bool:isWhiteListNomBlock;
+    
+    new info          [ 1 ];
+    new choice        [ MAX_MAPNAME_LENGHT + 32 ];
+    new nominationMap [ MAX_MAPNAME_LENGHT ];
+    new disabledReason[ MAX_SHORT_STRING ];
+    
+    isRecentMapNomAllowed = ( g_recentMapCount
+                              && get_pcvar_num( cvar_recentNomMapsAllowance ) == 0 );
+    isWhiteListNomBlock   = ( IS_WHITELIST_ENABLED()
+                              && IS_TO_HOURLY_LOAD_THE_WHITELIST() );
+    
+    // Not loaded?
+    if( isWhiteListNomBlock )
+    {
+        tryToLoadTheWhiteListFeature();
+    }
+    // end nomination menu variables
+    
+    for( mapIndex = 0; mapIndex < g_nominationMapCount; mapIndex++ )
+    {
+        ArrayGetString( g_nominationMapsArray, mapIndex, nominationMap, charsmax( nominationMap ) );
+        
+        // Start the menu entry item calculation:
+        // 'nomination_menu(1)' and 'nominationAttemptWithNamePart(2)'.
+        {
+            // there may be a much better way of doing this, but I didn't feel like
+            // storing the matches and mapIndex's only to loop through them again
+            info[ 0 ] = mapIndex;
+            
+            // in most cases, the map will be available for selection, so assume that's the case here
+            disabledReason[ 0 ] = '^0';
+            
+            // disable if the map has already been nominated
+            if( nomination_getPlayer( mapIndex ) ) 
+            {
+                formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_NOMINATED" );
+            }
+            else if( isRecentMapNomAllowed
+                     && map_isTooRecent( nominationMap ) )
+            {
+                formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_TOORECENT" );
+            }
+            else if( equali( g_currentMap, nominationMap ) )
+            {
+                formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_CURRENTMAP" );
+            }
+            else if( isWhiteListNomBlock
+                     && ( ( g_blackListTrieForWhiteList
+                            && TrieKeyExists( g_blackListTrieForWhiteList, nominationMap ) )
+                          || ( g_whitelistTrie
+                               && !TrieKeyExists( g_whitelistTrie, nominationMap ) ) ) )
+            {
+                formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_WHITELIST" );
+            }
+            
+            formatex( choice, charsmax( choice ), "%s %s", nominationMap, disabledReason );
+            LOGGER( 0, "( nomination_menu ) choice: %s, info[0]: %d", choice, info[ 0 ] )
+            
+            menu_additem( g_generalUsePlayersMenuIds[ player_id ], choice, info,
+                    ( disabledReason[ 0 ] == '^0' ? 0 : ( 1 << 26 ) ) );
+            
+        } // end the menu entry item calculation.
+        
+    } // end for 'mapIndex'.
+    
+    menu_display( player_id, g_generalUsePlayersMenuIds[ player_id ] );
+}
+
+/**
+ * Gather all maps that match the partialNameAttempt.
+ * 
+ * @note ( playerName[], &phraseIdx, matchingSegment[] )
+ */
+stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
+{
+    LOGGER( 128, "I AM ENTERING ON nominationAttemptWithNamePart(1) | player_id: %d, partialNameAttempt: %s", player_id, partialNameAttempt )
+    
+    new matchCount;
+    new matchIndex;
+    
+    matchCount = 0;
+    matchIndex = -1;
+    
+    // all map names are stored as lowercase, so normalize the partialNameAttempt
+    strtolower( partialNameAttempt );
+    buildTheNominationsMenu( player_id );
+    
+    // Start nomination menu variables
+    new      mapIndex;
+    new bool:isRecentMapNomAllowed;
+    new bool:isWhiteListNomBlock;
+    
+    new info          [ 1 ];
+    new choice        [ MAX_MAPNAME_LENGHT + 32 ];
+    new nominationMap [ MAX_MAPNAME_LENGHT ];
+    new disabledReason[ MAX_SHORT_STRING ];
+    
+    isRecentMapNomAllowed = ( g_recentMapCount
+                              && get_pcvar_num( cvar_recentNomMapsAllowance ) == 0 );
+    isWhiteListNomBlock   = ( IS_WHITELIST_ENABLED()
+                              && IS_TO_HOURLY_LOAD_THE_WHITELIST() );
+    
+    // Not loaded?
+    if( isWhiteListNomBlock )
+    {
+        tryToLoadTheWhiteListFeature();
+    }
+    // end nomination menu variables
+    
+    // To create the map indexes array, for a menu display if it does not exists yet.
+    if( !g_menuMapIndexForPlayerArrays[ player_id ] )
+    {
+        g_menuMapIndexForPlayerArrays[ player_id ] = ArrayCreate( 1 );
+    }
+    
+    // Add a dummy value due the first map option to be 'Cancel all your Nominations'.
+    ArrayPushCell( g_menuMapIndexForPlayerArrays[ player_id ], 0 );
+    
+    for( mapIndex = 0; mapIndex < g_nominationMapCount && matchCount <= MAX_NOM_MATCH_COUNT; ++mapIndex )
+    {
+        ArrayGetString( g_nominationMapsArray, mapIndex, nominationMap, charsmax( nominationMap ) );
+        
+        if( containi( nominationMap, partialNameAttempt ) > -1 )
+        {
+            // Store in case this is the only match
+            matchIndex = mapIndex;
+            
+            // Save the map index for the current menu position
+            ArrayPushCell( g_menuMapIndexForPlayerArrays[ player_id ], mapIndex );
+            matchCount++;
+            
+            // Start the menu entry item calculation:
+            // 'nomination_menu(1)' and 'nominationAttemptWithNamePart(2)'.
+            {
+                // there may be a much better way of doing this, but I didn't feel like
+                // storing the matches and mapIndex's only to loop through them again
+                info[ 0 ] = mapIndex;
+                
+                // in most cases, the map will be available for selection, so assume that's the case here
+                disabledReason[ 0 ] = '^0';
+                
+                // disable if the map has already been nominated
+                if( nomination_getPlayer( mapIndex ) ) 
+                {
+                    formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_NOMINATED" );
+                }
+                else if( isRecentMapNomAllowed
+                         && map_isTooRecent( nominationMap ) )
+                {
+                    formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_TOORECENT" );
+                }
+                else if( equali( g_currentMap, nominationMap ) )
+                {
+                    formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_CURRENTMAP" );
+                }
+                else if( isWhiteListNomBlock
+                         && ( ( g_blackListTrieForWhiteList
+                                && TrieKeyExists( g_blackListTrieForWhiteList, nominationMap ) )
+                              || ( g_whitelistTrie
+                                   && !TrieKeyExists( g_whitelistTrie, nominationMap ) ) ) )
+                {
+                    formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_WHITELIST" );
+                }
+                
+                formatex( choice, charsmax( choice ), "%s %s", nominationMap, disabledReason );
+                LOGGER( 0, "( nomination_menu ) choice: %s, info[0]: %d", choice, info[ 0 ] )
+                
+                menu_additem( g_generalUsePlayersMenuIds[ player_id ], choice, info,
+                        ( disabledReason[ 0 ] == '^0' ? 0 : ( 1 << 26 ) ) );
+                
+            } // end the menu entry item calculation.
+            
+        }  // end if 'containi'.
+        
+    } // end for 'mapIndex'.
+    
+    // handle the number of matches
+    switch( matchCount )
+    {
+        case 0:
+        {
+            // no matches; pity the poor fool
+            color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_NOMATCHES", partialNameAttempt );
+            
+            // Destroys the menu, as is was not used.
+            clearMenuMapIndexForPlayers( player_id );
+        }
+        case 1:
+        {
+            // one match?! omg, this is just like awesome
+            map_nominate( player_id, matchIndex );
+            
+            // Destroys the menu, as is was not used.
+            clearMenuMapIndexForPlayers( player_id );
+        }
+        default:
+        {
+            // this is kinda sexy; we put up a menu of the matches for them to pick the right one
+            if( matchCount >= MAX_NOM_MATCH_COUNT )
+            {
+                color_print( player_id, "%L", player_id, "GAL_NOM_MATCHES_MAX", MAX_NOM_MATCH_COUNT, MAX_NOM_MATCH_COUNT );
+            }
+            
+            color_print( player_id, "%L", player_id, "GAL_NOM_MATCHES", partialNameAttempt );
+            menu_display( player_id, g_generalUsePlayersMenuIds[ player_id ] );
+        }
+    }
+}
+
+/**
+ * This menu handler is a little different because it handles two similar menus. The
+ * 'nomination_menu(1)' and the 'nominationAttemptWithNamePart(2)'. They would be very similar
+ * handlers, then was just build one function instead of two alike.
+ */
+public nomination_handleMatchChoice( player_id, menu, item )
+{
+    LOGGER( 128, "I AM ENTERING ON nomination_handleMatchChoice(1) | player_id: %d, menu: %d, item: %d", player_id, menu, item )
+    
+    // Let go to destroy the menu and clean some memory.
+    if( item < 0 )
+    {
+        clearMenuMapIndexForPlayers( player_id );
+        
+        LOGGER( 1, "    ( nomination_handleMatchChoice ) Just Returning PLUGIN_CONTINUE, the menu is destroyed." )
+        return PLUGIN_CONTINUE;
+    }
+    
+    // Due the first menu option to be 'Cancel all your Nominations'.
+    if( item == 0 )
+    {
+        unnominatedDisconnectedPlayer( player_id );
+        clearMenuMapIndexForPlayers( player_id );
+        
+        LOGGER( 1, "    ( nomination_handleMatchChoice ) Just Returning PLUGIN_HANDLED, the nominations were cancelled." )
+        return PLUGIN_HANDLED;
+    }
+    
+    // If we are using the 'nominationAttemptWithNamePart(2)'.
+    // Just because it exists, does not mean it is being used. One case is when
+    // 'nominationAttemptWithNamePart(2)' is called, and later the 'nomination_menu(1)' is called.
+    if( g_menuMapIndexForPlayerArrays[ player_id ]
+        && ArraySize( g_menuMapIndexForPlayerArrays[ player_id ] ) )
+    {
+        item = ArrayGetCell( g_menuMapIndexForPlayerArrays[ player_id ], item );
+    }
+    else // Then we are using the 'nomination_menu(1)'.
+    {
+        // Due the first menu option to be 'Cancel all your Nominations', take one item less 'item - 1'.
+        item--;
+    }
+    
+    // debugging menu info tracker
+#if defined DEBUG
+    new access;
+    new callback;
+    
+    new info[ 1 ];
+    LOGGER( 4, "( nomination_handleMatchChoice ) item: %d, player_id: %d, menu: %d, \
+            g_menuMapIndexForPlayerArrays[player_id]: %d", \
+            item + 1, player_id, menu, g_menuMapIndexForPlayerArrays[ player_id ] )
+    
+    // Get item info
+    menu_item_getinfo( g_generalUsePlayersMenuIds[ player_id ], item + 1, access, info, 1, _, _, callback );
+    
+    LOGGER( 4, "( nomination_handleMatchChoice ) info[0]: %d, access: %d, \
+            g_generalUsePlayersMenuIds[player_id]: %d", \
+            info[ 0 ], access, g_generalUsePlayersMenuIds[ player_id ] )
+#endif
+    
+    map_nominate( player_id, item );
+    clearMenuMapIndexForPlayers( player_id );
+    
+    LOGGER( 1, "    ( nomination_handleMatchChoice ) Just Returning PLUGIN_HANDLED, successful nomination." )
+    return PLUGIN_HANDLED;
+}
+
+stock clearMenuMapIndexForPlayers( player_id, isToDestroyEverything = false )
+{
+    LOGGER( 128, "I AM ENTERING ON clearMenuMapIndexForPlayers(1) | player_id: %d", player_id )
+    
+    if( g_menuMapIndexForPlayerArrays[ player_id ] )
+    {
+        if( isToDestroyEverything )
+        {
+            TRY_TO_APPLY( ArrayDestroy, g_menuMapIndexForPlayerArrays[ player_id ] )
+        }
+        else
+        {
+            ArrayClear( g_menuMapIndexForPlayerArrays[ player_id ] );
+        }
+    }
+    
+    // Let go to destroy the menu and clean some memory.
+    if( g_generalUsePlayersMenuIds[ player_id ] )
+    {
+        menu_destroy( g_generalUsePlayersMenuIds[ player_id ] );
+        g_generalUsePlayersMenuIds[ player_id ] = 0;
+    }
+}
+
+/**
+ * Check if the map has already been nominated.
+ * 
+ * @return 0 when the map is not nominated, or the player nominator id.
+ */
+stock nomination_getPlayer( mapIndex )
+{
+    LOGGER( 128, "I AM ENTERING ON nomination_getPlayer(1) | mapIndex: %d", mapIndex )
+    
+    new trieKey          [ MAX_NOMINATION_TRIE_KEY_SIZE ];
+    new mapNominationData[ MapNominationsType ];
+    
+    num_to_str( mapIndex, trieKey, charsmax( trieKey ) );
+    LOGGER( 4, "( nomination_getPlayer ) trieKey: %s", trieKey )
+    
+    if( TrieKeyExists( g_nominationMapsTrie, trieKey ) )
+    {
+        TrieGetArray( g_nominationMapsTrie, trieKey, mapNominationData, sizeof mapNominationData );
+        
+        return mapNominationData[ MapNominationsPlayerId ];
+    }
+    
+    return 0;
+}
+
+/**
+ * Gets the nominated map index, given the player id and the nomination index.
+ * 
+ * @return -1 when there is no nomination, otherwise the map nomination index.
+ */
+stock getPlayerNominationMapIndex( player_id, nominationIndex )
+{
+    LOGGER( 0, "I AM ENTERING ON getPlayerNominationMapIndex(2) | player_id: %d, nominationIndex: %d", player_id, nominationIndex )
+    
+    new trieKey             [ MAX_NOMINATION_TRIE_KEY_SIZE ];
+    new playerNominationData[ MAX_NOMINATION_COUNT ];
+    
+    createPlayerNominationKey( player_id, trieKey, charsmax( trieKey ) );
+    
+    if( TrieKeyExists( g_playersNominationsTrie, trieKey ) )
+    {
+        TrieGetArray( g_playersNominationsTrie, trieKey, playerNominationData, sizeof playerNominationData );
+    }
+    else
+    {
+        return -1;
+    }
+    
+    return playerNominationData[ nominationIndex ];
+}
+
+/**
+ * Changes the player nomination. When there is no nominations, it creates the player entry to the
+ * the server nominations tables "g_nominationMapsTrie" and "g_playersNominationsTrie".
+ * 
+ * @param player_id             the nominator player id.
+ * @param nominationIndex       @see the updateNominationsReverseSearch's nominationIndex function parameter.
+ * @param mapIndex              @see the updateNominationsReverseSearch's mapIndex function parameter.
+ */
+stock setPlayerNominationMapIndex( player_id, nominationIndex, mapIndex )
+{
+    LOGGER( 128, "I AM ENTERING ON setPlayerNominationMapIndex(3) | player_id: %d, nominationIndex: %d, mapIndex: %d", player_id, nominationIndex, mapIndex )
+    
+    if( nominationIndex < MAX_NOMINATION_COUNT )
+    {
+        new originalMapIndex;
+        new trieKey             [ MAX_NOMINATION_TRIE_KEY_SIZE ];
+        new playerNominationData[ MAX_NOMINATION_COUNT ];
+        
+        createPlayerNominationKey( player_id, trieKey, charsmax( trieKey ) );
+        
+        if( TrieKeyExists( g_playersNominationsTrie, trieKey ) )
+        {
+            TrieGetArray( g_playersNominationsTrie, trieKey, playerNominationData, sizeof playerNominationData );
+            
+            originalMapIndex                        = playerNominationData[ nominationIndex ];
+            playerNominationData[ nominationIndex ] = mapIndex;
+            
+            TrieSetArray( g_playersNominationsTrie, trieKey, playerNominationData, sizeof playerNominationData );
+        }
+        else
+        {
+            for( new currentNominationIndex = 0; currentNominationIndex < MAX_NOMINATION_COUNT; ++currentNominationIndex )
+            {
+                playerNominationData[ currentNominationIndex ] = -1;
+                
+                LOGGER( 4, "( setPlayerNominationMapIndex ) playerNominationData[%d]: %d", \
+                        currentNominationIndex, playerNominationData[ currentNominationIndex ] )
+            }
+            
+            playerNominationData[ nominationIndex ] = mapIndex;
+            TrieSetArray( g_playersNominationsTrie, trieKey, playerNominationData, sizeof playerNominationData );
+        }
+        
+        updateNominationsReverseSearch( player_id, nominationIndex, mapIndex, originalMapIndex );
+    }
+    else
+    {
+        LOGGER( 1, "AMX_ERR_BOUNDS: %d. Was tried to set a wrong nomination bound index: %d", AMX_ERR_BOUNDS, nominationIndex )
+        log_error( AMX_ERR_BOUNDS, "Was tried to set a wrong nomination bound index: %d", nominationIndex );
+    }
+}
+
+/**
+ * Update the reverse search, i.e., to find the nominator player id given the nominated map index.
+ * Each map has one, and only one nomination index.
+ * 
+ * @param player_id             the nominator player game id.
+ * @param nominationIndex       the player's personal nominations array index.
+ * @param mapIndex              the server's nomination index. Uses -1 to disable the current 
+ *                                  player's personal nomination index.
+ * @param originalMapIndex      the correct server's nomination index. Do not accept the wild card
+ *                                  -1 as the mapIndex parameter just above.
+ */
+stock updateNominationsReverseSearch( player_id, nominationIndex, mapIndex, originalMapIndex )
+{
+    LOGGER( 128, "I AM ENTERING ON updateNominationsReverseSearch(4) | player_id: %d, \
+            nominationIndex: %d, mapIndex: %d, originalMapIndex: %d",  player_id, \
+            nominationIndex,     mapIndex,     originalMapIndex )
+    
+    new trieKey          [ MAX_NOMINATION_TRIE_KEY_SIZE ];
+    new mapNominationData[ MapNominationsType ];
+    
+    num_to_str( mapIndex, trieKey, charsmax( trieKey ) );
+    
+    if( mapIndex < 0 )
+    {
+        num_to_str( originalMapIndex, trieKey, charsmax( trieKey ) );
+        TrieDeleteKey( g_nominationMapsTrie, trieKey );
+    }
+    else
+    {
+        mapNominationData[ MapNominationsPlayerId ]        = player_id;
+        mapNominationData[ MapNominationsNominationIndex ] = nominationIndex;
+        
+        TrieSetArray( g_nominationMapsTrie, trieKey, mapNominationData, sizeof mapNominationData );
+    }
+}
+
+stock countPlayerNominations( player_id, &nominationOpenIndex )
+{
+    LOGGER( 128, "I AM ENTERING ON countPlayerNominations(2) | player_id: %d, nominationOpenIndex: %d", \
+                                                               player_id,     nominationOpenIndex )
+    new nominationCount;
+    
+    new trieKey[ MAX_NOMINATION_TRIE_KEY_SIZE ];
+    new playerNominationData[ MAX_NOMINATION_COUNT ];
+    
+    nominationOpenIndex = 0;
+    createPlayerNominationKey( player_id, trieKey, charsmax( trieKey ) );
+    
+    if( TrieKeyExists( g_playersNominationsTrie, trieKey ) )
+    {
+        TrieGetArray( g_playersNominationsTrie, trieKey, playerNominationData, sizeof playerNominationData );
+        
+        for( new nominationIndex = 0; nominationIndex < MAX_NOMINATION_COUNT; ++nominationIndex )
+        {
+            LOGGER( 4, "( countPlayerNominations ) playerNominationData[%d]: %d", \
+                    nominationIndex, playerNominationData[ nominationIndex ] )
+            
+            if( playerNominationData[ nominationIndex ] >= 0 )
+            {
+                nominationCount++;
+            }
+            else
+            {
+                nominationOpenIndex = nominationCount;
+                break;
+            }
+        }
+    }
+    else
+    {
+        nominationCount = 0;
+    }
+    
+    LOGGER( 4, "( countPlayerNominations ) nominationCount: %d, trieKey: %s, nominationOpenIndex: %d", \
+                                           nominationCount,     trieKey,     nominationOpenIndex )
+    return nominationCount;
+}
+
+stock createPlayerNominationKey( player_id, trieKey[], trieKeyMaxChars )
+{
+    LOGGER( 0, "I AM ENTERING ON createPlayerNominationKey(3) | player_id: %d, trieKeyMaxChars: %d", \
+            player_id, trieKeyMaxChars )
+    
+    new ipSize;
+    ipSize = get_user_ip( player_id, trieKey, trieKeyMaxChars );
+    
+#if defined DEBUG
+    ipSize += formatex( trieKey[ ipSize ], trieKeyMaxChars - ipSize, "player_id%d-", player_id );
+#endif
+    get_user_authid( player_id, trieKey[ ipSize ], trieKeyMaxChars - ipSize );
+    LOGGER( 0, "( createPlayerNominationKey ) player_id: %d, trieKey: %s,", player_id, trieKey )
+}
+
+stock nomination_toggle( player_id, mapIndex )
+{
+    LOGGER( 128, "I AM ENTERING ON nomination_toggle(2) | player_id: %d, mapIndex: %d", player_id, mapIndex )
+    new nominatorPlayerId = nomination_getPlayer( mapIndex );
+    
+    if( nominatorPlayerId == player_id )
+    {
+        nomination_cancel( player_id, mapIndex );
+    }
+    else
+    {
+        map_nominate( player_id, mapIndex, nominatorPlayerId );
+    }
+}
+
+stock nomination_cancel( player_id, mapIndex )
+{
+    LOGGER( 128, "I AM ENTERING ON nomination_cancel(2) | player_id: %d, mapIndex: %d", player_id, mapIndex )
+    
+    // cancellations can only be made if a vote isn't already in progress
+    if( g_voteStatus & VOTE_IS_IN_PROGRESS )
+    {
+        color_print( player_id, "%L", player_id, "GAL_CANCEL_FAIL_INPROGRESS" );
+        
+        LOGGER( 1, "    ( nomination_cancel ) Just Returning/blocking, the voting is in progress." )
+        return;
+    }
+    else if( g_voteStatus & VOTE_IS_OVER ) // and if the outcome of the vote hasn't already been determined
+    {
+        color_print( player_id, "%L", player_id, "GAL_CANCEL_FAIL_VOTEOVER" );
+        
+        LOGGER( 1, "    ( nomination_cancel ) Just Returning/blocking, the voting is over." )
+        return;
+    }
+    
+    new trieKey          [ MAX_NOMINATION_TRIE_KEY_SIZE ];
+    new mapName          [ MAX_MAPNAME_LENGHT ];
+    new mapNominationData[ MapNominationsType ];
+    
+    num_to_str( mapIndex, trieKey, charsmax( trieKey ) );
+    ArrayGetString( g_nominationMapsArray, mapIndex, mapName, charsmax( mapName ) );
+    
+    // nomination found, then delete it
+    if( TrieKeyExists( g_nominationMapsTrie, trieKey ) )
+    {
+        g_nominationCount--;
+        
+        TrieGetArray( g_nominationMapsTrie, trieKey, mapNominationData, sizeof mapNominationData );
+        setPlayerNominationMapIndex( player_id, mapNominationData[ MapNominationsNominationIndex ], -1 );
+        
+        nomination_announceCancellation( mapName );
+    }
+    else
+    {
+        new nominatorPlayerId = nomination_getPlayer( mapIndex );
+        
+        if( nominatorPlayerId )
+        {
+            new player_name[ MAX_PLAYER_NAME_LENGHT ];
+            
+            GET_USER_NAME( nominatorPlayerId, player_name )
+            color_print( player_id, "%L", player_id, "GAL_CANCEL_FAIL_SOMEONEELSE", mapName, player_name );
+        }
+        else
+        {
+            color_print( player_id, "%L", player_id, "GAL_CANCEL_FAIL_WASNOTYOU", mapName );
+        }
+    }
+}
+
+stock map_nominate( player_id, mapIndex, nominatorPlayerId = -1 )
+{
+    LOGGER( 128, "I AM ENTERING ON map_nominate(3) | player_id: %d, mapIndex: %d, nominatorPlayerId: %d", \
+                                                     player_id,     mapIndex,     nominatorPlayerId )
+    
+    // nominations can only be made if a vote isn't already in progress
+    if( g_voteStatus & VOTE_IS_IN_PROGRESS )
+    {
+        color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_INPROGRESS" );
+        
+        LOGGER( 1, "    ( map_nominate ) Just Returning/blocking, the voting is in progress." )
+        return;
+    }
+    else if( g_voteStatus & VOTE_IS_OVER ) // and if the outcome of the vote hasn't already been determined
+    {
+        color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_VOTEOVER" );
+        
+        LOGGER( 1, "    ( map_nominate ) Just Returning/blocking, the voting is over." )
+        return;
+    }
+    
+    new mapName[ MAX_MAPNAME_LENGHT ];
+    
+    // get the nominated map name
+    ArrayGetString( g_nominationMapsArray, mapIndex, mapName, charsmax( mapName ) ); 
+    LOGGER( 4, "( map_nominate ) mapIndex: %d, mapName: %s", mapIndex, mapName )
+    
+    if( IS_WHITELIST_ENABLED()
+        && IS_TO_HOURLY_LOAD_THE_WHITELIST() )
+    {
+        // Not loaded?
+        tryToLoadTheWhiteListFeature();
+        
+        if( ( g_blackListTrieForWhiteList
+              && TrieKeyExists( g_blackListTrieForWhiteList, mapName ) )
+            || ( g_whitelistTrie
+                 && !TrieKeyExists( g_whitelistTrie, mapName ) ) )
+        {
+            color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_WHITELIST", mapName );
+            
+            LOGGER( 1, "    ( map_nominate ) The map: %s, was blocked by the whitelist map setting.", mapName )
+            return;
+        }
+    }
+    
+    // players can not nominate the current map
+    if( equali( g_currentMap, mapName ) )
+    {
+        color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_CURRENTMAP", g_currentMap );
+        
+        LOGGER( 1, "    ( map_nominate ) Just Returning/blocking, cannot nominate the current map." )
+        return;
+    }
+    
+    // players may not be able to nominate recently played maps
+    if( g_recentMapCount
+        && map_isTooRecent( mapName )
+        && !get_pcvar_num( cvar_recentNomMapsAllowance ) )
+    {
+        color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_TOORECENT", mapName );
+        color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_TOORECENT_HLP" );
+        
+        LOGGER( 1, "    ( map_nominate ) Just Returning/blocking, cannot nominate recent maps." )
+        return;
+    }
+    
+    // check if the map has already been nominated
+    if( nominatorPlayerId == -1 )
+    {
+        nominatorPlayerId = nomination_getPlayer( mapIndex );
+    }
+    
+    // When no one nominated this map, the variable 'nominatorPlayerId' will be 0. Then here we
+    // to nominate it.
+    if( nominatorPlayerId == 0 )
+    {
+        new nominationOpenIndex;
+        new maxPlayerNominations;
+        
+        maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), MAX_NOMINATION_COUNT );
+        
+        // When max nomination limit is reached, then we must not to allow this nomination.
+        if( countPlayerNominations( player_id, nominationOpenIndex ) >= maxPlayerNominations )
+        {
+            new copiedChars;
+            
+            new nominatedMapName[ MAX_MAPNAME_LENGHT ];
+            new nominatedMaps   [ MAX_COLOR_MESSAGE ];
+            
+            for( new nominationIndex = 0; nominationIndex < maxPlayerNominations; ++nominationIndex )
+            {
+                mapIndex = getPlayerNominationMapIndex( player_id, nominationIndex );
+                
+                ArrayGetString( g_nominationMapsArray, mapIndex, nominatedMapName, charsmax( nominatedMapName ) );
+                
+                if( copiedChars )
+                {
+                    copiedChars += copy( nominatedMaps[ copiedChars ],
+                            charsmax( nominatedMaps ) - copiedChars, ", " );
+                }
+                
+                copiedChars += copy( nominatedMaps[ copiedChars ],
+                        charsmax( nominatedMaps ) - copiedChars, nominatedMapName );
+            }
+            
+            color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_TOOMANY", maxPlayerNominations, nominatedMaps );
+            color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_TOOMANY_HLP" );
+        }
+        // otherwise, allow the nomination
+        else
+        {
+            g_nominationCount++;
+            
+            setPlayerNominationMapIndex( player_id, nominationOpenIndex, mapIndex );
+            map_announceNomination( player_id, mapName );
+            
+            color_print( player_id, "%L", player_id, "GAL_NOM_GOOD_HLP" );
+        }
+        
+        LOGGER( 4, "( map_nominate ) nominationOpenIndex: %d, mapName: %s", nominationOpenIndex, mapName )
+    }
+    // If the nominatorPlayerId is equal to the current player_id, the player is trying to nominate
+    // the same map again. And it is not allowed.
+    else if( nominatorPlayerId == player_id )
+    {
+        color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_ALREADY", mapName );
+    }
+    // The player nomination is the same as some other player before. And it is not allowed.
+    else
+    {
+        new player_name[ MAX_PLAYER_NAME_LENGHT ];
+        GET_USER_NAME( nominatorPlayerId, player_name )
+        
+        color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_SOMEONEELSE", mapName, player_name );
+        color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_SOMEONEELSE_HLP" );
+    }
+}
+
+/**
+ * Print to chat all players nominations available. This is usually called by 'say noms'.
+ */
+public nomination_list()
+{
+    LOGGER( 128, "I AM ENTERING ON nomination_list(0)" )
+    
+    new nominationIndex;
+    new mapIndex;
+    new nomMapCount;
+    new maxPlayerNominations;
+    new copiedChars;
+    
+    new mapsList[ 101 ];
+    new mapName [ MAX_MAPNAME_LENGHT ];
+    
+    maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), MAX_NOMINATION_COUNT );
+    
+    for( new player_id = 1; player_id < MAX_PLAYERS_COUNT; ++player_id )
+    {
+        LOGGER( 4, "( nomination_list ) player_id: %d,", player_id, MAX_PLAYERS_COUNT )
+        
+        for( nominationIndex = 0; nominationIndex < maxPlayerNominations; ++nominationIndex )
+        {
+            mapIndex = getPlayerNominationMapIndex( player_id, nominationIndex );
+            
+            if( mapIndex >= 0 )
+            {
+                ArrayGetString( g_nominationMapsArray, mapIndex, mapName, charsmax( mapName ) );
+                
+                if( copiedChars )
+                {
+                    copiedChars += copy( mapsList[ copiedChars ], charsmax( mapsList ) - copiedChars, ", " );
+                }
+                copiedChars += copy( mapsList[ copiedChars ], charsmax( mapsList ) - copiedChars, mapName );
+                
+                if( ++nomMapCount == 4 )     // list 4 maps per chat line
+                {
+                    color_print( 0, "%L: %s", LANG_PLAYER, "GAL_NOMINATIONS", mapsList );
+                    
+                    nomMapCount   = 0;
+                    mapsList[ 0 ] = '^0';
+                }
+            }
+        }
+    }
+    
+    if( mapsList[ 0 ] )
+    {
+        color_print( 0, "%L: %s", LANG_PLAYER, "GAL_NOMINATIONS", mapsList );
+    }
+    else
+    {
+        color_print( 0, "%L: %L", LANG_PLAYER, "GAL_NOMINATIONS", LANG_PLAYER, "NONE" );
+    }
+}
+
+stock getSurMapNameIndex( mapSurName[] )
+{
+    LOGGER( 128, "I AM ENTERING ON getSurMapNameIndex(1) | mapSurName: %s", mapSurName )
+    
+    new mapIndex;
+    new map          [ MAX_MAPNAME_LENGHT ];
+    new nominationMap[ MAX_MAPNAME_LENGHT ];
+    
+    for( new prefixIndex = 0; prefixIndex < g_mapPrefixCount; ++prefixIndex )
+    {
+        formatex( map, charsmax( map ), "%s%s", g_mapPrefixes[ prefixIndex ], mapSurName );
+        
+        for( mapIndex = 0; mapIndex < g_nominationMapCount; ++mapIndex )
+        {
+            ArrayGetString( g_nominationMapsArray, mapIndex, nominationMap, charsmax( nominationMap ) );
+            
+            if( equali( map, nominationMap ) )
+            {
+                return mapIndex;
+            }
+        }
+    }
+    
+    return -1;
 }
 
 stock get_realplayersnum()
