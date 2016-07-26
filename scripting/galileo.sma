@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.2-256";
+new const PLUGIN_VERSION[] = "v3.2.2-257";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v3.2.2-256";
  * 
  * Default value: 0
  */
-#define DEBUG_LEVEL 16//1+16+2
+#define DEBUG_LEVEL 31//1+16+2
 
 
 /**
@@ -889,10 +889,9 @@ new g_dataDirPath   [ MAX_FILE_PATH_LENGHT ];
  * Nextmap sub-plugin global variables.
  */
 new cvar_amx_nextmap;
+new cvar_mapcyclefile;
 new g_nextMapCyclePosition;
-new g_nextMapName     [ MAX_MAPNAME_LENGHT ];
-new g_currentMapName  [ MAX_MAPNAME_LENGHT ];
-new g_mapCycleFilePath[ MAX_FILE_PATH_LENGHT ];
+
 
 new g_nextMap                   [ MAX_MAPNAME_LENGHT ];
 new g_currentMap                [ MAX_MAPNAME_LENGHT ];
@@ -902,14 +901,14 @@ new g_generalUsePlayersMenuIds  [ MAX_PLAYERS_COUNT ];
 new g_playersKills              [ MAX_PLAYERS_COUNT ];
 new g_arrayOfMapsWithVotesNumber[ MAX_OPTIONS_IN_VOTE ];
 
-new Array:g_menuMapIndexForPlayerArrays[ MAX_PLAYERS_COUNT ];
-
 new bool:g_isPlayerVoted            [ MAX_PLAYERS_COUNT ] = { true, ... };
 new bool:g_isPlayerParticipating    [ MAX_PLAYERS_COUNT ] = { true, ... };
 new bool:g_isPlayerSeeingTheVoteMenu[ MAX_PLAYERS_COUNT ];
 new bool:g_isPlayerCancelledVote    [ MAX_PLAYERS_COUNT ];
 new bool:g_answeredForEndOfMapVote  [ MAX_PLAYERS_COUNT ];
 new bool:g_rockedVote               [ MAX_PLAYERS_COUNT ];
+
+new Array:g_menuMapIndexForPlayerArrays[ MAX_PLAYERS_COUNT ];
 
 new g_mapPrefixes    [ MAX_PREFIX_COUNT ][ 16 ];
 new g_votingMapNames [ MAX_OPTIONS_IN_VOTE ][ MAX_MAPNAME_LENGHT ];
@@ -1193,10 +1192,6 @@ stock initializeGlobalArrays()
 {
     LOGGER( 128, "I AM ENTERING ON initializeGlobalArrays(0)" )
     
-    get_pcvar_string( cvar_voteWeightFlags, g_voteWeightFlags, charsmax( g_voteWeightFlags ) );
-    get_cvar_string( "amx_nextmap", g_nextMap, charsmax( g_nextMap ) );
-    get_mapname( g_currentMap, charsmax( g_currentMap ) );
-    
     g_nominationMapsTrie     = TrieCreate();
     g_playersNominationsTrie = TrieCreate();
     g_fillerMapsArray        = ArrayCreate( MAX_MAPNAME_LENGHT );
@@ -1204,6 +1199,9 @@ stock initializeGlobalArrays()
     
     // initialize nominations table
     nomination_clearAll();
+    
+    // load the weighted votes flags
+    get_pcvar_string( cvar_voteWeightFlags, g_voteWeightFlags, charsmax( g_voteWeightFlags ) );
     
     if( get_pcvar_num( cvar_recentMapsBannedNumber ) )
     {
@@ -1539,14 +1537,17 @@ stock configureTheMapcycleSystem( currentMap[], currentMapCharsMax )
     
     new possibleNextMapPosition;
     new restartsOnTheCurrentMap;
-    
     new Array:mapcycleFileListArray;
-    new possibleNextMap[ MAX_MAPNAME_LENGHT ];
+    
+    new possibleNextMap [ MAX_MAPNAME_LENGHT ];
+    new mapcycleFilePath[ MAX_FILE_PATH_LENGHT ];
     
     mapcycleFileListArray   = ArrayCreate( MAX_MAPNAME_LENGHT );
     restartsOnTheCurrentMap = getRestartsOnTheCurrentMap( currentMap );
     
-    map_populateList( mapcycleFileListArray, g_mapCycleFilePath, charsmax( g_mapCycleFilePath ) );
+    get_pcvar_string( cvar_mapcyclefile, mapcycleFilePath, charsmax( mapcycleFilePath ) );
+    map_populateList( mapcycleFileListArray, mapcycleFilePath, charsmax( mapcycleFilePath ) );
+    
     possibleNextMapPosition = map_getNext( mapcycleFileListArray, currentMap, possibleNextMap );
     
     LOGGER( 4, "( configureTheMapcycleSystem ) possibleNextMapPosition: %d, \
@@ -1566,7 +1567,7 @@ stock configureTheMapcycleSystem( currentMap[], currentMapCharsMax )
             
             if( possibleNextMapPosition != -1 )
             {
-                configureTheNextMapPlugin( possibleNextMapPosition, possibleNextMap );
+                configureTheNextMapPlugin( possibleNextMapPosition, possibleNextMap, mapcycleFilePath );
             }
             
             // Clear the old data
@@ -1586,14 +1587,14 @@ stock configureTheMapcycleSystem( currentMap[], currentMapCharsMax )
         }
         else
         {
-            configureTheNextMapPlugin( possibleNextMapPosition, possibleNextMap );
+            configureTheNextMapPlugin( possibleNextMapPosition, possibleNextMap, mapcycleFilePath );
             LOGGER( 4, "( configureTheMapcycleSystem ) restartsOnTheCurrentMap < MAX_SERVER_RESTART_ACCEPTABLE" )
             LOGGER( 4, "" )
         }
     }
     else
     {
-        configureTheNextMapPlugin( 0, possibleNextMap );
+        configureTheNextMapPlugin( 0, possibleNextMap, mapcycleFilePath );
         LOGGER( 4, "( configureTheMapcycleSystem ) configureTheNextMapPlugin( 0, possibleNextMap )" )
         LOGGER( 4, "" )
     }
@@ -1601,7 +1602,7 @@ stock configureTheMapcycleSystem( currentMap[], currentMapCharsMax )
     ArrayDestroy( mapcycleFileListArray );
 }
 
-stock configureTheNextMapPlugin( possibleNextMapPosition, possibleNextMap[] )
+stock configureTheNextMapPlugin( possibleNextMapPosition, possibleNextMap[], mapcycleFilePath[] )
 {
     LOGGER( 128 + 4, "I AM ENTERING ON configureTheNextMapPlugin(2) | \
             possibleNextMapPosition: %d, possibleNextMap: %s", \
@@ -1610,7 +1611,7 @@ stock configureTheNextMapPlugin( possibleNextMapPosition, possibleNextMap[] )
     g_nextMapCyclePosition = possibleNextMapPosition;
     
     setNextMap( possibleNextMap );
-    saveCurrentMapCycleSetting();
+    saveCurrentMapCycleSetting( mapcycleFilePath );
 }
 
 stock getRestartsOnTheCurrentMap( mapToChange[] )
@@ -6216,8 +6217,8 @@ stock map_getNext( Array:mapArray, currentMap[], nextMap[ MAX_MAPNAME_LENGHT ] )
     }
     else
     {
-        log_amx( "WARNING: Your 'mapcyclefile' server variable '%s' is invalid!", g_mapCycleFilePath );
-        LOGGER( 1, "WARNING: Your 'mapcyclefile' server variable '%s' is invalid!", g_mapCycleFilePath )
+        log_amx( "WARNING: Your 'mapcyclefile' server variable is invalid!" );
+        LOGGER( 1, "WARNING: Your 'mapcyclefile' server variable is invalid!" )
         
         copy( nextMap, charsmax( nextMap ), "your_mapcycle_file_is_empty" );
     }
@@ -8053,13 +8054,9 @@ public nextmap_plugin_init()
 {
     LOGGER( 128, "I AM ENTERING ON nextmap_plugin_init(0)" )
     
-    new mapcycleFilePath       [ MAX_FILE_PATH_LENGHT ];
-    new mapcycleCurrentIndex   [ MAX_MAPNAME_LENGHT ];
-    new tockenMapcycleAndPosion[ MAX_MAPNAME_LENGHT + MAX_FILE_PATH_LENGHT ];
-    
     pause( "acd", "nextmap.amxx" );
-    register_dictionary( "nextmap.txt" );
     register_event( "30", "changeMap", "a" );
+    register_dictionary( "nextmap.txt" );
     
     register_clcmd( "say nextmap", "sayNextMap", 0, "- displays nextmap" );
     register_clcmd( "say currentmap", "sayCurrentMap", 0, "- display current map" );
@@ -8067,21 +8064,33 @@ public nextmap_plugin_init()
     cvar_amx_nextmap     = register_cvar( "amx_nextmap", "", FCVAR_SERVER | FCVAR_EXTDLL | FCVAR_SPONLY );
     cvar_mp_chattime     = get_cvar_pointer( "mp_chattime" );
     cvar_mp_friendlyfire = get_cvar_pointer( "mp_friendlyfire" );
+    cvar_mapcyclefile    = get_cvar_pointer( "mapcyclefile" );
     
     if( cvar_mp_friendlyfire )
     {
         register_clcmd( "say ff", "sayFFStatus", 0, "- display friendly fire status" );
     }
     
-    get_cvar_string( "mapcyclefile", g_mapCycleFilePath, charsmax( g_mapCycleFilePath ) );
-    get_mapname( g_currentMapName, charsmax( g_currentMapName ) );
+    loadNextMapPluginSetttings();
+}
+
+stock loadNextMapPluginSetttings()
+{
+    new mapcycleCurrentIndex   [ MAX_MAPNAME_LENGHT ];
+    new lastMapcycleFilePath   [ MAX_FILE_PATH_LENGHT ];
+    new currentMapcycleFilePath[ MAX_FILE_PATH_LENGHT ];
+    new tockenMapcycleAndPosion[ MAX_MAPNAME_LENGHT + MAX_FILE_PATH_LENGHT ];
+    
+    get_mapname( g_currentMap, charsmax( g_currentMap ) );
+    get_pcvar_string( cvar_mapcyclefile, currentMapcycleFilePath, charsmax( currentMapcycleFilePath ) );
+    
+    // The from the local info, the map token saved on the last server map.
     get_localinfo( "lastmapcycle", tockenMapcycleAndPosion, charsmax( tockenMapcycleAndPosion ) );
     
-    parse( tockenMapcycleAndPosion,
-            mapcycleFilePath, charsmax( mapcycleFilePath ),
-            mapcycleCurrentIndex, charsmax( mapcycleCurrentIndex ) );
+    parse( tockenMapcycleAndPosion, lastMapcycleFilePath, charsmax( lastMapcycleFilePath ),
+                                     mapcycleCurrentIndex, charsmax( mapcycleCurrentIndex ) );
     
-    if( !equali( g_mapCycleFilePath, mapcycleFilePath ) )
+    if( !equali( currentMapcycleFilePath, lastMapcycleFilePath ) )
     {
         g_nextMapCyclePosition = 0;    // mapcyclefile has been changed - go from first
     }
@@ -8092,53 +8101,57 @@ public nextmap_plugin_init()
         g_nextMapCyclePosition = str_to_num( mapcycleCurrentIndex );
         get_localinfo( "galileo_lastmap", lastMap, charsmax( lastMap ) );
         
-        if( equali( g_currentMapName, lastMap ) )
+        if( equali( g_currentMap, lastMap ) )
         {
             g_nextMapCyclePosition--;
         }
     }
     
     // Increments by 1, the global variable 'g_nextMapCyclePosition', or set its to 1.
-    readMapCycle( g_mapCycleFilePath, g_nextMapName, charsmax( g_nextMapName ) );
-    set_pcvar_string( cvar_amx_nextmap, g_nextMapName );
+    readMapCycle( currentMapcycleFilePath, g_nextMap, charsmax( g_nextMap ) );
     
-    LOGGER( 2, "( nextmap_plugin_init ) IS CHANGING THE CVAR 'amx_nextmap' to '%s'", g_nextMapName )
-    saveCurrentMapCycleSetting();
+    LOGGER( 2, "( nextmap_plugin_init ) IS CHANGING THE CVAR 'amx_nextmap' to '%s'", g_nextMap )
+    set_pcvar_string( cvar_amx_nextmap, g_nextMap );
+    
+    saveCurrentMapCycleSetting( currentMapcycleFilePath );
 }
 
 /**
- * The variable 'g_nextMapCyclePosition' is updated at 'handleServerStart()', to update the
+ * The variable 'g_nextMapCyclePosition' is updated also at 'handleServerStart()', to refresh the
  * new settings.
+ * 
+ * @param mapcycleFilePath         the current map-cycle file path.
  */
-stock saveCurrentMapCycleSetting()
+stock saveCurrentMapCycleSetting( mapcycleFilePath[] )
 {
     LOGGER( 128, "I AM ENTERING ON saveCurrentMapCycleSetting(0)" )
     new tockenMapcycleAndPosion[ MAX_MAPNAME_LENGHT + MAX_FILE_PATH_LENGHT ];
     
     formatex( tockenMapcycleAndPosion, charsmax( tockenMapcycleAndPosion ), "%s %d",
-            g_mapCycleFilePath, g_nextMapCyclePosition );
+            mapcycleFilePath, g_nextMapCyclePosition );
     
     // save lastmapcycle settings
     set_localinfo( "lastmapcycle", tockenMapcycleAndPosion );
-    set_localinfo( "galileo_lastmap", g_currentMapName );
+    set_localinfo( "galileo_lastmap", g_currentMap );
 }
 
-stock getNextMapName( szArg[], iMax )
+stock getNextMapName( nextMapName[], maxChars )
 {
-    LOGGER( 128, "I AM ENTERING ON getNextMapName(2) | iMax: %d", iMax )
-    new lenght = get_pcvar_string( cvar_amx_nextmap, szArg, iMax );
+    LOGGER( 128, "I AM ENTERING ON getNextMapName(2) | maxChars: %d", maxChars )
+    new lenght = get_pcvar_string( cvar_amx_nextmap, nextMapName, maxChars );
     
-    if( isAValidMap( szArg ) )
+    if( IS_MAP_VALID( nextMapName ) )
     {
-        LOGGER( 1, "    ( getNextMapName ) Returning lenght: %d, szArg: %s", lenght, szArg )
+        LOGGER( 1, "    ( getNextMapName ) Returning lenght: %d, nextMapName: %s", lenght, nextMapName )
         return lenght;
     }
     
-    lenght = copy( szArg, iMax, g_nextMapName );
-    set_pcvar_string( cvar_amx_nextmap, g_nextMapName );
-    LOGGER( 2, "( getNextMapName ) IS CHANGING THE CVAR 'amx_nextmap' to '%s'", g_nextMapName )
+    lenght = copy( nextMapName, maxChars, g_nextMap );
+    set_pcvar_string( cvar_amx_nextmap, g_nextMap );
     
-    LOGGER( 1, "    ( getNextMapName ) Returning lenght: %d, szArg: %s", lenght, szArg )
+    LOGGER( 2, "( getNextMapName ) IS CHANGING THE CVAR 'amx_nextmap' to '%s'", g_nextMap )
+    LOGGER( 1, "    ( getNextMapName ) Returning lenght: %d, nextMapName: %s", lenght, nextMapName )
+    
     return lenght;
 }
 
@@ -8179,7 +8192,7 @@ public sayNextMap()
 public sayCurrentMap()
 {
     LOGGER( 128, "I AM ENTERING ON sayCurrentMap(0)" )
-    client_print( 0, print_chat, "%L: %s", LANG_PLAYER, "PLAYED_MAP", g_currentMapName );
+    client_print( 0, print_chat, "%L: %s", LANG_PLAYER, "PLAYED_MAP", g_currentMap );
 }
 
 public sayFFStatus()
@@ -8307,7 +8320,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         LOGGER( 1, "WARNING: Couldn't find a valid map or the file doesn't exist (file ^"%s^")", mapcycleFilePath )
         log_amx( "WARNING: Couldn't find a valid map or the file doesn't exist (file ^"%s^")", mapcycleFilePath );
         
-        copy( nextMapName, nextMapNameMaxchars, g_currentMapName );
+        copy( nextMapName, nextMapNameMaxchars, g_currentMap );
     }
     
     LOGGER( 4, "( readMapCycle ) | nextMapName: %s, nextMapNameMaxchars: %d", nextMapName, nextMapNameMaxchars )
