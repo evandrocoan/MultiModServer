@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.2-257";
+new const PLUGIN_VERSION[] = "v3.2.2-258";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v3.2.2-257";
  * 
  * Default value: 0
  */
-#define DEBUG_LEVEL 31//1+16+2
+#define DEBUG_LEVEL 0//1+16+2
 
 
 /**
@@ -1551,8 +1551,7 @@ stock configureTheMapcycleSystem( currentMap[], currentMapCharsMax )
     possibleNextMapPosition = map_getNext( mapcycleFileListArray, currentMap, possibleNextMap );
     
     LOGGER( 4, "( configureTheMapcycleSystem ) possibleNextMapPosition: %d, \
-            restartsOnTheCurrentMap: %d, currentMap: %s, possibleNextMap: %s", \
-                                               possibleNextMapPosition, \
+            restartsOnTheCurrentMap: %d, currentMap: %s, possibleNextMap: %s", possibleNextMapPosition, \
             restartsOnTheCurrentMap,     currentMap,     possibleNextMap )
     
     if( possibleNextMapPosition != -1 )
