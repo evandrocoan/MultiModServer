@@ -20,15 +20,15 @@ for %%i in (*.sma) do (
     
     echo intend_empty_lines.lua "%%i" > temp_file.txt
     intend_empty_lines.lua "%%i" > temp_file.txt
-    del "%%i"
     
-    :: convert the EOF from CRLF to LF due the loss by the " > " above. 
-    echo tr -d '\r' < temp_file.txt > "%%i"
-    tr -d '\r' < temp_file.txt > "%%i"
-    del temp_file.txt
+    del "%%i"
+    mv "temp_file.txt" "%%i"
 )
+
 echo.
 )
+
+
 goto successfully
 
 :error
