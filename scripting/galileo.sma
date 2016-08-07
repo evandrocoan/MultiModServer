@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.2-258";
+new const PLUGIN_VERSION[] = "v3.2.2-259";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -918,6 +918,13 @@ new g_chooseMapMenuId;
 new g_chooseMapQuestionMenuId;
 
 
+/**
+ * Called just after server activation. 
+ * 
+ * Good place to initialize most of the plugin, such as registering
+ * cvars, commands or forwards, creating data structures for later use, or
+ * generating and loading other required configurations.
+ */
 public plugin_init()
 {
 #if DEBUG_LEVEL & DEBUG_LEVEL_CRITICAL_MODE
