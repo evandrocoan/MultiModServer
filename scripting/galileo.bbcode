@@ -112,6 +112,7 @@ it stills can be used all alone. See the [goanchor=Change]Change Log[/goanchor] 
 It is [COLOR="Red"][B]highly recommended[/B][/COLOR] you to review the well-commented "[B]galileo.cfg[/B]" to see
 all the cvars' options you have with this plugin.  It's located in the [B]Attached ZIP[/B]
 available at the [goanchor=Downloads]Downloads[/goanchor] section, and [B]here below[/B] clicking on the [COLOR="Red"]show[/COLOR] button:
+[spoiler]
 [pawn]
 // Galileo Configuration File
 
@@ -799,9 +800,10 @@ gal_sounds_mute 0
 gal_colored_chat_enabled 1
 
 [/pawn]
-
+[/spoiler]
 
 ********************** [anchor]Brief[/anchor][SIZE="6"][COLOR="Blue"][B]Brief Features' list[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor] ******
+[spoiler]
 [QUOTE]
 [LIST=1]
  [*] Ability to "[B]rock the vote[/B]".
@@ -1002,6 +1004,20 @@ de_inferno
 [/LIST]
 [/QUOTE]
 
+[anchor]Mapcycle[/anchor][SIZE="4"][B]Setting up a Mapcycle[/B][/SIZE]: [goanchor=Top]Go to top[/goanchor]
+
+[QUOTE=azure;11799]hrrmm this is very interesting. Could I set this up to change the mapcycle possibly?
+
+like have mapcycle 1 from 9 till 23 and then mapcycle2 from 23 til 9?
+[/QUOTE]
+The plugin [URL="https://forums.alliedmods.net/showthread.php?p=12724"]Task Scheduler[/URL] can do that. See here [URL="https://forums.alliedmods.net/showthread.php?p=12724#post12724"]how to configure it[/URL]. You can use it to configure the
+cvars:[LIST=1]mapcyclefile
+[*]gal_vote_mapfile
+[*]gal_vote_minplayers_mapfile
+[*]gal_nom_mapfile
+[*]gal_emptyserver_mapfile[/LIST]To use another mapcycle files which does not contain the maps you do not want to use by early hours.
+[/spoiler]
+
 
 ********************** [anchor]Requirements[/anchor][SIZE="6"][COLOR="Blue"][B]Requirements and Commands[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor]  ******
 
@@ -1140,7 +1156,7 @@ Thank you!  It means a lot to me.
 
 
 ******************************** [anchor]Change[/anchor][B][SIZE="6"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
-
+[spoiler]
 [B]2016-07-20 | v3.2.2-248[/B]
 [LIST=1]
 [*]Fixed run-off voting showing empty map names.
@@ -1471,7 +1487,7 @@ to stop the changing to that map and to use the its next map.
 [LIST=1]
 [*]Initial release.
 [/LIST]
-
+[/spoiler]
 
 ******************************** [anchor]Sourcecode[/anchor][SIZE="6"][COLOR="blue"][B]Support[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor] *******************************
 
@@ -1518,7 +1534,7 @@ from the [B]amxx cvars[/B] command. They will be grouped together.
 
 
 ******************************** [anchor]Screen[/anchor][B][SIZE="6"][COLOR="blue"]Screenshots[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
-
+[spoiler]
 [LIST=1]
 [*][goanchor=gal_colored_chat_enabled]Colored chat[/goanchor]
 [*][goanchor=gal_endofmapvote_ask]Ask the players whether to vote[/goanchor]
@@ -1590,7 +1606,7 @@ If someones do not want to see the 'Stay Here' vote option, just needs to disabl
 // 1 - show the vote option "Stay Here".
 amx_extendmap_allow_stay 1
 [/PAWN]
-
+[/spoiler]
 
 [anchor]Compilations[/anchor]******************************** [B][SIZE="6"][COLOR="blue"]Compilations Data[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor]  *****************
 
@@ -1752,20 +1768,6 @@ Note that these versions above are probably not tested or maybe not stable as th
 Download[/goanchor] [B][COLOR="Red"]below[/B][/COLOR]. See here how to compile plugins: [URL="https://forums.alliedmods.net/showthread.php?t=172936#Compiling"][HOW TO] Compiling plugins[/URL].
 
 
-[anchor]Mapcycle[/anchor][SIZE="4"][B]Setting up a Mapcycle[/B][/SIZE]: [goanchor=Top]Go to top[/goanchor]
-
-[QUOTE=azure;11799]hrrmm this is very interesting. Could I set this up to change the mapcycle possibly?
-
-like have mapcycle 1 from 9 till 23 and then mapcycle2 from 23 til 9?
-[/QUOTE]
-The plugin [URL="https://forums.alliedmods.net/showthread.php?p=12724"]Task Scheduler[/URL] can do that. See here [URL="https://forums.alliedmods.net/showthread.php?p=12724#post12724"]how to configure it[/URL]. You can use it to configure the
-cvars:[LIST=1]mapcyclefile
-[*]gal_vote_mapfile
-[*]gal_vote_minplayers_mapfile
-[*]gal_nom_mapfile
-[*]gal_emptyserver_mapfile[/LIST]To use another mapcycle files which does not contain the maps you do not want to use by early hours.
-
-
 [anchor]Old[/anchor][SIZE="4"][B]Old Versions Downloads[/B][/SIZE]: [goanchor=Top]Go to top[/goanchor]
 
 [URL="https://github.com/addonszz/Galileo/releases"] https://github.com/addonszz/Galileo/releases[/URL]
@@ -1783,4 +1785,7 @@ v2.6                 (Galileo-2.6.zip - 299 views   -  91.1 KB)
 * Click [URL="http://www.gametracker.com/search/?search_by=server_variable&search_by2=gal_version&query=&loc=_all&sort=&order=&searchipp=50#search"]here[/URL] to see all servers using this plugin.
 * Click [URL="https://github.com/addonszz/Galileo/commits/develop"]here[/URL] to see what is changed/new on it.
 ___________________________________________________________________________________________________________________________________[/SIZE]
+
+
+
 
