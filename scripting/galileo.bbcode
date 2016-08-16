@@ -802,6 +802,7 @@ gal_colored_chat_enabled 1
 [/pawn]
 [/SPOILER]
 
+
 ********************** [anchor]Brief[/anchor][SIZE="6"][COLOR="Blue"][B]Brief Features' list[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor] ******
 [SPOILER]
 [QUOTE]
@@ -1114,6 +1115,45 @@ galileo.amxx
 [LIST=1]
 
 [*]Fix the code formatter 'format_code.bat' not formatting properly anymore.
+
+
+[*][QUOTE=Shattered Heart Lynx;2438437]
+Do you mind expanding Sven Co-op support?
+
+You can use[FONT=Courier New] is_running("svencoop") [/FONT]to add some extra checks and to manipulate some specific cvars.
+
+Examples:
+[PHP]set_pcvar_string( g_cvar_amx_nextmap, nextMap );
+if(is_running("svencoop"))
+{
+    set_cvar_string( "mp_nextmap_cycle", nextMap );
+}[/PHP]This controls the Next Map: [map name] text which appears in the scoreboard, which is tied to the [FONT=Courier New]mp_nextmap_cycle[/FONT] cvar. I know there are more references to amx_nextmap in your code but it was just an example.
+
+Also:
+[PHP]#include <hamsandwich>[/PHP][plugin_init()]
+[PHP]if(is_running("svencoop"))
+{
+    RegisterHam(Ham_Use, "game_end", "voteNextmap");
+}[/PHP][PHP]voteNextmap()
+{
+    [call the vote next map method, to immediately change]
+}[/PHP]This allows the players to choose the nextmap everytime they complete the current one. I tested with server_cmd("gal_startvote") and it works (executing the command because it's a different .amxx plugin), and it would be better if you call the function directly.
+
+Thanks in advance.[/QUOTE]
+
+
+[*][QUOTE=Shattered Heart Lynx;2439087][URL="https://forums.alliedmods.net/showthread.php?t=63695"]NextMap with Sven Co-op Fix[/URL] covers an specific issue, it makes the default map chooser plugin (AMXX's Nextmap) to NOT move the cursor on map series. Let's take for example this mapcycle.txt.
+
+[CODE][...]
+afrikakorps1
+sc_another
+[...][/CODE]
+
+ If the nextmap in afrikakorps1 is sc_another, it will maintain it in afrikakorps2, and afrikakorps3 (these are not in the mapcycle because they are continuations to afrikakorps1 and 2, respectively).
+
+Sadly it only works with the vanilla nextmap.amxx plugin. 
+
+If you can implement something like this in Galileo it would be great as well.[/QUOTE]
 
 
 [/LIST]
@@ -1489,6 +1529,7 @@ to stop the changing to that map and to use the its next map.
 [/LIST]
 [/SPOILER]
 
+
 ******************************** [anchor]Sourcecode[/anchor][SIZE="6"][COLOR="blue"][B]Support[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor] *******************************
 
 You can [B]receive support[/B] for this plugin within this thread. Non-Steam servers are not supported.
@@ -1607,6 +1648,7 @@ If someones do not want to see the 'Stay Here' vote option, just needs to disabl
 amx_extendmap_allow_stay 1
 [/PAWN]
 [/SPOILER]
+
 
 [anchor]Compilations[/anchor]******************************** [B][SIZE="6"][COLOR="blue"]Compilations Data[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor]  *****************
 
@@ -1747,6 +1789,7 @@ Press enter to exit ...
 [/html]
 [/SPOILER]
 [/SPOILER]
+
 
 ******************************** [anchor]Downloads[/anchor][SIZE="6"][COLOR="Blue"][B]Downloads[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor] *************************
 
