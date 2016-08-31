@@ -14,7 +14,11 @@
 *.h text
 *.h++ text
 *.hh text
+*.bbcode text
+*.sma text
 
 # Compiled Object files
 *.o binary
 *.obj binary
+*.amxx
+*.amx

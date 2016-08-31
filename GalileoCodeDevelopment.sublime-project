@@ -1,0 +1,21 @@
+{
+	"folders":
+	[
+		{
+			"path": "."
+		}
+	],
+    "build_systems":
+    [
+        {
+            "working_dir": "$project_path/scripting",
+            // "selector": "source.AmxxPawn, source.AMXX", // comment this to build from everywhere
+            
+            "name": "Build Main file",
+            "cmd": ["sh","$packages/SublimeBuildSystem/AmxxPawn.sh","galileo.sma"],
+            
+            "target": "ansi_color_build",
+            "syntax": "Packages/ANSIescape/ANSI.tmLanguage"
+        }
+    ]
+}
