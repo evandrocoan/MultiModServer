@@ -3,6 +3,9 @@
 	[
 		{
 			"path": "."
+		},
+		{
+			"path": "F:\\SteamCMD\\steamapps\\common\\Half-Life\\czero\\addons\\amxmodx"
 		}
 	],
     "build_systems":
@@ -12,7 +15,7 @@
             // "selector": "source.AmxxPawn, source.AMXX", // comment this to build from everywhere
             
             "name": "Build Main file",
-            "cmd": ["sh","$packages/SublimeBuildSystem/AmxxPawn.sh","galileo.sma"],
+            "cmd": ["compile_and_install.bat", "1"],
             
             "target": "ansi_color_build",
             "syntax": "Packages/ANSIescape/ANSI.tmLanguage"
