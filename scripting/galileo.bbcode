@@ -1165,7 +1165,26 @@ Sadly it only works with the vanilla nextmap.amxx plugin.
 If you can implement something like this in Galileo it would be great as well.[/QUOTE]
 
 
-[*]Can you add one function ... when no one voted for nextmap or extend or "stay here" , i want the map to be extended ... no change on random map :)
+[*][QUOTE=Beyond Reality;2450220][B]Can you add one function ... when no one voted for nextmap or extend or "stay here" , i want the map to be extended ... no change on random map :)[/B][/QUOTE]
+
+[*][QUOTE=vase070;2454534]
+after the map vote has been concluded and nextmap chosen if you type 
+[CODE]
+amx_cvar amx_nextmap "map name"
+[/CODE]
+in console and type "nextmap" in chat it will still show the map that was voted for instead of the map changed to via "amx_cvar amx_nextmap".
+However the nextmap does indeed change to whatever you set via "amx_cvar amx_nextmap" :) 
+[/QUOTE]
+
+[*][QUOTE=vase070;2454534]
+also when you join server after awhile it will say 
+[CODE]
+Type 'amx_help' in the console to see available commands
+Time Left: 19:39 min. Next Map: de_dust2002
+[/CODE]
+But when you type nextmap in chat you get "Next Map: [not yet voted on]"
+I don't think these are bugs i mean as far as i know but i'm just pointing stuff out
+[/QUOTE]
 
 
 [/LIST]
@@ -1818,7 +1837,8 @@ And this is a direct link to always to download the latest [COLOR="Red"]unreleas
 
 And because it is the development version, the debugging is enabled. Go to around the 'line 60' and find:[PAWN]
 #define DEBUG_LEVEL SomeNumber(s)[/PAWN]and change it to:[PAWN]
-#define DEBUG_LEVEL 0[/PAWN]
+#define DEBUG_LEVEL 0
+[/PAWN]
 
 Note that these versions above are probably not tested or maybe not stable as the [goanchor=LatestRelease]Latest Release
 Download[/goanchor] [B][COLOR="Red"]below[/B][/COLOR]. See here how to compile plugins: [URL="https://forums.alliedmods.net/showthread.php?t=172936#Compiling"][HOW TO] Compiling plugins[/URL].
