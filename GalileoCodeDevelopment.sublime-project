@@ -5,8 +5,11 @@
 			"path": "."
 		},
 		{
-			"path": "F:\\SteamCMD\\steamapps\\common\\Half-Life\\czero\\addons\\amxmodx"
-		}
+			"path": "D:/User/Dropbox/Applications/SoftwareVersioning/alliedmodders/"
+		},
+        {
+            "path": "F:/SteamCMD/steamapps/common/Half-Life/czero/addons/amxmodx/configs"
+        }
 	],
     "build_systems":
     [
