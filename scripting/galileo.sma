@@ -2786,7 +2786,7 @@ stock tryToLoadTheWhiteListFeature()
  * 
  * @note It must to be protected by an 'IS_WHITELIST_ENABLED()' evaluation.
  */
-loadTheWhiteListFeature()
+stock loadTheWhiteListFeature()
 {
     LOGGER( 128, "I AM ENTERING ON loadTheWhiteListFeature(0)" )
     
