@@ -1187,6 +1187,43 @@ I don't think these are bugs i mean as far as i know but i'm just pointing stuff
 [/QUOTE]
 
 
+[*][QUOTE]gal_endofmapvote_start 1 --> So, set it to 0 to start the map voting exactly about 2 minutes and 15 seconds. Now look, the voting will to start and take about 1 minute to finish, depending on your vote time and if there is runoff or not.
+[/QUOTE]
+Fix this, limit the maximum time the voting time (gal_vote_duration) + the runoff time (gal_runoff_duration) may be set, so they cannot be set above 1 minutes and 30 seconds.
+
+
+[*][pawn]
+// Indicates the end map type at the last seconds.
+// 0 - do not show the countdown, drop weapons or buy grenades.
+// 1 - show the countdown, drop weapons and buy grenades.
+gal_endonround_countdown 0
+[/pawn]
+Split this within multi-bits for better choosing. Example, 7 (111), to use The countdown, drop weapons and buy grenades.
+
+
+[*][QUOTE]Split this within multi-bits for better choosing. Example, 7 (111), to use The countdown, drop weapons and buy grenades.
+[/QUOTE]
+Fix all multi-bit operations to be explicitly clear as this one:
+[pawn]
+// Indicates which say commands can be used to rock the vote. 
+// The flags are additive. A value of 0 will disable this feature.
+// 1 - standard "rockthevote" command
+// 2 - shorthand "rtv" command
+// 3 - Same as 1 and 2 at the same time.
+// 4 - dynamic "rockthe<anything>vote" command (allows a player to type 
+//     any one word (i.e. no spaces) that starts with "rockthe" and ends 
+//     with "vote". Some examples might be: "rockthedamnvote", 
+//     "rockthesillylittlevote", or "rockthefreakingvote". The total 
+//     length of the word can not be longer than 31 characters. That 
+//     leaves 20 characters for creativeness once you factor in the 
+//     lengths of "rockthe" and "vote")
+// 5 - Same as 1 and 4 at the same time.
+// 6 - Same as 2 and 4 at the same time.
+// 7 - Same as 1, 2 and 4 at the same time.
+gal_rtv_commands 7
+[/pawn]
+
+
 [/LIST]
 
 
