@@ -1126,6 +1126,7 @@ Stills not clear enough? See more tutorials on [URL="https://forums.alliedmods.n
 [*]Fix the code formatter 'format_code.bat' not formatting properly anymore.
 
 
+
 [*][QUOTE=Shattered Heart Lynx;2438437]
 Do you mind expanding Sven Co-op support?
 
@@ -1151,6 +1152,7 @@ Also:
 Thanks in advance.[/QUOTE]
 
 
+
 [*][QUOTE=Shattered Heart Lynx;2439087][URL="https://forums.alliedmods.net/showthread.php?t=63695"]NextMap with Sven Co-op Fix[/URL] covers an specific issue, it makes the default map chooser plugin (AMXX's Nextmap) to NOT move the cursor on map series. Let's take for example this mapcycle.txt.
 
 [CODE][...]
@@ -1165,7 +1167,10 @@ Sadly it only works with the vanilla nextmap.amxx plugin.
 If you can implement something like this in Galileo it would be great as well.[/QUOTE]
 
 
+
 [*][QUOTE=Beyond Reality;2450220][B]Can you add one function ... when no one voted for nextmap or extend or "stay here" , i want the map to be extended ... no change on random map :)[/B][/QUOTE]
+
+
 
 [*][QUOTE=vase070;2454534]
 after the map vote has been concluded and nextmap chosen if you type 
@@ -1175,6 +1180,8 @@ amx_cvar amx_nextmap "map name"
 in console and type "nextmap" in chat it will still show the map that was voted for instead of the map changed to via "amx_cvar amx_nextmap".
 However the nextmap does indeed change to whatever you set via "amx_cvar amx_nextmap" :) 
 [/QUOTE]
+
+
 
 [*][QUOTE=vase070;2454534]
 also when you join server after awhile it will say 
@@ -1187,9 +1194,11 @@ I don't think these are bugs i mean as far as i know but i'm just pointing stuff
 [/QUOTE]
 
 
+
 [*][QUOTE]gal_endofmapvote_start 1 --> So, set it to 0 to start the map voting exactly about 2 minutes and 15 seconds. Now look, the voting will to start and take about 1 minute to finish, depending on your vote time and if there is runoff or not.
 [/QUOTE]
 Fix this, limit the maximum time the voting time (gal_vote_duration) + the runoff time (gal_runoff_duration) may be set, so they cannot be set above 1 minutes and 30 seconds.
+
 
 
 [*][pawn]
@@ -1199,6 +1208,7 @@ Fix this, limit the maximum time the voting time (gal_vote_duration) + the runof
 gal_endonround_countdown 0
 [/pawn]
 Split this within multi-bits for better choosing. Example, 7 (111), to use The countdown, drop weapons and buy grenades.
+
 
 
 [*][QUOTE]Split this within multi-bits for better choosing. Example, 7 (111), to use The countdown, drop weapons and buy grenades.
@@ -1224,11 +1234,42 @@ gal_rtv_commands 7
 [/pawn]
 
 
-[*]
-So, when that 2 minutes and 15 seconds end, the map will change at the current round , but note when I say the current round end, I mean, the round will end, but as soon as the next round starts, the map will change and the countdown about 5 seconds specified by the cvar `gal_endonround_countdown` above will to start.
+
+[*]So, when that 2 minutes and 15 seconds end, the map will change at the current round , but note when I say the current round end, I mean, the round will end, but as soon as the next round starts, the map will change and the countdown about 5 seconds specified by the cvar `gal_endonround_countdown` above will to start.
 [QUOTE=brlight;2456750]Can´t you add a cvar or something so map changes when the current round end and not in the next round start?
 Would be really nice.[/QUOTE]
 Ok, noted.
+
+[*][QUOTE=damnyourefine;2457110]Hello, I need some help with this plugin!
+
+I have it successfully installed and configured in near entirety on my CS 1.6 server for a month now; however, we have noticed one issue..
+
+In some instances, the server will forcibly change the map to a map in the defined mapcycle file while we are in the process of a RTV vote or after the RTV has concluded. 
+
+For example, when the RTV is triggered by enough player votes or gal_startvote, the vote will be in progress with people actively voting OR the vote will have concluded with a "The next map will be X", and then the server halts the players and changes the map to a map in the mapcycle.
+
+I cannot find a cvar in the plugin config to control this behavior. What am I missing?
+
+
+Yes, I have verified the default (and any other) map manager plugins are disabled. :)[/QUOTE]
+
+Summary: At a vote map by RTV or `gal_startvote`, people voted for the map X, but at change level, the server changed to the map Y.
+
+
+[*][QUOTE=Skyliner;2457525]It's there any possibility to make a modification?
+What modification? When a players chose the map, the menu will disapear. Why?
+Because many of my players are complain that they can't chose weapons or grenades when the menu is on. Thanks! :)[/QUOTE]
+Add a new option to the section:
+[pawn]
+////////////////////////////////////////////////////////////////////////
+// By showing the status of the vote, you allow players to see how    //
+// many votes the various choices received.                           //
+////////////////////////////////////////////////////////////////////////
+[/pawn]
+Allowing the close the vote menu and the vote status is 3 - always show the vote current progress.
+It is supposed to use the button 0. Adding a sub-menu. Change the undo to Undo/Close the vote menu. 
+Then later, he may choose between undo the last vote, and close the voting menu.
+
 
 
 [/LIST]
