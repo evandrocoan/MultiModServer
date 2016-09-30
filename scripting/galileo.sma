@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.2-259";
+new const PLUGIN_VERSION[] = "v3.2.2-260";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -2016,7 +2016,13 @@ public round_end_event()
         }
     }
     
-    endRoundWatchdog();
+    if( !( g_voteStatus & VOTE_IS_IN_PROGRESS ) )
+    {
+        // If this is called when the voting is going on, it will cause the voting to be cut
+        // and will force the map to immediately change to the next map on the map cycle.
+        endRoundWatchdog();
+    }
+    
     LOGGER( 32, "( round_end_event ) | g_maxRoundsNumber = %d, \
             g_roundsPlayedNumber = %d, current_rounds_trigger = %d", \
                                        g_maxRoundsNumber, \
@@ -2037,7 +2043,7 @@ stock endRoundWatchdog()
         {
             g_isTimeToChangeLevel = true;
             g_isRtvLastRound      = false;
-            g_isTheLastGameRound     = false;
+            g_isTheLastGameRound  = false;
             
             remove_task( TASKID_SHOW_LAST_ROUND_HUD );
             set_task( 6.0, "process_last_round", TASKID_PROCESS_LAST_ROUND );
