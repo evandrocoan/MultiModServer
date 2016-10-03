@@ -1511,9 +1511,11 @@ For any problems with this plugin visit this own page for support:
 [url="https://forums.alliedmods.net/showthread.php?t=273019"] https://forums.alliedmods.net/showthread.php?t=273019[/url]
 
 If you are [B]posting[/B] because the plugin or a [B]feature[/B] of the plugin isn't working for you, [B]please[/B] do
-all of the following, so we can [COLOR="Blue"]more efficiently[/COLOR] figure out what's going on.
+all of the following, so we can [COLOR="Blue"]more efficiently[/COLOR] figure out what's going on:
 
-You can enable the DEBUG_LEVEL on 16, instead of 0, as default. [URL="https://forums.alliedmods.net/showthread.php?t=273019#Development"]See here how[/URL] to do it. After that,
+
+[LIST=1]
+[*]You can enable the DEBUG_LEVEL on 16, instead of 0, as default. [URL="https://forums.alliedmods.net/showthread.php?t=273019#Development"]See here how[/URL] to do it. After that,
 to install the plugin, let your server run until the problem you are experiencing happens and after
 that send me by PM or post here log file '[COLOR="Blue"]_galileo.log[/COLOR]'. It will be at the folder '[COLOR="blue"]addons/amxmodx/logs[/COLOR]'. 
 
@@ -1521,7 +1523,9 @@ The file '[COLOR="Blue"]_galileo.log[/COLOR]' will be very helpful to find out w
 You current plugin is not creating the file log file '[COLOR="Blue"]_galileo.log[/COLOR]', only the one with the debugging
 log enabled, as I explained above with the DEBUG_LEVEL 16 constant inside the plugin.
 
-If you have access to your game server's console, type the [COLOR="Blue"][B]following[/B][/COLOR] commands in the server console:
+
+
+[*]If you have access to your [COLOR="Blue"][B]game server's console[/B][/COLOR], type the [COLOR="Red"][B]following[/B][/COLOR] commands in the server console:
 [LIST]
 [*]status
 [*]version
@@ -1529,9 +1533,9 @@ If you have access to your game server's console, type the [COLOR="Blue"][B]foll
 [*]amxx list
 [*]amxx cvars
 [/LIST]
-If you don't have access the your [COLOR="Blue"][B]game server's console[/B][/COLOR], join your server and type the
-following commands in your game console:
 
+If you don't have access the your game server's console, join your server and type the [COLOR="Red"][B]following[/B][/COLOR]
+commands in your [COLOR="Blue"][B]game's console[/B][/COLOR]:
 [LIST]
 [*]status
 [*]rcon_password "YOUR_RCON_PASSWORD"
@@ -1540,11 +1544,13 @@ following commands in your game console:
 [*]rcon amxx list
 [*]rcon amxx cvars
 [/LIST]
+[/LIST]
 [LIST=1]
 [*]Paste here everything from the [B]status[/B] command [COLOR="Red"][B]*except*[/B][/COLOR] the player list.
 [*]Paste here the entire result from the [B]version[/B], [B]meta list[/B] and [B]amxx list[/B] commands.
 [*]Paste here [COLOR="red"][B]*only*[/B][/COLOR] the CVARs that contain "[COLOR="SeaGreen"][B]galileo.amxx[/B][/COLOR]" in the last column
 from the [B]amxx cvars[/B] command. They will be grouped together.
+
 [/LIST]
 
 
