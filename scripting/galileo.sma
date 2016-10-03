@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.3-261";
+new const PLUGIN_VERSION[] = "v3.2.3-262";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -390,9 +390,9 @@ new const PLUGIN_VERSION[] = "v3.2.3-261";
 #define ANNOUNCE_CHOICE_PLAYERS 1
 #define ANNOUNCE_CHOICE_ADMINS  2
 
-#define NONE_OPTION_HIDE_AFTER_USER_VOTE           0
-#define NONE_OPTION_ALWAYS_KEEP_SHOWING            1
-#define NONE_OPTION_CONVERT_IT_TO_CANCEL_LAST_VOTE 2
+#define NONE_OPTION_HIDE_AFTER_USER_VOTE        0
+#define NONE_OPTION_ALWAYS_KEEP_SHOWING         1
+#define CONVERT_NONE_OPTION_TO_CANCEL_LAST_VOTE 2
 
 #define MAX_PREFIX_COUNT              32
 #define MAX_MAPS_IN_VOTE              8
@@ -4478,7 +4478,7 @@ stock calculate_menu_dirt( player_id, bool:isVoteOver, voteStatus[], menuDirty[]
     menuDirty  [ 0 ] = '^0';
     noneOption [ 0 ] = '^0';
     isToShowUndo     = ( player_id > 0 \
-                         && g_voteShowNoneOptionType == NONE_OPTION_CONVERT_IT_TO_CANCEL_LAST_VOTE \
+                         && g_voteShowNoneOptionType == CONVERT_NONE_OPTION_TO_CANCEL_LAST_VOTE \
                          && g_isPlayerVoted[ player_id ] \
                          && !g_isPlayerCancelledVote[ player_id ] );
     
@@ -4607,7 +4607,7 @@ stock computeUndoButton( player_id, bool:isToShowUndo, bool:isVoteOver, noneOpti
                                 COLOR_RED, COLOR_WHITE, player_id, "GAL_OPTION_NONE" );
                     }
                 }
-                case NONE_OPTION_ALWAYS_KEEP_SHOWING, NONE_OPTION_CONVERT_IT_TO_CANCEL_LAST_VOTE:
+                case NONE_OPTION_ALWAYS_KEEP_SHOWING, CONVERT_NONE_OPTION_TO_CANCEL_LAST_VOTE:
                 {
                     formatex( noneOption, noneOptionSize, "%s0. %s%L",
                             COLOR_RED, COLOR_WHITE, player_id, "GAL_OPTION_NONE" );
@@ -4631,7 +4631,7 @@ stock calculate_menu_clean( player_id, menuClean[], menuCleanSize )
     menuClean  [ 0 ] = '^0';
     noneOption [ 0 ] = '^0';
     isToShowUndo     = ( player_id > 0 \
-                         && g_voteShowNoneOptionType == NONE_OPTION_CONVERT_IT_TO_CANCEL_LAST_VOTE \
+                         && g_voteShowNoneOptionType == CONVERT_NONE_OPTION_TO_CANCEL_LAST_VOTE \
                          && g_isPlayerVoted[ player_id ] \
                          && !g_isPlayerCancelledVote[ player_id ] );
     
@@ -4729,7 +4729,7 @@ public vote_handleChoice( player_id, key )
     }
     else if( key == 9
              && !g_isPlayerCancelledVote[ player_id ]
-             && g_voteShowNoneOptionType == NONE_OPTION_CONVERT_IT_TO_CANCEL_LAST_VOTE
+             && g_voteShowNoneOptionType == CONVERT_NONE_OPTION_TO_CANCEL_LAST_VOTE
              && g_isToShowNoneOption )
     {
         cancel_player_vote( player_id );
