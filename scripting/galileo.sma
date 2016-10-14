@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.3-262";
+new const PLUGIN_VERSION[] = "v3.2.3-263";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -3070,9 +3070,9 @@ stock processLoadedMapsFile( groupCount, maxMapsPerGroupToUse[], fillersFilePath
     new bool: useWhitelistOutBlock = isWhitelistEnabled;
     new bool: useIsPrefixInMenu    = get_pcvar_num( cvar_voteUniquePrefixes ) != 0;
     new bool: useMapIsTooRecent    = ( g_recentMapCount
-                                      && get_pcvar_num( cvar_recentMapsBannedNumber ) != 0 );
+                                       && get_pcvar_num( cvar_recentMapsBannedNumber ) != 0 );
     new bool: isWhiteListOutBlock  = ( isWhitelistEnabled
-                                      && get_pcvar_num( cvar_isWhiteListBlockOut ) != 0 );
+                                       && get_pcvar_num( cvar_isWhiteListBlockOut ) != 0 );
     
     /**
      * This variable is to avoid double blocking which lead to the algorithm corruption and errors.
