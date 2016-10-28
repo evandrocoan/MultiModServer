@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.3-248";
+new const PLUGIN_VERSION[] = "v3.2.4-248";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -136,9 +136,14 @@ new const PLUGIN_VERSION[] = "v3.2.3-248";
     stock writeToTheDebugFile( const log_file[], const formated_message[] )
     {
         new Float:gameTime;
+        new       currentTime;
+        static    lastRun;
         
-        gameTime = get_gametime();
-        log_to_file( log_file, "{%3.4f} %s", gameTime, formated_message );
+        gameTime    = get_gametime();
+        currentTime = tickcount();
+        
+        log_to_file( log_file, "{%.3f %d %d %4d} %s", gameTime, heapspace(), currentTime, currentTime - lastRun, formated_message );
+        lastRun = currentTime;
     }
 #endif
 
@@ -238,7 +243,17 @@ new const PLUGIN_VERSION[] = "v3.2.3-248";
         // Save the game cvars
         saveServerCvarsForTesting();
         
-        test_colorChatLimits( player_id );
+        for( new i = 0; i < 1000; i++ )
+        {
+            for( new i = 0; i < 1000; i++ )
+            {
+            }
+            
+            LOGGER( 1, "Current i is: %d", i )
+        }
+        
+        test_loadVoteChoices_cases();
+        //test_colorChatLimits( player_id );
         //test_unnominatedDisconnected( player_id );
         //test_announceVoteBlockedMap_a();
         //test_announceVoteBlockedMap_c();
@@ -8333,6 +8348,9 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         
         register_clcmd( "say run", "inGameTestsToExecute", -1 );
         register_clcmd( "say_team run", "inGameTestsToExecute", -1 );
+        
+        register_concmd( "run", "inGameTestsToExecute" );
+        register_concmd( "runall", "runTests" );
         
         register_clcmd( "say runall", "runTests", -1 );
         register_clcmd( "say_team runall", "runTests", -1 );
