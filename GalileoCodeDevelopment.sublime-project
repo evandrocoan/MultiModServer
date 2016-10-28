@@ -1,0 +1,28 @@
+{
+	"folders":
+	[
+		{
+			"path": "."
+		},
+		{
+			"path": "D:/User/Dropbox/Applications/SoftwareVersioning/AlliedModdersFiles/Dependencies"
+		},
+        {
+            "path": "F:/SteamCMD/steamapps/common/Half-Life/czero/addons/amxmodx/configs"
+        }
+	],
+    "build_systems":
+    [
+        {
+            "working_dir": "$project_path/scripting",
+            // "selector": "source.AmxxPawn, source.AMXX", // comment this to build from everywhere
+            
+            "file_regex": "(^[a-zA-Z._-]+)\\(([0-9]+)\\) : (error.*)",
+            "name": "Build Main file",
+            "cmd": ["compile_and_install.bat", "1"],
+            
+            "target": "ansi_color_build",
+            "syntax": "Packages/ANSIescape/ANSI.tmLanguage"
+        }
+    ]
+}
