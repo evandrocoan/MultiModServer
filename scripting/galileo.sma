@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.4-265";
+new const PLUGIN_VERSION[] = "v3.2.4-266";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -441,7 +441,7 @@ new const PLUGIN_VERSION[] = "v3.2.4-265";
  * The macro 'VOTE_ROUND_START_DETECTION_DELAYED(0)' use this second intervals. The default time
  * interval range is 4 minutes.
  */
-#define VOTE_ROUND_START_MIN_DELAY 400
+#define VOTE_ROUND_START_MIN_DELAY 250 + START_VOTEMAP_MIN_TIME
 #define VOTE_ROUND_START_MAX_DELAY START_VOTEMAP_MIN_TIME
 
 
