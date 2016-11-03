@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.4-266";
+new const PLUGIN_VERSION[] = "v3.2.4-267";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v3.2.4-266";
  * 
  * Default value: 0
  */
-#define DEBUG_LEVEL 0//1+16+2
+#define DEBUG_LEVEL 16//1+16+2
 
 
 /**
@@ -2500,6 +2500,30 @@ stock loadMapFileList( Array:mapArray, mapFilePath[], Trie:fillerMapTrie = Inval
                 ArrayPushString( mapArray, loadedMapName );
                 ++mapCount;
             }
+        }
+        
+        if( mapCount < 3 )
+        {
+            new parsedLines;
+            new writePosition;
+            new readLines[ MAX_BIG_BOSS_STRING ];
+            
+            fseek( mapFile, SEEK_SET, 0 );
+            
+            while( !feof( mapFile )
+                   && parsedLines < 11 )
+            {
+                parsedLines++;
+                fgets( mapFile, loadedMapName, charsmax( loadedMapName ) );
+                
+                if( writePosition < charsmax( readLines ) )
+                {
+                    writePosition += copy( readLines[ writePosition ], charsmax( readLines ) - writePosition, loadedMapName );
+                }
+            }
+            
+            LOGGER( 1, "( loadMapFileList ) Error %d, No valid maps found: %s^n", AMX_ERR_NOTFOUND, readLines )
+            log_error( AMX_ERR_NOTFOUND, "No valid maps found: %s^n", readLines );
         }
         
         fclose( mapFile );
