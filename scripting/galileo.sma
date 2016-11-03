@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.4-267";
+new const PLUGIN_VERSION[] = "v3.2.4-268";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -271,7 +271,7 @@ new const PLUGIN_VERSION[] = "v3.2.4-267";
     /**
      * Accept all maps as valid while running the unit tests.
      */
-    #define IS_MAP_VALID(%1) ( g_test_isTheUnitTestsRunning || is_map_valid( %1 ) )
+    #define IS_MAP_VALID(%1) ( g_test_isTheUnitTestsRunning || IS_MAP_VALID_BSP( %1 ) )
     
     /**
      * Call the internal function to perform its task and stop the current test execution to avoid
@@ -332,7 +332,7 @@ new const PLUGIN_VERSION[] = "v3.2.4-267";
     new g_test_minPlayersFilePath[] = "minimumPlayersTestFile.txt";
     
 #else
-    #define IS_MAP_VALID(%1) ( is_map_valid( %1 ) )
+    #define IS_MAP_VALID(%1) ( IS_MAP_VALID_BSP( %1 ) )
     
 #endif
 
@@ -637,6 +637,10 @@ new const PLUGIN_VERSION[] = "v3.2.4-267";
     } \
 }
 
+/**
+ * Accept a map as valid, even when they end with `.bsp`.
+ */
+#define IS_MAP_VALID_BSP(%1) ( is_map_valid( %1 ) || is_map_valid_bsp_check( %1 ) )
 
 
 // General Global Variables
@@ -8095,6 +8099,38 @@ public plugin_end()
     // Clear game crash action flag file for a new game.
     generateGameCrashActionFilePath( gameCrashActionFilePath, charsmax( gameCrashActionFilePath ) );
     delete_file( gameCrashActionFilePath );
+}
+
+/**
+ * If the IS_MAP_VALID check failed, check the end of the string for the `.bsp` extension.
+ */
+stock is_map_valid_bsp_check( mapName[] )
+{
+    new lenght = strlen( mapName ) - 4;
+    
+    // The mapName was too short to possibly house the .bsp extension
+    if( lenght < 0 )
+    {
+        LOGGER( 0, "    ( is_map_valid_bsp_check ) Returning false. [lenght < 0]" )
+        return false;
+    }
+    
+    if( equali( mapName[ lenght ], ".bsp" ) )
+    {
+        // If the ending was .bsp, then cut it off.
+        // As the string is by reference, so this copies back to the loaded text.
+        mapName[ lenght ] = '^0';
+        
+        // Recheck
+        if( is_map_valid( mapName ) )
+        {
+            LOGGER( 0, "    ( is_map_valid_bsp_check ) Returning true. [is_map_valid]" )
+            return true;
+        }
+    }
+    
+    LOGGER( 0, "    ( is_map_valid_bsp_check ) Returning false. " )
+    return false;
 }
 
 
