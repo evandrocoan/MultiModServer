@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.4-269";
+new const PLUGIN_VERSION[] = "v3.2.4-270";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -4331,9 +4331,8 @@ public vote_display( argument[ 2 ] )
     // 'tryToShowTheVotingMenu(0)' function call.
     if( player_id > 0 )
     {
-        menuKeys = calculateExtensionOption( player_id, isVoteOver,
-                copiedChars, voteStatus,
-                charsmax( voteStatus ), menuKeys );
+        menuKeys = calculateExtensionOption( player_id, isVoteOver, copiedChars, voteStatus,
+                                             charsmax( voteStatus ), menuKeys );
 
         if( g_showVoteStatus == SHOW_STATUS_ALWAYS
             || g_showVoteStatus == SHOW_STATUS_AFTER_VOTE )
@@ -4358,9 +4357,8 @@ public vote_display( argument[ 2 ] )
         {
             player_id = players[ playerIndex ];
 
-            menuKeys = calculateExtensionOption( player_id, isVoteOver,
-                    copiedChars, voteStatus,
-                    charsmax( voteStatus ), menuKeys );
+            menuKeys = calculateExtensionOption( player_id, isVoteOver, copiedChars, voteStatus,
+                                                 charsmax( voteStatus ), menuKeys );
 
             if( !g_isPlayerVoted[ player_id ]
                 && !isVoteOver
@@ -4380,10 +4378,12 @@ public vote_display( argument[ 2 ] )
             }
         }
     }
+
+    g_isToRefreshVoteStatus = g_showVoteStatus & SHOW_STATUS_ALWAYS != 0;
 }
 
-stock calculateExtensionOption( player_id, bool:isVoteOver, copiedChars, voteStatus[], voteStatusLenght,
-                                menuKeys )
+stock calculateExtensionOption( player_id       , bool:isVoteOver, copiedChars, voteStatus[],
+                                voteStatusLenght, menuKeys )
 {
     LOGGER( 0, "I AM ENTERING ON calculateExtensionOption(6) | player_id: %d, isVoteOver: %d, \
             copiedChars: %d, voteStatus: %s, ^nvoteStatusLenght: %d, menuKeys: %d", player_id, isVoteOver, \
@@ -4495,10 +4495,10 @@ stock calculateExtensionOption( player_id, bool:isVoteOver, copiedChars, voteSta
             menuKeys |= ( 1 << g_totalVoteOptions );
         }
 
-        g_isToRefreshVoteStatus =  g_showVoteStatus & SHOW_STATUS_ALWAYS != 0;
     }
 
-    // make a copy of the virgin menu
+    // Make a copy of the virgin menu, using the first player's menu as base.
+    // This menu only contains the maps manes, so it will not affect the multi-language.
     if( g_voteStatusClean[ 0 ] == '^0' )
     {
         copy( g_voteStatusClean, charsmax( g_voteStatusClean ), voteStatus );
@@ -4673,9 +4673,9 @@ stock calculate_menu_clean( player_id, menuClean[], menuCleanSize )
 
     menuClean  [ 0 ] = '^0';
     noneOption [ 0 ] = '^0';
-    isToShowUndo     = ( player_id > 0 \
-                         && g_voteShowNoneOptionType == CONVERT_NONE_OPTION_TO_CANCEL_LAST_VOTE \
-                         && g_isPlayerVoted[ player_id ] \
+    isToShowUndo     = ( player_id > 0
+                         && g_voteShowNoneOptionType == CONVERT_NONE_OPTION_TO_CANCEL_LAST_VOTE
+                         && g_isPlayerVoted[ player_id ]
                          && !g_isPlayerCancelledVote[ player_id ] );
 
     computeVoteMenuFooter( player_id, voteFooter, charsmax( voteFooter ) );
