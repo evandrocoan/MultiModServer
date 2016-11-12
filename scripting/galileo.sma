@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.4-270";
+new const PLUGIN_VERSION[] = "v3.2.4-271";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -4272,7 +4272,7 @@ public sort_stringsi( const elem1[], const elem2[], const array[], data[], data_
 
 public vote_display( argument[ 2 ] )
 {
-    LOGGER( 4, "I AM ENTERING ON vote_display(1) | argument[0]: %d, argument[1]: %d", argument[ 0 ], argument[ 1 ] )
+    LOGGER( 4, "I AM ENTERING ON vote_display(1) | updateTimeRemaining: %d, player_id: %d", argument[ 0 ], argument[ 1 ] )
     new menuKeys;
 
     static voteStatus  [ MAX_BIG_BOSS_STRING - 100 ];
@@ -4713,22 +4713,9 @@ stock calculate_menu_clean( player_id, menuClean[], menuCleanSize )
 
 stock display_vote_menu( bool:menuType, player_id, menuBody[], menuKeys )
 {
-    LOGGER( 0, "I AM ENTERING ON display_vote_menu(4) | menuType: %d, player_id: %d, \
+    LOGGER( 4, "I AM ENTERING ON display_vote_menu(4) | menuType: %d, player_id: %d, \
             menuBody: %s, menuKeys: %d",                menuType,     player_id, \
             menuBody,     menuKeys )
-
-#if defined DEBUG
-    if( player_id == 1 )
-    {
-        new player_name[ MAX_PLAYER_NAME_LENGHT ];
-
-        GET_USER_NAME( player_id, player_name )
-
-        LOGGER( 4, "    [%s ( %s )]", player_name, ( menuType ? "clean" : "dirty" ) )
-        LOGGER( 4, "        %s", menuBody )
-        LOGGER( 4, "" )
-    }
-#endif
 
     if( isPlayerAbleToSeeTheVoteMenu( player_id ) )
     {
@@ -4740,7 +4727,7 @@ stock display_vote_menu( bool:menuType, player_id, menuBody[], menuKeys )
 
 stock isPlayerAbleToSeeTheVoteMenu( player_id )
 {
-    LOGGER( 0, "I AM ENTERING ON isPlayerAbleToSeeTheVoteMenu(1) | player_id: %d", player_id )
+    LOGGER( 4, "I AM ENTERING ON isPlayerAbleToSeeTheVoteMenu(1) | player_id: %d", player_id )
 
     new menu_id;
     new menukeys_unused;
