@@ -1,5 +1,5 @@
-[anchor]Top[/anchor][SIZE="7"][COLOR="Blue"][B]Galileo v3.2.4-248[/B][/COLOR][/SIZE] A feature rich map voting plugin
-[COLOR=Red][SIZE=1]Release: 2008-09-12 | Last Update: 2016-10-28 | Date Format: Year-Month-Day[/COLOR][/SIZE]
+[anchor]Top[/anchor][SIZE="7"][COLOR="Blue"][B]Galileo v3.2.5-272[/B][/COLOR][/SIZE] A feature rich map voting plugin
+[COLOR=Red][SIZE=1]Release: 2008-09-12 | Last Update: 2016-11-12 | Date Format: Year-Month-Day[/COLOR][/SIZE]
 
 If you want to translate the Galileo Mapchooser to your language or if you see some
 error or bad coloring tags positioning at the current translations, feel free to correct
@@ -127,22 +127,22 @@ available at the [goanchor=Downloads]Downloads[/goanchor] section, and [B]here b
 // 'amx_extendmap_step_rounds' to 0.                                  //
 ////////////////////////////////////////////////////////////////////////
 
-// Specifies the number of minutes a map will be extended each time 
+// Specifies the number of minutes a map will be extended each time
 // the "Extend Map" option wins the map vote.
 amx_extendmap_step 15
 
-// Specifies the maximum number of minutes a map can be played, if it 
-// has been extended. A value less than mp_timelimit will not let the 
+// Specifies the maximum number of minutes a map can be played, if it
+// has been extended. A value less than mp_timelimit will not let the
 // map be extended.
 amx_extendmap_max 90
 
-// Specifies the number of rounds a map will be extended each time 
+// Specifies the number of rounds a map will be extended each time
 // the "Extend Map" option wins the map vote. This only has effect
-// when you are using 'mp_winlimit' or 'mp_maxrounds' instead of 
+// when you are using 'mp_winlimit' or 'mp_maxrounds' instead of
 // 'mp_timelimit'.
 amx_extendmap_step_rounds 30
 
-// Specifies the number of frags a map will be extended each time 
+// Specifies the number of frags a map will be extended each time
 // the "Extend Map" option wins the map vote. This only has effect
 // when you are using 'mp_fraglimit' instead of 'mp_timelimit',
 // 'mp_winlimit' or 'mp_maxrounds'.
@@ -219,14 +219,14 @@ gal_listmaps_paginate 10
 // again at the expense of playing a variety of other maps.           //
 ////////////////////////////////////////////////////////////////////////
 
-// Specifies how many of the most recent maps are disallowed from a 
+// Specifies how many of the most recent maps are disallowed from a
 // map vote. A value of 0 will disable this feature.
 gal_banrecent 3
 
 // When banning recently played maps the last several maps that have
 // been played can not be nominated.
 // 0 - keep banning the recently played from nomination.
-// 1 - the banned maps will keep banned from the being added to the 
+// 1 - the banned maps will keep banned from the being added to the
 //     voting list automatically, but they are still able to be nominated
 //     and added to the voting list.
 gal_recent_nom_maps 1
@@ -238,7 +238,7 @@ gal_recent_nom_maps 1
 //     specified by the cvar 'gal_vote_mapfile'.
 gal_banrecent_mapcycle 0
 
-// Indicates the style in which the recent maps are displayed when a 
+// Indicates the style in which the recent maps are displayed when a
 // player uses the "recentmaps" say command.
 // 1 - all maps on one line
 // 2 - each map on a separate line
@@ -253,41 +253,41 @@ gal_banrecentstyle 3
 // rocked it, a vote will begin.                                      //
 ////////////////////////////////////////////////////////////////////////
 
-// Indicates which say commands can be used to rock the vote. 
+// Indicates which say commands can be used to rock the vote.
 // The flags are additive. A value of 0 will disable this feature.
 // 1 - standard "rockthevote" command
 // 2 - shorthand "rtv" command
 // 3 - Same as 1 and 2 at the same time.
-// 4 - dynamic "rockthe<anything>vote" command (allows a player to type 
-//     any one word (i.e. no spaces) that starts with "rockthe" and ends 
-//     with "vote". Some examples might be: "rockthedamnvote", 
-//     "rockthesillylittlevote", or "rockthefreakingvote". The total 
-//     length of the word can not be longer than 31 characters. That 
-//     leaves 20 characters for creativeness once you factor in the 
+// 4 - dynamic "rockthe<anything>vote" command (allows a player to type
+//     any one word (i.e. no spaces) that starts with "rockthe" and ends
+//     with "vote". Some examples might be: "rockthedamnvote",
+//     "rockthesillylittlevote", or "rockthefreakingvote". The total
+//     length of the word can not be longer than 31 characters. That
+//     leaves 20 characters for creativeness once you factor in the
 //     lengths of "rockthe" and "vote")
 // 5 - Same as 1 and 4 at the same time.
 // 6 - Same as 2 and 4 at the same time.
 // 7 - Same as 1, 2 and 4 at the same time.
 gal_rtv_commands 7
 
-// Specifies the number of minutes after a map starts that players 
+// Specifies the number of minutes after a map starts that players
 // have to wait before they can rock the vote. When a single player
-// is on the server, that player can rock the vote at any time, 
+// is on the server, that player can rock the vote at any time,
 // regardless of this setting.
 gal_rtv_wait 10
 
-// Specifies the number of rounds after a map starts that players 
+// Specifies the number of rounds after a map starts that players
 // have to wait before they can rock the vote. When a single player
-// is on the server, that player can rock the vote at any time, 
-// regardless of this setting. If you use both 'mp_timelimit > 0' and 
+// is on the server, that player can rock the vote at any time,
+// regardless of this setting. If you use both 'mp_timelimit > 0' and
 // 'mp_maxrounds > 0', this cvar will be ignored and the cvar 'gal_rtv_wait'
 // will be used instead of this.
 gal_rtv_wait_rounds 5
 
-// Specifies the number of frags after a map starts that players 
+// Specifies the number of frags after a map starts that players
 // have to wait before they can rock the vote. When a single player
-// is on the server, that player can rock the vote at any time, 
-// regardless of this setting. If you use both 'mp_timelimit > 0', 
+// is on the server, that player can rock the vote at any time,
+// regardless of this setting. If you use both 'mp_timelimit > 0',
 // 'mp_maxrounds > 0' and 'mp_fraglimit > 0' this cvar will be ignored
 // and the cvar 'gal_rtv_wait' will be used instead of this.
 gal_rtv_wait_frags 20
@@ -335,7 +335,7 @@ gal_runoff_duration 15
 // of 0 or 1 will disable this feature.
 gal_vote_weight 1
 
-// Specifies the standard access flags needed to have weighted votes. 
+// Specifies the standard access flags needed to have weighted votes.
 // You can specify multiple flags.
 gal_vote_weightflags "y"
 
@@ -362,8 +362,8 @@ gal_endonround 2
 // 1 - end after the current round.
 gal_endonround_rtv 1
 
-// Indicates how to announce the last round. If selected a value higher 
-// than 0, this cvar indicates also the players minimum number necessary 
+// Indicates how to announce the last round. If selected a value higher
+// than 0, this cvar indicates also the players minimum number necessary
 // to allow the last round to be finished when the time runs out.
 // 0 - to show only a chat print, saying that it is the last round.
 // 1 - to show chat and a constant HUD message during the last round.
@@ -404,7 +404,7 @@ gal_vote_replace_menu 0
 // 3 - 1 and 2 at the same time.
 gal_vote_showstatustype 2
 
-// Shows the voting option "None" for people to choose if they don't 
+// Shows the voting option "None" for people to choose if they don't
 // like any other choice.
 // 0 - Disabled this feature.
 // 1 - Enabled this feature.
@@ -524,7 +524,7 @@ gal_srv_fraglimit_restart 0
 // vote near the end of the map to decide what the next map will be.  //
 ////////////////////////////////////////////////////////////////////////
 
-// Indicates whether there should be a vote near the end 
+// Indicates whether there should be a vote near the end
 // of the map to decide what the next map will be.
 gal_endofmapvote 1
 
@@ -536,12 +536,12 @@ gal_endofmapvote 1
 // 1 - enable this feature
 gal_endofmapvote_start 1
 
-// Allow the command this command "say nextmap" return "[not yet voted on]" 
-// if the map vote hasn't started yet and "[voting in progress]" once the 
-// vote has started. When the outcome of the vote is determined, this 
+// Allow the command this command "say nextmap" return "[not yet voted on]"
+// if the map vote hasn't started yet and "[voting in progress]" once the
+// vote has started. When the outcome of the vote is determined, this
 // command will return the map name.
-// 0 - Disable the change to "[voting in progress]" and "[not yet voted on]" 
-// 1 - Enable the change to "[voting in progress]" and "[not yet voted on]" 
+// 0 - Disable the change to "[voting in progress]" and "[not yet voted on]"
+// 1 - Enable the change to "[voting in progress]" and "[not yet voted on]"
 gal_nextmap_change 0
 
 
@@ -653,7 +653,7 @@ gal_vote_minplayers_mapfile "addons/amxmodx/configs/galileo/minplayers_mapcycle.
 // be used.
 // A value of 0 will disable the Whitelist feature.
 // A value of 1 will always enable the Whitelist feature.
-// A value higher than 1 will enable the Whitelist feature only when 
+// A value higher than 1 will enable the Whitelist feature only when
 // there are less players than the cvar 'gal_whitelist_minplayers'.
 gal_whitelist_minplayers 1
 
@@ -673,13 +673,13 @@ gal_whitelist_nom_block 1
 gal_whitelist_block_out 0
 
 // Specifies the map file used for the Whitelist Feature to specify
-// when certain maps can be used to fill the voting list. 
+// when certain maps can be used to fill the voting list.
 // You can specify a relative path before the filename, relative from
 // your gamemod folder, i.e., "addons/amxmodx/configs/mymapcycle.txt".
 gal_vote_whitelist_mapfile "addons/amxmodx/configs/galileo/whitelist_mapcycle.txt"
 
 // Indicates whether the maps being added, after nominations have been
-// added to a vote, should have unique map prefixes from those already 
+// added to a vote, should have unique map prefixes from those already
 // in the vote.
 gal_vote_uniqueprefixes 0
 
@@ -692,14 +692,14 @@ gal_vote_uniqueprefixes 0
 // make it into the next vote.                                        //
 ////////////////////////////////////////////////////////////////////////
 
-// Specifies how many nominations each player can make. There is a hard 
+// Specifies how many nominations each player can make. There is a hard
 // cap defined that is set to 8.
 // This CVAR needs to be set equal to or less than the hard cap.
 // A value of 0 will disable this feature.
 gal_nom_playerallowance 2
 
 // Specifies the file to use which holds the names of the maps, listed
-// one per line, that players can nominate. 
+// one per line, that players can nominate.
 // You can specify a relative path before the filename, relative from
 // your gamemod folder (i.e. "addons/amxmodx/configs/mymapcycle.txt").
 //
@@ -742,8 +742,8 @@ gal_vote_announcechoice 1
 ////////////////////////////////////////////////////////////////////////
 
 // The cvar 'gal_emptyserver_wait', specifies how many minutes to wait,
-// when the server is empty, before changing to an alternate empty-server 
-// map-cycle. 
+// when the server is empty, before changing to an alternate empty-server
+// map-cycle.
 // * The empty-server system waits the 'gal_emptyserver_wait' cvar
 //   specified minutes before to change to an empty-server map-cycle.
 // * If some player connect to the server while the system is waiting
@@ -830,12 +830,12 @@ gal_colored_chat_enabled 1
 
  [*] To ask the players before the voting begins, if they [B]want to[/B] participate the map
      voting [COLOR="blue"]to decide[/COLOR] which next map will be played. See the cvar 'gal_endofmapvote_ask'.
-     
-     
+
+
  [*] After the user voted, transform the '[B]0 - None[/B]' option to an '[COLOR="blue"]one time cancel[/COLOR]' vote
      opportunity, configured by cvar.
-     
-     
+
+
  [*] If you are using only '[B]mp_timelimit[/B]' the map extension will be in minutes.
      If you are using '[B]mp_maxrounds[/B]/[B]mp_winlimit[/B]' the map extension will be in rounds.
      If you are using both '[B]mp_timelimit[/B]/[B]mp_maxrounds[/B]/[B]mp_winlimit[/B]', it gives you the
@@ -843,12 +843,12 @@ gal_colored_chat_enabled 1
      and [COLOR="Blue"]10 rounds[/COLOR] remaining. It will give you by minutes, and not by rounds. And to avoid
      re-voting when those [COLOR="Blue"]10 rounds[/COLOR] end up, it will [COLOR="Blue"]temporarily[/COLOR] disables the rounds voting
      when the remaining rounds end up.
-     
-     
+
+
  [*] Command '[COLOR="Blue"][B]gal_startvote -nochange or -restart[/B][/COLOR]', to forces a map vote to begin
      and the map will be changed once the next map has been determined.
-     
-     
+
+
             [LIST]
             [*]If the "[COLOR="blue"][B]-nochange[/B][/COLOR]" argument is supplied, the map will not be changed by
             [COLOR="Blue"]Galileo[/COLOR], which is useful when you have a different plugin handling the actual
@@ -859,42 +859,42 @@ gal_colored_chat_enabled 1
             the current map is restarted. This command is for the "[URL="https://forums.alliedmods.net/showthread.php?t=273020"]Multi-Mod Manager[/URL]"
             plugin.
             [/LIST]
-            
-            
+
+
  [*] Command '[COLOR="Blue"][B]gal_createmapfile filename[/B][/COLOR]', Creates a file that contains a list of every
      valid map in your maps folder. The [B]filename[/B] argument indicates specifies the name
      to be used for the new file.  It will be created in the [COLOR="Blue"][B]./configs/galileo/[/B][/COLOR] folder.
-     
-     
+
+
  [*] [COLOR="Blue"][B]The Maintenance Mode[/B][/COLOR]:
      If the owner of the server is fixing something or updating the server and doesn't wanna the map
      to be changed, he will enable the maintenance command '[B]gal_command_maintenance[/B]', so the map
      can't be changed by any method like gal_startvote/rtv/timeleft or maxrounds ended... and will displayed
      a print chat with something like that: You cannot change the map when the server is in mode maintenance.
-     
-     
+
+
  [*] [COLOR="Blue"][B]New Recent Maps List[/B][/COLOR]:
      Maps are commonly repeated on the vote and there is no chance for all of them. Hence on server
      to get to play on, you need the use the '[B]gal_banrecent[/B]' to ban these 1000+ maps. Because of this,
      players can't nominate maps for few days. [COLOR="Red"]The proposition[/COLOR] is adding a file to the plugin, in which
      will save map history and a bunch of recent maps won't be able to get automatically displayed on
      the voting menu, but still be able to get nominated.
-     
+
      This is automatically done, it will not allow to repeat maps on the voting list until all them to be
      showed at least once. The cvar '[B]gal_recent_nom_maps[/B]' control whether this feature is activated
      or not. See it on the 'galileo.cfg' file.
-     
+
      When the banned maps list is bigger than all maps on the server, what happens?
      It stops counting/using the recent banned list maps and randonly to start adding banned maps.
-     
-     
+
+
  [*] [COLOR="Blue"][B]The Half-File cvar 'mp_fraglimit' Support[/B][/COLOR]:
      Enable virtual support for the [COLOR="Blue"]Half-File[/COLOR] cvar '[B]mp_fraglimit[/B]' on game modes as '[COLOR="Red"]Counter-Strike[/COLOR]' which
      do not support the cvar 'mp_fraglimit'. You need to configure the 'mp_fraglimit' as you configure the
-     'mp_timelimit' cvar on you 'server.cfg' file. See the cvar '[B]gal_mp_fraglimit_support[/B]' on the 
+     'mp_timelimit' cvar on you 'server.cfg' file. See the cvar '[B]gal_mp_fraglimit_support[/B]' on the
      'galileo.cfg' configuration file.
-     
-     
+
+
  [*] [COLOR="Blue"][B]The Map Groups Feature[/B][/COLOR]:
      It uses whatever file you have set in the cvar '[B]gal_vote_mapfile[/B]'. Normally, in that
      file you would just have a listing of maps, one per line. But to use the groups feature,
@@ -909,11 +909,11 @@ gal_colored_chat_enabled 1
      [/CODE]The text "[B][groups][/B]" has to be the very first line in the file, on a line by itself. The
      numbers, on separate lines, specifies how many maps from each file to add to the
      voting menu.
-     
+
      If you had a file within what was posted above, then you would have to create the
      files: '[B]1.ini[/B]', '[B]2.ini[/B]', '[B]3.ini[/B]', and '[B]4.ini[/B]' in the '[B]./configs/galileo/[/B]' folder. Each of
      those INI files would contain a list of maps, one per line.
-     
+
      Galileo will first load any nominated maps into the vote. Then Galileo would pick 2
      maps from '[B]1.ini[/B]', 1 from '[B]2.ini[/B]', 1 from '[B]3.ini[/B]', and 3 from '[B]4.ini[/B]' 'til the maximum
      value of 8 to be reached.
@@ -939,8 +939,8 @@ gal_colored_chat_enabled 1
      map fillers from your map groups files '[B]1.ini[/B]' (1st line after [B][groups][/B]) and '[B]2.ini[/B]'
      (2nd line after [B][groups][/B]), the map '[COLOR="blue"]de_dust2[/COLOR]' will not be added because there is not
      enough space.
-     
-     
+
+
  [*] [COLOR="Blue"][B]The Whitelist Feature[/B][/COLOR]:
      If uses whatever file you set on the cvar '[B]gal_vote_whitelist_mapfile[/B]' as the
      Whitelist. It specifies the time where its listed maps are allowed to be added to
@@ -962,23 +962,23 @@ de_dust2_long
      10:00:00 and 22:59:59 o'clock. This feature should be helpful because some servers have
      about only 10 players between 05:00 and 10:00 o'clock, so they will be needing [COLOR="Blue"]small
      maps[/COLOR] for playing. Basically, the Whitelist is a filter to your mapcycle/filler list.
-     
+
      It is an whitelist:
      [URL="https://en.wikipedia.org/wiki/Whitelist"] https://en.wikipedia.org/wiki/Whitelist[/URL]
-     
+
      It is a list to specifies the time where the maps are [B][COLOR="Blue"]allowed[/COLOR][/B].
      It is not a list to specifies the time where the maps are [B][COLOR="red"]blocked[/COLOR][/B] (directly).
-     
+
      So, instead of to think on which time you want to [B][COLOR="red"]block[/COLOR][/B] them.
      To think on which time you want to [B][COLOR="Blue"]allow[/COLOR][/B] them.
-     
+
      Using [10-22], means:
-     
+
      1) You want to [B][COLOR="Blue"]allow[/COLOR][/B] them between 10:00:00 hours (morning) until 22:59:59 (night).
      2) Doing it, will cause to [B][COLOR="red"]block[/COLOR][/B] them between 22:00:00 (today night), until 09:59:59 (tomorrow morning).
      3) If the cvar 'gal_whitelist_block_out' = 1, it will always [B][COLOR="red"]block[/COLOR][/B] all maps not following any rules as [10-21], [3-11], etc.
      4) If the cvar 'gal_whitelist_block_out' = 0, it will always [B][COLOR="Blue"]allow[/COLOR][/B] all maps not following any rules as [10-21], [3-11], etc.
-     
+
      Hence,
      [LIST=1]
      [*]If you try to play 'de_dust' / 'de_inferno' when it is [B]09[/B] hours, you will be [COLOR="Red"]blocked[/COLOR].
@@ -988,7 +988,7 @@ de_dust2_long
      [*]If you try to play 'de_dust' / 'de_inferno' when it is [B]23[/B] hours, you will be [COLOR="Red"]blocked[/COLOR].
      [*]and so on...
      [/LIST]
-     
+
      To block them between 10-22, change your config file to:
      [code]
 [22-10]
@@ -1164,8 +1164,10 @@ Thank you!  It means a lot to me.
 
 ******************************** [anchor]Change[/anchor][B][SIZE="6"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
 [SPOILER]
-
-[*]Added support to map names ending with `.bsp` extension on the voting map list. [URL="https://github.com/addonszz/Galileo/issues/21"]Issue #21[/URL].
+[B]2016-11-12 | v3.2.5-272[/B]
+[*]Vote shows only for one player: [URL="https://github.com/addonszz/Galileo/issues/26"]Issues#26[/URL].
+[*]Added support to map names ending with `.bsp` extension on the voting map list: [URL="https://github.com/addonszz/Galileo/issues/21"]Issue #21[/URL].
+[/LIST]
 
 [B]2016-10-28 | v3.2.4-248[/B]
 [LIST=1]
@@ -1174,7 +1176,7 @@ Thank you!  It means a lot to me.
 
 [B]2016-09-30 | v3.2.3-248[/B]
 [LIST=1]
-[*]Fixed issue where people voted for the map X, but at change level, the server changed to the map Y, [URL="https://github.com/addonszz/Galileo/issues/3"]Issues#3[/URL].
+[*]Fixed issue where people voted for the map X, but at change level, the server changed to the map Y: [URL="https://github.com/addonszz/Galileo/issues/3"]Issues#3[/URL].
 [/LIST]
 
 [B]2016-07-20 | v3.2.2-248[/B]
@@ -1523,7 +1525,7 @@ all of the following, so we can [COLOR="Blue"]more efficiently[/COLOR] figure ou
 [LIST=1]
 [*]You can enable the DEBUG_LEVEL on 16, instead of 0, as default. [URL="https://forums.alliedmods.net/showthread.php?t=273019#Development"]See here how[/URL] to do it. After that,
 to install the plugin, let your server run until the problem you are experiencing happens and after
-that send me by PM or post here log file '[COLOR="Blue"]_galileo.log[/COLOR]'. It will be at the folder '[COLOR="blue"]addons/amxmodx/logs[/COLOR]'. 
+that send me by PM or post here log file '[COLOR="Blue"]_galileo.log[/COLOR]'. It will be at the folder '[COLOR="blue"]addons/amxmodx/logs[/COLOR]'.
 
 The file '[COLOR="Blue"]_galileo.log[/COLOR]' will be very helpful to find out why it is not working.
 You current plugin is not creating the file log file '[COLOR="Blue"]_galileo.log[/COLOR]', only the one with the debugging
@@ -1671,7 +1673,7 @@ Header size:            1.064 bytes       2.480 bytes        3.384 bytes        
 Code size:              8.412 bytes      50.864 bytes       66.260 bytes       91.112 bytes      125.192 bytes       111.044 bytes
 Data size:              3.592 bytes      71.288 bytes       45.228 bytes       56.704 bytes       57.292 bytes       405.296 bytes
 Total requirements:    29.452 bytes     141.016 bytes      131.256 bytes      168.392 bytes      203.556 bytes       536.372 bytes
-Compilation Time:        0,48 sec          1,12 sec           1,11 sec           1,87 sec           2,62 sec            2,34 sec  
+Compilation Time:        0,48 sec          1,12 sec           1,11 sec           1,87 sec           2,62 sec            2,34 sec
 [/PAWN]
 Table with just '[COLOR="Blue"][B]galileo_1.1.290[/B][/COLOR]' and '[COLOR="blue"][B]galileo_2.0[/B][/COLOR]'[PAWN]
 Plugin name:         galileo 1.1.290           galileo 2.0       Diferences
@@ -1679,7 +1681,7 @@ Header size:             3.384 bytes           4.192 bytes       +808 bytes
 Code size:              66.260 bytes          91.112 bytes    +24.852 bytes
 Data size:              45.228 bytes          56.704 bytes    +11.476 bytes
 Total requirements:    131.256 bytes         168.392 bytes    +37.136 bytes
-Compilation Time:         1,11 sec              1,87 sec        +0,76 sec  
+Compilation Time:         1,11 sec              1,87 sec        +0,76 sec
 [/PAWN]
 Table with just '[COLOR="Blue"][B]galileo_2.0[/B][/COLOR]' and '[COLOR="blue"][B]galileo_3.0.0-162[/B][/COLOR]'[PAWN]
 Plugin name:             galileo 2.0           galileo 3.0       Diferences
@@ -1687,7 +1689,7 @@ Header size:             4.192 bytes           4.688 bytes       +496 bytes
 Code size:              91.112 bytes         125.192 bytes    +34.080 bytes
 Data size:              56.704 bytes          57.292 bytes       +588 bytes
 Total requirements:    168.392 bytes         203.556 bytes    +35.164 bytes
-Compilation Time:         1,87 sec              2,62 sec        +0,75 sec  
+Compilation Time:         1,87 sec              2,62 sec        +0,75 sec
 [/PAWN]
 Table with just '[COLOR="Blue"][B]deagsmapmanager[/B][/COLOR]' and '[COLOR="blue"][B]galileo_3.0.0-162[/B][/COLOR]'[PAWN]
 Plugin name:         deagsmapmanager           galileo 3.0       Diferences
@@ -1695,27 +1697,27 @@ Header size:             3.648 bytes           4.688 bytes     +1.040 bytes
 Code size:             111.044 bytes         125.192 bytes    +14.148 bytes
 Data size:             405.296 bytes          57.292 bytes   -348.004 bytes
 Total requirements:    536.372 bytes         203.556 bytes   -332.816 bytes
-Compilation Time:         2,34 sec              2,62 sec        +0,28 sec  
+Compilation Time:         2,34 sec              2,62 sec        +0,28 sec
 [/PAWN]
-Source Data:[SPOILER] 
+Source Data:[SPOILER]
 [html]
 //AMXXPC compile.exe
 // by the AMX Mod X Dev Team
 
 
 //// deagsmapmanager.sma
-// 
+//
 // D:\User\DataStore\GamesDataStore\Conter-Strike1.6\Outros\Addons\Multi-Mod\Amx Mod X\AmxModX_1.8.3_Compiler\deagsmapmanager.sma(284) : warning 233: symbol "client_disconnect" is marked as deprecated: Use client_disconnected() instead.
-// 
+//
 // D:\User\DataStore\GamesDataStore\Conter-Strike1.6\Outros\Addons\Multi-Mod\Amx Mod X\AmxModX_1.8.3_Compiler\deagsmapmanager.sma(1527) : warning 233: symbol "strbreak" is marked as deprecated: Use argbreak() instead
 // D:\User\DataStore\GamesDataStore\Conter-Strike1.6\Outros\Addons\Multi-Mod\Amx Mod X\AmxModX_1.8.3_Compiler\deagsmapmanager.sma(2846) : warning 233: symbol "is_amd64_server" is marked as deprecated: AMXX is not shipping 64bits builds anymore. This native is basically guaranteed to return 0.
-// 
+//
 // Header size:           3648 bytes
 // Code size:           111044 bytes
 // Data size:           405296 bytes
 // Stack/heap size:      16384 bytes
 // Total requirements:  536372 bytes
-// 
+//
 // 3 Warnings.
 // Done.
 //
@@ -1723,15 +1725,15 @@ Source Data:[SPOILER]
 // ----------------------------------------
 
 //// dmc233.sma
-// 
+//
 // D:\User\DataStore\GamesDataStore\Conter-Strike1.6\Outros\Addons\Multi-Mod\Amx Mod X\AmxModX_1.8.3_Compiler\dmc233.sma(1629) : warning 233: symbol "client_disconnect" is marked as deprecated: Use client_disconnected() instead.
-// 
+//
 // Header size:           2480 bytes
 // Code size:            50864 bytes
 // Data size:            71288 bytes
 // Stack/heap size:      16384 bytes
 // Total requirements:  141016 bytes
-// 
+//
 // 1 Warning.
 // Done.
 //
@@ -1739,15 +1741,15 @@ Source Data:[SPOILER]
 // ----------------------------------------
 
 //// galileo_1.1.290.sma
-// 
+//
 // D:\User\DataStore\GamesDataStore\Conter-Strike1.6\Outros\Addons\Multi-Mod\Amx Mod X\AmxModX_1.8.3_Compiler\galileo_1.1.290.sma(2688) : warning 233: symbol "client_disconnect" is marked as deprecated: Use client_disconnected() instead.
-// 
+//
 // Header size:           3384 bytes
 // Code size:            66260 bytes
 // Data size:            45228 bytes
 // Stack/heap size:      16384 bytes
 // Total requirements:  131256 bytes
-// 
+//
 // 1 Warning.
 // Done.
 //
@@ -1755,7 +1757,7 @@ Source Data:[SPOILER]
 // ----------------------------------------
 
 //// galileo_2.0.sma
-// 
+//
 // Header size:           4192 bytes
 // Code size:            91112 bytes
 // Data size:            56704 bytes
@@ -1767,7 +1769,7 @@ Source Data:[SPOILER]
 // ----------------------------------------
 
 //// galileo_3.0.0-162.sma
-// 
+//
 // Header size:           4688 bytes
 // Code size:           125192 bytes
 // Data size:            57292 bytes
@@ -1779,7 +1781,7 @@ Source Data:[SPOILER]
 // ----------------------------------------
 
 //// mapchooser.sma
-// 
+//
 // Header size:           1064 bytes
 // Code size:             8412 bytes
 // Data size:             3592 bytes
