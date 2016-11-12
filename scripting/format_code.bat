@@ -2,7 +2,7 @@
 
 
 SET ERROR_LOG_FILE=uncrustify_log.txt
-SET CONFIG_FILE=..\..\MyUncrustifyConfigs\amxmodx.cfg
+SET CONFIG_FILE=D:\User\Dropbox\Applications\SoftwareVersioning\MyUncrustifyConfigs\amxmodx.cfg
 
 
 
@@ -15,20 +15,20 @@ echo Parsing file... Current time is: %time% - %CURRENT_DATE%
 >compiled\%ERROR_LOG_FILE% 2>&1 (
 for %%i in (*.sma) do (
     echo.
-    echo uncrustify.exe -c %CONFIG_FILE% --no-backup %%i... Current time is: %time% - %CURRENT_DATE%
-    uncrustify.exe -c %CONFIG_FILE% --no-backup %%i || goto error
+    echo uncrustify.exe -c %CONFIG_FILE% --no-backup "%%i"... Current time is: %time% - %CURRENT_DATE%
+    uncrustify.exe -c %CONFIG_FILE% --no-backup "%%i" || goto error
     
-    echo intend_empty_lines.lua %%i > temp_file.txt
-    intend_empty_lines.lua %%i > temp_file.txt
-    del %%i
+    echo intend_empty_lines.lua "%%i" > temp_file.txt
+    intend_empty_lines.lua "%%i" > temp_file.txt
     
-    :: convert the EOF from CRLF to LF due the loss by the " > " above. 
-    echo tr -d '\r' < temp_file.txt > %%i
-    tr -d '\r' < temp_file.txt > %%i
-    del temp_file.txt
+    del "%%i"
+    mv "temp_file.txt" "%%i"
 )
+
 echo.
 )
+
+
 goto successfully
 
 :error

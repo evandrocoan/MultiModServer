@@ -16,11 +16,13 @@ rem Get the current date to the variable CURRENT_DATE
 for /f %%i in ('date /T') do set CURRENT_DATE=%%i
 
 rem Here begins the command you want to measure
-set STARTTIME=%TIME%
+for /F "tokens=1-4 delims=:.," %%a in ("%time%") do (
+   set /A "start=(((%%a*60)+1%%b %% 100)*60+1%%c %% 100)*100+1%%d %% 100"
+)
+
 
 rem Update the current galileo version file include
 xcopy /E /S /Y ".\include" "%AMXX_COMPILER%\include"
-
 
 for %%i in (*.sma) do (
     echo.
@@ -32,7 +34,28 @@ for %%i in (*.sma) do (
 )
 
 rem Run the files installer.
+echo.
 start /min install.bat 1
+
+
+rem Calculating the duration is easy.
+for /F "tokens=1-4 delims=:.," %%a in ("%time%") do (
+   set /A "end=(((%%a*60)+1%%b %% 100)*60+1%%c %% 100)*100+1%%d %% 100"
+)
+
+rem Get elapsed time.
+set /A elapsed=end-start
+
+rem Show elapsed time:
+set /A hh=elapsed/(60*60*100), rest=elapsed%%(60*60*100), mm=rest/(60*100), rest%%=60*100, ss=rest/100, cc=rest%%100
+if %mm% lss 10 set mm=0%mm%
+if %ss% lss 10 set ss=0%ss%
+if %cc% lss 10 set cc=0%cc%
+
+rem Outputting.
+echo Took %hh%:%mm%:%ss%,%cc% seconds to run this script.
+
+
 
 rem Pause the script for result reading, when it is run without any command line parameters.
 echo.
@@ -40,30 +63,3 @@ if "%1"=="" pause
 
 
 
-rem Here ends the command you want to measure.
-set ENDTIME=%TIME%
-
-rem Convert STARTTIME and ENDTIME to centiseconds.
-set /A STARTTIME=(1%STARTTIME:~0,2%-100)*360000 + (1%STARTTIME:~3,2%-100)*6000 + (1%STARTTIME:~6,2%-100)*100 + (1%STARTTIME:~9,2%-100)
-set /A ENDTIME=(1%ENDTIME:~0,2%-100)*360000 + (1%ENDTIME:~3,2%-100)*6000 + (1%ENDTIME:~6,2%-100)*100 + (1%ENDTIME:~9,2%-100)
-
-rem Calculating the duration is easy.
-set /A DURATION=%ENDTIME%-%STARTTIME%
-
-rem we might have measured the time between days.
-if %ENDTIME% LSS %STARTTIME% set set /A DURATION=%STARTTIME%-%ENDTIME%
-
-rem Now break the centiseconds down to hors, minutes, seconds and the remaining centiseconds.
-set /A DURATIONH=%DURATION% / 360000
-set /A DURATIONM=(%DURATION% - %DURATIONH%*360000) / 6000
-set /A DURATIONS=(%DURATION% - %DURATIONH%*360000 - %DURATIONM%*6000) / 100
-set /A DURATIONHS=(%DURATION% - %DURATIONH%*360000 - %DURATIONM%*6000 - %DURATIONS%*100)
-
-rem Some formatting.
-if %DURATIONH% LSS 10 set DURATIONH=0%DURATIONH%
-if %DURATIONM% LSS 10 set DURATIONM=0%DURATIONM%
-if %DURATIONS% LSS 10 set DURATIONS=0%DURATIONS%
-if %DURATIONHS% LSS 10 set DURATIONHS=0%DURATIONHS%
-
-rem Outputting.
-echo Took %DURATIONH%:%DURATIONM%:%DURATIONS%,%DURATIONHS% seconds to run this script.
