@@ -31,6 +31,22 @@ and come here to [URL="https://forums.alliedmods.net/showthread.php?t=277636"]th
    [/LIST]
 [/LIST]
 
+[B]Contributing[/B]
+
+You are welcome to start contributing to this plugin. To do it just:
+[LIST=1]
+[*]Learn [URL="https://forums.alliedmods.net/showthread.php?p=2349342#post2349342"]how to use GitHub[/URL].
+[*]Fork it [URL="https://github.com/addonszz/Galileo"]on GitHub[/URL]. See here [URL="https://guides.github.com/activities/forking/"]how to fork[/URL] on GitHub.
+[*]Checkout on the `develop` branch.
+[*]To read the [URL="https://github.com/addonszz/Galileo/blob/develop/.github/CONTRIBUTING.md"]Contributing Guidelines[/URL].
+[*]To see the [URL="https://github.com/addonszz/Galileo/issues"]Issues List[/URL]. The best way to start it is first fixing [URL="https://github.com/addonszz/Galileo/issues?q=is%3Aissue+is%3Aopen+label%3A%22S%3A+trivial%22"]one trivial issue[/URL] and
+to perform its pull request and to see how it goes.
+[*]To see recent commits on:[URL="https://github.com/addonszz/Galileo/commits/develop"] https://github.com/addonszz/Galileo/commits/develop[/URL],
+as:[URL="https://github.com/addonszz/Galileo/commit/f386a49c6e07f4a4d52375a0a1d3607734e5f60d"] https://github.com/addonszz/Galileo/commit/f386a49c6e07f4a4d52375a0a1d3607734e5f60d[/URL].
+[*]To open and to comment on issues at the [URL="https://github.com/addonszz/Galileo/issues"]Issues List[/URL].
+[*]And to perform pull requests.
+[/LIST]
+
 
 ********************** [anchor]Introduction[/anchor][B][SIZE="6"][COLOR="blue"]Introduction[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor]  *******************************
 
@@ -167,8 +183,9 @@ amx_extendmap_allow_stay 1
 // 1 - show the map name on the 'stay here' vote option.
 amx_extendmap_allow_stay_type 0
 
-// Choose how to follow the map-cycle, when anyone vote for next map.
-// 0 - choose a random map, as next map.
+// Choose how to follow the map-cycle, when anyone vote for next map, i.e.,
+// no votes on any map on the voting list, but there are players playing.
+// 0 - choose a random map from the current voting map list, as next map.
 // 1 - follow your current map-cycle order.
 amx_extendmap_allow_order 1
 
@@ -358,8 +375,11 @@ gal_endonround 2
 // If selected a value higher than 0, this cvar indicates also the players
 // minimum number necessary to allow the last round to be finished when
 // the time runs out.
-// 0 - end immediately after the voting finished.
-// 1 - end after the current round.
+// For example, if this cvar value is set to 2, and there are only 1 player
+// on the server, the round will end immediately.
+// 0               - end immediately after the voting finished.
+// player's number - end after the current round, only when there are at
+//                   least the `player's number` quantity on the server.
 gal_endonround_rtv 1
 
 // Indicates how to announce the last round. If selected a value higher
@@ -529,9 +549,9 @@ gal_srv_fraglimit_restart 0
 gal_endofmapvote 1
 
 // Indicates whether there should be created a 4 minutes range before
-// the last 2 minutes to detect a round start and to give time about 20
-// seconds to buy weapons after the round to start and before the map
-// voting to start.
+// approximately the last 2 minutes and 22 seconds to detect a round start
+// and to give time about 20 seconds to buy weapons after the round to start
+// and before the map voting to start.
 // 0 - disabled this feature
 // 1 - enable this feature
 gal_endofmapvote_start 1
@@ -798,7 +818,6 @@ gal_sounds_mute 0
 // 0 - Disabled
 // 1 - Enabled
 gal_colored_chat_enabled 1
-
 [/pawn]
 [/SPOILER]
 
