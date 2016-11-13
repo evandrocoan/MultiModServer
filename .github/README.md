@@ -2,15 +2,20 @@
 
 ## The issue list
 
-Head straight to https://github.com/evandrocoan/Galileo/issues for a list of all issues or click `Issues` in the navigation bar on the almost-top.
+Head straight to https://github.com/evandrocoan/Galileo/issues for a list of all issues or click
+`Issues` in the navigation bar on the almost-top.
 
-Use [Github's reactions feature](https://github.com/blog/2119-add-reactions-to-pull-requests-issues-and-comments) to vote on issues. Future "+1" comments with no further content will be deleted without notice.
+Use [Github's reactions feature](https://github.com/blog/2119-add-reactions-to-pull-requests-issues-and-comments)
+to vote on issues. Future "+1" comments with no further content will be deleted without notice.
 
 
 
 ## Before creating a new issue
 
-* Search for the issue [here](https://github.com/SublimeTextIssues/Core/search?q=&type=Issues) to check if it was already reported. You may use labels for filtering the [issue list](https://github.com/SublimeTextIssues/Core/issues) by clicking any of these related to the problem you want to report or request.
+* Search for the issue [here](https://github.com/evandrocoan/Galileo/search?q=&type=Issues) to 
+check if it was already reported. You may use labels for filtering the
+[issue list](https://github.com/SublimeTextIssues/Core/issues) by clicking any of these related
+to the problem you want to report or request.
 
 
 
@@ -19,11 +24,6 @@ Use [Github's reactions feature](https://github.com/blog/2119-add-reactions-to-p
 1.  Start with a descriptive but concise **subject** that quickly and uniquely identifies the problem.
 *   Write a **summary** of the problem in a few lines, giving an idea of what the issue is about.
 *   Then, **describe** the bug with all the information you can give.
-    Be sure to include the following information:
-    * Operating System
-    * The version of Sublime Text that you're using
-    * Any related software which may cause ST to act strangely
-    * If relevant, does the bug occur with no packages installed / [with ST3 in a reverted/clean state](https://www.sublimetext.com/docs/3/revert.html)?
 
     Also keep in mind to clearly separate fact from speculation.
 *   Try to find a way to **reproduce** the problem and write down precise steps. It might be useful to include a *code example* for this.
