@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-275";
+new const PLUGIN_VERSION[] = "v3.2.6-276";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -784,6 +784,7 @@ new bool:g_isToShowNoneOption;
 new bool:g_isToShowExpCountdown;
 new bool:g_isToShowVoteCounter;
 new bool:g_isToRefreshVoteStatus;
+new bool:g_isTheFirstPlayerVoted;
 new bool:g_isEmptyCycleMapConfigured;
 new bool:g_isMaxroundsExtend;
 new bool:g_isVotingByRounds;
@@ -4193,6 +4194,7 @@ public vote_handleDisplay()
 
     // make sure the display is constructed from scratch
     g_isToRefreshVoteStatus = true;
+    g_isTheFirstPlayerVoted = false;
 
     // ensure the vote status doesn't indicate expired
     g_voteStatus &= ~VOTE_IS_EXPIRED;
@@ -4241,8 +4243,6 @@ public tryToShowTheVotingMenu()
             vote_display( argument );
         }
     }
-
-    g_isToRefreshVoteStatus = g_showVoteStatus & SHOW_STATUS_ALWAYS != 0;
 }
 
 public closeVoting()
@@ -4380,6 +4380,11 @@ public vote_display( argument[ 2 ] )
             }
         }
     }
+
+    // Block the next menu updates until the first player voted, for the settings
+    // `SHOW_STATUS_AFTER_VOTE` and `SHOW_STATUS_ALWAYS`.
+    g_isToRefreshVoteStatus = ( ( g_showVoteStatus & SHOW_STATUS_ALWAYS != 0 )
+                                || g_isTheFirstPlayerVoted );
 }
 
 stock calculateExtensionOption( player_id       , bool:isVoteOver, copiedChars, voteStatus[],
@@ -4757,7 +4762,7 @@ public vote_handleChoice( player_id, key )
 
         // After the first player voted, the menu may be updated with the percentages for the options
         // `SHOW_STATUS_AFTER_VOTE` and `SHOW_STATUS_ALWAYS`.
-        g_isToRefreshVoteStatus = true;
+        g_isTheFirstPlayerVoted = true;
     }
     else if( key == 9
              && !g_isPlayerCancelledVote[ player_id ]
