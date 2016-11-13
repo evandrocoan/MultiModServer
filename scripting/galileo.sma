@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.5-273";
+new const PLUGIN_VERSION[] = "v3.2.6-275";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -4236,6 +4236,8 @@ public tryToShowTheVotingMenu()
             argument[ 1 ]                            = player_id;
             g_isPlayerSeeingTheVoteMenu[ player_id ] = true;
 
+            // Allow lazy players to see the menu when the `SHOW_STATUS_ALWAYS` is not set.
+            g_isToRefreshVoteStatus = true;
             vote_display( argument );
         }
     }
@@ -4495,8 +4497,8 @@ stock calculateExtensionOption( player_id       , bool:isVoteOver, copiedChars, 
 
     }
 
-    // Make a copy of the virgin menu, using the first player's menu as base.
-    // This menu only contains the maps manes, so it will not affect the multi-language.
+    // Make a copy of the virgin menu, using the first player's menu as base. This causes all
+    // the subsequent clean menus being displayed on the first player language.
     if( g_voteStatusClean[ 0 ] == '^0' )
     {
         copy( g_voteStatusClean, charsmax( g_voteStatusClean ), voteStatus );
@@ -4753,6 +4755,8 @@ public vote_handleChoice( player_id, key )
     {
         register_vote( player_id, key );
 
+        // After the first player voted, the menu may be updated with the percentages for the options
+        // `SHOW_STATUS_AFTER_VOTE` and `SHOW_STATUS_ALWAYS`.
         g_isToRefreshVoteStatus = true;
     }
     else if( key == 9
