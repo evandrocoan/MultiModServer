@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.5-272";
+new const PLUGIN_VERSION[] = "v3.2.6-275";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -69,9 +69,9 @@ new const PLUGIN_VERSION[] = "v3.2.5-272";
  *
  * 1   - Normal/basic debugging/depuration.
  *
- * 2   - a) To skip the 'pendingVoteCountdown()'.
- *       b) Set the vote runoff time to 5 seconds.
- *       c) Run the NORMAL Unit Tests.
+ * 2   - a) Run the NORMAL Unit Tests on the server start.
+ *       b) To skip the 'pendingVoteCountdown()'.
+ *       c) Set the vote runoff time to 5 seconds.
  *
  * 4   - Run the DELAYED Unit Tests.
  *
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v3.2.5-272";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 16//1+16+2
+#define DEBUG_LEVEL 0
 
 
 /**
@@ -141,14 +141,12 @@ new const PLUGIN_VERSION[] = "v3.2.5-272";
      */
     stock writeToTheDebugFile( const log_file[], const formated_message[] )
     {
-        new Float:gameTime;
-        new       currentTime;
-        static    lastRun;
+        static lastRun;
+        new    currentTime;
 
-        gameTime    = get_gametime();
         currentTime = tickcount();
 
-        log_to_file( log_file, "{%.3f %d %d %4d} %s", gameTime, heapspace(), currentTime, currentTime - lastRun, formated_message );
+        log_to_file( log_file, "{%.3f %d %5d %4d} %s", get_gametime(), heapspace(), currentTime, currentTime - lastRun, formated_message );
         lastRun = currentTime;
     }
 #endif
@@ -4238,9 +4236,13 @@ public tryToShowTheVotingMenu()
             argument[ 1 ]                            = player_id;
             g_isPlayerSeeingTheVoteMenu[ player_id ] = true;
 
+            // Allow lazy players to see the menu when the `SHOW_STATUS_ALWAYS` is not set.
+            g_isToRefreshVoteStatus = true;
             vote_display( argument );
         }
     }
+
+    g_isToRefreshVoteStatus = g_showVoteStatus & SHOW_STATUS_ALWAYS != 0;
 }
 
 public closeVoting()
@@ -4378,8 +4380,6 @@ public vote_display( argument[ 2 ] )
             }
         }
     }
-
-    g_isToRefreshVoteStatus = g_showVoteStatus & SHOW_STATUS_ALWAYS != 0;
 }
 
 stock calculateExtensionOption( player_id       , bool:isVoteOver, copiedChars, voteStatus[],
@@ -4497,8 +4497,8 @@ stock calculateExtensionOption( player_id       , bool:isVoteOver, copiedChars, 
 
     }
 
-    // Make a copy of the virgin menu, using the first player's menu as base.
-    // This menu only contains the maps manes, so it will not affect the multi-language.
+    // Make a copy of the virgin menu, using the first player's menu as base. This causes all
+    // the subsequent clean menus being displayed on the first player language.
     if( g_voteStatusClean[ 0 ] == '^0' )
     {
         copy( g_voteStatusClean, charsmax( g_voteStatusClean ), voteStatus );
@@ -4755,6 +4755,8 @@ public vote_handleChoice( player_id, key )
     {
         register_vote( player_id, key );
 
+        // After the first player voted, the menu may be updated with the percentages for the options
+        // `SHOW_STATUS_AFTER_VOTE` and `SHOW_STATUS_ALWAYS`.
         g_isToRefreshVoteStatus = true;
     }
     else if( key == 9
