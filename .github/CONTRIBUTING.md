@@ -1,16 +1,16 @@
 ## Before creating a new pull request
 
- * Search for the issue to check if it was already reported. You may use labels for filtering the by clicking any of these related to the problem you want to report or request.
+ * Search for the issue to check if it was already reported. You may use labels for filtering the
+ by clicking any of these related to the problem you want to report or request.
+
+
 
 ___
-This project use/try to follow the gitflow: http://nvie.com/posts/a-successful-git-branching-model/
+### This project use/try to follow the gitflow
 
+1. http://nvie.com/posts/a-successful-git-branching-model/
 
-
-
-
-### The gitflow do not merge/commit things to master branch, it is done to the 'develop' branch.
-
+The gitflow do not merge/commit things to master branch, it is done to the 'develop' branch.
 To contribute, fork this project and checkout to the 'develop' branch to proceed with your updates.
 The master branch is updated over an new plugin official release, while the 'develop' branch
 receives/stores all the updates which are waiting to be released on the next version. The updates
@@ -22,6 +22,23 @@ well explained on gitflow tutorials, as the one just above.
 
 ### Coding style
 ![stay clean](https://notepad-plus-plus.org/assets/images/good-bad-practice.jpg)
+
+
+
+
+### Commits and Pull Requests
+
+Keep the commit log as healthy as the code. It is one of the first places new contributors will look at the project.
+
+1. No more than one change per commit. There should be no changes in a commit which are unrelated to its message.
+
+1. Every commit should pass all tests on its own.
+
+1. Follow [these conventions](http://chris.beams.io/posts/git-commit/) when writing the commit message
+
+1. Know when to make exceptions.
+
+Also see: [How to name things in programming](http://www.slideshare.net/pirhilton/how-to-name-things-the-hardest-problem-in-programming)
 
 
 
@@ -221,10 +238,12 @@ method parameters (camel case + begins with a lower case)</h5>
 
 
 
-#Copyright
+### Copyright
 
 Originally downloaded from:
-https://github.com/notepad-plus-plus/notepad-plus-plus/blob/master/CONTRIBUTING.md
+
+1. https://github.com/notepad-plus-plus/notepad-plus-plus/blob/master/CONTRIBUTING.md
+1. https://raw.githubusercontent.com/translate/python-jproperties/master/CONTRIBUTING.md
 
 COPYING -- Describes the terms under which Notepad++ is distributed. You should have received a
 copy of the GNU General Public License along with this file. If not, see <http://www.gnu.org/licenses/>.
