@@ -35,6 +35,29 @@ Use [Github's reactions feature](https://github.com/blog/2119-add-reactions-to-p
 to vote on issues. Future "+1" comments with no further content will be deleted without notice.
 
 
+#### Issues types:
+
+1. `S: blocker` are the bugs we need to fix immediately. These are the bugs that will prevent the
+product from working if it were released in that state.
+1. `S: critical` issues are bugs, but there is typically a workaround or a quick fix that can be
+applied post-release.
+1. `S: major` issues have a workaround and can be put off without impacting the functionality of
+the application.
+1. `S: minor` issues are small bugs/issues which require a small or real complex/big code changes to be
+fixed.
+1. `S: trivial` issues are usually reserved for enhancements as "nice to haves" or bugs which
+require almost zero code changes to be fixed.
+
+[How do you define the severity (critical/high/low etc) of bugs?](http://stackoverflow.com/questions/2469178/how-do-you-define-the-severity-critical-high-low-etc-of-bugs)
+
+
+#### Prefixes used around the Issues
+
+1. The prefix `S: `, is supposed to mean the Issue's `Severity`. 
+1. The prefix `T: `, is supposed to mean the Issue's `Type`. 
+1. The prefix `R: `, is supposed to mean the Issue's `Resolution`. 
+
+
 
 
 ### Before creating a new issue
