@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-276";
+new const PLUGIN_VERSION[] = "v3.2.6-277";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -5396,8 +5396,16 @@ stock map_extend()
     if( g_rtvWaitMinutes )
     {
         g_rtvWaitMinutes += get_pcvar_float( cvar_mp_timelimit );
-        g_rtvWaitRounds  += get_pcvar_num( cvar_mp_maxrounds );
-        g_rtvWaitFrags   += get_pcvar_num( cvar_mp_fraglimit );
+    }
+
+    if( g_rtvWaitRounds )
+    {
+        g_rtvWaitRounds += get_pcvar_num( cvar_mp_maxrounds );
+    }
+
+    if( g_rtvWaitFrags )
+    {
+        g_rtvWaitFrags += get_pcvar_num( cvar_mp_fraglimit );
     }
 
     saveEndGameLimits();
