@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-277";
+new const PLUGIN_VERSION[] = "v3.2.6-278";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -4049,6 +4049,15 @@ public pendingVoteCountdown()
     {
         displayEndOfTheMapVoteMenu( 0 );
     }
+
+    // visual countdown,
+    // Add a new cvar as `gal_text_messages_mute` (gal_sounds_mute)
+    // issue: https://github.com/evandrocoan/Galileo/issues/31
+    // if( !( get_pcvar_num( cvar_textMessagesMute ) & VISUAL_COUNTDOWN ) )
+    // {
+    //     set_hudmessage( 0, 222, 50, -1.0, 0.13, 0, 1.0, 0.94, 0.0, 0.0, -1 );
+    //     show_hudmessage( 0, "%L", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", g_pendingVoteCountdown );
+    // }
 
     // visual countdown
     set_hudmessage( 0, 222, 50, -1.0, 0.13, 0, 1.0, 0.94, 0.0, 0.0, -1 );
