@@ -144,10 +144,13 @@ public get_client_info(id)
     get_user_authid(id,authid[id],31)
     get_user_ip(id,ip[id],31)
 
-    new written = geoip_country(ip[id],country[id])
-    written = written + copy(country[id][written], charsmax(country[]) - written, "/")
+    new written = geoip_country(ip[id],country[id], id)
 
-    geoip_city(ip[id], country[id][written], charsmax(country[]) - written);
+    written = written + copy(country[id][written], charsmax(country[]) - written, "/")
+    geoip_region_name(ip[id], country[id][written], charsmax(country[]) - written, id);
+
+    written = written + copy(country[id][written], charsmax(country[]) - written, "/")
+    geoip_city(ip[id], country[id][written], charsmax(country[]) - written, id);
 
     if(equal(country[id],"error"))
     {
