@@ -41,7 +41,7 @@ new display_type_pcvar
 
 new name[33][32]
 new authid[33][32]
-new country[33][46]
+new country[33][90]
 new ip[33][32]
 
 new connect_soundfile[64]
@@ -142,16 +142,19 @@ public get_client_info(id)
 {
     get_user_name(id,name[id],31)
     get_user_authid(id,authid[id],31)
-
     get_user_ip(id,ip[id],31)
-    geoip_country(ip[id],country[id])
+
+    new written = geoip_country(ip[id],country[id])
+    written = written + copy(country[id][written], charsmax(country[]) - written, "/")
+
+    geoip_city(ip[id], country[id][written], charsmax(country[]) - written);
 
     if(equal(country[id],"error"))
     {
         if(contain(ip[id],"192.168") == 0 || equal(ip[id],"127.0.0.1") || contain(ip[id],"10.")==0 ||  contain(ip[id],"172.")==0)
         {
             country[id] = "LAN"
-        } 
+        }
         else if(equal(ip[id],"loopback"))
         {
             country[id] = "ListenServer User"
