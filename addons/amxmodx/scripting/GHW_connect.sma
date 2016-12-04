@@ -56,7 +56,13 @@ public plugin_init()
     register_cvar("cm_connect_string","[AMXX] %name (%steamid) has connected (%country).")
     register_cvar("cm_disconnect_string","[AMXX] %name (%steamid) has disconnected (%country).")
 
+    // register_concmd( "test", "test_", -1 );
     saytext_msgid = get_user_msgid("SayText")
+}
+
+public test_( player_id )
+{
+    get_client_info( player_id )
 }
 
 public plugin_precache()
@@ -142,17 +148,21 @@ public get_client_info(id)
 {
     get_user_name(id,name[id],31)
     get_user_authid(id,authid[id],31)
+
+    // copy(ip[id], charsmax(ip[]), "179.176.103.134")
     get_user_ip(id,ip[id],31)
 
-    new written = geoip_country(ip[id],country[id], id)
+    new written = geoip_country_ex(ip[id],country[id], charsmax(country[]), id)
 
-    written = written + copy(country[id][written], charsmax(country[]) - written, "/")
-    geoip_region_name(ip[id], country[id][written], charsmax(country[]) - written, id);
+    if( written )
+    {
+        written = written + copy(country[id][written], charsmax(country[]) - written, "/")
+        geoip_region_name(ip[id], country[id][written], charsmax(country[]) - written, id);
 
-    written = written + copy(country[id][written], charsmax(country[]) - written, "/")
-    geoip_city(ip[id], country[id][written], charsmax(country[]) - written, id);
-
-    if(equal(country[id],"error"))
+        written = written + copy(country[id][written], charsmax(country[]) - written, "/")
+        geoip_city(ip[id], country[id][written], charsmax(country[]) - written, id);
+    }
+    else
     {
         if(contain(ip[id],"192.168") == 0 || equal(ip[id],"127.0.0.1") || contain(ip[id],"10.")==0 ||  contain(ip[id],"172.")==0)
         {
@@ -167,6 +177,8 @@ public get_client_info(id)
             country[id] = "Unknown Country"
         }
     }
+
+    // server_print( "country[%d]: %s", id, country[id])
 }
 
 public client_infochanged(id)
