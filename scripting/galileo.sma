@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-279";
+new const PLUGIN_VERSION[] = "v3.2.6-280";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -3387,12 +3387,10 @@ stock vote_addNominations( blockedMapsBuffer[], &announcementShowedTimes = 0 )
 
     if( g_nominationCount )
     {
-        new player_id;
-        new mapIndex;
-        new nominationIndex;
+        new nominationCount;
 
         new Trie:whitelistMapTrie;
-        new      mapName[ MAX_MAPNAME_LENGHT ];
+        new mapName[ MAX_MAPNAME_LENGHT ];
 
         // Note: The Map Groups Feature will not work with the Minimum Players Feature when adding
         // nominations, as we do not load the Map Groups Feature. But the Map Groups Feature will
@@ -3424,77 +3422,27 @@ stock vote_addNominations( blockedMapsBuffer[], &announcementShowedTimes = 0 )
         new slotsAvailable    = g_maxVotingChoices - g_totalVoteOptions;
         new voteNominationMax = ( maxNominations ) ? min( maxNominations, slotsAvailable ) : slotsAvailable;
 
-        // set how many total nominations each player is allowed
-        new maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), MAX_NOMINATION_COUNT );
-
         // print the players nominations for debug
-    #if defined DEBUG
-        new nominator_id;
-        new playerName[ MAX_PLAYER_NAME_LENGHT ];
+        nominationCount = ArraySize( g_nominationMapsArray );
+        LOGGER( 4, "( vote_addNominations ) nominationCount: %d", nominationCount, show_all_players_nominations() )
 
-        for( nominationIndex = 0; nominationIndex < maxPlayerNominations; ++nominationIndex )
+        // Add as many nominations as we can by FIFO
+        for( new mapIndex = 0; mapIndex < nominationCount; ++mapIndex )
         {
-            LOGGER( 4, "" )
-            LOGGER( 4, "" )
+            ArrayGetString( g_nominationMapsArray, mapIndex, mapName, charsmax( mapName ) );
+            LOGGER( 4, "( vote_addNominations ) g_nominationMapsArray.mapIndex: %d, mapName: %s", mapIndex, mapName )
 
-            LOGGER( 4, "( vote_addNominations ) nominationIndex: %d, maxPlayerNominations: %d", \
-                                                nominationIndex,     maxPlayerNominations )
-
-            for( player_id = 1; player_id < MAX_PLAYERS_COUNT; ++player_id )
+            if( isFillersMapUsingMinplayers
+                && !TrieKeyExists( whitelistMapTrie, mapName ) )
             {
-                mapIndex = getPlayerNominationMapIndex( player_id, nominationIndex );
+                LOGGER( 8, "    The map: %s, was blocked by the minimum players map setting.", mapName )
+                announceVoteBlockedMap( mapName, blockedMapsBuffer, "GAL_FILLER_BLOCKED", announcementShowedTimes );
 
-                if( mapIndex >= 0 )
-                {
-                    ArrayGetString( g_nominationMapsArray, mapIndex, mapName, charsmax( mapName ) );
-
-                    nominator_id = nomination_getPlayer( mapIndex );
-                    GET_USER_NAME( nominator_id, playerName )
-
-                    LOGGER( 4, "      %-32s %s", mapName, playerName )
-                }
+                continue;
             }
-        }
-    #endif
 
-        // Add as many nominations as we can [TODO: develop a better method of determining which
-        // nominations make the cut; either FIFO or random].
-        // Note: It will not add the nominations from disconnected players. TODO, add their
-        // nominations when the cvar 'gal_unnominate_disconnected' is disabled.
-        for( nominationIndex = 0; nominationIndex < maxPlayerNominations; ++nominationIndex )
-        {
-            LOGGER( 4, "" )
-            LOGGER( 4, "" )
-            LOGGER( 4, "( vote_addNominations ) nominationIndex: %d, maxPlayerNominations: %d", \
-                                                nominationIndex,     maxPlayerNominations )
-
-            for( player_id = 1; player_id < MAX_PLAYERS_COUNT; ++player_id )
-            {
-                mapIndex = getPlayerNominationMapIndex( player_id, nominationIndex );
-
-                if( mapIndex >= 0 )
-                {
-                    ArrayGetString( g_nominationMapsArray, mapIndex, mapName, charsmax( mapName ) );
-
-                    if( isFillersMapUsingMinplayers
-                        && !TrieKeyExists( whitelistMapTrie, mapName ) )
-                    {
-                        LOGGER( 8, "    The map: %s, was blocked by the minimum players map setting.", mapName )
-
-                        announceVoteBlockedMap( mapName, blockedMapsBuffer, "GAL_FILLER_BLOCKED", announcementShowedTimes );
-                        continue;
-                    }
-
-                    copy( g_votingMapNames[ g_totalVoteOptions ], charsmax( g_votingMapNames[] ), mapName );
-                    g_totalVoteOptions++;
-
-                    if( g_totalVoteOptions == voteNominationMax )
-                    {
-                        break;
-                    }
-                }
-
-            } // end player's nominations looking
+            copy( g_votingMapNames[ g_totalVoteOptions ], charsmax( g_votingMapNames[] ), mapName );
+            g_totalVoteOptions++;
 
             if( g_totalVoteOptions == voteNominationMax )
             {
@@ -3511,6 +3459,44 @@ stock vote_addNominations( blockedMapsBuffer[], &announcementShowedTimes = 0 )
     LOGGER( 4, "" )
 
 } // end vote_addNominations(2)
+
+stock show_all_players_nominations()
+{
+    LOGGER( 128, "I AM ENTERING ON show_all_players_nominations(0)" )
+
+    new mapIndex;
+    new nominator_id;
+
+    new mapName   [ MAX_MAPNAME_LENGHT ];
+    new playerName[ MAX_PLAYER_NAME_LENGHT ];
+
+    // set how many total nominations each player is allowed
+    new maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), MAX_NOMINATION_COUNT );
+
+    for( new nominationIndex = 0; nominationIndex < maxPlayerNominations; ++nominationIndex )
+    {
+        LOGGER( 4, "" )
+        LOGGER( 4, "" )
+
+        LOGGER( 4, "( vote_addNominations ) nominationIndex: %d, maxPlayerNominations: %d", \
+                                            nominationIndex,     maxPlayerNominations )
+
+        for( new player_id = 1; player_id < MAX_PLAYERS_COUNT; ++player_id )
+        {
+            mapIndex = getPlayerNominationMapIndex( player_id, nominationIndex );
+
+            if( mapIndex >= 0 )
+            {
+                ArrayGetString( g_nominationMapsArray, mapIndex, mapName, charsmax( mapName ) );
+
+                nominator_id = nomination_getPlayer( mapIndex );
+                GET_USER_NAME( nominator_id, playerName )
+
+                LOGGER( 4, "      %-32s %s", mapName, playerName )
+            }
+        }
+    }
+}
 
 stock loadNormalVoteChoices()
 {
