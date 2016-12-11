@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-278";
+new const PLUGIN_VERSION[] = "v3.2.6-279";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-278";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 0
+#define DEBUG_LEVEL 2+4
 
 
 /**
@@ -7297,9 +7297,11 @@ stock createPlayerNominationKey( player_id, trieKey[], trieKeyMaxChars )
     new ipSize;
     ipSize = get_user_ip( player_id, trieKey, trieKeyMaxChars );
 
-#if defined DEBUG
-    ipSize += formatex( trieKey[ ipSize ], trieKeyMaxChars - ipSize, "player_id%d-", player_id );
-#endif
+    if( !ipSize )
+    {
+        ipSize += formatex( trieKey[ ipSize ], trieKeyMaxChars - ipSize, "id%d-", player_id );
+    }
+
     get_user_authid( player_id, trieKey[ ipSize ], trieKeyMaxChars - ipSize );
     LOGGER( 0, "( createPlayerNominationKey ) player_id: %d, trieKey: %s,", player_id, trieKey )
 }
