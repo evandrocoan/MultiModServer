@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-281";
+new const PLUGIN_VERSION[] = "v3.2.6-282";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -9511,6 +9511,46 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     }
 
     /**
+     * Checks whether the voting menu is properly loaded given some maps.
+     *
+     * @param requiredMap      a map to be on the menu.
+     * @param blockedMap       a map to not be on the menu.
+     * @param newSeries        a char as the new test series start. The default is to use the last serie.
+     */
+    stock test_loadVoteChoices_case( requiredMap[], blockedMap[], newSeries = 0 )
+    {
+        new test_id = test_registerSeriesNaming( "test_loadVoteChoices", newSeries );
+
+        test_loadVoteChoices_check( test_id, requiredMap, true );
+        test_loadVoteChoices_check( test_id, blockedMap, false );
+    }
+
+    /**
+     * @see test_loadVoteChoices_case(3).
+     */
+    stock test_loadVoteChoices_check( test_id, mapToCheck[], bool:isToBePresent )
+    {
+        new bool:isMapPresent;
+        new      currentIndex;
+        new      errorMessage[ MAX_LONG_STRING ];
+
+        if( mapToCheck[ 0 ] )
+        {
+            for( currentIndex = 0; currentIndex < sizeof g_votingMapNames; ++currentIndex )
+            {
+                if( equali( g_votingMapNames[ currentIndex ], mapToCheck ) )
+                {
+                    isMapPresent = true;
+                }
+            }
+
+            formatex( errorMessage, charsmax( errorMessage ),
+                    "The map '%s' %s be present on the voting map menu.", mapToCheck, ( isToBePresent? "must to" : "MUST NOT to" ) );
+            SET_TEST_FAILURE( test_id, isMapPresent != isToBePresent, errorMessage )
+        }
+    }
+
+    /**
      * PART 1: Nominates some maps and create the vote map file and minimum players map file.
      */
     stock test_loadVoteChoices_serie_a()
@@ -9602,46 +9642,6 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         test_loadVoteChoices_case( "de_rain"   , "", 'd' );   // case 1
         test_loadVoteChoices_case( "de_inferno", "de_nuke" ); // case 2
         test_loadVoteChoices_case( "as_trunda" , "de_nuke" ); // case 3
-    }
-
-    /**
-     * Checks whether the voting menu is properly loaded given some maps.
-     *
-     * @param requiredMap      a map to be on the menu.
-     * @param blockedMap       a map to not be on the menu.
-     * @param newSeries        a char as the new test series start. The default is to use the last serie.
-     */
-    stock test_loadVoteChoices_case( requiredMap[], blockedMap[], newSeries = 0 )
-    {
-        new test_id = test_registerSeriesNaming( "test_loadVoteChoices", newSeries );
-
-        test_loadVoteChoices_check( test_id, requiredMap, true );
-        test_loadVoteChoices_check( test_id, blockedMap, false );
-    }
-
-    /**
-     * @see test_loadVoteChoices_case(3).
-     */
-    stock test_loadVoteChoices_check( test_id, mapToCheck[], bool:isToBePresent )
-    {
-        new bool:isMapPresent;
-        new      currentIndex;
-        new      errorMessage[ MAX_LONG_STRING ];
-
-        if( mapToCheck[ 0 ] )
-        {
-            for( currentIndex = 0; currentIndex < sizeof g_votingMapNames; ++currentIndex )
-            {
-                if( equali( g_votingMapNames[ currentIndex ], mapToCheck ) )
-                {
-                    isMapPresent = true;
-                }
-            }
-
-            formatex( errorMessage, charsmax( errorMessage ),
-                    "The map '%s' %s be present on the voting map menu.", mapToCheck, ( isToBePresent? "must to" : "MUST NOT to" ) );
-            SET_TEST_FAILURE( test_id, isMapPresent != isToBePresent, errorMessage )
-        }
     }
 
 
