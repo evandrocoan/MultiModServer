@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-284";
+new const PLUGIN_VERSION[] = "v3.2.6-285";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -8387,6 +8387,9 @@ public sayNextMap()
 {
     LOGGER( 128, "I AM ENTERING ON sayNextMap(0)" )
 
+    new nextMap[ MAX_MAPNAME_LENGHT ];
+    get_pcvar_string( cvar_amx_nextmap, nextMap, charsmax( nextMap ) );
+
     if( get_pcvar_num( cvar_nextMapChangeAnnounce )
         && get_pcvar_num( cvar_endOfMapVote )
         && !( g_voteStatus & VOTE_IS_OVER ) )
@@ -8403,14 +8406,13 @@ public sayNextMap()
     else
     {
     #if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
-        color_print( 0, "%L ^4%s", LANG_PLAYER, "NEXT_MAP", g_nextMap );
+        color_print( 0, "%L ^4%s", LANG_PLAYER, "NEXT_MAP", nextMap );
     #else
-        color_print( 0, "%L %s", LANG_PLAYER, "NEXT_MAP", g_nextMap );
+        color_print( 0, "%L %s", LANG_PLAYER, "NEXT_MAP", nextMap );
     #endif
     }
 
-    LOGGER( 4, "( sayNextMap ) %L %s, cvar_endOfMapVote: %d, cvar_nextMapChangeAnnounce: %d", \
-            LANG_SERVER, "NEXT_MAP", g_nextMap, \
+    LOGGER( 4, "( sayNextMap ) cvar_endOfMapVote: %d, cvar_nextMapChangeAnnounce: %d", \
             get_pcvar_num( cvar_endOfMapVote ), \
             get_pcvar_num( cvar_nextMapChangeAnnounce ) )
 
@@ -8451,7 +8453,7 @@ public changeMap()
     LOGGER( 128, "I AM ENTERING ON changeMap(0)" )
 
     new Float:chattime;
-    new       nextmap_name[ MAX_MAPNAME_LENGHT ];
+    new nextmap_name[ MAX_MAPNAME_LENGHT ];
 
     // mp_chattime defaults to 10 in other mods
     chattime = cvar_mp_chattime ? get_pcvar_float( cvar_mp_chattime ) : 10.0;
