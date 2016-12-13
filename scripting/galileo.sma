@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-287";
+new const PLUGIN_VERSION[] = "v3.2.6-288";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -5603,68 +5603,6 @@ stock map_isTooRecent( map[] )
     return TrieKeyExists( g_recentMapsTrie, map );
 }
 
-/**
- * This function choose what RTV's type will be used to 'rock the vote'. The types are:
- * 1) Per rounds.
- * 1.1) Is by mp_winlimit expiration proximity?
- * 1.2) Is by mp_maxrounds expiration proximity?
- * 2) Per minutes.
- *
- * These data are used to display the voting menu and proper set the voting flow. This use the
- * default voting type to timer if the rounds ending are disabled.
- */
-stock configureRtvVotingType()
-{
-    LOGGER( 128, "I AM ENTERING ON configureRtvVotingType(0)" )
-
-    new minutes_left    = get_timeleft() / 20; // Uses 20 instead of 60 to be more a fair amount
-    new maxrounds_left  = get_pcvar_num( cvar_mp_maxrounds ) - g_roundsPlayedNumber;
-    new winlimit_left   = get_pcvar_num( cvar_mp_winlimit ) - max( g_totalCtWins, g_totalTerroristsWins );
-    new fragslimit_left = get_pcvar_num( cvar_mp_fraglimit ) - g_greatestKillerFrags;
-
-    if( ( minutes_left > maxrounds_left
-          && maxrounds_left > 0 )
-        || ( minutes_left > winlimit_left
-             && winlimit_left > 0 ) )
-    {
-        g_isVotingByRounds = true;
-
-        // the variable 'g_isMaxroundsExtend' is forced to false because it could not be always false.
-        if( maxrounds_left >= winlimit_left )
-        {
-            g_isMaxroundsExtend = true;
-        }
-        else
-        {
-            g_isMaxroundsExtend = false;
-        }
-
-    } else if( minutes_left > fragslimit_left
-               && fragslimit_left > 0 )
-    {
-        g_isVotingByFrags = true;
-    }
-}
-
-stock start_rtvVote()
-{
-    LOGGER( 128, "I AM ENTERING ON start_rtvVote(0)" )
-
-    if( get_pcvar_num( cvar_endOnRoundRtv )
-        && get_realplayersnum() >= get_pcvar_num( cvar_endOnRoundRtv ) )
-    {
-        g_isTheLastGameRound = true;
-        g_isRtvLastRound  = true;
-    }
-    else
-    {
-        g_isTimeToChangeLevel = true;
-    }
-
-    configureRtvVotingType();
-    vote_startDirector( true );
-}
-
 stock is_to_block_RTV( player_id )
 {
     LOGGER( 128, "I AM ENTERING ON is_to_block_RTV(2) | player_id: %d", player_id )
@@ -5811,6 +5749,68 @@ stock try_to_start_the_RTV( rocksNeeded )
             // rocks are still needed, at regular intervals
             set_task( get_pcvar_float( cvar_rtvReminder ) * 60.0, "rtv_remind", TASKID_RTV_REMINDER, _, _, "b" );
         }
+    }
+}
+
+stock start_rtvVote()
+{
+    LOGGER( 128, "I AM ENTERING ON start_rtvVote(0)" )
+
+    if( get_pcvar_num( cvar_endOnRoundRtv )
+        && get_realplayersnum() >= get_pcvar_num( cvar_endOnRoundRtv ) )
+    {
+        g_isTheLastGameRound = true;
+        g_isRtvLastRound  = true;
+    }
+    else
+    {
+        g_isTimeToChangeLevel = true;
+    }
+
+    configureRtvVotingType();
+    vote_startDirector( true );
+}
+
+/**
+ * This function choose what RTV's type will be used to 'rock the vote'. The types are:
+ * 1) Per rounds.
+ * 1.1) Is by mp_winlimit expiration proximity?
+ * 1.2) Is by mp_maxrounds expiration proximity?
+ * 2) Per minutes.
+ *
+ * These data are used to display the voting menu and proper set the voting flow. This use the
+ * default voting type to timer if the rounds ending are disabled.
+ */
+stock configureRtvVotingType()
+{
+    LOGGER( 128, "I AM ENTERING ON configureRtvVotingType(0)" )
+
+    new minutes_left    = get_timeleft() / 20; // Uses 20 instead of 60 to be more a fair amount
+    new maxrounds_left  = get_pcvar_num( cvar_mp_maxrounds ) - g_roundsPlayedNumber;
+    new winlimit_left   = get_pcvar_num( cvar_mp_winlimit ) - max( g_totalCtWins, g_totalTerroristsWins );
+    new fragslimit_left = get_pcvar_num( cvar_mp_fraglimit ) - g_greatestKillerFrags;
+
+    if( ( minutes_left > maxrounds_left
+          && maxrounds_left > 0 )
+        || ( minutes_left > winlimit_left
+             && winlimit_left > 0 ) )
+    {
+        g_isVotingByRounds = true;
+
+        // the variable 'g_isMaxroundsExtend' is forced to false because it could not be always false.
+        if( maxrounds_left >= winlimit_left )
+        {
+            g_isMaxroundsExtend = true;
+        }
+        else
+        {
+            g_isMaxroundsExtend = false;
+        }
+
+    } else if( minutes_left > fragslimit_left
+               && fragslimit_left > 0 )
+    {
+        g_isVotingByFrags = true;
     }
 }
 
