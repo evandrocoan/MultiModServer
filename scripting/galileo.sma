@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-290";
+new const PLUGIN_VERSION[] = "v3.2.6-291";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -1973,8 +1973,6 @@ public startVotingByGameEngineCall()
     {
         g_isTimeToChangeLevel = true;
         vote_startDirector( false );
-
-        //return
     }
 }
 
@@ -5770,7 +5768,7 @@ stock start_rtvVote()
     }
 
     configureRtvVotingType();
-    vote_startDirector( true );
+    vote_startDirector( false );
 }
 
 /**
@@ -9983,7 +9981,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
      */
     stock test_RTVAndUnRTV_load()
     {
-        // Nominations functions:
+        // RTVs functions:
         //
         // vote_rock( player_id )
         // vote_unrockTheVote( player_id )
