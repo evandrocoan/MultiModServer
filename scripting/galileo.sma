@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-285";
+new const PLUGIN_VERSION[] = "v3.2.6-286";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -2009,7 +2009,8 @@ public client_death_event()
     {
         new killerId = read_data( 1 );
 
-        if( killerId )
+        if( killerId < MAX_PLAYERS_COUNT
+            && killerId > 0 )
         {
             new frags;
 
