@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-286";
+new const PLUGIN_VERSION[] = "v3.2.6-287";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -5665,86 +5665,105 @@ stock start_rtvVote()
     vote_startDirector( true );
 }
 
-public vote_rock( player_id )
+stock is_to_block_RTV( player_id )
 {
-    LOGGER( 128, "I AM ENTERING ON vote_rock(1) | map: %d", player_id )
+    LOGGER( 128, "I AM ENTERING ON is_to_block_RTV(2) | player_id: %d", player_id )
 
-    // if an early vote is pending, don't allow any rocks
+    // If time-limit is 0, minutesElapsed will always be 0.
+    new Float:minutesElapsed;
+
+    // If an early vote is pending, don't allow any rocks
     if( g_voteStatus & VOTE_IS_EARLY )
     {
         color_print( player_id, "%L", player_id, "GAL_ROCK_FAIL_PENDINGVOTE" );
-
-        LOGGER( 1, "    ( vote_rock ) Just Returning/blocking, the early voting is pending." )
-        return;
+        LOGGER( 1, "    ( is_to_block_RTV ) Just Returning/blocking, the early voting is pending." )
     }
 
-    // rocks can only be made if a vote isn't already in progress
-    if( g_voteStatus & VOTE_IS_IN_PROGRESS )
+    // Rocks can only be made if a vote isn't already in progress
+    else if( g_voteStatus & VOTE_IS_IN_PROGRESS )
     {
         color_print( player_id, "%L", player_id, "GAL_ROCK_FAIL_INPROGRESS" );
-
-        LOGGER( 1, "    ( vote_rock ) Just Returning/blocking, the voting is in progress." )
-        return;
+        LOGGER( 1, "    ( is_to_block_RTV ) Just Returning/blocking, the voting is in progress." )
     }
-    else if( g_voteStatus & VOTE_IS_OVER ) // and if the outcome of the vote hasn't already been determined
+
+    // If the outcome of the vote hasn't already been determined
+    else if( g_voteStatus & VOTE_IS_OVER )
     {
         color_print( player_id, "%L", player_id, "GAL_ROCK_FAIL_VOTEOVER" );
-
-        LOGGER( 1, "    ( vote_rock ) Just Returning/blocking, the voting is over." )
-        return;
+        LOGGER( 1, "    ( is_to_block_RTV ) Just Returning/blocking, the voting is over." )
     }
 
-    if( get_pcvar_num( cvar_rtvWaitAdmin )
-        && g_rtvWaitAdminNumber > 0 )
+    // Cannot rock when admins are online
+    else if( get_pcvar_num( cvar_rtvWaitAdmin )
+             && g_rtvWaitAdminNumber > 0 )
     {
         color_print( player_id, "%L", player_id, "GAL_ROCK_WAIT_ADMIN" );
-
-        LOGGER( 1, "    ( vote_rock ) Just Returning/blocking, cannot rock when admins are online." )
-        return;
+        LOGGER( 1, "    ( is_to_block_RTV ) Just Returning/blocking, cannot rock when admins are online." )
     }
 
-    // if the player is the only one on the server, bring up the vote immediately
-    if( get_realplayersnum() == 1 )
+    // If the player is the only one on the server, bring up the vote immediately
+    else if( get_realplayersnum() == 1 )
     {
         start_rtvVote();
-
-        LOGGER( 1, "    ( vote_rock ) Just Returning/blocking, the voting started." )
-        return;
+        LOGGER( 1, "    ( is_to_block_RTV ) Just Returning/blocking, the voting started." )
     }
 
-    // if time-limit is 0, minutesElapsed will always be 0.
-    new Float:minutesElapsed = map_getMinutesElapsed();
-
-    // make sure enough time has gone by on the current map
-    if( g_rtvWaitMinutes
-        && minutesElapsed
-        && minutesElapsed < g_rtvWaitMinutes )
+    // Make sure enough time has gone by on the current map
+    else if( g_rtvWaitMinutes
+             && ( minutesElapsed = map_getMinutesElapsed() )
+             && minutesElapsed < g_rtvWaitMinutes )
     {
-        color_print( player_id, "%L", player_id, "GAL_ROCK_FAIL_TOOSOON", floatround( g_rtvWaitMinutes - minutesElapsed, floatround_ceil ) );
+        new remaining_time = floatround( g_rtvWaitMinutes - minutesElapsed, floatround_ceil );
 
-        LOGGER( 1, "    ( vote_rock ) Just Returning/blocking, too soon to rock by minutes." )
-        return;
+        color_print( player_id, "%L", player_id, "GAL_ROCK_FAIL_TOOSOON", remaining_time );
+        LOGGER( 1, "    ( is_to_block_RTV ) Just Returning/blocking, too soon to rock by minutes." )
     }
+
+    // Make sure enough rounds has gone by on the current map
     else if( g_rtvWaitRounds
              && g_roundsPlayedNumber < g_rtvWaitRounds )
     {
-        color_print( player_id, "%L", player_id, "GAL_ROCK_FAIL_TOOSOON_ROUNDS", g_rtvWaitRounds - g_roundsPlayedNumber );
+        new remaining_rounds = g_rtvWaitRounds - g_roundsPlayedNumber;
 
-        LOGGER( 1, "    ( vote_rock ) Just Returning/blocking, too soon to rock by rounds." )
-        return;
+        color_print( player_id, "%L", player_id, "GAL_ROCK_FAIL_TOOSOON_ROUNDS", remaining_rounds );
+        LOGGER( 1, "    ( is_to_block_RTV ) Just Returning/blocking, too soon to rock by rounds." )
     }
+
+    // Make sure enough frags has gone by on the current map
     else if( g_rtvWaitFrags
              && g_greatestKillerFrags < g_rtvWaitFrags )
     {
-        color_print( player_id, "%L", player_id, "GAL_ROCK_FAIL_TOOSOON_FRAGS", g_rtvWaitFrags - g_greatestKillerFrags );
+        new remaining_frags =  g_rtvWaitFrags - g_greatestKillerFrags;
 
-        LOGGER( 1, "    ( vote_rock ) Just Returning/blocking, too soon to rock by frags." )
-        return;
+        color_print( player_id, "%L", player_id, "GAL_ROCK_FAIL_TOOSOON_FRAGS", remaining_frags );
+        LOGGER( 1, "    ( is_to_block_RTV ) Just Returning/blocking, too soon to rock by frags." )
+    }
+    else
+    {
+        LOGGER( 1, "    ( is_to_block_RTV ) Just Returning/allowing, the RTV." )
+        return false;
     }
 
-    // determine how many total rocks are needed
-    new rocksNeeded = vote_getRocksNeeded();
+    return true;
+}
 
+public vote_rock( player_id )
+{
+    LOGGER( 128, "I AM ENTERING ON vote_rock(1) | map: %d", player_id )
+    new rocksNeeded;
+
+    if( !is_to_block_RTV( player_id )
+        && compute_the_RTV_vote( player_id, ( rocksNeeded = vote_getRocksNeeded() ) ) )
+    {
+        try_to_start_the_RTV( rocksNeeded );
+    }
+}
+
+/**
+ * Allow the player to rock the vote.
+ */
+stock compute_the_RTV_vote( player_id, rocksNeeded )
+{
     // make sure player hasn't already rocked the vote
     if( g_rockedVote[ player_id ] )
     {
@@ -5752,21 +5771,27 @@ public vote_rock( player_id )
         rtv_remind( TASKID_RTV_REMINDER + player_id );
 
         LOGGER( 1, "    ( vote_rock ) Just Returning/blocking, already rocked the vote." )
-        return;
+        return false;
     }
 
-    // allow the player to rock the vote
     g_rockedVote[ player_id ] = true;
-
     color_print( player_id, "%L", player_id, "GAL_ROCK_SUCCESS" );
 
+    LOGGER( 1, "    ( vote_rock ) Just Returning/blocking, accepting rock the vote." )
+    return true;
+}
+
+/**
+ * Determine if there have been enough rocks for a vote yet.
+ */
+stock try_to_start_the_RTV( rocksNeeded )
+{
     // make sure the rtv reminder timer has stopped
     if( task_exists( TASKID_RTV_REMINDER ) )
     {
         remove_task( TASKID_RTV_REMINDER );
     }
 
-    // determine if there have been enough rocks for a vote yet
     if( ++g_rockedVoteCount >= rocksNeeded )
     {
         // announce that the vote has been rocked
@@ -5797,7 +5822,6 @@ stock vote_unrockTheVote( player_id )
     {
         g_rockedVote[ player_id ] = false;
         g_rockedVoteCount--;
-        // and such
     }
 }
 
