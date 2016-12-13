@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-289";
+new const PLUGIN_VERSION[] = "v3.2.6-290";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-289";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 16+2
+#define DEBUG_LEVEL 16+2+4
 
 
 /**
@@ -230,6 +230,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-289";
         test_resetRoundsScores_cases();
         test_loadVoteChoices_cases();
         test_nominateAndUnnominate_load();
+        test_RTVAndUnRTV_load();
     }
 
     /**
@@ -3878,6 +3879,7 @@ stock approvedTheVotingStart( bool:is_forced_voting )
     // the rounds start delay task could be running
     remove_task( TASKID_START_VOTING_BY_TIMER );
 
+    // If the voting menu deletion task is running, remove it the delete the menus right now.
     if( remove_task( TASKID_DELETE_USERS_MENUS ) )
     {
         vote_resetStats();
@@ -7216,11 +7218,11 @@ stock getPlayerNominationMapIndex( player_id, nominationIndex )
     }
     else
     {
-        LOGGER( 1, "    ( getPlayerNominationMapIndex ) Returning playerNominationData[nominationIndex]: %d", -1 )
+        LOGGER( 0, "    ( getPlayerNominationMapIndex ) Returning playerNominationData[nominationIndex]: %d", -1 )
         return -1;
     }
 
-    LOGGER( 1, "    ( getPlayerNominationMapIndex ) Returning playerNominationData[nominationIndex]: %d", \
+    LOGGER( 0, "    ( getPlayerNominationMapIndex ) Returning playerNominationData[nominationIndex]: %d", \
            playerNominationData[ nominationIndex ] )
     return playerNominationData[ nominationIndex ];
 }
@@ -7505,40 +7507,6 @@ stock nomination_cancel( player_id, mapIndex )
     }
 }
 
-stock map_nominate( player_id, mapIndex )
-{
-    LOGGER( 128, "I AM ENTERING ON map_nominate(2) | player_id: %d, mapIndex: %d", player_id, mapIndex )
-
-    new mapName[ MAX_MAPNAME_LENGHT ];
-
-    // get the nominated map name
-    ArrayGetString( g_nominationLoadedMapsArray, mapIndex, mapName, charsmax( mapName ) );
-    LOGGER( 4, "( map_nominate ) mapIndex: %d, mapName: %s", mapIndex, mapName )
-
-    if( !is_to_block_map_nomination( player_id, mapName ) )
-    {
-        if( IS_WHITELIST_ENABLED()
-            && IS_TO_HOURLY_LOAD_THE_WHITELIST() )
-        {
-            // Not loaded?
-            tryToLoadTheWhiteListFeature();
-
-            if( ( g_blackListTrieForWhiteList
-                  && TrieKeyExists( g_blackListTrieForWhiteList, mapName ) )
-                || ( g_whitelistTrie
-                     && !TrieKeyExists( g_whitelistTrie, mapName ) ) )
-            {
-                color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_WHITELIST", mapName );
-                LOGGER( 1, "    ( map_nominate ) The map: %s, was blocked by the whitelist map setting.", mapName )
-                return;
-            }
-        }
-
-        add_the_nominated_map( player_id, mapIndex, mapName );
-    }
-}
-
-
 stock is_to_block_map_nomination( player_id, mapName[] )
 {
     LOGGER( 128, "I AM ENTERING ON is_to_block_map_nomination(2) | player_id: %d, mapName: %d", player_id, mapName )
@@ -7584,9 +7552,42 @@ stock is_to_block_map_nomination( player_id, mapName[] )
     return true;
 }
 
-stock add_the_nominated_map( player_id, mapIndex, mapName[] )
+stock map_nominate( player_id, mapIndex )
 {
-    LOGGER( 128, "I AM ENTERING ON add_the_nominated_map(3) | player_id: %d, mapIndex: %d, mapName: %d", \
+    LOGGER( 128, "I AM ENTERING ON map_nominate(2) | player_id: %d, mapIndex: %d", player_id, mapIndex )
+
+    new mapName[ MAX_MAPNAME_LENGHT ];
+
+    // get the nominated map name
+    ArrayGetString( g_nominationLoadedMapsArray, mapIndex, mapName, charsmax( mapName ) );
+    LOGGER( 4, "( map_nominate ) mapIndex: %d, mapName: %s", mapIndex, mapName )
+
+    if( !is_to_block_map_nomination( player_id, mapName ) )
+    {
+        if( IS_WHITELIST_ENABLED()
+            && IS_TO_HOURLY_LOAD_THE_WHITELIST() )
+        {
+            // Not loaded?
+            tryToLoadTheWhiteListFeature();
+
+            if( ( g_blackListTrieForWhiteList
+                  && TrieKeyExists( g_blackListTrieForWhiteList, mapName ) )
+                || ( g_whitelistTrie
+                     && !TrieKeyExists( g_whitelistTrie, mapName ) ) )
+            {
+                color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_WHITELIST", mapName );
+                LOGGER( 1, "    ( map_nominate ) The map: %s, was blocked by the whitelist map setting.", mapName )
+                return;
+            }
+        }
+
+        try_to_add_the_nomination( player_id, mapIndex, mapName );
+    }
+}
+
+stock try_to_add_the_nomination( player_id, mapIndex, mapName[] )
+{
+    LOGGER( 128, "I AM ENTERING ON try_to_add_the_nomination(3) | player_id: %d, mapIndex: %d, mapName: %d", \
             player_id, mapIndex, mapName )
 
     // check if the map has already been nominated
@@ -7596,66 +7597,72 @@ stock add_the_nominated_map( player_id, mapIndex, mapName[] )
     // to nominate it.
     if( nominatorPlayerId == 0 )
     {
-        new openNominationIndex;
-        new maxPlayerNominations;
-
-        maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), MAX_NOMINATION_COUNT );
-
-        // When max nomination limit is reached, then we must not to allow this nomination.
-        if( countPlayerNominations( player_id, openNominationIndex ) >= maxPlayerNominations )
-        {
-            new copiedChars;
-
-            new nominatedMapName[ MAX_MAPNAME_LENGHT ];
-            new nominatedMaps   [ MAX_COLOR_MESSAGE ];
-
-            for( new nominationIndex = 0; nominationIndex < maxPlayerNominations; ++nominationIndex )
-            {
-                mapIndex = getPlayerNominationMapIndex( player_id, nominationIndex );
-                ArrayGetString( g_nominationLoadedMapsArray, mapIndex, nominatedMapName, charsmax( nominatedMapName ) );
-
-                if( copiedChars )
-                {
-                    copiedChars += copy( nominatedMaps[ copiedChars ],
-                            charsmax( nominatedMaps ) - copiedChars, ", " );
-                }
-
-                copiedChars += copy( nominatedMaps[ copiedChars ],
-                        charsmax( nominatedMaps ) - copiedChars, nominatedMapName );
-            }
-
-            color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_TOOMANY", maxPlayerNominations, nominatedMaps );
-            color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_TOOMANY_HLP" );
-        }
-
-        // otherwise, allow the nomination
-        else
-        {
-            setPlayerNominationMapIndex( player_id, openNominationIndex, mapIndex );
-            map_announceNomination( player_id, mapName );
-
-            color_print( player_id, "%L", player_id, "GAL_NOM_GOOD_HLP" );
-        }
-
-        LOGGER( 4, "( add_the_nominated_map ) openNominationIndex: %d, mapName: %s", openNominationIndex, mapName )
+        add_my_nomination( player_id, mapIndex, mapName );
     }
-
-    // If the nominatorPlayerId is equal to the current player_id, the player is trying to nominate
-    // the same map again. And it is not allowed.
     else if( nominatorPlayerId == player_id )
     {
+        // If the nominatorPlayerId is equal to the current player_id, the player is trying to nominate
+        // the same map again. And it is not allowed.
         color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_ALREADY", mapName );
     }
-
-    // The player nomination is the same as some other player before. And it is not allowed.
     else
     {
+        // The player nomination is the same as some other player before. And it is not allowed.
         new player_name[ MAX_PLAYER_NAME_LENGHT ];
         GET_USER_NAME( nominatorPlayerId, player_name )
 
         color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_SOMEONEELSE", mapName, player_name );
         color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_SOMEONEELSE_HLP" );
     }
+}
+
+stock add_my_nomination( player_id, mapIndex, mapName[] )
+{
+    new openNominationIndex;
+    new maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), MAX_NOMINATION_COUNT );
+
+    // When max nomination limit is reached, then we must not to allow this nomination.
+    if( countPlayerNominations( player_id, openNominationIndex ) >= maxPlayerNominations )
+    {
+        show_my_nominated_maps( player_id, maxPlayerNominations );
+    }
+    else
+    {
+        // otherwise, allow the nomination
+        setPlayerNominationMapIndex( player_id, openNominationIndex, mapIndex );
+
+        map_announceNomination( player_id, mapName );
+        color_print( player_id, "%L", player_id, "GAL_NOM_GOOD_HLP" );
+    }
+
+    LOGGER( 4, "( try_to_add_the_nomination ) openNominationIndex: %d, mapName: %s", openNominationIndex, mapName )
+}
+
+stock show_my_nominated_maps( player_id, maxPlayerNominations )
+{
+    new mapIndex;
+    new copiedChars;
+
+    new nominatedMaps   [ MAX_COLOR_MESSAGE ];
+    new nominatedMapName[ MAX_MAPNAME_LENGHT ];
+
+    for( new nominationIndex = 0; nominationIndex < maxPlayerNominations; ++nominationIndex )
+    {
+        mapIndex = getPlayerNominationMapIndex( player_id, nominationIndex );
+        ArrayGetString( g_nominationLoadedMapsArray, mapIndex, nominatedMapName, charsmax( nominatedMapName ) );
+
+        if( copiedChars )
+        {
+            copiedChars += copy( nominatedMaps[ copiedChars ],
+                    charsmax( nominatedMaps ) - copiedChars, ", " );
+        }
+
+        copiedChars += copy( nominatedMaps[ copiedChars ],
+                charsmax( nominatedMaps ) - copiedChars, nominatedMapName );
+    }
+
+    color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_TOOMANY", maxPlayerNominations, nominatedMaps );
+    color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_TOOMANY_HLP" );
 }
 
 /**
@@ -8129,7 +8136,13 @@ stock cancelVoting( bool:isToDoubleReset = false )
     resetRoundEnding();
     delete_users_menus( isToDoubleReset );
 
-    g_voteStatus = 0;
+    g_voteStatus &= ~VOTE_IS_IN_PROGRESS;
+    g_voteStatus &= ~VOTE_IS_FORCED;
+    g_voteStatus &= ~VOTE_IS_RUNOFF;
+
+    // g_voteStatus &= ~VOTE_IS_OVER;
+    // g_voteStatus &= ~VOTE_IS_EARLY;
+    // g_voteStatus &= ~VOTE_IS_EXPIRED;
 }
 
 /**
@@ -9909,48 +9922,50 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         // nomination_list()
 
         // Add a nomination for the player 1
-        test_nominateAndUnnominate( 1, 0, 1, true ); // Case 1
+        test_nominateAndUnnominate( .player_id = 1, .map_index = 0, .total_Nom = 1, .action = 'a' ); // Case 1
 
         // Failed, you already nominated it
-        test_nominateAndUnnominate( 1, 0, 1, true ); // Case 2
+        test_nominateAndUnnominate( .player_id = 1, .map_index = 0, .total_Nom = 1, .action = 'a' ); // Case 2
 
         // Remove the nomination for the player 1
-        test_nominateAndUnnominate( 1, 0, 0, false ); // Case 3
+        test_nominateAndUnnominate( .player_id = 1, .map_index = 0, .total_Nom = 0, .action = 'r' ); // Case 3
 
         // Add 2 nominations
-        test_nominateAndUnnominate( 1, 0, 1, true ); // Case 4
-        test_nominateAndUnnominate( 1, 1, 2, true ); // Case 5
+        test_nominateAndUnnominate( .player_id = 1, .map_index = 0, .total_Nom = 1, .action = 'a' ); // Case 4
+        test_nominateAndUnnominate( .player_id = 1, .map_index = 1, .total_Nom = 2, .action = 'a' ); // Case 5
 
         // Remove 4
-        test_nominateAndUnnominate( 1, 0, 1, false ); // Case 6
-        test_nominateAndUnnominate( 1, 1, 0, false ); // Case 7
-        test_nominateAndUnnominate( 1, 1, 0, false ); // Case 8
-        test_nominateAndUnnominate( 1, 0, 0, false ); // Case 9
+        test_nominateAndUnnominate( .player_id = 1, .map_index = 0, .total_Nom = 1, .action = 'r' ); // Case 6
+        test_nominateAndUnnominate( .player_id = 1, .map_index = 1, .total_Nom = 0, .action = 'r' ); // Case 7
+        test_nominateAndUnnominate( .player_id = 1, .map_index = 1, .total_Nom = 0, .action = 'r' ); // Case 8
+        test_nominateAndUnnominate( .player_id = 1, .map_index = 0, .total_Nom = 0, .action = 'r' ); // Case 9
 
         // test whether the unnominatedDisconnectedPlayer(1) forward is cleaning the players
         // nominations correctly. Add 2 nominations
-        test_nominateAndUnnominate( 1, 0, 1, true ); // Case 10
-        test_nominateAndUnnominate( 1, 1, 2, true ); // Case 11
+        test_nominateAndUnnominate( .player_id = 1, .map_index = 0, .total_Nom = 1, .action = 'a' ); // Case 10
+        test_nominateAndUnnominate( .player_id = 1, .map_index = 1, .total_Nom = 2, .action = 'a' ); // Case 11
 
         unnominatedDisconnectedPlayer( 1 );
-        test_nominateAndUnnominate( 1, 0, 1, true ); // Case 12
+        test_nominateAndUnnominate( .player_id = 1, .map_index = 0, .total_Nom = 0, .action = 'n' ); // Case 12
     }
 
-    stock test_nominateAndUnnominate( player_id, map_index, total_nominations, bool:is_to_nominate )
+    stock test_nominateAndUnnominate( player_id, map_index, total_Nom, action )
     {
         new openNominationIndex;
         new errorMessage[ MAX_LONG_STRING ];
 
-        new test_id;
-        test_id = test_registerSeriesNaming( "test_nominateAndUnnominate", 'a' );
+        new test_id = test_registerSeriesNaming( "test_nominateAndUnnominate", 'a' );
 
-        if( is_to_nominate )
+        switch( action )
         {
-            map_nominate( player_id, map_index );
-        }
-        else
-        {
-            nomination_cancel( player_id, map_index );
+            case 'a':
+            {
+                map_nominate( player_id, map_index );
+            }
+            case 'r':
+            {
+                nomination_cancel( player_id, map_index );
+            }
         }
 
         nomination_list();
@@ -9958,9 +9973,73 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         // Count how much nominations that player has
         new nominationsCount = countPlayerNominations( player_id, openNominationIndex );
 
-        formatex( errorMessage, charsmax( errorMessage ), "Must to be %d nominations, instead of %d.", total_nominations, nominationsCount );
-        SET_TEST_FAILURE( test_id, nominationsCount != total_nominations, errorMessage )
+        formatex( errorMessage, charsmax( errorMessage ), "Must to be %d nominations, instead of %d.", total_Nom, nominationsCount );
+        SET_TEST_FAILURE( test_id, nominationsCount != total_Nom, errorMessage )
     }
+
+
+    /**
+     * To test the RTV feature.
+     */
+    stock test_RTVAndUnRTV_load()
+    {
+        // Nominations functions:
+        //
+        // vote_rock( player_id )
+        // vote_unrockTheVote( player_id )
+
+        g_rtvWaitMinutes     = 0.0;
+        g_rtvWaitRounds      = 0;
+        g_rtvWaitFrags       = 0;
+        g_rtvWaitAdminNumber = 0;
+
+        g_test_aimedPlayersNumber = 6;
+        set_pcvar_float( cvar_rtvRatio, 0.5 );
+
+        // Add a RTV for the player 1
+        test_RTVAndUnRTV( .player_id = 1, .total_RTVs = 1, .action = 'a' ); // Case
+        test_RTVAndUnRTV( .player_id = 1, .total_RTVs = 1, .action = 'a' ); // Case
+        test_RTVAndUnRTV( .player_id = 1, .total_RTVs = 1, .action = 'a' ); // Case
+
+        test_RTVAndUnRTV( .player_id = 2, .total_RTVs = 2, .action = 'a' ); // Case
+        test_RTVAndUnRTV( .player_id = 2, .total_RTVs = 2, .action = 'a' ); // Case
+        test_RTVAndUnRTV( .player_id = 2, .total_RTVs = 1, .action = 'r' ); // Case
+        test_RTVAndUnRTV( .player_id = 2, .total_RTVs = 1, .action = 'r' ); // Case
+
+        test_RTVAndUnRTV( .player_id = 1, .total_RTVs = 0, .action = 'r' ); // Case
+        test_RTVAndUnRTV( .player_id = 1, .total_RTVs = 0, .action = 'r' ); // Case
+        test_RTVAndUnRTV( .player_id = 1, .total_RTVs = 0, .action = 'r' ); // Case
+        test_RTVAndUnRTV( .player_id = 1, .total_RTVs = 0, .action = 'r' ); // Case
+
+        test_RTVAndUnRTV( .player_id = 1, .total_RTVs = 1, .action = 'a' ); // Case
+        test_RTVAndUnRTV( .player_id = 2, .total_RTVs = 2, .action = 'a' ); // Case
+        test_RTVAndUnRTV( .player_id = 3, .total_RTVs = 3, .action = 'a' ); // Case
+
+        cancelVoting();
+        test_RTVAndUnRTV( .player_id = 1, .total_RTVs = 0, .action = 'n' ); // Case
+    }
+
+    stock test_RTVAndUnRTV( player_id, total_RTVs, action )
+    {
+        new errorMessage[ MAX_LONG_STRING ];
+        new test_id = test_registerSeriesNaming( "test_RTVAndUnRTV", 'b' );
+
+        switch( action )
+        {
+            case 'a':
+            {
+                vote_rock( player_id );
+            }
+            case 'r':
+            {
+                vote_unrockTheVote( player_id );
+            }
+        }
+
+        formatex( errorMessage, charsmax( errorMessage ), "Must to be %d RTVs, instead of %d.", total_RTVs, g_rockedVoteCount );
+        SET_TEST_FAILURE( test_id, g_rockedVoteCount != total_RTVs, errorMessage )
+    }
+
 
 
 
@@ -9968,21 +10047,23 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     // ###########################################################################################
     new Float:test_extendMapMaximum;
     new Float:test_mp_timelimit;
-    new       test_mp_winlimit;
-    new       test_mp_maxrounds;
-    new       test_mp_fraglimit;
-    new       test_serverTimeLimitRestart;
-    new       test_serverWinlimitRestart;
-    new       test_serverMaxroundsRestart;
-    new       test_serverFraglimitRestart;
-    new       test_whitelistMinPlayers;
-    new       test_isWhiteListNomBlock;
-    new       test_isWhiteListBlockOut;
-    new       test_voteMinPlayers;
-    new       test_NomMinPlayersControl;
-    new       test_nomQtyUsed;
-    new       test_voteMapChoiceCount;
-    new       test_nomPlayerAllowance;
+    new Float:test_rtvRatio;
+
+    new test_mp_winlimit;
+    new test_mp_maxrounds;
+    new test_mp_fraglimit;
+    new test_serverTimeLimitRestart;
+    new test_serverWinlimitRestart;
+    new test_serverMaxroundsRestart;
+    new test_serverFraglimitRestart;
+    new test_whitelistMinPlayers;
+    new test_isWhiteListNomBlock;
+    new test_isWhiteListBlockOut;
+    new test_voteMinPlayers;
+    new test_NomMinPlayersControl;
+    new test_nomQtyUsed;
+    new test_voteMapChoiceCount;
+    new test_nomPlayerAllowance;
 
     new test_nomMapFilePath           [ MAX_FILE_PATH_LENGHT ];
     new test_voteMapFilePath          [ MAX_FILE_PATH_LENGHT ];
@@ -10009,6 +10090,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         get_pcvar_string( cvar_voteWhiteListMapFilePath, test_voteWhiteListMapFilePath, charsmax( test_voteWhiteListMapFilePath ) );
         get_pcvar_string( cvar_voteMinPlayersMapFilePath, test_voteMinPlayersMapFilePath, charsmax( test_voteMinPlayersMapFilePath ) );
 
+        test_rtvRatio                = get_pcvar_float( cvar_rtvRatio );
         test_extendMapMaximum        = get_pcvar_float( cvar_maxMapExtendTime );
         test_mp_timelimit            = get_pcvar_float( cvar_mp_timelimit     );
 
@@ -10059,6 +10141,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
             set_pcvar_string( cvar_voteWhiteListMapFilePath , test_voteWhiteListMapFilePath  );
             set_pcvar_string( cvar_voteMinPlayersMapFilePath, test_voteMinPlayersMapFilePath );
 
+            set_pcvar_float( cvar_rtvRatio        , test_rtvRatio );
             set_pcvar_float( cvar_maxMapExtendTime, test_extendMapMaximum );
             set_pcvar_float( cvar_mp_timelimit    , test_mp_timelimit     );
 
