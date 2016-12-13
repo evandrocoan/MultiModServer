@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-283";
+new const PLUGIN_VERSION[] = "v3.2.6-284";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -1652,7 +1652,7 @@ stock configureTheNextMapPlugin( possibleNextMapPosition, possibleNextMap[], map
 
     g_nextMapCyclePosition = possibleNextMapPosition;
 
-    setNextMap( possibleNextMap );
+    setNextMap( possibleNextMap, false );
     saveCurrentMapCycleSetting( mapcycleFilePath );
 }
 
@@ -1739,19 +1739,26 @@ public startNonForcedVoting()
     vote_startDirector( false );
 }
 
-stock setNextMap( nextMap[] )
+stock setNextMap( nextMap[], bool:isToUpdateTheCvar = true )
 {
     LOGGER( 128, "I AM ENTERING ON setNextMap(1) | nextMap: %s", nextMap )
 
     if( IS_MAP_VALID( nextMap ) )
     {
         // set the queryable cvar
-        set_pcvar_string( cvar_amx_nextmap, nextMap );
+        if( isToUpdateTheCvar
+            || !( get_pcvar_num( cvar_nextMapChangeAnnounce )
+                 && get_pcvar_num( cvar_endOfMapVote ) ) )
+        {
+            LOGGER( 2, "( setNextMap ) IS CHANGING THE CVAR 'amx_nextmap' to '%s'", nextMap )
+            set_pcvar_string( cvar_amx_nextmap, nextMap );
+        }
+
         copy( g_nextMap, charsmax( g_nextMap ), nextMap );
 
         // update our data file
         saveCurrentAndNextMapNames( nextMap );
-        LOGGER( 2, "( setNextMap ) IS CHANGING THE CVAR 'amx_nextmap' to '%s'", nextMap )
+        LOGGER( 2, "( setNextMap ) IS CHANGING THE global variable g_nextMap to '%s'", nextMap )
     }
     else
     {
@@ -6198,7 +6205,7 @@ stock configureNextEmptyCycleMap()
         map_getNext( g_emptyCycleMapsArray, lastEmptyCycleMap, nextMap );
 
         setLastEmptyCycleMap( nextMap );
-        setNextMap( nextMap );
+        setNextMap( nextMap, false );
     }
 
     return mapIndex;
@@ -8319,9 +8326,21 @@ stock loadNextMapPluginSetttings()
 
     // Increments by 1, the global variable 'g_nextMapCyclePosition', or set its to 1.
     readMapCycle( currentMapcycleFilePath, g_nextMap, charsmax( g_nextMap ) );
-
     LOGGER( 2, "( nextmap_plugin_init ) IS CHANGING THE CVAR 'amx_nextmap' to '%s'", g_nextMap )
-    set_pcvar_string( cvar_amx_nextmap, g_nextMap );
+
+    if( get_pcvar_num( cvar_nextMapChangeAnnounce )
+        && get_pcvar_num( cvar_endOfMapVote ) )
+    {
+        new nextMapName[ 128 ];
+        formatex( nextMapName, charsmax( nextMapName ), "%L", LANG_SERVER, "GAL_NEXTMAP_UNKNOWN" );
+
+        REMOVE_CODE_COLOR_TAGS( nextMapName )
+        set_pcvar_string( cvar_amx_nextmap, nextMapName );
+    }
+    else
+    {
+        set_pcvar_string( cvar_amx_nextmap, g_nextMap );
+    }
 
     saveCurrentMapCycleSetting( currentMapcycleFilePath );
 }
