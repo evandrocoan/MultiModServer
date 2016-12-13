@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-288";
+new const PLUGIN_VERSION[] = "v3.2.6-289";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -9062,6 +9062,193 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
 
 
 
+
+    // Here below to start the manual Unit Tests and the Unit Tests helper functions.
+    // ###########################################################################################
+
+    /**
+     * Calls the 'test_loadVoteChoices_load(1)' series case 'a' for manual testing, and seeing the
+     * outputted string by 'announceVoteBlockedMap(4)'.
+     */
+    stock test_announceVoteBlockedMap_a()
+    {
+        test_loadVoteChoices_load();
+        test_loadVoteChoices_serie( 'a' );
+    }
+
+    /**
+     * Calls the 'test_loadVoteChoices_load(1)' series case 'c' for manual testing.
+     *
+     * @see test_announceVoteBlockedMap_a(0).
+     */
+    stock test_announceVoteBlockedMap_c()
+    {
+        test_loadVoteChoices_load();
+        test_loadVoteChoices_serie( 'c' );
+    }
+
+    /**
+     * Create some nominations the force to remove them by the 'unnominatedDisconnectedPlayer(1)',
+     * for manual testing.
+     */
+    stock test_unnominatedDisconnected( player_id )
+    {
+        helper_clearNominationsData();
+        set_pcvar_num( cvar_nomPlayerAllowance, 9 );
+
+        helper_unnominated_nomsLoad( player_id, "de_dust2002v2005_forEver2009", "de_dust2002v2005_forEver2010",
+                                              "de_dust2002v2005_forEver2011", "de_dust2002v2005_forEver2012",
+                                              "de_dust2002v2005_forEver2013", "de_dust2002v2005_forEver2014",
+                                              "de_dust2002v2005_forEver2015", "de_dust2002v2005_forEver2016" );
+
+        unnominatedDisconnectedPlayer( player_id );
+    }
+
+    /**
+     * Manual test for the maximum chat message send to the server players.
+     */
+    stock test_colorChatLimits( player_id )
+    {
+        new const string[] = "ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ";
+
+        color_print( 0, string );
+        color_print( player_id, string );
+
+        new formats[ MAX_BIG_BOSS_STRING ];
+        copy( formats, charsmax( formats ), "My big formatter: %s" );
+
+        color_print( 0, formats, string );
+        color_print( player_id, formats, string );
+    }
+
+    /**
+     * Load the specified nominations into the system.
+     *
+     * @param nominations      the variable number of maps nominations.
+     */
+    stock helper_loadVoteChoices_nomsLoad( ... )
+    {
+        new stringIndex;
+        new argumentsNumber;
+        new currentMap[ MAX_MAPNAME_LENGHT ];
+
+        static playerId    = 1;
+        static optionIndex = 0;
+
+        argumentsNumber = numargs();
+
+        // To load the maps passed as arguments
+        for( new currentIndex = 0; currentIndex < argumentsNumber; ++currentIndex )
+        {
+            stringIndex = 0;
+
+            if( playerId > MAX_PLAYERS )
+            {
+                playerId = 1;
+                ++optionIndex;
+
+                if( optionIndex > 2 )
+                {
+                    optionIndex = 0;
+                }
+            }
+
+            while( ( currentMap[ stringIndex ] = getarg( currentIndex, stringIndex++ ) ) )
+            {
+            }
+
+            currentMap[ stringIndex ] = '^0';
+            ArrayPushString( g_nominationLoadedMapsArray, currentMap );
+
+            setPlayerNominationMapIndex( playerId++, optionIndex, currentIndex );
+        }
+    }
+
+    /**
+     * To create a map file list on the specified file path on the disk.
+     *
+     * @param mapFileListPath      the path to the mapFileList.
+     * @param mapFileList          the variable number of maps.
+     */
+    stock helper_mapFileListLoad( mapFileListPath[], ... )
+    {
+        new stringIndex;
+        new currentIndex;
+        new fileDescriptor;
+        new currentMap[ MAX_MAPNAME_LENGHT ];
+
+        delete_file( mapFileListPath );
+        fileDescriptor = fopen( mapFileListPath, "wt" );
+
+        if( fileDescriptor )
+        {
+            new argumentsNumber = numargs();
+
+            // To load the maps passed as arguments
+            for( currentIndex = 1; currentIndex < argumentsNumber; ++currentIndex )
+            {
+                stringIndex = 0;
+
+                while( ( currentMap[ stringIndex ] = getarg( currentIndex, stringIndex++ ) ) )
+                {
+                }
+
+                currentMap[ stringIndex ] = '^0';
+                fprintf( fileDescriptor, "%s^n", currentMap );
+            }
+
+            fclose( fileDescriptor );
+        }
+    }
+
+    /**
+     * To clear the normal game nominations.
+     */
+    stock helper_clearNominationsData()
+    {
+        clearTheVotingMenu();
+        nomination_clearAll();
+
+        // Clear the nominations file loaded maps
+        ArrayClear( g_nominationLoadedMapsArray );
+    }
+
+    /**
+     * Load the specified nominations into a specific player.
+     *
+     * @param player_id        the player id to receive the nominations.
+     * @param nominations      the variable number of maps nominations.
+     */
+    stock helper_unnominated_nomsLoad( player_id, ... )
+    {
+        new stringIndex;
+        new argumentsNumber;
+        new currentMap[ MAX_MAPNAME_LENGHT ];
+
+        argumentsNumber = numargs() - 1;
+
+        // To load the maps passed as arguments
+        for( new currentIndex = 0; currentIndex < argumentsNumber; ++currentIndex )
+        {
+            stringIndex = 0;
+
+            while( ( currentMap[ stringIndex ] = getarg( currentIndex + 1, stringIndex++ ) ) )
+            {
+            }
+
+            currentMap[ stringIndex ] = '^0';
+            ArrayPushString( g_nominationLoadedMapsArray, currentMap );
+
+            if( currentIndex < MAX_NOMINATION_COUNT )
+            {
+                setPlayerNominationMapIndex( player_id, currentIndex, currentIndex );
+            }
+        }
+    }
+
+
+
+
     // Here below to start the Unit Tests code.
     // ###########################################################################################
 
@@ -9230,6 +9417,8 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         // Call the next chain test.
         set_task( 1.0, "test_exampleModel_case2", chainDelay );
     }*/
+
+
 
 
     // Place new 'vote_startDirector(1)' chain tests above here.
@@ -9771,191 +9960,6 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
 
         formatex( errorMessage, charsmax( errorMessage ), "Must to be %d nominations, instead of %d.", total_nominations, nominationsCount );
         SET_TEST_FAILURE( test_id, nominationsCount != total_nominations, errorMessage )
-    }
-
-
-
-    // Here below to start the manual Unit Tests and the Unit Tests helper functions.
-    // ###########################################################################################
-
-    /**
-     * Calls the 'test_loadVoteChoices_load(1)' series case 'a' for manual testing, and seeing the
-     * outputted string by 'announceVoteBlockedMap(4)'.
-     */
-    stock test_announceVoteBlockedMap_a()
-    {
-        test_loadVoteChoices_load();
-        test_loadVoteChoices_serie( 'a' );
-    }
-
-    /**
-     * Calls the 'test_loadVoteChoices_load(1)' series case 'c' for manual testing.
-     *
-     * @see test_announceVoteBlockedMap_a(0).
-     */
-    stock test_announceVoteBlockedMap_c()
-    {
-        test_loadVoteChoices_load();
-        test_loadVoteChoices_serie( 'c' );
-    }
-
-    /**
-     * Create some nominations the force to remove them by the 'unnominatedDisconnectedPlayer(1)',
-     * for manual testing.
-     */
-    stock test_unnominatedDisconnected( player_id )
-    {
-        helper_clearNominationsData();
-        set_pcvar_num( cvar_nomPlayerAllowance, 9 );
-
-        helper_unnominated_nomsLoad( player_id, "de_dust2002v2005_forEver2009", "de_dust2002v2005_forEver2010",
-                                              "de_dust2002v2005_forEver2011", "de_dust2002v2005_forEver2012",
-                                              "de_dust2002v2005_forEver2013", "de_dust2002v2005_forEver2014",
-                                              "de_dust2002v2005_forEver2015", "de_dust2002v2005_forEver2016" );
-
-        unnominatedDisconnectedPlayer( player_id );
-    }
-
-    /**
-     * Manual test for the maximum chat message send to the server players.
-     */
-    stock test_colorChatLimits( player_id )
-    {
-        new const string[] = "ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ";
-
-        color_print( 0, string );
-        color_print( player_id, string );
-
-        new formats[ MAX_BIG_BOSS_STRING ];
-        copy( formats, charsmax( formats ), "My big formatter: %s" );
-
-        color_print( 0, formats, string );
-        color_print( player_id, formats, string );
-    }
-
-    /**
-     * Load the specified nominations into the system.
-     *
-     * @param nominations      the variable number of maps nominations.
-     */
-    stock helper_loadVoteChoices_nomsLoad( ... )
-    {
-        new stringIndex;
-        new argumentsNumber;
-        new currentMap[ MAX_MAPNAME_LENGHT ];
-
-        static playerId    = 1;
-        static optionIndex = 0;
-
-        argumentsNumber = numargs();
-
-        // To load the maps passed as arguments
-        for( new currentIndex = 0; currentIndex < argumentsNumber; ++currentIndex )
-        {
-            stringIndex = 0;
-
-            if( playerId > MAX_PLAYERS )
-            {
-                playerId = 1;
-                ++optionIndex;
-
-                if( optionIndex > 2 )
-                {
-                    optionIndex = 0;
-                }
-            }
-
-            while( ( currentMap[ stringIndex ] = getarg( currentIndex, stringIndex++ ) ) )
-            {
-            }
-
-            currentMap[ stringIndex ] = '^0';
-            ArrayPushString( g_nominationLoadedMapsArray, currentMap );
-
-            setPlayerNominationMapIndex( playerId++, optionIndex, currentIndex );
-        }
-    }
-
-    /**
-     * To create a map file list on the specified file path on the disk.
-     *
-     * @param mapFileListPath      the path to the mapFileList.
-     * @param mapFileList          the variable number of maps.
-     */
-    stock helper_mapFileListLoad( mapFileListPath[], ... )
-    {
-        new stringIndex;
-        new currentIndex;
-        new fileDescriptor;
-        new currentMap[ MAX_MAPNAME_LENGHT ];
-
-        delete_file( mapFileListPath );
-        fileDescriptor = fopen( mapFileListPath, "wt" );
-
-        if( fileDescriptor )
-        {
-            new argumentsNumber = numargs();
-
-            // To load the maps passed as arguments
-            for( currentIndex = 1; currentIndex < argumentsNumber; ++currentIndex )
-            {
-                stringIndex = 0;
-
-                while( ( currentMap[ stringIndex ] = getarg( currentIndex, stringIndex++ ) ) )
-                {
-                }
-
-                currentMap[ stringIndex ] = '^0';
-                fprintf( fileDescriptor, "%s^n", currentMap );
-            }
-
-            fclose( fileDescriptor );
-        }
-    }
-
-    /**
-     * To clear the normal game nominations.
-     */
-    stock helper_clearNominationsData()
-    {
-        clearTheVotingMenu();
-        nomination_clearAll();
-
-        // Clear the nominations file loaded maps
-        ArrayClear( g_nominationLoadedMapsArray );
-    }
-
-    /**
-     * Load the specified nominations into a specific player.
-     *
-     * @param player_id        the player id to receive the nominations.
-     * @param nominations      the variable number of maps nominations.
-     */
-    stock helper_unnominated_nomsLoad( player_id, ... )
-    {
-        new stringIndex;
-        new argumentsNumber;
-        new currentMap[ MAX_MAPNAME_LENGHT ];
-
-        argumentsNumber = numargs() - 1;
-
-        // To load the maps passed as arguments
-        for( new currentIndex = 0; currentIndex < argumentsNumber; ++currentIndex )
-        {
-            stringIndex = 0;
-
-            while( ( currentMap[ stringIndex ] = getarg( currentIndex + 1, stringIndex++ ) ) )
-            {
-            }
-
-            currentMap[ stringIndex ] = '^0';
-            ArrayPushString( g_nominationLoadedMapsArray, currentMap );
-
-            if( currentIndex < MAX_NOMINATION_COUNT )
-            {
-                setPlayerNominationMapIndex( player_id, currentIndex, currentIndex );
-            }
-        }
     }
 
 
