@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-297";
+new const PLUGIN_VERSION[] = "v3.2.6-299";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -412,6 +412,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-297";
 
 #define MAX_PREFIX_COUNT              32
 #define MAX_MAPS_IN_VOTE              8
+#define MENU_ITEMS_PER_PAGE           8
 #define MAX_NOMINATION_COUNT          8
 #define MAX_OPTIONS_IN_VOTE           9
 #define MAX_STANDARD_MAP_COUNT        25
@@ -818,7 +819,6 @@ new bool:g_isVotingByRounds;
 new bool:g_isVotingByFrags;
 new bool:g_isTheLastGameRound;
 new bool:g_isThePenultGameRound;
-new bool:g_isToChangeMapByFragLimit;
 new bool:g_isToChangeMapOnVotingEnd;
 new bool:g_isVirtualFragLimitSupport;
 new bool:g_isTimeToRestart;
@@ -1386,7 +1386,7 @@ stock configureTheRTVFeature()
             map_loadPrefixList();
         }
 
-        map_loadNominationList();
+        loadNominationList();
     }
 }
 
@@ -1541,7 +1541,7 @@ public handleServerStart( backupMapsFilePath[] )
             // if noms aren't allowed, the nomination list hasn't already been loaded
             if( get_pcvar_num( cvar_nomPlayerAllowance ) == 0 )
             {
-                map_loadNominationList();
+                loadNominationList();
             }
 
             new nominationsMapsCount = ArraySize( g_nominationLoadedMapsArray );
@@ -2235,10 +2235,8 @@ public client_death_event()
                 g_greatestKillerFrags = frags;
 
                 if( g_isVirtualFragLimitSupport
-                    && g_greatestKillerFrags > g_fragLimitNumber - 1
-                    && !g_isToChangeMapByFragLimit )
+                    && g_greatestKillerFrags > g_fragLimitNumber - 1 )
                 {
-                    g_isToChangeMapByFragLimit = true;
                     try_to_manage_map_end( true );
                 }
             }
@@ -2375,12 +2373,12 @@ stock try_to_manage_map_end( bool:isToImmediatelyChangeLevel = false )
         if( !areThereEnoughPlayers
             && isToImmediatelyChangeLevel )
         {
-            process_last_round();
+            try_to_process_last_round( isToImmediatelyChangeLevel );
         }
         else if( !map_manageEnd()
                  && isToImmediatelyChangeLevel )
         {
-            process_last_round();
+            try_to_process_last_round( isToImmediatelyChangeLevel );
         }
     }
 }
@@ -2451,9 +2449,6 @@ stock prevent_map_change()
     set_pcvar_num(   cvar_mp_winlimit,  0   );
     set_pcvar_num(   cvar_mp_fraglimit, 0   );
 
-    // Restart the mp_fraglimit changing
-    g_isToChangeMapByFragLimit = false;
-
     LOGGER( 2, "( prevent_map_change ) IS CHANGING THE CVAR %-22s to '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
     LOGGER( 2, "( prevent_map_change ) IS CHANGING THE CVAR %-22s to '%d'.", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) )
     LOGGER( 2, "( prevent_map_change ) IS CHANGING THE CVAR %-22s to '%d'.", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) )
@@ -2491,14 +2486,14 @@ stock endRoundWatchdog()
     if( g_isTheLastGameRound )
     {
         remove_task( TASKID_SHOW_LAST_ROUND_HUD );
-        set_task( 6.0, "process_last_round", TASKID_PROCESS_LAST_ROUND );
+        set_task( 6.0, "process_last_round_by_set_task", TASKID_PROCESS_LAST_ROUND );
     }
     else if( g_isThePenultGameRound )
     {
         // When time runs out, end map at the next round end.
         g_isTheLastGameRound = true;
 
-        // set it to false because later we first could try to check this before `g_isTheLastGameRound`
+        // Set it to false because later we first could try to check this before `g_isTheLastGameRound`
         // resulting on an infinity loop.
         g_isThePenultGameRound = false;
 
@@ -2508,11 +2503,24 @@ stock endRoundWatchdog()
 }
 
 /**
- * To perform the switch between the straight intermission_display(0) and the last_round_countdown(0).
+ * Used to call try_to_process_last_round(1) without setting its default parameter `isToImmediatelyChangeLevel`
+ * to true, when calling it from a set_task() function within a task id.
+ *
+ * This is because when a set_task() has a task id, will will pass its task id as the first parameter.
  */
-public process_last_round()
+public process_last_round_by_set_task()
 {
-    LOGGER( 128, "I AM ENTERING ON process_last_round(0)" )
+    LOGGER( 128, "I AM ENTERING ON process_last_round_by_set_task(0)" )
+    try_to_process_last_round();
+}
+
+/**
+ * This is a fail safe to not allow map changes if must there be a map voting and it was not
+ * finished/performed yet.
+ */
+stock try_to_process_last_round( bool:isToImmediatelyChangeLevel = false )
+{
+    LOGGER( 128, "I AM ENTERING ON try_to_process_last_round(0)" )
     new bool:allowMapChange;
 
     if( g_voteStatus & VOTE_IS_OVER )
@@ -2531,10 +2539,24 @@ public process_last_round()
         }
     }
 
-    if( ( ( g_isTheLastGameRound
-            || g_isToChangeMapOnVotingEnd )
-          && allowMapChange )
-        || g_isToChangeMapByFragLimit )
+    if( allowMapChange )
+    {
+        process_last_round( isToImmediatelyChangeLevel );
+    }
+}
+
+/**
+ * To perform the switch between the straight intermission_processing(0) and the last_round_countdown(0).
+ *
+ * This is used to be called from the computeVotes(0) end voting function. To call process_last_round(1)
+ * with the variable `g_isToChangeMapOnVotingEnd` properly set.
+ */
+stock process_last_round( bool:isToImmediatelyChangeLevel = false )
+{
+    LOGGER( 128, "I AM ENTERING ON process_last_round(1)" )
+
+    if( g_isTheLastGameRound
+        || isToImmediatelyChangeLevel )
     {
         if( get_pcvar_num( cvar_isEndMapCountdown ) )
         {
@@ -2543,14 +2565,14 @@ public process_last_round()
         }
         else
         {
-            intermission_display();
+            intermission_processing();
         }
     }
 }
 
-stock intermission_display()
+stock intermission_processing()
 {
-    LOGGER( 128, "I AM ENTERING ON intermission_display(0)" )
+    LOGGER( 128, "I AM ENTERING ON intermission_processing(0)" )
     new Float:mp_chattime = get_intermission_chattime();
 
     // Choose how to change the level.
@@ -2661,7 +2683,7 @@ public last_round_countdown()
 
     if( g_lastRroundCountdown == 0 )
     {
-        intermission_display();
+        intermission_processing();
     }
 }
 
@@ -3086,14 +3108,14 @@ stock loadMapsFolderDirectory( Array:mapArray, Trie:fillerMapTrie = Invalid_Trie
     return mapCount;
 }
 
-public map_loadNominationList()
+public loadNominationList()
 {
-    LOGGER( 128, "I AM ENTERING ON map_loadNominationList(0)" )
+    LOGGER( 128, "I AM ENTERING ON loadNominationList(0)" )
 
     new nomMapFilePath[ MAX_FILE_PATH_LENGHT ];
     get_pcvar_string( cvar_nomMapFilePath, nomMapFilePath, charsmax( nomMapFilePath ) );
 
-    LOGGER( 4, "( map_loadNominationList() ) cvar_nomMapFilePath: %s", nomMapFilePath )
+    LOGGER( 4, "( loadNominationList() ) cvar_nomMapFilePath: %s", nomMapFilePath )
     map_populateList( g_nominationLoadedMapsArray, nomMapFilePath, charsmax( nomMapFilePath ), g_nominationLoadedMapsTrie );
 }
 
@@ -5656,7 +5678,7 @@ public computeVotes()
                      && g_isTimeToRestart )
             {
                 color_print( 0, "%L", LANG_PLAYER, "GAL_WINNER_STAY" );
-                process_last_round();
+                process_last_round( g_isToChangeMapOnVotingEnd );
             }
             else if( g_isGameFinalVoting ) // "extend map" won
             {
@@ -5688,7 +5710,7 @@ public computeVotes()
             server_exec();
 
             color_print( 0, "%L", LANG_PLAYER, "GAL_NEXTMAP", g_nextMap );
-            process_last_round();
+            process_last_round( g_isToChangeMapOnVotingEnd );
 
             g_voteStatus |= VOTE_IS_OVER;
         }
@@ -5707,7 +5729,7 @@ public computeVotes()
             color_print( 0, "%L", LANG_PLAYER, "GAL_WINNER_ORDERED", g_nextMap );
         }
 
-        process_last_round();
+        process_last_round( g_isToChangeMapOnVotingEnd );
         g_voteStatus |= VOTE_IS_OVER;
     }
 
@@ -7228,11 +7250,13 @@ stock nomination_menu( player_id )
     }
     // end nomination menu variables
 
+    new itemsCount           = -1;
     new nominationsMapsCount = ArraySize( g_nominationLoadedMapsArray );
 
-    for( mapIndex = 0; mapIndex < nominationsMapsCount; mapIndex++ )
+    for( mapIndex = 0; mapIndex < nominationsMapsCount && itemsCount < MENU_ITEMS_PER_PAGE; mapIndex++ )
     {
         ArrayGetString( g_nominationLoadedMapsArray, mapIndex, nominationMap, charsmax( nominationMap ) );
+        itemsCount++;
 
         // Start the menu entry item calculation:
         // 'nomination_menu(1)' and 'nominationAttemptWithNamePart(2)'.
@@ -10223,7 +10247,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
 
         // Player cannot nominate the current map, so if you are on one fo these maps, the test will fail.
         helper_mapFileListLoad( g_test_nomMapFilePath, "de_test_dust1", "de_test_dust2", "de_test_dust3", "de_test_dust4" );
-        map_loadNominationList();
+        loadNominationList();
 
         // Nominations functions:
         //
@@ -10541,7 +10565,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
 
         // Reload unloaded features.
         loadMapFiles();
-        map_loadNominationList();
+        loadNominationList();
         loadTheWhiteListFeature();
 
         // Clean tests files.
