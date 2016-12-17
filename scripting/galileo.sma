@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-295";
+new const PLUGIN_VERSION[] = "v3.2.6-296";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-295";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 16+2
+#define DEBUG_LEVEL 16+2+4
 
 
 /**
@@ -882,14 +882,31 @@ new Array:g_recentListMapsArray;
 new Trie: g_recentMapsTrie;
 
 /**
- * Whitelist feature variables.
+ * Contains the loaded current loaded Whilelist from the array `g_whitelistFileArray` for the
+ * Whilelist Out Block Feature `cvar_isWhiteListBlockOut`.
  */
 new Array:g_whitelistArray;
+
+/**
+ * Contains all the loaded valid lines from the Whitelist file contents.
+ */
+new Array:g_whitelistFileArray;
+
+/**
+ * Whitelist feature variables.
+ */
 new Trie: g_whitelistTrie;
 new Trie: g_blackListTrieForWhiteList;
 
-new Array:g_fillerLoadedMapsArray;
+/**
+ * Contains all loaded nominations maps from the nomination file list.
+ */
 new Array:g_nominationLoadedMapsArray;
+
+/**
+ * Contains all loaded nominations maps from the nomination file list, for fast search.
+ */
+new Trie:g_nominationLoadedMapsTrie;
 
 /**
  * Contains the paths to the voting fillers files.
@@ -1287,9 +1304,10 @@ stock initializeGlobalArrays()
 
     g_reverseSearchNominationsTrie = TrieCreate();
     g_forwardSearchNominationsTrie = TrieCreate();
-    g_nominatedMapsArray           = ArrayCreate();
-    g_fillerLoadedMapsArray        = ArrayCreate( MAX_MAPNAME_LENGHT );
-    g_nominationLoadedMapsArray    = ArrayCreate( MAX_MAPNAME_LENGHT );
+    g_nominationLoadedMapsTrie     = TrieCreate();
+
+    g_nominatedMapsArray        = ArrayCreate();
+    g_nominationLoadedMapsArray = ArrayCreate( MAX_MAPNAME_LENGHT );
 
     // initialize nominations table
     nomination_clearAll();
@@ -1627,7 +1645,7 @@ public setGameToFinishAtHalfTime()
  * To configure the mapcycle system and to detect if the last MAX_SERVER_RESTART_ACCEPTABLE restarts
  * was to the same map. If so, change to the next map right after it.
  */
-stock configureTheMapcycleSystem( currentMap[], currentMapCharsMax )
+stock configureTheMapcycleSystem( currentMap[], currentMapLength )
 {
     LOGGER( 128, "I AM ENTERING ON configureTheMapcycleSystem(2) | currentMap: %s", currentMap )
 
@@ -1666,7 +1684,7 @@ stock configureTheMapcycleSystem( currentMap[], currentMapCharsMax )
             }
 
             // Clear the old data
-            copy( currentMap, currentMapCharsMax, possibleCurrentMap );
+            copy( currentMap, currentMapLength, possibleCurrentMap );
             formatex( lastMapChangedFilePath, charsmax( lastMapChangedFilePath ), "%s/%s", g_dataDirPath, LAST_CHANGE_MAP_FILE_NAME );
 
             if( file_exists( lastMapChangedFilePath ) )
@@ -1950,6 +1968,44 @@ public map_writeRecentList()
     TRY_TO_APPLY( TrieDestroy, mapCycleMapsTrie )
 }
 
+stock loadWhiteListFileFromFile( &Array:whitelistArray, whiteListFilePath[] )
+{
+    LOGGER( 128, "I AM ENTERING ON loadWhiteListFileFromFile(2) | whitelistArray: %d, whiteListFilePath: %s", \
+            whitelistArray,  whiteListFilePath )
+
+    new whiteListFileDescriptor;
+    new currentLine[ MAX_LONG_STRING ];
+
+    if( !( whiteListFileDescriptor = fopen( whiteListFilePath, "rt" ) ) )
+    {
+        LOGGER( 8, "ERROR! Invalid file descriptor. whiteListFileDescriptor: %d, whiteListFilePath: %s", \
+                whiteListFileDescriptor, whiteListFilePath )
+    }
+
+    while( !feof( whiteListFileDescriptor ) )
+    {
+        fgets( whiteListFileDescriptor, currentLine, charsmax( currentLine ) );
+        trim( currentLine );
+
+        // skip commentaries while reading file
+        if( currentLine[ 0 ] == '^0'
+            || currentLine[ 0 ] == ';'
+            || ( currentLine[ 0 ] == '/'
+                 && currentLine[ 1 ] == '/' ) )
+        {
+            continue;
+        }
+        else
+        {
+            LOGGER( 8, "( loadWhiteListFileFromFile ) Adding the currentLine: %s", currentLine )
+            ArrayPushString( whitelistArray, currentLine );
+        }
+    }
+
+    fclose( whiteListFileDescriptor );
+    LOGGER( 1, "I AM EXITING loadWhiteListFileFromFile(2) | whitelistArray: %d", whitelistArray )
+}
+
 stock processLoadedMapFileFromFile( &Array:playerFillerMapsArray, &Array:fillersFilePathsArray )
 {
     LOGGER( 128, "I AM ENTERING ON processLoadedMapFileFromFile(2) groupCount: %d", ArraySize( fillersFilePathsArray ) )
@@ -1977,6 +2033,7 @@ stock loadMapFiles()
     LOGGER( 128, "I AM ENTERING ON loadMapFiles(0)" )
     new mapFilerFilePath[ MAX_FILE_PATH_LENGHT ];
 
+    TRY_TO_APPLY( ArrayDestroy, g_whitelistFileArray )
     TRY_TO_APPLY( ArrayDestroy, g_voteMinPlayerFillerPathsArray )
     TRY_TO_APPLY( ArrayDestroy, g_voteNorPlayerFillerPathsArray )
     TRY_TO_APPLY( ArrayDestroy, g_minMaxMapsPerGroupToUseArray )
@@ -1985,14 +2042,21 @@ stock loadMapFiles()
     destroy_two_dimensional_array( g_norPlayerFillerMapGroupArrays );
     destroy_two_dimensional_array( g_minPlayerFillerMapGroupArrays );
 
-    g_minPlayerFillerMapGroupArrays = ArrayCreate();
+    g_whitelistFileArray = ArrayCreate( MAX_LONG_STRING );
+
     g_voteMinPlayerFillerPathsArray = ArrayCreate( MAX_MAPNAME_LENGHT );
+    g_minPlayerFillerMapGroupArrays = ArrayCreate();
     g_minMaxMapsPerGroupToUseArray  = ArrayCreate();
 
-    g_norPlayerFillerMapGroupArrays = ArrayCreate();
     g_voteNorPlayerFillerPathsArray = ArrayCreate( MAX_MAPNAME_LENGHT );
+    g_norPlayerFillerMapGroupArrays = ArrayCreate();
     g_norMaxMapsPerGroupToUseArray  = ArrayCreate();
 
+    LOGGER( 4, "" )
+    get_pcvar_string( cvar_voteWhiteListMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) );
+    loadWhiteListFileFromFile( g_whitelistFileArray, mapFilerFilePath );
+
+    LOGGER( 4, "" )
     get_pcvar_string( cvar_voteMinPlayersMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) );
     loadMapGroupsFeatureFile( mapFilerFilePath, g_voteMinPlayerFillerPathsArray, g_minMaxMapsPerGroupToUseArray );
 
@@ -2008,7 +2072,7 @@ stock loadMapFiles()
     LOGGER( 4, "", debugLoadedMapFileFromFile( g_minPlayerFillerMapGroupArrays, g_minMaxMapsPerGroupToUseArray ) )
     LOGGER( 4, "", debugLoadedMapFileFromFile( g_norPlayerFillerMapGroupArrays, g_norMaxMapsPerGroupToUseArray ) )
 
-    LOGGER( 4, "( loadMapFiles ) MapsGroups Loaded" )
+    LOGGER( 4, "( loadMapFiles ) Maps Files Loaded." )
     LOGGER( 4, "" )
     LOGGER( 4, "" )
 }
@@ -2844,7 +2908,7 @@ public resetRoundsScores()
     LOGGER( 1, "I AM EXITING ON resetRoundsScores(0)" )
 }
 
-stock map_populateList( Array:mapArray = Invalid_Array, mapFilePath[], mapFilePathMaxChars, Trie:fillerMapTrie = Invalid_Trie )
+stock map_populateList( Array:mapArray = Invalid_Array, mapFilePath[], mapFilePathLength, Trie:fillerMapTrie = Invalid_Trie )
 {
     LOGGER( 128, "I AM ENTERING ON map_populateList(4) | mapFilePath: %s", mapFilePath )
 
@@ -2870,7 +2934,7 @@ stock map_populateList( Array:mapArray = Invalid_Array, mapFilePath[], mapFilePa
     }
     else
     {
-        get_cvar_string( "mapcyclefile", mapFilePath, mapFilePathMaxChars );
+        get_cvar_string( "mapcyclefile", mapFilePath, mapFilePathLength );
 
         LOGGER( 4, "" )
         LOGGER( 4, "    map_populateList(...) Loading the MAPCYCLE! mapFilePath: %s", mapFilePath )
@@ -2906,7 +2970,8 @@ stock loadMapFileList( Array:mapArray, mapFilePath[], Trie:fillerMapTrie = Inval
                 {
                     TrieSetCell( fillerMapTrie, loadedMapName, mapCount );
                 }
-                else
+
+                if( mapArray )
                 {
                     ArrayPushString( mapArray, loadedMapName );
                 }
@@ -2987,7 +3052,8 @@ stock loadMapsFolderDirectory( Array:mapArray, Trie:fillerMapTrie = Invalid_Trie
                     {
                         TrieSetCell( fillerMapTrie, loadedMapName, mapCount );
                     }
-                    else
+
+                    if( mapArray )
                     {
                         ArrayPushString( mapArray, loadedMapName );
                     }
@@ -3024,7 +3090,7 @@ public map_loadNominationList()
     get_pcvar_string( cvar_nomMapFilePath, nomMapFilePath, charsmax( nomMapFilePath ) );
 
     LOGGER( 4, "( map_loadNominationList() ) cvar_nomMapFilePath: %s", nomMapFilePath )
-    map_populateList( g_nominationLoadedMapsArray, nomMapFilePath, charsmax( nomMapFilePath ) );
+    map_populateList( g_nominationLoadedMapsArray, nomMapFilePath, charsmax( nomMapFilePath ), g_nominationLoadedMapsTrie );
 }
 
 stock map_loadEmptyCycleList()
@@ -3257,36 +3323,109 @@ stock loadTheWhiteListFeature()
 {
     LOGGER( 128, "I AM ENTERING ON loadTheWhiteListFeature(0)" )
 
-    new currentHourString [ 8 ];
-    new whiteListFilePath [ MAX_FILE_PATH_LENGHT ];
+    new currentHour;
+    new currentHourString[ 8 ];
 
     get_time( "%H", currentHourString, charsmax( currentHourString ) );
-    get_pcvar_string( cvar_voteWhiteListMapFilePath, whiteListFilePath, charsmax( whiteListFilePath ) );
+    currentHour = str_to_num( currentHourString );
 
     if( get_pcvar_num( cvar_isWhiteListBlockOut ) )
     {
-        loadWhiteListFile( str_to_num( currentHourString ), g_whitelistTrie, whiteListFilePath, true, g_whitelistArray );
+        loadWhiteListFile( currentHour, g_whitelistTrie, g_whitelistFileArray, true, g_whitelistArray );
     }
     else
     {
-        loadWhiteListFile( str_to_num( currentHourString ), g_blackListTrieForWhiteList, whiteListFilePath );
+        loadWhiteListFile( currentHour, g_blackListTrieForWhiteList, g_whitelistFileArray );
     }
 }
 
-stock loadWhiteListFile( currentHour, &Trie:listTrie, whiteListFilePath[], bool:isWhiteList = false, &Array:listArray = Invalid_Array )
+stock loadWhiteListFile( currentHour, &Trie:listTrie, Array:whitelistFileArray, bool:isWhiteList = false, &Array:listArray = Invalid_Array )
 {
-    LOGGER( 1, "" )
-    LOGGER( 128, "I AM ENTERING ON loadWhiteListFile(4) | listTrie: %d, isWhiteList: %d, whiteListFilePath: %s", \
-            listTrie, isWhiteList, whiteListFilePath )
+    LOGGER( 128, "I AM ENTERING ON loadWhiteListFile(5) | currentHour: %d, listTrie: %d", currentHour, listTrie )
 
-    new startHour;
-    new endHour;
-    new whiteListFileDescriptor;
+    if( whitelistFileArray )
+    {
+        new startHour;
+        new endHour;
 
-    new bool:isToLoadTheseMaps;
-    new currentLine    [ MAX_MAPNAME_LENGHT ];
-    new startHourString[ MAX_MAPNAME_LENGHT / 2 ];
-    new endHourString  [ MAX_MAPNAME_LENGHT / 2 ];
+        new linesCount;
+        new bool:isToLoadTheseMaps;
+
+        new currentLine    [ MAX_MAPNAME_LENGHT ];
+        new startHourString[ MAX_MAPNAME_LENGHT / 2 ];
+        new endHourString  [ MAX_MAPNAME_LENGHT / 2 ];
+
+        setupLoadWhiteListParams( isWhiteList, listTrie, listArray );
+        linesCount = ArraySize( whitelistFileArray );
+
+        for( new lineIndex = 0; lineIndex < linesCount; lineIndex++ )
+        {
+            ArrayGetString( whitelistFileArray, lineIndex, currentLine, charsmax( currentLine ) );
+
+            if( currentLine[ 0 ] == '['
+                && isdigit( currentLine[ 1 ] ) )
+            {
+                // remove line delimiters [ and ]
+                replace_all( currentLine, charsmax( currentLine ), "[", "" );
+                replace_all( currentLine, charsmax( currentLine ), "]", "" );
+
+                // Invert it to change the 'If we are %s these hours...' LOGGER(...) message accordantly.
+            #if IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST > 0
+                isWhiteList = !isWhiteList;
+            #endif
+
+                LOGGER( 8, "( loadWhiteListFile ) " )
+                LOGGER( 8, "( loadWhiteListFile ) If we are %s these hours, we must load these maps:", \
+                        ( isWhiteList? "between" : "outside" ) )
+                LOGGER( 8, "( loadWhiteListFile ) currentLine: %s (currentHour: %d)", currentLine, currentHour )
+
+                // broke the current line
+                strtok( currentLine,
+                        startHourString, charsmax( startHourString ),
+                        endHourString, charsmax( endHourString ),
+                        '-', 0 );
+
+                startHour = str_to_num( startHourString );
+                endHour   = str_to_num( endHourString );
+
+                standardizeTheHoursForWhitelist( currentHour, startHour, endHour );
+
+                // Revert the variable 'isWhiteList' change and calculates whether to load the Blacklist/Whitelist or not.
+            #if IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST > 0
+                isWhiteList = !isWhiteList;
+                convertWhitelistToBlacklist( startHour, endHour );
+            #endif
+                isToLoadTheNextWhiteListGroup( isToLoadTheseMaps, currentHour, startHour, endHour, isWhiteList );
+                continue;
+            }
+            else if( !isToLoadTheseMaps )
+            {
+                continue;
+            }
+            else
+            {
+                LOGGER( 8, "( loadWhiteListFile ) Trying to add: %s", currentLine )
+
+                if( IS_MAP_VALID( currentLine ) )
+                {
+                    LOGGER( 8, "( loadWhiteListFile ) OK!")
+                    TrieSetCell( listTrie, currentLine, 0 );
+
+                    if( isWhiteList )
+                    {
+                        ArrayPushString( listArray, currentLine );
+                    }
+                }
+            }
+        }
+    }
+
+    LOGGER( 1, "I AM EXITING loadWhiteListFile(5) | listArray: %d, whitelistFileArray: %d", listArray, whitelistFileArray )
+}
+
+stock setupLoadWhiteListParams( bool:isWhiteList, &Trie:listTrie, &Array:listArray )
+{
+    LOGGER( 128, "I AM ENTERING ON setupLoadWhiteListParams(3) | isWhiteList: %d", isWhiteList )
 
     if( listTrie )
     {
@@ -3299,9 +3438,9 @@ stock loadWhiteListFile( currentHour, &Trie:listTrie, whiteListFilePath[], bool:
 
     if( isWhiteList )
     {
+        // clear the map array in case we're reusing it
         if( listArray )
         {
-            // clear the map array in case we're reusing it
             ArrayClear( listArray );
         }
         else
@@ -3309,85 +3448,6 @@ stock loadWhiteListFile( currentHour, &Trie:listTrie, whiteListFilePath[], bool:
             listArray = ArrayCreate( MAX_MAPNAME_LENGHT );
         }
     }
-
-    if( !( whiteListFileDescriptor = fopen( whiteListFilePath, "rt" ) ) )
-    {
-        LOGGER( 8, "ERROR! Invalid file descriptor. whiteListFileDescriptor: %d, whiteListFilePath: %s", \
-                whiteListFileDescriptor, whiteListFilePath )
-    }
-
-    while( !feof( whiteListFileDescriptor ) )
-    {
-        fgets( whiteListFileDescriptor, currentLine, charsmax( currentLine ) );
-        trim( currentLine );
-
-        // skip commentaries while reading file
-        if( currentLine[ 0 ] == '^0'
-            || currentLine[ 0 ] == ';'
-            || ( currentLine[ 0 ] == '/'
-                 && currentLine[ 1 ] == '/' ) )
-        {
-            continue;
-        }
-        else if( currentLine[ 0 ] == '['
-                 && isdigit( currentLine[ 1 ] ) )
-        {
-            // remove line delimiters [ and ]
-            replace_all( currentLine, charsmax( currentLine ), "[", "" );
-            replace_all( currentLine, charsmax( currentLine ), "]", "" );
-
-            // Invert it to change the 'If we are %s these hours...' LOGGER(...) message accordantly.
-        #if IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST > 0
-            isWhiteList = !isWhiteList;
-        #endif
-
-            LOGGER( 8, "( loadWhiteListFile ) " )
-            LOGGER( 8, "( loadWhiteListFile ) If we are %s these hours, we must load these maps:", \
-                    ( isWhiteList? "between" : "outside" ) )
-            LOGGER( 8, "( loadWhiteListFile ) currentLine: %s (currentHour: %d)", currentLine, currentHour )
-
-            // broke the current line
-            strtok( currentLine,
-                    startHourString, charsmax( startHourString ),
-                    endHourString, charsmax( endHourString ),
-                    '-', 0 );
-
-            startHour = str_to_num( startHourString );
-            endHour   = str_to_num( endHourString );
-
-            standardizeTheHoursForWhitelist( currentHour, startHour, endHour );
-
-            // Revert the variable 'isWhiteList' change and calculates whether to load the Blacklist/Whitelist or not.
-        #if IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST > 0
-            isWhiteList = !isWhiteList;
-            convertWhitelistToBlacklist( startHour, endHour );
-        #endif
-            isToLoadTheNextWhiteListGroup( isToLoadTheseMaps, currentHour, startHour, endHour, isWhiteList );
-            continue;
-        }
-        else if( !isToLoadTheseMaps )
-        {
-            continue;
-        }
-        else
-        {
-            LOGGER( 8, "( loadWhiteListFile ) Trying to add: %s", currentLine )
-
-            if( IS_MAP_VALID( currentLine ) )
-            {
-                LOGGER( 8, "( loadWhiteListFile ) OK!")
-                TrieSetCell( listTrie, currentLine, 0 );
-
-                if( isWhiteList )
-                {
-                    ArrayPushString( listArray, currentLine );
-                }
-            }
-        }
-    }
-
-    fclose( whiteListFileDescriptor );
-    LOGGER( 1, "I AM EXITING loadWhiteListFile(3) | listTrie: %d", listTrie )
 }
 
 stock loadMapGroupsFeature()
@@ -3461,7 +3521,6 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
     // The Whitelist Out Block feature disables The Map Groups Feature.
     if( isWhiteListOutBlock )
     {
-        LOGGER( 0, "", print_is_white_list_out_block() )
         LOGGER( 4, "( processLoadedMapsFile ) Disabling the MapsGroups Feature due isWhiteListOutBlock" )
 
     #if AMXX_VERSION_NUM < 183
@@ -3492,9 +3551,11 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
             // Not loaded?
             tryToLoadTheWhiteListFeature();
 
+            // The Whitelist out block feature, disables The Map Groups Feature.
             if( isWhiteListOutBlock )
             {
-                // The Whitelist out block feature, disables The Map Groups Feature.
+                LOGGER( 0, "", print_is_white_list_out_block() )
+
                 fillerMapsArray      = g_whitelistArray;
                 useWhitelistOutBlock = false;
             }
@@ -3755,15 +3816,12 @@ stock vote_addFillers( blockedMapsBuffer[], &announcementShowedTimes = 0 )
 stock vote_addNominations( blockedMapsBuffer[], &announcementShowedTimes = 0 )
 {
     LOGGER( 128, "I AM ENTERING ON vote_addNominations(2) | announcementShowedTimes: %d", announcementShowedTimes )
-
-    new nominationCount;
     new bool:isFillersMapUsingMinplayers;
 
-    // Clear the array to use its size later, and know when if the first group was loaded.
-    ArrayClear( g_fillerLoadedMapsArray );
-    nominationCount = ArraySize( g_nominationLoadedMapsArray );
+    // Try to add the nominations, if there are nominated maps.
+    new nominatedMapsCount = ArraySize( g_nominatedMapsArray );
 
-    if( nominationCount )
+    if( nominatedMapsCount )
     {
         new Trie:whitelistMapTrie;
 
@@ -3800,8 +3858,7 @@ stock vote_addNominations( blockedMapsBuffer[], &announcementShowedTimes = 0 )
         new voteNominationMax = ( maxNominations ) ? min( maxNominations, slotsAvailable ) : slotsAvailable;
 
         // print the players nominations for debug
-        LOGGER( 4, "( vote_addNominations ) nominationCount: %d", nominationCount, show_all_players_nominations() )
-        new nominatedMapsCount = ArraySize( g_nominatedMapsArray );
+        LOGGER( 4, "( vote_addNominations ) nominatedMapsCount", nominatedMapsCount, show_all_players_nominations() )
 
         // Add as many nominations as we can by FIFO
         for( new nominationIndex = 0; nominationIndex < nominatedMapsCount; ++nominationIndex )
@@ -3839,8 +3896,7 @@ stock vote_addNominations( blockedMapsBuffer[], &announcementShowedTimes = 0 )
 
     LOGGER( 4, "" )
     LOGGER( 4, "" )
-
-} // end vote_addNominations(2)
+}
 
 stock show_all_players_nominations()
 {
@@ -7707,20 +7763,20 @@ stock countPlayerNominations( player_id, &openNominationIndex )
     return nominationCount;
 }
 
-stock createPlayerNominationKey( player_id, trieKey[], trieKeyMaxChars )
+stock createPlayerNominationKey( player_id, trieKey[], trieKeyLength )
 {
-    LOGGER( 0, "I AM ENTERING ON createPlayerNominationKey(3) | player_id: %d, trieKeyMaxChars: %d", \
-            player_id, trieKeyMaxChars )
+    LOGGER( 0, "I AM ENTERING ON createPlayerNominationKey(3) | player_id: %d, trieKeyLength: %d", \
+            player_id, trieKeyLength )
 
     new ipSize;
-    ipSize = get_user_ip( player_id, trieKey, trieKeyMaxChars );
+    ipSize = get_user_ip( player_id, trieKey, trieKeyLength );
 
     if( !ipSize )
     {
-        ipSize += formatex( trieKey[ ipSize ], trieKeyMaxChars - ipSize, "id%d-", player_id );
+        ipSize += formatex( trieKey[ ipSize ], trieKeyLength - ipSize, "id%d-", player_id );
     }
 
-    get_user_authid( player_id, trieKey[ ipSize ], trieKeyMaxChars - ipSize );
+    get_user_authid( player_id, trieKey[ ipSize ], trieKeyLength - ipSize );
     LOGGER( 0, "( createPlayerNominationKey ) player_id: %d, trieKey: %s,", player_id, trieKey )
 }
 
@@ -8008,26 +8064,19 @@ public nomination_list()
 stock getSurMapNameIndex( mapSurName[] )
 {
     LOGGER( 128, "I AM ENTERING ON getSurMapNameIndex(1) | mapSurName: %s", mapSurName )
-
     new map[ MAX_MAPNAME_LENGHT ];
-    new nominationMap[ MAX_MAPNAME_LENGHT ];
-
-    new mapIndex;
-    new nominationsMapsCount = ArraySize( g_nominationLoadedMapsArray );
 
     for( new prefixIndex = 0; prefixIndex < g_mapPrefixCount; ++prefixIndex )
     {
         formatex( map, charsmax( map ), "%s%s", g_mapPrefixes[ prefixIndex ], mapSurName );
 
-        for( mapIndex = 0; mapIndex < nominationsMapsCount; ++mapIndex )
+        if( TrieKeyExists( g_nominationLoadedMapsTrie, map ) )
         {
-            ArrayGetString( g_nominationLoadedMapsArray, mapIndex, nominationMap, charsmax( nominationMap ) );
+            new mapIndex;
+            TrieGetCell( g_nominationLoadedMapsTrie, map, mapIndex );
 
-            if( equali( map, nominationMap ) )
-            {
-                LOGGER( 1, "    ( getSurMapNameIndex ) Just Returning, mapIndex: %d", mapIndex )
-                return mapIndex;
-            }
+            LOGGER( 1, "    ( getSurMapNameIndex ) Just Returning, mapIndex: %d", mapIndex )
+            return mapIndex;
         }
     }
 
@@ -8537,7 +8586,6 @@ public plugin_end()
     // Clear Dynamic Arrays
     // ############################################################################################
     TRY_TO_APPLY( ArrayDestroy, g_emptyCycleMapsArray )
-    TRY_TO_APPLY( ArrayDestroy, g_fillerLoadedMapsArray )
     TRY_TO_APPLY( ArrayDestroy, g_nominationLoadedMapsArray )
     TRY_TO_APPLY( ArrayDestroy, g_recentListMapsArray )
     TRY_TO_APPLY( ArrayDestroy, g_whitelistArray )
@@ -8555,9 +8603,10 @@ public plugin_end()
     // ############################################################################################
     TRY_TO_APPLY( TrieDestroy, g_forwardSearchNominationsTrie )
     TRY_TO_APPLY( TrieDestroy, g_reverseSearchNominationsTrie )
+    TRY_TO_APPLY( TrieDestroy, g_whitelistTrie )
     TRY_TO_APPLY( TrieDestroy, g_recentMapsTrie )
     TRY_TO_APPLY( TrieDestroy, g_blackListTrieForWhiteList )
-    TRY_TO_APPLY( TrieDestroy, g_whitelistTrie )
+    TRY_TO_APPLY( TrieDestroy, g_nominationLoadedMapsTrie )
 
     // Clear the dynamic array menus, just to be sure.
     for( new currentIndex = 0; currentIndex < MAX_PLAYERS_COUNT; ++currentIndex )
@@ -9857,8 +9906,11 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         formatex( testName, charsmax( testName ), "test_loadCurrentBlacklist_case%d", currentCaseNumber );
         new test_id = register_test( 0, testName );
 
-        new Trie:blackListTrie = TrieCreate();
-        loadWhiteListFile( hour, blackListTrie, g_test_whiteListFilePath );
+        new Trie: blackListTrie      = TrieCreate();
+        new Array:whitelistFileArray = ArrayCreate( MAX_LONG_STRING );
+
+        loadWhiteListFileFromFile( whitelistFileArray, g_test_whiteListFilePath );
+        loadWhiteListFile( hour, blackListTrie, whitelistFileArray );
 
         formatex( errorMessage, charsmax( errorMessage ), "The map '%s' must to be present on the trie, but it was not!", map_existent );
         SET_TEST_FAILURE( test_id, !TrieKeyExists( blackListTrie, map_existent ), errorMessage )
@@ -9867,6 +9919,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         SET_TEST_FAILURE( test_id, TrieKeyExists( blackListTrie, not_existent ), errorMessage )
 
         TrieDestroy( blackListTrie );
+        ArrayDestroy( whitelistFileArray );
     }
 
     /**
