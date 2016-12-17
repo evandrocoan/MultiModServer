@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-293";
+new const PLUGIN_VERSION[] = "v3.2.6-294";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -2014,7 +2014,7 @@ stock loadMapFiles()
     LOGGER( 4, "" )
 }
 
-stock debugLoadedMapFileFromFile( &Array:playerFillerMapsArray, &Array:MaxMapsPerGroupToUseArray )
+stock debugLoadedMapFileFromFile( &Array:playerFillerMapsArray, &Array:maxMapsPerGroupToUseArray )
 {
     LOGGER( 128, "I AM ENTERING ON debugLoadedMapFileFromFile(3) groupCount: %d", ArraySize( playerFillerMapsArray ) )
 
@@ -2029,7 +2029,7 @@ stock debugLoadedMapFileFromFile( &Array:playerFillerMapsArray, &Array:MaxMapsPe
         fillerMapsArray = ArrayGetCell( playerFillerMapsArray, groupIndex );
 
         LOGGER( 8, "[%i] maxMapsPerGroupToUse: %i, filersMapCount: %i", groupIndex, \
-                ArrayGetCell( MaxMapsPerGroupToUseArray, groupIndex ), ArraySize( fillerMapsArray ) )
+                ArrayGetCell( maxMapsPerGroupToUseArray, groupIndex ), ArraySize( fillerMapsArray ) )
 
         for( new mapIndex = 0; mapIndex < ArraySize( fillerMapsArray ) && mapIndex < 10; mapIndex++ )
         {
@@ -3424,20 +3424,20 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
 
     new Array:fillerMapsArray;
     new Array:fillerMapGroupsArrays;
-    new Array:MaxMapsPerGroupToUseArray;
+    new Array:maxMapsPerGroupToUseArray;
     new mapName[ MAX_MAPNAME_LENGHT ];
 
     switch( fillersFilePathEnum )
     {
         case fillersFilePaths_MininumPlayers:
         {
-            fillerMapGroupsArrays      = g_minPlayerFillerMapGroupArrays;
-            MaxMapsPerGroupToUseArray = g_minMaxMapsPerGroupToUseArray;
+            fillerMapGroupsArrays     = g_minPlayerFillerMapGroupArrays;
+            maxMapsPerGroupToUseArray = g_minMaxMapsPerGroupToUseArray;
         }
         case fillersFilePaths_NormalPlayers:
         {
-            fillerMapGroupsArrays      = g_norPlayerFillerMapGroupArrays;
-            MaxMapsPerGroupToUseArray = g_norMaxMapsPerGroupToUseArray;
+            fillerMapGroupsArrays     = g_norPlayerFillerMapGroupArrays;
+            maxMapsPerGroupToUseArray = g_norMaxMapsPerGroupToUseArray;
         }
     }
 
@@ -3465,28 +3465,14 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
         blockedFillersMapTrie = TrieCreate();
     }
 
-    if( isWhitelistEnabled )
-    {
-        // Not loaded?
-        tryToLoadTheWhiteListFeature();
-
-        if( isWhiteListOutBlock )
-        {
-            // The Whitelist out block feature, disables The Map Groups Feature.
-            fillerMapsArray      = g_whitelistArray;
-            useWhitelistOutBlock = false;
-        }
-    }
-
     groupCount = ArraySize( fillerMapGroupsArrays );
     LOGGER( 4, "( processLoadedMapsFile ) groupCount: %d, fillerMapGroupsArrays: %d", groupCount, fillerMapGroupsArrays )
 
     // The Whitelist Out Block feature disables The Map Groups Feature.
-    if( IS_WHITELIST_ENABLED()
-        && get_pcvar_num( cvar_isWhiteListBlockOut ) )
+    if( isWhiteListOutBlock )
     {
         LOGGER( 0, "", print_is_white_list_out_block() )
-        LOGGER( 4, "( processLoadedMapsFile ) Disabling the MapsGroups Feature due isWhiteListBlockOut" )
+        LOGGER( 4, "( processLoadedMapsFile ) Disabling the MapsGroups Feature due isWhiteListOutBlock" )
 
     #if AMXX_VERSION_NUM < 183
         groupCount = ArraySize( fillerMapGroupsArrays );
@@ -3495,7 +3481,7 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
         {
             groupCount--;
 
-            ArrayDeleteItem( MaxMapsPerGroupToUseArray, groupCount );
+            ArrayDeleteItem( maxMapsPerGroupToUseArray, groupCount );
             fillerMapsArray = ArrayGetCell( fillerMapGroupsArrays, groupCount );
 
             ArrayDeleteItem( fillerMapGroupsArrays, groupCount );
@@ -3503,15 +3489,35 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
         }
     #else
         groupCount = 1;
-        ArrayResize( fillerMapGroupsArrays     , groupCount );
-        ArrayResize( MaxMapsPerGroupToUseArray, groupCount );
+        ArrayResize( fillerMapGroupsArrays    , groupCount );
+        ArrayResize( maxMapsPerGroupToUseArray, groupCount );
     #endif
     }
 
     // fill remaining slots with random maps from each filler file, as much as possible
     for( new groupIndex = 0; groupIndex < groupCount; ++groupIndex )
     {
-        fillerMapsArray = ArrayGetCell( fillerMapGroupsArrays, groupIndex );
+        if( isWhitelistEnabled )
+        {
+            // Not loaded?
+            tryToLoadTheWhiteListFeature();
+
+            if( isWhiteListOutBlock )
+            {
+                // The Whitelist out block feature, disables The Map Groups Feature.
+                fillerMapsArray      = g_whitelistArray;
+                useWhitelistOutBlock = false;
+            }
+            else
+            {
+                fillerMapsArray = ArrayGetCell( fillerMapGroupsArrays, groupIndex );
+            }
+        }
+        else
+        {
+            fillerMapsArray = ArrayGetCell( fillerMapGroupsArrays, groupIndex );
+        }
+
         filersMapCount  = ArraySize( fillerMapsArray );
 
         LOGGER( 8, "" )
@@ -3521,7 +3527,7 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
         if( filersMapCount
             && g_totalVoteOptions < g_maxVotingChoices )
         {
-            maxMapsPerGroupToUse = ArrayGetCell( MaxMapsPerGroupToUseArray, groupIndex );
+            maxMapsPerGroupToUse = ArrayGetCell( maxMapsPerGroupToUseArray, groupIndex );
             allowedFilersCount   = min( min(
                                              maxMapsPerGroupToUse, g_maxVotingChoices - g_totalVoteOptions
                                            ), filersMapCount );
