@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-294";
+new const PLUGIN_VERSION[] = "v3.2.6-295";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-294";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 16+2+4
+#define DEBUG_LEVEL 16+2
 
 
 /**
@@ -322,7 +322,6 @@ new const PLUGIN_VERSION[] = "v3.2.6-294";
 
     new g_test_lastTimeStamp;
     new g_test_aimedPlayersNumber;
-    new g_test_aimedCurrentHour;
     new g_test_gameElapsedTime;
     new g_test_startDayInteger;
 
@@ -3157,13 +3156,13 @@ stock isToLoadTheNextWhiteListGroup( &isToLoadTheseMaps, currentHour, startHour,
         }
     }
 
-    LOGGER( 8, "( loadWhiteListFile ) %2d >  %2d     : %2d", startHour, endHour, startHour > endHour )
-    LOGGER( 8, "( loadWhiteListFile ) %2d >= %2d > %2d: %2d", \
+    LOGGER( 8, "( isToLoadTheNextWhiteListGroup ) %2d >  %2d     : %2d", startHour, endHour, startHour > endHour )
+    LOGGER( 8, "( isToLoadTheNextWhiteListGroup ) %2d >= %2d > %2d: %2d", \
             startHour, currentHour, endHour, \
             startHour >= currentHour && currentHour > endHour )
 
-    LOGGER( 8, "( loadWhiteListFile ) %2d <  %2d     : %2d", startHour, endHour, startHour < endHour )
-    LOGGER( 8, "( loadWhiteListFile ) %2d <= %2d < %2d: %2d, isToLoadTheseMaps: %d", \
+    LOGGER( 8, "( isToLoadTheNextWhiteListGroup ) %2d <  %2d     : %2d", startHour, endHour, startHour < endHour )
+    LOGGER( 8, "( isToLoadTheNextWhiteListGroup ) %2d <= %2d < %2d: %2d, isToLoadTheseMaps: %d", \
             startHour, currentHour, endHour, \
             startHour <= currentHour && currentHour < endHour, isToLoadTheseMaps )
 }
@@ -3193,7 +3192,7 @@ stock standardizeTheHoursForWhitelist( &currentHour, &startHour, &endHour )
     if( currentHour > 23
         || currentHour < 0 )
     {
-        LOGGER( 1, "( loadWhiteListFile ) currentHour: %d, will became 0.", currentHour )
+        LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) currentHour: %d, will became 0.", currentHour )
         currentHour = 0;
     }
 }
@@ -3258,36 +3257,36 @@ stock loadTheWhiteListFeature()
 {
     LOGGER( 128, "I AM ENTERING ON loadTheWhiteListFeature(0)" )
 
+    new currentHourString [ 8 ];
     new whiteListFilePath [ MAX_FILE_PATH_LENGHT ];
+
+    get_time( "%H", currentHourString, charsmax( currentHourString ) );
     get_pcvar_string( cvar_voteWhiteListMapFilePath, whiteListFilePath, charsmax( whiteListFilePath ) );
 
     if( get_pcvar_num( cvar_isWhiteListBlockOut ) )
     {
-        loadWhiteListFile( g_whitelistTrie, whiteListFilePath, true, g_whitelistArray );
+        loadWhiteListFile( str_to_num( currentHourString ), g_whitelistTrie, whiteListFilePath, true, g_whitelistArray );
     }
     else
     {
-        loadWhiteListFile( g_blackListTrieForWhiteList, whiteListFilePath );
+        loadWhiteListFile( str_to_num( currentHourString ), g_blackListTrieForWhiteList, whiteListFilePath );
     }
 }
 
-stock loadWhiteListFile( &Trie:listTrie, whiteListFilePath[], bool:isWhiteList = false, &Array:listArray = Invalid_Array )
+stock loadWhiteListFile( currentHour, &Trie:listTrie, whiteListFilePath[], bool:isWhiteList = false, &Array:listArray = Invalid_Array )
 {
     LOGGER( 1, "" )
-    LOGGER( 128, "I AM ENTERING ON loadWhiteListFile(4) | listTrie: %d, isWhiteList: %d, whiteListFilePath: %s", listTrie, isWhiteList, whiteListFilePath )
+    LOGGER( 128, "I AM ENTERING ON loadWhiteListFile(4) | listTrie: %d, isWhiteList: %d, whiteListFilePath: %s", \
+            listTrie, isWhiteList, whiteListFilePath )
 
-    new      startHour;
-    new      endHour;
-    new      whiteListFileDescriptor;
+    new startHour;
+    new endHour;
+    new whiteListFileDescriptor;
+
     new bool:isToLoadTheseMaps;
-
-    new currentHourString [ 8 ];
-    new currentLine       [ MAX_MAPNAME_LENGHT ];
-    new startHourString   [ MAX_MAPNAME_LENGHT / 2 ];
-    new endHourString     [ MAX_MAPNAME_LENGHT / 2 ];
-
-    get_time( "%H", currentHourString, charsmax( currentHourString ) );
-    new currentHour = str_to_num( currentHourString );
+    new currentLine    [ MAX_MAPNAME_LENGHT ];
+    new startHourString[ MAX_MAPNAME_LENGHT / 2 ];
+    new endHourString  [ MAX_MAPNAME_LENGHT / 2 ];
 
     if( listTrie )
     {
@@ -3310,14 +3309,6 @@ stock loadWhiteListFile( &Trie:listTrie, whiteListFilePath[], bool:isWhiteList =
             listArray = ArrayCreate( MAX_MAPNAME_LENGHT );
         }
     }
-
-    // While the Unit Tests are running, to force a specific time.
-#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
-    if( g_test_aimedCurrentHour )
-    {
-        currentHour = g_test_aimedCurrentHour;
-    }
-#endif
 
     if( !( whiteListFileDescriptor = fopen( whiteListFilePath, "rt" ) ) )
     {
@@ -3397,8 +3388,7 @@ stock loadWhiteListFile( &Trie:listTrie, whiteListFilePath[], bool:isWhiteList =
 
     fclose( whiteListFileDescriptor );
     LOGGER( 1, "I AM EXITING loadWhiteListFile(3) | listTrie: %d", listTrie )
-
-} // end loadWhiteListFile(2)
+}
 
 stock loadMapGroupsFeature()
 {
@@ -9080,7 +9070,6 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         g_test_maxDelayResult     = 0;
         g_test_lastMaxDelayResult = 0;
         g_test_aimedPlayersNumber = 0;
-        g_test_aimedCurrentHour   = 0;
         g_test_gameElapsedTime    = 0;
 
         ArrayClear( g_test_idsAndNamesArray );
@@ -9866,13 +9855,10 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         new errorMessage[ MAX_LONG_STRING ];
 
         formatex( testName, charsmax( testName ), "test_loadCurrentBlacklist_case%d", currentCaseNumber );
+        new test_id = register_test( 0, testName );
 
-        new test_id            = register_test( 0, testName );
         new Trie:blackListTrie = TrieCreate();
-
-        g_test_aimedCurrentHour = hour;
-        loadWhiteListFile( blackListTrie, g_test_whiteListFilePath );
-        g_test_aimedCurrentHour = 0;
+        loadWhiteListFile( hour, blackListTrie, g_test_whiteListFilePath );
 
         formatex( errorMessage, charsmax( errorMessage ), "The map '%s' must to be present on the trie, but it was not!", map_existent );
         SET_TEST_FAILURE( test_id, !TrieKeyExists( blackListTrie, map_existent ), errorMessage )
