@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-292";
+new const PLUGIN_VERSION[] = "v3.2.6-293";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-292";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 16+2
+#define DEBUG_LEVEL 16+2+4
 
 
 /**
@@ -258,8 +258,8 @@ new const PLUGIN_VERSION[] = "v3.2.6-292";
             // LOGGER( 1, "Current i is: %d", i )
         }
 
-        test_nominateAndUnnominate_load();
-        // test_loadVoteChoices_cases();
+        // test_nominateAndUnnominate_load();
+        test_loadVoteChoices_cases();
         //test_colorChatLimits( player_id );
         //test_unnominatedDisconnected( player_id );
         //test_announceVoteBlockedMap_a();
@@ -640,6 +640,28 @@ new const PLUGIN_VERSION[] = "v3.2.6-292";
 }
 
 /**
+ * Same as TRY_TO_APPLY(2), but the second argument must to be a two Dimensional Dynamic Array.
+ */
+stock destroy_two_dimensional_array( Array:outerArray )
+{
+    LOGGER( 128, "I AM ENTERING ON destroy_two_dimensional_array(1) | arrayIndentifation: %d", outerArray )
+
+    if( outerArray )
+    {
+        new innerArray;
+        new size = ArraySize( outerArray );
+
+        for( new index = 0; index < size; index++ )
+        {
+            innerArray = ArrayGetCell( outerArray, index );
+            TRY_TO_APPLY( ArrayDestroy, Array:innerArray )
+        }
+
+        TRY_TO_APPLY( ArrayDestroy, outerArray )
+    }
+}
+
+/**
  * Accept a map as valid, even when they end with `.bsp`.
  */
 #define IS_MAP_VALID_BSP(%1) ( is_map_valid( %1 ) || is_map_valid_bsp_check( %1 ) )
@@ -886,8 +908,8 @@ new Array:g_norMaxMapsPerGroupToUseArray;
  * Contains a Dynamic Array of Dynamic Arrays. Each one of the sub-arrays contains the maps loaded
  * from the Array `g_voteMinPlayerFillerPathsArray` for each of the its paths receptively.
  */
-new Array:g_minPlayerFillerMapGroupsArray;
-new Array:g_norPlayerFillerMapGroupsArray;
+new Array:g_minPlayerFillerMapGroupArrays;
+new Array:g_norPlayerFillerMapGroupArrays;
 
 /**
  *
@@ -1117,6 +1139,59 @@ public plugin_init()
     LOGGER( 1, "" )
 }
 
+/**
+ * Called when all plugins went through plugin_init(). When this forward is called, most plugins
+ * should have registered their cvars and commands already.
+ */
+public plugin_cfg()
+{
+    LOGGER( 128, "I AM ENTERING ON plugin_cfg(0)" )
+
+    /**
+     * Register the color chat 'g_user_msgid' variable, if it is enabled.
+     */
+#if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
+#if AMXX_VERSION_NUM < 183
+    // If some exception happened before this, all color_print(...) messages will cause native
+    // error 10, on the AMXX 182. It is because, the execution flow will not reach here, then
+    // the player "g_user_msgid" will be be initialized.
+    g_user_msgid = get_user_msgid( "SayText" );
+#endif
+#endif
+
+    // setup some server settings
+    loadPluginSetttings();
+    initializeGlobalArrays();
+
+    // the 'mp_fraglimitCvarSupport(0)' could register a new cvar, hence only call 'cacheCvarsValues' them after it.
+    mp_fraglimitCvarSupport();
+    cacheCvarsValues();
+    resetRoundsScores();
+
+    // re-cache later to wait load some late server configurations, as the per-map configs.
+    set_task( DELAY_TO_WAIT_THE_SERVER_CVARS_TO_BE_LOADED, "cacheCvarsValues" );
+
+    LOGGER( 4, "" )
+    LOGGER( 4, " The current map is [%s].", g_currentMap )
+    LOGGER( 4, " The next map is [%s]", g_nextMap )
+    LOGGER( 4, "" )
+
+    configureTheRTVFeature();
+    configureTheWhiteListFeature();
+    configureServerStart();
+    configureServerMapChange();
+    loadMapFiles();
+
+    // Configure the Unit Tests, when they are activate.
+#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
+    saveCurrentTestsTimeStamp();
+    configureTheUnitTests();
+#endif
+
+    LOGGER( 1, "I AM EXITING plugin_cfg(0)..." )
+    LOGGER( 1, "" )
+}
+
 stock configureSpecificGameModFeature()
 {
     /**
@@ -1182,59 +1257,6 @@ stock configureTheVotingMenus()
             "vote_handleChoice" );
 
     register_menucmd( g_chooseMapQuestionMenuId, MENU_KEY_6 | MENU_KEY_0, "handleEndOfTheMapVoteChoice" );
-}
-
-/**
- * Called when all plugins went through plugin_init(). When this forward is called, most plugins
- * should have registered their cvars and commands already.
- */
-public plugin_cfg()
-{
-    LOGGER( 128, "I AM ENTERING ON plugin_cfg(0)" )
-
-    /**
-     * Register the color chat 'g_user_msgid' variable, if it is enabled.
-     */
-#if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
-#if AMXX_VERSION_NUM < 183
-    // If some exception happened before this, all color_print(...) messages will cause native
-    // error 10, on the AMXX 182. It is because, the execution flow will not reach here, then
-    // the player "g_user_msgid" will be be initialized.
-    g_user_msgid = get_user_msgid( "SayText" );
-#endif
-#endif
-
-    // setup some server settings
-    loadPluginSetttings();
-    initializeGlobalArrays();
-
-    // the 'mp_fraglimitCvarSupport(0)' could register a new cvar, hence only call 'cacheCvarsValues' them after it.
-    mp_fraglimitCvarSupport();
-    cacheCvarsValues();
-    resetRoundsScores();
-
-    // re-cache later to wait load some late server configurations, as the per-map configs.
-    set_task( DELAY_TO_WAIT_THE_SERVER_CVARS_TO_BE_LOADED, "cacheCvarsValues" );
-
-    LOGGER( 4, "" )
-    LOGGER( 4, " The current map is [%s].", g_currentMap )
-    LOGGER( 4, " The next map is [%s]", g_nextMap )
-    LOGGER( 4, "" )
-
-    configureTheRTVFeature();
-    configureTheWhiteListFeature();
-    configureServerStart();
-    configureServerMapChange();
-    loadMapFiles();
-
-    // Configure the Unit Tests, when they are activate.
-#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
-    saveCurrentTestsTimeStamp();
-    configureTheUnitTests();
-#endif
-
-    LOGGER( 1, "I AM EXITING plugin_cfg(0)..." )
-    LOGGER( 1, "" )
 }
 
 stock loadPluginSetttings()
@@ -1956,11 +1978,19 @@ stock loadMapFiles()
     LOGGER( 128, "I AM ENTERING ON loadMapFiles(0)" )
     new mapFilerFilePath[ MAX_FILE_PATH_LENGHT ];
 
-    g_minPlayerFillerMapGroupsArray = ArrayCreate();
+    TRY_TO_APPLY( ArrayDestroy, g_voteMinPlayerFillerPathsArray )
+    TRY_TO_APPLY( ArrayDestroy, g_voteNorPlayerFillerPathsArray )
+    TRY_TO_APPLY( ArrayDestroy, g_minMaxMapsPerGroupToUseArray )
+    TRY_TO_APPLY( ArrayDestroy, g_norMaxMapsPerGroupToUseArray )
+
+    destroy_two_dimensional_array( g_norPlayerFillerMapGroupArrays );
+    destroy_two_dimensional_array( g_minPlayerFillerMapGroupArrays );
+
+    g_minPlayerFillerMapGroupArrays = ArrayCreate();
     g_voteMinPlayerFillerPathsArray = ArrayCreate( MAX_MAPNAME_LENGHT );
     g_minMaxMapsPerGroupToUseArray  = ArrayCreate();
 
-    g_norPlayerFillerMapGroupsArray = ArrayCreate();
+    g_norPlayerFillerMapGroupArrays = ArrayCreate();
     g_voteNorPlayerFillerPathsArray = ArrayCreate( MAX_MAPNAME_LENGHT );
     g_norMaxMapsPerGroupToUseArray  = ArrayCreate();
 
@@ -1972,12 +2002,12 @@ stock loadMapFiles()
     loadMapGroupsFeatureFile( mapFilerFilePath, g_voteNorPlayerFillerPathsArray, g_norMaxMapsPerGroupToUseArray );
 
     LOGGER( 4, "" )
-    processLoadedMapFileFromFile( g_minPlayerFillerMapGroupsArray, g_voteMinPlayerFillerPathsArray );
-    processLoadedMapFileFromFile( g_norPlayerFillerMapGroupsArray, g_voteNorPlayerFillerPathsArray );
+    processLoadedMapFileFromFile( g_minPlayerFillerMapGroupArrays, g_voteMinPlayerFillerPathsArray );
+    processLoadedMapFileFromFile( g_norPlayerFillerMapGroupArrays, g_voteNorPlayerFillerPathsArray );
 
     LOGGER( 4, "" )
-    LOGGER( 4, "", debugLoadedMapFileFromFile( g_minPlayerFillerMapGroupsArray, g_minMaxMapsPerGroupToUseArray ) )
-    LOGGER( 4, "", debugLoadedMapFileFromFile( g_norPlayerFillerMapGroupsArray, g_norMaxMapsPerGroupToUseArray ) )
+    LOGGER( 4, "", debugLoadedMapFileFromFile( g_minPlayerFillerMapGroupArrays, g_minMaxMapsPerGroupToUseArray ) )
+    LOGGER( 4, "", debugLoadedMapFileFromFile( g_norPlayerFillerMapGroupArrays, g_norMaxMapsPerGroupToUseArray ) )
 
     LOGGER( 4, "( loadMapFiles ) MapsGroups Loaded" )
     LOGGER( 4, "" )
@@ -3393,7 +3423,7 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
     new maxMapsPerGroupToUse;
 
     new Array:fillerMapsArray;
-    new Array:fillerMapGroupsArray;
+    new Array:fillerMapGroupsArrays;
     new Array:MaxMapsPerGroupToUseArray;
     new mapName[ MAX_MAPNAME_LENGHT ];
 
@@ -3401,12 +3431,12 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
     {
         case fillersFilePaths_MininumPlayers:
         {
-            fillerMapGroupsArray      = g_minPlayerFillerMapGroupsArray;
+            fillerMapGroupsArrays      = g_minPlayerFillerMapGroupArrays;
             MaxMapsPerGroupToUseArray = g_minMaxMapsPerGroupToUseArray;
         }
         case fillersFilePaths_NormalPlayers:
         {
-            fillerMapGroupsArray      = g_norPlayerFillerMapGroupsArray;
+            fillerMapGroupsArrays      = g_norPlayerFillerMapGroupArrays;
             MaxMapsPerGroupToUseArray = g_norMaxMapsPerGroupToUseArray;
         }
     }
@@ -3448,8 +3478,8 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
         }
     }
 
-    groupCount = ArraySize( fillerMapGroupsArray );
-    LOGGER( 4, "( processLoadedMapsFile ) groupCount: %d, fillerMapGroupsArray: %d", groupCount, fillerMapGroupsArray )
+    groupCount = ArraySize( fillerMapGroupsArrays );
+    LOGGER( 4, "( processLoadedMapsFile ) groupCount: %d, fillerMapGroupsArrays: %d", groupCount, fillerMapGroupsArrays )
 
     // The Whitelist Out Block feature disables The Map Groups Feature.
     if( IS_WHITELIST_ENABLED()
@@ -3459,17 +3489,21 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
         LOGGER( 4, "( processLoadedMapsFile ) Disabling the MapsGroups Feature due isWhiteListBlockOut" )
 
     #if AMXX_VERSION_NUM < 183
-        groupCount = ArraySize( fillerMapGroupsArray );
+        groupCount = ArraySize( fillerMapGroupsArrays );
 
         while( groupCount > 1 )
         {
             groupCount--;
-            ArrayDeleteItem( fillerMapGroupsArray     , groupCount );
+
             ArrayDeleteItem( MaxMapsPerGroupToUseArray, groupCount );
+            fillerMapsArray = ArrayGetCell( fillerMapGroupsArrays, groupCount );
+
+            ArrayDeleteItem( fillerMapGroupsArrays, groupCount );
+            TRY_TO_APPLY( ArrayDestroy, fillerMapsArray )
         }
     #else
         groupCount = 1;
-        ArrayResize( fillerMapGroupsArray     , groupCount );
+        ArrayResize( fillerMapGroupsArrays     , groupCount );
         ArrayResize( MaxMapsPerGroupToUseArray, groupCount );
     #endif
     }
@@ -3477,7 +3511,7 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
     // fill remaining slots with random maps from each filler file, as much as possible
     for( new groupIndex = 0; groupIndex < groupCount; ++groupIndex )
     {
-        fillerMapsArray = ArrayGetCell( fillerMapGroupsArray, groupIndex );
+        fillerMapsArray = ArrayGetCell( fillerMapGroupsArrays, groupIndex );
         filersMapCount  = ArraySize( fillerMapsArray );
 
         LOGGER( 8, "" )
@@ -3494,6 +3528,8 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
 
             LOGGER( 8, "[%i] allowedFilersCount: %i   maxMapsPerGroupToUse[%i]: %i", groupIndex, \
                     allowedFilersCount, groupIndex, maxMapsPerGroupToUse )
+            LOGGER( 8, "" )
+            LOGGER( 8, "" )
 
             for( choiceIndex = 0; choiceIndex < allowedFilersCount; ++choiceIndex )
             {
@@ -3505,8 +3541,7 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
                 mapIndex = random_num( 0, filersMapCount - 1 );
                 ArrayGetString( fillerMapsArray, mapIndex, mapName, charsmax( mapName ) );
 
-                LOGGER( 8, "" )
-                LOGGER( 8, "( out ) [%i] choiceIndex: %i, mapIndex: %i, mapName: %s, unsuccessfulCount: %i, g_totalVoteOptions: %i", \
+                LOGGER( 8, "( in  ) [%i] choiceIndex: %i, mapIndex: %i, mapName: %s, unsuccessfulCount: %i, g_totalVoteOptions: %i", \
                         groupIndex, choiceIndex, mapIndex, mapName, unsuccessfulCount, g_totalVoteOptions )
 
                 while( map_isInMenu( mapName )
@@ -3606,8 +3641,8 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
                     if( !TrieKeyExists( blockedFillersMapTrie, mapName ) )
                     {
                         LOGGER( 8, "    BLOCKED!" )
-                        TrieSetCell( blockedFillersMapTrie, mapName, 0 );
 
+                        TrieSetCell( blockedFillersMapTrie, mapName, 0 );
                         announceVoteBlockedMap( mapName, blockedMapsBuffer, "GAL_FILLER_BLOCKED", announcementShowedTimes );
                     }
 
@@ -4263,12 +4298,12 @@ stock vote_startDirector( bool:is_forced_voting )
         finalizeVoting();
     }
 
+    LOGGER( 4, "   [PLAYER CHOICES]" )
+    LOGGER( 4, "" )
+    LOGGER( 4, "" )
     LOGGER( 4, "    ( vote_startDirector|out ) g_isTheLastGameRound: %d", g_isTheLastGameRound )
     LOGGER( 4, "    ( vote_startDirector|out ) g_isTimeToRestart: %d, g_voteStatus & VOTE_IS_FORCED: %d", \
             g_isTimeToRestart, g_voteStatus & VOTE_IS_FORCED != 0 )
-    LOGGER( 4, "" )
-    LOGGER( 4, "" )
-    LOGGER( 4, "   [PLAYER CHOICES]" )
 }
 
 stock initializeTheVoteDisplay()
@@ -7540,9 +7575,6 @@ stock updateNominationsForwardSearch( player_id, nominationIndex, mapIndex )
         for( new currentNominationIndex = 0; currentNominationIndex < MAX_NOMINATION_COUNT; ++currentNominationIndex )
         {
             playerNominationsIndexes[ currentNominationIndex ] = -1;
-
-            LOGGER( 4, "( setPlayerNominationMapIndex ) playerNominationsIndexes[%d]: %d", \
-                    currentNominationIndex, playerNominationsIndexes[ currentNominationIndex ] )
         }
 
         playerNominationsIndexes[ nominationIndex ] = mapIndex;
@@ -8513,6 +8545,15 @@ public plugin_end()
     TRY_TO_APPLY( ArrayDestroy, g_nominationLoadedMapsArray )
     TRY_TO_APPLY( ArrayDestroy, g_recentListMapsArray )
     TRY_TO_APPLY( ArrayDestroy, g_whitelistArray )
+    TRY_TO_APPLY( ArrayDestroy, g_nominatedMapsArray )
+
+    TRY_TO_APPLY( ArrayDestroy, g_voteMinPlayerFillerPathsArray )
+    TRY_TO_APPLY( ArrayDestroy, g_voteNorPlayerFillerPathsArray )
+    TRY_TO_APPLY( ArrayDestroy, g_minMaxMapsPerGroupToUseArray )
+    TRY_TO_APPLY( ArrayDestroy, g_norMaxMapsPerGroupToUseArray )
+
+    destroy_two_dimensional_array( g_norPlayerFillerMapGroupArrays );
+    destroy_two_dimensional_array( g_minPlayerFillerMapGroupArrays );
 
     // Clear Dynamic Tries
     // ############################################################################################
@@ -10036,6 +10077,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         g_test_aimedPlayersNumber = 0;
 
         // To force the Whitelist to be reloaded.
+        loadMapFiles();
         loadTheWhiteListFeature();
         loadNormalVoteChoices();
 
@@ -10058,6 +10100,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         g_test_aimedPlayersNumber = 5;
 
         // To force the Whitelist to be reloaded.
+        loadMapFiles();
         loadTheWhiteListFeature();
         loadNormalVoteChoices();
 
@@ -10083,6 +10126,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         g_test_aimedPlayersNumber = 0;
 
         // To force the Whitelist to be reloaded.
+        loadMapFiles();
         loadTheWhiteListFeature();
         loadNormalVoteChoices();
 
@@ -10107,6 +10151,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         g_test_aimedPlayersNumber = 5;
 
         // To force the Whitelist to be reloaded.
+        loadMapFiles();
         loadTheWhiteListFeature();
         loadNormalVoteChoices();
 
@@ -10125,9 +10170,10 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     stock test_nominateAndUnnominate_load()
     {
         helper_clearNominationsData();
-        helper_mapFileListLoad( g_test_nomMapFilePath, "de_dust1", "de_dust2", "de_dust3", "de_dust4" );
-
         set_pcvar_string( cvar_nomMapFilePath, g_test_nomMapFilePath );
+
+        // Player cannot nominate the current map, so if you are on one fo these maps, the test will fail.
+        helper_mapFileListLoad( g_test_nomMapFilePath, "de_test_dust1", "de_test_dust2", "de_test_dust3", "de_test_dust4" );
         map_loadNominationList();
 
         // Nominations functions:
@@ -10440,13 +10486,14 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
             set_pcvar_num( cvar_nomPlayerAllowance  , test_nomPlayerAllowance   );
         }
 
-        // Reload unloaded features.
-        map_loadNominationList();
-        loadTheWhiteListFeature();
-
         // Clear tests results.
         resetRoundsScores();
         cancelVoting();
+
+        // Reload unloaded features.
+        loadMapFiles();
+        map_loadNominationList();
+        loadTheWhiteListFeature();
 
         // Clean tests files.
         delete_file( g_test_voteMapFilePath );
