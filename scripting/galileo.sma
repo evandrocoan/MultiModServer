@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-296";
+new const PLUGIN_VERSION[] = "v3.2.6-297";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -893,10 +893,14 @@ new Array:g_whitelistArray;
 new Array:g_whitelistFileArray;
 
 /**
- * Whitelist feature variables.
+ * Contains all the allowed maps to be added as nominations or as voting map fillers.
  */
 new Trie: g_whitelistTrie;
-new Trie: g_blackListTrieForWhiteList;
+
+/**
+ * Contains all the blocked maps to be added as nominations or as voting map fillers.
+ */
+new Trie: g_blackListForWhiteListTrie;
 
 /**
  * Contains all loaded nominations maps from the nomination file list.
@@ -3301,7 +3305,7 @@ stock tryToLoadTheWhiteListFeature()
     }
     else
     {
-        if( !g_blackListTrieForWhiteList )
+        if( !g_blackListForWhiteListTrie )
         {
             loadTheWhiteListFeature();
         }
@@ -3335,7 +3339,7 @@ stock loadTheWhiteListFeature()
     }
     else
     {
-        loadWhiteListFile( currentHour, g_blackListTrieForWhiteList, g_whitelistFileArray );
+        loadWhiteListFile( currentHour, g_blackListForWhiteListTrie, g_whitelistFileArray );
     }
 }
 
@@ -3691,7 +3695,7 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
 
                 if( isWhitelistEnabled
                     && !isWhiteListOutBlock
-                    && TrieKeyExists( g_blackListTrieForWhiteList, mapName ) )
+                    && TrieKeyExists( g_blackListForWhiteListTrie, mapName ) )
                 {
                     LOGGER( 8, "    Trying to block: %s, by the whitelist map setting...", mapName )
 
@@ -7255,8 +7259,8 @@ stock nomination_menu( player_id )
                 formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_CURRENTMAP" );
             }
             else if( isWhiteListNomBlock
-                     && ( ( g_blackListTrieForWhiteList
-                            && TrieKeyExists( g_blackListTrieForWhiteList, nominationMap ) )
+                     && ( ( g_blackListForWhiteListTrie
+                            && TrieKeyExists( g_blackListForWhiteListTrie, nominationMap ) )
                           || ( g_whitelistTrie
                                && !TrieKeyExists( g_whitelistTrie, nominationMap ) ) ) )
             {
@@ -7365,8 +7369,8 @@ stock nominationAttemptWithNamePart( player_id, partialNameAttempt[] )
                     formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_CURRENTMAP" );
                 }
                 else if( isWhiteListNomBlock
-                         && ( ( g_blackListTrieForWhiteList
-                                && TrieKeyExists( g_blackListTrieForWhiteList, nominationMap ) )
+                         && ( ( g_blackListForWhiteListTrie
+                                && TrieKeyExists( g_blackListForWhiteListTrie, nominationMap ) )
                               || ( g_whitelistTrie
                                    && !TrieKeyExists( g_whitelistTrie, nominationMap ) ) ) )
                 {
@@ -7916,8 +7920,8 @@ stock map_nominate( player_id, mapIndex )
             // Not loaded?
             tryToLoadTheWhiteListFeature();
 
-            if( ( g_blackListTrieForWhiteList
-                  && TrieKeyExists( g_blackListTrieForWhiteList, mapName ) )
+            if( ( g_blackListForWhiteListTrie
+                  && TrieKeyExists( g_blackListForWhiteListTrie, mapName ) )
                 || ( g_whitelistTrie
                      && !TrieKeyExists( g_whitelistTrie, mapName ) ) )
             {
@@ -8605,7 +8609,7 @@ public plugin_end()
     TRY_TO_APPLY( TrieDestroy, g_reverseSearchNominationsTrie )
     TRY_TO_APPLY( TrieDestroy, g_whitelistTrie )
     TRY_TO_APPLY( TrieDestroy, g_recentMapsTrie )
-    TRY_TO_APPLY( TrieDestroy, g_blackListTrieForWhiteList )
+    TRY_TO_APPLY( TrieDestroy, g_blackListForWhiteListTrie )
     TRY_TO_APPLY( TrieDestroy, g_nominationLoadedMapsTrie )
 
     // Clear the dynamic array menus, just to be sure.
