@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-299";
+new const PLUGIN_VERSION[] = "v3.2.6-300";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -623,6 +623,22 @@ new const PLUGIN_VERSION[] = "v3.2.6-299";
 }
 
 /**
+ * Accept a map as valid, even when they end with `.bsp`.
+ */
+#define IS_MAP_VALID_BSP(%1) ( is_map_valid( %1 ) || is_map_valid_bsp_check( %1 ) )
+
+/**
+ * Check whether a line not a commentary, empty and if it is a valid map by IS_MAP_VALID(1).
+ *
+ * @param currentLine a string within the line to check.
+ */
+#define IT_IS_A_VALID_MAP_LINE(%1) \
+    ( %1[ 0 ] \
+      && !equal( %1, "//", 2 ) \
+      && !equal( %1, ";", 1 ) \
+      && IS_MAP_VALID( %1 ) )
+
+/**
  * General handler to assist object property applying and keep the code clear. This only need
  * to be used with destructors/cleaners which does not support uninitialized handlers, requiring
  * an if pre-checking.
@@ -660,11 +676,6 @@ stock destroy_two_dimensional_array( Array:outerArray )
         TRY_TO_APPLY( ArrayDestroy, outerArray )
     }
 }
-
-/**
- * Accept a map as valid, even when they end with `.bsp`.
- */
-#define IS_MAP_VALID_BSP(%1) ( is_map_valid( %1 ) || is_map_valid_bsp_check( %1 ) )
 
 
 // General Global Variables
@@ -2971,46 +2982,30 @@ stock map_populateList( Array:mapArray = Invalid_Array, mapFilePath[], mapFilePa
     return mapCount;
 }
 
-stock loadMapFileList( Array:mapArray, mapFilePath[], Trie:fillerMapTrie = Invalid_Trie )
+stock loadMapFileList( Array:mapArray, mapFilePath[], Trie:fillerMapTrie )
 {
     LOGGER( 128, "I AM ENTERING ON loadMapFileList(3) | mapFilePath: %s", mapFilePath )
 
     new mapCount;
-    new mapFile = fopen( mapFilePath, "rt" );
+    new mapFileDescriptor = fopen( mapFilePath, "rt" );
 
-    if( mapFile )
+    if( mapFileDescriptor )
     {
         new loadedMapName[ MAX_MAPNAME_LENGHT ];
 
-        while( !feof( mapFile ) )
+        // Removing the if's from the loop to improve speed
+        if( mapArray
+            && fillerMapTrie )
         {
-            fgets( mapFile, loadedMapName, charsmax( loadedMapName ) );
-            trim( loadedMapName );
-
-            if( loadedMapName[ 0 ]
-                && !equal( loadedMapName, "//", 2 )
-                && !equal( loadedMapName, ";", 1 )
-                && IS_MAP_VALID( loadedMapName ) )
-            {
-                if( fillerMapTrie )
-                {
-                    TrieSetCell( fillerMapTrie, loadedMapName, mapCount );
-                }
-
-                if( mapArray )
-                {
-                    ArrayPushString( mapArray, loadedMapName );
-                }
-
-            #if defined DEBUG
-                if( mapCount < 10 )
-                {
-                    LOGGER( 4, "( loadMapFileList ) %d, loadedMapName: %s", mapCount + 1, loadedMapName )
-                }
-            #endif
-
-                ++mapCount;
-            }
+            mapCount = loadMapFileListComplete( mapFileDescriptor, mapArray, fillerMapTrie );
+        }
+        else if( mapArray )
+        {
+            mapCount = loadMapFileListArray( mapFileDescriptor, mapArray );
+        }
+        else // if( fillerMapTrie )
+        {
+            mapCount = loadMapFileListTrie( mapFileDescriptor, fillerMapTrie );
         }
 
         if( mapCount < 2 )
@@ -3019,13 +3014,13 @@ stock loadMapFileList( Array:mapArray, mapFilePath[], Trie:fillerMapTrie = Inval
             new writePosition;
             new readLines[ MAX_BIG_BOSS_STRING ];
 
-            fseek( mapFile, SEEK_SET, 0 );
+            fseek( mapFileDescriptor, SEEK_SET, 0 );
 
-            while( !feof( mapFile )
+            while( !feof( mapFileDescriptor )
                    && parsedLines < 11 )
             {
                 parsedLines++;
-                fgets( mapFile, loadedMapName, charsmax( loadedMapName ) );
+                fgets( mapFileDescriptor, loadedMapName, charsmax( loadedMapName ) );
 
                 if( writePosition < charsmax( readLines ) )
                 {
@@ -3037,7 +3032,7 @@ stock loadMapFileList( Array:mapArray, mapFilePath[], Trie:fillerMapTrie = Inval
             log_error( AMX_ERR_NOTFOUND, "Not valid/enough(%d) maps found: %s^n", mapCount, readLines );
         }
 
-        fclose( mapFile );
+        fclose( mapFileDescriptor );
         LOGGER( 4, "" )
     }
     else
@@ -3049,51 +3044,122 @@ stock loadMapFileList( Array:mapArray, mapFilePath[], Trie:fillerMapTrie = Inval
     return mapCount;
 }
 
-stock loadMapsFolderDirectory( Array:mapArray, Trie:fillerMapTrie = Invalid_Trie )
+stock loadMapFileListComplete( mapFileDescriptor, Array:mapArray, Trie:fillerMapTrie )
 {
-    LOGGER( 128, "I AM ENTERING ON loadMapsFolderDirectory(2) | Array:mapArray: %d", mapArray )
+    LOGGER( 128, "I AM ENTERING ON loadMapsFolderDirectoryComplete(3) | mapFileDescriptor: %d", mapFileDescriptor )
 
-    new directoryDescriptor;
     new mapCount;
     new loadedMapName[ MAX_MAPNAME_LENGHT ];
 
-    directoryDescriptor = open_dir( "maps", loadedMapName, charsmax( loadedMapName ) );
+    while( !feof( mapFileDescriptor ) )
+    {
+        fgets( mapFileDescriptor, loadedMapName, charsmax( loadedMapName ) );
+        trim( loadedMapName );
 
+        if( IT_IS_A_VALID_MAP_LINE( loadedMapName ) )
+        {
+            TrieSetCell( fillerMapTrie, loadedMapName, mapCount );
+            ArrayPushString( mapArray, loadedMapName );
+
+        #if defined DEBUG
+            if( mapCount < 10 )
+            {
+                LOGGER( 4, "( loadMapFileList ) %d, loadedMapName: %s", mapCount + 1, loadedMapName )
+            }
+        #endif
+
+            ++mapCount;
+        }
+    }
+
+    return mapCount;
+}
+
+stock loadMapFileListArray( mapFileDescriptor, Array:mapArray )
+{
+    LOGGER( 128, "I AM ENTERING ON loadMapsFolderDirectoryComplete(3) | mapFileDescriptor: %d", mapFileDescriptor )
+
+    new mapCount;
+    new loadedMapName[ MAX_MAPNAME_LENGHT ];
+
+    while( !feof( mapFileDescriptor ) )
+    {
+        fgets( mapFileDescriptor, loadedMapName, charsmax( loadedMapName ) );
+        trim( loadedMapName );
+
+        if( IT_IS_A_VALID_MAP_LINE( loadedMapName ) )
+        {
+            ArrayPushString( mapArray, loadedMapName );
+
+        #if defined DEBUG
+            if( mapCount < 10 )
+            {
+                LOGGER( 4, "( loadMapFileList ) %d, loadedMapName: %s", mapCount + 1, loadedMapName )
+            }
+        #endif
+
+            ++mapCount;
+        }
+    }
+
+    return mapCount;
+}
+
+stock loadMapFileListTrie( mapFileDescriptor, Trie:fillerMapTrie )
+{
+    LOGGER( 128, "I AM ENTERING ON loadMapsFolderDirectoryComplete(3) | mapFileDescriptor: %d", mapFileDescriptor )
+
+    new mapCount;
+    new loadedMapName[ MAX_MAPNAME_LENGHT ];
+
+    while( !feof( mapFileDescriptor ) )
+    {
+        fgets( mapFileDescriptor, loadedMapName, charsmax( loadedMapName ) );
+        trim( loadedMapName );
+
+        if( IT_IS_A_VALID_MAP_LINE( loadedMapName ) )
+        {
+            TrieSetCell( fillerMapTrie, loadedMapName, mapCount );
+
+        #if defined DEBUG
+            if( mapCount < 10 )
+            {
+                LOGGER( 4, "( loadMapFileList ) %d, loadedMapName: %s", mapCount + 1, loadedMapName )
+            }
+        #endif
+
+            ++mapCount;
+        }
+    }
+
+    return mapCount;
+}
+
+stock loadMapsFolderDirectory( Array:mapArray, Trie:fillerMapTrie )
+{
+    LOGGER( 128, "I AM ENTERING ON loadMapsFolderDirectory(2) | Array:mapArray: %d", mapArray )
+
+    new mapCount;
+    new directoryDescriptor;
+
+    new parentDirectorUnused[ 5 ];
+    directoryDescriptor = open_dir( "maps", parentDirectorUnused, charsmax( parentDirectorUnused ) );
+
+    // Removing the if's from the loop to improve speed
     if( directoryDescriptor )
     {
-        new mapNameLength;
-
-        while( next_file( directoryDescriptor, loadedMapName, charsmax( loadedMapName ) ) )
+        if( mapArray
+            && fillerMapTrie )
         {
-            mapNameLength = strlen( loadedMapName );
-
-            if( mapNameLength > 4
-                && equali( loadedMapName[ mapNameLength - 4 ], ".bsp", 4 ) )
-            {
-                loadedMapName[ mapNameLength - 4 ] = '^0';
-
-                if( IS_MAP_VALID( loadedMapName ) )
-                {
-                    if( fillerMapTrie )
-                    {
-                        TrieSetCell( fillerMapTrie, loadedMapName, mapCount );
-                    }
-
-                    if( mapArray )
-                    {
-                        ArrayPushString( mapArray, loadedMapName );
-                    }
-
-                #if defined DEBUG
-                    if( mapCount < 10 )
-                    {
-                        LOGGER( 4, "( loadMapsFolderDirectory ) %d, loadedMapName: %s", mapCount + 1, loadedMapName )
-                    }
-                #endif
-
-                    ++mapCount;
-                }
-            }
+            mapCount = loadMapsFolderDirectoryComplete( directoryDescriptor, mapArray, fillerMapTrie );
+        }
+        else if( mapArray )
+        {
+            mapCount = loadMapsFolderDirectoryArray( directoryDescriptor, mapArray );
+        }
+        else // if( fillerMapTrie )
+        {
+            mapCount = loadMapsFolderDirectoryTrie( directoryDescriptor, fillerMapTrie );
         }
 
         close_dir( directoryDescriptor );
@@ -3103,6 +3169,115 @@ stock loadMapsFolderDirectory( Array:mapArray, Trie:fillerMapTrie = Invalid_Trie
         // directory not found, wtf?
         LOGGER( 1, "( loadMapsFolderDirectory ) Error %d, %L", AMX_ERR_NOTFOUND, LANG_SERVER, "GAL_MAPS_FOLDERMISSING" )
         log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FOLDERMISSING" );
+    }
+
+    return mapCount;
+}
+
+stock loadMapsFolderDirectoryComplete( directoryDescriptor, Array:mapArray, Trie:fillerMapTrie )
+{
+    LOGGER( 128, "I AM ENTERING ON loadMapsFolderDirectoryComplete(3) | directoryDescriptor: %d", directoryDescriptor )
+
+    new mapCount;
+    new mapNameLength;
+    new loadedMapName[ MAX_MAPNAME_LENGHT ];
+
+    while( next_file( directoryDescriptor, loadedMapName, charsmax( loadedMapName ) ) )
+    {
+        mapNameLength = strlen( loadedMapName );
+
+        if( mapNameLength > 4
+            && equali( loadedMapName[ mapNameLength - 4 ], ".bsp", 4 ) )
+        {
+            loadedMapName[ mapNameLength - 4 ] = '^0';
+
+            if( IS_MAP_VALID( loadedMapName ) )
+            {
+                TrieSetCell( fillerMapTrie, loadedMapName, mapCount );
+                ArrayPushString( mapArray, loadedMapName );
+
+            #if defined DEBUG
+                if( mapCount < 10 )
+                {
+                    LOGGER( 4, "( loadMapsFolderDirectory ) %d, loadedMapName: %s", mapCount + 1, loadedMapName )
+                }
+            #endif
+
+                ++mapCount;
+            }
+        }
+    }
+
+    return mapCount;
+}
+
+stock loadMapsFolderDirectoryArray( directoryDescriptor, Array:mapArray )
+{
+    LOGGER( 128, "I AM ENTERING ON loadMapsFolderDirectoryArray(2) | directoryDescriptor: %d", directoryDescriptor )
+
+    new mapCount;
+    new mapNameLength;
+    new loadedMapName[ MAX_MAPNAME_LENGHT ];
+
+    while( next_file( directoryDescriptor, loadedMapName, charsmax( loadedMapName ) ) )
+    {
+        mapNameLength = strlen( loadedMapName );
+
+        if( mapNameLength > 4
+            && equali( loadedMapName[ mapNameLength - 4 ], ".bsp", 4 ) )
+        {
+            loadedMapName[ mapNameLength - 4 ] = '^0';
+
+            if( IS_MAP_VALID( loadedMapName ) )
+            {
+                ArrayPushString( mapArray, loadedMapName );
+
+            #if defined DEBUG
+                if( mapCount < 10 )
+                {
+                    LOGGER( 4, "( loadMapsFolderDirectory ) %d, loadedMapName: %s", mapCount + 1, loadedMapName )
+                }
+            #endif
+
+                ++mapCount;
+            }
+        }
+    }
+
+    return mapCount;
+}
+
+stock loadMapsFolderDirectoryTrie( directoryDescriptor, Trie:fillerMapTrie )
+{
+    LOGGER( 128, "I AM ENTERING ON loadMapsFolderDirectoryTrie(2) | directoryDescriptor: %d", directoryDescriptor )
+
+    new mapCount;
+    new mapNameLength;
+    new loadedMapName[ MAX_MAPNAME_LENGHT ];
+
+    while( next_file( directoryDescriptor, loadedMapName, charsmax( loadedMapName ) ) )
+    {
+        mapNameLength = strlen( loadedMapName );
+
+        if( mapNameLength > 4
+            && equali( loadedMapName[ mapNameLength - 4 ], ".bsp", 4 ) )
+        {
+            loadedMapName[ mapNameLength - 4 ] = '^0';
+
+            if( IS_MAP_VALID( loadedMapName ) )
+            {
+                TrieSetCell( fillerMapTrie, loadedMapName, mapCount );
+
+            #if defined DEBUG
+                if( mapCount < 10 )
+                {
+                    LOGGER( 4, "( loadMapsFolderDirectory ) %d, loadedMapName: %s", mapCount + 1, loadedMapName )
+                }
+            #endif
+
+                ++mapCount;
+            }
+        }
     }
 
     return mapCount;
@@ -4153,6 +4328,8 @@ public vote_manageEnd()
         if( secondsLeft < 30
             && secondsLeft > 0 )
         {
+            // try_to_manage_map_end() cannot be called with true, otherwise it will change the map
+            // before the last seconds to be finished.
             try_to_manage_map_end();
         }
     }
@@ -6956,7 +7133,7 @@ public cmd_createMapFile( player_id, level, cid )
             new loadedMapName[ MAX_MAPNAME_LENGHT + 5 ];
 
             new directoryDescriptor;
-            new mapFile;
+            new mapFileDescriptor;
             new mapCount;
             new mapNameLength;
 
@@ -6967,9 +7144,9 @@ public cmd_createMapFile( player_id, level, cid )
                 new mapFilePath[ MAX_FILE_PATH_LENGHT ];
 
                 formatex( mapFilePath, charsmax( mapFilePath ), "%s/%s", g_configsDirPath, mapFileName );
-                mapFile = fopen( mapFilePath, "wt" );
+                mapFileDescriptor = fopen( mapFilePath, "wt" );
 
-                if( mapFile )
+                if( mapFileDescriptor )
                 {
                     mapCount = 0;
 
@@ -6985,12 +7162,12 @@ public cmd_createMapFile( player_id, level, cid )
                             if( IS_MAP_VALID( loadedMapName ) )
                             {
                                 mapCount++;
-                                fprintf( mapFile, "%s^n", loadedMapName );
+                                fprintf( mapFileDescriptor, "%s^n", loadedMapName );
                             }
                         }
                     }
 
-                    fclose( mapFile );
+                    fclose( mapFileDescriptor );
                     console_print( player_id, "%L", player_id, "GAL_CREATIONSUCCESS", mapFilePath, mapCount );
                 }
                 else
@@ -7929,7 +8106,6 @@ stock is_to_block_map_nomination( player_id, mapName[] )
 stock map_nominate( player_id, mapIndex )
 {
     LOGGER( 128, "I AM ENTERING ON map_nominate(2) | player_id: %d, mapIndex: %d", player_id, mapIndex )
-
     new mapName[ MAX_MAPNAME_LENGHT ];
 
     // get the nominated map name
@@ -7992,6 +8168,9 @@ stock try_to_add_the_nomination( player_id, mapIndex, mapName[] )
 
 stock add_my_nomination( player_id, mapIndex, mapName[] )
 {
+    LOGGER( 128, "I AM ENTERING ON add_my_nomination(0) player_id: %d, mapIndex: %d, mapName: %s", \
+            player_id, mapIndex, mapName )
+
     new openNominationIndex;
     new maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), MAX_NOMINATION_COUNT );
 
@@ -8014,6 +8193,9 @@ stock add_my_nomination( player_id, mapIndex, mapName[] )
 
 stock show_my_nominated_maps( player_id, maxPlayerNominations )
 {
+    LOGGER( 128, "I AM ENTERING ON show_my_nominated_maps(2) player_id: %d, maxPlayerNominations: %d", \
+            player_id, maxPlayerNominations )
+
     new mapIndex;
     new copiedChars;
 
