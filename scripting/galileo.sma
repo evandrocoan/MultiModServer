@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-305";
+new const PLUGIN_VERSION[] = "v3.2.6-306";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -7539,7 +7539,9 @@ stock nomination_menu( player_id )
 
     LOGGER( 4, "( nominationAttemptWithNamePart ) itemsCount: %d, mapIndex: %d", itemsCount, mapIndex )
 
-    addMenuMoreBackExitOptions( player_id, disabledReason, mapIndex < nominationsMapsCount, g_generalUsePlayersMenuPages[ player_id ], itemsCount );
+    addMenuMoreBackExitOptions( player_id, disabledReason, mapIndex < nominationsMapsCount,
+            g_generalUsePlayersMenuPages[ player_id ] > 0, itemsCount );
+
     menu_display( player_id, g_generalUsePlayersMenuIds[ player_id ] );
 }
 
@@ -7666,8 +7668,13 @@ stock nominationAttemptWithNamePart( player_id, startSearchIndex = 0, bool:isToE
     // If there are not map matches, reshow the last menu page with the more button disabled.
     if( itemsCount )
     {
-        isToEnableMoreButton = isToEnableMoreButton ? false : mapIndex + 1 < nominationsMapsCount;
-        addMenuMoreBackExitOptions( player_id, disabledReason, isToEnableMoreButton, startSearchIndex, itemsCount );
+        // If this function is called within this parameter true, it means this is the seconds time
+        // we are trying to show the same last page, so instead of showing an empty page, we show
+        // the same page, but within the more button disabled.
+        isToEnableMoreButton = isToEnableMoreButton ? false : mapIndex < nominationsMapsCount;
+
+        addMenuMoreBackExitOptions( player_id, disabledReason, isToEnableMoreButton,
+                bool:ArraySize( g_partialMatchFirstPageItems[ player_id ] ), itemsCount );
 
         // handle the number of matches
         switch( itemsCount )
@@ -7737,10 +7744,10 @@ stock nominationAttemptWithNamePart( player_id, startSearchIndex = 0, bool:isToE
     }
 }
 
-stock addMenuMoreBackExitOptions( player_id, disabledReason[], bool:isToEnableMoreButton, startSearchIndex, itemsCount )
+stock addMenuMoreBackExitOptions( player_id, disabledReason[], bool:isToEnableMoreButton, bool:isToEnableBackButton, itemsCount )
 {
     LOGGER( 128, "I AM ENTERING ON addMenuMoreBackExitOptions(5) | isToEnableMoreButton: %d, \
-            startSearchIndex: %d, itemsCount: %d", isToEnableMoreButton, startSearchIndex, itemsCount )
+            isToEnableBackButton: %d", isToEnableMoreButton, isToEnableBackButton )
 
     // Force the menu control options to be present on the keys 8 (more), 9 (back) and 0 (exit).
     while( itemsCount < MAX_MENU_ITEMS_PER_PAGE )
@@ -7754,19 +7761,17 @@ stock addMenuMoreBackExitOptions( player_id, disabledReason[], bool:isToEnableMo
         // menu_addblank( g_generalUsePlayersMenuIds[ player_id ], 1 );
     }
 
+    // Add some space from the control options and format the back button within the LANG file.
+    menu_addblank( g_generalUsePlayersMenuIds[ player_id ], 0 );
     formatex( disabledReason, MAX_SHORT_STRING - 1, "%L", player_id, "BACK" );
 
     // If we are on the first page, disable the back option.
-    if( startSearchIndex > 0 )
+    if( isToEnableBackButton )
     {
-        // Add some space from the control options.
-        menu_addblank( g_generalUsePlayersMenuIds[ player_id ], 0 );
         menu_additem( g_generalUsePlayersMenuIds[ player_id ], disabledReason, _, 0 );
     }
     else
     {
-        // Add some space from the control options.
-        menu_addblank( g_generalUsePlayersMenuIds[ player_id ], 0 );
         menu_additem( g_generalUsePlayersMenuIds[ player_id ], disabledReason, _, 1 << 26 );
     }
 
@@ -7877,8 +7882,8 @@ public nomination_handlePartialMatch( player_id, menu, item )
         new arguments[ 3 ];
         new lastPosition = ArraySize( g_partialMatchFirstPageItems[ player_id ] ) - 1;
 
-        // We are already on the first page.
-        if( lastPosition == 0 )
+        // We are already on the first page or something like that.
+        if( lastPosition < 0 )
         {
             arguments[ 1 ] = 0;
         }
