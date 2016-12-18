@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-306";
+new const PLUGIN_VERSION[] = "v3.2.6-307";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -8498,13 +8498,19 @@ public nomination_list()
 
             if( copiedChars )
             {
-                copiedChars += copy( mapsList[ copiedChars ], charsmax( mapsList ) - copiedChars, ", " );
+                copiedChars += copy( mapsList[ copiedChars ], charsmax( mapsList ) - copiedChars, "^1, ^4" );
             }
+
             copiedChars += copy( mapsList[ copiedChars ], charsmax( mapsList ) - copiedChars, mapName );
 
             if( ++nomMapCount == 4 )     // list 4 maps per chat line
             {
-                color_print( 0, "%L: %s", LANG_PLAYER, "GAL_NOMINATIONS", mapsList );
+                #if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES == 0
+                    REMOVE_CODE_COLOR_TAGS( mapsList )
+                    color_print( 0, "%L: %s", LANG_PLAYER, "GAL_NOMINATIONS", mapsList );
+                #else
+                    color_print( 0, "%L: ^4%s", LANG_PLAYER, "GAL_NOMINATIONS", mapsList );
+                #endif
 
                 nomMapCount   = 0;
                 mapsList[ 0 ] = '^0';
@@ -8514,7 +8520,12 @@ public nomination_list()
 
     if( mapsList[ 0 ] )
     {
+    #if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES == 0
+        REMOVE_CODE_COLOR_TAGS( mapsList )
         color_print( 0, "%L: %s", LANG_PLAYER, "GAL_NOMINATIONS", mapsList );
+    #else
+        color_print( 0, "%L: ^4%s", LANG_PLAYER, "GAL_NOMINATIONS", mapsList );
+    #endif
     }
     else
     {
