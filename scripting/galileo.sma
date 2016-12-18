@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-310";
+new const PLUGIN_VERSION[] = "v3.2.6-311";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -6992,26 +6992,37 @@ public cmd_nominations( player_id )
 public cmd_listrecent( player_id )
 {
     LOGGER( 128, "I AM ENTERING ON cmd_listrecent(1) | player_id: %d", player_id )
-    new recentMapName[ MAX_MAPNAME_LENGHT ];
 
     switch( get_pcvar_num( cvar_banRecentStyle ) )
     {
         case 1:
         {
             new copiedChars;
+            new recentMapName    [ MAX_MAPNAME_LENGHT ];
             new recentMapsMessage[ MAX_COLOR_MESSAGE ];
 
             for( new mapIndex = 0; mapIndex < g_recentMapCount; ++mapIndex )
             {
                 ArrayGetString( g_recentListMapsArray, mapIndex, recentMapName, charsmax( recentMapName ) );
-                copiedChars += formatex( recentMapsMessage[ copiedChars ], charsmax( recentMapsMessage ) - copiedChars, ", %s", recentMapName );
+
+                if( copiedChars < charsmax( recentMapsMessage ) )
+                {
+                    copiedChars += formatex( recentMapsMessage[ copiedChars ],
+                            charsmax( recentMapsMessage ) - copiedChars, ", %s", recentMapName );
+                }
+                else
+                {
+                    break;
+                }
             }
 
             color_print( 0, "%L: %s", LANG_PLAYER, "GAL_MAP_RECENTMAPS", recentMapsMessage[ 2 ] );
         }
         case 2:
         {
-            for( new mapIndex = 0; mapIndex < g_recentMapCount; ++mapIndex )
+            new recentMapName[ MAX_MAPNAME_LENGHT ];
+
+            for( new mapIndex = 0; mapIndex < g_recentMapCount && mapIndex < 5; ++mapIndex )
             {
                 ArrayGetString( g_recentListMapsArray, mapIndex, recentMapName, charsmax( recentMapName ) );
 
@@ -7021,33 +7032,39 @@ public cmd_listrecent( player_id )
         }
         case 3:
         {
-            new menuOptionString[ 64 ];
-
-            // We starting building the menu
-            TRY_TO_APPLY( menu_destroy, g_generalUsePlayersMenuIds[ player_id ] )
-
-            // To create the menu
-            formatex( menuOptionString, charsmax( menuOptionString ), "%L", player_id, "GAL_MAP_RECENTMAPS" );
-            g_generalUsePlayersMenuIds[ player_id ] = menu_create( menuOptionString, "cmd_listrecent_handler" );
-
-            // Configure the menu buttons.
-            SET_MENU_LANG_STRING_PROPERTY( MPROP_EXITNAME, g_generalUsePlayersMenuIds[ player_id ], "EXIT" )
-            SET_MENU_LANG_STRING_PROPERTY( MPROP_NEXTNAME, g_generalUsePlayersMenuIds[ player_id ], "MORE" )
-            SET_MENU_LANG_STRING_PROPERTY( MPROP_BACKNAME, g_generalUsePlayersMenuIds[ player_id ], "BACK" )
-
-            // Add the menu items.
-            for( new mapIndex = 0; mapIndex < g_recentMapCount; ++mapIndex )
-            {
-                ArrayGetString( g_recentListMapsArray, mapIndex, recentMapName, charsmax( recentMapName ) );
-                menu_additem( g_generalUsePlayersMenuIds[ player_id ], recentMapName );
-            }
-
-            // To display the menu.
-            menu_display( player_id, g_generalUsePlayersMenuIds[ player_id ] );
+            showRecentMapsListMenu( player_id );
         }
     }
 
     return PLUGIN_HANDLED;
+}
+
+public showRecentMapsListMenu( player_id )
+{
+    new recentMapName[ MAX_MAPNAME_LENGHT ];
+    new menuOptionString[ 64 ];
+
+    // We starting building the menu
+    TRY_TO_APPLY( menu_destroy, g_generalUsePlayersMenuIds[ player_id ] )
+
+    // To create the menu
+    formatex( menuOptionString, charsmax( menuOptionString ), "%L", player_id, "GAL_MAP_RECENTMAPS" );
+    g_generalUsePlayersMenuIds[ player_id ] = menu_create( menuOptionString, "cmd_listrecent_handler" );
+
+    // Configure the menu buttons.
+    SET_MENU_LANG_STRING_PROPERTY( MPROP_EXITNAME, g_generalUsePlayersMenuIds[ player_id ], "EXIT" )
+    SET_MENU_LANG_STRING_PROPERTY( MPROP_NEXTNAME, g_generalUsePlayersMenuIds[ player_id ], "MORE" )
+    SET_MENU_LANG_STRING_PROPERTY( MPROP_BACKNAME, g_generalUsePlayersMenuIds[ player_id ], "BACK" )
+
+    // Add the menu items.
+    for( new mapIndex = 0; mapIndex < g_recentMapCount; ++mapIndex )
+    {
+        ArrayGetString( g_recentListMapsArray, mapIndex, recentMapName, charsmax( recentMapName ) );
+        menu_additem( g_generalUsePlayersMenuIds[ player_id ], recentMapName );
+    }
+
+    // To display the menu.
+    menu_display( player_id, g_generalUsePlayersMenuIds[ player_id ] );
 }
 
 public cmd_listrecent_handler( player_id, menu, item )
