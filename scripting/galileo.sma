@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-313";
+new const PLUGIN_VERSION[] = "v3.2.6-315";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -658,13 +658,18 @@ new const PLUGIN_VERSION[] = "v3.2.6-313";
     } \
 }
 
-#define CLEAR_MENU_FOR_PLAYER(%1,%2) \
+/**
+ * Check whether the menu exists, call menu_destroy(1) and set the menu to id to 0.
+ *
+ * @param menu_id_variable    a variable within the player menu to be destroyed.
+ */
+#define DESTROY_PLAYER_NEW_MENU_TYPE(%1) \
 { \
-    LOGGER( 128, "I AM ENTERING ON CLEAR_MENU_FOR_PLAYER(2) | player_id: %d, menu_id: %d", %1, %2 ) \
-    if( %2 ) \
+    LOGGER( 128, "I AM ENTERING ON DESTROY_PLAYER_NEW_MENU_TYPE(1) | menu_id: %d", %1 ) \
+    if( %1 ) \
     { \
-        menu_destroy( %2 ); \
-        %2 = 0; \
+        menu_destroy( %1 ); \
+        %1 = 0; \
     } \
 }
 
@@ -3950,6 +3955,7 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
                 copy( g_votingMapNames[ g_totalVoteOptions ], charsmax( g_votingMapNames[] ), mapName );
                 g_totalVoteOptions++;
 
+                LOGGER( 8, "" )
                 LOGGER( 8, "( out ) [%i] choiceIndex: %i, mapIndex: %i, mapName: %s, unsuccessfulCount: %i, g_totalVoteOptions: %i", \
                         groupIndex, choiceIndex, mapIndex, mapName, unsuccessfulCount, g_totalVoteOptions )
                 LOGGER( 8, "" )
@@ -4005,7 +4011,7 @@ stock debug_vote_map_selection( choiceIndex, mapName[], useWhitelistOutBlock, is
     static lastchoiceIndex = 0;
 
     // Reset the currentMapIndex map counting after a successful map addition.
-    if( g_totalVoteOptions != lastchoiceIndex )
+    if( choiceIndex != lastchoiceIndex )
     {
         currentMapIndex = 0;
         lastchoiceIndex = choiceIndex;
@@ -7175,7 +7181,7 @@ public cmd_listrecent_handler( player_id, menu, item )
         || ( item == 9
              && g_recentMapsMenuPages[ player_id ] == 0 ) )
     {
-        CLEAR_MENU_FOR_PLAYER( player_id, g_generalUsePlayersMenuIds[ player_id ] )
+        DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
 
         LOGGER( 1, "    ( cmd_listrecent_handler ) Just Returning PLUGIN_HANDLED, as menu is destroyed." )
         return PLUGIN_HANDLED;
@@ -7185,7 +7191,7 @@ public cmd_listrecent_handler( player_id, menu, item )
     if( item == 9
         && g_recentMapsMenuPages[ player_id ] > 0 )
     {
-        CLEAR_MENU_FOR_PLAYER( player_id, g_generalUsePlayersMenuIds[ player_id ] )
+        DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
         g_recentMapsMenuPages[ player_id ] ? g_recentMapsMenuPages[ player_id ]-- : player_id;
 
         // We need to delay the menu show up on 0.2 seconds to avoid players lagging the server by DOS attack.
@@ -7198,7 +7204,7 @@ public cmd_listrecent_handler( player_id, menu, item )
     // If the 9 button item is hit, and we are on some page not the last one, we must to perform the more option.
     if( item == 8 )
     {
-        CLEAR_MENU_FOR_PLAYER( player_id, g_generalUsePlayersMenuIds[ player_id ] )
+        DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
         g_recentMapsMenuPages[ player_id ]++;
 
         // We need to delay the menu show up on 0.2 seconds to avoid players lagging the server by DOS attack.
@@ -7584,7 +7590,7 @@ stock nomination_menu( player_id )
     LOGGER( 128, "I AM ENTERING ON nomination_menu(1) | player_id: %d", player_id )
 
     // Clear the last menu, if exists
-    CLEAR_MENU_FOR_PLAYER( player_id, g_generalUsePlayersMenuIds[ player_id ] )
+    DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
 
     new itemsCount;
     new nominationsMapsCount;
@@ -7731,7 +7737,7 @@ stock nominationAttemptWithNamePart( player_id, startSearchIndex = 0 )
     LOGGER( 128, "I AM ENTERING ON nominationAttemptWithNamePart(2) | startSearchIndex: %d", startSearchIndex )
 
     // Clear the last menu, if exists
-    CLEAR_MENU_FOR_PLAYER( player_id, g_generalUsePlayersMenuIds[ player_id ] )
+    DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
 
     new matchIndex;
     new itemsCount;
@@ -7867,7 +7873,7 @@ stock nominationAttemptWithNamePart( player_id, startSearchIndex = 0 )
                 color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_NOMATCHES", g_nominationPartialNameAttempt[ player_id ] );
 
                 // Destroys the menu, as is was not used.
-                CLEAR_MENU_FOR_PLAYER( player_id, g_generalUsePlayersMenuIds[ player_id ] )
+                DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
             }
             case 1:
             {
@@ -7875,7 +7881,7 @@ stock nominationAttemptWithNamePart( player_id, startSearchIndex = 0 )
                 map_nominate( player_id, matchIndex );
 
                 // Destroys the menu, as is was not used.
-                CLEAR_MENU_FOR_PLAYER( player_id, g_generalUsePlayersMenuIds[ player_id ] )
+                DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
             }
         }
     }
@@ -7964,7 +7970,7 @@ public nomination_handleMatchChoice( player_id, menu, item )
     if( item < 0
         || item == 9 )
     {
-        CLEAR_MENU_FOR_PLAYER( player_id, g_generalUsePlayersMenuIds[ player_id ] )
+        DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
 
         LOGGER( 1, "    ( nomination_handleMatchChoice ) Just Returning PLUGIN_HANDLED, the menu is destroyed." )
         return PLUGIN_HANDLED;
@@ -7976,7 +7982,7 @@ public nomination_handleMatchChoice( player_id, menu, item )
         && g_nominationPlayersMenuPages[ player_id ] == 0 )
     {
         unnominatedDisconnectedPlayer( player_id );
-        CLEAR_MENU_FOR_PLAYER( player_id, g_generalUsePlayersMenuIds[ player_id ] )
+        DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
 
         LOGGER( 1, "    ( nomination_handleMatchChoice ) Just Returning PLUGIN_HANDLED, the nominations were cancelled." )
         return PLUGIN_HANDLED;
@@ -7985,7 +7991,7 @@ public nomination_handleMatchChoice( player_id, menu, item )
     // If the 8 button item is hit, and we are not on the first page, we must to perform the back option.
     if( item == 7 )
     {
-        CLEAR_MENU_FOR_PLAYER( player_id, g_generalUsePlayersMenuIds[ player_id ] )
+        DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
         g_nominationPlayersMenuPages[ player_id ] ? g_nominationPlayersMenuPages[ player_id ]-- : player_id;
 
         // We need to delay the menu show up on 0.2 seconds to avoid players lagging the server by DOS attack.
@@ -7998,7 +8004,7 @@ public nomination_handleMatchChoice( player_id, menu, item )
     // If the 9 button item is hit, and we are on some page not the last one, we must to perform the more option.
     if( item == 8 )
     {
-        CLEAR_MENU_FOR_PLAYER( player_id, g_generalUsePlayersMenuIds[ player_id ] )
+        DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
         g_nominationPlayersMenuPages[ player_id ]++;
 
         // We need to delay the menu show up on 0.2 seconds to avoid players lagging the server by DOS attack.
@@ -8013,7 +8019,7 @@ public nomination_handleMatchChoice( player_id, menu, item )
     item = convert_septal_to_decimal( g_nominationPlayersMenuPages[ player_id ] * 10 + item ) - 1;
 
     map_nominate( player_id, item );
-    CLEAR_MENU_FOR_PLAYER( player_id, g_generalUsePlayersMenuIds[ player_id ] )
+    DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
 
     LOGGER( 1, "    ( nomination_handleMatchChoice ) Just Returning PLUGIN_HANDLED, successful nomination." )
     return PLUGIN_HANDLED;
@@ -8028,7 +8034,7 @@ public nomination_handlePartialMatch( player_id, menu, item )
     if( item < 0
         || item == 9 )
     {
-        CLEAR_MENU_FOR_PLAYER( player_id, g_generalUsePlayersMenuIds[ player_id ] )
+        DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
 
         LOGGER( 1, "    ( nomination_handlePartialMatch ) Just Returning PLUGIN_HANDLED, the menu is destroyed." )
         return PLUGIN_HANDLED;
@@ -8053,7 +8059,7 @@ public nomination_handlePartialMatch( player_id, menu, item )
         ArrayDeleteItem( g_partialMatchFirstPageItems[ player_id ], lastPosition );
 
         arguments[ 0 ] = player_id;
-        CLEAR_MENU_FOR_PLAYER( player_id, g_generalUsePlayersMenuIds[ player_id ] )
+        DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
 
         // We need to delay the menu show up on 0.2 seconds to avoid players lagging the server by DOS attack.
         set_task( 0.2, "nominationAttemptWithNameHook", _, arguments, sizeof arguments );
@@ -8071,7 +8077,7 @@ public nomination_handlePartialMatch( player_id, menu, item )
         arguments[ 1 ] = g_menuMapIndexForPlayerArrays[ player_id ][ MAX_NOM_MENU_ITEMS_PER_PAGE - 1 ] + 1;
 
         ArrayPushCell( g_partialMatchFirstPageItems[ player_id ], g_menuMapIndexForPlayerArrays[ player_id ][ 0 ] );
-        CLEAR_MENU_FOR_PLAYER( player_id, g_generalUsePlayersMenuIds[ player_id ] )
+        DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
 
         // We need to delay the menu show up on 0.2 seconds to avoid players lagging the server by DOS attack.
         set_task( 0.2, "nominationAttemptWithNameHook", _, arguments, sizeof arguments );
@@ -8084,7 +8090,7 @@ public nomination_handlePartialMatch( player_id, menu, item )
     item = g_menuMapIndexForPlayerArrays[ player_id ][ item ];
 
     map_nominate( player_id, item );
-    CLEAR_MENU_FOR_PLAYER( player_id, g_generalUsePlayersMenuIds[ player_id ] )
+    DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
 
     LOGGER( 1, "    ( nomination_handlePartialMatch ) Just Returning PLUGIN_HANDLED, successful nomination." )
     return PLUGIN_HANDLED;
@@ -9260,7 +9266,7 @@ public plugin_end()
     for( currentIndex = 0; currentIndex < MAX_PLAYERS_COUNT; ++currentIndex )
     {
         // To clear each one separately to improve the debugging sight.
-        CLEAR_MENU_FOR_PLAYER( currentIndex, g_generalUsePlayersMenuIds[ currentIndex ] )
+        DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ currentIndex ] )
     }
 
     // Clear game crash action flag file for a new game.
