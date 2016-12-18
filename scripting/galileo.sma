@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-304";
+new const PLUGIN_VERSION[] = "v3.2.6-305";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -7478,9 +7478,10 @@ stock nomination_menu( player_id )
     // SET_MENU_LANG_STRING_PROPERTY( MPROP_NEXTNAME, g_generalUsePlayersMenuIds[ player_id ], "MORE" )
     // SET_MENU_LANG_STRING_PROPERTY( MPROP_BACKNAME, g_generalUsePlayersMenuIds[ player_id ], "BACK" )
 
+    // The first page contains by default the `Cancel All Nominations` option
     nominationsMapsCount = ArraySize( g_nominationLoadedMapsArray );
 
-    // The first page contains by default the `Cancel All Nominations` option
+    // The first page will get one less item due the `Cancel All Nominations` option.
     if( g_generalUsePlayersMenuPages[ player_id ] == 0 )
     {
         mapIndex   = 0;
@@ -7538,7 +7539,7 @@ stock nomination_menu( player_id )
 
     LOGGER( 4, "( nominationAttemptWithNamePart ) itemsCount: %d, mapIndex: %d", itemsCount, mapIndex )
 
-    addMenuMoreBackExitOptions( player_id, disabledReason, mapIndex + 1 < nominationsMapsCount, g_generalUsePlayersMenuPages[ player_id ], itemsCount );
+    addMenuMoreBackExitOptions( player_id, disabledReason, mapIndex < nominationsMapsCount, g_generalUsePlayersMenuPages[ player_id ], itemsCount );
     menu_display( player_id, g_generalUsePlayersMenuIds[ player_id ] );
 }
 
@@ -7738,45 +7739,46 @@ stock nominationAttemptWithNamePart( player_id, startSearchIndex = 0, bool:isToE
 
 stock addMenuMoreBackExitOptions( player_id, disabledReason[], bool:isToEnableMoreButton, startSearchIndex, itemsCount )
 {
-    // If there are more maps, add the more option
-    if( isToEnableMoreButton )
+    LOGGER( 128, "I AM ENTERING ON addMenuMoreBackExitOptions(5) | isToEnableMoreButton: %d, \
+            startSearchIndex: %d, itemsCount: %d", isToEnableMoreButton, startSearchIndex, itemsCount )
+
+    // Force the menu control options to be present on the keys 8 (more), 9 (back) and 0 (exit).
+    while( itemsCount < MAX_MENU_ITEMS_PER_PAGE )
     {
-        // Add some space from the control options.
-        menu_addblank( g_generalUsePlayersMenuIds[ player_id ], 0 );
-
-        formatex( disabledReason, MAX_SHORT_STRING - 1, "%L", player_id, "MORE" );
-        menu_additem( g_generalUsePlayersMenuIds[ player_id ], disabledReason, _, 0 );
-    }
-    else
-    {
-        // Force the menu control options to be present on the keys 8 (more), 9 (back) and 0 (exit).
-        while( itemsCount < MAX_MENU_ITEMS_PER_PAGE )
-        {
-            itemsCount++;
-            formatex( disabledReason, MAX_SHORT_STRING - 1, "%L", player_id, "OFF" );
-            menu_additem( g_generalUsePlayersMenuIds[ player_id ], disabledReason, _, 1 << 26 );
-
-            // When using slot=1 this might break your menu. To achieve this functionality
-            // menu_addblank2() should be used (AMXX 183 only).
-            // menu_addblank( g_generalUsePlayersMenuIds[ player_id ], 1 );
-        }
-
-        // Add some space from the control options.
-        menu_addblank( g_generalUsePlayersMenuIds[ player_id ], 0 );
-
-        formatex( disabledReason, MAX_SHORT_STRING - 1, "%L", player_id, "MORE" );
+        itemsCount++;
+        formatex( disabledReason, MAX_SHORT_STRING - 1, "%L", player_id, "OFF" );
         menu_additem( g_generalUsePlayersMenuIds[ player_id ], disabledReason, _, 1 << 26 );
+
+        // When using slot=1 this might break your menu. To achieve this functionality
+        // menu_addblank2() should be used (AMXX 183 only).
+        // menu_addblank( g_generalUsePlayersMenuIds[ player_id ], 1 );
     }
+
+    formatex( disabledReason, MAX_SHORT_STRING - 1, "%L", player_id, "BACK" );
 
     // If we are on the first page, disable the back option.
     if( startSearchIndex > 0 )
     {
-        formatex( disabledReason, MAX_SHORT_STRING - 1, "%L", player_id, "BACK" );
+        // Add some space from the control options.
+        menu_addblank( g_generalUsePlayersMenuIds[ player_id ], 0 );
         menu_additem( g_generalUsePlayersMenuIds[ player_id ], disabledReason, _, 0 );
     }
     else
     {
-        formatex( disabledReason, MAX_SHORT_STRING - 1, "%L", player_id, "BACK" );
+        // Add some space from the control options.
+        menu_addblank( g_generalUsePlayersMenuIds[ player_id ], 0 );
+        menu_additem( g_generalUsePlayersMenuIds[ player_id ], disabledReason, _, 1 << 26 );
+    }
+
+    formatex( disabledReason, MAX_SHORT_STRING - 1, "%L", player_id, "MORE" );
+
+    // If there are more maps, add the more option
+    if( isToEnableMoreButton )
+    {
+        menu_additem( g_generalUsePlayersMenuIds[ player_id ], disabledReason, _, 0 );
+    }
+    else
+    {
         menu_additem( g_generalUsePlayersMenuIds[ player_id ], disabledReason, _, 1 << 26 );
     }
 
@@ -7817,21 +7819,8 @@ public nomination_handleMatchChoice( player_id, menu, item )
         return PLUGIN_HANDLED;
     }
 
-    // If the 8 button item is hit, and we are on some page not the last one, we must to perform the more option.
+    // If the 8 button item is hit, and we are not on the first page, we must to perform the back option.
     if( item == 7 )
-    {
-        g_generalUsePlayersMenuPages[ player_id ]++;
-        clearMenuMapIndexForPlayers( player_id );
-
-        // We need to delay the menu show up on 0.2 seconds to avoid players lagging the server by DOS attack.
-        set_task( 0.2, "nomination_menuHook", player_id );
-
-        LOGGER( 1, "    ( nomination_handleMatchChoice ) Just Returning PLUGIN_HANDLED, doing the more button." )
-        return PLUGIN_HANDLED;
-    }
-
-    // If the 9 button item is hit, and we are not on the first page, we must to perform the back option.
-    if( item == 8 )
     {
         clearMenuMapIndexForPlayers( player_id );
         g_generalUsePlayersMenuPages[ player_id ] ? g_generalUsePlayersMenuPages[ player_id ]-- : player_id;
@@ -7840,6 +7829,19 @@ public nomination_handleMatchChoice( player_id, menu, item )
         set_task( 0.2, "nomination_menuHook", player_id );
 
         LOGGER( 1, "    ( nomination_handleMatchChoice ) Just Returning PLUGIN_HANDLED, doing the back button." )
+        return PLUGIN_HANDLED;
+    }
+
+    // If the 9 button item is hit, and we are on some page not the last one, we must to perform the more option.
+    if( item == 8 )
+    {
+        clearMenuMapIndexForPlayers( player_id );
+        g_generalUsePlayersMenuPages[ player_id ]++;
+
+        // We need to delay the menu show up on 0.2 seconds to avoid players lagging the server by DOS attack.
+        set_task( 0.2, "nomination_menuHook", player_id );
+
+        LOGGER( 1, "    ( nomination_handleMatchChoice ) Just Returning PLUGIN_HANDLED, doing the more button." )
         return PLUGIN_HANDLED;
     }
 
@@ -7869,26 +7871,8 @@ public nomination_handlePartialMatch( player_id, menu, item )
         return PLUGIN_CONTINUE;
     }
 
-    // If the 8 button item is hit, and we are on some page not the last one, we must to perform the more option.
+    // If the 8 button item is hit, and we are not on the first page, we must to perform the back option.
     if( item == 7 )
-    {
-        new arguments[ 3 ];
-
-        arguments[ 0 ] = player_id;
-        arguments[ 1 ] = g_menuMapIndexForPlayerArrays[ player_id ][ MAX_MENU_ITEMS_PER_PAGE - 1 ] + 1;
-
-        ArrayPushCell( g_partialMatchFirstPageItems[ player_id ], g_menuMapIndexForPlayerArrays[ player_id ][ 0 ] );
-        clearMenuMapIndexForPlayers( player_id );
-
-        // We need to delay the menu show up on 0.2 seconds to avoid players lagging the server by DOS attack.
-        set_task( 0.2, "nominationAttemptWithNameHook", _, arguments, sizeof arguments );
-
-        LOGGER( 1, "    ( nomination_handlePartialMatch ) Just Returning PLUGIN_HANDLED, doing the more button." )
-        return PLUGIN_HANDLED;
-    }
-
-    // If the 9 button item is hit, and we are not on the first page, we must to perform the back option.
-    if( item == 8 )
     {
         new arguments[ 3 ];
         new lastPosition = ArraySize( g_partialMatchFirstPageItems[ player_id ] ) - 1;
@@ -7912,6 +7896,24 @@ public nomination_handlePartialMatch( player_id, menu, item )
         set_task( 0.2, "nominationAttemptWithNameHook", _, arguments, sizeof arguments );
 
         LOGGER( 1, "    ( nomination_handlePartialMatch ) Just Returning PLUGIN_HANDLED, doing the back button." )
+        return PLUGIN_HANDLED;
+    }
+
+    // If the 9 button item is hit, and we are on some page not the last one, we must to perform the more option.
+    if( item == 8 )
+    {
+        new arguments[ 3 ];
+
+        arguments[ 0 ] = player_id;
+        arguments[ 1 ] = g_menuMapIndexForPlayerArrays[ player_id ][ MAX_MENU_ITEMS_PER_PAGE - 1 ] + 1;
+
+        ArrayPushCell( g_partialMatchFirstPageItems[ player_id ], g_menuMapIndexForPlayerArrays[ player_id ][ 0 ] );
+        clearMenuMapIndexForPlayers( player_id );
+
+        // We need to delay the menu show up on 0.2 seconds to avoid players lagging the server by DOS attack.
+        set_task( 0.2, "nominationAttemptWithNameHook", _, arguments, sizeof arguments );
+
+        LOGGER( 1, "    ( nomination_handlePartialMatch ) Just Returning PLUGIN_HANDLED, doing the more button." )
         return PLUGIN_HANDLED;
     }
 
