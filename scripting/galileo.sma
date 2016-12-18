@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-308";
+new const PLUGIN_VERSION[] = "v3.2.6-310";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -7565,7 +7565,7 @@ stock nomination_menu( player_id )
 public nominationAttemptWithNameHook( parameters[] )
 {
     LOGGER( 128, "I AM ENTERING ON nominationAttemptWithNameHook(2) | startSearchIndex: %d", parameters[ 1 ] )
-    nominationAttemptWithNamePart( parameters[ 0 ], parameters[ 1 ], bool:parameters[ 2 ] );
+    nominationAttemptWithNamePart( parameters[ 0 ], parameters[ 1 ] );
 }
 
 /**
@@ -7573,7 +7573,7 @@ public nominationAttemptWithNameHook( parameters[] )
  *
  * @note ( playerName[], &phraseIdx, matchingSegment[] )
  */
-stock nominationAttemptWithNamePart( player_id, startSearchIndex = 0, bool:isToEnableMoreButton = false )
+stock nominationAttemptWithNamePart( player_id, startSearchIndex = 0 )
 {
     LOGGER( 128, "I AM ENTERING ON nominationAttemptWithNamePart(2) | startSearchIndex: %d", startSearchIndex )
 
@@ -7623,10 +7623,10 @@ stock nominationAttemptWithNamePart( player_id, startSearchIndex = 0, bool:isToE
     // To create the menu
 #if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
     formatex( disabledReason, charsmax( disabledReason ),
-            IS_COLORED_CHAT_ENABLED() ? "%L\R%d/%d" : "%L %d/%d",
+            IS_COLORED_CHAT_ENABLED() ? "%L\R%d/%d" : "%L %d /%d",
             player_id, "GAL_LISTMAPS_TITLE", currentPageNumber + 1, lastPageNumber );
 #else
-    formatex( disabledReason, charsmax( disabledReason ), "%L %d/%d", player_id, "GAL_LISTMAPS_TITLE",
+    formatex( disabledReason, charsmax( disabledReason ), "%L %d /%d", player_id, "GAL_LISTMAPS_TITLE",
             currentPageNumber + 1, lastPageNumber );
 #endif
 
@@ -7694,24 +7694,22 @@ stock nominationAttemptWithNamePart( player_id, startSearchIndex = 0, bool:isToE
 
     } // end for 'mapIndex'.
 
-    LOGGER( 4, "( nominationAttemptWithNamePart ) itemsCount: %d, mapIndex: %d", itemsCount, mapIndex )
+    new lastPosition = ArraySize( g_partialMatchFirstPageItems[ player_id ] ) - 1;
 
-    // If there are not map matches, reshow the last menu page with the more button disabled.
-    if( itemsCount )
+    LOGGER( 4, "( nominationAttemptWithNamePart ) mapIndex: %d", mapIndex)
+    LOGGER( 4, "( nominationAttemptWithNamePart ) itemsCount: %d, lastPosition: %d", itemsCount, lastPosition )
+
+    // If the last position is negative, then there is not last position, moreover this is the
+    // first call to nominationAttemptWithNamePart(3), then it means there any or one matches for
+    // the partial map name nomination.
+    if( lastPosition < 0
+        && itemsCount < 2 )
     {
-        // If this function is called within this parameter true, it means this is the seconds time
-        // we are trying to show the same last page, so instead of showing an empty page, we show
-        // the same page, but within the more button disabled.
-        isToEnableMoreButton = isToEnableMoreButton ? false : mapIndex < nominationsMapsCount;
-        addMenuMoreBackExitOptions( player_id, disabledReason, isToEnableMoreButton, bool:currentPageNumber, itemsCount );
-
         // handle the number of matches
         switch( itemsCount )
         {
             case 0:
             {
-                noMatchesPityThePoorFool:
-
                 // no matches; pity the poor fool
                 color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_NOMATCHES", g_nominationPartialNameAttempt[ player_id ] );
 
@@ -7726,50 +7724,28 @@ stock nominationAttemptWithNamePart( player_id, startSearchIndex = 0, bool:isToE
                 // Destroys the menu, as is was not used.
                 clearMenuMapIndexForPlayers( player_id );
             }
-            default:
-            {
-                // this is kinda sexy; we put up a menu of the matches for them to pick the right one
-                if( itemsCount >= MAX_NOM_MATCH_COUNT )
-                {
-                    color_print( player_id, "%L", player_id, "GAL_NOM_MATCHES_MAX", MAX_NOM_MATCH_COUNT, MAX_NOM_MATCH_COUNT );
-                }
-
-                if( !g_isSawPartialMatchFirstPage[ player_id ] )
-                {
-                    g_isSawPartialMatchFirstPage[ player_id ] = true;
-                    color_print( player_id, "%L", player_id, "GAL_NOM_MATCHES", g_nominationPartialNameAttempt[ player_id ] );
-                }
-
-                menu_display( player_id, g_generalUsePlayersMenuIds[ player_id ] );
-            }
         }
-
     }
     else
     {
-        new lastPosition = ArraySize( g_partialMatchFirstPageItems[ player_id ] ) - 1;
-
-        // If the last position is negative, it there there is not last position, then this is there
-        // first call to nominationAttemptWithNamePart(3), then it means there any matches for the
-        // partial map name nomination.
-        if( lastPosition < 0 )
+        // this is kinda sexy; we put up a menu of the matches for them to pick the right one
+        if( itemsCount >= MAX_NOM_MATCH_COUNT )
         {
-            goto noMatchesPityThePoorFool;
+            color_print( player_id, "%L", player_id, "GAL_NOM_MATCHES_MAX", MAX_NOM_MATCH_COUNT, MAX_NOM_MATCH_COUNT );
         }
 
-        new arguments[ 4 ];
+        if( !g_isSawPartialMatchFirstPage[ player_id ] )
+        {
+            g_isSawPartialMatchFirstPage[ player_id ] = true;
+            color_print( player_id, "%L", player_id, "GAL_NOM_MATCHES", g_nominationPartialNameAttempt[ player_id ] );
+        }
 
-        arguments[ 0 ] = player_id;
-        arguments[ 1 ] = ArrayGetCell( g_partialMatchFirstPageItems[ player_id ], lastPosition );
-        arguments[ 2 ] = true;
+        // Old behavior: If this function is called within this parameter true, it means this is
+        // the seconds time we are trying to show the same last page, so instead of showing an
+        // empty page, we show the same page, but within the more button disabled.
+        addMenuMoreBackExitOptions( player_id, disabledReason, mapIndex < nominationsMapsCount, bool:currentPageNumber, itemsCount );
 
-        ArrayDeleteItem( g_partialMatchFirstPageItems[ player_id ], lastPosition );
-        clearMenuMapIndexForPlayers( player_id );
-
-        // We need to delay the menu show up on 0.2 seconds to avoid players lagging the server by DOS attack.
-        set_task( 0.2, "nominationAttemptWithNameHook", _, arguments, sizeof arguments );
-
-        LOGGER( 1, "    ( nominationAttemptWithNamePart ) Doing the back button." )
+        menu_display( player_id, g_generalUsePlayersMenuIds[ player_id ] );
     }
 }
 
@@ -7908,7 +7884,7 @@ public nomination_handlePartialMatch( player_id, menu, item )
     // If the 8 button item is hit, and we are not on the first page, we must to perform the back option.
     if( item == 7 )
     {
-        new arguments[ 3 ];
+        new arguments[ 2 ];
         new lastPosition = ArraySize( g_partialMatchFirstPageItems[ player_id ] ) - 1;
 
         // We are already on the first page or something like that.
@@ -7936,7 +7912,7 @@ public nomination_handlePartialMatch( player_id, menu, item )
     // If the 9 button item is hit, and we are on some page not the last one, we must to perform the more option.
     if( item == 8 )
     {
-        new arguments[ 3 ];
+        new arguments[ 2 ];
 
         arguments[ 0 ] = player_id;
         arguments[ 1 ] = g_menuMapIndexForPlayerArrays[ player_id ][ MAX_MENU_ITEMS_PER_PAGE - 1 ] + 1;
