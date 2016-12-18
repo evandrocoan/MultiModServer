@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-307";
+new const PLUGIN_VERSION[] = "v3.2.6-308";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -362,6 +362,8 @@ new const PLUGIN_VERSION[] = "v3.2.6-307";
 #if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
     new bool:g_isColorChatSupported;
     new bool:g_isColoredChatEnabled;
+
+    #define IS_COLORED_CHAT_ENABLED() ( g_isColorChatSupported && g_isColoredChatEnabled )
 
     #if AMXX_VERSION_NUM < 183
         new g_user_msgid;
@@ -7455,13 +7457,40 @@ stock nomination_menu( player_id )
     }
     // end nomination menu variables
 
+    nominationsMapsCount = ArraySize( g_nominationLoadedMapsArray );
+
+    // The first page contains by default the `Cancel All Nominations` option, then the first page
+    // will get one less item due the `Cancel All Nominations` option.
+    if( g_generalUsePlayersMenuPages[ player_id ] == 0 )
+    {
+        mapIndex   = 0;
+        itemsCount = 1;
+    }
+    else
+    {
+        mapIndex   = g_generalUsePlayersMenuPages[ player_id ] * 7 - 1;
+        itemsCount = 0;
+    }
+
+    // Calculate how much pages there are available.
+    new currentPageNumber = g_generalUsePlayersMenuPages[ player_id ];
+    new lastPageNumber    = ( ( ( nominationsMapsCount + 1 ) / MAX_MENU_ITEMS_PER_PAGE )
+                        + ( ( ( ( nominationsMapsCount + 1 ) % MAX_MENU_ITEMS_PER_PAGE ) > 0 ) ? 1 : 0 ) );
 
     // To create the menu
-    formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_LISTMAPS_TITLE" );
+#if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
+    formatex( disabledReason, charsmax( disabledReason ),
+            IS_COLORED_CHAT_ENABLED() ? "%L\R%d /%d" : "%L  %d /%d",
+            player_id, "GAL_LISTMAPS_TITLE", currentPageNumber + 1, lastPageNumber );
+#else
+    formatex( disabledReason, charsmax( disabledReason ), "%L  %d /%d", player_id, "GAL_LISTMAPS_TITLE",
+            currentPageNumber + 1, lastPageNumber );
+#endif
+
     g_generalUsePlayersMenuIds[ player_id ] = menu_create( disabledReason, "nomination_handleMatchChoice" );
 
     // The first menu item, 'Cancel All Your Nominations.
-    if( g_generalUsePlayersMenuPages[ player_id ] < 1 )
+    if( currentPageNumber < 1 )
     {
         formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_NOM_CANCEL_OPTION" );
         menu_additem( g_generalUsePlayersMenuIds[ player_id ], disabledReason, _, 0 );
@@ -7477,21 +7506,6 @@ stock nomination_menu( player_id )
     // SET_MENU_LANG_STRING_PROPERTY( MPROP_EXITNAME, g_generalUsePlayersMenuIds[ player_id ], "EXIT" )
     // SET_MENU_LANG_STRING_PROPERTY( MPROP_NEXTNAME, g_generalUsePlayersMenuIds[ player_id ], "MORE" )
     // SET_MENU_LANG_STRING_PROPERTY( MPROP_BACKNAME, g_generalUsePlayersMenuIds[ player_id ], "BACK" )
-
-    // The first page contains by default the `Cancel All Nominations` option
-    nominationsMapsCount = ArraySize( g_nominationLoadedMapsArray );
-
-    // The first page will get one less item due the `Cancel All Nominations` option.
-    if( g_generalUsePlayersMenuPages[ player_id ] == 0 )
-    {
-        mapIndex   = 0;
-        itemsCount = 1;
-    }
-    else
-    {
-        mapIndex   = g_generalUsePlayersMenuPages[ player_id ] * 7 - 1;
-        itemsCount = 0;
-    }
 
     for( ; mapIndex < nominationsMapsCount && itemsCount < MAX_MENU_ITEMS_PER_PAGE; mapIndex++ )
     {
@@ -7539,9 +7553,7 @@ stock nomination_menu( player_id )
 
     LOGGER( 4, "( nominationAttemptWithNamePart ) itemsCount: %d, mapIndex: %d", itemsCount, mapIndex )
 
-    addMenuMoreBackExitOptions( player_id, disabledReason, mapIndex < nominationsMapsCount,
-            g_generalUsePlayersMenuPages[ player_id ] > 0, itemsCount );
-
+    addMenuMoreBackExitOptions( player_id, disabledReason, mapIndex < nominationsMapsCount, currentPageNumber > 0, itemsCount );
     menu_display( player_id, g_generalUsePlayersMenuIds[ player_id ] );
 }
 
@@ -7593,9 +7605,31 @@ stock nominationAttemptWithNamePart( player_id, startSearchIndex = 0, bool:isToE
     }
     // end nomination menu variables
 
+    matchIndex           = -1;
+    nominationsMapsCount = ArraySize( g_nominationLoadedMapsArray );
+
+    // Calculate how much pages there are available.
+    new currentPageNumber = ArraySize( g_partialMatchFirstPageItems[ player_id ] );
+    new lastPageNumber    = 1;
+
+    // We cannot know how much pages there are without counting all the partial matches search,
+    // so here we try to estimate how much pages there are.
+    if( currentPageNumber > 0 )
+    {
+        lastPageNumber = ArrayGetCell( g_partialMatchFirstPageItems[ player_id ], currentPageNumber - 1 );
+        lastPageNumber = ( ( nominationsMapsCount - lastPageNumber ) / MAX_MENU_ITEMS_PER_PAGE ) + currentPageNumber;
+    }
 
     // To create the menu
-    formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_LISTMAPS_TITLE" );
+#if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
+    formatex( disabledReason, charsmax( disabledReason ),
+            IS_COLORED_CHAT_ENABLED() ? "%L\R%d/%d" : "%L %d/%d",
+            player_id, "GAL_LISTMAPS_TITLE", currentPageNumber + 1, lastPageNumber );
+#else
+    formatex( disabledReason, charsmax( disabledReason ), "%L %d/%d", player_id, "GAL_LISTMAPS_TITLE",
+            currentPageNumber + 1, lastPageNumber );
+#endif
+
     g_generalUsePlayersMenuIds[ player_id ] = menu_create( disabledReason, "nomination_handlePartialMatch" );
 
     // Disables the menu paging.
@@ -7605,9 +7639,6 @@ stock nominationAttemptWithNamePart( player_id, startSearchIndex = 0, bool:isToE
     // SET_MENU_LANG_STRING_PROPERTY( MPROP_EXITNAME, g_generalUsePlayersMenuIds[ player_id ], "EXIT" )
     // SET_MENU_LANG_STRING_PROPERTY( MPROP_NEXTNAME, g_generalUsePlayersMenuIds[ player_id ], "MORE" )
     // SET_MENU_LANG_STRING_PROPERTY( MPROP_BACKNAME, g_generalUsePlayersMenuIds[ player_id ], "BACK" )
-
-    matchIndex           = -1;
-    nominationsMapsCount = ArraySize( g_nominationLoadedMapsArray );
 
     for( mapIndex = startSearchIndex; mapIndex < nominationsMapsCount && itemsCount < MAX_MENU_ITEMS_PER_PAGE; ++mapIndex )
     {
@@ -7672,9 +7703,7 @@ stock nominationAttemptWithNamePart( player_id, startSearchIndex = 0, bool:isToE
         // we are trying to show the same last page, so instead of showing an empty page, we show
         // the same page, but within the more button disabled.
         isToEnableMoreButton = isToEnableMoreButton ? false : mapIndex < nominationsMapsCount;
-
-        addMenuMoreBackExitOptions( player_id, disabledReason, isToEnableMoreButton,
-                bool:ArraySize( g_partialMatchFirstPageItems[ player_id ] ), itemsCount );
+        addMenuMoreBackExitOptions( player_id, disabledReason, isToEnableMoreButton, bool:currentPageNumber, itemsCount );
 
         // handle the number of matches
         switch( itemsCount )
@@ -8682,8 +8711,7 @@ stock color_print( const player_id, const message[], any:... )
         if( player_id )
         {
         #if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
-            if( g_isColorChatSupported
-                && g_isColoredChatEnabled )
+            if( IS_COLORED_CHAT_ENABLED() )
             {
                 formated_message[ 0 ] = '^1';
                 vformat( formated_message[ 1 ], charsmax( formated_message ) - 1, message, 3 );
@@ -8799,8 +8827,7 @@ stock color_print( const player_id, const message[], any:... )
                 }
 
             #if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
-                if( g_isColorChatSupported
-                    && g_isColoredChatEnabled )
+                if( IS_COLORED_CHAT_ENABLED() )
                 {
                     formated_message[ 0 ] = '^1';
                     vformat( formated_message[ 1 ], charsmax( formated_message ) - 1, message, 3 );
@@ -8831,8 +8858,7 @@ stock color_print( const player_id, const message[], any:... )
         vformat( formated_message, charsmax( formated_message ), message, 3 );
         LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
 
-        if( g_isColorChatSupported
-            && g_isColoredChatEnabled )
+        if( IS_COLORED_CHAT_ENABLED() )
         {
             client_print_color( player_id, print_team_default, formated_message );
         }
