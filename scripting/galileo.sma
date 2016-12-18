@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-311";
+new const PLUGIN_VERSION[] = "v3.2.6-312";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -414,7 +414,8 @@ new const PLUGIN_VERSION[] = "v3.2.6-311";
 
 #define MAX_PREFIX_COUNT              32
 #define MAX_MAPS_IN_VOTE              8
-#define MAX_MENU_ITEMS_PER_PAGE       7
+#define MAX_NOM_MENU_ITEMS_PER_PAGE   7
+#define MAX_FULL_MENU_ITEMS_PER_PAGE  8
 #define MAX_NOMINATION_COUNT          8
 #define MAX_OPTIONS_IN_VOTE           9
 #define MAX_STANDARD_MAP_COUNT        25
@@ -1039,7 +1040,8 @@ new g_currentMap                [ MAX_MAPNAME_LENGHT  ];
 new g_playerVotedOption         [ MAX_PLAYERS_COUNT   ];
 new g_playerVotedWeight         [ MAX_PLAYERS_COUNT   ];
 new g_generalUsePlayersMenuIds  [ MAX_PLAYERS_COUNT   ];
-new g_generalUsePlayersMenuPages[ MAX_PLAYERS_COUNT   ];
+new g_recentMapsMenuPages       [ MAX_PLAYERS_COUNT   ];
+new g_nominationPlayersMenuPages[ MAX_PLAYERS_COUNT   ];
 new g_playersKills              [ MAX_PLAYERS_COUNT   ];
 new g_arrayOfMapsWithVotesNumber[ MAX_OPTIONS_IN_VOTE ];
 
@@ -1052,7 +1054,7 @@ new bool:g_rockedVote               [ MAX_PLAYERS_COUNT ];
 
 new g_mapPrefixes                [ MAX_PREFIX_COUNT    ][ 16                      ];
 new g_votingMapNames             [ MAX_OPTIONS_IN_VOTE ][ MAX_MAPNAME_LENGHT      ];
-new g_menuMapIndexForPlayerArrays[ MAX_PLAYERS_COUNT   ][ MAX_MENU_ITEMS_PER_PAGE ];
+new g_menuMapIndexForPlayerArrays[ MAX_PLAYERS_COUNT   ][ MAX_NOM_MENU_ITEMS_PER_PAGE ];
 
 new g_chooseMapMenuId;
 new g_chooseMapQuestionMenuId;
@@ -1908,7 +1910,8 @@ public map_loadRecentList()
             fgets( recentMapsFileDescriptor, recentMapName, charsmax( recentMapName ) );
             trim( recentMapName );
 
-            if( recentMapName[ 0 ] )
+            if( recentMapName[ 0 ]
+                && IS_MAP_VALID( recentMapName ) )
             {
                 if( g_recentMapCount == maxRecentMapsBans )
                 {
@@ -7041,44 +7044,153 @@ public cmd_listrecent( player_id )
 
 public showRecentMapsListMenu( player_id )
 {
+    LOGGER( 128, "I AM ENTERING ON showRecentMapsListMenu(1) | player_id: %d", player_id )
+
+    new mapIndex;
+    new itemsCount;
+
     new recentMapName[ MAX_MAPNAME_LENGHT ];
     new menuOptionString[ 64 ];
 
     // We starting building the menu
     TRY_TO_APPLY( menu_destroy, g_generalUsePlayersMenuIds[ player_id ] )
 
+    if( ( mapIndex = g_recentMapsMenuPages[ player_id ] * MAX_FULL_MENU_ITEMS_PER_PAGE ) )
+    {
+        mapIndex = mapIndex - 1;
+    }
+
+    itemsCount = 0;
+
+    // Calculate how much pages there are available.
+    new currentPageNumber = g_recentMapsMenuPages[ player_id ];
+    new lastPageNumber    = ( ( g_recentMapCount / MAX_FULL_MENU_ITEMS_PER_PAGE )
+                        + ( ( ( g_recentMapCount % MAX_FULL_MENU_ITEMS_PER_PAGE ) > 0 ) ? 1 : 0 ) );
+
     // To create the menu
-    formatex( menuOptionString, charsmax( menuOptionString ), "%L", player_id, "GAL_MAP_RECENTMAPS" );
+#if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
+    formatex( menuOptionString, charsmax( menuOptionString ),
+            IS_COLORED_CHAT_ENABLED() ? "%L\R%d /%d" : "%L  %d /%d",
+            player_id, "GAL_MAP_RECENTMAPS", currentPageNumber + 1, lastPageNumber );
+#else
+    formatex( menuOptionString, charsmax( menuOptionString ), "%L  %d /%d", player_id, "GAL_MAP_RECENTMAPS",
+            currentPageNumber + 1, lastPageNumber );
+#endif
+
     g_generalUsePlayersMenuIds[ player_id ] = menu_create( menuOptionString, "cmd_listrecent_handler" );
 
+    // Disables the menu paging.
+    menu_setprop( g_generalUsePlayersMenuIds[ player_id ], MPROP_PERPAGE, 0 );
+
     // Configure the menu buttons.
-    SET_MENU_LANG_STRING_PROPERTY( MPROP_EXITNAME, g_generalUsePlayersMenuIds[ player_id ], "EXIT" )
-    SET_MENU_LANG_STRING_PROPERTY( MPROP_NEXTNAME, g_generalUsePlayersMenuIds[ player_id ], "MORE" )
-    SET_MENU_LANG_STRING_PROPERTY( MPROP_BACKNAME, g_generalUsePlayersMenuIds[ player_id ], "BACK" )
+    // SET_MENU_LANG_STRING_PROPERTY( MPROP_EXITNAME, g_generalUsePlayersMenuIds[ player_id ], "EXIT" )
+    // SET_MENU_LANG_STRING_PROPERTY( MPROP_NEXTNAME, g_generalUsePlayersMenuIds[ player_id ], "MORE" )
+    // SET_MENU_LANG_STRING_PROPERTY( MPROP_BACKNAME, g_generalUsePlayersMenuIds[ player_id ], "BACK" )
 
     // Add the menu items.
-    for( new mapIndex = 0; mapIndex < g_recentMapCount; ++mapIndex )
+    for( ; mapIndex < g_recentMapCount && itemsCount < MAX_FULL_MENU_ITEMS_PER_PAGE; ++mapIndex, ++itemsCount )
     {
+        LOGGER( 4, "( showRecentMapsListMenu ) mapIndex: %d", mapIndex )
         ArrayGetString( g_recentListMapsArray, mapIndex, recentMapName, charsmax( recentMapName ) );
+
         menu_additem( g_generalUsePlayersMenuIds[ player_id ], recentMapName );
+        LOGGER( 4, "( showRecentMapsListMenu ) recentMapName: %s", recentMapName )
     }
+
+    LOGGER( 4, "( showRecentMapsListMenu ) itemsCount: %d, mapIndex: %d", itemsCount, mapIndex )
+    addMenuMoreBackOptions( player_id, menuOptionString, mapIndex < g_recentMapCount, currentPageNumber > 0, itemsCount );
 
     // To display the menu.
     menu_display( player_id, g_generalUsePlayersMenuIds[ player_id ] );
+}
+
+stock addMenuMoreBackOptions( player_id, menuOptionString[], bool:isToEnableMoreButton, bool:isToEnableBackButton, itemsCount )
+{
+    LOGGER( 128, "I AM ENTERING ON addMenuMoreBackOptions(5) | isToEnableMoreButton: %d, \
+            isToEnableBackButton: %d", isToEnableMoreButton, isToEnableBackButton )
+
+    // Force the menu control options to be present on the keys 8 (more), 9 (back) and 0 (exit).
+    while( itemsCount < MAX_FULL_MENU_ITEMS_PER_PAGE )
+    {
+        itemsCount++;
+        formatex( menuOptionString, MAX_SHORT_STRING - 1, "%L", player_id, "OFF" );
+        menu_additem( g_generalUsePlayersMenuIds[ player_id ], menuOptionString, _, 1 << 26 );
+
+        // When using slot=1 this might break your menu. To achieve this functionality
+        // menu_addblank2() should be used (AMXX 183 only).
+        // menu_addblank( g_generalUsePlayersMenuIds[ player_id ], 1 );
+    }
+
+    // Add some space from the control options and format the more button within the LANG file.
+    menu_addblank( g_generalUsePlayersMenuIds[ player_id ], 0 );
+    formatex( menuOptionString, MAX_SHORT_STRING - 1, "%L", player_id, "MORE" );
+
+    // If there are more maps, add the more option
+    if( isToEnableMoreButton )
+    {
+        menu_additem( g_generalUsePlayersMenuIds[ player_id ], menuOptionString, _, 0 );
+    }
+    else
+    {
+        menu_additem( g_generalUsePlayersMenuIds[ player_id ], menuOptionString, _, 1 << 26 );
+    }
+
+    // If we are on the first page, disable the back option and to add the exit button.
+    if( isToEnableBackButton )
+    {
+        formatex( menuOptionString, MAX_SHORT_STRING - 1, "%L", player_id, "BACK" );
+        menu_additem( g_generalUsePlayersMenuIds[ player_id ], menuOptionString, _, 0 );
+    }
+    else
+    {
+        // To add the exit button
+        formatex( menuOptionString, MAX_SHORT_STRING - 1, "%L", player_id, "EXIT" );
+        menu_additem( g_generalUsePlayersMenuIds[ player_id ], menuOptionString, _, 0 );
+    }
 }
 
 public cmd_listrecent_handler( player_id, menu, item )
 {
     LOGGER( 128, "I AM ENTERING ON cmd_listrecent_handler(3) | player_id: %d, menu: %d, item: %d", player_id, menu, item )
 
-    // Let go to destroy the menu and clean some memory.
-    if( item < 0 )
+    // Let go to destroy the menu and clean some memory. As the menu is not paginated, the item 9
+    // is the key 0 on the keyboard. Also, the item 8 is the key 9; 7, 8; 6, 7; 5, 6; 4, 5; etc.
+    if( item < 0
+        || ( item == 9
+             && g_recentMapsMenuPages[ player_id ] == 0 ) )
     {
         menu_destroy( g_generalUsePlayersMenuIds[ player_id ] );
         g_generalUsePlayersMenuIds[ player_id ] = 0;
 
         LOGGER( 1, "    ( cmd_listrecent_handler ) Just Returning PLUGIN_CONTINUE, as menu is destroyed." )
         return PLUGIN_CONTINUE;
+    }
+
+    // If the 0 button item is hit, and we are not on the first page, we must to perform the back option.
+    if( item == 9
+        && g_recentMapsMenuPages[ player_id ] > 0 )
+    {
+        clearMenuMapIndexForPlayers( player_id );
+        g_recentMapsMenuPages[ player_id ] ? g_recentMapsMenuPages[ player_id ]-- : player_id;
+
+        // We need to delay the menu show up on 0.2 seconds to avoid players lagging the server by DOS attack.
+        set_task( 0.2, "showRecentMapsListMenu", player_id );
+
+        LOGGER( 1, "    ( cmd_listrecent_handler ) Just Returning PLUGIN_HANDLED, doing the back button." )
+        return PLUGIN_HANDLED;
+    }
+
+    // If the 9 button item is hit, and we are on some page not the last one, we must to perform the more option.
+    if( item == 8 )
+    {
+        clearMenuMapIndexForPlayers( player_id );
+        g_recentMapsMenuPages[ player_id ]++;
+
+        // We need to delay the menu show up on 0.2 seconds to avoid players lagging the server by DOS attack.
+        set_task( 0.2, "showRecentMapsListMenu", player_id );
+
+        LOGGER( 1, "    ( cmd_listrecent_handler ) Just Returning PLUGIN_HANDLED, doing the more button." )
+        return PLUGIN_HANDLED;
     }
 
     // Just keep showing the menu until the exit button is pressed.
@@ -7436,7 +7548,7 @@ public cmd_say( player_id )
  */
 public nomination_menuHook( player_id )
 {
-    LOGGER( 128, "I AM ENTERING ON nomination_menuHook(1) | currentPage: %d", g_generalUsePlayersMenuPages[ player_id ] )
+    LOGGER( 128, "I AM ENTERING ON nomination_menuHook(1) | currentPage: %d", g_nominationPlayersMenuPages[ player_id ] )
     nomination_menu( player_id );
 }
 
@@ -7478,21 +7590,21 @@ stock nomination_menu( player_id )
 
     // The first page contains by default the `Cancel All Nominations` option, then the first page
     // will get one less item due the `Cancel All Nominations` option.
-    if( g_generalUsePlayersMenuPages[ player_id ] == 0 )
+    if( g_nominationPlayersMenuPages[ player_id ] == 0 )
     {
         mapIndex   = 0;
         itemsCount = 1;
     }
     else
     {
-        mapIndex   = g_generalUsePlayersMenuPages[ player_id ] * 7 - 1;
+        mapIndex   = g_nominationPlayersMenuPages[ player_id ] * MAX_NOM_MENU_ITEMS_PER_PAGE - 1;
         itemsCount = 0;
     }
 
     // Calculate how much pages there are available.
-    new currentPageNumber = g_generalUsePlayersMenuPages[ player_id ];
-    new lastPageNumber    = ( ( ( nominationsMapsCount + 1 ) / MAX_MENU_ITEMS_PER_PAGE )
-                        + ( ( ( ( nominationsMapsCount + 1 ) % MAX_MENU_ITEMS_PER_PAGE ) > 0 ) ? 1 : 0 ) );
+    new currentPageNumber = g_nominationPlayersMenuPages[ player_id ];
+    new lastPageNumber    = ( ( ( nominationsMapsCount + 1 ) / MAX_NOM_MENU_ITEMS_PER_PAGE )
+                        + ( ( ( ( nominationsMapsCount + 1 ) % MAX_NOM_MENU_ITEMS_PER_PAGE ) > 0 ) ? 1 : 0 ) );
 
     // To create the menu
 #if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
@@ -7524,7 +7636,7 @@ stock nomination_menu( player_id )
     // SET_MENU_LANG_STRING_PROPERTY( MPROP_NEXTNAME, g_generalUsePlayersMenuIds[ player_id ], "MORE" )
     // SET_MENU_LANG_STRING_PROPERTY( MPROP_BACKNAME, g_generalUsePlayersMenuIds[ player_id ], "BACK" )
 
-    for( ; mapIndex < nominationsMapsCount && itemsCount < MAX_MENU_ITEMS_PER_PAGE; mapIndex++ )
+    for( ; mapIndex < nominationsMapsCount && itemsCount < MAX_NOM_MENU_ITEMS_PER_PAGE; mapIndex++ )
     {
         ArrayGetString( g_nominationLoadedMapsArray, mapIndex, nominationMap, charsmax( nominationMap ) );
         itemsCount++;
@@ -7634,7 +7746,7 @@ stock nominationAttemptWithNamePart( player_id, startSearchIndex = 0 )
     if( currentPageNumber > 0 )
     {
         lastPageNumber = ArrayGetCell( g_partialMatchFirstPageItems[ player_id ], currentPageNumber - 1 );
-        lastPageNumber = ( ( nominationsMapsCount - lastPageNumber ) / MAX_MENU_ITEMS_PER_PAGE ) + currentPageNumber;
+        lastPageNumber = ( ( nominationsMapsCount - lastPageNumber ) / MAX_NOM_MENU_ITEMS_PER_PAGE ) + currentPageNumber;
     }
 
     // To create the menu
@@ -7657,7 +7769,7 @@ stock nominationAttemptWithNamePart( player_id, startSearchIndex = 0 )
     // SET_MENU_LANG_STRING_PROPERTY( MPROP_NEXTNAME, g_generalUsePlayersMenuIds[ player_id ], "MORE" )
     // SET_MENU_LANG_STRING_PROPERTY( MPROP_BACKNAME, g_generalUsePlayersMenuIds[ player_id ], "BACK" )
 
-    for( mapIndex = startSearchIndex; mapIndex < nominationsMapsCount && itemsCount < MAX_MENU_ITEMS_PER_PAGE; ++mapIndex )
+    for( mapIndex = startSearchIndex; mapIndex < nominationsMapsCount && itemsCount < MAX_NOM_MENU_ITEMS_PER_PAGE; ++mapIndex )
     {
         ArrayGetString( g_nominationLoadedMapsArray, mapIndex, nominationMap, charsmax( nominationMap ) );
 
@@ -7772,7 +7884,7 @@ stock addMenuMoreBackExitOptions( player_id, disabledReason[], bool:isToEnableMo
             isToEnableBackButton: %d", isToEnableMoreButton, isToEnableBackButton )
 
     // Force the menu control options to be present on the keys 8 (more), 9 (back) and 0 (exit).
-    while( itemsCount < MAX_MENU_ITEMS_PER_PAGE )
+    while( itemsCount < MAX_NOM_MENU_ITEMS_PER_PAGE )
     {
         itemsCount++;
         formatex( disabledReason, MAX_SHORT_STRING - 1, "%L", player_id, "OFF" );
@@ -7837,7 +7949,7 @@ public nomination_handleMatchChoice( player_id, menu, item )
     // Due the first menu option to be 'Cancel all your Nominations', close the menu but if and
     // only if we are on the menu's first page.
     if( item == 0
-        && g_generalUsePlayersMenuPages[ player_id ] == 0 )
+        && g_nominationPlayersMenuPages[ player_id ] == 0 )
     {
         unnominatedDisconnectedPlayer( player_id );
         clearMenuMapIndexForPlayers( player_id );
@@ -7850,7 +7962,7 @@ public nomination_handleMatchChoice( player_id, menu, item )
     if( item == 7 )
     {
         clearMenuMapIndexForPlayers( player_id );
-        g_generalUsePlayersMenuPages[ player_id ] ? g_generalUsePlayersMenuPages[ player_id ]-- : player_id;
+        g_nominationPlayersMenuPages[ player_id ] ? g_nominationPlayersMenuPages[ player_id ]-- : player_id;
 
         // We need to delay the menu show up on 0.2 seconds to avoid players lagging the server by DOS attack.
         set_task( 0.2, "nomination_menuHook", player_id );
@@ -7863,7 +7975,7 @@ public nomination_handleMatchChoice( player_id, menu, item )
     if( item == 8 )
     {
         clearMenuMapIndexForPlayers( player_id );
-        g_generalUsePlayersMenuPages[ player_id ]++;
+        g_nominationPlayersMenuPages[ player_id ]++;
 
         // We need to delay the menu show up on 0.2 seconds to avoid players lagging the server by DOS attack.
         set_task( 0.2, "nomination_menuHook", player_id );
@@ -7874,7 +7986,7 @@ public nomination_handleMatchChoice( player_id, menu, item )
 
     // Due the first nomination menu option to be 'Cancel all your Nominations', take one item less 'item - 1'.
     // We are using the 'nomination_menu(1)'
-    item = convert_septal_to_decimal( g_generalUsePlayersMenuPages[ player_id ] * 10 + item ) - 1;
+    item = convert_septal_to_decimal( g_nominationPlayersMenuPages[ player_id ] * 10 + item ) - 1;
 
     map_nominate( player_id, item );
     clearMenuMapIndexForPlayers( player_id );
@@ -7932,7 +8044,7 @@ public nomination_handlePartialMatch( player_id, menu, item )
         new arguments[ 2 ];
 
         arguments[ 0 ] = player_id;
-        arguments[ 1 ] = g_menuMapIndexForPlayerArrays[ player_id ][ MAX_MENU_ITEMS_PER_PAGE - 1 ] + 1;
+        arguments[ 1 ] = g_menuMapIndexForPlayerArrays[ player_id ][ MAX_NOM_MENU_ITEMS_PER_PAGE - 1 ] + 1;
 
         ArrayPushCell( g_partialMatchFirstPageItems[ player_id ], g_menuMapIndexForPlayerArrays[ player_id ][ 0 ] );
         clearMenuMapIndexForPlayers( player_id );
@@ -7957,7 +8069,7 @@ public nomination_handlePartialMatch( player_id, menu, item )
 /**
  * Given a number on the base 7, calculates and return the equivalent decimal number (base 10).
  */
-public convert_septal_to_decimal( septal_number )
+stock convert_septal_to_decimal( septal_number )
 {
     LOGGER( 128, "I AM ENTERING ON convert_septal_to_decimal(1) | septal_number: %d", septal_number )
     new remainder;
@@ -7975,6 +8087,30 @@ public convert_septal_to_decimal( septal_number )
     }
 
     LOGGER( 1, "    ( convert_septal_to_decimal ) Returning decimal: %d", decimal )
+    return decimal;
+}
+
+/**
+ * Given a number on the base 8, calculates and return the equivalent decimal number (base 10).
+ */
+stock convert_octal_to_decimal( octal_number )
+{
+    LOGGER( 128, "I AM ENTERING ON convert_octal_to_decimal(1) | octal_number: %d", octal_number )
+    new remainder;
+
+    new decimal = 0;
+    new index   = 0;
+
+    while( octal_number != 0 )
+    {
+        remainder     = octal_number % 10;
+        octal_number /= 10;
+        decimal      += remainder * power( 8, index );
+
+        ++index;
+    }
+
+    LOGGER( 1, "    ( convert_octal_to_decimal ) Returning decimal: %d", decimal )
     return decimal;
 }
 
