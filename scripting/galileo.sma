@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-315";
+new const PLUGIN_VERSION[] = "v3.2.6-316";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -635,7 +635,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-315";
  *
  * @param currentLine a string within the line to check.
  */
-#define IT_IS_A_VALID_MAP_LINE(%1) \
+#define IS_IT_A_VALID_MAP_LINE(%1) \
     ( %1[ 0 ] \
       && !equal( %1, "//", 2 ) \
       && !equal( %1, ";", 1 ) \
@@ -805,6 +805,7 @@ new cvar_serverWinlimitRestart;
 new cvar_serverFraglimitRestart;
 new cvar_runoffEnabled;
 new cvar_runoffDuration;
+new cvar_runoffRatio;
 new cvar_showVoteStatus;
 new cvar_showVoteStatusType;
 new cvar_isToReplaceByVoteMenu;
@@ -1170,6 +1171,7 @@ public plugin_init()
     cvar_voteUniquePrefixes        = register_cvar( "gal_vote_uniqueprefixes", "0" );
     cvar_runoffEnabled             = register_cvar( "gal_runoff_enabled", "0" );
     cvar_runoffDuration            = register_cvar( "gal_runoff_duration", "10" );
+    cvar_runoffRatio               = register_cvar( "gal_runoff_ratio", "0.5" );
     cvar_soundsMute                = register_cvar( "gal_sounds_mute", "0" );
     cvar_voteMapFilePath           = register_cvar( "gal_vote_mapfile", "*" );
     cvar_voteMinPlayers            = register_cvar( "gal_vote_minplayers", "0" );
@@ -3101,7 +3103,7 @@ stock loadMapFileListComplete( mapFileDescriptor, Array:mapArray, Trie:fillerMap
         fgets( mapFileDescriptor, loadedMapName, charsmax( loadedMapName ) );
         trim( loadedMapName );
 
-        if( IT_IS_A_VALID_MAP_LINE( loadedMapName ) )
+        if( IS_IT_A_VALID_MAP_LINE( loadedMapName ) )
         {
             TrieSetCell( fillerMapTrie, loadedMapName, mapCount );
             ArrayPushString( mapArray, loadedMapName );
@@ -3132,7 +3134,7 @@ stock loadMapFileListArray( mapFileDescriptor, Array:mapArray )
         fgets( mapFileDescriptor, loadedMapName, charsmax( loadedMapName ) );
         trim( loadedMapName );
 
-        if( IT_IS_A_VALID_MAP_LINE( loadedMapName ) )
+        if( IS_IT_A_VALID_MAP_LINE( loadedMapName ) )
         {
             ArrayPushString( mapArray, loadedMapName );
 
@@ -3162,7 +3164,7 @@ stock loadMapFileListTrie( mapFileDescriptor, Trie:fillerMapTrie )
         fgets( mapFileDescriptor, loadedMapName, charsmax( loadedMapName ) );
         trim( loadedMapName );
 
-        if( IT_IS_A_VALID_MAP_LINE( loadedMapName ) )
+        if( IS_IT_A_VALID_MAP_LINE( loadedMapName ) )
         {
             TrieSetCell( fillerMapTrie, loadedMapName, mapCount );
 
@@ -5711,7 +5713,7 @@ public computeVotes()
         // if the top vote getting map didn't receive over 50% of the votes cast, to start a runoff vote
         if( get_pcvar_num( cvar_runoffEnabled )
             && !( g_voteStatus & VOTE_IS_RUNOFF )
-            && numberOfVotesAtFirstPlace <= g_totalVotesCounted / 2 )
+            && numberOfVotesAtFirstPlace <= g_totalVotesCounted * get_pcvar_float( cvar_runoffRatio ) )
         {
             // announce runoff voting requirement
             color_print( 0, "%L", LANG_PLAYER, "GAL_RUNOFF_REQUIRED" );
