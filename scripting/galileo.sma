@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-324";
+new const PLUGIN_VERSION[] = "v3.2.6-325";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -10403,6 +10403,9 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     {
         new errorMessage[ MAX_LONG_STRING ];
 
+        // Temporarily disables the `gal_nextmap_votemap` feature, as we are not testing it right now.
+        set_pcvar_num( cvar_nextMapChangeVotemap, 0 );
+
         new chainDelay = 2 + 2 + 1 + 1 + 1;
         new test_id    = register_test( chainDelay, "test_isMapExtensionAvowed_case1" );
 
@@ -11307,6 +11310,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     new test_nomQtyUsed;
     new test_voteMapChoiceCount;
     new test_nomPlayerAllowance;
+    new test_nextMapChangeVotemap;
 
     new test_nomMapFilePath           [ MAX_FILE_PATH_LENGHT ];
     new test_voteMapFilePath          [ MAX_FILE_PATH_LENGHT ];
@@ -11353,6 +11357,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         test_nomQtyUsed              = get_pcvar_num( cvar_nomQtyUsed             );
         test_voteMapChoiceCount      = get_pcvar_num( cvar_voteMapChoiceCount     );
         test_nomPlayerAllowance      = get_pcvar_num( cvar_nomPlayerAllowance     );
+        test_nextMapChangeVotemap    = get_pcvar_num( cvar_nextMapChangeVotemap   );
 
         LOGGER( 2, "    %38s cvar_mp_timelimit: %f  test_mp_timelimit: %f   g_originalTimelimit: %f", \
                 "saveServerCvarsForTesting( out )", get_pcvar_float( cvar_mp_timelimit ), test_mp_timelimit, g_originalTimelimit )
@@ -11402,6 +11407,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
             set_pcvar_num( cvar_nomQtyUsed          , test_nomQtyUsed           );
             set_pcvar_num( cvar_voteMapChoiceCount  , test_voteMapChoiceCount   );
             set_pcvar_num( cvar_nomPlayerAllowance  , test_nomPlayerAllowance   );
+            set_pcvar_num( cvar_nextMapChangeVotemap, test_nextMapChangeVotemap );
         }
 
         // Clear tests results.
