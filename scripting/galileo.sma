@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-327";
+new const PLUGIN_VERSION[] = "v3.2.6-328";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -1131,8 +1131,8 @@ public plugin_init()
     register_cvar( "gal_version", PLUGIN_VERSION, FCVAR_SERVER | FCVAR_SPONLY );
 
     cvar_endOfMapVote              = register_cvar( "gal_endofmapvote", "1" );
-    cvar_nextMapChangeAnnounce     = register_cvar( "gal_nextmap_change", "1" );
     cvar_endOfMapVoteStart         = register_cvar( "gal_endofmapvote_start", "0" );
+    cvar_nextMapChangeAnnounce     = register_cvar( "gal_nextmap_change", "1" );
     cvar_nextMapChangeVotemap      = register_cvar( "gal_nextmap_votemap", "0" );
     cvar_isToShowVoteCounter       = register_cvar( "gal_vote_show_counter", "0" );
     cvar_isToShowNoneOption        = register_cvar( "gal_vote_show_none", "0" );
@@ -1885,7 +1885,7 @@ stock setNextMap( nextMapName[], bool:isToUpdateTheCvar = true )
         // set the queryable cvar
         if( isToUpdateTheCvar
             || !( get_pcvar_num( cvar_nextMapChangeAnnounce )
-                 && get_pcvar_num( cvar_endOfMapVote ) ) )
+                  && get_pcvar_num( cvar_endOfMapVote ) ) )
         {
             LOGGER( 2, "( setNextMap ) IS CHANGING THE CVAR 'amx_nextmap' to '%s'.", nextMapName )
             set_pcvar_string( cvar_amx_nextmap, nextMapName );
@@ -4467,6 +4467,7 @@ stock approvedTheVotingStart( bool:is_forced_voting )
             is_forced_voting, get_realplayersnum() )
 
     if( get_pcvar_num( cvar_nextMapChangeVotemap )
+        && get_pcvar_num( cvar_nextMapChangeAnnounce )
         && !is_forced_voting )
     {
         new nextMapFlag[ 128 ];
