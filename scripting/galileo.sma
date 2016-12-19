@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-323";
+new const PLUGIN_VERSION[] = "v3.2.6-324";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -4476,7 +4476,7 @@ stock approvedTheVotingStart( bool:is_forced_voting )
 
         get_pcvar_string( cvar_amx_nextmap, nextMapName, charsmax( nextMapName ) );
 
-        if( equali( nextMapFlag, nextMapName, strlen( nextMapName ) ) )
+        if( !equali( nextMapFlag, nextMapName, strlen( nextMapName ) ) )
         {
             LOGGER( 1, "    ( approvedTheVotingStart ) Returning false due the `gal_nextmap_votemap` feature." )
             return false;
