@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-321";
+new const PLUGIN_VERSION[] = "v3.2.6-322";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -1031,7 +1031,6 @@ new g_whitelistNomBlockTime;
 new g_totalTerroristsWins;
 new g_totalCtWins;
 new g_totalVoteOptions;
-new g_totalVoteOptionsTemp;
 
 new g_maxVotingChoices;
 new g_voteStatus;
@@ -4527,23 +4526,37 @@ stock approvedTheVotingStart( bool:is_forced_voting )
     return true;
 }
 
+stock printVotingMaps( votingMapsCount )
+{
+    LOGGER( 128, "I AM ENTERING ON printVotingMaps(1) votingMapsCount: %d", votingMapsCount )
+
+    for( new index = 0; index < votingMapsCount; index++ )
+    {
+        LOGGER( 16, "( printVotingMaps ) Voting map %d: %s", index, g_votingMapNames[ index ] )
+    }
+
+    return 0;
+}
+
 stock loadRunOffVoteChoices()
 {
     LOGGER( 128, "I AM ENTERING ON loadRunOffVoteChoices(0)" )
-    new runoffChoice[ 2 ][ MAX_MAPNAME_LENGHT ];
+    new runoffChoice[ MAX_OPTIONS_IN_VOTE ][ MAX_MAPNAME_LENGHT ];
 
-    g_totalVoteOptions = g_totalVoteOptionsTemp;
-    g_voteDuration     = get_pcvar_num( cvar_runoffDuration );
+    // Create a clean copy to not copy overridden maps
+    for( new mapIndex = 0; mapIndex < g_totalVoteOptions; mapIndex++ )
+    {
+        copy( runoffChoice[ mapIndex ], charsmax( runoffChoice[] ), g_votingMapNames[ g_arrayOfRunOffChoices[ mapIndex ] ] );
+    }
 
-    // load runoff choices
-    copy( runoffChoice[ 0 ], charsmax( runoffChoice[] ), g_votingMapNames[ g_arrayOfRunOffChoices[ 0 ] ] );
-    copy( runoffChoice[ 1 ], charsmax( runoffChoice[] ), g_votingMapNames[ g_arrayOfRunOffChoices[ 1 ] ] );
+    // Load runoff choices
+    for( new mapIndex = 0; mapIndex < g_totalVoteOptions; mapIndex++ )
+    {
+        copy( g_votingMapNames[ mapIndex ], charsmax( g_votingMapNames[] ), runoffChoice[ mapIndex ] );
+    }
 
-    copy( g_votingMapNames[ 0 ], charsmax( g_votingMapNames[] ), runoffChoice[ 0 ] );
-    copy( g_votingMapNames[ 1 ], charsmax( g_votingMapNames[] ), runoffChoice[ 1 ] );
-
-    LOGGER( 16, "( loadRunOffVoteChoices ) map1: %s, map2: %s, g_totalVoteOptions: %d", \
-            g_votingMapNames[ 0 ], g_votingMapNames[ 1 ], g_totalVoteOptions )
+    g_voteDuration = get_pcvar_num( cvar_runoffDuration );
+    LOGGER( 0, "", printVotingMaps( g_totalVoteOptions ) )
 }
 
 stock configureVotingStart( bool:is_forced_voting )
@@ -5729,7 +5742,7 @@ stock printRunOffMaps( runOffMapsCount )
 
     for( new index = 0; index < runOffMapsCount; index++ )
     {
-        LOGGER( 16, "( printRunOffMaps ) RunOff Map %d: %s", index, g_votingMapNames[ g_arrayOfRunOffChoices[ index ] ] )
+        LOGGER( 16, "( printRunOffMaps ) RunOff map %d: %s", index, g_votingMapNames[ g_arrayOfRunOffChoices[ index ] ] )
     }
 
     return 0;
@@ -5740,25 +5753,31 @@ stock handleMoreThanTwoMapsAtFirst( firstPlaceChoices[], numberOfMapsAtFirstPosi
     LOGGER( 128, "I AM ENTERING ON handleMoreThanTwoMapsAtFirst(2)" )
     LOGGER( 0, "", printIntegerArray( 16, firstPlaceChoices, "firstPlaceChoices", numberOfMapsAtFirstPosition ) )
 
+    new seedValue;
     new randomInteger;
     new maxVotingChoices;
+    new originalTotalVotingOptions;
 
     maxVotingChoices = min( MAX_OPTIONS_IN_VOTE, get_pcvar_num( cvar_runoffMapchoices ) );
     maxVotingChoices = max( min( maxVotingChoices, numberOfMapsAtFirstPosition ), 2 );
 
-    g_totalVoteOptionsTemp = maxVotingChoices;
+    originalTotalVotingOptions = g_totalVoteOptions;
+    g_totalVoteOptions         = maxVotingChoices;
+
+    // Get an unit identification for the seed sequence value
+    seedValue = get_systime();
 
     for( new voteOptionIndex = 0; voteOptionIndex < maxVotingChoices; voteOptionIndex++ )
     {
-        randomInteger = getUniqueRandomInteger( 0, maxVotingChoices );
+        randomInteger = getUniqueRandomInteger( seedValue, maxVotingChoices );
 
         // If firstPlaceChoices[ numberOfMapsAtFirstPosition - 1 ]  is equal to
         // g_totalVoteOptions then it option is not a valid map, it is the keep current
         // map option, and must be informed it to the vote_display function, to show the
         // 1 map options and the keep current map.
-        if( firstPlaceChoices[ randomInteger ] == g_totalVoteOptions )
+        if( firstPlaceChoices[ randomInteger ] == originalTotalVotingOptions )
         {
-            g_totalVoteOptionsTemp--;
+            g_totalVoteOptions--;
             g_isRunOffNeedingKeepCurrentMap = true;
         }
 
@@ -5766,7 +5785,7 @@ stock handleMoreThanTwoMapsAtFirst( firstPlaceChoices[], numberOfMapsAtFirstPosi
     }
 
     LOGGER( 16, "( handleMoreThanTwoMapsAtFirst ) Number of Maps at First Position > 2" )
-    LOGGER( 0, "", printRunOffMaps( g_totalVoteOptionsTemp ) )
+    LOGGER( 0, "", printRunOffMaps( g_totalVoteOptions ) )
 
     color_print( 0, "%L", LANG_PLAYER, "GAL_RESULT_TIED1", numberOfMapsAtFirstPosition );
 }
@@ -5821,23 +5840,23 @@ stock handleTwoMapsAtFirstPosition( firstPlaceChoices[] )
     {
         g_isRunOffNeedingKeepCurrentMap = true;
         g_arrayOfRunOffChoices[ 0 ]     = firstPlaceChoices[ 1 ];
-        g_totalVoteOptionsTemp          = 1;
+        g_totalVoteOptions              = 1;
     }
     else if( firstPlaceChoices[ 1 ] == g_totalVoteOptions )
     {
         g_isRunOffNeedingKeepCurrentMap = true;
         g_arrayOfRunOffChoices[ 0 ]     = firstPlaceChoices[ 0 ];
-        g_totalVoteOptionsTemp          = 1;
+        g_totalVoteOptions              = 1;
     }
     else
     {
-        g_totalVoteOptionsTemp      = 2;
+        g_totalVoteOptions          = 2;
         g_arrayOfRunOffChoices[ 0 ] = firstPlaceChoices[ 0 ];
         g_arrayOfRunOffChoices[ 1 ] = firstPlaceChoices[ 1 ];
     }
 
     LOGGER( 16, "( handleTwoMapsAtFirstPosition ) Number of Maps at First Position == 2" )
-    LOGGER( 0, "", printRunOffMaps( g_totalVoteOptionsTemp ) )
+    LOGGER( 0, "", printRunOffMaps( g_totalVoteOptions ) )
 }
 
 stock handleOneMapAtSecondPosition( firstPlaceChoices[], secondPlaceChoices[] )
@@ -5848,23 +5867,23 @@ stock handleOneMapAtSecondPosition( firstPlaceChoices[], secondPlaceChoices[] )
     {
         g_isRunOffNeedingKeepCurrentMap = true;
         g_arrayOfRunOffChoices[ 0 ]     = secondPlaceChoices[ 0 ];
-        g_totalVoteOptionsTemp          = 1;
+        g_totalVoteOptions              = 1;
     }
     else if( secondPlaceChoices[ 0 ] == g_totalVoteOptions )
     {
         g_isRunOffNeedingKeepCurrentMap = true;
         g_arrayOfRunOffChoices[ 0 ]     = firstPlaceChoices[ 0 ];
-        g_totalVoteOptionsTemp          = 1;
+        g_totalVoteOptions              = 1;
     }
     else
     {
-        g_totalVoteOptionsTemp      = 2;
+        g_totalVoteOptions          = 2;
         g_arrayOfRunOffChoices[ 0 ] = firstPlaceChoices[ 0 ];
         g_arrayOfRunOffChoices[ 1 ] = secondPlaceChoices[ 0 ];
     }
 
     LOGGER( 16, "( handleOneMapAtSecondPosition ) Number of Maps at Second Position == 1" )
-    LOGGER( 0, "", printRunOffMaps( g_totalVoteOptionsTemp ) )
+    LOGGER( 0, "", printRunOffMaps( g_totalVoteOptions ) )
 }
 
 stock handleOneMapAtFirstPosition( firstPlaceChoices[], secondPlaceChoices[], numberOfMapsAtSecondPosition )
@@ -5876,23 +5895,23 @@ stock handleOneMapAtFirstPosition( firstPlaceChoices[], secondPlaceChoices[], nu
     {
         g_isRunOffNeedingKeepCurrentMap = true;
         g_arrayOfRunOffChoices[ 0 ]     = secondPlaceChoices[ randonNumber ];
-        g_totalVoteOptionsTemp          = 1;
+        g_totalVoteOptions              = 1;
     }
     else if( secondPlaceChoices[ randonNumber ] == g_totalVoteOptions )
     {
         g_isRunOffNeedingKeepCurrentMap = true;
         g_arrayOfRunOffChoices[ 0 ]     = firstPlaceChoices[ 0 ];
-        g_totalVoteOptionsTemp          = 1;
+        g_totalVoteOptions              = 1;
     }
     else
     {
-        g_totalVoteOptionsTemp      = 2;
+        g_totalVoteOptions          = 2;
         g_arrayOfRunOffChoices[ 0 ] = firstPlaceChoices[ 0 ];
         g_arrayOfRunOffChoices[ 1 ] = secondPlaceChoices[ randonNumber ];
     }
 
     LOGGER( 16, "( handleOneMapAtFirstPosition ) Number of Maps at First Position == 1 && At Second Position > 1" )
-    LOGGER( 0, "", printRunOffMaps( g_totalVoteOptionsTemp ) )
+    LOGGER( 0, "", printRunOffMaps( g_totalVoteOptions ) )
 
     color_print( 0, "%L", LANG_PLAYER, "GAL_RESULT_TIED2", numberOfMapsAtSecondPosition );
 }
@@ -9258,7 +9277,6 @@ public vote_resetStats()
     LOGGER( 128, "I AM ENTERING ON vote_resetStats(0)" )
 
     g_voteStatusClean[ 0 ] = '^0';
-    g_totalVoteOptions     = 0;
     g_totalVotesCounted    = 0;
     g_pendingVoteCountdown = 7;
 
@@ -9272,7 +9290,9 @@ public vote_resetStats()
 
     if( !( g_voteStatus & VOTE_IS_RUNOFF ) )
     {
+        g_totalVoteOptions = 0;
         clearTheVotingMenu();
+
         arrayset( g_isPlayerParticipating, true, sizeof g_isPlayerParticipating );
     }
 
@@ -10761,11 +10781,11 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         new changeResult;
         new errorMessage[ MAX_LONG_STRING ];
 
-        g_test_gameElapsedTime    = elapsedValue;
-        g_totalTerroristsWins = elapsedValue;
-        g_totalCtWins         = elapsedValue;
-        g_roundsPlayedNumber  = elapsedValue;
-        g_greatestKillerFrags = elapsedValue;
+        g_test_gameElapsedTime = elapsedValue;
+        g_totalTerroristsWins  = elapsedValue;
+        g_totalCtWins          = elapsedValue;
+        g_roundsPlayedNumber   = elapsedValue;
+        g_greatestKillerFrags  = elapsedValue;
 
         set_pcvar_num( limiterCvarPointer, defaultLimiterValue );
         set_pcvar_num( serverCvarPointer, defaultCvarValue );
