@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-317";
+new const PLUGIN_VERSION[] = "v3.2.6-320";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -413,11 +413,9 @@ new const PLUGIN_VERSION[] = "v3.2.6-317";
 #define CONVERT_NONE_OPTION_TO_CANCEL_LAST_VOTE 2
 
 #define MAX_PREFIX_COUNT              32
-#define MAX_MAPS_IN_VOTE              8
-#define MAX_NOM_MENU_ITEMS_PER_PAGE   7
-#define MAX_FULL_MENU_ITEMS_PER_PAGE  8
-#define MAX_NOMINATION_COUNT          8
 #define MAX_OPTIONS_IN_VOTE           9
+#define MAX_MENU_ITEMS_PER_PAGE       8
+#define MAX_NOM_MENU_ITEMS_PER_PAGE   7
 #define MAX_STANDARD_MAP_COUNT        25
 #define MAX_SERVER_RESTART_ACCEPTABLE 10
 #define MAX_NOM_MATCH_COUNT           1000
@@ -842,8 +840,6 @@ new bool:g_isExtendmapAllowStay;
 new bool:g_isToShowNoneOption;
 new bool:g_isToShowExpCountdown;
 new bool:g_isToShowVoteCounter;
-new bool:g_isToRefreshVoteStatus;
-new bool:g_isTheFirstPlayerVoted;
 new bool:g_isEmptyCycleMapConfigured;
 new bool:g_isMaxroundsExtend;
 new bool:g_isVotingByRounds;
@@ -871,7 +867,7 @@ new Float:g_original_sv_maxspeed;
 new Array:g_emptyCycleMapsArray;
 
 /**
- * Stores all the player's nominations indexes within a array of the size MAX_NOMINATION_COUNT,
+ * Stores all the player's nominations indexes within a array of the size MAX_OPTIONS_IN_VOTE,
  * for the given trieKey by createPlayerNominationKey(3).
  *
  * Each player's nomination index is the index to the array `g_nominationLoadedMapsArray` containing
@@ -1035,9 +1031,9 @@ new COLOR_GREY  [ 3 ]; // \d
 
 new g_mapPrefixCount = 1;
 
-new g_arrayOfRunOffChoices[ 2 ];
 new g_voteStatus_symbol   [ 3 ];
 new g_voteWeightFlags     [ 32 ];
+new g_arrayOfRunOffChoices[ MAX_OPTIONS_IN_VOTE ];
 new g_voteStatusClean     [ MAX_BIG_BOSS_STRING ];
 
 new g_configsDirPath[ MAX_FILE_PATH_LENGHT ];
@@ -1491,16 +1487,16 @@ public cacheCvarsValues()
 {
     LOGGER( 128, "I AM ENTERING ON cacheCvarsValues(0)" )
 
-    g_rtvCommands            = get_pcvar_num( cvar_rtvCommands );
-    g_extendmapStepRounds    = get_pcvar_num( cvar_extendmapStepRounds );
-    g_extendmapStepFrags     = get_pcvar_num( cvar_extendmapStepFrags );
-    g_extendmapStepMinutes   = get_pcvar_num( cvar_extendmapStepMinutes );
+    g_rtvCommands            = get_pcvar_num( cvar_rtvCommands            );
+    g_extendmapStepRounds    = get_pcvar_num( cvar_extendmapStepRounds    );
+    g_extendmapStepFrags     = get_pcvar_num( cvar_extendmapStepFrags     );
+    g_extendmapStepMinutes   = get_pcvar_num( cvar_extendmapStepMinutes   );
     g_extendmapAllowStayType = get_pcvar_num( cvar_extendmapAllowStayType );
-    g_showVoteStatus         = get_pcvar_num( cvar_showVoteStatus );
+    g_showVoteStatus         = get_pcvar_num( cvar_showVoteStatus         );
     g_voteShowNoneOptionType = get_pcvar_num( cvar_voteShowNoneOptionType );
-    g_showVoteStatusType     = get_pcvar_num( cvar_showVoteStatusType );
-    g_fragLimitNumber        = get_pcvar_num( cvar_mp_fraglimit );
-    g_timeLimitNumber        = get_pcvar_num( cvar_mp_timelimit );
+    g_showVoteStatusType     = get_pcvar_num( cvar_showVoteStatusType     );
+    g_fragLimitNumber        = get_pcvar_num( cvar_mp_fraglimit           );
+    g_timeLimitNumber        = get_pcvar_num( cvar_mp_timelimit           );
 
     /**
      * If it is enabled, cache whether the coloring is enabled by its cvar.
@@ -1509,11 +1505,11 @@ public cacheCvarsValues()
     g_isColoredChatEnabled = get_pcvar_num( cvar_coloredChatEnabled ) != 0;
 #endif
 
-    g_isExtendmapAllowStay      = get_pcvar_num( cvar_extendmapAllowStay ) != 0;
-    g_isToShowNoneOption        = get_pcvar_num( cvar_isToShowNoneOption ) != 0;
-    g_isToShowVoteCounter       = get_pcvar_num( cvar_isToShowVoteCounter ) != 0;
+    g_isExtendmapAllowStay      = get_pcvar_num( cvar_extendmapAllowStay   ) != 0;
+    g_isToShowNoneOption        = get_pcvar_num( cvar_isToShowNoneOption   ) != 0;
+    g_isToShowVoteCounter       = get_pcvar_num( cvar_isToShowVoteCounter  ) != 0;
     g_isToShowExpCountdown      = get_pcvar_num( cvar_isToShowExpCountdown ) != 0;
-    g_isVirtualFragLimitSupport = get_pcvar_num( cvar_fragLimitSupport ) != 0;
+    g_isVirtualFragLimitSupport = get_pcvar_num( cvar_fragLimitSupport     ) != 0;
 
     g_maxVotingChoices = max( min( MAX_OPTIONS_IN_VOTE, get_pcvar_num( cvar_voteMapChoiceCount ) ), 2 );
 }
@@ -2188,7 +2184,7 @@ stock loadMapGroupsFeatureFile( mapFilerFilePath[], &Array:mapFilersPathArray, &
                 LOGGER( 8, "" )
                 LOGGER( 8, "this is a [groups] mapFilerFile" )
 
-                // read the filler mapFilerFile to determine how many groups there are ( max of MAX_MAPS_IN_VOTE )
+                // read the filler mapFilerFile to determine how many groups there are ( max of MAX_OPTIONS_IN_VOTE )
                 while( !feof( mapFilerFile ) )
                 {
                     fgets( mapFilerFile, currentReadedLine, charsmax( currentReadedLine ) );
@@ -2199,7 +2195,7 @@ stock loadMapGroupsFeatureFile( mapFilerFilePath[], &Array:mapFilersPathArray, &
 
                     if( isdigit( currentReadedLine[ 0 ] ) )
                     {
-                        if( groupCount < MAX_MAPS_IN_VOTE )
+                        if( groupCount < MAX_OPTIONS_IN_VOTE )
                         {
                             groupCount++;
 
@@ -2253,7 +2249,7 @@ stock loadMapGroupsFeatureFile( mapFilerFilePath[], &Array:mapFilersPathArray, &
 
         // the options `*` and `#` will be handled by map_populateList(4) later.
         ArrayPushString( mapFilersPathArray, mapFilerFilePath );
-        ArrayPushCell( maxMapsPerGroupToUse, MAX_MAPS_IN_VOTE );
+        ArrayPushCell( maxMapsPerGroupToUse, MAX_OPTIONS_IN_VOTE );
     }
 
     LOGGER( 4, "( loadMapGroupsFeatureFile ) MapsGroups Loaded, mapFilerFilePath: %s", mapFilerFilePath )
@@ -3793,6 +3789,8 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
     #endif
     }
 
+    new maxVotingChoices = g_isMapExtensionAllowed ? g_maxVotingChoices - 1 : g_maxVotingChoices;
+
     // fill remaining slots with random maps from each filler file, as much as possible
     for( new groupIndex = 0; groupIndex < groupCount; ++groupIndex )
     {
@@ -3819,18 +3817,18 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
             fillerMapsArray = ArrayGetCell( fillerMapGroupsArrays, groupIndex );
         }
 
-        filersMapCount  = ArraySize( fillerMapsArray );
+        filersMapCount = ArraySize( fillerMapsArray );
 
         LOGGER( 8, "" )
-        LOGGER( 8, "[%i] groupCount:%i, filersMapCount: %i,  g_totalVoteOptions: %i, g_maxVotingChoices: %i", \
-                groupIndex, groupCount, filersMapCount, g_totalVoteOptions, g_maxVotingChoices )
+        LOGGER( 8, "[%i] groupCount:%i, filersMapCount: %i,  g_totalVoteOptions: %i, maxVotingChoices: %i", \
+                groupIndex, groupCount, filersMapCount, g_totalVoteOptions, maxVotingChoices )
 
         if( filersMapCount
-            && g_totalVoteOptions < g_maxVotingChoices )
+            && g_totalVoteOptions < maxVotingChoices )
         {
             maxMapsPerGroupToUse = ArrayGetCell( maxMapsPerGroupToUseArray, groupIndex );
             allowedFilersCount   = min( min(
-                                             maxMapsPerGroupToUse, g_maxVotingChoices - g_totalVoteOptions
+                                             maxMapsPerGroupToUse, maxVotingChoices - g_totalVoteOptions
                                            ), filersMapCount );
 
             LOGGER( 8, "[%i] allowedFilersCount: %i   maxMapsPerGroupToUse[%i]: %i", groupIndex, \
@@ -4053,15 +4051,20 @@ stock debug_vote_map_selection( choiceIndex, mapName[], useWhitelistOutBlock, is
 stock vote_addFillers( blockedMapsBuffer[], &announcementShowedTimes = 0 )
 {
     LOGGER( 128, "I AM ENTERING ON vote_addFillers(2) | announcementShowedTimes: %d", announcementShowedTimes )
+    new maxVotingChoices = g_isMapExtensionAllowed ? g_maxVotingChoices - 1 : g_maxVotingChoices;
 
-    if( g_totalVoteOptions >= g_maxVotingChoices )
+    if( g_totalVoteOptions < maxVotingChoices )
     {
-        LOGGER( 1, "    ( vote_addFillers ) Just Returning/blocking, the voting list is filled." )
-        return;
+        new fillersFilePathEnum = loadMapGroupsFeature();
+        processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMapsBuffer, announcementShowedTimes );
     }
-
-    new fillersFilePathEnum = loadMapGroupsFeature();
-    processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMapsBuffer, announcementShowedTimes );
+    else
+    {
+        LOGGER( 4, " ( vote_addFillers ) maxVotingChoices: %d", maxVotingChoices )
+        LOGGER( 4, " ( vote_addFillers ) g_maxVotingChoices: %d", g_maxVotingChoices )
+        LOGGER( 4, " ( vote_addFillers ) g_totalVoteOptions: %d", g_totalVoteOptions )
+        LOGGER( 1, "    ( vote_addFillers ) Just Returning/blocking, the voting list is filled." )
+    }
 }
 
 stock vote_addNominations( blockedMapsBuffer[], &announcementShowedTimes = 0 )
@@ -4103,9 +4106,11 @@ stock vote_addNominations( blockedMapsBuffer[], &announcementShowedTimes = 0 )
             }
         }
 
+        new maxVotingChoices = g_isMapExtensionAllowed ? g_maxVotingChoices - 1 : g_maxVotingChoices;
+
         // set how many total nominations we can use in this vote
         new maxNominations    = get_pcvar_num( cvar_nomQtyUsed );
-        new slotsAvailable    = g_maxVotingChoices - g_totalVoteOptions;
+        new slotsAvailable    = maxVotingChoices - g_totalVoteOptions;
         new voteNominationMax = ( maxNominations ) ? min( maxNominations, slotsAvailable ) : slotsAvailable;
 
         // print the players nominations for debug
@@ -4160,7 +4165,7 @@ stock show_all_players_nominations()
     new playerName[ MAX_PLAYER_NAME_LENGHT ];
 
     // set how many total nominations each player is allowed
-    new maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), MAX_NOMINATION_COUNT );
+    new maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), MAX_OPTIONS_IN_VOTE );
 
     for( new nominationIndex = 0; nominationIndex < maxPlayerNominations; ++nominationIndex )
     {
@@ -4847,10 +4852,6 @@ public vote_handleDisplay()
         copy( g_voteStatus_symbol, charsmax( g_voteStatus_symbol ), "%" );
     }
 
-    // make sure the display is constructed from scratch
-    g_isToRefreshVoteStatus = true;
-    g_isTheFirstPlayerVoted = false;
-
     // ensure the vote status doesn't indicate expired
     g_voteStatus &= ~VOTE_IS_EXPIRED;
 
@@ -4894,7 +4895,6 @@ public tryToShowTheVotingMenu()
             g_isPlayerSeeingTheVoteMenu[ player_id ] = true;
 
             // Allow lazy players to see the menu when the `SHOW_STATUS_ALWAYS` is not set.
-            g_isToRefreshVoteStatus = true;
             vote_display( argument );
         }
     }
@@ -4952,34 +4952,30 @@ public vote_display( argument[ 2 ] )
     }
 
     LOGGER( 4, "  ( votedisplay ) player_id: %i, updateTimeRemaining: %i", argument[ 1 ], argument[ 0 ]  )
-    LOGGER( 4, "  ( votedisplay ) g_isToRefreshVoteStatus: %i,  g_totalVoteOptions: %i, strlen( g_voteStatusClean ): %i", \
-            g_isToRefreshVoteStatus,  g_totalVoteOptions, strlen( g_voteStatusClean )  )
+    LOGGER( 4, "  ( votedisplay ) g_totalVoteOptions: %i, strlen( g_voteStatusClean ): %i", \
+            g_totalVoteOptions, strlen( g_voteStatusClean )  )
 
-    if( g_isToRefreshVoteStatus
-        || isVoteOver )
+    // wipe the previous vote status
+    voteStatus[ 0 ] = '^0';
+
+    // register the 'None' option key
+    if( g_isToShowNoneOption
+        && !isVoteOver )
     {
-        // wipe the previous vote status clean
-        voteStatus[ 0 ] = '^0';
+        menuKeys = MENU_KEY_0;
+    }
 
-        // register the 'None' option key
-        if( g_isToShowNoneOption
-            && !isVoteOver )
-        {
-            menuKeys = MENU_KEY_0;
-        }
+    // add maps to the menu
+    for( new choiceIndex = 0; choiceIndex < g_totalVoteOptions; ++choiceIndex )
+    {
+        computeVoteMapLine( voteMapLine, charsmax( voteMapLine ), choiceIndex );
 
-        // add maps to the menu
-        for( new choiceIndex = 0; choiceIndex < g_totalVoteOptions; ++choiceIndex )
-        {
-            computeVoteMapLine( voteMapLine, charsmax( voteMapLine ), choiceIndex );
+        copiedChars += formatex( voteStatus[ copiedChars ], charsmax( voteStatus ) - copiedChars,
+                "^n%s%i. %s%s%s",
+                COLOR_RED, choiceIndex + 1, COLOR_WHITE,
+                g_votingMapNames[ choiceIndex ], voteMapLine );
 
-            copiedChars += formatex( voteStatus[ copiedChars ], charsmax( voteStatus ) - copiedChars,
-                    "^n%s%i. %s%s%s",
-                    COLOR_RED, choiceIndex + 1, COLOR_WHITE,
-                    g_votingMapNames[ choiceIndex ], voteMapLine );
-
-            menuKeys |= ( 1 << choiceIndex );
-        }
+        menuKeys |= ( 1 << choiceIndex );
     }
 
     // This is to optionally display to single player that just voted or never saw the menu.
@@ -4987,7 +4983,7 @@ public vote_display( argument[ 2 ] )
     // 'tryToShowTheVotingMenu(0)' function call.
     if( player_id > 0 )
     {
-        menuKeys = calculateExtensionOption( player_id, isVoteOver, copiedChars, voteStatus,
+        menuKeys = addExtensionStayOption( player_id, copiedChars, voteStatus,
                                              charsmax( voteStatus ), menuKeys );
 
         if( g_showVoteStatus == SHOW_STATUS_ALWAYS
@@ -5013,7 +5009,7 @@ public vote_display( argument[ 2 ] )
         {
             player_id = players[ playerIndex ];
 
-            menuKeys = calculateExtensionOption( player_id, isVoteOver, copiedChars, voteStatus,
+            menuKeys = addExtensionStayOption( player_id, copiedChars, voteStatus,
                                                  charsmax( voteStatus ), menuKeys );
 
             if( !g_isPlayerVoted[ player_id ]
@@ -5034,125 +5030,113 @@ public vote_display( argument[ 2 ] )
             }
         }
     }
-
-    // Block the next menu updates until the first player voted, for the settings
-    // `SHOW_STATUS_AFTER_VOTE` and `SHOW_STATUS_ALWAYS`.
-    g_isToRefreshVoteStatus = ( ( g_showVoteStatus & SHOW_STATUS_ALWAYS != 0 )
-                                || g_isTheFirstPlayerVoted );
 }
 
-stock calculateExtensionOption( player_id       , bool:isVoteOver, copiedChars, voteStatus[],
-                                voteStatusLenght, menuKeys )
+stock addExtensionStayOption( player_id, copiedChars, voteStatus[], voteStatusLenght, menuKeys )
 {
-    LOGGER( 0, "I AM ENTERING ON calculateExtensionOption(6) | player_id: %d, isVoteOver: %d, \
-            copiedChars: %d, voteStatus: %s, ^nvoteStatusLenght: %d, menuKeys: %d", player_id, isVoteOver, \
-            copiedChars, voteStatus, voteStatusLenght, menuKeys )
+    LOGGER( 4, "I AM ENTERING ON calculateExtensionOption(6) | player_id: %d, copiedChars: %d, \
+            voteStatus: %s, ^nvoteStatusLenght: %d, menuKeys: %d", player_id, copiedChars, \
+            voteStatus, voteStatusLenght, menuKeys )
 
-    if( g_isToRefreshVoteStatus
-        || isVoteOver )
+    new bool:allowStay;
+    new bool:allowExtend;
+    new voteMapLine[ MAX_MAPNAME_LENGHT ];
+
+    allowExtend = ( g_isGameFinalVoting
+                    && !( g_voteStatus & VOTE_IS_RUNOFF ) );
+
+    allowStay = ( ( g_voteStatus & VOTE_IS_EARLY
+                    || g_voteStatus & VOTE_IS_FORCED )
+                  && !( g_voteStatus & VOTE_IS_RUNOFF ) );
+
+    if( g_isRunOffNeedingKeepCurrentMap )
     {
-        new bool:allowStay;
-        new bool:allowExtend;
-
-        new voteMapLine[ MAX_MAPNAME_LENGHT ];
-
-        allowExtend = ( g_isGameFinalVoting
-                        && !( g_voteStatus & VOTE_IS_RUNOFF ) );
-
-        allowStay = ( ( g_voteStatus & VOTE_IS_EARLY
-                        || g_voteStatus & VOTE_IS_FORCED )
-                      && !( g_voteStatus & VOTE_IS_RUNOFF ) );
-
-        if( g_isRunOffNeedingKeepCurrentMap )
+        // if it is a end map RunOff, then it is a extend button, not a keep current map button
+        if( g_isGameFinalVoting )
         {
-            // if it is a end map RunOff, then it is a extend button, not a keep current map button
-            if( g_isGameFinalVoting )
+            allowExtend = true;
+            allowStay   = false;
+        }
+        else
+        {
+            allowExtend = false;
+            allowStay   = true;
+        }
+    }
+
+    if( !g_isExtendmapAllowStay )
+    {
+        allowStay = false;
+    }
+
+    LOGGER( 4, "    ( vote_handleDisplay ) Add optional menu item | allowStay: %d, allowExtend: %d, \
+           g_isExtendmapAllowStay: %d", allowStay, allowExtend, g_isExtendmapAllowStay )
+
+    // add optional menu item
+    if( g_isMapExtensionAllowed
+        && ( allowExtend
+             || allowStay ) )
+    {
+        // if it's not a runoff vote, add a space between the maps and the additional option
+        if( !( g_voteStatus & VOTE_IS_RUNOFF ) )
+        {
+            copiedChars += formatex( voteStatus[ copiedChars ], voteStatusLenght - copiedChars, "^n" );
+        }
+
+        computeVoteMapLine( voteMapLine, charsmax( voteMapLine ), g_totalVoteOptions );
+
+        if( allowExtend )
+        {
+            new extend_step = 15;
+            new extend_option_type[ 32 ];
+
+            // add the "Extend Map" menu item.
+            if( g_isVotingByRounds )
             {
-                allowExtend = true;
-                allowStay   = false;
+                extend_step = g_extendmapStepRounds;
+                copy( extend_option_type, charsmax( extend_option_type ), "GAL_OPTION_EXTEND_ROUND" );
+            }
+            else if( g_isVotingByFrags )
+            {
+                extend_step = g_extendmapStepFrags;
+                copy( extend_option_type, charsmax( extend_option_type ), "GAL_OPTION_EXTEND_FRAGS" );
             }
             else
             {
-                allowExtend = false;
-                allowStay   = true;
-            }
-        }
-
-        if( !g_isExtendmapAllowStay )
-        {
-            allowStay = false;
-        }
-
-        LOGGER( 4, "    ( vote_handleDisplay ) Add optional menu item | allowStay: %d, allowExtend: %d, \
-               g_isExtendmapAllowStay: %d", allowStay, allowExtend, g_isExtendmapAllowStay )
-
-        // add optional menu item
-        if( g_isMapExtensionAllowed
-            && ( allowExtend
-                 || allowStay ) )
-        {
-            // if it's not a runoff vote, add a space between the maps and the additional option
-            if( !( g_voteStatus & VOTE_IS_RUNOFF ) )
-            {
-                copiedChars += formatex( voteStatus[ copiedChars ], voteStatusLenght - copiedChars, "^n" );
+                extend_step = g_extendmapStepMinutes;
+                copy( extend_option_type, charsmax( extend_option_type ), "GAL_OPTION_EXTEND" );
             }
 
-            computeVoteMapLine( voteMapLine, charsmax( voteMapLine ), g_totalVoteOptions );
-
-            if( allowExtend )
+            copiedChars += formatex( voteStatus[ copiedChars ], voteStatusLenght - copiedChars,
+                    "^n%s%i. %s%L%s",
+                    COLOR_RED, g_totalVoteOptions + 1,
+                    COLOR_WHITE, player_id,
+                    extend_option_type, g_currentMap,
+                    extend_step, voteMapLine );
+        }
+        else
+        {
+            // add the "Stay Here" menu item
+            if( g_extendmapAllowStayType )
             {
-                new extend_step = 15;
-                new extend_option_type[ 32 ];
-
-                // add the "Extend Map" menu item.
-                if( g_isVotingByRounds )
-                {
-                    extend_step = g_extendmapStepRounds;
-                    copy( extend_option_type, charsmax( extend_option_type ), "GAL_OPTION_EXTEND_ROUND" );
-                }
-                else if( g_isVotingByFrags )
-                {
-                    extend_step = g_extendmapStepFrags;
-                    copy( extend_option_type, charsmax( extend_option_type ), "GAL_OPTION_EXTEND_FRAGS" );
-                }
-                else
-                {
-                    extend_step = g_extendmapStepMinutes;
-                    copy( extend_option_type, charsmax( extend_option_type ), "GAL_OPTION_EXTEND" );
-                }
-
                 copiedChars += formatex( voteStatus[ copiedChars ], voteStatusLenght - copiedChars,
                         "^n%s%i. %s%L%s",
                         COLOR_RED, g_totalVoteOptions + 1,
-                        COLOR_WHITE, player_id,
-                        extend_option_type, g_currentMap,
-                        extend_step, voteMapLine );
+                        COLOR_WHITE, player_id, "GAL_OPTION_STAY_MAP",
+                        g_currentMap, voteMapLine );
             }
             else
             {
-                // add the "Stay Here" menu item
-                if( g_extendmapAllowStayType )
-                {
-                    copiedChars += formatex( voteStatus[ copiedChars ], voteStatusLenght - copiedChars,
-                            "^n%s%i. %s%L%s",
-                            COLOR_RED, g_totalVoteOptions + 1,
-                            COLOR_WHITE, player_id, "GAL_OPTION_STAY_MAP",
-                            g_currentMap, voteMapLine );
-                }
-                else
-                {
-                    copiedChars += formatex( voteStatus[ copiedChars ], voteStatusLenght - copiedChars,
-                            "^n%s%i. %s%L%s",
-                            COLOR_RED, g_totalVoteOptions + 1,
-                            COLOR_WHITE, player_id, "GAL_OPTION_STAY",
-                            voteMapLine );
-                }
+                copiedChars += formatex( voteStatus[ copiedChars ], voteStatusLenght - copiedChars,
+                        "^n%s%i. %s%L%s",
+                        COLOR_RED, g_totalVoteOptions + 1,
+                        COLOR_WHITE, player_id, "GAL_OPTION_STAY",
+                        voteMapLine );
             }
-
-            // Added the extension/stay key option (1 << 2 = key 3, 1 << 3 = key 4, ...)
-            menuKeys |= ( 1 << g_totalVoteOptions );
         }
 
+        // Added the extension/stay key option (1 << 2 = key 3, 1 << 3 = key 4, ...)
+        menuKeys |= ( 1 << g_totalVoteOptions );
     }
 
     // Make a copy of the virgin menu, using the first player's menu as base. This causes all
@@ -5408,10 +5392,6 @@ public vote_handleChoice( player_id, key )
     if( !g_isPlayerVoted[ player_id ] )
     {
         register_vote( player_id, key );
-
-        // After the first player voted, the menu may be updated with the percentages for the options
-        // `SHOW_STATUS_AFTER_VOTE` and `SHOW_STATUS_ALWAYS`.
-        g_isTheFirstPlayerVoted = true;
     }
     else if( key == 9
              && !g_isPlayerCancelledVote[ player_id ]
@@ -6790,7 +6770,7 @@ stock unnominatedDisconnectedPlayer( player_id )
     new blockedMapsBuffer[ MAX_COLOR_MESSAGE ];
 
     // cancel player's nominations and print what was cancelled.
-    maxPlayerNominations    = min( get_pcvar_num( cvar_nomPlayerAllowance ), MAX_NOMINATION_COUNT );
+    maxPlayerNominations    = min( get_pcvar_num( cvar_nomPlayerAllowance ), MAX_OPTIONS_IN_VOTE );
     announcementShowedTimes = 1;
 
     for( new nominationIndex = 0; nominationIndex < maxPlayerNominations; ++nominationIndex )
@@ -7142,7 +7122,7 @@ public showRecentMapsListMenu( player_id )
     // We starting building the menu
     TRY_TO_APPLY( menu_destroy, g_generalUsePlayersMenuIds[ player_id ] )
 
-    if( ( mapIndex = g_recentMapsMenuPages[ player_id ] * MAX_FULL_MENU_ITEMS_PER_PAGE ) )
+    if( ( mapIndex = g_recentMapsMenuPages[ player_id ] * MAX_MENU_ITEMS_PER_PAGE ) )
     {
         mapIndex = mapIndex - 1;
     }
@@ -7151,8 +7131,8 @@ public showRecentMapsListMenu( player_id )
 
     // Calculate how much pages there are available.
     new currentPageNumber = g_recentMapsMenuPages[ player_id ];
-    new lastPageNumber    = ( ( g_recentMapCount / MAX_FULL_MENU_ITEMS_PER_PAGE )
-                        + ( ( ( g_recentMapCount % MAX_FULL_MENU_ITEMS_PER_PAGE ) > 0 ) ? 1 : 0 ) );
+    new lastPageNumber    = ( ( g_recentMapCount / MAX_MENU_ITEMS_PER_PAGE )
+                        + ( ( ( g_recentMapCount % MAX_MENU_ITEMS_PER_PAGE ) > 0 ) ? 1 : 0 ) );
 
     // To create the menu
 #if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
@@ -7175,7 +7155,7 @@ public showRecentMapsListMenu( player_id )
     // SET_MENU_LANG_STRING_PROPERTY( MPROP_BACKNAME, g_generalUsePlayersMenuIds[ player_id ], "BACK" )
 
     // Add the menu items.
-    for( ; mapIndex < g_recentMapCount && itemsCount < MAX_FULL_MENU_ITEMS_PER_PAGE; ++mapIndex, ++itemsCount )
+    for( ; mapIndex < g_recentMapCount && itemsCount < MAX_MENU_ITEMS_PER_PAGE; ++mapIndex, ++itemsCount )
     {
         LOGGER( 4, "( showRecentMapsListMenu ) mapIndex: %d", mapIndex )
         ArrayGetString( g_recentListMapsArray, mapIndex, recentMapName, charsmax( recentMapName ) );
@@ -7197,7 +7177,7 @@ stock addMenuMoreBackOptions( player_id, menuOptionString[], bool:isToEnableMore
             isToEnableBackButton: %d", isToEnableMoreButton, isToEnableBackButton )
 
     // Force the menu control options to be present on the keys 8 (more), 9 (back) and 0 (exit).
-    while( itemsCount < MAX_FULL_MENU_ITEMS_PER_PAGE )
+    while( itemsCount < MAX_MENU_ITEMS_PER_PAGE )
     {
         itemsCount++;
         formatex( menuOptionString, MAX_SHORT_STRING - 1, "%L", player_id, "OFF" );
@@ -8252,7 +8232,7 @@ stock getPlayerNominationMapIndex( player_id, nominationIndex )
     LOGGER( 0, "I AM ENTERING ON getPlayerNominationMapIndex(2) | player_id: %d, nominationIndex: %d", player_id, nominationIndex )
 
     new trieKey             [ MAX_NOMINATION_TRIE_KEY_SIZE ];
-    new playerNominationData[ MAX_NOMINATION_COUNT ];
+    new playerNominationData[ MAX_OPTIONS_IN_VOTE ];
 
     createPlayerNominationKey( player_id, trieKey, charsmax( trieKey ) );
 
@@ -8285,7 +8265,7 @@ stock setPlayerNominationMapIndex( player_id, nominationIndex, mapIndex )
     LOGGER( 128, "I AM ENTERING ON setPlayerNominationMapIndex(3) | player_id: %d, nominationIndex: %d, mapIndex: %d", \
             player_id, nominationIndex, mapIndex )
 
-    if( nominationIndex < MAX_NOMINATION_COUNT )
+    if( nominationIndex < MAX_OPTIONS_IN_VOTE )
     {
         new originalMapIndex = updateNominationsForwardSearch( player_id, nominationIndex, mapIndex );
         updateNominationsReverseSearch( player_id, nominationIndex, mapIndex, originalMapIndex );
@@ -8307,7 +8287,7 @@ stock updateNominationsForwardSearch( player_id, nominationIndex, mapIndex )
 
     new originalMapIndex;
     new trieKey                 [ MAX_NOMINATION_TRIE_KEY_SIZE ];
-    new playerNominationsIndexes[ MAX_NOMINATION_COUNT ];
+    new playerNominationsIndexes[ MAX_OPTIONS_IN_VOTE ];
 
     createPlayerNominationKey( player_id, trieKey, charsmax( trieKey ) );
 
@@ -8321,7 +8301,7 @@ stock updateNominationsForwardSearch( player_id, nominationIndex, mapIndex )
     }
     else
     {
-        for( new currentNominationIndex = 0; currentNominationIndex < MAX_NOMINATION_COUNT; ++currentNominationIndex )
+        for( new currentNominationIndex = 0; currentNominationIndex < MAX_OPTIONS_IN_VOTE; ++currentNominationIndex )
         {
             playerNominationsIndexes[ currentNominationIndex ] = -1;
         }
@@ -8425,7 +8405,7 @@ stock countPlayerNominations( player_id, &openNominationIndex )
     LOGGER( 4, "( countPlayerNominations ) ArraySize(g_nominatedMapsArray): %d", ArraySize( g_nominatedMapsArray ) )
 
     new trieKey[ MAX_NOMINATION_TRIE_KEY_SIZE ];
-    new playerNominationData[ MAX_NOMINATION_COUNT ];
+    new playerNominationData[ MAX_OPTIONS_IN_VOTE ];
 
     openNominationIndex = 0;
     createPlayerNominationKey( player_id, trieKey, charsmax( trieKey ) );
@@ -8434,7 +8414,7 @@ stock countPlayerNominations( player_id, &openNominationIndex )
     {
         TrieGetArray( g_forwardSearchNominationsTrie, trieKey, playerNominationData, sizeof playerNominationData );
 
-        for( new nominationIndex = 0; nominationIndex < MAX_NOMINATION_COUNT; ++nominationIndex )
+        for( new nominationIndex = 0; nominationIndex < MAX_OPTIONS_IN_VOTE; ++nominationIndex )
         {
             LOGGER( 4, "( countPlayerNominations ) playerNominationData[%d]: %d", \
                     nominationIndex, playerNominationData[ nominationIndex ] )
@@ -8664,7 +8644,7 @@ stock add_my_nomination( player_id, mapIndex, mapName[] )
             player_id, mapIndex, mapName )
 
     new openNominationIndex;
-    new maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), MAX_NOMINATION_COUNT );
+    new maxPlayerNominations = min( get_pcvar_num( cvar_nomPlayerAllowance ), MAX_OPTIONS_IN_VOTE );
 
     // When max nomination limit is reached, then we must not to allow this nomination.
     if( countPlayerNominations( player_id, openNominationIndex ) >= maxPlayerNominations )
@@ -9238,7 +9218,9 @@ stock clearTheVotingMenu()
     for( new currentIndex = 0; currentIndex < sizeof g_votingMapNames; ++currentIndex )
     {
         LOGGER( 1, "Cleaning g_votingMapNames[%d]: %s", currentIndex, g_votingMapNames[ currentIndex ] )
-        g_votingMapNames[ currentIndex ][ 0 ] = '^0';
+
+        g_votingMapNames [ currentIndex ][ 0 ] = '^0';
+        g_arrayOfRunOffChoices[ currentIndex ] = 0;
     }
 }
 
@@ -9697,7 +9679,8 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
             g_arrayOfMapsWithVotesNumber[ 3 ] += 0;     // map 4
             g_arrayOfMapsWithVotesNumber[ 4 ] += 0;     // map 5
 
-            if( g_isExtendmapAllowStay || g_isGameFinalVoting )
+            if( g_isExtendmapAllowStay
+                || g_isGameFinalVoting )
             {
                 g_arrayOfMapsWithVotesNumber[ 5 ] += 0;    // extend option
             }
@@ -10274,7 +10257,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
             currentMap[ stringIndex ] = '^0';
             ArrayPushString( g_nominationLoadedMapsArray, currentMap );
 
-            if( currentIndex < MAX_NOMINATION_COUNT )
+            if( currentIndex < MAX_OPTIONS_IN_VOTE )
             {
                 setPlayerNominationMapIndex( player_id, currentIndex, currentIndex );
             }
