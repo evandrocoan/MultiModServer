@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-325";
+new const PLUGIN_VERSION[] = "v3.2.6-327";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -4466,7 +4466,8 @@ stock approvedTheVotingStart( bool:is_forced_voting )
     LOGGER( 128, "I AM ENTERING ON approvedTheVotingStart(1) | is_forced_voting: %d, get_realplayersnum: %d", \
             is_forced_voting, get_realplayersnum() )
 
-    if( get_pcvar_num( cvar_nextMapChangeVotemap ) )
+    if( get_pcvar_num( cvar_nextMapChangeVotemap )
+        && !is_forced_voting )
     {
         new nextMapFlag[ 128 ];
         new nextMapName[ MAX_MAPNAME_LENGHT ];
@@ -5783,8 +5784,8 @@ stock handleMoreThanTwoMapsAtFirst( firstPlaceChoices[], numberOfMapsAtFirstPosi
     originalTotalVotingOptions = g_totalVoteOptions;
     g_totalVoteOptions         = maxVotingChoices;
 
-    // Get an unit identification for the seed sequence value
-    seedValue = get_systime();
+    // Get an unique identification for the seed sequence value
+    seedValue = abs( get_systime() );
 
     for( new voteOptionIndex = 0; voteOptionIndex < maxVotingChoices; voteOptionIndex++ )
     {
