@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-320";
+new const PLUGIN_VERSION[] = "v3.2.6-321";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -80,11 +80,13 @@ new const PLUGIN_VERSION[] = "v3.2.6-320";
  *
  * 16   - Enable DEBUG_LEVEL 1 and all its debugging/depuration available.
  *
- * 31  - Enable the levels 1, 2, 4, 8 and 16.
+ * 32  - Run the manual test on server start.
+ *
+ * 63  - Enable the levels 1, 2, 4, 8, 16 and 32.
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 16+2+4
+#define DEBUG_LEVEL 16+2+4+8
 
 
 /**
@@ -100,6 +102,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-320";
 #define DEBUG_LEVEL_UNIT_TEST_DELAYED 4
 #define DEBUG_LEVEL_FAKE_VOTES        8
 #define DEBUG_LEVEL_CRITICAL_MODE     16
+#define DEBUG_LEVEL_MANUAL_TEST_START 32
 
 /**
  * Common strings sizes used around the plugin.
@@ -217,12 +220,14 @@ new const PLUGIN_VERSION[] = "v3.2.6-320";
 /**
  * Setup the Unit Tests when they are used/necessary.
  */
-#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
+#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START )
     /**
      * Contains all imediates unit tests to execute.
      */
     stock normalTestsToExecute()
     {
+        LOGGER( 128, "I AM ENTERING ON normalTestsToExecute(0)" )
+
         test_registerTest();
         test_isInEmptyCycle();
         test_mapGetNext_cases();
@@ -231,6 +236,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-320";
         test_loadVoteChoices_cases();
         test_nominateAndUnnominate_load();
         test_RTVAndUnRTV_load();
+        test_getUniqueRandom_load();
     }
 
     /**
@@ -238,16 +244,24 @@ new const PLUGIN_VERSION[] = "v3.2.6-320";
      */
     public dalayedTestsToExecute()
     {
+        LOGGER( 128, "I AM ENTERING ON dalayedTestsToExecute(0)" )
         test_isMapExtensionAvowed_case1();
     }
+
+    /**
+     * Used to know when the Unit Tests are running.
+     */
+    new bool:g_test_isTheUnitTestsRunning;
 
     /**
      * Run the manual call Unit Tests, by 'say run' and 'say_team run'.
      */
     public inGameTestsToExecute( player_id )
     {
+        LOGGER( 128, "I AM ENTERING ON inGameTestsToExecute(1) player_id: %d", player_id )
+
         // Save the game cvars
-        saveServerCvarsForTesting();
+        g_test_isTheUnitTestsRunning ? player_id : saveServerCvarsForTesting();
 
         for( new i = 0; i < 1000; i++ )
         {
@@ -258,15 +272,16 @@ new const PLUGIN_VERSION[] = "v3.2.6-320";
             // LOGGER( 1, "Current i is: %d", i )
         }
 
+        test_getUniqueRandom_load();
         // test_nominateAndUnnominate_load();
-        test_loadVoteChoices_cases();
+        // test_loadVoteChoices_cases();
         //test_colorChatLimits( player_id );
         //test_unnominatedDisconnected( player_id );
         //test_announceVoteBlockedMap_a();
         //test_announceVoteBlockedMap_c();
 
         // Restore the game cvars
-        printTheUnitTestsResults();
+        g_test_isTheUnitTestsRunning ? player_id : printTheUnitTestsResults();
     }
 
     /**
@@ -315,7 +330,6 @@ new const PLUGIN_VERSION[] = "v3.2.6-320";
     new g_test_lastMaxDelayResult;
 
     new Trie: g_test_failureIdsTrie;
-    new bool: g_test_isTheUnitTestsRunning;
     new Array:g_test_failureIdsArray;
     new Array:g_test_idsAndNamesArray;
     new Array:g_test_failureReasonsArray;
@@ -1087,7 +1101,7 @@ public plugin_init()
 #endif
 
     register_plugin( PLUGIN_NAME, PLUGIN_VERSION, PLUGIN_AUTHOR );
-    LOGGER( 1, "^n^n^n^n%s PLUGIN VERSION %s INITIATING...", PLUGIN_NAME, PLUGIN_VERSION )
+    LOGGER( 1, "^n^n^n^n^n^n^n^n^n^n^n%s PLUGIN VERSION %s INITIATING...", PLUGIN_NAME, PLUGIN_VERSION )
 
     cvar_maxMapExtendTime        = register_cvar( "amx_extendmap_max", "90" );
     cvar_extendmapStepMinutes    = register_cvar( "amx_extendmap_step", "15" );
@@ -1160,7 +1174,7 @@ public plugin_init()
     cvar_voteDuration              = register_cvar( "gal_vote_duration", "15" );
     cvar_isToShowExpCountdown      = register_cvar( "gal_vote_expirationcountdown", "1" );
     cvar_isEndMapCountdown         = register_cvar( "gal_endonround_countdown", "0" );
-    cvar_voteMapChoiceCount        = register_cvar( "gal_vote_mapchoices", "5" );
+    cvar_voteMapChoiceCount        = register_cvar( "gal_vote_mapchoices", "6" );
     cvar_voteAnnounceChoice        = register_cvar( "gal_vote_announcechoice", "1" );
     cvar_showVoteStatus            = register_cvar( "gal_vote_showstatus", "1" );
     cvar_isToReplaceByVoteMenu     = register_cvar( "gal_vote_replace_menu", "0" );
@@ -1169,7 +1183,7 @@ public plugin_init()
     cvar_runoffEnabled             = register_cvar( "gal_runoff_enabled", "0" );
     cvar_runoffDuration            = register_cvar( "gal_runoff_duration", "10" );
     cvar_runoffRatio               = register_cvar( "gal_runoff_ratio", "0.5" );
-    cvar_runoffMapchoices          = register_cvar( "gal_runoff_ratio", "2" );
+    cvar_runoffMapchoices          = register_cvar( "gal_runoff_mapchoices", "2" );
     cvar_soundsMute                = register_cvar( "gal_sounds_mute", "0" );
     cvar_voteMapFilePath           = register_cvar( "gal_vote_mapfile", "*" );
     cvar_voteMinPlayers            = register_cvar( "gal_vote_minplayers", "0" );
@@ -1252,7 +1266,7 @@ public plugin_cfg()
     loadMapFiles();
 
     // Configure the Unit Tests, when they are activate.
-#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
+#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START )
     saveCurrentTestsTimeStamp();
     configureTheUnitTests();
 #endif
@@ -4461,7 +4475,7 @@ stock approvedTheVotingStart( bool:is_forced_voting )
         LOGGER( 1, "    ( approvedTheVotingStart ) g_voteStatus: %d, g_voteStatus & VOTE_IS_OVER: %d", \
                 g_voteStatus, g_voteStatus & VOTE_IS_OVER != 0 )
 
-    #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
+    #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START )
         if( g_test_isTheUnitTestsRunning )
         {
             LOGGER( 1, "    ( approvedTheVotingStart ) Returning true on the if !g_test_isTheUnitTestsRunning, \
@@ -4608,8 +4622,6 @@ stock vote_startDirector( bool:is_forced_voting )
         finalizeVoting();
     }
 
-    LOGGER( 4, "   [PLAYER CHOICES]" )
-    LOGGER( 4, "" )
     LOGGER( 4, "" )
     LOGGER( 4, "    ( vote_startDirector|out ) g_isTheLastGameRound: %d", g_isTheLastGameRound )
     LOGGER( 4, "    ( vote_startDirector|out ) g_isTimeToRestart: %d, g_voteStatus & VOTE_IS_FORCED: %d", \
@@ -4620,41 +4632,22 @@ stock initializeTheVoteDisplay()
 {
     LOGGER( 128, "I AM ENTERING ON initializeTheVoteDisplay(0)" )
 
-    new       player_id;
-    new       playersCount;
-    new       players            [ MAX_PLAYERS ];
+    new player_id;
+    new playersCount;
+
+    new players[ MAX_PLAYERS ];
     new Float:handleChoicesDelay;
 
-    // clear all nominations
+    // Clear all nominations
     nomination_clearAll();
 
-    // alphabetize the maps
+    // Alphabetize the maps
     SortCustom2D( g_votingMapNames, g_totalVoteOptions, "sort_stringsi" );
 
-    // print the voting map options
-#if defined DEBUG
-    new voteOptions = ( g_totalVoteOptions == 1? 2 : g_totalVoteOptions );
-
-    for( new dbgChoice = 0; dbgChoice < voteOptions; dbgChoice++ )
-    {
-        LOGGER( 4, "      %i. %s", dbgChoice + 1, g_votingMapNames[ dbgChoice ] )
-    }
-#endif
-
-    // force a right vote duration for the Unit Tests run
-#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
-    g_voteDuration = 5;
-#endif
-
-    // to create fake votes when needed
-#if DEBUG_LEVEL & DEBUG_LEVEL_FAKE_VOTES
-    set_task( 2.0, "create_fakeVotes", TASKID_DBG_FAKEVOTES );
-#endif
-
-    // skip bots and hltv
+    // Skip bots and hltv
     get_players( players, playersCount, "ch" );
 
-    // mark the players who are in this vote for use later
+    // Mark the players who are in this vote for use later
     for( new playerIndex = 0; playerIndex < playersCount; ++playerIndex )
     {
         player_id = players[ playerIndex ];
@@ -4665,28 +4658,60 @@ stock initializeTheVoteDisplay()
         }
     }
 
-    // adjust the choices delay for the Unit Tests run or normal work flow
-#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
+    // Adjust the choices delay for the Unit Tests run or normal work flow
+#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START )
     handleChoicesDelay = 0.1;
 #else
 
-    // set_task 1.0 + pendingVoteCountdown 1.0
+    // Set_task 1.0 + pendingVoteCountdown 1.0
     handleChoicesDelay = 7.0 + 1.0 + 1.0;
 
-    // make perfunctory announcement: "get ready to choose a map"
+    // Make perfunctory announcement: "get ready to choose a map"
     if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_GETREADYTOCHOOSE ) )
     {
         client_cmd( 0, "spk ^"get red( e80 ) ninety( s45 ) to check( e20 ) \
                 use bay( s18 ) mass( e42 ) cap( s50 )^"" );
     }
 
-    // announce the pending vote countdown from 7 to 1
+    // Announce the pending vote countdown from 7 to 1
     g_pendingVoteCountdown = 7;
     set_task( 1.0, "pendingVoteCountdown", TASKID_PENDING_VOTE_COUNTDOWN, _, _, "a", 7 );
 #endif
 
-    // display the map choices, 1 second from now
+    // Set debug options
+    LOGGER( 0, "", configureVoteDisplayDebugging() )
+
+    // Display the map choices, 1 second from now
     set_task( handleChoicesDelay, "vote_handleDisplay", TASKID_VOTE_HANDLEDISPLAY );
+}
+
+stock configureVoteDisplayDebugging()
+{
+    // Force a right vote duration for the Unit Tests run
+#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START )
+    g_voteDuration = 5;
+#endif
+
+    // To create fake votes when needed
+#if DEBUG_LEVEL & DEBUG_LEVEL_FAKE_VOTES
+    set_task( 2.0, "create_fakeVotes", TASKID_DBG_FAKEVOTES );
+#endif
+
+    // Print the voting map options
+#if defined DEBUG
+    new voteOptions = ( g_totalVoteOptions == 1? 2 : g_totalVoteOptions );
+
+    LOGGER( 4, "" )
+    LOGGER( 4, "" )
+    LOGGER( 4, "   [PLAYER CHOICES]" )
+
+    for( new dbgChoice = 0; dbgChoice < voteOptions; dbgChoice++ )
+    {
+        LOGGER( 4, "      %i. %s", dbgChoice + 1, g_votingMapNames[ dbgChoice ] )
+    }
+#endif
+
+    return 0;
 }
 
 public pendingVoteCountdown()
@@ -5624,7 +5649,7 @@ stock showPlayersVoteResult()
     {
         computeVoteMapLine( voteMapLine, charsmax( voteMapLine ), playerVoteMapChoiceIndex );
 
-        LOGGER( 4, "      %2i/%3i  %i. %s", \
+        LOGGER( 4, "      %2i/%-2i, %i. %s", \
                 g_arrayOfMapsWithVotesNumber[ playerVoteMapChoiceIndex ], g_totalVotesCounted, \
                 playerVoteMapChoiceIndex, g_votingMapNames[ playerVoteMapChoiceIndex ] )
     }
@@ -5633,64 +5658,115 @@ stock showPlayersVoteResult()
     return 0;
 }
 
+/**
+ * Get unique random positive numbers between 0 until 31. If the `maximum`'s parameter value
+ * provided is greater than 31, the generated numbers will not be unique. The range is:
+ *
+ *     0 <= return value <= maximum <= 31
+ *
+ * @param sequence     a random positive number to reset the current unique return values.
+ * @param maximum      the upper bound limit, i.e., the maximum value to be sorted.
+ *
+ * @return -1 when there are not new unique positive numbers to return.
+ */
+stock getUniqueRandomInteger( sequence, maximum )
+{
+    LOGGER( 128, "I AM ENTERING ON getUniqueRandomInteger(2) %d. maximum: %d", sequence, maximum )
+    static maximumBitField;
+
+    static lastSequence   = -1;
+    static sortedIntegers = 0;
+
+    if( lastSequence != sequence )
+    {
+        lastSequence    = sequence;
+        sortedIntegers  = 0;
+        maximumBitField = 0;
+
+        for( new index = 0; index < maximum + 1; index++ )
+        {
+            maximumBitField |= ( 1 << index );
+        }
+    }
+
+    new randomInteger;
+
+    // Keep looping while there is numbers that haven't yet been selected.
+    while( sortedIntegers != maximumBitField )
+    {
+        randomInteger = random_num( 0, maximum );
+
+        // If the number has not yet been selected yet
+        if( !( sortedIntegers & ( 1 << randomInteger ) ) )
+        {
+            // Set bit on the sortedIntegers bit-field, so the integer will now be considered selected
+            sortedIntegers |= ( 1 << randomInteger );
+
+            LOGGER( 1, "    ( getUniqueRandomInteger ) Just Returning the randomInteger: %d", randomInteger )
+            return randomInteger;
+        }
+    }
+
+    LOGGER( 1, "    ( getUniqueRandomInteger ) Just Returning the randomInteger: %d", -1 )
+    return -1;
+}
+
+stock printIntegerArray( level, integerArray[], arrayName[], integerArraySize )
+{
+    LOGGER( 128, "I AM ENTERING ON printIntegerArray(4) integerArraySize: %d", integerArraySize )
+
+    for( new index = 0; index < integerArraySize; index++ )
+    {
+        LOGGER( level, "( printIntegerArray ) %s: %d", arrayName, integerArray[ index ] )
+    }
+
+    return 0;
+}
+
+stock printRunOffMaps( runOffMapsCount )
+{
+    LOGGER( 128, "I AM ENTERING ON printRunOffMaps(1) runOffMapsCount: %d", runOffMapsCount )
+
+    for( new index = 0; index < runOffMapsCount; index++ )
+    {
+        LOGGER( 16, "( printRunOffMaps ) RunOff Map %d: %s", index, g_votingMapNames[ g_arrayOfRunOffChoices[ index ] ] )
+    }
+
+    return 0;
+}
+
 stock handleMoreThanTwoMapsAtFirst( firstPlaceChoices[], numberOfMapsAtFirstPosition )
 {
     LOGGER( 128, "I AM ENTERING ON handleMoreThanTwoMapsAtFirst(2)" )
-    LOGGER( 16, "( numberOfMapsAtFirstPosition > 2 ) --- firstPlaceChoices[ numberOfMapsAtFirstPosition - 1 ] : %d", \
-            firstPlaceChoices[ numberOfMapsAtFirstPosition - 1 ] )
+    LOGGER( 0, "", printIntegerArray( 16, firstPlaceChoices, "firstPlaceChoices", numberOfMapsAtFirstPosition ) )
 
-    // determine the two choices that will be facing off
-    new firstChoiceIndex;
-    new secondChoiceIndex;
+    new randomInteger;
+    new maxVotingChoices;
 
-    firstChoiceIndex  = random_num( 0, numberOfMapsAtFirstPosition - 1 );
-    secondChoiceIndex = random_num( 0, numberOfMapsAtFirstPosition - 1 );
+    maxVotingChoices = min( MAX_OPTIONS_IN_VOTE, get_pcvar_num( cvar_runoffMapchoices ) );
+    maxVotingChoices = max( min( maxVotingChoices, numberOfMapsAtFirstPosition ), 2 );
 
-    LOGGER( 16, "( numberOfMapsAtFirstPosition > 2 ) --- firstChoiceIndex: %d, secondChoiceIndex: %d", \
-            firstChoiceIndex, secondChoiceIndex )
+    g_totalVoteOptionsTemp = maxVotingChoices;
 
-    if( firstChoiceIndex == secondChoiceIndex )
+    for( new voteOptionIndex = 0; voteOptionIndex < maxVotingChoices; voteOptionIndex++ )
     {
-        if( secondChoiceIndex - 1 < 0 )
+        randomInteger = getUniqueRandomInteger( 0, maxVotingChoices );
+
+        // If firstPlaceChoices[ numberOfMapsAtFirstPosition - 1 ]  is equal to
+        // g_totalVoteOptions then it option is not a valid map, it is the keep current
+        // map option, and must be informed it to the vote_display function, to show the
+        // 1 map options and the keep current map.
+        if( firstPlaceChoices[ randomInteger ] == g_totalVoteOptions )
         {
-            ++secondChoiceIndex;
+            g_totalVoteOptionsTemp--;
+            g_isRunOffNeedingKeepCurrentMap = true;
         }
-        else
-        {
-            --secondChoiceIndex;
-        }
+
+        g_arrayOfRunOffChoices[ voteOptionIndex ] = firstPlaceChoices[ randomInteger ];
     }
 
-    /**
-     * If firstPlaceChoices[ numberOfMapsAtFirstPosition - 1 ]  is equal to
-     * g_totalVoteOptions then it option is not a valid map, it is the keep current
-     * map option, and must be informed it to the vote_display function, to show the
-     * 1 map options and the keep current map.
-     */
-    if( firstPlaceChoices[ firstChoiceIndex ] == g_totalVoteOptions )
-    {
-        g_totalVoteOptionsTemp          = 1;
-        g_arrayOfRunOffChoices[ 0 ]     = firstPlaceChoices[ secondChoiceIndex ];
-        g_isRunOffNeedingKeepCurrentMap = true;
-    }
-    else if( firstPlaceChoices[ secondChoiceIndex ] == g_totalVoteOptions )
-    {
-        g_totalVoteOptionsTemp          = 1;
-        g_arrayOfRunOffChoices[ 0 ]     = firstPlaceChoices[ firstChoiceIndex ];
-        g_isRunOffNeedingKeepCurrentMap = true;
-    }
-    else
-    {
-        g_totalVoteOptionsTemp      = 2;
-        g_arrayOfRunOffChoices[ 0 ] = firstPlaceChoices[ firstChoiceIndex ];
-        g_arrayOfRunOffChoices[ 1 ] = firstPlaceChoices[ secondChoiceIndex ];
-    }
-
-    LOGGER( 16, "( numberOfMapsAtFirstPosition > 2 ) --- firstChoiceIndex: %d, secondChoiceIndex: %d", \
-            firstChoiceIndex, secondChoiceIndex )
-    LOGGER( 16, "( numberOfMapsAtFirstPosition > 2 ) --- GAL_RESULT_TIED1 --- Runoff map1: %s, Runoff map2: %s", \
-            g_votingMapNames[ g_arrayOfRunOffChoices[ 0 ] ], \
-            g_votingMapNames[ g_arrayOfRunOffChoices[ 1 ] ] )
+    LOGGER( 16, "( handleMoreThanTwoMapsAtFirst ) Number of Maps at First Position > 2" )
+    LOGGER( 0, "", printRunOffMaps( g_totalVoteOptionsTemp ) )
 
     color_print( 0, "%L", LANG_PLAYER, "GAL_RESULT_TIED1", numberOfMapsAtFirstPosition );
 }
@@ -5720,13 +5796,14 @@ stock startRunoffVoting( firstPlaceChoices[], secondPlaceChoices[], numberOfMaps
     {
         handleTwoMapsAtFirstPosition( firstPlaceChoices );
     }
+    // If `numberOfMapsAtFirstPosition` is not greater than 2, neither equal to 2, therefore it is 1.
     else if( numberOfMapsAtSecondPosition == 1 )
     {
-        handleOneMapsAtSecondPosition( firstPlaceChoices, secondPlaceChoices );
+        handleOneMapAtSecondPosition( firstPlaceChoices, secondPlaceChoices );
     }
     else // numberOfMapsAtFirstPosition == 1 && numberOfMapsAtSecondPosition > 1
     {
-        handleOneMapsAtFirstPosition( firstPlaceChoices, secondPlaceChoices, numberOfMapsAtSecondPosition );
+        handleOneMapAtFirstPosition( firstPlaceChoices, secondPlaceChoices, numberOfMapsAtSecondPosition );
     }
 
     // clear all the votes
@@ -5759,14 +5836,13 @@ stock handleTwoMapsAtFirstPosition( firstPlaceChoices[] )
         g_arrayOfRunOffChoices[ 1 ] = firstPlaceChoices[ 1 ];
     }
 
-    LOGGER( 16, "( numberOfMapsAtFirstPosition == 2 ) --- Runoff map1: %s, Runoff map2: %s, g_totalVoteOptions: %d", \
-            g_votingMapNames[ g_arrayOfRunOffChoices[ 0 ] ], \
-            g_votingMapNames[ g_arrayOfRunOffChoices[ 1 ] ], g_totalVoteOptions )
+    LOGGER( 16, "( handleTwoMapsAtFirstPosition ) Number of Maps at First Position == 2" )
+    LOGGER( 0, "", printRunOffMaps( g_totalVoteOptionsTemp ) )
 }
 
-stock handleOneMapsAtSecondPosition( firstPlaceChoices[], secondPlaceChoices[] )
+stock handleOneMapAtSecondPosition( firstPlaceChoices[], secondPlaceChoices[] )
 {
-    LOGGER( 128, "I AM ENTERING ON handleOneMapsAtSecondPosition(2)" )
+    LOGGER( 128, "I AM ENTERING ON handleOneMapAtSecondPosition(2)" )
 
     if( firstPlaceChoices[ 0 ] == g_totalVoteOptions )
     {
@@ -5787,14 +5863,13 @@ stock handleOneMapsAtSecondPosition( firstPlaceChoices[], secondPlaceChoices[] )
         g_arrayOfRunOffChoices[ 1 ] = secondPlaceChoices[ 0 ];
     }
 
-    LOGGER( 16, "( numberOfMapsAtSecondPosition == 1 ) --- Runoff map1: %s, Runoff map2: %s", \
-            g_votingMapNames[ g_arrayOfRunOffChoices[ 0 ] ], \
-            g_votingMapNames[ g_arrayOfRunOffChoices[ 1 ] ] )
+    LOGGER( 16, "( handleOneMapAtSecondPosition ) Number of Maps at Second Position == 1" )
+    LOGGER( 0, "", printRunOffMaps( g_totalVoteOptionsTemp ) )
 }
 
-stock handleOneMapsAtFirstPosition( firstPlaceChoices[], secondPlaceChoices[], numberOfMapsAtSecondPosition )
+stock handleOneMapAtFirstPosition( firstPlaceChoices[], secondPlaceChoices[], numberOfMapsAtSecondPosition )
 {
-    LOGGER( 128, "I AM ENTERING ON handleOneMapsAtFirstPosition(3)" )
+    LOGGER( 128, "I AM ENTERING ON handleOneMapAtFirstPosition(3)" )
     new randonNumber = random_num( 0, numberOfMapsAtSecondPosition - 1 );
 
     if( firstPlaceChoices[ 0 ] == g_totalVoteOptions )
@@ -5816,10 +5891,8 @@ stock handleOneMapsAtFirstPosition( firstPlaceChoices[], secondPlaceChoices[], n
         g_arrayOfRunOffChoices[ 1 ] = secondPlaceChoices[ randonNumber ];
     }
 
-    LOGGER( 16, "( numberOfMapsAtFirstPosition == 1 && numberOfMapsAtSecondPosition > 1 ) --- \
-            Runoff map1: %s, Runoff map2: %s", \
-            g_votingMapNames[ g_arrayOfRunOffChoices[ 0 ] ], \
-            g_votingMapNames[ g_arrayOfRunOffChoices[ 1 ] ] )
+    LOGGER( 16, "( handleOneMapAtFirstPosition ) Number of Maps at First Position == 1 && At Second Position > 1" )
+    LOGGER( 0, "", printRunOffMaps( g_totalVoteOptionsTemp ) )
 
     color_print( 0, "%L", LANG_PLAYER, "GAL_RESULT_TIED2", numberOfMapsAtSecondPosition );
 }
@@ -5832,7 +5905,7 @@ stock determineTheVotingFirstChoices( firstPlaceChoices[], secondPlaceChoices[],
     new playerVoteMapChoiceIndex;
 
     // determine the number of votes for 1st and 2nd places
-    for( playerVoteMapChoiceIndex = 0; playerVoteMapChoiceIndex <= g_totalVoteOptions;
+    for( playerVoteMapChoiceIndex = 0; playerVoteMapChoiceIndex < g_totalVoteOptions;
          ++playerVoteMapChoiceIndex )
     {
         if( numberOfVotesAtFirstPlace < g_arrayOfMapsWithVotesNumber[ playerVoteMapChoiceIndex ] )
@@ -5847,7 +5920,7 @@ stock determineTheVotingFirstChoices( firstPlaceChoices[], secondPlaceChoices[],
     }
 
     // determine which maps are in 1st and 2nd places
-    for( playerVoteMapChoiceIndex = 0; playerVoteMapChoiceIndex <= g_totalVoteOptions;
+    for( playerVoteMapChoiceIndex = 0; playerVoteMapChoiceIndex < g_totalVoteOptions;
          ++playerVoteMapChoiceIndex )
     {
         LOGGER( 16, "Inside the for to determine which maps are in 1st and 2nd places, \
@@ -6044,7 +6117,7 @@ stock map_getMinutesElapsedInteger()
     LOGGER( 128, "I AM ENTERING ON Float:map_getMinutesElapsed(0) | mp_timelimit: %f", get_pcvar_float( cvar_mp_timelimit ) )
 
     // While the Unit Tests are running, to force a specific time.
-#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
+#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START )
     if( g_test_isTheUnitTestsRunning )
     {
         return g_test_gameElapsedTime;
@@ -6577,14 +6650,14 @@ public cmd_HL1_listmaps( player_id )
 public map_listAll( player_id )
 {
     LOGGER( 128, "I AM ENTERING ON map_listAll(1) | player_id: %d", player_id )
+    static lastMapDisplayed[ MAX_MAPNAME_LENGHT ][ 2 ];
 
     new start;
     new userid;
     new mapPerPage;
 
-    new    command         [ 32 ];
-    new    paramenter      [ 8 ];
-    static lastMapDisplayed[ MAX_MAPNAME_LENGHT ][ 2 ];
+    new command  [ 32 ];
+    new parameter[ 8 ];
 
     // determine if the player has requested a listing before
     userid = get_user_userid( player_id );
@@ -6599,9 +6672,9 @@ public map_listAll( player_id )
 
     if( mapPerPage )
     {
-        if( read_argv( 1, paramenter, charsmax( paramenter ) ) )
+        if( read_argv( 1, parameter, charsmax( parameter ) ) )
         {
-            if( paramenter[ 0 ] == '*' )
+            if( parameter[ 0 ] == '*' )
             {
                 // if the last map previously displayed belongs to the current user,
                 // start them off there, otherwise, start them at 1
@@ -6616,7 +6689,7 @@ public map_listAll( player_id )
             }
             else
             {
-                start = str_to_num( paramenter );
+                start = str_to_num( parameter );
             }
         }
         else
@@ -6626,9 +6699,9 @@ public map_listAll( player_id )
 
         if( player_id == 0
             && read_argc() == 3
-            && read_argv( 2, paramenter, charsmax( paramenter ) ) )
+            && read_argv( 2, parameter, charsmax( parameter ) ) )
         {
-            mapPerPage = str_to_num( paramenter );
+            mapPerPage = str_to_num( parameter );
         }
     }
 
@@ -8785,7 +8858,7 @@ stock get_realplayersnum()
     new players[ MAX_PLAYERS ];
     get_players( players, playersCount, "ch" );
 
-#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL && DEBUG_LEVEL & DEBUG_LEVEL_FAKE_VOTES
+#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START ) && DEBUG_LEVEL & DEBUG_LEVEL_FAKE_VOTES
     if( g_test_isTheUnitTestsRunning )
     {
         return g_test_aimedPlayersNumber;
@@ -8793,7 +8866,7 @@ stock get_realplayersnum()
 
     return FAKE_PLAYERS_NUMBER_FOR_DEBUGGING;
 #else
-    #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
+    #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START )
         if( g_test_isTheUnitTestsRunning )
         {
             return g_test_aimedPlayersNumber;
@@ -8880,7 +8953,7 @@ stock color_print( const player_id, const message[], any:... )
     LOGGER( 128, "I AM ENTERING ON color_print(...) | player_id: %d, message: %s...", player_id, message )
     new formated_message[ MAX_COLOR_MESSAGE ];
 
-#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
+#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START )
     g_test_printedMessage[ 0 ] = '^0';
 
     vformat( g_test_printedMessage, charsmax( g_test_printedMessage ), message, 3 );
@@ -9273,7 +9346,7 @@ public plugin_end()
     destroy_two_dimensional_array( g_minPlayerFillerMapGroupArrays );
 
     // Clean the unit tests data
-#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
+#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START )
     TRY_TO_APPLY( ArrayDestroy, g_test_idsAndNamesArray )
     TRY_TO_APPLY( ArrayDestroy, g_test_failureIdsArray )
     TRY_TO_APPLY( ArrayDestroy, g_test_failureReasonsArray )
@@ -9676,7 +9749,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
             g_arrayOfMapsWithVotesNumber[ 0 ] += 0;     // map 1
             g_arrayOfMapsWithVotesNumber[ 1 ] += 2;     // map 2
             g_arrayOfMapsWithVotesNumber[ 2 ] += 2;     // map 3
-            g_arrayOfMapsWithVotesNumber[ 3 ] += 0;     // map 4
+            g_arrayOfMapsWithVotesNumber[ 3 ] += 2;     // map 4
             g_arrayOfMapsWithVotesNumber[ 4 ] += 0;     // map 5
 
             if( g_isExtendmapAllowStay
@@ -9695,7 +9768,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
 
 
 // The Unit Tests execution
-#if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
+#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START )
     stock configureTheUnitTests()
     {
         LOGGER( 128, "I AM ENTERING ON configureTheUnitTests(0)" )
@@ -9855,6 +9928,14 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_DELAYED
         g_test_maxDelayResult = 1;
         set_task( 0.5, "dalayedTestsToExecute" );
+    #endif
+
+        // Run the manual tests.
+    #if DEBUG_LEVEL & DEBUG_LEVEL_MANUAL_TEST_START
+        print_logger( "" );
+        print_logger( "" );
+        print_logger( "" );
+        inGameTestsToExecute( 0 );
     #endif
 
         // displays the OK to the last test.
@@ -11049,6 +11130,56 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
 
         formatex( errorMessage, charsmax( errorMessage ), "Must to be %d RTVs, instead of %d.", total_RTVs, g_rockedVoteCount );
         SET_TEST_FAILURE( test_id, g_rockedVoteCount != total_RTVs, errorMessage )
+    }
+
+    /**
+     * To test the stock getUniqueRandomIntegers(2).
+     */
+    stock test_getUniqueRandom_load()
+    {
+        test_getUniqueRandomInteger( 0  ); // Case 1
+        test_getUniqueRandomInteger( 1  ); // Case 2
+        test_getUniqueRandomInteger( 30 ); // Case 3
+        test_getUniqueRandomInteger( 31 ); // Case 4
+
+        test_getUniqueRandomInteger( 31 ); // Case 5
+        test_getUniqueRandomInteger( 30 ); // Case 6
+        test_getUniqueRandomInteger( 1  ); // Case 7
+        test_getUniqueRandomInteger( 0  ); // Case 8
+    }
+
+    stock test_getUniqueRandomInteger( max_value )
+    {
+        new errorMessage[ MAX_LONG_STRING ];
+        new test_id = test_registerSeriesNaming( "test_getUniqueRandomInteger", 'a' );
+
+        new trieSize;
+        new sortedInterger;
+
+        new sortedIntergerString[ 6 ];
+        new Trie:sortedIntegers = TrieCreate();
+
+        static sequence = -1;
+        sequence++;
+
+        for( new index = 0; index < max_value + 3 ; index++ )
+        {
+            sortedInterger = getUniqueRandomInteger( sequence, max_value );
+            num_to_str( sortedInterger, sortedIntergerString, charsmax( sortedIntergerString ) );
+
+            formatex( errorMessage, charsmax( errorMessage ), "The integer %d, must not to be sorted twice.", sortedInterger );
+            SET_TEST_FAILURE( test_id, TrieKeyExists( sortedIntegers, sortedIntergerString ) && sortedInterger != -1, errorMessage )
+
+            if( !TrieKeyExists( sortedIntegers, sortedIntergerString ) )
+            {
+                TrieSetCell( sortedIntegers, sortedIntergerString, index ) ? trieSize++ : trieSize;
+            }
+        }
+
+        formatex( errorMessage, charsmax( errorMessage ), "The TrieSize must to be %d, instead of %d.", max_value + 2, trieSize );
+        SET_TEST_FAILURE( test_id, trieSize != max_value + 2, errorMessage )
+
+        TrieDestroy( sortedIntegers );
     }
 
 
