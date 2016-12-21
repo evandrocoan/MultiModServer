@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-330";
+new const PLUGIN_VERSION[] = "v3.2.6-331";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -3958,7 +3958,8 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
     #endif
     }
 
-    new maxVotingChoices = g_isMapExtensionAllowed ? g_maxVotingChoices - 1 : g_maxVotingChoices;
+    new maxVotingChoices = g_isMapExtensionAllowed ?
+            ( g_maxVotingChoices >= MAX_OPTIONS_IN_VOTE ? g_maxVotingChoices - 1 : g_maxVotingChoices ) : g_maxVotingChoices;
 
     // fill remaining slots with random maps from each filler file, as much as possible
     for( new groupIndex = 0; groupIndex < groupCount; ++groupIndex )
@@ -4220,7 +4221,9 @@ stock debug_vote_map_selection( choiceIndex, mapName[], useWhitelistOutBlock, is
 stock vote_addFillers( blockedMapsBuffer[], &announcementShowedTimes = 0 )
 {
     LOGGER( 128, "I AM ENTERING ON vote_addFillers(2) | announcementShowedTimes: %d", announcementShowedTimes )
-    new maxVotingChoices = g_isMapExtensionAllowed ? g_maxVotingChoices - 1 : g_maxVotingChoices;
+
+    new maxVotingChoices = g_isMapExtensionAllowed ?
+            ( g_maxVotingChoices >= MAX_OPTIONS_IN_VOTE ? g_maxVotingChoices - 1 : g_maxVotingChoices ) : g_maxVotingChoices;
 
     if( g_totalVoteOptions < maxVotingChoices )
     {
@@ -4275,7 +4278,8 @@ stock vote_addNominations( blockedMapsBuffer[], &announcementShowedTimes = 0 )
             }
         }
 
-        new maxVotingChoices = g_isMapExtensionAllowed ? g_maxVotingChoices - 1 : g_maxVotingChoices;
+        new maxVotingChoices = g_isMapExtensionAllowed ?
+                ( g_maxVotingChoices >= MAX_OPTIONS_IN_VOTE ? g_maxVotingChoices - 1 : g_maxVotingChoices ) : g_maxVotingChoices;
 
         // set how many total nominations we can use in this vote
         new maxNominations    = get_pcvar_num( cvar_nomQtyUsed );
