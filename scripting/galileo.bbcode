@@ -1190,15 +1190,18 @@ Thank you!  It means a lot to me.
 [SPOILER]
 
 [LIST=1]
-[*]Added Added new cvar `gal_nextmap_votemap` to not start another map voting when the server admin to starts one. [URL="https://github.com/addonszz/Galileo/issues/22"]Issue#22[/URL].
-[*]Added Added new cvar `gal_runoff_mapchoices` to let the voting take into account all the map options that had the maximum amount of votes. [URL="https://github.com/addonszz/Galileo/issues/33"]Issue#33[/URL].
+[*]Added an optimum time for the vote starting at map end. [URL="https://github.com/addonszz/Galileo/issues/20"]Issue#20[/URL].
+[*]Improved the cvar `gal_endofmapvote_start` detection and added new options to it. [URL="https://github.com/addonszz/Galileo/issues/38"]Issue#38[/URL].
+[*]Added new cvar `gal_nextmap_votemap` to not start another map voting when the server admin to starts one. [URL="https://github.com/addonszz/Galileo/issues/22"]Issue#22[/URL].
+[*]Added new cvar `gal_runoff_mapchoices` to let the voting take into account all the map options that had the maximum amount of votes. [URL="https://github.com/addonszz/Galileo/issues/33"]Issue#33[/URL].
 [*]Added new cvar `gal_runoff_ratio` to specifies the minimum amount of votes the most voted map should have to not start a run off voting. [URL="https://github.com/addonszz/Galileo/issues/33"]Issue#33[/URL].
 [*]Implemented the Allow Round Finish feature for the cvar `mp_fraglimit`.
 [*]Implemented the Maintenance Mode for the cvars `mp_fraglimit`, `mp_maxrounds` and `mp_winlimit`.
-[*]Fixed the cvar `gal_vote_mapchoices` not including the options `Stay Here` and `Extend Map`. Note, if you cvar was set to 5, now change it to 6.
+[*]Fixed the cvar `gal_vote_mapchoices` not allowing 9 map votes when the `Stay Here` and `Extend Map` are disabled.
 [*]Fixed possible client overflow when show the recent maps list.
 [*]Fixed the recent map feature allowing invalid maps to be added to the recent maps list.
 [*]Fixed the setting `gal_vote_showstatus` 1 and 2 showing the vote percentage results when it should not.
+[*]Fixed limit for the maximum voting time start. [URL="https://github.com/addonszz/Galileo/issues/8"]Issue#8[/URL].
 [*]Fixed lag every time before vote countdown starts. [URL="https://github.com/addonszz/Galileo/issues/19"]Issue#19[/URL].
 [*]Fixed not adding the nominations from disconnected players. [URL="https://github.com/addonszz/Galileo/issues/27"]Issue#27[/URL].
 [*]Fixed some Unit Tests failing when the DEBUG_LEVEL is set to 2. [URL="https://github.com/addonszz/Galileo/issues/28"]Issue#28[/URL].

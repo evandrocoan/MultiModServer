@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-328";
+new const PLUGIN_VERSION[] = "v3.2.6-329";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -86,7 +86,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-328";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 16+2+4+8
+#define DEBUG_LEVEL 16+4+8
 
 
 /**
@@ -220,7 +220,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-328";
 /**
  * Setup the Unit Tests when they are used/necessary.
  */
-#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START )
+#if DEBUG_LEVEL >= DEBUG_LEVEL_NORMAL
     /**
      * Contains all imediates unit tests to execute.
      */
@@ -451,15 +451,8 @@ new const PLUGIN_VERSION[] = "v3.2.6-328";
  * The periodic task created on 'configureServerMapChange(0)' use this intervals in seconds to
  * start checking for an end map voting start.
  */
-#define START_VOTEMAP_MIN_TIME 151
-#define START_VOTEMAP_MAX_TIME 129
-
-/**
- * The macro 'VOTE_ROUND_START_DETECTION_DELAYED(0)' use this second intervals. The default time
- * interval range is 4 minutes.
- */
-#define VOTE_ROUND_START_MIN_DELAY 250 + START_VOTEMAP_MIN_TIME
-#define VOTE_ROUND_START_MAX_DELAY START_VOTEMAP_MIN_TIME
+#define START_VOTEMAP_MIN_TIME ( 41 + g_totalVoteTime )
+#define START_VOTEMAP_MAX_TIME ( 9 + g_totalVoteTime )
 
 
 
@@ -476,35 +469,29 @@ new const PLUGIN_VERSION[] = "v3.2.6-328";
 /**
  * Specifies how much time to delay the voting start after the round start.
  */
-#define VOTE_ROUND_START_SECONDS_DELAY() \
-    ( get_pcvar_num( cvar_mp_freezetime ) + 20.0 )
+#define ROUND_VOTING_START_SECONDS_DELAY() \
+    ( get_pcvar_num( cvar_mp_freezetime ) + 15 )
+//
+
+/**
+ * Determine whether the server is on an acceptable time to start a map voting on the middle of the
+ * round and to start the end map voting near the map time limit expiration.
+ *
+ * @param secondsRemaining     how many seconds are remaining to the map end.
+ */
+#define IS_TIME_TO_START_THE_END_OF_MAP_VOTING(%1) \
+    ( get_pcvar_num( cvar_endOfMapVote ) \
+      && %1 < START_VOTEMAP_MIN_TIME \
+      && %1 > START_VOTEMAP_MAX_TIME \
+      && !get_pcvar_num( cvar_endOfMapVoteStart ) \
+      && !IS_END_OF_MAP_VOTING_GOING_ON() )
 //
 
 /**
  * Start a map voting delayed after the mp_maxrounds or mp_winlimit minimum to be reached.
  */
-#define VOTE_START_ROUND_DELAY() \
-    set_task( VOTE_ROUND_START_SECONDS_DELAY(), "start_voting_by_rounds", TASKID_START_VOTING_BY_ROUNDS ); \
-//
-
-/**
- * Give time range to try detecting the round start, to avoid the old buy weapons menu override.
- *
- * @param seconds     how many seconds are remaining to the map end.
- */
-#define VOTE_ROUND_START_DETECTION_DELAYED(%1) \
-    ( %1 < VOTE_ROUND_START_MIN_DELAY \
-      && %1 > VOTE_ROUND_START_MAX_DELAY )
-//
-
-/**
- * To start the end map voting near the map time limit expiration.
- *
- * @param seconds     how many seconds are remaining to the map end.
- */
-#define IS_TIME_TO_START_THE_END_OF_MAP_VOTING(%1) \
-    ( %1 < START_VOTEMAP_MIN_TIME \
-      && %1 > START_VOTEMAP_MAX_TIME )
+#define START_VOTING_BY_MIDDLE_ROUND_DELAY() \
+    set_task( float( ROUND_VOTING_START_SECONDS_DELAY() ), "start_voting_by_rounds", TASKID_START_VOTING_BY_ROUNDS );
 //
 
 /**
@@ -770,6 +757,7 @@ new cvar_isExtendmapOrderAllowed;
 new cvar_isToStopEmptyCycle;
 new cvar_unnominateDisconnected;
 new cvar_endOnRound;
+new cvar_endOfMapVote;
 new cvar_endOfMapVoteStart;
 new cvar_endOnRoundRtv;
 new cvar_endOnRound_msg;
@@ -781,7 +769,6 @@ new cvar_extendmapStepRounds;
 new cvar_extendmapStepFrags;
 new cvar_fragLimitSupport;
 new cvar_extendmapAllowStay;
-new cvar_endOfMapVote;
 new cvar_isToAskForEndOfTheMapVote;
 new cvar_emptyServerWaitMinutes;
 new cvar_isEmptyCycleByMapChange;
@@ -845,7 +832,6 @@ new const CHOOSE_MAP_MENU_NAME[]            = "gal_menuChooseMap";
 new const CHOOSE_MAP_MENU_QUESTION[]        = "chooseMapQuestion";
 new const GAME_CRASH_RECREATION_FLAG_FILE[] = "gameCrashRecreationAction.txt";
 
-new bool:g_doesTheRoundEndedWhileVoting;
 new bool:g_isVotingByTimer;
 new bool:g_isTimeToResetGame;
 new bool:g_isTimeToResetRounds;
@@ -1002,6 +988,10 @@ new Array:g_partialMatchFirstPageItems[ MAX_PLAYERS_COUNT ];
 new bool:g_isSawPartialMatchFirstPage[ MAX_PLAYERS_COUNT ];
 
 
+new g_totalRoundsSavedTimes;
+new g_roundAverageTime;
+new g_totalVoteTime;
+new g_roundStartTime;
 new g_originalMaxRounds;
 new g_originalWinLimit;
 new g_originalFragLimit;
@@ -1026,7 +1016,7 @@ new g_maxRoundsNumber;
 new g_fragLimitNumber;
 new g_greatestKillerFrags;
 new g_timeLimitNumber;
-new g_roundsPlayedNumber;
+new g_totalRoundsPlayed;
 new g_whitelistNomBlockTime;
 
 new g_totalTerroristsWins;
@@ -1103,16 +1093,14 @@ public plugin_init()
     register_plugin( PLUGIN_NAME, PLUGIN_VERSION, PLUGIN_AUTHOR );
     LOGGER( 1, "^n^n^n^n^n^n^n^n^n^n^n%s PLUGIN VERSION %s INITIATING...", PLUGIN_NAME, PLUGIN_VERSION )
 
-    cvar_maxMapExtendTime        = register_cvar( "amx_extendmap_max", "90" );
-    cvar_extendmapStepMinutes    = register_cvar( "amx_extendmap_step", "15" );
-    cvar_extendmapStepRounds     = register_cvar( "amx_extendmap_step_rounds", "30" );
-    cvar_extendmapStepFrags      = register_cvar( "amx_extendmap_step_frags", "60" );
-    cvar_fragLimitSupport        = register_cvar( "gal_mp_fraglimit_support", "0" );
-    cvar_extendmapAllowStay      = register_cvar( "amx_extendmap_allow_stay", "0" );
-    cvar_isExtendmapOrderAllowed = register_cvar( "amx_extendmap_allow_order", "0" );
-    cvar_extendmapAllowStayType  = register_cvar( "amx_extendmap_allow_stay_type", "0" );
-    cvar_disabledValuePointer    = register_cvar( "gal_disabled_value_pointer", "0", FCVAR_SPONLY );
-    cvar_isFirstServerStart      = register_cvar( "gal_server_starting", "1", FCVAR_SPONLY );
+    cvar_extendmapStepMinutes    = register_cvar ( "amx_extendmap_step"           , "15" );
+    cvar_maxMapExtendTime        = register_cvar ( "amx_extendmap_max"            , "90" );
+    cvar_extendmapStepRounds     = register_cvar ( "amx_extendmap_step_rounds"    , "30" );
+    cvar_extendmapStepFrags      = register_cvar ( "amx_extendmap_step_frags"     , "60" );
+    cvar_fragLimitSupport        = register_cvar ( "gal_mp_fraglimit_support"     , "0"  );
+    cvar_extendmapAllowStay      = register_cvar ( "amx_extendmap_allow_stay"     , "0"  );
+    cvar_extendmapAllowStayType  = register_cvar ( "amx_extendmap_allow_stay_type", "0"  );
+    cvar_isExtendmapOrderAllowed = register_cvar ( "amx_extendmap_allow_order"    , "0"  );
 
     // print the current used debug information
 #if DEBUG_LEVEL & ( DEBUG_LEVEL_NORMAL | DEBUG_LEVEL_CRITICAL_MODE )
@@ -1123,77 +1111,83 @@ public plugin_init()
     register_cvar( "gal_debug_level", debug_level, FCVAR_SERVER | FCVAR_SPONLY );
 #endif
 
+    register_cvar( "gal_version", PLUGIN_VERSION, FCVAR_SERVER | FCVAR_SPONLY );
+
+    cvar_cmdVotemap                = register_cvar( "gal_cmd_votemap"             , "0"    );
+    cvar_cmdListmaps               = register_cvar( "gal_cmd_listmaps"            , "2"    );
+    cvar_listmapsPaginate          = register_cvar( "gal_listmaps_paginate"       , "10"   );
+    cvar_recentMapsBannedNumber    = register_cvar( "gal_banrecent"               , "3"    );
+    cvar_recentNomMapsAllowance    = register_cvar( "gal_recent_nom_maps"         , "0"    );
+    cvar_isOnlyRecentMapcycleMaps  = register_cvar( "gal_banrecent_mapcycle"      , "0"    );
+    cvar_banRecentStyle            = register_cvar( "gal_banrecentstyle"          , "1"    );
+    cvar_rtvCommands               = register_cvar( "gal_rtv_commands"            , "3"    );
+    cvar_rtvWaitMinutes            = register_cvar( "gal_rtv_wait"                , "10"   );
+    cvar_rtvWaitRounds             = register_cvar( "gal_rtv_wait_rounds"         , "5"    );
+    cvar_rtvWaitFrags              = register_cvar( "gal_rtv_wait_frags"          , "20"   );
+    cvar_rtvWaitAdmin              = register_cvar( "gal_rtv_wait_admin"          , "0"    );
+    cvar_rtvRatio                  = register_cvar( "gal_rtv_ratio"               , "0.60" );
+    cvar_rtvReminder               = register_cvar( "gal_rtv_reminder"            , "2"    );
+    cvar_runoffEnabled             = register_cvar( "gal_runoff_enabled"          , "0"    );
+    cvar_runoffDuration            = register_cvar( "gal_runoff_duration"         , "10"   );
+    cvar_runoffRatio               = register_cvar( "gal_runoff_ratio"            , "0.5"  );
+    cvar_runoffMapchoices          = register_cvar( "gal_runoff_mapchoices"       , "2"    );
+    cvar_voteWeight                = register_cvar( "gal_vote_weight"             , "1"    );
+    cvar_voteWeightFlags           = register_cvar( "gal_vote_weightflags"        , "y"    );
+    cvar_endOnRound                = register_cvar( "gal_endonround"              , "1"    );
+    cvar_endOnRoundRtv             = register_cvar( "gal_endonround_rtv"          , "0"    );
+    cvar_endOnRound_msg            = register_cvar( "gal_endonround_msg"          , "0"    );
+    cvar_isEndMapCountdown         = register_cvar( "gal_endonround_countdown"    , "0"    );
+    cvar_showVoteStatus            = register_cvar( "gal_vote_showstatus"         , "1"    );
+    cvar_showVoteStatusType        = register_cvar( "gal_vote_showstatustype"     , "3"    );
+    cvar_isToReplaceByVoteMenu     = register_cvar( "gal_vote_replace_menu"       , "0"    );
+    cvar_isToShowNoneOption        = register_cvar( "gal_vote_show_none"          , "0"    );
+    cvar_voteShowNoneOptionType    = register_cvar( "gal_vote_show_none_type"     , "0"    );
+    cvar_isToShowExpCountdown      = register_cvar( "gal_vote_expirationcountdown", "1"    );
+    cvar_isToShowVoteCounter       = register_cvar( "gal_vote_show_counter"       , "0"    );
+    cvar_isToAskForEndOfTheMapVote = register_cvar( "gal_endofmapvote_ask"        , "0"    );
+    cvar_serverStartAction         = register_cvar( "gal_srv_start"               , "0"    );
+    cvar_gameCrashRecreationAction = register_cvar( "gal_game_crash_recreation"   , "0"    );
+    cvar_serverTimeLimitRestart    = register_cvar( "gal_srv_timelimit_restart"   , "0"    );
+    cvar_serverMaxroundsRestart    = register_cvar( "gal_srv_maxrounds_restart"   , "0"    );
+    cvar_serverWinlimitRestart     = register_cvar( "gal_srv_winlimit_restart"    , "0"    );
+    cvar_serverFraglimitRestart    = register_cvar( "gal_srv_fraglimit_restart"   , "0"    );
+    cvar_endOfMapVote              = register_cvar( "gal_endofmapvote"            , "1"    );
+    cvar_endOfMapVoteStart         = register_cvar( "gal_endofmapvote_start"      , "0"    );
+    cvar_nextMapChangeAnnounce     = register_cvar( "gal_nextmap_change"          , "1"    );
+    cvar_nextMapChangeVotemap      = register_cvar( "gal_nextmap_votemap"         , "0"    );
+    cvar_voteMapChoiceCount        = register_cvar( "gal_vote_mapchoices"         , "6"    );
+    cvar_voteDuration              = register_cvar( "gal_vote_duration"           , "15"   );
+    cvar_voteMapFilePath           = register_cvar( "gal_vote_mapfile"            , "*"    );
+    cvar_voteMinPlayers            = register_cvar( "gal_vote_minplayers"         , "0"    );
+    cvar_nomMinPlayersControl      = register_cvar( "gal_nom_minplayers_control"  , "0"    );
+    cvar_voteMinPlayersMapFilePath = register_cvar( "gal_vote_minplayers_mapfile" , ""     );
+    cvar_whitelistMinPlayers       = register_cvar( "gal_whitelist_minplayers"    , "0"    );
+    cvar_isWhiteListNomBlock       = register_cvar( "gal_whitelist_nom_block"     , "0"    );
+    cvar_isWhiteListBlockOut       = register_cvar( "gal_whitelist_block_out"     , "0"    );
+    cvar_voteWhiteListMapFilePath  = register_cvar( "gal_vote_whitelist_mapfile"  , ""     );
+    cvar_voteUniquePrefixes        = register_cvar( "gal_vote_uniqueprefixes"     , "0"    );
+    cvar_nomPlayerAllowance        = register_cvar( "gal_nom_playerallowance"     , "2"    );
+    cvar_nomMapFilePath            = register_cvar( "gal_nom_mapfile"             , "*"    );
+    cvar_nomPrefixes               = register_cvar( "gal_nom_prefixes"            , "1"    );
+    cvar_nomQtyUsed                = register_cvar( "gal_nom_qtyused"             , "0"    );
+    cvar_unnominateDisconnected    = register_cvar( "gal_unnominate_disconnected" , "0"    );
+    cvar_voteAnnounceChoice        = register_cvar( "gal_vote_announcechoice"     , "1"    );
+    cvar_emptyServerWaitMinutes    = register_cvar( "gal_emptyserver_wait"        , "0"    );
+    cvar_isEmptyCycleByMapChange   = register_cvar( "gal_emptyserver_change"      , "0"    );
+    cvar_emptyMapFilePath          = register_cvar( "gal_emptyserver_mapfile"     , ""     );
+    cvar_soundsMute                = register_cvar( "gal_sounds_mute"             , "0"    );
+
     // Enables the colored chat control cvar.
 #if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
     cvar_coloredChatEnabled = register_cvar( "gal_colored_chat_enabled", "0", FCVAR_SPONLY );
 #endif
 
-    register_cvar( "gal_version", PLUGIN_VERSION, FCVAR_SERVER | FCVAR_SPONLY );
+    // Not a configurable cvar, this is used instead of the `localinfo`.
+    cvar_isFirstServerStart   = register_cvar( "gal_server_starting", "1", FCVAR_SPONLY );
+    cvar_isToStopEmptyCycle   = register_cvar( "gal_in_empty_cycle" , "0", FCVAR_SPONLY );
 
-    cvar_endOfMapVote              = register_cvar( "gal_endofmapvote", "1" );
-    cvar_endOfMapVoteStart         = register_cvar( "gal_endofmapvote_start", "0" );
-    cvar_nextMapChangeAnnounce     = register_cvar( "gal_nextmap_change", "1" );
-    cvar_nextMapChangeVotemap      = register_cvar( "gal_nextmap_votemap", "0" );
-    cvar_isToShowVoteCounter       = register_cvar( "gal_vote_show_counter", "0" );
-    cvar_isToShowNoneOption        = register_cvar( "gal_vote_show_none", "0" );
-    cvar_voteShowNoneOptionType    = register_cvar( "gal_vote_show_none_type", "0" );
-    cvar_isToStopEmptyCycle        = register_cvar( "gal_in_empty_cycle", "0", FCVAR_SPONLY );
-    cvar_unnominateDisconnected    = register_cvar( "gal_unnominate_disconnected", "0" );
-    cvar_endOnRound                = register_cvar( "gal_endonround", "1" );
-    cvar_endOnRoundRtv             = register_cvar( "gal_endonround_rtv", "0" );
-    cvar_endOnRound_msg            = register_cvar( "gal_endonround_msg", "0" );
-    cvar_voteWeight                = register_cvar( "gal_vote_weight", "1" );
-    cvar_voteWeightFlags           = register_cvar( "gal_vote_weightflags", "y" );
-    cvar_cmdVotemap                = register_cvar( "gal_cmd_votemap", "0" );
-    cvar_cmdListmaps               = register_cvar( "gal_cmd_listmaps", "2" );
-    cvar_listmapsPaginate          = register_cvar( "gal_listmaps_paginate", "10" );
-    cvar_recentMapsBannedNumber    = register_cvar( "gal_banrecent", "3" );
-    cvar_recentNomMapsAllowance    = register_cvar( "gal_recent_nom_maps", "0" );
-    cvar_isOnlyRecentMapcycleMaps  = register_cvar( "gal_banrecent_mapcycle", "0" );
-    cvar_banRecentStyle            = register_cvar( "gal_banrecentstyle", "1" );
-    cvar_isToAskForEndOfTheMapVote = register_cvar( "gal_endofmapvote_ask", "0" );
-    cvar_emptyServerWaitMinutes    = register_cvar( "gal_emptyserver_wait", "0" );
-    cvar_isEmptyCycleByMapChange   = register_cvar( "gal_emptyserver_change", "0" );
-    cvar_emptyMapFilePath          = register_cvar( "gal_emptyserver_mapfile", "" );
-    cvar_serverStartAction         = register_cvar( "gal_srv_start", "0" );
-    cvar_gameCrashRecreationAction = register_cvar( "gal_game_crash_recreation", "0" );
-    cvar_serverTimeLimitRestart    = register_cvar( "gal_srv_timelimit_restart", "0" );
-    cvar_serverMaxroundsRestart    = register_cvar( "gal_srv_maxrounds_restart", "0" );
-    cvar_serverWinlimitRestart     = register_cvar( "gal_srv_winlimit_restart", "0" );
-    cvar_serverFraglimitRestart    = register_cvar( "gal_srv_fraglimit_restart", "0" );
-    cvar_rtvCommands               = register_cvar( "gal_rtv_commands", "3" );
-    cvar_rtvWaitMinutes            = register_cvar( "gal_rtv_wait", "10" );
-    cvar_rtvWaitRounds             = register_cvar( "gal_rtv_wait_rounds", "5" );
-    cvar_rtvWaitFrags              = register_cvar( "gal_rtv_wait_frags", "20" );
-    cvar_rtvWaitAdmin              = register_cvar( "gal_rtv_wait_admin", "0" );
-    cvar_rtvRatio                  = register_cvar( "gal_rtv_ratio", "0.60" );
-    cvar_rtvReminder               = register_cvar( "gal_rtv_reminder", "2" );
-    cvar_nomPlayerAllowance        = register_cvar( "gal_nom_playerallowance", "2" );
-    cvar_nomMapFilePath            = register_cvar( "gal_nom_mapfile", "*" );
-    cvar_nomPrefixes               = register_cvar( "gal_nom_prefixes", "1" );
-    cvar_nomQtyUsed                = register_cvar( "gal_nom_qtyused", "0" );
-    cvar_voteDuration              = register_cvar( "gal_vote_duration", "15" );
-    cvar_isToShowExpCountdown      = register_cvar( "gal_vote_expirationcountdown", "1" );
-    cvar_isEndMapCountdown         = register_cvar( "gal_endonround_countdown", "0" );
-    cvar_voteMapChoiceCount        = register_cvar( "gal_vote_mapchoices", "6" );
-    cvar_voteAnnounceChoice        = register_cvar( "gal_vote_announcechoice", "1" );
-    cvar_showVoteStatus            = register_cvar( "gal_vote_showstatus", "1" );
-    cvar_isToReplaceByVoteMenu     = register_cvar( "gal_vote_replace_menu", "0" );
-    cvar_showVoteStatusType        = register_cvar( "gal_vote_showstatustype", "3" );
-    cvar_voteUniquePrefixes        = register_cvar( "gal_vote_uniqueprefixes", "0" );
-    cvar_runoffEnabled             = register_cvar( "gal_runoff_enabled", "0" );
-    cvar_runoffDuration            = register_cvar( "gal_runoff_duration", "10" );
-    cvar_runoffRatio               = register_cvar( "gal_runoff_ratio", "0.5" );
-    cvar_runoffMapchoices          = register_cvar( "gal_runoff_mapchoices", "2" );
-    cvar_soundsMute                = register_cvar( "gal_sounds_mute", "0" );
-    cvar_voteMapFilePath           = register_cvar( "gal_vote_mapfile", "*" );
-    cvar_voteMinPlayers            = register_cvar( "gal_vote_minplayers", "0" );
-    cvar_nomMinPlayersControl      = register_cvar( "gal_nom_minplayers_control", "0" );
-    cvar_voteMinPlayersMapFilePath = register_cvar( "gal_vote_minplayers_mapfile", "" );
-    cvar_whitelistMinPlayers       = register_cvar( "gal_whitelist_minplayers", "0" );
-    cvar_isWhiteListNomBlock       = register_cvar( "gal_whitelist_nom_block", "0" );
-    cvar_isWhiteListBlockOut       = register_cvar( "gal_whitelist_block_out", "0" );
-    cvar_voteWhiteListMapFilePath  = register_cvar( "gal_vote_whitelist_mapfile", "" );
+    // This is a general pointer used for cvars not registered on the game.
+    cvar_disabledValuePointer = register_cvar( "gal_disabled_value_pointer", "0", FCVAR_SPONLY );
 
     nextmap_plugin_init();
     configureEndGameCvars();
@@ -1219,7 +1213,7 @@ public plugin_init()
     register_concmd( "gal_createmapfile", "cmd_createMapFile", ADMIN_RCON );
     register_concmd( "gal_command_maintenance", "cmd_maintenanceMode", ADMIN_RCON );
 
-    LOGGER( 1, "I AM EXITING plugin_init(0)..." )
+    LOGGER( 1, "    I AM EXITING plugin_init(0)..." )
     LOGGER( 1, "" )
 }
 
@@ -1267,12 +1261,12 @@ public plugin_cfg()
     loadMapFiles();
 
     // Configure the Unit Tests, when they are activate.
-#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START )
+#if DEBUG_LEVEL >= DEBUG_LEVEL_NORMAL
     saveCurrentTestsTimeStamp();
     configureTheUnitTests();
 #endif
 
-    LOGGER( 1, "I AM EXITING plugin_cfg(0)..." )
+    LOGGER( 1, "    I AM EXITING plugin_cfg(0)..." )
     LOGGER( 1, "" )
 }
 
@@ -1409,7 +1403,7 @@ stock mp_fraglimitCvarSupport()
 
     // mp_fraglimit
     new exists_mp_fraglimit_cvar = cvar_exists( "mp_fraglimit" );
-    LOGGER( 1, "( mp_fraglimitCvarSupport ) exists_mp_fraglimit_cvar: %d", exists_mp_fraglimit_cvar )
+    LOGGER( 32, "( mp_fraglimitCvarSupport ) exists_mp_fraglimit_cvar: %d", exists_mp_fraglimit_cvar )
 
     if( exists_mp_fraglimit_cvar )
     {
@@ -1501,6 +1495,7 @@ stock configureServerStart()
 public cacheCvarsValues()
 {
     LOGGER( 128, "I AM ENTERING ON cacheCvarsValues(0)" )
+    g_totalVoteTime = howManySecondsLastMapTheVoting();
 
     g_rtvCommands            = get_pcvar_num( cvar_rtvCommands            );
     g_extendmapStepRounds    = get_pcvar_num( cvar_extendmapStepRounds    );
@@ -2309,15 +2304,144 @@ public client_death_event()
     }
 }
 
+/**
+ * Predict if this will be the last round and allow to start the voting.
+ * Give time range to try detecting the round start, to avoid the old buy weapons menu override.
+ * This is called every round start and determines whether this round should be used to perform
+ * the map voting.
+ *
+ * @param secondsRemaining     how many seconds are remaining to the map end.
+ */
+stock isToStartTheVotingOnThisRound( secondsRemaining )
+{
+    LOGGER( 128, "I AM ENTERING ON isToStartTheVotingOnThisRound(1) secondsRemaining: %d", secondsRemaining )
+
+    LOGGER( 32, "( isToStartTheVotingOnThisRound ) task_exists: %d", task_exists( TASKID_START_VOTING_BY_TIMER ) )
+    LOGGER( 32, "( isToStartTheVotingOnThisRound ) cvar_endOfMapVote: %d", get_pcvar_num( cvar_endOfMapVote ) )
+
+    if( get_pcvar_num( cvar_endOfMapVote )
+        && !task_exists( TASKID_START_VOTING_BY_TIMER ) )
+    {
+        new roundsRemaining;
+
+        // Make sure there are enough data to operate, otherwise set an invalid data.
+        if( g_totalRoundsSavedTimes > 7 )
+        {
+            roundsRemaining = howManyRoundsAreRemaining( secondsRemaining - g_totalVoteTime );
+        }
+        else
+        {
+            roundsRemaining = 10;
+        }
+
+        LOGGER( 32, "( isToStartTheVotingOnThisRound ) roundsRemaining: %d", roundsRemaining )
+        LOGGER( 32, "( isToStartTheVotingOnThisRound ) g_isTheLastGameRound: %d", g_isTheLastGameRound )
+        LOGGER( 32, "( isToStartTheVotingOnThisRound ) g_isThePenultGameRound: %d", g_isThePenultGameRound )
+        LOGGER( 32, "( isToStartTheVotingOnThisRound ) g_totalRoundsSavedTimes: %d", g_totalRoundsSavedTimes )
+        LOGGER( 32, "( isToStartTheVotingOnThisRound ) cvar_endOnRound: %d", get_pcvar_num( cvar_endOnRound ) )
+        LOGGER( 32, "( isToStartTheVotingOnThisRound ) cvar_endOfMapVoteStart: %d", get_pcvar_num( cvar_endOfMapVoteStart ) )
+
+        switch( get_pcvar_num( cvar_endOfMapVoteStart ) )
+        {
+            // `cvar_endOnRound`: When time runs out, end at the current round end.
+            // `cvar_endOfMapVoteStart`: To start the voting on the last round to be played.
+            case 1:
+            {
+                if( get_pcvar_num( cvar_endOnRound ) )
+                {
+                    if( g_isTheLastGameRound )
+                    {
+                        LOGGER( 1, "    ( isToStartTheVotingOnThisRound ) Returning true." )
+                        return true;
+                    }
+                }
+                else if( roundsRemaining == 0 )
+                {
+                    LOGGER( 1, "    ( isToStartTheVotingOnThisRound ) Returning true." )
+                    return true;
+                }
+            }
+            // `cvar_endOnRound`: When time runs out, end at the next round end.
+            // `cvar_endOfMapVoteStart`: To start the voting on the round before the last.
+            case 2:
+            {
+                if( get_pcvar_num( cvar_endOnRound ) )
+                {
+                    if( g_isThePenultGameRound )
+                    {
+                        LOGGER( 1, "    ( isToStartTheVotingOnThisRound ) Returning true." )
+                        return true;
+                    }
+                }
+                else if( roundsRemaining == 2 )
+                {
+                    LOGGER( 1, "    ( isToStartTheVotingOnThisRound ) Returning true." )
+                    return true;
+                }
+            }
+            // `cvar_endOnRound`: Do not applies.
+            // `cvar_endOfMapVoteStart`: To start the voting on the round before the last of the last.
+            case 3:
+            {
+                if( get_pcvar_num( cvar_endOnRound ) )
+                {
+                    if( roundsRemaining < 2 )
+                    {
+                        LOGGER( 1, "    ( isToStartTheVotingOnThisRound ) Returning true." )
+                        return true;
+                    }
+                }
+                else if( roundsRemaining < 4 )
+                {
+                    LOGGER( 1, "    ( isToStartTheVotingOnThisRound ) Returning true." )
+                    return true;
+                }
+            }
+        }
+    }
+
+    LOGGER( 1, "    ( isToStartTheVotingOnThisRound ) Just returning false." )
+    return false;
+}
+
+stock howManySecondsLastMapTheVoting()
+{
+    LOGGER( 128, "I AM ENTERING ON howManySecondsLastMapTheVoting(0)" )
+    new voteTime;
+
+    // Until the pendingVoteCountdown(0) to finish takes 7.0 + 1.0 + 1.0 seconds.
+    voteTime = 7 + 1 + 1;
+
+    // After, it takes more the `g_voteDuration` until the the close vote function to be called.
+    // Let us assume the worst case, then always will be performed a runoff voting.
+    voteTime = voteTime + get_pcvar_num( cvar_voteDuration );
+    voteTime = voteTime + get_pcvar_num( cvar_runoffDuration );
+
+    // When the voting is closed on closeVoting(0), take more 6 seconds until the result to be counted.
+    // And more 3 seconds until the runoff voting to start.
+    // Then we need to count again those 7.0 + 1.0 + 1.0 until the pendingVoteCountdown(0) and the
+    // other 6 seconds until the runoff voting results to be counted.
+    voteTime = voteTime + 6 + 3 + 7 + 1 + 1 + 6;
+
+    LOGGER( 1, "    ( howManySecondsLastMapTheVoting ) Returning the vote total time: %d", voteTime )
+    return voteTime;
+}
+
+stock howManyRoundsAreRemaining( secondsRemaining )
+{
+    LOGGER( 128, "I AM ENTERING ON howManyRoundsAreRemaining(2), g_roundAverageTime: %d", g_roundAverageTime )
+    LOGGER( 1, "    ( howManyRoundsAreRemaining ) Returning rounds remaining: %d", secondsRemaining / g_roundAverageTime )
+
+    return secondsRemaining / g_roundAverageTime;
+}
+
 public round_start_event()
 {
     LOGGER( 128, "I AM ENTERING ON round_start_event(0)" )
 
-    if( VOTE_ROUND_START_DETECTION_DELAYED( get_timeleft() )
-        && get_pcvar_num( cvar_endOfMapVoteStart )
-        && !task_exists( TASKID_START_VOTING_BY_TIMER ) )
+    if( isToStartTheVotingOnThisRound( get_timeleft() ) )
     {
-        set_task( VOTE_ROUND_START_SECONDS_DELAY(), "start_voting_by_timer", TASKID_START_VOTING_BY_TIMER );
+        set_task( float( ROUND_VOTING_START_SECONDS_DELAY() ), "start_voting_by_timer", TASKID_START_VOTING_BY_TIMER );
     }
 
     if( g_isTimeToResetRounds )
@@ -2331,6 +2455,8 @@ public round_start_event()
         g_isTimeToResetGame = false;
         set_task( 1.0, "map_restoreEndGameCvars" );
     }
+
+    g_roundStartTime = floatround( get_gametime(), floatround_ceil );
 }
 
 public team_win_event()
@@ -2364,7 +2490,7 @@ public team_win_event()
             && !IS_END_OF_MAP_VOTING_GOING_ON() )
         {
             g_isMaxroundsExtend = false;
-            VOTE_START_ROUND_DELAY()
+            START_VOTING_BY_MIDDLE_ROUND_DELAY()
         }
 
         if( g_totalCtWins > g_winLimitInteger - 2
@@ -2382,23 +2508,25 @@ public team_win_event()
 public round_end_event()
 {
     LOGGER( 128, "I AM ENTERING ON round_end_event(0)" )
-    new current_rounds_trigger;
 
-    g_roundsPlayedNumber++;
+    new current_rounds_trigger;
+    g_totalRoundsPlayed++;
+
+    saveTheRoundTime();
     g_maxRoundsNumber = get_pcvar_num( cvar_mp_maxrounds );
 
     if( g_maxRoundsNumber )
     {
-        current_rounds_trigger = g_roundsPlayedNumber + VOTE_START_ROUNDS;
+        current_rounds_trigger = g_totalRoundsPlayed + VOTE_START_ROUNDS;
 
         if( ( current_rounds_trigger > g_maxRoundsNumber )
             && !IS_END_OF_MAP_VOTING_GOING_ON() )
         {
             g_isMaxroundsExtend = true;
-            VOTE_START_ROUND_DELAY()
+            START_VOTING_BY_MIDDLE_ROUND_DELAY()
         }
 
-        if( g_roundsPlayedNumber > g_maxRoundsNumber - 2 )
+        if( g_totalRoundsPlayed > g_maxRoundsNumber - 2 )
         {
             try_to_manage_map_end();
         }
@@ -2410,15 +2538,41 @@ public round_end_event()
         // and will force the map to immediately change to the next map on the map cycle.
         endRoundWatchdog();
     }
-    else
-    {
-        // Useful for history data to improve the middle round voting start feature.
-        g_doesTheRoundEndedWhileVoting = true;
-    }
 
     LOGGER( 32, "( round_end_event ) | g_maxRoundsNumber: %d", g_maxRoundsNumber )
-    LOGGER( 32, "( round_end_event ) | g_roundsPlayedNumber: %d, current_rounds_trigger: %d", \
-            g_roundsPlayedNumber, current_rounds_trigger )
+    LOGGER( 32, "( round_end_event ) | g_totalRoundsPlayed: %d, current_rounds_trigger: %d", \
+            g_totalRoundsPlayed, current_rounds_trigger )
+}
+
+stock saveTheRoundTime()
+{
+    LOGGER( 128, "I AM ENTERING ON saveTheRoundTime(0)" )
+    new roundEndTime = floatround( get_gametime(), floatround_ceil ) - g_roundStartTime;
+
+    // Rounds taking less than 10 seconds does not seem to fit.
+    if( roundEndTime > 10 )
+    {
+        static lastSavedRound;
+        static roundPlayedTimes[ 20 ];
+
+        // To keep the latest round data up to date.
+        roundPlayedTimes[ lastSavedRound ] = roundEndTime;
+        g_roundAverageTime                 = roundPlayedTimes[ 0 ];
+
+        lastSavedRound = ( lastSavedRound + 1 ) % sizeof roundPlayedTimes;
+        g_totalRoundsSavedTimes + 1 > sizeof roundPlayedTimes ? g_totalRoundsSavedTimes : g_totalRoundsSavedTimes++;
+
+        for( new index = 1; index < g_totalRoundsSavedTimes; index++ )
+        {
+            g_roundAverageTime = ( g_roundAverageTime + roundPlayedTimes[ index ] ) / 2;
+        }
+
+        LOGGER( 32, "( saveTheRoundTime ) lastSavedRound: %d", lastSavedRound )
+        LOGGER( 32, "( saveTheRoundTime ) g_roundAverageTime: %d", g_roundAverageTime )
+        LOGGER( 32, "( saveTheRoundTime ) g_totalRoundsSavedTimes: %d", g_totalRoundsSavedTimes )
+    }
+
+    LOGGER( 32, "( saveTheRoundTime ) roundEndTime: %d", roundEndTime )
 }
 
 stock try_to_manage_map_end( bool:isToImmediatelyChangeLevel = false )
@@ -2855,12 +3009,12 @@ stock is_there_game_commencing()
 
         if( CT_count && TR_count )
         {
-            LOGGER( 1, "( is_there_game_commencing ) Returning true." )
+            LOGGER( 1, "    ( is_there_game_commencing ) Returning true." )
             return true;
         }
     }
 
-    LOGGER( 1, "( is_there_game_commencing ) Returning false." )
+    LOGGER( 1, "    ( is_there_game_commencing ) Returning false." )
     return false;
 }
 
@@ -2983,20 +3137,20 @@ public resetRoundsScores()
 
     CALCULATE_NEW_GAME_LIMIT( cvar_serverTimeLimitRestart, cvar_mp_timelimit, map_getMinutesElapsedInteger() )
     CALCULATE_NEW_GAME_LIMIT( cvar_serverWinlimitRestart, cvar_mp_winlimit, max( g_totalTerroristsWins, g_totalCtWins ) )
-    CALCULATE_NEW_GAME_LIMIT( cvar_serverMaxroundsRestart, cvar_mp_maxrounds, g_roundsPlayedNumber )
+    CALCULATE_NEW_GAME_LIMIT( cvar_serverMaxroundsRestart, cvar_mp_maxrounds, g_totalRoundsPlayed )
     CALCULATE_NEW_GAME_LIMIT( cvar_serverFraglimitRestart, cvar_mp_fraglimit, g_greatestKillerFrags )
 
     // Reset the plugin internal limiter counters.
     g_totalTerroristsWins = 0;
     g_totalCtWins         = 0;
-    g_roundsPlayedNumber  = -1;
+    g_totalRoundsPlayed   = -1;
     g_greatestKillerFrags = 0;
 
     LOGGER( 2, "( resetRoundsScores ) CHECKOUT the cvar %-23s is '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
     LOGGER( 2, "( resetRoundsScores ) CHECKOUT the cvar %-23s is '%d'.", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) )
     LOGGER( 2, "( resetRoundsScores ) CHECKOUT the cvar %-23s is '%d'.", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) )
     LOGGER( 2, "( resetRoundsScores ) CHECKOUT the cvar %-23s is '%d'.", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) )
-    LOGGER( 1, "I AM EXITING ON resetRoundsScores(0)" )
+    LOGGER( 1, "    I AM EXITING ON resetRoundsScores(0)" )
 }
 
 stock map_populateList( Array:mapArray = Invalid_Array, mapFilePath[], mapFilePathLength, Trie:fillerMapTrie = Invalid_Trie )
@@ -3032,7 +3186,7 @@ stock map_populateList( Array:mapArray = Invalid_Array, mapFilePath[], mapFilePa
         mapCount = loadMapFileList( mapArray, mapFilePath, fillerMapTrie );
     }
 
-    LOGGER( 1, "I AM EXITING map_populateList(4) mapCount: %d", mapCount )
+    LOGGER( 1, "    I AM EXITING map_populateList(4) mapCount: %d", mapCount )
     return mapCount;
 }
 
@@ -3416,7 +3570,7 @@ stock isToLoadTheNextWhiteListGroup( &isToLoadTheseMaps, currentHour, startHour,
     if( startHour == endHour
         && endHour == currentHour )
     {
-        LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) startHour == endHour: %d", startHour )
+        LOGGER( 8, "( isToLoadTheNextWhiteListGroup ) startHour == endHour: %d", startHour )
 
         // Manual fix needed to convert 5-5 to 05:00:00 until 05:59:59, instead of all day long.
     #if IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST > 0
@@ -3505,21 +3659,21 @@ stock standardizeTheHoursForWhitelist( &currentHour, &startHour, &endHour )
     if( startHour > 23
         || startHour < 0 )
     {
-        LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) startHour: %d, will became 0.", startHour )
+        LOGGER( 8, "( isToLoadTheNextWhiteListGroup ) startHour: %d, will became 0.", startHour )
         startHour = 0;
     }
 
     if( endHour > 23
         || endHour < 0 )
     {
-        LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) endHour: %d, will became 0.", endHour )
+        LOGGER( 8, "( isToLoadTheNextWhiteListGroup ) endHour: %d, will became 0.", endHour )
         endHour = 0;
     }
 
     if( currentHour > 23
         || currentHour < 0 )
     {
-        LOGGER( 1, "( isToLoadTheNextWhiteListGroup ) currentHour: %d, will became 0.", currentHour )
+        LOGGER( 8, "( isToLoadTheNextWhiteListGroup ) currentHour: %d, will became 0.", currentHour )
         currentHour = 0;
     }
 }
@@ -3681,7 +3835,7 @@ stock loadWhiteListFile( currentHour, &Trie:listTrie, Array:whitelistFileArray, 
         }
     }
 
-    LOGGER( 1, "I AM EXITING loadWhiteListFile(5) | listArray: %d, whitelistFileArray: %d", listArray, whitelistFileArray )
+    LOGGER( 1, "    I AM EXITING loadWhiteListFile(5) | listArray: %d, whitelistFileArray: %d", listArray, whitelistFileArray )
 }
 
 stock setupLoadWhiteListParams( bool:isWhiteList, &Trie:listTrie, &Array:listArray )
@@ -4075,9 +4229,9 @@ stock vote_addFillers( blockedMapsBuffer[], &announcementShowedTimes = 0 )
     }
     else
     {
-        LOGGER( 4, " ( vote_addFillers ) maxVotingChoices: %d", maxVotingChoices )
-        LOGGER( 4, " ( vote_addFillers ) g_maxVotingChoices: %d", g_maxVotingChoices )
-        LOGGER( 4, " ( vote_addFillers ) g_totalVoteOptions: %d", g_totalVoteOptions )
+        LOGGER( 8, " ( vote_addFillers ) maxVotingChoices: %d", maxVotingChoices )
+        LOGGER( 8, " ( vote_addFillers ) g_maxVotingChoices: %d", g_maxVotingChoices )
+        LOGGER( 8, " ( vote_addFillers ) g_totalVoteOptions: %d", g_totalVoteOptions )
         LOGGER( 1, "    ( vote_addFillers ) Just Returning/blocking, the voting list is filled." )
     }
 }
@@ -4388,8 +4542,7 @@ public vote_manageEnd()
     if( secondsLeft )
     {
         // are we ready to start an "end of map" vote?
-        if( IS_TIME_TO_START_THE_END_OF_MAP_VOTING( secondsLeft )
-            && !IS_END_OF_MAP_VOTING_GOING_ON() )
+        if( IS_TIME_TO_START_THE_END_OF_MAP_VOTING( secondsLeft ) )
         {
             start_voting_by_timer();
         }
@@ -4431,7 +4584,7 @@ stock handle_game_crash_recreation( secondsLeft )
     if( g_isToCreateGameCrashFlag
         && (  g_timeLimitNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_timeLimitNumber - secondsLeft / 60
            || g_fragLimitNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_greatestKillerFrags
-           || g_maxRoundsNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_roundsPlayedNumber + 1
+           || g_maxRoundsNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_totalRoundsPlayed + 1
            || g_winLimitInteger / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_totalTerroristsWins + g_totalCtWins ) )
     {
         new gameCrashActionFilePath[ MAX_FILE_PATH_LENGHT ];
@@ -4439,19 +4592,19 @@ stock handle_game_crash_recreation( secondsLeft )
         // stop creating this file unnecessarily
         g_isToCreateGameCrashFlag = false;
 
-        LOGGER( 1, "( vote_manageEnd )  %d/%d < %d: %d", \
+        LOGGER( 32, "( vote_manageEnd )  %d/%d < %d: %d", \
                 g_timeLimitNumber, SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR, g_timeLimitNumber - secondsLeft / 60, \
                 g_timeLimitNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_timeLimitNumber - secondsLeft / 60)
 
-        LOGGER( 1, "( vote_manageEnd )  %d/%d < %d: %d", \
+        LOGGER( 32, "( vote_manageEnd )  %d/%d < %d: %d", \
                 g_fragLimitNumber, SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR, g_greatestKillerFrags, \
                 g_fragLimitNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_greatestKillerFrags )
 
-        LOGGER( 1, "( vote_manageEnd )  %d/%d < %d: %d", \
-                g_maxRoundsNumber, SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR, g_roundsPlayedNumber + 1, \
-                g_maxRoundsNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_roundsPlayedNumber + 1 )
+        LOGGER( 32, "( vote_manageEnd )  %d/%d < %d: %d", \
+                g_maxRoundsNumber, SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR, g_totalRoundsPlayed + 1, \
+                g_maxRoundsNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_totalRoundsPlayed + 1 )
 
-        LOGGER( 1, "( vote_manageEnd )  %d/%d < %d: %d", \
+        LOGGER( 32, "( vote_manageEnd )  %d/%d < %d: %d", \
                 g_winLimitInteger, SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR, g_totalTerroristsWins + g_totalCtWins, \
                 g_winLimitInteger / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_totalTerroristsWins + g_totalCtWins )
 
@@ -4495,7 +4648,7 @@ stock approvedTheVotingStart( bool:is_forced_voting )
         LOGGER( 1, "    ( approvedTheVotingStart ) g_voteStatus: %d, g_voteStatus & VOTE_IS_OVER: %d", \
                 g_voteStatus, g_voteStatus & VOTE_IS_OVER != 0 )
 
-    #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START )
+    #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
         if( g_test_isTheUnitTestsRunning )
         {
             LOGGER( 1, "    ( approvedTheVotingStart ) Returning true on the if !g_test_isTheUnitTestsRunning, \
@@ -4589,9 +4742,6 @@ stock configureVotingStart( bool:is_forced_voting )
 
     // make it known that a vote is in progress
     g_voteStatus |= VOTE_IS_IN_PROGRESS;
-
-    // reset its value state to default
-    g_doesTheRoundEndedWhileVoting = false;
 
     // Set the voting status to forced
     if( is_forced_voting )
@@ -4693,7 +4843,7 @@ stock initializeTheVoteDisplay()
     }
 
     // Adjust the choices delay for the Unit Tests run or normal work flow
-#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START )
+#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
     handleChoicesDelay = 0.1;
 #else
 
@@ -4722,7 +4872,7 @@ stock initializeTheVoteDisplay()
 stock configureVoteDisplayDebugging()
 {
     // Force a right vote duration for the Unit Tests run
-#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START )
+#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
     g_voteDuration = 5;
 #endif
 
@@ -6157,7 +6307,7 @@ stock map_getMinutesElapsedInteger()
     LOGGER( 128, "I AM ENTERING ON Float:map_getMinutesElapsed(0) | mp_timelimit: %f", get_pcvar_float( cvar_mp_timelimit ) )
 
     // While the Unit Tests are running, to force a specific time.
-#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START )
+#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
     if( g_test_isTheUnitTestsRunning )
     {
         return g_test_gameElapsedTime;
@@ -6283,7 +6433,7 @@ public map_restoreEndGameCvars()
     }
 
     cacheCvarsValues();
-    LOGGER( 1, "I AM EXITING ON map_restoreEndGameCvars(0)" )
+    LOGGER( 1, "    I AM EXITING ON map_restoreEndGameCvars(0)" )
 }
 
 stock restoreOriginalServerMaxSpeed()
@@ -6414,9 +6564,9 @@ stock is_to_block_RTV( player_id )
 
     // Make sure enough rounds has gone by on the current map
     else if( g_rtvWaitRounds
-             && g_roundsPlayedNumber < g_rtvWaitRounds )
+             && g_totalRoundsPlayed < g_rtvWaitRounds )
     {
-        new remaining_rounds = g_rtvWaitRounds - g_roundsPlayedNumber;
+        new remaining_rounds = g_rtvWaitRounds - g_totalRoundsPlayed;
 
         color_print( player_id, "%L", player_id, "GAL_ROCK_FAIL_TOOSOON_ROUNDS", remaining_rounds );
         LOGGER( 1, "    ( is_to_block_RTV ) Just Returning/blocking, too soon to rock by rounds." )
@@ -6549,7 +6699,7 @@ stock configureRtvVotingType()
     LOGGER( 128, "I AM ENTERING ON configureRtvVotingType(0)" )
 
     new minutes_left    = get_timeleft() / 20; // Uses 20 instead of 60 to be more a fair amount
-    new maxrounds_left  = get_pcvar_num( cvar_mp_maxrounds ) - g_roundsPlayedNumber;
+    new maxrounds_left  = get_pcvar_num( cvar_mp_maxrounds ) - g_totalRoundsPlayed;
     new winlimit_left   = get_pcvar_num( cvar_mp_winlimit ) - max( g_totalCtWins, g_totalTerroristsWins );
     new fragslimit_left = get_pcvar_num( cvar_mp_fraglimit ) - g_greatestKillerFrags;
 
@@ -6631,7 +6781,7 @@ public map_change_stays()
     LOGGER( 128, "I AM ENTERING ON map_change_stays(0)" )
     resetRoundEnding();
 
-    LOGGER( 1, " ( map_change_stays ) g_currentMapName: %s", g_currentMapName )
+    LOGGER( 4, "( map_change_stays ) g_currentMapName: %s", g_currentMapName )
     serverChangeLevel( g_currentMapName );
 }
 
@@ -7435,10 +7585,10 @@ public cmd_startVote( player_id, level, cid )
                 g_isTimeToRestart = true;
             }
 
-            LOGGER( 1, "( cmd_startVote ) equal( %s, '-restart', 4 )? %d", argument, equal( argument, "-restart", 4 ) )
+            LOGGER( 8, "( cmd_startVote ) equal( %s, '-restart', 4 )? %d", argument, equal( argument, "-restart", 4 ) )
         }
 
-        LOGGER( 1, "( cmd_startVote ) g_isTimeToRestart? %d, g_isToChangeMapOnVotingEnd? %d, \
+        LOGGER( 8, "( cmd_startVote ) g_isTimeToRestart? %d, g_isToChangeMapOnVotingEnd? %d, \
                 g_voteStatus & VOTE_IS_FORCED: %d", g_isTimeToRestart, g_isToChangeMapOnVotingEnd, \
                 g_voteStatus & VOTE_IS_FORCED != 0 )
 
@@ -8898,7 +9048,8 @@ stock get_realplayersnum()
     new players[ MAX_PLAYERS ];
     get_players( players, playersCount, "ch" );
 
-#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START ) && DEBUG_LEVEL & DEBUG_LEVEL_FAKE_VOTES
+#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED ) \
+    && DEBUG_LEVEL & DEBUG_LEVEL_FAKE_VOTES
     if( g_test_isTheUnitTestsRunning )
     {
         return g_test_aimedPlayersNumber;
@@ -8906,7 +9057,7 @@ stock get_realplayersnum()
 
     return FAKE_PLAYERS_NUMBER_FOR_DEBUGGING;
 #else
-    #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START )
+    #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
         if( g_test_isTheUnitTestsRunning )
         {
             return g_test_aimedPlayersNumber;
@@ -8993,7 +9144,7 @@ stock color_print( const player_id, const message[], any:... )
     LOGGER( 128, "I AM ENTERING ON color_print(...) | player_id: %d, message: %s...", player_id, message )
     new formated_message[ MAX_COLOR_MESSAGE ];
 
-#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START )
+#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
     g_test_printedMessage[ 0 ] = '^0';
 
     vformat( g_test_printedMessage, charsmax( g_test_printedMessage ), message, 3 );
@@ -9331,7 +9482,7 @@ stock clearTheVotingMenu()
 
     for( new currentIndex = 0; currentIndex < sizeof g_votingMapNames; ++currentIndex )
     {
-        LOGGER( 1, "Cleaning g_votingMapNames[%d]: %s", currentIndex, g_votingMapNames[ currentIndex ] )
+        LOGGER( 8, "Cleaning g_votingMapNames[%d]: %s", currentIndex, g_votingMapNames[ currentIndex ] )
 
         g_votingMapNames [ currentIndex ][ 0 ] = '^0';
         g_arrayOfRunOffChoices[ currentIndex ] = 0;
@@ -9387,7 +9538,7 @@ public plugin_end()
     destroy_two_dimensional_array( g_minPlayerFillerMapGroupArrays );
 
     // Clean the unit tests data
-#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START )
+#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
     TRY_TO_APPLY( ArrayDestroy, g_test_idsAndNamesArray )
     TRY_TO_APPLY( ArrayDestroy, g_test_failureIdsArray )
     TRY_TO_APPLY( ArrayDestroy, g_test_failureReasonsArray )
@@ -9575,7 +9726,7 @@ stock getNextMapName( nextMapName[], maxChars )
 
     if( IS_MAP_VALID( nextMapName ) )
     {
-        LOGGER( 1, "    ( getNextMapName ) Returning lenght: %d, nextMapName: %s", lenght, nextMapName )
+        LOGGER( 4, "    ( getNextMapName ) Returning lenght: %d, nextMapName: %s", lenght, nextMapName )
         return lenght;
     }
 
@@ -9809,7 +9960,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
 
 
 // The Unit Tests execution
-#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START )
+#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
     stock configureTheUnitTests()
     {
         LOGGER( 128, "I AM ENTERING ON configureTheUnitTests(0)" )
@@ -9952,6 +10103,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     {
         LOGGER( 128, "I AM ENTERING ON runTests(0)" )
 
+    #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
         print_logger( "" );
         print_logger( "" );
         print_logger( "" );
@@ -9959,6 +10111,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         print_logger( "" );
 
         saveServerCvarsForTesting();
+    #endif
 
         // Run the normal tests.
     #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
@@ -9980,10 +10133,13 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     #endif
 
         // displays the OK to the last test.
+    #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
         displaysLastTestOk();
+    #endif
 
         if( g_test_maxDelayResult )
         {
+        #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
             print_all_tests_executed();
             print_tests_failure();
 
@@ -9993,13 +10149,15 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
             print_logger( "    After '%d' runtime seconds... Executing the %s's Unit Tests delayed until at least %d seconds: ",
                                      computeTheTestElapsedTime(),          PLUGIN_NAME,          g_test_maxDelayResult );
             print_logger( "" );
-
+        #endif
             g_test_lastMaxDelayResult = g_test_maxDelayResult;
             set_task( g_test_maxDelayResult + 1.0, "show_delayed_results" );
         }
         else
         {
+        #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
             printTheUnitTestsResults();
+        #endif
         }
     }
 
@@ -10461,6 +10619,10 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         new test_id;
         new secondsLeft;
 
+        // When the `gal_endofmapvote_start` feature is enabled, will will not allow a votemap
+        // by time limit expiration.
+        set_pcvar_num( cvar_endOfMapVoteStart, 0 );
+
         new errorMessage[ MAX_LONG_STRING ];
         test_id = register_test( chainDelay, "test_endOfMapVotingStart_case1" );
 
@@ -10473,8 +10635,12 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         set_pcvar_float( cvar_mp_timelimit,
                 ( get_pcvar_float( cvar_mp_timelimit ) * 60
                   - secondsLeft
-                  + START_VOTEMAP_MAX_TIME + 15 )
+                  + START_VOTEMAP_MAX_TIME + 7 )
                 / 60 );
+
+        LOGGER( 32, "timelimit: %d", floatround( get_pcvar_float( cvar_mp_timelimit ) * 60 ) )
+        LOGGER( 32, "START_VOTEMAP_MIN_TIME: %d", START_VOTEMAP_MIN_TIME )
+        LOGGER( 32, "START_VOTEMAP_MAX_TIME: %d", START_VOTEMAP_MAX_TIME )
 
         displaysLastTestOk();
         set_task( 1.0, "test_endOfMapVotingStart_case2", chainDelay );
@@ -10808,7 +10974,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         g_test_gameElapsedTime = elapsedValue;
         g_totalTerroristsWins  = elapsedValue;
         g_totalCtWins          = elapsedValue;
-        g_roundsPlayedNumber   = elapsedValue;
+        g_totalRoundsPlayed   = elapsedValue;
         g_greatestKillerFrags  = elapsedValue;
 
         set_pcvar_num( limiterCvarPointer, defaultLimiterValue );
@@ -11313,6 +11479,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     new test_voteMapChoiceCount;
     new test_nomPlayerAllowance;
     new test_nextMapChangeVotemap;
+    new test_endOfMapVoteStart;
 
     new test_nomMapFilePath           [ MAX_FILE_PATH_LENGHT ];
     new test_voteMapFilePath          [ MAX_FILE_PATH_LENGHT ];
@@ -11360,6 +11527,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         test_voteMapChoiceCount      = get_pcvar_num( cvar_voteMapChoiceCount     );
         test_nomPlayerAllowance      = get_pcvar_num( cvar_nomPlayerAllowance     );
         test_nextMapChangeVotemap    = get_pcvar_num( cvar_nextMapChangeVotemap   );
+        test_endOfMapVoteStart       = get_pcvar_num( test_endOfMapVoteStart      );
 
         LOGGER( 2, "    %38s cvar_mp_timelimit: %f  test_mp_timelimit: %f   g_originalTimelimit: %f", \
                 "saveServerCvarsForTesting( out )", get_pcvar_float( cvar_mp_timelimit ), test_mp_timelimit, g_originalTimelimit )
@@ -11410,6 +11578,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
             set_pcvar_num( cvar_voteMapChoiceCount  , test_voteMapChoiceCount   );
             set_pcvar_num( cvar_nomPlayerAllowance  , test_nomPlayerAllowance   );
             set_pcvar_num( cvar_nextMapChangeVotemap, test_nextMapChangeVotemap );
+            set_pcvar_num( cvar_endOfMapVoteStart   , test_endOfMapVoteStart    );
         }
 
         // Clear tests results.
