@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-329";
+new const PLUGIN_VERSION[] = "v3.2.6-330";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -86,7 +86,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-329";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 16+4+8
+#define DEBUG_LEVEL 16+4+8+2
 
 
 /**
@@ -6443,8 +6443,8 @@ stock restoreOriginalServerMaxSpeed()
     if( g_original_sv_maxspeed )
     {
         set_pcvar_float( cvar_sv_maxspeed, g_original_sv_maxspeed );
-
         LOGGER( 2, "( restoreOriginalServerMaxSpeed ) IS CHANGING THE CVAR 'sv_maxspeed' to '%f'.", g_original_sv_maxspeed )
+
         g_original_sv_maxspeed = 0.0;
     }
 }
@@ -10103,13 +10103,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     {
         LOGGER( 128, "I AM ENTERING ON runTests(0)" )
 
-    #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
-        print_logger( "" );
-        print_logger( "" );
-        print_logger( "" );
-        print_logger( "    Executing the %s's Unit Tests: ", PLUGIN_NAME );
-        print_logger( "" );
-
+    #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_UNIT_TEST_DELAYED )
         saveServerCvarsForTesting();
     #endif
 
@@ -10197,6 +10191,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     stock printTheUnitTestsResults()
     {
         // clean the testing
+        print_logger( "" );
         print_logger( "" );
         print_logger( "" );
         print_logger( "" );
@@ -11496,38 +11491,50 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     stock saveServerCvarsForTesting()
     {
         LOGGER( 128, "I AM ENTERING ON saveServerCvarsForTesting(0)" )
-        g_test_isTheUnitTestsRunning = true;
 
-        cleanTheUnitTestsData();
-        saveCurrentTestsTimeStamp();
+        if( !g_test_isTheUnitTestsRunning )
+        {
+            g_test_isTheUnitTestsRunning = true;
 
-        get_pcvar_string( cvar_nomMapFilePath, test_nomMapFilePath, charsmax( test_nomMapFilePath ) );
-        get_pcvar_string( cvar_voteMapFilePath, test_voteMapFilePath, charsmax( test_voteMapFilePath ) );
-        get_pcvar_string( cvar_voteWhiteListMapFilePath, test_voteWhiteListMapFilePath, charsmax( test_voteWhiteListMapFilePath ) );
-        get_pcvar_string( cvar_voteMinPlayersMapFilePath, test_voteMinPlayersMapFilePath, charsmax( test_voteMinPlayersMapFilePath ) );
+            print_logger( "" );
+            print_logger( "" );
+            print_logger( "" );
+            print_logger( "" );
+            print_logger( "" );
+            print_logger( "    Executing the %s's Unit Tests: ", PLUGIN_NAME );
+            print_logger( "" );
 
-        test_rtvRatio                = get_pcvar_float( cvar_rtvRatio );
-        test_extendMapMaximum        = get_pcvar_float( cvar_maxMapExtendTime );
-        test_mp_timelimit            = get_pcvar_float( cvar_mp_timelimit     );
+            cleanTheUnitTestsData();
+            saveCurrentTestsTimeStamp();
 
-        test_mp_winlimit             = get_pcvar_num( cvar_mp_winlimit            );
-        test_mp_maxrounds            = get_pcvar_num( cvar_mp_maxrounds           );
-        test_mp_fraglimit            = get_pcvar_num( cvar_mp_fraglimit           );
-        test_serverTimeLimitRestart  = get_pcvar_num( cvar_serverTimeLimitRestart );
-        test_serverWinlimitRestart   = get_pcvar_num( cvar_serverWinlimitRestart  );
-        test_serverMaxroundsRestart  = get_pcvar_num( cvar_serverMaxroundsRestart );
-        test_serverFraglimitRestart  = get_pcvar_num( cvar_serverFraglimitRestart );
+            get_pcvar_string( cvar_nomMapFilePath, test_nomMapFilePath, charsmax( test_nomMapFilePath ) );
+            get_pcvar_string( cvar_voteMapFilePath, test_voteMapFilePath, charsmax( test_voteMapFilePath ) );
+            get_pcvar_string( cvar_voteWhiteListMapFilePath, test_voteWhiteListMapFilePath, charsmax( test_voteWhiteListMapFilePath ) );
+            get_pcvar_string( cvar_voteMinPlayersMapFilePath, test_voteMinPlayersMapFilePath, charsmax( test_voteMinPlayersMapFilePath ) );
 
-        test_whitelistMinPlayers     = get_pcvar_num( cvar_whitelistMinPlayers    );
-        test_isWhiteListNomBlock     = get_pcvar_num( cvar_isWhiteListNomBlock    );
-        test_isWhiteListBlockOut     = get_pcvar_num( cvar_isWhiteListBlockOut    );
-        test_voteMinPlayers          = get_pcvar_num( cvar_voteMinPlayers         );
-        test_NomMinPlayersControl    = get_pcvar_num( cvar_nomMinPlayersControl   );
-        test_nomQtyUsed              = get_pcvar_num( cvar_nomQtyUsed             );
-        test_voteMapChoiceCount      = get_pcvar_num( cvar_voteMapChoiceCount     );
-        test_nomPlayerAllowance      = get_pcvar_num( cvar_nomPlayerAllowance     );
-        test_nextMapChangeVotemap    = get_pcvar_num( cvar_nextMapChangeVotemap   );
-        test_endOfMapVoteStart       = get_pcvar_num( test_endOfMapVoteStart      );
+            test_rtvRatio                = get_pcvar_float( cvar_rtvRatio );
+            test_extendMapMaximum        = get_pcvar_float( cvar_maxMapExtendTime );
+            test_mp_timelimit            = get_pcvar_float( cvar_mp_timelimit     );
+
+            test_mp_winlimit             = get_pcvar_num( cvar_mp_winlimit            );
+            test_mp_maxrounds            = get_pcvar_num( cvar_mp_maxrounds           );
+            test_mp_fraglimit            = get_pcvar_num( cvar_mp_fraglimit           );
+            test_serverTimeLimitRestart  = get_pcvar_num( cvar_serverTimeLimitRestart );
+            test_serverWinlimitRestart   = get_pcvar_num( cvar_serverWinlimitRestart  );
+            test_serverMaxroundsRestart  = get_pcvar_num( cvar_serverMaxroundsRestart );
+            test_serverFraglimitRestart  = get_pcvar_num( cvar_serverFraglimitRestart );
+
+            test_whitelistMinPlayers     = get_pcvar_num( cvar_whitelistMinPlayers    );
+            test_isWhiteListNomBlock     = get_pcvar_num( cvar_isWhiteListNomBlock    );
+            test_isWhiteListBlockOut     = get_pcvar_num( cvar_isWhiteListBlockOut    );
+            test_voteMinPlayers          = get_pcvar_num( cvar_voteMinPlayers         );
+            test_NomMinPlayersControl    = get_pcvar_num( cvar_nomMinPlayersControl   );
+            test_nomQtyUsed              = get_pcvar_num( cvar_nomQtyUsed             );
+            test_voteMapChoiceCount      = get_pcvar_num( cvar_voteMapChoiceCount     );
+            test_nomPlayerAllowance      = get_pcvar_num( cvar_nomPlayerAllowance     );
+            test_nextMapChangeVotemap    = get_pcvar_num( cvar_nextMapChangeVotemap   );
+            test_endOfMapVoteStart       = get_pcvar_num( cvar_endOfMapVoteStart      );
+        }
 
         LOGGER( 2, "    %38s cvar_mp_timelimit: %f  test_mp_timelimit: %f   g_originalTimelimit: %f", \
                 "saveServerCvarsForTesting( out )", get_pcvar_float( cvar_mp_timelimit ), test_mp_timelimit, g_originalTimelimit )
