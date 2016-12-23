@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-333";
+new const PLUGIN_VERSION[] = "v3.2.6-334";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -86,7 +86,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-333";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 16+4
+#define DEBUG_LEVEL 16+4+2
 
 
 /**
@@ -237,6 +237,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-333";
         test_nominateAndUnnominate_load();
         test_RTVAndUnRTV_load();
         test_getUniqueRandom_load();
+        test_whatGameEndingTypeIt_load();
     }
 
     /**
@@ -272,7 +273,8 @@ new const PLUGIN_VERSION[] = "v3.2.6-333";
             // LOGGER( 1, "Current i is: %d", i )
         }
 
-        test_getUniqueRandom_load();
+        test_whatGameEndingTypeIt_load();
+        // test_getUniqueRandom_load();
         // test_nominateAndUnnominate_load();
         // test_loadVoteChoices_cases();
         //test_colorChatLimits( player_id );
@@ -281,7 +283,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-333";
         //test_announceVoteBlockedMap_c();
 
         // Restore the game cvars
-        g_test_isTheUnitTestsRunning ? player_id : printTheUnitTestsResults();
+        g_test_isTheUnitTestsRunning ? printTheUnitTestsResults() : player_id;
     }
 
     /**
@@ -391,6 +393,9 @@ new const PLUGIN_VERSION[] = "v3.2.6-333";
  */
 #define MAX_INTEGER  2147483647
 #define MIN_INTEGER -2147483648
+
+#define FRAGS_BY_ROUND_AVERAGE   5
+#define SECONDS_BY_ROUND_AVERAGE 50
 
 #define LISTMAPS_USERID   0
 #define LISTMAPS_LAST_MAP 1
@@ -998,9 +1003,9 @@ new bool:g_isSawPartialMatchFirstPage[ MAX_PLAYERS_COUNT ];
 enum GameEndingType
 {
     GameEndingType_ByNothing,
-    GameEndingType_ByTimeLimit,
-    GameEndingType_ByMaxRounds,
     GameEndingType_ByWinLimit,
+    GameEndingType_ByMaxRounds,
+    GameEndingType_ByTimeLimit,
     GameEndingType_ByFragLimit
 }
 
@@ -2543,13 +2548,24 @@ stock howManyRoundsAreRemaining( secondsRemaining, GameEndingType:whatGameEnding
     return MAX_INTEGER;
 }
 
-#define SWITCH_ENDIND_GAME_TYPE_RETURN(%1,%2,%3,%4,%5) \
+/**
+ * Gets a cvar and computes their difference.
+ *
+ * @param outputData
+ * @param inputData
+ * @param globalVariable
+ */
+#define GET_REMAINING(%1,%2,%3) ( %1 = %2 - %3 );
+
+/**
+ * Wrapper to call switchEndingGameType(10) without repeating the same `if` code everywhere.
+ */
+#define SWITCH_ENDING_GAME_TYPE_RETURN(%0,%1,%2,%3,%4,%5,%6,%7,%8,%9) \
 { \
-    new GameEndingType:gameType; \
-    gameType = switchEndindGameType( %1, %2, %3, %4, %5 ); \
+    gameType = switchEndingGameType( %0, %1, %2, %3, %4, %5, %6, %7, %8, %9 ); \
     if( gameType != GameEndingType_ByNothing ) \
     { \
-        LOGGER( 1, "    ( SWITCH_ENDIND_GAME_TYPE_RETURN ) Returning GameEndingType: %d", gameType ) \
+        LOGGER( 1, "    ( SWITCH_ENDING_GAME_TYPE_RETURN ) Returning GameEndingType: %d", gameType ) \
         return gameType; \
     } \
 }
@@ -2557,11 +2573,26 @@ stock howManyRoundsAreRemaining( secondsRemaining, GameEndingType:whatGameEnding
 stock GameEndingType:whatGameEndingTypeItIs()
 {
     LOGGER( 128, "I AM ENTERING ON whatGameEndingTypeItIs(0)" )
+    new GameEndingType:gameType;
 
-    new rounds_left_by_time;
-    new rounds_left_by_frags;
+    new by_time;
+    new by_frags;
+    new by_winlimit;
+    new by_maxrounds;
 
-    rounds_left_by_frags = get_pcvar_num( cvar_mp_fraglimit ) - g_greatestKillerFrags;
+    new cv_time;
+    new cv_frags;
+    new cv_maxrounds;
+    new cv_winlimit;
+
+    cv_winlimit  = get_pcvar_num( cvar_mp_winlimit  );
+    cv_maxrounds = get_pcvar_num( cvar_mp_maxrounds );
+    cv_time      = get_pcvar_num( cvar_mp_timelimit );
+    cv_frags     = get_pcvar_num( cvar_mp_fraglimit );
+
+    GET_REMAINING( by_frags    , cv_frags    , g_greatestKillerFrags )
+    GET_REMAINING( by_maxrounds, cv_maxrounds, g_totalRoundsPlayed )
+    GET_REMAINING( by_winlimit , cv_winlimit , max( g_totalCtWins, g_totalTerroristsWins ) )
 
     // Make sure there are enough data to operate, otherwise set valid data.
     if( g_totalRoundsSavedTimes > MIN_VOTE_START_ROUNDS_DELAY )
@@ -2569,50 +2600,54 @@ stock GameEndingType:whatGameEndingTypeItIs()
         // Avoid zero division
         if( g_roundAverageTime )
         {
-            rounds_left_by_time = get_timeleft() / g_roundAverageTime;
+            by_time = get_timeleft() / g_roundAverageTime;
         }
         else
         {
-            // Uses 20 instead of 60 to be more a fair amount
-            rounds_left_by_time = get_timeleft() / 20;
+            by_time = get_timeleft() / SECONDS_BY_ROUND_AVERAGE;
         }
 
+        // Avoid zero division
         if( g_greatestKillerFrags
             && g_totalRoundsPlayed )
         {
-            rounds_left_by_frags = rounds_left_by_frags / ( g_greatestKillerFrags / g_totalRoundsPlayed );
+            new integerDivision = g_greatestKillerFrags / g_totalRoundsPlayed;
+            by_frags = by_frags / ( integerDivision ? integerDivision : FRAGS_BY_ROUND_AVERAGE );
         }
         else
         {
-            rounds_left_by_frags = rounds_left_by_frags / 5;
+            by_frags = by_frags / FRAGS_BY_ROUND_AVERAGE;
         }
     }
     else
     {
-        // Uses 20 instead of 60 to be more a fair amount
-        rounds_left_by_time  = get_timeleft() / 20;
-        rounds_left_by_frags = rounds_left_by_frags / 5;
+        by_time  = get_timeleft() / SECONDS_BY_ROUND_AVERAGE;
+        by_frags = by_frags / FRAGS_BY_ROUND_AVERAGE;
     }
 
-    new rounds_left_by_maxrounds  = get_pcvar_num( cvar_mp_maxrounds ) - g_totalRoundsPlayed;
-    new rounds_left_by_winlimit   = get_pcvar_num( cvar_mp_winlimit ) - max( g_totalCtWins, g_totalTerroristsWins );
+    LOGGER( 0, "", debugWhatGameEndingTypeItIs( by_maxrounds, by_time, by_winlimit, by_frags, 32 ) )
 
-    LOGGER( 0, "", debugWhatGameEndingTypeItIs( rounds_left_by_maxrounds, rounds_left_by_time, \
-            rounds_left_by_winlimit, rounds_left_by_frags, 32 ) )
+    // Check whether there is any allowed combination.
+    SWITCH_ENDING_GAME_TYPE_RETURN( by_winlimit    , cv_winlimit , by_time    , cv_time      , \
+            by_maxrounds, cv_maxrounds, by_frags   , cv_frags    , GameEndingType_ByWinLimit , false )
+    SWITCH_ENDING_GAME_TYPE_RETURN( by_maxrounds   , cv_maxrounds, by_time    , cv_time      , \
+            by_winlimit , cv_winlimit , by_frags   , cv_frags    , GameEndingType_ByMaxRounds, false )
+    SWITCH_ENDING_GAME_TYPE_RETURN( by_time        , cv_time     , by_winlimit, cv_winlimit  , \
+            by_maxrounds, cv_maxrounds, by_frags   , cv_frags    , GameEndingType_ByTimeLimit, false )
+    SWITCH_ENDING_GAME_TYPE_RETURN( by_frags       , cv_frags    , by_time    , cv_time      , \
+            by_maxrounds, cv_maxrounds, by_winlimit, cv_winlimit , GameEndingType_ByFragLimit, false )
 
-    SWITCH_ENDIND_GAME_TYPE_RETURN( rounds_left_by_maxrounds, rounds_left_by_time, rounds_left_by_winlimit, \
-            rounds_left_by_frags, GameEndingType_ByMaxRounds )
+    // Allow self return for the first matching slot, as there are not combinations at all.
+    SWITCH_ENDING_GAME_TYPE_RETURN( cv_winlimit    , cv_winlimit , cv_time    , cv_time      , \
+            cv_maxrounds, cv_maxrounds, cv_frags   , cv_frags    , GameEndingType_ByWinLimit , true )
+    SWITCH_ENDING_GAME_TYPE_RETURN( cv_maxrounds   , cv_maxrounds, cv_time    , cv_time      , \
+            cv_winlimit , cv_winlimit , cv_frags   , cv_frags    , GameEndingType_ByMaxRounds, true )
+    SWITCH_ENDING_GAME_TYPE_RETURN( cv_time        , cv_time     , cv_winlimit, cv_winlimit  , \
+            cv_maxrounds, cv_maxrounds, cv_frags   , cv_frags    , GameEndingType_ByTimeLimit, true )
+    SWITCH_ENDING_GAME_TYPE_RETURN( cv_frags       , cv_frags    , cv_time    , cv_time      , \
+            cv_maxrounds, cv_maxrounds, cv_winlimit, cv_winlimit , GameEndingType_ByFragLimit, true )
 
-    SWITCH_ENDIND_GAME_TYPE_RETURN( rounds_left_by_winlimit, rounds_left_by_time, rounds_left_by_maxrounds, \
-            rounds_left_by_frags, GameEndingType_ByWinLimit )
-
-    SWITCH_ENDIND_GAME_TYPE_RETURN( rounds_left_by_time, rounds_left_by_winlimit, rounds_left_by_maxrounds, \
-            rounds_left_by_frags, GameEndingType_ByTimeLimit )
-
-    SWITCH_ENDIND_GAME_TYPE_RETURN( rounds_left_by_frags, rounds_left_by_time, rounds_left_by_maxrounds, \
-            rounds_left_by_winlimit, GameEndingType_ByFragLimit )
-
-    LOGGER( 1, "    ( whatGameEndingTypeItIs ) Returning GameEndingType_ByNothing: %d", GameEndingType_ByNothing )
+    LOGGER( 0, "    ( whatGameEndingTypeItIs ) Returning: %d", GameEndingType_ByNothing )
     return GameEndingType_ByNothing;
 }
 
@@ -2622,104 +2657,107 @@ stock debugWhatGameEndingTypeItIs( rounds_left_by_maxrounds, rounds_left_by_time
     LOGGER( debugLevel, "I AM ENTERING ON debugWhatGameEndingTypeItIs(4)" )
 
     LOGGER( debugLevel, "" )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) rounds_left_by_maxrounds: %d", rounds_left_by_maxrounds )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) rounds_left_by_time: %d", rounds_left_by_time )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) rounds_left_by_winlimit: %d", rounds_left_by_winlimit )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) rounds_left_by_frags: %d", rounds_left_by_frags )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) cv_winlimit: %2d", get_pcvar_num( cvar_mp_winlimit  ) )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) cv_maxrounds: %0d", get_pcvar_num( cvar_mp_maxrounds ) )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) cv_time: %6f", get_pcvar_float( cvar_mp_timelimit ) )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) cv_frags: %5d", get_pcvar_num( cvar_mp_fraglimit ) )
 
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) GameEndingType_ByNothing: %d"  , GameEndingType_ByNothing )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) GameEndingType_ByWinLimit: %d" , GameEndingType_ByWinLimit )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs )" )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) rounds_left_by_winlimit: %2d", rounds_left_by_winlimit )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) rounds_left_by_maxrounds: %0d", rounds_left_by_maxrounds )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) rounds_left_by_time: %6d", rounds_left_by_time )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) rounds_left_by_frags: %5d", rounds_left_by_frags )
+
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs )" )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) GameEndingType_ByWinLimit: %2d", GameEndingType_ByWinLimit )
     LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) GameEndingType_ByMaxRounds: %d", GameEndingType_ByMaxRounds )
     LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) GameEndingType_ByTimeLimit: %d", GameEndingType_ByTimeLimit )
     LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) GameEndingType_ByFragLimit: %d", GameEndingType_ByFragLimit )
 
+    LOGGER( debugLevel, "" )
     return 0;
 }
 
-stock GameEndingType:switchEndindGameType( maxrounds, time, winlimit, frags, GameEndingType:type )
+stock GameEndingType:switchEndingGameType( by_maxrounds, cv_maxrounds, by_time, cv_time, by_winlimit, cv_winlimit,
+                                           by_frags, cv_frags, GameEndingType:type, bool:allowSelfReturn )
 {
-    if( maxrounds )
+    LOGGER( 128, "I AM ENTERING ON switchEndingGameType(10) GameEndingType: %d", type )
+
+    // If the cvar original value is set to a zero value, the round will never ended by such cvar.
+    if( cv_maxrounds > 0 )
     {
-        if( time
-            && winlimit
-            && frags )
+        // If the `if-else` chain is not cut once the higher order is evaluated, it will be able to
+        // fall under the wrong entrance type, as lower the level, more the restrictions are lost.
+        if( cv_time > 0
+            && cv_winlimit > 0
+            && cv_frags > 0 )
         {
-            if( time > maxrounds )
+            if( by_time > by_maxrounds
+                && by_winlimit > by_maxrounds
+                && by_frags > by_maxrounds )
             {
-                if( winlimit > maxrounds )
-                {
-                    if( frags > maxrounds )
-                    {
-                        return type;
-                    }
-                }
-            }
-        }
-
-        if( time
-            && winlimit )
-        {
-            if( time > maxrounds )
-            {
-                if( winlimit > maxrounds )
-                {
-                    return type;
-                }
-            }
-        }
-
-        if( time
-            && frags )
-        {
-            if( time > maxrounds )
-            {
-                if( frags > maxrounds )
-                {
-                    return type;
-                }
-            }
-        }
-
-        if( winlimit
-            && frags )
-        {
-            if( winlimit > maxrounds )
-            {
-                if( frags > maxrounds )
-                {
-                    return type;
-                }
-            }
-        }
-
-        if( time )
-        {
-            if( time > maxrounds )
-            {
+                LOGGER( 0, "^n^n^n ( switchEndingGameType ) 1" )
                 return type;
             }
         }
-
-        if( winlimit )
+        else if( cv_time > 0
+                 && cv_winlimit > 0 )
         {
-            if( winlimit > maxrounds )
+            if( by_time > by_maxrounds
+                && by_winlimit > by_maxrounds )
             {
+                LOGGER( 0, "^n^n^n ( switchEndingGameType ) 2" )
                 return type;
             }
         }
-
-        if( frags )
+        else if( cv_time > 0
+                 && cv_frags > 0 )
         {
-            if( frags > maxrounds )
+            if( by_time > by_maxrounds
+                && by_frags > by_maxrounds )
             {
+                LOGGER( 0, "^n^n^n ( switchEndingGameType ) 3" )
                 return type;
             }
         }
-
-        return type;
+        else if( cv_winlimit > 0
+                 && cv_frags > 0 )
+        {
+            if( by_winlimit > by_maxrounds
+                && by_frags > by_maxrounds )
+            {
+                LOGGER( 0, "^n^n^n ( switchEndingGameType ) 4" )
+                return type;
+            }
+        }
+        // If the `by_maxrounds` did not fall in any of these above traps to fall out the `if-else` chain,
+        // it is safe to left if free from this point towards.
+        else if( cv_time > 0
+                 && by_time > by_maxrounds )
+        {
+            LOGGER( 0, "^n^n^n ( switchEndingGameType ) 5" )
+            return type;
+        }
+        else if( cv_winlimit > 0
+                 && by_winlimit > by_maxrounds )
+        {
+            LOGGER( 0, "^n^n^n ( switchEndingGameType ) 6" )
+            return type;
+        }
+        else if( cv_frags > 0
+                 && by_frags > by_maxrounds )
+        {
+            LOGGER( 0, "^n^n^n ( switchEndingGameType ) 7" )
+            return type;
+        }
+        else if( allowSelfReturn )
+        {
+            LOGGER( 0, "^n^n^n ( switchEndingGameType ) 8" )
+            return type;
+        }
     }
 
-    LOGGER( 1, "    ( switchEndindGameType ) Returning GameEndingType_ByNothing: %d", GameEndingType_ByNothing )
+    LOGGER( 1, "    ( switchEndingGameType ) Returning GameEndingType_ByNothing: %d", GameEndingType_ByNothing )
     return GameEndingType_ByNothing;
 }
 
@@ -10622,6 +10660,10 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
 
     stock printTheUnitTestsResults()
     {
+    #if DEBUG_LEVEL & DEBUG_LEVEL_MANUAL_TEST_START
+        displaysLastTestOk();
+    #endif
+
         // clean the testing
         print_logger( "" );
         print_logger( "" );
@@ -10656,7 +10698,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
             }
             else if( lastFailure == lastTestId  )
             {
-                print_logger( "FALILED!" );
+                print_logger( "FAILED!" );
                 print_logger( "" );
                 print_logger( "" );
                 print_logger( "" );
@@ -11805,6 +11847,105 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         TrieDestroy( sortedIntegers );
     }
 
+    /**
+     * To test the stock whatGameEndingTypeItIs(0).
+     */
+    stock test_whatGameEndingTypeIt_load()
+    {
+        new GameEndingType:tNone   = GameEndingType_ByNothing;
+        new GameEndingType:tLimit  = GameEndingType_ByTimeLimit;
+        new GameEndingType:tWins   = GameEndingType_ByWinLimit;
+        new GameEndingType:tRounds = GameEndingType_ByMaxRounds;
+        new GameEndingType:tFrags  = GameEndingType_ByFragLimit;
+
+        test_whatGameEndingTypeIt( .cvarW=1, .win=100, .trs= 20, .result=tWins ); // Case 1
+        test_whatGameEndingTypeIt( .cvarW=1, .win=100, .trs=  0, .result=tWins ); // Case 2
+        test_whatGameEndingTypeIt( .cvarW=1, .win=100, .trs=101, .result=tWins ); // Case 3
+        test_whatGameEndingTypeIt( .cvarW=1, .win=  0, .trs=101, .result=tNone ); // Case 4
+        test_whatGameEndingTypeIt( .cvarW=1, .win=  0, .trs=  0, .result=tNone ); // Case 5
+
+        test_whatGameEndingTypeIt( .cvarM=1, .max=100, .played= 20, .result=tRounds ); // Case 6
+        test_whatGameEndingTypeIt( .cvarM=1, .max=100, .played=  0, .result=tRounds ); // Case 7
+        test_whatGameEndingTypeIt( .cvarM=1, .max=100, .played=101, .result=tRounds ); // Case 8
+        test_whatGameEndingTypeIt( .cvarM=1, .max=  0, .played=101, .result=tNone   ); // Case 9
+        test_whatGameEndingTypeIt( .cvarM=1, .max=  0, .played=  0, .result=tNone   ); // Case 10
+
+        test_whatGameEndingTypeIt( .cvarT=1, .time=100.0, .limit=60.0* 20, .result=tLimit ); // Case 11
+        test_whatGameEndingTypeIt( .cvarT=1, .time=100.0, .limit=60.0*  3, .result=tLimit ); // Case 12
+        test_whatGameEndingTypeIt( .cvarT=1, .time=100.0, .limit=60.0*101, .result=tLimit ); // Case 13
+        test_whatGameEndingTypeIt( .cvarT=1, .time=  0.0, .limit=60.0*101, .result=tNone  ); // Case 14
+        test_whatGameEndingTypeIt( .cvarT=1, .time=  0.0, .limit=60.0*  0, .result=tNone  ); // Case 15
+
+        test_whatGameEndingTypeIt( .cvarF=1, .frag=100, .frags= 20, .result=tFrags ); // Case 16
+        test_whatGameEndingTypeIt( .cvarF=1, .frag=100, .frags=  0, .result=tFrags ); // Case 17
+        test_whatGameEndingTypeIt( .cvarF=1, .frag=100, .frags=101, .result=tFrags ); // Case 18
+        test_whatGameEndingTypeIt( .cvarF=1, .frag=  0, .frags=101, .result=tNone  ); // Case 19
+        test_whatGameEndingTypeIt( .cvarF=1, .frag=  0, .frags=  0, .result=tNone  ); // Case 20
+
+        test_whatGameEndingTypeIt( .cvarT=1, .time=100.0, .limit=100*60.0, .result=tLimit  ); // Case 21
+        test_whatGameEndingTypeIt( .cvarM=1, .max=50    , .played=101    , .result=tRounds ); // Case 22
+
+        test_whatGameEndingTypeIt( .cvarM=1, .max=200   , .played=100   ,
+                                   .cvarT=1, .time=100.0, .limit=60.0*50, .result=tLimit ); // Case 23
+
+        test_whatGameEndingTypeIt( .cvarM=1, .max=200   , .played=100   ,
+                                   .cvarW=1, .win=20    , .cts=5        , .trs=0,
+                                   .cvarT=1, .time=100.0, .limit=60.0*50, .result=tWins ); // Case 24
+
+        test_whatGameEndingTypeIt( .cvarM=1, .max=200   , .played=100   ,
+                                   .cvarW=1, .win=20    , .cts=5        , .trs=0,
+                                   .cvarF=1, .frag=30   , .frags=5      ,
+                                   .cvarT=1, .time=100.0, .limit=60.0*50, .result=tFrags ); // Case 25
+
+        test_whatGameEndingTypeIt( .cvarW=1 , .win=20    , .cts=5        , .trs=0,
+                                   .cvarM=1 , .max=200   , .played=100   ,
+                                   .cvarT=1 , .time=100.0, .limit=60.0*10,
+                                   .cvarF=1 , .frag=30   , .frags=5      ,
+                                   .mean=210, .saved=10  , .result=tLimit  ); // Case 26
+    }
+
+    stock test_whatGameEndingTypeIt( cvarW=0, win=0         , cts=0          , trs=0,
+                                     cvarM=0, max=0         , played=0       ,
+                                     cvarT=0, Float:time=0.0, Float:limit=0.0,
+                                     cvarF=0, frag=0        , frags=0        ,
+                                     mean=0 , saved=0       , GameEndingType:result )
+    {
+        new GameEndingType:gameType;
+
+        new errorMessage[ MAX_LONG_STRING ];
+        new test_id = test_registerSeriesNaming( "test_whatGameEndingTypeIt", 'b' );
+
+        g_roundAverageTime      = mean;
+        g_totalRoundsSavedTimes = saved;
+        g_totalRoundsPlayed     = played;
+        g_totalCtWins           = cts;
+        g_totalTerroristsWins   = trs;
+        g_greatestKillerFrags   = frags;
+
+        set_pcvar_num(   cvar_mp_winlimit , cvarW ? win  : 0   );
+        set_pcvar_num(   cvar_mp_maxrounds, cvarM ? max  : 0   );
+        set_pcvar_float( cvar_mp_timelimit, cvarT ? time : 0.0 );
+        set_pcvar_num(   cvar_mp_fraglimit, cvarF ? frag : 0   );
+
+        LOGGER( 32, "( test_whatGameEndingTypeIt ) timelimit: %d", floatround( get_pcvar_float( cvar_mp_timelimit ) * 60 ) )
+
+        if( time > 0.0 )
+        {
+            set_pcvar_float( cvar_mp_timelimit,
+                    ( get_pcvar_float( cvar_mp_timelimit ) * 60
+                      - get_timeleft()
+                      + limit
+                    ) / 60 );
+        }
+
+        LOGGER( 32, "( test_whatGameEndingTypeIt ) timelimit: %d", floatround( get_pcvar_float( cvar_mp_timelimit ) * 60 ) )
+
+        gameType = whatGameEndingTypeItIs();
+
+        formatex( errorMessage, charsmax( errorMessage ), "The GameEndingType must to be %d, instead of %d.", result, gameType );
+        SET_TEST_FAILURE( test_id, gameType != result, errorMessage )
+    }
+
 
 
 
@@ -12009,6 +12150,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         // Clear tests results.
         resetRoundsScores();
         cancelVoting();
+        g_totalRoundsSavedTimes = 0;
 
         // Reload unloaded features.
         loadMapFiles();
