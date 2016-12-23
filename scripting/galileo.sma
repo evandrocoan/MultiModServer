@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-334";
+new const PLUGIN_VERSION[] = "v3.2.6-335";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -2651,33 +2651,6 @@ stock GameEndingType:whatGameEndingTypeItIs()
     return GameEndingType_ByNothing;
 }
 
-stock debugWhatGameEndingTypeItIs( rounds_left_by_maxrounds, rounds_left_by_time, rounds_left_by_winlimit,
-                                   rounds_left_by_frags, debugLevel )
-{
-    LOGGER( debugLevel, "I AM ENTERING ON debugWhatGameEndingTypeItIs(4)" )
-
-    LOGGER( debugLevel, "" )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) cv_winlimit: %2d", get_pcvar_num( cvar_mp_winlimit  ) )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) cv_maxrounds: %0d", get_pcvar_num( cvar_mp_maxrounds ) )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) cv_time: %6f", get_pcvar_float( cvar_mp_timelimit ) )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) cv_frags: %5d", get_pcvar_num( cvar_mp_fraglimit ) )
-
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs )" )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) rounds_left_by_winlimit: %2d", rounds_left_by_winlimit )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) rounds_left_by_maxrounds: %0d", rounds_left_by_maxrounds )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) rounds_left_by_time: %6d", rounds_left_by_time )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) rounds_left_by_frags: %5d", rounds_left_by_frags )
-
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs )" )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) GameEndingType_ByWinLimit: %2d", GameEndingType_ByWinLimit )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) GameEndingType_ByMaxRounds: %d", GameEndingType_ByMaxRounds )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) GameEndingType_ByTimeLimit: %d", GameEndingType_ByTimeLimit )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) GameEndingType_ByFragLimit: %d", GameEndingType_ByFragLimit )
-
-    LOGGER( debugLevel, "" )
-    return 0;
-}
-
 stock GameEndingType:switchEndingGameType( by_maxrounds, cv_maxrounds, by_time, cv_time, by_winlimit, cv_winlimit,
                                            by_frags, cv_frags, GameEndingType:type, bool:allowSelfReturn )
 {
@@ -2759,6 +2732,33 @@ stock GameEndingType:switchEndingGameType( by_maxrounds, cv_maxrounds, by_time, 
 
     LOGGER( 1, "    ( switchEndingGameType ) Returning GameEndingType_ByNothing: %d", GameEndingType_ByNothing )
     return GameEndingType_ByNothing;
+}
+
+stock debugWhatGameEndingTypeItIs( rounds_left_by_maxrounds, rounds_left_by_time, rounds_left_by_winlimit,
+                                   rounds_left_by_frags, debugLevel )
+{
+    LOGGER( debugLevel, "I AM ENTERING ON debugWhatGameEndingTypeItIs(5)" )
+
+    LOGGER( debugLevel, "" )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) cv_winlimit: %2d", get_pcvar_num( cvar_mp_winlimit  ) )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) cv_maxrounds: %0d", get_pcvar_num( cvar_mp_maxrounds ) )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) cv_time: %6f", get_pcvar_float( cvar_mp_timelimit ) )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) cv_frags: %5d", get_pcvar_num( cvar_mp_fraglimit ) )
+
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs )" )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) rounds_left_by_winlimit: %2d", rounds_left_by_winlimit )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) rounds_left_by_maxrounds: %0d", rounds_left_by_maxrounds )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) rounds_left_by_time: %6d", rounds_left_by_time )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) rounds_left_by_frags: %5d", rounds_left_by_frags )
+
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs )" )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) GameEndingType_ByWinLimit: %2d", GameEndingType_ByWinLimit )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) GameEndingType_ByMaxRounds: %d", GameEndingType_ByMaxRounds )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) GameEndingType_ByTimeLimit: %d", GameEndingType_ByTimeLimit )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) GameEndingType_ByFragLimit: %d", GameEndingType_ByFragLimit )
+
+    LOGGER( debugLevel, "" )
+    return 0;
 }
 
 stock debugIsTimeToStartTheEndOfMap( secondsRemaining, debugLevel )
