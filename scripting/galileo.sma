@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-336";
+new const PLUGIN_VERSION[] = "v3.2.6-337";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -2501,46 +2501,16 @@ stock howManyRoundsAreRemaining( secondsRemaining, GameEndingType:whatGameEnding
         case GameEndingType_ByFragLimit:
         {
             new rounds_left_by_frags = get_pcvar_num( cvar_mp_fraglimit ) - g_greatestKillerFrags;
+            getRoundsRemainingByFrags( secondsRemaining, _, rounds_left_by_frags );
 
-            // Make sure there are enough data to operate, otherwise set an invalid data.
-            if( g_totalRoundsSavedTimes > MIN_VOTE_START_ROUNDS_DELAY )
-            {
-                if( g_greatestKillerFrags
-                    && g_totalRoundsPlayed )
-                {
-                    return rounds_left_by_frags / ( g_greatestKillerFrags / g_totalRoundsPlayed );
-                }
-                else
-                {
-                    return rounds_left_by_frags / 5;
-                }
-            }
-            else
-            {
-                return rounds_left_by_frags / 5;
-            }
+            return rounds_left_by_frags;
         }
         case GameEndingType_ByTimeLimit:
         {
-            // Make sure there are enough data to operate, otherwise set an invalid data.
-            if( g_totalRoundsSavedTimes > MIN_VOTE_START_ROUNDS_DELAY )
-            {
-                // Avoid zero division
-                if( g_roundAverageTime )
-                {
-                    return secondsRemaining / g_roundAverageTime;
-                }
-                else
-                {
-                    // Uses 20 instead of 60 to be more a fair amount
-                    return secondsRemaining / 20;
-                }
-            }
-            else
-            {
-                // Uses 20 instead of 60 to be more a fair amount
-                return secondsRemaining / 20;
-            }
+            new rounds_left_by_time;
+            getRoundsRemainingByFrags( secondsRemaining, rounds_left_by_time );
+
+            return rounds_left_by_time;
         }
     }
 
@@ -2548,8 +2518,42 @@ stock howManyRoundsAreRemaining( secondsRemaining, GameEndingType:whatGameEnding
     return MAX_INTEGER;
 }
 
+stock getRoundsRemainingByFrags( secondsRemaining, &by_time = 0, &by_frags = 0 )
+{
+    // Make sure there are enough data to operate, otherwise set valid data.
+    if( g_totalRoundsSavedTimes > MIN_VOTE_START_ROUNDS_DELAY )
+    {
+        // Avoid zero division
+        if( g_roundAverageTime )
+        {
+            by_time = secondsRemaining / g_roundAverageTime;
+        }
+        else
+        {
+            by_time = secondsRemaining / SECONDS_BY_ROUND_AVERAGE;
+        }
+
+        // Avoid zero division
+        if( g_greatestKillerFrags
+            && g_totalRoundsPlayed )
+        {
+            new integerDivision = g_greatestKillerFrags / g_totalRoundsPlayed;
+            by_frags = by_frags / ( integerDivision ? integerDivision : FRAGS_BY_ROUND_AVERAGE );
+        }
+        else
+        {
+            by_frags = by_frags / FRAGS_BY_ROUND_AVERAGE;
+        }
+    }
+    else
+    {
+        by_time  = secondsRemaining / SECONDS_BY_ROUND_AVERAGE;
+        by_frags = by_frags / FRAGS_BY_ROUND_AVERAGE;
+    }
+}
+
 /**
- * Gets a cvar and computes their difference.
+ * Gets input variables and computes their difference.
  *
  * @param outputData
  * @param inputData
@@ -2594,37 +2598,7 @@ stock GameEndingType:whatGameEndingTypeItIs()
     GET_REMAINING( by_maxrounds, cv_maxrounds, g_totalRoundsPlayed )
     GET_REMAINING( by_winlimit , cv_winlimit , max( g_totalCtWins, g_totalTerroristsWins ) )
 
-    // Make sure there are enough data to operate, otherwise set valid data.
-    if( g_totalRoundsSavedTimes > MIN_VOTE_START_ROUNDS_DELAY )
-    {
-        // Avoid zero division
-        if( g_roundAverageTime )
-        {
-            by_time = get_timeleft() / g_roundAverageTime;
-        }
-        else
-        {
-            by_time = get_timeleft() / SECONDS_BY_ROUND_AVERAGE;
-        }
-
-        // Avoid zero division
-        if( g_greatestKillerFrags
-            && g_totalRoundsPlayed )
-        {
-            new integerDivision = g_greatestKillerFrags / g_totalRoundsPlayed;
-            by_frags = by_frags / ( integerDivision ? integerDivision : FRAGS_BY_ROUND_AVERAGE );
-        }
-        else
-        {
-            by_frags = by_frags / FRAGS_BY_ROUND_AVERAGE;
-        }
-    }
-    else
-    {
-        by_time  = get_timeleft() / SECONDS_BY_ROUND_AVERAGE;
-        by_frags = by_frags / FRAGS_BY_ROUND_AVERAGE;
-    }
-
+    getRoundsRemainingByFrags( get_timeleft(), by_time, by_frags );
     LOGGER( 0, "", debugWhatGameEndingTypeItIs( by_maxrounds, by_time, by_winlimit, by_frags, 32 ) )
 
     // Check whether there is any allowed combination.
