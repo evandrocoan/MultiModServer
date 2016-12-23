@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-335";
+new const PLUGIN_VERSION[] = "v3.2.6-336";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -11706,6 +11706,10 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         test_nominateAndUnnominate( .player_id = 1, .map_index = 0, .total_Nom = 0, .action = 'n' ); // Case 12
     }
 
+    /**
+     * Create one case test for the nomination system based on its parameters passed by the
+     * test_nominateAndUnnominate_load(0) loader function.
+     */
     stock test_nominateAndUnnominate( player_id, map_index, total_Nom, action )
     {
         new openNominationIndex;
@@ -11733,7 +11737,6 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         formatex( errorMessage, charsmax( errorMessage ), "Must to be %d nominations, instead of %d.", total_Nom, nominationsCount );
         SET_TEST_FAILURE( test_id, nominationsCount != total_Nom, errorMessage )
     }
-
 
     /**
      * To test the RTV feature.
@@ -11776,6 +11779,10 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         test_RTVAndUnRTV( .player_id = 1, .total_RTVs = 0, .action = 'n' ); // Case
     }
 
+    /**
+     * Create one case test for the RTV feature based on its parameters passed by the
+     * test_RTVAndUnRTV_load(0) loader function.
+     */
     stock test_RTVAndUnRTV( player_id, total_RTVs, action )
     {
         new errorMessage[ MAX_LONG_STRING ];
@@ -11813,6 +11820,10 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         test_getUniqueRandomInteger( 0  ); // Case 8
     }
 
+    /**
+     * Create one case test for the stock getUniqueRandomIntegers(0) based on its parameters passed
+     * by the test_getUniqueRandom_load(0) loader function.
+     */
     stock test_getUniqueRandomInteger( max_value )
     {
         new errorMessage[ MAX_LONG_STRING ];
@@ -11904,6 +11915,10 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
                                    .mean=210, .saved=10  , .result=tLimit  ); // Case 26
     }
 
+    /**
+     * Create one case test for the stock whatGameEndingTypeItIs(0) based on its parameters passed
+     * by the test_whatGameEndingTypeIt_load(0) loader function.
+     */
     stock test_whatGameEndingTypeIt( cvarW=0, win=0         , cts=0          , trs=0,
                                      cvarM=0, max=0         , played=0       ,
                                      cvarT=0, Float:time=0.0, Float:limit=0.0,
