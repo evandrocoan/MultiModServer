@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-332";
+new const PLUGIN_VERSION[] = "v3.2.6-333";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -86,7 +86,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-332";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 16+4+2
+#define DEBUG_LEVEL 16+4
 
 
 /**
@@ -991,6 +991,18 @@ new Array:g_partialMatchFirstPageItems[ MAX_PLAYERS_COUNT ];
  * when the player rewind to the first partial nomination menu page.
  */
 new bool:g_isSawPartialMatchFirstPage[ MAX_PLAYERS_COUNT ];
+
+/**
+ * Create a new type to perform the switch between voting by rounds, time or frags limit.
+ */
+enum GameEndingType
+{
+    GameEndingType_ByNothing,
+    GameEndingType_ByTimeLimit,
+    GameEndingType_ByMaxRounds,
+    GameEndingType_ByWinLimit,
+    GameEndingType_ByFragLimit
+}
 
 
 new g_totalRoundsSavedTimes;
@@ -2420,17 +2432,8 @@ stock isToStartTheVotingOnThisRound( secondsRemaining )
     if( get_pcvar_num( cvar_endOfMapVote )
         && !task_exists( TASKID_START_VOTING_BY_TIMER ) )
     {
-        new roundsRemaining;
-
-        // Make sure there are enough data to operate, otherwise set an invalid data.
-        if( g_totalRoundsSavedTimes > MIN_VOTE_START_ROUNDS_DELAY )
-        {
-            roundsRemaining = howManyRoundsAreRemaining( secondsRemaining - g_totalVoteTime );
-        }
-        else
-        {
-            roundsRemaining = MAX_INTEGER;
-        }
+        new roundsRemaining = howManyRoundsAreRemaining( secondsRemaining - PERIODIC_CHECKING_INTERVAL,
+                whatGameEndingTypeItIs() );
 
         LOGGER( 0, "", debugIsTimeToStartTheEndOfMap( secondsRemaining, 32 ) )
         return chooseTheEndOfMapStartOption( roundsRemaining );
@@ -2467,10 +2470,257 @@ stock howManySecondsLastMapTheVoting()
     return voteTime;
 }
 
-stock howManyRoundsAreRemaining( secondsRemaining )
+/**
+ * This function choose which round round ending type it is and count how many rounds there are.
+ * The types are:
+ *
+ *     1) Per rounds.
+ *     2) Is by mp_winlimit expiration proximity?
+ *     3) Is by mp_maxrounds expiration proximity?
+ *     4) Per minutes.
+ */
+stock howManyRoundsAreRemaining( secondsRemaining, GameEndingType:whatGameEndingType )
 {
-    // LOGGER( 128, "I AM ENTERING ON howManyRoundsAreRemaining(2), g_roundAverageTime: %d", g_roundAverageTime )
-    return secondsRemaining / ( g_roundAverageTime ? g_roundAverageTime : 1 );
+    LOGGER( 128, "I AM ENTERING ON howManyRoundsAreRemaining(1), g_roundAverageTime: %d", g_roundAverageTime )
+
+    switch( whatGameEndingType )
+    {
+        case GameEndingType_ByMaxRounds:
+        {
+            return get_pcvar_num( cvar_mp_maxrounds ) - g_totalRoundsPlayed;
+        }
+        case GameEndingType_ByWinLimit:
+        {
+            return get_pcvar_num( cvar_mp_winlimit ) - max( g_totalCtWins, g_totalTerroristsWins );
+        }
+        case GameEndingType_ByFragLimit:
+        {
+            new rounds_left_by_frags = get_pcvar_num( cvar_mp_fraglimit ) - g_greatestKillerFrags;
+
+            // Make sure there are enough data to operate, otherwise set an invalid data.
+            if( g_totalRoundsSavedTimes > MIN_VOTE_START_ROUNDS_DELAY )
+            {
+                if( g_greatestKillerFrags
+                    && g_totalRoundsPlayed )
+                {
+                    return rounds_left_by_frags / ( g_greatestKillerFrags / g_totalRoundsPlayed );
+                }
+                else
+                {
+                    return rounds_left_by_frags / 5;
+                }
+            }
+            else
+            {
+                return rounds_left_by_frags / 5;
+            }
+        }
+        case GameEndingType_ByTimeLimit:
+        {
+            // Make sure there are enough data to operate, otherwise set an invalid data.
+            if( g_totalRoundsSavedTimes > MIN_VOTE_START_ROUNDS_DELAY )
+            {
+                // Avoid zero division
+                if( g_roundAverageTime )
+                {
+                    return secondsRemaining / g_roundAverageTime;
+                }
+                else
+                {
+                    // Uses 20 instead of 60 to be more a fair amount
+                    return secondsRemaining / 20;
+                }
+            }
+            else
+            {
+                // Uses 20 instead of 60 to be more a fair amount
+                return secondsRemaining / 20;
+            }
+        }
+    }
+
+    LOGGER( 1, "    ( howManyRoundsAreRemaining ) Returning MAX_INTEGER: %d", MAX_INTEGER )
+    return MAX_INTEGER;
+}
+
+#define SWITCH_ENDIND_GAME_TYPE_RETURN(%1,%2,%3,%4,%5) \
+{ \
+    new GameEndingType:gameType; \
+    gameType = switchEndindGameType( %1, %2, %3, %4, %5 ); \
+    if( gameType != GameEndingType_ByNothing ) \
+    { \
+        LOGGER( 1, "    ( SWITCH_ENDIND_GAME_TYPE_RETURN ) Returning GameEndingType: %d", gameType ) \
+        return gameType; \
+    } \
+}
+
+stock GameEndingType:whatGameEndingTypeItIs()
+{
+    LOGGER( 128, "I AM ENTERING ON whatGameEndingTypeItIs(0)" )
+
+    new rounds_left_by_time;
+    new rounds_left_by_frags;
+
+    rounds_left_by_frags = get_pcvar_num( cvar_mp_fraglimit ) - g_greatestKillerFrags;
+
+    // Make sure there are enough data to operate, otherwise set valid data.
+    if( g_totalRoundsSavedTimes > MIN_VOTE_START_ROUNDS_DELAY )
+    {
+        // Avoid zero division
+        if( g_roundAverageTime )
+        {
+            rounds_left_by_time = get_timeleft() / g_roundAverageTime;
+        }
+        else
+        {
+            // Uses 20 instead of 60 to be more a fair amount
+            rounds_left_by_time = get_timeleft() / 20;
+        }
+
+        if( g_greatestKillerFrags
+            && g_totalRoundsPlayed )
+        {
+            rounds_left_by_frags = rounds_left_by_frags / ( g_greatestKillerFrags / g_totalRoundsPlayed );
+        }
+        else
+        {
+            rounds_left_by_frags = rounds_left_by_frags / 5;
+        }
+    }
+    else
+    {
+        // Uses 20 instead of 60 to be more a fair amount
+        rounds_left_by_time  = get_timeleft() / 20;
+        rounds_left_by_frags = rounds_left_by_frags / 5;
+    }
+
+    new rounds_left_by_maxrounds  = get_pcvar_num( cvar_mp_maxrounds ) - g_totalRoundsPlayed;
+    new rounds_left_by_winlimit   = get_pcvar_num( cvar_mp_winlimit ) - max( g_totalCtWins, g_totalTerroristsWins );
+
+    LOGGER( 0, "", debugWhatGameEndingTypeItIs( rounds_left_by_maxrounds, rounds_left_by_time, \
+            rounds_left_by_winlimit, rounds_left_by_frags, 32 ) )
+
+    SWITCH_ENDIND_GAME_TYPE_RETURN( rounds_left_by_maxrounds, rounds_left_by_time, rounds_left_by_winlimit, \
+            rounds_left_by_frags, GameEndingType_ByMaxRounds )
+
+    SWITCH_ENDIND_GAME_TYPE_RETURN( rounds_left_by_winlimit, rounds_left_by_time, rounds_left_by_maxrounds, \
+            rounds_left_by_frags, GameEndingType_ByWinLimit )
+
+    SWITCH_ENDIND_GAME_TYPE_RETURN( rounds_left_by_time, rounds_left_by_winlimit, rounds_left_by_maxrounds, \
+            rounds_left_by_frags, GameEndingType_ByTimeLimit )
+
+    SWITCH_ENDIND_GAME_TYPE_RETURN( rounds_left_by_frags, rounds_left_by_time, rounds_left_by_maxrounds, \
+            rounds_left_by_winlimit, GameEndingType_ByFragLimit )
+
+    LOGGER( 1, "    ( whatGameEndingTypeItIs ) Returning GameEndingType_ByNothing: %d", GameEndingType_ByNothing )
+    return GameEndingType_ByNothing;
+}
+
+stock debugWhatGameEndingTypeItIs( rounds_left_by_maxrounds, rounds_left_by_time, rounds_left_by_winlimit,
+                                   rounds_left_by_frags, debugLevel )
+{
+    LOGGER( debugLevel, "I AM ENTERING ON debugWhatGameEndingTypeItIs(4)" )
+
+    LOGGER( debugLevel, "" )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) rounds_left_by_maxrounds: %d", rounds_left_by_maxrounds )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) rounds_left_by_time: %d", rounds_left_by_time )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) rounds_left_by_winlimit: %d", rounds_left_by_winlimit )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) rounds_left_by_frags: %d", rounds_left_by_frags )
+
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) GameEndingType_ByNothing: %d"  , GameEndingType_ByNothing )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) GameEndingType_ByWinLimit: %d" , GameEndingType_ByWinLimit )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) GameEndingType_ByMaxRounds: %d", GameEndingType_ByMaxRounds )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) GameEndingType_ByTimeLimit: %d", GameEndingType_ByTimeLimit )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) GameEndingType_ByFragLimit: %d", GameEndingType_ByFragLimit )
+
+    return 0;
+}
+
+stock GameEndingType:switchEndindGameType( maxrounds, time, winlimit, frags, GameEndingType:type )
+{
+    if( maxrounds )
+    {
+        if( time
+            && winlimit
+            && frags )
+        {
+            if( time > maxrounds )
+            {
+                if( winlimit > maxrounds )
+                {
+                    if( frags > maxrounds )
+                    {
+                        return type;
+                    }
+                }
+            }
+        }
+
+        if( time
+            && winlimit )
+        {
+            if( time > maxrounds )
+            {
+                if( winlimit > maxrounds )
+                {
+                    return type;
+                }
+            }
+        }
+
+        if( time
+            && frags )
+        {
+            if( time > maxrounds )
+            {
+                if( frags > maxrounds )
+                {
+                    return type;
+                }
+            }
+        }
+
+        if( winlimit
+            && frags )
+        {
+            if( winlimit > maxrounds )
+            {
+                if( frags > maxrounds )
+                {
+                    return type;
+                }
+            }
+        }
+
+        if( time )
+        {
+            if( time > maxrounds )
+            {
+                return type;
+            }
+        }
+
+        if( winlimit )
+        {
+            if( winlimit > maxrounds )
+            {
+                return type;
+            }
+        }
+
+        if( frags )
+        {
+            if( frags > maxrounds )
+            {
+                return type;
+            }
+        }
+
+        return type;
+    }
+
+    LOGGER( 1, "    ( switchEndindGameType ) Returning GameEndingType_ByNothing: %d", GameEndingType_ByNothing )
+    return GameEndingType_ByNothing;
 }
 
 stock debugIsTimeToStartTheEndOfMap( secondsRemaining, debugLevel )
@@ -2479,7 +2729,7 @@ stock debugIsTimeToStartTheEndOfMap( secondsRemaining, debugLevel )
 
     LOGGER( debugLevel, "" )
     LOGGER( debugLevel, "( debugIsTimeToStartTheEndOfMap ) roundsRemaining: %d", \
-            howManyRoundsAreRemaining( secondsRemaining - g_totalVoteTime ) )
+            howManyRoundsAreRemaining( secondsRemaining - g_totalVoteTime, whatGameEndingTypeItIs() ) )
 
     LOGGER( debugLevel, "( debugIsTimeToStartTheEndOfMap ) task_exists TASKID_START_VOTING_BY_TIMER: %d", \
             task_exists( TASKID_START_VOTING_BY_TIMER ) )
@@ -6875,10 +7125,11 @@ stock start_rtvVote()
 
 /**
  * This function choose what RTV's type will be used to 'rock the vote'. The types are:
- * 1) Per rounds.
- * 1.1) Is by mp_winlimit expiration proximity?
- * 1.2) Is by mp_maxrounds expiration proximity?
- * 2) Per minutes.
+ *
+ *     1) Per rounds.
+ *     2) Is by mp_winlimit expiration proximity?
+ *     3) Is by mp_maxrounds expiration proximity?
+ *     4) Per minutes.
  *
  * These data are used to display the voting menu and proper set the voting flow. This use the
  * default voting type to timer if the rounds ending are disabled.
@@ -6887,32 +7138,27 @@ stock configureRtvVotingType()
 {
     LOGGER( 128, "I AM ENTERING ON configureRtvVotingType(0)" )
 
-    new minutes_left    = get_timeleft() / 20; // Uses 20 instead of 60 to be more a fair amount
-    new maxrounds_left  = get_pcvar_num( cvar_mp_maxrounds ) - g_totalRoundsPlayed;
-    new winlimit_left   = get_pcvar_num( cvar_mp_winlimit ) - max( g_totalCtWins, g_totalTerroristsWins );
-    new fragslimit_left = get_pcvar_num( cvar_mp_fraglimit ) - g_greatestKillerFrags;
-
-    if( ( minutes_left > maxrounds_left
-          && maxrounds_left > 0 )
-        || ( minutes_left > winlimit_left
-             && winlimit_left > 0 ) )
+    switch( whatGameEndingTypeItIs() )
     {
-        g_isVotingByRounds = true;
-
-        // the variable 'g_isMaxroundsExtend' is forced to false because it could not be always false.
-        if( maxrounds_left >= winlimit_left )
+        case GameEndingType_ByMaxRounds:
         {
+            g_isVotingByRounds  = true;
             g_isMaxroundsExtend = true;
         }
-        else
+        case GameEndingType_ByWinLimit:
         {
+            // the variable 'g_isMaxroundsExtend' is forced to false because it could not be always false.
+            g_isVotingByRounds  = true;
             g_isMaxroundsExtend = false;
         }
-
-    } else if( minutes_left > fragslimit_left
-               && fragslimit_left > 0 )
-    {
-        g_isVotingByFrags = true;
+        case GameEndingType_ByFragLimit:
+        {
+            g_isVotingByFrags = true;
+        }
+        case GameEndingType_ByTimeLimit:
+        {
+            // A voting by time does not need any special setting
+        }
     }
 }
 
@@ -10810,7 +11056,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         set_pcvar_float( cvar_mp_timelimit,
                 ( get_pcvar_float( cvar_mp_timelimit ) * 60
                   - secondsLeft
-                  + START_VOTEMAP_MAX_TIME + 2*PERIODIC_CHECKING_INTERVAL + 1 )
+                  + START_VOTEMAP_MAX_TIME + PERIODIC_CHECKING_INTERVAL )
                 / 60 );
 
         LOGGER( 32, "( test_endOfMapVotingStart_case1 ) timelimit: %d", floatround( get_pcvar_float( cvar_mp_timelimit ) * 60 ) )
