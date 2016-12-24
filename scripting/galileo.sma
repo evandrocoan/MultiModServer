@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-344";
+new const PLUGIN_VERSION[] = "v3.2.6-345";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -76,7 +76,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-344";
  * 4   - Run the DELAYED Unit Tests.
  *
  * 8   - a) To create fake votes. See the function 'create_fakeVotes()'.
- *       b) To create fake players count. See the function 'get_realplayersnum()'.
+ *       b) To create fake players count. See the function 'get_real_players_number()'.
  *
  * 16   - Enable DEBUG_LEVEL 1 and all its debugging/depuration available.
  *
@@ -526,7 +526,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-344";
  */
 #define IS_WHITELIST_ENABLED() \
     ( get_pcvar_num( cvar_whitelistMinPlayers ) == 1 \
-      || get_realplayersnum() < get_pcvar_num( cvar_whitelistMinPlayers ) )
+      || get_real_players_number() < get_pcvar_num( cvar_whitelistMinPlayers ) )
 //
 
 /**
@@ -543,7 +543,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-344";
  * instead of the cvar 'gal_vote_mapfile' map file list.
  */
 #define IS_NOMINATION_MININUM_PLAYERS_CONTROL_ENABLED() \
-    ( get_realplayersnum() < get_pcvar_num( cvar_voteMinPlayers ) \
+    ( get_real_players_number() < get_pcvar_num( cvar_voteMinPlayers ) \
       && get_pcvar_num( cvar_nomMinPlayersControl ) )
 //
 
@@ -821,8 +821,10 @@ new cvar_isToReplaceByVoteMenu;
 new cvar_soundsMute;
 new cvar_voteMapFilePath;
 new cvar_voteMinPlayers;
+new cvar_voteMidPlayers;
 new cvar_nomMinPlayersControl;
 new cvar_voteMinPlayersMapFilePath;
+new cvar_voteMidPlayersMapFilePath;
 new cvar_whitelistMinPlayers;
 new cvar_isWhiteListNomBlock;
 new cvar_isWhiteListBlockOut;
@@ -955,12 +957,14 @@ new Trie:g_nominationLoadedMapsTrie;
  * Contains the paths to the voting fillers files.
  */
 new Array:g_voteMinPlayerFillerPathsArray;
+new Array:g_voteMidPlayerFillerPathsArray;
 new Array:g_voteNorPlayerFillerPathsArray;
 
 /**
  * Contains how much maps per map group file to load.
  */
 new Array:g_minMaxMapsPerGroupToUseArray;
+new Array:g_midMaxMapsPerGroupToUseArray;
 new Array:g_norMaxMapsPerGroupToUseArray;
 
 /**
@@ -968,6 +972,7 @@ new Array:g_norMaxMapsPerGroupToUseArray;
  * from the Array `g_voteMinPlayerFillerPathsArray` for each of the its paths receptively.
  */
 new Array:g_minPlayerFillerMapGroupArrays;
+new Array:g_midPlayerFillerMapGroupArrays;
 new Array:g_norPlayerFillerMapGroupArrays;
 
 /**
@@ -977,6 +982,7 @@ new Array:g_norPlayerFillerMapGroupArrays;
 enum fillersFilePathType
 {
     fillersFilePaths_MininumPlayers,
+    fillersFilePaths_MiddlePlayers,
     fillersFilePaths_NormalPlayers
 }
 
@@ -1184,8 +1190,10 @@ public plugin_init()
     cvar_voteDuration              = register_cvar( "gal_vote_duration"           , "15"   );
     cvar_voteMapFilePath           = register_cvar( "gal_vote_mapfile"            , "*"    );
     cvar_voteMinPlayers            = register_cvar( "gal_vote_minplayers"         , "0"    );
+    cvar_voteMidPlayers            = register_cvar( "gal_vote_midplayers"         , "0"    );
     cvar_nomMinPlayersControl      = register_cvar( "gal_nom_minplayers_control"  , "0"    );
     cvar_voteMinPlayersMapFilePath = register_cvar( "gal_vote_minplayers_mapfile" , ""     );
+    cvar_voteMidPlayersMapFilePath = register_cvar( "gal_vote_midplayers_mapfile" , ""     );
     cvar_whitelistMinPlayers       = register_cvar( "gal_whitelist_minplayers"    , "0"    );
     cvar_isWhiteListNomBlock       = register_cvar( "gal_whitelist_nom_block"     , "0"    );
     cvar_isWhiteListBlockOut       = register_cvar( "gal_whitelist_block_out"     , "0"    );
@@ -1405,6 +1413,10 @@ stock initializeGlobalArrays()
     g_voteMinPlayerFillerPathsArray = ArrayCreate( MAX_MAPNAME_LENGHT );
     g_minPlayerFillerMapGroupArrays = ArrayCreate();
     g_minMaxMapsPerGroupToUseArray  = ArrayCreate();
+
+    g_voteMidPlayerFillerPathsArray = ArrayCreate( MAX_MAPNAME_LENGHT );
+    g_midPlayerFillerMapGroupArrays = ArrayCreate();
+    g_midMaxMapsPerGroupToUseArray  = ArrayCreate();
 
     g_voteNorPlayerFillerPathsArray = ArrayCreate( MAX_MAPNAME_LENGHT );
     g_norPlayerFillerMapGroupArrays = ArrayCreate();
@@ -2107,9 +2119,9 @@ stock loadWhiteListFileFromFile( &Array:whitelistArray, whiteListFilePath[] )
     LOGGER( 1, "I AM EXITING loadWhiteListFileFromFile(2) | whitelistArray: %d", whitelistArray )
 }
 
-stock processLoadedMapFileFromFile( &Array:playerFillerMapsArray, &Array:fillersFilePathsArray )
+stock processLoadedGroupMapFileFrom( &Array:playerFillerMapsArray, &Array:fillersFilePathsArray )
 {
-    LOGGER( 128, "I AM ENTERING ON processLoadedMapFileFromFile(2) groupCount: %d", ArraySize( fillersFilePathsArray ) )
+    LOGGER( 128, "I AM ENTERING ON processLoadedGroupMapFileFrom(2) groupCount: %d", ArraySize( fillersFilePathsArray ) )
     new fillerFilePath[ MAX_FILE_PATH_LENGHT ];
 
     new Array:fillerMapsArray;
@@ -2135,13 +2147,19 @@ stock loadMapFiles()
 
     // To clear them, in case we are reloading it.
     TRY_TO_APPLY( ArrayClear, g_whitelistFileArray )
+
+    TRY_TO_APPLY( ArrayClear, g_voteMidPlayerFillerPathsArray )
+    TRY_TO_APPLY( ArrayClear, g_midMaxMapsPerGroupToUseArray )
+
     TRY_TO_APPLY( ArrayClear, g_voteMinPlayerFillerPathsArray )
-    TRY_TO_APPLY( ArrayClear, g_voteNorPlayerFillerPathsArray )
     TRY_TO_APPLY( ArrayClear, g_minMaxMapsPerGroupToUseArray )
+
+    TRY_TO_APPLY( ArrayClear, g_voteNorPlayerFillerPathsArray )
     TRY_TO_APPLY( ArrayClear, g_norMaxMapsPerGroupToUseArray )
 
     destroy_two_dimensional_array( g_norPlayerFillerMapGroupArrays, false );
     destroy_two_dimensional_array( g_minPlayerFillerMapGroupArrays, false );
+    destroy_two_dimensional_array( g_midPlayerFillerMapGroupArrays, false );
 
     // To start loading the files.
     new mapFilerFilePath[ MAX_FILE_PATH_LENGHT ];
@@ -2155,17 +2173,23 @@ stock loadMapFiles()
     loadMapGroupsFeatureFile( mapFilerFilePath, g_voteMinPlayerFillerPathsArray, g_minMaxMapsPerGroupToUseArray );
 
     LOGGER( 4, "" )
+    get_pcvar_string( cvar_voteMidPlayersMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) );
+    loadMapGroupsFeatureFile( mapFilerFilePath, g_voteMidPlayerFillerPathsArray, g_midMaxMapsPerGroupToUseArray );
+
+    LOGGER( 4, "" )
     get_pcvar_string( cvar_voteMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) );
     loadMapGroupsFeatureFile( mapFilerFilePath, g_voteNorPlayerFillerPathsArray, g_norMaxMapsPerGroupToUseArray );
 
     // To process the loaded files to let them ready for immediate use.
     LOGGER( 4, "" )
-    processLoadedMapFileFromFile( g_minPlayerFillerMapGroupArrays, g_voteMinPlayerFillerPathsArray );
-    processLoadedMapFileFromFile( g_norPlayerFillerMapGroupArrays, g_voteNorPlayerFillerPathsArray );
+    processLoadedGroupMapFileFrom( g_minPlayerFillerMapGroupArrays, g_voteMinPlayerFillerPathsArray );
+    processLoadedGroupMapFileFrom( g_midPlayerFillerMapGroupArrays, g_voteMidPlayerFillerPathsArray );
+    processLoadedGroupMapFileFrom( g_norPlayerFillerMapGroupArrays, g_voteNorPlayerFillerPathsArray );
 
     LOGGER( 4, "" )
-    LOGGER( 4, "", debugLoadedMapFileFromFile( g_minPlayerFillerMapGroupArrays, g_minMaxMapsPerGroupToUseArray ) )
-    LOGGER( 4, "", debugLoadedMapFileFromFile( g_norPlayerFillerMapGroupArrays, g_norMaxMapsPerGroupToUseArray ) )
+    LOGGER( 4, "", debugLoadedGroupMapFileFrom( g_minPlayerFillerMapGroupArrays, g_minMaxMapsPerGroupToUseArray ) )
+    LOGGER( 4, "", debugLoadedGroupMapFileFrom( g_midPlayerFillerMapGroupArrays, g_midMaxMapsPerGroupToUseArray ) )
+    LOGGER( 4, "", debugLoadedGroupMapFileFrom( g_norPlayerFillerMapGroupArrays, g_norMaxMapsPerGroupToUseArray ) )
 
     // Load the ban recent maps feature
     if( get_pcvar_num( cvar_recentMapsBannedNumber ) )
@@ -2186,9 +2210,9 @@ stock loadMapFiles()
     LOGGER( 4, "" )
 }
 
-stock debugLoadedMapFileFromFile( &Array:playerFillerMapsArray, &Array:maxMapsPerGroupToUseArray )
+stock debugLoadedGroupMapFileFrom( &Array:playerFillerMapsArray, &Array:maxMapsPerGroupToUseArray )
 {
-    LOGGER( 128, "I AM ENTERING ON debugLoadedMapFileFromFile(3) groupCount: %d", ArraySize( playerFillerMapsArray ) )
+    LOGGER( 128, "I AM ENTERING ON debugLoadedGroupMapFileFrom(3) groupCount: %d", ArraySize( playerFillerMapsArray ) )
 
     new Array:fillerMapsArray;
     new fillerMap[ MAX_FILE_PATH_LENGHT ];
@@ -3020,7 +3044,7 @@ stock try_to_manage_map_end( bool:isToImmediatelyChangeLevel = false )
     else if( !( g_isTheLastGameRound
                 || g_isThePenultGameRound ) )
     {
-        new bool:areThereEnoughPlayers = get_realplayersnum() >= get_pcvar_num( cvar_endOnRound_msg );
+        new bool:areThereEnoughPlayers = get_real_players_number() >= get_pcvar_num( cvar_endOnRound_msg );
 
         if( !areThereEnoughPlayers
             && isToImmediatelyChangeLevel )
@@ -3064,8 +3088,8 @@ stock try_to_manage_map_end( bool:isToImmediatelyChangeLevel = false )
 public map_manageEnd()
 {
     LOGGER( 128, "I AM ENTERING ON map_manageEnd(0)" )
-    LOGGER( 2, "%32s mp_timelimit: %f, get_realplayersnum: %d", "map_manageEnd(in)", \
-            get_pcvar_float( cvar_mp_timelimit ), get_realplayersnum() )
+    LOGGER( 2, "%32s mp_timelimit: %f, get_real_players_number: %d", "map_manageEnd(in)", \
+            get_pcvar_float( cvar_mp_timelimit ), get_real_players_number() )
 
     switch( get_pcvar_num( cvar_endOnRound ) )
     {
@@ -3108,8 +3132,8 @@ public map_manageEnd()
     tryToStartTheVotingOnThisRound();
     configure_last_round_HUD();
 
-    LOGGER( 2, "%32s mp_timelimit: %f, get_realplayersnum: %d", "map_manageEnd(out)", \
-            get_pcvar_float( cvar_mp_timelimit ), get_realplayersnum() )
+    LOGGER( 2, "%32s mp_timelimit: %f, get_real_players_number: %d", "map_manageEnd(out)", \
+            get_pcvar_float( cvar_mp_timelimit ), get_real_players_number() )
 
     LOGGER( 1, "    ( map_manageEnd ) Just returning and allowing the end management." )
     return true;
@@ -4339,10 +4363,22 @@ stock setupLoadWhiteListParams( bool:isWhiteList, &Trie:listTrie, &Array:listArr
 stock loadMapGroupsFeature()
 {
     LOGGER( 128, "I AM ENTERING ON loadMapGroupsFeature(0)" )
+    new realPlayersNumber = get_real_players_number();
 
-    if( get_realplayersnum() < get_pcvar_num( cvar_voteMinPlayers ) )
+    if( realPlayersNumber > 0 )
     {
-        return fillersFilePaths_MininumPlayers;
+        new voteMininumPlayers = get_pcvar_num( cvar_voteMinPlayers );
+        new voteMiddlePlayers  = get_pcvar_num( cvar_voteMidPlayers );
+
+        if( realPlayersNumber < voteMininumPlayers )
+        {
+            return fillersFilePaths_MininumPlayers;
+        }
+        else if( voteMiddlePlayers > voteMininumPlayers
+                 && realPlayersNumber < voteMiddlePlayers )
+        {
+            return fillersFilePaths_MiddlePlayers;
+        }
     }
 
     return fillersFilePaths_NormalPlayers;
@@ -4370,7 +4406,12 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
             fillerMapGroupsArrays     = g_minPlayerFillerMapGroupArrays;
             maxMapsPerGroupToUseArray = g_minMaxMapsPerGroupToUseArray;
         }
-        case fillersFilePaths_NormalPlayers:
+        case fillersFilePaths_MiddlePlayers:
+        {
+            fillerMapGroupsArrays     = g_midPlayerFillerMapGroupArrays;
+            maxMapsPerGroupToUseArray = g_midMaxMapsPerGroupToUseArray;
+        }
+        default: // case fillersFilePaths_NormalPlayers:
         {
             fillerMapGroupsArrays     = g_norPlayerFillerMapGroupArrays;
             maxMapsPerGroupToUseArray = g_norMaxMapsPerGroupToUseArray;
@@ -5008,7 +5049,7 @@ public startVotingByGameEngineCall()
 
 public vote_manageEnd()
 {
-    LOGGER( 0, "I AM ENTERING ON vote_manageEnd(0) | get_realplayersnum: %d", get_realplayersnum() )
+    LOGGER( 0, "I AM ENTERING ON vote_manageEnd(0) | get_real_players_number: %d", get_real_players_number() )
     new secondsLeft = get_timeleft();
 
     if( secondsLeft )
@@ -5088,8 +5129,8 @@ stock handle_game_crash_recreation( secondsLeft )
 
 stock approvedTheVotingStart( bool:is_forced_voting )
 {
-    LOGGER( 128, "I AM ENTERING ON approvedTheVotingStart(1) | is_forced_voting: %d, get_realplayersnum: %d", \
-            is_forced_voting, get_realplayersnum() )
+    LOGGER( 128, "I AM ENTERING ON approvedTheVotingStart(1) | is_forced_voting: %d, get_real_players_number: %d", \
+            is_forced_voting, get_real_players_number() )
 
     if( get_pcvar_num( cvar_nextMapChangeVotemap )
         && get_pcvar_num( cvar_nextMapChangeAnnounce )
@@ -5111,7 +5152,7 @@ stock approvedTheVotingStart( bool:is_forced_voting )
     }
 
     // block the voting on some not allowed situations/cases
-    if( get_realplayersnum() == 0
+    if( get_real_players_number() == 0
         || ( g_voteStatus & VOTE_IS_IN_PROGRESS
              && !( g_voteStatus & VOTE_IS_RUNOFF ) )
         || ( !is_forced_voting
@@ -5129,7 +5170,7 @@ stock approvedTheVotingStart( bool:is_forced_voting )
         }
     #endif
 
-        if( get_realplayersnum() == 0 )
+        if( get_real_players_number() == 0 )
         {
             if( get_pcvar_num( cvar_isEmptyCycleByMapChange ) )
             {
@@ -7183,7 +7224,7 @@ stock is_to_block_RTV( player_id )
     }
 
     // If the player is the only one on the server, bring up the vote immediately
-    else if( get_realplayersnum() == 1 )
+    else if( get_real_players_number() == 1 )
     {
         start_rtvVote();
         LOGGER( 1, "    ( is_to_block_RTV ) Just Returning/blocking, the voting started." )
@@ -7309,7 +7350,7 @@ stock start_rtvVote()
     new endOnRoundRtv = get_pcvar_num( cvar_endOnRoundRtv );
 
     if( endOnRoundRtv
-        && get_realplayersnum() >= endOnRoundRtv )
+        && get_real_players_number() >= endOnRoundRtv )
     {
         g_isToChangeMapOnVotingEnd = true;
     }
@@ -7375,7 +7416,7 @@ stock vote_unrockTheVote( player_id )
 stock vote_getRocksNeeded()
 {
     LOGGER( 128, "I AM ENTERING ON vote_getRocksNeeded(0)" )
-    return floatround( get_pcvar_float( cvar_rtvRatio ) * float( get_realplayersnum() ), floatround_ceil );
+    return floatround( get_pcvar_float( cvar_rtvRatio ) * float( get_real_players_number() ), floatround_ceil );
 }
 
 public rtv_remind( param )
@@ -7693,7 +7734,7 @@ stock unnominatedDisconnectedPlayer( player_id )
 stock isToHandleRecentlyEmptyServer()
 {
     LOGGER( 128, "I AM ENTERING ON isToHandleRecentlyEmptyServer(0)" )
-    new playersCount = get_realplayersnum();
+    new playersCount = get_real_players_number();
 
     LOGGER( 2, "( isToHandleRecentlyEmptyServer ) mp_timelimit: %f, g_originalTimelimit: %f, playersCount: %d", \
             get_pcvar_float( cvar_mp_timelimit ), g_originalTimelimit, playersCount )
@@ -7728,7 +7769,7 @@ public inicializeEmptyCycleFeature()
 {
     LOGGER( 128, "I AM ENTERING ON inicializeEmptyCycleFeature(0)" )
 
-    if( get_realplayersnum() == 0 )
+    if( get_real_players_number() == 0 )
     {
         if( get_pcvar_num( cvar_isToStopEmptyCycle ) )
         {
@@ -9674,9 +9715,9 @@ stock getSurMapNameIndex( mapSurName[] )
     return -1;
 }
 
-stock get_realplayersnum()
+stock get_real_players_number()
 {
-    LOGGER( 0, "I AM ENTERING ON get_realplayersnum(0)" )
+    LOGGER( 0, "I AM ENTERING ON get_real_players_number(0)" )
     new playersCount;
 
     new players[ MAX_PLAYERS ];
@@ -10169,6 +10210,7 @@ public plugin_end()
 
     destroy_two_dimensional_array( g_norPlayerFillerMapGroupArrays );
     destroy_two_dimensional_array( g_minPlayerFillerMapGroupArrays );
+    destroy_two_dimensional_array( g_midPlayerFillerMapGroupArrays );
 
     // Clean the unit tests data
 #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
@@ -10187,8 +10229,11 @@ public plugin_end()
     TRY_TO_APPLY( ArrayDestroy, g_nominatedMapsArray )
 
     TRY_TO_APPLY( ArrayDestroy, g_voteMinPlayerFillerPathsArray )
+    TRY_TO_APPLY( ArrayDestroy, g_voteMidPlayerFillerPathsArray )
     TRY_TO_APPLY( ArrayDestroy, g_voteNorPlayerFillerPathsArray )
+
     TRY_TO_APPLY( ArrayDestroy, g_minMaxMapsPerGroupToUseArray )
+    TRY_TO_APPLY( ArrayDestroy, g_midMaxMapsPerGroupToUseArray )
     TRY_TO_APPLY( ArrayDestroy, g_norMaxMapsPerGroupToUseArray )
 
     // Clear Dynamic Tries
@@ -11639,33 +11684,26 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     }
 
     /**
-     * This is a configuration loader for the 'loadNormalVoteChoices(0)' function testing.
+     * To call the general test handler 'test_loadVoteChoices_serie(1)' using test series, the
+     * `loadNormalVoteChoices(0)` function testing.
      */
-    stock test_loadVoteChoices_load()
+    stock test_loadVoteChoices_cases()
     {
-        // Enable all settings
+        // Enable all settings and to perform the configuration loading
         set_pcvar_string( cvar_voteMapFilePath, g_test_voteMapFilePath );
         set_pcvar_string( cvar_voteWhiteListMapFilePath, g_test_whiteListFilePath );
         set_pcvar_string( cvar_voteMinPlayersMapFilePath, g_test_minPlayersFilePath );
 
         set_pcvar_num( cvar_whitelistMinPlayers  , 1 );
-        set_pcvar_num( cvar_voteMinPlayers       , 1 );
+        set_pcvar_num( cvar_voteMinPlayers       , 2 );
         set_pcvar_num( cvar_isWhiteListNomBlock  , 0 );
         set_pcvar_num( cvar_isWhiteListBlockOut  , 0 );
-        set_pcvar_num( cvar_nomMinPlayersControl , 1 );
+        set_pcvar_num( cvar_nomMinPlayersControl , 2 );
         set_pcvar_num( cvar_nomPlayerAllowance   , 2 );
         set_pcvar_num( cvar_voteMapChoiceCount   , 5 );
         set_pcvar_num( cvar_nomQtyUsed           , 0 );
 
         cacheCvarsValues();
-    }
-
-    /**
-     * To call the general test handler 'test_loadVoteChoices_serie(1)' using test series.
-     */
-    stock test_loadVoteChoices_cases()
-    {
-        test_loadVoteChoices_load();
 
         // If 'g_test_aimedPlayersNumber < cvar_voteMinPlayers', enables the minimum players feature.
         g_test_aimedPlayersNumber = 0;
@@ -11762,8 +11800,8 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         helper_mapFileListLoad( g_test_minPlayersFilePath, "de_rain" , "de_nuke" );
         helper_mapFileListLoad( g_test_whiteListFilePath , "[0-23]"  , "de_rain", "de_nuke" );
 
-        // Enables the minimum players feature.
-        g_test_aimedPlayersNumber = 0;
+        // Forced the minimum players feature map to be loaded.
+        g_test_aimedPlayersNumber = 1;
 
         // To force the Whitelist to be reloaded.
         loadMapFiles();
@@ -11811,8 +11849,8 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         helper_mapFileListLoad( g_test_minPlayersFilePath, "de_rats" , "de_train" );
         helper_mapFileListLoad( g_test_whiteListFilePath , "[0-23]"  , "de_rats", "de_train" );
 
-        // Enables the minimum players feature.
-        g_test_aimedPlayersNumber = 0;
+        // Forced the minimum players feature map to be loaded.
+        g_test_aimedPlayersNumber = 1;
 
         // To force the Whitelist to be reloaded.
         loadMapFiles();

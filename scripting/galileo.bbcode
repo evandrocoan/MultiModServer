@@ -1190,13 +1190,15 @@ Thank you!  It means a lot to me.
 [SPOILER]
 
 [LIST=1]
+[*]Added the ability for players to close the vote menu, if they want to. [URL="https://github.com/addonszz/Galileo/issues/4"]Issue#4[/URL].
 [*]Added an optimum time for the vote starting at map end. [URL="https://github.com/addonszz/Galileo/issues/20"]Issue#20[/URL].
-[*]Improved the cvar `gal_endofmapvote_start` detection and added new options to it. [URL="https://github.com/addonszz/Galileo/issues/38"]Issue#38[/URL].
+[*]Added a new option to the cvar `gal_vote_show_none`, to created a new menu showing command the options. [URL="https://github.com/addonszz/Galileo/issues/40"]Issue#40[/URL].
 [*]Added new cvar `gal_nextmap_votemap` to not start another map voting when the server admin to starts one. [URL="https://github.com/addonszz/Galileo/issues/22"]Issue#22[/URL].
 [*]Added new cvar `gal_runoff_mapchoices` to let the voting take into account all the map options that had the maximum amount of votes. [URL="https://github.com/addonszz/Galileo/issues/33"]Issue#33[/URL].
 [*]Added new cvar `gal_runoff_ratio` to specifies the minimum amount of votes the most voted map should have to not start a run off voting. [URL="https://github.com/addonszz/Galileo/issues/33"]Issue#33[/URL].
 [*]Implemented the Allow Round Finish feature for the cvar `mp_fraglimit`.
 [*]Implemented the Maintenance Mode for the cvars `mp_fraglimit`, `mp_maxrounds` and `mp_winlimit`.
+[*]Improved the cvar `gal_endofmapvote_start` detection and added new options to it. [URL="https://github.com/addonszz/Galileo/issues/38"]Issue#38[/URL].
 [*]Fixed the cvar `gal_vote_mapchoices` not allowing 9 map votes when the `Stay Here` and `Extend Map` are disabled.
 [*]Fixed possible client overflow when show the recent maps list.
 [*]Fixed the recent map feature allowing invalid maps to be added to the recent maps list.
@@ -1207,6 +1209,7 @@ Thank you!  It means a lot to me.
 [*]Fixed some Unit Tests failing when the DEBUG_LEVEL is set to 2. [URL="https://github.com/addonszz/Galileo/issues/28"]Issue#28[/URL].
 [*]Fixed Next Map: [not yet voted on] not showing on the welcome message. [URL="https://github.com/addonszz/Galileo/issues/9"]Issue#9[/URL].
 [*]Fixed the new nominations menu, increasing server overall performance. [URL="https://github.com/addonszz/Galileo/issues/41"]Issue#41[/URL].
+[*]Fixed the map_loadRecentList(0) loading more maps than are available to be banned. [URL="https://github.com/addonszz/Galileo/issues/44"]Issue#44[/URL].
 [*]Fixed nextmap in chat showing the map that was voted for instead of the map changed to via amx_cvar amx_nextmap. [URL="https://github.com/addonszz/Galileo/issues/10"]Issue#10[/URL].
 [/LIST]
 
