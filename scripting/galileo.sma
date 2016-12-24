@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-342";
+new const PLUGIN_VERSION[] = "v3.2.6-343";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -692,8 +692,11 @@ new const PLUGIN_VERSION[] = "v3.2.6-342";
 
 /**
  * Same as TRY_TO_APPLY(2), but the second argument must to be a two Dimensional Dynamic Array.
+ *
+ * @param outerArray                   a Dynamic Array within several Dynamic Arrays.
+ * @param isToDestroyTheOuterArray     whether to destroy or clear the `outerArray` provided.
  */
-stock destroy_two_dimensional_array( Array:outerArray )
+stock destroy_two_dimensional_array( Array:outerArray, bool:isToDestroyTheOuterArray = true )
 {
     LOGGER( 128, "I AM ENTERING ON destroy_two_dimensional_array(1) | arrayIndentifation: %d", outerArray )
 
@@ -708,7 +711,14 @@ stock destroy_two_dimensional_array( Array:outerArray )
             TRY_TO_APPLY( ArrayDestroy, Array:innerArray )
         }
 
-        TRY_TO_APPLY( ArrayDestroy, outerArray )
+        if( isToDestroyTheOuterArray )
+        {
+            TRY_TO_APPLY( ArrayDestroy, outerArray )
+        }
+        else
+        {
+            TRY_TO_APPLY( ArrayClear, outerArray )
+        }
     }
 }
 
@@ -1294,6 +1304,8 @@ public plugin_cfg()
     configureTheWhiteListFeature();
     configureServerStart();
     configureServerMapChange();
+
+    cacheCvarsValues();
     loadMapFiles();
 
     // Configure the Unit Tests, when they are activate.
@@ -1392,6 +1404,7 @@ stock loadPluginSetttings()
     }
 
     LOGGER( 1, "( loadPluginSetttings ) g_configsDirPath: %s, g_dataDirPath: %s,", g_configsDirPath, g_dataDirPath )
+
     server_cmd( "exec %s/galileo.cfg", g_configsDirPath );
     server_exec();
 }
@@ -1400,33 +1413,28 @@ stock initializeGlobalArrays()
 {
     LOGGER( 128, "I AM ENTERING ON initializeGlobalArrays(0)" )
 
-    g_reverseSearchNominationsTrie = TrieCreate();
-    g_forwardSearchNominationsTrie = TrieCreate();
-    g_nominationLoadedMapsTrie     = TrieCreate();
+    g_whitelistFileArray = ArrayCreate( MAX_LONG_STRING );
 
     g_nominatedMapsArray        = ArrayCreate();
     g_nominationLoadedMapsArray = ArrayCreate( MAX_MAPNAME_LENGHT );
 
-    // initialize nominations table
-    nomination_clearAll();
+    g_reverseSearchNominationsTrie = TrieCreate();
+    g_forwardSearchNominationsTrie = TrieCreate();
+    g_nominationLoadedMapsTrie     = TrieCreate();
+
+    g_voteMinPlayerFillerPathsArray = ArrayCreate( MAX_MAPNAME_LENGHT );
+    g_minPlayerFillerMapGroupArrays = ArrayCreate();
+    g_minMaxMapsPerGroupToUseArray  = ArrayCreate();
+
+    g_voteNorPlayerFillerPathsArray = ArrayCreate( MAX_MAPNAME_LENGHT );
+    g_norPlayerFillerMapGroupArrays = ArrayCreate();
+    g_norMaxMapsPerGroupToUseArray  = ArrayCreate();
+
+    g_recentMapsTrie      = TrieCreate();
+    g_recentListMapsArray = ArrayCreate( MAX_MAPNAME_LENGHT );
 
     // load the weighted votes flags
     get_pcvar_string( cvar_voteWeightFlags, g_voteWeightFlags, charsmax( g_voteWeightFlags ) );
-
-    if( get_pcvar_num( cvar_recentMapsBannedNumber ) )
-    {
-        g_recentMapsTrie      = TrieCreate();
-        g_recentListMapsArray = ArrayCreate( MAX_MAPNAME_LENGHT );
-
-        map_loadRecentList();
-        register_clcmd( "say recentmaps", "cmd_listrecent", 0 );
-
-        if( !( get_pcvar_num( cvar_isFirstServerStart )
-               && get_pcvar_num( cvar_serverStartAction ) ) )
-        {
-            map_writeRecentList();
-        }
-    }
 }
 
 /**
@@ -1954,9 +1962,17 @@ stock saveCurrentAndNextMapNames( nextMapName[] )
     }
 }
 
-public map_loadRecentList()
+/**
+ * Load the recent ban map from the file. If the number of valid maps loaded is lower than the
+ * number of map loaded to fill the vote menu, not all the maps will be loaded.
+ *
+ * This also restrict the number of maps to be write to the file `RECENT_BAN_MAPS_FILE_NAME` as if
+ * not all maps have been loaded here, on them will be written down to the file on
+ * map_writeRecentBanList(0).
+ */
+public map_loadRecentBanList()
 {
-    LOGGER( 128, "I AM ENTERING ON map_loadRecentList(0)" )
+    LOGGER( 128, "I AM ENTERING ON map_loadRecentBanList(0)" )
     new recentMapsFilePath[ MAX_FILE_PATH_LENGHT ];
 
     formatex( recentMapsFilePath, charsmax( recentMapsFilePath ), "%s/%s", g_dataDirPath, RECENT_BAN_MAPS_FILE_NAME );
@@ -1966,6 +1982,10 @@ public map_loadRecentList()
     {
         new recentMapName[ MAX_MAPNAME_LENGHT ];
         new maxRecentMapsBans = get_pcvar_num( cvar_recentMapsBannedNumber );
+
+        new loadedMapsCount  = ArraySize( g_voteNorPlayerFillerPathsArray );
+        new maxVotingChoices = g_maxVotingChoices + 3;
+        maxRecentMapsBans > maxVotingChoices + loadedMapsCount ? ( maxRecentMapsBans -= maxVotingChoices ) : 0;
 
         while( !feof( recentMapsFileDescriptor ) )
         {
@@ -1994,9 +2014,9 @@ public map_loadRecentList()
     }
 }
 
-public map_writeRecentList()
+public map_writeRecentBanList()
 {
-    LOGGER( 128, "I AM ENTERING ON map_writeRecentList(0)" )
+    LOGGER( 128, "I AM ENTERING ON map_writeRecentBanList(0)" )
 
     new Trie:mapCycleMapsTrie;
     new bool:isOnlyRecentMapcycleMaps;
@@ -2132,26 +2152,19 @@ stock processLoadedMapFileFromFile( &Array:playerFillerMapsArray, &Array:fillers
 stock loadMapFiles()
 {
     LOGGER( 128, "I AM ENTERING ON loadMapFiles(0)" )
+
+    // To clear them, in case we are reloading it.
+    TRY_TO_APPLY( ArrayClear, g_whitelistFileArray )
+    TRY_TO_APPLY( ArrayClear, g_voteMinPlayerFillerPathsArray )
+    TRY_TO_APPLY( ArrayClear, g_voteNorPlayerFillerPathsArray )
+    TRY_TO_APPLY( ArrayClear, g_minMaxMapsPerGroupToUseArray )
+    TRY_TO_APPLY( ArrayClear, g_norMaxMapsPerGroupToUseArray )
+
+    destroy_two_dimensional_array( g_norPlayerFillerMapGroupArrays, false );
+    destroy_two_dimensional_array( g_minPlayerFillerMapGroupArrays, false );
+
+    // To start loading the files.
     new mapFilerFilePath[ MAX_FILE_PATH_LENGHT ];
-
-    TRY_TO_APPLY( ArrayDestroy, g_whitelistFileArray )
-    TRY_TO_APPLY( ArrayDestroy, g_voteMinPlayerFillerPathsArray )
-    TRY_TO_APPLY( ArrayDestroy, g_voteNorPlayerFillerPathsArray )
-    TRY_TO_APPLY( ArrayDestroy, g_minMaxMapsPerGroupToUseArray )
-    TRY_TO_APPLY( ArrayDestroy, g_norMaxMapsPerGroupToUseArray )
-
-    destroy_two_dimensional_array( g_norPlayerFillerMapGroupArrays );
-    destroy_two_dimensional_array( g_minPlayerFillerMapGroupArrays );
-
-    g_whitelistFileArray = ArrayCreate( MAX_LONG_STRING );
-
-    g_voteMinPlayerFillerPathsArray = ArrayCreate( MAX_MAPNAME_LENGHT );
-    g_minPlayerFillerMapGroupArrays = ArrayCreate();
-    g_minMaxMapsPerGroupToUseArray  = ArrayCreate();
-
-    g_voteNorPlayerFillerPathsArray = ArrayCreate( MAX_MAPNAME_LENGHT );
-    g_norPlayerFillerMapGroupArrays = ArrayCreate();
-    g_norMaxMapsPerGroupToUseArray  = ArrayCreate();
 
     LOGGER( 4, "" )
     get_pcvar_string( cvar_voteWhiteListMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) );
@@ -2165,6 +2178,7 @@ stock loadMapFiles()
     get_pcvar_string( cvar_voteMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) );
     loadMapGroupsFeatureFile( mapFilerFilePath, g_voteNorPlayerFillerPathsArray, g_norMaxMapsPerGroupToUseArray );
 
+    // To process the loaded files to let them ready for immediate use.
     LOGGER( 4, "" )
     processLoadedMapFileFromFile( g_minPlayerFillerMapGroupArrays, g_voteMinPlayerFillerPathsArray );
     processLoadedMapFileFromFile( g_norPlayerFillerMapGroupArrays, g_voteNorPlayerFillerPathsArray );
@@ -2172,6 +2186,20 @@ stock loadMapFiles()
     LOGGER( 4, "" )
     LOGGER( 4, "", debugLoadedMapFileFromFile( g_minPlayerFillerMapGroupArrays, g_minMaxMapsPerGroupToUseArray ) )
     LOGGER( 4, "", debugLoadedMapFileFromFile( g_norPlayerFillerMapGroupArrays, g_norMaxMapsPerGroupToUseArray ) )
+
+    // Load the ban recent maps feature
+    if( get_pcvar_num( cvar_recentMapsBannedNumber ) )
+    {
+        map_loadRecentBanList();
+        register_clcmd( "say recentmaps", "cmd_listrecent", 0 );
+
+        // Do nothing if the map will be instantly changed
+        if( !( get_pcvar_num( cvar_isFirstServerStart )
+               && get_pcvar_num( cvar_serverStartAction ) ) )
+        {
+            map_writeRecentBanList();
+        }
+    }
 
     LOGGER( 4, "( loadMapFiles ) Maps Files Loaded." )
     LOGGER( 4, "" )
@@ -5665,7 +5693,7 @@ public vote_display( argument[ 2 ] )
     if( player_id > 0 )
     {
         menuKeys = addExtensionStayOption( player_id, copiedChars, voteStatus,
-                                             charsmax( voteStatus ), menuKeys );
+                charsmax( voteStatus ), menuKeys );
 
         if( g_isPlayerClosedTheVoteMenu[ player_id ] )
         {
