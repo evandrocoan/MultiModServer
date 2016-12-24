@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-339";
+new const PLUGIN_VERSION[] = "v3.2.6-340";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -859,6 +859,7 @@ new bool:g_isUsingEmptyCycle;
 new bool:g_isRunOffNeedingKeepCurrentMap;
 new bool:g_isExtendmapAllowStay;
 new bool:g_isToShowNoneOption;
+new bool:g_isToShowSubMenu;
 new bool:g_isToShowExpCountdown;
 new bool:g_isToShowVoteCounter;
 new bool:g_isEmptyCycleMapConfigured;
@@ -1094,8 +1095,9 @@ new g_nominationPlayersMenuPages[ MAX_PLAYERS_COUNT   ];
 new g_playersKills              [ MAX_PLAYERS_COUNT   ];
 new g_arrayOfMapsWithVotesNumber[ MAX_OPTIONS_IN_VOTE ];
 
-new bool:g_isPlayerVoted            [ MAX_PLAYERS_COUNT ] = { true, ... };
-new bool:g_isPlayerParticipating    [ MAX_PLAYERS_COUNT ] = { true, ... };
+new bool:g_isPlayerVoted            [ MAX_PLAYERS_COUNT ] = { true , ... };
+new bool:g_isPlayerParticipating    [ MAX_PLAYERS_COUNT ] = { true , ... };
+new bool:g_isPlayerSeeingTheSubMenu [ MAX_PLAYERS_COUNT ];
 new bool:g_isPlayerSeeingTheVoteMenu[ MAX_PLAYERS_COUNT ];
 new bool:g_isPlayerCancelledVote    [ MAX_PLAYERS_COUNT ];
 new bool:g_answeredForEndOfMapVote  [ MAX_PLAYERS_COUNT ];
@@ -1548,7 +1550,8 @@ public cacheCvarsValues()
 #endif
 
     g_isExtendmapAllowStay      = get_pcvar_num( cvar_extendmapAllowStay   ) != 0;
-    g_isToShowNoneOption        = get_pcvar_num( cvar_isToShowNoneOption   ) != 0;
+    g_isToShowNoneOption        = get_pcvar_num( cvar_isToShowNoneOption   ) == 1;
+    g_isToShowSubMenu           = get_pcvar_num( cvar_isToShowNoneOption   ) == 2;
     g_isToShowVoteCounter       = get_pcvar_num( cvar_isToShowVoteCounter  ) != 0;
     g_isToShowExpCountdown      = get_pcvar_num( cvar_isToShowExpCountdown ) != 0;
     g_isVirtualFragLimitSupport = get_pcvar_num( cvar_fragLimitSupport     ) != 0;
@@ -5630,10 +5633,17 @@ public vote_display( argument[ 2 ] )
     voteStatus[ 0 ] = '^0';
 
     // register the 'None' option key
-    if( g_isToShowNoneOption
-        && !isVoteOver )
+    if( g_isToShowSubMenu
+        || ( g_isToShowNoneOption
+             && !isVoteOver ) )
     {
         menuKeys = MENU_KEY_0;
+    }
+
+    if( g_isToShowSubMenu
+        && g_isPlayerSeeingTheSubMenu[ player_id ] )
+    {
+
     }
 
     // add maps to the menu
@@ -9914,7 +9924,6 @@ public vote_resetStats()
 
     // reset everyones' votes
     arrayset( g_isPlayerVoted, true, sizeof g_isPlayerVoted );
-    arrayset( g_arrayOfMapsWithVotesNumber, 0, sizeof g_arrayOfMapsWithVotesNumber );
 
     if( !( g_voteStatus & VOTE_IS_RUNOFF ) )
     {
@@ -9926,10 +9935,12 @@ public vote_resetStats()
 
     arrayset( g_isPlayerCancelledVote, false, sizeof g_isPlayerCancelledVote );
     arrayset( g_answeredForEndOfMapVote, false, sizeof g_answeredForEndOfMapVote );
+    arrayset( g_isPlayerSeeingTheSubMenu, false, sizeof g_isPlayerSeeingTheSubMenu );
     arrayset( g_isPlayerSeeingTheVoteMenu, false, sizeof g_isPlayerSeeingTheVoteMenu );
 
     arrayset( g_playerVotedOption, 0, sizeof g_playerVotedOption );
     arrayset( g_playerVotedWeight, 0, sizeof g_playerVotedWeight );
+    arrayset( g_arrayOfMapsWithVotesNumber, 0, sizeof g_arrayOfMapsWithVotesNumber );
 }
 
 stock clearTheVotingMenu()
