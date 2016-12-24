@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-341";
+new const PLUGIN_VERSION[] = "v3.2.6-342";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -5756,7 +5756,7 @@ stock dispaly_the_vote_sub_menu( player_id )
             ^n%s0.%s %L"
             ,
             COLOR_YELLOW, player_id, "CMD_MENU",
-            COLOR_RED, canVoteNone ? COLOR_WHITE : COLOR_GREY, player_id, "GAL_OPTION_NONE",
+            COLOR_RED, canVoteNone ? COLOR_WHITE : COLOR_GREY, player_id, "GAL_OPTION_NONE_VOTE",
             COLOR_RED, canCancel   ? COLOR_WHITE : COLOR_GREY, player_id, "GAL_OPTION_CANCEL_VOTE",
             COLOR_RED, COLOR_WHITE, player_id, "EXIT",
             COLOR_RED, COLOR_WHITE, player_id, "BACK",
