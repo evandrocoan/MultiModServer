@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-340";
+new const PLUGIN_VERSION[] = "v3.2.6-341";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -220,7 +220,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-340";
 /**
  * Setup the Unit Tests when they are used/necessary.
  */
-#if DEBUG_LEVEL >= DEBUG_LEVEL_NORMAL
+#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
     /**
      * Contains all imediates unit tests to execute.
      */
@@ -1097,6 +1097,7 @@ new g_arrayOfMapsWithVotesNumber[ MAX_OPTIONS_IN_VOTE ];
 
 new bool:g_isPlayerVoted            [ MAX_PLAYERS_COUNT ] = { true , ... };
 new bool:g_isPlayerParticipating    [ MAX_PLAYERS_COUNT ] = { true , ... };
+new bool:g_isPlayerClosedTheVoteMenu[ MAX_PLAYERS_COUNT ];
 new bool:g_isPlayerSeeingTheSubMenu [ MAX_PLAYERS_COUNT ];
 new bool:g_isPlayerSeeingTheVoteMenu[ MAX_PLAYERS_COUNT ];
 new bool:g_isPlayerCancelledVote    [ MAX_PLAYERS_COUNT ];
@@ -1228,6 +1229,7 @@ public plugin_init()
     configureTheVotingMenus();
     configureSpecificGameModFeature();
 
+    register_dictionary( "cmdmenu.txt" );
     register_dictionary( "common.txt" );
     register_dictionary_colored( "galileo.txt" );
 
@@ -1295,7 +1297,7 @@ public plugin_cfg()
     loadMapFiles();
 
     // Configure the Unit Tests, when they are activate.
-#if DEBUG_LEVEL >= DEBUG_LEVEL_NORMAL
+#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
     saveCurrentTestsTimeStamp();
     configureTheUnitTests();
 #endif
@@ -5601,6 +5603,10 @@ public sort_stringsi( const elem1[], const elem2[], const array[], data[], data_
     return strcmp( elem1, elem2, 1 );
 }
 
+/**
+ * This function is called with the correct player id only after the player voted or by the
+ * 'tryToShowTheVotingMenu(0)' function call.
+ */
 public vote_display( argument[ 2 ] )
 {
     LOGGER( 4, "I AM ENTERING ON vote_display(1) | updateTimeRemaining: %d, player_id: %d", argument[ 0 ], argument[ 1 ] )
@@ -5633,17 +5639,11 @@ public vote_display( argument[ 2 ] )
     voteStatus[ 0 ] = '^0';
 
     // register the 'None' option key
-    if( g_isToShowSubMenu
-        || ( g_isToShowNoneOption
-             && !isVoteOver ) )
+    if( ( g_isToShowNoneOption
+          && !isVoteOver )
+        || g_isToShowSubMenu )
     {
         menuKeys = MENU_KEY_0;
-    }
-
-    if( g_isToShowSubMenu
-        && g_isPlayerSeeingTheSubMenu[ player_id ] )
-    {
-
     }
 
     // add maps to the menu
@@ -5667,8 +5667,17 @@ public vote_display( argument[ 2 ] )
         menuKeys = addExtensionStayOption( player_id, copiedChars, voteStatus,
                                              charsmax( voteStatus ), menuKeys );
 
-        if( g_showVoteStatus == SHOW_STATUS_ALWAYS
-            || g_showVoteStatus == SHOW_STATUS_AFTER_VOTE )
+        if( g_isPlayerClosedTheVoteMenu[ player_id ] )
+        {
+            // Do nothing
+        }
+        else if( g_isToShowSubMenu
+                 && g_isPlayerSeeingTheSubMenu[ player_id ] )
+        {
+            dispaly_the_vote_sub_menu( player_id );
+        }
+        else if( g_showVoteStatus == SHOW_STATUS_ALWAYS
+                 || g_showVoteStatus == SHOW_STATUS_AFTER_VOTE )
         {
             calculate_menu_dirt( player_id, isVoteOver, voteStatus, menuDirty, charsmax( menuDirty ), noneIsHidden );
             display_vote_menu( false, player_id, menuDirty, menuKeys );
@@ -5690,27 +5699,71 @@ public vote_display( argument[ 2 ] )
         {
             player_id = players[ playerIndex ];
 
-            menuKeys = addExtensionStayOption( player_id, copiedChars, voteStatus,
-                                                 charsmax( voteStatus ), menuKeys );
-
-            if( !g_isPlayerVoted[ player_id ]
-                && !isVoteOver
-                && g_showVoteStatus != SHOW_STATUS_ALWAYS )
+            if( g_isPlayerClosedTheVoteMenu[ player_id ] )
             {
-                calculate_menu_clean( player_id, menuClean, charsmax( menuClean ) );
-                display_vote_menu( true, player_id, menuClean, menuKeys );
+                continue;
             }
-            else if( g_showVoteStatus == SHOW_STATUS_ALWAYS
-                     || ( isVoteOver
-                          && g_showVoteStatus )
-                     || ( g_isPlayerVoted[ player_id ]
-                          && g_showVoteStatus == SHOW_STATUS_AFTER_VOTE ) )
+            else if( g_isToShowSubMenu
+                     && g_isPlayerSeeingTheSubMenu[ player_id ] )
             {
-                calculate_menu_dirt( player_id, isVoteOver, voteStatus, menuDirty, charsmax( menuDirty ), noneIsHidden );
-                display_vote_menu( false, player_id, menuDirty, menuKeys );
+                dispaly_the_vote_sub_menu( player_id );
+            }
+            else
+            {
+                menuKeys = addExtensionStayOption( player_id, copiedChars, voteStatus,
+                        charsmax( voteStatus ), menuKeys );
+
+                if( !g_isPlayerVoted[ player_id ]
+                    && !isVoteOver
+                    && g_showVoteStatus != SHOW_STATUS_ALWAYS )
+                {
+                    calculate_menu_clean( player_id, menuClean, charsmax( menuClean ) );
+                    display_vote_menu( true, player_id, menuClean, menuKeys );
+                }
+                else if( g_showVoteStatus == SHOW_STATUS_ALWAYS
+                         || ( isVoteOver
+                              && g_showVoteStatus )
+                         || ( g_isPlayerVoted[ player_id ]
+                              && g_showVoteStatus == SHOW_STATUS_AFTER_VOTE ) )
+                {
+                    calculate_menu_dirt( player_id, isVoteOver, voteStatus, menuDirty, charsmax( menuDirty ), noneIsHidden );
+                    display_vote_menu( false, player_id, menuDirty, menuKeys );
+                }
             }
         }
     }
+}
+
+stock dispaly_the_vote_sub_menu( player_id )
+{
+    LOGGER( 128, "I AM ENTERING ON dispaly_the_vote_sub_menu(1)" )
+    static menu_body[ MAX_LONG_STRING ];
+
+    new menuKeys         = MENU_KEY_0 | MENU_KEY_5;
+    new bool:canVoteNone = !g_isPlayerVoted[ player_id ];
+    new bool:canCancel   = !g_isPlayerCancelledVote[ player_id ] && g_isPlayerVoted[ player_id ];
+
+    menuKeys |= canVoteNone ? MENU_KEY_1 : 0;
+    menuKeys |= canCancel   ? MENU_KEY_3 : 0;
+
+    menu_body[ 0 ] = '^0';
+
+    formatex( menu_body, charsmax( menu_body ),
+           "%s%L^n^n\
+            %s1.%s %L^n\
+            %s3.%s %L^n\
+            %s5.%s %L^n\
+            ^n%s0.%s %L"
+            ,
+            COLOR_YELLOW, player_id, "CMD_MENU",
+            COLOR_RED, canVoteNone ? COLOR_WHITE : COLOR_GREY, player_id, "GAL_OPTION_NONE",
+            COLOR_RED, canCancel   ? COLOR_WHITE : COLOR_GREY, player_id, "GAL_OPTION_CANCEL_VOTE",
+            COLOR_RED, COLOR_WHITE, player_id, "EXIT",
+            COLOR_RED, COLOR_WHITE, player_id, "BACK",
+            player_id );
+
+    display_vote_menu( true, player_id, menu_body, menuKeys );
+    LOGGER( 4, "%48s", " ( dispaly_the_vote_sub_menu| out )" )
 }
 
 stock addExtensionStayOption( player_id, copiedChars, voteStatus[], voteStatusLenght, menuKeys )
@@ -5857,7 +5910,17 @@ stock calculate_menu_dirt( player_id, bool:isVoteOver, voteStatus[], menuDirty[]
         formatex( menuHeader, charsmax( menuHeader ), "%s%L",
                 COLOR_YELLOW, player_id, "GAL_RESULT" );
 
-        if( g_isToShowNoneOption
+        if( g_isToShowSubMenu )
+        {
+            formatex( menuDirty, menuDirtySize, "%s^n%s^n\
+                    %s0.%s %L^n^n\
+                    %s%L",
+                    menuHeader, voteStatus,
+                    COLOR_RED, COLOR_WHITE, player_id, "CMD_MENU",
+                    COLOR_YELLOW, player_id, "GAL_VOTE_ENDED" );
+
+        }
+        else if( g_isToShowNoneOption
             && g_voteShowNoneOptionType )
         {
             computeUndoButton( player_id, isToShowUndo, isVoteOver, noneOption, charsmax( noneOption ) );
@@ -5877,7 +5940,16 @@ stock calculate_menu_dirt( player_id, bool:isVoteOver, voteStatus[], menuDirty[]
         formatex( menuHeader, charsmax( menuHeader ), "%s%L",
                 COLOR_YELLOW, player_id, "GAL_CHOOSE" );
 
-        if( g_isToShowNoneOption )
+        if( g_isToShowSubMenu )
+        {
+            formatex( menuDirty, menuDirtySize, "%s^n%s^n\
+                    %s0.%s %L\
+                    %s",
+                    menuHeader, voteStatus,
+                    COLOR_RED, COLOR_WHITE, player_id, "CMD_MENU",
+                    voteFooter );
+        }
+        else if( g_isToShowNoneOption )
         {
             computeUndoButton( player_id, isToShowUndo, isVoteOver, noneOption, charsmax( noneOption ) );
 
@@ -6006,7 +6078,16 @@ stock calculate_menu_clean( player_id, menuClean[], menuCleanSize )
 
     // append a "None" option on for people to choose if they don't like any other choice
     // to append it here to always shows it WHILE voting.
-    if( g_isToShowNoneOption )
+    if( g_isToShowSubMenu )
+    {
+        formatex( menuClean, menuCleanSize, "%s^n%s\
+                %s0.%s %L^n\
+                %s",
+                menuHeader, g_voteStatusClean,
+                COLOR_RED, COLOR_WHITE, player_id, "CMD_MENU",
+                voteFooter );
+    }
+    else if( g_isToShowNoneOption )
     {
         if( isToShowUndo )
         {
@@ -6033,7 +6114,7 @@ stock calculate_menu_clean( player_id, menuClean[], menuCleanSize )
 
 stock display_vote_menu( bool:menuType, player_id, menuBody[], menuKeys )
 {
-    LOGGER( 4, "I AM ENTERING ON display_vote_menu(4) | menuType: %d, player_id: %d, \
+    LOGGER( 128, "I AM ENTERING ON display_vote_menu(4) | menuType: %d, player_id: %d, \
             menuBody: %s, menuKeys: %d", menuType, player_id, menuBody, menuKeys )
 
     if( isPlayerAbleToSeeTheVoteMenu( player_id ) )
@@ -6046,7 +6127,7 @@ stock display_vote_menu( bool:menuType, player_id, menuBody[], menuKeys )
 
 stock isPlayerAbleToSeeTheVoteMenu( player_id )
 {
-    LOGGER( 4, "I AM ENTERING ON isPlayerAbleToSeeTheVoteMenu(1) | player_id: %d", player_id )
+    LOGGER( 128, "I AM ENTERING ON isPlayerAbleToSeeTheVoteMenu(1) | player_id: %d", player_id )
 
     new menu_id;
     new menukeys_unused;
@@ -6070,7 +6151,27 @@ public vote_handleChoice( player_id, key )
         return;
     }
 
-    if( !g_isPlayerVoted[ player_id ] )
+    if( g_isToShowSubMenu
+        && key == 9 )
+    {
+        if( g_isPlayerSeeingTheSubMenu[ player_id ] )
+        {
+            g_isPlayerSeeingTheSubMenu[ player_id ] = false;
+        }
+        else
+        {
+            g_isPlayerSeeingTheSubMenu[ player_id ] = true;
+        }
+
+        reshowTheVoteMenu( player_id );
+        return;
+    }
+    else if( g_isPlayerSeeingTheSubMenu[ player_id ] )
+    {
+        processSubMenuKeyHit( player_id, key );
+        return;
+    }
+    else if( !g_isPlayerVoted[ player_id ] )
     {
         register_vote( player_id, key );
     }
@@ -6090,13 +6191,45 @@ public vote_handleChoice( player_id, key )
     if( g_showVoteStatus == SHOW_STATUS_ALWAYS
         || g_showVoteStatus == SHOW_STATUS_AFTER_VOTE )
     {
-        new argument[ 2 ];
-
-        argument[ 0 ] = false;
-        argument[ 1 ] = player_id;
-
-        set_task( 0.1, "vote_display", TASKID_VOTE_DISPLAY, argument, sizeof argument );
+        reshowTheVoteMenu( player_id );
     }
+}
+
+stock processSubMenuKeyHit( player_id, key )
+{
+    switch( key )
+    {
+        case 0: // key 1
+        {
+            // None option
+            register_vote( player_id, 9 );
+        }
+        case 2: // key 3
+        {
+            // Cancel vote option
+            if( !g_isPlayerCancelledVote[ player_id ] )
+            {
+                cancel_player_vote( player_id );
+            }
+        }
+        case 4: // key 5
+        {
+            // Exit option
+            g_isPlayerClosedTheVoteMenu[ player_id ] = true;
+        }
+    }
+
+    reshowTheVoteMenu( player_id );
+}
+
+stock reshowTheVoteMenu( player_id )
+{
+    new argument[ 2 ];
+
+    argument[ 0 ] = false;
+    argument[ 1 ] = player_id;
+
+    set_task( 0.1, "vote_display", TASKID_VOTE_DISPLAY, argument, sizeof argument );
 }
 
 stock cancel_player_vote( player_id )
@@ -6613,6 +6746,9 @@ public computeVotes()
 {
     LOGGER( 128, "I AM ENTERING ON computeVotes(0)" )
     LOGGER( 0, "", showPlayersVoteResult() )
+
+    // If some how the menu still alive, kill it.
+    delete_users_menus();
 
     new numberOfVotesAtFirstPlace;
     new numberOfVotesAtSecondPlace;
@@ -9937,6 +10073,7 @@ public vote_resetStats()
     arrayset( g_answeredForEndOfMapVote, false, sizeof g_answeredForEndOfMapVote );
     arrayset( g_isPlayerSeeingTheSubMenu, false, sizeof g_isPlayerSeeingTheSubMenu );
     arrayset( g_isPlayerSeeingTheVoteMenu, false, sizeof g_isPlayerSeeingTheVoteMenu );
+    arrayset( g_isPlayerClosedTheVoteMenu, false, sizeof g_isPlayerClosedTheVoteMenu );
 
     arrayset( g_playerVotedOption, 0, sizeof g_playerVotedOption );
     arrayset( g_playerVotedWeight, 0, sizeof g_playerVotedWeight );
@@ -9956,7 +10093,7 @@ stock clearTheVotingMenu()
     }
 }
 
-stock delete_users_menus( bool:isToDoubleReset )
+stock delete_users_menus( bool:isToDoubleReset=false )
 {
     LOGGER( 128, "I AM ENTERING ON delete_users_menus(1) | isToDoubleReset: %d", isToDoubleReset )
 
@@ -9984,7 +10121,7 @@ stock delete_users_menus( bool:isToDoubleReset )
             || menu_id == g_chooseMapQuestionMenuId )
         {
             formatex( failureMessage, charsmax( failureMessage ), "%L", player_id, "GAL_VOTE_ENDED" );
-            show_menu( player_id, menukeys_unused, "Voting canceled!", isToDoubleReset ? 5 : 1, CHOOSE_MAP_MENU_NAME );
+            show_menu( player_id, menukeys_unused, failureMessage, isToDoubleReset ? 5 : 1, CHOOSE_MAP_MENU_NAME );
         }
     }
 }
