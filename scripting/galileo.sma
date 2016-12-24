@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-343";
+new const PLUGIN_VERSION[] = "v3.2.6-344";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -547,6 +547,17 @@ new const PLUGIN_VERSION[] = "v3.2.6-343";
       && get_pcvar_num( cvar_nomMinPlayersControl ) )
 //
 
+/**
+ * When it is set the maximum voting options as 9, we need to give space to the `Stay Here` and
+ * `Extend` on the voting menu, calculating how many voting choices are allowed to be used,
+ * considering whether the voting map extension option is being showed or not.
+ */
+#define MAX_VOTING_CHOICES() \
+    ( g_isMapExtensionAllowed ? \
+        ( g_maxVotingChoices >= MAX_OPTIONS_IN_VOTE ? \
+            g_maxVotingChoices - 1 : g_maxVotingChoices ) : g_maxVotingChoices )
+//
+
 
 
 // Global Macro Expansions
@@ -690,37 +701,6 @@ new const PLUGIN_VERSION[] = "v3.2.6-343";
     } \
 }
 
-/**
- * Same as TRY_TO_APPLY(2), but the second argument must to be a two Dimensional Dynamic Array.
- *
- * @param outerArray                   a Dynamic Array within several Dynamic Arrays.
- * @param isToDestroyTheOuterArray     whether to destroy or clear the `outerArray` provided.
- */
-stock destroy_two_dimensional_array( Array:outerArray, bool:isToDestroyTheOuterArray = true )
-{
-    LOGGER( 128, "I AM ENTERING ON destroy_two_dimensional_array(1) | arrayIndentifation: %d", outerArray )
-
-    if( outerArray )
-    {
-        new innerArray;
-        new size = ArraySize( outerArray );
-
-        for( new index = 0; index < size; index++ )
-        {
-            innerArray = ArrayGetCell( outerArray, index );
-            TRY_TO_APPLY( ArrayDestroy, Array:innerArray )
-        }
-
-        if( isToDestroyTheOuterArray )
-        {
-            TRY_TO_APPLY( ArrayDestroy, outerArray )
-        }
-        else
-        {
-            TRY_TO_APPLY( ArrayClear, outerArray )
-        }
-    }
-}
 
 
 // General Global Variables
@@ -4449,8 +4429,7 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
     #endif
     }
 
-    new maxVotingChoices = g_isMapExtensionAllowed ?
-            ( g_maxVotingChoices >= MAX_OPTIONS_IN_VOTE ? g_maxVotingChoices - 1 : g_maxVotingChoices ) : g_maxVotingChoices;
+    new maxVotingChoices = MAX_VOTING_CHOICES();
 
     // fill remaining slots with random maps from each filler file, as much as possible
     for( new groupIndex = 0; groupIndex < groupCount; ++groupIndex )
@@ -4713,8 +4692,7 @@ stock vote_addFillers( blockedMapsBuffer[], &announcementShowedTimes = 0 )
 {
     LOGGER( 128, "I AM ENTERING ON vote_addFillers(2) | announcementShowedTimes: %d", announcementShowedTimes )
 
-    new maxVotingChoices = g_isMapExtensionAllowed ?
-            ( g_maxVotingChoices >= MAX_OPTIONS_IN_VOTE ? g_maxVotingChoices - 1 : g_maxVotingChoices ) : g_maxVotingChoices;
+    new maxVotingChoices = MAX_VOTING_CHOICES();
 
     if( g_totalVoteOptions < maxVotingChoices )
     {
@@ -4769,8 +4747,7 @@ stock vote_addNominations( blockedMapsBuffer[], &announcementShowedTimes = 0 )
             }
         }
 
-        new maxVotingChoices = g_isMapExtensionAllowed ?
-                ( g_maxVotingChoices >= MAX_OPTIONS_IN_VOTE ? g_maxVotingChoices - 1 : g_maxVotingChoices ) : g_maxVotingChoices;
+        new maxVotingChoices = MAX_VOTING_CHOICES();
 
         // set how many total nominations we can use in this vote
         new maxNominations    = get_pcvar_num( cvar_nomQtyUsed );
@@ -6562,6 +6539,7 @@ stock handleMoreThanTwoMapsAtFirst( firstPlaceChoices[], numberOfMapsAtFirstPosi
     new maxVotingChoices;
     new originalTotalVotingOptions;
 
+    // This only valid for the runoff voting. Do not use MAX_VOTING_CHOICES(0) here.
     maxVotingChoices = min( MAX_OPTIONS_IN_VOTE, get_pcvar_num( cvar_runoffMapchoices ) );
     maxVotingChoices = max( min( maxVotingChoices, numberOfMapsAtFirstPosition ), 2 );
 
@@ -6690,6 +6668,19 @@ stock handleOneMapAtSecondPosition( firstPlaceChoices[], secondPlaceChoices[] )
     LOGGER( 0, "", printRunOffMaps( g_totalVoteOptions ) )
 }
 
+/**
+ * Do not implement the feature below here in:
+ *
+ *     Another CVAR for the number of maps to be included in runoff voting.
+ *     https://github.com/addonszz/Galileo/issues/33
+ *
+ * It is because it will cause complications as when there is only one player at the server. If the
+ * player vote for one map, it will cause this option to be triggered:
+ *
+ *     numberOfMapsAtFirstPosition == 1 && numberOfMapsAtSecondPosition > 1
+ *
+ * And then a run off voting would be triggered when there is only one player at the server.
+ */
 stock handleOneMapAtFirstPosition( firstPlaceChoices[], secondPlaceChoices[], numberOfMapsAtSecondPosition )
 {
     LOGGER( 128, "I AM ENTERING ON handleOneMapAtFirstPosition(3)" )
@@ -6725,10 +6716,18 @@ stock determineTheVotingFirstChoices( firstPlaceChoices[], secondPlaceChoices[],
                                       &numberOfMapsAtSecondPosition )
 {
     LOGGER( 128, "I AM ENTERING ON determineTheVotingFirstChoices(6)" )
+
     new playerVoteMapChoiceIndex;
+    new bool:isRunoffVoting = ( g_voteStatus & VOTE_IS_RUNOFF ) != 0;
+
+    // Determine how much maps it should look up to, considering whether there is the option
+    // `Stay Here` or `Extend` displayed on the voting menu.
+    new maxVotingChoices = g_totalVoteOptions >= MAX_OPTIONS_IN_VOTE ? g_totalVoteOptions :
+            ( g_isMapExtensionAllowed && !isRunoffVoting ? ( g_totalVoteOptions + 1 ) :
+                ( g_isRunOffNeedingKeepCurrentMap        ? ( g_totalVoteOptions + 1 ) : g_totalVoteOptions ) );
 
     // determine the number of votes for 1st and 2nd places
-    for( playerVoteMapChoiceIndex = 0; playerVoteMapChoiceIndex < g_totalVoteOptions;
+    for( playerVoteMapChoiceIndex = 0; playerVoteMapChoiceIndex < maxVotingChoices;
          ++playerVoteMapChoiceIndex )
     {
         if( numberOfVotesAtFirstPlace < g_arrayOfMapsWithVotesNumber[ playerVoteMapChoiceIndex ] )
@@ -6743,7 +6742,7 @@ stock determineTheVotingFirstChoices( firstPlaceChoices[], secondPlaceChoices[],
     }
 
     // determine which maps are in 1st and 2nd places
-    for( playerVoteMapChoiceIndex = 0; playerVoteMapChoiceIndex < g_totalVoteOptions;
+    for( playerVoteMapChoiceIndex = 0; playerVoteMapChoiceIndex < maxVotingChoices;
          ++playerVoteMapChoiceIndex )
     {
         LOGGER( 16, "Inside the for to determine which maps are in 1st and 2nd places, \
@@ -6762,12 +6761,14 @@ stock determineTheVotingFirstChoices( firstPlaceChoices[], secondPlaceChoices[],
 
     // At for: g_totalVoteOptions: 5, numberOfMapsAtFirstPosition: 3, numberOfMapsAtSecondPosition: 0
     LOGGER( 16, "After for to determine which maps are in 1st and 2nd places." )
-    LOGGER( 16, "g_totalVoteOptions: %d, numberOfMapsAtFirstPosition: %d, numberOfMapsAtSecondPosition: %d", \
-            g_totalVoteOptions, numberOfMapsAtFirstPosition, numberOfMapsAtSecondPosition )
+    LOGGER( 16, "maxVotingChoices: %d, isRunoffVoting: %d", maxVotingChoices, isRunoffVoting )
+    LOGGER( 16, "g_totalVoteOptions: %d", g_totalVoteOptions )
+    LOGGER( 16, "numberOfMapsAtFirstPosition: %d", numberOfMapsAtFirstPosition )
+    LOGGER( 16, "numberOfMapsAtSecondPosition: %d", numberOfMapsAtSecondPosition )
 
-    LOGGER( 1, "    ( determineTheVotingFirstChoices ) g_isTheLastGameRound: %d", g_isTheLastGameRound )
-    LOGGER( 1, "    ( determineTheVotingFirstChoices ) g_isTimeToRestart: %d, g_voteStatus & VOTE_IS_FORCED: %d", \
-            g_isTimeToRestart, g_voteStatus & VOTE_IS_FORCED != 0 )
+    LOGGER( 1, "( determineTheVotingFirstChoices ) g_isTheLastGameRound: %d", g_isTheLastGameRound )
+    LOGGER( 1, "( determineTheVotingFirstChoices ) g_isTimeToRestart: %d", g_isTimeToRestart )
+    LOGGER( 1, "( determineTheVotingFirstChoices ) g_voteStatus & VOTE_IS_FORCED: %d", g_voteStatus & VOTE_IS_FORCED != 0 )
 }
 
 public computeVotes()
@@ -10216,6 +10217,38 @@ public plugin_end()
     // Clear game crash action flag file for a new game.
     generateGameCrashActionFilePath( gameCrashActionFilePath, charsmax( gameCrashActionFilePath ) );
     delete_file( gameCrashActionFilePath );
+}
+
+/**
+ * Same as TRY_TO_APPLY(2), but the second argument must to be a two Dimensional Dynamic Array.
+ *
+ * @param outerArray                   a Dynamic Array within several Dynamic Arrays.
+ * @param isToDestroyTheOuterArray     whether to destroy or clear the `outerArray` provided.
+ */
+stock destroy_two_dimensional_array( Array:outerArray, bool:isToDestroyTheOuterArray = true )
+{
+    LOGGER( 128, "I AM ENTERING ON destroy_two_dimensional_array(1) | arrayIndentifation: %d", outerArray )
+
+    if( outerArray )
+    {
+        new innerArray;
+        new size = ArraySize( outerArray );
+
+        for( new index = 0; index < size; index++ )
+        {
+            innerArray = ArrayGetCell( outerArray, index );
+            TRY_TO_APPLY( ArrayDestroy, Array:innerArray )
+        }
+
+        if( isToDestroyTheOuterArray )
+        {
+            TRY_TO_APPLY( ArrayDestroy, outerArray )
+        }
+        else
+        {
+            TRY_TO_APPLY( ArrayClear, outerArray )
+        }
+    }
 }
 
 /**
