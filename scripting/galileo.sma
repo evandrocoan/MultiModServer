@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-337";
+new const PLUGIN_VERSION[] = "v3.2.6-339";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -508,6 +508,16 @@ new const PLUGIN_VERSION[] = "v3.2.6-337";
 #define IS_END_OF_MAP_VOTING_GOING_ON() \
     ( g_voteStatus & VOTE_IS_IN_PROGRESS \
       || g_voteStatus & VOTE_IS_OVER )
+//
+
+/**
+ * Verifies if the round time is too big. If the map time is too big, makes not sense to wait to
+ * start the map voting and will probably not to start the voting.
+ */
+#define IS_THE_ROUND_TIME_TOO_BIG() \
+    ( get_pcvar_num( cvar_mp_roundtime ) > 8 \
+      && g_totalRoundsSavedTimes < MIN_VOTE_START_ROUNDS_DELAY + 1 \
+      && g_roundAverageTime > 300 )
 //
 
 /**
@@ -2796,7 +2806,8 @@ stock isTimeToStartTheEndOfMapVoting( secondsRemaining )
             // there will be no round end waiting and once the `secondsRemaining` are finished, the map
             // will change whether the voting is complete or not.
             //     This is not the case when the `cvar_endOnRound` is enabled. If the voting is not finish
-            // when the round is end, a new extra round will be played.
+            // when the round is end, a new extra round will be played. If the map time is too big, makes
+            // no sense to wait and will probably not to start the voting.
             //
             //     Let suppose the `cvar_endOnRound` is set to 1, and right now the the time left is 20, and
             // there are remaining 30 seconds to finish the round. If this is called, it should do nothing
@@ -2804,7 +2815,8 @@ stock isTimeToStartTheEndOfMapVoting( secondsRemaining )
             //
             if( !get_pcvar_num( cvar_endOfMapVoteStart )
                || g_totalRoundsSavedTimes < MIN_VOTE_START_ROUNDS_DELAY + 1
-               || !get_pcvar_num( cvar_endOnRound ) )
+               || !get_pcvar_num( cvar_endOnRound )
+               || IS_THE_ROUND_TIME_TOO_BIG() )
             {
                 LOGGER( 0, "    ( isTimeToStartTheEndOfMapVoting ) Just returning true." )
                 return true;
