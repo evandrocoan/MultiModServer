@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-353";
+new const PLUGIN_VERSION[] = "v3.2.6-354";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -5691,8 +5691,8 @@ public vote_display( argument[ 2 ] )
     LOGGER( 4, "I AM ENTERING ON vote_display(1)" )
 
     new menuKeys;
-    static voteStatus [ MAX_BIG_BOSS_STRING - 100 ];
-    static voteMapLine[ MAX_MAPNAME_LENGHT + 32 ];
+    static voteStatus    [ MAX_BIG_BOSS_STRING - 100 ];
+    static mapVotingCount[ MAX_MAPNAME_LENGHT + 32 ];
 
     new copiedChars         = 0;
     new player_id           = argument[ 1 ];
@@ -5720,13 +5720,13 @@ public vote_display( argument[ 2 ] )
     // add maps to the menu
     for( new choiceIndex = 0; choiceIndex < g_totalVoteOptions; ++choiceIndex )
     {
-        computeVoteMapLine( voteMapLine, charsmax( voteMapLine ), choiceIndex );
+        computeMapVotingCount( mapVotingCount, charsmax( mapVotingCount ), choiceIndex );
 
         copiedChars += formatex( voteStatus[ copiedChars ], charsmax( voteStatus ) - copiedChars,
                "^n%s%i.%s \
                 %s%s",
                 COLOR_RED, choiceIndex + 1, COLOR_WHITE,
-                g_votingMapNames[ choiceIndex ], voteMapLine );
+                g_votingMapNames[ choiceIndex ], mapVotingCount );
 
         menuKeys |= ( 1 << choiceIndex );
     }
@@ -5845,7 +5845,7 @@ stock addExtensionOption( player_id, copiedChars, voteStatus[], voteStatusLenght
 
     new bool:allowStay;
     new bool:allowExtend;
-    new voteMapLine[ MAX_MAPNAME_LENGHT ];
+    new mapVotingCount[ MAX_MAPNAME_LENGHT ];
 
     allowExtend = ( g_isGameFinalVoting
                     && !( g_voteStatus & IS_RUNOFF_VOTE ) );
@@ -5888,7 +5888,7 @@ stock addExtensionOption( player_id, copiedChars, voteStatus[], voteStatusLenght
             copiedChars += formatex( voteStatus[ copiedChars ], voteStatusLenght - copiedChars, "^n" );
         }
 
-        computeVoteMapLine( voteMapLine, charsmax( voteMapLine ), g_totalVoteOptions );
+        computeMapVotingCount( mapVotingCount, charsmax( mapVotingCount ), g_totalVoteOptions );
 
         if( allowExtend )
         {
@@ -5918,7 +5918,7 @@ stock addExtensionOption( player_id, copiedChars, voteStatus[], voteStatusLenght
                     %s",
                     COLOR_RED, g_totalVoteOptions + 1,
                     COLOR_WHITE, player_id, extend_option_type, g_currentMapName, extend_step,
-                    voteMapLine );
+                    mapVotingCount );
         }
         else
         {
@@ -5931,7 +5931,7 @@ stock addExtensionOption( player_id, copiedChars, voteStatus[], voteStatusLenght
                         %s",
                         COLOR_RED, g_totalVoteOptions + 1,
                         COLOR_WHITE, player_id, "GAL_OPTION_STAY_MAP", g_currentMapName,
-                        voteMapLine );
+                        mapVotingCount );
             }
             else
             {
@@ -5941,7 +5941,7 @@ stock addExtensionOption( player_id, copiedChars, voteStatus[], voteStatusLenght
                         %s",
                         COLOR_RED, g_totalVoteOptions + 1,
                         COLOR_WHITE, player_id, "GAL_OPTION_STAY",
-                        voteMapLine );
+                        mapVotingCount );
             }
         }
 
@@ -6538,21 +6538,22 @@ stock announceRegistedVote( player_id, pressedKeyCode )
     }
 }
 
-stock computeVoteMapLine( voteMapLine[], voteMapLineLength, voteIndex )
+stock computeMapVotingCount( mapVotingCount[], mapVotingCountLength, voteIndex, bool:isToAddResults = true )
 {
-    LOGGER( 0, "I AM ENTERING ON computeVoteMapLine(3) | voteMapLine: %s, voteMapLineLength: %d, \
-            voteIndex: %d", voteMapLine, voteMapLineLength, voteIndex )
+    LOGGER( 0, "I AM ENTERING ON computeMapVotingCount(3) | mapVotingCount: %s, mapVotingCountLength: %d, \
+            voteIndex: %d", mapVotingCount, mapVotingCountLength, voteIndex )
 
     new voteCountNumber = g_arrayOfMapsWithVotesNumber[ voteIndex ];
 
     if( voteCountNumber
+        && isToAddResults
         && g_showVoteStatus )
     {
         switch( g_showVoteStatusType )
         {
             case STATUS_TYPE_COUNT:
             {
-                formatex( voteMapLine, voteMapLineLength, " %s(%s%i%s%s)",
+                formatex( mapVotingCount, mapVotingCountLength, " %s(%s%i%s%s)",
                         COLOR_YELLOW, COLOR_GREY,
                         voteCountNumber, g_voteStatus_symbol,
                         COLOR_YELLOW );
@@ -6561,7 +6562,7 @@ stock computeVoteMapLine( voteMapLine[], voteMapLineLength, voteIndex )
             {
                 new votePercentNunber = percent( voteCountNumber, g_totalVotesCounted );
 
-                formatex( voteMapLine, voteMapLineLength, " %s(%s%i%s%s)",
+                formatex( mapVotingCount, mapVotingCountLength, " %s(%s%i%s%s)",
                         COLOR_YELLOW, COLOR_GREY,
                         votePercentNunber, g_voteStatus_symbol,
                         COLOR_YELLOW );
@@ -6570,7 +6571,7 @@ stock computeVoteMapLine( voteMapLine[], voteMapLineLength, voteIndex )
             {
                 new votePercentNunber = percent( voteCountNumber, g_totalVotesCounted );
 
-                formatex( voteMapLine, voteMapLineLength,
+                formatex( mapVotingCount, mapVotingCountLength,
                         " %s(%s%i%s %s[%s%d%s]%s)",
                         COLOR_RED, COLOR_GREY,
                         votePercentNunber, g_voteStatus_symbol,
@@ -6580,23 +6581,23 @@ stock computeVoteMapLine( voteMapLine[], voteMapLineLength, voteIndex )
             }
             default:
             {
-                voteMapLine[ 0 ] = '^0';
+                mapVotingCount[ 0 ] = '^0';
             }
         }
     }
     else
     {
-        voteMapLine[ 0 ] = '^0';
+        mapVotingCount[ 0 ] = '^0';
     }
 
-    LOGGER( 0, " ( computeVoteMapLine ) | g_showVoteStatus: %d, g_showVoteStatusType: %d, voteCountNumber: %d", \
+    LOGGER( 0, " ( computeMapVotingCount ) | g_showVoteStatus: %d, g_showVoteStatusType: %d, voteCountNumber: %d", \
             g_showVoteStatus, g_showVoteStatusType, voteCountNumber )
 }
 
 stock showPlayersVoteResult()
 {
     LOGGER( 128, "I AM ENTERING ON showPlayersVoteResult(0)" )
-    new voteMapLine[ 32 ];
+    new mapVotingCount[ 32 ];
 
     LOGGER( 4, "" )
     LOGGER( 4, "   [VOTE RESULT]" )
@@ -6604,7 +6605,7 @@ stock showPlayersVoteResult()
     for( new playerVoteMapChoiceIndex = 0; playerVoteMapChoiceIndex <= g_totalVoteOptions;
          ++playerVoteMapChoiceIndex )
     {
-        computeVoteMapLine( voteMapLine, charsmax( voteMapLine ), playerVoteMapChoiceIndex );
+        computeMapVotingCount( mapVotingCount, charsmax( mapVotingCount ), playerVoteMapChoiceIndex );
 
         LOGGER( 4, "      %2i/%-2i, %i. %s", \
                 g_arrayOfMapsWithVotesNumber[ playerVoteMapChoiceIndex ], g_totalVotesCounted, \
