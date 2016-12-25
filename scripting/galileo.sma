@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-350";
+new const PLUGIN_VERSION[] = "v3.2.6-352";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -86,7 +86,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-350";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 2+4+16
+#define DEBUG_LEVEL 2+4
 
 
 /**
@@ -1366,10 +1366,10 @@ stock configureTheVotingMenus()
     g_chooseMapMenuId         = register_menuid( CHOOSE_MAP_MENU_NAME );
     g_chooseMapQuestionMenuId = register_menuid( CHOOSE_MAP_MENU_QUESTION );
 
-    register_menucmd( g_chooseMapMenuId, MENU_KEY_1 | MENU_KEY_2 |
-            MENU_KEY_3 | MENU_KEY_4 | MENU_KEY_5 | MENU_KEY_6 |
-            MENU_KEY_7 | MENU_KEY_8 | MENU_KEY_9 | MENU_KEY_0,
-            "vote_handleChoice" );
+    register_menucmd( g_chooseMapMenuId, MENU_KEY_0 | MENU_KEY_1 |
+               MENU_KEY_2 | MENU_KEY_3 | MENU_KEY_4 | MENU_KEY_5 |
+               MENU_KEY_6 | MENU_KEY_7 | MENU_KEY_8 | MENU_KEY_9,
+               "vote_handleChoice" );
 
     register_menucmd( g_chooseMapQuestionMenuId, MENU_KEY_6 | MENU_KEY_0, "handleEndOfTheMapVoteChoice" );
 }
@@ -5628,8 +5628,9 @@ public closeVoting()
 
     // waits until the last voting second to finish
     set_task( 0.9, "voteExpire" );
-
     set_task( 1.0, "vote_display", TASKID_VOTE_DISPLAY, argument, sizeof argument, "a", 3 );
+
+    // set_task( 1.5, "delete_users_menus_care", TASKID_DELETE_USERS_MENUS_CARE );
     set_task( 5.5, "computeVotes", TASKID_VOTE_EXPIRE );
 }
 
@@ -5637,6 +5638,11 @@ public voteExpire()
 {
     LOGGER( 128, "I AM ENTERING ON voteExpire(0)" )
     g_voteStatus |= IS_VOTE_EXPIRED;
+
+    // This is necessary because the SubVote Menu is not closing automatically when the voting finishes,
+    // then the voting results are being displayed forcing the SubMenu to looks like it is not closing
+    // never and ever, but actually it is just being displayed 3 times as it was the voting results.
+    arrayset( g_isPlayerSeeingTheSubMenu, false, sizeof g_isPlayerSeeingTheSubMenu );
 }
 
 public sort_stringsi( const elem1[], const elem2[], const array[], data[], data_size )
@@ -6263,9 +6269,9 @@ stock isPlayerAbleToSeeTheVoteMenu( player_id )
     LOGGER( 128, "I AM ENTERING ON isPlayerAbleToSeeTheVoteMenu(1) | player_id: %d", player_id )
 
     new menu_id;
-    new menukeys_unused;
+    new menuKeys_unused;
 
-    get_user_menu( player_id, menu_id, menukeys_unused );
+    get_user_menu( player_id, menu_id, menuKeys_unused );
 
     return ( menu_id == 0
              || menu_id == g_chooseMapMenuId
@@ -6904,9 +6910,6 @@ public computeVotes()
 {
     LOGGER( 128, "I AM ENTERING ON computeVotes(0)" )
     LOGGER( 0, "", showPlayersVoteResult() )
-
-    // If some how the menu still alive, kill it.
-    set_task( 6.0, "delete_users_menus_care", TASKID_DELETE_USERS_MENUS_CARE );
 
     new numberOfVotesAtFirstPlace;
     new numberOfVotesAtSecondPlace;
@@ -10254,20 +10257,49 @@ stock clearTheVotingMenu()
 
 public delete_users_menus_care()
 {
+    LOGGER( 128, "I AM ENTERING ON delete_users_menus_care(0)" )
     delete_users_menus();
 }
 
-stock delete_users_menus( bool:isToDoubleReset=false )
+stock delete_user_menu( player_id )
+{
+    LOGGER( 128, "I AM ENTERING ON delete_user_menu(1) | player_id: %d", player_id )
+
+    new menu_id;
+    new menuKeys;
+    new menuKeys_unused;
+    new failureMessage[ 128 ];
+
+    menuKeys  = MENU_KEY_0 | MENU_KEY_1 | MENU_KEY_2 | MENU_KEY_3 | MENU_KEY_4;
+    menuKeys |= MENU_KEY_5 | MENU_KEY_6 | MENU_KEY_7 | MENU_KEY_8 | MENU_KEY_9;
+
+    get_user_menu( player_id, menu_id, menuKeys_unused );
+
+    if( g_isPlayerSeeingTheSubMenu[ player_id ]
+        || menu_id == g_chooseMapMenuId
+        || menu_id == g_chooseMapQuestionMenuId )
+    {
+        // formatex( failureMessage, charsmax( failureMessage ), "%L", player_id, "GAL_VOTE_ENDED" );
+        formatex( failureMessage, charsmax( failureMessage ), "Closing the Menu..." );
+        show_menu( player_id, menuKeys, failureMessage, 2, CHOOSE_MAP_MENU_NAME );
+    }
+}
+
+stock delete_users_menus( bool:isToDoubleReset = false )
 {
     LOGGER( 128, "I AM ENTERING ON delete_users_menus(1) | isToDoubleReset: %d", isToDoubleReset )
 
     new menu_id;
     new player_id;
     new playersCount;
-    new menukeys_unused;
+    new menuKeys;
+    new menuKeys_unused;
 
     new players       [ MAX_PLAYERS ];
     new failureMessage[ 128 ];
+
+    menuKeys  = MENU_KEY_0 | MENU_KEY_1 | MENU_KEY_2 | MENU_KEY_3 | MENU_KEY_4;
+    menuKeys |= MENU_KEY_5 | MENU_KEY_6 | MENU_KEY_7 | MENU_KEY_8 | MENU_KEY_9;
 
     get_players( players, playersCount, "ch" );
 
@@ -10279,13 +10311,13 @@ stock delete_users_menus( bool:isToDoubleReset=false )
     for( new player_index; player_index < playersCount; ++player_index )
     {
         player_id = players[ player_index ];
-        get_user_menu( player_id, menu_id, menukeys_unused );
+        get_user_menu( player_id, menu_id, menuKeys_unused );
 
         if( menu_id == g_chooseMapMenuId
             || menu_id == g_chooseMapQuestionMenuId )
         {
             formatex( failureMessage, charsmax( failureMessage ), "%L", player_id, "GAL_VOTE_ENDED" );
-            show_menu( player_id, menukeys_unused, failureMessage, isToDoubleReset ? 5 : 2, CHOOSE_MAP_MENU_NAME );
+            show_menu( player_id, menuKeys, failureMessage, isToDoubleReset ? 5 : 2, CHOOSE_MAP_MENU_NAME );
         }
     }
 }
