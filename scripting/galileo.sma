@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-345";
+new const PLUGIN_VERSION[] = "v3.2.6-346";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -86,7 +86,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-345";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 16+4+2
+#define DEBUG_LEVEL 2+4+8
 
 
 /**
@@ -407,12 +407,12 @@ new const PLUGIN_VERSION[] = "v3.2.6-345";
 #define MAPFILETYPE_SINGLE 1
 #define MAPFILETYPE_GROUPS 2
 
-#define VOTE_IS_IN_PROGRESS 1
-#define VOTE_IS_FORCED      2
-#define VOTE_IS_RUNOFF      4
-#define VOTE_IS_OVER        8
-#define VOTE_IS_EARLY       16
-#define VOTE_IS_EXPIRED     32
+#define IS_VOTE_IN_PROGRESS 1
+#define IS_FORCED_VOTE      2
+#define IS_RUNOFF_VOTE      4
+#define IS_VOTE_OVER        8
+#define IS_VOTE_EARLY       16
+#define IS_VOTE_EXPIRED     32
 
 #define SOUND_GETREADYTOCHOOSE 1
 #define SOUND_COUNTDOWN        2
@@ -506,8 +506,8 @@ new const PLUGIN_VERSION[] = "v3.2.6-345";
  * Verifies if a voting is or was already processed.
  */
 #define IS_END_OF_MAP_VOTING_GOING_ON() \
-    ( g_voteStatus & VOTE_IS_IN_PROGRESS \
-      || g_voteStatus & VOTE_IS_OVER )
+    ( g_voteStatus & IS_VOTE_IN_PROGRESS \
+      || g_voteStatus & IS_VOTE_OVER )
 //
 
 /**
@@ -1898,7 +1898,7 @@ stock vote_manageEarlyStart()
 {
     LOGGER( 128, "I AM ENTERING ON vote_manageEarlyStart(0)" )
 
-    g_voteStatus |= VOTE_IS_EARLY;
+    g_voteStatus |= IS_VOTE_EARLY;
     set_task( 120.0, "startNonForcedVoting", TASKID_VOTE_STARTDIRECTOR );
 }
 
@@ -2985,7 +2985,7 @@ public round_end_event()
         }
     }
 
-    if( !( g_voteStatus & VOTE_IS_IN_PROGRESS ) )
+    if( !( g_voteStatus & IS_VOTE_IN_PROGRESS ) )
     {
         // If this is called when the voting is going on, it will cause the voting to be cut
         // and will force the map to immediately change to the next map on the map cycle.
@@ -3227,7 +3227,7 @@ stock try_to_process_last_round( bool:isToImmediatelyChangeLevel = false )
     LOGGER( 128, "I AM ENTERING ON try_to_process_last_round(0)" )
     new bool:allowMapChange;
 
-    if( g_voteStatus & VOTE_IS_OVER )
+    if( g_voteStatus & IS_VOTE_OVER )
     {
         allowMapChange = true;
     }
@@ -3515,9 +3515,9 @@ public round_restart_event()
     LOGGER( 128, "I AM ENTERING ON round_restart_event(0)" )
 
     // Enable a new voting, as a new game is starting
-    g_voteStatus &= ~VOTE_IS_OVER;
-    g_voteStatus &= ~VOTE_IS_EARLY;
-    g_voteStatus &= ~VOTE_IS_EXPIRED;
+    g_voteStatus &= ~IS_VOTE_OVER;
+    g_voteStatus &= ~IS_VOTE_EARLY;
+    g_voteStatus &= ~IS_VOTE_EXPIRED;
 
     if( g_isEndGameLimitsChanged
         && is_there_game_commencing()
@@ -5153,13 +5153,13 @@ stock approvedTheVotingStart( bool:is_forced_voting )
 
     // block the voting on some not allowed situations/cases
     if( get_real_players_number() == 0
-        || ( g_voteStatus & VOTE_IS_IN_PROGRESS
-             && !( g_voteStatus & VOTE_IS_RUNOFF ) )
+        || ( g_voteStatus & IS_VOTE_IN_PROGRESS
+             && !( g_voteStatus & IS_RUNOFF_VOTE ) )
         || ( !is_forced_voting
-             && g_voteStatus & VOTE_IS_OVER ) )
+             && g_voteStatus & IS_VOTE_OVER ) )
     {
-        LOGGER( 1, "    ( approvedTheVotingStart ) g_voteStatus: %d, g_voteStatus & VOTE_IS_OVER: %d", \
-                g_voteStatus, g_voteStatus & VOTE_IS_OVER != 0 )
+        LOGGER( 1, "    ( approvedTheVotingStart ) g_voteStatus: %d, g_voteStatus & IS_VOTE_OVER: %d", \
+                g_voteStatus, g_voteStatus & IS_VOTE_OVER != 0 )
 
     #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
         if( g_test_isTheUnitTestsRunning )
@@ -5177,7 +5177,7 @@ stock approvedTheVotingStart( bool:is_forced_voting )
                 startEmptyCycleSystem();
             }
 
-            if( g_voteStatus & VOTE_IS_IN_PROGRESS )
+            if( g_voteStatus & IS_VOTE_IN_PROGRESS )
             {
                 cancelVoting();
             }
@@ -5189,7 +5189,7 @@ stock approvedTheVotingStart( bool:is_forced_voting )
 
     // allow a new forced voting while the map is ending
     if( is_forced_voting
-        && g_voteStatus & VOTE_IS_OVER )
+        && g_voteStatus & IS_VOTE_OVER )
     {
         new bool:roundEndStatus[ 4 ];
 
@@ -5254,12 +5254,12 @@ stock configureVotingStart( bool:is_forced_voting )
     cacheCvarsValues();
 
     // make it known that a vote is in progress
-    g_voteStatus |= VOTE_IS_IN_PROGRESS;
+    g_voteStatus |= IS_VOTE_IN_PROGRESS;
 
     // Set the voting status to forced
     if( is_forced_voting )
     {
-        g_voteStatus |= VOTE_IS_FORCED;
+        g_voteStatus |= IS_FORCED_VOTE;
     }
 
     // Max rounds/frags vote map does not have a max rounds extension limit as mp_timelimit
@@ -5294,7 +5294,7 @@ stock vote_startDirector( bool:is_forced_voting )
         return;
     }
 
-    if( g_voteStatus & VOTE_IS_RUNOFF )
+    if( g_voteStatus & IS_RUNOFF_VOTE )
     {
         // to load runoff vote choices
         loadRunOffVoteChoices();
@@ -5321,8 +5321,8 @@ stock vote_startDirector( bool:is_forced_voting )
 
     LOGGER( 4, "" )
     LOGGER( 4, "    ( vote_startDirector|out ) g_isTheLastGameRound: %d", g_isTheLastGameRound )
-    LOGGER( 4, "    ( vote_startDirector|out ) g_isTimeToRestart: %d, g_voteStatus & VOTE_IS_FORCED: %d", \
-            g_isTimeToRestart, g_voteStatus & VOTE_IS_FORCED != 0 )
+    LOGGER( 4, "    ( vote_startDirector|out ) g_isTimeToRestart: %d, g_voteStatus & IS_FORCED_VOTE: %d", \
+            g_isTimeToRestart, g_voteStatus & IS_FORCED_VOTE != 0 )
 }
 
 stock initializeTheVoteDisplay()
@@ -5375,15 +5375,6 @@ stock initializeTheVoteDisplay()
     set_task( 1.0, "pendingVoteCountdown", TASKID_PENDING_VOTE_COUNTDOWN, _, _, "a", 7 );
 #endif
 
-    // Set debug options
-    LOGGER( 0, "", configureVoteDisplayDebugging() )
-
-    // Display the map choices, 1 second from now
-    set_task( handleChoicesDelay, "vote_handleDisplay", TASKID_VOTE_HANDLEDISPLAY );
-}
-
-stock configureVoteDisplayDebugging()
-{
     // Force a right vote duration for the Unit Tests run
 #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
     g_votingSecondsRemaining = 5;
@@ -5394,8 +5385,16 @@ stock configureVoteDisplayDebugging()
     set_task( 2.0, "create_fakeVotes", TASKID_DBG_FAKEVOTES );
 #endif
 
+    // Set debug options
+    LOGGER( 0, "", configureVoteDisplayDebugging() )
+
+    // Display the map choices, 1 second from now
+    set_task( handleChoicesDelay, "vote_handleDisplay", TASKID_VOTE_HANDLEDISPLAY );
+}
+
+stock configureVoteDisplayDebugging()
+{
     // Print the voting map options
-#if defined DEBUG
     new voteOptions = ( g_totalVoteOptions == 1? 2 : g_totalVoteOptions );
 
     LOGGER( 4, "" )
@@ -5406,7 +5405,6 @@ stock configureVoteDisplayDebugging()
     {
         LOGGER( 4, "      %i. %s", dbgChoice + 1, g_votingMapNames[ dbgChoice ] )
     }
-#endif
 
     return 0;
 }
@@ -5416,7 +5414,7 @@ public pendingVoteCountdown()
     LOGGER( 128, "I AM ENTERING ON pendingVoteCountdown(0)" )
 
     if( get_pcvar_num( cvar_isToAskForEndOfTheMapVote )
-        && !( g_voteStatus & VOTE_IS_RUNOFF ) )
+        && !( g_voteStatus & IS_RUNOFF_VOTE ) )
     {
         displayEndOfTheMapVoteMenu( 0 );
     }
@@ -5575,7 +5573,7 @@ public vote_handleDisplay()
     }
 
     // ensure the vote status doesn't indicate expired
-    g_voteStatus &= ~VOTE_IS_EXPIRED;
+    g_voteStatus &= ~IS_VOTE_EXPIRED;
 
     new argument[ 2 ] = { true, 0 };
 
@@ -5637,7 +5635,7 @@ public closeVoting()
 public voteExpire()
 {
     LOGGER( 128, "I AM ENTERING ON voteExpire(0)" )
-    g_voteStatus |= VOTE_IS_EXPIRED;
+    g_voteStatus |= IS_VOTE_EXPIRED;
 }
 
 public sort_stringsi( const elem1[], const elem2[], const array[], data[], data_size )
@@ -5667,7 +5665,7 @@ public vote_display( argument[ 2 ] )
     new copiedChars         = 0;
     new updateTimeRemaining = argument[ 0 ];
 
-    new bool:isVoteOver   = g_voteStatus & VOTE_IS_EXPIRED != 0;
+    new bool:isVoteOver   = g_voteStatus & IS_VOTE_EXPIRED != 0;
     new bool:noneIsHidden = ( g_isToShowNoneOption
                               && !g_voteShowNoneOptionType
                               && !isVoteOver );
@@ -5823,11 +5821,11 @@ stock addExtensionStayOption( player_id, copiedChars, voteStatus[], voteStatusLe
     new voteMapLine[ MAX_MAPNAME_LENGHT ];
 
     allowExtend = ( g_isGameFinalVoting
-                    && !( g_voteStatus & VOTE_IS_RUNOFF ) );
+                    && !( g_voteStatus & IS_RUNOFF_VOTE ) );
 
-    allowStay = ( ( g_voteStatus & VOTE_IS_EARLY
-                    || g_voteStatus & VOTE_IS_FORCED )
-                  && !( g_voteStatus & VOTE_IS_RUNOFF ) );
+    allowStay = ( ( g_voteStatus & IS_VOTE_EARLY
+                    || g_voteStatus & IS_FORCED_VOTE )
+                  && !( g_voteStatus & IS_RUNOFF_VOTE ) );
 
     if( g_isRunOffNeedingKeepCurrentMap )
     {
@@ -5858,7 +5856,7 @@ stock addExtensionStayOption( player_id, copiedChars, voteStatus[], voteStatusLe
              || allowStay ) )
     {
         // if it's not a runoff vote, add a space between the maps and the additional option
-        if( !( g_voteStatus & VOTE_IS_RUNOFF ) )
+        if( !( g_voteStatus & IS_RUNOFF_VOTE ) )
         {
             copiedChars += formatex( voteStatus[ copiedChars ], voteStatusLenght - copiedChars, "^n" );
         }
@@ -5958,13 +5956,23 @@ stock calculate_menu_dirt( player_id, bool:isVoteOver, voteStatus[], menuDirty[]
 
         if( g_isToShowSubMenu )
         {
-            formatex( menuDirty, menuDirtySize, "%s^n%s^n\
-                    %s0.%s %L^n^n\
+            if( g_voteStatus & IS_RUNOFF_VOTE
+                || !g_isMapExtensionAllowed )
+            {
+                copy( noneOption, charsmax( noneOption ), "^n" );
+            }
+            else
+            {
+                copy( noneOption, charsmax( noneOption ), "" );
+            }
+
+            formatex( menuDirty, menuDirtySize,
+                   "%s^n%s^n\
+                    %s%s0.%s %L^n^n\
                     %s%L",
                     menuHeader, voteStatus,
-                    COLOR_RED, COLOR_WHITE, player_id, "CMD_MENU",
+                    noneOption, COLOR_RED, COLOR_WHITE, player_id, "CMD_MENU",
                     COLOR_YELLOW, player_id, "GAL_VOTE_ENDED" );
-
         }
         else if( g_isToShowNoneOption
             && g_voteShowNoneOptionType )
@@ -5988,11 +5996,22 @@ stock calculate_menu_dirt( player_id, bool:isVoteOver, voteStatus[], menuDirty[]
 
         if( g_isToShowSubMenu )
         {
-            formatex( menuDirty, menuDirtySize, "%s^n%s^n\
-                    %s0.%s %L\
+            if( g_voteStatus & IS_RUNOFF_VOTE
+                || !g_isMapExtensionAllowed )
+            {
+                copy( noneOption, charsmax( noneOption ), "^n" );
+            }
+            else
+            {
+                copy( noneOption, charsmax( noneOption ), "" );
+            }
+
+            formatex( menuDirty, menuDirtySize,
+                   "%s^n%s^n\
+                    %s%s0.%s %L\
                     %s",
                     menuHeader, voteStatus,
-                    COLOR_RED, COLOR_WHITE, player_id, "CMD_MENU",
+                    noneOption, COLOR_RED, COLOR_WHITE, player_id, "CMD_MENU",
                     voteFooter );
         }
         else if( g_isToShowNoneOption )
@@ -6126,11 +6145,22 @@ stock calculate_menu_clean( player_id, menuClean[], menuCleanSize )
     // to append it here to always shows it WHILE voting.
     if( g_isToShowSubMenu )
     {
-        formatex( menuClean, menuCleanSize, "%s^n%s\
-                %s0.%s %L^n\
+        if( g_voteStatus & IS_RUNOFF_VOTE
+            || !g_isMapExtensionAllowed )
+        {
+            copy( noneOption, charsmax( noneOption ), "^n" );
+        }
+        else
+        {
+            copy( noneOption, charsmax( noneOption ), "" );
+        }
+
+        formatex( menuClean, menuCleanSize,
+               "%s^n%s^n\
+                %s%s0.%s %L^n\
                 %s",
                 menuHeader, g_voteStatusClean,
-                COLOR_RED, COLOR_WHITE, player_id, "CMD_MENU",
+                noneOption, COLOR_RED, COLOR_WHITE, player_id, "CMD_MENU",
                 voteFooter );
     }
     else if( g_isToShowNoneOption )
@@ -6144,7 +6174,8 @@ stock calculate_menu_clean( player_id, menuClean[], menuCleanSize )
             copy( noneOption, charsmax( noneOption ), "GAL_OPTION_NONE" );
         }
 
-        formatex( menuClean, menuCleanSize, "%s^n%s^n^n\
+        formatex( menuClean, menuCleanSize,
+               "%s^n%s^n^n\
                 %s0. %s%L%s",
                 menuHeader, g_voteStatusClean,
                 COLOR_RED, COLOR_WHITE,
@@ -6189,7 +6220,7 @@ public vote_handleChoice( player_id, key )
 {
     LOGGER( 128, "I AM ENTERING ON vote_handleChoice(2) | player_id: %d, key: %d", player_id, key )
 
-    if( g_voteStatus & VOTE_IS_EXPIRED )
+    if( g_voteStatus & IS_VOTE_EXPIRED )
     {
         client_cmd( player_id, "^"slot%i^"", key + 1 );
 
@@ -6628,7 +6659,7 @@ stock startRunoffVoting( firstPlaceChoices[], secondPlaceChoices[], numberOfMaps
     }
 
     // let the server know the next vote will be a runoff
-    g_voteStatus |= VOTE_IS_RUNOFF;
+    g_voteStatus |= IS_RUNOFF_VOTE;
 
     if( numberOfMapsAtFirstPosition > 2 )
     {
@@ -6759,7 +6790,7 @@ stock determineTheVotingFirstChoices( firstPlaceChoices[], secondPlaceChoices[],
     LOGGER( 128, "I AM ENTERING ON determineTheVotingFirstChoices(6)" )
 
     new playerVoteMapChoiceIndex;
-    new bool:isRunoffVoting = ( g_voteStatus & VOTE_IS_RUNOFF ) != 0;
+    new bool:isRunoffVoting = ( g_voteStatus & IS_RUNOFF_VOTE ) != 0;
 
     // Determine how much maps it should look up to, considering whether there is the option
     // `Stay Here` or `Extend` displayed on the voting menu.
@@ -6809,7 +6840,7 @@ stock determineTheVotingFirstChoices( firstPlaceChoices[], secondPlaceChoices[],
 
     LOGGER( 1, "( determineTheVotingFirstChoices ) g_isTheLastGameRound: %d", g_isTheLastGameRound )
     LOGGER( 1, "( determineTheVotingFirstChoices ) g_isTimeToRestart: %d", g_isTimeToRestart )
-    LOGGER( 1, "( determineTheVotingFirstChoices ) g_voteStatus & VOTE_IS_FORCED: %d", g_voteStatus & VOTE_IS_FORCED != 0 )
+    LOGGER( 1, "( determineTheVotingFirstChoices ) g_voteStatus & IS_FORCED_VOTE: %d", g_voteStatus & IS_FORCED_VOTE != 0 )
 }
 
 public computeVotes()
@@ -6818,7 +6849,7 @@ public computeVotes()
     LOGGER( 0, "", showPlayersVoteResult() )
 
     // If some how the menu still alive, kill it.
-    delete_users_menus();
+    // delete_users_menus();
 
     new numberOfVotesAtFirstPlace;
     new numberOfVotesAtSecondPlace;
@@ -6838,7 +6869,7 @@ public computeVotes()
     {
         // if the top vote getting map didn't receive over 50% of the votes cast, to start a runoff vote
         if( get_pcvar_num( cvar_runoffEnabled )
-            && !( g_voteStatus & VOTE_IS_RUNOFF )
+            && !( g_voteStatus & IS_RUNOFF_VOTE )
             && numberOfVotesAtFirstPlace <= g_totalVotesCounted * get_pcvar_float( cvar_runoffRatio ) )
         {
             startRunoffVoting( firstPlaceChoices, secondPlaceChoices, numberOfMapsAtFirstPosition,
@@ -6856,8 +6887,8 @@ public computeVotes()
     }
 
     LOGGER( 1, "    ( computeVotes|out ) g_isTheLastGameRound: %d", g_isTheLastGameRound )
-    LOGGER( 1, "    ( computeVotes|out ) g_isTimeToRestart: %d, g_voteStatus & VOTE_IS_FORCED: %d", \
-            g_isTimeToRestart, g_voteStatus & VOTE_IS_FORCED != 0 )
+    LOGGER( 1, "    ( computeVotes|out ) g_isTimeToRestart: %d, g_voteStatus & IS_FORCED_VOTE: %d", \
+            g_isTimeToRestart, g_voteStatus & IS_FORCED_VOTE != 0 )
 
     finalizeVoting();
 }
@@ -6879,8 +6910,8 @@ stock chooseTheVotingMapWinner( firstPlaceChoices[], numberOfMapsAtFirstPosition
     }
 
     LOGGER( 1, "    ( chooseTheVotingMapWinner ) g_isTheLastGameRound: %d ", g_isTheLastGameRound )
-    LOGGER( 1, "    ( chooseTheVotingMapWinner ) g_isTimeToRestart: %d, g_voteStatus & VOTE_IS_FORCED: %d", \
-            g_isTimeToRestart, g_voteStatus & VOTE_IS_FORCED != 0 )
+    LOGGER( 1, "    ( chooseTheVotingMapWinner ) g_isTimeToRestart: %d, g_voteStatus & IS_FORCED_VOTE: %d", \
+            g_isTimeToRestart, g_voteStatus & IS_FORCED_VOTE != 0 )
 
     // winnerVoteMapIndex == g_totalVoteOptions, means the 'Stay Here' option.
     // Then, here we keep the current map or extend current map.
@@ -6919,8 +6950,8 @@ stock chooseTheVotingMapWinner( firstPlaceChoices[], numberOfMapsAtFirstPosition
         resetRoundEnding();
 
         // no longer is an early vote
-        g_voteStatus &= ~VOTE_IS_EARLY;
-        g_voteStatus &= ~VOTE_IS_FORCED;
+        g_voteStatus &= ~IS_VOTE_EARLY;
+        g_voteStatus &= ~IS_FORCED_VOTE;
     }
     else // the execution flow gets here when the winner option is not keep/extend map
     {
@@ -6930,7 +6961,7 @@ stock chooseTheVotingMapWinner( firstPlaceChoices[], numberOfMapsAtFirstPosition
         color_print( 0, "%L", LANG_PLAYER, "GAL_NEXTMAP", g_nextMapName );
         process_last_round( g_isToChangeMapOnVotingEnd );
 
-        g_voteStatus |= VOTE_IS_OVER;
+        g_voteStatus |= IS_VOTE_OVER;
     }
 }
 
@@ -6950,7 +6981,7 @@ stock chooseRandomVotingWinner()
     }
 
     process_last_round( g_isToChangeMapOnVotingEnd );
-    g_voteStatus |= VOTE_IS_OVER;
+    g_voteStatus |= IS_VOTE_OVER;
 }
 
 /**
@@ -6966,12 +6997,12 @@ stock finalizeVoting()
     g_isRunOffNeedingKeepCurrentMap = false;
 
     // vote is no longer in progress
-    g_voteStatus &= ~VOTE_IS_IN_PROGRESS;
+    g_voteStatus &= ~IS_VOTE_IN_PROGRESS;
 
     // if we were in a runoff mode, get out of it
-    g_voteStatus &= ~VOTE_IS_RUNOFF;
+    g_voteStatus &= ~IS_RUNOFF_VOTE;
 
-    // this must be called after 'g_voteStatus &= ~VOTE_IS_RUNOFF' above
+    // this must be called after 'g_voteStatus &= ~IS_RUNOFF_VOTE' above
     vote_resetStats();
 }
 
@@ -7195,21 +7226,21 @@ stock is_to_block_RTV( player_id )
     new Float:minutesElapsed;
 
     // If an early vote is pending, don't allow any rocks
-    if( g_voteStatus & VOTE_IS_EARLY )
+    if( g_voteStatus & IS_VOTE_EARLY )
     {
         color_print( player_id, "%L", player_id, "GAL_ROCK_FAIL_PENDINGVOTE" );
         LOGGER( 1, "    ( is_to_block_RTV ) Just Returning/blocking, the early voting is pending." )
     }
 
     // Rocks can only be made if a vote isn't already in progress
-    else if( g_voteStatus & VOTE_IS_IN_PROGRESS )
+    else if( g_voteStatus & IS_VOTE_IN_PROGRESS )
     {
         color_print( player_id, "%L", player_id, "GAL_ROCK_FAIL_INPROGRESS" );
         LOGGER( 1, "    ( is_to_block_RTV ) Just Returning/blocking, the voting is in progress." )
     }
 
     // If the outcome of the vote hasn't already been determined
-    else if( g_voteStatus & VOTE_IS_OVER )
+    else if( g_voteStatus & IS_VOTE_OVER )
     {
         color_print( player_id, "%L", player_id, "GAL_ROCK_FAIL_VOTEOVER" );
         LOGGER( 1, "    ( is_to_block_RTV ) Just Returning/blocking, the voting is over." )
@@ -7931,7 +7962,7 @@ public client_putinserver( player_id )
 {
     LOGGER( 128, "I AM ENTERING ON client_putinserver(1) | player_id: %d", player_id )
 
-    if( ( g_voteStatus & VOTE_IS_EARLY )
+    if( ( g_voteStatus & IS_VOTE_EARLY )
         && !is_user_bot( player_id )
         && !is_user_hltv( player_id ) )
     {
@@ -8235,7 +8266,7 @@ public cmd_startVote( player_id, level, cid )
         return PLUGIN_HANDLED;
     }
 
-    if( g_voteStatus & VOTE_IS_IN_PROGRESS )
+    if( g_voteStatus & IS_VOTE_IN_PROGRESS )
     {
         color_print( player_id, "%L", player_id, "GAL_VOTE_INPROGRESS" );
     }
@@ -8264,8 +8295,8 @@ public cmd_startVote( player_id, level, cid )
         }
 
         LOGGER( 8, "( cmd_startVote ) g_isTimeToRestart? %d, g_isToChangeMapOnVotingEnd? %d, \
-                g_voteStatus & VOTE_IS_FORCED: %d", g_isTimeToRestart, g_isToChangeMapOnVotingEnd, \
-                g_voteStatus & VOTE_IS_FORCED != 0 )
+                g_voteStatus & IS_FORCED_VOTE: %d", g_isTimeToRestart, g_isToChangeMapOnVotingEnd, \
+                g_voteStatus & IS_FORCED_VOTE != 0 )
 
         vote_startDirector( true );
     }
@@ -9473,14 +9504,14 @@ stock is_to_block_map_nomination( player_id, mapName[] )
     LOGGER( 128, "I AM ENTERING ON is_to_block_map_nomination(2) | player_id: %d, mapName: %d", player_id, mapName )
 
     // nominations can only be made if a vote isn't already in progress
-    if( g_voteStatus & VOTE_IS_IN_PROGRESS )
+    if( g_voteStatus & IS_VOTE_IN_PROGRESS )
     {
         color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_INPROGRESS" );
         LOGGER( 1, "    ( is_to_block_map_nomination ) Just Returning/blocking, the voting is in progress." )
     }
 
     // and if the outcome of the vote hasn't already been determined
-    else if( g_voteStatus & VOTE_IS_OVER )
+    else if( g_voteStatus & IS_VOTE_OVER )
     {
         color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_VOTEOVER" );
         LOGGER( 1, "    ( is_to_block_map_nomination ) Just Returning/blocking, the voting is over." )
@@ -10107,9 +10138,9 @@ stock cancelVoting( bool:isToDoubleReset = false )
     delete_users_menus( isToDoubleReset );
 
     // Disables the flags without to invalid a last voting outcome results.
-    g_voteStatus &= ~VOTE_IS_IN_PROGRESS;
-    g_voteStatus &= ~VOTE_IS_FORCED;
-    g_voteStatus &= ~VOTE_IS_RUNOFF;
+    g_voteStatus &= ~IS_VOTE_IN_PROGRESS;
+    g_voteStatus &= ~IS_FORCED_VOTE;
+    g_voteStatus &= ~IS_RUNOFF_VOTE;
 }
 
 /**
@@ -10131,7 +10162,7 @@ public vote_resetStats()
     // reset everyones' votes
     arrayset( g_isPlayerVoted, true, sizeof g_isPlayerVoted );
 
-    if( !( g_voteStatus & VOTE_IS_RUNOFF ) )
+    if( !( g_voteStatus & IS_RUNOFF_VOTE ) )
     {
         g_totalVoteOptions = 0;
         clearTheVotingMenu();
@@ -10191,7 +10222,7 @@ stock delete_users_menus( bool:isToDoubleReset=false )
             || menu_id == g_chooseMapQuestionMenuId )
         {
             formatex( failureMessage, charsmax( failureMessage ), "%L", player_id, "GAL_VOTE_ENDED" );
-            show_menu( player_id, menukeys_unused, failureMessage, isToDoubleReset ? 5 : 1, CHOOSE_MAP_MENU_NAME );
+            show_menu( player_id, menukeys_unused, failureMessage, isToDoubleReset ? 5 : 2, CHOOSE_MAP_MENU_NAME );
         }
     }
 }
@@ -10457,9 +10488,9 @@ public sayNextMap()
 
     if( get_pcvar_num( cvar_nextMapChangeAnnounce )
         && get_pcvar_num( cvar_endOfMapVote )
-        && !( g_voteStatus & VOTE_IS_OVER ) )
+        && !( g_voteStatus & IS_VOTE_OVER ) )
     {
-        if( g_voteStatus & VOTE_IS_IN_PROGRESS )
+        if( g_voteStatus & IS_VOTE_IN_PROGRESS )
         {
             color_print( 0, "%L %L", LANG_PLAYER, "NEXT_MAP", LANG_PLAYER, "GAL_NEXTMAP_VOTING" );
         }
@@ -10639,7 +10670,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         LOGGER( 128, "I AM ENTERING ON create_fakeVotes(0)" )
         writeToTheDebugFile( DEBUGGER_OUTPUT_LOG_FILE_NAME, "Creating fake votes..." );
 
-        if( g_voteStatus & VOTE_IS_RUNOFF )
+        if( g_voteStatus & IS_RUNOFF_VOTE )
         {
             g_arrayOfMapsWithVotesNumber[ 0 ] += 2;     // choice 1
             g_arrayOfMapsWithVotesNumber[ 1 ] += 2;     // choice 2
@@ -11357,7 +11388,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         new test_id = register_test( chainDelay, "test_endOfMapVotingStart_case2" );
 
         vote_manageEnd();
-        SET_TEST_FAILURE( test_id, !( g_voteStatus & VOTE_IS_IN_PROGRESS ), "vote_startDirector() does not started!" )
+        SET_TEST_FAILURE( test_id, !( g_voteStatus & IS_VOTE_IN_PROGRESS ), "vote_startDirector() does not started!" )
 
         set_pcvar_float( cvar_mp_timelimit, 20.0 );
         cancelVoting();
@@ -11374,7 +11405,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         new test_id = register_test( chainDelay, "test_endOfMapVotingStop_case1" );
 
         vote_manageEnd();
-        SET_TEST_FAILURE( test_id, ( g_voteStatus & VOTE_IS_IN_PROGRESS ) != 0, "vote_startDirector() does started!" )
+        SET_TEST_FAILURE( test_id, ( g_voteStatus & IS_VOTE_IN_PROGRESS ) != 0, "vote_startDirector() does started!" )
 
         set_pcvar_float( cvar_mp_timelimit, 1.0 );
         cancelVoting();
@@ -11391,7 +11422,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         new test_id = register_test( chainDelay, "test_endOfMapVotingStop_case2" );
 
         vote_manageEnd();
-        SET_TEST_FAILURE( test_id, ( g_voteStatus & VOTE_IS_IN_PROGRESS ) != 0, "vote_startDirector() does started!" )
+        SET_TEST_FAILURE( test_id, ( g_voteStatus & IS_VOTE_IN_PROGRESS ) != 0, "vote_startDirector() does started!" )
 
         set_pcvar_float( cvar_mp_timelimit, 20.0 );
         //cancelVoting();
