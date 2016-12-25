@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-354";
+new const PLUGIN_VERSION[] = "v3.2.6-355";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -5837,7 +5837,7 @@ stock dispaly_the_vote_sub_menu( player_id )
     LOGGER( 4, "%48s", " ( dispaly_the_vote_sub_menu| out )" )
 }
 
-stock addExtensionOption( player_id, copiedChars, voteStatus[], voteStatusLenght, menuKeys )
+stock addExtensionOption( player_id, copiedChars, voteStatus[], voteStatusLenght, menuKeys, bool:isToAddResults = true )
 {
     LOGGER( 4, "I AM ENTERING ON calculateExtensionOption(6) | player_id: %d", player_id )
     LOGGER( 4, "( calculateExtensionOption ) voteStatusLenght: %d, menuKeys: %d", voteStatusLenght, menuKeys )
@@ -5888,7 +5888,7 @@ stock addExtensionOption( player_id, copiedChars, voteStatus[], voteStatusLenght
             copiedChars += formatex( voteStatus[ copiedChars ], voteStatusLenght - copiedChars, "^n" );
         }
 
-        computeMapVotingCount( mapVotingCount, charsmax( mapVotingCount ), g_totalVoteOptions );
+        computeMapVotingCount( mapVotingCount, charsmax( mapVotingCount ), g_totalVoteOptions, isToAddResults );
 
         if( allowExtend )
         {
@@ -6213,7 +6213,7 @@ stock display_menu_clean( player_id, menuKeys )
                      && !g_isPlayerCancelledVote[ player_id ] );
 
     computeVoteMenuFooter( player_id, voteFooter, charsmax( voteFooter ) );
-    menuKeys = addExtensionOption( player_id, 0, voteExtension, charsmax( voteExtension ), menuKeys );
+    menuKeys = addExtensionOption( player_id, 0, voteExtension, charsmax( voteExtension ), menuKeys, false );
 
     // Add the header
     formatex( menuHeader, charsmax( menuHeader ), "%s%L",
