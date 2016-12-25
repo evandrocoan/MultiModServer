@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-355";
+new const PLUGIN_VERSION[] = "v3.2.6-357";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -8374,10 +8374,10 @@ public cmd_voteMap( player_id, level, cid )
 
             read_args( arguments, charsmax( arguments ) );
             remove_quotes( arguments );
-        #endif
 
-            LOGGER( 8, "( cmd_voteMap ) arguments: %s", arguments )
             LOGGER( 8, "( cmd_voteMap ) " )
+            LOGGER( 8, "( cmd_voteMap ) arguments: %s", arguments )
+        #endif
 
             // To start from 1 because the first argument 0, is the command line name `gal_startvote`.
             for( new index = 1; index < argumentsCount; index++ )
@@ -8392,16 +8392,16 @@ public cmd_voteMap( player_id, level, cid )
                     copy( g_votingMapNames[ g_totalVoteOptions ], charsmax( g_votingMapNames[] ), argument );
                     g_totalVoteOptions++;
                 }
-                else if( containi( argument, "nointro" ) > -1 )
+                else if( -1 < containi( argument, "nointro" ) < 2 )
                 {
                     LOGGER( 8, "    ( cmd_voteMap ) Entering on argument `nointro`" )
                 }
-                else if( containi( argument, "norunoff" ) > -1 )
+                else if( -1 < containi( argument, "norunoff" ) < 2  )
                 {
                     LOGGER( 8, "    ( cmd_voteMap ) Entering on argument `norunoff`" )
 
                 }
-                else if( containi( argument, "noextension" ) > -1 )
+                else if( -1 < containi( argument, "noextension" ) < 2 )
                 {
                     LOGGER( 8, "    ( cmd_voteMap ) Entering on argument `noextension`" )
 
@@ -8434,28 +8434,34 @@ public cmd_voteMap( player_id, level, cid )
 stock showGalVoteMapHelp( player_id, index = 0, argument[] = {0} )
 {
     LOGGER( 128, "I AM ENTERING ON showGalVoteMapHelp(1) | argument: %s", argument )
-    new outputMessage[ MAX_BIG_BOSS_STRING ];
+    new outputMessage[ MAX_LONG_STRING ];
 
     if( argument[ 0 ] )
     {
         formatex( outputMessage, charsmax( outputMessage ),
-                "The argument `%d=%s` could not be recognized as a valid map or option.", index, argument );
+                "^nThe argument `%d=%s` could not be recognized as a valid map or option.", index, argument );
 
-        if( player_id )
-        {
-            client_print( player_id, print_console, "" );
-            client_print( player_id, print_console, outputMessage );
-        }
-        else
-        {
-            server_print( "" );
-            server_print( outputMessage );
-        }
+        player_id ? client_print( player_id, print_console, outputMessage ) : server_print( outputMessage );
     }
-    else
-    {
 
-    }
+    // It was necessary to split the message up to 256 characters due the output print being cut.
+    formatex( outputMessage, charsmax( outputMessage ),
+           "%sThese are the `gal_startvote` command usage examples:^n\
+            ^ngal_startvote map1 map2 map3 map4 ... map9\
+            ^ngal_startvote map1 map2 map3 map4 ... map9 -nointro -noextension -norunoff\
+            ^ngal_startvote map1 map2 map3 map4 ... map9 -nointro -noextension\
+            ", argument[ 0 ] ? "" : "^n"
+            );
+    player_id ? client_print( player_id, print_console, outputMessage ) : server_print( outputMessage );
+
+    formatex( outputMessage, charsmax( outputMessage ),
+           "gal_startvote map1 map2 map3\
+            ^ngal_startvote map1 map2 -nointro -noextension\
+            ^ngal_startvote map1 map2 -nointro\
+            ^ngal_startvote map1 map2 -noextension\
+            ^ngal_startvote map1 map2^n\
+            " );
+    player_id ? client_print( player_id, print_console, outputMessage ) : server_print( outputMessage );
 }
 
 /**
