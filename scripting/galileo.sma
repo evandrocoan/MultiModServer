@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-347";
+new const PLUGIN_VERSION[] = "v3.2.6-349";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -719,6 +719,7 @@ enum (+= 100000)
     TASKID_RTV_REMINDER = 100000, // start with 100000
     TASKID_SHOW_LAST_ROUND_HUD,
     TASKID_DELETE_USERS_MENUS,
+    TASKID_DELETE_USERS_MENUS_CARE,
     TASKID_PREVENT_INFITY_GAME,
     TASKID_EMPTYSERVER,
     TASKID_START_VOTING_BY_ROUNDS,
@@ -5203,7 +5204,7 @@ stock approvedTheVotingStart( bool:is_forced_voting )
     // the rounds start delay task could be running
     remove_task( TASKID_START_VOTING_BY_TIMER );
 
-    // If the voting menu deletion task is running, remove it the delete the menus right now.
+    // If the voting menu deletion task is running, remove it then delete the menus right now.
     if( remove_task( TASKID_DELETE_USERS_MENUS ) )
     {
         vote_resetStats();
@@ -5960,12 +5961,21 @@ stock calculate_menu_dirt( player_id, bool:isVoteOver, voteStatus[], menuDirty[]
 
         if( g_isToShowSubMenu )
         {
+            if( isToAddExtraLine )
+            {
+                copy( noneOption, charsmax( noneOption ), "^n" );
+            }
+            else
+            {
+                copy( noneOption, charsmax( noneOption ), "" );
+            }
+
             formatex( menuDirty, menuDirtySize,
                    "%s^n%s^n\
                     %s%s0.%s %L^n^n\
                     %s%L",
                     menuHeader, voteStatus,
-                    isToAddExtraLine ? "^n" : "", COLOR_RED, COLOR_WHITE, player_id, "CMD_MENU",
+                    noneOption, COLOR_RED, COLOR_WHITE, player_id, "CMD_MENU",
                     COLOR_YELLOW, player_id, "GAL_VOTE_ENDED" );
         }
         else if( g_isToShowNoneOption
@@ -5998,12 +6008,21 @@ stock calculate_menu_dirt( player_id, bool:isVoteOver, voteStatus[], menuDirty[]
 
         if( g_isToShowSubMenu )
         {
+            if( isToAddExtraLine )
+            {
+                copy( noneOption, charsmax( noneOption ), "^n" );
+            }
+            else
+            {
+                copy( noneOption, charsmax( noneOption ), "" );
+            }
+
             formatex( menuDirty, menuDirtySize,
                    "%s^n%s^n\
                     %s%s0.%s %L\
                     %s",
                     menuHeader, voteStatus,
-                    isToAddExtraLine ? "^n" : "", COLOR_RED, COLOR_WHITE, player_id, "CMD_MENU",
+                    noneOption, COLOR_RED, COLOR_WHITE, player_id, "CMD_MENU",
                     voteFooter );
         }
         else if( g_isToShowNoneOption )
@@ -6019,7 +6038,7 @@ stock calculate_menu_dirt( player_id, bool:isVoteOver, voteStatus[], menuDirty[]
             }
 
             formatex( menuDirty, menuDirtySize,
-                   "%s^n%s^n^n\
+                   "%s^n%s^n\
                     %s\
                     %s",
                     menuHeader, voteStatus,
@@ -6100,7 +6119,7 @@ stock computeUndoButton( player_id, bool:isToShowUndo, bool:isVoteOver, noneOpti
                        "%s%s\
                         0. %s%L",
                         isToAddExtraLine ? "^n" : "", COLOR_RED,
-                        COLOR_WHITE, player_id, "GAL_OPTION_NONE" );
+                        ( isVoteOver ? COLOR_GREY : COLOR_WHITE ), player_id, "GAL_OPTION_NONE" );
             }
         }
         else
@@ -6119,7 +6138,7 @@ stock computeUndoButton( player_id, bool:isToShowUndo, bool:isVoteOver, noneOpti
                                "%s%s\
                                 0. %s%L",
                                 isToAddExtraLine ? "^n" : "", COLOR_RED,
-                                COLOR_WHITE, player_id, "GAL_OPTION_NONE" );
+                                ( isVoteOver ? COLOR_GREY : COLOR_WHITE ), player_id, "GAL_OPTION_NONE" );
                     }
                 }
                 case NONE_OPTION_ALWAYS_KEEP_SHOWING, CONVERT_NONE_OPTION_TO_CANCEL_LAST_VOTE:
@@ -6128,7 +6147,7 @@ stock computeUndoButton( player_id, bool:isToShowUndo, bool:isVoteOver, noneOpti
                            "%s%s\
                             0. %s%L",
                             isToAddExtraLine ? "^n" : "", COLOR_RED,
-                            COLOR_WHITE, player_id, "GAL_OPTION_NONE" );
+                            ( isVoteOver ? COLOR_GREY : COLOR_WHITE ), player_id, "GAL_OPTION_NONE" );
                 }
             }
         }
@@ -6166,12 +6185,21 @@ stock calculate_menu_clean( player_id, menuClean[], menuCleanSize )
     // to append it here to always shows it WHILE voting.
     if( g_isToShowSubMenu )
     {
+        if( isToAddExtraLine )
+        {
+            copy( noneOption, charsmax( noneOption ), "^n" );
+        }
+        else
+        {
+            copy( noneOption, charsmax( noneOption ), "" );
+        }
+
         formatex( menuClean, menuCleanSize,
                "%s^n%s^n\
                 %s%s0.%s %L^n\
                 %s",
                 menuHeader, g_voteStatusClean,
-                isToAddExtraLine ? "^n" : "", COLOR_RED, COLOR_WHITE, player_id, "CMD_MENU",
+                noneOption, COLOR_RED, COLOR_WHITE, player_id, "CMD_MENU",
                 voteFooter );
     }
     else if( g_isToShowNoneOption )
@@ -6307,6 +6335,7 @@ stock processSubMenuKeyHit( player_id, key )
         {
             // Exit option
             g_isPlayerClosedTheVoteMenu[ player_id ] = true;
+            return;
         }
     }
 
@@ -6863,7 +6892,7 @@ public computeVotes()
     LOGGER( 0, "", showPlayersVoteResult() )
 
     // If some how the menu still alive, kill it.
-    // delete_users_menus();
+    set_task( 6.0, "delete_users_menus_care", TASKID_DELETE_USERS_MENUS_CARE );
 
     new numberOfVotesAtFirstPlace;
     new numberOfVotesAtSecondPlace;
@@ -10134,6 +10163,7 @@ stock cancelVoting( bool:isToDoubleReset = false )
     remove_task( TASKID_START_VOTING_BY_ROUNDS );
     remove_task( TASKID_START_VOTING_BY_TIMER );
     remove_task( TASKID_DELETE_USERS_MENUS );
+    remove_task( TASKID_DELETE_USERS_MENUS_CARE );
     remove_task( TASKID_VOTE_DISPLAY );
     remove_task( TASKID_PREVENT_INFITY_GAME );
     remove_task( TASKID_DBG_FAKEVOTES );
@@ -10206,6 +10236,11 @@ stock clearTheVotingMenu()
         g_votingMapNames [ currentIndex ][ 0 ] = '^0';
         g_arrayOfRunOffChoices[ currentIndex ] = 0;
     }
+}
+
+public delete_users_menus_care()
+{
+    delete_users_menus();
 }
 
 stock delete_users_menus( bool:isToDoubleReset=false )
