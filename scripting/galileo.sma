@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-346";
+new const PLUGIN_VERSION[] = "v3.2.6-347";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -86,7 +86,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-346";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 2+4+8
+#define DEBUG_LEVEL 0
 
 
 /**
@@ -5934,12 +5934,16 @@ stock calculate_menu_dirt( player_id, bool:isVoteOver, voteStatus[], menuDirty[]
             voteStatus, menuDirty, menuDirtySize, noneIsHidden )
 
     new bool:isToShowUndo;
-    static   voteFooter[ MAX_SHORT_STRING ];
-    static   menuHeader[ MAX_SHORT_STRING / 2 ];
-    static   noneOption[ MAX_SHORT_STRING / 2 ];
+    new bool:isToAddExtraLine;
+
+    static voteFooter[ MAX_SHORT_STRING ];
+    static menuHeader[ MAX_SHORT_STRING / 2 ];
+    static noneOption[ MAX_SHORT_STRING / 2 ];
 
     menuDirty  [ 0 ] = '^0';
     noneOption [ 0 ] = '^0';
+    isToAddExtraLine = ( g_voteStatus & IS_RUNOFF_VOTE
+                         || !g_isMapExtensionAllowed );
     isToShowUndo     = ( player_id > 0 \
                          && g_voteShowNoneOptionType == CONVERT_NONE_OPTION_TO_CANCEL_LAST_VOTE \
                          && g_isPlayerVoted[ player_id ] \
@@ -5956,36 +5960,34 @@ stock calculate_menu_dirt( player_id, bool:isVoteOver, voteStatus[], menuDirty[]
 
         if( g_isToShowSubMenu )
         {
-            if( g_voteStatus & IS_RUNOFF_VOTE
-                || !g_isMapExtensionAllowed )
-            {
-                copy( noneOption, charsmax( noneOption ), "^n" );
-            }
-            else
-            {
-                copy( noneOption, charsmax( noneOption ), "" );
-            }
-
             formatex( menuDirty, menuDirtySize,
                    "%s^n%s^n\
                     %s%s0.%s %L^n^n\
                     %s%L",
                     menuHeader, voteStatus,
-                    noneOption, COLOR_RED, COLOR_WHITE, player_id, "CMD_MENU",
+                    isToAddExtraLine ? "^n" : "", COLOR_RED, COLOR_WHITE, player_id, "CMD_MENU",
                     COLOR_YELLOW, player_id, "GAL_VOTE_ENDED" );
         }
         else if( g_isToShowNoneOption
-            && g_voteShowNoneOptionType )
+                 && g_voteShowNoneOptionType )
         {
             computeUndoButton( player_id, isToShowUndo, isVoteOver, noneOption, charsmax( noneOption ) );
 
-            formatex( menuDirty, menuDirtySize, "%s^n%s^n^n%s%s^n^n%L",
-                    menuHeader, voteStatus, noneOption, COLOR_YELLOW, player_id, "GAL_VOTE_ENDED" );
+            formatex( menuDirty, menuDirtySize,
+                   "%s^n%s^n\
+                    %s^n^n\
+                    %s%L",
+                    menuHeader, voteStatus,
+                    noneOption,
+                    COLOR_YELLOW, player_id, "GAL_VOTE_ENDED" );
         }
         else
         {
-            formatex( menuDirty, menuDirtySize, "%s^n%s^n^n%s%L",
-                    menuHeader, voteStatus, COLOR_YELLOW, player_id, "GAL_VOTE_ENDED" );
+            formatex( menuDirty, menuDirtySize,
+                   "%s^n%s^n^n\
+                    %s%L",
+                    menuHeader, voteStatus,
+                    COLOR_YELLOW, player_id, "GAL_VOTE_ENDED" );
         }
     }
     else
@@ -5996,22 +5998,12 @@ stock calculate_menu_dirt( player_id, bool:isVoteOver, voteStatus[], menuDirty[]
 
         if( g_isToShowSubMenu )
         {
-            if( g_voteStatus & IS_RUNOFF_VOTE
-                || !g_isMapExtensionAllowed )
-            {
-                copy( noneOption, charsmax( noneOption ), "^n" );
-            }
-            else
-            {
-                copy( noneOption, charsmax( noneOption ), "" );
-            }
-
             formatex( menuDirty, menuDirtySize,
                    "%s^n%s^n\
                     %s%s0.%s %L\
                     %s",
                     menuHeader, voteStatus,
-                    noneOption, COLOR_RED, COLOR_WHITE, player_id, "CMD_MENU",
+                    isToAddExtraLine ? "^n" : "", COLOR_RED, COLOR_WHITE, player_id, "CMD_MENU",
                     voteFooter );
         }
         else if( g_isToShowNoneOption )
@@ -6026,13 +6018,21 @@ stock calculate_menu_dirt( player_id, bool:isVoteOver, voteStatus[], menuDirty[]
                 voteFooter[ 1 ] = ' ';
             }
 
-            formatex( menuDirty, menuDirtySize, "%s^n%s^n^n%s%s",
-                    menuHeader, voteStatus, noneOption, voteFooter );
+            formatex( menuDirty, menuDirtySize,
+                   "%s^n%s^n^n\
+                    %s\
+                    %s",
+                    menuHeader, voteStatus,
+                    noneOption,
+                    voteFooter );
         }
         else
         {
-            formatex( menuDirty, menuDirtySize, "%s^n%s%s",
-                    menuHeader, voteStatus, voteFooter );
+            formatex( menuDirty, menuDirtySize,
+                   "%s^n%s\
+                    %s",
+                    menuHeader, voteStatus,
+                    voteFooter );
         }
     }
 }
@@ -6071,11 +6071,16 @@ stock computeUndoButton( player_id, bool:isToShowUndo, bool:isVoteOver, noneOpti
     LOGGER( 0, "I AM ENTERING ON computeUndoButton(5) | player_id: %d, isToShowUndo: %d, \
             noneOption: %s, noneOptionSize: %d", player_id, isToShowUndo, noneOption, noneOptionSize )
 
+    new bool:isToAddExtraLine = ( g_voteStatus & IS_RUNOFF_VOTE
+                                  || !g_isMapExtensionAllowed );
+
     if( isToShowUndo )
     {
-        formatex( noneOption, noneOptionSize, "%s0. %s%L",
-                COLOR_RED, ( isVoteOver ? COLOR_GREY : COLOR_WHITE ),
-                player_id, "GAL_OPTION_CANCEL_VOTE" );
+        formatex( noneOption, noneOptionSize,
+               "%s%s\
+                0. %s%L",
+                isToAddExtraLine ? "^n" : "", COLOR_RED,
+                ( isVoteOver ? COLOR_GREY : COLOR_WHITE ), player_id, "GAL_OPTION_CANCEL_VOTE" );
     }
     else
     {
@@ -6083,13 +6088,19 @@ stock computeUndoButton( player_id, bool:isToShowUndo, bool:isVoteOver, noneOpti
         {
             if( g_isPlayerVoted[ player_id ]  )
             {
-                formatex( noneOption, noneOptionSize, "%s0. %s%L",
-                        COLOR_RED, COLOR_GREY, player_id, "GAL_OPTION_CANCEL_VOTE" );
+                formatex( noneOption, noneOptionSize,
+                       "%s%s\
+                        0. %s%L",
+                        isToAddExtraLine ? "^n" : "", COLOR_RED,
+                        COLOR_GREY, player_id, "GAL_OPTION_CANCEL_VOTE" );
             }
             else
             {
-                formatex( noneOption, noneOptionSize, "%s0. %s%L",
-                        COLOR_RED, COLOR_WHITE, player_id, "GAL_OPTION_NONE" );
+                formatex( noneOption, noneOptionSize,
+                       "%s%s\
+                        0. %s%L",
+                        isToAddExtraLine ? "^n" : "", COLOR_RED,
+                        COLOR_WHITE, player_id, "GAL_OPTION_NONE" );
             }
         }
         else
@@ -6104,14 +6115,20 @@ stock computeUndoButton( player_id, bool:isToShowUndo, bool:isVoteOver, noneOpti
                     }
                     else
                     {
-                        formatex( noneOption, noneOptionSize, "%s0. %s%L",
-                                COLOR_RED, COLOR_WHITE, player_id, "GAL_OPTION_NONE" );
+                        formatex( noneOption, noneOptionSize,
+                               "%s%s\
+                                0. %s%L",
+                                isToAddExtraLine ? "^n" : "", COLOR_RED,
+                                COLOR_WHITE, player_id, "GAL_OPTION_NONE" );
                     }
                 }
                 case NONE_OPTION_ALWAYS_KEEP_SHOWING, CONVERT_NONE_OPTION_TO_CANCEL_LAST_VOTE:
                 {
-                    formatex( noneOption, noneOptionSize, "%s0. %s%L",
-                            COLOR_RED, COLOR_WHITE, player_id, "GAL_OPTION_NONE" );
+                    formatex( noneOption, noneOptionSize,
+                           "%s%s\
+                            0. %s%L",
+                            isToAddExtraLine ? "^n" : "", COLOR_RED,
+                            COLOR_WHITE, player_id, "GAL_OPTION_NONE" );
                 }
             }
         }
@@ -6124,12 +6141,16 @@ stock calculate_menu_clean( player_id, menuClean[], menuCleanSize )
             menuCleanSize: %d", player_id, menuClean, menuCleanSize )
 
     new bool:isToShowUndo;
-    static   voteFooter[ MAX_SHORT_STRING ];
-    static   menuHeader[ MAX_SHORT_STRING / 2 ];
-    static   noneOption[ MAX_SHORT_STRING / 2 ];
+    new bool:isToAddExtraLine;
+
+    static voteFooter[ MAX_SHORT_STRING ];
+    static menuHeader[ MAX_SHORT_STRING / 2 ];
+    static noneOption[ MAX_SHORT_STRING / 2 ];
 
     menuClean  [ 0 ] = '^0';
     noneOption [ 0 ] = '^0';
+    isToAddExtraLine = ( g_voteStatus & IS_RUNOFF_VOTE
+                         || !g_isMapExtensionAllowed );
     isToShowUndo     = ( player_id > 0
                          && g_voteShowNoneOptionType == CONVERT_NONE_OPTION_TO_CANCEL_LAST_VOTE
                          && g_isPlayerVoted[ player_id ]
@@ -6145,22 +6166,12 @@ stock calculate_menu_clean( player_id, menuClean[], menuCleanSize )
     // to append it here to always shows it WHILE voting.
     if( g_isToShowSubMenu )
     {
-        if( g_voteStatus & IS_RUNOFF_VOTE
-            || !g_isMapExtensionAllowed )
-        {
-            copy( noneOption, charsmax( noneOption ), "^n" );
-        }
-        else
-        {
-            copy( noneOption, charsmax( noneOption ), "" );
-        }
-
         formatex( menuClean, menuCleanSize,
                "%s^n%s^n\
                 %s%s0.%s %L^n\
                 %s",
                 menuHeader, g_voteStatusClean,
-                noneOption, COLOR_RED, COLOR_WHITE, player_id, "CMD_MENU",
+                isToAddExtraLine ? "^n" : "", COLOR_RED, COLOR_WHITE, player_id, "CMD_MENU",
                 voteFooter );
     }
     else if( g_isToShowNoneOption )
@@ -6175,17 +6186,20 @@ stock calculate_menu_clean( player_id, menuClean[], menuCleanSize )
         }
 
         formatex( menuClean, menuCleanSize,
-               "%s^n%s^n^n\
-                %s0. %s%L%s",
+               "%s^n%s^n\
+                %s%s0. %s%L\
+                %s",
                 menuHeader, g_voteStatusClean,
-                COLOR_RED, COLOR_WHITE,
-                player_id, noneOption,
+                isToAddExtraLine ? "^n" : "", COLOR_RED, COLOR_WHITE, player_id, noneOption,
                 voteFooter );
     }
     else
     {
-        formatex( menuClean, menuCleanSize, "%s^n%s%s",
-                menuHeader, g_voteStatusClean, voteFooter );
+        formatex( menuClean, menuCleanSize,
+               "%s^n%s\
+                %s",
+                menuHeader, g_voteStatusClean,
+                voteFooter );
     }
 }
 
