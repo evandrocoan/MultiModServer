@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-352";
+new const PLUGIN_VERSION[] = "v3.2.6-353";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -65,28 +65,30 @@ new const PLUGIN_VERSION[] = "v3.2.6-352";
  * because it creates also a fake players count. So, do not enable 'DEBUG_LEVEL_FAKE_VOTES'
  * if you do not want the map voting starting on an empty server.
  *
- * 0   - Disables this feature.
+ * 0    - Disables this feature.
  *
- * 1   - Normal/basic debugging/depuration.
+ * 1    - Normal/basic debugging/depuration.
  *
- * 2   - a) Run the NORMAL Unit Tests on the server start.
+ * 2    - a) Run the NORMAL Unit Tests on the server start.
  *       b) To skip the 'pendingVoteCountdown()'.
  *       c) Set the vote runoff time to 5 seconds.
  *
- * 4   - Run the DELAYED Unit Tests.
+ * 4    - Run the DELAYED Unit Tests.
  *
- * 8   - a) To create fake votes. See the function 'create_fakeVotes()'.
+ * 8    - a) To create fake votes. See the function 'create_fakeVotes()'.
  *       b) To create fake players count. See the function 'get_real_players_number()'.
  *
  * 16   - Enable DEBUG_LEVEL 1 and all its debugging/depuration available.
  *
- * 32  - Run the manual test on server start.
+ * 32   - Run the manual test on server start.
  *
- * 63  - Enable the levels 1, 2, 4, 8, 16 and 32.
+ * 64   - Disable the LOGGER() while running the Unit Tests.
+ *
+ * 127  - Enable the levels 1, 2, 4, 8, 16, 32 and 64.
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 2+4
+#define DEBUG_LEVEL 16+2+64
 
 
 /**
@@ -103,6 +105,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-352";
 #define DEBUG_LEVEL_FAKE_VOTES        8
 #define DEBUG_LEVEL_CRITICAL_MODE     16
 #define DEBUG_LEVEL_MANUAL_TEST_START 32
+#define DEBUG_LEVEL_DISABLE_TEST_LOGS 64
 
 /**
  * Common strings sizes used around the plugin.
@@ -137,6 +140,17 @@ new const PLUGIN_VERSION[] = "v3.2.6-352";
     new const DEBUGGER_OUTPUT_LOG_FILE_NAME[] = "_galileo.log";
 
     /**
+     * Used to know when the Unit Tests are running.
+     */
+    new bool:g_test_isTheUnitTestsRunning;
+
+    /**
+     * Allow the Manual Unit Tests to show LOGGER() debugging messages when the level
+     * DEBUG_LEVEL_DISABLE_TEST_LOGS is enabled.
+     */
+    new bool:g_test_isTheManualTestsRunning;
+
+    /**
      * Write messages to the debug log file on 'addons/amxmodx/logs'.
      *
      * @param log_file               the log file name.
@@ -144,13 +158,17 @@ new const PLUGIN_VERSION[] = "v3.2.6-352";
      */
     stock writeToTheDebugFile( const log_file[], const formated_message[] )
     {
+        new currentTime;
         static lastRun;
-        new    currentTime;
 
         currentTime = tickcount();
 
         log_to_file( log_file, "{%.3f %d %5d %4d} %s", get_gametime(), heapspace(), currentTime, currentTime - lastRun, formated_message );
         lastRun = currentTime;
+
+        // Removes the compiler warning `warning 203: symbol is never used` when only the debug
+        // level `DEBUG_LEVEL_NORMAL` is enabled.
+        if( g_test_isTheUnitTestsRunning && g_test_isTheManualTestsRunning ) { }
     }
 #endif
 
@@ -201,10 +219,21 @@ new const PLUGIN_VERSION[] = "v3.2.6-352";
     {
         if( mode & g_debug_level )
         {
+        #if DEBUG_LEVEL & DEBUG_LEVEL_DISABLE_TEST_LOGS
+            if( !g_test_isTheUnitTestsRunning
+                || g_test_isTheManualTestsRunning )
+            {
+                static formated_message[ MAX_BIG_BOSS_STRING ];
+                vformat( formated_message, charsmax( formated_message ), message, 3 );
+
+                writeToTheDebugFile( DEBUGGER_OUTPUT_LOG_FILE_NAME, formated_message );
+            }
+        #else
             static formated_message[ MAX_BIG_BOSS_STRING ];
             vformat( formated_message, charsmax( formated_message ), message, 3 );
 
             writeToTheDebugFile( DEBUGGER_OUTPUT_LOG_FILE_NAME, formated_message );
+        #endif
         }
     }
 #else
@@ -250,19 +279,17 @@ new const PLUGIN_VERSION[] = "v3.2.6-352";
     }
 
     /**
-     * Used to know when the Unit Tests are running.
-     */
-    new bool:g_test_isTheUnitTestsRunning;
-
-    /**
      * Run the manual call Unit Tests, by 'say run' and 'say_team run'.
      */
     public inGameTestsToExecute( player_id )
     {
         LOGGER( 128, "I AM ENTERING ON inGameTestsToExecute(1) player_id: %d", player_id )
 
+        // Allow to show the LOGGER() debugging when the level DEBUG_LEVEL_DISABLE_TEST_LOGS is enabled.
+        g_test_isTheManualTestsRunning = true;
+
         // Save the game cvars
-        g_test_isTheUnitTestsRunning ? player_id : saveServerCvarsForTesting();
+        g_test_isTheUnitTestsRunning ? 0 : saveServerCvarsForTesting();
 
         for( new i = 0; i < 1000; i++ )
         {
@@ -1243,6 +1270,7 @@ public plugin_init()
     register_clcmd( "votemap", "cmd_HL1_votemap" );
     register_clcmd( "listmaps", "cmd_HL1_listmaps" );
 
+    register_concmd( "gal_votemap", "cmd_voteMap", ADMIN_MAP );
     register_concmd( "gal_startvote", "cmd_startVote", ADMIN_MAP );
     register_concmd( "gal_cancelvote", "cmd_cancelVote", ADMIN_MAP );
     register_concmd( "gal_createmapfile", "cmd_createMapFile", ADMIN_RCON );
@@ -2787,13 +2815,12 @@ stock debugIsTimeToStartTheEndOfMap( secondsRemaining, debugLevel )
 {
     LOGGER( 128, "I AM ENTERING ON debugIsTimeToStartTheEndOfMap(2)" )
 
+    new taskExist       = task_exists( TASKID_START_VOTING_BY_TIMER );
+    new roundsRemaining = howManyRoundsAreRemaining( secondsRemaining - g_totalVoteTime, whatGameEndingTypeItIs() );
+
     LOGGER( debugLevel, "" )
-    LOGGER( debugLevel, "( debugIsTimeToStartTheEndOfMap ) roundsRemaining: %d", \
-            howManyRoundsAreRemaining( secondsRemaining - g_totalVoteTime, whatGameEndingTypeItIs() ) )
-
-    LOGGER( debugLevel, "( debugIsTimeToStartTheEndOfMap ) task_exists TASKID_START_VOTING_BY_TIMER: %d", \
-            task_exists( TASKID_START_VOTING_BY_TIMER ) )
-
+    LOGGER( debugLevel, "( debugIsTimeToStartTheEndOfMap ) roundsRemaining: %d", roundsRemaining )
+    LOGGER( debugLevel, "( debugIsTimeToStartTheEndOfMap ) task_exists TASKID_START_VOTING_BY_TIMER: %d", taskExist )
     LOGGER( debugLevel, "( debugIsTimeToStartTheEndOfMap ) g_isTheLastGameRound: %d", g_isTheLastGameRound )
     LOGGER( debugLevel, "( debugIsTimeToStartTheEndOfMap ) g_isThePenultGameRound: %d", g_isThePenultGameRound )
     LOGGER( debugLevel, "( debugIsTimeToStartTheEndOfMap ) debugLevel: %d", debugLevel )
@@ -2807,6 +2834,7 @@ stock debugIsTimeToStartTheEndOfMap( secondsRemaining, debugLevel )
     LOGGER( debugLevel, "( debugIsTimeToStartTheEndOfMap ) PERIODIC_CHECKING_INTERVAL: %d", PERIODIC_CHECKING_INTERVAL )
     LOGGER( debugLevel, "( debugIsTimeToStartTheEndOfMap ) MIN_VOTE_START_ROUNDS_DELAY: %d", MIN_VOTE_START_ROUNDS_DELAY )
     LOGGER( debugLevel, "( debugIsTimeToStartTheEndOfMap ) IS_END_OF_MAP_VOTING_GOING_ON(): %d", IS_END_OF_MAP_VOTING_GOING_ON() )
+    LOGGER( debugLevel, "" )
 
     return 0;
 }
@@ -8312,6 +8340,124 @@ public cmd_cancelVote( player_id, level, cid )
 }
 
 /**
+ * It will receive a list of maps and will to perform a map voting as if it was an automatic or
+ * forced one. The only difference would be the maps it will use. Instead of random, they will
+ * the the maps passed to the command `gal_votemap map1 map2 map3 ... map9`.
+ *
+ * Issue: Add the command `gal_votemap` https://github.com/addonszz/Galileo/issues/48
+ */
+public cmd_voteMap( player_id, level, cid )
+{
+    LOGGER( 128, "I AM ENTERING ON cmd_voteMap(3) | player_id: %d, level: %d, cid: %d", player_id, level, cid )
+
+    if( !cmd_access( player_id, level, cid, 1 ) )
+    {
+        LOGGER( 1, "    ( cmd_voteMap ) Returning PLUGIN_HANDLED" )
+        return PLUGIN_HANDLED;
+    }
+
+    if( g_voteStatus & IS_VOTE_IN_PROGRESS )
+    {
+        color_print( player_id, "%L", player_id, "GAL_VOTE_INPROGRESS" );
+    }
+    else
+    {
+        new argumentsCount = read_argc();
+
+        if( argumentsCount > 2 )
+        {
+            new argument[ MAX_MAPNAME_LENGHT  ];
+
+        #if defined DEBUG
+            new arguments[ MAX_BIG_BOSS_STRING ];
+
+            read_args( arguments, charsmax( arguments ) );
+            remove_quotes( arguments );
+        #endif
+
+            LOGGER( 8, "( cmd_voteMap ) arguments: %s", arguments )
+            LOGGER( 8, "( cmd_voteMap ) " )
+
+            // To start from 1 because the first argument 0, is the command line name `gal_startvote`.
+            for( new index = 1; index < argumentsCount; index++ )
+            {
+                read_argv( index, argument, charsmax( argument ) );
+                LOGGER( 8, "( cmd_voteMap ) argument[%d]: %s", index, argument )
+
+                if( IS_MAP_VALID( argument ) )
+                {
+                    LOGGER( 8, "    ( cmd_voteMap ) argument is a valid map." )
+
+                    copy( g_votingMapNames[ g_totalVoteOptions ], charsmax( g_votingMapNames[] ), argument );
+                    g_totalVoteOptions++;
+                }
+                else if( containi( argument, "nointro" ) > -1 )
+                {
+                    LOGGER( 8, "    ( cmd_voteMap ) Entering on argument `nointro`" )
+                }
+                else if( containi( argument, "norunoff" ) > -1 )
+                {
+                    LOGGER( 8, "    ( cmd_voteMap ) Entering on argument `norunoff`" )
+
+                }
+                else if( containi( argument, "noextension" ) > -1 )
+                {
+                    LOGGER( 8, "    ( cmd_voteMap ) Entering on argument `noextension`" )
+
+                }
+                else
+                {
+                    showGalVoteMapHelp( player_id, index, argument );
+
+                    // As should not be any invalid arguments, we do allow to keep going on, otherwise
+                    // we would have to use a buffers loader as on announceVoteBlockedMap(4) and
+                    // flushVoteBlockedMaps(3) to avoid the client overflow when too many how arguments
+                    // are passed by.
+                    LOGGER( 1, "    ( cmd_voteMap ) Returning PLUGIN_HANDLED" )
+                    return PLUGIN_HANDLED;
+                }
+            }
+
+
+        }
+        else
+        {
+            showGalVoteMapHelp( player_id );
+        }
+    }
+
+    LOGGER( 1, "    ( cmd_voteMap ) Returning PLUGIN_HANDLED" )
+    return PLUGIN_HANDLED;
+}
+
+stock showGalVoteMapHelp( player_id, index = 0, argument[] = {0} )
+{
+    LOGGER( 128, "I AM ENTERING ON showGalVoteMapHelp(1) | argument: %s", argument )
+    new outputMessage[ MAX_BIG_BOSS_STRING ];
+
+    if( argument[ 0 ] )
+    {
+        formatex( outputMessage, charsmax( outputMessage ),
+                "The argument `%d=%s` could not be recognized as a valid map or option.", index, argument );
+
+        if( player_id )
+        {
+            client_print( player_id, print_console, "" );
+            client_print( player_id, print_console, outputMessage );
+        }
+        else
+        {
+            server_print( "" );
+            server_print( outputMessage );
+        }
+    }
+    else
+    {
+
+    }
+}
+
+/**
  * Called when need to start a vote map, where the command line first argument could be:
  *    -nochange: extend the current map, aka, Keep Current Map, will to do the real extend.
  *    -restart: extend the current map, aka, Keep Current Map restart the server at the current map.
@@ -12485,7 +12631,8 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         if( g_test_isTheUnitTestsRunning )
         {
             map_restoreEndGameCvars();
-            g_test_isTheUnitTestsRunning = false;
+            g_test_isTheUnitTestsRunning   = false;
+            g_test_isTheManualTestsRunning = false;
 
             g_originalTimelimit = 0.0;
             g_originalMaxRounds = 0;
