@@ -97,13 +97,14 @@ at '[COLOR="Blue"]./data/lang/[/COLOR][B]galileo.txt[/B]' location.
 [LIST=1]
 [*]English [en]
 [*]Brazilian Portuguese [bp]
-[*]Spanish [es] reviewed by [URL="https://forums.alliedmods.net/member.php?u=246727"][B]ACM1PT[/B][/URL]
+[*]Spanish [es] reviewed by [URL="https://forums.alliedmods.net/member.php?u=246727"][B]ACM1PT[/B][/URL] and updated by [URL="https://forums.alliedmods.net/member.php?u=119830"][B]Shattered Heart Lynx[/B][/URL].
 [*]Polish [pl] reviewed by [URL="https://forums.alliedmods.net/member.php?u=49801"][B]BeNq![/B][/URL]
 [*]Romanian [ro] by [URL="https://forums.alliedmods.net/member.php?u=259683"][B]iNdio[/B][/URL]
 [*]Italian [it] by [URL="https://forums.alliedmods.net/member.php?u=259683"][B]iNdio[/B][/URL]
 [*]Dutch [nl] by [URL="https://forums.alliedmods.net/member.php?u=149700"][B]Napoleon_be[/B][/URL]
 [*]Serbian [sr] by [URL="https://forums.alliedmods.net/member.php?u=235274"][B]MihailoZ[/B][/URL]
 [*]Slovak [sk] by [URL="https://forums.alliedmods.net/member.php?u=184733"][B]Belo95135[/B][/URL]
+[*]Hungarian [hu] by [URL="https://github.com/regener"][B]regener[/B][/URL]
 
 [/LIST]
 See here the current and effectively integrated LANGs constants:
@@ -883,6 +884,42 @@ gal_colored_chat_enabled 1
             [/LIST]
 
 
+ [*] Command '[COLOR="Blue"][B]gal_votmemap[/B][/COLOR]', to receive a list of maps and will to perform a map voting
+     as if it was an automatic end of map voting. It has the following optional arguments:
+
+
+            [LIST]
+            [*]If the "[COLOR="blue"][B]-nointro[/B][/COLOR]" argument is supplied, the countdown "7", "6", "5", "4", "3", "2", "1"
+            will be skipped and the voting will start immediately as you send the command.
+
+
+            [*]If the "[COLOR="blue"][B]-norunoff[/B][/COLOR]" argument is supplied, the runoff vote will be disabled
+            for this voting, if it is not already disabled by the cvar `gal_runoff_enabled`.
+
+
+            [*]If the "[COLOR="blue"][B]-noextension[/B][/COLOR]" argument is supplied, the map extension will be disabled
+            for this voting, if it is not already disabled by the cvar `amx_extendmap_step`.
+
+
+            [*]If the "[COLOR="blue"][B]-loadnominations[/B][/COLOR]" argument is supplied, the map nominations will be loaded
+            for this voting, if they are enabled by the cvar `gal_nom_playerallowance`.
+            [/LIST]
+
+    [B]Usage examples:[/B]
+    [code]
+These are the `gal_votemap` command usage examples:
+
+gal_votemap map1 map2 map3 map4 ... map9
+gal_votemap map1 map2 map3 map4 ... map9 -nointro -noextension -norunoff
+gal_votemap map1 map2 map3 map4 ... map9 -nointro -noextension
+gal_votemap map1 map2 map3
+gal_votemap map1 map2 -nointro -noextension
+gal_votemap map1 map2 -nointro
+gal_votemap map1 map2 -loadnominations
+gal_votemap map1 map2
+    [/code]
+
+
  [*] Command '[COLOR="Blue"][B]gal_createmapfile filename[/B][/COLOR]', Creates a file that contains a list of every
      valid map in your maps folder. The [B]filename[/B] argument indicates specifies the name
      to be used for the new file.  It will be created in the [COLOR="Blue"][B]./configs/galileo/[/B][/COLOR] folder.
@@ -1156,6 +1193,7 @@ See the current issues/features request list on: [URL="https://github.com/addons
 [B]ConnorMcLeod[/B]: For the [Dyn Native] ColorChat v0.3.2 (04 jul 2013) register_dictionary_colored function.
 [B][URL="https://forums.alliedmods.net/member.php?u=263772"]Old.School[/URL][/B] ([B][NOPARSE][B][/NOPARSE]l@k ~ [R]Eed[/B]): For bug reports, testing and feature suggestions.
 [B][URL="https://forums.alliedmods.net/member.php?u=259683"]iNdio[/URL][/B]: For the Romanian [ro] and Italian [it] language translations.
+[B][URL="https://github.com/regener"]regener[/URL][/B]: For the Hungarian [hu] language translation.
 [B][URL="https://github.com/Ni3znajomy"]Ni3znajomy[/URL][/B]: For contributions/work over project on the GitHub.
 [B][URL="https://forums.alliedmods.net/member.php?u=119830"]Shattered Heart Lynx[/URL][/B]: For the custom 'amxx_datadir' directory, the cvar 'gal_banrecent_mapcycle' suggestion and RTV 'Sven Co-op' fix and bug report.
 [B][URL="https://forums.alliedmods.net/member.php?u=267675"]wombad321[/URL][/B]: For the 'map extend' not showing bug report and the new recent list feature suggestion.
@@ -1194,6 +1232,7 @@ Thank you!  It means a lot to me.
 [*]Added an optimum time for the vote starting at map end. [URL="https://github.com/addonszz/Galileo/issues/20"]Issue#20[/URL].
 [*]Added a new option to the cvar `gal_vote_show_none`, to created a new menu showing command the options. [URL="https://github.com/addonszz/Galileo/issues/40"]Issue#40[/URL].
 [*]Added new cvar `gal_nextmap_votemap` to not start another map voting when the server admin to starts one. [URL="https://github.com/addonszz/Galileo/issues/22"]Issue#22[/URL].
+[*]Added the the command `gal_votemap`, to receive a list of maps and will to perform a map voting as if it was an automatic end of map voting. [URL="https://github.com/addonszz/Galileo/issues/48"]Issue#48[/URL].
 [*]Added new cvar `gal_runoff_mapchoices` to let the voting take into account all the map options that had the maximum amount of votes. [URL="https://github.com/addonszz/Galileo/issues/33"]Issue#33[/URL].
 [*]Added new cvar `gal_runoff_ratio` to specifies the minimum amount of votes the most voted map should have to not start a run off voting. [URL="https://github.com/addonszz/Galileo/issues/33"]Issue#33[/URL].
 [*]Implemented the Allow Round Finish feature for the cvar `mp_fraglimit`.
