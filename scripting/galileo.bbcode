@@ -1038,6 +1038,11 @@ gal_votemap map1 map2
      to be used for the new file.  It will be created in the [COLOR="Blue"][B]./configs/galileo/[/B][/COLOR] folder.
 
 
+ [*] Command '[COLOR="Blue"][B]gal_changelevel[/B][/COLOR]', To immediately change level to the current map at
+     the [COLOR="Blue"][B]cvar nextmap[/B][/COLOR]. If the next map is set to `[not yet voted on]` the map will
+     be changed the next map on the map cycle.
+
+
  [*] [COLOR="Blue"][B]The Maintenance Mode[/B][/COLOR]:
      If the owner of the server is fixing something or updating the server and doesn't wanna the map
      to be changed, he will enable the maintenance command '[B]gal_command_maintenance[/B]', so the map
@@ -1346,6 +1351,7 @@ Thank you!  It means a lot to me.
 [*]Added a new option to the cvar `gal_vote_show_none`, to created a new menu showing command the options. [URL="https://github.com/addonszz/Galileo/issues/40"]Issue#40[/URL].
 [*]Added new cvar `gal_nextmap_votemap` to not start another map voting when the server admin to starts one. [URL="https://github.com/addonszz/Galileo/issues/22"]Issue#22[/URL].
 [*]Added the the command `gal_votemap`, to receive a list of maps and will to perform a map voting as if it was an automatic end of map voting. [URL="https://github.com/addonszz/Galileo/issues/48"]Issue#48[/URL].
+[*]Added the the command `gal_changelevel`, to immediately change level to the current map at the cvar nextmap. [URL="https://github.com/addonszz/Galileo/issues/48"]Issue#48[/URL].
 [*]Added new cvar `gal_runoff_mapchoices` to let the voting take into account all the map options that had the maximum amount of votes. [URL="https://github.com/addonszz/Galileo/issues/33"]Issue#33[/URL].
 [*]Added new cvar `gal_runoff_ratio` to specifies the minimum amount of votes the most voted map should have to not start a run off voting. [URL="https://github.com/addonszz/Galileo/issues/33"]Issue#33[/URL].
 [*]Implemented the Allow Round Finish feature for the cvar `mp_fraglimit`.
