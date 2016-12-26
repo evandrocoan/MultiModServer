@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-357";
+new const PLUGIN_VERSION[] = "v3.2.6-358";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -433,6 +433,11 @@ new const PLUGIN_VERSION[] = "v3.2.6-357";
 
 #define MAPFILETYPE_SINGLE 1
 #define MAPFILETYPE_GROUPS 2
+
+#define IS_DISABLED_VOTEMAP_EXIT        1
+#define IS_DISABLED_VOTEMAP_INTRO       2
+#define IS_DISABLED_VOTEMAP_RUNOFF      4
+#define IS_DISABLED_VOTEMAP_EXTENSION   8
 
 #define IS_VOTE_IN_PROGRESS 1
 #define IS_FORCED_VOTE      2
@@ -868,6 +873,7 @@ new const LAST_CHANGE_MAP_FILE_NAME[]       = "lastChangedMapName.dat";
 new const RECENT_BAN_MAPS_FILE_NAME[]       = "recentMaps.dat";
 new const CHOOSE_MAP_MENU_NAME[]            = "gal_menuChooseMap";
 new const CHOOSE_MAP_MENU_QUESTION[]        = "chooseMapQuestion";
+new const CHOOSE_VOTEMAP_MENU_QUESTION[]    = "chooseVoteMapQuestion";
 new const GAME_CRASH_RECREATION_FLAG_FILE[] = "gameCrashRecreationAction.txt";
 
 new bool:g_theRoundEndWhileVoting;
@@ -1060,6 +1066,7 @@ new g_extendmapAllowStayType;
 new g_showVoteStatus;
 new g_voteShowNoneOptionType;
 new g_pendingVoteCountdown;
+new g_pendingMapVoteCountdown;
 new g_lastRroundCountdown;
 new g_rtvWaitAdminNumber;
 new g_emptyCycleMapsNumber;
@@ -1082,6 +1089,8 @@ new g_totalVoteOptions;
 
 new g_maxVotingChoices;
 new g_voteStatus;
+new g_voteMapStatus;
+new g_voteMapInvokerPlayerId;
 new g_votingSecondsRemaining;
 new g_totalVotesCounted;
 
@@ -1109,6 +1118,7 @@ new cvar_mapcyclefile;
 new g_nextMapCyclePosition;
 
 
+new g_invokerVoteMapNameToDecide[ MAX_MAPNAME_LENGHT  ];
 new g_nextMapName               [ MAX_MAPNAME_LENGHT  ];
 new g_currentMapName            [ MAX_MAPNAME_LENGHT  ];
 new g_playerVotedOption         [ MAX_PLAYERS_COUNT   ];
@@ -1134,6 +1144,7 @@ new g_menuMapIndexForPlayerArrays[ MAX_PLAYERS_COUNT   ][ MAX_NOM_MENU_ITEMS_PER
 
 new g_chooseMapMenuId;
 new g_chooseMapQuestionMenuId;
+new g_chooseVoteMapQuestionMenuId;
 
 
 /**
@@ -1255,8 +1266,10 @@ public plugin_init()
     configureTheVotingMenus();
     configureSpecificGameModFeature();
 
-    register_dictionary( "cmdmenu.txt" );
     register_dictionary( "common.txt" );
+    register_dictionary( "cmdmenu.txt" );
+    register_dictionary( "mapsmenu.txt" );
+    register_dictionary( "adminvote.txt" );
     register_dictionary_colored( "galileo.txt" );
 
     register_logevent( "game_commencing_event", 2, "0=World triggered", "1=Game_Commencing" );
@@ -1269,8 +1282,8 @@ public plugin_init()
     register_clcmd( "say_team", "cmd_say", -1 );
     register_clcmd( "votemap", "cmd_HL1_votemap" );
     register_clcmd( "listmaps", "cmd_HL1_listmaps" );
+    register_clcmd( "gal_votemap", "cmd_voteMap", ADMIN_MAP );
 
-    register_concmd( "gal_votemap", "cmd_voteMap", ADMIN_MAP );
     register_concmd( "gal_startvote", "cmd_startVote", ADMIN_MAP );
     register_concmd( "gal_cancelvote", "cmd_cancelVote", ADMIN_MAP );
     register_concmd( "gal_createmapfile", "cmd_createMapFile", ADMIN_RCON );
@@ -1391,8 +1404,9 @@ stock configureTheVotingMenus()
 {
     LOGGER( 128, "I AM ENTERING ON configureTheVotingMenus(0)" )
 
-    g_chooseMapMenuId         = register_menuid( CHOOSE_MAP_MENU_NAME );
-    g_chooseMapQuestionMenuId = register_menuid( CHOOSE_MAP_MENU_QUESTION );
+    g_chooseMapMenuId             = register_menuid( CHOOSE_MAP_MENU_NAME );
+    g_chooseMapQuestionMenuId     = register_menuid( CHOOSE_MAP_MENU_QUESTION );
+    g_chooseVoteMapQuestionMenuId = register_menuid( CHOOSE_VOTEMAP_MENU_QUESTION );
 
     register_menucmd( g_chooseMapMenuId, MENU_KEY_0 | MENU_KEY_1 |
                MENU_KEY_2 | MENU_KEY_3 | MENU_KEY_4 | MENU_KEY_5 |
@@ -1400,6 +1414,7 @@ stock configureTheVotingMenus()
                "vote_handleChoice" );
 
     register_menucmd( g_chooseMapQuestionMenuId, MENU_KEY_6 | MENU_KEY_0, "handleEndOfTheMapVoteChoice" );
+    register_menucmd( g_chooseVoteMapQuestionMenuId, MENU_KEY_1 | MENU_KEY_3 | MENU_KEY_5, "handleVoteMapActionMenu" );
 }
 
 stock loadPluginSetttings()
@@ -1940,6 +1955,15 @@ public startNonForcedVoting()
 stock setNextMap( nextMapName[], bool:isToUpdateTheCvar = true )
 {
     LOGGER( 128, "I AM ENTERING ON setNextMap(1) | nextMapName: %s", nextMapName )
+
+    // While the `IS_DISABLED_VOTEMAP_EXIT` bit flag is set, we cannot allow any decisions.
+    if( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXIT )
+    {
+        copy( g_invokerVoteMapNameToDecide, charsmax( g_invokerVoteMapNameToDecide ), nextMapName );
+
+        LOGGER( 1, "    ( setNextMap ) Just returning/blocking, g_voteMapStatus: %d", g_voteMapStatus )
+        return;
+    }
 
     if( IS_MAP_VALID( nextMapName ) )
     {
@@ -3287,6 +3311,20 @@ stock try_to_process_last_round( bool:isToImmediatelyChangeLevel = false )
 stock process_last_round( bool:isToImmediatelyChangeLevel = false )
 {
     LOGGER( 128, "I AM ENTERING ON process_last_round(1)" )
+
+    // While the `IS_DISABLED_VOTEMAP_EXIT` bit flag is set, we cannot allow any decisions, however
+    // if something is trying to change the map using the `isToImmediatelyChangeLevel` flag, we should
+    // allow, it as it seems serious stuff.
+    if( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXIT
+        && !isToImmediatelyChangeLevel )
+    {
+        // When the map extension is called, there is anyone else trying to show action menu,
+        // therefore invoke it before returning.
+        openTheVoteMapActionMenu();
+
+        LOGGER( 1, "    ( process_last_round ) Just returning/blocking, g_voteMapStatus: %d", g_voteMapStatus )
+        return;
+    }
 
     if( g_isTheLastGameRound
         || isToImmediatelyChangeLevel )
@@ -4903,9 +4941,27 @@ stock show_all_players_nominations()
     return 0;
 }
 
-stock loadNormalVoteChoices()
+stock loadOnlyNominationVoteChoices()
 {
-    LOGGER( 128, "I AM ENTERING ON loadNormalVoteChoices(0)" )
+    if( IS_NOMINATION_MININUM_PLAYERS_CONTROL_ENABLED()
+        || IS_WHITELIST_ENABLED() )
+    {
+        new announcementShowedTimes = 1;
+        new blockedMapsBuffer[ MAX_COLOR_MESSAGE ];
+
+        vote_addNominations( blockedMapsBuffer, announcementShowedTimes );
+        flushVoteBlockedMaps( blockedMapsBuffer, "GAL_FILLER_BLOCKED", announcementShowedTimes );
+    }
+    else
+    {
+        new dummyArray[] = 0;
+        vote_addNominations( dummyArray );
+    }
+}
+
+stock loadTheDefaultVotingChoices()
+{
+    LOGGER( 128, "I AM ENTERING ON loadTheDefaultVotingChoices(0)" )
 
     if( IS_NOMINATION_MININUM_PLAYERS_CONTROL_ENABLED()
         || IS_WHITELIST_ENABLED() )
@@ -4929,7 +4985,7 @@ stock loadNormalVoteChoices()
     g_votingSecondsRemaining = get_pcvar_num( cvar_voteDuration );
 
     LOGGER( 4, "" )
-    LOGGER( 4, "I AM EXITING ON loadNormalVoteChoices(0) | g_totalVoteOptions: %d", g_totalVoteOptions )
+    LOGGER( 4, "I AM EXITING ON loadTheDefaultVotingChoices(0) | g_totalVoteOptions: %d", g_totalVoteOptions )
 }
 
 /**
@@ -5156,7 +5212,7 @@ stock handle_game_crash_recreation( secondsLeft )
     }
 }
 
-stock approvedTheVotingStart( bool:is_forced_voting )
+stock bool:approvedTheVotingStart( bool:is_forced_voting )
 {
     LOGGER( 128, "I AM ENTERING ON approvedTheVotingStart(1) | is_forced_voting: %d, get_real_players_number: %d", \
             is_forced_voting, get_real_players_number() )
@@ -5291,16 +5347,23 @@ stock configureVotingStart( bool:is_forced_voting )
         g_voteStatus |= IS_FORCED_VOTE;
     }
 
-    // Max rounds/frags vote map does not have a max rounds extension limit as mp_timelimit
-    if( g_isVotingByRounds
-        || g_isVotingByFrags )
+    if( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXTENSION )
     {
-        g_isMapExtensionAllowed = true;
+        g_isMapExtensionAllowed = false;
     }
     else
     {
-        g_isMapExtensionAllowed =
-            get_pcvar_float( cvar_mp_timelimit ) < get_pcvar_float( cvar_maxMapExtendTime );
+        // Max rounds/frags vote map does not have a max rounds extension limit as mp_timelimit
+        if( g_isVotingByRounds
+            || g_isVotingByFrags )
+        {
+            g_isMapExtensionAllowed = true;
+        }
+        else
+        {
+            g_isMapExtensionAllowed =
+                get_pcvar_float( cvar_mp_timelimit ) < get_pcvar_float( cvar_maxMapExtendTime );
+        }
     }
 
     // configure the end voting type
@@ -5330,13 +5393,17 @@ stock vote_startDirector( bool:is_forced_voting )
     }
     else
     {
+        // Clear the cmd_startVote(3) map settings just in case they where loaded.
+        g_voteMapStatus = 0;
+
         // to prepare the initial voting state
         configureVotingStart( is_forced_voting );
 
         // to load vote choices
-        loadNormalVoteChoices();
+        loadTheDefaultVotingChoices();
     }
 
+    // Show up the voting menu
     if( g_totalVoteOptions )
     {
         initializeTheVoteDisplay();
@@ -5389,19 +5456,26 @@ stock initializeTheVoteDisplay()
     handleChoicesDelay = 0.1;
 #else
 
-    // Set_task 1.0 + pendingVoteCountdown 1.0
-    handleChoicesDelay = 7.0 + 1.0 + 1.0;
-
-    // Make perfunctory announcement: "get ready to choose a map"
-    if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_GETREADYTOCHOOSE ) )
+    if( g_voteMapStatus & IS_DISABLED_VOTEMAP_INTRO )
     {
-        client_cmd( 0, "spk ^"get red( e80 ) ninety( s45 ) to check( e20 ) \
-                use bay( s18 ) mass( e42 ) cap( s50 )^"" );
+        handleChoicesDelay = 0.1;
     }
+    else
+    {
+        // Set_task 1.0 + pendingVoteCountdown 1.0
+        handleChoicesDelay = 7.0 + 1.0 + 1.0;
 
-    // Announce the pending vote countdown from 7 to 1
-    g_pendingVoteCountdown = 7;
-    set_task( 1.0, "pendingVoteCountdown", TASKID_PENDING_VOTE_COUNTDOWN, _, _, "a", 7 );
+        // Make perfunctory announcement: "get ready to choose a map"
+        if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_GETREADYTOCHOOSE ) )
+        {
+            client_cmd( 0, "spk ^"get red( e80 ) ninety( s45 ) to check( e20 ) \
+                    use bay( s18 ) mass( e42 ) cap( s50 )^"" );
+        }
+
+        // Announce the pending vote countdown from 7 to 1
+        g_pendingVoteCountdown = 7;
+        set_task( 1.0, "pendingVoteCountdown", TASKID_PENDING_VOTE_COUNTDOWN, _, _, "a", 7 );
+    }
 #endif
 
     // Force a right vote duration for the Unit Tests run
@@ -6959,6 +7033,7 @@ public computeVotes()
         // if the top vote getting map didn't receive over 50% of the votes cast, to start a runoff vote
         if( get_pcvar_num( cvar_runoffEnabled )
             && !( g_voteStatus & IS_RUNOFF_VOTE )
+            && !( g_voteMapStatus & IS_DISABLED_VOTEMAP_RUNOFF )
             && numberOfVotesAtFirstPlace <= g_totalVotesCounted * get_pcvar_float( cvar_runoffRatio ) )
         {
             startRunoffVoting( firstPlaceChoices, secondPlaceChoices, numberOfMapsAtFirstPosition,
@@ -6987,7 +7062,7 @@ stock chooseTheVotingMapWinner( firstPlaceChoices[], numberOfMapsAtFirstPosition
     LOGGER( 128, "I AM ENTERING ON chooseTheVotingMapWinner(2)" )
     new winnerVoteMapIndex;
 
-    // if there is a tie for 1st, randomly select one as the winner
+    // If there is a tie for 1st, randomly select one as the winner
     if( numberOfMapsAtFirstPosition > 1 )
     {
         winnerVoteMapIndex = firstPlaceChoices[ random_num( 0, numberOfMapsAtFirstPosition - 1 ) ];
@@ -7010,6 +7085,17 @@ stock chooseTheVotingMapWinner( firstPlaceChoices[], numberOfMapsAtFirstPosition
             && !g_isTimeToRestart )
         {
             color_print( 0, "%L", LANG_PLAYER, "GAL_WINNER_STAY" );
+
+            // While the `IS_DISABLED_VOTEMAP_EXIT` bit flag is set, we cannot allow any decisions,
+            // however here, none decisions are being made. Anyways, we cannot block the execution
+            // right here without executing the remaining code.
+            if( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXIT )
+            {
+                // When the map extension is called, there is anyone else trying to show action menu,
+                // therefore invoke it before returning.
+                openTheVoteMapActionMenu();
+                LOGGER( 1, "    ( chooseTheVotingMapWinner ) Just opened the menu due g_voteMapStatus: %d", g_voteMapStatus )
+            }
         }
         else if( !g_isGameFinalVoting // "stay here" won and the map must be restarted.
                  && g_isTimeToRestart )
@@ -7038,11 +7124,11 @@ stock chooseTheVotingMapWinner( firstPlaceChoices[], numberOfMapsAtFirstPosition
         // We are extending the map as result of the voting outcome, so reset the ending round variables.
         resetRoundEnding();
 
-        // no longer is an early vote
+        // no longer is an early or forced voting
         g_voteStatus &= ~IS_VOTE_EARLY;
         g_voteStatus &= ~IS_FORCED_VOTE;
     }
-    else // the execution flow gets here when the winner option is not keep/extend map
+    else // The execution flow gets here when the winner option is not keep/extend map
     {
         setNextMap( g_votingMapNames[ winnerVoteMapIndex ] );
         server_exec();
@@ -7066,6 +7152,7 @@ stock chooseRandomVotingWinner()
     }
     else
     {
+        setNextMap( g_nextMapName );
         color_print( 0, "%L", LANG_PLAYER, "GAL_WINNER_ORDERED", g_nextMapName );
     }
 
@@ -7119,6 +7206,18 @@ stock map_extend()
 {
     LOGGER( 128, "I AM ENTERING ON map_extend(0)" )
     LOGGER( 2, "%32s g_rtvWaitMinutes: %f, g_extendmapStepMinutes: %d", "map_extend( in )", g_rtvWaitMinutes, g_extendmapStepMinutes )
+
+    // While the `IS_DISABLED_VOTEMAP_EXIT` bit flag is set, we cannot allow any decisions.
+    if( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXIT )
+    {
+        // When the map extension is called, there is anyone else trying to show action menu,
+        // therefore invoke it before returning.
+        openTheVoteMapActionMenu();
+
+        LOGGER( 1, "    ( map_extend ) Just returning/blocking, g_voteMapStatus: %d", g_voteMapStatus )
+        return;
+    }
+
     LOGGER( 2, "( map_extend ) TRYING to change the cvar %15s to '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
     LOGGER( 2, "( map_extend ) TRYING to change the cvar %15s to '%d'.", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) )
     LOGGER( 2, "( map_extend ) TRYING to change the cvar %15s to '%d'.", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) )
@@ -8334,10 +8433,55 @@ public cmd_cancelVote( player_id, level, cid )
         return PLUGIN_HANDLED;
     }
 
+    // If the are on debug mode, just to erase everything, as may be there something overlapping.
+#if defined DEBUG
     cancelVoting( true );
+
+    // To avoid the warning unreachable code.
+    if( !g_dummy_value )
+    {
+        LOGGER( 1, "    ( cmd_cancelVote ) Returning PLUGIN_HANDLED" )
+        return PLUGIN_HANDLED;
+    }
+#endif
+
+    if( g_voteStatus & IS_VOTE_IN_PROGRESS )
+    {
+        color_print( 0, "%L", LANG_SERVER, "VOT_CANC" );
+        cancelVoting( true );
+    }
+    else
+    {
+        color_print( 0, "%L", LANG_SERVER, "NO_VOTE_CANC" );
+    }
 
     LOGGER( 1, "    ( cmd_cancelVote ) Returning PLUGIN_HANDLED" )
     return PLUGIN_HANDLED;
+}
+
+stock bool:approvedTheVotingStartLight( bool:is_forced_voting )
+{
+    LOGGER( 128, "I AM ENTERING ON approvedTheVotingStartLight(1) | is_forced_voting: %d, get_real_players_number: %d", \
+            is_forced_voting, get_real_players_number() )
+
+    // block the voting on some not allowed situations/cases
+    if( get_real_players_number() == 0)
+    {
+        LOGGER( 1, "    ( approvedTheVotingStartLight ) Returning false 0 players on the server." )
+        return false;
+    }
+
+    // the rounds start delay task could be running
+    remove_task( TASKID_START_VOTING_BY_TIMER );
+
+    // If the voting menu deletion task is running, remove it then delete the menus right now.
+    if( remove_task( TASKID_DELETE_USERS_MENUS ) )
+    {
+        vote_resetStats();
+    }
+
+    LOGGER( 1, "    ( approvedTheVotingStart ) Returning true, due passed by all requirements." )
+    return true;
 }
 
 /**
@@ -8357,27 +8501,37 @@ public cmd_voteMap( player_id, level, cid )
         return PLUGIN_HANDLED;
     }
 
+    // There is a real strange `Run time error 5: memory access` bug around these declarations,
+    // if you use the approvedTheVotingStart(1) instead of the approvedTheVotingStartLight(1)!
     if( g_voteStatus & IS_VOTE_IN_PROGRESS )
     {
         color_print( player_id, "%L", player_id, "GAL_VOTE_INPROGRESS" );
     }
-    else
+    else if( approvedTheVotingStartLight( true ) )
     {
-        new argumentsCount = read_argc();
+        new argumentsCount;
+        new arguments[ MAX_BIG_BOSS_STRING ];
+
+        read_args( arguments, charsmax( arguments ) );
+        remove_quotes( arguments );
+
+        argumentsCount = read_argc();
+        log_amx( "%L: %s", LANG_SERVER, "START_VOT", arguments );
+
+        LOGGER( 8, "( cmd_voteMap ) " )
+        LOGGER( 8, "( cmd_voteMap ) arguments: %s", arguments )
 
         if( argumentsCount > 2 )
         {
             new argument[ MAX_MAPNAME_LENGHT  ];
 
-        #if defined DEBUG
-            new arguments[ MAX_BIG_BOSS_STRING ];
+            // If this was just called but not within the sufficient maps, the menu will contain
+            // invalid maps, therefore clean it just to be sure.
+            clearTheVotingMenu();
 
-            read_args( arguments, charsmax( arguments ) );
-            remove_quotes( arguments );
-
-            LOGGER( 8, "( cmd_voteMap ) " )
-            LOGGER( 8, "( cmd_voteMap ) arguments: %s", arguments )
-        #endif
+            // To set the initial settings setup
+            g_voteMapStatus                   = IS_DISABLED_VOTEMAP_EXIT;
+            g_invokerVoteMapNameToDecide[ 0 ] = '^0';
 
             // To start from 1 because the first argument 0, is the command line name `gal_startvote`.
             for( new index = 1; index < argumentsCount; index++ )
@@ -8395,16 +8549,24 @@ public cmd_voteMap( player_id, level, cid )
                 else if( -1 < containi( argument, "nointro" ) < 2 )
                 {
                     LOGGER( 8, "    ( cmd_voteMap ) Entering on argument `nointro`" )
+                    g_voteMapStatus |= IS_DISABLED_VOTEMAP_INTRO;
                 }
                 else if( -1 < containi( argument, "norunoff" ) < 2  )
                 {
                     LOGGER( 8, "    ( cmd_voteMap ) Entering on argument `norunoff`" )
-
+                    g_voteMapStatus |= IS_DISABLED_VOTEMAP_RUNOFF;
                 }
                 else if( -1 < containi( argument, "noextension" ) < 2 )
                 {
                     LOGGER( 8, "    ( cmd_voteMap ) Entering on argument `noextension`" )
+                    g_voteMapStatus |= IS_DISABLED_VOTEMAP_EXTENSION;
+                }
+                else if( -1 < containi( argument, "loadnominations" ) < 2 )
+                {
+                    LOGGER( 8, "    ( cmd_voteMap ) Entering on argument `loadnominations`" )
 
+                    // Load on the nominations maps.
+                    loadOnlyNominationVoteChoices();
                 }
                 else
                 {
@@ -8419,7 +8581,30 @@ public cmd_voteMap( player_id, level, cid )
                 }
             }
 
+            LOGGER( 8, "    ( cmd_voteMap ) g_voteMapStatus: %d", g_voteMapStatus )
 
+            if( g_totalVoteOptions > 1 )
+            {
+                // Load the voting time
+                g_votingSecondsRemaining = get_pcvar_num( cvar_voteDuration );
+
+                // Save the invoker id to use it later when we get the outcome result
+                g_voteMapInvokerPlayerId = player_id;
+
+                // to prepare the initial voting state, forcing the start up.
+                configureVotingStart( true );
+
+                // Show up the voting menu
+                initializeTheVoteDisplay();
+            }
+            else
+            {
+                // Vote creation failed; no maps found.
+                color_print( 0, "%L", LANG_PLAYER, "GAL_VOTE_NOMAPS" );
+
+                finalizeVoting();
+                showGalVoteMapHelp( player_id );
+            }
         }
         else
         {
@@ -8434,34 +8619,145 @@ public cmd_voteMap( player_id, level, cid )
 stock showGalVoteMapHelp( player_id, index = 0, argument[] = {0} )
 {
     LOGGER( 128, "I AM ENTERING ON showGalVoteMapHelp(1) | argument: %s", argument )
-    new outputMessage[ MAX_LONG_STRING ];
 
     if( argument[ 0 ] )
     {
-        formatex( outputMessage, charsmax( outputMessage ),
+        client_print( player_id, print_console,
                 "^nThe argument `%d=%s` could not be recognized as a valid map or option.", index, argument );
-
-        player_id ? client_print( player_id, print_console, outputMessage ) : server_print( outputMessage );
     }
 
-    // It was necessary to split the message up to 256 characters due the output print being cut.
-    formatex( outputMessage, charsmax( outputMessage ),
-           "%sThese are the `gal_startvote` command usage examples:^n\
-            ^ngal_startvote map1 map2 map3 map4 ... map9\
-            ^ngal_startvote map1 map2 map3 map4 ... map9 -nointro -noextension -norunoff\
-            ^ngal_startvote map1 map2 map3 map4 ... map9 -nointro -noextension\
-            ", argument[ 0 ] ? "" : "^n"
-            );
-    player_id ? client_print( player_id, print_console, outputMessage ) : server_print( outputMessage );
+    // It was necessary to split the message up to 190 characters due the output print being cut.
+    client_print( player_id, print_console,
+           "Examples:\
+            ^ngal_votemap map1 map2 map3 map4 ... map9 -nointro -noextension -norunoff" );
 
-    formatex( outputMessage, charsmax( outputMessage ),
-           "gal_startvote map1 map2 map3\
-            ^ngal_startvote map1 map2 -nointro -noextension\
-            ^ngal_startvote map1 map2 -nointro\
-            ^ngal_startvote map1 map2 -noextension\
-            ^ngal_startvote map1 map2^n\
-            " );
-    player_id ? client_print( player_id, print_console, outputMessage ) : server_print( outputMessage );
+    client_print( player_id, print_console,
+           "gal_votemap map1 map2 map3 map4 ... map9\
+            ^ngal_votemap map1 map2 map3 -nointro -noextension" );
+
+    client_print( player_id, print_console,
+           "gal_votemap map1 map2 -nointro\
+            ^ngal_votemap map1 map2 -loadnominations\
+            ^ngal_votemap map1 map2" );
+}
+
+stock openTheVoteMapActionMenu()
+{
+    LOGGER( 128, "I AM ENTERING ON openTheVoteMapActionMenu(0) | player_id: %d", g_voteMapInvokerPlayerId )
+
+    g_pendingMapVoteCountdown = get_pcvar_num( cvar_voteDuration );
+    set_task( 1.0, "displayTheVoteMapActionMenu", TASKID_PENDING_VOTE_COUNTDOWN, _, _, "a", g_pendingMapVoteCountdown );
+}
+
+public handleVoteMapActionMenu( player_id, pressedKeyCode )
+{
+    LOGGER( 128, "I AM ENTERING ON handleVoteMapActionMenu(2) | player_id: %d, pressedKeyCode: %d", \
+            player_id, pressedKeyCode )
+
+    // Allow the result outcome to be processed
+    g_voteMapStatus = 0;
+
+    // Stop the menu from showing up again
+    remove_task( TASKID_PENDING_VOTE_COUNTDOWN );
+
+    switch( pressedKeyCode )
+    {
+        // pressedKeyCode 0 means the keyboard key 1
+        case 0:
+        {
+            if( g_invokerVoteMapNameToDecide[ 0 ] )
+            {
+                setNextMap( g_invokerVoteMapNameToDecide );
+                process_last_round( true );
+            }
+        }
+        case 2:
+        {
+            // Only set the next map
+            if( g_invokerVoteMapNameToDecide[ 0 ] )
+            {
+                setNextMap( g_invokerVoteMapNameToDecide );
+            }
+        }
+        case 4:
+        {
+            // Do nothing by default, we are rejecting the results
+        }
+    }
+
+    LOGGER( 1, "    ( handleEndOfTheMapVoteChoice ) Returning PLUGIN_HANDLED" )
+    return PLUGIN_HANDLED;
+}
+
+public displayTheVoteMapActionMenu()
+{
+    LOGGER( 128, "I AM ENTERING ON displayTheVoteMapActionMenu(0) | player_id: %d", g_voteMapInvokerPlayerId )
+    new player_id = g_voteMapInvokerPlayerId;
+
+    if( is_user_connected( player_id )
+        && --g_pendingMapVoteCountdown > 0 )
+    {
+        new winnerMap   [ MAX_MAPNAME_LENGHT ];
+        new menu_body   [ MAX_LONG_STRING    ];
+        new menu_counter[ MAX_SHORT_STRING   ];
+
+        new menu_id;
+        new menuKeys;
+        new menuKeysUnused;
+        new bool:allowChange = g_invokerVoteMapNameToDecide[ 0 ] != 0;
+
+        // To change the keys, go also to configureTheVotingMenus(0)
+        menuKeys = MENU_KEY_3;
+
+        // If the g_invokerVoteMapNameToDecide is empty, then the winner map is the stay here option.
+        if( allowChange )
+        {
+            menuKeys |= MENU_KEY_1 | MENU_KEY_5;
+            formatex( winnerMap, charsmax( winnerMap ), "%s", g_invokerVoteMapNameToDecide );
+        }
+        else
+        {
+            formatex( winnerMap, charsmax( winnerMap ), "%L", player_id, "GAL_OPTION_STAY" );
+        }
+
+        formatex( menu_counter, charsmax( menu_counter ),
+                " %s(%s%d %L%s)",
+                COLOR_YELLOW, COLOR_GREY, g_pendingMapVoteCountdown, LANG_PLAYER, "GAL_TIMELEFT", COLOR_YELLOW );
+
+        formatex( menu_body, charsmax( menu_body ),
+               "%s%L^n^n\
+                %s1.%s %L %s^n\
+                %s3.%s %L^n^n\
+                %s%L^n^n\
+                %s5.%s %L %s\
+                ",
+                COLOR_YELLOW, player_id, "WHICH_MAP",
+                COLOR_RED, allowChange ? COLOR_WHITE : COLOR_GREY, player_id, "CHANGE_MAP_TO", winnerMap,
+                COLOR_RED, allowChange ? COLOR_WHITE : COLOR_GREY, player_id, "GAL_OPTION_CANCEL_PARTIALLY", winnerMap,
+                COLOR_YELLOW, player_id, "WANT_CONTINUE",
+                COLOR_RED, COLOR_WHITE, player_id, "CANC_VOTE", menu_counter,
+                0 );
+
+        get_user_menu( player_id, menu_id, menuKeysUnused );
+
+        if( menu_id == 0
+            || menu_id == g_chooseVoteMapQuestionMenuId )
+        {
+            show_menu( player_id, menuKeys, menu_body, ( g_pendingMapVoteCountdown == 1 ? 1 : 2 ),
+                    CHOOSE_VOTEMAP_MENU_QUESTION );
+        }
+
+        LOGGER( 4, "( displayTheVoteMapActionMenu ) menu_body: %s", menu_body )
+        LOGGER( 4, "    menu_id: %d, menuKeys: %d, ", menu_id, menuKeys )
+        LOGGER( 4, "    g_pendingMapVoteCountdown: %d", g_pendingMapVoteCountdown )
+    }
+    else
+    {
+        // To perform the default action automatically, nothing is answered.
+        handleVoteMapActionMenu( player_id, 2 );
+    }
+
+    LOGGER( 4, "%48s", " ( displayTheVoteMapActionMenu| out )" )
 }
 
 /**
@@ -11964,7 +12260,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
 
     /**
      * To call the general test handler 'test_loadVoteChoices_serie(1)' using test series, the
-     * `loadNormalVoteChoices(0)` function testing.
+     * `loadTheDefaultVotingChoices(0)` function testing.
      */
     stock test_loadVoteChoices_cases()
     {
@@ -12085,7 +12381,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         // To force the Whitelist to be reloaded.
         loadMapFiles();
         loadTheWhiteListFeature();
-        loadNormalVoteChoices();
+        loadTheDefaultVotingChoices();
 
         test_loadVoteChoices_case( "de_rain", "de_inferno", 'a' ); // case 1
         test_loadVoteChoices_case( "de_nuke", "as_trunda" );       // case 2
@@ -12108,7 +12404,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         // To force the Whitelist to be reloaded.
         loadMapFiles();
         loadTheWhiteListFeature();
-        loadNormalVoteChoices();
+        loadTheDefaultVotingChoices();
 
         test_loadVoteChoices_case( "de_rain"   , "de_nuke", 'b' ); // case 1
         test_loadVoteChoices_case( "de_inferno", "de_nuke" );      // case 2
@@ -12134,7 +12430,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         // To force the Whitelist to be reloaded.
         loadMapFiles();
         loadTheWhiteListFeature();
-        loadNormalVoteChoices();
+        loadTheDefaultVotingChoices();
 
         test_loadVoteChoices_case( "de_rats" , "de_dust2002v2005_forEver2009", 'c' ); // case 1
         test_loadVoteChoices_case( "de_train", "de_dust2002v2005_forEver2010" );      // case 2
@@ -12159,7 +12455,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         // To force the Whitelist to be reloaded.
         loadMapFiles();
         loadTheWhiteListFeature();
-        loadNormalVoteChoices();
+        loadTheDefaultVotingChoices();
 
         test_loadVoteChoices_case( "de_rain"   , "", 'd' );   // case 1
         test_loadVoteChoices_case( "de_inferno", "de_nuke" ); // case 2
