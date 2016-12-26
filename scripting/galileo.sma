@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-359";
+new const PLUGIN_VERSION[] = "v3.2.6-360";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -1286,6 +1286,7 @@ public plugin_init()
 
     register_concmd( "gal_startvote", "cmd_startVote", ADMIN_MAP );
     register_concmd( "gal_cancelvote", "cmd_cancelVote", ADMIN_MAP );
+    register_concmd( "gal_changelevel", "cmd_changeLevel", ADMIN_MAP );
     register_concmd( "gal_createmapfile", "cmd_createMapFile", ADMIN_RCON );
     register_concmd( "gal_command_maintenance", "cmd_maintenanceMode", ADMIN_RCON );
 
@@ -8420,6 +8421,22 @@ public cmd_listrecent_handler( player_id, menu, item )
     menu_display( player_id, g_generalUsePlayersMenuIds[ player_id ] );
 
     LOGGER( 1, "    ( cmd_listrecent_handler ) Just Returning PLUGIN_HANDLED." )
+    return PLUGIN_HANDLED;
+}
+
+public cmd_changeLevel( player_id, level, cid )
+{
+    LOGGER( 128, "I AM ENTERING ON cmd_changeLevel(3) | player_id: %d, level: %d, cid: %d", player_id, level, cid )
+
+    if( !cmd_access( player_id, level, cid, 1 ) )
+    {
+        LOGGER( 1, "    ( cmd_changeLevel ) Returning PLUGIN_HANDLED" )
+        return PLUGIN_HANDLED;
+    }
+
+    process_last_round( true );
+
+    LOGGER( 1, "    ( cmd_changeLevel ) Returning PLUGIN_HANDLED" )
     return PLUGIN_HANDLED;
 }
 
