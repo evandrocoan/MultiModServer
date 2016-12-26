@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-358";
+new const PLUGIN_VERSION[] = "v3.2.6-359";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -3314,7 +3314,7 @@ stock process_last_round( bool:isToImmediatelyChangeLevel = false )
 
     // While the `IS_DISABLED_VOTEMAP_EXIT` bit flag is set, we cannot allow any decisions, however
     // if something is trying to change the map using the `isToImmediatelyChangeLevel` flag, we should
-    // allow, it as it seems serious stuff.
+    // allow as it seems serious stuff.
     if( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXIT
         && !isToImmediatelyChangeLevel )
     {
