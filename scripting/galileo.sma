@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-365";
+new const PLUGIN_VERSION[] = "v3.2.6-366";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -7407,15 +7407,23 @@ stock map_isInMenu( map[] )
 stock removeMapFromTheVotingMenu( mapName[] )
 {
     LOGGER( 1, "I AM ENTERING ON removeMapFromTheVotingMenu(1) | map: %s", mapName )
+    new index;
 
-    for( new index = 0; index < g_totalVoteOptions; index++ )
+    for( ; index < g_totalVoteOptions; index++ )
     {
         if( equali( mapName, g_votingMapNames[ index ] ) )
         {
+            LOGGER( 4, "( removeMapFromTheVotingMenu ) Removing map: %s", mapName )
             g_votingMapNames[ index ][ 0 ] = '^0';
             g_totalVoteOptions--;
             break;
         }
+    }
+
+    // Switch the entries to not mess with everything depending on the `g_totalVoteOptions` size.
+    for( ; index < g_totalVoteOptions; index++ )
+    {
+        copy( g_votingMapNames[ index ], charsmax( g_votingMapNames[] ), g_votingMapNames[ index + 1 ] );
     }
 }
 
@@ -8456,10 +8464,11 @@ public cmd_listrecent_handler( player_id, menu, item )
         && g_recentMapsMenuPages[ player_id ] > 0 )
     {
         DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
-        g_recentMapsMenuPages[ player_id ] ? g_recentMapsMenuPages[ player_id ]-- : player_id;
+        g_recentMapsMenuPages[ player_id ] ? g_recentMapsMenuPages[ player_id ]-- : 0;
 
-        // We need to delay the menu show up on 0.2 seconds to avoid players lagging the server by DOS attack.
-        set_task( 0.2, "showRecentMapsListMenu", player_id );
+        // Before re-creating the menu within the updated data, we need to wait for it be destroyed.
+        // Also avoid players lagging the server by DOS attack.
+        set_task( 0.1, "showRecentMapsListMenu", player_id );
 
         LOGGER( 1, "    ( cmd_listrecent_handler ) Just Returning PLUGIN_HANDLED, doing the back button." )
         return PLUGIN_HANDLED;
@@ -8471,8 +8480,9 @@ public cmd_listrecent_handler( player_id, menu, item )
         DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
         g_recentMapsMenuPages[ player_id ]++;
 
-        // We need to delay the menu show up on 0.2 seconds to avoid players lagging the server by DOS attack.
-        set_task( 0.2, "showRecentMapsListMenu", player_id );
+        // Before re-creating the menu within the updated data, we need to wait for it be destroyed.
+        // Also avoid players lagging the server by DOS attack.
+        set_task( 0.1, "showRecentMapsListMenu", player_id );
 
         LOGGER( 1, "    ( cmd_listrecent_handler ) Just Returning PLUGIN_HANDLED, doing the more button." )
         return PLUGIN_HANDLED;
@@ -8731,7 +8741,7 @@ stock openTheVoteMapActionMenu()
 {
     LOGGER( 128, "I AM ENTERING ON openTheVoteMapActionMenu(0) | player_id: %d", g_voteMapInvokerPlayerId )
 
-    g_pendingMapVoteCountdown = get_pcvar_num( cvar_voteDuration ) + 45;
+    g_pendingMapVoteCountdown = get_pcvar_num( cvar_voteDuration ) + 120;
     set_task( 1.0, "displayTheVoteMapActionMenu", TASKID_PENDING_VOTE_COUNTDOWN, _, _, "a", g_pendingMapVoteCountdown );
 }
 
@@ -8858,6 +8868,181 @@ stock voteMapMenuBuilder( player_id )
     displayVoteMapMenuHook( player_id );
 }
 
+#define VOTEMAP_VOTING_MAP_NAMES_INDEX_FLAG -2
+
+public handleDisplayVoteMapCommands( player_id, menu, item )
+{
+    if( item == MENU_EXIT )
+    {
+        DESTROY_PLAYER_NEW_MENU_TYPE( menu )
+        displayVoteMapMenu( player_id );
+
+        LOGGER( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, returning to the main menu." )
+        return PLUGIN_HANDLED;
+    }
+
+    if( item < 0 )
+    {
+        DESTROY_PLAYER_NEW_MENU_TYPE( menu )
+
+        LOGGER( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, the menu is destroyed." )
+        return PLUGIN_HANDLED;
+    }
+
+    // To start the voting
+    if( item == 0 )
+    {
+        DESTROY_PLAYER_NEW_MENU_TYPE( menu )
+        DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
+
+        startVoteMapVoting( player_id );
+
+        LOGGER( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, starting the voting." )
+        return PLUGIN_HANDLED;
+    }
+
+    // To exit the menu
+    if( item == 1 )
+    {
+        DESTROY_PLAYER_NEW_MENU_TYPE( menu )
+        DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
+
+        LOGGER( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, starting the voting." )
+        return PLUGIN_HANDLED;
+    }
+
+    // To exit the menu
+    if( item == 2 )
+    {
+        clearTheVotingMenu();
+        g_voteMapMenuPages[ player_id ] = 0;
+
+        DESTROY_PLAYER_NEW_MENU_TYPE( menu )
+        DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
+
+        LOGGER( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, starting the voting." )
+        return PLUGIN_HANDLED;
+    }
+
+    // debugging menu info tracker
+    LOGGER( 4, "", debug_nomination_match_choice( player_id, menu, item ) )
+
+    new access;
+    new callback;
+
+    new info[ 1 ];
+    new mapName[ MAX_MAPNAME_LENGHT ];
+
+    menu_item_getinfo( menu, item, access, info, sizeof info, _, _, callback );
+
+    if( info[ 0 ] > -1 )
+    {
+        // Toggle it if enabled
+        ArrayGetString( g_nominationLoadedMapsArray, info[0], mapName, charsmax( mapName ) );
+        map_isInMenu( mapName ) ? removeMapFromTheVotingMenu( mapName ) : addMapToTheVotingMenu( mapName );
+    }
+    else
+    {
+        new mapIndex = abs( info[ 0 ] ) + VOTEMAP_VOTING_MAP_NAMES_INDEX_FLAG;
+
+        if( g_votingMapNames[ mapIndex ][ 0 ] )
+        {
+            removeMapFromTheVotingMenu( g_votingMapNames[ mapIndex ] );
+        }
+    }
+
+    // Before re-creating the menu within the updated data, we need to wait for it be destroyed.
+    // Also avoid players lagging the server by DOS attack.
+    DESTROY_PLAYER_NEW_MENU_TYPE( menu )
+    set_task( 0.1, "displayVoteMapMenuCommands", player_id );
+
+    LOGGER( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, the menu is showed again." )
+    return PLUGIN_HANDLED;
+}
+
+stock debug_nomination_match_choice( player_id, menu, item )
+{
+    new access;
+    new callback;
+
+    new info[ 1 ];
+    LOGGER( 4, "( debug_nomination_match_choice ) item: %d, player_id: %d, menu: %d, \
+            g_menuMapIndexForPlayerArrays[player_id]: %d", \
+            item, player_id, menu, g_menuMapIndexForPlayerArrays[ player_id ] )
+
+    // Get item info
+    menu_item_getinfo( g_generalUsePlayersMenuIds[ player_id ], item, access, info, sizeof info, _, _, callback );
+
+    LOGGER( 4, "( debug_nomination_match_choice ) info[0]: %d, access: %d, \
+            g_generalUsePlayersMenuIds[player_id]: %d", \
+            info[ 0 ], access, g_generalUsePlayersMenuIds[ player_id ] )
+
+    menu_item_getinfo( menu, item, access, info, sizeof info, _, _, callback );
+    LOGGER( 4, "( debug_nomination_match_choice ) info[0]: %d, access: %d, menu%d", info[ 0 ], access, menu )
+
+    return 0;
+}
+
+public displayVoteMapMenuCommands( player_id )
+{
+    LOGGER( 128, "I AM ENTERING ON displayVoteMapMenuCommands(1) | player_id: %d", player_id )
+
+    new menuId;
+    new mapIndex;
+    new info[ 1 ];
+
+    new choice          [ MAX_SHORT_STRING ];
+    new menuOptionString[ MAX_SHORT_STRING ];
+
+    // To create the menu
+    formatex( choice, charsmax( choice ), "%L", player_id, "CMD_MENU" );
+    menuId = menu_create( choice, "handleDisplayVoteMapCommands" );
+
+    // The first menus items
+    formatex( choice, charsmax( choice ), "%L%s (%d)", player_id, "START_VOT", COLOR_YELLOW, g_totalVoteOptions );
+    menu_additem( menuId, choice, { -1 }, g_totalVoteOptions > 1 ? 0 : ( 1 << 26 ) );
+
+    formatex( choice, charsmax( choice ), "%L", player_id, "EXIT" );
+    menu_additem( menuId, choice, { -1 }, 0 );
+
+    formatex( choice, charsmax( choice ), "%L", player_id, "CANC_VOTE" );
+    menu_additem( menuId, choice, { -1 }, g_totalVoteOptions > 0 ? 0 : ( 1 << 26 ) );
+
+    // Add some space from the first menu options.
+    menu_addblank( menuId, 0 );
+
+    // Configure the menu buttons.
+    SET_MENU_LANG_STRING_PROPERTY( MPROP_EXITNAME, menuId, "GAL_LISTMAPS_TITLE" )
+    SET_MENU_LANG_STRING_PROPERTY( MPROP_NEXTNAME, menuId, "MORE" )
+    SET_MENU_LANG_STRING_PROPERTY( MPROP_BACKNAME, menuId, "BACK" )
+
+    for( mapIndex = 0; mapIndex < g_totalVoteOptions; mapIndex++ )
+    {
+        if( g_votingMapNames[ mapIndex ][ 0 ] )
+        {
+            info[ 0 ] = VOTEMAP_VOTING_MAP_NAMES_INDEX_FLAG - mapIndex;
+            formatex( choice, charsmax( choice ), "%s%s %L", g_votingMapNames[ mapIndex ], COLOR_YELLOW, player_id, "GAL_MATCH_NOMINATED" );
+
+            LOGGER( 4, "( displayVoteMapMenuCommands ) choice: %s, info[0]: %d", choice, info[ 0 ] )
+            menu_additem( menuId, choice, info, 0 );
+        }
+    }
+
+    // The exit option is not showing up at the button 0, but on 9! This forces it to.
+    while( mapIndex + 3 < MAX_NOM_MENU_ITEMS_PER_PAGE )
+    {
+        mapIndex++;
+        formatex( menuOptionString, MAX_SHORT_STRING - 1, "%L", player_id, "OFF" );
+        menu_additem( menuId, menuOptionString, _, 1 << 26 );
+
+        // When using slot=1 this might break your menu. To achieve this functionality
+        // menu_addblank2() should be used (AMXX 183 only).
+        // menu_addblank( g_generalUsePlayersMenuIds[ player_id ], 1 );
+    }
+
+    menu_display( player_id, menuId );
+}
+
 /**
  * Due there are several first menu options, take `VOTEMAP_FIRST_PAGE_ITEMS_COUNTING` items less.
  */
@@ -8884,7 +9069,7 @@ public handleDisplayVoteMap( player_id, menu, item )
         && g_totalVoteOptions > 1 )
     {
         DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
-        startVoteMapVoting( player_id );
+        displayVoteMapMenuCommands( player_id );
 
         LOGGER( 1, "    ( handleDisplayVoteMap ) Just Returning PLUGIN_HANDLED, starting the voting." )
         return PLUGIN_HANDLED;
@@ -8896,8 +9081,9 @@ public handleDisplayVoteMap( player_id, menu, item )
         DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
         g_voteMapMenuPages[ player_id ] ? g_voteMapMenuPages[ player_id ]-- : 0;
 
-        // We need to delay the menu show up on 0.2 seconds to avoid players lagging the server by DOS attack.
-        set_task( 0.2, "displayVoteMapMenuHook", player_id );
+        // Before re-creating the menu within the updated data, we need to wait for it be destroyed.
+        // Also avoid players lagging the server by DOS attack.
+        set_task( 0.1, "displayVoteMapMenuHook", player_id );
 
         LOGGER( 1, "    ( handleDisplayVoteMap ) Just Returning PLUGIN_HANDLED, doing the back button." )
         return PLUGIN_HANDLED;
@@ -8909,8 +9095,9 @@ public handleDisplayVoteMap( player_id, menu, item )
         DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
         g_voteMapMenuPages[ player_id ]++;
 
-        // We need to delay the menu show up on 0.2 seconds to avoid players lagging the server by DOS attack.
-        set_task( 0.2, "displayVoteMapMenuHook", player_id );
+        // Before re-creating the menu within the updated data, we need to wait for it be destroyed.
+        // Also avoid players lagging the server by DOS attack.
+        set_task( 0.1, "displayVoteMapMenuHook", player_id );
 
         LOGGER( 1, "    ( handleDisplayVoteMap ) Just Returning PLUGIN_HANDLED, doing the more button." )
         return PLUGIN_HANDLED;
@@ -8963,7 +9150,7 @@ public handleDisplayVoteMap( player_id, menu, item )
     }
 
     DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
-    set_task( 0.2, "displayVoteMapMenuHook", player_id );
+    set_task( 0.1, "displayVoteMapMenuHook", player_id );
 
     LOGGER( 1, "    ( handleDisplayVoteMap ) Just Returning PLUGIN_HANDLED, successful nomination." )
     return PLUGIN_HANDLED;
@@ -9111,7 +9298,7 @@ stock addMenuMoreBackStartOptions( player_id, disabledReason[], bool:isToEnableM
     // To add the exit button
     if( g_totalVoteOptions > 1 )
     {
-        formatex( disabledReason, MAX_SHORT_STRING - 1, "%L%s (%d)", player_id, "START_VOT", COLOR_YELLOW, g_totalVoteOptions );
+        formatex( disabledReason, MAX_SHORT_STRING - 1, "%L%s (%d)", player_id, "CMD_MENU", COLOR_YELLOW, g_totalVoteOptions );
         menu_additem( g_generalUsePlayersMenuIds[ player_id ], disabledReason, _, 0 );
     }
     else
@@ -9970,10 +10157,11 @@ public nomination_handleMatchChoice( player_id, menu, item )
     if( item == 7 )
     {
         DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
-        g_nominationPlayersMenuPages[ player_id ] ? g_nominationPlayersMenuPages[ player_id ]-- : player_id;
+        g_nominationPlayersMenuPages[ player_id ] ? g_nominationPlayersMenuPages[ player_id ]-- : 0;
 
-        // We need to delay the menu show up on 0.2 seconds to avoid players lagging the server by DOS attack.
-        set_task( 0.2, "nomination_menuHook", player_id );
+        // Before re-creating the menu within the updated data, we need to wait for it be destroyed.
+        // Also avoid players lagging the server by DOS attack.
+        set_task( 0.1, "nomination_menuHook", player_id );
 
         LOGGER( 1, "    ( nomination_handleMatchChoice ) Just Returning PLUGIN_HANDLED, doing the back button." )
         return PLUGIN_HANDLED;
@@ -9985,8 +10173,9 @@ public nomination_handleMatchChoice( player_id, menu, item )
         DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
         g_nominationPlayersMenuPages[ player_id ]++;
 
-        // We need to delay the menu show up on 0.2 seconds to avoid players lagging the server by DOS attack.
-        set_task( 0.2, "nomination_menuHook", player_id );
+        // Before re-creating the menu within the updated data, we need to wait for it be destroyed.
+        // Also avoid players lagging the server by DOS attack.
+        set_task( 0.1, "nomination_menuHook", player_id );
 
         LOGGER( 1, "    ( nomination_handleMatchChoice ) Just Returning PLUGIN_HANDLED, doing the more button." )
         return PLUGIN_HANDLED;
@@ -10039,8 +10228,9 @@ public nomination_handlePartialMatch( player_id, menu, item )
         arguments[ 0 ] = player_id;
         DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
 
-        // We need to delay the menu show up on 0.2 seconds to avoid players lagging the server by DOS attack.
-        set_task( 0.2, "nominationAttemptWithNameHook", _, arguments, sizeof arguments );
+        // Before re-creating the menu within the updated data, we need to wait for it be destroyed.
+        // Also avoid players lagging the server by DOS attack.
+        set_task( 0.1, "nominationAttemptWithNameHook", _, arguments, sizeof arguments );
 
         LOGGER( 1, "    ( nomination_handlePartialMatch ) Just Returning PLUGIN_HANDLED, doing the back button." )
         return PLUGIN_HANDLED;
@@ -10057,8 +10247,9 @@ public nomination_handlePartialMatch( player_id, menu, item )
         ArrayPushCell( g_partialMatchFirstPageItems[ player_id ], g_menuMapIndexForPlayerArrays[ player_id ][ 0 ] );
         DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
 
-        // We need to delay the menu show up on 0.2 seconds to avoid players lagging the server by DOS attack.
-        set_task( 0.2, "nominationAttemptWithNameHook", _, arguments, sizeof arguments );
+        // Before re-creating the menu within the updated data, we need to wait for it be destroyed.
+        // Also avoid players lagging the server by DOS attack.
+        set_task( 0.1, "nominationAttemptWithNameHook", _, arguments, sizeof arguments );
 
         LOGGER( 1, "    ( nomination_handlePartialMatch ) Just Returning PLUGIN_HANDLED, doing the more button." )
         return PLUGIN_HANDLED;
