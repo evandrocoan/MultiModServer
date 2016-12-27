@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-369";
+new const PLUGIN_VERSION[] = "v3.2.6-370";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -9542,6 +9542,7 @@ public cmd_say( player_id )
     // if the chat line has more than 2 words, we're not interested at all
     if( thirdWord[ 0 ] == '^0' )
     {
+        new userFlags = get_user_flags( player_id );
         LOGGER( 4, "( cmd_say ) the thirdWord is empty." )
 
         // if the chat line contains 1 word, it could be a map or a one-word command as
@@ -9550,7 +9551,8 @@ public cmd_say( player_id )
         {
             LOGGER( 4, "( cmd_say ) the secondWord is empty." )
 
-            if( containi( firstWord, GAL_VOTEMAP_MENU_COMMAND ) > -1 )
+            if( userFlags & ADMIN_MAP
+                && containi( firstWord, GAL_VOTEMAP_MENU_COMMAND ) > -1 )
             {
                 // Calculate how much pages there are available.
                 new nominationsMapsCount = ArraySize( g_nominationLoadedMapsArray );
@@ -9639,6 +9641,19 @@ public cmd_say( player_id )
                 }
             }
         }
+        else if( userFlags & ADMIN_MAP
+                 && equali( firstWord, GAL_VOTEMAP_MENU_COMMAND ) )
+        {
+            // Calculate how much pages there are available.
+            new nominationsMapsCount = ArraySize( g_nominationLoadedMapsArray );
+            new lastPageNumber       = GET_LAST_PAGE_NUMBER( nominationsMapsCount, MAX_NOM_MENU_ITEMS_PER_PAGE )
+
+            setCorrectMenuPage( player_id, secondWord, g_voteMapMenuPages, lastPageNumber );
+            voteMapMenuBuilder( player_id );
+
+            LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, voteMapMenuBuilder(1) chosen." )
+            return PLUGIN_HANDLED;
+        }
         else if( get_pcvar_num( cvar_nomPlayerAllowance ) )  // "say <nominate|nom|cancel> <map>"
         {
             if( strlen( firstWord ) > 5
@@ -9653,18 +9668,6 @@ public cmd_say( player_id )
                 nomination_menu( player_id );
 
                 LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, nomination_menu(1) chosen." )
-                return PLUGIN_HANDLED;
-            }
-            if( equali( firstWord, GAL_VOTEMAP_MENU_COMMAND ) )
-            {
-                // Calculate how much pages there are available.
-                new nominationsMapsCount = ArraySize( g_nominationLoadedMapsArray );
-                new lastPageNumber       = GET_LAST_PAGE_NUMBER( nominationsMapsCount, MAX_NOM_MENU_ITEMS_PER_PAGE )
-
-                setCorrectMenuPage( player_id, secondWord, g_voteMapMenuPages, lastPageNumber );
-                voteMapMenuBuilder( player_id );
-
-                LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, voteMapMenuBuilder(1) chosen." )
                 return PLUGIN_HANDLED;
             }
             else if( equali( firstWord, "nominate" )
