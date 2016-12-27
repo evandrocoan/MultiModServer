@@ -450,6 +450,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-360";
 #define SOUND_COUNTDOWN        2
 #define SOUND_TIMETOCHOOSE     4
 #define SOUND_RUNOFFREQUIRED   8
+#define SOUND_MAPCHANGE        16
 
 #define SHOW_STATUS_NEVER      0
 #define SHOW_STATUS_AFTER_VOTE 1
@@ -3426,7 +3427,10 @@ stock intermission_effects()
     client_cmd( 0, "hegren" );
 
     client_cmd( 0, "+showscores" );
-    client_cmd( 0, "speak ^"loading environment on to your computer^"" );
+	if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_MAPCHANGE ) )
+	{
+		client_cmd( 0, "speak ^"loading environment on to your computer^"" );
+	}
 }
 
 public last_round_countdown()
