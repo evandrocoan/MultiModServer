@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-361";
+new const PLUGIN_VERSION[] = "v3.2.6-362";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -4725,8 +4725,7 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
                     goto keepSearching;
                 }
 
-                copy( g_votingMapNames[ g_totalVoteOptions ], charsmax( g_votingMapNames[] ), mapName );
-                g_totalVoteOptions++;
+                addMapToTheVotingMenu( mapName );
 
                 LOGGER( 8, "" )
                 LOGGER( 8, "( out ) [%i] choiceIndex: %i, mapIndex: %i, mapName: %s, unsuccessfulCount: %i, g_totalVoteOptions: %i", \
@@ -4907,8 +4906,7 @@ stock vote_addNominations( blockedMapsBuffer[], &announcementShowedTimes = 0 )
                     continue;
                 }
 
-                copy( g_votingMapNames[ g_totalVoteOptions ], charsmax( g_votingMapNames[] ), mapName );
-                g_totalVoteOptions++;
+                addMapToTheVotingMenu( mapName );
 
                 if( g_totalVoteOptions == voteNominationMax )
                 {
@@ -8607,9 +8605,7 @@ public cmd_voteMap( player_id, level, cid )
                 if( IS_MAP_VALID( argument ) )
                 {
                     LOGGER( 8, "    ( cmd_voteMap ) argument is a valid map." )
-
-                    copy( g_votingMapNames[ g_totalVoteOptions ], charsmax( g_votingMapNames[] ), argument );
-                    g_totalVoteOptions++;
+                    addMapToTheVotingMenu( argument );
                 }
                 else if( -1 < containi( argument, "nointro" ) < 2 )
                 {
