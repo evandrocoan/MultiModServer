@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-364";
+new const PLUGIN_VERSION[] = "v3.2.6-365";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -753,6 +753,16 @@ new const PLUGIN_VERSION[] = "v3.2.6-364";
     LOGGER( 256, "I AM ENTERING ON TOGGLE_BIT_FLAG_ON_OFF(2) | mask: %d, flag: %d", %1, %2 ) \
     %1 & %2 ? ( %1 &= ~%2 ) : ( %1 |= %2 ); \
 }
+
+/**
+ * Check whether the menu exists, call menu_destroy(1) and set the menu to id to 0.
+ *
+ * @param totalMenuItems
+ * @param menuItemPerPage
+ */
+#define GET_LAST_PAGE_NUMBER(%1,%2) \
+        ( ( ( %1 + 1 ) / %2 ) \
+    + ( ( ( ( %1 + 1 ) % %2 ) > 0 ) ? 1 : 0 ) );
 
 
 
@@ -8336,8 +8346,7 @@ public showRecentMapsListMenu( player_id )
 
     // Calculate how much pages there are available.
     new currentPageNumber = g_recentMapsMenuPages[ player_id ];
-    new lastPageNumber    = ( ( g_recentMapCount / MAX_MENU_ITEMS_PER_PAGE )
-                        + ( ( ( g_recentMapCount % MAX_MENU_ITEMS_PER_PAGE ) > 0 ) ? 1 : 0 ) );
+    new lastPageNumber    = GET_LAST_PAGE_NUMBER( g_recentMapCount, MAX_MENU_ITEMS_PER_PAGE )
 
     // To create the menu
 #if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
@@ -8840,6 +8849,8 @@ public displayTheVoteMapActionMenu()
 
 stock voteMapMenuBuilder( player_id )
 {
+    LOGGER( 128, "I AM ENTERING ON voteMapMenuBuilder(0) | player_id: %d", player_id )
+
     // The initial settings setup
     g_voteMapStatus                   = IS_DISABLED_VOTEMAP_EXIT;
     g_invokerVoteMapNameToDecide[ 0 ] = '^0';
@@ -8974,7 +8985,7 @@ public displayVoteMapMenuHook( player_id )
  */
 stock displayVoteMapMenu( player_id )
 {
-    LOGGER( 128, "I AM ENTERING ON nomination_menu(1) | player_id: %d", player_id )
+    LOGGER( 128, "I AM ENTERING ON displayVoteMapMenu(1) | player_id: %d", player_id )
 
     // Clear the last menu, if exists
     DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
@@ -9077,7 +9088,7 @@ stock displayVoteMapMenu( player_id )
             }
 
             formatex( choice, charsmax( choice ), "%s %s %s", nominationMap, selectedMap, disabledReason );
-            LOGGER( 4, "( nomination_menu ) choice: %s", choice )
+            LOGGER( 4, "( displayVoteMapMenu ) choice: %s", choice )
 
             menu_additem( g_generalUsePlayersMenuIds[ player_id ], choice, _,
                     ( disabledReason[ 0 ] == '^0' ? 0 : ( 1 << 26 ) ) );
@@ -9409,8 +9420,46 @@ public cmd_say( player_id )
         }
         else if( get_pcvar_num( cvar_nomPlayerAllowance ) )  // "say <nominate|nom|cancel> <map>"
         {
-            if( equali( firstWord, "nominate" )
-                || equali( firstWord, "nom" ) )
+            if( strlen( firstWord ) > 5
+                && equali( firstWord, "nom", 3 )
+                && equali( firstWord[ strlen( firstWord ) - 4 ], "menu" ) )
+            {
+                // Calculate how much pages there are available.
+                new nominationsMapsCount = ArraySize( g_nominationLoadedMapsArray );
+                new lastPageNumber       = GET_LAST_PAGE_NUMBER( nominationsMapsCount, MAX_NOM_MENU_ITEMS_PER_PAGE )
+
+                setCorrectMenuPage( player_id, secondWord, g_nominationPlayersMenuPages, lastPageNumber );
+                nomination_menu( player_id );
+
+                LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, nomination_menu(1) chosen." )
+                return PLUGIN_HANDLED;
+            }
+            if( equali( firstWord, "galmenu" ) )
+            {
+                // Calculate how much pages there are available.
+                new nominationsMapsCount = ArraySize( g_nominationLoadedMapsArray );
+                new lastPageNumber       = GET_LAST_PAGE_NUMBER( nominationsMapsCount, MAX_NOM_MENU_ITEMS_PER_PAGE )
+
+                setCorrectMenuPage( player_id, secondWord, g_voteMapMenuPages, lastPageNumber );
+                voteMapMenuBuilder( player_id );
+
+                LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, voteMapMenuBuilder(1) chosen." )
+                return PLUGIN_HANDLED;
+            }
+            else if( equali( firstWord, "galmenu" ) )
+            {
+                // Calculate how much pages there are available.
+                new nominationsMapsCount = ArraySize( g_nominationLoadedMapsArray );
+                new lastPageNumber       = GET_LAST_PAGE_NUMBER( nominationsMapsCount, MAX_NOM_MENU_ITEMS_PER_PAGE )
+
+                setCorrectMenuPage( player_id, secondWord, g_voteMapMenuPages, lastPageNumber );
+                voteMapMenuBuilder( player_id );
+
+                LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, voteMapMenuBuilder(1) chosen." )
+                return PLUGIN_HANDLED;
+            }
+            else if( equali( firstWord, "nominate" )
+                     || equali( firstWord, "nom" ) )
             {
                 strtolower( secondWord );
                 g_isSawPartialMatchFirstPage[ player_id ] = false;
@@ -9448,6 +9497,44 @@ public cmd_say( player_id )
 
     LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_CONTINUE, as reached the handler end." )
     return PLUGIN_CONTINUE;
+}
+
+stock setCorrectMenuPage( player_id, pageString[], menuPages[], pagesCount )
+{
+    LOGGER( 128, "I AM ENTERING ON setCorrectMenuPage(1) | pageString: %s, pagesCount: %d", pageString, pagesCount )
+
+    if( strlen( pageString ) > 1
+        && ( pageString[ 0 ] == '['
+             || pageString[ 0 ] == '('
+             || pageString[ 0 ] == '`'
+             || pageString[ 0 ] == '{'
+             || pageString[ 0 ] == '"'
+             || pageString[ 0 ] == ''' )
+        && isdigit( pageString[ 1 ] ) )
+    {
+        new index = 2;
+        pageString[ 0 ] = pageString[ 1 ];
+        pageString[ 1 ] = '^0';
+
+        while( isdigit( pageString[ index ] ) )
+        {
+            pageString[ index - 1 ] = pageString[ index ];
+            pageString[ index     ] = '^0';
+            index++;
+        }
+    }
+
+    // The pages index, start on 0
+    new targetPage = str_to_num( pageString );
+
+    if( pagesCount > targetPage )
+    {
+        menuPages[ player_id ] = targetPage - 1;
+    }
+    else
+    {
+        menuPages[ player_id ] = pagesCount - 1;
+    }
 }
 
 /**
@@ -9504,8 +9591,7 @@ stock nomination_menu( player_id )
 
     // Calculate how much pages there are available.
     new currentPageNumber = g_nominationPlayersMenuPages[ player_id ];
-    new lastPageNumber    = ( ( ( nominationsMapsCount + 1 ) / MAX_NOM_MENU_ITEMS_PER_PAGE )
-                        + ( ( ( ( nominationsMapsCount + 1 ) % MAX_NOM_MENU_ITEMS_PER_PAGE ) > 0 ) ? 1 : 0 ) );
+    new lastPageNumber    = GET_LAST_PAGE_NUMBER( nominationsMapsCount, MAX_NOM_MENU_ITEMS_PER_PAGE )
 
     // To create the menu
 #if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
