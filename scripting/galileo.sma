@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-367";
+new const PLUGIN_VERSION[] = "v3.2.6-369";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -70,13 +70,13 @@ new const PLUGIN_VERSION[] = "v3.2.6-367";
  * 1    - Normal/basic debugging/depuration.
  *
  * 2    - a) Run the NORMAL Unit Tests on the server start.
- *       b) To skip the 'pendingVoteCountdown()'.
- *       c) Set the vote runoff time to 5 seconds.
+ *        b) To skip the 'pendingVoteCountdown()'.
+ *        c) Set the vote runoff time to 5 seconds.
  *
  * 4    - Run the DELAYED Unit Tests.
  *
  * 8    - a) To create fake votes. See the function 'create_fakeVotes()'.
- *       b) To create fake players count. See the function 'get_real_players_number()'.
+ *        b) To create fake players count. See the function 'get_real_players_number()'.
  *
  * 16   - Enable DEBUG_LEVEL 1 and all its debugging/depuration available.
  *
@@ -88,7 +88,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-367";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 32+64+1
+#define DEBUG_LEVEL 1+64+2+4
 
 
 /**
@@ -274,6 +274,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-367";
         test_getUniqueRandom_load();
         test_whatGameEndingTypeIt_load();
         test_convertNumericBase_load();
+        test_setCorrectMenuPage_load();
     }
 
     /**
@@ -307,7 +308,8 @@ new const PLUGIN_VERSION[] = "v3.2.6-367";
             // LOGGER( 1, "Current i is: %d", i )
         }
 
-        test_convertNumericBase_load();
+        test_setCorrectMenuPage_load();
+        // test_convertNumericBase_load();
         // test_whatGameEndingTypeIt_load();
         // test_getUniqueRandom_load();
         // test_nominateAndUnnominate_load();
@@ -898,6 +900,7 @@ new cvar_voteWhiteListMapFilePath;
 /**
  * Various Artists.
  */
+new const GAL_VOTEMAP_MENU_COMMAND[]        = "galmenu";
 new const LAST_EMPTY_CYCLE_FILE_NAME[]      = "lastEmptyCycleMapName.dat";
 new const CURRENT_AND_NEXTMAP_FILE_NAME[]   = "currentAndNextmapNames.dat";
 new const LAST_CHANGE_MAP_FILE_NAME[]       = "lastChangedMapName.dat";
@@ -8607,7 +8610,7 @@ public cmd_voteMap( player_id, level, cid )
         remove_quotes( arguments );
 
         argumentsCount = read_argc();
-        log_amx( "%L: %s", LANG_SERVER, "GAL_START_VOTE", arguments );
+        log_amx( "%L: %s", LANG_SERVER, "GAL_VOTE_START", arguments );
 
         LOGGER( 8, "( cmd_voteMap ) " )
         LOGGER( 8, "( cmd_voteMap ) arguments: %s", arguments )
@@ -8871,6 +8874,10 @@ stock voteMapMenuBuilder( player_id )
     displayVoteMapMenuHook( player_id );
 }
 
+/**
+ * Used to select indexes values at the array `g_votingMapNames` instead of the usual array, when we're
+ * are on the submenu `Commands Menu`.
+ */
 #define VOTEMAP_VOTING_MAP_NAMES_INDEX_FLAG -2
 
 public handleDisplayVoteMapCommands( player_id, menu, item )
@@ -8892,7 +8899,6 @@ public handleDisplayVoteMapCommands( player_id, menu, item )
         return PLUGIN_HANDLED;
     }
 
-    // To start the voting
     if( item == 0 )
     {
         DESTROY_PLAYER_NEW_MENU_TYPE( menu )
@@ -8904,7 +8910,6 @@ public handleDisplayVoteMapCommands( player_id, menu, item )
         return PLUGIN_HANDLED;
     }
 
-    // To exit the menu
     if( item == 1 )
     {
         DESTROY_PLAYER_NEW_MENU_TYPE( menu )
@@ -8914,7 +8919,6 @@ public handleDisplayVoteMapCommands( player_id, menu, item )
         return PLUGIN_HANDLED;
     }
 
-    // To exit the menu
     if( item == 2 )
     {
         clearTheVotingMenu();
@@ -8923,7 +8927,18 @@ public handleDisplayVoteMapCommands( player_id, menu, item )
         DESTROY_PLAYER_NEW_MENU_TYPE( menu )
         DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
 
-        LOGGER( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, starting the voting." )
+        LOGGER( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, cleaning the voting." )
+        return PLUGIN_HANDLED;
+    }
+
+    if( item == 3 )
+    {
+        DESTROY_PLAYER_NEW_MENU_TYPE( menu )
+        DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
+
+        client_cmd( player_id, "messagemode ^"say %s^"", GAL_VOTEMAP_MENU_COMMAND );
+
+        LOGGER( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, opening go to page." )
         return PLUGIN_HANDLED;
     }
 
@@ -9004,7 +9019,7 @@ public displayVoteMapMenuCommands( player_id )
     menuId = menu_create( choice, "handleDisplayVoteMapCommands" );
 
     // The first menus items
-    formatex( choice, charsmax( choice ), "%L%s (%d)", player_id, "GAL_START_VOTE", COLOR_YELLOW, g_totalVoteOptions );
+    formatex( choice, charsmax( choice ), "%L%s (%d)", player_id, "GAL_VOTE_START", COLOR_YELLOW, g_totalVoteOptions );
     menu_additem( menuId, choice, { -1 }, g_totalVoteOptions > 1 ? 0 : ( 1 << 26 ) );
 
     formatex( choice, charsmax( choice ), "%L", player_id, "EXIT" );
@@ -9012,6 +9027,9 @@ public displayVoteMapMenuCommands( player_id )
 
     formatex( choice, charsmax( choice ), "%L", player_id, "CANC_VOTE" );
     menu_additem( menuId, choice, { -1 }, g_totalVoteOptions > 0 ? 0 : ( 1 << 26 ) );
+
+    formatex( choice, charsmax( choice ), "%L", player_id, "GAL_VOTE_GO_TO_PAGE" );
+    menu_additem( menuId, choice, { -1 }, 0 );
 
     // Add some space from the first menu options.
     menu_addblank( menuId, 0 );
@@ -9525,7 +9543,6 @@ public cmd_say( player_id )
     if( thirdWord[ 0 ] == '^0' )
     {
         LOGGER( 4, "( cmd_say ) the thirdWord is empty." )
-        new mapIndex;
 
         // if the chat line contains 1 word, it could be a map or a one-word command as
         // "say [rtv|rockthe<anything>vote]"
@@ -9533,8 +9550,13 @@ public cmd_say( player_id )
         {
             LOGGER( 4, "( cmd_say ) the secondWord is empty." )
 
-            if( equali( firstWord, "galmenu" ) )
+            if( containi( firstWord, GAL_VOTEMAP_MENU_COMMAND ) > -1 )
             {
+                // Calculate how much pages there are available.
+                new nominationsMapsCount = ArraySize( g_nominationLoadedMapsArray );
+                new lastPageNumber       = GET_LAST_PAGE_NUMBER( nominationsMapsCount, MAX_NOM_MENU_ITEMS_PER_PAGE )
+
+                setCorrectMenuPage( player_id, firstWord, g_voteMapMenuPages, lastPageNumber );
                 voteMapMenuBuilder( player_id );
 
                 LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, voteMapMenuBuilder(1) chosen." )
@@ -9567,7 +9589,7 @@ public cmd_say( player_id )
                 }
                 else
                 {
-                    mapIndex = getSurMapNameIndex( firstWord );
+                    new mapIndex = getSurMapNameIndex( firstWord );
 
                     if( mapIndex >= 0 )
                     {
@@ -9578,8 +9600,13 @@ public cmd_say( player_id )
                     }
                     else if( strlen( firstWord ) > 5
                              && equali( firstWord, "nom", 3 )
-                             && equali( firstWord[ strlen( firstWord ) - 4 ], "menu" ) )
+                             && containi( firstWord, "menu" ) > 1 )
                     {
+                        // Calculate how much pages there are available.
+                        new nominationsMapsCount = ArraySize( g_nominationLoadedMapsArray );
+                        new lastPageNumber       = GET_LAST_PAGE_NUMBER( nominationsMapsCount, MAX_NOM_MENU_ITEMS_PER_PAGE )
+
+                        setCorrectMenuPage( player_id, firstWord, g_voteMapMenuPages, lastPageNumber );
                         nomination_menu( player_id );
 
                         LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, nomination_menu(1) chosen." )
@@ -9628,19 +9655,7 @@ public cmd_say( player_id )
                 LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, nomination_menu(1) chosen." )
                 return PLUGIN_HANDLED;
             }
-            if( equali( firstWord, "galmenu" ) )
-            {
-                // Calculate how much pages there are available.
-                new nominationsMapsCount = ArraySize( g_nominationLoadedMapsArray );
-                new lastPageNumber       = GET_LAST_PAGE_NUMBER( nominationsMapsCount, MAX_NOM_MENU_ITEMS_PER_PAGE )
-
-                setCorrectMenuPage( player_id, secondWord, g_voteMapMenuPages, lastPageNumber );
-                voteMapMenuBuilder( player_id );
-
-                LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, voteMapMenuBuilder(1) chosen." )
-                return PLUGIN_HANDLED;
-            }
-            else if( equali( firstWord, "galmenu" ) )
+            if( equali( firstWord, GAL_VOTEMAP_MENU_COMMAND ) )
             {
                 // Calculate how much pages there are available.
                 new nominationsMapsCount = ArraySize( g_nominationLoadedMapsArray );
@@ -9676,7 +9691,7 @@ public cmd_say( player_id )
             else if( equali( firstWord, "cancel" ) )
             {
                 // bpj -- allow ambiguous cancel in which case a menu of their nominations is shown
-                mapIndex = getSurMapNameIndex( secondWord );
+                new mapIndex = getSurMapNameIndex( secondWord );
 
                 if( mapIndex >= 0 )
                 {
@@ -9693,41 +9708,59 @@ public cmd_say( player_id )
     return PLUGIN_CONTINUE;
 }
 
+/**
+ * Remove all the text from the string, except the first digits chain, to allow to open the menu
+ * as `say galmenuPageNumber`. For example: `say galmenu50`.
+ */
 stock setCorrectMenuPage( player_id, pageString[], menuPages[], pagesCount )
 {
     LOGGER( 128, "I AM ENTERING ON setCorrectMenuPage(1) | pageString: %s, pagesCount: %d", pageString, pagesCount )
 
-    if( strlen( pageString ) > 1
-        && ( pageString[ 0 ] == '['
-             || pageString[ 0 ] == '('
-             || pageString[ 0 ] == '`'
-             || pageString[ 0 ] == '{'
-             || pageString[ 0 ] == '"'
-             || pageString[ 0 ] == ''' )
-        && isdigit( pageString[ 1 ] ) )
+    if( strlen( pageString ) > 1 )
     {
-        new index = 2;
-        pageString[ 0 ] = pageString[ 1 ];
-        pageString[ 1 ] = '^0';
+        new searchIndex;
+        new resultIndex;
 
-        while( isdigit( pageString[ index ] ) )
+        while( pageString[ searchIndex ]
+               && !isdigit( pageString[ searchIndex ] ) )
         {
-            pageString[ index - 1 ] = pageString[ index ];
-            pageString[ index     ] = '^0';
-            index++;
+            pageString[ 0 ]           = pageString[ searchIndex ];
+            pageString[ searchIndex ] = '^0';
+
+            searchIndex++;
+        }
+
+        // When the page number start with a digit, we would erase all the string.
+        if( searchIndex == 0 )
+        {
+            searchIndex = 1;
+        }
+
+        while( isdigit( pageString[ searchIndex ] ) )
+        {
+            pageString[ resultIndex ] = pageString[ searchIndex ];
+            pageString[ searchIndex ] = '^0';
+
+            searchIndex++;
+            resultIndex++;
         }
     }
 
-    // The pages index, start on 0
-    new targetPage = str_to_num( pageString );
+    LOGGER( 4, "( setCorrectMenuPage ) pageString: %s", pageString )
 
-    if( pagesCount > targetPage )
+    if( isdigit( pageString[ 0 ] ) )
     {
-        menuPages[ player_id ] = targetPage - 1;
-    }
-    else
-    {
-        menuPages[ player_id ] = pagesCount - 1;
+        // The pages index, start on 0
+        new targetPage = str_to_num( pageString );
+
+        if( pagesCount > targetPage )
+        {
+            menuPages[ player_id ] = targetPage - 1;
+        }
+        else
+        {
+            menuPages[ player_id ] = pagesCount - 1;
+        }
     }
 }
 
@@ -11582,20 +11615,20 @@ stock destroy_two_dimensional_array( Array:outerArray, bool:isToDestroyTheOuterA
  */
 stock is_map_valid_bsp_check( mapName[] )
 {
-    new lenght = strlen( mapName ) - 4;
+    new length = strlen( mapName ) - 4;
 
     // The mapName was too short to possibly house the .bsp extension
-    if( lenght < 0 )
+    if( length < 0 )
     {
-        LOGGER( 256, "    ( is_map_valid_bsp_check ) Returning false. [lenght < 0]" )
+        LOGGER( 256, "    ( is_map_valid_bsp_check ) Returning false. [length < 0]" )
         return false;
     }
 
-    if( equali( mapName[ lenght ], ".bsp" ) )
+    if( equali( mapName[ length ], ".bsp" ) )
     {
         // If the ending was .bsp, then cut it off.
         // As the string is by reference, so this copies back to the loaded text.
-        mapName[ lenght ] = '^0';
+        mapName[ length ] = '^0';
 
         // Recheck
         if( is_map_valid( mapName ) )
@@ -11609,6 +11642,9 @@ stock is_map_valid_bsp_check( mapName[] )
     return false;
 }
 
+/**
+ * Configure the print indexes padding and max line length in characters.
+ */
 #define MAX_CELL_LENGHT    20
 #define MAX_MESSAGE_LENGHT 80
 
@@ -11788,20 +11824,20 @@ stock saveCurrentMapCycleSetting( mapcycleFilePath[] )
 stock getNextMapName( nextMapName[], maxChars )
 {
     LOGGER( 128, "I AM ENTERING ON getNextMapName(2) | maxChars: %d", maxChars )
-    new lenght = get_pcvar_string( cvar_amx_nextmap, nextMapName, maxChars );
+    new length = get_pcvar_string( cvar_amx_nextmap, nextMapName, maxChars );
 
     if( IS_MAP_VALID( nextMapName ) )
     {
-        LOGGER( 4, "    ( getNextMapName ) Returning lenght: %d, nextMapName: %s", lenght, nextMapName )
-        return lenght;
+        LOGGER( 4, "    ( getNextMapName ) Returning length: %d, nextMapName: %s", length, nextMapName )
+        return length;
     }
 
-    lenght = copy( nextMapName, maxChars, g_nextMapName );
+    length = copy( nextMapName, maxChars, g_nextMapName );
     set_pcvar_string( cvar_amx_nextmap, g_nextMapName );
 
     LOGGER( 2, "( getNextMapName ) IS CHANGING THE CVAR 'amx_nextmap' to '%s'.", g_nextMapName )
-    LOGGER( 1, "    ( getNextMapName ) Returning lenght: %d, nextMapName: %s", lenght, nextMapName )
-    return lenght;
+    LOGGER( 1, "    ( getNextMapName ) Returning length: %d, nextMapName: %s", length, nextMapName )
+    return length;
 }
 
 public sayNextMap()
@@ -11892,8 +11928,8 @@ public changeMap()
         LOGGER( 2, "( changeMap ) IS CHANGING THE CVAR 'mp_chattime' to '%f'.", chattime + 2.0 )
     }
 
-    new lenght = getNextMapName( nextmap_name, charsmax( nextmap_name ) ) + 1;
-    set_task( chattime, "delayedChange", 0, nextmap_name, lenght ); // change with 1.5 sec. delay
+    new length = getNextMapName( nextmap_name, charsmax( nextmap_name ) ) + 1;
+    set_task( chattime, "delayedChange", 0, nextmap_name, length ); // change with 1.5 sec. delay
 }
 
 stock bool:isAValidMap( mapname[] )
@@ -11907,20 +11943,20 @@ stock bool:isAValidMap( mapname[] )
     }
 
     // If the IS_MAP_VALID check failed, check the end of the string
-    new lenght = strlen( mapname ) - 4;
+    new length = strlen( mapname ) - 4;
 
     // The mapname was too short to possibly house the .bsp extension
-    if( lenght < 0 )
+    if( length < 0 )
     {
-        LOGGER( 256, "    ( isAValidMap ) Returning false. [lenght < 0]" )
+        LOGGER( 256, "    ( isAValidMap ) Returning false. [length < 0]" )
         return false;
     }
 
-    if( equali( mapname[ lenght ], ".bsp" ) )
+    if( equali( mapname[ length ], ".bsp" ) )
     {
         // If the ending was .bsp, then cut it off.
         // the string is by reference, so this copies back to the loaded text.
-        mapname[ lenght ] = '^0';
+        mapname[ length ] = '^0';
 
         // recheck
         if( IS_MAP_VALID( mapname ) )
@@ -13582,6 +13618,40 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
                 origin_number, origin_base, destiny_base, expected, result );
 
         SET_TEST_FAILURE( test_id, result != expected, errorMessage )
+    }
+
+    /**
+     * To test the stock setCorrectMenuPage(4).
+     */
+    stock test_setCorrectMenuPage_load()
+    {
+        test_setCorrectMenuPage( .pageString="noPagesHere", .pagesCount=5, .expectedPage=0 ); // Case 1
+        test_setCorrectMenuPage( .pageString="pages5Here" , .pagesCount=5, .expectedPage=4 ); // Case 2
+        test_setCorrectMenuPage( .pageString="5Here"      , .pagesCount=5, .expectedPage=4 ); // Case 3
+        test_setCorrectMenuPage( .pageString="6Here"      , .pagesCount=5, .expectedPage=4 ); // Case 4
+        test_setCorrectMenuPage( .pageString="menuCute6"  , .pagesCount=5, .expectedPage=4 ); // Case 5
+        test_setCorrectMenuPage( .pageString="menuCute4"  , .pagesCount=5, .expectedPage=3 ); // Case 6
+    }
+
+    /**
+     * Create one case test for the stock setCorrectMenuPage(4) based on its parameters passed
+     * by the test_setCorrectMenuPage_load(0) loader function.
+     */
+    stock test_setCorrectMenuPage( pageString[], pagesCount, expectedPage )
+    {
+        new menuPages   [ 2 ];
+        new errorMessage[ MAX_LONG_STRING ];
+
+        new player_id = 1;
+        new test_id   = test_registerSeriesNaming( "test_convertNumericBase", 'b' );
+
+        setCorrectMenuPage( player_id, pageString, menuPages, pagesCount );
+
+        formatex( errorMessage, charsmax( errorMessage ),
+                "The converted page `%s` must to be %d, instead of %d.",
+                pageString, expectedPage, menuPages[ player_id ] );
+
+        SET_TEST_FAILURE( test_id, menuPages[ player_id ] != expectedPage, errorMessage )
     }
 
 
