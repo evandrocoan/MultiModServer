@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-362";
+new const PLUGIN_VERSION[] = "v3.2.6-364";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -88,7 +88,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-362";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 16+32+64
+#define DEBUG_LEVEL 32+64+1
 
 
 /**
@@ -198,12 +198,18 @@ new const PLUGIN_VERSION[] = "v3.2.6-362";
      *        c) Actions at vote_startDirector(1).
      *
      * 16   - Runoff voting.
+     *
      * 32   - Rounds end map voting.
+     *
      * 64   - Debug for the color_print(...) function.
+     *
      * 128  - Functions entrances messages.
-     * 255  - Enables all debug logging levels.
+     *
+     * 256  - High called functions calls.
+     *
+     * 511  - Enables all debug logging levels.
      */
-    new g_debug_level = 1 + 4 + 8 + 16;
+    new g_debug_level = 1+2+4+8+16+32+64+128;
 
     /**
      * Write debug messages accordantly with the 'g_debug_level' variable.
@@ -744,7 +750,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-362";
  */
 #define TOGGLE_BIT_FLAG_ON_OFF(%1,%2) \
 { \
-    LOGGER( 0, "I AM ENTERING ON TOGGLE_BIT_FLAG_ON_OFF(2) | mask: %d, flag: %d", %1, %2 ) \
+    LOGGER( 256, "I AM ENTERING ON TOGGLE_BIT_FLAG_ON_OFF(2) | mask: %d, flag: %d", %1, %2 ) \
     %1 & %2 ? ( %1 &= ~%2 ) : ( %1 |= %2 ); \
 }
 
@@ -1409,7 +1415,7 @@ stock configureEndGameCvars()
 
 stock tryToGetGameModCvar( &cvar_to_get, cvar_name[] )
 {
-    LOGGER( 0, "I AM ENTERING ON tryToGetGameModCvar(2) | cvar_to_get: %d, cvar_name: %s", cvar_to_get, cvar_name )
+    LOGGER( 256, "I AM ENTERING ON tryToGetGameModCvar(2) | cvar_to_get: %d, cvar_name: %s", cvar_to_get, cvar_name )
 
     if( !( cvar_to_get = get_cvar_pointer( cvar_name ) ) )
     {
@@ -2411,7 +2417,7 @@ stock loadMapGroupsFeatureFile( mapFilerFilePath[], &Array:mapFilersPathArray, &
 
 public client_death_event()
 {
-    LOGGER( 0, "I AM ENTERING ON client_death_event(0)" )
+    LOGGER( 256, "I AM ENTERING ON client_death_event(0)" )
 
     if( g_fragLimitNumber )
     {
@@ -2560,7 +2566,7 @@ stock isToStartTheVotingOnThisRound( secondsRemaining )
         new roundsRemaining = howManyRoundsAreRemaining( secondsRemaining - PERIODIC_CHECKING_INTERVAL,
                 whatGameEndingTypeItIs() );
 
-        LOGGER( 0, "", debugIsTimeToStartTheEndOfMap( secondsRemaining, 0 ) )
+        LOGGER( 0, "", debugIsTimeToStartTheEndOfMap( secondsRemaining, 256 ) )
         return chooseTheEndOfMapStartOption( roundsRemaining );
     }
 
@@ -2719,7 +2725,7 @@ stock GameEndingType:whatGameEndingTypeItIs()
     GET_REMAINING( by_winlimit , cv_winlimit , max( g_totalCtWins, g_totalTerroristsWins ) )
 
     getRoundsRemainingByFrags( get_timeleft(), by_time, by_frags );
-    LOGGER( 0, "", debugWhatGameEndingTypeItIs( by_maxrounds, by_time, by_winlimit, by_frags, 0 ) )
+    LOGGER( 0, "", debugWhatGameEndingTypeItIs( by_maxrounds, by_time, by_winlimit, by_frags, 256 ) )
 
     // Check whether there is any allowed combination.
     SWITCH_ENDING_GAME_TYPE_RETURN( by_winlimit    , cv_winlimit , by_time    , cv_time      , \
@@ -2741,14 +2747,14 @@ stock GameEndingType:whatGameEndingTypeItIs()
     SWITCH_ENDING_GAME_TYPE_RETURN( cv_frags       , cv_frags    , cv_time    , cv_time      , \
             cv_maxrounds, cv_maxrounds, cv_winlimit, cv_winlimit , GameEndingType_ByFragLimit, true )
 
-    LOGGER( 0, "    ( whatGameEndingTypeItIs ) Returning: %d", GameEndingType_ByNothing )
+    LOGGER( 256, "    ( whatGameEndingTypeItIs ) Returning: %d", GameEndingType_ByNothing )
     return GameEndingType_ByNothing;
 }
 
 stock GameEndingType:switchEndingGameType( by_maxrounds, cv_maxrounds, by_time, cv_time, by_winlimit, cv_winlimit,
                                            by_frags, cv_frags, GameEndingType:type, bool:allowSelfReturn )
 {
-    LOGGER( 0, "I AM ENTERING ON switchEndingGameType(10) GameEndingType: %d", type )
+    LOGGER( 256, "I AM ENTERING ON switchEndingGameType(10) GameEndingType: %d", type )
 
     // If the cvar original value is set to a zero value, the round will never ended by such cvar.
     if( cv_maxrounds > 0 )
@@ -2763,7 +2769,7 @@ stock GameEndingType:switchEndingGameType( by_maxrounds, cv_maxrounds, by_time, 
                 && by_winlimit > by_maxrounds
                 && by_frags > by_maxrounds )
             {
-                LOGGER( 0, "^n^n^n ( switchEndingGameType ) 1" )
+                LOGGER( 256, "^n^n^n ( switchEndingGameType ) 1" )
                 return type;
             }
         }
@@ -2773,7 +2779,7 @@ stock GameEndingType:switchEndingGameType( by_maxrounds, cv_maxrounds, by_time, 
             if( by_time > by_maxrounds
                 && by_winlimit > by_maxrounds )
             {
-                LOGGER( 0, "^n^n^n ( switchEndingGameType ) 2" )
+                LOGGER( 256, "^n^n^n ( switchEndingGameType ) 2" )
                 return type;
             }
         }
@@ -2783,7 +2789,7 @@ stock GameEndingType:switchEndingGameType( by_maxrounds, cv_maxrounds, by_time, 
             if( by_time > by_maxrounds
                 && by_frags > by_maxrounds )
             {
-                LOGGER( 0, "^n^n^n ( switchEndingGameType ) 3" )
+                LOGGER( 256, "^n^n^n ( switchEndingGameType ) 3" )
                 return type;
             }
         }
@@ -2793,7 +2799,7 @@ stock GameEndingType:switchEndingGameType( by_maxrounds, cv_maxrounds, by_time, 
             if( by_winlimit > by_maxrounds
                 && by_frags > by_maxrounds )
             {
-                LOGGER( 0, "^n^n^n ( switchEndingGameType ) 4" )
+                LOGGER( 256, "^n^n^n ( switchEndingGameType ) 4" )
                 return type;
             }
         }
@@ -2802,29 +2808,29 @@ stock GameEndingType:switchEndingGameType( by_maxrounds, cv_maxrounds, by_time, 
         else if( cv_time > 0
                  && by_time > by_maxrounds )
         {
-            LOGGER( 0, "^n^n^n ( switchEndingGameType ) 5" )
+            LOGGER( 256, "^n^n^n ( switchEndingGameType ) 5" )
             return type;
         }
         else if( cv_winlimit > 0
                  && by_winlimit > by_maxrounds )
         {
-            LOGGER( 0, "^n^n^n ( switchEndingGameType ) 6" )
+            LOGGER( 256, "^n^n^n ( switchEndingGameType ) 6" )
             return type;
         }
         else if( cv_frags > 0
                  && by_frags > by_maxrounds )
         {
-            LOGGER( 0, "^n^n^n ( switchEndingGameType ) 7" )
+            LOGGER( 256, "^n^n^n ( switchEndingGameType ) 7" )
             return type;
         }
         else if( allowSelfReturn )
         {
-            LOGGER( 0, "^n^n^n ( switchEndingGameType ) 8" )
+            LOGGER( 256, "^n^n^n ( switchEndingGameType ) 8" )
             return type;
         }
     }
 
-    LOGGER( 0, "    ( switchEndingGameType ) Returning GameEndingType_ByNothing: %d", GameEndingType_ByNothing )
+    LOGGER( 256, "    ( switchEndingGameType ) Returning GameEndingType_ByNothing: %d", GameEndingType_ByNothing )
     return GameEndingType_ByNothing;
 }
 
@@ -2897,7 +2903,7 @@ stock debugIsTimeToStartTheEndOfMap( secondsRemaining, debugLevel )
  */
 stock isTimeToStartTheEndOfMapVoting( secondsRemaining )
 {
-    LOGGER( 0, "I AM ENTERING ON isTimeToStartTheEndOfMapVoting(1)" )
+    LOGGER( 256, "I AM ENTERING ON isTimeToStartTheEndOfMapVoting(1)" )
 
     if( secondsRemaining < START_VOTEMAP_MIN_TIME
         && secondsRemaining > START_VOTEMAP_MAX_TIME )
@@ -2928,13 +2934,13 @@ stock isTimeToStartTheEndOfMapVoting( secondsRemaining )
                || !get_pcvar_num( cvar_endOnRound )
                || IS_THE_ROUND_TIME_TOO_BIG() )
             {
-                LOGGER( 0, "    ( isTimeToStartTheEndOfMapVoting ) Just returning true." )
+                LOGGER( 256, "    ( isTimeToStartTheEndOfMapVoting ) Just returning true." )
                 return true;
             }
         }
     }
 
-    LOGGER( 0, "    ( isTimeToStartTheEndOfMapVoting ) Just returning false." )
+    LOGGER( 256, "    ( isTimeToStartTheEndOfMapVoting ) Just returning false." )
     return false;
 }
 
@@ -3445,10 +3451,10 @@ stock intermission_effects()
     client_cmd( 0, "hegren" );
 
     client_cmd( 0, "+showscores" );
-	if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_MAPCHANGE ) )
-	{
-		client_cmd( 0, "speak ^"loading environment on to your computer^"" );
-	}
+    if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_MAPCHANGE ) )
+    {
+        client_cmd( 0, "speak ^"loading environment on to your computer^"" );
+    }
 }
 
 public last_round_countdown()
@@ -3493,7 +3499,7 @@ public configure_last_round_HUD()
 
 public show_last_round_HUD()
 {
-    LOGGER( 0, "I AM ENTERING ON show_last_round_HUD(0)" )
+    LOGGER( 256, "I AM ENTERING ON show_last_round_HUD(0)" )
 
     set_hudmessage( 255, 255, 255, 0.15, 0.15, 0, 0.0, 1.0, 0.1, 0.1, 1 );
     static last_round_message[ MAX_COLOR_MESSAGE ];
@@ -4150,7 +4156,7 @@ public map_loadPrefixList()
 
 stock isToLoadTheNextWhiteListGroup( &isToLoadTheseMaps, currentHour, startHour, endHour, isWhiteList = false )
 {
-    LOGGER( 0, "I AM ENTERING ON isToLoadTheNextWhiteListGroup(5) | startHour: %d, endHour: %d", startHour, endHour )
+    LOGGER( 256, "I AM ENTERING ON isToLoadTheNextWhiteListGroup(5) | startHour: %d, endHour: %d", startHour, endHour )
 
     if( startHour == endHour
         && endHour == currentHour )
@@ -4183,13 +4189,13 @@ stock isToLoadTheNextWhiteListGroup( &isToLoadTheseMaps, currentHour, startHour,
         //         4           3
             && currentHour > endHour )
         {
-            LOGGER( 0, "( isToLoadTheNextWhiteListGroup ) startHour > endHour && ( currentHour < startHour && currentHour > endHour )" )
+            LOGGER( 256, "( isToLoadTheNextWhiteListGroup ) startHour > endHour && ( currentHour < startHour && currentHour > endHour )" )
             isToLoadTheseMaps = !isWhiteList;
         }
         //               6           5
         else // if( currentHour > startHour )
         {
-            LOGGER( 0, "( isToLoadTheNextWhiteListGroup ) startHour > endHour && ( currentHour > startHour || currentHour < endHour )" )
+            LOGGER( 256, "( isToLoadTheNextWhiteListGroup ) startHour > endHour && ( currentHour > startHour || currentHour < endHour )" )
             isToLoadTheseMaps = isWhiteList;
         }
     }
@@ -4211,13 +4217,13 @@ stock isToLoadTheNextWhiteListGroup( &isToLoadTheseMaps, currentHour, startHour,
         //          2           3
             || currentHour < startHour )
         {
-            LOGGER( 0, "( isToLoadTheNextWhiteListGroup ) startHour < endHour && ( currentHour > endHour || currentHour < startHour )" )
+            LOGGER( 256, "( isToLoadTheNextWhiteListGroup ) startHour < endHour && ( currentHour > endHour || currentHour < startHour )" )
             isToLoadTheseMaps = !isWhiteList;
         }
         //              4            3
         else // if( currentHour > startHour )
         {
-            LOGGER( 0, "( isToLoadTheNextWhiteListGroup ) startHour < endHour && ( currentHour < endHour || currentHour > startHour )" )
+            LOGGER( 256, "( isToLoadTheNextWhiteListGroup ) startHour < endHour && ( currentHour < endHour || currentHour > startHour )" )
             isToLoadTheseMaps = isWhiteList;
         }
     }
@@ -4238,7 +4244,7 @@ stock isToLoadTheNextWhiteListGroup( &isToLoadTheseMaps, currentHour, startHour,
  */
 stock standardizeTheHoursForWhitelist( &currentHour, &startHour, &endHour )
 {
-    LOGGER( 0, "I AM ENTERING ON standardizeTheHoursForWhitelist(3) | currentHour: %d, startHour: %d, endHour: %d", \
+    LOGGER( 256, "I AM ENTERING ON standardizeTheHoursForWhitelist(3) | currentHour: %d, startHour: %d, endHour: %d", \
             currentHour, startHour, endHour )
 
     if( startHour > 23
@@ -4275,7 +4281,7 @@ stock standardizeTheHoursForWhitelist( &currentHour, &startHour, &endHour )
 //                                     3         0
 stock convertWhitelistToBlacklist( &startHour, &endHour )
 {
-    LOGGER( 0, "I AM ENTERING ON convertWhitelistToBlacklist(2) | startHour: %d, endHour: %d", startHour, endHour )
+    LOGGER( 256, "I AM ENTERING ON convertWhitelistToBlacklist(2) | startHour: %d, endHour: %d", startHour, endHour )
     new backup;
 
     backup    = ( endHour + 1 > 23? 0 : endHour + 1 );
@@ -4775,7 +4781,7 @@ stock debug_vote_map_selection( choiceIndex, mapName[], useWhitelistOutBlock, is
                                 useEqualiCurrentMap, unsuccessfulCount, currentBlockerStrategy,
                                 useIsPrefixInMenu, useMapIsTooRecent, Trie:blockedFillersMapTrie )
 {
-    LOGGER( 0, "I AM ENTERING ON debug_vote_map_selection(10) | choiceIndex: %d", choiceIndex )
+    LOGGER( 256, "I AM ENTERING ON debug_vote_map_selection(10) | choiceIndex: %d", choiceIndex )
     new type[5];
 
     static isIncrementTime = 0;
@@ -5155,7 +5161,7 @@ public startVotingByGameEngineCall()
 
 public vote_manageEnd()
 {
-    LOGGER( 0, "I AM ENTERING ON vote_manageEnd(0) | get_real_players_number: %d", get_real_players_number() )
+    LOGGER( 256, "I AM ENTERING ON vote_manageEnd(0) | get_real_players_number: %d", get_real_players_number() )
     new secondsLeft = get_timeleft();
 
     if( secondsLeft )
@@ -5198,7 +5204,7 @@ public vote_manageEnd()
  */
 stock handle_game_crash_recreation( secondsLeft )
 {
-    LOGGER( 0, "I AM ENTERING ON handle_game_crash_recreation(1) | secondsLeft: %d", secondsLeft )
+    LOGGER( 256, "I AM ENTERING ON handle_game_crash_recreation(1) | secondsLeft: %d", secondsLeft )
 
     if( g_isToCreateGameCrashFlag
         && (  g_timeLimitNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_timeLimitNumber - secondsLeft / 60
@@ -6051,9 +6057,9 @@ stock addExtensionOption( player_id, copiedChars, voteStatus[], voteStatusLenght
 
 stock display_menu_dirt( player_id, menuKeys, bool:isVoteOver, bool:noneIsHidden, voteStatus[] )
 {
-    LOGGER( 0, "I AM ENTERING ON display_menu_dirt(6) | player_id: %d", player_id )
-    LOGGER( 0, "( display_menu_dirt ) isVoteOver: %d, voteStatus: %s", isVoteOver, voteStatus )
-    LOGGER( 0, "( display_menu_dirt ) menuKeys: %s, noneIsHidden: %d", menuKeys, noneIsHidden )
+    LOGGER( 256, "I AM ENTERING ON display_menu_dirt(6) | player_id: %d", player_id )
+    LOGGER( 256, "( display_menu_dirt ) isVoteOver: %d, voteStatus: %s", isVoteOver, voteStatus )
+    LOGGER( 256, "( display_menu_dirt ) menuKeys: %s, noneIsHidden: %d", menuKeys, noneIsHidden )
 
     new bool:isToShowUndo;
     new bool:isToAddExtraLine;
@@ -6186,8 +6192,8 @@ stock display_menu_dirt( player_id, menuKeys, bool:isVoteOver, bool:noneIsHidden
 
 stock computeVoteMenuFooter( player_id, voteFooter[], voteFooterSize )
 {
-    LOGGER( 0, "I AM ENTERING ON computeVoteMenuFooter(3) | player_id: %d", player_id )
-    LOGGER( 0, "( computeVoteMenuFooter ) | voteFooter: %s, voteFooterSize: %d", voteFooter, voteFooterSize )
+    LOGGER( 256, "I AM ENTERING ON computeVoteMenuFooter(3) | player_id: %d", player_id )
+    LOGGER( 256, "( computeVoteMenuFooter ) | voteFooter: %s, voteFooterSize: %d", voteFooter, voteFooterSize )
 
     new copiedChars;
     copiedChars = copy( voteFooter, voteFooterSize, "^n^n" );
@@ -6215,9 +6221,9 @@ stock computeVoteMenuFooter( player_id, voteFooter[], voteFooterSize )
 
 stock computeUndoButton( player_id, bool:isToShowUndo, bool:isVoteOver, noneOption[], noneOptionSize )
 {
-    LOGGER( 0, "I AM ENTERING ON computeUndoButton(5) | player_id: %d", player_id )
-    LOGGER( 0, "( computeUndoButton ) | isToShowUndo: %d", isToShowUndo )
-    LOGGER( 0, "( computeUndoButton ) | noneOption: %s, noneOptionSize: %d", noneOption, noneOptionSize )
+    LOGGER( 256, "I AM ENTERING ON computeUndoButton(5) | player_id: %d", player_id )
+    LOGGER( 256, "( computeUndoButton ) | isToShowUndo: %d", isToShowUndo )
+    LOGGER( 256, "( computeUndoButton ) | noneOption: %s, noneOptionSize: %d", noneOption, noneOptionSize )
 
     new bool:isToAddExtraLine = ( g_voteStatus & IS_RUNOFF_VOTE
                                   || !g_isMapExtensionAllowed );
@@ -6285,8 +6291,8 @@ stock computeUndoButton( player_id, bool:isToShowUndo, bool:isVoteOver, noneOpti
 
 stock display_menu_clean( player_id, menuKeys )
 {
-    LOGGER( 0, "I AM ENTERING ON display_menu_clean(2) | player_id: %d", player_id )
-    LOGGER( 0, "( display_menu_clean ) | menuKeys: %d", menuKeys )
+    LOGGER( 256, "I AM ENTERING ON display_menu_clean(2) | player_id: %d", player_id )
+    LOGGER( 256, "( display_menu_clean ) | menuKeys: %d", menuKeys )
 
     new bool:isToShowUndo;
     new bool:isToAddExtraLine;
@@ -6637,7 +6643,7 @@ stock announceRegistedVote( player_id, pressedKeyCode )
 
 stock computeMapVotingCount( mapVotingCount[], mapVotingCountLength, voteIndex, bool:isToAddResults = true )
 {
-    LOGGER( 0, "I AM ENTERING ON computeMapVotingCount(3) | mapVotingCount: %s, mapVotingCountLength: %d, \
+    LOGGER( 256, "I AM ENTERING ON computeMapVotingCount(3) | mapVotingCount: %s, mapVotingCountLength: %d, \
             voteIndex: %d", mapVotingCount, mapVotingCountLength, voteIndex )
 
     new voteCountNumber = g_arrayOfMapsWithVotesNumber[ voteIndex ];
@@ -6687,7 +6693,7 @@ stock computeMapVotingCount( mapVotingCount[], mapVotingCountLength, voteIndex, 
         mapVotingCount[ 0 ] = '^0';
     }
 
-    LOGGER( 0, " ( computeMapVotingCount ) | g_showVoteStatus: %d, g_showVoteStatusType: %d, voteCountNumber: %d", \
+    LOGGER( 256, " ( computeMapVotingCount ) | g_showVoteStatus: %d, g_showVoteStatusType: %d, voteCountNumber: %d", \
             g_showVoteStatus, g_showVoteStatusType, voteCountNumber )
 }
 
@@ -7372,19 +7378,19 @@ stock restoreOriginalServerMaxSpeed()
 
 stock map_isInMenu( map[] )
 {
-    LOGGER( 0, "I AM ENTERING ON map_isInMenu(1) | map: %s", map )
+    LOGGER( 256, "I AM ENTERING ON map_isInMenu(1) | map: %s", map )
 
     for( new playerVoteMapChoiceIndex = 0;
          playerVoteMapChoiceIndex < g_totalVoteOptions; ++playerVoteMapChoiceIndex )
     {
         if( equali( map, g_votingMapNames[ playerVoteMapChoiceIndex ] ) )
         {
-            LOGGER( 0, "    ( map_isInMenu ) Returning true." )
+            LOGGER( 256, "    ( map_isInMenu ) Returning true." )
             return true;
         }
     }
 
-    LOGGER( 0, "    ( map_isInMenu ) Returning false." )
+    LOGGER( 256, "    ( map_isInMenu ) Returning false." )
     return false;
 }
 
@@ -7416,7 +7422,7 @@ stock addMapToTheVotingMenu( mapName[] )
 
 stock isPrefixInMenu( map[] )
 {
-    LOGGER( 0, "I AM ENTERING ON isPrefixInMenu(1) | map: %s", map )
+    LOGGER( 256, "I AM ENTERING ON isPrefixInMenu(1) | map: %s", map )
 
     new junk[ 8 ];
     new possiblePrefix[ 8 ];
@@ -7434,12 +7440,12 @@ stock isPrefixInMenu( map[] )
 
         if( equali( possiblePrefix, existingPrefix ) )
         {
-            LOGGER( 0, "    ( isPrefixInMenu ) Returning true." )
+            LOGGER( 256, "    ( isPrefixInMenu ) Returning true." )
             return true;
         }
     }
 
-    LOGGER( 0, "    ( isPrefixInMenu ) Returning false." )
+    LOGGER( 256, "    ( isPrefixInMenu ) Returning false." )
     return false;
 }
 
@@ -7449,8 +7455,8 @@ stock isPrefixInMenu( map[] )
  */
 stock map_isTooRecent( map[] )
 {
-    LOGGER( 0, "I AM ENTERING ON map_isTooRecent(1) | map: %s", map )
-    LOGGER( 0, "    ( map_isTooRecent ) Returning TrieKeyExists: %d", TrieKeyExists( g_recentMapsTrie, map ) )
+    LOGGER( 256, "I AM ENTERING ON map_isTooRecent(1) | map: %s", map )
+    LOGGER( 256, "    ( map_isTooRecent ) Returning TrieKeyExists: %d", TrieKeyExists( g_recentMapsTrie, map ) )
 
     return TrieKeyExists( g_recentMapsTrie, map );
 }
@@ -10123,7 +10129,7 @@ stock nomination_getPlayer( mapIndex )
  */
 stock getPlayerNominationMapIndex( player_id, nominationIndex )
 {
-    LOGGER( 0, "I AM ENTERING ON getPlayerNominationMapIndex(2) | player_id: %d, nominationIndex: %d", player_id, nominationIndex )
+    LOGGER( 256, "I AM ENTERING ON getPlayerNominationMapIndex(2) | player_id: %d, nominationIndex: %d", player_id, nominationIndex )
 
     new trieKey             [ MAX_NOMINATION_TRIE_KEY_SIZE ];
     new playerNominationData[ MAX_OPTIONS_IN_VOTE ];
@@ -10136,11 +10142,11 @@ stock getPlayerNominationMapIndex( player_id, nominationIndex )
     }
     else
     {
-        LOGGER( 0, "    ( getPlayerNominationMapIndex ) Returning playerNominationData[nominationIndex]: %d", -1 )
+        LOGGER( 256, "    ( getPlayerNominationMapIndex ) Returning playerNominationData[nominationIndex]: %d", -1 )
         return -1;
     }
 
-    LOGGER( 0, "    ( getPlayerNominationMapIndex ) Returning playerNominationData[nominationIndex]: %d", \
+    LOGGER( 256, "    ( getPlayerNominationMapIndex ) Returning playerNominationData[nominationIndex]: %d", \
            playerNominationData[ nominationIndex ] )
     return playerNominationData[ nominationIndex ];
 }
@@ -10336,7 +10342,7 @@ stock countPlayerNominations( player_id, &openNominationIndex )
 
 stock createPlayerNominationKey( player_id, trieKey[], trieKeyLength )
 {
-    LOGGER( 0, "I AM ENTERING ON createPlayerNominationKey(3) | player_id: %d, trieKeyLength: %d", \
+    LOGGER( 256, "I AM ENTERING ON createPlayerNominationKey(3) | player_id: %d, trieKeyLength: %d", \
             player_id, trieKeyLength )
 
     new ipSize;
@@ -10348,7 +10354,7 @@ stock createPlayerNominationKey( player_id, trieKey[], trieKeyLength )
     }
 
     get_user_authid( player_id, trieKey[ ipSize ], trieKeyLength - ipSize );
-    LOGGER( 0, "( createPlayerNominationKey ) player_id: %d, trieKey: %s,", player_id, trieKey )
+    LOGGER( 256, "( createPlayerNominationKey ) player_id: %d, trieKey: %s,", player_id, trieKey )
 }
 
 stock nomination_toggle( player_id, mapIndex )
@@ -10673,7 +10679,7 @@ stock getSurMapNameIndex( mapSurName[] )
 
 stock get_real_players_number()
 {
-    LOGGER( 0, "I AM ENTERING ON get_real_players_number(0)" )
+    LOGGER( 256, "I AM ENTERING ON get_real_players_number(0)" )
     new playersCount;
 
     new players[ MAX_PLAYERS ];
@@ -10707,7 +10713,7 @@ stock get_real_players_number()
 
 stock percent( is, of )
 {
-    LOGGER( 0, "I AM ENTERING ON percent(2) | is: %d, of: %d", is, of )
+    LOGGER( 256, "I AM ENTERING ON percent(2) | is: %d, of: %d", is, of )
     return ( of != 0 ) ? floatround( floatmul( float( is ) / float( of ), 100.0 ) ) : 0;
 }
 
@@ -11025,7 +11031,7 @@ stock register_dictionary_colored( const dictionaryFile[] )
                 REMOVE_LETTER_COLOR_TAGS( langTranslationText )
             #endif
 
-                LOGGER( 0, "lang: %s, Id: %d, Text: %s", langTypeAcronym, translationKeyId, langTranslationText )
+                LOGGER( 256, "lang: %s, Id: %d, Text: %s", langTypeAcronym, translationKeyId, langTranslationText )
                 AddTranslation( langTypeAcronym, translationKeyId, langTranslationText[ 2 ] );
             }
         }
@@ -11297,7 +11303,7 @@ stock is_map_valid_bsp_check( mapName[] )
     // The mapName was too short to possibly house the .bsp extension
     if( lenght < 0 )
     {
-        LOGGER( 0, "    ( is_map_valid_bsp_check ) Returning false. [lenght < 0]" )
+        LOGGER( 256, "    ( is_map_valid_bsp_check ) Returning false. [lenght < 0]" )
         return false;
     }
 
@@ -11310,12 +11316,12 @@ stock is_map_valid_bsp_check( mapName[] )
         // Recheck
         if( is_map_valid( mapName ) )
         {
-            LOGGER( 0, "    ( is_map_valid_bsp_check ) Returning true. [is_map_valid]" )
+            LOGGER( 256, "    ( is_map_valid_bsp_check ) Returning true. [is_map_valid]" )
             return true;
         }
     }
 
-    LOGGER( 0, "    ( is_map_valid_bsp_check ) Returning false. " )
+    LOGGER( 256, "    ( is_map_valid_bsp_check ) Returning false. " )
     return false;
 }
 
@@ -11612,7 +11618,7 @@ stock bool:isAValidMap( mapname[] )
 
     if( IS_MAP_VALID( mapname ) )
     {
-        LOGGER( 0, "    ( isAValidMap ) Returning true. [IS_MAP_VALID]" )
+        LOGGER( 256, "    ( isAValidMap ) Returning true. [IS_MAP_VALID]" )
         return true;
     }
 
@@ -11622,7 +11628,7 @@ stock bool:isAValidMap( mapname[] )
     // The mapname was too short to possibly house the .bsp extension
     if( lenght < 0 )
     {
-        LOGGER( 0, "    ( isAValidMap ) Returning false. [lenght < 0]" )
+        LOGGER( 256, "    ( isAValidMap ) Returning false. [lenght < 0]" )
         return false;
     }
 
@@ -11635,12 +11641,12 @@ stock bool:isAValidMap( mapname[] )
         // recheck
         if( IS_MAP_VALID( mapname ) )
         {
-            LOGGER( 0, "    ( isAValidMap ) Returning true. [IS_MAP_VALID]" )
+            LOGGER( 256, "    ( isAValidMap ) Returning true. [IS_MAP_VALID]" )
             return true;
         }
     }
 
-    LOGGER( 0, "    ( isAValidMap ) Returning false." )
+    LOGGER( 256, "    ( isAValidMap ) Returning false." )
     return false;
 }
 
@@ -12039,7 +12045,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
 
     stock print_tests_failure()
     {
-        LOGGER( 0, "I AM ENTERING ON print_tests_failure(0)" )
+        LOGGER( 256, "I AM ENTERING ON print_tests_failure(0)" )
 
         new test_id;
         new test_name[ MAX_SHORT_STRING ];
@@ -12079,7 +12085,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
      */
     stock setTestFailure( test_id, bool:isFailure, failure_reason[] )
     {
-        LOGGER( 0, "I AM ENTERING ON setTestFailure(...) | test_id: %d, isFailure: %d, \
+        LOGGER( 256, "I AM ENTERING ON setTestFailure(...) | test_id: %d, isFailure: %d, \
                 failure_reason: %s", test_id, isFailure, failure_reason )
 
         new trieKey[ 10 ];
@@ -12113,7 +12119,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
      */
     stock register_test( max_delay_result, test_name[] )
     {
-        LOGGER( 0, "I AM ENTERING ON register_test(2) | max_delay_result: %d, test_name: %s", max_delay_result, test_name )
+        LOGGER( 256, "I AM ENTERING ON register_test(2) | max_delay_result: %d, test_name: %s", max_delay_result, test_name )
         ArrayPushString( g_test_idsAndNamesArray, test_name );
 
         // All the normal Unit Tests will be finished when the Delayed Unit Test begin.
