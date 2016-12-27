@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-360";
+new const PLUGIN_VERSION[] = "v3.2.6-361";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -88,7 +88,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-360";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 16+2+64
+#define DEBUG_LEVEL 16+32+64
 
 
 /**
@@ -267,6 +267,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-360";
         test_RTVAndUnRTV_load();
         test_getUniqueRandom_load();
         test_whatGameEndingTypeIt_load();
+        test_convertNumericBase_load();
     }
 
     /**
@@ -300,7 +301,8 @@ new const PLUGIN_VERSION[] = "v3.2.6-360";
             // LOGGER( 1, "Current i is: %d", i )
         }
 
-        test_whatGameEndingTypeIt_load();
+        test_convertNumericBase_load();
+        // test_whatGameEndingTypeIt_load();
         // test_getUniqueRandom_load();
         // test_nominateAndUnnominate_load();
         // test_loadVoteChoices_cases();
@@ -438,6 +440,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-360";
 #define IS_DISABLED_VOTEMAP_INTRO       2
 #define IS_DISABLED_VOTEMAP_RUNOFF      4
 #define IS_DISABLED_VOTEMAP_EXTENSION   8
+#define IS_ENABLED_VOTEMAP_NOMINATIONS  16
 
 #define IS_VOTE_IN_PROGRESS 1
 #define IS_FORCED_VOTE      2
@@ -732,6 +735,17 @@ new const PLUGIN_VERSION[] = "v3.2.6-360";
         menu_destroy( %1 ); \
         %1 = 0; \
     } \
+}
+
+/**
+ * Check whether the menu exists, call menu_destroy(1) and set the menu to id to 0.
+ *
+ * @param menu_id_variable    a variable within the player menu to be destroyed.
+ */
+#define TOGGLE_BIT_FLAG_ON_OFF(%1,%2) \
+{ \
+    LOGGER( 0, "I AM ENTERING ON TOGGLE_BIT_FLAG_ON_OFF(2) | mask: %d, flag: %d", %1, %2 ) \
+    %1 & %2 ? ( %1 &= ~%2 ) : ( %1 |= %2 ); \
 }
 
 
@@ -1125,6 +1139,7 @@ new g_currentMapName            [ MAX_MAPNAME_LENGHT  ];
 new g_playerVotedOption         [ MAX_PLAYERS_COUNT   ];
 new g_playerVotedWeight         [ MAX_PLAYERS_COUNT   ];
 new g_generalUsePlayersMenuIds  [ MAX_PLAYERS_COUNT   ];
+new g_voteMapMenuPages          [ MAX_PLAYERS_COUNT   ];
 new g_recentMapsMenuPages       [ MAX_PLAYERS_COUNT   ];
 new g_nominationPlayersMenuPages[ MAX_PLAYERS_COUNT   ];
 new g_playersKills              [ MAX_PLAYERS_COUNT   ];
@@ -2341,8 +2356,11 @@ stock loadMapGroupsFeatureFile( mapFilerFilePath[], &Array:mapFilersPathArray, &
                         }
                         else
                         {
-                            LOGGER( 1, "AMX_ERR_BOUNDS, %L", LANG_SERVER, "GAL_GRP_FAIL_TOOMANY", mapFilerFilePath )
-                            log_error( AMX_ERR_BOUNDS, "%L", LANG_SERVER, "GAL_GRP_FAIL_TOOMANY", mapFilerFilePath );
+                            LOGGER( 1, "AMX_ERR_BOUNDS, %L %L", LANG_SERVER, "GAL_GRP_FAIL_TOOMANY", \
+                                    mapFilerFilePath, LANG_SERVER, "GAL_GRP_FAIL_TOOMANY_2" )
+
+                            log_error( AMX_ERR_BOUNDS, "%L %L", LANG_SERVER, "GAL_GRP_FAIL_TOOMANY",
+                                    mapFilerFilePath, LANG_SERVER, "GAL_GRP_FAIL_TOOMANY_2" );
 
                             break;
                         }
@@ -2542,7 +2560,7 @@ stock isToStartTheVotingOnThisRound( secondsRemaining )
         new roundsRemaining = howManyRoundsAreRemaining( secondsRemaining - PERIODIC_CHECKING_INTERVAL,
                 whatGameEndingTypeItIs() );
 
-        LOGGER( 0, "", debugIsTimeToStartTheEndOfMap( secondsRemaining, 32 ) )
+        LOGGER( 0, "", debugIsTimeToStartTheEndOfMap( secondsRemaining, 0 ) )
         return chooseTheEndOfMapStartOption( roundsRemaining );
     }
 
@@ -2701,7 +2719,7 @@ stock GameEndingType:whatGameEndingTypeItIs()
     GET_REMAINING( by_winlimit , cv_winlimit , max( g_totalCtWins, g_totalTerroristsWins ) )
 
     getRoundsRemainingByFrags( get_timeleft(), by_time, by_frags );
-    LOGGER( 0, "", debugWhatGameEndingTypeItIs( by_maxrounds, by_time, by_winlimit, by_frags, 32 ) )
+    LOGGER( 0, "", debugWhatGameEndingTypeItIs( by_maxrounds, by_time, by_winlimit, by_frags, 0 ) )
 
     // Check whether there is any allowed combination.
     SWITCH_ENDING_GAME_TYPE_RETURN( by_winlimit    , cv_winlimit , by_time    , cv_time      , \
@@ -2730,7 +2748,7 @@ stock GameEndingType:whatGameEndingTypeItIs()
 stock GameEndingType:switchEndingGameType( by_maxrounds, cv_maxrounds, by_time, cv_time, by_winlimit, cv_winlimit,
                                            by_frags, cv_frags, GameEndingType:type, bool:allowSelfReturn )
 {
-    LOGGER( 128, "I AM ENTERING ON switchEndingGameType(10) GameEndingType: %d", type )
+    LOGGER( 0, "I AM ENTERING ON switchEndingGameType(10) GameEndingType: %d", type )
 
     // If the cvar original value is set to a zero value, the round will never ended by such cvar.
     if( cv_maxrounds > 0 )
@@ -2806,7 +2824,7 @@ stock GameEndingType:switchEndingGameType( by_maxrounds, cv_maxrounds, by_time, 
         }
     }
 
-    LOGGER( 1, "    ( switchEndingGameType ) Returning GameEndingType_ByNothing: %d", GameEndingType_ByNothing )
+    LOGGER( 0, "    ( switchEndingGameType ) Returning GameEndingType_ByNothing: %d", GameEndingType_ByNothing )
     return GameEndingType_ByNothing;
 }
 
@@ -5399,6 +5417,8 @@ stock vote_startDirector( bool:is_forced_voting )
     else
     {
         // Clear the cmd_startVote(3) map settings just in case they where loaded.
+        // Clean it just to be sure as the voteMapMenuBuilder() could let it filled.
+        clearTheVotingMenu();
         g_voteMapStatus = 0;
 
         // to prepare the initial voting state
@@ -7370,6 +7390,32 @@ stock map_isInMenu( map[] )
     return false;
 }
 
+stock removeMapFromTheVotingMenu( mapName[] )
+{
+    LOGGER( 1, "I AM ENTERING ON removeMapFromTheVotingMenu(1) | map: %s", mapName )
+
+    for( new index = 0; index < g_totalVoteOptions; index++ )
+    {
+        if( equali( mapName, g_votingMapNames[ index ] ) )
+        {
+            g_votingMapNames[ index ][ 0 ] = '^0';
+            g_totalVoteOptions--;
+            break;
+        }
+    }
+}
+
+stock addMapToTheVotingMenu( mapName[] )
+{
+    LOGGER( 1, "I AM ENTERING ON addMapToTheVotingMenu(1) | map: %s", mapName )
+
+    if( !map_isInMenu( mapName ) )
+    {
+        copy( g_votingMapNames[ g_totalVoteOptions ], charsmax( g_votingMapNames[] ), mapName );
+        g_totalVoteOptions++;
+    }
+}
+
 stock isPrefixInMenu( map[] )
 {
     LOGGER( 0, "I AM ENTERING ON isPrefixInMenu(1) | map: %s", map )
@@ -8284,13 +8330,6 @@ public showRecentMapsListMenu( player_id )
     // We starting building the menu
     TRY_TO_APPLY( menu_destroy, g_generalUsePlayersMenuIds[ player_id ] )
 
-    if( ( mapIndex = g_recentMapsMenuPages[ player_id ] * MAX_MENU_ITEMS_PER_PAGE ) )
-    {
-        mapIndex = mapIndex - 1;
-    }
-
-    itemsCount = 0;
-
     // Calculate how much pages there are available.
     new currentPageNumber = g_recentMapsMenuPages[ player_id ];
     new lastPageNumber    = ( ( g_recentMapCount / MAX_MENU_ITEMS_PER_PAGE )
@@ -8315,6 +8354,11 @@ public showRecentMapsListMenu( player_id )
     // SET_MENU_LANG_STRING_PROPERTY( MPROP_EXITNAME, g_generalUsePlayersMenuIds[ player_id ], "EXIT" )
     // SET_MENU_LANG_STRING_PROPERTY( MPROP_NEXTNAME, g_generalUsePlayersMenuIds[ player_id ], "MORE" )
     // SET_MENU_LANG_STRING_PROPERTY( MPROP_BACKNAME, g_generalUsePlayersMenuIds[ player_id ], "BACK" )
+
+    if( ( mapIndex = currentPageNumber * MAX_MENU_ITEMS_PER_PAGE ) )
+    {
+        mapIndex = mapIndex - 1;
+    }
 
     // Add the menu items.
     for( ; mapIndex < g_recentMapCount && itemsCount < MAX_MENU_ITEMS_PER_PAGE; ++mapIndex, ++itemsCount )
@@ -8480,10 +8524,10 @@ public cmd_cancelVote( player_id, level, cid )
     return PLUGIN_HANDLED;
 }
 
-stock bool:approvedTheVotingStartLight( bool:is_forced_voting )
+stock bool:approvedTheVotingStartLight()
 {
-    LOGGER( 128, "I AM ENTERING ON approvedTheVotingStartLight(1) | is_forced_voting: %d, get_real_players_number: %d", \
-            is_forced_voting, get_real_players_number() )
+    LOGGER( 128, "I AM ENTERING ON approvedTheVotingStartLight(1) get_real_players_number: %d", \
+            get_real_players_number() )
 
     // block the voting on some not allowed situations/cases
     if( get_real_players_number() == 0)
@@ -8528,7 +8572,7 @@ public cmd_voteMap( player_id, level, cid )
     {
         color_print( player_id, "%L", player_id, "GAL_VOTE_INPROGRESS" );
     }
-    else if( approvedTheVotingStartLight( true ) )
+    else if( approvedTheVotingStartLight() )
     {
         new argumentsCount;
         new arguments[ MAX_BIG_BOSS_STRING ];
@@ -8546,11 +8590,11 @@ public cmd_voteMap( player_id, level, cid )
         {
             new argument[ MAX_MAPNAME_LENGHT  ];
 
-            // If this was just called but not within the sufficient maps, the menu will contain
-            // invalid maps, therefore clean it just to be sure.
+            // If the voteMapMenuBuilder(1) added some maps, they will be around here, but we do not
+            // want to them be here as this is a full spec command.
             clearTheVotingMenu();
 
-            // To set the initial settings setup
+            // The initial settings setup
             g_voteMapStatus                   = IS_DISABLED_VOTEMAP_EXIT;
             g_invokerVoteMapNameToDecide[ 0 ] = '^0';
 
@@ -8593,6 +8637,10 @@ public cmd_voteMap( player_id, level, cid )
                 {
                     showGalVoteMapHelp( player_id, index, argument );
 
+                    // If this was just called but not within the sufficient maps, the menu will contain
+                    // invalid maps, therefore clean it just to be sure.
+                    clearTheVotingMenu();
+
                     // As should not be any invalid arguments, we do allow to keep going on, otherwise
                     // we would have to use a buffers loader as on announceVoteBlockedMap(4) and
                     // flushVoteBlockedMaps(3) to avoid the client overflow when too many how arguments
@@ -8603,29 +8651,7 @@ public cmd_voteMap( player_id, level, cid )
             }
 
             LOGGER( 8, "    ( cmd_voteMap ) g_voteMapStatus: %d", g_voteMapStatus )
-
-            if( g_totalVoteOptions > 1 )
-            {
-                // Load the voting time
-                g_votingSecondsRemaining = get_pcvar_num( cvar_voteDuration );
-
-                // Save the invoker id to use it later when we get the outcome result
-                g_voteMapInvokerPlayerId = player_id;
-
-                // to prepare the initial voting state, forcing the start up.
-                configureVotingStart( true );
-
-                // Show up the voting menu
-                initializeTheVoteDisplay();
-            }
-            else
-            {
-                // Vote creation failed; no maps found.
-                color_print( 0, "%L", LANG_PLAYER, "GAL_VOTE_NOMAPS" );
-
-                finalizeVoting();
-                showGalVoteMapHelp( player_id );
-            }
+            startVoteMapVoting( player_id );
         }
         else
         {
@@ -8635,6 +8661,34 @@ public cmd_voteMap( player_id, level, cid )
 
     LOGGER( 1, "    ( cmd_voteMap ) Returning PLUGIN_HANDLED" )
     return PLUGIN_HANDLED;
+}
+
+stock startVoteMapVoting( player_id )
+{
+    LOGGER( 128, "I AM ENTERING ON startVoteMapVoting(1) | player_id: %s", player_id )
+
+    if( g_totalVoteOptions > 1 )
+    {
+        // Load the voting time
+        g_votingSecondsRemaining = get_pcvar_num( cvar_voteDuration );
+
+        // Save the invoker id to use it later when we get the outcome result
+        g_voteMapInvokerPlayerId = player_id;
+
+        // to prepare the initial voting state, forcing the start up.
+        configureVotingStart( true );
+
+        // Show up the voting menu
+        initializeTheVoteDisplay();
+    }
+    else
+    {
+        // Vote creation failed; no maps found.
+        color_print( 0, "%L", LANG_PLAYER, "GAL_VOTE_NOMAPS" );
+
+        finalizeVoting();
+        showGalVoteMapHelp( player_id );
+    }
 }
 
 stock showGalVoteMapHelp( player_id, index = 0, argument[] = {0} )
@@ -8666,7 +8720,7 @@ stock openTheVoteMapActionMenu()
 {
     LOGGER( 128, "I AM ENTERING ON openTheVoteMapActionMenu(0) | player_id: %d", g_voteMapInvokerPlayerId )
 
-    g_pendingMapVoteCountdown = get_pcvar_num( cvar_voteDuration );
+    g_pendingMapVoteCountdown = get_pcvar_num( cvar_voteDuration ) + 45;
     set_task( 1.0, "displayTheVoteMapActionMenu", TASKID_PENDING_VOTE_COUNTDOWN, _, _, "a", g_pendingMapVoteCountdown );
 }
 
@@ -8686,23 +8740,23 @@ public handleVoteMapActionMenu( player_id, pressedKeyCode )
         // pressedKeyCode 0 means the keyboard key 1
         case 0:
         {
+            // Do nothing by default, we are rejecting the results
+        }
+        case 2:
+        {
             if( g_invokerVoteMapNameToDecide[ 0 ] )
             {
                 setNextMap( g_invokerVoteMapNameToDecide );
                 process_last_round( true );
             }
         }
-        case 2:
+        case 4:
         {
             // Only set the next map
             if( g_invokerVoteMapNameToDecide[ 0 ] )
             {
                 setNextMap( g_invokerVoteMapNameToDecide );
             }
-        }
-        case 4:
-        {
-            // Do nothing by default, we are rejecting the results
         }
     }
 
@@ -8746,17 +8800,18 @@ public displayTheVoteMapActionMenu()
                 COLOR_YELLOW, COLOR_GREY, g_pendingMapVoteCountdown, LANG_PLAYER, "GAL_TIMELEFT", COLOR_YELLOW );
 
         formatex( menu_body, charsmax( menu_body ),
-               "%s%L^n^n\
-                %s1.%s %L %s^n\
-                %s3.%s %L^n^n\
-                %s%L^n^n\
-                %s5.%s %L %s\
+               "\
+                %L%s: %s%s^n\
+                %s%L^n\
+                ^n%s1.%s %L %s\
+                ^n%s3.%s %L %s\
+                ^n%s5.%s %L\
                 ",
-                COLOR_YELLOW, player_id, "WHICH_MAP",
-                COLOR_RED, allowChange ? COLOR_WHITE : COLOR_GREY, player_id, "CHANGE_MAP_TO", winnerMap,
-                COLOR_RED, allowChange ? COLOR_WHITE : COLOR_GREY, player_id, "GAL_OPTION_CANCEL_PARTIALLY", winnerMap,
+                player_id, "THE_RESULT", COLOR_RED, COLOR_WHITE, winnerMap,
                 COLOR_YELLOW, player_id, "WANT_CONTINUE",
                 COLOR_RED, COLOR_WHITE, player_id, "CANC_VOTE", menu_counter,
+                COLOR_RED, allowChange ? COLOR_WHITE : COLOR_GREY, player_id, "CHANGE_MAP_TO", winnerMap,
+                COLOR_RED, allowChange ? COLOR_WHITE : COLOR_GREY, player_id, "GAL_OPTION_CANCEL_PARTIALLY", winnerMap,
                 0 );
 
         get_user_menu( player_id, menu_id, menuKeysUnused );
@@ -8775,10 +8830,282 @@ public displayTheVoteMapActionMenu()
     else
     {
         // To perform the default action automatically, nothing is answered.
-        handleVoteMapActionMenu( player_id, 2 );
+        handleVoteMapActionMenu( player_id, 0 );
     }
 
     LOGGER( 4, "%48s", " ( displayTheVoteMapActionMenu| out )" )
+}
+
+stock voteMapMenuBuilder( player_id )
+{
+    // The initial settings setup
+    g_voteMapStatus                   = IS_DISABLED_VOTEMAP_EXIT;
+    g_invokerVoteMapNameToDecide[ 0 ] = '^0';
+
+    displayVoteMapMenuHook( player_id );
+}
+
+/**
+ * Due there are several first menu options, take `VOTEMAP_FIRST_PAGE_ITEMS_COUNTING` items less.
+ */
+#define VOTEMAP_FIRST_PAGE_ITEMS_COUNTING 4
+
+public handleDisplayVoteMap( player_id, menu, item )
+{
+    LOGGER( 128, "I AM ENTERING ON handleDisplayVoteMap(1) | player_id: %d, menu: %d, item: %d", player_id, menu, item )
+
+    // Let go to destroy the menu and clean some memory. As the menu is not paginated, the item 9
+    // is the key 0 on the keyboard. Also, the item 8 is the key 9; 7, 8; 6, 7; 5, 6; 4, 5; etc.
+    if( item < 0
+        || ( item == 9
+             && g_totalVoteOptions < 2 ) )
+    {
+        DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
+
+        LOGGER( 1, "    ( handleDisplayVoteMap ) Just Returning PLUGIN_HANDLED, the menu is destroyed." )
+        return PLUGIN_HANDLED;
+    }
+
+    // To start the voting
+    if( item == 9
+        && g_totalVoteOptions > 1 )
+    {
+        DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
+        startVoteMapVoting( player_id );
+
+        LOGGER( 1, "    ( handleDisplayVoteMap ) Just Returning PLUGIN_HANDLED, starting the voting." )
+        return PLUGIN_HANDLED;
+    }
+
+    // If the 8 button item is hit, and we are not on the first page, we must to perform the back option.
+    if( item == 7 )
+    {
+        DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
+        g_voteMapMenuPages[ player_id ] ? g_voteMapMenuPages[ player_id ]-- : 0;
+
+        // We need to delay the menu show up on 0.2 seconds to avoid players lagging the server by DOS attack.
+        set_task( 0.2, "displayVoteMapMenuHook", player_id );
+
+        LOGGER( 1, "    ( handleDisplayVoteMap ) Just Returning PLUGIN_HANDLED, doing the back button." )
+        return PLUGIN_HANDLED;
+    }
+
+    // If the 9 button item is hit, and we are on some page not the last one, we must to perform the more option.
+    if( item == 8 )
+    {
+        DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
+        g_voteMapMenuPages[ player_id ]++;
+
+        // We need to delay the menu show up on 0.2 seconds to avoid players lagging the server by DOS attack.
+        set_task( 0.2, "displayVoteMapMenuHook", player_id );
+
+        LOGGER( 1, "    ( handleDisplayVoteMap ) Just Returning PLUGIN_HANDLED, doing the more button." )
+        return PLUGIN_HANDLED;
+    }
+
+    // Due the firsts items to be specials, intercept them, but if and only if we are on the menu's first page.
+    if( g_voteMapMenuPages[ player_id ] == 0
+        && item < 4 )
+    {
+        switch( item )
+        {
+            // pressedKeyCode 0 means the keyboard key 1
+            case 0:
+            {
+                LOGGER( 8, "    ( cmd_voteMap ) Entering on argument `nointro`" )
+                TOGGLE_BIT_FLAG_ON_OFF( g_voteMapStatus, IS_DISABLED_VOTEMAP_INTRO )
+            }
+            case 1:
+            {
+                LOGGER( 8, "    ( cmd_voteMap ) Entering on argument `norunoff`" )
+                TOGGLE_BIT_FLAG_ON_OFF( g_voteMapStatus, IS_DISABLED_VOTEMAP_RUNOFF )
+            }
+            case 2:
+            {
+                LOGGER( 8, "    ( cmd_voteMap ) Entering on argument `noextension`" )
+                TOGGLE_BIT_FLAG_ON_OFF( g_voteMapStatus, IS_DISABLED_VOTEMAP_EXTENSION )
+            }
+            case 3:
+            {
+                // Load on the nominations maps.
+                loadOnlyNominationVoteChoices();
+
+                // This option cannot be undone, to reduce the code complexity.
+                g_voteMapStatus |= IS_ENABLED_VOTEMAP_NOMINATIONS;
+                LOGGER( 8, "    ( cmd_voteMap ) Entering on argument `loadnominations`" )
+            }
+        }
+    }
+    else
+    {
+        new mapName[ MAX_MAPNAME_LENGHT ];
+        new pageSeptalNumber = convert_numeric_base( g_voteMapMenuPages[ player_id ], 10, 7 );
+
+        // Due there are several first menu options, take `VOTEMAP_FIRST_PAGE_ITEMS_COUNTING` items less.
+        item = convert_numeric_base( pageSeptalNumber * 10, 7, 10 ) + item - VOTEMAP_FIRST_PAGE_ITEMS_COUNTING;
+        ArrayGetString( g_nominationLoadedMapsArray, item, mapName, charsmax( mapName ) );
+
+        // Toggle it if enabled
+        map_isInMenu( mapName ) ? removeMapFromTheVotingMenu( mapName ) : addMapToTheVotingMenu( mapName );
+    }
+
+    DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
+    set_task( 0.2, "displayVoteMapMenuHook", player_id );
+
+    LOGGER( 1, "    ( handleDisplayVoteMap ) Just Returning PLUGIN_HANDLED, successful nomination." )
+    return PLUGIN_HANDLED;
+}
+
+/**
+ * Used to allow the menu displayVoteMapMenu(1) to have parameters within a default value.
+ * It is because public functions are not allow to have a default value and we need this function
+ * be public to allow it to be called from a set_task().
+ */
+public displayVoteMapMenuHook( player_id )
+{
+    LOGGER( 128, "I AM ENTERING ON displayVoteMapMenuHook(1) | currentPage: %d", g_voteMapMenuPages[ player_id ] )
+    displayVoteMapMenu( player_id );
+}
+
+/**
+ * Gather all maps that match the nomination.
+ */
+stock displayVoteMapMenu( player_id )
+{
+    LOGGER( 128, "I AM ENTERING ON nomination_menu(1) | player_id: %d", player_id )
+
+    // Clear the last menu, if exists
+    DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
+
+    new mapIndex;
+    new itemsCount;
+    new nominationsMapsCount;
+
+    new choice        [ MAX_MAPNAME_LENGHT + 32 ];
+    new nominationMap [ MAX_MAPNAME_LENGHT ];
+    new selectedMap   [ MAX_SHORT_STRING ];
+    new disabledReason[ MAX_SHORT_STRING ];
+
+    nominationsMapsCount  = ArraySize( g_nominationLoadedMapsArray );
+
+    // Calculate how much pages there are available.
+    new currentPageNumber = g_voteMapMenuPages[ player_id ];
+    new lastPageNumber    = ( ( ( nominationsMapsCount + 1 ) / MAX_NOM_MENU_ITEMS_PER_PAGE )
+                        + ( ( ( ( nominationsMapsCount + 1 ) % MAX_NOM_MENU_ITEMS_PER_PAGE ) > 0 ) ? 1 : 0 ) );
+
+    // To create the menu
+#if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
+    formatex( disabledReason, charsmax( disabledReason ),
+            IS_COLORED_CHAT_ENABLED() ? "%L\R%d /%d" : "%L  %d /%d",
+            player_id, "GAL_LISTMAPS_TITLE", currentPageNumber + 1, lastPageNumber );
+#else
+    formatex( disabledReason, charsmax( disabledReason ), "%L  %d /%d", player_id, "GAL_LISTMAPS_TITLE",
+            currentPageNumber + 1, lastPageNumber );
+#endif
+
+    g_generalUsePlayersMenuIds[ player_id ] = menu_create( disabledReason, "handleDisplayVoteMap" );
+
+    // The first page contains by default options, then the first page will get one less items due
+    // the extra options.
+    if( currentPageNumber < 1 )
+    {
+        new bool:isOn;
+        formatex( selectedMap, charsmax( selectedMap ), "%s%L", COLOR_YELLOW, player_id, "GAL_CHOICE_MAP", 0, 0 );
+
+        mapIndex   = 0;
+        itemsCount = 4;
+
+        isOn = g_voteMapStatus & IS_DISABLED_VOTEMAP_INTRO != 0;
+        formatex( disabledReason, charsmax( disabledReason ), "-nointro %s", isOn ? selectedMap : {0} );
+        menu_additem( g_generalUsePlayersMenuIds[ player_id ], disabledReason, _, 0 );
+
+        isOn = g_voteMapStatus & IS_DISABLED_VOTEMAP_RUNOFF != 0;
+        formatex( disabledReason, charsmax( disabledReason ), "-norunoff %s", isOn ? selectedMap : {0} );
+        menu_additem( g_generalUsePlayersMenuIds[ player_id ], disabledReason, _, 0 );
+
+        isOn = g_voteMapStatus & IS_DISABLED_VOTEMAP_EXTENSION != 0;
+        formatex( disabledReason, charsmax( disabledReason ), "-noextension %s", isOn ? selectedMap : {0} );
+        menu_additem( g_generalUsePlayersMenuIds[ player_id ], disabledReason, _, 0 );
+
+        isOn = g_voteMapStatus & IS_ENABLED_VOTEMAP_NOMINATIONS != 0;
+        formatex( disabledReason, charsmax( disabledReason ), "-loadnominations %s", isOn ? selectedMap : {0} );
+        menu_additem( g_generalUsePlayersMenuIds[ player_id ], disabledReason, _, isOn ? ( 1 << 26 ) : 0 );
+
+        // Add some space from the last option.
+        // menu_addblank( g_generalUsePlayersMenuIds[ player_id ], 0 );
+    }
+    else
+    {
+        // Due there are several first menu options, take `VOTEMAP_FIRST_PAGE_ITEMS_COUNTING` items less.
+        mapIndex   = currentPageNumber * MAX_NOM_MENU_ITEMS_PER_PAGE - VOTEMAP_FIRST_PAGE_ITEMS_COUNTING;
+        itemsCount = 0;
+    }
+
+    // Disables the menu paging.
+    menu_setprop( g_generalUsePlayersMenuIds[ player_id ], MPROP_PERPAGE, 0 );
+
+    // Configure the menu buttons.
+    // SET_MENU_LANG_STRING_PROPERTY( MPROP_EXITNAME, g_generalUsePlayersMenuIds[ player_id ], "EXIT" )
+    // SET_MENU_LANG_STRING_PROPERTY( MPROP_NEXTNAME, g_generalUsePlayersMenuIds[ player_id ], "MORE" )
+    // SET_MENU_LANG_STRING_PROPERTY( MPROP_BACKNAME, g_generalUsePlayersMenuIds[ player_id ], "BACK" )
+
+    for( ; mapIndex < nominationsMapsCount && itemsCount < MAX_NOM_MENU_ITEMS_PER_PAGE; mapIndex++ )
+    {
+        ArrayGetString( g_nominationLoadedMapsArray, mapIndex, nominationMap, charsmax( nominationMap ) );
+        itemsCount++;
+
+        // Start the menu entry item calculation
+        {
+            // in most cases, the map will be available for selection, so assume that's the case here
+            selectedMap   [ 0 ] = '^0';
+            disabledReason[ 0 ] = '^0';
+
+            // disable if the map has already been nominated
+            if( map_isInMenu( nominationMap ) )
+            {
+                formatex( selectedMap, charsmax( selectedMap ), "%s%L", COLOR_YELLOW, player_id, "GAL_MATCH_NOMINATED" );
+            }
+            else if( g_totalVoteOptions > 8 )
+            {
+                formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_GRP_FAIL_TOOMANY_2" );
+            }
+            else if( equali( g_currentMapName, nominationMap ) )
+            {
+                formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_CURRENTMAP" );
+            }
+
+            formatex( choice, charsmax( choice ), "%s %s %s", nominationMap, selectedMap, disabledReason );
+            LOGGER( 4, "( nomination_menu ) choice: %s", choice )
+
+            menu_additem( g_generalUsePlayersMenuIds[ player_id ], choice, _,
+                    ( disabledReason[ 0 ] == '^0' ? 0 : ( 1 << 26 ) ) );
+
+        } // end the menu entry item calculation.
+
+    } // end for 'mapIndex'.
+
+    LOGGER( 4, "( displayVoteMapMenu ) itemsCount: %d, mapIndex: %d", itemsCount, mapIndex )
+
+    addMenuMoreBackStartOptions( player_id, disabledReason, mapIndex < nominationsMapsCount, currentPageNumber > 0, itemsCount );
+    menu_display( player_id, g_generalUsePlayersMenuIds[ player_id ] );
+}
+
+stock addMenuMoreBackStartOptions( player_id, disabledReason[], bool:isToEnableMoreButton, bool:isToEnableBackButton, itemsCount )
+{
+    LOGGER( 128, "I AM ENTERING ON addMenuMoreBackStartOptions(5) | isToEnableMoreButton: %d", isToEnableMoreButton )
+    addMenuMoreBackButtons( player_id, disabledReason, isToEnableMoreButton, isToEnableBackButton, itemsCount );
+
+    // To add the exit button
+    if( g_totalVoteOptions > 1 )
+    {
+        formatex( disabledReason, MAX_SHORT_STRING - 1, "%L%s (%d)", player_id, "START_VOT", COLOR_YELLOW, g_totalVoteOptions );
+        menu_additem( g_generalUsePlayersMenuIds[ player_id ], disabledReason, _, 0 );
+    }
+    else
+    {
+        formatex( disabledReason, MAX_SHORT_STRING - 1, "%L%s (%d)", player_id, "EXIT", COLOR_GREY, g_totalVoteOptions );
+        menu_additem( g_generalUsePlayersMenuIds[ player_id ], disabledReason, _, 0 );
+    }
 }
 
 /**
@@ -8999,14 +9326,20 @@ public cmd_say( player_id )
         {
             LOGGER( 4, "( cmd_say ) the secondWord is empty." )
 
-            if( ( g_rtvCommands & RTV_CMD_SHORTHAND
-                  && equali( firstWord, "rtv" ) )
-                || ( g_rtvCommands & RTV_CMD_DYNAMIC
-                     && equali( firstWord, "rockthe", 7 )
-                     && equali( firstWord[ strlen( firstWord ) - 4 ], "vote" )
-                     && !( g_rtvCommands & RTV_CMD_STANDARD ) ) )
+            if( equali( firstWord, "galmenu" ) )
             {
-                LOGGER( 4, "( cmd_say ) running vote_rock( player_id ); player_id: %s", player_id )
+                voteMapMenuBuilder( player_id );
+
+                LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, voteMapMenuBuilder(1) chosen." )
+                return PLUGIN_HANDLED;
+            }
+            else if( ( g_rtvCommands & RTV_CMD_SHORTHAND
+                       && equali( firstWord, "rtv" ) )
+                     || ( g_rtvCommands & RTV_CMD_DYNAMIC
+                          && equali( firstWord, "rockthe", 7 )
+                          && equali( firstWord[ strlen( firstWord ) - 4 ], "vote" )
+                          && !( g_rtvCommands & RTV_CMD_STANDARD ) ) )
+            {
                 vote_rock( player_id );
 
                 LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, vote_rock(1) chosen." )
@@ -9127,6 +9460,11 @@ public nomination_menuHook( player_id )
 }
 
 /**
+ * Due there are several first menu options, take `VOTEMAP_FIRST_PAGE_ITEMS_COUNTING` items less.
+ */
+#define NOMINATION_FIRST_PAGE_ITEMS_COUNTING 1
+
+/**
  * Gather all maps that match the nomination.
  */
 stock nomination_menu( player_id )
@@ -9162,19 +9500,6 @@ stock nomination_menu( player_id )
 
     nominationsMapsCount = ArraySize( g_nominationLoadedMapsArray );
 
-    // The first page contains by default the `Cancel All Nominations` option, then the first page
-    // will get one less item due the `Cancel All Nominations` option.
-    if( g_nominationPlayersMenuPages[ player_id ] == 0 )
-    {
-        mapIndex   = 0;
-        itemsCount = 1;
-    }
-    else
-    {
-        mapIndex   = g_nominationPlayersMenuPages[ player_id ] * MAX_NOM_MENU_ITEMS_PER_PAGE - 1;
-        itemsCount = 0;
-    }
-
     // Calculate how much pages there are available.
     new currentPageNumber = g_nominationPlayersMenuPages[ player_id ];
     new lastPageNumber    = ( ( ( nominationsMapsCount + 1 ) / MAX_NOM_MENU_ITEMS_PER_PAGE )
@@ -9209,6 +9534,20 @@ stock nomination_menu( player_id )
     // SET_MENU_LANG_STRING_PROPERTY( MPROP_EXITNAME, g_generalUsePlayersMenuIds[ player_id ], "EXIT" )
     // SET_MENU_LANG_STRING_PROPERTY( MPROP_NEXTNAME, g_generalUsePlayersMenuIds[ player_id ], "MORE" )
     // SET_MENU_LANG_STRING_PROPERTY( MPROP_BACKNAME, g_generalUsePlayersMenuIds[ player_id ], "BACK" )
+
+    // The first page contains by default the `Cancel All Nominations` option, then the first page
+    // will get one less item due the `Cancel All Nominations` option.
+    if( currentPageNumber == 0 )
+    {
+        mapIndex   = 0;
+        itemsCount = 1;
+    }
+    else
+    {
+        // Due there are several first menu options, take `VOTEMAP_FIRST_PAGE_ITEMS_COUNTING` items less.
+        mapIndex   = currentPageNumber * MAX_NOM_MENU_ITEMS_PER_PAGE - NOMINATION_FIRST_PAGE_ITEMS_COUNTING;
+        itemsCount = 0;
+    }
 
     for( ; mapIndex < nominationsMapsCount && itemsCount < MAX_NOM_MENU_ITEMS_PER_PAGE; mapIndex++ )
     {
@@ -9457,6 +9796,17 @@ stock addMenuMoreBackExitOptions( player_id, disabledReason[], bool:isToEnableMo
     LOGGER( 128, "I AM ENTERING ON addMenuMoreBackExitOptions(5) | isToEnableMoreButton: %d, \
             isToEnableBackButton: %d", isToEnableMoreButton, isToEnableBackButton )
 
+    addMenuMoreBackButtons( player_id, disabledReason, isToEnableMoreButton, isToEnableBackButton, itemsCount );
+
+    // To add the exit button
+    formatex( disabledReason, MAX_SHORT_STRING - 1, "%L", player_id, "EXIT" );
+    menu_additem( g_generalUsePlayersMenuIds[ player_id ], disabledReason, _, 0 );
+}
+
+stock addMenuMoreBackButtons( player_id, disabledReason[], bool:isToEnableMoreButton, bool:isToEnableBackButton, itemsCount )
+{
+    LOGGER( 128, "I AM ENTERING ON addMenuMoreBackButtons(5) | isToEnableBackButton: %d", isToEnableBackButton )
+
     // Force the menu control options to be present on the keys 8 (more), 9 (back) and 0 (exit).
     while( itemsCount < MAX_NOM_MENU_ITEMS_PER_PAGE )
     {
@@ -9494,10 +9844,6 @@ stock addMenuMoreBackExitOptions( player_id, disabledReason[], bool:isToEnableMo
     {
         menu_additem( g_generalUsePlayersMenuIds[ player_id ], disabledReason, _, 1 << 26 );
     }
-
-    // To add the exit button
-    formatex( disabledReason, MAX_SHORT_STRING - 1, "%L", player_id, "EXIT" );
-    menu_additem( g_generalUsePlayersMenuIds[ player_id ], disabledReason, _, 0 );
 }
 
 /**
@@ -9559,8 +9905,8 @@ public nomination_handleMatchChoice( player_id, menu, item )
     }
 
     // Due the first nomination menu option to be 'Cancel all your Nominations', take one item less 'item - 1'.
-    // We are using the 'nomination_menu(1)'
-    item = convert_septal_to_decimal( g_nominationPlayersMenuPages[ player_id ] * 10 + item ) - 1;
+    new pageSeptalNumber = convert_numeric_base( g_nominationPlayersMenuPages[ player_id ], 10, 7 );
+    item = convert_numeric_base( pageSeptalNumber * 10, 7, 10 ) + item - NOMINATION_FIRST_PAGE_ITEMS_COUNTING;
 
     map_nominate( player_id, item );
     DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
@@ -9641,27 +9987,80 @@ public nomination_handlePartialMatch( player_id, menu, item )
 }
 
 /**
- * Given a number on the base 7, calculates and return the equivalent decimal number (base 10).
+ * Given a number on a certain base until 10, calculates and return the equivalent number on another
+ * base until 10.
+ *
+ * @param origin_number    the number to be converted.
+ * @param origin_base      the base where `origin_number` is on.
+ * @param destiny_base     the base where `origin_number` is to be converted to.
  */
-stock convert_septal_to_decimal( septal_number )
+stock convert_numeric_base( origin_number, origin_base, destiny_base )
 {
-    LOGGER( 128, "I AM ENTERING ON convert_septal_to_decimal(1) | septal_number: %d", septal_number )
-    new remainder;
+    LOGGER( 128, "I AM ENTERING ON convert_numeric_base(1) | number: %d (%d->%d)", \
+            origin_number, origin_base, destiny_base )
 
-    new decimal = 0;
-    new index   = 0;
+    new integer;
+    new Array:digits;
 
-    while( septal_number != 0 )
+    digits  = toDigitsRepresentation( origin_number, 10 );
+    // printDynamicArrayCells( digits );
+
+    integer = fromDigitsRepresentation( digits, origin_base );
+    ArrayDestroy( digits );
+
+    digits  = toDigitsRepresentation( integer, destiny_base );
+    // printDynamicArrayCells( digits );
+
+    integer = fromDigitsRepresentation( digits, 10 );
+    ArrayDestroy( digits );
+
+    LOGGER( 1, "    ( convert_numeric_base ) Returning integer: %d", integer )
+    return integer;
+}
+
+/**
+ * Read an digits Dynamic Array at its given base and return an integer representation.
+ *
+ * @param digits           a Dynamic Array within the digits of inputed number on the specified base.
+ * @param origin_base      the base where `digits` are represented.
+ *
+ * return an integer representation inputed number on the specified base.
+ */
+stock fromDigitsRepresentation( Array:digits, origin_base )
+{
+    new integer;
+    new arraySize = ArraySize( digits );
+
+    for( new index = 0; index < arraySize; index ++ )
     {
-        remainder      = septal_number % 10;
-        septal_number /= 10;
-        decimal       += remainder * power( 7, index );
-
-        ++index;
+        integer = integer * origin_base + ArrayGetCell( digits, index );
     }
 
-    LOGGER( 1, "    ( convert_septal_to_decimal ) Returning decimal: %d", decimal )
-    return decimal;
+    return integer;
+}
+
+/**
+ * Create an Dynamic Array within of the decimal number at its given base.
+ *
+ * @param origin_number    a decimal number to be converted.
+ * @param origin_base      the base where `origin_number` is to be converted to.
+ *
+ * return a Dynamic Array within the digits of inputed number on the specified base.
+ */
+stock Array:toDigitsRepresentation( origin_number, origin_base )
+{
+    new Array:digits = ArrayCreate();
+
+    ArrayPushCell( digits, origin_number % origin_base );
+    origin_number = origin_number / origin_base;
+
+    while( origin_number > 0 )
+    {
+        ArrayInsertCellBefore( digits, 0, origin_number % origin_base );
+        origin_number = origin_number / origin_base;
+    }
+
+    return digits;
 }
 
 /**
@@ -10922,6 +11321,81 @@ stock is_map_valid_bsp_check( mapName[] )
 
     LOGGER( 0, "    ( is_map_valid_bsp_check ) Returning false. " )
     return false;
+}
+
+#define MAX_CELL_LENGHT    20
+#define MAX_MESSAGE_LENGHT 80
+
+stock printDynamicArrayCells( Array:array )
+{
+    // server_print( "" );
+
+    new indexString      [ 8                  ];
+    new elementString    [ 8                  ];
+    new cellString       [ MAX_CELL_LENGHT    ];
+    new cellStringsBuffer[ MAX_MESSAGE_LENGHT ];
+
+    new arraySize = ArraySize( array );
+
+    for( new index = 0; index < arraySize; index++ )
+    {
+        // Create a cellString within a trailing comma
+        formatex( indexString  , charsmax( indexString )  , "(%d) "    , index                        );
+        formatex( elementString, charsmax( elementString ), "%d, "     , ArrayGetCell( array, index ) );
+        formatex( cellString   , charsmax( cellString )   , "%7s %-9s" , indexString, elementString   );
+
+        // Add a new cellString to the output buffer and flushes it when it full
+        announceCellString( cellString, cellStringsBuffer );
+    }
+
+    // Flush the last cells
+    flushCellStrings( cellStringsBuffer );
+    // server_print( "" );
+}
+
+/**
+ * Announce cells to the server console.
+ *
+ * @param cellStringAnnounce     a cell as string.
+ * @param cellStringsBuffer      the output string to be printed.
+ *
+ * @note It does not immediately print the cell, the output occurs when the buffer is full.
+ */
+stock announceCellString( cellStringAnnounce[], cellStringsBuffer[] )
+{
+    static copiedChars;
+
+    // Reset the characters counter for the output flush
+    if( !cellStringsBuffer[ 0 ] )
+    {
+        copiedChars = 0;
+    }
+
+    // Add the cellString to the buffer
+    copiedChars += copy( cellStringsBuffer[ copiedChars ], MAX_MESSAGE_LENGHT - 1 - copiedChars, cellStringAnnounce );
+
+    // Calculate whether to flush now or not
+    if( copiedChars > MAX_MESSAGE_LENGHT - MAX_CELL_LENGHT )
+    {
+        flushCellStrings( cellStringsBuffer );
+    }
+}
+
+/**
+ * Print the current buffer, if there are any cellStrings on it.
+ *
+ * @param cellStringsBuffer     the formatted cellStrings list to be printed.
+ */
+stock flushCellStrings( cellStringsBuffer[] )
+{
+    if( cellStringsBuffer[ 0 ] )
+    {
+        // Print the message
+        server_print( "%-13s%s", "Array Cells: ", cellStringsBuffer[ 0 ]  );
+
+        // Clear the buffer
+        cellStringsBuffer[ 0 ] = '^0';
+    }
 }
 
 
@@ -12790,6 +13264,40 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         SET_TEST_FAILURE( test_id, gameType != result, errorMessage )
     }
 
+    /**
+     * To test the stock convert_numeric_base(3).
+     */
+    stock test_convertNumericBase_load()
+    {
+        test_convertNumericBase( .origin_number = 10  , .origin_base = 7 , .destiny_base = 10, .expected = 7    ); // Case 1
+        test_convertNumericBase( .origin_number = 10  , .origin_base = 6 , .destiny_base = 10, .expected = 6    ); // Case 2
+        test_convertNumericBase( .origin_number = 10  , .origin_base = 5 , .destiny_base = 10, .expected = 5    ); // Case 3
+        test_convertNumericBase( .origin_number = 10  , .origin_base = 8 , .destiny_base = 10, .expected = 8    ); // Case 4
+        test_convertNumericBase( .origin_number = 10  , .origin_base = 9 , .destiny_base = 10, .expected = 9    ); // Case 5
+        test_convertNumericBase( .origin_number = 10  , .origin_base = 10, .destiny_base = 10, .expected = 10   ); // Case 6
+        test_convertNumericBase( .origin_number = 11  , .origin_base = 7 , .destiny_base = 9 , .expected = 8    ); // Case 7
+        test_convertNumericBase( .origin_number = 2462, .origin_base = 7 , .destiny_base = 9 , .expected = 1238 ); // Case 8
+        test_convertNumericBase( .origin_number = 1238, .origin_base = 9 , .destiny_base = 7 , .expected = 2462 ); // Case 9
+    }
+
+    /**
+     * Create one case test for the stock convert_numeric_base(0) based on its parameters passed
+     * by the test_convertNumericBase_load(0) loader function.
+     */
+    stock test_convertNumericBase( origin_number, origin_base, destiny_base, expected )
+    {
+        new errorMessage[ MAX_LONG_STRING ];
+        new test_id = test_registerSeriesNaming( "test_convertNumericBase", 'a' );
+
+        new result = convert_numeric_base( origin_number, origin_base, destiny_base );
+
+        formatex( errorMessage, charsmax( errorMessage ),
+                "Converting the number %d on base %d to base %d must to be %d, instead of %d.",
+                origin_number, origin_base, destiny_base, expected, result );
+
+        SET_TEST_FAILURE( test_id, result != expected, errorMessage )
+    }
+
 
 
 
@@ -12894,6 +13402,8 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     stock saveServerCvarsForTesting()
     {
         LOGGER( 128, "I AM ENTERING ON saveServerCvarsForTesting(0)" )
+        LOGGER( 2, "    %38s cvar_mp_timelimit: %f  test_mp_timelimit: %f   g_originalTimelimit: %f", \
+                "saveServerCvarsForTesting( in )", get_pcvar_float( cvar_mp_timelimit ), test_mp_timelimit, g_originalTimelimit )
 
         if( !g_test_isTheUnitTestsRunning )
         {
@@ -12938,9 +13448,6 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
             test_nextMapChangeVotemap    = get_pcvar_num( cvar_nextMapChangeVotemap   );
             test_endOfMapVoteStart       = get_pcvar_num( cvar_endOfMapVoteStart      );
         }
-
-        LOGGER( 2, "    %38s cvar_mp_timelimit: %f  test_mp_timelimit: %f   g_originalTimelimit: %f", \
-                "saveServerCvarsForTesting( out )", get_pcvar_float( cvar_mp_timelimit ), test_mp_timelimit, g_originalTimelimit )
     }
 
     /**
