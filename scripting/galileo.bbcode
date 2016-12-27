@@ -1033,14 +1033,22 @@ gal_votemap map1 map2
     [/code]
 
 
- [*] Command '[COLOR="Blue"][B]gal_createmapfile filename[/B][/COLOR]', Creates a file that contains a list of every
+ [*] Command '[COLOR="Blue"][B]gal_createmapfile filename[/B][/COLOR]', creates a file that contains a list of every
      valid map in your maps folder. The [B]filename[/B] argument indicates specifies the name
      to be used for the new file.  It will be created in the [COLOR="Blue"][B]./configs/galileo/[/B][/COLOR] folder.
 
 
- [*] Command '[COLOR="Blue"][B]gal_changelevel[/B][/COLOR]', To immediately change level to the current map at
+ [*] Command '[COLOR="Blue"][B]gal_changelevel[/B][/COLOR]', to immediately change level to the current map at
      the [COLOR="Blue"][B]cvar nextmap[/B][/COLOR]. If the next map is set to `[not yet voted on]` the map will
      be changed the next map on the map cycle.
+
+
+ [*] Command '[COLOR="Blue"][B]say galmenu [page_number][/B][/COLOR]', (admin MAP level required) to choose from the loaded server
+     maps, the maps to create a map voting by a menu, as the one with the `gal_votemap` command. Consider here the
+     nomination file list as maps source to build up the menu. If specified the `page_number` argument, the menu
+     will be opened a the specified page. Example: `say galmenu 50` will open the menu right on the page 50.
+     If the argument `page_number` is omitted, the menu will open at the first page, or the last page
+     you opened it.
 
 
  [*] [COLOR="Blue"][B]The Maintenance Mode[/B][/COLOR]:
@@ -1246,13 +1254,17 @@ cvars:[LIST=1]mapcyclefile
 [COLOR="Blue"]say [I]nominate[/I] [B]partialMapName[/B][/COLOR]
 [COLOR="Blue"]say [I]nom[/I] [B]partialMapName[/B][/COLOR]
 
-[B]//[/B] Open a nomination map menu containing all the plugins allowed to nominate.
+[B]//[/B] Open a nomination map menu containing all the plugins allowed to nominate. If specified
+[B]//[/B] the `page_number` argument, the menu will be opened a the specified page. Example:
+[B]//[/B] `say galmenu 50` will open the menu right on the page 50. If the argument `page_number`
+[B]//[/B] is omitted, the menu will open at the first page, or the last page you opened it.
+[B]//[/B]
 [B]//[/B] The [I]anything[/I] argument can be any "word" up to 20 characters without spaces.
 [B]//[/B] Configure the valid map prefixed at './amxmodx/configs/galileo/prefixes.ini'.
 [B]//[/B] Requires the CVAR "gal_nom_playerallowance" to be set to a value higher than 0.
 [B]//[/B] Requires the CVAR "gal_nom_prefixes" to be set to a value higher than 0.
 [COLOR="Blue"]say [I]nom[/I][B]anything[/B]menu[/COLOR]
-[COLOR="Blue"]say [I]nom[/I]menu[/COLOR]
+[COLOR="Blue"]say [I]nom[/I]menu[/COLOR] [page_number]
 [COLOR="Blue"]say [B]mapprefix_[/B][/COLOR]
 
 [B]//[/B] Cancels the nomination of [I]mapname[/I], which would have had to be previously
@@ -1329,6 +1341,7 @@ See the current issues/features request list on: [URL="https://github.com/addons
 [B][URL="https://forums.alliedmods.net/member.php?u=85472"]damnyourefine[/URL][/B]: For donations and reported/helped with the bug [URL="https://github.com/addonszz/Galileo/issues/3"]Issues#3[/URL].
 [B][URL="https://github.com/mo0nsniper"]mo0nsniper[/URL][/B]: For the bug report, vote shows only for one player [URL="https://github.com/addonszz/Galileo/issues/26"]Issues#26[/URL].
 [B][URL="https://forums.alliedmods.net/member.php?u=184733"]Belo95135[/URL][/B]: For the Slovak [sk] language translation.
+[B][URL="https://github.com/regener"]regener[/URL][/B]: For the Hungarian [hu] language translation and the GitHub [URL="https://github.com/addonszz/Galileo/pull/50"]Pull Request #50[/URL] adding the missing mute sound option at map change.
 [QUOTE=Brad;684848]
 A lot of time and effort went into making this plugin, making features just right,
 making sure there were no bugs, making sure it was easy to use. If you are glad I made
@@ -1346,12 +1359,15 @@ Thank you!  It means a lot to me.
 [SPOILER]
 
 [LIST=1]
+[*]Translated the plugin to Slovak [sk] and Hungarian [hu] languages. See the new LANG file 'galileo.txt'.
+[*]Added the `page_number` argument to all menus possible. Now you can open any menu at the page you want to. Example `say nomenu 50`.
 [*]Added the ability for players to close the vote menu, if they want to. [URL="https://github.com/addonszz/Galileo/issues/4"]Issue#4[/URL].
 [*]Added an optimum time for the vote starting at map end. [URL="https://github.com/addonszz/Galileo/issues/20"]Issue#20[/URL].
 [*]Added a new option to the cvar `gal_vote_show_none`, to created a new menu showing command the options. [URL="https://github.com/addonszz/Galileo/issues/40"]Issue#40[/URL].
 [*]Added new cvar `gal_nextmap_votemap` to not start another map voting when the server admin to starts one. [URL="https://github.com/addonszz/Galileo/issues/22"]Issue#22[/URL].
-[*]Added the the command `gal_votemap`, to receive a list of maps and will to perform a map voting as if it was an automatic end of map voting. [URL="https://github.com/addonszz/Galileo/issues/48"]Issue#48[/URL].
 [*]Added the the command `gal_changelevel`, to immediately change level to the current map at the cvar nextmap. [URL="https://github.com/addonszz/Galileo/issues/48"]Issue#48[/URL].
+[*]Added the the command `gal_votemap`, to receive a list of maps and will to perform a map voting as if it was an automatic end of map voting. [URL="https://github.com/addonszz/Galileo/issues/48"]Issue#48[/URL].
+[*]Added the the command `say galmenu`, (admin MAP level required) to choose from the loaded server maps, the maps to create a map voting by a menu, as the one with the `gal_votemap` command. [URL="https://github.com/addonszz/Galileo/issues/48"]Issue#48[/URL].
 [*]Added new cvar `gal_runoff_mapchoices` to let the voting take into account all the map options that had the maximum amount of votes. [URL="https://github.com/addonszz/Galileo/issues/33"]Issue#33[/URL].
 [*]Added new cvar `gal_runoff_ratio` to specifies the minimum amount of votes the most voted map should have to not start a run off voting. [URL="https://github.com/addonszz/Galileo/issues/33"]Issue#33[/URL].
 [*]Implemented the Allow Round Finish feature for the cvar `mp_fraglimit`.
