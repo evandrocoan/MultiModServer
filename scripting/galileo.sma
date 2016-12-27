@@ -8607,7 +8607,7 @@ public cmd_voteMap( player_id, level, cid )
         remove_quotes( arguments );
 
         argumentsCount = read_argc();
-        log_amx( "%L: %s", LANG_SERVER, "START_VOT", arguments );
+        log_amx( "%L: %s", LANG_SERVER, "GAL_START_VOTE", arguments );
 
         LOGGER( 8, "( cmd_voteMap ) " )
         LOGGER( 8, "( cmd_voteMap ) arguments: %s", arguments )
@@ -9004,7 +9004,7 @@ public displayVoteMapMenuCommands( player_id )
     menuId = menu_create( choice, "handleDisplayVoteMapCommands" );
 
     // The first menus items
-    formatex( choice, charsmax( choice ), "%L%s (%d)", player_id, "START_VOT", COLOR_YELLOW, g_totalVoteOptions );
+    formatex( choice, charsmax( choice ), "%L%s (%d)", player_id, "GAL_START_VOTE", COLOR_YELLOW, g_totalVoteOptions );
     menu_additem( menuId, choice, { -1 }, g_totalVoteOptions > 1 ? 0 : ( 1 << 26 ) );
 
     formatex( choice, charsmax( choice ), "%L", player_id, "EXIT" );
