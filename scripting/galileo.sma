@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-371";
+new const PLUGIN_VERSION[] = "v3.2.6-372";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -550,8 +550,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-371";
  * Verifies if a voting is or was already processed.
  */
 #define IS_END_OF_MAP_VOTING_GOING_ON() \
-    ( g_voteStatus & IS_VOTE_IN_PROGRESS \
-      || g_voteStatus & IS_VOTE_OVER )
+    ( g_voteStatus & ( IS_VOTE_IN_PROGRESS | IS_VOTE_OVER ) )
 //
 
 /**
@@ -832,6 +831,7 @@ new cvar_isToStopEmptyCycle;
 new cvar_unnominateDisconnected;
 new cvar_endOnRound;
 new cvar_endOfMapVote;
+new cvar_endOfMapVoteExpiration;
 new cvar_endOfMapVoteStart;
 new cvar_endOnRoundRtv;
 new cvar_endOnRound_msg;
@@ -1257,6 +1257,7 @@ public plugin_init()
     cvar_serverWinlimitRestart     = register_cvar( "gal_srv_winlimit_restart"    , "0"    );
     cvar_serverFraglimitRestart    = register_cvar( "gal_srv_fraglimit_restart"   , "0"    );
     cvar_endOfMapVote              = register_cvar( "gal_endofmapvote"            , "1"    );
+    cvar_endOfMapVoteExpiration    = register_cvar( "gal_endofmapvote_expiration" , "1"    );
     cvar_endOfMapVoteStart         = register_cvar( "gal_endofmapvote_start"      , "0"    );
     cvar_nextMapChangeAnnounce     = register_cvar( "gal_nextmap_change"          , "1"    );
     cvar_nextMapChangeVotemap      = register_cvar( "gal_nextmap_votemap"         , "0"    );
@@ -3278,9 +3279,16 @@ stock endRoundWatchdog()
     g_fragLimitNumber = get_pcvar_num( cvar_mp_fraglimit );
     g_timeLimitNumber = get_pcvar_num( cvar_mp_timelimit );
 
-    // When time runs out, end map at the current round end.
+    if( get_pcvar_num( cvar_endOfMapVoteExpiration )
+        && g_voteStatus & IS_VOTE_OVER )
+    {
+        // Make the map to change immediately.
+        g_isTheLastGameRound = true;
+    }
+
     if( g_isTheLastGameRound )
     {
+        // When time runs out, end map at the current round end.
         remove_task( TASKID_SHOW_LAST_ROUND_HUD );
         set_task( 6.0, "process_last_round_by_set_task", TASKID_PROCESS_LAST_ROUND );
     }
@@ -3357,8 +3365,8 @@ stock process_last_round( bool:isToImmediatelyChangeLevel = false )
     if( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXIT
         && !isToImmediatelyChangeLevel )
     {
-        // When the map extension is called, there is anyone else trying to show action menu,
-        // therefore invoke it before returning.
+        // When this is called, there is not anyone else trying to show action menu, therefore
+        // invoke it before returning.
         openTheVoteMapActionMenu();
 
         LOGGER( 1, "    ( process_last_round ) Just returning/blocking, g_voteMapStatus: %d", g_voteMapStatus )
@@ -5969,8 +5977,7 @@ stock addExtensionOption( player_id, copiedChars, voteStatus[], voteStatusLenght
     allowExtend = ( g_isGameFinalVoting
                     && !( g_voteStatus & IS_RUNOFF_VOTE ) );
 
-    allowStay = ( ( g_voteStatus & IS_VOTE_EARLY
-                    || g_voteStatus & IS_FORCED_VOTE )
+    allowStay = ( ( g_voteStatus & ( IS_VOTE_EARLY | IS_FORCED_VOTE ) )
                   && !( g_voteStatus & IS_RUNOFF_VOTE ) );
 
     if( g_isRunOffNeedingKeepCurrentMap )
@@ -7136,8 +7143,8 @@ stock chooseTheVotingMapWinner( firstPlaceChoices[], numberOfMapsAtFirstPosition
             // right here without executing the remaining code.
             if( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXIT )
             {
-                // When the map extension is called, there is anyone else trying to show action menu,
-                // therefore invoke it before returning.
+                // When the stay here option is called, there is anyone else trying to show action menu,
+                // therefore invoke it before continuing.
                 openTheVoteMapActionMenu();
                 LOGGER( 1, "    ( chooseTheVotingMapWinner ) Just opened the menu due g_voteMapStatus: %d", g_voteMapStatus )
             }
