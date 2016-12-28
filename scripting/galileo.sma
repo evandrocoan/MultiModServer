@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-376";
+new const PLUGIN_VERSION[] = "v3.2.6-377";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -7199,19 +7199,6 @@ stock chooseTheVotingMapWinner( firstPlaceChoices[], numberOfMapsAtFirstPosition
         }
         else if( g_isGameFinalVoting ) // "extend map" won
         {
-            if( g_isVotingByRounds )
-            {
-                color_print( 0, "%L", LANG_PLAYER, "GAL_WINNER_EXTEND_ROUND", g_extendmapStepRounds );
-            }
-            else if( g_isVotingByFrags )
-            {
-                color_print( 0, "%L", LANG_PLAYER, "GAL_WINNER_EXTEND_FRAGS", g_extendmapStepFrags );
-            }
-            else
-            {
-                color_print( 0, "%L", LANG_PLAYER, "GAL_WINNER_EXTEND", g_extendmapStepMinutes );
-            }
-
             map_extend();
         }
 
@@ -7236,18 +7223,31 @@ stock chooseTheVotingMapWinner( firstPlaceChoices[], numberOfMapsAtFirstPosition
 
 stock chooseRandomVotingWinner()
 {
-    if( !get_pcvar_num( cvar_isExtendmapOrderAllowed ) )
+    switch( get_pcvar_num( cvar_isExtendmapOrderAllowed ) )
     {
-        new winnerVoteMapIndex;
-        winnerVoteMapIndex = random_num( 0, g_totalVoteOptions - 1 );
+        // 1 - follow your current map-cycle order
+        case 1:
+        {
+            setNextMap( g_nextMapName );
+            color_print( 0, "%L%L", LANG_PLAYER, "GAL_WINNER_NO_ONE_VOTED", LANG_PLAYER, "GAL_WINNER_ORDERED", g_nextMapName );
+        }
+        // 2 - extend the current map
+        case 2:
+        {
+            setNextMap( g_nextMapName );
+            color_print( 0, "%L%L", LANG_PLAYER, "GAL_WINNER_NO_ONE_VOTED", LANG_PLAYER );
 
-        setNextMap( g_votingMapNames[ winnerVoteMapIndex ] );
-        color_print( 0, "%L", LANG_PLAYER, "GAL_WINNER_RANDOM", g_nextMapName );
-    }
-    else
-    {
-        setNextMap( g_nextMapName );
-        color_print( 0, "%L", LANG_PLAYER, "GAL_WINNER_ORDERED", g_nextMapName );
+            map_extend();
+        }
+        // 0 - choose a random map from the current voting map list, as next map
+        default:
+        {
+            new winnerVoteMapIndex;
+            winnerVoteMapIndex = random_num( 0, g_totalVoteOptions - 1 );
+
+            setNextMap( g_votingMapNames[ winnerVoteMapIndex ] );
+            color_print( 0, "%L%L", LANG_PLAYER, "GAL_WINNER_NO_ONE_VOTED", LANG_PLAYER, "GAL_WINNER_RANDOM", g_nextMapName );
+        }
     }
 
     process_last_round( g_isToChangeMapOnVotingEnd );
@@ -7300,6 +7300,20 @@ stock map_extend()
 {
     LOGGER( 128, "I AM ENTERING ON map_extend(0)" )
     LOGGER( 2, "%32s g_rtvWaitMinutes: %f, g_extendmapStepMinutes: %d", "map_extend( in )", g_rtvWaitMinutes, g_extendmapStepMinutes )
+
+    // To announce the map extension to everybody
+    if( g_isVotingByRounds )
+    {
+        color_print( 0, "%L", LANG_PLAYER, "GAL_WINNER_EXTEND_ROUND", g_extendmapStepRounds );
+    }
+    else if( g_isVotingByFrags )
+    {
+        color_print( 0, "%L", LANG_PLAYER, "GAL_WINNER_EXTEND_FRAGS", g_extendmapStepFrags );
+    }
+    else
+    {
+        color_print( 0, "%L", LANG_PLAYER, "GAL_WINNER_EXTEND", g_extendmapStepMinutes );
+    }
 
     // While the `IS_DISABLED_VOTEMAP_EXIT` bit flag is set, we cannot allow any decisions.
     if( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXIT )
