@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-377";
+new const PLUGIN_VERSION[] = "v3.2.6-378";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -88,7 +88,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-377";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 0//1+64+2+4
+#define DEBUG_LEVEL 1+64
 
 
 /**
@@ -902,6 +902,7 @@ new cvar_whitelistMinPlayers;
 new cvar_isWhiteListNomBlock;
 new cvar_isWhiteListBlockOut;
 new cvar_voteWhiteListMapFilePath;
+new cvar_coloredChatPrefix;
 
 
 /**
@@ -1143,8 +1144,9 @@ new COLOR_GREY  [ 3 ]; // \d
 
 new g_mapPrefixCount = 1;
 
-new g_voteStatus_symbol   [ 3 ];
 new g_voteWeightFlags     [ 32 ];
+new g_voteStatus_symbol   [ 3  ];
+new g_coloredChatPrefix   [ 16 ];
 new g_arrayOfRunOffChoices[ MAX_OPTIONS_IN_VOTE ];
 new g_voteStatusClean     [ MAX_BIG_BOSS_STRING ];
 
@@ -1293,6 +1295,7 @@ public plugin_init()
     cvar_isEmptyCycleByMapChange   = register_cvar( "gal_emptyserver_change"      , "0"    );
     cvar_emptyMapFilePath          = register_cvar( "gal_emptyserver_mapfile"     , ""     );
     cvar_soundsMute                = register_cvar( "gal_sounds_mute"             , "0"    );
+    cvar_coloredChatPrefix         = register_cvar( "gal_colored_chat_prefix"     , ""     );
 
     // Enables the colored chat control cvar.
 #if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
@@ -1640,6 +1643,8 @@ public cacheCvarsValues()
 #if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
     g_isColoredChatEnabled = get_pcvar_num( cvar_coloredChatEnabled ) != 0;
 #endif
+
+    get_pcvar_string( cvar_coloredChatPrefix, g_coloredChatPrefix, charsmax( g_coloredChatPrefix ) );
 
     g_isExtendmapAllowStay      = get_pcvar_num( cvar_extendmapAllowStay   ) != 0;
     g_isToShowNoneOption        = get_pcvar_num( cvar_isToShowNoneOption   ) == 1;
@@ -11207,7 +11212,7 @@ stock color_print( const player_id, const message[], any:... )
     vformat( formated_message, charsmax( formated_message ), message, 3 );
     LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
 
-    client_print( player_id, print_chat, formated_message );
+    client_print( player_id, print_chat, "%s%s", g_coloredChatPrefix, formated_message );
 
 #else
     #if AMXX_VERSION_NUM < 183
@@ -11216,11 +11221,24 @@ stock color_print( const player_id, const message[], any:... )
         #if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
             if( IS_COLORED_CHAT_ENABLED() )
             {
+                // On the AMXX 182, all the colored messaged must to start within a color.
                 formated_message[ 0 ] = '^1';
                 vformat( formated_message[ 1 ], charsmax( formated_message ) - 1, message, 3 );
 
-                LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
-                PRINT_COLORED_MESSAGE( player_id, formated_message )
+                new message[ MAX_COLOR_MESSAGE ];
+
+                if( g_coloredChatPrefix[ 0 ] )
+                {
+                    formatex( message, charsmax( message ), "^1%s%s", g_coloredChatPrefix, formated_message[ 1 ] );
+
+                    LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, message )
+                    PRINT_COLORED_MESSAGE( player_id, message )
+                }
+                else
+                {
+                    LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
+                    PRINT_COLORED_MESSAGE( player_id, formated_message )
+                }
             }
             else
             {
@@ -11228,13 +11246,13 @@ stock color_print( const player_id, const message[], any:... )
                 LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
 
                 REMOVE_CODE_COLOR_TAGS( formated_message )
-                client_print( player_id, print_chat, formated_message );
+                client_print( player_id, print_chat, "%s%s", g_coloredChatPrefix, formated_message );
             }
         #else
             vformat( formated_message, charsmax( formated_message ), message, 3 );
             LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
 
-            client_print( player_id, print_chat, formated_message );
+            client_print( player_id, print_chat, "%s%s", g_coloredChatPrefix, formated_message );
         #endif
         }
         else
@@ -11332,11 +11350,24 @@ stock color_print( const player_id, const message[], any:... )
             #if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
                 if( IS_COLORED_CHAT_ENABLED() )
                 {
+                    // On the AMXX 182, all the colored messaged must to start within a color.
                     formated_message[ 0 ] = '^1';
                     vformat( formated_message[ 1 ], charsmax( formated_message ) - 1, message, 3 );
 
-                    LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
-                    PRINT_COLORED_MESSAGE( player_id, formated_message )
+                    new message[ MAX_COLOR_MESSAGE ];
+
+                    if( g_coloredChatPrefix[ 0 ] )
+                    {
+                        formatex( message, charsmax( message ), "^1%s%s", g_coloredChatPrefix, formated_message[ 1 ] );
+
+                        LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, message )
+                        PRINT_COLORED_MESSAGE( player_id, message )
+                    }
+                    else
+                    {
+                        LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
+                        PRINT_COLORED_MESSAGE( player_id, formated_message )
+                    }
                 }
                 else
                 {
@@ -11344,13 +11375,13 @@ stock color_print( const player_id, const message[], any:... )
                     LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
 
                     REMOVE_CODE_COLOR_TAGS( formated_message )
-                    client_print( player_id, print_chat, formated_message );
+                    client_print( player_id, print_chat, "%s%s", g_coloredChatPrefix, formated_message );
                 }
             #else
                 vformat( formated_message, charsmax( formated_message ), message, 3 );
                 LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
 
-                client_print( player_id, print_chat, formated_message );
+                client_print( player_id, print_chat, "%s%s", g_coloredChatPrefix, formated_message );
             #endif
             }
 
@@ -11363,12 +11394,12 @@ stock color_print( const player_id, const message[], any:... )
 
         if( IS_COLORED_CHAT_ENABLED() )
         {
-            client_print_color( player_id, print_team_default, formated_message );
+            client_print_color( player_id, print_team_default, "%s%s", g_coloredChatPrefix, formated_message );
         }
         else
         {
             REMOVE_CODE_COLOR_TAGS( formated_message )
-            client_print( player_id, print_chat, formated_message );
+            client_print( player_id, print_chat, "%s%s", g_coloredChatPrefix, formated_message );
         }
     #endif
 #endif
