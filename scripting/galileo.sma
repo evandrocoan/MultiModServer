@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-374";
+new const PLUGIN_VERSION[] = "v3.2.6-375";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -88,7 +88,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-374";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+64+2+4
+#define DEBUG_LEVEL 0//1+64+2+4
 
 
 /**
@@ -449,6 +449,11 @@ new const PLUGIN_VERSION[] = "v3.2.6-374";
 #define IS_DISABLED_VOTEMAP_RUNOFF      4
 #define IS_DISABLED_VOTEMAP_EXTENSION   8
 #define IS_ENABLED_VOTEMAP_NOMINATIONS  16
+
+#define IS_MAP_MAPCHANGE_COUNTDOWN      1
+#define IS_MAP_MAPCHANGE_DROP_WEAPONS   2
+#define IS_MAP_MAPCHANGE_FREEZE_PLAYERS 4
+#define IS_MAP_MAPCHANGE_BUY_GRENADES   8
 
 #define IS_VOTE_IN_PROGRESS 1
 #define IS_FORCED_VOTE      2
@@ -3386,7 +3391,7 @@ stock process_last_round( bool:isToImmediatelyChangeLevel = false )
     if( g_isTheLastGameRound
         || isToImmediatelyChangeLevel )
     {
-        if( get_pcvar_num( cvar_isEndMapCountdown ) )
+        if( get_pcvar_num( cvar_isEndMapCountdown ) & IS_MAP_MAPCHANGE_COUNTDOWN )
         {
             g_lastRroundCountdown = 6;
             set_task( 1.0, "last_round_countdown", TASKID_PROCESS_LAST_ROUND, _, _, "a", 6 );
@@ -3440,20 +3445,19 @@ stock Float:get_intermission_chattime()
 stock show_intermission( Float:mp_chattime )
 {
     LOGGER( 128, "I AM ENTERING ON show_intermission(1) mp_chattime: %f", mp_chattime )
+    new endGameType = get_pcvar_num( cvar_isEndMapCountdown );
 
-    if( get_pcvar_num( cvar_isEndMapCountdown ) )
+    if( endGameType )
     {
-        LOGGER( 128, " ( show_intermission ) dropping weapons." )
-
-        g_isTimeToResetGame    = true; // reset the game ending if there is a restart round.
-        g_original_sv_maxspeed = get_pcvar_float( cvar_sv_maxspeed );
+        // Reset the game ending if there is a restart round.
+        g_isTimeToResetGame = true;
 
         set_task( mp_chattime - 0.5, "intermission_hold", TASKID_INTERMISSION_HOLD );
-        intermission_effects();
+        intermission_effects( endGameType, mp_chattime );
     }
     else
     {
-        LOGGER( 128, " ( show_intermission ) do not dropping weapons." )
+        LOGGER( 4, " ( show_intermission ) Do nothing, just change the map." )
         intermission_hold();
     }
 }
@@ -3466,23 +3470,37 @@ public intermission_hold()
     message_end();
 }
 
-stock intermission_effects()
+stock intermission_effects( endGameType, Float:mp_chattime )
 {
-    LOGGER( 128, "I AM ENTERING ON intermission_effects(0)" )
+    LOGGER( 128, "I AM ENTERING ON intermission_effects(1) endGameType: %d", endGameType )
 
-    set_pcvar_float( cvar_sv_maxspeed, 0.0 );
-    LOGGER( 2, "( intermission_effects ) IS CHANGING THE CVAR 'sv_maxspeed' to '%f'.", get_pcvar_float( cvar_sv_maxspeed ) )
+    if( endGameType & IS_MAP_MAPCHANGE_FREEZE_PLAYERS )
+    {
+        g_original_sv_maxspeed = get_pcvar_float( cvar_sv_maxspeed );
+        set_pcvar_float( cvar_sv_maxspeed, 0.0 );
 
-    client_cmd( 0, "slot1" );
-    client_cmd( 0, "drop weapon_c4" );
-    client_cmd( 0, "drop" );
-    client_cmd( 0, "drop" );
+        LOGGER( 2, "( intermission_effects ) IS CHANGING THE CVAR 'sv_maxspeed' to '%f'.", get_pcvar_float( cvar_sv_maxspeed ) )
+    }
 
-    client_cmd( 0, "sgren" );
-    client_cmd( 0, "hegren" );
+    if( endGameType & IS_MAP_MAPCHANGE_DROP_WEAPONS )
+    {
+        client_cmd( 0, "slot1" );
+        client_cmd( 0, "drop weapon_c4" );
+        client_cmd( 0, "drop" );
+        client_cmd( 0, "drop" );
+    }
+
+    if( endGameType & IS_MAP_MAPCHANGE_BUY_GRENADES )
+    {
+        client_cmd( 0, "sgren" );
+        client_cmd( 0, "hegren" );
+    }
 
     client_cmd( 0, "+showscores" );
-    if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_MAPCHANGE ) )
+
+    // Check also if there is not enough time to play it
+    if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_MAPCHANGE )
+        && mp_chattime > 3.0 )
     {
         client_cmd( 0, "speak ^"loading environment on to your computer^"" );
     }
