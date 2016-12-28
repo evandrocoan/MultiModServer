@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-379";
+new const PLUGIN_VERSION[] = "v3.2.6-381";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -209,7 +209,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-379";
      *
      * 511  - Enables all debug logging levels.
      */
-    new g_debug_level = 1+2+4+8+16+32+64+128;
+    new g_debug_level = 1+2+4+8+16+32+64+128+256;
 
     /**
      * Write debug messages accordantly with the 'g_debug_level' variable.
@@ -909,6 +909,8 @@ new cvar_coloredChatPrefix;
 /**
  * Various Artists.
  */
+new const MAP_FOLDER_LOAD_FLAG[]            = "*";
+new const MAP_CYCLE_LOAD_FLAG[]             = "#";
 new const GAL_VOTEMAP_MENU_COMMAND[]        = "galmenu";
 new const LAST_EMPTY_CYCLE_FILE_NAME[]      = "lastEmptyCycleMapName.dat";
 new const CURRENT_AND_NEXTMAP_FILE_NAME[]   = "currentAndNextmapNames.dat";
@@ -2131,8 +2133,8 @@ public map_writeRecentBanList()
     {
         get_pcvar_string( cvar_voteMapFilePath, voteMapsFilerFilePath, charsmax( voteMapsFilerFilePath ) );
 
-        // '*' is and invalid because it already allow all server maps.
-        if( !equal( voteMapsFilerFilePath, "*" ) )
+        // '*' is invalid because it already allow all server maps.
+        if( !equal( voteMapsFilerFilePath, MAP_FOLDER_LOAD_FLAG ) )
         {
             mapCycleMapsTrie = TrieCreate();
 
@@ -2348,8 +2350,8 @@ stock loadMapGroupsFeatureFile( mapFilerFilePath[], &Array:mapFilersPathArray, &
     LOGGER( 128, "I AM ENTERING ON loadMapGroupsFeatureFile(0), mapFilerFilePath: %s", mapFilerFilePath )
 
     // The mapFilerFilePaths '*' and '#' disables The Map Groups Feature.
-    if( !equal( mapFilerFilePath[ 0 ], "*" )
-        && !equal( mapFilerFilePath[ 0 ], "#" ) )
+    if( !equal( mapFilerFilePath[ 0 ], MAP_FOLDER_LOAD_FLAG )
+        && !equal( mapFilerFilePath[ 0 ], MAP_CYCLE_LOAD_FLAG ) )
     {
         // determine what kind of file it's being used as
         new mapFilerFile = fopen( mapFilerFilePath, "rt" );
@@ -3821,30 +3823,36 @@ stock map_populateList( Array:mapArray = Invalid_Array, mapFilePath[], mapFilePa
     // load the array with maps
     new mapCount;
 
-    // clear the map array in case we're reusing it
-    TRY_TO_APPLY( ArrayClear, mapArray )
-    TRY_TO_APPLY( TrieClear, fillerMapTrie )
+    // If there is a map file to load
+    if( mapFilePath[ 0 ] )
+    {
+        new bool:isMapFolderLoad = equali( mapFilePath, MAP_FOLDER_LOAD_FLAG ) != 0;
 
-    if( !equal( mapFilePath, "*" )
-        && !equal( mapFilePath, "#" ) )
-    {
-        LOGGER( 4, "" )
-        LOGGER( 4, "    map_populateList(...) Loading the PASSED FILE! mapFilePath: %s", mapFilePath )
-        mapCount = loadMapFileList( mapArray, mapFilePath, fillerMapTrie );
-    }
-    else if( equal( mapFilePath, "*" ) )
-    {
-        LOGGER( 4, "" )
-        LOGGER( 4, "    map_populateList(...) Loading the MAP FOLDER! mapFilePath: %s", mapFilePath )
-        mapCount = loadMapsFolderDirectory( mapArray, fillerMapTrie );
-    }
-    else
-    {
-        get_cvar_string( "mapcyclefile", mapFilePath, mapFilePathLength );
+        // clear the map array in case we're reusing it
+        TRY_TO_APPLY( ArrayClear, mapArray )
+        TRY_TO_APPLY( TrieClear, fillerMapTrie )
 
-        LOGGER( 4, "" )
-        LOGGER( 4, "    map_populateList(...) Loading the MAPCYCLE! mapFilePath: %s", mapFilePath )
-        mapCount = loadMapFileList( mapArray, mapFilePath, fillerMapTrie );
+        if( !isMapFolderLoad
+            && !equal( mapFilePath, MAP_CYCLE_LOAD_FLAG ) )
+        {
+            LOGGER( 4, "" )
+            LOGGER( 4, "    map_populateList(...) Loading the PASSED FILE! mapFilePath: %s", mapFilePath )
+            mapCount = loadMapFileList( mapArray, mapFilePath, fillerMapTrie );
+        }
+        else if( isMapFolderLoad )
+        {
+            LOGGER( 4, "" )
+            LOGGER( 4, "    map_populateList(...) Loading the MAP FOLDER! mapFilePath: %s", mapFilePath )
+            mapCount = loadMapsFolderDirectory( mapArray, fillerMapTrie );
+        }
+        else
+        {
+            get_cvar_string( "mapcyclefile", mapFilePath, mapFilePathLength );
+
+            LOGGER( 4, "" )
+            LOGGER( 4, "    map_populateList(...) Loading the MAPCYCLE! mapFilePath: %s", mapFilePath )
+            mapCount = loadMapFileList( mapArray, mapFilePath, fillerMapTrie );
+        }
     }
 
     LOGGER( 1, "    I AM EXITING map_populateList(4) mapCount: %d", mapCount )
@@ -3921,7 +3929,7 @@ stock loadMapFileList( Array:mapArray, mapFilePath[], Trie:fillerMapTrie )
 
 stock loadMapFileListComplete( mapFileDescriptor, Array:mapArray, Trie:fillerMapTrie )
 {
-    LOGGER( 128, "I AM ENTERING ON loadMapsFolderDirectoryComplete(3) | mapFileDescriptor: %d", mapFileDescriptor )
+    LOGGER( 128, "I AM ENTERING ON loadMapFileListComplete(2) | mapFileDescriptor: %d", mapFileDescriptor )
 
     new mapCount;
     new loadedMapName[ MAX_MAPNAME_LENGHT ];
@@ -3939,7 +3947,7 @@ stock loadMapFileListComplete( mapFileDescriptor, Array:mapArray, Trie:fillerMap
         #if defined DEBUG
             if( mapCount < MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST )
             {
-                LOGGER( 4, "( loadMapFileList ) %d, loadedMapName: %s", mapCount + 1, loadedMapName )
+                LOGGER( 4, "( loadMapFileListComplete ) %d, loadedMapName: %s", mapCount + 1, loadedMapName )
             }
         #endif
 
@@ -3952,7 +3960,7 @@ stock loadMapFileListComplete( mapFileDescriptor, Array:mapArray, Trie:fillerMap
 
 stock loadMapFileListArray( mapFileDescriptor, Array:mapArray )
 {
-    LOGGER( 128, "I AM ENTERING ON loadMapsFolderDirectoryComplete(3) | mapFileDescriptor: %d", mapFileDescriptor )
+    LOGGER( 128, "I AM ENTERING ON loadMapFileListArray(2) | mapFileDescriptor: %d", mapFileDescriptor )
 
     new mapCount;
     new loadedMapName[ MAX_MAPNAME_LENGHT ];
@@ -3969,7 +3977,7 @@ stock loadMapFileListArray( mapFileDescriptor, Array:mapArray )
         #if defined DEBUG
             if( mapCount < MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST )
             {
-                LOGGER( 4, "( loadMapFileList ) %d, loadedMapName: %s", mapCount + 1, loadedMapName )
+                LOGGER( 4, "( loadMapFileListArray ) %d, loadedMapName: %s", mapCount + 1, loadedMapName )
             }
         #endif
 
@@ -3982,7 +3990,7 @@ stock loadMapFileListArray( mapFileDescriptor, Array:mapArray )
 
 stock loadMapFileListTrie( mapFileDescriptor, Trie:fillerMapTrie )
 {
-    LOGGER( 128, "I AM ENTERING ON loadMapsFolderDirectoryComplete(3) | mapFileDescriptor: %d", mapFileDescriptor )
+    LOGGER( 128, "I AM ENTERING ON loadMapFileListTrie(2) | mapFileDescriptor: %d", mapFileDescriptor )
 
     new mapCount;
     new loadedMapName[ MAX_MAPNAME_LENGHT ];
@@ -3999,7 +4007,7 @@ stock loadMapFileListTrie( mapFileDescriptor, Trie:fillerMapTrie )
         #if defined DEBUG
             if( mapCount < MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST )
             {
-                LOGGER( 4, "( loadMapFileList ) %d, loadedMapName: %s", mapCount + 1, loadedMapName )
+                LOGGER( 4, "( loadMapFileListTrie ) %d, loadedMapName: %s", mapCount + 1, loadedMapName )
             }
         #endif
 
@@ -4074,7 +4082,7 @@ stock loadMapsFolderDirectoryComplete( directoryDescriptor, Array:mapArray, Trie
             #if defined DEBUG
                 if( mapCount < MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST )
                 {
-                    LOGGER( 4, "( loadMapsFolderDirectory ) %d, loadedMapName: %s", mapCount + 1, loadedMapName )
+                    LOGGER( 4, "( loadMapsFolderDirectoryComplete ) %d, loadedMapName: %s", mapCount + 1, loadedMapName )
                 }
             #endif
 
@@ -4110,7 +4118,7 @@ stock loadMapsFolderDirectoryArray( directoryDescriptor, Array:mapArray )
             #if defined DEBUG
                 if( mapCount < MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST )
                 {
-                    LOGGER( 4, "( loadMapsFolderDirectory ) %d, loadedMapName: %s", mapCount + 1, loadedMapName )
+                    LOGGER( 4, "( loadMapsFolderDirectoryArray ) %d, loadedMapName: %s", mapCount + 1, loadedMapName )
                 }
             #endif
 
@@ -4146,7 +4154,7 @@ stock loadMapsFolderDirectoryTrie( directoryDescriptor, Trie:fillerMapTrie )
             #if defined DEBUG
                 if( mapCount < MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST )
                 {
-                    LOGGER( 4, "( loadMapsFolderDirectory ) %d, loadedMapName: %s", mapCount + 1, loadedMapName )
+                    LOGGER( 4, "( loadMapsFolderDirectoryTrie ) %d, loadedMapName: %s", mapCount + 1, loadedMapName )
                 }
             #endif
 
@@ -4937,8 +4945,8 @@ stock vote_addNominations( blockedMapsBuffer[], &announcementShowedTimes = 0 )
             new mapFilerFilePath[ MAX_FILE_PATH_LENGHT ];
             get_pcvar_string( cvar_voteMinPlayersMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) );
 
-            // '*' is and invalid blacklist for voting, because it would block all server maps.
-            if( equal( mapFilerFilePath, "*" ) )
+            // '*' is invalid blacklist for voting, because it would block all server maps.
+            if( equal( mapFilerFilePath, MAP_FOLDER_LOAD_FLAG ) )
             {
                 LOGGER( 1, "AMX_ERR_NOTFOUND, %L", LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilerFilePath )
                 log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilerFilePath );
@@ -8039,15 +8047,29 @@ stock restartEmptyCycle()
     remove_task( TASKID_EMPTYSERVER );
 }
 
+/**
+ * The reamxmodx is requiring more parameters to allow a call to `client_authorized()` from the
+ * Unit Test. So, the stock client_authorized_stock(1) is just a shadow of the client_authorized(1)
+ * just to allow to perform the Unit tests.
+ */
+#define CLIENT_AUTHORIZED_MACRO(%1) \
+{ \
+    LOGGER( 128, "I AM ENTERING ON client_authorized(1) | player_id: %d", %1 ) \
+    restartEmptyCycle(); \
+    if( get_user_flags( %1 ) & ADMIN_MAP ) \
+    { \
+        g_rtvWaitAdminNumber++; \
+    } \
+}
+
+stock client_authorized_stock( player_id )
+{
+    CLIENT_AUTHORIZED_MACRO( player_id )
+}
+
 public client_authorized( player_id )
 {
-    LOGGER( 128, "I AM ENTERING ON client_authorized(1) | player_id: %d", player_id )
-    restartEmptyCycle();
-
-    if( get_user_flags( player_id ) & ADMIN_MAP )
-    {
-        g_rtvWaitAdminNumber++;
-    }
+    CLIENT_AUTHORIZED_MACRO( player_id )
 }
 
 #if AMXX_VERSION_NUM < 183
@@ -11762,7 +11784,7 @@ stock is_map_valid_bsp_check( mapName[] )
         // Recheck
         if( is_map_valid( mapName ) )
         {
-            LOGGER( 256, "    ( is_map_valid_bsp_check ) Returning true. [is_map_valid]" )
+            LOGGER( 256, "    ( is_map_valid_bsp_check ) Returning true." )
             return true;
         }
     }
@@ -12067,7 +12089,7 @@ stock bool:isAValidMap( mapname[] )
 
     if( IS_MAP_VALID( mapname ) )
     {
-        LOGGER( 256, "    ( isAValidMap ) Returning true. [IS_MAP_VALID]" )
+        LOGGER( 256, "    ( isAValidMap ) Returning true." )
         return true;
     }
 
@@ -12090,7 +12112,7 @@ stock bool:isAValidMap( mapname[] )
         // recheck
         if( IS_MAP_VALID( mapname ) )
         {
-            LOGGER( 256, "    ( isAValidMap ) Returning true. [IS_MAP_VALID]" )
+            LOGGER( 256, "    ( isAValidMap ) Returning true." )
             return true;
         }
     }
@@ -12983,13 +13005,13 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         new test_id = register_test( 0, "test_isInEmptyCycle" );
 
         set_pcvar_num( cvar_isToStopEmptyCycle, 1 );
-        client_authorized( 1 );
+        client_authorized_stock( .player_id = 1  );
 
         formatex( errorMessage, charsmax( errorMessage ), "cvar_isToStopEmptyCycle must be 0 (it was %d)", get_pcvar_num( cvar_isToStopEmptyCycle ) );
         SET_TEST_FAILURE( test_id, get_pcvar_num( cvar_isToStopEmptyCycle ) != 0, errorMessage )
 
         set_pcvar_num( cvar_isToStopEmptyCycle, 0 );
-        client_authorized( 1 );
+        client_authorized_stock( .player_id = 1 );
 
         formatex( errorMessage, charsmax( errorMessage ), "cvar_isToStopEmptyCycle must be 0 (it was %d)", get_pcvar_num( cvar_isToStopEmptyCycle ) );
         SET_TEST_FAILURE( test_id, get_pcvar_num( cvar_isToStopEmptyCycle ) != 0, errorMessage )
