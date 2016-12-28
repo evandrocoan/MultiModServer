@@ -320,7 +320,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-371";
         //test_announceVoteBlockedMap_c();
 
         // Restore the game cvars
-        g_test_isTheUnitTestsRunning ? printTheUnitTestsResults() : player_id;
+        g_test_isTheUnitTestsRunning ? printTheUnitTestsResults() : 0;
     }
 
     /**
@@ -4297,8 +4297,8 @@ stock convertWhitelistToBlacklist( &startHour, &endHour )
     LOGGER( 256, "I AM ENTERING ON convertWhitelistToBlacklist(2) | startHour: %d, endHour: %d", startHour, endHour )
     new backup;
 
-    backup    = ( endHour + 1 > 23? 0 : endHour + 1 );
-    endHour   = ( startHour - 1 < 0? 23 : startHour - 1 );
+    backup    = ( endHour   + 1 > 23 ? 0  : endHour   + 1 );
+    endHour   = ( startHour - 1 < 0  ? 23 : startHour - 1 );
     startHour = backup;
 }
 
@@ -4825,8 +4825,8 @@ stock debug_vote_map_selection( choiceIndex, mapName[], useWhitelistOutBlock, is
 
     LOGGER( 8, "          isPrefixInMenu: %d, TrieKeyExists( blockedFillersMapTrie ): %d, \
             !TrieKeyExists( g_whitelistTrie ): %d", isPrefixInMenu( mapName ), \
-            ( useWhitelistOutBlock? TrieKeyExists( blockedFillersMapTrie, mapName ) : false ), \
-            ( isWhiteListOutBlock? !TrieKeyExists( g_whitelistTrie, mapName ) : false ) )
+            ( useWhitelistOutBlock?  TrieKeyExists( blockedFillersMapTrie, mapName ) : false ), \
+            ( isWhiteListOutBlock ? !TrieKeyExists( g_whitelistTrie      , mapName ) : false ) )
 
     LOGGER( 8, "          useMapIsTooRecent: %d, useIsPrefixInMenu: %d, useEqualiCurrentMap: %d", \
             useMapIsTooRecent, useIsPrefixInMenu, useEqualiCurrentMap )
@@ -5540,7 +5540,7 @@ stock initializeTheVoteDisplay()
 stock configureVoteDisplayDebugging()
 {
     // Print the voting map options
-    new voteOptions = ( g_totalVoteOptions == 1? 2 : g_totalVoteOptions );
+    new voteOptions = ( g_totalVoteOptions == 1 ? 2 : g_totalVoteOptions );
 
     LOGGER( 4, "" )
     LOGGER( 4, "" )
@@ -6249,8 +6249,8 @@ stock computeUndoButton( player_id, bool:isToShowUndo, bool:isVoteOver, noneOpti
         formatex( noneOption, noneOptionSize,
                "%s%s\
                 0. %s%L",
-                isToAddExtraLine ? "^n" : "", COLOR_RED,
-                ( isVoteOver ? COLOR_GREY : COLOR_WHITE ), player_id, "GAL_OPTION_CANCEL_VOTE" );
+                isToAddExtraLine ? "^n"       : ""           , COLOR_RED,
+                ( isVoteOver     ? COLOR_GREY : COLOR_WHITE ), player_id, "GAL_OPTION_CANCEL_VOTE" );
     }
     else
     {
@@ -6269,8 +6269,8 @@ stock computeUndoButton( player_id, bool:isToShowUndo, bool:isVoteOver, noneOpti
                 formatex( noneOption, noneOptionSize,
                        "%s%s\
                         0. %s%L",
-                        isToAddExtraLine ? "^n" : "", COLOR_RED,
-                        ( isVoteOver ? COLOR_GREY : COLOR_WHITE ), player_id, "GAL_OPTION_NONE" );
+                        isToAddExtraLine ? "^n"       : ""           , COLOR_RED,
+                        ( isVoteOver     ? COLOR_GREY : COLOR_WHITE ), player_id, "GAL_OPTION_NONE" );
             }
         }
         else
@@ -6288,8 +6288,8 @@ stock computeUndoButton( player_id, bool:isToShowUndo, bool:isVoteOver, noneOpti
                         formatex( noneOption, noneOptionSize,
                                "%s%s\
                                 0. %s%L",
-                                isToAddExtraLine ? "^n" : "", COLOR_RED,
-                                ( isVoteOver ? COLOR_GREY : COLOR_WHITE ), player_id, "GAL_OPTION_NONE" );
+                                isToAddExtraLine ? "^n"       : ""           , COLOR_RED,
+                                ( isVoteOver     ? COLOR_GREY : COLOR_WHITE ), player_id, "GAL_OPTION_NONE" );
                     }
                 }
                 case NONE_OPTION_ALWAYS_KEEP_SHOWING, CONVERT_NONE_OPTION_TO_CANCEL_LAST_VOTE:
@@ -6297,8 +6297,8 @@ stock computeUndoButton( player_id, bool:isToShowUndo, bool:isVoteOver, noneOpti
                     formatex( noneOption, noneOptionSize,
                            "%s%s\
                             0. %s%L",
-                            isToAddExtraLine ? "^n" : "", COLOR_RED,
-                            ( isVoteOver ? COLOR_GREY : COLOR_WHITE ), player_id, "GAL_OPTION_NONE" );
+                            isToAddExtraLine ? "^n"       : ""           , COLOR_RED,
+                            ( isVoteOver     ? COLOR_GREY : COLOR_WHITE ), player_id, "GAL_OPTION_NONE" );
                 }
             }
         }
@@ -8837,7 +8837,7 @@ public displayTheVoteMapActionMenu()
                 player_id, "THE_RESULT", COLOR_RED, COLOR_WHITE, winnerMap,
                 COLOR_YELLOW, player_id, "WANT_CONTINUE",
                 COLOR_RED, COLOR_WHITE, player_id, "CANC_VOTE", menu_counter,
-                COLOR_RED, allowChange ? COLOR_WHITE : COLOR_GREY, player_id, "CHANGE_MAP_TO", winnerMap,
+                COLOR_RED, allowChange ? COLOR_WHITE : COLOR_GREY, player_id, "CHANGE_MAP_TO"              , winnerMap,
                 COLOR_RED, allowChange ? COLOR_WHITE : COLOR_GREY, player_id, "GAL_OPTION_CANCEL_PARTIALLY", winnerMap,
                 0 );
 
@@ -9529,10 +9529,10 @@ public cmd_say( player_id )
     read_args( sentence, charsmax( sentence ) );
     remove_quotes( sentence );
 
-    parse( sentence,
-            firstWord, charsmax( firstWord ),
-            secondWord, charsmax( secondWord ),
-            thirdWord, charsmax( thirdWord ) );
+    parse( sentence  ,
+           firstWord , charsmax( firstWord  ),
+           secondWord, charsmax( secondWord ),
+           thirdWord , charsmax( thirdWord  ) );
 
     LOGGER( 4, "( cmd_say ) sentence: %s, firstWord: %s, secondWord: %s, thirdWord: %s", \
             sentence, firstWord, secondWord, thirdWord )
@@ -12336,7 +12336,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         {
             new lastTestId       = ( g_test_testsNumber );
             new numberOfFailures = ArraySize( g_test_failureIdsArray );
-            new lastFailure      = ( numberOfFailures? ArrayGetCell( g_test_failureIdsArray, numberOfFailures - 1 ) : 0 );
+            new lastFailure      = ( numberOfFailures ? ArrayGetCell( g_test_failureIdsArray, numberOfFailures - 1 ) : 0 );
 
             LOGGER( 1, "( displaysLastTestOk ) numberOfFailures: %d, lastFailure: %d, lastTestId: %d", \
                     numberOfFailures, lastFailure, lastTestId )
@@ -13196,7 +13196,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
             }
 
             formatex( errorMessage, charsmax( errorMessage ),
-                    "The map '%s' %s be present on the voting map menu.", mapToCheck, ( isToBePresent? "must to" : "MUST NOT to" ) );
+                    "The map '%s' %s be present on the voting map menu.", mapToCheck, ( isToBePresent ? "must to" : "MUST NOT to" ) );
             SET_TEST_FAILURE( test_id, isMapPresent != isToBePresent, errorMessage )
         }
     }
