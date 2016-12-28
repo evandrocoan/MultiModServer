@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-375";
+new const PLUGIN_VERSION[] = "v3.2.6-376";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -454,6 +454,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-375";
 #define IS_MAP_MAPCHANGE_DROP_WEAPONS   2
 #define IS_MAP_MAPCHANGE_FREEZE_PLAYERS 4
 #define IS_MAP_MAPCHANGE_BUY_GRENADES   8
+#define IS_MAP_MAPCHANGE_FRIENDLY_FIRE  16
 
 #define IS_VOTE_IN_PROGRESS 1
 #define IS_FORCED_VOTE      2
@@ -942,6 +943,7 @@ new bool:g_isMapExtensionAllowed;
 new bool:g_isGameFinalVoting;
 new bool:g_isOnMaintenanceMode;
 new bool:g_isToCreateGameCrashFlag;
+new bool:g_isToRestoreFriendlyFire;
 
 new Float:g_rtvWaitMinutes;
 new Float:g_originalTimelimit;
@@ -3481,6 +3483,18 @@ stock intermission_effects( endGameType, Float:mp_chattime )
 
         LOGGER( 2, "( intermission_effects ) IS CHANGING THE CVAR 'sv_maxspeed' to '%f'.", get_pcvar_float( cvar_sv_maxspeed ) )
     }
+
+    if( cvar_mp_friendlyfire
+        && endGameType & IS_MAP_MAPCHANGE_FRIENDLY_FIRE )
+    {
+        if( ( g_isToRestoreFriendlyFire = get_pcvar_num( cvar_mp_friendlyfire ) == 0 ) )
+        {
+            set_pcvar_num( cvar_mp_friendlyfire, 1 );
+        }
+
+        LOGGER( 2, "( intermission_effects ) IS CHANGING THE CVAR 'mp_friendlyfire' to '%d'.", get_pcvar_num( cvar_mp_friendlyfire ) )
+    }
+
 
     if( endGameType & IS_MAP_MAPCHANGE_DROP_WEAPONS )
     {
@@ -7424,6 +7438,15 @@ stock restoreOriginalServerMaxSpeed()
         LOGGER( 2, "( restoreOriginalServerMaxSpeed ) IS CHANGING THE CVAR 'sv_maxspeed' to '%f'.", g_original_sv_maxspeed )
 
         g_original_sv_maxspeed = 0.0;
+    }
+
+    if( cvar_mp_friendlyfire
+        && g_isToRestoreFriendlyFire )
+    {
+        set_pcvar_num( cvar_mp_friendlyfire, 0 );
+        LOGGER( 2, "( restoreOriginalServerMaxSpeed ) IS CHANGING THE CVAR 'mp_friendlyfire' to '%d'.", get_pcvar_num( cvar_mp_friendlyfire ) )
+
+        g_isToRestoreFriendlyFire = false;
     }
 }
 
