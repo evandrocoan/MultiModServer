@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-378";
+new const PLUGIN_VERSION[] = "v3.2.6-379";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -88,7 +88,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-378";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+64
+#define DEBUG_LEVEL 1+64+2+4
 
 
 /**
@@ -872,6 +872,7 @@ new cvar_nomMapFilePath;
 new cvar_nomPrefixes;
 new cvar_nomQtyUsed;
 new cvar_nomPlayerAllowance;
+new cvar_nomCleaning;
 new cvar_isToShowExpCountdown;
 new cvar_isEndMapCountdown;
 new cvar_voteMapChoiceCount;
@@ -1286,6 +1287,7 @@ public plugin_init()
     cvar_voteWhiteListMapFilePath  = register_cvar( "gal_vote_whitelist_mapfile"  , ""     );
     cvar_voteUniquePrefixes        = register_cvar( "gal_vote_uniqueprefixes"     , "0"    );
     cvar_nomPlayerAllowance        = register_cvar( "gal_nom_playerallowance"     , "2"    );
+    cvar_nomCleaning               = register_cvar( "gal_nom_cleaning"            , "1"    );
     cvar_nomMapFilePath            = register_cvar( "gal_nom_mapfile"             , "*"    );
     cvar_nomPrefixes               = register_cvar( "gal_nom_prefixes"            , "1"    );
     cvar_nomQtyUsed                = register_cvar( "gal_nom_qtyused"             , "0"    );
@@ -8334,10 +8336,13 @@ stock nomination_clearAll()
 {
     LOGGER( 128, "I AM ENTERING ON nomination_clearAll(0)" )
 
-    TrieClear( g_reverseSearchNominationsTrie );
-    TrieClear( g_forwardSearchNominationsTrie );
+    if( get_pcvar_num( cvar_nomCleaning ) )
+    {
+        TrieClear( g_reverseSearchNominationsTrie );
+        TrieClear( g_forwardSearchNominationsTrie );
 
-    ArrayClear( g_nominatedMapsArray );
+        ArrayClear( g_nominatedMapsArray );
+    }
 }
 
 stock map_announceNomination( player_id, map[] )
@@ -12729,6 +12734,8 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
      */
     stock helper_clearNominationsData()
     {
+        set_pcvar_num( cvar_nomCleaning, 1 );
+
         clearTheVotingMenu();
         nomination_clearAll();
 
@@ -13866,6 +13873,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     new test_nomPlayerAllowance;
     new test_nextMapChangeVotemap;
     new test_endOfMapVoteStart;
+    new test_nomCleaning;
 
     new test_nomMapFilePath           [ MAX_FILE_PATH_LENGHT ];
     new test_voteMapFilePath          [ MAX_FILE_PATH_LENGHT ];
@@ -13927,6 +13935,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
             test_nomPlayerAllowance      = get_pcvar_num( cvar_nomPlayerAllowance     );
             test_nextMapChangeVotemap    = get_pcvar_num( cvar_nextMapChangeVotemap   );
             test_endOfMapVoteStart       = get_pcvar_num( cvar_endOfMapVoteStart      );
+            test_nomCleaning             = get_pcvar_num( cvar_nomCleaning            );
         }
     }
 
@@ -13977,6 +13986,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
             set_pcvar_num( cvar_nomPlayerAllowance  , test_nomPlayerAllowance   );
             set_pcvar_num( cvar_nextMapChangeVotemap, test_nextMapChangeVotemap );
             set_pcvar_num( cvar_endOfMapVoteStart   , test_endOfMapVoteStart    );
+            set_pcvar_num( cvar_nomCleaning         , test_nomCleaning          );
         }
 
         // Clear tests results.
