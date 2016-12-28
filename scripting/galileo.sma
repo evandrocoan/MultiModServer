@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-372";
+new const PLUGIN_VERSION[] = "v3.2.6-373";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -8774,7 +8774,8 @@ public handleVoteMapActionMenu( player_id, pressedKeyCode )
         // pressedKeyCode 0 means the keyboard key 1
         case 0:
         {
-            // Do nothing by default, we are rejecting the results
+            // If we are rejecting the results, allow a new map end voting to start
+            g_voteStatus &= ~IS_VOTE_OVER;
         }
         case 2:
         {
