@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-370";
+new const PLUGIN_VERSION[] = "v3.2.6-371";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -9516,8 +9516,6 @@ public cmd_maintenanceMode( player_id, level, cid )
 public cmd_say( player_id )
 {
     LOGGER( 128, "I AM ENTERING ON cmd_say(1) | player_id: %s", player_id )
-
-    new prefix_index;
     new thirdWord[ 2 ];
 
     static sentence  [ 70 ];
@@ -9578,67 +9576,7 @@ public cmd_say( player_id )
             }
             else if( get_pcvar_num( cvar_nomPlayerAllowance ) )
             {
-                LOGGER( 4, "( cmd_say ) on the 1 word: else if( cvar_nomPlayerAllowance ), \
-                        get_pcvar_num( cvar_nomPlayerAllowance ): %d", get_pcvar_num( cvar_nomPlayerAllowance ) )
-
-                if( equali( firstWord, "noms" )
-                    || equali( firstWord, "nominations" ) )
-                {
-                    nomination_list();
-
-                    LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, nomination_list(0) chosen." )
-                    return PLUGIN_HANDLED;
-                }
-                else
-                {
-                    new mapIndex = getSurMapNameIndex( firstWord );
-
-                    if( mapIndex >= 0 )
-                    {
-                        nomination_toggle( player_id, mapIndex );
-
-                        LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, nomination_toggle(2) chosen." )
-                        return PLUGIN_HANDLED;
-                    }
-                    else if( strlen( firstWord ) > 5
-                             && equali( firstWord, "nom", 3 )
-                             && containi( firstWord, "menu" ) > 1 )
-                    {
-                        // Calculate how much pages there are available.
-                        new nominationsMapsCount = ArraySize( g_nominationLoadedMapsArray );
-                        new lastPageNumber       = GET_LAST_PAGE_NUMBER( nominationsMapsCount, MAX_NOM_MENU_ITEMS_PER_PAGE )
-
-                        setCorrectMenuPage( player_id, firstWord, g_voteMapMenuPages, lastPageNumber );
-                        nomination_menu( player_id );
-
-                        LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, nomination_menu(1) chosen." )
-                        return PLUGIN_HANDLED;
-                    }
-                    else // if contains a prefix
-                    {
-                        for( prefix_index = 0; prefix_index < g_mapPrefixCount; prefix_index++ )
-                        {
-                            LOGGER( 4, "( cmd_say ) firstWord: %s, \
-                                    g_mapPrefixes[%d]: %s, \
-                                    containi( %s, %s )? %d", \
-                                    firstWord, \
-                                    prefix_index, g_mapPrefixes[ prefix_index ], \
-                                    firstWord, g_mapPrefixes[ prefix_index ], containi( firstWord, g_mapPrefixes[ prefix_index ] ) )
-
-                            if( containi( firstWord, g_mapPrefixes[ prefix_index ] ) > -1 )
-                            {
-                                nomination_menu( player_id );
-
-                                LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, nomination_menu(1) chosen." )
-                                return PLUGIN_HANDLED;
-                            }
-                        }
-                    }
-
-                    LOGGER( 4, "( cmd_say ) equali(%s, 'nom', 3)? %d, strlen(%s) > 5? %d", \
-                            firstWord, equali( firstWord, "nom", 3 ), \
-                            firstWord, strlen( firstWord ) > 5 )
-                }
+                if( sayHandlerForOneNomWords( player_id, firstWord ) ) return PLUGIN_HANDLED;
             }
         }
         else if( userFlags & ADMIN_MAP
@@ -9656,59 +9594,138 @@ public cmd_say( player_id )
         }
         else if( get_pcvar_num( cvar_nomPlayerAllowance ) )  // "say <nominate|nom|cancel> <map>"
         {
-            if( strlen( firstWord ) > 5
-                && equali( firstWord, "nom", 3 )
-                && equali( firstWord[ strlen( firstWord ) - 4 ], "menu" ) )
-            {
-                // Calculate how much pages there are available.
-                new nominationsMapsCount = ArraySize( g_nominationLoadedMapsArray );
-                new lastPageNumber       = GET_LAST_PAGE_NUMBER( nominationsMapsCount, MAX_NOM_MENU_ITEMS_PER_PAGE )
-
-                setCorrectMenuPage( player_id, secondWord, g_nominationPlayersMenuPages, lastPageNumber );
-                nomination_menu( player_id );
-
-                LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, nomination_menu(1) chosen." )
-                return PLUGIN_HANDLED;
-            }
-            else if( equali( firstWord, "nominate" )
-                     || equali( firstWord, "nom" ) )
-            {
-                strtolower( secondWord );
-                g_isSawPartialMatchFirstPage[ player_id ] = false;
-
-                if( g_partialMatchFirstPageItems[ player_id ] )
-                {
-                    ArrayClear( g_partialMatchFirstPageItems[ player_id ] );
-                }
-                else
-                {
-                    g_partialMatchFirstPageItems[ player_id ] = ArrayCreate();
-                }
-
-                copy( g_nominationPartialNameAttempt[ player_id ], charsmax( g_nominationPartialNameAttempt[] ), secondWord );
-                nominationAttemptWithNamePart( player_id );
-
-                LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, nominationAttemptWithNamePart(2): %s", secondWord )
-                return PLUGIN_HANDLED;
-            }
-            else if( equali( firstWord, "cancel" ) )
-            {
-                // bpj -- allow ambiguous cancel in which case a menu of their nominations is shown
-                new mapIndex = getSurMapNameIndex( secondWord );
-
-                if( mapIndex >= 0 )
-                {
-                    nomination_cancel( player_id, mapIndex );
-
-                    LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, nomination cancel option chosen." )
-                    return PLUGIN_HANDLED;
-                }
-            }
+            if( sayHandlerForTwoNomWords( player_id, firstWord, secondWord ) ) return PLUGIN_HANDLED;
         }
     }
 
     LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_CONTINUE, as reached the handler end." )
     return PLUGIN_CONTINUE;
+}
+
+stock sayHandlerForOneNomWords( player_id, firstWord[] )
+{
+    LOGGER( 128, "I AM ENTERING ON sayHandlerForOneNomWords(3)" )
+    LOGGER( 4, "( sayHandlerForOneNomWords ) on the 1 word: else if( cvar_nomPlayerAllowance ), \
+            get_pcvar_num( cvar_nomPlayerAllowance ): %d", get_pcvar_num( cvar_nomPlayerAllowance ) )
+
+    if( equali( firstWord, "noms" )
+        || equali( firstWord, "nominations" ) )
+    {
+        nomination_list();
+
+        LOGGER( 1, "    ( sayHandlerForOneNomWords ) Just Returning PLUGIN_HANDLED, nomination_list(0) chosen." )
+        return true;
+    }
+    else
+    {
+        new mapIndex = getSurMapNameIndex( firstWord );
+
+        if( mapIndex >= 0 )
+        {
+            nomination_toggle( player_id, mapIndex );
+
+            LOGGER( 1, "    ( sayHandlerForOneNomWords ) Just Returning PLUGIN_HANDLED, nomination_toggle(2) chosen." )
+            return true;
+        }
+        else if( strlen( firstWord ) > 5
+                 && equali( firstWord, "nom", 3 )
+                 && containi( firstWord, "menu" ) > 1 )
+        {
+            // Calculate how much pages there are available.
+            new nominationsMapsCount = ArraySize( g_nominationLoadedMapsArray );
+            new lastPageNumber       = GET_LAST_PAGE_NUMBER( nominationsMapsCount, MAX_NOM_MENU_ITEMS_PER_PAGE )
+
+            setCorrectMenuPage( player_id, firstWord, g_voteMapMenuPages, lastPageNumber );
+            nomination_menu( player_id );
+
+            LOGGER( 1, "    ( sayHandlerForOneNomWords ) Just Returning PLUGIN_HANDLED, nomination_menu(1) chosen." )
+            return true;
+        }
+        else // if contains a prefix
+        {
+            for( new prefix_index = 0; prefix_index < g_mapPrefixCount; prefix_index++ )
+            {
+                LOGGER( 4, "( sayHandlerForOneNomWords ) firstWord: %s, \
+                        g_mapPrefixes[%d]: %s, \
+                        containi( %s, %s )? %d", \
+                        firstWord, \
+                        prefix_index, g_mapPrefixes[ prefix_index ], \
+                        firstWord, g_mapPrefixes[ prefix_index ], containi( firstWord, g_mapPrefixes[ prefix_index ] ) )
+
+                if( containi( firstWord, g_mapPrefixes[ prefix_index ] ) > -1 )
+                {
+                    nomination_menu( player_id );
+
+                    LOGGER( 1, "    ( sayHandlerForOneNomWords ) Just Returning PLUGIN_HANDLED, nomination_menu(1) chosen." )
+                    return true;
+                }
+            }
+        }
+
+        LOGGER( 4, "( sayHandlerForOneNomWords ) equali(%s, 'nom', 3)? %d, strlen(%s) > 5? %d", \
+                firstWord, equali( firstWord, "nom", 3 ), \
+                firstWord, strlen( firstWord ) > 5 )
+    }
+
+    LOGGER( 1, "    ( sayHandlerForOneNomWords ) Just Returning false." )
+    return false;
+}
+
+stock sayHandlerForTwoNomWords( player_id, firstWord[], secondWord[] )
+{
+    LOGGER( 128, "I AM ENTERING ON sayHandlerForTwoNomWords(3)" )
+
+    if( strlen( firstWord ) > 5
+        && equali( firstWord, "nom", 3 )
+        && equali( firstWord[ strlen( firstWord ) - 4 ], "menu" ) )
+    {
+        // Calculate how much pages there are available.
+        new nominationsMapsCount = ArraySize( g_nominationLoadedMapsArray );
+        new lastPageNumber       = GET_LAST_PAGE_NUMBER( nominationsMapsCount, MAX_NOM_MENU_ITEMS_PER_PAGE )
+
+        setCorrectMenuPage( player_id, secondWord, g_nominationPlayersMenuPages, lastPageNumber );
+        nomination_menu( player_id );
+
+        LOGGER( 1, "    ( sayHandlerForTwoNomWords ) Just Returning PLUGIN_HANDLED, nomination_menu(1) chosen." )
+        return true;
+    }
+    else if( equali( firstWord, "nominate" )
+             || equali( firstWord, "nom" ) )
+    {
+        strtolower( secondWord );
+        g_isSawPartialMatchFirstPage[ player_id ] = false;
+
+        if( g_partialMatchFirstPageItems[ player_id ] )
+        {
+            ArrayClear( g_partialMatchFirstPageItems[ player_id ] );
+        }
+        else
+        {
+            g_partialMatchFirstPageItems[ player_id ] = ArrayCreate();
+        }
+
+        copy( g_nominationPartialNameAttempt[ player_id ], charsmax( g_nominationPartialNameAttempt[] ), secondWord );
+        nominationAttemptWithNamePart( player_id );
+
+        LOGGER( 1, "    ( sayHandlerForTwoNomWords ) Just Returning PLUGIN_HANDLED, nominationAttemptWithNamePart(2): %s", secondWord )
+        return true;
+    }
+    else if( equali( firstWord, "cancel" ) )
+    {
+        // bpj -- allow ambiguous cancel in which case a menu of their nominations is shown
+        new mapIndex = getSurMapNameIndex( secondWord );
+
+        if( mapIndex >= 0 )
+        {
+            nomination_cancel( player_id, mapIndex );
+
+            LOGGER( 1, "    ( sayHandlerForTwoNomWords ) Just Returning PLUGIN_HANDLED, nomination cancel option chosen." )
+            return true;
+        }
+    }
+
+    LOGGER( 1, "    ( sayHandlerForTwoNomWords ) Just Returning false." )
+    return false;
 }
 
 /**
