@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-373";
+new const PLUGIN_VERSION[] = "v3.2.6-374";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -830,6 +830,7 @@ new cvar_isExtendmapOrderAllowed;
 new cvar_isToStopEmptyCycle;
 new cvar_unnominateDisconnected;
 new cvar_endOnRound;
+new cvar_endOnRoundChange;
 new cvar_endOfMapVote;
 new cvar_endOfMapVoteExpiration;
 new cvar_endOfMapVoteStart;
@@ -1239,6 +1240,7 @@ public plugin_init()
     cvar_voteWeight                = register_cvar( "gal_vote_weight"             , "1"    );
     cvar_voteWeightFlags           = register_cvar( "gal_vote_weightflags"        , "y"    );
     cvar_endOnRound                = register_cvar( "gal_endonround"              , "1"    );
+    cvar_endOnRoundChange          = register_cvar( "gal_endonround_change"       , "1"    );
     cvar_endOnRoundRtv             = register_cvar( "gal_endonround_rtv"          , "0"    );
     cvar_endOnRound_msg            = register_cvar( "gal_endonround_msg"          , "0"    );
     cvar_isEndMapCountdown         = register_cvar( "gal_endonround_countdown"    , "0"    );
@@ -3290,7 +3292,15 @@ stock endRoundWatchdog()
     {
         // When time runs out, end map at the current round end.
         remove_task( TASKID_SHOW_LAST_ROUND_HUD );
-        set_task( 6.0, "process_last_round_by_set_task", TASKID_PROCESS_LAST_ROUND );
+
+        if( get_pcvar_num( cvar_endOnRoundChange ) )
+        {
+            process_last_round_by_set_task();
+        }
+        else
+        {
+            set_task( 6.0, "process_last_round_by_set_task", TASKID_PROCESS_LAST_ROUND );
+        }
     }
     else if( g_isThePenultGameRound )
     {
