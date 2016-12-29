@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-389";
+new const PLUGIN_VERSION[] = "v3.2.6-390";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -468,11 +468,15 @@ new const PLUGIN_VERSION[] = "v3.2.6-389";
 #define IS_VOTE_EARLY       16
 #define IS_VOTE_EXPIRED     32
 
-#define SOUND_GETREADYTOCHOOSE 1
-#define SOUND_COUNTDOWN        2
-#define SOUND_TIMETOCHOOSE     4
-#define SOUND_RUNOFFREQUIRED   8
-#define SOUND_MAPCHANGE        16
+#define SOUND_GET_READY_TO_CHOOSE 1
+#define SOUND_COUNTDOWN           2
+#define SOUND_TIME_TO_CHOOSE      4
+#define SOUND_RUNOFF_REQUIRED     8
+#define SOUND_MAPCHANGE           16
+
+#define HUD_CHANGELEVEL_COUNTDOWN 1
+#define HUD_VOTE_VISUAL_COUNTDOWN 2
+#define HUD_CHANGELEVEL_ANNOUNCE  4
 
 #define SHOW_STATUS_NEVER      0
 #define SHOW_STATUS_AFTER_VOTE 1
@@ -898,6 +902,7 @@ new cvar_showVoteStatus;
 new cvar_showVoteStatusType;
 new cvar_isToReplaceByVoteMenu;
 new cvar_soundsMute;
+new cvar_hudsHide;
 new cvar_voteMapFilePath;
 new cvar_voteMinPlayers;
 new cvar_voteMidPlayers;
@@ -1304,6 +1309,7 @@ public plugin_init()
     cvar_isEmptyCycleByMapChange   = register_cvar( "gal_emptyserver_change"      , "0"    );
     cvar_emptyMapFilePath          = register_cvar( "gal_emptyserver_mapfile"     , ""     );
     cvar_soundsMute                = register_cvar( "gal_sounds_mute"             , "0"    );
+    cvar_hudsHide                  = register_cvar( "gal_sounds_hud"              , "0"    );
     cvar_coloredChatPrefix         = register_cvar( "gal_colored_chat_prefix"     , ""     );
 
     // Enables the colored chat control cvar.
@@ -3569,8 +3575,11 @@ public last_round_countdown()
     if( real_number )
     {
         // visual countdown
-        set_hudmessage( 255, 10, 10, -1.0, 0.13, 0, 1.0, 0.94, 0.0, 0.0, -1 );
-        show_hudmessage( 0, "%d %L...", real_number, LANG_PLAYER, "GAL_TIMELEFT" );
+        if( !( get_pcvar_num( cvar_hudsHide ) & HUD_CHANGELEVEL_COUNTDOWN ) )
+        {
+            set_hudmessage( 255, 10, 10, -1.0, 0.13, 0, 1.0, 0.94, 0.0, 0.0, -1 );
+            show_hudmessage( 0, "%d %L...", real_number, LANG_PLAYER, "GAL_TIMELEFT" );
+        }
 
         // audio countdown
         if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_COUNTDOWN ) )
@@ -3595,7 +3604,8 @@ public configure_last_round_HUD()
 {
     LOGGER( 128, "I AM ENTERING ON configure_last_round_HUD(0)" )
 
-    if( get_pcvar_num( cvar_endOnRound_msg ) )
+    if( get_pcvar_num( cvar_endOnRound_msg )
+        && !( get_pcvar_num( cvar_hudsHide ) & HUD_CHANGELEVEL_ANNOUNCE ) )
     {
         set_task( 1.0, "show_last_round_HUD", TASKID_SHOW_LAST_ROUND_HUD, _, _, "b" );
     }
@@ -5610,7 +5620,7 @@ stock initializeTheVoteDisplay()
         handleChoicesDelay = 7.0 + 1.0 + 1.0;
 
         // Make perfunctory announcement: "get ready to choose a map"
-        if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_GETREADYTOCHOOSE ) )
+        if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_GET_READY_TO_CHOOSE ) )
         {
             client_cmd( 0, "spk ^"get red( e80 ) ninety( s45 ) to check( e20 ) \
                     use bay( s18 ) mass( e42 ) cap( s50 )^"" );
@@ -5666,18 +5676,12 @@ public pendingVoteCountdown()
         displayEndOfTheMapVoteMenu( 0 );
     }
 
-    // visual countdown,
-    // Add a new cvar as `gal_text_messages_mute` (gal_sounds_mute)
-    // issue: https://github.com/evandrocoan/Galileo/issues/31
-    // if( !( get_pcvar_num( cvar_textMessagesMute ) & VISUAL_COUNTDOWN ) )
-    // {
-    //     set_hudmessage( 0, 222, 50, -1.0, 0.13, 0, 1.0, 0.94, 0.0, 0.0, -1 );
-    //     show_hudmessage( 0, "%L", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", g_pendingVoteCountdown );
-    // }
-
     // visual countdown
-    set_hudmessage( 0, 222, 50, -1.0, 0.13, 0, 1.0, 0.94, 0.0, 0.0, -1 );
-    show_hudmessage( 0, "%L", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", g_pendingVoteCountdown );
+    if( !( get_pcvar_num( cvar_hudsHide ) & HUD_VOTE_VISUAL_COUNTDOWN ) )
+    {
+        set_hudmessage( 0, 222, 50, -1.0, 0.13, 0, 1.0, 0.94, 0.0, 0.0, -1 );
+        show_hudmessage( 0, "%L", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", g_pendingVoteCountdown );
+    }
 
     // audio countdown
     if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_COUNTDOWN ) )
@@ -5811,7 +5815,7 @@ public vote_handleDisplay()
     LOGGER( 128, "I AM ENTERING ON vote_handleDisplay(0)" )
 
     // announce: "time to choose"
-    if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_TIMETOCHOOSE ) )
+    if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_TIME_TO_CHOOSE ) )
     {
         client_cmd( 0, "spk Gman/Gman_Choose%i", random_num( 1, 2 ) );
     }
@@ -7029,7 +7033,7 @@ stock startRunoffVoting( firstPlaceChoices[], secondPlaceChoices[], numberOfMaps
     // announce runoff voting requirement
     color_print( 0, "%L", LANG_PLAYER, "GAL_RUNOFF_REQUIRED" );
 
-    if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_RUNOFFREQUIRED ) )
+    if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_RUNOFF_REQUIRED ) )
     {
         client_cmd( 0, "spk ^"run officer( e40 ) voltage( e30 ) accelerating( s70 ) \
                 is required^"" );
@@ -11771,6 +11775,9 @@ public plugin_end()
     LOGGER( 32, "" )
     LOGGER( 32, "I AM ENTERING ON plugin_end(0). THE END OF THE PLUGIN LIFE!" )
 
+    // Just in case the Unit Tests are running while changing level.
+    restoreServerCvarsFromTesting();
+
     new currentIndex;
     new gameCrashActionFilePath[ MAX_FILE_PATH_LENGHT ];
 
@@ -12714,7 +12721,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         }
 
         g_test_testsNumber++;
-        print_logger( "        EXECUTING TEST %d AFTER %d OF %d SECONDS DELAY - %s ",
+        print_logger( "        EXECUTING TEST %d AFTER %d WITH UNTIL %d SECONDS DELAY - %s ",
                 g_test_testsNumber, computeTheTestElapsedTime(), max_delay_result, test_name );
 
         if( g_test_maxDelayResult < max_delay_result )
