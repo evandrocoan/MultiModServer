@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-381";
+new const PLUGIN_VERSION[] = "v3.2.6-382";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -88,7 +88,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-381";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+64+2+4
+#define DEBUG_LEVEL 1+64+4+2
 
 
 /**
@@ -272,6 +272,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-381";
         test_nominateAndUnnominate_load();
         test_RTVAndUnRTV_load();
         test_getUniqueRandom_load();
+        test_getUniqueRandom2_load();
         test_whatGameEndingTypeIt_load();
         test_convertNumericBase_load();
         test_setCorrectMenuPage_load();
@@ -308,7 +309,8 @@ new const PLUGIN_VERSION[] = "v3.2.6-381";
             // LOGGER( 1, "Current i is: %d", i )
         }
 
-        test_setCorrectMenuPage_load();
+        test_getUniqueRandom2_load();
+        // test_setCorrectMenuPage_load();
         // test_convertNumericBase_load();
         // test_whatGameEndingTypeIt_load();
         // test_getUniqueRandom_load();
@@ -1393,7 +1395,6 @@ public plugin_cfg()
 
     // Configure the Unit Tests, when they are activate.
 #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
-    saveCurrentTestsTimeStamp();
     configureTheUnitTests();
 #endif
 
@@ -4597,6 +4598,8 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
     new unsuccessfulCount;
     new currentBlockerStrategy;
 
+    new Array:randomGenaratorHolder = ArrayCreate();
+
     new bool:isWhitelistEnabled   = IS_WHITELIST_ENABLED();
     new bool:useEqualiCurrentMap  = true;
     new bool:useWhitelistOutBlock = isWhitelistEnabled;
@@ -4698,7 +4701,7 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
 
                 keepSearching:
 
-                mapIndex = random_num( 0, filersMapCount - 1 );
+                mapIndex = getUniqueRandomInteger2( randomGenaratorHolder, 0, filersMapCount - 1 );
                 ArrayGetString( fillerMapsArray, mapIndex, mapName, charsmax( mapName ) );
 
                 LOGGER( 8, "( in  ) [%i] choiceIndex: %i, mapIndex: %i, mapName: %s, unsuccessfulCount: %i, g_totalVoteOptions: %i", \
@@ -4779,7 +4782,9 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
                         unsuccessfulCount = 0;
                     }
 
-                    if( ++mapIndex >= filersMapCount )
+                    ++mapIndex;
+
+                    if( mapIndex >= filersMapCount )
                     {
                         mapIndex = 0;
                     }
@@ -4832,6 +4837,7 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
     }
 
     TRY_TO_APPLY( TrieDestroy, blockedFillersMapTrie )
+    TRY_TO_APPLY( ArrayDestroy, randomGenaratorHolder )
 }
 
 stock print_is_white_list_out_block()
@@ -6797,6 +6803,60 @@ stock showPlayersVoteResult()
 
     LOGGER( 4, "" )
     return 0;
+}
+
+/**
+ * Get unique random positive numbers between 0 until maximum. If the `maximum`'s change between
+ * the function calls, the unique random number sequence will be restarted to this new maximum
+ * value.
+ *
+ * Also after the maximum value been reached, the random unique sequence will be restarted and a
+ * new unique random number sequence will be generated. The range is:
+ *
+ *     minimum <= return value <= maximum
+ *
+ * Do not change the minimum value without changing at the same time the maximum value, otherwise
+ * you will still get number at the old minimum value starting range.
+ *
+ * @param holder      a initially empty Dynamic Array used for internal purposes.
+ * @param minimum     the inclusive lower bound limit, i.e., the minimum value to be sorted.
+ * @param maximum     the inclusive upper bound limit, i.e., the maximum value to be sorted.
+ *
+ * @return a unique random integer until the `maximum` parameter value.
+ */
+stock getUniqueRandomInteger2( Array:holder, minimum = 0, maximum = 0 )
+{
+    LOGGER( 128, "I AM ENTERING ON getUniqueRandomInteger(2) range: %d-%d", minimum, maximum )
+
+    new randomIndex;
+    new returnValue;
+
+    static holderSize;
+    static lastMaximum = MIN_INTEGER;
+
+    if( lastMaximum != maximum
+        || holderSize < 1 )
+    {
+        ArrayClear( holder );
+
+        lastMaximum = maximum;
+        holderSize  = ( maximum - minimum ) + 1;
+
+        for( new index = minimum; index < holderSize; index++ )
+        {
+            ArrayPushCell( holder, index );
+        }
+    }
+
+    --holderSize;
+
+    randomIndex = random_num( 0, holderSize );
+    returnValue = ArrayGetCell( holder, randomIndex );
+
+    ArrayDeleteItem( holder, randomIndex );
+
+    LOGGER( 1, "    ( getUniqueRandomInteger ) %d. Just Returning the random integer: %d", holderSize, returnValue )
+    return returnValue;
 }
 
 /**
@@ -12355,6 +12415,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     public runTests()
     {
         LOGGER( 128, "I AM ENTERING ON runTests(0)" )
+        saveCurrentTestsTimeStamp();
 
     #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_UNIT_TEST_DELAYED )
         saveServerCvarsForTesting();
@@ -12395,6 +12456,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
             print_logger( "" );
             print_logger( "    After '%d' runtime seconds... Executing the %s's Unit Tests delayed until at least %d seconds: ",
                                      computeTheTestElapsedTime(),          PLUGIN_NAME,          g_test_maxDelayResult );
+            print_logger( "" );
             print_logger( "" );
         #endif
             g_test_lastMaxDelayResult = g_test_maxDelayResult;
@@ -12600,7 +12662,8 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         }
 
         g_test_testsNumber++;
-        print_logger( "        EXECUTING TEST %d WITH %d SECONDS DELAY - %s ", g_test_testsNumber, max_delay_result, test_name );
+        print_logger( "        EXECUTING TEST %d UNTIL %d OF %d SECONDS DELAYED - %s ",
+                g_test_testsNumber, max_delay_result, computeTheTestElapsedTime(), test_name );
 
         if( g_test_maxDelayResult < max_delay_result )
         {
@@ -13583,7 +13646,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     }
 
     /**
-     * To test the stock getUniqueRandomIntegers(2).
+     * To test the stock getUniqueRandomInteger(2).
      */
     stock test_getUniqueRandom_load()
     {
@@ -13632,6 +13695,84 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
 
         formatex( errorMessage, charsmax( errorMessage ), "The TrieSize must to be %d, instead of %d.", max_value + 2, trieSize );
         SET_TEST_FAILURE( test_id, trieSize != max_value + 2, errorMessage )
+
+        TrieDestroy( sortedIntegers );
+    }
+
+    /**
+     * To test the stock getUniqueRandomInteger2(3).
+     */
+    stock test_getUniqueRandom2_load()
+    {
+        new Array:holder = ArrayCreate();
+
+        test_getUniqueRandomInteger2( holder, 0, 0  ); // Case 1
+        test_getUniqueRandomInteger2( holder, 0, 1  ); // Case 2
+        test_getUniqueRandomInteger2( holder, 0, 30 ); // Case 3
+        test_getUniqueRandomInteger2( holder, 0, 31 ); // Case 4
+
+        test_getUniqueRandomInteger2( holder, 0, 31 ); // Case 5
+        test_getUniqueRandomInteger2( holder, 0, 30 ); // Case 6
+        test_getUniqueRandomInteger2( holder, 0, 1  ); // Case 7
+        test_getUniqueRandomInteger2( holder, 0, 0  ); // Case 8
+
+        ArrayDestroy( holder );
+    }
+
+    /**
+     * Create one case test for the stock getUniqueRandomInteger2(0) based on its parameters passed
+     * by the test_getUniqueRandom_load2(0) loader function.
+     */
+    stock test_getUniqueRandomInteger2( Array:holder, min_value, max_value )
+    {
+        new errorMessage[ MAX_LONG_STRING ];
+        new test_id = test_registerSeriesNaming( "test_getUniqueRandomInteger", 'a' );
+
+        new trieSize;
+        new sortedInterger;
+
+        new sortedIntergerString[ 6 ];
+        new Trie:sortedIntegers = TrieCreate();
+        new randomCount         = max_value - min_value + 1;
+
+        static sequence = -1;
+        sequence++;
+
+        for( new index = 0; index < max_value + 1 ; index++ )
+        {
+            sortedInterger = getUniqueRandomInteger2( holder, min_value, max_value );
+            num_to_str( sortedInterger, sortedIntergerString, charsmax( sortedIntergerString ) );
+
+            formatex( errorMessage, charsmax( errorMessage ), "The integer %d, must not to be sorted twice.", sortedInterger );
+            SET_TEST_FAILURE( test_id, TrieKeyExists( sortedIntegers, sortedIntergerString ), errorMessage )
+
+            if( !TrieKeyExists( sortedIntegers, sortedIntergerString ) )
+            {
+                TrieSetCell( sortedIntegers, sortedIntergerString, index ) ? trieSize++ : 0;
+            }
+        }
+
+        formatex( errorMessage, charsmax( errorMessage ), "The TrieSize must to be %d, instead of %d.", max_value, trieSize );
+        SET_TEST_FAILURE( test_id, trieSize != randomCount, errorMessage )
+
+        LOGGER( 1, "" )
+
+        for( new index = 0; index < max_value + 1 ; index++ )
+        {
+            sortedInterger = getUniqueRandomInteger2( holder, min_value, max_value );
+            num_to_str( sortedInterger, sortedIntergerString, charsmax( sortedIntergerString ) );
+
+            formatex( errorMessage, charsmax( errorMessage ), "The integer %d, must to be sorted twice.", sortedInterger );
+            SET_TEST_FAILURE( test_id, !TrieKeyExists( sortedIntegers, sortedIntergerString ), errorMessage )
+
+            if( !TrieKeyExists( sortedIntegers, sortedIntergerString ) )
+            {
+                TrieSetCell( sortedIntegers, sortedIntergerString, index ) ? trieSize++ : 0;
+            }
+        }
+
+        formatex( errorMessage, charsmax( errorMessage ), "The TrieSize must to be %d, instead of %d.", max_value, trieSize );
+        SET_TEST_FAILURE( test_id, trieSize != randomCount, errorMessage )
 
         TrieDestroy( sortedIntegers );
     }
