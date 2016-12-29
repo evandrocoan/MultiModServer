@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-383";
+new const PLUGIN_VERSION[] = "v3.2.6-385";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -271,8 +271,8 @@ new const PLUGIN_VERSION[] = "v3.2.6-383";
         test_loadVoteChoices_cases();
         test_nominateAndUnnominate_load();
         test_RTVAndUnRTV_load();
-        test_getUniqueRandom_load();
-        test_getUniqueRandom2_load();
+        test_getUniqueRandomBasic_load();
+        test_getUniqueRandomInt_load();
         test_whatGameEndingTypeIt_load();
         test_convertNumericBase_load();
         test_setCorrectMenuPage_load();
@@ -309,11 +309,11 @@ new const PLUGIN_VERSION[] = "v3.2.6-383";
             // LOGGER( 1, "Current i is: %d", i )
         }
 
-        test_getUniqueRandom2_load();
+        test_getUniqueRandomInt_load();
         // test_setCorrectMenuPage_load();
         // test_convertNumericBase_load();
         // test_whatGameEndingTypeIt_load();
-        // test_getUniqueRandom_load();
+        // test_getUniqueRandomBasic_load();
         // test_nominateAndUnnominate_load();
         // test_loadVoteChoices_cases();
         //test_colorChatLimits( player_id );
@@ -4701,7 +4701,7 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
 
                 keepSearching:
 
-                mapIndex = getUniqueRandomInteger2( randomGenaratorHolder, 0, filersMapCount - 1 );
+                mapIndex = getUniqueRandomInteger( randomGenaratorHolder, 0, filersMapCount - 1 );
                 ArrayGetString( fillerMapsArray, mapIndex, mapName, charsmax( mapName ) );
 
                 LOGGER( 8, "( in  ) [%i] choiceIndex: %i, mapIndex: %i, mapName: %s, unsuccessfulCount: %i, g_totalVoteOptions: %i", \
@@ -6806,25 +6806,31 @@ stock showPlayersVoteResult()
 }
 
 /**
- * Get unique random positive numbers between 0 until maximum. If the `maximum`'s change between
- * the function calls, the unique random number sequence will be restarted to this new maximum
- * value.
+ * Get unique random numbers between a minimum until maximum.
  *
- * Also after the maximum value been reached, the random unique sequence will be restarted and a
- * new unique random number sequence will be generated. The range is:
+ * If the `maximum`'s change between the function calls, the unique random number sequence will be
+ * restarted to this new maximum value.
+ *
+ * Also after the maximum value been reached, the random unique sequence will be restarted and a new
+ * unique random number sequence will be generated. To reset the sequence, just to call this function
+ * just as `getUniqueRandomInteger( holder )`. The range is:
  *
  *     minimum <= return value <= maximum
  *
- * Do not change the minimum value without changing at the same time the maximum value, otherwise
- * you will still get number at the old minimum value starting range.
+ * 1. Do not forgot the call ArrayCreate() for the `holder` parameter before calling this function,
+ *    and to call ArrayDestroy(1) for the `holder` parameter after you finished using this function.
+ * 2. Do not change the minimum value without changing at the same time the maximum value, otherwise
+ *    you will still get number at the old minimum value starting range.
+ * 3. This algorithm complexity is linear `O( n )` for the first call and when the random generated
+ *    sequence is restarted. The further function calls has constant `O( 1 )` complexity.
  *
- * @param holder      a initially empty Dynamic Array used for internal purposes.
+ * @param holder      an initially empty Dynamic Array used for internal purposes.
  * @param minimum     the inclusive lower bound limit, i.e., the minimum value to be sorted.
  * @param maximum     the inclusive upper bound limit, i.e., the maximum value to be sorted.
  *
- * @return a unique random integer until the `maximum` parameter value.
+ * @return an unique random integer until the `maximum` parameter value.
  */
-stock getUniqueRandomInteger2( Array:holder, minimum = 0, maximum = 0 )
+stock getUniqueRandomInteger( Array:holder, minimum = 0, maximum = 0 )
 {
     LOGGER( 128, "I AM ENTERING ON getUniqueRandomInteger(2) range: %d-%d", minimum, maximum )
 
@@ -6854,7 +6860,7 @@ stock getUniqueRandomInteger2( Array:holder, minimum = 0, maximum = 0 )
     randomIndex = random_num( 0, holderSize );
     returnValue = ArrayGetCell( holder, randomIndex );
 
-    // Swap the random value from the middle of the array to the last position, reduce the removal
+    // Swap the random value from the middle of the array to the last position, reduces the removal
     // complexity from linear `O( n )` to constant `O( 1 )`.
     ArraySwap( holder, randomIndex, holderSize );
     ArrayDeleteItem( holder, holderSize );
@@ -6874,9 +6880,9 @@ stock getUniqueRandomInteger2( Array:holder, minimum = 0, maximum = 0 )
  *
  * @return -1 when there are not new unique positive numbers to return.
  */
-stock getUniqueRandomInteger( sequence, maximum )
+stock getUniqueRandomIntegerBasic( sequence, maximum )
 {
-    LOGGER( 128, "I AM ENTERING ON getUniqueRandomInteger(2) maximum: %d", maximum )
+    LOGGER( 128, "I AM ENTERING ON getUniqueRandomIntegerBasic(2) maximum: %d", maximum )
     static maximumBitField;
 
     static lastSequence   = -1;
@@ -6907,12 +6913,12 @@ stock getUniqueRandomInteger( sequence, maximum )
             // Set bit on the sortedIntegers bit-field, so the integer will now be considered selected
             sortedIntegers |= ( 1 << randomInteger );
 
-            LOGGER( 1, "    ( getUniqueRandomInteger ) %d. Just Returning the random integer: %d", sequence, randomInteger )
+            LOGGER( 1, "    ( getUniqueRandomIntegerBasic ) %d. Just Returning the random integer: %d", sequence, randomInteger )
             return randomInteger;
         }
     }
 
-    LOGGER( 1, "    ( getUniqueRandomInteger ) %d. Just Returning the random integer: %d", sequence, -1 )
+    LOGGER( 1, "    ( getUniqueRandomIntegerBasic ) %d. Just Returning the random integer: %d", sequence, -1 )
     return -1;
 }
 
@@ -6962,7 +6968,7 @@ stock handleMoreThanTwoMapsAtFirst( firstPlaceChoices[], numberOfMapsAtFirstPosi
 
     for( new voteOptionIndex = 0; voteOptionIndex < maxVotingChoices; voteOptionIndex++ )
     {
-        randomInteger = getUniqueRandomInteger( seedValue, maxVotingChoices );
+        randomInteger = getUniqueRandomIntegerBasic( seedValue, maxVotingChoices );
 
         // If firstPlaceChoices[ numberOfMapsAtFirstPosition - 1 ]  is equal to
         // g_totalVoteOptions then it option is not a valid map, it is the keep current
@@ -13650,29 +13656,29 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     }
 
     /**
-     * To test the stock getUniqueRandomInteger(2).
+     * To test the stock getUniqueRandomIntegerBasic(2).
      */
-    stock test_getUniqueRandom_load()
+    stock test_getUniqueRandomBasic_load()
     {
-        test_getUniqueRandomInteger( 0  ); // Case 1
-        test_getUniqueRandomInteger( 1  ); // Case 2
-        test_getUniqueRandomInteger( 30 ); // Case 3
-        test_getUniqueRandomInteger( 31 ); // Case 4
+        test_getUniqueRandomIntBasic( 0  ); // Case 1
+        test_getUniqueRandomIntBasic( 1  ); // Case 2
+        test_getUniqueRandomIntBasic( 30 ); // Case 3
+        test_getUniqueRandomIntBasic( 31 ); // Case 4
 
-        test_getUniqueRandomInteger( 31 ); // Case 5
-        test_getUniqueRandomInteger( 30 ); // Case 6
-        test_getUniqueRandomInteger( 1  ); // Case 7
-        test_getUniqueRandomInteger( 0  ); // Case 8
+        test_getUniqueRandomIntBasic( 31 ); // Case 5
+        test_getUniqueRandomIntBasic( 30 ); // Case 6
+        test_getUniqueRandomIntBasic( 1  ); // Case 7
+        test_getUniqueRandomIntBasic( 0  ); // Case 8
     }
 
     /**
      * Create one case test for the stock getUniqueRandomIntegers(0) based on its parameters passed
-     * by the test_getUniqueRandom_load(0) loader function.
+     * by the test_getUniqueRandomBasic_load(0) loader function.
      */
-    stock test_getUniqueRandomInteger( max_value )
+    stock test_getUniqueRandomIntBasic( max_value )
     {
         new errorMessage[ MAX_LONG_STRING ];
-        new test_id = test_registerSeriesNaming( "test_getUniqueRandomInteger", 'a' );
+        new test_id = test_registerSeriesNaming( "test_getUniqueRandomIntBasic", 'a' );
 
         new trieSize;
         new sortedInterger;
@@ -13685,7 +13691,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
 
         for( new index = 0; index < max_value + 3 ; index++ )
         {
-            sortedInterger = getUniqueRandomInteger( sequence, max_value );
+            sortedInterger = getUniqueRandomIntegerBasic( sequence, max_value );
             num_to_str( sortedInterger, sortedIntergerString, charsmax( sortedIntergerString ) );
 
             formatex( errorMessage, charsmax( errorMessage ), "The integer %d, must not to be sorted twice.", sortedInterger );
@@ -13704,33 +13710,33 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     }
 
     /**
-     * To test the stock getUniqueRandomInteger2(3).
+     * To test the stock getUniqueRandomInteger(3).
      */
-    stock test_getUniqueRandom2_load()
+    stock test_getUniqueRandomInt_load()
     {
         new Array:holder = ArrayCreate();
 
-        test_getUniqueRandomInteger2( holder, 0, 0  ); // Case 1
-        test_getUniqueRandomInteger2( holder, 0, 1  ); // Case 2
-        test_getUniqueRandomInteger2( holder, 0, 30 ); // Case 3
-        test_getUniqueRandomInteger2( holder, 0, 31 ); // Case 4
+        test_getUniqueRandomInteger( holder, 0, 0  ); // Case 1
+        test_getUniqueRandomInteger( holder, 0, 1  ); // Case 2
+        test_getUniqueRandomInteger( holder, 0, 30 ); // Case 3
+        test_getUniqueRandomInteger( holder, 0, 31 ); // Case 4
 
-        test_getUniqueRandomInteger2( holder, 0, 31 ); // Case 5
-        test_getUniqueRandomInteger2( holder, 0, 30 ); // Case 6
-        test_getUniqueRandomInteger2( holder, 0, 1  ); // Case 7
-        test_getUniqueRandomInteger2( holder, 0, 0  ); // Case 8
+        test_getUniqueRandomInteger( holder, 0, 31 ); // Case 5
+        test_getUniqueRandomInteger( holder, 0, 30 ); // Case 6
+        test_getUniqueRandomInteger( holder, 0, 1  ); // Case 7
+        test_getUniqueRandomInteger( holder, 0, 0  ); // Case 8
 
         ArrayDestroy( holder );
     }
 
     /**
-     * Create one case test for the stock getUniqueRandomInteger2(0) based on its parameters passed
+     * Create one case test for the stock getUniqueRandomInteger(0) based on its parameters passed
      * by the test_getUniqueRandom_load2(0) loader function.
      */
-    stock test_getUniqueRandomInteger2( Array:holder, min_value, max_value )
+    stock test_getUniqueRandomInteger( Array:holder, min_value, max_value )
     {
         new errorMessage[ MAX_LONG_STRING ];
-        new test_id = test_registerSeriesNaming( "test_getUniqueRandomInteger", 'a' );
+        new test_id = test_registerSeriesNaming( "test_getUniqueRandomInteger", 'c' );
 
         new trieSize;
         new sortedInterger;
@@ -13744,7 +13750,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
 
         for( new index = 0; index < max_value + 1 ; index++ )
         {
-            sortedInterger = getUniqueRandomInteger2( holder, min_value, max_value );
+            sortedInterger = getUniqueRandomInteger( holder, min_value, max_value );
             num_to_str( sortedInterger, sortedIntergerString, charsmax( sortedIntergerString ) );
 
             formatex( errorMessage, charsmax( errorMessage ), "The integer %d, must not to be sorted twice.", sortedInterger );
@@ -13763,7 +13769,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
 
         for( new index = 0; index < max_value + 1 ; index++ )
         {
-            sortedInterger = getUniqueRandomInteger2( holder, min_value, max_value );
+            sortedInterger = getUniqueRandomInteger( holder, min_value, max_value );
             num_to_str( sortedInterger, sortedIntergerString, charsmax( sortedIntergerString ) );
 
             formatex( errorMessage, charsmax( errorMessage ), "The integer %d, must to be sorted twice.", sortedInterger );
