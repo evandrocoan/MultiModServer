@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-386";
+new const PLUGIN_VERSION[] = "v3.2.6-387";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -41,13 +41,13 @@ new const PLUGIN_VERSION[] = "v3.2.6-386";
 #define IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST 0
 
 /**
- * Enables the support the Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
+ * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
  * "game_end". It will require the '<hamsandwich>' module.
  */
 #define IS_TO_ENABLE_SVEN_COOP_SUPPPORT 1
 
 /**
- * Change this value from 0 to 1, to disable the colored text message (chat messages).
+ * Change this value from 1 to 0, to disable the colored text message (chat messages).
  */
 #define IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES 1
 
@@ -409,6 +409,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-386";
  */
 #if IS_TO_ENABLE_SVEN_COOP_SUPPPORT > 0
     #include <hamsandwich>
+    new cvar_mp_nextmap_cycle;
 #endif
 
 /**
@@ -622,10 +623,10 @@ new const PLUGIN_VERSION[] = "v3.2.6-386";
  */
 #define INSERT_COLOR_TAGS(%1) \
 { \
-    replace_all( %1, charsmax( %1 ), "!g", "^4" ); \
-    replace_all( %1, charsmax( %1 ), "!t", "^3" ); \
-    replace_all( %1, charsmax( %1 ), "!n", "^1" ); \
-    replace_all( %1, charsmax( %1 ), "!y", "^1" ); \
+    replace_all( %1, MAX_COLOR_MESSAGE - 1, "!g", "^4" ); \
+    replace_all( %1, MAX_COLOR_MESSAGE - 1, "!t", "^3" ); \
+    replace_all( %1, MAX_COLOR_MESSAGE - 1, "!n", "^1" ); \
+    replace_all( %1, MAX_COLOR_MESSAGE - 1, "!y", "^1" ); \
 }
 
 /**
@@ -636,10 +637,10 @@ new const PLUGIN_VERSION[] = "v3.2.6-386";
  */
 #define REMOVE_CODE_COLOR_TAGS(%1) \
 { \
-    replace_all( %1, charsmax( %1 ), "^4", "" ); \
-    replace_all( %1, charsmax( %1 ), "^3", "" ); \
-    replace_all( %1, charsmax( %1 ), "^2", "" ); \
-    replace_all( %1, charsmax( %1 ), "^1", "" ); \
+    replace_all( %1, MAX_COLOR_MESSAGE - 1, "^4", "" ); \
+    replace_all( %1, MAX_COLOR_MESSAGE - 1, "^3", "" ); \
+    replace_all( %1, MAX_COLOR_MESSAGE - 1, "^2", "" ); \
+    replace_all( %1, MAX_COLOR_MESSAGE - 1, "^1", "" ); \
 }
 
 /**
@@ -650,10 +651,10 @@ new const PLUGIN_VERSION[] = "v3.2.6-386";
  */
 #define REMOVE_LETTER_COLOR_TAGS(%1) \
 { \
-    replace_all( %1, charsmax( %1 ), "!g", "" ); \
-    replace_all( %1, charsmax( %1 ), "!t", "" ); \
-    replace_all( %1, charsmax( %1 ), "!n", "" ); \
-    replace_all( %1, charsmax( %1 ), "!y", "" ); \
+    replace_all( %1, MAX_COLOR_MESSAGE - 1, "!g", "" ); \
+    replace_all( %1, MAX_COLOR_MESSAGE - 1, "!t", "" ); \
+    replace_all( %1, MAX_COLOR_MESSAGE - 1, "!n", "" ); \
+    replace_all( %1, MAX_COLOR_MESSAGE - 1, "!y", "" ); \
 }
 
 /**
@@ -1316,8 +1317,8 @@ public plugin_init()
     // This is a general pointer used for cvars not registered on the game.
     cvar_disabledValuePointer = register_cvar( "gal_disabled_value_pointer", "0", FCVAR_SPONLY );
 
-    nextmap_plugin_init();
     configureEndGameCvars();
+    nextmap_plugin_init();
     configureTheVotingMenus();
     configureSpecificGameModFeature();
 
@@ -1436,13 +1437,19 @@ stock configureEndGameCvars()
 {
     LOGGER( 128, "I AM ENTERING ON configureEndGameCvars(0)" )
 
-    tryToGetGameModCvar( cvar_mp_maxrounds,  "mp_maxrounds" );
-    tryToGetGameModCvar( cvar_mp_winlimit,   "mp_winlimit" );
-    tryToGetGameModCvar( cvar_mp_freezetime, "mp_freezetime" );
-    tryToGetGameModCvar( cvar_mp_timelimit,  "mp_timelimit" );
-    tryToGetGameModCvar( cvar_mp_roundtime,  "mp_roundtime" );
-    tryToGetGameModCvar( cvar_mp_chattime,   "mp_chattime" );
-    tryToGetGameModCvar( cvar_sv_maxspeed,   "sv_maxspeed" );
+    tryToGetGameModCvar( cvar_mp_maxrounds    , "mp_maxrounds"     );
+    tryToGetGameModCvar( cvar_mp_winlimit     , "mp_winlimit"      );
+    tryToGetGameModCvar( cvar_mp_freezetime   , "mp_freezetime"    );
+    tryToGetGameModCvar( cvar_mp_timelimit    , "mp_timelimit"     );
+    tryToGetGameModCvar( cvar_mp_roundtime    , "mp_roundtime"     );
+    tryToGetGameModCvar( cvar_mp_chattime     , "mp_chattime"      );
+    tryToGetGameModCvar( cvar_mp_friendlyfire , "mp_friendlyfire"  );
+    tryToGetGameModCvar( cvar_sv_maxspeed     , "sv_maxspeed"      );
+    tryToGetGameModCvar( cvar_mapcyclefile    , "mapcyclefile"     );
+
+#if IS_TO_ENABLE_SVEN_COOP_SUPPPORT > 0
+    tryToGetGameModCvar( cvar_mp_nextmap_cycle, "mp_nextmap_cycle" );
+#endif
 }
 
 stock tryToGetGameModCvar( &cvar_to_get, cvar_name[] )
@@ -2031,6 +2038,10 @@ stock setNextMap( nextMapName[], bool:isToUpdateTheCvar = true )
         {
             LOGGER( 2, "( setNextMap ) IS CHANGING THE CVAR 'amx_nextmap' to '%s'.", nextMapName )
             set_pcvar_string( cvar_amx_nextmap, nextMapName );
+
+        #if IS_TO_ENABLE_SVEN_COOP_SUPPPORT > 0
+            set_pcvar_string( cvar_mp_nextmap_cycle, nextMapName );
+        #endif
         }
 
         copy( g_nextMapName, charsmax( g_nextMapName ), nextMapName );
@@ -11959,10 +11970,7 @@ public nextmap_plugin_init()
     register_clcmd( "say nextmap", "sayNextMap", 0, "- displays nextmap" );
     register_clcmd( "say currentmap", "sayCurrentMap", 0, "- display current map" );
 
-    cvar_amx_nextmap     = register_cvar( "amx_nextmap", "", FCVAR_SERVER | FCVAR_EXTDLL | FCVAR_SPONLY );
-    cvar_mp_chattime     = get_cvar_pointer( "mp_chattime" );
-    cvar_mp_friendlyfire = get_cvar_pointer( "mp_friendlyfire" );
-    cvar_mapcyclefile    = get_cvar_pointer( "mapcyclefile" );
+    cvar_amx_nextmap = register_cvar( "amx_nextmap", "", FCVAR_SERVER | FCVAR_EXTDLL | FCVAR_SPONLY );
 
     if( cvar_mp_friendlyfire )
     {
@@ -12017,10 +12025,18 @@ stock loadNextMapPluginSetttings()
 
         REMOVE_CODE_COLOR_TAGS( nextMapName )
         set_pcvar_string( cvar_amx_nextmap, nextMapName );
+
+    #if IS_TO_ENABLE_SVEN_COOP_SUPPPORT > 0
+        set_pcvar_string( cvar_mp_nextmap_cycle, nextMapName );
+    #endif
     }
     else
     {
         set_pcvar_string( cvar_amx_nextmap, g_nextMapName );
+
+    #if IS_TO_ENABLE_SVEN_COOP_SUPPPORT > 0
+        set_pcvar_string( cvar_mp_nextmap_cycle, g_nextMapName );
+    #endif
     }
 
     saveCurrentMapCycleSetting( currentMapcycleFilePath );
@@ -12058,6 +12074,10 @@ stock getNextMapName( nextMapName[], maxChars )
 
     length = copy( nextMapName, maxChars, g_nextMapName );
     set_pcvar_string( cvar_amx_nextmap, g_nextMapName );
+
+#if IS_TO_ENABLE_SVEN_COOP_SUPPPORT > 0
+    set_pcvar_string( cvar_mp_nextmap_cycle, g_nextMapName );
+#endif
 
     LOGGER( 2, "( getNextMapName ) IS CHANGING THE CVAR 'amx_nextmap' to '%s'.", g_nextMapName )
     LOGGER( 1, "    ( getNextMapName ) Returning length: %d, nextMapName: %s", length, nextMapName )
