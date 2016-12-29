@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-394";
+new const PLUGIN_VERSION[] = "v3.2.6-395";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -771,10 +771,10 @@ new const PLUGIN_VERSION[] = "v3.2.6-394";
 }
 
 /**
- * Check whether the menu exists, call menu_destroy(1) and set the menu to id to 0.
+ * Calculate which is the number of the last menu page.
  *
- * @param totalMenuItems
- * @param menuItemPerPage
+ * @param totalMenuItems     how many items there are on the menu
+ * @param menuItemPerPage    how much items there are on each menu's page
  */
 #define GET_LAST_PAGE_NUMBER(%1,%2) \
         ( ( ( %1 + 1 ) / %2 ) \
@@ -9965,7 +9965,7 @@ stock setCorrectMenuPage( player_id, pageString[], menuPages[], pagesCount )
             searchIndex++;
         }
 
-        // When the page number start with a digit, we would erase all the string.
+        // When the page number start with a digit, we would erase all the string if not doing this.
         if( searchIndex == 0 )
         {
             searchIndex = 1;
