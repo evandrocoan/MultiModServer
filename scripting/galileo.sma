@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-387";
+new const PLUGIN_VERSION[] = "v3.2.6-388";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -12695,8 +12695,8 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         }
 
         g_test_testsNumber++;
-        print_logger( "        EXECUTING TEST %d UNTIL %d OF %d SECONDS DELAYED - %s ",
-                g_test_testsNumber, max_delay_result, computeTheTestElapsedTime(), test_name );
+        print_logger( "        EXECUTING TEST %d AFTER %d OF %d SECONDS DELAY - %s ",
+                g_test_testsNumber, computeTheTestElapsedTime(), max_delay_result, test_name );
 
         if( g_test_maxDelayResult < max_delay_result )
         {
