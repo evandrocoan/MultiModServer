@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-382";
+new const PLUGIN_VERSION[] = "v3.2.6-383";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -6850,10 +6850,14 @@ stock getUniqueRandomInteger2( Array:holder, minimum = 0, maximum = 0 )
 
     --holderSize;
 
+    // Get a unique random value
     randomIndex = random_num( 0, holderSize );
     returnValue = ArrayGetCell( holder, randomIndex );
 
-    ArrayDeleteItem( holder, randomIndex );
+    // Swap the random value from the middle of the array to the last position, reduce the removal
+    // complexity from linear `O( n )` to constant `O( 1 )`.
+    ArraySwap( holder, randomIndex, holderSize );
+    ArrayDeleteItem( holder, holderSize );
 
     LOGGER( 1, "    ( getUniqueRandomInteger ) %d. Just Returning the random integer: %d", holderSize, returnValue )
     return returnValue;
