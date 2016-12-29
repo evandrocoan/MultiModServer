@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-391";
+new const PLUGIN_VERSION[] = "v3.2.6-394";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -11778,28 +11778,28 @@ public plugin_end()
     LOGGER( 32, "" )
     LOGGER( 32, "I AM ENTERING ON plugin_end(0). THE END OF THE PLUGIN LIFE!" )
 
+#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
     // Just in case the Unit Tests are running while changing level.
     restoreServerCvarsFromTesting();
 
-    new currentIndex;
-    new gameCrashActionFilePath[ MAX_FILE_PATH_LENGHT ];
-
-    map_restoreEndGameCvars();
-
-    destroy_two_dimensional_array( g_norPlayerFillerMapGroupArrays );
-    destroy_two_dimensional_array( g_minPlayerFillerMapGroupArrays );
-    destroy_two_dimensional_array( g_midPlayerFillerMapGroupArrays );
-
     // Clean the unit tests data
-#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
     TRY_TO_APPLY( ArrayDestroy, g_test_idsAndNamesArray )
     TRY_TO_APPLY( ArrayDestroy, g_test_failureIdsArray )
     TRY_TO_APPLY( ArrayDestroy, g_test_failureReasonsArray )
     TRY_TO_APPLY( TrieDestroy, g_test_failureIdsTrie )
 #endif
 
+    new currentIndex;
+    new gameCrashActionFilePath[ MAX_FILE_PATH_LENGHT ];
+
+    map_restoreEndGameCvars();
+
     // Clear Dynamic Arrays
     // ############################################################################################
+    destroy_two_dimensional_array( g_norPlayerFillerMapGroupArrays );
+    destroy_two_dimensional_array( g_minPlayerFillerMapGroupArrays );
+    destroy_two_dimensional_array( g_midPlayerFillerMapGroupArrays );
+
     TRY_TO_APPLY( ArrayDestroy, g_emptyCycleMapsArray )
     TRY_TO_APPLY( ArrayDestroy, g_nominationLoadedMapsArray )
     TRY_TO_APPLY( ArrayDestroy, g_recentListMapsArray )
