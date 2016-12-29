@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-385";
+new const PLUGIN_VERSION[] = "v3.2.6-386";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -439,9 +439,10 @@ new const PLUGIN_VERSION[] = "v3.2.6-385";
 #define LISTMAPS_USERID   0
 #define LISTMAPS_LAST_MAP 1
 
-#define RTV_CMD_STANDARD  1
-#define RTV_CMD_SHORTHAND 2
-#define RTV_CMD_DYNAMIC   4
+#define RTV_CMD_STANDARD              1
+#define RTV_CMD_SHORTHAND             2
+#define RTV_CMD_DYNAMIC               4
+#define RTV_CMD_SINGLE_PLAYER_DISABLE 8
 
 #define MAPFILETYPE_SINGLE 1
 #define MAPFILETYPE_GROUPS 2
@@ -6809,11 +6810,12 @@ stock showPlayersVoteResult()
  * Get unique random numbers between a minimum until maximum.
  *
  * If the `maximum`'s change between the function calls, the unique random number sequence will be
- * restarted to this new maximum value.
+ * restarted to this new maximum value. Also after the maximum value been reached, the random unique
+ * sequence will be restarted and a new unique random number sequence will be generated.
  *
- * Also after the maximum value been reached, the random unique sequence will be restarted and a new
- * unique random number sequence will be generated. To reset the sequence, just to call this function
- * just as `getUniqueRandomInteger( holder )`. The range is:
+ * If your `maximum` parameter value is not 0, you can to reset the sequence manually just to calling
+ * this function as `getUniqueRandomInteger( holder )` or using some the `maximum` parameter value.
+ * The random generated range is:
  *
  *     minimum <= return value <= maximum
  *
@@ -7679,7 +7681,8 @@ stock is_to_block_RTV( player_id )
     }
 
     // If the player is the only one on the server, bring up the vote immediately
-    else if( get_real_players_number() == 1 )
+    else if( get_real_players_number() == 1
+             && !( g_rtvCommands & RTV_CMD_SINGLE_PLAYER_DISABLE ) )
     {
         start_rtvVote();
         LOGGER( 1, "    ( is_to_block_RTV ) Just Returning/blocking, the voting started." )
