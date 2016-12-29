@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-390";
+new const PLUGIN_VERSION[] = "v3.2.6-391";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -5513,8 +5513,11 @@ stock configureVotingStart( bool:is_forced_voting )
         }
         else
         {
-            g_isMapExtensionAllowed =
-                get_pcvar_float( cvar_mp_timelimit ) < get_pcvar_float( cvar_maxMapExtendTime );
+            if( get_pcvar_num( cvar_maxMapExtendTime ) )
+            {
+                g_isMapExtensionAllowed =
+                        get_pcvar_float( cvar_mp_timelimit ) < get_pcvar_float( cvar_maxMapExtendTime );
+            }
         }
     }
 
@@ -7481,7 +7484,7 @@ stock map_extend()
             set_pcvar_num( cvar_mp_maxrounds, get_pcvar_num( cvar_mp_maxrounds ) + g_extendmapStepRounds );
             set_pcvar_num( cvar_mp_winlimit, 0 );
         }
-        else
+        else // isWinlimitExtend
         {
             set_pcvar_num( cvar_mp_maxrounds, 0 );
             set_pcvar_num( cvar_mp_winlimit, get_pcvar_num( cvar_mp_winlimit ) + g_extendmapStepRounds );
