@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-388";
+new const PLUGIN_VERSION[] = "v3.2.6-389";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -124,6 +124,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-388";
  */
 #include <amxmodx>
 #include <amxmisc>
+#include <fun>
 
 /**
  * Force the use of semicolons on every statements.
@@ -3517,13 +3518,31 @@ stock intermission_effects( endGameType, Float:mp_chattime )
         LOGGER( 2, "( intermission_effects ) IS CHANGING THE CVAR 'mp_friendlyfire' to '%d'.", get_pcvar_num( cvar_mp_friendlyfire ) )
     }
 
-
-    if( endGameType & IS_MAP_MAPCHANGE_DROP_WEAPONS )
+    if( endGameType & ( IS_MAP_MAPCHANGE_DROP_WEAPONS | IS_MAP_MAPCHANGE_BUY_GRENADES ) )
     {
-        client_cmd( 0, "slot1" );
-        client_cmd( 0, "drop weapon_c4" );
-        client_cmd( 0, "drop" );
-        client_cmd( 0, "drop" );
+        new player_id;
+        new playersCount;
+
+        new players[32];
+        get_players( players, playersCount, "ah" );
+
+        for( --playersCount; playersCount > -1; playersCount-- )
+        {
+            player_id = players[ playersCount ];
+
+            if( endGameType & IS_MAP_MAPCHANGE_DROP_WEAPONS )
+            {
+                strip_user_weapons( player_id );
+                give_item( player_id, "weapon_knife" );
+            }
+
+            if( endGameType & IS_MAP_MAPCHANGE_BUY_GRENADES )
+            {
+                give_item( player_id, "weapon_smokegrenade" );
+                give_item( player_id, "weapon_flashbang" );
+                give_item( player_id, "weapon_hegrenade" );
+            }
+        }
     }
 
     if( endGameType & IS_MAP_MAPCHANGE_BUY_GRENADES )

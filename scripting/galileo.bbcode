@@ -1360,6 +1360,7 @@ Thank you!  It means a lot to me.
 
 [LIST=1]
 [*]Translated the plugin to Slovak [sk] and Hungarian [hu] languages. See the new LANG file 'galileo.txt'.
+[*]Replaced to cvar `gal_endonround_countdown`, the buy weapons by a give weapons, now without money or out buy zones can win weapons on change level. [URL="https://github.com/addonszz/Galileo/issues/16"]Issue#16[/URL].
 [*]Added support to Sven Coop 'mp_nextmap_cycle' cvar and the vote map start by the Ham_Use "game_end". [URL="https://github.com/addonszz/Galileo/issues/13"]Issue#13[/URL].
 [*]Added the `page_number` argument to all menus possible. Now you can open any menu at the page you want to. Example `say nomenu 50`.
 [*]Added the ability for players to close the vote menu, if they want to. [URL="https://github.com/addonszz/Galileo/issues/4"]Issue#4[/URL].
@@ -1376,13 +1377,10 @@ Thank you!  It means a lot to me.
 [*]Added new cvar `gal_runoff_ratio` to specifies the minimum amount of votes the most voted map should have to not start a run off voting. [URL="https://github.com/addonszz/Galileo/issues/33"]Issue#33[/URL].
 [*]Added new cvar `gal_endonround_change` to choose whether the map should change current round final seconds, or at next round start first seconds. [URL="https://github.com/addonszz/Galileo/issues/5"]Issue#5[/URL].
 [*]Added new cvar `gal_endofmapvote_expiration` to change the map at the round the map voting is finished, without wait to the `mp_timelimit` or `mp_maxrounds`. URL="https://github.com/addonszz/Galileo/issues/5"]Issue#5[/URL].
-[*]Implemented the Allow Round Finish feature for the cvar `mp_fraglimit`.
-[*]Implemented the Maintenance Mode for the cvars `mp_fraglimit`, `mp_maxrounds` and `mp_winlimit`.
-[*]Removed the extra space between the `Extend` option and the voting menu `None` option.
+[*]Added new option to the cvar `amx_extendmap_allow_order`, when no one voted for nextmap or extend or "stay here", extend the map. [URL="https://github.com/addonszz/Galileo/issues/11"]Issue#11[/URL].
+[*]Added new option to the cvar `gal_endonround_countdown`, allow to set mp_friendlyfire to 1, so players can bombard each other with grenades just before change level. [URL="https://github.com/addonszz/Galileo/issues/15"]Issue#15[/URL].
 [*]Improved the cvar `gal_endofmapvote_start` detection and added new options to it. [URL="https://github.com/addonszz/Galileo/issues/38"]Issue#38[/URL].
 [*]Improved the cvar `gal_endonround_countdown` available options for configuration. [URL="https://github.com/addonszz/Galileo/issues/7"]Issue#7[/URL].
-[*]Added new option to the cvar `gal_endonround_countdown`, allow to set mp_friendlyfire to 1, so players can bombard each other with grenades just before change level. [URL="https://github.com/addonszz/Galileo/issues/15"]Issue#15[/URL].
-[*]Added new option to the cvar `amx_extendmap_allow_order`, when no one voted for nextmap or extend or "stay here", extend the map. [URL="https://github.com/addonszz/Galileo/issues/11"]Issue#11[/URL].
 [*]Improved the multi-bit operations to be more clear on the configuration file `galileo.cfg`'s documentation. Issue: [URL="https://github.com/addonszz/Galileo/issues/6"]Issue#6[/URL].
 [*]Fixed possible client overflow when show the recent maps list.
 [*]Fixed the voting menu `None` option not becoming greyed out when the voting to finish.
@@ -1398,6 +1396,9 @@ Thank you!  It means a lot to me.
 [*]Fixed the map_loadRecentList(0) loading more maps than are available to be banned. [URL="https://github.com/addonszz/Galileo/issues/44"]Issue#44[/URL].
 [*]Fixed the clean menu `stay option` is being displayed on the first player language. [URL="https://github.com/addonszz/Galileo/issues/29"]Issue#29[/URL].
 [*]Fixed nextmap in chat showing the map that was voted for instead of the map changed to via amx_cvar amx_nextmap. [URL="https://github.com/addonszz/Galileo/issues/10"]Issue#10[/URL].
+[*]Implemented the Allow Round Finish feature for the cvar `mp_fraglimit`.
+[*]Implemented the Maintenance Mode for the cvars `mp_fraglimit`, `mp_maxrounds` and `mp_winlimit`.
+[*]Removed the extra space between the `Extend` option and the voting menu `None` option.
 [/LIST]
 
 [B]2016-11-13 | v3.2.6-274[/B]
