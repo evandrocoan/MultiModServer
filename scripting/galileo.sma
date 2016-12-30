@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-398";
+new const PLUGIN_VERSION[] = "v3.2.6-399";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -88,7 +88,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-398";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+64+2+4
+#define DEBUG_LEVEL 1+64+4+2+16
 
 
 /**
@@ -277,6 +277,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-398";
         test_whatGameEndingTypeIt_load();
         test_convertNumericBase_load();
         test_setCorrectMenuPage_load();
+        test_map_populateListOnSeries();
     }
 
     /**
@@ -310,10 +311,11 @@ new const PLUGIN_VERSION[] = "v3.2.6-398";
             // LOGGER( 1, "Current i is: %d", i )
         }
 
+        test_map_populateListOnSeries();
         // test_setCorrectMenuPage_load();
         // test_convertNumericBase_load();
         // test_whatGameEndingTypeIt_load();
-        test_getUniqueRandomInt_load();
+        // test_getUniqueRandomInt_load();
         // test_getUniqueRandomBasic_load();
         // test_nominateAndUnnominate_load();
         // test_loadVoteChoices_cases();
@@ -329,7 +331,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-398";
     /**
      * Accept all maps as valid while running the unit tests.
      */
-    #define IS_MAP_VALID(%1) ( g_test_isTheUnitTestsRunning || IS_MAP_VALID_BSP( %1 ) )
+    #define IS_MAP_VALID(%1) ( isAllowedValidMapByTheUnitTests(%1) || !g_test_isToUseStrictValidMaps && IS_MAP_VALID_BSP( %1 ) )
 
     /**
      * Call the internal function to perform its task and stop the current test execution to avoid
@@ -371,7 +373,9 @@ new const PLUGIN_VERSION[] = "v3.2.6-398";
     new g_test_failureNumber;
     new g_test_lastMaxDelayResult;
 
+    new bool: g_test_isToUseStrictValidMaps;
     new Trie: g_test_failureIdsTrie;
+    new Trie: g_test_strictValidMapsTrie;
     new Array:g_test_failureIdsArray;
     new Array:g_test_idsAndNamesArray;
     new Array:g_test_failureReasonsArray;
@@ -889,6 +893,7 @@ new cvar_voteAnnounceChoice;
 new cvar_voteUniquePrefixes;
 new cvar_rtvReminder;
 new cvar_serverStartAction;
+new cvar_serverMoveCursor;
 new cvar_gameCrashRecreationAction;
 new cvar_serverTimeLimitRestart;
 new cvar_serverMaxroundsRestart;
@@ -1022,6 +1027,12 @@ new Array:g_whitelistArray;
  * Contains all the loaded valid lines from the Whitelist file contents.
  */
 new Array:g_whitelistFileArray;
+
+/**
+ * Contains all the loaded valid maps for the `gal_srv_move_cursor` feature. If the feature is disabled,
+ * it contains only the normal/usual loaded maps from the map cycle file.
+ */
+new Array:g_mapcycleFileListArray;
 
 /**
  * Contains all the allowed maps to be added as nominations or as voting map fillers.
@@ -1275,6 +1286,7 @@ public plugin_init()
     cvar_isToShowVoteCounter       = register_cvar( "gal_vote_show_counter"       , "0"    );
     cvar_isToAskForEndOfTheMapVote = register_cvar( "gal_endofmapvote_ask"        , "0"    );
     cvar_serverStartAction         = register_cvar( "gal_srv_start"               , "0"    );
+    cvar_serverMoveCursor          = register_cvar( "gal_srv_move_cursor"         , "0"    );
     cvar_gameCrashRecreationAction = register_cvar( "gal_game_crash_recreation"   , "0"    );
     cvar_serverTimeLimitRestart    = register_cvar( "gal_srv_timelimit_restart"   , "0"    );
     cvar_serverMaxroundsRestart    = register_cvar( "gal_srv_maxrounds_restart"   , "0"    );
@@ -1866,18 +1878,12 @@ stock configureTheMapcycleSystem( currentMap[], currentMapLength )
 
     new possibleNextMapPosition;
     new restartsOnTheCurrentMap;
-    new Array:mapcycleFileListArray;
 
     new possibleNextMap [ MAX_MAPNAME_LENGHT ];
     new mapcycleFilePath[ MAX_FILE_PATH_LENGHT ];
 
-    mapcycleFileListArray   = ArrayCreate( MAX_MAPNAME_LENGHT );
     restartsOnTheCurrentMap = getRestartsOnTheCurrentMap( currentMap );
-
-    get_pcvar_string( cvar_mapcyclefile, mapcycleFilePath, charsmax( mapcycleFilePath ) );
-    map_populateList( mapcycleFileListArray, mapcycleFilePath, charsmax( mapcycleFilePath ) );
-
-    possibleNextMapPosition = map_getNext( mapcycleFileListArray, currentMap, possibleNextMap );
+    possibleNextMapPosition = map_getNext( g_mapcycleFileListArray, currentMap, possibleNextMap );
 
     LOGGER( 4, "( configureTheMapcycleSystem ) possibleNextMapPosition: %d", possibleNextMapPosition )
     LOGGER( 4, "( configureTheMapcycleSystem ) restartsOnTheCurrentMap: %d, currentMap: %s, possibleNextMap: %s", \
@@ -1891,7 +1897,7 @@ stock configureTheMapcycleSystem( currentMap[], currentMapLength )
             new lastMapChangedFilePath[ MAX_FILE_PATH_LENGHT ];
 
             copy( possibleCurrentMap, charsmax( possibleCurrentMap ), possibleNextMap );
-            possibleNextMapPosition = map_getNext( mapcycleFileListArray, possibleCurrentMap, possibleNextMap );
+            possibleNextMapPosition = map_getNext( g_mapcycleFileListArray, possibleCurrentMap, possibleNextMap );
 
             if( possibleNextMapPosition != -1 )
             {
@@ -1926,8 +1932,6 @@ stock configureTheMapcycleSystem( currentMap[], currentMapLength )
         LOGGER( 4, "( configureTheMapcycleSystem ) configureTheNextMapPlugin( 0, possibleNextMap )" )
         LOGGER( 4, "" )
     }
-
-    ArrayDestroy( mapcycleFileListArray );
 }
 
 stock configureTheNextMapPlugin( possibleNextMapPosition, possibleNextMap[], mapcycleFilePath[] )
@@ -3901,6 +3905,37 @@ stock map_populateList( Array:mapArray = Invalid_Array, mapFilePath[], mapFilePa
     return mapCount;
 }
 
+stock checkIfThereEnoughMapPopulated( mapCount, mapFileDescriptor )
+{
+    LOGGER( 128, "I AM ENTERING ON checkIfThereEnoughMapPopulated(2) | mapCount: %d", mapCount )
+
+    if( mapCount < 2 )
+    {
+        new parsedLines;
+        new writePosition;
+
+        new readLines    [ MAX_BIG_BOSS_STRING ];
+        new loadedMapName[ MAX_MAPNAME_LENGHT ];
+
+        fseek( mapFileDescriptor, SEEK_SET, 0 );
+
+        while( !feof( mapFileDescriptor )
+               && parsedLines < 11 )
+        {
+            parsedLines++;
+            fgets( mapFileDescriptor, loadedMapName, charsmax( loadedMapName ) );
+
+            if( writePosition < charsmax( readLines ) )
+            {
+                writePosition += copy( readLines[ writePosition ], charsmax( readLines ) - writePosition, loadedMapName );
+            }
+        }
+
+        LOGGER( 1, "( loadMapFileList ) Error %d, Not valid/enough(%d) maps found: %s^n", AMX_ERR_NOTFOUND, mapCount, readLines )
+        log_error( AMX_ERR_NOTFOUND, "Not valid/enough(%d) maps found: %s^n", mapCount, readLines );
+    }
+}
+
 stock loadMapFileList( Array:mapArray, mapFilePath[], Trie:fillerMapTrie )
 {
     LOGGER( 128, "I AM ENTERING ON loadMapFileList(3) | mapFilePath: %s", mapFilePath )
@@ -3910,8 +3945,6 @@ stock loadMapFileList( Array:mapArray, mapFilePath[], Trie:fillerMapTrie )
 
     if( mapFileDescriptor )
     {
-        new loadedMapName[ MAX_MAPNAME_LENGHT ];
-
         // Removing the if's from the loop to improve speed
         if( mapArray
             && fillerMapTrie )
@@ -3927,29 +3960,7 @@ stock loadMapFileList( Array:mapArray, mapFilePath[], Trie:fillerMapTrie )
             mapCount = loadMapFileListTrie( mapFileDescriptor, fillerMapTrie );
         }
 
-        if( mapCount < 2 )
-        {
-            new parsedLines;
-            new writePosition;
-            new readLines[ MAX_BIG_BOSS_STRING ];
-
-            fseek( mapFileDescriptor, SEEK_SET, 0 );
-
-            while( !feof( mapFileDescriptor )
-                   && parsedLines < 11 )
-            {
-                parsedLines++;
-                fgets( mapFileDescriptor, loadedMapName, charsmax( loadedMapName ) );
-
-                if( writePosition < charsmax( readLines ) )
-                {
-                    writePosition += copy( readLines[ writePosition ], charsmax( readLines ) - writePosition, loadedMapName );
-                }
-            }
-
-            LOGGER( 1, "( loadMapFileList ) Error %d, Not valid/enough(%d) maps found: %s^n", AMX_ERR_NOTFOUND, mapCount, readLines )
-            log_error( AMX_ERR_NOTFOUND, "Not valid/enough(%d) maps found: %s^n", mapCount, readLines );
-        }
+        checkIfThereEnoughMapPopulated( mapCount, mapFileDescriptor );
 
         fclose( mapFileDescriptor );
         LOGGER( 4, "" )
@@ -9958,7 +9969,7 @@ stock sayHandlerForTwoNomWords( player_id, firstWord[], secondWord[] )
  */
 stock setCorrectMenuPage( player_id, pageString[], menuPages[], pagesCount )
 {
-    LOGGER( 128, "I AM ENTERING ON setCorrectMenuPage(1) | pageString: %s, pagesCount: %d", pageString, pagesCount )
+    LOGGER( 128, "I AM ENTERING ON setCorrectMenuPage(4) | pageString: %s, pagesCount: %d", pageString, pagesCount )
 
     if( strlen( pageString ) > 1 )
     {
@@ -11792,10 +11803,12 @@ public plugin_end()
     restoreServerCvarsFromTesting();
 
     // Clean the unit tests data
+    TRY_TO_APPLY( TrieDestroy, g_test_failureIdsTrie )
+    TRY_TO_APPLY( TrieDestroy, g_test_strictValidMapsTrie )
+
     TRY_TO_APPLY( ArrayDestroy, g_test_idsAndNamesArray )
     TRY_TO_APPLY( ArrayDestroy, g_test_failureIdsArray )
     TRY_TO_APPLY( ArrayDestroy, g_test_failureReasonsArray )
-    TRY_TO_APPLY( TrieDestroy, g_test_failureIdsTrie )
 #endif
 
     new currentIndex;
@@ -11810,6 +11823,7 @@ public plugin_end()
     destroy_two_dimensional_array( g_midPlayerFillerMapGroupArrays );
 
     TRY_TO_APPLY( ArrayDestroy, g_emptyCycleMapsArray )
+    TRY_TO_APPLY( ArrayDestroy, g_mapcycleFileListArray )
     TRY_TO_APPLY( ArrayDestroy, g_nominationLoadedMapsArray )
     TRY_TO_APPLY( ArrayDestroy, g_recentListMapsArray )
     TRY_TO_APPLY( ArrayDestroy, g_whitelistArray )
@@ -12018,25 +12032,81 @@ public nextmap_plugin_init()
     loadNextMapPluginSetttings();
 }
 
+stock loadTheNextMapFile( mapcycleFilePath[], mapcycleFilePathLength )
+{
+    LOGGER( 128, "I AM ENTERING ON loadNextMapPluginSetttings(2)" )
+    get_pcvar_string( cvar_mapcyclefile, mapcycleFilePath, mapcycleFilePathLength );
+
+    g_mapcycleFileListArray = ArrayCreate( MAX_MAPNAME_LENGHT );
+    map_populateListOnSeries( g_mapcycleFileListArray, mapcycleFilePath );
+}
+
+stock readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
+{
+    LOGGER( 128, "I AM ENTERING ON readMapCycle(3) | mapcycleFilePath: %s", mapcycleFilePath )
+
+    new mapsProcessedNumber;
+    new loadedMapName[ MAX_MAPNAME_LENGHT ];
+
+    new mapCycleMapsCount = ArraySize( g_mapcycleFileListArray );
+
+    if( mapCycleMapsCount )
+    {
+        for( new mapIndex = 0; mapIndex < mapCycleMapsCount; mapIndex++ )
+        {
+            ArrayGetString( g_mapcycleFileListArray, mapIndex, loadedMapName, charsmax( loadedMapName ) );
+
+            if( ++mapsProcessedNumber > g_nextMapCyclePosition )
+            {
+                copy( nextMapName, nextMapNameMaxchars, loadedMapName );
+                LOGGER( 1, "    ( readMapCycle ) g_nextMapCyclePosition: %d", g_nextMapCyclePosition )
+
+                g_nextMapCyclePosition = mapsProcessedNumber;
+                LOGGER( 1, "    ( readMapCycle ) mapsProcessedNumber: %d", mapsProcessedNumber )
+
+                LOGGER( 1, "    ( readMapCycle ) Just returning/blocking on 'mapsProcessedNumber > g_nextMapCyclePosition'." )
+                return;
+            }
+        }
+
+        // It it gets here, we are restarting the map cycle and starting following it from the first line.
+        ArrayGetString( g_mapcycleFileListArray, 0, nextMapName, nextMapNameMaxchars );
+    }
+    else
+    {
+        LOGGER( 1, "WARNING: Couldn't find a valid map or the file doesn't exist (file ^"%s^")", mapcycleFilePath )
+        log_amx( "WARNING: Couldn't find a valid map or the file doesn't exist (file ^"%s^")", mapcycleFilePath );
+
+        copy( nextMapName, nextMapNameMaxchars, g_currentMapName );
+    }
+
+    LOGGER( 4, "( readMapCycle ) | nextMapName: %s, nextMapNameMaxchars: %d", nextMapName, nextMapNameMaxchars )
+    g_nextMapCyclePosition = 1;
+}
+
 stock loadNextMapPluginSetttings()
 {
+    LOGGER( 128, "I AM ENTERING ON loadNextMapPluginSetttings(0)" )
+
     new mapcycleCurrentIndex   [ MAX_MAPNAME_LENGHT ];
     new lastMapcycleFilePath   [ MAX_FILE_PATH_LENGHT ];
     new currentMapcycleFilePath[ MAX_FILE_PATH_LENGHT ];
     new tockenMapcycleAndPosion[ MAX_MAPNAME_LENGHT + MAX_FILE_PATH_LENGHT ];
 
-    get_mapname( g_currentMapName, charsmax( g_currentMapName ) );
-    get_pcvar_string( cvar_mapcyclefile, currentMapcycleFilePath, charsmax( currentMapcycleFilePath ) );
+    // Load the full map cycle if, considering whether the feature `gal_srv_move_cursor` is enabled or not.
+    loadTheNextMapFile( currentMapcycleFilePath, charsmax( currentMapcycleFilePath ) );
 
     // The from the local info, the map token saved on the last server map.
+    get_mapname( g_currentMapName, charsmax( g_currentMapName ) );
     get_localinfo( "lastmapcycle", tockenMapcycleAndPosion, charsmax( tockenMapcycleAndPosion ) );
 
     parse( tockenMapcycleAndPosion, lastMapcycleFilePath, charsmax( lastMapcycleFilePath ),
-                                     mapcycleCurrentIndex, charsmax( mapcycleCurrentIndex ) );
+                                    mapcycleCurrentIndex, charsmax( mapcycleCurrentIndex ) );
 
+    // mapcyclefile has been changed - go from first
     if( !equali( currentMapcycleFilePath, lastMapcycleFilePath ) )
     {
-        g_nextMapCyclePosition = 0;    // mapcyclefile has been changed - go from first
+        g_nextMapCyclePosition = 0;
     }
     else
     {
@@ -12051,7 +12121,7 @@ stock loadNextMapPluginSetttings()
         }
     }
 
-    // Increments by 1, the global variable 'g_nextMapCyclePosition', or set its to 1.
+    // Increments by 1, the global variable 'g_nextMapCyclePosition', or set its value to 1.
     readMapCycle( currentMapcycleFilePath, g_nextMapName, charsmax( g_nextMapName ) );
     LOGGER( 2, "( nextmap_plugin_init ) IS CHANGING THE CVAR 'amx_nextmap' to '%s'.", g_nextMapName )
 
@@ -12252,56 +12322,238 @@ stock bool:isAValidMap( mapname[] )
     return false;
 }
 
-readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
+stock getTheCurrentSerieForTheMap( mapNameDirt[], mapNameClean[] )
 {
-    LOGGER( 128, "I AM ENTERING ON readMapCycle(3) | mapcycleFilePath: %s", mapcycleFilePath )
-    new textLength;
+    LOGGER( 256, "I AM ENTERING ON getTheCurrentSerieForTheMap(2) | mapNameDirt: %s", mapNameDirt )
+    new mapNameLength = strlen( mapNameDirt );
 
-    new currentReadLine [ MAX_MAPNAME_LENGHT ];
-    new firstMapcycleMap[ MAX_MAPNAME_LENGHT ];
-
-    new mapsProcessedNumber    = 0;
-    new currentLineToReadIndex = 0;
-
-    if( file_exists( mapcycleFilePath ) )
+    if( mapNameLength > 1 )
     {
-        while( read_file( mapcycleFilePath, currentLineToReadIndex++, currentReadLine, charsmax( currentReadLine ), textLength ) )
+        new searchIndex = mapNameLength - 1;
+
+        // Move backwards until the number ends.
+        while( searchIndex > -1
+               && isdigit( mapNameDirt[ searchIndex ] ) )
         {
-            if( !isAValidMap( currentReadLine ) )
+            // Removes the current series number from the map name.
+            mapNameClean[ searchIndex ] = '^0';
+            searchIndex--;
+        }
+
+        LOGGER( 256, "mapNameClean: %s", mapNameClean )
+
+        // If its not a map name only within digits on its name, continues the algorithm.
+        if( searchIndex > -1 )
+        {
+            new resultIndex;
+
+            // Moves forward to the last know digit.
+            searchIndex++;
+
+            // Move forward until finish copying the number to the beginning of the string.
+            while( isdigit( mapNameDirt[ searchIndex ] ) )
             {
-                continue;
+                mapNameDirt[ resultIndex ] = mapNameDirt[ searchIndex ];
+                mapNameDirt[ searchIndex ] = '^0';
+
+                searchIndex++;
+                resultIndex++;
             }
 
-            if( !mapsProcessedNumber )
-            {
-                copy( firstMapcycleMap, charsmax( firstMapcycleMap ), currentReadLine );
-            }
-
-            if( ++mapsProcessedNumber > g_nextMapCyclePosition )
-            {
-                copy( nextMapName, nextMapNameMaxchars, currentReadLine );
-                g_nextMapCyclePosition = mapsProcessedNumber;
-
-                LOGGER( 1, "    ( readMapCycle ) Just returning/blocking on 'mapsProcessedNumber > g_nextMapCyclePosition'." )
-                return;
-            }
+            // Null terminates the string, cutting everything else which are not digits.
+            mapNameDirt[ resultIndex ] = '^0';
         }
     }
 
-    if( mapsProcessedNumber )
+    LOGGER( 256, "( getTheCurrentSerieForTheMap ) mapNameDirt: %s", mapNameDirt )
+
+    if( isdigit( mapNameDirt[ 0 ] ) )
     {
-        copy( nextMapName, nextMapNameMaxchars, firstMapcycleMap );
+        LOGGER( 256, "    ( getTheCurrentSerieForTheMap ) Returning: %d", str_to_num( mapNameDirt ) + 1 )
+        return str_to_num( mapNameDirt ) + 1;
+    }
+
+    LOGGER( 256, "    ( getTheCurrentSerieForTheMap ) Returning 1, no number found." )
+    return 1;
+}
+
+stock isThereNextMapOnTheSerie( &currentSerie, mapNameClean[], nextMapName[] )
+{
+    LOGGER( 256, "I AM ENTERING ON isThereNextMapOnTheSerie(3) | mapNameClean: %s", mapNameClean )
+    new currentForwardLook;
+
+    // Look forward to be able to find more spaced sequences as `de_dust2002` and `de_dust2015`.
+    do
+    {
+        formatex( nextMapName, MAX_MAPNAME_LENGHT - 1, "%s%d", mapNameClean, currentSerie );
+
+        if( IS_MAP_VALID( nextMapName ) )
+        {
+            LOGGER( 256, "    ( isThereNextMapOnTheSerie ) Returning: 1, currentSerie: %d", currentSerie )
+            return true;
+        }
+
+        // Moves the pointer to the next serie, if it still not find the valid map.
+        currentSerie++;
+
+    } while( currentForwardLook++ < 20 );
+
+    LOGGER( 256, "    ( isThereNextMapOnTheSerie ) Returning: false" )
+    return false;
+}
+
+stock loadTheCursorOnMapSeries( Array:mapArray, Trie:loadedMapSeriesTrie, currentMapName[], nextMapName[], &mapCount )
+{
+    LOGGER( 256, "I AM ENTERING ON loadTheCursorOnMapSeries(5) | currentMapName: %s", currentMapName )
+
+    new currentSerie;
+    new maximumSerie;
+
+    new mapNameDirt [ MAX_MAPNAME_LENGHT ];
+    new mapNameClean[ MAX_MAPNAME_LENGHT ];
+
+    copy( mapNameDirt, charsmax( mapNameDirt ), currentMapName );
+    copy( mapNameClean, charsmax( mapNameClean ), currentMapName );
+
+    // Series longer than this will not be considered.
+    currentSerie = getTheCurrentSerieForTheMap( mapNameDirt, mapNameClean );
+    maximumSerie = currentSerie + 500;
+
+    // Do not reload the series if it was loaded before.
+    if( !TrieKeyExists( loadedMapSeriesTrie, mapNameClean ) )
+    {
+        while( isThereNextMapOnTheSerie( currentSerie, mapNameClean, nextMapName )
+               && currentSerie < maximumSerie )
+        {
+            TrieSetCell( loadedMapSeriesTrie, mapNameClean, mapCount );
+
+            ArrayPushString( mapArray, nextMapName );
+            LOGGER( 256, "( loadTheCursorOnMapSeries ) nextMapName: %s", nextMapName )
+
+            // Moves the pointer to the next serie.
+            currentSerie++;
+            mapCount++;
+        }
+    }
+}
+
+stock loadMapFileSeriesListArray( mapFileDescriptor, Array:mapArray )
+{
+    LOGGER( 128, "I AM ENTERING ON loadMapFileSeriesListArray(2) | mapFileDescriptor: %d", mapFileDescriptor )
+
+    new mapCount;
+    new nextMapName  [ MAX_MAPNAME_LENGHT ];
+    new loadedMapName[ MAX_MAPNAME_LENGHT ];
+
+    new Trie:loadedMapSeriesTrie;
+    new bool:isToMoveTheCursorOnMapSeries = get_pcvar_num( cvar_serverMoveCursor ) != 0;
+
+    if( isToMoveTheCursorOnMapSeries ) loadedMapSeriesTrie = TrieCreate();
+
+    while( !feof( mapFileDescriptor ) )
+    {
+        fgets( mapFileDescriptor, loadedMapName, charsmax( loadedMapName ) );
+        trim( loadedMapName );
+
+        if( IS_IT_A_VALID_MAP_LINE( loadedMapName ) )
+        {
+            ArrayPushString( mapArray, loadedMapName );
+
+        #if defined DEBUG
+            if( mapCount < MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST )
+            {
+                LOGGER( 4, "( loadMapFileSeriesListArray ) %d, loadedMapName: %s", mapCount + 1, loadedMapName )
+            }
+        #endif
+
+            // Load the series maps, if enabled.
+            if( isToMoveTheCursorOnMapSeries )
+            {
+                loadTheCursorOnMapSeries( mapArray, loadedMapSeriesTrie, loadedMapName, nextMapName, mapCount );
+            }
+
+            ++mapCount;
+        }
+    }
+
+    LOGGER( 1, "    ( loadMapFileSeriesListArray ) Returning mapCount: %d", mapCount )
+    return mapCount;
+}
+
+stock loadMapFileListOnSeries( Array:mapArray, mapFilePath[] )
+{
+    LOGGER( 128, "I AM ENTERING ON loadMapFileListOnSeries(2) | mapFilePath: %s", mapFilePath )
+
+    new mapCount;
+    new mapFileDescriptor = fopen( mapFilePath, "rt" );
+
+    if( mapFileDescriptor )
+    {
+        if( mapArray )
+        {
+            mapCount = loadMapFileSeriesListArray( mapFileDescriptor, mapArray );
+        }
+
+        checkIfThereEnoughMapPopulated( mapCount, mapFileDescriptor );
+
+        fclose( mapFileDescriptor );
+        LOGGER( 4, "" )
     }
     else
     {
-        LOGGER( 1, "WARNING: Couldn't find a valid map or the file doesn't exist (file ^"%s^")", mapcycleFilePath )
-        log_amx( "WARNING: Couldn't find a valid map or the file doesn't exist (file ^"%s^")", mapcycleFilePath );
-
-        copy( nextMapName, nextMapNameMaxchars, g_currentMapName );
+        LOGGER( 1, "( loadMapFileListOnSeries ) Error %d, %L", AMX_ERR_NOTFOUND, LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilePath )
+        log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilePath );
     }
 
-    LOGGER( 4, "( readMapCycle ) | nextMapName: %s, nextMapNameMaxchars: %d", nextMapName, nextMapNameMaxchars )
-    g_nextMapCyclePosition = 1;
+    LOGGER( 1, "    ( loadMapFileListOnSeries ) Returning mapCount: %d", mapCount )
+    return mapCount;
+}
+
+/**
+ * This function supposes map cycle as:
+ *
+ *     de_dust
+ *     de_inferno
+ *     de_chateal
+ *     de_dust2
+ *     de_nuke
+ *
+ * And will understand it as being:
+ *
+ *     de_dust
+ *     de_dust2
+ *     de_dust3
+ *     de_dust4
+ *     de_inferno
+ *     de_chateal
+ *     de_dust2
+ *     de_nuke
+ *
+ * So the `mapsProcessedNumber` will count `de_dust4` as being the position 4 and `de_inferno` as being
+ * the position 5, while in fact, `de_dust4` does not exist on the map cycle file, and the `de_inferno`
+ * being actually on the position 2.
+ */
+stock map_populateListOnSeries( Array:mapArray, mapFilePath[] )
+{
+    LOGGER( 128, "I AM ENTERING ON map_populateListOnSeries(2) | mapFilePath: %s", mapFilePath )
+
+    // load the array with maps
+    new mapCount;
+
+    // If there is a map file to load
+    if( mapFilePath[ 0 ] )
+    {
+        // clear the map array in case we're reusing it
+        TRY_TO_APPLY( ArrayClear, mapArray )
+
+        LOGGER( 4, "" )
+        LOGGER( 4, "    map_populateListOnSeries(...) Loading the PASSED FILE! mapFilePath: %s", mapFilePath )
+
+        mapCount = loadMapFileListOnSeries( mapArray, mapFilePath );
+    }
+
+    LOGGER( 1, "    I AM EXITING map_populateListOnSeries(2) mapCount: %d", mapCount )
+    return mapCount;
 }
 
 
@@ -12359,6 +12611,8 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         register_clcmd( "say_team runall", "runTests", -1 );
 
         g_test_failureIdsTrie      = TrieCreate();
+        g_test_strictValidMapsTrie = TrieCreate();
+
         g_test_failureIdsArray     = ArrayCreate( 1 );
         g_test_failureReasonsArray = ArrayCreate( MAX_LONG_STRING );
         g_test_idsAndNamesArray    = ArrayCreate( MAX_SHORT_STRING );
@@ -12799,6 +13053,24 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         return register_test( 0, testName );
     }
 
+    /**
+     * When the global variable `g_test_isToUseStrictValidMaps` is set to, this looks for maps as being
+     * valid from the global Trie `g_test_strictValidMapsTrie`.
+     *
+     * This is useful to create any map environment you want to perform the Unit Testing. See the
+     * function helper_loadStrictValidMapsTrie() to load the global Trie `g_test_strictValidMapsTrie`
+     * with the maps you want to be valid.
+     */
+    stock isAllowedValidMapByTheUnitTests( mapName[] )
+    {
+        if( g_test_isToUseStrictValidMaps )
+        {
+            return TrieKeyExists( g_test_strictValidMapsTrie, mapName );
+        }
+
+        return g_test_isTheUnitTestsRunning;
+    }
+
 
 
 
@@ -12882,6 +13154,34 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
             }
 
             fclose( fileDescriptor );
+        }
+    }
+
+    /**
+     * To clean and load the global `g_test_strictValidMapsTrie` within the passed maps as arguments.
+     *
+     * @param mapFileList          the variable number of maps.
+     */
+    stock helper_loadStrictValidMapsTrie( ... )
+    {
+        new stringIndex;
+        new currentIndex;
+        new currentMap[ MAX_MAPNAME_LENGHT ];
+
+        new argumentsNumber = numargs();
+        TRY_TO_APPLY( TrieClear, g_test_strictValidMapsTrie )
+
+        // To load the maps passed as arguments
+        for( currentIndex = 0; currentIndex < argumentsNumber; ++currentIndex )
+        {
+            stringIndex = 0;
+
+            while( ( currentMap[ stringIndex ] = getarg( currentIndex, stringIndex++ ) ) )
+            {
+            }
+
+            currentMap[ stringIndex ] = '^0';
+            TrieSetCell( g_test_strictValidMapsTrie, currentMap, currentIndex );
         }
     }
 
@@ -14040,6 +14340,97 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         SET_TEST_FAILURE( test_id, menuPages[ player_id ] != expectedPage, errorMessage )
     }
 
+    /**
+     * Tests if the function map_populateListOnSeries(2) is properly loading the maps series.
+     */
+    stock test_map_populateListOnSeries()
+    {
+        g_test_isToUseStrictValidMaps = true;
+        new test_id = test_registerSeriesNaming( "test_map_populateListOnSeries", 'a' ); // Case 1
+
+        new Array:populatedArray = ArrayCreate( MAX_MAPNAME_LENGHT );
+        set_pcvar_num( cvar_serverMoveCursor, 1 );
+
+        helper_mapFileListLoad( g_test_voteMapFilePath, "de_dust1", "de_dust2", "de_nuke", "de_dust2" );
+        helper_loadStrictValidMapsTrie( "de_dust1", "de_dust2", "de_dust5", "de_dust6", "de_nuke" );
+
+        test_strictValidMapsTrie( test_id, "de_dust1" );
+        test_strictValidMapsTrie( test_id, "de_dust2" );
+        test_strictValidMapsTrie( test_id, "de_dust5" );
+        test_strictValidMapsTrie( test_id, "de_dust6" );
+        test_strictValidMapsTrie( test_id, "de_nuke"  );
+
+        test_id = test_registerSeriesNaming( "test_map_populateListOnSeries", 'a' ); // Case 2
+        test_strictValidMapsTrie( test_id, "de_nuke2", true );
+        test_strictValidMapsTrie( test_id, "de_dust" , true );
+        test_strictValidMapsTrie( test_id, "de_dust3", true );
+        test_strictValidMapsTrie( test_id, "de_dust4", true );
+
+        // Second part
+        new mapCount = map_populateListOnSeries( populatedArray, g_test_voteMapFilePath );
+        new errorMessage[ MAX_LONG_STRING ];
+
+        for( new index = 0; index < ArraySize( populatedArray ); index++ )
+        {
+            ArrayGetString( populatedArray, index, errorMessage, charsmax( errorMessage ) );
+            LOGGER( 1, "populatedArray index: %d, mapName: %s", index, errorMessage )
+        }
+
+        new expectedSize = 7;
+        formatex( errorMessage, charsmax( errorMessage ), "The map populatedArray size must to be %d, instead of %d.",
+                expectedSize, mapCount );
+        SET_TEST_FAILURE( test_id, mapCount != expectedSize, errorMessage )
+
+        test_id = test_registerSeriesNaming( "test_map_populateListOnSeries", 'a' ); // Case 3
+        test_populateListOnSeries( populatedArray, test_id, "de_dust1" );
+        test_populateListOnSeries( populatedArray, test_id, "de_dust2" );
+        test_populateListOnSeries( populatedArray, test_id, "de_dust5" );
+        test_populateListOnSeries( populatedArray, test_id, "de_dust6" );
+        test_populateListOnSeries( populatedArray, test_id, "de_nuke"  );
+
+        test_id = test_registerSeriesNaming( "test_map_populateListOnSeries", 'a' ); // Case 4
+        test_populateListOnSeries( populatedArray, test_id, "de_nuke2", true );
+        test_populateListOnSeries( populatedArray, test_id, "de_dust" , true );
+        test_populateListOnSeries( populatedArray, test_id, "de_dust3", true );
+        test_populateListOnSeries( populatedArray, test_id, "de_dust4", true );
+
+        g_test_isToUseStrictValidMaps = false;
+        ArrayDestroy( populatedArray );
+    }
+
+    /**
+     * Create one case test for the stock helper_loadStrictValidMapsTrie() based on its parameters passed
+     * by the test_map_populateListOnSeries(0) loader function.
+     */
+    stock test_populateListOnSeries( Array:populatedArray, test_id, mapName[], bool:isNotToBe = false  )
+    {
+        new bool:isOnTheArray;
+        new errorMessage[ MAX_LONG_STRING ];
+
+        for( new index = 0; index < ArraySize( populatedArray ); index++ )
+        {
+            ArrayGetString( populatedArray, index, errorMessage, charsmax( errorMessage ) );
+            if( equali( errorMessage, mapName ) != 0 ) isOnTheArray = true;
+        }
+
+        formatex( errorMessage, charsmax( errorMessage ), "The map `%s` must %sto be loaded on the array.",
+                mapName, isNotToBe ? "not " : "" );
+        SET_TEST_FAILURE( test_id, isOnTheArray == isNotToBe, errorMessage )
+    }
+
+    /**
+     * Create one case test for the stock map_populateListOnSeries(2) based on its parameters passed
+     * by the test_map_populateListOnSeries(0) loader function.
+     */
+    stock test_strictValidMapsTrie( test_id, mapName[], bool:isNotToBe = false )
+    {
+        new errorMessage[ MAX_LONG_STRING ];
+
+        formatex( errorMessage, charsmax( errorMessage ), "The map `%s` must %sto be loaded on the trie.",
+                mapName, isNotToBe ? "not " : "" );
+        SET_TEST_FAILURE( test_id, TrieKeyExists( g_test_strictValidMapsTrie, mapName ) == isNotToBe, errorMessage )
+    }
+
 
 
 
@@ -14129,6 +14520,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     new test_nextMapChangeVotemap;
     new test_endOfMapVoteStart;
     new test_nomCleaning;
+    new test_serverMoveCursor;
 
     new test_nomMapFilePath           [ MAX_FILE_PATH_LENGHT ];
     new test_voteMapFilePath          [ MAX_FILE_PATH_LENGHT ];
@@ -14191,6 +14583,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
             test_nextMapChangeVotemap    = get_pcvar_num( cvar_nextMapChangeVotemap   );
             test_endOfMapVoteStart       = get_pcvar_num( cvar_endOfMapVoteStart      );
             test_nomCleaning             = get_pcvar_num( cvar_nomCleaning            );
+            test_serverMoveCursor        = get_pcvar_num( cvar_serverMoveCursor       );
         }
     }
 
@@ -14242,6 +14635,7 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
             set_pcvar_num( cvar_nextMapChangeVotemap, test_nextMapChangeVotemap );
             set_pcvar_num( cvar_endOfMapVoteStart   , test_endOfMapVoteStart    );
             set_pcvar_num( cvar_nomCleaning         , test_nomCleaning          );
+            set_pcvar_num( cvar_serverMoveCursor    , test_serverMoveCursor     );
         }
 
         // Clear tests results.
