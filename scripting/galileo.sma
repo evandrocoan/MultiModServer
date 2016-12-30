@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-402";
+new const PLUGIN_VERSION[] = "v3.2.6-403";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -757,6 +757,8 @@ new const PLUGIN_VERSION[] = "v3.2.6-402";
 
 /**
  * Internal variables used by the GET_MAP_NAME(3) and GET_MAP_INFO(3) macros.
+ * By conversion, never ever a Trie will store together the map information/info,
+ * only the map name as the hash key.
  */
 new __g_getMapNameInputLine [ MAX_MAPNAME_LENGHT ];
 new __g_getMapNameRightToken[ MAX_MAPNAME_LENGHT ];
@@ -795,8 +797,7 @@ new __g_getMapNameRightToken[ MAX_MAPNAME_LENGHT ];
 #define IS_IT_A_VALID_MAP_LINE(%1) \
     ( %1[ 0 ] \
       && !equal( %1, "//", 2 ) \
-      && !equal( %1, ";", 1 ) \
-      && IS_MAP_VALID( %1 ) )
+      && !equal( %1, ";", 1 ) )
 
 /**
  * General handler to assist object property applying and keep the code clear. This only need
@@ -4064,26 +4065,32 @@ stock loadMapFileListComplete( mapFileDescriptor, Array:mapArray, Trie:fillerMap
     LOGGER( 128, "I AM ENTERING ON loadMapFileListComplete(2) | mapFileDescriptor: %d", mapFileDescriptor )
 
     new mapCount;
+    new loadedMapLine[ MAX_MAPNAME_LENGHT ];
     new loadedMapName[ MAX_MAPNAME_LENGHT ];
 
     while( !feof( mapFileDescriptor ) )
     {
-        fgets( mapFileDescriptor, loadedMapName, charsmax( loadedMapName ) );
-        trim( loadedMapName );
+        fgets( mapFileDescriptor, loadedMapLine, charsmax( loadedMapLine ) );
+        trim( loadedMapLine );
 
-        if( IS_IT_A_VALID_MAP_LINE( loadedMapName ) )
+        if( IS_IT_A_VALID_MAP_LINE( loadedMapLine ) )
         {
-            TrieSetCell( fillerMapTrie, loadedMapName, mapCount );
-            ArrayPushString( mapArray, loadedMapName );
+            GET_MAP_NAME_LEFT( loadedMapLine, loadedMapName )
 
-        #if defined DEBUG
-            if( mapCount < MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST )
+            if( IS_MAP_VALID( loadedMapName ) )
             {
-                LOGGER( 4, "( loadMapFileListComplete ) %d, loadedMapName: %s", mapCount + 1, loadedMapName )
-            }
-        #endif
+                TrieSetCell( fillerMapTrie, loadedMapName, mapCount );
+                ArrayPushString( mapArray, loadedMapLine );
 
-            ++mapCount;
+            #if defined DEBUG
+                if( mapCount < MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST )
+                {
+                    LOGGER( 4, "( loadMapFileListComplete ) %d, loadedMapLine: %s", mapCount + 1, loadedMapLine )
+                }
+            #endif
+
+                ++mapCount;
+            }
         }
     }
 
@@ -4096,24 +4103,30 @@ stock loadMapFileListArray( mapFileDescriptor, Array:mapArray )
 
     new mapCount;
     new loadedMapName[ MAX_MAPNAME_LENGHT ];
+    new loadedMapLine[ MAX_MAPNAME_LENGHT ];
 
     while( !feof( mapFileDescriptor ) )
     {
-        fgets( mapFileDescriptor, loadedMapName, charsmax( loadedMapName ) );
-        trim( loadedMapName );
+        fgets( mapFileDescriptor, loadedMapLine, charsmax( loadedMapLine ) );
+        trim( loadedMapLine );
 
-        if( IS_IT_A_VALID_MAP_LINE( loadedMapName ) )
+        if( IS_IT_A_VALID_MAP_LINE( loadedMapLine ) )
         {
-            ArrayPushString( mapArray, loadedMapName );
+            GET_MAP_NAME_LEFT( loadedMapLine, loadedMapName )
 
-        #if defined DEBUG
-            if( mapCount < MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST )
+            if( IS_MAP_VALID( loadedMapName ) )
             {
-                LOGGER( 4, "( loadMapFileListArray ) %d, loadedMapName: %s", mapCount + 1, loadedMapName )
-            }
-        #endif
+                ArrayPushString( mapArray, loadedMapLine );
 
-            ++mapCount;
+            #if defined DEBUG
+                if( mapCount < MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST )
+                {
+                    LOGGER( 4, "( loadMapFileListArray ) %d, loadedMapLine: %s", mapCount + 1, loadedMapLine )
+                }
+            #endif
+
+                ++mapCount;
+            }
         }
     }
 
@@ -4126,24 +4139,30 @@ stock loadMapFileListTrie( mapFileDescriptor, Trie:fillerMapTrie )
 
     new mapCount;
     new loadedMapName[ MAX_MAPNAME_LENGHT ];
+    new loadedMapLine[ MAX_MAPNAME_LENGHT ];
 
     while( !feof( mapFileDescriptor ) )
     {
-        fgets( mapFileDescriptor, loadedMapName, charsmax( loadedMapName ) );
-        trim( loadedMapName );
+        fgets( mapFileDescriptor, loadedMapLine, charsmax( loadedMapLine ) );
+        trim( loadedMapLine );
 
-        if( IS_IT_A_VALID_MAP_LINE( loadedMapName ) )
+        if( IS_IT_A_VALID_MAP_LINE( loadedMapLine ) )
         {
-            TrieSetCell( fillerMapTrie, loadedMapName, mapCount );
+            GET_MAP_NAME_LEFT( loadedMapLine, loadedMapName )
 
-        #if defined DEBUG
-            if( mapCount < MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST )
+            if( IS_MAP_VALID( loadedMapName ) )
             {
-                LOGGER( 4, "( loadMapFileListTrie ) %d, loadedMapName: %s", mapCount + 1, loadedMapName )
-            }
-        #endif
+                TrieSetCell( fillerMapTrie, loadedMapName, mapCount );
 
-            ++mapCount;
+            #if defined DEBUG
+                if( mapCount < MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST )
+                {
+                    LOGGER( 4, "( loadMapFileListTrie ) %d, loadedMapLine: %s", mapCount + 1, loadedMapLine )
+                }
+            #endif
+
+                ++mapCount;
+            }
         }
     }
 
@@ -12578,6 +12597,7 @@ stock loadMapFileSeriesListArray( mapFileDescriptor, Array:mapArray )
     new mapCount;
     new nextMapName  [ MAX_MAPNAME_LENGHT ];
     new loadedMapName[ MAX_MAPNAME_LENGHT ];
+    new loadedMapLine[ MAX_MAPNAME_LENGHT ];
 
     new Trie:loadedMapSeriesTrie;
     new bool:isToMoveTheCursorOnMapSeries = get_pcvar_num( cvar_serverMoveCursor ) != 0;
@@ -12586,27 +12606,32 @@ stock loadMapFileSeriesListArray( mapFileDescriptor, Array:mapArray )
 
     while( !feof( mapFileDescriptor ) )
     {
-        fgets( mapFileDescriptor, loadedMapName, charsmax( loadedMapName ) );
-        trim( loadedMapName );
+        fgets( mapFileDescriptor, loadedMapLine, charsmax( loadedMapLine ) );
+        trim( loadedMapLine );
 
-        if( IS_IT_A_VALID_MAP_LINE( loadedMapName ) )
+        if( IS_IT_A_VALID_MAP_LINE( loadedMapLine ) )
         {
-            ArrayPushString( mapArray, loadedMapName );
+            GET_MAP_NAME_LEFT( loadedMapLine, loadedMapName )
 
-        #if defined DEBUG
-            if( mapCount < MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST )
+            if( IS_MAP_VALID( loadedMapName ) )
             {
-                LOGGER( 4, "( loadMapFileSeriesListArray ) %d, loadedMapName: %s", mapCount + 1, loadedMapName )
-            }
-        #endif
+                ArrayPushString( mapArray, loadedMapLine );
 
-            // Load the series maps, if enabled.
-            if( isToMoveTheCursorOnMapSeries )
-            {
-                loadTheCursorOnMapSeries( mapArray, loadedMapSeriesTrie, loadedMapName, nextMapName, mapCount );
-            }
+            #if defined DEBUG
+                if( mapCount < MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST )
+                {
+                    LOGGER( 4, "( loadMapFileSeriesListArray ) %d, loadedMapLine: %s", mapCount + 1, loadedMapLine )
+                }
+            #endif
 
-            ++mapCount;
+                // Load the series maps, if enabled.
+                if( isToMoveTheCursorOnMapSeries )
+                {
+                    loadTheCursorOnMapSeries( mapArray, loadedMapSeriesTrie, loadedMapName, nextMapName, mapCount );
+                }
+
+                ++mapCount;
+            }
         }
     }
 
