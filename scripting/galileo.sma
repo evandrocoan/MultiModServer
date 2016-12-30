@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-395";
+new const PLUGIN_VERSION[] = "v3.2.6-398";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -88,7 +88,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-395";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+64+4+2
+#define DEBUG_LEVEL 1+64+2+4
 
 
 /**
@@ -210,7 +210,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-395";
      *
      * 511  - Enables all debug logging levels.
      */
-    new g_debug_level = 1+2+4+8+16+32+64+128+256;
+    new g_debug_level = 1+2+4+8+16+32+64+128;
 
     /**
      * Write debug messages accordantly with the 'g_debug_level' variable.
@@ -310,10 +310,10 @@ new const PLUGIN_VERSION[] = "v3.2.6-395";
             // LOGGER( 1, "Current i is: %d", i )
         }
 
-        test_getUniqueRandomInt_load();
         // test_setCorrectMenuPage_load();
         // test_convertNumericBase_load();
         // test_whatGameEndingTypeIt_load();
+        test_getUniqueRandomInt_load();
         // test_getUniqueRandomBasic_load();
         // test_nominateAndUnnominate_load();
         // test_loadVoteChoices_cases();
@@ -4742,7 +4742,7 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
 
                 keepSearching:
 
-                mapIndex = getUniqueRandomInteger( randomGenaratorHolder, 0, filersMapCount - 1 );
+                mapIndex = random_num( 0, filersMapCount - 1 );
                 ArrayGetString( fillerMapsArray, mapIndex, mapName, charsmax( mapName ) );
 
                 LOGGER( 8, "( in  ) [%i] choiceIndex: %i, mapIndex: %i, mapName: %s, unsuccessfulCount: %i, g_totalVoteOptions: %i", \
@@ -6866,33 +6866,42 @@ stock showPlayersVoteResult()
  * @param holder      an initially empty Dynamic Array used for internal purposes.
  * @param minimum     the inclusive lower bound limit, i.e., the minimum value to be sorted.
  * @param maximum     the inclusive upper bound limit, i.e., the maximum value to be sorted.
+ * @param restart     if false, the sequence will not be automatically restarted and will to start
+ *                    returning the value -1;
  *
  * @return an unique random integer until the `maximum` parameter value.
  */
-stock getUniqueRandomInteger( Array:holder, minimum = 0, maximum = 0 )
+stock getUniqueRandomInteger( Array:holder, minimum = MIN_INTEGER, maximum = MIN_INTEGER, restart = true )
 {
     LOGGER( 128, "I AM ENTERING ON getUniqueRandomInteger(2) range: %d-%d", minimum, maximum )
+    static lastMaximum = MIN_INTEGER;
 
     new randomIndex;
     new returnValue;
-
-    static holderSize;
-    static lastMaximum = MIN_INTEGER;
+    new holderSize = ArraySize( holder );
 
     if( lastMaximum != maximum
-        || holderSize < 1 )
+        || ( restart
+             && holderSize < 1 ) )
     {
-        ArrayClear( holder );
+        LOGGER( 1, "( getUniqueRandomInteger ) Reseting the sequence, ArraySize: %d", holderSize )
 
         lastMaximum = maximum;
-        holderSize  = ( maximum - minimum ) + 1;
+        ArrayClear( holder );
 
-        for( new index = minimum; index < holderSize; index++ )
+        for( new index = minimum; index <= maximum; index++ )
         {
             ArrayPushCell( holder, index );
         }
+
+        holderSize = ArraySize( holder );
+    }
+    else if( holderSize < 1 )
+    {
+        return -1;
     }
 
+    LOGGER( 1, "( getUniqueRandomInteger ) ArraySize: %d", ArraySize( holder ) )
     --holderSize;
 
     // Get a unique random value
@@ -13724,13 +13733,17 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     }
 
     /**
-     * Create one case test for the stock getUniqueRandomIntegers(0) based on its parameters passed
-     * by the test_getUniqueRandomBasic_load(0) loader function.
+     * Create one case test for the stock getUniqueRandomIntegerBasic(2) and getUniqueRandomInteger(4)
+     * based on its parameters passed by the test_getUniqueRandomBasic_load(0) and test_getUniqueRandomInteger(0)
+     * loader functions.
      */
-    stock test_getUniqueRandomIntBasic( max_value )
+    stock test_getUniqueRandomIntBasic( max_value, Array:holder = Invalid_Array )
     {
         new errorMessage[ MAX_LONG_STRING ];
         new test_id = test_registerSeriesNaming( "test_getUniqueRandomIntBasic", 'a' );
+
+        TRY_TO_APPLY( getUniqueRandomInteger, holder )
+        static sequence = -1;
 
         new trieSize;
         new sortedInterger;
@@ -13738,12 +13751,19 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         new sortedIntergerString[ 6 ];
         new Trie:sortedIntegers = TrieCreate();
 
-        static sequence = -1;
         sequence++;
 
         for( new index = 0; index < max_value + 3 ; index++ )
         {
-            sortedInterger = getUniqueRandomIntegerBasic( sequence, max_value );
+            if( holder )
+            {
+                sortedInterger = getUniqueRandomInteger( holder, 0, max_value, false );
+            }
+            else
+            {
+                sortedInterger = getUniqueRandomIntegerBasic( sequence, max_value );
+            }
+
             num_to_str( sortedInterger, sortedIntergerString, charsmax( sortedIntergerString ) );
 
             formatex( errorMessage, charsmax( errorMessage ), "The integer %d, must not to be sorted twice.", sortedInterger );
@@ -13768,15 +13788,25 @@ readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     {
         new Array:holder = ArrayCreate();
 
-        test_getUniqueRandomInteger( holder, 0, 0  ); // Case 1
-        test_getUniqueRandomInteger( holder, 0, 1  ); // Case 2
-        test_getUniqueRandomInteger( holder, 0, 30 ); // Case 3
-        test_getUniqueRandomInteger( holder, 0, 31 ); // Case 4
+        test_getUniqueRandomIntBasic( 0 , holder ); // Case 1
+        test_getUniqueRandomIntBasic( 1 , holder ); // Case 2
+        test_getUniqueRandomIntBasic( 30, holder ); // Case 3
+        test_getUniqueRandomIntBasic( 31, holder ); // Case 4
 
-        test_getUniqueRandomInteger( holder, 0, 31 ); // Case 5
-        test_getUniqueRandomInteger( holder, 0, 30 ); // Case 6
-        test_getUniqueRandomInteger( holder, 0, 1  ); // Case 7
-        test_getUniqueRandomInteger( holder, 0, 0  ); // Case 8
+        test_getUniqueRandomIntBasic( 31, holder ); // Case 5
+        test_getUniqueRandomIntBasic( 30, holder ); // Case 6
+        test_getUniqueRandomIntBasic( 1 , holder ); // Case 7
+        test_getUniqueRandomIntBasic( 0 , holder ); // Case 8
+
+        test_getUniqueRandomInteger( holder, 0, 0  ); // Case 9
+        test_getUniqueRandomInteger( holder, 0, 1  ); // Case 10
+        test_getUniqueRandomInteger( holder, 0, 30 ); // Case 11
+        test_getUniqueRandomInteger( holder, 0, 31 ); // Case 12
+
+        test_getUniqueRandomInteger( holder, 0, 31 ); // Case 13
+        test_getUniqueRandomInteger( holder, 0, 30 ); // Case 14
+        test_getUniqueRandomInteger( holder, 0, 1  ); // Case 15
+        test_getUniqueRandomInteger( holder, 0, 0  ); // Case 16
 
         ArrayDestroy( holder );
     }
