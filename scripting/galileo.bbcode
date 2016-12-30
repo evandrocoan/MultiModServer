@@ -1367,19 +1367,20 @@ Thank you!  It means a lot to me.
 [*]Added the `page_number` argument to all menus possible. Now you can open any menu at the page you want to. Example `say nomenu 50`.
 [*]Added the ability for players to close the vote menu, if they want to. [URL="https://github.com/addonszz/Galileo/issues/4"]Issue#4[/URL].
 [*]Added an optimum time for the vote starting at map end. [URL="https://github.com/addonszz/Galileo/issues/20"]Issue#20[/URL].
-[*]Added a new option to the cvar `gal_rtv_commands`, to disable the RTV when there is only a single player on the server. [URL="https://github.com/addonszz/Galileo/issues/24"]Issue#24[/URL].
-[*]Added a new option to the cvar `gal_vote_show_none`, to created a new menu showing command the options. [URL="https://github.com/addonszz/Galileo/issues/40"]Issue#40[/URL].
+[*]Added the the command `say galmenu`, (admin MAP level required) to choose from the loaded server maps, the maps to create a map voting by a menu, as the one with the `gal_votemap` command. [URL="https://github.com/addonszz/Galileo/issues/48"]Issue#48[/URL].
+[*]Added the the command `gal_changelevel`, to immediately change level to the current map at the cvar nextmap. [URL="https://github.com/addonszz/Galileo/issues/48"]Issue#48[/URL].
+[*]Added the the command `gal_votemap`, to receive a list of maps and will to perform a map voting as if it was an automatic end of map voting. [URL="https://github.com/addonszz/Galileo/issues/48"]Issue#48[/URL].
+[*]Added new cvar `gal_srv_move_cursor` to move the cursor on map series, because they are continuations as to afrikakorps1 and 2, respectively. [URL="https://github.com/addonszz/Galileo/issues/12"]Issue#12[/URL].
 [*]Added new cvar `gal_sounds_hud` to indicates if any HUD messages should be hidden during the various events in which they'd normal be showed. [URL="https://github.com/addonszz/Galileo/issues/31"]Issue#31[/URL].
 [*]Added new cvar `gal_colored_chat_prefix` to allow always to print a prefix before the Galileo chat messages. [URL="https://github.com/addonszz/Galileo/issues/34"]Issue#34[/URL].
 [*]Added new cvar `gal_nom_cleaning` to allow do not clean the map nominations' maps when the map voting started.  [URL="https://github.com/addonszz/Galileo/issues/32"]Issue#32[/URL].
 [*]Added new cvar `gal_nextmap_votemap` to not start another map voting when the server admin to starts one. [URL="https://github.com/addonszz/Galileo/issues/22"]Issue#22[/URL].
-[*]Added the the command `gal_changelevel`, to immediately change level to the current map at the cvar nextmap. [URL="https://github.com/addonszz/Galileo/issues/48"]Issue#48[/URL].
-[*]Added the the command `gal_votemap`, to receive a list of maps and will to perform a map voting as if it was an automatic end of map voting. [URL="https://github.com/addonszz/Galileo/issues/48"]Issue#48[/URL].
-[*]Added the the command `say galmenu`, (admin MAP level required) to choose from the loaded server maps, the maps to create a map voting by a menu, as the one with the `gal_votemap` command. [URL="https://github.com/addonszz/Galileo/issues/48"]Issue#48[/URL].
 [*]Added new cvar `gal_runoff_mapchoices` to let the voting take into account all the map options that had the maximum amount of votes. [URL="https://github.com/addonszz/Galileo/issues/33"]Issue#33[/URL].
 [*]Added new cvar `gal_runoff_ratio` to specifies the minimum amount of votes the most voted map should have to not start a run off voting. [URL="https://github.com/addonszz/Galileo/issues/33"]Issue#33[/URL].
 [*]Added new cvar `gal_endonround_change` to choose whether the map should change current round final seconds, or at next round start first seconds. [URL="https://github.com/addonszz/Galileo/issues/5"]Issue#5[/URL].
 [*]Added new cvar `gal_endofmapvote_expiration` to change the map at the round the map voting is finished, without wait to the `mp_timelimit` or `mp_maxrounds`. [URL="https://github.com/addonszz/Galileo/issues/5"]Issue#5[/URL].
+[*]Added a new option to the cvar `gal_rtv_commands`, to disable the RTV when there is only a single player on the server. [URL="https://github.com/addonszz/Galileo/issues/24"]Issue#24[/URL].
+[*]Added a new option to the cvar `gal_vote_show_none`, to created a new menu showing command the options. [URL="https://github.com/addonszz/Galileo/issues/40"]Issue#40[/URL].
 [*]Added new option to the cvar `amx_extendmap_allow_order`, when no one voted for nextmap or extend or "stay here", extend the map. [URL="https://github.com/addonszz/Galileo/issues/11"]Issue#11[/URL].
 [*]Added new option to the cvar `gal_endonround_countdown`, allow to set mp_friendlyfire to 1, so players can bombard each other with grenades just before change level. [URL="https://github.com/addonszz/Galileo/issues/15"]Issue#15[/URL].
 [*]Added new option to the cvar `amx_extendmap_max`, allowing to disable it setting it to 0.
