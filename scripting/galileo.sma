@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-400";
+new const PLUGIN_VERSION[] = "v3.2.6-401";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -88,7 +88,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-400";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+64+4+2+16
+#define DEBUG_LEVEL 1+16+64+4+2
 
 
 /**
@@ -278,6 +278,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-400";
         test_convertNumericBase_load();
         test_setCorrectMenuPage_load();
         test_map_populateListOnSeries();
+        test_GET_MAP_NAME_load();
     }
 
     /**
@@ -311,7 +312,8 @@ new const PLUGIN_VERSION[] = "v3.2.6-400";
             // LOGGER( 1, "Current i is: %d", i )
         }
 
-        test_map_populateListOnSeries();
+        test_GET_MAP_NAME_load();
+        // test_map_populateListOnSeries();
         // test_setCorrectMenuPage_load();
         // test_convertNumericBase_load();
         // test_whatGameEndingTypeIt_load();
@@ -719,6 +721,40 @@ new const PLUGIN_VERSION[] = "v3.2.6-400";
  * Accept a map as valid, even when they end with `.bsp`.
  */
 #define IS_MAP_VALID_BSP(%1) ( is_map_valid( %1 ) || is_map_valid_bsp_check( %1 ) )
+
+/**
+ * Retrieves a map name from a Dynamic Array of maps.
+ *
+ * @param mapArray       a Dynamic Array of maps
+ * @param mapIndex       an valid index on the `mapArray` parameter
+ * @param mapName        a string to store the map name
+ */
+#define GET_MAP_NAME(%1,%2,%3) \
+{ \
+    ArrayGetString( %1, %2, __g_getMapNameInputLine, MAX_MAPNAME_LENGHT - 1 ); \
+    strtok( __g_getMapNameInputLine, %3, MAX_MAPNAME_LENGHT - 1, \
+            __g_getMapNameRightToken   , MAX_MAPNAME_LENGHT - 1, ' ' ); \
+}
+
+/**
+ * Internal variables used by the GET_MAP_NAME(3) and GET_MAP_INFO(3) macros.
+ */
+new __g_getMapNameInputLine [ MAX_MAPNAME_LENGHT ];
+new __g_getMapNameRightToken[ MAX_MAPNAME_LENGHT ];
+
+/**
+ * Retrieves a map name from a Dynamic Array of maps.
+ *
+ * @param mapArray       a Dynamic Array of maps
+ * @param mapIndex       an valid index on the `mapArray` parameter
+ * @param mapName        a string to store the map name
+ */
+#define GET_MAP_INFO(%1,%2,%3) \
+{ \
+    ArrayGetString( %1, %2, __g_getMapNameInputLine, MAX_MAPNAME_LENGHT - 1 ); \
+    strtok( __g_getMapNameInputLine, __g_getMapNameRightToken, MAX_MAPNAME_LENGHT - 1, \
+            %3                                               , MAX_MAPNAME_LENGHT - 1, ' ' ); \
+}
 
 /**
  * Check whether a line not a commentary, empty and if it is a valid map by IS_MAP_VALID(1).
@@ -14475,6 +14511,49 @@ stock map_populateListOnSeries( Array:mapArray, mapFilePath[] )
         formatex( errorMessage, charsmax( errorMessage ), "The map `%s` must %sto be loaded on the trie.",
                 mapName, isNotToBe ? "not " : "" );
         SET_TEST_FAILURE( test_id, TrieKeyExists( g_test_strictValidMapsTrie, mapName ) == isNotToBe, errorMessage )
+    }
+
+    /**
+     * Tests if the function map_populateListOnSeries(2) is properly loading the maps series.
+     */
+    stock test_GET_MAP_NAME_load()
+    {
+        new Array:populatedArray = ArrayCreate( MAX_MAPNAME_LENGHT );
+
+        ArrayPushString( populatedArray, "de_dust1 bute by" );
+        ArrayPushString( populatedArray, "de_dust2" );
+        ArrayPushString( populatedArray, "de_nuke" );
+        ArrayPushString( populatedArray, "cs_office data" );
+
+        test_GET_MAP_NAME( populatedArray, 0, "de_dust1" , "bute by" );
+        test_GET_MAP_NAME( populatedArray, 1, "de_dust2" , ""        );
+        test_GET_MAP_NAME( populatedArray, 2, "de_nuke"  , ""        );
+        test_GET_MAP_NAME( populatedArray, 3, "cs_office", "data"    );
+
+        ArrayDestroy( populatedArray );
+    }
+
+    /**
+     * Create one case test for the macros GET_MAP_NAME(3) and GET_MAP_INFO(3), based on its parameters
+     * passed by the test_GET_MAP_NAME_load(0) loader function.
+     */
+    stock test_GET_MAP_NAME( Array:populatedArray, index, mapNameExpected[], mapInfoExpected[] )
+    {
+        new mapName     [ MAX_MAPNAME_LENGHT ];
+        new errorMessage[ MAX_LONG_STRING ];
+
+        new test_id = test_registerSeriesNaming( "test_GET_MAP_NAME", 'd' ); // Case 1
+        GET_MAP_NAME( populatedArray, index, mapName )
+
+        formatex( errorMessage, charsmax( errorMessage ), "The map name must to be %s, instead of %s.",
+                mapNameExpected, mapName );
+        SET_TEST_FAILURE( test_id, !equali( mapName, mapNameExpected ), errorMessage )
+
+        GET_MAP_INFO( populatedArray, index, mapName )
+
+        formatex( errorMessage, charsmax( errorMessage ), "The map info must to be %s, instead of %s.",
+                mapInfoExpected, mapName );
+        SET_TEST_FAILURE( test_id, !equali( mapName, mapInfoExpected ), errorMessage )
     }
 
 
