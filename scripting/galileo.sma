@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-401";
+new const PLUGIN_VERSION[] = "v3.2.6-402";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -436,6 +436,15 @@ new const PLUGIN_VERSION[] = "v3.2.6-401";
 #endif
 
 /**
+ * Switch between the AMXX 182 and 183 deprecated/bugged functions.
+ */
+#if AMXX_VERSION_NUM < 183
+    #define STR_TOKEN strtok
+#else
+    #define STR_TOKEN strtok2
+#endif
+
+/**
  * General Constants.
  */
 #define MAX_INTEGER  2147483647
@@ -723,17 +732,27 @@ new const PLUGIN_VERSION[] = "v3.2.6-401";
 #define IS_MAP_VALID_BSP(%1) ( is_map_valid( %1 ) || is_map_valid_bsp_check( %1 ) )
 
 /**
- * Retrieves a map name from a Dynamic Array of maps.
+ * Split the map name from a string.
  *
- * @param mapArray       a Dynamic Array of maps
- * @param mapIndex       an valid index on the `mapArray` parameter
- * @param mapName        a string to store the map name
+ * @param textLine   a string containing a map name at the first part
+ * @param mapName    a string to save the map extracted
  */
-#define GET_MAP_NAME(%1,%2,%3) \
+#define GET_MAP_NAME_LEFT(%2,%3) \
 { \
-    ArrayGetString( %1, %2, __g_getMapNameInputLine, MAX_MAPNAME_LENGHT - 1 ); \
-    strtok( __g_getMapNameInputLine, %3, MAX_MAPNAME_LENGHT - 1, \
-            __g_getMapNameRightToken   , MAX_MAPNAME_LENGHT - 1, ' ' ); \
+    STR_TOKEN( %2,                   %3, MAX_MAPNAME_LENGHT - 1, \
+               __g_getMapNameRightToken, MAX_MAPNAME_LENGHT - 1, ' ' ); \
+}
+
+/**
+ * Split the map info from a string.
+ *
+ * @param textLine   a string containing a map info at the second part
+ * @param mapName    a string to save the map extracted
+ */
+#define GET_MAP_INFO_RIGHT(%2,%3) \
+{ \
+    STR_TOKEN( %2, __g_getMapNameRightToken, MAX_MAPNAME_LENGHT - 1, \
+               %3                          , MAX_MAPNAME_LENGHT - 1, ' ' ); \
 }
 
 /**
@@ -749,11 +768,23 @@ new __g_getMapNameRightToken[ MAX_MAPNAME_LENGHT ];
  * @param mapIndex       an valid index on the `mapArray` parameter
  * @param mapName        a string to store the map name
  */
+#define GET_MAP_NAME(%1,%2,%3) \
+{ \
+    ArrayGetString( %1, %2, __g_getMapNameInputLine, MAX_MAPNAME_LENGHT - 1 ); \
+    GET_MAP_NAME_LEFT( __g_getMapNameInputLine, %3 ) \
+}
+
+/**
+ * Retrieves a map name from a Dynamic Array of maps.
+ *
+ * @param mapArray       a Dynamic Array of maps
+ * @param mapIndex       an valid index on the `mapArray` parameter
+ * @param mapName        a string to store the map name
+ */
 #define GET_MAP_INFO(%1,%2,%3) \
 { \
     ArrayGetString( %1, %2, __g_getMapNameInputLine, MAX_MAPNAME_LENGHT - 1 ); \
-    strtok( __g_getMapNameInputLine, __g_getMapNameRightToken, MAX_MAPNAME_LENGHT - 1, \
-            %3                                               , MAX_MAPNAME_LENGHT - 1, ' ' ); \
+    GET_MAP_INFO_RIGHT( __g_getMapNameInputLine, %3 ) \
 }
 
 /**
@@ -1245,6 +1276,7 @@ new bool:g_rockedVote               [ MAX_PLAYERS_COUNT ];
 
 new g_mapPrefixes                [ MAX_PREFIX_COUNT    ][ 16                      ];
 new g_votingMapNames             [ MAX_OPTIONS_IN_VOTE ][ MAX_MAPNAME_LENGHT      ];
+new g_votingMapInfos             [ MAX_OPTIONS_IN_VOTE ][ MAX_MAPNAME_LENGHT      ];
 new g_menuMapIndexForPlayerArrays[ MAX_PLAYERS_COUNT   ][ MAX_NOM_MENU_ITEMS_PER_PAGE ];
 
 new g_chooseMapMenuId;
@@ -1818,11 +1850,7 @@ public handleServerStart( backupMapsFilePath[] )
 
             if( nominationsMapsCount )
             {
-                ArrayGetString
-                (
-                    g_nominationLoadedMapsArray, random_num( 0, nominationsMapsCount - 1 ),
-                    mapToChange, charsmax( mapToChange )
-                );
+                GET_MAP_NAME( g_nominationLoadedMapsArray, random_num( 0, nominationsMapsCount - 1 ), mapToChange )
             }
         }
 
@@ -2312,7 +2340,7 @@ stock processLoadedGroupMapFileFrom( &Array:playerFillerMapsArray, &Array:filler
     for( new groupIndex = 0; groupIndex < groupCount; ++groupIndex )
     {
         fillerMapsArray = ArrayCreate( MAX_MAPNAME_LENGHT );
-        ArrayGetString(  fillersFilePathsArray, groupIndex, fillerFilePath, charsmax( fillerFilePath ) );
+        ArrayGetString( fillersFilePathsArray, groupIndex, fillerFilePath, charsmax( fillerFilePath ) );
 
         map_populateList( fillerMapsArray, fillerFilePath, charsmax( fillerFilePath ) );
         ArrayPushCell( playerFillerMapsArray, fillerMapsArray );
@@ -2395,8 +2423,9 @@ stock debugLoadedGroupMapFileFrom( &Array:playerFillerMapsArray, &Array:maxMapsP
 {
     LOGGER( 128, "I AM ENTERING ON debugLoadedGroupMapFileFrom(3) groupCount: %d", ArraySize( playerFillerMapsArray ) )
 
+    new arraySize;
     new Array:fillerMapsArray;
-    new fillerMap[ MAX_FILE_PATH_LENGHT ];
+    new fillerMap[ MAX_MAPNAME_LENGHT ];
 
     new groupCount = ArraySize( playerFillerMapsArray );
 
@@ -2404,13 +2433,14 @@ stock debugLoadedGroupMapFileFrom( &Array:playerFillerMapsArray, &Array:maxMapsP
     for( new groupIndex = 0; groupIndex < groupCount; ++groupIndex )
     {
         fillerMapsArray = ArrayGetCell( playerFillerMapsArray, groupIndex );
+        arraySize = ArraySize( fillerMapsArray );
 
         LOGGER( 8, "[%i] maxMapsPerGroupToUse: %i, filersMapCount: %i", groupIndex, \
-                ArrayGetCell( maxMapsPerGroupToUseArray, groupIndex ), ArraySize( fillerMapsArray ) )
+                ArrayGetCell( maxMapsPerGroupToUseArray, groupIndex ), arraySize )
 
         for( new mapIndex = 0; mapIndex < ArraySize( fillerMapsArray ) && mapIndex < 10; mapIndex++ )
         {
-            ArrayGetString( fillerMapsArray, mapIndex, fillerMap, charsmax( fillerMap ) );
+            GET_MAP_NAME( fillerMapsArray, mapIndex, fillerMap )
             LOGGER( 8, "   fillerMap[%i]: %s", mapIndex, fillerMap )
         }
     }
@@ -4537,6 +4567,7 @@ stock loadWhiteListFile( currentHour, &Trie:listTrie, Array:whitelistFileArray, 
         new linesCount;
         new bool:isToLoadTheseMaps;
 
+        new mapName        [ MAX_MAPNAME_LENGHT ];
         new currentLine    [ MAX_MAPNAME_LENGHT ];
         new startHourString[ MAX_MAPNAME_LENGHT / 2 ];
         new endHourString  [ MAX_MAPNAME_LENGHT / 2 ];
@@ -4566,10 +4597,9 @@ stock loadWhiteListFile( currentHour, &Trie:listTrie, Array:whitelistFileArray, 
                 LOGGER( 8, "( loadWhiteListFile ) currentLine: %s (currentHour: %d)", currentLine, currentHour )
 
                 // broke the current line
-                strtok( currentLine,
+                STR_TOKEN( currentLine ,
                         startHourString, charsmax( startHourString ),
-                        endHourString, charsmax( endHourString ),
-                        '-', 0 );
+                        endHourString  , charsmax( endHourString )  , '-', 0 );
 
                 startHour = str_to_num( startHourString );
                 endHour   = str_to_num( endHourString );
@@ -4591,11 +4621,12 @@ stock loadWhiteListFile( currentHour, &Trie:listTrie, Array:whitelistFileArray, 
             else
             {
                 LOGGER( 8, "( loadWhiteListFile ) Trying to add: %s", currentLine )
+                GET_MAP_NAME_LEFT( currentLine, mapName )
 
-                if( IS_MAP_VALID( currentLine ) )
+                if( IS_MAP_VALID( mapName ) )
                 {
                     LOGGER( 8, "( loadWhiteListFile ) OK!")
-                    TrieSetCell( listTrie, currentLine, 0 );
+                    TrieSetCell( listTrie, mapName, lineIndex );
 
                     if( isWhiteList )
                     {
@@ -4674,6 +4705,7 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
     new Array:fillerMapGroupsArrays;
     new Array:maxMapsPerGroupToUseArray;
     new mapName[ MAX_MAPNAME_LENGHT ];
+    new mapInfo[ MAX_MAPNAME_LENGHT ];
 
     switch( fillersFilePathEnum )
     {
@@ -4803,7 +4835,7 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
                 keepSearching:
 
                 mapIndex = random_num( 0, filersMapCount - 1 );
-                ArrayGetString( fillerMapsArray, mapIndex, mapName, charsmax( mapName ) );
+                GET_MAP_NAME( fillerMapsArray, mapIndex, mapName )
 
                 LOGGER( 8, "( in  ) [%i] choiceIndex: %i, mapIndex: %i, mapName: %s, unsuccessfulCount: %i, g_totalVoteOptions: %i", \
                         groupIndex, choiceIndex, mapIndex, mapName, unsuccessfulCount, g_totalVoteOptions )
@@ -4891,7 +4923,7 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
                     }
 
                     unsuccessfulCount++;
-                    ArrayGetString( fillerMapsArray, mapIndex, mapName, charsmax( mapName ) );
+                    GET_MAP_NAME( fillerMapsArray, mapIndex, mapName )
 
                     LOGGER( 0, "", debug_vote_map_selection( choiceIndex, mapName, useWhitelistOutBlock, \
                             isWhiteListOutBlock, useEqualiCurrentMap, unsuccessfulCount, currentBlockerStrategy, \
@@ -4915,7 +4947,8 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
                     goto keepSearching;
                 }
 
-                addMapToTheVotingMenu( mapName );
+                GET_MAP_INFO( fillerMapsArray, mapIndex, mapInfo )
+                addMapToTheVotingMenu( mapName, mapInfo );
 
                 LOGGER( 8, "" )
                 LOGGER( 8, "( out ) [%i] choiceIndex: %i, mapIndex: %i, mapName: %s, unsuccessfulCount: %i, g_totalVoteOptions: %i", \
@@ -5043,6 +5076,7 @@ stock vote_addNominations( blockedMapsBuffer[], &announcementShowedTimes = 0 )
 
         new mapIndex;
         new mapName[ MAX_MAPNAME_LENGHT ];
+        new mapInfo[ MAX_MAPNAME_LENGHT ];
 
         // Note: The Map Groups Feature will not work with the Minimum Players Feature when adding
         // nominations, as we do not load the Map Groups Feature. But the Map Groups Feature will
@@ -5085,7 +5119,7 @@ stock vote_addNominations( blockedMapsBuffer[], &announcementShowedTimes = 0 )
 
             if( mapIndex > -1 )
             {
-                ArrayGetString( g_nominationLoadedMapsArray, mapIndex, mapName, charsmax( mapName ) );
+                GET_MAP_NAME( g_nominationLoadedMapsArray, mapIndex, mapName )
                 LOGGER( 4, "( vote_addNominations ) g_nominationLoadedMapsArray.mapIndex: %d, mapName: %s", mapIndex, mapName )
 
                 if( isFillersMapUsingMinplayers
@@ -5097,7 +5131,8 @@ stock vote_addNominations( blockedMapsBuffer[], &announcementShowedTimes = 0 )
                     continue;
                 }
 
-                addMapToTheVotingMenu( mapName );
+                GET_MAP_INFO( g_nominationLoadedMapsArray, mapIndex, mapInfo )
+                addMapToTheVotingMenu( mapName, mapInfo );
 
                 if( g_totalVoteOptions == voteNominationMax )
                 {
@@ -5516,7 +5551,7 @@ stock printVotingMaps( votingMapsCount )
 
     for( new index = 0; index < votingMapsCount; index++ )
     {
-        LOGGER( 16, "( printVotingMaps ) Voting map %d: %s", index, g_votingMapNames[ index ] )
+        LOGGER( 16, "( printVotingMaps ) Voting map %d: %s %s", index, g_votingMapNames[ index ], g_votingMapInfos[ index ] )
     }
 
     return 0;
@@ -5525,18 +5560,22 @@ stock printVotingMaps( votingMapsCount )
 stock loadRunOffVoteChoices()
 {
     LOGGER( 128, "I AM ENTERING ON loadRunOffVoteChoices(0)" )
-    new runoffChoice[ MAX_OPTIONS_IN_VOTE ][ MAX_MAPNAME_LENGHT ];
+
+    new runoffChoiceName[ MAX_OPTIONS_IN_VOTE ][ MAX_MAPNAME_LENGHT ];
+    new runoffChoiceInfo[ MAX_OPTIONS_IN_VOTE ][ MAX_MAPNAME_LENGHT ];
 
     // Create a clean copy to not copy overridden maps
     for( new mapIndex = 0; mapIndex < g_totalVoteOptions; mapIndex++ )
     {
-        copy( runoffChoice[ mapIndex ], charsmax( runoffChoice[] ), g_votingMapNames[ g_arrayOfRunOffChoices[ mapIndex ] ] );
+        copy( runoffChoiceName[ mapIndex ], charsmax( runoffChoiceName[] ), g_votingMapNames[ g_arrayOfRunOffChoices[ mapIndex ] ] );
+        copy( runoffChoiceInfo[ mapIndex ], charsmax( runoffChoiceInfo[] ), g_votingMapInfos[ g_arrayOfRunOffChoices[ mapIndex ] ] );
     }
 
     // Load runoff choices
     for( new mapIndex = 0; mapIndex < g_totalVoteOptions; mapIndex++ )
     {
-        copy( g_votingMapNames[ mapIndex ], charsmax( g_votingMapNames[] ), runoffChoice[ mapIndex ] );
+        copy( g_votingMapNames[ mapIndex ], charsmax( g_votingMapNames[] ), runoffChoiceName[ mapIndex ] );
+        copy( g_votingMapInfos[ mapIndex ], charsmax( g_votingMapInfos[] ), runoffChoiceInfo[ mapIndex ] );
     }
 
     g_votingSecondsRemaining = get_pcvar_num( cvar_runoffDuration );
@@ -5723,7 +5762,7 @@ stock configureVoteDisplayDebugging()
 
     for( new dbgChoice = 0; dbgChoice < voteOptions; dbgChoice++ )
     {
-        LOGGER( 4, "      %i. %s", dbgChoice + 1, g_votingMapNames[ dbgChoice ] )
+        LOGGER( 4, "      %i. %s %s", dbgChoice + 1, g_votingMapNames[ dbgChoice ], g_votingMapInfos[ dbgChoice ] )
     }
 
     return 0;
@@ -6894,9 +6933,10 @@ stock showPlayersVoteResult()
     {
         computeMapVotingCount( mapVotingCount, charsmax( mapVotingCount ), playerVoteMapChoiceIndex );
 
-        LOGGER( 4, "      %2i/%-2i, %i. %s", \
+        LOGGER( 4, "      %2i/%-2i, %i. %s %s", \
                 g_arrayOfMapsWithVotesNumber[ playerVoteMapChoiceIndex ], g_totalVotesCounted, \
-                playerVoteMapChoiceIndex, g_votingMapNames[ playerVoteMapChoiceIndex ] )
+                playerVoteMapChoiceIndex, g_votingMapNames[ playerVoteMapChoiceIndex ], \
+                g_votingMapInfos[ playerVoteMapChoiceIndex ] )
     }
 
     LOGGER( 4, "" )
@@ -7685,7 +7725,10 @@ stock removeMapFromTheVotingMenu( mapName[] )
         if( equali( mapName, g_votingMapNames[ index ] ) )
         {
             LOGGER( 4, "( removeMapFromTheVotingMenu ) Removing map: %s", mapName )
+
             g_votingMapNames[ index ][ 0 ] = '^0';
+            g_votingMapInfos[ index ][ 0 ] = '^0';
+
             g_totalVoteOptions--;
             break;
         }
@@ -7695,16 +7738,19 @@ stock removeMapFromTheVotingMenu( mapName[] )
     for( ; index < g_totalVoteOptions; index++ )
     {
         copy( g_votingMapNames[ index ], charsmax( g_votingMapNames[] ), g_votingMapNames[ index + 1 ] );
+        copy( g_votingMapInfos[ index ], charsmax( g_votingMapInfos[] ), g_votingMapInfos[ index + 1 ] );
     }
 }
 
-stock addMapToTheVotingMenu( mapName[] )
+stock addMapToTheVotingMenu( mapName[], mapInfo[] )
 {
     LOGGER( 1, "I AM ENTERING ON addMapToTheVotingMenu(1) | map: %s", mapName )
 
     if( !map_isInMenu( mapName ) )
     {
         copy( g_votingMapNames[ g_totalVoteOptions ], charsmax( g_votingMapNames[] ), mapName );
+        copy( g_votingMapInfos[ g_totalVoteOptions ], charsmax( g_votingMapInfos[] ), mapInfo );
+
         g_totalVoteOptions++;
     }
 }
@@ -7717,15 +7763,14 @@ stock isPrefixInMenu( map[] )
     new possiblePrefix[ 8 ];
     new existingPrefix[ 8 ];
 
-    strtok( map, possiblePrefix, charsmax( possiblePrefix ), junk, charsmax( junk ), '_', 1 );
+    STR_TOKEN( map, possiblePrefix, charsmax( possiblePrefix ), junk, charsmax( junk ), '_', 1 );
 
     for( new playerVoteMapChoiceIndex = 0;
          playerVoteMapChoiceIndex < g_totalVoteOptions; ++playerVoteMapChoiceIndex )
     {
-        strtok( g_votingMapNames[ playerVoteMapChoiceIndex ],
+        STR_TOKEN( g_votingMapNames[ playerVoteMapChoiceIndex ],
                 existingPrefix, charsmax( existingPrefix ),
-                junk, charsmax( junk ),
-                '_', 1 );
+                junk          , charsmax( junk )          , '_', 1 );
 
         if( equali( possiblePrefix, existingPrefix ) )
         {
@@ -8181,7 +8226,7 @@ public map_listAll( player_id )
             nominated[ 0 ] = '^0';
         }
 
-        ArrayGetString( g_nominationLoadedMapsArray, mapIndex, mapName, charsmax( mapName ) );
+        GET_MAP_NAME( g_nominationLoadedMapsArray, mapIndex, mapName )
         console_print( player_id, "%3i: %s  %s", mapIndex + 1, mapName, nominated );
     }
 
@@ -8297,7 +8342,7 @@ stock unnominatedDisconnectedPlayer( player_id )
         {
             setPlayerNominationMapIndex( player_id, nominationIndex, -1 );
 
-            ArrayGetString( g_nominationLoadedMapsArray, mapIndex, mapName, charsmax( mapName ) );
+            GET_MAP_NAME( g_nominationLoadedMapsArray, mapIndex, mapName )
             announceVoteBlockedMap( mapName, blockedMapsBuffer, "GAL_FILLER_BLOCKED", announcementShowedTimes );
         }
     }
@@ -8472,7 +8517,7 @@ stock map_getNext( Array:mapArray, currentMap[], nextMapName[ MAX_MAPNAME_LENGHT
 
     for( new mapIndex = 0; mapIndex < mapCount; mapIndex++ )
     {
-        ArrayGetString( mapArray, mapIndex, thisMap, charsmax( thisMap ) );
+        GET_MAP_NAME( mapArray, mapIndex, thisMap )
 
         if( equali( currentMap, thisMap ) )
         {
@@ -8492,7 +8537,7 @@ stock map_getNext( Array:mapArray, currentMap[], nextMapName[ MAX_MAPNAME_LENGHT
 
     if( mapCount > 0 )
     {
-        ArrayGetString( mapArray, nextmapIndex, nextMapName, charsmax( nextMapName ) );
+        GET_MAP_NAME( mapArray, nextmapIndex, nextMapName )
     }
     else
     {
@@ -8920,7 +8965,7 @@ public cmd_voteMap( player_id, level, cid )
                 if( IS_MAP_VALID( argument ) )
                 {
                     LOGGER( 8, "    ( cmd_voteMap ) argument is a valid map." )
-                    addMapToTheVotingMenu( argument );
+                    addMapToTheVotingMenu( argument, "" );
                 }
                 else if( -1 < containi( argument, "nointro" ) < 2 )
                 {
@@ -9235,14 +9280,17 @@ public handleDisplayVoteMapCommands( player_id, menu, item )
 
     new info[ 1 ];
     new mapName[ MAX_MAPNAME_LENGHT ];
+    new mapInfo[ MAX_MAPNAME_LENGHT ];
 
     menu_item_getinfo( menu, item, access, info, sizeof info, _, _, callback );
 
     if( info[ 0 ] > -1 )
     {
+        GET_MAP_NAME( g_nominationLoadedMapsArray, info[0], mapName )
+        GET_MAP_INFO( g_nominationLoadedMapsArray, info[0], mapInfo )
+
         // Toggle it if enabled
-        ArrayGetString( g_nominationLoadedMapsArray, info[0], mapName, charsmax( mapName ) );
-        map_isInMenu( mapName ) ? removeMapFromTheVotingMenu( mapName ) : addMapToTheVotingMenu( mapName );
+        map_isInMenu( mapName ) ? removeMapFromTheVotingMenu( mapName ) : addMapToTheVotingMenu( mapName, mapInfo );
     }
     else
     {
@@ -9447,14 +9495,17 @@ public handleDisplayVoteMap( player_id, menu, item )
     else
     {
         new mapName[ MAX_MAPNAME_LENGHT ];
+        new mapInfo[ MAX_MAPNAME_LENGHT ];
         new pageSeptalNumber = convert_numeric_base( g_voteMapMenuPages[ player_id ], 10, 7 );
 
         // Due there are several first menu options, take `VOTEMAP_FIRST_PAGE_ITEMS_COUNTING` items less.
         item = convert_numeric_base( pageSeptalNumber * 10, 7, 10 ) + item - VOTEMAP_FIRST_PAGE_ITEMS_COUNTING;
-        ArrayGetString( g_nominationLoadedMapsArray, item, mapName, charsmax( mapName ) );
+
+        GET_MAP_NAME( g_nominationLoadedMapsArray, item, mapName )
+        GET_MAP_INFO( g_nominationLoadedMapsArray, item, mapInfo )
 
         // Toggle it if enabled
-        map_isInMenu( mapName ) ? removeMapFromTheVotingMenu( mapName ) : addMapToTheVotingMenu( mapName );
+        map_isInMenu( mapName ) ? removeMapFromTheVotingMenu( mapName ) : addMapToTheVotingMenu( mapName, mapInfo );
     }
 
     DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
@@ -9561,7 +9612,7 @@ stock displayVoteMapMenu( player_id )
 
     for( ; mapIndex < nominationsMapsCount && itemsCount < MAX_NOM_MENU_ITEMS_PER_PAGE; mapIndex++ )
     {
-        ArrayGetString( g_nominationLoadedMapsArray, mapIndex, nominationMap, charsmax( nominationMap ) );
+        GET_MAP_NAME( g_nominationLoadedMapsArray, mapIndex, nominationMap )
         itemsCount++;
 
         // Start the menu entry item calculation
@@ -10171,7 +10222,7 @@ stock nomination_menu( player_id )
 
     for( ; mapIndex < nominationsMapsCount && itemsCount < MAX_NOM_MENU_ITEMS_PER_PAGE; mapIndex++ )
     {
-        ArrayGetString( g_nominationLoadedMapsArray, mapIndex, nominationMap, charsmax( nominationMap ) );
+        GET_MAP_NAME( g_nominationLoadedMapsArray, mapIndex, nominationMap )
         itemsCount++;
 
         // Start the menu entry item calculation:
@@ -10304,7 +10355,7 @@ stock nominationAttemptWithNamePart( player_id, startSearchIndex = 0 )
 
     for( mapIndex = startSearchIndex; mapIndex < nominationsMapsCount && itemsCount < MAX_NOM_MENU_ITEMS_PER_PAGE; ++mapIndex )
     {
-        ArrayGetString( g_nominationLoadedMapsArray, mapIndex, nominationMap, charsmax( nominationMap ) );
+        GET_MAP_NAME( g_nominationLoadedMapsArray, mapIndex, nominationMap )
 
         if( containi( nominationMap, g_nominationPartialNameAttempt[ player_id ] ) > -1 )
         {
@@ -11006,7 +11057,7 @@ stock nomination_cancel( player_id, mapIndex )
         new mapName[ MAX_MAPNAME_LENGHT ];
 
         num_to_str( mapIndex, trieKey, charsmax( trieKey ) );
-        ArrayGetString( g_nominationLoadedMapsArray, mapIndex, mapName, charsmax( mapName ) );
+        GET_MAP_NAME( g_nominationLoadedMapsArray, mapIndex, mapName )
 
         // Nomination found, then delete it. It is more probably you will only try to cancel your
         // own nominations.
@@ -11103,7 +11154,7 @@ stock map_nominate( player_id, mapIndex )
     new mapName[ MAX_MAPNAME_LENGHT ];
 
     // get the nominated map name
-    ArrayGetString( g_nominationLoadedMapsArray, mapIndex, mapName, charsmax( mapName ) );
+    GET_MAP_NAME( g_nominationLoadedMapsArray, mapIndex, mapName )
     LOGGER( 4, "( map_nominate ) mapIndex: %d, mapName: %s", mapIndex, mapName )
 
     if( !is_to_block_map_nomination( player_id, mapName ) )
@@ -11199,7 +11250,7 @@ stock show_my_nominated_maps( player_id, maxPlayerNominations )
     for( new nominationIndex = 0; nominationIndex < maxPlayerNominations; ++nominationIndex )
     {
         mapIndex = getPlayerNominationMapIndex( player_id, nominationIndex );
-        ArrayGetString( g_nominationLoadedMapsArray, mapIndex, nominatedMapName, charsmax( nominatedMapName ) );
+        GET_MAP_NAME( g_nominationLoadedMapsArray, mapIndex, nominatedMapName )
 
         if( copiedChars )
         {
@@ -11237,7 +11288,7 @@ public nomination_list()
 
         if( mapIndex > -1 )
         {
-            ArrayGetString( g_nominationLoadedMapsArray, mapIndex, mapName, charsmax( mapName ) );
+            GET_MAP_NAME( g_nominationLoadedMapsArray, mapIndex, mapName )
 
             if( copiedChars )
             {
@@ -11659,7 +11710,7 @@ stock register_dictionary_colored( const dictionaryFile[] )
 
         if( currentReadLine[ 0 ] == '[' )
         {
-            strtok( currentReadLine[ 1 ], langTypeAcronym, charsmax( langTypeAcronym ), currentReadLine, 1, ']' );
+            STR_TOKEN( currentReadLine[ 1 ], langTypeAcronym, charsmax( langTypeAcronym ), currentReadLine, 1, ']' );
         }
         else if( currentReadLine[ 0 ] )
         {
@@ -11768,9 +11819,10 @@ stock clearTheVotingMenu()
     for( new currentIndex = 0; currentIndex < sizeof g_votingMapNames; ++currentIndex )
     {
         LOGGER( 8, "Cleaning g_votingMapNames[%d]: %s", currentIndex, g_votingMapNames[ currentIndex ] )
-
-        g_votingMapNames [ currentIndex ][ 0 ] = '^0';
         g_arrayOfRunOffChoices[ currentIndex ] = 0;
+
+        g_votingMapNames[ currentIndex ][ 0 ] = '^0';
+        g_votingMapInfos[ currentIndex ][ 0 ] = '^0';
     }
 }
 
@@ -12128,7 +12180,7 @@ stock readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     {
         for( new mapIndex = 0; mapIndex < mapCycleMapsCount; mapIndex++ )
         {
-            ArrayGetString( g_mapcycleFileListArray, mapIndex, loadedMapName, charsmax( loadedMapName ) );
+            GET_MAP_NAME( g_mapcycleFileListArray, mapIndex, loadedMapName )
 
             if( ++mapsProcessedNumber > g_nextMapCyclePosition )
             {
@@ -12145,7 +12197,7 @@ stock readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         }
 
         // It it gets here, we are restarting the map cycle and starting following it from the first line.
-        ArrayGetString( g_mapcycleFileListArray, 0, nextMapName, nextMapNameMaxchars );
+        GET_MAP_NAME( g_mapcycleFileListArray, 0, nextMapName )
     }
     else
     {
@@ -13806,7 +13858,7 @@ stock map_populateListOnSeries( Array:mapArray, mapFilePath[] )
         // To print the voting menu for analysis.
         for( new currentIndex = 0; currentIndex < sizeof g_votingMapNames; ++currentIndex )
         {
-            LOGGER( 1, "g_votingMapNames[%d]: %s", currentIndex, g_votingMapNames[ currentIndex ] )
+            LOGGER( 1, "g_votingMapNames[%d]: %s %s", currentIndex, g_votingMapNames[ currentIndex ], g_votingMapInfos[ currentIndex ] )
         }
     }
 
@@ -14491,7 +14543,7 @@ stock map_populateListOnSeries( Array:mapArray, mapFilePath[] )
 
         for( new index = 0; index < ArraySize( populatedArray ); index++ )
         {
-            ArrayGetString( populatedArray, index, errorMessage, charsmax( errorMessage ) );
+            GET_MAP_NAME( populatedArray, index, errorMessage )
             if( equali( errorMessage, mapName ) != 0 ) isOnTheArray = true;
         }
 
