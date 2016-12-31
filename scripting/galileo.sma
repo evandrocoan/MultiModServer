@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-405";
+new const PLUGIN_VERSION[] = "v3.2.6-406";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -88,7 +88,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-405";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+2+4+64
+#define DEBUG_LEVEL 1
 
 
 /**
@@ -3489,7 +3489,7 @@ stock try_to_process_last_round( bool:isToImmediatelyChangeLevel = false )
  * This is used to be called from the computeVotes(0) end voting function. To call process_last_round(1)
  * with the variable `g_isToChangeMapOnVotingEnd` properly set.
  */
-stock process_last_round( bool:isToImmediatelyChangeLevel = false )
+stock process_last_round( bool:isToImmediatelyChangeLevel = false, isCountDownAllowed = true )
 {
     LOGGER( 128, "I AM ENTERING ON process_last_round(1)" )
 
@@ -3510,7 +3510,8 @@ stock process_last_round( bool:isToImmediatelyChangeLevel = false )
     if( g_isTheLastGameRound
         || isToImmediatelyChangeLevel )
     {
-        if( get_pcvar_num( cvar_isEndMapCountdown ) & IS_MAP_MAPCHANGE_COUNTDOWN )
+        if( get_pcvar_num( cvar_isEndMapCountdown ) & IS_MAP_MAPCHANGE_COUNTDOWN
+            && isCountDownAllowed )
         {
             g_lastRroundCountdown = 6;
             set_task( 1.0, "last_round_countdown", TASKID_PROCESS_LAST_ROUND, _, _, "a", 6 );
@@ -8896,7 +8897,31 @@ public cmd_changeLevel( player_id, level, cid )
         return PLUGIN_HANDLED;
     }
 
-    process_last_round( true );
+    new argumentsCount = read_argc();
+
+    if( argumentsCount > 1 )
+    {
+        new arguments[ MAX_BIG_BOSS_STRING ];
+
+        read_args( arguments, charsmax( arguments ) );
+        remove_quotes( arguments );
+
+        LOGGER( 8, "( cmd_changeLevel ) " )
+        LOGGER( 8, "( cmd_changeLevel ) argumentsCount: %d, arguments: %s", argumentsCount, arguments )
+
+        if( containi( arguments, "now" ) > -1 )
+        {
+            process_last_round( true, false );
+        }
+        else
+        {
+            process_last_round( true );
+        }
+    }
+    else
+    {
+        process_last_round( true );
+    }
 
     LOGGER( 1, "    ( cmd_changeLevel ) Returning PLUGIN_HANDLED" )
     return PLUGIN_HANDLED;
