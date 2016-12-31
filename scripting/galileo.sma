@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.0.0-410";
+new const PLUGIN_VERSION[] = "v4.0.0-411";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -3263,15 +3263,23 @@ stock saveTheRoundTime()
 
         // To keep the latest round data up to date.
         roundPlayedTimes[ lastSavedRound ] = roundTotalTime;
-        g_roundAverageTime                 = roundPlayedTimes[ 0 ];
 
-        lastSavedRound = ( lastSavedRound + 1 ) % sizeof roundPlayedTimes;
-        g_totalRoundsSavedTimes + 1 > sizeof roundPlayedTimes ? g_totalRoundsSavedTimes : g_totalRoundsSavedTimes++;
+        // Increments the counter until 20, and stops it as our array has only 20 slots.
+        if( g_totalRoundsSavedTimes < sizeof roundPlayedTimes )
+        {
+            g_totalRoundsSavedTimes++;
+        }
+
+        // Calculate the rounds average times.
+        g_roundAverageTime = roundPlayedTimes[ 0 ];
 
         for( new index = 1; index < g_totalRoundsSavedTimes; index++ )
         {
             g_roundAverageTime = ( g_roundAverageTime + roundPlayedTimes[ index ] ) / 2;
         }
+
+        // Updates the next position to be inserted.
+        lastSavedRound = ( lastSavedRound + 1 ) % sizeof roundPlayedTimes;
 
         LOGGER( 32, "( saveTheRoundTime ) lastSavedRound: %d", lastSavedRound )
         LOGGER( 32, "( saveTheRoundTime ) g_roundAverageTime: %d", g_roundAverageTime )
