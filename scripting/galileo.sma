@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-406";
+new const PLUGIN_VERSION[] = "v3.2.6-407";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -95,6 +95,12 @@ new const PLUGIN_VERSION[] = "v3.2.6-406";
  * How much players use when the debugging level 'DEBUG_LEVEL_FAKE_VOTES' is enabled.
  */
 #define FAKE_PLAYERS_NUMBER_FOR_DEBUGGING 1
+
+/**
+ * When the debug mode `DEBUG_LEVEL` is enabled, the map_populateList(4) will show up to this maps
+ * loaded from the server.
+ */
+#define MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST 100
 
 /**
  * Debugging level configurations.
@@ -1086,8 +1092,8 @@ new Array:g_nominatedMapsArray;
 /**
  * The ban recent maps variables.
  */
-new Array:g_recentListMapsArray;
 new Trie: g_recentMapsTrie;
+new Array:g_recentListMapsArray;
 
 /**
  * Contains the loaded current loaded Whilelist from the array `g_whitelistFileArray` for the
@@ -1104,6 +1110,7 @@ new Array:g_whitelistFileArray;
  * Contains all the loaded valid maps for the `gal_srv_move_cursor` feature. If the feature is disabled,
  * it contains only the normal/usual loaded maps from the map cycle file.
  */
+new Trie:g_mapcycleFileListTrie;
 new Array:g_mapcycleFileListArray;
 
 /**
@@ -2174,7 +2181,7 @@ stock saveCurrentAndNextMapNames( nextMapName[] )
  *
  * This also restrict the number of maps to be write to the file `RECENT_BAN_MAPS_FILE_NAME` as if
  * not all maps have been loaded here, on them will be written down to the file on
- * map_writeRecentBanList(0).
+ * writeRecentMapsBanList(0).
  */
 public map_loadRecentBanList()
 {
@@ -2189,9 +2196,13 @@ public map_loadRecentBanList()
         new recentMapName[ MAX_MAPNAME_LENGHT ];
         new maxRecentMapsBans = get_pcvar_num( cvar_recentMapsBannedNumber );
 
-        new loadedMapsCount  = ArraySize( g_voteNorPlayerFillerPathsArray );
+        new loadedMapsCount  = ArraySize( g_mapcycleFileListArray );
         new maxVotingChoices = g_maxVotingChoices + 3;
-        maxRecentMapsBans > maxVotingChoices + loadedMapsCount ? ( maxRecentMapsBans -= maxVotingChoices ) : 0;
+
+        maxRecentMapsBans + maxVotingChoices > loadedMapsCount ? ( maxRecentMapsBans -= maxVotingChoices ) : 0;
+        LOGGER( 4, "( map_loadRecentBanList ) loadedMapsCount: %d", loadedMapsCount )
+        LOGGER( 4, "( map_loadRecentBanList ) maxVotingChoices: %d", maxVotingChoices )
+        LOGGER( 4, "( map_loadRecentBanList ) maxRecentMapsBans: %d", maxRecentMapsBans )
 
         while( !feof( recentMapsFileDescriptor ) )
         {
@@ -2201,7 +2212,7 @@ public map_loadRecentBanList()
             if( recentMapName[ 0 ]
                 && IS_MAP_VALID( recentMapName ) )
             {
-                if( g_recentMapCount == maxRecentMapsBans )
+                if( g_recentMapCount >= maxRecentMapsBans )
                 {
                     break;
                 }
@@ -2220,48 +2231,28 @@ public map_loadRecentBanList()
     }
 }
 
-public map_writeRecentBanList()
+stock writeRecentMapsBanList()
 {
-    LOGGER( 128, "I AM ENTERING ON map_writeRecentBanList(0)" )
+    LOGGER( 128, "I AM ENTERING ON writeRecentMapsBanList()")
 
-    new Trie:mapCycleMapsTrie;
-    new bool:isOnlyRecentMapcycleMaps;
-    new recentMapsFileDescriptor;
-
-    new recentMapName        [ MAX_MAPNAME_LENGHT ];
-    new recentMapsFilePath   [ MAX_FILE_PATH_LENGHT ];
-    new voteMapsFilerFilePath[ MAX_FILE_PATH_LENGHT ];
+    new recentMapName     [ MAX_MAPNAME_LENGHT ];
+    new recentMapsFilePath[ MAX_FILE_PATH_LENGHT ];
 
     formatex( recentMapsFilePath, charsmax( recentMapsFilePath ), "%s/%s", g_dataDirPath, RECENT_BAN_MAPS_FILE_NAME );
-    isOnlyRecentMapcycleMaps = get_pcvar_num( cvar_isOnlyRecentMapcycleMaps ) != 0;
-
-    if( isOnlyRecentMapcycleMaps )
-    {
-        get_pcvar_string( cvar_voteMapFilePath, voteMapsFilerFilePath, charsmax( voteMapsFilerFilePath ) );
-
-        // '*' is invalid because it already allow all server maps.
-        if( !equal( voteMapsFilerFilePath, MAP_FOLDER_LOAD_FLAG ) )
-        {
-            mapCycleMapsTrie = TrieCreate();
-
-            // This call is only to load the 'mapCycleMapsTrie'
-            map_populateList( _, voteMapsFilerFilePath, charsmax( voteMapsFilerFilePath ), mapCycleMapsTrie );
-        }
-        else
-        {
-            isOnlyRecentMapcycleMaps = false;
-        }
-    }
-
-    recentMapsFileDescriptor = fopen( recentMapsFilePath, "wt" );
+    new recentMapsFileDescriptor = fopen( recentMapsFilePath, "wt" );
 
     if( recentMapsFileDescriptor )
     {
+        new bool:isOnlyRecentMapcycleMaps = get_pcvar_num( cvar_isOnlyRecentMapcycleMaps ) != 0;
+        LOGGER( 4, "( writeRecentMapsBanList ) isOnlyRecentMapcycleMaps: %s", isOnlyRecentMapcycleMaps )
+
+        // Do not ban repeated maps
         if( !TrieKeyExists( g_recentMapsTrie, g_currentMapName ) )
         {
+            // Add the current map to the ban list
             if( isOnlyRecentMapcycleMaps )
             {
-                if( TrieKeyExists( mapCycleMapsTrie, g_currentMapName ) )
+                if( TrieKeyExists( g_mapcycleFileListTrie, g_currentMapName ) )
                 {
                     fprintf( recentMapsFileDescriptor, "%s^n", g_currentMapName );
                 }
@@ -2272,13 +2263,14 @@ public map_writeRecentBanList()
             }
         }
 
+        // Add the others banned maps to the ban list
         for( new mapIndex = 0; mapIndex < g_recentMapCount; ++mapIndex )
         {
             ArrayGetString( g_recentListMapsArray, mapIndex, recentMapName, charsmax( recentMapName ) );
 
             if( isOnlyRecentMapcycleMaps )
             {
-                if( TrieKeyExists( mapCycleMapsTrie, recentMapName ) )
+                if( TrieKeyExists( g_mapcycleFileListTrie, recentMapName ) )
                 {
                     fprintf( recentMapsFileDescriptor, "%s^n", recentMapName );
                 }
@@ -2290,9 +2282,42 @@ public map_writeRecentBanList()
         }
 
         fclose( recentMapsFileDescriptor );
+        LOGGER( 0, "", printRecentBanFile( recentMapsFilePath ) )
+    }
+    else
+    {
+        LOGGER( 1, "WARNING, writeRecentMapsBanList: Couldn't find a valid map or the file doesn't exist (file ^"%s^")", recentMapsFilePath )
+        log_amx(   "WARNING, writeRecentMapsBanList: Couldn't find a valid map or the file doesn't exist (file ^"%s^")", recentMapsFilePath );
+    }
+}
+
+stock printRecentBanFile( recentMapsFilePath[] )
+{
+    LOGGER( 128, "I AM ENTERING ON printRecentBanFile(1) recentMapsFilePath: %s", recentMapsFilePath )
+
+    new loadedMapName[ MAX_MAPNAME_LENGHT ];
+    new mapFileDescriptor = fopen( recentMapsFilePath, "rt" );
+
+    while( !feof( mapFileDescriptor ) )
+    {
+        fgets( mapFileDescriptor, loadedMapName, charsmax( loadedMapName ) );
+        trim( loadedMapName );
+
+    #if defined DEBUG
+        static mapCount;
+
+        if( mapCount++ < MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST
+            && !( g_debug_level & 256 ) )
+        {
+            LOGGER( 4, "( printRecentBanFile ) %d, loadedMapName: %s", mapCount, loadedMapName )
+        }
+
+        LOGGER( 256, "( printRecentBanFile ) %d, loadedMapName: %s", mapCount, loadedMapName )
+    #endif
     }
 
-    TRY_TO_APPLY( TrieDestroy, mapCycleMapsTrie )
+    fclose( mapFileDescriptor );
+    return 0;
 }
 
 stock loadWhiteListFileFromFile( &Array:whitelistArray, whiteListFilePath[] )
@@ -2415,7 +2440,7 @@ stock loadMapFiles()
         if( !( get_pcvar_num( cvar_isFirstServerStart )
                && get_pcvar_num( cvar_serverStartAction ) ) )
         {
-            map_writeRecentBanList();
+            writeRecentMapsBanList();
         }
     }
 
@@ -2443,7 +2468,7 @@ stock debugLoadedGroupMapFileFrom( &Array:playerFillerMapsArray, &Array:maxMapsP
         LOGGER( 8, "[%i] maxMapsPerGroupToUse: %i, filersMapCount: %i", groupIndex, \
                 ArrayGetCell( maxMapsPerGroupToUseArray, groupIndex ), arraySize )
 
-        for( new mapIndex = 0; mapIndex < ArraySize( fillerMapsArray ) && mapIndex < 10; mapIndex++ )
+        for( new mapIndex = 0; mapIndex < arraySize && mapIndex < 10; mapIndex++ )
         {
             GET_MAP_NAME( fillerMapsArray, mapIndex, fillerMap )
             LOGGER( 8, "   fillerMap[%i]: %s", mapIndex, fillerMap )
@@ -4008,7 +4033,9 @@ stock checkIfThereEnoughMapPopulated( mapCount, mapFileDescriptor )
                && parsedLines < 11 )
         {
             parsedLines++;
+
             fgets( mapFileDescriptor, loadedMapName, charsmax( loadedMapName ) );
+            trim( loadedMapName );
 
             if( writePosition < charsmax( readLines ) )
             {
@@ -4058,12 +4085,6 @@ stock loadMapFileList( Array:mapArray, mapFilePath[], Trie:fillerMapTrie )
 
     return mapCount;
 }
-
-/**
- * When the debug mode `DEBUG_LEVEL` is enabled, the map_populateList(4) will show up to this maps
- * loaded from the server.
- */
-#define MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST 10
 
 stock loadMapFileListComplete( mapFileDescriptor, Array:mapArray, Trie:fillerMapTrie )
 {
@@ -12024,8 +12045,11 @@ public plugin_end()
     // ############################################################################################
     TRY_TO_APPLY( TrieDestroy, g_forwardSearchNominationsTrie )
     TRY_TO_APPLY( TrieDestroy, g_reverseSearchNominationsTrie )
+
     TRY_TO_APPLY( TrieDestroy, g_whitelistTrie )
     TRY_TO_APPLY( TrieDestroy, g_recentMapsTrie )
+    TRY_TO_APPLY( TrieDestroy, g_mapcycleFileListTrie )
+
     TRY_TO_APPLY( TrieDestroy, g_blackListForWhiteListTrie )
     TRY_TO_APPLY( TrieDestroy, g_nominationLoadedMapsTrie )
 
@@ -12218,9 +12242,10 @@ stock loadTheNextMapFile( mapcycleFilePath[], mapcycleFilePathLength )
     LOGGER( 128, "I AM ENTERING ON loadNextMapPluginSetttings(2)" )
     get_pcvar_string( cvar_mapcyclefile, mapcycleFilePath, mapcycleFilePathLength );
 
+    g_mapcycleFileListTrie  = TrieCreate();
     g_mapcycleFileListArray = ArrayCreate( MAX_MAPNAME_LENGHT );
-    map_populateListOnSeries( g_mapcycleFileListArray, mapcycleFilePath );
 
+    map_populateListOnSeries( g_mapcycleFileListArray, g_mapcycleFileListTrie, mapcycleFilePath );
     LOGGER( 0, "", printDynamicArrayMaps( g_mapcycleFileListArray, 256 ) )
 }
 
@@ -12282,8 +12307,8 @@ stock readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     }
     else
     {
-        LOGGER( 1, "WARNING: Couldn't find a valid map or the file doesn't exist (file ^"%s^")", mapcycleFilePath )
-        log_amx( "WARNING: Couldn't find a valid map or the file doesn't exist (file ^"%s^")", mapcycleFilePath );
+        LOGGER( 1, "WARNING, readMapCycle: Couldn't find a valid map or the file doesn't exist (file ^"%s^")", mapcycleFilePath )
+        log_amx(   "WARNING, readMapCycle: Couldn't find a valid map or the file doesn't exist (file ^"%s^")", mapcycleFilePath );
 
         copy( nextMapName, nextMapNameMaxchars, g_currentMapName );
     }
@@ -12652,7 +12677,7 @@ stock loadTheCursorOnMapSeries( Array:mapArray, Trie:loadedMapSeriesTrie, curren
     }
 }
 
-stock loadMapFileSeriesListArray( mapFileDescriptor, Array:mapArray )
+stock loadMapFileSeriesListArray( mapFileDescriptor, Array:mapArray, Trie:mapTrie )
 {
     LOGGER( 128, "I AM ENTERING ON loadMapFileSeriesListArray(2) | mapFileDescriptor: %d", mapFileDescriptor )
 
@@ -12677,6 +12702,7 @@ stock loadMapFileSeriesListArray( mapFileDescriptor, Array:mapArray )
 
             if( IS_MAP_VALID( loadedMapName ) )
             {
+                TrieSetCell( mapTrie, loadedMapName, mapCount );
                 ArrayPushString( mapArray, loadedMapLine );
 
             #if defined DEBUG
@@ -12701,18 +12727,19 @@ stock loadMapFileSeriesListArray( mapFileDescriptor, Array:mapArray )
     return mapCount;
 }
 
-stock loadMapFileListOnSeries( Array:mapArray, mapFilePath[] )
+stock loadMapFileListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
 {
-    LOGGER( 128, "I AM ENTERING ON loadMapFileListOnSeries(2) | mapFilePath: %s", mapFilePath )
+    LOGGER( 128, "I AM ENTERING ON loadMapFileListOnSeries(3) | mapFilePath: %s", mapFilePath )
 
     new mapCount;
     new mapFileDescriptor = fopen( mapFilePath, "rt" );
 
     if( mapFileDescriptor )
     {
-        if( mapArray )
+        if( mapArray
+            && mapTrie )
         {
-            mapCount = loadMapFileSeriesListArray( mapFileDescriptor, mapArray );
+            mapCount = loadMapFileSeriesListArray( mapFileDescriptor, mapArray, mapTrie );
         }
 
         checkIfThereEnoughMapPopulated( mapCount, mapFileDescriptor );
@@ -12754,9 +12781,9 @@ stock loadMapFileListOnSeries( Array:mapArray, mapFilePath[] )
  * the position 5, while in fact, `de_dust4` does not exist on the map cycle file, and the `de_inferno`
  * being actually on the position 2.
  */
-stock map_populateListOnSeries( Array:mapArray, mapFilePath[] )
+stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
 {
-    LOGGER( 128, "I AM ENTERING ON map_populateListOnSeries(2) | mapFilePath: %s", mapFilePath )
+    LOGGER( 128, "I AM ENTERING ON map_populateListOnSeries(3) | mapFilePath: %s", mapFilePath )
 
     // load the array with maps
     new mapCount;
@@ -12766,11 +12793,12 @@ stock map_populateListOnSeries( Array:mapArray, mapFilePath[] )
     {
         // clear the map array in case we're reusing it
         TRY_TO_APPLY( ArrayClear, mapArray )
+        TRY_TO_APPLY( TrieClear , mapTrie )
 
         LOGGER( 4, "" )
         LOGGER( 4, "    map_populateListOnSeries(...) Loading the PASSED FILE! mapFilePath: %s", mapFilePath )
 
-        mapCount = loadMapFileListOnSeries( mapArray, mapFilePath );
+        mapCount = loadMapFileListOnSeries( mapArray, mapTrie, mapFilePath );
     }
 
     LOGGER( 1, "    I AM EXITING map_populateListOnSeries(2) mapCount: %d", mapCount )
