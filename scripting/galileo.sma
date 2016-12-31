@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-407";
+new const PLUGIN_VERSION[] = "v3.2.6-408";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -100,7 +100,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-407";
  * When the debug mode `DEBUG_LEVEL` is enabled, the map_populateList(4) will show up to this maps
  * loaded from the server.
  */
-#define MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST 100
+#define MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST 10
 
 /**
  * Debugging level configurations.
@@ -2183,7 +2183,7 @@ stock saveCurrentAndNextMapNames( nextMapName[] )
  * not all maps have been loaded here, on them will be written down to the file on
  * writeRecentMapsBanList(0).
  */
-public map_loadRecentBanList()
+public map_loadRecentBanList( loadedMapsCount )
 {
     LOGGER( 128, "I AM ENTERING ON map_loadRecentBanList(0)" )
     new recentMapsFilePath[ MAX_FILE_PATH_LENGHT ];
@@ -2194,10 +2194,9 @@ public map_loadRecentBanList()
     if( recentMapsFileDescriptor )
     {
         new recentMapName[ MAX_MAPNAME_LENGHT ];
-        new maxRecentMapsBans = get_pcvar_num( cvar_recentMapsBannedNumber );
 
-        new loadedMapsCount  = ArraySize( g_mapcycleFileListArray );
-        new maxVotingChoices = g_maxVotingChoices + 3;
+        new maxRecentMapsBans = get_pcvar_num( cvar_recentMapsBannedNumber );
+        new maxVotingChoices  = g_maxVotingChoices + 3;
 
         maxRecentMapsBans + maxVotingChoices > loadedMapsCount ? ( maxRecentMapsBans -= maxVotingChoices ) : 0;
         LOGGER( 4, "( map_loadRecentBanList ) loadedMapsCount: %d", loadedMapsCount )
@@ -2252,6 +2251,7 @@ stock writeRecentMapsBanList()
             // Add the current map to the ban list
             if( isOnlyRecentMapcycleMaps )
             {
+                // Do not if is on the current map cycle. Not writing it to the file, means not banning.
                 if( TrieKeyExists( g_mapcycleFileListTrie, g_currentMapName ) )
                 {
                     fprintf( recentMapsFileDescriptor, "%s^n", g_currentMapName );
@@ -2361,6 +2361,8 @@ stock loadWhiteListFileFromFile( &Array:whitelistArray, whiteListFilePath[] )
 stock processLoadedGroupMapFileFrom( &Array:playerFillerMapsArray, &Array:fillersFilePathsArray )
 {
     LOGGER( 128, "I AM ENTERING ON processLoadedGroupMapFileFrom(2) groupCount: %d", ArraySize( fillersFilePathsArray ) )
+
+    new loadedMapsTotal;
     new fillerFilePath[ MAX_FILE_PATH_LENGHT ];
 
     new Array:fillerMapsArray;
@@ -2372,12 +2374,14 @@ stock processLoadedGroupMapFileFrom( &Array:playerFillerMapsArray, &Array:filler
         fillerMapsArray = ArrayCreate( MAX_MAPNAME_LENGHT );
         ArrayGetString( fillersFilePathsArray, groupIndex, fillerFilePath, charsmax( fillerFilePath ) );
 
-        map_populateList( fillerMapsArray, fillerFilePath, charsmax( fillerFilePath ) );
+        loadedMapsTotal += map_populateList( fillerMapsArray, fillerFilePath, charsmax( fillerFilePath ) );
         ArrayPushCell( playerFillerMapsArray, fillerMapsArray );
 
         LOGGER( 8, "[%i] groupCount: %i, filersMapCount: %i", groupIndex, groupCount, ArraySize( fillerMapsArray ) )
         LOGGER( 8, "     fillersFilePaths[%i]: %s", groupIndex, fillerFilePath )
     }
+
+    return loadedMapsTotal;
 }
 
 stock loadMapFiles()
@@ -2401,6 +2405,7 @@ stock loadMapFiles()
     destroy_two_dimensional_array( g_midPlayerFillerMapGroupArrays, false );
 
     // To start loading the files.
+    new loadedCount[ 3 ];
     new mapFilerFilePath[ MAX_FILE_PATH_LENGHT ];
 
     LOGGER( 4, "" )
@@ -2421,9 +2426,9 @@ stock loadMapFiles()
 
     // To process the loaded files to let them ready for immediate use.
     LOGGER( 4, "" )
-    processLoadedGroupMapFileFrom( g_minPlayerFillerMapGroupArrays, g_voteMinPlayerFillerPathsArray );
-    processLoadedGroupMapFileFrom( g_midPlayerFillerMapGroupArrays, g_voteMidPlayerFillerPathsArray );
-    processLoadedGroupMapFileFrom( g_norPlayerFillerMapGroupArrays, g_voteNorPlayerFillerPathsArray );
+    loadedCount[ 0 ] = processLoadedGroupMapFileFrom( g_minPlayerFillerMapGroupArrays, g_voteMinPlayerFillerPathsArray );
+    loadedCount[ 1 ] = processLoadedGroupMapFileFrom( g_midPlayerFillerMapGroupArrays, g_voteMidPlayerFillerPathsArray );
+    loadedCount[ 2 ] = processLoadedGroupMapFileFrom( g_norPlayerFillerMapGroupArrays, g_voteNorPlayerFillerPathsArray );
 
     LOGGER( 4, "" )
     LOGGER( 4, "", debugLoadedGroupMapFileFrom( g_minPlayerFillerMapGroupArrays, g_minMaxMapsPerGroupToUseArray ) )
@@ -2433,7 +2438,7 @@ stock loadMapFiles()
     // Load the ban recent maps feature
     if( get_pcvar_num( cvar_recentMapsBannedNumber ) )
     {
-        map_loadRecentBanList();
+        map_loadRecentBanList( loadedCount[ 2 ] );
         register_clcmd( "say recentmaps", "cmd_listrecent", 0 );
 
         // Do nothing if the map will be instantly changed
