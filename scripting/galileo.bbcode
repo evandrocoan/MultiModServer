@@ -1,5 +1,5 @@
-[anchor]Top[/anchor][SIZE="7"][COLOR="Blue"][B]Galileo v3.2.6-274[/B][/COLOR][/SIZE] A feature rich map voting plugin
-[COLOR=Red][SIZE=1]Release: 2008-09-12 | Last Update: 2016-11-13 | Date Format: Year-Month-Day[/COLOR][/SIZE]
+[anchor]Top[/anchor][SIZE="7"][COLOR="Blue"][B]Galileo v4.0.0-410[/B][/COLOR][/SIZE] A feature rich map voting plugin
+[COLOR=Red][SIZE=1]Release: 2008-09-12 | Last Update: 2016-12-31 | Date Format: Year-Month-Day[/COLOR][/SIZE]
 
 If you want to translate the Galileo Mapchooser to your language or if you see some
 error or bad coloring tags positioning at the current translations, feel free to correct
@@ -15,6 +15,7 @@ and come here to [URL="https://forums.alliedmods.net/showthread.php?t=277636"]th
 [*][goanchor=Brief]Brief Features' list[/goanchor]
 [*][goanchor=Requirements]Requirements and Commands[/goanchor]
 [*][goanchor=Installation][B]Installation[/B][/goanchor]
+[*][goanchor=Mapcycle]Setting up a Mapcycle[/goanchor]
 [*][goanchor=TODO]TODO[/goanchor]
 [*][goanchor=Credits]Credits[/goanchor]
 [*][goanchor=Support][B]Support[/B][/goanchor]
@@ -25,7 +26,6 @@ and come here to [URL="https://forums.alliedmods.net/showthread.php?t=277636"]th
    [LIST=1]
    [*][URL="https://forums.alliedmods.net/showthread.php?t=172936#Compiling"]How to compile plugins[/URL]
    [*][goanchor=Development]Development Versions[/goanchor]
-   [*][goanchor=Mapcycle]Setting up a Mapcycle[/goanchor]
    [*][goanchor=Old]Old Versions Downloads[/goanchor]
    [*][goanchor=LatestRelease][B]Latest Release Download[/B][/goanchor]
    [/LIST]
@@ -97,12 +97,14 @@ at '[COLOR="Blue"]./data/lang/[/COLOR][B]galileo.txt[/B]' location.
 [LIST=1]
 [*]English [en]
 [*]Brazilian Portuguese [bp]
-[*]Spanish [es]
+[*]Spanish [es] reviewed by [URL="https://forums.alliedmods.net/member.php?u=246727"][B]ACM1PT[/B][/URL] and updated by [URL="https://forums.alliedmods.net/member.php?u=119830"][B]Shattered Heart Lynx[/B][/URL].
 [*]Polish [pl] reviewed by [URL="https://forums.alliedmods.net/member.php?u=49801"][B]BeNq![/B][/URL]
 [*]Romanian [ro] by [URL="https://forums.alliedmods.net/member.php?u=259683"][B]iNdio[/B][/URL]
 [*]Italian [it] by [URL="https://forums.alliedmods.net/member.php?u=259683"][B]iNdio[/B][/URL]
 [*]Dutch [nl] by [URL="https://forums.alliedmods.net/member.php?u=149700"][B]Napoleon_be[/B][/URL]
 [*]Serbian [sr] by [URL="https://forums.alliedmods.net/member.php?u=235274"][B]MihailoZ[/B][/URL]
+[*]Slovak [sk] by [URL="https://forums.alliedmods.net/member.php?u=184733"][B]Belo95135[/B][/URL]
+[*]Hungarian [hu] by [URL="https://github.com/regener"][B]regener[/B][/URL]
 
 [/LIST]
 See here the current and effectively integrated LANGs constants:
@@ -145,48 +147,61 @@ available at the [goanchor=Downloads]Downloads[/goanchor] section, and [B]here b
 
 // Specifies the number of minutes a map will be extended each time
 // the "Extend Map" option wins the map vote.
+//
+// To disabled this feature, set the cvar `amx_extendmap_max` to 0
 amx_extendmap_step 15
 
 // Specifies the maximum number of minutes a map can be played, if it
-// has been extended. A value less than mp_timelimit will not let the
-// map be extended.
-amx_extendmap_max 90
+// has been extended. A value less than mp_timelimit as 0 will not let
+// the map to be extended.
+//
+// To disable this feature, set this cvar to 0
+amx_extendmap_max 0
 
 // Specifies the number of rounds a map will be extended each time
 // the "Extend Map" option wins the map vote. This only has effect
 // when you are using 'mp_winlimit' or 'mp_maxrounds' instead of
 // 'mp_timelimit'.
+//
+// Currently you cannot disable this feature.
 amx_extendmap_step_rounds 30
 
 // Specifies the number of frags a map will be extended each time
 // the "Extend Map" option wins the map vote. This only has effect
 // when you are using 'mp_fraglimit' instead of 'mp_timelimit',
 // 'mp_winlimit' or 'mp_maxrounds'.
+//
+// Currently you cannot disable this feature.
 amx_extendmap_step_frags 60
 
 // Enable virtual support for the Half-File cvar 'mp_fraglimit' on
 // game modes as 'Counter-Strike' which do not support the cvar
 // 'mp_fraglimit'. You need to configure the 'mp_fraglimit' as
 // you configure the 'mp_timelimit' cvar on you 'server.cfg' file.
+//
 // 0 - do not create the 'mp_fraglimit' cvar support.
 // 1 - create the 'mp_fraglimit' cvar support.
 gal_mp_fraglimit_support 0
 
 // Control the 'Stay Here' vote option when performing early votes
 // or by the 'gal_startvote' server command.
+//
 // 0 - do not show the vote option "Stay Here".
 // 1 - show the vote option "Stay Here".
 amx_extendmap_allow_stay 1
 
 // This feature allow to show the map name on the stay here vote option.
+//
 // 0 - do not show the map name on the 'stay here' vote option.
 // 1 - show the map name on the 'stay here' vote option.
 amx_extendmap_allow_stay_type 0
 
-// Choose how to follow the map-cycle, when anyone vote for next map, i.e.,
+// Choose how to follow the mapcycle, when anyone vote for next map, i.e.,
 // no votes on any map on the voting list, but there are players playing.
+//
 // 0 - choose a random map from the current voting map list, as next map.
-// 1 - follow your current map-cycle order.
+// 1 - follow your current mapcycle order.
+// 2 - extend the current map.
 amx_extendmap_allow_order 1
 
 
@@ -203,11 +218,13 @@ amx_extendmap_allow_order 1
 ////////////////////////////////////////////////////////////////////////
 
 // Indicates how the standard HL1 "votemap" command should function.
+//
 // 0 - disable
 // 1 - behave normally
 gal_cmd_votemap 1
 
 // Indicates how the standard HL1 "listmaps" command should function.
+//
 // 0 - disable
 // 1 - behave normally
 // 2 - behave the same as the "gal_listmaps" command (galileo default)
@@ -223,8 +240,9 @@ gal_cmd_listmaps 1
 ////////////////////////////////////////////////////////////////////////
 
 // Specifies how many maps per "page" to show when using the gal_listmaps
-// console command. Setting it to 0 will not paginate the map listing.
-// Pagination will be in the style of the amx_help command.
+// console command. Pagination will be in the style of the amx_help command.
+//
+// Setting it to 0 will not paginate the map listing.
 gal_listmaps_paginate 10
 
 
@@ -236,27 +254,39 @@ gal_listmaps_paginate 10
 // again at the expense of playing a variety of other maps.           //
 ////////////////////////////////////////////////////////////////////////
 
-// Specifies how many of the most recent maps are disallowed from a
-// map vote. A value of 0 will disable this feature.
-gal_banrecent 3
+// Specifies how many of the most recent maps are disallowed from a map
+// vote.
+//
+// If you specify a value greater than the number o maps in your server
+// mapcycle file, the file on the cvar `mapcyclefile`, it will automatically
+// ban only the maximum allowed.
+//
+// A value of 0 will disable this feature.
+gal_banrecent 20
 
 // When banning recently played maps the last several maps that have
 // been played can not be nominated.
+//
 // 0 - keep banning the recently played from nomination.
+//
 // 1 - the banned maps will keep banned from the being added to the
 //     voting list automatically, but they are still able to be nominated
 //     and added to the voting list.
 gal_recent_nom_maps 1
 
 // Only mark as recent played maps, those maps which are included on
-// the map-cycle specified by the cvar 'gal_vote_mapfile'.
+// the mapcycle specified by the cvar 'mapcyclefile'.
+//
 // 0 - Mark as recent maps, every recently played map.
-// 1 - Only mark as recent maps, the maps included in the map-cycle list
-//     specified by the cvar 'gal_vote_mapfile'.
+//
+// 1 - Only mark as recent maps, the maps included in the mapcycle list
+//     specified by the cvar 'mapcyclefile'.
 gal_banrecent_mapcycle 0
 
 // Indicates the style in which the recent maps are displayed when a
 // player uses the "recentmaps" say command.
+//
+// 0 - do not show the banned maps, when using the `recentmaps` command
 // 1 - all maps on one line
 // 2 - each map on a separate line
 // 3 - display a menu.
@@ -272,6 +302,7 @@ gal_banrecentstyle 3
 
 // Indicates which say commands can be used to rock the vote.
 // The flags are additive. A value of 0 will disable this feature.
+//
 // 1 - standard "rockthevote" command
 // 2 - shorthand "rtv" command
 // 3 - Same as 1 and 2 at the same time.
@@ -285,43 +316,67 @@ gal_banrecentstyle 3
 // 5 - Same as 1 and 4 at the same time.
 // 6 - Same as 2 and 4 at the same time.
 // 7 - Same as 1, 2 and 4 at the same time.
+// 8 - Disable the RTV when there is only a single player on the server.
+//
+// For example, if you want to use the options 1 and 2, use 1 + 2:
+// gal_rtv_commands 3
+//
+// Instead of:
+// gal_rtv_commands 0
 gal_rtv_commands 7
 
 // Specifies the number of minutes after a map starts that players
 // have to wait before they can rock the vote. When a single player
 // is on the server, that player can rock the vote at any time,
-// regardless of this setting.
+// regardless of this setting, unless the cvar `gal_rtv_commands`
+// is set blocking it.
+//
+// To disable this feature, set this cvar to 0
 gal_rtv_wait 10
 
 // Specifies the number of rounds after a map starts that players
 // have to wait before they can rock the vote. When a single player
 // is on the server, that player can rock the vote at any time,
-// regardless of this setting. If you use both 'mp_timelimit > 0' and
-// 'mp_maxrounds > 0', this cvar will be ignored and the cvar 'gal_rtv_wait'
-// will be used instead of this.
+// regardless of this setting.
+//
+// If you use both 'mp_timelimit > 0' and 'mp_maxrounds > 0', this
+// cvar will be ignored and the cvar 'gal_rtv_wait' will be used
+// instead of this.
+//
+// To disable this feature, set this cvar to 0
 gal_rtv_wait_rounds 5
 
 // Specifies the number of frags after a map starts that players
 // have to wait before they can rock the vote. When a single player
 // is on the server, that player can rock the vote at any time,
-// regardless of this setting. If you use both 'mp_timelimit > 0',
-// 'mp_maxrounds > 0' and 'mp_fraglimit > 0' this cvar will be ignored
-// and the cvar 'gal_rtv_wait' will be used instead of this.
+// regardless of this setting.
+//
+// If you use both 'mp_timelimit > 0', 'mp_maxrounds > 0' and
+// 'mp_fraglimit > 0' this cvar will be ignored and the cvar
+// 'gal_rtv_wait' will be used instead of this.
+//
+// To disable this feature, set this cvar to 0
 gal_rtv_wait_frags 20
 
 // If there is an admin with the change map flag online:
+//
 // 0 - players can normally rock the vote.
+//
 // 1 - RTV will not work and will print "Cannot rock the vote when an
 //     admin is online".
 gal_rtv_wait_admin 0
 
 // Specifies the ratio of players that need to rock the vote before a
 // vote will be forced to occur. When a single player is on the server,
-// that player can rock the vote and start an immediate vote.
+// that player can rock the vote and start an immediate vote, unless
+// the cvar `gal_rtv_commands` is set blocking it.
+//
+// To disable this feature, set this cvar to 1
 gal_rtv_ratio 0.60
 
 // Specifies how often, in minutes, to remind everyone how many more
 // rocks are still needed, after the last rock has been made.
+//
 // A value of 0 will disable this feature.
 gal_rtv_reminder 2
 
@@ -334,12 +389,45 @@ gal_rtv_reminder 2
 ////////////////////////////////////////////////////////////////////////
 
 // Indicates whether to allow runoff voting or not.
+//
 // 0 - disable runoff voting
 // 1 - enable runoff voting
 gal_runoff_enabled 1
 
 // Specifies the number of seconds the runoff vote should last.
+// To disabled this feature, set the cvar `gal_runoff_enabled` to 0
 gal_runoff_duration 15
+
+// Specifies the minimum amount of votes the most voted map should have
+// to not start a run off voting. For example, setting it to 0.4 will
+// cause a runoff to start if the most voted map does not get
+// 0.4*100% = 40% of the votes. The basic formula to start it is:
+//
+//     numberOfVotesAtFirstPlace <= g_totalVotesCounted * gal_runoff_ratio
+//
+// If the most voted map does not receive at lest these votes percentage,
+// a runoff voting is performed.
+//
+// To disabled this feature, set the cvar `gal_runoff_enabled` to 0
+gal_runoff_ratio 0.5
+
+// Specifies the number of maps players can choose from during the runoff
+// vote. The number of maps must be between 2 and 9. This count includes
+// the options `Stay Here` and `Extend Map`.
+// Now the voting take may into account all the map options that had the
+// maximum amount of votes, i.e., the number of maps to be included in
+// runoff voting. So someone could choose  to have two, three or maybe
+// all maps with the highest number of votes in runoff voting.
+//
+// Note:
+// Not all your runoff voting's will use all these maps. This will only
+// happen when there are several high and equally voted maps.
+// For example, if this cvar is set to 9 and there are 9 maps in voting,
+// and only 7 of them get one vote, only those 7 maps will be present on
+// the runoff vote.
+//
+// To disabled this feature, set the cvar `gal_runoff_enabled` to 0
+gal_runoff_mapchoices 2
 
 
 
@@ -348,12 +436,14 @@ gal_runoff_duration 15
 // than a regular player's vote.                                      //
 ////////////////////////////////////////////////////////////////////////
 
-// Specifies how many votes a single admin vote should count as. A value
-// of 0 or 1 will disable this feature.
+// Specifies how many votes a single admin vote should count as.
+// A value of 0 or 1 will disable this feature.
 gal_vote_weight 1
 
 // Specifies the standard access flags needed to have weighted votes.
 // You can specify multiple flags.
+//
+// To disabled this feature, set the cvar `gal_vote_weight` to 0
 gal_vote_weightflags "y"
 
 
@@ -366,10 +456,20 @@ gal_vote_weightflags "y"
 ////////////////////////////////////////////////////////////////////////
 
 // Indicates when a map should end when time runs out.
+//
 // 0 - end immediately when time runs out
 // 1 - when time runs out, end at the current round end
 // 2 - when time runs out, end at the next round end
-gal_endonround 2
+gal_endonround 1
+
+// When the cvar like the `gal_endonround` is changing the map, to choose
+// whether the map should change current round final seconds, or at next
+// round start first seconds. The choice is whether the first current round
+// final seconds, or at first next round start seconds.
+//
+// 0 - map changes at the next round start and not at the current round end.
+// 1 - map changes at the current round end and not in the next round start.
+gal_endonround_change 1
 
 // Indicates when a map should end after the RTV voting is finished.
 // If selected a value higher than 0, this cvar indicates also the players
@@ -377,7 +477,9 @@ gal_endonround 2
 // the time runs out.
 // For example, if this cvar value is set to 2, and there are only 1 player
 // on the server, the round will end immediately.
+//
 // 0               - end immediately after the voting finished.
+//
 // player's number - end after the current round, only when there are at
 //                   least the `player's number` quantity on the server.
 gal_endonround_rtv 1
@@ -385,14 +487,27 @@ gal_endonround_rtv 1
 // Indicates how to announce the last round. If selected a value higher
 // than 0, this cvar indicates also the players minimum number necessary
 // to allow the last round to be finished when the time runs out.
+//
 // 0 - to show only a chat print, saying that it is the last round.
 // 1 - to show chat and a constant HUD message during the last round.
 gal_endonround_msg 1
 
 // Indicates the end map type at the last seconds.
-// 0 - do not show the countdown, drop weapons or buy grenades.
-// 1 - show the countdown, drop weapons and buy grenades.
-gal_endonround_countdown 1
+//
+//  0 - do not nothing special/different
+//  1 - show a countdown from 5 until 1
+//  2 - To drop the player weapons
+//  4 - freeze all the players speed
+//  8 - buy grenades
+// 16 - to set mp_friendlyfire to 1 so players can bombard each other
+//      with grenades just before change level.
+//
+// For example, if you want to mude the options 1 and 2, use 1 + 2:
+// gal_endonround_countdown 3
+//
+// Instead of:
+// gal_endonround_countdown 0
+gal_endonround_countdown 15
 
 
 
@@ -403,32 +518,42 @@ gal_endonround_countdown 1
 
 // Indicates when the vote progress should be shown to a player.
 // A value of 0 disables this feature.
+//
 // 0 - never (this disables the cvar 'gal_vote_expirationcountdown')
 // 1 - after player has voted
 // 2 - after the vote ends (this disables the cvar 'gal_vote_expirationcountdown')
 // 3 - always show the vote current progress
 gal_vote_showstatus 3
 
-// Indicates whether to replace any menu opened by the server players,
-// when a voting is started, or to wait that menu to be closed before
-// showing the voting menu.
-// 0 - Waits the user to close his current menu, only then show the
-//     new menu.
-// 1 - Replace any opened menu.
-gal_vote_replace_menu 0
-
 // Indicates how to show the progress of a vote.
+//
 // 0 - never (the same as 'gal_vote_showstatus 0')
 // 1 - as vote count
 // 2 - as percentage of all votes cast
 // 3 - 1 and 2 at the same time.
 gal_vote_showstatustype 2
 
+// Indicates whether to replace any menu opened by the server players,
+// when a voting is started, or to wait that menu to be closed before
+// showing the voting menu.
+//
+// 0 - Waits the user to close his current menu, only then show the
+//     new menu.
+//
+// 1 - Replace any opened menu.
+gal_vote_replace_menu 0
+
 // Shows the voting option "None" for people to choose if they don't
 // like any other choice.
+//
 // 0 - Disabled this feature.
+//
 // 1 - Enabled this feature.
-gal_vote_show_none 1
+//
+// 2 - Instead of adding a new menu option as `None`, to add a new
+//     submenu allowing to choose the option: `None`, `Go back`,
+//     `Close The Voting Menu` and `Undo My vote`.
+gal_vote_show_none 2
 
 
 
@@ -441,15 +566,19 @@ gal_vote_show_none 1
 
 // Indicates whether there should be asked to the players if they want to
 // participate the map vote to decide what the next map will be.
-// 0 - disabled this feature
-// 1 - enable this feature
 // When using that feature, the players will be asked if they want to vote.
 // They need to press 6 for yes and 0 for no. So they cannot press the wrong key.
+//
+// 0 - disabled this feature
+// 1 - enable this feature
 gal_endofmapvote_ask 1
 
 // How the 'None' option should behavior when it is active.
+//
 // 0 - Hide after the user voted on some option.
+//
 // 1 - Always keep showing
+//
 // 2 - Convert it to 'Cancel Last Vote' option, to allow only
 //     'one time cancel' vote opportunity. Then, when you vote on the
 //     wrong option, because you pressed the wrong key, you just need
@@ -466,11 +595,13 @@ gal_vote_show_none_type 2
 ////////////////////////////////////////////////////////////////////////
 
 // Indicates whether a vote expiration countdown should be displayed.
+//
 // 0 - do not show the countdown
 // 1 - show the countdown
 gal_vote_expirationcountdown 1
 
 // Shows a countdown time during the voting.
+//
 // 0 - Only during the last 10 seconds
 // 1 - Always shows.
 gal_vote_show_counter 1
@@ -492,79 +623,178 @@ gal_vote_show_counter 1
 // the server has been 'externally restarted'. 'Externally restarted'
 // means to say about the Computer's Operational System (Linux) or Server
 // Manager (HLSW), used the server command 'quit' and reopened the server.
+//
 // 0 - Stay on the map the server started with.
+//
 // 1 - Change to the map that was being played when the server was reset.
 //     If the server restarts on the same maps more than 10 times, its
-//     go to the next map on the map-cycle list.
+//     go to the next map on the mapcycle list.
+//
 // 2 - Change to what would have been the next map had the server not
 //     been restarted.
+//
 // 3 - Start an early map vote after the first two minutes.
+//
 // 4 - Change to a randomly selected map from your nominatable map list.
+//
+// To disable this feature, set this cvar to 0
 gal_srv_start 1
+
+// Move the cursor on map series, because they are continuations as to
+// afrikakorps1 and 2, respectively.
+//
+// If the next map in the map cycle after afrikakorps1 is sc_another,
+// it will set the next map to afrikakorps2, and afrikakorps3. The maps
+// afrikakorps2, and afrikakorps3 are not in the map cycle because they
+// are continuations to afrikakorps1 and 2, respectively.
+//
+// For example:
+//
+// If on you server you got installed the following maps:
+// de_dust, de_dust2, de_dust3, de_dust4, de_inferno, de_chateal and de_nuke.
+//
+// This feature will take your map cycle as:
+//
+//     de_dust
+//     de_inferno
+//     de_chateal
+//     de_dust2
+//     de_nuke
+//
+// And will understand it as being:
+//
+//     de_dust
+//     de_dust2
+//     de_dust3
+//     de_dust4
+//     de_inferno
+//     de_chateal
+//     de_dust2
+//     de_nuke
+//
+// 0 - disable this feature
+// 1 - enable this feature
+gal_srv_move_cursor 1
 
 // Indicates which action to take immediately after it is detected that
 // the server has been 'externally restarted', and half of the time-left or
 // rounds-left passed.
+//
 // 0 - Always use the 'gal_srv_start' cvar configured option.
+//
 // 1 - The server will change to the next map.
+//
 // 2 - To act like the cvar 'gal_srv_start' option 3.
+//
 // 3 - The server will start a vote after the half of the time-left or
 //     rounds-left passed.
+//
+// To disable this feature, set this cvar to 0
 gal_game_crash_recreation 0
 
 // When it is used 'sv_restartround', do not reset the 'mp_timelimit'.
-// 0 - Reset the 'mp_timelimit'.
+//
+// 0           - Reset the 'mp_timelimit'.
+//
 // 1 or higher - Do not reset the 'mp_timelimit' and add '1 or higher' - 1
 //               minutes to the mp_timelimit.
+//
+// To disable this feature, set this cvar to 0
 gal_srv_timelimit_restart 0
 
 // When it is used 'sv_restartround' command, do not reset the 'mp_maxrounds'.
-// 0 - Reset the 'mp_maxrounds'.
+//
+// 0           - Reset the 'mp_maxrounds'.
+//
 // 1 or higher - Do not reset the 'mp_maxrounds' and add '1 or higher' - 1
 //               rounds to the mp_maxrounds.
+//
+// To disable this feature, set this cvar to 0
 gal_srv_maxrounds_restart 0
 
 // When it is used 'sv_restartround', do not reset the 'mp_winlimit'.
-// 0 - Reset the 'mp_winlimit'.
+//
+// 0           - Reset the 'mp_winlimit'.
+//
 // 1 or higher - Do not reset the 'mp_winlimit' and add '1 or higher' - 1
 //               rounds to the mp_winlimit.
+//
+// To disable this feature, set this cvar to 0
 gal_srv_winlimit_restart 0
 
 // When it is used 'sv_restartround' command, do not reset the 'mp_fraglimit'.
-// 0 - Reset the 'mp_fraglimit'.
+//
+// 0           - Reset the 'mp_fraglimit'.
+//
 // 1 or higher - Do not reset the 'mp_fraglimit' and add '1 or higher' - 1
 //               frags to the mp_fraglimit.
+//
+// To disable this feature, set this cvar to 0
 gal_srv_fraglimit_restart 0
 
 
 
 ////////////////////////////////////////////////////////////////////////
-// Some people like to stick to their defined map-cycle unless a vote //
+// Some people like to stick to their defined mapcycle unless a vote //
 // is started in the meantime. Other people like to always have a     //
 // vote near the end of the map to decide what the next map will be.  //
 ////////////////////////////////////////////////////////////////////////
 
 // Indicates whether there should be a vote near the end
 // of the map to decide what the next map will be. (Default 1)
+//
 // 0 - do not to perform a automatic end map voting.
 // 1 - to perform a automatic end map voting.
+//
+// To disable this feature, set this cvar to 0
 gal_endofmapvote 1
 
-// Indicates whether there should be created a 4 minutes range before
-// approximately the last 2 minutes and 22 seconds to detect a round start
-// and to give time about 20 seconds to buy weapons after the round to start
-// and before the map voting to start.
-// 0 - disabled this feature
-// 1 - enable this feature
+// When the end map voting is performed on the current round before its ending
+// change the map immediately, without wait to the `mp_timelimit` or `mp_maxrounds`
+// time expiration. Enabling this feature override the round behavior of the cvar
+// `gal_endonround`.
+//
+// 0 - to wait for the `mp_timelimit` or `mp_maxrounds` time expiration.
+// 1 - to change the map as soon as the voting is finished and the round ends.
+//
+// To disable this feature, set this cvar to 0
+gal_endofmapvote_expiration 0
+
+// A heuristic which counts every end round, how much time the round
+// took and how much time remains to the end of map. In base with it,
+// calculate the correct round to start the voting.
+//
+// Notes:
+// 1. It requires the game to have at least 8 rounds played, otherwise
+//    it cannot try to guess on which round it should to start the voting.
+//
+// 2. If the prediction fail and the voting is not finish when the round
+//    ended or the round total time is too short, i.e., the round total
+//    time is bigger than the total voting time (including a possible
+//    runoff, if enabled), a extra round will be played.
+//
+// 0 - Disable this feature.
+// 1 - To start the voting on the Ultima     game round (the last round to be played).
+// 2 - To start the voting on the Penult     game round (the round before the last).
+// 3 - To start the voting on the Antepenult game round (the round before the last of the last).
 gal_endofmapvote_start 1
 
-// Allow the command this command "say nextmap" return "[not yet voted on]"
+// Allow the command command "say nextmap" return "[not yet voted on]"
 // if the map vote hasn't started yet and "[voting in progress]" once the
 // vote has started. When the outcome of the vote is determined, this
 // command will return the map name.
+//
 // 0 - Disable the change to "[voting in progress]" and "[not yet voted on]"
 // 1 - Enable the change to "[voting in progress]" and "[not yet voted on]"
 gal_nextmap_change 0
+
+// If the server admin want to, he can make a custom vote for the nextmap
+// and after the voting finishes Galileo would not start another map voting.
+//
+// Note: This requires the cvar `gal_nextmap_change` to be enabled.
+// 0 - Disable the "[not yet voted on]" change detection.
+// 1 - Enable the "[not yet voted on]" change detection.
+gal_nextmap_votemap 1
 
 
 
@@ -575,10 +805,14 @@ gal_nextmap_change 0
 ////////////////////////////////////////////////////////////////////////
 
 // Specifies the number of maps players can choose from during the vote.
-// The number of maps must be between 2 and 8.
+// The number of maps must be between 2 and 9. This count includes the
+// options `Stay Here` and `Extend Map`.
+//
+// To disabled this feature, uninstall the `Galileo` plugin from your server.
 gal_vote_mapchoices 5
 
 // Specifies the number of seconds the vote should last.
+// To disabled this feature, uninstall the `Galileo` plugin from your server.
 gal_vote_duration 20
 
 
@@ -614,35 +848,69 @@ gal_vote_duration 20
 // many maps to use from each group. Or also, specifies the file to use
 // which either holds the names of the maps, one per line, that the vote
 // will be filled with.
+//
 // You can specify a relative path before the filename, relative from
 // your gamemod folder, i.e., "addons/amxmodx/configs/mymapcycle.txt".
+//
 // Use * for all maps in the server's maps folder.
-// Use # for your map-cycle, i.e., whatever file is on the cvar
-// 'mapcyclefile'.
+// Use # for your mapcycle, i.e., whatever file is on the cvar 'mapcyclefile'.
+//
+// To disabled this feature, uninstall the `Galileo` plugin from your server.
 gal_vote_mapfile "*"
 
 // When there are less players than cvar 'gal_vote_minplayers' value on
 // the server, use a different map file list specified at the cvar
 // 'gal_vote_minplayers_mapfile' to fill the map voting as map fillers
-// instead of the cvar 'gal_vote_mapfile' map file list.
+// instead of the cvar 'gal_vote_mapfile' map file list. This is the range:
+//
+//     0 < player_count < gal_vote_minplayers < MAX_PLAYERS
+//
 // A value of 0 or 1 will disable this feature.
 gal_vote_minplayers 0
+
+// When there are less players than cvar `gal_vote_middle_players` and
+// the more or equally players than the cvar `gal_vote_minplayers` value
+// on the server, use a different map file list specified at the cvar
+// `gal_vote_midplayers_mapfile` to fill the map voting as map fillers
+// instead of the cvar `gal_vote_mapfile` map file list.
+//
+// If both `gal_vote_minplayers` and `gal_vote_middle_players` are set to
+// the same value greater than 1, the `gal_vote_minimum_players` map file
+// will be used. This is the range:
+//
+//     0 < gal_vote_minplayers <= player_count < gal_vote_middle_players < MAX_PLAYERS
+//
+// A value of 0, 1 or 2 will disable this feature.
+gal_vote_midplayers 0
 
 // Let the server players nominate maps from the nomination file list
 // 'gal_nom_mapfile'. But, when the cvar 'gal_vote_minplayers' is enabled,
 // only allow nominations from the 'gal_vote_minplayers_mapfile'.
+//
 // 0 - Show all nominated maps.
+//
 // 1 - Only allow nominations from the 'gal_vote_minplayers_mapfile' when
 //     when the cvar 'gal_vote_minplayers' is enabled.
-//     Note: This will allow the players to nominated maps not from
-//           'gal_vote_minplayers_mapfile', but they will not be show
-//           at the map voting if there are less players than
-//           'gal_vote_minplayers', at the moment when the voting starts.
+//
+//     Note: This will allow the players to nominate maps not from
+//     'gal_vote_minplayers_mapfile', but they will not be show at the map
+//     voting if there are less players than 'gal_vote_minplayers', at the
+//     moment when the voting starts.
+//
+// To disable this feature, set this cvar to 0
 gal_nom_minplayers_control 0
 
 // The map file to use when 'gal_vote_minplayers' is enabled.
-// Use # for your map-cycle (whatever file is on the cvar 'mapcyclefile').
+// Use # for your mapcycle (whatever file is on the cvar 'mapcyclefile').
+//
+// To disabled this feature, set the cvar `gal_vote_minplayers` to 0
 gal_vote_minplayers_mapfile "addons/amxmodx/configs/galileo/minplayers_mapcycle.txt"
+
+// The map file to use when 'gal_vote_midplayers' is enabled.
+// Use # for your mapcycle (whatever file is on the cvar 'mapcyclefile').
+//
+// To disabled this feature, set the cvar `gal_vote_midplayers` to 0
+gal_vote_midplayers_mapfile "addons/amxmodx/configs/galileo/midplayers_mapcycle.txt"
 
 
 
@@ -651,7 +919,7 @@ gal_vote_minplayers_mapfile "addons/amxmodx/configs/galileo/minplayers_mapcycle.
 // 'gal_whitelist_minplayers' is set to 1 or higher. The Whitelist     //
 // feature specifies the time where the maps are allowed to be added   //
 // to the voting list as fillers after the nominations being loaded.   //
-// Basically, it is a filter to your map-cycle/filler list.             //
+// Basically, it is a filter to your mapcycle/filler list.             //
 // The Whitelist file must to follow this pattern:                     //
 // [10-22]                                                             //
 // de_dust2                                                            //
@@ -673,6 +941,7 @@ gal_vote_minplayers_mapfile "addons/amxmodx/configs/galileo/minplayers_mapcycle.
 
 // Specifies how the cvar 'gal_vote_whitelist_mapfile' file list must
 // be used.
+//
 // A value of 0 will disable the Whitelist feature.
 // A value of 1 will always enable the Whitelist feature.
 // A value higher than 1 will enable the Whitelist feature only when
@@ -682,27 +951,38 @@ gal_whitelist_minplayers 1
 // The Whitelist feature specifies the time where the maps are allowed
 // to be added to the voting list as fillers after the nominations being
 // loaded.
+//
 // 0 - Allow all map nominations.
 // 1 - Block the map nominations not allowed by the Whitelist feature.
+//
+// To disable this feature, set this cvar to 0
 gal_whitelist_nom_block 1
 
 // When a map is not included on the Whitelist file, it is never blocked.
 // Here you can choose to force only allow maps on the Whitelist rule
 // or allow the maps not on the Whitelist rule.
 // Note: When this cvar is activated, it disables The Map Groups Feature.
+//
 // 0 - Allow all maps outside the Whitelist rule.
 // 1 - Block all maps outside the Whitelist rule.
+//
+// To disable this feature, set this cvar to 0
 gal_whitelist_block_out 0
 
 // Specifies the map file used for the Whitelist Feature to specify
 // when certain maps can be used to fill the voting list.
 // You can specify a relative path before the filename, relative from
 // your gamemod folder, i.e., "addons/amxmodx/configs/mymapcycle.txt".
+//
+// To disabled this feature, set the cvar `gal_whitelist_minplayers` to 0
 gal_vote_whitelist_mapfile "addons/amxmodx/configs/galileo/whitelist_mapcycle.txt"
 
 // Indicates whether the maps being added, after nominations have been
 // added to a vote, should have unique map prefixes from those already
 // in the vote.
+//
+// 0 - disable this feature
+// 1 - enable this feature
 gal_vote_uniqueprefixes 0
 
 
@@ -715,10 +995,18 @@ gal_vote_uniqueprefixes 0
 ////////////////////////////////////////////////////////////////////////
 
 // Specifies how many nominations each player can make. There is a hard
-// cap defined that is set to 8.
-// This CVAR needs to be set equal to or less than the hard cap.
-// A value of 0 will disable this feature.
+// cap defined that is set to 8. This CVAR needs to be set equal to or
+// less than the hard cap. A value of 0 will disable this feature.
 gal_nom_playerallowance 2
+
+// Do not clean the map nominations when the map voting started. This is
+// useful when the voting winner option is to extended the current map,
+// this way the next map voting will keep the nominations from the first
+// one.
+//
+// 0 - Do not clean the map nominations
+// 1 - To clean the map nominations
+gal_nom_cleaning 0
 
 // Specifies the file to use which holds the names of the maps, listed
 // one per line, that players can nominate.
@@ -726,7 +1014,9 @@ gal_nom_playerallowance 2
 // your gamemod folder (i.e. "addons/amxmodx/configs/mymapcycle.txt").
 //
 // Use * for all maps in the server's maps folder.
-// Use # for your map-cycle (whatever file is on the cvar 'mapcyclefile').
+// Use # for your mapcycle (whatever file is on the cvar 'mapcyclefile').
+//
+// To disabled this feature, set the cvar `gal_nom_playerallowance` to 0
 gal_nom_mapfile "*"
 
 // Indicates if the './amxmodx/configs/galileo/prefixes.ini' file should
@@ -735,12 +1025,17 @@ gal_nom_mapfile "*"
 gal_nom_prefixes 1
 
 // Specifies how many of the nominations made will be considered for use
-// in the next map vote.
-// A value of 0 means all the nominated maps will be considered.
+// in the next map vote. A value of 0 means all the nominated maps will
+// be considered.
+//
+// To disable this feature, set this cvar to 0
 gal_nom_qtyused 0
 
 // Specifies if it will be removed the nominated maps by a player when
 // this player disconnects.
+//
+// 0 - disable this feature
+// 1 - enable this feature
 gal_unnominate_disconnected 0
 
 
@@ -751,8 +1046,11 @@ gal_unnominate_disconnected 0
 ////////////////////////////////////////////////////////////////////////
 
 // Indicates whether to announce each player's choice.
+//
 // 0 - keep the player's choice private
 // 1 - announce the player's choice
+//
+// To disable this feature, set this cvar to 0
 gal_vote_announcechoice 1
 
 
@@ -765,19 +1063,24 @@ gal_vote_announcechoice 1
 
 // The cvar 'gal_emptyserver_wait', specifies how many minutes to wait,
 // when the server is empty, before changing to an alternate empty-server
-// map-cycle.
+// mapcycle.
+//
 // * The empty-server system waits the 'gal_emptyserver_wait' cvar
-//   specified minutes before to change to an empty-server map-cycle.
+//   specified minutes before to change to an empty-server mapcycle.
+//
 // * If some player connect to the server while the system is waiting
 //   the 'gal_emptyserver_wait' cvar specified minutes, the system is
 //   stopped. If that player which just connected, to disconnect, the
 //   empty-server system to restart.
+//
 // * After to change to an empty-server map, the system to stop changing
 //   the map every 'gal_emptyserver_wait' specified minutes, because it
 //   is already on an popular map. The system lets the timelimit, maxrounds
 //   or winlimit expiration to change the map normally.
-// * If the server keeps empty, while using the empty-server map-cycle this
-//   feature keep the server using the empty-server map-cycle.
+//
+// * If the server keeps empty, while using the empty-server mapcycle this
+//   feature keep the server using the empty-server mapcycle.
+//
 // * If you not do like this time approach, set the cvar 'gal_emptyserver_wait'
 //   to 0 and to use the cvar 'gal_emptyserver_change' instead of this one.
 //
@@ -785,18 +1088,20 @@ gal_vote_announcechoice 1
 // minutes - how many minutes to wait before start the empty-cycle mode.
 gal_emptyserver_wait 0
 
-// When the server is empty, only change to an alternate empty-server map-cycle
+// When the server is empty, only change to an alternate empty-server mapcycle
 // after timelimit, maxrounds or winlimit expiration.
 // This feature only works if the cvar 'gal_emptyserver_wait' is set to 0.
+//
 // 0 - disabled this feature.
 // 1 - enable this feature.
 gal_emptyserver_change 0
 
 // Specifies the file which contains a listing of maps, one per line,
-// to be used as the map-cycle when the server is empty.
-// You can specify a relative path before the filename, relative from
-// your gamemod folder (i.e. "addons/amxmodx/configs/mymapcycle.txt").
+// to be used as the mapcycle when the server is empty. You can specify
+// a relative path before the filename, relative from your gamemod folder
+// (i.e. "addons/amxmodx/configs/mymapcycle.txt").
 //
+// To disabled this feature, set the cvar `gal_emptyserver_wait` to 0
 gal_emptyserver_mapfile "addons/amxmodx/configs/galileo/emptycycle_maplist.txt"
 
 
@@ -808,18 +1113,49 @@ gal_emptyserver_mapfile "addons/amxmodx/configs/galileo/emptycycle_maplist.txt"
 ////////////////////////////////////////////////////////////////////////
 
 // Indicates if any sounds should be muted during the various events in
-// which they'd normal be spoken.
-// The flags are additive. A value of 0 will not mute any of the sounds.
-// 1 - "get ready to choose a map"
-// 2 - "7", "6", "5", "4", "3", "2", "1"
-// 4 - "time to choose"
-// 8 - "runoff voting is required"
+// which they'd normal be spoken. The flags are additive. A value of 0
+// will not mute any of the sounds.
+//
+//  1 - "get ready to choose a map"
+//  2 - "7", "6", "5", "4", "3", "2", "1"
+//  4 - "time to choose"
+//  8 - "runoff voting is required"
+// 16 - "loading environment on to your computer" at map change
+//
+// For example, if you want to mude the options 1 and 2, use 1 + 2:
+// gal_sounds_mute 3
+//
+// Instead of:
+// gal_sounds_mute 0
 gal_sounds_mute 0
 
+// Indicates if any HUD messages should be hidden during the various
+// events in which they'd normal be showed. The flags are additive.
+// A value of 0 will not hide any of the HUD.
+//
+// 1 - The change level numbers countdown text
+// 2 - The voting start numbers countdown text
+// 4 - The change level announcement `The next map!y will be 'mapName'`
+//
+// For example, if you want to mude the options 1 and 2, use 1 + 2:
+// gal_sounds_hud 3
+//
+// Instead of:
+// gal_sounds_hud 0
+gal_sounds_hud 0
+
 // Enable or disable the color on the plugin text message chat (colored chat).
-// 0 - Disabled
-// 1 - Enabled
+//
+// 0 - disable this feature
+// 1 - enable this feature
 gal_colored_chat_enabled 1
+
+// To always print a prefix before the Galileo chat messages.
+//
+// 1. To disable the all the messages prefixing, set this cvar to: ""
+// 2. To enabled the message prefixing, set this cvar to the prefix
+//    you want to. For example: "[AMXX] "
+gal_colored_chat_prefix ""
 [/pawn]
 [/SPOILER]
 
@@ -882,9 +1218,59 @@ gal_colored_chat_enabled 1
             [/LIST]
 
 
- [*] Command '[COLOR="Blue"][B]gal_createmapfile filename[/B][/COLOR]', Creates a file that contains a list of every
+ [*] Command '[COLOR="Blue"][B]gal_votmemap[/B][/COLOR]', to receive a list of maps and will to perform a map voting
+     as if it was an automatic end of map voting. It has the following optional arguments:
+
+
+            [LIST]
+            [*]If the "[COLOR="blue"][B]-nointro[/B][/COLOR]" argument is supplied, the countdown "7", "6", "5", "4", "3", "2", "1"
+            will be skipped and the voting will start immediately as you send the command.
+
+
+            [*]If the "[COLOR="blue"][B]-norunoff[/B][/COLOR]" argument is supplied, the runoff vote will be disabled
+            for this voting, if it is not already disabled by the cvar `gal_runoff_enabled`.
+
+
+            [*]If the "[COLOR="blue"][B]-noextension[/B][/COLOR]" argument is supplied, the map extension will be disabled
+            for this voting, if it is not already disabled by the cvar `amx_extendmap_step`.
+
+
+            [*]If the "[COLOR="blue"][B]-loadnominations[/B][/COLOR]" argument is supplied, the map nominations will be loaded
+            for this voting, if they are enabled by the cvar `gal_nom_playerallowance`.
+            [/LIST]
+
+    [B]Usage examples:[/B]
+    [code]
+These are the `gal_votemap` command usage examples:
+
+gal_votemap map1 map2 map3 map4 ... map9
+gal_votemap map1 map2 map3 map4 ... map9 -nointro -noextension -norunoff
+gal_votemap map1 map2 map3 map4 ... map9 -nointro -noextension
+gal_votemap map1 map2 map3
+gal_votemap map1 map2 -nointro -noextension
+gal_votemap map1 map2 -nointro
+gal_votemap map1 map2 -loadnominations
+gal_votemap map1 map2
+    [/code]
+
+
+ [*] Command '[COLOR="Blue"][B]gal_createmapfile filename[/B][/COLOR]', creates a file that contains a list of every
      valid map in your maps folder. The [B]filename[/B] argument indicates specifies the name
      to be used for the new file.  It will be created in the [COLOR="Blue"][B]./configs/galileo/[/B][/COLOR] folder.
+
+
+ [*] Command '[COLOR="Blue"][B]gal_changelevel[/B][/COLOR]', to immediately change level to the current map at
+     the [COLOR="Blue"][B]cvar nextmap[/B][/COLOR]. If the next map is set to `[not yet voted on]` the map will
+     be changed the next map on the map cycle. If the argument `now` is provided as in `gal_changelevel now`, the
+     5 seconds countdown just before change level will not be presented.
+
+
+ [*] Command '[COLOR="Blue"][B]say galmenu [page_number][/B][/COLOR]', (admin MAP level required) to choose from the loaded server
+     maps, the maps to create a map voting by a menu, as the one with the `gal_votemap` command. Consider here the
+     nomination file list as maps source to build up the menu. If specified the `page_number` argument, the menu
+     will be opened a the specified page. Example: `say galmenu 50` will open the menu right on the page 50.
+     If the argument `page_number` is omitted, the menu will open at the first page, or the last page
+     you opened it.
 
 
  [*] [COLOR="Blue"][B]The Maintenance Mode[/B][/COLOR]:
@@ -1025,20 +1411,8 @@ de_inferno
      And so on...
 [/LIST]
 [/QUOTE]
-
-[anchor]Mapcycle[/anchor][SIZE="4"][B]Setting up a Mapcycle[/B][/SIZE]: [goanchor=Top]Go to top[/goanchor]
-
-[QUOTE=azure;11799]hrrmm this is very interesting. Could I set this up to change the mapcycle possibly?
-
-like have mapcycle 1 from 9 till 23 and then mapcycle2 from 23 til 9?
-[/QUOTE]
-The plugin [URL="https://forums.alliedmods.net/showthread.php?p=12724"]Task Scheduler[/URL] can do that. See here [URL="https://forums.alliedmods.net/showthread.php?p=12724#post12724"]how to configure it[/URL]. You can use it to configure the
-cvars:[LIST=1]mapcyclefile
-[*]gal_vote_mapfile
-[*]gal_vote_minplayers_mapfile
-[*]gal_nom_mapfile
-[*]gal_emptyserver_mapfile[/LIST]To use another mapcycle files which does not contain the maps you do not want to use by early hours.
 [/SPOILER]
+
 
 
 ********************** [anchor]Requirements[/anchor][SIZE="6"][COLOR="Blue"][B]Requirements and Commands[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor]  ******
@@ -1090,13 +1464,17 @@ cvars:[LIST=1]mapcyclefile
 [COLOR="Blue"]say [I]nominate[/I] [B]partialMapName[/B][/COLOR]
 [COLOR="Blue"]say [I]nom[/I] [B]partialMapName[/B][/COLOR]
 
-[B]//[/B] Open a nomination map menu containing all the plugins allowed to nominate.
+[B]//[/B] Open a nomination map menu containing all the plugins allowed to nominate. If specified
+[B]//[/B] the `page_number` argument, the menu will be opened a the specified page. Example:
+[B]//[/B] `say galmenu 50` will open the menu right on the page 50. If the argument `page_number`
+[B]//[/B] is omitted, the menu will open at the first page, or the last page you opened it.
+[B]//[/B]
 [B]//[/B] The [I]anything[/I] argument can be any "word" up to 20 characters without spaces.
 [B]//[/B] Configure the valid map prefixed at './amxmodx/configs/galileo/prefixes.ini'.
 [B]//[/B] Requires the CVAR "gal_nom_playerallowance" to be set to a value higher than 0.
 [B]//[/B] Requires the CVAR "gal_nom_prefixes" to be set to a value higher than 0.
 [COLOR="Blue"]say [I]nom[/I][B]anything[/B]menu[/COLOR]
-[COLOR="Blue"]say [I]nom[/I]menu[/COLOR]
+[COLOR="Blue"]say [I]nom[/I]menu[/COLOR] [page_number]
 [COLOR="Blue"]say [B]mapprefix_[/B][/COLOR]
 
 [B]//[/B] Cancels the nomination of [I]mapname[/I], which would have had to be previously
@@ -1140,6 +1518,21 @@ Stills not clear enough? See more tutorials on [URL="https://forums.alliedmods.n
 
 
 
+[anchor]Mapcycle[/anchor][SIZE="4"][B]Setting up a Mapcycle[/B][/SIZE]: [goanchor=Top]Go to top[/goanchor]
+
+[QUOTE=azure;11799]hrrmm this is very interesting. Could I set this up to change the mapcycle possibly?
+
+like have mapcycle 1 from 9 till 23 and then mapcycle2 from 23 til 9?
+[/QUOTE]
+The plugin [URL="https://forums.alliedmods.net/showthread.php?p=12724"]Task Scheduler[/URL] can do that. See here [URL="https://forums.alliedmods.net/showthread.php?p=12724#post12724"]how to configure it[/URL]. You can use it to configure the
+cvars:[LIST=1]mapcyclefile
+[*]gal_vote_mapfile
+[*]gal_vote_minplayers_mapfile
+[*]gal_nom_mapfile
+[*]gal_emptyserver_mapfile[/LIST]To use another mapcycle files which does not contain the maps you do not want to use by early hours.
+
+
+
 ******************************** [anchor]TODO[/anchor][B][SIZE="6"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] *********************************
 
 See the current issues/features request list on: [URL="https://github.com/addonszz/Galileo/issues"] https://github.com/addonszz/Galileo/issues[/URL].
@@ -1155,6 +1548,7 @@ See the current issues/features request list on: [URL="https://github.com/addons
 [B]ConnorMcLeod[/B]: For the [Dyn Native] ColorChat v0.3.2 (04 jul 2013) register_dictionary_colored function.
 [B][URL="https://forums.alliedmods.net/member.php?u=263772"]Old.School[/URL][/B] ([B][NOPARSE][B][/NOPARSE]l@k ~ [R]Eed[/B]): For bug reports, testing and feature suggestions.
 [B][URL="https://forums.alliedmods.net/member.php?u=259683"]iNdio[/URL][/B]: For the Romanian [ro] and Italian [it] language translations.
+[B][URL="https://github.com/regener"]regener[/URL][/B]: For the Hungarian [hu] language translation.
 [B][URL="https://github.com/Ni3znajomy"]Ni3znajomy[/URL][/B]: For contributions/work over project on the GitHub.
 [B][URL="https://forums.alliedmods.net/member.php?u=119830"]Shattered Heart Lynx[/URL][/B]: For the custom 'amxx_datadir' directory, the cvar 'gal_banrecent_mapcycle' suggestion and RTV 'Sven Co-op' fix and bug report.
 [B][URL="https://forums.alliedmods.net/member.php?u=267675"]wombad321[/URL][/B]: For the 'map extend' not showing bug report and the new recent list feature suggestion.
@@ -1171,6 +1565,8 @@ See the current issues/features request list on: [URL="https://github.com/addons
 [B][URL="https://forums.alliedmods.net/member.php?u=235274"]MihailoZ[/URL][/B]: For the 'galileo.txt' lang file misspellings report and the Serbian [sr] language translation.
 [B][URL="https://forums.alliedmods.net/member.php?u=85472"]damnyourefine[/URL][/B]: For donations and reported/helped with the bug [URL="https://github.com/addonszz/Galileo/issues/3"]Issues#3[/URL].
 [B][URL="https://github.com/mo0nsniper"]mo0nsniper[/URL][/B]: For the bug report, vote shows only for one player [URL="https://github.com/addonszz/Galileo/issues/26"]Issues#26[/URL].
+[B][URL="https://forums.alliedmods.net/member.php?u=184733"]Belo95135[/URL][/B]: For the Slovak [sk] language translation.
+[B][URL="https://github.com/regener"]regener[/URL][/B]: For the Hungarian [hu] language translation and the GitHub [URL="https://github.com/addonszz/Galileo/pull/50"]Pull Request #50[/URL] adding the missing mute sound option at map change.
 [QUOTE=Brad;684848]
 A lot of time and effort went into making this plugin, making features just right,
 making sure there were no bugs, making sure it was easy to use. If you are glad I made
@@ -1187,15 +1583,65 @@ Thank you!  It means a lot to me.
 ******************************** [anchor]Change[/anchor][B][SIZE="6"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
 [SPOILER]
 
+[B]2016-12-31 | v4.0.0-410[/B]
+[LIST=1]
+[*]Translated the plugin to Slovak [sk] and Hungarian [hu] languages. See the new LANG file 'galileo.txt'.
+[*]Replaced to cvar `gal_endonround_countdown`, the buy weapons by a give weapons. Now players without money or out buy zones can win weapons on change level. [URL="https://github.com/addonszz/Galileo/issues/16"]Issue#16[/URL].
+[*]Added explicit disabled and enabled values to all cvars on the config file. [URL="https://github.com/addonszz/Galileo/issues/30"]Issue#30[/URL].
+[*]Added support to Sven Coop 'mp_nextmap_cycle' cvar and the vote map start by the Ham_Use "game_end". [URL="https://github.com/addonszz/Galileo/issues/13"]Issue#13[/URL].
+[*]Added the `page_number` argument to all menus possible. Now you can open any menu at the page you want to. Example `say nomenu 50`.
+[*]Added the ability to show map information after the map name on the voting menu. [URL="https://github.com/addonszz/Galileo/issues/18"]Issue#18[/URL].
+[*]Added the ability for players to close the vote menu, if they want to. [URL="https://github.com/addonszz/Galileo/issues/4"]Issue#4[/URL].
+[*]Added an optimum time for the vote starting at map end. [URL="https://github.com/addonszz/Galileo/issues/20"]Issue#20[/URL].
+[*]Added the the command `say galmenu`, (admin MAP level required) to choose from the loaded server maps, the maps to create a map voting by a menu, as the one with the `gal_votemap` command. [URL="https://github.com/addonszz/Galileo/issues/48"]Issue#48[/URL].
+[*]Added the the command `gal_changelevel`, to immediately change level to the current map at the cvar nextmap. [URL="https://github.com/addonszz/Galileo/issues/48"]Issue#48[/URL].
+[*]Added the the command `gal_votemap`, to receive a list of maps and will to perform a map voting as if it was an automatic end of map voting. [URL="https://github.com/addonszz/Galileo/issues/48"]Issue#48[/URL].
+[*]Added new cvar `gal_srv_move_cursor` to move the cursor on map series, because they are continuations as to afrikakorps1 and 2, respectively. [URL="https://github.com/addonszz/Galileo/issues/12"]Issue#12[/URL].
+[*]Added new cvar `gal_sounds_hud` to indicates if any HUD messages should be hidden during the various events in which they'd normal be showed. [URL="https://github.com/addonszz/Galileo/issues/31"]Issue#31[/URL].
+[*]Added new cvar `gal_colored_chat_prefix` to allow always to print a prefix before the Galileo chat messages. [URL="https://github.com/addonszz/Galileo/issues/34"]Issue#34[/URL].
+[*]Added new cvar `gal_nom_cleaning` to allow do not clean the map nominations' maps when the map voting started.  [URL="https://github.com/addonszz/Galileo/issues/32"]Issue#32[/URL].
+[*]Added new cvar `gal_nextmap_votemap` to not start another map voting when the server admin to starts one. [URL="https://github.com/addonszz/Galileo/issues/22"]Issue#22[/URL].
+[*]Added new cvar `gal_runoff_mapchoices` to let the voting take into account all the map options that had the maximum amount of votes. [URL="https://github.com/addonszz/Galileo/issues/33"]Issue#33[/URL].
+[*]Added new cvar `gal_runoff_ratio` to specifies the minimum amount of votes the most voted map should have to not start a run off voting. [URL="https://github.com/addonszz/Galileo/issues/33"]Issue#33[/URL].
+[*]Added new cvar `gal_endonround_change` to choose whether the map should change current round final seconds, or at next round start first seconds. [URL="https://github.com/addonszz/Galileo/issues/5"]Issue#5[/URL].
+[*]Added new cvar `gal_endofmapvote_expiration` to change the map at the round the map voting is finished, without wait to the `mp_timelimit` or `mp_maxrounds`. [URL="https://github.com/addonszz/Galileo/issues/5"]Issue#5[/URL].
+[*]Added a new option to the cvar `gal_rtv_commands`, to disable the RTV when there is only a single player on the server. [URL="https://github.com/addonszz/Galileo/issues/24"]Issue#24[/URL].
+[*]Added a new option to the cvar `gal_vote_show_none`, to created a new menu showing command the options. [URL="https://github.com/addonszz/Galileo/issues/40"]Issue#40[/URL].
+[*]Added new option to the cvar `amx_extendmap_allow_order`, when no one voted for nextmap or extend or "stay here", extend the map. [URL="https://github.com/addonszz/Galileo/issues/11"]Issue#11[/URL].
+[*]Added new option to the cvar `gal_endonround_countdown`, allow to set mp_friendlyfire to 1, so players can bombard each other with grenades just before change level. [URL="https://github.com/addonszz/Galileo/issues/15"]Issue#15[/URL].
+[*]Added new option to the cvar `amx_extendmap_max`, allowing to disable it setting it to 0.
+[*]Improved the cvar `gal_endofmapvote_start` detection and added new options to it. [URL="https://github.com/addonszz/Galileo/issues/38"]Issue#38[/URL].
+[*]Improved the cvar `gal_endonround_countdown` available options for configuration. [URL="https://github.com/addonszz/Galileo/issues/7"]Issue#7[/URL].
+[*]Improved the multi-bit operations to be more clear on the configuration file `galileo.cfg`'s documentation. Issue: [URL="https://github.com/addonszz/Galileo/issues/6"]Issue#6[/URL].
+[*]Fixed possible client overflow when show the recent maps list.
+[*]Fixed the voting menu `None` option not becoming greyed out when the voting is finished.
+[*]Fixed the recent map feature allowing invalid maps to be added to the recent maps list.
+[*]Fixed the setting `gal_vote_showstatus` 1 and 2 showing the vote percentage results when it should not.
+[*]Fixed the cvar `gal_vote_mapchoices` not allowing 9 map votes when the `Stay Here` and `Extend Map` are disabled.
+[*]Fixed the ban `gal_banrecent_mapcycle` feature using the cvar `gal_vote_mapfile`, instead of the cvar `mapcyclefile`.
+[*]Fixed limit for the maximum voting time start. [URL="https://github.com/addonszz/Galileo/issues/8"]Issue#8[/URL].
+[*]Fixed lag every time before vote countdown starts. [URL="https://github.com/addonszz/Galileo/issues/19"]Issue#19[/URL].
+[*]Fixed not adding the nominations from disconnected players. [URL="https://github.com/addonszz/Galileo/issues/27"]Issue#27[/URL].
+[*]Fixed some Unit Tests failing when the DEBUG_LEVEL is set to 2. [URL="https://github.com/addonszz/Galileo/issues/28"]Issue#28[/URL].
+[*]Fixed Next Map: [not yet voted on] not showing on the welcome message. [URL="https://github.com/addonszz/Galileo/issues/9"]Issue#9[/URL].
+[*]Fixed the new nominations menu, increasing server overall performance. [URL="https://github.com/addonszz/Galileo/issues/41"]Issue#41[/URL].
+[*]Fixed the map_loadRecentList(0) loading more maps than are available to be banned. [URL="https://github.com/addonszz/Galileo/issues/44"]Issue#44[/URL].
+[*]Fixed the clean menu `stay option` is being displayed on the first player language. [URL="https://github.com/addonszz/Galileo/issues/29"]Issue#29[/URL].
+[*]Fixed nextmap in chat showing the map that was voted for instead of the map changed to via amx_cvar amx_nextmap. [URL="https://github.com/addonszz/Galileo/issues/10"]Issue#10[/URL].
+[*]Implemented the Allow Round Finish feature for the cvar `mp_fraglimit`.
+[*]Implemented the Maintenance Mode for the cvars `mp_fraglimit`, `mp_maxrounds` and `mp_winlimit`.
+[*]Removed the extra space between the `Extend` option and the voting menu `None` option.
+[/LIST]
+
 [B]2016-11-13 | v3.2.6-274[/B]
 [LIST=1]
-[*]Finally fixed the issue where the vote shows only for one player: [URL="https://github.com/addonszz/Galileo/issues/26"]Issues#26[/URL].
+[*]Finally fixed the issue where the vote shows only for one player: [URL="https://github.com/addonszz/Galileo/issues/26"]Issue#26[/URL].
 [/LIST]
 
 [B]2016-11-12 | v3.2.5-272[/B]
 [LIST=1]
-[*]Fixed the issue where the vote shows only for one player: [URL="https://github.com/addonszz/Galileo/issues/26"]Issues#26[/URL].
-[*]Added support to map names ending with `.bsp` extension on the voting map list: [URL="https://github.com/addonszz/Galileo/issues/21"]Issue #21[/URL].
+[*]Fixed the issue where the vote shows only for one player: [URL="https://github.com/addonszz/Galileo/issues/26"]Issue#26[/URL].
+[*]Added support to map names ending with `.bsp` extension on the voting map list: [URL="https://github.com/addonszz/Galileo/issues/21"]Issue#21[/URL].
 [/LIST]
 
 [B]2016-10-28 | v3.2.4-248[/B]
@@ -1293,8 +1739,7 @@ Thank you!  It means a lot to me.
 [*]Fixed the 'nom partialMapName' menu choosing wrong maps.
 [*]Added the player menus to be used with 'say_team' beyond 'say'.
 [*]Added a first nomination's menu option to cancel all your nominations.
-[*]When the server is (crash maybe) restarted 10 times on the same map, added to the server start feature,
-to stop the changing to that map and to use the its next map.
+[*]When the server is (crash maybe) restarted 10 times on the same map, added to the server start feature, to stop the changing to that map and to use the its next map.
 [*]Removed the 15 seconds delay on the server start feature.
 [/LIST]
 
@@ -1359,44 +1804,33 @@ to stop the changing to that map and to use the its next map.
 [*]Fixed the language bug where the voting menu is always displayed on LANG_SERVER instead of LANG_PLAYER.
 [*]Added the Romanian [ro] and Italian [it] language translations.
 [*]Fixed a bug, where 'gal_rtv_wait_rounds' has priority over 'gal_rtv_wait'.
-[*]Added new cvars 'gal_srv_timelimit_restart', 'gal_srv_maxrounds_restart' and 'gal_srv_winlimit_restart'
-    to control the sv_restart. If nonzero and the server is restarted, adds x - 1 rounds/minutes to
-    mp_maxrounds or mp_winlimit or mp_timelimit. Example using mp_maxrounds: If mp_maxrounds = 40 and
-    20 rounds has already passed and admin used sv_restart. After the restart, if the cvar is 1, the
-    rounds left will be 20. If the cvar is 0 the rounds left will 40.
+[*]Added new cvars 'gal_srv_timelimit_restart', 'gal_srv_maxrounds_restart' and 'gal_srv_winlimit_restart' to control the sv_restart.
+   If nonzero and the server is restarted, adds x - 1 rounds/minutes to mp_maxrounds or mp_winlimit or mp_timelimit.
+   Example using mp_maxrounds: If mp_maxrounds = 40 and 20 rounds has already passed and admin used sv_restart.
+   After the restart, if the cvar is 1, the rounds left will be 20. If the cvar is 0 the rounds left will 40.
 [*]Create a new LANG file to show 'rounds' instead of 'minutes', when you are using mp_maxrounds.
 [*]Add an admin command 'gal_cancelvote' to cancel the current vote.
-[*]Fixed bug using mp_maxrounds: if the vote started automatic and the result is extend its works fine
-    and with mp_maxrounds. If the vote started by rtv and the result is extend he will with extend with
-    mp_timelimit. It must use mp_maxrounds.
+[*]Fixed bug using mp_maxrounds: if the vote started automatic and the result is extend its works fine and with mp_maxrounds.
+   If the vote started by rtv and the result is extend he will with extend with mp_timelimit. It must use mp_maxrounds.
 [*]Fixed 'sv_restartround' time detection.
 [*]Added new cvar 'gal_endonround_rtv' to Indicates when a map should end after the RTV voting is finished.
-    0 - end immediately after the voting finished.
-    1 - end after the current round.
+   0 - end immediately after the voting finished. 1 - end after the current round.
 [*]Added new cvar 'gal_rtv_wait_admin'. If an admin have the change map flag is online:
-    0 - players can normally rock the vote.
-    1 - RTV will not work and will print 'Cannot rock the vote when an admin is online'.
+   0 - players can normally rock the vote. 1 - RTV will not work and will print 'Cannot rock the vote when an admin is online'.
 [*]Fixed bug where the handle empty server feature would change the map when there are players playing.
 [*]Integrated the cvar 'gal_endonround_players' features into the cvar 'gal_endonround_msg'.
-[*]Added to the 'gal_endonround_rtv' cvar the players minimum number necessary to allow the
-    last round to be finished when the time runs out.
-[*]Added new option 2 to the cvar 'gal_vote_show_none_type'. After the user voted, transform
-    the '0 - None' option on 'one time cancel' vote opportunity.
+[*]Added to the 'gal_endonround_rtv' cvar the players minimum number necessary to allow the last round to be finished when the time runs out.
+[*]Added new option 2 to the cvar 'gal_vote_show_none_type'. After the user voted, transform the '0 - None' option on 'one time cancel' vote opportunity.
 [*]Added support to 'engine_changelevel' from AMX Mod X 183.
-[*]Added correct documentation for the 'gal_srv_start' cvar to indicates which action to take
-    when it is detected that the server has been 'externally restarted'.
+[*]Added correct documentation for the 'gal_srv_start' cvar to indicates which action to take when it is detected that the server has been 'externally restarted'.
 [*]Improved 'gal_emptyserver_wait' cvar documentation in the configuration file.
 [*]Fixed empty-server map cycle bug to always starting at its first map.
-[*]Added new cvar 'gal_emptyserver_change'. When the server is empty, only change to an alternate
-    empty-server map cycle after timelimit, maxrounds or winlimit expiration.
-[*]Added new cvar 'gal_endofmapvote_ask' to indicates whether there should be asked to the players
-    if they want to participate the map vote to decide what the next map will be.
-[*]Added to the handle server start feature the ability to continues the mapcycle from the lastmap
-    played instead of the first map on the mapcycle list.
+[*]Added new cvar 'gal_emptyserver_change'. When the server is empty, only change to an alternate empty-server map cycle after timelimit, maxrounds or winlimit expiration.
+[*]Added new cvar 'gal_endofmapvote_ask' to indicates whether there should be asked to the players if they want to participate the map vote to decide what the next map will be.
+[*]Added to the handle server start feature the ability to continues the mapcycle from the lastmap played instead of the first map on the mapcycle list.
 [*]Added the Map Groups Feature feature documentation.
-[*]Added new cvar 'gal_vote_whitelist_mapfile' that points a configuration file which specifies the
-    time where its listed maps are allowed to be added to the voting list as fillers after the nominations
-    being loaded.
+[*]Added new cvar 'gal_vote_whitelist_mapfile' that points a configuration file which specifies the time where its listed
+   maps are allowed to be added to the voting list as fillers after the nominations being loaded.
 [/LIST]
 
 [B]2016-01-17 | v1.2[/B] ~ [B]v1.2.2[/B]
@@ -1405,10 +1839,8 @@ to stop the changing to that map and to use the its next map.
 [*]Fixed bug when the vote started by rtv vote work but the map didn't change.
 [*]Added RTV support to 'mp_maxrounds' and 'mp_winlimit'.
 [*]Fixed the command 'gal_startvote' handler not ignoring double quotes.
-[*]Added new cvar 'gal_vote_minplayers_mapfile' to specifiy the mapcycle file to use when
-    'gal_vote_minplayers' is activated.
-[*]Added new cvar 'gal_vote_minplayers' to specify the minimum players number to use the
-    'gal_vote_minplayers_mapfile'.
+[*]Added new cvar 'gal_vote_minplayers_mapfile' to specifiy the mapcycle file to use when 'gal_vote_minplayers' is activated.
+[*]Added new cvar 'gal_vote_minplayers' to specify the minimum players number to use the 'gal_vote_minplayers_mapfile'.
 [/LIST]
 
 [B]2016-01-17 | v1.2-release_candidate1.hotfix1[/B]
@@ -1430,12 +1862,9 @@ to stop the changing to that map and to use the its next map.
 [*]Added a new cvar to disable the colored chat.
 [*]Fixed 'gal_startvote' [-restart] argument not working.
 [*]Fixed showing that the player chose extend map, instead of stay on map.
-[*]Added new cvar 'amx_extendmap_allow_order' to follow the map cycle map order, when anyone vote
-    for next map.
-[*]Added support to the old cvar variable 'gal_vote_mapfile', and a new option '*' to choose use
-    the mapcycle instead.
-[*]Added the 'gal_vote_show_none' cvar to shows the voting option "None" for people to choose if
-    they don't like any other choice.
+[*]Added new cvar 'amx_extendmap_allow_order' to follow the map cycle map order, when anyone vote for next map.
+[*]Added support to the old cvar variable 'gal_vote_mapfile', and a new option '*' to choose use the mapcycle instead.
+[*]Added the 'gal_vote_show_none' cvar to shows the voting option "None" for people to choose if they don't like any other choice.
 [*]Added a new cvar 'gal_vote_show_counter', to show only the last 10 seconds remaining to end the voting.
 [*]Added an option to 'gal_vote_showstatustype', to show the vote progress as porcetage and count.
 [*]Added an option to 'gal_banrecentstyle', to show the recent maps are displayed as a menu.
@@ -1450,8 +1879,7 @@ to stop the changing to that map and to use the its next map.
 [*]Implemented mp_winlimit and mp_maxrounds end map voting.
 [*]Removed automatic vote map, after forcing votemap using '-nochange' argument.
 [*]Replaced the command 'gal_startvote2' with 'gal_startvote' and options '-nochange' and '-restart'.
-[*]Added new cvar "gal_endonround_players" which indicates the players minimum number necessary to
-    allow the last round to be finished when time runs out.
+[*]Added new cvar "gal_endonround_players" which indicates the players minimum number necessary to allow the last round to be finished when time runs out.
 [*]Added new cvar option "gal_rtv_commands 7" to enable 7 the options 1, 2 and 4 at the same time.
 [*]Added new cvar "amx_extendmap_step_rounds" to the config file.
 [*]Added new cvar "amx_extendmap_max" which limits the max extension time.
@@ -1505,32 +1933,29 @@ to stop the changing to that map and to use the its next map.
 [*]Added a check for valid map when populating the various map listings from map list files.
 [*]Fixed error whem empty server map file doesn't exist.
 [*]Fixed issue whereas Galileo would set the time limit to 0 in the course of it's regular
-    activities but then sometimes not reset it to the original time limit afterwards.
+   activities but then sometimes not reset it to the original time limit afterwards.
 [*]No longer tries to print menus in color if the game mod doesn't support colored menus.
 [*]Fixed possible RTV exploit by introducing a delay before a single player can RTV after a
-    map change. It's the lesser of either 2 minutes or the value of gal_rtv_wait.
+   map change. It's the lesser of either 2 minutes or the value of gal_rtv_wait.
 [*]Added additional information to comments for gal_nom_mapfile, gal_vote_mapfile, and
-    gal_emptyserver_mapfile in galileo.cfg.
+   gal_emptyserver_mapfile in galileo.cfg.
 [*]Changed default for gal_nom_prefixes from 1 to 0. In other words, the prefix functionality
-    will be turned off by default.
+   will be turned off by default.
 [*]Will no longer overwrite an existing menu. This means if a player has another menu open when
-    the map vote starts, they won't see the map vote until the other menu is closed. It also means
-    that, after a player voted and if the server is showing the vote progress, if another menu
-    overwrites Galileo's, the progress won't be shown again until the other menu has been closed.
-    This only affects people that show the in-progress vote status.
+   the map vote starts, they won't see the map vote until the other menu is closed. It also means
+   that, after a player voted and if the server is showing the vote progress, if another menu
+   overwrites Galileo's, the progress won't be shown again until the other menu has been closed.
+   This only affects people that show the in-progress vote status.
 [*]Now obeys a setting of "0" for gal_endofmapvote. Would previously erroneously present a vote
-    regardless of the setting.
+   regardless of the setting.
 [*]New CVAR, gal_sounds_mute, to indicate if any of the sentences spoken during various events are
-    muted. See galileo.cfg for more information.
+   muted. See galileo.cfg for more information.
 [*]Added code to handle automated version info from SVN. This is of no consequence to anyone but
-    me really, but I wanted to include it in the change log since it actually involves a change
-    to the code.
-[*]Removed benign code that was prepped for feature utilizing standard maps of each mod. There
-    is no longer any plans to add any information regarding standard maps as I see no use for it.
-[*]Removed the following language keys:
-    GAL_STANDARD_NOTFOUND
-    GAL_STANDARD_TOOMANY
-    GAL_STANDARD_UNKNOWNMOD
+   me really, but I wanted to include it in the change log since it actually involves a change
+   to the code.
+[*]Removed benign code that was prepped for feature utilizing standard maps of each mod.
+   There is no longer any plans to add any information regarding standard maps as I see no use for it.
+[*]Removed the following language keys: GAL_STANDARD_NOTFOUND, GAL_STANDARD_TOOMANY, GAL_STANDARD_UNKNOWNMOD
 [*]Fixed the "vote filler groups" feature that was previously working incorrectly.
 [/LIST]
 
@@ -1746,6 +2171,14 @@ Data size:              56.704 bytes          57.292 bytes       +588 bytes
 Total requirements:    168.392 bytes         203.556 bytes    +35.164 bytes
 Compilation Time:         1,87 sec              2,62 sec        +0,75 sec
 [/PAWN]
+Table with just '[COLOR="Blue"][B]galileo_3.0.0-162[/B][/COLOR]' and '[COLOR="blue"][B]galileo_4.0.0-410[/B][/COLOR]'[PAWN]
+Plugin name:             galileo 3.0          galileo 4.0       Diferences
+Header size:             4.688 bytes          5.520 bytes     +0.832 bytes
+Code size:             125.192 bytes        181.256 bytes    +56.064 bytes
+Data size:              57.292 bytes         83.972 bytes    +26.680 bytes
+Total requirements:    203.556 bytes        287.132 bytes    +83.576 bytes
+Compilation Time:         2,62 sec             4,62 sec        +2,00 sec
+[/PAWN]
 Table with just '[COLOR="Blue"][B]deagsmapmanager[/B][/COLOR]' and '[COLOR="blue"][B]galileo_3.0.0-162[/B][/COLOR]'[PAWN]
 Plugin name:         deagsmapmanager           galileo 3.0       Diferences
 Header size:             3.648 bytes           4.688 bytes     +1.040 bytes
@@ -1793,6 +2226,18 @@ Source Data:[SPOILER]
 // Done.
 //
 // Compilation Time: 1,12 sec
+// ----------------------------------------
+
+//// galileo4.0.sma
+//
+// Header size:           5520 bytes
+// Code size:           181256 bytes
+// Data size:            83972 bytes
+// Stack/heap size:      16384 bytes
+// Total requirements:  287132 bytes
+// Done.
+//
+// Compilation Time: 4,62 sec
 // ----------------------------------------
 
 //// galileo_1.1.290.sma
@@ -1887,6 +2332,7 @@ v2.6               , Galileo-2.6.zip   ( 91.1 KB, 299   views)
 v3.2.2             , Galileo-3.2.2.zip (141.2 KB, 191   views)
 v3.2.3             , Galileo-3.2.3.zip (141.4 KB, 94    views)
 v3.2.4             , Galileo-3.2.4.zip (142.2 KB, 50    views)
+v3.2.6             , Galileo-3.2.6.zip (144.4 KB, 149   views)
 [/CODE]
 
 [anchor]LatestRelease[/anchor]******************************** [SIZE="6"][B][COLOR="Blue"]Latest Release Download[/COLOR][/B][/SIZE]: [goanchor=Top]Go to top[/goanchor] **

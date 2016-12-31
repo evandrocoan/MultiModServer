@@ -1,0 +1,6 @@
+awp_ruins
+awp_city
+aim_ak-colt
+de_dust2_fundo
+aim_headshot
+awp_map
