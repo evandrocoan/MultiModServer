@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.0.0-412";
+new const PLUGIN_VERSION[] = "v4.0.0-413";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -2185,7 +2185,7 @@ stock saveCurrentAndNextMapNames( nextMapName[] )
  */
 public map_loadRecentBanList( loadedMapsCount )
 {
-    LOGGER( 128, "I AM ENTERING ON map_loadRecentBanList(0)" )
+    LOGGER( 128, "I AM ENTERING ON map_loadRecentBanList(1) loadedMapsCount: %d", loadedMapsCount )
     new recentMapsFilePath[ MAX_FILE_PATH_LENGHT ];
 
     formatex( recentMapsFilePath, charsmax( recentMapsFilePath ), "%s/%s", g_dataDirPath, RECENT_BAN_MAPS_FILE_NAME );
@@ -2198,8 +2198,11 @@ public map_loadRecentBanList( loadedMapsCount )
         new maxRecentMapsBans = get_pcvar_num( cvar_recentMapsBannedNumber );
         new maxVotingChoices  = g_maxVotingChoices + 3;
 
-        maxRecentMapsBans + maxVotingChoices > loadedMapsCount ? ( maxRecentMapsBans -= maxVotingChoices ) : 0;
-        LOGGER( 4, "( map_loadRecentBanList ) loadedMapsCount: %d", loadedMapsCount )
+        if( maxRecentMapsBans + maxVotingChoices > loadedMapsCount )
+        {
+            maxRecentMapsBans = maxRecentMapsBans - maxVotingChoices;
+        }
+
         LOGGER( 4, "( map_loadRecentBanList ) maxVotingChoices: %d", maxVotingChoices )
         LOGGER( 4, "( map_loadRecentBanList ) maxRecentMapsBans: %d", maxRecentMapsBans )
 
@@ -2251,7 +2254,7 @@ stock writeRecentMapsBanList()
             // Add the current map to the ban list
             if( isOnlyRecentMapcycleMaps )
             {
-                // Do not if is on the current map cycle. Not writing it to the file, means not banning.
+                // Only ban if the map is on the current map cycle. Not writing it to the file, means not banning.
                 if( TrieKeyExists( g_mapcycleFileListTrie, g_currentMapName ) )
                 {
                     fprintf( recentMapsFileDescriptor, "%s^n", g_currentMapName );
@@ -2438,7 +2441,17 @@ stock loadMapFiles()
     // Load the ban recent maps feature
     if( get_pcvar_num( cvar_recentMapsBannedNumber ) )
     {
-        map_loadRecentBanList( loadedCount[ 2 ] );
+        // If we are only banning the maps on the map cycle, we should consider its size instead of
+        // the voting filler's size.
+        if( get_pcvar_num( cvar_isOnlyRecentMapcycleMaps ) )
+        {
+            map_loadRecentBanList( ArraySize( g_mapcycleFileListArray ) );
+        }
+        else
+        {
+            map_loadRecentBanList( loadedCount[ 2 ] );
+        }
+
         register_clcmd( "say recentmaps", "cmd_listrecent", 0 );
 
         // Do nothing if the map will be instantly changed
