@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.0.0-411";
+new const PLUGIN_VERSION[] = "v4.0.0-412";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -9331,6 +9331,8 @@ stock voteMapMenuBuilder( player_id )
 
 public handleDisplayVoteMapCommands( player_id, menu, item )
 {
+    LOGGER( 128, "I AM ENTERING ON handleDisplayVoteMapCommands(3) | player_id: %d, menu: %d, item: %d", player_id, menu, item )
+
     if( item == MENU_EXIT )
     {
         DESTROY_PLAYER_NEW_MENU_TYPE( menu )
@@ -9434,6 +9436,8 @@ public handleDisplayVoteMapCommands( player_id, menu, item )
 
 stock debug_nomination_match_choice( player_id, menu, item )
 {
+    LOGGER( 128, "I AM ENTERING ON debug_nomination_match_choice(3) | player_id: %d, menu: %d, item: %d", player_id, menu, item )
+
     new access;
     new callback;
 
@@ -9525,7 +9529,7 @@ public displayVoteMapMenuCommands( player_id )
 
 public handleDisplayVoteMap( player_id, menu, item )
 {
-    LOGGER( 128, "I AM ENTERING ON handleDisplayVoteMap(1) | player_id: %d, menu: %d, item: %d", player_id, menu, item )
+    LOGGER( 128, "I AM ENTERING ON handleDisplayVoteMap(3) | player_id: %d, menu: %d, item: %d", player_id, menu, item )
 
     // Let go to destroy the menu and clean some memory. As the menu is not paginated, the item 9
     // is the key 0 on the keyboard. Also, the item 8 is the key 9; 7, 8; 6, 7; 5, 6; 4, 5; etc.
@@ -9533,7 +9537,7 @@ public handleDisplayVoteMap( player_id, menu, item )
         || ( item == 9
              && g_totalVoteOptions < 2 ) )
     {
-        DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
+        DESTROY_PLAYER_NEW_MENU_TYPE( menu )
 
         LOGGER( 1, "    ( handleDisplayVoteMap ) Just Returning PLUGIN_HANDLED, the menu is destroyed." )
         return PLUGIN_HANDLED;
@@ -9543,7 +9547,7 @@ public handleDisplayVoteMap( player_id, menu, item )
     if( item == 9
         && g_totalVoteOptions > 1 )
     {
-        DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
+        DESTROY_PLAYER_NEW_MENU_TYPE( menu )
         displayVoteMapMenuCommands( player_id );
 
         LOGGER( 1, "    ( handleDisplayVoteMap ) Just Returning PLUGIN_HANDLED, starting the voting." )
@@ -9553,7 +9557,7 @@ public handleDisplayVoteMap( player_id, menu, item )
     // If the 8 button item is hit, and we are not on the first page, we must to perform the back option.
     if( item == 7 )
     {
-        DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
+        DESTROY_PLAYER_NEW_MENU_TYPE( menu )
         g_voteMapMenuPages[ player_id ] ? g_voteMapMenuPages[ player_id ]-- : 0;
 
         // Try to block/difficult players from performing the Denial Of Server attack.
@@ -9567,7 +9571,7 @@ public handleDisplayVoteMap( player_id, menu, item )
     // If the 9 button item is hit, and we are on some page not the last one, we must to perform the more option.
     if( item == 8 )
     {
-        DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
+        DESTROY_PLAYER_NEW_MENU_TYPE( menu )
         g_voteMapMenuPages[ player_id ]++;
 
         // Try to block/difficult players from performing the Denial Of Server attack.
@@ -9615,10 +9619,10 @@ public handleDisplayVoteMap( player_id, menu, item )
     {
         new mapName[ MAX_MAPNAME_LENGHT ];
         new mapInfo[ MAX_MAPNAME_LENGHT ];
-        new pageSeptalNumber = convert_numeric_base( g_voteMapMenuPages[ player_id ], 10, 7 );
+        new pageSeptalNumber = convert_numeric_base( g_voteMapMenuPages[ player_id ], 10, MAX_NOM_MENU_ITEMS_PER_PAGE );
 
         // Due there are several first menu options, take `VOTEMAP_FIRST_PAGE_ITEMS_COUNTING` items less.
-        item = convert_numeric_base( pageSeptalNumber * 10, 7, 10 ) + item - VOTEMAP_FIRST_PAGE_ITEMS_COUNTING;
+        item = convert_numeric_base( pageSeptalNumber * 10, MAX_NOM_MENU_ITEMS_PER_PAGE, 10 ) + item - VOTEMAP_FIRST_PAGE_ITEMS_COUNTING;
 
         GET_MAP_NAME( g_nominationLoadedMapsArray, item, mapName )
         GET_MAP_INFO( g_nominationLoadedMapsArray, item, mapInfo )
@@ -9627,7 +9631,7 @@ public handleDisplayVoteMap( player_id, menu, item )
         map_isInMenu( mapName ) ? removeMapFromTheVotingMenu( mapName ) : addMapToTheVotingMenu( mapName, mapInfo );
     }
 
-    DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
+    DESTROY_PLAYER_NEW_MENU_TYPE( menu )
 
     // displayVoteMapMenuHook( player_id );
     set_task( 0.1, "displayVoteMapMenuHook", player_id );
