@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.0.0-409";
+new const PLUGIN_VERSION[] = "v4.0.0-410";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -14606,6 +14606,7 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
         g_test_isToUseStrictValidMaps = true;
         new test_id = test_registerSeriesNaming( "test_map_populateListOnSeries", 'a' ); // Case 1
 
+        new Trie:populatedTrie   = TrieCreate();
         new Array:populatedArray = ArrayCreate( MAX_MAPNAME_LENGHT );
         set_pcvar_num( cvar_serverMoveCursor, 1 );
 
@@ -14625,7 +14626,7 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
         test_strictValidMapsTrie( test_id, "de_dust4", true );
 
         // Second part
-        new mapCount = map_populateListOnSeries( populatedArray, g_test_voteMapFilePath );
+        new mapCount = map_populateListOnSeries( populatedArray, populatedTrie, g_test_voteMapFilePath );
         new errorMessage[ MAX_LONG_STRING ];
 
         for( new index = 0; index < ArraySize( populatedArray ); index++ )
