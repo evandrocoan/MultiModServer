@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-408";
+new const PLUGIN_VERSION[] = "v4.0.0-409";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -88,7 +88,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-408";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1
+#define DEBUG_LEVEL 0
 
 
 /**
@@ -5669,6 +5669,10 @@ stock configureVotingStart( bool:is_forced_voting )
             {
                 g_isMapExtensionAllowed =
                         get_pcvar_float( cvar_mp_timelimit ) < get_pcvar_float( cvar_maxMapExtendTime );
+            }
+            else
+            {
+                g_isMapExtensionAllowed = true;
             }
         }
     }
