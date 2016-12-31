@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-403";
+new const PLUGIN_VERSION[] = "v3.2.6-404";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -279,6 +279,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-403";
         test_setCorrectMenuPage_load();
         test_map_populateListOnSeries();
         test_GET_MAP_NAME_load();
+        test_GET_MAP_INFO_load();
     }
 
     /**
@@ -312,7 +313,8 @@ new const PLUGIN_VERSION[] = "v3.2.6-403";
             // LOGGER( 1, "Current i is: %d", i )
         }
 
-        test_GET_MAP_NAME_load();
+        test_GET_MAP_INFO_load();
+        // test_GET_MAP_NAME_load();
         // test_map_populateListOnSeries();
         // test_setCorrectMenuPage_load();
         // test_convertNumericBase_load();
@@ -5564,7 +5566,7 @@ stock bool:approvedTheVotingStart( bool:is_forced_voting )
     return true;
 }
 
-stock printVotingMaps( votingMapsCount )
+stock printVotingMaps( votingMapsCount = MAX_OPTIONS_IN_VOTE )
 {
     LOGGER( 128, "I AM ENTERING ON printVotingMaps(1) votingMapsCount: %d", votingMapsCount )
 
@@ -5572,6 +5574,9 @@ stock printVotingMaps( votingMapsCount )
     {
         LOGGER( 16, "( printVotingMaps ) Voting map %d: %s %s", index, g_votingMapNames[ index ], g_votingMapInfos[ index ] )
     }
+
+    LOGGER( 16, "" )
+    LOGGER( 16, "" )
 
     return 0;
 }
@@ -14631,6 +14636,101 @@ stock map_populateListOnSeries( Array:mapArray, mapFilePath[] )
         formatex( errorMessage, charsmax( errorMessage ), "The map info must to be %s, instead of %s.",
                 mapInfoExpected, mapName );
         SET_TEST_FAILURE( test_id, !equali( mapName, mapInfoExpected ), errorMessage )
+    }
+
+    /**
+     * Tests if menu maps informations are being properly loaded into a normal/usual map voting menu.
+     */
+    stock test_GET_MAP_INFO_load()
+    {
+        // Enable all settings and to perform the configuration loading
+        set_pcvar_string( cvar_voteMapFilePath          , g_test_voteMapFilePath    );
+        set_pcvar_string( cvar_voteWhiteListMapFilePath , g_test_whiteListFilePath  );
+        set_pcvar_string( cvar_voteMinPlayersMapFilePath, g_test_minPlayersFilePath );
+
+        set_pcvar_num( cvar_whitelistMinPlayers  , 1 );
+        set_pcvar_num( cvar_voteMinPlayers       , 2 );
+        set_pcvar_num( cvar_isWhiteListNomBlock  , 0 );
+        set_pcvar_num( cvar_isWhiteListBlockOut  , 0 );
+        set_pcvar_num( cvar_nomMinPlayersControl , 2 );
+        set_pcvar_num( cvar_nomPlayerAllowance   , 2 );
+        set_pcvar_num( cvar_voteMapChoiceCount   , 5 );
+        set_pcvar_num( cvar_nomQtyUsed           , 0 );
+
+        cacheCvarsValues();
+
+        // If 'g_test_aimedPlayersNumber < cvar_voteMinPlayers', enables the minimum players feature.
+        g_test_aimedPlayersNumber = 5;
+
+        helper_mapFileListLoad( g_test_voteMapFilePath, "de_dust1 info1", "de_dust2noInfo", "de_dust2 info1 info2" );
+        helper_mapFileListLoad( g_test_minPlayersFilePath, "de_rats" , "de_train" );
+        helper_mapFileListLoad( g_test_whiteListFilePath , "[0-23]"  , "de_rats", "de_train" );
+
+        // To force the Whitelist to be reloaded.
+        loadMapFiles();
+        loadTheWhiteListFeature();
+        loadTheDefaultVotingChoices();
+
+        printVotingMaps();
+
+        test_GET_MAP_INFO( "de_dust1"       , "info1", true  );   // case 1
+        test_GET_MAP_INFO( "de_dust1"       , "info1", true  );   // case 2
+        test_GET_MAP_INFO( "de_dust2noInfo" , ""     , true  );   // case 3
+        test_GET_MAP_INFO( "de_dust2noInfo2", "Info" , false );   // case 4
+        test_GET_MAP_INFO( "de_dust"        , "info" , false );   // case 5
+    }
+
+    /**
+     * Checks whether the voting menu is properly loaded given some maps.
+     *
+     * @param requiredMap      a map name to be on the menu
+     * @param requiredInfo     a map info to be on the menu
+     * @param toBe             true if the information should be present, false otherwise
+     */
+    stock test_GET_MAP_INFO( requiredMap[], requiredInfo[], bool:toBe )
+    {
+        new test_id = test_registerSeriesNaming( "test_GET_MAP_INFO", 'a' );
+
+        test_GET_MAP_INFO_check( test_id, requiredMap , true , toBe );
+        test_GET_MAP_INFO_check( test_id, requiredInfo, false, toBe );
+    }
+
+    /**
+     * @see test_GET_MAP_INFO(2).
+     */
+    stock test_GET_MAP_INFO_check( test_id, textToCheck[], bool:is, bool:toBe )
+    {
+        new bool:isMapPresent;
+        new      currentIndex;
+        new      errorMessage[ MAX_LONG_STRING ];
+
+        if( textToCheck[ 0 ] )
+        {
+            if( is )
+            {
+                for( currentIndex = 0; currentIndex < sizeof g_votingMapNames; ++currentIndex )
+                {
+                    if( equali( g_votingMapNames[ currentIndex ], textToCheck ) )
+                    {
+                        isMapPresent = true;
+                    }
+                }
+            }
+            else
+            {
+                for( currentIndex = 0; currentIndex < sizeof g_votingMapInfos; ++currentIndex )
+                {
+                    if( equali( g_votingMapInfos[ currentIndex ], textToCheck ) )
+                    {
+                        isMapPresent = true;
+                    }
+                }
+            }
+
+            formatex( errorMessage, charsmax( errorMessage ),
+                    "The %s '%s' must %sto be present on the voting map menu.", is ? "name" : "info", textToCheck, toBe ? "" : "not " );
+            SET_TEST_FAILURE( test_id, isMapPresent != toBe, errorMessage )
+        }
     }
 
 
