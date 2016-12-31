@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v3.2.6-404";
+new const PLUGIN_VERSION[] = "v3.2.6-405";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -88,7 +88,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-404";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+16+64+4+2
+#define DEBUG_LEVEL 1+2+4+64
 
 
 /**
@@ -280,6 +280,7 @@ new const PLUGIN_VERSION[] = "v3.2.6-404";
         test_map_populateListOnSeries();
         test_GET_MAP_NAME_load();
         test_GET_MAP_INFO_load();
+        test_SortCustomSynced2D();
     }
 
     /**
@@ -313,7 +314,8 @@ new const PLUGIN_VERSION[] = "v3.2.6-404";
             // LOGGER( 1, "Current i is: %d", i )
         }
 
-        test_GET_MAP_INFO_load();
+        test_SortCustomSynced2D();
+        // test_GET_MAP_INFO_load();
         // test_GET_MAP_NAME_load();
         // test_map_populateListOnSeries();
         // test_setCorrectMenuPage_load();
@@ -5566,13 +5568,13 @@ stock bool:approvedTheVotingStart( bool:is_forced_voting )
     return true;
 }
 
-stock printVotingMaps( votingMapsCount = MAX_OPTIONS_IN_VOTE )
+stock printVotingMaps( mapNames[][], mapInfos[][], votingMapsCount = MAX_OPTIONS_IN_VOTE )
 {
-    LOGGER( 128, "I AM ENTERING ON printVotingMaps(1) votingMapsCount: %d", votingMapsCount )
+    LOGGER( 128, "I AM ENTERING ON printVotingMaps(3) votingMapsCount: %d", votingMapsCount )
 
     for( new index = 0; index < votingMapsCount; index++ )
     {
-        LOGGER( 16, "( printVotingMaps ) Voting map %d: %s %s", index, g_votingMapNames[ index ], g_votingMapInfos[ index ] )
+        LOGGER( 16, "( printVotingMaps ) Voting map %d: %s %s", index, mapNames[ index ], mapInfos[ index ] )
     }
 
     LOGGER( 16, "" )
@@ -5603,7 +5605,7 @@ stock loadRunOffVoteChoices()
     }
 
     g_votingSecondsRemaining = get_pcvar_num( cvar_runoffDuration );
-    LOGGER( 0, "", printVotingMaps( g_totalVoteOptions ) )
+    LOGGER( 0, "", printVotingMaps(  g_votingMapNames, g_votingMapInfos, g_totalVoteOptions ) )
 }
 
 stock configureVotingStart( bool:is_forced_voting )
@@ -5701,6 +5703,45 @@ stock vote_startDirector( bool:is_forced_voting )
             g_isTimeToRestart, g_voteStatus & IS_FORCED_VOTE != 0 )
 }
 
+/**
+ * Sort static the static array `array[]` and keep the array `arraySync` updated with it.
+ *
+ * @param array        a sorted two-dimensional static array
+ * @param arraySync    a synced two-dimensional static array with the first parameter `array[][]`
+ * @param elementSize  the size of the elements to be inserted
+ */
+stock SortCustomSynced2D( array[][], arraySync[][], arraySize )
+{
+    LOGGER( 128, "I AM ENTERING ON SortCustomSynced2D(3) arraySize: %d", arraySize )
+    LOGGER( 0, "", printVotingMaps( array, arraySync ) )
+
+    new outerIndex;
+    new innerIndex;
+
+    new tempElement    [ MAX_MAPNAME_LENGHT ];
+    new tempElementSync[ MAX_MAPNAME_LENGHT ];
+
+    for( outerIndex = 0; outerIndex < arraySize; outerIndex++ )
+    {
+        for( innerIndex = outerIndex + 1; innerIndex < arraySize; innerIndex++ )
+        {
+            if( strcmp( array[ outerIndex ], array[ innerIndex ] ) > 0 )
+            {
+                copy( tempElement    , charsmax( tempElement     ), array    [ outerIndex ] );
+                copy( tempElementSync, charsmax( tempElementSync ), arraySync[ outerIndex ] );
+
+                copy( array    [ outerIndex ], charsmax( tempElement ), array    [ innerIndex ] );
+                copy( arraySync[ outerIndex ], charsmax( tempElement ), arraySync[ innerIndex ] );
+
+                copy( array    [ innerIndex ], charsmax( tempElement     ), tempElement     );
+                copy( arraySync[ innerIndex ], charsmax( tempElementSync ), tempElementSync );
+            }
+        }
+    }
+
+    LOGGER( 0, "", printVotingMaps( array, arraySync ) )
+}
+
 stock initializeTheVoteDisplay()
 {
     LOGGER( 128, "I AM ENTERING ON initializeTheVoteDisplay(0)" )
@@ -5715,7 +5756,7 @@ stock initializeTheVoteDisplay()
     nomination_clearAll();
 
     // Alphabetize the maps
-    SortCustom2D( g_votingMapNames, g_totalVoteOptions, "sort_stringsi" );
+    SortCustomSynced2D( g_votingMapNames, g_votingMapInfos, g_totalVoteOptions );
 
     // Skip bots and hltv
     get_players( players, playersCount, "ch" );
@@ -6022,15 +6063,6 @@ public voteExpire()
     // then the voting results are being displayed forcing the SubMenu to looks like it is not closing
     // never and ever, but actually it is just being displayed 3 times as it was the voting results.
     arrayset( g_isPlayerSeeingTheSubMenu, false, sizeof g_isPlayerSeeingTheSubMenu );
-}
-
-public sort_stringsi( const elem1[], const elem2[], const array[], data[], data_size )
-{
-    LOGGER( 128, "I AM ENTERING ON sort_stringsi(5) | elem1: %15s, elem2: %15s, array: %10s, data: %10s, \
-            data_size: %3d",                          elem1,       elem2,       array,       data, \
-            data_size )
-
-    return strcmp( elem1, elem2, 1 );
 }
 
 /**
@@ -13151,7 +13183,7 @@ stock map_populateListOnSeries( Array:mapArray, mapFilePath[] )
         }
 
         g_test_testsNumber++;
-        print_logger( "        EXECUTING TEST %d AFTER %d WITH UNTIL %d SECONDS DELAY - %s ",
+        print_logger( "        EXECUTING TEST %d AFTER %d WITH UNTIL %d SECONDS DELAYED - %s ",
                 g_test_testsNumber, computeTheTestElapsedTime(), max_delay_result, test_name );
 
         if( g_test_maxDelayResult < max_delay_result )
@@ -14671,7 +14703,7 @@ stock map_populateListOnSeries( Array:mapArray, mapFilePath[] )
         loadTheWhiteListFeature();
         loadTheDefaultVotingChoices();
 
-        printVotingMaps();
+        printVotingMaps( g_votingMapNames, g_votingMapInfos );
 
         test_GET_MAP_INFO( "de_dust1"       , "info1", true  );   // case 1
         test_GET_MAP_INFO( "de_dust1"       , "info1", true  );   // case 2
@@ -14731,6 +14763,58 @@ stock map_populateListOnSeries( Array:mapArray, mapFilePath[] )
                     "The %s '%s' must %sto be present on the voting map menu.", is ? "name" : "info", textToCheck, toBe ? "" : "not " );
             SET_TEST_FAILURE( test_id, isMapPresent != toBe, errorMessage )
         }
+    }
+
+    /**
+     * Tests if the function SortCustomSynced2D(3) is properly sorting the maps.
+     */
+    stock test_SortCustomSynced2D()
+    {
+        new expected    [ MAX_MAPNAME_LENGHT ];
+        new errorMessage[ MAX_LONG_STRING    ];
+
+        new position;
+        new test_id = test_registerSeriesNaming( "test_SortCustomSynced2D", 'd' );
+
+        new votingMaps[ MAX_OPTIONS_IN_VOTE ][ MAX_MAPNAME_LENGHT ];
+        new votingInfo[ MAX_OPTIONS_IN_VOTE ][ MAX_MAPNAME_LENGHT ];
+
+        copy( votingMaps[ 0 ], charsmax( votingMaps[] ), "de_dust2" );
+        copy( votingMaps[ 1 ], charsmax( votingMaps[] ), "de_dust1" );
+        copy( votingMaps[ 2 ], charsmax( votingMaps[] ), "de_nuke"  );
+        copy( votingMaps[ 3 ], charsmax( votingMaps[] ), "cs_nuke"  );
+
+        copy( votingInfo[ 0 ], charsmax( votingInfo[] ), " []"         );
+        copy( votingInfo[ 1 ], charsmax( votingInfo[] ), "() de_dust1" );
+        copy( votingInfo[ 2 ], charsmax( votingInfo[] ), "de_nuke"     );
+        copy( votingInfo[ 3 ], charsmax( votingInfo[] ), "[ cs_nuke ]" );
+
+        SortCustomSynced2D( votingMaps, votingInfo, 4 );
+
+        position = 0;
+        copy( expected, charsmax( expected ), "cs_nuke" );
+        formatex( errorMessage, charsmax( errorMessage ),
+                 "The position %d must to be %s, instead of %s.", position, expected, votingMaps[ position ] );
+        SET_TEST_FAILURE( test_id, !equali( expected, votingMaps[ position ] ), errorMessage )
+
+        position = 1;
+        copy( expected, charsmax( expected ), "de_dust1" );
+        formatex( errorMessage, charsmax( errorMessage ),
+                 "The position %d must to be %s, instead of %s.", position, expected, votingMaps[ position ] );
+        SET_TEST_FAILURE( test_id, !equali( expected, votingMaps[ position ] ), errorMessage )
+
+        position = 2;
+        copy( expected, charsmax( expected ), "de_dust2" );
+        formatex( errorMessage, charsmax( errorMessage ),
+                 "The position %d must to be %s, instead of %s.", position, expected, votingMaps[ position ] );
+        SET_TEST_FAILURE( test_id, !equali( expected, votingMaps[ position ] ), errorMessage )
+
+
+        position = 3;
+        copy( expected, charsmax( expected ), "de_nuke" );
+        formatex( errorMessage, charsmax( errorMessage ),
+                 "The position %d must to be %s, instead of %s.", position, expected, votingMaps[ position ] );
+        SET_TEST_FAILURE( test_id, !equali( expected, votingMaps[ position ] ), errorMessage )
     }
 
 
