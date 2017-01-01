@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.0.0-415";
+new const PLUGIN_VERSION[] = "v4.0.0-416";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -14915,7 +14915,6 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
         formatex( errorMessage, charsmax( errorMessage ),
                  "The position %d must to be %s, instead of %s.", position, expected, votingMaps[ position ] );
         SET_TEST_FAILURE( test_id, !equali( expected, votingMaps[ position ] ), errorMessage )
-
 
         position = 3;
         copy( expected, charsmax( expected ), "de_nuke" );
