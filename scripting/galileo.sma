@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.0.0-414";
+new const PLUGIN_VERSION[] = "v4.0.0-415";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -967,6 +967,7 @@ new cvar_nomCleaning;
 new cvar_isToShowExpCountdown;
 new cvar_isEndMapCountdown;
 new cvar_voteMapChoiceCount;
+new cvar_voteMapChoiceNext;
 new cvar_voteAnnounceChoice;
 new cvar_voteUniquePrefixes;
 new cvar_rtvReminder;
@@ -1377,7 +1378,8 @@ public plugin_init()
     cvar_endOfMapVoteStart         = register_cvar( "gal_endofmapvote_start"      , "0"    );
     cvar_nextMapChangeAnnounce     = register_cvar( "gal_nextmap_change"          , "1"    );
     cvar_nextMapChangeVotemap      = register_cvar( "gal_nextmap_votemap"         , "0"    );
-    cvar_voteMapChoiceCount        = register_cvar( "gal_vote_mapchoices"         , "6"    );
+    cvar_voteMapChoiceCount        = register_cvar( "gal_vote_mapchoices"         , "5"    );
+    cvar_voteMapChoiceNext         = register_cvar( "gal_vote_mapchoices_next"    , "0"    );
     cvar_voteDuration              = register_cvar( "gal_vote_duration"           , "15"   );
     cvar_voteMapFilePath           = register_cvar( "gal_vote_mapfile"            , "*"    );
     cvar_voteMinPlayers            = register_cvar( "gal_vote_minplayers"         , "0"    );
@@ -5280,6 +5282,21 @@ stock loadOnlyNominationVoteChoices()
 stock loadTheDefaultVotingChoices()
 {
     LOGGER( 128, "I AM ENTERING ON loadTheDefaultVotingChoices(0)" )
+
+    // To add the next map to the voting menu, if enabled.
+    if( get_pcvar_num( cvar_voteMapChoiceNext ) )
+    {
+        new mapIndex;
+        new mapInfo[ MAX_MAPNAME_LENGHT ];
+
+        if( TrieKeyExists( g_mapcycleFileListTrie, g_nextMapName ) )
+        {
+            TrieGetCell(  g_mapcycleFileListTrie , g_nextMapName, mapIndex );
+            GET_MAP_INFO( g_mapcycleFileListArray, mapIndex     , mapInfo  )
+        }
+
+        addMapToTheVotingMenu( g_nextMapName, mapInfo );
+    }
 
     if( IS_NOMINATION_MININUM_PLAYERS_CONTROL_ENABLED()
         || IS_WHITELIST_ENABLED() )
