@@ -1,0 +1,3 @@
+[submodule "versioning/versioning"]
+	path = versioning/versioning
+	url = https://github.com/evandrocoan/.versioning
