@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.0.0-416";
+new const PLUGIN_VERSION[] = "v4.0.0-417";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -2989,7 +2989,7 @@ stock GameEndingType:switchEndingGameType( by_maxrounds, cv_maxrounds, by_time, 
             }
         }
         // If the `by_maxrounds` did not fall in any of these above traps to fall out the `if-else` chain,
-        // it is safe to left if free from this point towards.
+        // it is safe to let if free from this point towards.
         else if( cv_time > 0
                  && by_time > by_maxrounds )
         {
@@ -3691,12 +3691,6 @@ stock intermission_effects( endGameType, Float:mp_chattime )
                 give_item( player_id, "weapon_hegrenade" );
             }
         }
-    }
-
-    if( endGameType & IS_MAP_MAPCHANGE_BUY_GRENADES )
-    {
-        client_cmd( 0, "sgren" );
-        client_cmd( 0, "hegren" );
     }
 
     client_cmd( 0, "+showscores" );
