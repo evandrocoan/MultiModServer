@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.0.0-413";
+new const PLUGIN_VERSION[] = "v4.0.0-414";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -12322,7 +12322,9 @@ stock readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         {
             GET_MAP_NAME( g_mapcycleFileListArray, mapIndex, loadedMapName )
 
-            if( ++mapsProcessedNumber > g_nextMapCyclePosition )
+            // Block the next map cvar to be set to the current map.
+            if( ++mapsProcessedNumber > g_nextMapCyclePosition
+                && !equali( g_currentMapName, loadedMapName ) )
             {
                 copy( nextMapName, nextMapNameMaxchars, loadedMapName );
                 LOGGER( 1, "( readMapCycle ) loadedMapName: %s", loadedMapName )
