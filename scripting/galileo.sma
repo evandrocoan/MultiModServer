@@ -93,7 +93,7 @@ new const PLUGIN_VERSION[] = "v4.0.0-423";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+2+4
+#define DEBUG_LEVEL 1+2+4+16
 
 
 /**
@@ -8227,6 +8227,9 @@ stock serverChangeLevel( mapName[] )
 #else
     engine_changelevel( mapName );
 #endif
+
+    LOGGER( 1, "    I AM EXITING serverChangeLevel(1)..." )
+    LOGGER( 1, "" )
 }
 
 public cmd_HL1_votemap( player_id )
