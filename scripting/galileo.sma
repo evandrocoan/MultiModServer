@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.0.0-420";
+new const PLUGIN_VERSION[] = "v4.0.0-421";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -3655,7 +3655,7 @@ stock intermission_effects( endGameType, Float:mp_chattime )
     if( endGameType & IS_MAP_MAPCHANGE_FREEZE_PLAYERS )
     {
         g_original_sv_maxspeed = get_pcvar_float( cvar_sv_maxspeed );
-        set_pcvar_float( cvar_sv_maxspeed, 0.0 );
+        tryToSetGameModCvarFloat( cvar_sv_maxspeed, 0.0 );
 
         LOGGER( 2, "( intermission_effects ) IS CHANGING THE CVAR 'sv_maxspeed' to '%f'.", get_pcvar_float( cvar_sv_maxspeed ) )
     }
@@ -3665,7 +3665,7 @@ stock intermission_effects( endGameType, Float:mp_chattime )
     {
         if( ( g_isToRestoreFriendlyFire = get_pcvar_num( cvar_mp_friendlyfire ) == 0 ) )
         {
-            set_pcvar_num( cvar_mp_friendlyfire, 1 );
+            tryToSetGameModCvarNum( cvar_mp_friendlyfire, 1 );
         }
 
         LOGGER( 2, "( intermission_effects ) IS CHANGING THE CVAR 'mp_friendlyfire' to '%d'.", get_pcvar_num( cvar_mp_friendlyfire ) )
@@ -7808,7 +7808,7 @@ stock restoreOriginalServerMaxSpeed()
 
     if( g_original_sv_maxspeed )
     {
-        set_pcvar_float( cvar_sv_maxspeed, g_original_sv_maxspeed );
+        tryToSetGameModCvarFloat( cvar_sv_maxspeed, g_original_sv_maxspeed );
         LOGGER( 2, "( restoreOriginalServerMaxSpeed ) IS CHANGING THE CVAR 'sv_maxspeed' to '%f'.", g_original_sv_maxspeed )
 
         g_original_sv_maxspeed = 0.0;
@@ -12618,7 +12618,7 @@ public delayedChange( param[] )
         // just below.
         new Float:mp_chattime = get_pcvar_float( cvar_mp_chattime ) - 2.0;
 
-        set_pcvar_float( cvar_mp_chattime, mp_chattime );
+        tryToSetGameModCvarFloat( cvar_mp_chattime, mp_chattime );
         LOGGER( 2, "( delayedChange ) IS CHANGING THE CVAR 'mp_chattime' to '%f'.", get_pcvar_float( cvar_mp_chattime ) )
     }
 
@@ -12641,7 +12641,7 @@ public changeMap()
     if( cvar_mp_chattime )
     {
         // make sure mp_chattime is long
-        set_pcvar_float( cvar_mp_chattime, chattime + 2.0 );
+        tryToSetGameModCvarFloat( cvar_mp_chattime, chattime + 2.0 );
         LOGGER( 2, "( changeMap ) IS CHANGING THE CVAR 'mp_chattime' to '%f'.", chattime + 2.0 )
     }
 
@@ -13630,7 +13630,7 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
         new test_id    = register_test( chainDelay, "test_isMapExtensionAvowed_case1" );
 
         set_pcvar_float( cvar_maxMapExtendTime, 20.0 );
-        set_pcvar_float( cvar_mp_timelimit, 10.0 );
+        tryToSetGameModCvarFloat( cvar_mp_timelimit, 10.0 );
 
         vote_startDirector( false );
 
@@ -13656,7 +13656,7 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
         cancelVoting();
 
         set_pcvar_float( cvar_maxMapExtendTime, 10.0 );
-        set_pcvar_float( cvar_mp_timelimit, 20.0 );
+        tryToSetGameModCvarFloat( cvar_mp_timelimit, 20.0 );
 
         vote_startDirector( false );
 
@@ -13688,7 +13688,7 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
         cancelVoting();
         secondsLeft = get_timeleft();
 
-        set_pcvar_float( cvar_mp_timelimit,
+        tryToSetGameModCvarFloat( cvar_mp_timelimit,
                 ( get_pcvar_float( cvar_mp_timelimit ) * 60
                   - secondsLeft
                   + START_VOTEMAP_MAX_TIME + PERIODIC_CHECKING_INTERVAL )
@@ -13712,7 +13712,7 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
         vote_manageEnd();
         SET_TEST_FAILURE( test_id, !( g_voteStatus & IS_VOTE_IN_PROGRESS ), "vote_startDirector() does not started!" )
 
-        set_pcvar_float( cvar_mp_timelimit, 20.0 );
+        tryToSetGameModCvarFloat( cvar_mp_timelimit, 20.0 );
         cancelVoting();
 
         displaysLastTestOk();
@@ -13729,7 +13729,7 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
         vote_manageEnd();
         SET_TEST_FAILURE( test_id, ( g_voteStatus & IS_VOTE_IN_PROGRESS ) != 0, "vote_startDirector() does started!" )
 
-        set_pcvar_float( cvar_mp_timelimit, 1.0 );
+        tryToSetGameModCvarFloat( cvar_mp_timelimit, 1.0 );
         cancelVoting();
 
         displaysLastTestOk();
@@ -13746,7 +13746,7 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
         vote_manageEnd();
         SET_TEST_FAILURE( test_id, ( g_voteStatus & IS_VOTE_IN_PROGRESS ) != 0, "vote_startDirector() does started!" )
 
-        set_pcvar_float( cvar_mp_timelimit, 20.0 );
+        tryToSetGameModCvarFloat( cvar_mp_timelimit, 20.0 );
         //cancelVoting();
 
         displaysLastTestOk();
@@ -14631,7 +14631,7 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
 
         if( time > 0.0 )
         {
-            set_pcvar_float( cvar_mp_timelimit,
+            tryToSetGameModCvarFloat( cvar_mp_timelimit,
                     ( get_pcvar_float( cvar_mp_timelimit ) * 60
                       - get_timeleft()
                       + limit
