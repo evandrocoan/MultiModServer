@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.0.0-422";
+new const PLUGIN_VERSION[] = "v4.0.0-423";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -93,7 +93,7 @@ new const PLUGIN_VERSION[] = "v4.0.0-422";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+2+4+64
+#define DEBUG_LEVEL 1+2+4
 
 
 /**
@@ -1581,12 +1581,14 @@ stock configureEndGameCvars()
 
 stock tryToGetGameModCvar( &cvar_to_get, cvar_name[] )
 {
-    LOGGER( 256, "I AM ENTERING ON tryToGetGameModCvar(2) | cvar_to_get: %d, cvar_name: %s", cvar_to_get, cvar_name )
+    LOGGER( 128, "I AM ENTERING ON tryToGetGameModCvar(2) | cvar_to_get: %d, cvar_name: %s", cvar_to_get, cvar_name )
 
     if( !( cvar_to_get = get_cvar_pointer( cvar_name ) ) )
     {
         cvar_to_get = cvar_disabledValuePointer;
     }
+
+    LOGGER( 1, "( tryToGetGameModCvar ) %s is cvar_to_get: %d", cvar_name, cvar_to_get )
 }
 
 stock configureTheVotingMenus()
@@ -1688,6 +1690,9 @@ stock mp_fraglimitCvarSupport()
     {
         cvar_mp_fraglimit = cvar_disabledValuePointer;
     }
+
+    LOGGER( 1, "( mp_fraglimitCvarSupport ) cvar_disabledValuePointer: %d", cvar_disabledValuePointer )
+    LOGGER( 1, "( mp_fraglimitCvarSupport ) mp_fraglimit is cvar_to_get: %d", cvar_mp_fraglimit )
 }
 
 stock configureTheRTVFeature()
@@ -12081,6 +12086,7 @@ stock delete_users_menus( bool:isToDoubleReset = false )
 stock tryToSetGameModCvarFloat( cvarPointer, Float:value )
 {
     LOGGER( 128, "I AM ENTERING ON tryToSetGameModCvarFloat(2) | cvarPointer: %d, value: %f", cvarPointer, value )
+    LOGGER( 1, "( tryToSetGameModCvarNum ) cvar_disabledValuePointer: %d", cvar_disabledValuePointer )
 
     if( cvarPointer != cvar_disabledValuePointer )
     {
@@ -12092,6 +12098,7 @@ stock tryToSetGameModCvarFloat( cvarPointer, Float:value )
 stock tryToSetGameModCvarNum( cvarPointer, num )
 {
     LOGGER( 128, "I AM ENTERING ON tryToSetGameModCvarNum(2) | cvarPointer: %d, num: %d", cvarPointer, num )
+    LOGGER( 1, "( tryToSetGameModCvarNum ) cvar_disabledValuePointer: %d", cvar_disabledValuePointer )
 
     if( cvarPointer != cvar_disabledValuePointer )
     {
@@ -12103,6 +12110,7 @@ stock tryToSetGameModCvarNum( cvarPointer, num )
 stock tryToSetGameModCvarString( cvarPointer, string[] )
 {
     LOGGER( 128, "I AM ENTERING ON tryToSetGameModCvarString(2) | cvarPointer: %d, string: %s", cvarPointer, string )
+    LOGGER( 1, "( tryToSetGameModCvarNum ) cvar_disabledValuePointer: %d", cvar_disabledValuePointer )
 
     if( cvarPointer != cvar_disabledValuePointer )
     {
@@ -13986,15 +13994,19 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
      */
     stock test_resetRoundsScores_cases()
     {
-        test_resetRoundsScores_loader( 90, 60, 31, 60  ); // case 1, 90 - 60 + 31 - 1 = 60
-        test_resetRoundsScores_loader( 90, 20, 31, 100 ); // case 2, 90 - 20 + 31 - 1 = 100
-        test_resetRoundsScores_loader( 20, 15, 11, 15  ); // case 3, 20 - 15 + 11 - 1 = 15
-        test_resetRoundsScores_loader( 60, 50, 1, 10 );   // case 4, 60 - 50 + 1  - 1 = 10
-        test_resetRoundsScores_loader( 60, 59, 1, 1 );    // case 5, 60 - 59 + 1  - 1 = 1
-        test_resetRoundsScores_loader( 60, 60, 1, 60 );   // case 6, 60 - 60 + 1  - 1 = 60
-        test_resetRoundsScores_loader( 60, 59, 0, 60 );   // case 7, 60 - 59 + 0  - 1 = 60
-        test_resetRoundsScores_loader( 60, 20, 0, 60 );   // case 8, 60 - 20 + 0  - 1 = 60
-        test_resetRoundsScores_loader( 60, 80, 10, 60 );  // case 9, 60 - 80 + 10 - 1 = 60
+        // Register the cvar `mp_fraglimit` if is not yet registered.
+        set_pcvar_num( cvar_fragLimitSupport       , 1 );
+        mp_fraglimitCvarSupport();
+
+        test_resetRoundsScores_loader( 90, 60, 31, 60  ); // case  1-4 , 90 - 60 + 31 - 1 = 60
+        test_resetRoundsScores_loader( 90, 20, 31, 100 ); // case  5-8 , 90 - 20 + 31 - 1 = 100
+        test_resetRoundsScores_loader( 20, 15, 11, 15  ); // case  9-12, 20 - 15 + 11 - 1 = 15
+        test_resetRoundsScores_loader( 60, 50, 1 , 10  ); // case 13-16, 60 - 50 + 1  - 1 = 10
+        test_resetRoundsScores_loader( 60, 59, 1 , 1   ); // case 17-20, 60 - 59 + 1  - 1 = 1
+        test_resetRoundsScores_loader( 60, 60, 1 , 60  ); // case 21-24, 60 - 60 + 1  - 1 = 60
+        test_resetRoundsScores_loader( 60, 59, 0 , 60  ); // case 25-28, 60 - 59 + 0  - 1 = 60
+        test_resetRoundsScores_loader( 60, 20, 0 , 60  ); // case 29-32, 60 - 20 + 0  - 1 = 60
+        test_resetRoundsScores_loader( 60, 80, 10, 60  ); // case 33-36, 60 - 80 + 10 - 1 = 60
     }
 
     /**
@@ -14007,39 +14019,46 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
      */
     stock test_resetRoundsScores_loader( defaultCvarValue, elapsedValue, defaultLimiterValue, aimResult )
     {
-        static currentCaseNumber = 0;
-        currentCaseNumber++;
+        test_resetRoundsScores_case( cvar_serverTimeLimitRestart, cvar_mp_timelimit, elapsedValue, aimResult,
+                defaultCvarValue, defaultLimiterValue );
 
-        new test_id;
-        new testName[ MAX_SHORT_STRING ];
+        test_resetRoundsScores_case( cvar_serverWinlimitRestart ,  cvar_mp_winlimit, elapsedValue, aimResult,
+                defaultCvarValue, defaultLimiterValue );
 
-        formatex( testName, charsmax( testName ), "test_resetRoundsScores_case%d", currentCaseNumber );
-        test_id  = register_test( 0, testName );
+        test_resetRoundsScores_case( cvar_serverMaxroundsRestart, cvar_mp_maxrounds, elapsedValue, aimResult,
+                defaultCvarValue, defaultLimiterValue );
 
-        test_resetRoundsScores_case( test_id, cvar_serverTimeLimitRestart, cvar_mp_timelimit, elapsedValue, aimResult, defaultCvarValue, defaultLimiterValue );
-        test_resetRoundsScores_case( test_id, cvar_serverWinlimitRestart,  cvar_mp_winlimit, elapsedValue, aimResult, defaultCvarValue, defaultLimiterValue );
-        test_resetRoundsScores_case( test_id, cvar_serverMaxroundsRestart, cvar_mp_maxrounds, elapsedValue, aimResult, defaultCvarValue, defaultLimiterValue );
-        test_resetRoundsScores_case( test_id, cvar_serverFraglimitRestart, cvar_mp_fraglimit, elapsedValue, aimResult, defaultCvarValue, defaultLimiterValue );
+        test_resetRoundsScores_case( cvar_serverFraglimitRestart, cvar_mp_fraglimit, elapsedValue, aimResult,
+                defaultCvarValue, defaultLimiterValue );
     }
 
     /**
      * This is a general test handler for the function 'resetRoundsScores(0)'.
      *
-     * @param test_id                 the current case, test identification number.
      * @param limiterCvarPointer      the 'gal_srv_..._restart' pointer
      * @param serverCvarPointer       the game cvar pointer as 'cvar_mp_timelimit'.
      *
      * @note see the stock test_resetRoundsScores_loader(4) for the other parameters.
      */
-    stock test_resetRoundsScores_case( test_id, limiterCvarPointer, serverCvarPointer, elapsedValue, aimResult, defaultCvarValue, defaultLimiterValue )
+    stock test_resetRoundsScores_case( limiterCvarPointer, serverCvarPointer, elapsedValue,
+                                       aimResult, defaultCvarValue, defaultLimiterValue )
     {
+        new test_id;
+        new testName[ MAX_SHORT_STRING ];
+
         new changeResult;
         new errorMessage[ MAX_LONG_STRING ];
+
+        static currentCaseNumber = 0;
+        currentCaseNumber++;
+
+        formatex( testName, charsmax( testName ), "test_resetRoundsScores_case%d", currentCaseNumber );
+        test_id  = register_test( 0, testName );
 
         g_test_gameElapsedTime = elapsedValue;
         g_totalTerroristsWins  = elapsedValue;
         g_totalCtWins          = elapsedValue;
-        g_totalRoundsPlayed   = elapsedValue;
+        g_totalRoundsPlayed    = elapsedValue;
         g_greatestKillerFrags  = elapsedValue;
 
         tryToSetGameModCvarNum( limiterCvarPointer, defaultLimiterValue );
@@ -15102,6 +15121,7 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
     new test_endOfMapVoteStart;
     new test_nomCleaning;
     new test_serverMoveCursor;
+    new test_mp_fraglimitCvarSupport;
 
     new test_nomMapFilePath           [ MAX_FILE_PATH_LENGHT ];
     new test_voteMapFilePath          [ MAX_FILE_PATH_LENGHT ];
@@ -15141,9 +15161,9 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
             get_pcvar_string( cvar_voteWhiteListMapFilePath, test_voteWhiteListMapFilePath, charsmax( test_voteWhiteListMapFilePath ) );
             get_pcvar_string( cvar_voteMinPlayersMapFilePath, test_voteMinPlayersMapFilePath, charsmax( test_voteMinPlayersMapFilePath ) );
 
-            test_rtvRatio                = get_pcvar_float( cvar_rtvRatio );
-            test_extendMapMaximum        = get_pcvar_float( cvar_maxMapExtendTime );
-            test_mp_timelimit            = get_pcvar_float( cvar_mp_timelimit     );
+            test_rtvRatio                = get_pcvar_float( cvar_rtvRatio             );
+            test_extendMapMaximum        = get_pcvar_float( cvar_maxMapExtendTime     );
+            test_mp_timelimit            = get_pcvar_float( cvar_mp_timelimit         );
 
             test_mp_winlimit             = get_pcvar_num( cvar_mp_winlimit            );
             test_mp_maxrounds            = get_pcvar_num( cvar_mp_maxrounds           );
@@ -15165,6 +15185,7 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
             test_endOfMapVoteStart       = get_pcvar_num( cvar_endOfMapVoteStart      );
             test_nomCleaning             = get_pcvar_num( cvar_nomCleaning            );
             test_serverMoveCursor        = get_pcvar_num( cvar_serverMoveCursor       );
+            test_mp_fraglimitCvarSupport = get_pcvar_num( cvar_fragLimitSupport       );
         }
     }
 
@@ -15188,37 +15209,38 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
             g_originalWinLimit  = 0;
             g_originalFragLimit = 0;
 
-            tryToSetGameModCvarFloat( cvar_mp_timelimit, test_mp_timelimit );
+            tryToSetGameModCvarFloat( cvar_mp_timelimit     , test_mp_timelimit              );
 
-            tryToSetGameModCvarNum( cvar_mp_winlimit           , test_mp_winlimit            );
-            tryToSetGameModCvarNum( cvar_mp_maxrounds          , test_mp_maxrounds           );
-            tryToSetGameModCvarNum( cvar_mp_fraglimit          , test_mp_fraglimit           );
+            tryToSetGameModCvarNum( cvar_mp_winlimit        , test_mp_winlimit               );
+            tryToSetGameModCvarNum( cvar_mp_maxrounds       , test_mp_maxrounds              );
+            tryToSetGameModCvarNum( cvar_mp_fraglimit       , test_mp_fraglimit              );
 
             set_pcvar_string( cvar_nomMapFilePath           , test_nomMapFilePath            );
             set_pcvar_string( cvar_voteMapFilePath          , test_voteMapFilePath           );
             set_pcvar_string( cvar_voteWhiteListMapFilePath , test_voteWhiteListMapFilePath  );
             set_pcvar_string( cvar_voteMinPlayersMapFilePath, test_voteMinPlayersMapFilePath );
 
-            set_pcvar_float( cvar_rtvRatio        , test_rtvRatio );
-            set_pcvar_float( cvar_maxMapExtendTime, test_extendMapMaximum );
+            set_pcvar_float( cvar_rtvRatio             , test_rtvRatio         );
+            set_pcvar_float( cvar_maxMapExtendTime     , test_extendMapMaximum );
 
-            set_pcvar_num( cvar_serverTimeLimitRestart, test_serverTimeLimitRestart );
-            set_pcvar_num( cvar_serverWinlimitRestart , test_serverWinlimitRestart  );
-            set_pcvar_num( cvar_serverMaxroundsRestart, test_serverMaxroundsRestart );
-            set_pcvar_num( cvar_serverFraglimitRestart, test_serverFraglimitRestart );
+            set_pcvar_num( cvar_serverTimeLimitRestart , test_serverTimeLimitRestart );
+            set_pcvar_num( cvar_serverWinlimitRestart  , test_serverWinlimitRestart  );
+            set_pcvar_num( cvar_serverMaxroundsRestart , test_serverMaxroundsRestart );
+            set_pcvar_num( cvar_serverFraglimitRestart , test_serverFraglimitRestart );
 
-            set_pcvar_num( cvar_whitelistMinPlayers , test_whitelistMinPlayers  );
-            set_pcvar_num( cvar_isWhiteListNomBlock , test_isWhiteListNomBlock  );
-            set_pcvar_num( cvar_isWhiteListBlockOut , test_isWhiteListBlockOut  );
-            set_pcvar_num( cvar_voteMinPlayers      , test_voteMinPlayers       );
-            set_pcvar_num( cvar_nomMinPlayersControl, test_NomMinPlayersControl );
-            set_pcvar_num( cvar_nomQtyUsed          , test_nomQtyUsed           );
-            set_pcvar_num( cvar_voteMapChoiceCount  , test_voteMapChoiceCount   );
-            set_pcvar_num( cvar_nomPlayerAllowance  , test_nomPlayerAllowance   );
-            set_pcvar_num( cvar_nextMapChangeVotemap, test_nextMapChangeVotemap );
-            set_pcvar_num( cvar_endOfMapVoteStart   , test_endOfMapVoteStart    );
-            set_pcvar_num( cvar_nomCleaning         , test_nomCleaning          );
-            set_pcvar_num( cvar_serverMoveCursor    , test_serverMoveCursor     );
+            set_pcvar_num( cvar_whitelistMinPlayers    , test_whitelistMinPlayers     );
+            set_pcvar_num( cvar_isWhiteListNomBlock    , test_isWhiteListNomBlock     );
+            set_pcvar_num( cvar_isWhiteListBlockOut    , test_isWhiteListBlockOut     );
+            set_pcvar_num( cvar_voteMinPlayers         , test_voteMinPlayers          );
+            set_pcvar_num( cvar_nomMinPlayersControl   , test_NomMinPlayersControl    );
+            set_pcvar_num( cvar_nomQtyUsed             , test_nomQtyUsed              );
+            set_pcvar_num( cvar_voteMapChoiceCount     , test_voteMapChoiceCount      );
+            set_pcvar_num( cvar_nomPlayerAllowance     , test_nomPlayerAllowance      );
+            set_pcvar_num( cvar_nextMapChangeVotemap   , test_nextMapChangeVotemap    );
+            set_pcvar_num( cvar_endOfMapVoteStart      , test_endOfMapVoteStart       );
+            set_pcvar_num( cvar_nomCleaning            , test_nomCleaning             );
+            set_pcvar_num( cvar_serverMoveCursor       , test_serverMoveCursor        );
+            set_pcvar_num( cvar_fragLimitSupport       , test_mp_fraglimitCvarSupport );
         }
 
         // Clear tests results.
