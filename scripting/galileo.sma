@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.0.0-423";
+new const PLUGIN_VERSION[] = "v4.0.0-425";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -3200,7 +3200,10 @@ public round_start_event()
 
 public team_win_event()
 {
+    LOGGER( 128, "" )
+    LOGGER( 128, "" )
     LOGGER( 128, "I AM ENTERING ON team_win_event(0)" )
+
     g_isTheRoundEnded = true;
 
     new wins_Terrorist_trigger;
@@ -3314,8 +3317,11 @@ stock saveTheRoundTime()
 
         for( new index = 1; index < g_totalRoundsSavedTimes; index++ )
         {
-            g_roundAverageTime = ( g_roundAverageTime + roundPlayedTimes[ index ] ) / 2;
+            g_roundAverageTime = g_roundAverageTime + roundPlayedTimes[ index ];
         }
+
+        LOGGER( 32, "( saveTheRoundTime ) Total Sum: %d", g_roundAverageTime )
+        g_roundAverageTime = ( g_roundAverageTime / g_totalRoundsSavedTimes ) + 1;
 
         // Updates the next position to be inserted.
         lastSavedRound = ( lastSavedRound + 1 ) % sizeof roundPlayedTimes;
