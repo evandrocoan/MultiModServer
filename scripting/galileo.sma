@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.0.0-421";
+new const PLUGIN_VERSION[] = "v4.0.0-422";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -51,6 +51,11 @@ new const PLUGIN_VERSION[] = "v4.0.0-421";
  */
 #define IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES 1
 
+/**
+ * Change this value from 1 to 0, to disable Re-HLDS and Re-Amx Mod X support. If you disable the
+ * support, and you are using the Re-HLDS and Re-Amx Mod X, you server may crash.
+ */
+#define IS_TO_ENABLE_RE_HLDS_RE_AMXMODX_SUPPORT 1
 
 
 // Debugger Main Definitions
@@ -88,7 +93,7 @@ new const PLUGIN_VERSION[] = "v4.0.0-421";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 0
+#define DEBUG_LEVEL 1+2+4+64
 
 
 /**
@@ -1313,6 +1318,24 @@ public plugin_init()
     register_plugin( PLUGIN_NAME, PLUGIN_VERSION, PLUGIN_AUTHOR );
     LOGGER( 1, "^n^n^n^n^n^n^n^n^n^n^n%s PLUGIN VERSION %s INITIATING...", PLUGIN_NAME, PLUGIN_VERSION )
 
+    // print the current used debug information
+#if DEBUG_LEVEL & ( DEBUG_LEVEL_NORMAL | DEBUG_LEVEL_CRITICAL_MODE )
+    new debug_level[ MAX_SHORT_STRING ];
+    formatex( debug_level, charsmax( debug_level ), "%d | %d", g_debug_level, DEBUG_LEVEL );
+
+    LOGGER( 1, "( plugin_init ) gal_debug_level: %s", debug_level )
+    register_cvar( "gal_debug_level", debug_level, FCVAR_SERVER | FCVAR_SPONLY );
+#endif
+
+    LOGGER( 1, "( plugin_init )" )
+    LOGGER( 1, "( plugin_init ) AMXX_VERSION_NUM:                         %d", AMXX_VERSION_NUM )
+    LOGGER( 1, "( plugin_init ) IS_TO_ENABLE_SVEN_COOP_SUPPPORT:          %d", IS_TO_ENABLE_SVEN_COOP_SUPPPORT )
+    LOGGER( 1, "( plugin_init ) FAKE_PLAYERS_NUMBER_FOR_DEBUGGING:        %d", FAKE_PLAYERS_NUMBER_FOR_DEBUGGING )
+    LOGGER( 1, "( plugin_init ) MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST:    %d", MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST )
+    LOGGER( 1, "( plugin_init ) IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES:   %d", IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES )
+    LOGGER( 1, "( plugin_init ) IS_TO_ENABLE_RE_HLDS_RE_AMXMODX_SUPPORT:  %d", IS_TO_ENABLE_RE_HLDS_RE_AMXMODX_SUPPORT )
+    LOGGER( 1, "( plugin_init ) IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST: %d", IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST )
+
     cvar_extendmapStepMinutes    = register_cvar ( "amx_extendmap_step"           , "15" );
     cvar_maxMapExtendTime        = register_cvar ( "amx_extendmap_max"            , "90" );
     cvar_extendmapStepRounds     = register_cvar ( "amx_extendmap_step_rounds"    , "30" );
@@ -1321,15 +1344,6 @@ public plugin_init()
     cvar_extendmapAllowStay      = register_cvar ( "amx_extendmap_allow_stay"     , "0"  );
     cvar_extendmapAllowStayType  = register_cvar ( "amx_extendmap_allow_stay_type", "0"  );
     cvar_isExtendmapOrderAllowed = register_cvar ( "amx_extendmap_allow_order"    , "0"  );
-
-    // print the current used debug information
-#if DEBUG_LEVEL & ( DEBUG_LEVEL_NORMAL | DEBUG_LEVEL_CRITICAL_MODE )
-    new debug_level[ MAX_SHORT_STRING ];
-    formatex( debug_level, charsmax( debug_level ), "%d | %d", g_debug_level, DEBUG_LEVEL );
-
-    LOGGER( 1, "gal_debug_level: %s", debug_level )
-    register_cvar( "gal_debug_level", debug_level, FCVAR_SERVER | FCVAR_SPONLY );
-#endif
 
     register_cvar( "gal_version", PLUGIN_VERSION, FCVAR_SERVER | FCVAR_SPONLY );
 
@@ -8200,7 +8214,10 @@ stock serverChangeLevel( mapName[] )
 {
     LOGGER( 128, "I AM ENTERING ON serverChangeLevel(1) | mapName: %s", mapName )
 
-#if AMXX_VERSION_NUM < 183
+    LOGGER( 4, "( serverChangeLevel ) AMXX_VERSION_NUM: %d", AMXX_VERSION_NUM )
+    LOGGER( 4, "( serverChangeLevel ) IS_TO_ENABLE_RE_HLDS_RE_AMXMODX_SUPPORT: %d", IS_TO_ENABLE_RE_HLDS_RE_AMXMODX_SUPPORT )
+
+#if AMXX_VERSION_NUM < 183 || IS_TO_ENABLE_RE_HLDS_RE_AMXMODX_SUPPORT > 0
     server_cmd( "changelevel %s", mapName );
 #else
     engine_changelevel( mapName );
