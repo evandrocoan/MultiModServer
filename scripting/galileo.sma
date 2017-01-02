@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.0.0-418";
+new const PLUGIN_VERSION[] = "v4.0.0-419";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -1542,6 +1542,10 @@ stock configureSpecificGameModFeature()
     }
 }
 
+/**
+ * All these cvars must to be set using the tryToSetGameModCvarNum(2), tryToSetGameModCvarString(2)
+ * and tryToSetGameModCvarFloat(2) functions.
+ */
 stock configureEndGameCvars()
 {
     LOGGER( 128, "I AM ENTERING ON configureEndGameCvars(0)" )
@@ -1946,10 +1950,10 @@ public setGameToFinishAtHalfTime()
     LOGGER( 128, "I AM ENTERING ON setGameToFinishAtHalfTime(0)" )
     saveEndGameLimits();
 
-    set_pcvar_float( cvar_mp_timelimit, g_originalTimelimit / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR );
-    set_pcvar_num(   cvar_mp_maxrounds, g_originalMaxRounds / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR );
-    set_pcvar_num(   cvar_mp_winlimit,  g_originalWinLimit  / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR );
-    set_pcvar_num(   cvar_mp_fraglimit, g_originalFragLimit / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR );
+    tryToSetGameModCvarFloat( cvar_mp_timelimit, g_originalTimelimit / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR );
+    tryToSetGameModCvarNum(   cvar_mp_maxrounds, g_originalMaxRounds / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR );
+    tryToSetGameModCvarNum(   cvar_mp_winlimit,  g_originalWinLimit  / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR );
+    tryToSetGameModCvarNum(   cvar_mp_fraglimit, g_originalFragLimit / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR );
 
     LOGGER( 2, "( setGameToFinishAtHalfTime ) IS CHANGING THE CVAR 'mp_timelimit' to '%f'.", get_pcvar_float( cvar_mp_timelimit ) )
     LOGGER( 2, "( setGameToFinishAtHalfTime ) IS CHANGING THE CVAR 'mp_fraglimit' to '%d'.", get_pcvar_num( cvar_mp_fraglimit ) )
@@ -1961,20 +1965,21 @@ public setGameToFinishAtHalfTime()
  * To configure the mapcycle system and to detect if the last MAX_SERVER_RESTART_ACCEPTABLE restarts
  * was to the same map. If so, change to the next map right after it.
  */
-stock configureTheMapcycleSystem( currentMap[], currentMapLength )
+stock configureTheMapcycleSystem( mapToChange[], mapToChangeLength )
 {
-    LOGGER( 128, "I AM ENTERING ON configureTheMapcycleSystem(2) | currentMap: %s", currentMap )
+    LOGGER( 128, "I AM ENTERING ON configureTheMapcycleSystem(2) | mapToChange: %s", mapToChange )
 
     new possibleNextMapPosition;
     new restartsOnTheCurrentMap;
     new possibleNextMap[ MAX_MAPNAME_LENGHT ];
 
-    restartsOnTheCurrentMap = getRestartsOnTheCurrentMap( currentMap );
-    possibleNextMapPosition = map_getNext( g_mapcycleFileListArray, currentMap, possibleNextMap );
+    restartsOnTheCurrentMap = getRestartsOnTheCurrentMap( mapToChange );
+    possibleNextMapPosition = map_getNext( g_mapcycleFileListArray, mapToChange, possibleNextMap );
 
+    LOGGER( 4, "( configureTheMapcycleSystem ) mapToChange: %s", mapToChange )
+    LOGGER( 4, "( configureTheMapcycleSystem ) possibleNextMap: %d", possibleNextMap )
     LOGGER( 4, "( configureTheMapcycleSystem ) possibleNextMapPosition: %d", possibleNextMapPosition )
-    LOGGER( 4, "( configureTheMapcycleSystem ) restartsOnTheCurrentMap: %d, currentMap: %s, possibleNextMap: %s", \
-            restartsOnTheCurrentMap, currentMap, possibleNextMap )
+    LOGGER( 4, "( configureTheMapcycleSystem ) restartsOnTheCurrentMap: %d", restartsOnTheCurrentMap )
 
     if( possibleNextMapPosition != -1 )
     {
@@ -1992,7 +1997,7 @@ stock configureTheMapcycleSystem( currentMap[], currentMapLength )
             }
 
             // Clear the old data
-            copy( currentMap, currentMapLength, possibleCurrentMap );
+            copy( mapToChange, mapToChangeLength, possibleCurrentMap );
             formatex( lastMapChangedFilePath, charsmax( lastMapChangedFilePath ), "%s/%s", g_dataDirPath, LAST_CHANGE_MAP_FILE_NAME );
 
             if( file_exists( lastMapChangedFilePath ) )
@@ -2003,7 +2008,7 @@ stock configureTheMapcycleSystem( currentMap[], currentMapLength )
             write_file( lastMapChangedFilePath, "nothing_to_be_added_by^n0" );
             log_message( "" );
             log_message( "The server is jumping to the next map after the current map due \
-                    more than %d restarts on the map %s.", MAX_SERVER_RESTART_ACCEPTABLE, currentMap );
+                    more than %d restarts on the map %s.", MAX_SERVER_RESTART_ACCEPTABLE, mapToChange );
             log_message( "" );
         }
         else
@@ -2058,8 +2063,8 @@ stock getRestartsOnTheCurrentMap( mapToChange[] )
         write_file( lastMapChangedFilePath, "nothing_to_be_added_by^n0" );
     }
 
-    LOGGER( 4, "( getRestartsOnTheCurrentMap ) lastMapChangedFilePath: %s, mapToChange: %s", \
-            lastMapChangedFilePath, mapToChange )
+    LOGGER( 4, "( getRestartsOnTheCurrentMap ) mapToChange: %s,", mapToChange )
+    LOGGER( 4, "( getRestartsOnTheCurrentMap ) lastMapChangedFilePath: %s", lastMapChangedFilePath )
 
     if( lastMapChangedFile )
     {
@@ -2075,8 +2080,8 @@ stock getRestartsOnTheCurrentMap( mapToChange[] )
 
         fprintf( lastMapChangedFile, "%s", mapToChange );
         LOGGER( 4, "( getRestartsOnTheCurrentMap ) lastMapChangedName: %s", lastMapChangedName )
-        LOGGER( 4, "( getRestartsOnTheCurrentMap ) lastMapChangedCountString: %s, lastMapChangedCount: %d", \
-                lastMapChangedCountString, lastMapChangedCount )
+        LOGGER( 4, "( getRestartsOnTheCurrentMap ) lastMapChangedCount: %d", lastMapChangedCount )
+        LOGGER( 4, "( getRestartsOnTheCurrentMap ) lastMapChangedCountString: %s", lastMapChangedCountString )
 
         if( equali( mapToChange, lastMapChangedName ) )
         {
@@ -2096,7 +2101,7 @@ stock getRestartsOnTheCurrentMap( mapToChange[] )
         fclose( lastMapChangedFile );
     }
 
-    LOGGER( 1, "    ( getRestartsOnTheCurrentMap ) lastMapChangedCount: %d", lastMapChangedCount )
+    LOGGER( 1, "    ( getRestartsOnTheCurrentMap ) Returning lastMapChangedCount: %d", lastMapChangedCount )
     return lastMapChangedCount;
 }
 
@@ -2142,7 +2147,7 @@ stock setNextMap( nextMapName[], bool:isToUpdateTheCvar = true )
             set_pcvar_string( cvar_amx_nextmap, nextMapName );
 
         #if IS_TO_ENABLE_SVEN_COOP_SUPPPORT > 0
-            set_pcvar_string( cvar_mp_nextmap_cycle, nextMapName );
+            tryToSetGameModCvarString( cvar_mp_nextmap_cycle, nextMapName );
         #endif
         }
 
@@ -3420,10 +3425,10 @@ stock prevent_map_change()
     new Float:roundTimeMinutes = get_pcvar_float( cvar_mp_roundtime );
 
     // Prevent the map from ending automatically.
-    set_pcvar_float( cvar_mp_timelimit, 0.0 );
-    set_pcvar_num(   cvar_mp_maxrounds, 0   );
-    set_pcvar_num(   cvar_mp_winlimit,  0   );
-    set_pcvar_num(   cvar_mp_fraglimit, 0   );
+    tryToSetGameModCvarFloat( cvar_mp_timelimit, 0.0 );
+    tryToSetGameModCvarNum(   cvar_mp_maxrounds, 0   );
+    tryToSetGameModCvarNum(   cvar_mp_winlimit,  0   );
+    tryToSetGameModCvarNum(   cvar_mp_fraglimit, 0   );
 
     LOGGER( 2, "( prevent_map_change ) IS CHANGING THE CVAR %-22s to '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
     LOGGER( 2, "( prevent_map_change ) IS CHANGING THE CVAR %-22s to '%d'.", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) )
@@ -3960,7 +3965,7 @@ stock restoreRoundEnding( bool:roundEndStatus[] )
             if( serverCvarValue > 0 ) \
             { \
                 saveEndGameLimits(); \
-                set_pcvar_num( %2, serverCvarValue ); \
+                tryToSetGameModCvarNum( %2, serverCvarValue ); \
             } \
         } \
     } \
@@ -3977,7 +3982,7 @@ public resetRoundsScores()
     new serverLimiterValue;
 
     CALCULATE_NEW_GAME_LIMIT( cvar_serverTimeLimitRestart, cvar_mp_timelimit, map_getMinutesElapsedInteger() )
-    CALCULATE_NEW_GAME_LIMIT( cvar_serverWinlimitRestart, cvar_mp_winlimit, max( g_totalTerroristsWins, g_totalCtWins ) )
+    CALCULATE_NEW_GAME_LIMIT( cvar_serverWinlimitRestart , cvar_mp_winlimit , max( g_totalTerroristsWins, g_totalCtWins ) )
     CALCULATE_NEW_GAME_LIMIT( cvar_serverMaxroundsRestart, cvar_mp_maxrounds, g_totalRoundsPlayed )
     CALCULATE_NEW_GAME_LIMIT( cvar_serverFraglimitRestart, cvar_mp_fraglimit, g_greatestKillerFrags )
 
@@ -7707,33 +7712,33 @@ stock map_extend()
     // do that actual map extension
     if( g_isVotingByRounds )
     {
-        set_pcvar_num( cvar_mp_fraglimit, 0 );
-        set_pcvar_float( cvar_mp_timelimit, 0.0 );
+        tryToSetGameModCvarNum(  cvar_mp_fraglimit , 0   );
+        tryToSetGameModCvarFloat( cvar_mp_timelimit, 0.0 );
 
         if( g_isMaxroundsExtend )
         {
-            set_pcvar_num( cvar_mp_maxrounds, get_pcvar_num( cvar_mp_maxrounds ) + g_extendmapStepRounds );
-            set_pcvar_num( cvar_mp_winlimit, 0 );
+            tryToSetGameModCvarNum( cvar_mp_maxrounds, get_pcvar_num( cvar_mp_maxrounds ) + g_extendmapStepRounds );
+            tryToSetGameModCvarNum( cvar_mp_winlimit, 0 );
         }
         else // isWinlimitExtend
         {
-            set_pcvar_num( cvar_mp_maxrounds, 0 );
-            set_pcvar_num( cvar_mp_winlimit, get_pcvar_num( cvar_mp_winlimit ) + g_extendmapStepRounds );
+            tryToSetGameModCvarNum( cvar_mp_maxrounds, 0 );
+            tryToSetGameModCvarNum( cvar_mp_winlimit, get_pcvar_num( cvar_mp_winlimit ) + g_extendmapStepRounds );
         }
     }
     else if( g_isVotingByFrags )
     {
-        set_pcvar_num( cvar_mp_maxrounds, 0 );
-        set_pcvar_num( cvar_mp_winlimit, 0 );
-        set_pcvar_float( cvar_mp_timelimit, 0.0 );
-        set_pcvar_num( cvar_mp_fraglimit, get_pcvar_num( cvar_mp_fraglimit ) + g_extendmapStepFrags );
+        tryToSetGameModCvarNum(   cvar_mp_maxrounds, 0   );
+        tryToSetGameModCvarNum(   cvar_mp_winlimit , 0   );
+        tryToSetGameModCvarFloat( cvar_mp_timelimit, 0.0 );
+        tryToSetGameModCvarNum(   cvar_mp_fraglimit, get_pcvar_num( cvar_mp_fraglimit ) + g_extendmapStepFrags );
     }
     else
     {
-        set_pcvar_num( cvar_mp_fraglimit, 0 );
-        set_pcvar_num( cvar_mp_maxrounds, 0 );
-        set_pcvar_num( cvar_mp_winlimit, 0 );
-        set_pcvar_float( cvar_mp_timelimit, get_pcvar_float( cvar_mp_timelimit ) + g_extendmapStepMinutes );
+        tryToSetGameModCvarNum( cvar_mp_fraglimit, 0 );
+        tryToSetGameModCvarNum( cvar_mp_maxrounds, 0 );
+        tryToSetGameModCvarNum( cvar_mp_winlimit, 0 );
+        tryToSetGameModCvarFloat( cvar_mp_timelimit, get_pcvar_float( cvar_mp_timelimit ) + g_extendmapStepMinutes );
     }
 
     LOGGER( 2, "( map_extend ) CHECKOUT the cvar %23s is '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
@@ -7777,10 +7782,10 @@ public map_restoreEndGameCvars()
     {
         g_isEndGameLimitsChanged = false;
 
-        set_pcvar_float( cvar_mp_timelimit, g_originalTimelimit );
-        set_pcvar_num(   cvar_mp_maxrounds, g_originalMaxRounds );
-        set_pcvar_num(   cvar_mp_winlimit,  g_originalWinLimit  );
-        set_pcvar_num(   cvar_mp_fraglimit, g_originalFragLimit );
+        tryToSetGameModCvarFloat( cvar_mp_timelimit, g_originalTimelimit );
+        tryToSetGameModCvarNum(   cvar_mp_maxrounds, g_originalMaxRounds );
+        tryToSetGameModCvarNum(   cvar_mp_winlimit , g_originalWinLimit  );
+        tryToSetGameModCvarNum(   cvar_mp_fraglimit, g_originalFragLimit );
 
         LOGGER( 2, "( map_restoreEndGameCvars ) RESTORING the cvar %-22s to '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
         LOGGER( 2, "( map_restoreEndGameCvars ) RESTORING the cvar %-22s to '%d'.", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) )
@@ -7812,7 +7817,7 @@ stock restoreOriginalServerMaxSpeed()
     if( cvar_mp_friendlyfire
         && g_isToRestoreFriendlyFire )
     {
-        set_pcvar_num( cvar_mp_friendlyfire, 0 );
+        tryToSetGameModCvarNum( cvar_mp_friendlyfire, 0 );
         LOGGER( 2, "( restoreOriginalServerMaxSpeed ) IS CHANGING THE CVAR 'mp_friendlyfire' to '%d'.", get_pcvar_num( cvar_mp_friendlyfire ) )
 
         g_isToRestoreFriendlyFire = false;
@@ -12056,6 +12061,39 @@ stock delete_users_menus( bool:isToDoubleReset = false )
     }
 }
 
+stock tryToSetGameModCvarFloat( cvarPointer, Float:value )
+{
+    LOGGER( 128, "I AM ENTERING ON tryToSetGameModCvarFloat(2) | cvarPointer: %d, value: %f", cvarPointer, value )
+
+    if( cvarPointer != cvar_disabledValuePointer )
+    {
+        LOGGER( 2, "( tryToSetGameModCvarFloat ) IS CHANGING THE CVAR '%d' to '%f'.", cvarPointer, value )
+        set_pcvar_float( cvarPointer, value );
+    }
+}
+
+stock tryToSetGameModCvarNum( cvarPointer, num )
+{
+    LOGGER( 128, "I AM ENTERING ON tryToSetGameModCvarNum(2) | cvarPointer: %d, num: %d", cvarPointer, num )
+
+    if( cvarPointer != cvar_disabledValuePointer )
+    {
+        LOGGER( 2, "( tryToSetGameModCvarNum ) IS CHANGING THE CVAR '%d' to '%d'.", cvarPointer, num )
+        set_pcvar_num( cvarPointer, num );
+    }
+}
+
+stock tryToSetGameModCvarString( cvarPointer, string[] )
+{
+    LOGGER( 128, "I AM ENTERING ON tryToSetGameModCvarString(2) | cvarPointer: %d, string: %s", cvarPointer, string )
+
+    if( cvarPointer != cvar_disabledValuePointer )
+    {
+        LOGGER( 2, "( tryToSetGameModCvarString ) IS CHANGING THE CVAR '%d' to '%s'.", cvarPointer, string )
+        set_pcvar_string( cvarPointer, string );
+    }
+}
+
 public plugin_end()
 {
     LOGGER( 32, "" )
@@ -12436,7 +12474,7 @@ stock loadNextMapPluginSetttings()
         set_pcvar_string( cvar_amx_nextmap, nextMapName );
 
     #if IS_TO_ENABLE_SVEN_COOP_SUPPPORT > 0
-        set_pcvar_string( cvar_mp_nextmap_cycle, nextMapName );
+        tryToSetGameModCvarString( cvar_mp_nextmap_cycle, nextMapName );
     #endif
     }
     else
@@ -12444,7 +12482,7 @@ stock loadNextMapPluginSetttings()
         set_pcvar_string( cvar_amx_nextmap, g_nextMapName );
 
     #if IS_TO_ENABLE_SVEN_COOP_SUPPPORT > 0
-        set_pcvar_string( cvar_mp_nextmap_cycle, g_nextMapName );
+        tryToSetGameModCvarString( cvar_mp_nextmap_cycle, g_nextMapName );
     #endif
     }
 
@@ -12465,7 +12503,7 @@ stock saveCurrentMapCycleSetting( mapcycleFilePath[] )
     formatex( tockenMapcycleAndPosion, charsmax( tockenMapcycleAndPosion ), "%s %d",
             mapcycleFilePath, g_nextMapCyclePosition );
 
-    LOGGER( 2, "( saveCurrentMapCycleSetting ) tockenMapcycleAndPosion %s:", tockenMapcycleAndPosion )
+    LOGGER( 2, "( saveCurrentMapCycleSetting ) tockenMapcycleAndPosion: %s", tockenMapcycleAndPosion )
 
     // save lastmapcycle settings
     set_localinfo( "lastmapcycle", tockenMapcycleAndPosion );
@@ -12487,7 +12525,7 @@ stock getNextMapName( nextMapName[], maxChars )
     set_pcvar_string( cvar_amx_nextmap, g_nextMapName );
 
 #if IS_TO_ENABLE_SVEN_COOP_SUPPPORT > 0
-    set_pcvar_string( cvar_mp_nextmap_cycle, g_nextMapName );
+    tryToSetGameModCvarString( cvar_mp_nextmap_cycle, g_nextMapName );
 #endif
 
     LOGGER( 2, "( getNextMapName ) IS CHANGING THE CVAR 'amx_nextmap' to '%s'.", g_nextMapName )
@@ -13963,8 +14001,8 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
         g_totalRoundsPlayed   = elapsedValue;
         g_greatestKillerFrags  = elapsedValue;
 
-        set_pcvar_num( limiterCvarPointer, defaultLimiterValue );
-        set_pcvar_num( serverCvarPointer, defaultCvarValue );
+        tryToSetGameModCvarNum( limiterCvarPointer, defaultLimiterValue );
+        tryToSetGameModCvarNum( serverCvarPointer , defaultCvarValue );
 
         // It is expected the 'changeResult' to be 'defaultCvarValue' - 'elapsedValue' + 'defaultLimiterValue' - 1
         resetRoundsScores();
@@ -14560,10 +14598,10 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
         g_totalTerroristsWins   = trs;
         g_greatestKillerFrags   = frags;
 
-        set_pcvar_num(   cvar_mp_winlimit , cvarW ? win  : 0   );
-        set_pcvar_num(   cvar_mp_maxrounds, cvarM ? max  : 0   );
-        set_pcvar_float( cvar_mp_timelimit, cvarT ? time : 0.0 );
-        set_pcvar_num(   cvar_mp_fraglimit, cvarF ? frag : 0   );
+        tryToSetGameModCvarNum(   cvar_mp_winlimit , cvarW ? win  : 0   );
+        tryToSetGameModCvarNum(   cvar_mp_maxrounds, cvarM ? max  : 0   );
+        tryToSetGameModCvarFloat( cvar_mp_timelimit, cvarT ? time : 0.0 );
+        tryToSetGameModCvarNum(   cvar_mp_fraglimit, cvarF ? frag : 0   );
 
         LOGGER( 32, "( test_whatGameEndingTypeIt ) timelimit: %d", floatround( get_pcvar_float( cvar_mp_timelimit ) * 60 ) )
 
@@ -15109,6 +15147,12 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
             g_originalWinLimit  = 0;
             g_originalFragLimit = 0;
 
+            tryToSetGameModCvarFloat( cvar_mp_timelimit, test_mp_timelimit );
+
+            tryToSetGameModCvarNum( cvar_mp_winlimit           , test_mp_winlimit            );
+            tryToSetGameModCvarNum( cvar_mp_maxrounds          , test_mp_maxrounds           );
+            tryToSetGameModCvarNum( cvar_mp_fraglimit          , test_mp_fraglimit           );
+
             set_pcvar_string( cvar_nomMapFilePath           , test_nomMapFilePath            );
             set_pcvar_string( cvar_voteMapFilePath          , test_voteMapFilePath           );
             set_pcvar_string( cvar_voteWhiteListMapFilePath , test_voteWhiteListMapFilePath  );
@@ -15116,11 +15160,7 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
 
             set_pcvar_float( cvar_rtvRatio        , test_rtvRatio );
             set_pcvar_float( cvar_maxMapExtendTime, test_extendMapMaximum );
-            set_pcvar_float( cvar_mp_timelimit    , test_mp_timelimit     );
 
-            set_pcvar_num( cvar_mp_winlimit           , test_mp_winlimit            );
-            set_pcvar_num( cvar_mp_maxrounds          , test_mp_maxrounds           );
-            set_pcvar_num( cvar_mp_fraglimit          , test_mp_fraglimit           );
             set_pcvar_num( cvar_serverTimeLimitRestart, test_serverTimeLimitRestart );
             set_pcvar_num( cvar_serverWinlimitRestart , test_serverWinlimitRestart  );
             set_pcvar_num( cvar_serverMaxroundsRestart, test_serverMaxroundsRestart );

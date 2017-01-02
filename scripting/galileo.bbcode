@@ -1587,6 +1587,7 @@ Thank you!  It means a lot to me.
 [*]Fixed the map banning by the map cycle, using voting filler's size as limit, instead of the map cycle file size.
 [*]Blocked the next map cvar to be set to the current map while reading the map cycle file.
 [*]Added new cvar `gal_vote_mapchoices_next` to always add the former next map, read from your map cycle file, to the voting menu.
+[*]Fixed bad default game mod cvars detection.
 [/LIST]
 
 [B]2016-12-31 | v4.0.0-410[/B]
@@ -1599,23 +1600,23 @@ Thank you!  It means a lot to me.
 [*]Added the ability to show map information after the map name on the voting menu. [URL="https://github.com/addonszz/Galileo/issues/18"]Issue#18[/URL]
 [*]Added the ability for players to close the vote menu, if they want to. [URL="https://github.com/addonszz/Galileo/issues/4"]Issue#4[/URL]
 [*]Added an optimum time for the vote starting at map end. [URL="https://github.com/addonszz/Galileo/issues/20"]Issue#20[/URL]
-[*]Added the the command `say galmenu`, (admin MAP level required) to choose from the loaded server maps, the maps to create a map voting by a menu. [URL="https://github.com/addonszz/Galileo/issues/48"]Issue#48[/URL]
-[*]Added the the command `gal_changelevel`, to immediately change level to the current map at the cvar nextmap. [URL="https://github.com/addonszz/Galileo/issues/48"]Issue#48[/URL]
-[*]Added the the command `gal_votemap`, to receive a list of maps and will to perform a map voting as if it was an automatic end of map voting. [URL="https://github.com/addonszz/Galileo/issues/48"]Issue#48[/URL]
-[*]Added new cvar `gal_srv_move_cursor` to move the cursor on map series, because they are continuations as to afrikakorps1 and 2, respectively. [URL="https://github.com/addonszz/Galileo/issues/12"]Issue#12[/URL]
-[*]Added new cvar `gal_sounds_hud` to indicates if any HUD messages should be hidden during the various events in which they'd normal be showed. [URL="https://github.com/addonszz/Galileo/issues/31"]Issue#31[/URL]
-[*]Added new cvar `gal_colored_chat_prefix` to allow always to print a prefix before the Galileo chat messages. [URL="https://github.com/addonszz/Galileo/issues/34"]Issue#34[/URL]
-[*]Added new cvar `gal_nom_cleaning` to allow do not clean the map nominations' maps when the map voting started.  [URL="https://github.com/addonszz/Galileo/issues/32"]Issue#32[/URL]
-[*]Added new cvar `gal_nextmap_votemap` to not start another map voting when the server admin to starts one. [URL="https://github.com/addonszz/Galileo/issues/22"]Issue#22[/URL]
-[*]Added new cvar `gal_runoff_mapchoices` to let the voting take into account all the map options that had the maximum amount of votes. [URL="https://github.com/addonszz/Galileo/issues/33"]Issue#33[/URL]
-[*]Added new cvar `gal_runoff_ratio` to specifies the minimum amount of votes the most voted map should have to not start a run off voting. [URL="https://github.com/addonszz/Galileo/issues/33"]Issue#33[/URL]
-[*]Added new cvar `gal_endonround_change` to choose whether the map should change current round final seconds, or at next round start first seconds. [URL="https://github.com/addonszz/Galileo/issues/5"]Issue#5[/URL]
-[*]Added new cvar `gal_endofmapvote_expiration` to change the map at the round the map voting is finished, without wait to the `mp_timelimit` or `mp_maxrounds`. [URL="https://github.com/addonszz/Galileo/issues/5"]Issue#5[/URL]
+[*]Added a new command `say galmenu`, (admin MAP level required) to choose from the loaded server maps, the maps to create a map voting by a menu. [URL="https://github.com/addonszz/Galileo/issues/48"]Issue#48[/URL]
+[*]Added a new command `gal_changelevel`, to immediately change level to the current map at the cvar nextmap. [URL="https://github.com/addonszz/Galileo/issues/48"]Issue#48[/URL]
+[*]Added a new command `gal_votemap`, to receive a list of maps and will to perform a map voting as if it was an automatic end of map voting. [URL="https://github.com/addonszz/Galileo/issues/48"]Issue#48[/URL]
+[*]Added a new cvar `gal_srv_move_cursor` to move the cursor on map series, because they are continuations as to afrikakorps1 and 2, respectively. [URL="https://github.com/addonszz/Galileo/issues/12"]Issue#12[/URL]
+[*]Added a new cvar `gal_sounds_hud` to indicates if any HUD messages should be hidden during the various events in which they'd normal be showed. [URL="https://github.com/addonszz/Galileo/issues/31"]Issue#31[/URL]
+[*]Added a new cvar `gal_colored_chat_prefix` to allow always to print a prefix before the Galileo chat messages. [URL="https://github.com/addonszz/Galileo/issues/34"]Issue#34[/URL]
+[*]Added a new cvar `gal_nom_cleaning` to allow do not clean the map nominations' maps when the map voting started.  [URL="https://github.com/addonszz/Galileo/issues/32"]Issue#32[/URL]
+[*]Added a new cvar `gal_nextmap_votemap` to not start another map voting when the server admin to starts one. [URL="https://github.com/addonszz/Galileo/issues/22"]Issue#22[/URL]
+[*]Added a new cvar `gal_runoff_mapchoices` to let the voting take into account all the map options that had the maximum amount of votes. [URL="https://github.com/addonszz/Galileo/issues/33"]Issue#33[/URL]
+[*]Added a new cvar `gal_runoff_ratio` to specifies the minimum amount of votes the most voted map should have to not start a run off voting. [URL="https://github.com/addonszz/Galileo/issues/33"]Issue#33[/URL]
+[*]Added a new cvar `gal_endonround_change` to choose whether the map should change current round final seconds, or at next round start first seconds. [URL="https://github.com/addonszz/Galileo/issues/5"]Issue#5[/URL]
+[*]Added a new cvar `gal_endofmapvote_expiration` to change the map at the round the map voting is finished, without wait to the `mp_timelimit` or `mp_maxrounds`. [URL="https://github.com/addonszz/Galileo/issues/5"]Issue#5[/URL]
 [*]Added a new option to the cvar `gal_rtv_commands`, to disable the RTV when there is only a single player on the server. [URL="https://github.com/addonszz/Galileo/issues/24"]Issue#24[/URL]
 [*]Added a new option to the cvar `gal_vote_show_none`, to create a new menu showing command the options. [URL="https://github.com/addonszz/Galileo/issues/40"]Issue#40[/URL]
-[*]Added new option to the cvar `amx_extendmap_allow_order`, when no one voted for nextmap or extend or "stay here", extend the map. [URL="https://github.com/addonszz/Galileo/issues/11"]Issue#11[/URL]
-[*]Added new option to the cvar `gal_endonround_countdown`, allow to set mp_friendlyfire to 1, so players can bombard each other with grenades just before change level. [URL="https://github.com/addonszz/Galileo/issues/15"]Issue#15[/URL]
-[*]Added new option to the cvar `amx_extendmap_max`, allowing to disable it setting it to 0.
+[*]Added a new option to the cvar `amx_extendmap_allow_order`, when no one voted for nextmap or extend or "stay here", extend the map. [URL="https://github.com/addonszz/Galileo/issues/11"]Issue#11[/URL]
+[*]Added a new option to the cvar `gal_endonround_countdown`, allow to set mp_friendlyfire to 1, so players can bombard each other with grenades just before change level. [URL="https://github.com/addonszz/Galileo/issues/15"]Issue#15[/URL]
+[*]Added a new option to the cvar `amx_extendmap_max`, allowing to disable it setting it to 0.
 [*]Improved the cvar `gal_endofmapvote_start` detection and added new options to it. [URL="https://github.com/addonszz/Galileo/issues/38"]Issue#38[/URL]
 [*]Improved the cvar `gal_endonround_countdown` available options for configuration. [URL="https://github.com/addonszz/Galileo/issues/7"]Issue#7[/URL]
 [*]Improved the multi-bit operations to be more clear on the configuration file `galileo.cfg`'s documentation. [URL="https://github.com/addonszz/Galileo/issues/6"]Issue#6[/URL]
@@ -2164,20 +2165,20 @@ Total requirements: 29.452 bytes    141.016 bytes      131.256 bytes    168.392 
 Compilation Time:     0,48 sec         1,12 sec           1,11 sec         1,87 sec         2,62 sec         4,62 sec           2,34 sec
 [/PAWN]
 Table with just '[COLOR="Blue"][B]galileo_1.1.290[/B][/COLOR]' and '[COLOR="blue"][B]galileo_2.0[/B][/COLOR]'[PAWN]
-Plugin name:         galileo 1.1.290           galileo 2.0       Diferences
-Header size:             3.384 bytes           4.192 bytes       +808 bytes
-Code size:              66.260 bytes          91.112 bytes    +24.852 bytes
-Data size:              45.228 bytes          56.704 bytes    +11.476 bytes
-Total requirements:    131.256 bytes         168.392 bytes    +37.136 bytes
-Compilation Time:         1,11 sec              1,87 sec        +0,76 sec
+Plugin name:         galileo 1.1.290          galileo 2.0       Diferences
+Header size:             3.384 bytes          4.192 bytes       +808 bytes
+Code size:              66.260 bytes         91.112 bytes    +24.852 bytes
+Data size:              45.228 bytes         56.704 bytes    +11.476 bytes
+Total requirements:    131.256 bytes        168.392 bytes    +37.136 bytes
+Compilation Time:         1,11 sec             1,87 sec        +0,76 sec
 [/PAWN]
 Table with just '[COLOR="Blue"][B]galileo_2.0[/B][/COLOR]' and '[COLOR="blue"][B]galileo_3.0.0-162[/B][/COLOR]'[PAWN]
-Plugin name:             galileo 2.0           galileo 3.0       Diferences
-Header size:             4.192 bytes           4.688 bytes       +496 bytes
-Code size:              91.112 bytes         125.192 bytes    +34.080 bytes
-Data size:              56.704 bytes          57.292 bytes       +588 bytes
-Total requirements:    168.392 bytes         203.556 bytes    +35.164 bytes
-Compilation Time:         1,87 sec              2,62 sec        +0,75 sec
+Plugin name:             galileo 2.0          galileo 3.0       Diferences
+Header size:             4.192 bytes          4.688 bytes       +496 bytes
+Code size:              91.112 bytes        125.192 bytes    +34.080 bytes
+Data size:              56.704 bytes         57.292 bytes       +588 bytes
+Total requirements:    168.392 bytes        203.556 bytes    +35.164 bytes
+Compilation Time:         1,87 sec             2,62 sec        +0,75 sec
 [/PAWN]
 Table with just '[COLOR="Blue"][B]galileo_3.0.0-162[/B][/COLOR]' and '[COLOR="blue"][B]galileo_4.0.0-410[/B][/COLOR]'[PAWN]
 Plugin name:             galileo 3.0          galileo 4.0       Diferences
@@ -2188,12 +2189,12 @@ Total requirements:    203.556 bytes        287.132 bytes    +83.576 bytes
 Compilation Time:         2,62 sec             4,62 sec        +2,00 sec
 [/PAWN]
 Table with just '[COLOR="Blue"][B]deagsmapmanager[/B][/COLOR]' and '[COLOR="blue"][B]galileo_3.0.0-162[/B][/COLOR]'[PAWN]
-Plugin name:         deagsmapmanager           galileo 3.0       Diferences
-Header size:             3.648 bytes           4.688 bytes     +1.040 bytes
-Code size:             111.044 bytes         125.192 bytes    +14.148 bytes
-Data size:             405.296 bytes          57.292 bytes   -348.004 bytes
-Total requirements:    536.372 bytes         203.556 bytes   -332.816 bytes
-Compilation Time:         2,34 sec              2,62 sec        +0,28 sec
+Plugin name:         deagsmapmanager          galileo 3.0       Diferences
+Header size:             3.648 bytes          4.688 bytes     +1.040 bytes
+Code size:             111.044 bytes        125.192 bytes    +14.148 bytes
+Data size:             405.296 bytes         57.292 bytes   -348.004 bytes
+Total requirements:    536.372 bytes        203.556 bytes   -332.816 bytes
+Compilation Time:         2,34 sec             2,62 sec        +0,28 sec
 [/PAWN]
 Source Data:[SPOILER]
 [html]
