@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.0.0-425";
+new const PLUGIN_VERSION[] = "v4.0.0-426";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -178,9 +178,9 @@ new const PLUGIN_VERSION[] = "v4.0.0-425";
         log_to_file( log_file, "{%.3f %d %5d %4d} %s", get_gametime(), heapspace(), currentTime, currentTime - lastRun, formated_message );
         lastRun = currentTime;
 
-        // Removes the compiler warning `warning 203: symbol is never used` when only the debug
-        // level `DEBUG_LEVEL_NORMAL` is enabled.
+        // Removes the compiler warning `warning 203: symbol is never used` with some DEBUG levels.
         if( g_test_isTheUnitTestsRunning && g_test_isTheManualTestsRunning ) { }
+        if( DEBUGGER_OUTPUT_LOG_FILE_NAME[0] ) { }
     }
 #endif
 
@@ -3115,7 +3115,7 @@ stock isTimeToStartTheEndOfMapVoting( secondsRemaining )
     LOGGER( 256, "I AM ENTERING ON isTimeToStartTheEndOfMapVoting(1)" )
 
     if( secondsRemaining < START_VOTEMAP_MIN_TIME
-        && secondsRemaining > START_VOTEMAP_MAX_TIME )
+        && secondsRemaining > 0 )
     {
         LOGGER( 0, "", debugIsTimeToStartTheEndOfMap( secondsRemaining, 32 ) )
 
@@ -3780,22 +3780,23 @@ public configure_last_round_HUD()
 public show_last_round_HUD()
 {
     LOGGER( 256, "I AM ENTERING ON show_last_round_HUD(0)" )
-
     set_hudmessage( 255, 255, 255, 0.15, 0.15, 0, 0.0, 1.0, 0.1, 0.1, 1 );
-    static last_round_message[ MAX_COLOR_MESSAGE ];
+
+    new nextMapName       [ MAX_MAPNAME_LENGHT ];
+    new last_round_message[ MAX_COLOR_MESSAGE  ];
 
 #if AMXX_VERSION_NUM < 183
-    new    player_id;
-    new    playerIndex;
-    new    playersCount;
-    static players[ MAX_PLAYERS ];
+    new player_id;
+    new playerIndex;
+    new playersCount;
+    new players[ MAX_PLAYERS ];
 #endif
-
-    last_round_message[ 0 ] = '^0';
 
     if( g_isTheLastGameRound
         && !g_theRoundEndWhileVoting )
     {
+        get_pcvar_string( cvar_amx_nextmap, nextMapName, charsmax( nextMapName ) );
+
         // This is because the Amx Mod X 1.8.2 is not recognizing the player LANG_PLAYER when it is
         // formatted before with formatex(...)
     #if AMXX_VERSION_NUM < 183
@@ -3806,14 +3807,14 @@ public show_last_round_HUD()
             player_id = players[ playerIndex ];
 
             formatex( last_round_message, charsmax( last_round_message ), "%L ^n%L",
-                    player_id, "GAL_CHANGE_NEXTROUND",  player_id, "GAL_NEXTMAP", g_nextMapName );
+                    player_id, "GAL_CHANGE_NEXTROUND",  player_id, "GAL_NEXTMAP", nextMapName );
 
             REMOVE_CODE_COLOR_TAGS( last_round_message )
             show_hudmessage( player_id, last_round_message );
         }
     #else
         formatex( last_round_message, charsmax( last_round_message ), "%L ^n%L",
-                LANG_PLAYER, "GAL_CHANGE_NEXTROUND",  LANG_PLAYER, "GAL_NEXTMAP", g_nextMapName );
+                LANG_PLAYER, "GAL_CHANGE_NEXTROUND",  LANG_PLAYER, "GAL_NEXTMAP", nextMapName );
 
         REMOVE_CODE_COLOR_TAGS( last_round_message )
         show_hudmessage( 0, last_round_message );
@@ -5498,6 +5499,12 @@ public vote_manageEnd()
 
     if( secondsLeft )
     {
+        // are we ready to start an "end of map" vote?
+        if( isTimeToStartTheEndOfMapVoting( secondsLeft ) )
+        {
+            start_voting_by_timer();
+        }
+
         // are we managing the end of the map?
         if( secondsLeft < 30
             && secondsLeft > 0 )
@@ -5505,12 +5512,6 @@ public vote_manageEnd()
             // try_to_manage_map_end() cannot be called with true, otherwise it will change the map
             // before the last seconds to be finished.
             try_to_manage_map_end();
-        }
-
-        // are we ready to start an "end of map" vote?
-        if( isTimeToStartTheEndOfMapVoting( secondsLeft ) )
-        {
-            start_voting_by_timer();
         }
     }
 
@@ -5668,6 +5669,9 @@ stock printVotingMaps( mapNames[][], mapInfos[][], votingMapsCount = MAX_OPTIONS
 
     LOGGER( 16, "" )
     LOGGER( 16, "" )
+
+    // Removes the compiler warning `warning 203: symbol is never used` with some DEBUG levels.
+    if( mapNames[ 0 ][ 0 ] && mapInfos[ 0 ][ 0 ] ) { }
 
     return 0;
 }
