@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.0.0-427";
+new const PLUGIN_VERSION[] = "v4.0.0-428";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -604,7 +604,6 @@ new const PLUGIN_VERSION[] = "v4.0.0-427";
  */
 #define IS_THE_ROUND_TIME_TOO_BIG() \
     ( get_pcvar_num( cvar_mp_roundtime ) > 8 \
-      && g_totalRoundsSavedTimes < MIN_VOTE_START_ROUNDS_DELAY + 1 \
       && g_roundAverageTime > 300 )
 //
 
