@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.0.0-426";
+new const PLUGIN_VERSION[] = "v4.0.0-427";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -93,7 +93,7 @@ new const PLUGIN_VERSION[] = "v4.0.0-426";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+2+4+16
+#define DEBUG_LEVEL 1+16
 
 
 /**
@@ -2772,8 +2772,8 @@ stock isToStartTheVotingOnThisRound( secondsRemaining )
     if( get_pcvar_num( cvar_endOfMapVote )
         && !task_exists( TASKID_START_VOTING_BY_TIMER ) )
     {
-        new roundsRemaining = howManyRoundsAreRemaining( secondsRemaining - PERIODIC_CHECKING_INTERVAL,
-                whatGameEndingTypeItIs() );
+        new secondsPassed   = secondsRemaining - PERIODIC_CHECKING_INTERVAL;
+        new roundsRemaining = howManyRoundsAreRemaining( secondsPassed, whatGameEndingTypeItIs() );
 
         LOGGER( 0, "", debugIsTimeToStartTheEndOfMap( secondsRemaining, 256 ) )
         return chooseTheEndOfMapStartOption( roundsRemaining );
@@ -2855,6 +2855,9 @@ stock howManyRoundsAreRemaining( secondsRemaining, GameEndingType:whatGameEnding
 
 stock getRoundsRemainingByFrags( secondsRemaining, &by_time = 0, &by_frags = 0 )
 {
+    LOGGER( 128, "I AM ENTERING ON getRoundsRemainingByFrags(3), secondsRemaining: %d", secondsRemaining )
+    if( secondsRemaining < 1 ) secondsRemaining = 1;
+
     // Make sure there are enough data to operate, otherwise set valid data.
     if( g_totalRoundsSavedTimes > MIN_VOTE_START_ROUNDS_DELAY )
     {
@@ -3163,6 +3166,8 @@ stock isTimeToStartTheEndOfMapVoting( secondsRemaining )
  */
 stock tryToStartTheVotingOnThisRound()
 {
+    LOGGER( 128, "I AM ENTERING ON tryToStartTheVotingOnThisRound(0)" )
+
     if( !g_isTheRoundEnded
         && isToStartTheVotingOnThisRound( get_timeleft() ) )
     {
@@ -3170,7 +3175,7 @@ stock tryToStartTheVotingOnThisRound()
         new howManySecondsPassed = floatround( get_gametime(), floatround_ceil ) - g_roundStartTime;
 
         howManySecondsPassed = ROUND_VOTING_START_SECONDS_DELAY() - howManySecondsPassed;
-        howManySecondsPassed > 0 ? howManySecondsPassed : ( howManySecondsPassed = 1 );
+        if( howManySecondsPassed < 1 ) howManySecondsPassed = 1;
 
         set_task( float( howManySecondsPassed ), "start_voting_by_timer", TASKID_START_VOTING_BY_TIMER );
     }
@@ -3346,6 +3351,8 @@ stock try_to_manage_map_end( bool:isToImmediatelyChangeLevel = false )
     else if( !( g_isTheLastGameRound
                 || g_isThePenultGameRound ) )
     {
+        // If selected a value higher than 0, this cvar indicates also the players minimum number necessary
+        // to allow the last round to be finished when the time runs out.
         new bool:areThereEnoughPlayers = get_real_players_number() >= get_pcvar_num( cvar_endOnRound_msg );
 
         if( !areThereEnoughPlayers
@@ -3393,6 +3400,10 @@ public map_manageEnd()
     LOGGER( 2, "%32s mp_timelimit: %f, get_real_players_number: %d", "map_manageEnd(in)", \
             get_pcvar_float( cvar_mp_timelimit ), get_real_players_number() )
 
+    // We need to check it before to call prevent_map_change(0), otherwise the timelimit will be
+    // set to 0, and we cannot calculate whether to start the voting on this round correctly.
+    tryToStartTheVotingOnThisRound();
+
     switch( get_pcvar_num( cvar_endOnRound ) )
     {
         // when time runs out, end at the current round end
@@ -3431,7 +3442,6 @@ public map_manageEnd()
         }
     }
 
-    tryToStartTheVotingOnThisRound();
     configure_last_round_HUD();
 
     LOGGER( 2, "%32s mp_timelimit: %f, get_real_players_number: %d", "map_manageEnd(out)", \
@@ -5591,6 +5601,9 @@ stock bool:approvedTheVotingStart( bool:is_forced_voting )
 
         if( !equali( nextMapFlag, nextMapName, strlen( nextMapName ) ) )
         {
+            // The voting is over, i.e., must to be performed.
+            g_voteStatus |= IS_VOTE_OVER;
+
             LOGGER( 1, "    ( approvedTheVotingStart ) Returning false due the `gal_nextmap_votemap` feature." )
             return false;
         }
