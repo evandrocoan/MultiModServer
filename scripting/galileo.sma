@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.0.0-417";
+new const PLUGIN_VERSION[] = "v4.0.0-418";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -7063,7 +7063,10 @@ stock showPlayersVoteResult()
 }
 
 /**
- * Get unique random numbers between a minimum until maximum.
+ * Get unique random numbers between a minimum until maximum. For now this function is used on the
+ * source code. It is here for historical purposes only. It was previously created for use but its
+ * used was deprecated. Now it can be used for implementation comparison between its sister function
+ * getUniqueRandomIntegerBasic(2) just bellow.
  *
  * If the `maximum`'s change between the function calls, the unique random number sequence will be
  * restarted to this new maximum value. Also after the maximum value been reached, the random unique
@@ -10725,8 +10728,8 @@ public nomination_handleMatchChoice( player_id, menu, item )
     }
 
     // Due the first nomination menu option to be 'Cancel all your Nominations', take one item less 'item - 1'.
-    new pageSeptalNumber = convert_numeric_base( g_nominationPlayersMenuPages[ player_id ], 10, 7 );
-    item = convert_numeric_base( pageSeptalNumber * 10, 7, 10 ) + item - NOMINATION_FIRST_PAGE_ITEMS_COUNTING;
+    new pageSeptalNumber = convert_numeric_base( g_nominationPlayersMenuPages[ player_id ], 10, MAX_NOM_MENU_ITEMS_PER_PAGE );
+    item = convert_numeric_base( pageSeptalNumber * 10, MAX_NOM_MENU_ITEMS_PER_PAGE, 10 ) + item - NOMINATION_FIRST_PAGE_ITEMS_COUNTING;
 
     map_nominate( player_id, item );
     DESTROY_PLAYER_NEW_MENU_TYPE( g_generalUsePlayersMenuIds[ player_id ] )
@@ -10735,6 +10738,19 @@ public nomination_handleMatchChoice( player_id, menu, item )
     return PLUGIN_HANDLED;
 }
 
+/**
+ * These menus does not use the `info[]` parameter allowed by the new menu style because in the
+ * previous implementation of this menu, where a single menu within all the map entries was build.
+ * There the `info[]` option on AMXX 182 as getting wrong indexes about after the menu entry 200.
+ * So, a implementation to pass the indexes using global variables was created.
+ *
+ * Now as the menu has at most only 10 entries, such bug would not to apply. However I prefer to keep
+ * this implementation for historical reasons  and as it is already functional and its properly of
+ * remembering on which page the menu was closed previously is properly working.
+ *
+ * The new menus built after this using the `on demand approach` are already using the `info[]` option
+ * from the new menus style. For its implementation, see the function: displayVoteMapMenuCommands(1)
+ */
 public nomination_handlePartialMatch( player_id, menu, item )
 {
     LOGGER( 128, "I AM ENTERING ON nomination_handlePartialMatch(1) | player_id: %d, menu: %d, item: %d", player_id, menu, item )
