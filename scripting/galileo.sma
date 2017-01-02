@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.0.0-419";
+new const PLUGIN_VERSION[] = "v4.0.0-420";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -12548,13 +12548,37 @@ public sayNextMap()
         {
             color_print( 0, "%L %L", LANG_PLAYER, "NEXT_MAP", LANG_PLAYER, "GAL_NEXTMAP_VOTING" );
         }
+        else if( get_pcvar_num( cvar_nextMapChangeVotemap ) )
+        {
+            new nextMapFlag[ 128 ];
+            new nextMapName[ MAX_MAPNAME_LENGHT ];
+
+            formatex( nextMapFlag, charsmax( nextMapFlag ), "%L", LANG_SERVER, "GAL_NEXTMAP_UNKNOWN" );
+            REMOVE_CODE_COLOR_TAGS( nextMapFlag )
+
+            get_pcvar_string( cvar_amx_nextmap, nextMapName, charsmax( nextMapName ) );
+
+            // If the values are not equal, it means the next map was changed by the admin, then
+            // we must to show the changed map.
+            if( equali( nextMapFlag, nextMapName, strlen( nextMapName ) ) )
+            {
+                goto gal_nextmap_unknown;
+            }
+            else
+            {
+                goto show_the_nextmap_cvar;
+            }
+        }
         else
         {
+            gal_nextmap_unknown:
             color_print( 0, "%L %L", LANG_PLAYER, "NEXT_MAP", LANG_PLAYER, "GAL_NEXTMAP_UNKNOWN" );
         }
     }
     else
     {
+        show_the_nextmap_cvar:
+
     #if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
         color_print( 0, "%L ^4%s", LANG_PLAYER, "NEXT_MAP", nextMapName );
     #else
