@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.0.0-430";
+new const PLUGIN_VERSION[] = "v4.0.0-431";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -936,7 +936,7 @@ new cvar_endOfMapVote;
 new cvar_endOfMapVoteExpiration;
 new cvar_endOfMapVoteStart;
 new cvar_endOnRoundRtv;
-new cvar_endOnRound_msg;
+new cvar_endOnRoundMininum;
 new cvar_voteWeight;
 new cvar_voteWeightFlags;
 new cvar_maxMapExtendTime;
@@ -1369,7 +1369,7 @@ public plugin_init()
     cvar_endOnRound                = register_cvar( "gal_endonround"              , "1"    );
     cvar_endOnRoundChange          = register_cvar( "gal_endonround_change"       , "1"    );
     cvar_endOnRoundRtv             = register_cvar( "gal_endonround_rtv"          , "0"    );
-    cvar_endOnRound_msg            = register_cvar( "gal_endonround_msg"          , "0"    );
+    cvar_endOnRoundMininum         = register_cvar( "gal_endonround_msg"          , "0"    );
     cvar_isEndMapCountdown         = register_cvar( "gal_endonround_countdown"    , "0"    );
     cvar_showVoteStatus            = register_cvar( "gal_vote_showstatus"         , "1"    );
     cvar_showVoteStatusType        = register_cvar( "gal_vote_showstatustype"     , "3"    );
@@ -3355,12 +3355,11 @@ stock try_to_manage_map_end( bool:isToImmediatelyChangeLevel = false )
     else if( !( g_isTheLastGameRound
                 || g_isThePenultGameRound ) )
     {
-        // If selected a value higher than 0, this cvar indicates also the players minimum number necessary
-        // to allow the last round to be finished when the time runs out.
-        new bool:areThereEnoughPlayers = get_real_players_number() >= get_pcvar_num( cvar_endOnRound_msg );
+        // This cvar indicates also the players minimum number necessary to allow the last round to be
+        // finished when the time runs out.
+        new bool:areThereEnoughPlayers = get_real_players_number() > get_pcvar_num( cvar_endOnRoundMininum );
 
-        if( !areThereEnoughPlayers
-            && isToImmediatelyChangeLevel )
+        if( !areThereEnoughPlayers )
         {
             try_to_process_last_round( isToImmediatelyChangeLevel );
         }
@@ -3797,8 +3796,7 @@ public configure_last_round_HUD()
 {
     LOGGER( 128, "I AM ENTERING ON configure_last_round_HUD(0)" )
 
-    if( get_pcvar_num( cvar_endOnRound_msg )
-        && !( get_pcvar_num( cvar_hudsHide ) & HUD_CHANGELEVEL_ANNOUNCE ) )
+    if( !( get_pcvar_num( cvar_hudsHide ) & HUD_CHANGELEVEL_ANNOUNCE ) )
     {
         set_task( 1.0, "show_last_round_HUD", TASKID_SHOW_LAST_ROUND_HUD, _, _, "b" );
     }
