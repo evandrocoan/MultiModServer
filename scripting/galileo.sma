@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.0.0-431";
+new const PLUGIN_VERSION[] = "v4.0.0-433";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -93,7 +93,7 @@ new const PLUGIN_VERSION[] = "v4.0.0-431";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1
+#define DEBUG_LEVEL 1+16
 
 
 /**
@@ -5603,7 +5603,6 @@ stock bool:approvedTheVotingStart( bool:is_forced_voting )
             is_forced_voting, get_real_players_number() )
 
     if( get_pcvar_num( cvar_nextMapChangeVotemap )
-        && get_pcvar_num( cvar_nextMapChangeAnnounce )
         && !is_forced_voting )
     {
         new nextMapFlag[ 128 ];
@@ -5612,9 +5611,13 @@ stock bool:approvedTheVotingStart( bool:is_forced_voting )
         formatex( nextMapFlag, charsmax( nextMapFlag ), "%L", LANG_SERVER, "GAL_NEXTMAP_UNKNOWN" );
         REMOVE_CODE_COLOR_TAGS( nextMapFlag )
 
+        new bool:isNextMapChangeAnnounce = get_pcvar_num( cvar_nextMapChangeAnnounce ) != 0;
         get_pcvar_string( cvar_amx_nextmap, nextMapName, charsmax( nextMapName ) );
 
-        if( !equali( nextMapFlag, nextMapName, strlen( nextMapName ) ) )
+        if( isNextMapChangeAnnounce
+            && !equali( nextMapFlag, nextMapName, strlen( nextMapName ) )
+            || !isNextMapChangeAnnounce
+               && !equali( g_nextMapName, nextMapName, strlen( nextMapName ) ) )
         {
             // The voting is over, i.e., must to be performed.
             g_voteStatus |= IS_VOTE_OVER;
@@ -12628,8 +12631,8 @@ stock getNextMapName( nextMapName[], maxChars )
 public sayNextMap()
 {
     LOGGER( 128, "I AM ENTERING ON sayNextMap(0)" )
-
     new nextMapName[ MAX_MAPNAME_LENGHT ];
+
     get_pcvar_string( cvar_amx_nextmap, nextMapName, charsmax( nextMapName ) );
 
     if( get_pcvar_num( cvar_nextMapChangeAnnounce )
@@ -12652,13 +12655,13 @@ public sayNextMap()
 
             // If the values are not equal, it means the next map was changed by the admin, then
             // we must to show the changed map.
-            if( equali( nextMapFlag, nextMapName, strlen( nextMapName ) ) )
+            if( !equali( nextMapFlag, nextMapName, strlen( nextMapName ) ) )
             {
-                goto gal_nextmap_unknown;
+                goto show_the_nextmap_cvar;
             }
             else
             {
-                goto show_the_nextmap_cvar;
+                goto gal_nextmap_unknown;
             }
         }
         else
