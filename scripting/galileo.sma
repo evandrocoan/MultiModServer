@@ -93,7 +93,7 @@ new const PLUGIN_VERSION[] = "v4.0.0-428";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+16
+#define DEBUG_LEVEL 1
 
 
 /**
@@ -3117,7 +3117,7 @@ stock isTimeToStartTheEndOfMapVoting( secondsRemaining )
     LOGGER( 256, "I AM ENTERING ON isTimeToStartTheEndOfMapVoting(1)" )
 
     if( secondsRemaining < START_VOTEMAP_MIN_TIME
-        && secondsRemaining > 0 )
+        && secondsRemaining > START_VOTEMAP_MAX_TIME )
     {
         LOGGER( 0, "", debugIsTimeToStartTheEndOfMap( secondsRemaining, 32 ) )
 
@@ -3399,10 +3399,6 @@ public map_manageEnd()
     LOGGER( 2, "%32s mp_timelimit: %f, get_real_players_number: %d", "map_manageEnd(in)", \
             get_pcvar_float( cvar_mp_timelimit ), get_real_players_number() )
 
-    // We need to check it before to call prevent_map_change(0), otherwise the timelimit will be
-    // set to 0, and we cannot calculate whether to start the voting on this round correctly.
-    tryToStartTheVotingOnThisRound();
-
     switch( get_pcvar_num( cvar_endOnRound ) )
     {
         // when time runs out, end at the current round end
@@ -3441,6 +3437,18 @@ public map_manageEnd()
         }
     }
 
+    // This could be or not the last round to be played. If this is the last round, it means the
+    // feature `cvar_endOnRound` is enabled. Otherwise the voting would have been started when the
+    // time left get on the minimum time set by `g_totalVoteTime`.
+    //
+    // We need to check it after to call prevent_map_change(0), otherwise we will not be able to
+    // calculate whether to start the voting on this round correctly. The point around here is,
+    //
+    //     1. If the voting was not started yet.
+    //     2. And the mapping is ending.
+    //     3. The `cvar_endOfMapVoteStart` failed to predict the correct last round to start voting.
+    //
+    tryToStartTheVotingOnThisRound();
     configure_last_round_HUD();
 
     LOGGER( 2, "%32s mp_timelimit: %f, get_real_players_number: %d", "map_manageEnd(out)", \
@@ -5508,12 +5516,6 @@ public vote_manageEnd()
 
     if( secondsLeft )
     {
-        // are we ready to start an "end of map" vote?
-        if( isTimeToStartTheEndOfMapVoting( secondsLeft ) )
-        {
-            start_voting_by_timer();
-        }
-
         // are we managing the end of the map?
         if( secondsLeft < 30
             && secondsLeft > 0 )
@@ -5521,6 +5523,12 @@ public vote_manageEnd()
             // try_to_manage_map_end() cannot be called with true, otherwise it will change the map
             // before the last seconds to be finished.
             try_to_manage_map_end();
+        }
+
+        // are we ready to start an "end of map" vote?
+        if( isTimeToStartTheEndOfMapVoting( secondsLeft ) )
+        {
+            start_voting_by_timer();
         }
     }
 
@@ -7697,12 +7705,10 @@ stock map_getMinutesElapsedInteger()
     return get_pcvar_num( cvar_mp_timelimit ) - ( get_timeleft() / 60 );
 }
 
-stock map_extend()
+stock toAnnounceTheMapExtension()
 {
-    LOGGER( 128, "I AM ENTERING ON map_extend(0)" )
-    LOGGER( 2, "%32s g_rtvWaitMinutes: %f, g_extendmapStepMinutes: %d", "map_extend( in )", g_rtvWaitMinutes, g_extendmapStepMinutes )
+    LOGGER( 128, "I AM ENTERING ON toAnnounceTheMapExtension(0)" )
 
-    // To announce the map extension to everybody
     if( g_isVotingByRounds )
     {
         color_print( 0, "%L", LANG_PLAYER, "GAL_WINNER_EXTEND_ROUND", g_extendmapStepRounds );
@@ -7715,6 +7721,14 @@ stock map_extend()
     {
         color_print( 0, "%L", LANG_PLAYER, "GAL_WINNER_EXTEND", g_extendmapStepMinutes );
     }
+}
+
+stock map_extend()
+{
+    LOGGER( 128, "I AM ENTERING ON map_extend(0)" )
+    LOGGER( 2, "%32s g_rtvWaitMinutes: %f, g_extendmapStepMinutes: %d", "map_extend( in )", g_rtvWaitMinutes, g_extendmapStepMinutes )
+
+    toAnnounceTheMapExtension();
 
     // While the `IS_DISABLED_VOTEMAP_EXIT` bit flag is set, we cannot allow any decisions.
     if( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXIT )
@@ -7732,7 +7746,31 @@ stock map_extend()
     LOGGER( 2, "( map_extend ) TRYING to change the cvar %15s to '%d'.", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) )
     LOGGER( 2, "( map_extend ) TRYING to change the cvar %15s to '%d'.", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) )
 
-    // reset the "rtv wait" time, taking into consideration the map extension
+    // Remove the fail safe, as we are extending the map. The fail safe could be running if the
+    // `cvar_endOfMapVoteStart` failed to predict the correct last round to start voting, the voting
+    // could have been started on the map_manageEnd(0) function. Then the fail safe will be running,
+    // but if the map extension was the voting winner option, then we must to disable the fail safe
+    // as we do not need it anymore.
+    remove_task( TASKID_PREVENT_INFITY_GAME );
+    resetTheRtvWaitTime();
+
+    saveEndGameLimits();
+    doTheActualMapExtension();
+
+    LOGGER( 2, "    ( map_extend ) CHECKOUT the cvar %19s is '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
+    LOGGER( 2, "    ( map_extend ) CHECKOUT the cvar %19s is '%d'.", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) )
+    LOGGER( 2, "    ( map_extend ) CHECKOUT the cvar %19s is '%d'.", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) )
+    LOGGER( 2, "    ( map_extend ) CHECKOUT the cvar %19s is '%d'.", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) )
+    LOGGER( 2, "%32s g_rtvWaitMinutes: %f, g_extendmapStepMinutes: %d", "map_extend( out )", g_rtvWaitMinutes, g_extendmapStepMinutes )
+}
+
+/**
+ * Reset the "rtv wait" time, taking into consideration the map extension.
+ */
+stock resetTheRtvWaitTime()
+{
+    LOGGER( 128, "I AM ENTERING ON resetTheRtvWaitTime(0)" )
+
     if( g_rtvWaitMinutes )
     {
         g_rtvWaitMinutes += get_pcvar_float( cvar_mp_timelimit );
@@ -7747,10 +7785,12 @@ stock map_extend()
     {
         g_rtvWaitFrags += get_pcvar_num( cvar_mp_fraglimit );
     }
+}
 
-    saveEndGameLimits();
+stock doTheActualMapExtension()
+{
+    LOGGER( 128, "I AM ENTERING ON doTheActualMapExtension(0)" )
 
-    // do that actual map extension
     if( g_isVotingByRounds )
     {
         tryToSetGameModCvarNum(  cvar_mp_fraglimit , 0   );
@@ -7781,12 +7821,6 @@ stock map_extend()
         tryToSetGameModCvarNum( cvar_mp_winlimit, 0 );
         tryToSetGameModCvarFloat( cvar_mp_timelimit, get_pcvar_float( cvar_mp_timelimit ) + g_extendmapStepMinutes );
     }
-
-    LOGGER( 2, "( map_extend ) CHECKOUT the cvar %23s is '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
-    LOGGER( 2, "( map_extend ) CHECKOUT the cvar %23s is '%d'.", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) )
-    LOGGER( 2, "( map_extend ) CHECKOUT the cvar %23s is '%d'.", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) )
-    LOGGER( 2, "( map_extend ) CHECKOUT the cvar %23s is '%d'.", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) )
-    LOGGER( 2, "%32s g_rtvWaitMinutes: %f, g_extendmapStepMinutes: %d", "map_extend( out )", g_rtvWaitMinutes, g_extendmapStepMinutes )
 }
 
 stock saveEndGameLimits()
