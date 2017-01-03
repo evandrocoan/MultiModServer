@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.0.0-436";
+new const PLUGIN_VERSION[] = "v4.0.0-437";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -94,7 +94,7 @@ new const PLUGIN_VERSION[] = "v4.0.0-436";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+16
+#define DEBUG_LEVEL 1+2
 
 
 /**
@@ -289,7 +289,8 @@ new const PLUGIN_VERSION[] = "v4.0.0-436";
         test_whatGameEndingTypeIt_load();
         test_convertNumericBase_load();
         test_setCorrectMenuPage_load();
-        test_map_populateListOnSeries();
+        test_strictValidMapsTrie_load();
+        test_populateListOnSeries_load();
         test_GET_MAP_NAME_load();
         test_GET_MAP_INFO_load();
         test_SortCustomSynced2D();
@@ -329,7 +330,7 @@ new const PLUGIN_VERSION[] = "v4.0.0-436";
         test_SortCustomSynced2D();
         // test_GET_MAP_INFO_load();
         // test_GET_MAP_NAME_load();
-        // test_map_populateListOnSeries();
+        // test_populateListOnSeries_load();
         // test_setCorrectMenuPage_load();
         // test_convertNumericBase_load();
         // test_whatGameEndingTypeIt_load();
@@ -498,6 +499,10 @@ new const PLUGIN_VERSION[] = "v4.0.0-436";
 #define IS_VOTE_OVER        8
 #define IS_VOTE_EARLY       16
 #define IS_VOTE_EXPIRED     32
+
+#define IS_TO_LOAD_THE_FIRST_MAP_SERIES 1
+#define IS_TO_LOAD_ALL_THE_MAP_SERIES   2
+#define IS_TO_LOAD_EXPLICIT_MAP_SERIES  4
 
 #define SOUND_GET_READY_TO_CHOOSE 1
 #define SOUND_COUNTDOWN           2
@@ -12860,12 +12865,11 @@ stock isThereNextMapOnTheSerie( &currentSerie, mapNameClean[], nextMapName[] )
     return false;
 }
 
-stock loadTheCursorOnMapSeries( Array:mapArray, Trie:mapTrie, Trie:loadedMapSeriesTrie, currentMapName[], nextMapName[], &mapCount )
+stock loadTheCursorOnMapSeries( Array:mapArray, Trie:mapTrie, Trie:loadedMapSeriesTrie, currentMapName[],
+                                nextMapName[] , &mapCount   , cursorOnMapSeries )
 {
-    LOGGER( 256, "I AM ENTERING ON loadTheCursorOnMapSeries(5) | currentMapName: %s", currentMapName )
-
+    LOGGER( 256, "I AM ENTERING ON loadTheCursorOnMapSeries(7) | currentMapName: %s", currentMapName )
     new currentSerie;
-    new maximumSerie;
 
     new mapNameDirt [ MAX_MAPNAME_LENGHT ];
     new mapNameClean[ MAX_MAPNAME_LENGHT ];
@@ -12873,20 +12877,53 @@ stock loadTheCursorOnMapSeries( Array:mapArray, Trie:mapTrie, Trie:loadedMapSeri
     copy( mapNameDirt, charsmax( mapNameDirt ), currentMapName );
     copy( mapNameClean, charsmax( mapNameClean ), currentMapName );
 
-    // Series longer than this will not be considered.
-    currentSerie = getTheCurrentSerieForTheMap( mapNameDirt, mapNameClean );
-    maximumSerie = currentSerie + 500;
+    // If we are loading only map series starting at 1, block the execution if the initial serie is
+    // greater than 1.
+    if( ( currentSerie = getTheCurrentSerieForTheMap( mapNameDirt, mapNameClean ) ) > 1
+        && cursorOnMapSeries & IS_TO_LOAD_EXPLICIT_MAP_SERIES )
+    {
+        LOGGER( 256, "    ( loadTheCursorOnMapSeries ) Returning/Blocking the execution." )
+        return;
+    }
 
-    // Do not reload the series if it was loaded before.
-    if( !TrieKeyExists( loadedMapSeriesTrie, mapNameClean ) )
+    // Series longer than this size will not be considered.
+    new maximumSerie = currentSerie + 3000;
+
+    // We do not need to check for the `IS_TO_LOAD_ALL_THE_MAP_SERIES`, because we will always
+    // being loading all the series, when any bit flag on `cursorOnMapSeries` is set, but the
+    // Trie `loadedMapSeriesTrie` is not set.
+    //
+    // If the execution flow get until this point, it is certain there is some bit set on the
+    // variable `cursorOnMapSeries`.
+    if( loadedMapSeriesTrie )
+    {
+        // Do not reload the series if it was loaded before.
+        if( !TrieKeyExists( loadedMapSeriesTrie, mapNameClean ) )
+        {
+            while( isThereNextMapOnTheSerie( currentSerie, mapNameClean, nextMapName )
+                   && currentSerie < maximumSerie )
+            {
+                TrieSetCell( loadedMapSeriesTrie, mapNameClean, mapCount );
+
+                TrieSetCell( mapTrie, nextMapName, mapCount );
+                ArrayPushString( mapArray, nextMapName );
+
+                LOGGER( 256, "( loadTheCursorOnMapSeries ) nextMapName: %s", nextMapName )
+
+                // Moves the pointer to the next serie.
+                currentSerie++;
+                mapCount++;
+            }
+        }
+    }
+    else
     {
         while( isThereNextMapOnTheSerie( currentSerie, mapNameClean, nextMapName )
                && currentSerie < maximumSerie )
         {
-            TrieSetCell( loadedMapSeriesTrie, mapNameClean, mapCount );
-
             TrieSetCell( mapTrie, nextMapName, mapCount );
             ArrayPushString( mapArray, nextMapName );
+
             LOGGER( 256, "( loadTheCursorOnMapSeries ) nextMapName: %s", nextMapName )
 
             // Moves the pointer to the next serie.
@@ -12896,19 +12933,28 @@ stock loadTheCursorOnMapSeries( Array:mapArray, Trie:mapTrie, Trie:loadedMapSeri
     }
 }
 
-stock loadMapFileSeriesListArray( mapFileDescriptor, Array:mapArray, Trie:mapTrie )
+stock printUntilTheNthLoadedMap( mapIndex, mapName[] )
 {
-    LOGGER( 128, "I AM ENTERING ON loadMapFileSeriesListArray(2) | mapFileDescriptor: %d", mapFileDescriptor )
+    // There is not point in adding the entry statement to this function as its purpose is only to
+    // print few lines as possible.
+    LOGGER( 0, "I AM ENTERING ON loadMapFileSeriesListArray(2)" )
+
+    if( mapIndex < MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST )
+    {
+        LOGGER( 4, "( printUntilTheNthLoadedMap ) %d, loadedMapLine: %s", mapIndex, mapName )
+    }
+
+    return 0;
+}
+
+stock loadMapFileSeriesListArray( mapFileDescriptor, Array:mapArray, Trie:mapTrie, Trie:loadedMapSeriesTrie, cursorOnMapSeries )
+{
+    LOGGER( 128, "I AM ENTERING ON loadMapFileSeriesListArray(5) | mapFileDescriptor: %d", mapFileDescriptor )
 
     new mapCount;
     new nextMapName  [ MAX_MAPNAME_LENGHT ];
     new loadedMapName[ MAX_MAPNAME_LENGHT ];
     new loadedMapLine[ MAX_MAPNAME_LENGHT ];
-
-    new Trie:loadedMapSeriesTrie;
-    new bool:isToMoveTheCursorOnMapSeries = get_pcvar_num( cvar_serverMoveCursor ) != 0;
-
-    if( isToMoveTheCursorOnMapSeries ) loadedMapSeriesTrie = TrieCreate();
 
     while( !feof( mapFileDescriptor ) )
     {
@@ -12924,17 +12970,12 @@ stock loadMapFileSeriesListArray( mapFileDescriptor, Array:mapArray, Trie:mapTri
                 TrieSetCell( mapTrie, loadedMapName, mapCount );
                 ArrayPushString( mapArray, loadedMapLine );
 
-            #if defined DEBUG
-                if( mapCount < MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST )
-                {
-                    LOGGER( 4, "( loadMapFileSeriesListArray ) %d, loadedMapLine: %s", mapCount + 1, loadedMapLine )
-                }
-            #endif
+                LOGGER( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapLine ) )
 
-                // Load the series maps, if enabled.
-                if( isToMoveTheCursorOnMapSeries )
+                if( cursorOnMapSeries )
                 {
-                    loadTheCursorOnMapSeries( mapArray, mapTrie, loadedMapSeriesTrie, loadedMapName, nextMapName, mapCount );
+                    loadTheCursorOnMapSeries( mapArray, mapTrie, loadedMapSeriesTrie, loadedMapName,
+                            nextMapName, mapCount, cursorOnMapSeries );
                 }
 
                 ++mapCount;
@@ -12955,12 +12996,24 @@ stock loadMapFileListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
 
     if( mapFileDescriptor )
     {
+        new Trie:loadedMapSeriesTrie;
+        new cursorOnMapSeries = get_pcvar_num( cvar_serverMoveCursor );
+
+        // If the `IS_TO_LOAD_ALL_THE_MAP_SERIES` is set, it overrides the `IS_TO_LOAD_THE_FIRST_MAP_SERIES`
+        // bit flag.
+        if( cursorOnMapSeries & IS_TO_LOAD_THE_FIRST_MAP_SERIES
+            && !( cursorOnMapSeries & IS_TO_LOAD_ALL_THE_MAP_SERIES ) )
+        {
+            loadedMapSeriesTrie = TrieCreate();
+        }
+
         if( mapArray
             && mapTrie )
         {
-            mapCount = loadMapFileSeriesListArray( mapFileDescriptor, mapArray, mapTrie );
+            mapCount = loadMapFileSeriesListArray( mapFileDescriptor, mapArray, mapTrie, loadedMapSeriesTrie, cursorOnMapSeries );
         }
 
+        TRY_TO_APPLY( TrieDestroy, loadedMapSeriesTrie )
         checkIfThereEnoughMapPopulated( mapCount, mapFileDescriptor );
 
         fclose( mapFileDescriptor );
@@ -13020,7 +13073,7 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
         mapCount = loadMapFileListOnSeries( mapArray, mapTrie, mapFilePath );
     }
 
-    LOGGER( 1, "    I AM EXITING map_populateListOnSeries(2) mapCount: %d", mapCount )
+    LOGGER( 1, "    I AM EXITING map_populateListOnSeries(3) mapCount: %d", mapCount )
     return mapCount;
 }
 
@@ -14820,35 +14873,65 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
     }
 
     /**
-     * Tests if the function map_populateListOnSeries(2) is properly loading the maps series.
+     * Tests if the function helper_loadStrictValidMapsTrie() is properly loading its maps bytes
+     * isAllowedValidMapByTheUnitTests(1).
      */
-    stock test_map_populateListOnSeries()
+    stock test_strictValidMapsTrie_load()
     {
         g_test_isToUseStrictValidMaps = true;
-        new test_id = test_registerSeriesNaming( "test_map_populateListOnSeries", 'a' ); // Case 1
-
-        new Trie:populatedTrie   = TrieCreate();
-        new Array:populatedArray = ArrayCreate( MAX_MAPNAME_LENGHT );
-        set_pcvar_num( cvar_serverMoveCursor, 1 );
 
         helper_mapFileListLoad( g_test_voteMapFilePath, "de_dust1", "de_dust2", "de_nuke", "de_dust2" );
         helper_loadStrictValidMapsTrie( "de_dust1", "de_dust2", "de_dust5", "de_dust6", "de_nuke" );
 
-        test_strictValidMapsTrie( test_id, "de_dust1" );
-        test_strictValidMapsTrie( test_id, "de_dust2" );
-        test_strictValidMapsTrie( test_id, "de_dust5" );
-        test_strictValidMapsTrie( test_id, "de_dust6" );
-        test_strictValidMapsTrie( test_id, "de_nuke"  );
+        test_strictValidMapsTrie( "de_dust1" ); // Case 1
+        test_strictValidMapsTrie( "de_dust2" ); // Case 2
+        test_strictValidMapsTrie( "de_dust5" ); // Case 3
+        test_strictValidMapsTrie( "de_dust6" ); // Case 4
+        test_strictValidMapsTrie( "de_nuke"  ); // Case 5
 
-        test_id = test_registerSeriesNaming( "test_map_populateListOnSeries", 'a' ); // Case 2
-        test_strictValidMapsTrie( test_id, "de_nuke2", true );
-        test_strictValidMapsTrie( test_id, "de_dust" , true );
-        test_strictValidMapsTrie( test_id, "de_dust3", true );
-        test_strictValidMapsTrie( test_id, "de_dust4", true );
+        test_strictValidMapsTrie( "de_nuke2", true ); // Case 6
+        test_strictValidMapsTrie( "de_dust" , true ); // Case 7
+        test_strictValidMapsTrie( "de_dust3", true ); // Case 8
+        test_strictValidMapsTrie( "de_dust4", true ); // Case 9
 
-        // Second part
-        new mapCount = map_populateListOnSeries( populatedArray, populatedTrie, g_test_voteMapFilePath );
+        g_test_isToUseStrictValidMaps = false;
+    }
+
+    /**
+     * Create one case test for the stock isAllowedValidMapByTheUnitTests(1) based on its parameters passed
+     * by the test_strictValidMapsTrie_load(0) loader function.
+     */
+    stock test_strictValidMapsTrie( mapName[], bool:isNotToBe = false )
+    {
+        new test_id = test_registerSeriesNaming( "test_strictValidMapsTrie", 'a' );
         new errorMessage[ MAX_LONG_STRING ];
+
+        formatex( errorMessage, charsmax( errorMessage ), "The map `%s` must %sto be loaded on the trie.",
+                mapName, isNotToBe ? "not " : "" );
+        SET_TEST_FAILURE( test_id, TrieKeyExists( g_test_strictValidMapsTrie, mapName ) == isNotToBe, errorMessage )
+    }
+
+    /**
+     * Tests if the function map_populateListOnSeries(3) is properly loading the maps series.
+     */
+    stock test_populateListOnSeries_load()
+    {
+        new test_id;
+        new expectedSize;
+
+        g_test_isToUseStrictValidMaps = true;
+
+        new Trie:populatedTrie   = TrieCreate();
+        new Array:populatedArray = ArrayCreate( MAX_MAPNAME_LENGHT );
+
+        helper_mapFileListLoad( g_test_voteMapFilePath, "de_dust1", "de_dust2", "de_nuke", "de_dust2" );
+        helper_loadStrictValidMapsTrie( "de_dust1", "de_dust2", "de_dust5", "de_dust6", "de_nuke" );
+
+        // Set the settings accordantly to what is being tests on this Unit Test.
+        set_pcvar_num( cvar_serverMoveCursor, 1 );
+
+        new errorMessage[ MAX_LONG_STRING ];
+        new mapCount = map_populateListOnSeries( populatedArray, populatedTrie, g_test_voteMapFilePath );
 
         for( new index = 0; index < ArraySize( populatedArray ); index++ )
         {
@@ -14856,34 +14939,36 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
             LOGGER( 1, "populatedArray index: %d, mapName: %s", index, errorMessage )
         }
 
-        new expectedSize = 7;
+        test_id      = test_registerSeriesNaming( "test_populateListOnSeries_load", 'e' );
+        expectedSize = 7;
+
         formatex( errorMessage, charsmax( errorMessage ), "The map populatedArray size must to be %d, instead of %d.",
                 expectedSize, mapCount );
         SET_TEST_FAILURE( test_id, mapCount != expectedSize, errorMessage )
 
-        test_id = test_registerSeriesNaming( "test_map_populateListOnSeries", 'a' ); // Case 3
-        test_populateListOnSeries( populatedArray, test_id, "de_dust1" );
-        test_populateListOnSeries( populatedArray, test_id, "de_dust2" );
-        test_populateListOnSeries( populatedArray, test_id, "de_dust5" );
-        test_populateListOnSeries( populatedArray, test_id, "de_dust6" );
-        test_populateListOnSeries( populatedArray, test_id, "de_nuke"  );
+        test_populateListOnSeries( populatedArray, "de_dust1" ); // Case 1
+        test_populateListOnSeries( populatedArray, "de_dust2" ); // Case 2
+        test_populateListOnSeries( populatedArray, "de_dust5" ); // Case 3
+        test_populateListOnSeries( populatedArray, "de_dust6" ); // Case 4
+        test_populateListOnSeries( populatedArray, "de_nuke"  ); // Case 5
 
-        test_id = test_registerSeriesNaming( "test_map_populateListOnSeries", 'a' ); // Case 4
-        test_populateListOnSeries( populatedArray, test_id, "de_nuke2", true );
-        test_populateListOnSeries( populatedArray, test_id, "de_dust" , true );
-        test_populateListOnSeries( populatedArray, test_id, "de_dust3", true );
-        test_populateListOnSeries( populatedArray, test_id, "de_dust4", true );
+        test_populateListOnSeries( populatedArray, "de_nuke2", true ); // Case 6
+        test_populateListOnSeries( populatedArray, "de_dust" , true ); // Case 7
+        test_populateListOnSeries( populatedArray, "de_dust3", true ); // Case 8
+        test_populateListOnSeries( populatedArray, "de_dust4", true ); // Case 9
 
         g_test_isToUseStrictValidMaps = false;
         ArrayDestroy( populatedArray );
     }
 
     /**
-     * Create one case test for the stock helper_loadStrictValidMapsTrie() based on its parameters passed
-     * by the test_map_populateListOnSeries(0) loader function.
+     * Create one case test for the stock map_populateListOnSeries(3) based on its parameters passed
+     * by the test_populateListOnSeries_load(0) loader function.
      */
-    stock test_populateListOnSeries( Array:populatedArray, test_id, mapName[], bool:isNotToBe = false  )
+    stock test_populateListOnSeries( Array:populatedArray, mapName[], bool:isNotToBe = false  )
     {
+        new test_id = test_registerSeriesNaming( "test_populateListOnSeries_load", 'e' );
+
         new bool:isOnTheArray;
         new errorMessage[ MAX_LONG_STRING ];
 
@@ -14899,20 +14984,7 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
     }
 
     /**
-     * Create one case test for the stock map_populateListOnSeries(2) based on its parameters passed
-     * by the test_map_populateListOnSeries(0) loader function.
-     */
-    stock test_strictValidMapsTrie( test_id, mapName[], bool:isNotToBe = false )
-    {
-        new errorMessage[ MAX_LONG_STRING ];
-
-        formatex( errorMessage, charsmax( errorMessage ), "The map `%s` must %sto be loaded on the trie.",
-                mapName, isNotToBe ? "not " : "" );
-        SET_TEST_FAILURE( test_id, TrieKeyExists( g_test_strictValidMapsTrie, mapName ) == isNotToBe, errorMessage )
-    }
-
-    /**
-     * Tests if the function map_populateListOnSeries(2) is properly loading the maps series.
+     * Tests if the function map_populateListOnSeries(3) is properly loading the maps series.
      */
     stock test_GET_MAP_NAME_load()
     {
