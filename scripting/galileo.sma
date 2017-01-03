@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.0.0-433";
+new const PLUGIN_VERSION[] = "v4.0.0-435";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -56,6 +56,7 @@ new const PLUGIN_VERSION[] = "v4.0.0-433";
  * support, and you are using the Re-HLDS and Re-Amx Mod X, you server may crash.
  */
 #define IS_TO_ENABLE_RE_HLDS_RE_AMXMODX_SUPPORT 1
+
 
 
 // Debugger Main Definitions
@@ -3080,12 +3081,9 @@ stock debugWhatGameEndingTypeItIs( rounds_left_by_maxrounds, rounds_left_by_time
 stock debugIsTimeToStartTheEndOfMap( secondsRemaining, debugLevel )
 {
     LOGGER( 128, "I AM ENTERING ON debugIsTimeToStartTheEndOfMap(2)" )
-
-    new taskExist       = task_exists( TASKID_START_VOTING_BY_TIMER );
-    new roundsRemaining = howManyRoundsAreRemaining( secondsRemaining - g_totalVoteTime, whatGameEndingTypeItIs() );
+    new taskExist = task_exists( TASKID_START_VOTING_BY_TIMER );
 
     LOGGER( debugLevel, "" )
-    LOGGER( debugLevel, "( debugIsTimeToStartTheEndOfMap ) roundsRemaining: %d", roundsRemaining )
     LOGGER( debugLevel, "( debugIsTimeToStartTheEndOfMap ) task_exists TASKID_START_VOTING_BY_TIMER: %d", taskExist )
     LOGGER( debugLevel, "( debugIsTimeToStartTheEndOfMap ) g_isTheLastGameRound: %d", g_isTheLastGameRound )
     LOGGER( debugLevel, "( debugIsTimeToStartTheEndOfMap ) g_isThePenultGameRound: %d", g_isThePenultGameRound )
