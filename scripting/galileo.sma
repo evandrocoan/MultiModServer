@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.0.0-438";
+new const PLUGIN_VERSION[] = "v4.0.0-439";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -12684,7 +12684,7 @@ public sayNextMap()
     #if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
         color_print( 0, "%L ^4%s", LANG_PLAYER, "NEXT_MAP", nextMapName );
     #else
-        color_print( 0, "%L %s", LANG_PLAYER, "NEXT_MAP", nextMapName );
+        client_print( 0, print_chat, LANG_PLAYER, "NEXT_MAP", nextMapName );
     #endif
     }
 
@@ -12698,16 +12698,25 @@ public sayNextMap()
 public sayCurrentMap()
 {
     LOGGER( 128, "I AM ENTERING ON sayCurrentMap(0)" )
+
+#if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
+    color_print( 0, "%L ^4%s", LANG_PLAYER, "PLAYED_MAP", g_currentMapName );
+#else
     client_print( 0, print_chat, "%L: %s", LANG_PLAYER, "PLAYED_MAP", g_currentMapName );
+#endif
 }
 
 public sayFFStatus()
 {
     LOGGER( 128, "I AM ENTERING ON sayFFStatus(0)" )
 
-    client_print( 0, print_chat, "%L: %L",
-            LANG_PLAYER, "FRIEND_FIRE",
-            LANG_PLAYER, get_pcvar_num( cvar_mp_friendlyfire ) ? "ON" : "OFF" );
+    #if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
+        color_print( 0, "%L: ^4%L",
+                LANG_PLAYER, "FRIEND_FIRE",
+                LANG_PLAYER, get_pcvar_num( cvar_mp_friendlyfire ) ? "ON" : "OFF" );
+    #else
+        client_print( 0, print_chat,  );
+    #endif
 }
 
 public delayedChange( param[] )
