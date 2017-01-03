@@ -1564,7 +1564,7 @@ See the current issues/features request list on [URL="https://github.com/addonsz
 [B][URL="https://forums.alliedmods.net/member.php?u=144216"]vase070[/URL][/B]: For the missing 'GAL_WINNER_ORDERED' bug report.
 [B][URL="https://forums.alliedmods.net/member.php?u=235274"]MihailoZ[/URL][/B]: For the 'galileo.txt' lang file misspellings report and the Serbian [sr] language translation.
 [B][URL="https://forums.alliedmods.net/member.php?u=85472"]damnyourefine[/URL][/B]: For donations and reported/helped with the bug [URL="https://github.com/addonszz/Galileo/issues/3"]Issues#3[/URL].
-[B][URL="https://github.com/mo0nsniper"]mo0nsniper[/URL][/B]: For the bug report, vote shows only for one player [URL="https://github.com/addonszz/Galileo/issues/26"]Issues#26[/URL].
+[B][URL="https://github.com/mo0nsniper"]mo0nsniper[/URL][/B]: For testing and bug reports, as vote shows only for one player [URL="https://github.com/addonszz/Galileo/issues/26"]Issues#26[/URL] and [URL="https://github.com/addonszz/Galileo/issues/22"]Issues#22[/URL].
 [B][URL="https://forums.alliedmods.net/member.php?u=184733"]Belo95135[/URL][/B]: For the Slovak [sk] language translation.
 [B][URL="https://github.com/regener"]regener[/URL][/B]: For the Hungarian [hu] language translation and the GitHub [URL="https://github.com/addonszz/Galileo/pull/50"]Pull Request #50[/URL].
 [QUOTE=Brad;684848]
@@ -1585,10 +1585,11 @@ Thank you!  It means a lot to me.
 
 [LIST=1]
 [*]Fixed bad default game mod cvars detection.
-[*]Fixed the command `say nextmap` showing `[not yet voted on]` when the feature `gal_nextmap_votemap` is enabled.
+[*]Fixed the commands `say nextmap` showing `[not yet voted on]` when the feature `gal_nextmap_votemap` is enabled.
 [*]Fixed the map banning by the map cycle, using voting filler's size as limit, instead of the map cycle file size.
 [*]Fixed the `gal_endofmapvote_start` last round prediction calculating wrong the round time average.
 [*]Fixed crashes on for the Re-HLDS and Re-Amx Mod X servers.
+[*]Fixed the cvar `gal_endofmapvote_start` showing the original server next map, instead of the map set by the server admin.
 [*]Fixed the cvar `gal_nextmap_votemap` not setting the voting status as over.
 [*]Fixed the cvar `gal_endonround` showing a next map value out of date when the admin sets it manually.
 [*]Fixed the cvar `gal_endonround` overriding the map extension when the `gal_endofmapvote_start` fail its detection.

@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.0.0-429";
+new const PLUGIN_VERSION[] = "v4.0.0-430";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -1587,7 +1587,7 @@ stock tryToGetGameModCvar( &cvar_to_get, cvar_name[] )
         cvar_to_get = cvar_disabledValuePointer;
     }
 
-    LOGGER( 1, "( tryToGetGameModCvar ) %s is cvar_to_get: %d", cvar_name, cvar_to_get )
+    LOGGER( 1, "    ( tryToGetGameModCvar ) %s is cvar_to_get: %d", cvar_name, cvar_to_get )
 }
 
 stock configureTheVotingMenus()
@@ -3404,6 +3404,9 @@ public map_manageEnd()
     LOGGER( 2, "%32s mp_timelimit: %f, get_real_players_number: %d", "map_manageEnd(in)", \
             get_pcvar_float( cvar_mp_timelimit ), get_real_players_number() )
 
+    new nextMapName[ MAX_MAPNAME_LENGHT ];
+    get_pcvar_string( cvar_amx_nextmap, nextMapName, charsmax( nextMapName ) );
+
     switch( get_pcvar_num( cvar_endOnRound ) )
     {
         // when time runs out, end at the current round end
@@ -3413,7 +3416,7 @@ public map_manageEnd()
             prevent_map_change();
 
             color_print( 0, "%L %L %L",
-                    LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED", LANG_PLAYER, "GAL_CHANGE_NEXTROUND", LANG_PLAYER, "GAL_NEXTMAP", g_nextMapName );
+                    LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED", LANG_PLAYER, "GAL_CHANGE_NEXTROUND", LANG_PLAYER, "GAL_NEXTMAP", nextMapName );
         }
         // when time runs out, end at the next round end
         case 2:
@@ -3425,14 +3428,16 @@ public map_manageEnd()
             if( get_pcvar_float( cvar_mp_roundtime ) > 8.0 )
             {
                 g_isTheLastGameRound = true;
+
                 color_print( 0, "%L %L %L",
-                        LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED", LANG_PLAYER, "GAL_CHANGE_NEXTROUND", LANG_PLAYER, "GAL_NEXTMAP", g_nextMapName );
+                        LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED", LANG_PLAYER, "GAL_CHANGE_NEXTROUND", LANG_PLAYER, "GAL_NEXTMAP", nextMapName );
             }
             else
             {
                 g_isThePenultGameRound = true;
+
                 color_print( 0, "%L %L",
-                        LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED", LANG_PLAYER, "GAL_NEXTMAP", g_nextMapName );
+                        LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED", LANG_PLAYER, "GAL_NEXTMAP", nextMapName );
             }
         }
         default:
@@ -12150,11 +12155,11 @@ stock delete_users_menus( bool:isToDoubleReset = false )
 stock tryToSetGameModCvarFloat( cvarPointer, Float:value )
 {
     LOGGER( 128, "I AM ENTERING ON tryToSetGameModCvarFloat(2) | cvarPointer: %d, value: %f", cvarPointer, value )
-    LOGGER( 1, "( tryToSetGameModCvarNum ) cvar_disabledValuePointer: %d", cvar_disabledValuePointer )
+    LOGGER( 1, "    ( tryToSetGameModCvarNum ) cvar_disabledValuePointer: %d", cvar_disabledValuePointer )
 
     if( cvarPointer != cvar_disabledValuePointer )
     {
-        LOGGER( 2, "( tryToSetGameModCvarFloat ) IS CHANGING THE CVAR '%d' to '%f'.", cvarPointer, value )
+        LOGGER( 2, "    ( tryToSetGameModCvarFloat ) IS CHANGING THE CVAR '%d' to '%f'.", cvarPointer, value )
         set_pcvar_float( cvarPointer, value );
     }
 }
@@ -12162,11 +12167,11 @@ stock tryToSetGameModCvarFloat( cvarPointer, Float:value )
 stock tryToSetGameModCvarNum( cvarPointer, num )
 {
     LOGGER( 128, "I AM ENTERING ON tryToSetGameModCvarNum(2) | cvarPointer: %d, num: %d", cvarPointer, num )
-    LOGGER( 1, "( tryToSetGameModCvarNum ) cvar_disabledValuePointer: %d", cvar_disabledValuePointer )
+    LOGGER( 1, "    ( tryToSetGameModCvarNum ) cvar_disabledValuePointer: %d", cvar_disabledValuePointer )
 
     if( cvarPointer != cvar_disabledValuePointer )
     {
-        LOGGER( 2, "( tryToSetGameModCvarNum ) IS CHANGING THE CVAR '%d' to '%d'.", cvarPointer, num )
+        LOGGER( 2, "    ( tryToSetGameModCvarNum ) IS CHANGING THE CVAR '%d' to '%d'.", cvarPointer, num )
         set_pcvar_num( cvarPointer, num );
     }
 }
@@ -12174,11 +12179,11 @@ stock tryToSetGameModCvarNum( cvarPointer, num )
 stock tryToSetGameModCvarString( cvarPointer, string[] )
 {
     LOGGER( 128, "I AM ENTERING ON tryToSetGameModCvarString(2) | cvarPointer: %d, string: %s", cvarPointer, string )
-    LOGGER( 1, "( tryToSetGameModCvarNum ) cvar_disabledValuePointer: %d", cvar_disabledValuePointer )
+    LOGGER( 1, "    ( tryToSetGameModCvarNum ) cvar_disabledValuePointer: %d", cvar_disabledValuePointer )
 
     if( cvarPointer != cvar_disabledValuePointer )
     {
-        LOGGER( 2, "( tryToSetGameModCvarString ) IS CHANGING THE CVAR '%d' to '%s'.", cvarPointer, string )
+        LOGGER( 2, "    ( tryToSetGameModCvarString ) IS CHANGING THE CVAR '%d' to '%s'.", cvarPointer, string )
         set_pcvar_string( cvarPointer, string );
     }
 }
