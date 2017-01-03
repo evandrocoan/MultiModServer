@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.0.0-435";
+new const PLUGIN_VERSION[] = "v4.0.0-436";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -3353,7 +3353,7 @@ stock try_to_manage_map_end( bool:isToImmediatelyChangeLevel = false )
     else if( !( g_isTheLastGameRound
                 || g_isThePenultGameRound ) )
     {
-        // This cvar indicates also the players minimum number necessary to allow the last round to be
+        // This cvar indicates the players minimum number necessary to allow the last round to be
         // finished when the time runs out.
         new bool:areThereEnoughPlayers = get_real_players_number() > get_pcvar_num( cvar_endOnRoundMininum );
 
@@ -12860,7 +12860,7 @@ stock isThereNextMapOnTheSerie( &currentSerie, mapNameClean[], nextMapName[] )
     return false;
 }
 
-stock loadTheCursorOnMapSeries( Array:mapArray, Trie:loadedMapSeriesTrie, currentMapName[], nextMapName[], &mapCount )
+stock loadTheCursorOnMapSeries( Array:mapArray, Trie:mapTrie, Trie:loadedMapSeriesTrie, currentMapName[], nextMapName[], &mapCount )
 {
     LOGGER( 256, "I AM ENTERING ON loadTheCursorOnMapSeries(5) | currentMapName: %s", currentMapName )
 
@@ -12885,6 +12885,7 @@ stock loadTheCursorOnMapSeries( Array:mapArray, Trie:loadedMapSeriesTrie, curren
         {
             TrieSetCell( loadedMapSeriesTrie, mapNameClean, mapCount );
 
+            TrieSetCell( mapTrie, nextMapName, mapCount );
             ArrayPushString( mapArray, nextMapName );
             LOGGER( 256, "( loadTheCursorOnMapSeries ) nextMapName: %s", nextMapName )
 
@@ -12933,7 +12934,7 @@ stock loadMapFileSeriesListArray( mapFileDescriptor, Array:mapArray, Trie:mapTri
                 // Load the series maps, if enabled.
                 if( isToMoveTheCursorOnMapSeries )
                 {
-                    loadTheCursorOnMapSeries( mapArray, loadedMapSeriesTrie, loadedMapName, nextMapName, mapCount );
+                    loadTheCursorOnMapSeries( mapArray, mapTrie, loadedMapSeriesTrie, loadedMapName, nextMapName, mapCount );
                 }
 
                 ++mapCount;
