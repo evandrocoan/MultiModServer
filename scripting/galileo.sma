@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.0.0-437";
+new const PLUGIN_VERSION[] = "v4.0.0-438";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -292,6 +292,7 @@ new const PLUGIN_VERSION[] = "v4.0.0-437";
         test_strictValidMapsTrie_load();
         test_populateListOnSeries_load1();
         test_populateListOnSeries_load2();
+        test_populateListOnSeries_load3();
         test_GET_MAP_NAME_load();
         test_GET_MAP_INFO_load();
         test_SortCustomSynced2D();
@@ -333,6 +334,7 @@ new const PLUGIN_VERSION[] = "v4.0.0-437";
         // test_GET_MAP_NAME_load();
         test_populateListOnSeries_load1();
         test_populateListOnSeries_load2();
+        test_populateListOnSeries_load3();
         // test_setCorrectMenuPage_load();
         // test_convertNumericBase_load();
         // test_whatGameEndingTypeIt_load();
@@ -12832,14 +12834,17 @@ stock getTheCurrentSerieForTheMap( mapNameDirt[], mapNameClean[] )
 
     LOGGER( 256, "( getTheCurrentSerieForTheMap ) mapNameDirt: %s", mapNameDirt )
 
+    // We just to return the next map on the series instead of the current one, which is already loaded.
     if( isdigit( mapNameDirt[ 0 ] ) )
     {
         LOGGER( 256, "    ( getTheCurrentSerieForTheMap ) Returning: %d", str_to_num( mapNameDirt ) + 1 )
         return str_to_num( mapNameDirt ) + 1;
     }
 
-    LOGGER( 256, "    ( getTheCurrentSerieForTheMap ) Returning 1, no number found." )
-    return 1;
+    // We are returning 0 because someone may try to start their map series naming at 0.
+    LOGGER( 256, "    ( getTheCurrentSerieForTheMap ) Returning 0, no number found." )
+
+    return 0;
 }
 
 stock isThereNextMapOnTheSerie( &currentSerie, mapNameClean[], nextMapName[] )
@@ -12880,8 +12885,9 @@ stock loadTheCursorOnMapSeries( Array:mapArray, Trie:mapTrie, Trie:loadedMapSeri
     copy( mapNameClean, charsmax( mapNameClean ), currentMapName );
 
     // If we are loading only map series starting at 1, block the execution if the initial serie is
-    // greater than 1.
-    if( ( currentSerie = getTheCurrentSerieForTheMap( mapNameDirt, mapNameClean ) ) > 1
+    // greater than 2, because this function returns the next map on the series, then if the current
+    // serie is 1, it will return 2. Therefore we must to allow it accordantly to the settings.
+    if( ( currentSerie = getTheCurrentSerieForTheMap( mapNameDirt, mapNameClean ) ) > 2
         && cursorOnMapSeries & IS_TO_LOAD_EXPLICIT_MAP_SERIES )
     {
         LOGGER( 256, "    ( loadTheCursorOnMapSeries ) Returning/Blocking the execution." )
@@ -14956,6 +14962,7 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
         test_populateListOnSeries( populatedArray, {2}    , "de_dust5", false ); // Case 4
         test_populateListOnSeries( populatedArray, {3}    , "de_dust6", false ); // Case 5
         test_populateListOnSeries( populatedArray, {5}    , "de_nuke" , false ); // Case 6
+
         test_populateListOnSeries( populatedArray, _      , "de_nuke2", true  ); // Case 7
         test_populateListOnSeries( populatedArray, _      , "de_dust" , true  ); // Case 8
         test_populateListOnSeries( populatedArray, _      , "de_dust3", true  ); // Case 9
@@ -14993,6 +15000,34 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
 
         TrieDestroy( populatedTrie );
         ArrayDestroy( populatedArray );
+    }
+
+    /**
+     * Tests if the function map_populateListOnSeries(3) is properly loading the maps series.
+     */
+    stock test_populateListOnSeries_load3()
+    {
+        new Trie:populatedTrie   = TrieCreate();
+        new Array:populatedArray = ArrayCreate( MAX_MAPNAME_LENGHT );
+
+        g_test_isToUseStrictValidMaps = true;
+        test_populateListOnSeries_build( 6, populatedArray, populatedTrie, 7 ); // Case 1
+
+        test_populateListOnSeries( populatedArray, {0}    , "de_dust1", false ); // Case 2
+        test_populateListOnSeries( populatedArray, {1,4,6}, "de_dust2", false ); // Case 3
+        test_populateListOnSeries( populatedArray, {2}    , "de_dust5", false ); // Case 4
+        test_populateListOnSeries( populatedArray, {3}    , "de_dust6", false ); // Case 5
+        test_populateListOnSeries( populatedArray, {5}    , "de_nuke" , false ); // Case 6
+
+        test_populateListOnSeries( populatedArray, _      , "de_nuke2", true  ); // Case 7
+        test_populateListOnSeries( populatedArray, _      , "de_dust" , true  ); // Case 8
+        test_populateListOnSeries( populatedArray, _      , "de_dust3", true  ); // Case 9
+        test_populateListOnSeries( populatedArray, _      , "de_dust4", true  ); // Case 10
+
+        TrieDestroy( populatedTrie );
+        ArrayDestroy( populatedArray );
+
+        g_test_isToUseStrictValidMaps = false;
     }
 
     /**
