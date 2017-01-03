@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.0.0-428";
+new const PLUGIN_VERSION[] = "v4.0.0-429";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -1789,9 +1789,14 @@ public cacheCvarsValues()
      */
 #if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
     g_isColoredChatEnabled = get_pcvar_num( cvar_coloredChatEnabled ) != 0;
-#endif
 
     get_pcvar_string( cvar_coloredChatPrefix, g_coloredChatPrefix, charsmax( g_coloredChatPrefix ) );
+    INSERT_COLOR_TAGS( g_coloredChatPrefix )
+#else
+    get_pcvar_string( cvar_coloredChatPrefix, g_coloredChatPrefix, charsmax( g_coloredChatPrefix ) );
+    REMOVE_CODE_COLOR_TAGS( g_coloredChatPrefix )
+#endif
+
 
     g_isExtendmapAllowStay      = get_pcvar_num( cvar_extendmapAllowStay   ) != 0;
     g_isToShowNoneOption        = get_pcvar_num( cvar_isToShowNoneOption   ) == 1;
@@ -11736,7 +11741,7 @@ stock color_print( const player_id, const message[], any:... )
 
                 if( g_coloredChatPrefix[ 0 ] )
                 {
-                    formatex( message, charsmax( message ), "^1%s%s", g_coloredChatPrefix, formated_message[ 1 ] );
+                    formatex( message, charsmax( message ), "^1%s^1%s", g_coloredChatPrefix, formated_message[ 1 ] );
 
                     LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, message )
                     PRINT_COLORED_MESSAGE( player_id, message )
@@ -11865,7 +11870,7 @@ stock color_print( const player_id, const message[], any:... )
 
                     if( g_coloredChatPrefix[ 0 ] )
                     {
-                        formatex( message, charsmax( message ), "^1%s%s", g_coloredChatPrefix, formated_message[ 1 ] );
+                        formatex( message, charsmax( message ), "^1%s^1%s", g_coloredChatPrefix, formated_message[ 1 ] );
 
                         LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, message )
                         PRINT_COLORED_MESSAGE( player_id, message )
@@ -11901,7 +11906,7 @@ stock color_print( const player_id, const message[], any:... )
 
         if( IS_COLORED_CHAT_ENABLED() )
         {
-            client_print_color( player_id, print_team_default, "%s%s", g_coloredChatPrefix, formated_message );
+            client_print_color( player_id, print_team_default, "%s^1%s", g_coloredChatPrefix, formated_message );
         }
         else
         {
