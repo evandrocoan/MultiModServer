@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.0.0-443";
+new const PLUGIN_VERSION[] = "v4.0.0-444";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -5778,7 +5778,9 @@ stock configureVotingStart( bool:is_forced_voting )
 stock configureTheExtensionOption( bool:is_forced_voting )
 {
     LOGGER( 128, "I AM ENTERING ON configureTheExtensionOption(1) is_forced_voting: %d", is_forced_voting )
+    new Float:cache;
 
+    // If we cannot find anything cancelling/blocking the map extension, allow it by the default.
     if( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXTENSION )
     {
         g_isMapExtensionAllowed = false;
@@ -5789,33 +5791,33 @@ stock configureTheExtensionOption( bool:is_forced_voting )
         g_isMapExtensionAllowed = false;
     }
     else if( g_isVotingByFrags
-             && get_pcvar_num( cvar_maxMapExtendFrags ) )
+             && ( cache = Float:get_pcvar_num( cvar_maxMapExtendFrags ) ) )
     {
         g_isMapExtensionAllowed =
-                get_pcvar_num( cvar_mp_fraglimit ) < get_pcvar_num( cvar_maxMapExtendTime );
+                get_pcvar_num( cvar_mp_fraglimit ) < cache;
     }
     else if( g_isVotingByRounds
-             && get_pcvar_num( cvar_maxMapExtendRounds ) )
+             && ( cache = Float:get_pcvar_num( cvar_maxMapExtendRounds ) ) )
     {
         switch( whatGameEndingTypeItIs() )
         {
             case GameEndingType_ByWinLimit:
             {
                 g_isMapExtensionAllowed =
-                        get_pcvar_num( cvar_mp_winlimit ) < get_pcvar_num( cvar_maxMapExtendRounds );
+                        get_pcvar_num( cvar_mp_winlimit ) < cache;
             }
             default:
             {
                 g_isMapExtensionAllowed =
-                        get_pcvar_num( cvar_mp_maxrounds ) < get_pcvar_num( cvar_maxMapExtendRounds );
+                        get_pcvar_num( cvar_mp_maxrounds ) < cache;
             }
         }
     }
     else if( g_isVotingByTimer
-             && get_pcvar_float( cvar_maxMapExtendTime ) )
+             && ( cache = get_pcvar_float( cvar_maxMapExtendTime ) ) )
     {
         g_isMapExtensionAllowed =
-                get_pcvar_float( cvar_mp_timelimit ) < get_pcvar_float( cvar_maxMapExtendTime );
+                get_pcvar_float( cvar_mp_timelimit ) < cache;
     }
     else
     {
@@ -13843,6 +13845,7 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
         set_pcvar_float( cvar_maxMapExtendTime, 20.0 );
         tryToSetGameModCvarFloat( cvar_mp_timelimit, 10.0 );
 
+        g_isVotingByTimer = true;
         vote_startDirector( false );
 
         formatex( errorMessage, charsmax( errorMessage ), "g_isMapExtensionAllowed must be 1 (it was %d)", g_isMapExtensionAllowed );
@@ -13857,8 +13860,10 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
      */
     public test_isMapExtensionAvowed_case2( chainDelay )
     {
+        new test_id;
         new errorMessage[ MAX_LONG_STRING ];
-        new test_id = register_test( chainDelay, "test_isMapExtensionAvowed_case2" );
+
+        test_id = register_test( chainDelay, "test_isMapExtensionAvowed_case2" );
 
         formatex( errorMessage, charsmax( errorMessage ), "g_isMapExtensionAllowed must be 1 (it was %d)", g_isMapExtensionAllowed );
         SET_TEST_FAILURE( test_id, !g_isMapExtensionAllowed, errorMessage )
@@ -13866,9 +13871,13 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
         color_print( 0, "%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED" );
         cancelVoting();
 
+        // Case 3
+        test_id = register_test( chainDelay, "test_isMapExtensionAvowed_case3" );
+
         set_pcvar_float( cvar_maxMapExtendTime, 10.0 );
         tryToSetGameModCvarFloat( cvar_mp_timelimit, 20.0 );
 
+        g_isVotingByTimer = true;
         vote_startDirector( false );
 
         formatex( errorMessage, charsmax( errorMessage ), "g_isMapExtensionAllowed must be 0 (it was %d)", g_isMapExtensionAllowed );
