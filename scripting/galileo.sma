@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.0.0-444";
+new const PLUGIN_VERSION[] = "v4.0.0-445";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -4201,13 +4201,7 @@ stock loadMapFileListComplete( mapFileDescriptor, Array:mapArray, Trie:fillerMap
                 TrieSetCell( fillerMapTrie, loadedMapName, mapCount );
                 ArrayPushString( mapArray, loadedMapLine );
 
-            #if defined DEBUG
-                if( mapCount < MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST )
-                {
-                    LOGGER( 4, "( loadMapFileListComplete ) %d, loadedMapLine: %s", mapCount + 1, loadedMapLine )
-                }
-            #endif
-
+                LOGGER( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapLine ) )
                 ++mapCount;
             }
         }
@@ -4237,13 +4231,7 @@ stock loadMapFileListArray( mapFileDescriptor, Array:mapArray )
             {
                 ArrayPushString( mapArray, loadedMapLine );
 
-            #if defined DEBUG
-                if( mapCount < MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST )
-                {
-                    LOGGER( 4, "( loadMapFileListArray ) %d, loadedMapLine: %s", mapCount + 1, loadedMapLine )
-                }
-            #endif
-
+                LOGGER( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapLine ) )
                 ++mapCount;
             }
         }
@@ -4273,13 +4261,7 @@ stock loadMapFileListTrie( mapFileDescriptor, Trie:fillerMapTrie )
             {
                 TrieSetCell( fillerMapTrie, loadedMapName, mapCount );
 
-            #if defined DEBUG
-                if( mapCount < MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST )
-                {
-                    LOGGER( 4, "( loadMapFileListTrie ) %d, loadedMapLine: %s", mapCount + 1, loadedMapLine )
-                }
-            #endif
-
+                LOGGER( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapLine ) )
                 ++mapCount;
             }
         }
@@ -4349,13 +4331,7 @@ stock loadMapsFolderDirectoryComplete( directoryDescriptor, Array:mapArray, Trie
                 TrieSetCell( fillerMapTrie, loadedMapName, mapCount );
                 ArrayPushString( mapArray, loadedMapName );
 
-            #if defined DEBUG
-                if( mapCount < MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST )
-                {
-                    LOGGER( 4, "( loadMapsFolderDirectoryComplete ) %d, loadedMapName: %s", mapCount + 1, loadedMapName )
-                }
-            #endif
-
+                LOGGER( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapName ) )
                 ++mapCount;
             }
         }
@@ -4385,13 +4361,7 @@ stock loadMapsFolderDirectoryArray( directoryDescriptor, Array:mapArray )
             {
                 ArrayPushString( mapArray, loadedMapName );
 
-            #if defined DEBUG
-                if( mapCount < MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST )
-                {
-                    LOGGER( 4, "( loadMapsFolderDirectoryArray ) %d, loadedMapName: %s", mapCount + 1, loadedMapName )
-                }
-            #endif
-
+                LOGGER( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapName ) )
                 ++mapCount;
             }
         }
@@ -4421,13 +4391,7 @@ stock loadMapsFolderDirectoryTrie( directoryDescriptor, Trie:fillerMapTrie )
             {
                 TrieSetCell( fillerMapTrie, loadedMapName, mapCount );
 
-            #if defined DEBUG
-                if( mapCount < MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST )
-                {
-                    LOGGER( 4, "( loadMapsFolderDirectoryTrie ) %d, loadedMapName: %s", mapCount + 1, loadedMapName )
-                }
-            #endif
-
+                LOGGER( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapName ) )
                 ++mapCount;
             }
         }
