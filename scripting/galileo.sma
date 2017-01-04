@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.0.0-442";
+new const PLUGIN_VERSION[] = "v4.0.0-443";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -94,7 +94,7 @@ new const PLUGIN_VERSION[] = "v4.0.0-442";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1
+#define DEBUG_LEVEL 1+2+4+64
 
 
 /**
@@ -956,7 +956,9 @@ new cvar_voteWeightFlags;
 new cvar_maxMapExtendTime;
 new cvar_extendmapStepMinutes;
 new cvar_extendmapStepRounds;
+new cvar_maxMapExtendRounds;
 new cvar_extendmapStepFrags;
+new cvar_maxMapExtendFrags;
 new cvar_fragLimitSupport;
 new cvar_extendmapAllowStay;
 new cvar_isToAskForEndOfTheMapVote;
@@ -1352,8 +1354,10 @@ public plugin_init()
     cvar_extendmapStepMinutes    = register_cvar ( "amx_extendmap_step"           , "15" );
     cvar_maxMapExtendTime        = register_cvar ( "amx_extendmap_max"            , "90" );
     cvar_extendmapStepRounds     = register_cvar ( "amx_extendmap_step_rounds"    , "30" );
-    cvar_extendmapStepFrags      = register_cvar ( "amx_extendmap_step_frags"     , "60" );
+    cvar_maxMapExtendRounds      = register_cvar ( "amx_extendmap_max_rounds"     , "0"  );
     cvar_fragLimitSupport        = register_cvar ( "gal_mp_fraglimit_support"     , "0"  );
+    cvar_extendmapStepFrags      = register_cvar ( "amx_extendmap_step_frags"     , "60" );
+    cvar_maxMapExtendFrags       = register_cvar ( "amx_extendmap_max_frags"      , "0"  );
     cvar_extendmapAllowStay      = register_cvar ( "amx_extendmap_allow_stay"     , "0"  );
     cvar_extendmapAllowStayType  = register_cvar ( "amx_extendmap_allow_stay_type", "0"  );
     cvar_isExtendmapOrderAllowed = register_cvar ( "amx_extendmap_allow_order"    , "0"  );
@@ -5779,32 +5783,39 @@ stock configureTheExtensionOption( bool:is_forced_voting )
     {
         g_isMapExtensionAllowed = false;
     }
-    else if( g_isVotingByRounds
-             || g_isVotingByFrags )
+    else if( g_voteStatus & IS_RTV_VOTE
+             && get_pcvar_num( cvar_rtvWaitAdmin ) & IS_TO_RTV_NOT_ALLOW_STAY )
     {
-        // Max rounds/frags vote map does not have a max rounds extension limit as mp_timelimit
-        if( g_voteStatus & IS_RTV_VOTE
-            && get_pcvar_num( cvar_rtvWaitAdmin ) & IS_TO_RTV_NOT_ALLOW_STAY )
+        g_isMapExtensionAllowed = false;
+    }
+    else if( g_isVotingByFrags
+             && get_pcvar_num( cvar_maxMapExtendFrags ) )
+    {
+        g_isMapExtensionAllowed =
+                get_pcvar_num( cvar_mp_fraglimit ) < get_pcvar_num( cvar_maxMapExtendTime );
+    }
+    else if( g_isVotingByRounds
+             && get_pcvar_num( cvar_maxMapExtendRounds ) )
+    {
+        switch( whatGameEndingTypeItIs() )
         {
-            g_isMapExtensionAllowed = false;
-        }
-        else
-        {
-            g_isMapExtensionAllowed = true;
+            case GameEndingType_ByWinLimit:
+            {
+                g_isMapExtensionAllowed =
+                        get_pcvar_num( cvar_mp_winlimit ) < get_pcvar_num( cvar_maxMapExtendRounds );
+            }
+            default:
+            {
+                g_isMapExtensionAllowed =
+                        get_pcvar_num( cvar_mp_maxrounds ) < get_pcvar_num( cvar_maxMapExtendRounds );
+            }
         }
     }
-    else if( get_pcvar_num( cvar_maxMapExtendTime ) )
+    else if( g_isVotingByTimer
+             && get_pcvar_float( cvar_maxMapExtendTime ) )
     {
-        if( g_voteStatus & IS_RTV_VOTE
-            && get_pcvar_num( cvar_rtvWaitAdmin ) & IS_TO_RTV_NOT_ALLOW_STAY )
-        {
-            g_isMapExtensionAllowed = false;
-        }
-        else
-        {
-            g_isMapExtensionAllowed =
-                    get_pcvar_float( cvar_mp_timelimit ) < get_pcvar_float( cvar_maxMapExtendTime );
-        }
+        g_isMapExtensionAllowed =
+                get_pcvar_float( cvar_mp_timelimit ) < get_pcvar_float( cvar_maxMapExtendTime );
     }
     else
     {
