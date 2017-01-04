@@ -1586,6 +1586,7 @@ Thank you!  It means a lot to me.
 [LIST=1]
 [*]Fixed bad default game mod cvars detection.
 [*]Fixed the commands `say nextmap` showing `[not yet voted on]` when the feature `gal_nextmap_votemap` is enabled.
+[*]Fixed the voting menu is not showing the extend option on the RTV voting.
 [*]Fixed the map banning by the map cycle, using voting filler's size as limit, instead of the map cycle file size.
 [*]Fixed the `gal_endofmapvote_start` last round prediction calculating wrong the round time average.
 [*]Fixed crashes on for the Re-HLDS and Re-Amx Mod X servers.
@@ -1599,6 +1600,7 @@ Thank you!  It means a lot to me.
 [*]Removed the HUD control option from the cvar `gal_endonround_msg` as the cvar `gal_sounds_hud` already configures it.
 [*]Blocked the next map cvar to be set to the current map while reading the map cycle file.
 [*]Added a new cvar `gal_vote_mapchoices_next` to always add the former next map, read from your map cycle file, to the voting menu.
+[*]Added a new option to the cvar `gal_rtv_wait_admin`, do not allow the RTV show the `Stay Here` vote option.
 [*]Added a new option to the cvar `gal_colored_chat_prefix`, now you can use the colored strings codes. For example: "!g[!yAMXX!g] ".
 [*]Added full color chat support to the commands `say nextmap` and `say currentmap`.
 [*]Added new options to the cvar `gal_srv_move_cursor` allow load the map series.
