@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.0.0-439";
+new const PLUGIN_VERSION[] = "v4.0.0-440";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -94,7 +94,7 @@ new const PLUGIN_VERSION[] = "v4.0.0-439";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+16
+#define DEBUG_LEVEL 1+2+4+64
 
 
 /**
@@ -14001,10 +14001,10 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
         ArrayPushString( testMapListArray, "de_dust4" );
         ArrayPushString( testMapListArray, "de_dust" );
 
-        test_mapGetNext_case( testMapListArray, "de_dust", "de_dust2", 0 );      // case 1
-        test_mapGetNext_case( testMapListArray, "de_dust2", "de_inferno", 1 );   // case 2
-        test_mapGetNext_case( testMapListArray, "de_inferno", "de_dust4", 2 );   // case 3
-        test_mapGetNext_case( testMapListArray, "de_inferno2", "de_dust2", -1 ); // case 4
+        test_mapGetNext_case( testMapListArray, "de_dust", "de_dust2", 0 );      // Case 1
+        test_mapGetNext_case( testMapListArray, "de_dust2", "de_inferno", 1 );   // Case 2
+        test_mapGetNext_case( testMapListArray, "de_inferno", "de_dust4", 2 );   // Case 3
+        test_mapGetNext_case( testMapListArray, "de_inferno2", "de_dust2", -1 ); // Case 4
 
         ArrayDestroy( testMapListArray );
     }
@@ -14076,18 +14076,18 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
     {
         test_loadCurrentBlackList_load();
 
-        test_loadCurrentBlacklist_case( 12, "de_dust2", "de_dust7" ); // case 1
-        test_loadCurrentBlacklist_case( 23, "de_dust5", "de_dust4" ); // case 2
-        test_loadCurrentBlacklist_case( 23, "de_dust7", "de_dust2" ); // case 3
-        test_loadCurrentBlacklist_case( 24, "de_dust4", "de_dust1" ); // case 4
-        test_loadCurrentBlacklist_case( 23, "de_dust7", "de_dust8" ); // case 5
-        test_loadCurrentBlacklist_case( 22, "de_dust8", "de_dust7" ); // case 6
-        test_loadCurrentBlacklist_case( 23, "de_dust5", "de_dust1" ); // case 7
-        test_loadCurrentBlacklist_case( 23, "de_dust6", "de_dust2" ); // case 8
-        test_loadCurrentBlacklist_case( 23, "de_dust7", "de_dust3" ); // case 9
-        test_loadCurrentBlacklist_case( 23, "de_dust5", "de_dust4" ); // case 10
-        test_loadCurrentBlacklist_case( 2, "de_dust6", "de_dust11" ); // case 11
-        test_loadCurrentBlacklist_case( 4, "de_dust13", "de_dust4" ); // case 12
+        test_loadCurrentBlacklist_case( 12, "de_dust2", "de_dust7" ); // Case 1
+        test_loadCurrentBlacklist_case( 23, "de_dust5", "de_dust4" ); // Case 2
+        test_loadCurrentBlacklist_case( 23, "de_dust7", "de_dust2" ); // Case 3
+        test_loadCurrentBlacklist_case( 24, "de_dust4", "de_dust1" ); // Case 4
+        test_loadCurrentBlacklist_case( 23, "de_dust7", "de_dust8" ); // Case 5
+        test_loadCurrentBlacklist_case( 22, "de_dust8", "de_dust7" ); // Case 6
+        test_loadCurrentBlacklist_case( 23, "de_dust5", "de_dust1" ); // Case 7
+        test_loadCurrentBlacklist_case( 23, "de_dust6", "de_dust2" ); // Case 8
+        test_loadCurrentBlacklist_case( 23, "de_dust7", "de_dust3" ); // Case 9
+        test_loadCurrentBlacklist_case( 23, "de_dust5", "de_dust4" ); // Case 10
+        test_loadCurrentBlacklist_case( 2, "de_dust6", "de_dust11" ); // Case 11
+        test_loadCurrentBlacklist_case( 4, "de_dust13", "de_dust4" ); // Case 12
     }
 
     /**
@@ -14137,15 +14137,15 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
         set_pcvar_num( cvar_fragLimitSupport       , 1 );
         mp_fraglimitCvarSupport();
 
-        test_resetRoundsScores_loader( 90, 60, 31, 60  ); // case  1-4 , 90 - 60 + 31 - 1 = 60
-        test_resetRoundsScores_loader( 90, 20, 31, 100 ); // case  5-8 , 90 - 20 + 31 - 1 = 100
-        test_resetRoundsScores_loader( 20, 15, 11, 15  ); // case  9-12, 20 - 15 + 11 - 1 = 15
-        test_resetRoundsScores_loader( 60, 50, 1 , 10  ); // case 13-16, 60 - 50 + 1  - 1 = 10
-        test_resetRoundsScores_loader( 60, 59, 1 , 1   ); // case 17-20, 60 - 59 + 1  - 1 = 1
-        test_resetRoundsScores_loader( 60, 60, 1 , 60  ); // case 21-24, 60 - 60 + 1  - 1 = 60
-        test_resetRoundsScores_loader( 60, 59, 0 , 60  ); // case 25-28, 60 - 59 + 0  - 1 = 60
-        test_resetRoundsScores_loader( 60, 20, 0 , 60  ); // case 29-32, 60 - 20 + 0  - 1 = 60
-        test_resetRoundsScores_loader( 60, 80, 10, 60  ); // case 33-36, 60 - 80 + 10 - 1 = 60
+        test_resetRoundsScores_loader( 90, 60, 31, 60  ); // Case  1-4 , 90 - 60 + 31 - 1 = 60
+        test_resetRoundsScores_loader( 90, 20, 31, 100 ); // Case  5-8 , 90 - 20 + 31 - 1 = 100
+        test_resetRoundsScores_loader( 20, 15, 11, 15  ); // Case  9-12, 20 - 15 + 11 - 1 = 15
+        test_resetRoundsScores_loader( 60, 50, 1 , 10  ); // Case 13-16, 60 - 50 + 1  - 1 = 10
+        test_resetRoundsScores_loader( 60, 59, 1 , 1   ); // Case 17-20, 60 - 59 + 1  - 1 = 1
+        test_resetRoundsScores_loader( 60, 60, 1 , 60  ); // Case 21-24, 60 - 60 + 1  - 1 = 60
+        test_resetRoundsScores_loader( 60, 59, 0 , 60  ); // Case 25-28, 60 - 59 + 0  - 1 = 60
+        test_resetRoundsScores_loader( 60, 20, 0 , 60  ); // Case 29-32, 60 - 20 + 0  - 1 = 60
+        test_resetRoundsScores_loader( 60, 80, 10, 60  ); // Case 33-36, 60 - 80 + 10 - 1 = 60
     }
 
     /**
@@ -14336,8 +14336,8 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
         loadTheWhiteListFeature();
         loadTheDefaultVotingChoices();
 
-        test_loadVoteChoices_case( "de_rain", "de_inferno", 'a' ); // case 1
-        test_loadVoteChoices_case( "de_nuke", "as_trunda" );       // case 2
+        test_loadVoteChoices_case( "de_rain", "de_inferno", 'a' ); // Case 1
+        test_loadVoteChoices_case( "de_nuke", "as_trunda" );       // Case 2
     }
 
     /**
@@ -14359,9 +14359,9 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
         loadTheWhiteListFeature();
         loadTheDefaultVotingChoices();
 
-        test_loadVoteChoices_case( "de_rain"   , "de_nuke", 'b' ); // case 1
-        test_loadVoteChoices_case( "de_inferno", "de_nuke" );      // case 2
-        test_loadVoteChoices_case( "as_trunda" , "de_nuke" );      // case 3
+        test_loadVoteChoices_case( "de_rain"   , "de_nuke", 'b' ); // Case 1
+        test_loadVoteChoices_case( "de_inferno", "de_nuke" );      // Case 2
+        test_loadVoteChoices_case( "as_trunda" , "de_nuke" );      // Case 3
     }
 
     /**
@@ -14385,10 +14385,10 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
         loadTheWhiteListFeature();
         loadTheDefaultVotingChoices();
 
-        test_loadVoteChoices_case( "de_rats" , "de_dust2002v2005_forEver2009", 'c' ); // case 1
-        test_loadVoteChoices_case( "de_train", "de_dust2002v2005_forEver2010" );      // case 2
-        test_loadVoteChoices_case( "de_train", "de_dust2002v2005_forEver2011" );      // case 3
-        test_loadVoteChoices_case( "de_rats" , "de_dust2002v2005_forEver2012" );      // case 4
+        test_loadVoteChoices_case( "de_rats" , "de_dust2002v2005_forEver2009", 'c' ); // Case 1
+        test_loadVoteChoices_case( "de_train", "de_dust2002v2005_forEver2010" );      // Case 2
+        test_loadVoteChoices_case( "de_train", "de_dust2002v2005_forEver2011" );      // Case 3
+        test_loadVoteChoices_case( "de_rats" , "de_dust2002v2005_forEver2012" );      // Case 4
     }
 
     /**
@@ -14410,9 +14410,9 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
         loadTheWhiteListFeature();
         loadTheDefaultVotingChoices();
 
-        test_loadVoteChoices_case( "de_rain"   , "", 'd' );   // case 1
-        test_loadVoteChoices_case( "de_inferno", "de_nuke" ); // case 2
-        test_loadVoteChoices_case( "as_trunda" , "de_nuke" ); // case 3
+        test_loadVoteChoices_case( "de_rain"   , "", 'd' );   // Case 1
+        test_loadVoteChoices_case( "de_inferno", "de_nuke" ); // Case 2
+        test_loadVoteChoices_case( "as_trunda" , "de_nuke" ); // Case 3
     }
 
     /**
@@ -14933,7 +14933,7 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
      */
     stock test_populateListOnSeries_build( cursorOnMapSeries, Array:populatedArray, Trie:populatedTrie, expectedSize )
     {
-        new test_id = test_registerSeriesNaming( "test_populateListOnSeries_load1", 'e' );
+        new test_id = test_registerSeriesNaming( "test_populateListOnSeries", 'e' );
 
         helper_mapFileListLoad( g_test_voteMapFilePath, "de_dust1", "de_dust2", "de_nuke", "de_dust2" );
         helper_loadStrictValidMapsTrie( "de_dust1", "de_dust2", "de_dust5", "de_dust6", "de_nuke" );
@@ -15045,7 +15045,7 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
      */
     stock test_populateListOnSeries( Array:populatedArray, expectedIndexes[]={0}, mapName[], bool:isNotToBe = false  )
     {
-        new test_id = test_registerSeriesNaming( "test_populateListOnSeries_load1", 'e' );
+        new test_id = test_registerSeriesNaming( "test_populateListOnSeries", 'e' );
 
         new expectedIndex;
         new bool:isOnTheArray;
@@ -15084,10 +15084,10 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
         ArrayPushString( populatedArray, "de_nuke" );
         ArrayPushString( populatedArray, "cs_office data" );
 
-        test_GET_MAP_NAME( populatedArray, 0, "de_dust1" , "bute by" );
-        test_GET_MAP_NAME( populatedArray, 1, "de_dust2" , ""        );
-        test_GET_MAP_NAME( populatedArray, 2, "de_nuke"  , ""        );
-        test_GET_MAP_NAME( populatedArray, 3, "cs_office", "data"    );
+        test_GET_MAP_NAME( populatedArray, 0, "de_dust1" , "bute by" ); // Case 1
+        test_GET_MAP_NAME( populatedArray, 1, "de_dust2" , ""        ); // Case 3
+        test_GET_MAP_NAME( populatedArray, 2, "de_nuke"  , ""        ); // Case 5
+        test_GET_MAP_NAME( populatedArray, 3, "cs_office", "data"    ); // Case 7
 
         ArrayDestroy( populatedArray );
     }
@@ -15098,16 +15098,18 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
      */
     stock test_GET_MAP_NAME( Array:populatedArray, index, mapNameExpected[], mapInfoExpected[] )
     {
+        new test_id;
         new mapName     [ MAX_MAPNAME_LENGHT ];
         new errorMessage[ MAX_LONG_STRING ];
 
-        new test_id = test_registerSeriesNaming( "test_GET_MAP_NAME", 'd' ); // Case 1
+        test_id = test_registerSeriesNaming( "test_GET_MAP_NAME", 'd' ); // Case 1
         GET_MAP_NAME( populatedArray, index, mapName )
 
         formatex( errorMessage, charsmax( errorMessage ), "The map name must to be %s, instead of %s.",
                 mapNameExpected, mapName );
         SET_TEST_FAILURE( test_id, !equali( mapName, mapNameExpected ), errorMessage )
 
+        test_id = test_registerSeriesNaming( "test_GET_MAP_NAME", 'd' ); // Case 2
         GET_MAP_INFO( populatedArray, index, mapName )
 
         formatex( errorMessage, charsmax( errorMessage ), "The map info must to be %s, instead of %s.",
@@ -15139,9 +15141,9 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
         // If 'g_test_aimedPlayersNumber < cvar_voteMinPlayers', enables the minimum players feature.
         g_test_aimedPlayersNumber = 5;
 
-        helper_mapFileListLoad( g_test_voteMapFilePath, "de_dust1 info1", "de_dust2noInfo", "de_dust2 info1 info2" );
-        helper_mapFileListLoad( g_test_minPlayersFilePath, "de_rats" , "de_train" );
-        helper_mapFileListLoad( g_test_whiteListFilePath , "[0-23]"  , "de_rats", "de_train" );
+        helper_mapFileListLoad( g_test_voteMapFilePath   , "de_dust1 info1", "de_dust2noInfo", "de_dust2 info1 info2" );
+        helper_mapFileListLoad( g_test_minPlayersFilePath, "de_rats"       , "de_train" );
+        helper_mapFileListLoad( g_test_whiteListFilePath , "[0-23]"        , "de_rats", "de_train" );
 
         // To force the Whitelist to be reloaded.
         loadMapFiles();
@@ -15150,11 +15152,11 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
 
         printVotingMaps( g_votingMapNames, g_votingMapInfos );
 
-        test_GET_MAP_INFO( "de_dust1"       , "info1", true  );   // case 1
-        test_GET_MAP_INFO( "de_dust1"       , "info1", true  );   // case 2
-        test_GET_MAP_INFO( "de_dust2noInfo" , ""     , true  );   // case 3
-        test_GET_MAP_INFO( "de_dust2noInfo2", "Info" , false );   // case 4
-        test_GET_MAP_INFO( "de_dust"        , "info" , false );   // case 5
+        test_GET_MAP_INFO( "de_dust1"       , "info1", true  );   // Case 1
+        test_GET_MAP_INFO( "de_dust1"       , "info1", true  );   // Case 3
+        test_GET_MAP_INFO( "de_dust2noInfo" , ""     , true  );   // Case 5
+        test_GET_MAP_INFO( "de_dust2noInfo2", "Info" , false );   // Case 7
+        test_GET_MAP_INFO( "de_dust"        , "info" , false );   // Case 9
     }
 
     /**
@@ -15166,9 +15168,12 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
      */
     stock test_GET_MAP_INFO( requiredMap[], requiredInfo[], bool:toBe )
     {
-        new test_id = test_registerSeriesNaming( "test_GET_MAP_INFO", 'a' );
+        new test_id;
 
+        test_id = test_registerSeriesNaming( "test_GET_MAP_INFO", 'a' ); // Case 1
         test_GET_MAP_INFO_check( test_id, requiredMap , true , toBe );
+
+        test_id = test_registerSeriesNaming( "test_GET_MAP_INFO", 'a' ); // Case 2
         test_GET_MAP_INFO_check( test_id, requiredInfo, false, toBe );
     }
 
@@ -15310,7 +15315,10 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
      */
     stock test_colorChatLimits( player_id )
     {
-        new const string[] = "ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ";
+        new const string[] = "ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ \
+                ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ \
+                ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ \
+                ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ";
 
         color_print( 0, string );
         color_print( player_id, string );
