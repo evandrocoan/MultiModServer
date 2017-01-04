@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.0.0-441";
+new const PLUGIN_VERSION[] = "v4.0.0-442";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -94,7 +94,7 @@ new const PLUGIN_VERSION[] = "v4.0.0-441";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+2+64
+#define DEBUG_LEVEL 1
 
 
 /**
@@ -6055,54 +6055,58 @@ public displayEndOfTheMapVoteMenu( player_id )
 
     for( new playerIndex = 0; playerIndex < playersCount; playerIndex++ )
     {
-        menu_body   [ 0 ] = '^0';
-        menu_counter[ 0 ] = '^0';
-
-        player_id      = players[ playerIndex ];
-        isVoting       = g_isPlayerParticipating[ player_id ];
-        playerAnswered = g_answeredForEndOfMapVote[ player_id ];
-
-        if( !playerAnswered )
+        // If the player does not has completely closed the menu for good.
+        if( !g_isPlayerClosedTheVoteMenu[ ( player_id = players[ playerIndex ] ) ] )
         {
-            menuKeys = MENU_KEY_0 | MENU_KEY_6;
+            isVoting       = g_isPlayerParticipating[ player_id ];
+            playerAnswered = g_answeredForEndOfMapVote[ player_id ];
 
-            formatex( menu_counter, charsmax( menu_counter ),
-                    " %s(%s%d %L%s)",
-                    COLOR_YELLOW, COLOR_GREY, g_pendingVoteCountdown, LANG_PLAYER, "GAL_TIMELEFT", COLOR_YELLOW );
+            menu_body   [ 0 ] = '^0';
+            menu_counter[ 0 ] = '^0';
+
+            if( !playerAnswered )
+            {
+                menuKeys = MENU_KEY_0 | MENU_KEY_6;
+
+                formatex( menu_counter, charsmax( menu_counter ),
+                        " %s(%s%d %L%s)",
+                        COLOR_YELLOW, COLOR_GREY, g_pendingVoteCountdown, LANG_PLAYER, "GAL_TIMELEFT", COLOR_YELLOW );
+            }
+            else
+            {
+                // The close for good option key
+                menuKeys = MENU_KEY_0;
+            }
+
+            formatex( menu_body, charsmax( menu_body ),
+                    "%s%L^n^n\
+                    %s6. %s%L %s^n\
+                    %s0. %s%L",
+                    COLOR_YELLOW, player_id, "GAL_CHOOSE_QUESTION",
+
+                    COLOR_RED, ( playerAnswered ? ( isVoting ? COLOR_YELLOW : COLOR_GREY ) : COLOR_WHITE ),
+                    player_id, "GAL_CHOOSE_QUESTION_YES", menu_counter,
+
+                    COLOR_RED, ( playerAnswered ? ( !isVoting ? COLOR_YELLOW : COLOR_GREY ) : COLOR_WHITE ),
+                    player_id, ( playerAnswered ? "GAL_OPTION_NONE_VOTE" : "GAL_CHOOSE_QUESTION_NO" ) );
+
+            get_user_menu( player_id, menu_id, menuKeysUnused );
+
+            if( menu_id == 0
+                || menu_id == g_chooseMapQuestionMenuId )
+            {
+                show_menu( player_id, menuKeys, menu_body, ( g_pendingVoteCountdown == 1 ? 1 : 2 ),
+                        CHOOSE_MAP_MENU_QUESTION );
+            }
+
+            LOGGER( 4, " ( displayEndOfTheMapVoteMenu| for ) menu_body: %s", menu_body )
+            LOGGER( 4, "    menu_id:%d, menuKeys: %d, isVoting: %d, playerAnswered:%d, \
+                    player_id: %d, playerIndex: %d", menu_id, menuKeys, isVoting, playerAnswered, \
+                    player_id, playerIndex )
+
+            LOGGER( 4, "    playersCount: %d, g_pendingVoteCountdown: %d, menu_counter: %s", \
+                    playersCount, g_pendingVoteCountdown, menu_counter )
         }
-        else
-        {
-            menuKeys = MENU_KEY_1;
-        }
-
-        formatex( menu_body, charsmax( menu_body ),
-                "%s%L^n^n\
-                %s6. %s%L %s^n\
-                %s0. %s%L",
-                COLOR_YELLOW, player_id, "GAL_CHOOSE_QUESTION",
-
-                COLOR_RED, ( playerAnswered ? ( isVoting ? COLOR_YELLOW : COLOR_GREY ) : COLOR_WHITE ),
-                player_id, "GAL_CHOOSE_QUESTION_YES", menu_counter,
-
-                COLOR_RED, ( playerAnswered ? ( !isVoting ? COLOR_YELLOW : COLOR_GREY ) : COLOR_WHITE ),
-                player_id, "GAL_CHOOSE_QUESTION_NO" );
-
-        get_user_menu( player_id, menu_id, menuKeysUnused );
-
-        if( menu_id == 0
-            || menu_id == g_chooseMapQuestionMenuId )
-        {
-            show_menu( player_id, menuKeys, menu_body, ( g_pendingVoteCountdown == 1 ? 1 : 2 ),
-                    CHOOSE_MAP_MENU_QUESTION );
-        }
-
-        LOGGER( 4, " ( displayEndOfTheMapVoteMenu| for ) menu_body: %s", menu_body )
-        LOGGER( 4, "    menu_id:%d, menuKeys: %d, isVoting: %d, playerAnswered:%d, \
-                player_id: %d, playerIndex: %d", menu_id, menuKeys, isVoting, playerAnswered, \
-                player_id, playerIndex )
-
-        LOGGER( 4, "    playersCount: %d, g_pendingVoteCountdown: %d, menu_counter: %s", \
-                playersCount, g_pendingVoteCountdown, menu_counter )
     }
 
     LOGGER( 4, "%48s", " ( displayEndOfTheMapVoteMenu| out )" )
@@ -6113,23 +6117,22 @@ public handleEndOfTheMapVoteChoice( player_id, pressedKeyCode )
     LOGGER( 128, "I AM ENTERING ON handleEndOfTheMapVoteChoice(2) | player_id: %d, pressedKeyCode: %d", \
             player_id, pressedKeyCode )
 
-    switch( pressedKeyCode )
+    // pressedKeyCode 0 means the keyboard key 1
+    if( !g_answeredForEndOfMapVote[ player_id ]
+         && pressedKeyCode == 9 )
     {
-        case 9: // pressedKeyCode 9 means the keyboard key 0
-        {
-            announceRegistedVote( player_id, pressedKeyCode );
+        announceRegistedVote( player_id, pressedKeyCode );
 
-            g_isPlayerVoted[ player_id ]         = true;
-            g_isPlayerParticipating[ player_id ] = false;
-        }
-        case 0: // pressedKeyCode 0 means the keyboard key 1
-        {
-            // displayEndOfTheMapVoteMenu( player_id );
-            set_task( 0.1, "displayEndOfTheMapVoteMenu", player_id );
+        g_isPlayerVoted[ player_id ]         = true;
+        g_isPlayerParticipating[ player_id ] = false;
+    }
+    else if( g_answeredForEndOfMapVote[ player_id ]
+             && pressedKeyCode == 9 )
+    {
+        g_isPlayerClosedTheVoteMenu[ player_id ] = true;
 
-            LOGGER( 1, "    ( handleEndOfTheMapVoteChoice ) Returning PLUGIN_HANDLED" )
-            return PLUGIN_HANDLED;
-        }
+        LOGGER( 1, "    ( handleEndOfTheMapVoteChoice ) Returning PLUGIN_HANDLED" )
+        return PLUGIN_HANDLED;
     }
 
     g_answeredForEndOfMapVote[ player_id ] = true;
@@ -6382,6 +6385,34 @@ stock dispaly_the_vote_sub_menu( player_id )
 
     display_vote_menu( true, player_id, menu_body, menuKeys );
     LOGGER( 4, "%48s", " ( dispaly_the_vote_sub_menu| out )" )
+}
+
+stock processSubMenuKeyHit( player_id, key )
+{
+    switch( key )
+    {
+        case 0: // key 1
+        {
+            // None option
+            register_vote( player_id, 9 );
+        }
+        case 2: // key 3
+        {
+            // Cancel vote option
+            if( !g_isPlayerCancelledVote[ player_id ] )
+            {
+                cancel_player_vote( player_id );
+            }
+        }
+        case 4: // key 5
+        {
+            // Exit option
+            g_isPlayerClosedTheVoteMenu[ player_id ] = true;
+            return;
+        }
+    }
+
+    reshowTheVoteMenu( player_id );
 }
 
 stock addExtensionOption( player_id, copiedChars, voteStatus[], voteStatusLenght, menuKeys, bool:isToAddResults = true )
@@ -6907,34 +6938,6 @@ public vote_handleChoice( player_id, key )
     {
         reshowTheVoteMenu( player_id );
     }
-}
-
-stock processSubMenuKeyHit( player_id, key )
-{
-    switch( key )
-    {
-        case 0: // key 1
-        {
-            // None option
-            register_vote( player_id, 9 );
-        }
-        case 2: // key 3
-        {
-            // Cancel vote option
-            if( !g_isPlayerCancelledVote[ player_id ] )
-            {
-                cancel_player_vote( player_id );
-            }
-        }
-        case 4: // key 5
-        {
-            // Exit option
-            g_isPlayerClosedTheVoteMenu[ player_id ] = true;
-            return;
-        }
-    }
-
-    reshowTheVoteMenu( player_id );
 }
 
 stock reshowTheVoteMenu( player_id )
