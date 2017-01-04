@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.0.0-440";
+new const PLUGIN_VERSION[] = "v4.0.0-441";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -94,7 +94,7 @@ new const PLUGIN_VERSION[] = "v4.0.0-440";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+2+4+64
+#define DEBUG_LEVEL 1+2+64
 
 
 /**
@@ -485,6 +485,9 @@ new const PLUGIN_VERSION[] = "v4.0.0-440";
 #define MAPFILETYPE_SINGLE 1
 #define MAPFILETYPE_GROUPS 2
 
+#define IS_TO_RTV_WAIT_ADMIN     1
+#define IS_TO_RTV_NOT_ALLOW_STAY 2
+
 #define IS_DISABLED_VOTEMAP_EXIT        1
 #define IS_DISABLED_VOTEMAP_INTRO       2
 #define IS_DISABLED_VOTEMAP_RUNOFF      4
@@ -501,8 +504,9 @@ new const PLUGIN_VERSION[] = "v4.0.0-440";
 #define IS_FORCED_VOTE      2
 #define IS_RUNOFF_VOTE      4
 #define IS_VOTE_OVER        8
-#define IS_VOTE_EARLY       16
+#define IS_EARLY_VOTE       16
 #define IS_VOTE_EXPIRED     32
+#define IS_RTV_VOTE         64
 
 #define IS_TO_LOAD_THE_FIRST_MAP_SERIES 1
 #define IS_TO_LOAD_ALL_THE_MAP_SERIES   2
@@ -532,8 +536,8 @@ new const PLUGIN_VERSION[] = "v4.0.0-440";
 #define ANNOUNCE_CHOICE_PLAYERS 1
 #define ANNOUNCE_CHOICE_ADMINS  2
 
-#define NONE_OPTION_HIDE_AFTER_USER_VOTE        0
-#define NONE_OPTION_ALWAYS_KEEP_SHOWING         1
+#define HIDE_AFTER_USER_VOTE_NONE_OPTION        0
+#define ALWAYS_KEEP_SHOWING_NONE_OPTION         1
 #define CONVERT_NONE_OPTION_TO_CANCEL_LAST_VOTE 2
 
 #define MAX_PREFIX_COUNT              32
@@ -2146,7 +2150,7 @@ stock vote_manageEarlyStart()
 {
     LOGGER( 128, "I AM ENTERING ON vote_manageEarlyStart(0)" )
 
-    g_voteStatus |= IS_VOTE_EARLY;
+    g_voteStatus |= IS_EARLY_VOTE;
     set_task( 120.0, "startNonForcedVoting", TASKID_VOTE_STARTDIRECTOR );
 }
 
@@ -3925,7 +3929,7 @@ public round_restart_event()
 
     // Enable a new voting, as a new game is starting
     g_voteStatus &= ~IS_VOTE_OVER;
-    g_voteStatus &= ~IS_VOTE_EARLY;
+    g_voteStatus &= ~IS_EARLY_VOTE;
     g_voteStatus &= ~IS_VOTE_EXPIRED;
 
     if( g_isEndGameLimitsChanged
@@ -5755,40 +5759,65 @@ stock configureVotingStart( bool:is_forced_voting )
         g_voteStatus |= IS_FORCED_VOTE;
     }
 
+    configureTheExtensionOption( is_forced_voting );
+
+    LOGGER( 4, "( configureVotingStart ) g_voteStatus: %d, ", g_voteStatus )
+    LOGGER( 4, "( configureVotingStart ) g_voteMapStatus: %d, ", g_voteMapStatus )
+
+    // stop RTV reminders
+    remove_task( TASKID_RTV_REMINDER );
+}
+
+/**
+ * To allow show the extension option as `Stay Here` and `Extend` and to set the end voting type.
+ */
+stock configureTheExtensionOption( bool:is_forced_voting )
+{
+    LOGGER( 128, "I AM ENTERING ON configureTheExtensionOption(1) is_forced_voting: %d", is_forced_voting )
+
     if( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXTENSION )
     {
         g_isMapExtensionAllowed = false;
     }
-    else
+    else if( g_isVotingByRounds
+             || g_isVotingByFrags )
     {
         // Max rounds/frags vote map does not have a max rounds extension limit as mp_timelimit
-        if( g_isVotingByRounds
-            || g_isVotingByFrags )
+        if( g_voteStatus & IS_RTV_VOTE
+            && get_pcvar_num( cvar_rtvWaitAdmin ) & IS_TO_RTV_NOT_ALLOW_STAY )
         {
-            g_isMapExtensionAllowed = true;
+            g_isMapExtensionAllowed = false;
         }
         else
         {
-            if( get_pcvar_num( cvar_maxMapExtendTime ) )
-            {
-                g_isMapExtensionAllowed =
-                        get_pcvar_float( cvar_mp_timelimit ) < get_pcvar_float( cvar_maxMapExtendTime );
-            }
-            else
-            {
-                g_isMapExtensionAllowed = true;
-            }
+            g_isMapExtensionAllowed = true;
         }
     }
+    else if( get_pcvar_num( cvar_maxMapExtendTime ) )
+    {
+        if( g_voteStatus & IS_RTV_VOTE
+            && get_pcvar_num( cvar_rtvWaitAdmin ) & IS_TO_RTV_NOT_ALLOW_STAY )
+        {
+            g_isMapExtensionAllowed = false;
+        }
+        else
+        {
+            g_isMapExtensionAllowed =
+                    get_pcvar_float( cvar_mp_timelimit ) < get_pcvar_float( cvar_maxMapExtendTime );
+        }
+    }
+    else
+    {
+        g_isMapExtensionAllowed = true;
+    }
 
-    // configure the end voting type
     g_isGameFinalVoting = ( ( g_isVotingByRounds
                               || g_isVotingByTimer
                               || g_isVotingByFrags )
                             && !is_forced_voting );
 
-    // stop RTV reminders
-    remove_task( TASKID_RTV_REMINDER );
+    LOGGER( 4, "( configureTheExtensionOption ) g_isGameFinalVoting: %d, ", g_isGameFinalVoting )
+    LOGGER( 4, "( configureTheExtensionOption ) g_isMapExtensionAllowed: %d, ", g_isMapExtensionAllowed )
 }
 
 stock vote_startDirector( bool:is_forced_voting )
@@ -6368,7 +6397,7 @@ stock addExtensionOption( player_id, copiedChars, voteStatus[], voteStatusLenght
     allowExtend = ( g_isGameFinalVoting
                     && !( g_voteStatus & IS_RUNOFF_VOTE ) );
 
-    allowStay = ( ( g_voteStatus & ( IS_VOTE_EARLY | IS_FORCED_VOTE ) )
+    allowStay = ( g_isMapExtensionAllowed
                   && !( g_voteStatus & IS_RUNOFF_VOTE ) );
 
     if( g_isRunOffNeedingKeepCurrentMap )
@@ -6407,6 +6436,7 @@ stock addExtensionOption( player_id, copiedChars, voteStatus[], voteStatusLenght
 
         computeMapVotingCount( mapVotingCount, charsmax( mapVotingCount ), g_totalVoteOptions, isToAddResults );
 
+        // The extension option has priority over the stay here option.
         if( allowExtend )
         {
             new extend_step = 15;
@@ -6675,7 +6705,7 @@ stock computeUndoButton( player_id, bool:isToShowUndo, bool:isVoteOver, noneOpti
         {
             switch( g_voteShowNoneOptionType )
             {
-                case NONE_OPTION_HIDE_AFTER_USER_VOTE:
+                case HIDE_AFTER_USER_VOTE_NONE_OPTION:
                 {
                     if( g_isPlayerVoted[ player_id ] )
                     {
@@ -6690,7 +6720,7 @@ stock computeUndoButton( player_id, bool:isToShowUndo, bool:isVoteOver, noneOpti
                                 ( isVoteOver     ? COLOR_GREY : COLOR_WHITE ), player_id, "GAL_OPTION_NONE" );
                     }
                 }
-                case NONE_OPTION_ALWAYS_KEEP_SHOWING, CONVERT_NONE_OPTION_TO_CANCEL_LAST_VOTE:
+                case ALWAYS_KEEP_SHOWING_NONE_OPTION, CONVERT_NONE_OPTION_TO_CANCEL_LAST_VOTE:
                 {
                     formatex( noneOption, noneOptionSize,
                            "%s%s\
@@ -7633,7 +7663,7 @@ stock chooseTheVotingMapWinner( firstPlaceChoices[], numberOfMapsAtFirstPosition
         resetRoundEnding();
 
         // no longer is an early or forced voting
-        g_voteStatus &= ~IS_VOTE_EARLY;
+        g_voteStatus &= ~IS_EARLY_VOTE;
         g_voteStatus &= ~IS_FORCED_VOTE;
     }
     else // The execution flow gets here when the winner option is not keep/extend map
@@ -7656,7 +7686,7 @@ stock chooseRandomVotingWinner()
         case 1:
         {
             setNextMap( g_nextMapName );
-            color_print( 0, "%L%L", LANG_PLAYER, "GAL_WINNER_NO_ONE_VOTED", LANG_PLAYER, "GAL_WINNER_ORDERED", g_nextMapName );
+            color_print( 0, "%L %L", LANG_PLAYER, "GAL_WINNER_NO_ONE_VOTED", LANG_PLAYER, "GAL_WINNER_ORDERED", g_nextMapName );
         }
         // 2 - extend the current map
         case 2:
@@ -7673,7 +7703,7 @@ stock chooseRandomVotingWinner()
             winnerVoteMapIndex = random_num( 0, g_totalVoteOptions - 1 );
 
             setNextMap( g_votingMapNames[ winnerVoteMapIndex ] );
-            color_print( 0, "%L%L", LANG_PLAYER, "GAL_WINNER_NO_ONE_VOTED", LANG_PLAYER, "GAL_WINNER_RANDOM", g_nextMapName );
+            color_print( 0, "%L %L", LANG_PLAYER, "GAL_WINNER_NO_ONE_VOTED", LANG_PLAYER, "GAL_WINNER_RANDOM", g_nextMapName );
         }
     }
 
@@ -7696,8 +7726,9 @@ stock finalizeVoting()
     // vote is no longer in progress
     g_voteStatus &= ~IS_VOTE_IN_PROGRESS;
 
-    // if we were in a runoff mode, get out of it
+    // if we were in a runoff or RTV mode, get out of it
     g_voteStatus &= ~IS_RUNOFF_VOTE;
+    g_voteStatus &= ~IS_RTV_VOTE;
 
     // this must be called after 'g_voteStatus &= ~IS_RUNOFF_VOTE' above
     vote_resetStats();
@@ -8023,7 +8054,7 @@ stock is_to_block_RTV( player_id )
     new Float:minutesElapsed;
 
     // If an early vote is pending, don't allow any rocks
-    if( g_voteStatus & IS_VOTE_EARLY )
+    if( g_voteStatus & IS_EARLY_VOTE )
     {
         color_print( player_id, "%L", player_id, "GAL_ROCK_FAIL_PENDINGVOTE" );
         LOGGER( 1, "    ( is_to_block_RTV ) Just Returning/blocking, the early voting is pending." )
@@ -8044,7 +8075,7 @@ stock is_to_block_RTV( player_id )
     }
 
     // Cannot rock when admins are online
-    else if( get_pcvar_num( cvar_rtvWaitAdmin )
+    else if( get_pcvar_num( cvar_rtvWaitAdmin ) & IS_TO_RTV_WAIT_ADMIN
              && g_rtvWaitAdminNumber > 0 )
     {
         color_print( player_id, "%L", player_id, "GAL_ROCK_WAIT_ADMIN" );
@@ -8188,7 +8219,9 @@ stock start_rtvVote()
         g_isTheLastGameRound = true;
     }
 
+    g_voteStatus |= IS_RTV_VOTE;
     configureRtvVotingType();
+
     vote_startDirector( false );
 }
 
@@ -8781,7 +8814,7 @@ public client_putinserver( player_id )
 {
     LOGGER( 128, "I AM ENTERING ON client_putinserver(1) | player_id: %d", player_id )
 
-    if( ( g_voteStatus & IS_VOTE_EARLY )
+    if( ( g_voteStatus & IS_EARLY_VOTE )
         && !is_user_bot( player_id )
         && !is_user_hltv( player_id ) )
     {
