@@ -1,0 +1,3 @@
+[submodule "githooks/versioning"]
+	path = githooks/versioning
+	url = https://github.com/evandrocoan/.versioning
