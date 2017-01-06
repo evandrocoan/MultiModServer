@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.1.1-450";
+new const PLUGIN_VERSION[] = "v4.1.1-451";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -476,6 +476,9 @@ new const PLUGIN_VERSION[] = "v4.1.1-450";
 
 #define LISTMAPS_USERID   0
 #define LISTMAPS_LAST_MAP 1
+
+#define RUNOFF_ENABLED 1
+#define RUNOFF_EXTEND  2
 
 #define VOTE_TIME_SEC    1.0
 #define VOTE_TIME_HUD    7.0
@@ -2822,7 +2825,7 @@ stock howManySecondsLastMapTheVoting()
     voteTime = voteTime + get_pcvar_num( cvar_voteDuration );
 
     // Let us assume the worst case, then always will be performed a runoff voting.
-    if( get_pcvar_num( cvar_runoffEnabled ) )
+    if( get_pcvar_num( cvar_runoffEnabled ) & RUNOFF_ENABLED )
     {
         voteTime = voteTime + get_pcvar_num( cvar_runoffDuration );
 
@@ -7565,11 +7568,13 @@ public computeVotes()
     determineTheVotingFirstChoices( firstPlaceChoices, secondPlaceChoices, numberOfVotesAtFirstPlace,
             numberOfVotesAtSecondPlace, numberOfMapsAtFirstPosition, numberOfMapsAtSecondPosition );
 
+    new runoffEnabled= get_pcvar_num( cvar_runoffEnabled );
+
     // announce the outcome
     if( numberOfVotesAtFirstPlace )
     {
         // if the top vote getting map didn't receive over 50% of the votes cast, to start a runoff vote
-        if( get_pcvar_num( cvar_runoffEnabled )
+        if( runoffEnabled & RUNOFF_ENABLED
             && !( g_voteStatus & IS_RUNOFF_VOTE )
             && !( g_voteMapStatus & IS_DISABLED_VOTEMAP_RUNOFF )
             && numberOfVotesAtFirstPlace <= g_totalVotesCounted * get_pcvar_float( cvar_runoffRatio ) )
@@ -7579,6 +7584,10 @@ public computeVotes()
 
             LOGGER( 1, "    ( computeVotes ) Just Returning/blocking, its runoff time." )
             return;
+        }
+        else if( runoffEnabled & RUNOFF_EXTEND )
+        {
+            map_extend();
         }
 
         chooseTheVotingMapWinner( firstPlaceChoices, numberOfMapsAtFirstPosition );
@@ -7672,15 +7681,17 @@ stock chooseRandomVotingWinner()
         // 1 - follow your current map-cycle order
         case 1:
         {
-            setNextMap( g_nextMapName );
             color_print( 0, "%L %L", LANG_PLAYER, "GAL_WINNER_NO_ONE_VOTED", LANG_PLAYER, "GAL_WINNER_ORDERED", g_nextMapName );
+
+            // Need to be called to trigger special behaviors.
+            setNextMap( g_nextMapName );
         }
         // 2 - extend the current map
         case 2:
         {
-            setNextMap( g_nextMapName );
             color_print( 0, "%L%L", LANG_PLAYER, "GAL_WINNER_NO_ONE_VOTED", LANG_PLAYER );
 
+            // When called, it already to trigger the special behaviors.
             map_extend();
         }
         // 0 - choose a random map from the current voting map list, as next map
