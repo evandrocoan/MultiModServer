@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.1.1-454";
+new const PLUGIN_VERSION[] = "v4.1.1-455";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -5949,19 +5949,12 @@ stock initializeTheVoteDisplay()
         if( get_pcvar_num( cvar_isToAskForEndOfTheMapVote ) & END_OF_MAP_VOTE_ANNOUNCE )
         {
             set_task( VOTE_TIME_ANNOUNCE, "announceThePendingVote", TASKID_PENDING_VOTE_COUNTDOWN );
-
-            // visual countdown
-            if( !( get_pcvar_num( cvar_hudsHide ) & HUD_VOTE_VISUAL_COUNTDOWN ) )
-            {
-                set_hudmessage( 0, 222, 50, -1.0, 0.13, 1, 1.0, 4.94, 0.0, 0.0, -1 );
-
-                show_hudmessage( 0, "%L", LANG_PLAYER, "DMAP_NEXTMAP_VOTE_REMAINING",
-                        floatround( VOTE_TIME_ANNOUNCE + VOTE_TIME_HUD_2, floatround_floor ) );
-            }
+            announceThePendingVoteTime( VOTE_TIME_ANNOUNCE + VOTE_TIME_HUD_2 );
         }
         else
         {
             announceThePendingVote();
+            announceThePendingVoteTime( VOTE_TIME_HUD_1 );
         }
     }
 #endif
@@ -5981,6 +5974,19 @@ stock initializeTheVoteDisplay()
 
     // Display the map choices, 1 second from now
     set_task( handleChoicesDelay, "vote_handleDisplay", TASKID_VOTE_HANDLEDISPLAY );
+}
+
+stock announceThePendingVoteTime( Float:time )
+{
+    new targetTime = floatround( time, floatround_floor );
+    color_print( 0, "%L", LANG_PLAYER, "DMAP_NEXTMAP_VOTE_REMAINING2", targetTime );
+
+    // visual countdown
+    if( !( get_pcvar_num( cvar_hudsHide ) & HUD_VOTE_VISUAL_COUNTDOWN ) )
+    {
+        set_hudmessage( 0, 222, 50, -1.0, 0.13, 1, 1.0, 4.94, 0.0, 0.0, -1 );
+        show_hudmessage( 0, "%L", LANG_PLAYER, "DMAP_NEXTMAP_VOTE_REMAINING1", targetTime );
+    }
 }
 
 public announceThePendingVote()
