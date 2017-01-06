@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-458";
+new const PLUGIN_VERSION[] = "v4.2.0-459";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -540,6 +540,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-458";
 #define SHOW_STATUS_AT_END     2
 #define SHOW_STATUS_ALWAYS     3
 
+#define END_AT_RIGHT_NOW             0
 #define END_AT_THE_CURRENT_ROUND_END 1
 #define END_AT_THE_NEXT_ROUND_END    2
 
@@ -584,7 +585,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-458";
  * The rounds number required to be reached to allow predict if this will be the last round and
  * allow to start the voting.
  */
-#define MIN_VOTE_START_ROUNDS_DELAY 7
+#define MIN_VOTE_START_ROUNDS_DELAY 5
 
 /**
  * The periodic task created on 'configureServerMapChange(0)' use this intervals in seconds to
@@ -2722,7 +2723,7 @@ stock chooseTheEndOfMapStartOption( roundsRemaining )
 
     switch( get_pcvar_num( cvar_endOnRound ) )
     {
-        case 0:
+        case END_AT_RIGHT_NOW:
         {
             if( endOfMapVoteStart
                 && roundsRemaining < endOfMapVoteStart + 1 )
@@ -2808,10 +2809,10 @@ stock isToStartTheVotingOnThisRound( secondsRemaining )
     if( get_pcvar_num( cvar_endOfMapVote )
         && !task_exists( TASKID_START_VOTING_BY_TIMER ) )
     {
-        new secondsPassed   = secondsRemaining - PERIODIC_CHECKING_INTERVAL;
-        new roundsRemaining = howManyRoundsAreRemaining( secondsPassed, whatGameEndingTypeItIs() );
-
         LOGGER( 0, "", debugIsTimeToStartTheEndOfMap( secondsRemaining, 256 ) )
+        new secondsPassed = secondsRemaining - PERIODIC_CHECKING_INTERVAL;
+
+        new roundsRemaining = howManyRoundsAreRemaining( secondsPassed, whatGameEndingTypeItIs() );
         return chooseTheEndOfMapStartOption( roundsRemaining );
     }
 
@@ -3439,9 +3440,6 @@ public map_manageEnd()
         {
             g_isTheLastGameRound = true;
             prevent_map_change();
-
-            color_print( 0, "%L %L %L",
-                    LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED", LANG_PLAYER, "GAL_CHANGE_NEXTROUND", LANG_PLAYER, "GAL_NEXTMAP", nextMapName );
         }
         // when time runs out, end at the next round end
         case 2:
@@ -3453,16 +3451,10 @@ public map_manageEnd()
             if( get_pcvar_float( cvar_mp_roundtime ) > 8.0 )
             {
                 g_isTheLastGameRound = true;
-
-                color_print( 0, "%L %L %L",
-                        LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED", LANG_PLAYER, "GAL_CHANGE_NEXTROUND", LANG_PLAYER, "GAL_NEXTMAP", nextMapName );
             }
             else
             {
                 g_isThePenultGameRound = true;
-
-                color_print( 0, "%L %L",
-                        LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED", LANG_PLAYER, "GAL_NEXTMAP", nextMapName );
             }
         }
         default:
@@ -3821,10 +3813,24 @@ public last_round_countdown()
 public configure_last_round_HUD()
 {
     LOGGER( 128, "I AM ENTERING ON configure_last_round_HUD(0)" )
+    new nextMapName[ MAX_MAPNAME_LENGHT ];
 
     if( !( get_pcvar_num( cvar_hudsHide ) & HUD_CHANGELEVEL_ANNOUNCE ) )
     {
         set_task( 1.0, "show_last_round_HUD", TASKID_SHOW_LAST_ROUND_HUD, _, _, "b" );
+    }
+
+    if( g_isTheLastGameRound
+        && !g_theRoundEndWhileVoting )
+    {
+        color_print( 0, "%L %L %L",
+                LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED",
+                LANG_PLAYER, "GAL_CHANGE_NEXTROUND",
+                LANG_PLAYER, "GAL_NEXTMAP", nextMapName );
+    }
+    else
+    {
+        color_print( 0, "%L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED", LANG_PLAYER, "GAL_NEXTMAP", nextMapName );
     }
 }
 
@@ -3871,7 +3877,7 @@ public show_last_round_HUD()
         show_hudmessage( 0, last_round_message );
     #endif
     }
-    else // if( g_isThePenultGameRound ) // Here `g_isThePenultGameRound` will always be true
+    else
     {
     #if AMXX_VERSION_NUM < 183
         get_players( players, playersCount, "ch" );
@@ -5953,6 +5959,7 @@ stock initializeTheVoteDisplay()
         }
         else
         {
+            // Visual countdown
             announceThePendingVote();
             announceThePendingVoteTime( VOTE_TIME_HUD_1 );
         }
@@ -5983,8 +5990,9 @@ stock announceThePendingVoteTime( Float:time )
     new targetTime = floatround( time, floatround_floor );
     color_print( 0, "%L", LANG_PLAYER, "DMAP_NEXTMAP_VOTE_REMAINING2", targetTime );
 
-    // visual countdown
-    if( !( get_pcvar_num( cvar_hudsHide ) & HUD_VOTE_VISUAL_COUNTDOWN ) )
+    // If there is enough time
+    if( targetTime > VOTE_TIME_HUD_1
+        && !( get_pcvar_num( cvar_hudsHide ) & HUD_VOTE_VISUAL_COUNTDOWN ) )
     {
         set_hudmessage( 0, 222, 50, -1.0, 0.13, 1, 1.0, 4.94, 0.0, 0.0, -1 );
         show_hudmessage( 0, "%L", LANG_PLAYER, "DMAP_NEXTMAP_VOTE_REMAINING1", targetTime );
