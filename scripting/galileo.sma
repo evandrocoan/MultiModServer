@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.1.1-455";
+new const PLUGIN_VERSION[] = "v4.2.0-457";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -3821,10 +3821,22 @@ public last_round_countdown()
 public configure_last_round_HUD()
 {
     LOGGER( 128, "I AM ENTERING ON configure_last_round_HUD(0)" )
+    new nextMapName[ MAX_MAPNAME_LENGHT ];
 
     if( !( get_pcvar_num( cvar_hudsHide ) & HUD_CHANGELEVEL_ANNOUNCE ) )
     {
         set_task( 1.0, "show_last_round_HUD", TASKID_SHOW_LAST_ROUND_HUD, _, _, "b" );
+    }
+
+    if( g_isTheLastGameRound
+        && !g_theRoundEndWhileVoting )
+    {
+        get_pcvar_string( cvar_amx_nextmap, nextMapName, charsmax( nextMapName ) );
+        color_print( 0, "%L %L", LANG_PLAYER, "GAL_CHANGE_NEXTROUND",  LANG_PLAYER, "GAL_NEXTMAP", nextMapName );
+    }
+    else // if( g_isThePenultGameRound ) // Here `g_isThePenultGameRound` will always be true
+    {
+        color_print( 0, "%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED" );
     }
 }
 
@@ -5978,6 +5990,8 @@ stock initializeTheVoteDisplay()
 
 stock announceThePendingVoteTime( Float:time )
 {
+    LOGGER( 128, "I AM ENTERING ON announceThePendingVoteTime(1) time: %f", time )
+
     new targetTime = floatround( time, floatround_floor );
     color_print( 0, "%L", LANG_PLAYER, "DMAP_NEXTMAP_VOTE_REMAINING2", targetTime );
 
