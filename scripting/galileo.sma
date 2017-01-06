@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.1.1-453";
+new const PLUGIN_VERSION[] = "v4.1.1-454";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -5953,8 +5953,10 @@ stock initializeTheVoteDisplay()
             // visual countdown
             if( !( get_pcvar_num( cvar_hudsHide ) & HUD_VOTE_VISUAL_COUNTDOWN ) )
             {
-                set_hudmessage( 0, 222, 50, -1.0, 0.13, 0, 1.0, 0.94, 0.0, 0.0, -1 );
-                show_hudmessage( 0, "%L", LANG_PLAYER, "DMAP_NEXTMAP_VOTE_REMAINING", VOTE_TIME_ANNOUNCE + VOTE_TIME_HUD_2 );
+                set_hudmessage( 0, 222, 50, -1.0, 0.13, 1, 1.0, 4.94, 0.0, 0.0, -1 );
+
+                show_hudmessage( 0, "%L", LANG_PLAYER, "DMAP_NEXTMAP_VOTE_REMAINING",
+                        floatround( VOTE_TIME_ANNOUNCE + VOTE_TIME_HUD_2, floatround_floor ) );
             }
         }
         else
@@ -7615,20 +7617,25 @@ public computeVotes()
     if( numberOfVotesAtFirstPlace )
     {
         // if the top vote getting map didn't receive over 50% of the votes cast, to start a runoff vote
-        if( runoffEnabled == RUNOFF_ENABLED
-            && !( g_voteStatus & IS_RUNOFF_VOTE )
-            && !( g_voteMapStatus & IS_DISABLED_VOTEMAP_RUNOFF )
-            && numberOfVotesAtFirstPlace <= g_totalVotesCounted * get_pcvar_float( cvar_runoffRatio ) )
+        if( numberOfVotesAtFirstPlace <= g_totalVotesCounted * get_pcvar_float( cvar_runoffRatio ) )
         {
-            startRunoffVoting( firstPlaceChoices, secondPlaceChoices, numberOfMapsAtFirstPosition,
-                    numberOfMapsAtSecondPosition );
+            if( runoffEnabled == RUNOFF_ENABLED
+                && !( g_voteStatus & IS_RUNOFF_VOTE )
+                && !( g_voteMapStatus & IS_DISABLED_VOTEMAP_RUNOFF ) )
+            {
+                startRunoffVoting( firstPlaceChoices, secondPlaceChoices, numberOfMapsAtFirstPosition,
+                        numberOfMapsAtSecondPosition );
 
-            LOGGER( 1, "    ( computeVotes ) Just Returning/blocking, its runoff time." )
-            return;
-        }
-        else if( runoffEnabled == RUNOFF_EXTEND )
-        {
-            map_extend();
+                LOGGER( 1, "    ( computeVotes ) Just Returning/blocking, its runoff starting." )
+                return;
+            }
+            else if( runoffEnabled == RUNOFF_EXTEND )
+            {
+                map_extend();
+
+                LOGGER( 1, "    ( computeVotes ) Just Returning/blocking, its runoff extending." )
+                return;
+            }
         }
 
         chooseTheVotingMapWinner( firstPlaceChoices, numberOfMapsAtFirstPosition );
