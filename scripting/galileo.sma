@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.1.1-451";
+new const PLUGIN_VERSION[] = "v4.1.1-453";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -480,10 +480,15 @@ new const PLUGIN_VERSION[] = "v4.1.1-451";
 #define RUNOFF_ENABLED 1
 #define RUNOFF_EXTEND  2
 
-#define VOTE_TIME_SEC    1.0
-#define VOTE_TIME_HUD    7.0
-#define VOTE_TIME_RUNOFF 3.0
-#define VOTE_TIME_COUNT  5.5
+#define END_OF_MAP_VOTE_ASK      1
+#define END_OF_MAP_VOTE_ANNOUNCE 2
+
+#define VOTE_TIME_SEC      1.0
+#define VOTE_TIME_HUD_1    7.0
+#define VOTE_TIME_HUD_2    5.0
+#define VOTE_TIME_ANNOUNCE 10.0
+#define VOTE_TIME_RUNOFF   3.0
+#define VOTE_TIME_COUNT    5.5
 
 #define RTV_CMD_STANDARD              1
 #define RTV_CMD_SHORTHAND             2
@@ -596,14 +601,15 @@ new const PLUGIN_VERSION[] = "v4.1.1-451";
 /**
  * The frags/kills number before the mp_fraglimit to be reached and to start the map voting.
  */
-#define VOTE_START_FRAGS() 20
+#define VOTE_START_FRAGS() \
+    ( g_fragLimitNumber > 30 ? 20 : 10 )
 //
 
 /**
  * Specifies how much time to delay the voting start after the round start.
  */
 #define ROUND_VOTING_START_SECONDS_DELAY() \
-    ( get_pcvar_num( cvar_mp_freezetime ) + PERIODIC_CHECKING_INTERVAL )
+    ( get_pcvar_num( cvar_mp_freezetime ) + PERIODIC_CHECKING_INTERVAL - 5 )
 //
 
 /**
@@ -2818,25 +2824,20 @@ stock howManySecondsLastMapTheVoting()
     LOGGER( 128, "I AM ENTERING ON howManySecondsLastMapTheVoting(0)" )
     new Float:voteTime;
 
-    // Until the pendingVoteCountdown(0) to finish takes VOTE_TIME_HUD + VOTE_TIME_SEC + VOTE_TIME_SEC seconds.
-    voteTime = VOTE_TIME_HUD + VOTE_TIME_SEC + VOTE_TIME_SEC;
+    // Until the pendingVoteCountdown(0) to finish takes getVoteAnnouncementTime() + VOTE_TIME_SEC + VOTE_TIME_SEC seconds.
+    voteTime = getVoteAnnouncementTime() + VOTE_TIME_SEC + VOTE_TIME_SEC;
 
     // After, it takes more the `g_votingSecondsRemaining` until the the close vote function to be called.
-    voteTime = voteTime + get_pcvar_num( cvar_voteDuration );
-
-    // Let us assume the worst case, then always will be performed a runoff voting.
-    if( get_pcvar_num( cvar_runoffEnabled ) & RUNOFF_ENABLED )
-    {
-        voteTime = voteTime + get_pcvar_num( cvar_runoffDuration );
-
-        // And more 3 seconds until the runoff voting to start.
-        voteTime = voteTime + VOTE_TIME_RUNOFF;
-    }
+    voteTime += get_pcvar_num( cvar_voteDuration );
 
     // When the voting is closed on closeVoting(0), take more VOTE_TIME_COUNT seconds until the result to be counted.
-    // Then we need to count again those VOTE_TIME_HUD + VOTE_TIME_SEC + VOTE_TIME_SEC until the pendingVoteCountdown(0) and the
-    // other VOTE_TIME_COUNT seconds until the runoff voting results to be counted.
-    voteTime = voteTime + VOTE_TIME_COUNT + VOTE_TIME_HUD + VOTE_TIME_SEC + VOTE_TIME_SEC + VOTE_TIME_COUNT;
+    voteTime += VOTE_TIME_COUNT;
+
+    // Let us assume the worst case, then always will be performed a runoff voting.
+    if( get_pcvar_num( cvar_runoffEnabled ) == RUNOFF_ENABLED )
+    {
+        voteTime = 2 * voteTime + get_pcvar_num( cvar_runoffDuration ) + VOTE_TIME_RUNOFF;
+    }
 
     LOGGER( 1, "    ( howManySecondsLastMapTheVoting ) Returning the vote total time: %d", voteTime )
     return floatround( voteTime, floatround_ceil );
@@ -3335,7 +3336,7 @@ stock saveTheRoundTime()
     if( roundTotalTime > 10 )
     {
         static lastSavedRound;
-        static roundPlayedTimes[ 20 ];
+        static roundPlayedTimes[ 10 ];
 
         // To keep the latest round data up to date.
         roundPlayedTimes[ lastSavedRound ] = roundTotalTime;
@@ -5935,7 +5936,7 @@ stock initializeTheVoteDisplay()
     else
     {
         // Set_task 1.0 + pendingVoteCountdown 1.0
-        handleChoicesDelay = VOTE_TIME_HUD + VOTE_TIME_SEC + VOTE_TIME_SEC;
+        handleChoicesDelay = VOTE_TIME_SEC + VOTE_TIME_SEC + getVoteAnnouncementTime();
 
         // Make perfunctory announcement: "get ready to choose a map"
         if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_GET_READY_TO_CHOOSE ) )
@@ -5944,9 +5945,22 @@ stock initializeTheVoteDisplay()
                     use bay( s18 ) mass( e42 ) cap( s50 )^"" );
         }
 
-        // Announce the pending vote countdown from 7 to 1
-        g_pendingVoteCountdown = floatround( VOTE_TIME_HUD, floatround_floor );
-        set_task( VOTE_TIME_SEC, "pendingVoteCountdown", TASKID_PENDING_VOTE_COUNTDOWN, _, _, "a", g_pendingVoteCountdown );
+        // Announce the pending vote countdown from 7 | 5 to 1
+        if( get_pcvar_num( cvar_isToAskForEndOfTheMapVote ) & END_OF_MAP_VOTE_ANNOUNCE )
+        {
+            set_task( VOTE_TIME_ANNOUNCE, "announceThePendingVote", TASKID_PENDING_VOTE_COUNTDOWN );
+
+            // visual countdown
+            if( !( get_pcvar_num( cvar_hudsHide ) & HUD_VOTE_VISUAL_COUNTDOWN ) )
+            {
+                set_hudmessage( 0, 222, 50, -1.0, 0.13, 0, 1.0, 0.94, 0.0, 0.0, -1 );
+                show_hudmessage( 0, "%L", LANG_PLAYER, "DMAP_NEXTMAP_VOTE_REMAINING", VOTE_TIME_ANNOUNCE + VOTE_TIME_HUD_2 );
+            }
+        }
+        else
+        {
+            announceThePendingVote();
+        }
     }
 #endif
 
@@ -5965,6 +5979,34 @@ stock initializeTheVoteDisplay()
 
     // Display the map choices, 1 second from now
     set_task( handleChoicesDelay, "vote_handleDisplay", TASKID_VOTE_HANDLEDISPLAY );
+}
+
+public announceThePendingVote()
+{
+    LOGGER( 128, "I AM ENTERING ON announceThePendingVote(0)" )
+
+    if( get_pcvar_num( cvar_isToAskForEndOfTheMapVote ) & END_OF_MAP_VOTE_ANNOUNCE )
+    {
+        g_pendingVoteCountdown = floatround( VOTE_TIME_HUD_2, floatround_floor );
+    }
+    else
+    {
+        g_pendingVoteCountdown = floatround( VOTE_TIME_HUD_1, floatround_floor );
+    }
+
+    set_task( VOTE_TIME_SEC, "pendingVoteCountdown", TASKID_PENDING_VOTE_COUNTDOWN, _, _, "a", g_pendingVoteCountdown );
+}
+
+stock Float:getVoteAnnouncementTime()
+{
+    LOGGER( 128, "I AM ENTERING ON getVoteAnnouncementTime(0)" )
+
+    if( get_pcvar_num( cvar_isToAskForEndOfTheMapVote ) & END_OF_MAP_VOTE_ANNOUNCE )
+    {
+        return VOTE_TIME_ANNOUNCE + VOTE_TIME_HUD_2;
+    }
+
+    return VOTE_TIME_HUD_1;
 }
 
 stock configureVoteDisplayDebugging()
@@ -6155,8 +6197,7 @@ public vote_handleDisplay()
     if( g_showVoteStatus == SHOW_STATUS_ALWAYS
         || g_showVoteStatus == SHOW_STATUS_AFTER_VOTE )
     {
-        set_task( 1.0, "vote_display", TASKID_VOTE_DISPLAY, argument, sizeof argument, "a",
-                g_votingSecondsRemaining );
+        set_task( 1.0, "vote_display", TASKID_VOTE_DISPLAY, argument, sizeof argument, "a", g_votingSecondsRemaining );
     }
     else // g_showVoteStatus == SHOW_STATUS_AT_END || g_showVoteStatus == SHOW_STATUS_NEVER
     {
@@ -7574,7 +7615,7 @@ public computeVotes()
     if( numberOfVotesAtFirstPlace )
     {
         // if the top vote getting map didn't receive over 50% of the votes cast, to start a runoff vote
-        if( runoffEnabled & RUNOFF_ENABLED
+        if( runoffEnabled == RUNOFF_ENABLED
             && !( g_voteStatus & IS_RUNOFF_VOTE )
             && !( g_voteMapStatus & IS_DISABLED_VOTEMAP_RUNOFF )
             && numberOfVotesAtFirstPlace <= g_totalVotesCounted * get_pcvar_float( cvar_runoffRatio ) )
@@ -7585,7 +7626,7 @@ public computeVotes()
             LOGGER( 1, "    ( computeVotes ) Just Returning/blocking, its runoff time." )
             return;
         }
-        else if( runoffEnabled & RUNOFF_EXTEND )
+        else if( runoffEnabled == RUNOFF_EXTEND )
         {
             map_extend();
         }
