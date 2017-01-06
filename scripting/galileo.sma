@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.1.0-446";
+new const PLUGIN_VERSION[] = "v4.1.1-450";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -476,6 +476,11 @@ new const PLUGIN_VERSION[] = "v4.1.0-446";
 
 #define LISTMAPS_USERID   0
 #define LISTMAPS_LAST_MAP 1
+
+#define VOTE_TIME_SEC    1.0
+#define VOTE_TIME_HUD    7.0
+#define VOTE_TIME_RUNOFF 3.0
+#define VOTE_TIME_COUNT  5.5
 
 #define RTV_CMD_STANDARD              1
 #define RTV_CMD_SHORTHAND             2
@@ -2808,10 +2813,10 @@ stock isToStartTheVotingOnThisRound( secondsRemaining )
 stock howManySecondsLastMapTheVoting()
 {
     LOGGER( 128, "I AM ENTERING ON howManySecondsLastMapTheVoting(0)" )
-    new voteTime;
+    new Float:voteTime;
 
-    // Until the pendingVoteCountdown(0) to finish takes 7.0 + 1.0 + 1.0 seconds.
-    voteTime = 7 + 1 + 1;
+    // Until the pendingVoteCountdown(0) to finish takes VOTE_TIME_HUD + VOTE_TIME_SEC + VOTE_TIME_SEC seconds.
+    voteTime = VOTE_TIME_HUD + VOTE_TIME_SEC + VOTE_TIME_SEC;
 
     // After, it takes more the `g_votingSecondsRemaining` until the the close vote function to be called.
     voteTime = voteTime + get_pcvar_num( cvar_voteDuration );
@@ -2820,16 +2825,18 @@ stock howManySecondsLastMapTheVoting()
     if( get_pcvar_num( cvar_runoffEnabled ) )
     {
         voteTime = voteTime + get_pcvar_num( cvar_runoffDuration );
+
+        // And more 3 seconds until the runoff voting to start.
+        voteTime = voteTime + VOTE_TIME_RUNOFF;
     }
 
-    // When the voting is closed on closeVoting(0), take more 6 seconds until the result to be counted.
-    // And more 3 seconds until the runoff voting to start.
-    // Then we need to count again those 7.0 + 1.0 + 1.0 until the pendingVoteCountdown(0) and the
-    // other 6 seconds until the runoff voting results to be counted.
-    voteTime = voteTime + 6 + 3 + 7 + 1 + 1 + 6;
+    // When the voting is closed on closeVoting(0), take more VOTE_TIME_COUNT seconds until the result to be counted.
+    // Then we need to count again those VOTE_TIME_HUD + VOTE_TIME_SEC + VOTE_TIME_SEC until the pendingVoteCountdown(0) and the
+    // other VOTE_TIME_COUNT seconds until the runoff voting results to be counted.
+    voteTime = voteTime + VOTE_TIME_COUNT + VOTE_TIME_HUD + VOTE_TIME_SEC + VOTE_TIME_SEC + VOTE_TIME_COUNT;
 
     LOGGER( 1, "    ( howManySecondsLastMapTheVoting ) Returning the vote total time: %d", voteTime )
-    return voteTime;
+    return floatround( voteTime, floatround_ceil );
 }
 
 /**
@@ -5925,7 +5932,7 @@ stock initializeTheVoteDisplay()
     else
     {
         // Set_task 1.0 + pendingVoteCountdown 1.0
-        handleChoicesDelay = 7.0 + 1.0 + 1.0;
+        handleChoicesDelay = VOTE_TIME_HUD + VOTE_TIME_SEC + VOTE_TIME_SEC;
 
         // Make perfunctory announcement: "get ready to choose a map"
         if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_GET_READY_TO_CHOOSE ) )
@@ -5935,8 +5942,8 @@ stock initializeTheVoteDisplay()
         }
 
         // Announce the pending vote countdown from 7 to 1
-        g_pendingVoteCountdown = 7;
-        set_task( 1.0, "pendingVoteCountdown", TASKID_PENDING_VOTE_COUNTDOWN, _, _, "a", 7 );
+        g_pendingVoteCountdown = floatround( VOTE_TIME_HUD, floatround_floor );
+        set_task( VOTE_TIME_SEC, "pendingVoteCountdown", TASKID_PENDING_VOTE_COUNTDOWN, _, _, "a", g_pendingVoteCountdown );
     }
 #endif
 
@@ -6191,11 +6198,11 @@ public closeVoting()
     new argument[ 2 ] = { false, -1 };
 
     // waits until the last voting second to finish
-    set_task( 0.9, "voteExpire" );
-    set_task( 1.0, "vote_display", TASKID_VOTE_DISPLAY, argument, sizeof argument, "a", 3 );
+    set_task( VOTE_TIME_SEC - 0.1, "voteExpire" );
+    set_task( VOTE_TIME_SEC, "vote_display", TASKID_VOTE_DISPLAY, argument, sizeof argument, "a", 3 );
 
     // set_task( 1.5, "delete_users_menus_care", TASKID_DELETE_USERS_MENUS_CARE );
-    set_task( 5.5, "computeVotes", TASKID_VOTE_EXPIRE );
+    set_task( VOTE_TIME_COUNT, "computeVotes", TASKID_VOTE_EXPIRE );
 }
 
 public voteExpire()
@@ -7380,7 +7387,7 @@ stock startRunoffVoting( firstPlaceChoices[], secondPlaceChoices[], numberOfMaps
     vote_resetStats();
 
     // start the runoff vote, vote_startDirector
-    set_task( 3.0, "startNonForcedVoting", TASKID_VOTE_STARTDIRECTOR );
+    set_task( VOTE_TIME_RUNOFF, "startNonForcedVoting", TASKID_VOTE_STARTDIRECTOR );
 }
 
 stock handleTwoMapsAtFirstPosition( firstPlaceChoices[] )
@@ -8192,11 +8199,11 @@ stock start_rtvVote()
     if( endOnRoundRtv
         && get_real_players_number() >= endOnRoundRtv )
     {
-        g_isToChangeMapOnVotingEnd = true;
+        g_isTheLastGameRound = true;
     }
     else
     {
-        g_isTheLastGameRound = true;
+        g_isToChangeMapOnVotingEnd = true;
     }
 
     g_voteStatus |= IS_RTV_VOTE;
