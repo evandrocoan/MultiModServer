@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.1.0-447";
+new const PLUGIN_VERSION[] = "v4.1.1-450";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -8199,11 +8199,11 @@ stock start_rtvVote()
     if( endOnRoundRtv
         && get_real_players_number() >= endOnRoundRtv )
     {
-        g_isToChangeMapOnVotingEnd = true;
+        g_isTheLastGameRound = true;
     }
     else
     {
-        g_isTheLastGameRound = true;
+        g_isToChangeMapOnVotingEnd = true;
     }
 
     g_voteStatus |= IS_RTV_VOTE;
