@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-463";
+new const PLUGIN_VERSION[] = "v4.2.0-464";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -94,7 +94,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-463";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+16
+#define DEBUG_LEVEL 1+2+4+64
 
 
 /**
@@ -395,6 +395,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-463";
     new g_test_testsNumber;
     new g_test_failureNumber;
     new g_test_lastMaxDelayResult;
+    new g_lastNormalTestToExecuteId;
 
     new bool: g_test_isToUseStrictValidMaps;
     new Trie: g_test_failureIdsTrie;
@@ -1346,7 +1347,7 @@ public plugin_init()
 #endif
 
     register_plugin( PLUGIN_NAME, PLUGIN_VERSION, PLUGIN_AUTHOR );
-    LOGGER( 1, "^n^n^n^n^n^n^n^n^n^n^n%s PLUGIN VERSION %s INITIATING...", PLUGIN_NAME, PLUGIN_VERSION )
+    LOGGER( 1, "^n^n^n^n^n^n^n^n^n^n^n^n%s PLUGIN VERSION %s INITIATING...", PLUGIN_NAME, PLUGIN_VERSION )
 
     // print the current used debug information
 #if DEBUG_LEVEL & ( DEBUG_LEVEL_NORMAL | DEBUG_LEVEL_CRITICAL_MODE )
@@ -2689,11 +2690,11 @@ public client_death_event()
             {
                 g_greatestKillerFrags = frags;
 
-                // This is already protected by a `!IS_END_OF_MAP_VOTING_GOING_ON`.
+                // This is already protected by a `!IS_END_OF_MAP_VOTING_GOING_ON()`.
                 if( g_isVirtualFragLimitSupport
                     && g_greatestKillerFrags > g_fragLimitNumber - 1 )
                 {
-                    try_to_manage_map_end( true );
+                    try_to_manage_map_end();
                 }
             }
         }
@@ -3193,7 +3194,7 @@ stock isTimeToStartTheEndOfMapVoting( secondsRemaining )
  * algorithms fail to detect the correct round to start the voting.
  *
  * Also, the map will not accept to change when the voting is running due the restriction on
- * try_to_process_last_round(1). On the cases where that restriction does not have effect, the
+ * try_to_process_last_round(0). On the cases where that restriction does not have effect, the
  * voting will already have been started by vote_manageEnd(0) when the maximum allowed time comes.
  */
 stock tryToStartTheVotingOnThisRound()
@@ -3373,9 +3374,9 @@ stock saveTheRoundTime()
     LOGGER( 32, "( saveTheRoundTime ) roundTotalTime: %d", roundTotalTime )
 }
 
-stock try_to_manage_map_end( bool:isToImmediatelyChangeLevel = false )
+stock try_to_manage_map_end()
 {
-    LOGGER( 128, "I AM ENTERING ON try_to_manage_map_end(1) isToImmediatelyChangeLevel: %d", isToImmediatelyChangeLevel )
+    LOGGER( 128, "I AM ENTERING ON try_to_manage_map_end()" )
 
     if( g_isOnMaintenanceMode )
     {
@@ -3391,12 +3392,11 @@ stock try_to_manage_map_end( bool:isToImmediatelyChangeLevel = false )
 
         if( !areThereEnoughPlayers )
         {
-            try_to_process_last_round( isToImmediatelyChangeLevel );
+            try_to_process_last_round();
         }
-        else if( !map_manageEnd()
-                 && isToImmediatelyChangeLevel )
+        else if( !map_manageEnd() )
         {
-            try_to_process_last_round( isToImmediatelyChangeLevel );
+            try_to_process_last_round();
         }
     }
 }
@@ -3549,11 +3549,11 @@ stock endRoundWatchdog()
 
         if( get_pcvar_num( cvar_endOnRoundChange ) )
         {
-            process_last_round_by_set_task();
+            try_to_process_last_round();
         }
         else
         {
-            set_task( 6.0, "process_last_round_by_set_task", TASKID_PROCESS_LAST_ROUND );
+            set_task( 6.0, "try_to_process_last_round", TASKID_PROCESS_LAST_ROUND );
         }
     }
     else if( g_isThePenultGameRound )
@@ -3571,22 +3571,10 @@ stock endRoundWatchdog()
 }
 
 /**
- * Used to call try_to_process_last_round(1) without setting its default parameter `isToImmediatelyChangeLevel`
- * to true, when calling it from a set_task() function within a task id.
- *
- * This is because when a set_task() has a task id, will will pass its task id as the first parameter.
- */
-public process_last_round_by_set_task()
-{
-    LOGGER( 128, "I AM ENTERING ON process_last_round_by_set_task(0)" )
-    try_to_process_last_round();
-}
-
-/**
  * This is a fail safe to not allow map changes if must there be a map voting and it was not
  * finished/performed yet.
  */
-stock try_to_process_last_round( bool:isToImmediatelyChangeLevel = false )
+public try_to_process_last_round()
 {
     LOGGER( 128, "I AM ENTERING ON try_to_process_last_round(0)" )
     new bool:allowMapChange;
@@ -3609,25 +3597,22 @@ stock try_to_process_last_round( bool:isToImmediatelyChangeLevel = false )
 
     if( allowMapChange )
     {
-        process_last_round( isToImmediatelyChangeLevel );
+        process_last_round( g_isTheLastGameRound );
     }
 }
 
 /**
  * To perform the switch between the straight intermission_processing(0) and the last_round_countdown(0).
  *
- * This is used to be called from the computeVotes(0) end voting function. To call process_last_round(1)
+ * This is used to be called from the computeVotes(0) end voting function. To call process_last_round(2)
  * with the variable `g_isToChangeMapOnVotingEnd` properly set.
  */
-stock process_last_round( bool:isToImmediatelyChangeLevel = false, isCountDownAllowed = true )
+stock process_last_round( bool:isToImmediatelyChangeLevel, isCountDownAllowed = true )
 {
-    LOGGER( 128, "I AM ENTERING ON process_last_round(1)" )
+    LOGGER( 128, "I AM ENTERING ON process_last_round(2) isToImmediatelyChangeLevel: %d", isToImmediatelyChangeLevel )
 
-    // While the `IS_DISABLED_VOTEMAP_EXIT` bit flag is set, we cannot allow any decisions, however
-    // if something is trying to change the map using the `isToImmediatelyChangeLevel` flag, we should
-    // allow as it seems serious stuff.
-    if( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXIT
-        && !isToImmediatelyChangeLevel )
+    // While the `IS_DISABLED_VOTEMAP_EXIT` bit flag is set, we cannot allow any decisions
+    if( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXIT )
     {
         // When this is called, there is not anyone else trying to show action menu, therefore
         // invoke it before returning.
@@ -3637,11 +3622,10 @@ stock process_last_round( bool:isToImmediatelyChangeLevel = false, isCountDownAl
         return;
     }
 
-    if( g_isTheLastGameRound
-        || isToImmediatelyChangeLevel )
+    if( isToImmediatelyChangeLevel )
     {
-        if( get_pcvar_num( cvar_isEndMapCountdown ) & IS_MAP_MAPCHANGE_COUNTDOWN
-            && isCountDownAllowed )
+        if( isCountDownAllowed
+            && get_pcvar_num( cvar_isEndMapCountdown ) & IS_MAP_MAPCHANGE_COUNTDOWN )
         {
             g_lastRroundCountdown = 6;
             set_task( 1.0, "last_round_countdown", TASKID_PROCESS_LAST_ROUND, _, _, "a", 6 );
@@ -5529,8 +5513,8 @@ public vote_manageEnd()
         if( secondsLeft < 30
             && secondsLeft > 0 )
         {
-            // try_to_manage_map_end() cannot be called with true, otherwise it will change the map
-            // before the last seconds to be finished.
+            // This cannot trigger the map change, otherwise it will change the map before the last
+            // seconds to be finished.
             try_to_manage_map_end();
         }
 
@@ -13391,7 +13375,9 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
 
         // Run the delayed tests.
     #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_DELAYED
-        g_test_maxDelayResult = 1;
+        g_test_maxDelayResult       = 1;
+        g_lastNormalTestToExecuteId = g_test_testsNumber;
+
         set_task( 0.5, "dalayedTestsToExecute" );
     #endif
 
@@ -13619,8 +13605,9 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
         LOGGER( 256, "I AM ENTERING ON register_test(2) | max_delay_result: %d, test_name: %s", max_delay_result, test_name )
         ArrayPushString( g_test_idsAndNamesArray, test_name );
 
-        // All the normal Unit Tests will be finished when the Delayed Unit Test begin.
-        if( !g_test_maxDelayResult )
+        // All the normal Unit Tests will be finished when the Delayed Unit Test begin. This is used
+        // to not show a OK, after to print the Normal Unit Tests Results.
+        if( g_lastNormalTestToExecuteId != g_test_testsNumber + 1)
         {
             displaysLastTestOk();
         }
@@ -13903,7 +13890,6 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
         formatex( errorMessage, charsmax( errorMessage ), "g_isMapExtensionAllowed must be 1 (it was %d)", g_isMapExtensionAllowed );
         SET_TEST_FAILURE( test_id, !g_isMapExtensionAllowed, errorMessage )
 
-        displaysLastTestOk();
         set_task( 2.0, "test_isMapExtensionAvowed_case2", chainDelay );
     }
 
@@ -13935,7 +13921,6 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
         formatex( errorMessage, charsmax( errorMessage ), "g_isMapExtensionAllowed must be 0 (it was %d)", g_isMapExtensionAllowed );
         SET_TEST_FAILURE( test_id, g_isMapExtensionAllowed, errorMessage )
 
-        displaysLastTestOk();
         set_task( 2.0, "test_endOfMapVotingStart_case1", chainDelay );
     }
 
@@ -13970,7 +13955,6 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
         LOGGER( 32, "( test_endOfMapVotingStart_case1 ) START_VOTEMAP_MIN_TIME: %d", START_VOTEMAP_MIN_TIME )
         LOGGER( 32, "( test_endOfMapVotingStart_case1 ) START_VOTEMAP_MAX_TIME: %d", START_VOTEMAP_MAX_TIME )
 
-        displaysLastTestOk();
         set_task( 1.0, "test_endOfMapVotingStart_case2", chainDelay );
     }
 
@@ -13987,7 +13971,6 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
         tryToSetGameModCvarFloat( cvar_mp_timelimit, 20.0 );
         cancelVoting();
 
-        displaysLastTestOk();
         set_task( 1.0, "test_endOfMapVotingStop_case1", chainDelay );
     }
 
@@ -14004,7 +13987,6 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
         tryToSetGameModCvarFloat( cvar_mp_timelimit, 2.0 );
         cancelVoting();
 
-        displaysLastTestOk();
         set_task( 1.0, "test_endOfMapVotingStop_case2", chainDelay );
     }
 
@@ -14021,7 +14003,6 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
         tryToSetGameModCvarFloat( cvar_mp_timelimit, 20.0 );
         //cancelVoting();
 
-        displaysLastTestOk();
         //set_task( 1.0, "test_exampleModel_case1", chainDelay );
     }
 
@@ -14039,9 +14020,6 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
 
         // Clear the voting for a new test to begin.
         // cancelVoting();
-
-        // Displays this test OK here, because if it gets until this instruction, it was successful.
-        displaysLastTestOk();
 
         // Call the next chain test.
         set_task( 1.0, "test_exampleModel_case2", chainDelay );
@@ -15496,7 +15474,11 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
             print_logger( "" );
             print_logger( "" );
             print_logger( "" );
+            print_logger( "" );
+            print_logger( "" );
+            print_logger( "" );
             print_logger( "    Executing the %s's Unit Tests: ", PLUGIN_NAME );
+            print_logger( "" );
             print_logger( "" );
 
             cleanTheUnitTestsData();
