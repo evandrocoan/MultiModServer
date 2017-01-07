@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-459";
+new const PLUGIN_VERSION[] = "v4.2.0-462";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -2809,8 +2809,9 @@ stock isToStartTheVotingOnThisRound( secondsRemaining )
     if( get_pcvar_num( cvar_endOfMapVote )
         && !task_exists( TASKID_START_VOTING_BY_TIMER ) )
     {
-        LOGGER( 0, "", debugIsTimeToStartTheEndOfMap( secondsRemaining, 256 ) )
+        // Reduce the total time due the PERIODIC_CHECKING_INTERVAL error.
         new secondsPassed = secondsRemaining - PERIODIC_CHECKING_INTERVAL;
+        LOGGER( 0, "", debugIsTimeToStartTheEndOfMap( secondsRemaining, 256 ) )
 
         new roundsRemaining = howManyRoundsAreRemaining( secondsPassed, whatGameEndingTypeItIs() );
         return chooseTheEndOfMapStartOption( roundsRemaining );
@@ -3193,7 +3194,12 @@ stock isTimeToStartTheEndOfMapVoting( secondsRemaining )
  * they are performed at the round_start_event(0) once it is triggered.
  *
  * This cannot to be called when we are between rounds because the seconds passed since the round
- * started are out of date.
+ * started are out of date. This will to start a map voting near the round end when the prediction
+ * algorithms fail to detect the correct round to start the voting.
+ *
+ * Also, the map will not accept to change when the voting is running due the restriction on
+ * try_to_process_last_round(1). On the cases where that restriction does not have effect, the
+ * voting will already have been started by vote_manageEnd(0) when the maximum allowed time comes.
  */
 stock tryToStartTheVotingOnThisRound()
 {
@@ -3202,12 +3208,14 @@ stock tryToStartTheVotingOnThisRound()
     if( !g_isTheRoundEnded
         && isToStartTheVotingOnThisRound( get_timeleft() ) )
     {
-        // how may seconds have been passed since the round started.
+        // how may seconds have been passed since the round started, is case this is called by
+        // a late round start event as map_manageEnd(0).
         new howManySecondsPassed = floatround( get_gametime(), floatround_ceil ) - g_roundStartTime;
 
+        // if so, we cannot delay any more the vote map start as we could be already be running out of time.
         howManySecondsPassed = ROUND_VOTING_START_SECONDS_DELAY() - howManySecondsPassed;
-        if( howManySecondsPassed < 1 ) howManySecondsPassed = 1;
 
+        if( howManySecondsPassed < 1 ) howManySecondsPassed = 1;
         set_task( float( howManySecondsPassed ), "start_voting_by_timer", TASKID_START_VOTING_BY_TIMER );
     }
 }
@@ -3384,7 +3392,7 @@ stock try_to_manage_map_end( bool:isToImmediatelyChangeLevel = false )
     {
         // This cvar indicates the players minimum number necessary to allow the last round to be
         // finished when the time runs out.
-        new bool:areThereEnoughPlayers = get_real_players_number() > get_pcvar_num( cvar_endOnRoundMininum );
+        new bool:areThereEnoughPlayers = get_real_players_number() >= get_pcvar_num( cvar_endOnRoundMininum );
 
         if( !areThereEnoughPlayers )
         {
@@ -3417,7 +3425,9 @@ stock try_to_manage_map_end( bool:isToImmediatelyChangeLevel = false )
  *
  *         We do not wait to start the map voting, and to start the it right when the remaining time
  *     reaches the `g_votingSecondsRemaining` time. But as we only periodically check to whether to start
- *     the map voting each 15 seconds, we must to set the minimum check as: g_votingSecondsRemaining + 15 seconds + 1
+ *     the map voting each 15 seconds, we must to set the maximum check start as `g_votingSecondsRemaining`
+ *     and the minimum start check as `g_votingSecondsRemaining + 15 seconds + 1`. These values are defined
+ *     by the constants `START_VOTEMAP_MAX_TIME` and `START_VOTEMAP_MIN_TIME`, respectively.
  *
  *     Now the the average round time is shorter than the total voting time, we must to
  * start a map voting, otherwise we could get an extra round being played. This case also
@@ -3436,13 +3446,13 @@ public map_manageEnd()
     switch( get_pcvar_num( cvar_endOnRound ) )
     {
         // when time runs out, end at the current round end
-        case 1:
+        case END_AT_THE_CURRENT_ROUND_END:
         {
             g_isTheLastGameRound = true;
             prevent_map_change();
         }
         // when time runs out, end at the next round end
-        case 2:
+        case END_AT_THE_NEXT_ROUND_END:
         {
             prevent_map_change();
 
@@ -3821,14 +3831,14 @@ public configure_last_round_HUD()
     }
 
     if( g_isTheLastGameRound
-        && !g_theRoundEndWhileVoting )
+        && g_voteStatus & IS_VOTE_OVER )
     {
         color_print( 0, "%L %L %L",
                 LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED",
                 LANG_PLAYER, "GAL_CHANGE_NEXTROUND",
                 LANG_PLAYER, "GAL_NEXTMAP", nextMapName );
     }
-    else
+    else if( g_isThePenultGameRound )
     {
         color_print( 0, "%L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED", LANG_PLAYER, "GAL_NEXTMAP", nextMapName );
     }
@@ -3850,7 +3860,7 @@ public show_last_round_HUD()
 #endif
 
     if( g_isTheLastGameRound
-        && !g_theRoundEndWhileVoting )
+        && g_voteStatus & IS_VOTE_OVER )
     {
         get_pcvar_string( cvar_amx_nextmap, nextMapName, charsmax( nextMapName ) );
 
@@ -3877,7 +3887,7 @@ public show_last_round_HUD()
         show_hudmessage( 0, last_round_message );
     #endif
     }
-    else
+    else if( g_isThePenultGameRound )
     {
     #if AMXX_VERSION_NUM < 183
         get_players( players, playersCount, "ch" );
