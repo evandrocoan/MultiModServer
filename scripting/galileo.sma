@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-464";
+new const PLUGIN_VERSION[] = "v4.2.0-465";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -94,7 +94,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-464";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+2+4+64
+#define DEBUG_LEVEL 0
 
 
 /**
@@ -592,7 +592,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-464";
  * The periodic task created on 'configureServerMapChange(0)' use this intervals in seconds to
  * start checking for an end map voting start.
  */
-#define START_VOTEMAP_MIN_TIME ( g_totalVoteTime + PERIODIC_CHECKING_INTERVAL + 1 )
+#define START_VOTEMAP_MIN_TIME ( g_totalVoteTime + PERIODIC_CHECKING_INTERVAL + 3 )
 #define START_VOTEMAP_MAX_TIME ( g_totalVoteTime )
 
 
@@ -3421,7 +3421,7 @@ stock try_to_manage_map_end()
  *         We do not wait to start the map voting, and to start the it right when the remaining time
  *     reaches the `g_votingSecondsRemaining` time. But as we only periodically check to whether to start
  *     the map voting each 15 seconds, we must to set the maximum check start as `g_votingSecondsRemaining`
- *     and the minimum start check as `g_votingSecondsRemaining + 15 seconds + 1`. These values are defined
+ *     and the minimum start check as `g_votingSecondsRemaining + 15 seconds + 3`. These values are defined
  *     by the constants `START_VOTEMAP_MAX_TIME` and `START_VOTEMAP_MIN_TIME`, respectively.
  *
  *     Now the the average round time is shorter than the total voting time, we must to
@@ -3635,6 +3635,10 @@ stock process_last_round( bool:isToImmediatelyChangeLevel, isCountDownAllowed = 
             intermission_processing();
         }
     }
+    else
+    {
+        show_last_round_message();
+    }
 }
 
 stock intermission_processing()
@@ -3806,20 +3810,30 @@ public configure_last_round_HUD()
         set_task( 1.0, "show_last_round_HUD", TASKID_SHOW_LAST_ROUND_HUD, _, _, "b" );
     }
 
-    new nextMapName[ MAX_MAPNAME_LENGHT ];
-    get_pcvar_string( cvar_amx_nextmap, nextMapName, charsmax( nextMapName ) );
+    show_last_round_message();
+}
 
-    if( g_isTheLastGameRound
-        && g_voteStatus & IS_VOTE_OVER )
+stock show_last_round_message()
+{
+    LOGGER( 128, "I AM ENTERING ON show_last_round_message(0)" )
+
+    if( g_voteStatus & IS_VOTE_OVER
+        && !g_isToChangeMapOnVotingEnd )
     {
-        color_print( 0, "%L %L %L",
-                LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED",
-                LANG_PLAYER, "GAL_CHANGE_NEXTROUND",
-                LANG_PLAYER, "GAL_NEXTMAP", nextMapName );
-    }
-    else if( g_isThePenultGameRound )
-    {
-        color_print( 0, "%L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED", LANG_PLAYER, "GAL_NEXTMAP", nextMapName );
+        new nextMapName[ MAX_MAPNAME_LENGHT ];
+        get_pcvar_string( cvar_amx_nextmap, nextMapName, charsmax( nextMapName ) );
+
+        if( g_isTheLastGameRound )
+        {
+            color_print( 0, "%L %L %L",
+                    LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED",
+                    LANG_PLAYER, "GAL_CHANGE_NEXTROUND",
+                    LANG_PLAYER, "GAL_NEXTMAP", nextMapName );
+        }
+        else if( g_isThePenultGameRound )
+        {
+            color_print( 0, "%L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED", LANG_PLAYER, "GAL_NEXTMAP", nextMapName );
+        }
     }
 }
 
@@ -3838,53 +3852,56 @@ public show_last_round_HUD()
     new players[ MAX_PLAYERS ];
 #endif
 
-    if( g_isTheLastGameRound
-        && g_voteStatus & IS_VOTE_OVER )
+    if( g_voteStatus & IS_VOTE_OVER
+        && !g_isToChangeMapOnVotingEnd )
     {
-        get_pcvar_string( cvar_amx_nextmap, nextMapName, charsmax( nextMapName ) );
-
-        // This is because the Amx Mod X 1.8.2 is not recognizing the player LANG_PLAYER when it is
-        // formatted before with formatex(...)
-    #if AMXX_VERSION_NUM < 183
-        get_players( players, playersCount, "ch" );
-
-        for( playerIndex = 0; playerIndex < playersCount; playerIndex++ )
+        if( g_isTheLastGameRound )
         {
-            player_id = players[ playerIndex ];
+            get_pcvar_string( cvar_amx_nextmap, nextMapName, charsmax( nextMapName ) );
 
+            // This is because the Amx Mod X 1.8.2 is not recognizing the player LANG_PLAYER when it is
+            // formatted before with formatex(...)
+        #if AMXX_VERSION_NUM < 183
+            get_players( players, playersCount, "ch" );
+
+            for( playerIndex = 0; playerIndex < playersCount; playerIndex++ )
+            {
+                player_id = players[ playerIndex ];
+
+                formatex( last_round_message, charsmax( last_round_message ), "%L ^n%L",
+                        player_id, "GAL_CHANGE_NEXTROUND",  player_id, "GAL_NEXTMAP", nextMapName );
+
+                REMOVE_CODE_COLOR_TAGS( last_round_message )
+                show_hudmessage( player_id, last_round_message );
+            }
+        #else
             formatex( last_round_message, charsmax( last_round_message ), "%L ^n%L",
-                    player_id, "GAL_CHANGE_NEXTROUND",  player_id, "GAL_NEXTMAP", nextMapName );
+                    LANG_PLAYER, "GAL_CHANGE_NEXTROUND",  LANG_PLAYER, "GAL_NEXTMAP", nextMapName );
 
             REMOVE_CODE_COLOR_TAGS( last_round_message )
-            show_hudmessage( player_id, last_round_message );
+            show_hudmessage( 0, last_round_message );
+        #endif
         }
-    #else
-        formatex( last_round_message, charsmax( last_round_message ), "%L ^n%L",
-                LANG_PLAYER, "GAL_CHANGE_NEXTROUND",  LANG_PLAYER, "GAL_NEXTMAP", nextMapName );
-
-        REMOVE_CODE_COLOR_TAGS( last_round_message )
-        show_hudmessage( 0, last_round_message );
-    #endif
-    }
-    else if( g_isThePenultGameRound )
-    {
-    #if AMXX_VERSION_NUM < 183
-        get_players( players, playersCount, "ch" );
-
-        for( playerIndex = 0; playerIndex < playersCount; playerIndex++ )
+        else if( g_isThePenultGameRound )
         {
-            player_id = players[ playerIndex ];
-            formatex( last_round_message, charsmax( last_round_message ), "%L", player_id, "GAL_CHANGE_TIMEEXPIRED" );
+        #if AMXX_VERSION_NUM < 183
+            get_players( players, playersCount, "ch" );
+
+            for( playerIndex = 0; playerIndex < playersCount; playerIndex++ )
+            {
+                player_id = players[ playerIndex ];
+                formatex( last_round_message, charsmax( last_round_message ), "%L", player_id, "GAL_CHANGE_TIMEEXPIRED" );
+
+                REMOVE_CODE_COLOR_TAGS( last_round_message )
+                show_hudmessage( player_id, last_round_message );
+            }
+        #else
+            formatex( last_round_message, charsmax( last_round_message ), "%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED" );
 
             REMOVE_CODE_COLOR_TAGS( last_round_message )
-            show_hudmessage( player_id, last_round_message );
+            show_hudmessage( 0, last_round_message );
+        #endif
         }
-    #else
-        formatex( last_round_message, charsmax( last_round_message ), "%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED" );
-
-        REMOVE_CODE_COLOR_TAGS( last_round_message )
-        show_hudmessage( 0, last_round_message );
-    #endif
     }
 }
 
@@ -5983,7 +6000,7 @@ stock announceThePendingVoteTime( Float:time )
     if( targetTime > VOTE_TIME_HUD_1
         && !( get_pcvar_num( cvar_hudsHide ) & HUD_VOTE_VISUAL_COUNTDOWN ) )
     {
-        set_hudmessage( 0, 222, 50, -1.0, 0.13, 1, 1.0, 4.94, 0.0, 0.0, -1 );
+        set_hudmessage( 0, 222, 50, -1.0, 0.13, 1, 1.0, 5.94, 0.0, 0.0, -1 );
         show_hudmessage( 0, "%L", LANG_PLAYER, "DMAP_NEXTMAP_VOTE_REMAINING1", targetTime );
     }
 }
@@ -5994,11 +6011,11 @@ public announceThePendingVote()
 
     if( get_pcvar_num( cvar_isToAskForEndOfTheMapVote ) & END_OF_MAP_VOTE_ANNOUNCE )
     {
-        g_pendingVoteCountdown = floatround( VOTE_TIME_HUD_2, floatround_floor );
+        g_pendingVoteCountdown = floatround( VOTE_TIME_HUD_2, floatround_floor ) + 1;
     }
     else
     {
-        g_pendingVoteCountdown = floatround( VOTE_TIME_HUD_1, floatround_floor );
+        g_pendingVoteCountdown = floatround( VOTE_TIME_HUD_1, floatround_floor ) + 1;
     }
 
     set_task( VOTE_TIME_SEC, "pendingVoteCountdown", TASKID_PENDING_VOTE_COUNTDOWN, _, _, "a", g_pendingVoteCountdown );
@@ -6043,20 +6060,25 @@ public pendingVoteCountdown()
         displayEndOfTheMapVoteMenu( 0 );
     }
 
-    // visual countdown
-    if( !( get_pcvar_num( cvar_hudsHide ) & HUD_VOTE_VISUAL_COUNTDOWN ) )
+    // We increase it 1 more, and remove it later to allow the displayEndOfTheMapVoteMenu(1) to automatically
+    // select the Yes option when the counter hits 1.
+    if( g_pendingVoteCountdown > 1 )
     {
-        set_hudmessage( 0, 222, 50, -1.0, 0.13, 0, 1.0, 0.94, 0.0, 0.0, -1 );
-        show_hudmessage( 0, "%L", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", g_pendingVoteCountdown );
-    }
+        // visual countdown
+        if( !( get_pcvar_num( cvar_hudsHide ) & HUD_VOTE_VISUAL_COUNTDOWN ) )
+        {
+            set_hudmessage( 0, 222, 50, -1.0, 0.13, 0, 1.0, 0.94, 0.0, 0.0, -1 );
+            show_hudmessage( 0, "%L", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", g_pendingVoteCountdown - 1 );
+        }
 
-    // audio countdown
-    if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_COUNTDOWN ) )
-    {
-        new word[ 6 ];
-        num_to_word( g_pendingVoteCountdown, word, 5 );
+        // audio countdown
+        if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_COUNTDOWN ) )
+        {
+            new word[ 6 ];
+            num_to_word( g_pendingVoteCountdown - 1, word, 5 );
 
-        client_cmd( 0, "spk ^"fvox/%s^"", word );
+            client_cmd( 0, "spk ^"fvox/%s^"", word );
+        }
     }
 
     // decrement the countdown
@@ -6095,7 +6117,7 @@ public displayEndOfTheMapVoteMenu( player_id )
         if( !g_isPlayerClosedTheVoteMenu[ ( player_id = players[ playerIndex ] ) ] )
         {
             isVoting       = g_isPlayerParticipating[ player_id ];
-            playerAnswered = g_answeredForEndOfMapVote[ player_id ];
+            playerAnswered = g_answeredForEndOfMapVote[ player_id ] || g_pendingVoteCountdown < 2;
 
             menu_body   [ 0 ] = '^0';
             menu_counter[ 0 ] = '^0';
@@ -6106,7 +6128,7 @@ public displayEndOfTheMapVoteMenu( player_id )
 
                 formatex( menu_counter, charsmax( menu_counter ),
                         " %s(%s%d %L%s)",
-                        COLOR_YELLOW, COLOR_GREY, g_pendingVoteCountdown, LANG_PLAYER, "GAL_TIMELEFT", COLOR_YELLOW );
+                        COLOR_YELLOW, COLOR_GREY, g_pendingVoteCountdown - 1, LANG_PLAYER, "GAL_TIMELEFT", COLOR_YELLOW );
             }
             else
             {
@@ -6124,15 +6146,14 @@ public displayEndOfTheMapVoteMenu( player_id )
                     player_id, "GAL_CHOOSE_QUESTION_YES", menu_counter,
 
                     COLOR_RED, ( playerAnswered ? ( !isVoting ? COLOR_YELLOW : COLOR_GREY ) : COLOR_WHITE ),
-                    player_id, ( playerAnswered ? "GAL_OPTION_NONE_VOTE" : "GAL_CHOOSE_QUESTION_NO" ) );
+                    player_id, ( playerAnswered && !isVoting ? "GAL_OPTION_NONE_VOTE" : "GAL_CHOOSE_QUESTION_NO" ) );
 
             get_user_menu( player_id, menu_id, menuKeysUnused );
 
             if( menu_id == 0
                 || menu_id == g_chooseMapQuestionMenuId )
             {
-                show_menu( player_id, menuKeys, menu_body, ( g_pendingVoteCountdown == 1 ? 1 : 2 ),
-                        CHOOSE_MAP_MENU_QUESTION );
+                show_menu( player_id, menuKeys, menu_body, ( g_pendingVoteCountdown == 1 ? 1 : 2 ), CHOOSE_MAP_MENU_QUESTION );
             }
 
             LOGGER( 4, " ( displayEndOfTheMapVoteMenu| for ) menu_body: %s", menu_body )
@@ -6163,6 +6184,7 @@ public handleEndOfTheMapVoteChoice( player_id, pressedKeyCode )
         g_isPlayerParticipating[ player_id ] = false;
     }
     else if( g_answeredForEndOfMapVote[ player_id ]
+             && !g_isPlayerParticipating[ player_id ]
              && pressedKeyCode == 9 )
     {
         g_isPlayerClosedTheVoteMenu[ player_id ] = true;
@@ -7852,6 +7874,7 @@ stock map_extend()
     // but if the map extension was the voting winner option, then we must to disable the fail safe
     // as we do not need it anymore.
     remove_task( TASKID_PREVENT_INFITY_GAME );
+    remove_task( TASKID_SHOW_LAST_ROUND_HUD );
     resetTheRtvWaitTime();
 
     saveEndGameLimits();
@@ -13403,8 +13426,11 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
             print_logger( "" );
             print_logger( "" );
             print_logger( "" );
+            print_logger( "" );
+            print_logger( "" );
             print_logger( "    After '%d' runtime seconds... Executing the %s's Unit Tests delayed until at least %d seconds: ",
                                      computeTheTestElapsedTime(),          PLUGIN_NAME,          g_test_maxDelayResult );
+            print_logger( "" );
             print_logger( "" );
             print_logger( "" );
         #endif
@@ -13607,7 +13633,7 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
 
         // All the normal Unit Tests will be finished when the Delayed Unit Test begin. This is used
         // to not show a OK, after to print the Normal Unit Tests Results.
-        if( g_lastNormalTestToExecuteId != g_test_testsNumber + 1)
+        if( g_lastNormalTestToExecuteId != g_test_testsNumber )
         {
             displaysLastTestOk();
         }
