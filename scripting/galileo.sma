@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-462";
+new const PLUGIN_VERSION[] = "v4.2.0-463";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -94,7 +94,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-462";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 0
+#define DEBUG_LEVEL 1+16
 
 
 /**
@@ -1517,10 +1517,10 @@ public plugin_cfg()
 #endif
 #endif
 
-    // setup some server settings
+    // Load the initial settings
     loadPluginSetttings();
-    loadNextMapPluginSetttings();
     initializeGlobalArrays();
+    loadNextMapPluginSetttings();
 
     LOGGER( 4, "" )
     LOGGER( 4, "" )
@@ -1691,9 +1691,6 @@ stock initializeGlobalArrays()
 
     g_recentMapsTrie      = TrieCreate();
     g_recentListMapsArray = ArrayCreate( MAX_MAPNAME_LENGHT );
-
-    // load the weighted votes flags
-    get_pcvar_string( cvar_voteWeightFlags, g_voteWeightFlags, charsmax( g_voteWeightFlags ) );
 }
 
 /**
@@ -1804,7 +1801,6 @@ stock configureServerStart()
 public cacheCvarsValues()
 {
     LOGGER( 128, "I AM ENTERING ON cacheCvarsValues(0)" )
-    g_totalVoteTime = howManySecondsLastMapTheVoting();
 
     g_rtvCommands            = get_pcvar_num( cvar_rtvCommands            );
     g_extendmapStepRounds    = get_pcvar_num( cvar_extendmapStepRounds    );
@@ -1830,6 +1826,8 @@ public cacheCvarsValues()
     REMOVE_CODE_COLOR_TAGS( g_coloredChatPrefix )
 #endif
 
+    // load the weighted votes flags
+    get_pcvar_string( cvar_voteWeightFlags, g_voteWeightFlags, charsmax( g_voteWeightFlags ) );
 
     g_isExtendmapAllowStay      = get_pcvar_num( cvar_extendmapAllowStay   ) != 0;
     g_isToShowNoneOption        = get_pcvar_num( cvar_isToShowNoneOption   ) == 1;
@@ -1839,6 +1837,9 @@ public cacheCvarsValues()
     g_isVirtualFragLimitSupport = get_pcvar_num( cvar_fragLimitSupport     ) != 0;
 
     g_maxVotingChoices = max( min( MAX_OPTIONS_IN_VOTE, get_pcvar_num( cvar_voteMapChoiceCount ) ), 2 );
+
+    // It need to be cached after loading all the cvars
+    g_totalVoteTime = howManySecondsLastMapTheVoting();
 }
 
 /**
@@ -2830,7 +2831,7 @@ stock howManySecondsLastMapTheVoting()
     voteTime = getVoteAnnouncementTime() + VOTE_TIME_SEC + VOTE_TIME_SEC;
 
     // After, it takes more the `g_votingSecondsRemaining` until the the close vote function to be called.
-    voteTime += get_pcvar_num( cvar_voteDuration );
+    voteTime += get_pcvar_float( cvar_voteDuration );
 
     // When the voting is closed on closeVoting(0), take more VOTE_TIME_COUNT seconds until the result to be counted.
     voteTime += VOTE_TIME_COUNT;
@@ -2838,10 +2839,10 @@ stock howManySecondsLastMapTheVoting()
     // Let us assume the worst case, then always will be performed a runoff voting.
     if( get_pcvar_num( cvar_runoffEnabled ) == RUNOFF_ENABLED )
     {
-        voteTime = 2 * voteTime + get_pcvar_num( cvar_runoffDuration ) + VOTE_TIME_RUNOFF;
+        voteTime = voteTime + voteTime + get_pcvar_float( cvar_runoffDuration ) + VOTE_TIME_RUNOFF;
     }
 
-    LOGGER( 1, "    ( howManySecondsLastMapTheVoting ) Returning the vote total time: %d", voteTime )
+    LOGGER( 1, "    ( howManySecondsLastMapTheVoting ) Returning the vote total time: %f", voteTime )
     return floatround( voteTime, floatround_ceil );
 }
 
@@ -2856,7 +2857,7 @@ stock howManySecondsLastMapTheVoting()
  */
 stock howManyRoundsAreRemaining( secondsRemaining, GameEndingType:whatGameEndingType )
 {
-    LOGGER( 128, "I AM ENTERING ON howManyRoundsAreRemaining(1), g_roundAverageTime: %d", g_roundAverageTime )
+    LOGGER( 128, "I AM ENTERING ON howManyRoundsAreRemaining(2), g_roundAverageTime: %d", g_roundAverageTime )
 
     switch( whatGameEndingType )
     {
@@ -2870,17 +2871,17 @@ stock howManyRoundsAreRemaining( secondsRemaining, GameEndingType:whatGameEnding
         }
         case GameEndingType_ByFragLimit:
         {
-            new rounds_left_by_frags = get_pcvar_num( cvar_mp_fraglimit ) - g_greatestKillerFrags;
-            getRoundsRemainingByFrags( secondsRemaining, _, rounds_left_by_frags );
+            new roundsLeftBy_frags = get_pcvar_num( cvar_mp_fraglimit ) - g_greatestKillerFrags;
 
-            return rounds_left_by_frags;
+            getRoundsRemainingByFrags( _, roundsLeftBy_frags );
+            return roundsLeftBy_frags;
         }
         case GameEndingType_ByTimeLimit:
         {
-            new rounds_left_by_time;
-            getRoundsRemainingByFrags( secondsRemaining, rounds_left_by_time );
+            new roundsLeftBy_time = secondsRemaining;
 
-            return rounds_left_by_time;
+            getRoundsRemainingByFrags( roundsLeftBy_time );
+            return roundsLeftBy_time;
         }
     }
 
@@ -2888,10 +2889,12 @@ stock howManyRoundsAreRemaining( secondsRemaining, GameEndingType:whatGameEnding
     return MAX_INTEGER;
 }
 
-stock getRoundsRemainingByFrags( secondsRemaining, &by_time = 0, &by_frags = 0 )
+stock getRoundsRemainingByFrags( &by_time = 0, &by_frags = 0 )
 {
-    LOGGER( 128, "I AM ENTERING ON getRoundsRemainingByFrags(3), secondsRemaining: %d", secondsRemaining )
-    if( secondsRemaining < 1 ) secondsRemaining = 1;
+    LOGGER( 128, "I AM ENTERING ON getRoundsRemainingByFrags(2), by_time: %d, by_frags: %d", by_time, by_frags )
+
+    if( by_time  < 1 ) by_time  = 1;
+    if( by_frags < 1 ) by_frags = 1;
 
     // Make sure there are enough data to operate, otherwise set valid data.
     if( g_totalRoundsSavedTimes > MIN_VOTE_START_ROUNDS_DELAY )
@@ -2899,11 +2902,11 @@ stock getRoundsRemainingByFrags( secondsRemaining, &by_time = 0, &by_frags = 0 )
         // Avoid zero division
         if( g_roundAverageTime )
         {
-            by_time = secondsRemaining / g_roundAverageTime;
+            by_time = by_time / g_roundAverageTime;
         }
         else
         {
-            by_time = secondsRemaining / SECONDS_BY_ROUND_AVERAGE;
+            by_time = by_time / SECONDS_BY_ROUND_AVERAGE;
         }
 
         // Avoid zero division
@@ -2920,19 +2923,10 @@ stock getRoundsRemainingByFrags( secondsRemaining, &by_time = 0, &by_frags = 0 )
     }
     else
     {
-        by_time  = secondsRemaining / SECONDS_BY_ROUND_AVERAGE;
+        by_time  = by_time / SECONDS_BY_ROUND_AVERAGE;
         by_frags = by_frags / FRAGS_BY_ROUND_AVERAGE;
     }
 }
-
-/**
- * Gets input variables and computes their difference.
- *
- * @param outputData
- * @param inputData
- * @param globalVariable
- */
-#define GET_REMAINING(%1,%2,%3) ( %1 = %2 - %3 );
 
 /**
  * Wrapper to call switchEndingGameType(10) without repeating the same `if` code everywhere.
@@ -2967,11 +2961,12 @@ stock GameEndingType:whatGameEndingTypeItIs()
     cv_time      = get_pcvar_num( cvar_mp_timelimit );
     cv_frags     = get_pcvar_num( cvar_mp_fraglimit );
 
-    GET_REMAINING( by_frags    , cv_frags    , g_greatestKillerFrags )
-    GET_REMAINING( by_maxrounds, cv_maxrounds, g_totalRoundsPlayed )
-    GET_REMAINING( by_winlimit , cv_winlimit , max( g_totalCtWins, g_totalTerroristsWins ) )
+    by_time      = get_timeleft();
+    by_frags     = cv_frags     - g_greatestKillerFrags;
+    by_maxrounds = cv_maxrounds - g_totalRoundsPlayed;
+    by_winlimit  = cv_winlimit  - max( g_totalCtWins, g_totalTerroristsWins );
 
-    getRoundsRemainingByFrags( get_timeleft(), by_time, by_frags );
+    getRoundsRemainingByFrags( by_time, by_frags );
     LOGGER( 0, "", debugWhatGameEndingTypeItIs( by_maxrounds, by_time, by_winlimit, by_frags, 256 ) )
 
     // Check whether there is any allowed combination.
@@ -3147,7 +3142,7 @@ stock debugIsTimeToStartTheEndOfMap( secondsRemaining, debugLevel )
  */
 stock isTimeToStartTheEndOfMapVoting( secondsRemaining )
 {
-    LOGGER( 256, "I AM ENTERING ON isTimeToStartTheEndOfMapVoting(1)" )
+    LOGGER( 256, "I AM ENTERING ON isTimeToStartTheEndOfMapVoting(1) secondsRemaining: %d", secondsRemaining )
 
     if( secondsRemaining < START_VOTEMAP_MIN_TIME
         && secondsRemaining > START_VOTEMAP_MAX_TIME )
@@ -3440,22 +3435,16 @@ public map_manageEnd()
     LOGGER( 2, "%32s mp_timelimit: %f, get_real_players_number: %d", "map_manageEnd(in)", \
             get_pcvar_float( cvar_mp_timelimit ), get_real_players_number() )
 
-    new nextMapName[ MAX_MAPNAME_LENGHT ];
-    get_pcvar_string( cvar_amx_nextmap, nextMapName, charsmax( nextMapName ) );
-
     switch( get_pcvar_num( cvar_endOnRound ) )
     {
         // when time runs out, end at the current round end
         case END_AT_THE_CURRENT_ROUND_END:
         {
             g_isTheLastGameRound = true;
-            prevent_map_change();
         }
         // when time runs out, end at the next round end
         case END_AT_THE_NEXT_ROUND_END:
         {
-            prevent_map_change();
-
             // This is to avoid have a extra round at special mods where time limit is equal the
             // round timer.
             if( get_pcvar_float( cvar_mp_roundtime ) > 8.0 )
@@ -3486,6 +3475,10 @@ public map_manageEnd()
     //     3. The `cvar_endOfMapVoteStart` failed to predict the correct last round to start voting.
     //
     tryToStartTheVotingOnThisRound();
+
+    // These must to be called after tryToStartTheVotingOnThisRound(0), otherwise it will invalid its
+    // required data as `mp_timelimit`, `mp_fraglimit` and etc.
+    prevent_map_change();
     configure_last_round_HUD();
 
     LOGGER( 2, "%32s mp_timelimit: %f, get_real_players_number: %d", "map_manageEnd(out)", \
@@ -3823,12 +3816,14 @@ public last_round_countdown()
 public configure_last_round_HUD()
 {
     LOGGER( 128, "I AM ENTERING ON configure_last_round_HUD(0)" )
-    new nextMapName[ MAX_MAPNAME_LENGHT ];
 
     if( !( get_pcvar_num( cvar_hudsHide ) & HUD_CHANGELEVEL_ANNOUNCE ) )
     {
         set_task( 1.0, "show_last_round_HUD", TASKID_SHOW_LAST_ROUND_HUD, _, _, "b" );
     }
+
+    new nextMapName[ MAX_MAPNAME_LENGHT ];
+    get_pcvar_string( cvar_amx_nextmap, nextMapName, charsmax( nextMapName ) );
 
     if( g_isTheLastGameRound
         && g_voteStatus & IS_VOTE_OVER )
@@ -13461,6 +13456,7 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
         // All delayed tests finished.
         if( nextCheckTime < 1 )
         {
+            displaysLastTestOk();
             printTheUnitTestsResults();
         }
         else
@@ -14005,7 +14001,7 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
         vote_manageEnd();
         SET_TEST_FAILURE( test_id, ( g_voteStatus & IS_VOTE_IN_PROGRESS ) != 0, "vote_startDirector() does started!" )
 
-        tryToSetGameModCvarFloat( cvar_mp_timelimit, 1.0 );
+        tryToSetGameModCvarFloat( cvar_mp_timelimit, 2.0 );
         cancelVoting();
 
         displaysLastTestOk();
