@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-465";
+new const PLUGIN_VERSION[] = "v4.2.0-466";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -1249,6 +1249,7 @@ new g_extendmapAllowStayType;
 new g_showVoteStatus;
 new g_voteShowNoneOptionType;
 new g_pendingVoteCountdown;
+new g_showLastRoundHudCounter;
 new g_pendingMapVoteCountdown;
 new g_lastRroundCountdown;
 new g_rtvWaitAdminNumber;
@@ -3637,6 +3638,8 @@ stock process_last_round( bool:isToImmediatelyChangeLevel, isCountDownAllowed = 
     }
     else
     {
+        // To restart the HUD counter to force it to show up
+        g_showLastRoundHudCounter = 0;
         show_last_round_message();
     }
 }
@@ -3840,6 +3843,12 @@ stock show_last_round_message()
 public show_last_round_HUD()
 {
     LOGGER( 256, "I AM ENTERING ON show_last_round_HUD(0)" )
+
+    if( ++g_showLastRoundHudCounter % 30 > 6 )
+    {
+        return;
+    }
+
     set_hudmessage( 255, 255, 255, 0.15, 0.15, 0, 0.0, 1.0, 0.1, 0.1, 1 );
 
     new nextMapName       [ MAX_MAPNAME_LENGHT ];
