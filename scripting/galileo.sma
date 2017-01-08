@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-467";
+new const PLUGIN_VERSION[] = "v4.2.0-468";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -560,7 +560,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-467";
 #define MAX_MENU_ITEMS_PER_PAGE       8
 #define MAX_NOM_MENU_ITEMS_PER_PAGE   7
 #define MAX_STANDARD_MAP_COUNT        25
-#define MAX_SERVER_RESTART_ACCEPTABLE 10
+#define MAX_SERVER_RESTART_ACCEPTABLE 5
 #define MAX_NOM_MATCH_COUNT           1000
 #define MAX_PLAYERS_COUNT             MAX_PLAYERS + 1
 
@@ -3195,7 +3195,7 @@ stock isTimeToStartTheEndOfMapVoting( secondsRemaining )
  * algorithms fail to detect the correct round to start the voting.
  *
  * Also, the map will not accept to change when the voting is running due the restriction on
- * try_to_process_last_round(0). On the cases where that restriction does not have effect, the
+ * try_to_process_last_round(1). On the cases where that restriction does not have effect, the
  * voting will already have been started by vote_manageEnd(0) when the maximum allowed time comes.
  */
 stock tryToStartTheVotingOnThisRound()
@@ -3554,7 +3554,7 @@ stock endRoundWatchdog()
         }
         else
         {
-            set_task( 6.0, "try_to_process_last_round", TASKID_PROCESS_LAST_ROUND );
+            set_task( 6.0, "try_to_process_last_roundPublic", TASKID_PROCESS_LAST_ROUND );
         }
     }
     else if( g_isThePenultGameRound )
@@ -3572,10 +3572,22 @@ stock endRoundWatchdog()
 }
 
 /**
+ * Used to call try_to_process_last_round(1) without setting its default parameter `isToImmediatelyChangeLevel`
+ * to true, when calling it from a set_task() function within a task id.
+ *
+ * This is because when a set_task() has a task id, will will pass its task id as the first parameter.
+ */
+public try_to_process_last_roundPublic()
+{
+    LOGGER( 128, "I AM ENTERING ON try_to_process_last_roundPublic(0)" )
+    try_to_process_last_round();
+}
+
+/**
  * This is a fail safe to not allow map changes if must there be a map voting and it was not
  * finished/performed yet.
  */
-public try_to_process_last_round( bool:isFragLimitEnd = false )
+stock try_to_process_last_round( bool:isFragLimitEnd = false )
 {
     LOGGER( 128, "I AM ENTERING ON try_to_process_last_round(0)" )
     new bool:allowMapChange;
@@ -3782,8 +3794,11 @@ public last_round_countdown()
         // visual countdown
         if( !( get_pcvar_num( cvar_hudsHide ) & HUD_CHANGELEVEL_COUNTDOWN ) )
         {
+            new nextMapName[ MAX_MAPNAME_LENGHT ];
+            get_pcvar_string( cvar_amx_nextmap, nextMapName, charsmax( nextMapName ) );
+
             set_hudmessage( 255, 10, 10, -1.0, 0.13, 0, 1.0, 0.94, 0.0, 0.0, -1 );
-            show_hudmessage( 0, "%d %L...", real_number, LANG_PLAYER, "GAL_TIMELEFT" );
+            show_hudmessage( 0, "%L...", LANG_PLAYER, "DMAP_MAP_CHANGING_IN1", nextMapName, real_number );
         }
 
         // audio countdown
