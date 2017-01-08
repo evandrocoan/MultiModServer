@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-469";
+new const PLUGIN_VERSION[] = "v4.2.0-471";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -94,7 +94,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-469";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1
+#define DEBUG_LEVEL 1+16
 
 
 /**
@@ -1251,7 +1251,7 @@ new g_voteShowNoneOptionType;
 new g_pendingVoteCountdown;
 new g_showLastRoundHudCounter;
 new g_pendingMapVoteCountdown;
-new g_lastRroundCountdown;
+new g_lastRoundCountdown;
 new g_rtvWaitAdminNumber;
 new g_emptyCycleMapsNumber;
 new g_recentMapCount;
@@ -2692,9 +2692,12 @@ public client_death_event()
             {
                 g_greatestKillerFrags = frags;
 
-                // This is already protected by a `!IS_END_OF_MAP_VOTING_GOING_ON()`.
+                // This is already protected by a `!IS_END_OF_MAP_VOTING_GOING_ON()`. This `? 2 : 1`
+                // condition allow Galileo to manage the round end, if it is enabled. Otherwise let
+                // the actual game mod to do it. If the support is not virtual but the `mp_fraglimitCvarSupport`,
+                // the try_to_manage_map_end(1) to perform it.
                 if( g_isVirtualFragLimitSupport
-                    && g_greatestKillerFrags > g_fragLimitNumber - 1 )
+                    && g_greatestKillerFrags > g_fragLimitNumber - ( get_pcvar_num( cvar_endOnRound ) ? 2 : 1 ) )
                 {
                     try_to_manage_map_end( true );
                 }
@@ -3641,7 +3644,7 @@ stock process_last_round( bool:isToImmediatelyChangeLevel, isCountDownAllowed = 
         if( isCountDownAllowed
             && get_pcvar_num( cvar_isEndMapCountdown ) & IS_MAP_MAPCHANGE_COUNTDOWN )
         {
-            g_lastRroundCountdown = 6;
+            g_lastRoundCountdown = 6;
             set_task( 1.0, "last_round_countdown", TASKID_PROCESS_LAST_ROUND, _, _, "a", 6 );
         }
         else
@@ -3788,7 +3791,7 @@ stock intermission_effects( endGameType, Float:mp_chattime )
 public last_round_countdown()
 {
     LOGGER( 128, "I AM ENTERING ON last_round_countdown(0)" )
-    new real_number = g_lastRroundCountdown - 1;
+    new real_number = g_lastRoundCountdown - 1;
 
     if( real_number )
     {
@@ -3813,9 +3816,9 @@ public last_round_countdown()
     }
 
     // decrement the countdown
-    g_lastRroundCountdown--;
+    g_lastRoundCountdown--;
 
-    if( g_lastRroundCountdown == 0 )
+    if( g_lastRoundCountdown == 0 )
     {
         intermission_processing();
     }
