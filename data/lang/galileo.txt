@@ -117,6 +117,7 @@ GAL_WINNER_STAY = We are!g staying here!y.
 GAL_WINNER_TIED = The winning choice was!g randomly!t selected from the !g%i!t tied top choices.
 DMAP_NEXTMAP_VOTE_REMAINING1 = A Vote will occur to choose the next map in %d seconds
 DMAP_NEXTMAP_VOTE_REMAINING2 = A Vote will occur to choose the!g next map!y in!g %d seconds
+DMAP_MAP_CHANGING_IN1 = Map changing to %s in %d seconds
 
 [bp]
 GAL_CANCEL_FAIL_INPROGRESS = !tCancelamento!g falhou; !yvotacao ja esta em progresso.
@@ -237,6 +238,7 @@ GAL_WINNER_STAY = Mapa atual!g mantido!y.
 GAL_WINNER_TIED = O Mapa vencedor!g foi escolhido!t entre !g%i!t escolhas empatadas.
 DMAP_NEXTMAP_VOTE_REMAINING1 = Votacao para o proximo mapa ocorrera em %d segundos
 DMAP_NEXTMAP_VOTE_REMAINING2 = Votacao para o!g proximo mapa!y ocorrera em!g %d segundos
+DMAP_MAP_CHANGING_IN1 = Mudando mapa para %s em %d segundos
 
 [es]
 GAL_CANCEL_FAIL_INPROGRESS = !tError al cancelar;!y la votación ya está en curso.
@@ -357,6 +359,7 @@ GAL_WINNER_STAY = Nos quedaremos aquí.
 GAL_WINNER_TIED = La elección ganadora fue elegida al azar de las !g%i!y mejores opciones.
 DMAP_NEXTMAP_VOTE_REMAINING1 = A Votar se producirán para elegir el próximo mapa en %d segundos
 DMAP_NEXTMAP_VOTE_REMAINING2 = A Votar se producirán para elegir el!g próximo mapa!y en!g %d segundos
+DMAP_MAP_CHANGING_IN1 = Cambio en %s en %d segundos
 
 [pl]
 GAL_CANCEL_FAIL_INPROGRESS = Blad przy anulowaniu mapy; !tglosowanie juz sie rozpoczelo.
@@ -477,6 +480,7 @@ GAL_WINNER_STAY = Zostajemy!g tutaj!y.
 GAL_WINNER_TIED = Mapa zostala wybrana z !g%i!t najczesciej zaglosowanych.
 DMAP_NEXTMAP_VOTE_REMAINING1 = Glosowanie na nastepna mape rozpocznie sie za %d sekund
 DMAP_NEXTMAP_VOTE_REMAINING2 = Glosowanie na nastepna!g mape rozpocznie!y sie za!g %d sekund
+DMAP_MAP_CHANGING_IN1 = Zmiana mapy na %s nastapi za %d sekund
 
 [ro]
 GAL_CANCEL_FAIL_INPROGRESS = !tAnulare!g nereusita; Votul este deja in desfasurare.
@@ -597,6 +601,7 @@ GAL_WINNER_STAY = Vom!g ramane aici!y.
 GAL_WINNER_TIED = Alegerea castigatoare a fost selectata !gcazual!t din !g%i!t al topului.
 DMAP_NEXTMAP_VOTE_REMAINING1 = Va urma un vot pentru a alege urmatoarea harta in %d secunde
 DMAP_NEXTMAP_VOTE_REMAINING2 = Va urma un vot pentru a alege!g urmatoarea!y harta in!g %d secunde
+DMAP_MAP_CHANGING_IN1 = Harta se schimba pe %s in %d secunde
 
 [it]
 GAL_CANCEL_FAIL_INPROGRESS = !tCancellazione!g non riuscita; il voto!y e gia in corso.
@@ -717,6 +722,7 @@ GAL_WINNER_STAY = !g Restiamo qui!y.
 GAL_WINNER_TIED = La scelta vincitrice e stata selezionata !gcasualmente!t dai !g%i!t del top.
 DMAP_NEXTMAP_VOTE_REMAINING1 = A votazione avverrà a scegliere la seguente mappa nei %d secondi
 DMAP_NEXTMAP_VOTE_REMAINING2 = A votazione avverrà a scegliere la!g seguente mappa!y nei!g %d secondi
+DMAP_MAP_CHANGING_IN1 = Mappa passaggio a %s in %d secondi
 
 [nl]
 GAL_CANCEL_FAIL_INPROGRESS = !tAnnulering mislukt; stemming is!y al bezig.
@@ -837,6 +843,7 @@ GAL_WINNER_STAY = We !gblijven hier!y.
 GAL_WINNER_TIED = De gewonnen keuze is willekeurig geselecteerd van de !g%i!t evenveel gekozen keuzes.
 DMAP_NEXTMAP_VOTE_REMAINING1 = Een stemming voor de volgende map zal starten in %d seconden
 DMAP_NEXTMAP_VOTE_REMAINING2 = Een stemming voor de volgende!g map zal!y starten in!g %d seconden
+DMAP_MAP_CHANGING_IN1 = Map wordt veranderd naar %s in %d seconden
 
 [sr]
 GAL_CANCEL_FAIL_INPROGRESS = !tPoništenje!g nije uspelo; glasanje je!y u toku.
@@ -957,6 +964,7 @@ GAL_WINNER_STAY = Vi!g ostajete ovde!y.
 GAL_WINNER_TIED = Pobjednička mapa!g je nasumično!t izabrana od !g%i!t najboljih povezanih glasova.
 DMAP_NEXTMAP_VOTE_REMAINING1 = А глас ће доћи да изабере следећи карту у %d sekundi
 DMAP_NEXTMAP_VOTE_REMAINING2 = А глас ће доћи да изабере!y следећи карту!g у!g %d sekundi
+DMAP_MAP_CHANGING_IN1 = Карта мењања да се %s и %d секунде
 
 [sk]
 GAL_CANCEL_FAIL_INPROGRESS = !tZrusenie!g neuspesne, hlasovanie!y uz prebieha.
@@ -1077,6 +1085,7 @@ GAL_WINNER_STAY = !gZostavame TU!y.
 GAL_WINNER_TIED = Nasledujuca mapa bola!g nahodne!t vybrana z !g%i!t.
 DMAP_NEXTMAP_VOTE_REMAINING1 = Hlasovanie sa príde vybrať iný mapu v %d sekund
 DMAP_NEXTMAP_VOTE_REMAINING2 = Hlasovanie sa príde vybrať!g iný mapu!y v!g %d sekund
+DMAP_MAP_CHANGING_IN1 = Mapa prechod na %s za %d sekúnd
 
 [hu]
 GAL_CANCEL_FAIL_INPROGRESS = Megszakítás sikertelen; a szavazás már folyamatban van.
@@ -1197,3 +1206,4 @@ GAL_WINNER_STAY = Mi itt maradunk!y.
 GAL_WINNER_TIED = A nyertes pálya véletlenszerűen kiválasztva a %i legtöbbet szavazott közül.
 DMAP_NEXTMAP_VOTE_REMAINING1 = Az szavazás fog bekövetkezni hogy válasszon a következő térképet %d másodperc
 DMAP_NEXTMAP_VOTE_REMAINING2 = Az szavazás fog bekövetkezni!g hogy válasszon!y a következő térképet!g %d másodperc
+DMAP_MAP_CHANGING_IN1 = Mapa zmena na %s v %d sekúnd
