@@ -1421,13 +1421,19 @@ de_inferno
 [LIST=1]
 [*]Amx Mod X [B]1.8[/B] or [COLOR="Red"][B]higher only[/B][/COLOR]
 [*]The Default '[B]Amx Mod X[/B]' [COLOR="Red"]NextMap Plugin [B]Disabled[/B][/COLOR] (nextmap.amxx)
+[*]The Default '[B]Amx Mod X[/B]' [COLOR="Red"]TimeLeft Plugin [B]Disabled[/B][/COLOR] (timeleft.amxx)
+[*]The Default '[B]Amx Mod X[/B]' [COLOR="Red"]Mapchooser Plugin [B]Disabled[/B][/COLOR] (mapchooser.amxx)
 [*]Any other [B]mapchooser[/B] plugin [B]disabled[/B].
 [/LIST]
 
 [SIZE="4"][B]Client's Commands:[/B][/SIZE]
 
+[B]//[/B] Displays, to all players how much last until the map to end. This is
+[B]//[/B] a replacement for AMXX's command with the same name.
+[COLOR="Blue"]say [B]nextmap[/B][/COLOR]
+
 [B]//[/B] Displays, to all players, the next map that will be played.  This is
-[B]//[/B] a replacement for AMXX's command of the same name.
+[B]//[/B] a replacement for AMXX's command with the same name.
 [B]//[/B] When using end of map voting (CVAR "gal_endofmapvote" and
 [B]//[/B] "gal_nextmap_change" set to 1), this command will return "[not yet voted on]"
 [B]//[/B] if the map vote hasn't started yet and "[voting in progress]"
@@ -1509,8 +1515,9 @@ plugins folder usually at "[COLOR="Blue"]yourGameMod/addons/amxmodx/[/COLOR][B]p
 [*] Put the [B]next line[/B] to your "[B]plugins.ini[/B]" file at "[COLOR="Blue"]yourGameMod/addons/amxmodx/[/COLOR][B]configs[/B]"
 folder and disable the original "[B]mapchooser.amxx[/B]" or any other [B]map manager plugin[/B], like
 the [B]deagsmapmanager.amxx[/B]: [QUOTE]
-;deagsmapmanager.amxx
 ;mapchooser.amxx
+;nextmap.amxx
+;timeleft.amxx
 galileo.amxx
 [/QUOTE]
 [/LIST]
@@ -1583,7 +1590,14 @@ Thank you!  It means a lot to me.
 ******************************** [anchor]Change[/anchor][B][SIZE="6"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
 [SPOILER]
 
-Fixed the map fraglimit not change the map.
+
+[LIST=1]
+[*]Added a new command `say timeleft` to show how many seconds there are remaining to the map end.
+[*]Added support to the command `say timeleft` say how may rounds/frags are remaining.
+[*]Added new requirement, now you need to disable the default `timeleft.amxx` plugin.
+[*]Fixed the map frag limit not change the map.
+[*]Fixed the cvar `amx_extendmap_allow_order` option 2 not working.
+[/LIST]
 
 [B]2017-01-06 | v4.2.0-466[/B]
 [LIST=1]
