@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-466";
+new const PLUGIN_VERSION[] = "v4.2.0-467";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -2695,7 +2695,7 @@ public client_death_event()
                 if( g_isVirtualFragLimitSupport
                     && g_greatestKillerFrags > g_fragLimitNumber - 1 )
                 {
-                    try_to_manage_map_end();
+                    try_to_manage_map_end( true );
                 }
             }
         }
@@ -3375,7 +3375,7 @@ stock saveTheRoundTime()
     LOGGER( 32, "( saveTheRoundTime ) roundTotalTime: %d", roundTotalTime )
 }
 
-stock try_to_manage_map_end()
+stock try_to_manage_map_end( bool:isFragLimitEnd = false )
 {
     LOGGER( 128, "I AM ENTERING ON try_to_manage_map_end()" )
 
@@ -3393,11 +3393,11 @@ stock try_to_manage_map_end()
 
         if( !areThereEnoughPlayers )
         {
-            try_to_process_last_round();
+            try_to_process_last_round( isFragLimitEnd );
         }
         else if( !map_manageEnd() )
         {
-            try_to_process_last_round();
+            try_to_process_last_round( isFragLimitEnd );
         }
     }
 }
@@ -3575,7 +3575,7 @@ stock endRoundWatchdog()
  * This is a fail safe to not allow map changes if must there be a map voting and it was not
  * finished/performed yet.
  */
-public try_to_process_last_round()
+public try_to_process_last_round( bool:isFragLimitEnd = false )
 {
     LOGGER( 128, "I AM ENTERING ON try_to_process_last_round(0)" )
     new bool:allowMapChange;
@@ -3598,7 +3598,7 @@ public try_to_process_last_round()
 
     if( allowMapChange )
     {
-        process_last_round( g_isTheLastGameRound );
+        process_last_round( g_isTheLastGameRound || isFragLimitEnd );
     }
 }
 
@@ -3636,7 +3636,8 @@ stock process_last_round( bool:isToImmediatelyChangeLevel, isCountDownAllowed = 
             intermission_processing();
         }
     }
-    else
+    else if( g_isTheLastGameRound
+             || g_isThePenultGameRound )
     {
         // To restart the HUD counter to force it to show up
         g_showLastRoundHudCounter = 0;
