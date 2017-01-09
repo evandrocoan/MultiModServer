@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-472";
+new const PLUGIN_VERSION[] = "v4.2.0-474";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -921,6 +921,7 @@ enum (+= 100000)
     TASKID_START_VOTING_BY_TIMER,
     TASKID_PROCESS_LAST_ROUND,
     TASKID_PROCESS_LAST_ROUND_COUNT,
+    TASKID_PROCESS_LAST_ROUNDCHANGE,
     TASKID_VOTE_HANDLEDISPLAY,
     TASKID_VOTE_DISPLAY,
     TASKID_VOTE_EXPIRE,
@@ -3645,7 +3646,7 @@ stock process_last_round( bool:isToImmediatelyChangeLevel, isCountDownAllowed = 
         if( isCountDownAllowed
             && get_pcvar_num( cvar_isEndMapCountdown ) & IS_MAP_MAPCHANGE_COUNTDOWN )
         {
-            if( !task_exists( TASKID_PROCESS_LAST_ROUND_COUNT )
+            if( !task_exists( TASKID_PROCESS_LAST_ROUND_COUNT ) )
             {
                 new totalTime        = 6;
                 g_lastRoundCountdown = totalTime;
@@ -12173,6 +12174,7 @@ stock cancelVoting( bool:isToDoubleReset = false )
     remove_task( TASKID_INTERMISSION_HOLD );
     remove_task( TASKID_PROCESS_LAST_ROUND );
     remove_task( TASKID_PROCESS_LAST_ROUND_COUNT );
+    remove_task( TASKID_PROCESS_LAST_ROUNDCHANGE );
     remove_task( TASKID_SHOW_LAST_ROUND_HUD );
     remove_task( TASKID_FINISH_GAME_TIME_BY_HALF );
 
@@ -12881,6 +12883,14 @@ public delayedChange( param[] )
     serverChangeLevel( param );
 }
 
+public changeMapIntermission()
+{
+    LOGGER( 128, "I AM ENTERING ON changeMapIntermission(0)" )
+
+    intermission_hold();
+    changeMap();
+}
+
 /**
  * This function call is only triggered by the game event register_event( "30", "changeMap", "a" ).
  */
@@ -12902,7 +12912,9 @@ public changeMap()
     }
 
     new length = getNextMapName( nextmap_name, charsmax( nextmap_name ) ) + 1;
-    set_task( chattime, "delayedChange", 0, nextmap_name, length ); // change with 1.5 sec. delay
+
+    // change with 1.5 sec. delay
+    set_task( chattime, "delayedChange", 0, nextmap_name, length );
 }
 
 stock bool:isAValidMap( mapname[] )
@@ -13455,9 +13467,11 @@ stock findDispFormat( _time )
 {
     LOGGER( 256, "I AM ENTERING ON findDispFormat(1) _time: %d", _time )
 
+    // For the map to change, because somehow the game time left returned by the engine is sometimes
+    // a littler bigger as 10 seconds, than the correct time left returned by get_timeleft(0).
     if( _time == 1 )
     {
-
+        set_task( 1.2, "changeMapIntermission", TASKID_PROCESS_LAST_ROUNDCHANGE );
     }
 
     // it is important to check i<sizeof BEFORE g_TimeSet[i][0] to prevent out of bound error
