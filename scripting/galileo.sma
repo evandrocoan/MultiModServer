@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-474";
+new const PLUGIN_VERSION[] = "v4.2.0-477";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -599,6 +599,14 @@ new const PLUGIN_VERSION[] = "v4.2.0-474";
 
 // In-place Macros
 // ###############################################################################################
+
+/**
+ * This indicates the players minimum number necessary to allow the last round to be finished when
+ * the time runs out.
+ */
+#define ARE_THERE_ENOUGH_PLAYERS_FOR_MANAGE_END() \
+    ( get_real_players_number() >= get_pcvar_num( cvar_endOnRoundMininum ) )
+//
 
 /**
  * The frags/kills number before the mp_fraglimit to be reached and to start the map voting.
@@ -1352,15 +1360,6 @@ public plugin_init()
     register_plugin( PLUGIN_NAME, PLUGIN_VERSION, PLUGIN_AUTHOR );
     LOGGER( 1, "^n^n^n^n^n^n^n^n^n^n^n^n%s PLUGIN VERSION %s INITIATING...", PLUGIN_NAME, PLUGIN_VERSION )
 
-    // print the current used debug information
-#if DEBUG_LEVEL & ( DEBUG_LEVEL_NORMAL | DEBUG_LEVEL_CRITICAL_MODE )
-    new debug_level[ MAX_SHORT_STRING ];
-    formatex( debug_level, charsmax( debug_level ), "%d | %d", g_debug_level, DEBUG_LEVEL );
-
-    LOGGER( 1, "( plugin_init ) gal_debug_level: %s", debug_level )
-    register_cvar( "gal_debug_level", debug_level, FCVAR_SERVER | FCVAR_SPONLY );
-#endif
-
     LOGGER( 1, "( plugin_init )" )
     LOGGER( 1, "( plugin_init ) AMXX_VERSION_NUM:                         %d", AMXX_VERSION_NUM )
     LOGGER( 1, "( plugin_init ) IS_TO_ENABLE_SVEN_COOP_SUPPPORT:          %d", IS_TO_ENABLE_SVEN_COOP_SUPPPORT )
@@ -1382,6 +1381,15 @@ public plugin_init()
     cvar_isExtendmapOrderAllowed = register_cvar ( "amx_extendmap_allow_order"    , "0"  );
 
     register_cvar( "gal_version", PLUGIN_VERSION, FCVAR_SERVER | FCVAR_SPONLY );
+
+    // print the current used debug information
+#if DEBUG_LEVEL & ( DEBUG_LEVEL_NORMAL | DEBUG_LEVEL_CRITICAL_MODE )
+    new debug_level[ MAX_SHORT_STRING ];
+    formatex( debug_level, charsmax( debug_level ), "%d | %d", g_debug_level, DEBUG_LEVEL );
+
+    LOGGER( 1, "( plugin_init ) gal_debug_level: %s", debug_level )
+    register_cvar( "gal_debug_level", debug_level, FCVAR_SERVER | FCVAR_SPONLY );
+#endif
 
     cvar_cmdVotemap                = register_cvar( "gal_cmd_votemap"             , "0"    );
     cvar_cmdListmaps               = register_cvar( "gal_cmd_listmaps"            , "2"    );
@@ -3176,8 +3184,9 @@ stock isTimeToStartTheEndOfMapVoting( secondsRemaining )
             // there are remaining 30 seconds to finish the round. If this is called, it should do nothing
             // because as the `cvar_endOnRound` is enabled, the voting will be scheduled by map_manageEnd(0).
             //
-            if( !get_pcvar_num( cvar_endOfMapVoteStart )
+            if( !ARE_THERE_ENOUGH_PLAYERS_FOR_MANAGE_END()
                || g_totalRoundsSavedTimes < MIN_VOTE_START_ROUNDS_DELAY + 1
+               || !get_pcvar_num( cvar_endOfMapVoteStart )
                || !get_pcvar_num( cvar_endOnRound )
                || IS_THE_ROUND_TIME_TOO_BIG() )
             {
@@ -3393,15 +3402,9 @@ stock try_to_manage_map_end( bool:isFragLimitEnd = false )
     else if( !( g_isTheLastGameRound
                 || g_isThePenultGameRound ) )
     {
-        // This cvar indicates the players minimum number necessary to allow the last round to be
-        // finished when the time runs out.
-        new bool:areThereEnoughPlayers = get_real_players_number() >= get_pcvar_num( cvar_endOnRoundMininum );
-
-        if( !areThereEnoughPlayers )
-        {
-            try_to_process_last_round( isFragLimitEnd );
-        }
-        else if( !map_manageEnd() )
+        // Do not invert the order of these conditional statements, otherwise it will break everything.
+        if( !ARE_THERE_ENOUGH_PLAYERS_FOR_MANAGE_END()
+            || !map_manageEnd() )
         {
             try_to_process_last_round( isFragLimitEnd );
         }
