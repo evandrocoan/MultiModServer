@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-480";
+new const PLUGIN_VERSION[] = "v4.2.0-483";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -586,7 +586,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-480";
  * Define how many times the server can crash on a map, before that map to be ignored and to select
  * the next map on the map cycle to be played. The counter starts on 0.
  */
-#define MAX_SERVER_RESTART_ACCEPTABLE 4
+#define MAX_SERVER_RESTART_ACCEPTABLE 3
 
 /**
  * Defines the interval where the periodic tasks as map_manageEnd(0) and vote_manageEnd(0) will be
@@ -2073,50 +2073,53 @@ stock configureTheMapcycleSystem( mapToChange[], mapToChangeLength )
     LOGGER( 4, "( configureTheMapcycleSystem ) possibleNextMapPosition: %d", possibleNextMapPosition )
     LOGGER( 4, "( configureTheMapcycleSystem ) restartsOnTheCurrentMap: %d", restartsOnTheCurrentMap )
 
-    if( possibleNextMapPosition != -1 )
+    if( restartsOnTheCurrentMap > MAX_SERVER_RESTART_ACCEPTABLE )
     {
-        if( restartsOnTheCurrentMap > MAX_SERVER_RESTART_ACCEPTABLE )
+        new possibleCurrentMap    [ MAX_MAPNAME_LENGHT ];
+        new lastMapChangedFilePath[ MAX_FILE_PATH_LENGHT ];
+
+        setThisMapAsPossibleCrashingMap( mapToChange );
+
+        copy( possibleCurrentMap, charsmax( possibleCurrentMap ), possibleNextMap );
+        possibleNextMapPosition = map_getNext( g_mapcycleFileListArray, possibleCurrentMap, possibleNextMap );
+
+        // If there is not any map, just to do setup it by default the first server's map.
+        if( possibleNextMapPosition == -1 )
         {
-            new possibleCurrentMap    [ MAX_MAPNAME_LENGHT ];
-            new lastMapChangedFilePath[ MAX_FILE_PATH_LENGHT ];
-
-            setThisMapAsPossibleCrashingMap( mapToChange );
-
-            copy( possibleCurrentMap, charsmax( possibleCurrentMap ), possibleNextMap );
-            possibleNextMapPosition = map_getNext( g_mapcycleFileListArray, possibleCurrentMap, possibleNextMap );
-
-            // If there is not any map, just to do not setup anything as it is by default the first server's map.
-            if( possibleNextMapPosition != -1 )
-            {
-                configureTheNextMapPlugin( possibleNextMapPosition, possibleNextMap );
-            }
-
-            // Clear the old data
-            copy( mapToChange, mapToChangeLength, possibleCurrentMap );
-            formatex( lastMapChangedFilePath, charsmax( lastMapChangedFilePath ), "%s/%s", g_dataDirPath, LAST_CHANGE_MAP_FILE_NAME );
-
-            if( file_exists( lastMapChangedFilePath ) )
-            {
-                delete_file( lastMapChangedFilePath );
-            }
-
-            write_file( lastMapChangedFilePath, "nothing_to_be_added_by^n0" );
-            log_message( "" );
-            log_message( "The server is jumping to the next map after the current map due \
-                    more than %d restarts on the map %s.", MAX_SERVER_RESTART_ACCEPTABLE, mapToChange );
-            log_message( "" );
+            configureTheNextMapPlugin( 0, possibleNextMap );
+            LOGGER( 4, "( configureTheMapcycleSystem ) configureTheNextMapPlugin( 0, possibleNextMap )" )
+            LOGGER( 4, "" )
         }
         else
         {
             configureTheNextMapPlugin( possibleNextMapPosition, possibleNextMap );
-            LOGGER( 4, "( configureTheMapcycleSystem ) restartsOnTheCurrentMap < MAX_SERVER_RESTART_ACCEPTABLE" )
-            LOGGER( 4, "" )
         }
+
+        // Clear the old data
+        copy( mapToChange, mapToChangeLength, possibleCurrentMap );
+        formatex( lastMapChangedFilePath, charsmax( lastMapChangedFilePath ), "%s/%s", g_dataDirPath, LAST_CHANGE_MAP_FILE_NAME );
+
+        if( file_exists( lastMapChangedFilePath ) )
+        {
+            delete_file( lastMapChangedFilePath );
+        }
+
+        write_file( lastMapChangedFilePath, "nothing_to_be_added_by^n0" );
+        log_message( "" );
+        log_message( "The server is jumping to the next map after the current map due \
+                more than %d restarts on the map %s.", MAX_SERVER_RESTART_ACCEPTABLE, mapToChange );
+        log_message( "" );
     }
-    else
+    else if( possibleNextMapPosition == -1 )
     {
         configureTheNextMapPlugin( 0, possibleNextMap );
         LOGGER( 4, "( configureTheMapcycleSystem ) configureTheNextMapPlugin( 0, possibleNextMap )" )
+        LOGGER( 4, "" )
+    }
+    else
+    {
+        configureTheNextMapPlugin( possibleNextMapPosition, possibleNextMap );
+        LOGGER( 4, "( configureTheMapcycleSystem ) restartsOnTheCurrentMap < MAX_SERVER_RESTART_ACCEPTABLE" )
         LOGGER( 4, "" )
     }
 }
@@ -2176,7 +2179,7 @@ stock getRestartsOnTheCurrentMap( mapToChange[] )
             delete_file( lastMapChangedFilePath );
         }
 
-        write_file( lastMapChangedFilePath, "nothing_to_be_added_by^n0" );
+        write_file( lastMapChangedFilePath, "nothing_to_be_added_by^n0^n" );
     }
 
     LOGGER( 4, "( getRestartsOnTheCurrentMap ) mapToChange: %s,", mapToChange )
@@ -2184,17 +2187,18 @@ stock getRestartsOnTheCurrentMap( mapToChange[] )
 
     if( lastMapChangedFile )
     {
-        fgets( lastMapChangedFile, lastMapChangedName, charsmax( lastMapChangedName ) );
-        fgets( lastMapChangedFile, lastMapChangedCountString, charsmax( lastMapChangedCountString ) );
-
+        fgets(  lastMapChangedFile, lastMapChangedName, charsmax( lastMapChangedName ) );
+        fgets(  lastMapChangedFile, lastMapChangedCountString, charsmax( lastMapChangedCountString ) );
         fclose( lastMapChangedFile );
+
+        trim( mapToChange );
         trim( lastMapChangedName );
         trim( lastMapChangedCountString );
 
         lastMapChangedCount = str_to_num( lastMapChangedCountString );
         lastMapChangedFile  = fopen( lastMapChangedFilePath, "wt" );
 
-        fprintf( lastMapChangedFile, "%s", mapToChange );
+        fprintf( lastMapChangedFile, "%s^n", mapToChange );
         LOGGER( 4, "( getRestartsOnTheCurrentMap ) lastMapChangedName: %s", lastMapChangedName )
         LOGGER( 4, "( getRestartsOnTheCurrentMap ) lastMapChangedCount: %d", lastMapChangedCount )
         LOGGER( 4, "( getRestartsOnTheCurrentMap ) lastMapChangedCountString: %s", lastMapChangedCountString )
@@ -2203,7 +2207,7 @@ stock getRestartsOnTheCurrentMap( mapToChange[] )
         {
             ++lastMapChangedCount;
 
-            fprintf( lastMapChangedFile, "^n%d", lastMapChangedCount );
+            fprintf( lastMapChangedFile, "%d^n", lastMapChangedCount );
             LOGGER( 4, "( getRestartsOnTheCurrentMap ) mapToChange is equal to lastMapChangedName." )
         }
         else
