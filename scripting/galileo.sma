@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-478";
+new const PLUGIN_VERSION[] = "v4.2.0-479";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -571,6 +571,18 @@ new const PLUGIN_VERSION[] = "v4.2.0-478";
 #define SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR      2
 #define DELAY_TO_WAIT_THE_SERVER_CVARS_TO_BE_LOADED 50.0
 
+
+/**
+ * Highly and directly impact on the server change level performance.
+ *
+ * If your server is hosted under an SSD (Solid State Disk), a value high as 20 will take up to 10 or 20 seconds to
+ * complete the change level for a mapcycle within 800 maps.
+ *
+ * If your server is hosted under an HD (Hard Disk), a value high as 20 will take up to 60 or 120 seconds to
+ * complete the change level for a mapcycle within 800 maps.
+ */
+#define MAX_NON_SEQUENCIAL_MAPS_ON_THE_SERIE 3
+
 /**
  * Defines the interval where the periodic tasks as map_manageEnd(0) and vote_manageEnd(0) will be
  * checked.
@@ -1093,6 +1105,7 @@ new bool:g_isToRestoreFriendlyFire;
 new Float:g_rtvWaitMinutes;
 new Float:g_originalTimelimit;
 new Float:g_original_sv_maxspeed;
+new Float:g_originalChatTime;
 
 
 /**
@@ -1568,6 +1581,9 @@ public plugin_cfg()
 #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
     configureTheUnitTests();
 #endif
+
+    // set_pcvar_num( cvar_mp_chattime, 3 ); // Used to loop through all server maps looking for crashing ones
+    // set_task( 7.0, "changeMapIntermission", TASKID_PROCESS_LAST_ROUNDCHANGE );
 
     LOGGER( 1, "    I AM EXITING plugin_cfg(0)..." )
     LOGGER( 1, "" )
@@ -8035,6 +8051,8 @@ stock saveEndGameLimits()
 public map_restoreEndGameCvars()
 {
     LOGGER( 128 + 2, "I AM ENTERING ON map_restoreEndGameCvars(0)" )
+
+    restoreTheChatTime();
     restoreOriginalServerMaxSpeed();
 
     LOGGER( 2, "( map_restoreEndGameCvars ) TRYING to change the cvar %15s to '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
@@ -8068,9 +8086,9 @@ public map_restoreEndGameCvars()
 
 stock restoreOriginalServerMaxSpeed()
 {
-    LOGGER( 128, "I AM ENTERING ON restoreOriginalServerMaxSpeed(0)" )
+    LOGGER( 128, "I AM ENTERING ON restoreOriginalServerMaxSpeed(0) g_original_sv_maxspeed: %f", g_original_sv_maxspeed )
 
-    if( g_original_sv_maxspeed )
+    if( floatround( g_original_sv_maxspeed, floatround_floor ) )
     {
         tryToSetGameModCvarFloat( cvar_sv_maxspeed, g_original_sv_maxspeed );
         LOGGER( 2, "( restoreOriginalServerMaxSpeed ) IS CHANGING THE CVAR 'sv_maxspeed' to '%f'.", g_original_sv_maxspeed )
@@ -12920,29 +12938,49 @@ public changeMapIntermission()
 }
 
 /**
+ * If the game to be faster the us to change the level we must to restore the the `cvar_mp_chattime`
+ * on plugin_end(0).
+ */
+stock restoreTheChatTime()
+{
+    LOGGER( 128, "I AM ENTERING ON restoreTheChatTime(0) g_originalChatTime: %f", g_originalChatTime )
+
+    if( floatround( g_originalChatTime, floatround_floor ) )
+    {
+        LOGGER( 2, "( restoreTheChatTime ) IS CHANGING THE CVAR 'mp_chattime' to '%f'.", g_originalChatTime )
+        tryToSetGameModCvarFloat( cvar_mp_chattime, g_originalChatTime );
+
+        g_originalChatTime = 0.0;
+    }
+}
+
+/**
  * This function call is only triggered by the game event register_event( "30", "changeMap", "a" ).
  */
 public changeMap()
 {
     LOGGER( 128, "I AM ENTERING ON changeMap(0)" )
 
-    new Float:chattime;
+    new Float:chatTime;
     new nextmap_name[ MAX_MAPNAME_LENGHT ];
 
     // mp_chattime defaults to 10 in other mods
-    chattime = cvar_mp_chattime ? get_pcvar_float( cvar_mp_chattime ) : 10.0;
+    if( cvar_mp_chattime )
+    {
+        chatTime = g_originalChatTime = get_pcvar_float( cvar_mp_chattime );
+    }
 
     if( cvar_mp_chattime )
     {
         // make sure mp_chattime is long
-        tryToSetGameModCvarFloat( cvar_mp_chattime, chattime + 2.0 );
-        LOGGER( 2, "( changeMap ) IS CHANGING THE CVAR 'mp_chattime' to '%f'.", chattime + 2.0 )
+        tryToSetGameModCvarFloat( cvar_mp_chattime, chatTime + 2.0 );
+        LOGGER( 2, "( changeMap ) IS CHANGING THE CVAR 'mp_chattime' to '%f'.", chatTime + 2.0 )
     }
 
     new length = getNextMapName( nextmap_name, charsmax( nextmap_name ) ) + 1;
 
     // change with 1.5 sec. delay
-    set_task( chattime, "delayedChange", 0, nextmap_name, length );
+    set_task( chatTime, "delayedChange", 0, nextmap_name, length );
 }
 
 stock bool:isAValidMap( mapname[] )
@@ -13060,7 +13098,7 @@ stock isThereNextMapOnTheSerie( &currentSerie, mapNameClean[], nextMapName[] )
         // Moves the pointer to the next serie, if it still not find the valid map.
         currentSerie++;
 
-    } while( currentForwardLook++ < 20 );
+    } while( currentForwardLook++ < MAX_NON_SEQUENCIAL_MAPS_ON_THE_SERIE );
 
     LOGGER( 256, "    ( isThereNextMapOnTheSerie ) Returning: false" )
     return false;
