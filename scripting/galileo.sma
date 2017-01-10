@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-479";
+new const PLUGIN_VERSION[] = "v4.2.0-480";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -560,7 +560,6 @@ new const PLUGIN_VERSION[] = "v4.2.0-479";
 #define MAX_MENU_ITEMS_PER_PAGE       8
 #define MAX_NOM_MENU_ITEMS_PER_PAGE   7
 #define MAX_STANDARD_MAP_COUNT        25
-#define MAX_SERVER_RESTART_ACCEPTABLE 5
 #define MAX_NOM_MATCH_COUNT           1000
 #define MAX_PLAYERS_COUNT             MAX_PLAYERS + 1
 
@@ -582,6 +581,12 @@ new const PLUGIN_VERSION[] = "v4.2.0-479";
  * complete the change level for a mapcycle within 800 maps.
  */
 #define MAX_NON_SEQUENCIAL_MAPS_ON_THE_SERIE 3
+
+/**
+ * Define how many times the server can crash on a map, before that map to be ignored and to select
+ * the next map on the map cycle to be played. The counter starts on 0.
+ */
+#define MAX_SERVER_RESTART_ACCEPTABLE 4
 
 /**
  * Defines the interval where the periodic tasks as map_manageEnd(0) and vote_manageEnd(0) will be
@@ -8480,7 +8485,7 @@ public map_change_stays()
     serverChangeLevel( g_currentMapName );
 }
 
-stock serverChangeLevel( mapName[] )
+public serverChangeLevel( mapName[] )
 {
     LOGGER( 128, "I AM ENTERING ON serverChangeLevel(1) | mapName: %s", mapName )
 
@@ -12912,23 +12917,6 @@ public sayFFStatus()
     #endif
 }
 
-public delayedChange( param[] )
-{
-    LOGGER( 128, "I AM ENTERING ON delayedChange(1) | param: %s", param )
-
-    if( cvar_mp_chattime )
-    {
-        // It will be a positive value because here we are restoring the increment did on changeMap(0)
-        // just below.
-        new Float:mp_chattime = get_pcvar_float( cvar_mp_chattime ) - 2.0;
-
-        tryToSetGameModCvarFloat( cvar_mp_chattime, mp_chattime );
-        LOGGER( 2, "( delayedChange ) IS CHANGING THE CVAR 'mp_chattime' to '%f'.", get_pcvar_float( cvar_mp_chattime ) )
-    }
-
-    serverChangeLevel( param );
-}
-
 public changeMapIntermission()
 {
     LOGGER( 128, "I AM ENTERING ON changeMapIntermission(0)" )
@@ -12980,7 +12968,7 @@ public changeMap()
     new length = getNextMapName( nextmap_name, charsmax( nextmap_name ) ) + 1;
 
     // change with 1.5 sec. delay
-    set_task( chatTime, "delayedChange", 0, nextmap_name, length );
+    set_task( chatTime, "serverChangeLevel", 0, nextmap_name, length );
 }
 
 stock bool:isAValidMap( mapname[] )
