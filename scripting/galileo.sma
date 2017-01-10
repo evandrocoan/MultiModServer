@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-477";
+new const PLUGIN_VERSION[] = "v4.2.0-478";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -94,7 +94,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-477";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+16
+#define DEBUG_LEVEL 0
 
 
 /**
@@ -1060,6 +1060,7 @@ new const CHOOSE_MAP_MENU_NAME[]            = "gal_menuChooseMap";
 new const CHOOSE_MAP_MENU_QUESTION[]        = "chooseMapQuestion";
 new const CHOOSE_VOTEMAP_MENU_QUESTION[]    = "chooseVoteMapQuestion";
 new const GAME_CRASH_RECREATION_FLAG_FILE[] = "gameCrashRecreationAction.txt";
+new const MAPS_WHERE_THE_SERVER_CRASHED[]   = "maps_where_the_server_probably_crashed.txt";
 
 new bool:g_theRoundEndWhileVoting;
 new bool:g_isTheRoundEnded;
@@ -2058,9 +2059,12 @@ stock configureTheMapcycleSystem( mapToChange[], mapToChangeLength )
             new possibleCurrentMap    [ MAX_MAPNAME_LENGHT ];
             new lastMapChangedFilePath[ MAX_FILE_PATH_LENGHT ];
 
+            setThisMapAsPossibleCrashingMap( mapToChange );
+
             copy( possibleCurrentMap, charsmax( possibleCurrentMap ), possibleNextMap );
             possibleNextMapPosition = map_getNext( g_mapcycleFileListArray, possibleCurrentMap, possibleNextMap );
 
+            // If there is not any map, just to do not setup anything as it is by default the first server's map.
             if( possibleNextMapPosition != -1 )
             {
                 configureTheNextMapPlugin( possibleNextMapPosition, possibleNextMap );
@@ -2093,6 +2097,27 @@ stock configureTheMapcycleSystem( mapToChange[], mapToChangeLength )
         configureTheNextMapPlugin( 0, possibleNextMap );
         LOGGER( 4, "( configureTheMapcycleSystem ) configureTheNextMapPlugin( 0, possibleNextMap )" )
         LOGGER( 4, "" )
+    }
+}
+
+stock setThisMapAsPossibleCrashingMap( mapName[] )
+{
+    LOGGER( 128, "I AM ENTERING ON setThisMapAsPossibleCrashingMap(1) | mapName: %s", mapName )
+
+    new serverCrashedMapsFile;
+    new serverCrashedMapsFilePath[ MAX_FILE_PATH_LENGHT ];
+
+    formatex( serverCrashedMapsFilePath, charsmax( serverCrashedMapsFilePath ), "%s/%s", g_dataDirPath, MAPS_WHERE_THE_SERVER_CRASHED );
+
+    if( !( serverCrashedMapsFile = fopen( serverCrashedMapsFilePath, "a+" ) ) )
+    {
+        LOGGER( 1, "ERROR, setThisMapAsPossibleCrashingMap: Couldn't open the file (file ^"%s^")", serverCrashedMapsFilePath )
+        log_amx(   "ERROR, setThisMapAsPossibleCrashingMap: Couldn't open the file (file ^"%s^")", serverCrashedMapsFilePath );
+    }
+    else
+    {
+        fprintf( serverCrashedMapsFile, "%s^n", mapName );
+        fclose( serverCrashedMapsFile );
     }
 }
 
