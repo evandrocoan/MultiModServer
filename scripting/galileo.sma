@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-484";
+new const PLUGIN_VERSION[] = "v4.2.0-488";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -1810,6 +1810,8 @@ stock configureServerStart()
         g_isToCreateGameCrashFlag = true;
     }
 
+    // To update the current and next map names every server start. This setup must to be run only
+    // at the first time the server is started.
     if( get_pcvar_num( cvar_isFirstServerStart ) )
     {
         new backupMapsFilePath[ MAX_FILE_PATH_LENGHT ];
@@ -1822,13 +1824,54 @@ stock configureServerStart()
         }
         else
         {
-            saveCurrentAndNextMapNames( g_nextMapName );
+            // These data, are already loaded by the configureTheNextMapPlugin(0) function call.
+            saveCurrentAndNextMapNames( g_currentMapName, g_nextMapName );
         }
     }
-    else // update the current and next map names every server start
+}
+
+/**
+ * I must to set next the current and next map at plugin_end(0), because if the next map changed by
+ * a normal server change level, the current and next map names will not be updated.
+ *
+ * I must also to read them on the server start, as currently is being done, because I need to
+ * set up whether we need to change level now or not.
+ *
+ * Notice that this whole algorithm is only ran at the first time the server start, to set properly
+ * the last where the server was before to be closed or crash.
+ */
+stock setTheCurrentAndNextMapSettings()
+{
+    // Must not to be run only at the first time the server is started, because the setup call to
+    // saveCurrentAndNextMapNames(2) was already done by setNextMap(2).
+    if( !get_pcvar_num( cvar_isFirstServerStart ) )
     {
-        saveCurrentAndNextMapNames( g_nextMapName );
+        new nextMapName   [ MAX_MAPNAME_LENGHT ];
+        new currentMapName[ MAX_MAPNAME_LENGHT ];
+
+        // Remember, this is called at plugin_end(0), so the next map will became the the current map.
+        getNextMapName( currentMapName, charsmax( currentMapName ) );
+
+        // These data does not need to be synced/updated with `g_nextMapCyclePosition` because they
+        // are only used at the first time the server is started. Moreover, at the first time the
+        // server has started, these data will be used the find out the correct value for the
+        // variable `g_nextMapCyclePosition` use.
+        if( map_getNext( g_mapcycleFileListArray, currentMapName, nextMapName ) == -1 )
+        {
+            // If we cannot find a valid next map, set it as the current map. Therefore when the
+            // readMapCycle(3) to start looking for a new next map, it will automatically take the
+            // first map, as is does not allow the current map to be set as the next map.
+            saveCurrentAndNextMapNames( currentMapName, currentMapName );
+        }
+        else
+        {
+            saveCurrentAndNextMapNames( currentMapName, nextMapName );
+        }
     }
+
+    // This is the key that tells us if this server has been started or not.
+    set_pcvar_num( cvar_isFirstServerStart, 0 );
+    LOGGER( 2, "( handleServerStart ) IS CHANGING THE CVAR 'gal_server_starting' to '%d'.", 0 )
 }
 
 /**
@@ -1922,10 +1965,6 @@ public handleServerStart( backupMapsFilePath[] )
     LOGGER( 128, "I AM ENTERING ON handleServerStart(1) | backupMapsFilePath: %s", backupMapsFilePath )
     new startAction;
 
-    // this is the key that tells us if this server has been restarted or not
-    set_pcvar_num( cvar_isFirstServerStart, 0 );
-    LOGGER( 2, "( handleServerStart ) IS CHANGING THE CVAR 'gal_server_starting' to '%d'.", 0 )
-
     // take the defined "server start" action
     startAction = get_pcvar_num( cvar_serverStartAction );
     isHandledGameCrashAction( startAction );
@@ -1971,12 +2010,19 @@ public handleServerStart( backupMapsFilePath[] )
 
         configureTheMapcycleSystem( mapToChange, charsmax( mapToChange ) );
 
-        if( mapToChange[ 0 ]
-            && IS_MAP_VALID( mapToChange ) )
+        if( mapToChange[ 0 ] )
         {
-            if( !equali( mapToChange, g_currentMapName ) )
+            if( IS_MAP_VALID( mapToChange ) )
             {
-                serverChangeLevel( mapToChange );
+                if( !equali( mapToChange, g_currentMapName ) )
+                {
+                    serverChangeLevel( mapToChange );
+                }
+            }
+            else
+            {
+                LOGGER( 1, "WARNING, Invalid map read from the current and next map file: ^"%s^"", mapToChange )
+                log_amx(   "WARNING, Invalid map read from the current and next map file: ^"%s^"", mapToChange );
             }
         }
         else // startAction == SERVER_START_MAPVOTE
@@ -2301,7 +2347,7 @@ stock setNextMap( nextMapName[], bool:isToUpdateTheCvar = true )
         copy( g_nextMapName, charsmax( g_nextMapName ), nextMapName );
 
         // update our data file
-        saveCurrentAndNextMapNames( nextMapName );
+        saveCurrentAndNextMapNames( g_currentMapName, nextMapName );
         LOGGER( 2, "( setNextMap ) IS CHANGING THE global variable g_nextMapName to '%s'.", nextMapName )
     }
     else
@@ -2311,7 +2357,11 @@ stock setNextMap( nextMapName[], bool:isToUpdateTheCvar = true )
     }
 }
 
-stock saveCurrentAndNextMapNames( nextMapName[] )
+/**
+ * The next map written to the file `currentAndNextmapNames.dat` is not currently used, let us keep
+ * it for debugging purposes or for some future use.
+ */
+stock saveCurrentAndNextMapNames( currentMapName[], nextMapName[] )
 {
     LOGGER( 128, "I AM ENTERING ON saveCurrentAndNextMapNames(1) | nextMapName: %s", nextMapName )
 
@@ -2324,8 +2374,9 @@ stock saveCurrentAndNextMapNames( nextMapName[] )
     if( backupMapsFile )
     {
         trim( nextMapName );
+        trim( currentMapName );
 
-        fprintf( backupMapsFile, "%s^n", g_currentMapName );
+        fprintf( backupMapsFile, "%s^n", currentMapName );
         fprintf( backupMapsFile, "%s^n", nextMapName );
 
         fclose( backupMapsFile );
@@ -12451,6 +12502,7 @@ public plugin_end()
     new currentIndex;
     new gameCrashActionFilePath[ MAX_FILE_PATH_LENGHT ];
 
+    setTheCurrentAndNextMapSettings();
     map_restoreEndGameCvars();
 
     // Clear Dynamic Arrays
@@ -12749,6 +12801,8 @@ stock readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
     }
 
     LOGGER( 4, "( readMapCycle ) | nextMapName: %s, nextMapNameMaxchars: %d", nextMapName, nextMapNameMaxchars )
+
+    // Setting it to 1 will cause the next map to be `g_mapcycleFileListArray[1]` map.
     g_nextMapCyclePosition = 1;
 }
 
