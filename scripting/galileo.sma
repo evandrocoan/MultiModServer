@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-491";
+new const PLUGIN_VERSION[] = "v4.2.0-494";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -2221,30 +2221,35 @@ stock getRestartsOnTheCurrentMap( mapToChange[] )
         trim( lastMapChangedCountString );
 
         lastMapChangedCount = str_to_num( lastMapChangedCountString );
-        lastMapChangedFile  = fopen( lastMapChangedFilePath, "wt" );
 
-        fprintf( lastMapChangedFile, "%s^n", mapToChange );
+        // If it got here, it could be opened for reading, but could not be opened for writing as in ready on files.
+        if( ( lastMapChangedFile = fopen( lastMapChangedFilePath, "wt" ) ) )
+        {
+            fprintf( lastMapChangedFile, "%s^n", mapToChange );
+
+            if( equali( mapToChange, lastMapChangedName ) )
+            {
+                ++lastMapChangedCount;
+                LOGGER( 4, "( getRestartsOnTheCurrentMap ) mapToChange is equal to lastMapChangedName." )
+            }
+            else
+            {
+                lastMapChangedCount = 0;
+                LOGGER( 4, "( getRestartsOnTheCurrentMap ) mapToChange is not equal to lastMapChangedName." )
+            }
+
+            fprintf( lastMapChangedFile, "%d^n", lastMapChangedCount );
+            fclose( lastMapChangedFile );
+        }
+        else
+        {
+            LOGGER( 1, "ERROR, getRestartsOnTheCurrentMap: Couldn't open the file to write (file ^"%s^")", lastMapChangedFilePath )
+            log_amx(   "ERROR, getRestartsOnTheCurrentMap: Couldn't open the file to write (file ^"%s^")", lastMapChangedFilePath );
+        }
 
         LOGGER( 4, "( getRestartsOnTheCurrentMap ) lastMapChangedName: %s", lastMapChangedName )
         LOGGER( 4, "( getRestartsOnTheCurrentMap ) lastMapChangedCount: %d", lastMapChangedCount )
         LOGGER( 4, "( getRestartsOnTheCurrentMap ) lastMapChangedCountString: %s", lastMapChangedCountString )
-
-        if( equali( mapToChange, lastMapChangedName ) )
-        {
-            ++lastMapChangedCount;
-
-            fprintf( lastMapChangedFile, "%d^n", lastMapChangedCount );
-            LOGGER( 4, "( getRestartsOnTheCurrentMap ) mapToChange is equal to lastMapChangedName." )
-        }
-        else
-        {
-            lastMapChangedCount = 0;
-
-            fprintf( lastMapChangedFile, "0^n" );
-            LOGGER( 4, "( getRestartsOnTheCurrentMap ) mapToChange is not equal to lastMapChangedName." )
-        }
-
-        fclose( lastMapChangedFile );
     }
     else
     {
