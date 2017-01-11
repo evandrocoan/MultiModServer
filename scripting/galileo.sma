@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-490";
+new const PLUGIN_VERSION[] = "v4.2.0-491";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -2052,78 +2052,6 @@ public handleServerStart( backupMapsFilePath[] )
 }
 
 /**
- *
- * @return true when the crashing was properly handled, false otherwise.
- */
-public isHandledGameCrashAction( &startAction )
-{
-    LOGGER( 128, "I AM ENTERING ON isHandledGameCrashAction(1) | startAction: %d", startAction )
-
-    new gameCrashAction;
-    new gameCrashActionFilePath[ MAX_FILE_PATH_LENGHT ];
-
-    gameCrashAction = get_pcvar_num( cvar_gameCrashRecreationAction );
-    generateGameCrashActionFilePath( gameCrashActionFilePath, charsmax( gameCrashActionFilePath ) );
-
-    if( gameCrashAction
-        && file_exists( gameCrashActionFilePath ) )
-    {
-        delete_file( gameCrashActionFilePath );
-
-        switch( gameCrashAction )
-        {
-            case 1: // The server will not change to the last map.
-            {
-                startAction = SERVER_START_NEXTMAP;
-            }
-            case 2: // The server will start a vote changing the map.
-            {
-                startAction = SERVER_START_MAPVOTE;
-            }
-            case 3: // The server will start a vote after the half of the time-left.
-            {
-                // disable any other server start action
-                startAction = 0;
-
-                // force to use only the '1/SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR' time, i.e.,
-                // stop creating an infinity loop of half of half...
-                g_isToCreateGameCrashFlag = false;
-
-                // Wait until the mp_timelimit, etc cvars, to be loaded from the configuration file.
-                set_task( DELAY_TO_WAIT_THE_SERVER_CVARS_TO_BE_LOADED + 10.0, "setGameToFinishAtHalfTime", TASKID_FINISH_GAME_TIME_BY_HALF );
-            }
-        }
-    }
-}
-
-stock generateGameCrashActionFilePath( gameCrashActionFilePath[], charsmaxGameCrashActionFilePath )
-{
-    LOGGER( 128, "I AM ENTERING ON gameCrashActionFilePath(2) | charsmaxGameCrashActionFilePath: %d", charsmaxGameCrashActionFilePath )
-
-    formatex( gameCrashActionFilePath, charsmaxGameCrashActionFilePath, "%s/%s", g_dataDirPath, GAME_CRASH_RECREATION_FLAG_FILE );
-    LOGGER( 1, "( generateGameCrashActionFilePath ) | gameCrashActionFilePath: %s", gameCrashActionFilePath )
-}
-
-/**
- * Save the mp_maxrounds, etc and set them to half of it.
- */
-public setGameToFinishAtHalfTime()
-{
-    LOGGER( 128, "I AM ENTERING ON setGameToFinishAtHalfTime(0)" )
-    saveEndGameLimits();
-
-    tryToSetGameModCvarFloat( cvar_mp_timelimit, g_originalTimelimit / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR );
-    tryToSetGameModCvarNum(   cvar_mp_maxrounds, g_originalMaxRounds / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR );
-    tryToSetGameModCvarNum(   cvar_mp_winlimit,  g_originalWinLimit  / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR );
-    tryToSetGameModCvarNum(   cvar_mp_fraglimit, g_originalFragLimit / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR );
-
-    LOGGER( 2, "( setGameToFinishAtHalfTime ) IS CHANGING THE CVAR 'mp_timelimit' to '%f'.", get_pcvar_float( cvar_mp_timelimit ) )
-    LOGGER( 2, "( setGameToFinishAtHalfTime ) IS CHANGING THE CVAR 'mp_fraglimit' to '%d'.", get_pcvar_num( cvar_mp_fraglimit ) )
-    LOGGER( 2, "( setGameToFinishAtHalfTime ) IS CHANGING THE CVAR 'mp_maxrounds' to '%d'.", get_pcvar_num( cvar_mp_maxrounds ) )
-    LOGGER( 2, "( setGameToFinishAtHalfTime ) IS CHANGING THE CVAR 'mp_winlimit' to '%d'.", get_pcvar_num( cvar_mp_winlimit ) )
-}
-
-/**
  * To detect if the last MAX_SERVER_RESTART_ACCEPTABLE restarts was to the same map. If so, change
  * to the next map right after it.
  *
@@ -2338,6 +2266,78 @@ stock getRestartsOnTheCurrentMap( mapToChange[] )
 
     LOGGER( 1, "    ( getRestartsOnTheCurrentMap ) Returning lastMapChangedCount: %d", lastMapChangedCount )
     return lastMapChangedCount;
+}
+
+/**
+ *
+ * @return true when the crashing was properly handled, false otherwise.
+ */
+public isHandledGameCrashAction( &startAction )
+{
+    LOGGER( 128, "I AM ENTERING ON isHandledGameCrashAction(1) | startAction: %d", startAction )
+
+    new gameCrashAction;
+    new gameCrashActionFilePath[ MAX_FILE_PATH_LENGHT ];
+
+    gameCrashAction = get_pcvar_num( cvar_gameCrashRecreationAction );
+    generateGameCrashActionFilePath( gameCrashActionFilePath, charsmax( gameCrashActionFilePath ) );
+
+    if( gameCrashAction
+        && file_exists( gameCrashActionFilePath ) )
+    {
+        delete_file( gameCrashActionFilePath );
+
+        switch( gameCrashAction )
+        {
+            case 1: // The server will not change to the last map.
+            {
+                startAction = SERVER_START_NEXTMAP;
+            }
+            case 2: // The server will start a vote changing the map.
+            {
+                startAction = SERVER_START_MAPVOTE;
+            }
+            case 3: // The server will start a vote after the half of the time-left.
+            {
+                // disable any other server start action
+                startAction = 0;
+
+                // force to use only the '1/SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR' time, i.e.,
+                // stop creating an infinity loop of half of half...
+                g_isToCreateGameCrashFlag = false;
+
+                // Wait until the mp_timelimit, etc cvars, to be loaded from the configuration file.
+                set_task( DELAY_TO_WAIT_THE_SERVER_CVARS_TO_BE_LOADED + 10.0, "setGameToFinishAtHalfTime", TASKID_FINISH_GAME_TIME_BY_HALF );
+            }
+        }
+    }
+}
+
+stock generateGameCrashActionFilePath( gameCrashActionFilePath[], charsmaxGameCrashActionFilePath )
+{
+    LOGGER( 128, "I AM ENTERING ON gameCrashActionFilePath(2) | charsmaxGameCrashActionFilePath: %d", charsmaxGameCrashActionFilePath )
+
+    formatex( gameCrashActionFilePath, charsmaxGameCrashActionFilePath, "%s/%s", g_dataDirPath, GAME_CRASH_RECREATION_FLAG_FILE );
+    LOGGER( 1, "( generateGameCrashActionFilePath ) | gameCrashActionFilePath: %s", gameCrashActionFilePath )
+}
+
+/**
+ * Save the mp_maxrounds, etc and set them to half of it.
+ */
+public setGameToFinishAtHalfTime()
+{
+    LOGGER( 128, "I AM ENTERING ON setGameToFinishAtHalfTime(0)" )
+    saveEndGameLimits();
+
+    tryToSetGameModCvarFloat( cvar_mp_timelimit, g_originalTimelimit / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR );
+    tryToSetGameModCvarNum(   cvar_mp_maxrounds, g_originalMaxRounds / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR );
+    tryToSetGameModCvarNum(   cvar_mp_winlimit,  g_originalWinLimit  / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR );
+    tryToSetGameModCvarNum(   cvar_mp_fraglimit, g_originalFragLimit / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR );
+
+    LOGGER( 2, "( setGameToFinishAtHalfTime ) IS CHANGING THE CVAR 'mp_timelimit' to '%f'.", get_pcvar_float( cvar_mp_timelimit ) )
+    LOGGER( 2, "( setGameToFinishAtHalfTime ) IS CHANGING THE CVAR 'mp_fraglimit' to '%d'.", get_pcvar_num( cvar_mp_fraglimit ) )
+    LOGGER( 2, "( setGameToFinishAtHalfTime ) IS CHANGING THE CVAR 'mp_maxrounds' to '%d'.", get_pcvar_num( cvar_mp_maxrounds ) )
+    LOGGER( 2, "( setGameToFinishAtHalfTime ) IS CHANGING THE CVAR 'mp_winlimit' to '%d'.", get_pcvar_num( cvar_mp_winlimit ) )
 }
 
 /**
