@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-496";
+new const PLUGIN_VERSION[] = "v4.2.0-497";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -1887,29 +1887,43 @@ stock configureServerMapChange()
 stock configureServerStart()
 {
     LOGGER( 128, "I AM ENTERING ON configureServerStart(0)" )
+    new startAction;
 
     if( get_pcvar_num( cvar_gameCrashRecreationAction ) )
     {
         g_isToCreateGameCrashFlag = true;
     }
 
+    // take the defined "server start" action
+    startAction = get_pcvar_num( cvar_serverStartAction );
+
     // To update the current and next map names every server start. This setup must to be run only
     // at the first time the server is started.
-    if( get_pcvar_num( cvar_isFirstServerStart ) == FIRST_SERVER_START )
+    if( startAction )
     {
-        new backupMapsFilePath[ MAX_FILE_PATH_LENGHT ];
-        formatex( backupMapsFilePath, charsmax( backupMapsFilePath ), "%s/%s", g_dataDirPath, CURRENT_AND_NEXTMAP_FILE_NAME );
+        if( get_pcvar_num( cvar_isFirstServerStart ) == FIRST_SERVER_START )
+        {
+            new backupMapsFilePath[ MAX_FILE_PATH_LENGHT ];
+            formatex( backupMapsFilePath, charsmax( backupMapsFilePath ), "%s/%s", g_dataDirPath, CURRENT_AND_NEXTMAP_FILE_NAME );
 
-        // If the data file does not exists yet, we cannot handle the server start.
-        if( file_exists( backupMapsFilePath ) )
-        {
-            handleServerStart( backupMapsFilePath );
+            // If the data file does not exists yet, we cannot handle the server start.
+            if( file_exists( backupMapsFilePath ) )
+            {
+                handleServerStart( backupMapsFilePath, startAction );
+            }
+            else
+            {
+                // These data, are already loaded by the loadNextMapPluginSetttings(0) function call.
+                saveCurrentAndNextMapNames( g_currentMapName, g_nextMapName, true );
+            }
         }
-        else
-        {
-            // These data, are already loaded by the loadNextMapPluginSetttings(0) function call.
-            saveCurrentAndNextMapNames( g_currentMapName, g_nextMapName, true );
-        }
+    }
+    else
+    {
+        set_pcvar_num( cvar_isFirstServerStart, SECOND_SERVER_START );
+
+        LOGGER( 2, "( configureServerStart ) IS CHANGING THE CVAR 'gal_server_starting' to '%d'.", \
+                get_pcvar_num( cvar_isFirstServerStart ) )
     }
 }
 
@@ -1988,99 +2002,92 @@ stock setTheCurrentAndNextMapSettings()
  *
  * 4 - change to a randomly selected map from your nominatable map list
  */
-public handleServerStart( backupMapsFilePath[] )
+public handleServerStart( backupMapsFilePath[], startAction )
 {
     LOGGER( 128, "I AM ENTERING ON handleServerStart(1) | backupMapsFilePath: %s", backupMapsFilePath )
-    new startAction;
-
-    // take the defined "server start" action
-    startAction = get_pcvar_num( cvar_serverStartAction );
     isHandledGameCrashAction( startAction );
 
-    if( startAction )
+    new mapToChange[ MAX_MAPNAME_LENGHT ];
+    new nextMapName[ MAX_MAPNAME_LENGHT ];
+
+    new mapCyclePosition;
+    new mapCyclePositionString[ 10 ];
+
+    if( startAction == SERVER_START_CURRENTMAP
+        || startAction == SERVER_START_NEXTMAP )
     {
-        new mapToChange[ MAX_MAPNAME_LENGHT ];
-        new nextMapName[ MAX_MAPNAME_LENGHT ];
+        new backupMapsFile = fopen( backupMapsFilePath, "rt" );
 
-        new mapCyclePosition;
-        new mapCyclePositionString[ 10 ];
-
-        if( startAction == SERVER_START_CURRENTMAP
-            || startAction == SERVER_START_NEXTMAP )
+        if( backupMapsFile )
         {
-            new backupMapsFile = fopen( backupMapsFilePath, "rt" );
+            fgets( backupMapsFile, mapToChange, charsmax( mapToChange ) );
+            fgets( backupMapsFile, nextMapName, charsmax( nextMapName )  );
+            fgets( backupMapsFile, mapCyclePositionString, charsmax( mapCyclePositionString ) );
 
-            if( backupMapsFile )
+            trim( mapToChange );
+            trim( nextMapName );
+            trim( mapCyclePositionString );
+
+            mapCyclePosition = str_to_num( mapCyclePositionString );
+
+            if( startAction == SERVER_START_NEXTMAP )
             {
-                fgets( backupMapsFile, mapToChange, charsmax( mapToChange ) );
-                fgets( backupMapsFile, nextMapName, charsmax( nextMapName )  );
-                fgets( backupMapsFile, mapCyclePositionString, charsmax( mapCyclePositionString ) );
+                copy( mapToChange, charsmax( mapToChange ), nextMapName );
 
-                trim( mapToChange );
-                trim( nextMapName );
-                trim( mapCyclePositionString );
-
-                mapCyclePosition = str_to_num( mapCyclePositionString );
-
-                if( startAction == SERVER_START_NEXTMAP )
-                {
-                    copy( mapToChange, charsmax( mapToChange ), nextMapName );
-
-                    // If there is not found a next map, the current map name on `nextMapName` will to be
-                    // set as the first map cycle map name.
-                    map_getNext( g_mapcycleFileListArray, mapToChange, nextMapName );
-                }
-
-                fclose( backupMapsFile );
+                // If there is not found a next map, the current map name on `nextMapName` will to be
+                // set as the first map cycle map name.
+                map_getNext( g_mapcycleFileListArray, mapToChange, nextMapName );
             }
+
+            fclose( backupMapsFile );
         }
-        else if( startAction == SERVER_START_RANDOMMAP ) // pick a random map from allowable nominations
+    }
+    else if( startAction == SERVER_START_RANDOMMAP ) // pick a random map from allowable nominations
+    {
+        // if noms aren't allowed, the nomination list hasn't already been loaded
+        if( get_pcvar_num( cvar_nomPlayerAllowance ) == 0 )
         {
-            // if noms aren't allowed, the nomination list hasn't already been loaded
-            if( get_pcvar_num( cvar_nomPlayerAllowance ) == 0 )
-            {
-                loadNominationList();
-            }
-
-            new nominationsMapsCount = ArraySize( g_nominationLoadedMapsArray );
-
-            if( nominationsMapsCount )
-            {
-                GET_MAP_NAME( g_nominationLoadedMapsArray, random_num( 0, nominationsMapsCount - 1 ), mapToChange )
-            }
+            loadNominationList();
         }
 
-        // When this is called more than `MAX_SERVER_RESTART_ACCEPTABLE` on the same mapToChange, we
-        // know crash trouble is probably expecting us.
-        configureTheMapcycleSystem( mapToChange, nextMapName, mapCyclePosition );
+        new nominationsMapsCount = ArraySize( g_nominationLoadedMapsArray );
 
-        if( mapToChange[ 0 ] )
+        if( nominationsMapsCount )
         {
-            if( IS_MAP_VALID( mapToChange ) )
+            GET_MAP_NAME( g_nominationLoadedMapsArray, random_num( 0, nominationsMapsCount - 1 ), mapToChange )
+        }
+    }
+
+    // When this is called more than `MAX_SERVER_RESTART_ACCEPTABLE` on the same mapToChange, we
+    // know crash trouble is probably expecting us.
+    configureTheMapcycleSystem( mapToChange, nextMapName, mapCyclePosition );
+
+    if( mapToChange[ 0 ] )
+    {
+        if( IS_MAP_VALID( mapToChange ) )
+        {
+            // If the default started server map is the last current map, we need to set the server
+            // state as already restarted.
+            if( equali( mapToChange, g_currentMapName ) )
             {
-                // If the default started server map is the last current map, we need to set the server
-                // state as already restarted.
-                if( equali( mapToChange, g_currentMapName ) )
-                {
-                    // This is the key that tells us if this server has been started or not.
-                    set_pcvar_num( cvar_isFirstServerStart, AFTER_READ_MAPCYCLE );
-                    LOGGER( 2, "( handleServerStart ) IS CHANGING THE CVAR 'gal_server_starting' to '%d'.", AFTER_READ_MAPCYCLE )
-                }
-                else
-                {
-                    serverChangeLevel( mapToChange );
-                }
+                // This is the key that tells us if this server has been started or not.
+                set_pcvar_num( cvar_isFirstServerStart, AFTER_READ_MAPCYCLE );
+                LOGGER( 2, "( handleServerStart ) IS CHANGING THE CVAR 'gal_server_starting' to '%d'.", AFTER_READ_MAPCYCLE )
             }
             else
             {
-                LOGGER( 1, "WARNING, Invalid map read from the current and next map file: ^"%s^"", mapToChange )
-                log_amx(   "WARNING, Invalid map read from the current and next map file: ^"%s^"", mapToChange );
+                serverChangeLevel( mapToChange );
             }
         }
-        else // startAction == SERVER_START_MAPVOTE
+        else
         {
-            vote_manageEarlyStart();
+            LOGGER( 1, "WARNING, Invalid map read from the current and next map file: ^"%s^"", mapToChange )
+            log_amx(   "WARNING, Invalid map read from the current and next map file: ^"%s^"", mapToChange );
         }
+    }
+    else // startAction == SERVER_START_MAPVOTE
+    {
+        vote_manageEarlyStart();
     }
 }
 
