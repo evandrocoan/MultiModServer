@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-488";
+new const PLUGIN_VERSION[] = "v4.2.0-489";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -94,7 +94,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-488";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 0
+#define DEBUG_LEVEL 1
 
 
 /**
@@ -1801,79 +1801,6 @@ stock configureTheWhiteListFeature()
     }
 }
 
-stock configureServerStart()
-{
-    LOGGER( 128, "I AM ENTERING ON configureServerStart(0)" )
-
-    if( get_pcvar_num( cvar_gameCrashRecreationAction ) )
-    {
-        g_isToCreateGameCrashFlag = true;
-    }
-
-    // To update the current and next map names every server start. This setup must to be run only
-    // at the first time the server is started.
-    if( get_pcvar_num( cvar_isFirstServerStart ) )
-    {
-        new backupMapsFilePath[ MAX_FILE_PATH_LENGHT ];
-        formatex( backupMapsFilePath, charsmax( backupMapsFilePath ), "%s/%s", g_dataDirPath, CURRENT_AND_NEXTMAP_FILE_NAME );
-
-        // If the data file does not exists yet, we cannot handle the server start.
-        if( file_exists( backupMapsFilePath ) )
-        {
-            handleServerStart( backupMapsFilePath );
-        }
-        else
-        {
-            // These data, are already loaded by the configureTheNextMapPlugin(0) function call.
-            saveCurrentAndNextMapNames( g_currentMapName, g_nextMapName );
-        }
-    }
-}
-
-/**
- * I must to set next the current and next map at plugin_end(0), because if the next map changed by
- * a normal server change level, the current and next map names will not be updated.
- *
- * I must also to read them on the server start, as currently is being done, because I need to
- * set up whether we need to change level now or not.
- *
- * Notice that this whole algorithm is only ran at the first time the server start, to set properly
- * the last where the server was before to be closed or crash.
- */
-stock setTheCurrentAndNextMapSettings()
-{
-    // Must not to be run only at the first time the server is started, because the setup call to
-    // saveCurrentAndNextMapNames(2) was already done by setNextMap(2).
-    if( !get_pcvar_num( cvar_isFirstServerStart ) )
-    {
-        new nextMapName   [ MAX_MAPNAME_LENGHT ];
-        new currentMapName[ MAX_MAPNAME_LENGHT ];
-
-        // Remember, this is called at plugin_end(0), so the next map will became the the current map.
-        getNextMapName( currentMapName, charsmax( currentMapName ) );
-
-        // These data does not need to be synced/updated with `g_nextMapCyclePosition` because they
-        // are only used at the first time the server is started. Moreover, at the first time the
-        // server has started, these data will be used the find out the correct value for the
-        // variable `g_nextMapCyclePosition` use.
-        if( map_getNext( g_mapcycleFileListArray, currentMapName, nextMapName ) == -1 )
-        {
-            // If we cannot find a valid next map, set it as the current map. Therefore when the
-            // readMapCycle(3) to start looking for a new next map, it will automatically take the
-            // first map, as is does not allow the current map to be set as the next map.
-            saveCurrentAndNextMapNames( currentMapName, currentMapName );
-        }
-        else
-        {
-            saveCurrentAndNextMapNames( currentMapName, nextMapName );
-        }
-    }
-
-    // This is the key that tells us if this server has been started or not.
-    set_pcvar_num( cvar_isFirstServerStart, 0 );
-    LOGGER( 2, "( handleServerStart ) IS CHANGING THE CVAR 'gal_server_starting' to '%d'.", 0 )
-}
-
 /**
  * To cache some high used server cvars.
  */
@@ -1944,6 +1871,86 @@ stock configureServerMapChange()
 }
 
 /**
+ * Notice that this whole algorithm is only ran at the first time the server start, to set properly
+ * the last where the server was before to be closed or crash.
+ *
+ * I must also to read them on the server start, as currently is being done, because I need to
+ * set up whether we need to change level now or not.
+ */
+stock configureServerStart()
+{
+    LOGGER( 128, "I AM ENTERING ON configureServerStart(0)" )
+
+    if( get_pcvar_num( cvar_gameCrashRecreationAction ) )
+    {
+        g_isToCreateGameCrashFlag = true;
+    }
+
+    // To update the current and next map names every server start. This setup must to be run only
+    // at the first time the server is started.
+    if( get_pcvar_num( cvar_isFirstServerStart ) )
+    {
+        new backupMapsFilePath[ MAX_FILE_PATH_LENGHT ];
+        formatex( backupMapsFilePath, charsmax( backupMapsFilePath ), "%s/%s", g_dataDirPath, CURRENT_AND_NEXTMAP_FILE_NAME );
+
+        // If the data file does not exists yet, we cannot handle the server start.
+        if( file_exists( backupMapsFilePath ) )
+        {
+            handleServerStart( backupMapsFilePath );
+        }
+        else
+        {
+            // These data, are already loaded by the configureTheNextMapPlugin(0) function call.
+            saveCurrentAndNextMapNames( g_currentMapName, g_nextMapName );
+        }
+    }
+}
+
+/**
+ * I must to set next the current and next map at plugin_end(0), because if the next map changed by
+ * a normal server change level, the current and next map names will not be updated.
+ *
+ * It is impossible to detect to which map the server was changed when the server admin does `amx_map`
+ * or any other command to change the level to a specific map.
+ *
+ * However we do not need to worry about such commands because if the admin does so, the map will be
+ * changed to just before the map they were before the change level command to be performed.
+ */
+stock setTheCurrentAndNextMapSettings()
+{
+    // Must not to be run only at the first time the server is started, because the setup call to
+    // saveCurrentAndNextMapNames(2) was already done by setNextMap(2).
+    if( !get_pcvar_num( cvar_isFirstServerStart ) )
+    {
+        new nextMapName   [ MAX_MAPNAME_LENGHT ];
+        new currentMapName[ MAX_MAPNAME_LENGHT ];
+
+        // Remember, this is called at plugin_end(0), so the next map will became the the current map.
+        getNextMapName( currentMapName, charsmax( currentMapName ) );
+
+        // These data does not need to be synced/updated with `g_nextMapCyclePosition` because they
+        // are only used at the first time the server is started. Moreover, at the first time the
+        // server has started, these data will be used the find out the correct value for the
+        // variable `g_nextMapCyclePosition` use.
+        if( map_getNext( g_mapcycleFileListArray, currentMapName, nextMapName ) == -1 )
+        {
+            // If we cannot find a valid next map, set it as the current map. Therefore when the
+            // readMapCycle(3) to start looking for a new next map, it will automatically take the
+            // first map, as is does not allow the current map to be set as the next map.
+            saveCurrentAndNextMapNames( currentMapName, currentMapName );
+        }
+        else
+        {
+            saveCurrentAndNextMapNames( currentMapName, nextMapName );
+        }
+    }
+
+    // This is the key that tells us if this server has been started or not.
+    set_pcvar_num( cvar_isFirstServerStart, 0 );
+    LOGGER( 2, "( handleServerStart ) IS CHANGING THE CVAR 'gal_server_starting' to '%d'.", 0 )
+}
+
+/**
  * Indicates which action to take when it is detected that the server
  * has been 'externally restarted'. By 'externally restarted', is mean to
  * say the Computer's Operational System (Linux) or Server Manager (HLSW),
@@ -2008,13 +2015,23 @@ public handleServerStart( backupMapsFilePath[] )
             }
         }
 
+        // When this is called more than `MAX_SERVER_RESTART_ACCEPTABLE` on the same mapToChange, we
+        // know crash trouble is probably expecting us.
         configureTheMapcycleSystem( mapToChange, charsmax( mapToChange ) );
 
         if( mapToChange[ 0 ] )
         {
             if( IS_MAP_VALID( mapToChange ) )
             {
-                if( !equali( mapToChange, g_currentMapName ) )
+                // If the default started server map is the last current map, we need to set the server
+                // state as already restarted.
+                if( equali( mapToChange, g_currentMapName ) )
+                {
+                    // This is the key that tells us if this server has been started or not.
+                    set_pcvar_num( cvar_isFirstServerStart, 0 );
+                    LOGGER( 2, "( handleServerStart ) IS CHANGING THE CVAR 'gal_server_starting' to '%d'.", 0 )
+                }
+                else
                 {
                     serverChangeLevel( mapToChange );
                 }
@@ -2131,6 +2148,7 @@ stock configureTheMapcycleSystem( mapToChange[], mapToChangeLength )
 
     if( restartsOnTheCurrentMap > MAX_SERVER_RESTART_ACCEPTABLE )
     {
+        new lastMapChangedFile;
         new possibleCurrentMap    [ MAX_MAPNAME_LENGHT ];
         new lastMapChangedFilePath[ MAX_FILE_PATH_LENGHT ];
 
@@ -2155,15 +2173,21 @@ stock configureTheMapcycleSystem( mapToChange[], mapToChangeLength )
         copy( mapToChange, mapToChangeLength, possibleCurrentMap );
         formatex( lastMapChangedFilePath, charsmax( lastMapChangedFilePath ), "%s/%s", g_dataDirPath, LAST_CHANGE_MAP_FILE_NAME );
 
-        if( file_exists( lastMapChangedFilePath ) )
+        if( ( lastMapChangedFile = fopen( lastMapChangedFilePath, "wt" ) ) )
         {
-            delete_file( lastMapChangedFilePath );
+            fprintf( lastMapChangedFile, "nothing_to_be_added_by^n0^n" );
+            fclose( lastMapChangedFile );
+        }
+        else
+        {
+            LOGGER( 1, "ERROR, getRestartsOnTheCurrentMap: Couldn't open the file to write (file ^"%s^")", lastMapChangedFilePath )
+            log_amx(   "ERROR, getRestartsOnTheCurrentMap: Couldn't open the file to write (file ^"%s^")", lastMapChangedFilePath );
         }
 
-        write_file( lastMapChangedFilePath, "nothing_to_be_added_by^n0" );
         log_message( "" );
-        log_message( "The server is jumping to the next map after the current map due \
-                more than %d restarts on the map %s.", MAX_SERVER_RESTART_ACCEPTABLE, mapToChange );
+        log_message( "The server is jumping to the next map after the current map due more than %d restarts on the map %s.",
+                MAX_SERVER_RESTART_ACCEPTABLE, mapToChange );
+
         log_message( "" );
     }
     else if( possibleNextMapPosition == -1 )
@@ -2241,23 +2265,14 @@ stock getRestartsOnTheCurrentMap( mapToChange[] )
 
     formatex( lastMapChangedFilePath, charsmax( lastMapChangedFilePath ), "%s/%s", g_dataDirPath, LAST_CHANGE_MAP_FILE_NAME );
 
-    if( !( lastMapChangedFile = fopen( lastMapChangedFilePath, "rt" ) ) )
-    {
-        if( file_exists( lastMapChangedFilePath ) )
-        {
-            delete_file( lastMapChangedFilePath );
-        }
-
-        write_file( lastMapChangedFilePath, "nothing_to_be_added_by^n0^n" );
-    }
-
     LOGGER( 4, "( getRestartsOnTheCurrentMap ) mapToChange: %s,", mapToChange )
     LOGGER( 4, "( getRestartsOnTheCurrentMap ) lastMapChangedFilePath: %s", lastMapChangedFilePath )
 
-    if( lastMapChangedFile )
+    if( ( lastMapChangedFile = fopen( lastMapChangedFilePath, "rt" ) ) )
     {
-        fgets(  lastMapChangedFile, lastMapChangedName, charsmax( lastMapChangedName ) );
-        fgets(  lastMapChangedFile, lastMapChangedCountString, charsmax( lastMapChangedCountString ) );
+        fgets( lastMapChangedFile, lastMapChangedName       , charsmax( lastMapChangedName        ) );
+        fgets( lastMapChangedFile, lastMapChangedCountString, charsmax( lastMapChangedCountString ) );
+
         fclose( lastMapChangedFile );
 
         trim( mapToChange );
@@ -2268,6 +2283,7 @@ stock getRestartsOnTheCurrentMap( mapToChange[] )
         lastMapChangedFile  = fopen( lastMapChangedFilePath, "wt" );
 
         fprintf( lastMapChangedFile, "%s^n", mapToChange );
+
         LOGGER( 4, "( getRestartsOnTheCurrentMap ) lastMapChangedName: %s", lastMapChangedName )
         LOGGER( 4, "( getRestartsOnTheCurrentMap ) lastMapChangedCount: %d", lastMapChangedCount )
         LOGGER( 4, "( getRestartsOnTheCurrentMap ) lastMapChangedCountString: %s", lastMapChangedCountString )
@@ -2283,11 +2299,28 @@ stock getRestartsOnTheCurrentMap( mapToChange[] )
         {
             lastMapChangedCount = 0;
 
-            fprintf( lastMapChangedFile, "^n0" );
+            fprintf( lastMapChangedFile, "0^n" );
             LOGGER( 4, "( getRestartsOnTheCurrentMap ) mapToChange is not equal to lastMapChangedName." )
         }
 
         fclose( lastMapChangedFile );
+    }
+    else
+    {
+        LOGGER( 1, "ERROR, getRestartsOnTheCurrentMap: Couldn't open the file to read (file ^"%s^")", lastMapChangedFilePath )
+        log_amx(   "ERROR, getRestartsOnTheCurrentMap: Couldn't open the file to read (file ^"%s^")", lastMapChangedFilePath );
+
+        if( ( lastMapChangedFile = fopen( lastMapChangedFilePath, "wt" ) ) )
+        {
+            fprintf( lastMapChangedFile, "nothing_to_be_added_by^n0^n" );
+            fclose( lastMapChangedFile );
+        }
+        else
+        {
+            LOGGER( 1, "ERROR, getRestartsOnTheCurrentMap: Couldn't open the file to write (file ^"%s^")", lastMapChangedFilePath )
+            log_amx(   "ERROR, getRestartsOnTheCurrentMap: Couldn't open the file to write (file ^"%s^")", lastMapChangedFilePath );
+        }
+
     }
 
     LOGGER( 1, "    ( getRestartsOnTheCurrentMap ) Returning lastMapChangedCount: %d", lastMapChangedCount )
