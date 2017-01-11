@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-497";
+new const PLUGIN_VERSION[] = "v4.2.0-498";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -2318,6 +2318,85 @@ stock getRestartsOnTheCurrentMap( mapToChange[] )
 }
 
 /**
+ * Internally set the next map on `g_nextMapName` and save to the file `currentAndNextmapNames.dat`,
+ * the current map name and the here provided nextMapName.
+ */
+stock setNextMap( currentMapName[], nextMapName[], bool:isToUpdateTheCvar = true, bool:forceUpdateFile = false )
+{
+    LOGGER( 128, "I AM ENTERING ON setNextMap(4) | nextMapName: %s", nextMapName )
+
+    // While the `IS_DISABLED_VOTEMAP_EXIT` bit flag is set, we cannot allow any decisions.
+    if( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXIT )
+    {
+        copy( g_invokerVoteMapNameToDecide, charsmax( g_invokerVoteMapNameToDecide ), nextMapName );
+
+        LOGGER( 1, "    ( setNextMap ) Just returning/blocking, g_voteMapStatus: %d", g_voteMapStatus )
+        return;
+    }
+
+    if( IS_MAP_VALID( nextMapName ) )
+    {
+        // set the queryable cvar
+        if( isToUpdateTheCvar
+            || !( get_pcvar_num( cvar_nextMapChangeAnnounce )
+                  && get_pcvar_num( cvar_endOfMapVote ) ) )
+        {
+            LOGGER( 2, "( setNextMap ) IS CHANGING THE CVAR 'amx_nextmap' to '%s'.", nextMapName )
+            set_pcvar_string( cvar_amx_nextmap, nextMapName );
+
+        #if IS_TO_ENABLE_SVEN_COOP_SUPPPORT > 0
+            tryToSetGameModCvarString( cvar_mp_nextmap_cycle, nextMapName );
+        #endif
+        }
+
+        copy( g_nextMapName, charsmax( g_nextMapName ), nextMapName );
+
+        // update our data file
+        saveCurrentAndNextMapNames( currentMapName, nextMapName, forceUpdateFile );
+        LOGGER( 2, "( setNextMap ) IS CHANGING THE global variable g_nextMapName to '%s'.", nextMapName )
+    }
+    else
+    {
+        LOGGER( 1, "AMX_ERR_PARAMS, %s, was tried to set a invalid next-map!", nextMapName )
+        log_error( AMX_ERR_PARAMS, "%s, was tried to set a invalid next-map!", nextMapName );
+    }
+}
+
+/**
+ * The next map written to the file `currentAndNextmapNames.dat` is currently used for the option
+ * `startAction == SERVER_START_NEXTMAP` and debugging purposes.
+ */
+stock saveCurrentAndNextMapNames( currentMapName[], nextMapName[], bool:forceUpdateFile = false )
+{
+    LOGGER( 128, "I AM ENTERING ON saveCurrentAndNextMapNames(3) | currentMapName: %s, nextMapName: %s", currentMapName, nextMapName )
+
+    // Must not to be run only at the first time the server is started, because the current map pointed
+    // will be instantly changed, neither need to be saved to be restored later, as it is always opened
+    // at the server start.
+    if( get_pcvar_num( cvar_isFirstServerStart ) == AFTER_READ_MAPCYCLE
+        || forceUpdateFile )
+    {
+        new backupMapsFile;
+        new backupMapsFilePath[ MAX_FILE_PATH_LENGHT ];
+
+        formatex( backupMapsFilePath, charsmax( backupMapsFilePath ), "%s/%s", g_dataDirPath, CURRENT_AND_NEXTMAP_FILE_NAME );
+        backupMapsFile = fopen( backupMapsFilePath, "wt" );
+
+        if( backupMapsFile )
+        {
+            trim( nextMapName );
+            trim( currentMapName );
+
+            fprintf( backupMapsFile, "%s^n", currentMapName );
+            fprintf( backupMapsFile, "%s^n", nextMapName );
+            fprintf( backupMapsFile, "%d^n", g_nextMapCyclePosition );
+
+            fclose( backupMapsFile );
+        }
+    }
+}
+
+/**
  *
  * @return true when the crashing was properly handled, false otherwise.
  */
@@ -2405,85 +2484,6 @@ public startNonForcedVoting()
 {
     LOGGER( 128, "I AM ENTERING ON startNonForcedVoting(0)" )
     vote_startDirector( false );
-}
-
-/**
- * Internally set the next map on `g_nextMapName` and save to the file `currentAndNextmapNames.dat`,
- * the current map name and the here provided nextMapName.
- */
-stock setNextMap( currentMapName[], nextMapName[], bool:isToUpdateTheCvar = true, bool:forceUpdateFile = false )
-{
-    LOGGER( 128, "I AM ENTERING ON setNextMap(4) | nextMapName: %s", nextMapName )
-
-    // While the `IS_DISABLED_VOTEMAP_EXIT` bit flag is set, we cannot allow any decisions.
-    if( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXIT )
-    {
-        copy( g_invokerVoteMapNameToDecide, charsmax( g_invokerVoteMapNameToDecide ), nextMapName );
-
-        LOGGER( 1, "    ( setNextMap ) Just returning/blocking, g_voteMapStatus: %d", g_voteMapStatus )
-        return;
-    }
-
-    if( IS_MAP_VALID( nextMapName ) )
-    {
-        // set the queryable cvar
-        if( isToUpdateTheCvar
-            || !( get_pcvar_num( cvar_nextMapChangeAnnounce )
-                  && get_pcvar_num( cvar_endOfMapVote ) ) )
-        {
-            LOGGER( 2, "( setNextMap ) IS CHANGING THE CVAR 'amx_nextmap' to '%s'.", nextMapName )
-            set_pcvar_string( cvar_amx_nextmap, nextMapName );
-
-        #if IS_TO_ENABLE_SVEN_COOP_SUPPPORT > 0
-            tryToSetGameModCvarString( cvar_mp_nextmap_cycle, nextMapName );
-        #endif
-        }
-
-        copy( g_nextMapName, charsmax( g_nextMapName ), nextMapName );
-
-        // update our data file
-        saveCurrentAndNextMapNames( currentMapName, nextMapName, forceUpdateFile );
-        LOGGER( 2, "( setNextMap ) IS CHANGING THE global variable g_nextMapName to '%s'.", nextMapName )
-    }
-    else
-    {
-        LOGGER( 1, "AMX_ERR_PARAMS, %s, was tried to set a invalid next-map!", nextMapName )
-        log_error( AMX_ERR_PARAMS, "%s, was tried to set a invalid next-map!", nextMapName );
-    }
-}
-
-/**
- * The next map written to the file `currentAndNextmapNames.dat` is currently used for the option
- * `startAction == SERVER_START_NEXTMAP` and debugging purposes.
- */
-stock saveCurrentAndNextMapNames( currentMapName[], nextMapName[], bool:forceUpdateFile = false )
-{
-    LOGGER( 128, "I AM ENTERING ON saveCurrentAndNextMapNames(3) | currentMapName: %s, nextMapName: %s", currentMapName, nextMapName )
-
-    // Must not to be run only at the first time the server is started, because the current map pointed
-    // will be instantly changed, neither need to be saved to be restored later, as it is always opened
-    // at the server start.
-    if( get_pcvar_num( cvar_isFirstServerStart ) == AFTER_READ_MAPCYCLE
-        || forceUpdateFile )
-    {
-        new backupMapsFile;
-        new backupMapsFilePath[ MAX_FILE_PATH_LENGHT ];
-
-        formatex( backupMapsFilePath, charsmax( backupMapsFilePath ), "%s/%s", g_dataDirPath, CURRENT_AND_NEXTMAP_FILE_NAME );
-        backupMapsFile = fopen( backupMapsFilePath, "wt" );
-
-        if( backupMapsFile )
-        {
-            trim( nextMapName );
-            trim( currentMapName );
-
-            fprintf( backupMapsFile, "%s^n", currentMapName );
-            fprintf( backupMapsFile, "%s^n", nextMapName );
-            fprintf( backupMapsFile, "%d^n", g_nextMapCyclePosition );
-
-            fclose( backupMapsFile );
-        }
-    }
 }
 
 /**
