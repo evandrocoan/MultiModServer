@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-483";
+new const PLUGIN_VERSION[] = "v4.2.0-484";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -1815,6 +1815,7 @@ stock configureServerStart()
         new backupMapsFilePath[ MAX_FILE_PATH_LENGHT ];
         formatex( backupMapsFilePath, charsmax( backupMapsFilePath ), "%s/%s", g_dataDirPath, CURRENT_AND_NEXTMAP_FILE_NAME );
 
+        // If the data file does not exists yet, we cannot handle the server start.
         if( file_exists( backupMapsFilePath ) )
         {
             handleServerStart( backupMapsFilePath );
@@ -1906,10 +1907,14 @@ stock configureServerMapChange()
  * used the server command 'quit' and reopened the server.
  *
  * 0 - stay on the map the server started with
+ *
  * 1 - change to the map that was being played when the server was reset
+ *
  * 2 - change to what would have been the next map had the server not
  *     been restarted ( if the next map isn't known, this acts like 3 )
+ *
  * 3 - start an early map vote after the first two minutes
+ *
  * 4 - change to a randomly selected map from your nominatable map list
  */
 public handleServerStart( backupMapsFilePath[] )
@@ -2054,8 +2059,10 @@ public setGameToFinishAtHalfTime()
 }
 
 /**
- * To configure the mapcycle system and to detect if the last MAX_SERVER_RESTART_ACCEPTABLE restarts
- * was to the same map. If so, change to the next map right after it.
+ * To detect if the last MAX_SERVER_RESTART_ACCEPTABLE restarts was to the same map. If so, change
+ * to the next map right after it.
+ *
+ * @param mapToChange is the first map read from `currentAndNextmapNames.dat`, i.e., the supposed last current map.
  */
 stock configureTheMapcycleSystem( mapToChange[], mapToChangeLength )
 {
@@ -2063,6 +2070,9 @@ stock configureTheMapcycleSystem( mapToChange[], mapToChangeLength )
 
     new possibleNextMapPosition;
     new restartsOnTheCurrentMap;
+
+    // This is the possibleNextMap because if the current map is restarted too much, this possibleNextMap
+    // will the the mapToChange, which in seconds will became the current map.
     new possibleNextMap[ MAX_MAPNAME_LENGHT ];
 
     restartsOnTheCurrentMap = getRestartsOnTheCurrentMap( mapToChange );
@@ -2147,13 +2157,26 @@ stock setThisMapAsPossibleCrashingMap( mapName[] )
 
 stock configureTheNextMapPlugin( possibleNextMapPosition, possibleNextMap[]  )
 {
-    LOGGER( 128 + 4, "I AM ENTERING ON configureTheNextMapPlugin(2) | possibleNextMapPosition: %d, possibleNextMap: %s", \
-            possibleNextMapPosition, possibleNextMap )
+    LOGGER( 128, "I AM ENTERING ON configureTheNextMapPlugin(2)" )
+    LOGGER( 4, "possibleNextMapPosition: %d, possibleNextMap: %s", possibleNextMapPosition, possibleNextMap )
 
     new mapcycleFilePath[ MAX_FILE_PATH_LENGHT ];
-
     get_pcvar_string( cvar_mapcyclefile, mapcycleFilePath, charsmax( mapcycleFilePath ) );
-    g_nextMapCyclePosition = possibleNextMapPosition;
+
+    if( !( g_nextMapCyclePosition = possibleNextMapPosition ) )
+    {
+        // When we are setting the `possibleNextMapPosition` to 0, we are restarting the map cycle
+        // from its first position. This happens every time we complete a map cycle full loop.
+        if( ArraySize( g_mapcycleFileListArray ) > 0 )
+        {
+            GET_MAP_NAME( g_mapcycleFileListArray, 0, possibleNextMap )
+        }
+        else
+        {
+            LOGGER( 1, "WARNING, There are not enough maps loaded from your map cycle file: ", mapcycleFilePath )
+            log_amx(   "WARNING, There are not enough maps loaded from your map cycle file: ", mapcycleFilePath );
+        }
+    }
 
     setNextMap( possibleNextMap, false );
     saveCurrentMapCycleSetting( mapcycleFilePath );
@@ -2243,6 +2266,10 @@ public startNonForcedVoting()
     vote_startDirector( false );
 }
 
+/**
+ * Internally set the next map on `g_nextMapName` and save to the file `currentAndNextmapNames.dat`,
+ * the current map name and the here provided nextMapName.
+ */
 stock setNextMap( nextMapName[], bool:isToUpdateTheCvar = true )
 {
     LOGGER( 128, "I AM ENTERING ON setNextMap(1) | nextMapName: %s", nextMapName )
@@ -2296,8 +2323,11 @@ stock saveCurrentAndNextMapNames( nextMapName[] )
 
     if( backupMapsFile )
     {
-        fprintf( backupMapsFile, "%s", g_currentMapName );
-        fprintf( backupMapsFile, "^n%s", nextMapName );
+        trim( nextMapName );
+
+        fprintf( backupMapsFile, "%s^n", g_currentMapName );
+        fprintf( backupMapsFile, "%s^n", nextMapName );
+
         fclose( backupMapsFile );
     }
 }
@@ -12794,7 +12824,7 @@ stock loadNextMapPluginSetttings()
 }
 
 /**
- * The variable 'g_nextMapCyclePosition' is updated also at 'handleServerStart()', to refresh the
+ * The variable 'g_nextMapCyclePosition' is updated also at 'handleServerStart(0)', to refresh the
  * new settings.
  *
  * @param mapcycleFilePath         the current map-cycle file path.
@@ -12804,9 +12834,7 @@ stock saveCurrentMapCycleSetting( mapcycleFilePath[] )
     LOGGER( 128, "I AM ENTERING ON saveCurrentMapCycleSetting(1) mapcycleFilePath: %s", mapcycleFilePath )
     new tockenMapcycleAndPosion[ MAX_MAPNAME_LENGHT + MAX_FILE_PATH_LENGHT ];
 
-    formatex( tockenMapcycleAndPosion, charsmax( tockenMapcycleAndPosion ), "%s %d",
-            mapcycleFilePath, g_nextMapCyclePosition );
-
+    formatex( tockenMapcycleAndPosion, charsmax( tockenMapcycleAndPosion ), "%s %d", mapcycleFilePath, g_nextMapCyclePosition );
     LOGGER( 2, "( saveCurrentMapCycleSetting ) tockenMapcycleAndPosion: %s", tockenMapcycleAndPosion )
 
     // save lastmapcycle settings
