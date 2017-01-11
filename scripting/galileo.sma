@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-495";
+new const PLUGIN_VERSION[] = "v4.2.0-496";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -3856,7 +3856,7 @@ stock try_to_process_last_round( bool:isFragLimitEnd = false )
  * This is used to be called from the computeVotes(0) end voting function. To call process_last_round(2)
  * with the variable `g_isToChangeMapOnVotingEnd` properly set.
  */
-stock process_last_round( bool:isToImmediatelyChangeLevel, isCountDownAllowed = true )
+stock process_last_round( bool:isToImmediatelyChangeLevel, bool:isCountDownAllowed = true )
 {
     LOGGER( 128, "I AM ENTERING ON process_last_round(2) isToImmediatelyChangeLevel: %d", isToImmediatelyChangeLevel )
 
@@ -3886,7 +3886,7 @@ stock process_last_round( bool:isToImmediatelyChangeLevel, isCountDownAllowed = 
         }
         else
         {
-            intermission_processing();
+            intermission_processing( isCountDownAllowed );
         }
     }
     else if( g_isTheLastGameRound
@@ -3898,10 +3898,10 @@ stock process_last_round( bool:isToImmediatelyChangeLevel, isCountDownAllowed = 
     }
 }
 
-stock intermission_processing()
+stock intermission_processing( bool:isCountDownAllowed = true )
 {
     LOGGER( 128, "I AM ENTERING ON intermission_processing(0)" )
-    new Float:mp_chattime = get_intermission_chattime();
+    new Float:mp_chattime = isCountDownAllowed ? get_intermission_chattime() : 0.1;
 
     // Choose how to change the level.
     if( g_isTimeToRestart )
@@ -3913,7 +3913,7 @@ stock intermission_processing()
         set_task( mp_chattime, "map_change", TASKID_MAP_CHANGE );
     }
 
-    show_intermission( mp_chattime );
+    isCountDownAllowed ? show_intermission( mp_chattime ) : 0;
 }
 
 stock Float:get_intermission_chattime()
