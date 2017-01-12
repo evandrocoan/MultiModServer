@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-505";
+new const PLUGIN_VERSION[] = "v4.2.0-506";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -9728,6 +9728,9 @@ stock startVoteMapVoting( player_id )
     }
 }
 
+/**
+ * This is the `gal_votemap` admin's command line help displayer.
+ */
 stock showGalVoteMapHelp( player_id, index = 0, argument[] = {0} )
 {
     LOGGER( 128, "I AM ENTERING ON showGalVoteMapHelp(1) | argument: %s", argument )
@@ -9753,6 +9756,9 @@ stock showGalVoteMapHelp( player_id, index = 0, argument[] = {0} )
             ^ngal_votemap map1 map2" );
 }
 
+/**
+ * This set up the `say galmenu` final admin's choice builder.
+ */
 stock openTheVoteMapActionMenu()
 {
     LOGGER( 128, "I AM ENTERING ON openTheVoteMapActionMenu(0) | player_id: %d", g_voteMapInvokerPlayerId )
@@ -9761,6 +9767,9 @@ stock openTheVoteMapActionMenu()
     set_task( 1.0, "displayTheVoteMapActionMenu", TASKID_PENDING_VOTE_COUNTDOWN, _, _, "a", g_pendingMapVoteCountdown );
 }
 
+/**
+ * This is the `say galmenu` final admin's choice handler.
+ */
 public handleVoteMapActionMenu( player_id, pressedKeyCode )
 {
     LOGGER( 128, "I AM ENTERING ON handleVoteMapActionMenu(2) | player_id: %d, pressedKeyCode: %d", \
@@ -9802,6 +9811,9 @@ public handleVoteMapActionMenu( player_id, pressedKeyCode )
     return PLUGIN_HANDLED;
 }
 
+/**
+ * This is the `say galmenu` final admin's choice builder.
+ */
 public displayTheVoteMapActionMenu()
 {
     LOGGER( 128, "I AM ENTERING ON displayTheVoteMapActionMenu(0) | player_id: %d", g_voteMapInvokerPlayerId )
@@ -9820,12 +9832,12 @@ public displayTheVoteMapActionMenu()
         new bool:allowChange = g_invokerVoteMapNameToDecide[ 0 ] != 0;
 
         // To change the keys, go also to configureTheVotingMenus(0)
-        menuKeys = MENU_KEY_3;
+        menuKeys = MENU_KEY_1;
 
         // If the g_invokerVoteMapNameToDecide is empty, then the winner map is the stay here option.
         if( allowChange )
         {
-            menuKeys |= MENU_KEY_1 | MENU_KEY_5;
+            menuKeys |= MENU_KEY_3 | MENU_KEY_5;
             formatex( winnerMap, charsmax( winnerMap ), "%s", g_invokerVoteMapNameToDecide );
         }
         else
@@ -9891,6 +9903,9 @@ stock voteMapMenuBuilder( player_id )
  */
 #define VOTEMAP_VOTING_MAP_NAMES_INDEX_FLAG -2
 
+/**
+ * This is the secondary `say galmenu` handler.
+ */
 public handleDisplayVoteMapCommands( player_id, menu, item )
 {
     LOGGER( 128, "I AM ENTERING ON handleDisplayVoteMapCommands(3) | player_id: %d, menu: %d, item: %d", player_id, menu, item )
@@ -10009,6 +10024,11 @@ stock debug_nomination_match_choice( player_id, menu, item )
     return 0;
 }
 
+/**
+ * This is the secondary `say galmenu` builder.
+ *
+ * It is used to choose to cancel the personal voting, start it or see the added maps.
+ */
 public displayVoteMapMenuCommands( player_id )
 {
     LOGGER( 128, "I AM ENTERING ON displayVoteMapMenuCommands(1) | player_id: %d", player_id )
@@ -10037,7 +10057,7 @@ public displayVoteMapMenuCommands( player_id )
     menu_additem( menu, choice, { -1 }, 0 );
 
     // Add some space from the first menu options.
-    menu_addblank( menu, 0 );
+    // menu_addblank( menu, 0 );
 
     // Configure the menu buttons.
     SET_MENU_LANG_STRING_PROPERTY( MPROP_EXITNAME, menu, "GAL_LISTMAPS_TITLE" )
@@ -10076,6 +10096,9 @@ public displayVoteMapMenuCommands( player_id )
  */
 #define VOTEMAP_FIRST_PAGE_ITEMS_COUNTING 4
 
+/**
+ * This is the `say galmenu` main menu handler.
+ */
 public handleDisplayVoteMap( player_id, menu, item )
 {
     LOGGER( 128, "I AM ENTERING ON handleDisplayVoteMap(3) | player_id: %d, menu: %d, item: %d", player_id, menu, item )
@@ -10201,7 +10224,7 @@ public displayVoteMapMenuHook( player_id )
 }
 
 /**
- * Gather all maps that match the nomination.
+ * This is the main menu `say galmenu` builder.
  */
 stock displayVoteMapMenu( player_id )
 {
