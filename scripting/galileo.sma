@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-503";
+new const PLUGIN_VERSION[] = "v4.2.0-504";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -94,7 +94,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-503";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+2+64+8
+#define DEBUG_LEVEL 1+32
 
 
 /**
@@ -332,10 +332,10 @@ new const PLUGIN_VERSION[] = "v4.2.0-503";
         // test_SortCustomSynced2D();
         // test_GET_MAP_INFO_load();
         // test_GET_MAP_NAME_load();
-        test_populateListOnSeries_load1();
-        test_populateListOnSeries_load2();
-        test_populateListOnSeries_load3();
-        // test_setCorrectMenuPage_load();
+        // test_populateListOnSeries_load1();
+        // test_populateListOnSeries_load2();
+        // test_populateListOnSeries_load3();
+        test_setCorrectMenuPage_load();
         // test_convertNumericBase_load();
         // test_whatGameEndingTypeIt_load();
         // test_getUniqueRandomInt_load();
@@ -3863,7 +3863,7 @@ stock try_to_process_last_round( bool:isFragLimitEnd = false )
 /**
  * To perform the switch between the straight intermission_processing(0) and the last_round_countdown(0).
  *
- * This is used to be called from the computeVotes(0) end voting function. To call process_last_round(2)
+ * This is used to be called from the computeVotes(0) end voting function, there to call process_last_round(2)
  * with the variable `g_isToChangeMapOnVotingEnd` properly set.
  */
 stock process_last_round( bool:isToImmediatelyChangeLevel, bool:isCountDownAllowed = true )
@@ -10659,7 +10659,7 @@ stock sayHandlerForOneNomWords( player_id, firstWord[] )
             new nominationsMapsCount = ArraySize( g_nominationLoadedMapsArray );
             new lastPageNumber       = GET_LAST_PAGE_NUMBER( nominationsMapsCount, MAX_NOM_MENU_ITEMS_PER_PAGE )
 
-            setCorrectMenuPage( player_id, firstWord, g_voteMapMenuPages, lastPageNumber );
+            setCorrectMenuPage( player_id, firstWord, g_nominationPlayersMenuPages, lastPageNumber );
             nomination_menu( player_id );
 
             LOGGER( 1, "    ( sayHandlerForOneNomWords ) Just Returning PLUGIN_HANDLED, nomination_menu(1) chosen." )
@@ -10760,11 +10760,12 @@ stock setCorrectMenuPage( player_id, pageString[], menuPages[], pagesCount )
 {
     LOGGER( 128, "I AM ENTERING ON setCorrectMenuPage(4) | pageString: %s, pagesCount: %d", pageString, pagesCount )
 
-    if( strlen( pageString ) > 1 )
+    if( strlen( pageString ) > 0 )
     {
         new searchIndex;
         new resultIndex;
 
+        // Find the index `searchIndex` of the first digit on the string.
         while( pageString[ searchIndex ]
                && !isdigit( pageString[ searchIndex ] ) )
         {
@@ -10774,37 +10775,50 @@ stock setCorrectMenuPage( player_id, pageString[], menuPages[], pagesCount )
             searchIndex++;
         }
 
+        LOGGER( 4, "( setCorrectMenuPage ) 1. pageString: %s", pageString )
+
         // When the page number start with a digit, we would erase all the string if not doing this.
-        if( searchIndex == 0 )
+        if( searchIndex == 0
+            && isdigit( pageString[ 0 ] ) )
         {
-            searchIndex = 1;
-        }
+            LOGGER( 4, "( setCorrectMenuPage ) 2. searchIndex: %d", searchIndex )
 
-        while( isdigit( pageString[ searchIndex ] ) )
-        {
-            pageString[ resultIndex ] = pageString[ searchIndex ];
+            do
+            {
+                searchIndex++;
+
+            } while( isdigit( pageString[ searchIndex ] ) );
+
             pageString[ searchIndex ] = '^0';
-
-            searchIndex++;
-            resultIndex++;
         }
-    }
-
-    LOGGER( 4, "( setCorrectMenuPage ) pageString: %s", pageString )
-
-    if( isdigit( pageString[ 0 ] ) )
-    {
-        // The pages index, start on 0
-        new targetPage = str_to_num( pageString );
-
-        if( pagesCount > targetPage )
+        else if( isdigit( pageString[ searchIndex ] ) )
         {
-            menuPages[ player_id ] = targetPage - 1;
+            LOGGER( 4, "( setCorrectMenuPage ) 3. searchIndex: %d", searchIndex )
+
+            do
+            {
+                pageString[ resultIndex ] = pageString[ searchIndex ];
+                pageString[ searchIndex ] = '^0';
+
+                searchIndex++;
+                resultIndex++;
+
+            } while( isdigit( pageString[ searchIndex ] ) );
         }
         else
         {
-            menuPages[ player_id ] = pagesCount - 1;
+            LOGGER( 4, "( setCorrectMenuPage ) 4. searchIndex: %d", searchIndex )
+            pageString[ searchIndex ] = '^0';
         }
+    }
+
+    LOGGER( 4, "( setCorrectMenuPage ) 5. pageString: %s", pageString )
+
+    // The pages index, start on 0
+    if( isdigit( pageString[ 0 ] ) )
+    {
+        new targetPage = str_to_num( pageString );
+        menuPages[ player_id ] = ( pagesCount > targetPage ? targetPage : pagesCount ) - 1;
     }
 }
 
@@ -10824,6 +10838,43 @@ public nomination_menuHook( player_id )
  */
 #define NOMINATION_FIRST_PAGE_ITEMS_COUNTING 1
 
+stock getRecentMapsAndWhiteList( player_id, &isRecentMapNomBlocked, &isWhiteListNomBlock )
+{
+    isWhiteListNomBlock = ( IS_WHITELIST_ENABLED()
+                            && IS_TO_HOURLY_LOAD_THE_WHITELIST() );
+
+    // Not loaded?
+    if( isWhiteListNomBlock )
+    {
+        tryToLoadTheWhiteListFeature();
+    }
+
+    switch( get_pcvar_num( cvar_recentNomMapsAllowance ) )
+    {
+        case 1:
+        {
+            isRecentMapNomBlocked = false;
+        }
+        case 2:
+        {
+            isRecentMapNomBlocked = !( get_user_flags( player_id ) & ADMIN_MAP );
+        }
+        default:
+        {
+            isRecentMapNomBlocked = true;
+        }
+    }
+}
+
+#define startNominationMenuVariables(%1) \
+    new      mapIndex; \
+    new bool:isRecentMapNomBlocked; \
+    new bool:isWhiteListNomBlock; \
+    new choice        [ MAX_MAPNAME_LENGHT + 32 ]; \
+    new nominationMap [ MAX_MAPNAME_LENGHT ]; \
+    new disabledReason[ MAX_SHORT_STRING ]; \
+    getRecentMapsAndWhiteList( %1, isRecentMapNomBlocked, isWhiteListNomBlock )
+
 /**
  * Gather all maps that match the nomination.
  */
@@ -10837,27 +10888,7 @@ stock nomination_menu( player_id )
     new itemsCount;
     new nominationsMapsCount;
 
-    // Start nomination menu variables
-    new      mapIndex;
-    new bool:isRecentMapNomAllowed;
-    new bool:isWhiteListNomBlock;
-
-    new choice        [ MAX_MAPNAME_LENGHT + 32 ];
-    new nominationMap [ MAX_MAPNAME_LENGHT ];
-    new disabledReason[ MAX_SHORT_STRING ];
-
-    isRecentMapNomAllowed = ( g_recentMapCount
-                              && get_pcvar_num( cvar_recentNomMapsAllowance ) == 0 );
-    isWhiteListNomBlock   = ( IS_WHITELIST_ENABLED()
-                              && IS_TO_HOURLY_LOAD_THE_WHITELIST() );
-
-    // Not loaded?
-    if( isWhiteListNomBlock )
-    {
-        tryToLoadTheWhiteListFeature();
-    }
-    // end nomination menu variables
-
+    startNominationMenuVariables( player_id );
     nominationsMapsCount = ArraySize( g_nominationLoadedMapsArray );
 
     // Calculate how much pages there are available.
@@ -10924,7 +10955,7 @@ stock nomination_menu( player_id )
             {
                 formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_NOMINATED" );
             }
-            else if( isRecentMapNomAllowed
+            else if( isRecentMapNomBlocked
                      && map_isTooRecent( nominationMap ) )
             {
                 formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_TOORECENT" );
@@ -10985,26 +11016,7 @@ stock nominationAttemptWithNamePart( player_id, startSearchIndex = 0 )
     new itemsCount;
     new nominationsMapsCount;
 
-    // Start nomination menu variables
-    new      mapIndex;
-    new bool:isRecentMapNomAllowed;
-    new bool:isWhiteListNomBlock;
-
-    new choice        [ MAX_MAPNAME_LENGHT + 32 ];
-    new nominationMap [ MAX_MAPNAME_LENGHT ];
-    new disabledReason[ MAX_SHORT_STRING ];
-
-    isRecentMapNomAllowed = ( g_recentMapCount
-                              && get_pcvar_num( cvar_recentNomMapsAllowance ) == 0 );
-    isWhiteListNomBlock   = ( IS_WHITELIST_ENABLED()
-                              && IS_TO_HOURLY_LOAD_THE_WHITELIST() );
-
-    // Not loaded?
-    if( isWhiteListNomBlock )
-    {
-        tryToLoadTheWhiteListFeature();
-    }
-    // end nomination menu variables
+    startNominationMenuVariables( player_id );
 
     matchIndex           = -1;
     nominationsMapsCount = ArraySize( g_nominationLoadedMapsArray );
@@ -11065,7 +11077,7 @@ stock nominationAttemptWithNamePart( player_id, startSearchIndex = 0 )
                 {
                     formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_NOMINATED" );
                 }
-                else if( isRecentMapNomAllowed
+                else if( isRecentMapNomBlocked
                          && map_isTooRecent( nominationMap ) )
                 {
                     formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_TOORECENT" );
@@ -11834,7 +11846,9 @@ stock is_to_block_map_nomination( player_id, mapName[] )
     else if( mapName[0]
              && g_recentMapCount
              && map_isTooRecent( mapName )
-             && !get_pcvar_num( cvar_recentNomMapsAllowance ) )
+             && ( ( get_pcvar_num( cvar_recentNomMapsAllowance ) == 2
+                    && !( get_user_flags( player_id ) & ADMIN_MAP ) )
+                  || get_pcvar_num( cvar_recentNomMapsAllowance ) == 0 ) )
     {
         color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_TOORECENT", mapName );
         color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_TOORECENT_HLP" );
@@ -15674,12 +15688,13 @@ public timeRemain()
      */
     stock test_setCorrectMenuPage_load()
     {
-        test_setCorrectMenuPage( .pageString="noPagesHere", .pagesCount=5, .expectedPage=0 ); // Case 1
-        test_setCorrectMenuPage( .pageString="pages5Here" , .pagesCount=5, .expectedPage=4 ); // Case 2
-        test_setCorrectMenuPage( .pageString="5Here"      , .pagesCount=5, .expectedPage=4 ); // Case 3
-        test_setCorrectMenuPage( .pageString="6Here"      , .pagesCount=5, .expectedPage=4 ); // Case 4
-        test_setCorrectMenuPage( .pageString="menuCute6"  , .pagesCount=5, .expectedPage=4 ); // Case 5
-        test_setCorrectMenuPage( .pageString="menuCute4"  , .pagesCount=5, .expectedPage=3 ); // Case 6
+        test_setCorrectMenuPage( .pageString="noPagesHere", .pagesCount=5  , .expectedPage=0  ); // Case 1
+        test_setCorrectMenuPage( .pageString="pages5Here" , .pagesCount=5  , .expectedPage=4  ); // Case 2
+        test_setCorrectMenuPage( .pageString="5Here"      , .pagesCount=5  , .expectedPage=4  ); // Case 3
+        test_setCorrectMenuPage( .pageString="6Here"      , .pagesCount=5  , .expectedPage=4  ); // Case 4
+        test_setCorrectMenuPage( .pageString="menuCute6"  , .pagesCount=5  , .expectedPage=4  ); // Case 5
+        test_setCorrectMenuPage( .pageString="menuCute4"  , .pagesCount=5  , .expectedPage=3  ); // Case 6
+        test_setCorrectMenuPage( .pageString="50"         , .pagesCount=120, .expectedPage=49 ); // Case 7
     }
 
     /**
@@ -15689,16 +15704,18 @@ public timeRemain()
     stock test_setCorrectMenuPage( pageString[], pagesCount, expectedPage )
     {
         new menuPages   [ 2 ];
+        new pageString2 [ 64 ];
         new errorMessage[ MAX_LONG_STRING ];
 
         new player_id = 1;
         new test_id   = test_registerSeriesNaming( "test_convertNumericBase", 'b' );
 
+        copy( pageString2, charsmax( pageString2 ), pageString );
         setCorrectMenuPage( player_id, pageString, menuPages, pagesCount );
 
         formatex( errorMessage, charsmax( errorMessage ),
-                "The converted page `%s` must to be %d, instead of %d.",
-                pageString, expectedPage, menuPages[ player_id ] );
+                "The converted page `%s` must to be %d, instead of %d (%s).",
+                pageString2, expectedPage, menuPages[ player_id ], pageString );
 
         SET_TEST_FAILURE( test_id, menuPages[ player_id ] != expectedPage, errorMessage )
     }
