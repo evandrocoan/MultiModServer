@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-508";
+new const PLUGIN_VERSION[] = "v4.2.0-509";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -4105,11 +4105,11 @@ stock show_last_round_message()
             color_print( 0, "%L %L %L",
                     LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED",
                     LANG_PLAYER, "GAL_CHANGE_NEXTROUND",
-                    LANG_PLAYER, "GAL_NEXTMAP", nextMapName );
+                    LANG_PLAYER, "GAL_NEXTMAP2", nextMapName );
         }
         else if( g_isThePenultGameRound )
         {
-            color_print( 0, "%L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED", LANG_PLAYER, "GAL_NEXTMAP", nextMapName );
+            color_print( 0, "%L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED", LANG_PLAYER, "GAL_NEXTMAP2", nextMapName );
         }
     }
 }
@@ -4152,14 +4152,14 @@ public show_last_round_HUD()
                 player_id = players[ playerIndex ];
 
                 formatex( last_round_message, charsmax( last_round_message ), "%L ^n%L",
-                        player_id, "GAL_CHANGE_NEXTROUND",  player_id, "GAL_NEXTMAP", nextMapName );
+                        player_id, "GAL_CHANGE_NEXTROUND",  player_id, "GAL_NEXTMAP1", nextMapName );
 
                 REMOVE_CODE_COLOR_TAGS( last_round_message )
                 show_hudmessage( player_id, last_round_message );
             }
         #else
             formatex( last_round_message, charsmax( last_round_message ), "%L ^n%L",
-                    LANG_PLAYER, "GAL_CHANGE_NEXTROUND",  LANG_PLAYER, "GAL_NEXTMAP", nextMapName );
+                    LANG_PLAYER, "GAL_CHANGE_NEXTROUND",  LANG_PLAYER, "GAL_NEXTMAP1", nextMapName );
 
             REMOVE_CODE_COLOR_TAGS( last_round_message )
             show_hudmessage( 0, last_round_message );
@@ -8039,8 +8039,8 @@ stock chooseTheVotingMapWinner( firstPlaceChoices[], numberOfMapsAtFirstPosition
 
         g_voteStatus |= IS_VOTE_OVER;
 
-        color_print( 0, "%L: %L", LANG_PLAYER, "DMAP_MAP_EXTENDED2", LANG_PLAYER, "GAL_NEXTMAP", g_nextMapName );
-        toShowTheMapNextHud( "GAL_VOTE_ENDED", "DMAP_MAP_EXTENDED1", "GAL_NEXTMAP", g_nextMapName );
+        color_print( 0, "%L: %L", LANG_PLAYER, "DMAP_MAP_EXTENDED2", LANG_PLAYER, "GAL_NEXTMAP2", g_nextMapName );
+        toShowTheMapNextHud( "GAL_VOTE_ENDED", "DMAP_MAP_EXTENDED1", "GAL_NEXTMAP1", g_nextMapName );
 
         process_last_round( g_isToChangeMapOnVotingEnd );
     }
