@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-509";
+new const PLUGIN_VERSION[] = "v4.2.0-510";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -4103,13 +4103,13 @@ stock show_last_round_message()
         if( g_isTheLastGameRound )
         {
             color_print( 0, "%L %L %L",
-                    LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED",
-                    LANG_PLAYER, "GAL_CHANGE_NEXTROUND",
+                    LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED2",
+                    LANG_PLAYER, "GAL_CHANGE_NEXTROUND2",
                     LANG_PLAYER, "GAL_NEXTMAP2", nextMapName );
         }
         else if( g_isThePenultGameRound )
         {
-            color_print( 0, "%L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED", LANG_PLAYER, "GAL_NEXTMAP2", nextMapName );
+            color_print( 0, "%L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED2", LANG_PLAYER, "GAL_NEXTMAP2", nextMapName );
         }
     }
 }
@@ -4123,67 +4123,29 @@ public show_last_round_HUD()
         return;
     }
 
+    // On the Amx Mod X 1.8.2 is not recognizing the player LANG_PLAYER when it is formatted before
+    // with formatex(...)
+    //
+    // formatex( last_round_message, charsmax( last_round_message ), "%L^n%L",
+    //         player_id, "GAL_CHANGE_NEXTROUND2",  player_id, "GAL_NEXTMAP2", nextMapName );
+    // REMOVE_CODE_COLOR_TAGS( last_round_message )
+    // show_hudmessage( player_id, last_round_message );
+    //
     set_hudmessage( 255, 255, 255, 0.15, 0.15, 0, 0.0, 1.0, 0.1, 0.1, 1 );
-
-    new nextMapName       [ MAX_MAPNAME_LENGHT ];
-    new last_round_message[ MAX_COLOR_MESSAGE  ];
-
-#if AMXX_VERSION_NUM < 183
-    new player_id;
-    new playerIndex;
-    new playersCount;
-    new players[ MAX_PLAYERS ];
-#endif
 
     if( g_voteStatus & IS_VOTE_OVER
         && !g_isToChangeMapOnVotingEnd )
     {
         if( g_isTheLastGameRound )
         {
+            new nextMapName[ MAX_MAPNAME_LENGHT ];
             get_pcvar_string( cvar_amx_nextmap, nextMapName, charsmax( nextMapName ) );
 
-            // This is because the Amx Mod X 1.8.2 is not recognizing the player LANG_PLAYER when it is
-            // formatted before with formatex(...)
-        #if AMXX_VERSION_NUM < 183
-            get_players( players, playersCount, "ch" );
-
-            for( playerIndex = 0; playerIndex < playersCount; playerIndex++ )
-            {
-                player_id = players[ playerIndex ];
-
-                formatex( last_round_message, charsmax( last_round_message ), "%L ^n%L",
-                        player_id, "GAL_CHANGE_NEXTROUND",  player_id, "GAL_NEXTMAP1", nextMapName );
-
-                REMOVE_CODE_COLOR_TAGS( last_round_message )
-                show_hudmessage( player_id, last_round_message );
-            }
-        #else
-            formatex( last_round_message, charsmax( last_round_message ), "%L ^n%L",
-                    LANG_PLAYER, "GAL_CHANGE_NEXTROUND",  LANG_PLAYER, "GAL_NEXTMAP1", nextMapName );
-
-            REMOVE_CODE_COLOR_TAGS( last_round_message )
-            show_hudmessage( 0, last_round_message );
-        #endif
+            show_hudmessage( 0, "%L^n%L", LANG_PLAYER, "GAL_CHANGE_NEXTROUND1",  LANG_PLAYER, "GAL_NEXTMAP1", nextMapName );
         }
         else if( g_isThePenultGameRound )
         {
-        #if AMXX_VERSION_NUM < 183
-            get_players( players, playersCount, "ch" );
-
-            for( playerIndex = 0; playerIndex < playersCount; playerIndex++ )
-            {
-                player_id = players[ playerIndex ];
-                formatex( last_round_message, charsmax( last_round_message ), "%L", player_id, "GAL_CHANGE_TIMEEXPIRED" );
-
-                REMOVE_CODE_COLOR_TAGS( last_round_message )
-                show_hudmessage( player_id, last_round_message );
-            }
-        #else
-            formatex( last_round_message, charsmax( last_round_message ), "%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED" );
-
-            REMOVE_CODE_COLOR_TAGS( last_round_message )
-            show_hudmessage( 0, last_round_message );
-        #endif
+            show_hudmessage( 0, "%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED1" );
         }
     }
 }
@@ -8169,7 +8131,7 @@ stock toShowTheMapExtensionHud( lang1[], lang2[], lang3[], extend )
     if( !( get_pcvar_num( cvar_hudsHide ) & HUD_VOTE_RESULTS_ANNOUNCE ) )
     {
         set_hudmessage( 150, 120, 0, -1.0, 0.13, 0, 1.0, 9.94, 0.0, 0.0, -1 );
-        show_hudmessage( 0, "%L %L:^n %L", LANG_PLAYER, lang1, LANG_PLAYER, lang2, LANG_PLAYER, lang3, extend );
+        show_hudmessage( 0, "%L %L:^n%L", LANG_PLAYER, lang1, LANG_PLAYER, lang2, LANG_PLAYER, lang3, extend );
     }
 }
 
@@ -8180,7 +8142,7 @@ stock toShowTheMapStayHud( lang1[], lang2[], lang3[] )
     if( !( get_pcvar_num( cvar_hudsHide ) & HUD_VOTE_RESULTS_ANNOUNCE ) )
     {
         set_hudmessage( 150, 120, 0, -1.0, 0.13, 0, 1.0, 9.94, 0.0, 0.0, -1 );
-        show_hudmessage( 0, "%L %L:^n %L", LANG_PLAYER, lang1, LANG_PLAYER, lang2, LANG_PLAYER, lang3 );
+        show_hudmessage( 0, "%L %L:^n%L", LANG_PLAYER, lang1, LANG_PLAYER, lang2, LANG_PLAYER, lang3 );
     }
 }
 
@@ -8191,7 +8153,7 @@ stock toShowTheMapNextHud( lang1[], lang2[], lang3[], map[] )
     if( !( get_pcvar_num( cvar_hudsHide ) & HUD_VOTE_RESULTS_ANNOUNCE ) )
     {
         set_hudmessage( 150, 120, 0, -1.0, 0.13, 0, 1.0, 9.94, 0.0, 0.0, -1 );
-        show_hudmessage( 0, "%L %L:^n %L", LANG_PLAYER, lang1, LANG_PLAYER, lang2, LANG_PLAYER, lang3, map );
+        show_hudmessage( 0, "%L %L:^n%L", LANG_PLAYER, lang1, LANG_PLAYER, lang2, LANG_PLAYER, lang3, map );
     }
 }
 
@@ -14664,7 +14626,7 @@ public timeRemain()
         formatex( errorMessage, charsmax( errorMessage ), "g_isMapExtensionAllowed must be 1 (it was %d)", g_isMapExtensionAllowed );
         SET_TEST_FAILURE( test_id, !g_isMapExtensionAllowed, errorMessage )
 
-        color_print( 0, "%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED" );
+        color_print( 0, "%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED2" );
         cancelVoting();
 
         // Case 3
