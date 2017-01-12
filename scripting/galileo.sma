@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-502";
+new const PLUGIN_VERSION[] = "v4.2.0-503";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -7712,9 +7712,10 @@ stock startRunoffVoting( firstPlaceChoices[], secondPlaceChoices[], numberOfMaps
                          numberOfMapsAtSecondPosition )
 {
     LOGGER( 128, "I AM ENTERING ON startRunoffVoting(4)" )
+    new votePercent = floatround( 100 * get_pcvar_float( cvar_runoffRatio ), floatround_ceil );
 
     // announce runoff voting requirement
-    color_print( 0, "%L", LANG_PLAYER, "GAL_RUNOFF_REQUIRED" );
+    color_print( 0, "%L", LANG_PLAYER, "GAL_RUNOFF_REQUIRED", votePercent );
 
     if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_RUNOFF_REQUIRED ) )
     {
