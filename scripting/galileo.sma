@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-499";
+new const PLUGIN_VERSION[] = "v4.2.0-500";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -94,7 +94,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-499";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1
+#define DEBUG_LEVEL 1+2+64+8
 
 
 /**
@@ -540,10 +540,11 @@ new const PLUGIN_VERSION[] = "v4.2.0-499";
 #define HUD_VOTE_VISUAL_COUNTDOWN 2
 #define HUD_CHANGELEVEL_ANNOUNCE  4
 
-#define SHOW_STATUS_NEVER      0
-#define SHOW_STATUS_AFTER_VOTE 1
-#define SHOW_STATUS_AT_END     2
-#define SHOW_STATUS_ALWAYS     3
+#define SHOW_STATUS_NEVER             0
+#define SHOW_STATUS_AFTER_VOTE        1
+#define SHOW_STATUS_AT_END            2
+#define SHOW_STATUS_ALWAYS            3
+#define SHOW_STATUS_ALWAYS_UNTIL_VOTE 4
 
 #define END_AT_RIGHT_NOW             0
 #define END_AT_THE_CURRENT_ROUND_END 1
@@ -6498,7 +6499,8 @@ public vote_handleDisplay()
     new argument[ 2 ] = { true, 0 };
 
     if( g_showVoteStatus == SHOW_STATUS_ALWAYS
-        || g_showVoteStatus == SHOW_STATUS_AFTER_VOTE )
+        || g_showVoteStatus == SHOW_STATUS_AFTER_VOTE
+        || g_showVoteStatus == SHOW_STATUS_ALWAYS_UNTIL_VOTE )
     {
         set_task( 1.0, "vote_display", TASKID_VOTE_DISPLAY, argument, sizeof argument, "a", g_votingSecondsRemaining );
     }
@@ -6640,8 +6642,9 @@ public vote_display( argument[ 2 ] )
             menuKeys = addExtensionOption( player_id, copiedChars, voteStatus, charsmax( voteStatus ), menuKeys );
             display_menu_dirt( player_id, menuKeys, isVoteOver, noneIsHidden, voteStatus );
         }
-        else // g_showVoteStatus == SHOW_STATUS_NEVER || g_showVoteStatus == SHOW_STATUS_AT_END
+        else if( g_showVoteStatus != SHOW_STATUS_ALWAYS_UNTIL_VOTE )
         {
+            // g_showVoteStatus == SHOW_STATUS_NEVER || g_showVoteStatus == SHOW_STATUS_AT_END
             display_menu_clean( player_id, menuKeys );
         }
     }
@@ -6669,11 +6672,14 @@ public vote_display( argument[ 2 ] )
             {
                 if( !g_isPlayerVoted[ player_id ]
                     && !isVoteOver
-                    && g_showVoteStatus != SHOW_STATUS_ALWAYS )
+                    && g_showVoteStatus != SHOW_STATUS_ALWAYS
+                    && g_showVoteStatus != SHOW_STATUS_ALWAYS_UNTIL_VOTE )
                 {
                     display_menu_clean( player_id, menuKeys );
                 }
                 else if( g_showVoteStatus == SHOW_STATUS_ALWAYS
+                         || ( g_showVoteStatus == SHOW_STATUS_ALWAYS_UNTIL_VOTE
+                              && !g_isPlayerVoted[ player_id ] )
                          || ( isVoteOver
                               && g_showVoteStatus )
                          || ( g_isPlayerVoted[ player_id ]
@@ -7008,8 +7014,9 @@ stock computeVoteMenuFooter( player_id, voteFooter[], voteFooterSize )
     {
         if( ( g_votingSecondsRemaining < 10
               || g_isToShowVoteCounter )
-            && ( g_showVoteStatus == SHOW_STATUS_ALWAYS
-                 || g_showVoteStatus == SHOW_STATUS_AFTER_VOTE ) )
+            && ( g_showVoteStatus == SHOW_STATUS_AFTER_VOTE
+                 || g_showVoteStatus == SHOW_STATUS_ALWAYS
+                 || g_showVoteStatus == SHOW_STATUS_ALWAYS_UNTIL_VOTE ) )
         {
             if( g_votingSecondsRemaining >= 0 )
             {
