@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-501";
+new const PLUGIN_VERSION[] = "v4.2.0-502";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -150,7 +150,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-501";
     /**
      * The file on the './addons/amxmodx/logs' folder, to save the debugging text output.
      */
-    new const DEBUGGER_OUTPUT_LOG_FILE_NAME[] = "_galileo.log";
+    new const DEBUGGER_OUTPUT_LOG_FILE_NAME[] = "_galileo_log.txt";
 
     /**
      * Used to know when the Unit Tests are running.
