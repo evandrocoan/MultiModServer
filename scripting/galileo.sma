@@ -8114,12 +8114,12 @@ stock toAnnounceTheMapExtension( lang[] )
     }
     else if( g_isVotingByFrags )
     {
-        color_print( 0, "%L %L", LANG_PLAYER, lang, LANG_PLAYER, "GAL_WINNER_EXTEND_FRAGS2", g_extendmapStepRounds );
+        color_print( 0, "%L %L", LANG_PLAYER, lang, LANG_PLAYER, "GAL_WINNER_EXTEND_FRAGS2", g_extendmapStepFrags );
         toShowTheMapExtensionHud( lang, "DMAP_MAP_EXTENDED1", "GAL_WINNER_EXTEND_FRAGS1", g_extendmapStepFrags );
     }
     else
     {
-        color_print( 0, "%L %L", LANG_PLAYER, lang, LANG_PLAYER, "GAL_WINNER_EXTEND2", g_extendmapStepRounds );
+        color_print( 0, "%L %L", LANG_PLAYER, lang, LANG_PLAYER, "GAL_WINNER_EXTEND2", g_extendmapStepMinutes );
         toShowTheMapExtensionHud( lang, "DMAP_MAP_EXTENDED1", "GAL_WINNER_EXTEND1", g_extendmapStepMinutes );
     }
 }
