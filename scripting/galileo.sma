@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-498";
+new const PLUGIN_VERSION[] = "v4.2.0-499";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -1935,15 +1935,17 @@ stock configureServerStart()
  * or any other command to change the level to a specific map.
  *
  * However we do not need to worry about such commands because if the admin does so, the map will be
- * changed to just before the map they were before the change level command to be performed.
+ * changed to the map just before they were, when the change level command to be performed.
  */
 stock setTheCurrentAndNextMapSettings()
 {
     LOGGER( 128, "I AM ENTERING ON setTheCurrentAndNextMapSettings(0)" )
 
     // Must not to be run only at the first time the server is started, because the setup call to
-    // saveCurrentAndNextMapNames(3) was already done by setNextMap(4).
-    if( !get_pcvar_num( cvar_isFirstServerStart ) )
+    // saveCurrentAndNextMapNames(3) does not need to be performed at the server first start as we
+    // are only reading the last data set, instead of setting new data to it.
+    if( get_pcvar_num( cvar_serverStartAction )
+        && get_pcvar_num( cvar_isFirstServerStart ) != FIRST_SERVER_START )
     {
         new nextMapName   [ MAX_MAPNAME_LENGHT ];
         new currentMapName[ MAX_MAPNAME_LENGHT ];
@@ -1968,7 +1970,8 @@ stock setTheCurrentAndNextMapSettings()
         }
     }
 
-    // This is the key that tells us if this server has been started or not.
+    // This is the key that tells us if this server has been started or not. Note it is important to
+    // perform this switch only after the instructions call.
     switch( get_pcvar_num( cvar_isFirstServerStart ) )
     {
         case FIRST_SERVER_START:
@@ -2070,9 +2073,10 @@ public handleServerStart( backupMapsFilePath[], startAction )
             // state as already restarted.
             if( equali( mapToChange, g_currentMapName ) )
             {
-                // This is the key that tells us if this server has been started or not.
-                set_pcvar_num( cvar_isFirstServerStart, AFTER_READ_MAPCYCLE );
-                LOGGER( 2, "( handleServerStart ) IS CHANGING THE CVAR 'gal_server_starting' to '%d'.", AFTER_READ_MAPCYCLE )
+                // If we got here, the level was `FIRST_SERVER_START`, and as we are not changing
+                // the map, we must to set it to the next level `SECOND_SERVER_START`.
+                set_pcvar_num( cvar_isFirstServerStart, SECOND_SERVER_START );
+                LOGGER( 2, "( handleServerStart ) IS CHANGING THE CVAR 'gal_server_starting' to '%d'.", SECOND_SERVER_START )
             }
             else
             {
@@ -2205,6 +2209,13 @@ stock setThisMapAsPossibleCrashingMap( mapName[] )
     }
 }
 
+/**
+ * When we are setting the `possibleNextMapPosition` to 0, we are restarting the map cycle from its
+ * first position. This happens every time we complete a map cycle full loop.
+ *
+ * However, this function is only called at the first time the server started, so not setting anything
+ * implies on already starting the map cycle from its first position.
+ */
 stock configureTheNextMapPlugin( possibleCurrentMap[], possibleNextMap[], possibleNextMapPosition, bool:forceUpdateFile = false )
 {
     LOGGER( 128, "I AM ENTERING ON configureTheNextMapPlugin(4)" )
@@ -2214,27 +2225,14 @@ stock configureTheNextMapPlugin( possibleCurrentMap[], possibleNextMap[], possib
     LOGGER( 4, "( configureTheNextMapPlugin ) possibleCurrentMap: %s",  possibleCurrentMap )
     LOGGER( 4, "( configureTheNextMapPlugin ) possibleNextMapPosition: %d", possibleNextMapPosition )
 
-    new mapcycleFilePath[ MAX_FILE_PATH_LENGHT ];
-    get_pcvar_string( cvar_mapcyclefile, mapcycleFilePath, charsmax( mapcycleFilePath ) );
-
-    if( !( g_nextMapCyclePosition = possibleNextMapPosition )
-        && !get_pcvar_num( cvar_isFirstServerStart ) )
+    if( ( g_nextMapCyclePosition = possibleNextMapPosition ) )
     {
-        // When we are setting the `possibleNextMapPosition` to 0, we are restarting the map cycle
-        // from its first position. This happens every time we complete a map cycle full loop.
-        if( ArraySize( g_mapcycleFileListArray ) > 0 )
-        {
-            GET_MAP_NAME( g_mapcycleFileListArray, 0, possibleNextMap )
-        }
-        else
-        {
-            LOGGER( 1, "WARNING, There are not enough maps loaded from your map cycle file: ", mapcycleFilePath )
-            log_amx(   "WARNING, There are not enough maps loaded from your map cycle file: ", mapcycleFilePath );
-        }
-    }
+        new mapcycleFilePath[ MAX_FILE_PATH_LENGHT ];
+        get_pcvar_string( cvar_mapcyclefile, mapcycleFilePath, charsmax( mapcycleFilePath ) );
 
-    setNextMap( possibleCurrentMap, possibleNextMap, true, forceUpdateFile );
-    saveCurrentMapCycleSetting( mapcycleFilePath );
+        setNextMap( possibleCurrentMap, possibleNextMap, true, forceUpdateFile );
+        saveCurrentMapCycleSetting( mapcycleFilePath );
+    }
 }
 
 stock getRestartsOnTheCurrentMap( mapToChange[] )
@@ -2363,6 +2361,10 @@ stock setNextMap( currentMapName[], nextMapName[], bool:isToUpdateTheCvar = true
 }
 
 /**
+ * The parameter `forceUpdateFile` is used only when we need to set the `CURRENT_AND_NEXTMAP_FILE_NAME`
+ * at the first time we started the server. As by the book, we only read the `CURRENT_AND_NEXTMAP_FILE_NAME`
+ * data at the server start.
+ *
  * The next map written to the file `currentAndNextmapNames.dat` is currently used for the option
  * `startAction == SERVER_START_NEXTMAP` and debugging purposes.
  */
@@ -2370,10 +2372,9 @@ stock saveCurrentAndNextMapNames( currentMapName[], nextMapName[], bool:forceUpd
 {
     LOGGER( 128, "I AM ENTERING ON saveCurrentAndNextMapNames(3) | currentMapName: %s, nextMapName: %s", currentMapName, nextMapName )
 
-    // Must not to be run only at the first time the server is started, because the current map pointed
-    // will be instantly changed, neither need to be saved to be restored later, as it is always opened
-    // at the server start.
-    if( get_pcvar_num( cvar_isFirstServerStart ) == AFTER_READ_MAPCYCLE
+    // We do not need to check whether the `cvar_serverStartAction` is enabled or not, because the
+    // execution flow only gets here when it is enabled.
+    if( get_pcvar_num( cvar_isFirstServerStart ) != FIRST_SERVER_START
         || forceUpdateFile )
     {
         new backupMapsFile;
@@ -2766,7 +2767,7 @@ stock loadMapFiles()
         register_clcmd( "say recentmaps", "cmd_listrecent", 0 );
 
         // Do nothing if the map will be instantly changed
-        if( !( get_pcvar_num( cvar_isFirstServerStart )
+        if( !( get_pcvar_num( cvar_isFirstServerStart ) == FIRST_SERVER_START
                && get_pcvar_num( cvar_serverStartAction ) ) )
         {
             writeRecentMapsBanList();
@@ -12952,7 +12953,8 @@ stock loadNextMapPluginSetttings()
     }
 
     // Get the last next map set on the first server start
-    if( get_pcvar_num( cvar_isFirstServerStart ) == SECOND_SERVER_START )
+    if( get_pcvar_num( cvar_serverStartAction )
+        && get_pcvar_num( cvar_isFirstServerStart ) == SECOND_SERVER_START )
     {
         // This is the key that tells us if this server has been started or not.
         set_pcvar_num( cvar_isFirstServerStart, AFTER_READ_MAPCYCLE );
@@ -13913,7 +13915,8 @@ public timeRemain()
         g_test_idsAndNamesArray    = ArrayCreate( MAX_SHORT_STRING );
 
         // delay needed to wait the 'server.cfg' run to load its saved cvars
-        if( !get_pcvar_num( cvar_isFirstServerStart ) )
+        if( !( get_pcvar_num( cvar_serverStartAction )
+               && get_pcvar_num( cvar_isFirstServerStart ) == FIRST_SERVER_START ) )
         {
             set_task( 2.0, "runTests" );
         }
