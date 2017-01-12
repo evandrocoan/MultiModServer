@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-506";
+new const PLUGIN_VERSION[] = "v4.2.0-507";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -7945,9 +7945,7 @@ public computeVotes()
             }
             else if( runoffEnabled == RUNOFF_EXTEND )
             {
-                toAnnounceTheMapExtension( "GAL_WINNER_NO_ONE_VOTED" );
-                map_extend();
-
+                map_extend( "GAL_WINNER_NO_ONE_VOTED" );
                 LOGGER( 1, "( computeVotes ) Its runoff extending." )
             }
             else
@@ -8024,8 +8022,7 @@ stock chooseTheVotingMapWinner( firstPlaceChoices[], numberOfMapsAtFirstPosition
         }
         else if( g_isGameFinalVoting ) // "extend map" won
         {
-            toAnnounceTheMapExtension( "GAL_VOTE_ENDED" );
-            map_extend();
+            map_extend( "GAL_VOTE_ENDED" );
         }
     }
     else // The execution flow gets here when the winner option is not keep/extend map
@@ -8071,10 +8068,8 @@ stock chooseRandomVotingWinner()
         // 2 - extend the current map
         case 2:
         {
-            toAnnounceTheMapExtension( "GAL_WINNER_NO_ONE_VOTED" );
-
             // When called, to trigger the special behaviors.
-            map_extend();
+            map_extend( "GAL_WINNER_NO_ONE_VOTED" );
         }
         // 0 - choose a random map from the current voting map list, as next map
         default:
@@ -8171,9 +8166,9 @@ stock toShowTheMapExtensionHud( lang1[], lang2[], lang3[], extend )
     }
 }
 
-stock map_extend()
+stock map_extend( lang[] )
 {
-    LOGGER( 128, "I AM ENTERING ON map_extend(0)" )
+    LOGGER( 128, "I AM ENTERING ON map_extend(1)" )
     LOGGER( 2, "%32s g_rtvWaitMinutes: %f, g_extendmapStepMinutes: %d", "map_extend( in )", g_rtvWaitMinutes, g_extendmapStepMinutes )
 
     // While the `IS_DISABLED_VOTEMAP_EXIT` bit flag is set, we cannot allow any decisions.
@@ -8186,6 +8181,8 @@ stock map_extend()
         LOGGER( 1, "    ( map_extend ) Just returning/blocking, g_voteMapStatus: %d", g_voteMapStatus )
         return;
     }
+
+    toAnnounceTheMapExtension( lang );
 
     LOGGER( 2, "( map_extend ) TRYING to change the cvar %15s to '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
     LOGGER( 2, "( map_extend ) TRYING to change the cvar %15s to '%d'.", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) )
