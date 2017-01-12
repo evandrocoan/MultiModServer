@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-500";
+new const PLUGIN_VERSION[] = "v4.2.0-501";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -100,7 +100,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-500";
 /**
  * How much players use when the debugging level 'DEBUG_LEVEL_FAKE_VOTES' is enabled.
  */
-#define FAKE_PLAYERS_NUMBER_FOR_DEBUGGING 1
+#define FAKE_PLAYERS_NUMBER_FOR_DEBUGGING 3
 
 /**
  * When the debug mode `DEBUG_LEVEL` is enabled, the map_populateList(4) will show up to this maps
@@ -539,6 +539,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-500";
 #define HUD_CHANGELEVEL_COUNTDOWN 1
 #define HUD_VOTE_VISUAL_COUNTDOWN 2
 #define HUD_CHANGELEVEL_ANNOUNCE  4
+#define HUD_VOTE_RESULTS_ANNOUNCE 8
 
 #define SHOW_STATUS_NEVER             0
 #define SHOW_STATUS_AFTER_VOTE        1
@@ -3446,7 +3447,7 @@ stock isTimeToStartTheEndOfMapVoting( secondsRemaining )
  * algorithms fail to detect the correct round to start the voting.
  *
  * Also, the map will not accept to change when the voting is running due the restriction on
- * try_to_process_last_round(1). On the cases where that restriction does not have effect, the
+ * try_to_process_last_round(2). On the cases where that restriction does not have effect, the
  * voting will already have been started by vote_manageEnd(0) when the maximum allowed time comes.
  */
 stock tryToStartTheVotingOnThisRound()
@@ -3887,10 +3888,15 @@ stock process_last_round( bool:isToImmediatelyChangeLevel, bool:isCountDownAllow
         {
             if( !task_exists( TASKID_PROCESS_LAST_ROUND_COUNT ) )
             {
+                new nextMapName[ MAX_MAPNAME_LENGHT ];
+
                 new totalTime        = 6;
                 g_lastRoundCountdown = totalTime;
 
                 set_task( 1.0, "last_round_countdown", TASKID_PROCESS_LAST_ROUND_COUNT, _, _, "a", totalTime );
+
+                get_pcvar_string( cvar_amx_nextmap, nextMapName, charsmax( nextMapName ) );
+                color_print( 0, "%L...", LANG_PLAYER, "DMAP_MAP_CHANGING_IN2", nextMapName, totalTime );
             }
         }
         else
@@ -7939,14 +7945,20 @@ public computeVotes()
             }
             else if( runoffEnabled == RUNOFF_EXTEND )
             {
+                toAnnounceTheMapExtension( "GAL_WINNER_NO_ONE_VOTED" );
                 map_extend();
 
-                LOGGER( 1, "    ( computeVotes ) Just Returning/blocking, its runoff extending." )
-                return;
+                LOGGER( 1, "( computeVotes ) Its runoff extending." )
+            }
+            else
+            {
+                chooseTheVotingMapWinner( firstPlaceChoices, numberOfMapsAtFirstPosition );
             }
         }
-
-        chooseTheVotingMapWinner( firstPlaceChoices, numberOfMapsAtFirstPosition );
+        else
+        {
+            chooseTheVotingMapWinner( firstPlaceChoices, numberOfMapsAtFirstPosition );
+        }
     }
     else // the execution flow gets here when anybody voted for next map
     {
@@ -7989,9 +8001,7 @@ stock chooseTheVotingMapWinner( firstPlaceChoices[], numberOfMapsAtFirstPosition
         {
             color_print( 0, "%L", LANG_PLAYER, "GAL_WINNER_STAY" );
 
-            // While the `IS_DISABLED_VOTEMAP_EXIT` bit flag is set, we cannot allow any decisions,
-            // however here, none decisions are being made. Anyways, we cannot block the execution
-            // right here without executing the remaining code.
+            // While the `IS_DISABLED_VOTEMAP_EXIT` bit flag is set, we cannot allow any decisions
             if( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXIT )
             {
                 // When the stay here option is called, there is anyone else trying to show action menu,
@@ -7999,24 +8009,24 @@ stock chooseTheVotingMapWinner( firstPlaceChoices[], numberOfMapsAtFirstPosition
                 openTheVoteMapActionMenu();
                 LOGGER( 1, "    ( chooseTheVotingMapWinner ) Just opened the menu due g_voteMapStatus: %d", g_voteMapStatus )
             }
+
+            // However here, none decisions are being made. Anyways, we cannot block the execution
+            // right here without executing the remaining code.
+            noLongerIsAnEarlyVoting();
         }
         else if( !g_isGameFinalVoting // "stay here" won and the map must be restarted.
                  && g_isTimeToRestart )
         {
             color_print( 0, "%L", LANG_PLAYER, "GAL_WINNER_STAY" );
+
+            noLongerIsAnEarlyVoting();
             process_last_round( g_isToChangeMapOnVotingEnd );
         }
         else if( g_isGameFinalVoting ) // "extend map" won
         {
+            toAnnounceTheMapExtension( "GAL_VOTE_ENDED" );
             map_extend();
         }
-
-        // We are extending the map as result of the voting outcome, so reset the ending round variables.
-        resetRoundEnding();
-
-        // no longer is an early or forced voting
-        g_voteStatus &= ~IS_EARLY_VOTE;
-        g_voteStatus &= ~IS_FORCED_VOTE;
     }
     else // The execution flow gets here when the winner option is not keep/extend map
     {
@@ -8024,10 +8034,22 @@ stock chooseTheVotingMapWinner( firstPlaceChoices[], numberOfMapsAtFirstPosition
         server_exec();
 
         color_print( 0, "%L", LANG_PLAYER, "GAL_NEXTMAP", g_nextMapName );
-        process_last_round( g_isToChangeMapOnVotingEnd );
 
         g_voteStatus |= IS_VOTE_OVER;
+        process_last_round( g_isToChangeMapOnVotingEnd );
     }
+}
+
+stock noLongerIsAnEarlyVoting()
+{
+    LOGGER( 128, "I AM ENTERING ON noLongerIsAnEarlyVoting(0)" )
+
+    // We are extending the map as result of the voting outcome, so reset the ending round variables.
+    resetRoundEnding();
+
+    // no longer is an early or forced voting
+    g_voteStatus &= ~IS_EARLY_VOTE;
+    g_voteStatus &= ~IS_FORCED_VOTE;
 }
 
 stock chooseRandomVotingWinner()
@@ -8039,32 +8061,33 @@ stock chooseRandomVotingWinner()
         // 1 - follow your current map-cycle order
         case 1:
         {
+            g_voteStatus |= IS_VOTE_OVER;
             color_print( 0, "%L %L", LANG_PLAYER, "GAL_WINNER_NO_ONE_VOTED", LANG_PLAYER, "GAL_WINNER_ORDERED", g_nextMapName );
 
             // Need to be called to trigger special behaviors.
             setNextMap( g_currentMapName, g_nextMapName );
+            process_last_round( g_isToChangeMapOnVotingEnd );
         }
         // 2 - extend the current map
         case 2:
         {
-            color_print( 0, "%L", LANG_PLAYER, "GAL_WINNER_NO_ONE_VOTED" );
+            toAnnounceTheMapExtension( "GAL_WINNER_NO_ONE_VOTED" );
 
-            // When called, it already to trigger the special behaviors.
+            // When called, to trigger the special behaviors.
             map_extend();
         }
         // 0 - choose a random map from the current voting map list, as next map
         default:
         {
-            new winnerVoteMapIndex;
-            winnerVoteMapIndex = random_num( 0, g_totalVoteOptions - 1 );
+            g_voteStatus |= IS_VOTE_OVER;
 
+            new winnerVoteMapIndex = random_num( 0, g_totalVoteOptions - 1 );
             setNextMap( g_currentMapName, g_votingMapNames[ winnerVoteMapIndex ] );
+
             color_print( 0, "%L %L", LANG_PLAYER, "GAL_WINNER_NO_ONE_VOTED", LANG_PLAYER, "GAL_WINNER_RANDOM", g_nextMapName );
+            process_last_round( g_isToChangeMapOnVotingEnd );
         }
     }
-
-    process_last_round( g_isToChangeMapOnVotingEnd );
-    g_voteStatus |= IS_VOTE_OVER;
 }
 
 /**
@@ -8110,21 +8133,41 @@ stock map_getMinutesElapsedInteger()
     return get_pcvar_num( cvar_mp_timelimit ) - ( get_timeleft() / 60 );
 }
 
-stock toAnnounceTheMapExtension()
+stock toAnnounceTheMapExtension( lang[] )
 {
-    LOGGER( 128, "I AM ENTERING ON toAnnounceTheMapExtension(0)" )
+    LOGGER( 128, "I AM ENTERING ON toAnnounceTheMapExtension(1) lang: %s", lang )
 
     if( g_isVotingByRounds )
     {
-        color_print( 0, "%L", LANG_PLAYER, "GAL_WINNER_EXTEND_ROUND", g_extendmapStepRounds );
+        toShowTheMapExtension   ( lang, "DMAP_MAP_EXTENDED2", "GAL_WINNER_EXTEND_ROUND2", g_extendmapStepRounds );
+        toShowTheMapExtensionHud( lang, "DMAP_MAP_EXTENDED1", "GAL_WINNER_EXTEND_ROUND1", g_extendmapStepRounds );
     }
     else if( g_isVotingByFrags )
     {
-        color_print( 0, "%L", LANG_PLAYER, "GAL_WINNER_EXTEND_FRAGS", g_extendmapStepFrags );
+        toShowTheMapExtension   ( lang, "DMAP_MAP_EXTENDED2", "GAL_WINNER_EXTEND_FRAGS2", g_extendmapStepFrags );
+        toShowTheMapExtensionHud( lang, "DMAP_MAP_EXTENDED1", "GAL_WINNER_EXTEND_FRAGS1", g_extendmapStepFrags );
     }
     else
     {
-        color_print( 0, "%L", LANG_PLAYER, "GAL_WINNER_EXTEND", g_extendmapStepMinutes );
+        toShowTheMapExtension   ( lang, "DMAP_MAP_EXTENDED2", "GAL_WINNER_EXTEND2", g_extendmapStepMinutes );
+        toShowTheMapExtensionHud( lang, "DMAP_MAP_EXTENDED1", "GAL_WINNER_EXTEND1", g_extendmapStepMinutes );
+    }
+}
+
+stock toShowTheMapExtension( lang1[], lang2[], lang3[], extend )
+{
+    LOGGER( 128, "I AM ENTERING ON toShowTheMapExtension(4) lang2: %s, lang3: %s", lang2, lang3 )
+    color_print( 0, "%L. %L, %L", LANG_PLAYER, lang1, LANG_PLAYER, lang2, LANG_PLAYER, lang3, extend );
+}
+
+stock toShowTheMapExtensionHud( lang1[], lang2[], lang3[], extend )
+{
+    LOGGER( 128, "I AM ENTERING ON toShowTheMapExtensionHud(4) lang2: %s, lang3: %s, extend: %d", lang2, lang3, extend )
+
+    if( !( get_pcvar_num( cvar_hudsHide ) & HUD_VOTE_RESULTS_ANNOUNCE ) )
+    {
+        set_hudmessage( 150, 120, 0, -1.0, 0.13, 0, 1.0, 9.94, 0.0, 0.0, -1 );
+        show_hudmessage( 0, "%L. %L,^n %L", LANG_PLAYER, lang1, LANG_PLAYER, lang2, LANG_PLAYER, lang3, extend );
     }
 }
 
@@ -8132,8 +8175,6 @@ stock map_extend()
 {
     LOGGER( 128, "I AM ENTERING ON map_extend(0)" )
     LOGGER( 2, "%32s g_rtvWaitMinutes: %f, g_extendmapStepMinutes: %d", "map_extend( in )", g_rtvWaitMinutes, g_extendmapStepMinutes )
-
-    toAnnounceTheMapExtension();
 
     // While the `IS_DISABLED_VOTEMAP_EXIT` bit flag is set, we cannot allow any decisions.
     if( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXIT )
@@ -8160,6 +8201,7 @@ stock map_extend()
     remove_task( TASKID_SHOW_LAST_ROUND_HUD );
     resetTheRtvWaitTime();
 
+    noLongerIsAnEarlyVoting();
     saveEndGameLimits();
     doTheActualMapExtension();
 
@@ -8407,7 +8449,7 @@ stock map_isTooRecent( map[] )
 
 stock is_to_block_RTV( player_id )
 {
-    LOGGER( 128, "I AM ENTERING ON is_to_block_RTV(2) | player_id: %d", player_id )
+    LOGGER( 128, "I AM ENTERING ON is_to_block_RTV(1) | player_id: %d", player_id )
 
     // If time-limit is 0, minutesElapsed will always be 0.
     new Float:minutesElapsed;
@@ -8490,7 +8532,7 @@ stock is_to_block_RTV( player_id )
 
 public vote_rock( player_id )
 {
-    LOGGER( 128, "I AM ENTERING ON vote_rock(1) | map: %d", player_id )
+    LOGGER( 128, "I AM ENTERING ON vote_rock(1) | player_id: %d", player_id )
     new rocksNeeded;
 
     if( !is_to_block_RTV( player_id )
@@ -10349,8 +10391,7 @@ public cmd_startVote( player_id, level, cid )
             {
                 g_isToChangeMapOnVotingEnd = false;
             }
-
-            if( equali( argument, "-restart", 4 ) )
+            else if( equali( argument, "-restart", 4 ) )
             {
                 g_isTimeToRestart = true;
             }
