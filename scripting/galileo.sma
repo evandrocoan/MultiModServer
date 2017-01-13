@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-515";
+new const PLUGIN_VERSION[] = "v4.2.0-517";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -519,6 +519,11 @@ new const PLUGIN_VERSION[] = "v4.2.0-515";
 #define IS_MAP_MAPCHANGE_FREEZE_PLAYERS 4
 #define IS_MAP_MAPCHANGE_BUY_GRENADES   8
 #define IS_MAP_MAPCHANGE_FRIENDLY_FIRE  16
+
+#define IS_BY_TIMER    1
+#define IS_BY_FRAGS    2
+#define IS_BY_ROUNDS   4
+#define IS_BY_WINLIMIT 8
 
 #define IS_VOTE_IN_PROGRESS 1
 #define IS_FORCED_VOTE      2
@@ -1093,7 +1098,6 @@ new const MAPS_WHERE_THE_SERVER_CRASHED[]   = "maps_where_the_server_probably_cr
 
 new bool:g_theRoundEndWhileVoting;
 new bool:g_isTheRoundEnded;
-new bool:g_isVotingByTimer;
 new bool:g_isTimeToResetGame;
 new bool:g_isTimeToResetRounds;
 new bool:g_isUsingEmptyCycle;
@@ -1104,9 +1108,6 @@ new bool:g_isToShowSubMenu;
 new bool:g_isToShowExpCountdown;
 new bool:g_isToShowVoteCounter;
 new bool:g_isEmptyCycleMapConfigured;
-new bool:g_isMaxroundsExtend;
-new bool:g_isVotingByRounds;
-new bool:g_isVotingByFrags;
 new bool:g_isTheLastGameRound;
 new bool:g_isThePenultGameRound;
 new bool:g_isToChangeMapOnVotingEnd;
@@ -1315,6 +1316,7 @@ new g_totalVoteOptions;
 new g_maxVotingChoices;
 new g_voteStatus;
 new g_voteMapStatus;
+new g_endVotingType;
 new g_voteMapInvokerPlayerId;
 new g_votingSecondsRemaining;
 new g_totalVotesCounted;
@@ -5729,76 +5731,84 @@ stock computeNextWhiteListLoadTime( seconds, bool:isSecondsLeft = true )
  */
 stock vote_manageEarlyStart()
 {
-    LOGGER( 128, "I AM ENTERING ON vote_manageEarlyStart(0)" )
-
+    LOGGER( 128, "I AM ENTERING ON vote_manageEarlyStart(0) g_voteStatus: %d", g_voteStatus )
     g_voteStatus |= IS_EARLY_VOTE;
+
     set_task( 120.0, "startNonForcedVoting", TASKID_VOTE_STARTDIRECTOR );
 }
 
 public startNonForcedVoting()
 {
-    LOGGER( 128, "I AM ENTERING ON startNonForcedVoting(0)" )
+    LOGGER( 128, "I AM ENTERING ON startNonForcedVoting(0) g_endVotingType: %d", g_endVotingType )
     vote_startDirector( false );
 }
 
 public start_voting_by_winlimit()
 {
-    LOGGER( 128, "I AM ENTERING ON start_voting_by_winlimit(0) | get_pcvar_num( cvar_endOfMapVote ): %d", \
-            get_pcvar_num( cvar_endOfMapVote ) )
+    LOGGER( 128, "I AM ENTERING ON start_voting_by_winlimit(0) g_endVotingType: %d", g_endVotingType)
+    LOGGER( 32, "( start_voting_by_winlimit ) get_pcvar_num( cvar_endOfMapVote ): %d", get_pcvar_num( cvar_endOfMapVote ) )
 
     if( get_pcvar_num( cvar_endOfMapVote ) )
     {
-        g_isVotingByRounds  = true;
-        g_isMaxroundsExtend = false;
+        g_endVotingType |= IS_BY_WINLIMIT;
+
+        resetVoteTypeGlobals();
         vote_startDirector( false );
     }
 }
 
 public start_voting_by_maxrounds()
 {
-    LOGGER( 128, "I AM ENTERING ON start_voting_by_maxrounds(0) | get_pcvar_num( cvar_endOfMapVote ): %d", \
-            get_pcvar_num( cvar_endOfMapVote ) )
+    LOGGER( 128, "I AM ENTERING ON start_voting_by_maxrounds(0) g_endVotingType: %d", g_endVotingType)
+    LOGGER( 32, "( start_voting_by_maxrounds ) get_pcvar_num( cvar_endOfMapVote ): %d", get_pcvar_num( cvar_endOfMapVote ) )
 
     if( get_pcvar_num( cvar_endOfMapVote ) )
     {
-        g_isVotingByRounds  = true;
-        g_isMaxroundsExtend = true;
+        g_endVotingType |= IS_BY_ROUNDS;
+
+        resetVoteTypeGlobals();
         vote_startDirector( false );
     }
 }
 
 public start_voting_by_frags()
 {
-    LOGGER( 128, "I AM ENTERING ON start_voting_by_frags(0) | get_pcvar_num( cvar_endOfMapVote ): %d", \
-            get_pcvar_num( cvar_endOfMapVote ) )
+    LOGGER( 128, "I AM ENTERING ON start_voting_by_frags(0) g_endVotingType: %d", g_endVotingType)
+    LOGGER( 32, "( start_voting_by_frags ) get_pcvar_num( cvar_endOfMapVote ): %d", get_pcvar_num( cvar_endOfMapVote ) )
 
     if( get_pcvar_num( cvar_endOfMapVote ) )
     {
-        g_isVotingByFrags = true;
+        g_endVotingType |= IS_BY_FRAGS;
+
+        resetVoteTypeGlobals();
         vote_startDirector( false );
     }
 }
 
 public start_voting_by_timer()
 {
-    LOGGER( 128, "I AM ENTERING ON start_voting_by_timer(0) | get_pcvar_num( cvar_endOfMapVote ): %d", \
-            get_pcvar_num( cvar_endOfMapVote ) )
+    LOGGER( 128, "I AM ENTERING ON start_voting_by_timer(0) g_endVotingType: %d", g_endVotingType)
+    LOGGER( 32, "( start_voting_by_timer ) get_pcvar_num( cvar_endOfMapVote ): %d", get_pcvar_num( cvar_endOfMapVote ) )
 
     if( get_pcvar_num( cvar_endOfMapVote ) )
     {
-        g_isVotingByTimer = true;
+        g_endVotingType |= IS_BY_TIMER;
+
+        resetVoteTypeGlobals();
         vote_startDirector( false );
     }
 }
 
 public startVotingByGameEngineCall()
 {
-    LOGGER( 128, "I AM ENTERING ON startVotingByGameEngineCall(0) | get_pcvar_num( cvar_endOfMapVote ): %d", \
-            get_pcvar_num( cvar_endOfMapVote ) )
+    LOGGER( 128, "I AM ENTERING ON startVotingByGameEngineCall(0) g_endVotingType: %d", g_endVotingType)
+    LOGGER( 32, "( startVotingByGameEngineCall ) get_pcvar_num( cvar_endOfMapVote ): %d", get_pcvar_num( cvar_endOfMapVote ) )
 
     if( get_pcvar_num( cvar_endOfMapVote ) )
     {
         g_isToChangeMapOnVotingEnd = true;
+
+        resetVoteTypeGlobals();
         vote_startDirector( false );
     }
 }
@@ -6063,30 +6073,25 @@ stock configureTheExtensionOption( bool:is_forced_voting )
     {
         g_isMapExtensionAllowed = false;
     }
-    else if( g_isVotingByFrags
+    else if( g_endVotingType & IS_BY_FRAGS
              && ( cache = Float:get_pcvar_num( cvar_maxMapExtendFrags ) ) )
     {
         g_isMapExtensionAllowed =
                 get_pcvar_num( cvar_mp_fraglimit ) < cache;
     }
-    else if( g_isVotingByRounds
+    else if( g_endVotingType & IS_BY_ROUNDS
              && ( cache = Float:get_pcvar_num( cvar_maxMapExtendRounds ) ) )
     {
-        switch( whatGameEndingTypeItIs() )
-        {
-            case GameEndingType_ByWinLimit:
-            {
-                g_isMapExtensionAllowed =
-                        get_pcvar_num( cvar_mp_winlimit ) < cache;
-            }
-            default:
-            {
-                g_isMapExtensionAllowed =
-                        get_pcvar_num( cvar_mp_maxrounds ) < cache;
-            }
-        }
+        g_isMapExtensionAllowed =
+                get_pcvar_num( cvar_mp_maxrounds ) < cache;
     }
-    else if( g_isVotingByTimer
+    else if( g_endVotingType & IS_BY_WINLIMIT
+             && ( cache = get_pcvar_float( cvar_maxMapExtendRounds ) ) )
+    {
+        g_isMapExtensionAllowed =
+                get_pcvar_num( cvar_mp_winlimit ) < cache;
+    }
+    else if( g_endVotingType & IS_BY_TIMER
              && ( cache = get_pcvar_float( cvar_maxMapExtendTime ) ) )
     {
         g_isMapExtensionAllowed =
@@ -6097,9 +6102,10 @@ stock configureTheExtensionOption( bool:is_forced_voting )
         g_isMapExtensionAllowed = true;
     }
 
-    g_isGameFinalVoting = ( ( g_isVotingByRounds
-                              || g_isVotingByTimer
-                              || g_isVotingByFrags )
+    g_isGameFinalVoting = ( ( g_endVotingType & IS_BY_ROUNDS
+                              || g_endVotingType & IS_BY_WINLIMIT
+                              || g_endVotingType & IS_BY_TIMER
+                              || g_endVotingType & IS_BY_FRAGS )
                             && !is_forced_voting );
 
     LOGGER( 4, "( configureTheExtensionOption ) g_isGameFinalVoting: %d, ", g_isGameFinalVoting )
@@ -6828,12 +6834,12 @@ stock addExtensionOption( player_id, copiedChars, voteStatus[], voteStatusLenght
             new extend_option_type[ 32 ];
 
             // add the "Extend Map" menu item.
-            if( g_isVotingByRounds )
+            if( g_endVotingType & ( IS_BY_ROUNDS | IS_BY_WINLIMIT ) )
             {
                 extend_step = g_extendmapStepRounds;
                 copy( extend_option_type, charsmax( extend_option_type ), "GAL_OPTION_EXTEND_ROUND" );
             }
-            else if( g_isVotingByFrags )
+            else if( g_endVotingType & IS_BY_FRAGS )
             {
                 extend_step = g_extendmapStepFrags;
                 copy( extend_option_type, charsmax( extend_option_type ), "GAL_OPTION_EXTEND_FRAGS" );
@@ -8109,13 +8115,9 @@ stock chooseRandomVotingWinner()
 
 stock resetVoteTypeGlobals()
 {
-    LOGGER( 128, "I AM ENTERING ON finalizeVoting(0)" )
+    LOGGER( 128, "I AM ENTERING ON resetVoteTypeGlobals(0)" )
 
-    g_isVotingByTimer   = false;
-    g_isVotingByRounds  = false;
-    g_isMaxroundsExtend = false;
-    g_isVotingByFrags   = false;
-
+    g_endVotingType                 = 0;
     g_isRunOffNeedingKeepCurrentMap = false;
 }
 
@@ -8162,12 +8164,12 @@ stock toAnnounceTheMapExtension( lang[] )
 {
     LOGGER( 128, "I AM ENTERING ON toAnnounceTheMapExtension(1) lang: %s", lang )
 
-    if( g_isVotingByRounds )
+    if( g_endVotingType & ( IS_BY_ROUNDS | IS_BY_WINLIMIT ) )
     {
         color_print( 0, "%L %L", LANG_PLAYER, lang, LANG_PLAYER, "GAL_WINNER_EXTEND_ROUND2", g_extendmapStepRounds );
         toShowTheMapExtensionHud( lang, "DMAP_MAP_EXTENDED1", "GAL_WINNER_EXTEND_ROUND1", g_extendmapStepRounds );
     }
-    else if( g_isVotingByFrags )
+    else if( g_endVotingType & IS_BY_FRAGS )
     {
         color_print( 0, "%L %L", LANG_PLAYER, lang, LANG_PLAYER, "GAL_WINNER_EXTEND_FRAGS2", g_extendmapStepFrags );
         toShowTheMapExtensionHud( lang, "DMAP_MAP_EXTENDED1", "GAL_WINNER_EXTEND_FRAGS1", g_extendmapStepFrags );
@@ -8285,34 +8287,32 @@ stock doTheActualMapExtension()
 {
     LOGGER( 128, "I AM ENTERING ON doTheActualMapExtension(0)" )
 
-    if( g_isVotingByRounds )
+    if( g_endVotingType & IS_BY_ROUNDS )
     {
-        tryToSetGameModCvarNum(  cvar_mp_fraglimit , 0   );
+        tryToSetGameModCvarNum(   cvar_mp_maxrounds, get_pcvar_num( cvar_mp_maxrounds ) + g_extendmapStepRounds );
+        tryToSetGameModCvarNum(   cvar_mp_winlimit , 0 );
+        tryToSetGameModCvarNum(   cvar_mp_fraglimit, 0 );
         tryToSetGameModCvarFloat( cvar_mp_timelimit, 0.0 );
-
-        if( g_isMaxroundsExtend )
-        {
-            tryToSetGameModCvarNum( cvar_mp_maxrounds, get_pcvar_num( cvar_mp_maxrounds ) + g_extendmapStepRounds );
-            tryToSetGameModCvarNum( cvar_mp_winlimit, 0 );
-        }
-        else // isWinlimitExtend
-        {
-            tryToSetGameModCvarNum( cvar_mp_maxrounds, 0 );
-            tryToSetGameModCvarNum( cvar_mp_winlimit, get_pcvar_num( cvar_mp_winlimit ) + g_extendmapStepRounds );
-        }
     }
-    else if( g_isVotingByFrags )
+    else if( g_endVotingType & IS_BY_WINLIMIT )
+    {
+        tryToSetGameModCvarNum(   cvar_mp_maxrounds, 0  );
+        tryToSetGameModCvarNum(   cvar_mp_winlimit , get_pcvar_num( cvar_mp_winlimit ) + g_extendmapStepRounds );
+        tryToSetGameModCvarNum(   cvar_mp_fraglimit, 0 );
+        tryToSetGameModCvarFloat( cvar_mp_timelimit, 0.0 );
+    }
+    else if( g_endVotingType & IS_BY_FRAGS )
     {
         tryToSetGameModCvarNum(   cvar_mp_maxrounds, 0   );
         tryToSetGameModCvarNum(   cvar_mp_winlimit , 0   );
-        tryToSetGameModCvarFloat( cvar_mp_timelimit, 0.0 );
         tryToSetGameModCvarNum(   cvar_mp_fraglimit, get_pcvar_num( cvar_mp_fraglimit ) + g_extendmapStepFrags );
+        tryToSetGameModCvarFloat( cvar_mp_timelimit, 0.0 );
     }
     else
     {
-        tryToSetGameModCvarNum( cvar_mp_fraglimit, 0 );
-        tryToSetGameModCvarNum( cvar_mp_maxrounds, 0 );
-        tryToSetGameModCvarNum( cvar_mp_winlimit, 0 );
+        tryToSetGameModCvarNum(   cvar_mp_maxrounds, 0 );
+        tryToSetGameModCvarNum(   cvar_mp_winlimit , 0 );
+        tryToSetGameModCvarNum(   cvar_mp_fraglimit, 0 );
         tryToSetGameModCvarFloat( cvar_mp_timelimit, get_pcvar_float( cvar_mp_timelimit ) + g_extendmapStepMinutes );
     }
 }
@@ -14684,7 +14684,7 @@ public timeRemain()
         set_pcvar_float( cvar_maxMapExtendTime, 20.0 );
         tryToSetGameModCvarFloat( cvar_mp_timelimit, 10.0 );
 
-        g_isVotingByTimer = true;
+        g_endVotingType |= IS_BY_TIMER;
         vote_startDirector( false );
 
         formatex( errorMessage, charsmax( errorMessage ), "g_isMapExtensionAllowed must be 1 (it was %d)", g_isMapExtensionAllowed );
@@ -14715,7 +14715,7 @@ public timeRemain()
         set_pcvar_float( cvar_maxMapExtendTime, 10.0 );
         tryToSetGameModCvarFloat( cvar_mp_timelimit, 20.0 );
 
-        g_isVotingByTimer = true;
+        g_endVotingType |= IS_BY_TIMER;
         vote_startDirector( false );
 
         formatex( errorMessage, charsmax( errorMessage ), "g_isMapExtensionAllowed must be 0 (it was %d)", g_isMapExtensionAllowed );
