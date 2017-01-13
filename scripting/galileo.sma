@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-514";
+new const PLUGIN_VERSION[] = "v4.2.0-515";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -8709,7 +8709,7 @@ stock configureRtvVotingType()
         }
         default:
         {
-            g_isVotingByTimer = true;
+            // By default we a voting by time. And a vote by time does not need any special setting.
         }
     }
 }
