@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-511";
+new const PLUGIN_VERSION[] = "v4.2.0-512";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -86,7 +86,9 @@ new const PLUGIN_VERSION[] = "v4.2.0-511";
  *
  * 16   - Enable DEBUG_LEVEL 1 and all its debugging/depuration available.
  *
- * 32   - Run the manual test on server start.
+ * 32   - a) Run the MANUAL test on server start.
+ *        b) To skip the 'pendingVoteCountdown()'.
+ *        c) Set the vote runoff time to 5 seconds.
  *
  * 64   - Disable the LOGGER() while running the Unit Tests.
  *
@@ -94,7 +96,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-511";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+32
+#define DEBUG_LEVEL 1+32+8
 
 
 /**
@@ -329,13 +331,13 @@ new const PLUGIN_VERSION[] = "v4.2.0-511";
             // LOGGER( 1, "Current i is: %d", i )
         }
 
-        // test_SortCustomSynced2D();
-        // test_GET_MAP_INFO_load();
-        // test_GET_MAP_NAME_load();
+        test_SortCustomSynced2D();
+        test_GET_MAP_INFO_load();
+        test_GET_MAP_NAME_load();
         // test_populateListOnSeries_load1();
         // test_populateListOnSeries_load2();
         // test_populateListOnSeries_load3();
-        test_setCorrectMenuPage_load();
+        // test_setCorrectMenuPage_load();
         // test_convertNumericBase_load();
         // test_whatGameEndingTypeIt_load();
         // test_getUniqueRandomInt_load();
@@ -6577,9 +6579,9 @@ public vote_display( argument[ 2 ] )
 
         copiedChars += formatex( voteStatus[ copiedChars ], charsmax( voteStatus ) - copiedChars,
                "^n%s%i.%s \
-                %s%s",
+                %s %s%s",
                 COLOR_RED, choiceIndex + 1, COLOR_WHITE,
-                g_votingMapNames[ choiceIndex ], mapVotingCount );
+                g_votingMapNames[ choiceIndex ], g_votingMapInfos[ choiceIndex ], mapVotingCount );
 
         menuKeys |= ( 1 << choiceIndex );
     }
@@ -8387,7 +8389,7 @@ stock removeMapFromTheVotingMenu( mapName[] )
 
 stock addMapToTheVotingMenu( mapName[], mapInfo[] )
 {
-    LOGGER( 1, "I AM ENTERING ON addMapToTheVotingMenu(1) | map: %s", mapName )
+    LOGGER( 1, "I AM ENTERING ON addMapToTheVotingMenu(1) | map: %s, mapInfo: %s", mapName, mapInfo )
 
     if( !map_isInMenu( mapName ) )
     {
