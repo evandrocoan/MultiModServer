@@ -8667,51 +8667,13 @@ stock start_rtvVote()
     }
 
     g_voteStatus |= IS_RTV_VOTE;
-    configureRtvVotingType();
-
-    // Any voting not started by `cvar_endOfMapVoteStart`, `cvar_endOnRound` or ending limit expiration,
-    // is a forced voting.
-    vote_startDirector( true );
-}
-
-/**
- * This function choose what RTV's type will be used to 'rock the vote'. The types are:
- *
- *     1) Per rounds.
- *     2) Is by mp_winlimit expiration proximity?
- *     3) Is by mp_maxrounds expiration proximity?
- *     4) Per minutes.
- *
- * These data are used to display the voting menu and proper set the voting flow. This use the
- * default voting type to timer if the rounds ending are disabled.
- */
-stock configureRtvVotingType()
-{
-    LOGGER( 128, "I AM ENTERING ON configureRtvVotingType(0)" )
 
     // Just to be sure
     resetVoteTypeGlobals();
 
-    switch( whatGameEndingTypeItIs() )
-    {
-        case GameEndingType_ByMaxRounds:
-        {
-            g_isVotingByRounds  = true;
-            g_isMaxroundsExtend = true;
-        }
-        case GameEndingType_ByWinLimit:
-        {
-            g_isVotingByRounds  = true;
-        }
-        case GameEndingType_ByFragLimit:
-        {
-            g_isVotingByFrags = true;
-        }
-        default:
-        {
-            // By default we a voting by time. And a vote by time does not need any special setting.
-        }
-    }
+    // Any voting not started by `cvar_endOfMapVoteStart`, `cvar_endOnRound` or ending limit expiration,
+    // is a forced voting.
+    vote_startDirector( true );
 }
 
 stock vote_unrockTheVote( player_id )
