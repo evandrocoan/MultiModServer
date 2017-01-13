@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-512";
+new const PLUGIN_VERSION[] = "v4.2.0-513";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -6578,10 +6578,12 @@ public vote_display( argument[ 2 ] )
         computeMapVotingCount( mapVotingCount, charsmax( mapVotingCount ), choiceIndex );
 
         copiedChars += formatex( voteStatus[ copiedChars ], charsmax( voteStatus ) - copiedChars,
-               "^n%s%i.%s \
-                %s %s%s",
-                COLOR_RED, choiceIndex + 1, COLOR_WHITE,
-                g_votingMapNames[ choiceIndex ], g_votingMapInfos[ choiceIndex ], mapVotingCount );
+               "^n%s%d.%s %s\
+                %s\
+                %s%s",
+                COLOR_RED, choiceIndex + 1, COLOR_WHITE, g_votingMapNames[ choiceIndex ],
+                g_votingMapInfos[ choiceIndex ][ 0 ] ? " " : "",
+                g_votingMapInfos[ choiceIndex ], mapVotingCount );
 
         menuKeys |= ( 1 << choiceIndex );
     }
@@ -8379,7 +8381,7 @@ stock removeMapFromTheVotingMenu( mapName[] )
         }
     }
 
-    // Switch the entries to not mess with everything depending on the `g_totalVoteOptions` size.
+    // Shift the entries to not mess with everything depending on the `g_totalVoteOptions` size.
     for( ; index < g_totalVoteOptions; index++ )
     {
         copy( g_votingMapNames[ index ], charsmax( g_votingMapNames[] ), g_votingMapNames[ index + 1 ] );
