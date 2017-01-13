@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-513";
+new const PLUGIN_VERSION[] = "v4.2.0-514";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -603,7 +603,12 @@ new const PLUGIN_VERSION[] = "v4.2.0-513";
 #define PERIODIC_CHECKING_INTERVAL 15
 
 /**
- * The rounds number before the mp_maxrounds/mp_winlimit to be reached to start the map voting.
+ * The rounds number before the mp_maxrounds/mp_winlimit to be reached to start the map voting. This
+ * constant is equivalent to the `START_VOTEMAP_MIN_TIME` and `START_VOTEMAP_MAX_TIME` concepts.
+ *
+ * Make sure this is big enough, because the rounds could be finish pretty fast and the game may end
+ * before it, as this option only takes effect and the `cvar_endOnRound` and `cvar_endOfMapVoteStart`
+ * are not handling the map end.
  */
 #define VOTE_START_ROUNDS 4
 
@@ -650,8 +655,8 @@ new const PLUGIN_VERSION[] = "v4.2.0-513";
 /**
  * Start a map voting delayed after the mp_maxrounds or mp_winlimit minimum to be reached.
  */
-#define START_VOTING_BY_MIDDLE_ROUND_DELAY() \
-    set_task( float( ROUND_VOTING_START_SECONDS_DELAY() ), "start_voting_by_rounds", TASKID_START_VOTING_BY_ROUNDS );
+#define START_VOTING_BY_MIDDLE_ROUND_DELAY(%1) \
+    set_task( float( ROUND_VOTING_START_SECONDS_DELAY() ), %1, TASKID_START_VOTING_DELAYED );
 //
 
 /**
@@ -950,8 +955,7 @@ enum (+= 100000)
     TASKID_DELETE_USERS_MENUS_CARE,
     TASKID_PREVENT_INFITY_GAME,
     TASKID_EMPTYSERVER,
-    TASKID_START_VOTING_BY_ROUNDS,
-    TASKID_START_VOTING_BY_TIMER,
+    TASKID_START_VOTING_DELAYED,
     TASKID_PROCESS_LAST_ROUND,
     TASKID_PROCESS_LAST_ROUND_COUNT,
     TASKID_PROCESS_LAST_ROUNDCHANGE,
@@ -2476,24 +2480,6 @@ public setGameToFinishAtHalfTime()
 }
 
 /**
- * Action from handleServerStart to take when it is detected that the server has been
- * restarted. 3 - start an early map vote after the first two minutes.
- */
-stock vote_manageEarlyStart()
-{
-    LOGGER( 128, "I AM ENTERING ON vote_manageEarlyStart(0)" )
-
-    g_voteStatus |= IS_EARLY_VOTE;
-    set_task( 120.0, "startNonForcedVoting", TASKID_VOTE_STARTDIRECTOR );
-}
-
-public startNonForcedVoting()
-{
-    LOGGER( 128, "I AM ENTERING ON startNonForcedVoting(0)" )
-    vote_startDirector( false );
-}
-
-/**
  * Load the recent ban map from the file. If the number of valid maps loaded is lower than the
  * number of map loaded to fill the vote menu, not all the maps will be loaded.
  *
@@ -2929,14 +2915,10 @@ public client_death_event()
         {
             new frags;
 
-            if( ( ( ( frags = ++g_playersKills[ killerId ] ) + VOTE_START_FRAGS() ) > g_fragLimitNumber )
-                && !IS_END_OF_MAP_VOTING_GOING_ON() )
+            if( ( ( frags = ++g_playersKills[ killerId ] ) + VOTE_START_FRAGS() ) > g_fragLimitNumber
+                && isTimeToStartTheEndOfMapVoting() )
             {
-                if( get_pcvar_num( cvar_endOfMapVote ) )
-                {
-                    g_isVotingByFrags = true;
-                    vote_startDirector( false );
-                }
+                start_voting_by_frags();
             }
 
             if( frags > g_greatestKillerFrags )
@@ -3060,18 +3042,18 @@ stock chooseTheEndOfMapStartOption( roundsRemaining )
  *
  * @param secondsRemaining         how many seconds are remaining to the map end.
  */
-stock isToStartTheVotingOnThisRound( secondsRemaining )
+stock isToStartTheVotingOnThisRound( secondsRemaining, GameEndingType:gameEndingType )
 {
-    LOGGER( 128, "I AM ENTERING ON isToStartTheVotingOnThisRound(1) secondsRemaining: %d", secondsRemaining )
+    LOGGER( 128, "I AM ENTERING ON isToStartTheVotingOnThisRound(2) secondsRemaining: %d", secondsRemaining )
 
     if( get_pcvar_num( cvar_endOfMapVote )
-        && !task_exists( TASKID_START_VOTING_BY_TIMER ) )
+        && !task_exists( TASKID_START_VOTING_DELAYED ) )
     {
         // Reduce the total time due the PERIODIC_CHECKING_INTERVAL error.
         new secondsPassed = secondsRemaining - PERIODIC_CHECKING_INTERVAL;
         LOGGER( 0, "", debugIsTimeToStartTheEndOfMap( secondsRemaining, 256 ) )
 
-        new roundsRemaining = howManyRoundsAreRemaining( secondsPassed, whatGameEndingTypeItIs() );
+        new roundsRemaining = howManyRoundsAreRemaining( secondsPassed, gameEndingType );
         return chooseTheEndOfMapStartOption( roundsRemaining );
     }
 
@@ -3363,10 +3345,10 @@ stock debugWhatGameEndingTypeItIs( rounds_left_by_maxrounds, rounds_left_by_time
 stock debugIsTimeToStartTheEndOfMap( secondsRemaining, debugLevel )
 {
     LOGGER( 128, "I AM ENTERING ON debugIsTimeToStartTheEndOfMap(2)" )
-    new taskExist = task_exists( TASKID_START_VOTING_BY_TIMER );
+    new taskExist = task_exists( TASKID_START_VOTING_DELAYED );
 
     LOGGER( debugLevel, "" )
-    LOGGER( debugLevel, "( debugIsTimeToStartTheEndOfMap ) task_exists TASKID_START_VOTING_BY_TIMER: %d", taskExist )
+    LOGGER( debugLevel, "( debugIsTimeToStartTheEndOfMap ) task_exists TASKID_START_VOTING_DELAYED: %d", taskExist )
     LOGGER( debugLevel, "( debugIsTimeToStartTheEndOfMap ) g_isTheLastGameRound: %d", g_isTheLastGameRound )
     LOGGER( debugLevel, "( debugIsTimeToStartTheEndOfMap ) g_isThePenultGameRound: %d", g_isThePenultGameRound )
     LOGGER( debugLevel, "( debugIsTimeToStartTheEndOfMap ) debugLevel: %d", debugLevel )
@@ -3394,46 +3376,38 @@ stock debugIsTimeToStartTheEndOfMap( secondsRemaining, debugLevel )
  *
  * As we only periodically check to whether to start the map voting each 15 seconds, we must to set
  * the minimum check as: g_votingSecondsRemaining + 15 seconds + 1
- *
- * @param secondsRemaining     how many seconds are remaining to the map end.
  */
-stock isTimeToStartTheEndOfMapVoting( secondsRemaining )
+stock isTimeToStartTheEndOfMapVoting()
 {
-    LOGGER( 256, "I AM ENTERING ON isTimeToStartTheEndOfMapVoting(1) secondsRemaining: %d", secondsRemaining )
+    LOGGER( 256, "I AM ENTERING ON isTimeToStartTheEndOfMapVoting(0) secondsRemaining: %d", get_timeleft() )
+    LOGGER( 0, "", debugIsTimeToStartTheEndOfMap( get_timeleft(), 32 ) )
 
-    if( secondsRemaining < START_VOTEMAP_MIN_TIME
-        && secondsRemaining > START_VOTEMAP_MAX_TIME )
+    if( !IS_END_OF_MAP_VOTING_GOING_ON()
+        && !task_exists( TASKID_START_VOTING_DELAYED )
+        && get_pcvar_num( cvar_endOfMapVote ) )
     {
-        LOGGER( 0, "", debugIsTimeToStartTheEndOfMap( secondsRemaining, 32 ) )
-
-        if( !IS_END_OF_MAP_VOTING_GOING_ON()
-            && !task_exists( TASKID_START_VOTING_BY_TIMER )
-            && get_pcvar_num( cvar_endOfMapVote ) )
+        //     If the `cvar_endOfMapVoteStart` is not enabled, we must to start a map voting right now
+        // because the time is ending and the `cvar_endOfMapVoteStart` will not be able to start a map
+        // voting.
+        //
+        //     If the `cvar_endOnRound` is not enabled we must to start the voting right now because
+        // there will be no round end waiting and once the `secondsRemaining` are finished, the map
+        // will change whether the voting is complete or not.
+        //     This is not the case when the `cvar_endOnRound` is enabled. If the voting is not finish
+        // when the round is end, a new extra round will be played. If the map time is too big, makes
+        // no sense to wait and will probably not to start the voting.
+        //
+        //     Let suppose the `cvar_endOnRound` is set to 1, and right now the the time left is 20, and
+        // there are remaining 30 seconds to finish the round. If this is called, it should do nothing
+        // because as the `cvar_endOnRound` is enabled, the voting will be scheduled by map_manageEnd(0).
+        //
+        if( !ARE_THERE_ENOUGH_PLAYERS_FOR_MANAGE_END()
+           || !get_pcvar_num( cvar_endOfMapVoteStart )
+           || !get_pcvar_num( cvar_endOnRound )
+           || IS_THE_ROUND_TIME_TOO_BIG() )
         {
-            //     If the `cvar_endOfMapVoteStart` is not ready or enabled, we must to start a map voting
-            // right now because the time is ending and the `cvar_endOfMapVoteStart` will not be able
-            // to start a map voting because there are not enough data until `MIN_VOTE_START_ROUNDS_DELAY`.
-            //
-            //     If the `cvar_endOnRound` is not enabled we must to start the voting right now because
-            // there will be no round end waiting and once the `secondsRemaining` are finished, the map
-            // will change whether the voting is complete or not.
-            //     This is not the case when the `cvar_endOnRound` is enabled. If the voting is not finish
-            // when the round is end, a new extra round will be played. If the map time is too big, makes
-            // no sense to wait and will probably not to start the voting.
-            //
-            //     Let suppose the `cvar_endOnRound` is set to 1, and right now the the time left is 20, and
-            // there are remaining 30 seconds to finish the round. If this is called, it should do nothing
-            // because as the `cvar_endOnRound` is enabled, the voting will be scheduled by map_manageEnd(0).
-            //
-            if( !ARE_THERE_ENOUGH_PLAYERS_FOR_MANAGE_END()
-               || g_totalRoundsSavedTimes < MIN_VOTE_START_ROUNDS_DELAY + 1
-               || !get_pcvar_num( cvar_endOfMapVoteStart )
-               || !get_pcvar_num( cvar_endOnRound )
-               || IS_THE_ROUND_TIME_TOO_BIG() )
-            {
-                LOGGER( 256, "    ( isTimeToStartTheEndOfMapVoting ) Just returning true." )
-                return true;
-            }
+            LOGGER( 256, "    ( isTimeToStartTheEndOfMapVoting ) Just returning true." )
+            return true;
         }
     }
 
@@ -3442,6 +3416,8 @@ stock isTimeToStartTheEndOfMapVoting( secondsRemaining )
 }
 
 /**
+ * This only handles the voting starting by limit expiration.
+ *
  * Called on the round's middle to start determine whether to start to voting map. If it is called
  * between the team_win_event(0) and round_start_event(0), this must to not perform any actions as
  * they are performed at the round_start_event(0) once it is triggered.
@@ -3457,19 +3433,38 @@ stock isTimeToStartTheEndOfMapVoting( secondsRemaining )
 stock tryToStartTheVotingOnThisRound()
 {
     LOGGER( 128, "I AM ENTERING ON tryToStartTheVotingOnThisRound(0)" )
+    new GameEndingType:gameEndingType = whatGameEndingTypeItIs();
 
     if( !g_isTheRoundEnded
-        && isToStartTheVotingOnThisRound( get_timeleft() ) )
+        && isToStartTheVotingOnThisRound( get_timeleft(), gameEndingType ) )
     {
-        // how may seconds have been passed since the round started, is case this is called by
+        // How may seconds have been passed since the round started, is case this is called by
         // a late round start event as map_manageEnd(0).
         new howManySecondsPassed = floatround( get_gametime(), floatround_ceil ) - g_roundStartTime;
 
         // if so, we cannot delay any more the vote map start as we could be already be running out of time.
         howManySecondsPassed = ROUND_VOTING_START_SECONDS_DELAY() - howManySecondsPassed;
-
         if( howManySecondsPassed < 1 ) howManySecondsPassed = 1;
-        set_task( float( howManySecondsPassed ), "start_voting_by_timer", TASKID_START_VOTING_BY_TIMER );
+
+        switch( gameEndingType )
+        {
+            case GameEndingType_ByWinLimit:
+            {
+                set_task( float( howManySecondsPassed ), "start_voting_by_winlimit", TASKID_START_VOTING_DELAYED );
+            }
+            case GameEndingType_ByMaxRounds:
+            {
+                set_task( float( howManySecondsPassed ), "start_voting_by_maxrounds", TASKID_START_VOTING_DELAYED );
+            }
+            case GameEndingType_ByFragLimit:
+            {
+                set_task( float( howManySecondsPassed ), "start_voting_by_frags", TASKID_START_VOTING_DELAYED );
+            }
+            default:
+            {
+                set_task( float( howManySecondsPassed ), "start_voting_by_timer", TASKID_START_VOTING_DELAYED );
+            }
+        }
     }
 }
 
@@ -3525,12 +3520,11 @@ public team_win_event()
         wins_CT_trigger        = g_totalCtWins + VOTE_START_ROUNDS;
         wins_Terrorist_trigger = g_totalTerroristsWins + VOTE_START_ROUNDS;
 
-        if( ( ( wins_CT_trigger > g_winLimitInteger )
-              || ( wins_Terrorist_trigger > g_winLimitInteger ) )
-            && !IS_END_OF_MAP_VOTING_GOING_ON() )
+        if( ( wins_CT_trigger > g_winLimitInteger
+              || wins_Terrorist_trigger > g_winLimitInteger )
+            && isTimeToStartTheEndOfMapVoting() )
         {
-            g_isMaxroundsExtend = false;
-            START_VOTING_BY_MIDDLE_ROUND_DELAY()
+            START_VOTING_BY_MIDDLE_ROUND_DELAY( "start_voting_by_winlimit" )
         }
 
         if( g_totalCtWins > g_winLimitInteger - 2
@@ -3560,11 +3554,10 @@ public round_end_event()
     {
         current_rounds_trigger = g_totalRoundsPlayed + VOTE_START_ROUNDS;
 
-        if( ( current_rounds_trigger > g_maxRoundsNumber )
-            && !IS_END_OF_MAP_VOTING_GOING_ON() )
+        if( current_rounds_trigger > g_maxRoundsNumber
+            && isTimeToStartTheEndOfMapVoting() )
         {
-            g_isMaxroundsExtend = true;
-            START_VOTING_BY_MIDDLE_ROUND_DELAY()
+            START_VOTING_BY_MIDDLE_ROUND_DELAY( "start_voting_by_maxrounds" )
         }
 
         if( g_totalRoundsPlayed > g_maxRoundsNumber - 2 )
@@ -5730,14 +5723,58 @@ stock computeNextWhiteListLoadTime( seconds, bool:isSecondsLeft = true )
     LOGGER( 1, "I AM EXITING computeNextWhiteListLoadTime(2) | g_whitelistNomBlockTime: %d, secondsForReload: %d", g_whitelistNomBlockTime, secondsForReload )
 }
 
-public start_voting_by_rounds()
+/**
+ * Action from handleServerStart to take when it is detected that the server has been
+ * restarted. 3 - start an early map vote after the first two minutes.
+ */
+stock vote_manageEarlyStart()
 {
-    LOGGER( 128, "I AM ENTERING ON start_voting_by_rounds(0) | get_pcvar_num( cvar_endOfMapVote ): %d", \
+    LOGGER( 128, "I AM ENTERING ON vote_manageEarlyStart(0)" )
+
+    g_voteStatus |= IS_EARLY_VOTE;
+    set_task( 120.0, "startNonForcedVoting", TASKID_VOTE_STARTDIRECTOR );
+}
+
+public startNonForcedVoting()
+{
+    LOGGER( 128, "I AM ENTERING ON startNonForcedVoting(0)" )
+    vote_startDirector( false );
+}
+
+public start_voting_by_winlimit()
+{
+    LOGGER( 128, "I AM ENTERING ON start_voting_by_winlimit(0) | get_pcvar_num( cvar_endOfMapVote ): %d", \
             get_pcvar_num( cvar_endOfMapVote ) )
 
     if( get_pcvar_num( cvar_endOfMapVote ) )
     {
-        g_isVotingByRounds = true;
+        g_isVotingByRounds  = true;
+        g_isMaxroundsExtend = false;
+        vote_startDirector( false );
+    }
+}
+
+public start_voting_by_maxrounds()
+{
+    LOGGER( 128, "I AM ENTERING ON start_voting_by_maxrounds(0) | get_pcvar_num( cvar_endOfMapVote ): %d", \
+            get_pcvar_num( cvar_endOfMapVote ) )
+
+    if( get_pcvar_num( cvar_endOfMapVote ) )
+    {
+        g_isVotingByRounds  = true;
+        g_isMaxroundsExtend = true;
+        vote_startDirector( false );
+    }
+}
+
+public start_voting_by_frags()
+{
+    LOGGER( 128, "I AM ENTERING ON start_voting_by_frags(0) | get_pcvar_num( cvar_endOfMapVote ): %d", \
+            get_pcvar_num( cvar_endOfMapVote ) )
+
+    if( get_pcvar_num( cvar_endOfMapVote ) )
+    {
+        g_isVotingByFrags = true;
         vote_startDirector( false );
     }
 }
@@ -5783,7 +5820,9 @@ public vote_manageEnd()
         }
 
         // are we ready to start an "end of map" vote?
-        if( isTimeToStartTheEndOfMapVoting( secondsLeft ) )
+        if( secondsLeft < START_VOTEMAP_MIN_TIME
+            && secondsLeft > START_VOTEMAP_MAX_TIME
+            && isTimeToStartTheEndOfMapVoting() )
         {
             start_voting_by_timer();
         }
@@ -5926,7 +5965,7 @@ stock bool:approvedTheVotingStart( bool:is_forced_voting )
     }
 
     // the rounds start delay task could be running
-    remove_task( TASKID_START_VOTING_BY_TIMER );
+    remove_task( TASKID_START_VOTING_DELAYED );
 
     // If the voting menu deletion task is running, remove it then delete the menus right now.
     if( remove_task( TASKID_DELETE_USERS_MENUS ) )
@@ -6067,6 +6106,10 @@ stock configureTheExtensionOption( bool:is_forced_voting )
     LOGGER( 4, "( configureTheExtensionOption ) g_isMapExtensionAllowed: %d, ", g_isMapExtensionAllowed )
 }
 
+/**
+ * Any voting not started by `cvar_endOfMapVoteStart`, `cvar_endOnRound` or ending limit expiration,
+ * is a forced voting.
+ */
 stock vote_startDirector( bool:is_forced_voting )
 {
     LOGGER( 128, "I AM ENTERING ON vote_startDirector(1) | is_forced_voting: %d", is_forced_voting )
@@ -8064,17 +8107,25 @@ stock chooseRandomVotingWinner()
     }
 }
 
+stock resetVoteTypeGlobals()
+{
+    LOGGER( 128, "I AM ENTERING ON finalizeVoting(0)" )
+
+    g_isVotingByTimer   = false;
+    g_isVotingByRounds  = false;
+    g_isMaxroundsExtend = false;
+    g_isVotingByFrags   = false;
+
+    g_isRunOffNeedingKeepCurrentMap = false;
+}
+
 /**
  * Restore global variables to is default state. This is to be ready for a new voting.
  */
 stock finalizeVoting()
 {
     LOGGER( 128, "I AM ENTERING ON finalizeVoting(0)" )
-
-    g_isVotingByTimer               = false;
-    g_isVotingByRounds              = false;
-    g_isVotingByFrags               = false;
-    g_isRunOffNeedingKeepCurrentMap = false;
+    resetVoteTypeGlobals();
 
     // vote is no longer in progress
     g_voteStatus &= ~IS_VOTE_IN_PROGRESS;
@@ -8618,7 +8669,9 @@ stock start_rtvVote()
     g_voteStatus |= IS_RTV_VOTE;
     configureRtvVotingType();
 
-    vote_startDirector( false );
+    // Any voting not started by `cvar_endOfMapVoteStart`, `cvar_endOnRound` or ending limit expiration,
+    // is a forced voting.
+    vote_startDirector( true );
 }
 
 /**
@@ -8636,6 +8689,9 @@ stock configureRtvVotingType()
 {
     LOGGER( 128, "I AM ENTERING ON configureRtvVotingType(0)" )
 
+    // Just to be sure
+    resetVoteTypeGlobals();
+
     switch( whatGameEndingTypeItIs() )
     {
         case GameEndingType_ByMaxRounds:
@@ -8645,17 +8701,15 @@ stock configureRtvVotingType()
         }
         case GameEndingType_ByWinLimit:
         {
-            // the variable 'g_isMaxroundsExtend' is forced to false because it could not be always false.
             g_isVotingByRounds  = true;
-            g_isMaxroundsExtend = false;
         }
         case GameEndingType_ByFragLimit:
         {
             g_isVotingByFrags = true;
         }
-        case GameEndingType_ByTimeLimit:
+        default:
         {
-            // A voting by time does not need any special setting
+            g_isVotingByTimer = true;
         }
     }
 }
@@ -9571,7 +9625,7 @@ stock bool:approvedTheVotingStartLight()
     }
 
     // the rounds start delay task could be running
-    remove_task( TASKID_START_VOTING_BY_TIMER );
+    remove_task( TASKID_START_VOTING_DELAYED );
 
     // If the voting menu deletion task is running, remove it then delete the menus right now.
     if( remove_task( TASKID_DELETE_USERS_MENUS ) )
@@ -12453,8 +12507,7 @@ stock cancelVoting( bool:isToDoubleReset = false )
 {
     LOGGER( 128, "I AM ENTERING ON cancelVoting(1) | isToDoubleReset: %d", isToDoubleReset )
 
-    remove_task( TASKID_START_VOTING_BY_ROUNDS );
-    remove_task( TASKID_START_VOTING_BY_TIMER );
+    remove_task( TASKID_START_VOTING_DELAYED );
     remove_task( TASKID_DELETE_USERS_MENUS );
     remove_task( TASKID_DELETE_USERS_MENUS_CARE );
     remove_task( TASKID_VOTE_DISPLAY );
@@ -13590,7 +13643,6 @@ new g_TimeSet[ 32 ][ 2 ];
 
 // pcvars
 new g_amx_timeleft;
-new g_mp_timelimit;
 new g_amx_time_voice;
 
 public timeleftPluginInit()
@@ -13607,8 +13659,6 @@ public timeleftPluginInit()
 
     register_srvcmd( "amx_time_display", "setDisplaying" );
     register_dictionary( "timeleft.txt" );
-
-    g_mp_timelimit = get_cvar_pointer( "mp_timelimit" );
 }
 
 public sayTheTime( id )
@@ -13672,25 +13722,87 @@ public sayTimeLeft( id )
 {
     LOGGER( 128, "I AM ENTERING ON sayTimeLeft(1) id: %d", id )
 
-    if( get_pcvar_float( g_mp_timelimit ) )
+    switch( whatGameEndingTypeItIs() )
     {
-        new a = get_timeleft();
-
-        if( get_pcvar_num( g_amx_time_voice ) )
+        case GameEndingType_ByTimeLimit:
         {
-            new svoice[ 128 ];
-            setTimeVoice( svoice, charsmax( svoice ), 0, a );
-            client_cmd( id, "%s", svoice );
+            sayTimeLeftOn( id );
         }
-
-        client_print( 0, print_chat, "%L:  %d:%02d", LANG_PLAYER, "TIME_LEFT", ( a / 60 ), ( a % 60 ) );
-    }
-    else
-    {
-        client_print( 0, print_chat, "%L", LANG_PLAYER, "NO_T_LIMIT" );
+        case GameEndingType_ByMaxRounds:
+        {
+            sayMaxRoundsLeft( id );
+        }
+        case GameEndingType_ByWinLimit:
+        {
+            sayWinLimitLeft( id );
+        }
+        case GameEndingType_ByFragLimit:
+        {
+            sayFragsLeft( id );
+        }
+        default:
+        {
+            client_print( 0, print_chat, "%L", LANG_PLAYER, "NO_T_LIMIT" );
+        }
     }
 
     return PLUGIN_CONTINUE;
+}
+
+stock sayFragsLeft( id )
+{
+    new a = get_timeleft();
+
+    if( get_pcvar_num( g_amx_time_voice ) )
+    {
+        new svoice[ 128 ];
+        setTimeVoice( svoice, charsmax( svoice ), 0, a );
+        client_cmd( id, "%s", svoice );
+    }
+
+    client_print( 0, print_chat, "%L:  %d:%02d", LANG_PLAYER, "TIME_LEFT", ( a / 60 ), ( a % 60 ) );
+}
+
+stock sayWinLimitLeft( id )
+{
+    new a = get_timeleft();
+
+    if( get_pcvar_num( g_amx_time_voice ) )
+    {
+        new svoice[ 128 ];
+        setTimeVoice( svoice, charsmax( svoice ), 0, a );
+        client_cmd( id, "%s", svoice );
+    }
+
+    client_print( 0, print_chat, "%L:  %d:%02d", LANG_PLAYER, "TIME_LEFT", ( a / 60 ), ( a % 60 ) );
+}
+
+stock sayMaxRoundsLeft( id )
+{
+    new a = get_timeleft();
+
+    if( get_pcvar_num( g_amx_time_voice ) )
+    {
+        new svoice[ 128 ];
+        setTimeVoice( svoice, charsmax( svoice ), 0, a );
+        client_cmd( id, "%s", svoice );
+    }
+
+    client_print( 0, print_chat, "%L:  %d:%02d", LANG_PLAYER, "TIME_LEFT", ( a / 60 ), ( a % 60 ) );
+}
+
+stock sayTimeLeftOn( id )
+{
+    new a = get_timeleft();
+
+    if( get_pcvar_num( g_amx_time_voice ) )
+    {
+        new svoice[ 128 ];
+        setTimeVoice( svoice, charsmax( svoice ), 0, a );
+        client_cmd( id, "%s", svoice );
+    }
+
+    client_print( 0, print_chat, "%L:  %d:%02d", LANG_PLAYER, "TIME_LEFT", ( a / 60 ), ( a % 60 ) );
 }
 
 stock setTimeText( text[], len, tmlf, id )
