@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-522";
+new const PLUGIN_VERSION[] = "v4.2.0-523";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -10571,23 +10571,23 @@ public cmd_createMapFile( player_id, level, cid )
 
 stock createMapFileFromAllServerMaps( player_id, mapFilePath[] )
 {
+    LOGGER( 128, "I AM ENTERING ON createMapFileFromAllServerMaps(2) | player_id: %d, mapFilePath: %s", player_id, mapFilePath )
+
     // map name is MAX_MAPNAME_LENGHT, .bsp: 4 + string terminator: 1 = 5
     new loadedMapName[ MAX_MAPNAME_LENGHT + 5 ];
 
-    new directoryDescriptor;
-    new mapFileDescriptor;
-    new mapCount;
-    new mapNameLength;
-
-    directoryDescriptor = open_dir( "maps", loadedMapName, charsmax( loadedMapName )  );
+    new directoryDescriptor = open_dir( "maps", loadedMapName, charsmax( loadedMapName )  );
 
     if( directoryDescriptor )
     {
-        mapFileDescriptor = fopen( mapFilePath, "wt" );
+        new mapFileDescriptor = fopen( mapFilePath, "wt" );
 
         if( mapFileDescriptor )
         {
-            mapCount = 0;
+            new mapCount;
+            new mapNameLength;
+
+            new Array:allMapsArray = ArrayCreate( MAX_MAPNAME_LENGHT );
 
             while( next_file( directoryDescriptor, loadedMapName, charsmax( loadedMapName ) ) )
             {
@@ -10600,19 +10600,29 @@ stock createMapFileFromAllServerMaps( player_id, mapFilePath[] )
 
                     if( IS_MAP_VALID( loadedMapName ) )
                     {
-                        mapCount++;
-                        fprintf( mapFileDescriptor, "%s^n", loadedMapName );
+                        ArrayPushString( allMapsArray, loadedMapName );
                     }
                 }
             }
 
+            mapCount = ArraySize( allMapsArray );
+            ArraySort( allMapsArray, "sort_stringsi" );
+
+            for( new index = 0; index < mapCount; index++ )
+            {
+                ArrayGetString( allMapsArray, index, loadedMapName, charsmax( loadedMapName) );
+                fprintf( mapFileDescriptor, "%s^n", loadedMapName );
+            }
+
             fclose( mapFileDescriptor );
+            ArrayDestroy( allMapsArray );
+
             console_print( player_id, "%L", player_id, "GAL_CREATIONSUCCESS", mapFilePath, mapCount );
         }
         else
         {
             console_print( player_id, "%L", player_id, "GAL_CREATIONFAILED", mapFilePath );
-            LOGGER( 1, "ERROR: %L", LANG_SERVER, "GAL_CREATIONFAILED", mapFilePath, mapCount )
+            LOGGER( 1, "ERROR: %L", LANG_SERVER, "GAL_CREATIONFAILED", mapFilePath )
         }
 
         close_dir( directoryDescriptor );
@@ -10623,6 +10633,20 @@ stock createMapFileFromAllServerMaps( player_id, mapFilePath[] )
         console_print( player_id, "%L", player_id, "GAL_MAPSFOLDERMISSING" );
         LOGGER( 1, "ERROR: %L", LANG_SERVER, "GAL_MAPSFOLDERMISSING" )
     }
+}
+
+public sort_stringsi( Array:array, elem1, elem2, data[], data_size )
+{
+    LOGGER( 256, "I AM ENTERING ON sort_stringsi(5) | array: %d, elem1: %d, elem2: %d", array, elem1, elem2 )
+
+    new map1[ MAX_MAPNAME_LENGHT ];
+    new map2[ MAX_MAPNAME_LENGHT ];
+
+    ArrayGetString( array, elem1, map1, charsmax( map1 ) );
+    ArrayGetString( array, elem2, map2, charsmax( map2 ) );
+
+    LOGGER( 256, "    ( sort_stringsi ) Returning %s > %s: %d", map1, map2, strcmp( map1, map2, 1 ) )
+    return strcmp( map1, map2, 1 );
 }
 
 public cmd_maintenanceMode( player_id, level, cid )
@@ -10678,15 +10702,15 @@ public cmd_lookingForCrashes( player_id, level, cid )
     {
         delete_file( modeFlagFilePath );
 
-        if( player_id )
-        {
-            client_print( player_id, print_console, "See your server console or the file:^n%s^n", crashedMapsFilePath );
-        }
-
         if( ( crashedMapsFile = fopen( crashedMapsFilePath, "rt" ) ) )
         {
             new mapLoaded[ MAX_MAPNAME_LENGHT ];
-            server_print( "Contents of the file: ^n%s^n", crashedMapsFilePath );
+
+            log_amx( "Stopping the server crash change...^nContents of the file: ^n%s^n", crashedMapsFilePath);
+            server_print( "Stopping the server crash change...^nContents of the file: ^n%s^n", crashedMapsFilePath );
+
+            client_print( player_id, print_console, "Stopping the server crash change...^n\
+                    See your server console or the server file:^n%s^n", crashedMapsFilePath);
 
             while( !feof( crashedMapsFile ) )
             {
@@ -10706,8 +10730,13 @@ public cmd_lookingForCrashes( player_id, level, cid )
     }
     else
     {
-        client_print( player_id, print_console, "Starting the crash maps search. This will check all your server maps.^n\
-                To stop the search, run this command again or delete the file:^n%s^n", modeFlagFilePath );
+        new message[ MAX_LONG_STRING ];
+
+        formatex( message, charsmax( message ), "^nStarting the crash maps search. This will check all your server maps." );
+        log_amx( message );
+
+        console_print( player_id, message );
+        console_print( player_id, "To stop the search, run this command again or delete the file" );
 
         if( ( crashedMapsFile = fopen( crashedMapsFilePath, "a+" ) ) )
         {
