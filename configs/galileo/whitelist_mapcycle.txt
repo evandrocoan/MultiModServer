@@ -15,3 +15,27 @@ de_nuke_32
 de_dust2_long
 de_vertigo
 de_olan
+
+// These maps crashed Counter-Strike Condition Zero due the 512 entities limit.
+[0-0]
+surf_water-run
+awp_digital
+awp_false
+awp_italy
+awp_mario
+awp_snowcliffs
+cs_dune
+cs_dune_NV
+cs_eeb
+de_rain
+de_sampa
+de_springfield_b
+drh_bhop_dust2
+fy_arborday
+fy_iceworld2k3
+fy_night_snow
+fy_snowplace_sym
+jb_bb_v1
+jb_japierdole
+kz_crackhops
+
