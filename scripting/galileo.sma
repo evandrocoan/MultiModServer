@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-517";
+new const PLUGIN_VERSION[] = "v4.2.0-518";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -8084,8 +8084,8 @@ stock chooseRandomVotingWinner()
         {
             g_voteStatus |= IS_VOTE_OVER;
 
-            color_print( 0, "%L %L", LANG_PLAYER, "GAL_WINNER_NO_ONE_VOTED", LANG_PLAYER, "GAL_WINNER_ORDERED", g_nextMapName );
-            toShowTheMapNextHud( "GAL_WINNER_NO_ONE_VOTED", "DMAP_MAP_EXTENDED1", "GAL_WINNER_ORDERED", g_nextMapName );
+            color_print( 0, "%L. %L", LANG_PLAYER, "GAL_WINNER_NO_ONE_VOTED", LANG_PLAYER, "GAL_WINNER_ORDERED2", g_nextMapName );
+            toShowTheMapNextHud( "GAL_WINNER_NO_ONE_VOTED", "DMAP_MAP_EXTENDED1", "GAL_WINNER_ORDERED1", g_nextMapName );
 
             // Need to be called to trigger special behaviors.
             setNextMap( g_currentMapName, g_nextMapName );
@@ -8105,8 +8105,8 @@ stock chooseRandomVotingWinner()
             new winnerVoteMapIndex = random_num( 0, g_totalVoteOptions - 1 );
             setNextMap( g_currentMapName, g_votingMapNames[ winnerVoteMapIndex ] );
 
-            color_print( 0, "%L %L", LANG_PLAYER, "GAL_WINNER_NO_ONE_VOTED", LANG_PLAYER, "GAL_WINNER_RANDOM", g_nextMapName );
-            toShowTheMapNextHud( "GAL_WINNER_NO_ONE_VOTED", "DMAP_MAP_EXTENDED1", "GAL_WINNER_RANDOM", g_nextMapName );
+            color_print( 0, "%L. %L", LANG_PLAYER, "GAL_WINNER_NO_ONE_VOTED", LANG_PLAYER, "GAL_WINNER_RANDOM2", g_nextMapName );
+            toShowTheMapNextHud( "GAL_WINNER_NO_ONE_VOTED", "DMAP_MAP_EXTENDED1", "GAL_WINNER_RANDOM1", g_nextMapName );
 
             process_last_round( g_isToChangeMapOnVotingEnd );
         }
@@ -8188,7 +8188,7 @@ stock toShowTheMapExtensionHud( lang1[], lang2[], lang3[], extend )
     if( !( get_pcvar_num( cvar_hudsHide ) & HUD_VOTE_RESULTS_ANNOUNCE ) )
     {
         set_hudmessage( 150, 120, 0, -1.0, 0.13, 0, 1.0, 9.94, 0.0, 0.0, -1 );
-        show_hudmessage( 0, "%L %L:^n%L", LANG_PLAYER, lang1, LANG_PLAYER, lang2, LANG_PLAYER, lang3, extend );
+        show_hudmessage( 0, "%L. %L:^n%L", LANG_PLAYER, lang1, LANG_PLAYER, lang2, LANG_PLAYER, lang3, extend );
     }
 }
 
@@ -8199,18 +8199,18 @@ stock toShowTheMapStayHud( lang1[], lang2[], lang3[] )
     if( !( get_pcvar_num( cvar_hudsHide ) & HUD_VOTE_RESULTS_ANNOUNCE ) )
     {
         set_hudmessage( 150, 120, 0, -1.0, 0.13, 0, 1.0, 9.94, 0.0, 0.0, -1 );
-        show_hudmessage( 0, "%L %L:^n%L", LANG_PLAYER, lang1, LANG_PLAYER, lang2, LANG_PLAYER, lang3 );
+        show_hudmessage( 0, "%L. %L:^n%L", LANG_PLAYER, lang1, LANG_PLAYER, lang2, LANG_PLAYER, lang3 );
     }
 }
 
 stock toShowTheMapNextHud( lang1[], lang2[], lang3[], map[] )
 {
-    LOGGER( 128, "I AM ENTERING ON toShowTheMapStayHud(4) lang1: %s, lang2: %s, lang3: %s", lang1, lang2, lang3 )
+    LOGGER( 128, "I AM ENTERING ON toShowTheMapNextHud(4) lang1: %s, lang2: %s, lang3: %s", lang1, lang2, lang3 )
 
     if( !( get_pcvar_num( cvar_hudsHide ) & HUD_VOTE_RESULTS_ANNOUNCE ) )
     {
         set_hudmessage( 150, 120, 0, -1.0, 0.13, 0, 1.0, 9.94, 0.0, 0.0, -1 );
-        show_hudmessage( 0, "%L %L:^n%L", LANG_PLAYER, lang1, LANG_PLAYER, lang2, LANG_PLAYER, lang3, map );
+        show_hudmessage( 0, "%L. %L:^n%L", LANG_PLAYER, lang1, LANG_PLAYER, lang2, LANG_PLAYER, lang3, map );
     }
 }
 
@@ -10350,11 +10350,19 @@ public handleVoteMapActionMenu( player_id, pressedKeyCode )
         {
             // If we are rejecting the results, allow a new map end voting to start
             g_voteStatus &= ~IS_VOTE_OVER;
+
+            if( g_invokerVoteMapNameToDecide[ 0 ] )
+            {
+                color_print( 0, "%L. %L: %s", LANG_PLAYER, "RESULT_REF", LANG_PLAYER, "VOT_CANC", g_invokerVoteMapNameToDecide );
+            }
+
+            toShowTheMapNextHud( "RESULT_REF", "VOT_CANC", "GAL_OPTION_STAY_MAP", g_currentMapName );
         }
         case 2:
         {
             if( g_invokerVoteMapNameToDecide[ 0 ] )
             {
+                // The end of map count countdown will immediately start, so there is not point int showing any messages.
                 setNextMap( g_currentMapName, g_invokerVoteMapNameToDecide );
                 process_last_round( true );
             }
@@ -10364,6 +10372,9 @@ public handleVoteMapActionMenu( player_id, pressedKeyCode )
             // Only set the next map
             if( g_invokerVoteMapNameToDecide[ 0 ] )
             {
+                color_print( 0, "%L. %L: %s", LANG_PLAYER, "RESULT_ACC", LANG_PLAYER, "VOTE_SUCCESS", g_invokerVoteMapNameToDecide );
+                toShowTheMapNextHud( "RESULT_ACC", "DMAP_MAP_EXTENDED1", "GAL_WINNER_ORDERED1", g_invokerVoteMapNameToDecide );
+
                 setNextMap( g_currentMapName, g_invokerVoteMapNameToDecide );
             }
         }
