@@ -1161,7 +1161,7 @@ gal_colored_chat_prefix ""
 
 
 ********************** [anchor]Brief[/anchor][SIZE="6"][COLOR="Blue"][B]Brief Features' list[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor] ******
-[SPOILER]
+
 [QUOTE]
 [LIST=1]
  [*] Ability to "[B]rock the vote[/B]".
@@ -1263,6 +1263,18 @@ gal_votemap map1 map2
      the [COLOR="Blue"][B]cvar nextmap[/B][/COLOR]. If the next map is set to `[not yet voted on]` the map will
      be changed the next map on the map cycle. If the argument `now` is provided as in `gal_changelevel now`, the
      5 seconds countdown just before change level will not be presented.
+
+
+ [*] Command '[COLOR="Blue"][B]gal_looking_for_crashes[/B][/COLOR]', to search crashing maps through all your server maps. This command will:
+
+     [LIST=1]
+     [*]Set the mp_chattime to 3,
+     [*]Change the map to the next map every 7 seconds,
+     [/LIST]
+
+     If you want to stop it, run the same command gal_start_looking_for_crashes on your server console.
+     After stop, it will output the contents of the crashing maps at:
+     `addons/amxmodx/data/galielo/maps_where_the_server_probably_crashed.txt`
 
 
  [*] Command '[COLOR="Blue"][B]say galmenu [page_number][/B][/COLOR]', (admin MAP level required) to choose from the loaded server
@@ -1411,7 +1423,6 @@ de_inferno
      And so on...
 [/LIST]
 [/QUOTE]
-[/SPOILER]
 
 
 
@@ -1592,6 +1603,7 @@ Thank you!  It means a lot to me.
 
 
 [LIST=1]
+[*]Added a new command `gal_looking_for_crashes` to search crashing maps through all your server maps.
 [*]Added a new command `say timeleft` to show how many seconds there are remaining to the map end.
 [*]Added support to the command `say timeleft` say how may rounds/frags are remaining.
 [*]Added voice support to the command `say timeleft` say how may rounds/frags are remaining.
