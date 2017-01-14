@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-520";
+new const PLUGIN_VERSION[] = "v4.2.0-522";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -96,7 +96,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-520";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+32+8
+#define DEBUG_LEVEL 0
 
 
 /**
@@ -719,6 +719,14 @@ new const PLUGIN_VERSION[] = "v4.2.0-520";
             g_maxVotingChoices - 1 : g_maxVotingChoices ) : g_maxVotingChoices )
 //
 
+/**
+ * Return whether is to allow a crash search on this server start or not.
+ */
+#define IS_TO_ALLOW_A_CRASH_SEARCH(%1) \
+    ( file_exists( modeFlagFilePath ) \
+      && !( DEBUG_LEVEL & DEBUG_LEVEL_FAKE_VOTES ) )
+//
+
 
 
 // Global Macro Expansions
@@ -1004,6 +1012,7 @@ new cvar_isToShowNoneOption;
 new cvar_voteShowNoneOptionType;
 new cvar_isExtendmapOrderAllowed;
 new cvar_isToStopEmptyCycle;
+new cvar_successfullLevels;
 new cvar_unnominateDisconnected;
 new cvar_endOnRound;
 new cvar_endOnRoundChange;
@@ -1095,6 +1104,7 @@ new const CHOOSE_MAP_MENU_NAME[]            = "gal_menuChooseMap";
 new const CHOOSE_MAP_MENU_QUESTION[]        = "chooseMapQuestion";
 new const CHOOSE_VOTEMAP_MENU_QUESTION[]    = "chooseVoteMapQuestion";
 new const GAME_CRASH_RECREATION_FLAG_FILE[] = "gameCrashRecreationAction.txt";
+new const TO_STOP_THE_CRASH_SEARCH[]        = "delete_this_to_stop_the_crash_search.txt";
 new const MAPS_WHERE_THE_SERVER_CRASHED[]   = "maps_where_the_server_probably_crashed.txt";
 
 new bool:g_theRoundEndWhileVoting;
@@ -1506,8 +1516,9 @@ public plugin_init()
     //
     // When `cvar_isFirstServerStart` set set to 2 we are on the first server start period. If this
     // is set to 1, we are on the beginning of the second server map change level.
-    cvar_isFirstServerStart   = register_cvar( "gal_server_starting", "2", FCVAR_SPONLY );
-    cvar_isToStopEmptyCycle   = register_cvar( "gal_in_empty_cycle" , "0", FCVAR_SPONLY );
+    cvar_isFirstServerStart = register_cvar( "gal_server_starting"    , "2", FCVAR_SPONLY );
+    cvar_isToStopEmptyCycle = register_cvar( "gal_in_empty_cycle"     , "0", FCVAR_SPONLY );
+    cvar_successfullLevels  = register_cvar( "gal_successfull_levels" , "0", FCVAR_SPONLY );
 
     // This is a general pointer used for cvars not registered on the game.
     cvar_disabledValuePointer = register_cvar( "gal_disabled_value_pointer", "0", FCVAR_SPONLY );
@@ -1541,6 +1552,7 @@ public plugin_init()
     register_concmd( "gal_changelevel", "cmd_changeLevel", ADMIN_MAP );
     register_concmd( "gal_createmapfile", "cmd_createMapFile", ADMIN_RCON );
     register_concmd( "gal_command_maintenance", "cmd_maintenanceMode", ADMIN_RCON );
+    register_concmd( "gal_looking_for_crashes", "cmd_lookingForCrashes", ADMIN_RCON );
 
     LOGGER( 1, "    I AM EXITING plugin_init(0)..." )
     LOGGER( 1, "" )
@@ -1604,11 +1616,44 @@ public plugin_cfg()
     configureTheUnitTests();
 #endif
 
-    // set_pcvar_num( cvar_mp_chattime, 3 ); // Used to loop through all server maps looking for crashing ones
-    // set_task( 7.0, "changeMapIntermission", TASKID_PROCESS_LAST_ROUNDCHANGE );
+    // Used to loop through all server maps looking for crashing ones
+    runTheServerMapCrashSearch();
 
     LOGGER( 1, "    I AM EXITING plugin_cfg(0)..." )
     LOGGER( 1, "" )
+}
+
+stock runTheServerMapCrashSearch()
+{
+    new modeFlagFilePath[ MAX_FILE_PATH_LENGHT ];
+    formatex( modeFlagFilePath, charsmax( modeFlagFilePath ), "%s/%s", g_dataDirPath, TO_STOP_THE_CRASH_SEARCH );
+
+    if( IS_TO_ALLOW_A_CRASH_SEARCH( modeFlagFilePath ) )
+    {
+        new Float:delay;
+
+        new successfullLevels;
+        new currentDate[ MAX_SHORT_STRING ];
+
+        get_time( "%m/%d/%Y - %H:%M:%S", currentDate, charsmax( currentDate ) );
+        successfullLevels = get_pcvar_num( cvar_successfullLevels );
+
+        server_print( "^n%s", currentDate );
+        server_print( "The current map is: %s", g_currentMapName );
+        server_print( "The next map will be: %s", g_nextMapName );
+        server_print( "Successfully completed server change levels without crash: %d^n", successfullLevels );
+
+        // Allow the admin to connect to the server and to disable the command `gal_looking_for_crashes`.
+        delay = get_real_players_number() ? 100.0 : 7.0;
+        server_print( "The server is changing level in %d seconds!", floatround( delay, floatround_floor ) );
+
+        set_pcvar_num( cvar_mp_chattime, 3 );
+        set_pcvar_num( cvar_serverMoveCursor, 0 );
+        set_pcvar_num( cvar_successfullLevels, successfullLevels + 1 );
+
+        set_task( delay, "changeMapIntermission" );
+        set_pcvar_string( cvar_mapcyclefile, modeFlagFilePath );
+    }
 }
 
 stock configureSpecificGameModFeature()
@@ -1714,6 +1759,14 @@ stock loadPluginSetttings()
 
     server_cmd( "exec %s/galileo.cfg", g_configsDirPath );
     server_exec();
+
+    new modeFlagFilePath[ MAX_FILE_PATH_LENGHT ];
+    formatex( modeFlagFilePath, charsmax( modeFlagFilePath ), "%s/%s", g_dataDirPath, TO_STOP_THE_CRASH_SEARCH );
+
+    if( IS_TO_ALLOW_A_CRASH_SEARCH( modeFlagFilePath ) )
+    {
+
+    }
 }
 
 stock initializeGlobalArrays()
@@ -10495,64 +10548,14 @@ public cmd_createMapFile( player_id, level, cid )
     {
         case 1:
         {
-            new mapFileName[ MAX_MAPNAME_LENGHT ];
+            new mapFileName[ MAX_MAPNAME_LENGHT   ];
+            new mapFilePath[ MAX_FILE_PATH_LENGHT ];
 
             read_argv( 1, mapFileName, charsmax( mapFileName ) );
             remove_quotes( mapFileName );
 
-            // map name is MAX_MAPNAME_LENGHT, .bsp: 4 + string terminator: 1 = 5
-            new loadedMapName[ MAX_MAPNAME_LENGHT + 5 ];
-
-            new directoryDescriptor;
-            new mapFileDescriptor;
-            new mapCount;
-            new mapNameLength;
-
-            directoryDescriptor = open_dir( "maps", loadedMapName, charsmax( loadedMapName )  );
-
-            if( directoryDescriptor )
-            {
-                new mapFilePath[ MAX_FILE_PATH_LENGHT ];
-
-                formatex( mapFilePath, charsmax( mapFilePath ), "%s/%s", g_configsDirPath, mapFileName );
-                mapFileDescriptor = fopen( mapFilePath, "wt" );
-
-                if( mapFileDescriptor )
-                {
-                    mapCount = 0;
-
-                    while( next_file( directoryDescriptor, loadedMapName, charsmax( loadedMapName ) ) )
-                    {
-                        mapNameLength = strlen( loadedMapName );
-
-                        if( mapNameLength > 4
-                            && equali( loadedMapName[ mapNameLength - 4 ], ".bsp", 4 ) )
-                        {
-                            loadedMapName[ mapNameLength - 4 ] = '^0';
-
-                            if( IS_MAP_VALID( loadedMapName ) )
-                            {
-                                mapCount++;
-                                fprintf( mapFileDescriptor, "%s^n", loadedMapName );
-                            }
-                        }
-                    }
-
-                    fclose( mapFileDescriptor );
-                    console_print( player_id, "%L", player_id, "GAL_CREATIONSUCCESS", mapFilePath, mapCount );
-                }
-                else
-                {
-                    console_print( player_id, "%L", player_id, "GAL_CREATIONFAILED", mapFilePath );
-                }
-
-                close_dir( directoryDescriptor );
-            }
-            else
-            {
-                // directory not found, wtf?
-                console_print( player_id, "%L", player_id, "GAL_MAPSFOLDERMISSING" );
-            }
+            formatex( mapFilePath, charsmax( mapFilePath ), "%s/%s", g_configsDirPath, mapFileName );
+            createMapFileFromAllServerMaps( player_id, mapFilePath );
         }
         default:
         {
@@ -10566,11 +10569,62 @@ public cmd_createMapFile( player_id, level, cid )
     return PLUGIN_HANDLED;
 }
 
-/**
- * Called when need to start a vote map, where the command line first argument could be:
- *    -nochange: extend the current map, aka, Keep Current Map, will to do the real extend.
- *    -restart: extend the current map, aka, Keep Current Map restart the server at the current map.
- */
+stock createMapFileFromAllServerMaps( player_id, mapFilePath[] )
+{
+    // map name is MAX_MAPNAME_LENGHT, .bsp: 4 + string terminator: 1 = 5
+    new loadedMapName[ MAX_MAPNAME_LENGHT + 5 ];
+
+    new directoryDescriptor;
+    new mapFileDescriptor;
+    new mapCount;
+    new mapNameLength;
+
+    directoryDescriptor = open_dir( "maps", loadedMapName, charsmax( loadedMapName )  );
+
+    if( directoryDescriptor )
+    {
+        mapFileDescriptor = fopen( mapFilePath, "wt" );
+
+        if( mapFileDescriptor )
+        {
+            mapCount = 0;
+
+            while( next_file( directoryDescriptor, loadedMapName, charsmax( loadedMapName ) ) )
+            {
+                mapNameLength = strlen( loadedMapName );
+
+                if( mapNameLength > 4
+                    && equali( loadedMapName[ mapNameLength - 4 ], ".bsp", 4 ) )
+                {
+                    loadedMapName[ mapNameLength - 4 ] = '^0';
+
+                    if( IS_MAP_VALID( loadedMapName ) )
+                    {
+                        mapCount++;
+                        fprintf( mapFileDescriptor, "%s^n", loadedMapName );
+                    }
+                }
+            }
+
+            fclose( mapFileDescriptor );
+            console_print( player_id, "%L", player_id, "GAL_CREATIONSUCCESS", mapFilePath, mapCount );
+        }
+        else
+        {
+            console_print( player_id, "%L", player_id, "GAL_CREATIONFAILED", mapFilePath );
+            LOGGER( 1, "ERROR: %L", LANG_SERVER, "GAL_CREATIONFAILED", mapFilePath, mapCount )
+        }
+
+        close_dir( directoryDescriptor );
+    }
+    else
+    {
+        // directory not found, wtf?
+        console_print( player_id, "%L", player_id, "GAL_MAPSFOLDERMISSING" );
+        LOGGER( 1, "ERROR: %L", LANG_SERVER, "GAL_MAPSFOLDERMISSING" )
+    }
+}
+
 public cmd_maintenanceMode( player_id, level, cid )
 {
     LOGGER( 128, "I AM ENTERING ON cmd_maintenanceMode(3) | player_id: %d, level: %d, cid: %d", player_id, level, cid )
@@ -10599,6 +10653,81 @@ public cmd_maintenanceMode( player_id, level, cid )
     }
 
     LOGGER( 1, "    ( cmd_maintenanceMode ) Returning PLUGIN_HANDLED" )
+    return PLUGIN_HANDLED;
+}
+
+public cmd_lookingForCrashes( player_id, level, cid )
+{
+    LOGGER( 128, "I AM ENTERING ON cmd_lookingForCrashes(3) | player_id: %d, level: %d, cid: %d", player_id, level, cid )
+
+    if( !cmd_access( player_id, level, cid, 1 ) )
+    {
+        LOGGER( 1, "    ( cmd_lookingForCrashes ) Returning PLUGIN_HANDLED" )
+        return PLUGIN_HANDLED;
+    }
+
+    new crashedMapsFile;
+
+    new modeFlagFilePath   [ MAX_FILE_PATH_LENGHT ];
+    new crashedMapsFilePath[ MAX_FILE_PATH_LENGHT ];
+
+    formatex( modeFlagFilePath, charsmax( modeFlagFilePath ), "%s/%s", g_dataDirPath, TO_STOP_THE_CRASH_SEARCH );
+    formatex( crashedMapsFilePath, charsmax( crashedMapsFilePath ), "%s/%s", g_dataDirPath, MAPS_WHERE_THE_SERVER_CRASHED );
+
+    if( file_exists( modeFlagFilePath ) )
+    {
+        delete_file( modeFlagFilePath );
+
+        if( player_id )
+        {
+            client_print( player_id, print_console, "See your server console or the file:^n%s^n", crashedMapsFilePath );
+        }
+
+        if( ( crashedMapsFile = fopen( crashedMapsFilePath, "rt" ) ) )
+        {
+            new mapLoaded[ MAX_MAPNAME_LENGHT ];
+            server_print( "Contents of the file: ^n%s^n", crashedMapsFilePath );
+
+            while( !feof( crashedMapsFile ) )
+            {
+                fgets( crashedMapsFile, mapLoaded, charsmax( mapLoaded ) );
+
+                trim( mapLoaded );
+                server_print( "%s^n", mapLoaded );
+            }
+
+            fclose( crashedMapsFile );
+        }
+        else
+        {
+            LOGGER( 1, "ERROR, Couldn't open the file ^"%s^")", crashedMapsFilePath )
+            log_amx(   "ERROR, Couldn't open the file ^"%s^")", crashedMapsFilePath );
+        }
+    }
+    else
+    {
+        client_print( player_id, print_console, "Starting the crash maps search. This will check all your server maps.^n\
+                To stop the search, run this command again or delete the file:^n%s^n", modeFlagFilePath );
+
+        if( ( crashedMapsFile = fopen( crashedMapsFilePath, "a+" ) ) )
+        {
+            new currentDate[ MAX_SHORT_STRING ];
+            get_time( "%m/%d/%Y - %H:%M:%S", currentDate, charsmax( currentDate ) );
+
+            fprintf( crashedMapsFile, "^n^n%s^n", currentDate );
+            fclose( crashedMapsFile );
+
+            createMapFileFromAllServerMaps( player_id, modeFlagFilePath );
+            runTheServerMapCrashSearch();
+        }
+        else
+        {
+            LOGGER( 1, "ERROR, Couldn't create the file ^"%s^")", crashedMapsFilePath )
+            log_amx(   "ERROR, Couldn't create the file ^"%s^")", crashedMapsFilePath );
+        }
+    }
+
+    LOGGER( 1, "    ( cmd_lookingForCrashes ) Returning PLUGIN_HANDLED" )
     return PLUGIN_HANDLED;
 }
 
