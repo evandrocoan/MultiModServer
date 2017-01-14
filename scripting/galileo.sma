@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-518";
+new const PLUGIN_VERSION[] = "v4.2.0-519";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -547,6 +547,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-518";
 #define HUD_VOTE_VISUAL_COUNTDOWN 2
 #define HUD_CHANGELEVEL_ANNOUNCE  4
 #define HUD_VOTE_RESULTS_ANNOUNCE 8
+#define HUD_TIMELEFT_ANNOUNCE     16
 
 #define SHOW_STATUS_NEVER             0
 #define SHOW_STATUS_AFTER_VOTE        1
@@ -5861,6 +5862,47 @@ public vote_manageEnd()
 stock handle_game_crash_recreation( secondsLeft )
 {
     LOGGER( 256, "I AM ENTERING ON handle_game_crash_recreation(1) | secondsLeft: %d", secondsLeft )
+    static showCounter;
+
+    // PERIODIC_CHECKING_INTERVAL = 15 seconds, 15 * 50 = 750 = 12.5 minutes
+    if( ++showCounter % 50 < 1 )
+    {
+        if( !( get_pcvar_num( cvar_hudsHide ) & HUD_TIMELEFT_ANNOUNCE ) )
+        {
+            set_hudmessage( 255, 255, 255, 0.15, 0.15, 0, 0.0, 6.0, 0.1, 0.1, 1 );
+
+            switch( whatGameEndingTypeItIs() )
+            {
+                case GameEndingType_ByMaxRounds:
+                {
+                    new roundsLeft = get_pcvar_num( cvar_mp_maxrounds ) - g_totalRoundsPlayed;
+                    show_hudmessage( 0, "%L:^n%d:%2d %L", LANG_PLAYER, "TIME_LEFT", roundsLeft, LANG_PLAYER, "GAL_OPTION_NAME_ROUND" );
+                }
+                case GameEndingType_ByWinLimit:
+                {
+                    new winLeft = get_pcvar_num( cvar_mp_winlimit ) - max( g_totalCtWins, g_totalTerroristsWins );
+                    show_hudmessage( 0, "%L:^n%d:%2d %L", LANG_PLAYER, "TIME_LEFT", winLeft, LANG_PLAYER, "GAL_OPTION_NAME_ROUND" );
+                }
+                case GameEndingType_ByFragLimit:
+                {
+                    new fragsLeft = get_pcvar_num( cvar_mp_fraglimit ) - g_greatestKillerFrags;
+                    show_hudmessage( 0, "%L:^n%d:%2d %L", LANG_PLAYER, "TIME_LEFT", fragsLeft, LANG_PLAYER, "GAL_OPTION_NAME_FRAGS" );
+                }
+                case GameEndingType_ByTimeLimit:
+                {
+                    new timeLeft = get_timeleft();
+                    new seconds  = timeLeft % 60;
+                    new minutes  = floatround( ( timeLeft - seconds ) / 60.0 );
+
+                    show_hudmessage( 0, "%L:^n%d:%2d %L", LANG_PLAYER, "TIME_LEFT", minutes, seconds, LANG_PLAYER, "MINUTES" );
+                }
+                default:
+                {
+                    show_hudmessage( 0, "%L:^n%L", LANG_PLAYER, "TIME_LEFT", LANG_PLAYER, "NO_T_LIMIT" );
+                }
+            }
+        }
+    }
 
     if( g_isToCreateGameCrashFlag
         && (  g_timeLimitNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_timeLimitNumber - secondsLeft / 60
