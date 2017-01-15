@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-523";
+new const PLUGIN_VERSION[] = "v4.2.0-525";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
@@ -96,7 +96,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-523";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 0
+#define DEBUG_LEVEL 1+32+64
 
 
 /**
@@ -242,7 +242,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-523";
         {
         #if DEBUG_LEVEL & DEBUG_LEVEL_DISABLE_TEST_LOGS
             if( !g_test_isTheUnitTestsRunning
-                || g_test_isTheManualTestsRunning )
+                || !g_test_isTheManualTestsRunning )
             {
                 static formated_message[ MAX_BIG_BOSS_STRING ];
                 vformat( formated_message, charsmax( formated_message ), message, 3 );
@@ -331,9 +331,10 @@ new const PLUGIN_VERSION[] = "v4.2.0-523";
             // LOGGER( 1, "Current i is: %d", i )
         }
 
-        test_SortCustomSynced2D();
-        test_GET_MAP_INFO_load();
-        test_GET_MAP_NAME_load();
+        test_loadCurrentBlackList_cases();
+        // test_SortCustomSynced2D();
+        // test_GET_MAP_INFO_load();
+        // test_GET_MAP_NAME_load();
         // test_populateListOnSeries_load1();
         // test_populateListOnSeries_load2();
         // test_populateListOnSeries_load3();
@@ -1086,6 +1087,7 @@ new cvar_voteMidPlayersMapFilePath;
 new cvar_whitelistMinPlayers;
 new cvar_isWhiteListNomBlock;
 new cvar_isWhiteListBlockOut;
+new cvar_isWhiteListHourlySet;
 new cvar_voteWhiteListMapFilePath;
 new cvar_coloredChatPrefix;
 
@@ -1491,6 +1493,7 @@ public plugin_init()
     cvar_whitelistMinPlayers       = register_cvar( "gal_whitelist_minplayers"    , "0"    );
     cvar_isWhiteListNomBlock       = register_cvar( "gal_whitelist_nom_block"     , "0"    );
     cvar_isWhiteListBlockOut       = register_cvar( "gal_whitelist_block_out"     , "0"    );
+    cvar_isWhiteListHourlySet      = register_cvar( "gal_whitelist_hourly_set"    , "0"    );
     cvar_voteWhiteListMapFilePath  = register_cvar( "gal_vote_whitelist_mapfile"  , ""     );
     cvar_voteUniquePrefixes        = register_cvar( "gal_vote_uniqueprefixes"     , "0"    );
     cvar_nomPlayerAllowance        = register_cvar( "gal_nom_playerallowance"     , "2"    );
@@ -4785,21 +4788,41 @@ public map_loadPrefixList()
     }
 }
 
+/**
+ * When the Whitelist ` cvar_isWhiteListHourlySet` says [0-0] it means it will not block them from 00:00:00 until 00:59:59
+ * When the Whitelist `!cvar_isWhiteListHourlySet` says [0-0] it means it will not block them from 00:00:00 until 00:00:00
+ */
 stock isToLoadTheNextWhiteListGroup( &isToLoadTheseMaps, currentHour, startHour, endHour, isWhiteList = false )
 {
     LOGGER( 256, "I AM ENTERING ON isToLoadTheNextWhiteListGroup(5) | startHour: %d, endHour: %d", startHour, endHour )
 
-    if( startHour == endHour
-        && endHour == currentHour )
+    // Here handle all the cases when the start hour is equals to the end hour.
+    if( startHour == endHour )
     {
         LOGGER( 8, "( isToLoadTheNextWhiteListGroup ) startHour == endHour: %d", startHour )
 
-        // Manual fix needed to convert 5-5 to 05:00:00 until 05:59:59, instead of all day long.
-    #if IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST > 0
-        isToLoadTheseMaps = isWhiteList;
-    #else
-        isToLoadTheseMaps = !isWhiteList;
-    #endif
+        // I want to 5-5 to be all day long.
+        if( get_pcvar_num( cvar_isWhiteListHourlySet ) )
+        {
+            // The black and white list must to block it all day long.
+            isToLoadTheseMaps = !isWhiteList;
+        }
+        else
+        {
+            if( endHour == currentHour )
+            {
+                // Manual fix needed to convert 5-5 to 05:00:00 until 05:59:59, instead of all day long.
+            #if IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST > 0
+                isToLoadTheseMaps = isWhiteList;
+            #else
+                isToLoadTheseMaps = !isWhiteList;
+            #endif
+            }
+            else
+            {
+                isToLoadTheseMaps = isWhiteList;
+            }
+        }
     }
     //           5          3
     else if( startHour > endHour )
@@ -5032,6 +5055,7 @@ stock loadWhiteListFile( currentHour, &Trie:listTrie, Array:whitelistFileArray, 
                 isWhiteList = !isWhiteList;
                 convertWhitelistToBlacklist( startHour, endHour );
             #endif
+
                 isToLoadTheNextWhiteListGroup( isToLoadTheseMaps, currentHour, startHour, endHour, isWhiteList );
                 continue;
             }
@@ -14525,19 +14549,25 @@ public timeRemain()
     {
         LOGGER( 128, "I AM ENTERING ON print_all_tests_executed(0)" )
 
+        new trieKey[ 10 ];
         new test_name[ MAX_SHORT_STRING ];
         new testsNumber = ArraySize( g_test_idsAndNamesArray );
 
         print_logger( "" );
         print_logger( "" );
         print_logger( "" );
-        print_logger( "    The following tests were executed: " );
+        print_logger( "    The following tests were successfully executed: " );
         print_logger( "" );
 
         for( new test_index = 0; test_index < testsNumber; test_index++ )
         {
-            ArrayGetString( g_test_idsAndNamesArray, test_index, test_name, charsmax( test_name ) );
-            print_logger( "       %3d. %s", test_index + 1, test_name );
+            num_to_str( test_index, trieKey, charsmax( trieKey ) );
+
+            if( !TrieKeyExists( g_test_failureIdsTrie, trieKey ) )
+            {
+                ArrayGetString( g_test_idsAndNamesArray, test_index, test_name, charsmax( test_name ) );
+                print_logger( "       %3d. %s", test_index + 1, test_name );
+            }
         }
     }
 
@@ -15166,7 +15196,11 @@ public timeRemain()
             "[5-3]"    ,
             "de_dust11",
             "de_dust12",
-            "de_dust13"
+            "de_dust13",
+            "[0-0]"    ,
+            "de_dust14",
+            "de_dust15",
+            "de_dust16"
         );
     }
 
@@ -15177,53 +15211,75 @@ public timeRemain()
     {
         test_loadCurrentBlackList_load();
 
-        test_loadCurrentBlacklist_case( 12, "de_dust2", "de_dust7" ); // Case 1
-        test_loadCurrentBlacklist_case( 23, "de_dust5", "de_dust4" ); // Case 2
-        test_loadCurrentBlacklist_case( 23, "de_dust7", "de_dust2" ); // Case 3
-        test_loadCurrentBlacklist_case( 24, "de_dust4", "de_dust1" ); // Case 4
-        test_loadCurrentBlacklist_case( 23, "de_dust7", "de_dust8" ); // Case 5
-        test_loadCurrentBlacklist_case( 22, "de_dust8", "de_dust7" ); // Case 6
-        test_loadCurrentBlacklist_case( 23, "de_dust5", "de_dust1" ); // Case 7
-        test_loadCurrentBlacklist_case( 23, "de_dust6", "de_dust2" ); // Case 8
-        test_loadCurrentBlacklist_case( 23, "de_dust7", "de_dust3" ); // Case 9
-        test_loadCurrentBlacklist_case( 23, "de_dust5", "de_dust4" ); // Case 10
-        test_loadCurrentBlacklist_case( 2, "de_dust6", "de_dust11" ); // Case 11
-        test_loadCurrentBlacklist_case( 4, "de_dust13", "de_dust4" ); // Case 12
+        test_loadCurrentBlacklist_case( 12, "de_dust2" , "de_dust7"  ); // Case 1/2
+        test_loadCurrentBlacklist_case( 23, "de_dust5" , "de_dust4"  ); // Case 3/4
+        test_loadCurrentBlacklist_case( 23, "de_dust7" , "de_dust2"  ); // Case 5/6
+        test_loadCurrentBlacklist_case( 24, "de_dust4" , "de_dust1"  ); // Case 7/8
+        test_loadCurrentBlacklist_case( 23, "de_dust7" , "de_dust8"  ); // Case 9/10
+        test_loadCurrentBlacklist_case( 22, "de_dust8" , "de_dust7"  ); // Case 11/12
+        test_loadCurrentBlacklist_case( 23, "de_dust5" , "de_dust1"  ); // Case 13/14
+        test_loadCurrentBlacklist_case( 23, "de_dust6" , "de_dust2"  ); // Case 15/16
+        test_loadCurrentBlacklist_case( 23, "de_dust7" , "de_dust3"  ); // Case 17/18
+        test_loadCurrentBlacklist_case( 23, "de_dust5" , "de_dust4"  ); // Case 19/20
+        test_loadCurrentBlacklist_case( 2 , "de_dust6" , "de_dust11" ); // Case 21/22
+        test_loadCurrentBlacklist_case( 4 , "de_dust13", "de_dust4"  ); // Case 23/24
+
+        test_loadCurrentBlacklist_case( 0 , "", "de_dust14" ); // Case 25
+        test_loadCurrentBlacklist_case( 0 , "", "de_dust15" ); // Case 26
+        test_loadCurrentBlacklist_case( 0 , "", "de_dust16" ); // Case 27
+        test_loadCurrentBlacklist_case( 1 , "", "de_dust14" ); // Case 28
+        test_loadCurrentBlacklist_case( 1 , "", "de_dust15" ); // Case 29
+        test_loadCurrentBlacklist_case( 1 , "", "de_dust16" ); // Case 30
+        test_loadCurrentBlacklist_case( 23, "", "de_dust14" ); // Case 31
+        test_loadCurrentBlacklist_case( 23, "", "de_dust15" ); // Case 32
+        test_loadCurrentBlacklist_case( 23, "", "de_dust16" ); // Case 33
+        test_loadCurrentBlacklist_case( 12, "", "de_dust14" ); // Case 34
+        test_loadCurrentBlacklist_case( 12, "", "de_dust15" ); // Case 35
+        test_loadCurrentBlacklist_case( 12, "", "de_dust16" ); // Case 36
     }
 
     /**
      * This is a general test handler for the function 'loadWhiteListFile(4)'.
      *
-     * @param hour             the current hour.
+     * @param currentHour      the current hour.
      * @param map_existent     the map name to exist.
      * @param not_existent     the map name to does not exist.
      */
 #if IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST > 0
-    stock test_loadCurrentBlacklist_case( hour, not_existent[], map_existent[] )
+    stock test_loadCurrentBlacklist_case( currentHour, not_existent[], map_existent[] )
 #else
-    stock test_loadCurrentBlacklist_case( hour, map_existent[], not_existent[] )
+    stock test_loadCurrentBlacklist_case( currentHour, map_existent[], not_existent[] )
 #endif
     {
         static currentCaseNumber = 0;
-        currentCaseNumber++;
 
+        new test_id;
         new testName    [ MAX_SHORT_STRING ];
         new errorMessage[ MAX_LONG_STRING ];
-
-        formatex( testName, charsmax( testName ), "test_loadCurrentBlacklist_case%d", currentCaseNumber );
-        new test_id = register_test( 0, testName );
 
         new Trie: blackListTrie      = TrieCreate();
         new Array:whitelistFileArray = ArrayCreate( MAX_LONG_STRING );
 
         loadWhiteListFileFromFile( whitelistFileArray, g_test_whiteListFilePath );
-        loadWhiteListFile( hour, blackListTrie, whitelistFileArray );
+        loadWhiteListFile( currentHour, blackListTrie, whitelistFileArray );
 
-        formatex( errorMessage, charsmax( errorMessage ), "The map '%s' must to be present on the trie, but it was not!", map_existent );
-        SET_TEST_FAILURE( test_id, !TrieKeyExists( blackListTrie, map_existent ), errorMessage )
+        if( map_existent[ 0 ] )
+        {
+            formatex( testName, charsmax( testName ), "test_loadCurrentBlacklist_case%d", ++currentCaseNumber );
+            test_id = register_test( 0, testName );
 
-        formatex( errorMessage, charsmax( errorMessage ), "The map '%s' must not to be present on the trie, but it was!", not_existent );
-        SET_TEST_FAILURE( test_id, TrieKeyExists( blackListTrie, not_existent ), errorMessage )
+            formatex( errorMessage, charsmax( errorMessage ), "The map '%s' must to be present on the trie, but it was not!", map_existent );
+            SET_TEST_FAILURE( test_id, !TrieKeyExists( blackListTrie, map_existent ), errorMessage )
+        }
+
+        if( not_existent[ 0 ] )
+        {
+            formatex( testName, charsmax( testName ), "test_loadCurrentBlacklist_case%d", ++currentCaseNumber );
+            test_id = register_test( 0, testName );
+
+            formatex( errorMessage, charsmax( errorMessage ), "The map '%s' must not to be present on the trie, but it was!", not_existent );
+            SET_TEST_FAILURE( test_id, TrieKeyExists( blackListTrie, not_existent ), errorMessage )
+        }
 
         TrieDestroy( blackListTrie );
         ArrayDestroy( whitelistFileArray );
