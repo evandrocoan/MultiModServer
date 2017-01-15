@@ -33,12 +33,12 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-528";
+new const PLUGIN_VERSION[] = "v4.2.0-530";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
  */
-#define IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST 0
+#define IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST 1
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -365,7 +365,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-528";
     { \
         if( setTestFailure( %1 ) ) \
         { \
-            LOGGER( 1, "    ( SET_TEST_FAILURE ) Just returning/bloking." ) \
+            LOGGER( 1, "    ( SET_TEST_FAILURE ) Just returning/blocking." ) \
             return; \
         } \
     }
@@ -4914,7 +4914,15 @@ stock isToLoadNextWhiteListGroupOpen( &isToLoadTheseMaps, currentHour, startHour
 stock isToLoadNextWhiteListGroupClose( &isToLoadTheseMaps, currentHour, startHour, endHour, isWhiteList = false )
 {
     LOGGER( 256, "I AM ENTERING ON isToLoadNextWhiteListGroupClose(5) currentHour: %d", currentHour )
-    LOGGER( 256, "I AM ENTERING ON isToLoadNextWhiteListGroupClose(5) currentHour: %d", currentHour )
+    LOGGER( 256, "( isToLoadNextWhiteListGroupClose ) startHour: %d, endHour: %d", startHour, endHour )
+
+    if( startHour != endHour
+        && startHour != 0
+        && endHour != 23 )
+    {
+        endHour -= 1;
+    }
+
     LOGGER( 256, "( isToLoadNextWhiteListGroupClose ) startHour: %d, endHour: %d", startHour, endHour )
 
     // Calculates whether to load the Blacklist/Whitelist or not.
@@ -4926,19 +4934,9 @@ stock isToLoadNextWhiteListGroupClose( &isToLoadTheseMaps, currentHour, startHou
     if( startHour == endHour )
     {
         LOGGER( 8, "( isToLoadNextWhiteListGroupClose ) startHour == endHour: %d", startHour )
-
     #if IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST > 0
-        // On the Blacklist list, wee need to manually handle the Whitelist not being able to handle
-        // the period as 0-0 from 00:00:00 to 00:00:00, i.e., always block the map instead of allow it
-        // all day long.
+        // Manual fix needed to convert 5-5 to all day long.
         if( loadZeroTime )
-        {
-            isToLoadTheseMaps = !isWhiteList;
-        }
-        else
-    #endif
-        // Manual fix needed to convert 5-5 to 05:00:00 until 05:59:59, instead of all day long.
-        if( endHour == currentHour )
         {
             isToLoadTheseMaps = isWhiteList;
         }
@@ -4946,6 +4944,11 @@ stock isToLoadNextWhiteListGroupClose( &isToLoadTheseMaps, currentHour, startHou
         {
             isToLoadTheseMaps = !isWhiteList;
         }
+    #else
+        // Manual set needed to convert 5-5 to always block a map. Now 0-23 is 00:00:00 until 22:59:59,
+        // and there is not way to allow a map from 00:00:00 until 23:59:59.
+        isToLoadTheseMaps = !isWhiteList;
+    #endif
     }
     //           5          3
     else if( startHour > endHour )
@@ -5066,6 +5069,35 @@ stock standardizeTheHoursForWhitelist( &currentHour, &startHour, &endHour )
 stock bool:convertWhitelistToBlacklist( &startHour, &endHour )
 {
     LOGGER( 256, "I AM ENTERING ON convertWhitelistToBlacklist(2)" )
+
+#if IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST > 0
+    if( startHour == endHour )
+    {
+        LOGGER( 256, "( convertWhitelistToBlacklist ) startHour: %d, endHour: %d", startHour, endHour )
+        LOGGER( 256, "    ( convertWhitelistToBlacklist ) Returning true." )
+        return true;
+    }
+
+    if( startHour == 0
+        && endHour == 23 )
+    {
+        startHour = 23;
+        endHour   = 23;
+
+        LOGGER( 256, "( convertWhitelistToBlacklist ) startHour: %d, endHour: %d", startHour, endHour )
+        LOGGER( 256, "    ( convertWhitelistToBlacklist ) Returning true." )
+        return true;
+    }
+
+    new backup;
+
+    backup    = ( endHour   + 1 > 23 ? 0  : endHour   + 1 );
+    endHour   = ( startHour - 1 < 0  ? 23 : startHour - 1 );
+    startHour = backup;
+
+    LOGGER( 256, "( convertWhitelistToBlacklist ) startHour: %d, endHour: %d", startHour, endHour )
+
+#else
     new backup;
 
     backup    = ( endHour   + 1 > 23 ? 0  : endHour   + 1 );
@@ -5077,12 +5109,13 @@ stock bool:convertWhitelistToBlacklist( &startHour, &endHour )
     if( startHour == 0
         && endHour == 23 )
     {
-        endHour   = 0;
         startHour = 0;
+        endHour   = 0;
 
         LOGGER( 256, "    ( convertWhitelistToBlacklist ) Returning true." )
         return true;
     }
+#endif
 
     LOGGER( 256, "    ( convertWhitelistToBlacklist ) Returning false." )
     return false;
@@ -15350,13 +15383,13 @@ public timeRemain()
     {
         // To block them (Blacklist), we need   to load them when we are between 23-0 (23:00:00-0:59:59).
         // To allow them (Whitelist), we cannot to load them when we are between 23-0 (23:00:00-0:59:59).
-        test_isToLoadBlacklist_case( .isToLoad=false, .currentHour=23, .startHour=23, .endHour=0  ); // Case 7
-        test_isToLoadBlacklist_case( .isToLoad=false, .currentHour=0 , .startHour=23, .endHour=0  ); // Case 1
-        test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=1 , .startHour=23, .endHour=0  ); // Case 2
-        test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=12, .startHour=23, .endHour=0  ); // Case 3
-        test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=11, .startHour=23, .endHour=0  ); // Case 4
-        test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=13, .startHour=23, .endHour=0  ); // Case 5
-        test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=22, .startHour=23, .endHour=0  ); // Case 6
+        test_isToLoadBlacklist_case( .isToLoad=false, .currentHour=23, .startHour=23, .endHour=0  ); // Case 1
+        test_isToLoadBlacklist_case( .isToLoad=false, .currentHour=0 , .startHour=23, .endHour=0  ); // Case 2
+        test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=1 , .startHour=23, .endHour=0  ); // Case 3
+        test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=12, .startHour=23, .endHour=0  ); // Case 4
+        test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=11, .startHour=23, .endHour=0  ); // Case 5
+        test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=13, .startHour=23, .endHour=0  ); // Case 6
+        test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=22, .startHour=23, .endHour=0  ); // Case 7
 
         test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=0 , .startHour=1 , .endHour=23 ); // Case 8
         test_isToLoadBlacklist_case( .isToLoad=false, .currentHour=1 , .startHour=1 , .endHour=23 ); // Case 9
@@ -15408,12 +15441,76 @@ public timeRemain()
     }
 
     /**
+     * To call the general test handler 'test_isToLoadBlacklist_case(3)' using test scenario cases.
+     */
+    stock test_loadNextWhiteListGroupClos()
+    {
+        // To block them (Blacklist), we need   to load them when we are between 23-0 (23:00:00-23:59:59).
+        // To allow them (Whitelist), we cannot to load them when we are between 23-0 (23:00:00-23:59:59).
+        test_isToLoadBlacklist_case( .isToLoad=false, .currentHour=23, .startHour=23, .endHour=0 , .isClose=true ); // Case 1
+        test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=0 , .startHour=23, .endHour=0 , .isClose=true ); // Case 2
+        test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=1 , .startHour=23, .endHour=0 , .isClose=true ); // Case 3
+        test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=12, .startHour=23, .endHour=0 , .isClose=true ); // Case 4
+        test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=11, .startHour=23, .endHour=0 , .isClose=true ); // Case 5
+        test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=13, .startHour=23, .endHour=0 , .isClose=true ); // Case 6
+        test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=22, .startHour=23, .endHour=0 , .isClose=true ); // Case 7
+
+        test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=0 , .startHour=1 , .endHour=23, .isClose=true ); // Case 8
+        test_isToLoadBlacklist_case( .isToLoad=false, .currentHour=1 , .startHour=1 , .endHour=23, .isClose=true ); // Case 9
+        test_isToLoadBlacklist_case( .isToLoad=false, .currentHour=2 , .startHour=1 , .endHour=23, .isClose=true ); // Case 10
+        test_isToLoadBlacklist_case( .isToLoad=false, .currentHour=12, .startHour=1 , .endHour=23, .isClose=true ); // Case 11
+        test_isToLoadBlacklist_case( .isToLoad=false, .currentHour=22, .startHour=1 , .endHour=23, .isClose=true ); // Case 12
+        test_isToLoadBlacklist_case( .isToLoad=true, .currentHour=23, .startHour=1 , .endHour=23 , .isClose=true ); // Case 13
+
+        test_isToLoadBlacklist_case( .isToLoad=false, .currentHour=12, .startHour=12, .endHour=22, .isClose=true ); // Case 14
+        test_isToLoadBlacklist_case( .isToLoad=false, .currentHour=13, .startHour=12, .endHour=22, .isClose=true ); // Case 15
+        test_isToLoadBlacklist_case( .isToLoad=false, .currentHour=17, .startHour=12, .endHour=22, .isClose=true ); // Case 16
+        test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=22, .startHour=12, .endHour=22, .isClose=true ); // Case 17
+        test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=11, .startHour=12, .endHour=22, .isClose=true ); // Case 18
+        test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=5 , .startHour=12, .endHour=22, .isClose=true ); // Case 19
+        test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=9 , .startHour=12, .endHour=22, .isClose=true ); // Case 20
+        test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=23, .startHour=12, .endHour=22, .isClose=true ); // Case 21
+        test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=0 , .startHour=12, .endHour=22, .isClose=true ); // Case 22
+
+        test_isToLoadBlacklist_case( .isToLoad=false, .currentHour=23, .startHour=23, .endHour=5 , .isClose=true ); // Case 23
+        test_isToLoadBlacklist_case( .isToLoad=false, .currentHour=0 , .startHour=23, .endHour=5 , .isClose=true ); // Case 24
+        test_isToLoadBlacklist_case( .isToLoad=false, .currentHour=1 , .startHour=23, .endHour=5 , .isClose=true ); // Case 25
+        test_isToLoadBlacklist_case( .isToLoad=false, .currentHour=2 , .startHour=23, .endHour=5 , .isClose=true ); // Case 26
+        test_isToLoadBlacklist_case( .isToLoad=false, .currentHour=4 , .startHour=23, .endHour=5 , .isClose=true ); // Case 27
+        test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=5 , .startHour=23, .endHour=5 , .isClose=true ); // Case 28
+        test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=22, .startHour=23, .endHour=5 , .isClose=true ); // Case 29
+        test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=21, .startHour=23, .endHour=5 , .isClose=true ); // Case 30
+        test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=6 , .startHour=23, .endHour=5 , .isClose=true ); // Case 31
+        test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=7 , .startHour=23, .endHour=5 , .isClose=true ); // Case 32
+        test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=7 , .startHour=23, .endHour=5 , .isClose=true ); // Case 33
+        test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=12, .startHour=23, .endHour=5 , .isClose=true ); // Case 34
+
+        test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=4 , .startHour=5 , .endHour=3 , .isClose=true ); // Case 35
+        test_isToLoadBlacklist_case( .isToLoad=false, .currentHour=5 , .startHour=5 , .endHour=3 , .isClose=true ); // Case 36
+        test_isToLoadBlacklist_case( .isToLoad=false, .currentHour=6 , .startHour=5 , .endHour=3 , .isClose=true ); // Case 37
+        test_isToLoadBlacklist_case( .isToLoad=false, .currentHour=15, .startHour=5 , .endHour=3 , .isClose=true ); // Case 38
+        test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=3 , .startHour=5 , .endHour=3 , .isClose=true ); // Case 39
+        test_isToLoadBlacklist_case( .isToLoad=false, .currentHour=2 , .startHour=5 , .endHour=3 , .isClose=true ); // Case 40
+
+        test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=0 , .startHour=0 , .endHour=0 , .isClose=true ); // Case 41
+        test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=1 , .startHour=0 , .endHour=0 , .isClose=true ); // Case 42
+        test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=2 , .startHour=0 , .endHour=0 , .isClose=true ); // Case 43
+        test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=23, .startHour=0 , .endHour=0 , .isClose=true ); // Case 44
+        test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=22, .startHour=0 , .endHour=0 , .isClose=true ); // Case 45
+        test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=12, .startHour=0 , .endHour=0 , .isClose=true ); // Case 46
+
+        test_isToLoadBlacklist_case( .isToLoad=false, .currentHour=0 , .startHour=0 , .endHour=23, .isClose=true ); // Case 47
+        test_isToLoadBlacklist_case( .isToLoad=true , .currentHour=23, .startHour=0 , .endHour=23, .isClose=true ); // Case 48
+        test_isToLoadBlacklist_case( .isToLoad=false, .currentHour=12, .startHour=0 , .endHour=23, .isClose=true ); // Case 49
+    }
+
+    /**
      * This is a general test handler for the function 'isToLoadNextWhiteListGroupOpen(5)'.
      *
      * @param currentHour      the current hour.
      * @param isToLoad         whether the sequence should be loaded by the given `currentHour`.
      */
-    stock test_isToLoadBlacklist_case( bool:isToLoad, currentHour, startHour, endHour, isWhiteList = false )
+    stock test_isToLoadBlacklist_case( bool:isToLoad, currentHour, startHour, endHour, bool:isWhiteList = false, bool:isClose = false )
     {
         new test_id;
         new bool:loadResult;
@@ -15424,7 +15521,15 @@ public timeRemain()
     #endif
 
         test_id = test_registerSeriesNaming( "test_isToLoadBlacklist", 'c' );
-        isToLoadNextWhiteListGroupOpen( loadResult, currentHour, startHour, endHour, isWhiteList );
+
+        if( isClose )
+        {
+            isToLoadNextWhiteListGroupClose( loadResult, currentHour, startHour, endHour, isWhiteList );
+        }
+        else
+        {
+            isToLoadNextWhiteListGroupOpen( loadResult, currentHour, startHour, endHour, isWhiteList );
+        }
 
         formatex( errorMessage, charsmax( errorMessage ), "The hour %2d must %sto be loaded at [%d-%d]!",
                 currentHour, ( isToLoad ? "" : "not " ), startHour, endHour );
@@ -15475,7 +15580,8 @@ public timeRemain()
     stock test_loadCurrentBlackList_cases()
     {
         test_loadCurrentBlackList_load();
-        test_loadNextWhiteListGroupOpen();return;
+        test_loadNextWhiteListGroupClos();return;
+        test_loadNextWhiteListGroupOpen();
 
         test_loadCurrentBlacklist_case( 12, "de_dust2" , "de_dust7"  ); // Case 1/2
         test_loadCurrentBlacklist_case( 23, "de_dust5" , "de_dust4"  ); // Case 3/4
@@ -15490,9 +15596,9 @@ public timeRemain()
         test_loadCurrentBlacklist_case( 2 , "de_dust6" , "de_dust11" ); // Case 21/22
         test_loadCurrentBlacklist_case( 4 , "de_dust13", "de_dust4"  ); // Case 23/24
 
-        test_loadCurrentBlacklist_case( 0 , "de_dust14", "" ); // Case 25
-        test_loadCurrentBlacklist_case( 0 , "de_dust15", "" ); // Case 26
-        test_loadCurrentBlacklist_case( 0 , "de_dust16", "" ); // Case 27
+        test_loadCurrentBlacklist_case( 0 , "", "de_dust14" ); // Case 25
+        test_loadCurrentBlacklist_case( 0 , "", "de_dust15" ); // Case 26
+        test_loadCurrentBlacklist_case( 0 , "", "de_dust16" ); // Case 27
 
         test_loadCurrentBlacklist_case( 1 , "de_dust14", "" ); // Case 28
         test_loadCurrentBlacklist_case( 1 , "de_dust15", "" ); // Case 29
