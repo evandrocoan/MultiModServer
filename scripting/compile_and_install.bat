@@ -2,12 +2,12 @@
 
 
 rem Components:
-rem 
+rem
 rem Time calculation downloaded from:
 rem http://stackoverflow.com/q/9922498/4934640
 rem http://stackoverflow.com/questions/9922498/calculate-time-difference-in-windows-batch-file
-rem 
-rem AMX Mod X compiling batch downloaded from: 
+rem
+rem AMX Mod X compiling batch downloaded from:
 rem https://github.com/alliedmodders/amxmodx/pull/212/commits
 
 
@@ -24,12 +24,15 @@ for /F "tokens=1-4 delims=:.," %%a in ("%time%") do (
 rem Update the current galileo version file include
 xcopy /E /S /Y ".\include" "%AMXX_COMPILER%\include"
 
+del F:\SteamCMD\steamapps\common\Half-Life\czero\addons\amxmodx\plugins\galileo.amxx
+
 for %%i in (*.sma) do (
     echo.
     rem The format of %TIME% is HH:MM:SS,CS for example 23:59:59,99
     echo // Compiling %%i ... Current time is: %TIME% - %CURRENT_DATE%
     echo.
-    
+
+    del D:\User\Dropbox\Applications\SoftwareVersioning\Subtrees\Galileo\scripting\compiled\galileo.amxx
     amxxpc.exe "%%i" -ocompiled/"%%~ni.amxx"
 )
 
