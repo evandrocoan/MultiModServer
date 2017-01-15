@@ -33,12 +33,12 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-526";
+new const PLUGIN_VERSION[] = "v4.2.0-527";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
  */
-#define IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST 1
+#define IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST 0
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -160,10 +160,10 @@ new const PLUGIN_VERSION[] = "v4.2.0-526";
     new bool:g_test_isTheUnitTestsRunning;
 
     /**
-     * Allow the Manual Unit Tests to show LOGGER() debugging messages when the level
+     * Allow the Manual Unit Tests to disable LOGGER() debugging messages when the level
      * DEBUG_LEVEL_DISABLE_TEST_LOGS is enabled.
      */
-    new bool:g_test_isTheManualTestsRunning;
+    new bool:g_test_isToDisableLogging;
 
     /**
      * Write messages to the debug log file on 'addons/amxmodx/logs'.
@@ -182,7 +182,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-526";
         lastRun = currentTime;
 
         // Removes the compiler warning `warning 203: symbol is never used` with some DEBUG levels.
-        if( g_test_isTheUnitTestsRunning && g_test_isTheManualTestsRunning ) { }
+        if( g_test_isTheUnitTestsRunning && g_test_isToDisableLogging ) { }
         if( DEBUGGER_OUTPUT_LOG_FILE_NAME[0] ) { }
     }
 #endif
@@ -241,8 +241,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-526";
         if( mode & g_debug_level )
         {
         #if DEBUG_LEVEL & DEBUG_LEVEL_DISABLE_TEST_LOGS
-            if( !g_test_isTheUnitTestsRunning
-                || !g_test_isTheManualTestsRunning )
+            if( !g_test_isToDisableLogging )
             {
                 static formated_message[ MAX_BIG_BOSS_STRING ];
                 vformat( formated_message, charsmax( formated_message ), message, 3 );
@@ -316,11 +315,8 @@ new const PLUGIN_VERSION[] = "v4.2.0-526";
     {
         LOGGER( 128, "I AM ENTERING ON inGameTestsToExecute(1) player_id: %d", player_id )
 
-        // Allow to show the LOGGER() debugging when the level DEBUG_LEVEL_DISABLE_TEST_LOGS is enabled.
-        g_test_isTheManualTestsRunning = true;
-
-        // Save the game cvars
-        g_test_isTheUnitTestsRunning ? 0 : saveServerCvarsForTesting();
+        // Save the game cvars?
+        if( !g_test_isTheUnitTestsRunning ) saveServerCvarsForTesting();
 
         for( new i = 0; i < 1000; i++ )
         {
@@ -351,7 +347,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-526";
         //test_announceVoteBlockedMap_c();
 
         // Restore the game cvars
-        g_test_isTheUnitTestsRunning ? printTheUnitTestsResults() : 0;
+        if( g_test_isTheUnitTestsRunning ) printTheUnitTestsResults();
     }
 
     /**
@@ -1087,7 +1083,6 @@ new cvar_voteMidPlayersMapFilePath;
 new cvar_whitelistMinPlayers;
 new cvar_isWhiteListNomBlock;
 new cvar_isWhiteListBlockOut;
-new cvar_isWhiteListHourlySet;
 new cvar_voteWhiteListMapFilePath;
 new cvar_coloredChatPrefix;
 
@@ -1493,7 +1488,6 @@ public plugin_init()
     cvar_whitelistMinPlayers       = register_cvar( "gal_whitelist_minplayers"    , "0"    );
     cvar_isWhiteListNomBlock       = register_cvar( "gal_whitelist_nom_block"     , "0"    );
     cvar_isWhiteListBlockOut       = register_cvar( "gal_whitelist_block_out"     , "0"    );
-    cvar_isWhiteListHourlySet      = register_cvar( "gal_whitelist_hourly_set"    , "0"    );
     cvar_voteWhiteListMapFilePath  = register_cvar( "gal_vote_whitelist_mapfile"  , ""     );
     cvar_voteUniquePrefixes        = register_cvar( "gal_vote_uniqueprefixes"     , "0"    );
     cvar_nomPlayerAllowance        = register_cvar( "gal_nom_playerallowance"     , "2"    );
@@ -4801,7 +4795,7 @@ public map_loadPrefixList()
  * When the Whitelist `!gal_whitelist_hourly_set` says [0-0] it means it will block them from 00:00:00 until 23:59:59
  *
  * As we may notice, the current whitelist feature is full featured and the `gal_whitelist_hourly_set` is obsolete.
- * To force the Whitelist to block them from 00:00:00 until 23:59:59, we need to set it as [0-23].
+ * To force the Whitelist to block them from 00:00:00 until 23:59:59, we need to set it as {0-0}.
  *
  * For the `gal_whitelist_block_out` option 0 - Allow all maps outside the Whitelist rule.
  *
@@ -4818,41 +4812,30 @@ public map_loadPrefixList()
  *
  * How do I block a map?
  * If I load the map from the file to the `Trie`, I will allow it on that hour and block all the others not loaded.
+ *
+ * @note the hours parameters `startHour` and `endHour` must to be already normalized by standardizeTheHoursForWhitelist(3).
  */
-stock isToLoadTheNextWhiteListGroup( &isToLoadTheseMaps, currentHour, startHour, endHour, isWhiteList = false )
+stock isToLoadNextWhiteListGroupOpen( &isToLoadTheseMaps, currentHour, startHour, endHour, isWhiteList = false )
 {
-    LOGGER( 256, "I AM ENTERING ON isToLoadTheNextWhiteListGroup(5) | startHour: %d, endHour: %d", startHour, endHour )
+    LOGGER( 256, "I AM ENTERING ON isToLoadNextWhiteListGroupOpen(5) | startHour: %d, endHour: %d", startHour, endHour )
 
     // Here handle all the cases when the start hour is equals to the end hour.
     if( startHour == endHour )
     {
-        LOGGER( 8, "( isToLoadTheNextWhiteListGroup ) startHour == endHour: %d", startHour )
+        LOGGER( 8, "( isToLoadNextWhiteListGroupOpen ) startHour == endHour: %d", startHour )
 
-        // I want to 5-5 to be all day long.
-        if( get_pcvar_num( cvar_isWhiteListHourlySet ) )
+        if( endHour == currentHour )
         {
-            // The black and white list must to block it all day long.
-            #if IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST > 0
-                isToLoadTheseMaps = isWhiteList;
-            #else
-                isToLoadTheseMaps = !isWhiteList;
-            #endif
+            isToLoadTheseMaps = isWhiteList;
         }
         else
         {
-            if( endHour == currentHour )
-            {
-                // Manual fix needed to convert 5-5 to 05:00:00 until 05:59:59, instead of all day long.
-            #if IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST > 0
-                isToLoadTheseMaps = isWhiteList;
-            #else
-                isToLoadTheseMaps = !isWhiteList;
-            #endif
-            }
-            else
-            {
-                isToLoadTheseMaps = isWhiteList;
-            }
+            // Manual fix needed to convert 5-5 to 05:00:00 until 05:59:59, instead of all day long.
+        #if IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST > 0
+            isToLoadTheseMaps = isWhiteList;
+        #else
+            isToLoadTheseMaps = !isWhiteList;
+        #endif
         }
     }
     //           5          3
@@ -4874,13 +4857,13 @@ stock isToLoadTheNextWhiteListGroup( &isToLoadTheseMaps, currentHour, startHour,
         //         4           3
             && currentHour > endHour )
         {
-            LOGGER( 256, "( isToLoadTheNextWhiteListGroup ) startHour > endHour && ( currentHour < startHour && currentHour > endHour )" )
+            LOGGER( 256, "( isToLoadNextWhiteListGroupOpen ) startHour > endHour && ( currentHour < startHour && currentHour > endHour )" )
             isToLoadTheseMaps = !isWhiteList;
         }
         //               6           5
         else // if( currentHour > startHour )
         {
-            LOGGER( 256, "( isToLoadTheNextWhiteListGroup ) startHour > endHour && ( currentHour > startHour || currentHour < endHour )" )
+            LOGGER( 256, "( isToLoadNextWhiteListGroupOpen ) startHour > endHour && ( currentHour > startHour || currentHour < endHour )" )
             isToLoadTheseMaps = isWhiteList;
         }
     }
@@ -4902,26 +4885,117 @@ stock isToLoadTheNextWhiteListGroup( &isToLoadTheseMaps, currentHour, startHour,
         //          2           3
             || currentHour < startHour )
         {
-            LOGGER( 256, "( isToLoadTheNextWhiteListGroup ) startHour < endHour && ( currentHour > endHour || currentHour < startHour )" )
+            LOGGER( 256, "( isToLoadNextWhiteListGroupOpen ) startHour < endHour && ( currentHour > endHour || currentHour < startHour )" )
             isToLoadTheseMaps = !isWhiteList;
         }
         //              4            3
         else // if( currentHour > startHour )
         {
-            LOGGER( 256, "( isToLoadTheNextWhiteListGroup ) startHour < endHour && ( currentHour < endHour || currentHour > startHour )" )
+            LOGGER( 256, "( isToLoadNextWhiteListGroupOpen ) startHour < endHour && ( currentHour < endHour || currentHour > startHour )" )
             isToLoadTheseMaps = isWhiteList;
         }
     }
 
-    LOGGER( 8, "( isToLoadTheNextWhiteListGroup ) %2d >  %2d     : %2d", startHour, endHour, startHour > endHour )
-    LOGGER( 8, "( isToLoadTheNextWhiteListGroup ) %2d >= %2d > %2d: %2d", \
+    LOGGER( 0, "", debugIsToLoadNextWhiteListGroup( currentHour, startHour, endHour, isToLoadTheseMaps ) )
+}
+
+stock isToLoadNextWhiteListGroupClose( &isToLoadTheseMaps, currentHour, startHour, endHour, isWhiteList = false )
+{
+    LOGGER( 256, "I AM ENTERING ON isToLoadNextWhiteListGroupClose(5) | startHour: %d, endHour: %d", startHour, endHour )
+
+    // Here handle all the cases when the start hour is equals to the end hour.
+    if( startHour == endHour )
+    {
+        LOGGER( 8, "( isToLoadNextWhiteListGroupClose ) startHour == endHour: %d", startHour )
+
+        if( endHour == currentHour )
+        {
+            // Manual fix needed to convert 5-5 to 05:00:00 until 05:59:59, instead of all day long.
+        #if IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST > 0
+            isToLoadTheseMaps = isWhiteList;
+        #else
+            isToLoadTheseMaps = !isWhiteList;
+        #endif
+        }
+        else
+        {
+            isToLoadTheseMaps = isWhiteList;
+        }
+    }
+    //           5          3
+    else if( startHour > endHour )
+    {
+        // 5  > 3
+        // 23 > 1
+        // 22 > 12
+        // 24 > 23
+        //
+        // On this cases, we to go from one day to another, always. So we need to be able to
+        // calculate whether the current hour is between these. Doing ( 24 - startHour - endHour )
+        // here, we got how much hours there are between them.
+        //
+        // On 5-3, the possible value(s) for current hour: 4
+        //
+        //      4             5
+        if( currentHour < startHour
+        //         4           3
+            && currentHour > endHour )
+        {
+            LOGGER( 256, "( isToLoadNextWhiteListGroupClose ) startHour > endHour && ( currentHour < startHour && currentHour > endHour )" )
+            isToLoadTheseMaps = !isWhiteList;
+        }
+        //               6           5
+        else // if( currentHour > startHour )
+        {
+            LOGGER( 256, "( isToLoadNextWhiteListGroupClose ) startHour > endHour && ( currentHour > startHour || currentHour < endHour )" )
+            isToLoadTheseMaps = isWhiteList;
+        }
+    }
+    //             3          5
+    else // if( startHour < endHour )
+    {
+        // 3  < 5
+        // 1  < 23
+        // 12 < 22
+        // 23 < 24
+        //
+        // On this cases, we to go from the same day to the same day, always. So we need to be able
+        // to calculate whether the current hour is between these.
+        //
+        // On 3-5, the possible value(s) for current hour: 6, 7, ..., 1, 2
+        //
+        //      6            5
+        if( currentHour > endHour
+        //          2           3
+            || currentHour < startHour )
+        {
+            LOGGER( 256, "( isToLoadNextWhiteListGroupClose ) startHour < endHour && ( currentHour > endHour || currentHour < startHour )" )
+            isToLoadTheseMaps = !isWhiteList;
+        }
+        //              4            3
+        else // if( currentHour > startHour )
+        {
+            LOGGER( 256, "( isToLoadNextWhiteListGroupClose ) startHour < endHour && ( currentHour < endHour || currentHour > startHour )" )
+            isToLoadTheseMaps = isWhiteList;
+        }
+    }
+
+    LOGGER( 0, "", debugIsToLoadNextWhiteListGroup( currentHour, startHour, endHour, isToLoadTheseMaps ) )
+}
+
+stock debugIsToLoadNextWhiteListGroup( currentHour, startHour, endHour, isToLoadTheseMaps )
+{
+    LOGGER( 8, "( debugIsToLoadNextWhiteListGroup ) %2d >  %2d     : %2d", startHour, endHour, startHour > endHour )
+    LOGGER( 8, "( debugIsToLoadNextWhiteListGroup ) %2d >= %2d > %2d: %2d", \
             startHour, currentHour, endHour, \
             startHour >= currentHour && currentHour > endHour )
 
-    LOGGER( 8, "( isToLoadTheNextWhiteListGroup ) %2d <  %2d     : %2d", startHour, endHour, startHour < endHour )
-    LOGGER( 8, "( isToLoadTheNextWhiteListGroup ) %2d <= %2d < %2d: %2d, isToLoadTheseMaps: %d", \
+    LOGGER( 8, "( debugIsToLoadNextWhiteListGroup ) %2d <  %2d     : %2d", startHour, endHour, startHour < endHour )
+    LOGGER( 8, "( debugIsToLoadNextWhiteListGroup ) %2d <= %2d < %2d: %2d, isToLoadTheseMaps: %d", \
             startHour, currentHour, endHour, \
             startHour <= currentHour && currentHour < endHour, isToLoadTheseMaps )
+
+    return 0;
 }
 
 /**
@@ -4935,21 +5009,21 @@ stock standardizeTheHoursForWhitelist( &currentHour, &startHour, &endHour )
     if( startHour > 23
         || startHour < 0 )
     {
-        LOGGER( 8, "( isToLoadTheNextWhiteListGroup ) startHour: %d, will became 0.", startHour )
+        LOGGER( 8, "( standardizeTheHoursForWhitelist ) startHour: %d, will became 0.", startHour )
         startHour = 0;
     }
 
     if( endHour > 23
         || endHour < 0 )
     {
-        LOGGER( 8, "( isToLoadTheNextWhiteListGroup ) endHour: %d, will became 0.", endHour )
+        LOGGER( 8, "( standardizeTheHoursForWhitelist ) endHour: %d, will became 0.", endHour )
         endHour = 0;
     }
 
     if( currentHour > 23
         || currentHour < 0 )
     {
-        LOGGER( 8, "( isToLoadTheNextWhiteListGroup ) currentHour: %d, will became 0.", currentHour )
+        LOGGER( 8, "( standardizeTheHoursForWhitelist ) currentHour: %d, will became 0.", currentHour )
         currentHour = 0;
     }
 }
@@ -5054,40 +5128,14 @@ stock loadWhiteListFile( currentHour, &Trie:listTrie, Array:whitelistFileArray, 
         {
             ArrayGetString( whitelistFileArray, lineIndex, currentLine, charsmax( currentLine ) );
 
-            if( currentLine[ 0 ] == '['
-                && isdigit( currentLine[ 1 ] ) )
+            if( whiteListHourlySet( '[', currentLine, startHourString, endHourString, isWhiteList, currentHour, startHour, endHour ) )
             {
-                // remove line delimiters [ and ]
-                replace_all( currentLine, charsmax( currentLine ), "[", "" );
-                replace_all( currentLine, charsmax( currentLine ), "]", "" );
-
-                // Invert it to change the 'If we are %s these hours...' LOGGER(...) message accordantly.
-            #if IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST > 0
-                isWhiteList = !isWhiteList;
-            #endif
-
-                LOGGER( 8, "( loadWhiteListFile ) " )
-                LOGGER( 8, "( loadWhiteListFile ) If we are %s these hours, we must load these maps:", \
-                        ( isWhiteList? "between" : "outside" ) )
-                LOGGER( 8, "( loadWhiteListFile ) currentLine: %s (currentHour: %d)", currentLine, currentHour )
-
-                // broke the current line
-                STR_TOKEN( currentLine ,
-                        startHourString, charsmax( startHourString ),
-                        endHourString  , charsmax( endHourString )  , '-', 0 );
-
-                startHour = str_to_num( startHourString );
-                endHour   = str_to_num( endHourString );
-
-                standardizeTheHoursForWhitelist( currentHour, startHour, endHour );
-
-                // Revert the variable 'isWhiteList' change and calculates whether to load the Blacklist/Whitelist or not.
-            #if IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST > 0
-                isWhiteList = !isWhiteList;
-                convertWhitelistToBlacklist( startHour, endHour );
-            #endif
-
-                isToLoadTheNextWhiteListGroup( isToLoadTheseMaps, currentHour, startHour, endHour, isWhiteList );
+                isToLoadNextWhiteListGroupOpen( isToLoadTheseMaps, currentHour, startHour, endHour, isWhiteList );
+                continue;
+            }
+            else if( whiteListHourlySet( '{', currentLine, startHourString, endHourString, isWhiteList, currentHour, startHour, endHour ) )
+            {
+                isToLoadNextWhiteListGroupClose( isToLoadTheseMaps, currentHour, startHour, endHour, isWhiteList );
                 continue;
             }
             else if( !isToLoadTheseMaps )
@@ -5114,6 +5162,52 @@ stock loadWhiteListFile( currentHour, &Trie:listTrie, Array:whitelistFileArray, 
     }
 
     LOGGER( 1, "    I AM EXITING loadWhiteListFile(5) | listArray: %d, whitelistFileArray: %d", listArray, whitelistFileArray )
+}
+
+stock whiteListHourlySet( trigger, currentLine[], startHourString[], endHourString[], &isWhiteList, &currentHour, &startHour, &endHour )
+{
+    LOGGER( 256, "I AM ENTERING ON whiteListHourlySet(4) | trigger: %c", trigger )
+
+    if( currentLine[ 0 ] == trigger
+        && isdigit( currentLine[ 1 ] ) )
+    {
+        // remove line delimiters [ and ]
+        replace_all( currentLine, MAX_MAPNAME_LENGHT - 1, "[", "" );
+        replace_all( currentLine, MAX_MAPNAME_LENGHT - 1, "{", "" );
+        replace_all( currentLine, MAX_MAPNAME_LENGHT - 1, "}", "" );
+        replace_all( currentLine, MAX_MAPNAME_LENGHT - 1, "]", "" );
+
+        // Invert it to change the 'If we are %s these hours...' LOGGER(...) message accordantly.
+    #if IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST > 0
+        isWhiteList = !isWhiteList;
+    #endif
+
+        LOGGER( 8, "( whiteListHourlySet ) " )
+        LOGGER( 8, "( whiteListHourlySet ) If we are %s these hours, we must load these maps:", ( isWhiteList? "between" : "outside" ) )
+        LOGGER( 8, "( whiteListHourlySet ) currentLine: %s (currentHour: %d)", currentLine, currentHour )
+
+        // broke the current line
+        STR_TOKEN( currentLine ,
+                startHourString, MAX_MAPNAME_LENGHT / 2,
+                endHourString  , MAX_MAPNAME_LENGHT / 2, '-', 0 );
+
+        startHour = str_to_num( startHourString );
+        endHour   = str_to_num( endHourString );
+
+        standardizeTheHoursForWhitelist( currentHour, startHour, endHour );
+
+        // Revert the variable 'isWhiteList' change and calculates whether to load the Blacklist/Whitelist or not.
+    #if IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST > 0
+        isWhiteList = !isWhiteList;
+        convertWhitelistToBlacklist( startHour, endHour );
+    #endif
+
+        LOGGER( 256, "    ( whiteListHourlySet ) Returning true for: %s", currentLine )
+        return true;
+    }
+
+    LOGGER( 256, "    ( whiteListHourlySet ) Returning false for: %s", currentLine )
+    return false;
 }
 
 stock setupLoadWhiteListParams( bool:isWhiteList, &Trie:listTrie, &Array:listArray )
@@ -14449,7 +14543,7 @@ public timeRemain()
     #endif
 
         // Run the manual tests.
-    #if DEBUG_LEVEL & DEBUG_LEVEL_MANUAL_TEST_START
+    #if DEBUG_LEVEL & DEBUG_LEVEL_MANUAL_TEST_START && !( DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_UNIT_TEST_DELAYED ) )
         print_logger( "" );
         print_logger( "" );
         print_logger( "" );
@@ -14825,10 +14919,11 @@ public timeRemain()
     /**
      * To create a map file list on the specified file path on the disk.
      *
+     * @param replace              true if is to replace `[` `]` by `{` `}`, false if not.
      * @param mapFileListPath      the path to the mapFileList.
      * @param mapFileList          the variable number of maps.
      */
-    stock helper_mapFileListLoad( mapFileListPath[], ... )
+    stock helper_mapFileListLoad( bool:replace, mapFileListPath[], ... )
     {
         new stringIndex;
         new currentIndex;
@@ -14843,7 +14938,7 @@ public timeRemain()
             new argumentsNumber = numargs();
 
             // To load the maps passed as arguments
-            for( currentIndex = 1; currentIndex < argumentsNumber; ++currentIndex )
+            for( currentIndex = 2; currentIndex < argumentsNumber; ++currentIndex )
             {
                 stringIndex = 0;
 
@@ -14852,6 +14947,13 @@ public timeRemain()
                 }
 
                 currentMap[ stringIndex ] = '^0';
+
+                if( replace )
+                {
+                    replace_all( currentMap, charsmax( currentMap ), "[", "{" );
+                    replace_all( currentMap, charsmax( currentMap ), "]", "{" );
+                }
+
                 fprintf( fileDescriptor, "%s^n", currentMap );
             }
 
@@ -15203,12 +15305,99 @@ public timeRemain()
     }
 
     /**
+     * To call the general test handler 'test_isToLoadBlacklist_case(3)' using test scenario cases.
+     */
+    stock test_loadNextWhiteListGroupOpen()
+    {
+        // To allow them (Whitelist), we cannot to load them when we are between 23-0 (23:00:00-0:59:59).
+        test_isToLoadBlacklist_case( false, .currentHour=23, .startHour=23, .endHour=0  ); // Case 7
+        test_isToLoadBlacklist_case( false, .currentHour=0 , .startHour=23, .endHour=0  ); // Case 1
+        test_isToLoadBlacklist_case( true , .currentHour=1 , .startHour=23, .endHour=0  ); // Case 2
+        test_isToLoadBlacklist_case( true , .currentHour=12, .startHour=23, .endHour=0  ); // Case 3
+        test_isToLoadBlacklist_case( true , .currentHour=11, .startHour=23, .endHour=0  ); // Case 4
+        test_isToLoadBlacklist_case( true , .currentHour=13, .startHour=23, .endHour=0  ); // Case 5
+        test_isToLoadBlacklist_case( true , .currentHour=22, .startHour=23, .endHour=0  ); // Case 6
+
+        test_isToLoadBlacklist_case( true , .currentHour=0 , .startHour=1 , .endHour=23 ); // Case 8
+        test_isToLoadBlacklist_case( false, .currentHour=1 , .startHour=1 , .endHour=23 ); // Case 9
+        test_isToLoadBlacklist_case( false, .currentHour=2 , .startHour=1 , .endHour=23 ); // Case 10
+        test_isToLoadBlacklist_case( false, .currentHour=12, .startHour=1 , .endHour=23 ); // Case 11
+        test_isToLoadBlacklist_case( false, .currentHour=22, .startHour=1 , .endHour=23 ); // Case 12
+        test_isToLoadBlacklist_case( false, .currentHour=23, .startHour=1 , .endHour=23 ); // Case 13
+
+        test_isToLoadBlacklist_case( false, .currentHour=12, .startHour=12, .endHour=22 ); // Case 14
+        test_isToLoadBlacklist_case( false, .currentHour=13, .startHour=12, .endHour=22 ); // Case 15
+        test_isToLoadBlacklist_case( false, .currentHour=17, .startHour=12, .endHour=22 ); // Case 16
+        test_isToLoadBlacklist_case( false, .currentHour=22, .startHour=12, .endHour=22 ); // Case 17
+        test_isToLoadBlacklist_case( true , .currentHour=11, .startHour=12, .endHour=22 ); // Case 18
+        test_isToLoadBlacklist_case( true , .currentHour=5 , .startHour=12, .endHour=22 ); // Case 19
+        test_isToLoadBlacklist_case( true , .currentHour=9 , .startHour=12, .endHour=22 ); // Case 20
+        test_isToLoadBlacklist_case( true , .currentHour=23, .startHour=12, .endHour=22 ); // Case 21
+        test_isToLoadBlacklist_case( true , .currentHour=0 , .startHour=12, .endHour=22 ); // Case 22
+
+        test_isToLoadBlacklist_case( false, .currentHour=23, .startHour=23, .endHour=5  ); // Case 23
+        test_isToLoadBlacklist_case( false, .currentHour=0 , .startHour=23, .endHour=5  ); // Case 24
+        test_isToLoadBlacklist_case( false, .currentHour=1 , .startHour=23, .endHour=5  ); // Case 25
+        test_isToLoadBlacklist_case( false, .currentHour=2 , .startHour=23, .endHour=5  ); // Case 26
+        test_isToLoadBlacklist_case( false, .currentHour=4 , .startHour=23, .endHour=5  ); // Case 27
+        test_isToLoadBlacklist_case( false, .currentHour=5 , .startHour=23, .endHour=5  ); // Case 28
+        test_isToLoadBlacklist_case( true , .currentHour=22, .startHour=23, .endHour=5  ); // Case 29
+        test_isToLoadBlacklist_case( true , .currentHour=21, .startHour=23, .endHour=5  ); // Case 30
+        test_isToLoadBlacklist_case( true , .currentHour=6 , .startHour=23, .endHour=5  ); // Case 31
+        test_isToLoadBlacklist_case( true , .currentHour=7 , .startHour=23, .endHour=5  ); // Case 32
+        test_isToLoadBlacklist_case( true , .currentHour=7 , .startHour=23, .endHour=5  ); // Case 33
+        test_isToLoadBlacklist_case( true , .currentHour=12, .startHour=23, .endHour=5  ); // Case 34
+
+        test_isToLoadBlacklist_case( true , .currentHour=4 , .startHour=5 , .endHour=3  ); // Case 35
+        test_isToLoadBlacklist_case( false, .currentHour=5 , .startHour=5 , .endHour=3  ); // Case 36
+        test_isToLoadBlacklist_case( false, .currentHour=6 , .startHour=5 , .endHour=3  ); // Case 37
+        test_isToLoadBlacklist_case( false, .currentHour=15, .startHour=5 , .endHour=3  ); // Case 38
+        test_isToLoadBlacklist_case( false, .currentHour=3 , .startHour=5 , .endHour=3  ); // Case 39
+        test_isToLoadBlacklist_case( false, .currentHour=2 , .startHour=5 , .endHour=3  ); // Case 40
+
+        test_isToLoadBlacklist_case( false, .currentHour=0 , .startHour=0 , .endHour=0  ); // Case 41
+        test_isToLoadBlacklist_case( true , .currentHour=1 , .startHour=0 , .endHour=0  ); // Case 42
+        test_isToLoadBlacklist_case( true , .currentHour=2 , .startHour=0 , .endHour=0  ); // Case 43
+        test_isToLoadBlacklist_case( true , .currentHour=23, .startHour=0 , .endHour=0  ); // Case 44
+        test_isToLoadBlacklist_case( true , .currentHour=22, .startHour=0 , .endHour=0  ); // Case 45
+        test_isToLoadBlacklist_case( true , .currentHour=12, .startHour=0 , .endHour=0  ); // Case 46
+
+        test_isToLoadBlacklist_case( false, .currentHour=0 , .startHour=0 , .endHour=23 ); // Case 47
+        test_isToLoadBlacklist_case( false, .currentHour=23, .startHour=0 , .endHour=23 ); // Case 48
+        test_isToLoadBlacklist_case( false, .currentHour=12, .startHour=0 , .endHour=23 ); // Case 49
+    }
+
+    /**
+     * This is a general test handler for the function 'isToLoadNextWhiteListGroupOpen(5)'.
+     *
+     * @param currentHour      the current hour.
+     * @param isToLoad         whether the sequence should be loaded by the given `currentHour`.
+     */
+    stock test_isToLoadBlacklist_case( bool:isToLoad, currentHour, startHour, endHour, isWhiteList = false )
+    {
+        new test_id;
+        new bool:loadResult;
+        new errorMessage[ MAX_LONG_STRING ];
+
+    #if IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST > 0
+        isToLoad = !isToLoad;
+    #endif
+
+        isToLoadNextWhiteListGroupOpen( loadResult, currentHour, startHour, endHour, isWhiteList );
+        test_id = test_registerSeriesNaming( "test_isToLoadBlacklist", 'c' );
+
+        formatex( errorMessage, charsmax( errorMessage ), "The hour %2d must to be loaded at [%d-%d]!", currentHour, startHour, endHour );
+        SET_TEST_FAILURE( test_id, loadResult != isToLoad, errorMessage )
+    }
+
+    /**
      * This is a configuration loader for the 'loadWhiteListFile(4)' function testing.
      */
-    public test_loadCurrentBlackList_load()
+    stock test_loadCurrentBlackList_load( bool:replace = false )
     {
         helper_mapFileListLoad
         (
+            replace,
             g_test_whiteListFilePath,
             "[23-24]"  ,
             "de_dust1" ,
@@ -15241,9 +15430,10 @@ public timeRemain()
     /**
      * To call the general test handler 'test_loadCurrentBlacklist_case(3)' using test scenario cases.
      */
-    public test_loadCurrentBlackList_cases()
+    stock test_loadCurrentBlackList_cases()
     {
         test_loadCurrentBlackList_load();
+        test_loadNextWhiteListGroupOpen();return;
 
         test_loadCurrentBlacklist_case( 12, "de_dust2" , "de_dust7"  ); // Case 1/2
         test_loadCurrentBlacklist_case( 23, "de_dust5" , "de_dust4"  ); // Case 3/4
@@ -15523,9 +15713,9 @@ public timeRemain()
     {
         helper_loadNominations( "de_rain", "de_inferno", "as_trunda" );
 
-        helper_mapFileListLoad( g_test_voteMapFilePath   , "de_dust1", "de_dust2" );
-        helper_mapFileListLoad( g_test_minPlayersFilePath, "de_rain" , "de_nuke" );
-        helper_mapFileListLoad( g_test_whiteListFilePath , "[0-23]"  , "de_rain", "de_nuke" );
+        helper_mapFileListLoad( false, g_test_voteMapFilePath   , "de_dust1", "de_dust2" );
+        helper_mapFileListLoad( false, g_test_minPlayersFilePath, "de_rain" , "de_nuke" );
+        helper_mapFileListLoad( false, g_test_whiteListFilePath , "[0-23]"  , "de_rain", "de_nuke" );
 
         // Forced the minimum players feature map to be loaded.
         g_test_aimedPlayersNumber = 1;
@@ -15546,9 +15736,9 @@ public timeRemain()
     {
         helper_loadNominations( "de_rain", "de_inferno", "as_trunda" );
 
-        helper_mapFileListLoad( g_test_voteMapFilePath   , "de_dust1", "de_dust2" );
-        helper_mapFileListLoad( g_test_minPlayersFilePath, "de_rain" , "de_nuke" );
-        helper_mapFileListLoad( g_test_whiteListFilePath , "[0-23]"  , "de_rain", "de_nuke" );
+        helper_mapFileListLoad( false, g_test_voteMapFilePath   , "de_dust1", "de_dust2" );
+        helper_mapFileListLoad( false, g_test_minPlayersFilePath, "de_rain" , "de_nuke" );
+        helper_mapFileListLoad( false, g_test_whiteListFilePath , "[0-23]"  , "de_rain", "de_nuke" );
 
         // Disables the minimum players feature.
         g_test_aimedPlayersNumber = 5;
@@ -15572,9 +15762,9 @@ public timeRemain()
                                        "de_dust2002v2005_forEver2012", "de_dust2002v2005_forEver2013", "de_dust2002v2005_forEver2014",
                                        "de_dust2002v2005_forEver2015", "de_dust2002v2005_forEver2016", "de_dust2002v2005_forEver2017" );
 
-        helper_mapFileListLoad( g_test_voteMapFilePath   , "de_dust1", "de_dust2" );
-        helper_mapFileListLoad( g_test_minPlayersFilePath, "de_rats" , "de_train" );
-        helper_mapFileListLoad( g_test_whiteListFilePath , "[0-23]"  , "de_rats", "de_train" );
+        helper_mapFileListLoad( false, g_test_voteMapFilePath   , "de_dust1", "de_dust2" );
+        helper_mapFileListLoad( false, g_test_minPlayersFilePath, "de_rats" , "de_train" );
+        helper_mapFileListLoad( false, g_test_whiteListFilePath , "[0-23]"  , "de_rats", "de_train" );
 
         // Forced the minimum players feature map to be loaded.
         g_test_aimedPlayersNumber = 1;
@@ -15597,9 +15787,9 @@ public timeRemain()
     {
         helper_loadNominations( "de_rain", "de_inferno", "as_trunda" );
 
-        helper_mapFileListLoad( g_test_voteMapFilePath   , "de_dust1", "de_dust2" );
-        helper_mapFileListLoad( g_test_minPlayersFilePath, "de_rain" , "de_nuke" );
-        helper_mapFileListLoad( g_test_whiteListFilePath , "[0-23]"  , "de_rain", "de_nuke" );
+        helper_mapFileListLoad( false, g_test_voteMapFilePath   , "de_dust1", "de_dust2" );
+        helper_mapFileListLoad( false, g_test_minPlayersFilePath, "de_rain" , "de_nuke" );
+        helper_mapFileListLoad( false, g_test_whiteListFilePath , "[0-23]"  , "de_rain", "de_nuke" );
 
         // Disables the minimum players feature.
         g_test_aimedPlayersNumber = 5;
@@ -15627,7 +15817,7 @@ public timeRemain()
         set_pcvar_string( cvar_nomMapFilePath, g_test_nomMapFilePath );
 
         // Player cannot nominate the current map, so if you are on one fo these maps, the test will fail.
-        helper_mapFileListLoad( g_test_nomMapFilePath, "de_test_dust1", "de_test_dust2", "de_test_dust3", "de_test_dust4" );
+        helper_mapFileListLoad( false, g_test_nomMapFilePath, "de_test_dust1", "de_test_dust2", "de_test_dust3", "de_test_dust4" );
         loadNominationList();
 
         // Nominations functions:
@@ -16099,7 +16289,7 @@ public timeRemain()
     {
         g_test_isToUseStrictValidMaps = true;
 
-        helper_mapFileListLoad( g_test_voteMapFilePath, "de_dust1", "de_dust2", "de_nuke", "de_dust2" );
+        helper_mapFileListLoad( false, g_test_voteMapFilePath, "de_dust1", "de_dust2", "de_nuke", "de_dust2" );
         helper_loadStrictValidMapsTrie( "de_dust1", "de_dust2", "de_dust5", "de_dust6", "de_nuke" );
 
         test_strictValidMapsTrie( "de_dust1" ); // Case 1
@@ -16137,7 +16327,7 @@ public timeRemain()
     {
         new test_id = test_registerSeriesNaming( "test_populateListOnSeries", 'e' );
 
-        helper_mapFileListLoad( g_test_voteMapFilePath, "de_dust1", "de_dust2", "de_nuke", "de_dust2" );
+        helper_mapFileListLoad( false, g_test_voteMapFilePath, "de_dust1", "de_dust2", "de_nuke", "de_dust2" );
         helper_loadStrictValidMapsTrie( "de_dust1", "de_dust2", "de_dust5", "de_dust6", "de_nuke" );
 
         // Set the settings accordantly to what is being tests on this Unit Test.
@@ -16343,9 +16533,9 @@ public timeRemain()
         // If 'g_test_aimedPlayersNumber < cvar_voteMinPlayers', enables the minimum players feature.
         g_test_aimedPlayersNumber = 5;
 
-        helper_mapFileListLoad( g_test_voteMapFilePath   , "de_dust1 info1", "de_dust2noInfo", "de_dust2 info1 info2" );
-        helper_mapFileListLoad( g_test_minPlayersFilePath, "de_rats"       , "de_train" );
-        helper_mapFileListLoad( g_test_whiteListFilePath , "[0-23]"        , "de_rats", "de_train" );
+        helper_mapFileListLoad( false, g_test_voteMapFilePath   , "de_dust1 info1", "de_dust2noInfo", "de_dust2 info1 info2" );
+        helper_mapFileListLoad( false, g_test_minPlayersFilePath, "de_rats"       , "de_train" );
+        helper_mapFileListLoad( false, g_test_whiteListFilePath , "[0-23]"        , "de_rats", "de_train" );
 
         // To force the Whitelist to be reloaded.
         loadMapFiles();
@@ -16583,6 +16773,7 @@ public timeRemain()
 
         if( !g_test_isTheUnitTestsRunning )
         {
+            g_test_isToDisableLogging    = true;
             g_test_isTheUnitTestsRunning = true;
 
             print_logger( "" );
@@ -16646,7 +16837,6 @@ public timeRemain()
         {
             map_restoreEndGameCvars();
             g_test_isTheUnitTestsRunning   = false;
-            g_test_isTheManualTestsRunning = false;
 
             g_originalTimelimit = 0.0;
             g_originalMaxRounds = 0;
@@ -16704,6 +16894,9 @@ public timeRemain()
 
         LOGGER( 2, "    %38s cvar_mp_timelimit: %f  test_mp_timelimit: %f  g_originalTimelimit: %f", \
                 "restoreServerCvarsFromTesting( out )", get_pcvar_float( cvar_mp_timelimit ), test_mp_timelimit, g_originalTimelimit )
+
+        // Only to disable the Unit Tests running, after all the print being outputted due the `DEBUG_LEVEL_DISABLE_TEST_LOGS` level.
+        g_test_isToDisableLogging = false;
     }
 #endif
 
