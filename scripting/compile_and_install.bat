@@ -35,6 +35,7 @@ for %%i in (*.sma) do (
 
     del D:\User\Dropbox\Applications\SoftwareVersioning\Subtrees\Galileo\scripting\compiled\galileo.amxx
     amxxpc.exe "%%i" -ocompiled/"%%~ni.amxx"
+    xcopy /E /S /Y  D:\User\Dropbox\Applications\SoftwareVersioning\Subtrees\Galileo\scripting\compiled\galileo.amxx F:\SteamCMD\steamapps\common\Half-Life\czero\addons\amxmodx\plugins\
 )
 
 rem Run the files installer.
