@@ -24,6 +24,7 @@ for /F "tokens=1-4 delims=:.," %%a in ("%time%") do (
 rem Update the current galileo version file include
 xcopy /E /S /Y ".\include" "%AMXX_COMPILER%\include"
 
+rem Some how the AMXX 182 compiler is not compilling some times, so let us know when it does not.
 del F:\SteamCMD\steamapps\common\Half-Life\czero\addons\amxmodx\plugins\galileo.amxx
 
 for %%i in (*.sma) do (

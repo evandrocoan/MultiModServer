@@ -33,12 +33,12 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-525";
+new const PLUGIN_VERSION[] = "v4.2.0-526";
 
 /**
  * Change this value from 0 to 1, to use the Whitelist feature as a Blacklist feature.
  */
-#define IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST 0
+#define IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST 1
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -4789,8 +4789,35 @@ public map_loadPrefixList()
 }
 
 /**
- * When the Whitelist ` cvar_isWhiteListHourlySet` says [0-0] it means it will not block them from 00:00:00 until 00:59:59
- * When the Whitelist `!cvar_isWhiteListHourlySet` says [0-0] it means it will not block them from 00:00:00 until 00:00:00
+ * By default, the Whitelist understand a period as 5-5 being 05:00:00 until 05:59:59, and a period
+ * as 5-6 being 05:00:00 until 06:59:59.
+ *
+ * 0 - To convert 5-5 to 05:00:00 until 05:59:59.
+ * 1 - I want to 5-5 to be all day long.
+ *
+ * To disable this feature, set this cvar to 0
+ *
+ * When the Whitelist ` gal_whitelist_hourly_set` says [0-0] it means it will allow them from 00:00:00 until 00:59:59
+ * When the Whitelist `!gal_whitelist_hourly_set` says [0-0] it means it will block them from 00:00:00 until 23:59:59
+ *
+ * As we may notice, the current whitelist feature is full featured and the `gal_whitelist_hourly_set` is obsolete.
+ * To force the Whitelist to block them from 00:00:00 until 23:59:59, we need to set it as [0-23].
+ *
+ * For the `gal_whitelist_block_out` option 0 - Allow all maps outside the Whitelist rule.
+ *
+ *     To block, we need   to load them.
+ *     To allow, we cannot to load them.
+ *
+ * How do I block a map?
+ * If I load the map from the file to the `Trie`, I will block it on that hour and allow all the others loaded.
+ *
+ * For the `gal_whitelist_block_out` option 1 - Block all maps outside the Whitelist rule.
+ *
+ *     To block, we cannot to load them.
+ *     To allow, we need   to load them.
+ *
+ * How do I block a map?
+ * If I load the map from the file to the `Trie`, I will allow it on that hour and block all the others not loaded.
  */
 stock isToLoadTheNextWhiteListGroup( &isToLoadTheseMaps, currentHour, startHour, endHour, isWhiteList = false )
 {
@@ -4805,7 +4832,11 @@ stock isToLoadTheNextWhiteListGroup( &isToLoadTheseMaps, currentHour, startHour,
         if( get_pcvar_num( cvar_isWhiteListHourlySet ) )
         {
             // The black and white list must to block it all day long.
-            isToLoadTheseMaps = !isWhiteList;
+            #if IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST > 0
+                isToLoadTheseMaps = isWhiteList;
+            #else
+                isToLoadTheseMaps = !isWhiteList;
+            #endif
         }
         else
         {
@@ -15200,7 +15231,10 @@ public timeRemain()
             "[0-0]"    ,
             "de_dust14",
             "de_dust15",
-            "de_dust16"
+            "de_dust16",
+            "[0-23]"   ,
+            "de_dust17",
+            "de_dust18"
         );
     }
 
@@ -15224,18 +15258,26 @@ public timeRemain()
         test_loadCurrentBlacklist_case( 2 , "de_dust6" , "de_dust11" ); // Case 21/22
         test_loadCurrentBlacklist_case( 4 , "de_dust13", "de_dust4"  ); // Case 23/24
 
-        test_loadCurrentBlacklist_case( 0 , "", "de_dust14" ); // Case 25
-        test_loadCurrentBlacklist_case( 0 , "", "de_dust15" ); // Case 26
-        test_loadCurrentBlacklist_case( 0 , "", "de_dust16" ); // Case 27
-        test_loadCurrentBlacklist_case( 1 , "", "de_dust14" ); // Case 28
-        test_loadCurrentBlacklist_case( 1 , "", "de_dust15" ); // Case 29
-        test_loadCurrentBlacklist_case( 1 , "", "de_dust16" ); // Case 30
-        test_loadCurrentBlacklist_case( 23, "", "de_dust14" ); // Case 31
-        test_loadCurrentBlacklist_case( 23, "", "de_dust15" ); // Case 32
-        test_loadCurrentBlacklist_case( 23, "", "de_dust16" ); // Case 33
-        test_loadCurrentBlacklist_case( 12, "", "de_dust14" ); // Case 34
-        test_loadCurrentBlacklist_case( 12, "", "de_dust15" ); // Case 35
-        test_loadCurrentBlacklist_case( 12, "", "de_dust16" ); // Case 36
+        test_loadCurrentBlacklist_case( 0 , "de_dust14", "" ); // Case 25
+        test_loadCurrentBlacklist_case( 0 , "de_dust15", "" ); // Case 26
+        test_loadCurrentBlacklist_case( 0 , "de_dust16", "" ); // Case 27
+
+        test_loadCurrentBlacklist_case( 1 , "de_dust14", "" ); // Case 28
+        test_loadCurrentBlacklist_case( 1 , "de_dust15", "" ); // Case 29
+        test_loadCurrentBlacklist_case( 1 , "de_dust16", "" ); // Case 30
+        test_loadCurrentBlacklist_case( 23, "de_dust14", "" ); // Case 31
+        test_loadCurrentBlacklist_case( 23, "de_dust15", "" ); // Case 32
+        test_loadCurrentBlacklist_case( 23, "de_dust16", "" ); // Case 33
+        test_loadCurrentBlacklist_case( 12, "de_dust14", "" ); // Case 34
+        test_loadCurrentBlacklist_case( 12, "de_dust15", "" ); // Case 35
+        test_loadCurrentBlacklist_case( 12, "de_dust16", "" ); // Case 36
+
+        test_loadCurrentBlacklist_case( 1 , "", "de_dust17" ); // Case 37
+        test_loadCurrentBlacklist_case( 1 , "", "de_dust18" ); // Case 38
+        test_loadCurrentBlacklist_case( 23, "", "de_dust17" ); // Case 39
+        test_loadCurrentBlacklist_case( 23, "", "de_dust18" ); // Case 40
+        test_loadCurrentBlacklist_case( 12, "", "de_dust17" ); // Case 41
+        test_loadCurrentBlacklist_case( 12, "", "de_dust18" ); // Case 42
     }
 
     /**
