@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-532";
+new const PLUGIN_VERSION[] = "v4.2.0-533";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -91,7 +91,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-532";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+32+16
+#define DEBUG_LEVEL 1+32+64
 
 
 /**
@@ -4809,10 +4809,11 @@ public map_loadPrefixList()
  *
  * @note the hours parameters `startHour` and `endHour` must to be already normalized by standardizeTheHoursForWhitelist(3).
  */
-stock isToLoadNextWhiteListGroupOpen( &isToLoadTheseMaps, currentHour, startHour, endHour, isWhiteList = false )
+stock bool:isToLoadNextWhiteListGroupOpen( currentHour, startHour, endHour, bool:isWhiteList = false )
 {
-    LOGGER( 256, "I AM ENTERING ON isToLoadNextWhiteListGroupOpen(5) currentHour: %d", currentHour )
+    LOGGER( 256, "I AM ENTERING ON isToLoadNextWhiteListGroupOpen(4) currentHour: %d", currentHour )
     LOGGER( 256, "( isToLoadNextWhiteListGroupOpen ) startHour: %d, endHour: %d", startHour, endHour )
+    new bool:isToLoadTheseMaps;
 
     // Here handle all the cases when the start hour is equals to the end hour.
     if( startHour == endHour )
@@ -4829,72 +4830,21 @@ stock isToLoadNextWhiteListGroupOpen( &isToLoadTheseMaps, currentHour, startHour
             isToLoadTheseMaps = !isWhiteList;
         }
     }
-    //           5          3
-    else if( startHour > endHour )
+    else
     {
-        // 5  > 3
-        // 23 > 1
-        // 22 > 12
-        // 24 > 23
-        //
-        // On this cases, we to go from one day to another, always. So we need to be able to
-        // calculate whether the current hour is between these. Doing ( 24 - startHour - endHour )
-        // here, we got how much hours there are between them.
-        //
-        // On 5-3, the possible value(s) for current hour: 4
-        //
-        //      4             5
-        if( currentHour < startHour
-        //         4           3
-            && currentHour > endHour )
-        {
-            LOGGER( 256, "( isToLoadNextWhiteListGroupOpen ) 1." )
-            isToLoadTheseMaps = !isWhiteList;
-        }
-        //               6           5
-        else // if( currentHour > startHour )
-        {
-            LOGGER( 256, "( isToLoadNextWhiteListGroupOpen ) 2." )
-            isToLoadTheseMaps = isWhiteList;
-        }
-    }
-    //             3          5
-    else // if( startHour < endHour )
-    {
-        // 3  < 5
-        // 1  < 23
-        // 12 < 22
-        // 23 < 24
-        //
-        // On this cases, we to go from the same day to the same day, always. So we need to be able
-        // to calculate whether the current hour is between these.
-        //
-        // On 3-5, the possible value(s) for current hour: 6, 7, ..., 1, 2
-        //
-        //      6            5
-        if( currentHour > endHour
-        //          2           3
-            || currentHour < startHour )
-        {
-            LOGGER( 256, "( isToLoadNextWhiteListGroupOpen ) 3." )
-            isToLoadTheseMaps = !isWhiteList;
-        }
-        //              4            3
-        else // if( currentHour > startHour )
-        {
-            LOGGER( 256, "( isToLoadNextWhiteListGroupOpen ) 4." )
-            isToLoadTheseMaps = isWhiteList;
-        }
+        isToLoadTheseMaps = isToLoadNextWhiteListEndProcess( currentHour, startHour, endHour, isWhiteList );
     }
 
     LOGGER( 0, "", debugIsToLoadNextWhiteListGroup( currentHour, startHour, endHour, isToLoadTheseMaps ) )
+    return isToLoadTheseMaps;
 }
 
-stock isToLoadNextWhiteListGroupClose( &isToLoadTheseMaps, currentHour, startHour, endHour, isWhiteList = false )
+stock bool:isToLoadNextWhiteListGroupClose( currentHour, startHour, endHour, bool:isWhiteList = false )
 {
-    LOGGER( 256, "I AM ENTERING ON isToLoadNextWhiteListGroupClose(5) currentHour: %d", currentHour )
+    LOGGER( 256, "I AM ENTERING ON isToLoadNextWhiteListGroupClose(4) currentHour: %d", currentHour )
     LOGGER( 256, "( isToLoadNextWhiteListGroupClose ) startHour: %d, endHour: %d", startHour, endHour )
 
+    new bool:isToLoadTheseMaps;
     new bool:isDecreased = false;
 
     if( startHour != endHour )
@@ -4930,8 +4880,21 @@ stock isToLoadNextWhiteListGroupClose( &isToLoadTheseMaps, currentHour, startHou
             isToLoadTheseMaps = !isWhiteList;
         }
     }
-    //           5          3
-    else if( startHour > endHour )
+    else
+    {
+        isToLoadTheseMaps = isToLoadNextWhiteListEndProcess( currentHour, startHour, endHour, isWhiteList );
+    }
+
+    LOGGER( 0, "", debugIsToLoadNextWhiteListGroup( currentHour, startHour, endHour, isToLoadTheseMaps ) )
+    return isToLoadTheseMaps;
+}
+
+stock bool:isToLoadNextWhiteListEndProcess( currentHour, startHour, endHour, bool:isWhiteList )
+{
+    LOGGER( 256, "I AM ENTERING ON isToLoadNextWhiteListEndProcess(4)" )
+
+    //      5          3
+    if( startHour > endHour )
     {
         // 5  > 3
         // 23 > 1
@@ -4949,14 +4912,14 @@ stock isToLoadNextWhiteListGroupClose( &isToLoadTheseMaps, currentHour, startHou
         //         4           3
             && currentHour > endHour )
         {
-            LOGGER( 256, "( isToLoadNextWhiteListGroupClose ) 1." )
-            isToLoadTheseMaps = !isWhiteList;
+            LOGGER( 256, "( isToLoadNextWhiteListEndProcess ) 1. Returning: %d", !isWhiteList )
+            return !isWhiteList;
         }
         //               6           5
         else // if( currentHour > startHour )
         {
-            LOGGER( 256, "( isToLoadNextWhiteListGroupClose ) 2." )
-            isToLoadTheseMaps = isWhiteList;
+            LOGGER( 256, "( isToLoadNextWhiteListEndProcess ) 2. Returning: %d", isWhiteList )
+            return isWhiteList;
         }
     }
     //             3          5
@@ -4977,18 +4940,19 @@ stock isToLoadNextWhiteListGroupClose( &isToLoadTheseMaps, currentHour, startHou
         //          2           3
             || currentHour < startHour )
         {
-            LOGGER( 256, "( isToLoadNextWhiteListGroupClose ) 3." )
-            isToLoadTheseMaps = !isWhiteList;
+            LOGGER( 256, "( isToLoadNextWhiteListEndProcess ) 3. Returning: %d", !isWhiteList )
+            return !isWhiteList;
         }
         //              4            3
         else // if( currentHour > startHour )
         {
-            LOGGER( 256, "( isToLoadNextWhiteListGroupClose ) 4." )
-            isToLoadTheseMaps = isWhiteList;
+            LOGGER( 256, "( isToLoadNextWhiteListEndProcess ) 4. Returning: %d", isWhiteList )
+            return isWhiteList;
         }
     }
 
-    LOGGER( 0, "", debugIsToLoadNextWhiteListGroup( currentHour, startHour, endHour, isToLoadTheseMaps ) )
+    LOGGER( 256, "    ( isToLoadNextWhiteListEndProcess ) Returning false." )
+    return false;
 }
 
 stock debugIsToLoadNextWhiteListGroup( currentHour, startHour, endHour, isToLoadTheseMaps )
@@ -5049,7 +5013,6 @@ stock standardizeTheHoursForWhitelist( &currentHour, &startHour, &endHour )
 stock bool:convertWhitelistToBlacklist( &startHour, &endHour )
 {
     LOGGER( 256, "I AM ENTERING ON convertWhitelistToBlacklist(2)" )
-
     new backup;
 
     backup    = ( endHour   + 1 > 23 ? 0  : endHour   + 1 );
@@ -5130,7 +5093,7 @@ stock loadTheWhiteListFeature()
 
 stock loadWhiteListFile( currentHour, &Trie:listTrie, Array:whitelistFileArray, bool:isWhiteList = false, &Array:listArray = Invalid_Array )
 {
-    LOGGER( 128, "I AM ENTERING ON loadWhiteListFile(5) | currentHour: %d, listTrie: %d", currentHour, listTrie )
+    LOGGER( 128, "I AM ENTERING ON loadWhiteListFile(5) currentHour: %d, listTrie: %d", currentHour, listTrie )
 
     if( whitelistFileArray )
     {
@@ -5154,12 +5117,12 @@ stock loadWhiteListFile( currentHour, &Trie:listTrie, Array:whitelistFileArray, 
 
             if( whiteListHourlySet( '[', currentLine, startHourString, endHourString, isWhiteList, currentHour, startHour, endHour ) )
             {
-                isToLoadNextWhiteListGroupOpen( isToLoadTheseMaps, currentHour, startHour, endHour, isWhiteList );
+                isToLoadTheseMaps = isToLoadNextWhiteListGroupOpen( currentHour, startHour, endHour, isWhiteList );
                 continue;
             }
             else if( whiteListHourlySet( '{', currentLine, startHourString, endHourString, isWhiteList, currentHour, startHour, endHour ) )
             {
-                isToLoadNextWhiteListGroupClose( isToLoadTheseMaps, currentHour, startHour, endHour, isWhiteList );
+                isToLoadTheseMaps = isToLoadNextWhiteListGroupClose( currentHour, startHour, endHour, isWhiteList );
                 continue;
             }
             else if( !isToLoadTheseMaps )
@@ -5185,12 +5148,12 @@ stock loadWhiteListFile( currentHour, &Trie:listTrie, Array:whitelistFileArray, 
         }
     }
 
-    LOGGER( 1, "    I AM EXITING loadWhiteListFile(5) | listArray: %d, whitelistFileArray: %d", listArray, whitelistFileArray )
+    LOGGER( 1, "    I AM EXITING loadWhiteListFile(5) listArray: %d, whitelistFileArray: %d", listArray, whitelistFileArray )
 }
 
 stock whiteListHourlySet( trigger, currentLine[], startHourString[], endHourString[], &isWhiteList, &currentHour, &startHour, &endHour )
 {
-    LOGGER( 256, "I AM ENTERING ON whiteListHourlySet(4) | trigger: %c", trigger )
+    LOGGER( 256, "I AM ENTERING ON whiteListHourlySet(4) trigger: %c", trigger )
 
     if( currentLine[ 0 ] == trigger
         && isdigit( currentLine[ 1 ] ) )
@@ -15445,7 +15408,7 @@ public timeRemain()
     }
 
     /**
-     * This is a general test handler for the function 'isToLoadNextWhiteListGroupOpen(5)'.
+     * This is a general test handler for the function 'isToLoadNextWhiteListGroupOpen(4)'.
      *
      * @param currentHour      the current hour.
      * @param isToLoad         whether the sequence should be loaded by the given `currentHour`.
@@ -15461,11 +15424,11 @@ public timeRemain()
 
         if( isClose )
         {
-            isToLoadNextWhiteListGroupClose( loadResult, currentHour, startHour, endHour, isWhiteList );
+            loadResult = isToLoadNextWhiteListGroupClose( currentHour, startHour, endHour, isWhiteList );
         }
         else
         {
-            isToLoadNextWhiteListGroupOpen( loadResult, currentHour, startHour, endHour, isWhiteList );
+            loadResult = isToLoadNextWhiteListGroupOpen( currentHour, startHour, endHour, isWhiteList );
         }
 
         formatex( errorMessage, charsmax( errorMessage ), "The hour %2d must %sto be loaded at [%d-%d]!",
