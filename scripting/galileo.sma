@@ -33,18 +33,13 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-538";
+new const PLUGIN_VERSION[] = "v4.2.0-539";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
  * "game_end". It will require the '<hamsandwich>' module.
  */
 #define IS_TO_ENABLE_SVEN_COOP_SUPPPORT 1
-
-/**
- * Change this value from 1 to 0, to disable the colored text message (chat messages).
- */
-#define IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES 1
 
 /**
  * Change this value from 1 to 0, to disable Re-HLDS and Re-Amx Mod X support. If you disable the
@@ -436,20 +431,26 @@ new const PLUGIN_VERSION[] = "v4.2.0-538";
 #endif
 
 /**
- * Register the color chat necessary variables, if it is enabled.
+ * Register the color chat necessary variables.
  */
-#if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
-    new bool:g_isColorChatSupported;
-    new bool:g_isColoredChatEnabled;
+new bool:g_isColorChatSupported;
+new bool:g_isColoredChatEnabled;
 
-    #define IS_COLORED_CHAT_ENABLED() ( g_isColorChatSupported && g_isColoredChatEnabled )
+/**
+ * On the first server start, we do not know whether the color chat is allowed/enabled. This is due
+ * the register register_dictionary_colored(1) to be called on plugin_init(0) and the settings being
+ * loaded only at plugin_cfg(0).
+ */
+#define IS_COLORED_CHAT_ENABLED() \
+    ( g_isColorChatSupported \
+      && g_isColoredChatEnabled \
+      && get_pcvar_num( cvar_isFirstServerStart ) != FIRST_SERVER_START )
 
-    #if AMXX_VERSION_NUM < 183
-        new g_user_msgid;
-    #endif
-
-    new cvar_coloredChatEnabled;
+#if AMXX_VERSION_NUM < 183
+    new g_user_msgid;
 #endif
+
+new cvar_coloredChatEnabled;
 
 /**
  * Switch between the AMXX 182 and 183 deprecated/bugged functions.
@@ -1401,7 +1402,6 @@ public plugin_init()
     LOGGER( 1, "( plugin_init ) IS_TO_ENABLE_SVEN_COOP_SUPPPORT:          %d", IS_TO_ENABLE_SVEN_COOP_SUPPPORT )
     LOGGER( 1, "( plugin_init ) FAKE_PLAYERS_NUMBER_FOR_DEBUGGING:        %d", FAKE_PLAYERS_NUMBER_FOR_DEBUGGING )
     LOGGER( 1, "( plugin_init ) MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST:    %d", MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST )
-    LOGGER( 1, "( plugin_init ) IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES:   %d", IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES )
     LOGGER( 1, "( plugin_init ) IS_TO_ENABLE_RE_HLDS_RE_AMXMODX_SUPPORT:  %d", IS_TO_ENABLE_RE_HLDS_RE_AMXMODX_SUPPORT )
 
     cvar_extendmapStepMinutes    = register_cvar ( "amx_extendmap_step"           , "15" );
@@ -1501,9 +1501,7 @@ public plugin_init()
     cvar_coloredChatPrefix         = register_cvar( "gal_colored_chat_prefix"     , ""     );
 
     // Enables the colored chat control cvar.
-#if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
     cvar_coloredChatEnabled = register_cvar( "gal_colored_chat_enabled", "0", FCVAR_SPONLY );
-#endif
 
     // Not a configurable cvar, this is used instead of the `localinfo`.
     //
@@ -1560,15 +1558,13 @@ public plugin_cfg()
     LOGGER( 128, "I AM ENTERING ON plugin_cfg(0)" )
 
     /**
-     * Register the color chat 'g_user_msgid' variable, if it is enabled.
+     * Register the color chat 'g_user_msgid' variable, for the AMXX 182.
      */
-#if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
 #if AMXX_VERSION_NUM < 183
     // If some exception happened before this, all color_print(...) messages will cause native
     // error 10, on the AMXX 182. It is because, the execution flow will not reach here, then
     // the player "g_user_msgid" will be be initialized.
     g_user_msgid = get_user_msgid( "SayText" );
-#endif
 #endif
 
     // Load the initial settings
@@ -1654,10 +1650,8 @@ stock configureSpecificGameModFeature()
     /**
      * If it is enabled, Load whether the color chat is supported by the current Game Modification.
      */
-#if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
     g_isColorChatSupported = ( is_running( "czero" )
                                || is_running( "cstrike" ) );
-#endif
 
     /**
      * Register the voting start call from the Sven Coop game.
@@ -1871,39 +1865,38 @@ public cacheCvarsValues()
 {
     LOGGER( 128, "I AM ENTERING ON cacheCvarsValues(0)" )
 
-    g_rtvCommands            = get_pcvar_num( cvar_rtvCommands            );
-    g_extendmapStepRounds    = get_pcvar_num( cvar_extendmapStepRounds    );
-    g_extendmapStepFrags     = get_pcvar_num( cvar_extendmapStepFrags     );
-    g_extendmapStepMinutes   = get_pcvar_num( cvar_extendmapStepMinutes   );
-    g_extendmapAllowStayType = get_pcvar_num( cvar_extendmapAllowStayType );
-    g_showVoteStatus         = get_pcvar_num( cvar_showVoteStatus         );
-    g_voteShowNoneOptionType = get_pcvar_num( cvar_voteShowNoneOptionType );
-    g_showVoteStatusType     = get_pcvar_num( cvar_showVoteStatusType     );
-    g_fragLimitNumber        = get_pcvar_num( cvar_mp_fraglimit           );
-    g_timeLimitNumber        = get_pcvar_num( cvar_mp_timelimit           );
+    g_rtvCommands               = get_pcvar_num( cvar_rtvCommands            );
+    g_extendmapStepRounds       = get_pcvar_num( cvar_extendmapStepRounds    );
+    g_extendmapStepFrags        = get_pcvar_num( cvar_extendmapStepFrags     );
+    g_extendmapStepMinutes      = get_pcvar_num( cvar_extendmapStepMinutes   );
+    g_extendmapAllowStayType    = get_pcvar_num( cvar_extendmapAllowStayType );
+    g_showVoteStatus            = get_pcvar_num( cvar_showVoteStatus         );
+    g_voteShowNoneOptionType    = get_pcvar_num( cvar_voteShowNoneOptionType );
+    g_showVoteStatusType        = get_pcvar_num( cvar_showVoteStatusType     );
+    g_fragLimitNumber           = get_pcvar_num( cvar_mp_fraglimit           );
+    g_timeLimitNumber           = get_pcvar_num( cvar_mp_timelimit           );
 
-    /**
-     * If it is enabled, cache whether the coloring is enabled by its cvar.
-     */
-#if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
-    g_isColoredChatEnabled = get_pcvar_num( cvar_coloredChatEnabled ) != 0;
-
-    get_pcvar_string( cvar_coloredChatPrefix, g_coloredChatPrefix, charsmax( g_coloredChatPrefix ) );
-    INSERT_COLOR_TAGS( g_coloredChatPrefix )
-#else
-    get_pcvar_string( cvar_coloredChatPrefix, g_coloredChatPrefix, charsmax( g_coloredChatPrefix ) );
-    REMOVE_CODE_COLOR_TAGS( g_coloredChatPrefix )
-#endif
-
-    // load the weighted votes flags
-    get_pcvar_string( cvar_voteWeightFlags, g_voteWeightFlags, charsmax( g_voteWeightFlags ) );
-
+    g_isColoredChatEnabled      = get_pcvar_num( cvar_coloredChatEnabled )   != 0;
     g_isExtendmapAllowStay      = get_pcvar_num( cvar_extendmapAllowStay   ) != 0;
     g_isToShowNoneOption        = get_pcvar_num( cvar_isToShowNoneOption   ) == 1;
     g_isToShowSubMenu           = get_pcvar_num( cvar_isToShowNoneOption   ) == 2;
     g_isToShowVoteCounter       = get_pcvar_num( cvar_isToShowVoteCounter  ) != 0;
     g_isToShowExpCountdown      = get_pcvar_num( cvar_isToShowExpCountdown ) != 0;
     g_isVirtualFragLimitSupport = get_pcvar_num( cvar_fragLimitSupport     ) != 0;
+
+    // load the weighted votes flags and chat prefix.
+    get_pcvar_string( cvar_voteWeightFlags, g_voteWeightFlags, charsmax( g_voteWeightFlags ) );
+    get_pcvar_string( cvar_coloredChatPrefix, g_coloredChatPrefix, charsmax( g_coloredChatPrefix ) );
+
+    //Do not put it before the variable `g_isColoredChatEnabled` caching above.
+    if( IS_COLORED_CHAT_ENABLED() )
+    {
+        INSERT_COLOR_TAGS( g_coloredChatPrefix )
+    }
+    else
+    {
+        REMOVE_CODE_COLOR_TAGS( g_coloredChatPrefix )
+    }
 
     g_maxVotingChoices = max( min( MAX_OPTIONS_IN_VOTE, get_pcvar_num( cvar_voteMapChoiceCount ) ), 2 );
 
@@ -5114,11 +5107,10 @@ stock loadWhiteListFile( currentHour, &Trie:listTrie, Array:whitelistFileArray, 
     {
         new startHour;
         new endHour;
-
         new linesCount;
-        new isWhiteListBlockOut;
 
         new bool:isToLoadTheseMaps;
+        new bool:isWhiteListBlockOut;
 
         new mapName        [ MAX_MAPNAME_LENGHT ];
         new currentLine    [ MAX_MAPNAME_LENGHT ];
@@ -5126,7 +5118,7 @@ stock loadWhiteListFile( currentHour, &Trie:listTrie, Array:whitelistFileArray, 
         new endHourString  [ MAX_MAPNAME_LENGHT / 2 ];
 
         linesCount          = ArraySize( whitelistFileArray );
-        isWhiteListBlockOut = get_pcvar_num( cvar_isWhiteListBlockOut );
+        isWhiteListBlockOut = get_pcvar_num( cvar_isWhiteListBlockOut ) != 0;
 
         setupLoadWhiteListParams( isWhiteListBlockOut, listTrie, listArray );
 
@@ -5867,9 +5859,7 @@ stock flushVoteBlockedMaps( blockedMapsBuffer[], flushAnnouncement[], &announcem
             color_print( 0, "%L", LANG_PLAYER, flushAnnouncement, 0, 0 );
         }
 
-    #if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES == 0
-        REMOVE_CODE_COLOR_TAGS( blockedMapsBuffer )
-    #endif
+        if( !IS_COLORED_CHAT_ENABLED() ) REMOVE_CODE_COLOR_TAGS( blockedMapsBuffer )
         color_print( 0, "%L", LANG_PLAYER, "GAL_MATCHING", blockedMapsBuffer[ 3 ] );
 
         announcementShowedTimes++;
@@ -9599,14 +9589,9 @@ public showRecentMapsListMenu( player_id )
     new lastPageNumber    = GET_LAST_PAGE_NUMBER( g_recentMapCount, MAX_MENU_ITEMS_PER_PAGE )
 
     // To create the menu
-#if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
     formatex( menuOptionString, charsmax( menuOptionString ),
             IS_COLORED_CHAT_ENABLED() ? "%L\R%d /%d" : "%L  %d /%d",
             player_id, "GAL_MAP_RECENTMAPS", currentPageNumber + 1, lastPageNumber );
-#else
-    formatex( menuOptionString, charsmax( menuOptionString ), "%L  %d /%d", player_id, "GAL_MAP_RECENTMAPS",
-            currentPageNumber + 1, lastPageNumber );
-#endif
 
     new menu = menu_create( menuOptionString, "cmd_listrecent_handler" );
 
@@ -10060,14 +10045,9 @@ stock displayVoteMapMenu( player_id )
                         + ( ( ( ( nominationsMapsCount + 1 ) % MAX_NOM_MENU_ITEMS_PER_PAGE ) > 0 ) ? 1 : 0 ) );
 
     // To create the menu
-#if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
     formatex( disabledReason, charsmax( disabledReason ),
             IS_COLORED_CHAT_ENABLED() ? "%L\R%d /%d" : "%L  %d /%d",
             player_id, "GAL_LISTMAPS_TITLE", currentPageNumber + 1, lastPageNumber );
-#else
-    formatex( disabledReason, charsmax( disabledReason ), "%L  %d /%d", player_id, "GAL_LISTMAPS_TITLE",
-            currentPageNumber + 1, lastPageNumber );
-#endif
 
     new menu = menu_create( disabledReason, "handleDisplayVoteMap" );
 
@@ -11263,14 +11243,9 @@ stock nomination_menu( player_id )
     new lastPageNumber    = GET_LAST_PAGE_NUMBER( nominationsMapsCount, MAX_NOM_MENU_ITEMS_PER_PAGE )
 
     // To create the menu
-#if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
     formatex( disabledReason, charsmax( disabledReason ),
             IS_COLORED_CHAT_ENABLED() ? "%L\R%d /%d" : "%L  %d /%d",
             player_id, "GAL_LISTMAPS_TITLE", currentPageNumber + 1, lastPageNumber );
-#else
-    formatex( disabledReason, charsmax( disabledReason ), "%L  %d /%d", player_id, "GAL_LISTMAPS_TITLE",
-            currentPageNumber + 1, lastPageNumber );
-#endif
 
     new menu = menu_create( disabledReason, "nomination_handleMatchChoice" );
 
@@ -11397,14 +11372,9 @@ stock nominationAttemptWithNamePart( player_id, startSearchIndex = 0 )
     }
 
     // To create the menu
-#if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
     formatex( disabledReason, charsmax( disabledReason ),
             IS_COLORED_CHAT_ENABLED() ? "%L\R%d/%d" : "%L %d /%d",
             player_id, "GAL_LISTMAPS_TITLE", currentPageNumber + 1, lastPageNumber );
-#else
-    formatex( disabledReason, charsmax( disabledReason ), "%L %d /%d", player_id, "GAL_LISTMAPS_TITLE",
-            currentPageNumber + 1, lastPageNumber );
-#endif
 
     new menu = menu_create( disabledReason, "nomination_handlePartialMatch" );
 
@@ -12376,12 +12346,15 @@ public nomination_list()
 
             if( ++nomMapCount == 4 )     // list 4 maps per chat line
             {
-                #if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES == 0
+                if( IS_COLORED_CHAT_ENABLED() )
+                {
+                    color_print( 0, "%L: ^4%s", LANG_PLAYER, "GAL_NOMINATIONS", mapsList );
+                }
+                else
+                {
                     REMOVE_CODE_COLOR_TAGS( mapsList )
                     color_print( 0, "%L: %s", LANG_PLAYER, "GAL_NOMINATIONS", mapsList );
-                #else
-                    color_print( 0, "%L: ^4%s", LANG_PLAYER, "GAL_NOMINATIONS", mapsList );
-                #endif
+                }
 
                 nomMapCount   = 0;
                 mapsList[ 0 ] = '^0';
@@ -12391,12 +12364,15 @@ public nomination_list()
 
     if( mapsList[ 0 ] )
     {
-    #if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES == 0
-        REMOVE_CODE_COLOR_TAGS( mapsList )
-        color_print( 0, "%L: %s", LANG_PLAYER, "GAL_NOMINATIONS", mapsList );
-    #else
-        color_print( 0, "%L: ^4%s", LANG_PLAYER, "GAL_NOMINATIONS", mapsList );
-    #endif
+        if( IS_COLORED_CHAT_ENABLED() )
+        {
+            color_print( 0, "%L: ^4%s", LANG_PLAYER, "GAL_NOMINATIONS", mapsList );
+        }
+        else
+        {
+            REMOVE_CODE_COLOR_TAGS( mapsList )
+            color_print( 0, "%L: %s", LANG_PLAYER, "GAL_NOMINATIONS", mapsList );
+        }
     }
     else
     {
@@ -12543,17 +12519,131 @@ stock color_print( const player_id, const message[], any:... )
      * server language, instead of the player language. This is a AMXX 1.8.2 bug only. There is a
      * way to overcome this. It is to print a message to each player, as the colored print does.
      */
-#if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES == 0 && AMXX_VERSION_NUM > 182
-    vformat( formated_message, charsmax( formated_message ), message, 3 );
-    LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
-
-    client_print( player_id, print_chat, "%s%s", g_coloredChatPrefix, formated_message );
-
-#else
-    #if AMXX_VERSION_NUM < 183
-        if( player_id )
+#if AMXX_VERSION_NUM < 183
+    if( player_id )
+    {
+        if( IS_COLORED_CHAT_ENABLED() )
         {
-        #if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
+            // On the AMXX 182, all the colored messaged must to start within a color.
+            formated_message[ 0 ] = '^1';
+            vformat( formated_message[ 1 ], charsmax( formated_message ) - 1, message, 3 );
+
+            new message[ MAX_COLOR_MESSAGE ];
+
+            if( g_coloredChatPrefix[ 0 ] )
+            {
+                formatex( message, charsmax( message ), "^1%s^1%s", g_coloredChatPrefix, formated_message[ 1 ] );
+
+                LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, message )
+                PRINT_COLORED_MESSAGE( player_id, message )
+            }
+            else
+            {
+                LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
+                PRINT_COLORED_MESSAGE( player_id, formated_message )
+            }
+        }
+        else
+        {
+            vformat( formated_message, charsmax( formated_message ), message, 3 );
+            LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
+
+            REMOVE_CODE_COLOR_TAGS( formated_message )
+            client_print( player_id, print_chat, "%s%s", g_coloredChatPrefix, formated_message );
+        }
+    }
+    else
+    {
+        new playersCount;
+        new players[ MAX_PLAYERS ];
+
+        get_players( players, playersCount, "ch" );
+
+        // Figure out if at least 1 player is connected
+        // so we don't execute useless code
+        if( !playersCount )
+        {
+            LOGGER( 64, "    ( color_print ) Returning on playersCount: %d...", playersCount )
+            return;
+        }
+
+        new player_id;
+        new string_index;
+        new argument_index;
+        new multi_lingual_constants_number;
+        new params_number;
+        new Array:multi_lingual_indexes_array;
+
+        multi_lingual_indexes_array    = ArrayCreate();
+        params_number                  = numargs();
+        multi_lingual_constants_number = 0;
+
+        LOGGER( 64, "( color_print ) playersCount: %d, params_number: %d...", playersCount, params_number )
+
+        // ML can be used
+        if( params_number > 3 )
+        {
+            for( argument_index = 2; argument_index < params_number; argument_index++ )
+            {
+                LOGGER( 64, "( color_print ) getarg(%d): %d", argument_index, getarg( argument_index, 0 ) )
+
+                // retrieve original param value and check if it's LANG_PLAYER value
+                if( getarg( argument_index ) == LANG_PLAYER )
+                {
+                    string_index = 0;
+
+                    // as LANG_PLAYER == -1, check if next param string is a registered language translation
+                    while( ( formated_message[ string_index ] =
+                                 getarg( argument_index + 1, string_index++ ) ) )
+                    {
+                    }
+                    formated_message[ string_index ] = '^0';
+
+                    LOGGER( 64, "( color_print ) player_id: %d, formated_message: %s", \
+                            player_id, formated_message )
+
+                    LOGGER( 64, "( color_print ) GetLangTransKey( formated_message ) != TransKey_Bad: %d, \
+                          multi_lingual_constants_number: %d, string_index: %d...", \
+                          GetLangTransKey( formated_message ) != TransKey_Bad, \
+                          multi_lingual_constants_number, string_index )
+
+                    if( GetLangTransKey( formated_message ) != TransKey_Bad )
+                    {
+                        // Store that argument as LANG_PLAYER so we can alter it later
+                        ArrayPushCell( multi_lingual_indexes_array, argument_index++ );
+
+                        // Update ML array, so we'll know 1st if ML is used,
+                        // 2nd how many arguments we have to change
+                        multi_lingual_constants_number++;
+                    }
+
+                    LOGGER( 64, "( color_print ) argument_index (after ArrayPushCell): %d...", argument_index )
+                }
+            }
+        }
+
+        LOGGER( 64, "( color_print ) multi_lingual_constants_number: %d...", multi_lingual_constants_number )
+
+        for( --playersCount; playersCount >= 0; --playersCount )
+        {
+            player_id = players[ playersCount ];
+
+            if( multi_lingual_constants_number )
+            {
+                for( argument_index = 0; argument_index < multi_lingual_constants_number; argument_index++ )
+                {
+                    LOGGER( 64, "( color_print ) argument_index: %d, player_id: %d, \
+                            ArrayGetCell( %d, %d ): %d...", \
+                            argument_index, player_id, \
+                            multi_lingual_indexes_array, argument_index, \
+                            ArrayGetCell( multi_lingual_indexes_array, argument_index ) )
+
+                    // Set all LANG_PLAYER args to player index ( = player_id )
+                    // so we can format the text for that specific player
+                    setarg( ArrayGetCell( multi_lingual_indexes_array, argument_index ), _, player_id );
+                }
+            }
+
             if( IS_COLORED_CHAT_ENABLED() )
             {
                 // On the AMXX 182, all the colored messaged must to start within a color.
@@ -12583,160 +12673,24 @@ stock color_print( const player_id, const message[], any:... )
                 REMOVE_CODE_COLOR_TAGS( formated_message )
                 client_print( player_id, print_chat, "%s%s", g_coloredChatPrefix, formated_message );
             }
-        #else
-            vformat( formated_message, charsmax( formated_message ), message, 3 );
-            LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
-
-            client_print( player_id, print_chat, "%s%s", g_coloredChatPrefix, formated_message );
-        #endif
         }
-        else
-        {
-            new playersCount;
-            new players[ MAX_PLAYERS ];
 
-            get_players( players, playersCount, "ch" );
+        ArrayDestroy( multi_lingual_indexes_array );
+    }
+#else // this else only works for AMXX 183 or superior, due noted bug above.
 
-            // Figure out if at least 1 player is connected
-            // so we don't execute useless code
-            if( !playersCount )
-            {
-                LOGGER( 64, "    ( color_print ) Returning on playersCount: %d...", playersCount )
-                return;
-            }
+    vformat( formated_message, charsmax( formated_message ), message, 3 );
+    LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
 
-            new player_id;
-            new string_index;
-            new argument_index;
-            new multi_lingual_constants_number;
-            new params_number;
-            new Array:multi_lingual_indexes_array;
-
-            multi_lingual_indexes_array    = ArrayCreate();
-            params_number                  = numargs();
-            multi_lingual_constants_number = 0;
-
-            LOGGER( 64, "( color_print ) playersCount: %d, params_number: %d...", playersCount, params_number )
-
-            // ML can be used
-            if( params_number > 3 )
-            {
-                for( argument_index = 2; argument_index < params_number; argument_index++ )
-                {
-                    LOGGER( 64, "( color_print ) getarg(%d): %d", argument_index, getarg( argument_index, 0 ) )
-
-                    // retrieve original param value and check if it's LANG_PLAYER value
-                    if( getarg( argument_index ) == LANG_PLAYER )
-                    {
-                        string_index = 0;
-
-                        // as LANG_PLAYER == -1, check if next param string is a registered language translation
-                        while( ( formated_message[ string_index ] =
-                                     getarg( argument_index + 1, string_index++ ) ) )
-                        {
-                        }
-                        formated_message[ string_index ] = '^0';
-
-                        LOGGER( 64, "( color_print ) player_id: %d, formated_message: %s", \
-                                player_id, formated_message )
-
-                        LOGGER( 64, "( color_print ) GetLangTransKey( formated_message ) != TransKey_Bad: %d, \
-                              multi_lingual_constants_number: %d, string_index: %d...", \
-                              GetLangTransKey( formated_message ) != TransKey_Bad, \
-                              multi_lingual_constants_number, string_index )
-
-                        if( GetLangTransKey( formated_message ) != TransKey_Bad )
-                        {
-                            // Store that argument as LANG_PLAYER so we can alter it later
-                            ArrayPushCell( multi_lingual_indexes_array, argument_index++ );
-
-                            // Update ML array, so we'll know 1st if ML is used,
-                            // 2nd how many arguments we have to change
-                            multi_lingual_constants_number++;
-                        }
-
-                        LOGGER( 64, "( color_print ) argument_index (after ArrayPushCell): %d...", argument_index )
-                    }
-                }
-            }
-
-            LOGGER( 64, "( color_print ) multi_lingual_constants_number: %d...", multi_lingual_constants_number )
-
-            for( --playersCount; playersCount >= 0; --playersCount )
-            {
-                player_id = players[ playersCount ];
-
-                if( multi_lingual_constants_number )
-                {
-                    for( argument_index = 0; argument_index < multi_lingual_constants_number; argument_index++ )
-                    {
-                        LOGGER( 64, "( color_print ) argument_index: %d, player_id: %d, \
-                                ArrayGetCell( %d, %d ): %d...", \
-                                argument_index, player_id, \
-                                multi_lingual_indexes_array, argument_index, \
-                                ArrayGetCell( multi_lingual_indexes_array, argument_index ) )
-
-                        // Set all LANG_PLAYER args to player index ( = player_id )
-                        // so we can format the text for that specific player
-                        setarg( ArrayGetCell( multi_lingual_indexes_array, argument_index ), _, player_id );
-                    }
-                }
-
-            #if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
-                if( IS_COLORED_CHAT_ENABLED() )
-                {
-                    // On the AMXX 182, all the colored messaged must to start within a color.
-                    formated_message[ 0 ] = '^1';
-                    vformat( formated_message[ 1 ], charsmax( formated_message ) - 1, message, 3 );
-
-                    new message[ MAX_COLOR_MESSAGE ];
-
-                    if( g_coloredChatPrefix[ 0 ] )
-                    {
-                        formatex( message, charsmax( message ), "^1%s^1%s", g_coloredChatPrefix, formated_message[ 1 ] );
-
-                        LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, message )
-                        PRINT_COLORED_MESSAGE( player_id, message )
-                    }
-                    else
-                    {
-                        LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
-                        PRINT_COLORED_MESSAGE( player_id, formated_message )
-                    }
-                }
-                else
-                {
-                    vformat( formated_message, charsmax( formated_message ), message, 3 );
-                    LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
-
-                    REMOVE_CODE_COLOR_TAGS( formated_message )
-                    client_print( player_id, print_chat, "%s%s", g_coloredChatPrefix, formated_message );
-                }
-            #else
-                vformat( formated_message, charsmax( formated_message ), message, 3 );
-                LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
-
-                client_print( player_id, print_chat, "%s%s", g_coloredChatPrefix, formated_message );
-            #endif
-            }
-
-            ArrayDestroy( multi_lingual_indexes_array );
-        }
-    #else // this else only works for AMXX 183 or superior, due noted bug above.
-
-        vformat( formated_message, charsmax( formated_message ), message, 3 );
-        LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
-
-        if( IS_COLORED_CHAT_ENABLED() )
-        {
-            client_print_color( player_id, print_team_default, "%s^1%s", g_coloredChatPrefix, formated_message );
-        }
-        else
-        {
-            REMOVE_CODE_COLOR_TAGS( formated_message )
-            client_print( player_id, print_chat, "%s%s", g_coloredChatPrefix, formated_message );
-        }
-    #endif
+    if( IS_COLORED_CHAT_ENABLED() )
+    {
+        client_print_color( player_id, print_team_default, "%s^1%s", g_coloredChatPrefix, formated_message );
+    }
+    else
+    {
+        REMOVE_CODE_COLOR_TAGS( formated_message )
+        client_print( player_id, print_chat, "%s%s", g_coloredChatPrefix, formated_message );
+    }
 #endif
 
     LOGGER( 64, "( color_print ) [out] player_id: %d, Chat printed: %s...", player_id, formated_message )
@@ -12801,11 +12755,14 @@ stock register_dictionary_colored( const dictionaryFile[] )
 
             if( translationKeyId != TransKey_Bad )
             {
-            #if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
-                INSERT_COLOR_TAGS( langTranslationText )
-            #else
-                REMOVE_LETTER_COLOR_TAGS( langTranslationText )
-            #endif
+                if( IS_COLORED_CHAT_ENABLED() )
+                {
+                    INSERT_COLOR_TAGS( langTranslationText )
+                }
+                else
+                {
+                    REMOVE_LETTER_COLOR_TAGS( langTranslationText )
+                }
 
                 LOGGER( 256, "lang: %s, Id: %d, Text: %s", langTypeAcronym, translationKeyId, langTranslationText )
                 AddTranslation( langTypeAcronym, translationKeyId, langTranslationText[ 2 ] );
@@ -13500,11 +13457,14 @@ public sayNextMap()
     {
         show_the_nextmap_cvar:
 
-    #if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
-        color_print( 0, "%L ^4%s", LANG_PLAYER, "NEXT_MAP", nextMapName );
-    #else
-        client_print( 0, print_chat, LANG_PLAYER, "NEXT_MAP", nextMapName );
-    #endif
+        if( IS_COLORED_CHAT_ENABLED() )
+        {
+            color_print( 0, "%L ^4%s", LANG_PLAYER, "NEXT_MAP", nextMapName );
+        }
+        else
+        {
+            client_print( 0, print_chat, "%L %s", LANG_PLAYER, "NEXT_MAP", nextMapName );
+        }
     }
 
     LOGGER( 4, "( sayNextMap ) cvar_endOfMapVote: %d, cvar_nextMapChangeAnnounce: %d", \
@@ -13518,24 +13478,32 @@ public sayCurrentMap()
 {
     LOGGER( 128, "I AM ENTERING ON sayCurrentMap(0)" )
 
-#if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
-    color_print( 0, "%L ^4%s", LANG_PLAYER, "PLAYED_MAP", g_currentMapName );
-#else
-    client_print( 0, print_chat, "%L: %s", LANG_PLAYER, "PLAYED_MAP", g_currentMapName );
-#endif
+    if( IS_COLORED_CHAT_ENABLED() )
+    {
+        color_print( 0, "%L ^4%s", LANG_PLAYER, "PLAYED_MAP", g_currentMapName );
+    }
+    else
+    {
+        client_print( 0, print_chat, "%L: %s", LANG_PLAYER, "PLAYED_MAP", g_currentMapName );
+    }
 }
 
 public sayFFStatus()
 {
     LOGGER( 128, "I AM ENTERING ON sayFFStatus(0)" )
 
-    #if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
+    if( IS_COLORED_CHAT_ENABLED() )
+    {
         color_print( 0, "%L: ^4%L",
                 LANG_PLAYER, "FRIEND_FIRE",
                 LANG_PLAYER, get_pcvar_num( cvar_mp_friendlyfire ) ? "ON" : "OFF" );
-    #else
-        client_print( 0, print_chat,  );
-    #endif
+    }
+    else
+    {
+        client_print( 0, print_chat, "%L: %L",
+                LANG_PLAYER, "FRIEND_FIRE",
+                LANG_PLAYER, get_pcvar_num( cvar_mp_friendlyfire ) ? "ON" : "OFF" );
+    }
 }
 
 public changeMapIntermission()
@@ -14050,11 +14018,14 @@ public sayTimeLeft( id )
                 speakRemainingInterger( id, roundsLeft );
             }
 
-        #if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
-            color_print( 0, "^4%L:^1 %d %L", LANG_PLAYER, "TIME_LEFT", roundsLeft, LANG_PLAYER, "GAL_OPTION_NAME_ROUND" );
-        #else
-            color_print( 0, "%L: %d %L", LANG_PLAYER, "TIME_LEFT", roundsLeft, LANG_PLAYER, "GAL_OPTION_NAME_ROUND" );
-        #endif
+            if( IS_COLORED_CHAT_ENABLED() )
+            {
+                color_print( 0, "^4%L:^1 %d %L", LANG_PLAYER, "TIME_LEFT", roundsLeft, LANG_PLAYER, "GAL_OPTION_NAME_ROUND" );
+            }
+            else
+            {
+                color_print( 0, "%L: %d %L", LANG_PLAYER, "TIME_LEFT", roundsLeft, LANG_PLAYER, "GAL_OPTION_NAME_ROUND" );
+            }
         }
         case GameEndingType_ByWinLimit:
         {
@@ -14065,11 +14036,14 @@ public sayTimeLeft( id )
                 speakRemainingInterger( id, winLeft );
             }
 
-        #if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
-            color_print( 0, "^4%L:^1 %d %L", LANG_PLAYER, "TIME_LEFT", winLeft, LANG_PLAYER, "GAL_OPTION_NAME_ROUND" );
-        #else
-            color_print( 0, "%L: %d %L", LANG_PLAYER, "TIME_LEFT", winLeft, LANG_PLAYER, "GAL_OPTION_NAME_ROUND" );
-        #endif
+            if( IS_COLORED_CHAT_ENABLED() )
+            {
+                color_print( 0, "^4%L:^1 %d %L", LANG_PLAYER, "TIME_LEFT", winLeft, LANG_PLAYER, "GAL_OPTION_NAME_ROUND" );
+            }
+            else
+            {
+                color_print( 0, "%L: %d %L", LANG_PLAYER, "TIME_LEFT", winLeft, LANG_PLAYER, "GAL_OPTION_NAME_ROUND" );
+            }
         }
         case GameEndingType_ByFragLimit:
         {
@@ -14080,11 +14054,14 @@ public sayTimeLeft( id )
                 speakRemainingInterger( id, fragsLeft );
             }
 
-        #if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
-            color_print( 0, "^4%L:^1 %d %L", LANG_PLAYER, "TIME_LEFT", fragsLeft, LANG_PLAYER, "GAL_OPTION_NAME_FRAGS" );
-        #else
-            color_print( 0, "%L: %d %L", LANG_PLAYER, "TIME_LEFT", fragsLeft, LANG_PLAYER, "GAL_OPTION_NAME_FRAGS" );
-        #endif
+            if( IS_COLORED_CHAT_ENABLED() )
+            {
+                color_print( 0, "^4%L:^1 %d %L", LANG_PLAYER, "TIME_LEFT", fragsLeft, LANG_PLAYER, "GAL_OPTION_NAME_FRAGS" );
+            }
+            else
+            {
+                color_print( 0, "%L: %d %L", LANG_PLAYER, "TIME_LEFT", fragsLeft, LANG_PLAYER, "GAL_OPTION_NAME_FRAGS" );
+            }
         }
         case GameEndingType_ByTimeLimit:
         {
@@ -14098,19 +14075,25 @@ public sayTimeLeft( id )
                 client_cmd( id, "%s", speakText );
             }
 
-        #if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
-            color_print( 0, "^4%L:^1 %d^4:^1%02d %L", LANG_PLAYER, "TIME_LEFT", ( timeLeft / 60 ), ( timeLeft % 60 ), "MINUTES" );
-        #else
-            color_print( 0, "%L: %d:%02d %L", LANG_PLAYER, "TIME_LEFT", ( timeLeft / 60 ), ( timeLeft % 60 ), "MINUTES" );
-        #endif
+            if( IS_COLORED_CHAT_ENABLED() )
+            {
+                color_print( 0, "^4%L:^1 %d^4:^1%02d %L", LANG_PLAYER, "TIME_LEFT", ( timeLeft / 60 ), ( timeLeft % 60 ), "MINUTES" );
+            }
+            else
+            {
+                color_print( 0, "%L: %d:%02d %L", LANG_PLAYER, "TIME_LEFT", ( timeLeft / 60 ), ( timeLeft % 60 ), "MINUTES" );
+            }
         }
         default:
         {
-        #if IS_TO_ENABLE_THE_COLORED_TEXT_MESSAGES > 0
-            color_print( 0, "^4%L:^1 %L", LANG_PLAYER, "TIME_LEFT", LANG_PLAYER, "NO_T_LIMIT" );
-        #else
-            color_print( 0, "%L: %L", LANG_PLAYER, "TIME_LEFT", LANG_PLAYER, "NO_T_LIMIT" );
-        #endif
+            if( IS_COLORED_CHAT_ENABLED() )
+            {
+                color_print( 0, "^4%L:^1 %L", LANG_PLAYER, "TIME_LEFT", LANG_PLAYER, "NO_T_LIMIT" );
+            }
+            else
+            {
+                color_print( 0, "%L: %L", LANG_PLAYER, "TIME_LEFT", LANG_PLAYER, "NO_T_LIMIT" );
+            }
         }
     }
 
