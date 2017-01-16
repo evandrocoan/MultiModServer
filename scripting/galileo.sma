@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-540";
+new const PLUGIN_VERSION[] = "v4.2.0-541";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -1969,6 +1969,8 @@ stock configureServerStart()
     }
     else
     {
+        // The level `FIRST_SERVER_START` is only meant to be used by the `startAction`, therefore
+        // when the `startAction` is disable we must to set it to the seconds level `SECOND_SERVER_START`.
         set_pcvar_num( cvar_isFirstServerStart, SECOND_SERVER_START );
 
         LOGGER( 2, "( configureServerStart ) IS CHANGING THE CVAR 'gal_server_starting' to '%d'.", \
@@ -9863,6 +9865,10 @@ public cmd_voteMap( player_id, level, cid )
         if( argumentsCount > 2 )
         {
             new argument[ MAX_MAPNAME_LENGHT  ];
+            new bool:isWhitelistEnabled = IS_WHITELIST_ENABLED();
+
+            // Not loaded?
+            tryToLoadTheWhiteListFeature();
 
             // If the voteMapMenuBuilder(1) added some maps, they will be around here, but we do not
             // want to them be here as this is a full spec command.
@@ -9878,7 +9884,18 @@ public cmd_voteMap( player_id, level, cid )
                 read_argv( index, argument, charsmax( argument ) );
                 LOGGER( 8, "( cmd_voteMap ) argument[%d]: %s", index, argument )
 
-                if( IS_MAP_VALID( argument ) )
+                if( isWhitelistEnabled
+                    && ( ( g_blacklistTrie
+                           && TrieKeyExists( g_blacklistTrie, argument ) )
+                         || ( g_whitelistTrie
+                              && !TrieKeyExists( g_whitelistTrie, argument ) ) ) )
+                {
+                    console_print( player_id, "%s: %L", argument, player_id, "GAL_MATCH_WHITELIST" );
+                    LOGGER( 8, "    ( cmd_voteMap ) %s: %L", argument, player_id, "GAL_MATCH_WHITELIST" )
+
+                    goto invalid_map_provited;
+                }
+                else if( IS_MAP_VALID( argument ) )
                 {
                     LOGGER( 8, "    ( cmd_voteMap ) argument is a valid map." )
                     addMapToTheVotingMenu( argument, "" );
@@ -9908,6 +9925,7 @@ public cmd_voteMap( player_id, level, cid )
                 else
                 {
                     showGalVoteMapHelp( player_id, index, argument );
+                    invalid_map_provited:
 
                     // If this was just called but not within the sufficient maps, the menu will contain
                     // invalid maps, therefore clean it just to be sure.
@@ -9972,20 +9990,20 @@ stock showGalVoteMapHelp( player_id, index = 0, argument[] = {0} )
 
     if( argument[ 0 ] )
     {
-        client_print( player_id, print_console,
+        console_print( player_id,
                 "^nThe argument `%d=%s` could not be recognized as a valid map or option.", index, argument );
     }
 
     // It was necessary to split the message up to 190 characters due the output print being cut.
-    client_print( player_id, print_console,
+    console_print( player_id,
            "Examples:\
             ^ngal_votemap map1 map2 map3 map4 ... map9 -nointro -noextension -norunoff" );
 
-    client_print( player_id, print_console,
+    console_print( player_id,
            "gal_votemap map1 map2 map3 map4 ... map9\
             ^ngal_votemap map1 map2 map3 -nointro -noextension" );
 
-    client_print( player_id, print_console,
+    console_print( player_id,
            "gal_votemap map1 map2 -nointro\
             ^ngal_votemap map1 map2 -loadnominations\
             ^ngal_votemap map1 map2" );
@@ -10095,6 +10113,11 @@ stock displayVoteMapMenu( player_id )
     // SET_MENU_LANG_STRING_PROPERTY( MPROP_NEXTNAME, menu, "MORE" )
     // SET_MENU_LANG_STRING_PROPERTY( MPROP_BACKNAME, menu, "BACK" )
 
+    new bool:isWhitelistEnabled = IS_WHITELIST_ENABLED();
+
+    // Not loaded?
+    tryToLoadTheWhiteListFeature();
+
     for( ; mapIndex < nominationsMapsCount && itemsCount < MAX_NOM_MENU_ITEMS_PER_PAGE; mapIndex++ )
     {
         GET_MAP_NAME( g_nominationLoadedMapsArray, mapIndex, nominationMap )
@@ -10118,6 +10141,14 @@ stock displayVoteMapMenu( player_id )
             else if( equali( g_currentMapName, nominationMap ) )
             {
                 formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_CURRENTMAP" );
+            }
+            else if( isWhitelistEnabled
+                && ( ( g_blacklistTrie
+                       && TrieKeyExists( g_blacklistTrie, nominationMap ) )
+                     || ( g_whitelistTrie
+                          && !TrieKeyExists( g_whitelistTrie, nominationMap ) ) ) )
+            {
+                formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_WHITELIST" );
             }
 
             formatex( choice, charsmax( choice ), "%s %s %s", nominationMap, selectedMap, disabledReason );
