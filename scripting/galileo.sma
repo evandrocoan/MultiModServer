@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-541";
+new const PLUGIN_VERSION[] = "v4.2.0-542";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -1911,6 +1911,24 @@ stock configureServerMapChange()
 {
     LOGGER( 128, "I AM ENTERING ON configureServerMapChange(0)" )
 
+    if( IS_WHITELIST_ENABLED()
+        && ( ( g_blacklistTrie
+               && TrieKeyExists( g_blacklistTrie, g_nextMapName ) )
+             || ( g_whitelistTrie
+                  && !TrieKeyExists( g_whitelistTrie, g_nextMapName ) ) ) )
+    {
+        new currentNextMap[ MAX_MAPNAME_LENGHT ];
+
+        log_amx( "configureServerMapChange: %s: %L", g_nextMapName, LANG_SERVER, "GAL_MATCH_WHITELIST" );
+        LOGGER( 8, "    ( configureServerMapChange ) %s: %L", g_nextMapName, LANG_SERVER, "GAL_MATCH_WHITELIST" )
+
+        copy( currentNextMap, charsmax( currentNextMap ), g_nextMapName );
+        map_getNext( g_mapcycleFileListArray, currentNextMap, g_nextMapName );
+
+        // Need to be called to trigger special behaviors.
+        setNextMap( g_currentMapName, g_nextMapName );
+    }
+
     if( get_pcvar_num( cvar_emptyServerWaitMinutes )
         || get_pcvar_num( cvar_isEmptyCycleByMapChange ) )
     {
@@ -2401,7 +2419,11 @@ stock setNextMap( currentMapName[], nextMapName[], bool:isToUpdateTheCvar = true
         #endif
         }
 
-        copy( g_nextMapName, charsmax( g_nextMapName ), nextMapName );
+        // Allow to send the variable `g_nextMapName` to the function setNextMap(4).
+        if( !equali( g_nextMapName, nextMapName ) )
+        {
+            copy( g_nextMapName, charsmax( g_nextMapName ), nextMapName );
+        }
 
         // update our data file
         saveCurrentAndNextMapNames( currentMapName, nextMapName, forceUpdateFile );
@@ -9402,6 +9424,9 @@ public startEmptyCycleSystem()
  * Given a mapArray list and the currentMap, calculates the next map after the currentMap provided at
  * the mapArray. The map list to start on 0 as the first map.
  *
+ * If there is not found a next map, the current map name on `nextMapName` will to be set as the
+ * first map cycle map name.
+ *
  * @param mapArray      the dynamic array with the map list to search
  * @param currentMap    the string printer to the current map name
  * @param nextMapName   the string pointer which will receive the next map
@@ -9411,25 +9436,40 @@ public startEmptyCycleSystem()
 stock map_getNext( Array:mapArray, currentMap[], nextMapName[] )
 {
     LOGGER( 128, "I AM ENTERING ON map_getNext(3) currentMap: %s", currentMap )
+
     new thisMap[ MAX_MAPNAME_LENGHT ];
+    new bool:isWhitelistEnabled = IS_WHITELIST_ENABLED();
 
     new nextmapIndex = 0;
     new returnValue  = -1;
     new mapCount     = ArraySize( mapArray );
 
-    for( new mapIndex = 0; mapIndex < mapCount; mapIndex++ )
+    for( new currentMapIndex = 0; currentMapIndex < mapCount; currentMapIndex++ )
     {
-        GET_MAP_NAME( mapArray, mapIndex, thisMap )
+        GET_MAP_NAME( mapArray, currentMapIndex, thisMap )
 
         if( equali( currentMap, thisMap ) )
         {
-            if( mapIndex == mapCount - 1 )
+            // When the current map is the last one, the next map is the first maps on the map cycle.
+            if( currentMapIndex == mapCount - 1 )
             {
                 nextmapIndex = 0;
             }
             else
             {
-                nextmapIndex = mapIndex + 1;
+                nextmapIndex = currentMapIndex + 1;
+            }
+
+            GET_MAP_NAME( mapArray, nextmapIndex, nextMapName )
+
+            if( isWhitelistEnabled
+                && ( ( g_blacklistTrie
+                       && TrieKeyExists( g_blacklistTrie, nextMapName ) )
+                     || ( g_whitelistTrie
+                          && !TrieKeyExists( g_whitelistTrie, nextMapName ) ) ) )
+            {
+                copy( currentMap, MAX_MAPNAME_LENGHT - 1, nextMapName );
+                continue;
             }
 
             returnValue = nextmapIndex;
@@ -9437,7 +9477,8 @@ stock map_getNext( Array:mapArray, currentMap[], nextMapName[] )
         }
     }
 
-    if( mapCount > 0 )
+    if( mapCount > 0
+        && returnValue > -1 )
     {
         GET_MAP_NAME( mapArray, nextmapIndex, nextMapName )
     }
@@ -9446,7 +9487,7 @@ stock map_getNext( Array:mapArray, currentMap[], nextMapName[] )
         log_amx(   "WARNING: Your 'mapcyclefile' server variable is invalid!" );
         LOGGER( 1, "WARNING: Your 'mapcyclefile' server variable is invalid!" )
 
-        copy( nextMapName, MAX_MAPNAME_LENGHT - 1, "your_mapcycle_file_is_empty" );
+        copy( nextMapName, MAX_MAPNAME_LENGHT - 1, g_currentMapName );
     }
 
     LOGGER( 1, "    ( map_getNext ) Returning mapIndex: %d, nextMapName: %s", returnValue, nextMapName )
