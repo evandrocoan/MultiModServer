@@ -17,7 +17,8 @@ de_vertigo
 de_olan
 
 // These maps crashed Counter-Strike Condition Zero due the 512 entities limit.
-[0-0]
+// Using {0-0} instead of [0-0] will block them all day long, instead of 00:00:00 until 00:59:59.
+{0-0}
 surf_water-run
 awp_digital
 awp_false

@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-535";
+new const PLUGIN_VERSION[] = "v4.2.0-538";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -91,7 +91,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-535";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+32+64
+#define DEBUG_LEVEL 1+2+4+64
 
 
 /**
@@ -1179,8 +1179,8 @@ new Trie: g_recentMapsTrie;
 new Array:g_recentListMapsArray;
 
 /**
- * Contains the loaded current loaded Whilelist from the array `g_whitelistFileArray` for the
- * Whilelist Out Block Feature `cvar_isWhiteListBlockOut`.
+ * Contains the current loaded Whilelist from the array `g_whitelistFileArray` for the Whilelist Out Block
+ * feature `cvar_isWhiteListBlockOut`.
  */
 new Array:g_whitelistArray;
 
@@ -1204,7 +1204,7 @@ new Trie: g_whitelistTrie;
 /**
  * Contains all the blocked maps to be added as nominations or as voting map fillers.
  */
-new Trie: g_blackListForWhiteListTrie;
+new Trie: g_blacklistTrie;
 
 /**
  * Contains all loaded nominations maps from the nomination file list.
@@ -5048,6 +5048,7 @@ stock tryToLoadTheWhiteListFeature()
 {
     if( get_pcvar_num( cvar_isWhiteListBlockOut ) )
     {
+        // Loads all the allowed maps to be added as nominations or as voting map fillers.
         if( !g_whitelistTrie )
         {
             loadTheWhiteListFeature();
@@ -5055,7 +5056,8 @@ stock tryToLoadTheWhiteListFeature()
     }
     else
     {
-        if( !g_blackListForWhiteListTrie )
+        // Loads all the blocked maps to be added as nominations or as voting map fillers.
+        if( !g_blacklistTrie )
         {
             loadTheWhiteListFeature();
         }
@@ -5083,17 +5085,28 @@ stock loadTheWhiteListFeature()
     get_time( "%H", currentHourString, charsmax( currentHourString ) );
     currentHour = str_to_num( currentHourString );
 
+    // When the `cvar_whitelistType` is set to true, the `cvar_isWhiteListBlockOut` must to loas as a Whitelist.
+    new bool:whitelistType = get_pcvar_num( cvar_whitelistType ) != 0;
+
     if( get_pcvar_num( cvar_isWhiteListBlockOut ) )
     {
-        loadWhiteListFile( currentHour, g_whitelistTrie, g_whitelistFileArray, true, g_whitelistArray );
+        loadWhiteListFile( currentHour, g_whitelistTrie, g_whitelistFileArray, !whitelistType, g_whitelistArray );
+    }
+    else if( whitelistType )
+    {
+        loadWhiteListFile( currentHour, g_blacklistTrie, g_whitelistFileArray, true );
     }
     else
     {
-        loadWhiteListFile( currentHour, g_blackListForWhiteListTrie, g_whitelistFileArray );
+        loadWhiteListFile( currentHour, g_blacklistTrie, g_whitelistFileArray, false );
     }
 }
 
-stock loadWhiteListFile( currentHour, &Trie:listTrie, Array:whitelistFileArray, bool:isBlackList = false, &Array:listArray = Invalid_Array )
+/**
+ * The parameters `listTrie` and `listArray` must to be passed by as reference because they are created
+ * internally by this function on setupLoadWhiteListParams(3).
+ */
+stock loadWhiteListFile( currentHour, &Trie:listTrie, Array:whitelistFileArray, bool:isBlackList, &Array:listArray = Invalid_Array )
 {
     LOGGER( 128, "I AM ENTERING ON loadWhiteListFile(5) currentHour: %d, listTrie: %d", currentHour, listTrie )
 
@@ -5103,6 +5116,8 @@ stock loadWhiteListFile( currentHour, &Trie:listTrie, Array:whitelistFileArray, 
         new endHour;
 
         new linesCount;
+        new isWhiteListBlockOut;
+
         new bool:isToLoadTheseMaps;
 
         new mapName        [ MAX_MAPNAME_LENGHT ];
@@ -5110,8 +5125,10 @@ stock loadWhiteListFile( currentHour, &Trie:listTrie, Array:whitelistFileArray, 
         new startHourString[ MAX_MAPNAME_LENGHT / 2 ];
         new endHourString  [ MAX_MAPNAME_LENGHT / 2 ];
 
-        setupLoadWhiteListParams( isBlackList, listTrie, listArray );
-        linesCount = ArraySize( whitelistFileArray );
+        linesCount          = ArraySize( whitelistFileArray );
+        isWhiteListBlockOut = get_pcvar_num( cvar_isWhiteListBlockOut );
+
+        setupLoadWhiteListParams( isWhiteListBlockOut, listTrie, listArray );
 
         for( new lineIndex = 0; lineIndex < linesCount; lineIndex++ )
         {
@@ -5138,10 +5155,10 @@ stock loadWhiteListFile( currentHour, &Trie:listTrie, Array:whitelistFileArray, 
 
                 if( IS_MAP_VALID( mapName ) )
                 {
-                    LOGGER( 8, "( loadWhiteListFile ) OK!")
+                    LOGGER( 8, "( loadWhiteListFile ) %d. OK! ", listTrie )
                     TrieSetCell( listTrie, mapName, lineIndex );
 
-                    if( isBlackList )
+                    if( listArray )
                     {
                         ArrayPushString( listArray, currentLine );
                     }
@@ -5187,9 +5204,10 @@ stock whiteListHourlySet( trigger, currentLine[], startHourString[], endHourStri
     return false;
 }
 
-stock setupLoadWhiteListParams( bool:isBlackList, &Trie:listTrie, &Array:listArray )
+stock setupLoadWhiteListParams( bool:isWhiteListBlockOut, &Trie:listTrie, &Array:listArray )
 {
-    LOGGER( 128, "I AM ENTERING ON setupLoadWhiteListParams(3) isBlackList: %d", isBlackList )
+    LOGGER( 128, "I AM ENTERING ON setupLoadWhiteListParams(3) isWhiteListBlockOut: %d", isWhiteListBlockOut )
+    LOGGER( 128, "( setupLoadWhiteListParams ) listTrie: %d, listArray: %d", listTrie, listArray )
 
     if( listTrie )
     {
@@ -5200,7 +5218,7 @@ stock setupLoadWhiteListParams( bool:isBlackList, &Trie:listTrie, &Array:listArr
         listTrie = TrieCreate();
     }
 
-    if( isBlackList )
+    if( isWhiteListBlockOut )
     {
         // clear the map array in case we're reusing it
         if( listArray )
@@ -5479,7 +5497,7 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
 
                 if( isWhitelistEnabled
                     && !isWhiteListOutBlock
-                    && TrieKeyExists( g_blackListForWhiteListTrie, mapName ) )
+                    && TrieKeyExists( g_blacklistTrie, mapName ) )
                 {
                     LOGGER( 8, "    Trying to block: %s, by the whitelist map setting...", mapName )
 
@@ -11314,8 +11332,8 @@ stock nomination_menu( player_id )
                 formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_CURRENTMAP" );
             }
             else if( isWhiteListNomBlock
-                     && ( ( g_blackListForWhiteListTrie
-                            && TrieKeyExists( g_blackListForWhiteListTrie, nominationMap ) )
+                     && ( ( g_blacklistTrie
+                            && TrieKeyExists( g_blacklistTrie, nominationMap ) )
                           || ( g_whitelistTrie
                                && !TrieKeyExists( g_whitelistTrie, nominationMap ) ) ) )
             {
@@ -11432,8 +11450,8 @@ stock nominationAttemptWithNamePart( player_id, startSearchIndex = 0 )
                     formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_CURRENTMAP" );
                 }
                 else if( isWhiteListNomBlock
-                         && ( ( g_blackListForWhiteListTrie
-                                && TrieKeyExists( g_blackListForWhiteListTrie, nominationMap ) )
+                         && ( ( g_blacklistTrie
+                                && TrieKeyExists( g_blacklistTrie, nominationMap ) )
                               || ( g_whitelistTrie
                                    && !TrieKeyExists( g_whitelistTrie, nominationMap ) ) ) )
                 {
@@ -12224,8 +12242,8 @@ stock map_nominate( player_id, mapIndex )
             // Not loaded?
             tryToLoadTheWhiteListFeature();
 
-            if( ( g_blackListForWhiteListTrie
-                  && TrieKeyExists( g_blackListForWhiteListTrie, mapName ) )
+            if( ( g_blacklistTrie
+                  && TrieKeyExists( g_blacklistTrie, mapName ) )
                 || ( g_whitelistTrie
                      && !TrieKeyExists( g_whitelistTrie, mapName ) ) )
             {
@@ -13045,7 +13063,7 @@ public plugin_end()
     TRY_TO_APPLY( TrieDestroy, g_recentMapsTrie )
     TRY_TO_APPLY( TrieDestroy, g_mapcycleFileListTrie )
 
-    TRY_TO_APPLY( TrieDestroy, g_blackListForWhiteListTrie )
+    TRY_TO_APPLY( TrieDestroy, g_blacklistTrie )
     TRY_TO_APPLY( TrieDestroy, g_nominationLoadedMapsTrie )
 
     // Clear the dynamic arras, just to be sure.
@@ -15487,10 +15505,10 @@ public timeRemain()
         test_loadNextWhiteListGroupClos( 'b', false );
 
         test_loadNextWhiteListGroupOpen( 'c', false );
-        test_loadNextWhiteListGroupOpen( 'd', true  );
+        test_loadNextWhiteListGroupOpen( 'a', true  );
 
-        test_loadCurrentBlacklistMaps( 'a', false );
-        test_loadCurrentBlacklistMaps( 'b', true  );
+        test_loadCurrentBlacklistMaps( 'b', false );
+        test_loadCurrentBlacklistMaps( 'c', true  );
     }
 
     stock test_loadCurrentBlacklistMaps( s, bool:isBlackList )
@@ -15533,6 +15551,7 @@ public timeRemain()
     /**
      * This is a general test handler for the function 'loadWhiteListFile(4)'.
      *
+     * @param s                a char within the current test series.
      * @param isBlackList      whether is is a Whitelist or Blacklist test.
      * @param currentHour      the current hour.
      * @param map_existent     the map name to exist.
