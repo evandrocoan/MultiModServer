@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-539";
+new const PLUGIN_VERSION[] = "v4.2.0-540";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -14011,78 +14011,19 @@ public sayTimeLeft( id )
     {
         case GameEndingType_ByMaxRounds:
         {
-            new roundsLeft = get_pcvar_num( cvar_mp_maxrounds ) - g_totalRoundsPlayed;
-
-            if( get_pcvar_num( g_amx_time_voice ) )
-            {
-                speakRemainingInterger( id, roundsLeft );
-            }
-
-            if( IS_COLORED_CHAT_ENABLED() )
-            {
-                color_print( 0, "^4%L:^1 %d %L", LANG_PLAYER, "TIME_LEFT", roundsLeft, LANG_PLAYER, "GAL_OPTION_NAME_ROUND" );
-            }
-            else
-            {
-                color_print( 0, "%L: %d %L", LANG_PLAYER, "TIME_LEFT", roundsLeft, LANG_PLAYER, "GAL_OPTION_NAME_ROUND" );
-            }
+            sayRoundsLeft( id );
         }
         case GameEndingType_ByWinLimit:
         {
-            new winLeft = get_pcvar_num( cvar_mp_winlimit ) - max( g_totalCtWins, g_totalTerroristsWins );
-
-            if( get_pcvar_num( g_amx_time_voice ) )
-            {
-                speakRemainingInterger( id, winLeft );
-            }
-
-            if( IS_COLORED_CHAT_ENABLED() )
-            {
-                color_print( 0, "^4%L:^1 %d %L", LANG_PLAYER, "TIME_LEFT", winLeft, LANG_PLAYER, "GAL_OPTION_NAME_ROUND" );
-            }
-            else
-            {
-                color_print( 0, "%L: %d %L", LANG_PLAYER, "TIME_LEFT", winLeft, LANG_PLAYER, "GAL_OPTION_NAME_ROUND" );
-            }
+            sayWinLimitLeft( id );
         }
         case GameEndingType_ByFragLimit:
         {
-            new fragsLeft = get_pcvar_num( cvar_mp_fraglimit ) - g_greatestKillerFrags;
-
-            if( get_pcvar_num( g_amx_time_voice ) )
-            {
-                speakRemainingInterger( id, fragsLeft );
-            }
-
-            if( IS_COLORED_CHAT_ENABLED() )
-            {
-                color_print( 0, "^4%L:^1 %d %L", LANG_PLAYER, "TIME_LEFT", fragsLeft, LANG_PLAYER, "GAL_OPTION_NAME_FRAGS" );
-            }
-            else
-            {
-                color_print( 0, "%L: %d %L", LANG_PLAYER, "TIME_LEFT", fragsLeft, LANG_PLAYER, "GAL_OPTION_NAME_FRAGS" );
-            }
+            sayFragsLeft( id );
         }
         case GameEndingType_ByTimeLimit:
         {
-            new timeLeft = get_timeleft();
-
-            if( get_pcvar_num( g_amx_time_voice ) )
-            {
-                new speakText[ MAX_COLOR_MESSAGE ];
-
-                setTimeVoice( speakText, charsmax( speakText ), 0, timeLeft );
-                client_cmd( id, "%s", speakText );
-            }
-
-            if( IS_COLORED_CHAT_ENABLED() )
-            {
-                color_print( 0, "^4%L:^1 %d^4:^1%02d %L", LANG_PLAYER, "TIME_LEFT", ( timeLeft / 60 ), ( timeLeft % 60 ), "MINUTES" );
-            }
-            else
-            {
-                color_print( 0, "%L: %d:%02d %L", LANG_PLAYER, "TIME_LEFT", ( timeLeft / 60 ), ( timeLeft % 60 ), "MINUTES" );
-            }
+            sayTimeLeftOn( id );
         }
         default:
         {
@@ -14098,6 +14039,89 @@ public sayTimeLeft( id )
     }
 
     return PLUGIN_CONTINUE;
+}
+
+stock sayRoundsLeft( id )
+{
+    LOGGER( 128, "I AM ENTERING ON sayRoundsLeft(1) id: %d", id )
+    new roundsLeft = get_pcvar_num( cvar_mp_maxrounds ) - g_totalRoundsPlayed;
+
+    if( get_pcvar_num( g_amx_time_voice ) )
+    {
+        speakRemainingInterger( id, roundsLeft );
+    }
+
+    if( IS_COLORED_CHAT_ENABLED() )
+    {
+        color_print( 0, "^4%L:^1 %d %L", LANG_PLAYER, "TIME_LEFT", roundsLeft, LANG_PLAYER, "GAL_OPTION_NAME_ROUND" );
+    }
+    else
+    {
+        color_print( 0, "%L: %d %L", LANG_PLAYER, "TIME_LEFT", roundsLeft, LANG_PLAYER, "GAL_OPTION_NAME_ROUND" );
+    }
+}
+
+stock sayWinLimitLeft( id )
+{
+    LOGGER( 128, "I AM ENTERING ON sayWinLimitLeft(1) id: %d", id )
+    new winLeft = get_pcvar_num( cvar_mp_winlimit ) - max( g_totalCtWins, g_totalTerroristsWins );
+
+    if( get_pcvar_num( g_amx_time_voice ) )
+    {
+        speakRemainingInterger( id, winLeft );
+    }
+
+    if( IS_COLORED_CHAT_ENABLED() )
+    {
+        color_print( 0, "^4%L:^1 %d %L", LANG_PLAYER, "TIME_LEFT", winLeft, LANG_PLAYER, "GAL_OPTION_NAME_ROUND" );
+    }
+    else
+    {
+        color_print( 0, "%L: %d %L", LANG_PLAYER, "TIME_LEFT", winLeft, LANG_PLAYER, "GAL_OPTION_NAME_ROUND" );
+    }
+}
+
+stock sayFragsLeft( id )
+{
+    LOGGER( 128, "I AM ENTERING ON sayFragsLeft(1) id: %d", id )
+    new fragsLeft = get_pcvar_num( cvar_mp_fraglimit ) - g_greatestKillerFrags;
+
+    if( get_pcvar_num( g_amx_time_voice ) )
+    {
+        speakRemainingInterger( id, fragsLeft );
+    }
+
+    if( IS_COLORED_CHAT_ENABLED() )
+    {
+        color_print( 0, "^4%L:^1 %d %L", LANG_PLAYER, "TIME_LEFT", fragsLeft, LANG_PLAYER, "GAL_OPTION_NAME_FRAGS" );
+    }
+    else
+    {
+        color_print( 0, "%L: %d %L", LANG_PLAYER, "TIME_LEFT", fragsLeft, LANG_PLAYER, "GAL_OPTION_NAME_FRAGS" );
+    }
+}
+
+stock sayTimeLeftOn( id )
+{
+    LOGGER( 128, "I AM ENTERING ON sayTimeLeftOn(1) id: %d", id )
+    new timeLeft = get_timeleft();
+
+    if( get_pcvar_num( g_amx_time_voice ) )
+    {
+        new speakText[ MAX_COLOR_MESSAGE ];
+
+        setTimeVoice( speakText, charsmax( speakText ), 0, timeLeft );
+        client_cmd( id, "%s", speakText );
+    }
+
+    if( IS_COLORED_CHAT_ENABLED() )
+    {
+        color_print( 0, "^4%L:^1 %d^4:^1%02d %L", LANG_PLAYER, "TIME_LEFT", ( timeLeft / 60 ), ( timeLeft % 60 ), "MINUTES" );
+    }
+    else
+    {
+        color_print( 0, "%L: %d:%02d %L", LANG_PLAYER, "TIME_LEFT", ( timeLeft / 60 ), ( timeLeft % 60 ), "MINUTES" );
+    }
 }
 
 stock speakRemainingInterger( id, integer )
