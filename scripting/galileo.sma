@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-533";
+new const PLUGIN_VERSION[] = "v4.2.0-534";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -1075,6 +1075,7 @@ new cvar_voteMidPlayers;
 new cvar_nomMinPlayersControl;
 new cvar_voteMinPlayersMapFilePath;
 new cvar_voteMidPlayersMapFilePath;
+new cvar_whitelistType;
 new cvar_whitelistMinPlayers;
 new cvar_isWhiteListNomBlock;
 new cvar_isWhiteListBlockOut;
@@ -1479,6 +1480,7 @@ public plugin_init()
     cvar_nomMinPlayersControl      = register_cvar( "gal_nom_minplayers_control"  , "0"    );
     cvar_voteMinPlayersMapFilePath = register_cvar( "gal_vote_minplayers_mapfile" , ""     );
     cvar_voteMidPlayersMapFilePath = register_cvar( "gal_vote_midplayers_mapfile" , ""     );
+    cvar_whitelistType             = register_cvar( "gal_whitelist_type"          , "0"    );
     cvar_whitelistMinPlayers       = register_cvar( "gal_whitelist_minplayers"    , "0"    );
     cvar_isWhiteListNomBlock       = register_cvar( "gal_whitelist_nom_block"     , "0"    );
     cvar_isWhiteListBlockOut       = register_cvar( "gal_whitelist_block_out"     , "0"    );
@@ -4809,7 +4811,7 @@ public map_loadPrefixList()
  *
  * @note the hours parameters `startHour` and `endHour` must to be already normalized by standardizeTheHoursForWhitelist(3).
  */
-stock bool:isToLoadNextWhiteListGroupOpen( currentHour, startHour, endHour, bool:isWhiteList = false )
+stock bool:isToLoadNextWhiteListGroupOpen( currentHour, startHour, endHour, bool:isBlackList = false )
 {
     LOGGER( 256, "I AM ENTERING ON isToLoadNextWhiteListGroupOpen(4) currentHour: %d", currentHour )
     LOGGER( 256, "( isToLoadNextWhiteListGroupOpen ) startHour: %d, endHour: %d", startHour, endHour )
@@ -4823,23 +4825,23 @@ stock bool:isToLoadNextWhiteListGroupOpen( currentHour, startHour, endHour, bool
         // Manual fix needed to convert 5-5 to 05:00:00 until 05:59:59, instead of all day long.
         if( endHour == currentHour )
         {
-            isToLoadTheseMaps = isWhiteList;
+            isToLoadTheseMaps = isBlackList;
         }
         else
         {
-            isToLoadTheseMaps = !isWhiteList;
+            isToLoadTheseMaps = !isBlackList;
         }
     }
     else
     {
-        isToLoadTheseMaps = isToLoadNextWhiteListEndProcess( currentHour, startHour, endHour, isWhiteList );
+        isToLoadTheseMaps = isToLoadNextWhiteListEndProcess( currentHour, startHour, endHour, isBlackList );
     }
 
     LOGGER( 0, "", debugIsToLoadNextWhiteListGroup( currentHour, startHour, endHour, isToLoadTheseMaps ) )
     return isToLoadTheseMaps;
 }
 
-stock bool:isToLoadNextWhiteListGroupClose( currentHour, startHour, endHour, bool:isWhiteList = false )
+stock bool:isToLoadNextWhiteListGroupClose( currentHour, startHour, endHour, bool:isBlackList = false )
 {
     LOGGER( 256, "I AM ENTERING ON isToLoadNextWhiteListGroupClose(4) currentHour: %d", currentHour )
     LOGGER( 256, "( isToLoadNextWhiteListGroupClose ) startHour: %d, endHour: %d", startHour, endHour )
@@ -4873,23 +4875,23 @@ stock bool:isToLoadNextWhiteListGroupClose( currentHour, startHour, endHour, boo
         if( isDecreased
             && endHour == currentHour )
         {
-            isToLoadTheseMaps = isWhiteList;
+            isToLoadTheseMaps = isBlackList;
         }
         else
         {
-            isToLoadTheseMaps = !isWhiteList;
+            isToLoadTheseMaps = !isBlackList;
         }
     }
     else
     {
-        isToLoadTheseMaps = isToLoadNextWhiteListEndProcess( currentHour, startHour, endHour, isWhiteList );
+        isToLoadTheseMaps = isToLoadNextWhiteListEndProcess( currentHour, startHour, endHour, isBlackList );
     }
 
     LOGGER( 0, "", debugIsToLoadNextWhiteListGroup( currentHour, startHour, endHour, isToLoadTheseMaps ) )
     return isToLoadTheseMaps;
 }
 
-stock bool:isToLoadNextWhiteListEndProcess( currentHour, startHour, endHour, bool:isWhiteList )
+stock bool:isToLoadNextWhiteListEndProcess( currentHour, startHour, endHour, bool:isBlackList )
 {
     LOGGER( 256, "I AM ENTERING ON isToLoadNextWhiteListEndProcess(4)" )
 
@@ -4912,14 +4914,14 @@ stock bool:isToLoadNextWhiteListEndProcess( currentHour, startHour, endHour, boo
         //         4           3
             && currentHour > endHour )
         {
-            LOGGER( 256, "( isToLoadNextWhiteListEndProcess ) 1. Returning: %d", !isWhiteList )
-            return !isWhiteList;
+            LOGGER( 256, "( isToLoadNextWhiteListEndProcess ) 1. Returning: %d", !isBlackList )
+            return !isBlackList;
         }
         //               6           5
         else // if( currentHour > startHour )
         {
-            LOGGER( 256, "( isToLoadNextWhiteListEndProcess ) 2. Returning: %d", isWhiteList )
-            return isWhiteList;
+            LOGGER( 256, "( isToLoadNextWhiteListEndProcess ) 2. Returning: %d", isBlackList )
+            return isBlackList;
         }
     }
     //             3          5
@@ -4940,14 +4942,14 @@ stock bool:isToLoadNextWhiteListEndProcess( currentHour, startHour, endHour, boo
         //          2           3
             || currentHour < startHour )
         {
-            LOGGER( 256, "( isToLoadNextWhiteListEndProcess ) 3. Returning: %d", !isWhiteList )
-            return !isWhiteList;
+            LOGGER( 256, "( isToLoadNextWhiteListEndProcess ) 3. Returning: %d", !isBlackList )
+            return !isBlackList;
         }
         //              4            3
         else // if( currentHour > startHour )
         {
-            LOGGER( 256, "( isToLoadNextWhiteListEndProcess ) 4. Returning: %d", isWhiteList )
-            return isWhiteList;
+            LOGGER( 256, "( isToLoadNextWhiteListEndProcess ) 4. Returning: %d", isBlackList )
+            return isBlackList;
         }
     }
 
@@ -5091,7 +5093,7 @@ stock loadTheWhiteListFeature()
     }
 }
 
-stock loadWhiteListFile( currentHour, &Trie:listTrie, Array:whitelistFileArray, bool:isWhiteList = false, &Array:listArray = Invalid_Array )
+stock loadWhiteListFile( currentHour, &Trie:listTrie, Array:whitelistFileArray, bool:isBlackList = false, &Array:listArray = Invalid_Array )
 {
     LOGGER( 128, "I AM ENTERING ON loadWhiteListFile(5) currentHour: %d, listTrie: %d", currentHour, listTrie )
 
@@ -5108,21 +5110,21 @@ stock loadWhiteListFile( currentHour, &Trie:listTrie, Array:whitelistFileArray, 
         new startHourString[ MAX_MAPNAME_LENGHT / 2 ];
         new endHourString  [ MAX_MAPNAME_LENGHT / 2 ];
 
-        setupLoadWhiteListParams( isWhiteList, listTrie, listArray );
+        setupLoadWhiteListParams( isBlackList, listTrie, listArray );
         linesCount = ArraySize( whitelistFileArray );
 
         for( new lineIndex = 0; lineIndex < linesCount; lineIndex++ )
         {
             ArrayGetString( whitelistFileArray, lineIndex, currentLine, charsmax( currentLine ) );
 
-            if( whiteListHourlySet( '[', currentLine, startHourString, endHourString, isWhiteList, currentHour, startHour, endHour ) )
+            if( whiteListHourlySet( '[', currentLine, startHourString, endHourString, isBlackList, currentHour, startHour, endHour ) )
             {
-                isToLoadTheseMaps = isToLoadNextWhiteListGroupOpen( currentHour, startHour, endHour, isWhiteList );
+                isToLoadTheseMaps = isToLoadNextWhiteListGroupOpen( currentHour, startHour, endHour, isBlackList );
                 continue;
             }
-            else if( whiteListHourlySet( '{', currentLine, startHourString, endHourString, isWhiteList, currentHour, startHour, endHour ) )
+            else if( whiteListHourlySet( '{', currentLine, startHourString, endHourString, isBlackList, currentHour, startHour, endHour ) )
             {
-                isToLoadTheseMaps = isToLoadNextWhiteListGroupClose( currentHour, startHour, endHour, isWhiteList );
+                isToLoadTheseMaps = isToLoadNextWhiteListGroupClose( currentHour, startHour, endHour, isBlackList );
                 continue;
             }
             else if( !isToLoadTheseMaps )
@@ -5139,7 +5141,7 @@ stock loadWhiteListFile( currentHour, &Trie:listTrie, Array:whitelistFileArray, 
                     LOGGER( 8, "( loadWhiteListFile ) OK!")
                     TrieSetCell( listTrie, mapName, lineIndex );
 
-                    if( isWhiteList )
+                    if( isBlackList )
                     {
                         ArrayPushString( listArray, currentLine );
                     }
@@ -5151,7 +5153,7 @@ stock loadWhiteListFile( currentHour, &Trie:listTrie, Array:whitelistFileArray, 
     LOGGER( 1, "    I AM EXITING loadWhiteListFile(5) listArray: %d, whitelistFileArray: %d", listArray, whitelistFileArray )
 }
 
-stock whiteListHourlySet( trigger, currentLine[], startHourString[], endHourString[], &isWhiteList, &currentHour, &startHour, &endHour )
+stock whiteListHourlySet( trigger, currentLine[], startHourString[], endHourString[], &isBlackList, &currentHour, &startHour, &endHour )
 {
     LOGGER( 256, "I AM ENTERING ON whiteListHourlySet(4) trigger: %c", trigger )
 
@@ -5165,7 +5167,7 @@ stock whiteListHourlySet( trigger, currentLine[], startHourString[], endHourStri
         replace_all( currentLine, MAX_MAPNAME_LENGHT - 1, "]", "" );
 
         LOGGER( 8, "( whiteListHourlySet ) " )
-        LOGGER( 8, "( whiteListHourlySet ) If we are %s these hours, we must load these maps:", ( isWhiteList? "between" : "outside" ) )
+        LOGGER( 8, "( whiteListHourlySet ) If we are %s these hours, we must load these maps:", ( isBlackList? "between" : "outside" ) )
         LOGGER( 8, "( whiteListHourlySet ) currentLine: %s (currentHour: %d)", currentLine, currentHour )
 
         // broke the current line
@@ -5185,9 +5187,9 @@ stock whiteListHourlySet( trigger, currentLine[], startHourString[], endHourStri
     return false;
 }
 
-stock setupLoadWhiteListParams( bool:isWhiteList, &Trie:listTrie, &Array:listArray )
+stock setupLoadWhiteListParams( bool:isBlackList, &Trie:listTrie, &Array:listArray )
 {
-    LOGGER( 128, "I AM ENTERING ON setupLoadWhiteListParams(3) | isWhiteList: %d", isWhiteList )
+    LOGGER( 128, "I AM ENTERING ON setupLoadWhiteListParams(3) | isBlackList: %d", isBlackList )
 
     if( listTrie )
     {
@@ -5198,7 +5200,7 @@ stock setupLoadWhiteListParams( bool:isWhiteList, &Trie:listTrie, &Array:listArr
         listTrie = TrieCreate();
     }
 
-    if( isWhiteList )
+    if( isBlackList )
     {
         // clear the map array in case we're reusing it
         if( listArray )
@@ -15413,22 +15415,22 @@ public timeRemain()
      * @param currentHour      the current hour.
      * @param isToLoad         whether the sequence should be loaded by the given `currentHour`.
      */
-    stock test_isToLoadBlacklist_case( s, bool:isWhiteList, bool:isClose, bool:isToLoad, currentHour, startHour, endHour )
+    stock test_isToLoadBlacklist_case( s, bool:isBlackList, bool:isClose, bool:isToLoad, currentHour, startHour, endHour )
     {
         new test_id;
         new bool:loadResult;
         new errorMessage[ MAX_LONG_STRING ];
 
-        if( isWhiteList ) isToLoad = !isToLoad;
+        if( isBlackList ) isToLoad = !isToLoad;
         test_id = test_registerSeriesNaming( "test_isToLoadBlacklist", s );
 
         if( isClose )
         {
-            loadResult = isToLoadNextWhiteListGroupClose( currentHour, startHour, endHour, isWhiteList );
+            loadResult = isToLoadNextWhiteListGroupClose( currentHour, startHour, endHour, isBlackList );
         }
         else
         {
-            loadResult = isToLoadNextWhiteListGroupOpen( currentHour, startHour, endHour, isWhiteList );
+            loadResult = isToLoadNextWhiteListGroupOpen( currentHour, startHour, endHour, isBlackList );
         }
 
         formatex( errorMessage, charsmax( errorMessage ), "The hour %2d must %sto be loaded at [%d-%d]!",
@@ -15491,64 +15493,64 @@ public timeRemain()
         test_loadCurrentBlacklistMaps( 'b', true  );
     }
 
-    stock test_loadCurrentBlacklistMaps( s, bool:isWhiteList )
+    stock test_loadCurrentBlacklistMaps( s, bool:isBlackList )
     {
-        test_loadCurrentBlacklist_case( s, isWhiteList, 12, "de_dust2" , "de_dust7"  ); // Case 1/2
-        test_loadCurrentBlacklist_case( s, isWhiteList, 23, "de_dust5" , "de_dust4"  ); // Case 3/4
-        test_loadCurrentBlacklist_case( s, isWhiteList, 23, "de_dust7" , "de_dust2"  ); // Case 5/6
-        test_loadCurrentBlacklist_case( s, isWhiteList, 24, "de_dust4" , "de_dust1"  ); // Case 7/8
-        test_loadCurrentBlacklist_case( s, isWhiteList, 23, "de_dust7" , "de_dust8"  ); // Case 9/10
-        test_loadCurrentBlacklist_case( s, isWhiteList, 22, "de_dust8" , "de_dust7"  ); // Case 11/12
-        test_loadCurrentBlacklist_case( s, isWhiteList, 23, "de_dust5" , "de_dust1"  ); // Case 13/14
-        test_loadCurrentBlacklist_case( s, isWhiteList, 23, "de_dust6" , "de_dust2"  ); // Case 15/16
-        test_loadCurrentBlacklist_case( s, isWhiteList, 23, "de_dust7" , "de_dust3"  ); // Case 17/18
-        test_loadCurrentBlacklist_case( s, isWhiteList, 23, "de_dust5" , "de_dust4"  ); // Case 19/20
-        test_loadCurrentBlacklist_case( s, isWhiteList, 2 , "de_dust6" , "de_dust11" ); // Case 21/22
-        test_loadCurrentBlacklist_case( s, isWhiteList, 4 , "de_dust13", "de_dust4"  ); // Case 23/24
+        test_loadCurrentBlacklist_case( s, isBlackList, 12, "de_dust2" , "de_dust7"  ); // Case 1/2
+        test_loadCurrentBlacklist_case( s, isBlackList, 23, "de_dust5" , "de_dust4"  ); // Case 3/4
+        test_loadCurrentBlacklist_case( s, isBlackList, 23, "de_dust7" , "de_dust2"  ); // Case 5/6
+        test_loadCurrentBlacklist_case( s, isBlackList, 24, "de_dust4" , "de_dust1"  ); // Case 7/8
+        test_loadCurrentBlacklist_case( s, isBlackList, 23, "de_dust7" , "de_dust8"  ); // Case 9/10
+        test_loadCurrentBlacklist_case( s, isBlackList, 22, "de_dust8" , "de_dust7"  ); // Case 11/12
+        test_loadCurrentBlacklist_case( s, isBlackList, 23, "de_dust5" , "de_dust1"  ); // Case 13/14
+        test_loadCurrentBlacklist_case( s, isBlackList, 23, "de_dust6" , "de_dust2"  ); // Case 15/16
+        test_loadCurrentBlacklist_case( s, isBlackList, 23, "de_dust7" , "de_dust3"  ); // Case 17/18
+        test_loadCurrentBlacklist_case( s, isBlackList, 23, "de_dust5" , "de_dust4"  ); // Case 19/20
+        test_loadCurrentBlacklist_case( s, isBlackList, 2 , "de_dust6" , "de_dust11" ); // Case 21/22
+        test_loadCurrentBlacklist_case( s, isBlackList, 4 , "de_dust13", "de_dust4"  ); // Case 23/24
 
-        test_loadCurrentBlacklist_case( s, isWhiteList, 0 , "", "de_dust14" ); // Case 25
-        test_loadCurrentBlacklist_case( s, isWhiteList, 0 , "", "de_dust15" ); // Case 26
-        test_loadCurrentBlacklist_case( s, isWhiteList, 0 , "", "de_dust16" ); // Case 27
+        test_loadCurrentBlacklist_case( s, isBlackList, 0 , "", "de_dust14" ); // Case 25
+        test_loadCurrentBlacklist_case( s, isBlackList, 0 , "", "de_dust15" ); // Case 26
+        test_loadCurrentBlacklist_case( s, isBlackList, 0 , "", "de_dust16" ); // Case 27
 
-        test_loadCurrentBlacklist_case( s, isWhiteList, 1 , "de_dust14", "" ); // Case 28
-        test_loadCurrentBlacklist_case( s, isWhiteList, 1 , "de_dust15", "" ); // Case 29
-        test_loadCurrentBlacklist_case( s, isWhiteList, 1 , "de_dust16", "" ); // Case 30
-        test_loadCurrentBlacklist_case( s, isWhiteList, 23, "de_dust14", "" ); // Case 31
-        test_loadCurrentBlacklist_case( s, isWhiteList, 23, "de_dust15", "" ); // Case 32
-        test_loadCurrentBlacklist_case( s, isWhiteList, 23, "de_dust16", "" ); // Case 33
-        test_loadCurrentBlacklist_case( s, isWhiteList, 12, "de_dust14", "" ); // Case 34
-        test_loadCurrentBlacklist_case( s, isWhiteList, 12, "de_dust15", "" ); // Case 35
-        test_loadCurrentBlacklist_case( s, isWhiteList, 12, "de_dust16", "" ); // Case 36
+        test_loadCurrentBlacklist_case( s, isBlackList, 1 , "de_dust14", "" ); // Case 28
+        test_loadCurrentBlacklist_case( s, isBlackList, 1 , "de_dust15", "" ); // Case 29
+        test_loadCurrentBlacklist_case( s, isBlackList, 1 , "de_dust16", "" ); // Case 30
+        test_loadCurrentBlacklist_case( s, isBlackList, 23, "de_dust14", "" ); // Case 31
+        test_loadCurrentBlacklist_case( s, isBlackList, 23, "de_dust15", "" ); // Case 32
+        test_loadCurrentBlacklist_case( s, isBlackList, 23, "de_dust16", "" ); // Case 33
+        test_loadCurrentBlacklist_case( s, isBlackList, 12, "de_dust14", "" ); // Case 34
+        test_loadCurrentBlacklist_case( s, isBlackList, 12, "de_dust15", "" ); // Case 35
+        test_loadCurrentBlacklist_case( s, isBlackList, 12, "de_dust16", "" ); // Case 36
 
-        test_loadCurrentBlacklist_case( s, isWhiteList, 1 , "", "de_dust17" ); // Case 37
-        test_loadCurrentBlacklist_case( s, isWhiteList, 1 , "", "de_dust18" ); // Case 38
-        test_loadCurrentBlacklist_case( s, isWhiteList, 23, "", "de_dust17" ); // Case 39
-        test_loadCurrentBlacklist_case( s, isWhiteList, 23, "", "de_dust18" ); // Case 40
-        test_loadCurrentBlacklist_case( s, isWhiteList, 12, "", "de_dust17" ); // Case 41
-        test_loadCurrentBlacklist_case( s, isWhiteList, 12, "", "de_dust18" ); // Case 42
+        test_loadCurrentBlacklist_case( s, isBlackList, 1 , "", "de_dust17" ); // Case 37
+        test_loadCurrentBlacklist_case( s, isBlackList, 1 , "", "de_dust18" ); // Case 38
+        test_loadCurrentBlacklist_case( s, isBlackList, 23, "", "de_dust17" ); // Case 39
+        test_loadCurrentBlacklist_case( s, isBlackList, 23, "", "de_dust18" ); // Case 40
+        test_loadCurrentBlacklist_case( s, isBlackList, 12, "", "de_dust17" ); // Case 41
+        test_loadCurrentBlacklist_case( s, isBlackList, 12, "", "de_dust18" ); // Case 42
     }
 
     /**
      * This is a general test handler for the function 'loadWhiteListFile(4)'.
      *
-     * @param isWhiteList      whether is is a Whitelist or Blacklist test.
+     * @param isBlackList      whether is is a Whitelist or Blacklist test.
      * @param currentHour      the current hour.
      * @param map_existent     the map name to exist.
      * @param not_existent     the map name to does not exist.
      */
-    stock test_loadCurrentBlacklist_case( s, bool:isWhiteList, currentHour, not_existent[], map_existent[] )
+    stock test_loadCurrentBlacklist_case( s, bool:isBlackList, currentHour, not_existent[], map_existent[] )
     {
-        if( isWhiteList )
+        if( isBlackList )
         {
-            test_loadCurrentBlacklist_caseT( s, isWhiteList, currentHour, map_existent, not_existent );
+            test_loadCurrentBlacklist_caseT( s, isBlackList, currentHour, map_existent, not_existent );
         }
         else
         {
-            test_loadCurrentBlacklist_caseT( s, isWhiteList, currentHour, not_existent, map_existent);
+            test_loadCurrentBlacklist_caseT( s, isBlackList, currentHour, not_existent, map_existent);
         }
     }
 
-    stock test_loadCurrentBlacklist_caseT( s, bool:isWhiteList, currentHour, map_existent[], not_existent[] )
+    stock test_loadCurrentBlacklist_caseT( s, bool:isBlackList, currentHour, map_existent[], not_existent[] )
     {
         new test_id;
         new errorMessage[ MAX_LONG_STRING ];
@@ -15557,7 +15559,7 @@ public timeRemain()
         new Array:whitelistFileArray = ArrayCreate( MAX_LONG_STRING );
 
         loadWhiteListFileFromFile( whitelistFileArray, g_test_whiteListFilePath );
-        loadWhiteListFile( currentHour, blackListTrie, whitelistFileArray, isWhiteList );
+        loadWhiteListFile( currentHour, blackListTrie, whitelistFileArray, isBlackList );
 
         if( map_existent[ 0 ] )
         {
