@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-542";
+new const PLUGIN_VERSION[] = "v4.2.0-543";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -718,6 +718,20 @@ new cvar_coloredChatEnabled;
 #define IS_TO_ALLOW_A_CRASH_SEARCH(%1) \
     ( file_exists( modeFlagFilePath ) \
       && !( DEBUG_LEVEL & DEBUG_LEVEL_FAKE_VOTES ) )
+//
+
+/**
+ * Used to determine whether a map is blocked by the Whitelist feature.
+ *
+ * @param isWhitelistEnabled     whether or not is to allow the Whitelist blockage.
+ * @param mapNameToCheck         the map name to be verified if the map list checking is enabled.
+ */
+#define IS_WHITELIST_BLOCKING(%1,%2) \
+    ( %1 \
+      && ( ( g_blacklistTrie \
+             && TrieKeyExists( g_blacklistTrie, %2 ) ) \
+           || ( g_whitelistTrie \
+                && !TrieKeyExists( g_whitelistTrie, %2 ) ) ) )
 //
 
 
@@ -1911,11 +1925,7 @@ stock configureServerMapChange()
 {
     LOGGER( 128, "I AM ENTERING ON configureServerMapChange(0)" )
 
-    if( IS_WHITELIST_ENABLED()
-        && ( ( g_blacklistTrie
-               && TrieKeyExists( g_blacklistTrie, g_nextMapName ) )
-             || ( g_whitelistTrie
-                  && !TrieKeyExists( g_whitelistTrie, g_nextMapName ) ) ) )
+    if( IS_WHITELIST_BLOCKING( IS_WHITELIST_ENABLED(), g_nextMapName ) )
     {
         new currentNextMap[ MAX_MAPNAME_LENGHT ];
 
@@ -9462,11 +9472,7 @@ stock map_getNext( Array:mapArray, currentMap[], nextMapName[] )
 
             GET_MAP_NAME( mapArray, nextmapIndex, nextMapName )
 
-            if( isWhitelistEnabled
-                && ( ( g_blacklistTrie
-                       && TrieKeyExists( g_blacklistTrie, nextMapName ) )
-                     || ( g_whitelistTrie
-                          && !TrieKeyExists( g_whitelistTrie, nextMapName ) ) ) )
+            if( IS_WHITELIST_BLOCKING( isWhitelistEnabled, nextMapName ) )
             {
                 copy( currentMap, MAX_MAPNAME_LENGHT - 1, nextMapName );
                 continue;
@@ -9925,11 +9931,7 @@ public cmd_voteMap( player_id, level, cid )
                 read_argv( index, argument, charsmax( argument ) );
                 LOGGER( 8, "( cmd_voteMap ) argument[%d]: %s", index, argument )
 
-                if( isWhitelistEnabled
-                    && ( ( g_blacklistTrie
-                           && TrieKeyExists( g_blacklistTrie, argument ) )
-                         || ( g_whitelistTrie
-                              && !TrieKeyExists( g_whitelistTrie, argument ) ) ) )
+                if( IS_WHITELIST_BLOCKING( isWhitelistEnabled, argument ) )
                 {
                     console_print( player_id, "%s: %L", argument, player_id, "GAL_MATCH_WHITELIST" );
                     LOGGER( 8, "    ( cmd_voteMap ) %s: %L", argument, player_id, "GAL_MATCH_WHITELIST" )
@@ -10183,11 +10185,7 @@ stock displayVoteMapMenu( player_id )
             {
                 formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_CURRENTMAP" );
             }
-            else if( isWhitelistEnabled
-                && ( ( g_blacklistTrie
-                       && TrieKeyExists( g_blacklistTrie, nominationMap ) )
-                     || ( g_whitelistTrie
-                          && !TrieKeyExists( g_whitelistTrie, nominationMap ) ) ) )
+            else if( IS_WHITELIST_BLOCKING( isWhitelistEnabled, nominationMap ) )
             {
                 formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_WHITELIST" );
             }
@@ -11378,11 +11376,7 @@ stock nomination_menu( player_id )
             {
                 formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_CURRENTMAP" );
             }
-            else if( isWhiteListNomBlock
-                     && ( ( g_blacklistTrie
-                            && TrieKeyExists( g_blacklistTrie, nominationMap ) )
-                          || ( g_whitelistTrie
-                               && !TrieKeyExists( g_whitelistTrie, nominationMap ) ) ) )
+            else if( IS_WHITELIST_BLOCKING( isWhiteListNomBlock, nominationMap ) )
             {
                 formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_WHITELIST" );
             }
@@ -11491,11 +11485,7 @@ stock nominationAttemptWithNamePart( player_id, startSearchIndex = 0 )
                 {
                     formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_CURRENTMAP" );
                 }
-                else if( isWhiteListNomBlock
-                         && ( ( g_blacklistTrie
-                                && TrieKeyExists( g_blacklistTrie, nominationMap ) )
-                              || ( g_whitelistTrie
-                                   && !TrieKeyExists( g_whitelistTrie, nominationMap ) ) ) )
+                else if( IS_WHITELIST_BLOCKING( isWhiteListNomBlock, nominationMap ) )
                 {
                     formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_WHITELIST" );
                 }
@@ -12278,16 +12268,15 @@ stock map_nominate( player_id, mapIndex )
 
     if( !is_to_block_map_nomination( player_id, mapName ) )
     {
-        if( IS_WHITELIST_ENABLED()
-            && IS_TO_HOURLY_LOAD_THE_WHITELIST() )
+        new bool:isWhiteListNomBlock = ( IS_WHITELIST_ENABLED()
+                                         && IS_TO_HOURLY_LOAD_THE_WHITELIST() );
+
+        if( isWhiteListNomBlock )
         {
             // Not loaded?
             tryToLoadTheWhiteListFeature();
 
-            if( ( g_blacklistTrie
-                  && TrieKeyExists( g_blacklistTrie, mapName ) )
-                || ( g_whitelistTrie
-                     && !TrieKeyExists( g_whitelistTrie, mapName ) ) )
+            if( IS_WHITELIST_BLOCKING( isWhiteListNomBlock, mapName ) )
             {
                 color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_WHITELIST", mapName );
                 LOGGER( 1, "    ( map_nominate ) The map: %s, was blocked by the whitelist map setting.", mapName )
