@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-543";
+new const PLUGIN_VERSION[] = "v4.2.0-544";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -443,8 +443,7 @@ new bool:g_isColoredChatEnabled;
  */
 #define IS_COLORED_CHAT_ENABLED() \
     ( g_isColorChatSupported \
-      && g_isColoredChatEnabled \
-      && get_pcvar_num( cvar_isFirstServerStart ) != FIRST_SERVER_START )
+      && g_isColoredChatEnabled )
 
 #if AMXX_VERSION_NUM < 183
     new g_user_msgid;
@@ -1661,15 +1660,16 @@ stock runTheServerMapCrashSearch()
 
 stock configureSpecificGameModFeature()
 {
-    /**
-     * If it is enabled, Load whether the color chat is supported by the current Game Modification.
-     */
+    // If it is enabled, Load whether the color chat is supported by the current Game Modification.
     g_isColorChatSupported = ( is_running( "czero" )
                                || is_running( "cstrike" ) );
 
-    /**
-     * Register the voting start call from the Sven Coop game.
-     */
+    // On the first server start, we do not know whether the color chat is allowed/enabled. This is due
+    // the register register_dictionary_colored(1) to be called on plugin_init(0) and the settings being
+    // loaded only at plugin_cfg(0).
+    g_isColoredChatEnabled = get_pcvar_num( cvar_coloredChatEnabled ) != 0;
+
+    // Register the voting start call from the Sven Coop game.
 #if IS_TO_ENABLE_SVEN_COOP_SUPPPORT > 0
     if( is_running("svencoop") )
     {
@@ -1890,7 +1890,6 @@ public cacheCvarsValues()
     g_fragLimitNumber           = get_pcvar_num( cvar_mp_fraglimit           );
     g_timeLimitNumber           = get_pcvar_num( cvar_mp_timelimit           );
 
-    g_isColoredChatEnabled      = get_pcvar_num( cvar_coloredChatEnabled )   != 0;
     g_isExtendmapAllowStay      = get_pcvar_num( cvar_extendmapAllowStay   ) != 0;
     g_isToShowNoneOption        = get_pcvar_num( cvar_isToShowNoneOption   ) == 1;
     g_isToShowSubMenu           = get_pcvar_num( cvar_isToShowNoneOption   ) == 2;
@@ -1902,7 +1901,7 @@ public cacheCvarsValues()
     get_pcvar_string( cvar_voteWeightFlags, g_voteWeightFlags, charsmax( g_voteWeightFlags ) );
     get_pcvar_string( cvar_coloredChatPrefix, g_coloredChatPrefix, charsmax( g_coloredChatPrefix ) );
 
-    //Do not put it before the variable `g_isColoredChatEnabled` caching above.
+    //Do not put it before the variable `g_isColoredChatEnabled` caching.
     if( IS_COLORED_CHAT_ENABLED() )
     {
         INSERT_COLOR_TAGS( g_coloredChatPrefix )
@@ -12432,12 +12431,19 @@ public nomination_list()
         else
         {
             REMOVE_CODE_COLOR_TAGS( mapsList )
-            color_print( 0, "%L: %s", LANG_PLAYER, "GAL_NOMINATIONS", mapsList );
+            client_print( 0, print_chat, "%L: %s", LANG_PLAYER, "GAL_NOMINATIONS", mapsList );
         }
     }
     else
     {
-        color_print( 0, "%L: %L", LANG_PLAYER, "GAL_NOMINATIONS", LANG_PLAYER, "NONE" );
+        if( IS_COLORED_CHAT_ENABLED() )
+        {
+            color_print( 0, "%L: ^4%L", LANG_PLAYER, "GAL_NOMINATIONS", LANG_PLAYER, "NONE" );
+        }
+        else
+        {
+            client_print( 0, print_chat, "%L: %L", LANG_PLAYER, "GAL_NOMINATIONS", LANG_PLAYER, "NONE"  );
+        }
     }
 }
 
@@ -14094,7 +14100,7 @@ public sayTimeLeft( id )
             }
             else
             {
-                color_print( 0, "%L: %L", LANG_PLAYER, "TIME_LEFT", LANG_PLAYER, "NO_T_LIMIT" );
+                client_print( 0, print_chat, "%L: %L", LANG_PLAYER, "TIME_LEFT", LANG_PLAYER, "NO_T_LIMIT" );
             }
         }
     }
@@ -14118,7 +14124,7 @@ stock sayRoundsLeft( id )
     }
     else
     {
-        color_print( 0, "%L: %d %L", LANG_PLAYER, "TIME_LEFT", roundsLeft, LANG_PLAYER, "GAL_OPTION_NAME_ROUND" );
+        client_print( 0, print_chat, "%L: %d %L", LANG_PLAYER, "TIME_LEFT", roundsLeft, LANG_PLAYER, "GAL_OPTION_NAME_ROUND" );
     }
 }
 
@@ -14138,7 +14144,7 @@ stock sayWinLimitLeft( id )
     }
     else
     {
-        color_print( 0, "%L: %d %L", LANG_PLAYER, "TIME_LEFT", winLeft, LANG_PLAYER, "GAL_OPTION_NAME_ROUND" );
+        client_print( 0, print_chat, "%L: %d %L", LANG_PLAYER, "TIME_LEFT", winLeft, LANG_PLAYER, "GAL_OPTION_NAME_ROUND" );
     }
 }
 
@@ -14158,7 +14164,7 @@ stock sayFragsLeft( id )
     }
     else
     {
-        color_print( 0, "%L: %d %L", LANG_PLAYER, "TIME_LEFT", fragsLeft, LANG_PLAYER, "GAL_OPTION_NAME_FRAGS" );
+        client_print( 0, print_chat, "%L: %d %L", LANG_PLAYER, "TIME_LEFT", fragsLeft, LANG_PLAYER, "GAL_OPTION_NAME_FRAGS" );
     }
 }
 
@@ -14181,7 +14187,7 @@ stock sayTimeLeftOn( id )
     }
     else
     {
-        color_print( 0, "%L: %d:%02d %L", LANG_PLAYER, "TIME_LEFT", ( timeLeft / 60 ), ( timeLeft % 60 ), "MINUTES" );
+        client_print( 0, print_chat, "%L: %d:%02d %L", LANG_PLAYER, "TIME_LEFT", ( timeLeft / 60 ), ( timeLeft % 60 ), "MINUTES" );
     }
 }
 
