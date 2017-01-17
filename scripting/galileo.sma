@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-547";
+new const PLUGIN_VERSION[] = "v4.2.0-548";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -982,6 +982,7 @@ enum (+= 100000)
     TASKID_EMPTYSERVER,
     TASKID_START_VOTING_DELAYED,
     TASKID_PROCESS_LAST_ROUND,
+    TASKID_DISPLAY_REMAINING_TIME,
     TASKID_PROCESS_LAST_ROUND_COUNT,
     TASKID_PROCESS_LAST_ROUNDCHANGE,
     TASKID_VOTE_HANDLEDISPLAY,
@@ -4195,7 +4196,7 @@ public show_last_round_HUD()
 {
     LOGGER( 256, "I AM ENTERING ON show_last_round_HUD(0)" )
 
-    if( ++g_showLastRoundHudCounter % LAST_ROUND_HUD_SHOW_INTERVAL > 8 )
+    if( ++g_showLastRoundHudCounter % LAST_ROUND_HUD_SHOW_INTERVAL > 7 )
     {
         return;
     }
@@ -6096,7 +6097,8 @@ stock handle_game_crash_recreation( secondsLeft )
     {
         if( !( get_pcvar_num( cvar_hudsHide ) & HUD_TIMELEFT_ANNOUNCE ) )
         {
-            set_hudmessage( 255, 255, 255, 0.15, 0.15, 0, 0.0, 6.0, 0.1, 0.1, 1 );
+            new displayTime = 7;
+            set_hudmessage( 255, 255, 255, 0.15, 0.15, 0, 0.0, float( displayTime ), 0.1, 0.1, 1 );
 
             switch( whatGameEndingTypeItIs() )
             {
@@ -6117,11 +6119,7 @@ stock handle_game_crash_recreation( secondsLeft )
                 }
                 case GameEndingType_ByTimeLimit:
                 {
-                    new timeLeft = get_timeleft();
-                    new seconds  = timeLeft % 60;
-                    new minutes  = floatround( ( timeLeft - seconds ) / 60.0 );
-
-                    show_hudmessage( 0, "%L:^n%d: %2d %L", LANG_PLAYER, "TIME_LEFT", minutes, seconds, LANG_PLAYER, "MINUTES" );
+                    set_task( 1.0, "displayRemainingTime", TASKID_DISPLAY_REMAINING_TIME, _, _, "a", displayTime );
                 }
                 default:
                 {
@@ -6162,6 +6160,16 @@ stock handle_game_crash_recreation( secondsLeft )
         write_file( gameCrashActionFilePath, "Game Crash Action Flag File^n^nSee the cvar \
                 'gal_game_crash_recreation'.^nDo not delete it." );
     }
+}
+
+public displayRemainingTime()
+{
+    new timeLeft = get_timeleft();
+    new seconds  = timeLeft % 60;
+    new minutes  = floatround( ( timeLeft - seconds ) / 60.0 );
+
+    set_hudmessage( 255, 255, 255, 0.15, 0.15, 0, 0.0, 1.1, 0.1, 0.1, 1 );
+    show_hudmessage( 0, "%L:^n%d: %2d %L", LANG_PLAYER, "TIME_LEFT", minutes, seconds, LANG_PLAYER, "MINUTES" );
 }
 
 stock bool:approvedTheVotingStart( bool:is_forced_voting )
@@ -12875,6 +12883,7 @@ stock cancelVoting( bool:isToDoubleReset = false )
     remove_task( TASKID_PENDING_VOTE_COUNTDOWN );
     remove_task( TASKID_MAP_CHANGE );
     remove_task( TASKID_INTERMISSION_HOLD );
+    remove_task( TASKID_DISPLAY_REMAINING_TIME );
     remove_task( TASKID_PROCESS_LAST_ROUND );
     remove_task( TASKID_PROCESS_LAST_ROUND_COUNT );
     remove_task( TASKID_PROCESS_LAST_ROUNDCHANGE );
