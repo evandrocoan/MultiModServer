@@ -39,11 +39,32 @@ public plugin_init()
 	g_iMaxPlayers = get_maxplayers()
 
 	g_pCvarBlockChangeViewTime = register_cvar("kv_buttonsdelay", "2.0")
-	g_pCvarKv3rdPerson = register_cvar("kv_3rdview", "0") // 1 = first person
+	g_pCvarKv3rdPerson = register_cvar("kv_3rdview", "0") // 0 = first person
 	g_pCvarKvFade = register_cvar("kv_fade", "030000000180") // RRRGGGBBBAAA
 
 	RegisterHam(Ham_Killed, "player", "OnCBasePlayer_Killed_Post", true)
 }
+
+#if AMXX_VERSION_NUM < 183
+    public client_disconnect( id )
+#else
+    public client_disconnected( id )
+#endif
+{
+	remove_task( id );
+}
+
+public freeChaseCam( id )
+{
+	engclient_cmd(id, "specmode", "2")
+}
+
+#define SET_KILLER_VIEW(%1) \
+	set_pev(id, pev_deadflag, DEAD_DEAD); \
+	flTime = get_gametime(); \
+	set_pdata_float(id, m_fDeadTime, flTime - 3.1); \
+	ExecuteHam(Ham_Think, id); \
+	engclient_cmd(id, "specmode", %1)
 
 public OnCBasePlayer_Killed_Post( id, killer )
 {
@@ -52,15 +73,27 @@ public OnCBasePlayer_Killed_Post( id, killer )
 		return
 	}
 
-	set_pev(id, pev_deadflag, DEAD_DEAD)
-	new Float:flTime = get_gametime()
-	set_pdata_float(id, m_fDeadTime, flTime - 3.1)
-	ExecuteHam(Ham_Think, id)
+	new Float:flTime;
 
-	engclient_cmd(id, "specmode", get_pcvar_num(g_pCvarKv3rdPerson) ? "1" : "4")
+	switch(get_pcvar_num(g_pCvarKv3rdPerson))
+	{
+		case 1:
+		{
+			SET_KILLER_VIEW( "1" )
+		}
+		case 2:
+		{
+			set_task( 2.0, "freeChaseCam", id )
+			return;
+		}
+		default:
+		{
+			SET_KILLER_VIEW( "4" )
+		}
+	}
 
 	set_pdata_float(id, m_flNextSpecButtonTime, flTime + get_pcvar_float(g_pCvarBlockChangeViewTime))
-	
+
 	set_pev(id, pev_deadflag, DEAD_DYING)
 	set_pev(id, pev_nextthink, flTime + 0.1)
 	set_pdata_float(id, m_fDeadTime, flTime + 9999.0)
