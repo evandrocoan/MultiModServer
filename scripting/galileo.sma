@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-545";
+new const PLUGIN_VERSION[] = "v4.2.0-546";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -86,7 +86,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-545";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 0
+#define DEBUG_LEVEL 16
 
 
 /**
@@ -3187,14 +3187,14 @@ stock howManyRoundsAreRemaining( secondsRemaining, GameEndingType:whatGameEnding
         {
             new roundsLeftBy_frags = get_pcvar_num( cvar_mp_fraglimit ) - g_greatestKillerFrags;
 
-            getRoundsRemainingByFrags( _, roundsLeftBy_frags );
+            getRoundsRemainingBy( _, roundsLeftBy_frags );
             return roundsLeftBy_frags;
         }
         case GameEndingType_ByTimeLimit:
         {
             new roundsLeftBy_time = secondsRemaining;
 
-            getRoundsRemainingByFrags( roundsLeftBy_time );
+            getRoundsRemainingBy( roundsLeftBy_time );
             return roundsLeftBy_time;
         }
     }
@@ -3203,9 +3203,9 @@ stock howManyRoundsAreRemaining( secondsRemaining, GameEndingType:whatGameEnding
     return MAX_INTEGER;
 }
 
-stock getRoundsRemainingByFrags( &by_time = 0, &by_frags = 0 )
+stock getRoundsRemainingBy( &by_time = 0, &by_frags = 0 )
 {
-    LOGGER( 128, "I AM ENTERING ON getRoundsRemainingByFrags(2), by_time: %d, by_frags: %d", by_time, by_frags )
+    LOGGER( 128, "I AM ENTERING ON getRoundsRemainingBy(2), by_time: %d, by_frags: %d", by_time, by_frags )
 
     if( by_time  < 1 ) by_time  = 1;
     if( by_frags < 1 ) by_frags = 1;
@@ -3280,7 +3280,7 @@ stock GameEndingType:whatGameEndingTypeItIs()
     by_maxrounds = cv_maxrounds - g_totalRoundsPlayed;
     by_winlimit  = cv_winlimit  - max( g_totalCtWins, g_totalTerroristsWins );
 
-    getRoundsRemainingByFrags( by_time, by_frags );
+    getRoundsRemainingBy( by_time, by_frags );
     LOGGER( 0, "", debugWhatGameEndingTypeItIs( by_maxrounds, by_time, by_winlimit, by_frags, 256 ) )
 
     // Check whether there is any allowed combination.
@@ -6612,7 +6612,7 @@ public pendingVoteCountdown()
 {
     LOGGER( 128, "I AM ENTERING ON pendingVoteCountdown(0)" )
 
-    if( get_pcvar_num( cvar_isToAskForEndOfTheMapVote )
+    if( get_pcvar_num( cvar_isToAskForEndOfTheMapVote ) & END_OF_MAP_VOTE_ASK
         && !( g_voteStatus & IS_RUNOFF_VOTE ) )
     {
         displayEndOfTheMapVoteMenu( 0 );
@@ -7560,6 +7560,13 @@ public vote_handleChoice( player_id, key )
         || g_showVoteStatus == SHOW_STATUS_AFTER_VOTE )
     {
         reshowTheVoteMenu( player_id );
+    }
+    else if( g_isPlayerVoted[ player_id ]
+             && g_showVoteStatus == SHOW_STATUS_ALWAYS_UNTIL_VOTE
+             && isPlayerAbleToSeeTheVoteMenu( player_id ) )
+    {
+        // Some times the menu does not exit after voting. So, override manually.
+        show_menu( player_id, 1, ".", 1, CHOOSE_MAP_MENU_NAME );
     }
 }
 
@@ -9236,6 +9243,7 @@ public client_authorized( player_id )
 #endif
 {
     LOGGER( 128, "I AM ENTERING ON client_disconnected(1) player_id: %d", player_id )
+    if( is_user_bot( player_id ) ) return;
 
     if( get_user_flags( player_id ) & ADMIN_MAP )
     {
@@ -14183,7 +14191,7 @@ stock sayTimeLeftOn( id )
 
     if( IS_COLORED_CHAT_ENABLED() )
     {
-        color_print( 0, "^4%L:^1 %d^4:^1%02d %L", LANG_PLAYER, "TIME_LEFT", ( timeLeft / 60 ), ( timeLeft % 60 ), LANG_PLAYER, "MINUTES" );
+        color_print( 0, "^4%L:^1 %d:%02d %L", LANG_PLAYER, "TIME_LEFT", ( timeLeft / 60 ), ( timeLeft % 60 ), LANG_PLAYER, "MINUTES" );
     }
     else
     {
