@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-544";
+new const PLUGIN_VERSION[] = "v4.2.0-545";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -86,7 +86,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-544";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+2+4+64
+#define DEBUG_LEVEL 0
 
 
 /**
@@ -14183,11 +14183,11 @@ stock sayTimeLeftOn( id )
 
     if( IS_COLORED_CHAT_ENABLED() )
     {
-        color_print( 0, "^4%L:^1 %d^4:^1%02d %L", LANG_PLAYER, "TIME_LEFT", ( timeLeft / 60 ), ( timeLeft % 60 ), "MINUTES" );
+        color_print( 0, "^4%L:^1 %d^4:^1%02d %L", LANG_PLAYER, "TIME_LEFT", ( timeLeft / 60 ), ( timeLeft % 60 ), LANG_PLAYER, "MINUTES" );
     }
     else
     {
-        client_print( 0, print_chat, "%L: %d:%02d %L", LANG_PLAYER, "TIME_LEFT", ( timeLeft / 60 ), ( timeLeft % 60 ), "MINUTES" );
+        client_print( 0, print_chat, "%L: %d:%02d %L", LANG_PLAYER, "TIME_LEFT", ( timeLeft / 60 ), ( timeLeft % 60 ), LANG_PLAYER, "MINUTES" );
     }
 }
 
