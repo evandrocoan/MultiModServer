@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-550";
+new const PLUGIN_VERSION[] = "v4.2.0-551";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -467,7 +467,7 @@ new cvar_coloredChatEnabled;
 #define MIN_INTEGER -2147483648
 
 #define FRAGS_BY_ROUND_AVERAGE   13
-#define SECONDS_BY_ROUND_AVERAGE 60
+#define SECONDS_BY_ROUND_AVERAGE 100
 
 #define LISTMAPS_USERID   0
 #define LISTMAPS_LAST_MAP 1
@@ -505,6 +505,9 @@ new cvar_coloredChatEnabled;
 #define IS_DISABLED_VOTEMAP_RUNOFF      4
 #define IS_DISABLED_VOTEMAP_EXTENSION   8
 #define IS_ENABLED_VOTEMAP_NOMINATIONS  16
+
+#define MAP_CHANGES_AT_THE_NEXT_ROUND        0
+#define MAP_CHANGES_AT_THE_CURRENT_ROUND_END 1
 
 #define IS_MAP_MAPCHANGE_COUNTDOWN      1
 #define IS_MAP_MAPCHANGE_DROP_WEAPONS   2
@@ -618,7 +621,7 @@ new cvar_coloredChatEnabled;
  * The rounds number required to be reached to allow predict if this will be the last round and
  * allow to start the voting.
  */
-#define MIN_VOTE_START_ROUNDS_DELAY 2
+#define MIN_VOTE_START_ROUNDS_DELAY 1
 
 /**
  * The periodic task created on 'configureServerMapChange(0)' use this intervals in seconds to
@@ -631,6 +634,15 @@ new cvar_coloredChatEnabled;
 
 // In-place Macros
 // ###############################################################################################
+
+/**
+ * If this is called when the voting or the round ending is going on, it will cause the voting/round
+ * ending to be cut and will force the map to immediately change to the next map.
+ */
+#define IS_ALLOWED_MAP_CHANGE_ON_NOW() \
+    ( !task_exists( TASKID_PROCESS_LAST_ROUND_COUNT ) \
+      && !task_exists( TASKID_INTERMISSION_HOLD ) \
+      && !( g_voteStatus & IS_VOTE_IN_PROGRESS ) )
 
 /**
  * This indicates the players minimum number necessary to allow the last round to be finished when
@@ -3615,6 +3627,20 @@ public team_win_event()
         }
     }
 
+    // If this is called when the voting is going on, it will cause the voting to be cut
+    // and will force the map to immediately change to the next map on the map cycle.
+    if( g_isTheLastGameRound
+        && IS_ALLOWED_MAP_CHANGE_ON_NOW() )
+    {
+        // When time runs out, end map at the current round end.
+        remove_task( TASKID_SHOW_LAST_ROUND_HUD );
+
+        if( get_pcvar_num( cvar_endOnRoundChange ) == MAP_CHANGES_AT_THE_CURRENT_ROUND_END )
+        {
+            try_to_process_last_round();
+        }
+    }
+
     LOGGER( 32, "( team_win_event ) | string_team_winner: %s", string_team_winner )
     LOGGER( 32, "( team_win_event ) | g_winLimitInteger: %d, wins_CT_trigger: %d, wins_Terrorist_trigger: %d", \
             g_winLimitInteger, wins_CT_trigger, wins_Terrorist_trigger )
@@ -3647,7 +3673,7 @@ public round_end_event()
         }
     }
 
-    if( !( g_voteStatus & IS_VOTE_IN_PROGRESS ) )
+    if( IS_ALLOWED_MAP_CHANGE_ON_NOW() )
     {
         // If this is called when the voting is going on, it will cause the voting to be cut
         // and will force the map to immediately change to the next map on the map cycle.
@@ -3672,7 +3698,7 @@ stock saveTheRoundTime()
     if( roundTotalTime > 10 )
     {
         static lastSavedRound;
-        static roundPlayedTimes[ 10 ];
+        static roundPlayedTimes[ 5 ];
 
         // To keep the latest round data up to date.
         roundPlayedTimes[ lastSavedRound ] = roundTotalTime;
@@ -3872,13 +3898,9 @@ stock endRoundWatchdog()
         // When time runs out, end map at the current round end.
         remove_task( TASKID_SHOW_LAST_ROUND_HUD );
 
-        if( get_pcvar_num( cvar_endOnRoundChange ) )
+        if( get_pcvar_num( cvar_endOnRoundChange ) == MAP_CHANGES_AT_THE_CURRENT_ROUND_END )
         {
             try_to_process_last_round();
-        }
-        else
-        {
-            set_task( 6.0, "try_to_process_last_roundPublic", TASKID_PROCESS_LAST_ROUND );
         }
     }
     else if( g_isThePenultGameRound )
@@ -3893,18 +3915,6 @@ stock endRoundWatchdog()
         remove_task( TASKID_SHOW_LAST_ROUND_HUD );
         set_task( 5.0, "configure_last_round_HUD", TASKID_PROCESS_LAST_ROUND );
     }
-}
-
-/**
- * Used to call try_to_process_last_round(1) without setting its default parameter `isToImmediatelyChangeLevel`
- * to true, when calling it from a set_task() function within a task id.
- *
- * This is because when a set_task() has a task id, will will pass its task id as the first parameter.
- */
-public try_to_process_last_roundPublic()
-{
-    LOGGER( 128, "I AM ENTERING ON try_to_process_last_roundPublic(0)" )
-    try_to_process_last_round();
 }
 
 /**
@@ -4007,7 +4017,7 @@ stock intermission_processing( bool:isCountDownAllowed = true )
         set_task( mp_chattime, "map_change", TASKID_MAP_CHANGE );
     }
 
-    isCountDownAllowed ? show_intermission( mp_chattime ) : 0;
+    if( isCountDownAllowed ) show_intermission( mp_chattime );
 }
 
 stock Float:get_intermission_chattime()
