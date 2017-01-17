@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-546";
+new const PLUGIN_VERSION[] = "v4.2.0-547";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -576,6 +576,10 @@ new cvar_coloredChatEnabled;
 #define SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR      2
 #define DELAY_TO_WAIT_THE_SERVER_CVARS_TO_BE_LOADED 50.0
 
+/**
+ * Used on the count `++g_showLastRoundHudCounter % LAST_ROUND_HUD_SHOW_INTERVAL > 6`, called each second.
+ */
+#define LAST_ROUND_HUD_SHOW_INTERVAL 30
 
 /**
  * Highly and directly impact on the server change level performance.
@@ -971,6 +975,7 @@ enum (+= 100000)
 {
     TASKID_RTV_REMINDER = 100000, // start with 100000
     TASKID_SHOW_LAST_ROUND_HUD,
+    TASKID_SHOW_LAST_ROUND_MESSAGE,
     TASKID_DELETE_USERS_MENUS,
     TASKID_DELETE_USERS_MENUS_CARE,
     TASKID_PREVENT_INFITY_GAME,
@@ -3979,9 +3984,11 @@ stock process_last_round( bool:isToImmediatelyChangeLevel, bool:isCountDownAllow
     else if( g_isTheLastGameRound
              || g_isThePenultGameRound )
     {
-        // To restart the HUD counter to force it to show up
-        g_showLastRoundHudCounter = 0;
-        show_last_round_message();
+        // To restart the HUD counter to force it to show up, to announce the results.
+        new showDelay = 8;
+
+        g_showLastRoundHudCounter = LAST_ROUND_HUD_SHOW_INTERVAL - showDelay;
+        set_task( float( showDelay ) + 2, "show_last_round_message", TASKID_SHOW_LAST_ROUND_MESSAGE );
     }
 }
 
@@ -4160,7 +4167,7 @@ public configure_last_round_HUD()
     show_last_round_message();
 }
 
-stock show_last_round_message()
+public show_last_round_message()
 {
     LOGGER( 128, "I AM ENTERING ON show_last_round_message(0)" )
 
@@ -4188,7 +4195,7 @@ public show_last_round_HUD()
 {
     LOGGER( 256, "I AM ENTERING ON show_last_round_HUD(0)" )
 
-    if( ++g_showLastRoundHudCounter % 30 > 6 )
+    if( ++g_showLastRoundHudCounter % LAST_ROUND_HUD_SHOW_INTERVAL > 8 )
     {
         return;
     }
@@ -6114,7 +6121,7 @@ stock handle_game_crash_recreation( secondsLeft )
                     new seconds  = timeLeft % 60;
                     new minutes  = floatround( ( timeLeft - seconds ) / 60.0 );
 
-                    show_hudmessage( 0, "%L:^n%d:%2d %L", LANG_PLAYER, "TIME_LEFT", minutes, seconds, LANG_PLAYER, "MINUTES" );
+                    show_hudmessage( 0, "%L:^n%d: %2d %L", LANG_PLAYER, "TIME_LEFT", minutes, seconds, LANG_PLAYER, "MINUTES" );
                 }
                 default:
                 {
@@ -8295,8 +8302,8 @@ stock chooseTheVotingMapWinner( firstPlaceChoices[], numberOfMapsAtFirstPosition
                 LOGGER( 1, "    ( chooseTheVotingMapWinner ) Just opened the menu due g_voteMapStatus: %d", g_voteMapStatus )
             }
 
-            color_print( 0, "%L: %L", LANG_PLAYER, "DMAP_MAP_EXTENDED2", LANG_PLAYER, "GAL_WINNER_STAY2" );
-            toShowTheMapStayHud( "GAL_VOTE_ENDED", "DMAP_MAP_EXTENDED1", "GAL_WINNER_STAY1" );
+            color_print( 0, "%L: %L", LANG_PLAYER, "DMAP_MAP_EXTENDED", LANG_PLAYER, "GAL_WINNER_STAY2" );
+            toShowTheMapStayHud( "GAL_VOTE_ENDED", "DMAP_MAP_EXTENDED", "GAL_WINNER_STAY1" );
 
             // However here, none decisions are being made. Anyways, we cannot block the execution
             // right here without executing the remaining code.
@@ -12872,6 +12879,7 @@ stock cancelVoting( bool:isToDoubleReset = false )
     remove_task( TASKID_PROCESS_LAST_ROUND_COUNT );
     remove_task( TASKID_PROCESS_LAST_ROUNDCHANGE );
     remove_task( TASKID_SHOW_LAST_ROUND_HUD );
+    remove_task( TASKID_SHOW_LAST_ROUND_MESSAGE );
     remove_task( TASKID_FINISH_GAME_TIME_BY_HALF );
 
     finalizeVoting();

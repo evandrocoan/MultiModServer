@@ -130,8 +130,7 @@ DMAP_NEXTMAP_VOTE_REMAINING1 = A Vote will occur to choose the next map in %d se
 DMAP_NEXTMAP_VOTE_REMAINING2 = A Vote will occur to choose the!g next map!y in!g %d seconds
 DMAP_MAP_CHANGING_IN1 = Map changing to %s in %d seconds
 DMAP_MAP_CHANGING_IN2 = Map changing to!g %s!y in!t %d seconds
-DMAP_MAP_EXTENDED1 = Due to the result of the vote
-DMAP_MAP_EXTENDED2 = Due to the result of!gthe vote!y
+DMAP_MAP_EXTENDED = Due to the result of the vote
 
 [bp]
 GAL_CANCEL_FAIL_INPROGRESS = !tCancelamento!g falhou;!y votacao ja esta em progresso.
@@ -265,8 +264,7 @@ DMAP_NEXTMAP_VOTE_REMAINING1 = Votacao para o proximo mapa ocorrera em %d segund
 DMAP_NEXTMAP_VOTE_REMAINING2 = Votacao para o!g proximo mapa!y ocorrera em!g %d segundos
 DMAP_MAP_CHANGING_IN1 = Mudando mapa para %s em %d segundos
 DMAP_MAP_CHANGING_IN2 = Mudando mapa para!g %s!y em!t %d segundos
-DMAP_MAP_EXTENDED1 = Devido ao resultado da votacao
-DMAP_MAP_EXTENDED2 = Devido!g ao resultado da votacao!y
+DMAP_MAP_EXTENDED = Devido ao resultado da votacao
 
 [es]
 GAL_CANCEL_FAIL_INPROGRESS = !tError al!g cancelar; la votación!y ya está en curso.
@@ -400,8 +398,7 @@ DMAP_NEXTMAP_VOTE_REMAINING1 = A Votar se producirán para elegir el próximo ma
 DMAP_NEXTMAP_VOTE_REMAINING2 = A Votar se producirán para elegir el!g próximo mapa!y en!g %d segundos
 DMAP_MAP_CHANGING_IN1 = Cambio en %s en %d segundos
 DMAP_MAP_CHANGING_IN2 = Cambio en!g %s!t en!t %d segundos
-DMAP_MAP_EXTENDED1 = Debido a la votación
-DMAP_MAP_EXTENDED2 = Debido a!g la votación!y
+DMAP_MAP_EXTENDED = Debido a la votación
 
 [pl]
 GAL_CANCEL_FAIL_INPROGRESS = Blad przy anulowaniu mapy;!t glosowanie juz sie rozpoczelo.
@@ -535,8 +532,7 @@ DMAP_NEXTMAP_VOTE_REMAINING1 = Glosowanie na nastepna mape rozpocznie sie za %d 
 DMAP_NEXTMAP_VOTE_REMAINING2 = Glosowanie na nastepna!g mape rozpocznie!y sie za!g %d sekund
 DMAP_MAP_CHANGING_IN1 = Zmiana mapy na %s nastapi za %d sekund
 DMAP_MAP_CHANGING_IN2 = Zmiana mapy na!g %s!y nastapi za!t %d sekund
-DMAP_MAP_EXTENDED1 = Z powodu wyniku glosowania
-DMAP_MAP_EXTENDED2 = Z powodu!g wyniku!y glosowania
+DMAP_MAP_EXTENDED = Z powodu wyniku glosowania
 
 [ro]
 GAL_CANCEL_FAIL_INPROGRESS = !tAnulare!g nereusita; Votul este deja in desfasurare.
@@ -670,8 +666,7 @@ DMAP_NEXTMAP_VOTE_REMAINING1 = Va urma un vot pentru a alege urmatoarea harta in
 DMAP_NEXTMAP_VOTE_REMAINING2 = Va urma un vot pentru a alege!g urmatoarea!y harta in!g %d secunde
 DMAP_MAP_CHANGING_IN1 = Harta se schimba pe %s in %d secunde
 DMAP_MAP_CHANGING_IN2 = Harta se schimba pe!g %s!y in!t %d secunde
-DMAP_MAP_EXTENDED1 = Datorita votarii
-DMAP_MAP_EXTENDED2 = Datorita!g votarii!y
+DMAP_MAP_EXTENDED = Datorita votarii
 
 [it]
 GAL_CANCEL_FAIL_INPROGRESS = !tCancellazione!g non riuscita; il voto!y e gia in corso.
@@ -805,8 +800,7 @@ DMAP_NEXTMAP_VOTE_REMAINING1 = A votazione avverrà a scegliere la seguente mapp
 DMAP_NEXTMAP_VOTE_REMAINING2 = A votazione avverrà a scegliere la!g seguente mappa!y nei!g %d secondi
 DMAP_MAP_CHANGING_IN1 = Mappa passaggio a %s in %d secondi
 DMAP_MAP_CHANGING_IN2 = Mappa passaggio!g a %s!y in!t %d secondi
-DMAP_MAP_EXTENDED1 = A causa della votazione
-DMAP_MAP_EXTENDED2 = A causa!g della votazione!y
+DMAP_MAP_EXTENDED = A causa della votazione
 
 [nl]
 GAL_CANCEL_FAIL_INPROGRESS = !tAnnulering mislukt; stemming is!y al bezig.
@@ -940,8 +934,7 @@ DMAP_NEXTMAP_VOTE_REMAINING1 = Een stemming voor de volgende map zal starten in 
 DMAP_NEXTMAP_VOTE_REMAINING2 = Een stemming voor de volgende!g map zal!y starten in!g %d seconden
 DMAP_MAP_CHANGING_IN1 = Map wordt veranderd naar %s in %d seconden
 DMAP_MAP_CHANGING_IN2 = Map wordt veranderd!g naar %s!y in!t %d seconden
-DMAP_MAP_EXTENDED1 = Door de stemming
-DMAP_MAP_EXTENDED2 = Door de!g stemming!y
+DMAP_MAP_EXTENDED = Door de stemming
 
 [sr]
 GAL_CANCEL_FAIL_INPROGRESS = !tPoništenje!g nije uspelo; glasanje je!y u toku.
@@ -1075,8 +1068,7 @@ DMAP_NEXTMAP_VOTE_REMAINING1 = А глас ће доћи да изабере с�
 DMAP_NEXTMAP_VOTE_REMAINING2 = А глас ће доћи да изабере!y следећи карту!g у!g %d sekundi
 DMAP_MAP_CHANGING_IN1 = Карта мењања да се %s и %d секунде
 DMAP_MAP_CHANGING_IN1 = Карта мењања да!g се %s!y и!t %d секунде
-DMAP_MAP_EXTENDED1 = Услед гласање
-DMAP_MAP_EXTENDED2 = Услед!g гласање!y
+DMAP_MAP_EXTENDED = Услед гласање
 
 [sk]
 GAL_CANCEL_FAIL_INPROGRESS = !tZrusenie!g neuspesne, hlasovanie!y uz prebieha.
@@ -1210,8 +1202,7 @@ DMAP_NEXTMAP_VOTE_REMAINING1 = Hlasovanie sa príde vybrať iný mapu v %d sekun
 DMAP_NEXTMAP_VOTE_REMAINING2 = Hlasovanie sa príde vybrať!g iný mapu!y v!g %d sekund
 DMAP_MAP_CHANGING_IN1 = Mapa prechod na %s za %d sekúnd
 DMAP_MAP_CHANGING_IN1 = Mapa prechod!g na %s!y za!t %d sekúnd
-DMAP_MAP_EXTENDED1 = Kvôli o hlasovaní
-DMAP_MAP_EXTENDED2 = Kvôli!g o hlasovaní!y
+DMAP_MAP_EXTENDED = Kvôli o hlasovaní
 
 [hu]
 GAL_CANCEL_FAIL_INPROGRESS = !tMegszakítás!g sikertelen; a szavazás!y már folyamatban van.
@@ -1345,5 +1336,4 @@ DMAP_NEXTMAP_VOTE_REMAINING1 = Az szavazás fog bekövetkezni hogy válasszon a 
 DMAP_NEXTMAP_VOTE_REMAINING2 = Az szavazás fog bekövetkezni!g hogy válasszon!y a következő térképet!g %d másodperc
 DMAP_MAP_CHANGING_IN1 = Mapa zmena na %s v %d sekúnd
 DMAP_MAP_CHANGING_IN2 = Mapa zmena!g na %s!y v!t %d sekúnd
-DMAP_MAP_EXTENDED1 = Miatt az szavazásban
-DMAP_MAP_EXTENDED2 = Miatt!g az szavazásban!y
+DMAP_MAP_EXTENDED = Miatt az szavazásban
