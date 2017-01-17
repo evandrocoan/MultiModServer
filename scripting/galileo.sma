@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-551";
+new const PLUGIN_VERSION[] = "v4.2.0-552";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -3646,6 +3646,49 @@ public team_win_event()
             g_winLimitInteger, wins_CT_trigger, wins_Terrorist_trigger )
 }
 
+/**
+ * Called on the round_end_event(). This is the place to change the map when the variables
+ * `g_isThePenultGameRound` and `g_isTheLastGameRound` are set to true.
+ */
+stock endRoundWatchdog()
+{
+    LOGGER( 128, "I AM ENTERING ON endRoundWatchdog(0)" )
+
+    // When the voting is in progress, does not update these cvars.
+    g_fragLimitNumber = get_pcvar_num( cvar_mp_fraglimit );
+    g_timeLimitNumber = get_pcvar_num( cvar_mp_timelimit );
+
+    if( get_pcvar_num( cvar_endOfMapVoteExpiration )
+        && g_voteStatus & IS_VOTE_OVER )
+    {
+        // Make the map to change immediately.
+        g_isTheLastGameRound = true;
+    }
+
+    if( g_isTheLastGameRound )
+    {
+        // When time runs out, end map at the current round end.
+        remove_task( TASKID_SHOW_LAST_ROUND_HUD );
+
+        if( get_pcvar_num( cvar_endOnRoundChange ) == MAP_CHANGES_AT_THE_CURRENT_ROUND_END )
+        {
+            try_to_process_last_round();
+        }
+    }
+    else if( g_isThePenultGameRound )
+    {
+        // When time runs out, end map at the next round end.
+        g_isTheLastGameRound = true;
+
+        // Set it to false because later we first could try to check this before `g_isTheLastGameRound`
+        // resulting on an infinity loop.
+        g_isThePenultGameRound = false;
+
+        remove_task( TASKID_SHOW_LAST_ROUND_HUD );
+        set_task( 5.0, "configure_last_round_HUD", TASKID_PROCESS_LAST_ROUND );
+    }
+}
+
 public round_end_event()
 {
     LOGGER( 128, "I AM ENTERING ON round_end_event(0)" )
@@ -3872,49 +3915,6 @@ stock prevent_map_change()
 
     cacheCvarsValues();
     set_task( roundTimeMinutes * 60, "map_restoreEndGameCvars", TASKID_PREVENT_INFITY_GAME );
-}
-
-/**
- * Called on the round_end_event(). This is the place to change the map when the variables
- * `g_isThePenultGameRound` and `g_isTheLastGameRound` are set to true.
- */
-stock endRoundWatchdog()
-{
-    LOGGER( 128, "I AM ENTERING ON endRoundWatchdog(0)" )
-
-    // When the voting is in progress, does not update these cvars.
-    g_fragLimitNumber = get_pcvar_num( cvar_mp_fraglimit );
-    g_timeLimitNumber = get_pcvar_num( cvar_mp_timelimit );
-
-    if( get_pcvar_num( cvar_endOfMapVoteExpiration )
-        && g_voteStatus & IS_VOTE_OVER )
-    {
-        // Make the map to change immediately.
-        g_isTheLastGameRound = true;
-    }
-
-    if( g_isTheLastGameRound )
-    {
-        // When time runs out, end map at the current round end.
-        remove_task( TASKID_SHOW_LAST_ROUND_HUD );
-
-        if( get_pcvar_num( cvar_endOnRoundChange ) == MAP_CHANGES_AT_THE_CURRENT_ROUND_END )
-        {
-            try_to_process_last_round();
-        }
-    }
-    else if( g_isThePenultGameRound )
-    {
-        // When time runs out, end map at the next round end.
-        g_isTheLastGameRound = true;
-
-        // Set it to false because later we first could try to check this before `g_isTheLastGameRound`
-        // resulting on an infinity loop.
-        g_isThePenultGameRound = false;
-
-        remove_task( TASKID_SHOW_LAST_ROUND_HUD );
-        set_task( 5.0, "configure_last_round_HUD", TASKID_PROCESS_LAST_ROUND );
-    }
 }
 
 /**
