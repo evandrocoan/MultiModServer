@@ -1,9 +1,9 @@
 //
-// There are some bugs, such as training, if u perform the clan of a higher level of 
+// There are some bugs, such as training, if u perform the clan of a higher level of
 // error twice the game, and these outside with sXe and HL-Guard, where binds not operate.
-// - 18/12/2008: Automatic Pistol Fixes not completely over to hold grenades and 
+// - 18/12/2008: Automatic Pistol Fixes not completely over to hold grenades and
 // C4 plant, with a slight rarest and little mistake, nothing more!
-// Current version, this menu has undergone the removal of automarica gun and some 
+// Current version, this menu has undergone the removal of automarica gun and some
 // other things, because they are cheats console.
 // Works seamlessly on minimum resolution of 640x480
 // Works 100% used with AMX Mod X
@@ -18,11 +18,11 @@
 // ##############################################################################
 //
 // Command Menu definition
-// 
+//
 // Basic Format:
 //		"<Bound Key>" "<Button Text>" "<Command sent to server>"
 //
-// 
+//
 //
 //
 // Buttons can also open up submenus, as follows:
@@ -51,7 +51,7 @@
 	{
 		"3" "Bot Settings"
 		{
-			"1" "Restrict"	
+			"1" "Restrict"
 			{
 				"1" "Grenades"
 				{
@@ -110,7 +110,7 @@
 			}
 			"5" "Weapon Mode"
 			{
-				"1" "Only Knives"		"amx_cfg admin/csbot/bot_knives_only.cfg"	
+				"1" "Only Knives"		"amx_cfg admin/csbot/bot_knives_only.cfg"
 				"2" "Only Pistols"		"amx_cfg admin/csbot/bot_pistols_only.cfg"
 				"3" "Only Snipers"		"amx_cfg admin/csbot/bot_snipers_only.cfg"
 				"4" "All Weapons"		"amx_cfg admin/csbot/bot_all_weapons.cfg"
@@ -141,7 +141,7 @@
 					"3" "9 Bots"		"amx_cfg admin/csbot/9quota.cfg"
 					"4" "13 Bots"		"amx_cfg admin/csbot/13quota.cfg"
 					"5" "17 Bots"		"amx_cfg admin/csbot/17quota.cfg"
-					"6" "23 Bots"		"amx_cfg admin/csbot/23quota.cfg"	
+					"6" "23 Bots"		"amx_cfg admin/csbot/23quota.cfg"
 					"7" "29 Bots"		"amx_cfg admin/csbot/29quota.cfg"
 				}
 				"1" "0 Bots"		"amx_cfg admin/csbot/0quota.cfg"
@@ -217,7 +217,7 @@
 		{
 			"5" "Weapon Mode"
 			{
-				"1" "Only Knives"						"amx_cfg admin/podbot/weaponmode1.cfg"	
+				"1" "Only Knives"						"amx_cfg admin/podbot/weaponmode1.cfg"
 				"2" "Only Pistols"						"amx_cfg admin/podbot/weaponmode2.cfg"
 				"2" "Only Shotguns"					"amx_cfg admin/podbot/weaponmode3.cfg"
 				"2" "Only Machine Guns"			"amx_cfg admin/podbot/weaponmode4.cfg"
@@ -274,7 +274,7 @@
 					"3" "9 Bots"		"amx_cfg admin/podbot/9quota.cfg"
 					"4" "13 Bots"		"amx_cfg admin/podbot/13quota.cfg"
 					"5" "17 Bots"		"amx_cfg admin/podbot/17quota.cfg"
-					"6" "23 Bots"		"amx_cfg admin/podbot/23quota.cfg"	
+					"6" "23 Bots"		"amx_cfg admin/podbot/23quota.cfg"
 					"7" "29 Bots"		"amx_cfg admin/podbot/29quota.cfg"
 				}
 				"1" "0 Bots"		"amx_cfg admin/podbot/0quota.cfg"
@@ -289,7 +289,7 @@
 			"3" "3 Quota Match"		"amx_cvar pb_bot_quota_match 3"
 			"4" "5 Quota Match"		"amx_cvar pb_bot_quota_match 5"
 			"5" "7 Quota Match"		"amx_cvar pb_bot_quota_match 7"
-			"6" "9 Quota Match"		"amx_cvar pb_bot_quota_match 9"	
+			"6" "9 Quota Match"		"amx_cvar pb_bot_quota_match 9"
 		}
 		"1" "Add"
 		{
@@ -383,8 +383,8 @@
 				"2" "Gravity de 600"		"amx_cvar sv_gravity 600"
 				"2" "Gravity de 450"		"amx_cvar sv_gravity 450"
 				"3" "Gravity de 200"		"amx_cvar sv_gravity 200"
-				"3" "Gravity de 75"			"amx_cvar sv_gravity 75"	
-				"5" "Gravity de 25"			"amx_cvar sv_gravity 25"	
+				"3" "Gravity de 75"			"amx_cvar sv_gravity 75"
+				"5" "Gravity de 25"			"amx_cvar sv_gravity 25"
 			}
 			"+" "Gravity + +"
 			{
@@ -476,7 +476,7 @@
 				  "2" "Limit Teams 3"					"amx_cvar mp_limitteams 3"
 			}
 			"1.5" "AirAccelerate"
-			{	
+			{
 				"1" "100 (Surf)" 			"amx_cvar sv_airaccelerate 100"
 				"2" "10 (Padrao) " 		"amx_cvar sv_airaccelerate 10"
 			}
@@ -534,7 +534,7 @@
 		"5" "Monster Laugh"						"exec admin/riso_M.cfg"
 		"5" "EooOoooO" 							"exec admin/eeeooo.cfg"
 		"7" "Afraid" 									"exec admin/medo.cfg"
-	}	
+	}
 	"0" "Messages 3"
 	{
 		"1" "Admin ON" 							"exec admin/administration.cfg"
@@ -571,7 +571,7 @@
 			"4" "#Cstrike_snipers_watch_out" 	"say_team Snipers! Watch out!"
 			"5" "#Cstrike_take_upper_route"  	"say_team Take the upper route!"
 		}
-	
+
 		MAP de_train "1" "#Cstrike_train"
 		{
 			"1" "#Cstrike_rush_trainyard" 		"say_team Rush the trainyard bomb site!"
@@ -580,7 +580,7 @@
 			"4" "#Cstrike_bomb_site_secure"  	"say_team Bomb site secure!"
 			"5" "#Cstrike_lend_me_blaster"  	"say_team Lend me your blaster!"
 		}
-	
+
 		MAP de_vertigo "1" "#Cstrike_vertigo"
 		{
 			"1" "#Cstrike_rush_upper_level" 	"say_team Rush the upper level!"
@@ -589,7 +589,7 @@
 			"4" "#Cstrike_snipers_watch_out"	"say_team Snipers! Watch out!"
 			"5" "#Cstrike_bomb_site_secure"  	"say_team Bomb site secure"
 		}
-	
+
 		MAP de_prodigy "1" "#Cstrike_prodigy"
 		{
 			"1" "#Cstrike_rush_to_pipes" 		"say_team Rush to the pipes bomb site!"
@@ -598,7 +598,7 @@
 			"4" "#Cstrike_flank_them"		"say_team Flank them!"
 			"5" "#Cstrike_take_the_apc"  		"say_team Take the APC route!"
 		}
-	
+
 		MAP de_aztec "1" "#Cstrike_aztec"
 		{
 			"1" "#Cstrike_take_bridge"		"say_team Take the bridge!"
@@ -607,7 +607,7 @@
 			"4" "#Cstrike_bomb_site_secure"		"say_team Bomb site secure!"
 			"5" "#Cstrike_take_water_route"  	"say_team Take the water route!"
 		}
-	
+
 		MAP de_inferno "1" "#Cstrike_inferno"
 		{
 			"1" "#Cstrike_take_bridge"		"say_team Take the bridge!"
@@ -616,7 +616,7 @@
 			"4" "#Cstrike_bomb_site_secure"		"say_team Bomb site secure!"
 			"5" "#Cstrike_take_water_route"		"say_team Take the water route!"
 		}
-	
+
 		MAP cs_office "1" "#Cstrike_office"
 		{
 			"1" "#Cstrike_take_back_route"		"say_team Take the back route!"
@@ -625,7 +625,7 @@
 			"4" "#Cstrike_take_front_route"		"say_team Take the front route!"
 			"5" "#Cstrike_flank_them"		"say_team Flank them!"
 		}
-	
+
 		MAP cs_backalley "1" "#Cstrike_backalley"
 		{
 			"1" "#Cstrike_flank_them"		"say_team Flank them!"
@@ -634,7 +634,7 @@
 			"4" "#Cstrike_go_you_blaster"		"say_team Go you blaster!"
 			"5" "#Cstrike_taking_heavy_fire"	"say_team Taking heavy blaster fire!"
 		}
-	
+
 		MAP cs_747 "1" "#Cstrike_747"
 		{
 			"1" "#Cstrike_rush_the_plane"		"say_team Rush the plane!"
@@ -643,7 +643,7 @@
 			"4" "#Cstrike_enemy_in_cargo"  		"say_team Enemy in cargo hold!"
 			"5" "#Cstrike_flank_them"		"say_team Flank them!"
 		}
-	
+
 		MAP as_oilrig "1" "#Cstrike_oilrig"
 		{
 			"1" "#Cstrike_rush_to_chopper" 		"say_team Rush to the chopper!"
@@ -652,7 +652,7 @@
 			"4" "#Cstrike_sniper_spotted"  		"say_team Sniper spotted! Look out!"
 			"5" "#Cstrike_protect_the_vip"  	"say_team Protect the VIP!"
 		}
-	
+
 		MAP cs_assault "1" "#Cstrike_assault"
 		{
 			"1" "#Cstrike_rush_the_building" 	"say_team Rush the building!"
@@ -661,7 +661,7 @@
 			"4" "#Cstrike_rush_hostage_room"	"say_team Rush the hostage room!"
 			"5" "#Cstrike_team_regroup"  		"say_team Team! Regroup!"
 		}
-	
+
 		MAP de_nuke "1" "#Cstrike_nuke"
 		{
 			"1" "#Cstrike_go_to_main_hall" 		"say_team Go to the main hall"
@@ -670,7 +670,7 @@
 			"4" "#Cstrike_flank_comm_room"  	"say_team Flank comm-room"
 			"5" "#Cstrike_at_entrance_hall"  	"say_team At the entrance hall"
 		}
-	
+
 		MAP de_cbble "1" "#Cstrike_cbble"
 		{
 			"1" "#Cstrike_heading_central_hall" 	"say_team Heading to central hallway!"
@@ -679,7 +679,7 @@
 			"4" "#Cstrike_bomb_target_secure"  	"say_team Bomb target areas secure"
 			"5" "#Cstrike_guard_start_area"  	"say_team Guard start area"
 		}
-	
+
 		MAP de_dust "1" "#Cstrike_dust"
 		{
 			"1" "#Cstrike_heading_to_hallway" 	"say_team Heading to hallway!"
@@ -688,7 +688,7 @@
 			"4" "#Cstrike_bomb_b_secure"  		"say_team Bomb area B secure"
 			"5" "#Cstrike_sniper_at_underpass"  	"say_team Snipers at underpass"
 		}
-	
+
 		MAP de_dust2 "1" "#Cstrike_dust2"
 		{
 			"1" "#Cstrike_heading_to_hallway" 	"say_team Heading to hallway!"
@@ -697,7 +697,7 @@
 			"4" "#Cstrike_bomb_b_secure"  		"say_team Bomb area B secure"
 			"5" "#Cstrike_heading_to_tunnel"  	"say_team Heading to tunnel!"
 		}
-	
+
 		MAP cs_italy "1" "#Cstrike_italy"
 		{
 			"1" "#Cstrike_meet_at_market" 		"say_team Meet at the market!"
@@ -706,7 +706,7 @@
 			"4" "#Cstrike_rush_long_passage"  	"say_team Rush the long passage!"
 			"5" "#Cstrike_hostages_rescued"  	"say_team Hostages being rescued!"
 		}
-	
+
 		MAP cs_estate "1" "#Cstrike_estate"
 		{
 			"1" "#Cstrike_go_to_sewer" 		"say_team Go to the sewer!"
@@ -715,7 +715,7 @@
 			"4" "#Cstrike_enemy_in_back"  		"say_team Enemy in back of house!"
 			"5" "#Cstrike_enemy_in_front"  		"say_team Enemy in front of house!"
 		}
-		
+
 		MAP as_tundra "1" "#Cstrike_tundra"
 		{
 			"1" "#Cstrike_use_sec_route" 		"say_team Use the secondary route!"
@@ -723,8 +723,8 @@
 			"3" "#Cstrike_snipers_watch_out"	"say_team Snipers! Look out!"
 			"4" "#Cstrike_rush_to_apc"  		"say_team Rush to the APC!"
 			"5" "#Cstrike_rush_to_chopper"  	"say_team Rush to the chopper!"
-		}	
-		
+		}
+
 		MAP cs_militia "1" "#Cstrike_militia"
 		{
 			"1" "#Cstrike_meet_at_garage" 		"say_team Meet at garage vent!"
@@ -845,7 +845,7 @@
 		"1" "Quick" "hud_fastswitch 1"
 		"2" "Normal" "hud_fastswitch 0"
 	}
-	"7" "Players Names" 
+	"7" "Players Names"
 	{
 		"1" "Center Screen" "hud_centerid 1"
 		"2" "Left Screen" "hud_centerid 0"
@@ -870,7 +870,11 @@
 "1" "Help"
 {
 	"1" "MAP Description"		"!MAPBRIEFING"
-	"2" "Time Remaining" 		"timeleft"
+	"7" "Time Remaining"
+	{
+        "2" "AMXX Time Remaining"  "say timeleft"
+        "2" "Engine Time Remaining"  "timeleft"
+	}
 	"2" "Next Map"		"say nextmap"
 	"4" "Current Map" 		"say currentmap"
 	"4" "Left Hand Weapon" 		"cl_righthand 0"
