@@ -10,6 +10,10 @@
 #define m_iUserPrefs 510
 #define PREFS_VGUIMENUS (1<<0)
 
+#if !defined MAX_PLAYERS
+    #define MAX_PLAYERS 32
+#endif
+
 #define HasVGUIMenus(%1) (get_pdata_int(%1, m_iUserPrefs) & PREFS_VGUIMENUS)
 #define SetVGUIMenus(%1) set_pdata_int(%1, m_iUserPrefs, (get_pdata_int(%1, m_iUserPrefs) | PREFS_VGUIMENUS))
 #define RemoveVGUIMenus(%1) set_pdata_int(%1, m_iUserPrefs, (get_pdata_int(%1, m_iUserPrefs) & ~PREFS_VGUIMENUS))
@@ -48,8 +52,22 @@ new gMsgIdShowMenu;
 
 new gMaxPlayers;
 
+/**
+
+Change log
+
+v0.0.7
+Tried to fix the `Player out of range error`:
+L 01/17/2017 - 18:32:41: [CSTRIKE] Player out of range (0)
+L 01/17/2017 - 18:32:41: [AMXX] Displaying debug trace (plugin "teams_manager.amxx")
+L 01/17/2017 - 18:32:41: [AMXX] Run time error 10: native error (native "cs_set_user_team")
+L 01/17/2017 - 18:32:41: [AMXX]    [0] teams_manager.sma::Transfer (line 606)
+L 01/17/2017 - 18:32:41: [AMXX]    [1] teams_manager.sma::TaskCheckTeams (line 344)
+
+ */
+
 public plugin_init() {
-	register_plugin("Teams Manager AIO", "0.0.6", "Exolent");
+	register_plugin("Teams Manager AIO", "0.0.7", "Exolent");
 
 	register_clcmd("jointeam", "CmdJoinTeam");
 	register_clcmd("chooseteam", "CmdChooseTeam");
@@ -325,11 +343,10 @@ public TaskCheckTeams() {
 		otherTeam = CS_TEAM_SPECTATOR - team;
 
 		while(i > maxPlayers[team]) {
-			if(!transferImmunity && teamPlayers[team][--i][Player_Immunity]) {
+			if(!transferImmunity && teamPlayers[team][--i][Player_Immunity]
+			   || 0 >= ( id = teamPlayers[team][i][Player_Id] ) > MAX_PLAYERS) {
 				break;
 			}
-
-			id = teamPlayers[team][i][Player_Id];
 
 			switch(balanceMethod) {
 				case Balance_Spec: {
