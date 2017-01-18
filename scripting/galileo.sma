@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-555";
+new const PLUGIN_VERSION[] = "v4.2.0-556";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -4273,13 +4273,13 @@ public show_last_round_message()
 {
     LOGGER( 128, "I AM ENTERING ON show_last_round_message(0)" )
 
-    if( g_voteStatus & IS_VOTE_OVER
-        && !g_isToChangeMapOnVotingEnd )
-    {
-        new nextMapName[ MAX_MAPNAME_LENGHT ];
-        get_pcvar_string( cvar_amx_nextmap, nextMapName, charsmax( nextMapName ) );
+    new nextMapName[ MAX_MAPNAME_LENGHT ];
+    get_pcvar_string( cvar_amx_nextmap, nextMapName, charsmax( nextMapName ) );
 
-        if( g_isTheLastGameRound )
+    if( g_voteStatus & IS_VOTE_OVER )
+    {
+        if( g_isTheLastGameRound
+            && !g_isToChangeMapOnVotingEnd )
         {
             color_print( 0, "%L %L %L",
                     LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED2",
@@ -4290,6 +4290,10 @@ public show_last_round_message()
         {
             color_print( 0, "%L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED2", LANG_PLAYER, "GAL_NEXTMAP2", nextMapName );
         }
+    }
+    else if( g_isThePenultGameRound )
+    {
+        color_print( 0, "%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED2" );
     }
 }
 
@@ -4312,20 +4316,24 @@ public show_last_round_HUD()
     //
     set_hudmessage( 255, 255, 255, 0.15, 0.15, 0, 0.0, 1.0, 0.1, 0.1, 1 );
 
-    if( g_voteStatus & IS_VOTE_OVER
-        && !g_isToChangeMapOnVotingEnd )
-    {
-        if( g_isTheLastGameRound )
-        {
-            new nextMapName[ MAX_MAPNAME_LENGHT ];
-            get_pcvar_string( cvar_amx_nextmap, nextMapName, charsmax( nextMapName ) );
+    new nextMapName[ MAX_MAPNAME_LENGHT ];
+    get_pcvar_string( cvar_amx_nextmap, nextMapName, charsmax( nextMapName ) );
 
+    if( g_voteStatus & IS_VOTE_OVER )
+    {
+        if( g_isTheLastGameRound
+            && !g_isToChangeMapOnVotingEnd )
+        {
             show_hudmessage( 0, "%L^n%L", LANG_PLAYER, "GAL_CHANGE_NEXTROUND",  LANG_PLAYER, "GAL_NEXTMAP1", nextMapName );
         }
         else if( g_isThePenultGameRound )
         {
-            show_hudmessage( 0, "%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED1" );
+            show_hudmessage( 0, "%L^n%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED1", LANG_PLAYER, "GAL_NEXTMAP1", nextMapName );
         }
+    }
+    else if( g_isThePenultGameRound )
+    {
+        show_hudmessage( 0, "%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED1" );
     }
 }
 
