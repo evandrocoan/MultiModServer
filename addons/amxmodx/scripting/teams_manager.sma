@@ -343,8 +343,14 @@ public TaskCheckTeams() {
 		otherTeam = CS_TEAM_SPECTATOR - team;
 
 		while(i > maxPlayers[team]) {
+
+			// server_print( "player_id: %d, shit1: %d, shit2: %d, shit3: %d", teamPlayers[team][i][Player_Id],
+			// 		0 >= ( id = teamPlayers[team][i][Player_Id] ) > MAX_PLAYERS,
+			// 		0 >= ( id = teamPlayers[team][i][Player_Id] ), id > MAX_PLAYERS );
+
 			if(!transferImmunity && teamPlayers[team][--i][Player_Immunity]
-			   || 0 >= ( id = teamPlayers[team][i][Player_Id] ) > MAX_PLAYERS) {
+			   || 0 >= ( id = teamPlayers[team][i][Player_Id] )
+			   || id > MAX_PLAYERS) {
 				break;
 			}
 
