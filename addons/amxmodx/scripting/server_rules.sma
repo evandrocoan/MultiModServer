@@ -4,25 +4,25 @@
  * Server Rules
  *=====
  * (server_rules.sma)
- * Version 1.4 
+ * Version 1.4
  * http://djeyl.net/forum/index.php?showtopic=11675&st=0
  * (c) Copyright 2004, DoubleTap <doubletap@twazz.net>
  * http://counterstrike.twazz.net
  * Display Rules - ClanMod Style
  * Much thanks to Deagles3 for giving this plugin some life !
  * modified to support both amx and amxx by Dopefish
- * Command say /showrules 
+ * Command say /showrules
  * Added: additional say commands to display rules on more ways
  * rules - showrules - serverrules - /rules - /showrules - /serverrules
  * Can execute rules on players like ClanMod - amx_showrules username
  * Can force rules on players at logon with cvar in amx.cfg: forcerules 1
  */
 
-#include <amxmodx> 
+#include <amxmodx>
 #include <amxmisc>
 
 public mandatoryinform( strindex[ ] )
-{   
+{
     new myindex
     myindex = str_to_num( strindex )
     if(myindex>0)
@@ -34,7 +34,7 @@ public mandatoryinform( strindex[ ] )
 }
 
 public client_putinserver( id )
-{   
+{
     new str[ 4 ]
     num_to_str( id, str, 2 )
     if(get_cvar_num("forcerules"))
@@ -42,13 +42,13 @@ public client_putinserver( id )
 }
 
 public client_disconnect( id )
-{   
+{
     remove_task( 432211 + id )
     remove_task( 432611 + id )
 }
 
 public server_rules( id )
-{   
+{
 #if defined _amxmodx_included
     show_motd(id,"/addons/amxmodx/configs/commands.html","Server Rules")
 #else
@@ -58,7 +58,7 @@ public server_rules( id )
 }
 
 public admin_showthem( id, level, cid )
-{   
+{
     if (!cmd_access(id,level,cid,2))
     return PLUGIN_HANDLED
     new arg[32]
@@ -66,10 +66,10 @@ public admin_showthem( id, level, cid )
     new player = cmd_target(id,arg,5)
     if (!player) return PLUGIN_HANDLED
 
-    //new name[32] 
-    //get_user_name(player,name,31) 
+    //new name[32]
+    //get_user_name(player,name,31)
     client_cmd(player,"say Don't shoot! I am studing!")
-#if defined _amxmodx_included	
+#if defined _amxmodx_included
     show_motd(player,"/addons/amxmodx/configs/commands.html","READ THE RULES!")
 #else
     show_motd(player,"/addons/amxmodx/configs/commands.html","READ THE RULES!")
@@ -78,7 +78,7 @@ public admin_showthem( id, level, cid )
 }
 
 public plugin_init()
-{   
+{
     register_plugin( "Server Rules", "1.4", "DoubleTap" )
     register_dictionary( "adminhelp.txt" )
     register_dictionary( "multimodhelp.txt" )
@@ -90,6 +90,8 @@ public plugin_init()
 
     register_clcmd( "say /commands", "server_rules" )
     register_clcmd( "say commands", "server_rules" )
+    register_clcmd( "say /comandos", "server_rules" )
+    register_clcmd( "say comandos", "server_rules" )
     register_clcmd( "say /regras", "server_rules" )
     register_clcmd( "say regras", "server_rules" )
 
