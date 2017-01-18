@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-554";
+new const PLUGIN_VERSION[] = "v4.2.0-555";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -2569,7 +2569,7 @@ stock generateGameCrashActionFilePath( gameCrashActionFilePath[], charsmaxGameCr
     LOGGER( 128, "I AM ENTERING ON gameCrashActionFilePath(2) charsmaxGameCrashActionFilePath: %d", charsmaxGameCrashActionFilePath )
 
     formatex( gameCrashActionFilePath, charsmaxGameCrashActionFilePath, "%s/%s", g_dataDirPath, GAME_CRASH_RECREATION_FLAG_FILE );
-    LOGGER( 1, "( generateGameCrashActionFilePath ) | gameCrashActionFilePath: %s", gameCrashActionFilePath )
+    LOGGER( 1, "( generateGameCrashActionFilePath ) gameCrashActionFilePath: %s", gameCrashActionFilePath )
 }
 
 /**
@@ -3801,8 +3801,8 @@ public round_end_event()
         endRoundWatchdog();
     }
 
-    LOGGER( 32, "( round_end_event ) | g_maxRoundsNumber: %d", g_maxRoundsNumber )
-    LOGGER( 32, "( round_end_event ) | g_totalRoundsPlayed: %d, current_rounds_trigger: %d", \
+    LOGGER( 32, "( round_end_event ) g_maxRoundsNumber: %d", g_maxRoundsNumber )
+    LOGGER( 32, "( round_end_event ) g_totalRoundsPlayed: %d, current_rounds_trigger: %d", \
             g_totalRoundsPlayed, current_rounds_trigger )
 }
 
@@ -7187,7 +7187,7 @@ stock addExtensionOption( player_id, copiedChars, voteStatus[], voteStatusLenght
         allowStay = false;
     }
 
-    LOGGER( 4, "    ( vote_handleDisplay ) Add optional menu item | allowStay: %d, allowExtend: %d, \
+    LOGGER( 4, "    ( vote_handleDisplay ) Add optional menu item allowStay: %d, allowExtend: %d, \
            g_isExtendmapAllowStay: %d", allowStay, allowExtend, g_isExtendmapAllowStay )
 
     // add optional menu item
@@ -7404,7 +7404,7 @@ stock display_menu_dirt( player_id, menuKeys, bool:isVoteOver, bool:noneIsHidden
 stock computeVoteMenuFooter( player_id, voteFooter[], voteFooterSize )
 {
     LOGGER( 256, "I AM ENTERING ON computeVoteMenuFooter(3) player_id: %d", player_id )
-    LOGGER( 256, "( computeVoteMenuFooter ) | voteFooter: %s, voteFooterSize: %d", voteFooter, voteFooterSize )
+    LOGGER( 256, "( computeVoteMenuFooter ) voteFooter: %s, voteFooterSize: %d", voteFooter, voteFooterSize )
 
     new copiedChars;
     copiedChars = copy( voteFooter, voteFooterSize, "^n^n" );
@@ -7434,8 +7434,8 @@ stock computeVoteMenuFooter( player_id, voteFooter[], voteFooterSize )
 stock computeUndoButton( player_id, bool:isToShowUndo, bool:isVoteOver, noneOption[], noneOptionSize )
 {
     LOGGER( 256, "I AM ENTERING ON computeUndoButton(5) player_id: %d", player_id )
-    LOGGER( 256, "( computeUndoButton ) | isToShowUndo: %d", isToShowUndo )
-    LOGGER( 256, "( computeUndoButton ) | noneOption: %s, noneOptionSize: %d", noneOption, noneOptionSize )
+    LOGGER( 256, "( computeUndoButton ) isToShowUndo: %d", isToShowUndo )
+    LOGGER( 256, "( computeUndoButton ) noneOption: %s, noneOptionSize: %d", noneOption, noneOptionSize )
 
     new bool:isToAddExtraLine = ( g_voteStatus & IS_RUNOFF_VOTE
                                   || !g_isMapExtensionAllowed );
@@ -7504,7 +7504,7 @@ stock computeUndoButton( player_id, bool:isToShowUndo, bool:isVoteOver, noneOpti
 stock display_menu_clean( player_id, menuKeys )
 {
     LOGGER( 256, "I AM ENTERING ON display_menu_clean(2) player_id: %d", player_id )
-    LOGGER( 256, "( display_menu_clean ) | menuKeys: %d", menuKeys )
+    LOGGER( 256, "( display_menu_clean ) menuKeys: %d", menuKeys )
 
     new bool:isToShowUndo;
     new bool:isToAddExtraLine;
@@ -7596,8 +7596,8 @@ stock display_menu_clean( player_id, menuKeys )
 stock display_vote_menu( bool:menuType, player_id, menuBody[], menuKeys )
 {
     LOGGER( 128, "I AM ENTERING ON display_vote_menu(4) menuType: %d", menuType )
-    LOGGER( 4, "( display_vote_menu ) | player_id: %d", player_id )
-    LOGGER( 4, "( display_vote_menu ) | menuBody: %s, menuKeys: %d", menuBody, menuKeys )
+    LOGGER( 4, "( display_vote_menu ) player_id: %d", player_id )
+    LOGGER( 4, "( display_vote_menu ) menuBody: %s, menuKeys: %d", menuBody, menuKeys )
 
     if( isPlayerAbleToSeeTheVoteMenu( player_id ) )
     {
@@ -7884,7 +7884,7 @@ stock computeMapVotingCount( mapVotingCount[], mapVotingCountLength, voteIndex, 
         mapVotingCount[ 0 ] = '^0';
     }
 
-    LOGGER( 256, " ( computeMapVotingCount ) | g_showVoteStatus: %d, g_showVoteStatusType: %d, voteCountNumber: %d", \
+    LOGGER( 256, " ( computeMapVotingCount ) g_showVoteStatus: %d, g_showVoteStatusType: %d, voteCountNumber: %d", \
             g_showVoteStatus, g_showVoteStatusType, voteCountNumber )
 }
 
@@ -9307,7 +9307,7 @@ public map_listAll( player_id )
  */
 stock no_color_print( const player_id, const message[], any:... )
 {
-    LOGGER( 128, "I AM ENTERING ON color_console_print(...) | player_id: %d, message: %s...", player_id, message )
+    LOGGER( 128, "I AM ENTERING ON color_console_print(...) player_id: %d, message: %s...", player_id, message )
     new formated_message[ MAX_COLOR_MESSAGE ];
 
     vformat( formated_message, charsmax( formated_message ), message, 3 );
@@ -12693,7 +12693,7 @@ stock percent( is, of )
  */
 stock color_print( const player_id, const message[], any:... )
 {
-    LOGGER( 128, "I AM ENTERING ON color_print(...) | player_id: %d, message: %s...", player_id, message )
+    LOGGER( 128, "I AM ENTERING ON color_print(...) player_id: %d, message: %s...", player_id, message )
     new formated_message[ MAX_COLOR_MESSAGE ];
 
 #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
@@ -13469,7 +13469,7 @@ stock readMapCycle( mapcycleFilePath[], nextMapName[], nextMapNameMaxchars )
         copy( nextMapName, nextMapNameMaxchars, g_currentMapName );
     }
 
-    LOGGER( 4, "( readMapCycle ) | nextMapName: %s, nextMapNameMaxchars: %d", nextMapName, nextMapNameMaxchars )
+    LOGGER( 4, "( readMapCycle ) nextMapName: %s, nextMapNameMaxchars: %d", nextMapName, nextMapNameMaxchars )
 
     // Setting it to 1 will cause the next map to be `g_mapcycleFileListArray[1]` map.
     g_nextMapCyclePosition = 1;
@@ -14931,7 +14931,7 @@ public timeRemain()
      */
     stock setTestFailure( test_id, bool:isFailure, failure_reason[] )
     {
-        LOGGER( 256, "I AM ENTERING ON setTestFailure(...) | test_id: %d, isFailure: %d, \
+        LOGGER( 256, "I AM ENTERING ON setTestFailure(...) test_id: %d, isFailure: %d, \
                 failure_reason: %s", test_id, isFailure, failure_reason )
 
         new trieKey[ 10 ];
