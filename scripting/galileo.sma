@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-553";
+new const PLUGIN_VERSION[] = "v4.2.0-554";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -1133,7 +1133,6 @@ new const GAME_CRASH_RECREATION_FLAG_FILE[] = "gameCrashRecreationAction.txt";
 new const TO_STOP_THE_CRASH_SEARCH[]        = "delete_this_to_stop_the_crash_search.txt";
 new const MAPS_WHERE_THE_SERVER_CRASHED[]   = "maps_where_the_server_probably_crashed.txt";
 
-new bool:g_theRoundEndWhileVoting;
 new bool:g_isTimeToResetGame;
 new bool:g_isTimeToResetRounds;
 new bool:g_isUsingEmptyCycle;
@@ -1576,6 +1575,7 @@ public plugin_init()
     register_dictionary( "adminvote.txt" );
     register_dictionary_colored( "galileo.txt" );
 
+    register_event( "HLTV", "new_round_event", "a", "1=0", "2=0");
     register_logevent( "game_commencing_event", 2, "0=World triggered", "1=Game_Commencing" );
     register_logevent( "team_win_event",        6, "0=Team" );
     register_logevent( "round_restart_event",   2, "0=World triggered", "1&Restart_Round_" );
@@ -3591,6 +3591,35 @@ stock tryToStartTheVotingOnThisRound()
     }
 }
 
+/**
+ * Called before the freeze time to start counting. This event is not called for the first game round.
+ */
+public new_round_event()
+{
+    LOGGER( 128, "I AM ENTERING ON new_round_event(0)" )
+    tryToStartTheVotingOnThisRound();
+
+    if( IS_ABLE_TO_PERFORMED_A_MAP_CHANGE() )
+    {
+        if( g_isTheLastGameRound )
+        {
+            // When time runs out, end map at the current round end.
+            remove_task( TASKID_SHOW_LAST_ROUND_HUD );
+
+            // As this is called after team_win_event(0), we  need to check the `MAP_CHANGES_AT_THE_CURRENT_ROUND_END`
+            // because not all rounds have the team_win_event(0) called, therefore we must to do it now or never.
+            if( get_pcvar_num( cvar_endOnRoundChange )
+                || get_pcvar_num( cvar_endOnRoundChange ) == MAP_CHANGES_AT_THE_CURRENT_ROUND_END )
+            {
+                try_to_process_last_round();
+            }
+        }
+    }
+}
+
+/**
+ * Called after the freeze time to stop counting.
+ */
 public round_start_event()
 {
     LOGGER( 128, "I AM ENTERING ON round_start_event(0)" )
@@ -3601,15 +3630,14 @@ public round_start_event()
         set_task( 1.0, "resetRoundsScores" );
     }
 
+    g_roundStartTime = floatround( get_gametime(), floatround_ceil );
+
+    // This must not to be called when we are performing the round ending, otherwise it will cause the
+    // round to immediately change as the cvars are being restored. Every time this must to be called,
+    // the function cancelVoting(1) will also be called and it will cause the IS_ABLE_TO_PERFORMED_A_MAP_CHANGE(0)
+    // to return false, allowing the execution flow to get until here.
     if( !IS_ABLE_TO_PERFORMED_A_MAP_CHANGE() )
     {
-        // This could be called without causing problems, but there is not need to call it.
-        tryToStartTheVotingOnThisRound();
-
-        // This must not to be called when we are performing the round ending, otherwise it will cause the
-        // round to immediately change as the cvars are being restored. Every time this must to be called,
-        // the function cancelVoting(1) will also be called and it will cause the IS_ABLE_TO_PERFORMED_A_MAP_CHANGE(0)
-        // to return false, allowing the execution flow to get until here.
         if( g_isTimeToResetGame )
         {
             g_isTimeToResetGame = false;
@@ -3617,7 +3645,12 @@ public round_start_event()
         }
     }
 
-    g_roundStartTime = floatround( get_gametime(), floatround_ceil );
+    // Lazy update the game ending context, after the round_start_event(0) to be completed.
+    if( g_isThePenultGameRoundContext && g_isThePenultGameRound )
+    {
+        g_isTheLastGameRoundContext   = true;
+        g_isThePenultGameRoundContext = false;
+    }
 }
 
 public team_win_event()
@@ -3662,30 +3695,29 @@ public team_win_event()
         }
     }
 
-    // If this is called when the voting is going on, it will cause the voting to be cut
-    // and will force the map to immediately change to the next map on the map cycle.
-    if( g_isTheLastGameRound
-        && IS_ABLE_TO_PERFORMED_A_MAP_CHANGE() )
-    {
-        // When time runs out, end map at the current round end.
-        remove_task( TASKID_SHOW_LAST_ROUND_HUD );
+    debugTeamWinEvent( string_team_winner, wins_CT_trigger, wins_Terrorist_trigger );
+}
 
-        if( get_pcvar_num( cvar_endOnRoundChange ) == MAP_CHANGES_AT_THE_CURRENT_ROUND_END )
-        {
-            try_to_process_last_round();
-        }
-    }
+stock debugTeamWinEvent( string_team_winner[], wins_CT_trigger, wins_Terrorist_trigger )
+{
+    LOGGER( 32, "I AM ENTERING ON debugTeamWinEvent(3)" )
 
-    // Lazy update the game ending context, after the round_start_event(0) to be completed.
-    if( g_isThePenultGameRoundContext && g_isThePenultGameRound )
-    {
-        g_isTheLastGameRoundContext   = true;
-        g_isThePenultGameRoundContext = false;
-    }
-
-    LOGGER( 32, "( team_win_event ) | string_team_winner: %s", string_team_winner )
-    LOGGER( 32, "( team_win_event ) | g_winLimitInteger: %d, wins_CT_trigger: %d, wins_Terrorist_trigger: %d", \
-            g_winLimitInteger, wins_CT_trigger, wins_Terrorist_trigger )
+    LOGGER( 32, "( debugTeamWinEvent )" )
+    LOGGER( 32, "( debugTeamWinEvent ) string_team_winner: %s", string_team_winner )
+    LOGGER( 32, "( debugTeamWinEvent ) g_winLimitInteger: %d", g_winLimitInteger )
+    LOGGER( 32, "( debugTeamWinEvent ) wins_CT_trigger: %d", wins_CT_trigger )
+    LOGGER( 32, "( debugTeamWinEvent ) wins_Terrorist_trigger: %d", wins_Terrorist_trigger )
+    LOGGER( 32, "( debugTeamWinEvent ) g_isGameEndingTypeContextSaved: %d", g_isGameEndingTypeContextSaved )
+    LOGGER( 32, "( debugTeamWinEvent ) g_gameEndingTypeContextSaved: %d", g_gameEndingTypeContextSaved )
+    LOGGER( 32, "( debugTeamWinEvent ) g_timeLeftContextSaved: %d", g_timeLeftContextSaved )
+    LOGGER( 32, "( debugTeamWinEvent ) g_maxRoundsContextSaved: %d", g_maxRoundsContextSaved )
+    LOGGER( 32, "( debugTeamWinEvent ) g_winLimitContextSaved: %d", g_winLimitContextSaved )
+    LOGGER( 32, "( debugTeamWinEvent ) g_fragLimitContextSaved: %d", g_fragLimitContextSaved )
+    LOGGER( 32, "( debugTeamWinEvent ) g_isTheLastGameRound: %d", g_isTheLastGameRound )
+    LOGGER( 32, "( debugTeamWinEvent ) g_isTheLastGameRoundContext: %d", g_isTheLastGameRoundContext )
+    LOGGER( 32, "( debugTeamWinEvent ) g_isThePenultGameRound: %d", g_isThePenultGameRound )
+    LOGGER( 32, "( debugTeamWinEvent ) g_isThePenultGameRoundContext: %d", g_isThePenultGameRoundContext )
+    LOGGER( 32, "( debugTeamWinEvent )" )
 }
 
 /**
@@ -3695,26 +3727,28 @@ public team_win_event()
 stock endRoundWatchdog()
 {
     LOGGER( 128, "I AM ENTERING ON endRoundWatchdog(0)" )
+    new bool:endOfMapVoteExpiration = get_pcvar_num( cvar_endOfMapVoteExpiration ) != 0;
 
-    // When the voting is in progress, does not update these cvars.
+    // Just update their values when calling this function.
     g_fragLimitNumber = get_pcvar_num( cvar_mp_fraglimit );
     g_timeLimitNumber = get_pcvar_num( cvar_mp_timelimit );
 
-    if( get_pcvar_num( cvar_endOfMapVoteExpiration )
+    if( endOfMapVoteExpiration
         && g_voteStatus & IS_VOTE_OVER )
     {
         // Make the map to change immediately.
-        g_isTheLastGameRound = true;
+        g_isTheLastGameRound   = true;
+        g_isThePenultGameRound = false;
     }
 
+    // Always remove this, if set up.
+    remove_task( TASKID_SHOW_LAST_ROUND_HUD );
+
+    // This is what changes the map on the next round.
     if( g_isTheLastGameRound )
     {
         // When time runs out, end map at the current round end.
-        remove_task( TASKID_SHOW_LAST_ROUND_HUD );
-
-        // As this is called after team_win_event(0), we  need to check the `MAP_CHANGES_AT_THE_CURRENT_ROUND_END`
-        // because not all rounds have the team_win_event(0) called, therefore we must to do it now or never.
-        if( get_pcvar_num( cvar_endOnRoundChange )
+        if( endOfMapVoteExpiration
             || get_pcvar_num( cvar_endOnRoundChange ) == MAP_CHANGES_AT_THE_CURRENT_ROUND_END )
         {
             try_to_process_last_round();
@@ -3729,7 +3763,6 @@ stock endRoundWatchdog()
         // resulting on an infinity loop.
         g_isThePenultGameRound = false;
 
-        remove_task( TASKID_SHOW_LAST_ROUND_HUD );
         set_task( 5.0, "configure_last_round_HUD", TASKID_PROCESS_LAST_ROUND );
     }
 }
@@ -3737,11 +3770,12 @@ stock endRoundWatchdog()
 public round_end_event()
 {
     LOGGER( 128, "I AM ENTERING ON round_end_event(0)" )
-
     new current_rounds_trigger;
-    g_totalRoundsPlayed++;
 
+    g_totalRoundsPlayed++;
     saveTheRoundTime();
+
+    // Get the updated value.
     g_maxRoundsNumber = get_pcvar_num( cvar_mp_maxrounds );
 
     if( g_maxRoundsNumber )
@@ -3760,15 +3794,11 @@ public round_end_event()
         }
     }
 
+    // If this is called when the voting is going on, it will cause the voting to be cut
+    // and will force the map to immediately change to the next map on the map cycle.
     if( IS_ABLE_TO_PERFORMED_A_MAP_CHANGE() )
     {
-        // If this is called when the voting is going on, it will cause the voting to be cut
-        // and will force the map to immediately change to the next map on the map cycle.
         endRoundWatchdog();
-    }
-    else
-    {
-        g_theRoundEndWhileVoting = true;
     }
 
     LOGGER( 32, "( round_end_event ) | g_maxRoundsNumber: %d", g_maxRoundsNumber )
@@ -4398,7 +4428,6 @@ stock resetRoundEnding()
     g_isTimeToRestart              = false;
     g_isThePenultGameRound         = false;
     g_isToChangeMapOnVotingEnd     = false;
-    g_theRoundEndWhileVoting       = false;
     g_isGameEndingTypeContextSaved = false;
 
     remove_task( TASKID_SHOW_LAST_ROUND_HUD );
@@ -4414,7 +4443,6 @@ stock saveRoundEnding( bool:roundEndStatus[] )
     roundEndStatus[ 1 ] = g_isTimeToRestart;
     roundEndStatus[ 2 ] = g_isThePenultGameRound;
     roundEndStatus[ 3 ] = g_isToChangeMapOnVotingEnd;
-    roundEndStatus[ 4 ] = g_theRoundEndWhileVoting;
 }
 
 stock restoreRoundEnding( bool:roundEndStatus[] )
@@ -4426,7 +4454,6 @@ stock restoreRoundEnding( bool:roundEndStatus[] )
     g_isTimeToRestart          = roundEndStatus[ 1 ];
     g_isThePenultGameRound     = roundEndStatus[ 2 ];
     g_isToChangeMapOnVotingEnd = roundEndStatus[ 3 ];
-    g_theRoundEndWhileVoting   = roundEndStatus[ 4 ];
 }
 
 /**
@@ -8590,6 +8617,7 @@ stock map_extend( lang[] )
     }
 
     toAnnounceTheMapExtension( lang );
+    noLongerIsAnEarlyVoting();
 
     LOGGER( 2, "( map_extend ) TRYING to change the cvar %15s to '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
     LOGGER( 2, "( map_extend ) TRYING to change the cvar %15s to '%d'.", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) )
@@ -8605,7 +8633,6 @@ stock map_extend( lang[] )
     remove_task( TASKID_SHOW_LAST_ROUND_HUD );
     resetTheRtvWaitTime();
 
-    noLongerIsAnEarlyVoting();
     saveEndGameLimits();
     doTheActualMapExtension();
 
