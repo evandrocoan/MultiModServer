@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-573";
+new const PLUGIN_VERSION[] = "v4.2.0-574";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -479,15 +479,17 @@ new cvar_coloredChatEnabled;
 #define SECOND_SERVER_START 1
 #define AFTER_READ_MAPCYCLE 0
 
-#define END_OF_MAP_VOTE_ASK      1
-#define END_OF_MAP_VOTE_ANNOUNCE 2
+#define END_OF_MAP_VOTE_ASK       1
+#define END_OF_MAP_VOTE_ANNOUNCE1 2
+#define END_OF_MAP_VOTE_ANNOUNCE2 4
 
-#define VOTE_TIME_SEC      1.0
-#define VOTE_TIME_HUD_1    7.0
-#define VOTE_TIME_HUD_2    5.0
-#define VOTE_TIME_ANNOUNCE 10.0
-#define VOTE_TIME_RUNOFF   3.0
-#define VOTE_TIME_COUNT    5.5
+#define VOTE_TIME_SEC       1.0
+#define VOTE_TIME_HUD1      7.0
+#define VOTE_TIME_HUD2      5.0
+#define VOTE_TIME_ANNOUNCE1 10.0
+#define VOTE_TIME_ANNOUNCE2 5.0
+#define VOTE_TIME_RUNOFF    3.0
+#define VOTE_TIME_COUNT     5.5
 
 #define RTV_CMD_STANDARD              1
 #define RTV_CMD_SHORTHAND             2
@@ -666,7 +668,7 @@ new cvar_coloredChatEnabled;
  */
 #define ROUND_VOTING_START_SECONDS_DELAY() \
     ( get_pcvar_num( cvar_mp_freezetime ) + PERIODIC_CHECKING_INTERVAL \
-      - ( get_pcvar_num( cvar_isToAskForEndOfTheMapVote ) & END_OF_MAP_VOTE_ANNOUNCE ? 0 : 5 ) \
+      - ( get_pcvar_num( cvar_isToAskForEndOfTheMapVote ) & END_OF_MAP_VOTE_ANNOUNCE1 ? 0 : 5 ) \
       + ( g_roundAverageTime > 2 * g_totalVoteTime / 3 ? g_totalVoteTime / 5 : 1 ) )
 //
 
@@ -3186,13 +3188,13 @@ stock isToStartTheVotingOnThisRound( secondsRemaining, GameEndingType:gameEnding
     return false;
 }
 
-stock howManySecondsLastMapTheVoting()
+stock howManySecondsLastMapTheVoting( bool:isToIncludeRunoff = true )
 {
     LOGGER( 128, "I AM ENTERING ON howManySecondsLastMapTheVoting(0)" )
     new Float:voteTime;
 
     // Until the pendingVoteCountdown(0) to finish takes getVoteAnnouncementTime() + VOTE_TIME_SEC + VOTE_TIME_SEC seconds.
-    voteTime = getVoteAnnouncementTime() + VOTE_TIME_SEC + VOTE_TIME_SEC;
+    voteTime = getVoteAnnouncementTime( get_pcvar_num( cvar_isToAskForEndOfTheMapVote ) ) + VOTE_TIME_SEC + VOTE_TIME_SEC;
 
     // After, it takes more the `g_votingSecondsRemaining` until the the close vote function to be called.
     voteTime += get_pcvar_float( cvar_voteDuration );
@@ -3201,7 +3203,8 @@ stock howManySecondsLastMapTheVoting()
     voteTime += VOTE_TIME_COUNT;
 
     // Let us assume the worst case, then always will be performed a runoff voting.
-    if( get_pcvar_num( cvar_runoffEnabled ) == RUNOFF_ENABLED )
+    if( get_pcvar_num( cvar_runoffEnabled ) == RUNOFF_ENABLED
+        && isToIncludeRunoff )
     {
         voteTime = voteTime + voteTime + get_pcvar_float( cvar_runoffDuration ) + VOTE_TIME_RUNOFF;
     }
@@ -6669,8 +6672,10 @@ stock initializeTheVoteDisplay()
     }
     else
     {
+        new isToAskForEndOfTheMapVote = get_pcvar_num( cvar_isToAskForEndOfTheMapVote );
+
         // Set_task 1.0 + pendingVoteCountdown 1.0
-        handleChoicesDelay = VOTE_TIME_SEC + VOTE_TIME_SEC + getVoteAnnouncementTime();
+        handleChoicesDelay = VOTE_TIME_SEC + VOTE_TIME_SEC + getVoteAnnouncementTime( isToAskForEndOfTheMapVote );
 
         // Make perfunctory announcement: "get ready to choose a map"
         if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_GET_READY_TO_CHOOSE ) )
@@ -6680,16 +6685,24 @@ stock initializeTheVoteDisplay()
         }
 
         // Announce the pending vote countdown from 7 | 5 to 1
-        if( get_pcvar_num( cvar_isToAskForEndOfTheMapVote ) & END_OF_MAP_VOTE_ANNOUNCE )
+        if( isToAskForEndOfTheMapVote & END_OF_MAP_VOTE_ANNOUNCE1 )
         {
-            set_task( VOTE_TIME_ANNOUNCE, "announceThePendingVote", TASKID_PENDING_VOTE_COUNTDOWN );
-            announceThePendingVoteTime( VOTE_TIME_ANNOUNCE + VOTE_TIME_HUD_2 );
+            if( isToAskForEndOfTheMapVote & END_OF_MAP_VOTE_ANNOUNCE2 )
+            {
+                set_task( VOTE_TIME_ANNOUNCE2, "announceThePendingVote", TASKID_PENDING_VOTE_COUNTDOWN );
+                announceThePendingVoteTime( VOTE_TIME_ANNOUNCE2 + VOTE_TIME_HUD2 );
+            }
+            else
+            {
+                set_task( VOTE_TIME_ANNOUNCE1, "announceThePendingVote", TASKID_PENDING_VOTE_COUNTDOWN );
+                announceThePendingVoteTime( VOTE_TIME_ANNOUNCE1 + VOTE_TIME_HUD1 );
+            }
         }
         else
         {
             // Visual countdown
             announceThePendingVote();
-            announceThePendingVoteTime( VOTE_TIME_HUD_1 );
+            announceThePendingVoteTime( VOTE_TIME_HUD1 );
         }
     }
 #endif
@@ -6719,7 +6732,7 @@ stock announceThePendingVoteTime( Float:time )
     color_print( 0, "%L", LANG_PLAYER, "DMAP_NEXTMAP_VOTE_REMAINING2", targetTime );
 
     // If there is enough time
-    if( targetTime > VOTE_TIME_HUD_1
+    if( targetTime > 4
         && !( get_pcvar_num( cvar_hudsHide ) & HUD_VOTE_VISUAL_COUNTDOWN ) )
     {
         set_hudmessage( 0, 222, 50, -1.0, 0.13, 1, 1.0, 5.94, 0.0, 0.0, -1 );
@@ -6731,28 +6744,35 @@ public announceThePendingVote()
 {
     LOGGER( 128, "I AM ENTERING ON announceThePendingVote(0)" )
 
-    if( get_pcvar_num( cvar_isToAskForEndOfTheMapVote ) & END_OF_MAP_VOTE_ANNOUNCE )
+    if( get_pcvar_num( cvar_isToAskForEndOfTheMapVote ) & END_OF_MAP_VOTE_ANNOUNCE1 )
     {
-        g_pendingVoteCountdown = floatround( VOTE_TIME_HUD_2, floatround_floor ) + 1;
+        g_pendingVoteCountdown = floatround( VOTE_TIME_HUD2, floatround_floor ) + 1;
     }
     else
     {
-        g_pendingVoteCountdown = floatround( VOTE_TIME_HUD_1, floatround_floor ) + 1;
+        g_pendingVoteCountdown = floatround( VOTE_TIME_HUD1, floatround_floor ) + 1;
     }
 
     set_task( VOTE_TIME_SEC, "pendingVoteCountdown", TASKID_PENDING_VOTE_COUNTDOWN, _, _, "a", g_pendingVoteCountdown );
 }
 
-stock Float:getVoteAnnouncementTime()
+stock Float:getVoteAnnouncementTime( isToAskForEndOfTheMapVote )
 {
     LOGGER( 128, "I AM ENTERING ON getVoteAnnouncementTime(0)" )
 
-    if( get_pcvar_num( cvar_isToAskForEndOfTheMapVote ) & END_OF_MAP_VOTE_ANNOUNCE )
+    if( isToAskForEndOfTheMapVote & END_OF_MAP_VOTE_ANNOUNCE1 )
     {
-        return VOTE_TIME_ANNOUNCE + VOTE_TIME_HUD_2;
+        if( isToAskForEndOfTheMapVote & END_OF_MAP_VOTE_ANNOUNCE2 )
+        {
+            return VOTE_TIME_ANNOUNCE2 + VOTE_TIME_HUD2;
+        }
+        else
+        {
+            return VOTE_TIME_ANNOUNCE1 + VOTE_TIME_HUD2;
+        }
     }
 
-    return VOTE_TIME_HUD_1;
+    return VOTE_TIME_HUD1;
 }
 
 stock configureVoteDisplayDebugging()
