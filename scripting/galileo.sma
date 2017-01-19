@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-574";
+new const PLUGIN_VERSION[] = "v4.2.0-577";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -3231,12 +3231,12 @@ stock howManyRoundsAreRemaining( secondsRemaining, GameEndingType:whatGameEnding
         case GameEndingType_ByMaxRounds:
         {
             return ( g_isGameEndingTypeContextSaved ?
-                     g_maxRoundsContextSaved : get_pcvar_num( cvar_mp_maxrounds ) ) - g_totalRoundsPlayed;
+                     g_maxRoundsContextSaved : get_pcvar_num( cvar_mp_maxrounds ) ) - g_totalRoundsPlayed - 1;
         }
         case GameEndingType_ByWinLimit:
         {
             return ( g_isGameEndingTypeContextSaved ?
-                     g_winLimitContextSaved : get_pcvar_num( cvar_mp_winlimit ) ) - max( g_totalCtWins, g_totalTerroristsWins );
+                     g_winLimitContextSaved : get_pcvar_num( cvar_mp_winlimit ) ) - max( g_totalCtWins, g_totalTerroristsWins ) - 1;
         }
         case GameEndingType_ByFragLimit:
         {
@@ -3273,7 +3273,7 @@ stock getRoundsRemainingBy( &by_time = 0, &by_frags = 0 )
         // Avoid zero division
         if( g_roundAverageTime )
         {
-            by_time = by_time / g_roundAverageTime;
+            by_time = by_time / g_roundAverageTime - 1;
         }
         else
         {
@@ -3285,7 +3285,15 @@ stock getRoundsRemainingBy( &by_time = 0, &by_frags = 0 )
             && g_totalRoundsPlayed )
         {
             new integerDivision = g_greatestKillerFrags / g_totalRoundsPlayed;
-            by_frags = by_frags / ( integerDivision ? integerDivision : FRAGS_BY_ROUND_AVERAGE );
+
+            if( integerDivision )
+            {
+                by_frags = by_frags / integerDivision - 1;
+            }
+            else
+            {
+                by_frags = by_frags / FRAGS_BY_ROUND_AVERAGE;
+            }
         }
         else
         {
@@ -4319,8 +4327,7 @@ public show_last_round_message()
         if( g_isTheLastGameRound
             && !g_isToChangeMapOnVotingEnd )
         {
-            color_print( 0, "%L %L %L",
-                    LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED2",
+            color_print( 0, "%L %L",
                     LANG_PLAYER, "GAL_CHANGE_NEXTROUND",
                     LANG_PLAYER, "GAL_NEXTMAP2", nextMapName );
         }
@@ -13741,7 +13748,7 @@ public sayCurrentMap()
 
     if( IS_COLORED_CHAT_ENABLED() )
     {
-        color_print( 0, "%L ^4%s", LANG_PLAYER, "PLAYED_MAP", g_currentMapName );
+        color_print( 0, "%L:^4 %s", LANG_PLAYER, "PLAYED_MAP", g_currentMapName );
     }
     else
     {
