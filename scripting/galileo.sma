@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-580";
+new const PLUGIN_VERSION[] = "v4.2.0-582";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -61,28 +61,28 @@ new const PLUGIN_VERSION[] = "v4.2.0-580";
  * because it creates also a fake players count. So, do not enable 'DEBUG_LEVEL_FAKE_VOTES'
  * if you do not want the map voting starting on an empty server.
  *
- * 0    - Disables this feature.
+ * 0   - Disables this feature.
  *
- * 1    - Normal/basic debugging/depuration.
+ * 1   - Normal/basic debugging/depuration.
  *
- * 2    - a) Run the NORMAL Unit Tests on the server start.
- *        b) To skip the 'pendingVoteCountdown()'.
- *        c) Set the vote runoff time to 5 seconds.
+ * 2   - a) Run the NORMAL Unit Tests on the server start.
+ *       b) To skip the 'pendingVoteCountdown()'.
+ *       c) Set the vote runoff time to 5 seconds.
  *
- * 4    - Run the DELAYED Unit Tests.
+ * 4   - Run the DELAYED Unit Tests.
  *
- * 8    - a) To create fake votes. See the function 'create_fakeVotes()'.
- *        b) To create fake players count. See the function 'get_real_players_number()'.
+ * 8   - a) To create fake votes. See the function 'create_fakeVotes()'.
+ *       b) To create fake players count. See the function 'get_real_players_number()'.
  *
- * 16   - Enable DEBUG_LEVEL 1 and all its debugging/depuration available.
+ * 16  - Enable DEBUG_LEVEL 1 and all its debugging/depuration available.
  *
- * 32   - a) Run the MANUAL test on server start.
- *        b) To skip the 'pendingVoteCountdown()'.
- *        c) Set the vote runoff time to 5 seconds.
+ * 32  - a) Run the MANUAL test on server start.
+ *       b) To skip the 'pendingVoteCountdown()'.
+ *       c) Set the vote runoff time to 5 seconds.
  *
- * 64   - Disable the LOGGER() while running the Unit Tests.
+ * 64  - Disable the LOGGER() while running the Unit Tests.
  *
- * 127  - Enable the levels 1, 2, 4, 8, 16, 32 and 64.
+ * 127 - Enable the levels 1, 2, 4, 8, 16, 32 and 64.
  *
  * Default value: 0
  */
@@ -466,9 +466,6 @@ new cvar_coloredChatEnabled;
 #define MAX_INTEGER  2147483647
 #define MIN_INTEGER -2147483648
 
-#define FRAGS_BY_ROUND_AVERAGE   13
-#define SECONDS_BY_ROUND_AVERAGE 100
-
 #define LISTMAPS_USERID   0
 #define LISTMAPS_LAST_MAP 1
 
@@ -617,14 +614,24 @@ new cvar_coloredChatEnabled;
  * before it, as this option only takes effect and the `cvar_endOnRound` and `cvar_endOfMapVoteStart`
  * are not handling the map end.
  */
-#define VOTE_START_ROUNDS 4
+#define VOTE_START_ROUNDS ( IS_THE_ROUND_AVERAGE_TIME_TOO_SHORT() ? 10 : 4 )
+
+/**
+ * Calculates whether to start the map voting due map closing time.
+ *
+ * @param fragsRemaining     how much frags are remaining to finish the map.
+ */
+#define IS_TO_START_THE_VOTE_BY_FRAGS(%1) ( %1 < ( g_fragLimitNumber > 30 ? 20 : 10 ) )
 
 /**
  * The rounds number required to be reached to allow predict if this will be the last round and
  * allow to start the voting.
  */
-#define MIN_ROUND_TIME_DELAY        10
-#define MIN_VOTE_START_ROUNDS_DELAY 1
+#define MIN_ROUND_TIME_DELAY         10
+#define FRAGS_BY_ROUND_AVERAGE       7
+#define SECONDS_BY_ROUND_AVERAGE     70
+#define MIN_VOTE_START_ROUNDS_DELAY  1
+#define MAX_SAVED_ROUNDS_FOR_AVERAGE 5
 
 /**
  * The periodic task created on 'configureServerMapChange(0)' use this intervals in seconds to
@@ -639,10 +646,29 @@ new cvar_coloredChatEnabled;
 // ###############################################################################################
 
 /**
+ * When there are enough rounds played and the round average time is neither even half to the vote
+ * total time, it is pretty pointless the try start the voting at the round start.
+ */
+#define IS_THE_ROUND_AVERAGE_TIME_TOO_SHORT() \
+    ( g_totalRoundsSavedTimes > MAX_SAVED_ROUNDS_FOR_AVERAGE - 2 \
+      && g_roundAverageTime < g_totalVoteTime / 2 )
+//
+
+/**
+ * When there are some rounds played and the round average time is just smaller than the to the vote
+ * total time, we need to try start the voting at the round start on round before the actual point as
+ * the voting will extend from one round to the other round.
+ */
+#define IS_THE_ROUND_AVERAGE_TIME_SHORT() \
+    ( g_totalRoundsSavedTimes > MIN_VOTE_START_ROUNDS_DELAY \
+      && g_roundAverageTime < g_totalVoteTime )
+//
+
+/**
  * If this is called when the voting or the round ending is going on, it will cause the voting/round
  * ending to be cut and will force the map to immediately change to the next map.
  */
-#define IS_ABLE_TO_PERFORMED_A_MAP_CHANGE() \
+#define IS_ABLE_TO_PERFORM_A_MAP_CHANGE() \
     ( !task_exists( TASKID_PROCESS_LAST_ROUND_COUNT ) \
       || !task_exists( TASKID_INTERMISSION_HOLD ) \
       || !( g_voteStatus & IS_VOTE_IN_PROGRESS ) \
@@ -658,18 +684,11 @@ new cvar_coloredChatEnabled;
 //
 
 /**
- * The frags/kills number before the mp_fraglimit to be reached and to start the map voting.
- */
-#define VOTE_START_FRAGS() \
-    ( g_fragLimitNumber > 30 ? 20 : 10 )
-//
-
-/**
  * Specifies how much time to delay the voting start after the round start.
  */
 #define ROUND_VOTING_START_SECONDS_DELAY() \
     ( get_pcvar_num( cvar_mp_freezetime ) + PERIODIC_CHECKING_INTERVAL \
-      - ( get_pcvar_num( cvar_isToAskForEndOfTheMapVote ) & END_OF_MAP_VOTE_ANNOUNCE1 ? 0 : 5 ) \
+      - ( get_pcvar_num( cvar_isToAskForEndOfTheMapVote ) & END_OF_MAP_VOTE_ANNOUNCE1 ? 5 : 0 ) \
       + ( g_roundAverageTime > 2 * g_totalVoteTime / 3 ? g_totalVoteTime / 5 : 1 ) )
 //
 
@@ -688,12 +707,13 @@ new cvar_coloredChatEnabled;
 //
 
 /**
- * Verifies if the round time is too big. If the map time is too big, makes not sense to wait to
- * start the map voting and will probably not to start the voting.
+ * Verifies if the round time is too big. If the map time is too big or near zero, makes not sense
+ * to wait to start the map voting and will probably not to start the voting.
  */
-#define IS_THE_ROUND_TIME_TOO_BIG() \
-    ( get_pcvar_num( cvar_mp_roundtime ) > 8 \
-      && g_roundAverageTime > 300 )
+#define IS_THE_ROUND_TIME_TOO_BIG(%1) \
+    ( ( %1 > 8.0 \
+        && g_roundAverageTime > 300 ) \
+      || %1 < 0.5 )
 //
 
 /**
@@ -1154,7 +1174,6 @@ new bool:g_isEmptyCycleMapConfigured;
 new bool:g_isTheLastGameRound;
 new bool:g_isThePenultGameRound;
 new bool:g_isToChangeMapOnVotingEnd;
-new bool:g_isVirtualFragLimitSupport;
 new bool:g_isTimeToRestart;
 new bool:g_isEndGameLimitsChanged;
 new bool:g_isMapExtensionAllowed;
@@ -1940,7 +1959,6 @@ public cacheCvarsValues()
     g_isToShowSubMenu           = get_pcvar_num( cvar_isToShowNoneOption   ) == 2;
     g_isToShowVoteCounter       = get_pcvar_num( cvar_isToShowVoteCounter  ) != 0;
     g_isToShowExpCountdown      = get_pcvar_num( cvar_isToShowExpCountdown ) != 0;
-    g_isVirtualFragLimitSupport = get_pcvar_num( cvar_fragLimitSupport     ) != 0;
 
     // load the weighted votes flags and chat prefix.
     get_pcvar_string( cvar_voteWeightFlags, g_voteWeightFlags, charsmax( g_voteWeightFlags ) );
@@ -3029,35 +3047,38 @@ stock loadMapGroupsFeatureFile( mapFilerFilePath[], &Array:mapFilersPathArray, &
     LOGGER( 4, "" )
 }
 
+/**
+ * This event is not registered by mp_fraglimitCvarSupport(0) if the game does not support the
+ * `mp_fraglimit` cvar natively or if the `cvar_fragLimitSupport` virtual support is not enabled.
+ */
 public client_death_event()
 {
     LOGGER( 256, "I AM ENTERING ON client_death_event(0)" )
+    new killerId = read_data( 1 );
 
-    if( g_fragLimitNumber )
+    if( killerId < MAX_PLAYERS_COUNT
+        && killerId > 0 )
     {
-        new killerId = read_data( 1 );
+        new frags;
 
-        if( killerId < MAX_PLAYERS_COUNT
-            && killerId > 0 )
+        if( ( frags = ++g_playersKills[ killerId ] ) > g_greatestKillerFrags )
         {
-            new frags;
+            g_greatestKillerFrags = frags;
 
-            if( ( ( frags = ++g_playersKills[ killerId ] ) + VOTE_START_FRAGS() ) > g_fragLimitNumber
-                && isTimeToStartTheEndOfMapVoting( get_pcvar_num( cvar_endOfMapVote ) ) )
+            if( g_fragLimitNumber )
             {
-                start_voting_by_frags();
-            }
+                new endOfMapVote = get_pcvar_num( cvar_endOfMapVote );
 
-            if( frags > g_greatestKillerFrags )
-            {
-                g_greatestKillerFrags = frags;
+                if( IS_TO_START_THE_VOTE_BY_FRAGS( g_fragLimitNumber - g_greatestKillerFrags )
+                    && isTimeToStartTheEndOfMapVoting( endOfMapVote ) )
+                {
+                    start_voting_by_frags();
+                }
 
-                // This is already protected by a `!IS_END_OF_MAP_VOTING_GOING_ON()`. This `? 2 : 1`
-                // condition allow Galileo to manage the round end, if it is enabled. Otherwise let
+                // This `? 2 : 1` condition allow Galileo to manage the round end, if it is enabled. Otherwise let
                 // the actual game mod to do it. If the support is not virtual but the `mp_fraglimitCvarSupport`,
-                // the try_to_manage_map_end(1) to perform it.
-                if( g_isVirtualFragLimitSupport
-                    && g_greatestKillerFrags > g_fragLimitNumber - ( get_pcvar_num( cvar_endOnRound ) ? 2 : 1 ) )
+                // the try_to_manage_map_end(1) will to perform the map change.
+                if( g_greatestKillerFrags > g_fragLimitNumber - ( endOfMapVote ? 2 : 1 ) )
                 {
                     try_to_manage_map_end( true );
                 }
@@ -3308,6 +3329,33 @@ stock getRoundsRemainingBy( &by_time = 0, &by_frags = 0 )
     }
 }
 
+stock debugWhatGameEndingTypeItIs( rounds_left_by_maxrounds, rounds_left_by_time, rounds_left_by_winlimit,
+                                   rounds_left_by_frags, debugLevel )
+{
+    LOGGER( debugLevel, "I AM ENTERING ON debugWhatGameEndingTypeItIs(5)" )
+
+    LOGGER( debugLevel, "" )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) cv_winlimit: %2d", get_pcvar_num( cvar_mp_winlimit  ) )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) cv_maxrounds: %0d", get_pcvar_num( cvar_mp_maxrounds ) )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) cv_time: %6f", get_pcvar_float( cvar_mp_timelimit ) )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) cv_frags: %5d", get_pcvar_num( cvar_mp_fraglimit ) )
+
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs )" )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) rounds_left_by_winlimit: %2d", rounds_left_by_winlimit )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) rounds_left_by_maxrounds: %0d", rounds_left_by_maxrounds )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) rounds_left_by_time: %6d", rounds_left_by_time )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) rounds_left_by_frags: %5d", rounds_left_by_frags )
+
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs )" )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) GameEndingType_ByWinLimit: %2d", GameEndingType_ByWinLimit )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) GameEndingType_ByMaxRounds: %d", GameEndingType_ByMaxRounds )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) GameEndingType_ByTimeLimit: %d", GameEndingType_ByTimeLimit )
+    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) GameEndingType_ByFragLimit: %d", GameEndingType_ByFragLimit )
+
+    LOGGER( debugLevel, "" )
+    return 0;
+}
+
 /**
  * Wrapper to call switchEndingGameType(10) without repeating the same `if` code everywhere.
  */
@@ -3456,33 +3504,6 @@ stock GameEndingType:switchEndingGameType( by_maxrounds, cv_maxrounds, by_time, 
     return GameEndingType_ByNothing;
 }
 
-stock debugWhatGameEndingTypeItIs( rounds_left_by_maxrounds, rounds_left_by_time, rounds_left_by_winlimit,
-                                   rounds_left_by_frags, debugLevel )
-{
-    LOGGER( debugLevel, "I AM ENTERING ON debugWhatGameEndingTypeItIs(5)" )
-
-    LOGGER( debugLevel, "" )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) cv_winlimit: %2d", get_pcvar_num( cvar_mp_winlimit  ) )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) cv_maxrounds: %0d", get_pcvar_num( cvar_mp_maxrounds ) )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) cv_time: %6f", get_pcvar_float( cvar_mp_timelimit ) )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) cv_frags: %5d", get_pcvar_num( cvar_mp_fraglimit ) )
-
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs )" )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) rounds_left_by_winlimit: %2d", rounds_left_by_winlimit )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) rounds_left_by_maxrounds: %0d", rounds_left_by_maxrounds )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) rounds_left_by_time: %6d", rounds_left_by_time )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) rounds_left_by_frags: %5d", rounds_left_by_frags )
-
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs )" )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) GameEndingType_ByWinLimit: %2d", GameEndingType_ByWinLimit )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) GameEndingType_ByMaxRounds: %d", GameEndingType_ByMaxRounds )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) GameEndingType_ByTimeLimit: %d", GameEndingType_ByTimeLimit )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) GameEndingType_ByFragLimit: %d", GameEndingType_ByFragLimit )
-
-    LOGGER( debugLevel, "" )
-    return 0;
-}
-
 stock debugIsTimeToStartTheEndOfMap( secondsRemaining, debugLevel )
 {
     LOGGER( 128, "I AM ENTERING ON debugIsTimeToStartTheEndOfMap(2)" )
@@ -3545,7 +3566,8 @@ stock isTimeToStartTheEndOfMapVoting( endOfMapVote )
         if( !ARE_THERE_ENOUGH_PLAYERS_FOR_MANAGE_END()
            || !get_pcvar_num( cvar_endOfMapVoteStart )
            || !get_pcvar_num( cvar_endOnRound )
-           || IS_THE_ROUND_TIME_TOO_BIG() )
+           || IS_THE_ROUND_TIME_TOO_BIG( get_pcvar_float( cvar_mp_roundtime ) )
+           || IS_THE_ROUND_AVERAGE_TIME_TOO_SHORT() )
         {
             LOGGER( 256, "    ( isTimeToStartTheEndOfMapVoting ) Just returning true." )
             return true;
@@ -3713,7 +3735,7 @@ public round_end_event()
 
     // If this is called when the voting is going on, it will cause the voting to be cut
     // and will force the map to immediately change to the next map on the map cycle.
-    if( IS_ABLE_TO_PERFORMED_A_MAP_CHANGE() )
+    if( IS_ABLE_TO_PERFORM_A_MAP_CHANGE() )
     {
         endRoundWatchdog();
     }
@@ -3781,7 +3803,7 @@ stock saveTheRoundTime()
     if( roundTotalTime > MIN_ROUND_TIME_DELAY )
     {
         static lastSavedRound;
-        static roundPlayedTimes[ 5 ];
+        static roundPlayedTimes[ MAX_SAVED_ROUNDS_FOR_AVERAGE ];
 
         // To keep the latest round data up to date.
         roundPlayedTimes[ lastSavedRound ] = roundTotalTime;
@@ -3822,15 +3844,11 @@ public new_round_event()
     LOGGER( 128, "I AM ENTERING ON new_round_event(0)" )
     tryToStartTheVotingOnThisRound( ROUND_VOTING_START_SECONDS_DELAY() );
 
-    if( IS_ABLE_TO_PERFORMED_A_MAP_CHANGE() )
+    if( g_isTheLastGameRound
+        && IS_ABLE_TO_PERFORM_A_MAP_CHANGE()
+        && get_pcvar_num( cvar_endOnRoundChange ) == MAP_CHANGES_AT_THE_NEXT_ROUND_START )
     {
-        if( g_isTheLastGameRound )
-        {
-            if( get_pcvar_num( cvar_endOnRoundChange ) == MAP_CHANGES_AT_THE_NEXT_ROUND_START )
-            {
-                try_to_process_last_round();
-            }
-        }
+        try_to_process_last_round();
     }
 }
 
@@ -4351,7 +4369,7 @@ public show_last_round_HUD()
 {
     LOGGER( 256, "I AM ENTERING ON show_last_round_HUD(0)" )
 
-    if( ++g_showLastRoundHudCounter % LAST_ROUND_HUD_SHOW_INTERVAL > 7
+    if( ++g_showLastRoundHudCounter % LAST_ROUND_HUD_SHOW_INTERVAL > 6
         || g_isTheRoundEnded )
     {
         return;
