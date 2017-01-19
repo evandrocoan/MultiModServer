@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-577";
+new const PLUGIN_VERSION[] = "v4.2.0-579";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -647,6 +647,7 @@ new cvar_coloredChatEnabled;
       || !task_exists( TASKID_INTERMISSION_HOLD ) \
       || !( g_voteStatus & IS_VOTE_IN_PROGRESS ) \
       || !g_isTheRoundEndWhileVoting )
+//
 
 /**
  * This indicates the players minimum number necessary to allow the last round to be finished when
@@ -3042,7 +3043,7 @@ public client_death_event()
             new frags;
 
             if( ( ( frags = ++g_playersKills[ killerId ] ) + VOTE_START_FRAGS() ) > g_fragLimitNumber
-                && isTimeToStartTheEndOfMapVoting() )
+                && isTimeToStartTheEndOfMapVoting( get_pcvar_num( cvar_endOfMapVote ) ) )
             {
                 start_voting_by_frags();
             }
@@ -3517,14 +3518,14 @@ stock debugIsTimeToStartTheEndOfMap( secondsRemaining, debugLevel )
  * As we only periodically check to whether to start the map voting each 15 seconds, we must to set
  * the minimum check as: g_votingSecondsRemaining + 15 seconds + 1
  */
-stock isTimeToStartTheEndOfMapVoting()
+stock isTimeToStartTheEndOfMapVoting( endOfMapVote )
 {
-    LOGGER( 256, "I AM ENTERING ON isTimeToStartTheEndOfMapVoting(0) secondsRemaining: %d", get_timeleft() )
+    LOGGER( 256, "I AM ENTERING ON isTimeToStartTheEndOfMapVoting(1) secondsRemaining: %d", get_timeleft() )
     LOGGER( 0, "", debugIsTimeToStartTheEndOfMap( get_timeleft(), 32 ) )
 
     if( !IS_END_OF_MAP_VOTING_GOING_ON()
         && !task_exists( TASKID_START_VOTING_DELAYED )
-        && get_pcvar_num( cvar_endOfMapVote ) )
+        && endOfMapVote )
     {
         //     If the `cvar_endOfMapVoteStart` is not enabled, we must to start a map voting right now
         // because the time is ending and the `cvar_endOfMapVoteStart` will not be able to start a map
@@ -3562,9 +3563,9 @@ stock isTimeToStartTheEndOfMapVoting()
  * try_to_process_last_round(2). On the cases where that restriction does not have effect, the
  * voting will already have been started by vote_manageEnd(0) when the maximum allowed time comes.
  */
-stock tryToStartTheVotingOnThisRound()
+stock tryToStartTheVotingOnThisRound( startDelay )
 {
-    LOGGER( 128, "I AM ENTERING ON tryToStartTheVotingOnThisRound(0)" )
+    LOGGER( 128, "I AM ENTERING ON tryToStartTheVotingOnThisRound(1) startDelay: %d", startDelay )
 
     new timeLeft;
     new GameEndingType:gameEndingType;
@@ -3588,19 +3589,19 @@ stock tryToStartTheVotingOnThisRound()
         {
             case GameEndingType_ByWinLimit:
             {
-                set_task( float( ROUND_VOTING_START_SECONDS_DELAY() ), "start_voting_by_winlimit", TASKID_START_VOTING_DELAYED );
+                set_task( float( startDelay ), "start_voting_by_winlimit", TASKID_START_VOTING_DELAYED );
             }
             case GameEndingType_ByMaxRounds:
             {
-                set_task( float( ROUND_VOTING_START_SECONDS_DELAY() ), "start_voting_by_maxrounds", TASKID_START_VOTING_DELAYED );
+                set_task( float( startDelay ), "start_voting_by_maxrounds", TASKID_START_VOTING_DELAYED );
             }
             case GameEndingType_ByFragLimit:
             {
-                set_task( float( ROUND_VOTING_START_SECONDS_DELAY() ), "start_voting_by_frags", TASKID_START_VOTING_DELAYED );
+                set_task( float( startDelay ), "start_voting_by_frags", TASKID_START_VOTING_DELAYED );
             }
             default:
             {
-                set_task( float( ROUND_VOTING_START_SECONDS_DELAY() ), "start_voting_by_timer", TASKID_START_VOTING_DELAYED );
+                set_task( float( startDelay ), "start_voting_by_timer", TASKID_START_VOTING_DELAYED );
             }
         }
     }
@@ -3661,7 +3662,7 @@ public team_win_event()
 
         if( ( wins_CT_trigger > g_winLimitInteger
               || wins_Terrorist_trigger > g_winLimitInteger )
-            && isTimeToStartTheEndOfMapVoting() )
+            && isTimeToStartTheEndOfMapVoting( get_pcvar_num( cvar_endOfMapVote ) ) )
         {
             START_VOTING_BY_MIDDLE_ROUND_DELAY( "start_voting_by_winlimit" )
         }
@@ -3699,7 +3700,7 @@ public round_end_event()
         current_rounds_trigger = g_totalRoundsPlayed + VOTE_START_ROUNDS;
 
         if( current_rounds_trigger > g_maxRoundsNumber
-            && isTimeToStartTheEndOfMapVoting() )
+            && isTimeToStartTheEndOfMapVoting( get_pcvar_num( cvar_endOfMapVote ) ) )
         {
             START_VOTING_BY_MIDDLE_ROUND_DELAY( "start_voting_by_maxrounds" )
         }
@@ -3819,7 +3820,7 @@ stock saveTheRoundTime()
 public new_round_event()
 {
     LOGGER( 128, "I AM ENTERING ON new_round_event(0)" )
-    tryToStartTheVotingOnThisRound();
+    tryToStartTheVotingOnThisRound( ROUND_VOTING_START_SECONDS_DELAY() );
 
     if( IS_ABLE_TO_PERFORMED_A_MAP_CHANGE() )
     {
@@ -3942,7 +3943,7 @@ stock try_to_process_last_round( bool:isFragLimitEnd = false )
  *
  *     Now the the average round time is shorter than the total voting time, we must to
  * start a map voting, otherwise we could get an extra round being played. This case also
- * must to be handled by tryToStartTheVotingOnThisRound(0), to start the voting on round before
+ * must to be handled by tryToStartTheVotingOnThisRound(1), to start the voting on round before
  * the actual last round.
  */
 public map_manageEnd()
@@ -6217,12 +6218,25 @@ public vote_manageEnd()
             try_to_manage_map_end();
         }
 
-        // are we ready to start an "end of map" vote?
+        // Are we ready to start an "end of map" vote?
         if( secondsLeft < START_VOTEMAP_MIN_TIME
-            && secondsLeft > START_VOTEMAP_MAX_TIME
-            && isTimeToStartTheEndOfMapVoting() )
+            && secondsLeft > START_VOTEMAP_MAX_TIME )
         {
-            start_voting_by_timer();
+            new endOfMapVote = get_pcvar_num( cvar_endOfMapVote );
+
+            // Here we tread a special case. There were not enough rounds saved, but we already hit
+            // the vote_manageEnd(0) which is only called on the last seconds of the map. Then just
+            // to start the voting right now, to allow one round maps.
+            //
+            // Note: Only timed maps are susceptible to this problem, maps guided by fraglimit,
+            // maxrounds and winlimit are good to go.
+            if( isTimeToStartTheEndOfMapVoting( endOfMapVote )
+                || ( endOfMapVote
+                     && !g_isTheRoundEnded
+                     && g_totalRoundsSavedTimes < MIN_VOTE_START_ROUNDS_DELAY + 1 ) )
+            {
+                start_voting_by_timer();
+            }
         }
     }
 
