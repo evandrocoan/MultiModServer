@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-566";
+new const PLUGIN_VERSION[] = "v4.2.0-567";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -506,7 +506,7 @@ new cvar_coloredChatEnabled;
 #define IS_DISABLED_VOTEMAP_EXTENSION   8
 #define IS_ENABLED_VOTEMAP_NOMINATIONS  16
 
-#define MAP_CHANGES_AT_THE_NEXT_ROUND        0
+#define MAP_CHANGES_AT_THE_NEXT_ROUND_START  0
 #define MAP_CHANGES_AT_THE_CURRENT_ROUND_END 1
 
 #define IS_MAP_MAPCHANGE_COUNTDOWN      1
@@ -3605,10 +3605,7 @@ public new_round_event()
     {
         if( g_isTheLastGameRound )
         {
-            // As this is called after team_win_event(0), we  need to check the `MAP_CHANGES_AT_THE_CURRENT_ROUND_END`
-            // because not all rounds have the team_win_event(0) called, therefore we must to do it now or never.
-            if( get_pcvar_num( cvar_endOnRoundChange )
-                || get_pcvar_num( cvar_endOnRoundChange ) == MAP_CHANGES_AT_THE_CURRENT_ROUND_END )
+            if( get_pcvar_num( cvar_endOnRoundChange ) == MAP_CHANGES_AT_THE_NEXT_ROUND_START )
             {
                 try_to_process_last_round();
             }
