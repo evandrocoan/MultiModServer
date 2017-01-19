@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-563";
+new const PLUGIN_VERSION[] = "v4.2.0-564";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -2031,6 +2031,13 @@ stock configureServerStart()
                 // These data, are already loaded by the loadNextMapPluginSetttings(0) function call.
                 saveCurrentAndNextMapNames( g_currentMapName, g_nextMapName, true );
             }
+        }
+        else
+        {
+            // Save the current and next map name when the server admin does something like `amx_map`, and the
+            // server did not crash on the selected map, the setTheCurrentAndNextMapSettings(0) cannot update
+            // what are the correct current and next map names, because it is only called a the plugin_end(0).
+            saveCurrentAndNextMapNames( g_currentMapName, g_nextMapName, true );
         }
     }
     else
