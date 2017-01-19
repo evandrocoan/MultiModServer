@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-579";
+new const PLUGIN_VERSION[] = "v4.2.0-580";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -4113,6 +4113,8 @@ stock process_last_round( bool:isToImmediatelyChangeLevel, bool:isCountDownAllow
                 }
 
                 g_lastRoundCountdown = totalTime;
+
+                remove_task( TASKID_SHOW_LAST_ROUND_HUD );
                 set_task( 1.0, "last_round_countdown", TASKID_PROCESS_LAST_ROUND_COUNT, _, _, "a", totalTime );
 
                 get_pcvar_string( cvar_amx_nextmap, nextMapName, charsmax( nextMapName ) );
@@ -4121,6 +4123,7 @@ stock process_last_round( bool:isToImmediatelyChangeLevel, bool:isCountDownAllow
         }
         else
         {
+            remove_task( TASKID_SHOW_LAST_ROUND_HUD );
             intermission_processing( isCountDownAllowed );
         }
     }
