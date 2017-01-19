@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-572";
+new const PLUGIN_VERSION[] = "v4.2.0-573";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -1137,6 +1137,7 @@ new const TO_STOP_THE_CRASH_SEARCH[]        = "delete_this_to_stop_the_crash_sea
 new const MAPS_WHERE_THE_SERVER_CRASHED[]   = "maps_where_the_server_probably_crashed.txt";
 
 new bool:g_isTheRoundEndWhileVoting;
+new bool:g_isTheRoundEnded;
 new bool:g_isTimeToResetGame;
 new bool:g_isTimeToResetRounds;
 new bool:g_isUsingEmptyCycle;
@@ -3628,6 +3629,7 @@ public team_win_event()
     new wins_CT_trigger;
     new string_team_winner[ 16 ];
 
+    g_isTheRoundEnded = true;
     read_logargv( 1, string_team_winner, charsmax( string_team_winner ) );
 
     if( string_team_winner[ 0 ] == 'T' )
@@ -3671,7 +3673,9 @@ public team_win_event()
 public round_end_event()
 {
     LOGGER( 128, "I AM ENTERING ON round_end_event(0)" )
+
     new current_rounds_trigger;
+    g_isTheRoundEnded = true;
 
     g_totalRoundsPlayed++;
     saveTheRoundTime();
@@ -3825,7 +3829,8 @@ public round_start_event()
 {
     LOGGER( 128, "I AM ENTERING ON round_start_event(0)" )
 
-    g_roundStartTime = floatround( get_gametime(), floatround_ceil );
+    g_isTheRoundEnded = false;
+    g_roundStartTime  = floatround( get_gametime(), floatround_ceil );
 
     if( g_isTimeToResetRounds )
     {
@@ -4332,7 +4337,8 @@ public show_last_round_HUD()
 {
     LOGGER( 256, "I AM ENTERING ON show_last_round_HUD(0)" )
 
-    if( ++g_showLastRoundHudCounter % LAST_ROUND_HUD_SHOW_INTERVAL > 7 )
+    if( ++g_showLastRoundHudCounter % LAST_ROUND_HUD_SHOW_INTERVAL > 7
+        || g_isTheRoundEnded )
     {
         return;
     }
