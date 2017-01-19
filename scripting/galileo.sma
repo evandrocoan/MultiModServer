@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-562";
+new const PLUGIN_VERSION[] = "v4.2.0-563";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -4262,14 +4262,22 @@ public last_round_countdown()
 public configure_last_round_HUD()
 {
     LOGGER( 128, "I AM ENTERING ON configure_last_round_HUD(0)" )
-    g_showLastRoundHudCounter = 0;
 
     if( !( get_pcvar_num( cvar_hudsHide ) & HUD_CHANGELEVEL_ANNOUNCE ) )
     {
-        set_task( 1.0, "show_last_round_HUD", TASKID_SHOW_LAST_ROUND_HUD, _, _, "b" );
+        remove_task( TASKID_SHOW_LAST_ROUND_HUD );
+        set_task( 7.0, "setup_last_round_HUD", TASKID_SHOW_LAST_ROUND_HUD );
     }
 
     show_last_round_message();
+}
+
+public setup_last_round_HUD()
+{
+    LOGGER( 128, "I AM ENTERING ON setup_last_round_HUD(0) g_showLastRoundHudCounter: %d", g_showLastRoundHudCounter )
+
+    g_showLastRoundHudCounter = 0;
+    set_task( 1.0, "show_last_round_HUD", TASKID_SHOW_LAST_ROUND_HUD, _, _, "b" );
 }
 
 public show_last_round_message()
