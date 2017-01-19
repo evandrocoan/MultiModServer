@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-567";
+new const PLUGIN_VERSION[] = "v4.2.0-569";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -3593,57 +3593,6 @@ stock tryToStartTheVotingOnThisRound()
     }
 }
 
-/**
- * Called before the freeze time to start counting. This event is not called for the first game round.
- */
-public new_round_event()
-{
-    LOGGER( 128, "I AM ENTERING ON new_round_event(0)" )
-    tryToStartTheVotingOnThisRound();
-
-    if( IS_ABLE_TO_PERFORMED_A_MAP_CHANGE() )
-    {
-        if( g_isTheLastGameRound )
-        {
-            if( get_pcvar_num( cvar_endOnRoundChange ) == MAP_CHANGES_AT_THE_NEXT_ROUND_START )
-            {
-                try_to_process_last_round();
-            }
-        }
-    }
-}
-
-/**
- * Called after the freeze time to stop counting.
- */
-public round_start_event()
-{
-    LOGGER( 128, "I AM ENTERING ON round_start_event(0)" )
-
-    g_roundStartTime = floatround( get_gametime(), floatround_ceil );
-
-    if( g_isTimeToResetRounds )
-    {
-        g_isTimeToResetRounds = false;
-        set_task( 1.0, "resetRoundsScores" );
-    }
-
-    if( g_isTimeToResetGame )
-    {
-        g_isTimeToResetGame = false;
-        set_task( 1.0, "map_restoreEndGameCvars" );
-    }
-
-    // Lazy update the game ending context, after the round_start_event(0) to be completed.
-    g_isTheRoundEndWhileVoting = false;
-
-    if( g_isThePenultGameRoundContext && g_isThePenultGameRound )
-    {
-        g_isTheLastGameRoundContext   = true;
-        g_isThePenultGameRoundContext = false;
-    }
-}
-
 public team_win_event()
 {
     LOGGER( 128, "" )
@@ -3718,50 +3667,55 @@ stock debugTeamWinEvent( string_team_winner[], wins_CT_trigger, wins_Terrorist_t
     return 0;
 }
 
+
 /**
- * Called on the round_end_event(). This is the place to change the map when the variables
- * `g_isThePenultGameRound` and `g_isTheLastGameRound` are set to true.
+ * Called before the freeze time to start counting. This event is not called for the first game round.
  */
-stock endRoundWatchdog()
+public new_round_event()
 {
-    LOGGER( 128, "I AM ENTERING ON endRoundWatchdog(0)" )
-    new bool:endOfMapVoteExpiration = get_pcvar_num( cvar_endOfMapVoteExpiration ) != 0;
+    LOGGER( 128, "I AM ENTERING ON new_round_event(0)" )
+    tryToStartTheVotingOnThisRound();
 
-    // Just update their values when calling this function.
-    g_fragLimitNumber = get_pcvar_num( cvar_mp_fraglimit );
-    g_timeLimitNumber = get_pcvar_num( cvar_mp_timelimit );
-
-    if( endOfMapVoteExpiration
-        && g_voteStatus & IS_VOTE_OVER )
+    if( IS_ABLE_TO_PERFORMED_A_MAP_CHANGE() )
     {
-        // Make the map to change immediately.
-        g_isTheLastGameRound   = true;
-        g_isThePenultGameRound = false;
-    }
-
-    // Always remove this, if set up.
-    remove_task( TASKID_SHOW_LAST_ROUND_HUD );
-
-    // This is what changes the map on the next round. The last round has ended and the map will change about now.
-    if( g_isTheLastGameRound )
-    {
-        // When time runs out, end map at the current round end.
-        if( endOfMapVoteExpiration
-            || get_pcvar_num( cvar_endOnRoundChange ) == MAP_CHANGES_AT_THE_CURRENT_ROUND_END )
+        if( g_isTheLastGameRound )
         {
-            try_to_process_last_round();
+            if( get_pcvar_num( cvar_endOnRoundChange ) == MAP_CHANGES_AT_THE_NEXT_ROUND_START )
+            {
+                try_to_process_last_round();
+            }
         }
     }
-    else if( g_isThePenultGameRound )
+}
+
+/**
+ * Called after the freeze time to stop counting.
+ */
+public round_start_event()
+{
+    LOGGER( 128, "I AM ENTERING ON round_start_event(0)" )
+
+    g_roundStartTime = floatround( get_gametime(), floatround_ceil );
+
+    if( g_isTimeToResetRounds )
     {
-        // When time runs out, end map at the next round end.
-        g_isTheLastGameRound = true;
+        g_isTimeToResetRounds = false;
+        set_task( 1.0, "resetRoundsScores" );
+    }
 
-        // Set it to false because later we first could try to check this before `g_isTheLastGameRound`
-        // resulting on an infinity loop.
-        g_isThePenultGameRound = false;
+    if( g_isTimeToResetGame )
+    {
+        g_isTimeToResetGame = false;
+        set_task( 1.0, "map_restoreEndGameCvars" );
+    }
 
-        set_task( 5.0, "configure_last_round_HUD", TASKID_PROCESS_LAST_ROUND );
+    // Lazy update the game ending context, after the round_start_event(0) to be completed.
+    g_isTheRoundEndWhileVoting = false;
+
+    if( g_isThePenultGameRoundContext && g_isThePenultGameRound )
+    {
+        g_isTheLastGameRoundContext   = true;
+        g_isThePenultGameRoundContext = false;
     }
 }
 
@@ -3807,6 +3761,50 @@ public round_end_event()
     LOGGER( 32, "( round_end_event ) g_maxRoundsNumber: %d", g_maxRoundsNumber )
     LOGGER( 32, "( round_end_event ) g_totalRoundsPlayed: %d, current_rounds_trigger: %d", \
             g_totalRoundsPlayed, current_rounds_trigger )
+}
+
+/**
+ * Called on the round_end_event(). This is the place to change the map when the variables
+ * `g_isThePenultGameRound` and `g_isTheLastGameRound` are set to true.
+ */
+stock endRoundWatchdog()
+{
+    LOGGER( 128, "I AM ENTERING ON endRoundWatchdog(0)" )
+    new bool:endOfMapVoteExpiration = get_pcvar_num( cvar_endOfMapVoteExpiration ) != 0;
+
+    // Just update their values when calling this function.
+    g_fragLimitNumber = get_pcvar_num( cvar_mp_fraglimit );
+    g_timeLimitNumber = get_pcvar_num( cvar_mp_timelimit );
+
+    if( endOfMapVoteExpiration
+        && g_voteStatus & IS_VOTE_OVER )
+    {
+        // Make the map to change immediately.
+        g_isTheLastGameRound   = true;
+        g_isThePenultGameRound = false;
+    }
+
+    // This is what changes the map on the next round. The last round has ended and the map will change about now.
+    if( g_isTheLastGameRound )
+    {
+        // When time runs out, end map at the current round end.
+        if( endOfMapVoteExpiration
+            || get_pcvar_num( cvar_endOnRoundChange ) == MAP_CHANGES_AT_THE_CURRENT_ROUND_END )
+        {
+            try_to_process_last_round();
+        }
+    }
+    else if( g_isThePenultGameRound )
+    {
+        // When time runs out, end map at the next round end.
+        g_isTheLastGameRound = true;
+
+        // Set it to false because later we first could try to check this before `g_isTheLastGameRound`
+        // resulting on an infinity loop.
+        g_isThePenultGameRound = false;
+
+        set_task( 5.0, "configure_last_round_HUD", TASKID_PROCESS_LAST_ROUND );
+    }
 }
 
 stock saveTheRoundTime()
@@ -3869,6 +3867,37 @@ stock try_to_manage_map_end( bool:isFragLimitEnd = false )
         {
             try_to_process_last_round( isFragLimitEnd );
         }
+    }
+}
+
+/**
+ * This is a fail safe to not allow map changes if must there be a map voting and it was not
+ * finished/performed yet.
+ */
+stock try_to_process_last_round( bool:isFragLimitEnd = false )
+{
+    LOGGER( 128, "I AM ENTERING ON try_to_process_last_round(0)" )
+    new bool:allowMapChange;
+
+    if( g_voteStatus & IS_VOTE_OVER )
+    {
+        allowMapChange = true;
+    }
+    else
+    {
+        if( get_pcvar_num( cvar_endOfMapVote ) )
+        {
+            allowMapChange = false;
+        }
+        else
+        {
+            allowMapChange = true;
+        }
+    }
+
+    if( allowMapChange )
+    {
+        process_last_round( g_isTheLastGameRound || isFragLimitEnd );
     }
 }
 
@@ -4010,37 +4039,6 @@ stock prevent_map_change()
 
     cacheCvarsValues();
     set_task( roundTimeMinutes * 60, "map_restoreEndGameCvars", TASKID_PREVENT_INFITY_GAME );
-}
-
-/**
- * This is a fail safe to not allow map changes if must there be a map voting and it was not
- * finished/performed yet.
- */
-stock try_to_process_last_round( bool:isFragLimitEnd = false )
-{
-    LOGGER( 128, "I AM ENTERING ON try_to_process_last_round(0)" )
-    new bool:allowMapChange;
-
-    if( g_voteStatus & IS_VOTE_OVER )
-    {
-        allowMapChange = true;
-    }
-    else
-    {
-        if( get_pcvar_num( cvar_endOfMapVote ) )
-        {
-            allowMapChange = false;
-        }
-        else
-        {
-            allowMapChange = true;
-        }
-    }
-
-    if( allowMapChange )
-    {
-        process_last_round( g_isTheLastGameRound || isFragLimitEnd );
-    }
 }
 
 /**
