@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-571";
+new const PLUGIN_VERSION[] = "v4.2.0-572";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -3594,6 +3594,30 @@ stock tryToStartTheVotingOnThisRound()
     }
 }
 
+stock debugTeamWinEvent( string_team_winner[], wins_CT_trigger, wins_Terrorist_trigger )
+{
+    LOGGER( 32, "I AM ENTERING ON debugTeamWinEvent(3)" )
+
+    LOGGER( 32, "( debugTeamWinEvent )" )
+    LOGGER( 32, "( debugTeamWinEvent ) string_team_winner: %s", string_team_winner )
+    LOGGER( 32, "( debugTeamWinEvent ) g_winLimitInteger: %d", g_winLimitInteger )
+    LOGGER( 32, "( debugTeamWinEvent ) wins_CT_trigger: %d", wins_CT_trigger )
+    LOGGER( 32, "( debugTeamWinEvent ) wins_Terrorist_trigger: %d", wins_Terrorist_trigger )
+    LOGGER( 32, "( debugTeamWinEvent ) g_isGameEndingTypeContextSaved: %d", g_isGameEndingTypeContextSaved )
+    LOGGER( 32, "( debugTeamWinEvent ) g_gameEndingTypeContextSaved: %d", g_gameEndingTypeContextSaved )
+    LOGGER( 32, "( debugTeamWinEvent ) g_timeLeftContextSaved: %d", g_timeLeftContextSaved )
+    LOGGER( 32, "( debugTeamWinEvent ) g_maxRoundsContextSaved: %d", g_maxRoundsContextSaved )
+    LOGGER( 32, "( debugTeamWinEvent ) g_winLimitContextSaved: %d", g_winLimitContextSaved )
+    LOGGER( 32, "( debugTeamWinEvent ) g_fragLimitContextSaved: %d", g_fragLimitContextSaved )
+    LOGGER( 32, "( debugTeamWinEvent ) g_isTheLastGameRound: %d", g_isTheLastGameRound )
+    LOGGER( 32, "( debugTeamWinEvent ) g_isTheLastGameRoundContext: %d", g_isTheLastGameRoundContext )
+    LOGGER( 32, "( debugTeamWinEvent ) g_isThePenultGameRound: %d", g_isThePenultGameRound )
+    LOGGER( 32, "( debugTeamWinEvent ) g_isThePenultGameRoundContext: %d", g_isThePenultGameRoundContext )
+    LOGGER( 32, "( debugTeamWinEvent )" )
+
+    return 0;
+}
+
 public team_win_event()
 {
     LOGGER( 128, "" )
@@ -3642,82 +3666,6 @@ public team_win_event()
     }
 
     LOGGER( 0, "", debugTeamWinEvent( string_team_winner, wins_CT_trigger, wins_Terrorist_trigger ) )
-}
-
-stock debugTeamWinEvent( string_team_winner[], wins_CT_trigger, wins_Terrorist_trigger )
-{
-    LOGGER( 32, "I AM ENTERING ON debugTeamWinEvent(3)" )
-
-    LOGGER( 32, "( debugTeamWinEvent )" )
-    LOGGER( 32, "( debugTeamWinEvent ) string_team_winner: %s", string_team_winner )
-    LOGGER( 32, "( debugTeamWinEvent ) g_winLimitInteger: %d", g_winLimitInteger )
-    LOGGER( 32, "( debugTeamWinEvent ) wins_CT_trigger: %d", wins_CT_trigger )
-    LOGGER( 32, "( debugTeamWinEvent ) wins_Terrorist_trigger: %d", wins_Terrorist_trigger )
-    LOGGER( 32, "( debugTeamWinEvent ) g_isGameEndingTypeContextSaved: %d", g_isGameEndingTypeContextSaved )
-    LOGGER( 32, "( debugTeamWinEvent ) g_gameEndingTypeContextSaved: %d", g_gameEndingTypeContextSaved )
-    LOGGER( 32, "( debugTeamWinEvent ) g_timeLeftContextSaved: %d", g_timeLeftContextSaved )
-    LOGGER( 32, "( debugTeamWinEvent ) g_maxRoundsContextSaved: %d", g_maxRoundsContextSaved )
-    LOGGER( 32, "( debugTeamWinEvent ) g_winLimitContextSaved: %d", g_winLimitContextSaved )
-    LOGGER( 32, "( debugTeamWinEvent ) g_fragLimitContextSaved: %d", g_fragLimitContextSaved )
-    LOGGER( 32, "( debugTeamWinEvent ) g_isTheLastGameRound: %d", g_isTheLastGameRound )
-    LOGGER( 32, "( debugTeamWinEvent ) g_isTheLastGameRoundContext: %d", g_isTheLastGameRoundContext )
-    LOGGER( 32, "( debugTeamWinEvent ) g_isThePenultGameRound: %d", g_isThePenultGameRound )
-    LOGGER( 32, "( debugTeamWinEvent ) g_isThePenultGameRoundContext: %d", g_isThePenultGameRoundContext )
-    LOGGER( 32, "( debugTeamWinEvent )" )
-
-    return 0;
-}
-
-
-/**
- * Called before the freeze time to start counting. This event is not called for the first game round.
- */
-public new_round_event()
-{
-    LOGGER( 128, "I AM ENTERING ON new_round_event(0)" )
-    tryToStartTheVotingOnThisRound();
-
-    if( IS_ABLE_TO_PERFORMED_A_MAP_CHANGE() )
-    {
-        if( g_isTheLastGameRound )
-        {
-            if( get_pcvar_num( cvar_endOnRoundChange ) == MAP_CHANGES_AT_THE_NEXT_ROUND_START )
-            {
-                try_to_process_last_round();
-            }
-        }
-    }
-}
-
-/**
- * Called after the freeze time to stop counting.
- */
-public round_start_event()
-{
-    LOGGER( 128, "I AM ENTERING ON round_start_event(0)" )
-
-    g_roundStartTime = floatround( get_gametime(), floatround_ceil );
-
-    if( g_isTimeToResetRounds )
-    {
-        g_isTimeToResetRounds = false;
-        set_task( 1.0, "resetRoundsScores" );
-    }
-
-    if( g_isTimeToResetGame )
-    {
-        g_isTimeToResetGame = false;
-        set_task( 1.0, "map_restoreEndGameCvars" );
-    }
-
-    // Lazy update the game ending context, after the round_start_event(0) to be completed.
-    g_isTheRoundEndWhileVoting = false;
-
-    if( g_isThePenultGameRoundContext && g_isThePenultGameRound )
-    {
-        g_isTheLastGameRoundContext   = true;
-        g_isThePenultGameRoundContext = false;
-    }
 }
 
 public round_end_event()
@@ -3848,6 +3796,57 @@ stock saveTheRoundTime()
     }
 
     LOGGER( 32, "( saveTheRoundTime ) roundTotalTime: %d", roundTotalTime )
+}
+
+/**
+ * Called before the freeze time to start counting. This event is not called for the first game round.
+ */
+public new_round_event()
+{
+    LOGGER( 128, "I AM ENTERING ON new_round_event(0)" )
+    tryToStartTheVotingOnThisRound();
+
+    if( IS_ABLE_TO_PERFORMED_A_MAP_CHANGE() )
+    {
+        if( g_isTheLastGameRound )
+        {
+            if( get_pcvar_num( cvar_endOnRoundChange ) == MAP_CHANGES_AT_THE_NEXT_ROUND_START )
+            {
+                try_to_process_last_round();
+            }
+        }
+    }
+}
+
+/**
+ * Called after the freeze time to stop counting.
+ */
+public round_start_event()
+{
+    LOGGER( 128, "I AM ENTERING ON round_start_event(0)" )
+
+    g_roundStartTime = floatround( get_gametime(), floatround_ceil );
+
+    if( g_isTimeToResetRounds )
+    {
+        g_isTimeToResetRounds = false;
+        set_task( 1.0, "resetRoundsScores" );
+    }
+
+    if( g_isTimeToResetGame )
+    {
+        g_isTimeToResetGame = false;
+        set_task( 1.0, "map_restoreEndGameCvars" );
+    }
+
+    // Lazy update the game ending context, after the round_start_event(0) to be completed.
+    g_isTheRoundEndWhileVoting = false;
+
+    if( g_isThePenultGameRoundContext && g_isThePenultGameRound )
+    {
+        g_isTheLastGameRoundContext   = true;
+        g_isThePenultGameRoundContext = false;
+    }
 }
 
 stock try_to_manage_map_end( bool:isFragLimitEnd = false )
