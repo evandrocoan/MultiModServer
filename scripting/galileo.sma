@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-556";
+new const PLUGIN_VERSION[] = "v4.2.0-562";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -642,8 +642,9 @@ new cvar_coloredChatEnabled;
  */
 #define IS_ABLE_TO_PERFORMED_A_MAP_CHANGE() \
     ( !task_exists( TASKID_PROCESS_LAST_ROUND_COUNT ) \
-      && !task_exists( TASKID_INTERMISSION_HOLD ) \
-      && !( g_voteStatus & IS_VOTE_IN_PROGRESS ) )
+      || !task_exists( TASKID_INTERMISSION_HOLD ) \
+      || !( g_voteStatus & IS_VOTE_IN_PROGRESS ) \
+      || !g_isTheRoundEndWhileVoting )
 
 /**
  * This indicates the players minimum number necessary to allow the last round to be finished when
@@ -1133,6 +1134,7 @@ new const GAME_CRASH_RECREATION_FLAG_FILE[] = "gameCrashRecreationAction.txt";
 new const TO_STOP_THE_CRASH_SEARCH[]        = "delete_this_to_stop_the_crash_search.txt";
 new const MAPS_WHERE_THE_SERVER_CRASHED[]   = "maps_where_the_server_probably_crashed.txt";
 
+new bool:g_isTheRoundEndWhileVoting;
 new bool:g_isTimeToResetGame;
 new bool:g_isTimeToResetRounds;
 new bool:g_isUsingEmptyCycle;
@@ -3086,25 +3088,12 @@ stock chooseTheEndOfMapStartOption( roundsRemaining )
         }
         case END_AT_THE_CURRENT_ROUND_END:
         {
-            switch( endOfMapVoteStart )
+            if( ( g_isGameEndingTypeContextSaved ? g_isTheLastGameRoundContext : g_isTheLastGameRound )
+                || ( endOfMapVoteStart
+                   && roundsRemaining < endOfMapVoteStart + 1 ) )
             {
-                case 1:
-                {
-                    if( g_isGameEndingTypeContextSaved ? g_isTheLastGameRoundContext : g_isTheLastGameRound )
-                    {
-                        LOGGER( 1, "    ( chooseTheEndOfMapStartOption ) Returning true." )
-                        return true;
-                    }
-                }
-                default:
-                {
-                    if( endOfMapVoteStart
-                        && roundsRemaining < endOfMapVoteStart + 1 )
-                    {
-                        LOGGER( 1, "    ( chooseTheEndOfMapStartOption ) Returning true." )
-                        return true;
-                    }
-                }
+                LOGGER( 1, "    ( chooseTheEndOfMapStartOption ) Returning true." )
+                return true;
             }
         }
         case END_AT_THE_NEXT_ROUND_END:
@@ -3113,7 +3102,9 @@ stock chooseTheEndOfMapStartOption( roundsRemaining )
             {
                 case 1:
                 {
-                    if( g_isGameEndingTypeContextSaved ? g_isTheLastGameRoundContext : g_isTheLastGameRound )
+                    if( ( g_isGameEndingTypeContextSaved ? g_isTheLastGameRoundContext : g_isTheLastGameRound )
+                        || ( endOfMapVoteStart
+                           && roundsRemaining < endOfMapVoteStart + 1 ) )
                     {
                         LOGGER( 1, "    ( chooseTheEndOfMapStartOption ) Returning true." )
                         return true;
@@ -3121,7 +3112,9 @@ stock chooseTheEndOfMapStartOption( roundsRemaining )
                 }
                 case 2:
                 {
-                    if( g_isGameEndingTypeContextSaved ? g_isThePenultGameRoundContext : g_isThePenultGameRound )
+                    if( ( g_isGameEndingTypeContextSaved ? g_isThePenultGameRoundContext : g_isThePenultGameRound )
+                        || ( endOfMapVoteStart
+                             && roundsRemaining < endOfMapVoteStart + 1 ) )
                     {
                         LOGGER( 1, "    ( chooseTheEndOfMapStartOption ) Returning true." )
                         return true;
@@ -3375,7 +3368,7 @@ stock GameEndingType:switchEndingGameType( by_maxrounds, cv_maxrounds, by_time, 
                 && by_winlimit > by_maxrounds
                 && by_frags > by_maxrounds )
             {
-                LOGGER( 256, "^n^n^n ( switchEndingGameType ) 1" )
+                LOGGER( 256, "    ( switchEndingGameType ) 1" )
                 return type;
             }
         }
@@ -3385,7 +3378,7 @@ stock GameEndingType:switchEndingGameType( by_maxrounds, cv_maxrounds, by_time, 
             if( by_time > by_maxrounds
                 && by_winlimit > by_maxrounds )
             {
-                LOGGER( 256, "^n^n^n ( switchEndingGameType ) 2" )
+                LOGGER( 256, "    ( switchEndingGameType ) 2" )
                 return type;
             }
         }
@@ -3395,7 +3388,7 @@ stock GameEndingType:switchEndingGameType( by_maxrounds, cv_maxrounds, by_time, 
             if( by_time > by_maxrounds
                 && by_frags > by_maxrounds )
             {
-                LOGGER( 256, "^n^n^n ( switchEndingGameType ) 3" )
+                LOGGER( 256, "    ( switchEndingGameType ) 3" )
                 return type;
             }
         }
@@ -3405,7 +3398,7 @@ stock GameEndingType:switchEndingGameType( by_maxrounds, cv_maxrounds, by_time, 
             if( by_winlimit > by_maxrounds
                 && by_frags > by_maxrounds )
             {
-                LOGGER( 256, "^n^n^n ( switchEndingGameType ) 4" )
+                LOGGER( 256, "    ( switchEndingGameType ) 4" )
                 return type;
             }
         }
@@ -3414,24 +3407,24 @@ stock GameEndingType:switchEndingGameType( by_maxrounds, cv_maxrounds, by_time, 
         else if( cv_time > 0
                  && by_time > by_maxrounds )
         {
-            LOGGER( 256, "^n^n^n ( switchEndingGameType ) 5" )
+            LOGGER( 256, "    ( switchEndingGameType ) 5" )
             return type;
         }
         else if( cv_winlimit > 0
                  && by_winlimit > by_maxrounds )
         {
-            LOGGER( 256, "^n^n^n ( switchEndingGameType ) 6" )
+            LOGGER( 256, "    ( switchEndingGameType ) 6" )
             return type;
         }
         else if( cv_frags > 0
                  && by_frags > by_maxrounds )
         {
-            LOGGER( 256, "^n^n^n ( switchEndingGameType ) 7" )
+            LOGGER( 256, "    ( switchEndingGameType ) 7" )
             return type;
         }
         else if( allowSelfReturn )
         {
-            LOGGER( 256, "^n^n^n ( switchEndingGameType ) 8" )
+            LOGGER( 256, "    ( switchEndingGameType ) 8" )
             return type;
         }
     }
@@ -3603,9 +3596,6 @@ public new_round_event()
     {
         if( g_isTheLastGameRound )
         {
-            // When time runs out, end map at the current round end.
-            remove_task( TASKID_SHOW_LAST_ROUND_HUD );
-
             // As this is called after team_win_event(0), we  need to check the `MAP_CHANGES_AT_THE_CURRENT_ROUND_END`
             // because not all rounds have the team_win_event(0) called, therefore we must to do it now or never.
             if( get_pcvar_num( cvar_endOnRoundChange )
@@ -3624,12 +3614,6 @@ public round_start_event()
 {
     LOGGER( 128, "I AM ENTERING ON round_start_event(0)" )
 
-    if( g_isTimeToResetRounds )
-    {
-        g_isTimeToResetRounds = false;
-        set_task( 1.0, "resetRoundsScores" );
-    }
-
     g_roundStartTime = floatround( get_gametime(), floatround_ceil );
 
     // This must not to be called when we are performing the round ending, otherwise it will cause the
@@ -3638,6 +3622,12 @@ public round_start_event()
     // to return false, allowing the execution flow to get until here.
     if( !IS_ABLE_TO_PERFORMED_A_MAP_CHANGE() )
     {
+        if( g_isTimeToResetRounds )
+        {
+            g_isTimeToResetRounds = false;
+            set_task( 1.0, "resetRoundsScores" );
+        }
+
         if( g_isTimeToResetGame )
         {
             g_isTimeToResetGame = false;
@@ -3646,6 +3636,8 @@ public round_start_event()
     }
 
     // Lazy update the game ending context, after the round_start_event(0) to be completed.
+    g_isTheRoundEndWhileVoting = false;
+
     if( g_isThePenultGameRoundContext && g_isThePenultGameRound )
     {
         g_isTheLastGameRoundContext   = true;
@@ -3693,6 +3685,11 @@ public team_win_event()
         {
             try_to_manage_map_end();
         }
+    }
+
+    if( g_voteStatus & IS_VOTE_IN_PROGRESS )
+    {
+        g_isTheRoundEndWhileVoting = true;
     }
 
     debugTeamWinEvent( string_team_winner, wins_CT_trigger, wins_Terrorist_trigger );
@@ -3744,7 +3741,7 @@ stock endRoundWatchdog()
     // Always remove this, if set up.
     remove_task( TASKID_SHOW_LAST_ROUND_HUD );
 
-    // This is what changes the map on the next round.
+    // This is what changes the map on the next round. The last round has ended and the map will change about now.
     if( g_isTheLastGameRound )
     {
         // When time runs out, end map at the current round end.
@@ -3799,6 +3796,11 @@ public round_end_event()
     if( IS_ABLE_TO_PERFORMED_A_MAP_CHANGE() )
     {
         endRoundWatchdog();
+    }
+
+    if( g_voteStatus & IS_VOTE_IN_PROGRESS )
+    {
+        g_isTheRoundEndWhileVoting = true;
     }
 
     LOGGER( 32, "( round_end_event ) g_maxRoundsNumber: %d", g_maxRoundsNumber )
@@ -4127,7 +4129,7 @@ stock Float:get_intermission_chattime()
         mp_chattime = 2.0;
     }
 
-    return mp_chattime;
+    return mp_chattime + 1.0;
 }
 
 /**
@@ -4260,6 +4262,7 @@ public last_round_countdown()
 public configure_last_round_HUD()
 {
     LOGGER( 128, "I AM ENTERING ON configure_last_round_HUD(0)" )
+    g_showLastRoundHudCounter = 0;
 
     if( !( get_pcvar_num( cvar_hudsHide ) & HUD_CHANGELEVEL_ANNOUNCE ) )
     {
@@ -4291,7 +4294,8 @@ public show_last_round_message()
             color_print( 0, "%L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED2", LANG_PLAYER, "GAL_NEXTMAP2", nextMapName );
         }
     }
-    else if( g_isThePenultGameRound )
+    else if( g_isTheLastGameRound
+             || g_isThePenultGameRound )
     {
         color_print( 0, "%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED2" );
     }
@@ -4326,12 +4330,14 @@ public show_last_round_HUD()
         {
             show_hudmessage( 0, "%L^n%L", LANG_PLAYER, "GAL_CHANGE_NEXTROUND",  LANG_PLAYER, "GAL_NEXTMAP1", nextMapName );
         }
-        else if( g_isThePenultGameRound )
+        else if( g_isTheLastGameRound
+                 || g_isThePenultGameRound )
         {
             show_hudmessage( 0, "%L^n%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED1", LANG_PLAYER, "GAL_NEXTMAP1", nextMapName );
         }
     }
-    else if( g_isThePenultGameRound )
+    else if( g_isTheLastGameRound
+             || g_isThePenultGameRound )
     {
         show_hudmessage( 0, "%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED1" );
     }
@@ -4435,6 +4441,7 @@ stock resetRoundEnding()
     g_isTheLastGameRound           = false;
     g_isTimeToRestart              = false;
     g_isThePenultGameRound         = false;
+    g_isTheRoundEndWhileVoting     = false;
     g_isToChangeMapOnVotingEnd     = false;
     g_isGameEndingTypeContextSaved = false;
 
@@ -4451,6 +4458,7 @@ stock saveRoundEnding( bool:roundEndStatus[] )
     roundEndStatus[ 1 ] = g_isTimeToRestart;
     roundEndStatus[ 2 ] = g_isThePenultGameRound;
     roundEndStatus[ 3 ] = g_isToChangeMapOnVotingEnd;
+    roundEndStatus[ 4 ] = g_isTheRoundEndWhileVoting;
 }
 
 stock restoreRoundEnding( bool:roundEndStatus[] )
@@ -4462,6 +4470,7 @@ stock restoreRoundEnding( bool:roundEndStatus[] )
     g_isTimeToRestart          = roundEndStatus[ 1 ];
     g_isThePenultGameRound     = roundEndStatus[ 2 ];
     g_isToChangeMapOnVotingEnd = roundEndStatus[ 3 ];
+    g_isTheRoundEndWhileVoting = roundEndStatus[ 4 ];
 }
 
 /**
@@ -4493,10 +4502,10 @@ stock restoreRoundEnding( bool:roundEndStatus[] )
 public resetRoundsScores()
 {
     LOGGER( 128 + 2, "I AM ENTERING ON resetRoundsScores(0)" )
-    LOGGER( 2, "( resetRoundsScores ) TRYING to change the cvar %15s to '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
-    LOGGER( 2, "( resetRoundsScores ) TRYING to change the cvar %15s to '%d'.", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) )
-    LOGGER( 2, "( resetRoundsScores ) TRYING to change the cvar %15s to '%d'.", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) )
-    LOGGER( 2, "( resetRoundsScores ) TRYING to change the cvar %15s to '%d'.", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) )
+    LOGGER( 2, "( resetRoundsScores ) TRYING to change the cvar %15s from '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
+    LOGGER( 2, "( resetRoundsScores ) TRYING to change the cvar %15s from '%d'.", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) )
+    LOGGER( 2, "( resetRoundsScores ) TRYING to change the cvar %15s from '%d'.", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) )
+    LOGGER( 2, "( resetRoundsScores ) TRYING to change the cvar %15s from '%d'.", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) )
 
     new serverLimiterValue;
 
@@ -4511,10 +4520,10 @@ public resetRoundsScores()
     g_totalRoundsPlayed   = -1;
     g_greatestKillerFrags = 0;
 
-    LOGGER( 2, "( resetRoundsScores ) CHECKOUT the cvar %-23s is '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
-    LOGGER( 2, "( resetRoundsScores ) CHECKOUT the cvar %-23s is '%d'.", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) )
-    LOGGER( 2, "( resetRoundsScores ) CHECKOUT the cvar %-23s is '%d'.", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) )
-    LOGGER( 2, "( resetRoundsScores ) CHECKOUT the cvar %-23s is '%d'.", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) )
+    LOGGER( 2, "( resetRoundsScores ) CHECKOUT the cvar %-25s is '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
+    LOGGER( 2, "( resetRoundsScores ) CHECKOUT the cvar %-25s is '%d'.", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) )
+    LOGGER( 2, "( resetRoundsScores ) CHECKOUT the cvar %-25s is '%d'.", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) )
+    LOGGER( 2, "( resetRoundsScores ) CHECKOUT the cvar %-25s is '%d'.", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) )
     LOGGER( 1, "    I AM EXITING ON resetRoundsScores(0)" )
 }
 
@@ -8578,7 +8587,7 @@ stock toShowTheMapExtensionHud( lang1[], lang2[], lang3[], extend )
 
     if( !( get_pcvar_num( cvar_hudsHide ) & HUD_VOTE_RESULTS_ANNOUNCE ) )
     {
-        set_hudmessage( 150, 120, 0, -1.0, 0.13, 0, 1.0, 9.94, 0.0, 0.0, -1 );
+        set_hudmessage( 150, 120, 0, -1.0, 0.13, 0, 1.0, 6.94, 0.0, 0.0, -1 );
         show_hudmessage( 0, "%L. %L:^n%L", LANG_PLAYER, lang1, LANG_PLAYER, lang2, LANG_PLAYER, lang3, extend );
     }
 }
@@ -8589,7 +8598,7 @@ stock toShowTheMapStayHud( lang1[], lang2[], lang3[] )
 
     if( !( get_pcvar_num( cvar_hudsHide ) & HUD_VOTE_RESULTS_ANNOUNCE ) )
     {
-        set_hudmessage( 150, 120, 0, -1.0, 0.13, 0, 1.0, 9.94, 0.0, 0.0, -1 );
+        set_hudmessage( 150, 120, 0, -1.0, 0.13, 0, 1.0, 6.94, 0.0, 0.0, -1 );
         show_hudmessage( 0, "%L. %L:^n%L", LANG_PLAYER, lang1, LANG_PLAYER, lang2, LANG_PLAYER, lang3 );
     }
 }
@@ -8600,7 +8609,7 @@ stock toShowTheMapNextHud( lang1[], lang2[], lang3[], map[] )
 
     if( !( get_pcvar_num( cvar_hudsHide ) & HUD_VOTE_RESULTS_ANNOUNCE ) )
     {
-        set_hudmessage( 150, 120, 0, -1.0, 0.13, 0, 1.0, 9.94, 0.0, 0.0, -1 );
+        set_hudmessage( 150, 120, 0, -1.0, 0.13, 0, 1.0, 6.94, 0.0, 0.0, -1 );
         show_hudmessage( 0, "%L. %L:^n%L", LANG_PLAYER, lang1, LANG_PLAYER, lang2, LANG_PLAYER, lang3, map );
     }
 }
@@ -13743,11 +13752,9 @@ public changeMap()
     // mp_chattime defaults to 10 in other mods
     if( cvar_mp_chattime )
     {
-        chatTime = g_originalChatTime = get_pcvar_float( cvar_mp_chattime );
-    }
+        chatTime           = get_pcvar_float( cvar_mp_chattime );
+        g_originalChatTime = chatTime;
 
-    if( cvar_mp_chattime )
-    {
         // make sure mp_chattime is long
         tryToSetGameModCvarFloat( cvar_mp_chattime, chatTime + 2.0 );
         LOGGER( 2, "( changeMap ) IS CHANGING THE CVAR 'mp_chattime' to '%f'.", chatTime + 2.0 )
