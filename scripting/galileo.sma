@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-564";
+new const PLUGIN_VERSION[] = "v4.2.0-565";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -3086,10 +3086,11 @@ stock chooseTheEndOfMapStartOption( roundsRemaining )
     {
         case END_AT_RIGHT_NOW:
         {
+            // Sum +1 to start it earlier as the cannot block the map changing.
             if( endOfMapVoteStart
                 && roundsRemaining < endOfMapVoteStart + 1 )
             {
-                LOGGER( 1, "    ( chooseTheEndOfMapStartOption ) Returning true." )
+                LOGGER( 1, "    ( chooseTheEndOfMapStartOption ) 1. Returning true." )
                 return true;
             }
         }
@@ -3097,9 +3098,9 @@ stock chooseTheEndOfMapStartOption( roundsRemaining )
         {
             if( ( g_isGameEndingTypeContextSaved ? g_isTheLastGameRoundContext : g_isTheLastGameRound )
                 || ( endOfMapVoteStart
-                   && roundsRemaining < endOfMapVoteStart + 1 ) )
+                   && roundsRemaining < endOfMapVoteStart ) )
             {
-                LOGGER( 1, "    ( chooseTheEndOfMapStartOption ) Returning true." )
+                LOGGER( 1, "    ( chooseTheEndOfMapStartOption ) 2. Returning true." )
                 return true;
             }
         }
@@ -3111,9 +3112,9 @@ stock chooseTheEndOfMapStartOption( roundsRemaining )
                 {
                     if( ( g_isGameEndingTypeContextSaved ? g_isTheLastGameRoundContext : g_isTheLastGameRound )
                         || ( endOfMapVoteStart
-                           && roundsRemaining < endOfMapVoteStart + 1 ) )
+                           && roundsRemaining < endOfMapVoteStart ) )
                     {
-                        LOGGER( 1, "    ( chooseTheEndOfMapStartOption ) Returning true." )
+                        LOGGER( 1, "    ( chooseTheEndOfMapStartOption ) 3. Returning true." )
                         return true;
                     }
                 }
@@ -3121,18 +3122,18 @@ stock chooseTheEndOfMapStartOption( roundsRemaining )
                 {
                     if( ( g_isGameEndingTypeContextSaved ? g_isThePenultGameRoundContext : g_isThePenultGameRound )
                         || ( endOfMapVoteStart
-                             && roundsRemaining < endOfMapVoteStart + 1 ) )
+                             && roundsRemaining < endOfMapVoteStart ) )
                     {
-                        LOGGER( 1, "    ( chooseTheEndOfMapStartOption ) Returning true." )
+                        LOGGER( 1, "    ( chooseTheEndOfMapStartOption ) 4. Returning true." )
                         return true;
                     }
                 }
                 default:
                 {
                     if( endOfMapVoteStart
-                        && roundsRemaining < endOfMapVoteStart + 1 )
+                        && roundsRemaining < endOfMapVoteStart )
                     {
-                        LOGGER( 1, "    ( chooseTheEndOfMapStartOption ) Returning true." )
+                        LOGGER( 1, "    ( chooseTheEndOfMapStartOption ) 5. Returning true." )
                         return true;
                     }
                 }
@@ -3623,23 +3624,16 @@ public round_start_event()
 
     g_roundStartTime = floatround( get_gametime(), floatround_ceil );
 
-    // This must not to be called when we are performing the round ending, otherwise it will cause the
-    // round to immediately change as the cvars are being restored. Every time this must to be called,
-    // the function cancelVoting(1) will also be called and it will cause the IS_ABLE_TO_PERFORMED_A_MAP_CHANGE(0)
-    // to return false, allowing the execution flow to get until here.
-    if( !IS_ABLE_TO_PERFORMED_A_MAP_CHANGE() )
+    if( g_isTimeToResetRounds )
     {
-        if( g_isTimeToResetRounds )
-        {
-            g_isTimeToResetRounds = false;
-            set_task( 1.0, "resetRoundsScores" );
-        }
+        g_isTimeToResetRounds = false;
+        set_task( 1.0, "resetRoundsScores" );
+    }
 
-        if( g_isTimeToResetGame )
-        {
-            g_isTimeToResetGame = false;
-            set_task( 1.0, "map_restoreEndGameCvars" );
-        }
+    if( g_isTimeToResetGame )
+    {
+        g_isTimeToResetGame = false;
+        set_task( 1.0, "map_restoreEndGameCvars" );
     }
 
     // Lazy update the game ending context, after the round_start_event(0) to be completed.
@@ -3699,7 +3693,7 @@ public team_win_event()
         g_isTheRoundEndWhileVoting = true;
     }
 
-    debugTeamWinEvent( string_team_winner, wins_CT_trigger, wins_Terrorist_trigger );
+    LOGGER( 0, "", debugTeamWinEvent( string_team_winner, wins_CT_trigger, wins_Terrorist_trigger ) )
 }
 
 stock debugTeamWinEvent( string_team_winner[], wins_CT_trigger, wins_Terrorist_trigger )
@@ -3722,6 +3716,8 @@ stock debugTeamWinEvent( string_team_winner[], wins_CT_trigger, wins_Terrorist_t
     LOGGER( 32, "( debugTeamWinEvent ) g_isThePenultGameRound: %d", g_isThePenultGameRound )
     LOGGER( 32, "( debugTeamWinEvent ) g_isThePenultGameRoundContext: %d", g_isThePenultGameRoundContext )
     LOGGER( 32, "( debugTeamWinEvent )" )
+
+    return 0;
 }
 
 /**
@@ -4149,9 +4145,6 @@ stock show_intermission( Float:mp_chattime )
 
     if( endGameType )
     {
-        // Reset the game ending if there is a restart round.
-        g_isTimeToResetGame = true;
-
         set_task( mp_chattime - 0.5, "intermission_hold", TASKID_INTERMISSION_HOLD );
         intermission_effects( endGameType, mp_chattime );
     }
