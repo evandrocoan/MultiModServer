@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-582";
+new const PLUGIN_VERSION[] = "v4.2.0-584";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -614,14 +614,14 @@ new cvar_coloredChatEnabled;
  * before it, as this option only takes effect and the `cvar_endOnRound` and `cvar_endOfMapVoteStart`
  * are not handling the map end.
  */
-#define VOTE_START_ROUNDS ( IS_THE_ROUND_AVERAGE_TIME_TOO_SHORT() ? 10 : 4 )
+#define VOTE_START_ROUNDS ( IS_THE_ROUND_AVERAGE_TIME_TOO_SHORT() ? 10 : ( IS_THE_ROUND_AVERAGE_TIME_SHORT() ? 7 : 4 ) )
 
 /**
  * Calculates whether to start the map voting due map closing time.
  *
  * @param fragsRemaining     how much frags are remaining to finish the map.
  */
-#define IS_TO_START_THE_VOTE_BY_FRAGS(%1) ( %1 < ( g_fragLimitNumber > 30 ? 20 : 10 ) )
+#define IS_TO_START_THE_VOTE_BY_FRAGS(%1) ( %1 < ( g_fragLimitNumber > 30 ? 20 : 12 ) )
 
 /**
  * The rounds number required to be reached to allow predict if this will be the last round and
@@ -3247,18 +3247,29 @@ stock howManySecondsLastMapTheVoting( bool:isToIncludeRunoff = true )
 stock howManyRoundsAreRemaining( secondsRemaining, GameEndingType:whatGameEndingType )
 {
     LOGGER( 128, "I AM ENTERING ON howManyRoundsAreRemaining(2), g_roundAverageTime: %d", g_roundAverageTime )
+    new avoidExtraRound;
+
+    if( IS_THE_ROUND_AVERAGE_TIME_TOO_SHORT() )
+    {
+        avoidExtraRound = -2;
+    }
+    else if( IS_THE_ROUND_AVERAGE_TIME_SHORT() )
+    {
+        avoidExtraRound = -1;
+    }
 
     switch( whatGameEndingType )
     {
         case GameEndingType_ByMaxRounds:
         {
             return ( g_isGameEndingTypeContextSaved ?
-                     g_maxRoundsContextSaved : get_pcvar_num( cvar_mp_maxrounds ) ) - g_totalRoundsPlayed - 1;
+                     g_maxRoundsContextSaved : get_pcvar_num( cvar_mp_maxrounds ) ) - g_totalRoundsPlayed - 1 + avoidExtraRound;
         }
         case GameEndingType_ByWinLimit:
         {
             return ( g_isGameEndingTypeContextSaved ?
-                     g_winLimitContextSaved : get_pcvar_num( cvar_mp_winlimit ) ) - max( g_totalCtWins, g_totalTerroristsWins ) - 1;
+                     g_winLimitContextSaved :
+                     get_pcvar_num( cvar_mp_winlimit ) ) - max( g_totalCtWins, g_totalTerroristsWins ) - 1 + avoidExtraRound;
         }
         case GameEndingType_ByFragLimit:
         {
@@ -3266,7 +3277,7 @@ stock howManyRoundsAreRemaining( secondsRemaining, GameEndingType:whatGameEnding
                                        g_fragLimitContextSaved : get_pcvar_num( cvar_mp_fraglimit ) ) - g_greatestKillerFrags;
 
             getRoundsRemainingBy( _, roundsLeftBy_frags );
-            return roundsLeftBy_frags;
+            return roundsLeftBy_frags + avoidExtraRound;
         }
         case GameEndingType_ByTimeLimit:
         {
@@ -3274,7 +3285,7 @@ stock howManyRoundsAreRemaining( secondsRemaining, GameEndingType:whatGameEnding
             new roundsLeftBy_time = secondsRemaining;
 
             getRoundsRemainingBy( roundsLeftBy_time );
-            return roundsLeftBy_time;
+            return roundsLeftBy_time + avoidExtraRound;
         }
     }
 
