@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-569";
+new const PLUGIN_VERSION[] = "v4.2.0-571";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -665,8 +665,9 @@ new cvar_coloredChatEnabled;
  * Specifies how much time to delay the voting start after the round start.
  */
 #define ROUND_VOTING_START_SECONDS_DELAY() \
-    ( get_pcvar_num( cvar_mp_freezetime ) + PERIODIC_CHECKING_INTERVAL - 5 \
-      + ( g_roundAverageTime > 2 * g_totalVoteTime ? g_totalVoteTime / 5 : 1 ) )
+    ( get_pcvar_num( cvar_mp_freezetime ) + PERIODIC_CHECKING_INTERVAL \
+      - ( get_pcvar_num( cvar_isToAskForEndOfTheMapVote ) & END_OF_MAP_VOTE_ANNOUNCE ? 0 : 5 ) \
+      + ( g_roundAverageTime > 2 * g_totalVoteTime / 3 ? g_totalVoteTime / 5 : 1 ) )
 //
 
 /**
@@ -4067,10 +4068,33 @@ stock process_last_round( bool:isToImmediatelyChangeLevel, bool:isCountDownAllow
         if( isCountDownAllowed
             && get_pcvar_num( cvar_isEndMapCountdown ) & IS_MAP_MAPCHANGE_COUNTDOWN )
         {
+            // If somehow this is called twice, do nothing on the second time.
             if( !task_exists( TASKID_PROCESS_LAST_ROUND_COUNT ) )
             {
+                new totalTime;
+                new freezeTime;
                 new nextMapName[ MAX_MAPNAME_LENGHT ];
-                new totalTime = 6;
+
+                // IF there is a freeze time, and it is not too much big.
+                if( ( freezeTime = get_pcvar_num( cvar_mp_freezetime ) )
+                    && freezeTime < 15 )
+                {
+                    // If true, this was trigged on the new round.
+                    if( abs( floatround( get_gametime(), floatround_ceil ) - g_roundStartTime ) <= freezeTime + 3 )
+                    {
+                        totalTime = freezeTime;
+                    }
+                    else
+                    {
+                        // On Counter-Strike Condition Zero, 5 seems to be the time between the round end/start events.
+                        totalTime = freezeTime + 5;
+                    }
+                }
+                else
+                {
+                    // If there is not freeze time, just do a countdown from 6.
+                    totalTime = 6;
+                }
 
                 g_lastRoundCountdown = totalTime;
                 set_task( 1.0, "last_round_countdown", TASKID_PROCESS_LAST_ROUND_COUNT, _, _, "a", totalTime );
@@ -12974,7 +12998,7 @@ stock register_dictionary_colored( const dictionaryFile[] )
                     REMOVE_LETTER_COLOR_TAGS( langTranslationText )
                 }
 
-                LOGGER( 256, "lang: %s, Id: %d, Text: %s", langTypeAcronym, translationKeyId, langTranslationText )
+                // LOGGER( 256, "lang: %s, Id: %d, Text: %s", langTypeAcronym, translationKeyId, langTranslationText )
                 AddTranslation( langTypeAcronym, translationKeyId, langTranslationText[ 2 ] );
             }
         }
