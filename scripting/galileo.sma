@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-586";
+new const PLUGIN_VERSION[] = "v4.2.0-587";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -10824,7 +10824,7 @@ public displayTheVoteMapActionMenu()
 
         formatex( menu_counter, charsmax( menu_counter ),
                 " %s(%s%d %L%s)",
-                COLOR_YELLOW, COLOR_GREY, g_pendingMapVoteCountdown, LANG_PLAYER, "GAL_TIMELEFT", COLOR_YELLOW );
+                COLOR_YELLOW, COLOR_GREY, g_pendingMapVoteCountdown, player_id, "GAL_TIMELEFT", COLOR_YELLOW );
 
         formatex( menu_body, charsmax( menu_body ),
                "\
