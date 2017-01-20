@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-604";
+new const PLUGIN_VERSION[] = "v4.2.0-606";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -1686,16 +1686,13 @@ public plugin_cfg()
     set_task( DELAY_TO_WAIT_THE_SERVER_CVARS_TO_BE_LOADED, "cacheCvarsValues" );
 
     LOGGER( 4, "" )
-    LOGGER( 4, " The current map is [%s].", g_currentMapName )
-    LOGGER( 4, " The next map is [%s]", g_nextMapName )
+    LOGGER( 4, "" )
+    LOGGER( 4, " The current map is [ %20s ]", g_currentMapName )
+    LOGGER( 4, " The  next   map is [ %20s ]", g_nextMapName )
+    LOGGER( 4, "" )
     LOGGER( 4, "" )
 
     configureTheRTVFeature();
-    configureTheWhiteListFeature();
-
-    LOGGER( 4, "" )
-    LOGGER( 4, "" )
-
     configureServerStart();
     configureServerMapChange();
 
@@ -1920,15 +1917,21 @@ stock configureTheRTVFeature()
     LOGGER( 4, "" )
 }
 
-stock configureTheWhiteListFeature()
+stock configureTheWhiteListFeature( mapFilerFilePath[] )
 {
     LOGGER( 128, "I AM ENTERING ON configureTheWhiteListFeature(0)" )
 
-    if( IS_WHITELIST_ENABLED()
-        && IS_TO_HOURLY_LOAD_THE_WHITELIST() )
+    if( IS_WHITELIST_ENABLED() )
     {
-        computeNextWhiteListLoadTime( 1, false );
-        loadTheWhiteListFeature();
+        LOGGER( 4, "" )
+        get_pcvar_string( cvar_voteWhiteListMapFilePath, mapFilerFilePath, MAX_FILE_PATH_LENGHT - 1 );
+        loadWhiteListFileFromFile( g_whitelistFileArray, mapFilerFilePath );
+
+        if( IS_TO_HOURLY_LOAD_THE_WHITELIST() )
+        {
+            computeNextWhiteListLoadTime( 1, false );
+            loadTheWhiteListFeature();
+        }
     }
 }
 
@@ -2843,33 +2846,31 @@ stock loadMapFiles()
     new mapFilerFilePath[ MAX_FILE_PATH_LENGHT ];
 
     // To clear them, in case we are reloading it.
-    TRY_TO_CLEAN( ArrayClear, g_voteMidPlayerFillerPathsArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
-    TRY_TO_CLEAN( ArrayClear, g_midMaxMapsPerGroupToUseArray , ArrayCreate() )
-
-    TRY_TO_CLEAN( ArrayClear, g_voteMinPlayerFillerPathsArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
-    TRY_TO_CLEAN( ArrayClear, g_minMaxMapsPerGroupToUseArray , ArrayCreate() )
-
-    TRY_TO_CLEAN( ArrayClear, g_voteNorPlayerFillerPathsArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
-    TRY_TO_CLEAN( ArrayClear, g_norMaxMapsPerGroupToUseArray , ArrayCreate() )
-
     TRY_TO_CLEAN( clear_two_dimensional_array, g_norPlayerFillerMapGroupArrays, ArrayCreate() )
     TRY_TO_CLEAN( clear_two_dimensional_array, g_minPlayerFillerMapGroupArrays, ArrayCreate() )
     TRY_TO_CLEAN( clear_two_dimensional_array, g_midPlayerFillerMapGroupArrays, ArrayCreate() )
 
     // To start loading the files.
-    LOGGER( 4, "" )
-    get_pcvar_string( cvar_voteWhiteListMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) );
-    loadWhiteListFileFromFile( g_whitelistFileArray, mapFilerFilePath );
+    configureTheWhiteListFeature( mapFilerFilePath );
 
     LOGGER( 4, "" )
+    TRY_TO_CLEAN( ArrayClear, g_voteMinPlayerFillerPathsArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
+    TRY_TO_CLEAN( ArrayClear, g_minMaxMapsPerGroupToUseArray , ArrayCreate() )
+
     get_pcvar_string( cvar_voteMinPlayersMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) );
     loadMapGroupsFeatureFile( mapFilerFilePath, g_voteMinPlayerFillerPathsArray, g_minMaxMapsPerGroupToUseArray );
 
     LOGGER( 4, "" )
+    TRY_TO_CLEAN( ArrayClear, g_voteMidPlayerFillerPathsArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
+    TRY_TO_CLEAN( ArrayClear, g_midMaxMapsPerGroupToUseArray , ArrayCreate() )
+
     get_pcvar_string( cvar_voteMidPlayersMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) );
     loadMapGroupsFeatureFile( mapFilerFilePath, g_voteMidPlayerFillerPathsArray, g_midMaxMapsPerGroupToUseArray );
 
     LOGGER( 4, "" )
+    TRY_TO_CLEAN( ArrayClear, g_voteNorPlayerFillerPathsArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
+    TRY_TO_CLEAN( ArrayClear, g_norMaxMapsPerGroupToUseArray , ArrayCreate() )
+
     get_pcvar_string( cvar_voteMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) );
     loadMapGroupsFeatureFile( mapFilerFilePath, g_voteNorPlayerFillerPathsArray, g_norMaxMapsPerGroupToUseArray );
 
