@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-608";
+new const PLUGIN_VERSION[] = "v4.2.0-609";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -578,6 +578,12 @@ new cvar_coloredChatEnabled;
 #define SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR      2
 #define DELAY_TO_WAIT_THE_SERVER_CVARS_TO_BE_LOADED 50.0
 
+
+/**
+ * The value used when the voting time is set to 0.
+ */
+#define INFINITY_VOTING_TIME_VALUE 1000
+
 /**
  * Used on the count `++g_showLastRoundHudCounter % LAST_ROUND_HUD_SHOW_INTERVAL > 6`, called each second.
  */
@@ -780,6 +786,17 @@ new cvar_coloredChatEnabled;
 
 // Global Macro Expansions
 // ###############################################################################################
+
+/**
+ * Used to set a the voting time to a variable.
+ */
+#define SET_VOTING_TIME_TO(%1,%2) \
+{ \
+    if( ( %1 = get_pcvar_num( %2 ) ) < 1 ) \
+    { \
+        %1 = INFINITY_VOTING_TIME_VALUE; \
+    } \
+}
 
 /**
  * Convert colored strings codes '!g for green', '!y for yellow', '!t for team'.
@@ -2662,6 +2679,9 @@ public map_loadRecentBanList( loadedMapsCount )
 
         fclose( recentMapsFileDescriptor );
     }
+
+    LOGGER( 1, "    ( map_loadRecentBanList ) Returning loadedCount: %d", g_recentMapCount )
+    return g_recentMapCount;
 }
 
 stock writeRecentMapsBanList()
@@ -2841,27 +2861,11 @@ stock loadMapFiles()
     new loadedCount     [ loadMapFilesTypes ];
     new mapFilerFilePath[ MAX_FILE_PATH_LENGHT ];
 
-    // To clear them, in case we are reloading it.
-    TRY_TO_CLEAN( clear_two_dimensional_array, g_norPlayerFillerMapGroupArrays, ArrayCreate() )
-
     // To start loading the files.
-    loadedCount[ t_Whitelist      ] = configureTheWhiteListFeature(  mapFilerFilePath );
+    loadedCount[ t_Whitelist      ] = configureTheWhiteListFeature( mapFilerFilePath );
     loadedCount[ t_MininumPlayers ] = configureTheMinPlayersFeature( mapFilerFilePath );
     loadedCount[ t_MiddlePlayers  ] = configureTheMidPlayersFeature( mapFilerFilePath );
-
-    LOGGER( 4, "" )
-    TRY_TO_CLEAN( ArrayClear, g_voteNorPlayerFillerPathsArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
-    TRY_TO_CLEAN( ArrayClear, g_norMaxMapsPerGroupToUseArray , ArrayCreate() )
-
-    get_pcvar_string( cvar_voteMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) );
-    loadMapGroupsFeatureFile( mapFilerFilePath, g_voteNorPlayerFillerPathsArray, g_norMaxMapsPerGroupToUseArray );
-
-    // To process the loaded files to let them ready for immediate use.
-    LOGGER( 4, "" )
-    loadedCount[ t_NormalPlayers ] = processLoadedGroupMapFileFrom( g_norPlayerFillerMapGroupArrays, g_voteNorPlayerFillerPathsArray );
-
-    LOGGER( 4, "" )
-    LOGGER( 4, "", debugLoadedGroupMapFileFrom( g_norPlayerFillerMapGroupArrays, g_norMaxMapsPerGroupToUseArray ) )
+    loadedCount[ t_NormalPlayers  ] = configureTheNorPlayersFeature( mapFilerFilePath );
 
     loadTheBanRecentMapsFeature( loadedCount[ t_NormalPlayers ] );
 
@@ -2870,12 +2874,40 @@ stock loadMapFiles()
     LOGGER( 4, "" )
 }
 
+stock configureTheNorPlayersFeature( mapFilerFilePath[] )
+{
+    LOGGER( 128, "I AM ENTERING ON configureTheNorPlayersFeature(2)" )
+    new loadedCount;
+
+    if( get_pcvar_num( cvar_voteMapChoiceCount ) > 1 )
+    {
+        get_pcvar_string( cvar_voteMapFilePath, mapFilerFilePath, MAX_FILE_PATH_LENGHT - 1 );
+
+        if( mapFilerFilePath[ 0 ] )
+        {
+            LOGGER( 4, "" )
+            TRY_TO_CLEAN( clear_two_dimensional_array, g_norPlayerFillerMapGroupArrays, ArrayCreate() )
+
+            TRY_TO_CLEAN( ArrayClear, g_voteNorPlayerFillerPathsArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
+            TRY_TO_CLEAN( ArrayClear, g_norMaxMapsPerGroupToUseArray , ArrayCreate() )
+
+            loadMapGroupsFeatureFile( mapFilerFilePath, g_voteNorPlayerFillerPathsArray, g_norMaxMapsPerGroupToUseArray );
+            loadedCount = processLoadedGroupMapFileFrom( g_norPlayerFillerMapGroupArrays, g_voteNorPlayerFillerPathsArray );
+
+            LOGGER( 4, "", debugLoadedGroupMapFileFrom( g_norPlayerFillerMapGroupArrays, g_norMaxMapsPerGroupToUseArray ) )
+        }
+    }
+
+    LOGGER( 1, "    ( configureTheNorPlayersFeature ) Returning loadedCount: %d", loadedCount )
+    return loadedCount;
+}
+
 stock configureTheMidPlayersFeature( mapFilerFilePath[] )
 {
     LOGGER( 128, "I AM ENTERING ON configureTheMidPlayersFeature(2)" )
     new loadedCount;
 
-    if( get_pcvar_num( cvar_voteMidPlayers ) > 1 )
+    if( get_pcvar_num( cvar_voteMidPlayers ) > 2 )
     {
         get_pcvar_string( cvar_voteMidPlayersMapFilePath, mapFilerFilePath, MAX_FILE_PATH_LENGHT - 1 );
 
@@ -2961,11 +2993,11 @@ stock loadTheBanRecentMapsFeature( loadedCount )
         // the voting filler's size.
         if( get_pcvar_num( cvar_isOnlyRecentMapcycleMaps ) )
         {
-            map_loadRecentBanList( ArraySize( g_mapcycleFileListArray ) );
+            loadedCount = map_loadRecentBanList( ArraySize( g_mapcycleFileListArray ) );
         }
         else
         {
-            map_loadRecentBanList( loadedCount );
+            loadedCount = map_loadRecentBanList( loadedCount );
         }
 
         register_clcmd( "say recentmaps", "cmd_listrecent", 0 );
@@ -2977,6 +3009,9 @@ stock loadTheBanRecentMapsFeature( loadedCount )
             writeRecentMapsBanList();
         }
     }
+
+    LOGGER( 1, "    ( loadTheBanRecentMapsFeature ) Returning loadedCount: %d", loadedCount )
+    return loadedCount;
 }
 
 stock debugLoadedGroupMapFileFrom( &Array:playerFillerMapsArray, &Array:maxMapsPerGroupToUseArray )
@@ -6129,7 +6164,7 @@ stock loadTheDefaultVotingChoices()
         vote_addFillers( dummyArray );
     }
 
-    g_votingSecondsRemaining = get_pcvar_num( cvar_voteDuration );
+    SET_VOTING_TIME_TO( g_votingSecondsRemaining, cvar_voteDuration )
 
     LOGGER( 4, "" )
     LOGGER( 4, "I AM EXITING ON loadTheDefaultVotingChoices(0) g_totalVoteOptions: %d", g_totalVoteOptions )
@@ -6603,7 +6638,7 @@ stock loadRunOffVoteChoices()
         copy( g_votingMapInfos[ mapIndex ], charsmax( g_votingMapInfos[] ), runoffChoiceInfo[ mapIndex ] );
     }
 
-    g_votingSecondsRemaining = get_pcvar_num( cvar_runoffDuration );
+    SET_VOTING_TIME_TO( g_votingSecondsRemaining, cvar_runoffDuration )
     LOGGER( 0, "", printVotingMaps(  g_votingMapNames, g_votingMapInfos, g_totalVoteOptions ) )
 }
 
@@ -10358,7 +10393,7 @@ stock startVoteMapVoting( player_id )
         || g_totalVoteOptions > 1 )
     {
         // Load the voting time
-        g_votingSecondsRemaining = get_pcvar_num( cvar_voteDuration );
+        SET_VOTING_TIME_TO( g_votingSecondsRemaining, cvar_voteDuration )
 
         // Save the invoker id to use it later when we get the outcome result
         g_voteMapInvokerPlayerId = player_id;
