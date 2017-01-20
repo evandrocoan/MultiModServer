@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-610";
+new const PLUGIN_VERSION[] = "v4.2.0-611";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -471,6 +471,9 @@ new cvar_coloredChatEnabled;
 
 #define RUNOFF_ENABLED 1
 #define RUNOFF_EXTEND  2
+
+#define VOTE_MININUM_PLAYERS_REQUIRED 1
+#define VOTE_MIDDLE_PLAYERS_REQUIRED  2
 
 #define FIRST_SERVER_START  2
 #define SECOND_SERVER_START 1
@@ -2904,7 +2907,7 @@ stock configureTheMidPlayersFeature( mapFilerFilePath[] )
     LOGGER( 128, "I AM ENTERING ON configureTheMidPlayersFeature(2)" )
     new loadedCount;
 
-    if( get_pcvar_num( cvar_voteMidPlayers ) > 2 )
+    if( get_pcvar_num( cvar_voteMidPlayers ) > VOTE_MIDDLE_PLAYERS_REQUIRED )
     {
         get_pcvar_string( cvar_voteMidPlayersMapFilePath, mapFilerFilePath, MAX_FILE_PATH_LENGHT - 1 );
 
@@ -2932,7 +2935,7 @@ stock configureTheMinPlayersFeature( mapFilerFilePath[] )
     LOGGER( 128, "I AM ENTERING ON configureTheMinPlayersFeature(2)" )
     new loadedCount;
 
-    if( get_pcvar_num( cvar_voteMinPlayers ) > 1 )
+    if( get_pcvar_num( cvar_voteMinPlayers ) > VOTE_MININUM_PLAYERS_REQUIRED )
     {
         get_pcvar_string( cvar_voteMinPlayersMapFilePath, mapFilerFilePath, MAX_FILE_PATH_LENGHT - 1 );
 
@@ -5584,7 +5587,7 @@ stock setupLoadWhiteListParams( bool:isWhiteListBlockOut, &Trie:listTrie, &Array
     }
 }
 
-stock loadMapGroupsFeature()
+stock fillersFilePathType:loadMapGroupsFeature()
 {
     LOGGER( 128, "I AM ENTERING ON loadMapGroupsFeature(0)" )
     new realPlayersNumber = get_real_players_number();
@@ -5594,12 +5597,14 @@ stock loadMapGroupsFeature()
         new voteMininumPlayers = get_pcvar_num( cvar_voteMinPlayers );
         new voteMiddlePlayers  = get_pcvar_num( cvar_voteMidPlayers );
 
-        if( realPlayersNumber < voteMininumPlayers )
+        if( realPlayersNumber < voteMininumPlayers
+            && voteMininumPlayers > VOTE_MININUM_PLAYERS_REQUIRED )
         {
             return fillersFilePaths_MininumPlayers;
         }
         else if( voteMiddlePlayers > voteMininumPlayers
-                 && realPlayersNumber < voteMiddlePlayers )
+                 && realPlayersNumber < voteMiddlePlayers
+                 && voteMiddlePlayers > VOTE_MIDDLE_PLAYERS_REQUIRED )
         {
             return fillersFilePaths_MiddlePlayers;
         }
@@ -5967,8 +5972,8 @@ stock vote_addFillers( blockedMapsBuffer[], &announcementShowedTimes = 0 )
 
     if( g_totalVoteOptions < maxVotingChoices )
     {
-        new fillersFilePathEnum = loadMapGroupsFeature();
-        processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMapsBuffer, announcementShowedTimes );
+        new fillersFilePathType:fillersFilePathEnum = loadMapGroupsFeature();
+        processLoadedMapsFile( fillersFilePathEnum, blockedMapsBuffer, announcementShowedTimes );
     }
     else
     {
