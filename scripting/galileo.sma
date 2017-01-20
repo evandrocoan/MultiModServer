@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-596";
+new const PLUGIN_VERSION[] = "v4.2.0-598";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -1838,8 +1838,6 @@ stock initializeGlobalArrays()
 {
     LOGGER( 128, "I AM ENTERING ON initializeGlobalArrays(0)" )
 
-    g_whitelistFileArray = ArrayCreate( MAX_LONG_STRING );
-
     g_voteMinPlayerFillerPathsArray = ArrayCreate( MAX_MAPNAME_LENGHT );
     g_minPlayerFillerMapGroupArrays = ArrayCreate();
     g_minMaxMapsPerGroupToUseArray  = ArrayCreate();
@@ -2773,6 +2771,15 @@ stock loadWhiteListFileFromFile( &Array:whitelistArray, whiteListFilePath[] )
     new whiteListFileDescriptor;
     new currentLine[ MAX_LONG_STRING ];
 
+    if( g_whitelistFileArray )
+    {
+        TRY_TO_APPLY( ArrayClear, g_whitelistFileArray )
+    }
+    else
+    {
+        g_whitelistFileArray = ArrayCreate( MAX_LONG_STRING );
+    }
+
     if( !( whiteListFileDescriptor = fopen( whiteListFilePath, "rt" ) ) )
     {
         LOGGER( 8, "ERROR! Invalid file descriptor. whiteListFileDescriptor: %d, whiteListFilePath: %s", \
@@ -2834,8 +2841,6 @@ stock loadMapFiles()
     LOGGER( 128, "I AM ENTERING ON loadMapFiles(0)" )
 
     // To clear them, in case we are reloading it.
-    TRY_TO_APPLY( ArrayClear, g_whitelistFileArray )
-
     TRY_TO_APPLY( ArrayClear, g_voteMidPlayerFillerPathsArray )
     TRY_TO_APPLY( ArrayClear, g_midMaxMapsPerGroupToUseArray )
 
@@ -5406,6 +5411,11 @@ stock loadWhiteListFile( currentHour, &Trie:listTrie, Array:whitelistFileArray, 
                 }
             }
         }
+    }
+    else
+    {
+        LOGGER( 1, "( loadWhiteListFile ) An invalid map descriptors %d/%d!^n", whitelistFileArray, listTrie )
+        log_error( AMX_ERR_PARAMS, "loadWhiteListFile: An invalid map descriptor %d/%d!^n", whitelistFileArray, listTrie );
     }
 
     LOGGER( 1, "    I AM EXITING loadWhiteListFile(5) listArray: %d, whitelistFileArray: %d", listArray, whitelistFileArray )
