@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-598";
+new const PLUGIN_VERSION[] = "v4.2.0-599";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -958,6 +958,27 @@ new __g_getMapNameRightToken[ MAX_MAPNAME_LENGHT ];
     if( %2 ) \
     { \
         %1( %2 ); \
+    } \
+}
+
+/**
+ * General handler to assist object property applying and keep the code clear. This only need
+ * to be used with cleaners and creators handlers.
+ *
+ * @param objectHandler           the object handler to be called for cleaning.
+ * @param objectIndentifation     the object identification number to be used.
+ * @param objectHandlerCreator    the object handler to be called for creation.
+ */
+#define TRY_TO_CLEAN(%1,%2,%3) \
+{ \
+    LOGGER( 128, "I AM ENTERING ON TRY_TO_CLEAN(3) objectIndentifation: %d", %2 ) \
+    if( %2 ) \
+    { \
+        %1( %2 ); \
+    } \
+    else \
+    { \
+        %2 = %3; \
     } \
 }
 
@@ -2771,14 +2792,7 @@ stock loadWhiteListFileFromFile( &Array:whitelistArray, whiteListFilePath[] )
     new whiteListFileDescriptor;
     new currentLine[ MAX_LONG_STRING ];
 
-    if( g_whitelistFileArray )
-    {
-        TRY_TO_APPLY( ArrayClear, g_whitelistFileArray )
-    }
-    else
-    {
-        g_whitelistFileArray = ArrayCreate( MAX_LONG_STRING );
-    }
+    TRY_TO_CLEAN( ArrayClear, g_whitelistFileArray, ArrayCreate( MAX_LONG_STRING ) )
 
     if( !( whiteListFileDescriptor = fopen( whiteListFilePath, "rt" ) ) )
     {
