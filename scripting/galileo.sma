@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-591";
+new const PLUGIN_VERSION[] = "v4.2.0-593";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -86,7 +86,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-591";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+2+4+16
+#define DEBUG_LEVEL 1
 
 
 /**
@@ -4698,9 +4698,14 @@ stock loadMapFileList( Array:mapArray, mapFilePath[], Trie:fillerMapTrie )
         {
             mapCount = loadMapFileListArray( mapFileDescriptor, mapArray );
         }
-        else // if( fillerMapTrie )
+        else if( fillerMapTrie )
         {
             mapCount = loadMapFileListTrie( mapFileDescriptor, fillerMapTrie );
+        }
+        else
+        {
+            LOGGER( 1, "( loadMapFileList ) An invalid map descriptors %d/%d!^n", mapArray, fillerMapTrie )
+            log_error( AMX_ERR_PARAMS, "loadMapFileList: An invalid map descriptor %d/%d!^n", mapArray, fillerMapTrie );
         }
 
         checkIfThereEnoughMapPopulated( mapCount, mapFileDescriptor );
@@ -4736,10 +4741,12 @@ stock loadMapFileListComplete( mapFileDescriptor, Array:mapArray, Trie:fillerMap
 
             if( IS_MAP_VALID( loadedMapName ) )
             {
+                strtolower( loadedMapName );
                 TrieSetCell( fillerMapTrie, loadedMapName, mapCount );
-                ArrayPushString( mapArray, loadedMapLine );
 
+                ArrayPushString( mapArray, loadedMapLine );
                 LOGGER( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapLine ) )
+
                 ++mapCount;
             }
         }
@@ -4768,8 +4775,8 @@ stock loadMapFileListArray( mapFileDescriptor, Array:mapArray )
             if( IS_MAP_VALID( loadedMapName ) )
             {
                 ArrayPushString( mapArray, loadedMapLine );
-
                 LOGGER( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapLine ) )
+
                 ++mapCount;
             }
         }
@@ -4797,6 +4804,7 @@ stock loadMapFileListTrie( mapFileDescriptor, Trie:fillerMapTrie )
 
             if( IS_MAP_VALID( loadedMapName ) )
             {
+                strtolower( loadedMapName );
                 TrieSetCell( fillerMapTrie, loadedMapName, mapCount );
 
                 LOGGER( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapLine ) )
@@ -4830,9 +4838,14 @@ stock loadMapsFolderDirectory( Array:mapArray, Trie:fillerMapTrie )
         {
             mapCount = loadMapsFolderDirectoryArray( directoryDescriptor, mapArray );
         }
-        else // if( fillerMapTrie )
+        else if( fillerMapTrie )
         {
             mapCount = loadMapsFolderDirectoryTrie( directoryDescriptor, fillerMapTrie );
+        }
+        else
+        {
+            LOGGER( 1, "( loadMapsFolderDirectory ) An invalid map descriptors %d/%d!^n", mapArray, fillerMapTrie )
+            log_error( AMX_ERR_PARAMS, "loadMapsFolderDirectory: An invalid map descriptor %d/%d!^n", mapArray, fillerMapTrie );
         }
 
         close_dir( directoryDescriptor );
@@ -4866,10 +4879,12 @@ stock loadMapsFolderDirectoryComplete( directoryDescriptor, Array:mapArray, Trie
 
             if( IS_MAP_VALID( loadedMapName ) )
             {
-                TrieSetCell( fillerMapTrie, loadedMapName, mapCount );
                 ArrayPushString( mapArray, loadedMapName );
+                strtolower( loadedMapName );
 
+                TrieSetCell( fillerMapTrie, loadedMapName, mapCount );
                 LOGGER( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapName ) )
+
                 ++mapCount;
             }
         }
@@ -4898,8 +4913,8 @@ stock loadMapsFolderDirectoryArray( directoryDescriptor, Array:mapArray )
             if( IS_MAP_VALID( loadedMapName ) )
             {
                 ArrayPushString( mapArray, loadedMapName );
-
                 LOGGER( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapName ) )
+
                 ++mapCount;
             }
         }
@@ -4927,6 +4942,7 @@ stock loadMapsFolderDirectoryTrie( directoryDescriptor, Trie:fillerMapTrie )
 
             if( IS_MAP_VALID( loadedMapName ) )
             {
+                strtolower( loadedMapName );
                 TrieSetCell( fillerMapTrie, loadedMapName, mapCount );
 
                 LOGGER( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapName ) )
@@ -10984,7 +11000,7 @@ public cmd_startVote( player_id, level, cid )
                 g_isTimeToRestart = true;
             }
 
-            LOGGER( 8, "( cmd_startVote ) equal( %s, '-restart', 4 )? %d", argument, equal( argument, "-restart", 4 ) )
+            LOGGER( 8, "( cmd_startVote ) equali( %s, '-restart', 4 )? %d", argument, equali( argument, "-restart", 4 ) )
         }
 
         LOGGER( 8, "( cmd_startVote ) g_isTimeToRestart? %d, g_isToChangeMapOnVotingEnd? %d, \
@@ -15571,7 +15587,7 @@ public timeRemain()
         ArrayGetString( g_test_idsAndNamesArray, 0, first_test_name, charsmax( first_test_name ) );
 
         formatex( errorMessage, charsmax( errorMessage ), "first_test_name must be 'test_registerTest' (it was %s)", first_test_name );
-        SET_TEST_FAILURE( test_id, !equal( first_test_name, "test_registerTest" ), errorMessage )
+        SET_TEST_FAILURE( test_id, !equali( first_test_name, "test_registerTest" ), errorMessage )
     }
 
     /**
@@ -15640,7 +15656,7 @@ public timeRemain()
         mapIndex = map_getNext( testMapListArray, currentMap, nextMapName );
 
         formatex( errorMessage, charsmax( errorMessage ), "The nextMapName must to be '%s'! But it was %s.", nextMapAim, nextMapName );
-        SET_TEST_FAILURE( test_id, !equal( nextMapName, nextMapAim ), errorMessage )
+        SET_TEST_FAILURE( test_id, !equali( nextMapName, nextMapAim ), errorMessage )
 
         formatex( errorMessage, charsmax( errorMessage ), "The mapIndex must to be %d! But it was %d.", mapIndexAim, mapIndex );
         SET_TEST_FAILURE( test_id, mapIndex != mapIndexAim, errorMessage )
