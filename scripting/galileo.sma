@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-603";
+new const PLUGIN_VERSION[] = "v4.2.0-604";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -86,7 +86,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-603";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1
+#define DEBUG_LEVEL 1+2+4+64
 
 
 /**
@@ -2839,6 +2839,9 @@ stock loadMapFiles()
 {
     LOGGER( 128, "I AM ENTERING ON loadMapFiles(0)" )
 
+    new loadedCount[ 3 ];
+    new mapFilerFilePath[ MAX_FILE_PATH_LENGHT ];
+
     // To clear them, in case we are reloading it.
     TRY_TO_CLEAN( ArrayClear, g_voteMidPlayerFillerPathsArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
     TRY_TO_CLEAN( ArrayClear, g_midMaxMapsPerGroupToUseArray , ArrayCreate() )
@@ -2854,9 +2857,6 @@ stock loadMapFiles()
     TRY_TO_CLEAN( clear_two_dimensional_array, g_midPlayerFillerMapGroupArrays, ArrayCreate() )
 
     // To start loading the files.
-    new loadedCount[ 3 ];
-    new mapFilerFilePath[ MAX_FILE_PATH_LENGHT ];
-
     LOGGER( 4, "" )
     get_pcvar_string( cvar_voteWhiteListMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) );
     loadWhiteListFileFromFile( g_whitelistFileArray, mapFilerFilePath );
@@ -2884,7 +2884,17 @@ stock loadMapFiles()
     LOGGER( 4, "", debugLoadedGroupMapFileFrom( g_midPlayerFillerMapGroupArrays, g_midMaxMapsPerGroupToUseArray ) )
     LOGGER( 4, "", debugLoadedGroupMapFileFrom( g_norPlayerFillerMapGroupArrays, g_norMaxMapsPerGroupToUseArray ) )
 
-    // Load the ban recent maps feature
+    loadTheBanRecentMapsFeature( loadedCount );
+
+    LOGGER( 4, "( loadMapFiles ) Maps Files Loaded." )
+    LOGGER( 4, "" )
+    LOGGER( 4, "" )
+}
+
+stock loadTheBanRecentMapsFeature( loadedCount[] )
+{
+    LOGGER( 128, "I AM ENTERING ON loadTheBanRecentMapsFeature(1)" )
+
     if( get_pcvar_num( cvar_recentMapsBannedNumber ) )
     {
         TRY_TO_CLEAN( TrieClear, g_recentMapsTrie, TrieCreate() )
@@ -2910,10 +2920,6 @@ stock loadMapFiles()
             writeRecentMapsBanList();
         }
     }
-
-    LOGGER( 4, "( loadMapFiles ) Maps Files Loaded." )
-    LOGGER( 4, "" )
-    LOGGER( 4, "" )
 }
 
 stock debugLoadedGroupMapFileFrom( &Array:playerFillerMapsArray, &Array:maxMapsPerGroupToUseArray )
