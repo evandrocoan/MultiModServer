@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-606";
+new const PLUGIN_VERSION[] = "v4.2.0-607";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -1917,24 +1917,6 @@ stock configureTheRTVFeature()
     LOGGER( 4, "" )
 }
 
-stock configureTheWhiteListFeature( mapFilerFilePath[] )
-{
-    LOGGER( 128, "I AM ENTERING ON configureTheWhiteListFeature(0)" )
-
-    if( IS_WHITELIST_ENABLED() )
-    {
-        LOGGER( 4, "" )
-        get_pcvar_string( cvar_voteWhiteListMapFilePath, mapFilerFilePath, MAX_FILE_PATH_LENGHT - 1 );
-        loadWhiteListFileFromFile( g_whitelistFileArray, mapFilerFilePath );
-
-        if( IS_TO_HOURLY_LOAD_THE_WHITELIST() )
-        {
-            computeNextWhiteListLoadTime( 1, false );
-            loadTheWhiteListFeature();
-        }
-    }
-}
-
 /**
  * To cache some high used server cvars.
  */
@@ -2777,6 +2759,7 @@ stock loadWhiteListFileFromFile( &Array:whitelistArray, whiteListFilePath[] )
     LOGGER( 128, "I AM ENTERING ON loadWhiteListFileFromFile(2) whitelistArray: %d", whitelistArray)
     LOGGER( 8, "( loadWhiteListFileFromFile ) whiteListFilePath: %s", whiteListFilePath )
 
+    new loadedCount;
     new whiteListFileDescriptor;
     new currentLine[ MAX_LONG_STRING ];
 
@@ -2805,11 +2788,16 @@ stock loadWhiteListFileFromFile( &Array:whitelistArray, whiteListFilePath[] )
         {
             LOGGER( 8, "( loadWhiteListFileFromFile ) Adding the currentLine: %s", currentLine )
             ArrayPushString( whitelistArray, currentLine );
+
+            loadedCount++;
         }
     }
 
     fclose( whiteListFileDescriptor );
     LOGGER( 1, "I AM EXITING loadWhiteListFileFromFile(2) whitelistArray: %d", whitelistArray )
+
+    LOGGER( 1, "    ( loadWhiteListFileFromFile ) Returning loadedCount: %d", loadedCount )
+    return loadedCount;
 }
 
 stock processLoadedGroupMapFileFrom( &Array:playerFillerMapsArray, &Array:fillersFilePathsArray )
@@ -2842,7 +2830,15 @@ stock loadMapFiles()
 {
     LOGGER( 128, "I AM ENTERING ON loadMapFiles(0)" )
 
-    new loadedCount[ 3 ];
+    enum loadMapFilesTypes
+    {
+        t_Whitelist,
+        t_MininumPlayers,
+        t_MiddlePlayers,
+        t_NormalPlayers
+    }
+
+    new loadedCount     [ loadMapFilesTypes ];
     new mapFilerFilePath[ MAX_FILE_PATH_LENGHT ];
 
     // To clear them, in case we are reloading it.
@@ -2851,14 +2847,8 @@ stock loadMapFiles()
     TRY_TO_CLEAN( clear_two_dimensional_array, g_midPlayerFillerMapGroupArrays, ArrayCreate() )
 
     // To start loading the files.
-    configureTheWhiteListFeature( mapFilerFilePath );
-
-    LOGGER( 4, "" )
-    TRY_TO_CLEAN( ArrayClear, g_voteMinPlayerFillerPathsArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
-    TRY_TO_CLEAN( ArrayClear, g_minMaxMapsPerGroupToUseArray , ArrayCreate() )
-
-    get_pcvar_string( cvar_voteMinPlayersMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) );
-    loadMapGroupsFeatureFile( mapFilerFilePath, g_voteMinPlayerFillerPathsArray, g_minMaxMapsPerGroupToUseArray );
+    loadedCount[ t_Whitelist      ] = configureTheWhiteListFeature(  mapFilerFilePath );
+    loadedCount[ t_MininumPlayers ] = configureTheMinPlayersFeature( mapFilerFilePath );
 
     LOGGER( 4, "" )
     TRY_TO_CLEAN( ArrayClear, g_voteMidPlayerFillerPathsArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
@@ -2876,23 +2866,68 @@ stock loadMapFiles()
 
     // To process the loaded files to let them ready for immediate use.
     LOGGER( 4, "" )
-    loadedCount[ 0 ] = processLoadedGroupMapFileFrom( g_minPlayerFillerMapGroupArrays, g_voteMinPlayerFillerPathsArray );
-    loadedCount[ 1 ] = processLoadedGroupMapFileFrom( g_midPlayerFillerMapGroupArrays, g_voteMidPlayerFillerPathsArray );
-    loadedCount[ 2 ] = processLoadedGroupMapFileFrom( g_norPlayerFillerMapGroupArrays, g_voteNorPlayerFillerPathsArray );
+    loadedCount[ t_MiddlePlayers ] = processLoadedGroupMapFileFrom( g_midPlayerFillerMapGroupArrays, g_voteMidPlayerFillerPathsArray );
+    loadedCount[ t_NormalPlayers ] = processLoadedGroupMapFileFrom( g_norPlayerFillerMapGroupArrays, g_voteNorPlayerFillerPathsArray );
 
     LOGGER( 4, "" )
     LOGGER( 4, "", debugLoadedGroupMapFileFrom( g_minPlayerFillerMapGroupArrays, g_minMaxMapsPerGroupToUseArray ) )
     LOGGER( 4, "", debugLoadedGroupMapFileFrom( g_midPlayerFillerMapGroupArrays, g_midMaxMapsPerGroupToUseArray ) )
     LOGGER( 4, "", debugLoadedGroupMapFileFrom( g_norPlayerFillerMapGroupArrays, g_norMaxMapsPerGroupToUseArray ) )
 
-    loadTheBanRecentMapsFeature( loadedCount );
+    loadTheBanRecentMapsFeature( loadedCount[ t_NormalPlayers ] );
 
     LOGGER( 4, "( loadMapFiles ) Maps Files Loaded." )
     LOGGER( 4, "" )
     LOGGER( 4, "" )
 }
 
-stock loadTheBanRecentMapsFeature( loadedCount[] )
+stock configureTheMinPlayersFeature( mapFilerFilePath[] )
+{
+    LOGGER( 128, "I AM ENTERING ON configureTheMinPlayersFeature(2)" )
+    new loadedCount;
+
+    if( get_pcvar_num( cvar_voteMinPlayers ) > 1 )
+    {
+        get_pcvar_string( cvar_voteMinPlayersMapFilePath, mapFilerFilePath, MAX_FILE_PATH_LENGHT - 1 );
+
+        if( mapFilerFilePath[ 0 ] )
+        {
+            LOGGER( 4, "" )
+            TRY_TO_CLEAN( ArrayClear, g_voteMinPlayerFillerPathsArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
+            TRY_TO_CLEAN( ArrayClear, g_minMaxMapsPerGroupToUseArray , ArrayCreate() )
+
+            loadMapGroupsFeatureFile( mapFilerFilePath, g_voteMinPlayerFillerPathsArray, g_minMaxMapsPerGroupToUseArray );
+            loadedCount = processLoadedGroupMapFileFrom( g_minPlayerFillerMapGroupArrays, g_voteMinPlayerFillerPathsArray );
+        }
+    }
+
+    LOGGER( 1, "    ( configureTheMinPlayersFeature ) Returning loadedCount: %d", loadedCount )
+    return loadedCount;
+}
+
+stock configureTheWhiteListFeature( mapFilerFilePath[] )
+{
+    LOGGER( 128, "I AM ENTERING ON configureTheWhiteListFeature(1)" )
+    new loadedCount;
+
+    if( IS_WHITELIST_ENABLED() )
+    {
+        LOGGER( 4, "" )
+        get_pcvar_string( cvar_voteWhiteListMapFilePath, mapFilerFilePath, MAX_FILE_PATH_LENGHT - 1 );
+        loadedCount = loadWhiteListFileFromFile( g_whitelistFileArray, mapFilerFilePath );
+
+        if( IS_TO_HOURLY_LOAD_THE_WHITELIST() )
+        {
+            computeNextWhiteListLoadTime( 1, false );
+            loadTheWhiteListFeature();
+        }
+    }
+
+    LOGGER( 1, "    ( configureTheWhiteListFeature ) Returning loadedCount: %d", loadedCount )
+    return loadedCount;
+}
+
+stock loadTheBanRecentMapsFeature( loadedCount )
 {
     LOGGER( 128, "I AM ENTERING ON loadTheBanRecentMapsFeature(1)" )
 
@@ -2909,7 +2944,7 @@ stock loadTheBanRecentMapsFeature( loadedCount[] )
         }
         else
         {
-            map_loadRecentBanList( loadedCount[ 2 ] );
+            map_loadRecentBanList( loadedCount );
         }
 
         register_clcmd( "say recentmaps", "cmd_listrecent", 0 );
