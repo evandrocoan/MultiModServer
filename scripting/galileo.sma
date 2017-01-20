@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-595";
+new const PLUGIN_VERSION[] = "v4.2.0-596";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -1839,13 +1839,6 @@ stock initializeGlobalArrays()
     LOGGER( 128, "I AM ENTERING ON initializeGlobalArrays(0)" )
 
     g_whitelistFileArray = ArrayCreate( MAX_LONG_STRING );
-
-    g_nominatedMapsArray        = ArrayCreate();
-    g_nominationLoadedMapsArray = ArrayCreate( MAX_MAPNAME_LENGHT );
-
-    g_reverseSearchNominationsTrie = TrieCreate();
-    g_forwardSearchNominationsTrie = TrieCreate();
-    g_nominationLoadedMapsTrie     = TrieCreate();
 
     g_voteMinPlayerFillerPathsArray = ArrayCreate( MAX_MAPNAME_LENGHT );
     g_minPlayerFillerMapGroupArrays = ArrayCreate();
@@ -4957,8 +4950,15 @@ stock loadMapsFolderDirectoryTrie( directoryDescriptor, Trie:fillerMapTrie )
 public loadNominationList()
 {
     LOGGER( 128, "I AM ENTERING ON loadNominationList(0)" )
-
     new nomMapFilePath[ MAX_FILE_PATH_LENGHT ];
+
+    g_nominatedMapsArray        = ArrayCreate();
+    g_nominationLoadedMapsArray = ArrayCreate( MAX_MAPNAME_LENGHT );
+
+    g_reverseSearchNominationsTrie = TrieCreate();
+    g_forwardSearchNominationsTrie = TrieCreate();
+    g_nominationLoadedMapsTrie     = TrieCreate();
+
     get_pcvar_string( cvar_nomMapFilePath, nomMapFilePath, charsmax( nomMapFilePath ) );
 
     LOGGER( 4, "( loadNominationList() ) cvar_nomMapFilePath: %s", nomMapFilePath )
