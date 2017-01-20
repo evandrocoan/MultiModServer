@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-609";
+new const PLUGIN_VERSION[] = "v4.2.0-610";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -582,7 +582,7 @@ new cvar_coloredChatEnabled;
 /**
  * The value used when the voting time is set to 0.
  */
-#define INFINITY_VOTING_TIME_VALUE 1000
+#define INFINITY_VOTING_TIME_VALUE 20
 
 /**
  * Used on the count `++g_showLastRoundHudCounter % LAST_ROUND_HUD_SHOW_INTERVAL > 6`, called each second.
@@ -792,7 +792,7 @@ new cvar_coloredChatEnabled;
  */
 #define SET_VOTING_TIME_TO(%1,%2) \
 { \
-    if( ( %1 = get_pcvar_num( %2 ) ) < 1 ) \
+    if( ( %1 = get_pcvar_num( %2 ) ) < 5 ) \
     { \
         %1 = INFINITY_VOTING_TIME_VALUE; \
     } \
@@ -2877,25 +2877,22 @@ stock loadMapFiles()
 stock configureTheNorPlayersFeature( mapFilerFilePath[] )
 {
     LOGGER( 128, "I AM ENTERING ON configureTheNorPlayersFeature(2)" )
+
     new loadedCount;
+    get_pcvar_string( cvar_voteMapFilePath, mapFilerFilePath, MAX_FILE_PATH_LENGHT - 1 );
 
-    if( get_pcvar_num( cvar_voteMapChoiceCount ) > 1 )
+    if( mapFilerFilePath[ 0 ] )
     {
-        get_pcvar_string( cvar_voteMapFilePath, mapFilerFilePath, MAX_FILE_PATH_LENGHT - 1 );
+        LOGGER( 4, "" )
+        TRY_TO_CLEAN( clear_two_dimensional_array, g_norPlayerFillerMapGroupArrays, ArrayCreate() )
 
-        if( mapFilerFilePath[ 0 ] )
-        {
-            LOGGER( 4, "" )
-            TRY_TO_CLEAN( clear_two_dimensional_array, g_norPlayerFillerMapGroupArrays, ArrayCreate() )
+        TRY_TO_CLEAN( ArrayClear, g_voteNorPlayerFillerPathsArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
+        TRY_TO_CLEAN( ArrayClear, g_norMaxMapsPerGroupToUseArray , ArrayCreate() )
 
-            TRY_TO_CLEAN( ArrayClear, g_voteNorPlayerFillerPathsArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
-            TRY_TO_CLEAN( ArrayClear, g_norMaxMapsPerGroupToUseArray , ArrayCreate() )
+        loadMapGroupsFeatureFile( mapFilerFilePath, g_voteNorPlayerFillerPathsArray, g_norMaxMapsPerGroupToUseArray );
+        loadedCount = processLoadedGroupMapFileFrom( g_norPlayerFillerMapGroupArrays, g_voteNorPlayerFillerPathsArray );
 
-            loadMapGroupsFeatureFile( mapFilerFilePath, g_voteNorPlayerFillerPathsArray, g_norMaxMapsPerGroupToUseArray );
-            loadedCount = processLoadedGroupMapFileFrom( g_norPlayerFillerMapGroupArrays, g_voteNorPlayerFillerPathsArray );
-
-            LOGGER( 4, "", debugLoadedGroupMapFileFrom( g_norPlayerFillerMapGroupArrays, g_norMaxMapsPerGroupToUseArray ) )
-        }
+        LOGGER( 4, "", debugLoadedGroupMapFileFrom( g_norPlayerFillerMapGroupArrays, g_norMaxMapsPerGroupToUseArray ) )
     }
 
     LOGGER( 1, "    ( configureTheNorPlayersFeature ) Returning loadedCount: %d", loadedCount )
@@ -3311,13 +3308,16 @@ stock isToStartTheVotingOnThisRound( secondsRemaining, GameEndingType:gameEnding
 stock howManySecondsLastMapTheVoting( bool:isToIncludeRunoff = true )
 {
     LOGGER( 128, "I AM ENTERING ON howManySecondsLastMapTheVoting(0)" )
+
+    new temp;
     new Float:voteTime;
 
     // Until the pendingVoteCountdown(0) to finish takes getVoteAnnouncementTime() + VOTE_TIME_SEC + VOTE_TIME_SEC seconds.
     voteTime = getVoteAnnouncementTime( get_pcvar_num( cvar_isToAskForEndOfTheMapVote ) ) + VOTE_TIME_SEC + VOTE_TIME_SEC;
 
     // After, it takes more the `g_votingSecondsRemaining` until the the close vote function to be called.
-    voteTime += get_pcvar_float( cvar_voteDuration );
+    SET_VOTING_TIME_TO( temp, cvar_voteDuration )
+    voteTime += temp;
 
     // When the voting is closed on closeVoting(0), take more VOTE_TIME_COUNT seconds until the result to be counted.
     voteTime += VOTE_TIME_COUNT;
@@ -3326,7 +3326,8 @@ stock howManySecondsLastMapTheVoting( bool:isToIncludeRunoff = true )
     if( get_pcvar_num( cvar_runoffEnabled ) == RUNOFF_ENABLED
         && isToIncludeRunoff )
     {
-        voteTime = voteTime + voteTime + get_pcvar_float( cvar_runoffDuration ) + VOTE_TIME_RUNOFF;
+        SET_VOTING_TIME_TO( temp, cvar_runoffDuration )
+        voteTime = voteTime + voteTime + temp + VOTE_TIME_RUNOFF;
     }
 
     LOGGER( 1, "    ( howManySecondsLastMapTheVoting ) Returning the vote total time: %f", voteTime )
