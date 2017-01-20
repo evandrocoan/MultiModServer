@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-584";
+new const PLUGIN_VERSION[] = "v4.2.0-586";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -7092,8 +7092,8 @@ public voteExpire()
 public vote_display( argument[ 2 ] )
 {
     LOGGER( 4, "I AM ENTERING ON vote_display(1)" )
-
     new menuKeys;
+
     static voteStatus    [ MAX_BIG_BOSS_STRING - 100 ];
     static mapVotingCount[ MAX_MAPNAME_LENGHT + 32 ];
 
@@ -7106,7 +7106,7 @@ public vote_display( argument[ 2 ] )
                                 && !isVoteOver );
 
     // Update time remaining
-    updateTimeRemaining ? g_votingSecondsRemaining-- : 0;
+    if( updateTimeRemaining ) g_votingSecondsRemaining--;
 
     LOGGER( 4, "  ( votedisplay ) player_id: %d", argument[ 1 ]  )
     LOGGER( 4, "  ( votedisplay ) updateTimeRemaining: %d", argument[ 0 ]  )
@@ -7248,6 +7248,8 @@ stock dispaly_the_vote_sub_menu( player_id )
 
 stock processSubMenuKeyHit( player_id, key )
 {
+    LOGGER( 4, "I AM ENTERING ON processSubMenuKeyHit(2) player_id: %d, key: %d", player_id, key )
+
     switch( key )
     {
         case 0: // key 1
@@ -7276,9 +7278,8 @@ stock processSubMenuKeyHit( player_id, key )
 
 stock addExtensionOption( player_id, copiedChars, voteStatus[], voteStatusLenght, menuKeys, bool:isToAddResults = true )
 {
-    LOGGER( 4, "I AM ENTERING ON calculateExtensionOption(6) player_id: %d", player_id )
-    LOGGER( 4, "( calculateExtensionOption ) voteStatusLenght: %d, menuKeys: %d", voteStatusLenght, menuKeys )
-    LOGGER( 4, "( calculateExtensionOption ) copiedChars: %d, voteStatus: %s",  copiedChars, voteStatus )
+    LOGGER( 4, "I AM ENTERING ON addExtensionOption(6) player_id: %d", player_id )
+    LOGGER( 4, "( addExtensionOption ) voteStatusLenght: %d, menuKeys: %d, copiedChars: %d", voteStatusLenght, menuKeys, copiedChars )
 
     new bool:allowStay;
     new bool:allowExtend;
@@ -7310,8 +7311,8 @@ stock addExtensionOption( player_id, copiedChars, voteStatus[], voteStatusLenght
         allowStay = false;
     }
 
-    LOGGER( 4, "    ( vote_handleDisplay ) Add optional menu item allowStay: %d, allowExtend: %d, \
-           g_isExtendmapAllowStay: %d", allowStay, allowExtend, g_isExtendmapAllowStay )
+    LOGGER( 4, "    ( addExtensionOption ) Add optional menu item, allowStay: %d, allowExtend: %d, \
+            g_isExtendmapAllowStay: %d", allowStay, allowExtend, g_isExtendmapAllowStay )
 
     // add optional menu item
     if( g_isMapExtensionAllowed
@@ -7386,14 +7387,14 @@ stock addExtensionOption( player_id, copiedChars, voteStatus[], voteStatusLenght
         menuKeys |= ( 1 << g_totalVoteOptions );
     }
 
+    LOGGER( 256, "    ( addExtensionOption ) Returning menuKeys: %d", menuKeys )
     return menuKeys;
 }
 
 stock display_menu_dirt( player_id, menuKeys, bool:isVoteOver, bool:noneIsHidden, voteStatus[] )
 {
-    LOGGER( 256, "I AM ENTERING ON display_menu_dirt(6) player_id: %d", player_id )
-    LOGGER( 256, "( display_menu_dirt ) isVoteOver: %d, voteStatus: %s", isVoteOver, voteStatus )
-    LOGGER( 256, "( display_menu_dirt ) menuKeys: %s, noneIsHidden: %d", menuKeys, noneIsHidden )
+    LOGGER( 256, "I AM ENTERING ON display_menu_dirt(5) player_id: %d", player_id )
+    LOGGER( 256, "( display_menu_dirt ) menuKeys: %d, noneIsHidden: %d, isVoteOver: %d", menuKeys, noneIsHidden, isVoteOver )
 
     new bool:isToShowUndo;
     new bool:isToAddExtraLine;
@@ -7527,7 +7528,7 @@ stock display_menu_dirt( player_id, menuKeys, bool:isVoteOver, bool:noneIsHidden
 stock computeVoteMenuFooter( player_id, voteFooter[], voteFooterSize )
 {
     LOGGER( 256, "I AM ENTERING ON computeVoteMenuFooter(3) player_id: %d", player_id )
-    LOGGER( 256, "( computeVoteMenuFooter ) voteFooter: %s, voteFooterSize: %d", voteFooter, voteFooterSize )
+    LOGGER( 256, "( computeVoteMenuFooter ) voteFooterSize: %d", voteFooterSize )
 
     new copiedChars;
     copiedChars = copy( voteFooter, voteFooterSize, "^n^n" );
