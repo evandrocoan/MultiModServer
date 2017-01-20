@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-594";
+new const PLUGIN_VERSION[] = "v4.2.0-595";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -5921,9 +5921,11 @@ stock vote_addNominations( blockedMapsBuffer[], &announcementShowedTimes = 0 )
         // Add as many nominations as we can by FIFO
         for( new nominationIndex = 0; nominationIndex < nominatedMapsCount; ++nominationIndex )
         {
-            mapIndex = ArrayGetCell( g_nominatedMapsArray, nominationIndex );
-
-            if( mapIndex > -1 )
+            if( ( mapIndex = ArrayGetCell( g_nominatedMapsArray, nominationIndex ) ) < 0 )
+            {
+                continue;
+            }
+            else
             {
                 GET_MAP_NAME( g_nominationLoadedMapsArray, mapIndex, mapName )
                 LOGGER( 4, "( vote_addNominations ) g_nominationLoadedMapsArray.mapIndex: %d, mapName: %s", mapIndex, mapName )
@@ -5978,9 +5980,11 @@ stock show_all_players_nominations()
 
         for( new player_id = 1; player_id < MAX_PLAYERS_COUNT; ++player_id )
         {
-            mapIndex = getPlayerNominationMapIndex( player_id, nominationIndex );
-
-            if( mapIndex >= 0 )
+            if( ( mapIndex = getPlayerNominationMapIndex( player_id, nominationIndex ) ) < 0 )
+            {
+                continue;
+            }
+            else
             {
                 ArrayGetString( g_nominationLoadedMapsArray, mapIndex, mapName, charsmax( mapName ) );
                 nominator_id = nomination_getPlayer( mapIndex );
@@ -9539,9 +9543,11 @@ stock unnominatedDisconnectedPlayer( player_id )
 
     for( new nominationIndex = 0; nominationIndex < maxPlayerNominations; ++nominationIndex )
     {
-        mapIndex = getPlayerNominationMapIndex( player_id, nominationIndex );
-
-        if( mapIndex >= 0 )
+        if( ( mapIndex = getPlayerNominationMapIndex( player_id, nominationIndex ) ) < 0 )
+        {
+            continue;
+        }
+        else
         {
             setPlayerNominationMapIndex( player_id, nominationIndex, -1 );
 
@@ -12648,7 +12654,11 @@ stock show_my_nominated_maps( player_id, maxPlayerNominations )
 
     for( new nominationIndex = 0; nominationIndex < maxPlayerNominations; ++nominationIndex )
     {
-        mapIndex = getPlayerNominationMapIndex( player_id, nominationIndex );
+        if( ( mapIndex = getPlayerNominationMapIndex( player_id, nominationIndex ) ) < 0 )
+        {
+            continue;
+        }
+
         GET_MAP_NAME( g_nominationLoadedMapsArray, mapIndex, nominatedMapName )
 
         if( copiedChars )
@@ -12683,9 +12693,11 @@ public nomination_list()
 
     for( new nominationIndex = 0; nominationIndex < nominatedMapsCount; ++nominationIndex )
     {
-        mapIndex = ArrayGetCell( g_nominatedMapsArray, nominationIndex );
-
-        if( mapIndex > -1 )
+        if( ( mapIndex = ArrayGetCell( g_nominatedMapsArray, nominationIndex ) ) < 0 )
+        {
+            continue;
+        }
+        else
         {
             GET_MAP_NAME( g_nominationLoadedMapsArray, mapIndex, mapName )
 
