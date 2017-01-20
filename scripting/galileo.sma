@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-611";
+new const PLUGIN_VERSION[] = "v4.2.0-612";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -2786,7 +2786,7 @@ stock loadWhiteListFileFromFile( &Array:whitelistArray, whiteListFilePath[] )
     new whiteListFileDescriptor;
     new currentLine[ MAX_LONG_STRING ];
 
-    TRY_TO_CLEAN( ArrayClear, g_whitelistFileArray, ArrayCreate( MAX_LONG_STRING ) )
+    TRY_TO_CLEAN( ArrayClear, whitelistArray, ArrayCreate( MAX_LONG_STRING ) )
 
     if( !( whiteListFileDescriptor = fopen( whiteListFilePath, "rt" ) ) )
     {
@@ -5389,38 +5389,6 @@ stock bool:convertWhitelistToBlacklist( &startHour, &endHour )
 }
 
 /**
- * This must to be called only when is possible that the Whitelist feature is not loaded by its
- * first time. For example, when the cvar 'cvar_isWhiteListNomBlock' is enabled after the server
- * start.
- *
- * @note It must to be protected by an 'IS_WHITELIST_ENABLED()' evaluation.
- */
-stock tryToLoadTheWhiteListFeature()
-{
-    if( get_pcvar_num( cvar_isWhiteListBlockOut ) )
-    {
-        // Loads all the allowed maps to be added as nominations or as voting map fillers.
-        if( !g_whitelistTrie )
-        {
-            loadTheWhiteListFeature();
-        }
-    }
-    else
-    {
-        // Loads all the blocked maps to be added as nominations or as voting map fillers.
-        if( !g_blacklistTrie )
-        {
-            loadTheWhiteListFeature();
-        }
-    }
-
-    if( IS_TO_HOURLY_LOAD_THE_WHITELIST() )
-    {
-        computeNextWhiteListLoadTime( floatround( get_gametime(), floatround_ceil ), false );
-    }
-}
-
-/**
  * This must to be called always is needed to update the Whitelist loaded maps, or when it is the
  * first time the Whitelist feature is loaded.
  *
@@ -5709,9 +5677,6 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
     {
         if( isWhitelistEnabled )
         {
-            // Not loaded?
-            tryToLoadTheWhiteListFeature();
-
             // The Whitelist out block feature, disables The Map Groups Feature.
             if( isWhiteListOutBlock )
             {
@@ -9139,9 +9104,14 @@ stock isPrefixInMenu( map[] )
 stock map_isTooRecent( map[] )
 {
     LOGGER( 256, "I AM ENTERING ON map_isTooRecent(1) map: %s", map )
-    LOGGER( 256, "    ( map_isTooRecent ) Returning TrieKeyExists: %d", TrieKeyExists( g_recentMapsTrie, map ) )
 
-    return TrieKeyExists( g_recentMapsTrie, map );
+    if( g_recentMapsTrie )
+    {
+        LOGGER( 256, "    ( map_isTooRecent ) Returning TrieKeyExists: %d", TrieKeyExists( g_recentMapsTrie, map ) )
+        return TrieKeyExists( g_recentMapsTrie, map );
+    }
+
+    return false;
 }
 
 stock is_to_block_RTV( player_id )
@@ -10307,9 +10277,6 @@ public cmd_voteMap( player_id, level, cid )
             new argument[ MAX_MAPNAME_LENGHT  ];
             new bool:isWhitelistEnabled = IS_WHITELIST_ENABLED();
 
-            // Not loaded?
-            tryToLoadTheWhiteListFeature();
-
             // If the voteMapMenuBuilder(1) added some maps, they will be around here, but we do not
             // want to them be here as this is a full spec command.
             clearTheVotingMenu();
@@ -10553,9 +10520,6 @@ stock displayVoteMapMenu( player_id )
     // SET_MENU_LANG_STRING_PROPERTY( MPROP_BACKNAME, menu, "BACK" )
 
     new bool:isWhitelistEnabled = IS_WHITELIST_ENABLED();
-
-    // Not loaded?
-    tryToLoadTheWhiteListFeature();
 
     for( ; mapIndex < nominationsMapsCount && itemsCount < MAX_NOM_MENU_ITEMS_PER_PAGE; mapIndex++ )
     {
@@ -11676,12 +11640,6 @@ stock getRecentMapsAndWhiteList( player_id, &isRecentMapNomBlocked, &isWhiteList
     isWhiteListNomBlock = ( IS_WHITELIST_ENABLED()
                             && IS_TO_HOURLY_LOAD_THE_WHITELIST() );
 
-    // Not loaded?
-    if( isWhiteListNomBlock )
-    {
-        tryToLoadTheWhiteListFeature();
-    }
-
     switch( get_pcvar_num( cvar_recentNomMapsAllowance ) )
     {
         case 1:
@@ -12686,9 +12644,6 @@ stock map_nominate( player_id, mapIndex )
 
         if( isWhiteListNomBlock )
         {
-            // Not loaded?
-            tryToLoadTheWhiteListFeature();
-
             if( IS_WHITELIST_BLOCKING( isWhiteListNomBlock, mapName ) )
             {
                 color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_WHITELIST", mapName );
