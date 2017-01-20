@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-590";
+new const PLUGIN_VERSION[] = "v4.2.0-591";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -86,7 +86,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-590";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+2+4+64+8
+#define DEBUG_LEVEL 1+2+4+16
 
 
 /**
@@ -8751,10 +8751,10 @@ stock map_extend( lang[] )
     toAnnounceTheMapExtension( lang );
     noLongerIsAnEarlyVoting();
 
-    LOGGER( 2, "( map_extend ) TRYING to change the cvar %15s to '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
-    LOGGER( 2, "( map_extend ) TRYING to change the cvar %15s to '%d'.", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) )
-    LOGGER( 2, "( map_extend ) TRYING to change the cvar %15s to '%d'.", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) )
-    LOGGER( 2, "( map_extend ) TRYING to change the cvar %15s to '%d'.", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) )
+    LOGGER( 2, "( map_extend ) TRYING to change the cvar %15s from '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
+    LOGGER( 2, "( map_extend ) TRYING to change the cvar %15s from '%d'.", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) )
+    LOGGER( 2, "( map_extend ) TRYING to change the cvar %15s from '%d'.", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) )
+    LOGGER( 2, "( map_extend ) TRYING to change the cvar %15s from '%d'.", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) )
 
     // Remove the fail safe, as we are extending the map. The fail safe could be running if the
     // `cvar_endOfMapVoteStart` failed to predict the correct last round to start voting, the voting
@@ -8859,10 +8859,10 @@ public map_restoreEndGameCvars()
     restoreTheChatTime();
     restoreOriginalServerMaxSpeed();
 
-    LOGGER( 2, "( map_restoreEndGameCvars ) TRYING to change the cvar %15s to '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
-    LOGGER( 2, "( map_restoreEndGameCvars ) TRYING to change the cvar %15s to '%d'.", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) )
-    LOGGER( 2, "( map_restoreEndGameCvars ) TRYING to change the cvar %15s to '%d'.", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) )
-    LOGGER( 2, "( map_restoreEndGameCvars ) TRYING to change the cvar %15s to '%d'.", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) )
+    LOGGER( 2, "( map_restoreEndGameCvars ) TRYING to change the cvar %15s from '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
+    LOGGER( 2, "( map_restoreEndGameCvars ) TRYING to change the cvar %15s from '%d'.", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) )
+    LOGGER( 2, "( map_restoreEndGameCvars ) TRYING to change the cvar %15s from '%d'.", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) )
+    LOGGER( 2, "( map_restoreEndGameCvars ) TRYING to change the cvar %15s from '%d'.", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) )
 
     if( g_isEndGameLimitsChanged )
     {
@@ -8873,10 +8873,10 @@ public map_restoreEndGameCvars()
         tryToSetGameModCvarNum(   cvar_mp_winlimit , g_originalWinLimit  );
         tryToSetGameModCvarNum(   cvar_mp_fraglimit, g_originalFragLimit );
 
-        LOGGER( 2, "( map_restoreEndGameCvars ) RESTORING the cvar %-22s to '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
-        LOGGER( 2, "( map_restoreEndGameCvars ) RESTORING the cvar %-22s to '%d'.", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) )
-        LOGGER( 2, "( map_restoreEndGameCvars ) RESTORING the cvar %-22s to '%d'.", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) )
-        LOGGER( 2, "( map_restoreEndGameCvars ) RESTORING the cvar %-22s to '%d'.", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) )
+        LOGGER( 2, "( map_restoreEndGameCvars ) RESTORING the cvar %-24s to '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
+        LOGGER( 2, "( map_restoreEndGameCvars ) RESTORING the cvar %-24s to '%d'.", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) )
+        LOGGER( 2, "( map_restoreEndGameCvars ) RESTORING the cvar %-24s to '%d'.", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) )
+        LOGGER( 2, "( map_restoreEndGameCvars ) RESTORING the cvar %-24s to '%d'.", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) )
 
         // restore to the original/right values
         g_rtvWaitMinutes = get_pcvar_float( cvar_rtvWaitMinutes );
@@ -14909,7 +14909,7 @@ public timeRemain()
             print_logger( "" );
             print_logger( "" );
             print_logger( "    After '%d' runtime seconds... Executing the %s's Unit Tests delayed until at least %d seconds: ",
-                                     computeTheTestElapsedTime(),          PLUGIN_NAME,          g_test_maxDelayResult );
+                                     computeTheTestElapsedTime(),          PLUGIN_NAME,                    g_test_maxDelayResult );
             print_logger( "" );
             print_logger( "" );
             print_logger( "" );
@@ -15916,7 +15916,7 @@ public timeRemain()
         }
     }
 
-    stock test_loadCurrentBlacklist_caseT( s, bool:isBlackList, currentHour, map_existent[], not_existent[] )
+    stock test_loadCurrentBlacklist_caseT( serie, bool:isBlackList, currentHour, map_existent[], not_existent[] )
     {
         new test_id;
         new errorMessage[ MAX_LONG_STRING ];
@@ -15929,7 +15929,7 @@ public timeRemain()
 
         if( map_existent[ 0 ] )
         {
-            test_id = test_registerSeriesNaming( "test_loadCurrentBlacklist", s );
+            test_id = test_registerSeriesNaming( "test_loadCurrentBlacklist", serie );
 
             formatex( errorMessage, charsmax( errorMessage ), "The map '%s' must to be present on the trie, but it was not!", map_existent );
             SET_TEST_FAILURE( test_id, !TrieKeyExists( blackListTrie, map_existent ), errorMessage )
@@ -15937,7 +15937,7 @@ public timeRemain()
 
         if( not_existent[ 0 ] )
         {
-            test_id = test_registerSeriesNaming( "test_loadCurrentBlacklist", s );
+            test_id = test_registerSeriesNaming( "test_loadCurrentBlacklist", serie );
 
             formatex( errorMessage, charsmax( errorMessage ), "The map '%s' must not to be present on the trie, but it was!", not_existent );
             SET_TEST_FAILURE( test_id, TrieKeyExists( blackListTrie, not_existent ), errorMessage )
@@ -16333,30 +16333,30 @@ public timeRemain()
         g_rtvWaitFrags       = 0;
         g_rtvWaitAdminNumber = 0;
 
-        g_test_aimedPlayersNumber = 6;
+        g_test_aimedPlayersNumber = 7;
         set_pcvar_float( cvar_rtvRatio, 0.5 );
 
         // Add a RTV for the player 1
-        test_RTVAndUnRTV( .player_id = 1, .total_RTVs = 1, .action = 'a' ); // Case
-        test_RTVAndUnRTV( .player_id = 1, .total_RTVs = 1, .action = 'a' ); // Case
-        test_RTVAndUnRTV( .player_id = 1, .total_RTVs = 1, .action = 'a' ); // Case
+        test_RTVAndUnRTV( .player_id = 1, .total_RTVs = 1, .action = 'a' ); // Case 1
+        test_RTVAndUnRTV( .player_id = 1, .total_RTVs = 1, .action = 'a' ); // Case 2
+        test_RTVAndUnRTV( .player_id = 1, .total_RTVs = 1, .action = 'a' ); // Case 3
 
-        test_RTVAndUnRTV( .player_id = 2, .total_RTVs = 2, .action = 'a' ); // Case
-        test_RTVAndUnRTV( .player_id = 2, .total_RTVs = 2, .action = 'a' ); // Case
-        test_RTVAndUnRTV( .player_id = 2, .total_RTVs = 1, .action = 'r' ); // Case
-        test_RTVAndUnRTV( .player_id = 2, .total_RTVs = 1, .action = 'r' ); // Case
+        test_RTVAndUnRTV( .player_id = 2, .total_RTVs = 2, .action = 'a' ); // Case 4
+        test_RTVAndUnRTV( .player_id = 2, .total_RTVs = 2, .action = 'a' ); // Case 5
+        test_RTVAndUnRTV( .player_id = 2, .total_RTVs = 1, .action = 'r' ); // Case 6
+        test_RTVAndUnRTV( .player_id = 2, .total_RTVs = 1, .action = 'r' ); // Case 7
 
-        test_RTVAndUnRTV( .player_id = 1, .total_RTVs = 0, .action = 'r' ); // Case
-        test_RTVAndUnRTV( .player_id = 1, .total_RTVs = 0, .action = 'r' ); // Case
-        test_RTVAndUnRTV( .player_id = 1, .total_RTVs = 0, .action = 'r' ); // Case
-        test_RTVAndUnRTV( .player_id = 1, .total_RTVs = 0, .action = 'r' ); // Case
+        test_RTVAndUnRTV( .player_id = 1, .total_RTVs = 0, .action = 'r' ); // Case 8
+        test_RTVAndUnRTV( .player_id = 1, .total_RTVs = 0, .action = 'r' ); // Case 9
+        test_RTVAndUnRTV( .player_id = 1, .total_RTVs = 0, .action = 'r' ); // Case 10
+        test_RTVAndUnRTV( .player_id = 1, .total_RTVs = 0, .action = 'r' ); // Case 11
 
-        test_RTVAndUnRTV( .player_id = 1, .total_RTVs = 1, .action = 'a' ); // Case
-        test_RTVAndUnRTV( .player_id = 2, .total_RTVs = 2, .action = 'a' ); // Case
-        test_RTVAndUnRTV( .player_id = 3, .total_RTVs = 3, .action = 'a' ); // Case
+        test_RTVAndUnRTV( .player_id = 1, .total_RTVs = 1, .action = 'a' ); // Case 12
+        test_RTVAndUnRTV( .player_id = 2, .total_RTVs = 2, .action = 'a' ); // Case 13
+        test_RTVAndUnRTV( .player_id = 3, .total_RTVs = 3, .action = 'a' ); // Case 14
 
         cancelVoting();
-        test_RTVAndUnRTV( .player_id = 1, .total_RTVs = 0, .action = 'n' ); // Case
+        test_RTVAndUnRTV( .player_id = 1, .total_RTVs = 0, .action = 'n' ); // Case 15
     }
 
     /**
