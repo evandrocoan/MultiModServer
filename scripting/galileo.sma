@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-587";
+new const PLUGIN_VERSION[] = "v4.2.0-589";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -6716,7 +6716,8 @@ stock initializeTheVoteDisplay()
 
     // Adjust the choices delay for the Unit Tests run or normal work flow
 #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
-    handleChoicesDelay = 0.1;
+    g_votingSecondsRemaining = 5;
+    handleChoicesDelay       = 0.1;
 #else
 
     if( g_voteMapStatus & IS_DISABLED_VOTEMAP_INTRO )
@@ -6758,11 +6759,6 @@ stock initializeTheVoteDisplay()
             announceThePendingVoteTime( VOTE_TIME_HUD1 );
         }
     }
-#endif
-
-    // Force a right vote duration for the Unit Tests run
-#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
-    g_votingSecondsRemaining = 5;
 #endif
 
     // To create fake votes when needed
@@ -7016,12 +7012,11 @@ public vote_handleDisplay()
     // ensure the vote status doesn't indicate expired
     g_voteStatus &= ~IS_VOTE_EXPIRED;
 
-    new argument[ 2 ] = { true, 0 };
-
     if( g_showVoteStatus == SHOW_STATUS_ALWAYS
         || g_showVoteStatus == SHOW_STATUS_AFTER_VOTE
         || g_showVoteStatus == SHOW_STATUS_ALWAYS_UNTIL_VOTE )
     {
+        new argument[ 2 ] = { true, 0 };
         set_task( 1.0, "vote_display", TASKID_VOTE_DISPLAY, argument, sizeof argument, "a", g_votingSecondsRemaining );
     }
     else // g_showVoteStatus == SHOW_STATUS_AT_END || g_showVoteStatus == SHOW_STATUS_NEVER
@@ -7118,11 +7113,12 @@ public vote_display( argument[ 2 ] )
     voteStatus[ 0 ] = '^0';
 
     // register the 'None' option key
-    g_isToShowSubMenu || ( g_isToShowNoneOption && !isVoteOver ) ? ( menuKeys = MENU_KEY_0 ) : 0;
+    if( g_isToShowSubMenu || ( g_isToShowNoneOption && !isVoteOver ) ) menuKeys = MENU_KEY_0;
 
     // add maps to the menu
     for( new choiceIndex = 0; choiceIndex < g_totalVoteOptions; ++choiceIndex )
     {
+        menuKeys |= ( 1 << choiceIndex );
         computeMapVotingCount( mapVotingCount, charsmax( mapVotingCount ), choiceIndex );
 
         copiedChars += formatex( voteStatus[ copiedChars ], charsmax( voteStatus ) - copiedChars,
@@ -7132,8 +7128,6 @@ public vote_display( argument[ 2 ] )
                 COLOR_RED, choiceIndex + 1, COLOR_WHITE, g_votingMapNames[ choiceIndex ],
                 g_votingMapInfos[ choiceIndex ][ 0 ] ? " " : "",
                 g_votingMapInfos[ choiceIndex ], mapVotingCount );
-
-        menuKeys |= ( 1 << choiceIndex );
     }
 
     // Make a copy of the virgin menu, using the first player's menu as base. To not make this
@@ -7291,6 +7285,13 @@ stock addExtensionOption( player_id, copiedChars, voteStatus[], voteStatusLenght
     allowStay = ( g_isMapExtensionAllowed
                   && !( g_voteStatus & IS_RUNOFF_VOTE ) );
 
+    // If this option is set, the stay option will never be show, and there is no way to the runoff
+    // result in set `g_isRunOffNeedingKeepCurrentMap` to true and `g_isGameFinalVoting` to false.
+    if( !g_isExtendmapAllowStay )
+    {
+        allowStay = false;
+    }
+
     if( g_isRunOffNeedingKeepCurrentMap )
     {
         // if it is a end map RunOff, then it is a extend button, not a keep current map button
@@ -7304,11 +7305,6 @@ stock addExtensionOption( player_id, copiedChars, voteStatus[], voteStatusLenght
             allowExtend = false;
             allowStay   = true;
         }
-    }
-
-    if( !g_isExtendmapAllowStay )
-    {
-        allowStay = false;
     }
 
     LOGGER( 4, "    ( addExtensionOption ) Add optional menu item, allowStay: %d, allowExtend: %d, \
@@ -10154,7 +10150,9 @@ public cmd_voteMap( player_id, level, cid )
         LOGGER( 8, "( cmd_voteMap ) " )
         LOGGER( 8, "( cmd_voteMap ) arguments: %s", arguments )
 
-        if( argumentsCount > 2 )
+        if( argumentsCount > 1
+            && g_isExtendmapAllowStay
+            || argumentsCount > 2 )
         {
             new argument[ MAX_MAPNAME_LENGHT  ];
             new bool:isWhitelistEnabled = IS_WHITELIST_ENABLED();
@@ -10245,7 +10243,10 @@ stock startVoteMapVoting( player_id )
 {
     LOGGER( 128, "I AM ENTERING ON startVoteMapVoting(1) player_id: %s", player_id )
 
-    if( g_totalVoteOptions > 1 )
+    if( g_totalVoteOptions > 0
+        && !( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXTENSION )
+        && g_isExtendmapAllowStay
+        || g_totalVoteOptions > 1 )
     {
         // Load the voting time
         g_votingSecondsRemaining = get_pcvar_num( cvar_voteDuration );
@@ -10456,7 +10457,10 @@ stock addMenuMoreBackStartOptions( menu, player_id, disabledReason[], bool:isToE
     addMenuMoreBackButtons( menu, player_id, disabledReason, isToEnableMoreButton, isToEnableBackButton, itemsCount );
 
     // To add the exit button
-    if( g_totalVoteOptions > 1 )
+    if( g_totalVoteOptions > 0
+        && !( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXTENSION )
+        && g_isExtendmapAllowStay
+        || g_totalVoteOptions > 1 )
     {
         formatex( disabledReason, MAX_SHORT_STRING - 1, "%L%s (%d)", player_id, "CMD_MENU", COLOR_YELLOW, g_totalVoteOptions );
         menu_additem( menu, disabledReason, _, 0 );
@@ -10479,7 +10483,10 @@ public handleDisplayVoteMap( player_id, menu, item )
     // is the key 0 on the keyboard. Also, the item 8 is the key 9; 7, 8; 6, 7; 5, 6; 4, 5; etc.
     if( item < 0
         || ( item == 9
-             && g_totalVoteOptions < 2 ) )
+             && !( g_totalVoteOptions > 0
+                   && !( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXTENSION )
+                   && g_isExtendmapAllowStay
+                   || g_totalVoteOptions > 1 ) ) )
     {
         DESTROY_PLAYER_NEW_MENU_TYPE( menu )
 
@@ -10489,7 +10496,10 @@ public handleDisplayVoteMap( player_id, menu, item )
 
     // To start the voting
     if( item == 9
-        && g_totalVoteOptions > 1 )
+        && ( g_totalVoteOptions > 0
+             && !( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXTENSION )
+             && g_isExtendmapAllowStay
+             || g_totalVoteOptions > 1 ) )
     {
         DESTROY_PLAYER_NEW_MENU_TYPE( menu )
         displayVoteMapMenuCommands( player_id );
@@ -10498,32 +10508,34 @@ public handleDisplayVoteMap( player_id, menu, item )
         return PLUGIN_HANDLED;
     }
 
-    // If the 8 button item is hit, and we are not on the first page, we must to perform the back option.
-    if( item == 7 )
+    switch( item )
     {
-        DESTROY_PLAYER_NEW_MENU_TYPE( menu )
-        g_voteMapMenuPages[ player_id ] ? g_voteMapMenuPages[ player_id ]-- : 0;
+        // If the 8 button item is hit, and we are not on the first page, we must to perform the back option.
+        case 7:
+        {
+            DESTROY_PLAYER_NEW_MENU_TYPE( menu )
+            g_voteMapMenuPages[ player_id ] ? g_voteMapMenuPages[ player_id ]-- : 0;
 
-        // Try to block/difficult players from performing the Denial Of Server attack.
-        // displayVoteMapMenuHook( player_id );
-        set_task( 0.1, "displayVoteMapMenuHook", player_id );
+            // Try to block/difficult players from performing the Denial Of Server attack.
+            // displayVoteMapMenuHook( player_id );
+            set_task( 0.1, "displayVoteMapMenuHook", player_id );
 
-        LOGGER( 1, "    ( handleDisplayVoteMap ) Just Returning PLUGIN_HANDLED, doing the back button." )
-        return PLUGIN_HANDLED;
-    }
+            LOGGER( 1, "    ( handleDisplayVoteMap ) Just Returning PLUGIN_HANDLED, doing the back button." )
+            return PLUGIN_HANDLED;
+        }
+        // If the 9 button item is hit, and we are on some page not the last one, we must to perform the more option.
+        case 8:
+        {
+            DESTROY_PLAYER_NEW_MENU_TYPE( menu )
+            g_voteMapMenuPages[ player_id ]++;
 
-    // If the 9 button item is hit, and we are on some page not the last one, we must to perform the more option.
-    if( item == 8 )
-    {
-        DESTROY_PLAYER_NEW_MENU_TYPE( menu )
-        g_voteMapMenuPages[ player_id ]++;
+            // Try to block/difficult players from performing the Denial Of Server attack.
+            // displayVoteMapMenuHook( player_id );
+            set_task( 0.1, "displayVoteMapMenuHook", player_id );
 
-        // Try to block/difficult players from performing the Denial Of Server attack.
-        // displayVoteMapMenuHook( player_id );
-        set_task( 0.1, "displayVoteMapMenuHook", player_id );
-
-        LOGGER( 1, "    ( handleDisplayVoteMap ) Just Returning PLUGIN_HANDLED, doing the more button." )
-        return PLUGIN_HANDLED;
+            LOGGER( 1, "    ( handleDisplayVoteMap ) Just Returning PLUGIN_HANDLED, doing the more button." )
+            return PLUGIN_HANDLED;
+        }
     }
 
     // Due the firsts items to be specials, intercept them, but if and only if we are on the menu's first page.
@@ -10610,7 +10622,10 @@ public displayVoteMapMenuCommands( player_id )
 
     // The first menus items
     formatex( choice, charsmax( choice ), "%L%s (%d)", player_id, "GAL_VOTE_START", COLOR_YELLOW, g_totalVoteOptions );
-    menu_additem( menu, choice, { -1 }, g_totalVoteOptions > 1 ? 0 : ( 1 << 26 ) );
+    menu_additem( menu, choice, { -1 }, g_totalVoteOptions > 0
+                                        && g_isExtendmapAllowStay
+                                        && !( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXTENSION )
+                                        || g_totalVoteOptions > 1 ? 0 : ( 1 << 26 ) );
 
     formatex( choice, charsmax( choice ), "%L", player_id, "EXIT" );
     menu_additem( menu, choice, { -1 }, 0 );
@@ -10680,41 +10695,41 @@ public handleDisplayVoteMapCommands( player_id, menu, item )
         return PLUGIN_HANDLED;
     }
 
-    if( item == 0 )
+    switch( item )
     {
-        DESTROY_PLAYER_NEW_MENU_TYPE( menu )
-        startVoteMapVoting( player_id );
+        case 0:
+        {
+            DESTROY_PLAYER_NEW_MENU_TYPE( menu )
+            startVoteMapVoting( player_id );
 
-        LOGGER( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, starting the voting." )
-        return PLUGIN_HANDLED;
-    }
+            LOGGER( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, starting the voting." )
+            return PLUGIN_HANDLED;
+        }
+        case 1:
+        {
+            DESTROY_PLAYER_NEW_MENU_TYPE( menu )
 
-    if( item == 1 )
-    {
-        DESTROY_PLAYER_NEW_MENU_TYPE( menu )
+            LOGGER( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, exit the menu." )
+            return PLUGIN_HANDLED;
+        }
+        case 2:
+        {
+            clearTheVotingMenu();
+            g_voteMapMenuPages[ player_id ] = 0;
 
-        LOGGER( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, starting the voting." )
-        return PLUGIN_HANDLED;
-    }
+            DESTROY_PLAYER_NEW_MENU_TYPE( menu )
 
-    if( item == 2 )
-    {
-        clearTheVotingMenu();
-        g_voteMapMenuPages[ player_id ] = 0;
+            LOGGER( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, cleaning the voting." )
+            return PLUGIN_HANDLED;
+        }
+        case 3:
+        {
+            DESTROY_PLAYER_NEW_MENU_TYPE( menu )
+            client_cmd( player_id, "messagemode ^"say %s^"", GAL_VOTEMAP_MENU_COMMAND );
 
-        DESTROY_PLAYER_NEW_MENU_TYPE( menu )
-
-        LOGGER( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, cleaning the voting." )
-        return PLUGIN_HANDLED;
-    }
-
-    if( item == 3 )
-    {
-        DESTROY_PLAYER_NEW_MENU_TYPE( menu )
-        client_cmd( player_id, "messagemode ^"say %s^"", GAL_VOTEMAP_MENU_COMMAND );
-
-        LOGGER( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, opening go to page." )
-        return PLUGIN_HANDLED;
+            LOGGER( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, opening go to page." )
+            return PLUGIN_HANDLED;
+        }
     }
 
     // debugging menu info tracker
