@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-607";
+new const PLUGIN_VERSION[] = "v4.2.0-608";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -2843,19 +2843,11 @@ stock loadMapFiles()
 
     // To clear them, in case we are reloading it.
     TRY_TO_CLEAN( clear_two_dimensional_array, g_norPlayerFillerMapGroupArrays, ArrayCreate() )
-    TRY_TO_CLEAN( clear_two_dimensional_array, g_minPlayerFillerMapGroupArrays, ArrayCreate() )
-    TRY_TO_CLEAN( clear_two_dimensional_array, g_midPlayerFillerMapGroupArrays, ArrayCreate() )
 
     // To start loading the files.
     loadedCount[ t_Whitelist      ] = configureTheWhiteListFeature(  mapFilerFilePath );
     loadedCount[ t_MininumPlayers ] = configureTheMinPlayersFeature( mapFilerFilePath );
-
-    LOGGER( 4, "" )
-    TRY_TO_CLEAN( ArrayClear, g_voteMidPlayerFillerPathsArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
-    TRY_TO_CLEAN( ArrayClear, g_midMaxMapsPerGroupToUseArray , ArrayCreate() )
-
-    get_pcvar_string( cvar_voteMidPlayersMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) );
-    loadMapGroupsFeatureFile( mapFilerFilePath, g_voteMidPlayerFillerPathsArray, g_midMaxMapsPerGroupToUseArray );
+    loadedCount[ t_MiddlePlayers  ] = configureTheMidPlayersFeature( mapFilerFilePath );
 
     LOGGER( 4, "" )
     TRY_TO_CLEAN( ArrayClear, g_voteNorPlayerFillerPathsArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
@@ -2866,12 +2858,9 @@ stock loadMapFiles()
 
     // To process the loaded files to let them ready for immediate use.
     LOGGER( 4, "" )
-    loadedCount[ t_MiddlePlayers ] = processLoadedGroupMapFileFrom( g_midPlayerFillerMapGroupArrays, g_voteMidPlayerFillerPathsArray );
     loadedCount[ t_NormalPlayers ] = processLoadedGroupMapFileFrom( g_norPlayerFillerMapGroupArrays, g_voteNorPlayerFillerPathsArray );
 
     LOGGER( 4, "" )
-    LOGGER( 4, "", debugLoadedGroupMapFileFrom( g_minPlayerFillerMapGroupArrays, g_minMaxMapsPerGroupToUseArray ) )
-    LOGGER( 4, "", debugLoadedGroupMapFileFrom( g_midPlayerFillerMapGroupArrays, g_midMaxMapsPerGroupToUseArray ) )
     LOGGER( 4, "", debugLoadedGroupMapFileFrom( g_norPlayerFillerMapGroupArrays, g_norMaxMapsPerGroupToUseArray ) )
 
     loadTheBanRecentMapsFeature( loadedCount[ t_NormalPlayers ] );
@@ -2879,6 +2868,34 @@ stock loadMapFiles()
     LOGGER( 4, "( loadMapFiles ) Maps Files Loaded." )
     LOGGER( 4, "" )
     LOGGER( 4, "" )
+}
+
+stock configureTheMidPlayersFeature( mapFilerFilePath[] )
+{
+    LOGGER( 128, "I AM ENTERING ON configureTheMidPlayersFeature(2)" )
+    new loadedCount;
+
+    if( get_pcvar_num( cvar_voteMidPlayers ) > 1 )
+    {
+        get_pcvar_string( cvar_voteMidPlayersMapFilePath, mapFilerFilePath, MAX_FILE_PATH_LENGHT - 1 );
+
+        if( mapFilerFilePath[ 0 ] )
+        {
+            LOGGER( 4, "" )
+            TRY_TO_CLEAN( clear_two_dimensional_array, g_midPlayerFillerMapGroupArrays, ArrayCreate() )
+
+            TRY_TO_CLEAN( ArrayClear, g_voteMidPlayerFillerPathsArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
+            TRY_TO_CLEAN( ArrayClear, g_midMaxMapsPerGroupToUseArray , ArrayCreate() )
+
+            loadMapGroupsFeatureFile( mapFilerFilePath, g_voteMidPlayerFillerPathsArray, g_midMaxMapsPerGroupToUseArray );
+            loadedCount = processLoadedGroupMapFileFrom( g_midPlayerFillerMapGroupArrays, g_voteMidPlayerFillerPathsArray );
+
+            LOGGER( 4, "", debugLoadedGroupMapFileFrom( g_midPlayerFillerMapGroupArrays, g_midMaxMapsPerGroupToUseArray ) )
+        }
+    }
+
+    LOGGER( 1, "    ( configureTheMidPlayersFeature ) Returning loadedCount: %d", loadedCount )
+    return loadedCount;
 }
 
 stock configureTheMinPlayersFeature( mapFilerFilePath[] )
@@ -2893,11 +2910,15 @@ stock configureTheMinPlayersFeature( mapFilerFilePath[] )
         if( mapFilerFilePath[ 0 ] )
         {
             LOGGER( 4, "" )
+            TRY_TO_CLEAN( clear_two_dimensional_array, g_minPlayerFillerMapGroupArrays, ArrayCreate() )
+
             TRY_TO_CLEAN( ArrayClear, g_voteMinPlayerFillerPathsArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
             TRY_TO_CLEAN( ArrayClear, g_minMaxMapsPerGroupToUseArray , ArrayCreate() )
 
             loadMapGroupsFeatureFile( mapFilerFilePath, g_voteMinPlayerFillerPathsArray, g_minMaxMapsPerGroupToUseArray );
             loadedCount = processLoadedGroupMapFileFrom( g_minPlayerFillerMapGroupArrays, g_voteMinPlayerFillerPathsArray );
+
+            LOGGER( 4, "", debugLoadedGroupMapFileFrom( g_minPlayerFillerMapGroupArrays, g_minMaxMapsPerGroupToUseArray ) )
         }
     }
 
