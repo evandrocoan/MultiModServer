@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-593";
+new const PLUGIN_VERSION[] = "v4.2.0-594";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -11275,11 +11275,14 @@ public cmd_say( player_id )
         new userFlags = get_user_flags( player_id );
         LOGGER( 4, "( cmd_say ) the thirdWord is empty." )
 
+        strtolower( firstWord );
+        strtolower( secondWord );
+
         // if the chat line contains 1 word, it could be a map or a one-word command as
         // "say [rtv|rockthe<anything>vote]"
         if( secondWord[ 0 ] == '^0' )
         {
-            LOGGER( 4, "( cmd_say ) the secondWord is empty." )
+            LOGGER( 4, "( cmd_say ) the secondWord is empty. Handling: '%s'.", firstWord )
 
             if( userFlags & ADMIN_MAP
                 && containi( firstWord, GAL_VOTEMAP_MENU_COMMAND ) > -1 )
