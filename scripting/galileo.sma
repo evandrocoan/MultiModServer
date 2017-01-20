@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-599";
+new const PLUGIN_VERSION[] = "v4.2.0-600";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -983,6 +983,11 @@ new __g_getMapNameRightToken[ MAX_MAPNAME_LENGHT ];
 }
 
 /**
+ * Wrapper to allow use the destroy_two_dimensional_array(2) as a cleaner on the TRY_TO_CLEAN(2).
+ */
+#define clear_two_dimensional_array(%1) destroy_two_dimensional_array( %1, false )
+
+/**
  * Check whether the menu exists, call menu_destroy(1) and set the menu to id to 0.
  *
  * @param menu_id_variable    a variable within the player menu to be destroyed.
@@ -1858,18 +1863,6 @@ stock loadPluginSetttings()
 stock initializeGlobalArrays()
 {
     LOGGER( 128, "I AM ENTERING ON initializeGlobalArrays(0)" )
-
-    g_voteMinPlayerFillerPathsArray = ArrayCreate( MAX_MAPNAME_LENGHT );
-    g_minPlayerFillerMapGroupArrays = ArrayCreate();
-    g_minMaxMapsPerGroupToUseArray  = ArrayCreate();
-
-    g_voteMidPlayerFillerPathsArray = ArrayCreate( MAX_MAPNAME_LENGHT );
-    g_midPlayerFillerMapGroupArrays = ArrayCreate();
-    g_midMaxMapsPerGroupToUseArray  = ArrayCreate();
-
-    g_voteNorPlayerFillerPathsArray = ArrayCreate( MAX_MAPNAME_LENGHT );
-    g_norPlayerFillerMapGroupArrays = ArrayCreate();
-    g_norMaxMapsPerGroupToUseArray  = ArrayCreate();
 
     g_recentMapsTrie      = TrieCreate();
     g_recentListMapsArray = ArrayCreate( MAX_MAPNAME_LENGHT );
@@ -2855,18 +2848,18 @@ stock loadMapFiles()
     LOGGER( 128, "I AM ENTERING ON loadMapFiles(0)" )
 
     // To clear them, in case we are reloading it.
-    TRY_TO_APPLY( ArrayClear, g_voteMidPlayerFillerPathsArray )
-    TRY_TO_APPLY( ArrayClear, g_midMaxMapsPerGroupToUseArray )
+    TRY_TO_CLEAN( ArrayClear, g_voteMidPlayerFillerPathsArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
+    TRY_TO_CLEAN( ArrayClear, g_midMaxMapsPerGroupToUseArray , ArrayCreate() )
 
-    TRY_TO_APPLY( ArrayClear, g_voteMinPlayerFillerPathsArray )
-    TRY_TO_APPLY( ArrayClear, g_minMaxMapsPerGroupToUseArray )
+    TRY_TO_CLEAN( ArrayClear, g_voteMinPlayerFillerPathsArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
+    TRY_TO_CLEAN( ArrayClear, g_minMaxMapsPerGroupToUseArray , ArrayCreate() )
 
-    TRY_TO_APPLY( ArrayClear, g_voteNorPlayerFillerPathsArray )
-    TRY_TO_APPLY( ArrayClear, g_norMaxMapsPerGroupToUseArray )
+    TRY_TO_CLEAN( ArrayClear, g_voteNorPlayerFillerPathsArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
+    TRY_TO_CLEAN( ArrayClear, g_norMaxMapsPerGroupToUseArray , ArrayCreate() )
 
-    destroy_two_dimensional_array( g_norPlayerFillerMapGroupArrays, false );
-    destroy_two_dimensional_array( g_minPlayerFillerMapGroupArrays, false );
-    destroy_two_dimensional_array( g_midPlayerFillerMapGroupArrays, false );
+    TRY_TO_CLEAN( clear_two_dimensional_array, g_norPlayerFillerMapGroupArrays, ArrayCreate() )
+    TRY_TO_CLEAN( clear_two_dimensional_array, g_minPlayerFillerMapGroupArrays, ArrayCreate() )
+    TRY_TO_CLEAN( clear_two_dimensional_array, g_midPlayerFillerMapGroupArrays, ArrayCreate() )
 
     // To start loading the files.
     new loadedCount[ 3 ];
