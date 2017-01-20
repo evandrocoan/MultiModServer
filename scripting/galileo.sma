@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-589";
+new const PLUGIN_VERSION[] = "v4.2.0-590";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -86,7 +86,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-589";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 16
+#define DEBUG_LEVEL 1+2+4+64+8
 
 
 /**
@@ -6784,7 +6784,7 @@ stock announceThePendingVoteTime( Float:time )
     if( targetTime > 4
         && !( get_pcvar_num( cvar_hudsHide ) & HUD_VOTE_VISUAL_COUNTDOWN ) )
     {
-        set_hudmessage( 0, 222, 50, -1.0, 0.13, 1, 1.0, 5.94, 0.0, 0.0, -1 );
+        set_hudmessage( 0, 222, 50, -1.0, 0.13, 1, 1.0, 4.94, 0.0, 0.0, -1 );
         show_hudmessage( 0, "%L", LANG_PLAYER, "DMAP_NEXTMAP_VOTE_REMAINING1", targetTime );
     }
 }
@@ -7277,7 +7277,6 @@ stock addExtensionOption( player_id, copiedChars, voteStatus[], voteStatusLenght
 
     new bool:allowStay;
     new bool:allowExtend;
-    new mapVotingCount[ MAX_MAPNAME_LENGHT ];
 
     allowExtend = ( g_isGameFinalVoting
                     && !( g_voteStatus & IS_RUNOFF_VOTE ) );
@@ -7315,6 +7314,11 @@ stock addExtensionOption( player_id, copiedChars, voteStatus[], voteStatusLenght
         && ( allowExtend
              || allowStay ) )
     {
+        new mapVotingCount[ MAX_MAPNAME_LENGHT ];
+
+        new bool:isToAddExtraLine = !( g_totalVoteOptions == 1
+                                       && !g_isRunOffNeedingKeepCurrentMap );
+
         // if it's not a runoff vote, add a space between the maps and the additional option
         if( !( g_voteStatus & IS_RUNOFF_VOTE ) )
         {
@@ -7347,10 +7351,10 @@ stock addExtensionOption( player_id, copiedChars, voteStatus[], voteStatusLenght
             }
 
             copiedChars += formatex( voteStatus[ copiedChars ], voteStatusLenght - copiedChars,
-                   "^n%s%i. \
+                   "%s%s%i. \
                     %s%L\
                     %s",
-                    COLOR_RED, g_totalVoteOptions + 1,
+                    isToAddExtraLine ? "^n" : "", COLOR_RED, g_totalVoteOptions + 1,
                     COLOR_WHITE, player_id, extend_option_type, g_currentMapName, extend_step,
                     mapVotingCount );
         }
@@ -7360,20 +7364,20 @@ stock addExtensionOption( player_id, copiedChars, voteStatus[], voteStatusLenght
             if( g_extendmapAllowStayType )
             {
                 copiedChars += formatex( voteStatus[ copiedChars ], voteStatusLenght - copiedChars,
-                       "^n%s%i. \
+                       "%s%s%i. \
                         %s%L\
                         %s",
-                        COLOR_RED, g_totalVoteOptions + 1,
+                        isToAddExtraLine ? "^n" : "", COLOR_RED, g_totalVoteOptions + 1,
                         COLOR_WHITE, player_id, "GAL_OPTION_STAY_MAP", g_currentMapName,
                         mapVotingCount );
             }
             else
             {
                 copiedChars += formatex( voteStatus[ copiedChars ], voteStatusLenght - copiedChars,
-                       "^n%s%i. \
+                       "%s%s%i. \
                         %s%L\
                         %s",
-                        COLOR_RED, g_totalVoteOptions + 1,
+                        isToAddExtraLine ? "^n" : "", COLOR_RED, g_totalVoteOptions + 1,
                         COLOR_WHITE, player_id, "GAL_OPTION_STAY",
                         mapVotingCount );
             }
@@ -7405,7 +7409,9 @@ stock display_menu_dirt( player_id, menuKeys, bool:isVoteOver, bool:noneIsHidden
     menuDirty  [ 0 ] = '^0';
     noneOption [ 0 ] = '^0';
     isToAddExtraLine = ( g_voteStatus & IS_RUNOFF_VOTE
-                         || !g_isMapExtensionAllowed );
+                         || !g_isMapExtensionAllowed
+                         || g_totalVoteOptions == 1
+                            && !g_isRunOffNeedingKeepCurrentMap );
 
     isToShowUndo = ( player_id > 0 \
                      && g_voteShowNoneOptionType == CONVERT_NONE_OPTION_TO_CANCEL_LAST_VOTE \
@@ -7558,7 +7564,9 @@ stock computeUndoButton( player_id, bool:isToShowUndo, bool:isVoteOver, noneOpti
     LOGGER( 256, "( computeUndoButton ) noneOption: %s, noneOptionSize: %d", noneOption, noneOptionSize )
 
     new bool:isToAddExtraLine = ( g_voteStatus & IS_RUNOFF_VOTE
-                                  || !g_isMapExtensionAllowed );
+                                  || !g_isMapExtensionAllowed
+                                  || g_totalVoteOptions == 1
+                                     && !g_isRunOffNeedingKeepCurrentMap );
 
     if( isToShowUndo )
     {
@@ -7640,7 +7648,9 @@ stock display_menu_clean( player_id, menuKeys )
     menuClean  [ 0 ] = '^0';
     noneOption [ 0 ] = '^0';
     isToAddExtraLine = ( g_voteStatus & IS_RUNOFF_VOTE
-                         || !g_isMapExtensionAllowed );
+                         || !g_isMapExtensionAllowed
+                         || g_totalVoteOptions == 1
+                            && !g_isRunOffNeedingKeepCurrentMap );
 
     isToShowUndo = ( player_id > 0
                      && g_voteShowNoneOptionType == CONVERT_NONE_OPTION_TO_CANCEL_LAST_VOTE
@@ -8710,7 +8720,9 @@ stock toShowTheMapNextHud( lang1[], lang2[], lang3[], map[] )
 {
     LOGGER( 128, "I AM ENTERING ON toShowTheMapNextHud(4) lang1: %s, lang2: %s, lang3: %s", lang1, lang2, lang3 )
 
-    if( !( get_pcvar_num( cvar_hudsHide ) & HUD_VOTE_RESULTS_ANNOUNCE ) )
+    // The end of map count countdown will immediately start, so there is not point int showing any messages.
+    if( !g_isToChangeMapOnVotingEnd
+        && !( get_pcvar_num( cvar_hudsHide ) & HUD_VOTE_RESULTS_ANNOUNCE ) )
     {
         set_hudmessage( 150, 120, 0, -1.0, 0.13, 0, 1.0, 6.94, 0.0, 0.0, -1 );
         show_hudmessage( 0, "%L. %L:^n%L", LANG_PLAYER, lang1, LANG_PLAYER, lang2, LANG_PLAYER, lang3, map );
@@ -10900,12 +10912,12 @@ public handleVoteMapActionMenu( player_id, pressedKeyCode )
             // If we are rejecting the results, allow a new map end voting to start
             g_voteStatus &= ~IS_VOTE_OVER;
 
+            // Then this is empty, the winner was stay here, and this result has already been announced.
             if( g_invokerVoteMapNameToDecide[ 0 ] )
             {
                 color_print( 0, "%L. %L: %s", LANG_PLAYER, "RESULT_REF", LANG_PLAYER, "VOT_CANC", g_invokerVoteMapNameToDecide );
+                toShowTheMapNextHud( "RESULT_REF", "VOT_CANC", "GAL_OPTION_STAY_MAP", g_currentMapName );
             }
-
-            toShowTheMapNextHud( "RESULT_REF", "VOT_CANC", "GAL_OPTION_STAY_MAP", g_currentMapName );
         }
         case 2:
         {
@@ -14689,7 +14701,7 @@ public timeRemain()
             g_arrayOfMapsWithVotesNumber[ 0 ] += 0;     // map 1
             g_arrayOfMapsWithVotesNumber[ 1 ] += 2;     // map 2
             g_arrayOfMapsWithVotesNumber[ 2 ] += 2;     // map 3
-            g_arrayOfMapsWithVotesNumber[ 3 ] += 2;     // map 4
+            g_arrayOfMapsWithVotesNumber[ 3 ] += 0;     // map 4
             g_arrayOfMapsWithVotesNumber[ 4 ] += 0;     // map 5
 
             if( g_isExtendmapAllowStay
