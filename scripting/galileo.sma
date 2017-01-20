@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-601";
+new const PLUGIN_VERSION[] = "v4.2.0-603";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -1672,7 +1672,6 @@ public plugin_cfg()
 
     // Load the initial settings
     loadPluginSetttings();
-    initializeGlobalArrays();
     loadNextMapPluginSetttings();
 
     LOGGER( 4, "" )
@@ -1858,14 +1857,6 @@ stock loadPluginSetttings()
     {
 
     }
-}
-
-stock initializeGlobalArrays()
-{
-    LOGGER( 128, "I AM ENTERING ON initializeGlobalArrays(0)" )
-
-    g_recentMapsTrie      = TrieCreate();
-    g_recentListMapsArray = ArrayCreate( MAX_MAPNAME_LENGHT );
 }
 
 /**
@@ -2673,6 +2664,7 @@ public map_loadRecentBanList( loadedMapsCount )
                     break;
                 }
 
+                // Avoid banning twice the same map.
                 if( !TrieKeyExists( g_recentMapsTrie, recentMapName ) )
                 {
                     ArrayPushString( g_recentListMapsArray, recentMapName );
@@ -2895,6 +2887,9 @@ stock loadMapFiles()
     // Load the ban recent maps feature
     if( get_pcvar_num( cvar_recentMapsBannedNumber ) )
     {
+        TRY_TO_CLEAN( TrieClear, g_recentMapsTrie, TrieCreate() )
+        TRY_TO_CLEAN( ArrayClear, g_recentListMapsArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
+
         // If we are only banning the maps on the map cycle, we should consider its size instead of
         // the voting filler's size.
         if( get_pcvar_num( cvar_isOnlyRecentMapcycleMaps ) )
@@ -17022,11 +17017,11 @@ public timeRemain()
 
         printVotingMaps( g_votingMapNames, g_votingMapInfos );
 
-        test_GET_MAP_INFO( "de_dust1"       , "info1", true  );   // Case 1
-        test_GET_MAP_INFO( "de_dust1"       , "info1", true  );   // Case 3
-        test_GET_MAP_INFO( "de_dust2noInfo" , ""     , true  );   // Case 5
-        test_GET_MAP_INFO( "de_dust2noInfo2", "Info" , false );   // Case 7
-        test_GET_MAP_INFO( "de_dust"        , "info" , false );   // Case 9
+        test_GET_MAP_INFO( "de_dust1"       , "info1", true  );   // Case 1/2
+        test_GET_MAP_INFO( "de_dust1"       , "info1", true  );   // Case 3/4
+        test_GET_MAP_INFO( "de_dust2noInfo" , ""     , true  );   // Case 5/6
+        test_GET_MAP_INFO( "de_dust2noInfo2", "Info" , false );   // Case 7/8
+        test_GET_MAP_INFO( "de_dust"        , "info" , false );   // Case 9/10
     }
 
     /**
