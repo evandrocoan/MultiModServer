@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-622";
+new const PLUGIN_VERSION[] = "v4.2.0-623";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -86,7 +86,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-622";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+2+64
+#define DEBUG_LEVEL 1+2+4+16
 
 
 /**
@@ -317,7 +317,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-622";
             // LOGGER( 1, "Current i is: %d", i )
         }
 
-        test_loadCurrentBlackList_cases();
+        // test_loadCurrentBlackList_cases();
         // test_SortCustomSynced2D();
         // test_GET_MAP_INFO_load();
         // test_GET_MAP_NAME_load();
@@ -330,7 +330,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-622";
         // test_getUniqueRandomInt_load();
         // test_getUniqueRandomBasic_load();
         // test_nominateAndUnnominate_load();
-        // test_loadVoteChoices_cases();
+        test_loadVoteChoices_cases();
         //test_colorChatLimits( player_id );
         //test_unnominatedDisconnected( player_id );
         //test_announceVoteBlockedMap_a();
@@ -1512,6 +1512,7 @@ public plugin_init()
     LOGGER( 1, "( plugin_init ) FAKE_PLAYERS_NUMBER_FOR_DEBUGGING:        %d", FAKE_PLAYERS_NUMBER_FOR_DEBUGGING )
     LOGGER( 1, "( plugin_init ) MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST:    %d", MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST )
     LOGGER( 1, "( plugin_init ) IS_TO_ENABLE_RE_HLDS_RE_AMXMODX_SUPPORT:  %d", IS_TO_ENABLE_RE_HLDS_RE_AMXMODX_SUPPORT )
+    LOGGER( 1, "( plugin_init )" )
 
     cvar_serverStartAction         = register_cvar( "gal_srv_start"                , "0"    );
     cvar_serverMoveCursor          = register_cvar( "gal_srv_move_cursor"          , "0"    );
@@ -2841,7 +2842,6 @@ stock configureTheRTVFeature( mapFilerFilePath[] )
         register_concmd( "gal_listmaps", "map_listAll" );
         register_clcmd( "say nominations", "cmd_nominations", 0, "- displays current nominations for next map" );
 
-        // Do not reload the prefixes.
         if( get_pcvar_num( cvar_nomPrefixes ) )
         {
             map_loadPrefixList( mapFilerFilePath );
@@ -5968,14 +5968,15 @@ stock vote_addFillers( blockedMapsBuffer[], &announcementShowedTimes = 0 )
 stock vote_addNominations( blockedMapsBuffer[], &announcementShowedTimes = 0 )
 {
     LOGGER( 128, "I AM ENTERING ON vote_addNominations(2) announcementShowedTimes: %d", announcementShowedTimes )
-    new bool:isFillersMapUsingMinplayers;
+
+    new nominatedMapsCount = ArraySize( g_nominatedMapsArray );
+    LOGGER( 128, "( vote_addNominations ) nominatedMapsCount: %d", nominatedMapsCount )
 
     // Try to add the nominations, if there are nominated maps.
-    new nominatedMapsCount = ArraySize( g_nominatedMapsArray );
-
     if( nominatedMapsCount )
     {
         new Trie:whitelistMapTrie;
+        new bool:isFillersMapUsingMinplayers;
 
         new mapIndex;
         new mapName[ MAX_MAPNAME_LENGHT ];
@@ -15334,6 +15335,12 @@ public timeRemain()
         return register_test( 0, testName );
     }
 
+
+
+
+    // Here below to start the Unit Tests help functions.
+    // ###########################################################################################
+
     /**
      * When the global variable `g_test_isToUseStrictValidMaps` is set to, this looks for maps as being
      * valid from the global Trie `g_test_strictValidMapsTrie`.
@@ -15352,12 +15359,6 @@ public timeRemain()
         return g_test_isTheUnitTestsRunning;
     }
 
-
-
-
-    // Here below to start the manual Unit Tests
-    // ###########################################################################################
-
     /**
      * Load the specified nominations into the system.
      *
@@ -15372,9 +15373,12 @@ public timeRemain()
         static playerId    = 1;
         static optionIndex = 0;
 
+        new Array:argumentMaps = ArrayCreate( MAX_MAPNAME_LENGHT );
+
+        helper_clearNominationsData();
         argumentsNumber = numargs();
 
-        // To load the maps passed as arguments
+        // To get the maps passed as arguments
         for( new currentIndex = 0; currentIndex < argumentsNumber; ++currentIndex )
         {
             stringIndex = 0;
@@ -15395,10 +15399,25 @@ public timeRemain()
             }
 
             currentMap[ stringIndex ] = '^0';
-            ArrayPushString( g_nominationLoadedMapsArray, currentMap );
+            ArrayPushString( argumentMaps, currentMap );
 
+            LOGGER( 256, "    ( helper_loadNominations ) currentMap[%d]: %s", currentIndex, currentMap )
+        }
+
+        set_pcvar_string( cvar_nomMapFilePath, g_test_nomMapFilePath );
+        helper_mapFileListLoad2( false, g_test_nomMapFilePath, argumentMaps );
+
+        new mapFilePath[ MAX_FILE_PATH_LENGHT ];
+        loadNominationList( mapFilePath );
+
+        // To load the maps passed as arguments as nominations
+        for( new currentIndex = 0; currentIndex < argumentsNumber; ++currentIndex )
+        {
+            ArrayGetString( argumentMaps, currentIndex, currentMap, charsmax( currentMap ) );
             setPlayerNominationMapIndex( playerId++, optionIndex, currentIndex );
         }
+
+        ArrayDestroy( argumentMaps );
     }
 
     /**
@@ -15447,6 +15466,45 @@ public timeRemain()
     }
 
     /**
+     * To create a map file list on the specified file path on the disk.
+     *
+     * @param replace              true if is to replace `[` `]` by `{` `}`, false if not.
+     * @param mapFileListPath      the path to the mapFileList.
+     * @param mapFileListArray     an Dynamic Array within a variable number of maps.
+     */
+    stock helper_mapFileListLoad2( bool:replace, mapFileListPath[], Array:mapFileListArray )
+    {
+        new currentIndex;
+        new fileDescriptor;
+        new currentMap[ MAX_MAPNAME_LENGHT ];
+
+        delete_file( mapFileListPath );
+        fileDescriptor = fopen( mapFileListPath, "wt" );
+
+        if( fileDescriptor )
+        {
+            new argumentsNumber = ArraySize( mapFileListArray );
+
+            // To load the maps passed as arguments
+            for( currentIndex = 0; currentIndex < argumentsNumber; ++currentIndex )
+            {
+                ArrayGetString( mapFileListArray, currentIndex, currentMap, charsmax( currentMap ) );
+
+                if( replace )
+                {
+                    replace_all( currentMap, charsmax( currentMap ), "[", "{" );
+                    replace_all( currentMap, charsmax( currentMap ), "]", "{" );
+                }
+
+                LOGGER( 256, "    ( helper_mapFileListLoad2 ) currentMap[%d]: %s", currentIndex, currentMap )
+                fprintf( fileDescriptor, "%s^n", currentMap );
+            }
+
+            fclose( fileDescriptor );
+        }
+    }
+
+    /**
      * To clean and load the global `g_test_strictValidMapsTrie` within the passed maps as arguments.
      *
      * @param mapFileList          the variable number of maps.
@@ -15486,6 +15544,14 @@ public timeRemain()
 
         // Clear the nominations file loaded maps
         ArrayClear( g_nominationLoadedMapsArray );
+    }
+
+    stock toPrintTheVotingMenuForAnalysis()
+    {
+        for( new currentIndex = 0; currentIndex < sizeof g_votingMapNames; ++currentIndex )
+        {
+            LOGGER( 1, "g_votingMapNames[%d]: %s %s", currentIndex, g_votingMapNames[ currentIndex ], g_votingMapInfos[ currentIndex ] )
+        }
     }
 
     /**
@@ -16202,45 +16268,104 @@ public timeRemain()
         // If 'g_test_aimedPlayersNumber < cvar_voteMinPlayers', enables the minimum players feature.
         g_test_aimedPlayersNumber = 0;
 
-        test_loadVoteChoices_serie( 'a' );
-        test_loadVoteChoices_serie( 'b' );
-        test_loadVoteChoices_serie( 'c' );
-        test_loadVoteChoices_serie( 'd' );
+        test_loadVoteChoices_serie_a();
+        test_loadVoteChoices_serie_b();
+        test_loadVoteChoices_serie_c();
+        test_loadVoteChoices_serie_d();
     }
 
     /**
-     * Run a test serie and clean its results.
+     * PART 1: Nominates some maps and create the vote map file and minimum players map file.
      */
-    stock test_loadVoteChoices_serie( currentSerie )
+    stock test_loadVoteChoices_serie_a()
     {
-        // Clear all loaded maps.
-        helper_clearNominationsData();
+        helper_mapFileListLoad( false, g_test_voteMapFilePath   , "de_dust1", "de_dust2" );
+        helper_mapFileListLoad( false, g_test_minPlayersFilePath, "de_rain" , "de_nuke" );
+        helper_mapFileListLoad( false, g_test_whiteListFilePath , "[0-23]"  , "de_rain", "de_nuke" );
 
-        switch( currentSerie )
-        {
-            case 'a':
-            {
-                test_loadVoteChoices_serie_a();
-            }
-            case 'b':
-            {
-                test_loadVoteChoices_serie_b();
-            }
-            case 'c':
-            {
-                test_loadVoteChoices_serie_c();
-            }
-            case 'd':
-            {
-                test_loadVoteChoices_serie_d();
-            }
-        }
+        // Forced the minimum players feature map to be loaded.
+        g_test_aimedPlayersNumber = 1;
 
-        // To print the voting menu for analysis.
-        for( new currentIndex = 0; currentIndex < sizeof g_votingMapNames; ++currentIndex )
-        {
-            LOGGER( 1, "g_votingMapNames[%d]: %s %s", currentIndex, g_votingMapNames[ currentIndex ], g_votingMapInfos[ currentIndex ] )
-        }
+        // To force the lists to be reloaded.
+        loadMapFiles();
+
+        helper_loadNominations( "de_rain", "de_inferno", "as_trunda" );
+        loadTheDefaultVotingChoices();
+
+        test_loadVoteChoices_case( "de_rain", "de_inferno", 'a' ); // Case 1
+        test_loadVoteChoices_case( "de_nuke", "as_trunda" );       // Case 2
+    }
+
+    /**
+     * PART 2: Force the minimum players feature to work.
+     */
+    stock test_loadVoteChoices_serie_b()
+    {
+        helper_mapFileListLoad( false, g_test_voteMapFilePath   , "de_dust1", "de_dust2" );
+        helper_mapFileListLoad( false, g_test_minPlayersFilePath, "de_rain" , "de_nuke" );
+        helper_mapFileListLoad( false, g_test_whiteListFilePath , "[0-23]"  , "de_rain", "de_nuke" );
+
+        // Disables the minimum players feature.
+        g_test_aimedPlayersNumber = 5;
+
+        // To force the lists to be reloaded.
+        loadMapFiles();
+
+        helper_loadNominations( "de_rain", "de_inferno", "as_trunda" );
+        loadTheDefaultVotingChoices();
+
+        test_loadVoteChoices_case( "de_rain"   , "de_nuke", 'b' ); // Case 1
+        test_loadVoteChoices_case( "de_inferno", "de_nuke" );      // Case 2
+        test_loadVoteChoices_case( "as_trunda" , "de_nuke" );      // Case 3
+    }
+
+    /**
+     * PART 3: Load more maps nominations and disable the minimum players feature.
+     */
+    stock test_loadVoteChoices_serie_c()
+    {
+        helper_mapFileListLoad( false, g_test_voteMapFilePath   , "de_dust1", "de_dust2" );
+        helper_mapFileListLoad( false, g_test_minPlayersFilePath, "de_rats" , "de_train" );
+        helper_mapFileListLoad( false, g_test_whiteListFilePath , "[0-23]"  , "de_rats", "de_train" );
+
+        // Forced the minimum players feature map to be loaded.
+        g_test_aimedPlayersNumber = 1;
+
+        // To force the lists to be reloaded.
+        loadMapFiles();
+
+        helper_loadNominations( "de_dust2002v2005_forEver2009", "de_dust2002v2005_forEver2010", "de_dust2002v2005_forEver2011",
+                                       "de_dust2002v2005_forEver2012", "de_dust2002v2005_forEver2013", "de_dust2002v2005_forEver2014",
+                                       "de_dust2002v2005_forEver2015", "de_dust2002v2005_forEver2016", "de_dust2002v2005_forEver2017" );
+        loadTheDefaultVotingChoices();
+
+        test_loadVoteChoices_case( "de_rats" , "de_dust2002v2005_forEver2009", 'c' ); // Case 1
+        test_loadVoteChoices_case( "de_train", "de_dust2002v2005_forEver2010" );      // Case 2
+        test_loadVoteChoices_case( "de_train", "de_dust2002v2005_forEver2011" );      // Case 3
+        test_loadVoteChoices_case( "de_rats" , "de_dust2002v2005_forEver2012" );      // Case 4
+    }
+
+    /**
+     * PART 4: Enable the minimum players feature.
+     */
+    stock test_loadVoteChoices_serie_d()
+    {
+        helper_mapFileListLoad( false, g_test_voteMapFilePath   , "de_dust1", "de_dust2" );
+        helper_mapFileListLoad( false, g_test_minPlayersFilePath, "de_rain" , "de_nuke" );
+        helper_mapFileListLoad( false, g_test_whiteListFilePath , "[0-23]"  , "de_rain", "de_nuke" );
+
+        // Disables the minimum players feature.
+        g_test_aimedPlayersNumber = 5;
+
+        // To force the lists to be reloaded.
+        loadMapFiles();
+
+        helper_loadNominations( "de_rain", "de_inferno", "as_trunda" );
+        loadTheDefaultVotingChoices();
+
+        test_loadVoteChoices_case( "de_rain"   , "", 'd' );   // Case 1
+        test_loadVoteChoices_case( "de_inferno", "de_nuke" ); // Case 2
+        test_loadVoteChoices_case( "as_trunda" , "de_nuke" ); // Case 3
     }
 
     /**
@@ -16252,20 +16377,21 @@ public timeRemain()
      */
     stock test_loadVoteChoices_case( requiredMap[], blockedMap[], newSeries = 0 )
     {
-        new test_id = test_registerSeriesNaming( "test_loadVoteChoices", newSeries );
-
-        test_loadVoteChoices_check( test_id, requiredMap, true );
-        test_loadVoteChoices_check( test_id, blockedMap, false );
+        test_loadVoteChoices_check( newSeries, requiredMap, true );
+        test_loadVoteChoices_check( newSeries, blockedMap, false );
     }
 
     /**
      * @see test_loadVoteChoices_case(3).
      */
-    stock test_loadVoteChoices_check( test_id, mapToCheck[], bool:isToBePresent )
+    stock test_loadVoteChoices_check( newSeries, mapToCheck[], bool:isToBePresent )
     {
         new bool:isMapPresent;
         new      currentIndex;
         new      errorMessage[ MAX_LONG_STRING ];
+
+        new test_id = test_registerSeriesNaming( "test_loadVoteChoices", newSeries );
+        toPrintTheVotingMenuForAnalysis();
 
         if( mapToCheck[ 0 ] )
         {
@@ -16281,100 +16407,6 @@ public timeRemain()
                     "The map '%s' %s be present on the voting map menu.", mapToCheck, ( isToBePresent ? "must to" : "MUST NOT to" ) );
             SET_TEST_FAILURE( test_id, isMapPresent != isToBePresent, errorMessage )
         }
-    }
-
-    /**
-     * PART 1: Nominates some maps and create the vote map file and minimum players map file.
-     */
-    stock test_loadVoteChoices_serie_a()
-    {
-        helper_loadNominations( "de_rain", "de_inferno", "as_trunda" );
-
-        helper_mapFileListLoad( false, g_test_voteMapFilePath   , "de_dust1", "de_dust2" );
-        helper_mapFileListLoad( false, g_test_minPlayersFilePath, "de_rain" , "de_nuke" );
-        helper_mapFileListLoad( false, g_test_whiteListFilePath , "[0-23]"  , "de_rain", "de_nuke" );
-
-        // Forced the minimum players feature map to be loaded.
-        g_test_aimedPlayersNumber = 1;
-
-        // To force the Whitelist to be reloaded.
-        loadMapFiles();
-        loadTheDefaultVotingChoices();
-
-        test_loadVoteChoices_case( "de_rain", "de_inferno", 'a' ); // Case 1
-        test_loadVoteChoices_case( "de_nuke", "as_trunda" );       // Case 2
-    }
-
-    /**
-     * PART 2: Force the minimum players feature to work.
-     */
-    stock test_loadVoteChoices_serie_b()
-    {
-        helper_loadNominations( "de_rain", "de_inferno", "as_trunda" );
-
-        helper_mapFileListLoad( false, g_test_voteMapFilePath   , "de_dust1", "de_dust2" );
-        helper_mapFileListLoad( false, g_test_minPlayersFilePath, "de_rain" , "de_nuke" );
-        helper_mapFileListLoad( false, g_test_whiteListFilePath , "[0-23]"  , "de_rain", "de_nuke" );
-
-        // Disables the minimum players feature.
-        g_test_aimedPlayersNumber = 5;
-
-        // To force the Whitelist to be reloaded.
-        loadMapFiles();
-        loadTheDefaultVotingChoices();
-
-        test_loadVoteChoices_case( "de_rain"   , "de_nuke", 'b' ); // Case 1
-        test_loadVoteChoices_case( "de_inferno", "de_nuke" );      // Case 2
-        test_loadVoteChoices_case( "as_trunda" , "de_nuke" );      // Case 3
-    }
-
-    /**
-     * PART 3: Load more maps nominations and disable the minimum players feature.
-     */
-    stock test_loadVoteChoices_serie_c()
-    {
-        helper_loadNominations( "de_dust2002v2005_forEver2009", "de_dust2002v2005_forEver2010", "de_dust2002v2005_forEver2011",
-                                       "de_dust2002v2005_forEver2012", "de_dust2002v2005_forEver2013", "de_dust2002v2005_forEver2014",
-                                       "de_dust2002v2005_forEver2015", "de_dust2002v2005_forEver2016", "de_dust2002v2005_forEver2017" );
-
-        helper_mapFileListLoad( false, g_test_voteMapFilePath   , "de_dust1", "de_dust2" );
-        helper_mapFileListLoad( false, g_test_minPlayersFilePath, "de_rats" , "de_train" );
-        helper_mapFileListLoad( false, g_test_whiteListFilePath , "[0-23]"  , "de_rats", "de_train" );
-
-        // Forced the minimum players feature map to be loaded.
-        g_test_aimedPlayersNumber = 1;
-
-        // To force the Whitelist to be reloaded.
-        loadMapFiles();
-        loadTheDefaultVotingChoices();
-
-        test_loadVoteChoices_case( "de_rats" , "de_dust2002v2005_forEver2009", 'c' ); // Case 1
-        test_loadVoteChoices_case( "de_train", "de_dust2002v2005_forEver2010" );      // Case 2
-        test_loadVoteChoices_case( "de_train", "de_dust2002v2005_forEver2011" );      // Case 3
-        test_loadVoteChoices_case( "de_rats" , "de_dust2002v2005_forEver2012" );      // Case 4
-    }
-
-    /**
-     * PART 4: Enable the minimum players feature.
-     */
-    stock test_loadVoteChoices_serie_d()
-    {
-        helper_loadNominations( "de_rain", "de_inferno", "as_trunda" );
-
-        helper_mapFileListLoad( false, g_test_voteMapFilePath   , "de_dust1", "de_dust2" );
-        helper_mapFileListLoad( false, g_test_minPlayersFilePath, "de_rain" , "de_nuke" );
-        helper_mapFileListLoad( false, g_test_whiteListFilePath , "[0-23]"  , "de_rain", "de_nuke" );
-
-        // Disables the minimum players feature.
-        g_test_aimedPlayersNumber = 5;
-
-        // To force the Whitelist to be reloaded.
-        loadMapFiles();
-        loadTheDefaultVotingChoices();
-
-        test_loadVoteChoices_case( "de_rain"   , "", 'd' );   // Case 1
-        test_loadVoteChoices_case( "de_inferno", "de_nuke" ); // Case 2
-        test_loadVoteChoices_case( "as_trunda" , "de_nuke" ); // Case 3
     }
 
     /**
@@ -17112,7 +17144,7 @@ public timeRemain()
         helper_mapFileListLoad( false, g_test_minPlayersFilePath, "de_rats"       , "de_train" );
         helper_mapFileListLoad( false, g_test_whiteListFilePath , "[0-23]"        , "de_rats", "de_train" );
 
-        // To force the Whitelist to be reloaded.
+        // To force the lists to be reloaded.
         loadMapFiles();
         loadTheDefaultVotingChoices();
 
