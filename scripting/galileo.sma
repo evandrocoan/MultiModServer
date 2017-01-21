@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-617";
+new const PLUGIN_VERSION[] = "v4.2.0-618";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -609,13 +609,6 @@ new cvar_coloredChatEnabled;
  * the next map on the map cycle to be played. The counter starts on 0.
  */
 #define MAX_SERVER_RESTART_ACCEPTABLE 3
-
-/**
- * Defines the interval where the periodic tasks as map_manageEnd(0) and vote_manageEnd(0) will be
- * checked.
- */
-#define PERIODIC_CHECKING_INTERVAL 15
-
 /**
  * The rounds number before the mp_maxrounds/mp_winlimit to be reached to start the map voting. This
  * constant is equivalent to the `START_VOTEMAP_MIN_TIME` and `START_VOTEMAP_MAX_TIME` concepts.
@@ -644,11 +637,13 @@ new cvar_coloredChatEnabled;
 #define MAX_SAVED_ROUNDS_FOR_AVERAGE 5
 
 /**
- * The periodic task created on 'configureServerMapChange(0)' use this intervals in seconds to
- * start checking for an end map voting start.
+ * The periodic task created on 'configureServerStart(1)' use this intervals in seconds to
+ * start checking for an end map voting start. Defines the interval where the periodic tasks
+ * as map_manageEnd(0) and vote_manageEnd(0) will be checked.
  */
-#define START_VOTEMAP_MIN_TIME ( g_totalVoteTime + PERIODIC_CHECKING_INTERVAL + 3 )
-#define START_VOTEMAP_MAX_TIME ( g_totalVoteTime )
+#define PERIODIC_CHECKING_INTERVAL 15
+#define START_VOTEMAP_MIN_TIME     ( g_totalVoteTime + PERIODIC_CHECKING_INTERVAL + 3 )
+#define START_VOTEMAP_MAX_TIME     ( g_totalVoteTime )
 
 
 
@@ -1696,9 +1691,6 @@ public plugin_cfg()
     cacheCvarsValues();
     resetRoundsScores();
 
-    // re-cache later to wait load some late server configurations, as the per-map configs.
-    set_task( DELAY_TO_WAIT_THE_SERVER_CVARS_TO_BE_LOADED, "cacheCvarsValues" );
-
     LOGGER( 4, "" )
     LOGGER( 4, "" )
     LOGGER( 4, " The current map is [ %20s ]", g_currentMapName )
@@ -1706,11 +1698,8 @@ public plugin_cfg()
     LOGGER( 4, "" )
     LOGGER( 4, "" )
 
-    configureServerStart();
-    configureServerMapChange();
-
-    cacheCvarsValues();
     loadMapFiles();
+    configureServerStart();
 
     // Configure the Unit Tests, when they are activate.
 #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
@@ -1859,6 +1848,11 @@ stock loadPluginSetttings()
 
     server_cmd( "exec %s/galileo.cfg", g_configsDirPath );
     server_exec();
+
+    // re-cache later to wait load some late server configurations, as the per-map configs.
+    set_task( DELAY_TO_WAIT_THE_SERVER_CVARS_TO_BE_LOADED, "cacheCvarsValues" );
+
+    cacheCvarsValues();
 }
 
 /**
@@ -1947,6 +1941,8 @@ stock configureServerStart()
 {
     LOGGER( 128, "I AM ENTERING ON configureServerStart(0)" )
     new startAction;
+
+    set_task( float( PERIODIC_CHECKING_INTERVAL ), "vote_manageEnd", _, _, _, "b" );
 
     if( get_pcvar_num( cvar_gameCrashRecreationAction ) )
     {
@@ -2820,6 +2816,7 @@ stock loadMapFiles()
     loadedCount[ t_NormalPlayers  ] = configureTheNorPlayersFeature( mapFilerFilePath );
 
     configureTheRTVFeature( mapFilerFilePath );
+    configureServerMapChange( mapFilerFilePath );
     loadTheBanRecentMapsFeature( loadedCount[ t_NormalPlayers ] );
 
     LOGGER( 4, "( loadMapFiles ) Maps Files Loaded." )
@@ -2860,7 +2857,7 @@ stock configureTheRTVFeature( mapFilerFilePath[] )
 /**
  * Setup the main task that schedules the end map voting and allow round finish feature.
  */
-stock configureServerMapChange()
+stock configureServerMapChange( emptyCycleFilePath[] )
 {
     LOGGER( 128, "I AM ENTERING ON configureServerMapChange(1)" )
 
@@ -2882,15 +2879,13 @@ stock configureServerMapChange()
         || get_pcvar_num( cvar_isEmptyCycleByMapChange ) )
     {
         g_emptyCycleMapsArray = ArrayCreate( MAX_MAPNAME_LENGHT );
-        map_loadEmptyCycleList();
+        map_loadEmptyCycleList( emptyCycleFilePath );
 
         if( get_pcvar_num( cvar_emptyServerWaitMinutes ) )
         {
             set_task( 60.0, "inicializeEmptyCycleFeature" );
         }
     }
-
-    set_task( float( PERIODIC_CHECKING_INTERVAL ), "vote_manageEnd", _, _, _, "b" );
 }
 
 stock configureTheNorPlayersFeature( mapFilerFilePath[] )
@@ -5089,14 +5084,12 @@ public loadNominationList( nomMapFilePath[] )
     LOGGER( 1, "    ( loadNominationList ) loadedCount: %d", ArraySize( g_nominationLoadedMapsArray ) )
 }
 
-stock map_loadEmptyCycleList()
+stock map_loadEmptyCycleList( emptyCycleFilePath[] )
 {
-    LOGGER( 128, "I AM ENTERING ON map_loadEmptyCycleList(0)" )
+    LOGGER( 128, "I AM ENTERING ON map_loadEmptyCycleList(1)" )
+    get_pcvar_string( cvar_emptyMapFilePath, emptyCycleFilePath, MAX_FILE_PATH_LENGHT - 1 );
 
-    new emptyCycleFilePath[ MAX_FILE_PATH_LENGHT ];
-    get_pcvar_string( cvar_emptyMapFilePath, emptyCycleFilePath, charsmax( emptyCycleFilePath ) );
-
-    g_emptyCycleMapsNumber = map_populateList( g_emptyCycleMapsArray, emptyCycleFilePath, charsmax( emptyCycleFilePath ) );
+    g_emptyCycleMapsNumber = map_populateList( g_emptyCycleMapsArray, emptyCycleFilePath, MAX_FILE_PATH_LENGHT - 1 );
     LOGGER( 4, "( map_loadEmptyCycleList ) g_emptyCycleMapsNumber: %d", g_emptyCycleMapsNumber )
 }
 
