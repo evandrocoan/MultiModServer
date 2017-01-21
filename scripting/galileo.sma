@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-616";
+new const PLUGIN_VERSION[] = "v4.2.0-617";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -566,6 +566,7 @@ new cvar_coloredChatEnabled;
 #define ALWAYS_KEEP_SHOWING_NONE_OPTION         1
 #define CONVERT_NONE_OPTION_TO_CANCEL_LAST_VOTE 2
 
+#define MAX_PREFIX_SIZE               16
 #define MAX_PREFIX_COUNT              32
 #define MAX_OPTIONS_IN_VOTE           9
 #define MAX_MENU_ITEMS_PER_PAGE       8
@@ -1486,7 +1487,7 @@ new bool:g_isPlayerCancelledVote    [ MAX_PLAYERS_COUNT ];
 new bool:g_answeredForEndOfMapVote  [ MAX_PLAYERS_COUNT ];
 new bool:g_rockedVote               [ MAX_PLAYERS_COUNT ];
 
-new g_mapPrefixes                [ MAX_PREFIX_COUNT    ][ 16                      ];
+new g_mapPrefixes                [ MAX_PREFIX_COUNT    ][ MAX_PREFIX_SIZE         ];
 new g_votingMapNames             [ MAX_OPTIONS_IN_VOTE ][ MAX_MAPNAME_LENGHT      ];
 new g_votingMapInfos             [ MAX_OPTIONS_IN_VOTE ][ MAX_MAPNAME_LENGHT      ];
 new g_menuMapIndexForPlayerArrays[ MAX_PLAYERS_COUNT   ][ MAX_NOM_MENU_ITEMS_PER_PAGE ];
@@ -1705,7 +1706,6 @@ public plugin_cfg()
     LOGGER( 4, "" )
     LOGGER( 4, "" )
 
-    configureTheRTVFeature();
     configureServerStart();
     configureServerMapChange();
 
@@ -1859,14 +1859,6 @@ stock loadPluginSetttings()
 
     server_cmd( "exec %s/galileo.cfg", g_configsDirPath );
     server_exec();
-
-    new modeFlagFilePath[ MAX_FILE_PATH_LENGHT ];
-    formatex( modeFlagFilePath, charsmax( modeFlagFilePath ), "%s/%s", g_dataDirPath, TO_STOP_THE_CRASH_SEARCH );
-
-    if( IS_TO_ALLOW_A_CRASH_SEARCH( modeFlagFilePath ) )
-    {
-
-    }
 }
 
 /**
@@ -2126,7 +2118,8 @@ public handleServerStart( backupMapsFilePath[], startAction )
         // if noms aren't allowed, the nomination list hasn't already been loaded
         if( get_pcvar_num( cvar_nomPlayerAllowance ) == 0 )
         {
-            loadNominationList();
+            new mapFilePath[ MAX_FILE_PATH_LENGHT ];
+            loadNominationList( mapFilePath );
         }
 
         new nominationsMapsCount = ArraySize( g_nominationLoadedMapsArray );
@@ -2826,6 +2819,7 @@ stock loadMapFiles()
     loadedCount[ t_MiddlePlayers  ] = configureTheMidPlayersFeature( mapFilerFilePath );
     loadedCount[ t_NormalPlayers  ] = configureTheNorPlayersFeature( mapFilerFilePath );
 
+    configureTheRTVFeature( mapFilerFilePath );
     loadTheBanRecentMapsFeature( loadedCount[ t_NormalPlayers ] );
 
     LOGGER( 4, "( loadMapFiles ) Maps Files Loaded." )
@@ -2833,9 +2827,9 @@ stock loadMapFiles()
     LOGGER( 4, "" )
 }
 
-stock configureTheRTVFeature()
+stock configureTheRTVFeature( mapFilerFilePath[] )
 {
-    LOGGER( 128, "I AM ENTERING ON configureTheRTVFeature(0)" )
+    LOGGER( 128, "I AM ENTERING ON configureTheRTVFeature(1)" )
 
     g_rtvWaitMinutes = get_pcvar_float( cvar_rtvWaitMinutes );
     g_rtvWaitRounds  = get_pcvar_num( cvar_rtvWaitRounds );
@@ -2853,10 +2847,10 @@ stock configureTheRTVFeature()
 
         if( get_pcvar_num( cvar_nomPrefixes ) )
         {
-            map_loadPrefixList();
+            map_loadPrefixList( mapFilerFilePath );
         }
 
-        loadNominationList();
+        loadNominationList( mapFilerFilePath );
     }
 
     LOGGER( 4, "" )
@@ -2868,7 +2862,7 @@ stock configureTheRTVFeature()
  */
 stock configureServerMapChange()
 {
-    LOGGER( 128, "I AM ENTERING ON configureServerMapChange(0)" )
+    LOGGER( 128, "I AM ENTERING ON configureServerMapChange(1)" )
 
     if( IS_WHITELIST_BLOCKING( IS_WHITELIST_ENABLED(), g_nextMapName ) )
     {
@@ -5077,10 +5071,9 @@ stock loadMapsFolderDirectoryTrie( directoryDescriptor, Trie:fillerMapTrie )
     return mapCount;
 }
 
-public loadNominationList()
+public loadNominationList( nomMapFilePath[] )
 {
-    LOGGER( 128, "I AM ENTERING ON loadNominationList(0)" )
-    new nomMapFilePath[ MAX_FILE_PATH_LENGHT ];
+    LOGGER( 128, "I AM ENTERING ON loadNominationList(1)" )
 
     TRY_TO_CLEAN( ArrayClear, g_nominatedMapsArray       , ArrayCreate()                     )
     TRY_TO_CLEAN( ArrayClear, g_nominationLoadedMapsArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
@@ -5089,10 +5082,11 @@ public loadNominationList()
     TRY_TO_CLEAN( TrieClear, g_forwardSearchNominationsTrie, TrieCreate() )
     TRY_TO_CLEAN( TrieClear, g_nominationLoadedMapsTrie    , TrieCreate() )
 
-    get_pcvar_string( cvar_nomMapFilePath, nomMapFilePath, charsmax( nomMapFilePath ) );
+    get_pcvar_string( cvar_nomMapFilePath, nomMapFilePath, MAX_FILE_PATH_LENGHT - 1 );
+    LOGGER( 4, "( loadNominationList ) cvar_nomMapFilePath: %s", nomMapFilePath )
 
-    LOGGER( 4, "( loadNominationList() ) cvar_nomMapFilePath: %s", nomMapFilePath )
-    map_populateList( g_nominationLoadedMapsArray, nomMapFilePath, charsmax( nomMapFilePath ), g_nominationLoadedMapsTrie );
+    map_populateList( g_nominationLoadedMapsArray, nomMapFilePath, MAX_FILE_PATH_LENGHT - 1, g_nominationLoadedMapsTrie );
+    LOGGER( 1, "    ( loadNominationList ) loadedCount: %d", ArraySize( g_nominationLoadedMapsArray ) )
 }
 
 stock map_loadEmptyCycleList()
@@ -5106,19 +5100,17 @@ stock map_loadEmptyCycleList()
     LOGGER( 4, "( map_loadEmptyCycleList ) g_emptyCycleMapsNumber: %d", g_emptyCycleMapsNumber )
 }
 
-public map_loadPrefixList()
+public map_loadPrefixList( prefixesFilePath[] )
 {
-    LOGGER( 128, "I AM ENTERING ON map_loadPrefixList(0)" )
-
+    LOGGER( 128, "I AM ENTERING ON map_loadPrefixList(1)" )
     new prefixesFile;
-    new prefixesFilePath[ MAX_FILE_PATH_LENGHT ];
 
-    formatex( prefixesFilePath, charsmax( prefixesFilePath ), "%s/prefixes.ini", g_configsDirPath );
+    formatex( prefixesFilePath, MAX_FILE_PATH_LENGHT - 1, "%s/prefixes.ini", g_configsDirPath );
     prefixesFile = fopen( prefixesFilePath, "rt" );
 
     if( prefixesFile )
     {
-        new loadedMapPrefix[ 16 ];
+        new loadedMapPrefix[ MAX_PREFIX_SIZE ];
 
         while( !feof( prefixesFile ) )
         {
@@ -5148,6 +5140,8 @@ public map_loadPrefixList()
         LOGGER( 1, "AMX_ERR_NOTFOUND, %L", LANG_SERVER, "GAL_PREFIXES_NOTFOUND", prefixesFilePath )
         log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_PREFIXES_NOTFOUND", prefixesFilePath );
     }
+
+    LOGGER( 1, "    ( map_loadPrefixList ) g_mapPrefixCount: %d", g_mapPrefixCount )
 }
 
 /**
@@ -16392,7 +16386,9 @@ public timeRemain()
 
         // Player cannot nominate the current map, so if you are on one fo these maps, the test will fail.
         helper_mapFileListLoad( false, g_test_nomMapFilePath, "de_test_dust1", "de_test_dust2", "de_test_dust3", "de_test_dust4" );
-        loadNominationList();
+
+        new mapFilePath[ MAX_FILE_PATH_LENGHT ];
+        loadNominationList( mapFilePath );
 
         // Nominations functions:
         //
