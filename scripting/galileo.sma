@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-624";
+new const PLUGIN_VERSION[] = "v4.2.0-625";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -86,7 +86,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-624";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+2+4+16
+#define DEBUG_LEVEL 1+2+4+64
 
 
 /**
@@ -147,7 +147,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-624";
     /**
      * Used to know when the Unit Tests are running.
      */
-    new bool:g_test_isTheUnitTestsRunning;
+    new bool:g_test_areTheUnitTestsRunning;
 
     /**
      * Allow the Manual Unit Tests to disable LOGGER() debugging messages when the level
@@ -172,7 +172,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-624";
         lastRun = currentTime;
 
         // Removes the compiler warning `warning 203: symbol is never used` with some DEBUG levels.
-        if( g_test_isTheUnitTestsRunning && g_test_isToDisableLogging ) { }
+        if( g_test_areTheUnitTestsRunning && g_test_isToDisableLogging ) { }
         if( DEBUGGER_OUTPUT_LOG_FILE_NAME[0] ) { }
     }
 #endif
@@ -306,7 +306,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-624";
         LOGGER( 128, "I AM ENTERING ON inGameTestsToExecute(1) player_id: %d", player_id )
 
         // Save the game cvars?
-        if( !g_test_isTheUnitTestsRunning ) saveServerCvarsForTesting();
+        if( !g_test_areTheUnitTestsRunning ) saveServerCvarsForTesting();
 
         for( new i = 0; i < 1000; i++ )
         {
@@ -337,7 +337,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-624";
         //test_announceVoteBlockedMap_c();
 
         // Restore the game cvars
-        if( g_test_isTheUnitTestsRunning ) printTheUnitTestsResults();
+        if( g_test_areTheUnitTestsRunning ) printTheUnitTestsResults();
     }
 
     /**
@@ -1523,22 +1523,22 @@ public plugin_init()
     cvar_serverFraglimitRestart    = register_cvar( "gal_srv_fraglimit_restart"    , "0"    );
     cvar_voteMapChoiceCount        = register_cvar( "gal_vote_mapchoices"          , "5"    );
     cvar_voteMapChoiceNext         = register_cvar( "gal_vote_mapchoices_next"     , "0"    );
-    cvar_voteDuration              = register_cvar( "gal_vote_duration"            , "15"   );
+    cvar_voteDuration              = register_cvar( "gal_vote_duration"            , "30"   );
     cvar_runoffEnabled             = register_cvar( "gal_runoff_enabled"           , "0"    );
-    cvar_runoffDuration            = register_cvar( "gal_runoff_duration"          , "10"   );
+    cvar_runoffDuration            = register_cvar( "gal_runoff_duration"          , "20"   );
     cvar_runoffRatio               = register_cvar( "gal_runoff_ratio"             , "0.5"  );
     cvar_runoffMapchoices          = register_cvar( "gal_runoff_mapchoices"        , "2"    );
     cvar_endOfMapVote              = register_cvar( "gal_endofmapvote"             , "1"    );
-    cvar_endOfMapVoteExpiration    = register_cvar( "gal_endofmapvote_expiration"  , "1"    );
+    cvar_endOfMapVoteExpiration    = register_cvar( "gal_endofmapvote_expiration"  , "0"    );
     cvar_endOfMapVoteStart         = register_cvar( "gal_endofmapvote_start"       , "0"    );
-    cvar_nextMapChangeAnnounce     = register_cvar( "gal_nextmap_change"           , "1"    );
+    cvar_nextMapChangeAnnounce     = register_cvar( "gal_nextmap_change"           , "0"    );
     cvar_nextMapChangeVotemap      = register_cvar( "gal_nextmap_votemap"          , "0"    );
-    cvar_nomPlayerAllowance        = register_cvar( "gal_nom_playerallowance"      , "2"    );
+    cvar_nomPlayerAllowance        = register_cvar( "gal_nom_playerallowance"      , "0"    );
     cvar_nomCleaning               = register_cvar( "gal_nom_cleaning"             , "1"    );
     cvar_nomMapFilePath            = register_cvar( "gal_nom_mapfile"              , "*"    );
     cvar_nomPrefixes               = register_cvar( "gal_nom_prefixes"             , "1"    );
     cvar_nomQtyUsed                = register_cvar( "gal_nom_qtyused"              , "0"    );
-    cvar_unnominateDisconnected    = register_cvar( "gal_unnominate_disconnected"  , "0"    );
+    cvar_unnominateDisconnected    = register_cvar( "gal_unnominate_disconnected"  , "1"    );
 
     register_cvar( "gal_version", PLUGIN_VERSION, FCVAR_SERVER | FCVAR_SPONLY );
 
@@ -1551,14 +1551,14 @@ public plugin_init()
     register_cvar( "gal_debug_level", debug_level, FCVAR_SERVER | FCVAR_SPONLY );
 #endif
 
-    cvar_rtvCommands               = register_cvar( "gal_rtv_commands"             , "3"    );
+    cvar_rtvCommands               = register_cvar( "gal_rtv_commands"             , "0"    );
     cvar_rtvWaitMinutes            = register_cvar( "gal_rtv_wait"                 , "10"   );
     cvar_rtvWaitRounds             = register_cvar( "gal_rtv_wait_rounds"          , "5"    );
-    cvar_rtvWaitFrags              = register_cvar( "gal_rtv_wait_frags"           , "20"   );
+    cvar_rtvWaitFrags              = register_cvar( "gal_rtv_wait_frags"           , "10"   );
     cvar_rtvWaitAdmin              = register_cvar( "gal_rtv_wait_admin"           , "0"    );
     cvar_rtvRatio                  = register_cvar( "gal_rtv_ratio"                , "0.60" );
     cvar_rtvReminder               = register_cvar( "gal_rtv_reminder"             , "2"    );
-    cvar_voteMapFilePath           = register_cvar( "gal_vote_mapfile"             , "*"    );
+    cvar_voteMapFilePath           = register_cvar( "gal_vote_mapfile"             , "#"    );
     cvar_voteMinPlayers            = register_cvar( "gal_vote_minplayers"          , "0"    );
     cvar_voteMidPlayers            = register_cvar( "gal_vote_midplayers"          , "0"    );
     cvar_nomMinPlayersControl      = register_cvar( "gal_nom_minplayers_control"   , "0"    );
@@ -1571,40 +1571,40 @@ public plugin_init()
     cvar_voteWhiteListMapFilePath  = register_cvar( "gal_vote_whitelist_mapfile"   , ""     );
     cvar_voteUniquePrefixes        = register_cvar( "gal_vote_uniqueprefixes"      , "0"    );
     cvar_extendmapStepMinutes      = register_cvar( "amx_extendmap_step"           , "15"   );
-    cvar_maxMapExtendTime          = register_cvar( "amx_extendmap_max"            , "90"   );
-    cvar_extendmapStepRounds       = register_cvar( "amx_extendmap_step_rounds"    , "30"   );
+    cvar_maxMapExtendTime          = register_cvar( "amx_extendmap_max"            , "0"   );
+    cvar_extendmapStepRounds       = register_cvar( "amx_extendmap_step_rounds"    , "20"   );
     cvar_maxMapExtendRounds        = register_cvar( "amx_extendmap_max_rounds"     , "0"    );
     cvar_fragLimitSupport          = register_cvar( "gal_mp_fraglimit_support"     , "0"    );
-    cvar_extendmapStepFrags        = register_cvar( "amx_extendmap_step_frags"     , "60"   );
+    cvar_extendmapStepFrags        = register_cvar( "amx_extendmap_step_frags"     , "30"   );
     cvar_maxMapExtendFrags         = register_cvar( "amx_extendmap_max_frags"      , "0"    );
     cvar_extendmapAllowStay        = register_cvar( "amx_extendmap_allow_stay"     , "0"    );
     cvar_extendmapAllowStayType    = register_cvar( "amx_extendmap_allow_stay_type", "0"    );
     cvar_isExtendmapOrderAllowed   = register_cvar( "amx_extendmap_allow_order"    , "0"    );
-    cvar_showVoteStatus            = register_cvar( "gal_vote_showstatus"          , "1"    );
-    cvar_showVoteStatusType        = register_cvar( "gal_vote_showstatustype"      , "3"    );
+    cvar_showVoteStatus            = register_cvar( "gal_vote_showstatus"          , "4"    );
+    cvar_showVoteStatusType        = register_cvar( "gal_vote_showstatustype"      , "2"    );
     cvar_isToReplaceByVoteMenu     = register_cvar( "gal_vote_replace_menu"        , "0"    );
     cvar_isToShowNoneOption        = register_cvar( "gal_vote_show_none"           , "0"    );
-    cvar_voteWeight                = register_cvar( "gal_vote_weight"              , "1"    );
+    cvar_voteWeight                = register_cvar( "gal_vote_weight"              , "0"    );
     cvar_voteWeightFlags           = register_cvar( "gal_vote_weightflags"         , "y"    );
     cvar_voteShowNoneOptionType    = register_cvar( "gal_vote_show_none_type"      , "0"    );
-    cvar_isToShowExpCountdown      = register_cvar( "gal_vote_expirationcountdown" , "1"    );
+    cvar_isToShowExpCountdown      = register_cvar( "gal_vote_expirationcountdown" , "0"    );
     cvar_isToShowVoteCounter       = register_cvar( "gal_vote_show_counter"        , "0"    );
     cvar_voteAnnounceChoice        = register_cvar( "gal_vote_announcechoice"      , "1"    );
     cvar_isToAskForEndOfTheMapVote = register_cvar( "gal_endofmapvote_ask"         , "0"    );
     cvar_cmdVotemap                = register_cvar( "gal_cmd_votemap"              , "0"    );
-    cvar_cmdListmaps               = register_cvar( "gal_cmd_listmaps"             , "2"    );
+    cvar_cmdListmaps               = register_cvar( "gal_cmd_listmaps"             , "1"    );
     cvar_listmapsPaginate          = register_cvar( "gal_listmaps_paginate"        , "10"   );
-    cvar_recentMapsBannedNumber    = register_cvar( "gal_banrecent"                , "3"    );
+    cvar_recentMapsBannedNumber    = register_cvar( "gal_banrecent"                , "0"    );
     cvar_recentNomMapsAllowance    = register_cvar( "gal_recent_nom_maps"          , "0"    );
     cvar_isOnlyRecentMapcycleMaps  = register_cvar( "gal_banrecent_mapcycle"       , "0"    );
-    cvar_banRecentStyle            = register_cvar( "gal_banrecentstyle"           , "1"    );
+    cvar_banRecentStyle            = register_cvar( "gal_banrecentstyle"           , "3"    );
     cvar_emptyServerWaitMinutes    = register_cvar( "gal_emptyserver_wait"         , "0"    );
     cvar_isEmptyCycleByMapChange   = register_cvar( "gal_emptyserver_change"       , "0"    );
     cvar_emptyMapFilePath          = register_cvar( "gal_emptyserver_mapfile"      , ""     );
     cvar_soundsMute                = register_cvar( "gal_sounds_mute"              , "0"    );
     cvar_hudsHide                  = register_cvar( "gal_sounds_hud"               , "0"    );
     cvar_coloredChatPrefix         = register_cvar( "gal_colored_chat_prefix"      , ""     );
-    cvar_endOnRound                = register_cvar( "gal_endonround"               , "1"    );
+    cvar_endOnRound                = register_cvar( "gal_endonround"               , "0"    );
     cvar_endOnRoundChange          = register_cvar( "gal_endonround_change"        , "1"    );
     cvar_endOnRoundRtv             = register_cvar( "gal_endonround_rtv"           , "0"    );
     cvar_endOnRoundMininum         = register_cvar( "gal_endonround_msg"           , "0"    );
@@ -4614,15 +4614,12 @@ public game_commencing_event()
     LOGGER( 128, "I AM ENTERING ON game_commencing_event(0)" )
 
 #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
-    new playersCount;
-    new players[ MAX_PLAYERS ];
-
-    get_players( players, playersCount, "dh" );
-
-    if( playersCount )
+    if( get_gametime() < 100
+        && ( get_playersnum( 1 )
+             || g_test_areTheUnitTestsRunning ) )
     {
         LOGGER( 1, "^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n" )
-        LOGGER( 1, "There are bots on the server!" )
+        LOGGER( 1, "There are players on the server!" )
         LOGGER( 1, "^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n" )
     }
     else
@@ -4630,7 +4627,6 @@ public game_commencing_event()
         g_isTimeToResetGame   = true;
         g_isTimeToResetRounds = true;
     }
-
 #else
     g_isTimeToResetGame   = true;
     g_isTimeToResetRounds = true;
@@ -6558,9 +6554,9 @@ stock bool:approvedTheVotingStart( bool:is_forced_voting )
                 g_voteStatus, g_voteStatus & IS_VOTE_OVER != 0 )
 
     #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
-        if( g_test_isTheUnitTestsRunning )
+        if( g_test_areTheUnitTestsRunning )
         {
-            LOGGER( 1, "    ( approvedTheVotingStart ) Returning true on the if !g_test_isTheUnitTestsRunning, \
+            LOGGER( 1, "    ( approvedTheVotingStart ) Returning true on the if !g_test_areTheUnitTestsRunning, \
                     cvar_isEmptyCycleByMapChange: %d.", get_pcvar_num( cvar_isEmptyCycleByMapChange ) )
             return true;
         }
@@ -7213,6 +7209,13 @@ public voteExpire()
 {
     LOGGER( 128, "I AM ENTERING ON voteExpire(0)" )
     g_voteStatus |= IS_VOTE_EXPIRED;
+
+    // For the results to show up on the `Voting Results` menu.
+    if( !g_showVoteStatusType
+        && g_showVoteStatus )
+    {
+        g_showVoteStatusType = STATUS_TYPE_PERCENTAGE;
+    }
 
     // This is necessary because the SubVote Menu is not closing automatically when the voting finishes,
     // then the voting results are being displayed forcing the SubMenu to looks like it is not closing
@@ -8805,7 +8808,7 @@ stock map_getMinutesElapsedInteger()
 
     // While the Unit Tests are running, to force a specific time.
 #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
-    if( g_test_isTheUnitTestsRunning )
+    if( g_test_areTheUnitTestsRunning )
     {
         return g_test_gameElapsedTime;
     }
@@ -12919,7 +12922,7 @@ stock get_real_players_number()
 
 #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED ) \
     && DEBUG_LEVEL & DEBUG_LEVEL_FAKE_VOTES
-    if( g_test_isTheUnitTestsRunning )
+    if( g_test_areTheUnitTestsRunning )
     {
         return g_test_aimedPlayersNumber;
     }
@@ -12927,7 +12930,7 @@ stock get_real_players_number()
     return FAKE_PLAYERS_NUMBER_FOR_DEBUGGING;
 #else
     #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
-        if( g_test_isTheUnitTestsRunning )
+        if( g_test_areTheUnitTestsRunning )
         {
             return g_test_aimedPlayersNumber;
         }
@@ -15378,7 +15381,7 @@ public timeRemain()
             return TrieKeyExists( g_test_strictValidMapsTrie, mapName );
         }
 
-        return g_test_isTheUnitTestsRunning;
+        return g_test_areTheUnitTestsRunning;
     }
 
     /**
@@ -17405,10 +17408,10 @@ public timeRemain()
         LOGGER( 2, "    %38s cvar_mp_timelimit: %f  test_mp_timelimit: %f   g_originalTimelimit: %f", \
                 "saveServerCvarsForTesting( in )", get_pcvar_float( cvar_mp_timelimit ), test_mp_timelimit, g_originalTimelimit )
 
-        if( !g_test_isTheUnitTestsRunning )
+        if( !g_test_areTheUnitTestsRunning )
         {
-            g_test_isToDisableLogging    = true;
-            g_test_isTheUnitTestsRunning = true;
+            g_test_isToDisableLogging     = true;
+            g_test_areTheUnitTestsRunning = true;
 
             print_logger( "" );
             print_logger( "" );
@@ -17469,10 +17472,10 @@ public timeRemain()
         LOGGER( 2, "    %38s cvar_mp_timelimit: %f  test_mp_timelimit: %f  g_originalTimelimit: %f", \
                 "restoreServerCvarsFromTesting( in )", get_pcvar_float( cvar_mp_timelimit ), test_mp_timelimit, g_originalTimelimit )
 
-        if( g_test_isTheUnitTestsRunning )
+        if( g_test_areTheUnitTestsRunning )
         {
             map_restoreEndGameCvars();
-            g_test_isTheUnitTestsRunning = false;
+            g_test_areTheUnitTestsRunning = false;
 
             g_originalTimelimit = 0.0;
             g_originalMaxRounds = 0;
