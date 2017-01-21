@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-614";
+new const PLUGIN_VERSION[] = "v4.2.0-615";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -86,7 +86,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-614";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+2+4+64
+#define DEBUG_LEVEL 1+2+16
 
 
 /**
@@ -732,13 +732,6 @@ new cvar_coloredChatEnabled;
 #define IS_WHITELIST_ENABLED() \
     ( get_pcvar_num( cvar_whitelistMinPlayers ) == 1 \
       || get_real_players_number() < get_pcvar_num( cvar_whitelistMinPlayers ) )
-//
-
-/**
- * Boolean check to know whether the Whitelist should be loaded every hour.
- */
-#define IS_TO_HOURLY_LOAD_THE_WHITELIST() \
-    ( get_pcvar_num( cvar_isWhiteListNomBlock ) )
 //
 
 /**
@@ -2648,9 +2641,16 @@ public map_loadRecentBanList( loadedMapsCount )
         new maxRecentMapsBans = get_pcvar_num( cvar_recentMapsBannedNumber );
         new maxVotingChoices  = g_maxVotingChoices + 3;
 
-        if( maxRecentMapsBans + maxVotingChoices > loadedMapsCount )
+        if( loadedMapsCount > maxVotingChoices )
         {
-            maxRecentMapsBans = maxRecentMapsBans - maxVotingChoices;
+            if( maxRecentMapsBans + maxVotingChoices > loadedMapsCount )
+            {
+                maxRecentMapsBans = maxRecentMapsBans - maxVotingChoices;
+            }
+        }
+        else
+        {
+            maxRecentMapsBans = 0;
         }
 
         LOGGER( 4, "( map_loadRecentBanList ) maxVotingChoices: %d", maxVotingChoices )
@@ -2683,7 +2683,7 @@ public map_loadRecentBanList( loadedMapsCount )
         fclose( recentMapsFileDescriptor );
     }
 
-    LOGGER( 1, "    ( map_loadRecentBanList ) Returning loadedCount: %d", g_recentMapCount )
+    LOGGER( 1, "    ( map_loadRecentBanList ) Returning g_recentMapCount: %d", g_recentMapCount )
     return g_recentMapCount;
 }
 
@@ -2988,14 +2988,12 @@ stock configureTheWhiteListFeature( mapFilerFilePath[] )
     if( IS_WHITELIST_ENABLED() )
     {
         LOGGER( 4, "" )
+
         get_pcvar_string( cvar_voteWhiteListMapFilePath, mapFilerFilePath, MAX_FILE_PATH_LENGHT - 1 );
         loadedCount = loadWhiteListFileFromFile( g_whitelistFileArray, mapFilerFilePath );
 
-        if( IS_TO_HOURLY_LOAD_THE_WHITELIST() )
-        {
-            computeNextWhiteListLoadTime( 1, false );
-            loadTheWhiteListFeature();
-        }
+        computeNextWhiteListLoadTime( 1, false );
+        loadTheWhiteListFeature();
     }
 
     LOGGER( 1, "    ( configureTheWhiteListFeature ) Returning loadedCount: %d", loadedCount )
@@ -9831,12 +9829,14 @@ stock map_getNext( Array:mapArray, currentMap[], nextMapName[] )
 {
     LOGGER( 128, "I AM ENTERING ON map_getNext(3) currentMap: %s", currentMap )
 
+    new bool:isWhitelistBlocking;
     new thisMap[ MAX_MAPNAME_LENGHT ];
-    new bool:isWhitelistEnabled = IS_WHITELIST_ENABLED();
 
     new nextmapIndex = 0;
     new returnValue  = -1;
     new mapCount     = ArraySize( mapArray );
+
+    new bool:isWhitelistEnabled = IS_WHITELIST_ENABLED();
 
     for( new currentMapIndex = 0; currentMapIndex < mapCount; currentMapIndex++ )
     {
@@ -9858,7 +9858,9 @@ stock map_getNext( Array:mapArray, currentMap[], nextMapName[] )
 
             if( IS_WHITELIST_BLOCKING( isWhitelistEnabled, nextMapName ) )
             {
+                isWhitelistBlocking = true;
                 copy( currentMap, MAX_MAPNAME_LENGHT - 1, nextMapName );
+
                 continue;
             }
 
@@ -9867,17 +9869,34 @@ stock map_getNext( Array:mapArray, currentMap[], nextMapName[] )
         }
     }
 
-    if( mapCount > 0
-        && returnValue > -1 )
+    if( isWhitelistBlocking )
     {
-        GET_MAP_NAME( mapArray, nextmapIndex, nextMapName )
+        if( mapCount > 0
+            && returnValue > -1 )
+        {
+            GET_MAP_NAME( mapArray, nextmapIndex, nextMapName )
+        }
+        else
+        {
+            log_amx(   "WARNING: Your 'mapcyclefile' server variable does not contain valid maps by the Whitelist feature!" );
+            LOGGER( 1, "WARNING: Your 'mapcyclefile' server variable does not contain valid maps by the Whitelist feature!" )
+
+            copy( nextMapName, MAX_MAPNAME_LENGHT - 1, g_currentMapName );
+        }
     }
     else
     {
-        log_amx(   "WARNING: Your 'mapcyclefile' server variable is invalid!" );
-        LOGGER( 1, "WARNING: Your 'mapcyclefile' server variable is invalid!" )
+        if( mapCount > 0 )
+        {
+            GET_MAP_NAME( mapArray, nextmapIndex, nextMapName )
+        }
+        else
+        {
+            log_amx(   "WARNING: Your 'mapcyclefile' server variable map file does not contain valid maps!" );
+            LOGGER( 1, "WARNING: Your 'mapcyclefile' server variable map file does not contain valid maps!" )
 
-        copy( nextMapName, MAX_MAPNAME_LENGHT - 1, g_currentMapName );
+            copy( nextMapName, MAX_MAPNAME_LENGHT - 1, g_currentMapName );
+        }
     }
 
     LOGGER( 1, "    ( map_getNext ) Returning mapIndex: %d, nextMapName: %s", returnValue, nextMapName )
@@ -11661,7 +11680,7 @@ public nomination_menuHook( player_id )
 stock getRecentMapsAndWhiteList( player_id, &isRecentMapNomBlocked, &isWhiteListNomBlock )
 {
     isWhiteListNomBlock = ( IS_WHITELIST_ENABLED()
-                            && IS_TO_HOURLY_LOAD_THE_WHITELIST() );
+                            && get_pcvar_num( cvar_isWhiteListNomBlock ) );
 
     switch( get_pcvar_num( cvar_recentNomMapsAllowance ) )
     {
@@ -12663,7 +12682,7 @@ stock map_nominate( player_id, mapIndex )
     if( !is_to_block_map_nomination( player_id, mapName ) )
     {
         new bool:isWhiteListNomBlock = ( IS_WHITELIST_ENABLED()
-                                         && IS_TO_HOURLY_LOAD_THE_WHITELIST() );
+                                         && get_pcvar_num( cvar_isWhiteListNomBlock ) );
 
         if( isWhiteListNomBlock )
         {
@@ -16078,8 +16097,10 @@ public timeRemain()
     stock test_resetRoundsScores_cases()
     {
         // Register the cvar `mp_fraglimit` if is not yet registered.
-        set_pcvar_num( cvar_fragLimitSupport       , 1 );
+        set_pcvar_num( cvar_fragLimitSupport, 1 );
         mp_fraglimitCvarSupport();
+
+        g_test_isToUseStrictValidMaps = true;
 
         test_resetRoundsScores_loader( 90, 60, 31, 60  ); // Case  1-4 , 90 - 60 + 31 - 1 = 60
         test_resetRoundsScores_loader( 90, 20, 31, 100 ); // Case  5-8 , 90 - 20 + 31 - 1 = 100
@@ -16090,6 +16111,8 @@ public timeRemain()
         test_resetRoundsScores_loader( 60, 59, 0 , 60  ); // Case 25-28, 60 - 59 + 0  - 1 = 60
         test_resetRoundsScores_loader( 60, 20, 0 , 60  ); // Case 29-32, 60 - 20 + 0  - 1 = 60
         test_resetRoundsScores_loader( 60, 80, 10, 60  ); // Case 33-36, 60 - 80 + 10 - 1 = 60
+
+        g_test_isToUseStrictValidMaps = false;
     }
 
     /**
