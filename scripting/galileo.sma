@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-618";
+new const PLUGIN_VERSION[] = "v4.2.0-619";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -1411,7 +1411,6 @@ new g_showLastRoundHudCounter;
 new g_pendingMapVoteCountdown;
 new g_lastRoundCountdown;
 new g_rtvWaitAdminNumber;
-new g_emptyCycleMapsNumber;
 new g_recentMapCount;
 new g_rtvCommands;
 new g_rtvWaitRounds;
@@ -1686,9 +1685,8 @@ public plugin_cfg()
     LOGGER( 4, "" )
     LOGGER( 4, "" )
 
-    // the 'mp_fraglimitCvarSupport(0)' could register a new cvar, hence only call 'cacheCvarsValues' them after it.
+    // The 'mp_fraglimitCvarSupport(0)' could register a new cvar, hence only call 'cacheCvarsValues' them after it.
     mp_fraglimitCvarSupport();
-    cacheCvarsValues();
     resetRoundsScores();
 
     LOGGER( 4, "" )
@@ -1701,13 +1699,13 @@ public plugin_cfg()
     loadMapFiles();
     configureServerStart();
 
+    // Used to loop through all server maps looking for crashing ones
+    runTheServerMapCrashSearch();
+
     // Configure the Unit Tests, when they are activate.
 #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
     configureTheUnitTests();
 #endif
-
-    // Used to loop through all server maps looking for crashing ones
-    runTheServerMapCrashSearch();
 
     LOGGER( 1, "    I AM EXITING plugin_cfg(0)..." )
     LOGGER( 1, "" )
@@ -1848,11 +1846,6 @@ stock loadPluginSetttings()
 
     server_cmd( "exec %s/galileo.cfg", g_configsDirPath );
     server_exec();
-
-    // re-cache later to wait load some late server configurations, as the per-map configs.
-    set_task( DELAY_TO_WAIT_THE_SERVER_CVARS_TO_BE_LOADED, "cacheCvarsValues" );
-
-    cacheCvarsValues();
 }
 
 /**
@@ -1884,6 +1877,11 @@ stock mp_fraglimitCvarSupport()
 
     LOGGER( 1, "( mp_fraglimitCvarSupport ) cvar_disabledValuePointer: %d", cvar_disabledValuePointer )
     LOGGER( 1, "( mp_fraglimitCvarSupport ) mp_fraglimit is cvar_to_get: %d", cvar_mp_fraglimit )
+
+    // re-cache later to wait load some late server configurations, as the per-map configs.
+    set_task( DELAY_TO_WAIT_THE_SERVER_CVARS_TO_BE_LOADED, "cacheCvarsValues" );
+
+    cacheCvarsValues();
 }
 
 /**
@@ -2111,7 +2109,7 @@ public handleServerStart( backupMapsFilePath[], startAction )
     }
     else if( startAction == SERVER_START_RANDOMMAP ) // pick a random map from allowable nominations
     {
-        // if noms aren't allowed, the nomination list hasn't already been loaded
+        // If noms aren't allowed, the nomination list hasn't already been loaded
         if( get_pcvar_num( cvar_nomPlayerAllowance ) == 0 )
         {
             new mapFilePath[ MAX_FILE_PATH_LENGHT ];
@@ -5089,13 +5087,13 @@ stock map_loadEmptyCycleList( emptyCycleFilePath[] )
     LOGGER( 128, "I AM ENTERING ON map_loadEmptyCycleList(1)" )
     get_pcvar_string( cvar_emptyMapFilePath, emptyCycleFilePath, MAX_FILE_PATH_LENGHT - 1 );
 
-    g_emptyCycleMapsNumber = map_populateList( g_emptyCycleMapsArray, emptyCycleFilePath, MAX_FILE_PATH_LENGHT - 1 );
-    LOGGER( 4, "( map_loadEmptyCycleList ) g_emptyCycleMapsNumber: %d", g_emptyCycleMapsNumber )
+    map_populateList( g_emptyCycleMapsArray, emptyCycleFilePath, MAX_FILE_PATH_LENGHT - 1 );
+    LOGGER( 4, "( map_loadEmptyCycleList ) loadedCount: %d", ArraySize( g_emptyCycleMapsArray ) )
 }
 
 public map_loadPrefixList( prefixesFilePath[] )
 {
-    LOGGER( 128, "I AM ENTERING ON map_loadPrefixList(1)" )
+    LOGGER( 128, "I AM ENTERING ON map_loadPrefixList(1) g_mapPrefixCount: %d", g_mapPrefixCount )
     new prefixesFile;
 
     formatex( prefixesFilePath, MAX_FILE_PATH_LENGHT - 1, "%s/prefixes.ini", g_configsDirPath );
@@ -9678,14 +9676,15 @@ stock isToHandleRecentlyEmptyServer()
 
         // if it is utilizing "empty server" feature, to start it.
         if( g_isUsingEmptyCycle
-            && g_emptyCycleMapsNumber )
+            && g_emptyCycleMapsArray
+            && ArraySize( g_emptyCycleMapsArray ) )
         {
             startEmptyCycleCountdown();
         }
     }
 
     LOGGER( 2, "I AM EXITING ON isToHandleRecentlyEmptyServer(0) g_isUsingEmptyCycle = %d, \
-            g_emptyCycleMapsNumber = %d", g_isUsingEmptyCycle, g_emptyCycleMapsNumber )
+            g_emptyCycleMapsArray: %d", g_isUsingEmptyCycle, g_emptyCycleMapsArray )
 }
 
 /**
