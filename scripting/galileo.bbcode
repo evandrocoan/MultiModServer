@@ -1282,7 +1282,7 @@ gal_votemap map1 map2
      nomination file list as maps source to build up the menu. If specified the `page_number` argument, the menu
      will be opened a the specified page. Example: `say galmenu 50` will open the menu right on the page 50.
      If the argument `page_number` is omitted, the menu will open at the first page, or the last page
-     you opened it.
+     you opened it. It requires the cvar `gal_nom_playerallowance` to be set to a value higher than 0.
 
 
  [*] [COLOR="Blue"][B]The Maintenance Mode[/B][/COLOR]:
@@ -1601,7 +1601,7 @@ Thank you!  It means a lot to me.
 ******************************** [anchor]Change[/anchor][B][SIZE="6"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
 [SPOILER]
 
-
+5.0
 [LIST=1]
 [*]Added a new cvar `gal_whitelist_type` to use the Whitelist feature as a Blacklist feature, to replace the `IS_TO_USE_BLACKLIST_INSTEAD_OF_WHITELIST` macro.
 [*]Added a new command `gal_looking_for_crashes` to search crashing maps through all your server maps.
