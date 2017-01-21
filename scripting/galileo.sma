@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-615";
+new const PLUGIN_VERSION[] = "v4.2.0-616";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -1618,7 +1618,7 @@ public plugin_init()
     // Enables the colored chat control cvar.
     cvar_coloredChatEnabled = register_cvar( "gal_colored_chat_enabled", "0", FCVAR_SPONLY );
 
-    // Not a configurable cvar, this is used instead of the `localinfo`.
+    // Not a configurable cvars, these are used instead of the `localinfo`.
     //
     // When `cvar_isFirstServerStart` set set to 2 we are on the first server start period. If this
     // is set to 1, we are on the beginning of the second server map change level.
@@ -1900,36 +1900,6 @@ stock mp_fraglimitCvarSupport()
     LOGGER( 1, "( mp_fraglimitCvarSupport ) mp_fraglimit is cvar_to_get: %d", cvar_mp_fraglimit )
 }
 
-stock configureTheRTVFeature()
-{
-    LOGGER( 128, "I AM ENTERING ON configureTheRTVFeature(0)" )
-
-    g_rtvWaitMinutes = get_pcvar_float( cvar_rtvWaitMinutes );
-    g_rtvWaitRounds  = get_pcvar_num( cvar_rtvWaitRounds );
-    g_rtvWaitFrags   = get_pcvar_num( cvar_rtvWaitFrags );
-
-    if( g_rtvCommands & RTV_CMD_STANDARD )
-    {
-        register_clcmd( "say rockthevote", "cmd_rockthevote", 0 );
-    }
-
-    if( get_pcvar_num( cvar_nomPlayerAllowance ) )
-    {
-        register_concmd( "gal_listmaps", "map_listAll" );
-        register_clcmd( "say nominations", "cmd_nominations", 0, "- displays current nominations for next map" );
-
-        if( get_pcvar_num( cvar_nomPrefixes ) )
-        {
-            map_loadPrefixList();
-        }
-
-        loadNominationList();
-    }
-
-    LOGGER( 4, "" )
-    LOGGER( 4, "" )
-}
-
 /**
  * To cache some high used server cvars.
  */
@@ -1972,42 +1942,6 @@ public cacheCvarsValues()
 
     // It need to be cached after loading all the cvars
     g_totalVoteTime = howManySecondsLastMapTheVoting();
-}
-
-/**
- * Setup the main task that schedules the end map voting and allow round finish feature.
- */
-stock configureServerMapChange()
-{
-    LOGGER( 128, "I AM ENTERING ON configureServerMapChange(0)" )
-
-    if( IS_WHITELIST_BLOCKING( IS_WHITELIST_ENABLED(), g_nextMapName ) )
-    {
-        new currentNextMap[ MAX_MAPNAME_LENGHT ];
-
-        log_amx( "configureServerMapChange: %s: %L", g_nextMapName, LANG_SERVER, "GAL_MATCH_WHITELIST" );
-        LOGGER( 8, "    ( configureServerMapChange ) %s: %L", g_nextMapName, LANG_SERVER, "GAL_MATCH_WHITELIST" )
-
-        copy( currentNextMap, charsmax( currentNextMap ), g_nextMapName );
-        map_getNext( g_mapcycleFileListArray, currentNextMap, g_nextMapName );
-
-        // Need to be called to trigger special behaviors.
-        setNextMap( g_currentMapName, g_nextMapName );
-    }
-
-    if( get_pcvar_num( cvar_emptyServerWaitMinutes )
-        || get_pcvar_num( cvar_isEmptyCycleByMapChange ) )
-    {
-        g_emptyCycleMapsArray = ArrayCreate( MAX_MAPNAME_LENGHT );
-        map_loadEmptyCycleList();
-
-        if( get_pcvar_num( cvar_emptyServerWaitMinutes ) )
-        {
-            set_task( 60.0, "inicializeEmptyCycleFeature" );
-        }
-    }
-
-    set_task( float( PERIODIC_CHECKING_INTERVAL ), "vote_manageEnd", _, _, _, "b" );
 }
 
 /**
@@ -2689,7 +2623,7 @@ public map_loadRecentBanList( loadedMapsCount )
 
 stock writeRecentMapsBanList()
 {
-    LOGGER( 128, "I AM ENTERING ON writeRecentMapsBanList()")
+    LOGGER( 128, "I AM ENTERING ON writeRecentMapsBanList(0) g_recentListMapsArray: %d", g_recentListMapsArray )
 
     new recentMapName     [ MAX_MAPNAME_LENGHT ];
     new recentMapsFilePath[ MAX_FILE_PATH_LENGHT ];
@@ -2897,6 +2831,72 @@ stock loadMapFiles()
     LOGGER( 4, "( loadMapFiles ) Maps Files Loaded." )
     LOGGER( 4, "" )
     LOGGER( 4, "" )
+}
+
+stock configureTheRTVFeature()
+{
+    LOGGER( 128, "I AM ENTERING ON configureTheRTVFeature(0)" )
+
+    g_rtvWaitMinutes = get_pcvar_float( cvar_rtvWaitMinutes );
+    g_rtvWaitRounds  = get_pcvar_num( cvar_rtvWaitRounds );
+    g_rtvWaitFrags   = get_pcvar_num( cvar_rtvWaitFrags );
+
+    if( g_rtvCommands & RTV_CMD_STANDARD )
+    {
+        register_clcmd( "say rockthevote", "cmd_rockthevote", 0 );
+    }
+
+    if( get_pcvar_num( cvar_nomPlayerAllowance ) )
+    {
+        register_concmd( "gal_listmaps", "map_listAll" );
+        register_clcmd( "say nominations", "cmd_nominations", 0, "- displays current nominations for next map" );
+
+        if( get_pcvar_num( cvar_nomPrefixes ) )
+        {
+            map_loadPrefixList();
+        }
+
+        loadNominationList();
+    }
+
+    LOGGER( 4, "" )
+    LOGGER( 4, "" )
+}
+
+/**
+ * Setup the main task that schedules the end map voting and allow round finish feature.
+ */
+stock configureServerMapChange()
+{
+    LOGGER( 128, "I AM ENTERING ON configureServerMapChange(0)" )
+
+    if( IS_WHITELIST_BLOCKING( IS_WHITELIST_ENABLED(), g_nextMapName ) )
+    {
+        new currentNextMap[ MAX_MAPNAME_LENGHT ];
+
+        log_amx( "configureServerMapChange: %s: %L", g_nextMapName, LANG_SERVER, "GAL_MATCH_WHITELIST" );
+        LOGGER( 8, "    ( configureServerMapChange ) %s: %L", g_nextMapName, LANG_SERVER, "GAL_MATCH_WHITELIST" )
+
+        copy( currentNextMap, charsmax( currentNextMap ), g_nextMapName );
+        map_getNext( g_mapcycleFileListArray, currentNextMap, g_nextMapName );
+
+        // Need to be called to trigger special behaviors.
+        setNextMap( g_currentMapName, g_nextMapName );
+    }
+
+    if( get_pcvar_num( cvar_emptyServerWaitMinutes )
+        || get_pcvar_num( cvar_isEmptyCycleByMapChange ) )
+    {
+        g_emptyCycleMapsArray = ArrayCreate( MAX_MAPNAME_LENGHT );
+        map_loadEmptyCycleList();
+
+        if( get_pcvar_num( cvar_emptyServerWaitMinutes ) )
+        {
+            set_task( 60.0, "inicializeEmptyCycleFeature" );
+        }
+    }
+
+    set_task( float( PERIODIC_CHECKING_INTERVAL ), "vote_manageEnd", _, _, _, "b" );
 }
 
 stock configureTheNorPlayersFeature( mapFilerFilePath[] )
@@ -16300,7 +16300,6 @@ public timeRemain()
 
         // To force the Whitelist to be reloaded.
         loadMapFiles();
-        loadTheWhiteListFeature();
         loadTheDefaultVotingChoices();
 
         test_loadVoteChoices_case( "de_rain", "de_inferno", 'a' ); // Case 1
@@ -16323,7 +16322,6 @@ public timeRemain()
 
         // To force the Whitelist to be reloaded.
         loadMapFiles();
-        loadTheWhiteListFeature();
         loadTheDefaultVotingChoices();
 
         test_loadVoteChoices_case( "de_rain"   , "de_nuke", 'b' ); // Case 1
@@ -16349,7 +16347,6 @@ public timeRemain()
 
         // To force the Whitelist to be reloaded.
         loadMapFiles();
-        loadTheWhiteListFeature();
         loadTheDefaultVotingChoices();
 
         test_loadVoteChoices_case( "de_rats" , "de_dust2002v2005_forEver2009", 'c' ); // Case 1
@@ -16374,7 +16371,6 @@ public timeRemain()
 
         // To force the Whitelist to be reloaded.
         loadMapFiles();
-        loadTheWhiteListFeature();
         loadTheDefaultVotingChoices();
 
         test_loadVoteChoices_case( "de_rain"   , "", 'd' );   // Case 1
@@ -17117,7 +17113,6 @@ public timeRemain()
 
         // To force the Whitelist to be reloaded.
         loadMapFiles();
-        loadTheWhiteListFeature();
         loadTheDefaultVotingChoices();
 
         printVotingMaps( g_votingMapNames, g_votingMapInfos );
@@ -17462,8 +17457,6 @@ public timeRemain()
 
         // Reload unloaded features.
         loadMapFiles();
-        loadNominationList();
-        loadTheWhiteListFeature();
 
         // Clean tests files.
         delete_file( g_test_voteMapFilePath );
