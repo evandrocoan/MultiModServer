@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-612";
+new const PLUGIN_VERSION[] = "v4.2.0-613";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -2849,6 +2849,28 @@ stock processLoadedGroupMapFileFrom( &Array:playerFillerMapsArray, &Array:filler
     return loadedMapsTotal;
 }
 
+stock processLoadedGroupMapFileFrom2( &Array:fillersFilePathsArray, &Trie:playerFillerMapsTrie )
+{
+    LOGGER( 128, "I AM ENTERING ON processLoadedGroupMapFileFrom(2) groupCount: %d", ArraySize( fillersFilePathsArray ) )
+
+    new loadedMapsTotal;
+    new fillerFilePath[ MAX_FILE_PATH_LENGHT ];
+
+    new groupCount = ArraySize( fillersFilePathsArray );
+
+    // fill remaining slots with random maps from each filler file, as much as possible
+    for( new groupIndex = 0; groupIndex < groupCount; ++groupIndex )
+    {
+        ArrayGetString( fillersFilePathsArray, groupIndex, fillerFilePath, charsmax( fillerFilePath ) );
+        loadedMapsTotal += map_populateList( _, fillerFilePath, charsmax( fillerFilePath ), playerFillerMapsTrie, false );
+
+        LOGGER( 8, "( processLoadedGroupMapFileFrom2 ) fillersFilePaths[%i]: %s", groupIndex, fillerFilePath )
+    }
+
+    LOGGER( 1, "    ( processLoadedGroupMapFileFrom2 ) Returning loadedMapsTotal: %d", loadedMapsTotal )
+    return loadedMapsTotal;
+}
+
 stock loadMapFiles()
 {
     LOGGER( 128, "I AM ENTERING ON loadMapFiles(0)" )
@@ -4705,7 +4727,8 @@ public resetRoundsScores()
     LOGGER( 1, "    I AM EXITING ON resetRoundsScores(0)" )
 }
 
-stock map_populateList( Array:mapArray = Invalid_Array, mapFilePath[], mapFilePathLength, Trie:fillerMapTrie = Invalid_Trie )
+stock map_populateList( Array:mapArray = Invalid_Array, mapFilePath[], mapFilePathLength,
+                        Trie:fillerMapTrie = Invalid_Trie, bool:isToClearTheTrie = true )
 {
     LOGGER( 128, "I AM ENTERING ON map_populateList(4) mapFilePath: %s", mapFilePath )
 
@@ -4719,7 +4742,7 @@ stock map_populateList( Array:mapArray = Invalid_Array, mapFilePath[], mapFilePa
 
         // clear the map array in case we're reusing it
         TRY_TO_APPLY( ArrayClear, mapArray )
-        TRY_TO_APPLY( TrieClear, fillerMapTrie )
+        if( isToClearTheTrie ) TRY_TO_APPLY( TrieClear, fillerMapTrie )
 
         if( !isMapFolderLoad
             && !equal( mapFilePath, MAP_CYCLE_LOAD_FLAG ) )
@@ -5985,7 +6008,7 @@ stock vote_addNominations( blockedMapsBuffer[], &announcementShowedTimes = 0 )
                 isFillersMapUsingMinplayers = true;
 
                 // This call is only to load the 'whitelistMapTrie'
-                map_populateList( _, mapFilerFilePath, charsmax( mapFilerFilePath ), whitelistMapTrie );
+                processLoadedGroupMapFileFrom2( g_minPlayerFillerMapGroupArrays, whitelistMapTrie );
             }
         }
 
