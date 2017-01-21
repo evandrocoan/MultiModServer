@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-621";
+new const PLUGIN_VERSION[] = "v4.2.0-622";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -86,7 +86,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-621";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+2+16
+#define DEBUG_LEVEL 1+2+64
 
 
 /**
@@ -1411,7 +1411,6 @@ new g_showLastRoundHudCounter;
 new g_pendingMapVoteCountdown;
 new g_lastRoundCountdown;
 new g_rtvWaitAdminNumber;
-new g_recentMapCount;
 new g_rtvCommands;
 new g_rtvWaitRounds;
 new g_rtvWaitFrags;
@@ -2547,9 +2546,11 @@ public setGameToFinishAtHalfTime()
  * not all maps have been loaded here, on them will be written down to the file on
  * writeRecentMapsBanList(0).
  */
-public map_loadRecentBanList( loadedMapsCount )
+public map_loadRecentBanList( maximumLoadMapsCount )
 {
-    LOGGER( 128, "I AM ENTERING ON map_loadRecentBanList(1) loadedMapsCount: %d", loadedMapsCount )
+    LOGGER( 128, "I AM ENTERING ON map_loadRecentBanList(1) maximumLoadMapsCount: %d", maximumLoadMapsCount )
+
+    new loadedMapsCount;
     new recentMapsFilePath[ MAX_FILE_PATH_LENGHT ];
 
     formatex( recentMapsFilePath, charsmax( recentMapsFilePath ), "%s/%s", g_dataDirPath, RECENT_BAN_MAPS_FILE_NAME );
@@ -2562,9 +2563,9 @@ public map_loadRecentBanList( loadedMapsCount )
         new maxRecentMapsBans = get_pcvar_num( cvar_recentMapsBannedNumber );
         new maxVotingChoices  = g_maxVotingChoices + 3;
 
-        if( loadedMapsCount > maxVotingChoices )
+        if( maximumLoadMapsCount > maxVotingChoices )
         {
-            if( maxRecentMapsBans + maxVotingChoices > loadedMapsCount )
+            if( maxRecentMapsBans + maxVotingChoices > maximumLoadMapsCount )
             {
                 maxRecentMapsBans = maxRecentMapsBans - maxVotingChoices;
             }
@@ -2585,7 +2586,7 @@ public map_loadRecentBanList( loadedMapsCount )
             if( recentMapName[ 0 ]
                 && IS_MAP_VALID( recentMapName ) )
             {
-                if( g_recentMapCount >= maxRecentMapsBans )
+                if( loadedMapsCount >= maxRecentMapsBans )
                 {
                     break;
                 }
@@ -2596,7 +2597,7 @@ public map_loadRecentBanList( loadedMapsCount )
                     ArrayPushString( g_recentListMapsArray, recentMapName );
                     TrieSetCell( g_recentMapsTrie, recentMapName, 0 );
 
-                    g_recentMapCount++;
+                    loadedMapsCount++;
                 }
             }
         }
@@ -2604,11 +2605,11 @@ public map_loadRecentBanList( loadedMapsCount )
         fclose( recentMapsFileDescriptor );
     }
 
-    LOGGER( 1, "    ( map_loadRecentBanList ) Returning g_recentMapCount: %d", g_recentMapCount )
-    return g_recentMapCount;
+    LOGGER( 1, "    ( map_loadRecentBanList ) Returning loadedMapsCount: %d", loadedMapsCount )
+    return loadedMapsCount;
 }
 
-stock writeRecentMapsBanList()
+stock writeRecentMapsBanList( loadedMapsCount )
 {
     LOGGER( 128, "I AM ENTERING ON writeRecentMapsBanList(0) g_recentListMapsArray: %d", g_recentListMapsArray )
 
@@ -2642,7 +2643,7 @@ stock writeRecentMapsBanList()
         }
 
         // Add the others banned maps to the ban list
-        for( new mapIndex = 0; mapIndex < g_recentMapCount; ++mapIndex )
+        for( new mapIndex = 0; mapIndex < loadedMapsCount; ++mapIndex )
         {
             ArrayGetString( g_recentListMapsArray, mapIndex, recentMapName, charsmax( recentMapName ) );
 
@@ -2988,9 +2989,10 @@ stock configureTheWhiteListFeature( mapFilerFilePath[] )
     return loadedCount;
 }
 
-stock loadTheBanRecentMapsFeature( loadedCount )
+stock loadTheBanRecentMapsFeature( maximumLoadMapsCount )
 {
     LOGGER( 128, "I AM ENTERING ON loadTheBanRecentMapsFeature(1)" )
+    new loadedCount;
 
     if( get_pcvar_num( cvar_recentMapsBannedNumber ) )
     {
@@ -3005,16 +3007,17 @@ stock loadTheBanRecentMapsFeature( loadedCount )
         }
         else
         {
-            loadedCount = map_loadRecentBanList( loadedCount );
+            loadedCount = map_loadRecentBanList( maximumLoadMapsCount );
         }
 
         register_clcmd( "say recentmaps", "cmd_listrecent", 0 );
 
         // Do nothing if the map will be instantly changed
-        if( !( get_pcvar_num( cvar_isFirstServerStart ) == FIRST_SERVER_START
-               && get_pcvar_num( cvar_serverStartAction ) ) )
+        if( loadedCount
+            && !( get_pcvar_num( cvar_isFirstServerStart ) == FIRST_SERVER_START
+                  && get_pcvar_num( cvar_serverStartAction ) ) )
         {
-            writeRecentMapsBanList();
+            writeRecentMapsBanList( loadedCount );
         }
     }
 
@@ -5639,10 +5642,11 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
     new bool:useEqualiCurrentMap  = true;
     new bool:useWhitelistOutBlock = isWhitelistEnabled;
     new bool:useIsPrefixInMenu    = get_pcvar_num( cvar_voteUniquePrefixes ) != 0;
-    new bool:useMapIsTooRecent    = ( g_recentMapCount
-                                      && get_pcvar_num( cvar_recentMapsBannedNumber ) != 0 );
     new bool:isWhiteListOutBlock  = ( isWhitelistEnabled
                                       && get_pcvar_num( cvar_isWhiteListBlockOut ) != 0 );
+    new bool:useMapIsTooRecent    = ( g_recentListMapsArray
+                                      && ArraySize( g_recentListMapsArray )
+                                      && get_pcvar_num( cvar_recentMapsBannedNumber ) != 0 );
 
     /**
      * This variable is to avoid double blocking which lead to the algorithm corruption and errors.
@@ -5925,7 +5929,7 @@ stock debug_vote_map_selection( choiceIndex, mapName[], useWhitelistOutBlock, is
 
     LOGGER( 8, "%d. ( debug_vote_map_selection|while_%s ) mapName: %s, map_isInMenu: %d, is_theCurrentMap: %d, \
             map_isTooRecent: %d", currentMapIndex, type, mapName, map_isInMenu( mapName ), \
-            equali( g_currentMapName, mapName ), ( g_recentMapCount? map_isTooRecent( mapName ) : 0 ) )
+            equali( g_currentMapName, mapName ), map_isTooRecent( mapName ) )
 
     LOGGER( 8, "          isPrefixInMenu: %d, TrieKeyExists( blockedFillersMapTrie ): %d, \
             !TrieKeyExists( g_whitelistTrie ): %d", isPrefixInMenu( mapName ), \
@@ -9109,10 +9113,6 @@ stock isPrefixInMenu( map[] )
     return false;
 }
 
-/**
- * Everybody who call this, must to check whether the recent maps are loaded or not. To do so, just
- * do 'if(g_recentMapCount)'.
- */
 stock map_isTooRecent( map[] )
 {
     LOGGER( 256, "I AM ENTERING ON map_isTooRecent(1) map: %s", map )
@@ -9970,47 +9970,52 @@ public cmd_nominations( player_id )
 public cmd_listrecent( player_id )
 {
     LOGGER( 128, "I AM ENTERING ON cmd_listrecent(1) player_id: %d", player_id )
+    new recentMapCount;
 
-    switch( get_pcvar_num( cvar_banRecentStyle ) )
+    if( g_recentListMapsArray
+        && ( recentMapCount = ArraySize( g_recentListMapsArray ) ) > 0 )
     {
-        case 1:
+        switch( get_pcvar_num( cvar_banRecentStyle ) )
         {
-            new copiedChars;
-            new recentMapName    [ MAX_MAPNAME_LENGHT ];
-            new recentMapsMessage[ MAX_COLOR_MESSAGE ];
-
-            for( new mapIndex = 0; mapIndex < g_recentMapCount; ++mapIndex )
+            case 1:
             {
-                ArrayGetString( g_recentListMapsArray, mapIndex, recentMapName, charsmax( recentMapName ) );
+                new copiedChars;
+                new recentMapName    [ MAX_MAPNAME_LENGHT ];
+                new recentMapsMessage[ MAX_COLOR_MESSAGE ];
 
-                if( copiedChars < charsmax( recentMapsMessage ) )
+                for( new mapIndex = 0; mapIndex < recentMapCount; ++mapIndex )
                 {
-                    copiedChars += formatex( recentMapsMessage[ copiedChars ],
-                            charsmax( recentMapsMessage ) - copiedChars, ", %s", recentMapName );
+                    ArrayGetString( g_recentListMapsArray, mapIndex, recentMapName, charsmax( recentMapName ) );
+
+                    if( copiedChars < charsmax( recentMapsMessage ) )
+                    {
+                        copiedChars += formatex( recentMapsMessage[ copiedChars ],
+                                charsmax( recentMapsMessage ) - copiedChars, ", %s", recentMapName );
+                    }
+                    else
+                    {
+                        break;
+                    }
                 }
-                else
+
+                color_print( 0, "%L: %s", LANG_PLAYER, "GAL_MAP_RECENTMAPS", recentMapsMessage[ 2 ] );
+            }
+            case 2:
+            {
+                new recentMapName[ MAX_MAPNAME_LENGHT ];
+
+                for( new mapIndex = 0; mapIndex < recentMapCount && mapIndex < 5; ++mapIndex )
                 {
-                    break;
+                    ArrayGetString( g_recentListMapsArray, mapIndex, recentMapName, charsmax( recentMapName ) );
+
+                    color_print( 0, "%L ( %i ): %s",
+                            LANG_PLAYER, "GAL_MAP_RECENTMAP", mapIndex + 1, recentMapName );
                 }
             }
-
-            color_print( 0, "%L: %s", LANG_PLAYER, "GAL_MAP_RECENTMAPS", recentMapsMessage[ 2 ] );
-        }
-        case 2:
-        {
-            new recentMapName[ MAX_MAPNAME_LENGHT ];
-
-            for( new mapIndex = 0; mapIndex < g_recentMapCount && mapIndex < 5; ++mapIndex )
+            case 3:
             {
-                ArrayGetString( g_recentListMapsArray, mapIndex, recentMapName, charsmax( recentMapName ) );
-
-                color_print( 0, "%L ( %i ): %s",
-                        LANG_PLAYER, "GAL_MAP_RECENTMAP", mapIndex + 1, recentMapName );
+                showRecentMapsListMenu( player_id );
             }
-        }
-        case 3:
-        {
-            showRecentMapsListMenu( player_id );
         }
     }
 
@@ -10029,8 +10034,9 @@ public showRecentMapsListMenu( player_id )
     new menuOptionString[ 64 ];
 
     // Calculate how much pages there are available.
+    new recentMapCount    = ArraySize( g_recentListMapsArray );
     new currentPageNumber = g_recentMapsMenuPages[ player_id ];
-    new lastPageNumber    = GET_LAST_PAGE_NUMBER( g_recentMapCount, MAX_MENU_ITEMS_PER_PAGE )
+    new lastPageNumber    = GET_LAST_PAGE_NUMBER( recentMapCount, MAX_MENU_ITEMS_PER_PAGE )
 
     // To create the menu
     formatex( menuOptionString, charsmax( menuOptionString ),
@@ -10053,7 +10059,7 @@ public showRecentMapsListMenu( player_id )
     }
 
     // Add the menu items.
-    for( ; mapIndex < g_recentMapCount && itemsCount < MAX_MENU_ITEMS_PER_PAGE; ++mapIndex, ++itemsCount )
+    for( ; mapIndex < recentMapCount && itemsCount < MAX_MENU_ITEMS_PER_PAGE; ++mapIndex, ++itemsCount )
     {
         LOGGER( 4, "( showRecentMapsListMenu ) mapIndex: %d", mapIndex )
         ArrayGetString( g_recentListMapsArray, mapIndex, recentMapName, charsmax( recentMapName ) );
@@ -10063,7 +10069,7 @@ public showRecentMapsListMenu( player_id )
     }
 
     LOGGER( 4, "( showRecentMapsListMenu ) itemsCount: %d, mapIndex: %d", itemsCount, mapIndex )
-    addMenuMoreBackOptions( menu, player_id, menuOptionString, mapIndex < g_recentMapCount, currentPageNumber > 0, itemsCount );
+    addMenuMoreBackOptions( menu, player_id, menuOptionString, mapIndex < recentMapCount, currentPageNumber > 0, itemsCount );
 
     // To display the menu.
     menu_display( player_id, menu );
@@ -12643,7 +12649,8 @@ stock is_to_block_map_nomination( player_id, mapName[] )
 
     // players may not be able to nominate recently played maps
     else if( mapName[0]
-             && g_recentMapCount
+             && g_recentListMapsArray
+             && ArraySize( g_recentListMapsArray )
              && map_isTooRecent( mapName )
              && ( ( get_pcvar_num( cvar_recentNomMapsAllowance ) == 2
                     && !( get_user_flags( player_id ) & ADMIN_MAP ) )
