@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-619";
+new const PLUGIN_VERSION[] = "v4.2.0-621";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -2840,6 +2840,7 @@ stock configureTheRTVFeature( mapFilerFilePath[] )
         register_concmd( "gal_listmaps", "map_listAll" );
         register_clcmd( "say nominations", "cmd_nominations", 0, "- displays current nominations for next map" );
 
+        // Do not reload the prefixes.
         if( get_pcvar_num( cvar_nomPrefixes ) )
         {
             map_loadPrefixList( mapFilerFilePath );
@@ -5096,6 +5097,9 @@ public map_loadPrefixList( prefixesFilePath[] )
     LOGGER( 128, "I AM ENTERING ON map_loadPrefixList(1) g_mapPrefixCount: %d", g_mapPrefixCount )
     new prefixesFile;
 
+    // To clear old values in case of reloading.
+    g_mapPrefixCount = 0;
+
     formatex( prefixesFilePath, MAX_FILE_PATH_LENGHT - 1, "%s/prefixes.ini", g_configsDirPath );
     prefixesFile = fopen( prefixesFilePath, "rt" );
 
@@ -5106,13 +5110,14 @@ public map_loadPrefixList( prefixesFilePath[] )
         while( !feof( prefixesFile ) )
         {
             fgets( prefixesFile, loadedMapPrefix, charsmax( loadedMapPrefix ) );
+            trim( loadedMapPrefix );
 
             if( loadedMapPrefix[ 0 ]
+                && loadedMapPrefix[ 0 ] != ';'
                 && !equal( loadedMapPrefix, "//", 2 ) )
             {
-                if( g_mapPrefixCount <= MAX_PREFIX_COUNT )
+                if( g_mapPrefixCount < MAX_PREFIX_COUNT )
                 {
-                    trim( loadedMapPrefix );
                     copy( g_mapPrefixes[ g_mapPrefixCount++ ], charsmax( loadedMapPrefix ), loadedMapPrefix );
                 }
                 else
@@ -5124,6 +5129,7 @@ public map_loadPrefixList( prefixesFilePath[] )
                 }
             }
         }
+
         fclose( prefixesFile );
     }
     else
