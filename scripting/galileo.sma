@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-625";
+new const PLUGIN_VERSION[] = "v4.2.0-626";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -468,6 +468,9 @@ new cvar_coloredChatEnabled;
 
 #define LISTMAPS_USERID   0
 #define LISTMAPS_LAST_MAP 1
+
+#define COMMAND_VOTEMAP_ENABLED  0
+#define COMMAND_LISTMAPS_ENABLED 1
 
 #define RUNOFF_ENABLED 1
 #define RUNOFF_EXTEND  2
@@ -1521,6 +1524,11 @@ public plugin_init()
     cvar_serverMaxroundsRestart    = register_cvar( "gal_srv_maxrounds_restart"    , "0"    );
     cvar_serverWinlimitRestart     = register_cvar( "gal_srv_winlimit_restart"     , "0"    );
     cvar_serverFraglimitRestart    = register_cvar( "gal_srv_fraglimit_restart"    , "0"    );
+    cvar_endOfMapVote              = register_cvar( "gal_endofmapvote"             , "1"    );
+    cvar_endOfMapVoteExpiration    = register_cvar( "gal_endofmapvote_expiration"  , "0"    );
+    cvar_endOfMapVoteStart         = register_cvar( "gal_endofmapvote_start"       , "0"    );
+    cvar_nextMapChangeAnnounce     = register_cvar( "gal_nextmap_change"           , "0"    );
+    cvar_nextMapChangeVotemap      = register_cvar( "gal_nextmap_votemap"          , "0"    );
     cvar_voteMapChoiceCount        = register_cvar( "gal_vote_mapchoices"          , "5"    );
     cvar_voteMapChoiceNext         = register_cvar( "gal_vote_mapchoices_next"     , "0"    );
     cvar_voteDuration              = register_cvar( "gal_vote_duration"            , "30"   );
@@ -1528,11 +1536,6 @@ public plugin_init()
     cvar_runoffDuration            = register_cvar( "gal_runoff_duration"          , "20"   );
     cvar_runoffRatio               = register_cvar( "gal_runoff_ratio"             , "0.5"  );
     cvar_runoffMapchoices          = register_cvar( "gal_runoff_mapchoices"        , "2"    );
-    cvar_endOfMapVote              = register_cvar( "gal_endofmapvote"             , "1"    );
-    cvar_endOfMapVoteExpiration    = register_cvar( "gal_endofmapvote_expiration"  , "0"    );
-    cvar_endOfMapVoteStart         = register_cvar( "gal_endofmapvote_start"       , "0"    );
-    cvar_nextMapChangeAnnounce     = register_cvar( "gal_nextmap_change"           , "0"    );
-    cvar_nextMapChangeVotemap      = register_cvar( "gal_nextmap_votemap"          , "0"    );
     cvar_nomPlayerAllowance        = register_cvar( "gal_nom_playerallowance"      , "0"    );
     cvar_nomCleaning               = register_cvar( "gal_nom_cleaning"             , "1"    );
     cvar_nomMapFilePath            = register_cvar( "gal_nom_mapfile"              , "*"    );
@@ -1591,7 +1594,7 @@ public plugin_init()
     cvar_isToShowVoteCounter       = register_cvar( "gal_vote_show_counter"        , "0"    );
     cvar_voteAnnounceChoice        = register_cvar( "gal_vote_announcechoice"      , "1"    );
     cvar_isToAskForEndOfTheMapVote = register_cvar( "gal_endofmapvote_ask"         , "0"    );
-    cvar_cmdVotemap                = register_cvar( "gal_cmd_votemap"              , "0"    );
+    cvar_cmdVotemap                = register_cvar( "gal_cmd_votemap"              , "1"    );
     cvar_cmdListmaps               = register_cvar( "gal_cmd_listmaps"             , "1"    );
     cvar_listmapsPaginate          = register_cvar( "gal_listmaps_paginate"        , "10"   );
     cvar_recentMapsBannedNumber    = register_cvar( "gal_banrecent"                , "0"    );
@@ -1624,6 +1627,7 @@ public plugin_init()
     // This is a general pointer used for cvars not registered on the game.
     cvar_disabledValuePointer = register_cvar( "gal_disabled_value_pointer", "0", FCVAR_SPONLY );
 
+    // This are default behaviors independent of any setting to be enabled.
     configureEndGameCvars();
     nextmapPluginInit();
     timeleftPluginInit();
@@ -1636,6 +1640,7 @@ public plugin_init()
     register_dictionary( "adminvote.txt" );
     register_dictionary_colored( "galileo.txt" );
 
+    // This are default behaviors independent of any setting to be enabled.
     register_event( "HLTV", "new_round_event", "a", "1=0", "2=0");
     register_logevent( "game_commencing_event", 2, "0=World triggered", "1=Game_Commencing" );
     register_logevent( "team_win_event",        6, "0=Team" );
@@ -1643,12 +1648,7 @@ public plugin_init()
     register_logevent( "round_start_event",     2, "1=Round_Start" );
     register_logevent( "round_end_event",       2, "1=Round_End" );
 
-    register_clcmd( "say", "cmd_say", -1 );
-    register_clcmd( "say_team", "cmd_say", -1 );
-    register_clcmd( "votemap", "cmd_HL1_votemap" );
-    register_clcmd( "listmaps", "cmd_HL1_listmaps" );
-    register_clcmd( "gal_votemap", "cmd_voteMap", ADMIN_MAP );
-
+    // This are default behaviors independent of any setting to be enabled.
     register_concmd( "gal_startvote", "cmd_startVote", ADMIN_MAP );
     register_concmd( "gal_cancelvote", "cmd_cancelVote", ADMIN_MAP );
     register_concmd( "gal_changelevel", "cmd_changeLevel", ADMIN_MAP );
@@ -1941,6 +1941,17 @@ stock configureServerStart()
     new startAction;
 
     set_task( float( PERIODIC_CHECKING_INTERVAL ), "vote_manageEnd", _, _, _, "b" );
+
+    // If these two settings are disabled, there is not need to these handlers.
+    if( get_pcvar_num( cvar_rtvCommands )
+        || get_pcvar_num( cvar_nomPlayerAllowance ) )
+    {
+        register_clcmd( "say"     , "cmd_say", -1 );
+        register_clcmd( "say_team", "cmd_say", -1 );
+    }
+
+    if( get_pcvar_num( cvar_cmdVotemap  ) == COMMAND_VOTEMAP_ENABLED  ) register_clcmd( "votemap" , "cmd_HL1_votemap"  );
+    if( get_pcvar_num( cvar_cmdListmaps ) == COMMAND_LISTMAPS_ENABLED ) register_clcmd( "listmaps", "cmd_HL1_listmaps" );
 
     if( get_pcvar_num( cvar_gameCrashRecreationAction ) )
     {
@@ -2839,6 +2850,7 @@ stock configureTheRTVFeature( mapFilerFilePath[] )
 
     if( get_pcvar_num( cvar_nomPlayerAllowance ) )
     {
+        register_clcmd( "gal_votemap", "cmd_voteMap", ADMIN_MAP );
         register_concmd( "gal_listmaps", "map_listAll" );
         register_clcmd( "say nominations", "cmd_nominations", 0, "- displays current nominations for next map" );
 
@@ -11396,6 +11408,8 @@ public cmd_lookingForCrashes( player_id, level, cid )
 
 /**
  * Generic say handler to determine if we need to act on what was said.
+ *
+ * This need to be registered only if the RTV and Nominations are enabled.
  */
 public cmd_say( player_id )
 {
@@ -11424,8 +11438,10 @@ public cmd_say( player_id )
     // if the chat line has more than 2 words, we're not interested at all
     if( thirdWord[ 0 ] == '^0' )
     {
-        new userFlags = get_user_flags( player_id );
-        LOGGER( 4, "( cmd_say ) the thirdWord is empty." )
+        new userFlags          = get_user_flags( player_id );
+        new nomPlayerAllowance = get_pcvar_num( cvar_nomPlayerAllowance );
+
+        LOGGER( 4, "( cmd_say ) the thirdWord is empty, userFlags: %d", userFlags )
 
         strtolower( firstWord );
         strtolower( secondWord );
@@ -11436,7 +11452,8 @@ public cmd_say( player_id )
         {
             LOGGER( 4, "( cmd_say ) the secondWord is empty. Handling: '%s'.", firstWord )
 
-            if( userFlags & ADMIN_MAP
+            if( nomPlayerAllowance
+                && userFlags & ADMIN_MAP
                 && containi( firstWord, GAL_VOTEMAP_MENU_COMMAND ) > -1 )
             {
                 // Calculate how much pages there are available.
@@ -11461,12 +11478,13 @@ public cmd_say( player_id )
                 LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, vote_rock(1) chosen." )
                 return PLUGIN_HANDLED;
             }
-            else if( get_pcvar_num( cvar_nomPlayerAllowance ) )
+            else if( nomPlayerAllowance )
             {
                 if( sayHandlerForOneNomWords( player_id, firstWord ) ) return PLUGIN_HANDLED;
             }
         }
-        else if( userFlags & ADMIN_MAP
+        else if( nomPlayerAllowance
+                 && userFlags & ADMIN_MAP
                  && equali( firstWord, GAL_VOTEMAP_MENU_COMMAND ) )
         {
             // Calculate how much pages there are available.
@@ -11479,7 +11497,7 @@ public cmd_say( player_id )
             LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, voteMapMenuBuilder(1) chosen." )
             return PLUGIN_HANDLED;
         }
-        else if( get_pcvar_num( cvar_nomPlayerAllowance ) )  // "say <nominate|nom|cancel> <map>"
+        else if( nomPlayerAllowance )  // "say <nominate|nom|cancel> <map>"
         {
             if( sayHandlerForTwoNomWords( player_id, firstWord, secondWord ) ) return PLUGIN_HANDLED;
         }
