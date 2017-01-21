@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-623";
+new const PLUGIN_VERSION[] = "v4.2.0-624";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -4613,8 +4613,28 @@ public game_commencing_event()
 {
     LOGGER( 128, "I AM ENTERING ON game_commencing_event(0)" )
 
+#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
+    new playersCount;
+    new players[ MAX_PLAYERS ];
+
+    get_players( players, playersCount, "dh" );
+
+    if( playersCount )
+    {
+        LOGGER( 1, "^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n" )
+        LOGGER( 1, "There are bots on the server!" )
+        LOGGER( 1, "^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n" )
+    }
+    else
+    {
+        g_isTimeToResetGame   = true;
+        g_isTimeToResetRounds = true;
+    }
+
+#else
     g_isTimeToResetGame   = true;
     g_isTimeToResetRounds = true;
+#endif
 
     cancelVoting( true );
 }
@@ -4648,6 +4668,7 @@ stock saveRoundEnding( bool:roundEndStatus[] )
     roundEndStatus[ 2 ] = g_isThePenultGameRound;
     roundEndStatus[ 3 ] = g_isToChangeMapOnVotingEnd;
     roundEndStatus[ 4 ] = g_isTheRoundEndWhileVoting;
+    roundEndStatus[ 5 ] = g_isGameEndingTypeContextSaved;
 }
 
 stock restoreRoundEnding( bool:roundEndStatus[] )
@@ -4655,11 +4676,12 @@ stock restoreRoundEnding( bool:roundEndStatus[] )
     LOGGER( 128, "I AM ENTERING ON restoreRoundEnding(1) roundEndStatus: %d, %d, %d, %d", \
             roundEndStatus[ 0 ], roundEndStatus[ 1 ], roundEndStatus[ 2 ], roundEndStatus[ 3 ] )
 
-    g_isTheLastGameRound       = roundEndStatus[ 0 ];
-    g_isTimeToRestart          = roundEndStatus[ 1 ];
-    g_isThePenultGameRound     = roundEndStatus[ 2 ];
-    g_isToChangeMapOnVotingEnd = roundEndStatus[ 3 ];
-    g_isTheRoundEndWhileVoting = roundEndStatus[ 4 ];
+    g_isTheLastGameRound           = roundEndStatus[ 0 ];
+    g_isTimeToRestart              = roundEndStatus[ 1 ];
+    g_isThePenultGameRound         = roundEndStatus[ 2 ];
+    g_isToChangeMapOnVotingEnd     = roundEndStatus[ 3 ];
+    g_isTheRoundEndWhileVoting     = roundEndStatus[ 4 ];
+    g_isGameEndingTypeContextSaved = roundEndStatus[ 5 ];
 }
 
 /**
@@ -15607,6 +15629,10 @@ public timeRemain()
         // Temporarily disables the `gal_nextmap_votemap` feature, as we are not testing it right now.
         set_pcvar_num( cvar_nextMapChangeVotemap, 0 );
 
+        // Set the voting time accordantly to what is expected on the tests.
+        set_pcvar_num( cvar_voteDuration  , 30 );
+        set_pcvar_num( cvar_runoffDuration, 20 );
+
         new chainDelay = 2 + 2 + 1 + 1 + 1;
         new test_id    = register_test( chainDelay, "test_isMapExtensionAvowed_case1" );
 
@@ -15677,7 +15703,7 @@ public timeRemain()
         tryToSetGameModCvarFloat( cvar_mp_timelimit,
                 ( get_pcvar_float( cvar_mp_timelimit ) * 60
                   - secondsLeft
-                  + START_VOTEMAP_MAX_TIME + PERIODIC_CHECKING_INTERVAL )
+                  + START_VOTEMAP_MAX_TIME + PERIODIC_CHECKING_INTERVAL - 5 )
                 / 60 );
 
         LOGGER( 32, "( test_endOfMapVotingStart_case1 ) timelimit: %d", floatround( get_pcvar_float( cvar_mp_timelimit ) * 60 ) )
@@ -17358,6 +17384,8 @@ public timeRemain()
     new test_nomCleaning;
     new test_serverMoveCursor;
     new test_mp_fraglimitCvarSupport;
+    new test_voteDuration;
+    new test_runoffDuration;
 
     new test_nomMapFilePath           [ MAX_FILE_PATH_LENGHT ];
     new test_voteMapFilePath          [ MAX_FILE_PATH_LENGHT ];
@@ -17427,6 +17455,8 @@ public timeRemain()
             test_nomCleaning             = get_pcvar_num( cvar_nomCleaning            );
             test_serverMoveCursor        = get_pcvar_num( cvar_serverMoveCursor       );
             test_mp_fraglimitCvarSupport = get_pcvar_num( cvar_fragLimitSupport       );
+            test_voteDuration            = get_pcvar_num( cvar_voteDuration           );
+            test_runoffDuration          = get_pcvar_num( cvar_runoffDuration         );
         }
     }
 
@@ -17442,7 +17472,7 @@ public timeRemain()
         if( g_test_isTheUnitTestsRunning )
         {
             map_restoreEndGameCvars();
-            g_test_isTheUnitTestsRunning   = false;
+            g_test_isTheUnitTestsRunning = false;
 
             g_originalTimelimit = 0.0;
             g_originalMaxRounds = 0;
@@ -17481,6 +17511,8 @@ public timeRemain()
             set_pcvar_num( cvar_nomCleaning            , test_nomCleaning             );
             set_pcvar_num( cvar_serverMoveCursor       , test_serverMoveCursor        );
             set_pcvar_num( cvar_fragLimitSupport       , test_mp_fraglimitCvarSupport );
+            set_pcvar_num( cvar_voteDuration           , test_voteDuration            );
+            set_pcvar_num( cvar_runoffDuration         , test_runoffDuration          );
         }
 
         // Clear tests results.
