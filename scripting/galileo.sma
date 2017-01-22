@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-633";
+new const PLUGIN_VERSION[] = "v4.2.0-634";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -86,7 +86,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-633";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+2+4+16
+#define DEBUG_LEVEL 1+16+32
 
 
 /**
@@ -287,6 +287,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-633";
         test_GET_MAP_NAME_load();
         test_GET_MAP_INFO_load();
         test_SortCustomSynced2D();
+        test_configureTheNextMap();
     }
 
     /**
@@ -317,6 +318,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-633";
             // LOGGER( 1, "Current i is: %d", i )
         }
 
+        test_configureTheNextMap();
         // test_loadCurrentBlackList_cases();
         // test_SortCustomSynced2D();
         // test_GET_MAP_INFO_load();
@@ -330,7 +332,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-633";
         // test_getUniqueRandomInt_load();
         // test_getUniqueRandomBasic_load();
         // test_nominateAndUnnominate_load();
-        test_loadVoteChoices_cases();
+        // test_loadVoteChoices_cases();
         //test_colorChatLimits( player_id );
         //test_unnominatedDisconnected( player_id );
         //test_announceVoteBlockedMap_a();
@@ -344,6 +346,16 @@ new const PLUGIN_VERSION[] = "v4.2.0-633";
      * Accept all maps as valid while running the unit tests.
      */
     #define IS_MAP_VALID(%1) ( isAllowedValidMapByTheUnitTests(%1) || !g_test_isToUseStrictValidMaps && IS_MAP_VALID_BSP( %1 ) )
+
+    /**
+     * Shorts the error message line. It requires the variable `errorMessage[ MAX_LONG_STRING ]`
+     * to be declared before it.
+     *
+     * Usage example:
+     *
+     *      FAILED "The expected result must to be %d, instead of %d.", expected, test_result );
+     */
+    #define FAILED formatex( errorMessage, charsmax( errorMessage ),
 
     /**
      * Call the internal function to perform its task and stop the current test execution to avoid
@@ -536,6 +548,7 @@ new cvar_coloredChatEnabled;
 #define IS_TO_LOAD_THE_FIRST_MAP_SERIES 1
 #define IS_TO_LOAD_ALL_THE_MAP_SERIES   2
 #define IS_TO_LOAD_EXPLICIT_MAP_SERIES  4
+#define IS_TO_LOAD_ALTERNATE_MAP_SERIES 8
 
 #define SOUND_GET_READY_TO_CHOOSE 1
 #define SOUND_COUNTDOWN           2
@@ -953,8 +966,8 @@ new __g_getMapNameRightToken[ MAX_MAPNAME_LENGHT ];
  */
 #define IS_IT_A_VALID_MAP_LINE(%1) \
     ( %1[ 0 ] \
-      && !equal( %1, "//", 2 ) \
-      && !equal( %1, ";", 1 ) )
+      && %1[ 1 ] != ';' \
+      && !equal( %1, "//", 2 ) )
 
 /**
  * General handler to assist object property applying and keep the code clear. This only need
@@ -13628,6 +13641,20 @@ stock is_map_valid_bsp_check( mapName[] )
     return false;
 }
 
+stock printUntilTheNthLoadedMap( mapIndex, mapName[] )
+{
+    // There is not point in adding the entry statement to this function as its purpose is only to
+    // print few lines as possible.
+    LOGGER( 0, "I AM ENTERING ON loadMapFileSeriesListArray(2)" )
+
+    if( mapIndex < MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST )
+    {
+        LOGGER( 4, "( printUntilTheNthLoadedMap ) %d, loadedMapLine: %s", mapIndex, mapName )
+    }
+
+    return 0;
+}
+
 stock printDynamicArrayMaps( Array:populatedArray, debugLevel )
 {
     LOGGER( debugLevel, "I AM ENTERING ON printDynamicArrayMaps(1) array id: %d", populatedArray )
@@ -13746,6 +13773,8 @@ public nextmapPluginInit()
 }
 
 /**
+ * Increments by 1, the global variable 'g_nextMapCyclePosition', or set its value to 1.
+ *
  * If the map cycles are loaded on the plugin_init(0), and the setting `gal_srv_move_cursor`, is
  * loaded only at the forward plugin_cfg(0). This ways we need to load both and discard the one
  * which was not necessary later when the settings are loaded on the plugin_cfg(0).
@@ -13797,7 +13826,7 @@ stock getNextMapByPosition( Array:mapcycleFileListArray, nextMapName[], &nextMap
             LOGGER( 1, "WARNING, getNextMapByPosition: The Whitelist feature is blocking all your map cycle maps!" )
             log_amx(   "WARNING, getNextMapByPosition: The Whitelist feature is blocking all your map cycle maps!" );
 
-            goto failed;
+            goto setTheCurrentMap;
         }
     }
     else
@@ -13805,7 +13834,7 @@ stock getNextMapByPosition( Array:mapcycleFileListArray, nextMapName[], &nextMap
         LOGGER( 1, "WARNING, getNextMapByPosition: No valid maps found on your map cycle! mapcycleFileListArray: %d", mapcycleFileListArray )
         log_amx(   "WARNING, getNextMapByPosition: No valid maps found on your map cycle! mapcycleFileListArray: %d", mapcycleFileListArray );
 
-        failed:
+        setTheCurrentMap:
         copy( nextMapName, MAX_MAPNAME_LENGHT - 1, g_currentMapName );
     }
 
@@ -13815,7 +13844,7 @@ stock getNextMapByPosition( Array:mapcycleFileListArray, nextMapName[], &nextMap
     LOGGER( 4, "    ( getNextMapByPosition ) nextMapName: %s, nextMapCyclePosition: %d", nextMapName, nextMapCyclePosition )
 }
 
-stock getLastNextMapFromServerStart( Array:mapcycleFileListArray, nextMapName[] )
+stock getLastNextMapFromServerStart( Array:mapcycleFileListArray, nextMapName[], &nextMapCyclePosition )
 {
     LOGGER( 128, "I AM ENTERING ON getLastNextMapFromServerStart(2)" )
 
@@ -13836,8 +13865,7 @@ stock getLastNextMapFromServerStart( Array:mapcycleFileListArray, nextMapName[] 
     }
     else
     {
-        // Increments by 1, the global variable 'g_nextMapCyclePosition', or set its value to 1.
-        getNextMapByPosition( mapcycleFileListArray, g_nextMapName, g_nextMapCyclePosition );
+        getNextMapByPosition( mapcycleFileListArray, g_nextMapName, nextMapCyclePosition );
     }
 }
 
@@ -13852,6 +13880,11 @@ stock loadTheNextMapFile( mapcycleFilePath[], &Array:mapcycleFileListArray, &Tri
     LOGGER( 0, "", printDynamicArrayMaps( mapcycleFileListArray, 256 ) )
 }
 
+/**
+ * If we were playing a map series map `cs_map1`, and due an RTV voting was started a new series as
+ * `de_map1`, we need to set the next map as `de_map2` instead of `cs_map1`. Also, after the series
+ * to be finished we must to be able to return to the next map after the original series `cs_map1`.
+ */
 stock configureTheNextMapSetttings( currentMapcycleFilePath[] )
 {
     LOGGER( 128, "I AM ENTERING ON configureTheNextMapSetttings(1)" )
@@ -13860,11 +13893,74 @@ stock configureTheNextMapSetttings( currentMapcycleFilePath[] )
     get_pcvar_string( cvar_mapcyclefile, currentMapcycleFilePath, MAX_MAPNAME_LENGHT - 1 );
     loadTheNextMapFile( currentMapcycleFilePath, g_mapcycleFileListArray, g_mapcycleFileListTrie );
 
-    getNextMapLocalInfoToken( currentMapcycleFilePath, g_nextMapCyclePosition );
-    getLastNextMapFromServerStart( g_mapcycleFileListArray, g_nextMapName );
+    if( areWeRunningAnAlternateSeries( g_currentMapName, g_nextMapName ) )
+    {
+        // Here we do not update the `g_nextMapCyclePosition` to the next map beyond the last valid serie,
+        // to be able to return to follow the map cycle when the new series is over.
+        moveTheCursorToTheLastMap( g_mapcycleFileListArray, g_nextMapCyclePosition );
+    }
+    else
+    {
+        getNextMapLocalInfoToken( currentMapcycleFilePath, g_nextMapCyclePosition );
+        getLastNextMapFromServerStart( g_mapcycleFileListArray, g_nextMapName, g_nextMapCyclePosition );
+    }
 
     setTheNextMapCvarFlag( g_nextMapName );
     saveCurrentMapCycleSetting( currentMapcycleFilePath, g_nextMapCyclePosition );
+}
+
+/**
+ * Move the current map cycle position to the end of the current series. If it is already on the end
+ * or there is not series for the current position, it does nothing, i.e., get stuck where it is now.
+ */
+stock moveTheCursorToTheLastMap( Array:mapcycleFileListArray, &nextMapCyclePosition )
+{
+    new currentSerie;
+
+    new mapNameDirt [ MAX_MAPNAME_LENGHT ];
+    new mapNameClean[ MAX_MAPNAME_LENGHT ];
+
+    getNextMapByPosition( mapcycleFileListArray, mapNameClean, nextMapCyclePosition );
+
+    copy( mapNameDirt, charsmax( mapNameDirt ), mapNameClean );
+    currentSerie = getTheCurrentSerieForTheMap( mapNameDirt, mapNameClean );
+
+    while( isThereNextMapOnTheSerie( currentSerie, mapNameClean, mapNameDirt ) )
+    {
+        nextMapCyclePosition++;
+        currentSerie++;
+    }
+}
+
+/**
+ * Start following the series by its dynamically generated name instead of using the virtual map cycle
+ * file list.
+ *
+ * Returns true when are on a series and should load the next map on it, and false when the series
+ * is over by getting on its last map.
+ */
+stock bool:areWeRunningAnAlternateSeries( currentMapName[], nextMapName[] )
+{
+    LOGGER( 128, "I AM ENTERING ON areWeRunningAnAlternateSeries(0)" )
+
+    if( get_pcvar_num( cvar_serverMoveCursor ) & IS_TO_LOAD_ALTERNATE_MAP_SERIES )
+    {
+        new currentSerie;
+
+        new mapNameDirt [ MAX_MAPNAME_LENGHT ];
+        new mapNameClean[ MAX_MAPNAME_LENGHT ];
+
+        copy( mapNameDirt, charsmax( mapNameDirt ), currentMapName );
+        copy( mapNameClean, charsmax( mapNameClean ), currentMapName );
+
+        currentSerie = getTheCurrentSerieForTheMap( mapNameDirt, mapNameClean );
+
+        LOGGER( 1, "    ( areWeRunningAnAlternateSeries ) Returning isThereNextMapOnTheSerie(3)" )
+        return isThereNextMapOnTheSerie( currentSerie, mapNameClean, nextMapName );
+    }
+
+    LOGGER( 1, "    ( areWeRunningAnAlternateSeries ) Returning false" )
+    return false;
 }
 
 stock getNextMapLocalInfoToken( currentMapcycleFilePath[], &nextMapCyclePosition )
@@ -14220,7 +14316,7 @@ stock getTheCurrentSerieForTheMap( mapNameDirt[], mapNameClean[] )
     return 0;
 }
 
-stock isThereNextMapOnTheSerie( &currentSerie, mapNameClean[], nextMapName[] )
+stock bool:isThereNextMapOnTheSerie( &currentSerie, mapNameClean[], nextMapName[] )
 {
     LOGGER( 256, "I AM ENTERING ON isThereNextMapOnTheSerie(3) mapNameClean: %s", mapNameClean )
     new currentForwardLook;
@@ -14312,20 +14408,6 @@ stock loadTheCursorOnMapSeries( Array:mapArray, Trie:mapTrie, Trie:loadedMapSeri
             mapCount++;
         }
     }
-}
-
-stock printUntilTheNthLoadedMap( mapIndex, mapName[] )
-{
-    // There is not point in adding the entry statement to this function as its purpose is only to
-    // print few lines as possible.
-    LOGGER( 0, "I AM ENTERING ON loadMapFileSeriesListArray(2)" )
-
-    if( mapIndex < MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST )
-    {
-        LOGGER( 4, "( printUntilTheNthLoadedMap ) %d, loadedMapLine: %s", mapIndex, mapName )
-    }
-
-    return 0;
 }
 
 stock loadMapFileSeriesListArray( mapFileDescriptor, Array:mapArray, Trie:mapTrie, Trie:loadedMapSeriesTrie, cursorOnMapSeries )
@@ -17302,50 +17384,68 @@ public timeRemain()
      */
     stock test_SortCustomSynced2D()
     {
-        new expected    [ MAX_MAPNAME_LENGHT ];
-        new errorMessage[ MAX_LONG_STRING    ];
-
-        new position;
-        new test_id = test_registerSeriesNaming( "test_SortCustomSynced2D", 'd' );
-
-        new votingMaps[ MAX_OPTIONS_IN_VOTE ][ MAX_MAPNAME_LENGHT ];
-        new votingInfo[ MAX_OPTIONS_IN_VOTE ][ MAX_MAPNAME_LENGHT ];
+        new votingMaps [ MAX_OPTIONS_IN_VOTE ][ MAX_MAPNAME_LENGHT ];
+        new votingInfos[ MAX_OPTIONS_IN_VOTE ][ MAX_MAPNAME_LENGHT ];
 
         copy( votingMaps[ 0 ], charsmax( votingMaps[] ), "de_dust2" );
         copy( votingMaps[ 1 ], charsmax( votingMaps[] ), "de_dust1" );
         copy( votingMaps[ 2 ], charsmax( votingMaps[] ), "de_nuke"  );
-        copy( votingMaps[ 3 ], charsmax( votingMaps[] ), "cs_nuke"  );
+        copy( votingMaps[ 3 ], charsmax( votingMaps[] ), "cs_nuke2" );
 
-        copy( votingInfo[ 0 ], charsmax( votingInfo[] ), " []"         );
-        copy( votingInfo[ 1 ], charsmax( votingInfo[] ), "() de_dust1" );
-        copy( votingInfo[ 2 ], charsmax( votingInfo[] ), "de_nuke"     );
-        copy( votingInfo[ 3 ], charsmax( votingInfo[] ), "[ cs_nuke ]" );
+        copy( votingInfos[ 0 ], charsmax( votingInfos[] ), " []"         );
+        copy( votingInfos[ 1 ], charsmax( votingInfos[] ), "() de_dust1" );
+        copy( votingInfos[ 2 ], charsmax( votingInfos[] ), "de_nuke"     );
+        copy( votingInfos[ 3 ], charsmax( votingInfos[] ), "[ cs_nuke ]" );
 
-        SortCustomSynced2D( votingMaps, votingInfo, 4 );
+        SortCustomSynced2D( votingMaps, votingInfos, 4 );
 
-        position = 0;
-        copy( expected, charsmax( expected ), "cs_nuke" );
-        formatex( errorMessage, charsmax( errorMessage ),
-                 "The position %d must to be %s, instead of %s.", position, expected, votingMaps[ position ] );
-        SET_TEST_FAILURE( test_id, !equali( expected, votingMaps[ position ] ), errorMessage )
+        test_SortCustomSynced2D_case( 0, "cs_nuke2" , "[ cs_nuke ]", votingMaps, votingInfos ); // Case 1/2
+        test_SortCustomSynced2D_case( 1, "de_dust1", "() de_dust1" , votingMaps, votingInfos ); // Case 3/4
+        test_SortCustomSynced2D_case( 2, "de_dust2", " []"         , votingMaps, votingInfos ); // Case 5/6
+        test_SortCustomSynced2D_case( 3, "de_nuke" , "de_nuke"     , votingMaps, votingInfos ); // Case 7/8
+    }
 
-        position = 1;
-        copy( expected, charsmax( expected ), "de_dust1" );
-        formatex( errorMessage, charsmax( errorMessage ),
-                 "The position %d must to be %s, instead of %s.", position, expected, votingMaps[ position ] );
-        SET_TEST_FAILURE( test_id, !equali( expected, votingMaps[ position ] ), errorMessage )
+    /**
+     * Create one case test for the stock SortCustomSynced2D(1) based on its parameters passed
+     * by the test_SortCustomSynced2D(0) loader function.
+     */
+    stock test_SortCustomSynced2D_case( expectedPosition, expectedMap[], expectedInfo[], votingMaps[][], votingInfos[][] )
+    {
+        new test_id;
+        new errorMessage[ MAX_LONG_STRING ];
 
-        position = 2;
-        copy( expected, charsmax( expected ), "de_dust2" );
-        formatex( errorMessage, charsmax( errorMessage ),
-                 "The position %d must to be %s, instead of %s.", position, expected, votingMaps[ position ] );
-        SET_TEST_FAILURE( test_id, !equali( expected, votingMaps[ position ] ), errorMessage )
+        test_id = test_registerSeriesNaming( "test_SortCustomSynced2D", 'd' );
 
-        position = 3;
-        copy( expected, charsmax( expected ), "de_nuke" );
-        formatex( errorMessage, charsmax( errorMessage ),
-                 "The position %d must to be %s, instead of %s.", position, expected, votingMaps[ position ] );
-        SET_TEST_FAILURE( test_id, !equali( expected, votingMaps[ position ] ), errorMessage )
+        FAILED "The expectedPosition %d must to be %s, instead of %s.", expectedPosition, expectedMap, votingMaps[ expectedPosition ] );
+        SET_TEST_FAILURE( test_id, !equali( expectedMap, votingMaps[ expectedPosition ] ), errorMessage )
+
+        test_id = test_registerSeriesNaming( "test_SortCustomSynced2D", 'd' );
+
+        FAILED "The expectedPosition %d must to be %s, instead of %s.", expectedPosition, expectedInfo, votingInfos[ expectedPosition ] );
+        SET_TEST_FAILURE( test_id, !equali( expectedInfo, votingInfos[ expectedPosition ] ), errorMessage )
+    }
+
+    /**
+     * Tests if the function configureTheNextMapSetttings(1) is properly setting the next map.
+     */
+    stock test_configureTheNextMap()
+    {
+
+    }
+
+    /**
+     * Create one case test for the stock configureTheNextMapSetttings(1) based on its parameters passed
+     * by the test_configureTheNextMap(0) loader function.
+     */
+    stock test_configureTheNextMap_case()
+    {
+        new test_id;
+        new errorMessage[ MAX_LONG_STRING ];
+
+        test_id = test_registerSeriesNaming( "test_configureTheNextMap", 'a' );
+
+        FAILED "The expected must to be %d, instead of %d.", expected, test_result );
+        SET_TEST_FAILURE( test_id, expected != test_result, errorMessage )
     }
 
 
@@ -17353,6 +17453,33 @@ public timeRemain()
 
     // Here below to start the manual Unit Tests
     // ###########################################################################################
+
+    /**
+     * Tests if the function functionNameExample(1) is properly setting the next map.
+     */
+    stock test_functionNameExample()
+    {
+        // This is a model test loader
+        test_functionNameExample_case( .expected=5 ) // Case 1
+    }
+
+    /**
+     * Create one case test for the stock functionNameExample(1) based on its parameters passed
+     * by the test_functionNameExample(0) loader function.
+     */
+    stock test_functionNameExample_case( expected )
+    {
+        new test_id;
+        new errorMessage[ MAX_LONG_STRING ];
+
+        test_id = test_registerSeriesNaming( "test_functionNameExample", 'a' );
+
+        // This is a model test case
+        test_result = someTesting();
+
+        FAILED "The expected result must to be %d, instead of %d.", expected, test_result );
+        SET_TEST_FAILURE( test_id, expected != test_result, errorMessage )
+    }
 
     /**
      * Calls the 'test_loadVoteChoices_load(1)' series case 'a' for manual testing, and seeing the
