@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-636";
+new const PLUGIN_VERSION[] = "v4.2.0-637";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -281,9 +281,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-636";
         test_convertNumericBase_load();
         test_setCorrectMenuPage_load();
         test_strictValidMapsTrie_load();
-        test_populateListOnSeries_load1();
-        test_populateListOnSeries_load2();
-        test_populateListOnSeries_load3();
+        test_populateListOnSeries_load();
         test_GET_MAP_NAME_load();
         test_GET_MAP_INFO_load();
         test_SortCustomSynced2D();
@@ -318,14 +316,12 @@ new const PLUGIN_VERSION[] = "v4.2.0-636";
             // LOGGER( 1, "Current i is: %d", i )
         }
 
-        test_configureTheNextMap();
+        // test_configureTheNextMap();
         // test_loadCurrentBlackList_cases();
         // test_SortCustomSynced2D();
         // test_GET_MAP_INFO_load();
         // test_GET_MAP_NAME_load();
-        // test_populateListOnSeries_load1();
-        // test_populateListOnSeries_load2();
-        // test_populateListOnSeries_load3();
+        test_populateListOnSeries_load();
         // test_setCorrectMenuPage_load();
         // test_convertNumericBase_load();
         // test_whatGameEndingTypeIt_load();
@@ -13872,12 +13868,16 @@ stock getLastNextMapFromServerStart( Array:mapcycleFileListArray, nextMapName[],
 stock loadTheNextMapFile( mapcycleFilePath[], &Array:mapcycleFileListArray, &Trie:mapcycleFileListTrie )
 {
     LOGGER( 128, "I AM ENTERING ON loadTheNextMapFile(3)" )
+    new mapCount;
 
     TRY_TO_CLEAN( TrieClear, mapcycleFileListTrie, TrieCreate() )
     TRY_TO_CLEAN( ArrayClear, mapcycleFileListArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
 
-    map_populateListOnSeries( mapcycleFileListArray, mapcycleFileListTrie, mapcycleFilePath );
+    mapCount = map_populateListOnSeries( mapcycleFileListArray, mapcycleFileListTrie, mapcycleFilePath );
     LOGGER( 0, "", printDynamicArrayMaps( mapcycleFileListArray, 256 ) )
+
+    LOGGER( 1, "    ( loadTheNextMapFile ) Returning mapCount: %d", mapCount )
+    return mapCount;
 }
 
 /**
@@ -13888,10 +13888,11 @@ stock loadTheNextMapFile( mapcycleFilePath[], &Array:mapcycleFileListArray, &Tri
 stock configureTheNextMapSetttings( currentMapcycleFilePath[] )
 {
     LOGGER( 128, "I AM ENTERING ON configureTheNextMapSetttings(1)" )
+    new mapCount;
 
     // Load the full map cycle if, considering whether the feature `gal_srv_move_cursor` is enabled or not.
     get_pcvar_string( cvar_mapcyclefile, currentMapcycleFilePath, MAX_MAPNAME_LENGHT - 1 );
-    loadTheNextMapFile( currentMapcycleFilePath, g_mapcycleFileListArray, g_mapcycleFileListTrie );
+    mapCount = loadTheNextMapFile( currentMapcycleFilePath, g_mapcycleFileListArray, g_mapcycleFileListTrie );
 
     if( areWeRunningAnAlternateSeries( g_currentMapName, g_nextMapName ) )
     {
@@ -13907,6 +13908,9 @@ stock configureTheNextMapSetttings( currentMapcycleFilePath[] )
 
     setTheNextMapCvarFlag( g_nextMapName );
     saveCurrentMapCycleSetting( currentMapcycleFilePath, g_nextMapCyclePosition );
+
+    LOGGER( 1, "    ( configureTheNextMapSetttings ) Returning mapCount: %d", mapCount )
+    return mapCount;
 }
 
 /**
@@ -17087,21 +17091,34 @@ public timeRemain()
         SET_TEST_FAILURE( test_id, TrieKeyExists( g_test_strictValidMapsTrie, mapName ) == isNotToBe, errorMessage )
     }
 
+    stock test_populateListOnSeries_load()
+    {
+        test_populateListOnSeries_load1();
+        test_populateListOnSeries_load2();
+        test_populateListOnSeries_load3();
+    }
+
     /**
      * To prepare the test_populateListOnSeries_load1(0) tests files and settings.
      */
-    stock test_populateListOnSeries_build( cursorOnMapSeries, Array:populatedArray, Trie:populatedTrie, expectedSize )
+    stock test_populateListOnSeries_build( Array:populatedArray, Trie:populatedTrie, expectedSize, bool:isFull )
     {
+        new mapCount;
+        new errorMessage[ MAX_LONG_STRING ];
+
         new test_id = test_registerSeriesNaming( "test_populateListOnSeries", 'e' );
 
         helper_mapFileListLoad( false, g_test_voteMapFilePath, "de_dust1", "de_dust2", "de_nuke", "de_dust2" );
         helper_loadStrictValidMapsTrie( "de_dust1", "de_dust2", "de_dust5", "de_dust6", "de_nuke" );
 
-        // Set the settings accordantly to what is being tests on this Unit Test.
-        set_pcvar_num( cvar_serverMoveCursor, cursorOnMapSeries );
-
-        new errorMessage[ MAX_LONG_STRING ];
-        new mapCount = map_populateListOnSeries( populatedArray, populatedTrie, g_test_voteMapFilePath );
+        if( isFull )
+        {
+            mapCount = configureTheNextMapSetttings( errorMessage );
+        }
+        else
+        {
+            mapCount = map_populateListOnSeries( populatedArray, populatedTrie, g_test_voteMapFilePath );
+        }
 
         for( new index = 0; index < ArraySize( populatedArray ); index++ )
         {
@@ -17116,13 +17133,16 @@ public timeRemain()
     /**
      * Tests if the function map_populateListOnSeries(3) is properly loading the maps series.
      */
-    stock test_populateListOnSeries_load1()
+    stock test_populateListOnSeries_load1( bool:isFull=false )
     {
         new Trie:populatedTrie   = TrieCreate();
         new Array:populatedArray = ArrayCreate( MAX_MAPNAME_LENGHT );
 
+        // Set the settings accordantly to what is being tests on this Unit Test.
+        set_pcvar_num( cvar_serverMoveCursor, 1 );
+
         g_test_isToUseStrictValidMaps = true;
-        test_populateListOnSeries_build( 1, populatedArray, populatedTrie, 7 ); // Case 1
+        test_populateListOnSeries_build( populatedArray, populatedTrie, .expectedSize=7, .isFull=isFull ); // Case 1
 
         test_populateListOnSeries( populatedArray, {0}    , "de_dust1", false ); // Case 2
         test_populateListOnSeries( populatedArray, {1,4,6}, "de_dust2", false ); // Case 3
@@ -17144,13 +17164,16 @@ public timeRemain()
     /**
      * Tests if the function map_populateListOnSeries(3) is properly loading the maps series.
      */
-    stock test_populateListOnSeries_load2()
+    stock test_populateListOnSeries_load2( bool:isFull=false )
     {
         new Trie:populatedTrie   = TrieCreate();
         new Array:populatedArray = ArrayCreate( MAX_MAPNAME_LENGHT );
 
+        // Set the settings accordantly to what is being tests on this Unit Test.
+        set_pcvar_num( cvar_serverMoveCursor, 2 );
+
         g_test_isToUseStrictValidMaps = true;
-        test_populateListOnSeries_build( 2, populatedArray, populatedTrie, 11 ); // Case 11
+        test_populateListOnSeries_build( populatedArray, populatedTrie, .expectedSize=11, .isFull=isFull ); // Case 11
 
         test_populateListOnSeries( populatedArray, {0}     , "de_dust1", false ); // Case 12
         test_populateListOnSeries( populatedArray, {1,4, 8}, "de_dust2", false ); // Case 13
@@ -17172,24 +17195,27 @@ public timeRemain()
     /**
      * Tests if the function map_populateListOnSeries(3) is properly loading the maps series.
      */
-    stock test_populateListOnSeries_load3()
+    stock test_populateListOnSeries_load3( bool:isFull=false )
     {
         new Trie:populatedTrie   = TrieCreate();
         new Array:populatedArray = ArrayCreate( MAX_MAPNAME_LENGHT );
 
+        // Set the settings accordantly to what is being tests on this Unit Test.
+        set_pcvar_num( cvar_serverMoveCursor, 6 );
+
         g_test_isToUseStrictValidMaps = true;
-        test_populateListOnSeries_build( 6, populatedArray, populatedTrie, 7 ); // Case 1
+        test_populateListOnSeries_build( populatedArray, populatedTrie, .expectedSize=7, .isFull=isFull ); // Case 21
 
-        test_populateListOnSeries( populatedArray, {0}    , "de_dust1", false ); // Case 2
-        test_populateListOnSeries( populatedArray, {1,4,6}, "de_dust2", false ); // Case 3
-        test_populateListOnSeries( populatedArray, {2}    , "de_dust5", false ); // Case 4
-        test_populateListOnSeries( populatedArray, {3}    , "de_dust6", false ); // Case 5
-        test_populateListOnSeries( populatedArray, {5}    , "de_nuke" , false ); // Case 6
+        test_populateListOnSeries( populatedArray, {0}    , "de_dust1", false ); // Case 22
+        test_populateListOnSeries( populatedArray, {1,4,6}, "de_dust2", false ); // Case 23
+        test_populateListOnSeries( populatedArray, {2}    , "de_dust5", false ); // Case 24
+        test_populateListOnSeries( populatedArray, {3}    , "de_dust6", false ); // Case 25
+        test_populateListOnSeries( populatedArray, {5}    , "de_nuke" , false ); // Case 26
 
-        test_populateListOnSeries( populatedArray, _      , "de_nuke2", true  ); // Case 7
-        test_populateListOnSeries( populatedArray, _      , "de_dust" , true  ); // Case 8
-        test_populateListOnSeries( populatedArray, _      , "de_dust3", true  ); // Case 9
-        test_populateListOnSeries( populatedArray, _      , "de_dust4", true  ); // Case 10
+        test_populateListOnSeries( populatedArray, _      , "de_nuke2", true  ); // Case 27
+        test_populateListOnSeries( populatedArray, _      , "de_dust" , true  ); // Case 28
+        test_populateListOnSeries( populatedArray, _      , "de_dust3", true  ); // Case 29
+        test_populateListOnSeries( populatedArray, _      , "de_dust4", true  ); // Case 30
 
         TrieDestroy( populatedTrie );
         ArrayDestroy( populatedArray );
@@ -17418,7 +17444,9 @@ public timeRemain()
      */
     stock test_configureTheNextMap()
     {
-
+        test_populateListOnSeries_load1( true );
+        test_populateListOnSeries_load2( true );
+        test_populateListOnSeries_load3( true );
     }
 
     /**
