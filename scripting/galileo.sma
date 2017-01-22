@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-631";
+new const PLUGIN_VERSION[] = "v4.2.0-633";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -13628,6 +13628,22 @@ stock is_map_valid_bsp_check( mapName[] )
     return false;
 }
 
+stock printDynamicArrayMaps( Array:populatedArray, debugLevel )
+{
+    LOGGER( debugLevel, "I AM ENTERING ON printDynamicArrayMaps(1) array id: %d", populatedArray )
+
+    new mapName[ MAX_MAPNAME_LENGHT ];
+    new size = ArraySize( populatedArray );
+
+    for( new index = 0; index < size; index++ )
+    {
+        ArrayGetString( populatedArray, index, mapName, charsmax( mapName ) );
+        LOGGER( debugLevel, "index: %d, mapName: %s", index, mapName )
+    }
+
+    return 0;
+}
+
 /**
  * Configure the print indexes padding and max line length in characters.
  */
@@ -13729,33 +13745,6 @@ public nextmapPluginInit()
     }
 }
 
-stock loadTheNextMapFile( mapcycleFilePath[], &Array:mapcycleFileListArray, &Trie:mapcycleFileListTrie )
-{
-    LOGGER( 128, "I AM ENTERING ON loadTheNextMapFile(3)" )
-
-    TRY_TO_CLEAN( TrieClear, mapcycleFileListTrie, TrieCreate() )
-    TRY_TO_CLEAN( ArrayClear, mapcycleFileListArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
-
-    map_populateListOnSeries( mapcycleFileListArray, mapcycleFileListTrie, mapcycleFilePath );
-    LOGGER( 0, "", printDynamicArrayMaps( mapcycleFileListArray, 256 ) )
-}
-
-stock printDynamicArrayMaps( Array:populatedArray, debugLevel )
-{
-    LOGGER( debugLevel, "I AM ENTERING ON printDynamicArrayMaps(1) array id: %d", populatedArray )
-
-    new mapName[ MAX_MAPNAME_LENGHT ];
-    new size = ArraySize( populatedArray );
-
-    for( new index = 0; index < size; index++ )
-    {
-        ArrayGetString( populatedArray, index, mapName, charsmax( mapName ) );
-        LOGGER( debugLevel, "index: %d, mapName: %s", index, mapName )
-    }
-
-    return 0;
-}
-
 /**
  * If the map cycles are loaded on the plugin_init(0), and the setting `gal_srv_move_cursor`, is
  * loaded only at the forward plugin_cfg(0). This ways we need to load both and discard the one
@@ -13826,21 +13815,6 @@ stock getNextMapByPosition( Array:mapcycleFileListArray, nextMapName[], &nextMap
     LOGGER( 4, "    ( getNextMapByPosition ) nextMapName: %s, nextMapCyclePosition: %d", nextMapName, nextMapCyclePosition )
 }
 
-stock configureTheNextMapSetttings( currentMapcycleFilePath[] )
-{
-    LOGGER( 128, "I AM ENTERING ON configureTheNextMapSetttings(1)" )
-
-    // Load the full map cycle if, considering whether the feature `gal_srv_move_cursor` is enabled or not.
-    get_pcvar_string( cvar_mapcyclefile, currentMapcycleFilePath, MAX_MAPNAME_LENGHT - 1 );
-    loadTheNextMapFile( currentMapcycleFilePath, g_mapcycleFileListArray, g_mapcycleFileListTrie );
-
-    getNextMapLocalInfoToken( currentMapcycleFilePath, g_nextMapCyclePosition );
-    getLastNextMapFromServerStart( g_mapcycleFileListArray, g_nextMapName );
-
-    setTheNextMapCvarFlag( g_nextMapName );
-    saveCurrentMapCycleSetting( currentMapcycleFilePath, g_nextMapCyclePosition );
-}
-
 stock getLastNextMapFromServerStart( Array:mapcycleFileListArray, nextMapName[] )
 {
     LOGGER( 128, "I AM ENTERING ON getLastNextMapFromServerStart(2)" )
@@ -13865,6 +13839,32 @@ stock getLastNextMapFromServerStart( Array:mapcycleFileListArray, nextMapName[] 
         // Increments by 1, the global variable 'g_nextMapCyclePosition', or set its value to 1.
         getNextMapByPosition( mapcycleFileListArray, g_nextMapName, g_nextMapCyclePosition );
     }
+}
+
+stock loadTheNextMapFile( mapcycleFilePath[], &Array:mapcycleFileListArray, &Trie:mapcycleFileListTrie )
+{
+    LOGGER( 128, "I AM ENTERING ON loadTheNextMapFile(3)" )
+
+    TRY_TO_CLEAN( TrieClear, mapcycleFileListTrie, TrieCreate() )
+    TRY_TO_CLEAN( ArrayClear, mapcycleFileListArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
+
+    map_populateListOnSeries( mapcycleFileListArray, mapcycleFileListTrie, mapcycleFilePath );
+    LOGGER( 0, "", printDynamicArrayMaps( mapcycleFileListArray, 256 ) )
+}
+
+stock configureTheNextMapSetttings( currentMapcycleFilePath[] )
+{
+    LOGGER( 128, "I AM ENTERING ON configureTheNextMapSetttings(1)" )
+
+    // Load the full map cycle if, considering whether the feature `gal_srv_move_cursor` is enabled or not.
+    get_pcvar_string( cvar_mapcyclefile, currentMapcycleFilePath, MAX_MAPNAME_LENGHT - 1 );
+    loadTheNextMapFile( currentMapcycleFilePath, g_mapcycleFileListArray, g_mapcycleFileListTrie );
+
+    getNextMapLocalInfoToken( currentMapcycleFilePath, g_nextMapCyclePosition );
+    getLastNextMapFromServerStart( g_mapcycleFileListArray, g_nextMapName );
+
+    setTheNextMapCvarFlag( g_nextMapName );
+    saveCurrentMapCycleSetting( currentMapcycleFilePath, g_nextMapCyclePosition );
 }
 
 stock getNextMapLocalInfoToken( currentMapcycleFilePath[], &nextMapCyclePosition )
