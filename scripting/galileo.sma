@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-629";
+new const PLUGIN_VERSION[] = "v4.2.0-630";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -1680,7 +1680,7 @@ public plugin_cfg()
 
     // Load the initial settings
     loadPluginSetttings();
-    loadNextMapPluginSetttings();
+    loadMapFiles();
 
     LOGGER( 4, "" )
     LOGGER( 4, "" )
@@ -1696,10 +1696,8 @@ public plugin_cfg()
     LOGGER( 4, "" )
     LOGGER( 4, "" )
 
-    loadMapFiles();
-    configureServerStart();
-
     // Used to loop through all server maps looking for crashing ones
+    configureServerStart();
     runTheServerMapCrashSearch();
 
     // Configure the Unit Tests, when they are activate.
@@ -1977,7 +1975,7 @@ stock configureServerStart()
             }
             else
             {
-                // These data, are already loaded by the loadNextMapPluginSetttings(0) function call.
+                // These data, are already loaded by the configureTheNextMapSetttings(0) function call.
                 saveCurrentAndNextMapNames( g_currentMapName, g_nextMapName, true );
             }
         }
@@ -2812,6 +2810,7 @@ stock loadMapFiles()
     enum loadMapFilesTypes
     {
         t_Whitelist,
+        t_MapCycle,
         t_MininumPlayers,
         t_MiddlePlayers,
         t_NormalPlayers
@@ -2822,6 +2821,7 @@ stock loadMapFiles()
 
     // To start loading the files.
     loadedCount[ t_Whitelist      ] = configureTheWhiteListFeature( mapFilerFilePath );
+    loadedCount[ t_MapCycle       ] = configureTheNextMapSetttings( mapFilerFilePath );
     loadedCount[ t_MininumPlayers ] = configureTheMinPlayersFeature( mapFilerFilePath );
     loadedCount[ t_MiddlePlayers  ] = configureTheMidPlayersFeature( mapFilerFilePath );
     loadedCount[ t_NormalPlayers  ] = configureTheNorPlayersFeature( mapFilerFilePath );
@@ -13773,7 +13773,8 @@ stock readMapCycle( mapcycleFilePath[], nextMapName[], &nextMapCyclePosition )
     new mapsProcessedNumber;
     new loadedMapName[ MAX_MAPNAME_LENGHT ];
 
-    new mapCycleMapsCount = ArraySize( g_mapcycleFileListArray );
+    new mapCycleMapsCount       = ArraySize( g_mapcycleFileListArray );
+    new bool:isWhitelistEnabled = IS_WHITELIST_ENABLED();
 
     if( mapCycleMapsCount )
     {
@@ -13783,7 +13784,8 @@ stock readMapCycle( mapcycleFilePath[], nextMapName[], &nextMapCyclePosition )
 
             // Block the next map cvar to be set to the current map.
             if( ++mapsProcessedNumber > nextMapCyclePosition
-                && !equali( g_currentMapName, loadedMapName ) )
+                && !equali( g_currentMapName, loadedMapName )
+                && !IS_WHITELIST_BLOCKING( isWhitelistEnabled, loadedMapName ) )
             {
                 copy( nextMapName, MAX_MAPNAME_LENGHT - 1, loadedMapName );
                 LOGGER( 1, "( readMapCycle ) loadedMapName: %s", loadedMapName )
@@ -13814,13 +13816,12 @@ stock readMapCycle( mapcycleFilePath[], nextMapName[], &nextMapCyclePosition )
     LOGGER( 4, "    ( readMapCycle ) nextMapName: %s, nextMapCyclePosition: %d", nextMapName, nextMapCyclePosition )
 }
 
-stock loadNextMapPluginSetttings()
+stock configureTheNextMapSetttings( currentMapcycleFilePath[] )
 {
-    LOGGER( 128, "I AM ENTERING ON loadNextMapPluginSetttings(0)" )
+    LOGGER( 128, "I AM ENTERING ON configureTheNextMapSetttings(1)" )
 
     new mapcycleCurrentIndex   [ MAX_MAPNAME_LENGHT ];
     new lastMapcycleFilePath   [ MAX_FILE_PATH_LENGHT ];
-    new currentMapcycleFilePath[ MAX_FILE_PATH_LENGHT ];
     new tockenMapcycleAndPosion[ MAX_MAPNAME_LENGHT + MAX_FILE_PATH_LENGHT ];
 
     // Load the full map cycle if, considering whether the feature `gal_srv_move_cursor` is enabled or not.
@@ -13833,12 +13834,12 @@ stock loadNextMapPluginSetttings()
     parse( tockenMapcycleAndPosion, lastMapcycleFilePath, charsmax( lastMapcycleFilePath ),
                                     mapcycleCurrentIndex, charsmax( mapcycleCurrentIndex ) );
 
-    LOGGER( 2, "( loadNextMapPluginSetttings ) mapcycleCurrentIndex: %d", mapcycleCurrentIndex )
-    LOGGER( 2, "( loadNextMapPluginSetttings ) lastMapcycleFilePath: %s", lastMapcycleFilePath )
-    LOGGER( 2, "( loadNextMapPluginSetttings ) tockenMapcycleAndPosion: %s", tockenMapcycleAndPosion )
-    LOGGER( 2, "( loadNextMapPluginSetttings ) currentMapcycleFilePath: %s", currentMapcycleFilePath )
+    LOGGER( 2, "( configureTheNextMapSetttings ) mapcycleCurrentIndex: %d", mapcycleCurrentIndex )
+    LOGGER( 2, "( configureTheNextMapSetttings ) lastMapcycleFilePath: %s", lastMapcycleFilePath )
+    LOGGER( 2, "( configureTheNextMapSetttings ) tockenMapcycleAndPosion: %s", tockenMapcycleAndPosion )
+    LOGGER( 2, "( configureTheNextMapSetttings ) currentMapcycleFilePath: %s", currentMapcycleFilePath )
 
-    // mapcyclefile has been changed - go from first
+    // mapcyclefile has been changed - go from first.
     if( equali( currentMapcycleFilePath, lastMapcycleFilePath ) )
     {
         new lastMap[ MAX_MAPNAME_LENGHT ];
@@ -13853,22 +13854,23 @@ stock loadNextMapPluginSetttings()
     }
     else
     {
+        // The first map on the map cycle.
         g_nextMapCyclePosition = 0;
     }
 
-    // Get the last next map set on the first server start
+    // Get the last next map set on the first server start.
     if( get_pcvar_num( cvar_serverStartAction )
         && get_pcvar_num( cvar_isFirstServerStart ) == SECOND_SERVER_START )
     {
         // This is the key that tells us if this server has been started or not.
         set_pcvar_num( cvar_isFirstServerStart, AFTER_READ_MAPCYCLE );
-        LOGGER( 2, "( loadNextMapPluginSetttings ) IS CHANGING THE CVAR 'gal_server_starting' to '%d'.", AFTER_READ_MAPCYCLE )
+        LOGGER( 2, "( configureTheNextMapSetttings ) IS CHANGING THE CVAR 'gal_server_starting' to '%d'.", AFTER_READ_MAPCYCLE )
 
         get_pcvar_string( cvar_amx_nextmap, g_nextMapName, charsmax( g_nextMapName ) );
 
         if( IS_MAP_VALID( g_nextMapName ) )
         {
-            LOGGER( 4, "( loadNextMapPluginSetttings ) g_nextMapName: %s", g_nextMapName )
+            LOGGER( 4, "( configureTheNextMapSetttings ) g_nextMapName: %s", g_nextMapName )
         }
     }
     else
