@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-627";
+new const PLUGIN_VERSION[] = "v4.2.0-628";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -13838,11 +13838,7 @@ stock loadNextMapPluginSetttings()
     LOGGER( 2, "( loadNextMapPluginSetttings ) currentMapcycleFilePath: %s", currentMapcycleFilePath )
 
     // mapcyclefile has been changed - go from first
-    if( !equali( currentMapcycleFilePath, lastMapcycleFilePath ) )
-    {
-        g_nextMapCyclePosition = 0;
-    }
-    else
+    if( equali( currentMapcycleFilePath, lastMapcycleFilePath ) )
     {
         new lastMap[ MAX_MAPNAME_LENGHT ];
 
@@ -13853,6 +13849,10 @@ stock loadNextMapPluginSetttings()
         {
             g_nextMapCyclePosition--;
         }
+    }
+    else
+    {
+        g_nextMapCyclePosition = 0;
     }
 
     // Get the last next map set on the first server start
