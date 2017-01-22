@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-634";
+new const PLUGIN_VERSION[] = "v4.2.0-635";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -353,9 +353,9 @@ new const PLUGIN_VERSION[] = "v4.2.0-634";
      *
      * Usage example:
      *
-     *      FAILED "The expected result must to be %d, instead of %d.", expected, test_result );
+     *      ERR( "The expected result must to be %d, instead of %d.", expected, test_result );
      */
-    #define FAILED formatex( errorMessage, charsmax( errorMessage ),
+    #define ERR(%1) formatex( errorMessage, charsmax( errorMessage ), %1 );
 
     /**
      * Call the internal function to perform its task and stop the current test execution to avoid
@@ -17416,12 +17416,12 @@ public timeRemain()
 
         test_id = test_registerSeriesNaming( "test_SortCustomSynced2D", 'd' );
 
-        FAILED "The expectedPosition %d must to be %s, instead of %s.", expectedPosition, expectedMap, votingMaps[ expectedPosition ] );
+        ERR( "The expectedPosition %d must to be %s, instead of %s.", expectedPosition, expectedMap, votingMaps[ expectedPosition ] )
         SET_TEST_FAILURE( test_id, !equali( expectedMap, votingMaps[ expectedPosition ] ), errorMessage )
 
         test_id = test_registerSeriesNaming( "test_SortCustomSynced2D", 'd' );
 
-        FAILED "The expectedPosition %d must to be %s, instead of %s.", expectedPosition, expectedInfo, votingInfos[ expectedPosition ] );
+        ERR( "The expectedPosition %d must to be %s, instead of %s.", expectedPosition, expectedInfo, votingInfos[ expectedPosition ] )
         SET_TEST_FAILURE( test_id, !equali( expectedInfo, votingInfos[ expectedPosition ] ), errorMessage )
     }
 
@@ -17444,7 +17444,7 @@ public timeRemain()
 
         test_id = test_registerSeriesNaming( "test_configureTheNextMap", 'a' );
 
-        FAILED "The expected must to be %d, instead of %d.", expected, test_result );
+        ERR( "The expected must to be %d, instead of %d.", expected, test_result )
         SET_TEST_FAILURE( test_id, expected != test_result, errorMessage )
     }
 
@@ -17477,7 +17477,7 @@ public timeRemain()
         // This is a model test case
         test_result = someTesting();
 
-        FAILED "The expected result must to be %d, instead of %d.", expected, test_result );
+        ERR( "The expected result must to be %d, instead of %d.", expected, test_result )
         SET_TEST_FAILURE( test_id, expected != test_result, errorMessage )
     }
 
