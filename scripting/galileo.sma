@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-626";
+new const PLUGIN_VERSION[] = "v4.2.0-627";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -469,8 +469,8 @@ new cvar_coloredChatEnabled;
 #define LISTMAPS_USERID   0
 #define LISTMAPS_LAST_MAP 1
 
-#define COMMAND_VOTEMAP_ENABLED  0
-#define COMMAND_LISTMAPS_ENABLED 1
+#define COMMAND_VOTEMAP_DISABLED  1
+#define COMMAND_LISTMAPS_DISABLED 1
 
 #define RUNOFF_ENABLED 1
 #define RUNOFF_EXTEND  2
@@ -1528,9 +1528,9 @@ public plugin_init()
     cvar_endOfMapVoteExpiration    = register_cvar( "gal_endofmapvote_expiration"  , "0"    );
     cvar_endOfMapVoteStart         = register_cvar( "gal_endofmapvote_start"       , "0"    );
     cvar_nextMapChangeAnnounce     = register_cvar( "gal_nextmap_change"           , "0"    );
-    cvar_nextMapChangeVotemap      = register_cvar( "gal_nextmap_votemap"          , "0"    );
+    cvar_nextMapChangeVotemap      = register_cvar( "gal_nextmap_votemap"          , "1"    );
     cvar_voteMapChoiceCount        = register_cvar( "gal_vote_mapchoices"          , "5"    );
-    cvar_voteMapChoiceNext         = register_cvar( "gal_vote_mapchoices_next"     , "0"    );
+    cvar_voteMapChoiceNext         = register_cvar( "gal_vote_mapchoices_next"     , "1"    );
     cvar_voteDuration              = register_cvar( "gal_vote_duration"            , "30"   );
     cvar_runoffEnabled             = register_cvar( "gal_runoff_enabled"           , "0"    );
     cvar_runoffDuration            = register_cvar( "gal_runoff_duration"          , "20"   );
@@ -1542,6 +1542,10 @@ public plugin_init()
     cvar_nomPrefixes               = register_cvar( "gal_nom_prefixes"             , "1"    );
     cvar_nomQtyUsed                = register_cvar( "gal_nom_qtyused"              , "0"    );
     cvar_unnominateDisconnected    = register_cvar( "gal_unnominate_disconnected"  , "1"    );
+    cvar_recentMapsBannedNumber    = register_cvar( "gal_banrecent"                , "0"    );
+    cvar_recentNomMapsAllowance    = register_cvar( "gal_recent_nom_maps"          , "0"    );
+    cvar_isOnlyRecentMapcycleMaps  = register_cvar( "gal_banrecent_mapcycle"       , "0"    );
+    cvar_banRecentStyle            = register_cvar( "gal_banrecentstyle"           , "3"    );
 
     register_cvar( "gal_version", PLUGIN_VERSION, FCVAR_SERVER | FCVAR_SPONLY );
 
@@ -1582,35 +1586,31 @@ public plugin_init()
     cvar_maxMapExtendFrags         = register_cvar( "amx_extendmap_max_frags"      , "0"    );
     cvar_extendmapAllowStay        = register_cvar( "amx_extendmap_allow_stay"     , "0"    );
     cvar_extendmapAllowStayType    = register_cvar( "amx_extendmap_allow_stay_type", "0"    );
-    cvar_isExtendmapOrderAllowed   = register_cvar( "amx_extendmap_allow_order"    , "0"    );
+    cvar_isExtendmapOrderAllowed   = register_cvar( "amx_extendmap_allow_order"    , "2"    );
     cvar_showVoteStatus            = register_cvar( "gal_vote_showstatus"          , "4"    );
     cvar_showVoteStatusType        = register_cvar( "gal_vote_showstatustype"      , "2"    );
-    cvar_isToReplaceByVoteMenu     = register_cvar( "gal_vote_replace_menu"        , "0"    );
+    cvar_isToReplaceByVoteMenu     = register_cvar( "gal_vote_replace_menu"        , "1"    );
     cvar_isToShowNoneOption        = register_cvar( "gal_vote_show_none"           , "0"    );
     cvar_voteWeight                = register_cvar( "gal_vote_weight"              , "0"    );
     cvar_voteWeightFlags           = register_cvar( "gal_vote_weightflags"         , "y"    );
-    cvar_voteShowNoneOptionType    = register_cvar( "gal_vote_show_none_type"      , "0"    );
+    cvar_voteShowNoneOptionType    = register_cvar( "gal_vote_show_none_type"      , "2"    );
     cvar_isToShowExpCountdown      = register_cvar( "gal_vote_expirationcountdown" , "0"    );
-    cvar_isToShowVoteCounter       = register_cvar( "gal_vote_show_counter"        , "0"    );
-    cvar_voteAnnounceChoice        = register_cvar( "gal_vote_announcechoice"      , "1"    );
+    cvar_isToShowVoteCounter       = register_cvar( "gal_vote_show_counter"        , "1"    );
+    cvar_voteAnnounceChoice        = register_cvar( "gal_vote_announcechoice"      , "0"    );
     cvar_isToAskForEndOfTheMapVote = register_cvar( "gal_endofmapvote_ask"         , "0"    );
     cvar_cmdVotemap                = register_cvar( "gal_cmd_votemap"              , "1"    );
     cvar_cmdListmaps               = register_cvar( "gal_cmd_listmaps"             , "1"    );
     cvar_listmapsPaginate          = register_cvar( "gal_listmaps_paginate"        , "10"   );
-    cvar_recentMapsBannedNumber    = register_cvar( "gal_banrecent"                , "0"    );
-    cvar_recentNomMapsAllowance    = register_cvar( "gal_recent_nom_maps"          , "0"    );
-    cvar_isOnlyRecentMapcycleMaps  = register_cvar( "gal_banrecent_mapcycle"       , "0"    );
-    cvar_banRecentStyle            = register_cvar( "gal_banrecentstyle"           , "3"    );
     cvar_emptyServerWaitMinutes    = register_cvar( "gal_emptyserver_wait"         , "0"    );
     cvar_isEmptyCycleByMapChange   = register_cvar( "gal_emptyserver_change"       , "0"    );
     cvar_emptyMapFilePath          = register_cvar( "gal_emptyserver_mapfile"      , ""     );
-    cvar_soundsMute                = register_cvar( "gal_sounds_mute"              , "0"    );
-    cvar_hudsHide                  = register_cvar( "gal_sounds_hud"               , "0"    );
+    cvar_soundsMute                = register_cvar( "gal_sounds_mute"              , "31"   );
+    cvar_hudsHide                  = register_cvar( "gal_sounds_hud"               , "31"   );
     cvar_coloredChatPrefix         = register_cvar( "gal_colored_chat_prefix"      , ""     );
     cvar_endOnRound                = register_cvar( "gal_endonround"               , "0"    );
-    cvar_endOnRoundChange          = register_cvar( "gal_endonround_change"        , "1"    );
-    cvar_endOnRoundRtv             = register_cvar( "gal_endonround_rtv"           , "0"    );
     cvar_endOnRoundMininum         = register_cvar( "gal_endonround_msg"           , "0"    );
+    cvar_endOnRoundRtv             = register_cvar( "gal_endonround_rtv"           , "0"    );
+    cvar_endOnRoundChange          = register_cvar( "gal_endonround_change"        , "1"    );
     cvar_isEndMapCountdown         = register_cvar( "gal_endonround_countdown"     , "0"    );
 
     // Enables the colored chat control cvar.
@@ -1950,8 +1950,8 @@ stock configureServerStart()
         register_clcmd( "say_team", "cmd_say", -1 );
     }
 
-    if( get_pcvar_num( cvar_cmdVotemap  ) == COMMAND_VOTEMAP_ENABLED  ) register_clcmd( "votemap" , "cmd_HL1_votemap"  );
-    if( get_pcvar_num( cvar_cmdListmaps ) == COMMAND_LISTMAPS_ENABLED ) register_clcmd( "listmaps", "cmd_HL1_listmaps" );
+    if( get_pcvar_num( cvar_cmdVotemap  ) != COMMAND_VOTEMAP_DISABLED  ) register_clcmd( "votemap" , "cmd_HL1_votemap"  );
+    if( get_pcvar_num( cvar_cmdListmaps ) != COMMAND_LISTMAPS_DISABLED ) register_clcmd( "listmaps", "cmd_HL1_listmaps" );
 
     if( get_pcvar_num( cvar_gameCrashRecreationAction ) )
     {
