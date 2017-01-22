@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-635";
+new const PLUGIN_VERSION[] = "v4.2.0-636";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -353,7 +353,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-635";
      *
      * Usage example:
      *
-     *      ERR( "The expected result must to be %d, instead of %d.", expected, test_result );
+     *      ERR( "The expected result must to be %d, instead of %d.", expected, test_result )
      */
     #define ERR(%1) formatex( errorMessage, charsmax( errorMessage ), %1 );
 
@@ -15782,7 +15782,7 @@ public timeRemain()
         g_endVotingType |= IS_BY_TIMER;
         vote_startDirector( false );
 
-        formatex( errorMessage, charsmax( errorMessage ), "g_isMapExtensionAllowed must be 1 (it was %d)", g_isMapExtensionAllowed );
+        ERR( "g_isMapExtensionAllowed must be 1 (it was %d)", g_isMapExtensionAllowed )
         SET_TEST_FAILURE( test_id, !g_isMapExtensionAllowed, errorMessage )
 
         set_task( 2.0, "test_isMapExtensionAvowed_case2", chainDelay );
@@ -15798,7 +15798,7 @@ public timeRemain()
 
         test_id = register_test( chainDelay, "test_isMapExtensionAvowed_case2" );
 
-        formatex( errorMessage, charsmax( errorMessage ), "g_isMapExtensionAllowed must be 1 (it was %d)", g_isMapExtensionAllowed );
+        ERR( "g_isMapExtensionAllowed must be 1 (it was %d)", g_isMapExtensionAllowed )
         SET_TEST_FAILURE( test_id, !g_isMapExtensionAllowed, errorMessage )
 
         color_print( 0, "%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED2" );
@@ -15813,7 +15813,7 @@ public timeRemain()
         g_endVotingType |= IS_BY_TIMER;
         vote_startDirector( false );
 
-        formatex( errorMessage, charsmax( errorMessage ), "g_isMapExtensionAllowed must be 0 (it was %d)", g_isMapExtensionAllowed );
+        ERR( "g_isMapExtensionAllowed must be 0 (it was %d)", g_isMapExtensionAllowed )
         SET_TEST_FAILURE( test_id, g_isMapExtensionAllowed, errorMessage )
 
         set_task( 2.0, "test_endOfMapVotingStart_case1", chainDelay );
@@ -15834,7 +15834,7 @@ public timeRemain()
         new errorMessage[ MAX_LONG_STRING ];
         test_id = register_test( chainDelay, "test_endOfMapVotingStart_case1" );
 
-        formatex( errorMessage, charsmax( errorMessage ), "g_isMapExtensionAllowed must be 0 (it was %d)", g_isMapExtensionAllowed );
+        ERR( "g_isMapExtensionAllowed must be 0 (it was %d)", g_isMapExtensionAllowed )
         SET_TEST_FAILURE( test_id, g_isMapExtensionAllowed, errorMessage )
 
         cancelVoting();
@@ -15937,15 +15937,15 @@ public timeRemain()
 
         test_id = register_test( 0, "test_registerTest" );
 
-        formatex( errorMessage, charsmax( errorMessage ), "g_test_testsNumber must be 1 (it was %d)", g_test_testsNumber );
+        ERR( "g_test_testsNumber must be 1 (it was %d)", g_test_testsNumber )
         SET_TEST_FAILURE( test_id, g_test_testsNumber != 1, errorMessage )
 
-        formatex( errorMessage, charsmax( errorMessage ), "test_id must be 1 (it was %d)", test_id );
+        ERR( "test_id must be 1 (it was %d)", test_id )
         SET_TEST_FAILURE( test_id, test_id != 1, errorMessage )
 
         ArrayGetString( g_test_idsAndNamesArray, 0, first_test_name, charsmax( first_test_name ) );
 
-        formatex( errorMessage, charsmax( errorMessage ), "first_test_name must be 'test_registerTest' (it was %s)", first_test_name );
+        ERR( "first_test_name must be 'test_registerTest' (it was %s)", first_test_name )
         SET_TEST_FAILURE( test_id, !equali( first_test_name, "test_registerTest" ), errorMessage )
     }
 
@@ -15960,13 +15960,13 @@ public timeRemain()
         set_pcvar_num( cvar_isToStopEmptyCycle, 1 );
         client_authorized_stock( .player_id = 1  );
 
-        formatex( errorMessage, charsmax( errorMessage ), "cvar_isToStopEmptyCycle must be 0 (it was %d)", get_pcvar_num( cvar_isToStopEmptyCycle ) );
+        ERR( "cvar_isToStopEmptyCycle must be 0 (it was %d)", get_pcvar_num( cvar_isToStopEmptyCycle ) )
         SET_TEST_FAILURE( test_id, get_pcvar_num( cvar_isToStopEmptyCycle ) != 0, errorMessage )
 
         set_pcvar_num( cvar_isToStopEmptyCycle, 0 );
         client_authorized_stock( .player_id = 1 );
 
-        formatex( errorMessage, charsmax( errorMessage ), "cvar_isToStopEmptyCycle must be 0 (it was %d)", get_pcvar_num( cvar_isToStopEmptyCycle ) );
+        ERR( "cvar_isToStopEmptyCycle must be 0 (it was %d)", get_pcvar_num( cvar_isToStopEmptyCycle ) )
         SET_TEST_FAILURE( test_id, get_pcvar_num( cvar_isToStopEmptyCycle ) != 0, errorMessage )
     }
 
@@ -16014,10 +16014,10 @@ public timeRemain()
         test_id  = register_test( 0, testName );
         mapIndex = map_getNext( testMapListArray, currentMap, nextMapName );
 
-        formatex( errorMessage, charsmax( errorMessage ), "The nextMapName must to be '%s'! But it was %s.", nextMapAim, nextMapName );
+        ERR( "The nextMapName must to be '%s'! But it was %s.", nextMapAim, nextMapName )
         SET_TEST_FAILURE( test_id, !equali( nextMapName, nextMapAim ), errorMessage )
 
-        formatex( errorMessage, charsmax( errorMessage ), "The mapIndex must to be %d! But it was %d.", mapIndexAim, mapIndex );
+        ERR( "The mapIndex must to be %d! But it was %d.", mapIndexAim, mapIndex )
         SET_TEST_FAILURE( test_id, mapIndex != mapIndexAim, errorMessage )
     }
 
@@ -16173,9 +16173,7 @@ public timeRemain()
             loadResult = isToLoadNextWhiteListGroupOpen( currentHour, startHour, endHour, isBlackList );
         }
 
-        formatex( errorMessage, charsmax( errorMessage ), "The hour %2d must %sto be loaded at [%d-%d]!",
-                currentHour, ( isToLoad ? "" : "not " ), startHour, endHour );
-
+        ERR( "The hour %2d must %sto be loaded at [%d-%d]!", currentHour, ( isToLoad ? "" : "not " ), startHour, endHour )
         SET_TEST_FAILURE( test_id, loadResult != isToLoad, errorMessage )
     }
 
@@ -16306,7 +16304,7 @@ public timeRemain()
         {
             test_id = test_registerSeriesNaming( "test_loadCurrentBlacklist", serie );
 
-            formatex( errorMessage, charsmax( errorMessage ), "The map '%s' must to be present on the trie, but it was not!", map_existent );
+            ERR( "The map '%s' must to be present on the trie, but it was not!", map_existent )
             SET_TEST_FAILURE( test_id, !TrieKeyExists( blackListTrie, map_existent ), errorMessage )
         }
 
@@ -16314,7 +16312,7 @@ public timeRemain()
         {
             test_id = test_registerSeriesNaming( "test_loadCurrentBlacklist", serie );
 
-            formatex( errorMessage, charsmax( errorMessage ), "The map '%s' must not to be present on the trie, but it was!", not_existent );
+            ERR( "The map '%s' must not to be present on the trie, but it was!", not_existent )
             SET_TEST_FAILURE( test_id, TrieKeyExists( blackListTrie, not_existent ), errorMessage )
         }
 
@@ -16405,7 +16403,7 @@ public timeRemain()
         resetRoundsScores();
         changeResult = get_pcvar_num( serverCvarPointer );
 
-        formatex( errorMessage, charsmax( errorMessage ), "The aim result '%d' was not achieved! The result was %d.", aimResult, changeResult );
+        ERR( "The aim result '%d' was not achieved! The result was %d.", aimResult, changeResult )
         SET_TEST_FAILURE( test_id, changeResult != aimResult, errorMessage )
     }
 
@@ -16569,8 +16567,7 @@ public timeRemain()
                 }
             }
 
-            formatex( errorMessage, charsmax( errorMessage ),
-                    "The map '%s' %s be present on the voting map menu.", mapToCheck, ( isToBePresent ? "must to" : "MUST NOT to" ) );
+            ERR( "The map '%s' %s be present on the voting map menu.", mapToCheck, ( isToBePresent ? "must to" : "MUST NOT to" ) )
             SET_TEST_FAILURE( test_id, isMapPresent != isToBePresent, errorMessage )
         }
     }
@@ -16657,7 +16654,7 @@ public timeRemain()
         // Count how much nominations that player has
         new nominationsCount = countPlayerNominations( player_id, openNominationIndex );
 
-        formatex( errorMessage, charsmax( errorMessage ), "Must to be %d nominations, instead of %d.", total_Nom, nominationsCount );
+        ERR( "Must to be %d nominations, instead of %d.", total_Nom, nominationsCount )
         SET_TEST_FAILURE( test_id, nominationsCount != total_Nom, errorMessage )
     }
 
@@ -16723,7 +16720,7 @@ public timeRemain()
             }
         }
 
-        formatex( errorMessage, charsmax( errorMessage ), "Must to be %d RTVs, instead of %d.", total_RTVs, g_rockedVoteCount );
+        ERR( "Must to be %d RTVs, instead of %d.", total_RTVs, g_rockedVoteCount )
         SET_TEST_FAILURE( test_id, g_rockedVoteCount != total_RTVs, errorMessage )
     }
 
@@ -16777,7 +16774,7 @@ public timeRemain()
 
             num_to_str( sortedInterger, sortedIntergerString, charsmax( sortedIntergerString ) );
 
-            formatex( errorMessage, charsmax( errorMessage ), "The integer %d, must not to be sorted twice.", sortedInterger );
+            ERR( "The integer %d, must not to be sorted twice.", sortedInterger )
             SET_TEST_FAILURE( test_id, TrieKeyExists( sortedIntegers, sortedIntergerString ) && sortedInterger != -1, errorMessage )
 
             if( !TrieKeyExists( sortedIntegers, sortedIntergerString ) )
@@ -16786,7 +16783,7 @@ public timeRemain()
             }
         }
 
-        formatex( errorMessage, charsmax( errorMessage ), "The TrieSize must to be %d, instead of %d.", max_value + 2, trieSize );
+        ERR( "The TrieSize must to be %d, instead of %d.", max_value + 2, trieSize )
         SET_TEST_FAILURE( test_id, trieSize != max_value + 2, errorMessage )
 
         TrieDestroy( sortedIntegers );
@@ -16846,7 +16843,7 @@ public timeRemain()
             sortedInterger = getUniqueRandomInteger( holder, min_value, max_value );
             num_to_str( sortedInterger, sortedIntergerString, charsmax( sortedIntergerString ) );
 
-            formatex( errorMessage, charsmax( errorMessage ), "The integer %d, must not to be sorted twice.", sortedInterger );
+            ERR( "The integer %d, must not to be sorted twice.", sortedInterger )
             SET_TEST_FAILURE( test_id, TrieKeyExists( sortedIntegers, sortedIntergerString ), errorMessage )
 
             if( !TrieKeyExists( sortedIntegers, sortedIntergerString ) )
@@ -16855,7 +16852,7 @@ public timeRemain()
             }
         }
 
-        formatex( errorMessage, charsmax( errorMessage ), "The TrieSize must to be %d, instead of %d.", max_value, trieSize );
+        ERR( "The TrieSize must to be %d, instead of %d.", max_value, trieSize )
         SET_TEST_FAILURE( test_id, trieSize != randomCount, errorMessage )
 
         LOGGER( 1, "" )
@@ -16865,7 +16862,7 @@ public timeRemain()
             sortedInterger = getUniqueRandomInteger( holder, min_value, max_value );
             num_to_str( sortedInterger, sortedIntergerString, charsmax( sortedIntergerString ) );
 
-            formatex( errorMessage, charsmax( errorMessage ), "The integer %d, must to be sorted twice.", sortedInterger );
+            ERR( "The integer %d, must to be sorted twice.", sortedInterger )
             SET_TEST_FAILURE( test_id, !TrieKeyExists( sortedIntegers, sortedIntergerString ), errorMessage )
 
             if( !TrieKeyExists( sortedIntegers, sortedIntergerString ) )
@@ -16874,7 +16871,7 @@ public timeRemain()
             }
         }
 
-        formatex( errorMessage, charsmax( errorMessage ), "The TrieSize must to be %d, instead of %d.", max_value, trieSize );
+        ERR( "The TrieSize must to be %d, instead of %d.", max_value, trieSize )
         SET_TEST_FAILURE( test_id, trieSize != randomCount, errorMessage )
 
         TrieDestroy( sortedIntegers );
@@ -16979,7 +16976,7 @@ public timeRemain()
 
         gameType = whatGameEndingTypeItIs();
 
-        formatex( errorMessage, charsmax( errorMessage ), "The GameEndingType must to be %d, instead of %d.", result, gameType );
+        ERR( "The GameEndingType must to be %d, instead of %d.", result, gameType )
         SET_TEST_FAILURE( test_id, gameType != result, errorMessage )
     }
 
@@ -17010,9 +17007,8 @@ public timeRemain()
 
         new result = convert_numeric_base( origin_number, origin_base, destiny_base );
 
-        formatex( errorMessage, charsmax( errorMessage ),
-                "Converting the number %d on base %d to base %d must to be %d, instead of %d.",
-                origin_number, origin_base, destiny_base, expected, result );
+        ERR( "Converting the number %d on base %d to base %d must to be %d, instead of %d.", \
+                origin_number, origin_base, destiny_base, expected, result )
 
         SET_TEST_FAILURE( test_id, result != expected, errorMessage )
     }
@@ -17047,9 +17043,8 @@ public timeRemain()
         copy( pageString2, charsmax( pageString2 ), pageString );
         setCorrectMenuPage( player_id, pageString, menuPages, pagesCount );
 
-        formatex( errorMessage, charsmax( errorMessage ),
-                "The converted page `%s` must to be %d, instead of %d (%s).",
-                pageString2, expectedPage, menuPages[ player_id ], pageString );
+        ERR( "The converted page `%s` must to be %d, instead of %d (%s).", \
+                pageString2, expectedPage, menuPages[ player_id ], pageString )
 
         SET_TEST_FAILURE( test_id, menuPages[ player_id ] != expectedPage, errorMessage )
     }
@@ -17088,8 +17083,7 @@ public timeRemain()
         new test_id = test_registerSeriesNaming( "test_strictValidMapsTrie", 'a' );
         new errorMessage[ MAX_LONG_STRING ];
 
-        formatex( errorMessage, charsmax( errorMessage ), "The map `%s` must %sto be loaded on the trie.",
-                mapName, isNotToBe ? "not " : "" );
+        ERR( "The map `%s` must %sto be loaded on the trie.", mapName, isNotToBe ? "not " : "" )
         SET_TEST_FAILURE( test_id, TrieKeyExists( g_test_strictValidMapsTrie, mapName ) == isNotToBe, errorMessage )
     }
 
@@ -17115,8 +17109,7 @@ public timeRemain()
             LOGGER( 1, "populatedArray index: %d, mapName: %s", index, errorMessage )
         }
 
-        formatex( errorMessage, charsmax( errorMessage ), "The map populatedArray size must to be %d, instead of %d.",
-                expectedSize, mapCount );
+        ERR( "The map populatedArray size must to be %d, instead of %d.", expectedSize, mapCount )
         SET_TEST_FAILURE( test_id, mapCount != expectedSize, errorMessage )
     }
 
@@ -17224,16 +17217,14 @@ public timeRemain()
             {
                 isOnTheArray = true;
 
-                formatex( errorMessage, charsmax( errorMessage ), "The map `%s` must be at the index %d, instead of %d.",
-                        mapName, expectedIndexes[ expectedIndex ], index );
+                ERR( "The map `%s` must be at the index %d, instead of %d.", mapName, expectedIndexes[ expectedIndex ], index )
                 SET_TEST_FAILURE( test_id, index != expectedIndexes[ expectedIndex ], errorMessage )
 
                 ++expectedIndex;
             }
         }
 
-        formatex( errorMessage, charsmax( errorMessage ), "The map `%s` must %sto be loaded on the array.",
-                mapName, isNotToBe ? "not " : "" );
+        ERR( "The map `%s` must %sto be loaded on the array.", mapName, isNotToBe ? "not " : "" )
         SET_TEST_FAILURE( test_id, isOnTheArray == isNotToBe, errorMessage )
     }
 
@@ -17270,15 +17261,13 @@ public timeRemain()
         test_id = test_registerSeriesNaming( "test_GET_MAP_NAME", 'd' ); // Case 1
         GET_MAP_NAME( populatedArray, index, mapName )
 
-        formatex( errorMessage, charsmax( errorMessage ), "The map name must to be %s, instead of %s.",
-                mapNameExpected, mapName );
+        ERR( "The map name must to be %s, instead of %s.", mapNameExpected, mapName )
         SET_TEST_FAILURE( test_id, !equali( mapName, mapNameExpected ), errorMessage )
 
         test_id = test_registerSeriesNaming( "test_GET_MAP_NAME", 'd' ); // Case 2
         GET_MAP_INFO( populatedArray, index, mapName )
 
-        formatex( errorMessage, charsmax( errorMessage ), "The map info must to be %s, instead of %s.",
-                mapInfoExpected, mapName );
+        ERR( "The map info must to be %s, instead of %s.", mapInfoExpected, mapName )
         SET_TEST_FAILURE( test_id, !equali( mapName, mapInfoExpected ), errorMessage )
     }
 
@@ -17373,8 +17362,7 @@ public timeRemain()
                 }
             }
 
-            formatex( errorMessage, charsmax( errorMessage ),
-                    "The %s '%s' must %sto be present on the voting map menu.", is ? "name" : "info", textToCheck, toBe ? "" : "not " );
+            ERR( "The %s '%s' must %sto be present on the voting map menu.", is ? "name" : "info", textToCheck, toBe ? "" : "not " )
             SET_TEST_FAILURE( test_id, isMapPresent != toBe, errorMessage )
         }
     }
