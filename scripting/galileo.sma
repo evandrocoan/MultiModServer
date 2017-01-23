@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-638";
+new const PLUGIN_VERSION[] = "v4.2.0-639";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -321,7 +321,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-638";
         // test_SortCustomSynced2D();
         // test_GET_MAP_INFO_load();
         // test_GET_MAP_NAME_load();
-        test_populateListOnSeries_load();
+        // test_populateListOnSeries_load();
         // test_setCorrectMenuPage_load();
         // test_convertNumericBase_load();
         // test_whatGameEndingTypeIt_load();
@@ -2312,7 +2312,7 @@ stock configureTheNextMapPlugin( possibleCurrentMap[], possibleNextMap[], possib
         get_pcvar_string( cvar_mapcyclefile, mapcycleFilePath, charsmax( mapcycleFilePath ) );
 
         setNextMap( possibleCurrentMap, possibleNextMap, true, forceUpdateFile );
-        saveCurrentMapCycleSetting( mapcycleFilePath, g_nextMapCyclePosition );
+        saveCurrentMapCycleSetting( g_currentMapName, mapcycleFilePath, g_nextMapCyclePosition );
     }
 }
 
@@ -13574,6 +13574,21 @@ public plugin_end()
 }
 
 /**
+ *
+ *
+ * @param text the debug message, if omitted its default value is ""
+ * @param any the variable number of formatting parameters
+ */
+stock doAmxxLog( const message[] = "", any:... )
+{
+    static formated_message[ MAX_LONG_STRING ];
+    vformat( formated_message, charsmax( formated_message ), message, 3 );
+
+    LOGGER( 1, formated_message )
+    log_amx( formated_message );
+}
+
+/**
  * Same as TRY_TO_APPLY(2), but the second argument must to be a two Dimensional Dynamic Array.
  *
  * @param outerArray                   a Dynamic Array within several Dynamic Arrays.
@@ -13798,16 +13813,24 @@ stock getNextMapByPosition( Array:mapcycleFileListArray, nextMapName[], &nextMap
             GET_MAP_NAME( mapcycleFileListArray, mapIndex, loadedMapName )
 
             // Block the next map cvar to be set to the current map.
-            if( ++mapsProcessedNumber > nextMapCyclePosition
-                && !equali( g_currentMapName, loadedMapName )
-                && !IS_WHITELIST_BLOCKING( isWhitelistEnabled, loadedMapName ) )
+            if( ++mapsProcessedNumber > nextMapCyclePosition )
             {
-                copy( nextMapName, MAX_MAPNAME_LENGHT - 1, loadedMapName );
-                LOGGER( 1, "( getNextMapByPosition ) loadedMapName: %s", loadedMapName )
-                LOGGER( 1, "( getNextMapByPosition ) nextMapCyclePosition: %d", nextMapCyclePosition )
+                if( equali( g_currentMapName, loadedMapName ) )
+                {
+                    LOGGER( 1, "WARNING, getNextMapByPosition: Blocking the current map loaded: %s!", loadedMapName )
+                    continue;
+                }
+                else if( IS_WHITELIST_BLOCKING( isWhitelistEnabled, loadedMapName ) )
+                {
+                    LOGGER( 1, "WARNING, getNextMapByPosition: The Whitelist feature is blocking: %s!", loadedMapName )
+                    continue;
+                }
 
-                nextMapCyclePosition = mapsProcessedNumber;
+                LOGGER( 1, "( getNextMapByPosition ) loadedMapName: %s", loadedMapName )
                 LOGGER( 1, "( getNextMapByPosition ) mapsProcessedNumber: %d", mapsProcessedNumber )
+
+                copy( nextMapName, MAX_MAPNAME_LENGHT - 1, loadedMapName );
+                nextMapCyclePosition = mapsProcessedNumber;
 
                 LOGGER( 1, "    ( getNextMapByPosition ) Just returning/blocking on 'mapsProcessedNumber > nextMapCyclePosition'." )
                 return;
@@ -13819,18 +13842,15 @@ stock getNextMapByPosition( Array:mapcycleFileListArray, nextMapName[], &nextMap
 
         if( IS_WHITELIST_BLOCKING( isWhitelistEnabled, nextMapName ) )
         {
-            LOGGER( 1, "WARNING, getNextMapByPosition: The Whitelist feature is blocking all your map cycle maps!" )
-            log_amx(   "WARNING, getNextMapByPosition: The Whitelist feature is blocking all your map cycle maps!" );
-
+            doAmxxLog( "WARNING, getNextMapByPosition: The Whitelist feature is blocking all your map cycle maps!" );
             goto setTheCurrentMap;
         }
     }
     else
     {
-        LOGGER( 1, "WARNING, getNextMapByPosition: No valid maps found on your map cycle! mapcycleFileListArray: %d", mapcycleFileListArray )
-        log_amx(   "WARNING, getNextMapByPosition: No valid maps found on your map cycle! mapcycleFileListArray: %d", mapcycleFileListArray );
-
         setTheCurrentMap:
+        doAmxxLog( "WARNING, getNextMapByPosition: No valid maps found on your map cycle! mapcycleFileListArray: %d", mapcycleFileListArray );
+
         copy( nextMapName, MAX_MAPNAME_LENGHT - 1, g_currentMapName );
     }
 
@@ -13907,7 +13927,7 @@ stock configureTheNextMapSetttings( currentMapcycleFilePath[] )
     }
 
     setTheNextMapCvarFlag( g_nextMapName );
-    saveCurrentMapCycleSetting( currentMapcycleFilePath, g_nextMapCyclePosition );
+    saveCurrentMapCycleSetting( g_currentMapName, currentMapcycleFilePath, g_nextMapCyclePosition );
 
     LOGGER( 1, "    ( configureTheNextMapSetttings ) Returning mapCount: %d", mapCount )
     return mapCount;
@@ -14043,9 +14063,9 @@ stock setTheNextMapCvarFlag( nextMapName[] )
  *
  * @param mapcycleFilePath         the current map-cycle file path.
  */
-stock saveCurrentMapCycleSetting( mapcycleFilePath[], nextMapCyclePosition )
+stock saveCurrentMapCycleSetting( currentMapName[], mapcycleFilePath[], nextMapCyclePosition )
 {
-    LOGGER( 128, "I AM ENTERING ON saveCurrentMapCycleSetting(2) mapcycleFilePath: %s", mapcycleFilePath )
+    LOGGER( 128, "I AM ENTERING ON saveCurrentMapCycleSetting(3) mapcycleFilePath: %s", mapcycleFilePath )
     LOGGER( 2, "( saveCurrentMapCycleSetting ) nextMapCyclePosition: %d", nextMapCyclePosition )
 
     new tockenMapcycleAndPosion[ MAX_MAPNAME_LENGHT + MAX_FILE_PATH_LENGHT ];
@@ -14055,7 +14075,7 @@ stock saveCurrentMapCycleSetting( mapcycleFilePath[], nextMapCyclePosition )
 
     // save lastmapcycle settings
     set_localinfo( "lastmapcycle", tockenMapcycleAndPosion );
-    set_localinfo( "galileo_lastmap", g_currentMapName );
+    set_localinfo( "galileo_lastmap", currentMapName );
 }
 
 stock getNextMapName( nextMapName[], maxChars )
@@ -17448,28 +17468,75 @@ public timeRemain()
     }
 
     /**
+     * To prepare the test_configureTheNextMap(0) tests files and settings.
+     */
+    stock test_configureTheNextMap_build( expectedSize )
+    {
+        new test_id;
+        new mapCount;
+
+        new errorMessage[ MAX_LONG_STRING ];
+        test_id = test_registerSeriesNaming( "test_configureTheNextMap", 'e' );
+
+        helper_mapFileListLoad( false, g_test_voteMapFilePath, "de_dust1", "de_dust2", "de_nuke", "de_dust2" );
+        helper_loadStrictValidMapsTrie( "de_dust1", "de_dust2", "de_dust5", "de_dust6", "de_nuke" );
+
+        g_test_isToUseStrictValidMaps = true;
+
+        set_pcvar_string( cvar_mapcyclefile, g_test_voteMapFilePath );
+        mapCount = configureTheNextMapSetttings( errorMessage );
+
+        g_test_isToUseStrictValidMaps = false;
+
+        ERR( "The map populatedArray size must to be %d, instead of %d.", expectedSize, mapCount )
+        SET_TEST_FAILURE( test_id, mapCount != expectedSize, errorMessage )
+    }
+
+    /**
      * Tests if the function configureTheNextMapSetttings(1) is properly setting the next map.
      */
     stock test_configureTheNextMap()
     {
-        test_populateListOnSeries_load1( true );
-        test_populateListOnSeries_load2( true );
-        test_populateListOnSeries_load3( true );
+        set_pcvar_num( cvar_whitelistMinPlayers, 0 );
+
+        // test_populateListOnSeries_load1( true ); // Case  1-10
+        // test_populateListOnSeries_load2( true ); // Case 10-20
+        // test_populateListOnSeries_load3( true ); // Case 20-30
+
+        // Setting the `cvar_serverMoveCursor` as 2 will load the map cycle as:
+        //  0. de_dust1
+        //  1. de_dust2
+        //  2. de_dust5
+        //  3. de_dust6
+        //  4. de_dust2
+        //  5. de_dust5
+        //  6. de_dust6
+        //  7. de_nuke
+        //  8. de_dust2
+        //  9. de_dust5
+        // 10. de_dust6
+        set_pcvar_num( cvar_serverMoveCursor, 2 );
+        saveCurrentMapCycleSetting( "de_dust1", g_test_voteMapFilePath, 1 );
+
+        copy( g_currentMapName, charsmax( g_currentMapName ), "de_dust0" );
+
+        test_configureTheNextMap_build( .expectedSize=11 ); // Case 31
+        test_configureTheNextMap_case( "de_dust2" ); // Case 32
     }
 
     /**
      * Create one case test for the stock configureTheNextMapSetttings(1) based on its parameters passed
      * by the test_configureTheNextMap(0) loader function.
      */
-    stock test_configureTheNextMap_case()
+    stock test_configureTheNextMap_case( nextMapNameExpected[] )
     {
         new test_id;
         new errorMessage[ MAX_LONG_STRING ];
 
-        test_id = test_registerSeriesNaming( "test_configureTheNextMap", 'a' );
+        test_id = test_registerSeriesNaming( "test_configureTheNextMap", 'e' );
 
-        ERR( "The expected must to be %d, instead of %d.", expected, test_result )
-        SET_TEST_FAILURE( test_id, expected != test_result, errorMessage )
+        ERR( "The nextMapName must to be %s, instead of %s.", nextMapNameExpected, g_nextMapName )
+        SET_TEST_FAILURE( test_id, !equali( nextMapNameExpected, g_nextMapName ), errorMessage )
     }
 
 
@@ -17596,6 +17663,9 @@ public timeRemain()
     new test_voteDuration;
     new test_runoffDuration;
 
+    new test_g_nextMapName   [ MAX_MAPNAME_LENGHT ];
+    new test_g_currentMapName[ MAX_MAPNAME_LENGHT ];
+
     new test_mapcyclefile             [ MAX_FILE_PATH_LENGHT ];
     new test_nomMapFilePath           [ MAX_FILE_PATH_LENGHT ];
     new test_voteMapFilePath          [ MAX_FILE_PATH_LENGHT ];
@@ -17635,10 +17705,13 @@ public timeRemain()
             cleanTheUnitTestsData();
             saveCurrentTestsTimeStamp();
 
-            get_pcvar_string( cvar_mapcyclefile, test_mapcyclefile, charsmax( test_mapcyclefile ) );
-            get_pcvar_string( cvar_nomMapFilePath, test_nomMapFilePath, charsmax( test_nomMapFilePath ) );
-            get_pcvar_string( cvar_voteMapFilePath, test_voteMapFilePath, charsmax( test_voteMapFilePath ) );
-            get_pcvar_string( cvar_voteWhiteListMapFilePath, test_voteWhiteListMapFilePath, charsmax( test_voteWhiteListMapFilePath ) );
+            copy( g_nextMapName   , charsmax( g_nextMapName )   , test_g_nextMapName    );
+            copy( g_currentMapName, charsmax( g_currentMapName ), test_g_currentMapName );
+
+            get_pcvar_string( cvar_mapcyclefile             , test_mapcyclefile             , charsmax( test_mapcyclefile )              );
+            get_pcvar_string( cvar_nomMapFilePath           , test_nomMapFilePath           , charsmax( test_nomMapFilePath )            );
+            get_pcvar_string( cvar_voteMapFilePath          , test_voteMapFilePath          , charsmax( test_voteMapFilePath )           );
+            get_pcvar_string( cvar_voteWhiteListMapFilePath , test_voteWhiteListMapFilePath , charsmax( test_voteWhiteListMapFilePath )  );
             get_pcvar_string( cvar_voteMinPlayersMapFilePath, test_voteMinPlayersMapFilePath, charsmax( test_voteMinPlayersMapFilePath ) );
 
             test_rtvRatio                = get_pcvar_float( cvar_rtvRatio             );
@@ -17690,11 +17763,14 @@ public timeRemain()
             g_originalWinLimit  = 0;
             g_originalFragLimit = 0;
 
-            tryToSetGameModCvarFloat( cvar_mp_timelimit     , test_mp_timelimit              );
+            tryToSetGameModCvarFloat( cvar_mp_timelimit     , test_mp_timelimit );
 
-            tryToSetGameModCvarNum( cvar_mp_winlimit        , test_mp_winlimit               );
-            tryToSetGameModCvarNum( cvar_mp_maxrounds       , test_mp_maxrounds              );
-            tryToSetGameModCvarNum( cvar_mp_fraglimit       , test_mp_fraglimit              );
+            tryToSetGameModCvarNum( cvar_mp_winlimit        , test_mp_winlimit  );
+            tryToSetGameModCvarNum( cvar_mp_maxrounds       , test_mp_maxrounds );
+            tryToSetGameModCvarNum( cvar_mp_fraglimit       , test_mp_fraglimit );
+
+            copy( test_g_nextMapName   , charsmax( test_g_nextMapName )   , g_nextMapName    );
+            copy( test_g_currentMapName, charsmax( test_g_currentMapName ), g_currentMapName );
 
             set_pcvar_string( cvar_mapcyclefile             , test_mapcyclefile              );
             set_pcvar_string( cvar_nomMapFilePath           , test_nomMapFilePath            );
