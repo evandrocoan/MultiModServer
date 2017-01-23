@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-658";
+new const PLUGIN_VERSION[] = "v4.2.0-659";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -17605,47 +17605,6 @@ public timeRemain()
         test_configureTheNextMap_load2( 'a' ); // Case 1-60
     }
 
-    stock test_configureTheNextMap_load2( s )
-    {
-        // Setting the `cvar_serverMoveCursor` as 2+8 will load the map cycle as:
-        //
-        // 0.  de_dust1
-        // 1.  de_dust2
-        // 2.  de_dust5
-        // 3.  cs_play
-        // 4.  aim_dumb
-        // 5.  de_nuke
-        // 6.  de_nuke1
-        // 7.  de_nuke2
-        // 8.  de_rage0
-        // 9.  de_rage1
-        // 10. de_rage2
-        // 11. de_rage3
-        // 12. go_girl
-        set_pcvar_num( cvar_serverMoveCursor, 10 );
-
-        test_configureTheNextMap_case( s, "de_dust0", "de_dust1", "de_dust2", 1 , 2 , .expectedSize=13 ); // Case  1-3
-        test_configureTheNextMap_case( s, "de_dust0", "de_dust1", "de_dust2", 1 , 2 , .expectedSize=13 ); // Case  4-6
-        test_configureTheNextMap_case( s, "de_dust0", "de_dust1", "de_dust2", 1 , 2 , .expectedSize=13 ); // Case  7-9
-        test_configureTheNextMap_case( s, "de_dust0", "de_nuke" , "de_nuke1", 1 , 3 , .expectedSize=13 ); // Case 10-12
-        test_configureTheNextMap_case( s, "de_dust0", "de_nuke" , "de_nuke1", 1 , 3 , .expectedSize=13 ); // Case 13-15
-        test_configureTheNextMap_case( s, "de_dust0", "de_nuke1", "de_nuke2", 1 , 3 , .expectedSize=13 ); // Case 16-18
-        test_configureTheNextMap_case( s, "de_dust0", "de_nuke1", "de_nuke2", 1 , 3 , .expectedSize=13 ); // Case 19-21
-        test_configureTheNextMap_case( s, "de_dust0", "de_nuke2", "cs_play" , 3 , 4 , .expectedSize=13 ); // Case 22-24
-        test_configureTheNextMap_case( s, "de_dust0", "de_nuke2", "cs_play" , 3 , 4 , .expectedSize=13 ); // Case 25-27
-        test_configureTheNextMap_case( s, "de_dust0", "de_nuke2", "cs_play" , 3 , 4 , .expectedSize=13 ); // Case 28-30
-        test_configureTheNextMap_case( s, "de_dust0", "cs_play" , "aim_dumb", 4 , 5 , .expectedSize=13 ); // Case 31-33
-        test_configureTheNextMap_case( s, "de_dust0", "aim_dumb", "de_nuke" , 5 , 6 , .expectedSize=13 ); // Case 34-36
-        test_configureTheNextMap_case( s, "de_dust0", "de_nuke" , "de_nuke1", 6 , 7 , .expectedSize=13 ); // Case 37-39
-        test_configureTheNextMap_case( s, "de_dust0", "de_nuke1", "de_nuke2", 7 , 8 , .expectedSize=13 ); // Case 40-42
-        test_configureTheNextMap_case( s, "de_dust0", "de_nuke2", "de_rage0", 8 , 9 , .expectedSize=13 ); // Case 43-45
-        test_configureTheNextMap_case( s, "de_dust0", "de_rage0", "de_rage1", 9 , 10, .expectedSize=13 ); // Case 46-48
-        test_configureTheNextMap_case( s, "de_dust0", "de_rage1", "de_rage2", 10, 11, .expectedSize=13 ); // Case 49-51
-        test_configureTheNextMap_case( s, "de_dust0", "de_rage2", "de_rage3", 11, 12, .expectedSize=13 ); // Case 52-54
-        test_configureTheNextMap_case( s, "de_dust0", "de_rage3", "go_girl" , 12, 13, .expectedSize=13 ); // Case 55-57
-        test_configureTheNextMap_case( s, "de_dust0", "go_girl" , "de_dust1", 13, 1 , .expectedSize=13 ); // Case 58-60
-    }
-
     /**
      * Create one case test for the stock configureTheNextMapSetttings(1) based on its parameters passed
      * by the test_configureTheNextMap(0) loader function.
@@ -17745,6 +17704,50 @@ public timeRemain()
         test_configureTheNextMap_case( s, "de_dust0", "de_dust5", "de_dust6", 10, 11 ); // Case 70-72
         test_configureTheNextMap_case( s, "de_dust0", "de_dust6", "de_dust1", 11, 1  ); // Case 73-75
         test_configureTheNextMap_case( s, "de_dust0", "de_dust1", "de_dust2", 1 , 2  ); // Case 76-78
+    }
+
+    /**
+     * test_configureTheNextMap_case( s, cmB[], cmA[], npE[], posB, posE, expectedSize=11 )
+     */
+    stock test_configureTheNextMap_load2( s )
+    {
+        // Setting the `cvar_serverMoveCursor` as 2+8 will load the map cycle as:
+        //
+        // 0.  de_dust1
+        // 1.  de_dust2
+        // 2.  de_dust5
+        // 3.  cs_play
+        // 4.  aim_dumb
+        // 5.  de_nuke
+        // 6.  de_nuke1
+        // 7.  de_nuke2
+        // 8.  de_rage0
+        // 9.  de_rage1
+        // 10. de_rage2
+        // 11. de_rage3
+        // 12. go_girl
+        set_pcvar_num( cvar_serverMoveCursor, 10 );
+
+        test_configureTheNextMap_case( s, "de_dust0", "de_dust1", "de_dust2", 1 , 2 , .expectedSize=13 ); // Case  1-3
+        test_configureTheNextMap_case( s, "de_dust0", "de_dust1", "de_dust2", 1 , 2 , .expectedSize=13 ); // Case  4-6
+        test_configureTheNextMap_case( s, "de_dust0", "de_dust1", "de_dust2", 1 , 2 , .expectedSize=13 ); // Case  7-9
+        test_configureTheNextMap_case( s, "de_dust0", "de_nuke" , "de_nuke1", 1 , 3 , .expectedSize=13 ); // Case 10-12
+        test_configureTheNextMap_case( s, "de_dust0", "de_nuke" , "de_nuke1", 1 , 3 , .expectedSize=13 ); // Case 13-15
+        test_configureTheNextMap_case( s, "de_dust0", "de_nuke1", "de_nuke2", 1 , 3 , .expectedSize=13 ); // Case 16-18
+        test_configureTheNextMap_case( s, "de_dust0", "de_nuke1", "de_nuke2", 1 , 3 , .expectedSize=13 ); // Case 19-21
+        test_configureTheNextMap_case( s, "de_dust0", "de_nuke2", "cs_play" , 3 , 4 , .expectedSize=13 ); // Case 22-24
+        test_configureTheNextMap_case( s, "de_dust0", "de_nuke2", "cs_play" , 3 , 4 , .expectedSize=13 ); // Case 25-27
+        test_configureTheNextMap_case( s, "de_dust0", "de_nuke2", "cs_play" , 3 , 4 , .expectedSize=13 ); // Case 28-30
+        test_configureTheNextMap_case( s, "de_dust0", "cs_play" , "aim_dumb", 4 , 5 , .expectedSize=13 ); // Case 31-33
+        test_configureTheNextMap_case( s, "de_dust0", "aim_dumb", "de_nuke" , 5 , 6 , .expectedSize=13 ); // Case 34-36
+        test_configureTheNextMap_case( s, "de_dust0", "de_nuke" , "de_nuke1", 6 , 7 , .expectedSize=13 ); // Case 37-39
+        test_configureTheNextMap_case( s, "de_dust0", "de_nuke1", "de_nuke2", 7 , 8 , .expectedSize=13 ); // Case 40-42
+        test_configureTheNextMap_case( s, "de_dust0", "de_nuke2", "de_rage0", 8 , 9 , .expectedSize=13 ); // Case 43-45
+        test_configureTheNextMap_case( s, "de_dust0", "de_rage0", "de_rage1", 9 , 10, .expectedSize=13 ); // Case 46-48
+        test_configureTheNextMap_case( s, "de_dust0", "de_rage1", "de_rage2", 10, 11, .expectedSize=13 ); // Case 49-51
+        test_configureTheNextMap_case( s, "de_dust0", "de_rage2", "de_rage3", 11, 12, .expectedSize=13 ); // Case 52-54
+        test_configureTheNextMap_case( s, "de_dust0", "de_rage3", "go_girl" , 12, 13, .expectedSize=13 ); // Case 55-57
+        test_configureTheNextMap_case( s, "de_dust0", "go_girl" , "de_dust1", 13, 1 , .expectedSize=13 ); // Case 58-60
     }
 
 
