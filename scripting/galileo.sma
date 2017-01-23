@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-639";
+new const PLUGIN_VERSION[] = "v4.2.0-641";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -1698,12 +1698,7 @@ public plugin_cfg()
     mp_fraglimitCvarSupport();
     resetRoundsScores();
 
-    LOGGER( 4, "" )
-    LOGGER( 4, "" )
-    LOGGER( 4, " The current map is [ %20s ]", g_currentMapName )
-    LOGGER( 4, " The  next   map is [ %20s ]", g_nextMapName )
-    LOGGER( 4, "" )
-    LOGGER( 4, "" )
+    LOGGER( 0, "", printTheCurrentAndNextMapNames() )
 
     // Used to loop through all server maps looking for crashing ones
     configureServerStart();
@@ -13574,7 +13569,50 @@ public plugin_end()
 }
 
 /**
+ * To print on the server console the current and next map names aligned. Output example:
  *
+ * L 01/23/2017 - 00:40:44: {1.000 15768 778942    1}
+ * L 01/23/2017 - 00:40:44: {1.000 15768 778943    1}
+ * L 01/23/2017 - 00:40:44: {1.000 15764 778945    2}  The current map is [ cs_italy_cz ]
+ * L 01/23/2017 - 00:40:44: {1.000 15764 778946    1}  The  next   map is [ cs_italy    ]
+ * L 01/23/2017 - 00:40:44: {1.000 15768 778948    2}
+ * L 01/23/2017 - 00:40:44: {1.000 15768 778949    1}
+ *
+ * There is not point in adding the entry statement to this function as its purpose is only to
+ * print few lines as possible.
+ */
+stock printTheCurrentAndNextMapNames()
+{
+    LOGGER( 0, "I AM ENTERING ON printTheCurrentAndNextMapNames(0)" )
+
+    new nextMap   [ MAX_MAPNAME_LENGHT ];
+    new currentMap[ MAX_MAPNAME_LENGHT ];
+
+    copy( nextMap, charsmax( nextMap ), g_nextMapName );
+    copy( currentMap, charsmax( currentMap ), g_currentMapName );
+
+    new nextLength    = strlen( nextMap );
+    new currentLength = strlen( currentMap );
+    new maximumLength = max( nextLength, currentLength );
+
+    while( nextLength    < maximumLength ) nextMap  [ nextLength++    ] = ' ';
+    while( currentLength < maximumLength )currentMap[ currentLength++ ] = ' ';
+
+    nextMap   [ nextLength    ] = '^0';
+    currentMap[ currentLength ] = '^0';
+
+    LOGGER( 4, "" )
+    LOGGER( 4, "" )
+    LOGGER( 4, " The current map is [ %s ]", nextMap )
+    LOGGER( 4, " The  next   map is [ %s ]", currentMap )
+    LOGGER( 4, "" )
+    LOGGER( 4, "" )
+
+    return 0;
+}
+
+/**
+ * Call the AMXX logger log_amx() and the internal debugger using the same logging message.
  *
  * @param text the debug message, if omitted its default value is ""
  * @param any the variable number of formatting parameters
@@ -13652,10 +13690,12 @@ stock is_map_valid_bsp_check( mapName[] )
     return false;
 }
 
+/**
+ * There is not point in adding the entry statement to this function as its purpose is only to
+ * print few lines as possible.
+ */
 stock printUntilTheNthLoadedMap( mapIndex, mapName[] )
 {
-    // There is not point in adding the entry statement to this function as its purpose is only to
-    // print few lines as possible.
     LOGGER( 0, "I AM ENTERING ON loadMapFileSeriesListArray(2)" )
 
     if( mapIndex < MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST )
@@ -17503,7 +17543,27 @@ public timeRemain()
         // test_populateListOnSeries_load2( true ); // Case 10-20
         // test_populateListOnSeries_load3( true ); // Case 20-30
 
-        // Setting the `cvar_serverMoveCursor` as 2 will load the map cycle as:
+        test_configureTheNextMap_case( "de_dust1", 1, "de_dust0", 2, "de_dust2" ); // Case 31-33
+    }
+
+    /**
+     * Create one case test for the stock configureTheNextMapSetttings(1) based on its parameters passed
+     * by the test_configureTheNextMap(0) loader function.
+     *
+     * @param np      next map name expected
+     * @param cmB     current map name before to call configureTheNextMapSetttings(1).
+     * @param posB    the map cycle position before to call configureTheNextMapSetttings(1).
+     * @param cmA     current map name after to call configureTheNextMapSetttings(1).
+     * @param posA    the map cycle position before to call configureTheNextMapSetttings(1).
+     */
+    stock test_configureTheNextMap_case( cmB[], posB, cmA[], posA, np[] )
+    {
+        new test_id;
+        new errorMessage[ MAX_LONG_STRING ];
+
+        // Setting the `cvar_serverMoveCursor` as 2 will load the map cycle on the
+        // test_configureTheNextMap_build(1) as:
+        //
         //  0. de_dust1
         //  1. de_dust2
         //  2. de_dust5
@@ -17516,27 +17576,24 @@ public timeRemain()
         //  9. de_dust5
         // 10. de_dust6
         set_pcvar_num( cvar_serverMoveCursor, 2 );
-        saveCurrentMapCycleSetting( "de_dust1", g_test_voteMapFilePath, 1 );
 
-        copy( g_currentMapName, charsmax( g_currentMapName ), "de_dust0" );
+        saveCurrentMapCycleSetting( cmB, g_test_voteMapFilePath, posB );
+        copy( g_currentMapName, charsmax( g_currentMapName ), cmA );
 
-        test_configureTheNextMap_build( .expectedSize=11 ); // Case 31
-        test_configureTheNextMap_case( "de_dust2" ); // Case 32
-    }
+        // Case 1
+        test_configureTheNextMap_build( .expectedSize=11 );
 
-    /**
-     * Create one case test for the stock configureTheNextMapSetttings(1) based on its parameters passed
-     * by the test_configureTheNextMap(0) loader function.
-     */
-    stock test_configureTheNextMap_case( nextMapNameExpected[] )
-    {
-        new test_id;
-        new errorMessage[ MAX_LONG_STRING ];
-
+        // Case 2
         test_id = test_registerSeriesNaming( "test_configureTheNextMap", 'e' );
 
-        ERR( "The nextMapName must to be %s, instead of %s.", nextMapNameExpected, g_nextMapName )
-        SET_TEST_FAILURE( test_id, !equali( nextMapNameExpected, g_nextMapName ), errorMessage )
+        ERR( "The nextMapName must to be %s, instead of %s.", np, g_nextMapName )
+        SET_TEST_FAILURE( test_id, !equali( np, g_nextMapName ), errorMessage )
+
+        // Case 3
+        test_id = test_registerSeriesNaming( "test_configureTheNextMap", 'e' );
+
+        ERR( "The map cycle position after must to be %d, instead of %d.", posA, g_nextMapCyclePosition )
+        SET_TEST_FAILURE( test_id, posA != g_nextMapCyclePosition, errorMessage )
     }
 
 
