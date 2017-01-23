@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-648";
+new const PLUGIN_VERSION[] = "v4.2.0-649";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -355,7 +355,8 @@ new const PLUGIN_VERSION[] = "v4.2.0-648";
 
     /**
      * Call the internal function to perform its task and stop the current test execution to avoid
-     * double failure at the test control system.
+     * double failure at the test control system. This is to be used instead of setTestFailure(1)
+     * when 2 consecutive tests use the same `test_id`.
      *
      * @see the stock 'setTestFailure(3)'.
      */
@@ -364,7 +365,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-648";
         if( setTestFailure( %1 ) ) \
         { \
             LOGGER( 1, "    ( SET_TEST_FAILURE ) Just returning/blocking." ) \
-            /*return;*/ \
+            return; \
         } \
     }
 
@@ -13574,8 +13575,8 @@ public plugin_end()
  *
  * L 01/23/2017 - 00:40:44: {1.000 15768 778942    1}
  * L 01/23/2017 - 00:40:44: {1.000 15768 778943    1}
- * L 01/23/2017 - 00:40:44: {1.000 15764 778945    2}  The current map is [ cs_italy_cz ]
- * L 01/23/2017 - 00:40:44: {1.000 15764 778946    1}  The  next   map is [ cs_italy    ]
+ * L 01/23/2017 - 00:40:44: {1.000 15764 778945    2}  The current map is [ cs_italy    ]
+ * L 01/23/2017 - 00:40:44: {1.000 15764 778946    1}  The  next   map is [ cs_italy_cz ]
  * L 01/23/2017 - 00:40:44: {1.000 15768 778948    2}
  * L 01/23/2017 - 00:40:44: {1.000 15768 778949    1}
  *
@@ -15455,7 +15456,8 @@ public timeRemain()
     }
 
     /**
-     * Informs the Test System that the test failed and why.
+     * Informs the Test System that the test failed and why. This is to be used directly instead of
+     * SET_TEST_FAILURE(1) when 2 consecutive tests use different `test_id`'s.
      *
      * @param test_id              the test_id at the Test System
      * @param isFailure            a boolean value setting whether the failure status is true.
@@ -17590,11 +17592,11 @@ public timeRemain()
 
         test_id = test_registerSeriesNaming( "test_configureTheNextMap", 'e' ); // Case 2
         ERR( "The nextMapName must to be %s, instead of %s.", npA, g_nextMapName )
-        SET_TEST_FAILURE( test_id, !equali( npA, g_nextMapName ), errorMessage )
+        setTestFailure( test_id, !equali( npA, g_nextMapName ), errorMessage );
 
         test_id = test_registerSeriesNaming( "test_configureTheNextMap", 'e' ); // Case 3
         ERR( "The map cycle position after must to be %d, instead of %d.", posA, g_nextMapCyclePosition )
-        SET_TEST_FAILURE( test_id, posA != g_nextMapCyclePosition, errorMessage )
+        setTestFailure( test_id, posA != g_nextMapCyclePosition, errorMessage );
     }
 
     stock test_configureTheNextMap_load1()
