@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-657";
+new const PLUGIN_VERSION[] = "v4.2.0-658";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -86,7 +86,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-657";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+2+4+64
+#define DEBUG_LEVEL 1+16+32
 
 
 /**
@@ -17296,16 +17296,16 @@ public timeRemain()
 
         test_populateListOnSeries_build( s, populatedArray, populatedTrie, .expectedSize=7, .isFull=is ); // Case 1
 
-        test_populateListOnSeries( s, populatedArray, {0}    , "de_dust1", false, is ); // Case 2
-        test_populateListOnSeries( s, populatedArray, {1,4,6}, "de_dust2", false, is ); // Case 3
-        test_populateListOnSeries( s, populatedArray, {2}    , "de_dust5", false, is ); // Case 4
-        test_populateListOnSeries( s, populatedArray, {3}    , "de_dust6", false, is ); // Case 5
-        test_populateListOnSeries( s, populatedArray, {5}    , "de_nuke" , false, is ); // Case 6
+        test_populateListOnSeries( s, populatedArray, {0}    , "de_dust1", false, is ); // Case  2-3
+        test_populateListOnSeries( s, populatedArray, {1,4,6}, "de_dust2", false, is ); // Case  4-5
+        test_populateListOnSeries( s, populatedArray, {2}    , "de_dust5", false, is ); // Case  6-7
+        test_populateListOnSeries( s, populatedArray, {3}    , "de_dust6", false, is ); // Case  8-9
+        test_populateListOnSeries( s, populatedArray, {5}    , "de_nuke" , false, is ); // Case 10-11
 
-        test_populateListOnSeries( s, populatedArray, _      , "de_nuke2", true , is ); // Case 7
-        test_populateListOnSeries( s, populatedArray, _      , "de_dust" , true , is ); // Case 8
-        test_populateListOnSeries( s, populatedArray, _      , "de_dust3", true , is ); // Case 9
-        test_populateListOnSeries( s, populatedArray, _      , "de_dust4", true , is ); // Case 10
+        test_populateListOnSeries( s, populatedArray, _      , "de_nuke2", true , is ); // Case 12-13
+        test_populateListOnSeries( s, populatedArray, _      , "de_dust" , true , is ); // Case 14-15
+        test_populateListOnSeries( s, populatedArray, _      , "de_dust3", true , is ); // Case 16-17
+        test_populateListOnSeries( s, populatedArray, _      , "de_dust4", true , is ); // Case 18-19
 
         TrieDestroy( populatedTrie );
         ArrayDestroy( populatedArray );
@@ -17322,18 +17322,18 @@ public timeRemain()
         // Set the settings accordantly to what is being tests on this Unit Test.
         set_pcvar_num( cvar_serverMoveCursor, 2 );
 
-        test_populateListOnSeries_build( s, populatedArray, populatedTrie, .expectedSize=11, .isFull=is ); // Case 11
+        test_populateListOnSeries_build( s, populatedArray, populatedTrie, .expectedSize=11, .isFull=is ); // Case 1
 
-        test_populateListOnSeries( s, populatedArray, {0}     , "de_dust1", false, is ); // Case 12
-        test_populateListOnSeries( s, populatedArray, {1,4, 8}, "de_dust2", false, is ); // Case 13
-        test_populateListOnSeries( s, populatedArray, {2,5, 9}, "de_dust5", false, is ); // Case 14
-        test_populateListOnSeries( s, populatedArray, {3,6,10}, "de_dust6", false, is ); // Case 15
-        test_populateListOnSeries( s, populatedArray, {7}     , "de_nuke" , false, is ); // Case 16
+        test_populateListOnSeries( s, populatedArray, {0}     , "de_dust1", false, is ); // Case  2-3
+        test_populateListOnSeries( s, populatedArray, {1,4, 8}, "de_dust2", false, is ); // Case  4-5
+        test_populateListOnSeries( s, populatedArray, {2,5, 9}, "de_dust5", false, is ); // Case  6-7
+        test_populateListOnSeries( s, populatedArray, {3,6,10}, "de_dust6", false, is ); // Case  8-9
+        test_populateListOnSeries( s, populatedArray, {7}     , "de_nuke" , false, is ); // Case 10-11
 
-        test_populateListOnSeries( s, populatedArray, _       , "de_nuke2", true , is ); // Case 17
-        test_populateListOnSeries( s, populatedArray, _       , "de_dust" , true , is ); // Case 18
-        test_populateListOnSeries( s, populatedArray, _       , "de_dust3", true , is ); // Case 19
-        test_populateListOnSeries( s, populatedArray, _       , "de_dust4", true , is ); // Case 20
+        test_populateListOnSeries( s, populatedArray, _       , "de_nuke2", true , is ); // Case 12-13
+        test_populateListOnSeries( s, populatedArray, _       , "de_dust" , true , is ); // Case 14-15
+        test_populateListOnSeries( s, populatedArray, _       , "de_dust3", true , is ); // Case 16-17
+        test_populateListOnSeries( s, populatedArray, _       , "de_dust4", true , is ); // Case 18-19
 
         TrieDestroy( populatedTrie );
         ArrayDestroy( populatedArray );
@@ -17350,18 +17350,18 @@ public timeRemain()
         // Set the settings accordantly to what is being tests on this Unit Test.
         set_pcvar_num( cvar_serverMoveCursor, 6 );
 
-        test_populateListOnSeries_build( s, populatedArray, populatedTrie, .expectedSize=7, .isFull=is ); // Case 21
+        test_populateListOnSeries_build( s, populatedArray, populatedTrie, .expectedSize=7, .isFull=is ); // Case 1
 
-        test_populateListOnSeries( s, populatedArray, {0}    , "de_dust1", false, is ); // Case 22
-        test_populateListOnSeries( s, populatedArray, {1,4,6}, "de_dust2", false, is ); // Case 23
-        test_populateListOnSeries( s, populatedArray, {2}    , "de_dust5", false, is ); // Case 24
-        test_populateListOnSeries( s, populatedArray, {3}    , "de_dust6", false, is ); // Case 25
-        test_populateListOnSeries( s, populatedArray, {5}    , "de_nuke" , false, is ); // Case 26
+        test_populateListOnSeries( s, populatedArray, {0}    , "de_dust1", false, is ); // Case  2-3
+        test_populateListOnSeries( s, populatedArray, {1,4,6}, "de_dust2", false, is ); // Case  4-5
+        test_populateListOnSeries( s, populatedArray, {2}    , "de_dust5", false, is ); // Case  6-7
+        test_populateListOnSeries( s, populatedArray, {3}    , "de_dust6", false, is ); // Case  8-9
+        test_populateListOnSeries( s, populatedArray, {5}    , "de_nuke" , false, is ); // Case 10-11
 
-        test_populateListOnSeries( s, populatedArray, _      , "de_nuke2", true , is ); // Case 27
-        test_populateListOnSeries( s, populatedArray, _      , "de_dust" , true , is ); // Case 28
-        test_populateListOnSeries( s, populatedArray, _      , "de_dust3", true , is ); // Case 29
-        test_populateListOnSeries( s, populatedArray, _      , "de_dust4", true , is ); // Case 30
+        test_populateListOnSeries( s, populatedArray, _      , "de_nuke2", true , is ); // Case 12-13
+        test_populateListOnSeries( s, populatedArray, _      , "de_dust" , true , is ); // Case 14-15
+        test_populateListOnSeries( s, populatedArray, _      , "de_dust3", true , is ); // Case 16-17
+        test_populateListOnSeries( s, populatedArray, _      , "de_dust4", true , is ); // Case 18-19
 
         TrieDestroy( populatedTrie );
         ArrayDestroy( populatedArray );
@@ -17597,12 +17597,12 @@ public timeRemain()
     {
         set_pcvar_num( cvar_whitelistMinPlayers, 0 );
 
-        test_populateListOnSeries_load1( 'a', true ); // Case  1-10
-        test_populateListOnSeries_load2( 'i', true ); // Case 10-20
-        test_populateListOnSeries_load3( 'b', true ); // Case 20-30
+        test_populateListOnSeries_load1( 'a', true ); // Case 1-19
+        test_populateListOnSeries_load2( 'i', true ); // Case 1-19
+        test_populateListOnSeries_load3( 'b', true ); // Case 1-19
 
-        test_configureTheNextMap_load1( 'd' ); // Case 31-78
-        test_configureTheNextMap_load2( 'a' ); // Case 79-
+        test_configureTheNextMap_load1( 'd' ); // Case 1-48
+        test_configureTheNextMap_load2( 'a' ); // Case 1-60
     }
 
     stock test_configureTheNextMap_load2( s )
@@ -17624,26 +17624,26 @@ public timeRemain()
         // 12. go_girl
         set_pcvar_num( cvar_serverMoveCursor, 10 );
 
-        test_configureTheNextMap_case( s, "de_dust0", "de_dust1", "de_dust2", 1 , 2 , .expectedSize=13 ); // Case  79-81
-        test_configureTheNextMap_case( s, "de_dust0", "de_dust1", "de_dust2", 1 , 2 , .expectedSize=13 ); // Case  82-84
-        test_configureTheNextMap_case( s, "de_dust0", "de_dust1", "de_dust2", 1 , 2 , .expectedSize=13 ); // Case  85-87
-        test_configureTheNextMap_case( s, "de_dust0", "de_nuke" , "de_nuke1", 1 , 3 , .expectedSize=13 ); // Case  88-90
-        test_configureTheNextMap_case( s, "de_dust0", "de_nuke" , "de_nuke1", 1 , 3 , .expectedSize=13 ); // Case  91-93
-        test_configureTheNextMap_case( s, "de_dust0", "de_nuke1", "de_nuke2", 1 , 3 , .expectedSize=13 ); // Case  94-96
-        test_configureTheNextMap_case( s, "de_dust0", "de_nuke1", "de_nuke2", 1 , 3 , .expectedSize=13 ); // Case  97-99
-        test_configureTheNextMap_case( s, "de_dust0", "de_nuke2", "cs_play" , 3 , 4 , .expectedSize=13 ); // Case 100-102
-        test_configureTheNextMap_case( s, "de_dust0", "de_nuke2", "cs_play" , 3 , 4 , .expectedSize=13 ); // Case 103-105
-        test_configureTheNextMap_case( s, "de_dust0", "de_nuke2", "cs_play" , 3 , 4 , .expectedSize=13 ); // Case 106-108
-        test_configureTheNextMap_case( s, "de_dust0", "cs_play" , "aim_dumb", 4 , 5 , .expectedSize=13 ); // Case 109-111
-        test_configureTheNextMap_case( s, "de_dust0", "aim_dumb", "de_nuke" , 5 , 6 , .expectedSize=13 ); // Case 112-114
-        test_configureTheNextMap_case( s, "de_dust0", "de_nuke" , "de_nuke1", 6 , 7 , .expectedSize=13 ); // Case 115-117
-        test_configureTheNextMap_case( s, "de_dust0", "de_nuke1", "de_nuke2", 7 , 8 , .expectedSize=13 ); // Case 118-120
-        test_configureTheNextMap_case( s, "de_dust0", "de_nuke2", "de_rage0", 8 , 9 , .expectedSize=13 ); // Case 121-123
-        test_configureTheNextMap_case( s, "de_dust0", "de_rage0", "de_rage1", 9 , 10, .expectedSize=13 ); // Case 124-126
-        test_configureTheNextMap_case( s, "de_dust0", "de_rage1", "de_rage2", 10, 11, .expectedSize=13 ); // Case 127-129
-        test_configureTheNextMap_case( s, "de_dust0", "de_rage2", "de_rage3", 11, 12, .expectedSize=13 ); // Case 130-132
-        test_configureTheNextMap_case( s, "de_dust0", "de_rage3", "go_girl" , 12, 13, .expectedSize=13 ); // Case 133-135
-        test_configureTheNextMap_case( s, "de_dust0", "go_girl" , "de_dust1", 13, 1 , .expectedSize=13 ); // Case 136-138
+        test_configureTheNextMap_case( s, "de_dust0", "de_dust1", "de_dust2", 1 , 2 , .expectedSize=13 ); // Case  1-3
+        test_configureTheNextMap_case( s, "de_dust0", "de_dust1", "de_dust2", 1 , 2 , .expectedSize=13 ); // Case  4-6
+        test_configureTheNextMap_case( s, "de_dust0", "de_dust1", "de_dust2", 1 , 2 , .expectedSize=13 ); // Case  7-9
+        test_configureTheNextMap_case( s, "de_dust0", "de_nuke" , "de_nuke1", 1 , 3 , .expectedSize=13 ); // Case 10-12
+        test_configureTheNextMap_case( s, "de_dust0", "de_nuke" , "de_nuke1", 1 , 3 , .expectedSize=13 ); // Case 13-15
+        test_configureTheNextMap_case( s, "de_dust0", "de_nuke1", "de_nuke2", 1 , 3 , .expectedSize=13 ); // Case 16-18
+        test_configureTheNextMap_case( s, "de_dust0", "de_nuke1", "de_nuke2", 1 , 3 , .expectedSize=13 ); // Case 19-21
+        test_configureTheNextMap_case( s, "de_dust0", "de_nuke2", "cs_play" , 3 , 4 , .expectedSize=13 ); // Case 22-24
+        test_configureTheNextMap_case( s, "de_dust0", "de_nuke2", "cs_play" , 3 , 4 , .expectedSize=13 ); // Case 25-27
+        test_configureTheNextMap_case( s, "de_dust0", "de_nuke2", "cs_play" , 3 , 4 , .expectedSize=13 ); // Case 28-30
+        test_configureTheNextMap_case( s, "de_dust0", "cs_play" , "aim_dumb", 4 , 5 , .expectedSize=13 ); // Case 31-33
+        test_configureTheNextMap_case( s, "de_dust0", "aim_dumb", "de_nuke" , 5 , 6 , .expectedSize=13 ); // Case 34-36
+        test_configureTheNextMap_case( s, "de_dust0", "de_nuke" , "de_nuke1", 6 , 7 , .expectedSize=13 ); // Case 37-39
+        test_configureTheNextMap_case( s, "de_dust0", "de_nuke1", "de_nuke2", 7 , 8 , .expectedSize=13 ); // Case 40-42
+        test_configureTheNextMap_case( s, "de_dust0", "de_nuke2", "de_rage0", 8 , 9 , .expectedSize=13 ); // Case 43-45
+        test_configureTheNextMap_case( s, "de_dust0", "de_rage0", "de_rage1", 9 , 10, .expectedSize=13 ); // Case 46-48
+        test_configureTheNextMap_case( s, "de_dust0", "de_rage1", "de_rage2", 10, 11, .expectedSize=13 ); // Case 49-51
+        test_configureTheNextMap_case( s, "de_dust0", "de_rage2", "de_rage3", 11, 12, .expectedSize=13 ); // Case 52-54
+        test_configureTheNextMap_case( s, "de_dust0", "de_rage3", "go_girl" , 12, 13, .expectedSize=13 ); // Case 55-57
+        test_configureTheNextMap_case( s, "de_dust0", "go_girl" , "de_dust1", 13, 1 , .expectedSize=13 ); // Case 58-60
     }
 
     /**
