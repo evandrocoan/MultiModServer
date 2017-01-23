@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-649";
+new const PLUGIN_VERSION[] = "v4.2.0-650";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -86,7 +86,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-649";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+16+32
+#define DEBUG_LEVEL 1+2+4+64
 
 
 /**
@@ -15862,7 +15862,7 @@ public timeRemain()
         vote_startDirector( false );
 
         ERR( "g_isMapExtensionAllowed must be 1 (it was %d)", g_isMapExtensionAllowed )
-        SET_TEST_FAILURE( test_id, !g_isMapExtensionAllowed, errorMessage )
+        setTestFailure( test_id, !g_isMapExtensionAllowed, errorMessage );
 
         set_task( 2.0, "test_isMapExtensionAvowed_case2", chainDelay );
     }
@@ -15878,7 +15878,7 @@ public timeRemain()
         test_id = register_test( chainDelay, "test_isMapExtensionAvowed_case2" );
 
         ERR( "g_isMapExtensionAllowed must be 1 (it was %d)", g_isMapExtensionAllowed )
-        SET_TEST_FAILURE( test_id, !g_isMapExtensionAllowed, errorMessage )
+        setTestFailure( test_id, !g_isMapExtensionAllowed, errorMessage );
 
         color_print( 0, "%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED2" );
         cancelVoting();
@@ -15893,7 +15893,7 @@ public timeRemain()
         vote_startDirector( false );
 
         ERR( "g_isMapExtensionAllowed must be 0 (it was %d)", g_isMapExtensionAllowed )
-        SET_TEST_FAILURE( test_id, g_isMapExtensionAllowed, errorMessage )
+        setTestFailure( test_id, g_isMapExtensionAllowed, errorMessage );
 
         set_task( 2.0, "test_endOfMapVotingStart_case1", chainDelay );
     }
@@ -15914,7 +15914,7 @@ public timeRemain()
         test_id = register_test( chainDelay, "test_endOfMapVotingStart_case1" );
 
         ERR( "g_isMapExtensionAllowed must be 0 (it was %d)", g_isMapExtensionAllowed )
-        SET_TEST_FAILURE( test_id, g_isMapExtensionAllowed, errorMessage )
+        setTestFailure( test_id, g_isMapExtensionAllowed, errorMessage );
 
         cancelVoting();
         secondsLeft = get_timeleft();
@@ -15940,7 +15940,7 @@ public timeRemain()
         new test_id = register_test( chainDelay, "test_endOfMapVotingStart_case2" );
 
         vote_manageEnd();
-        SET_TEST_FAILURE( test_id, !( g_voteStatus & IS_VOTE_IN_PROGRESS ), "vote_startDirector() does not started!" )
+        setTestFailure( test_id, !( g_voteStatus & IS_VOTE_IN_PROGRESS ), "vote_startDirector() does not started!" );
 
         tryToSetGameModCvarFloat( cvar_mp_timelimit, 20.0 );
         cancelVoting();
@@ -15956,7 +15956,7 @@ public timeRemain()
         new test_id = register_test( chainDelay, "test_endOfMapVotingStop_case1" );
 
         vote_manageEnd();
-        SET_TEST_FAILURE( test_id, ( g_voteStatus & IS_VOTE_IN_PROGRESS ) != 0, "vote_startDirector() does started!" )
+        setTestFailure( test_id, ( g_voteStatus & IS_VOTE_IN_PROGRESS ) != 0, "vote_startDirector() does started!" );
 
         tryToSetGameModCvarFloat( cvar_mp_timelimit, 2.0 );
         cancelVoting();
@@ -15972,7 +15972,7 @@ public timeRemain()
         new test_id = register_test( chainDelay, "test_endOfMapVotingStop_case2" );
 
         vote_manageEnd();
-        SET_TEST_FAILURE( test_id, ( g_voteStatus & IS_VOTE_IN_PROGRESS ) != 0, "vote_startDirector() does started!" )
+        setTestFailure( test_id, ( g_voteStatus & IS_VOTE_IN_PROGRESS ) != 0, "vote_startDirector() does started!" );
 
         tryToSetGameModCvarFloat( cvar_mp_timelimit, 20.0 );
         //cancelVoting();
@@ -16253,7 +16253,7 @@ public timeRemain()
         }
 
         ERR( "The hour %2d must %sto be loaded at [%d-%d]!", currentHour, ( isToLoad ? "" : "not " ), startHour, endHour )
-        SET_TEST_FAILURE( test_id, loadResult != isToLoad, errorMessage )
+        setTestFailure( test_id, loadResult != isToLoad, errorMessage );
     }
 
     /**
@@ -16384,7 +16384,7 @@ public timeRemain()
             test_id = test_registerSeriesNaming( "test_loadCurrentBlacklist", serie );
 
             ERR( "The map '%s' must to be present on the trie, but it was not!", map_existent )
-            SET_TEST_FAILURE( test_id, !TrieKeyExists( blackListTrie, map_existent ), errorMessage )
+            setTestFailure( test_id, !TrieKeyExists( blackListTrie, map_existent ), errorMessage );
         }
 
         if( not_existent[ 0 ] )
@@ -16392,7 +16392,7 @@ public timeRemain()
             test_id = test_registerSeriesNaming( "test_loadCurrentBlacklist", serie );
 
             ERR( "The map '%s' must not to be present on the trie, but it was!", not_existent )
-            SET_TEST_FAILURE( test_id, TrieKeyExists( blackListTrie, not_existent ), errorMessage )
+            setTestFailure( test_id, TrieKeyExists( blackListTrie, not_existent ), errorMessage );
         }
 
         TrieDestroy( blackListTrie );
@@ -16483,7 +16483,7 @@ public timeRemain()
         changeResult = get_pcvar_num( serverCvarPointer );
 
         ERR( "The aim result '%d' was not achieved! The result was %d.", aimResult, changeResult )
-        SET_TEST_FAILURE( test_id, changeResult != aimResult, errorMessage )
+        setTestFailure( test_id, changeResult != aimResult, errorMessage );
     }
 
     /**
@@ -16647,7 +16647,7 @@ public timeRemain()
             }
 
             ERR( "The map '%s' %s be present on the voting map menu.", mapToCheck, ( isToBePresent ? "must to" : "MUST NOT to" ) )
-            SET_TEST_FAILURE( test_id, isMapPresent != isToBePresent, errorMessage )
+            setTestFailure( test_id, isMapPresent != isToBePresent, errorMessage );
         }
     }
 
@@ -16734,7 +16734,7 @@ public timeRemain()
         new nominationsCount = countPlayerNominations( player_id, openNominationIndex );
 
         ERR( "Must to be %d nominations, instead of %d.", total_Nom, nominationsCount )
-        SET_TEST_FAILURE( test_id, nominationsCount != total_Nom, errorMessage )
+        setTestFailure( test_id, nominationsCount != total_Nom, errorMessage );
     }
 
     /**
@@ -16800,7 +16800,7 @@ public timeRemain()
         }
 
         ERR( "Must to be %d RTVs, instead of %d.", total_RTVs, g_rockedVoteCount )
-        SET_TEST_FAILURE( test_id, g_rockedVoteCount != total_RTVs, errorMessage )
+        setTestFailure( test_id, g_rockedVoteCount != total_RTVs, errorMessage );
     }
 
     /**
@@ -17056,7 +17056,7 @@ public timeRemain()
         gameType = whatGameEndingTypeItIs();
 
         ERR( "The GameEndingType must to be %d, instead of %d.", result, gameType )
-        SET_TEST_FAILURE( test_id, gameType != result, errorMessage )
+        setTestFailure( test_id, gameType != result, errorMessage );
     }
 
     /**
@@ -17089,7 +17089,7 @@ public timeRemain()
         ERR( "Converting the number %d on base %d to base %d must to be %d, instead of %d.", \
                 origin_number, origin_base, destiny_base, expected, result )
 
-        SET_TEST_FAILURE( test_id, result != expected, errorMessage )
+        setTestFailure( test_id, result != expected, errorMessage );
     }
 
     /**
@@ -17125,7 +17125,7 @@ public timeRemain()
         ERR( "The converted page `%s` must to be %d, instead of %d (%s).", \
                 pageString2, expectedPage, menuPages[ player_id ], pageString )
 
-        SET_TEST_FAILURE( test_id, menuPages[ player_id ] != expectedPage, errorMessage )
+        setTestFailure( test_id, menuPages[ player_id ] != expectedPage, errorMessage );
     }
 
     /**
@@ -17163,7 +17163,7 @@ public timeRemain()
         new errorMessage[ MAX_LONG_STRING ];
 
         ERR( "The map `%s` must %sto be loaded on the trie.", mapName, isNotToBe ? "not " : "" )
-        SET_TEST_FAILURE( test_id, TrieKeyExists( g_test_strictValidMapsTrie, mapName ) == isNotToBe, errorMessage )
+        setTestFailure( test_id, TrieKeyExists( g_test_strictValidMapsTrie, mapName ) == isNotToBe, errorMessage );
     }
 
     /**
@@ -17201,7 +17201,7 @@ public timeRemain()
         }
 
         ERR( "The map populatedArray size must to be %d, instead of %d.", expectedSize, mapCount )
-        SET_TEST_FAILURE( test_id, mapCount != expectedSize, errorMessage )
+        setTestFailure( test_id, mapCount != expectedSize, errorMessage );
     }
 
     stock test_populateListOnSeries_load()
@@ -17366,13 +17366,13 @@ public timeRemain()
         GET_MAP_NAME( populatedArray, index, mapName )
 
         ERR( "The map name must to be %s, instead of %s.", mapNameExpected, mapName )
-        SET_TEST_FAILURE( test_id, !equali( mapName, mapNameExpected ), errorMessage )
+        setTestFailure( test_id, !equali( mapName, mapNameExpected ), errorMessage );
 
         test_id = test_registerSeriesNaming( "test_GET_MAP_NAME", 'd' ); // Case 2
         GET_MAP_INFO( populatedArray, index, mapName )
 
         ERR( "The map info must to be %s, instead of %s.", mapInfoExpected, mapName )
-        SET_TEST_FAILURE( test_id, !equali( mapName, mapInfoExpected ), errorMessage )
+        setTestFailure( test_id, !equali( mapName, mapInfoExpected ), errorMessage );
     }
 
     /**
@@ -17467,7 +17467,7 @@ public timeRemain()
             }
 
             ERR( "The %s '%s' must %sto be present on the voting map menu.", is ? "name" : "info", textToCheck, toBe ? "" : "not " )
-            SET_TEST_FAILURE( test_id, isMapPresent != toBe, errorMessage )
+            setTestFailure( test_id, isMapPresent != toBe, errorMessage );
         }
     }
 
@@ -17509,12 +17509,12 @@ public timeRemain()
         test_id = test_registerSeriesNaming( "test_SortCustomSynced2D", 'd' );
 
         ERR( "The expectedPosition %d must to be %s, instead of %s.", expectedPosition, expectedMap, votingMaps[ expectedPosition ] )
-        SET_TEST_FAILURE( test_id, !equali( expectedMap, votingMaps[ expectedPosition ] ), errorMessage )
+        setTestFailure( test_id, !equali( expectedMap, votingMaps[ expectedPosition ] ), errorMessage );
 
         test_id = test_registerSeriesNaming( "test_SortCustomSynced2D", 'd' );
 
         ERR( "The expectedPosition %d must to be %s, instead of %s.", expectedPosition, expectedInfo, votingInfos[ expectedPosition ] )
-        SET_TEST_FAILURE( test_id, !equali( expectedInfo, votingInfos[ expectedPosition ] ), errorMessage )
+        setTestFailure( test_id, !equali( expectedInfo, votingInfos[ expectedPosition ] ), errorMessage );
     }
 
     /**
@@ -17536,7 +17536,7 @@ public timeRemain()
         g_test_isToUseStrictValidMaps = false;
 
         ERR( "The map populatedArray size must to be %d, instead of %d.", expectedSize, mapCount )
-        SET_TEST_FAILURE( test_id, mapCount != expectedSize, errorMessage )
+        setTestFailure( test_id, mapCount != expectedSize, errorMessage );
     }
 
     /**
@@ -17665,7 +17665,7 @@ public timeRemain()
         test_result = someTesting();
 
         ERR( "The expected result must to be %d, instead of %d.", expected, test_result )
-        SET_TEST_FAILURE( test_id, expected != test_result, errorMessage )
+        setTestFailure( test_id, expected != test_result, errorMessage );
     }
 
     /**
