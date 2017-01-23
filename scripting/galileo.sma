@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-651";
+new const PLUGIN_VERSION[] = "v4.2.0-652";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -86,7 +86,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-651";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+2+4+64
+#define DEBUG_LEVEL 1+16+32
 
 
 /**
@@ -17531,28 +17531,6 @@ public timeRemain()
     }
 
     /**
-     * To prepare the test_configureTheNextMap(0) tests files and settings.
-     */
-    stock test_configureTheNextMap_build( test_id, expectedSize )
-    {
-        new mapCount;
-        new errorMessage[ MAX_LONG_STRING ];
-
-        helper_mapFileListLoad( false, g_test_voteMapFilePath, "de_dust1", "de_dust2", "de_nuke", "de_dust2" );
-        helper_loadStrictValidMapsTrie( "de_dust1", "de_dust2", "de_dust5", "de_dust6", "de_nuke" );
-
-        g_test_isToUseStrictValidMaps = true;
-
-        set_pcvar_string( cvar_mapcyclefile, g_test_voteMapFilePath );
-        mapCount = configureTheNextMapSetttings( errorMessage );
-
-        g_test_isToUseStrictValidMaps = false;
-
-        ERR( "The map populatedArray size must to be %d, instead of %d.", expectedSize, mapCount )
-        setTestFailure( test_id, mapCount != expectedSize, errorMessage );
-    }
-
-    /**
      * Tests if the function configureTheNextMapSetttings(1) is properly setting the next map.
      */
     stock test_configureTheNextMap()
@@ -17569,29 +17547,44 @@ public timeRemain()
 
     stock test_configureTheNextMap_load2()
     {
-        // Setting the `cvar_serverMoveCursor` as 2+8 will load the map cycle the same as on the test
-        // test_configureTheNextMap_load1(0), however now the map cycling will have a new work flow.
+        // Setting the `cvar_serverMoveCursor` as 2+8 will load the map cycle as:
+        //
+        // 0.  de_dust1
+        // 1.  de_dust2
+        // 2.  de_dust5
+        // 3.  cs_play
+        // 4.  aim_dumb
+        // 5.  de_nuke
+        // 6.  de_nuke1
+        // 7.  de_nuke2
+        // 8.  de_rage0
+        // 9.  de_rage1
+        // 10. de_rage2
+        // 11. de_rage3
+        // 12. go_girl
         set_pcvar_num( cvar_serverMoveCursor, 10 );
 
-        test_configureTheNextMap_case( "de_dust0", "de_dust1", "de_dust2", 1 , 2  ); // Case 1-3
+        test_configureTheNextMap_case( "de_dust0", "de_dust1", "de_dust2", 1, 2, .expectedSize=13 ); // Case 1-3
+        test_configureTheNextMap_case( "de_dust0", "de_nuke" , "de_nuke1", 1, 3, .expectedSize=13 ); // Case 4-6
     }
 
     /**
      * Create one case test for the stock configureTheNextMapSetttings(1) based on its parameters passed
      * by the test_configureTheNextMap(0) loader function.
      *
-     * As the `posA` variable points to the next map of the next map of the current map `cmA`,
-     * the `posB` variable will be pointing to the map `npA` current position on the map cycle.
+     * As the `posE` variable points to the next map of the next map of the current map `cmA`,
+     * the `posB` variable will be pointing to the map `npE` current position on the map cycle.
      *
-     * @param cmA     current map name       after  to call saveCurrentMapCycleSetting(3).
      * @param cmB     current map name       before to call saveCurrentMapCycleSetting(3).
-     * @param npA     next map name expected after  to call saveCurrentMapCycleSetting(3).
+     * @param cmA     current map name       after  to call saveCurrentMapCycleSetting(3).
+     * @param npE     next map name expected after  to call saveCurrentMapCycleSetting(3) [Expected Next Map].
      * @param posB    the map cycle position before to call saveCurrentMapCycleSetting(3).
-     * @param posA    the map cycle position after  to call saveCurrentMapCycleSetting(3).
+     * @param posE    the map cycle position after  to call saveCurrentMapCycleSetting(3) [Expected Position].
      */
-    stock test_configureTheNextMap_case( cmB[], cmA[], npA[], posB, posA )
+    stock test_configureTheNextMap_case( cmB[], cmA[], npE[], posB, posE, expectedSize=11 )
     {
         new test_id;
+        new mapCount;
         new errorMessage[ MAX_LONG_STRING ];
 
         set_pcvar_string( cvar_amx_nextmap, cmA );
@@ -17600,22 +17593,44 @@ public timeRemain()
         saveCurrentMapCycleSetting( cmB, g_test_voteMapFilePath, posB );
         copy( g_currentMapName, charsmax( g_currentMapName ), cmA );
 
+        if( expectedSize == 11 )
+        {
+            helper_mapFileListLoad( false, g_test_voteMapFilePath, "de_dust1", "de_dust2", "de_nuke", "de_dust2" );
+            helper_loadStrictValidMapsTrie( "de_dust1", "de_dust2", "de_dust5", "de_dust6", "de_nuke" );
+        }
+        else
+        {
+            helper_mapFileListLoad( false, g_test_voteMapFilePath, "de_dust1", "cs_play", "aim_dumb",
+                                            "de_nuke", "de_rage0", "go_girl" );
+
+            helper_loadStrictValidMapsTrie( "de_dust0", "de_dust1", "de_dust2", "de_dust5", "cs_play", "aim_dumb",
+                                            "de_nuke", "de_nuke1", "de_nuke2", "de_rage0", "de_rage1", "de_rage2",
+                                            "de_rage3", "go_girl" );
+        }
+
+        g_test_isToUseStrictValidMaps = true;
+
+        set_pcvar_string( cvar_mapcyclefile, g_test_voteMapFilePath );
+        mapCount = configureTheNextMapSetttings( errorMessage );
+
+        g_test_isToUseStrictValidMaps = false;
+
         test_id = test_registerSeriesNaming( "test_configureTheNextMap", 'e' ); // Case 1
-        test_configureTheNextMap_build( test_id, .expectedSize=11 );
+        ERR( "The map populatedArray size must to be %d, instead of %d.", expectedSize, mapCount )
+        setTestFailure( test_id, mapCount != expectedSize, errorMessage );
 
         test_id = test_registerSeriesNaming( "test_configureTheNextMap", 'e' ); // Case 2
-        ERR( "The nextMapName must to be %s, instead of %s.", npA, g_nextMapName )
-        setTestFailure( test_id, !equali( npA, g_nextMapName ), errorMessage );
+        ERR( "The nextMapName must to be %s, instead of %s.", npE, g_nextMapName )
+        setTestFailure( test_id, !equali( npE, g_nextMapName ), errorMessage );
 
         test_id = test_registerSeriesNaming( "test_configureTheNextMap", 'e' ); // Case 3
-        ERR( "The map cycle position after must to be %d, instead of %d.", posA, g_nextMapCyclePosition )
-        setTestFailure( test_id, posA != g_nextMapCyclePosition, errorMessage );
+        ERR( "The map cycle position after must to be %d, instead of %d.", posE, g_nextMapCyclePosition )
+        setTestFailure( test_id, posE != g_nextMapCyclePosition, errorMessage );
     }
 
     stock test_configureTheNextMap_load1()
     {
-        // Setting the `cvar_serverMoveCursor` as 2 will load the map cycle on the
-        // test_configureTheNextMap_build(1) as:
+        // Setting the `cvar_serverMoveCursor` as 2 will load the map cycle on the as:
         //
         //  0. de_dust1
         //  1. de_dust2
