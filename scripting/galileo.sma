@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-637";
+new const PLUGIN_VERSION[] = "v4.2.0-638";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -316,7 +316,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-637";
             // LOGGER( 1, "Current i is: %d", i )
         }
 
-        // test_configureTheNextMap();
+        test_configureTheNextMap();
         // test_loadCurrentBlackList_cases();
         // test_SortCustomSynced2D();
         // test_GET_MAP_INFO_load();
@@ -17103,16 +17103,18 @@ public timeRemain()
      */
     stock test_populateListOnSeries_build( Array:populatedArray, Trie:populatedTrie, expectedSize, bool:isFull )
     {
+        new test_id;
         new mapCount;
-        new errorMessage[ MAX_LONG_STRING ];
 
-        new test_id = test_registerSeriesNaming( "test_populateListOnSeries", 'e' );
+        new errorMessage[ MAX_LONG_STRING ];
+        test_id = test_registerSeriesNaming( isFull ? "test_configureTheNextMap" : "test_populateListOnSeries", 'e' );
 
         helper_mapFileListLoad( false, g_test_voteMapFilePath, "de_dust1", "de_dust2", "de_nuke", "de_dust2" );
         helper_loadStrictValidMapsTrie( "de_dust1", "de_dust2", "de_dust5", "de_dust6", "de_nuke" );
 
         if( isFull )
         {
+            set_pcvar_string( cvar_mapcyclefile, g_test_voteMapFilePath );
             mapCount = configureTheNextMapSetttings( errorMessage );
         }
         else
@@ -17133,7 +17135,7 @@ public timeRemain()
     /**
      * Tests if the function map_populateListOnSeries(3) is properly loading the maps series.
      */
-    stock test_populateListOnSeries_load1( bool:isFull=false )
+    stock test_populateListOnSeries_load1( bool:is=false )
     {
         new Trie:populatedTrie   = TrieCreate();
         new Array:populatedArray = ArrayCreate( MAX_MAPNAME_LENGHT );
@@ -17142,18 +17144,18 @@ public timeRemain()
         set_pcvar_num( cvar_serverMoveCursor, 1 );
 
         g_test_isToUseStrictValidMaps = true;
-        test_populateListOnSeries_build( populatedArray, populatedTrie, .expectedSize=7, .isFull=isFull ); // Case 1
+        test_populateListOnSeries_build( populatedArray, populatedTrie, .expectedSize=7, .isFull=is ); // Case 1
 
-        test_populateListOnSeries( populatedArray, {0}    , "de_dust1", false ); // Case 2
-        test_populateListOnSeries( populatedArray, {1,4,6}, "de_dust2", false ); // Case 3
-        test_populateListOnSeries( populatedArray, {2}    , "de_dust5", false ); // Case 4
-        test_populateListOnSeries( populatedArray, {3}    , "de_dust6", false ); // Case 5
-        test_populateListOnSeries( populatedArray, {5}    , "de_nuke" , false ); // Case 6
+        test_populateListOnSeries( populatedArray, {0}    , "de_dust1", false, is ); // Case 2
+        test_populateListOnSeries( populatedArray, {1,4,6}, "de_dust2", false, is ); // Case 3
+        test_populateListOnSeries( populatedArray, {2}    , "de_dust5", false, is ); // Case 4
+        test_populateListOnSeries( populatedArray, {3}    , "de_dust6", false, is ); // Case 5
+        test_populateListOnSeries( populatedArray, {5}    , "de_nuke" , false, is ); // Case 6
 
-        test_populateListOnSeries( populatedArray, _      , "de_nuke2", true  ); // Case 7
-        test_populateListOnSeries( populatedArray, _      , "de_dust" , true  ); // Case 8
-        test_populateListOnSeries( populatedArray, _      , "de_dust3", true  ); // Case 9
-        test_populateListOnSeries( populatedArray, _      , "de_dust4", true  ); // Case 10
+        test_populateListOnSeries( populatedArray, _      , "de_nuke2", true , is ); // Case 7
+        test_populateListOnSeries( populatedArray, _      , "de_dust" , true , is ); // Case 8
+        test_populateListOnSeries( populatedArray, _      , "de_dust3", true , is ); // Case 9
+        test_populateListOnSeries( populatedArray, _      , "de_dust4", true , is ); // Case 10
 
         TrieDestroy( populatedTrie );
         ArrayDestroy( populatedArray );
@@ -17164,7 +17166,7 @@ public timeRemain()
     /**
      * Tests if the function map_populateListOnSeries(3) is properly loading the maps series.
      */
-    stock test_populateListOnSeries_load2( bool:isFull=false )
+    stock test_populateListOnSeries_load2( bool:is=false )
     {
         new Trie:populatedTrie   = TrieCreate();
         new Array:populatedArray = ArrayCreate( MAX_MAPNAME_LENGHT );
@@ -17173,18 +17175,18 @@ public timeRemain()
         set_pcvar_num( cvar_serverMoveCursor, 2 );
 
         g_test_isToUseStrictValidMaps = true;
-        test_populateListOnSeries_build( populatedArray, populatedTrie, .expectedSize=11, .isFull=isFull ); // Case 11
+        test_populateListOnSeries_build( populatedArray, populatedTrie, .expectedSize=11, .isFull=is ); // Case 11
 
-        test_populateListOnSeries( populatedArray, {0}     , "de_dust1", false ); // Case 12
-        test_populateListOnSeries( populatedArray, {1,4, 8}, "de_dust2", false ); // Case 13
-        test_populateListOnSeries( populatedArray, {2,5, 9}, "de_dust5", false ); // Case 14
-        test_populateListOnSeries( populatedArray, {3,6,10}, "de_dust6", false ); // Case 15
-        test_populateListOnSeries( populatedArray, {7}     , "de_nuke" , false ); // Case 16
+        test_populateListOnSeries( populatedArray, {0}     , "de_dust1", false, is ); // Case 12
+        test_populateListOnSeries( populatedArray, {1,4, 8}, "de_dust2", false, is ); // Case 13
+        test_populateListOnSeries( populatedArray, {2,5, 9}, "de_dust5", false, is ); // Case 14
+        test_populateListOnSeries( populatedArray, {3,6,10}, "de_dust6", false, is ); // Case 15
+        test_populateListOnSeries( populatedArray, {7}     , "de_nuke" , false, is ); // Case 16
 
-        test_populateListOnSeries( populatedArray, _       , "de_nuke2", true  ); // Case 17
-        test_populateListOnSeries( populatedArray, _       , "de_dust" , true  ); // Case 18
-        test_populateListOnSeries( populatedArray, _       , "de_dust3", true  ); // Case 19
-        test_populateListOnSeries( populatedArray, _       , "de_dust4", true  ); // Case 20
+        test_populateListOnSeries( populatedArray, _       , "de_nuke2", true , is ); // Case 17
+        test_populateListOnSeries( populatedArray, _       , "de_dust" , true , is ); // Case 18
+        test_populateListOnSeries( populatedArray, _       , "de_dust3", true , is ); // Case 19
+        test_populateListOnSeries( populatedArray, _       , "de_dust4", true , is ); // Case 20
 
         g_test_isToUseStrictValidMaps = false;
 
@@ -17195,7 +17197,7 @@ public timeRemain()
     /**
      * Tests if the function map_populateListOnSeries(3) is properly loading the maps series.
      */
-    stock test_populateListOnSeries_load3( bool:isFull=false )
+    stock test_populateListOnSeries_load3( bool:is=false )
     {
         new Trie:populatedTrie   = TrieCreate();
         new Array:populatedArray = ArrayCreate( MAX_MAPNAME_LENGHT );
@@ -17204,18 +17206,18 @@ public timeRemain()
         set_pcvar_num( cvar_serverMoveCursor, 6 );
 
         g_test_isToUseStrictValidMaps = true;
-        test_populateListOnSeries_build( populatedArray, populatedTrie, .expectedSize=7, .isFull=isFull ); // Case 21
+        test_populateListOnSeries_build( populatedArray, populatedTrie, .expectedSize=7, .isFull=is ); // Case 21
 
-        test_populateListOnSeries( populatedArray, {0}    , "de_dust1", false ); // Case 22
-        test_populateListOnSeries( populatedArray, {1,4,6}, "de_dust2", false ); // Case 23
-        test_populateListOnSeries( populatedArray, {2}    , "de_dust5", false ); // Case 24
-        test_populateListOnSeries( populatedArray, {3}    , "de_dust6", false ); // Case 25
-        test_populateListOnSeries( populatedArray, {5}    , "de_nuke" , false ); // Case 26
+        test_populateListOnSeries( populatedArray, {0}    , "de_dust1", false, is ); // Case 22
+        test_populateListOnSeries( populatedArray, {1,4,6}, "de_dust2", false, is ); // Case 23
+        test_populateListOnSeries( populatedArray, {2}    , "de_dust5", false, is ); // Case 24
+        test_populateListOnSeries( populatedArray, {3}    , "de_dust6", false, is ); // Case 25
+        test_populateListOnSeries( populatedArray, {5}    , "de_nuke" , false, is ); // Case 26
 
-        test_populateListOnSeries( populatedArray, _      , "de_nuke2", true  ); // Case 27
-        test_populateListOnSeries( populatedArray, _      , "de_dust" , true  ); // Case 28
-        test_populateListOnSeries( populatedArray, _      , "de_dust3", true  ); // Case 29
-        test_populateListOnSeries( populatedArray, _      , "de_dust4", true  ); // Case 30
+        test_populateListOnSeries( populatedArray, _      , "de_nuke2", true , is ); // Case 27
+        test_populateListOnSeries( populatedArray, _      , "de_dust" , true , is ); // Case 28
+        test_populateListOnSeries( populatedArray, _      , "de_dust3", true , is ); // Case 29
+        test_populateListOnSeries( populatedArray, _      , "de_dust4", true , is ); // Case 30
 
         TrieDestroy( populatedTrie );
         ArrayDestroy( populatedArray );
@@ -17227,15 +17229,21 @@ public timeRemain()
      * Create one case test for the stock map_populateListOnSeries(3) based on its parameters passed
      * by the test_populateListOnSeries_load1(0) loader function.
      */
-    stock test_populateListOnSeries( Array:populatedArray, expectedIndexes[]={0}, mapName[], bool:isNotToBe = false  )
+    stock test_populateListOnSeries( Array:populatedArray, expectedIndexes[]={0}, mapName[], bool:isNotToBe, isFull  )
     {
-        new test_id = test_registerSeriesNaming( "test_populateListOnSeries", 'e' );
-
+        new test_id;
+        new arraySize;
         new expectedIndex;
+
         new bool:isOnTheArray;
         new errorMessage[ MAX_LONG_STRING ];
 
-        for( new index = 0; index < ArraySize( populatedArray ); index++ )
+        test_id = test_registerSeriesNaming( isFull ? "test_configureTheNextMap" : "test_populateListOnSeries", 'e' );
+
+        if( isFull ) populatedArray = g_mapcycleFileListArray;
+        arraySize = ArraySize( populatedArray );
+
+        for( new index = 0; index < arraySize; index++ )
         {
             GET_MAP_NAME( populatedArray, index, errorMessage )
 
@@ -17243,14 +17251,14 @@ public timeRemain()
             {
                 isOnTheArray = true;
 
-                ERR( "The map `%s` must be at the index %d, instead of %d.", mapName, expectedIndexes[ expectedIndex ], index )
+                ERR( "The map `%10s` must be at the index %d, instead of %d.", mapName, expectedIndexes[ expectedIndex ], index )
                 SET_TEST_FAILURE( test_id, index != expectedIndexes[ expectedIndex ], errorMessage )
 
                 ++expectedIndex;
             }
         }
 
-        ERR( "The map `%s` must %sto be loaded on the array.", mapName, isNotToBe ? "not " : "" )
+        ERR( "The map `%10s` must %sto be loaded on the array.", mapName, isNotToBe ? "not " : "" )
         SET_TEST_FAILURE( test_id, isOnTheArray == isNotToBe, errorMessage )
     }
 
@@ -17588,6 +17596,7 @@ public timeRemain()
     new test_voteDuration;
     new test_runoffDuration;
 
+    new test_mapcyclefile             [ MAX_FILE_PATH_LENGHT ];
     new test_nomMapFilePath           [ MAX_FILE_PATH_LENGHT ];
     new test_voteMapFilePath          [ MAX_FILE_PATH_LENGHT ];
     new test_voteWhiteListMapFilePath [ MAX_FILE_PATH_LENGHT ];
@@ -17626,6 +17635,7 @@ public timeRemain()
             cleanTheUnitTestsData();
             saveCurrentTestsTimeStamp();
 
+            get_pcvar_string( cvar_mapcyclefile, test_mapcyclefile, charsmax( test_mapcyclefile ) );
             get_pcvar_string( cvar_nomMapFilePath, test_nomMapFilePath, charsmax( test_nomMapFilePath ) );
             get_pcvar_string( cvar_voteMapFilePath, test_voteMapFilePath, charsmax( test_voteMapFilePath ) );
             get_pcvar_string( cvar_voteWhiteListMapFilePath, test_voteWhiteListMapFilePath, charsmax( test_voteWhiteListMapFilePath ) );
@@ -17686,6 +17696,7 @@ public timeRemain()
             tryToSetGameModCvarNum( cvar_mp_maxrounds       , test_mp_maxrounds              );
             tryToSetGameModCvarNum( cvar_mp_fraglimit       , test_mp_fraglimit              );
 
+            set_pcvar_string( cvar_mapcyclefile             , test_mapcyclefile              );
             set_pcvar_string( cvar_nomMapFilePath           , test_nomMapFilePath            );
             set_pcvar_string( cvar_voteMapFilePath          , test_voteMapFilePath           );
             set_pcvar_string( cvar_voteWhiteListMapFilePath , test_voteWhiteListMapFilePath  );
