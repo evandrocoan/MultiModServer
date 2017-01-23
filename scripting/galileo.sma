@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-646";
+new const PLUGIN_VERSION[] = "v4.2.0-647";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -13974,29 +13974,6 @@ stock configureTheNextMapSetttings( currentMapcycleFilePath[] )
 }
 
 /**
- * Move the current map cycle position to the end of the current series. If it is already on the end
- * or there is not series for the current position, it does nothing, i.e., get stuck where it is now.
- */
-stock moveTheCursorToTheLastMap( Array:mapcycleFileListArray, &nextMapCyclePosition )
-{
-    new currentSerie;
-
-    new mapNameDirt [ MAX_MAPNAME_LENGHT ];
-    new mapNameClean[ MAX_MAPNAME_LENGHT ];
-
-    getNextMapByPosition( mapcycleFileListArray, mapNameClean, nextMapCyclePosition );
-
-    copy( mapNameDirt, charsmax( mapNameDirt ), mapNameClean );
-    currentSerie = getTheCurrentSerieForTheMap( mapNameDirt, mapNameClean );
-
-    while( isThereNextMapOnTheSerie( currentSerie, mapNameClean, mapNameDirt ) )
-    {
-        nextMapCyclePosition++;
-        currentSerie++;
-    }
-}
-
-/**
  * Start following the series by its dynamically generated name instead of using the virtual map cycle
  * file list.
  *
@@ -14025,6 +14002,30 @@ stock bool:areWeRunningAnAlternateSeries( currentMapName[], nextMapName[] )
 
     LOGGER( 1, "    ( areWeRunningAnAlternateSeries ) Returning false" )
     return false;
+}
+
+/**
+ * Move the current map cycle position to the end of the current series. If it is already on the end
+ * or there is not series for the current position, it does nothing, i.e., get stuck where it is now.
+ */
+stock moveTheCursorToTheLastMap( Array:mapcycleFileListArray, &nextMapCyclePosition )
+{
+    LOGGER( 128, "I AM ENTERING ON moveTheCursorToTheLastMap(2)" )
+    new currentSerie;
+
+    new mapNameDirt [ MAX_MAPNAME_LENGHT ];
+    new mapNameClean[ MAX_MAPNAME_LENGHT ];
+
+    getNextMapByPosition( mapcycleFileListArray, mapNameClean, nextMapCyclePosition );
+
+    copy( mapNameDirt, charsmax( mapNameDirt ), mapNameClean );
+    currentSerie = getTheCurrentSerieForTheMap( mapNameDirt, mapNameClean );
+
+    while( isThereNextMapOnTheSerie( currentSerie, mapNameClean, mapNameDirt ) )
+    {
+        nextMapCyclePosition++;
+        currentSerie++;
+    }
 }
 
 stock getNextMapLocalInfoToken( currentMapcycleFilePath[], &nextMapCyclePosition )
@@ -17536,6 +17537,7 @@ public timeRemain()
         test_populateListOnSeries_load3( true ); // Case 20-30
 
         test_configureTheNextMap_load1(); // Case 31-78
+        test_configureTheNextMap_load2(); // Case 79-
     }
 
     /**
@@ -17588,6 +17590,30 @@ public timeRemain()
         //  9. de_dust5
         // 10. de_dust6
         set_pcvar_num( cvar_serverMoveCursor, 2 );
+
+        test_configureTheNextMap_case( "de_dust0", "de_dust0", "de_dust2", 1 , 2  ); // Case 31-33
+        test_configureTheNextMap_case( "de_dust0", "de_dust0", "de_dust2", 1 , 2  ); // Case 34-36
+        test_configureTheNextMap_case( "de_dust1", "de_dust1", "de_dust2", 1 , 2  ); // Case 37-39
+        test_configureTheNextMap_case( "de_dust0", "de_dust2", "de_dust5", 2 , 3  ); // Case 40-42
+        test_configureTheNextMap_case( "de_dust0", "de_dust2", "de_dust5", 2 , 3  ); // Case 43-45
+        test_configureTheNextMap_case( "de_dust0", "de_dust5", "de_dust6", 3 , 4  ); // Case 46-48
+        test_configureTheNextMap_case( "de_dust0", "de_dust6", "de_dust2", 4 , 5  ); // Case 49-51
+        test_configureTheNextMap_case( "de_dust0", "de_dust2", "de_dust5", 5 , 6  ); // Case 52-54
+        test_configureTheNextMap_case( "de_dust0", "de_dust5", "de_dust6", 6 , 7  ); // Case 55-57
+        test_configureTheNextMap_case( "de_dust5", "de_dust5", "de_dust6", 6 , 7  ); // Case 58-60
+        test_configureTheNextMap_case( "de_dust0", "de_dust6", "de_nuke" , 7 , 8  ); // Case 61-63
+        test_configureTheNextMap_case( "de_dust0", "de_nuke" , "de_dust2", 8 , 9  ); // Case 64-66
+        test_configureTheNextMap_case( "de_dust0", "de_dust2", "de_dust5", 9 , 10 ); // Case 67-69
+        test_configureTheNextMap_case( "de_dust0", "de_dust5", "de_dust6", 10, 11 ); // Case 70-72
+        test_configureTheNextMap_case( "de_dust0", "de_dust6", "de_dust1", 0 , 1  ); // Case 73-75
+        test_configureTheNextMap_case( "de_dust0", "de_dust1", "de_dust2", 1 , 2  ); // Case 76-78
+    }
+
+    stock test_configureTheNextMap_load2()
+    {
+        // Setting the `cvar_serverMoveCursor` as 2+8 will load the map cycle the same as on the test
+        // test_configureTheNextMap_load1(0), however now the map cycling will have a new work flow.
+        set_pcvar_num( cvar_serverMoveCursor, 10 );
 
         test_configureTheNextMap_case( "de_dust0", "de_dust0", "de_dust2", 1 , 2  ); // Case 31-33
         test_configureTheNextMap_case( "de_dust0", "de_dust0", "de_dust2", 1 , 2  ); // Case 34-36
