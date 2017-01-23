@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-641";
+new const PLUGIN_VERSION[] = "v4.2.0-644";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -17510,13 +17510,10 @@ public timeRemain()
     /**
      * To prepare the test_configureTheNextMap(0) tests files and settings.
      */
-    stock test_configureTheNextMap_build( expectedSize )
+    stock test_configureTheNextMap_build( test_id, expectedSize )
     {
-        new test_id;
         new mapCount;
-
         new errorMessage[ MAX_LONG_STRING ];
-        test_id = test_registerSeriesNaming( "test_configureTheNextMap", 'e' );
 
         helper_mapFileListLoad( false, g_test_voteMapFilePath, "de_dust1", "de_dust2", "de_nuke", "de_dust2" );
         helper_loadStrictValidMapsTrie( "de_dust1", "de_dust2", "de_dust5", "de_dust6", "de_nuke" );
@@ -17543,20 +17540,26 @@ public timeRemain()
         // test_populateListOnSeries_load2( true ); // Case 10-20
         // test_populateListOnSeries_load3( true ); // Case 20-30
 
-        test_configureTheNextMap_case( "de_dust1", 1, "de_dust0", 2, "de_dust2" ); // Case 31-33
+        test_configureTheNextMap_case( "de_dust0", "de_dust1", "de_dust2", 1, 2 ); // Case 31-33
+        test_configureTheNextMap_case( "de_dust0", "de_dust1", "de_dust2", 1, 2 ); // Case
+        test_configureTheNextMap_case( "de_dust1", "de_dust1", "de_dust2", 1, 2 ); // Case
+        test_configureTheNextMap_case( "de_dust2", "de_dust1", "de_dust5", 2, 3 ); // Case
     }
 
     /**
      * Create one case test for the stock configureTheNextMapSetttings(1) based on its parameters passed
      * by the test_configureTheNextMap(0) loader function.
      *
-     * @param np      next map name expected
-     * @param cmB     current map name before to call configureTheNextMapSetttings(1).
-     * @param posB    the map cycle position before to call configureTheNextMapSetttings(1).
-     * @param cmA     current map name after to call configureTheNextMapSetttings(1).
-     * @param posA    the map cycle position before to call configureTheNextMapSetttings(1).
+     * As the `posA` variable points to the next map of the next map of the current map `cmA`,
+     * the `posB` variable will be pointing to the map `npA` current position on the map cycle.
+     *
+     * @param cmA     current map name       after  to call saveCurrentMapCycleSetting(3).
+     * @param cmB     current map name       before to call saveCurrentMapCycleSetting(3).
+     * @param npA     next map name expected after  to call saveCurrentMapCycleSetting(3).
+     * @param posB    the map cycle position before to call saveCurrentMapCycleSetting(3).
+     * @param posA    the map cycle position after  to call saveCurrentMapCycleSetting(3).
      */
-    stock test_configureTheNextMap_case( cmB[], posB, cmA[], posA, np[] )
+    stock test_configureTheNextMap_case( cmA[], cmB[], npA[], posB, posA )
     {
         new test_id;
         new errorMessage[ MAX_LONG_STRING ];
@@ -17576,22 +17579,17 @@ public timeRemain()
         //  9. de_dust5
         // 10. de_dust6
         set_pcvar_num( cvar_serverMoveCursor, 2 );
-
         saveCurrentMapCycleSetting( cmB, g_test_voteMapFilePath, posB );
+
+        test_id = test_registerSeriesNaming( "test_configureTheNextMap", 'e' ); // Case 1
         copy( g_currentMapName, charsmax( g_currentMapName ), cmA );
+        test_configureTheNextMap_build( test_id, .expectedSize=11 );
 
-        // Case 1
-        test_configureTheNextMap_build( .expectedSize=11 );
+        test_id = test_registerSeriesNaming( "test_configureTheNextMap", 'e' ); // Case 2
+        ERR( "The nextMapName must to be %s, instead of %s.", npA, g_nextMapName )
+        SET_TEST_FAILURE( test_id, !equali( npA, g_nextMapName ), errorMessage )
 
-        // Case 2
-        test_id = test_registerSeriesNaming( "test_configureTheNextMap", 'e' );
-
-        ERR( "The nextMapName must to be %s, instead of %s.", np, g_nextMapName )
-        SET_TEST_FAILURE( test_id, !equali( np, g_nextMapName ), errorMessage )
-
-        // Case 3
-        test_id = test_registerSeriesNaming( "test_configureTheNextMap", 'e' );
-
+        test_id = test_registerSeriesNaming( "test_configureTheNextMap", 'e' ); // Case 3
         ERR( "The map cycle position after must to be %d, instead of %d.", posA, g_nextMapCyclePosition )
         SET_TEST_FAILURE( test_id, posA != g_nextMapCyclePosition, errorMessage )
     }
