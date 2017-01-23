@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-644";
+new const PLUGIN_VERSION[] = "v4.2.0-646";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -17151,13 +17151,6 @@ public timeRemain()
         SET_TEST_FAILURE( test_id, TrieKeyExists( g_test_strictValidMapsTrie, mapName ) == isNotToBe, errorMessage )
     }
 
-    stock test_populateListOnSeries_load()
-    {
-        test_populateListOnSeries_load1();
-        test_populateListOnSeries_load2();
-        test_populateListOnSeries_load3();
-    }
-
     /**
      * To prepare the test_populateListOnSeries_load1(0) tests files and settings.
      */
@@ -17172,6 +17165,8 @@ public timeRemain()
         helper_mapFileListLoad( false, g_test_voteMapFilePath, "de_dust1", "de_dust2", "de_nuke", "de_dust2" );
         helper_loadStrictValidMapsTrie( "de_dust1", "de_dust2", "de_dust5", "de_dust6", "de_nuke" );
 
+        g_test_isToUseStrictValidMaps = true;
+
         if( isFull )
         {
             set_pcvar_string( cvar_mapcyclefile, g_test_voteMapFilePath );
@@ -17182,6 +17177,8 @@ public timeRemain()
             mapCount = map_populateListOnSeries( populatedArray, populatedTrie, g_test_voteMapFilePath );
         }
 
+        g_test_isToUseStrictValidMaps = false;
+
         for( new index = 0; index < ArraySize( populatedArray ); index++ )
         {
             ArrayGetString( populatedArray, index, errorMessage, charsmax( errorMessage ) );
@@ -17190,6 +17187,13 @@ public timeRemain()
 
         ERR( "The map populatedArray size must to be %d, instead of %d.", expectedSize, mapCount )
         SET_TEST_FAILURE( test_id, mapCount != expectedSize, errorMessage )
+    }
+
+    stock test_populateListOnSeries_load()
+    {
+        test_populateListOnSeries_load1();
+        test_populateListOnSeries_load2();
+        test_populateListOnSeries_load3();
     }
 
     /**
@@ -17203,7 +17207,6 @@ public timeRemain()
         // Set the settings accordantly to what is being tests on this Unit Test.
         set_pcvar_num( cvar_serverMoveCursor, 1 );
 
-        g_test_isToUseStrictValidMaps = true;
         test_populateListOnSeries_build( populatedArray, populatedTrie, .expectedSize=7, .isFull=is ); // Case 1
 
         test_populateListOnSeries( populatedArray, {0}    , "de_dust1", false, is ); // Case 2
@@ -17219,8 +17222,6 @@ public timeRemain()
 
         TrieDestroy( populatedTrie );
         ArrayDestroy( populatedArray );
-
-        g_test_isToUseStrictValidMaps = false;
     }
 
     /**
@@ -17234,7 +17235,6 @@ public timeRemain()
         // Set the settings accordantly to what is being tests on this Unit Test.
         set_pcvar_num( cvar_serverMoveCursor, 2 );
 
-        g_test_isToUseStrictValidMaps = true;
         test_populateListOnSeries_build( populatedArray, populatedTrie, .expectedSize=11, .isFull=is ); // Case 11
 
         test_populateListOnSeries( populatedArray, {0}     , "de_dust1", false, is ); // Case 12
@@ -17247,8 +17247,6 @@ public timeRemain()
         test_populateListOnSeries( populatedArray, _       , "de_dust" , true , is ); // Case 18
         test_populateListOnSeries( populatedArray, _       , "de_dust3", true , is ); // Case 19
         test_populateListOnSeries( populatedArray, _       , "de_dust4", true , is ); // Case 20
-
-        g_test_isToUseStrictValidMaps = false;
 
         TrieDestroy( populatedTrie );
         ArrayDestroy( populatedArray );
@@ -17265,7 +17263,6 @@ public timeRemain()
         // Set the settings accordantly to what is being tests on this Unit Test.
         set_pcvar_num( cvar_serverMoveCursor, 6 );
 
-        g_test_isToUseStrictValidMaps = true;
         test_populateListOnSeries_build( populatedArray, populatedTrie, .expectedSize=7, .isFull=is ); // Case 21
 
         test_populateListOnSeries( populatedArray, {0}    , "de_dust1", false, is ); // Case 22
@@ -17281,8 +17278,6 @@ public timeRemain()
 
         TrieDestroy( populatedTrie );
         ArrayDestroy( populatedArray );
-
-        g_test_isToUseStrictValidMaps = false;
     }
 
     /**
@@ -17536,14 +17531,11 @@ public timeRemain()
     {
         set_pcvar_num( cvar_whitelistMinPlayers, 0 );
 
-        // test_populateListOnSeries_load1( true ); // Case  1-10
-        // test_populateListOnSeries_load2( true ); // Case 10-20
-        // test_populateListOnSeries_load3( true ); // Case 20-30
+        test_populateListOnSeries_load1( true ); // Case  1-10
+        test_populateListOnSeries_load2( true ); // Case 10-20
+        test_populateListOnSeries_load3( true ); // Case 20-30
 
-        test_configureTheNextMap_case( "de_dust0", "de_dust1", "de_dust2", 1, 2 ); // Case 31-33
-        test_configureTheNextMap_case( "de_dust0", "de_dust1", "de_dust2", 1, 2 ); // Case
-        test_configureTheNextMap_case( "de_dust1", "de_dust1", "de_dust2", 1, 2 ); // Case
-        test_configureTheNextMap_case( "de_dust2", "de_dust1", "de_dust5", 2, 3 ); // Case
+        test_configureTheNextMap_load1(); // Case 31-78
     }
 
     /**
@@ -17559,11 +17551,28 @@ public timeRemain()
      * @param posB    the map cycle position before to call saveCurrentMapCycleSetting(3).
      * @param posA    the map cycle position after  to call saveCurrentMapCycleSetting(3).
      */
-    stock test_configureTheNextMap_case( cmA[], cmB[], npA[], posB, posA )
+    stock test_configureTheNextMap_case( cmB[], cmA[], npA[], posB, posA )
     {
         new test_id;
         new errorMessage[ MAX_LONG_STRING ];
 
+        saveCurrentMapCycleSetting( cmB, g_test_voteMapFilePath, posB );
+
+        test_id = test_registerSeriesNaming( "test_configureTheNextMap", 'e' ); // Case 1
+        copy( g_currentMapName, charsmax( g_currentMapName ), cmA );
+        test_configureTheNextMap_build( test_id, .expectedSize=11 );
+
+        test_id = test_registerSeriesNaming( "test_configureTheNextMap", 'e' ); // Case 2
+        ERR( "The nextMapName must to be %s, instead of %s.", npA, g_nextMapName )
+        SET_TEST_FAILURE( test_id, !equali( npA, g_nextMapName ), errorMessage )
+
+        test_id = test_registerSeriesNaming( "test_configureTheNextMap", 'e' ); // Case 3
+        ERR( "The map cycle position after must to be %d, instead of %d.", posA, g_nextMapCyclePosition )
+        SET_TEST_FAILURE( test_id, posA != g_nextMapCyclePosition, errorMessage )
+    }
+
+    stock test_configureTheNextMap_load1()
+    {
         // Setting the `cvar_serverMoveCursor` as 2 will load the map cycle on the
         // test_configureTheNextMap_build(1) as:
         //
@@ -17579,19 +17588,23 @@ public timeRemain()
         //  9. de_dust5
         // 10. de_dust6
         set_pcvar_num( cvar_serverMoveCursor, 2 );
-        saveCurrentMapCycleSetting( cmB, g_test_voteMapFilePath, posB );
 
-        test_id = test_registerSeriesNaming( "test_configureTheNextMap", 'e' ); // Case 1
-        copy( g_currentMapName, charsmax( g_currentMapName ), cmA );
-        test_configureTheNextMap_build( test_id, .expectedSize=11 );
-
-        test_id = test_registerSeriesNaming( "test_configureTheNextMap", 'e' ); // Case 2
-        ERR( "The nextMapName must to be %s, instead of %s.", npA, g_nextMapName )
-        SET_TEST_FAILURE( test_id, !equali( npA, g_nextMapName ), errorMessage )
-
-        test_id = test_registerSeriesNaming( "test_configureTheNextMap", 'e' ); // Case 3
-        ERR( "The map cycle position after must to be %d, instead of %d.", posA, g_nextMapCyclePosition )
-        SET_TEST_FAILURE( test_id, posA != g_nextMapCyclePosition, errorMessage )
+        test_configureTheNextMap_case( "de_dust0", "de_dust0", "de_dust2", 1 , 2  ); // Case 31-33
+        test_configureTheNextMap_case( "de_dust0", "de_dust0", "de_dust2", 1 , 2  ); // Case 34-36
+        test_configureTheNextMap_case( "de_dust1", "de_dust1", "de_dust2", 1 , 2  ); // Case 37-39
+        test_configureTheNextMap_case( "de_dust0", "de_dust2", "de_dust5", 2 , 3  ); // Case 40-42
+        test_configureTheNextMap_case( "de_dust0", "de_dust2", "de_dust5", 2 , 3  ); // Case 43-45
+        test_configureTheNextMap_case( "de_dust0", "de_dust5", "de_dust6", 3 , 4  ); // Case 46-48
+        test_configureTheNextMap_case( "de_dust0", "de_dust6", "de_dust2", 4 , 5  ); // Case 49-51
+        test_configureTheNextMap_case( "de_dust0", "de_dust2", "de_dust5", 5 , 6  ); // Case 52-54
+        test_configureTheNextMap_case( "de_dust0", "de_dust5", "de_dust6", 6 , 7  ); // Case 55-57
+        test_configureTheNextMap_case( "de_dust5", "de_dust5", "de_dust6", 6 , 7  ); // Case 58-60
+        test_configureTheNextMap_case( "de_dust0", "de_dust6", "de_nuke" , 7 , 8  ); // Case 61-63
+        test_configureTheNextMap_case( "de_dust0", "de_nuke" , "de_dust2", 8 , 9  ); // Case 64-66
+        test_configureTheNextMap_case( "de_dust0", "de_dust2", "de_dust5", 9 , 10 ); // Case 67-69
+        test_configureTheNextMap_case( "de_dust0", "de_dust5", "de_dust6", 10, 11 ); // Case 70-72
+        test_configureTheNextMap_case( "de_dust0", "de_dust6", "de_dust1", 0 , 1  ); // Case 73-75
+        test_configureTheNextMap_case( "de_dust0", "de_dust1", "de_dust2", 1 , 2  ); // Case 76-78
     }
 
 
