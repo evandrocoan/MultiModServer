@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-653";
+new const PLUGIN_VERSION[] = "v4.2.0-654";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -14012,8 +14012,15 @@ stock bool:areWeRunningAnAlternateSeries( currentMapName[], nextMapName[] )
         // Therefore we are not running an alternate series.
         if( !equali( nextMapNameClean, currentMapNameClean ) )
         {
-            LOGGER( 1, "    ( areWeRunningAnAlternateSeries ) Returning isThereNextMapOnTheSerie(3)" )
-            return isThereNextMapOnTheSerie( currentSerie, currentMapNameClean, nextMapName );
+            copy( mapNameDirt, charsmax( mapNameDirt ), nextMapName );
+
+            if( isThereNextMapOnTheSerie( currentSerie, currentMapNameClean, mapNameDirt ) )
+            {
+                copy( nextMapName, MAX_MAPNAME_LENGHT - 1, mapNameDirt );
+
+                LOGGER( 1, "    ( areWeRunningAnAlternateSeries ) Returning true." )
+                return true;
+            }
         }
     }
 
