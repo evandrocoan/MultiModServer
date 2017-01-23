@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-650";
+new const PLUGIN_VERSION[] = "v4.2.0-651";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -16014,18 +16014,19 @@ public timeRemain()
         new errorMessage   [ MAX_LONG_STRING ];
         new first_test_name[ MAX_SHORT_STRING ];
 
-        test_id = register_test( 0, "test_registerTest" );
-
+        test_id = register_test( 0, "test_registerTest_case1" );
         ERR( "g_test_testsNumber must be 1 (it was %d)", g_test_testsNumber )
-        SET_TEST_FAILURE( test_id, g_test_testsNumber != 1, errorMessage )
+        setTestFailure( test_id, g_test_testsNumber != 1, errorMessage );
 
-        ERR( "test_id must be 1 (it was %d)", test_id )
-        SET_TEST_FAILURE( test_id, test_id != 1, errorMessage )
+        test_id = register_test( 0, "test_registerTest_case2" );
+        ERR( "test_id must be 2 (it was %d)", test_id )
+        setTestFailure( test_id, test_id != 2, errorMessage );
 
         ArrayGetString( g_test_idsAndNamesArray, 0, first_test_name, charsmax( first_test_name ) );
 
-        ERR( "first_test_name must be 'test_registerTest' (it was %s)", first_test_name )
-        SET_TEST_FAILURE( test_id, !equali( first_test_name, "test_registerTest" ), errorMessage )
+        test_id = register_test( 0, "test_registerTest_case3" );
+        ERR( "first_test_name must be 'test_registerTest_case1' (it was %s)", first_test_name )
+        setTestFailure( test_id, !equali( first_test_name, "test_registerTest_case1" ), errorMessage );
     }
 
     /**
@@ -16033,20 +16034,22 @@ public timeRemain()
      */
     stock test_isInEmptyCycle()
     {
+        new test_id;
         new errorMessage[ MAX_LONG_STRING ];
-        new test_id = register_test( 0, "test_isInEmptyCycle" );
 
         set_pcvar_num( cvar_isToStopEmptyCycle, 1 );
         client_authorized_stock( .player_id = 1  );
 
+        test_id = register_test( 0, "test_isInEmptyCycle1" );
         ERR( "cvar_isToStopEmptyCycle must be 0 (it was %d)", get_pcvar_num( cvar_isToStopEmptyCycle ) )
-        SET_TEST_FAILURE( test_id, get_pcvar_num( cvar_isToStopEmptyCycle ) != 0, errorMessage )
+        setTestFailure( test_id, get_pcvar_num( cvar_isToStopEmptyCycle ) != 0, errorMessage );
 
         set_pcvar_num( cvar_isToStopEmptyCycle, 0 );
         client_authorized_stock( .player_id = 1 );
 
+        test_id = register_test( 0, "test_isInEmptyCycle2" );
         ERR( "cvar_isToStopEmptyCycle must be 0 (it was %d)", get_pcvar_num( cvar_isToStopEmptyCycle ) )
-        SET_TEST_FAILURE( test_id, get_pcvar_num( cvar_isToStopEmptyCycle ) != 0, errorMessage )
+        setTestFailure( test_id, get_pcvar_num( cvar_isToStopEmptyCycle ) != 0, errorMessage );
     }
 
     /**
@@ -16080,7 +16083,6 @@ public timeRemain()
     stock test_mapGetNext_case( Array:testMapListArray, currentMap[], nextMapAim[], mapIndexAim )
     {
         static currentCaseNumber = 0;
-        currentCaseNumber++;
 
         new test_id;
         new mapIndex;
@@ -16088,16 +16090,19 @@ public timeRemain()
         new testName    [ MAX_SHORT_STRING ];
         new errorMessage[ MAX_LONG_STRING ];
 
-        formatex( testName, charsmax( testName ), "test_mapGetNext_case%d", currentCaseNumber );
-
+        formatex( testName, charsmax( testName ), "test_mapGetNext_case%d", ++currentCaseNumber );
         test_id  = register_test( 0, testName );
+
         mapIndex = map_getNext( testMapListArray, currentMap, nextMapName );
 
         ERR( "The nextMapName must to be '%s'! But it was %s.", nextMapAim, nextMapName )
-        SET_TEST_FAILURE( test_id, !equali( nextMapName, nextMapAim ), errorMessage )
+        setTestFailure( test_id, !equali( nextMapName, nextMapAim ), errorMessage );
+
+        formatex( testName, charsmax( testName ), "test_mapGetNext_case%d", ++currentCaseNumber );
+        test_id  = register_test( 0, testName );
 
         ERR( "The mapIndex must to be %d! But it was %d.", mapIndexAim, mapIndex )
-        SET_TEST_FAILURE( test_id, mapIndex != mapIndexAim, errorMessage )
+        setTestFailure( test_id, mapIndex != mapIndexAim, errorMessage );
     }
 
     /**
@@ -16826,8 +16831,8 @@ public timeRemain()
      */
     stock test_getUniqueRandomIntBasic( max_value, Array:holder = Invalid_Array )
     {
+        new test_id;
         new errorMessage[ MAX_LONG_STRING ];
-        new test_id = test_registerSeriesNaming( "test_getUniqueRandomIntBasic", 'a' );
 
         TRY_TO_APPLY( getUniqueRandomInteger, holder )
         static sequence = -1;
@@ -16839,6 +16844,7 @@ public timeRemain()
         new Trie:sortedIntegers = TrieCreate();
 
         sequence++;
+        test_id = test_registerSeriesNaming( "test_getUniqueRandomIntBasic", 'a' );
 
         for( new index = 0; index < max_value + 3 ; index++ )
         {
@@ -16854,7 +16860,7 @@ public timeRemain()
             num_to_str( sortedInterger, sortedIntergerString, charsmax( sortedIntergerString ) );
 
             ERR( "The integer %d, must not to be sorted twice.", sortedInterger )
-            SET_TEST_FAILURE( test_id, TrieKeyExists( sortedIntegers, sortedIntergerString ) && sortedInterger != -1, errorMessage )
+            setTestFailure( test_id, TrieKeyExists( sortedIntegers, sortedIntergerString ) && sortedInterger != -1, errorMessage );
 
             if( !TrieKeyExists( sortedIntegers, sortedIntergerString ) )
             {
@@ -16862,8 +16868,9 @@ public timeRemain()
             }
         }
 
+        test_id = test_registerSeriesNaming( "test_getUniqueRandomIntBasic", 'a' );
         ERR( "The TrieSize must to be %d, instead of %d.", max_value + 2, trieSize )
-        SET_TEST_FAILURE( test_id, trieSize != max_value + 2, errorMessage )
+        setTestFailure( test_id, trieSize != max_value + 2, errorMessage );
 
         TrieDestroy( sortedIntegers );
     }
@@ -16904,8 +16911,8 @@ public timeRemain()
      */
     stock test_getUniqueRandomInteger( Array:holder, min_value, max_value )
     {
+        new test_id;
         new errorMessage[ MAX_LONG_STRING ];
-        new test_id = test_registerSeriesNaming( "test_getUniqueRandomInteger", 'c' );
 
         new trieSize;
         new sortedInterger;
@@ -16917,13 +16924,15 @@ public timeRemain()
         static sequence = -1;
         sequence++;
 
+        test_id = test_registerSeriesNaming( "test_getUniqueRandomInteger", 'c' );
+
         for( new index = 0; index < max_value + 1 ; index++ )
         {
             sortedInterger = getUniqueRandomInteger( holder, min_value, max_value );
             num_to_str( sortedInterger, sortedIntergerString, charsmax( sortedIntergerString ) );
 
             ERR( "The integer %d, must not to be sorted twice.", sortedInterger )
-            SET_TEST_FAILURE( test_id, TrieKeyExists( sortedIntegers, sortedIntergerString ), errorMessage )
+            setTestFailure( test_id, TrieKeyExists( sortedIntegers, sortedIntergerString ), errorMessage );
 
             if( !TrieKeyExists( sortedIntegers, sortedIntergerString ) )
             {
@@ -16931,10 +16940,12 @@ public timeRemain()
             }
         }
 
+        test_id = test_registerSeriesNaming( "test_getUniqueRandomInteger", 'c' );
         ERR( "The TrieSize must to be %d, instead of %d.", max_value, trieSize )
-        SET_TEST_FAILURE( test_id, trieSize != randomCount, errorMessage )
+        setTestFailure( test_id, trieSize != randomCount, errorMessage );
 
         LOGGER( 1, "" )
+        test_id = test_registerSeriesNaming( "test_getUniqueRandomInteger", 'c' );
 
         for( new index = 0; index < max_value + 1 ; index++ )
         {
@@ -16942,7 +16953,7 @@ public timeRemain()
             num_to_str( sortedInterger, sortedIntergerString, charsmax( sortedIntergerString ) );
 
             ERR( "The integer %d, must to be sorted twice.", sortedInterger )
-            SET_TEST_FAILURE( test_id, !TrieKeyExists( sortedIntegers, sortedIntergerString ), errorMessage )
+            setTestFailure( test_id, !TrieKeyExists( sortedIntegers, sortedIntergerString ), errorMessage );
 
             if( !TrieKeyExists( sortedIntegers, sortedIntergerString ) )
             {
@@ -16950,8 +16961,9 @@ public timeRemain()
             }
         }
 
+        test_id = test_registerSeriesNaming( "test_getUniqueRandomInteger", 'c' );
         ERR( "The TrieSize must to be %d, instead of %d.", max_value, trieSize )
-        SET_TEST_FAILURE( test_id, trieSize != randomCount, errorMessage )
+        setTestFailure( test_id, trieSize != randomCount, errorMessage );
 
         TrieDestroy( sortedIntegers );
     }
@@ -17322,14 +17334,15 @@ public timeRemain()
                 isOnTheArray = true;
 
                 ERR( "The map `%10s` must be at the index %d, instead of %d.", mapName, expectedIndexes[ expectedIndex ], index )
-                SET_TEST_FAILURE( test_id, index != expectedIndexes[ expectedIndex ], errorMessage )
+                setTestFailure( test_id, index != expectedIndexes[ expectedIndex ], errorMessage );
 
                 ++expectedIndex;
             }
         }
 
+        test_id = test_registerSeriesNaming( isFull ? "test_configureTheNextMap" : "test_populateListOnSeries", 'e' );
         ERR( "The map `%10s` must %sto be loaded on the array.", mapName, isNotToBe ? "not " : "" )
-        SET_TEST_FAILURE( test_id, isOnTheArray == isNotToBe, errorMessage )
+        setTestFailure( test_id, isOnTheArray == isNotToBe, errorMessage );
     }
 
     /**
