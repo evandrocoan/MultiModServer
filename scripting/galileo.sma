@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-659";
+new const PLUGIN_VERSION[] = "v4.2.0-660";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -13856,43 +13856,44 @@ stock getNextMapByPosition( Array:mapcycleFileListArray, nextMapName[], &nextMap
 
     if( mapCycleMapsCount )
     {
-        for( new mapIndex = 0; mapIndex < mapCycleMapsCount; mapIndex++ )
+        do
         {
-            GET_MAP_NAME( mapcycleFileListArray, mapIndex, loadedMapName )
+            ++mapsProcessedNumber;
+
+            if( nextMapCyclePosition >= mapCycleMapsCount )
+            {
+                LOGGER( 1, "WARNING, getNextMapByPosition: Restarting the map cycle at: %d", nextMapCyclePosition )
+                nextMapCyclePosition = 0;
+
+                continue;
+            }
+
+            GET_MAP_NAME( mapcycleFileListArray, nextMapCyclePosition, loadedMapName )
+
+            // Sets the index of the next map of the current next map.
+            ++nextMapCyclePosition;
 
             // Block the next map cvar to be set to the current map.
-            if( ++mapsProcessedNumber > nextMapCyclePosition )
+            if( equali( g_currentMapName, loadedMapName ) )
             {
-                if( equali( g_currentMapName, loadedMapName ) )
-                {
-                    LOGGER( 1, "WARNING, getNextMapByPosition: Blocking the current map loaded: %s!", loadedMapName )
-                    continue;
-                }
-                else if( IS_WHITELIST_BLOCKING( isWhitelistEnabled, loadedMapName ) )
-                {
-                    LOGGER( 1, "WARNING, getNextMapByPosition: The Whitelist feature is blocking: %s!", loadedMapName )
-                    continue;
-                }
-
-                LOGGER( 1, "( getNextMapByPosition ) nextMapName: %s", loadedMapName )
-                LOGGER( 1, "( getNextMapByPosition ) nextMapCyclePosition: %d", mapsProcessedNumber )
-
-                copy( nextMapName, MAX_MAPNAME_LENGHT - 1, loadedMapName );
-                nextMapCyclePosition = mapsProcessedNumber;
-
-                LOGGER( 1, "    ( getNextMapByPosition ) Just returning/blocking on 'mapsProcessedNumber > nextMapCyclePosition'." )
-                return;
+                LOGGER( 1, "WARNING, getNextMapByPosition: Blocking the current map loaded: %s!", loadedMapName )
+                continue;
             }
-        }
+            else if( IS_WHITELIST_BLOCKING( isWhitelistEnabled, loadedMapName ) )
+            {
+                LOGGER( 1, "WARNING, getNextMapByPosition: The Whitelist feature is blocking: %s!", loadedMapName )
+                continue;
+            }
 
-        // It it gets here, we are restarting the map cycle and starting following it from the first line.
-        GET_MAP_NAME( mapcycleFileListArray, 0, nextMapName )
+            LOGGER( 1, "( getNextMapByPosition ) nextMapCyclePosition: %d", nextMapCyclePosition )
+            copy( nextMapName, MAX_MAPNAME_LENGHT - 1, loadedMapName );
 
-        if( IS_WHITELIST_BLOCKING( isWhitelistEnabled, nextMapName ) )
-        {
-            doAmxxLog( "WARNING, getNextMapByPosition: The Whitelist feature is blocking all your map cycle maps!" );
-            goto setTheCurrentMap;
-        }
+            LOGGER( 1, "    ( getNextMapByPosition ) Just returning the nextMapName: %d", nextMapName )
+            return;
+
+        } while( mapsProcessedNumber < mapCycleMapsCount );
+
+        goto setTheCurrentMap;
     }
     else
     {
@@ -13901,9 +13902,6 @@ stock getNextMapByPosition( Array:mapcycleFileListArray, nextMapName[], &nextMap
 
         copy( nextMapName, MAX_MAPNAME_LENGHT - 1, g_currentMapName );
     }
-
-    // Setting it to 1 will cause the next map to be `mapcycleFileListArray` second map.
-    nextMapCyclePosition = 1;
 
     LOGGER( 4, "    ( getNextMapByPosition ) nextMapName: %s, nextMapCyclePosition: %d", nextMapName, nextMapCyclePosition )
 }
