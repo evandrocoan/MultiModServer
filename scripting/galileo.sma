@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-665";
+new const PLUGIN_VERSION[] = "v4.2.0-666";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -86,7 +86,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-665";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+16+32
+#define DEBUG_LEVEL 1+2+4+64
 
 
 /**
@@ -17611,13 +17611,13 @@ public timeRemain()
     {
         set_pcvar_num( cvar_whitelistMinPlayers, 0 );
 
-        // test_populateListOnSeries_load1( 'a', true ); // Case 1-19
-        // test_populateListOnSeries_load2( 'i', true ); // Case 1-19
-        // test_populateListOnSeries_load3( 'b', true ); // Case 1-19
+        test_populateListOnSeries_load1( 'a', true ); // Case 1-19
+        test_populateListOnSeries_load2( 'i', true ); // Case 1-19
+        test_populateListOnSeries_load3( 'b', true ); // Case 1-19
 
-        // test_configureTheNextMap_load1( 'd' ); // Case 1-48
+        test_configureTheNextMap_load1( 'd' ); // Case 1-48
         test_configureTheNextMap_load2( 'a' ); // Case 1-87
-        // test_configureTheNextMap_load3( 'c' ); //
+        test_configureTheNextMap_load3( 'c' ); // Case 1-72
     }
 
     /**
@@ -17789,42 +17789,53 @@ public timeRemain()
 
     stock test_configureTheNextMap_load3( s )
     {
-        // Setting the `cvar_serverMoveCursor` as 2+8 will load the map cycle as:
-        //
-        // 0.  de_dust1
-        // 1.  de_dust2
-        // 2.  de_dust5
-        // 3.  cs_play
-        // 4.  aim_dumb
-        // 5.  de_nuke
-        // 6.  de_nuke1
-        // 7.  de_nuke2
-        // 8.  de_rage0
-        // 9.  de_rage1
-        // 10. de_rage2
-        // 11. de_rage3
-        // 12. go_girl
+        // Setting the `cvar_serverMoveCursor` as 2+8 will load the map cycle as the load2 above.
         set_pcvar_num( cvar_serverMoveCursor, 10 );
 
         // Set the initial settings to start the first complete loop tests.
-        saveCurrentMapCycleSetting( "cs_play", g_test_voteMapFilePath, 6 );
+        saveCurrentMapCycleSetting( "cs_play", g_test_voteMapFilePath, 5 );
 
-        // If the RTV never stop coming, the map cycle position will be stuck for a long time,
-        // even if switches come back to the original series from where it come from...
-        test_configureTheNextMap_case( s, "cs_play" , "aim_dumb", 6 , .expectedSize=13 ); // Case  1-3
+        // If the RTV never stop coming, the map cycle position will be stuck for a long
+        // time, but if the series switches come back to the original series it did come
+        // from...
+        test_configureTheNextMap_case( s, "cs_play" , "aim_dumb", 5 , .expectedSize=13 ); // Case  1-3
         test_configureTheNextMap_case( s, "aim_dumb", "de_nuke" , 6 , .expectedSize=13 ); // Case  4-6
         test_configureTheNextMap_case( s, "de_nuke" , "de_nuke1", 7 , .expectedSize=13 ); // Case  7-9
         test_configureTheNextMap_case( s, "de_dust1", "de_dust2", 8 , .expectedSize=13 ); // Case 10-12
         test_configureTheNextMap_case( s, "de_dust2", "de_dust5", 8 , .expectedSize=13 ); // Case 13-15
         test_configureTheNextMap_case( s, "de_dust2", "de_dust5", 8 , .expectedSize=13 ); // Case 16-18
-        test_configureTheNextMap_case( s, "de_rage0", "de_rage1", 8 , .expectedSize=13 ); // Case 19-21
-        test_configureTheNextMap_case( s, "de_rage1", "de_rage2", 8 , .expectedSize=13 ); // Case 22-24
-        test_configureTheNextMap_case( s, "de_dust1", "de_dust2", 8 , .expectedSize=13 ); // Case 25-27
-        test_configureTheNextMap_case( s, "de_dust2", "de_dust5", 8 , .expectedSize=13 ); // Case 28-30
 
-        // the map cycle position will to start being updated again after some series to get finished.
-        test_configureTheNextMap_case( s, "de_dust5", "de_rage0", 9 , .expectedSize=13 ); // Case 31-33
-        test_configureTheNextMap_case( s, "de_rage0", "de_rage1", 10, .expectedSize=13 ); // Case 34-36
+        // we will to start following the map cycle again because for example here, the
+        // index 8 is the map `de_rage0` and it will hit the current map blocker forcing
+        // it to move to the new next of the next map.
+        test_configureTheNextMap_case( s, "de_rage0", "de_rage1", 10, .expectedSize=13 ); // Case 19-21
+        test_configureTheNextMap_case( s, "de_rage1", "de_rage2", 11, .expectedSize=13 ); // Case 22-24
+        test_configureTheNextMap_case( s, "de_dust1", "de_dust2", 12, .expectedSize=13 ); // Case 25-27
+        test_configureTheNextMap_case( s, "de_dust2", "de_dust5", 12, .expectedSize=13 ); // Case 28-30
+
+        // The map cycle position will to start being updated again after some series
+        // to get finished.
+        test_configureTheNextMap_case( s, "de_dust5", "go_girl" , 13, .expectedSize=13 ); // Case 31-33
+        test_configureTheNextMap_case( s, "go_girl" , "de_dust1", 1 , .expectedSize=13 ); // Case 34-36
+
+        // Here we do the same test as before, but now we allow the serie to finish
+        // naturally instead of by RTV.
+        saveCurrentMapCycleSetting( "cs_play", g_test_voteMapFilePath, 5 );
+
+        test_configureTheNextMap_case( s, "cs_play" , "aim_dumb", 5 , .expectedSize=13 ); // Case 37-39
+        test_configureTheNextMap_case( s, "aim_dumb", "de_nuke" , 6 , .expectedSize=13 ); // Case 40-42
+        test_configureTheNextMap_case( s, "de_nuke" , "de_nuke1", 7 , .expectedSize=13 ); // Case 43-45
+        test_configureTheNextMap_case( s, "de_dust1", "de_dust2", 8 , .expectedSize=13 ); // Case 46-48
+        test_configureTheNextMap_case( s, "de_dust2", "de_dust5", 8 , .expectedSize=13 ); // Case 49-51
+        test_configureTheNextMap_case( s, "de_dust2", "de_dust5", 8 , .expectedSize=13 ); // Case 52-54
+
+        test_configureTheNextMap_case( s, "de_dust5", "de_rage0", 9 , .expectedSize=13 ); // Case 55-57
+        test_configureTheNextMap_case( s, "de_rage0", "de_rage1", 10, .expectedSize=13 ); // Case 58-60
+        test_configureTheNextMap_case( s, "de_rage1", "de_rage2", 11, .expectedSize=13 ); // Case 61-63
+        test_configureTheNextMap_case( s, "de_rage2", "de_rage3", 12, .expectedSize=13 ); // Case 64-66
+
+        test_configureTheNextMap_case( s, "de_rage3", "go_girl" , 13, .expectedSize=13 ); // Case 67-69
+        test_configureTheNextMap_case( s, "go_girl" , "de_dust1", 1 , .expectedSize=13 ); // Case 70-72
     }
 
 
