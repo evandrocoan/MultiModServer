@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-662";
+new const PLUGIN_VERSION[] = "v4.2.0-664";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -17611,22 +17611,25 @@ public timeRemain()
      *
      * The `posE` variable points to the next map of the next map of the current map `cmA`.
      *
-     * @param cmB     current map name       before to call saveCurrentMapCycleSetting(3).
      * @param cmA     current map name       after  to call saveCurrentMapCycleSetting(3).
      * @param npE     next map name expected after  to call saveCurrentMapCycleSetting(3) [Expected Next Map].
      * @param posE    the map cycle position after  to call saveCurrentMapCycleSetting(3) [Expected Position].
      */
-    stock test_configureTheNextMap_case( s, cmB[], cmA[], npE[], posE, expectedSize=11 )
+    stock test_configureTheNextMap_case( s, cmA[], npE[], posE, expectedSize=11 )
     {
         new test_id;
         new mapCount;
-        new errorMessage[ MAX_LONG_STRING ];
+
+        new lastMap     [ MAX_MAPNAME_LENGHT ];
+        new errorMessage[ MAX_LONG_STRING    ];
 
         set_pcvar_string( cvar_amx_nextmap, cmA );
-        copy( g_nextMapName, charsmax( g_nextMapName ), cmA );
 
-        saveCurrentMapCycleSetting( cmB, g_test_voteMapFilePath, g_nextMapCyclePosition );
+        copy( g_nextMapName, charsmax( g_nextMapName ), cmA );
         copy( g_currentMapName, charsmax( g_currentMapName ), cmA );
+
+        get_localinfo( "galileo_lastmap", lastMap, charsmax( lastMap ) );
+        saveCurrentMapCycleSetting( lastMap, g_test_voteMapFilePath, g_nextMapCyclePosition );
 
         if( expectedSize == 11 )
         {
@@ -17664,7 +17667,7 @@ public timeRemain()
     }
 
     /**
-     * When the last played map `cmB` is equal to to `cmA`, the `posB` will be decremented by 1 unit because
+     * When the last played map `lastMap` is equal to to `cmA`, the `posB` will be decremented by 1 unit because
      * this situation only happens at map restart, and as here we are readding the the `posE` which points
      * to the next map of the current next map, we need to decrement it to keep the next map from cycling
      * through all the map cycle just because the server admin is doing the `restart` command.
@@ -17689,26 +17692,26 @@ public timeRemain()
         // Set the initial settings to start the tests.
         saveCurrentMapCycleSetting( "de_dust1", g_test_voteMapFilePath, 1 );
 
-        test_configureTheNextMap_case( s, "de_dust1", "de_dust0", "de_dust2", 2  ); // Case  1-3
-        test_configureTheNextMap_case( s, "de_dust0", "de_dust0", "de_dust2", 2  ); // Case  4-6
-        test_configureTheNextMap_case( s, "de_dust0", "de_dust1", "de_dust5", 3  ); // Case  7-9
-        // test_configureTheNextMap_case( s, "de_dust0", "de_dust2", "de_dust5", 3  ); // Case 10-12
-        // test_configureTheNextMap_case( s, "de_dust0", "de_dust2", "de_dust5", 3  ); // Case 13-15
-        // test_configureTheNextMap_case( s, "de_dust0", "de_dust5", "de_dust6", 4  ); // Case 16-18
-        // test_configureTheNextMap_case( s, "de_dust0", "de_dust6", "de_dust2", 5  ); // Case 19-21
-        // test_configureTheNextMap_case( s, "de_dust0", "de_dust2", "de_dust5", 6  ); // Case 22-24
-        // test_configureTheNextMap_case( s, "de_dust0", "de_dust5", "de_dust6", 7  ); // Case 25-27
-        // test_configureTheNextMap_case( s, "de_dust5", "de_dust5", "de_dust6", 7  ); // Case 28-30
-        // test_configureTheNextMap_case( s, "de_dust0", "de_dust6", "de_nuke" , 8  ); // Case 31-33
-        // test_configureTheNextMap_case( s, "de_dust0", "de_nuke" , "de_dust2", 9  ); // Case 34-36
-        // test_configureTheNextMap_case( s, "de_dust0", "de_dust2", "de_dust5", 10 ); // Case 37-39
-        // test_configureTheNextMap_case( s, "de_dust0", "de_dust5", "de_dust6", 11 ); // Case 40-42
-        // test_configureTheNextMap_case( s, "de_dust0", "de_dust6", "de_dust1", 1  ); // Case 43-45
-        // test_configureTheNextMap_case( s, "de_dust0", "de_dust1", "de_dust2", 2  ); // Case 46-48
+        test_configureTheNextMap_case( s, "de_dust0", "de_dust2", 2  ); // Case  1-3
+        test_configureTheNextMap_case( s, "de_dust0", "de_dust2", 2  ); // Case  4-6
+        test_configureTheNextMap_case( s, "de_dust1", "de_dust5", 3  ); // Case  7-9
+        test_configureTheNextMap_case( s, "de_dust1", "de_dust5", 3  ); // Case 10-12
+        test_configureTheNextMap_case( s, "de_dust2", "de_dust6", 4  ); // Case 13-15
+        test_configureTheNextMap_case( s, "de_dust2", "de_dust6", 4  ); // Case 16-18
+        test_configureTheNextMap_case( s, "de_dust6", "de_dust2", 5  ); // Case 19-21
+        test_configureTheNextMap_case( s, "de_dust2", "de_dust5", 6  ); // Case 22-24
+        test_configureTheNextMap_case( s, "de_dust5", "de_dust6", 7  ); // Case 25-27
+        test_configureTheNextMap_case( s, "de_dust5", "de_dust6", 7  ); // Case 28-30
+        test_configureTheNextMap_case( s, "de_dust6", "de_nuke" , 8  ); // Case 31-33
+        test_configureTheNextMap_case( s, "de_nuke" , "de_dust2", 9  ); // Case 34-36
+        test_configureTheNextMap_case( s, "de_dust2", "de_dust5", 10 ); // Case 37-39
+        test_configureTheNextMap_case( s, "de_dust5", "de_dust6", 11 ); // Case 40-42
+        test_configureTheNextMap_case( s, "de_dust6", "de_dust1", 1  ); // Case 43-45
+        test_configureTheNextMap_case( s, "de_dust1", "de_dust2", 2  ); // Case 46-48
     }
 
     /**
-     * test_configureTheNextMap_case( s, cmB[], cmA[], npE[], posB, posE, expectedSize=11 )
+     * test_configureTheNextMap_case( s, cmA[], npE[], posE, expectedSize=11 )
      */
     stock test_configureTheNextMap_load2( s )
     {
@@ -17730,44 +17733,44 @@ public timeRemain()
         set_pcvar_num( cvar_serverMoveCursor, 10 );
 
         // First complete loop
-        test_configureTheNextMap_case( s, "de_dust0", "de_dust1", "de_dust2", 2 , .expectedSize=13 ); // Case  1-3
-        test_configureTheNextMap_case( s, "de_dust0", "de_dust1", "de_dust2", 2 , .expectedSize=13 ); // Case  4-6
-        test_configureTheNextMap_case( s, "de_dust0", "de_dust1", "de_dust2", 2 , .expectedSize=13 ); // Case  7-9
-        test_configureTheNextMap_case( s, "de_dust0", "de_nuke" , "de_nuke1", 3 , .expectedSize=13 ); // Case 10-12
-        test_configureTheNextMap_case( s, "de_dust0", "de_nuke" , "de_nuke1", 3 , .expectedSize=13 ); // Case 13-15
-        test_configureTheNextMap_case( s, "de_dust0", "de_nuke1", "de_nuke2", 3 , .expectedSize=13 ); // Case 16-18
-        test_configureTheNextMap_case( s, "de_dust0", "de_nuke1", "de_nuke2", 3 , .expectedSize=13 ); // Case 19-21
-        test_configureTheNextMap_case( s, "de_dust0", "de_nuke2", "cs_play" , 4 , .expectedSize=13 ); // Case 22-24
-        test_configureTheNextMap_case( s, "de_dust0", "de_nuke2", "cs_play" , 4 , .expectedSize=13 ); // Case 25-27
-        test_configureTheNextMap_case( s, "de_dust0", "de_nuke2", "cs_play" , 4 , .expectedSize=13 ); // Case 28-30
-        test_configureTheNextMap_case( s, "de_dust0", "cs_play" , "aim_dumb", 5 , .expectedSize=13 ); // Case 31-33
-        test_configureTheNextMap_case( s, "de_dust0", "aim_dumb", "de_nuke" , 6 , .expectedSize=13 ); // Case 34-36
-        test_configureTheNextMap_case( s, "de_dust0", "de_nuke" , "de_nuke1", 7 , .expectedSize=13 ); // Case 37-39
-        test_configureTheNextMap_case( s, "de_dust0", "de_nuke1", "de_nuke2", 8 , .expectedSize=13 ); // Case 40-42
-        test_configureTheNextMap_case( s, "de_dust0", "de_nuke2", "de_rage0", 9 , .expectedSize=13 ); // Case 43-45
-        test_configureTheNextMap_case( s, "de_dust0", "de_rage0", "de_rage1", 10, .expectedSize=13 ); // Case 46-48
-        test_configureTheNextMap_case( s, "de_dust0", "de_rage1", "de_rage2", 11, .expectedSize=13 ); // Case 49-51
-        test_configureTheNextMap_case( s, "de_dust0", "de_rage2", "de_rage3", 12, .expectedSize=13 ); // Case 52-54
-        test_configureTheNextMap_case( s, "de_dust0", "de_rage3", "go_girl" , 13, .expectedSize=13 ); // Case 55-57
-        test_configureTheNextMap_case( s, "de_dust0", "go_girl" , "de_dust1", 1 , .expectedSize=13 ); // Case 58-60
+        test_configureTheNextMap_case( s, "de_dust1", "de_dust2", 2 , .expectedSize=13 ); // Case  1-3
+        test_configureTheNextMap_case( s, "de_dust1", "de_dust2", 2 , .expectedSize=13 ); // Case  4-6
+        test_configureTheNextMap_case( s, "de_dust1", "de_dust2", 2 , .expectedSize=13 ); // Case  7-9
+        test_configureTheNextMap_case( s, "de_nuke" , "de_nuke1", 3 , .expectedSize=13 ); // Case 10-12
+        test_configureTheNextMap_case( s, "de_nuke" , "de_nuke1", 3 , .expectedSize=13 ); // Case 13-15
+        test_configureTheNextMap_case( s, "de_nuke1", "de_nuke2", 3 , .expectedSize=13 ); // Case 16-18
+        test_configureTheNextMap_case( s, "de_nuke1", "de_nuke2", 3 , .expectedSize=13 ); // Case 19-21
+        test_configureTheNextMap_case( s, "de_nuke2", "cs_play" , 4 , .expectedSize=13 ); // Case 22-24
+        test_configureTheNextMap_case( s, "de_nuke2", "cs_play" , 4 , .expectedSize=13 ); // Case 25-27
+        test_configureTheNextMap_case( s, "de_nuke2", "cs_play" , 4 , .expectedSize=13 ); // Case 28-30
+        test_configureTheNextMap_case( s, "cs_play" , "aim_dumb", 5 , .expectedSize=13 ); // Case 31-33
+        test_configureTheNextMap_case( s, "aim_dumb", "de_nuke" , 6 , .expectedSize=13 ); // Case 34-36
+        test_configureTheNextMap_case( s, "de_nuke" , "de_nuke1", 7 , .expectedSize=13 ); // Case 37-39
+        test_configureTheNextMap_case( s, "de_nuke1", "de_nuke2", 8 , .expectedSize=13 ); // Case 40-42
+        test_configureTheNextMap_case( s, "de_nuke2", "de_rage0", 9 , .expectedSize=13 ); // Case 43-45
+        test_configureTheNextMap_case( s, "de_rage0", "de_rage1", 10, .expectedSize=13 ); // Case 46-48
+        test_configureTheNextMap_case( s, "de_rage1", "de_rage2", 11, .expectedSize=13 ); // Case 49-51
+        test_configureTheNextMap_case( s, "de_rage2", "de_rage3", 12, .expectedSize=13 ); // Case 52-54
+        test_configureTheNextMap_case( s, "de_rage3", "go_girl" , 13, .expectedSize=13 ); // Case 55-57
+        test_configureTheNextMap_case( s, "go_girl" , "de_dust1", 1 , .expectedSize=13 ); // Case 58-60
 
         // If the RTV never stop coming, the map cycle position will be stuck for a long time.
-        test_configureTheNextMap_case( s, "de_dust0", "de_nuke" , "de_nuke1", 3 , .expectedSize=13 ); // Case 61-63
-        test_configureTheNextMap_case( s, "de_dust0", "de_rage0", "de_rage1", 3 , .expectedSize=13 ); // Case 64-66
-        test_configureTheNextMap_case( s, "de_dust0", "de_rage1", "de_rage2", 3 , .expectedSize=13 ); // Case 64-66
-        test_configureTheNextMap_case( s, "de_dust0", "de_nuke" , "de_nuke1", 3 , .expectedSize=13 ); // Case 67-69
-        test_configureTheNextMap_case( s, "de_dust0", "de_nuke1", "de_nuke2", 3 , .expectedSize=13 ); // Case
-        test_configureTheNextMap_case( s, "de_dust0", "de_nuke2", "cs_play" , 4 , .expectedSize=13 ); // Case
-        test_configureTheNextMap_case( s, "de_dust0", "cs_play" , "aim_dumb", 5 , .expectedSize=13 ); // Case
+        test_configureTheNextMap_case( s, "de_nuke" , "de_nuke1", 3 , .expectedSize=13 ); // Case 61-63
+        test_configureTheNextMap_case( s, "de_rage0", "de_rage1", 3 , .expectedSize=13 ); // Case 64-66
+        test_configureTheNextMap_case( s, "de_rage1", "de_rage2", 3 , .expectedSize=13 ); // Case 64-66
+        test_configureTheNextMap_case( s, "de_nuke" , "de_nuke1", 3 , .expectedSize=13 ); // Case 67-69
+        test_configureTheNextMap_case( s, "de_nuke1", "de_nuke2", 3 , .expectedSize=13 ); // Case
+        test_configureTheNextMap_case( s, "de_nuke2", "cs_play" , 4 , .expectedSize=13 ); // Case
+        test_configureTheNextMap_case( s, "cs_play" , "aim_dumb", 5 , .expectedSize=13 ); // Case
 
         // But if the switches come back to the original series from where it come from, the map cycle
         // position will to start being updated again.
-        // test_configureTheNextMap_case( s, "de_dust0", "de_nuke" , "de_nuke1", 13, 3 , .expectedSize=13 ); // Case
-        // test_configureTheNextMap_case( s, "de_dust0", "de_rage0", "de_rage1", 13, 3 , .expectedSize=13 ); // Case
-        // test_configureTheNextMap_case( s, "de_dust0", "de_rage1", "de_rage2", 13, 3 , .expectedSize=13 ); // Case
-        // test_configureTheNextMap_case( s, "de_dust0", "de_dust1", "de_dust2", 13, 2 , .expectedSize=13 ); // Case
-        // test_configureTheNextMap_case( s, "de_dust0", "de_dust2", "de_dust5", 2 , 3 , .expectedSize=13 ); // Case
-        // test_configureTheNextMap_case( s, "de_dust0", "de_dust2", "de_dust5", 2 , 3 , .expectedSize=13 ); // Case
+        // test_configureTheNextMap_case( s, "de_nuke" , "de_nuke1", 13, 3 , .expectedSize=13 ); // Case
+        // test_configureTheNextMap_case( s, "de_rage0", "de_rage1", 13, 3 , .expectedSize=13 ); // Case
+        // test_configureTheNextMap_case( s, "de_rage1", "de_rage2", 13, 3 , .expectedSize=13 ); // Case
+        // test_configureTheNextMap_case( s, "de_dust1", "de_dust2", 13, 2 , .expectedSize=13 ); // Case
+        // test_configureTheNextMap_case( s, "de_dust2", "de_dust5", 2 , 3 , .expectedSize=13 ); // Case
+        // test_configureTheNextMap_case( s, "de_dust2", "de_dust5", 2 , 3 , .expectedSize=13 ); // Case
     }
 
 
