@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-661";
+new const PLUGIN_VERSION[] = "v4.2.0-662";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -86,7 +86,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-661";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+2+4+64
+#define DEBUG_LEVEL 1+16+32
 
 
 /**
@@ -2309,13 +2309,13 @@ stock configureTheNextMapPlugin( possibleCurrentMap[], possibleNextMap[], possib
     LOGGER( 4, "( configureTheNextMapPlugin ) possibleCurrentMap: %s",  possibleCurrentMap )
     LOGGER( 4, "( configureTheNextMapPlugin ) possibleNextMapPosition: %d", possibleNextMapPosition )
 
-    if( ( g_nextMapCyclePosition = possibleNextMapPosition ) )
+    if( possibleNextMapPosition )
     {
         new mapcycleFilePath[ MAX_FILE_PATH_LENGHT ];
         get_pcvar_string( cvar_mapcyclefile, mapcycleFilePath, charsmax( mapcycleFilePath ) );
 
         setNextMap( possibleCurrentMap, possibleNextMap, true, forceUpdateFile );
-        saveCurrentMapCycleSetting( g_currentMapName, mapcycleFilePath, g_nextMapCyclePosition );
+        saveCurrentMapCycleSetting( g_currentMapName, mapcycleFilePath, possibleNextMapPosition );
     }
 }
 
@@ -13954,27 +13954,29 @@ stock loadTheNextMapFile( mapcycleFilePath[], &Array:mapcycleFileListArray, &Tri
 stock configureTheNextMapSetttings( currentMapcycleFilePath[] )
 {
     LOGGER( 128, "I AM ENTERING ON configureTheNextMapSetttings(1)" )
+
     new mapCount;
+    new nextMapCyclePosition;
 
     // Load the full map cycle if, considering whether the feature `gal_srv_move_cursor` is enabled or not.
     get_pcvar_string( cvar_mapcyclefile, currentMapcycleFilePath, MAX_MAPNAME_LENGHT - 1 );
     mapCount = loadTheNextMapFile( currentMapcycleFilePath, g_mapcycleFileListArray, g_mapcycleFileListTrie );
 
-    getNextMapLocalInfoToken( currentMapcycleFilePath, g_nextMapCyclePosition );
-    getLastNextMapFromServerStart( g_mapcycleFileListArray, g_nextMapName, g_nextMapCyclePosition );
+    nextMapCyclePosition = getNextMapLocalInfoToken( currentMapcycleFilePath );
+    getLastNextMapFromServerStart( g_mapcycleFileListArray, g_nextMapName, nextMapCyclePosition );
 
     if( areWeRunningAnAlternateSeries( g_currentMapName, g_nextMapName ) )
     {
         // The index on `nextMapCyclePosition` is one map ahead the next map.
-        --g_nextMapCyclePosition;
+        --nextMapCyclePosition;
 
-        // Here we do not update the `g_nextMapCyclePosition` to the next map beyond the last valid serie,
+        // Here we do not update the `nextMapCyclePosition` to the next map beyond the last valid serie,
         // to be able to return to follow the map cycle when the new series is over.
-        moveTheCursorToTheLastMap( g_currentMapName, g_nextMapCyclePosition );
+        moveTheCursorToTheLastMap( g_currentMapName, nextMapCyclePosition );
     }
 
     setTheNextMapCvarFlag( g_nextMapName );
-    saveCurrentMapCycleSetting( g_currentMapName, currentMapcycleFilePath, g_nextMapCyclePosition );
+    saveCurrentMapCycleSetting( g_currentMapName, currentMapcycleFilePath, nextMapCyclePosition );
 
     LOGGER( 1, "    ( configureTheNextMapSetttings ) Returning mapCount: %d", mapCount )
     return mapCount;
@@ -14047,10 +14049,10 @@ stock moveTheCursorToTheLastMap( currentMapName[], &nextMapCyclePosition )
     }
 }
 
-stock getNextMapLocalInfoToken( currentMapcycleFilePath[], &nextMapCyclePosition )
+stock getNextMapLocalInfoToken( currentMapcycleFilePath[] )
 {
-    LOGGER( 128, "I AM ENTERING ON getNextMapLocalInfoToken(2) currentMapcycleFilePath: %s", currentMapcycleFilePath )
-    LOGGER( 2, "( getNextMapLocalInfoToken ) nextMapCyclePosition: %d", nextMapCyclePosition )
+    LOGGER( 128, "I AM ENTERING ON getNextMapLocalInfoToken(1) currentMapcycleFilePath: %s", currentMapcycleFilePath )
+    new nextMapCyclePosition;
 
     new mapcycleCurrentIndex   [ MAX_MAPNAME_LENGHT ];
     new lastMapcycleFilePath   [ MAX_FILE_PATH_LENGHT ];
@@ -14086,6 +14088,9 @@ stock getNextMapLocalInfoToken( currentMapcycleFilePath[], &nextMapCyclePosition
         // If the mapcyclefile has been changed, go from the first map on the map cycle.
         nextMapCyclePosition = 0;
     }
+
+    LOGGER( 2, "    ( getNextMapLocalInfoToken ) Returning nextMapCyclePosition: %d", nextMapCyclePosition )
+    return nextMapCyclePosition;
 }
 
 stock setTheNextMapCvarFlag( nextMapName[] )
@@ -14130,6 +14135,7 @@ stock saveCurrentMapCycleSetting( currentMapName[], mapcycleFilePath[], nextMapC
     new tockenMapcycleAndPosion[ MAX_MAPNAME_LENGHT + MAX_FILE_PATH_LENGHT ];
     formatex( tockenMapcycleAndPosion, charsmax( tockenMapcycleAndPosion ), "%s %d", mapcycleFilePath, nextMapCyclePosition );
 
+    g_nextMapCyclePosition = nextMapCyclePosition;
     LOGGER( 2, "( saveCurrentMapCycleSetting ) tockenMapcycleAndPosion: %s", tockenMapcycleAndPosion )
 
     // save lastmapcycle settings
@@ -17595,7 +17601,7 @@ public timeRemain()
         // test_populateListOnSeries_load2( 'i', true ); // Case 1-19
         // test_populateListOnSeries_load3( 'b', true ); // Case 1-19
 
-        // test_configureTheNextMap_load1( 'd' ); // Case 1-48
+        test_configureTheNextMap_load1( 'd' ); // Case 1-48
         // test_configureTheNextMap_load2( 'a' ); // Case 1-60
     }
 
@@ -17619,7 +17625,7 @@ public timeRemain()
         set_pcvar_string( cvar_amx_nextmap, cmA );
         copy( g_nextMapName, charsmax( g_nextMapName ), cmA );
 
-        saveCurrentMapCycleSetting( cmB, g_test_voteMapFilePath, g_nextMapCyclePosition - 1 );
+        saveCurrentMapCycleSetting( cmB, g_test_voteMapFilePath, g_nextMapCyclePosition );
         copy( g_currentMapName, charsmax( g_currentMapName ), cmA );
 
         if( expectedSize == 11 )
@@ -17653,7 +17659,7 @@ public timeRemain()
         setTestFailure( test_id, !equali( npE, g_nextMapName ), errorMessage );
 
         test_id = test_registerSeriesNaming( "test_configureTheNextMap", s ); // Case 3
-        ERR( "The map cycle position after must to be %d, instead of %d.", posE, g_nextMapCyclePosition )
+        ERR( "The map cycle position must to be %d, instead of %d.", posE, g_nextMapCyclePosition )
         setTestFailure( test_id, posE != g_nextMapCyclePosition, errorMessage );
     }
 
@@ -17683,22 +17689,22 @@ public timeRemain()
         // Set the initial settings to start the tests.
         saveCurrentMapCycleSetting( "de_dust1", g_test_voteMapFilePath, 1 );
 
-        test_configureTheNextMap_case( s, "de_dust1", "de_dust0", "de_dust2", 2  ); // Case 31-33
-        // test_configureTheNextMap_case( s, "de_dust1", "de_dust0", "de_dust2", 2  ); // Case 34-36
-        // test_configureTheNextMap_case( s, "de_dust0", "de_dust1", "de_dust2", 2  ); // Case 37-39
-        // test_configureTheNextMap_case( s, "de_dust0", "de_dust2", "de_dust5", 3  ); // Case 40-42
-        // test_configureTheNextMap_case( s, "de_dust0", "de_dust2", "de_dust5", 3  ); // Case 43-45
-        // test_configureTheNextMap_case( s, "de_dust0", "de_dust5", "de_dust6", 4  ); // Case 46-48
-        // test_configureTheNextMap_case( s, "de_dust0", "de_dust6", "de_dust2", 5  ); // Case 49-51
-        // test_configureTheNextMap_case( s, "de_dust0", "de_dust2", "de_dust5", 6  ); // Case 52-54
-        // test_configureTheNextMap_case( s, "de_dust0", "de_dust5", "de_dust6", 7  ); // Case 55-57
-        // test_configureTheNextMap_case( s, "de_dust5", "de_dust5", "de_dust6", 7  ); // Case 58-60
-        // test_configureTheNextMap_case( s, "de_dust0", "de_dust6", "de_nuke" , 8  ); // Case 61-63
-        // test_configureTheNextMap_case( s, "de_dust0", "de_nuke" , "de_dust2", 9  ); // Case 64-66
-        // test_configureTheNextMap_case( s, "de_dust0", "de_dust2", "de_dust5", 10 ); // Case 67-69
-        // test_configureTheNextMap_case( s, "de_dust0", "de_dust5", "de_dust6", 11 ); // Case 70-72
-        // test_configureTheNextMap_case( s, "de_dust0", "de_dust6", "de_dust1", 1  ); // Case 73-75
-        // test_configureTheNextMap_case( s, "de_dust0", "de_dust1", "de_dust2", 2  ); // Case 76-78
+        test_configureTheNextMap_case( s, "de_dust1", "de_dust0", "de_dust2", 2  ); // Case  1-3
+        test_configureTheNextMap_case( s, "de_dust0", "de_dust0", "de_dust2", 2  ); // Case  4-6
+        test_configureTheNextMap_case( s, "de_dust0", "de_dust1", "de_dust5", 3  ); // Case  7-9
+        // test_configureTheNextMap_case( s, "de_dust0", "de_dust2", "de_dust5", 3  ); // Case 10-12
+        // test_configureTheNextMap_case( s, "de_dust0", "de_dust2", "de_dust5", 3  ); // Case 13-15
+        // test_configureTheNextMap_case( s, "de_dust0", "de_dust5", "de_dust6", 4  ); // Case 16-18
+        // test_configureTheNextMap_case( s, "de_dust0", "de_dust6", "de_dust2", 5  ); // Case 19-21
+        // test_configureTheNextMap_case( s, "de_dust0", "de_dust2", "de_dust5", 6  ); // Case 22-24
+        // test_configureTheNextMap_case( s, "de_dust0", "de_dust5", "de_dust6", 7  ); // Case 25-27
+        // test_configureTheNextMap_case( s, "de_dust5", "de_dust5", "de_dust6", 7  ); // Case 28-30
+        // test_configureTheNextMap_case( s, "de_dust0", "de_dust6", "de_nuke" , 8  ); // Case 31-33
+        // test_configureTheNextMap_case( s, "de_dust0", "de_nuke" , "de_dust2", 9  ); // Case 34-36
+        // test_configureTheNextMap_case( s, "de_dust0", "de_dust2", "de_dust5", 10 ); // Case 37-39
+        // test_configureTheNextMap_case( s, "de_dust0", "de_dust5", "de_dust6", 11 ); // Case 40-42
+        // test_configureTheNextMap_case( s, "de_dust0", "de_dust6", "de_dust1", 1  ); // Case 43-45
+        // test_configureTheNextMap_case( s, "de_dust0", "de_dust1", "de_dust2", 2  ); // Case 46-48
     }
 
     /**
