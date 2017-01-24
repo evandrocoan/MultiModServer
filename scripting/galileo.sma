@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-666";
+new const PLUGIN_VERSION[] = "v4.2.0-669";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -86,7 +86,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-666";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+2+4+64
+#define DEBUG_LEVEL 1+32+64
 
 
 /**
@@ -13841,9 +13841,10 @@ public nextmapPluginInit()
  * Therefore we will get a completely wrong `g_nextMapCyclePosition` value which will mess with
  * everything, was the `gal_srv_move_cursor` feature makes both map cycle with different indexes.
  *
- * @param @nextMapCyclePosition     is the next map position following actual next map.
+ * @param &nextMapCyclePosition     is the next map position following actual next map.
+ * @param isUseTheCurrentMapRule      ignore the current map rule
  */
-stock getNextMapByPosition( Array:mapcycleFileListArray, nextMapName[], &nextMapCyclePosition )
+stock getNextMapByPosition( Array:mapcycleFileListArray, nextMapName[], &nextMapCyclePosition, bool:isUseTheCurrentMapRule=true )
 {
     LOGGER( 128, "I AM ENTERING ON getNextMapByPosition(3) mapcycleFileListArray: %d", mapcycleFileListArray )
     LOGGER( 128, "( getNextMapByPosition ) nextMapCyclePosition: %d", nextMapCyclePosition )
@@ -13874,7 +13875,8 @@ stock getNextMapByPosition( Array:mapcycleFileListArray, nextMapName[], &nextMap
             ++nextMapCyclePosition;
 
             // Block the next map cvar to be set to the current map.
-            if( equali( g_currentMapName, loadedMapName ) )
+            if( isUseTheCurrentMapRule
+                && equali( g_currentMapName, loadedMapName ) )
             {
                 LOGGER( 1, "WARNING, getNextMapByPosition: Blocking because this is the currentMap: %s!", loadedMapName )
                 continue;
@@ -14035,32 +14037,83 @@ stock moveTheCursorToTheLastMap( Array:mapcycleFileListArray, &nextMapCyclePosit
 {
     LOGGER( 128, "I AM ENTERING ON moveTheCursorToTheLastMap(2) nextMapCyclePosition: %d", nextMapCyclePosition )
 
+    new maximumTries;
     new currentSerie;
     new mapIndexBefore;
+    new cursorOnMapSeries;
 
     new mapNameClean        [ MAX_MAPNAME_LENGHT ];
     new originalSerieMapName[ MAX_MAPNAME_LENGHT ];
 
-    // The `nextMapCyclePosition` is pointing to the actual next map, but we need the index to the map
-    // before the next map.
-    if( ( mapIndexBefore = nextMapCyclePosition - 1 ) < 0 )
+    getMapIndexBefore( mapcycleFileListArray, nextMapCyclePosition - 1, mapIndexBefore );
+    getNextMapByPosition( mapcycleFileListArray, originalSerieMapName, mapIndexBefore, false );
+
+    maximumTries = ArraySize( mapcycleFileListArray );
+    copy( mapNameClean, charsmax( mapNameClean ), originalSerieMapName );
+
+    currentSerie      = getTheCurrentSerieForTheMap( mapNameClean );
+    cursorOnMapSeries = get_pcvar_num( cvar_serverMoveCursor );
+
+    // When the `IS_TO_LOAD_ALL_THE_MAP_SERIES` is set, it overrides the `IS_TO_LOAD_THE_FIRST_MAP_SERIES` bit flag.
+    if( cursorOnMapSeries & IS_TO_LOAD_EXPLICIT_MAP_SERIES
+        || cursorOnMapSeries & IS_TO_LOAD_THE_FIRST_MAP_SERIES
+           && !( cursorOnMapSeries & IS_TO_LOAD_ALL_THE_MAP_SERIES ) )
+    {
+        cursorOnMapSeries = 0;
+        new lastSerieMapName[ MAX_MAPNAME_LENGHT ];
+
+        LOGGER( 2, "( moveTheCursorToTheLastMap ) Trying to the cursor..." )
+
+        do
+        {
+            getMapIndexBefore( mapcycleFileListArray, mapIndexBefore - 1, mapIndexBefore );
+            getNextMapByPosition( mapcycleFileListArray, lastSerieMapName, mapIndexBefore, false );
+
+            // The getNextMapByPosition(3) call is incrementing it.
+            --mapIndexBefore;
+
+            // If the current serie is 1, it will return 2.
+            if( getTheCurrentSerieForTheMap( lastSerieMapName ) < 3
+                && equali( mapNameClean, lastSerieMapName ) )
+            {
+                goto moveCursor;
+            }
+
+        } while( cursorOnMapSeries++ < maximumTries
+                 && equali( mapNameClean, lastSerieMapName ) );
+
+    }
+    else
+    {
+        moveCursor:
+        cursorOnMapSeries = 0;
+
+        LOGGER( 2, "( moveTheCursorToTheLastMap ) Moving the cursor..." )
+
+        while( cursorOnMapSeries++ < maximumTries
+               && isThereNextMapOnTheSerie( currentSerie, mapNameClean, originalSerieMapName ) )
+        {
+            nextMapCyclePosition++;
+            currentSerie++;
+        }
+    }
+
+    LOGGER( 2, "    ( moveTheCursorToTheLastMap ) Returning nextMapCyclePosition: %d", nextMapCyclePosition )
+}
+
+/**
+ * The `nextMapCyclePosition` is pointing to the actual next map, but we need the index to the map
+ * before the next map.
+ */
+stock getMapIndexBefore( Array:mapcycleFileListArray, nextMapCyclePosition, &mapIndexBefore )
+{
+    LOGGER( 128, "I AM ENTERING ON getMapIndexBefore(1) mapIndexBefore: %d", mapIndexBefore )
+
+    if( ( mapIndexBefore = nextMapCyclePosition ) < 0 )
     {
         // If is it negative, we want to the last map on the array `g_mapcycleFileListArray`.
         mapIndexBefore = ArraySize( mapcycleFileListArray ) - 1;
     }
-
-    getNextMapByPosition( mapcycleFileListArray, originalSerieMapName, mapIndexBefore );
-
-    copy( mapNameClean, charsmax( mapNameClean ), originalSerieMapName );
-    currentSerie = getTheCurrentSerieForTheMap( mapNameClean );
-
-    while( isThereNextMapOnTheSerie( currentSerie, mapNameClean, originalSerieMapName ) )
-    {
-        nextMapCyclePosition++;
-        currentSerie++;
-    }
-
-    LOGGER( 2, "    ( moveTheCursorToTheLastMap ) Returning nextMapCyclePosition: %d", nextMapCyclePosition )
 }
 
 stock getNextMapLocalInfoToken( currentMapcycleFilePath[] )
@@ -14078,7 +14131,7 @@ stock getNextMapLocalInfoToken( currentMapcycleFilePath[] )
     parse( tockenMapcycleAndPosion, lastMapcycleFilePath, charsmax( lastMapcycleFilePath ),
                                     mapcycleCurrentIndex, charsmax( mapcycleCurrentIndex ) );
 
-    LOGGER( 2, "( getNextMapLocalInfoToken ) mapcycleCurrentIndex: %d", mapcycleCurrentIndex )
+    LOGGER( 2, "( getNextMapLocalInfoToken ) mapcycleCurrentIndex: %s", mapcycleCurrentIndex )
     LOGGER( 2, "( getNextMapLocalInfoToken ) lastMapcycleFilePath: %s", lastMapcycleFilePath )
     LOGGER( 2, "( getNextMapLocalInfoToken ) tockenMapcycleAndPosion: %s", tockenMapcycleAndPosion )
     LOGGER( 2, "( getNextMapLocalInfoToken ) currentMapcycleFilePath: %s", currentMapcycleFilePath )
@@ -14384,7 +14437,7 @@ stock getTheCurrentSerieForTheMap( mapNameClean[] )
             searchIndex--;
         }
 
-        LOGGER( 256, "mapNameClean: %s", mapNameClean )
+        LOGGER( 256, "( getTheCurrentSerieForTheMap ) mapNameClean: %s", mapNameClean )
 
         // If its not a map name only within digits on its name, continues the algorithm.
         if( searchIndex > -1 )
@@ -14450,7 +14503,7 @@ stock bool:isThereNextMapOnTheSerie( &currentSerie, mapNameClean[], nextMapName[
 }
 
 stock loadTheCursorOnMapSeries( Array:mapArray, Trie:mapTrie, Trie:loadedMapSeriesTrie, currentMapName[],
-                                nextMapName[] , &mapCount   , cursorOnMapSeries )
+                                nextMapName[] , &mapCount   , const cursorOnMapSeries )
 {
     LOGGER( 256, "I AM ENTERING ON loadTheCursorOnMapSeries(7) currentMapName: %s", currentMapName )
     new currentSerie;
@@ -14461,8 +14514,8 @@ stock loadTheCursorOnMapSeries( Array:mapArray, Trie:mapTrie, Trie:loadedMapSeri
     // If we are loading only map series starting at 1, block the execution if the initial serie is
     // greater than 2, because this function returns the next map on the series, then if the current
     // serie is 1, it will return 2. Therefore we must to allow it accordantly to the settings.
-    if( ( currentSerie = getTheCurrentSerieForTheMap( mapNameClean ) ) > 2
-        && cursorOnMapSeries & IS_TO_LOAD_EXPLICIT_MAP_SERIES )
+    if( ( ( currentSerie = getTheCurrentSerieForTheMap( mapNameClean ) ) > 2 )
+        && ( cursorOnMapSeries & IS_TO_LOAD_EXPLICIT_MAP_SERIES ) )
     {
         LOGGER( 256, "    ( loadTheCursorOnMapSeries ) Returning/Blocking the execution." )
         return;
@@ -14515,7 +14568,7 @@ stock loadTheCursorOnMapSeries( Array:mapArray, Trie:mapTrie, Trie:loadedMapSeri
     }
 }
 
-stock loadMapFileSeriesListArray( mapFileDescriptor, Array:mapArray, Trie:mapTrie, Trie:loadedMapSeriesTrie, cursorOnMapSeries )
+stock loadMapFileSeriesListArray( mapFileDescriptor, Array:mapArray, Trie:mapTrie, Trie:loadedMapSeriesTrie, const cursorOnMapSeries )
 {
     LOGGER( 128, "I AM ENTERING ON loadMapFileSeriesListArray(5) mapFileDescriptor: %d", mapFileDescriptor )
 
@@ -14523,6 +14576,9 @@ stock loadMapFileSeriesListArray( mapFileDescriptor, Array:mapArray, Trie:mapTri
     new nextMapName  [ MAX_MAPNAME_LENGHT ];
     new loadedMapName[ MAX_MAPNAME_LENGHT ];
     new loadedMapLine[ MAX_MAPNAME_LENGHT ];
+
+    LOGGER( 128, "( loadMapFileSeriesListArray ) cursorOnMapSeries: %d", cursorOnMapSeries )
+    LOGGER( 128, "( loadMapFileSeriesListArray ) loadedMapSeriesTrie: %d", loadedMapSeriesTrie )
 
     while( !feof( mapFileDescriptor ) )
     {
@@ -14565,10 +14621,9 @@ stock loadMapFileListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
     if( mapFileDescriptor )
     {
         new Trie:loadedMapSeriesTrie;
-        new cursorOnMapSeries = get_pcvar_num( cvar_serverMoveCursor );
+        new const cursorOnMapSeries = get_pcvar_num( cvar_serverMoveCursor );
 
-        // If the `IS_TO_LOAD_ALL_THE_MAP_SERIES` is set, it overrides the `IS_TO_LOAD_THE_FIRST_MAP_SERIES`
-        // bit flag.
+        // When the `IS_TO_LOAD_ALL_THE_MAP_SERIES` is set, it overrides the `IS_TO_LOAD_THE_FIRST_MAP_SERIES` bit flag.
         if( cursorOnMapSeries & IS_TO_LOAD_THE_FIRST_MAP_SERIES
             && !( cursorOnMapSeries & IS_TO_LOAD_ALL_THE_MAP_SERIES ) )
         {
@@ -17612,12 +17667,13 @@ public timeRemain()
         set_pcvar_num( cvar_whitelistMinPlayers, 0 );
 
         test_populateListOnSeries_load1( 'a', true ); // Case 1-19
-        test_populateListOnSeries_load2( 'i', true ); // Case 1-19
-        test_populateListOnSeries_load3( 'b', true ); // Case 1-19
+        test_populateListOnSeries_load2( 'b', true ); // Case 1-19
+        test_populateListOnSeries_load3( 'c', true ); // Case 1-19
 
         test_configureTheNextMap_load1( 'd' ); // Case 1-48
-        test_configureTheNextMap_load2( 'a' ); // Case 1-87
-        test_configureTheNextMap_load3( 'c' ); // Case 1-72
+        test_configureTheNextMap_load2( 'e' ); // Case 1-87
+        test_configureTheNextMap_load3( 'f' ); // Case 1-72
+        test_configureTheNextMap_load4( 'g' ); // Case 1-12
     }
 
     /**
@@ -17650,6 +17706,12 @@ public timeRemain()
         {
             HELPER_MAP_FILE_LIST_LOAD( g_test_voteMapFilePath, "de_dust1", "de_dust2", "de_nuke", "de_dust2" )
             helper_loadStrictValidMapsTrie( "de_dust1", "de_dust2", "de_dust5", "de_dust6", "de_nuke" );
+        }
+        else if( expectedSize == 5 )
+        {
+            HELPER_MAP_FILE_LIST_LOAD( g_test_voteMapFilePath, "de_dust2", "cs_italy_cz", "de_dust2_fundo", "de_dust_cz" )
+            helper_loadStrictValidMapsTrie( "de_dust", "de_dust2", "de_dust3", "de_dust4", "cs_italy_cz", "de_dust2_fundo",
+                                            "de_dust2_fundo2", "de_dust_cz" );
         }
         else
         {
@@ -17836,6 +17898,31 @@ public timeRemain()
 
         test_configureTheNextMap_case( s, "de_rage3", "go_girl" , 13, .expectedSize=13 ); // Case 67-69
         test_configureTheNextMap_case( s, "go_girl" , "de_dust1", 1 , .expectedSize=13 ); // Case 70-72
+    }
+
+    /**
+     * When the option `IS_TO_LOAD_EXPLICIT_MAP_SERIES` is set, the moveTheCursorToTheLastMap cannot
+     * move the cursor until the series end, if there are valid maps but the series does not started
+     * at 0 or 1.
+     */
+    stock test_configureTheNextMap_load4( s )
+    {
+        // Setting the `cvar_serverMoveCursor` as 2+4+8 will load the map cycle as:
+        //
+        // 0. de_dust2
+        // 1. cs_italy_cz
+        // 2. de_dust2_fundo
+        // 3. de_dust2_fundo2
+        // 4. de_dust_cz
+        set_pcvar_num( cvar_serverMoveCursor, 14 );
+
+        // Set the initial settings to start the first complete loop tests.
+        saveCurrentMapCycleSetting( "de_dust", g_test_voteMapFilePath, 1 );
+
+        test_configureTheNextMap_case( s, "de_dust" , "de_dust2"   , 1, .expectedSize=5 ); // Case  1-3
+        test_configureTheNextMap_case( s, "de_dust2", "de_dust3"   , 1, .expectedSize=5 ); // Case  4-6
+        test_configureTheNextMap_case( s, "de_dust3", "de_dust4"   , 1, .expectedSize=5 ); // Case  7-9
+        test_configureTheNextMap_case( s, "de_dust4", "cs_italy_cz", 2, .expectedSize=5 ); // Case 10-12
     }
 
 
