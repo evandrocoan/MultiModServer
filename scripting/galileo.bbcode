@@ -141,11 +141,6 @@ available at the [goanchor=Downloads]Downloads[/goanchor] section, and [B]here b
 // Server restarts could be due to a benign reason or could be due to //
 // a map that just crashed the server. In any case, you can specify   //
 // what happens when the server restarts.                             //
-// Example, using mp_maxrounds: If mp_maxrounds = 40, 30 rounds has   //
-// already passed and admin use the 'sv_restartround' command. After  //
-// the restart, if these cvars are 1's or higher, the rounds left     //
-// will be at least 10. If these cvars are 0, the rounds left will    //
-// 40.                                                                //
 ////////////////////////////////////////////////////////////////////////
 
 // Indicates which action to take immediately after it is detected that
@@ -216,12 +211,13 @@ gal_srv_start 1
 // If the next map in the map cycle after afrikakorps1 is sc_another,
 // it will set the next map to afrikakorps2, and afrikakorps3.
 //
-// The flags 1 and 2 are exclusive and the flag 4 is additive.
+// The flags 1 and 2 are exclusive and the flags 4 and 8 are additive.
 // A value of 0 will disable this feature.
 //
-//  1 - to load only the first map series it found
-//  2 - to load all the map series it found
-//  4 - only to load a map series only if it is starting at 1, as `de_dust` and `de_nuke1`
+//  1 - to load only the first map series it found.
+//  2 - to load all the map series it found (if 1 and 2 are set, 1 will be ignored).
+//  4 - only to load a map series only if it is starting at 1, as `de_dust` and `de_nuke1`.
+//  8 - if you are on a map series, and there is an RTV vote, start following the new series.
 //
 // For example, if you want to use the options 1 and 4, use 1 + 4:
 // gal_srv_move_cursor 5
@@ -230,11 +226,11 @@ gal_srv_start 1
 // gal_srv_move_cursor 0
 //
 // Default: 0
-gal_srv_move_cursor 6
+gal_srv_move_cursor 14
 
 // Indicates which action to take immediately after it is detected that
 // the server has been 'externally restarted', and half of the time-left or
-// rounds-left passed.
+// rounds-left has passed.
 //
 // 0 - Always use the 'gal_srv_start' cvar configured option.
 //
@@ -251,6 +247,12 @@ gal_srv_move_cursor 6
 gal_game_crash_recreation 0
 
 // When it is used 'sv_restartround', do not reset the 'mp_timelimit'.
+//
+// Example, using mp_timelimit: If mp_timelimit = 40, 30 minutes has
+// already passed and admin use the 'sv_restartround' command. After
+// the restart, if these cvars are 1's or higher, the minutes left
+// will be at least 10. If these cvars are 0, the minutes left will
+// 40.
 //
 // 0           - Reset the 'mp_timelimit'.
 //
@@ -1413,13 +1415,15 @@ gal_endonround_change 1
 // A value of 0 will do not nothing special/different.
 //
 //  1 - show a countdown from 5 until 1
+//
 //  2 - To drop the player weapons
+//
 //  4 - freeze all the players speed
+//
 //  8 - give grenades
+//
 // 16 - to set mp_friendlyfire to 1 so players can bombard each other
 //      with grenades just before change level.
-//
-// Default: 0
 //
 // For example, if you want to use the options 1 and 2, use 1 + 2:
 // gal_endonround_countdown 3
