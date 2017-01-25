@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-669";
+new const PLUGIN_VERSION[] = "v4.2.0-670";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -86,7 +86,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-669";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+32+64
+#define DEBUG_LEVEL 1+32+16+64
 
 
 /**
@@ -13967,15 +13967,8 @@ stock configureTheNextMapSetttings( currentMapcycleFilePath[] )
     nextMapCyclePosition = getNextMapLocalInfoToken( currentMapcycleFilePath );
     getLastNextMapFromServerStart( g_mapcycleFileListArray, g_nextMapName, nextMapCyclePosition );
 
-    if( areWeRunningAnAlternateSeries( g_currentMapName, g_nextMapName ) )
-    {
-        // The index on `nextMapCyclePosition` is one map ahead the next map
-        --nextMapCyclePosition;
-
-        // Here we do not update the `nextMapCyclePosition` to the next map beyond the last valid serie,
-        // to be able to return to follow the map cycle when the new series is over.
-        moveTheCursorToTheLastMap( g_mapcycleFileListArray, nextMapCyclePosition );
-    }
+    // Load the alternative sereis if existent.
+    tryToRunAnAlternateSeries( g_mapcycleFileListArray, g_currentMapName, g_nextMapName, nextMapCyclePosition );
 
     setTheNextMapCvarFlag( g_nextMapName );
     saveCurrentMapCycleSetting( g_currentMapName, currentMapcycleFilePath, nextMapCyclePosition );
@@ -13991,27 +13984,50 @@ stock configureTheNextMapSetttings( currentMapcycleFilePath[] )
  * Returns true when are on a series and should load the next map on it, and false when the series
  * is over by getting on its last map.
  */
-stock bool:areWeRunningAnAlternateSeries( currentMapName[], nextMapName[] )
+stock tryToRunAnAlternateSeries( Array:mapcycleFileListArray, currentMapName[], nextMapName[], &nextMapCyclePosition )
 {
-    LOGGER( 128, "I AM ENTERING ON areWeRunningAnAlternateSeries(2)" )
-    LOGGER( 128, "( areWeRunningAnAlternateSeries ) currentMapName: %s, nextMapName: %s", currentMapName, nextMapName )
+    LOGGER( 128, "I AM ENTERING ON tryToRunAnAlternateSeries(2)" )
+
+    LOGGER( 4, "" )
+    LOGGER( 4, "( tryToRunAnAlternateSeries ) nextMapCyclePosition: %d", nextMapCyclePosition )
+    LOGGER( 4, "( tryToRunAnAlternateSeries ) currentMapName: %s, nextMapName: %s", currentMapName, nextMapName )
 
     if( get_pcvar_num( cvar_serverMoveCursor ) & IS_TO_LOAD_ALTERNATE_MAP_SERIES )
     {
+        new mapIndexBefore;
+
         new currentSerie;
+        new originalSerie;
+
+        new originalSerieMapName     [ MAX_MAPNAME_LENGHT ];
+        new originalSerieMapNameClean[ MAX_MAPNAME_LENGHT ];
 
         new nextMapNameClean   [ MAX_MAPNAME_LENGHT ];
         new currentMapNameClean[ MAX_MAPNAME_LENGHT ];
 
-        copy( nextMapNameClean   , charsmax( nextMapNameClean    ), nextMapName    );
-        copy( currentMapNameClean, charsmax( currentMapNameClean ), currentMapName );
+        // The index on `nextMapCyclePosition` is two maps ahead the last map
+        getMapIndexBefore( mapcycleFileListArray, nextMapCyclePosition - 2, mapIndexBefore );
+        getNextMapByPosition( mapcycleFileListArray, originalSerieMapName, mapIndexBefore, false );
+
+        copy( nextMapNameClean         , charsmax( nextMapNameClean          ), nextMapName          );
+        copy( currentMapNameClean      , charsmax( currentMapNameClean       ), currentMapName       );
+        copy( originalSerieMapNameClean, charsmax( originalSerieMapNameClean ), originalSerieMapName );
 
         getTheCurrentSerieForTheMap( nextMapNameClean );
-        currentSerie = getTheCurrentSerieForTheMap( currentMapNameClean );
 
-        // If both clear names are equal, we the current map and the next map set are on the same series.
+        currentSerie  = getTheCurrentSerieForTheMap( currentMapNameClean );
+        originalSerie = getTheCurrentSerieForTheMap( originalSerieMapNameClean );
+
+        LOGGER( 4, "" )
+        LOGGER( 4, "( tryToRunAnAlternateSeries ) nextMapNameClean: %s", nextMapNameClean )
+        LOGGER( 4, "( tryToRunAnAlternateSeries ) currentMapNameClean: %s", currentMapNameClean )
+        LOGGER( 4, "( tryToRunAnAlternateSeries ) originalSerieMapNameClean: %s", originalSerieMapNameClean )
+        LOGGER( 4, "" )
+
+        // If both clear names are equal, the current map and the next map set are on the same series.
         // Therefore we are not running an alternate series.
-        if( !equali( nextMapNameClean, currentMapNameClean ) )
+        if( !equali( nextMapNameClean, currentMapNameClean )
+            && isTheCursorMovingAllowed( mapcycleFileListArray, originalSerieMapNameClean, mapIndexBefore ) )
         {
             copy( nextMapNameClean, charsmax( nextMapNameClean ), nextMapName );
 
@@ -14019,40 +14035,23 @@ stock bool:areWeRunningAnAlternateSeries( currentMapName[], nextMapName[] )
             {
                 copy( nextMapName, MAX_MAPNAME_LENGHT - 1, nextMapNameClean );
 
-                LOGGER( 1, "    ( areWeRunningAnAlternateSeries ) Returning true." )
-                return true;
+                // The index on `nextMapCyclePosition` is one map ahead the next map
+                --nextMapCyclePosition;
+
+                // Here we do not update the `nextMapCyclePosition` to the next map beyond the last valid serie,
+                // to be able to return to follow the map cycle when the new series is over.
+                moveTheCursorToTheLastMap( mapcycleFileListArray, originalSerieMapNameClean, originalSerie, nextMapCyclePosition );
             }
         }
     }
-
-    LOGGER( 1, "    ( areWeRunningAnAlternateSeries ) Returning false" )
-    return false;
 }
 
-/**
- * Move the current map cycle position to the end of the current series. If it is already on the end
- * or there is not series for the current position, it does nothing, i.e., get stuck where it is now.
- */
-stock moveTheCursorToTheLastMap( Array:mapcycleFileListArray, &nextMapCyclePosition )
+stock isTheCursorMovingAllowed( Array:mapcycleFileListArray, originalSerieMapNameClean[], mapIndexBefore )
 {
-    LOGGER( 128, "I AM ENTERING ON moveTheCursorToTheLastMap(2) nextMapCyclePosition: %d", nextMapCyclePosition )
+    LOGGER( 128, "I AM ENTERING ON isTheCursorMovingAllowed(3) mapIndexBefore: %d", mapIndexBefore )
 
-    new maximumTries;
-    new currentSerie;
-    new mapIndexBefore;
-    new cursorOnMapSeries;
-
-    new mapNameClean        [ MAX_MAPNAME_LENGHT ];
-    new originalSerieMapName[ MAX_MAPNAME_LENGHT ];
-
-    getMapIndexBefore( mapcycleFileListArray, nextMapCyclePosition - 1, mapIndexBefore );
-    getNextMapByPosition( mapcycleFileListArray, originalSerieMapName, mapIndexBefore, false );
-
-    maximumTries = ArraySize( mapcycleFileListArray );
-    copy( mapNameClean, charsmax( mapNameClean ), originalSerieMapName );
-
-    currentSerie      = getTheCurrentSerieForTheMap( mapNameClean );
-    cursorOnMapSeries = get_pcvar_num( cvar_serverMoveCursor );
+    new maximumTries      = ArraySize( mapcycleFileListArray );
+    new cursorOnMapSeries = get_pcvar_num( cvar_serverMoveCursor );
 
     // When the `IS_TO_LOAD_ALL_THE_MAP_SERIES` is set, it overrides the `IS_TO_LOAD_THE_FIRST_MAP_SERIES` bit flag.
     if( cursorOnMapSeries & IS_TO_LOAD_EXPLICIT_MAP_SERIES
@@ -14062,7 +14061,7 @@ stock moveTheCursorToTheLastMap( Array:mapcycleFileListArray, &nextMapCyclePosit
         cursorOnMapSeries = 0;
         new lastSerieMapName[ MAX_MAPNAME_LENGHT ];
 
-        LOGGER( 2, "( moveTheCursorToTheLastMap ) Trying to the cursor..." )
+        LOGGER( 2, "( isTheCursorMovingAllowed ) Trying to the cursor..." )
 
         do
         {
@@ -14074,28 +14073,43 @@ stock moveTheCursorToTheLastMap( Array:mapcycleFileListArray, &nextMapCyclePosit
 
             // If the current serie is 1, it will return 2.
             if( getTheCurrentSerieForTheMap( lastSerieMapName ) < 3
-                && equali( mapNameClean, lastSerieMapName ) )
+                && equali( originalSerieMapNameClean, lastSerieMapName ) )
             {
-                goto moveCursor;
+                LOGGER( 2, "    ( isTheCursorMovingAllowed ) Returning true." )
+                return true;
             }
 
         } while( cursorOnMapSeries++ < maximumTries
-                 && equali( mapNameClean, lastSerieMapName ) );
+                 && equali( originalSerieMapNameClean, lastSerieMapName ) );
 
+        LOGGER( 2, "    ( isTheCursorMovingAllowed ) Returning false." )
+        return false;
     }
-    else
+
+    LOGGER( 2, "    ( isTheCursorMovingAllowed ) Returning true." )
+    return true;
+}
+
+/**
+ * Move the current map cycle position to the end of the current series. If it is already on the end
+ * or there is not series for the current position, it does nothing, i.e., get stuck where it is now.
+ */
+stock moveTheCursorToTheLastMap( Array:mapcycleFileListArray, originalSerieMapNameClean[], originalSerie, &nextMapCyclePosition )
+{
+    LOGGER( 128, "I AM ENTERING ON moveTheCursorToTheLastMap(4) nextMapCyclePosition: %d", nextMapCyclePosition )
+
+    new maximumTries;
+    new processedMaps;
+    new unUsedNextMapName[ MAX_MAPNAME_LENGHT ];
+
+    maximumTries = ArraySize( mapcycleFileListArray );
+    LOGGER( 2, "( moveTheCursorToTheLastMap ) Moving the cursor..." )
+
+    while( processedMaps++ < maximumTries
+           && isThereNextMapOnTheSerie( originalSerie, originalSerieMapNameClean, unUsedNextMapName ) )
     {
-        moveCursor:
-        cursorOnMapSeries = 0;
-
-        LOGGER( 2, "( moveTheCursorToTheLastMap ) Moving the cursor..." )
-
-        while( cursorOnMapSeries++ < maximumTries
-               && isThereNextMapOnTheSerie( currentSerie, mapNameClean, originalSerieMapName ) )
-        {
-            nextMapCyclePosition++;
-            currentSerie++;
-        }
+        nextMapCyclePosition++;
+        originalSerie++;
     }
 
     LOGGER( 2, "    ( moveTheCursorToTheLastMap ) Returning nextMapCyclePosition: %d", nextMapCyclePosition )
@@ -14107,7 +14121,7 @@ stock moveTheCursorToTheLastMap( Array:mapcycleFileListArray, &nextMapCyclePosit
  */
 stock getMapIndexBefore( Array:mapcycleFileListArray, nextMapCyclePosition, &mapIndexBefore )
 {
-    LOGGER( 128, "I AM ENTERING ON getMapIndexBefore(1) mapIndexBefore: %d", mapIndexBefore )
+    LOGGER( 128, "I AM ENTERING ON getMapIndexBefore(3) mapIndexBefore: %d", mapIndexBefore )
 
     if( ( mapIndexBefore = nextMapCyclePosition ) < 0 )
     {
@@ -14416,6 +14430,7 @@ stock bool:isAValidMap( mapname[] )
 
 stock getTheCurrentSerieForTheMap( mapNameClean[] )
 {
+    LOGGER( 4, "" )
     LOGGER( 256, "I AM ENTERING ON getTheCurrentSerieForTheMap(1) mapNameClean: %s", mapNameClean )
 
     new mapNameLength;
@@ -17666,13 +17681,13 @@ public timeRemain()
     {
         set_pcvar_num( cvar_whitelistMinPlayers, 0 );
 
-        test_populateListOnSeries_load1( 'a', true ); // Case 1-19
-        test_populateListOnSeries_load2( 'b', true ); // Case 1-19
-        test_populateListOnSeries_load3( 'c', true ); // Case 1-19
+        // test_populateListOnSeries_load1( 'a', true ); // Case 1-19
+        // test_populateListOnSeries_load2( 'b', true ); // Case 1-19
+        // test_populateListOnSeries_load3( 'c', true ); // Case 1-19
 
-        test_configureTheNextMap_load1( 'd' ); // Case 1-48
-        test_configureTheNextMap_load2( 'e' ); // Case 1-87
-        test_configureTheNextMap_load3( 'f' ); // Case 1-72
+        // test_configureTheNextMap_load1( 'd' ); // Case 1-48
+        // test_configureTheNextMap_load2( 'e' ); // Case 1-87
+        // test_configureTheNextMap_load3( 'f' ); // Case 1-72
         test_configureTheNextMap_load4( 'g' ); // Case 1-12
     }
 
@@ -17817,7 +17832,9 @@ public timeRemain()
         test_configureTheNextMap_case( s, "de_dust1", "de_dust2", 2 , .expectedSize=13 ); // Case  4-6
         test_configureTheNextMap_case( s, "de_dust1", "de_dust2", 2 , .expectedSize=13 ); // Case  7-9
 
-        // Here we do a serie switch. For now on, the next map position must to be froze.
+        // Here we do a serie switch. Now the position pointer will be moved to the last
+        // last position on the series the next map position must to be froze until some
+        // of the switched series to be complete.
         test_configureTheNextMap_case( s, "de_nuke" , "de_nuke1", 3 , .expectedSize=13 ); // Case 10-12
         test_configureTheNextMap_case( s, "de_nuke" , "de_nuke1", 3 , .expectedSize=13 ); // Case 13-15
         test_configureTheNextMap_case( s, "de_nuke1", "de_nuke2", 3 , .expectedSize=13 ); // Case 16-18
@@ -17919,10 +17936,16 @@ public timeRemain()
         // Set the initial settings to start the first complete loop tests.
         saveCurrentMapCycleSetting( "de_dust", g_test_voteMapFilePath, 1 );
 
-        test_configureTheNextMap_case( s, "de_dust" , "de_dust2"   , 1, .expectedSize=5 ); // Case  1-3
-        test_configureTheNextMap_case( s, "de_dust2", "de_dust3"   , 1, .expectedSize=5 ); // Case  4-6
-        test_configureTheNextMap_case( s, "de_dust3", "de_dust4"   , 1, .expectedSize=5 ); // Case  7-9
-        test_configureTheNextMap_case( s, "de_dust4", "cs_italy_cz", 2, .expectedSize=5 ); // Case 10-12
+        test_configureTheNextMap_case( s, "de_dust"        , "de_dust2"       , 1, .expectedSize=5 ); // Case  1-3
+        test_configureTheNextMap_case( s, "de_dust2"       , "de_dust3"       , 1, .expectedSize=5 ); // Case  4-6
+        test_configureTheNextMap_case( s, "de_dust3"       , "de_dust4"       , 1, .expectedSize=5 ); // Case  7-9
+        test_configureTheNextMap_case( s, "de_dust4"       , "cs_italy_cz"    , 2, .expectedSize=5 ); // Case 10-12
+        test_configureTheNextMap_case( s, "cs_italy_cz"    , "de_dust2_fundo" , 3, .expectedSize=5 ); // Case 13-15
+        test_configureTheNextMap_case( s, "de_dust2_fundo" , "de_dust2_fundo2", 4, .expectedSize=5 ); // Case 16-18
+        test_configureTheNextMap_case( s, "de_dust2_fundo2", "de_dust_cz"     , 5, .expectedSize=5 ); // Case 19-21
+        test_configureTheNextMap_case( s, "de_dust_cz"     , "de_dust2"       , 1, .expectedSize=5 ); // Case 22-24
+        test_configureTheNextMap_case( s, "de_dust2"       , "cs_italy_cz"    , 2, .expectedSize=5 ); // Case 25-27
+        test_configureTheNextMap_case( s, "cs_italy_cz"    , "de_dust2_fundo" , 3, .expectedSize=5 ); // Case 28-30
     }
 
 
