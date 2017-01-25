@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-676";
+new const PLUGIN_VERSION[] = "v4.2.0-677";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -2175,8 +2175,7 @@ public handleServerStart( backupMapsFilePath[], startAction )
         }
         else
         {
-            LOGGER( 1, "WARNING, Invalid map read from the current and next map file: ^"%s^"", mapToChange )
-            log_amx(   "WARNING, Invalid map read from the current and next map file: ^"%s^"", mapToChange );
+            doAmxxLog( "WARNING, Invalid map read from the current and next map file: ^"%s^"", mapToChange );
         }
     }
     else // startAction == SERVER_START_MAPVOTE
@@ -2229,8 +2228,7 @@ stock configureTheMapcycleSystem( mapToChange[], possibleNextMap[], possibleNext
             }
             else
             {
-                log_amx(   "WARNING: Your 'mapcyclefile' server variable is invalid!" );
-                LOGGER( 1, "WARNING: Your 'mapcyclefile' server variable is invalid!" )
+                doAmxxLog( "WARNING: Your 'mapcyclefile' server variable is invalid!" );
 
                 copy( possibleCurrentMap, MAX_MAPNAME_LENGHT - 1, g_currentMapName );
                 copy( possibleNextMap   , MAX_MAPNAME_LENGHT - 1, g_currentMapName );
@@ -2260,15 +2258,14 @@ stock configureTheMapcycleSystem( mapToChange[], possibleNextMap[], possibleNext
         }
         else
         {
-            LOGGER( 1, "ERROR, configureTheMapcycleSystem: Couldn't open the file to write (file ^"%s^")", lastMapChangedFilePath )
-            log_amx(   "ERROR, configureTheMapcycleSystem: Couldn't open the file to write (file ^"%s^")", lastMapChangedFilePath );
+            doAmxxLog( "ERROR, configureTheMapcycleSystem: Couldn't open the file to write (file ^"%s^")", lastMapChangedFilePath );
         }
 
-        log_message( "" );
-        log_message( "The server is jumping to the next map after the current map due more than %d restarts on the map %s.",
+        doAmxxLog( "" );
+        doAmxxLog( "The server is jumping to the next map after the current map due more than %d restarts on the map %s.",
                 MAX_SERVER_RESTART_ACCEPTABLE, mapToChange );
 
-        log_message( "" );
+        doAmxxLog( "" );
     }
     else
     {
@@ -2289,8 +2286,7 @@ stock setThisMapAsPossibleCrashingMap( mapName[] )
 
     if( !( serverCrashedMapsFile = fopen( serverCrashedMapsFilePath, "a+" ) ) )
     {
-        LOGGER( 1, "ERROR, setThisMapAsPossibleCrashingMap: Couldn't open the file (file ^"%s^")", serverCrashedMapsFilePath )
-        log_amx(   "ERROR, setThisMapAsPossibleCrashingMap: Couldn't open the file (file ^"%s^")", serverCrashedMapsFilePath );
+        doAmxxLog( "ERROR, setThisMapAsPossibleCrashingMap: Couldn't open the file (file ^"%s^")", serverCrashedMapsFilePath );
     }
     else
     {
@@ -2375,8 +2371,7 @@ stock getRestartsOnTheCurrentMap( mapToChange[] )
         }
         else
         {
-            LOGGER( 1, "ERROR, getRestartsOnTheCurrentMap: Couldn't open the file to write (file ^"%s^")", lastMapChangedFilePath )
-            log_amx(   "ERROR, getRestartsOnTheCurrentMap: Couldn't open the file to write (file ^"%s^")", lastMapChangedFilePath );
+            doAmxxLog( "ERROR, getRestartsOnTheCurrentMap: Couldn't open the file to write (file ^"%s^")", lastMapChangedFilePath );
         }
 
         LOGGER( 4, "( getRestartsOnTheCurrentMap ) lastMapChangedName: %s", lastMapChangedName )
@@ -2385,8 +2380,7 @@ stock getRestartsOnTheCurrentMap( mapToChange[] )
     }
     else
     {
-        LOGGER( 1, "ERROR, getRestartsOnTheCurrentMap: Couldn't open the file to read (file ^"%s^")", lastMapChangedFilePath )
-        log_amx(   "ERROR, getRestartsOnTheCurrentMap: Couldn't open the file to read (file ^"%s^")", lastMapChangedFilePath );
+        doAmxxLog( "ERROR, getRestartsOnTheCurrentMap: Couldn't open the file to read (file ^"%s^")", lastMapChangedFilePath );
 
         if( ( lastMapChangedFile = fopen( lastMapChangedFilePath, "wt" ) ) )
         {
@@ -2395,8 +2389,7 @@ stock getRestartsOnTheCurrentMap( mapToChange[] )
         }
         else
         {
-            LOGGER( 1, "ERROR, getRestartsOnTheCurrentMap: Couldn't open the file to write (file ^"%s^")", lastMapChangedFilePath )
-            log_amx(   "ERROR, getRestartsOnTheCurrentMap: Couldn't open the file to write (file ^"%s^")", lastMapChangedFilePath );
+            doAmxxLog( "ERROR, getRestartsOnTheCurrentMap: Couldn't open the file to write (file ^"%s^")", lastMapChangedFilePath );
         }
 
     }
@@ -2693,8 +2686,7 @@ stock writeRecentMapsBanList( loadedMapsCount )
     }
     else
     {
-        LOGGER( 1, "WARNING, writeRecentMapsBanList: Couldn't find a valid map or the file doesn't exist (file ^"%s^")", recentMapsFilePath )
-        log_amx(   "WARNING, writeRecentMapsBanList: Couldn't find a valid map or the file doesn't exist (file ^"%s^")", recentMapsFilePath );
+        doAmxxLog( "WARNING, writeRecentMapsBanList: Couldn't find a valid map or the file doesn't exist (file ^"%s^")", recentMapsFilePath );
     }
 }
 
@@ -2894,9 +2886,7 @@ stock configureServerMapChange( emptyCycleFilePath[] )
     if( IS_WHITELIST_BLOCKING( IS_WHITELIST_ENABLED(), g_nextMapName ) )
     {
         new currentNextMap[ MAX_MAPNAME_LENGHT ];
-
-        log_amx( "configureServerMapChange: %s: %L", g_nextMapName, LANG_SERVER, "GAL_MATCH_WHITELIST" );
-        LOGGER( 8, "    ( configureServerMapChange ) %s: %L", g_nextMapName, LANG_SERVER, "GAL_MATCH_WHITELIST" )
+        doAmxxLog( "( configureServerMapChange ) %s: %L", g_nextMapName, LANG_SERVER, "GAL_MATCH_WHITELIST" );
 
         copy( currentNextMap, charsmax( currentNextMap ), g_nextMapName );
         map_getNext( g_mapcycleFileListArray, currentNextMap, g_nextMapName );
@@ -6304,9 +6294,7 @@ stock computeNextWhiteListLoadTime( seconds, bool:isSecondsLeft = true )
     else
     {
         g_whitelistNomBlockTime = 1000;
-
-        LOGGER( 1, "ERROR: The seconds parameter on 'computeNextWhiteListLoadTime(1)' function is zero!" )
-        log_amx( "ERROR: The seconds parameter on 'computeNextWhiteListLoadTime(1)' function is zero!" );
+        doAmxxLog( "ERROR: The seconds parameter on 'computeNextWhiteListLoadTime(1)' function is zero!" );
     }
 
     LOGGER( 1, "I AM EXITING computeNextWhiteListLoadTime(2) g_whitelistNomBlockTime: %d, secondsForReload: %d", g_whitelistNomBlockTime, secondsForReload )
@@ -11395,9 +11383,7 @@ public cmd_lookingForCrashes( player_id, level, cid )
         if( ( crashedMapsFile = fopen( crashedMapsFilePath, "rt" ) ) )
         {
             new mapLoaded[ MAX_MAPNAME_LENGHT ];
-
-            log_amx( "Stopping the server crash change...^nContents of the file: ^n%s^n", crashedMapsFilePath);
-            server_print( "Stopping the server crash change...^nContents of the file: ^n%s^n", crashedMapsFilePath );
+            doAmxxLog( "Stopping the server crash change...^nContents of the file: ^n%s^n", crashedMapsFilePath);
 
             client_print( player_id, print_console, "Stopping the server crash change...^n\
                     See your server console or the server file:^n%s^n", crashedMapsFilePath);
@@ -11414,8 +11400,7 @@ public cmd_lookingForCrashes( player_id, level, cid )
         }
         else
         {
-            LOGGER( 1, "ERROR, Couldn't open the file ^"%s^")", crashedMapsFilePath )
-            log_amx(   "ERROR, Couldn't open the file ^"%s^")", crashedMapsFilePath );
+            doAmxxLog( "ERROR, Couldn't open the file ^"%s^")", crashedMapsFilePath );
         }
     }
     else
@@ -11423,7 +11408,7 @@ public cmd_lookingForCrashes( player_id, level, cid )
         new message[ MAX_LONG_STRING ];
 
         formatex( message, charsmax( message ), "^nStarting the crash maps search. This will check all your server maps." );
-        log_amx( message );
+        doAmxxLog( message );
 
         console_print( player_id, message );
         console_print( player_id, "To stop the search, run this command again or delete the file" );
@@ -11441,8 +11426,7 @@ public cmd_lookingForCrashes( player_id, level, cid )
         }
         else
         {
-            LOGGER( 1, "ERROR, Couldn't create the file ^"%s^")", crashedMapsFilePath )
-            log_amx(   "ERROR, Couldn't create the file ^"%s^")", crashedMapsFilePath );
+            doAmxxLog( "ERROR, Couldn't create the file ^"%s^")", crashedMapsFilePath );
         }
     }
 
@@ -13295,8 +13279,9 @@ stock register_dictionary_colored( const dictionaryFile[] )
 
     if( !dictionaryFile )
     {
-        log_amx( "Failed to open %s", dictionaryFilePath );
+        doAmxxLog( "Failed to open %s", dictionaryFilePath );
         LOGGER( 1, "    Returning 0 on if( !dictionaryFile ), Failed to open: %s", dictionaryFilePath )
+
         return 0;
     }
 
