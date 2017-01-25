@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-670";
+new const PLUGIN_VERSION[] = "v4.2.0-671";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -13986,9 +13986,8 @@ stock configureTheNextMapSetttings( currentMapcycleFilePath[] )
  */
 stock tryToRunAnAlternateSeries( Array:mapcycleFileListArray, currentMapName[], nextMapName[], &nextMapCyclePosition )
 {
-    LOGGER( 128, "I AM ENTERING ON tryToRunAnAlternateSeries(2)" )
-
     LOGGER( 4, "" )
+    LOGGER( 128, "I AM ENTERING ON tryToRunAnAlternateSeries(4)" )
     LOGGER( 4, "( tryToRunAnAlternateSeries ) nextMapCyclePosition: %d", nextMapCyclePosition )
     LOGGER( 4, "( tryToRunAnAlternateSeries ) currentMapName: %s, nextMapName: %s", currentMapName, nextMapName )
 
@@ -14061,7 +14060,7 @@ stock isTheCursorMovingAllowed( Array:mapcycleFileListArray, originalSerieMapNam
         cursorOnMapSeries = 0;
         new lastSerieMapName[ MAX_MAPNAME_LENGHT ];
 
-        LOGGER( 2, "( isTheCursorMovingAllowed ) Trying to the cursor..." )
+        LOGGER( 2, "( isTheCursorMovingAllowed ) Trying to move the cursor..." )
 
         do
         {
@@ -14075,18 +14074,18 @@ stock isTheCursorMovingAllowed( Array:mapcycleFileListArray, originalSerieMapNam
             if( getTheCurrentSerieForTheMap( lastSerieMapName ) < 3
                 && equali( originalSerieMapNameClean, lastSerieMapName ) )
             {
-                LOGGER( 2, "    ( isTheCursorMovingAllowed ) Returning true." )
+                LOGGER( 2, "    ( isTheCursorMovingAllowed ) 1. Returning true." )
                 return true;
             }
 
         } while( cursorOnMapSeries++ < maximumTries
                  && equali( originalSerieMapNameClean, lastSerieMapName ) );
 
-        LOGGER( 2, "    ( isTheCursorMovingAllowed ) Returning false." )
+        LOGGER( 2, "    ( isTheCursorMovingAllowed ) 2. Returning false." )
         return false;
     }
 
-    LOGGER( 2, "    ( isTheCursorMovingAllowed ) Returning true." )
+    LOGGER( 2, "    ( isTheCursorMovingAllowed ) 3. Returning true." )
     return true;
 }
 
@@ -17681,14 +17680,15 @@ public timeRemain()
     {
         set_pcvar_num( cvar_whitelistMinPlayers, 0 );
 
-        // test_populateListOnSeries_load1( 'a', true ); // Case 1-19
-        // test_populateListOnSeries_load2( 'b', true ); // Case 1-19
-        // test_populateListOnSeries_load3( 'c', true ); // Case 1-19
+        test_populateListOnSeries_load1( 'a', true ); // Case 1-19
+        test_populateListOnSeries_load2( 'b', true ); // Case 1-19
+        test_populateListOnSeries_load3( 'c', true ); // Case 1-19
 
-        // test_configureTheNextMap_load1( 'd' ); // Case 1-48
-        // test_configureTheNextMap_load2( 'e' ); // Case 1-87
-        // test_configureTheNextMap_load3( 'f' ); // Case 1-72
-        test_configureTheNextMap_load4( 'g' ); // Case 1-12
+        test_configureTheNextMap_load1( 'd' ); // Case 1-48
+        test_configureTheNextMap_load2( 'e' ); // Case 1-87
+        test_configureTheNextMap_load3( 'f' ); // Case 1-72
+        test_configureTheNextMap_load4( 'g' ); // Case 1-24
+        // test_configureTheNextMap_load5( 'h' ); // Case 1-
     }
 
     /**
@@ -17936,16 +17936,45 @@ public timeRemain()
         // Set the initial settings to start the first complete loop tests.
         saveCurrentMapCycleSetting( "de_dust", g_test_voteMapFilePath, 1 );
 
+        // To do a complete loop.
         test_configureTheNextMap_case( s, "de_dust"        , "de_dust2"       , 1, .expectedSize=5 ); // Case  1-3
-        test_configureTheNextMap_case( s, "de_dust2"       , "de_dust3"       , 1, .expectedSize=5 ); // Case  4-6
-        test_configureTheNextMap_case( s, "de_dust3"       , "de_dust4"       , 1, .expectedSize=5 ); // Case  7-9
-        test_configureTheNextMap_case( s, "de_dust4"       , "cs_italy_cz"    , 2, .expectedSize=5 ); // Case 10-12
-        test_configureTheNextMap_case( s, "cs_italy_cz"    , "de_dust2_fundo" , 3, .expectedSize=5 ); // Case 13-15
-        test_configureTheNextMap_case( s, "de_dust2_fundo" , "de_dust2_fundo2", 4, .expectedSize=5 ); // Case 16-18
-        test_configureTheNextMap_case( s, "de_dust2_fundo2", "de_dust_cz"     , 5, .expectedSize=5 ); // Case 19-21
-        test_configureTheNextMap_case( s, "de_dust_cz"     , "de_dust2"       , 1, .expectedSize=5 ); // Case 22-24
-        test_configureTheNextMap_case( s, "de_dust2"       , "cs_italy_cz"    , 2, .expectedSize=5 ); // Case 25-27
-        test_configureTheNextMap_case( s, "cs_italy_cz"    , "de_dust2_fundo" , 3, .expectedSize=5 ); // Case 28-30
+        test_configureTheNextMap_case( s, "de_dust2"       , "cs_italy_cz"    , 2, .expectedSize=5 ); // Case  4-6
+        test_configureTheNextMap_case( s, "cs_italy_cz"    , "de_dust2_fundo" , 3, .expectedSize=5 ); // Case  7-9
+        test_configureTheNextMap_case( s, "de_dust2_fundo" , "de_dust2_fundo2", 4, .expectedSize=5 ); // Case 10-12
+        test_configureTheNextMap_case( s, "de_dust2_fundo2", "de_dust_cz"     , 5, .expectedSize=5 ); // Case 13-15
+        test_configureTheNextMap_case( s, "de_dust_cz"     , "de_dust2"       , 1, .expectedSize=5 ); // Case 16-18
+        test_configureTheNextMap_case( s, "de_dust2"       , "cs_italy_cz"    , 2, .expectedSize=5 ); // Case 19-21
+        test_configureTheNextMap_case( s, "cs_italy_cz"    , "de_dust2_fundo" , 3, .expectedSize=5 ); // Case 22-24
+    }
+
+    /**
+     * When the option `IS_TO_LOAD_EXPLICIT_MAP_SERIES` is set, the moveTheCursorToTheLastMap cannot
+     * move the cursor until the series end, if there are valid maps but the series does not started
+     * at 0 or 1.
+     */
+    stock test_configureTheNextMap_load5( s )
+    {
+        // Setting the `cvar_serverMoveCursor` as 2+4+8 will load the map cycle as:
+        //
+        // 0. de_dust2
+        // 1. cs_italy_cz
+        // 2. de_dust2_fundo
+        // 3. de_dust2_fundo2
+        // 4. de_dust_cz
+        set_pcvar_num( cvar_serverMoveCursor, 14 );
+
+        // Set the initial settings to start the first complete loop tests.
+        saveCurrentMapCycleSetting( "de_dust", g_test_voteMapFilePath, 1 );
+
+        // To do a complete loop.
+        test_configureTheNextMap_case( s, "de_dust"        , "de_dust2"       , 1, .expectedSize=5 ); // Case  1-3
+        test_configureTheNextMap_case( s, "de_dust2"       , "cs_italy_cz"    , 2, .expectedSize=5 ); // Case  4-6
+        test_configureTheNextMap_case( s, "cs_italy_cz"    , "de_dust2_fundo" , 3, .expectedSize=5 ); // Case  7-9
+        test_configureTheNextMap_case( s, "de_dust2_fundo" , "de_dust2_fundo2", 4, .expectedSize=5 ); // Case 10-12
+        test_configureTheNextMap_case( s, "de_dust2_fundo2", "de_dust_cz"     , 5, .expectedSize=5 ); // Case 13-15
+        test_configureTheNextMap_case( s, "de_dust_cz"     , "de_dust2"       , 1, .expectedSize=5 ); // Case 16-18
+        test_configureTheNextMap_case( s, "de_dust2"       , "cs_italy_cz"    , 2, .expectedSize=5 ); // Case 19-21
+        test_configureTheNextMap_case( s, "cs_italy_cz"    , "de_dust2_fundo" , 3, .expectedSize=5 ); // Case 22-24
     }
 
 
