@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-672";
+new const PLUGIN_VERSION[] = "v4.2.0-673";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -86,7 +86,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-672";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+32+16+64
+#define DEBUG_LEVEL 1+2+4+64
 
 
 /**
@@ -316,6 +316,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-672";
             // LOGGER( 1, "Current i is: %d", i )
         }
 
+        // test_mapGetNext_cases();
         test_configureTheNextMap();
         // test_loadCurrentBlackList_cases();
         // test_SortCustomSynced2D();
@@ -17688,7 +17689,7 @@ public timeRemain()
         test_configureTheNextMap_load2( 'e' ); // Case 1-87
         test_configureTheNextMap_load3( 'f' ); // Case 1-72
         test_configureTheNextMap_load4( 'g' ); // Case 1-24
-        // test_configureTheNextMap_load5( 'h' ); // Case 1-
+        test_configureTheNextMap_load5( 'h' ); // Case 1-27
     }
 
     /**
@@ -17727,7 +17728,7 @@ public timeRemain()
             }
             case 8:
             {
-                HELPER_MAP_FILE_LIST_LOAD( g_test_voteMapFilePath, "de_dust", "de_dust2", "cs_italy_cz", "de_dust2_fundo", "de_dust_cz" )
+                HELPER_MAP_FILE_LIST_LOAD( g_test_voteMapFilePath, "de_dust", "cs_italy_cz", "de_dust2_fundo", "de_dust_cz" )
                 helper_loadStrictValidMapsTrie( "de_dust", "de_dust2", "de_dust3", "de_dust4", "cs_italy_cz", "de_dust2_fundo",
                                                 "de_dust2_fundo2", "de_dust_cz" );
             }
@@ -17969,11 +17970,14 @@ public timeRemain()
     {
         // Setting the `cvar_serverMoveCursor` as 2+4+8 will load the map cycle as:
         //
-        // 0. de_dust2
-        // 1. cs_italy_cz
-        // 2. de_dust2_fundo
-        // 3. de_dust2_fundo2
-        // 4. de_dust_cz
+        // 0. de_dust
+        // 1. de_dust2
+        // 2. de_dust3
+        // 3. de_dust4
+        // 4. cs_italy_cz
+        // 5. de_dust2_fundo
+        // 6. de_dust2_fundo2
+        // 7. de_dust_cz
         set_pcvar_num( cvar_serverMoveCursor, 14 );
         new expectedSize = 8;
 
@@ -17981,14 +17985,15 @@ public timeRemain()
         saveCurrentMapCycleSetting( "de_dust", g_test_voteMapFilePath, 1 );
 
         // To do a complete loop.
-        test_configureTheNextMap_case( s, "de_dust"        , "de_dust2"       , 1, expectedSize ); // Case  1-3
-        test_configureTheNextMap_case( s, "de_dust2"       , "cs_italy_cz"    , 2, expectedSize ); // Case  4-6
-        test_configureTheNextMap_case( s, "cs_italy_cz"    , "de_dust2_fundo" , 3, expectedSize ); // Case  7-9
+        test_configureTheNextMap_case( s, "de_dust"        , "de_dust2"       , 2, expectedSize ); // Case  1-3
+        test_configureTheNextMap_case( s, "de_dust2"       , "de_dust3"       , 3, expectedSize ); // Case  4-6
+        test_configureTheNextMap_case( s, "de_dust3"       , "de_dust4"       , 4, expectedSize ); // Case  7-9
         test_configureTheNextMap_case( s, "de_dust2_fundo" , "de_dust2_fundo2", 4, expectedSize ); // Case 10-12
-        test_configureTheNextMap_case( s, "de_dust2_fundo2", "de_dust_cz"     , 5, expectedSize ); // Case 13-15
-        test_configureTheNextMap_case( s, "de_dust_cz"     , "de_dust2"       , 1, expectedSize ); // Case 16-18
-        test_configureTheNextMap_case( s, "de_dust2"       , "cs_italy_cz"    , 2, expectedSize ); // Case 19-21
-        test_configureTheNextMap_case( s, "cs_italy_cz"    , "de_dust2_fundo" , 3, expectedSize ); // Case 22-24
+        test_configureTheNextMap_case( s, "de_dust2_fundo2", "cs_italy_cz"    , 5, expectedSize ); // Case 13-15
+        test_configureTheNextMap_case( s, "cs_italy_cz"    , "de_dust2_fundo" , 6, expectedSize ); // Case 16-18
+        test_configureTheNextMap_case( s, "de_dust2_fundo" , "de_dust2_fundo2", 7, expectedSize ); // Case 19-21
+        test_configureTheNextMap_case( s, "de_dust2_fundo2", "de_dust_cz"     , 8, expectedSize ); // Case 22-24
+        test_configureTheNextMap_case( s, "de_dust_cz"     , "de_dust"        , 1, expectedSize ); // Case 25-27
     }
 
 
