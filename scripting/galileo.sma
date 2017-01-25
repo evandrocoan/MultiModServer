@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-678";
+new const PLUGIN_VERSION[] = "v4.2.0-679";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -86,7 +86,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-678";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+2+4+64
+#define DEBUG_LEVEL 1+2+4+64+16
 
 
 /**
@@ -317,9 +317,9 @@ new const PLUGIN_VERSION[] = "v4.2.0-678";
             // LOGGER( 1, "Current i is: %d", i )
         }
 
-        test_handleServerStart();
+        // test_handleServerStart();
         // test_mapGetNext_cases();
-        // test_configureTheNextMap();
+        test_configureTheNextMap();
         // test_loadCurrentBlackList_cases();
         // test_SortCustomSynced2D();
         // test_GET_MAP_INFO_load();
@@ -17798,7 +17798,7 @@ public timeRemain()
 
                 HELPER_MAP_FILE_LIST_LOAD( g_test_voteMapFilePath, "de_dust2", "cs_italy_cz", "de_dust2_fundo", "de_dust_cz" )
                 helper_loadStrictValidMapsTrie( "de_dust", "de_dust2", "de_dust3", "de_dust4", "cs_italy_cz", "de_dust2_fundo",
-                                                "de_dust2_fundo2", "de_dust_cz" );
+                                                "de_dust2_fundo2", "de_dust_cz", "aim_headshot" );
             }
             case 8:
             {
@@ -18277,6 +18277,7 @@ public timeRemain()
     new test_voteDuration;
     new test_runoffDuration;
 
+    new test_amx_nextmap     [ MAX_MAPNAME_LENGHT ];
     new test_g_nextMapName   [ MAX_MAPNAME_LENGHT ];
     new test_g_currentMapName[ MAX_MAPNAME_LENGHT ];
 
@@ -18326,8 +18327,10 @@ public timeRemain()
             cleanTheUnitTestsData();
             saveCurrentTestsTimeStamp();
 
-            copy( g_nextMapName   , charsmax( g_nextMapName )   , test_g_nextMapName    );
-            copy( g_currentMapName, charsmax( g_currentMapName ), test_g_currentMapName );
+            copy( test_g_nextMapName   , charsmax( test_g_nextMapName )   , g_nextMapName    );
+            copy( test_g_currentMapName, charsmax( test_g_currentMapName ), g_currentMapName );
+
+            get_pcvar_string( cvar_amx_nextmap, test_amx_nextmap, charsmax( test_amx_nextmap ) );
 
             get_pcvar_string( cvar_mapcyclefile             , test_mapcyclefile             , charsmax( test_mapcyclefile )              );
             get_pcvar_string( cvar_nomMapFilePath           , test_nomMapFilePath           , charsmax( test_nomMapFilePath )            );
@@ -18399,8 +18402,10 @@ public timeRemain()
             tryToSetGameModCvarNum( cvar_mp_maxrounds       , test_mp_maxrounds );
             tryToSetGameModCvarNum( cvar_mp_fraglimit       , test_mp_fraglimit );
 
-            copy( test_g_nextMapName   , charsmax( test_g_nextMapName )   , g_nextMapName    );
-            copy( test_g_currentMapName, charsmax( test_g_currentMapName ), g_currentMapName );
+            copy( g_nextMapName   , charsmax( g_nextMapName )   , test_g_nextMapName    );
+            copy( g_currentMapName, charsmax( g_currentMapName ), test_g_currentMapName );
+
+            set_pcvar_string( cvar_amx_nextmap, test_amx_nextmap );
 
             set_pcvar_string( cvar_mapcyclefile             , test_mapcyclefile              );
             set_pcvar_string( cvar_nomMapFilePath           , test_nomMapFilePath            );
