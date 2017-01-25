@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-679";
+new const PLUGIN_VERSION[] = "v4.2.0-680";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -86,7 +86,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-679";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+2+4+64+16
+#define DEBUG_LEVEL 1+2+4+64
 
 
 /**
@@ -14210,7 +14210,7 @@ stock getNextMapLocalInfoToken( currentMapcycleFilePath[] )
 
         if( equali( g_currentMapName, lastMap ) )
         {
-            nextMapCyclePosition--;
+            if( --nextMapCyclePosition < 0 ) nextMapCyclePosition = 0;
         }
     }
     else
@@ -15430,7 +15430,7 @@ public timeRemain()
         if( g_test_maxDelayResult )
         {
         #if DEBUG_LEVEL & DEBUG_LEVEL_UNIT_TEST_NORMAL
-            print_all_tests_executed();
+            print_all_tests_executed( false );
             print_tests_failure();
 
             print_logger( "" );
@@ -15542,28 +15542,31 @@ public timeRemain()
         return true;
     }
 
-    stock print_all_tests_executed()
+    stock print_all_tests_executed( bool:isToPrintAllTests = true )
     {
         LOGGER( 128, "I AM ENTERING ON print_all_tests_executed(0)" )
 
-        new trieKey[ 10 ];
-        new test_name[ MAX_SHORT_STRING ];
-        new testsNumber = ArraySize( g_test_idsAndNamesArray );
-
-        print_logger( "" );
-        print_logger( "" );
-        print_logger( "" );
-        print_logger( "    The following tests were successfully executed: " );
-        print_logger( "" );
-
-        for( new test_index = 0; test_index < testsNumber; test_index++ )
+        if( isToPrintAllTests )
         {
-            num_to_str( test_index + 1, trieKey, charsmax( trieKey ) );
+            new trieKey[ 10 ];
+            new test_name[ MAX_SHORT_STRING ];
+            new testsNumber = ArraySize( g_test_idsAndNamesArray );
 
-            if( !TrieKeyExists( g_test_failureIdsTrie, trieKey ) )
+            print_logger( "" );
+            print_logger( "" );
+            print_logger( "" );
+            print_logger( "    The following tests were successfully executed: " );
+            print_logger( "" );
+
+            for( new test_index = 0; test_index < testsNumber; test_index++ )
             {
-                ArrayGetString( g_test_idsAndNamesArray, test_index, test_name, charsmax( test_name ) );
-                print_logger( "       %3d. %s", test_index + 1, test_name );
+                num_to_str( test_index + 1, trieKey, charsmax( trieKey ) );
+
+                if( !TrieKeyExists( g_test_failureIdsTrie, trieKey ) )
+                {
+                    ArrayGetString( g_test_idsAndNamesArray, test_index, test_name, charsmax( test_name ) );
+                    print_logger( "       %3d. %s", test_index + 1, test_name );
+                }
             }
         }
     }
@@ -17739,6 +17742,7 @@ public timeRemain()
         test_configureTheNextMap_load3( 'f' ); // Case 1-48
         test_configureTheNextMap_load4( 'g' ); // Case 1-16
         test_configureTheNextMap_load5( 'h' ); // Case 1-18
+        test_configureTheNextMap_load6( 'i' ); // Case 1-4
     }
 
     /**
@@ -17798,7 +17802,7 @@ public timeRemain()
 
                 HELPER_MAP_FILE_LIST_LOAD( g_test_voteMapFilePath, "de_dust2", "cs_italy_cz", "de_dust2_fundo", "de_dust_cz" )
                 helper_loadStrictValidMapsTrie( "de_dust", "de_dust2", "de_dust3", "de_dust4", "cs_italy_cz", "de_dust2_fundo",
-                                                "de_dust2_fundo2", "de_dust_cz", "aim_headshot" );
+                                                "de_dust2_fundo2", "de_dust_cz", "aim_headshot", "aim_headshot2" );
             }
             case 8:
             {
@@ -18058,6 +18062,24 @@ public timeRemain()
         test_configureTheNextMap_case( s, "de_dust_cz"     , "de_dust"        , 1, expectedSize ); // Case 17-18
     }
 
+    stock test_configureTheNextMap_load6( s )
+    {
+        // Setting the `expectedSize` as 5 will load the map cycle as:
+        //
+        // 0. de_dust2
+        // 1. cs_italy_cz
+        // 2. de_dust2_fundo
+        // 3. de_dust2_fundo2
+        // 4. de_dust_cz
+        new expectedSize = 5;
+
+        // Set the initial settings to start the first complete loop tests.
+        saveCurrentMapCycleSetting( "aim_headshot", g_test_voteMapFilePath, 0 );
+
+        test_configureTheNextMap_case( s, "aim_headshot" , "aim_headshot2", 0, expectedSize ); // Case
+        test_configureTheNextMap_case( s, "de_dust2"     , "cs_italy_cz"  , 2, expectedSize ); // Case
+    }
+
     /**
      * Tests if the function handleServerStart(2) is properly setting the start map.
      */
@@ -18132,8 +18154,8 @@ public timeRemain()
             setTestFailure( test_id, !equali( nmnE, g_currentMapName ), errorMessage );
 
             // After doing this function call, the compiler is corrupting the variable `cmnE`, so we cannot just
-            // do `copy( cmnE, MAX_MAPNAME_LENGHT - 1, nmnE );`. We cannot use `cmnE` it after call this.
-            // And yes, the variable `cmnE` is neither passed to getNextMapByPosition(4), but it is being corrupted
+            // do `copy( cmnE, MAX_MAPNAME_LENGHT - 1, nmnE );`. We cannot use `cmnE` after call this.
+            // And yes, the variable `cmnE` is neither passed to getNextMapByPosition(4), but it still being corrupted
             // anyways. This is the same problem as in the cmd_voteMap(3) call to approvedTheVotingStart(1).
             getNextMapByPosition( g_mapcycleFileListArray, nextMapExpected, nextMapPositon );
         }
