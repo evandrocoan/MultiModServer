@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-677";
+new const PLUGIN_VERSION[] = "v4.2.0-678";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -1991,6 +1991,9 @@ stock configureServerStart()
             else
             {
                 // These data, are already loaded by the configureTheNextMapSetttings(0) function call.
+                trim( g_nextMapName );
+                trim( g_currentMapName );
+
                 saveCurrentAndNextMapNames( g_currentMapName, g_nextMapName, true );
             }
         }
@@ -1999,6 +2002,9 @@ stock configureServerStart()
             // Save the current and next map name when the server admin does something like `amx_map`, and the
             // server did not crash on the selected map, the setTheCurrentAndNextMapSettings(0) cannot update
             // what are the correct current and next map names, because it is only called a the plugin_end(0).
+            trim( g_nextMapName );
+            trim( g_currentMapName );
+
             saveCurrentAndNextMapNames( g_currentMapName, g_nextMapName, true );
         }
     }
@@ -2048,10 +2054,14 @@ stock setTheCurrentAndNextMapSettings()
             // If we cannot find a valid next map, set it as the current map. Therefore when the
             // getNextMapByPosition(3) to start looking for a new next map, it will automatically take the
             // first map, as is does not allow the current map to be set as the next map.
+            trim( currentMapName );
             saveCurrentAndNextMapNames( currentMapName, currentMapName );
         }
         else
         {
+            trim( nextMapName );
+            trim( currentMapName );
+
             saveCurrentAndNextMapNames( currentMapName, nextMapName );
         }
     }
@@ -2193,7 +2203,13 @@ public handleServerStart( backupMapsFilePath[], startAction )
 stock configureTheMapcycleSystem( mapToChange[], possibleNextMap[], possibleNextMapPosition )
 {
     LOGGER( 128, "I AM ENTERING ON configureTheMapcycleSystem(2) mapToChange: %s", mapToChange )
-    new restartsOnTheCurrentMap = getRestartsOnTheCurrentMap( mapToChange );
+    trim( mapToChange );
+
+    new restartsOnTheCurrentMap;
+    new crashingMap[ MAX_MAPNAME_LENGHT ];
+
+    copy( crashingMap, charsmax( crashingMap ), mapToChange );
+    restartsOnTheCurrentMap = getRestartsOnTheCurrentMap( mapToChange );
 
     LOGGER( 4, "( configureTheMapcycleSystem ) mapToChange: %s", mapToChange )
     LOGGER( 4, "( configureTheMapcycleSystem ) possibleNextMap: %s", possibleNextMap )
@@ -2207,7 +2223,7 @@ stock configureTheMapcycleSystem( mapToChange[], possibleNextMap[], possibleNext
         LOGGER( 4, "( configureTheMapcycleSystem ) restartsOnTheCurrentMap > MAX_SERVER_RESTART_ACCEPTABLE" )
         LOGGER( 4, "" )
 
-        setThisMapAsPossibleCrashingMap( mapToChange );
+        setThisMapAsPossibleCrashingMap( crashingMap );
 
         // This is the possibleCurrentMap because if the current map is restarted too much, this possibleCurrentMap
         // will the the mapToChange, which in seconds will became the current map.
@@ -2239,8 +2255,11 @@ stock configureTheMapcycleSystem( mapToChange[], possibleNextMap[], possibleNext
         }
         else
         {
+            // I do like the map_getNext(3) behavior. I prefer using getNextMapByPosition(4).
             copy( possibleCurrentMap, charsmax( possibleCurrentMap ), possibleNextMap );
-            possibleNextMapPosition = map_getNext( g_mapcycleFileListArray, possibleCurrentMap, possibleNextMap );
+
+            // possibleNextMapPosition = map_getNext( g_mapcycleFileListArray, possibleCurrentMap, possibleNextMap );
+            possibleNextMapPosition = getNextMapByPosition( g_mapcycleFileListArray, possibleNextMap, g_nextMapCyclePosition );
 
             // Update the current map to the next map.
             copy( mapToChange, MAX_MAPNAME_LENGHT - 1, possibleCurrentMap );
@@ -2263,7 +2282,7 @@ stock configureTheMapcycleSystem( mapToChange[], possibleNextMap[], possibleNext
 
         doAmxxLog( "" );
         doAmxxLog( "The server is jumping to the next map after the current map due more than %d restarts on the map %s.",
-                MAX_SERVER_RESTART_ACCEPTABLE, mapToChange );
+                MAX_SERVER_RESTART_ACCEPTABLE, crashingMap );
 
         doAmxxLog( "" );
     }
@@ -2275,7 +2294,7 @@ stock configureTheMapcycleSystem( mapToChange[], possibleNextMap[], possibleNext
     }
 }
 
-stock setThisMapAsPossibleCrashingMap( mapName[] )
+stock setThisMapAsPossibleCrashingMap( const mapName[] )
 {
     LOGGER( 128, "I AM ENTERING ON setThisMapAsPossibleCrashingMap(1) mapName: %s", mapName )
 
@@ -2321,7 +2340,7 @@ stock configureTheNextMapPlugin( possibleCurrentMap[], possibleNextMap[], possib
     }
 }
 
-stock getRestartsOnTheCurrentMap( mapToChange[] )
+stock getRestartsOnTheCurrentMap( const mapToChange[] )
 {
     LOGGER( 128, "I AM ENTERING ON getRestartsOnTheCurrentMap(1) mapToChange: %s", mapToChange )
 
@@ -2344,7 +2363,6 @@ stock getRestartsOnTheCurrentMap( mapToChange[] )
 
         fclose( lastMapChangedFile );
 
-        trim( mapToChange );
         trim( lastMapChangedName );
         trim( lastMapChangedCountString );
 
@@ -2440,6 +2458,9 @@ stock setNextMap( currentMapName[], nextMapName[], bool:isToUpdateTheCvar = true
         }
 
         // update our data file
+        trim( nextMapName );
+        trim( currentMapName );
+
         saveCurrentAndNextMapNames( currentMapName, nextMapName, forceUpdateFile );
         LOGGER( 2, "( setNextMap ) IS CHANGING THE global variable g_nextMapName to '%s'.", nextMapName )
     }
@@ -2458,7 +2479,7 @@ stock setNextMap( currentMapName[], nextMapName[], bool:isToUpdateTheCvar = true
  * The next map written to the file `currentAndNextmapNames.dat` is currently used for the option
  * `startAction == SERVER_START_NEXTMAP` and debugging purposes.
  */
-stock saveCurrentAndNextMapNames( currentMapName[], nextMapName[], bool:forceUpdateFile = false )
+stock saveCurrentAndNextMapNames( const currentMapName[], const nextMapName[], bool:forceUpdateFile = false )
 {
     LOGGER( 128, "I AM ENTERING ON saveCurrentAndNextMapNames(3) currentMapName: %s, nextMapName: %s", currentMapName, nextMapName )
 
@@ -2470,19 +2491,22 @@ stock saveCurrentAndNextMapNames( currentMapName[], nextMapName[], bool:forceUpd
         new backupMapsFile;
         new backupMapsFilePath[ MAX_FILE_PATH_LENGHT ];
 
+        get_pcvar_string( cvar_mapcyclefile, backupMapsFilePath, charsmax( backupMapsFilePath ) );
+        saveCurrentMapCycleSetting( currentMapName, backupMapsFilePath, g_nextMapCyclePosition );
+
         formatex( backupMapsFilePath, charsmax( backupMapsFilePath ), "%s/%s", g_dataDirPath, CURRENT_AND_NEXTMAP_FILE_NAME );
-        backupMapsFile = fopen( backupMapsFilePath, "wt" );
 
-        if( backupMapsFile )
+        if( ( backupMapsFile = fopen( backupMapsFilePath, "wt" ) ) )
         {
-            trim( nextMapName );
-            trim( currentMapName );
-
             fprintf( backupMapsFile, "%s^n", currentMapName );
             fprintf( backupMapsFile, "%s^n", nextMapName );
             fprintf( backupMapsFile, "%d^n", g_nextMapCyclePosition );
 
             fclose( backupMapsFile );
+        }
+        else
+        {
+            doAmxxLog( "ERROR: saveCurrentAndNextMapNames, Could not open the file backupMapsFilePath: %s", backupMapsFilePath );
         }
     }
 }
@@ -13490,6 +13514,7 @@ stock delete_users_menus( bool:isToDoubleReset = false )
 
 stock tryToSetGameModCvarFloat( cvarPointer, Float:value )
 {
+    LOGGER( 1, "" )
     LOGGER( 128, "I AM ENTERING ON tryToSetGameModCvarFloat(2) cvarPointer: %d, value: %f", cvarPointer, value )
     LOGGER( 1, "    ( tryToSetGameModCvarNum ) cvar_disabledValuePointer: %d", cvar_disabledValuePointer )
 
@@ -13502,6 +13527,7 @@ stock tryToSetGameModCvarFloat( cvarPointer, Float:value )
 
 stock tryToSetGameModCvarNum( cvarPointer, num )
 {
+    LOGGER( 1, "" )
     LOGGER( 128, "I AM ENTERING ON tryToSetGameModCvarNum(2) cvarPointer: %d, num: %d", cvarPointer, num )
     LOGGER( 1, "    ( tryToSetGameModCvarNum ) cvar_disabledValuePointer: %d", cvar_disabledValuePointer )
 
@@ -13514,6 +13540,7 @@ stock tryToSetGameModCvarNum( cvarPointer, num )
 
 stock tryToSetGameModCvarString( cvarPointer, string[] )
 {
+    LOGGER( 1, "" )
     LOGGER( 128, "I AM ENTERING ON tryToSetGameModCvarString(2) cvarPointer: %d, string: %s", cvarPointer, string )
     LOGGER( 1, "    ( tryToSetGameModCvarNum ) cvar_disabledValuePointer: %d", cvar_disabledValuePointer )
 
@@ -13861,7 +13888,7 @@ public nextmapPluginInit()
  * everything, was the `gal_srv_move_cursor` feature makes both map cycle with different indexes.
  *
  * @param &nextMapCyclePosition     is the next map position following actual next map.
- * @param isUseTheCurrentMapRule      ignore the current map rule
+ * @param isUseTheCurrentMapRule    use or not the current map set blocking rule.
  */
 stock getNextMapByPosition( Array:mapcycleFileListArray, nextMapName[], &nextMapCyclePosition, bool:isUseTheCurrentMapRule=true )
 {
@@ -13906,11 +13933,12 @@ stock getNextMapByPosition( Array:mapcycleFileListArray, nextMapName[], &nextMap
                 continue;
             }
 
-            LOGGER( 1, "( getNextMapByPosition ) nextMapCyclePosition: %d", nextMapCyclePosition )
             copy( nextMapName, MAX_MAPNAME_LENGHT - 1, loadedMapName );
 
-            LOGGER( 1, "    ( getNextMapByPosition ) Just returning the nextMapName: %s", nextMapName )
-            return;
+            LOGGER( 4, "( getNextMapByPosition ) nextMapName: %s,", nextMapName )
+            LOGGER( 4, "    ( getNextMapByPosition ) Just returning nextMapCyclePosition: %d", nextMapCyclePosition )
+
+            return nextMapCyclePosition;
 
         } while( mapsProcessedNumber < mapCycleMapsCount );
 
@@ -13924,7 +13952,10 @@ stock getNextMapByPosition( Array:mapcycleFileListArray, nextMapName[], &nextMap
         copy( nextMapName, MAX_MAPNAME_LENGHT - 1, g_currentMapName );
     }
 
-    LOGGER( 4, "    ( getNextMapByPosition ) nextMapName: %s, nextMapCyclePosition: %d", nextMapName, nextMapCyclePosition )
+    LOGGER( 4, "( getNextMapByPosition ) nextMapName: %s,", nextMapName )
+    LOGGER( 4, "    ( getNextMapByPosition ) Just returning nextMapCyclePosition: %d", nextMapCyclePosition )
+
+    return nextMapCyclePosition;
 }
 
 stock getLastNextMapFromServerStart( Array:mapcycleFileListArray, nextMapName[], &nextMapCyclePosition )
@@ -14226,7 +14257,7 @@ stock setTheNextMapCvarFlag( nextMapName[] )
  *
  * @param mapcycleFilePath         the current map-cycle file path.
  */
-stock saveCurrentMapCycleSetting( currentMapName[], mapcycleFilePath[], nextMapCyclePosition )
+stock saveCurrentMapCycleSetting( const currentMapName[], const mapcycleFilePath[], const nextMapCyclePosition )
 {
     LOGGER( 128, "I AM ENTERING ON saveCurrentMapCycleSetting(3) mapcycleFilePath: %s", mapcycleFilePath )
     LOGGER( 2, "( saveCurrentMapCycleSetting ) nextMapCyclePosition: %d", nextMapCyclePosition )
@@ -18032,18 +18063,31 @@ public timeRemain()
      */
     stock test_handleServerStart()
     {
-        // Setting the `expectedSize` as 5 will load the map cycle as:
+        // Setting the `expectedSize` as 8 will load the map cycle as:
         //
-        // 0. de_dust2
-        // 1. cs_italy_cz
-        // 2. de_dust2_fundo
-        // 3. de_dust2_fundo2
-        // 4. de_dust_cz
+        // 0. de_dust
+        // 1. de_dust2
+        // 2. de_dust3
+        // 3. de_dust4
+        // 4. cs_italy_cz
+        // 5. de_dust2_fundo
+        // 6. de_dust2_fundo2
+        // 7. de_dust_cz
         new startAction  = 1;
-        new expectedSize = 5;
+        new expectedSize = 8;
         test_loadTheNextMapPluginMaps( expectedSize );
 
-        test_handleServerStart_case( startAction, "de_dust2", "cs_italy_cz", 2 ); // Case 1
+        test_handleServerStart_case( startAction, "de_dust", "de_dust2", 6 ); // Case 1-3
+        test_handleServerStart_case( startAction, "de_dust", "de_dust3", 6 ); // Case 4-6
+
+        // Force mark the map as crashing.
+        for( new index = -1; index < MAX_SERVER_RESTART_ACCEPTABLE; ++index )
+        {
+            test_handleServerStart_case( startAction, "some_map1", "de_dust3", 6 ); // Case 7-18
+        }
+
+        // It is expected to the map cycle position to go from 3 to 4.
+        test_handleServerStart_case( startAction, "some_map1", "de_dust4", 4, .iA=true, .iP=3 ); // Case 19-21
     }
 
     /**
@@ -18054,31 +18098,55 @@ public timeRemain()
      * @param cmnE     the current map name        expected after the test to run.
      * @param nmnE     the next map cycle name     expected after the test to run.
      * @param nmpE     the next map cycle position expected after the test to run.
+     * @param iA       whether or not is to advance the expected next map.
+     * @param iP       the initial position to set the `g_nextMapCyclePosition` after saving the `nmpE`.
      */
-    stock test_handleServerStart_case( sA, cmnE[], nmnE[], nmpE )
+    stock test_handleServerStart_case( const sA, const cmnE[], const nmnE[], const nmpE, const iA=false, const iP=2 )
     {
         new test_id;
-        new errorMessage[ MAX_LONG_STRING ];
+        new nextMapPositon;
+
+        new errorMessage   [ MAX_LONG_STRING ];
+        new nextMapExpected[ MAX_MAPNAME_LENGHT ];
 
         // Set the initial settings to start the tests.
+        nextMapPositon         = nmpE;
         g_nextMapCyclePosition = nmpE;
+
+        copy( nextMapExpected, charsmax( nextMapExpected ), nmnE );
         saveCurrentAndNextMapNames( cmnE, nmnE, true );
 
         // Clear the initial settings to let the handleServerStart(2) set up them.
-        g_nextMapCyclePosition = 2;
+        g_nextMapCyclePosition = iP;
         copy( g_currentMapName, charsmax( g_currentMapName ), "some_map1" );
         copy( g_nextMapName   , charsmax( g_nextMapName    ), "some_map2" );
 
         formatex( errorMessage, charsmax( errorMessage ), "%s/%s", g_dataDirPath, CURRENT_AND_NEXTMAP_FILE_NAME );
         handleServerStart( errorMessage, sA );
 
-        test_id = test_registerSeriesNaming( "test_handleServerStart", 'a' );
-        ERR( "The next map name must to be %s, instead of %s.", nmpE, g_nextMapCyclePosition )
-        setTestFailure( test_id, nmpE != g_nextMapCyclePosition, errorMessage );
+        // The current map was ignored due to much restarts.
+        if( iA )
+        {
+            test_id = test_registerSeriesNaming( "test_handleServerStart", 'a' );
+            ERR( "The current map name must to be %s, instead of %s.", nmnE, g_currentMapName )
+            setTestFailure( test_id, !equali( nmnE, g_currentMapName ), errorMessage );
+
+            // After doing this function call, the compiler is corrupting the variable `cmnE`, so we cannot just
+            // do `copy( cmnE, MAX_MAPNAME_LENGHT - 1, nmnE );`. We cannot use `cmnE` it after call this.
+            // And yes, the variable `cmnE` is neither passed to getNextMapByPosition(4), but it is being corrupted
+            // anyways. This is the same problem as in the cmd_voteMap(3) call to approvedTheVotingStart(1).
+            getNextMapByPosition( g_mapcycleFileListArray, nextMapExpected, nextMapPositon );
+        }
+        else
+        {
+            test_id = test_registerSeriesNaming( "test_handleServerStart", 'a' );
+            ERR( "The current map name must to be %s, instead of %s.", cmnE, g_currentMapName )
+            setTestFailure( test_id, !equali( cmnE, g_currentMapName ), errorMessage );
+        }
 
         test_id = test_registerSeriesNaming( "test_handleServerStart", 'a' );
-        ERR( "The current map name must to be %s, instead of %s.", cmnE, g_currentMapName )
-        setTestFailure( test_id, !equali( cmnE, g_currentMapName ), errorMessage );
+        ERR( "The next map position must to be %d, instead of %d.", nmpE, g_nextMapCyclePosition )
+        setTestFailure( test_id, nmpE != g_nextMapCyclePosition, errorMessage );
 
         test_id = test_registerSeriesNaming( "test_handleServerStart", 'a' );
         ERR( "The next map name must to be %s, instead of %s.", nmnE, g_nextMapName )
