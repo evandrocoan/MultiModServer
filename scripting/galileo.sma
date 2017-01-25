@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-673";
+new const PLUGIN_VERSION[] = "v4.2.0-675";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -316,8 +316,8 @@ new const PLUGIN_VERSION[] = "v4.2.0-673";
             // LOGGER( 1, "Current i is: %d", i )
         }
 
-        // test_mapGetNext_cases();
-        test_configureTheNextMap();
+        test_mapGetNext_cases();
+        // test_configureTheNextMap();
         // test_loadCurrentBlackList_cases();
         // test_SortCustomSynced2D();
         // test_GET_MAP_INFO_load();
@@ -9868,14 +9868,14 @@ public startEmptyCycleSystem()
  *
  * @return mapIndex     the nextMapName index in the mapArray. -1 if not found a nextMapName.
  */
-stock map_getNext( Array:mapArray, currentMap[], nextMapName[] )
+stock map_getNext( Array:mapArray, const currentMap[], nextMapName[] )
 {
     LOGGER( 128, "I AM ENTERING ON map_getNext(3) currentMap: %s", currentMap )
-
     new bool:isWhitelistBlocking;
+
+    new nextmapIndex;
     new thisMap[ MAX_MAPNAME_LENGHT ];
 
-    new nextmapIndex = 0;
     new returnValue  = -1;
     new mapCount     = ArraySize( mapArray );
 
@@ -9885,7 +9885,8 @@ stock map_getNext( Array:mapArray, currentMap[], nextMapName[] )
     {
         GET_MAP_NAME( mapArray, currentMapIndex, thisMap )
 
-        if( equali( currentMap, thisMap ) )
+        if( isWhitelistBlocking
+            || equali( currentMap, thisMap ) )
         {
             // When the current map is the last one, the next map is the first maps on the map cycle.
             if( currentMapIndex == mapCount - 1 )
@@ -9901,9 +9902,9 @@ stock map_getNext( Array:mapArray, currentMap[], nextMapName[] )
 
             if( IS_WHITELIST_BLOCKING( isWhitelistEnabled, nextMapName ) )
             {
-                isWhitelistBlocking = true;
-                copy( currentMap, MAX_MAPNAME_LENGHT - 1, nextMapName );
+                doAmxxLog( "WARNING: map_getNext, The Whitelist feature is blocking the map: %s", nextMapName );
 
+                isWhitelistBlocking = true;
                 continue;
             }
 
@@ -9921,9 +9922,7 @@ stock map_getNext( Array:mapArray, currentMap[], nextMapName[] )
         }
         else
         {
-            log_amx(   "WARNING: Your 'mapcyclefile' server variable does not contain valid maps by the Whitelist feature!" );
-            LOGGER( 1, "WARNING: Your 'mapcyclefile' server variable does not contain valid maps by the Whitelist feature!" )
-
+            doAmxxLog( "WARNING: Your 'mapcyclefile' server variable does not contain valid maps by the Whitelist feature!" );
             copy( nextMapName, MAX_MAPNAME_LENGHT - 1, g_currentMapName );
         }
     }
@@ -9935,9 +9934,7 @@ stock map_getNext( Array:mapArray, currentMap[], nextMapName[] )
         }
         else
         {
-            log_amx(   "WARNING: Your 'mapcyclefile' server variable map file does not contain valid maps!" );
-            LOGGER( 1, "WARNING: Your 'mapcyclefile' server variable map file does not contain valid maps!" )
-
+            doAmxxLog( "WARNING: Your 'mapcyclefile' server variable map file does not contain valid maps!" );
             copy( nextMapName, MAX_MAPNAME_LENGHT - 1, g_currentMapName );
         }
     }
@@ -13629,7 +13626,7 @@ stock printTheCurrentAndNextMapNames()
 stock doAmxxLog( const message[] = "", any:... )
 {
     static formated_message[ MAX_LONG_STRING ];
-    vformat( formated_message, charsmax( formated_message ), message, 3 );
+    vformat( formated_message, charsmax( formated_message ), message, 2 );
 
     LOGGER( 1, formated_message )
     log_amx( formated_message );
@@ -13968,7 +13965,7 @@ stock configureTheNextMapSetttings( currentMapcycleFilePath[] )
     nextMapCyclePosition = getNextMapLocalInfoToken( currentMapcycleFilePath );
     getLastNextMapFromServerStart( g_mapcycleFileListArray, g_nextMapName, nextMapCyclePosition );
 
-    // Load the alternative sereis if existent.
+    // Load the alternative series if existent.
     tryToRunAnAlternateSeries( g_mapcycleFileListArray, g_currentMapName, g_nextMapName, nextMapCyclePosition );
 
     setTheNextMapCvarFlag( g_nextMapName );
@@ -16156,15 +16153,15 @@ public timeRemain()
     {
         new Array:testMapListArray = ArrayCreate( MAX_MAPNAME_LENGHT );
 
-        ArrayPushString( testMapListArray, "de_dust2" );
+        ArrayPushString( testMapListArray, "de_dust2"   );
         ArrayPushString( testMapListArray, "de_inferno" );
-        ArrayPushString( testMapListArray, "de_dust4" );
-        ArrayPushString( testMapListArray, "de_dust" );
+        ArrayPushString( testMapListArray, "de_dust4"   );
+        ArrayPushString( testMapListArray, "de_dust"    );
 
-        test_mapGetNext_case( testMapListArray, "de_dust", "de_dust2", 0 );      // Case 1
-        test_mapGetNext_case( testMapListArray, "de_dust2", "de_inferno", 1 );   // Case 2
-        test_mapGetNext_case( testMapListArray, "de_inferno", "de_dust4", 2 );   // Case 3
-        test_mapGetNext_case( testMapListArray, "de_inferno2", "de_dust2", -1 ); // Case 4
+        test_mapGetNext_case( testMapListArray, "de_dust"    , "de_dust2"  ,  0 ); // Case 1
+        test_mapGetNext_case( testMapListArray, "de_dust2"   , "de_inferno",  1 ); // Case 2
+        test_mapGetNext_case( testMapListArray, "de_inferno" , "de_dust4"  ,  2 ); // Case 3
+        test_mapGetNext_case( testMapListArray, "de_inferno2", "de_dust2"  , -1 ); // Case 4
 
         ArrayDestroy( testMapListArray );
     }
@@ -16177,7 +16174,7 @@ public timeRemain()
      * @param nextMapAim              an string as the desired next map
      * @param mapIndexAim             the desired next map index
      */
-    stock test_mapGetNext_case( Array:testMapListArray, currentMap[], nextMapAim[], mapIndexAim )
+    stock test_mapGetNext_case( Array:testMapListArray, const currentMap[], const nextMapAim[], mapIndexAim )
     {
         static currentCaseNumber = 0;
 
@@ -17962,9 +17959,7 @@ public timeRemain()
     }
 
     /**
-     * When the option `IS_TO_LOAD_EXPLICIT_MAP_SERIES` is set, the moveTheCursorToTheLastMap cannot
-     * move the cursor until the series end, if there are valid maps but the series does not started
-     * at 0 or 1.
+     * To an alternating series test.
      */
     stock test_configureTheNextMap_load5( s )
     {

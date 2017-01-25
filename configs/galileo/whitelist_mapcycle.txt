@@ -1,20 +1,20 @@
 [10-22]
-de_dust2
-de_inferno
-de_vegas
-de_train
+de_bdust2
+de_binferno
+de_bvegas
+de_btrain
 
 [23-05]
-de_survivor
-de_mirage
-de_tikal
-de_rats
-de_nuke_32
+de_bsurvivor
+de_bmirage
+de_btikal
+de_brats
+de_bnuke_32
 
 [05-10]
-de_dust2_long
-de_vertigo
-de_olan
+de_bdust2_long
+de_bvertigo
+de_bolan
 
 // These maps crashed Counter-Strike Condition Zero due the 512 entities limit.
 // Using {0-0} instead of [0-0] will block them all day long, instead of 00:00:00 until 00:59:59.
