@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-684";
+new const PLUGIN_VERSION[] = "v4.2.0-685";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -86,7 +86,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-684";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+16
+#define DEBUG_LEVEL 1+16+2+4+64
 
 
 /**
@@ -14053,10 +14053,8 @@ stock tryToRunAnAlternateSeries( Array:mapcycleFileListArray, currentMapName[],
 
     if( get_pcvar_num( cvar_serverMoveCursor ) & IS_TO_LOAD_ALTERNATE_MAP_SERIES )
     {
-        new defaultCurrentMapIndex;
-
         new currentMapSerie;
-        new defaultCurrentSerie;
+        new defaultCurrentMapIndex;
 
         new defaultCurrentMapName[ MAX_MAPNAME_LENGHT ];
         new possibleNextMap      [ MAX_MAPNAME_LENGHT ];
@@ -14065,8 +14063,8 @@ stock tryToRunAnAlternateSeries( Array:mapcycleFileListArray, currentMapName[],
         new defaultCurrentMapNameClean[ MAX_MAPNAME_LENGHT ];
         new defaultNextMapNameClean   [ MAX_MAPNAME_LENGHT ];
 
-        // The index on `defaultNextMapCyclePosition` is 2 maps ahead the last map
-        defaultCurrentMapIndex = getMapIndexBefore( mapcycleFileListArray, defaultNextMapCyclePosition, 2 );
+        // The index on `defaultNextMapCyclePosition` is 3 maps ahead the last map
+        defaultCurrentMapIndex = getMapIndexBefore( mapcycleFileListArray, defaultNextMapCyclePosition, 3 );
         getNextMapByPosition( mapcycleFileListArray, defaultCurrentMapName, defaultCurrentMapIndex, false );
 
         // The getNextMapByPosition(3) call is incrementing it.
@@ -14076,15 +14074,15 @@ stock tryToRunAnAlternateSeries( Array:mapcycleFileListArray, currentMapName[],
         copy( defaultCurrentMapNameClean, charsmax( defaultCurrentMapNameClean ), defaultCurrentMapName );
         copy( defaultNextMapNameClean   , charsmax( defaultNextMapNameClean    ), defaultNextMapName    );
 
-        currentMapSerie     = getTheCurrentSerieForTheMap( currentMapNameClean        );
-        defaultCurrentSerie = getTheCurrentSerieForTheMap( defaultCurrentMapNameClean );
+        currentMapSerie = getTheCurrentSerieForTheMap( currentMapNameClean );
 
+        getTheCurrentSerieForTheMap( defaultCurrentMapNameClean );
         getTheCurrentSerieForTheMap( defaultNextMapNameClean );
 
         LOGGER( 4, "" )
-        LOGGER( 4, "( tryToRunAnAlternateSeries ) currentMapNameClean:        %s", currentMapNameClean        )
-        LOGGER( 4, "( tryToRunAnAlternateSeries ) defaultCurrentMapNameClean: %s", defaultCurrentMapNameClean )
-        LOGGER( 4, "( tryToRunAnAlternateSeries ) defaultNextMapNameClean:    %s", defaultNextMapNameClean    )
+        LOGGER( 4, "( tryToRunAnAlternateSeries ) currentMapName:        %s", currentMapName        )
+        LOGGER( 4, "( tryToRunAnAlternateSeries ) defaultCurrentMapName: %s", defaultCurrentMapName )
+        LOGGER( 4, "( tryToRunAnAlternateSeries ) defaultNextMapName:    %s", defaultNextMapName    )
         LOGGER( 4, "" )
 
         // If both clear names are equal, the current map and the next map set are on the same series.
@@ -14096,7 +14094,7 @@ stock tryToRunAnAlternateSeries( Array:mapcycleFileListArray, currentMapName[],
 
         // Being successful means we are on a different series than the series set on the map cycle, and the series
         // is not finished yet. Therefore we must to keep following it until it ends, instead of the map cycle.
-        if( areWeRunningAnAlternateSeries( currentMapNameClean, currentMapSerie, possibleNextMap, isTheServerRestarting ) )
+        if( areWeRunningAnAlternateSeries( currentMapNameClean, currentMapSerie, possibleNextMap ) )
         {
             // Only if the isThereNextMapOnTheSerie(3) is successful, we set the map name on the returning variable.
             copy( defaultNextMapName, MAX_MAPNAME_LENGHT - 1, possibleNextMap );
@@ -14104,11 +14102,11 @@ stock tryToRunAnAlternateSeries( Array:mapcycleFileListArray, currentMapName[],
             // We only need to move it to the end of the `defaultCurrentMapName` only one time, and while doing it
             // we cannot move back the `defaultNextMapCyclePosition` cursor.
             if( isItTimeToMoveTheMapCycleCursor( mapcycleFileListArray, defaultCurrentMapName, defaultCurrentMapNameClean,
-                                                defaultNextMapNameClean, defaultCurrentMapIndex ) )
+                                                 defaultNextMapNameClean, defaultCurrentMapIndex ) )
             {
                 // Here we do not update the `defaultNextMapCyclePosition` to the next map beyond the last valid serie,
                 // to be able to return to follow the map cycle when the new series is over.
-                moveTheCursorToTheLastMap( mapcycleFileListArray, defaultCurrentMapNameClean, defaultCurrentSerie, defaultNextMapCyclePosition );
+                moveTheCursorToTheLastMap( mapcycleFileListArray, defaultCurrentMapNameClean, defaultNextMapCyclePosition );
             }
             else if( !isTheServerRestarting )
             {
@@ -14129,8 +14127,7 @@ stock tryToRunAnAlternateSeries( Array:mapcycleFileListArray, currentMapName[],
  * Returns false when the current playing map is inside of the range of the saved map cycle or
  * is not respecting the `IS_TO_LOAD_EXPLICIT_MAP_SERIES` start map rule.
  */
-stock bool:areWeRunningAnAlternateSeries( const currentMapNameClean[], currentMapSerie, possibleNextMap[],
-                                          const bool:isTheServerRestarting )
+stock bool:areWeRunningAnAlternateSeries( const currentMapNameClean[], currentMapSerie, possibleNextMap[] )
 {
     LOGGER( 128, "I AM ENTERING ON areWeRunningAnAlternateSeries(3)" )
 
@@ -14138,8 +14135,7 @@ stock bool:areWeRunningAnAlternateSeries( const currentMapNameClean[], currentMa
     new bool:isAnAlternateSeries;
 
     cursorOnMapSeries   = get_pcvar_num( cvar_serverMoveCursor );
-    isAnAlternateSeries = ( isThereNextMapOnTheSerie( currentMapSerie, currentMapNameClean, possibleNextMap )
-                            && !isTheServerRestarting );
+    isAnAlternateSeries = isThereNextMapOnTheSerie( currentMapSerie, currentMapNameClean, possibleNextMap );
 
     // When the `IS_TO_LOAD_ALL_THE_MAP_SERIES` is set, it overrides the `IS_TO_LOAD_THE_FIRST_MAP_SERIES` bit flag.
     if( cursorOnMapSeries & IS_TO_LOAD_EXPLICIT_MAP_SERIES
@@ -14194,7 +14190,6 @@ stock bool:isItTimeToMoveTheMapCycleCursor( Array:mapcycleFileListArray      , c
     if( equali( lastMapName, defaultCurrentMapName ) )
     {
         new cursorOnMapSeries = get_pcvar_num( cvar_serverMoveCursor );
-        LOGGER( 2, "( isItTimeToMoveTheMapCycleCursor ) Trying to move the cursor..." )
 
         // When the `IS_TO_LOAD_ALL_THE_MAP_SERIES` is set, it overrides the `IS_TO_LOAD_THE_FIRST_MAP_SERIES` bit flag.
         if( cursorOnMapSeries & IS_TO_LOAD_EXPLICIT_MAP_SERIES
@@ -14262,28 +14257,47 @@ stock bool:isItTimeToMoveTheMapCycleCursor( Array:mapcycleFileListArray      , c
  * Move the current map cycle position to the end of the current series. If it is already on the end
  * or there is not series for the current position, it does nothing, i.e., get stuck where it is now.
  *
- * @param defaultCurrentSerie            is already pointing to the next map on the series (if it exists).
  * @param defaultNextMapCyclePosition    is pointing the next map of the default next map on the `defaultCurrentMapNameClean` series.
  */
-stock moveTheCursorToTheLastMap( Array:mapcycleFileListArray, const defaultCurrentMapNameClean[],
-                                 defaultCurrentSerie, &defaultNextMapCyclePosition )
+stock moveTheCursorToTheLastMap( Array:mapcycleFileListArray, const defaultCurrentMapNameClean[], &defaultNextMapCyclePosition )
 {
-    LOGGER( 128, "I AM ENTERING ON moveTheCursorToTheLastMap(4) defaultNextMapCyclePosition: %d", defaultNextMapCyclePosition )
+    LOGGER( 128, "I AM ENTERING ON moveTheCursorToTheLastMap(3)" )
 
     new maximumTries;
     new processedMaps;
-    new unUsedNextMapName[ MAX_MAPNAME_LENGHT ];
 
-    maximumTries = ArraySize( mapcycleFileListArray );
+    new nextMapCyclePosition;
+    new defaultNextOfNextMapNameClean[ MAX_MAPNAME_LENGHT ];
+
+    maximumTries         = ArraySize( mapcycleFileListArray );
+    nextMapCyclePosition = getMapIndexBefore( mapcycleFileListArray, defaultNextMapCyclePosition, 1 );
+
+    getNextMapByPosition( mapcycleFileListArray, defaultNextOfNextMapNameClean, nextMapCyclePosition, false );
+
+    // If the current serie is 1, it will return 2.
+    nextMapCyclePosition = getTheCurrentSerieForTheMap( defaultNextOfNextMapNameClean );
+
+    LOGGER( 4, "( moveTheCursorToTheLastMap ) nextMapCyclePosition:          %d", nextMapCyclePosition          )
+    LOGGER( 4, "( moveTheCursorToTheLastMap ) defaultNextMapCyclePosition:   %d", defaultNextMapCyclePosition   )
+    LOGGER( 4, "" )
+    LOGGER( 4, "( moveTheCursorToTheLastMap ) defaultCurrentMapNameClean:    %s", defaultCurrentMapNameClean    )
+    LOGGER( 4, "( moveTheCursorToTheLastMap ) defaultNextOfNextMapNameClean: %s", defaultNextOfNextMapNameClean )
+    LOGGER( 4, "" )
     LOGGER( 2, "( moveTheCursorToTheLastMap ) Moving the cursor..." )
 
-    while( processedMaps++ < maximumTries
-           && isThereNextMapOnTheSerie( defaultCurrentSerie, defaultCurrentMapNameClean, unUsedNextMapName ) )
+    // Make sure we are incrementing the sequence on the right series.
+    if( equali( defaultCurrentMapNameClean, defaultNextOfNextMapNameClean ) )
     {
-        defaultCurrentSerie++;
-        defaultNextMapCyclePosition++;
+        while( processedMaps++ < maximumTries
+               && isThereNextMapOnTheSerie( nextMapCyclePosition, defaultCurrentMapNameClean, defaultNextOfNextMapNameClean ) )
+        {
+            nextMapCyclePosition++;
+            defaultNextMapCyclePosition++;
 
-        LOGGER( 4, "( moveTheCursorToTheLastMap ) Moving the map cycle position to: %d", defaultNextMapCyclePosition )
+            LOGGER( 4, "( moveTheCursorToTheLastMap ) nextMapCyclePosition:          %d", nextMapCyclePosition )
+            LOGGER( 4, "( moveTheCursorToTheLastMap ) defaultNextMapCyclePosition:   %d", defaultNextMapCyclePosition )
+            LOGGER( 4, "( moveTheCursorToTheLastMap ) defaultNextOfNextMapNameClean: %s", defaultNextOfNextMapNameClean )
+        }
     }
 
     LOGGER( 2, "    ( moveTheCursorToTheLastMap ) Returning defaultNextMapCyclePosition: %d", defaultNextMapCyclePosition )
@@ -17540,7 +17554,7 @@ public timeRemain()
     }
 
     /**
-     * To prepare the test_populateListOnSeries_load1(0) tests files and settings.
+     * To prepare the test_populateListOnSeries_loada(0) tests files and settings.
      */
     stock test_populateListOnSeries_build( s, Array:populatedArray, Trie:populatedTrie, expectedSize, bool:isFull )
     {
@@ -17579,15 +17593,15 @@ public timeRemain()
 
     stock test_populateListOnSeries_load()
     {
-        test_populateListOnSeries_load1( 'a' );
-        test_populateListOnSeries_load2( 'e' );
-        test_populateListOnSeries_load3( 'b' );
+        test_populateListOnSeries_loada( 'a' );
+        test_populateListOnSeries_loadb( 'b' );
+        test_populateListOnSeries_loadc( 'c' );
     }
 
     /**
      * Tests if the function map_populateListOnSeries(3) is properly loading the maps series.
      */
-    stock test_populateListOnSeries_load1( s, bool:is=false )
+    stock test_populateListOnSeries_loada( s, bool:is=false )
     {
         new Trie:populatedTrie   = TrieCreate();
         new Array:populatedArray = ArrayCreate( MAX_MAPNAME_LENGHT );
@@ -17615,7 +17629,7 @@ public timeRemain()
     /**
      * Tests if the function map_populateListOnSeries(3) is properly loading the maps series.
      */
-    stock test_populateListOnSeries_load2( s, bool:is=false )
+    stock test_populateListOnSeries_loadb( s, bool:is=false )
     {
         new Trie:populatedTrie   = TrieCreate();
         new Array:populatedArray = ArrayCreate( MAX_MAPNAME_LENGHT );
@@ -17643,7 +17657,7 @@ public timeRemain()
     /**
      * Tests if the function map_populateListOnSeries(3) is properly loading the maps series.
      */
-    stock test_populateListOnSeries_load3( s, bool:is=false )
+    stock test_populateListOnSeries_loadc( s, bool:is=false )
     {
         new Trie:populatedTrie   = TrieCreate();
         new Array:populatedArray = ArrayCreate( MAX_MAPNAME_LENGHT );
@@ -17670,7 +17684,7 @@ public timeRemain()
 
     /**
      * Create one case test for the stock map_populateListOnSeries(3) based on its parameters passed
-     * by the test_populateListOnSeries_load1(0) loader function.
+     * by the test_populateListOnSeries_loada(0) loader function.
      */
     stock test_populateListOnSeries( s, Array:populatedArray, expectedIndexes[]={0}, mapName[], bool:isNotToBe, isFull  )
     {
@@ -17898,16 +17912,16 @@ public timeRemain()
     {
         set_pcvar_num( cvar_whitelistMinPlayers, 0 );
 
-        test_populateListOnSeries_load1( 'a', true ); // Case 1-19
-        test_populateListOnSeries_load2( 'b', true ); // Case 1-19
-        test_populateListOnSeries_load3( 'c', true ); // Case 1-19
+        test_populateListOnSeries_loada( 'a', true ); // Case 1-19
+        test_populateListOnSeries_loadb( 'b', true ); // Case 1-19
+        test_populateListOnSeries_loadc( 'c', true ); // Case 1-19
 
-        test_configureTheNextMap_load1( 'd' ); // Case 1-32
-        // test_configureTheNextMap_load2( 'e' ); // Case 1-58
-        // test_configureTheNextMap_load3( 'f' ); // Case 1-48
-        // test_configureTheNextMap_load4( 'g' ); // Case 1-16
-        // test_configureTheNextMap_load5( 'h' ); // Case 1-18
-        // test_configureTheNextMap_load6( 'i' ); // Case 1-4
+        test_configureTheNextMap_loadd( 'd' ); // Case 1-32
+        test_configureTheNextMap_loade( 'e' ); // Case 1-58
+        test_configureTheNextMap_loadf( 'f' ); // Case 1-48
+        test_configureTheNextMap_loadg( 'g' ); // Case 1-20
+        test_configureTheNextMap_loadh( 'h' ); // Case 1-18
+        test_configureTheNextMap_loadi( 'i' ); // Case 1-4
     }
 
     /**
@@ -18007,7 +18021,7 @@ public timeRemain()
     /**
      * Test the cvar `gal_srv_move_cursor` set as 2.
      */
-    stock test_configureTheNextMap_load1( s )
+    stock test_configureTheNextMap_loadd( s )
     {
         // Setting the `cvar_serverMoveCursor` as 2 will load the map cycle on the as:
         //
@@ -18048,7 +18062,7 @@ public timeRemain()
     /**
      * Test the cvar `gal_srv_move_cursor` set as 10.
      */
-    stock test_configureTheNextMap_load2( s )
+    stock test_configureTheNextMap_loade( s )
     {
         // Setting the `expectedSize` as 13 will load the map cycle as:
         //
@@ -18112,7 +18126,7 @@ public timeRemain()
     /**
      * Test the cvar `gal_srv_move_cursor` set as 10, using an alternating series test from the above.
      */
-    stock test_configureTheNextMap_load3( s )
+    stock test_configureTheNextMap_loadf( s )
     {
         // Setting the `expectedSize` as 13 will load the map cycle as the load2 above.
         new expectedSize = 13;
@@ -18170,7 +18184,7 @@ public timeRemain()
      * move the cursor until the series end, if there are valid maps but the series does not started
      * at 0 or 1.
      */
-    stock test_configureTheNextMap_load4( s )
+    stock test_configureTheNextMap_loadg( s )
     {
         // Setting the `expectedSize` as 5 will load the map cycle as:
         //
@@ -18184,21 +18198,25 @@ public timeRemain()
         // Set the initial settings to start the first complete loop tests.
         saveCurrentMapCycleSetting( "de_dust", g_test_voteMapFilePath, 1 );
 
-        // To do a complete loop.
+        // Here we start the map on an alternate series and the map cycle position must to be frozen.
         test_configureTheNextMap_case( s, "de_dust"        , "de_dust2"       , 1, expectedSize ); // Case  1-2
-        test_configureTheNextMap_case( s, "de_dust2"       , "cs_italy_cz"    , 2, expectedSize ); // Case  3-4
-        test_configureTheNextMap_case( s, "cs_italy_cz"    , "de_dust2_fundo" , 3, expectedSize ); // Case  5-6
-        test_configureTheNextMap_case( s, "de_dust2_fundo" , "de_dust2_fundo2", 4, expectedSize ); // Case  7-8
-        test_configureTheNextMap_case( s, "de_dust2_fundo2", "de_dust_cz"     , 5, expectedSize ); // Case  9-10
-        test_configureTheNextMap_case( s, "de_dust_cz"     , "de_dust2"       , 1, expectedSize ); // Case 11-12
-        test_configureTheNextMap_case( s, "de_dust2"       , "cs_italy_cz"    , 2, expectedSize ); // Case 13-14
-        test_configureTheNextMap_case( s, "cs_italy_cz"    , "de_dust2_fundo" , 3, expectedSize ); // Case 15-16
+        test_configureTheNextMap_case( s, "de_dust2"       , "de_dust3"       , 1, expectedSize ); // Case  3-4
+        test_configureTheNextMap_case( s, "de_dust3"       , "de_dust4"       , 1, expectedSize ); // Case  5-6
+
+        // Here we finish the alternate series and the map cycle must to free.
+        test_configureTheNextMap_case( s, "de_dust4"       , "cs_italy_cz"    , 2, expectedSize ); // Case  7-8
+        test_configureTheNextMap_case( s, "cs_italy_cz"    , "de_dust2_fundo" , 3, expectedSize ); // Case  9-10
+        test_configureTheNextMap_case( s, "de_dust2_fundo" , "de_dust2_fundo2", 4, expectedSize ); // Case 11-12
+        test_configureTheNextMap_case( s, "de_dust2_fundo2", "de_dust_cz"     , 5, expectedSize ); // Case 13-14
+        test_configureTheNextMap_case( s, "de_dust_cz"     , "de_dust2"       , 1, expectedSize ); // Case 15-16
+        test_configureTheNextMap_case( s, "de_dust2"       , "cs_italy_cz"    , 2, expectedSize ); // Case 17-18
+        test_configureTheNextMap_case( s, "cs_italy_cz"    , "de_dust2_fundo" , 3, expectedSize ); // Case 19-20
     }
 
     /**
      * Test the cvar `gal_srv_move_cursor` set as 14, using an alternating series test from the above.
      */
-    stock test_configureTheNextMap_load5( s )
+    stock test_configureTheNextMap_loadh( s )
     {
         // Setting the `expectedSize` as 8 will load the map cycle as:
         //
@@ -18227,7 +18245,7 @@ public timeRemain()
         test_configureTheNextMap_case( s, "de_dust_cz"     , "de_dust"        , 1, expectedSize ); // Case 17-18
     }
 
-    stock test_configureTheNextMap_load6( s )
+    stock test_configureTheNextMap_loadi( s )
     {
         // Setting the `expectedSize` as 5 will load the map cycle as:
         //
