@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-680";
+new const PLUGIN_VERSION[] = "v4.2.0-682";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -86,7 +86,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-680";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+2+4+64
+#define DEBUG_LEVEL 1+2+64
 
 
 /**
@@ -14055,7 +14055,7 @@ stock tryToRunAnAlternateSeries( Array:mapcycleFileListArray, currentMapName[], 
         new currentMapNameClean[ MAX_MAPNAME_LENGHT ];
 
         // The index on `nextMapCyclePosition` is two maps ahead the last map
-        getMapIndexBefore( mapcycleFileListArray, nextMapCyclePosition - 2, mapIndexBefore );
+        mapIndexBefore = getMapIndexBefore( mapcycleFileListArray, nextMapCyclePosition - 2 );
         getNextMapByPosition( mapcycleFileListArray, originalSerieMapName, mapIndexBefore, false );
 
         copy( nextMapNameClean         , charsmax( nextMapNameClean          ), nextMapName          );
@@ -14095,7 +14095,7 @@ stock tryToRunAnAlternateSeries( Array:mapcycleFileListArray, currentMapName[], 
     }
 }
 
-stock isTheCursorMovingAllowed( Array:mapcycleFileListArray, originalSerieMapNameClean[], mapIndexBefore )
+stock bool:isTheCursorMovingAllowed( Array:mapcycleFileListArray, originalSerieMapNameClean[], mapIndexBefore )
 {
     LOGGER( 128, "I AM ENTERING ON isTheCursorMovingAllowed(3) mapIndexBefore: %d", mapIndexBefore )
 
@@ -14107,21 +14107,25 @@ stock isTheCursorMovingAllowed( Array:mapcycleFileListArray, originalSerieMapNam
         || cursorOnMapSeries & IS_TO_LOAD_THE_FIRST_MAP_SERIES
            && !( cursorOnMapSeries & IS_TO_LOAD_ALL_THE_MAP_SERIES ) )
     {
-        cursorOnMapSeries = 0;
+        new lastMapSerie;
         new lastSerieMapName[ MAX_MAPNAME_LENGHT ];
 
+        cursorOnMapSeries = 0;
         LOGGER( 2, "( isTheCursorMovingAllowed ) Trying to move the cursor..." )
 
         do
         {
-            getMapIndexBefore( mapcycleFileListArray, mapIndexBefore - 1, mapIndexBefore );
+            // Get the map before the next map 2 positions before, i.e., the current map on the last round.
+            mapIndexBefore = getMapIndexBefore( mapcycleFileListArray, mapIndexBefore - 1 );
+
             getNextMapByPosition( mapcycleFileListArray, lastSerieMapName, mapIndexBefore, false );
+            lastMapSerie = getTheCurrentSerieForTheMap( lastSerieMapName );
 
             // The getNextMapByPosition(3) call is incrementing it.
             --mapIndexBefore;
 
             // If the current serie is 1, it will return 2.
-            if( getTheCurrentSerieForTheMap( lastSerieMapName ) < 3
+            if( lastMapSerie < 3
                 && equali( originalSerieMapNameClean, lastSerieMapName ) )
             {
                 LOGGER( 2, "    ( isTheCursorMovingAllowed ) 1. Returning true." )
@@ -14168,15 +14172,19 @@ stock moveTheCursorToTheLastMap( Array:mapcycleFileListArray, originalSerieMapNa
  * The `nextMapCyclePosition` is pointing to the actual next map, but we need the index to the map
  * before the next map.
  */
-stock getMapIndexBefore( Array:mapcycleFileListArray, nextMapCyclePosition, &mapIndexBefore )
+stock getMapIndexBefore( Array:mapcycleFileListArray, nextMapCyclePosition )
 {
-    LOGGER( 128, "I AM ENTERING ON getMapIndexBefore(3) mapIndexBefore: %d", mapIndexBefore )
+    LOGGER( 128, "I AM ENTERING ON getMapIndexBefore(2) nextMapCyclePosition: %d", nextMapCyclePosition )
+    new mapIndexBefore;
 
     if( ( mapIndexBefore = nextMapCyclePosition ) < 0 )
     {
         // If is it negative, we want to the last map on the array `g_mapcycleFileListArray`.
         mapIndexBefore = ArraySize( mapcycleFileListArray ) - 1;
     }
+
+    LOGGER( 2, "    ( getMapIndexBefore ) Returning mapIndexBefore: %d", mapIndexBefore )
+    return mapIndexBefore;
 }
 
 stock getNextMapLocalInfoToken( currentMapcycleFilePath[] )
@@ -15523,9 +15531,18 @@ public timeRemain()
             if( !numberOfFailures
                 || lastFailure != lastTestId )
             {
+            #if DEBUG_LEVEL & DEBUG_LEVEL_DISABLE_TEST_LOGS
+                if( !g_test_isToDisableLogging )
+                {
+                    print_logger( "OK!" );
+                    print_logger( "" );
+                    print_logger( "" );
+                }
+            #else
                 print_logger( "OK!" );
                 print_logger( "" );
                 print_logger( "" );
+            #endif
             }
             else if( lastFailure == lastTestId  )
             {
@@ -15545,9 +15562,9 @@ public timeRemain()
     stock print_all_tests_executed( bool:isToPrintAllTests = true )
     {
         LOGGER( 128, "I AM ENTERING ON print_all_tests_executed(0)" )
-
         if( isToPrintAllTests )
         {
+        #if !( DEBUG_LEVEL & DEBUG_LEVEL_DISABLE_TEST_LOGS )
             new trieKey[ 10 ];
             new test_name[ MAX_SHORT_STRING ];
             new testsNumber = ArraySize( g_test_idsAndNamesArray );
@@ -15568,6 +15585,7 @@ public timeRemain()
                     print_logger( "       %3d. %s", test_index + 1, test_name );
                 }
             }
+        #endif
         }
     }
 
@@ -15659,8 +15677,17 @@ public timeRemain()
         }
 
         g_test_testsNumber++;
+
+    #if DEBUG_LEVEL & DEBUG_LEVEL_DISABLE_TEST_LOGS
+        if( !g_test_isToDisableLogging )
+        {
+            print_logger( "        EXECUTING TEST %d AFTER %d WITH UNTIL %d SECONDS DELAYED - %s ",
+                    g_test_testsNumber, computeTheTestElapsedTime(), max_delay_result, test_name );
+        }
+    #else
         print_logger( "        EXECUTING TEST %d AFTER %d WITH UNTIL %d SECONDS DELAYED - %s ",
                 g_test_testsNumber, computeTheTestElapsedTime(), max_delay_result, test_name );
+    #endif
 
         if( g_test_maxDelayResult < max_delay_result )
         {
@@ -18076,8 +18103,18 @@ public timeRemain()
         // Set the initial settings to start the first complete loop tests.
         saveCurrentMapCycleSetting( "aim_headshot", g_test_voteMapFilePath, 0 );
 
+        new backupMapsFilePath[ MAX_FILE_PATH_LENGHT ];
+        formatex( backupMapsFilePath, charsmax( backupMapsFilePath ), "%s/%s", g_dataDirPath, CURRENT_AND_NEXTMAP_FILE_NAME );
+
+        copy( g_nextMapName, charsmax( g_nextMapName ), "aim_headshot" );
+        copy( g_currentMapName, charsmax( g_currentMapName ), "aim_headshot2" );
+
+        delete_file( backupMapsFilePath );
+        saveCurrentAndNextMapNames( g_currentMapName, g_nextMapName, true );
+
         test_configureTheNextMap_case( s, "aim_headshot" , "aim_headshot2", 0, expectedSize ); // Case
         test_configureTheNextMap_case( s, "de_dust2"     , "cs_italy_cz"  , 2, expectedSize ); // Case
+
     }
 
     /**
