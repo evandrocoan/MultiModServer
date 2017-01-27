@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-686";
+new const PLUGIN_VERSION[] = "v4.2.0-687";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -86,7 +86,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-686";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+2+4+16+64
+#define DEBUG_LEVEL 1+2+4+64
 
 
 /**
@@ -14045,7 +14045,7 @@ stock tryToRunAnAlternateSeries( Array:mapcycleFileListArray, currentMapName[],
     LOGGER( 4, "" )
     LOGGER( 4, "" )
     LOGGER( 4, "" )
-    LOGGER( 128, "I AM ENTERING ON tryToRunAnAlternateSeries(4)" )
+    LOGGER( 128, "I AM ENTERING ON tryToRunAnAlternateSeries(5)" )
     LOGGER( 4, "( tryToRunAnAlternateSeries ) currentMapName:              %s", currentMapName              )
     LOGGER( 4, "( tryToRunAnAlternateSeries ) defaultNextMapName:          %s", defaultNextMapName          )
     LOGGER( 4, "( tryToRunAnAlternateSeries ) defaultNextMapCyclePosition: %d", defaultNextMapCyclePosition )
@@ -14090,7 +14090,7 @@ stock tryToRunAnAlternateSeries( Array:mapcycleFileListArray, currentMapName[],
         // If both clear names are equal, the current map and the next map set are on the same series.
         if( equali( currentMapNameClean, defaultNextMapNameClean ) )
         {
-            LOGGER( 2, "    ( tryToRunAnAlternateSeries ) Returning/blocking, we are following the map cycle series." )
+            LOGGER( 1, "    ( tryToRunAnAlternateSeries ) Returning/blocking, we are following the map cycle series." )
             return;
         }
 
@@ -14116,6 +14116,8 @@ stock tryToRunAnAlternateSeries( Array:mapcycleFileListArray, currentMapName[],
             }
         }
     }
+
+    LOGGER( 1, "    ( tryToRunAnAlternateSeries ) Exiting." )
 }
 
 /**
@@ -18521,6 +18523,7 @@ public timeRemain()
     new test_g_nextMapName   [ MAX_MAPNAME_LENGHT ];
     new test_g_currentMapName[ MAX_MAPNAME_LENGHT ];
 
+    new test_lastmapcycle             [ MAX_MAPNAME_LENGHT ];
     new test_mapcyclefile             [ MAX_FILE_PATH_LENGHT ];
     new test_nomMapFilePath           [ MAX_FILE_PATH_LENGHT ];
     new test_voteMapFilePath          [ MAX_FILE_PATH_LENGHT ];
@@ -18570,7 +18573,9 @@ public timeRemain()
             copy( test_g_nextMapName   , charsmax( test_g_nextMapName )   , g_nextMapName    );
             copy( test_g_currentMapName, charsmax( test_g_currentMapName ), g_currentMapName );
 
+            get_localinfo( "lastmapcycle", test_lastmapcycle, charsmax( test_lastmapcycle ) );
             get_localinfo( "galileo_lastmap", test_galileo_lastmap, charsmax( test_galileo_lastmap ) );
+
             get_pcvar_string( cvar_amx_nextmap, test_amx_nextmap, charsmax( test_amx_nextmap ) );
 
             get_pcvar_string( cvar_mapcyclefile             , test_mapcyclefile             , charsmax( test_mapcyclefile )              );
@@ -18646,7 +18651,9 @@ public timeRemain()
             copy( g_nextMapName   , charsmax( g_nextMapName )   , test_g_nextMapName    );
             copy( g_currentMapName, charsmax( g_currentMapName ), test_g_currentMapName );
 
+            set_localinfo( "lastmapcycle", test_lastmapcycle );
             set_localinfo( "galileo_lastmap", test_galileo_lastmap );
+
             set_pcvar_string( cvar_amx_nextmap, test_amx_nextmap );
 
             set_pcvar_string( cvar_mapcyclefile             , test_mapcyclefile              );
