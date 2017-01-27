@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-692";
+new const PLUGIN_VERSION[] = "v4.2.0-693";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -86,7 +86,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-692";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 0
+#define DEBUG_LEVEL 16+32
 
 
 /**
@@ -287,6 +287,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-692";
         test_SortCustomSynced2D();
         test_configureTheNextMap();
         test_handleServerStart();
+        test_endOfMapVoting();
     }
 
     /**
@@ -295,7 +296,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-692";
     public dalayedTestsToExecute()
     {
         LOGGER( 128, "I AM ENTERING ON dalayedTestsToExecute(0)" )
-        test_isMapExtensionAvowed_case1();
+        // Currently there are none Delayed Unit Tests Created.
     }
 
     /**
@@ -317,9 +318,10 @@ new const PLUGIN_VERSION[] = "v4.2.0-692";
             // LOGGER( 1, "Current i is: %d", i )
         }
 
+        test_endOfMapVoting();
         // test_handleServerStart();
         // test_mapGetNext_cases();
-        test_configureTheNextMap();
+        // test_configureTheNextMap();
         // test_loadCurrentBlackList_cases();
         // test_SortCustomSynced2D();
         // test_GET_MAP_INFO_load();
@@ -16207,149 +16209,7 @@ public timeRemain()
     // ###########################################################################################
 
     /**
-     * 1. Tests if the cvar 'amx_extendmap_max' functionality is working properly for a successful case.
-     */
-    stock test_isMapExtensionAvowed_case1()
-    {
-        new errorMessage[ MAX_LONG_STRING ];
-
-        // Temporarily disables the `gal_nextmap_votemap` feature, as we are not testing it right now.
-        set_pcvar_num( cvar_nextMapChangeVotemap, 0 );
-
-        // Set the voting time accordantly to what is expected on the tests.
-        set_pcvar_num( cvar_voteDuration  , 30 );
-        set_pcvar_num( cvar_runoffDuration, 20 );
-
-        new chainDelay = 2 + 2 + 1 + 1 + 1;
-        new test_id    = register_test( chainDelay, "test_isMapExtensionAvowed_case1" );
-
-        set_pcvar_float( cvar_maxMapExtendTime, 20.0 );
-        tryToSetGameModCvarFloat( cvar_mp_timelimit, 10.0 );
-
-        g_endVotingType |= IS_BY_TIMER;
-        vote_startDirector( false );
-
-        ERR( "g_isMapExtensionAllowed must be 1 (it was %d)", g_isMapExtensionAllowed )
-        setTestFailure( test_id, !g_isMapExtensionAllowed, errorMessage );
-
-        set_task( 2.0, "test_isMapExtensionAvowed_case2", chainDelay );
-    }
-
-    /**
-     * 2. Tests if the cvar 'amx_extendmap_max' functionality is working properly for a failure case.
-     */
-    public test_isMapExtensionAvowed_case2( chainDelay )
-    {
-        new test_id;
-        new errorMessage[ MAX_LONG_STRING ];
-
-        test_id = register_test( chainDelay, "test_isMapExtensionAvowed_case2" );
-
-        ERR( "g_isMapExtensionAllowed must be 1 (it was %d)", g_isMapExtensionAllowed )
-        setTestFailure( test_id, !g_isMapExtensionAllowed, errorMessage );
-
-        color_print( 0, "%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED2" );
-        cancelVoting();
-
-        // Case 3
-        test_id = register_test( chainDelay, "test_isMapExtensionAvowed_case3" );
-
-        set_pcvar_float( cvar_maxMapExtendTime, 10.0 );
-        tryToSetGameModCvarFloat( cvar_mp_timelimit, 20.0 );
-
-        g_endVotingType |= IS_BY_TIMER;
-        vote_startDirector( false );
-
-        ERR( "g_isMapExtensionAllowed must be 0 (it was %d)", g_isMapExtensionAllowed )
-        setTestFailure( test_id, g_isMapExtensionAllowed, errorMessage );
-
-        set_task( 2.0, "test_endOfMapVotingStart_case1", chainDelay );
-    }
-
-    /**
-     * 3. Tests if the end map voting is starting automatically at the end of map due time limit expiration.
-     */
-    public test_endOfMapVotingStart_case1( chainDelay )
-    {
-        new test_id;
-        new secondsLeft;
-
-        // When the `gal_endofmapvote_start` feature is enabled, will will not allow a votemap
-        // by time limit expiration.
-        set_pcvar_num( cvar_endOfMapVoteStart, 0 );
-
-        new errorMessage[ MAX_LONG_STRING ];
-        test_id = register_test( chainDelay, "test_endOfMapVotingStart_case1" );
-
-        ERR( "g_isMapExtensionAllowed must be 0 (it was %d)", g_isMapExtensionAllowed )
-        setTestFailure( test_id, g_isMapExtensionAllowed, errorMessage );
-
-        cancelVoting();
-        secondsLeft = get_timeleft();
-
-        tryToSetGameModCvarFloat( cvar_mp_timelimit,
-                ( get_pcvar_float( cvar_mp_timelimit ) * 60
-                  - secondsLeft
-                  + START_VOTEMAP_MAX_TIME + PERIODIC_CHECKING_INTERVAL - 5 )
-                / 60 );
-
-        LOGGER( 32, "( test_endOfMapVotingStart_case1 ) timelimit: %d", floatround( get_pcvar_float( cvar_mp_timelimit ) * 60 ) )
-        LOGGER( 32, "( test_endOfMapVotingStart_case1 ) START_VOTEMAP_MIN_TIME: %d", START_VOTEMAP_MIN_TIME )
-        LOGGER( 32, "( test_endOfMapVotingStart_case1 ) START_VOTEMAP_MAX_TIME: %d", START_VOTEMAP_MAX_TIME )
-
-        set_task( 1.0, "test_endOfMapVotingStart_case2", chainDelay );
-    }
-
-    /**
-     * 4. Tests if the end map voting is starting automatically at the end of map due time limit expiration.
-     */
-    public test_endOfMapVotingStart_case2( chainDelay )
-    {
-        new test_id = register_test( chainDelay, "test_endOfMapVotingStart_case2" );
-
-        vote_manageEnd();
-        setTestFailure( test_id, !( g_voteStatus & IS_VOTE_IN_PROGRESS ), "vote_startDirector() does not started!" );
-
-        tryToSetGameModCvarFloat( cvar_mp_timelimit, 20.0 );
-        cancelVoting();
-
-        set_task( 1.0, "test_endOfMapVotingStop_case1", chainDelay );
-    }
-
-    /**
-     * 5. Tests if the end map voting is not starting automatically at the end of map due time limit expiration.
-     */
-    public test_endOfMapVotingStop_case1( chainDelay )
-    {
-        new test_id = register_test( chainDelay, "test_endOfMapVotingStop_case1" );
-
-        vote_manageEnd();
-        setTestFailure( test_id, ( g_voteStatus & IS_VOTE_IN_PROGRESS ) != 0, "vote_startDirector() does started!" );
-
-        tryToSetGameModCvarFloat( cvar_mp_timelimit, 2.0 );
-        cancelVoting();
-
-        set_task( 1.0, "test_endOfMapVotingStop_case2", chainDelay );
-    }
-
-    /**
-     * 6. Tests if the end map voting is not starting automatically at the end of map due time limit expiration.
-     */
-    public test_endOfMapVotingStop_case2( chainDelay )
-    {
-        new test_id = register_test( chainDelay, "test_endOfMapVotingStop_case2" );
-
-        vote_manageEnd();
-        setTestFailure( test_id, ( g_voteStatus & IS_VOTE_IN_PROGRESS ) != 0, "vote_startDirector() does started!" );
-
-        tryToSetGameModCvarFloat( cvar_mp_timelimit, 20.0 );
-        //cancelVoting();
-
-        //set_task( 1.0, "test_exampleModel_case1", chainDelay );
-    }
-
-    /**
-     * 7. Tests if the ... this is model to create new tests. Duplicate this example code and
+     * 1. Tests if the ... this is model to create new tests. Duplicate this example code and
      * uncomment the test code body and its caller on the last test chain case just above here.
      * You need also to to go the first test and add to the variable 'chainDelay' how much time
      * this and its consecutive tests will take to execute.
@@ -18408,6 +18268,165 @@ public timeRemain()
         test_id = test_registerSeriesNaming( "test_handleServerStart", 'a' );
         ERR( "The next map name must to be %s, instead of %s.", nmnE, g_nextMapName )
         setTestFailure( test_id, !equali( nmnE, g_nextMapName ), errorMessage );
+    }
+
+    stock test_endOfMapVoting()
+    {
+        test_isMapExtensionAvowed_case1();
+        test_isMapExtensionAvowed_case2();
+        test_endOfMapVotingStart_case1();
+        test_endOfMapVotingStart_case2();
+        test_endOfMapVotingStop_case1();
+        test_endOfMapVotingStop_case2();
+        test_endOfMapVoting_case1();
+    }
+
+    /**
+     * 1. Tests if the cvar 'amx_extendmap_max' functionality is working properly for a successful case.
+     */
+    stock test_isMapExtensionAvowed_case1()
+    {
+        new test_id;
+        new errorMessage[ MAX_LONG_STRING ];
+
+        // Temporarily disables the `gal_nextmap_votemap` feature, as we are not testing it right now.
+        set_pcvar_num( cvar_nextMapChangeVotemap, 0 );
+
+        // Set the voting time accordantly to what is expected on the tests.
+        set_pcvar_num( cvar_voteDuration  , 30 );
+        set_pcvar_num( cvar_runoffDuration, 20 );
+
+        test_id = register_test( 0, "test_isMapExtensionAvowed_case1" );
+
+        set_pcvar_float( cvar_maxMapExtendTime, 20.0 );
+        tryToSetGameModCvarFloat( cvar_mp_timelimit, 10.0 );
+
+        g_endVotingType |= IS_BY_TIMER;
+        vote_startDirector( false );
+
+        ERR( "g_isMapExtensionAllowed must be 1, instead of %d.", g_isMapExtensionAllowed )
+        setTestFailure( test_id, !g_isMapExtensionAllowed, errorMessage );
+    }
+
+    /**
+     * 2. Tests if the cvar 'amx_extendmap_max' functionality is working properly for a failure case.
+     */
+    public test_isMapExtensionAvowed_case2()
+    {
+        new test_id;
+        new errorMessage[ MAX_LONG_STRING ];
+
+        // Case 2
+        test_id = register_test( 0, "test_isMapExtensionAvowed_case2" );
+
+        ERR( "g_isMapExtensionAllowed must be 1, instead of %d.", g_isMapExtensionAllowed )
+        setTestFailure( test_id, !g_isMapExtensionAllowed, errorMessage );
+
+        color_print( 0, "%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED2" );
+        cancelVoting();
+
+        // Case 3
+        test_id = register_test( 0, "test_isMapExtensionAvowed_case3" );
+
+        set_pcvar_float( cvar_maxMapExtendTime, 10.0 );
+        tryToSetGameModCvarFloat( cvar_mp_timelimit, 20.0 );
+
+        g_endVotingType |= IS_BY_TIMER;
+        vote_startDirector( false );
+
+        ERR( "g_isMapExtensionAllowed must be 0, instead of was %d.", g_isMapExtensionAllowed )
+        setTestFailure( test_id, g_isMapExtensionAllowed, errorMessage );
+    }
+
+    /**
+     * 3. Tests if the end map voting is starting automatically at the end of map due time limit expiration.
+     */
+    public test_endOfMapVotingStart_case1()
+    {
+        new test_id;
+        new secondsLeft;
+
+        // When the `gal_endofmapvote_start` feature is enabled, will will not allow a votemap
+        // by time limit expiration.
+        set_pcvar_num( cvar_endOfMapVoteStart, 0 );
+
+        new errorMessage[ MAX_LONG_STRING ];
+        test_id = register_test( 0, "test_endOfMapVotingStart_case1" );
+
+        ERR( "g_isMapExtensionAllowed must be 0, instead of %d.", g_isMapExtensionAllowed )
+        setTestFailure( test_id, g_isMapExtensionAllowed, errorMessage );
+
+        cancelVoting();
+        secondsLeft = get_timeleft();
+
+        tryToSetGameModCvarFloat( cvar_mp_timelimit,
+                ( get_pcvar_float( cvar_mp_timelimit ) * 60
+                  - secondsLeft
+                  + START_VOTEMAP_MAX_TIME + PERIODIC_CHECKING_INTERVAL - 5 )
+                / 60 );
+
+        LOGGER( 32, "( test_endOfMapVotingStart_case1 ) timelimit: %d", floatround( get_pcvar_float( cvar_mp_timelimit ) * 60 ) )
+        LOGGER( 32, "( test_endOfMapVotingStart_case1 ) START_VOTEMAP_MIN_TIME: %d", START_VOTEMAP_MIN_TIME )
+        LOGGER( 32, "( test_endOfMapVotingStart_case1 ) START_VOTEMAP_MAX_TIME: %d", START_VOTEMAP_MAX_TIME )
+    }
+
+    /**
+     * 4. Tests if the end map voting is starting automatically at the end of map due time limit expiration.
+     */
+    public test_endOfMapVotingStart_case2()
+    {
+        new test_id = register_test( 0, "test_endOfMapVotingStart_case2" );
+
+        vote_manageEnd();
+        setTestFailure( test_id, !( g_voteStatus & IS_VOTE_IN_PROGRESS ),
+                "The end map voting is not starting automatically at the end of map due time limit expiration." );
+
+        tryToSetGameModCvarFloat( cvar_mp_timelimit, 20.0 );
+        cancelVoting();
+    }
+
+    /**
+     * 5. Tests if the end map voting is not starting automatically at the end of map due time limit expiration.
+     */
+    public test_endOfMapVotingStop_case1()
+    {
+        new test_id = register_test( 0, "test_endOfMapVotingStop_case1" );
+
+        vote_manageEnd();
+        setTestFailure( test_id, ( g_voteStatus & IS_VOTE_IN_PROGRESS ) != 0,
+                "The end map voting is starting automatically at the end of map due time limit expiration." );
+
+        tryToSetGameModCvarFloat( cvar_mp_timelimit, 2.0 );
+        cancelVoting();
+    }
+
+    /**
+     * 6. Tests if the end map voting is not starting automatically at the end of map due time limit expiration.
+     */
+    public test_endOfMapVotingStop_case2()
+    {
+        new test_id = register_test( 0, "test_endOfMapVotingStop_case2" );
+
+        vote_manageEnd();
+        setTestFailure( test_id, ( g_voteStatus & IS_VOTE_IN_PROGRESS ) != 0,
+                "The end map voting is starting automatically at the end of map due time limit expiration." );
+
+        cancelVoting();
+    }
+
+    /**
+     * 7. Tests if the end map voting is not starting again right after if the extension option wins.
+     */
+    public test_endOfMapVoting_case1()
+    {
+        new test_id = register_test( 0, "test_endOfMapVoting_case1" );
+
+        vote_manageEnd();
+        setTestFailure( test_id, ( g_voteStatus & IS_VOTE_IN_PROGRESS ) == 0,
+                "The end map voting is starting again right after if the extension option wins." );
+
+        tryToSetGameModCvarFloat( cvar_mp_timelimit, 20.0 );
+        cancelVoting();
     }
 
 
