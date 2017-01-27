@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-687";
+new const PLUGIN_VERSION[] = "v4.2.0-688";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -14036,16 +14036,13 @@ stock configureTheNextMapSetttings( currentMapcycleFilePath[] )
  * @param currentMapName                 this is the map name which was just changed by the RTV or server Admin.
  * @param defaultNextMapName             the next map based on the position read from last `defaultNextMapCyclePosition` value.
  * @param defaultNextMapCyclePosition    the default position of the next map of current `defaultNextMapName`.
+ *
+ * @return true when the map cycle position need to be decreased, false otherwise.
  */
-stock tryToRunAnAlternateSeries( Array:mapcycleFileListArray, currentMapName[],
-                                 defaultNextMapName[], &defaultNextMapCyclePosition, const bool:isTheServerRestarting )
+stock tryToRunAnAlternateSeries( Array:mapcycleFileListArray, currentMapName[], defaultNextMapName[], &defaultNextMapCyclePosition )
 {
-    LOGGER( 4, "" )
-    LOGGER( 4, "" )
-    LOGGER( 4, "" )
-    LOGGER( 4, "" )
-    LOGGER( 4, "" )
-    LOGGER( 128, "I AM ENTERING ON tryToRunAnAlternateSeries(5)" )
+    LOGGER( 128, "I AM ENTERING ON tryToRunAnAlternateSeries(4)" )
+
     LOGGER( 4, "( tryToRunAnAlternateSeries ) currentMapName:              %s", currentMapName              )
     LOGGER( 4, "( tryToRunAnAlternateSeries ) defaultNextMapName:          %s", defaultNextMapName          )
     LOGGER( 4, "( tryToRunAnAlternateSeries ) defaultNextMapCyclePosition: %d", defaultNextMapCyclePosition )
@@ -14053,37 +14050,22 @@ stock tryToRunAnAlternateSeries( Array:mapcycleFileListArray, currentMapName[],
 
     if( get_pcvar_num( cvar_serverMoveCursor ) & IS_TO_LOAD_ALTERNATE_MAP_SERIES )
     {
-        new defaultCurrentMapIndex;
-
         new currentMapSerie;
         new defaultNextMapSeries;
 
-        new defaultCurrentMapName[ MAX_MAPNAME_LENGHT ];
         new possibleNextMap      [ MAX_MAPNAME_LENGHT ];
 
         new currentMapNameClean       [ MAX_MAPNAME_LENGHT ];
-        new defaultCurrentMapNameClean[ MAX_MAPNAME_LENGHT ];
         new defaultNextMapNameClean   [ MAX_MAPNAME_LENGHT ];
 
-        // The index on `defaultNextMapCyclePosition` is 3 maps ahead the last map
-        defaultCurrentMapIndex = getMapIndexBefore( mapcycleFileListArray, defaultNextMapCyclePosition, 3 );
-        getNextMapByPosition( mapcycleFileListArray, defaultCurrentMapName, defaultCurrentMapIndex, false );
-
-        // The getNextMapByPosition(3) call is incrementing it.
-        --defaultCurrentMapIndex;
-
         copy( currentMapNameClean       , charsmax( currentMapNameClean        ), currentMapName        );
-        copy( defaultCurrentMapNameClean, charsmax( defaultCurrentMapNameClean ), defaultCurrentMapName );
         copy( defaultNextMapNameClean   , charsmax( defaultNextMapNameClean    ), defaultNextMapName    );
 
         currentMapSerie      = getTheCurrentSerieForTheMap( currentMapNameClean );
         defaultNextMapSeries = getTheCurrentSerieForTheMap( defaultNextMapNameClean );
 
-        getTheCurrentSerieForTheMap( defaultCurrentMapNameClean );
-
         LOGGER( 4, "" )
         LOGGER( 4, "( tryToRunAnAlternateSeries ) currentMapName:        %s", currentMapName        )
-        LOGGER( 4, "( tryToRunAnAlternateSeries ) defaultCurrentMapName: %s", defaultCurrentMapName )
         LOGGER( 4, "( tryToRunAnAlternateSeries ) defaultNextMapName:    %s", defaultNextMapName    )
         LOGGER( 4, "" )
 
@@ -14091,7 +14073,8 @@ stock tryToRunAnAlternateSeries( Array:mapcycleFileListArray, currentMapName[],
         if( equali( currentMapNameClean, defaultNextMapNameClean ) )
         {
             LOGGER( 1, "    ( tryToRunAnAlternateSeries ) Returning/blocking, we are following the map cycle series." )
-            return;
+            LOGGER( 1, "    ( tryToRunAnAlternateSeries ) Returning false." )
+            return false;
         }
 
         // Being successful means we are on a different series than the series set on the map cycle, and the series
@@ -14103,21 +14086,17 @@ stock tryToRunAnAlternateSeries( Array:mapcycleFileListArray, currentMapName[],
 
             // We only need to move it to the end of the `defaultCurrentMapName` only one time, and while doing it
             // we cannot move back the `defaultNextMapCyclePosition` cursor.
-            if( tryToMoveTheMapCycleCursor( mapcycleFileListArray, defaultCurrentMapName,
-                                            defaultCurrentMapNameClean, defaultNextMapSeries, defaultNextMapNameClean,
-                                            defaultCurrentMapIndex, defaultNextMapCyclePosition ) )
+            if( tryToMoveTheMapCycleCursor( mapcycleFileListArray, defaultNextMapSeries,
+                                            defaultNextMapNameClean, defaultNextMapCyclePosition ) )
             {
-                if( !isTheServerRestarting )
-                {
-                    // Block the map cycle growing resetting it to its old value. This must to be called until
-                    // we exit the alternate series we are running on.
-                    --defaultNextMapCyclePosition;
-                }
+                LOGGER( 1, "    ( tryToRunAnAlternateSeries ) Returning true." )
+                return true;
             }
         }
     }
 
-    LOGGER( 1, "    ( tryToRunAnAlternateSeries ) Exiting." )
+    LOGGER( 1, "    ( tryToRunAnAlternateSeries ) Returning false." )
+    return false;
 }
 
 /**
@@ -14174,18 +14153,27 @@ stock bool:areWeRunningAnAlternateSeries( const currentMapNameClean[], currentMa
  * Returns false when the current map is already from the map cycle series, or when the current alternate
  * series is over by getting on its last map and the map cycle should be followed instead.
  *
- * @param defaultCurrentMapIndex    the map cycle position pointing to the `defaultCurrentMapNameClean`.
+ * @return true when the cursor was not moved, false otherwise.
  */
-stock bool:tryToMoveTheMapCycleCursor( Array:mapcycleFileListArray, const defaultCurrentMapName[],
-                                       const defaultCurrentMapNameClean[], defaultNextMapSeries,
-                                       const defaultNextMapNameClean[], defaultCurrentMapIndex,
-                                       &defaultNextMapCyclePosition )
+stock bool:tryToMoveTheMapCycleCursor( Array:mapcycleFileListArray, defaultNextMapSeries,
+                                       const defaultNextMapNameClean[], &defaultNextMapCyclePosition )
 {
-    LOGGER( 128, "I AM ENTERING ON tryToMoveTheMapCycleCursor(5)" )
+    LOGGER( 128, "I AM ENTERING ON tryToMoveTheMapCycleCursor(4)" )
+    new defaultCurrentMapIndex;
 
-    new lastMapName[ MAX_MAPNAME_LENGHT ];
+    new lastMapName          [ MAX_MAPNAME_LENGHT ];
+    new defaultCurrentMapName[ MAX_MAPNAME_LENGHT ];
+
+    // The index on `defaultNextMapCyclePosition` is 3 maps ahead the last map
+    defaultCurrentMapIndex = getMapIndexBefore( mapcycleFileListArray, defaultNextMapCyclePosition, 3 );
+    getNextMapByPosition( mapcycleFileListArray, defaultCurrentMapName, defaultCurrentMapIndex, false );
+
+    // The getNextMapByPosition(3) call is incrementing it.
+    --defaultCurrentMapIndex;
+
     get_localinfo( "galileo_lastmap", lastMapName, charsmax( lastMapName ) );
 
+    LOGGER( 4, "" )
     LOGGER( 4, "( tryToMoveTheMapCycleCursor ) lastMapName:            %s", lastMapName            )
     LOGGER( 4, "( tryToMoveTheMapCycleCursor ) defaultCurrentMapName:  %s", defaultCurrentMapName  )
     LOGGER( 4, "( tryToMoveTheMapCycleCursor ) defaultCurrentMapIndex: %d", defaultCurrentMapIndex )
@@ -14193,7 +14181,13 @@ stock bool:tryToMoveTheMapCycleCursor( Array:mapcycleFileListArray, const defaul
     // If the last map name is not the same as the defaultCurrentMapName, we already moved the cursor.
     if( equali( lastMapName, defaultCurrentMapName ) )
     {
-        new cursorOnMapSeries = get_pcvar_num( cvar_serverMoveCursor );
+        new cursorOnMapSeries;
+        new defaultCurrentMapNameClean[ MAX_MAPNAME_LENGHT ];
+
+        cursorOnMapSeries = get_pcvar_num( cvar_serverMoveCursor );
+
+        copy( defaultCurrentMapNameClean, charsmax( defaultCurrentMapNameClean ), defaultCurrentMapName );
+        getTheCurrentSerieForTheMap( defaultCurrentMapNameClean );
 
         // When the `IS_TO_LOAD_ALL_THE_MAP_SERIES` is set, it overrides the `IS_TO_LOAD_THE_FIRST_MAP_SERIES` bit flag.
         if( cursorOnMapSeries & IS_TO_LOAD_EXPLICIT_MAP_SERIES
@@ -14257,19 +14251,19 @@ stock bool:tryToMoveTheMapCycleCursor( Array:mapcycleFileListArray, const defaul
         {
             moveTheCursorToTheLastMap( mapcycleFileListArray, defaultCurrentMapNameClean, defaultNextMapCyclePosition );
 
-            LOGGER( 2, "    ( tryToMoveTheMapCycleCursor ) 3. Returning false." )
+            LOGGER( 2, "    ( tryToMoveTheMapCycleCursor ) 2. Returning false." )
             return false;
         }
         else if( isThereNextMapOnTheSerie( defaultNextMapSeries, defaultNextMapNameClean, lastMapName ) )
         {
             moveTheCursorToTheLastMap( mapcycleFileListArray, defaultNextMapNameClean, defaultNextMapCyclePosition );
 
-            LOGGER( 2, "    ( tryToMoveTheMapCycleCursor ) 4. Returning false." )
+            LOGGER( 2, "    ( tryToMoveTheMapCycleCursor ) 3. Returning false." )
             return false;
         }
     }
 
-    LOGGER( 2, "    ( tryToMoveTheMapCycleCursor ) 5. Returning true." )
+    LOGGER( 2, "    ( tryToMoveTheMapCycleCursor ) 4. Returning true." )
     return true;
 }
 
@@ -14347,10 +14341,9 @@ stock getNextMapLocalInfoToken( Array:mapcycleFileListArray, currentMapcycleFile
     LOGGER( 128, "I AM ENTERING ON getNextMapLocalInfoToken(2) currentMapcycleFilePath: %s", currentMapcycleFilePath )
 
     new nextMapCyclePosition;
-
     new bool:isTheServerRestarting;
-    new lastMap[ MAX_MAPNAME_LENGHT ];
 
+    new lastMap                [ MAX_MAPNAME_LENGHT ];
     new mapcycleCurrentIndex   [ MAX_MAPNAME_LENGHT ];
     new lastMapcycleFilePath   [ MAX_FILE_PATH_LENGHT ];
     new tockenMapcycleAndPosion[ MAX_MAPNAME_LENGHT + MAX_FILE_PATH_LENGHT ];
@@ -14361,8 +14354,8 @@ stock getNextMapLocalInfoToken( Array:mapcycleFileListArray, currentMapcycleFile
     parse( tockenMapcycleAndPosion, lastMapcycleFilePath, charsmax( lastMapcycleFilePath ),
                                     mapcycleCurrentIndex, charsmax( mapcycleCurrentIndex ) );
 
-    LOGGER( 2, "( getNextMapLocalInfoToken ) mapcycleCurrentIndex: %s", mapcycleCurrentIndex )
-    LOGGER( 2, "( getNextMapLocalInfoToken ) lastMapcycleFilePath: %s", lastMapcycleFilePath )
+    LOGGER( 2, "( getNextMapLocalInfoToken ) mapcycleCurrentIndex:    %s", mapcycleCurrentIndex    )
+    LOGGER( 2, "( getNextMapLocalInfoToken ) lastMapcycleFilePath:    %s", lastMapcycleFilePath    )
     LOGGER( 2, "( getNextMapLocalInfoToken ) tockenMapcycleAndPosion: %s", tockenMapcycleAndPosion )
     LOGGER( 2, "( getNextMapLocalInfoToken ) currentMapcycleFilePath: %s", currentMapcycleFilePath )
 
@@ -14390,7 +14383,23 @@ stock getNextMapLocalInfoToken( Array:mapcycleFileListArray, currentMapcycleFile
     }
 
     getLastNextMapFromServerStart( mapcycleFileListArray, g_nextMapName, nextMapCyclePosition );
-    tryToRunAnAlternateSeries( mapcycleFileListArray, g_currentMapName, g_nextMapName, nextMapCyclePosition, isTheServerRestarting );
+
+    LOGGER( 4, "" )
+    LOGGER( 4, "" )
+    LOGGER( 4, "" )
+    LOGGER( 4, "" )
+    LOGGER( 4, "" )
+
+    if( tryToRunAnAlternateSeries( mapcycleFileListArray, g_currentMapName, g_nextMapName, nextMapCyclePosition ) )
+    {
+        // If the server is restarting, the map cycle position was already decreased just above.
+        if( !isTheServerRestarting )
+        {
+            // Block the map cycle growing resetting it to its old value. This must to be called until
+            // we exit the alternate series we are running on.
+            --nextMapCyclePosition;
+        }
+    }
 
     LOGGER( 2, "    ( getNextMapLocalInfoToken ) Returning nextMapCyclePosition: %d", nextMapCyclePosition )
 
