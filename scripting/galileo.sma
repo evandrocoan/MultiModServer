@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-685";
+new const PLUGIN_VERSION[] = "v4.2.0-686";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -86,7 +86,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-685";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+16+2+4+64
+#define DEBUG_LEVEL 1+2+4+16+64
 
 
 /**
@@ -14053,8 +14053,10 @@ stock tryToRunAnAlternateSeries( Array:mapcycleFileListArray, currentMapName[],
 
     if( get_pcvar_num( cvar_serverMoveCursor ) & IS_TO_LOAD_ALTERNATE_MAP_SERIES )
     {
-        new currentMapSerie;
         new defaultCurrentMapIndex;
+
+        new currentMapSerie;
+        new defaultNextMapSeries;
 
         new defaultCurrentMapName[ MAX_MAPNAME_LENGHT ];
         new possibleNextMap      [ MAX_MAPNAME_LENGHT ];
@@ -14074,10 +14076,10 @@ stock tryToRunAnAlternateSeries( Array:mapcycleFileListArray, currentMapName[],
         copy( defaultCurrentMapNameClean, charsmax( defaultCurrentMapNameClean ), defaultCurrentMapName );
         copy( defaultNextMapNameClean   , charsmax( defaultNextMapNameClean    ), defaultNextMapName    );
 
-        currentMapSerie = getTheCurrentSerieForTheMap( currentMapNameClean );
+        currentMapSerie      = getTheCurrentSerieForTheMap( currentMapNameClean );
+        defaultNextMapSeries = getTheCurrentSerieForTheMap( defaultNextMapNameClean );
 
         getTheCurrentSerieForTheMap( defaultCurrentMapNameClean );
-        getTheCurrentSerieForTheMap( defaultNextMapNameClean );
 
         LOGGER( 4, "" )
         LOGGER( 4, "( tryToRunAnAlternateSeries ) currentMapName:        %s", currentMapName        )
@@ -14101,18 +14103,16 @@ stock tryToRunAnAlternateSeries( Array:mapcycleFileListArray, currentMapName[],
 
             // We only need to move it to the end of the `defaultCurrentMapName` only one time, and while doing it
             // we cannot move back the `defaultNextMapCyclePosition` cursor.
-            if( isItTimeToMoveTheMapCycleCursor( mapcycleFileListArray, defaultCurrentMapName, defaultCurrentMapNameClean,
-                                                 defaultNextMapNameClean, defaultCurrentMapIndex ) )
+            if( tryToMoveTheMapCycleCursor( mapcycleFileListArray, defaultCurrentMapName,
+                                            defaultCurrentMapNameClean, defaultNextMapSeries, defaultNextMapNameClean,
+                                            defaultCurrentMapIndex, defaultNextMapCyclePosition ) )
             {
-                // Here we do not update the `defaultNextMapCyclePosition` to the next map beyond the last valid serie,
-                // to be able to return to follow the map cycle when the new series is over.
-                moveTheCursorToTheLastMap( mapcycleFileListArray, defaultCurrentMapNameClean, defaultNextMapCyclePosition );
-            }
-            else if( !isTheServerRestarting )
-            {
-                // Block the map cycle growing resetting it to its old value. This must to be called until
-                // we exit the alternate series we are running on.
-                --defaultNextMapCyclePosition;
+                if( !isTheServerRestarting )
+                {
+                    // Block the map cycle growing resetting it to its old value. This must to be called until
+                    // we exit the alternate series we are running on.
+                    --defaultNextMapCyclePosition;
+                }
             }
         }
     }
@@ -14167,24 +14167,26 @@ stock bool:areWeRunningAnAlternateSeries( const currentMapNameClean[], currentMa
     return isAnAlternateSeries;
 }
 /**
- * Returns true when are on a series and should load the next map following the current map.
+ * Returns true when are on a series and should not load the next map following the current map.
  *
  * Returns false when the current map is already from the map cycle series, or when the current alternate
  * series is over by getting on its last map and the map cycle should be followed instead.
  *
  * @param defaultCurrentMapIndex    the map cycle position pointing to the `defaultCurrentMapNameClean`.
  */
-stock bool:isItTimeToMoveTheMapCycleCursor( Array:mapcycleFileListArray      , const defaultCurrentMapName[],
-                                           const defaultCurrentMapNameClean[], const defaultNextMapNameClean[],
-                                           defaultCurrentMapIndex )
+stock bool:tryToMoveTheMapCycleCursor( Array:mapcycleFileListArray, const defaultCurrentMapName[],
+                                       const defaultCurrentMapNameClean[], defaultNextMapSeries,
+                                       const defaultNextMapNameClean[], defaultCurrentMapIndex,
+                                       &defaultNextMapCyclePosition )
 {
-    LOGGER( 128, "I AM ENTERING ON isItTimeToMoveTheMapCycleCursor(5) defaultCurrentMapIndex: %d", defaultCurrentMapIndex )
+    LOGGER( 128, "I AM ENTERING ON tryToMoveTheMapCycleCursor(5)" )
 
     new lastMapName[ MAX_MAPNAME_LENGHT ];
     get_localinfo( "galileo_lastmap", lastMapName, charsmax( lastMapName ) );
 
-    LOGGER( 4, "( isItTimeToMoveTheMapCycleCursor ) lastMapName:           %s", lastMapName           )
-    LOGGER( 4, "( isItTimeToMoveTheMapCycleCursor ) defaultCurrentMapName: %s", defaultCurrentMapName )
+    LOGGER( 4, "( tryToMoveTheMapCycleCursor ) lastMapName:            %s", lastMapName            )
+    LOGGER( 4, "( tryToMoveTheMapCycleCursor ) defaultCurrentMapName:  %s", defaultCurrentMapName  )
+    LOGGER( 4, "( tryToMoveTheMapCycleCursor ) defaultCurrentMapIndex: %d", defaultCurrentMapIndex )
 
     // If the last map name is not the same as the defaultCurrentMapName, we already moved the cursor.
     if( equali( lastMapName, defaultCurrentMapName ) )
@@ -14222,9 +14224,9 @@ stock bool:isItTimeToMoveTheMapCycleCursor( Array:mapcycleFileListArray      , c
                 lastMapSerie = getTheCurrentSerieForTheMap( lastDefaultCurrentMapNameClean );
 
                 LOGGER( 4, "" )
-                LOGGER( 4, "( isItTimeToMoveTheMapCycleCursor ) processedMaps:                  %d", processedMaps                  )
-                LOGGER( 4, "( isItTimeToMoveTheMapCycleCursor ) defaultCurrentMapNameClean:     %s", defaultCurrentMapNameClean     )
-                LOGGER( 4, "( isItTimeToMoveTheMapCycleCursor ) lastDefaultCurrentMapNameClean: %s", lastDefaultCurrentMapNameClean )
+                LOGGER( 4, "( tryToMoveTheMapCycleCursor ) processedMaps:                  %d", processedMaps                  )
+                LOGGER( 4, "( tryToMoveTheMapCycleCursor ) defaultCurrentMapNameClean:     %s", defaultCurrentMapNameClean     )
+                LOGGER( 4, "( tryToMoveTheMapCycleCursor ) lastDefaultCurrentMapNameClean: %s", lastDefaultCurrentMapNameClean )
                 LOGGER( 4, "" )
 
                 if( lastMapSerie < 3
@@ -14236,21 +14238,37 @@ stock bool:isItTimeToMoveTheMapCycleCursor( Array:mapcycleFileListArray      , c
             } while( processedMaps++ < maximumTries
                      && equali( defaultCurrentMapNameClean, lastDefaultCurrentMapNameClean ) );
 
-            LOGGER( 2, "    ( isItTimeToMoveTheMapCycleCursor ) 1. Returning false." )
-            return false;
+            LOGGER( 2, "    ( tryToMoveTheMapCycleCursor ) 1. Returning true." )
+            return true;
         }
 
         approvedSeries:
 
+        LOGGER( 4, "" )
+        LOGGER( 4, "( tryToMoveTheMapCycleCursor ) defaultCurrentMapNameClean: %s", defaultCurrentMapNameClean )
+        LOGGER( 4, "( tryToMoveTheMapCycleCursor ) defaultNextMapNameClean:    %s", defaultNextMapNameClean    )
+        LOGGER( 4, "" )
+
+        // Here we do not update the `defaultNextMapCyclePosition` to the next map beyond the last valid serie,
+        // to be able to return to follow the map cycle when the new series is over.
         if( equali( defaultCurrentMapNameClean, defaultNextMapNameClean ) )
         {
-            LOGGER( 2, "    ( isItTimeToMoveTheMapCycleCursor ) 2. Returning true." )
-            return true;
+            moveTheCursorToTheLastMap( mapcycleFileListArray, defaultCurrentMapNameClean, defaultNextMapCyclePosition );
+
+            LOGGER( 2, "    ( tryToMoveTheMapCycleCursor ) 3. Returning false." )
+            return false;
+        }
+        else if( isThereNextMapOnTheSerie( defaultNextMapSeries, defaultNextMapNameClean, lastMapName ) )
+        {
+            moveTheCursorToTheLastMap( mapcycleFileListArray, defaultNextMapNameClean, defaultNextMapCyclePosition );
+
+            LOGGER( 2, "    ( tryToMoveTheMapCycleCursor ) 4. Returning false." )
+            return false;
         }
     }
 
-    LOGGER( 2, "    ( isItTimeToMoveTheMapCycleCursor ) 3. Returning false." )
-    return false;
+    LOGGER( 2, "    ( tryToMoveTheMapCycleCursor ) 5. Returning true." )
+    return true;
 }
 
 /**
@@ -15882,8 +15900,12 @@ public timeRemain()
             && newSeries != currentSerie )
         {
             currentSerie      = newSeries;
-            indentation       = ( ( currentSerie - 'a' + 1 ) * 3 ) % 15;
             currentCaseNumber = 1;
+
+            if( ( indentation = ( ( currentSerie - 'a' + 1 ) * 3 ) % 15 ) == 0 )
+            {
+                indentation = 3;
+            }
 
             for( currentIndex = 0; currentIndex < indentation; ++currentIndex )
             {
@@ -18112,6 +18134,8 @@ public timeRemain()
         test_configureTheNextMap_case( s, "de_rage3", "go_girl" , 13, expectedSize ); // Case 37-38
         test_configureTheNextMap_case( s, "go_girl" , "de_dust1", 1 , expectedSize ); // Case 39-40
 
+        // We must to also skip the `de_dust` series, otherwise the map cycle will never
+        // follow unless the `de_dust` series is followed.
         test_configureTheNextMap_case( s, "de_nuke" , "de_nuke1", 3 , expectedSize ); // Case 41-42
         test_configureTheNextMap_case( s, "de_rage0", "de_rage1", 3 , expectedSize ); // Case 43-44
         test_configureTheNextMap_case( s, "de_rage1", "de_rage2", 3 , expectedSize ); // Case 45-46
