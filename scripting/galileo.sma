@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-693";
+new const PLUGIN_VERSION[] = "v4.2.0-694";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -86,7 +86,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-693";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 16+32
+#define DEBUG_LEVEL 32+64
 
 
 /**
@@ -18274,15 +18274,15 @@ public timeRemain()
     {
         test_isMapExtensionAvowed_case1();
         test_isMapExtensionAvowed_case2();
-        test_endOfMapVotingStart_case1();
-        test_endOfMapVotingStart_case2();
-        test_endOfMapVotingStop_case1();
-        test_endOfMapVotingStop_case2();
-        test_endOfMapVoting_case1();
+        test_endOfMapVotingStart_case3();
+        test_endOfMapVotingStart_case4();
+        test_endOfMapVotingStop_case5();
+        test_endOfMapVotingStop_case7();
+        test_endOfMapVoting_case6();
     }
 
     /**
-     * 1. Tests if the cvar 'amx_extendmap_max' functionality is working properly for a successful case.
+     * Tests if the cvar 'amx_extendmap_max' functionality is working properly for a successful case.
      */
     stock test_isMapExtensionAvowed_case1()
     {
@@ -18309,7 +18309,7 @@ public timeRemain()
     }
 
     /**
-     * 2. Tests if the cvar 'amx_extendmap_max' functionality is working properly for a failure case.
+     * Tests if the cvar 'amx_extendmap_max' functionality is working properly for a failure case.
      */
     public test_isMapExtensionAvowed_case2()
     {
@@ -18339,9 +18339,9 @@ public timeRemain()
     }
 
     /**
-     * 3. Tests if the end map voting is starting automatically at the end of map due time limit expiration.
+     * Tests if the end map voting is starting automatically at the end of map due time limit expiration.
      */
-    public test_endOfMapVotingStart_case1()
+    public test_endOfMapVotingStart_case3()
     {
         new test_id;
         new secondsLeft;
@@ -18351,7 +18351,7 @@ public timeRemain()
         set_pcvar_num( cvar_endOfMapVoteStart, 0 );
 
         new errorMessage[ MAX_LONG_STRING ];
-        test_id = register_test( 0, "test_endOfMapVotingStart_case1" );
+        test_id = register_test( 0, "test_endOfMapVotingStart_case3" );
 
         ERR( "g_isMapExtensionAllowed must be 0, instead of %d.", g_isMapExtensionAllowed )
         setTestFailure( test_id, g_isMapExtensionAllowed, errorMessage );
@@ -18365,17 +18365,17 @@ public timeRemain()
                   + START_VOTEMAP_MAX_TIME + PERIODIC_CHECKING_INTERVAL - 5 )
                 / 60 );
 
-        LOGGER( 32, "( test_endOfMapVotingStart_case1 ) timelimit: %d", floatround( get_pcvar_float( cvar_mp_timelimit ) * 60 ) )
-        LOGGER( 32, "( test_endOfMapVotingStart_case1 ) START_VOTEMAP_MIN_TIME: %d", START_VOTEMAP_MIN_TIME )
-        LOGGER( 32, "( test_endOfMapVotingStart_case1 ) START_VOTEMAP_MAX_TIME: %d", START_VOTEMAP_MAX_TIME )
+        LOGGER( 32, "( test_endOfMapVotingStart_case3 ) timelimit: %d", floatround( get_pcvar_float( cvar_mp_timelimit ) * 60 ) )
+        LOGGER( 32, "( test_endOfMapVotingStart_case3 ) START_VOTEMAP_MIN_TIME: %d", START_VOTEMAP_MIN_TIME )
+        LOGGER( 32, "( test_endOfMapVotingStart_case3 ) START_VOTEMAP_MAX_TIME: %d", START_VOTEMAP_MAX_TIME )
     }
 
     /**
-     * 4. Tests if the end map voting is starting automatically at the end of map due time limit expiration.
+     * Tests if the end map voting is starting automatically at the end of map due time limit expiration.
      */
-    public test_endOfMapVotingStart_case2()
+    public test_endOfMapVotingStart_case4()
     {
-        new test_id = register_test( 0, "test_endOfMapVotingStart_case2" );
+        new test_id = register_test( 0, "test_endOfMapVotingStart_case4" );
 
         vote_manageEnd();
         setTestFailure( test_id, !( g_voteStatus & IS_VOTE_IN_PROGRESS ),
@@ -18386,26 +18386,11 @@ public timeRemain()
     }
 
     /**
-     * 5. Tests if the end map voting is not starting automatically at the end of map due time limit expiration.
+     * Tests if the end map voting is not starting automatically at the end of map due time limit expiration.
      */
-    public test_endOfMapVotingStop_case1()
+    public test_endOfMapVotingStop_case5()
     {
-        new test_id = register_test( 0, "test_endOfMapVotingStop_case1" );
-
-        vote_manageEnd();
-        setTestFailure( test_id, ( g_voteStatus & IS_VOTE_IN_PROGRESS ) != 0,
-                "The end map voting is starting automatically at the end of map due time limit expiration." );
-
-        tryToSetGameModCvarFloat( cvar_mp_timelimit, 2.0 );
-        cancelVoting();
-    }
-
-    /**
-     * 6. Tests if the end map voting is not starting automatically at the end of map due time limit expiration.
-     */
-    public test_endOfMapVotingStop_case2()
-    {
-        new test_id = register_test( 0, "test_endOfMapVotingStop_case2" );
+        new test_id = register_test( 0, "test_endOfMapVotingStop_case5" );
 
         vote_manageEnd();
         setTestFailure( test_id, ( g_voteStatus & IS_VOTE_IN_PROGRESS ) != 0,
@@ -18415,17 +18400,44 @@ public timeRemain()
     }
 
     /**
-     * 7. Tests if the end map voting is not starting again right after if the extension option wins.
+     * Tests if the end map voting is not starting again right after if the extension option wins.
      */
-    public test_endOfMapVoting_case1()
+    public test_endOfMapVoting_case6()
     {
-        new test_id = register_test( 0, "test_endOfMapVoting_case1" );
+        new test_id = register_test( 0, "test_endOfMapVoting_case6" );
 
+        // Extend the current map, instead of perform a runoff voting
+        set_pcvar_num( cvar_runoffEnabled, 2 );
         vote_manageEnd();
+
+        // Add votes to the Extend Option
+        g_arrayOfMapsWithVotesNumber[ 5 ] += 2;// extend option
+        g_totalVotesCounted = 2;
+
+        // Get the voting results.
+        computeVotes();
+
+        // Try to start a voting again
+        vote_manageEnd();
+
         setTestFailure( test_id, ( g_voteStatus & IS_VOTE_IN_PROGRESS ) == 0,
                 "The end map voting is starting again right after if the extension option wins." );
 
         tryToSetGameModCvarFloat( cvar_mp_timelimit, 20.0 );
+        cancelVoting();
+    }
+
+    /**
+     * Tests if the end map voting is not starting automatically at the end of map due time limit expiration.
+     */
+    public test_endOfMapVotingStop_case7()
+    {
+        new test_id = register_test( 0, "test_endOfMapVotingStop_case7" );
+
+        vote_manageEnd();
+        setTestFailure( test_id, ( g_voteStatus & IS_VOTE_IN_PROGRESS ) != 0,
+                "The end map voting is starting automatically at the end of map due time limit expiration." );
+
         cancelVoting();
     }
 
