@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-688";
+new const PLUGIN_VERSION[] = "v4.2.0-689";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -14015,7 +14015,8 @@ stock configureTheNextMapSetttings( currentMapcycleFilePath[] )
     get_pcvar_string( cvar_mapcyclefile, currentMapcycleFilePath, MAX_MAPNAME_LENGHT - 1 );
     mapCount = loadTheNextMapFile( currentMapcycleFilePath, g_mapcycleFileListArray, g_mapcycleFileListTrie );
 
-    nextMapCyclePosition = getNextMapLocalInfoToken( g_mapcycleFileListArray, currentMapcycleFilePath );
+    nextMapCyclePosition = getNextMapLocalInfoToken( currentMapcycleFilePath );
+    configureTheAlternateSeries( g_mapcycleFileListArray, nextMapCyclePosition );
 
     setTheNextMapCvarFlag( g_nextMapName );
     saveCurrentMapCycleSetting( g_currentMapName, currentMapcycleFilePath, nextMapCyclePosition );
@@ -14336,14 +14337,11 @@ stock getMapIndexBefore( Array:mapcycleFileListArray, nextMapCyclePosition, shif
     return mapIndexBefore;
 }
 
-stock getNextMapLocalInfoToken( Array:mapcycleFileListArray, currentMapcycleFilePath[] )
+stock getNextMapLocalInfoToken( currentMapcycleFilePath[] )
 {
-    LOGGER( 128, "I AM ENTERING ON getNextMapLocalInfoToken(2) currentMapcycleFilePath: %s", currentMapcycleFilePath )
-
+    LOGGER( 128, "I AM ENTERING ON getNextMapLocalInfoToken(1) currentMapcycleFilePath: %s", currentMapcycleFilePath )
     new nextMapCyclePosition;
-    new bool:isTheServerRestarting;
 
-    new lastMap                [ MAX_MAPNAME_LENGHT ];
     new mapcycleCurrentIndex   [ MAX_MAPNAME_LENGHT ];
     new lastMapcycleFilePath   [ MAX_FILE_PATH_LENGHT ];
     new tockenMapcycleAndPosion[ MAX_MAPNAME_LENGHT + MAX_FILE_PATH_LENGHT ];
@@ -14371,10 +14369,22 @@ stock getNextMapLocalInfoToken( Array:mapcycleFileListArray, currentMapcycleFile
         nextMapCyclePosition = 0;
     }
 
+    LOGGER( 2, "    ( getNextMapLocalInfoToken ) Returning nextMapCyclePosition: %d", nextMapCyclePosition )
+    return nextMapCyclePosition;
+}
+
+stock configureTheAlternateSeries( Array:mapcycleFileListArray, &nextMapCyclePosition )
+{
+    LOGGER( 128, "I AM ENTERING ON configureTheAlternateSeries(2)" )
+
+    new bool:isTheServerRestarting;
+    new lastMap[ MAX_MAPNAME_LENGHT ];
+
     get_localinfo( "galileo_lastmap", lastMap, charsmax( lastMap ) );
 
-    LOGGER( 4, "( getNextMapLocalInfoToken ) lastMap:          %s", lastMap          )
-    LOGGER( 4, "( getNextMapLocalInfoToken ) g_currentMapName: %s", g_currentMapName )
+    LOGGER( 4, "( configureTheAlternateSeries ) lastMap:              %s", lastMap              )
+    LOGGER( 4, "( configureTheAlternateSeries ) g_currentMapName:     %s", g_currentMapName     )
+    LOGGER( 4, "( configureTheAlternateSeries ) nextMapCyclePosition: %d", nextMapCyclePosition )
 
     // If successful, the tryToRunAnAlternateSeries(4) is already freezing the map cycle position.
     if( ( isTheServerRestarting = !!equali( g_currentMapName, lastMap ) ) )
@@ -14401,15 +14411,12 @@ stock getNextMapLocalInfoToken( Array:mapcycleFileListArray, currentMapcycleFile
         }
     }
 
-    LOGGER( 2, "    ( getNextMapLocalInfoToken ) Returning nextMapCyclePosition: %d", nextMapCyclePosition )
-
+    LOGGER( 2, "    ( configureTheAlternateSeries ) Returning nextMapCyclePosition: %d", nextMapCyclePosition )
     LOGGER( 4, "" )
     LOGGER( 4, "" )
     LOGGER( 4, "" )
     LOGGER( 4, "" )
     LOGGER( 4, "" )
-
-    return nextMapCyclePosition;
 }
 
 stock setTheNextMapCvarFlag( nextMapName[] )
