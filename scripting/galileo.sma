@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-689";
+new const PLUGIN_VERSION[] = "v4.2.0-691";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -86,7 +86,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-689";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+2+4+64
+#define DEBUG_LEVEL 1
 
 
 /**
@@ -13878,85 +13878,81 @@ public nextmapPluginInit()
     }
 }
 
-/**
- * Increments by 1, the global variable 'g_nextMapCyclePosition', or set its value to 1.
- *
- * If the map cycles are loaded on the plugin_init(0), and the setting `gal_srv_move_cursor`, is
- * loaded only at the forward plugin_cfg(0). This ways we need to load both and discard the one
- * which was not necessary later when the settings are loaded on the plugin_cfg(0).
- *
- * Therefore we will get a completely wrong `g_nextMapCyclePosition` value which will mess with
- * everything, was the `gal_srv_move_cursor` feature makes both map cycle with different indexes.
- *
- * @param &nextMapCyclePosition     is the next map position following actual next map.
- * @param isUseTheCurrentMapRule    use or not the current map set blocking rule.
- */
-stock getNextMapByPosition( Array:mapcycleFileListArray, nextMapName[], &nextMapCyclePosition, bool:isUseTheCurrentMapRule=true )
+stock loadTheNextMapFile( mapcycleFilePath[], &Array:mapcycleFileListArray, &Trie:mapcycleFileListTrie )
 {
-    LOGGER( 128, "I AM ENTERING ON getNextMapByPosition(3)" )
-    LOGGER( 128, "( getNextMapByPosition ) nextMapCyclePosition: %d", nextMapCyclePosition )
+    LOGGER( 128, "I AM ENTERING ON loadTheNextMapFile(3)" )
+    new mapCount;
 
-    new mapsProcessedNumber;
-    new loadedMapName[ MAX_MAPNAME_LENGHT ];
+    TRY_TO_CLEAN( TrieClear, mapcycleFileListTrie, TrieCreate() )
+    TRY_TO_CLEAN( ArrayClear, mapcycleFileListArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
 
-    new mapCycleMapsCount       = ArraySize( mapcycleFileListArray );
-    new bool:isWhitelistEnabled = IS_WHITELIST_ENABLED();
+    mapCount = map_populateListOnSeries( mapcycleFileListArray, mapcycleFileListTrie, mapcycleFilePath );
+    LOGGER( 0, "", printDynamicArrayMaps( mapcycleFileListArray, 256 ) )
 
-    if( mapCycleMapsCount )
+    LOGGER( 1, "    ( loadTheNextMapFile ) Returning mapCount: %d", mapCount )
+    return mapCount;
+}
+
+stock getNextMapLocalInfoToken( currentMapcycleFilePath[] )
+{
+    LOGGER( 128, "I AM ENTERING ON getNextMapLocalInfoToken(1) currentMapcycleFilePath: %s", currentMapcycleFilePath )
+    new nextMapCyclePosition;
+
+    new mapcycleCurrentIndex   [ MAX_MAPNAME_LENGHT ];
+    new lastMapcycleFilePath   [ MAX_FILE_PATH_LENGHT ];
+    new tockenMapcycleAndPosion[ MAX_MAPNAME_LENGHT + MAX_FILE_PATH_LENGHT ];
+
+    // Take from the local info, the map token saved on the last server map.
+    get_localinfo( "lastmapcycle", tockenMapcycleAndPosion, charsmax( tockenMapcycleAndPosion ) );
+
+    parse( tockenMapcycleAndPosion, lastMapcycleFilePath, charsmax( lastMapcycleFilePath ),
+                                    mapcycleCurrentIndex, charsmax( mapcycleCurrentIndex ) );
+
+    LOGGER( 2, "( getNextMapLocalInfoToken ) mapcycleCurrentIndex:    %s", mapcycleCurrentIndex    )
+    LOGGER( 2, "( getNextMapLocalInfoToken ) lastMapcycleFilePath:    %s", lastMapcycleFilePath    )
+    LOGGER( 2, "( getNextMapLocalInfoToken ) tockenMapcycleAndPosion: %s", tockenMapcycleAndPosion )
+    LOGGER( 2, "( getNextMapLocalInfoToken ) currentMapcycleFilePath: %s", currentMapcycleFilePath )
+
+    // This acts on when the server is restarted. As the next map position is set when reading
+    // the map cycle file, we need to undo it in order to keep the original next map before restart.
+    if( equali( currentMapcycleFilePath, lastMapcycleFilePath ) )
     {
-        do
-        {
-            ++mapsProcessedNumber;
-
-            if( nextMapCyclePosition >= mapCycleMapsCount )
-            {
-                LOGGER( 1, "WARNING, getNextMapByPosition: Restarting the map cycle at: %d", nextMapCyclePosition )
-                nextMapCyclePosition = 0;
-
-                continue;
-            }
-
-            GET_MAP_NAME( mapcycleFileListArray, nextMapCyclePosition, loadedMapName )
-
-            // Sets the index of the next map of the current next map.
-            ++nextMapCyclePosition;
-
-            // Block the next map cvar to be set to the current map.
-            if( isUseTheCurrentMapRule
-                && equali( g_currentMapName, loadedMapName ) )
-            {
-                LOGGER( 1, "WARNING, getNextMapByPosition: Blocking because this is the currentMap: %s!", loadedMapName )
-                continue;
-            }
-            else if( IS_WHITELIST_BLOCKING( isWhitelistEnabled, loadedMapName ) )
-            {
-                LOGGER( 1, "WARNING, getNextMapByPosition: The Whitelist feature is blocking: %s!", loadedMapName )
-                continue;
-            }
-
-            copy( nextMapName, MAX_MAPNAME_LENGHT - 1, loadedMapName );
-
-            LOGGER( 4, "( getNextMapByPosition ) nextMapName: %s,", nextMapName )
-            LOGGER( 4, "    ( getNextMapByPosition ) Just returning nextMapCyclePosition: %d", nextMapCyclePosition )
-
-            return nextMapCyclePosition;
-
-        } while( mapsProcessedNumber < mapCycleMapsCount );
-
-        goto setTheCurrentMap;
+        nextMapCyclePosition = str_to_num( mapcycleCurrentIndex );
     }
     else
     {
-        setTheCurrentMap:
-        doAmxxLog( "WARNING, getNextMapByPosition: No valid maps found on your map cycle! mapcycleFileListArray: %d", mapcycleFileListArray );
-
-        copy( nextMapName, MAX_MAPNAME_LENGHT - 1, g_currentMapName );
+        // If the mapcyclefile has been changed, go from the first map on the map cycle.
+        nextMapCyclePosition = 0;
     }
 
-    LOGGER( 4, "( getNextMapByPosition ) nextMapName: %s,", nextMapName )
-    LOGGER( 4, "    ( getNextMapByPosition ) Just returning nextMapCyclePosition: %d", nextMapCyclePosition )
-
+    LOGGER( 2, "    ( getNextMapLocalInfoToken ) Returning nextMapCyclePosition: %d", nextMapCyclePosition )
     return nextMapCyclePosition;
+}
+
+/**
+ * If we were playing a map series map `cs_map1`, and due an RTV voting was started a new series as
+ * `de_map1`, we need to set the next map as `de_map2` instead of `cs_map1`. Also, after the series
+ * to be finished we must to be able to return to the next map after the original series `cs_map1`.
+ */
+stock configureTheNextMapSetttings( currentMapcycleFilePath[] )
+{
+    LOGGER( 128, "I AM ENTERING ON configureTheNextMapSetttings(1)" )
+
+    new mapCount;
+    new nextMapCyclePosition;
+
+    // Load the full map cycle if, considering whether the feature `gal_srv_move_cursor` is enabled or not.
+    get_pcvar_string( cvar_mapcyclefile, currentMapcycleFilePath, MAX_MAPNAME_LENGHT - 1 );
+    mapCount = loadTheNextMapFile( currentMapcycleFilePath, g_mapcycleFileListArray, g_mapcycleFileListTrie );
+
+    nextMapCyclePosition = getNextMapLocalInfoToken( currentMapcycleFilePath );
+    configureTheAlternateSeries( g_mapcycleFileListArray, nextMapCyclePosition );
+
+    setTheNextMapCvarFlag( g_nextMapName );
+    saveCurrentMapCycleSetting( g_currentMapName, currentMapcycleFilePath, nextMapCyclePosition );
+
+    LOGGER( 1, "    ( configureTheNextMapSetttings ) Returning mapCount: %d", mapCount )
+    return mapCount;
 }
 
 stock getLastNextMapFromServerStart( Array:mapcycleFileListArray, nextMapName[], &nextMapCyclePosition )
@@ -13984,45 +13980,50 @@ stock getLastNextMapFromServerStart( Array:mapcycleFileListArray, nextMapName[],
     }
 }
 
-stock loadTheNextMapFile( mapcycleFilePath[], &Array:mapcycleFileListArray, &Trie:mapcycleFileListTrie )
+stock configureTheAlternateSeries( Array:mapcycleFileListArray, &nextMapCyclePosition )
 {
-    LOGGER( 128, "I AM ENTERING ON loadTheNextMapFile(3)" )
-    new mapCount;
+    LOGGER( 128, "I AM ENTERING ON configureTheAlternateSeries(2)" )
 
-    TRY_TO_CLEAN( TrieClear, mapcycleFileListTrie, TrieCreate() )
-    TRY_TO_CLEAN( ArrayClear, mapcycleFileListArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
+    new bool:isTheServerRestarting;
+    new lastMap[ MAX_MAPNAME_LENGHT ];
 
-    mapCount = map_populateListOnSeries( mapcycleFileListArray, mapcycleFileListTrie, mapcycleFilePath );
-    LOGGER( 0, "", printDynamicArrayMaps( mapcycleFileListArray, 256 ) )
+    get_localinfo( "galileo_lastmap", lastMap, charsmax( lastMap ) );
 
-    LOGGER( 1, "    ( loadTheNextMapFile ) Returning mapCount: %d", mapCount )
-    return mapCount;
-}
+    LOGGER( 4, "( configureTheAlternateSeries ) lastMap:              %s", lastMap              )
+    LOGGER( 4, "( configureTheAlternateSeries ) g_currentMapName:     %s", g_currentMapName     )
+    LOGGER( 4, "( configureTheAlternateSeries ) nextMapCyclePosition: %d", nextMapCyclePosition )
 
-/**
- * If we were playing a map series map `cs_map1`, and due an RTV voting was started a new series as
- * `de_map1`, we need to set the next map as `de_map2` instead of `cs_map1`. Also, after the series
- * to be finished we must to be able to return to the next map after the original series `cs_map1`.
- */
-stock configureTheNextMapSetttings( currentMapcycleFilePath[] )
-{
-    LOGGER( 128, "I AM ENTERING ON configureTheNextMapSetttings(1)" )
+    // If successful, the tryToRunAnAlternateSeries(4) is already freezing the map cycle position.
+    if( ( isTheServerRestarting = !!equali( g_currentMapName, lastMap ) ) )
+    {
+        nextMapCyclePosition = getMapIndexBefore( mapcycleFileListArray, nextMapCyclePosition, 1 );
+    }
 
-    new mapCount;
-    new nextMapCyclePosition;
+    getLastNextMapFromServerStart( mapcycleFileListArray, g_nextMapName, nextMapCyclePosition );
 
-    // Load the full map cycle if, considering whether the feature `gal_srv_move_cursor` is enabled or not.
-    get_pcvar_string( cvar_mapcyclefile, currentMapcycleFilePath, MAX_MAPNAME_LENGHT - 1 );
-    mapCount = loadTheNextMapFile( currentMapcycleFilePath, g_mapcycleFileListArray, g_mapcycleFileListTrie );
+    LOGGER( 4, "" )
+    LOGGER( 4, "" )
+    LOGGER( 4, "" )
+    LOGGER( 4, "" )
+    LOGGER( 4, "" )
 
-    nextMapCyclePosition = getNextMapLocalInfoToken( currentMapcycleFilePath );
-    configureTheAlternateSeries( g_mapcycleFileListArray, nextMapCyclePosition );
+    if( tryToRunAnAlternateSeries( mapcycleFileListArray, g_currentMapName, g_nextMapName, nextMapCyclePosition ) )
+    {
+        // If the server is restarting, the map cycle position was already decreased just above.
+        if( !isTheServerRestarting )
+        {
+            // Block the map cycle growing resetting it to its old value. This must to be called until
+            // we exit the alternate series we are running on.
+            --nextMapCyclePosition;
+        }
+    }
 
-    setTheNextMapCvarFlag( g_nextMapName );
-    saveCurrentMapCycleSetting( g_currentMapName, currentMapcycleFilePath, nextMapCyclePosition );
-
-    LOGGER( 1, "    ( configureTheNextMapSetttings ) Returning mapCount: %d", mapCount )
-    return mapCount;
+    LOGGER( 2, "    ( configureTheAlternateSeries ) Returning nextMapCyclePosition: %d", nextMapCyclePosition )
+    LOGGER( 4, "" )
+    LOGGER( 4, "" )
+    LOGGER( 4, "" )
+    LOGGER( 4, "" )
+    LOGGER( 4, "" )
 }
 
 /**
@@ -14337,86 +14338,85 @@ stock getMapIndexBefore( Array:mapcycleFileListArray, nextMapCyclePosition, shif
     return mapIndexBefore;
 }
 
-stock getNextMapLocalInfoToken( currentMapcycleFilePath[] )
+/**
+ * Increments by 1, the global variable 'g_nextMapCyclePosition', or set its value to 1.
+ *
+ * If the map cycles are loaded on the plugin_init(0), and the setting `gal_srv_move_cursor`, is
+ * loaded only at the forward plugin_cfg(0). This ways we need to load both and discard the one
+ * which was not necessary later when the settings are loaded on the plugin_cfg(0).
+ *
+ * Therefore we will get a completely wrong `g_nextMapCyclePosition` value which will mess with
+ * everything, was the `gal_srv_move_cursor` feature makes both map cycle with different indexes.
+ *
+ * @param &nextMapCyclePosition     is the next map position following actual next map.
+ * @param isUseTheCurrentMapRule    use or not the current map set blocking rule.
+ */
+stock getNextMapByPosition( Array:mapcycleFileListArray, nextMapName[], &nextMapCyclePosition, bool:isUseTheCurrentMapRule=true )
 {
-    LOGGER( 128, "I AM ENTERING ON getNextMapLocalInfoToken(1) currentMapcycleFilePath: %s", currentMapcycleFilePath )
-    new nextMapCyclePosition;
+    LOGGER( 128, "I AM ENTERING ON getNextMapByPosition(3)" )
+    LOGGER( 128, "( getNextMapByPosition ) nextMapCyclePosition: %d", nextMapCyclePosition )
 
-    new mapcycleCurrentIndex   [ MAX_MAPNAME_LENGHT ];
-    new lastMapcycleFilePath   [ MAX_FILE_PATH_LENGHT ];
-    new tockenMapcycleAndPosion[ MAX_MAPNAME_LENGHT + MAX_FILE_PATH_LENGHT ];
+    new mapsProcessedNumber;
+    new loadedMapName[ MAX_MAPNAME_LENGHT ];
 
-    // Take from the local info, the map token saved on the last server map.
-    get_localinfo( "lastmapcycle", tockenMapcycleAndPosion, charsmax( tockenMapcycleAndPosion ) );
+    new mapCycleMapsCount       = ArraySize( mapcycleFileListArray );
+    new bool:isWhitelistEnabled = IS_WHITELIST_ENABLED();
 
-    parse( tockenMapcycleAndPosion, lastMapcycleFilePath, charsmax( lastMapcycleFilePath ),
-                                    mapcycleCurrentIndex, charsmax( mapcycleCurrentIndex ) );
-
-    LOGGER( 2, "( getNextMapLocalInfoToken ) mapcycleCurrentIndex:    %s", mapcycleCurrentIndex    )
-    LOGGER( 2, "( getNextMapLocalInfoToken ) lastMapcycleFilePath:    %s", lastMapcycleFilePath    )
-    LOGGER( 2, "( getNextMapLocalInfoToken ) tockenMapcycleAndPosion: %s", tockenMapcycleAndPosion )
-    LOGGER( 2, "( getNextMapLocalInfoToken ) currentMapcycleFilePath: %s", currentMapcycleFilePath )
-
-    // This acts on when the server is restarted. As the next map position is set when reading
-    // the map cycle file, we need to undo it in order to keep the original next map before restart.
-    if( equali( currentMapcycleFilePath, lastMapcycleFilePath ) )
+    if( mapCycleMapsCount )
     {
-        nextMapCyclePosition = str_to_num( mapcycleCurrentIndex );
+        do
+        {
+            ++mapsProcessedNumber;
+
+            if( nextMapCyclePosition >= mapCycleMapsCount )
+            {
+                LOGGER( 1, "WARNING, getNextMapByPosition: Restarting the map cycle at: %d", nextMapCyclePosition )
+                nextMapCyclePosition = 0;
+
+                continue;
+            }
+
+            GET_MAP_NAME( mapcycleFileListArray, nextMapCyclePosition, loadedMapName )
+
+            // Sets the index of the next map of the current next map.
+            ++nextMapCyclePosition;
+
+            // Block the next map cvar to be set to the current map.
+            if( isUseTheCurrentMapRule
+                && equali( g_currentMapName, loadedMapName ) )
+            {
+                LOGGER( 1, "WARNING, getNextMapByPosition: Blocking because this is the currentMap: %s!", loadedMapName )
+                continue;
+            }
+            else if( IS_WHITELIST_BLOCKING( isWhitelistEnabled, loadedMapName ) )
+            {
+                LOGGER( 1, "WARNING, getNextMapByPosition: The Whitelist feature is blocking: %s!", loadedMapName )
+                continue;
+            }
+
+            copy( nextMapName, MAX_MAPNAME_LENGHT - 1, loadedMapName );
+
+            LOGGER( 4, "( getNextMapByPosition ) nextMapName: %s,", nextMapName )
+            LOGGER( 4, "    ( getNextMapByPosition ) Just returning nextMapCyclePosition: %d", nextMapCyclePosition )
+
+            return nextMapCyclePosition;
+
+        } while( mapsProcessedNumber < mapCycleMapsCount );
+
+        goto setTheCurrentMap;
     }
     else
     {
-        // If the mapcyclefile has been changed, go from the first map on the map cycle.
-        nextMapCyclePosition = 0;
+        setTheCurrentMap:
+        doAmxxLog( "WARNING, getNextMapByPosition: No valid maps found on your map cycle! mapcycleFileListArray: %d", mapcycleFileListArray );
+
+        copy( nextMapName, MAX_MAPNAME_LENGHT - 1, g_currentMapName );
     }
 
-    LOGGER( 2, "    ( getNextMapLocalInfoToken ) Returning nextMapCyclePosition: %d", nextMapCyclePosition )
+    LOGGER( 4, "( getNextMapByPosition ) nextMapName: %s,", nextMapName )
+    LOGGER( 4, "    ( getNextMapByPosition ) Just returning nextMapCyclePosition: %d", nextMapCyclePosition )
+
     return nextMapCyclePosition;
-}
-
-stock configureTheAlternateSeries( Array:mapcycleFileListArray, &nextMapCyclePosition )
-{
-    LOGGER( 128, "I AM ENTERING ON configureTheAlternateSeries(2)" )
-
-    new bool:isTheServerRestarting;
-    new lastMap[ MAX_MAPNAME_LENGHT ];
-
-    get_localinfo( "galileo_lastmap", lastMap, charsmax( lastMap ) );
-
-    LOGGER( 4, "( configureTheAlternateSeries ) lastMap:              %s", lastMap              )
-    LOGGER( 4, "( configureTheAlternateSeries ) g_currentMapName:     %s", g_currentMapName     )
-    LOGGER( 4, "( configureTheAlternateSeries ) nextMapCyclePosition: %d", nextMapCyclePosition )
-
-    // If successful, the tryToRunAnAlternateSeries(4) is already freezing the map cycle position.
-    if( ( isTheServerRestarting = !!equali( g_currentMapName, lastMap ) ) )
-    {
-        nextMapCyclePosition = getMapIndexBefore( mapcycleFileListArray, nextMapCyclePosition, 1 );
-    }
-
-    getLastNextMapFromServerStart( mapcycleFileListArray, g_nextMapName, nextMapCyclePosition );
-
-    LOGGER( 4, "" )
-    LOGGER( 4, "" )
-    LOGGER( 4, "" )
-    LOGGER( 4, "" )
-    LOGGER( 4, "" )
-
-    if( tryToRunAnAlternateSeries( mapcycleFileListArray, g_currentMapName, g_nextMapName, nextMapCyclePosition ) )
-    {
-        // If the server is restarting, the map cycle position was already decreased just above.
-        if( !isTheServerRestarting )
-        {
-            // Block the map cycle growing resetting it to its old value. This must to be called until
-            // we exit the alternate series we are running on.
-            --nextMapCyclePosition;
-        }
-    }
-
-    LOGGER( 2, "    ( configureTheAlternateSeries ) Returning nextMapCyclePosition: %d", nextMapCyclePosition )
-    LOGGER( 4, "" )
-    LOGGER( 4, "" )
-    LOGGER( 4, "" )
-    LOGGER( 4, "" )
-    LOGGER( 4, "" )
 }
 
 stock setTheNextMapCvarFlag( nextMapName[] )
@@ -14675,7 +14675,7 @@ stock bool:isAValidMap( mapname[] )
 
 stock getTheCurrentSerieForTheMap( mapNameClean[] )
 {
-    LOGGER( 4, "" )
+    LOGGER( 256, "" )
     LOGGER( 256, "I AM ENTERING ON getTheCurrentSerieForTheMap(1) mapNameClean: %s", mapNameClean )
 
     new mapNameLength;
@@ -14837,7 +14837,7 @@ stock loadMapFileSeriesListArray( mapFileDescriptor, Array:mapArray, Trie:mapTri
     new loadedMapName[ MAX_MAPNAME_LENGHT ];
     new loadedMapLine[ MAX_MAPNAME_LENGHT ];
 
-    LOGGER( 128, "( loadMapFileSeriesListArray ) cursorOnMapSeries: %d", cursorOnMapSeries )
+    LOGGER( 128, "( loadMapFileSeriesListArray ) cursorOnMapSeries:   %d", cursorOnMapSeries   )
     LOGGER( 128, "( loadMapFileSeriesListArray ) loadedMapSeriesTrie: %d", loadedMapSeriesTrie )
 
     while( !feof( mapFileDescriptor ) )
