@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-695";
+new const PLUGIN_VERSION[] = "v4.2.0-696";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -86,7 +86,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-695";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 2+64
+#define DEBUG_LEVEL 16+2+64
 
 
 /**
@@ -3510,22 +3510,22 @@ stock debugWhatGameEndingTypeItIs( rounds_left_by_maxrounds, rounds_left_by_time
     LOGGER( debugLevel, "I AM ENTERING ON debugWhatGameEndingTypeItIs(5)" )
 
     LOGGER( debugLevel, "" )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) cv_winlimit: %2d", get_pcvar_num( cvar_mp_winlimit  ) )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) cv_maxrounds: %0d", get_pcvar_num( cvar_mp_maxrounds ) )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) cv_time: %6f", get_pcvar_float( cvar_mp_timelimit ) )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) cv_frags: %5d", get_pcvar_num( cvar_mp_fraglimit ) )
+    LOGGER( debugLevel, "( whatGameEndingTypeItIs ) cv_winlimit: %2d", get_pcvar_num( cvar_mp_winlimit  ) )
+    LOGGER( debugLevel, "( whatGameEndingTypeItIs ) cv_maxrounds: %0d", get_pcvar_num( cvar_mp_maxrounds ) )
+    LOGGER( debugLevel, "( whatGameEndingTypeItIs ) cv_time: %6f", get_pcvar_float( cvar_mp_timelimit ) )
+    LOGGER( debugLevel, "( whatGameEndingTypeItIs ) cv_frags: %5d", get_pcvar_num( cvar_mp_fraglimit ) )
 
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs )" )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) rounds_left_by_winlimit: %2d", rounds_left_by_winlimit )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) rounds_left_by_maxrounds: %0d", rounds_left_by_maxrounds )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) rounds_left_by_time: %6d", rounds_left_by_time )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) rounds_left_by_frags: %5d", rounds_left_by_frags )
+    LOGGER( debugLevel, "( whatGameEndingTypeItIs )" )
+    LOGGER( debugLevel, "( whatGameEndingTypeItIs ) rounds_left_by_winlimit: %2d", rounds_left_by_winlimit )
+    LOGGER( debugLevel, "( whatGameEndingTypeItIs ) rounds_left_by_maxrounds: %0d", rounds_left_by_maxrounds )
+    LOGGER( debugLevel, "( whatGameEndingTypeItIs ) rounds_left_by_time: %6d", rounds_left_by_time )
+    LOGGER( debugLevel, "( whatGameEndingTypeItIs ) rounds_left_by_frags: %5d", rounds_left_by_frags )
 
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs )" )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) GameEndingType_ByWinLimit: %2d", GameEndingType_ByWinLimit )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) GameEndingType_ByMaxRounds: %d", GameEndingType_ByMaxRounds )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) GameEndingType_ByTimeLimit: %d", GameEndingType_ByTimeLimit )
-    LOGGER( debugLevel, "( debugWhatGameEndingTypeItIs ) GameEndingType_ByFragLimit: %d", GameEndingType_ByFragLimit )
+    LOGGER( debugLevel, "( whatGameEndingTypeItIs )" )
+    LOGGER( debugLevel, "( whatGameEndingTypeItIs ) GameEndingType_ByWinLimit: %2d", GameEndingType_ByWinLimit )
+    LOGGER( debugLevel, "( whatGameEndingTypeItIs ) GameEndingType_ByMaxRounds: %d", GameEndingType_ByMaxRounds )
+    LOGGER( debugLevel, "( whatGameEndingTypeItIs ) GameEndingType_ByTimeLimit: %d", GameEndingType_ByTimeLimit )
+    LOGGER( debugLevel, "( whatGameEndingTypeItIs ) GameEndingType_ByFragLimit: %d", GameEndingType_ByFragLimit )
 
     LOGGER( debugLevel, "" )
     return 0;
@@ -3685,20 +3685,20 @@ stock debugIsTimeToStartTheEndOfMap( secondsRemaining, debugLevel )
     new taskExist = task_exists( TASKID_START_VOTING_DELAYED );
 
     LOGGER( debugLevel, "" )
-    LOGGER( debugLevel, "( debugIsTimeToStartTheEndOfMap ) task_exists TASKID_START_VOTING_DELAYED: %d", taskExist )
-    LOGGER( debugLevel, "( debugIsTimeToStartTheEndOfMap ) g_isTheLastGameRound: %d", g_isTheLastGameRound )
-    LOGGER( debugLevel, "( debugIsTimeToStartTheEndOfMap ) g_isThePenultGameRound: %d", g_isThePenultGameRound )
-    LOGGER( debugLevel, "( debugIsTimeToStartTheEndOfMap ) debugLevel: %d", debugLevel )
-    LOGGER( debugLevel, "( debugIsTimeToStartTheEndOfMap ) secondsRemaining: %d", secondsRemaining )
-    LOGGER( debugLevel, "( debugIsTimeToStartTheEndOfMap ) cvar_endOnRound: %d", get_pcvar_num( cvar_endOnRound ) )
-    LOGGER( debugLevel, "( debugIsTimeToStartTheEndOfMap ) cvar_endOfMapVote: %d", get_pcvar_num( cvar_endOfMapVote ) )
-    LOGGER( debugLevel, "( debugIsTimeToStartTheEndOfMap ) cvar_endOfMapVoteStart: %d", get_pcvar_num( cvar_endOfMapVoteStart ) )
-    LOGGER( debugLevel, "( debugIsTimeToStartTheEndOfMap ) START_VOTEMAP_MIN_TIME: %d",  START_VOTEMAP_MIN_TIME )
-    LOGGER( debugLevel, "( debugIsTimeToStartTheEndOfMap ) START_VOTEMAP_MAX_TIME: %d",  START_VOTEMAP_MAX_TIME )
-    LOGGER( debugLevel, "( debugIsTimeToStartTheEndOfMap ) g_totalRoundsSavedTimes: %d", g_totalRoundsSavedTimes )
-    LOGGER( debugLevel, "( debugIsTimeToStartTheEndOfMap ) PERIODIC_CHECKING_INTERVAL: %d", PERIODIC_CHECKING_INTERVAL )
-    LOGGER( debugLevel, "( debugIsTimeToStartTheEndOfMap ) MIN_VOTE_START_ROUNDS_DELAY: %d", MIN_VOTE_START_ROUNDS_DELAY )
-    LOGGER( debugLevel, "( debugIsTimeToStartTheEndOfMap ) IS_END_OF_MAP_VOTING_GOING_ON(): %d", IS_END_OF_MAP_VOTING_GOING_ON() )
+    LOGGER( debugLevel, "( isTimeToStartTheEndOfMapVoting ) task_exists TASKID_START_VOTING_DELAYED: %d", taskExist )
+    LOGGER( debugLevel, "( isTimeToStartTheEndOfMapVoting ) g_isTheLastGameRound: %d", g_isTheLastGameRound )
+    LOGGER( debugLevel, "( isTimeToStartTheEndOfMapVoting ) g_isThePenultGameRound: %d", g_isThePenultGameRound )
+    LOGGER( debugLevel, "( isTimeToStartTheEndOfMapVoting ) debugLevel: %d", debugLevel )
+    LOGGER( debugLevel, "( isTimeToStartTheEndOfMapVoting ) secondsRemaining: %d", secondsRemaining )
+    LOGGER( debugLevel, "( isTimeToStartTheEndOfMapVoting ) cvar_endOnRound: %d", get_pcvar_num( cvar_endOnRound ) )
+    LOGGER( debugLevel, "( isTimeToStartTheEndOfMapVoting ) cvar_endOfMapVote: %d", get_pcvar_num( cvar_endOfMapVote ) )
+    LOGGER( debugLevel, "( isTimeToStartTheEndOfMapVoting ) cvar_endOfMapVoteStart: %d", get_pcvar_num( cvar_endOfMapVoteStart ) )
+    LOGGER( debugLevel, "( isTimeToStartTheEndOfMapVoting ) START_VOTEMAP_MIN_TIME: %d",  START_VOTEMAP_MIN_TIME )
+    LOGGER( debugLevel, "( isTimeToStartTheEndOfMapVoting ) START_VOTEMAP_MAX_TIME: %d",  START_VOTEMAP_MAX_TIME )
+    LOGGER( debugLevel, "( isTimeToStartTheEndOfMapVoting ) g_totalRoundsSavedTimes: %d", g_totalRoundsSavedTimes )
+    LOGGER( debugLevel, "( isTimeToStartTheEndOfMapVoting ) PERIODIC_CHECKING_INTERVAL: %d", PERIODIC_CHECKING_INTERVAL )
+    LOGGER( debugLevel, "( isTimeToStartTheEndOfMapVoting ) MIN_VOTE_START_ROUNDS_DELAY: %d", MIN_VOTE_START_ROUNDS_DELAY )
+    LOGGER( debugLevel, "( isTimeToStartTheEndOfMapVoting ) IS_END_OF_MAP_VOTING_GOING_ON(): %d", IS_END_OF_MAP_VOTING_GOING_ON() )
     LOGGER( debugLevel, "" )
 
     return 0;
@@ -3808,22 +3808,22 @@ stock debugTeamWinEvent( string_team_winner[], wins_CT_trigger, wins_Terrorist_t
 {
     LOGGER( 32, "I AM ENTERING ON debugTeamWinEvent(3)" )
 
-    LOGGER( 32, "( debugTeamWinEvent )" )
-    LOGGER( 32, "( debugTeamWinEvent ) string_team_winner: %s", string_team_winner )
-    LOGGER( 32, "( debugTeamWinEvent ) g_winLimitInteger: %d", g_winLimitInteger )
-    LOGGER( 32, "( debugTeamWinEvent ) wins_CT_trigger: %d", wins_CT_trigger )
-    LOGGER( 32, "( debugTeamWinEvent ) wins_Terrorist_trigger: %d", wins_Terrorist_trigger )
-    LOGGER( 32, "( debugTeamWinEvent ) g_isGameEndingTypeContextSaved: %d", g_isGameEndingTypeContextSaved )
-    LOGGER( 32, "( debugTeamWinEvent ) g_gameEndingTypeContextSaved: %d", g_gameEndingTypeContextSaved )
-    LOGGER( 32, "( debugTeamWinEvent ) g_timeLeftContextSaved: %d", g_timeLeftContextSaved )
-    LOGGER( 32, "( debugTeamWinEvent ) g_maxRoundsContextSaved: %d", g_maxRoundsContextSaved )
-    LOGGER( 32, "( debugTeamWinEvent ) g_winLimitContextSaved: %d", g_winLimitContextSaved )
-    LOGGER( 32, "( debugTeamWinEvent ) g_fragLimitContextSaved: %d", g_fragLimitContextSaved )
-    LOGGER( 32, "( debugTeamWinEvent ) g_isTheLastGameRound: %d", g_isTheLastGameRound )
-    LOGGER( 32, "( debugTeamWinEvent ) g_isTheLastGameRoundContext: %d", g_isTheLastGameRoundContext )
-    LOGGER( 32, "( debugTeamWinEvent ) g_isThePenultGameRound: %d", g_isThePenultGameRound )
-    LOGGER( 32, "( debugTeamWinEvent ) g_isThePenultGameRoundContext: %d", g_isThePenultGameRoundContext )
-    LOGGER( 32, "( debugTeamWinEvent )" )
+    LOGGER( 32, "( team_win_event )" )
+    LOGGER( 32, "( team_win_event ) string_team_winner: %s", string_team_winner )
+    LOGGER( 32, "( team_win_event ) g_winLimitInteger: %d", g_winLimitInteger )
+    LOGGER( 32, "( team_win_event ) wins_CT_trigger: %d", wins_CT_trigger )
+    LOGGER( 32, "( team_win_event ) wins_Terrorist_trigger: %d", wins_Terrorist_trigger )
+    LOGGER( 32, "( team_win_event ) g_isGameEndingTypeContextSaved: %d", g_isGameEndingTypeContextSaved )
+    LOGGER( 32, "( team_win_event ) g_gameEndingTypeContextSaved: %d", g_gameEndingTypeContextSaved )
+    LOGGER( 32, "( team_win_event ) g_timeLeftContextSaved: %d", g_timeLeftContextSaved )
+    LOGGER( 32, "( team_win_event ) g_maxRoundsContextSaved: %d", g_maxRoundsContextSaved )
+    LOGGER( 32, "( team_win_event ) g_winLimitContextSaved: %d", g_winLimitContextSaved )
+    LOGGER( 32, "( team_win_event ) g_fragLimitContextSaved: %d", g_fragLimitContextSaved )
+    LOGGER( 32, "( team_win_event ) g_isTheLastGameRound: %d", g_isTheLastGameRound )
+    LOGGER( 32, "( team_win_event ) g_isTheLastGameRoundContext: %d", g_isTheLastGameRoundContext )
+    LOGGER( 32, "( team_win_event ) g_isThePenultGameRound: %d", g_isThePenultGameRound )
+    LOGGER( 32, "( team_win_event ) g_isThePenultGameRoundContext: %d", g_isThePenultGameRoundContext )
+    LOGGER( 32, "( team_win_event )" )
 
     return 0;
 }
@@ -6355,9 +6355,10 @@ public start_voting_by_winlimit()
 
     if( get_pcvar_num( cvar_endOfMapVote ) )
     {
-        g_endVotingType |= IS_BY_WINLIMIT;
-
+        // This must to be called the first thing here.
         resetVoteTypeGlobals();
+
+        g_endVotingType |= IS_BY_WINLIMIT;
         vote_startDirector( false );
     }
 }
@@ -6369,9 +6370,10 @@ public start_voting_by_maxrounds()
 
     if( get_pcvar_num( cvar_endOfMapVote ) )
     {
-        g_endVotingType |= IS_BY_ROUNDS;
-
+        // This must to be called the first thing here.
         resetVoteTypeGlobals();
+
+        g_endVotingType |= IS_BY_ROUNDS;
         vote_startDirector( false );
     }
 }
@@ -6383,9 +6385,10 @@ public start_voting_by_frags()
 
     if( get_pcvar_num( cvar_endOfMapVote ) )
     {
-        g_endVotingType |= IS_BY_FRAGS;
-
+        // This must to be called the first thing here.
         resetVoteTypeGlobals();
+
+        g_endVotingType |= IS_BY_FRAGS;
         vote_startDirector( false );
     }
 }
@@ -6397,9 +6400,10 @@ public start_voting_by_timer()
 
     if( get_pcvar_num( cvar_endOfMapVote ) )
     {
-        g_endVotingType |= IS_BY_TIMER;
-
+        // This must to be called the first thing here.
         resetVoteTypeGlobals();
+
+        g_endVotingType |= IS_BY_TIMER;
         vote_startDirector( false );
     }
 }
@@ -6411,9 +6415,10 @@ public startVotingByGameEngineCall()
 
     if( get_pcvar_num( cvar_endOfMapVote ) )
     {
-        g_isToChangeMapOnVotingEnd = true;
-
+        // This must to be called the first thing here.
         resetVoteTypeGlobals();
+
+        g_isToChangeMapOnVotingEnd = true;
         vote_startDirector( false );
     }
 }
@@ -6780,8 +6785,10 @@ stock configureTheExtensionOption( bool:is_forced_voting )
                               || g_endVotingType & IS_BY_FRAGS )
                             && !is_forced_voting );
 
-    LOGGER( 4, "( configureTheExtensionOption ) g_isGameFinalVoting: %d, ", g_isGameFinalVoting )
-    LOGGER( 4, "( configureTheExtensionOption ) g_isMapExtensionAllowed: %d, ", g_isMapExtensionAllowed )
+    LOGGER( 4, "( configureTheExtensionOption ) g_endVotingType:         %d", g_endVotingType )
+    LOGGER( 4, "( configureTheExtensionOption ) is_forced_voting:        %d", is_forced_voting )
+    LOGGER( 4, "( configureTheExtensionOption ) g_isGameFinalVoting:     %d", g_isGameFinalVoting )
+    LOGGER( 4, "( configureTheExtensionOption ) g_isMapExtensionAllowed: %d", g_isMapExtensionAllowed )
 }
 
 /**
@@ -7301,6 +7308,7 @@ public vote_display( argument[ 2 ] )
     if( updateTimeRemaining ) g_votingSecondsRemaining--;
 
     LOGGER( 4, "  ( votedisplay ) player_id: %d", argument[ 1 ]  )
+    LOGGER( 4, "  ( votedisplay ) g_voteStatus: %d", g_voteStatus )
     LOGGER( 4, "  ( votedisplay ) updateTimeRemaining: %d", argument[ 0 ]  )
     LOGGER( 4, "  ( votedisplay ) g_totalVoteOptions: %d", g_totalVoteOptions )
     LOGGER( 4, "  ( votedisplay ) g_votingSecondsRemaining: %d", g_votingSecondsRemaining )
@@ -9392,6 +9400,9 @@ stock start_rtvVote()
     LOGGER( 128, "I AM ENTERING ON start_rtvVote(0)" )
     new endOnRoundRtv = get_pcvar_num( cvar_endOnRoundRtv );
 
+    // Just to be sure. And this must to be called the first thing here.
+    resetVoteTypeGlobals();
+
     if( endOnRoundRtv
         && get_real_players_number() >= endOnRoundRtv )
     {
@@ -9403,9 +9414,6 @@ stock start_rtvVote()
     }
 
     g_voteStatus |= IS_RTV_VOTE;
-
-    // Just to be sure
-    resetVoteTypeGlobals();
 
     // Any voting not started by `cvar_endOfMapVoteStart`, `cvar_endOnRound` or ending limit expiration,
     // is a forced voting.
