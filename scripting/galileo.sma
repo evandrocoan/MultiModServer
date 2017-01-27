@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-696";
+new const PLUGIN_VERSION[] = "v4.2.0-698";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -86,7 +86,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-696";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 16+2+64
+#define DEBUG_LEVEL 16
 
 
 /**
@@ -5617,7 +5617,7 @@ stock setupLoadWhiteListParams( bool:isWhiteListBlockOut, &Trie:listTrie, &Array
 
     if( listTrie )
     {
-        TrieClear( listTrie );
+        TRY_TO_APPLY( TrieClear, listTrie )
     }
     else
     {
@@ -5629,7 +5629,7 @@ stock setupLoadWhiteListParams( bool:isWhiteListBlockOut, &Trie:listTrie, &Array
         // clear the map array in case we're reusing it
         if( listArray )
         {
-            ArrayClear( listArray );
+            TRY_TO_APPLY( ArrayClear, listArray )
         }
         else
         {
@@ -6036,13 +6036,14 @@ stock vote_addFillers( blockedMapsBuffer[], &announcementShowedTimes = 0 )
 stock vote_addNominations( blockedMapsBuffer[], &announcementShowedTimes = 0 )
 {
     LOGGER( 128, "I AM ENTERING ON vote_addNominations(2) announcementShowedTimes: %d", announcementShowedTimes )
-
-    new nominatedMapsCount = ArraySize( g_nominatedMapsArray );
-    LOGGER( 128, "( vote_addNominations ) nominatedMapsCount: %d", nominatedMapsCount )
+    new nominatedMapsCount;
 
     // Try to add the nominations, if there are nominated maps.
-    if( nominatedMapsCount )
+    if( g_nominatedMapsArray
+        && ( nominatedMapsCount = ArraySize( g_nominatedMapsArray ) ) )
     {
+        LOGGER( 128, "( vote_addNominations ) nominatedMapsCount: %d", nominatedMapsCount )
+
         new Trie:whitelistMapTrie;
         new bool:isFillersMapUsingMinplayers;
 
@@ -8293,7 +8294,7 @@ stock getUniqueRandomInteger( Array:holder, minimum = MIN_INTEGER, maximum = MIN
         LOGGER( 1, "( getUniqueRandomInteger ) Reseting the sequence, ArraySize: %d", holderSize )
 
         lastMaximum = maximum;
-        ArrayClear( holder );
+        TRY_TO_APPLY( ArrayClear, holder )
 
         for( new index = minimum; index <= maximum; index++ )
         {
@@ -10056,10 +10057,10 @@ stock nomination_clearAll()
 
     if( get_pcvar_num( cvar_nomCleaning ) )
     {
-        TrieClear( g_reverseSearchNominationsTrie );
-        TrieClear( g_forwardSearchNominationsTrie );
+        TRY_TO_APPLY( TrieClear, g_reverseSearchNominationsTrie )
+        TRY_TO_APPLY( TrieClear, g_forwardSearchNominationsTrie )
 
-        ArrayClear( g_nominatedMapsArray );
+        TRY_TO_APPLY( ArrayClear, g_nominatedMapsArray )
     }
 }
 
@@ -11697,7 +11698,7 @@ stock sayHandlerForTwoNomWords( player_id, firstWord[], secondWord[] )
 
         if( g_partialMatchFirstPageItems[ player_id ] )
         {
-            ArrayClear( g_partialMatchFirstPageItems[ player_id ] );
+            TRY_TO_APPLY( ArrayClear, g_partialMatchFirstPageItems[ player_id ] )
         }
         else
         {
@@ -15621,10 +15622,10 @@ public timeRemain()
         g_test_aimedPlayersNumber = 0;
         g_test_gameElapsedTime    = 0;
 
-        ArrayClear( g_test_idsAndNamesArray );
-        ArrayClear( g_test_failureIdsArray );
-        ArrayClear( g_test_failureReasonsArray );
-        TrieClear( g_test_failureIdsTrie );
+        TRY_TO_APPLY( ArrayClear, g_test_idsAndNamesArray )
+        TRY_TO_APPLY( ArrayClear, g_test_failureIdsArray )
+        TRY_TO_APPLY( ArrayClear, g_test_failureReasonsArray )
+        TRY_TO_APPLY( TrieClear, g_test_failureIdsTrie )
     }
 
     /**
@@ -16195,7 +16196,7 @@ public timeRemain()
         nomination_clearAll();
 
         // Clear the nominations file loaded maps
-        ArrayClear( g_nominationLoadedMapsArray );
+        TRY_TO_APPLY( ArrayClear, g_nominationLoadedMapsArray )
     }
 
     stock toPrintTheVotingMenuForAnalysis()
