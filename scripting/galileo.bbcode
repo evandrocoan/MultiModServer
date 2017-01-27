@@ -129,7 +129,42 @@ it stills can be used all alone. See the [goanchor=Change]Change Log[/goanchor] 
 
 It is [COLOR="Red"][B]highly recommended[/B][/COLOR] you to review the well-commented "[B]galileo.cfg[/B]" to see
 all the cvars' options you have with this plugin.  It's located in the [B]Attached ZIP[/B]
-available at the [goanchor=Downloads]Downloads[/goanchor] section, and [B]here below[/B] clicking on the [COLOR="Red"]show[/COLOR] button:
+available at the [goanchor=Downloads]Downloads[/goanchor] section, and [B]here below[/B] clicking on the [COLOR="Red"]show[/COLOR] button.
+
+Minimal Configuration File:
+[pawn]
+// Galileo Configuration File
+
+
+////////////////////////////////////////////////////////////////////////
+// This is the minimal setting file you ever need to use Galileo.     //
+// All the other options not listed here are set to their default     //
+// values specified on the default `galileo.cfg` file which comes     //
+// with the plugin.                                                   //
+////////////////////////////////////////////////////////////////////////
+
+// vote options
+gal_vote_mapchoices 5
+
+// the vote last 20 seconds
+gal_vote_duration 20
+
+// display a vote countdown timer
+gal_vote_expirationcountdown 1
+
+// Indicates whether or not to perform a automatic end map voting
+gal_endofmapvote 1
+
+
+////////////////////////////////////////////////////////////////////////
+// Using this file you will only get exactly the settings specified.  //
+// If you want to customize better the Galileo behavior, open the     //
+// default `galileo.cfg` file which comes with the plugin, and pick   //
+// the options you want to and add/append them to this file.          //
+////////////////////////////////////////////////////////////////////////
+[/pawn]
+
+Default `galileo.cfg`:
 [SPOILER]
 [pawn]
 // Galileo Configuration File
@@ -1880,6 +1915,7 @@ Thank you!  It means a lot to me.
 
 5.0
 [LIST=1]
+[*]Created the Minimal_Configuration_File_(Opcional_Little-Options).zip, available at the [goanchor=Downloads]Downloads[/goanchor] section.
 [*]Disabled by default all settings allowing the delete the configuration file and only add a few settings as you need.
 [*]Forced the command `gal_createmapfile` to create the file alphabetically sorted.
 [*]Allowed the `gal_votemap` and `say galmenu` to create a vote map with only 1 map, if the `Stay Here` setting is enabled.
