@@ -29,11 +29,11 @@ new g_currentMapName[ MAX_MAPNAME_LENGHT  ];
 public plugin_init()
 {
     register_plugin( "Show Server Info", "1.0", "Addons zz" );
+}
 
-    get_mapname( g_currentMapName, charsmax( g_currentMapName ) );
-    get_cvar_string( "amx_nextmap", g_nextMapName, charsmax( g_nextMapName )  );
-
-    printTheCurrentAndNextMapNames();
+public plugin_cfg()
+{
+    set_task( 1.0, "printTheCurrentAndNextMapNames" );
 }
 
 /**
@@ -49,11 +49,14 @@ public plugin_init()
  * There is not point in adding the entry statement to this function as its purpose is only to
  * print few lines as possible.
  */
-stock printTheCurrentAndNextMapNames()
+public printTheCurrentAndNextMapNames()
 {
     new nextMap     [ MAX_MAPNAME_LENGHT ];
     new currentMap  [ MAX_MAPNAME_LENGHT ];
     new lastMapcycle[ MAX_MAPNAME_LENGHT ];
+
+    get_mapname( g_currentMapName, charsmax( g_currentMapName ) );
+    get_cvar_string( "amx_nextmap", g_nextMapName, charsmax( g_nextMapName )  );
 
     get_localinfo( "lastmapcycle", lastMapcycle, charsmax( lastMapcycle ) );
 
