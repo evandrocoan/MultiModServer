@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-708";
+new const PLUGIN_VERSION[] = "v4.2.0-709";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -2067,7 +2067,7 @@ stock setTheCurrentAndNextMapSettings()
         // are only used at the first time the server is started. Moreover, at the first time the
         // server has started, these data will be used the find out the correct value for the
         // variable `g_nextMapCyclePosition` use.
-        if( map_getNext( g_mapcycleFileListArray, currentMapName, nextMapName ) == -1 )
+        if( map_getNext( g_mapcycleFileListArray, currentMapName, nextMapName, "mapcyclefile" ) == -1 )
         {
             // If we cannot find a valid next map, set it as the current map. Therefore when the
             // getNextMapByPosition(5) to start looking for a new next map, it will automatically take the
@@ -2154,7 +2154,7 @@ public handleServerStart( backupMapsFilePath[], startAction )
 
                 // If there is not found a next map, the current map name on `nextMapName` will to be
                 // set as the first map cycle map name.
-                map_getNext( g_mapcycleFileListArray, mapToChange, nextMapName );
+                map_getNext( g_mapcycleFileListArray, mapToChange, nextMapName, "mapcyclefile" );
             }
         }
         else
@@ -2273,10 +2273,10 @@ stock configureTheMapcycleSystem( mapToChange[], possibleNextMap[], possibleNext
         }
         else
         {
-            // I do like the map_getNext(3) behavior. I prefer using getNextMapByPosition(5).
+            // I do like the map_getNext(4) behavior. I prefer using getNextMapByPosition(5).
             copy( possibleCurrentMap, charsmax( possibleCurrentMap ), possibleNextMap );
 
-            // possibleNextMapPosition = map_getNext( g_mapcycleFileListArray, possibleCurrentMap, possibleNextMap );
+            // possibleNextMapPosition = map_getNext( g_mapcycleFileListArray, possibleCurrentMap, possibleNextMap, "mapcyclefile" );
             possibleNextMapPosition = getNextMapByPosition( g_mapcycleFileListArray, possibleNextMap, g_nextMapCyclePosition );
 
             // Update the current map to the next map.
@@ -2934,7 +2934,7 @@ stock configureServerMapChange( emptyCycleFilePath[] )
         doAmxxLog( "( configureServerMapChange ) %s: %L", g_nextMapName, LANG_SERVER, "GAL_MATCH_WHITELIST" );
 
         copy( currentNextMap, charsmax( currentNextMap ), g_nextMapName );
-        map_getNext( g_mapcycleFileListArray, currentNextMap, g_nextMapName );
+        map_getNext( g_mapcycleFileListArray, currentNextMap, g_nextMapName, "mapcyclefile" );
 
         // Need to be called to trigger special behaviors.
         setNextMap( g_currentMapName, g_nextMapName );
@@ -9912,14 +9912,14 @@ stock configureNextEmptyCycleMap()
     new nextMapName      [ MAX_MAPNAME_LENGHT ];
     new lastEmptyCycleMap[ MAX_MAPNAME_LENGHT ];
 
-    mapIndex = map_getNext( g_emptyCycleMapsArray, g_currentMapName, nextMapName );
+    mapIndex = map_getNext( g_emptyCycleMapsArray, g_currentMapName, nextMapName, "empty_cycle_maps" );
 
     if( !g_isEmptyCycleMapConfigured )
     {
         g_isEmptyCycleMapConfigured = true;
 
         getLastEmptyCycleMap( lastEmptyCycleMap );
-        map_getNext( g_emptyCycleMapsArray, lastEmptyCycleMap, nextMapName );
+        map_getNext( g_emptyCycleMapsArray, lastEmptyCycleMap, nextMapName, "empty_cycle_maps" );
 
         setLastEmptyCycleMap( nextMapName );
         setNextMap( g_currentMapName, nextMapName, false );
@@ -9990,17 +9990,18 @@ public startEmptyCycleSystem()
  *
  * @return mapIndex     the nextMapName index in the mapArray. -1 if not found a nextMapName.
  */
-stock map_getNext( Array:mapArray, const currentMap[], nextMapName[] )
+stock map_getNext( Array:mapArray, const currentMap[], nextMapName[], const caller[] )
 {
-    LOGGER( 128, "I AM ENTERING ON map_getNext(3) currentMap: %s", currentMap )
+    LOGGER( 128, "I AM ENTERING ON map_getNext(4) currentMap: %s", currentMap )
     new bool:isWhitelistBlocking;
 
+    new mapCount;
     new nextmapIndex;
+
+    new returnValue = -1;
     new thisMap[ MAX_MAPNAME_LENGHT ];
 
-    new returnValue  = -1;
-    new mapCount     = ArraySize( mapArray );
-
+    if( mapArray ) mapCount = ArraySize( mapArray );
     new bool:isWhitelistEnabled = IS_WHITELIST_ENABLED();
 
     for( new currentMapIndex = 0; currentMapIndex < mapCount; currentMapIndex++ )
@@ -10044,7 +10045,7 @@ stock map_getNext( Array:mapArray, const currentMap[], nextMapName[] )
         }
         else
         {
-            doAmxxLog( "WARNING: Your 'mapcyclefile' server variable does not contain valid maps by the Whitelist feature!" );
+            doAmxxLog( "WARNING: map_getNext, Your '%s' server variable does not contain valid maps by the Whitelist feature!", caller );
             copy( nextMapName, MAX_MAPNAME_LENGHT - 1, g_currentMapName );
         }
     }
@@ -10056,7 +10057,7 @@ stock map_getNext( Array:mapArray, const currentMap[], nextMapName[] )
         }
         else
         {
-            doAmxxLog( "WARNING: Your 'mapcyclefile' server variable map file does not contain valid maps!" );
+            doAmxxLog( "WARNING: map_getNext, Your '%s' server variable map file does not contain valid maps!", caller );
             copy( nextMapName, MAX_MAPNAME_LENGHT - 1, g_currentMapName );
         }
     }
@@ -16402,7 +16403,7 @@ public timeRemain()
     }
 
     /**
-     * This is a general test handler for the function 'map_getNext(3)'.
+     * This is a general test handler for the function 'map_getNext(4)'.
      *
      * @param testMapListArray        an Array with a map-cycle for loading
      * @param currentMap              an string as the current map
@@ -16422,7 +16423,7 @@ public timeRemain()
         formatex( testName, charsmax( testName ), "test_mapGetNext_case%d", ++currentCaseNumber );
         test_id  = register_test( 0, testName );
 
-        mapIndex = map_getNext( testMapListArray, currentMap, nextMapName );
+        mapIndex = map_getNext( testMapListArray, currentMap, nextMapName, "test_mapGetNext_case" );
 
         ERR( "The nextMapName must to be '%s'! But it was %s.", nextMapAim, nextMapName )
         setTestFailure( test_id, !equali( nextMapName, nextMapAim ), errorMessage );
