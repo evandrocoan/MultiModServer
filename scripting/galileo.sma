@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-699";
+new const PLUGIN_VERSION[] = "v4.2.0-700";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -1602,12 +1602,12 @@ public plugin_init()
     cvar_voteWhiteListMapFilePath  = register_cvar( "gal_vote_whitelist_mapfile"   , ""     );
     cvar_voteUniquePrefixes        = register_cvar( "gal_vote_uniqueprefixes"      , "0"    );
     cvar_extendmapStepMinutes      = register_cvar( "amx_extendmap_step"           , "15"   );
-    cvar_maxMapExtendTime          = register_cvar( "amx_extendmap_max"            , "0"   );
+    cvar_maxMapExtendTime          = register_cvar( "amx_extendmap_max"            , "1"   );
     cvar_extendmapStepRounds       = register_cvar( "amx_extendmap_step_rounds"    , "20"   );
-    cvar_maxMapExtendRounds        = register_cvar( "amx_extendmap_max_rounds"     , "0"    );
+    cvar_maxMapExtendRounds        = register_cvar( "amx_extendmap_max_rounds"     , "1"    );
     cvar_fragLimitSupport          = register_cvar( "gal_mp_fraglimit_support"     , "0"    );
     cvar_extendmapStepFrags        = register_cvar( "amx_extendmap_step_frags"     , "30"   );
-    cvar_maxMapExtendFrags         = register_cvar( "amx_extendmap_max_frags"      , "0"    );
+    cvar_maxMapExtendFrags         = register_cvar( "amx_extendmap_max_frags"      , "1"    );
     cvar_extendmapAllowStay        = register_cvar( "amx_extendmap_allow_stay"     , "0"    );
     cvar_extendmapAllowStayType    = register_cvar( "amx_extendmap_allow_stay_type", "0"    );
     cvar_isExtendmapOrderAllowed   = register_cvar( "amx_extendmap_allow_order"    , "2"    );
@@ -7489,6 +7489,7 @@ stock addExtensionOption( player_id, copiedChars, voteStatus[], voteStatusLenght
                     && !( g_voteStatus & IS_RUNOFF_VOTE ) );
 
     allowStay = ( g_isMapExtensionAllowed
+                  && !g_isGameFinalVoting
                   && !( g_voteStatus & IS_RUNOFF_VOTE ) );
 
     // If this option is set, the stay option will never be show, and there is no way to the runoff
