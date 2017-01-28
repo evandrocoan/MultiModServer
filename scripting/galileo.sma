@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-704";
+new const PLUGIN_VERSION[] = "v4.2.0-705";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-704";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 16+2+64
+#define DEBUG_LEVEL 16
 
 
 /**
@@ -2070,7 +2070,7 @@ stock setTheCurrentAndNextMapSettings()
         if( map_getNext( g_mapcycleFileListArray, currentMapName, nextMapName ) == -1 )
         {
             // If we cannot find a valid next map, set it as the current map. Therefore when the
-            // getNextMapByPosition(3) to start looking for a new next map, it will automatically take the
+            // getNextMapByPosition(5) to start looking for a new next map, it will automatically take the
             // first map, as is does not allow the current map to be set as the next map.
             trim( currentMapName );
             saveCurrentAndNextMapNames( currentMapName, currentMapName );
@@ -2273,7 +2273,7 @@ stock configureTheMapcycleSystem( mapToChange[], possibleNextMap[], possibleNext
         }
         else
         {
-            // I do like the map_getNext(3) behavior. I prefer using getNextMapByPosition(4).
+            // I do like the map_getNext(3) behavior. I prefer using getNextMapByPosition(5).
             copy( possibleCurrentMap, charsmax( possibleCurrentMap ), possibleNextMap );
 
             // possibleNextMapPosition = map_getNext( g_mapcycleFileListArray, possibleCurrentMap, possibleNextMap );
@@ -14257,10 +14257,7 @@ stock bool:tryToMoveTheMapCycleCursor( Array:mapcycleFileListArray, defaultNextM
 
     // The index on `defaultNextMapCyclePosition` is 3 maps ahead the last map
     defaultCurrentMapIndex = getMapIndexBefore( mapcycleFileListArray, defaultNextMapCyclePosition, 3 );
-    getNextMapByPosition( mapcycleFileListArray, defaultCurrentMapName, defaultCurrentMapIndex, false );
-
-    // The getNextMapByPosition(3) call is incrementing it.
-    --defaultCurrentMapIndex;
+    getNextMapByPosition( mapcycleFileListArray, defaultCurrentMapName, defaultCurrentMapIndex, false, false );
 
     get_localinfo( "galileo_lastmap", lastMapName, charsmax( lastMapName ) );
 
@@ -14300,10 +14297,7 @@ stock bool:tryToMoveTheMapCycleCursor( Array:mapcycleFileListArray, defaultNextM
                 // Get the map before the `defaultCurrentMapNameClean` to verify whether they belong to the
                 // same series and if so, we must to move the cursor.
                 defaultCurrentMapIndex = getMapIndexBefore( mapcycleFileListArray, defaultCurrentMapIndex, 1 );
-                getNextMapByPosition( mapcycleFileListArray, lastDefaultCurrentMapName, defaultCurrentMapIndex, false );
-
-                // The getNextMapByPosition(3) call is incrementing it.
-                --defaultCurrentMapIndex;
+                getNextMapByPosition( mapcycleFileListArray, lastDefaultCurrentMapName, defaultCurrentMapIndex, false, false );
 
                 copy( lastDefaultCurrentMapNameClean, charsmax( lastDefaultCurrentMapNameClean ), lastDefaultCurrentMapName );
 
@@ -14440,10 +14434,13 @@ stock getMapIndexBefore( Array:mapcycleFileListArray, nextMapCyclePosition, shif
  * @param &nextMapCyclePosition     is the next map position following actual next map.
  * @param isUseTheCurrentMapRule    use or not the current map set blocking rule.
  */
-stock getNextMapByPosition( Array:mapcycleFileListArray, nextMapName[], &nextMapCyclePosition, bool:isUseTheCurrentMapRule=true )
+stock getNextMapByPosition( Array:mapcycleFileListArray, nextMapName[], &nextMapCyclePosition,
+                            bool:isUseTheCurrentMapRule=true, bool:isToIncrementThePosition=true )
 {
-    LOGGER( 128, "I AM ENTERING ON getNextMapByPosition(3)" )
+    LOGGER( 128, "I AM ENTERING ON getNextMapByPosition(5)" )
     LOGGER( 4, "( getNextMapByPosition ) nextMapCyclePosition: %d", nextMapCyclePosition )
+    LOGGER( 4, "( getNextMapByPosition ) isUseTheCurrentMapRule: %d", isUseTheCurrentMapRule )
+    LOGGER( 4, "( getNextMapByPosition ) isToIncrementThePosition: %d", isToIncrementThePosition )
 
     new mapsProcessedNumber;
     new loadedMapName[ MAX_MAPNAME_LENGHT ];
@@ -14468,7 +14465,7 @@ stock getNextMapByPosition( Array:mapcycleFileListArray, nextMapName[], &nextMap
             GET_MAP_NAME( mapcycleFileListArray, nextMapCyclePosition, loadedMapName )
 
             // Sets the index of the next map of the current next map.
-            ++nextMapCyclePosition;
+            if( isToIncrementThePosition ) ++nextMapCyclePosition;
 
             // Block the next map cvar to be set to the current map.
             if( isUseTheCurrentMapRule
@@ -18350,7 +18347,7 @@ public timeRemain()
 
             // After doing this function call, the compiler is corrupting the variable `cmnE`, so we cannot just
             // do `copy( cmnE, MAX_MAPNAME_LENGHT - 1, nmnE );`. We cannot use `cmnE` after call this.
-            // And yes, the variable `cmnE` is neither passed to getNextMapByPosition(4), but it still being corrupted
+            // And yes, the variable `cmnE` is neither passed to getNextMapByPosition(5), but it still being corrupted
             // anyways. This is the same problem as in the cmd_voteMap(3) call to approvedTheVotingStart(1).
             getNextMapByPosition( g_mapcycleFileListArray, nextMapExpected, nextMapPositon );
         }
