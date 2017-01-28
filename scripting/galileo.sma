@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-705";
+new const PLUGIN_VERSION[] = "v4.2.0-706";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -14955,7 +14955,10 @@ stock loadMapFileSeriesListArray( mapFileDescriptor, Array:mapArray, Trie:mapTri
 
                 LOGGER( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapLine ) )
 
-                if( cursorOnMapSeries )
+                // When only the option `IS_TO_LOAD_ALTERNATE_MAP_SERIES` is set, we cannot load
+                // the map cycle as series.
+                if( cursorOnMapSeries
+                    && cursorOnMapSeries != IS_TO_LOAD_ALTERNATE_MAP_SERIES )
                 {
                     loadTheCursorOnMapSeries( mapArray, mapTrie, loadedMapSeriesTrie, loadedMapName,
                             nextMapName, mapCount, cursorOnMapSeries );
