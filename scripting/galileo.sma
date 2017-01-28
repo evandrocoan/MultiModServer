@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-700";
+new const PLUGIN_VERSION[] = "v4.2.0-701";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -661,6 +661,11 @@ new cvar_coloredChatEnabled;
 #define MAX_SAVED_ROUNDS_FOR_AVERAGE 5
 
 /**
+ * Determine whether there will be a alternate vote option as `Stay Here` or `Extend Map`.
+ */
+#define IS_MAP_EXTENSION_ALLOWED() ( g_isMapExtensionAllowed || g_isExtendmapAllowStay && !g_isGameFinalVoting )
+
+/**
  * The periodic task created on 'configureServerStart(1)' use this intervals in seconds to
  * start checking for an end map voting start. Defines the interval where the periodic tasks
  * as map_manageEnd(0) and vote_manageEnd(0) will be checked.
@@ -771,7 +776,7 @@ new cvar_coloredChatEnabled;
  * considering whether the voting map extension option is being showed or not.
  */
 #define MAX_VOTING_CHOICES() \
-    ( g_isMapExtensionAllowed ? \
+    ( IS_MAP_EXTENSION_ALLOWED() ? \
         ( g_maxVotingChoices >= MAX_OPTIONS_IN_VOTE ? \
             g_maxVotingChoices - 1 : g_maxVotingChoices ) : g_maxVotingChoices )
 //
@@ -6742,7 +6747,7 @@ stock configureTheExtensionOption( bool:is_forced_voting )
     LOGGER( 128, "I AM ENTERING ON configureTheExtensionOption(1) is_forced_voting: %d", is_forced_voting )
     new Float:cache;
 
-    // If we cannot find anything cancelling/blocking the map extension, allow it by the default.
+    // If we cannot find anything cancelling/blocking the map extension, block it by the default.
     if( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXTENSION )
     {
         g_isMapExtensionAllowed = false;
@@ -6778,7 +6783,7 @@ stock configureTheExtensionOption( bool:is_forced_voting )
     }
     else
     {
-        g_isMapExtensionAllowed = true;
+        g_isMapExtensionAllowed = false;
     }
 
     g_isGameFinalVoting = ( ( g_endVotingType & IS_BY_ROUNDS
@@ -7488,16 +7493,9 @@ stock addExtensionOption( player_id, copiedChars, voteStatus[], voteStatusLenght
     allowExtend = ( g_isGameFinalVoting
                     && !( g_voteStatus & IS_RUNOFF_VOTE ) );
 
-    allowStay = ( g_isMapExtensionAllowed
+    allowStay = ( g_isExtendmapAllowStay
                   && !g_isGameFinalVoting
                   && !( g_voteStatus & IS_RUNOFF_VOTE ) );
-
-    // If this option is set, the stay option will never be show, and there is no way to the runoff
-    // result in set `g_isRunOffNeedingKeepCurrentMap` to true and `g_isGameFinalVoting` to false.
-    if( !g_isExtendmapAllowStay )
-    {
-        allowStay = false;
-    }
 
     if( g_isRunOffNeedingKeepCurrentMap )
     {
@@ -7518,7 +7516,7 @@ stock addExtensionOption( player_id, copiedChars, voteStatus[], voteStatusLenght
             g_isExtendmapAllowStay: %d", allowStay, allowExtend, g_isExtendmapAllowStay )
 
     // add optional menu item
-    if( g_isMapExtensionAllowed
+    if( IS_MAP_EXTENSION_ALLOWED()
         && ( allowExtend
              || allowStay ) )
     {
@@ -7617,7 +7615,7 @@ stock display_menu_dirt( player_id, menuKeys, bool:isVoteOver, bool:noneIsHidden
     menuDirty  [ 0 ] = '^0';
     noneOption [ 0 ] = '^0';
     isToAddExtraLine = ( g_voteStatus & IS_RUNOFF_VOTE
-                         || !g_isMapExtensionAllowed
+                         || !IS_MAP_EXTENSION_ALLOWED()
                          || g_totalVoteOptions == 1
                             && !g_isRunOffNeedingKeepCurrentMap );
 
@@ -7772,7 +7770,7 @@ stock computeUndoButton( player_id, bool:isToShowUndo, bool:isVoteOver, noneOpti
     LOGGER( 256, "( computeUndoButton ) noneOption: %s, noneOptionSize: %d", noneOption, noneOptionSize )
 
     new bool:isToAddExtraLine = ( g_voteStatus & IS_RUNOFF_VOTE
-                                  || !g_isMapExtensionAllowed
+                                  || !IS_MAP_EXTENSION_ALLOWED()
                                   || g_totalVoteOptions == 1
                                      && !g_isRunOffNeedingKeepCurrentMap );
 
@@ -7856,7 +7854,7 @@ stock display_menu_clean( player_id, menuKeys )
     menuClean  [ 0 ] = '^0';
     noneOption [ 0 ] = '^0';
     isToAddExtraLine = ( g_voteStatus & IS_RUNOFF_VOTE
-                         || !g_isMapExtensionAllowed
+                         || !IS_MAP_EXTENSION_ALLOWED()
                          || g_totalVoteOptions == 1
                             && !g_isRunOffNeedingKeepCurrentMap );
 
@@ -8598,8 +8596,8 @@ stock determineTheVotingFirstChoices( firstPlaceChoices[], secondPlaceChoices[],
     // Determine how much maps it should look up to, considering whether there is the option
     // `Stay Here` or `Extend` displayed on the voting menu.
     new maxVotingChoices = g_totalVoteOptions >= MAX_OPTIONS_IN_VOTE ? g_totalVoteOptions :
-            ( g_isMapExtensionAllowed && !isRunoffVoting ? ( g_totalVoteOptions + 1 ) :
-                ( g_isRunOffNeedingKeepCurrentMap        ? ( g_totalVoteOptions + 1 ) : g_totalVoteOptions ) );
+            ( IS_MAP_EXTENSION_ALLOWED() && !isRunoffVoting ? ( g_totalVoteOptions + 1 ) :
+                ( g_isRunOffNeedingKeepCurrentMap           ? ( g_totalVoteOptions + 1 ) : g_totalVoteOptions ) );
 
     // determine the number of votes for 1st and 2nd places
     for( playerVoteMapChoiceIndex = 0; playerVoteMapChoiceIndex < maxVotingChoices;
