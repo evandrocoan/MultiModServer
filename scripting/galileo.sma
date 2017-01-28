@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-703";
+new const PLUGIN_VERSION[] = "v4.2.0-704";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -662,6 +662,13 @@ new cvar_coloredChatEnabled;
  * Determine whether there will be a alternate vote option as `Stay Here` or `Extend Map`.
  */
 #define IS_MAP_EXTENSION_ALLOWED() ( g_isMapExtensionAllowed || g_isExtendmapAllowStay && !g_isGameFinalVoting )
+
+/**
+ * Every time an operation close to the call to map_manageEnd(0) need to be performed on the cvars
+ * `mp_timelimit`, `mp_fraglimit`, `mp_maxrounds` and `mp_winlimit`, this macro must to be used to
+ * retrieve the correct cvar value, otherwise it will probably get the value 0 and go nuts.
+ */
+#define GAME_ENDING_CONTEXT_SAVED(%1,%2) ( ( g_isGameEndingTypeContextSaved ) ? ( %1 ) : ( %2 ) )
 
 /**
  * The periodic task created on 'configureServerStart(1)' use this intervals in seconds to
@@ -1410,6 +1417,7 @@ new bool:g_isGameEndingTypeContextSaved;
 new GameEndingType:g_gameEndingTypeContextSaved;
 
 new g_timeLeftContextSaved;
+new Float:g_timeLimitContextSaved;
 new g_maxRoundsContextSaved;
 new g_winLimitContextSaved;
 new g_fragLimitContextSaved;
@@ -1920,6 +1928,8 @@ public cacheCvarsValues()
     g_showVoteStatus            = get_pcvar_num( cvar_showVoteStatus         );
     g_voteShowNoneOptionType    = get_pcvar_num( cvar_voteShowNoneOptionType );
     g_showVoteStatusType        = get_pcvar_num( cvar_showVoteStatusType     );
+    g_maxRoundsNumber           = get_pcvar_num( cvar_mp_maxrounds           );
+    g_winLimitInteger           = get_pcvar_num( cvar_mp_winlimit            );
     g_fragLimitNumber           = get_pcvar_num( cvar_mp_fraglimit           );
     g_timeLimitNumber           = get_pcvar_num( cvar_mp_timelimit           );
 
@@ -3886,18 +3896,19 @@ public team_win_event()
 public round_end_event()
 {
     LOGGER( 128, "I AM ENTERING ON round_end_event(0)" )
+
     new current_rounds_trigger;
-
-    // Just update their values when calling this function.
-    g_fragLimitNumber = get_pcvar_num( cvar_mp_fraglimit );
-    g_timeLimitNumber = get_pcvar_num( cvar_mp_timelimit );
-    g_isTheRoundEnded = true;
-
-    g_totalRoundsPlayed++;
     saveTheRoundTime();
+
+    g_isTheRoundEnded = true;
+    g_totalRoundsPlayed++;
 
     // Get the updated value.
     g_maxRoundsNumber = get_pcvar_num( cvar_mp_maxrounds );
+
+    // Also update their values when calling this function.
+    g_fragLimitNumber = get_pcvar_num( cvar_mp_fraglimit );
+    g_timeLimitNumber = get_pcvar_num( cvar_mp_timelimit );
 
     if( g_maxRoundsNumber )
     {
@@ -4210,6 +4221,7 @@ stock saveGameEndingTypeContext()
     g_gameEndingTypeContextSaved = whatGameEndingTypeItIs();
 
     g_timeLeftContextSaved  = get_timeleft() ? MIN_ROUND_TIME_DELAY - 1 : 0;
+    g_timeLimitContextSaved = get_pcvar_float( cvar_mp_timelimit );
     g_maxRoundsContextSaved = get_pcvar_num( cvar_mp_maxrounds );
     g_winLimitContextSaved  = get_pcvar_num( cvar_mp_winlimit );
     g_fragLimitContextSaved = get_pcvar_num( cvar_mp_fraglimit );
@@ -6745,43 +6757,54 @@ stock configureTheExtensionOption( bool:is_forced_voting )
     LOGGER( 128, "I AM ENTERING ON configureTheExtensionOption(1) is_forced_voting: %d", is_forced_voting )
     new Float:cache;
 
-    // If we cannot find anything cancelling/blocking the map extension, block it by the default.
+    // If we cannot find anything cancelling/blocking the map extension, allow it by the default.
     if( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXTENSION )
     {
+        LOGGER( 4, "( configureTheExtensionOption ) 1. " )
         g_isMapExtensionAllowed = false;
     }
     else if( g_voteStatus & IS_RTV_VOTE
              && get_pcvar_num( cvar_rtvWaitAdmin ) & IS_TO_RTV_NOT_ALLOW_STAY )
     {
+        LOGGER( 4, "( configureTheExtensionOption ) 2. " )
         g_isMapExtensionAllowed = false;
     }
     else if( g_endVotingType & IS_BY_FRAGS
              && ( cache = Float:get_pcvar_num( cvar_maxMapExtendFrags ) ) )
     {
+        LOGGER( 4, "( configureTheExtensionOption ) 3. " )
+
         g_isMapExtensionAllowed =
-                get_pcvar_num( cvar_mp_fraglimit ) < cache;
+                GAME_ENDING_CONTEXT_SAVED( g_fragLimitContextSaved, get_pcvar_num( cvar_mp_fraglimit ) ) < cache;
     }
     else if( g_endVotingType & IS_BY_ROUNDS
              && ( cache = Float:get_pcvar_num( cvar_maxMapExtendRounds ) ) )
     {
+        LOGGER( 4, "( configureTheExtensionOption ) 4. " )
+
         g_isMapExtensionAllowed =
-                get_pcvar_num( cvar_mp_maxrounds ) < cache;
+                GAME_ENDING_CONTEXT_SAVED( g_maxRoundsContextSaved, get_pcvar_num( cvar_mp_maxrounds ) ) < cache;
     }
     else if( g_endVotingType & IS_BY_WINLIMIT
              && ( cache = get_pcvar_float( cvar_maxMapExtendRounds ) ) )
     {
+        LOGGER( 4, "( configureTheExtensionOption ) 5. " )
+
         g_isMapExtensionAllowed =
-                get_pcvar_num( cvar_mp_winlimit ) < cache;
+                GAME_ENDING_CONTEXT_SAVED( g_winLimitContextSaved, get_pcvar_num( cvar_mp_winlimit ) ) < cache;
     }
     else if( g_endVotingType & IS_BY_TIMER
              && ( cache = get_pcvar_float( cvar_maxMapExtendTime ) ) )
     {
+        LOGGER( 4, "( configureTheExtensionOption ) 6. " )
+
         g_isMapExtensionAllowed =
-                get_pcvar_float( cvar_mp_timelimit ) < cache;
+                GAME_ENDING_CONTEXT_SAVED( g_timeLimitContextSaved, get_pcvar_float( cvar_mp_timelimit ) ) < cache;
     }
     else
     {
-        g_isMapExtensionAllowed = false;
+        LOGGER( 4, "( configureTheExtensionOption ) 7. " )
+        g_isMapExtensionAllowed = true;
     }
 
     g_isGameFinalVoting = ( ( g_endVotingType & IS_BY_ROUNDS
@@ -6794,6 +6817,9 @@ stock configureTheExtensionOption( bool:is_forced_voting )
     LOGGER( 4, "( configureTheExtensionOption ) is_forced_voting:        %d", is_forced_voting )
     LOGGER( 4, "( configureTheExtensionOption ) g_isGameFinalVoting:     %d", g_isGameFinalVoting )
     LOGGER( 4, "( configureTheExtensionOption ) g_isMapExtensionAllowed: %d", g_isMapExtensionAllowed )
+
+    // Allow it only on a end map voting.
+    g_isMapExtensionAllowed = g_isMapExtensionAllowed && g_isGameFinalVoting;
 }
 
 /**
@@ -9011,17 +9037,26 @@ stock resetTheRtvWaitTime()
 
     if( g_rtvWaitMinutes )
     {
-        g_rtvWaitMinutes += get_pcvar_float( cvar_mp_timelimit );
+        g_rtvWaitMinutes += GAME_ENDING_CONTEXT_SAVED( g_timeLimitContextSaved, get_pcvar_float( cvar_mp_timelimit ) );
     }
 
     if( g_rtvWaitRounds )
     {
-        g_rtvWaitRounds += get_pcvar_num( cvar_mp_maxrounds );
+        new cache = GAME_ENDING_CONTEXT_SAVED( g_maxRoundsContextSaved, get_pcvar_num( cvar_mp_maxrounds ) );
+
+        if( cache )
+        {
+            g_rtvWaitRounds += cache;
+        }
+        else if( ( cache = GAME_ENDING_CONTEXT_SAVED( g_winLimitContextSaved, get_pcvar_num( cvar_mp_winlimit ) ) ) )
+        {
+            g_rtvWaitRounds += cache;
+        }
     }
 
     if( g_rtvWaitFrags )
     {
-        g_rtvWaitFrags += get_pcvar_num( cvar_mp_fraglimit );
+        g_rtvWaitFrags += GAME_ENDING_CONTEXT_SAVED( g_fragLimitContextSaved, get_pcvar_num( cvar_mp_fraglimit ) );
     }
 }
 
@@ -9031,31 +9066,39 @@ stock doTheActualMapExtension()
 
     if( g_endVotingType & IS_BY_ROUNDS )
     {
-        tryToSetGameModCvarNum(   cvar_mp_maxrounds, get_pcvar_num( cvar_mp_maxrounds ) + g_extendmapStepRounds );
+        new total = GAME_ENDING_CONTEXT_SAVED( g_maxRoundsContextSaved, get_pcvar_num( cvar_mp_maxrounds ) );
+
+        tryToSetGameModCvarNum(   cvar_mp_maxrounds, total + g_extendmapStepRounds );
         tryToSetGameModCvarNum(   cvar_mp_winlimit , 0 );
         tryToSetGameModCvarNum(   cvar_mp_fraglimit, 0 );
         tryToSetGameModCvarFloat( cvar_mp_timelimit, 0.0 );
     }
     else if( g_endVotingType & IS_BY_WINLIMIT )
     {
+        new total = GAME_ENDING_CONTEXT_SAVED( g_winLimitContextSaved, get_pcvar_num( cvar_mp_winlimit ) );
+
         tryToSetGameModCvarNum(   cvar_mp_maxrounds, 0  );
-        tryToSetGameModCvarNum(   cvar_mp_winlimit , get_pcvar_num( cvar_mp_winlimit ) + g_extendmapStepRounds );
+        tryToSetGameModCvarNum(   cvar_mp_winlimit , total + g_extendmapStepRounds );
         tryToSetGameModCvarNum(   cvar_mp_fraglimit, 0 );
         tryToSetGameModCvarFloat( cvar_mp_timelimit, 0.0 );
     }
     else if( g_endVotingType & IS_BY_FRAGS )
     {
+        new total = GAME_ENDING_CONTEXT_SAVED( g_fragLimitContextSaved, get_pcvar_num( cvar_mp_fraglimit ) );
+
         tryToSetGameModCvarNum(   cvar_mp_maxrounds, 0   );
         tryToSetGameModCvarNum(   cvar_mp_winlimit , 0   );
-        tryToSetGameModCvarNum(   cvar_mp_fraglimit, get_pcvar_num( cvar_mp_fraglimit ) + g_extendmapStepFrags );
+        tryToSetGameModCvarNum(   cvar_mp_fraglimit, total + g_extendmapStepFrags );
         tryToSetGameModCvarFloat( cvar_mp_timelimit, 0.0 );
     }
     else
     {
+        new Float:total = GAME_ENDING_CONTEXT_SAVED( g_timeLimitContextSaved, get_pcvar_float( cvar_mp_timelimit ) );
+
         tryToSetGameModCvarNum(   cvar_mp_maxrounds, 0 );
         tryToSetGameModCvarNum(   cvar_mp_winlimit , 0 );
         tryToSetGameModCvarNum(   cvar_mp_fraglimit, 0 );
-        tryToSetGameModCvarFloat( cvar_mp_timelimit, get_pcvar_float( cvar_mp_timelimit ) + g_extendmapStepMinutes );
+        tryToSetGameModCvarFloat( cvar_mp_timelimit, total + g_extendmapStepMinutes );
     }
 }
 
@@ -9802,14 +9845,14 @@ stock isToHandleRecentlyEmptyServer()
     {
         if( g_originalTimelimit != get_pcvar_float( cvar_mp_timelimit ) )
         {
-            // it's possible that the map has been extended at least once. that
+            // It's possible that the map has been extended at least once. That
             // means that if someone comes into the server, the time limit will
-            // be the extended time limit rather than the normal time limit. bad.
-            // reset the original time limit
+            // be the extended time limit rather than the normal time limit, bad.
+            // Reset the original time limit
             map_restoreEndGameCvars();
         }
 
-        // if it is utilizing "empty server" feature, to start it.
+        // If it is utilizing "empty server" feature, to start it.
         if( g_isUsingEmptyCycle
             && g_emptyCycleMapsArray
             && ArraySize( g_emptyCycleMapsArray ) )
