@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-710";
+new const PLUGIN_VERSION[] = "v4.2.0-711";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-710";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 0
+#define DEBUG_LEVEL 2+64
 
 
 /**
@@ -4799,10 +4799,11 @@ public resetRoundsScores()
     LOGGER( 1, "    I AM EXITING ON resetRoundsScores(0)" )
 }
 
-stock map_populateList( Array:mapArray = Invalid_Array, mapFilePath[], Trie:fillerMapTrie = Invalid_Trie,
-                        bool:isToClearTheTrie = true )
+stock map_populateList( Array:mapArray=Invalid_Array, mapFilePath[],
+                        Trie:fillerMapTrie=Invalid_Trie, bool:isToClearTheTrie=true,
+                        bool:isToLoadDuplicatedLines=true )
 {
-    LOGGER( 128, "I AM ENTERING ON map_populateList(4) mapFilePath: %s", mapFilePath )
+    LOGGER( 128, "I AM ENTERING ON map_populateList(5) mapFilePath: %s", mapFilePath )
 
     // load the array with maps
     new mapCount;
@@ -4810,10 +4811,15 @@ stock map_populateList( Array:mapArray = Invalid_Array, mapFilePath[], Trie:fill
     // If there is a map file to load
     if( mapFilePath[ 0 ] )
     {
-        new bool:isMapFolderLoad = equali( mapFilePath, MAP_FOLDER_LOAD_FLAG ) != 0;
+        new Trie:duplicatedLines;
+        new bool:isMapFolderLoad;
+
+        if( !isToLoadDuplicatedLines ) duplicatedLines = TrieCreate();
+        isMapFolderLoad = equali( mapFilePath, MAP_FOLDER_LOAD_FLAG ) != 0;
 
         // clear the map array in case we're reusing it
         TRY_TO_APPLY( ArrayClear, mapArray )
+
         if( isToClearTheTrie ) TRY_TO_APPLY( TrieClear, fillerMapTrie )
 
         if( !isMapFolderLoad
@@ -4821,7 +4827,7 @@ stock map_populateList( Array:mapArray = Invalid_Array, mapFilePath[], Trie:fill
         {
             LOGGER( 4, "" )
             LOGGER( 4, "    map_populateList(...) Loading the PASSED FILE! mapFilePath: %s", mapFilePath )
-            mapCount = loadMapFileList( mapArray, mapFilePath, fillerMapTrie );
+            mapCount = loadMapFileList( mapArray, mapFilePath, fillerMapTrie, duplicatedLines );
         }
         else if( isMapFolderLoad )
         {
@@ -4835,8 +4841,10 @@ stock map_populateList( Array:mapArray = Invalid_Array, mapFilePath[], Trie:fill
 
             LOGGER( 4, "" )
             LOGGER( 4, "    map_populateList(...) Loading the MAPCYCLE! mapFilePath: %s", mapFilePath )
-            mapCount = loadMapFileList( mapArray, mapFilePath, fillerMapTrie );
+            mapCount = loadMapFileList( mapArray, mapFilePath, fillerMapTrie, duplicatedLines );
         }
+
+        TRY_TO_APPLY( TrieDestroy, duplicatedLines )
     }
 
     LOGGER( 1, "    I AM EXITING map_populateList(4) mapCount: %d", mapCount )
@@ -4877,9 +4885,9 @@ stock checkIfThereEnoughMapPopulated( mapCount, mapFileDescriptor, mapFilePath[]
     }
 }
 
-stock loadMapFileList( Array:mapArray, mapFilePath[], Trie:fillerMapTrie )
+stock loadMapFileList( Array:mapArray, mapFilePath[], Trie:fillerMapTrie, Trie:duplicatedLines )
 {
-    LOGGER( 128, "I AM ENTERING ON loadMapFileList(3) mapFilePath: %s", mapFilePath )
+    LOGGER( 128, "I AM ENTERING ON loadMapFileList(4) mapFilePath: %s", mapFilePath )
 
     new mapCount;
     new mapFileDescriptor = fopen( mapFilePath, "rt" );
@@ -4890,15 +4898,15 @@ stock loadMapFileList( Array:mapArray, mapFilePath[], Trie:fillerMapTrie )
         if( mapArray
             && fillerMapTrie )
         {
-            mapCount = loadMapFileListComplete( mapFileDescriptor, mapArray, fillerMapTrie );
+            mapCount = loadMapFileListComplete( mapFileDescriptor, mapArray, fillerMapTrie, duplicatedLines );
         }
         else if( mapArray )
         {
-            mapCount = loadMapFileListArray( mapFileDescriptor, mapArray );
+            mapCount = loadMapFileListArray( mapFileDescriptor, mapArray, duplicatedLines );
         }
         else if( fillerMapTrie )
         {
-            mapCount = loadMapFileListTrie( mapFileDescriptor, fillerMapTrie );
+            mapCount = loadMapFileListTrie( mapFileDescriptor, fillerMapTrie, duplicatedLines );
         }
         else
         {
@@ -4920,7 +4928,7 @@ stock loadMapFileList( Array:mapArray, mapFilePath[], Trie:fillerMapTrie )
     return mapCount;
 }
 
-stock loadMapFileListComplete( mapFileDescriptor, Array:mapArray, Trie:fillerMapTrie )
+stock loadMapFileListComplete( mapFileDescriptor, Array:mapArray, Trie:fillerMapTrie, Trie:duplicatedLines )
 {
     LOGGER( 128, "I AM ENTERING ON loadMapFileListComplete(2) mapFileDescriptor: %d", mapFileDescriptor )
 
@@ -4928,24 +4936,53 @@ stock loadMapFileListComplete( mapFileDescriptor, Array:mapArray, Trie:fillerMap
     new loadedMapLine[ MAX_MAPNAME_LENGHT ];
     new loadedMapName[ MAX_MAPNAME_LENGHT ];
 
-    while( !feof( mapFileDescriptor ) )
+    if( duplicatedLines )
     {
-        fgets( mapFileDescriptor, loadedMapLine, charsmax( loadedMapLine ) );
-        trim( loadedMapLine );
-
-        if( IS_IT_A_VALID_MAP_LINE( loadedMapLine ) )
+        while( !feof( mapFileDescriptor ) )
         {
-            GET_MAP_NAME_LEFT( loadedMapLine, loadedMapName )
+            fgets( mapFileDescriptor, loadedMapLine, charsmax( loadedMapLine ) );
+            trim( loadedMapLine );
 
-            if( IS_MAP_VALID( loadedMapName ) )
+            if( IS_IT_A_VALID_MAP_LINE( loadedMapLine )
+                && !TrieKeyExists( duplicatedLines, loadedMapLine ) )
             {
-                strtolower( loadedMapName );
-                TrieSetCell( fillerMapTrie, loadedMapName, mapCount );
+                TrieSetCell( duplicatedLines, loadedMapLine, mapCount );
+                GET_MAP_NAME_LEFT( loadedMapLine, loadedMapName )
 
-                ArrayPushString( mapArray, loadedMapLine );
-                LOGGER( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapLine ) )
+                if( IS_MAP_VALID( loadedMapName ) )
+                {
+                    strtolower( loadedMapName );
+                    TrieSetCell( fillerMapTrie, loadedMapName, mapCount );
 
-                ++mapCount;
+                    ArrayPushString( mapArray, loadedMapLine );
+                    LOGGER( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapLine ) )
+
+                    ++mapCount;
+                }
+            }
+        }
+    }
+    else
+    {
+        while( !feof( mapFileDescriptor ) )
+        {
+            fgets( mapFileDescriptor, loadedMapLine, charsmax( loadedMapLine ) );
+            trim( loadedMapLine );
+
+            if( IS_IT_A_VALID_MAP_LINE( loadedMapLine ) )
+            {
+                GET_MAP_NAME_LEFT( loadedMapLine, loadedMapName )
+
+                if( IS_MAP_VALID( loadedMapName ) )
+                {
+                    strtolower( loadedMapName );
+                    TrieSetCell( fillerMapTrie, loadedMapName, mapCount );
+
+                    ArrayPushString( mapArray, loadedMapLine );
+                    LOGGER( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapLine ) )
+
+                    ++mapCount;
+                }
             }
         }
     }
@@ -4953,7 +4990,7 @@ stock loadMapFileListComplete( mapFileDescriptor, Array:mapArray, Trie:fillerMap
     return mapCount;
 }
 
-stock loadMapFileListArray( mapFileDescriptor, Array:mapArray )
+stock loadMapFileListArray( mapFileDescriptor, Array:mapArray, Trie:duplicatedLines )
 {
     LOGGER( 128, "I AM ENTERING ON loadMapFileListArray(2) mapFileDescriptor: %d", mapFileDescriptor )
 
@@ -4961,21 +4998,47 @@ stock loadMapFileListArray( mapFileDescriptor, Array:mapArray )
     new loadedMapName[ MAX_MAPNAME_LENGHT ];
     new loadedMapLine[ MAX_MAPNAME_LENGHT ];
 
-    while( !feof( mapFileDescriptor ) )
+    if( duplicatedLines )
     {
-        fgets( mapFileDescriptor, loadedMapLine, charsmax( loadedMapLine ) );
-        trim( loadedMapLine );
-
-        if( IS_IT_A_VALID_MAP_LINE( loadedMapLine ) )
+        while( !feof( mapFileDescriptor ) )
         {
-            GET_MAP_NAME_LEFT( loadedMapLine, loadedMapName )
+            fgets( mapFileDescriptor, loadedMapLine, charsmax( loadedMapLine ) );
+            trim( loadedMapLine );
 
-            if( IS_MAP_VALID( loadedMapName ) )
+            if( IS_IT_A_VALID_MAP_LINE( loadedMapLine )
+                && !TrieKeyExists( duplicatedLines, loadedMapLine ) )
             {
-                ArrayPushString( mapArray, loadedMapLine );
-                LOGGER( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapLine ) )
+                TrieSetCell( duplicatedLines, loadedMapLine, mapCount );
+                GET_MAP_NAME_LEFT( loadedMapLine, loadedMapName )
 
-                ++mapCount;
+                if( IS_MAP_VALID( loadedMapName ) )
+                {
+                    ArrayPushString( mapArray, loadedMapLine );
+                    LOGGER( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapLine ) )
+
+                    ++mapCount;
+                }
+            }
+        }
+    }
+    else
+    {
+        while( !feof( mapFileDescriptor ) )
+        {
+            fgets( mapFileDescriptor, loadedMapLine, charsmax( loadedMapLine ) );
+            trim( loadedMapLine );
+
+            if( IS_IT_A_VALID_MAP_LINE( loadedMapLine ) )
+            {
+                GET_MAP_NAME_LEFT( loadedMapLine, loadedMapName )
+
+                if( IS_MAP_VALID( loadedMapName ) )
+                {
+                    ArrayPushString( mapArray, loadedMapLine );
+                    LOGGER( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapLine ) )
+
+                    ++mapCount;
+                }
             }
         }
     }
@@ -4983,7 +5046,7 @@ stock loadMapFileListArray( mapFileDescriptor, Array:mapArray )
     return mapCount;
 }
 
-stock loadMapFileListTrie( mapFileDescriptor, Trie:fillerMapTrie )
+stock loadMapFileListTrie( mapFileDescriptor, Trie:fillerMapTrie, Trie:duplicatedLines )
 {
     LOGGER( 128, "I AM ENTERING ON loadMapFileListTrie(2) mapFileDescriptor: %d", mapFileDescriptor )
 
@@ -4991,22 +5054,49 @@ stock loadMapFileListTrie( mapFileDescriptor, Trie:fillerMapTrie )
     new loadedMapName[ MAX_MAPNAME_LENGHT ];
     new loadedMapLine[ MAX_MAPNAME_LENGHT ];
 
-    while( !feof( mapFileDescriptor ) )
+    if( duplicatedLines )
     {
-        fgets( mapFileDescriptor, loadedMapLine, charsmax( loadedMapLine ) );
-        trim( loadedMapLine );
-
-        if( IS_IT_A_VALID_MAP_LINE( loadedMapLine ) )
+        while( !feof( mapFileDescriptor ) )
         {
-            GET_MAP_NAME_LEFT( loadedMapLine, loadedMapName )
+            fgets( mapFileDescriptor, loadedMapLine, charsmax( loadedMapLine ) );
+            trim( loadedMapLine );
 
-            if( IS_MAP_VALID( loadedMapName ) )
+            if( IS_IT_A_VALID_MAP_LINE( loadedMapLine )
+                && !TrieKeyExists( duplicatedLines, loadedMapLine ) )
             {
-                strtolower( loadedMapName );
-                TrieSetCell( fillerMapTrie, loadedMapName, mapCount );
+                TrieSetCell( duplicatedLines, loadedMapLine, mapCount );
+                GET_MAP_NAME_LEFT( loadedMapLine, loadedMapName )
 
-                LOGGER( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapLine ) )
-                ++mapCount;
+                if( IS_MAP_VALID( loadedMapName ) )
+                {
+                    strtolower( loadedMapName );
+                    TrieSetCell( fillerMapTrie, loadedMapName, mapCount );
+
+                    LOGGER( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapLine ) )
+                    ++mapCount;
+                }
+            }
+        }
+    }
+    else
+    {
+        while( !feof( mapFileDescriptor ) )
+        {
+            fgets( mapFileDescriptor, loadedMapLine, charsmax( loadedMapLine ) );
+            trim( loadedMapLine );
+
+            if( IS_IT_A_VALID_MAP_LINE( loadedMapLine ) )
+            {
+                GET_MAP_NAME_LEFT( loadedMapLine, loadedMapName )
+
+                if( IS_MAP_VALID( loadedMapName ) )
+                {
+                    strtolower( loadedMapName );
+                    TrieSetCell( fillerMapTrie, loadedMapName, mapCount );
+
+                    LOGGER( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapLine ) )
+                    ++mapCount;
+                }
             }
         }
     }
@@ -5170,6 +5260,17 @@ public loadNominationList( nomMapFilePath[] )
     LOGGER( 1, "    ( loadNominationList ) loadedCount: %d", ArraySize( g_nominationLoadedMapsArray ) )
 }
 
+/**
+ * Currently the empty cycle behavior is based on the function map_getNext(4). Therefore this is a
+ * problem because it will create infinity empty cycle loops between duplicated maps on the empty
+ * map cycle.
+ *
+ * So here I have to options:
+ * a) change all the empty cycle algorithm
+ * b) do not load duplicated maps.
+ *
+ * As anyone until now complained about this behavior, I choose the former as easier to implement.
+ */
 stock map_loadEmptyCycleList( emptyCycleFilePath[] )
 {
     LOGGER( 128, "I AM ENTERING ON map_loadEmptyCycleList(1)" )
@@ -5177,7 +5278,7 @@ stock map_loadEmptyCycleList( emptyCycleFilePath[] )
     TRY_TO_CLEAN( ArrayClear, g_emptyCycleMapsArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
     get_pcvar_string( cvar_emptyMapFilePath, emptyCycleFilePath, MAX_FILE_PATH_LENGHT - 1 );
 
-    map_populateList( g_emptyCycleMapsArray, emptyCycleFilePath );
+    map_populateList( g_emptyCycleMapsArray, emptyCycleFilePath, .isToLoadDuplicatedLines=false );
     LOGGER( 4, "( map_loadEmptyCycleList ) loadedCount: %d", ArraySize( g_emptyCycleMapsArray ) )
 }
 
