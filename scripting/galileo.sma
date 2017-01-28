@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-709";
+new const PLUGIN_VERSION[] = "v4.2.0-710";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -2826,7 +2826,7 @@ stock processLoadedGroupMapFileFrom( &Array:playerFillerMapsArray, &Array:filler
         fillerMapsArray = ArrayCreate( MAX_MAPNAME_LENGHT );
         ArrayGetString( fillersFilePathsArray, groupIndex, fillerFilePath, charsmax( fillerFilePath ) );
 
-        loadedMapsTotal += map_populateList( fillerMapsArray, fillerFilePath, charsmax( fillerFilePath ) );
+        loadedMapsTotal += map_populateList( fillerMapsArray, fillerFilePath );
         ArrayPushCell( playerFillerMapsArray, fillerMapsArray );
 
         LOGGER( 8, "[%i] groupCount: %i, filersMapCount: %i", groupIndex, groupCount, ArraySize( fillerMapsArray ) )
@@ -2849,7 +2849,7 @@ stock processLoadedGroupMapFileFrom2( &Array:fillersFilePathsArray, &Trie:player
     for( new groupIndex = 0; groupIndex < groupCount; ++groupIndex )
     {
         ArrayGetString( fillersFilePathsArray, groupIndex, fillerFilePath, charsmax( fillerFilePath ) );
-        loadedMapsTotal += map_populateList( _, fillerFilePath, charsmax( fillerFilePath ), playerFillerMapsTrie, false );
+        loadedMapsTotal += map_populateList( _, fillerFilePath, playerFillerMapsTrie, false );
 
         LOGGER( 8, "( processLoadedGroupMapFileFrom2 ) fillersFilePaths[%i]: %s", groupIndex, fillerFilePath )
     }
@@ -2943,7 +2943,6 @@ stock configureServerMapChange( emptyCycleFilePath[] )
     if( get_pcvar_num( cvar_emptyServerWaitMinutes )
         || get_pcvar_num( cvar_isEmptyCycleByMapChange ) )
     {
-        g_emptyCycleMapsArray = ArrayCreate( MAX_MAPNAME_LENGHT );
         map_loadEmptyCycleList( emptyCycleFilePath );
 
         if( get_pcvar_num( cvar_emptyServerWaitMinutes ) )
@@ -4800,8 +4799,8 @@ public resetRoundsScores()
     LOGGER( 1, "    I AM EXITING ON resetRoundsScores(0)" )
 }
 
-stock map_populateList( Array:mapArray = Invalid_Array, mapFilePath[], mapFilePathLength,
-                        Trie:fillerMapTrie = Invalid_Trie, bool:isToClearTheTrie = true )
+stock map_populateList( Array:mapArray = Invalid_Array, mapFilePath[], Trie:fillerMapTrie = Invalid_Trie,
+                        bool:isToClearTheTrie = true )
 {
     LOGGER( 128, "I AM ENTERING ON map_populateList(4) mapFilePath: %s", mapFilePath )
 
@@ -4832,7 +4831,7 @@ stock map_populateList( Array:mapArray = Invalid_Array, mapFilePath[], mapFilePa
         }
         else
         {
-            get_cvar_string( "mapcyclefile", mapFilePath, mapFilePathLength );
+            get_cvar_string( "mapcyclefile", mapFilePath, MAX_FILE_PATH_LENGHT - 1 );
 
             LOGGER( 4, "" )
             LOGGER( 4, "    map_populateList(...) Loading the MAPCYCLE! mapFilePath: %s", mapFilePath )
@@ -5167,16 +5166,18 @@ public loadNominationList( nomMapFilePath[] )
     get_pcvar_string( cvar_nomMapFilePath, nomMapFilePath, MAX_FILE_PATH_LENGHT - 1 );
     LOGGER( 4, "( loadNominationList ) cvar_nomMapFilePath: %s", nomMapFilePath )
 
-    map_populateList( g_nominationLoadedMapsArray, nomMapFilePath, MAX_FILE_PATH_LENGHT - 1, g_nominationLoadedMapsTrie );
+    map_populateList( g_nominationLoadedMapsArray, nomMapFilePath, g_nominationLoadedMapsTrie );
     LOGGER( 1, "    ( loadNominationList ) loadedCount: %d", ArraySize( g_nominationLoadedMapsArray ) )
 }
 
 stock map_loadEmptyCycleList( emptyCycleFilePath[] )
 {
     LOGGER( 128, "I AM ENTERING ON map_loadEmptyCycleList(1)" )
+
+    TRY_TO_CLEAN( ArrayClear, g_emptyCycleMapsArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
     get_pcvar_string( cvar_emptyMapFilePath, emptyCycleFilePath, MAX_FILE_PATH_LENGHT - 1 );
 
-    map_populateList( g_emptyCycleMapsArray, emptyCycleFilePath, MAX_FILE_PATH_LENGHT - 1 );
+    map_populateList( g_emptyCycleMapsArray, emptyCycleFilePath );
     LOGGER( 4, "( map_loadEmptyCycleList ) loadedCount: %d", ArraySize( g_emptyCycleMapsArray ) )
 }
 
