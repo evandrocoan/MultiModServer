@@ -139,8 +139,8 @@ Minimal Configuration File:
 ////////////////////////////////////////////////////////////////////////
 // This is the minimal setting file you ever need to use Galileo.     //
 // All the other options not listed here are set to their default     //
-// values specified on the default `galileo.cfg` file which comes     //
-// with the plugin.                                                   //
+// values specified on the default file `galileo.cfg` which comes     //
+// with the plugin on the zip file Galileo-XXX.zip                    //
 ////////////////////////////////////////////////////////////////////////
 
 // vote options
@@ -154,6 +154,13 @@ gal_vote_expirationcountdown 1
 
 // Indicates whether or not to perform a automatic end map voting
 gal_endofmapvote 1
+
+// Specifies the maximum number of minutes/rounds/frags a map can be played.
+// If 0, it will always allow map extension.
+// If 1, it will always block map extension.
+amx_extendmap_max 0
+amx_extendmap_max_round 0
+amx_extendmap_max_frags 0
 
 
 ////////////////////////////////////////////////////////////////////////

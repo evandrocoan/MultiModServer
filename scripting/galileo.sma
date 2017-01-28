@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-698";
+new const PLUGIN_VERSION[] = "v4.2.0-699";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -1093,6 +1093,7 @@ enum (+= 100000)
     TASKID_INTERMISSION_HOLD,
     TASKID_FINISH_GAME_TIME_BY_HALF,
     TASKID_BLOCK_NEW_VOTING_START,
+    TASKID_SERVER_CHANGE_LEVEL,
 }
 
 
@@ -1627,7 +1628,7 @@ public plugin_init()
     cvar_emptyServerWaitMinutes    = register_cvar( "gal_emptyserver_wait"         , "0"    );
     cvar_isEmptyCycleByMapChange   = register_cvar( "gal_emptyserver_change"       , "0"    );
     cvar_emptyMapFilePath          = register_cvar( "gal_emptyserver_mapfile"      , ""     );
-    cvar_soundsMute                = register_cvar( "gal_sounds_mute"              , "31"   );
+    cvar_soundsMute                = register_cvar( "gal_sounds_mute"              , "27"   );
     cvar_hudsHide                  = register_cvar( "gal_sounds_hud"               , "31"   );
     cvar_coloredChatPrefix         = register_cvar( "gal_colored_chat_prefix"      , ""     );
     cvar_endOnRound                = register_cvar( "gal_endonround"               , "0"    );
@@ -14654,16 +14655,25 @@ stock restoreTheChatTime()
 
 /**
  * This function call is only triggered by the game event register_event( "30", "changeMap", "a" ).
+ *
+ * The task `TASKID_SERVER_CHANGE_LEVEL` cannot be removed to stop the map change, because when this
+ * is called by the game, there is not turning back and the map will change anyways.
+ *
+ * This event can be called twice, one by th game engine (not turning back), and the other by me.
+ * The former is due the game engine call could take some seconds more to happen, then it would mess
+ * with the change timing. Therefore I call it just to be sure the deadline is missed.
  */
 public changeMap()
 {
     LOGGER( 128, "I AM ENTERING ON changeMap(0)" )
-
-    new Float:chatTime;
     new nextmap_name[ MAX_MAPNAME_LENGHT ];
 
     // mp_chattime defaults to 10 in other mods
-    if( cvar_mp_chattime )
+    new Float:chatTime = 8.0;
+
+    // So only set/save the chat time at its first called time.
+    if( cvar_mp_chattime
+        && !floatround( g_originalChatTime, floatround_floor ) )
     {
         chatTime           = get_pcvar_float( cvar_mp_chattime );
         g_originalChatTime = chatTime;
@@ -14673,10 +14683,14 @@ public changeMap()
         LOGGER( 2, "( changeMap ) IS CHANGING THE CVAR 'mp_chattime' to '%f'.", chatTime + 2.0 )
     }
 
-    new length = getNextMapName( nextmap_name, charsmax( nextmap_name ) ) + 1;
+    // If this task is already running, just do nothing by here.
+    if( !task_exists( TASKID_SERVER_CHANGE_LEVEL ) )
+    {
+        new length = getNextMapName( nextmap_name, charsmax( nextmap_name ) ) + 1;
 
-    // change with 1.5 sec. delay
-    set_task( chatTime, "serverChangeLevel", 0, nextmap_name, length );
+        // change with 1.5 sec. delay
+        set_task( chatTime, "serverChangeLevel", TASKID_SERVER_CHANGE_LEVEL, nextmap_name, length );
+    }
 }
 
 stock bool:isAValidMap( mapname[] )
