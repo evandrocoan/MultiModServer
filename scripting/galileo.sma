@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-712";
+new const PLUGIN_VERSION[] = "v4.2.0-714";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -6318,7 +6318,8 @@ stock loadTheDefaultVotingChoices()
     LOGGER( 128, "I AM ENTERING ON loadTheDefaultVotingChoices(0)" )
 
     // To add the next map to the voting menu, if enabled.
-    if( get_pcvar_num( cvar_voteMapChoiceNext ) )
+    if( get_pcvar_num( cvar_voteMapChoiceNext )
+        && !equali( g_currentMapName, g_nextMapName ) )
     {
         new mapIndex;
         new mapInfo[ MAX_MAPNAME_LENGHT ];
@@ -14611,6 +14612,7 @@ stock getNextMapByPosition( Array:mapcycleFileListArray, nextMapName[], &nextMap
         setTheCurrentMap:
         doAmxxLog( "WARNING, getNextMapByPosition: No valid maps found on your map cycle! mapcycleFileListArray: %d", mapcycleFileListArray );
 
+        nextMapCyclePosition = 0;
         copy( nextMapName, MAX_MAPNAME_LENGHT - 1, g_currentMapName );
     }
 
