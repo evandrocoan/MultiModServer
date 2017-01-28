@@ -131,7 +131,7 @@ It is [COLOR="Red"][B]highly recommended[/B][/COLOR] you to review the well-comm
 all the cvars' options you have with this plugin.  It's located in the [B]Attached ZIP[/B]
 available at the [goanchor=Downloads]Downloads[/goanchor] section, and [B]here below[/B] clicking on the [COLOR="Red"]show[/COLOR] button.
 
-Minimal Configuration File:
+[B]Minimal Configuration File:[/B]
 [pawn]
 // Galileo Configuration File
 
@@ -171,7 +171,7 @@ amx_extendmap_max_frags 1
 ////////////////////////////////////////////////////////////////////////
 [/pawn]
 
-Default `galileo.cfg`:
+[B]Default `galileo.cfg`:[/B]
 [SPOILER]
 [pawn]
 // Galileo Configuration File
@@ -257,7 +257,7 @@ gal_srv_start 1
 // A value of 0 will disable this feature.
 //
 //  1 - to load only the first map series it found.
-//  2 - to load all the map series it found (if 1 and 2 are set, 1 will be ignored).
+//  2 - to load all the map series it found (if the flags 1 and 2 are set, the flag 1 will be ignored).
 //  4 - only to load a map series only if it is starting at 1, as `de_dust` and `de_nuke1`.
 //  8 - if you are on a map series, and there is an RTV vote, start following the new series.
 //
@@ -268,7 +268,7 @@ gal_srv_start 1
 // gal_srv_move_cursor 0
 //
 // Default: 0
-gal_srv_move_cursor 14
+gal_srv_move_cursor 8
 
 // Indicates which action to take immediately after it is detected that
 // the server has been 'externally restarted', and half of the time-left or
@@ -973,7 +973,7 @@ amx_extendmap_step 15
 // To always allow map extension, set this cvar to 0
 // To always block map extension, set this cvar to 1
 //
-// Default: 0
+// Default: 1
 amx_extendmap_max 0
 
 // Specifies the number of rounds a map will be extended each time
@@ -993,7 +993,7 @@ amx_extendmap_step_rounds 20
 // To always allow map extension, set this cvar to 0
 // To always block map extension, set this cvar to 1
 //
-// Default: 0
+// Default: 1
 amx_extendmap_max_rounds 0
 
 // Enable virtual support for the Half-File cvar 'mp_fraglimit' on
@@ -1024,7 +1024,7 @@ amx_extendmap_step_frags 30
 // To always allow map extension, set this cvar to 0
 // To always block map extension, set this cvar to 1
 //
-// Default: 0
+// Default: 1
 amx_extendmap_max_frags 0
 
 // Control the 'Stay Here' vote option when performing early votes
@@ -1034,7 +1034,7 @@ amx_extendmap_max_frags 0
 // 1 - show the vote option "Stay Here".
 //
 // Default: 0
-amx_extendmap_allow_stay 0
+amx_extendmap_allow_stay 1
 
 // This feature allow to show the map name on the stay here vote option.
 //
@@ -1350,7 +1350,7 @@ gal_emptyserver_mapfile "addons/amxmodx/configs/galileo/emptycycle_maplist.txt"
 // Instead of:
 // gal_sounds_mute 0
 //
-// Default: 31
+// Default: 27
 gal_sounds_mute 0
 
 // Indicates if any HUD messages should be hidden during the various
@@ -2738,6 +2738,7 @@ v3.2.2             , Galileo-3.2.2.zip (141.2 KB, 191   views)
 v3.2.3             , Galileo-3.2.3.zip (141.4 KB, 94    views)
 v3.2.4             , Galileo-3.2.4.zip (142.2 KB, 50    views)
 v3.2.6             , Galileo-3.2.6.zip (144.4 KB, 149   views)
+v4.2.0             , Galileo-4.2.0.zip (199.6 KB, 117   views)
 [/CODE]
 
 [anchor]LatestRelease[/anchor]******************************** [SIZE="6"][B][COLOR="Blue"]Latest Release Download[/COLOR][/B][/SIZE]: [goanchor=Top]Go to top[/goanchor] **
