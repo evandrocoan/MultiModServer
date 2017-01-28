@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-707";
+new const PLUGIN_VERSION[] = "v4.2.0-708";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -4844,7 +4844,7 @@ stock map_populateList( Array:mapArray = Invalid_Array, mapFilePath[], mapFilePa
     return mapCount;
 }
 
-stock checkIfThereEnoughMapPopulated( mapCount, mapFileDescriptor )
+stock checkIfThereEnoughMapPopulated( mapCount, mapFileDescriptor, mapFilePath[] )
 {
     LOGGER( 128, "I AM ENTERING ON checkIfThereEnoughMapPopulated(2) mapCount: %d", mapCount )
 
@@ -4873,7 +4873,8 @@ stock checkIfThereEnoughMapPopulated( mapCount, mapFileDescriptor )
         }
 
         LOGGER( 1, "( loadMapFileList ) Error %d, Not valid/enough(%d) maps found: %s^n", AMX_ERR_NOTFOUND, mapCount, readLines )
-        log_error( AMX_ERR_NOTFOUND, "Not valid/enough(%d) maps found: %s^n", mapCount, readLines );
+        log_error( AMX_ERR_NOTFOUND, "Not valid/enough(%d) maps found in: %s", mapCount, mapFilePath );
+        log_error( AMX_ERR_NOTFOUND, "readLines: %s^n", readLines );
     }
 }
 
@@ -4906,7 +4907,7 @@ stock loadMapFileList( Array:mapArray, mapFilePath[], Trie:fillerMapTrie )
             log_error( AMX_ERR_PARAMS, "loadMapFileList: An invalid map descriptor %d/%d!^n", mapArray, fillerMapTrie );
         }
 
-        checkIfThereEnoughMapPopulated( mapCount, mapFileDescriptor );
+        checkIfThereEnoughMapPopulated( mapCount, mapFileDescriptor, mapFilePath );
 
         fclose( mapFileDescriptor );
         LOGGER( 4, "" )
@@ -14999,7 +15000,7 @@ stock loadMapFileListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
         }
 
         TRY_TO_APPLY( TrieDestroy, loadedMapSeriesTrie )
-        checkIfThereEnoughMapPopulated( mapCount, mapFileDescriptor );
+        checkIfThereEnoughMapPopulated( mapCount, mapFileDescriptor, mapFilePath );
 
         fclose( mapFileDescriptor );
         LOGGER( 4, "" )
