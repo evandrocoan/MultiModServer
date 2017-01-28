@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-714";
+new const PLUGIN_VERSION[] = "v4.2.0-715";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -1216,8 +1216,8 @@ new cvar_coloredChatPrefix;
 /**
  * Various Artists.
  */
-new const MAP_FOLDER_LOAD_FLAG[]            = "*";
-new const MAP_CYCLE_LOAD_FLAG[]             = "#";
+new const MAP_FOLDER_LOAD_FLAG              = '*';
+new const MAP_CYCLE_LOAD_FLAG               = '#';
 new const GAL_VOTEMAP_MENU_COMMAND[]        = "galmenu";
 new const LAST_EMPTY_CYCLE_FILE_NAME[]      = "lastEmptyCycleMapName.dat";
 new const CURRENT_AND_NEXTMAP_FILE_NAME[]   = "currentAndNextmapNames.dat";
@@ -2677,7 +2677,7 @@ public map_loadRecentBanList( maximumLoadMapsCount )
 
 stock writeRecentMapsBanList( loadedMapsCount )
 {
-    LOGGER( 128, "I AM ENTERING ON writeRecentMapsBanList(0) g_recentListMapsArray: %d", g_recentListMapsArray )
+    LOGGER( 128, "I AM ENTERING ON writeRecentMapsBanList(1) g_recentListMapsArray: %d", g_recentListMapsArray )
 
     new recentMapName     [ MAX_MAPNAME_LENGHT ];
     new recentMapsFilePath[ MAX_FILE_PATH_LENGHT ];
@@ -2954,23 +2954,32 @@ stock configureServerMapChange( emptyCycleFilePath[] )
 
 stock configureTheNorPlayersFeature( mapFilerFilePath[] )
 {
-    LOGGER( 128, "I AM ENTERING ON configureTheNorPlayersFeature(2)" )
+    LOGGER( 128, "I AM ENTERING ON configureTheNorPlayersFeature(1)" )
 
     new loadedCount;
     get_pcvar_string( cvar_voteMapFilePath, mapFilerFilePath, MAX_FILE_PATH_LENGHT - 1 );
 
     if( mapFilerFilePath[ 0 ] )
     {
-        LOGGER( 4, "" )
-        TRY_TO_CLEAN( clear_two_dimensional_array, g_norPlayerFillerMapGroupArrays, ArrayCreate() )
+        if( file_exists( mapFilerFilePath )
+            || mapFilerFilePath[ 0 ] == MAP_CYCLE_LOAD_FLAG
+            || mapFilerFilePath[ 0 ] == MAP_FOLDER_LOAD_FLAG )
+        {
+            LOGGER( 4, "" )
+            TRY_TO_CLEAN( clear_two_dimensional_array, g_norPlayerFillerMapGroupArrays, ArrayCreate() )
 
-        TRY_TO_CLEAN( ArrayClear, g_voteNorPlayerFillerPathsArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
-        TRY_TO_CLEAN( ArrayClear, g_norMaxMapsPerGroupToUseArray , ArrayCreate() )
+            TRY_TO_CLEAN( ArrayClear, g_voteNorPlayerFillerPathsArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
+            TRY_TO_CLEAN( ArrayClear, g_norMaxMapsPerGroupToUseArray , ArrayCreate() )
 
-        loadMapGroupsFeatureFile( mapFilerFilePath, g_voteNorPlayerFillerPathsArray, g_norMaxMapsPerGroupToUseArray );
-        loadedCount = processLoadedGroupMapFileFrom( g_norPlayerFillerMapGroupArrays, g_voteNorPlayerFillerPathsArray );
+            loadMapGroupsFeatureFile( mapFilerFilePath, g_voteNorPlayerFillerPathsArray, g_norMaxMapsPerGroupToUseArray );
+            loadedCount = processLoadedGroupMapFileFrom( g_norPlayerFillerMapGroupArrays, g_voteNorPlayerFillerPathsArray );
 
-        LOGGER( 4, "", debugLoadedGroupMapFileFrom( g_norPlayerFillerMapGroupArrays, g_norMaxMapsPerGroupToUseArray ) )
+            LOGGER( 4, "", debugLoadedGroupMapFileFrom( g_norPlayerFillerMapGroupArrays, g_norMaxMapsPerGroupToUseArray ) )
+        }
+        else
+        {
+            doAmxxLog( "ERROR: configureTheNorPlayersFeature, Could not open the file: %s", mapFilerFilePath );
+        }
     }
 
     LOGGER( 1, "    ( configureTheNorPlayersFeature ) Returning loadedCount: %d", loadedCount )
@@ -2979,7 +2988,7 @@ stock configureTheNorPlayersFeature( mapFilerFilePath[] )
 
 stock configureTheMidPlayersFeature( mapFilerFilePath[] )
 {
-    LOGGER( 128, "I AM ENTERING ON configureTheMidPlayersFeature(2)" )
+    LOGGER( 128, "I AM ENTERING ON configureTheMidPlayersFeature(1)" )
     new loadedCount;
 
     if( get_pcvar_num( cvar_voteMidPlayers ) > VOTE_MIDDLE_PLAYERS_REQUIRED )
@@ -2988,16 +2997,24 @@ stock configureTheMidPlayersFeature( mapFilerFilePath[] )
 
         if( mapFilerFilePath[ 0 ] )
         {
-            LOGGER( 4, "" )
-            TRY_TO_CLEAN( clear_two_dimensional_array, g_midPlayerFillerMapGroupArrays, ArrayCreate() )
+            if( file_exists( mapFilerFilePath )
+                || mapFilerFilePath[ 0 ] == MAP_CYCLE_LOAD_FLAG )
+            {
+                LOGGER( 4, "" )
+                TRY_TO_CLEAN( clear_two_dimensional_array, g_midPlayerFillerMapGroupArrays, ArrayCreate() )
 
-            TRY_TO_CLEAN( ArrayClear, g_voteMidPlayerFillerPathsArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
-            TRY_TO_CLEAN( ArrayClear, g_midMaxMapsPerGroupToUseArray , ArrayCreate() )
+                TRY_TO_CLEAN( ArrayClear, g_voteMidPlayerFillerPathsArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
+                TRY_TO_CLEAN( ArrayClear, g_midMaxMapsPerGroupToUseArray , ArrayCreate() )
 
-            loadMapGroupsFeatureFile( mapFilerFilePath, g_voteMidPlayerFillerPathsArray, g_midMaxMapsPerGroupToUseArray );
-            loadedCount = processLoadedGroupMapFileFrom( g_midPlayerFillerMapGroupArrays, g_voteMidPlayerFillerPathsArray );
+                loadMapGroupsFeatureFile( mapFilerFilePath, g_voteMidPlayerFillerPathsArray, g_midMaxMapsPerGroupToUseArray );
+                loadedCount = processLoadedGroupMapFileFrom( g_midPlayerFillerMapGroupArrays, g_voteMidPlayerFillerPathsArray );
 
-            LOGGER( 4, "", debugLoadedGroupMapFileFrom( g_midPlayerFillerMapGroupArrays, g_midMaxMapsPerGroupToUseArray ) )
+                LOGGER( 4, "", debugLoadedGroupMapFileFrom( g_midPlayerFillerMapGroupArrays, g_midMaxMapsPerGroupToUseArray ) )
+            }
+            else
+            {
+                doAmxxLog( "ERROR: configureTheMidPlayersFeature, Could not open the file: %s", mapFilerFilePath );
+            }
         }
     }
 
@@ -3007,7 +3024,7 @@ stock configureTheMidPlayersFeature( mapFilerFilePath[] )
 
 stock configureTheMinPlayersFeature( mapFilerFilePath[] )
 {
-    LOGGER( 128, "I AM ENTERING ON configureTheMinPlayersFeature(2)" )
+    LOGGER( 128, "I AM ENTERING ON configureTheMinPlayersFeature(1)" )
     new loadedCount;
 
     if( get_pcvar_num( cvar_voteMinPlayers ) > VOTE_MININUM_PLAYERS_REQUIRED )
@@ -3016,16 +3033,24 @@ stock configureTheMinPlayersFeature( mapFilerFilePath[] )
 
         if( mapFilerFilePath[ 0 ] )
         {
-            LOGGER( 4, "" )
-            TRY_TO_CLEAN( clear_two_dimensional_array, g_minPlayerFillerMapGroupArrays, ArrayCreate() )
+            if( file_exists( mapFilerFilePath )
+                || mapFilerFilePath[ 0 ] == MAP_CYCLE_LOAD_FLAG )
+            {
+                LOGGER( 4, "" )
+                TRY_TO_CLEAN( clear_two_dimensional_array, g_minPlayerFillerMapGroupArrays, ArrayCreate() )
 
-            TRY_TO_CLEAN( ArrayClear, g_voteMinPlayerFillerPathsArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
-            TRY_TO_CLEAN( ArrayClear, g_minMaxMapsPerGroupToUseArray , ArrayCreate() )
+                TRY_TO_CLEAN( ArrayClear, g_voteMinPlayerFillerPathsArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
+                TRY_TO_CLEAN( ArrayClear, g_minMaxMapsPerGroupToUseArray , ArrayCreate() )
 
-            loadMapGroupsFeatureFile( mapFilerFilePath, g_voteMinPlayerFillerPathsArray, g_minMaxMapsPerGroupToUseArray );
-            loadedCount = processLoadedGroupMapFileFrom( g_minPlayerFillerMapGroupArrays, g_voteMinPlayerFillerPathsArray );
+                loadMapGroupsFeatureFile( mapFilerFilePath, g_voteMinPlayerFillerPathsArray, g_minMaxMapsPerGroupToUseArray );
+                loadedCount = processLoadedGroupMapFileFrom( g_minPlayerFillerMapGroupArrays, g_voteMinPlayerFillerPathsArray );
 
-            LOGGER( 4, "", debugLoadedGroupMapFileFrom( g_minPlayerFillerMapGroupArrays, g_minMaxMapsPerGroupToUseArray ) )
+                LOGGER( 4, "", debugLoadedGroupMapFileFrom( g_minPlayerFillerMapGroupArrays, g_minMaxMapsPerGroupToUseArray ) )
+            }
+            else
+            {
+                doAmxxLog( "ERROR: configureTheMinPlayersFeature, Could not open the file: %s", mapFilerFilePath );
+            }
         }
     }
 
@@ -3091,7 +3116,7 @@ stock loadTheBanRecentMapsFeature( maximumLoadMapsCount )
 
 stock debugLoadedGroupMapFileFrom( &Array:playerFillerMapsArray, &Array:maxMapsPerGroupToUseArray )
 {
-    LOGGER( 128, "I AM ENTERING ON debugLoadedGroupMapFileFrom(3) groupCount: %d", ArraySize( playerFillerMapsArray ) )
+    LOGGER( 128, "I AM ENTERING ON debugLoadedGroupMapFileFrom(2) groupCount: %d", ArraySize( playerFillerMapsArray ) )
 
     new arraySize;
     new Array:fillerMapsArray;
@@ -3120,11 +3145,11 @@ stock debugLoadedGroupMapFileFrom( &Array:playerFillerMapsArray, &Array:maxMapsP
 
 stock loadMapGroupsFeatureFile( mapFilerFilePath[], &Array:mapFilersPathArray, &Array:maxMapsPerGroupToUse )
 {
-    LOGGER( 128, "I AM ENTERING ON loadMapGroupsFeatureFile(0), mapFilerFilePath: %s", mapFilerFilePath )
+    LOGGER( 128, "I AM ENTERING ON loadMapGroupsFeatureFile(3), mapFilerFilePath: %s", mapFilerFilePath )
 
     // The mapFilerFilePaths '*' and '#' disables The Map Groups Feature.
-    if( !equal( mapFilerFilePath[ 0 ], MAP_FOLDER_LOAD_FLAG )
-        && !equal( mapFilerFilePath[ 0 ], MAP_CYCLE_LOAD_FLAG ) )
+    if( mapFilerFilePath[ 0 ] != MAP_FOLDER_LOAD_FLAG
+        && mapFilerFilePath[ 0 ] != MAP_CYCLE_LOAD_FLAG )
     {
         // determine what kind of file it's being used as
         new mapFilerFile = fopen( mapFilerFilePath, "rt" );
@@ -3193,17 +3218,16 @@ stock loadMapGroupsFeatureFile( mapFilerFilePath[], &Array:mapFilersPathArray, &
                 fclose( mapFilerFile );
                 goto loadTheDefaultMapFile;
             }
+
+            fclose( mapFilerFile );
         }
         else
         {
             LOGGER( 1, "AMX_ERR_NOTFOUND, %L", LANG_SERVER, "GAL_FILLER_NOTFOUND", mapFilerFilePath )
             log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_FILLER_NOTFOUND", mapFilerFilePath );
 
-            fclose( mapFilerFile );
             goto loadTheDefaultMapFile;
         }
-
-        fclose( mapFilerFile );
     }
     // we'll be loading all maps in the /maps folder or the current mapcycle file
     else
@@ -4811,41 +4835,50 @@ stock map_populateList( Array:mapArray=Invalid_Array, mapFilePath[],
     // If there is a map file to load
     if( mapFilePath[ 0 ] )
     {
-        new Trie:duplicatedMaps;
-        new bool:isMapFolderLoad;
-
-        if( !isToLoadDuplicatedMaps ) duplicatedMaps = TrieCreate();
-        isMapFolderLoad = equali( mapFilePath, MAP_FOLDER_LOAD_FLAG ) != 0;
-
-        // clear the map array in case we're reusing it
-        TRY_TO_APPLY( ArrayClear, mapArray )
-
-        // Not always we want to discard the loaded maps
-        if( isToClearTheTrie ) TRY_TO_APPLY( TrieClear, fillerMapTrie )
-
-        if( !isMapFolderLoad
-            && !equal( mapFilePath, MAP_CYCLE_LOAD_FLAG ) )
+        if( file_exists( mapFilePath )
+            || mapFilePath[ 0 ] == MAP_CYCLE_LOAD_FLAG
+            || mapFilePath[ 0 ] == MAP_FOLDER_LOAD_FLAG )
         {
-            LOGGER( 4, "" )
-            LOGGER( 4, "    map_populateList(...) Loading the PASSED FILE! mapFilePath: %s", mapFilePath )
-            mapCount = loadMapFileList( mapArray, mapFilePath, fillerMapTrie, duplicatedMaps );
-        }
-        else if( isMapFolderLoad )
-        {
-            LOGGER( 4, "" )
-            LOGGER( 4, "    map_populateList(...) Loading the MAP FOLDER! mapFilePath: %s", mapFilePath )
-            mapCount = loadMapsFolderDirectory( mapArray, fillerMapTrie );
+            new Trie:duplicatedMaps;
+            new bool:isMapFolderLoad;
+
+            if( !isToLoadDuplicatedMaps ) duplicatedMaps = TrieCreate();
+            isMapFolderLoad = ( mapFilePath[ 0 ] == MAP_FOLDER_LOAD_FLAG );
+
+            // clear the map array in case we're reusing it
+            TRY_TO_APPLY( ArrayClear, mapArray )
+
+            // Not always we want to discard the loaded maps
+            if( isToClearTheTrie ) TRY_TO_APPLY( TrieClear, fillerMapTrie )
+
+            if( !isMapFolderLoad
+                && mapFilePath[ 0 ] != MAP_CYCLE_LOAD_FLAG )
+            {
+                LOGGER( 4, "" )
+                LOGGER( 4, "    map_populateList(...) Loading the PASSED FILE! mapFilePath: %s", mapFilePath )
+                mapCount = loadMapFileList( mapArray, mapFilePath, fillerMapTrie, duplicatedMaps );
+            }
+            else if( isMapFolderLoad )
+            {
+                LOGGER( 4, "" )
+                LOGGER( 4, "    map_populateList(...) Loading the MAP FOLDER! mapFilePath: %s", mapFilePath )
+                mapCount = loadMapsFolderDirectory( mapArray, fillerMapTrie );
+            }
+            else
+            {
+                get_cvar_string( "mapcyclefile", mapFilePath, MAX_FILE_PATH_LENGHT - 1 );
+
+                LOGGER( 4, "" )
+                LOGGER( 4, "    map_populateList(...) Loading the MAPCYCLE! mapFilePath: %s", mapFilePath )
+                mapCount = loadMapFileList( mapArray, mapFilePath, fillerMapTrie, duplicatedMaps );
+            }
+
+            TRY_TO_APPLY( TrieDestroy, duplicatedMaps )
         }
         else
         {
-            get_cvar_string( "mapcyclefile", mapFilePath, MAX_FILE_PATH_LENGHT - 1 );
-
-            LOGGER( 4, "" )
-            LOGGER( 4, "    map_populateList(...) Loading the MAPCYCLE! mapFilePath: %s", mapFilePath )
-            mapCount = loadMapFileList( mapArray, mapFilePath, fillerMapTrie, duplicatedMaps );
+            doAmxxLog( "ERROR: map_populateList, Could not open the file: %s", mapFilePath );
         }
-
-        TRY_TO_APPLY( TrieDestroy, duplicatedMaps )
     }
 
     LOGGER( 1, "    I AM EXITING map_populateList(4) mapCount: %d", mapCount )
@@ -6190,7 +6223,7 @@ stock vote_addNominations( blockedMapsBuffer[], &announcementShowedTimes = 0 )
             get_pcvar_string( cvar_voteMinPlayersMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) );
 
             // '*' is invalid blacklist for voting, because it would block all server maps.
-            if( equal( mapFilerFilePath, MAP_FOLDER_LOAD_FLAG ) )
+            if( mapFilerFilePath[ 0 ] == MAP_FOLDER_LOAD_FLAG )
             {
                 LOGGER( 1, "AMX_ERR_NOTFOUND, %L", LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilerFilePath )
                 log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilerFilePath );
@@ -15165,14 +15198,21 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
     // If there is a map file to load
     if( mapFilePath[ 0 ] )
     {
-        // clear the map array in case we're reusing it
-        TRY_TO_APPLY( ArrayClear, mapArray )
-        TRY_TO_APPLY( TrieClear , mapTrie )
+        if( file_exists( mapFilePath ) )
+        {
+            // clear the map array in case we're reusing it
+            TRY_TO_APPLY( ArrayClear, mapArray )
+            TRY_TO_APPLY( TrieClear , mapTrie )
 
-        LOGGER( 4, "" )
-        LOGGER( 4, "    map_populateListOnSeries(...) Loading the PASSED FILE! mapFilePath: %s", mapFilePath )
+            LOGGER( 4, "" )
+            LOGGER( 4, "    map_populateListOnSeries(...) Loading the PASSED FILE! mapFilePath: %s", mapFilePath )
 
-        mapCount = loadMapFileListOnSeries( mapArray, mapTrie, mapFilePath );
+            mapCount = loadMapFileListOnSeries( mapArray, mapTrie, mapFilePath );
+        }
+        else
+        {
+            doAmxxLog( "ERROR: map_populateListOnSeries, Could not open the file: %s", mapFilePath );
+        }
     }
 
     LOGGER( 1, "    I AM EXITING map_populateListOnSeries(3) mapCount: %d", mapCount )
