@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-701";
+new const PLUGIN_VERSION[] = "v4.2.0-702";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -11246,6 +11246,7 @@ public cmd_startVote( player_id, level, cid )
     }
     else
     {
+        new waitTime;
         g_isToChangeMapOnVotingEnd = true;
 
         if( read_argc() == 2 )
@@ -11270,6 +11271,9 @@ public cmd_startVote( player_id, level, cid )
         LOGGER( 8, "( cmd_startVote ) g_isTimeToRestart? %d, g_isToChangeMapOnVotingEnd? %d, \
                 g_voteStatus & IS_FORCED_VOTE: %d", g_isTimeToRestart, g_isToChangeMapOnVotingEnd, \
                 g_voteStatus & IS_FORCED_VOTE != 0 )
+
+        waitTime = floatround( getVoteAnnouncementTime( get_pcvar_num( cvar_isToAskForEndOfTheMapVote ) ), floatround_ceil );
+        console_print( player_id, "%L", player_id, "GAL_VOTE_COUNTDOWN", waitTime );
 
         vote_startDirector( true );
     }
