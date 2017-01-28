@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-702";
+new const PLUGIN_VERSION[] = "v4.2.0-703";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -65,20 +65,18 @@ new const PLUGIN_VERSION[] = "v4.2.0-702";
  *
  * 1   - Normal/basic debugging/depuration.
  *
- * 2   - a) Run the NORMAL Unit Tests on the server start.
- *       b) To skip the 'pendingVoteCountdown()'.
- *       c) Set the vote time to 5 seconds.
+ * 2   - Run the NORMAL Unit Tests on the server start.
  *
- * 4   - Run the DELAYED Unit Tests.
+ * 4   - Run the DELAYED Unit Tests on the server start.
  *
  * 8   - a) To create fake votes. See the function 'create_fakeVotes()'.
- *       b) To create fake players count. See the function 'get_real_players_number()'.
+ *       b) Set the vote time to 5 seconds.
+ *       c) To skip the 'pendingVoteCountdown()'.
+ *       d) To create fake players count. See the function 'get_real_players_number()'.
  *
  * 16  - Enable DEBUG_LEVEL 1 and all its debugging/depuration available.
  *
- * 32  - a) Run the MANUAL test on server start.
- *       b) To skip the 'pendingVoteCountdown()'.
- *       c) Set the vote time to 5 seconds.
+ * 32  - Run the MANUAL test on server start.
  *
  * 64  - Disable the LOGGER() while running the Unit Tests.
  *
@@ -86,7 +84,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-702";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 16
+#define DEBUG_LEVEL 16+2+64
 
 
 /**
@@ -6919,7 +6917,7 @@ stock initializeTheVoteDisplay()
     }
 
     // Adjust the choices delay for the Unit Tests run or normal work flow
-#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
+#if DEBUG_LEVEL & DEBUG_LEVEL_FAKE_VOTES
     g_votingSecondsRemaining = 5;
     handleChoicesDelay       = 0.1;
 #else
