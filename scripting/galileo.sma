@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-720";
+new const PLUGIN_VERSION[] = "v4.2.0-721";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-720";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 2+64
+#define DEBUG_LEVEL 0
 
 
 /**
@@ -1627,7 +1627,7 @@ public plugin_init()
     cvar_maxMapExtendFrags         = register_cvar( "amx_extendmap_max_frags"      , "1"    );
     cvar_extendmapAllowStay        = register_cvar( "amx_extendmap_allow_stay"     , "0"    );
     cvar_extendmapAllowStayType    = register_cvar( "amx_extendmap_allow_stay_type", "0"    );
-    cvar_isExtendmapOrderAllowed   = register_cvar( "amx_extendmap_allow_order"    , "2"    );
+    cvar_isExtendmapOrderAllowed   = register_cvar( "amx_extendmap_allow_order"    , "1"    );
     cvar_showVoteStatus            = register_cvar( "gal_vote_showstatus"          , "4"    );
     cvar_showVoteStatusType        = register_cvar( "gal_vote_showstatustype"      , "2"    );
     cvar_isToReplaceByVoteMenu     = register_cvar( "gal_vote_replace_menu"        , "1"    );
