@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-719";
+new const PLUGIN_VERSION[] = "v4.2.0-720";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -1500,6 +1500,7 @@ new g_dataDirPath   [ MAX_FILE_PATH_LENGHT ];
  */
 new cvar_amx_nextmap;
 new cvar_mapcyclefile;
+new cvar_gal_mapcyclefile;
 new g_nextMapCyclePosition;
 
 
@@ -1666,6 +1667,7 @@ public plugin_init()
 
     // This is a general pointer used for cvars not registered on the game.
     cvar_disabledValuePointer = register_cvar( "gal_disabled_value_pointer", "0", FCVAR_SPONLY );
+    cvar_gal_mapcyclefile     = register_cvar( "gal_mapcyclefile"          , "" , FCVAR_SERVER );
 
     // This are default behaviors independent of any setting to be enabled.
     configureEndGameCvars();
@@ -2013,7 +2015,7 @@ stock configureServerStart()
             }
             else
             {
-                // These data, are already loaded by the configureTheNextMapSetttings(0) function call.
+                // These data, are already loaded by the configureTheNextMapSetttings(1) function call.
                 trim( g_nextMapName );
                 trim( g_currentMapName );
 
@@ -2203,7 +2205,7 @@ public handleServerStart( backupMapsFilePath[], startAction )
             }
             else
             {
-                // When the Unit Tests are running, we do not want to wait anything.
+                // When the Unit Tests are running, we do not want to or can wait anything.
             #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
                 if( g_test_areTheUnitTestsRunning )
                 {
@@ -2313,7 +2315,7 @@ stock configureTheMapcycleSystem( mapToChange[], possibleNextMap[], possibleNext
         }
         else
         {
-            doAmxxLog( "ERROR, configureTheMapcycleSystem: Couldn't open the file to write the file ^"%s^"", lastMapChangedFilePath );
+            doAmxxLog( "ERROR, configureTheMapcycleSystem: Couldn't open the file to write ^"%s^"", lastMapChangedFilePath );
         }
 
         doAmxxLog( "" );
@@ -2425,7 +2427,7 @@ stock getRestartsOnTheCurrentMap( const mapToChange[] )
         }
         else
         {
-            doAmxxLog( "ERROR, getRestartsOnTheCurrentMap: Couldn't open the file to write the file ^"%s^"", lastMapChangedFilePath );
+            doAmxxLog( "ERROR, getRestartsOnTheCurrentMap: Couldn't open the file to write ^"%s^"", lastMapChangedFilePath );
         }
 
         LOGGER( 4, "( getRestartsOnTheCurrentMap ) lastMapChangedName: %s", lastMapChangedName )
@@ -2434,7 +2436,7 @@ stock getRestartsOnTheCurrentMap( const mapToChange[] )
     }
     else
     {
-        doAmxxLog( "ERROR, getRestartsOnTheCurrentMap: Couldn't open the file to read the file ^"%s^"", lastMapChangedFilePath );
+        doAmxxLog( "ERROR, getRestartsOnTheCurrentMap: Couldn't open the file to read ^"%s^"", lastMapChangedFilePath );
 
         if( ( lastMapChangedFile = fopen( lastMapChangedFilePath, "wt" ) ) )
         {
@@ -2443,7 +2445,7 @@ stock getRestartsOnTheCurrentMap( const mapToChange[] )
         }
         else
         {
-            doAmxxLog( "ERROR, getRestartsOnTheCurrentMap: Couldn't open the file to write the file ^"%s^"", lastMapChangedFilePath );
+            doAmxxLog( "ERROR, getRestartsOnTheCurrentMap: Couldn't open the file to write ^"%s^"", lastMapChangedFilePath );
         }
 
     }
@@ -2853,6 +2855,9 @@ stock processLoadedGroupMapFileFrom( Array:playerFillerMapsArray, Array:fillersF
     return loadedMapsTotal;
 }
 
+/**
+ *  To start loading the files.
+ */
 stock loadMapFiles( bool:readMapCycle = true )
 {
     LOGGER( 128, "I AM ENTERING ON loadMapFiles(1)" )
@@ -2868,13 +2873,15 @@ stock loadMapFiles( bool:readMapCycle = true )
     new loadedCount     [ loadMapFilesTypes ];
     new mapFilerFilePath[ MAX_FILE_PATH_LENGHT ];
 
-    // To start loading the files.
-    loadedCount[ t_Whitelist      ] = configureTheWhiteListFeature( mapFilerFilePath );
+    // The Whitelist list must to be loaded as the fist thing as the configureTheNextMapSetttings(1)
+    // need it to be loaded. And the configureTheNextMapSetttings(1) must to be the seconds thing to
+    // be loaded because the everything else depends on it being properly set up.
+    loadedCount[ t_Whitelist ] = configureTheWhiteListFeature( mapFilerFilePath );
+    if( readMapCycle ) configureTheNextMapSetttings( mapFilerFilePath );
+
     loadedCount[ t_MininumPlayers ] = configureTheMinPlayersFeature( mapFilerFilePath );
     loadedCount[ t_MiddlePlayers  ] = configureTheMidPlayersFeature( mapFilerFilePath );
     loadedCount[ t_NormalPlayers  ] = configureTheNorPlayersFeature( mapFilerFilePath );
-
-    if( readMapCycle ) configureTheNextMapSetttings( mapFilerFilePath );
 
     configureTheRTVFeature( mapFilerFilePath );
     configureServerMapChange( mapFilerFilePath );
@@ -14161,6 +14168,31 @@ stock getNextMapLocalInfoToken( currentMapcycleFilePath[] )
 }
 
 /**
+ * The default cvar `mapcyclefile` seems to crash the game if you have more of 489 maps in
+ * `mapcycle.txt`file. Therefore, you can use this cvar instead of the default `mapcyclefile` cvar
+ * if you want to have more map on your map cycle file.
+ */
+stock registerTheMayCycleCvar()
+{
+    LOGGER( 128, "I AM ENTERING ON registerTheMayCycleCvar(0)" )
+
+    new mapcycleFilePath[ MAX_FILE_PATH_LENGHT ];
+    get_pcvar_string( cvar_gal_mapcyclefile, mapcycleFilePath, charsmax( mapcycleFilePath ) );
+
+    if( mapcycleFilePath[ 0 ] )
+    {
+        if( file_exists( mapcycleFilePath ) )
+        {
+            cvar_mapcyclefile = cvar_gal_mapcyclefile;
+        }
+        else
+        {
+            doAmxxLog( "ERROR, registerTheMayCycleCvar: Couldn't open the file to read ^"%s^"", mapcycleFilePath );
+        }
+    }
+}
+
+/**
  * If we were playing a map series map `cs_map1`, and due an RTV voting was started a new series as
  * `de_map1`, we need to set the next map as `de_map2` instead of `cs_map1`. Also, after the series
  * to be finished we must to be able to return to the next map after the original series `cs_map1`.
@@ -14172,7 +14204,9 @@ stock configureTheNextMapSetttings( currentMapcycleFilePath[] )
     new mapCount;
     new nextMapCyclePosition;
 
-    // Load the full map cycle if, considering whether the feature `gal_srv_move_cursor` is enabled or not.
+    registerTheMayCycleCvar();
+
+    // Load the full map cycle considering whether the feature `gal_srv_move_cursor` is enabled or not.
     get_pcvar_string( cvar_mapcyclefile, currentMapcycleFilePath, MAX_MAPNAME_LENGHT - 1 );
     mapCount = loadTheNextMapFile( currentMapcycleFilePath, g_mapcycleFileListArray, g_mapcycleFileListTrie );
 
