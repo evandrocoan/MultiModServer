@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-715";
+new const PLUGIN_VERSION[] = "v4.2.0-716";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -212,7 +212,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-715";
      *
      * 511  - Enables all debug logging levels.
      */
-    new g_debug_level = 1+2+4+8+16+32+64+128;
+    new g_debug_level = 1+128;
 
     /**
      * Write debug messages accordantly with the 'g_debug_level' variable.
@@ -2159,7 +2159,7 @@ public handleServerStart( backupMapsFilePath[], startAction )
         }
         else
         {
-            doAmxxLog( "ERROR: handleServerStart, Could not open the file backupMapsFilePath: %s", backupMapsFilePath );
+            doAmxxLog( "ERROR, handleServerStart: Could not open the file backupMapsFilePath ^"%s^"", backupMapsFilePath );
         }
     }
     else if( startAction == SERVER_START_RANDOMMAP ) // pick a random map from allowable nominations
@@ -2203,7 +2203,7 @@ public handleServerStart( backupMapsFilePath[], startAction )
         }
         else
         {
-            doAmxxLog( "WARNING, Invalid map read from the current and next map file: ^"%s^"", mapToChange );
+            doAmxxLog( "WARNING, handleServerStart: Invalid map read from the current and next map file ^"%s^"", mapToChange );
         }
     }
     else // startAction == SERVER_START_MAPVOTE
@@ -2262,7 +2262,7 @@ stock configureTheMapcycleSystem( mapToChange[], possibleNextMap[], possibleNext
             }
             else
             {
-                doAmxxLog( "WARNING: Your 'mapcyclefile' server variable is invalid!" );
+                doAmxxLog( "WARNING, configureTheMapcycleSystem: Your ^"mapcyclefile^" server variable is invalid!" );
 
                 copy( possibleCurrentMap, MAX_MAPNAME_LENGHT - 1, g_currentMapName );
                 copy( possibleNextMap   , MAX_MAPNAME_LENGHT - 1, g_currentMapName );
@@ -2295,11 +2295,11 @@ stock configureTheMapcycleSystem( mapToChange[], possibleNextMap[], possibleNext
         }
         else
         {
-            doAmxxLog( "ERROR, configureTheMapcycleSystem: Couldn't open the file to write (file ^"%s^")", lastMapChangedFilePath );
+            doAmxxLog( "ERROR, configureTheMapcycleSystem: Couldn't open the file to write the file ^"%s^"", lastMapChangedFilePath );
         }
 
         doAmxxLog( "" );
-        doAmxxLog( "The server is jumping to the next map after the current map due more than %d restarts on the map %s.",
+        doAmxxLog( "The server is jumping to the next map after the current map due more than %d restarts on the map ^"%s^"",
                 MAX_SERVER_RESTART_ACCEPTABLE, crashingMap );
 
         doAmxxLog( "" );
@@ -2323,7 +2323,7 @@ stock setThisMapAsPossibleCrashingMap( const mapName[] )
 
     if( !( serverCrashedMapsFile = fopen( serverCrashedMapsFilePath, "a+" ) ) )
     {
-        doAmxxLog( "ERROR, setThisMapAsPossibleCrashingMap: Couldn't open the file (file ^"%s^")", serverCrashedMapsFilePath );
+        doAmxxLog( "ERROR, setThisMapAsPossibleCrashingMap: Couldn't open the file ^"%s^"", serverCrashedMapsFilePath );
     }
     else
     {
@@ -2407,7 +2407,7 @@ stock getRestartsOnTheCurrentMap( const mapToChange[] )
         }
         else
         {
-            doAmxxLog( "ERROR, getRestartsOnTheCurrentMap: Couldn't open the file to write (file ^"%s^")", lastMapChangedFilePath );
+            doAmxxLog( "ERROR, getRestartsOnTheCurrentMap: Couldn't open the file to write the file ^"%s^"", lastMapChangedFilePath );
         }
 
         LOGGER( 4, "( getRestartsOnTheCurrentMap ) lastMapChangedName: %s", lastMapChangedName )
@@ -2416,7 +2416,7 @@ stock getRestartsOnTheCurrentMap( const mapToChange[] )
     }
     else
     {
-        doAmxxLog( "ERROR, getRestartsOnTheCurrentMap: Couldn't open the file to read (file ^"%s^")", lastMapChangedFilePath );
+        doAmxxLog( "ERROR, getRestartsOnTheCurrentMap: Couldn't open the file to read the file ^"%s^"", lastMapChangedFilePath );
 
         if( ( lastMapChangedFile = fopen( lastMapChangedFilePath, "wt" ) ) )
         {
@@ -2425,7 +2425,7 @@ stock getRestartsOnTheCurrentMap( const mapToChange[] )
         }
         else
         {
-            doAmxxLog( "ERROR, getRestartsOnTheCurrentMap: Couldn't open the file to write (file ^"%s^")", lastMapChangedFilePath );
+            doAmxxLog( "ERROR, getRestartsOnTheCurrentMap: Couldn't open the file to write the file ^"%s^"", lastMapChangedFilePath );
         }
 
     }
@@ -2527,7 +2527,7 @@ stock saveCurrentAndNextMapNames( const currentMapName[], const nextMapName[], b
         }
         else
         {
-            doAmxxLog( "ERROR: saveCurrentAndNextMapNames, Could not open the file backupMapsFilePath: %s", backupMapsFilePath );
+            doAmxxLog( "ERROR, saveCurrentAndNextMapNames: Could not open the file backupMapsFilePath ^"%s^"", backupMapsFilePath );
         }
     }
 }
@@ -2731,7 +2731,7 @@ stock writeRecentMapsBanList( loadedMapsCount )
     }
     else
     {
-        doAmxxLog( "WARNING, writeRecentMapsBanList: Couldn't find a valid map or the file doesn't exist (file ^"%s^")", recentMapsFilePath );
+        doAmxxLog( "WARNING, writeRecentMapsBanList: Couldn't find a valid map or the file doesn't exist ^"%s^"", recentMapsFilePath );
     }
 }
 
@@ -2978,7 +2978,7 @@ stock configureTheNorPlayersFeature( mapFilerFilePath[] )
         }
         else
         {
-            doAmxxLog( "ERROR: configureTheNorPlayersFeature, Could not open the file: %s", mapFilerFilePath );
+            doAmxxLog( "ERROR, configureTheNorPlayersFeature: Could not open the file ^"%s^"", mapFilerFilePath );
         }
     }
 
@@ -3013,7 +3013,7 @@ stock configureTheMidPlayersFeature( mapFilerFilePath[] )
             }
             else
             {
-                doAmxxLog( "ERROR: configureTheMidPlayersFeature, Could not open the file: %s", mapFilerFilePath );
+                doAmxxLog( "ERROR, configureTheMidPlayersFeature: Could not open the file ^"%s^"", mapFilerFilePath );
             }
         }
     }
@@ -3049,7 +3049,7 @@ stock configureTheMinPlayersFeature( mapFilerFilePath[] )
             }
             else
             {
-                doAmxxLog( "ERROR: configureTheMinPlayersFeature, Could not open the file: %s", mapFilerFilePath );
+                doAmxxLog( "ERROR, configureTheMinPlayersFeature: Could not open the file ^"%s^"", mapFilerFilePath );
             }
         }
     }
@@ -4877,7 +4877,7 @@ stock map_populateList( Array:mapArray=Invalid_Array, mapFilePath[],
         }
         else
         {
-            doAmxxLog( "ERROR: map_populateList, Could not open the file: %s", mapFilePath );
+            doAmxxLog( "ERROR, map_populateList: Could not open the file ^"%s^"", mapFilePath );
         }
     }
 
@@ -4913,7 +4913,7 @@ stock checkIfThereEnoughMapPopulated( mapCount, mapFileDescriptor, mapFilePath[]
             }
         }
 
-        LOGGER( 1, "( loadMapFileList ) Error %d, Not valid/enough(%d) maps found: %s^n", AMX_ERR_NOTFOUND, mapCount, readLines )
+        LOGGER( 1, "( loadMapFileList ) ERROR %d, Not valid/enough(%d) maps found: %s^n", AMX_ERR_NOTFOUND, mapCount, readLines )
         log_error( AMX_ERR_NOTFOUND, "Not valid/enough(%d) maps found in: %s", mapCount, mapFilePath );
         log_error( AMX_ERR_NOTFOUND, "readLines: %s^n", readLines );
     }
@@ -4955,7 +4955,7 @@ stock loadMapFileList( Array:mapArray, mapFilePath[], Trie:fillerMapTrie, Trie:d
     }
     else
     {
-        LOGGER( 1, "( loadMapFileList ) Error %d, %L", AMX_ERR_NOTFOUND, LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilePath )
+        LOGGER( 1, "( loadMapFileList ) ERROR %d, %L", AMX_ERR_NOTFOUND, LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilePath )
         log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilePath );
     }
 
@@ -5185,7 +5185,7 @@ stock loadMapsFolderDirectory( Array:mapArray, Trie:fillerMapTrie )
     else
     {
         // directory not found, wtf?
-        LOGGER( 1, "( loadMapsFolderDirectory ) Error %d, %L", AMX_ERR_NOTFOUND, LANG_SERVER, "GAL_MAPS_FOLDERMISSING" )
+        LOGGER( 1, "( loadMapsFolderDirectory ) ERROR %d, %L", AMX_ERR_NOTFOUND, LANG_SERVER, "GAL_MAPS_FOLDERMISSING" )
         log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FOLDERMISSING" );
     }
 
@@ -6489,7 +6489,7 @@ stock computeNextWhiteListLoadTime( seconds, bool:isSecondsLeft = true )
     else
     {
         g_whitelistNomBlockTime = 1000;
-        doAmxxLog( "ERROR: The seconds parameter on 'computeNextWhiteListLoadTime(1)' function is zero!" );
+        doAmxxLog( "ERROR, computeNextWhiteListLoadTime: The seconds parameter is zero!" );
     }
 
     LOGGER( 1, "I AM EXITING computeNextWhiteListLoadTime(2) g_whitelistNomBlockTime: %d, secondsForReload: %d", g_whitelistNomBlockTime, secondsForReload )
@@ -10172,7 +10172,7 @@ stock map_getNext( Array:mapArray, const currentMap[], nextMapName[], const call
 
             if( IS_WHITELIST_BLOCKING( isWhitelistEnabled, nextMapName ) )
             {
-                doAmxxLog( "WARNING: map_getNext, The Whitelist feature is blocking the map: %s", nextMapName );
+                doAmxxLog( "WARNING, map_getNext: The Whitelist feature is blocking the map ^"%s^"", nextMapName );
 
                 isWhitelistBlocking = true;
                 continue;
@@ -10192,7 +10192,7 @@ stock map_getNext( Array:mapArray, const currentMap[], nextMapName[], const call
         }
         else
         {
-            doAmxxLog( "WARNING: map_getNext, Your '%s' server variable does not contain valid maps by the Whitelist feature!", caller );
+            doAmxxLog( "WARNING, map_getNext: Your ^"%s^" server variable does not contain valid maps by the Whitelist feature!", caller );
             copy( nextMapName, MAX_MAPNAME_LENGHT - 1, g_currentMapName );
         }
     }
@@ -10204,7 +10204,7 @@ stock map_getNext( Array:mapArray, const currentMap[], nextMapName[], const call
         }
         else
         {
-            doAmxxLog( "WARNING: map_getNext, Your '%s' server variable map file does not contain valid maps!", caller );
+            doAmxxLog( "WARNING, map_getNext: Your ^"%s^" server variable map file does not contain valid maps!", caller );
             copy( nextMapName, MAX_MAPNAME_LENGHT - 1, g_currentMapName );
         }
     }
@@ -11645,9 +11645,9 @@ public cmd_lookingForCrashes( player_id, level, cid )
         if( ( crashedMapsFile = fopen( crashedMapsFilePath, "rt" ) ) )
         {
             new mapLoaded[ MAX_MAPNAME_LENGHT ];
-            doAmxxLog( "Stopping the server crash change...^nContents of the file: ^n%s^n", crashedMapsFilePath);
+            doAmxxLog( "Stopping the server crash change...^nContents of the file: ^n^"%s^"^n", crashedMapsFilePath);
 
-            client_print( player_id, print_console, "Stopping the server crash change...^n\
+            console_print( player_id, "Stopping the server crash change...^n\
                     See your server console or the server file:^n%s^n", crashedMapsFilePath);
 
             while( !feof( crashedMapsFile ) )
@@ -11662,7 +11662,7 @@ public cmd_lookingForCrashes( player_id, level, cid )
         }
         else
         {
-            doAmxxLog( "ERROR, Couldn't open the file ^"%s^")", crashedMapsFilePath );
+            doAmxxLog( "ERROR, cmd_lookingForCrashes: Couldn't open the file ^"%s^"", crashedMapsFilePath );
         }
     }
     else
@@ -11688,7 +11688,7 @@ public cmd_lookingForCrashes( player_id, level, cid )
         }
         else
         {
-            doAmxxLog( "ERROR, Couldn't create the file ^"%s^")", crashedMapsFilePath );
+            doAmxxLog( "ERROR, cmd_lookingForCrashes: Couldn't create the file ^"%s^"", crashedMapsFilePath );
         }
     }
 
@@ -13541,8 +13541,8 @@ stock register_dictionary_colored( const dictionaryFile[] )
 
     if( !dictionaryFile )
     {
-        doAmxxLog( "Failed to open %s", dictionaryFilePath );
-        LOGGER( 1, "    Returning 0 on if( !dictionaryFile ), Failed to open: %s", dictionaryFilePath )
+        doAmxxLog( "ERROR, register_dictionary_colored: Failed to open ^"%s^"", dictionaryFilePath );
+        LOGGER( 1, "    Returning 0 on if( !dictionaryFile ), Failed to open ^"%s^"", dictionaryFilePath )
 
         return 0;
     }
@@ -14560,10 +14560,14 @@ stock getMapIndexBefore( Array:mapcycleFileListArray, nextMapCyclePosition, shif
     LOGGER( 128, "I AM ENTERING ON getMapIndexBefore(3) nextMapCyclePosition: %d", nextMapCyclePosition )
     new mapIndexBefore;
 
-    if( ( mapIndexBefore = ( nextMapCyclePosition - shifting ) ) < 0 )
+    if( mapcycleFileListArray
+        && ( mapIndexBefore = ( nextMapCyclePosition - shifting ) ) < 0 )
     {
         // If is it negative, we want to the last map on the array `g_mapcycleFileListArray`.
-        mapIndexBefore = ArraySize( mapcycleFileListArray ) - abs( mapIndexBefore );
+        if( ( mapIndexBefore = ( ArraySize( mapcycleFileListArray ) - abs( mapIndexBefore ) ) ) < 0 )
+        {
+            mapIndexBefore = 0;
+        }
     }
 
     LOGGER( 2, "    ( getMapIndexBefore ) Returning mapIndexBefore: %d", mapIndexBefore )
@@ -14603,6 +14607,7 @@ stock getNextMapByPosition( Array:mapcycleFileListArray, nextMapName[], &nextMap
         {
             ++mapsProcessedNumber;
 
+            // After reaching the end of the list, start from the first item.
             if( nextMapCyclePosition >= mapCycleMapsCount )
             {
                 LOGGER( 1, "WARNING, getNextMapByPosition: Restarting the map cycle at: %d", nextMapCyclePosition )
@@ -14643,7 +14648,7 @@ stock getNextMapByPosition( Array:mapcycleFileListArray, nextMapName[], &nextMap
     else
     {
         setTheCurrentMap:
-        doAmxxLog( "WARNING, getNextMapByPosition: No valid maps found on your map cycle! mapcycleFileListArray: %d", mapcycleFileListArray );
+        doAmxxLog( "WARNING, getNextMapByPosition: The current map will probably be set as the next map." );
 
         nextMapCyclePosition = 0;
         copy( nextMapName, MAX_MAPNAME_LENGHT - 1, g_currentMapName );
@@ -14689,10 +14694,15 @@ stock setTheNextMapCvarFlag( nextMapName[] )
  *
  * @param mapcycleFilePath         the current map-cycle file path.
  */
-stock saveCurrentMapCycleSetting( const currentMapName[], const mapcycleFilePath[], const nextMapCyclePosition )
+stock saveCurrentMapCycleSetting( const currentMapName[], const mapcycleFilePath[], nextMapCyclePosition )
 {
     LOGGER( 128, "I AM ENTERING ON saveCurrentMapCycleSetting(3)" )
-    g_nextMapCyclePosition = nextMapCyclePosition;
+
+    // At some extreme situations, this can be se to a negative value and we cannot allow it to be saved as it.
+    if( ( g_nextMapCyclePosition = nextMapCyclePosition ) < 0 )
+    {
+        g_nextMapCyclePosition = nextMapCyclePosition = 0;
+    }
 
     new tockenMapcycleAndPosion[ MAX_MAPNAME_LENGHT + MAX_FILE_PATH_LENGHT ];
     formatex( tockenMapcycleAndPosion, charsmax( tockenMapcycleAndPosion ), "%s %d", mapcycleFilePath, nextMapCyclePosition );
@@ -15105,10 +15115,9 @@ stock loadMapFileSeriesListArray( mapFileDescriptor, Array:mapArray, Trie:mapTri
 
                 LOGGER( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapLine ) )
 
-                // When only the option `IS_TO_LOAD_ALTERNATE_MAP_SERIES` is set, we cannot load
-                // the map cycle as series.
-                if( cursorOnMapSeries
-                    && cursorOnMapSeries != IS_TO_LOAD_ALTERNATE_MAP_SERIES )
+                // We only load the map cycle as series when it is set the `IS_TO_LOAD_THE_FIRST_MAP_SERIES`
+                // or `IS_TO_LOAD_ALL_THE_MAP_SERIES` bit flags.
+                if( cursorOnMapSeries & ( IS_TO_LOAD_THE_FIRST_MAP_SERIES | IS_TO_LOAD_ALL_THE_MAP_SERIES ) )
                 {
                     loadTheCursorOnMapSeries( mapArray, mapTrie, loadedMapSeriesTrie, loadedMapName,
                             nextMapName, mapCount, cursorOnMapSeries );
@@ -15156,7 +15165,7 @@ stock loadMapFileListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
     }
     else
     {
-        LOGGER( 1, "( loadMapFileListOnSeries ) Error %d, %L", AMX_ERR_NOTFOUND, LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilePath )
+        LOGGER( 1, "( loadMapFileListOnSeries ) ERROR %d, %L", AMX_ERR_NOTFOUND, LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilePath )
         log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilePath );
     }
 
@@ -15211,7 +15220,7 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
         }
         else
         {
-            doAmxxLog( "ERROR: map_populateListOnSeries, Could not open the file: %s", mapFilePath );
+            doAmxxLog( "ERROR, map_populateListOnSeries: Could not open the file ^"%s^"", mapFilePath );
         }
     }
 
