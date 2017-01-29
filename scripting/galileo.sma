@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.0.0-724";
+new const PLUGIN_VERSION[] = "v5.0.0-725";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -4737,12 +4737,11 @@ stock resetRoundEnding()
     LOGGER( 128, "I AM ENTERING ON resetRoundEnding(0)" )
 
     // Each one of these entries must to be saved on saveRoundEnding(1) and restored at restoreRoundEnding(1).
-    g_isTheLastGameRound           = false;
-    g_isTimeToRestart              = false;
-    g_isThePenultGameRound         = false;
-    g_isTheRoundEndWhileVoting     = false;
-    g_isToChangeMapOnVotingEnd     = false;
-    g_isGameEndingTypeContextSaved = false;
+    g_isTheLastGameRound       = false;
+    g_isTimeToRestart          = false;
+    g_isThePenultGameRound     = false;
+    g_isTheRoundEndWhileVoting = false;
+    g_isToChangeMapOnVotingEnd = false;
 
     remove_task( TASKID_SHOW_LAST_ROUND_HUD );
     client_cmd( 0, "-showscores" );
@@ -9021,7 +9020,12 @@ stock resetVoteTypeGlobals()
 stock finalizeVoting()
 {
     LOGGER( 128, "I AM ENTERING ON finalizeVoting(0)" )
+
+    // As the voting has ended, reset the voting ending type.
     resetVoteTypeGlobals();
+
+    // We cannot or need not the saved context anymore, as it is only used to start/setup the voting.
+    g_isGameEndingTypeContextSaved = false;
 
     // vote is no longer in progress
     g_voteStatus &= ~IS_VOTE_IN_PROGRESS;
@@ -9129,13 +9133,13 @@ stock map_extend( lang[] )
         return;
     }
 
-    toAnnounceTheMapExtension( lang );
-    noLongerIsAnEarlyVoting();
-
     LOGGER( 2, "( map_extend ) TRYING to change the cvar %15s from '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
     LOGGER( 2, "( map_extend ) TRYING to change the cvar %15s from '%d'.", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) )
     LOGGER( 2, "( map_extend ) TRYING to change the cvar %15s from '%d'.", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) )
     LOGGER( 2, "( map_extend ) TRYING to change the cvar %15s from '%d'.", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) )
+
+    saveEndGameLimits();
+    doTheActualMapExtension();
 
     // Remove the fail safe, as we are extending the map. The fail safe could be running if the
     // `cvar_endOfMapVoteStart` failed to predict the correct last round to start voting, the voting
@@ -9144,11 +9148,12 @@ stock map_extend( lang[] )
     // as we do not need it anymore.
     remove_task( TASKID_PREVENT_INFITY_GAME );
     remove_task( TASKID_SHOW_LAST_ROUND_HUD );
-    resetTheRtvWaitTime();
-    blockNewVotingToStart();
 
-    saveEndGameLimits();
-    doTheActualMapExtension();
+    blockNewVotingToStart();
+    toAnnounceTheMapExtension( lang );
+
+    resetTheRtvWaitTime();
+    noLongerIsAnEarlyVoting();
 
     LOGGER( 2, "    ( map_extend ) CHECKOUT the cvar %19s is '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
     LOGGER( 2, "    ( map_extend ) CHECKOUT the cvar %19s is '%d'.", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) )
