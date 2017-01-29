@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.0.1-726";
+new const PLUGIN_VERSION[] = "v5.0.2-727";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -6884,6 +6884,9 @@ stock configureVotingStart( bool:is_forced_voting )
     // make it known that a vote is in progress
     g_voteStatus |= IS_VOTE_IN_PROGRESS;
 
+    // Make sure this is not pointing to anything before the voting.
+    g_invokerVoteMapNameToDecide[ 0 ] = '^0';
+
     // Set the voting status to forced
     if( is_forced_voting )
     {
@@ -8947,8 +8950,17 @@ stock chooseTheVotingMapWinner( firstPlaceChoices[], numberOfMapsAtFirstPosition
 
         g_voteStatus |= IS_VOTE_OVER;
 
-        color_print( 0, "%L: %L", LANG_PLAYER, "DMAP_MAP_EXTENDED", LANG_PLAYER, "GAL_NEXTMAP2", g_nextMapName );
-        toShowTheMapNextHud( "GAL_VOTE_ENDED", "DMAP_MAP_EXTENDED", "GAL_NEXTMAP1", g_nextMapName );
+        // When it is a `gal_votemap` we need to print its map winner, instead of the `g_nextMapName`.
+        if( g_invokerVoteMapNameToDecide[ 0 ] )
+        {
+            color_print( 0, "%L: %L", LANG_PLAYER, "DMAP_MAP_EXTENDED", LANG_PLAYER, "GAL_NEXTMAP2", g_invokerVoteMapNameToDecide );
+            toShowTheMapNextHud( "GAL_VOTE_ENDED", "DMAP_MAP_EXTENDED", "GAL_NEXTMAP1", g_invokerVoteMapNameToDecide );
+        }
+        else
+        {
+            color_print( 0, "%L: %L", LANG_PLAYER, "DMAP_MAP_EXTENDED", LANG_PLAYER, "GAL_NEXTMAP2", g_nextMapName );
+            toShowTheMapNextHud( "GAL_VOTE_ENDED", "DMAP_MAP_EXTENDED", "GAL_NEXTMAP1", g_nextMapName );
+        }
 
         process_last_round( g_isToChangeMapOnVotingEnd );
     }
@@ -10652,8 +10664,7 @@ public cmd_voteMap( player_id, level, cid )
             clearTheVotingMenu();
 
             // The initial settings setup
-            g_voteMapStatus                   = IS_DISABLED_VOTEMAP_EXIT;
-            g_invokerVoteMapNameToDecide[ 0 ] = '^0';
+            g_voteMapStatus = IS_DISABLED_VOTEMAP_EXIT;
 
             // To start from 1 because the first argument 0, is the command line name `gal_startvote`.
             for( new index = 1; index < argumentsCount; index++ )
@@ -10793,8 +10804,7 @@ stock voteMapMenuBuilder( player_id )
     LOGGER( 128, "I AM ENTERING ON voteMapMenuBuilder(0) player_id: %d", player_id )
 
     // The initial settings setup
-    g_voteMapStatus                   = IS_DISABLED_VOTEMAP_EXIT;
-    g_invokerVoteMapNameToDecide[ 0 ] = '^0';
+    g_voteMapStatus = IS_DISABLED_VOTEMAP_EXIT;
 
     displayVoteMapMenuHook( player_id );
 }
