@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-716";
+new const PLUGIN_VERSION[] = "v4.2.0-717";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-716";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 2+64
+#define DEBUG_LEVEL 1+16+32
 
 
 /**
@@ -316,7 +316,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-716";
             // LOGGER( 1, "Current i is: %d", i )
         }
 
-        test_endOfMapVoting();
+        // test_endOfMapVoting();
         // test_handleServerStart();
         // test_mapGetNext_cases();
         // test_configureTheNextMap();
@@ -331,7 +331,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-716";
         // test_getUniqueRandomInt_load();
         // test_getUniqueRandomBasic_load();
         // test_nominateAndUnnominate_load();
-        // test_loadVoteChoices_cases();
+        test_loadVoteChoices_cases();
         //test_colorChatLimits( player_id );
         //test_unnominatedDisconnected( player_id );
         //test_announceVoteBlockedMap_a();
@@ -14220,6 +14220,7 @@ stock getLastNextMapFromServerStart( Array:mapcycleFileListArray, nextMapName[],
 
 stock configureTheAlternateSeries( Array:mapcycleFileListArray, &nextMapCyclePosition )
 {
+    LOGGER( 4, "" )
     LOGGER( 128, "I AM ENTERING ON configureTheAlternateSeries(2)" )
 
     new bool:isTheServerRestarting;
@@ -14310,9 +14311,14 @@ stock tryToRunAnAlternateSeries( Array:mapcycleFileListArray, currentMapName[], 
         LOGGER( 4, "" )
 
         // If both clear names are equal, the current map and the next map set are on the same series.
-        if( equali( currentMapNameClean, defaultNextMapNameClean ) )
+        // When the `mapcycleFileListArray` size is less than  and the current map name is the same as
+        // the next map name, it means there are not valid maps on the map cycle.
+        // Therefore we can check for an alternate series.
+        if( equali( currentMapNameClean, defaultNextMapNameClean )
+            && !( equali( currentMapName, defaultNextMapName )
+                  && ArraySize( mapcycleFileListArray ) < 1 ) )
         {
-            LOGGER( 1, "    ( tryToRunAnAlternateSeries ) Returning/blocking, we are following the map cycle series." )
+            LOGGER( 1, "( tryToRunAnAlternateSeries ) Returning/blocking, the current map and the next map set are on the same series." )
             LOGGER( 1, "    ( tryToRunAnAlternateSeries ) Returning false." )
             return false;
         }
@@ -14520,7 +14526,7 @@ stock moveTheCursorToTheLastMap( Array:mapcycleFileListArray, const defaultCurre
     maximumTries         = ArraySize( mapcycleFileListArray );
     nextMapCyclePosition = getMapIndexBefore( mapcycleFileListArray, defaultNextMapCyclePosition, 1 );
 
-    getNextMapByPosition( mapcycleFileListArray, defaultNextOfNextMapNameClean, nextMapCyclePosition, false );
+    getNextMapByPosition( mapcycleFileListArray, defaultNextOfNextMapNameClean, nextMapCyclePosition, false, false );
 
     // If the current serie is 1, it will return 2.
     nextMapCyclePosition = getTheCurrentSerieForTheMap( defaultNextOfNextMapNameClean );
@@ -14648,7 +14654,13 @@ stock getNextMapByPosition( Array:mapcycleFileListArray, nextMapName[], &nextMap
     else
     {
         setTheCurrentMap:
-        doAmxxLog( "WARNING, getNextMapByPosition: The current map will probably be set as the next map." );
+
+        // This warning cannot be throw when it is being called from the configureTheAlternateSeries(2)
+        // is trying to calculate the correct next map.
+        if( isToIncrementThePosition )
+        {
+            doAmxxLog( "WARNING, getNextMapByPosition: The current map will probably be set as the next map." );
+        }
 
         nextMapCyclePosition = 0;
         copy( nextMapName, MAX_MAPNAME_LENGHT - 1, g_currentMapName );
