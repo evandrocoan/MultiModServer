@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-717";
+new const PLUGIN_VERSION[] = "v4.2.0-718";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v4.2.0-717";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+16+32
+#define DEBUG_LEVEL 2+64
 
 
 /**
@@ -1363,8 +1363,13 @@ new Array:g_norMaxMapsPerGroupToUseArray;
 /**
  * Contains a Dynamic Array of Dynamic Arrays. Each one of the sub-arrays contains the maps loaded
  * from the Array `g_voteMinPlayerFillerPathsArray` for each of the its paths receptively.
+ *
+ * Currently only the `g_minPlayerFillerMapGroupTrie` is used, so the others Dynamic Arrays do not
+ * need a Trie as pair.
  */
+new Trie:g_minPlayerFillerMapGroupTrie;
 new Array:g_minPlayerFillerMapGroupArrays;
+
 new Array:g_midPlayerFillerMapGroupArrays;
 new Array:g_norPlayerFillerMapGroupArrays;
 
@@ -2727,7 +2732,7 @@ stock writeRecentMapsBanList( loadedMapsCount )
         }
 
         fclose( recentMapsFileDescriptor );
-        LOGGER( 0, "", printRecentBanFile( recentMapsFilePath ) )
+        LOGGER( 0, "", debugPrintRecentBanFile( recentMapsFilePath ) )
     }
     else
     {
@@ -2735,9 +2740,9 @@ stock writeRecentMapsBanList( loadedMapsCount )
     }
 }
 
-stock printRecentBanFile( recentMapsFilePath[] )
+stock debugPrintRecentBanFile( recentMapsFilePath[] )
 {
-    LOGGER( 128, "I AM ENTERING ON printRecentBanFile(1) recentMapsFilePath: %s", recentMapsFilePath )
+    LOGGER( 128, "I AM ENTERING ON debugPrintRecentBanFile(1) recentMapsFilePath: %s", recentMapsFilePath )
 
     new loadedMapName[ MAX_MAPNAME_LENGHT ];
     new mapFileDescriptor = fopen( recentMapsFilePath, "rt" );
@@ -2747,17 +2752,15 @@ stock printRecentBanFile( recentMapsFilePath[] )
         fgets( mapFileDescriptor, loadedMapName, charsmax( loadedMapName ) );
         trim( loadedMapName );
 
-    #if defined DEBUG
         static mapCount;
 
         if( mapCount++ < MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST
             && !( g_debug_level & 256 ) )
         {
-            LOGGER( 4, "( printRecentBanFile ) %d, loadedMapName: %s", mapCount, loadedMapName )
+            LOGGER( 4, "( debugPrintRecentBanFile ) %d, loadedMapName: %s", mapCount, loadedMapName )
         }
 
-        LOGGER( 256, "( printRecentBanFile ) %d, loadedMapName: %s", mapCount, loadedMapName )
-    #endif
+        LOGGER( 256, "( debugPrintRecentBanFile ) %d, loadedMapName: %s", mapCount, loadedMapName )
     }
 
     fclose( mapFileDescriptor );
@@ -2810,7 +2813,8 @@ stock loadWhiteListFileFromFile( &Array:whitelistArray, whiteListFilePath[] )
     return loadedCount;
 }
 
-stock processLoadedGroupMapFileFrom( &Array:playerFillerMapsArray, &Array:fillersFilePathsArray )
+stock processLoadedGroupMapFileFrom( Array:playerFillerMapsArray, Array:fillersFilePathsArray,
+                                     Trie:minPlayerFillerMapGroupTrie=Invalid_Trie, bool:isToClearTheTrie=true )
 {
     LOGGER( 128, "I AM ENTERING ON processLoadedGroupMapFileFrom(2) groupCount: %d", ArraySize( fillersFilePathsArray ) )
 
@@ -2826,35 +2830,13 @@ stock processLoadedGroupMapFileFrom( &Array:playerFillerMapsArray, &Array:filler
         fillerMapsArray = ArrayCreate( MAX_MAPNAME_LENGHT );
         ArrayGetString( fillersFilePathsArray, groupIndex, fillerFilePath, charsmax( fillerFilePath ) );
 
-        loadedMapsTotal += map_populateList( fillerMapsArray, fillerFilePath );
+        loadedMapsTotal += map_populateList( fillerMapsArray, fillerFilePath, minPlayerFillerMapGroupTrie, isToClearTheTrie );
         ArrayPushCell( playerFillerMapsArray, fillerMapsArray );
 
         LOGGER( 8, "[%i] groupCount: %i, filersMapCount: %i", groupIndex, groupCount, ArraySize( fillerMapsArray ) )
         LOGGER( 8, "     fillersFilePaths[%i]: %s", groupIndex, fillerFilePath )
     }
 
-    return loadedMapsTotal;
-}
-
-stock processLoadedGroupMapFileFrom2( &Array:fillersFilePathsArray, &Trie:playerFillerMapsTrie )
-{
-    LOGGER( 128, "I AM ENTERING ON processLoadedGroupMapFileFrom(2) groupCount: %d", ArraySize( fillersFilePathsArray ) )
-
-    new loadedMapsTotal;
-    new fillerFilePath[ MAX_FILE_PATH_LENGHT ];
-
-    new groupCount = ArraySize( fillersFilePathsArray );
-
-    // fill remaining slots with random maps from each filler file, as much as possible
-    for( new groupIndex = 0; groupIndex < groupCount; ++groupIndex )
-    {
-        ArrayGetString( fillersFilePathsArray, groupIndex, fillerFilePath, charsmax( fillerFilePath ) );
-        loadedMapsTotal += map_populateList( _, fillerFilePath, playerFillerMapsTrie, false );
-
-        LOGGER( 8, "( processLoadedGroupMapFileFrom2 ) fillersFilePaths[%i]: %s", groupIndex, fillerFilePath )
-    }
-
-    LOGGER( 1, "    ( processLoadedGroupMapFileFrom2 ) Returning loadedMapsTotal: %d", loadedMapsTotal )
     return loadedMapsTotal;
 }
 
@@ -3038,12 +3020,15 @@ stock configureTheMinPlayersFeature( mapFilerFilePath[] )
             {
                 LOGGER( 4, "" )
                 TRY_TO_CLEAN( clear_two_dimensional_array, g_minPlayerFillerMapGroupArrays, ArrayCreate() )
+                TRY_TO_CLEAN( TrieClear, g_minPlayerFillerMapGroupTrie , TrieCreate() )
 
                 TRY_TO_CLEAN( ArrayClear, g_voteMinPlayerFillerPathsArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
                 TRY_TO_CLEAN( ArrayClear, g_minMaxMapsPerGroupToUseArray , ArrayCreate() )
 
                 loadMapGroupsFeatureFile( mapFilerFilePath, g_voteMinPlayerFillerPathsArray, g_minMaxMapsPerGroupToUseArray );
-                loadedCount = processLoadedGroupMapFileFrom( g_minPlayerFillerMapGroupArrays, g_voteMinPlayerFillerPathsArray );
+
+                loadedCount = processLoadedGroupMapFileFrom( g_minPlayerFillerMapGroupArrays,
+                        g_voteMinPlayerFillerPathsArray, g_minPlayerFillerMapGroupTrie, false );
 
                 LOGGER( 4, "", debugLoadedGroupMapFileFrom( g_minPlayerFillerMapGroupArrays, g_minMaxMapsPerGroupToUseArray ) )
             }
@@ -6206,9 +6191,7 @@ stock vote_addNominations( blockedMapsBuffer[], &announcementShowedTimes = 0 )
         && ( nominatedMapsCount = ArraySize( g_nominatedMapsArray ) ) )
     {
         LOGGER( 128, "( vote_addNominations ) nominatedMapsCount: %d", nominatedMapsCount )
-
         new Trie:whitelistMapTrie;
-        new bool:isFillersMapUsingMinplayers;
 
         new mapIndex;
         new mapName[ MAX_MAPNAME_LENGHT ];
@@ -6223,18 +6206,15 @@ stock vote_addNominations( blockedMapsBuffer[], &announcementShowedTimes = 0 )
             get_pcvar_string( cvar_voteMinPlayersMapFilePath, mapFilerFilePath, charsmax( mapFilerFilePath ) );
 
             // '*' is invalid blacklist for voting, because it would block all server maps.
-            if( mapFilerFilePath[ 0 ] == MAP_FOLDER_LOAD_FLAG )
+            if( !mapFilerFilePath[ 0 ]
+                || mapFilerFilePath[ 0 ] == MAP_FOLDER_LOAD_FLAG )
             {
                 LOGGER( 1, "AMX_ERR_NOTFOUND, %L", LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilerFilePath )
                 log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilerFilePath );
             }
             else
             {
-                whitelistMapTrie            = TrieCreate();
-                isFillersMapUsingMinplayers = true;
-
-                // This call is only to load the 'whitelistMapTrie'
-                processLoadedGroupMapFileFrom2( g_minPlayerFillerMapGroupArrays, whitelistMapTrie );
+                whitelistMapTrie = g_minPlayerFillerMapGroupTrie;
             }
         }
 
@@ -6260,7 +6240,7 @@ stock vote_addNominations( blockedMapsBuffer[], &announcementShowedTimes = 0 )
                 GET_MAP_NAME( g_nominationLoadedMapsArray, mapIndex, mapName )
                 LOGGER( 4, "( vote_addNominations ) g_nominationLoadedMapsArray.mapIndex: %d, mapName: %s", mapIndex, mapName )
 
-                if( isFillersMapUsingMinplayers
+                if( whitelistMapTrie
                     && !TrieKeyExists( whitelistMapTrie, mapName ) )
                 {
                     LOGGER( 8, "    The map: %s, was blocked by the minimum players map setting.", mapName )
@@ -6279,8 +6259,6 @@ stock vote_addNominations( blockedMapsBuffer[], &announcementShowedTimes = 0 )
             }
 
         } // end nomination's players looking
-
-        TRY_TO_APPLY( TrieDestroy, whitelistMapTrie )
 
     } // end if nominations
 
@@ -6330,6 +6308,8 @@ stock show_all_players_nominations()
 
 stock loadOnlyNominationVoteChoices()
 {
+    LOGGER( 128, "I AM ENTERING ON loadOnlyNominationVoteChoices(0)" )
+
     if( IS_NOMINATION_MININUM_PLAYERS_CONTROL_ENABLED()
         || IS_WHITELIST_ENABLED() )
     {
