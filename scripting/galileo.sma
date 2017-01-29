@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-722";
+new const PLUGIN_VERSION[] = "v5.0.0-723";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -5555,8 +5555,11 @@ stock bool:isToLoadNextWhiteListEndProcess( currentHour, startHour, endHour, boo
         }
     }
 
+    // This is in fact unreachable code and the AMXX 183 know that, but he AMXX 182 don't.
+#if AMXX_VERSION_NUM < 183
     LOGGER( 256, "    ( isToLoadNextWhiteListEndProcess ) Returning false." )
     return false;
+#endif
 }
 
 stock debugIsToLoadNextWhiteListGroup( currentHour, startHour, endHour, isToLoadTheseMaps )
