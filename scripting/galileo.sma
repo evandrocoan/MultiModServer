@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-718";
+new const PLUGIN_VERSION[] = "v4.2.0-719";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -2126,7 +2126,7 @@ stock setTheCurrentAndNextMapSettings()
  */
 public handleServerStart( backupMapsFilePath[], startAction )
 {
-    LOGGER( 128, "I AM ENTERING ON handleServerStart(1) backupMapsFilePath: %s", backupMapsFilePath )
+    LOGGER( 128, "I AM ENTERING ON handleServerStart(2) backupMapsFilePath: %s", backupMapsFilePath )
     isHandledGameCrashAction( startAction );
 
     new mapToChange[ MAX_MAPNAME_LENGHT ];
@@ -2203,7 +2203,20 @@ public handleServerStart( backupMapsFilePath[], startAction )
             }
             else
             {
-                serverChangeLevel( mapToChange );
+                // When the Unit Tests are running, we do not want to wait anything.
+            #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
+                if( g_test_areTheUnitTestsRunning )
+                {
+                    serverChangeLevel( mapToChange );
+                }
+                else
+                {
+                    set_task( 2.0, "serverChangeLevel", _, mapToChange, charsmax( mapToChange ) );
+                }
+            #else
+                // Create a small delay to let other plugins to do their stuff/breath.
+                set_task( 2.0, "serverChangeLevel", _, mapToChange, charsmax( mapToChange ) );
+            #endif
             }
         }
         else
