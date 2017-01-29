@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v4.2.0-721";
+new const PLUGIN_VERSION[] = "v4.2.0-722";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -1573,6 +1573,12 @@ public plugin_init()
     cvar_voteMapChoiceCount        = register_cvar( "gal_vote_mapchoices"          , "5"    );
     cvar_voteMapChoiceNext         = register_cvar( "gal_vote_mapchoices_next"     , "1"    );
     cvar_voteDuration              = register_cvar( "gal_vote_duration"            , "30"   );
+    cvar_voteMapFilePath           = register_cvar( "gal_vote_mapfile"             , "#"    );
+    cvar_voteMinPlayers            = register_cvar( "gal_vote_minplayers"          , "0"    );
+    cvar_voteMidPlayers            = register_cvar( "gal_vote_midplayers"          , "0"    );
+    cvar_nomMinPlayersControl      = register_cvar( "gal_nom_minplayers_control"   , "0"    );
+    cvar_voteMinPlayersMapFilePath = register_cvar( "gal_vote_minplayers_mapfile"  , ""     );
+    cvar_voteMidPlayersMapFilePath = register_cvar( "gal_vote_midplayers_mapfile"  , ""     );
     cvar_runoffEnabled             = register_cvar( "gal_runoff_enabled"           , "0"    );
     cvar_runoffDuration            = register_cvar( "gal_runoff_duration"          , "20"   );
     cvar_runoffRatio               = register_cvar( "gal_runoff_ratio"             , "0.5"  );
@@ -1606,12 +1612,6 @@ public plugin_init()
     cvar_rtvWaitAdmin              = register_cvar( "gal_rtv_wait_admin"           , "0"    );
     cvar_rtvRatio                  = register_cvar( "gal_rtv_ratio"                , "0.60" );
     cvar_rtvReminder               = register_cvar( "gal_rtv_reminder"             , "2"    );
-    cvar_voteMapFilePath           = register_cvar( "gal_vote_mapfile"             , "#"    );
-    cvar_voteMinPlayers            = register_cvar( "gal_vote_minplayers"          , "0"    );
-    cvar_voteMidPlayers            = register_cvar( "gal_vote_midplayers"          , "0"    );
-    cvar_nomMinPlayersControl      = register_cvar( "gal_nom_minplayers_control"   , "0"    );
-    cvar_voteMinPlayersMapFilePath = register_cvar( "gal_vote_minplayers_mapfile"  , ""     );
-    cvar_voteMidPlayersMapFilePath = register_cvar( "gal_vote_midplayers_mapfile"  , ""     );
     cvar_whitelistType             = register_cvar( "gal_whitelist_type"           , "0"    );
     cvar_whitelistMinPlayers       = register_cvar( "gal_whitelist_minplayers"     , "0"    );
     cvar_isWhiteListNomBlock       = register_cvar( "gal_whitelist_nom_block"      , "0"    );
