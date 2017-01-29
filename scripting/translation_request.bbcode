@@ -1,0 +1,262 @@
+[anchor]Top[/anchor][SIZE="7"][COLOR="Blue"][B]Galileo Translation Request[/B][/COLOR][/SIZE]
+
+Hi everybody, if you want to translate the mapchooser [URL="https://forums.alliedmods.net/showthread.php?t=273019"]Galileo[/URL] to your language,
+post here your translations. If you see some error or bad coloring tags positioning at
+the current translations, feel free to correct and post it here. They will be available
+at the future plugin versions. See also [URL="https://forums.alliedmods.net/showthread.php?t=86477"]here the old translation[/URL] request thread, for
+old or outdated translations.
+
+[URL="https://forums.alliedmods.net/showthread.php?t=273019"][img]http://rf.revolvermaps.com/h/m/a/0/ff0000/256/0/55pppmo2s3a.png[/img][/URL]
+
+
+[SIZE="5"][COLOR="blue"][B]Contents' Table[/B][/COLOR][/SIZE]
+
+[LIST]
+[*][goanchor=Introduction]Translation Notes[/goanchor]
+[*][goanchor=Accents]Accents[/goanchor]
+[*][goanchor=tips_notes]See more tips/notes[/goanchor]
+[*][goanchor=Assistant]Translator Assistant[/goanchor]
+[*][goanchor=Requirements]English and others LANG Constants[/goanchor]
+[/LIST]
+It is already translated to:
+[LIST=1]
+[*]English [en]
+[*]Brazilian Portuguese [bp]
+[*]Spanish [es] reviewed by [URL="https://forums.alliedmods.net/member.php?u=246727"][B]ACM1PT[/B][/URL] and updated by [URL="https://forums.alliedmods.net/member.php?u=119830"][B]Shattered Heart Lynx[/B][/URL].
+[*]Polish [pl] reviewed by [URL="https://forums.alliedmods.net/member.php?u=49801"][B]BeNq![/B][/URL]
+[*]Romanian [ro] by [URL="https://forums.alliedmods.net/member.php?u=259683"][B]iNdio[/B][/URL]
+[*]Italian [it] by [URL="https://forums.alliedmods.net/member.php?u=259683"][B]iNdio[/B][/URL]
+[*]Dutch [nl] by [URL="https://forums.alliedmods.net/member.php?u=149700"][B]Napoleon_be[/B][/URL]
+[*]Serbian [sr] by [URL="https://forums.alliedmods.net/member.php?u=235274"][B]MihailoZ[/B][/URL]
+[*]Slovak [sk] by [URL="https://forums.alliedmods.net/member.php?u=184733"][B]Belo95135[/B][/URL]
+[*]Hungarian [hu] by [URL="https://github.com/regener"][B]regener[/B][/URL]
+
+[/LIST]
+See here the current and effectively integrated LANGs constants:
+[URL="https://github.com/addonszz/Galileo/blob/develop/data/lang/galileo.txt"] https://github.com/addonszz/Galileo/blob/develop/data/lang/galileo.txt[/URL]
+
+[html]
+[en]
+GAL_CANCEL_FAIL_INPROGRESS = !tCancellation!g failed; vote is!y already in progress.
+GAL_CANCEL_FAIL_SOMEONEELSE = Cancellation failed; '!g%s!y' was nominated by!g %s!y.
+GAL_CANCEL_FAIL_VOTEOVER = Cancellation!t failed;!y vote outcome!g has already!t been determined!y.
+GAL_CANCEL_FAIL_WASNOTYOU = Cancellation failed;!g you have not!y previously nominated '!g%s!y'.
+GAL_CANCEL_SUCCESS = The following maps!g are no!y longer nominated:!g %s
+GAL_CHANGE_NEXTROUND = Map change will happen after this round.
+GAL_CHANGE_TIMEEXPIRED1 = Time limit has expired.
+GAL_CHANGE_TIMEEXPIRED2 = Time limit!g has!t expired!y.
+GAL_CHANGE_MAINTENANCE = The server!t cannot change!y the map when it is!g on maintenance mode!y. Use 'gal_command_maintenance' to disable it.
+GAL_CHANGE_MAINTENANCE_STATE = The server maintenance mode is '!t%L!y'. Use '!ggal_command_maintenance!y' to toggle it.
+GAL_CHANGE_MAINTENANCE_ON = Activated
+GAL_CHANGE_MAINTENANCE_OFF = Deactivated
+GAL_CHOICE_EXTEND = You have!g chosen to extend!t the current map.
+GAL_CHOICE_EXTEND_ALL = !g%s!y has chosen to!t extend!y the current map.
+GAL_CHOICE_MAP = You have chosen '!g%s!y'.
+GAL_CHOICE_MAP_ALL = !t%s!y has chosen '!g%s!y'.
+GAL_CHOICE_NONE = You have chosen to!t not take part in this!g vote!y.
+GAL_CHOICE_NONE_ALL = !g%s!t has chosen to not!y take part in this vote.
+GAL_CHOICE_STAY = You have chosen!t to stay on!g the current map!y.
+GAL_CHOICE_STAY_ALL = !t%s!y has chosen to stay on!g the current map!y.
+GAL_CHOOSE = Choose the Next Map
+GAL_CHOOSE_QUESTION = Do you want to vote for the next map?
+GAL_CHOOSE_QUESTION_YES = Yes
+GAL_CHOOSE_QUESTION_NO = No
+GAL_CMD_CREATEFILE_USAGE1 = Usage: gal_createmapfile <filename>
+GAL_CMD_CREATEFILE_USAGE2 = The file will be created in ./amxmodx/configs/galileo
+GAL_CMD_NOMS = * You can use '!gnoms!y' instead of '!gnominations!y', if you!t would!y prefer.
+GAL_CMD_RTV = * You can use '!grtv!y' instead of '!grockthevote!y', if you!t would!y prefer.
+GAL_CREATIONFAILED = Could not create '%s'.
+GAL_CREATIONSUCCESS = Successfully created '%s' (%i maps).
+GAL_DISABLED = This command has been disabled.
+GAL_FILLER_NOTFOUND = Could not open '%s' to load maps used to fill the vote.
+GAL_FILLER_BLOCKED = The!g Min-Players!y /!g White-List!y settings blocked from vote the following matching maps:
+GAL_GRP_FAIL_NOCOUNTS = No group counts could be found in '%s' for the vote fill process.
+GAL_GRP_FAIL_TOOMANY = More than 8 filler group map counts were found in '%s'.
+GAL_GRP_FAIL_TOOMANY_2 = Only the first 8 are being loaded.
+GAL_LISTMAPS_MORE = Use '%s %i' or '%s *' for More
+GAL_LISTMAPS_SHOWING = Maps %i - %i of %i
+GAL_LISTMAPS_TITLE = Nominatable Maps
+GAL_MAPS_FILEMISSING = Could not open '%s'.
+GAL_MAPS_FOLDERMISSING = Could not find 'maps' directory.
+GAL_MAP_RECENTMAP = Recent Map
+GAL_MAP_RECENTMAPS = Recent Maps
+GAL_MATCHING = Matching: %s!y.
+GAL_MATCH_CURRENTMAP = (current map)
+GAL_MATCH_NOMINATED = (nominated)
+GAL_MATCH_TOORECENT = (too recent)
+GAL_MATCH_WHITELIST = (blocked until the next hour[s])
+GAL_NEXTMAP1 = The next map will be '%s'.
+GAL_NEXTMAP2 = The next map will be '!g%s!y'.
+GAL_NEXTMAP_UNKNOWN = !t[!ynot yet!g voted on!t]
+GAL_NEXTMAP_VOTING = !t[!yvote in!g progress!t]
+GAL_NOMINATEDBY = (nominated by %s)
+GAL_NOMINATIONS = NOMINATIONS
+GAL_NOMS_NOTFOUND = Could not open '%s' to load maps that can be nominated.
+GAL_NOM_FAIL_ALREADY = Nomination!t failed;!t you have already nominated!g %s!y.
+GAL_NOM_FAIL_CURRENTMAP = Nomination!t failed; '!g%s!y' is the current map.
+GAL_NOM_FAIL_INPROGRESS = Nomination failed;!g vote is already in progress!y.
+GAL_NOM_FAIL_NOMATCHES = Nomination failed;!g no map names matched '!y%s!g'.
+GAL_NOM_FAIL_SOMEONEELSE = Nomination failed; '!g%s!y' has already been nominated by!g %s!y.
+GAL_NOM_FAIL_SOMEONEELSE_HLP = You can type, '!gnominations!y' or '!gnoms!y', to see a list of!t current nominations!y.
+GAL_NOM_FAIL_TOOMANY = Nomination failed;!g you have already!y nominated!g %i!y maps (!g%s!y).
+GAL_NOM_FAIL_TOOMANY_HLP = To nominate a!t different map!g you must first cancel one of!y your current nominations!y.
+GAL_NOM_FAIL_TOORECENT = Nomination failed; '!g%s!y' was played too recently.
+GAL_NOM_FAIL_TOORECENT_HLP = You can type, '!grecentmaps!y', to see the most!t recently played maps!y.
+GAL_NOM_FAIL_VOTEOVER = Nomination!t failed;!y vote outcome has!g already been determined!y.
+GAL_NOM_FAIL_WHITELIST = Nomination failed; '!g%s!y' was blocked to be played on this and!t next hour(s)!y.
+GAL_NOM_GOOD_HLP = To cancel your!g nomination either!t type '!y<mapname>!t' or '!ycancel <mapname>!t'.
+GAL_NOM_MATCHES = !gMore than one map matched '!t%s!g'.!y Please choose the correct one.
+GAL_NOM_MATCHES_MAX = !gThere may have been more than!t %i!y matches. Only the first!g %i will be shown!y.
+GAL_NOM_SUCCESS = !g%s!y has just nominated '!g%s!y'.
+GAL_NOM_CANCEL_OPTION = Cancel all your Nominations
+GAL_OPTION_EXTEND = Extend '%s' %i Minutes
+GAL_OPTION_EXTEND_ROUND = Extend '%s' %i Rounds
+GAL_OPTION_EXTEND_FRAGS = Extend '%s' %i Frags
+GAL_OPTION_NAME_FRAGS = frags
+GAL_OPTION_NAME_ROUND = rounds
+GAL_OPTION_NONE = None
+GAL_OPTION_NONE_VOTE = I don't want to vote
+GAL_OPTION_STAY = Stay Here
+GAL_OPTION_STAY_MAP = Stay Here on %s
+GAL_OPTION_CANCEL_VOTE = Undo my vote
+GAL_OPTION_CANCEL_PARTIALLY = Only set the next map to %s
+GAL_PREFIXES_NOTFOUND = Could not open '%s' to load map prefixes.
+GAL_PREFIXES_TOOMANY = More than %i map prefixes were found in '%s'.
+GAL_RESULT = Result of the Vote
+GAL_RESULT_TIED1 = !g%i choices!y were tied for first.!t Two of them were randomly selected for the vote.
+GAL_RESULT_TIED2 = The!g first!y place choice and a randomly selected,!t of %i!y, second place choice will be in the vote.
+GAL_ROCK_ENOUGH = Enough players have!t rocked the vote!y that a vote for the next map will now begin.
+GAL_ROCK_FAIL_ALREADY = You have!t already rocked the vote!y.
+GAL_ROCK_FAIL_INPROGRESS = Vote is!t already in progress!y.
+GAL_ROCK_FAIL_PENDINGVOTE = There is a vote!t already scheduled to take place in less than!g 2 minutes!y.
+GAL_ROCK_FAIL_TOOSOON = You have to wait approximately!t %i more minutes!y before you can '!grock the vote!y'.
+GAL_ROCK_FAIL_TOOSOON_ROUNDS = You have to wait approximately!t %i more rounds!y before you can '!grock the vote!y'.
+GAL_ROCK_FAIL_TOOSOON_FRAGS = You have to wait approximately!t %i more frags!y before you can '!grock the vote!y'.
+GAL_ROCK_FAIL_VOTEOVER = Vote!g outcome!t has already been determined.
+GAL_ROCK_WAIT_ADMIN = You cannot '!grock the vote!y' when there is an admin!g  online!y.
+GAL_ROCK_NEEDMORE = !g%i!t more players need to '!yrockthevote!t' to start the vote.
+GAL_ROCK_SUCCESS = You have!t rocked the vote!y.
+GAL_RUNOFF_REQUIRED = !tRunoff voting is required!y because the top choice!g did not receive over %d%%!t of the votes cast.
+GAL_STANDARD_NOTFOUND = Error opening '%s' to load standard maps.
+GAL_STANDARD_TOOMANY = There are %i standard maps defined for the game '%s'.
+GAL_STANDARD_UNKNOWNMOD = No map standard set for the game ' '.
+GAL_TIMELEFT = Seconds remaining
+GAL_VOTE_COUNTDOWN = Voting will begin in %i seconds...
+GAL_VOTE_EARLY = Early map vote will begin within!g 2 minutes!y due to the!t server restart!y.
+GAL_VOTE_ENDED = The vote has ended
+GAL_VOTE_INPROGRESS = Vote is!g already!y in progress.
+GAL_VOTE_NOMAPS = Vote creation!t failed; no maps found.
+GAL_VOTE_WEIGHTED = Your vote is weighted. It counts as!g %i!y.
+GAL_VOTE_START = Start Voting
+GAL_VOTE_GO_TO_PAGE = Go to a menu's page
+GAL_WINNER_EXTEND1 = The current map will be extended for %i minutes.
+GAL_WINNER_EXTEND2 = The current map will be extended for!t %i minutes!y.
+GAL_WINNER_EXTEND_ROUND1 = The current map will be extended for %i rounds.
+GAL_WINNER_EXTEND_ROUND2 = The current map!t will be extended for!g %i rounds!y.
+GAL_WINNER_EXTEND_FRAGS1 = The current map will be extended for %i Frags.
+GAL_WINNER_EXTEND_FRAGS2 = The current map!t will be extended for!g %i Frags!y.
+GAL_WINNER_NO_ONE_VOTED = No one voted
+GAL_WINNER_RANDOM1 = The next map was randomly chosen to be '%s'.
+GAL_WINNER_RANDOM2 = The next map was randomly chosen to be '!g%s!y'.
+GAL_WINNER_ORDERED1 = The next map was chosen to be '%s'.
+GAL_WINNER_ORDERED2 = The next map was chosen to be '!g%s!y'.
+GAL_WINNER_STAY1 = We are staying here.
+GAL_WINNER_STAY2 = We are!g staying here!y.
+GAL_WINNER_TIED = The winning choice was!g randomly!t selected from the!g %i!t tied top choices.
+DMAP_NEXTMAP_VOTE_REMAINING1 = A Vote will occur to choose the next map in %d seconds
+DMAP_NEXTMAP_VOTE_REMAINING2 = A Vote will occur to choose the!g next map!y in!g %d seconds
+DMAP_MAP_CHANGING_IN1 = Map changing to %s in %d seconds
+DMAP_MAP_CHANGING_IN2 = Map changing to!g %s!y in!t %d seconds
+DMAP_MAP_EXTENDED = Due to the result of the vote
+[/html]
+
+[anchor]Introduction[/anchor][SIZE="5"][COLOR="Blue"][B]Translation Notes[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor]
+
+These LANG constants use '!t', '!g', and '!y' for colors. Then everything after these tags to use '!g for green', '!y for yellow' and '!t for team' color. At this plugin, all LANG constants automatically start using the yellow color. Example for:
+[QUOTE]GAL_CHANGE_TIMEEXPIRED = Time limit!g has!t expired. !tThe next map!y will be '!g%s!y'.[/QUOTE]Will be viewed like this:
+
+[IMG]http://i.imgur.com/47qmyN3.png[/IMG]
+
+If someones do not want colors when using this plugin/colored LANG file, just needs to disable this cvar on the 'galileo.cfg' config file:
+[PAWN]
+// Enable or disable the color on the plugin text message chat (colored chat).
+// 0 - Disabled
+// 1 - Enabled
+gal_colored_chat_enabled 1
+[/PAWN]
+
+Just do not put color tags at the LANG constants that do not already have, because they are used on the [B]server console[/B] or [B]menus[/B] like this:
+
+[IMG]http://i.imgur.com/ekDyONQ.png[/IMG]
+
+
+
+[anchor]Accents[/anchor][SIZE="5"][COLOR="Blue"][B]Accents[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor]
+
+[QUOTE=MihailoZ;2434003]And what you mean by accentuations?[/QUOTE]
+
+(?????????????) intonation, the action of emphasizing something.
+[CODE]
+Glasanje ce poceti za
+
+[COLOR="Blue"]versus[/COLOR]
+
+Glasanje ce poceti za
+[/CODE]
+[IMG]http://i.imgur.com/r2cXAga.png[/IMG]
+
+[url]https://en.wikipedia.org/wiki/Acute_accent[/url]
+
+
+
+[anchor]tips_notes[/anchor][SIZE="5"][COLOR="Blue"][B]See more notes by [URL="https://forums.alliedmods.net/member.php?u=30983"][B]DynamicBits[/B][/URL][/B][/COLOR][/SIZE][QUOTE=DynamicBits;1553773][B]Escape Sequences[/B] [goanchor=Top]Go to top[/goanchor]
+
+The caret (^), is used as a control character, which indicates the start of an escape sequence. Escape sequences are interpreted differently than normal characters. Understanding what these characters do is important and should help make translating less difficult. You should not alter these escape sequences when translating a string. Altering them can cause undesired effects, such as forcing a client to disconnect.
+
+The escape sequences you will commonly see in AMXX language files are:
+
+[LIST]
+[*]^n  (New-line)
+[*]^t  (Horizontal tab)
+[*]^^  (An actual caret)
+[*]^'  (Single quote)
+[*]^"  (Double quote)
+[*]^%  (Percent sign)
+[/LIST]
+
+[B]Formatting codes[/B]
+
+A second thing to be aware of is formatting codes. These are placeholders that will be replaced in the text displayed to the client or server console. You generally should be aware of whether a formatting code is numeric or text. If you want more information on what each formatting code actually represents, see the explanation of the [I]printf[/I] function in the [URL="http://www.compuphase.com/pawn/pawn.htm#DOWNLOAD_DOCS"]Pawn Language Guide[/URL].
+
+[LIST]
+[*]%b  (numeric)
+[*]%c  (text)
+[*]%d  (numeric)
+[*]%f  (numeric)
+[*]%q  (numeric)
+[*]%r  (numeric)
+[*]%s  (text)
+[*]%x  (numeric)
+[/LIST]
+[/QUOTE]
+
+
+[anchor]Assistant[/anchor][SIZE="5"][COLOR="Blue"][B]Translator Assistant[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor]
+
+Translator Assistant is an aid program in for translations. This simulates one, two or three work areas (a text region), one on top of another. It was created because it is easier to translate review looking at the original on the same screen.
+
+[IMG]http://i.imgur.com/GDpE3ph.png[/IMG]
+
+Requirements: RESOLUTION of at least 800x600.
+Original Download Page (translated): [URL="http://translate.google.com.br/translate?hl=en&sl=pt-BR&u=www.inf.ufsm.br/~silveira/ajudatradutores.html"] http://translate.google.com.br/translate?hl=en&sl=pt-BR&u=www.inf.ufsm.br/~silveira/ajudatradutores.html[/URL]
+
+[SIZE="4"][B]Download[/B][/SIZE]
+[URL="http://www.inf.ufsm.br/~silveira/Downloads/Oblivion/TranslatorAssistant.rar"] http://www.inf.ufsm.br/~silveira/Downloads/Oblivion/TranslatorAssistant.rar[/URL]
+
+
+[anchor]Requirements[/anchor][SIZE="5"][COLOR="Blue"][B]English and others LANG Constants[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor]
+
+
+
+
+
