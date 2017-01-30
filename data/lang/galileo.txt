@@ -99,6 +99,7 @@ GAL_ROCK_WAIT_ADMIN = You cannot '!grock the vote!y' when there is an admin!g  o
 GAL_ROCK_NEEDMORE = !g%i!t more players need to '!yrockthevote!t' to start the vote.
 GAL_ROCK_SUCCESS = You have!t rocked the vote!y.
 GAL_RUNOFF_REQUIRED = !tRunoff voting is required!y because the top choice!g did not receive over %d%%!t of the votes cast.
+GAL_RUNOFF_REQUIRED_TOP = The top choice did not receive enough of the votes
 GAL_STANDARD_NOTFOUND = Error opening '%s' to load standard maps.
 GAL_STANDARD_TOOMANY = There are %i standard maps defined for the game '%s'.
 GAL_STANDARD_UNKNOWNMOD = No map standard set for the game ' '.
@@ -129,7 +130,7 @@ DMAP_NEXTMAP_VOTE_REMAINING1 = A Vote will occur to choose the next map in %d se
 DMAP_NEXTMAP_VOTE_REMAINING2 = A Vote will occur to choose the!g next map!y in!g %d seconds
 DMAP_MAP_CHANGING_IN1 = Map changing to %s in %d seconds
 DMAP_MAP_CHANGING_IN2 = Map changing to!g %s!y in!t %d seconds
-DMAP_MAP_EXTENDED = Due to the result of the vote
+DMAP_MAP_EXTENDED1 = Due to the result of the vote
 
 [bp]
 GAL_CANCEL_FAIL_INPROGRESS = !tCancelamento!g falhou;!y votacao ja esta em progresso.
@@ -232,6 +233,7 @@ GAL_ROCK_WAIT_ADMIN = Voce nao pode '!grockthevote!y' quando existem administrad
 GAL_ROCK_NEEDMORE = Mais!g %i!t jogadores precisam pedir '!yrockthevote!t' para iniciar a votacao.
 GAL_ROCK_SUCCESS = Voce pediu '!trock the vote!y'.
 GAL_RUNOFF_REQUIRED = Uma!t segunda votacao!y e necessaria pois nenhum mapa alcancou!g %d%%!t dos votos preferidos.
+GAL_RUNOFF_REQUIRED_TOP = Nenhum mapa alcancou o numero de votos minimo
 GAL_STANDARD_NOTFOUND = Erro ao abrir '%s' para carregar mapas padrao.
 GAL_STANDARD_TOOMANY = Existem mais %i mapas padrao definidos para o jogo '%s'.
 GAL_STANDARD_UNKNOWNMOD = Nenhum mapa padrao definido para o jogo ' '.
@@ -262,7 +264,7 @@ DMAP_NEXTMAP_VOTE_REMAINING1 = Votacao para o proximo mapa ocorrera em %d segund
 DMAP_NEXTMAP_VOTE_REMAINING2 = Votacao para o!g proximo mapa!y ocorrera em!g %d segundos
 DMAP_MAP_CHANGING_IN1 = Mudando mapa para %s em %d segundos
 DMAP_MAP_CHANGING_IN2 = Mudando mapa para!g %s!y em!t %d segundos
-DMAP_MAP_EXTENDED = Devido ao resultado da votacao
+DMAP_MAP_EXTENDED1 = Devido ao resultado da votacao
 
 [es]
 GAL_CANCEL_FAIL_INPROGRESS = !tError al!g cancelar; la votación!y ya está en curso.
@@ -365,6 +367,7 @@ GAL_ROCK_WAIT_ADMIN = No se puede hacer un!g rtv!y cuando hay un!g administrador
 GAL_ROCK_NEEDMORE = !t%i!y jugadores más hicieron un rtv para comenzar!g una votación!y.
 GAL_ROCK_SUCCESS = Has!g hecho!y un rtv!t.
 GAL_RUNOFF_REQUIRED = !tSe necesita otra votación!y ya que la anterior no llegó a los!g %d%%!y de los votos.
+GAL_RUNOFF_REQUIRED_TOP = La anterior votación no llegó a los suficientes votos
 GAL_STANDARD_NOTFOUND = Error al abrir '%s' para cargar mapas estándar.
 GAL_STANDARD_TOOMANY = Existen %i mapas estándar definidos para el juego '%s'.
 GAL_STANDARD_UNKNOWNMOD = Ningún mapa estándar establecido para el juego ' '.
@@ -395,7 +398,7 @@ DMAP_NEXTMAP_VOTE_REMAINING1 = A Votar se producirán para elegir el próximo ma
 DMAP_NEXTMAP_VOTE_REMAINING2 = A Votar se producirán para elegir el!g próximo mapa!y en!g %d segundos
 DMAP_MAP_CHANGING_IN1 = Cambio en %s en %d segundos
 DMAP_MAP_CHANGING_IN2 = Cambio en!g %s!t en!t %d segundos
-DMAP_MAP_EXTENDED = Debido a la votación
+DMAP_MAP_EXTENDED1 = Debido a la votación
 
 [pl]
 GAL_CANCEL_FAIL_INPROGRESS = Blad przy anulowaniu mapy;!t glosowanie juz sie rozpoczelo.
@@ -498,6 +501,7 @@ GAL_ROCK_WAIT_ADMIN = Nie mozesz '!grockthevote!y', gdy!g  admin!y jest online.
 GAL_ROCK_NEEDMORE = Jeszcze!g %i!t graczy musi wpisac '!yrockthevote!t' lub '!grtv!t', aby wymusic glosowanie.
 GAL_ROCK_SUCCESS = Glosowanie!t zostalo wymuszone!y.
 GAL_RUNOFF_REQUIRED = !tZostanie przeprowadzone dodatkowe glosowanie na jedna!g z dwoch map, poniewaz zadna z map nie osiagnela %d%%!t glosow.
+GAL_RUNOFF_REQUIRED_TOP = Zadna z map nie osiagnela wystarczajaca glosow
 GAL_STANDARD_NOTFOUND = Nie mozna otworzyc pliku '%s', aby zaladowac standardowe mapy.
 GAL_STANDARD_TOOMANY = Jest zdefiniowanych wiecej niz %i standardowych map dla moda '%s'.
 GAL_STANDARD_UNKNOWNMOD = Brak standardowych map dla moda ' '.
@@ -528,7 +532,7 @@ DMAP_NEXTMAP_VOTE_REMAINING1 = Glosowanie na nastepna mape rozpocznie sie za %d 
 DMAP_NEXTMAP_VOTE_REMAINING2 = Glosowanie na nastepna!g mape rozpocznie!y sie za!g %d sekund
 DMAP_MAP_CHANGING_IN1 = Zmiana mapy na %s nastapi za %d sekund
 DMAP_MAP_CHANGING_IN2 = Zmiana mapy na!g %s!y nastapi za!t %d sekund
-DMAP_MAP_EXTENDED = Z powodu wyniku glosowania
+DMAP_MAP_EXTENDED1 = Z powodu wyniku glosowania
 
 [ro]
 GAL_CANCEL_FAIL_INPROGRESS = !tAnulare!g nereusita; Votul este deja in desfasurare.
@@ -631,6 +635,7 @@ GAL_ROCK_WAIT_ADMIN = Nu se poate '!grockthevote!y' atunci când există un admi
 GAL_ROCK_NEEDMORE = De!g %i!t jucatori in plus, este nevoie pentru '!yrockthevote!t' ,altfel votul nu incepe.
 GAL_ROCK_SUCCESS = Ai realizat!t rock the vote!y.
 GAL_RUNOFF_REQUIRED = !tMai multe voturi sunt necesare!y deoarece topul alegerilor!g nu a primit mai mult de %d%%!t din voturile inregistrate.
+GAL_RUNOFF_REQUIRED_TOP = Topul alegerilor nu a primit mai mult de suficienti din voturile
 GAL_STANDARD_NOTFOUND = Eroare la pornirea '%s' pentru a incarca mapele standard.
 GAL_STANDARD_TOOMANY = Se gasesc %i de mape standard definite pentru joc '%s'.
 GAL_STANDARD_UNKNOWNMOD = Nici o mapa nu a fost setata pentru joc ' '.
@@ -661,7 +666,7 @@ DMAP_NEXTMAP_VOTE_REMAINING1 = Va urma un vot pentru a alege urmatoarea harta in
 DMAP_NEXTMAP_VOTE_REMAINING2 = Va urma un vot pentru a alege!g urmatoarea!y harta in!g %d secunde
 DMAP_MAP_CHANGING_IN1 = Harta se schimba pe %s in %d secunde
 DMAP_MAP_CHANGING_IN2 = Harta se schimba pe!g %s!y in!t %d secunde
-DMAP_MAP_EXTENDED = Datorita votarii
+DMAP_MAP_EXTENDED1 = Datorita votarii
 
 [it]
 GAL_CANCEL_FAIL_INPROGRESS = !tCancellazione!g non riuscita; il voto!y e gia in corso.
@@ -764,6 +769,7 @@ GAL_ROCK_WAIT_ADMIN = Non si può '!grockthevote!y' in presenza di un!g amminist
 GAL_ROCK_NEEDMORE = !g%i!t giocatori in piu servono per iniziare il '!yrockthevote!t'.
 GAL_ROCK_SUCCESS = Hai fatto il!t rock the vote!y.
 GAL_RUNOFF_REQUIRED = !tPiu voti sono necessari!y perche il top delle scelte!g non ha ricevuto piu di %d%%!t dei voti registrati.
+GAL_RUNOFF_REQUIRED_TOP = Il top delle scelte non ha ricevuto piu di abbastanza dei voti
 GAL_STANDARD_NOTFOUND = Errore sull apertura di '%s' per caricare le mappe standard.
 GAL_STANDARD_TOOMANY = Ci sono piu di %i mappe standard definite per il gioco '%s'.
 GAL_STANDARD_UNKNOWNMOD = Nessuna mappa standard non e stata impostata per il gioco ' '.
@@ -794,7 +800,7 @@ DMAP_NEXTMAP_VOTE_REMAINING1 = A votazione avverrà a scegliere la seguente mapp
 DMAP_NEXTMAP_VOTE_REMAINING2 = A votazione avverrà a scegliere la!g seguente mappa!y nei!g %d secondi
 DMAP_MAP_CHANGING_IN1 = Mappa passaggio a %s in %d secondi
 DMAP_MAP_CHANGING_IN2 = Mappa passaggio!g a %s!y in!t %d secondi
-DMAP_MAP_EXTENDED = A causa della votazione
+DMAP_MAP_EXTENDED1 = A causa della votazione
 
 [nl]
 GAL_CANCEL_FAIL_INPROGRESS = !tAnnulering mislukt; stemming is!y al bezig.
@@ -897,6 +903,7 @@ GAL_ROCK_WAIT_ADMIN = Je kan niet stemmen om de map te veranderen wanneer er!g e
 GAL_ROCK_NEEDMORE = nog!g %i!t spelers moeten stemmen om de kaart te veranderen vooraleer de stemming kan beginnen.
 GAL_ROCK_SUCCESS = Je hebt gestemd om de!g kaart te!t veranderen.
 GAL_RUNOFF_REQUIRED = !tRunoff stemming is nodig omdat!g de eerste keuze niet meer dan %d%%!t van de uitgebrachte stemmen heeft ontvangen.
+GAL_RUNOFF_REQUIRED_TOP = Eerste keuze niet meer dan genoeg van de uitgebrachte stemmen heeft ontvangen
 GAL_STANDARD_NOTFOUND = Foutmelding tijdens het openen van '%s' om de standaard kaarten te laden.
 GAL_STANDARD_TOOMANY = Er zijn %i standaard kaarten gedefiniëerd voor het spel '%s'
 GAL_STANDARD_UNKNOWNMOD = Er zijn geen maps geïnstalleerd voor het spel ' '.
@@ -927,7 +934,7 @@ DMAP_NEXTMAP_VOTE_REMAINING1 = Een stemming voor de volgende map zal starten in 
 DMAP_NEXTMAP_VOTE_REMAINING2 = Een stemming voor de volgende!g map zal!y starten in!g %d seconden
 DMAP_MAP_CHANGING_IN1 = Map wordt veranderd naar %s in %d seconden
 DMAP_MAP_CHANGING_IN2 = Map wordt veranderd!g naar %s!y in!t %d seconden
-DMAP_MAP_EXTENDED = Door de stemming
+DMAP_MAP_EXTENDED1 = Door de stemming
 
 [sr]
 GAL_CANCEL_FAIL_INPROGRESS = !tPoništenje!g nije uspelo; glasanje je!y u toku.
@@ -1030,6 +1037,7 @@ GAL_ROCK_WAIT_ADMIN = Ne možete '!grock the vote!y' dok je admin tu.
 GAL_ROCK_NEEDMORE = Više od!g%i!t igrača moraju '!yubrzati glasanje!t' da bi glasanje počelo.
 GAL_ROCK_SUCCESS = Vi ste!t ubrzali glasanje!y.
 GAL_RUNOFF_REQUIRED = !tDrugi krug glasanja je neophodan!y jer najbolji odabiri!g nisu dobili više od %d%%!t glasova.
+GAL_RUNOFF_REQUIRED_TOP = Najbolji odabiri nisu dobili više od dovoljno glasova
 GAL_STANDARD_NOTFOUND = Greška pri otvaranju '%s' radi učitavanja standardnih mapa.
 GAL_STANDARD_TOOMANY = Postoje %i definisane standardne mape za igru '%s'.
 GAL_STANDARD_UNKNOWNMOD = Standard mape nije postavljen za igru ' '.
@@ -1060,7 +1068,7 @@ DMAP_NEXTMAP_VOTE_REMAINING1 = А глас ће доћи да изабере с�
 DMAP_NEXTMAP_VOTE_REMAINING2 = А глас ће доћи да изабере!y следећи карту!g у!g %d sekundi
 DMAP_MAP_CHANGING_IN1 = Карта мењања да се %s и %d секунде
 DMAP_MAP_CHANGING_IN1 = Карта мењања да!g се %s!y и!t %d секунде
-DMAP_MAP_EXTENDED = Услед гласање
+DMAP_MAP_EXTENDED1 = Услед гласање
 
 [sk]
 GAL_CANCEL_FAIL_INPROGRESS = !tZrusenie!g neuspesne, hlasovanie!y uz prebieha.
@@ -1163,6 +1171,7 @@ GAL_ROCK_WAIT_ADMIN = Nemozes pouzit '!grtv!y' ked je tu!g pripojeny!y admin.
 GAL_ROCK_NEEDMORE = Este!g %i!t hracov musi napisat '!yrtv!t' pre spustenie hlasovania.
 GAL_ROCK_SUCCESS = Pouzil/a si!t rtv!y pre spustenie hlasovania.
 GAL_RUNOFF_REQUIRED = !tBude este jedno hlasovanie!y pretoze ani jedna mapa!g neziskala viac ako %d%%!t odoslanych hlasov.
+GAL_RUNOFF_REQUIRED_TOP = Jedna mapa neziskala viac ako dostatok odoslanych hlasov
 GAL_STANDARD_NOTFOUND = Chyba pocas otvarania '%s' - nemozno nacitat standardne mapy.
 GAL_STANDARD_TOOMANY = Je tu %i standardnych map definovanych pre hru '%s'.
 GAL_STANDARD_UNKNOWNMOD = Nenasli sa ziadne standardne mapy pre hru ' '.
@@ -1193,7 +1202,7 @@ DMAP_NEXTMAP_VOTE_REMAINING1 = Hlasovanie sa príde vybrať iný mapu v %d sekun
 DMAP_NEXTMAP_VOTE_REMAINING2 = Hlasovanie sa príde vybrať!g iný mapu!y v!g %d sekund
 DMAP_MAP_CHANGING_IN1 = Mapa prechod na %s za %d sekúnd
 DMAP_MAP_CHANGING_IN1 = Mapa prechod!g na %s!y za!t %d sekúnd
-DMAP_MAP_EXTENDED = Kvôli o hlasovaní
+DMAP_MAP_EXTENDED1 = Kvôli o hlasovaní
 
 [hu]
 GAL_CANCEL_FAIL_INPROGRESS = !tMegszakítás!g sikertelen; a szavazás!y már folyamatban van.
@@ -1296,6 +1305,7 @@ GAL_ROCK_WAIT_ADMIN = Az '!grtv!y' kikapcsolva!t admin!y jelenléte miatt.
 GAL_ROCK_NEEDMORE = !t%i!y rtv szükséges még az !gelőrehozott szavazáshoz!y.
 GAL_ROCK_SUCCESS = !gA szavazás!y elkezdését kérted!t.
 GAL_RUNOFF_REQUIRED = !tÚjraszavázas szükséges!y, mert a szavazatok száma nem haladta meg!g az %d%%-ot!y.
+GAL_RUNOFF_REQUIRED_TOP = A szavazatok száma nem haladta meg az elegendő-ot
 GAL_STANDARD_NOTFOUND = Nem nyitható meg a '%s', hogy beolvassa az alap pályákat.
 GAL_STANDARD_TOOMANY = Több mint %i alap pálya lett megadva a '%s' játékhoz.
 GAL_STANDARD_UNKNOWNMOD = Nincs alap pálya megadva a játékhoz ' '.
@@ -1326,4 +1336,4 @@ DMAP_NEXTMAP_VOTE_REMAINING1 = Az szavazás fog bekövetkezni hogy válasszon a 
 DMAP_NEXTMAP_VOTE_REMAINING2 = Az szavazás fog bekövetkezni!g hogy válasszon!y a következő térképet!g %d másodperc
 DMAP_MAP_CHANGING_IN1 = Mapa zmena na %s v %d sekúnd
 DMAP_MAP_CHANGING_IN2 = Mapa zmena!g na %s!y v!t %d sekúnd
-DMAP_MAP_EXTENDED = Miatt az szavazásban
+DMAP_MAP_EXTENDED1 = Miatt az szavazásban

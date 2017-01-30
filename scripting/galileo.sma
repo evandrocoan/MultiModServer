@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.0.2-727";
+new const PLUGIN_VERSION[] = "v5.0.2-728";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -8859,7 +8859,7 @@ public computeVotes()
             }
             else if( runoffEnabled == RUNOFF_EXTEND )
             {
-                map_extend( "GAL_WINNER_NO_ONE_VOTED" );
+                map_extend( "GAL_RUNOFF_REQUIRED_TOP" );
                 LOGGER( 1, "( computeVotes ) Its runoff extending." )
             }
             else
@@ -8922,8 +8922,8 @@ stock chooseTheVotingMapWinner( firstPlaceChoices[], numberOfMapsAtFirstPosition
                 LOGGER( 1, "    ( chooseTheVotingMapWinner ) Just opened the menu due g_voteMapStatus: %d", g_voteMapStatus )
             }
 
-            color_print( 0, "%L: %L", LANG_PLAYER, "DMAP_MAP_EXTENDED", LANG_PLAYER, "GAL_WINNER_STAY2" );
-            toShowTheMapStayHud( "GAL_VOTE_ENDED", "DMAP_MAP_EXTENDED", "GAL_WINNER_STAY1" );
+            color_print( 0, "%L: %L", LANG_PLAYER, "DMAP_MAP_EXTENDED1", LANG_PLAYER, "GAL_WINNER_STAY2" );
+            toShowTheMapStayHud( "GAL_VOTE_ENDED", "DMAP_MAP_EXTENDED1", "GAL_WINNER_STAY1" );
 
             // However here, none decisions are being made. Anyways, we cannot block the execution
             // right here without executing the remaining code.
@@ -8953,13 +8953,13 @@ stock chooseTheVotingMapWinner( firstPlaceChoices[], numberOfMapsAtFirstPosition
         // When it is a `gal_votemap` we need to print its map winner, instead of the `g_nextMapName`.
         if( g_invokerVoteMapNameToDecide[ 0 ] )
         {
-            color_print( 0, "%L: %L", LANG_PLAYER, "DMAP_MAP_EXTENDED", LANG_PLAYER, "GAL_NEXTMAP2", g_invokerVoteMapNameToDecide );
-            toShowTheMapNextHud( "GAL_VOTE_ENDED", "DMAP_MAP_EXTENDED", "GAL_NEXTMAP1", g_invokerVoteMapNameToDecide );
+            color_print( 0, "%L: %L", LANG_PLAYER, "DMAP_MAP_EXTENDED1", LANG_PLAYER, "GAL_NEXTMAP2", g_invokerVoteMapNameToDecide );
+            toShowTheMapNextHud( "GAL_VOTE_ENDED", "DMAP_MAP_EXTENDED1", "GAL_NEXTMAP1", g_invokerVoteMapNameToDecide );
         }
         else
         {
-            color_print( 0, "%L: %L", LANG_PLAYER, "DMAP_MAP_EXTENDED", LANG_PLAYER, "GAL_NEXTMAP2", g_nextMapName );
-            toShowTheMapNextHud( "GAL_VOTE_ENDED", "DMAP_MAP_EXTENDED", "GAL_NEXTMAP1", g_nextMapName );
+            color_print( 0, "%L: %L", LANG_PLAYER, "DMAP_MAP_EXTENDED1", LANG_PLAYER, "GAL_NEXTMAP2", g_nextMapName );
+            toShowTheMapNextHud( "GAL_VOTE_ENDED", "DMAP_MAP_EXTENDED1", "GAL_NEXTMAP1", g_nextMapName );
         }
 
         process_last_round( g_isToChangeMapOnVotingEnd );
@@ -8990,7 +8990,7 @@ stock chooseRandomVotingWinner()
             g_voteStatus |= IS_VOTE_OVER;
 
             color_print( 0, "%L. %L", LANG_PLAYER, "GAL_WINNER_NO_ONE_VOTED", LANG_PLAYER, "GAL_WINNER_ORDERED2", g_nextMapName );
-            toShowTheMapNextHud( "GAL_WINNER_NO_ONE_VOTED", "DMAP_MAP_EXTENDED", "GAL_WINNER_ORDERED1", g_nextMapName );
+            toShowTheMapNextHud( "GAL_WINNER_NO_ONE_VOTED", "DMAP_MAP_EXTENDED1", "GAL_WINNER_ORDERED1", g_nextMapName );
 
             // Need to be called to trigger special behaviors.
             setNextMap( g_currentMapName, g_nextMapName );
@@ -9011,7 +9011,7 @@ stock chooseRandomVotingWinner()
             setNextMap( g_currentMapName, g_votingMapNames[ winnerVoteMapIndex ] );
 
             color_print( 0, "%L. %L", LANG_PLAYER, "GAL_WINNER_NO_ONE_VOTED", LANG_PLAYER, "GAL_WINNER_RANDOM2", g_nextMapName );
-            toShowTheMapNextHud( "GAL_WINNER_NO_ONE_VOTED", "DMAP_MAP_EXTENDED", "GAL_WINNER_RANDOM1", g_nextMapName );
+            toShowTheMapNextHud( "GAL_WINNER_NO_ONE_VOTED", "DMAP_MAP_EXTENDED1", "GAL_WINNER_RANDOM1", g_nextMapName );
 
             process_last_round( g_isToChangeMapOnVotingEnd );
         }
@@ -9077,17 +9077,17 @@ stock toAnnounceTheMapExtension( lang[] )
     if( g_endVotingType & ( IS_BY_ROUNDS | IS_BY_WINLIMIT ) )
     {
         color_print( 0, "%L %L", LANG_PLAYER, lang, LANG_PLAYER, "GAL_WINNER_EXTEND_ROUND2", g_extendmapStepRounds );
-        toShowTheMapExtensionHud( lang, "DMAP_MAP_EXTENDED", "GAL_WINNER_EXTEND_ROUND1", g_extendmapStepRounds );
+        toShowTheMapExtensionHud( lang, "DMAP_MAP_EXTENDED1", "GAL_WINNER_EXTEND_ROUND1", g_extendmapStepRounds );
     }
     else if( g_endVotingType & IS_BY_FRAGS )
     {
         color_print( 0, "%L %L", LANG_PLAYER, lang, LANG_PLAYER, "GAL_WINNER_EXTEND_FRAGS2", g_extendmapStepFrags );
-        toShowTheMapExtensionHud( lang, "DMAP_MAP_EXTENDED", "GAL_WINNER_EXTEND_FRAGS1", g_extendmapStepFrags );
+        toShowTheMapExtensionHud( lang, "DMAP_MAP_EXTENDED1", "GAL_WINNER_EXTEND_FRAGS1", g_extendmapStepFrags );
     }
     else
     {
         color_print( 0, "%L %L", LANG_PLAYER, lang, LANG_PLAYER, "GAL_WINNER_EXTEND2", g_extendmapStepMinutes );
-        toShowTheMapExtensionHud( lang, "DMAP_MAP_EXTENDED", "GAL_WINNER_EXTEND1", g_extendmapStepMinutes );
+        toShowTheMapExtensionHud( lang, "DMAP_MAP_EXTENDED1", "GAL_WINNER_EXTEND1", g_extendmapStepMinutes );
     }
 }
 
@@ -9134,8 +9134,8 @@ stock map_extend( lang[] )
     // While the `IS_DISABLED_VOTEMAP_EXIT` bit flag is set, we cannot allow any decisions.
     if( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXIT )
     {
-        color_print( 0, "%L: %L", LANG_PLAYER, "DMAP_MAP_EXTENDED", LANG_PLAYER, "GAL_WINNER_STAY2" );
-        toShowTheMapExtensionHud( "GAL_VOTE_ENDED", "DMAP_MAP_EXTENDED", "GAL_WINNER_STAY1", 0 );
+        color_print( 0, "%L: %L", LANG_PLAYER, "DMAP_MAP_EXTENDED1", LANG_PLAYER, "GAL_WINNER_STAY2" );
+        toShowTheMapExtensionHud( "GAL_VOTE_ENDED", "DMAP_MAP_EXTENDED1", "GAL_WINNER_STAY1", 0 );
 
         // When the map extension is called, there is anyone else trying to show action menu,
         // therefore invoke it before returning.
@@ -11422,7 +11422,7 @@ public handleVoteMapActionMenu( player_id, pressedKeyCode )
             if( g_invokerVoteMapNameToDecide[ 0 ] )
             {
                 color_print( 0, "%L. %L: %s", LANG_PLAYER, "RESULT_ACC", LANG_PLAYER, "VOTE_SUCCESS", g_invokerVoteMapNameToDecide );
-                toShowTheMapNextHud( "RESULT_ACC", "DMAP_MAP_EXTENDED", "GAL_WINNER_ORDERED1", g_invokerVoteMapNameToDecide );
+                toShowTheMapNextHud( "RESULT_ACC", "DMAP_MAP_EXTENDED1", "GAL_WINNER_ORDERED1", g_invokerVoteMapNameToDecide );
 
                 setNextMap( g_currentMapName, g_invokerVoteMapNameToDecide );
             }
