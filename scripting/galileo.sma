@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.0.2-729";
+new const PLUGIN_VERSION[] = "v5.0.2-730";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -14268,6 +14268,12 @@ stock getLastNextMapFromServerStart( Array:mapcycleFileListArray, nextMapName[],
 
         get_pcvar_string( cvar_amx_nextmap, nextMapName, MAX_MAPNAME_LENGHT - 1 );
 
+        // Block the next map name being read as the current map name on the server start.
+        if( equali( nextMapName, g_currentMapName ) )
+        {
+            goto getAnotherNextMapName;
+        }
+
         if( IS_MAP_VALID( nextMapName ) )
         {
             LOGGER( 4, "( getLastNextMapFromServerStart ) nextMapName: %s", nextMapName )
@@ -14275,6 +14281,7 @@ stock getLastNextMapFromServerStart( Array:mapcycleFileListArray, nextMapName[],
     }
     else
     {
+        getAnotherNextMapName:
         getNextMapByPosition( mapcycleFileListArray, g_nextMapName, nextMapCyclePosition );
     }
 }
