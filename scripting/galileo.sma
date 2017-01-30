@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.0.2-728";
+new const PLUGIN_VERSION[] = "v5.0.2-729";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.0.2-728";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 0
+#define DEBUG_LEVEL 16
 
 
 /**
@@ -6733,9 +6733,9 @@ public displayRemainingTime()
     show_hudmessage( 0, "%L:^n%d: %2d %L", LANG_PLAYER, "TIME_LEFT", minutes, seconds, LANG_PLAYER, "MINUTES" );
 }
 
-stock bool:approvedTheVotingStart( bool:is_forced_voting )
+stock bool:approveTheVotingStart( bool:is_forced_voting )
 {
-    LOGGER( 128, "I AM ENTERING ON approvedTheVotingStart(1) is_forced_voting: %d, get_real_players_number: %d", \
+    LOGGER( 128, "I AM ENTERING ON approveTheVotingStart(1) is_forced_voting: %d, get_real_players_number: %d", \
             is_forced_voting, get_real_players_number() )
 
     if( get_pcvar_num( cvar_nextMapChangeVotemap )
@@ -6758,7 +6758,7 @@ stock bool:approvedTheVotingStart( bool:is_forced_voting )
             // The voting is over, i.e., must to be performed.
             g_voteStatus |= IS_VOTE_OVER;
 
-            LOGGER( 1, "    ( approvedTheVotingStart ) Returning false due the `gal_nextmap_votemap` feature." )
+            LOGGER( 1, "    ( approveTheVotingStart ) Returning false due the `gal_nextmap_votemap` feature." )
             return false;
         }
     }
@@ -6770,13 +6770,13 @@ stock bool:approvedTheVotingStart( bool:is_forced_voting )
         || ( !is_forced_voting
              && g_voteStatus & IS_VOTE_OVER ) )
     {
-        LOGGER( 1, "    ( approvedTheVotingStart ) g_voteStatus: %d, g_voteStatus & IS_VOTE_OVER: %d", \
+        LOGGER( 1, "    ( approveTheVotingStart ) g_voteStatus: %d, g_voteStatus & IS_VOTE_OVER: %d", \
                 g_voteStatus, g_voteStatus & IS_VOTE_OVER != 0 )
 
     #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
         if( g_test_areTheUnitTestsRunning )
         {
-            LOGGER( 1, "    ( approvedTheVotingStart ) Returning true on the if !g_test_areTheUnitTestsRunning, \
+            LOGGER( 1, "    ( approveTheVotingStart ) Returning true on the if !g_test_areTheUnitTestsRunning, \
                     cvar_isEmptyCycleByMapChange: %d.", get_pcvar_num( cvar_isEmptyCycleByMapChange ) )
             return true;
         }
@@ -6795,7 +6795,7 @@ stock bool:approvedTheVotingStart( bool:is_forced_voting )
             }
         }
 
-        LOGGER( 1, "    ( approvedTheVotingStart ) Returning false on the big blocker." )
+        LOGGER( 1, "    ( approveTheVotingStart ) Returning false on the big blocker." )
         return false;
     }
 
@@ -6821,13 +6821,14 @@ stock bool:approvedTheVotingStart( bool:is_forced_voting )
         vote_resetStats();
     }
 
-    if( g_isMapExtensionPeriodRunning )
+    if( g_isMapExtensionPeriodRunning
+        && !is_forced_voting )
     {
-        LOGGER( 1, "    ( approvedTheVotingStart ) Returning false, block the new voting after the map extension." )
+        LOGGER( 1, "    ( approveTheVotingStart ) Returning false, block the new voting after the map extension." )
         return false;
     }
 
-    LOGGER( 1, "    ( approvedTheVotingStart ) Returning true, due passed by all requirements." )
+    LOGGER( 1, "    ( approveTheVotingStart ) Returning true, due passed by all requirements." )
     return true;
 }
 
@@ -6983,7 +6984,7 @@ stock vote_startDirector( bool:is_forced_voting )
 {
     LOGGER( 128, "I AM ENTERING ON vote_startDirector(1) is_forced_voting: %d", is_forced_voting )
 
-    if( !approvedTheVotingStart( is_forced_voting ) )
+    if( !approveTheVotingStart( is_forced_voting ) )
     {
         LOGGER( 1, "    ( vote_startDirector ) Just Returning/blocking, the voting was not approved." )
         return;
@@ -9447,6 +9448,24 @@ stock map_isTooRecent( map[] )
     return false;
 }
 
+stock announcerockFailToosoon( player_id, Float:minutesElapsed )
+{
+    LOGGER( 128, "I AM ENTERING ON announcerockFailToosoon(1) minutesElapsed: %d", minutesElapsed )
+    new remaining_time;
+
+    if( g_isMapExtensionPeriodRunning )
+    {
+        remaining_time = 2;
+    }
+    else
+    {
+        remaining_time = floatround( g_rtvWaitMinutes - minutesElapsed, floatround_ceil );
+    }
+
+    color_print( player_id, "%L", player_id, "GAL_ROCK_FAIL_TOOSOON", remaining_time );
+    LOGGER( 1, "    ( announcerockFailToosoon ) Just Returning/blocking, too soon to rock by minutes." )
+}
+
 stock is_to_block_RTV( player_id )
 {
     LOGGER( 128, "I AM ENTERING ON is_to_block_RTV(1) player_id: %d", player_id )
@@ -9492,14 +9511,12 @@ stock is_to_block_RTV( player_id )
     }
 
     // Make sure enough time has gone by on the current map
-    else if( g_rtvWaitMinutes
-             && ( minutesElapsed = map_getMinutesElapsed() )
-             && minutesElapsed < g_rtvWaitMinutes )
+    else if( ( g_rtvWaitMinutes
+               && ( minutesElapsed = map_getMinutesElapsed() )
+               && minutesElapsed < g_rtvWaitMinutes )
+             || g_isMapExtensionPeriodRunning )
     {
-        new remaining_time = floatround( g_rtvWaitMinutes - minutesElapsed, floatround_ceil );
-
-        color_print( player_id, "%L", player_id, "GAL_ROCK_FAIL_TOOSOON", remaining_time );
-        LOGGER( 1, "    ( is_to_block_RTV ) Just Returning/blocking, too soon to rock by minutes." )
+        announcerockFailToosoon( player_id, minutesElapsed );
     }
 
     // Make sure enough rounds has gone by on the current map
@@ -10590,15 +10607,15 @@ public cmd_cancelVote( player_id, level, cid )
     return PLUGIN_HANDLED;
 }
 
-stock bool:approvedTheVotingStartLight()
+stock bool:approveTheVotingStartLight()
 {
-    LOGGER( 128, "I AM ENTERING ON approvedTheVotingStartLight(1) get_real_players_number: %d", \
+    LOGGER( 128, "I AM ENTERING ON approveTheVotingStartLight(1) get_real_players_number: %d", \
             get_real_players_number() )
 
     // block the voting on some not allowed situations/cases
     if( get_real_players_number() == 0)
     {
-        LOGGER( 1, "    ( approvedTheVotingStartLight ) Returning false 0 players on the server." )
+        LOGGER( 1, "    ( approveTheVotingStartLight ) Returning false 0 players on the server." )
         return false;
     }
 
@@ -10611,7 +10628,7 @@ stock bool:approvedTheVotingStartLight()
         vote_resetStats();
     }
 
-    LOGGER( 1, "    ( approvedTheVotingStart ) Returning true, due passed by all requirements." )
+    LOGGER( 1, "    ( approveTheVotingStart ) Returning true, due passed by all requirements." )
     return true;
 }
 
@@ -10633,12 +10650,12 @@ public cmd_voteMap( player_id, level, cid )
     }
 
     // There is a real strange `Run time error 5: memory access` bug around these declarations,
-    // if you use the approvedTheVotingStart(1) instead of the approvedTheVotingStartLight(1)!
+    // if you use the approveTheVotingStart(1) instead of the approveTheVotingStartLight(1)!
     if( g_voteStatus & IS_VOTE_IN_PROGRESS )
     {
         color_print( player_id, "%L", player_id, "GAL_VOTE_INPROGRESS" );
     }
-    else if( approvedTheVotingStartLight() )
+    else if( approveTheVotingStartLight() )
     {
         new argumentsCount;
         new arguments[ MAX_BIG_BOSS_STRING ];
@@ -13638,7 +13655,6 @@ stock cancelVoting( bool:isToDoubleReset = false )
     remove_task( TASKID_SHOW_LAST_ROUND_HUD );
     remove_task( TASKID_SHOW_LAST_ROUND_MESSAGE );
     remove_task( TASKID_FINISH_GAME_TIME_BY_HALF );
-    remove_task( TASKID_BLOCK_NEW_VOTING_START );
 
     g_isMapExtensionPeriodRunning = false;
 
@@ -18574,7 +18590,7 @@ public timeRemain()
             // After doing this function call, the compiler is corrupting the variable `cmnE`, so we cannot just
             // do `copy( cmnE, MAX_MAPNAME_LENGHT - 1, nmnE );`. We cannot use `cmnE` after call this.
             // And yes, the variable `cmnE` is neither passed to getNextMapByPosition(5), but it still being corrupted
-            // anyways. This is the same problem as in the cmd_voteMap(3) call to approvedTheVotingStart(1).
+            // anyways. This is the same problem as in the cmd_voteMap(3) call to approveTheVotingStart(1).
             getNextMapByPosition( g_mapcycleFileListArray, nextMapExpected, nextMapPositon );
         }
         else
