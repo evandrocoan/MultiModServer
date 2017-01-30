@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.0.2-730";
+new const PLUGIN_VERSION[] = "v5.0.2-732";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -8974,7 +8974,7 @@ stock noLongerIsAnEarlyVoting()
     // We are extending the map as result of the voting outcome, so reset the ending round variables.
     resetRoundEnding();
 
-    // no longer is an early or forced voting
+    // No longer is an early or forced voting
     g_voteStatus &= ~IS_EARLY_VOTE;
     g_voteStatus &= ~IS_FORCED_VOTE;
 }
@@ -9233,6 +9233,9 @@ stock doTheActualMapExtension()
 {
     LOGGER( 128, "I AM ENTERING ON doTheActualMapExtension(0)" )
 
+    // Stop the map changing on a forced voting.
+    g_isToChangeMapOnVotingEnd = false;
+
     if( g_endVotingType & IS_BY_ROUNDS )
     {
         new total = GAME_ENDING_CONTEXT_SAVED( g_maxRoundsContextSaved, get_pcvar_num( cvar_mp_maxrounds ) );
@@ -9453,6 +9456,7 @@ stock announcerockFailToosoon( player_id, Float:minutesElapsed )
     LOGGER( 128, "I AM ENTERING ON announcerockFailToosoon(1) minutesElapsed: %d", minutesElapsed )
     new remaining_time;
 
+    // It will be 2 minutes because there is not point to calculate whether it will be 1 or 2 minutes.
     if( g_isMapExtensionPeriodRunning )
     {
         remaining_time = 2;
@@ -9511,10 +9515,9 @@ stock is_to_block_RTV( player_id )
     }
 
     // Make sure enough time has gone by on the current map
-    else if( ( g_rtvWaitMinutes
-               && ( minutesElapsed = map_getMinutesElapsed() )
-               && minutesElapsed < g_rtvWaitMinutes )
-             || g_isMapExtensionPeriodRunning )
+    else if( g_rtvWaitMinutes
+             && ( minutesElapsed = map_getMinutesElapsed() )
+             && minutesElapsed < g_rtvWaitMinutes )
     {
         announcerockFailToosoon( player_id, minutesElapsed );
     }
@@ -9640,10 +9643,11 @@ stock start_rtvVote()
         g_isToChangeMapOnVotingEnd = true;
     }
 
+    // Set the RTV voting status and remember, the RTV voting does not need to set the `g_endVotingType`
+    // because there is not map extension option, only `Stay Here` for forced voting as RTV.
     g_voteStatus |= IS_RTV_VOTE;
 
-    // Any voting not started by `cvar_endOfMapVoteStart`, `cvar_endOnRound` or ending limit expiration,
-    // is a forced voting.
+    // Any voting not started by `cvar_endOfMapVoteStart` or ending limit expiration, is a forced voting.
     vote_startDirector( true );
 }
 
