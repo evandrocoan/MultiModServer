@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.0.2-733";
+new const PLUGIN_VERSION[] = "v5.0.2-734";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -2056,6 +2056,24 @@ stock configureServerStart()
  * on the next time the server start, it will be on the next map instead of the current map. To fix
  * this, we need to detect here if this function is being called when the server admin the command
  * `rcon quit`.
+ *
+ * Algorithm o detect the quit command: (Not implemented, Not finished)
+ *
+ * 1. Update only at server start the new file `lastServerStartMapName.dat`
+ *
+ * 2. So if the map name on `lastServerStartMapName.dat` is different that the current map name on
+ *    `currentAndNextmapNames.dat`, the server crashed on change level or the server admin used the
+ *    command `quit` on the server console.
+ *
+ *    2.a) If the server crashed on change level, we still want to go back to that map on
+ *         `currentAndNextmapNames.dat` until `MAX_SERVER_RESTART_ACCEPTABLE`.
+ *    2.b) If the server admin just used the command `quit`, we want to go back to the map the
+ *         file `lastServerStartMapName.dat`.
+ *
+ * 3. If  if the map name on `lastServerStartMapName.dat` is equal that the current map name on
+ *    `currentAndNextmapNames.dat`, the server can crashed while playing the that map. This case is
+ *    the same on `2.a)`, we still want to come back to that map `lastServerStartMapName.dat` until
+ *    the MAX_SERVER_RESTART_ACCEPTABLE.
  */
 stock setTheCurrentAndNextMapSettings()
 {
