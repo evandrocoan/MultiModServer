@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.0.2-732";
+new const PLUGIN_VERSION[] = "v5.0.2-733";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.0.2-732";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 16
+#define DEBUG_LEVEL 0
 
 
 /**
@@ -2046,13 +2046,16 @@ stock configureServerStart()
 
 /**
  * I must to set next the current and next map at plugin_end(0), because if the next map changed by
- * a normal server change level, the current and next map names will not be updated.
+ * a normal server change level, the current and next map names will not be updated. It is impossible
+ * to detect to which map the server was changed when the server admin does `amx_map` or any other
+ * command to change the level to a specific map. However we do not need to worry about such commands
+ * because if the admin does so, the map will be changed to the map just before they were when the
+ * change level command to be performed.
  *
- * It is impossible to detect to which map the server was changed when the server admin does `amx_map`
- * or any other command to change the level to a specific map.
- *
- * However we do not need to worry about such commands because if the admin does so, the map will be
- * changed to the map just before they were, when the change level command to be performed.
+ * Sadly this function is being called when the server's admin is calling `rcon quit`. It means that
+ * on the next time the server start, it will be on the next map instead of the current map. To fix
+ * this, we need to detect here if this function is being called when the server admin the command
+ * `rcon quit`.
  */
 stock setTheCurrentAndNextMapSettings()
 {
