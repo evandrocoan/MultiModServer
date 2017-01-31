@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.0.2-727";
+new const PLUGIN_VERSION[] = "v5.0.2-734";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -2046,13 +2046,34 @@ stock configureServerStart()
 
 /**
  * I must to set next the current and next map at plugin_end(0), because if the next map changed by
- * a normal server change level, the current and next map names will not be updated.
+ * a normal server change level, the current and next map names will not be updated. It is impossible
+ * to detect to which map the server was changed when the server admin does `amx_map` or any other
+ * command to change the level to a specific map. However we do not need to worry about such commands
+ * because if the admin does so, the map will be changed to the map just before they were when the
+ * change level command to be performed.
  *
- * It is impossible to detect to which map the server was changed when the server admin does `amx_map`
- * or any other command to change the level to a specific map.
+ * Sadly this function is being called when the server's admin is calling `rcon quit`. It means that
+ * on the next time the server start, it will be on the next map instead of the current map. To fix
+ * this, we need to detect here if this function is being called when the server admin the command
+ * `rcon quit`.
  *
- * However we do not need to worry about such commands because if the admin does so, the map will be
- * changed to the map just before they were, when the change level command to be performed.
+ * Algorithm o detect the quit command: (Not implemented, Not finished)
+ *
+ * 1. Update only at server start the new file `lastServerStartMapName.dat`
+ *
+ * 2. So if the map name on `lastServerStartMapName.dat` is different that the current map name on
+ *    `currentAndNextmapNames.dat`, the server crashed on change level or the server admin used the
+ *    command `quit` on the server console.
+ *
+ *    2.a) If the server crashed on change level, we still want to go back to that map on
+ *         `currentAndNextmapNames.dat` until `MAX_SERVER_RESTART_ACCEPTABLE`.
+ *    2.b) If the server admin just used the command `quit`, we want to go back to the map the
+ *         file `lastServerStartMapName.dat`.
+ *
+ * 3. If  if the map name on `lastServerStartMapName.dat` is equal that the current map name on
+ *    `currentAndNextmapNames.dat`, the server can crashed while playing the that map. This case is
+ *    the same on `2.a)`, we still want to come back to that map `lastServerStartMapName.dat` until
+ *    the MAX_SERVER_RESTART_ACCEPTABLE.
  */
 stock setTheCurrentAndNextMapSettings()
 {
@@ -6733,9 +6754,9 @@ public displayRemainingTime()
     show_hudmessage( 0, "%L:^n%d: %2d %L", LANG_PLAYER, "TIME_LEFT", minutes, seconds, LANG_PLAYER, "MINUTES" );
 }
 
-stock bool:approvedTheVotingStart( bool:is_forced_voting )
+stock bool:approveTheVotingStart( bool:is_forced_voting )
 {
-    LOGGER( 128, "I AM ENTERING ON approvedTheVotingStart(1) is_forced_voting: %d, get_real_players_number: %d", \
+    LOGGER( 128, "I AM ENTERING ON approveTheVotingStart(1) is_forced_voting: %d, get_real_players_number: %d", \
             is_forced_voting, get_real_players_number() )
 
     if( get_pcvar_num( cvar_nextMapChangeVotemap )
@@ -6758,7 +6779,7 @@ stock bool:approvedTheVotingStart( bool:is_forced_voting )
             // The voting is over, i.e., must to be performed.
             g_voteStatus |= IS_VOTE_OVER;
 
-            LOGGER( 1, "    ( approvedTheVotingStart ) Returning false due the `gal_nextmap_votemap` feature." )
+            LOGGER( 1, "    ( approveTheVotingStart ) Returning false due the `gal_nextmap_votemap` feature." )
             return false;
         }
     }
@@ -6770,13 +6791,13 @@ stock bool:approvedTheVotingStart( bool:is_forced_voting )
         || ( !is_forced_voting
              && g_voteStatus & IS_VOTE_OVER ) )
     {
-        LOGGER( 1, "    ( approvedTheVotingStart ) g_voteStatus: %d, g_voteStatus & IS_VOTE_OVER: %d", \
+        LOGGER( 1, "    ( approveTheVotingStart ) g_voteStatus: %d, g_voteStatus & IS_VOTE_OVER: %d", \
                 g_voteStatus, g_voteStatus & IS_VOTE_OVER != 0 )
 
     #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
         if( g_test_areTheUnitTestsRunning )
         {
-            LOGGER( 1, "    ( approvedTheVotingStart ) Returning true on the if !g_test_areTheUnitTestsRunning, \
+            LOGGER( 1, "    ( approveTheVotingStart ) Returning true on the if !g_test_areTheUnitTestsRunning, \
                     cvar_isEmptyCycleByMapChange: %d.", get_pcvar_num( cvar_isEmptyCycleByMapChange ) )
             return true;
         }
@@ -6795,7 +6816,7 @@ stock bool:approvedTheVotingStart( bool:is_forced_voting )
             }
         }
 
-        LOGGER( 1, "    ( approvedTheVotingStart ) Returning false on the big blocker." )
+        LOGGER( 1, "    ( approveTheVotingStart ) Returning false on the big blocker." )
         return false;
     }
 
@@ -6821,13 +6842,14 @@ stock bool:approvedTheVotingStart( bool:is_forced_voting )
         vote_resetStats();
     }
 
-    if( g_isMapExtensionPeriodRunning )
+    if( g_isMapExtensionPeriodRunning
+        && !is_forced_voting )
     {
-        LOGGER( 1, "    ( approvedTheVotingStart ) Returning false, block the new voting after the map extension." )
+        LOGGER( 1, "    ( approveTheVotingStart ) Returning false, block the new voting after the map extension." )
         return false;
     }
 
-    LOGGER( 1, "    ( approvedTheVotingStart ) Returning true, due passed by all requirements." )
+    LOGGER( 1, "    ( approveTheVotingStart ) Returning true, due passed by all requirements." )
     return true;
 }
 
@@ -6983,7 +7005,7 @@ stock vote_startDirector( bool:is_forced_voting )
 {
     LOGGER( 128, "I AM ENTERING ON vote_startDirector(1) is_forced_voting: %d", is_forced_voting )
 
-    if( !approvedTheVotingStart( is_forced_voting ) )
+    if( !approveTheVotingStart( is_forced_voting ) )
     {
         LOGGER( 1, "    ( vote_startDirector ) Just Returning/blocking, the voting was not approved." )
         return;
@@ -8859,7 +8881,7 @@ public computeVotes()
             }
             else if( runoffEnabled == RUNOFF_EXTEND )
             {
-                map_extend( "GAL_WINNER_NO_ONE_VOTED" );
+                map_extend( "GAL_RUNOFF_REQUIRED_TOP" );
                 LOGGER( 1, "( computeVotes ) Its runoff extending." )
             }
             else
@@ -8922,8 +8944,8 @@ stock chooseTheVotingMapWinner( firstPlaceChoices[], numberOfMapsAtFirstPosition
                 LOGGER( 1, "    ( chooseTheVotingMapWinner ) Just opened the menu due g_voteMapStatus: %d", g_voteMapStatus )
             }
 
-            color_print( 0, "%L: %L", LANG_PLAYER, "DMAP_MAP_EXTENDED", LANG_PLAYER, "GAL_WINNER_STAY2" );
-            toShowTheMapStayHud( "GAL_VOTE_ENDED", "DMAP_MAP_EXTENDED", "GAL_WINNER_STAY1" );
+            color_print( 0, "%L: %L", LANG_PLAYER, "DMAP_MAP_EXTENDED1", LANG_PLAYER, "GAL_WINNER_STAY2" );
+            toShowTheMapStayHud( "GAL_VOTE_ENDED", "DMAP_MAP_EXTENDED1", "GAL_WINNER_STAY1" );
 
             // However here, none decisions are being made. Anyways, we cannot block the execution
             // right here without executing the remaining code.
@@ -8953,13 +8975,13 @@ stock chooseTheVotingMapWinner( firstPlaceChoices[], numberOfMapsAtFirstPosition
         // When it is a `gal_votemap` we need to print its map winner, instead of the `g_nextMapName`.
         if( g_invokerVoteMapNameToDecide[ 0 ] )
         {
-            color_print( 0, "%L: %L", LANG_PLAYER, "DMAP_MAP_EXTENDED", LANG_PLAYER, "GAL_NEXTMAP2", g_invokerVoteMapNameToDecide );
-            toShowTheMapNextHud( "GAL_VOTE_ENDED", "DMAP_MAP_EXTENDED", "GAL_NEXTMAP1", g_invokerVoteMapNameToDecide );
+            color_print( 0, "%L: %L", LANG_PLAYER, "DMAP_MAP_EXTENDED1", LANG_PLAYER, "GAL_NEXTMAP2", g_invokerVoteMapNameToDecide );
+            toShowTheMapNextHud( "GAL_VOTE_ENDED", "DMAP_MAP_EXTENDED1", "GAL_NEXTMAP1", g_invokerVoteMapNameToDecide );
         }
         else
         {
-            color_print( 0, "%L: %L", LANG_PLAYER, "DMAP_MAP_EXTENDED", LANG_PLAYER, "GAL_NEXTMAP2", g_nextMapName );
-            toShowTheMapNextHud( "GAL_VOTE_ENDED", "DMAP_MAP_EXTENDED", "GAL_NEXTMAP1", g_nextMapName );
+            color_print( 0, "%L: %L", LANG_PLAYER, "DMAP_MAP_EXTENDED1", LANG_PLAYER, "GAL_NEXTMAP2", g_nextMapName );
+            toShowTheMapNextHud( "GAL_VOTE_ENDED", "DMAP_MAP_EXTENDED1", "GAL_NEXTMAP1", g_nextMapName );
         }
 
         process_last_round( g_isToChangeMapOnVotingEnd );
@@ -8973,7 +8995,7 @@ stock noLongerIsAnEarlyVoting()
     // We are extending the map as result of the voting outcome, so reset the ending round variables.
     resetRoundEnding();
 
-    // no longer is an early or forced voting
+    // No longer is an early or forced voting
     g_voteStatus &= ~IS_EARLY_VOTE;
     g_voteStatus &= ~IS_FORCED_VOTE;
 }
@@ -8990,7 +9012,7 @@ stock chooseRandomVotingWinner()
             g_voteStatus |= IS_VOTE_OVER;
 
             color_print( 0, "%L. %L", LANG_PLAYER, "GAL_WINNER_NO_ONE_VOTED", LANG_PLAYER, "GAL_WINNER_ORDERED2", g_nextMapName );
-            toShowTheMapNextHud( "GAL_WINNER_NO_ONE_VOTED", "DMAP_MAP_EXTENDED", "GAL_WINNER_ORDERED1", g_nextMapName );
+            toShowTheMapNextHud( "GAL_WINNER_NO_ONE_VOTED", "DMAP_MAP_EXTENDED1", "GAL_WINNER_ORDERED1", g_nextMapName );
 
             // Need to be called to trigger special behaviors.
             setNextMap( g_currentMapName, g_nextMapName );
@@ -9011,7 +9033,7 @@ stock chooseRandomVotingWinner()
             setNextMap( g_currentMapName, g_votingMapNames[ winnerVoteMapIndex ] );
 
             color_print( 0, "%L. %L", LANG_PLAYER, "GAL_WINNER_NO_ONE_VOTED", LANG_PLAYER, "GAL_WINNER_RANDOM2", g_nextMapName );
-            toShowTheMapNextHud( "GAL_WINNER_NO_ONE_VOTED", "DMAP_MAP_EXTENDED", "GAL_WINNER_RANDOM1", g_nextMapName );
+            toShowTheMapNextHud( "GAL_WINNER_NO_ONE_VOTED", "DMAP_MAP_EXTENDED1", "GAL_WINNER_RANDOM1", g_nextMapName );
 
             process_last_round( g_isToChangeMapOnVotingEnd );
         }
@@ -9077,17 +9099,17 @@ stock toAnnounceTheMapExtension( lang[] )
     if( g_endVotingType & ( IS_BY_ROUNDS | IS_BY_WINLIMIT ) )
     {
         color_print( 0, "%L %L", LANG_PLAYER, lang, LANG_PLAYER, "GAL_WINNER_EXTEND_ROUND2", g_extendmapStepRounds );
-        toShowTheMapExtensionHud( lang, "DMAP_MAP_EXTENDED", "GAL_WINNER_EXTEND_ROUND1", g_extendmapStepRounds );
+        toShowTheMapExtensionHud( lang, "DMAP_MAP_EXTENDED1", "GAL_WINNER_EXTEND_ROUND1", g_extendmapStepRounds );
     }
     else if( g_endVotingType & IS_BY_FRAGS )
     {
         color_print( 0, "%L %L", LANG_PLAYER, lang, LANG_PLAYER, "GAL_WINNER_EXTEND_FRAGS2", g_extendmapStepFrags );
-        toShowTheMapExtensionHud( lang, "DMAP_MAP_EXTENDED", "GAL_WINNER_EXTEND_FRAGS1", g_extendmapStepFrags );
+        toShowTheMapExtensionHud( lang, "DMAP_MAP_EXTENDED1", "GAL_WINNER_EXTEND_FRAGS1", g_extendmapStepFrags );
     }
     else
     {
         color_print( 0, "%L %L", LANG_PLAYER, lang, LANG_PLAYER, "GAL_WINNER_EXTEND2", g_extendmapStepMinutes );
-        toShowTheMapExtensionHud( lang, "DMAP_MAP_EXTENDED", "GAL_WINNER_EXTEND1", g_extendmapStepMinutes );
+        toShowTheMapExtensionHud( lang, "DMAP_MAP_EXTENDED1", "GAL_WINNER_EXTEND1", g_extendmapStepMinutes );
     }
 }
 
@@ -9134,8 +9156,8 @@ stock map_extend( lang[] )
     // While the `IS_DISABLED_VOTEMAP_EXIT` bit flag is set, we cannot allow any decisions.
     if( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXIT )
     {
-        color_print( 0, "%L: %L", LANG_PLAYER, "DMAP_MAP_EXTENDED", LANG_PLAYER, "GAL_WINNER_STAY2" );
-        toShowTheMapExtensionHud( "GAL_VOTE_ENDED", "DMAP_MAP_EXTENDED", "GAL_WINNER_STAY1", 0 );
+        color_print( 0, "%L: %L", LANG_PLAYER, "DMAP_MAP_EXTENDED1", LANG_PLAYER, "GAL_WINNER_STAY2" );
+        toShowTheMapExtensionHud( "GAL_VOTE_ENDED", "DMAP_MAP_EXTENDED1", "GAL_WINNER_STAY1", 0 );
 
         // When the map extension is called, there is anyone else trying to show action menu,
         // therefore invoke it before returning.
@@ -9231,6 +9253,9 @@ stock resetTheRtvWaitTime()
 stock doTheActualMapExtension()
 {
     LOGGER( 128, "I AM ENTERING ON doTheActualMapExtension(0)" )
+
+    // Stop the map changing on a forced voting.
+    g_isToChangeMapOnVotingEnd = false;
 
     if( g_endVotingType & IS_BY_ROUNDS )
     {
@@ -9447,6 +9472,25 @@ stock map_isTooRecent( map[] )
     return false;
 }
 
+stock announcerockFailToosoon( player_id, Float:minutesElapsed )
+{
+    LOGGER( 128, "I AM ENTERING ON announcerockFailToosoon(1) minutesElapsed: %d", minutesElapsed )
+    new remaining_time;
+
+    // It will be 2 minutes because there is not point to calculate whether it will be 1 or 2 minutes.
+    if( g_isMapExtensionPeriodRunning )
+    {
+        remaining_time = 2;
+    }
+    else
+    {
+        remaining_time = floatround( g_rtvWaitMinutes - minutesElapsed, floatround_ceil );
+    }
+
+    color_print( player_id, "%L", player_id, "GAL_ROCK_FAIL_TOOSOON", remaining_time );
+    LOGGER( 1, "    ( announcerockFailToosoon ) Just Returning/blocking, too soon to rock by minutes." )
+}
+
 stock is_to_block_RTV( player_id )
 {
     LOGGER( 128, "I AM ENTERING ON is_to_block_RTV(1) player_id: %d", player_id )
@@ -9496,10 +9540,7 @@ stock is_to_block_RTV( player_id )
              && ( minutesElapsed = map_getMinutesElapsed() )
              && minutesElapsed < g_rtvWaitMinutes )
     {
-        new remaining_time = floatround( g_rtvWaitMinutes - minutesElapsed, floatround_ceil );
-
-        color_print( player_id, "%L", player_id, "GAL_ROCK_FAIL_TOOSOON", remaining_time );
-        LOGGER( 1, "    ( is_to_block_RTV ) Just Returning/blocking, too soon to rock by minutes." )
+        announcerockFailToosoon( player_id, minutesElapsed );
     }
 
     // Make sure enough rounds has gone by on the current map
@@ -9623,10 +9664,11 @@ stock start_rtvVote()
         g_isToChangeMapOnVotingEnd = true;
     }
 
+    // Set the RTV voting status and remember, the RTV voting does not need to set the `g_endVotingType`
+    // because there is not map extension option, only `Stay Here` for forced voting as RTV.
     g_voteStatus |= IS_RTV_VOTE;
 
-    // Any voting not started by `cvar_endOfMapVoteStart`, `cvar_endOnRound` or ending limit expiration,
-    // is a forced voting.
+    // Any voting not started by `cvar_endOfMapVoteStart` or ending limit expiration, is a forced voting.
     vote_startDirector( true );
 }
 
@@ -10590,15 +10632,15 @@ public cmd_cancelVote( player_id, level, cid )
     return PLUGIN_HANDLED;
 }
 
-stock bool:approvedTheVotingStartLight()
+stock bool:approveTheVotingStartLight()
 {
-    LOGGER( 128, "I AM ENTERING ON approvedTheVotingStartLight(1) get_real_players_number: %d", \
+    LOGGER( 128, "I AM ENTERING ON approveTheVotingStartLight(1) get_real_players_number: %d", \
             get_real_players_number() )
 
     // block the voting on some not allowed situations/cases
     if( get_real_players_number() == 0)
     {
-        LOGGER( 1, "    ( approvedTheVotingStartLight ) Returning false 0 players on the server." )
+        LOGGER( 1, "    ( approveTheVotingStartLight ) Returning false 0 players on the server." )
         return false;
     }
 
@@ -10611,7 +10653,7 @@ stock bool:approvedTheVotingStartLight()
         vote_resetStats();
     }
 
-    LOGGER( 1, "    ( approvedTheVotingStart ) Returning true, due passed by all requirements." )
+    LOGGER( 1, "    ( approveTheVotingStart ) Returning true, due passed by all requirements." )
     return true;
 }
 
@@ -10633,12 +10675,12 @@ public cmd_voteMap( player_id, level, cid )
     }
 
     // There is a real strange `Run time error 5: memory access` bug around these declarations,
-    // if you use the approvedTheVotingStart(1) instead of the approvedTheVotingStartLight(1)!
+    // if you use the approveTheVotingStart(1) instead of the approveTheVotingStartLight(1)!
     if( g_voteStatus & IS_VOTE_IN_PROGRESS )
     {
         color_print( player_id, "%L", player_id, "GAL_VOTE_INPROGRESS" );
     }
-    else if( approvedTheVotingStartLight() )
+    else if( approveTheVotingStartLight() )
     {
         new argumentsCount;
         new arguments[ MAX_BIG_BOSS_STRING ];
@@ -11422,7 +11464,7 @@ public handleVoteMapActionMenu( player_id, pressedKeyCode )
             if( g_invokerVoteMapNameToDecide[ 0 ] )
             {
                 color_print( 0, "%L. %L: %s", LANG_PLAYER, "RESULT_ACC", LANG_PLAYER, "VOTE_SUCCESS", g_invokerVoteMapNameToDecide );
-                toShowTheMapNextHud( "RESULT_ACC", "DMAP_MAP_EXTENDED", "GAL_WINNER_ORDERED1", g_invokerVoteMapNameToDecide );
+                toShowTheMapNextHud( "RESULT_ACC", "DMAP_MAP_EXTENDED1", "GAL_WINNER_ORDERED1", g_invokerVoteMapNameToDecide );
 
                 setNextMap( g_currentMapName, g_invokerVoteMapNameToDecide );
             }
@@ -13638,7 +13680,6 @@ stock cancelVoting( bool:isToDoubleReset = false )
     remove_task( TASKID_SHOW_LAST_ROUND_HUD );
     remove_task( TASKID_SHOW_LAST_ROUND_MESSAGE );
     remove_task( TASKID_FINISH_GAME_TIME_BY_HALF );
-    remove_task( TASKID_BLOCK_NEW_VOTING_START );
 
     g_isMapExtensionPeriodRunning = false;
 
@@ -14252,6 +14293,12 @@ stock getLastNextMapFromServerStart( Array:mapcycleFileListArray, nextMapName[],
 
         get_pcvar_string( cvar_amx_nextmap, nextMapName, MAX_MAPNAME_LENGHT - 1 );
 
+        // Block the next map name being read as the current map name on the server start.
+        if( equali( nextMapName, g_currentMapName ) )
+        {
+            goto getAnotherNextMapName;
+        }
+
         if( IS_MAP_VALID( nextMapName ) )
         {
             LOGGER( 4, "( getLastNextMapFromServerStart ) nextMapName: %s", nextMapName )
@@ -14259,6 +14306,7 @@ stock getLastNextMapFromServerStart( Array:mapcycleFileListArray, nextMapName[],
     }
     else
     {
+        getAnotherNextMapName:
         getNextMapByPosition( mapcycleFileListArray, g_nextMapName, nextMapCyclePosition );
     }
 }
@@ -18574,7 +18622,7 @@ public timeRemain()
             // After doing this function call, the compiler is corrupting the variable `cmnE`, so we cannot just
             // do `copy( cmnE, MAX_MAPNAME_LENGHT - 1, nmnE );`. We cannot use `cmnE` after call this.
             // And yes, the variable `cmnE` is neither passed to getNextMapByPosition(5), but it still being corrupted
-            // anyways. This is the same problem as in the cmd_voteMap(3) call to approvedTheVotingStart(1).
+            // anyways. This is the same problem as in the cmd_voteMap(3) call to approveTheVotingStart(1).
             getNextMapByPosition( g_mapcycleFileListArray, nextMapExpected, nextMapPositon );
         }
         else
