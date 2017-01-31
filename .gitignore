@@ -1,2 +1,7 @@
-*humbs.db
-_gsdata_*
+
+
+scripting/compiled/*
+
+!intentionally_initally_empty.txt
+
+*.sublime-workspace

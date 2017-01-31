@@ -1,3 +1,0 @@
-de_dust2
-de_inferno
-de_dust2_cz
