@@ -1,0 +1,68 @@
+// ---------------------------------
+// -------- Counter-Strike ---------
+// --------------- & ---------------
+// -------- Condition Zero ---------
+// ---------------------------------
+//   Team Semiclip 3.1.0 Info File
+// ---------------------------------
+
+Button triggers
+---------------
+IN_ATTACK = 1
+IN_JUMP = 2
+IN_DUCK = 4
+IN_FORWARD = 8
+IN_BACK = 16
+IN_USE = 32
+IN_CANCEL = 64
+IN_LEFT = 128
+IN_RIGHT = 256
+IN_MOVELEFT = 512
+IN_MOVERIGHT = 1024
+IN_ATTACK2 = 2048
+IN_RUN = 4096
+IN_RELOAD = 8192
+IN_ALT1 = 16384
+IN_SCORE = 32768
+-----------------------------
+semiclip_button_trigger = ???
+-----------------------------
+IN_USE + IN_RELOAD = 8224
+IN_DUCK + IN_USE + IN_JUMP = 38
+
+
+Priority of semiclip_block_team and semiclip_button
+---------------------------------------------------
+semiclip_block_team 0 -> both teams has automatic semiclip
+
+semiclip_button 0 -> any higher value as 0 is useless! <-
+semiclip_button 1 -> useless! both teams has automatic semiclip
+semiclip_button 2 -> useless! both teams has automatic semiclip
+semiclip_button 3 -> useless! both teams has automatic semiclip
+
+
+--------------------------------------------------------------------------------------------------------------------
+semiclip_block_team 1 -> ct team has automatic semiclip, terrors don't have it!
+
+semiclip_button 0 -> terrors don't have any semiclip <-
+semiclip_button 1 -> terrors have semiclip on button trigger <-
+semiclip_button 2 -> terrors don't have any semiclip but useless! ct team has automatic semiclip
+semiclip_button 3 -> terrors have semiclip on button trigger but useless! ct team has automatic semiclip
+
+
+--------------------------------------------------------------------------------------------------------------------
+semiclip_block_team 2 -> terror team has automatic semiclip, cts don't have it!
+
+semiclip_button 0 -> cts don't have any semiclip <-
+semiclip_button 1 -> cts don't have any semiclip but useless! terror team has automatic semiclip
+semiclip_button 2 -> cts have semiclip on button trigger <-
+semiclip_button 3 -> cts have semiclip on button trigger but useless! terror team has automatic semiclip
+
+
+--------------------------------------------------------------------------------------------------------------------
+semiclip_block_team 3 -> terror and ct team don't have automatic semiclip!
+
+semiclip_button 0 -> both teams don't have any semiclip
+semiclip_button 1 -> terrors have semiclip on button trigger, cts don't have any semiclip
+semiclip_button 2 -> cts have semiclip on button trigger, terrors don't have any semiclip
+semiclip_button 3 -> both teams have semiclip on button trigger
