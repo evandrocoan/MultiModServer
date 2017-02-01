@@ -1,0 +1,129 @@
+[en]
+CMD_CANT_LAST_HUMAN = You can't use this command on the last human.
+CMD_CANT_LAST_ZOMBIE = You can't use this command on the last zombie.
+CMD_ONLY_AFTER_GAME_MODE = You can only use this command after a game mode started.
+GAME_MODE_CANT_START = Game mode can't be started right now.
+CANT_RESPAWN = Player can't be respawned
+ALREADY_SURVIVOR = Player already a survivor
+ALREADY_NEMESIS = Player already a nemesis
+ALREADY_HUMAN = Player already a human
+ALREADY_ZOMBIE = Player already a zombie
+INVALID_GAME_MODE = Invalid game mode id
+CMD_START_GAME_MODE = start Game Mode
+
+CANT_BUY_WEAPONS_DEAD = You can't buy weapons when dead.
+CUSTOM_BUY_DISABLED = Custom buy menus are disabled.
+BUY_MENU_TIME_EXPIRED = Buy menu time has expired.
+CANT_BUY_ITEMS_DEAD = You can't buy extra items when dead.
+CMD_NOT_HCLASSES = Human Classes are disabled.
+NO_ADMIN_MENU = Admin menu not available.
+NO_CLASSES = No classes are currently available to you.
+NO_EXTRA_ITEMS = No extra items are currently available to you.
+CANT_CHANGE_TEAM = You can't change team right now.
+NOT_ENOUGH_MONEY = You dont have enough money.
+REQUIRED_AMOUNT = %d required
+HUMAN_SELECT = Your next human class will be
+
+MONEY1 = Money:
+MENU_BUY3_TITLE = Grenades
+MENU_HCLASS = Choose Human Class
+MENU_CHOOSE_TEAM = Choose Team
+MENU_ADMIN_START_GAME_MODE = Start Game Mode (use at roundstart)
+NOTICE_ARMAGEDDON = Armageddon Mode !!!
+NOTICE_ANTIDOTE2 = %s has given %s an antidote...
+
+ZOMBIENAME Classic Zombie = Classic Zombie
+ZOMBIEDESC Classic Zombie = =Balanced=
+ZOMBIENAME Raptor Zombie = Raptor Zombie
+ZOMBIEDESC Raptor Zombie = HP-- Speed++ Knockback++
+ZOMBIENAME Light Zombie = Light Zombie
+ZOMBIEDESC Light Zombie = HP- Jump+ Knockback+
+ZOMBIENAME Fat Zombie = Fat Zombie
+ZOMBIEDESC Fat Zombie = HP++ Speed- Knockback--
+ZOMBIENAME Leech Zombie = Leech Zombie
+ZOMBIEDESC Leech Zombie = HP- Knockback+ Leech++
+ZOMBIENAME Rage Zombie = Rage Zombie
+ZOMBIEDESC Rage Zombie = HP+ Speed+ Radioactivity++
+
+HUMANNAME Classic Human = Classic Human
+HUMANDESC Classic Human = =Balanced=
+HUMANNAME Raptor Human = Raptor Human
+HUMANDESC Raptor Human = HP-- Speed+ Gravity+
+
+ITEMNAME Nightvision = Nightvision
+ITEMNAME Antidote = Antidote
+ITEMNAME Zombie Madness = Zombie Madness
+ITEMNAME Infection Bomb = Infection Bomb
+
+MODENAME Infection Mode = Infection Mode
+MODENAME Nemesis Mode = Nemesis Mode
+MODENAME Survivor Mode = Survivor Mode
+MODENAME Swarm Mode = Swarm Mode
+MODENAME Multiple Infection Mode = Multiple Infection Mode
+MODENAME Plague Mode = Plague Mode
+MODENAME Armageddon Mode = Armageddon Mode
+
+[es]
+CMD_CANT_LAST_HUMAN = No puedes usar este comando en el último humano.
+CMD_CANT_LAST_ZOMBIE = No puedes usar este comando en el último zombie.
+CMD_ONLY_AFTER_GAME_MODE = Sólo puedes usar este comando luego de que un modo haya comenzado.
+GAME_MODE_CANT_START = El modo no puede iniciarse ahora.
+CANT_RESPAWN = El jugador no puede ser revivido
+ALREADY_SURVIVOR = El jugador ya es un survivor
+ALREADY_NEMESIS = El jugador ya es un nemesis
+ALREADY_HUMAN = El jugador ya es un humano
+ALREADY_ZOMBIE = El jugador ya es un zombie
+INVALID_GAME_MODE = ID de modo no válido
+CMD_START_GAME_MODE = comenzar Modo
+
+CANT_BUY_WEAPONS_DEAD = No puedes comprar armas si estás muerto.
+CUSTOM_BUY_DISABLED = Los menús de compra están deshabilitados.
+BUY_MENU_TIME_EXPIRED = El tiempo del menú de compra ha acabado.
+CANT_BUY_ITEMS_DEAD = No puedes comprar items extra si estás muerto.
+CMD_NOT_HCLASSES = Clases de Humano están deshabilitadas.
+NO_ADMIN_MENU = Menú de Admin no disponible.
+NO_CLASSES = No hay clases disponibles para ti actualmente.
+NO_EXTRA_ITEMS = No hay items extra disponibles para ti actualmente.
+CANT_CHANGE_TEAM = No puedes cambiar de equipo ahora.
+NOT_ENOUGH_MONEY = No tienes suficiente dinero.
+REQUIRED_AMOUNT = %d requeridos
+HUMAN_SELECT = Tu próxima clase de humano será
+
+MONEY1 = Dinero:
+MENU_BUY3_TITLE = Granadas
+MENU_HCLASS = Elegir Clase de Humano
+MENU_CHOOSE_TEAM = Elegir Equipo
+MENU_ADMIN_START_GAME_MODE = Comenzar Modo (usar al principio de la ronda)
+NOTICE_ARMAGEDDON = Modo Armageddon !!!
+NOTICE_ANTIDOTE2 = %s le ha dado un antídoto a %s...
+
+ZOMBIENAME Classic Zombie = Zombie Clásico
+ZOMBIEDESC Classic Zombie = =Balanceado=
+ZOMBIENAME Raptor Zombie = Zombie Raptor
+ZOMBIEDESC Raptor Zombie = HP-- Velocidad++ Knockback++
+ZOMBIENAME Light Zombie = Zombie Liviano
+ZOMBIEDESC Light Zombie = HP- Salto+ Knockback+
+ZOMBIENAME Fat Zombie = Zombie Gordo
+ZOMBIEDESC Fat Zombie = HP++ Velocidad- Knockback--
+ZOMBIENAME Leech Zombie = Zombie Leech
+ZOMBIEDESC Leech Zombie = HP- Knockback+ AbsorveHP++
+ZOMBIENAME Rage Zombie = Zombie Rage
+ZOMBIEDESC Rage Zombie = HP+ Speed+ Radioactividad++
+
+HUMANNAME Classic Human = Humano Clásico
+HUMANDESC Classic Human = =Balanceado=
+HUMANNAME Raptor Human = Humano Raptor
+HUMANDESC Raptor Human = HP-- Velocidad+ Gravedad+
+
+ITEMNAME Nightvision = Visión Nocturna
+ITEMNAME Antidote = Antídoto
+ITEMNAME Zombie Madness = Furia Zombie
+ITEMNAME Infection Bomb = Bomba de Infección
+
+MODENAME Infection Mode = Modo Infección
+MODENAME Nemesis Mode = Modo Nemesis
+MODENAME Survivor Mode = Modo Survivor
+MODENAME Swarm Mode = Modo Swarm
+MODENAME Multiple Infection Mode = Modo Multiple Infección
+MODENAME Plague Mode = Modo Plague
+MODENAME Armageddon Mode = Modo Armageddon

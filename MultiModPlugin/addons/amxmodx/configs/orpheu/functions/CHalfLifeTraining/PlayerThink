@@ -1,0 +1,29 @@
+{
+    "name"      : "PlayerThink",
+    "class"     : "CHalfLifeTraining",
+    "library"   : "mod",
+    "arguments" :
+    [
+        {
+            "type" : "CBasePlayer *"
+        }
+    ],
+    "identifiers":
+    [
+        {
+            "os"    : "windows",
+            "mod"   : "cstrike",
+            "value" : [0x53,0x55,0x56,0x8B,"*","*","*",0x8B,"*",0x57,0x8B,"*","*",0xD9,"*","*","*","*","*",0xD8,"*","*","*","*","*",0xDF]
+        },
+        {
+            "os"    : "windows",
+            "mod"   : "cstrike",
+            "value" : [0x53,0x55,0x8B,"*","*","*",0x8B,"*","*",0x57,0x8B,"*","*",0xD9,"*","*","*","*","*",0xD8,"*","*","*","*","*",0xDF]
+        },
+        {
+            "os"    : "linux",
+            "mod"   : "cstrike",
+            "value" : "PlayerThink__17CHalfLifeTrainingP11CBasePlayer"
+        }
+    ]
+}

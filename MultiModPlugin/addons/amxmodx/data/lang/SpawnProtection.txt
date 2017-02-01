@@ -1,0 +1,32 @@
+[en]
+SP_SHWMSG = You are protected for %d second(s)
+
+[ru]
+SP_SHWMSG = Ты неуязвим на %d секунд(ы)
+
+[bg]
+SP_SHWMSG = Vie ste zashtiten za %d sekunda(i)
+
+[sv]
+SP_SHWMSG = Du 'a'r skyddad f'o'r %d sekund(er)
+
+[es]
+SP_SHWMSG = Estas protegido por %d segundo(s)
+
+[sr]
+SP_SHWMSG = Zasticen si %d sekund(i)
+
+[pl]
+SP_SHWMSG = Jestes chroniony przez %d sekund
+
+[sk]
+SP_SHWMSG = Si chraneny na %d sec(s)
+
+[cz]
+SP_SHWMSG = Jsi chranenej po dobu %d sec(s)
+
+[de]
+SP_SHWMSG = Du bist nun fuer %d Sekunde(n) immun!
+
+[nl]
+SP_SHWMSG = Je bent beschermt voor %d second(en)

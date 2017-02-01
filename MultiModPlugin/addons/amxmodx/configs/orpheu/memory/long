@@ -1,0 +1,19 @@
+{
+    "name"        : "long",
+    "library"     : "mod",
+    "type"        : "long",
+    "memoryType"  : "data",
+    "identifiers" :
+    [
+        {
+            "os"    : "windows",
+            "mod"   : "cstrike",
+            "value" : 0
+        },
+        {
+            "os"    : "linux",
+            "mod"   : "cstrike",
+            "value" : 0
+        }
+    ]
+}

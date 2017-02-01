@@ -1,0 +1,35 @@
+[
+    {
+        "name"        : "roundTimeCheck",
+        "library"     : "mod",
+        "type"        : "byte",
+        "memoryType"  : "data",
+        "identifiers" : 
+        [
+            {
+                "os"    : "windows",
+                "mod"   : "cstrike",
+                "value" : ["*","*","*",0x0f,0x84,0xc6,0x06,0x00,0x00,0x39,0x5d,0x74,0x0f,0x85,0xbd,0x06,0x00,0x00,0x8a,0x45,0x7e,0x84,0xc0,0x74,0x38,0x68,0xb4,0xfd,"*","*",0x53,0xe8]
+            }
+        ]
+    },
+    {
+        "name"        : "roundTimeCheck|dummy",
+        "library"     : "mod",
+        "type"        : "byte",
+        "memoryType"  : "data",
+        "identifiers" : 
+        [
+            {
+                "os"    : "windows",
+                "mod"   : "cstrike",
+                "value" : 0
+            },
+            {
+                "os"    : "linux",
+                "mod"   : "cstrike",
+                "value" : 0
+            }
+        ]
+    }   
+]

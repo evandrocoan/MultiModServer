@@ -1,0 +1,33 @@
+<html><head><style type="text/css">pre{color:#FFB000;}body{background:#000000;margin-left:8px;margin-top:0px;}</style></head><body><pre>
+<b>How to get Heroes:</b>
+As you kill opponents you gain Experience Points (XP), once you have
+accumulated enough for a level up you will be able to choose a hero.
+The higher the level of the person you kill the more XP you get.
+The default starting point is level 0 and you cannot select any heroes.
+
+<b>How to use Binds:</b>
+To use some hero's powers you have to bind a key to:
+	+power#
+
+In order to bind a key you must open your console and use the bind command:
+	bind "key" "command"
+
+In this case the command is "+power#". Here are some examples:
+	bind f +power1		bind MOUSE3 +power2
+
+<b>Available Say Commands:</b>
+say /superherohelp	- This help menu
+say /showmenu		- Displays Select Super Power menu
+say /herolist		- Lets you see a list of heroes and powers
+say /myheroes		- Displays your heroes
+say /clearpowers	- Clears ALL powers
+say /drop <hero>		- Drop one power so you can pick another
+say /whohas <hero>		- Shows you who has a particular hero
+say /playerskills [@ALL|@CT|@T|name] - Shows you what heroes other players have chosen
+say /playerlevels [@ALL|@CT|@T|name] - Shows you what levels other players are
+
+say /automenu	- Enable/Disable auto-show of Select Super Power menu
+say /helpon	- Enable HUD Help message (by default only shown when dead)
+say /helpoff	- Disable HUD Help message
+
+Mod's Official Site: http://shero.alliedmods.net/</pre></body></html>

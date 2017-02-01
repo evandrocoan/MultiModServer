@@ -1,0 +1,15 @@
+*{	padding:0;
+	font:10pt verdana;}
+body{	background-color:#222;
+	text-align:center;}
+h1{	font:16pt;
+	color:#00B9F6;}
+th{	height:24;
+	padding-left:10;
+	padding-right:10;
+	background-color:#777;}
+td{	background-color:#666;
+	text-align:center;
+	color:white;}
+#b{width:240;text-align:left;padding-left:4;}
+#c{width:100;}

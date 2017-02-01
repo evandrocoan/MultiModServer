@@ -1,0 +1,55 @@
+[en]
+TTT_ITEM_HOOK = Hook
+TTT_ITEM_TRIPMINE = Tripmine
+TTT_ITEM_FAKEDETECTIVE = Fake Detective
+
+TTT_HOOKS = Hooks left: 
+
+TTT_FAKEDETECTIVE1 = , you now look like !t%L!n
+TTT_FAKEDETECTIVE2 = Max limit (!t%d!n) of !g%s!n item has been reached, you can't buy it!
+TTT_FAKEDETECTIVE3 = !t%s!n now looks like !t%L!n!
+TTT_FAKEDETECTIVE4 = There must be atleast !t1 %L!n to use !g%s!n!
+
+TTT_LOYALTY_NONE = None
+TTT_LOYALTY_PROVABLE = Provable
+TTT_LOYALTY_SUSPICIOUS = Suspicious
+TTT_LOYALTY_AVOIDABLE = Avoidable
+TTT_LOYALTY_TRAITOROUS = Traitorous
+
+TTT_LOYALTY_SET = You have set !t%s!n loyalty to !g%L!n!
+TTT_LOYALTY_ONE = Set loyalty by aim
+TTT_LOYALTY_ALL = Set loyalty by menu
+TTT_LOYALTY_AIMING = You are not aiming to player!
+
+TTT_ITEM_SHARING_MENU = Buy item for someone
+TTT_ITEM_SHARING_CLEAR = Buy for yourself
+TTT_ITEM_FROM = You have bought !g%s!n for !t%s!n!
+TTT_ITEM_TO = !t%s!n has bought you !g%s!n!
+
+[es]
+TTT_ITEM_HOOK = Gancho
+TTT_ITEM_TRIPMINE = Mina
+TTT_ITEM_FAKEDETECTIVE = Detective Falso
+
+TTT_HOOKS = Ganchos de izquierda: 
+
+TTT_FAKEDETECTIVE1 = , ahora pareces !t%L!n
+TTT_FAKEDETECTIVE2 = Limite maximo (!t%d!n) de !g%s!n ha sido alcanzado, no puedes comprarlo!
+TTT_FAKEDETECTIVE3 = !t%s!n ahora parece !t%L!n!
+TTT_FAKEDETECTIVE4 = Debe haber al menos !t1 %L!n para usar !g%s!n!
+
+TTT_LOYALTY_NONE = Ninguno
+TTT_LOYALTY_PROVABLE = Demostrable
+TTT_LOYALTY_SUSPICIOUS = Sospechoso
+TTT_LOYALTY_AVOIDABLE = Evitable
+TTT_LOYALTY_TRAITOROUS = Traicionero
+
+TTT_LOYALTY_SET = Has puesto a !t%s!n lealtad de !g%L!n!
+TTT_LOYALTY_ONE = Fijar lealtad por punteria
+TTT_LOYALTY_ALL = Fijar lealtad por menu
+TTT_LOYALTY_AIMING = No estas apuntando al jugador!
+
+TTT_ITEM_SHARING_MENU = Comprar item para alguien
+TTT_ITEM_SHARING_CLEAR = Comprar para usted mismo
+TTT_ITEM_FROM = Has comprado !g%s!n para !t%s!n!
+TTT_ITEM_TO = !t%s!n ha comprado para ti !g%s!n!
