@@ -1,0 +1,7 @@
+
+
+scripting/compiled/*
+
+!intentionally_initally_empty.txt
+
+*.sublime-workspace
