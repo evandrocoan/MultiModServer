@@ -1,3 +1,5 @@
+uncrustify.exe
+
 /compile.dat
 compiled/*
 amxxpc.exe
@@ -34,6 +36,7 @@ include/fakemeta_util.inc
 include/file.inc
 include/float.inc
 include/fun.inc
+include/geoip.inc
 include/hamsandwich.inc
 include/ham_const.inc
 include/hlsdk_const.inc
@@ -72,5 +75,3 @@ include/amxmod_compat/VexdUM_const.inc
 include/amxmod_compat/VexdUM_stock.inc
 include/amxmod_compat/Vexd_Utilities.inc
 include/amxmod_compat/xtrafun.inc
-
-!intentionally_initally_empty.txt
