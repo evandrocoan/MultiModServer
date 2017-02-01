@@ -1,0 +1,40 @@
+<font color=#00B9F6>
+<body bgcolor=#111111>
+<pre>
+<b>Grabbing blocks</b>
+Bind a key to +bmgrab, EG: bind f +bmgrab
+
+This allows you to move blocks, copy with attack1 and delete with attack2
+Pressing jump and duck moves blocks in and out
+
+<b>Main Menu</b>
+1. Block Menu			Shows block menu
+2. Teleport Menu		Shows teleport menu
+3. Timer Menu			Shows timer menu
+4. Measuring Tool		Shows measuring tool menu
+5. Long Jump Creator		Shows long jump creator menu
+6. Noclip: On/Off		Toggle noclip
+7. Godmode: On/Off		Toggle godmode
+9. Options Menu			Shows options menu
+0. Close			Close the bm menu
+
+<b>CVARs</b>
+bm_telefrags		%d	Telefragging 0|1
+bm_firedamageamount	%.1f	Damage every 1/2 sec
+bm_damageamount		%.1f	Damage every 1/2 sec
+bm_healamount		%.1f	Health given every half second
+bm_invincibletime	%.1f	Invincibility time
+bm_invinciblecooldown	%.1f	Seconds before invincibility can be used again
+bm_stealthtime		%.1f	Stealth time
+bm_stealthcooldown	%.1f	Seconds before stealth can be used again
+bm_camouflagetime	%.1f	Camouflage time
+bm_camouflagecooldown	%.1f	Secs until Camouflage can be used again
+bm_nukecooldown		%.1f	Secs until Nuke can be used again
+bm_randomcooldown	%.1f	Secs until random block can be used again
+bm_bootsofspeedtime	%.1f	Secs boots last for
+bm_bootsofspeedcooldown	%.1f	Secs until boots can be used again
+bm_autobhoptime		%.1f	Auto Bhop time
+bm_autobhopcooldown	%.1f	Auto Bhop cooldown
+bm_teleportsound	%d	Teleport sound 0|1
+
+</pre>

@@ -1,0 +1,22 @@
+{
+    "name"    : "CheckMapConditions",
+    "class"   : "CHalfLifeMultiplay",
+    "library" : "mod",
+    "return"  :
+    {
+        "type" : "bool"
+    },
+    "identifiers" : 
+    [
+        {
+            "os"    : "windows",
+            "mod"   : "cstrike",
+            "value" : [0x53,0x56,0x33,0xDB,0x68,"*",0x39,"*","*",0x8B,0xF1,0x53,0xE8,"*","*",0x03,0x00,0x83,0xC4,0x08,0x85,0xC0,0x74,0x0A,0xC6,0x46,0x7E,0x01,0xC6,0x46,0x7F,0x01,0xEB,0x1E]
+        },
+        {
+            "os"    : "linux",
+            "mod"   : "cstrike",
+            "value" : "CheckMapConditions__18CHalfLifeMultiplay"
+        }
+    ]
+}

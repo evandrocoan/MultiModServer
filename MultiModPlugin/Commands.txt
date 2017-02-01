@@ -1,0 +1,122 @@
+amx_help
+
+----- AMX Mod X Help: Commands -----
+  1: amx_addadmin <playername|auth> <accessflags> [password] [authtype] - add specified player as an admin to users.ini
+  2: amx_addban <"authid" or ip> <minutes> [reason]
+  3: amx_addclientmenuitem <menu text> <menu command> <access flags> <plugin name | plugin filename> - Add a menu item to Client Menus Front-End
+  4: amx_addmenuitem <menu text> <menu command> <access flags> <plugin name | plugin filename> - Add a menu item to Menus Front-End
+  5: amx_aimstatus - Show aimbot detection plugin status.
+  6: amx_aimwatch <player> <1=On 0=Off> - Add\Remove aimbot watch on player.
+  7: amx_alltalk [1 = ON | 0 = OFF]
+  8: amx_armor <nick, #userid, authid or @team> <armor to give>
+  9: amx_asay <message> -- Sends a message to all admins
+ 10: amx_badaim <player> <On/off or length of time: 1|0|time> <Save?: 1|0>: Turn on/off bad aim on a player.
+ 11: amx_ban <name or #userid> <minutes> [reason]
+ 12: amx_banip <name or #userid> <minutes> [reason]
+ 13: amx_bsay <color> <message> -- Sends a bottom HUD message to all players
+ 14: amx_bsay2 <color> <message> -- Sends a bottom HUD message to all players
+ 15: amx_bury <nick, #userid, authid or @team>
+ 16: amx_cancelvote - cancels last vote
+ 17: amx_cfg <filename>
+ 18: amx_chat <message> -- Sends a message to all VIP users
+ 19: amx_countdown - <seconds> <"cmd">
+ 20: amx_csay <color> <message> -- Sends a top HUD message to all players
+ 21: amx_csay2 <color> <message> -- Sends a top DHUD message to all players
+ 22: amx_cvar <cvar> [value]
+ 23: amx_disarm <nick, #userid, authid or @team>
+ 24: amx_drug <@all, @team, nick, #userid, authid or @team>
+ 25: amx_exec <nick or @team> <command>
+ 26: amx_extend <added time to extend> : ex. 5, if you want to extend it five more minutes.
+ 27: amx_fire <nick, #userid or authid or @team>
+ 28: amx_flash <nick, #userid, authid or @team> - Flashes player(s)
+ 29: amx_gag <nick, #userid or authid> <a|b|c> <time> - Flags: a = Normal Chat | b = Team Chat | c = Voicecomm
+ 30: amx_givemoney  <nick, #userid, authid or @team> <amount> - gives specified player money
+ 31: amx_glow <nick, #userid, authid, or @team/@all> <color> (or) <rrr> <ggg> <bbb> <aaa> -- lasts 1 round
+ 32: amx_glow2 <nick, #userid, authid, or @team/@all> <color> (or)  <rrr> <ggg> <bbb> <aaa> -- lasts forever
+ 33: amx_glowcolors shows a list of colors for amx_glow and amx_glow2
+ 34: amx_godmode <nick, #userid or @team> [0|1|2] - 0=OFF 1=ON 2=ON + ON EACH ROUND
+ 35: amx_gravity <gravity #>
+ 36: amx_heal <nick, #userid, authid or @team> <HP to give>
+ 37: amx_help <page> [nr of cmds (only for server)] - displays this help
+ 38: amx_helpserver <page> [nr of cmds (only for server)] - displays this help
+ 39: amx_kick <name or #userid> [reason]
+ 40: amx_kickdown - <seconds> <authid, nick or #userid> <"cmd">
+ 41: amx_knifesonly - disable and enable knife war 1 = on 0 = off
+ 42: amx_last - list the last few disconnected clients info
+ 43: amx_leave <tag> [tag] [tag] [tag]
+ 44: amx_lo3 - Executes lo3.cfg
+ 45: amx_lock - <CT/T/Auto/Spec> - Locks selected team
+ 46: amx_map <mapname>
+ 47: amx_modules
+ 48: amx_nick <name or #userid> <new nick>
+ 49: amx_noclip <nick, #userid, authid or @team> [0|1|2] - 0=OFF 1=ON 2=ON + ON EACH ROUND
+ 50: amx_nopass - Removes the server password
+ 51: amx_off - pauses some plugins
+ 52: amx_on - unpauses some plugins
+ 53: amx_pass <server password> - Sets the server password
+ 54: amx_pause - pause or unpause the game
+ 55: amx_pausecfg - list commands for pause/unpause management
+ 56: amx_pbaddbot <number of bots> - adds bots.
+ 57: amx_plugins
+ 58: amx_psay <player> <message> -- Sends a private message to a player
+ 59: amx_quit <nick, #userid, authid or @team>
+ 60: amx_reloadadmins
+ 61: amx_resetscore - <target>
+ 62: amx_restart - Restarts the game at round 1
+ 63: amx_restart <seconds (1-20)> - restarts the server in seconds
+ 64: amx_restrict - displays help for weapons restriction
+ 65: amx_revive <nick, #userid, authid or @team>
+ 66: amx_rocket <nick, #userid, authid or @team>
+ 67: amx_rsay <color> <message> -- Sends a right sided HUD message to all players
+ 68: amx_rsay2 <color> <message> -- Sends a right sided DHUD message to all players
+ 69: amx_say <message> -- Sends a message to all players
+ 70: amx_setamplitude <noise> Noise for lightning tracers.
+ 71: amx_setlang <language>
+ 72: amx_setmod help 1        | for help.
+ 73: amx_setmods shortModName <1 or 0> to restart or not       | Enable/Disable any mod, loaded or not (silent mod). Ex: amx_setmods surf 0
+ 74: amx_settracers <0|1|2> Set tracer mode.
+ 75: amx_showrules <authid, nick or #userid>
+ 76: amx_shutdown <seconds (1-20)> - shuts down the server in seconds
+ 77: amx_slap <name or #userid> [power]
+ 78: amx_slay <name or #userid>
+ 79: amx_slay2 <nick, #userid, authid or @team> [1-Lightning|2-Blood|3-Explode]
+ 80: amx_specnchoose - Sends everyone to spectate and brings up the choose team menu
+ 81: amx_stack <nick, #userid or authid> [0|1|2]
+ 82: amx_statscfg - displays help for stats configuration
+ 83: amx_statsx_mode <flags> - sets plugin options
+ 84: amx_stopdown
+ 85: amx_supermenu  - Bring up the menu for AMX_Super
+ 86: amx_supermenu_edit  - Allows you to edit the values the menu displays
+ 87: amx_swap - <name 1> <name 2> Swaps two players with eachother
+ 88: amx_switchall - Switches all players to the opposite team
+ 89: amx_takemoney  <nick, #userid or authid> <amount> - takes specified player money
+ 90: amx_team - <name> <CT/T/Spec> Transfers that player to the specified team
+ 91: amx_teamsay <team> <message> -- Sends a message to a specific team
+ 92: amx_teamswap - Swaps two teams with eachother
+ 93: amx_teleport <nick, #userid or authid> [x] [y] [z]
+ 94: amx_transfer - <name> <CT/T/Spec> Transfers that player to the specified team
+ 95: amx_tsay <color> <message> -- Sends a left HUD message to all players
+ 96: amx_tsay2 <color> <message> -- Sends a left DHUD message to all players
+ 97: amx_uberslap <nick, #userid or authid>
+ 98: amx_unammo <nick, #userid or @team> [0|1] - 0=OFF 1=ON
+ 99: amx_unban <"authid" or ip>
+100: amx_unbury <nick, #userid, authid or @team>
+101: amx_ungag <nick, #userid or authid>
+102: amx_unlock - <CT/T/Auto/Spec> - Unlocks selected team
+103: amx_userorigin <nick, #userid or authid
+104: amx_vote <question> <answer#1> <answer#2>
+105: amx_voteban <name or #userid>
+106: amx_votekick <name or #userid>
+107: amx_voteknifeonly - Start a vote to turn knifes Only on or off
+108: amx_votemap <map> [map] [map] [map]
+109: amx_weapon <nick, #userid, authid or @team> <weapon #>
+110: amx_who - displays who is on server
+111: gal_createmapfile
+112: gal_startvote
+113: gal_startvote2
+114: say voteknife - Starts a vote for knifesonly
+115: supermenu  - Bring up the menu for AMX_Super
+116: supermenu_edit  - Allows you to edit the values the menu displays
+117: terminate_round - Terminate a round immediately
+----- Entries 1 - 117 of 117 -----
+----- Use 'amx_help 1' for begin -----

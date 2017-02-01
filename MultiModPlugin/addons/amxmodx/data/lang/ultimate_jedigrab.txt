@@ -1,0 +1,67 @@
+; Translations for the menu
+
+"- displays Ultimate Jedi Grab Menu"
+fr:"- affiche le menu de Ultimate Jedi Grab"
+
+"Grab Toggle"
+fr:"Attraper"
+
+"Grab Toggle Player"
+fr:"Attraper Joueur"
+
+"Grab Toggle with NoClip"
+fr:"Attraper avec NoClip"
+
+"Grab Toggle Player with NoClip"
+fr:"Attraper Joueur avec NoClip"
+
+"Throw"
+fr:"Lancer"
+
+"Jedi Choke"
+fr:"Etranglement Jedi"
+
+"Undo Moving"
+fr:"Annuler Mouvement"
+
+"Kill Entity"
+fr:"Supprimer Entite"
+
+"MassMove Grab"
+fr:"Mouv. Multiple: Attraper"
+
+"MassMove Start"
+fr:"Mouv. Multiple: Commencer"
+
+"MassMove Start with NoClip"
+fr:"Mouv. Multiple: Commencer avec NoClip"
+
+"MassMove End"
+fr:"Mouv. Multiple: Arreter"
+
+"Copy Ent Toggle"
+fr:"Copier Entite"
+
+"Drop To Floor"
+fr:"Jeter Au Sol"
+
+"Ent Being Looking At"
+fr:"Info sur l'entite regardee"
+
+"Entity Search"
+fr:"Chercher entites autour de soi"
+
+"Show X Axis"
+fr:"Montrer l'axe des X"
+
+"Show Y Axis"
+fr:"Montrer l'axe des Y"
+
+"Show Z Axis"
+fr:"Montrer l'axe des Z"
+
+"Show KeyValues"
+fr:"Montrer les Clés/Valeurs"
+
+"Use Entity"
+fr:"Utiliser l'Entite"

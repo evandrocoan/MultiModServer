@@ -1,0 +1,36 @@
+{
+    "name"      : "EndRoundMessage",
+    "library"   : "mod",
+    "arguments" :
+    [
+        {
+            "type"  : "char *"
+        },
+        {
+            "type"  : "int"
+        }
+    ],
+    "identifiers":
+    [
+        {
+            "os"    : "windows",
+            "mod"   : "cstrike",
+            "value" : [0x53,0x8b,0x44,"*","*",0x55,0x56,0x57,0x8b,0x35,"*","*","*","*",0x33,0xff,0x8d,0x68,0x01,0x57,0x57,0x57,0x57,0x50,0x6a,0x04,0xbb,0x01,0x00,0x00,0x00,0xe8]
+        },
+        {
+            "os"    : "windows",
+            "mod"   : "cstrike",
+            "value" : [0x53,0x8B,"*","*","*",0x55,0x56,0x57,0x8B,"*","*","*","*","*",0x33,"*",0x8D,"*","*",0x57,0x57]
+        },
+        {
+            "os"    : "linux",
+            "mod"   : "cstrike",
+            "value" : "EndRoundMessage__FPCci"
+        },
+        {
+            "os"    : "linux",
+            "mod"   : "cstrike",
+            "value" : "_Z15EndRoundMessagePKci"
+        }
+    ]
+}

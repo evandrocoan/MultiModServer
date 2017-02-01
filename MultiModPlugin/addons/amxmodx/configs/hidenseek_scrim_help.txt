@@ -1,0 +1,45 @@
+<html>
+<style type="text/css">
+body
+{
+background-color:#000000;
+background-position:top center;
+background-image:url(http://i75.photobucket.com/albums/i310/X-olent/motd_background.png);
+background-attachment:fixed;
+background-repeat:repeat-x;
+}
+</style>
+
+<body>
+<center>
+<br>
+<br>
+<br>
+<font face="Arial" size="4" color="#999999"><b>
+Win %i Round%s:
+</b></font>
+<br>
+<font face="Arial" size="2" color="#FFFFFF"><b>
+This scrim mod is based upon winning and losing rounds.<br>
+When your team is hiding, you must win %s.<br>
+If the opposite team kills you before you win %s, the teams will switch.
+%s
+%s
+</b></font>
+
+<br>
+<br>
+<br>
+<font face="Arial" size="4" color="#999999"><b>
+Point System:
+</b></font>
+<br>
+<font face="Arial" size="2" color="#FFFFFF"><b>
+This scrim mod is based upon gameplay, where you earn and lose points for how well you play.<br>
+%s
+After %i round%s, the teams will switch.<br>
+After all %i round%s have finished, the team with the most points wins!
+</b></font>
+</center>
+</body>
+</html>

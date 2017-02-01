@@ -1,0 +1,48 @@
+﻿[en]
+SORRY = Sorry, player %s could not be found or targetted.
+MUTED = You have been muted by an admin, to apologize, type /sorry
+BEEN_MUTED = Player %s has been muted by admin %s
+CLIENT_SORRY = Player %s says sorry for his trolling
+UNMUTED = You are now able to chat
+
+[bp]
+SORRY = O jogador %s não pode ser achado ou é imune.
+MUTED = Um admin te deixou mudo, para pedir desculpas, digite /sorry
+BEEN_MUTED = O jogador %s foi deixado mudo pelo admin %s
+CLIENT_SORRY = O jogador %s pede desculpas por ser n00b
+UNMUTED = Agora você já pode falar no chat
+
+[es]
+SORRY = Lo siento, el jugador %s no se pudo encontrar o no es un objetivo valido.
+MUTED = Has sido muteado por un admin, para pedir disculpas escribe /sorry
+BEEN_MUTED = El jugador %s ha sido muteado por el admin %s
+CLIENT_SORRY = El jugador %s pide perdon por su estupidez
+UNMUTED = Ya puedes hablar por el chat
+
+[nl]
+SORRY = Speler %s ka, niet gevonden worden.
+MUTED = Je mag niet meer spreken van een beheerder, schrijf '/sorry'.
+BEEN_MUTED = Speler %s is verbannen om te spreken door beheerder %s.
+CLIENT_SORRY = Speler %s zegt sorry voor zijn fouten.
+UNMUTED = Je bent nu toegestaan te praten. 
+
+[sv]
+SORRY = Tyv'a'rr, spelare %s kunde inte bli hittad.
+MUTED = Du har blivit stum av en admin, f'o'r att be om urs'a'kt, skriv /sorry.
+BEEN_MUTED = Spelare %s har blivit stum av admin %s.
+CLIENT_SORRY = Spelare %s har bett om urs'a'kt f'o'r sitt beteende.
+UNMUTED = Du kan nu chatta igen.
+
+[ru]
+SORRY = Izvinite, igrok %s ne najden ili ne mozhet byt' priglushen
+MUTED = Vy byli priglusheny administratorom, chtoby izvinit'sja, naberite /sorry
+BEEN_MUTED = Igrok %s byl priglushen administratorom %s
+CLIENT_SORRY = Igrok %s prosit prowen'ja za trolling
+UNMUTED = Teper' vy mozhete govorit'
+
+[de]
+SORRY = Entschuldige, Spieler %s nicht gefunden oder ausgewaehlt.
+MUTED = Du wurdest von einem Admin gemuted, zum entschuldigen, schreibe /sorry
+BEEN_MUTED = Spieler %s wurde von Admin %s gemuted.
+CLIENT_SORRY = Spieler %s entschuldigt sich für sein verhalten
+UNMUTED = Du kannst nun wieder Chatten 

@@ -1,0 +1,17 @@
+{
+    "name"    : "HasRoundTimeExpired",
+    "class"   : "CHalfLifeMultiplay",
+    "library" : "mod",
+    "return"  : 
+    {
+        "type" : "bool"
+    },
+    "identifiers" : 
+    [
+        {
+            "os"    : "linux",
+            "mod"   : "cstrike",
+            "value" : "HasRoundTimeExpired__18CHalfLifeMultiplay"
+        }
+    ]
+}

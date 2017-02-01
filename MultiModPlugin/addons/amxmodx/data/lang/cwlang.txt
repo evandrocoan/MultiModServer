@@ -1,0 +1,29 @@
+[en]
+MESSAGE = %s e gata de macel.^n%s e din %s.
+
+[de]
+MESSAGE = %s ist bereit zu spielen.^n%s ist aus %s.
+
+[nl]
+MESSAGE = %s is klaar om te spelen.^n%s komt uit %s.
+
+[pl]
+MESSAGE = %s jest gotowy do gry.^n%s jest z %s.
+
+[sv]
+MESSAGE = %s 'a'r redo att spela.^n%s kommer fran %s.
+
+[fr]
+MESSAGE = %s est pret pour jouer.^n%s vient de %s.
+
+[bp]
+MESSAGE = %s estah preparado para jogar.^n%s eh de %s.
+
+[fin]
+MESSAGE = %s On valmis pelaamaan.^n%s On kotoisin %s.
+
+[ro]
+MESSAGE = %s este pregatit sa joace. ^n%s este din %s.
+
+[sp]
+MESSAGE = %s esta listo para jugar.^n%s es de %s.
