@@ -1,0 +1,30 @@
+botman's Monster plugin (http://planethalflife.com/botman)
+
+06/30/2002 - Release 3.00.00
+- You can now manually spawn monsters with the "monster" command even if
+  the monster_spawn cvar is set to 0.
+- Added dynamic precaching.  Precached sounds will only done for monsters
+  that are specified in the map specific monster .cfg file or for monsters
+  that are specified in the "monster_precache.cfg" file.  This helps prevent
+  the error "S_Findname: Out of sfx_t" that clients will sometimes get when
+  too many sounds have been precached.
+- Added monster "bigmomma" (the big spider thing with the sack hanging down).
+
+06/17/2002 - Release 2.10.00
+- Fix bug where players weren't getting damaged by monsters.
+
+06/16/2002 - Release 2.00.00
+- Fixed Linux .cfg file parsing for MS-DOS formatted files (invalid monster
+  name: monster/xxxxxxxx^M).
+- Created monster_spawn CVAR to turn on/off monster spawning on the fly
+  ("monster_spawn 1" is on, the default.  "monster_spawn 0" is off).
+- Added support for monster_skill.cfg file (in the MOD directory).
+- Created "monster" server command to allow server operators to spawn
+  monsters next to players in the game.
+- Added new monster "controller" (the flying head that shoots energy balls).
+- Modified to support metamod "unload" plugin command.  Loading the
+  plugin again after unloading it still doesn't seem to work.
+- Fixed bug where monster gets double damage.  (Thanks hullu!)
+
+06/02/2002 - Release 1.00.00
+- Initial release.
