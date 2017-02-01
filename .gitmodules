@@ -1,3 +1,21 @@
 [submodule "githooks/versioning"]
 	path = githooks/versioning
 	url = https://github.com/evandrocoan/.versioning
+[submodule "dependencies/ambuild"]
+	path = dependencies/ambuild
+	url = https://github.com/evandrocoan/ambuild
+[submodule "dependencies/halflife"]
+	path = dependencies/halflife
+	url = https://github.com/evandrocoan/halflife
+[submodule "dependencies/hlsdk"]
+	path = dependencies/hlsdk
+	url = https://github.com/evandrocoan/hlsdk
+[submodule "dependencies/metamod-am"]
+	path = dependencies/metamod-am
+	url = https://github.com/evandrocoan/metamod-hl1
+[submodule "dependencies/mysql-5.0"]
+	path = dependencies/mysql-5.0
+	url = https://github.com/evandrocoan/mysql-5.0
+[submodule "dependencies/amxmodx"]
+	path = dependencies/amxmodx
+	url = https://github.com/evandrocoan/amxmodx
