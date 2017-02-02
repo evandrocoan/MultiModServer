@@ -1,0 +1,24 @@
+Summary of Bot Reactions to Radio Commands
+	Follow me - Forces Bots in the near to follow you. You can specify 
+the maximum number of bots following in the podbot.cfg by the cvar 
+pb_numfollowuser (defaults to 3).
+	Hold this Position - Makes a Bot who's following you, stay a while 
+at that position and look around for enemies.
+	Taking Fire, need assistance - Makes all living Bots (not engaged in 
+a Fight) run to your position to assist you.
+	Need Backup - Basically the same as above, but limited to distance 
+and also the Bots use it sometimes to get some support.
+	Storm the Front! - Mighty command! Forces all Bots in the near to rush 
+in the direction you're pointing to when using that command. Basically 
+their level of aggression is increased so a pathetic frightened Bot could 
+also turn around and flee.
+	Get in position... - Bots in the near will try to take a covered position 
+and stay there until they either encounter an enemy, you order them to 
+leave, or they waited too long.
+	Go,go,go - If a Bot follows you, this commands stops him from 
+following. If there are other Bots in the near, they will stop camping 
+and going to roam the map again (normally used in combination with 
+"Get in position...")
+	Team, Fall Back! - Opposite of " Storm the Front". Increases Fear 
+and decreases aggression of Bots in the near so that they are more 
+likely to fall back and stay covered for a short period.
