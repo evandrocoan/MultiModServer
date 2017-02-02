@@ -14,15 +14,24 @@
     "build_systems":
     [
         {
-            "working_dir": "$project_path/scripting",
+            "working_dir": "$project_path/installers",
             // "selector": "source.AmxxPawn, source.AMXX", // comment this to build from everywhere
 
             "file_regex": "^(.+)\\(([0-9]+ ?.*)\\) : (.*)",
-            "name": "Build Main file",
-            "cmd": ["compile_and_install.bat", "1"],
+            "name": "Galileo Installer",
+            "cmd": ["galileo.bat", "$project_path/plugins/addons/amxmodx/scripting/galileo.sma", "galileo", "$packages"],
 
             // "target": "ansi_color_build",
-            "syntax": "Packages/ANSIescape/ANSI.tmLanguage"
+            // "syntax": "Packages/ANSIescape/ANSI.tmLanguage"
+
+            "variants":
+            [
+
+                {
+                    "name": "Clean Setup",
+                    "cmd": ["galileo.bat"],
+                },
+            ]
         }
     ]
 }
