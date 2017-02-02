@@ -1,10 +1,8 @@
-# Tells git to ignore the line endings for all files
-* -crlf
 
 # ...Unless the name matches the following
 # overriding patterns
 
-# Definitively text files 
+# Definitively text files
 *.txt text
 *.c text
 *.h text
