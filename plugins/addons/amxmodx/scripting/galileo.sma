@@ -7834,21 +7834,12 @@ stock display_menu_dirt( player_id, menuKeys, bool:isVoteOver, bool:noneIsHidden
 
         if( g_isToShowSubMenu )
         {
-            if( isToAddExtraLine )
-            {
-                copy( noneOption, charsmax( noneOption ), "^n" );
-            }
-            else
-            {
-                copy( noneOption, charsmax( noneOption ), "" );
-            }
-
             formatex( menuDirty, charsmax( menuDirty ),
                    "%s^n%s^n\
                     %s%s0.%s %L^n^n\
                     %s%L",
                     menuHeader, voteStatus,
-                    noneOption, COLOR_RED, COLOR_WHITE, player_id, "CMD_MENU",
+                    isToAddExtraLine ? "^n" : "", COLOR_RED, COLOR_WHITE, player_id, "CMD_MENU",
                     COLOR_YELLOW, player_id, "GAL_VOTE_ENDED" );
         }
         else if( g_isToShowNoneOption
@@ -7881,21 +7872,12 @@ stock display_menu_dirt( player_id, menuKeys, bool:isVoteOver, bool:noneIsHidden
 
         if( g_isToShowSubMenu )
         {
-            if( isToAddExtraLine )
-            {
-                copy( noneOption, charsmax( noneOption ), "^n" );
-            }
-            else
-            {
-                copy( noneOption, charsmax( noneOption ), "" );
-            }
-
             formatex( menuDirty, charsmax( menuDirty ),
                    "%s^n%s^n\
                     %s%s0.%s %L\
                     %s",
                     menuHeader, voteStatus,
-                    noneOption, COLOR_RED, COLOR_WHITE, player_id, "CMD_MENU",
+                    isToAddExtraLine ? "^n" : "", COLOR_RED, COLOR_WHITE, player_id, "CMD_MENU",
                     voteFooter );
         }
         else if( g_isToShowNoneOption )
@@ -8073,15 +8055,6 @@ stock display_menu_clean( player_id, menuKeys )
     // it here to always shows it WHILE voting.
     if( g_isToShowSubMenu )
     {
-        if( isToAddExtraLine )
-        {
-            copy( noneOption, charsmax( noneOption ), "^n" );
-        }
-        else
-        {
-            copy( noneOption, charsmax( noneOption ), "" );
-        }
-
         formatex( menuClean, charsmax( menuClean ),
                "%s^n%s^n\
                 %s^n\
@@ -8089,7 +8062,7 @@ stock display_menu_clean( player_id, menuKeys )
                 %s",
                 menuHeader, g_voteStatusClean,
                 voteExtension,
-                noneOption, COLOR_RED, COLOR_WHITE, player_id, "CMD_MENU",
+                isToAddExtraLine ? "^n" : "", COLOR_RED, COLOR_WHITE, player_id, "CMD_MENU",
                 voteFooter );
     }
     else if( g_isToShowNoneOption )
