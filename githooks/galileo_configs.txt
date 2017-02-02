@@ -1,4 +1,4 @@
 githooks/GALILEO_SMA_VERSION.txt,
-scripting/galileo.sma,
+plugins/addons/amxmodx/scripting/galileo.sma,
 develop,
 galileo.sma,
