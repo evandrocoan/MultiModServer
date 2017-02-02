@@ -1,0 +1,17 @@
+Waypoints by SoUlFaThEr & T Wrecks for PODbot mm (a metamod plugin).
+
+Place all .pwf files in your "addons\podbot\WPTDefault" folder.
+
+If you are playing this bot on old CS 1.5 You will need to NOT add 4 files to 
+the WPTDefault folder:
+de_aztec.pwf, de_cbble.pwf, de_inferno.pwf, and de_piranesi.pwf because these only 
+work for CS 1.6.
+
+The files named de_aztec(CS 1.5).pwf, de_cbble(CS 1.5).pwf, de_inferno(CS 1.5).pwf, and 
+de_piranesi(CS 1.5).pwf are the ones you need for old CS1.5. These maps were changed 
+for CS1.6 Steam!!!!!
+
+You will need to rename these, taking out the (CS 1.5). Once that is done,
+all maps will work with the waypoints given.
+
+Have fun.
