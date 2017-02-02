@@ -58,6 +58,26 @@ for /F "tokens=1-4 delims=:.," %%a in ("%time%") do (
 )
 
 
+
+rem To perform the clean install when this is run without any parameters
+IF "%1"=="" (
+
+    rem Clean the folder from the last install
+    del /Q clean_setup\
+    echo Clean setup output files necessary to installed. > clean_setup\intentionally_initally_empty.txt
+
+    rem To do the actual copying/installing.
+    call xcopy /E /S /Y "%~dp0..\plugins\addons\amxmodx\configs\galileo"       "clean_setup\configs\galileo\"
+    call xcopy /E /S /Y "%~dp0..\plugins\addons\amxmodx\data\lang\galileo.txt" "clean_setup\data\lang\"
+    call xcopy /E /S /Y "%~dp0..\plugins\addons\amxmodx\scripting\galileo.sma" "clean_setup\scripting\"
+
+    echo.
+    GOTO end
+
+)
+
+
+
 rem %1 is the first shell argument and %2 is the second shell argument passed by AmxxPawn.sublime-build
 rem Usually they should be the plugin's file full path and the plugin's file name without extension.
 rem
@@ -89,7 +109,7 @@ rem Initial array index to loop into.
 set "currentIndex=1"
 
 rem Loop throw all games to install the new files.
-:SymLoop
+:SymLoop1
 if defined folders_list[%currentIndex%] (
 
     rem Some how the AMXX compiler could not compiling/copied some times, so let us know when it does not.
@@ -105,7 +125,32 @@ if defined folders_list[%currentIndex%] (
     rem Update the next 'for/array' index to copy/install.
     set /a "currentIndex+=1"
 
-    GOTO :SymLoop
+    GOTO :SymLoop1
+)
+
+
+
+rem Copy the galileo files to the folders
+echo.
+
+rem Initial array index to loop into.
+set "currentIndex=0"
+
+rem Loop throw all games to install the new files.
+:SymLoop2
+if defined folders_list[%currentIndex%] (
+
+    rem Some how the AMXX compiler could not compiling/copied some times, so let us know when it does not.
+    setlocal EnableDelayedExpansion
+
+    rem To do the actual copying/installing.
+    call xcopy /E /S /Y "%~dp0..\plugins\addons\amxmodx\configs\galileo" "!folders_list[%currentIndex%]!\..\" > NUL
+    call xcopy /E /S /Y "%~dp0..\plugins\addons\amxmodx\data\lang\galileo.txt" "!folders_list[%currentIndex%]!\..\data\lang\galileo.txt" > NUL
+
+    rem Update the next 'for/array' index to copy/install.
+    set /a "currentIndex+=1"
+
+    GOTO :SymLoop2
 )
 
 
@@ -127,12 +172,15 @@ if %ss% lss 10 set ss=0%ss%
 if %cc% lss 10 set cc=0%cc%
 
 rem Outputting.
-echo.
 echo Took %hh%:%mm%:%ss%,%cc% seconds to run this script.
 
 rem Pause the script for result reading, when it is run without any command line parameters.
 echo.
 if "%1"=="" pause
+
+
+
+
 
 
 
