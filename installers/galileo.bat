@@ -57,26 +57,34 @@ for /F "tokens=1-4 delims=:.," %%a in ("%time%") do (
    set /A "start=(((%%a*60)+1%%b %% 100)*60+1%%c %% 100)*100+1%%d %% 100"
 )
 
+rem To perform the clean install when this is run without any parameters.
+IF "%1"=="" GOTO create_clean_setup
 
 
-rem To perform the clean install when this is run without any parameters
-IF "%1"=="" (
 
-    rem Clean the folder from the last install
-    del /Q clean_setup\
-    echo Clean setup output files necessary to installed. > clean_setup\intentionally_initally_empty.txt
+rem Go to compile the plugin, if the first command line parameter is empty.
+GOTO compile_the_plugin
 
-    rem To do the actual copying/installing.
-    call xcopy /S /Y "%~dp0..\plugins\addons\amxmodx\configs\galileo"       "clean_setup\configs\galileo\"
-    call xcopy /S /Y "%~dp0..\plugins\addons\amxmodx\data\lang\galileo.txt" "clean_setup\data\lang\"
-    call xcopy /S /Y "%~dp0..\plugins\addons\amxmodx\scripting\galileo.sma" "clean_setup\scripting\"
+rem To create the clean setup install
+:create_clean_setup
 
-    echo.
-    GOTO end
+rem Clean the folder from the last install
+rmdir /Q /S clean_setup\
+mkdir clean_setup\
+echo Clean setup output files necessary to installed. > clean_setup\intentionally_initally_empty.txt
 
-)
+rem To do the actual copying/installing.
+set /p Build=<"%~dp0..\githooks\GALILEO_SMA_VERSION.txt"
+call xcopy /S /Y "%~dp0..\plugins\addons\amxmodx\configs\galileo"       "clean_setup\Galileo-%Build%\configs\galileo\"
+call xcopy /S /Y "%~dp0..\plugins\addons\amxmodx\data\lang\galileo.txt" "clean_setup\Galileo-%Build%\data\lang\"
+call xcopy /S /Y "%~dp0..\plugins\addons\amxmodx\scripting\galileo.sma" "clean_setup\Galileo-%Build%\scripting\"
+
+echo.
+GOTO end
 
 
+
+:compile_the_plugin
 
 rem %1 is the first shell argument and %2 is the second shell argument passed by AmxxPawn.sublime-build
 rem Usually they should be the plugin's file full path and the plugin's file name without extension.
