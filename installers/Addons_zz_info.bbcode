@@ -36,7 +36,7 @@ section for features that are [B]planned[/B] for the final version.
 ********************** [anchor]Introduction[/anchor][B][SIZE="6"][COLOR="blue"]Introduction[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor]  *******************************
 
 You will have a new plugins list beyond you own "[B]plugins.ini[/B]" at "[COLOR="Blue"]yourGameMod/addons/amxmodx/[/COLOR][B]configs[/B]".
-This will be "[URL="https://github.com/addonszz/Multi-Mod_Plugin/blob/develop/addons/amxmodx/configs/plugins-ultra.ini"]plugins-ultra.ini[/URL]", too at "[COLOR="Blue"]yourGameMod/addons/amxmodx/[/COLOR][B]configs[/B]". It contains the descriptions
+This will be "[URL="https://github.com/addonszz/Galileo/blob/master/plugins/addons/amxmodx/configs/plugins-ultra.ini"]plugins-ultra.ini[/URL]", too at "[COLOR="Blue"]yourGameMod/addons/amxmodx/[/COLOR][B]configs[/B]". It contains the descriptions
 of all plugins at this Multi-Mod_Plugin. There you can active or deactivate then as you usually do
 at your own "[B]plugins.ini[/B].
 
@@ -69,10 +69,10 @@ This Multi-Mod_Plugin comes with the following Mods [B]installed[/B] and configu
 [/LIST]
 
 [SIZE="3"][B]Cvars:[/B][/SIZE]
-You can see and configure the [B]default cvars[/B] at "[COLOR="Blue"]yourGameMod/addons/amxmodx/[B]configs/[/B][/COLOR][URL="https://github.com/addonszz/Multi-Mod_Plugin/blob/develop/addons/amxmodx/configs/amxx_ultra.cfg"]amxx_ultra.cfg[/URL]" file.
+You can see and configure the [B]default cvars[/B] at "[COLOR="Blue"]yourGameMod/addons/amxmodx/[B]configs/[/B][/COLOR][URL="https://github.com/addonszz/Galileo/blob/master/plugins/addons/amxmodx/configs/amxx_ultra.cfg"]amxx_ultra.cfg[/URL]" file.
 
 [SIZE="3"][B]Commands:[/B][/SIZE]
-See [URL="https://github.com/addonszz/Multi-Mod_Plugin/blob/develop/Commands.txt"]here[/URL] the big list of commands actually activated. To see the new ones after active a plugin, just type
+See [URL="https://github.com/addonszz/Galileo/blob/master/plugins/Commands.txt"]here[/URL] the big list of commands actually activated. To see the new ones after active a plugin, just type
 "[B]amx_help[/B]" or "[B]amxx cvars[/B]" without quotos at your server's console, to see the commands and cvars of all
 plugins activated.
 
@@ -126,7 +126,7 @@ at the folder [COLOR="Blue"]yourGameMod/addons/amxmodx/[/COLOR][B]scripting/comp
 [COLOR="Blue"]yourGameMod/addons/amxmodx/[/COLOR][B]plugins/[/B]. [B]Note:[/B] To compile all files at your [B]scripting/[/B] folder, just
 run "[B]compile.exe[/B]" (windows) or [B]compile.sh[/B] (linux/mac).
 
-[B]4.[/B] [B]Edit[/B] the "[URL="https://github.com/addonszz/Multi-Mod_Plugin/blob/develop/addons/amxmodx/configs/plugins-ultra.ini"]plugins-ultra.ini[/URL]" file at [COLOR="Blue"]yourGameMod/addons/amxmodx/[/COLOR][B]configs/[/B] folder, to your own taste.
+[B]4.[/B] [B]Edit[/B] the "[URL="https://github.com/addonszz/Galileo/tree/master/plugins/addons/amxmodx/configs/plugins-ultra.ini"]plugins-ultra.ini[/URL]" file at [COLOR="Blue"]yourGameMod/addons/amxmodx/[/COLOR][B]configs/[/B] folder, to your own taste.
 
 [B]5.[/B] If you want to, [COLOR="red"]learn how to configure[/COLOR] your [URL="https://forums.alliedmods.net/showthread.php?t=273020#Configuration"]own mods here[/URL].
 
@@ -143,7 +143,8 @@ run "[B]compile.exe[/B]" (windows) or [B]compile.sh[/B] (linux/mac).
  * Find plugins which are leaking server's and client's performance and ping.
  * Remove, fix or substitute plugins bad coded which are leaking server's and client's performance and ping.
  * The mod CSDM Mod is crashing the server after 400 or 600 server change levels.
- * Install jailbreak, SoccerJam mod.
+ * Test the Jailbreak mod.
+ * Install SoccerJam mod.
  * Install Halloween Mod 2015.
  * Install Battlefield 2: Rank Mod by pRED*
 [/CODE]
@@ -151,34 +152,45 @@ run "[B]compile.exe[/B]" (windows) or [B]compile.sh[/B] (linux/mac).
 
 ******************************** [anchor]Change[/anchor][B][SIZE="6"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] ***********************
 
-[HTML]
-2017-02-02 | v2.0
- * Few bug fixes and updated Galileo to its latest versoin.
+[B]2017-02-02 | v2.0[/B]
+[LIST=1]
+[*]Few bug fixes and updated Galileo to its latest version.
+[*]Installed the Jailbreak (not tested).
+[/LIST]
 
-2016-03-28 | v1.0-alpha2
- * Installed the new MOD TTT, Trouble in Terrorist Town.
- * Updated the Galileo, DragonBall Mod and Multi-Mod Manager to its latest version.
- * Installed the new Deathrun mod.
- * Installed hideNseek mod recommended complementary plugins as blockmarker.
- * Installed AIO (All-In-One) Winter Plugin.
- * Installed the game accuracy fix plugin.
- * Adjusted the 'plugin-ultra.ini' file to use a mono-spaced font.
- * Fixed the 'commandmenu.txt' broken menus/features.
+[B]2016-03-28 | v1.0-alpha2[/B]
+[LIST=1]
+[*]Installed the new MOD TTT, Trouble in Terrorist Town.
+[*]Updated the Galileo, DragonBall Mod and Multi-Mod Manager to its latest version.
+[*]Installed the new Deathrun mod.
+[*]Installed hideNseek mod recommended complementary plugins as blockmarker.
+[*]Installed AIO (All-In-One) Winter Plugin.
+[*]Installed the game accuracy fix plugin.
+[*]Adjusted the 'plugin-ultra.ini' file to use a mono-spaced font.
+[*]Fixed the 'commandmenu.txt' broken menus/features.
+[/LIST]
 
-2015-10-30 | v1.0-alpha1.hotfix4
- * Disable the plugin the plugin "GHW_Weapon_Replacement.sma" due to became the server irresponsible.
+[B]2015-10-30 | v1.0-alpha1.hotfix4[/B]
+[LIST=1]
+[*]Disable the plugin the plugin "GHW_Weapon_Replacement.sma" due to became the server irresponsible.
+[/LIST]
 
-2015-10-14 | v1.0-alpha1.hotfix3
- * Updaded galileo_reloaded.sma to newer version.
- * Fixed cs_rio map crashing czero server's due 512 GoldSrc models limit.
- * Fixed Superheros Mod crashing czero server's due 512 GoldSrc models limit.
+[B]2015-10-14 | v1.0-alpha1.hotfix3[/B]
+[LIST=1]
+[*]Updaded galileo_reloaded.sma to newer version.
+[*]Fixed cs_rio map crashing czero server's due 512 GoldSrc models limit.
+[*]Fixed Superheros Mod crashing czero server's due 512 GoldSrc models limit.
+[/LIST]
 
-2015-10-10 | v1.0-alpha1.hotfix2
- * Fixed misssing include at addons_zz_info.sma
+[B]2015-10-10 | v1.0-alpha1.hotfix2[/B]
+[LIST=1]
+[*]Fixed misssing include at addons_zz_info.sma
+[/LIST]
 
-2015-10-10 | v1.0-alpha1
- * Initial alpha release.
-[/HTML]
+[B]2015-10-10 | v1.0-alpha1[/B]
+[LIST=1]
+[*]Initial alpha release.
+[/LIST]
 
 
 ******************************** [anchor]Credits[/anchor][B][SIZE="6"][COLOR="blue"]Credits[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *******************************
@@ -189,16 +201,16 @@ Hence, that are a lot of credits, so just read its own source code doc to heads 
 
 
 ******************************** [anchor]Downloads[/anchor][SIZE="6"][COLOR="Blue"][B]Downloads[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor] *************************
-
+https://github.com/addonszz/Galileo/tree/master/plugins/addons/amxmodx/configs/plugins-ultra.ini
 [anchor]Development[/anchor][SIZE="3"][B]Development Versions[/B][/SIZE]: [goanchor=Top]Go to top[/goanchor]
 
 Here you can see what is going on the latest [COLOR="Red"]unreleased[/COLOR] version over development at:
-[URL="https://github.com/addonszz/Multi-Mod_Plugin/commits/develop"][B]Github[/B]
+[URL="https://github.com/addonszz/Galileo/commits/master"][B]Github[/B]
 [IMG]http://i.imgur.com/TWUBJiH.png[/IMG]
-https://github.com/addonszz/Multi-Mod_Plugin/commits/develop[/URL]
+https://github.com/addonszz/Multi-Mod_Plugin/commits/master[/URL]
 
 And this is a direct link to always to download the latest [COLOR="Red"]unreleased[/COLOR] changes you see on the above link:
-[URL="https://github.com/addonszz/Multi-Mod_Plugin/archive/develop.zip"] https://github.com/addonszz/Multi-Mod_Plugin/archive/develop.zip[/URL]
+[URL="https://github.com/addonszz/Galileo/archive/master.zip"] https://github.com/addonszz/Multi-Mod_Plugin/archive/master.zip[/URL]
 
 Note that these versions above are probably not tested or maybe not stable as the [goanchor=LatestRelease]Latest Release
 Download[/goanchor] [B][COLOR="Red"]below[/B][/COLOR].
@@ -206,7 +218,7 @@ Download[/goanchor] [B][COLOR="Red"]below[/B][/COLOR].
 
 [anchor]Old[/anchor][SIZE="3"][B]Old Versions Downloads[/B][/SIZE]: [goanchor=Top]Go to top[/goanchor]
 
-[URL="https://github.com/addonszz/Multi-Mod_Plugin/releases"] https://github.com/addonszz/Multi-Mod_Plugin/releases[/URL]
+[URL="https://github.com/addonszz/Galileo/releases"] https://github.com/addonszz/Multi-Mod_Plugin/releases[/URL]
 [CODE]
 v1.0-alpha1.hotfix4: Multi-Mod_Server-master.zip (2.82 MB, 76  views)
 v1.0-alpha1.hotfix3: Multi-Mod_Plugin-master.zip (2.82 MB, 43  views)
@@ -215,6 +227,6 @@ v1.0-alpha2        : Multi-Mod_Plugin-master.zip (3.23 MB, 134 views)
 
 [anchor]LatestRelease[/anchor][SIZE="7"][B][COLOR="Blue"]Latest Release Download[/COLOR][/B][/SIZE]: [goanchor=Top]Go to top[/goanchor]
 [LIST]
-[*][URL="https://github.com/addonszz/Multi-Mod_Plugin/releases/download/v1.0-alpha2/plugin_resources.zip"]plugin_resources.zip[/URL] (131.49 MB)
+[*][URL="https://github.com/addonszz/Galileo/releases/download/plugin_2.0/plugin_resources.zip"]plugin_resources.zip[/URL] (156.99 MB)
 [/LIST]
 

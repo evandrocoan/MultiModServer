@@ -14,7 +14,7 @@ deactivate it or active some other mod like predator. And in the last five minut
 or be asked before a vote by the command "say votemod", creates a vote to select 
 what will be the Mod played in the next changelevel/restart.
 
-####Some Features with its Core Plugin [Multi-Mod_Plugin](https://github.com/addonszz/Multi-Mod_Plugin) installed
+####Some Features with its Core Plugin [Multi-Mod_Plugin](https://github.com/addonszz/Galileo/tree/master/plugins) installed
 - Support for: 
 - linux and windows servers.
 - Mac OS PODBot, Linux and Windows.
@@ -39,36 +39,33 @@ what will be the Mod played in the next changelevel/restart.
 - multi-mod_core, amx_exec, head_shot_announcer, grentrail, parachute, 
 knife_duel, amx_chicken, adv_killstreak, countdown_exec, ... 
 
-[See more info here.](https://github.com/addonszz/Amx_Ultra/blob/master/addons/amxmodx/configs/plugins-ultra.ini)
+[See more info here.](https://github.com/addonszz/Galileo/tree/master/plugins/addons/amxmodx/configs/plugins-ultra.ini)
 
 #To install it
 
-Download the binaries 
-[server_resources.zip](https://github.com/Addonszz/Multi-Mod_Server/releases/download/v4.0/server_resources.zip)
-and [Multi-Mod_Server-master.zip](https://github.com/Addonszz/Multi-Mod_Server/archive/master.zip), 
-then just unzip and put the content of 
-[server_resources.zip](https://github.com/Addonszz/Multi-Mod_Server/releases/download/v4.0/server_resources.zip) 
-and gamemod_common inside [Multi-Mod_Server-master.zip](https://github.com/Addonszz/Multi-Mod_Server/archive/master.zip), 
-at your's Game Mod's folder like cstrike or czero, replacing existents files. 
+Download the binaries:
+
+1. **server_resources.zip** - TODO
+1. **MultiModServer-master.zip**\dependencies\server_files - https://github.com/addonszz/Galileo/archive/master.zip
+
+then just unzip and put the content of **server_resources.zip** and gamemod_common inside
+**Multi-Mod_Server-master.zip**, at your's Game Mod's folder like cstrike or czero,
+replacing existents files. 
 Your Game Mod's folder usually is at: C:\Program Files (x86)\Steam\SteamApps\common\Half-Life\gamemod
 
 If your game mode is cstrike or czero, copy the content of cstrike or czero inside the downloaded 
-[Multi-Mod_Server-master.zip](https://github.com/Addonszz/Multi-Mod_Server/archive/master.zip)
-to your cstrike or czero game folder, replacing the existents files.
-And if your game is different than cstrike or czero, edit your "liblist.gam" at your 
-gamemod folder as the "liblist.gam" at cstrike or czero folder inside 
-[Multi-Mod_Server-master.zip](https://github.com/Addonszz/Multi-Mod_Server/archive/master.zip).
+**Multi-Mod_Server-master.zip** to your cstrike or czero game folder, replacing the existents files.
+And if your game is different than cstrike or czero, edit your "liblist.gam" at your gamemod folder
+as the "liblist.gam" at cstrike or czero folder inside **Multi-Mod_Server-master.zip**.
 
-Observation 1: The folder website at 
-[Multi-Mod_Server-master.zip](https://github.com/Addonszz/Multi-Mod_Server/archive/master.zip) 
-is just illustrative website and does not fill any role at your installation/setup.
-
-Observation 2: The files hlds_cstrike_27015 and hlds_czero_27015 are to create 
+Observation: The files hlds_cstrike_27015 and hlds_czero_27015 are to create 
 a command line server, due highly use less resources. It is configured at 27015 port. 
 To open more then one serve at once, duplicate the file and edit inside it, changing it to 
 use another port at the command +port 27015.
 
-After installing the addons, install its Core Plugin [Multi-Mod_Plugin](https://github.com/addonszz/Multi-Mod_Plugin).
+___
+
+After installing the addons, install its Core Plugin [Multi-Mod_Plugin](https://github.com/addonszz/Galileo/tree/master/plugins).
 
 And too, after installing the addons, just set your STEAM ID user. Please update the file:
 
@@ -80,16 +77,17 @@ After installing addons, just set your RCON password:
 
 Following the instructions contained therein. 
 
-Note 1: In order to use the commandmenu (key h in game). Every server 
-administrator should have the 
-[AddonsMultiMod-master.zip](https://github.com/Addonszz/AddonsMultiMod/archive/master.zip) 
+___
+
+**Note 1**: In order to use the commandmenu (key h in game). Every server 
+administrator should have the [Multi-Mod_Plugin](https://github.com/addonszz/Galileo/tree/master/plugins)
 above installed and with the RCON password configured, at his own Game Mod copy. 
 An admin can too just have the folder "gamemod_common/admin" with its contents and 
 the files "gamemod_common/commandmenu.txt" and "gamemod_common/autoexec.cfg",
 with the RCON password configured. 
 
-Note 2: The PASSWORD at podbotconfig.cfg at your gamemod folder, serves 
-to create waypoint using the linstenserver (play offline at new game) and add 
+**Note 2**: The PASSWORD at *podbotconfig.cfg* at your gamemod folder, serves 
+to create waypoint using the *linstenserver* (play offline at new game) and add 
 podbots. But who has rcon authentication can also control the podbots.
 
 If you have trouble configuring the server, this below is an awesome tutorial on 
@@ -100,7 +98,7 @@ http://steamcommunity.com/sharedfiles/filedetails/?id=340974032
 
 https://developer.valvesoftware.com/wiki/SteamCMD
 
-### [Veja Aqui em Português](http://translate.google.com.br/translate?hl=pt-BR&sl=en&u=https://github.com/addonszz/AddonsMultiMod)
+### [Veja Aqui em Português](http://translate.google.com.br/translate?hl=pt-BR&sl=en&u=https://github.com/addonszz/Galileo/tree/master/dependencies/server_files)
 
 
 ___
