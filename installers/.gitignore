@@ -1,0 +1,5 @@
+
+clean_setup/*
+
+!clean_setup/intentionally_initally_empty.txt
+
