@@ -67,9 +67,9 @@ IF "%1"=="" (
     echo Clean setup output files necessary to installed. > clean_setup\intentionally_initally_empty.txt
 
     rem To do the actual copying/installing.
-    call xcopy /E /S /Y "%~dp0..\plugins\addons\amxmodx\configs\galileo"       "clean_setup\configs\galileo\"
-    call xcopy /E /S /Y "%~dp0..\plugins\addons\amxmodx\data\lang\galileo.txt" "clean_setup\data\lang\"
-    call xcopy /E /S /Y "%~dp0..\plugins\addons\amxmodx\scripting\galileo.sma" "clean_setup\scripting\"
+    call xcopy /S /Y "%~dp0..\plugins\addons\amxmodx\configs\galileo"       "clean_setup\configs\galileo\"
+    call xcopy /S /Y "%~dp0..\plugins\addons\amxmodx\data\lang\galileo.txt" "clean_setup\data\lang\"
+    call xcopy /S /Y "%~dp0..\plugins\addons\amxmodx\scripting\galileo.sma" "clean_setup\scripting\"
 
     echo.
     GOTO end
@@ -119,7 +119,7 @@ if defined folders_list[%currentIndex%] (
     IF EXIST "!folders_list[%currentIndex%]!\%PLUGIN_BASE_FILE_NAME%.amxx" del "!folders_list[%currentIndex%]!\%PLUGIN_BASE_FILE_NAME%.amxx"
 
     rem To do the actual copying/installing.
-    for /f "delims=" %%a in ( 'xcopy /E /S /Y "%PLUGIN_BINARY_FILE_PATH%"^
+    for /f "delims=" %%a in ( 'xcopy /S /Y "%PLUGIN_BINARY_FILE_PATH%"^
             "!folders_list[%currentIndex%]!"^|find /v "%PLUGIN_BASE_FILE_NAME%"' ) do echo %%a, to the folder !folders_list[%currentIndex%]!
 
     rem Update the next 'for/array' index to copy/install.
@@ -144,8 +144,8 @@ if defined folders_list[%currentIndex%] (
     setlocal EnableDelayedExpansion
 
     rem To do the actual copying/installing.
-    call xcopy /E /S /Y "%~dp0..\plugins\addons\amxmodx\configs\galileo" "!folders_list[%currentIndex%]!\..\" > NUL
-    call xcopy /E /S /Y "%~dp0..\plugins\addons\amxmodx\data\lang\galileo.txt" "!folders_list[%currentIndex%]!\..\data\lang\galileo.txt" > NUL
+    call xcopy /S /Y "%~dp0..\plugins\addons\amxmodx\configs\galileo" "!folders_list[%currentIndex%]!\..\" > NUL
+    call xcopy /S /Y "%~dp0..\plugins\addons\amxmodx\data\lang\galileo.txt" "!folders_list[%currentIndex%]!\..\data\lang\galileo.txt" > NUL
 
     rem Update the next 'for/array' index to copy/install.
     set /a "currentIndex+=1"
