@@ -152,8 +152,8 @@ if defined folders_list[%currentIndex%] (
     setlocal EnableDelayedExpansion
 
     rem To do the actual copying/installing.
-    call xcopy /S /Y "%~dp0..\plugins\addons\amxmodx\configs\galileo" "!folders_list[%currentIndex%]!\..\" > NUL
-    call xcopy /S /Y "%~dp0..\plugins\addons\amxmodx\data\lang\galileo.txt" "!folders_list[%currentIndex%]!\..\data\lang\galileo.txt" > NUL
+    call xcopy /S /Y "%~dp0..\plugins\addons\amxmodx\configs\galileo" "!folders_list[%currentIndex%]!\..\configs\galileo\" > NUL
+    call xcopy /S /Y "%~dp0..\plugins\addons\amxmodx\data\lang\galileo.txt" "!folders_list[%currentIndex%]!\..\data\lang\" > NUL
 
     rem Update the next 'for/array' index to copy/install.
     set /a "currentIndex+=1"
