@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 
-./versioning/scripts/updateVersion.sh "galileo.cfg" $1
+./versioning/scripts/updateVersion.sh "galileo" $1
 
 
 # Exits the program using a successful exit status code.
