@@ -2,7 +2,11 @@
     "folders":
     [
         {
-            "path": "."
+            "path": ".",
+            "folder_exclude_patterns":
+            [
+                "installers/clean_setup",
+            ],
         },
         {
             "path": "D:/User/Dropbox/Applications/SoftwareVersioning/SublimeText/Data/Packages"
