@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.0.3-735";
+new const PLUGIN_VERSION[] = "v5.0.3-736";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.0.3-735";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 0
+#define DEBUG_LEVEL 16+8
 
 
 /**
@@ -9093,7 +9093,17 @@ stock toShowTheMapExtensionHud( lang1[], lang2[], lang3[], extend )
     if( !( get_pcvar_num( cvar_hudsHide ) & HUD_VOTE_RESULTS_ANNOUNCE ) )
     {
         set_hudmessage( 150, 120, 0, -1.0, 0.13, 0, 1.0, 6.94, 0.0, 0.0, -1 );
-        show_hudmessage( 0, "%L. %L:^n%L", LANG_PLAYER, lang1, LANG_PLAYER, lang2, LANG_PLAYER, lang3, extend );
+
+        // If our lang is `GAL_RUNOFF_REQUIRED_TOP`, we cannot include the lang `DMAP_MAP_EXTENDED1`
+        // otherwise the message will be too big and will break a line which should not.
+        if( equali( lang1, "GAL_RUNOFF_REQUIRED_TOP" ) )
+        {
+            show_hudmessage( 0, "%L:^n%L", LANG_PLAYER, lang1, LANG_PLAYER, lang3, extend );
+        }
+        else
+        {
+            show_hudmessage( 0, "%L. %L:^n%L", LANG_PLAYER, lang1, LANG_PLAYER, lang2, LANG_PLAYER, lang3, extend );
+        }
     }
 }
 
@@ -15772,14 +15782,14 @@ public timeRemain()
         {
             g_arrayOfMapsWithVotesNumber[ 0 ] += 0;     // map 1
             g_arrayOfMapsWithVotesNumber[ 1 ] += 2;     // map 2
-            g_arrayOfMapsWithVotesNumber[ 2 ] += 2;     // map 3
+            g_arrayOfMapsWithVotesNumber[ 2 ] += 0;     // map 3
             g_arrayOfMapsWithVotesNumber[ 3 ] += 0;     // map 4
             g_arrayOfMapsWithVotesNumber[ 4 ] += 0;     // map 5
 
             if( g_isExtendmapAllowStay
                 || g_isGameFinalVoting )
             {
-                g_arrayOfMapsWithVotesNumber[ 5 ] += 0;    // extend option
+                g_arrayOfMapsWithVotesNumber[ 5 ] += 2;    // extend option
             }
 
             g_totalVotesCounted = g_arrayOfMapsWithVotesNumber[ 0 ] + g_arrayOfMapsWithVotesNumber[ 1 ] +
