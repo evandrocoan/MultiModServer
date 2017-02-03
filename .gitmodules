@@ -19,3 +19,9 @@
 [submodule "dependencies/amxmodx"]
 	path = dependencies/amxmodx
 	url = https://github.com/evandrocoan/amxmodx
+[submodule "dependencies/csdm"]
+	path = dependencies/csdm
+	url = https://github.com/evandrocoan/csdm
+[submodule "dependencies/Orpheu"]
+	path = dependencies/Orpheu
+	url = https://github.com/evandrocoan/Orpheu
