@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.0.3-759";
+new const PLUGIN_VERSION[] = "v5.0.3-760";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -10559,8 +10559,8 @@ public cmd_listrecent_handler( player_id, menu, item )
         g_recentMapsMenuPages[ player_id ] ? g_recentMapsMenuPages[ player_id ]-- : 0;
 
         // Try to block/difficult players from performing the Denial Of Server attack.
-        // showRecentMapsListMenu( player_id );
-        set_task( 0.1, "showRecentMapsListMenu", player_id );
+        // set_task( 0.1, "showRecentMapsListMenu", player_id );
+        showRecentMapsListMenu( player_id );
 
         LOGGER( 1, "    ( cmd_listrecent_handler ) Just Returning PLUGIN_HANDLED, doing the back button." )
         return PLUGIN_HANDLED;
@@ -10573,8 +10573,8 @@ public cmd_listrecent_handler( player_id, menu, item )
         g_recentMapsMenuPages[ player_id ]++;
 
         // Try to block/difficult players from performing the Denial Of Server attack.
-        // showRecentMapsListMenu( player_id );
-        set_task( 0.1, "showRecentMapsListMenu", player_id );
+        // set_task( 0.1, "showRecentMapsListMenu", player_id );
+        showRecentMapsListMenu( player_id );
 
         LOGGER( 1, "    ( cmd_listrecent_handler ) Just Returning PLUGIN_HANDLED, doing the more button." )
         return PLUGIN_HANDLED;
@@ -11087,8 +11087,8 @@ public handleDisplayVoteMap( player_id, menu, item )
             g_voteMapMenuPages[ player_id ] ? g_voteMapMenuPages[ player_id ]-- : 0;
 
             // Try to block/difficult players from performing the Denial Of Server attack.
-            // displayVoteMapMenuHook( player_id );
-            set_task( 0.1, "displayVoteMapMenuHook", player_id );
+            // set_task( 0.1, "displayVoteMapMenuHook", player_id );
+            displayVoteMapMenuHook( player_id );
 
             LOGGER( 1, "    ( handleDisplayVoteMap ) Just Returning PLUGIN_HANDLED, doing the back button." )
             return PLUGIN_HANDLED;
@@ -11100,8 +11100,8 @@ public handleDisplayVoteMap( player_id, menu, item )
             g_voteMapMenuPages[ player_id ]++;
 
             // Try to block/difficult players from performing the Denial Of Server attack.
-            // displayVoteMapMenuHook( player_id );
-            set_task( 0.1, "displayVoteMapMenuHook", player_id );
+            // set_task( 0.1, "displayVoteMapMenuHook", player_id );
+            displayVoteMapMenuHook( player_id );
 
             LOGGER( 1, "    ( handleDisplayVoteMap ) Just Returning PLUGIN_HANDLED, doing the more button." )
             return PLUGIN_HANDLED;
@@ -11336,11 +11336,11 @@ public handleDisplayVoteMapCommands( player_id, menu, item )
     }
 
     // Before re-creating the menu within the updated data, we need to wait for it be destroyed.
-    // Try to block/difficult players from performing the Denial Of Server attack.
     DESTROY_PLAYER_NEW_MENU_TYPE( menu )
 
-    // displayVoteMapMenuCommands( player_id );
-    set_task( 0.1, "displayVoteMapMenuCommands", player_id );
+    // Try to block/difficult players from performing the Denial Of Server attack.
+    // set_task( 0.1, "displayVoteMapMenuCommands", player_id );
+    displayVoteMapMenuCommands( player_id );
 
     LOGGER( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, the menu is showed again." )
     return PLUGIN_HANDLED;
@@ -12527,8 +12527,8 @@ public nomination_handleMatchChoice( player_id, menu, item )
         g_nominationPlayersMenuPages[ player_id ]++;
 
         // Try to block/difficult players from performing the Denial Of Server attack.
-        // nomination_menuHook( player_id );
-        set_task( 0.1, "nomination_menuHook", player_id );
+        // set_task( 0.1, "nomination_menuHook", player_id );
+        nomination_menuHook( player_id );
 
         LOGGER( 1, "    ( nomination_handleMatchChoice ) Just Returning PLUGIN_HANDLED, doing the more button." )
         return PLUGIN_HANDLED;
@@ -12595,8 +12595,8 @@ public nomination_handlePartialMatch( player_id, menu, item )
         DESTROY_PLAYER_NEW_MENU_TYPE( menu )
 
         // Try to block/difficult players from performing the Denial Of Server attack.
-        // nominationAttemptWithNameHook( arguments );
-        set_task( 0.1, "nominationAttemptWithNameHook", _, arguments, sizeof arguments );
+        // set_task( 0.1, "nominationAttemptWithNameHook", _, arguments, sizeof arguments );
+        nominationAttemptWithNameHook( arguments );
 
         LOGGER( 1, "    ( nomination_handlePartialMatch ) Just Returning PLUGIN_HANDLED, doing the back button." )
         return PLUGIN_HANDLED;
@@ -12614,8 +12614,8 @@ public nomination_handlePartialMatch( player_id, menu, item )
         DESTROY_PLAYER_NEW_MENU_TYPE( menu )
 
         // Try to block/difficult players from performing the Denial Of Server attack.
-        // nominationAttemptWithNameHook( arguments );
-        set_task( 0.1, "nominationAttemptWithNameHook", _, arguments, sizeof arguments );
+        // set_task( 0.1, "nominationAttemptWithNameHook", _, arguments, sizeof arguments );
+        nominationAttemptWithNameHook( arguments );
 
         LOGGER( 1, "    ( nomination_handlePartialMatch ) Just Returning PLUGIN_HANDLED, doing the more button." )
         return PLUGIN_HANDLED;
