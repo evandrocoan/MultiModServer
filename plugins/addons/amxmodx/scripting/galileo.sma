@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.0.3-755";
+new const PLUGIN_VERSION[] = "v5.0.3-757";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.0.3-755";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 16
+#define DEBUG_LEVEL 0
 
 
 /**
@@ -1434,6 +1434,18 @@ new g_fragLimitContextSaved;
  */
 new bool:g_isTheLastGameRoundContext;
 new bool:g_isThePenultGameRoundContext;
+
+/**
+ * The array indexes used on the saveRoundEnding(1) and restoreRoundEnding(1).
+ */
+enum SaveRoundEnding
+{
+    SaveRoundEnding_LastRound,
+    SaveRoundEnding_RestartTime,
+    SaveRoundEnding_PenultRound,
+    SaveRoundEnding_VotingEnd,
+    SaveRoundEnding_WhileVoting
+}
 
 
 new g_totalRoundsSavedTimes;
@@ -4802,30 +4814,32 @@ stock resetRoundEnding()
     client_cmd( 0, "-showscores" );
 }
 
-stock saveRoundEnding( bool:roundEndStatus[] )
+stock saveRoundEnding( bool:roundEndStatus[ SaveRoundEnding ] )
 {
-    LOGGER( 128, "I AM ENTERING ON saveRoundEnding(1) roundEndStatus: %d, %d, %d, %d", \
-            roundEndStatus[ 0 ], roundEndStatus[ 1 ], roundEndStatus[ 2 ], roundEndStatus[ 3 ] )
+    LOGGER( 128, "I AM ENTERING ON saveRoundEnding(1)" )
+    LOGGER( 128, "( saveRoundEnding ) roundEndStatus[0]: %d", roundEndStatus[ SaveRoundEnding_LastRound   ] )
+    LOGGER( 128, "( saveRoundEnding ) roundEndStatus[1]: %d", roundEndStatus[ SaveRoundEnding_RestartTime ] )
+    LOGGER( 128, "( saveRoundEnding ) roundEndStatus[2]: %d", roundEndStatus[ SaveRoundEnding_PenultRound ] )
 
-    roundEndStatus[ 0 ] = g_isTheLastGameRound;
-    roundEndStatus[ 1 ] = g_isTimeToRestart;
-    roundEndStatus[ 2 ] = g_isThePenultGameRound;
-    roundEndStatus[ 3 ] = g_isToChangeMapOnVotingEnd;
-    roundEndStatus[ 4 ] = g_isTheRoundEndWhileVoting;
-    roundEndStatus[ 5 ] = g_isGameEndingTypeContextSaved;
+    roundEndStatus[ SaveRoundEnding_LastRound   ] = g_isTheLastGameRound;
+    roundEndStatus[ SaveRoundEnding_RestartTime ] = g_isTimeToRestart;
+    roundEndStatus[ SaveRoundEnding_PenultRound ] = g_isThePenultGameRound;
+    roundEndStatus[ SaveRoundEnding_VotingEnd   ] = g_isToChangeMapOnVotingEnd;
+    roundEndStatus[ SaveRoundEnding_WhileVoting ] = g_isTheRoundEndWhileVoting;
 }
 
-stock restoreRoundEnding( bool:roundEndStatus[] )
+stock restoreRoundEnding( bool:roundEndStatus[ SaveRoundEnding ] )
 {
-    LOGGER( 128, "I AM ENTERING ON restoreRoundEnding(1) roundEndStatus: %d, %d, %d, %d", \
-            roundEndStatus[ 0 ], roundEndStatus[ 1 ], roundEndStatus[ 2 ], roundEndStatus[ 3 ] )
+    LOGGER( 128, "I AM ENTERING ON restoreRoundEnding(1)" )
+    LOGGER( 128, "( restoreRoundEnding ) roundEndStatus[0]: %d", roundEndStatus[ SaveRoundEnding_LastRound   ] )
+    LOGGER( 128, "( restoreRoundEnding ) roundEndStatus[1]: %d", roundEndStatus[ SaveRoundEnding_RestartTime ] )
+    LOGGER( 128, "( restoreRoundEnding ) roundEndStatus[2]: %d", roundEndStatus[ SaveRoundEnding_PenultRound ] )
 
-    g_isTheLastGameRound           = roundEndStatus[ 0 ];
-    g_isTimeToRestart              = roundEndStatus[ 1 ];
-    g_isThePenultGameRound         = roundEndStatus[ 2 ];
-    g_isToChangeMapOnVotingEnd     = roundEndStatus[ 3 ];
-    g_isTheRoundEndWhileVoting     = roundEndStatus[ 4 ];
-    g_isGameEndingTypeContextSaved = roundEndStatus[ 5 ];
+    g_isTheLastGameRound       = bool:roundEndStatus[ SaveRoundEnding_LastRound   ];
+    g_isTimeToRestart          = bool:roundEndStatus[ SaveRoundEnding_RestartTime ];
+    g_isThePenultGameRound     = bool:roundEndStatus[ SaveRoundEnding_PenultRound ];
+    g_isToChangeMapOnVotingEnd = bool:roundEndStatus[ SaveRoundEnding_VotingEnd   ];
+    g_isTheRoundEndWhileVoting = bool:roundEndStatus[ SaveRoundEnding_WhileVoting ];
 }
 
 /**
@@ -6858,7 +6872,7 @@ stock bool:approveTheVotingStart( bool:is_forced_voting )
     if( is_forced_voting
         && g_voteStatus & IS_VOTE_OVER )
     {
-        new bool:roundEndStatus[ 4 ];
+        new bool:roundEndStatus[ SaveRoundEnding ];
 
         saveRoundEnding( roundEndStatus );
         cancelVoting();
