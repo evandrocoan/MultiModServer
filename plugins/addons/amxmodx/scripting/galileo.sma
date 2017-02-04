@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.2.0-765";
+new const PLUGIN_VERSION[] = "v5.2.0-766";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -6728,52 +6728,68 @@ stock handle_game_crash_recreation( secondsLeft )
     // PERIODIC_CHECKING_INTERVAL = 15 seconds, 15 * 50 = 750 = 12.5 minutes
     if( ++showCounter % 50 < 1 )
     {
-        if( !( get_pcvar_num( cvar_hudsHide ) & HUD_TIMELEFT_ANNOUNCE ) )
+        new displayTime = 7;
+        set_hudmessage( 255, 255, 255, 0.15, 0.15, 0, 0.0, float( displayTime ), 0.1, 0.1, 1 );
+
+        switch( whatGameEndingTypeItIs() )
         {
-            new displayTime = 7;
-            set_hudmessage( 255, 255, 255, 0.15, 0.15, 0, 0.0, float( displayTime ), 0.1, 0.1, 1 );
-
-            switch( whatGameEndingTypeItIs() )
+            case GameEndingType_ByMaxRounds:
             {
-                case GameEndingType_ByMaxRounds:
-                {
-                    new roundsLeft = get_pcvar_num( cvar_mp_maxrounds ) - g_totalRoundsPlayed;
+                new roundsLeft = get_pcvar_num( cvar_mp_maxrounds ) - g_totalRoundsPlayed;
 
+                if( !( get_pcvar_num( cvar_hudsHide ) & HUD_TIMELEFT_ANNOUNCE ) )
+                {
                     show_hudmessage( 0, "%L:^n%d:%2d %L", LANG_PLAYER, "TIME_LEFT", roundsLeft, LANG_PLAYER, "GAL_ROUNDS" );
-                    color_print( 0, "%L %L...", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", roundsLeft, LANG_PLAYER, "GAL_ROUNDS" );
                 }
-                case GameEndingType_ByWinLimit:
-                {
-                    new winLeft = get_pcvar_num( cvar_mp_winlimit ) - max( g_totalCtWins, g_totalTerroristsWins );
 
+                color_print( 0, "%L %L...", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", roundsLeft, LANG_PLAYER, "GAL_ROUNDS" );
+            }
+            case GameEndingType_ByWinLimit:
+            {
+                new winLeft = get_pcvar_num( cvar_mp_winlimit ) - max( g_totalCtWins, g_totalTerroristsWins );
+
+                if( !( get_pcvar_num( cvar_hudsHide ) & HUD_TIMELEFT_ANNOUNCE ) )
+                {
                     show_hudmessage( 0, "%L:^n%d:%2d %L", LANG_PLAYER, "TIME_LEFT", winLeft, LANG_PLAYER, "GAL_ROUNDS" );
-                    color_print( 0, "%L %L...", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", winLeft, LANG_PLAYER, "GAL_ROUNDS" );
                 }
-                case GameEndingType_ByFragLimit:
-                {
-                    new fragsLeft = get_pcvar_num( cvar_mp_fraglimit ) - g_greatestKillerFrags;
 
+                color_print( 0, "%L %L...", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", winLeft, LANG_PLAYER, "GAL_ROUNDS" );
+            }
+            case GameEndingType_ByFragLimit:
+            {
+                new fragsLeft = get_pcvar_num( cvar_mp_fraglimit ) - g_greatestKillerFrags;
+
+                if( !( get_pcvar_num( cvar_hudsHide ) & HUD_TIMELEFT_ANNOUNCE ) )
+                {
                     show_hudmessage( 0, "%L:^n%d:%2d %L", LANG_PLAYER, "TIME_LEFT", fragsLeft, LANG_PLAYER, "GAL_FRAGS" );
-                    color_print( 0, "%L %L...", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", fragsLeft, LANG_PLAYER, "GAL_FRAGS" );
                 }
-                case GameEndingType_ByTimeLimit:
+
+                color_print( 0, "%L %L...", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", fragsLeft, LANG_PLAYER, "GAL_FRAGS" );
+            }
+            case GameEndingType_ByTimeLimit:
+            {
+                if( !( get_pcvar_num( cvar_hudsHide ) & HUD_TIMELEFT_ANNOUNCE ) )
                 {
                     set_task( 1.0, "displayRemainingTime", TASKID_DISPLAY_REMAINING_TIME, _, _, "a", displayTime );
-                    color_print( 0, "%L %L...", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", get_timeleft() / 60, LANG_PLAYER, "GAL_MINUTES" );
                 }
-                default:
+
+                color_print( 0, "%L %L...", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", get_timeleft() / 60, LANG_PLAYER, "GAL_MINUTES" );
+            }
+            default:
+            {
+                if( !( get_pcvar_num( cvar_hudsHide ) & HUD_TIMELEFT_ANNOUNCE ) )
                 {
                     show_hudmessage( 0, "%L:^n%L", LANG_PLAYER, "TIME_LEFT", LANG_PLAYER, "NO_T_LIMIT" );
+                }
 
-                    // When we put the color tags inside the plugin, we need to check whether the color chat is enabled.
-                    if( IS_COLORED_CHAT_ENABLED() )
-                    {
-                        color_print( 0, "^4%L:^1 %L...", LANG_PLAYER, "TIME_LEFT", LANG_PLAYER, "NO_T_LIMIT" );
-                    }
-                    else
-                    {
-                        color_print( 0, "%L: %L...", LANG_PLAYER, "TIME_LEFT", LANG_PLAYER, "NO_T_LIMIT" );
-                    }
+                // When we put the color tags inside the plugin, we need to check whether the color chat is enabled.
+                if( IS_COLORED_CHAT_ENABLED() )
+                {
+                    color_print( 0, "^4%L:^1 %L...", LANG_PLAYER, "TIME_LEFT", LANG_PLAYER, "NO_T_LIMIT" );
+                }
+                else
+                {
+                    color_print( 0, "%L: %L...", LANG_PLAYER, "TIME_LEFT", LANG_PLAYER, "NO_T_LIMIT" );
                 }
             }
         }
