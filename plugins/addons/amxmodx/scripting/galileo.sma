@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.1.0-762";
+new const PLUGIN_VERSION[] = "v5.1.1-763";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -12124,9 +12124,6 @@ stock getRecentMapsAndWhiteList( player_id, &isRecentMapNomBlocked, &isWhiteList
     new      mapIndex; \
     new bool:isRecentMapNomBlocked; \
     new bool:isWhiteListNomBlock; \
-    new choice        [ MAX_MAPNAME_LENGHT + 32 ]; \
-    new nominationMap [ MAX_MAPNAME_LENGHT ]; \
-    new disabledReason[ MAX_SHORT_STRING ]; \
     getRecentMapsAndWhiteList( %1, isRecentMapNomBlocked, isWhiteListNomBlock )
 
 /**
@@ -12138,6 +12135,10 @@ stock nomination_menu( player_id )
 
     new itemsCount;
     new nominationsMapsCount;
+
+    new choice        [ MAX_MAPNAME_LENGHT + 32 ];
+    new nominationMap [ MAX_MAPNAME_LENGHT ];
+    new disabledReason[ MAX_SHORT_STRING ];
 
     startNominationMenuVariables( player_id );
     nominationsMapsCount = ArraySize( g_nominationLoadedMapsArray );
@@ -12274,13 +12275,11 @@ stock nominationAttemptWithNamePart( player_id, startSearchIndex = 0 )
 {
     LOGGER( 128, "I AM ENTERING ON nominationAttemptWithNamePart(2) startSearchIndex: %d", startSearchIndex )
 
-    new matchIndex;
     new itemsCount;
     new nominationsMapsCount;
+    new menuGeneralItem[ MAX_SHORT_STRING ];
 
     startNominationMenuVariables( player_id );
-
-    matchIndex           = -1;
     nominationsMapsCount = ArraySize( g_nominationLoadedMapsArray );
 
     // Calculate how much pages there are available.
@@ -12296,11 +12295,11 @@ stock nominationAttemptWithNamePart( player_id, startSearchIndex = 0 )
     }
 
     // To create the menu
-    formatex( disabledReason, charsmax( disabledReason ),
+    formatex( menuGeneralItem, charsmax( menuGeneralItem ),
             IS_COLORED_CHAT_ENABLED() ? "%L\R%d/%d" : "%L %d /%d",
             player_id, "GAL_LISTMAPS_TITLE", currentPageNumber + 1, lastPageNumber );
 
-    new menu = menu_create( disabledReason, "nomination_handlePartialMatch" );
+    new menu = menu_create( menuGeneralItem, "nomination_handlePartialMatch" );
 
     // Disables the menu paging.
     menu_setprop( menu, MPROP_PERPAGE, 0 );
@@ -12310,95 +12309,152 @@ stock nominationAttemptWithNamePart( player_id, startSearchIndex = 0 )
     // SET_MENU_LANG_STRING_PROPERTY( MPROP_NEXTNAME, menu, "MORE" )
     // SET_MENU_LANG_STRING_PROPERTY( MPROP_BACKNAME, menu, "BACK" )
 
+    new arguments[ 9 ];
+
+    arguments[ 0 ] = player_id;
+    arguments[ 1 ] = mapIndex;
+    arguments[ 2 ] = itemsCount;
+    arguments[ 3 ] = startSearchIndex;
+    arguments[ 4 ] = nominationsMapsCount;
+    arguments[ 5 ] = isWhiteListNomBlock;
+    arguments[ 6 ] = isRecentMapNomBlocked;
+    arguments[ 7 ] = menu;
+    arguments[ 8 ] = currentPageNumber;
+
+    fillThePartialNominationMenu( arguments );
+}
+
+/**
+ * This menu is pretty expensive and cannot let be running free. If the server has too much maps,
+ * this will cause lag if this task is not split along the time when a single menu page is not filled
+ * until the `MAX_NOM_MATCH_COUNT`.
+ */
+public fillThePartialNominationMenu( argumentsIn[] )
+{
+    LOGGER( 128, "I AM ENTERING ON fillThePartialNominationMenu(1)" )
+
+    LOGGER( 128, "( fillThePartialNominationMenu ) player_id:             %d", argumentsIn[ 0 ] )
+    LOGGER( 128, "( fillThePartialNominationMenu ) mapIndex:              %d", argumentsIn[ 1 ] )
+    LOGGER( 128, "( fillThePartialNominationMenu ) itemsCount:            %d", argumentsIn[ 2 ] )
+    LOGGER( 128, "( fillThePartialNominationMenu ) startSearchIndex:      %d", argumentsIn[ 3 ] )
+    LOGGER( 128, "( fillThePartialNominationMenu ) nominationsMapsCount:  %d", argumentsIn[ 4 ] )
+    LOGGER( 128, "( fillThePartialNominationMenu ) isWhiteListNomBlock:   %d", argumentsIn[ 5 ] )
+    LOGGER( 128, "( fillThePartialNominationMenu ) isRecentMapNomBlocked: %d", argumentsIn[ 6 ] )
+    LOGGER( 128, "( fillThePartialNominationMenu ) menu:                  %d", argumentsIn[ 7 ] )
+    LOGGER( 128, "( fillThePartialNominationMenu ) currentPageNumber:     %d", argumentsIn[ 8 ] )
+
+    new const player_id             = argumentsIn[ 0 ];
+    new mapIndex                    = argumentsIn[ 1 ];
+    new itemsCount                  = argumentsIn[ 2 ];
+    new const startSearchIndex      = argumentsIn[ 3 ];
+    new const nominationsMapsCount  = argumentsIn[ 4 ];
+    new const isWhiteListNomBlock   = argumentsIn[ 5 ];
+    new const isRecentMapNomBlocked = argumentsIn[ 6 ];
+    new const menu                  = argumentsIn[ 7 ];
+    new const currentPageNumber     = argumentsIn[ 8 ];
+
+    // I am not using argumentsIn, because after the first call, all its values are trashed.
+    new argumentsOut[ 9 ];
+    new endSearchIndex = startSearchIndex + MAX_NOM_MATCH_COUNT;
+
+    new choice        [ MAX_MAPNAME_LENGHT + 32 ];
+    new nominationMap [ MAX_MAPNAME_LENGHT ];
+    new disabledReason[ MAX_SHORT_STRING ];
+
     for( mapIndex = startSearchIndex; mapIndex < nominationsMapsCount && itemsCount < MAX_NOM_MENU_ITEMS_PER_PAGE; ++mapIndex )
     {
-        GET_MAP_NAME( g_nominationLoadedMapsArray, mapIndex, nominationMap )
-
-        if( containi( nominationMap, g_nominationPartialNameAttempt[ player_id ] ) > -1 )
+        if( mapIndex < endSearchIndex )
         {
-            // Store in case this is the only match
-            matchIndex = mapIndex;
+            GET_MAP_NAME( g_nominationLoadedMapsArray, mapIndex, nominationMap )
 
-            // Save the map index for the current menu position
-            g_menuMapIndexForPlayerArrays[ player_id ][ itemsCount ] = mapIndex;
-            itemsCount++;
-
-            // Start the menu entry item calculation:
-            // 'nomination_menu(1)' and 'nominationAttemptWithNamePart(2)'.
+            if( containi( nominationMap, g_nominationPartialNameAttempt[ player_id ] ) > -1 )
             {
-                // in most cases, the map will be available for selection, so assume that's the case here
-                disabledReason[ 0 ] = '^0';
+                // Save the map index for the current menu position
+                g_menuMapIndexForPlayerArrays[ player_id ][ itemsCount ] = mapIndex;
+                itemsCount++;
 
-                // disable if the map has already been nominated
-                if( nomination_getPlayer( mapIndex ) )
+                // Start the menu entry item calculation:
+                // 'nomination_menu(1)' and 'fillThePartialNominationMenu(2)'.
                 {
-                    formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_NOMINATED" );
-                }
-                else if( isRecentMapNomBlocked
-                         && map_isTooRecent( nominationMap ) )
-                {
-                    formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_TOORECENT" );
-                }
-                else if( equali( g_currentMapName, nominationMap ) )
-                {
-                    formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_CURRENTMAP" );
-                }
-                else if( IS_WHITELIST_BLOCKING( isWhiteListNomBlock, nominationMap ) )
-                {
-                    formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_WHITELIST" );
-                }
+                    // in most cases, the map will be available for selection, so assume that's the case here
+                    disabledReason[ 0 ] = '^0';
 
-                formatex( choice, charsmax( choice ), "%s %s", nominationMap, disabledReason );
-                LOGGER( 4, "( nominationAttemptWithNamePart ) choice: %s", choice )
+                    // disable if the map has already been nominated
+                    if( nomination_getPlayer( mapIndex ) )
+                    {
+                        formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_NOMINATED" );
+                    }
+                    else if( isRecentMapNomBlocked
+                             && map_isTooRecent( nominationMap ) )
+                    {
+                        formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_TOORECENT" );
+                    }
+                    else if( equali( g_currentMapName, nominationMap ) )
+                    {
+                        formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_CURRENTMAP" );
+                    }
+                    else if( IS_WHITELIST_BLOCKING( isWhiteListNomBlock, nominationMap ) )
+                    {
+                        formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_WHITELIST" );
+                    }
 
-                menu_additem( menu, choice, _, ( disabledReason[ 0 ] == '^0' ? 0 : ( 1 << 26 ) ) );
+                    formatex( choice, charsmax( choice ), "%s %s", nominationMap, disabledReason );
+                    LOGGER( 4, "( fillThePartialNominationMenu ) choice: %s", choice )
 
-            } // end the menu entry item calculation.
+                    menu_additem( menu, choice, _, ( disabledReason[ 0 ] == '^0' ? 0 : ( 1 << 26 ) ) );
 
-        }  // end if 'containi'.
+                } // end the menu entry item calculation.
+
+            } // end if 'containi'.
+
+        }
+        else
+        {
+            argumentsOut[ 0 ] = player_id;
+            argumentsOut[ 1 ] = mapIndex;
+            argumentsOut[ 2 ] = itemsCount;
+            argumentsOut[ 3 ] = endSearchIndex;
+            argumentsOut[ 4 ] = nominationsMapsCount;
+            argumentsOut[ 5 ] = isWhiteListNomBlock;
+            argumentsOut[ 6 ] = isRecentMapNomBlocked;
+            argumentsOut[ 7 ] = menu;
+            argumentsOut[ 8 ] = currentPageNumber;
+
+            set_task( 1.0, "fillThePartialNominationMenu", _, argumentsOut, sizeof argumentsOut );
+
+            // The map search could take some time, as there are more than MAX_NOM_MATCH_COUNT unsuccessful matches.
+            if( endSearchIndex == MAX_NOM_MATCH_COUNT )
+            {
+                color_print( player_id, "%L", player_id, "GAL_NOM_MATCHES_MAX",
+                        nominationsMapsCount / MAX_NOM_MATCH_COUNT, MAX_NOM_MATCH_COUNT );
+            }
+
+            // Block the menu from displaying before the search goes through all the possible items.
+            return;
+        }
 
     } // end for 'mapIndex'.
 
     new lastPosition = ArraySize( g_partialMatchFirstPageItems[ player_id ] ) - 1;
 
-    LOGGER( 4, "( nominationAttemptWithNamePart ) mapIndex: %d", mapIndex)
-    LOGGER( 4, "( nominationAttemptWithNamePart ) itemsCount: %d, lastPosition: %d", itemsCount, lastPosition )
+    LOGGER( 4, "( fillThePartialNominationMenu ) mapIndex: %d", mapIndex)
+    LOGGER( 4, "( fillThePartialNominationMenu ) itemsCount: %d, lastPosition: %d", itemsCount, lastPosition )
 
     // If the last position is negative, then there is not last position, moreover this is the
-    // first call to nominationAttemptWithNamePart(3), then it means there any or one matches for
+    // first call to fillThePartialNominationMenu(3), then it means there any or one matches for
     // the partial map name nomination.
     if( lastPosition < 0
-        && itemsCount < 2 )
+        && itemsCount < 1 )
     {
-        // handle the number of matches
-        switch( itemsCount )
-        {
-            case 0:
-            {
-                // no matches; pity the poor fool
-                color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_NOMATCHES", g_nominationPartialNameAttempt[ player_id ] );
+        // no matches; pity the poor fool
+        color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_NOMATCHES", g_nominationPartialNameAttempt[ player_id ] );
 
-                // Destroys the menu, as is was not used.
-                DESTROY_PLAYER_NEW_MENU_TYPE( menu )
-            }
-            case 1:
-            {
-                // one match?! omg, this is just like awesome
-                map_nominate( player_id, matchIndex );
-
-                // Destroys the menu, as is was not used.
-                DESTROY_PLAYER_NEW_MENU_TYPE( menu )
-            }
-        }
+        // Destroys the menu, as is was not used.
+        TRY_TO_APPLY( menu_destroy, menu )
     }
     else
     {
         // this is kinda sexy; we put up a menu of the matches for them to pick the right one
-        if( itemsCount >= MAX_NOM_MATCH_COUNT )
-        {
-            color_print( player_id, "%L", player_id, "GAL_NOM_MATCHES_MAX", MAX_NOM_MATCH_COUNT, MAX_NOM_MATCH_COUNT );
-        }
-
         if( !g_isSawPartialMatchFirstPage[ player_id ] )
         {
             g_isSawPartialMatchFirstPage[ player_id ] = true;
@@ -12414,19 +12470,19 @@ stock nominationAttemptWithNamePart( player_id, startSearchIndex = 0 )
     }
 }
 
-stock addMenuMoreBackExitOptions( menu, player_id, disabledReason[], bool:isToEnableMoreButton, bool:isToEnableBackButton, itemsCount )
+stock addMenuMoreBackExitOptions( menu, player_id, menuGeneralItem[], bool:isToEnableMoreButton, bool:isToEnableBackButton, itemsCount )
 {
     LOGGER( 128, "I AM ENTERING ON addMenuMoreBackExitOptions(5) isToEnableMoreButton: %d, \
             isToEnableBackButton: %d", isToEnableMoreButton, isToEnableBackButton )
 
-    addMenuMoreBackButtons( menu, player_id, disabledReason, isToEnableMoreButton, isToEnableBackButton, itemsCount );
+    addMenuMoreBackButtons( menu, player_id, menuGeneralItem, isToEnableMoreButton, isToEnableBackButton, itemsCount );
 
     // To add the exit button
-    formatex( disabledReason, MAX_SHORT_STRING - 1, "%L", player_id, "EXIT" );
-    menu_additem( menu, disabledReason, _, 0 );
+    formatex( menuGeneralItem, MAX_SHORT_STRING - 1, "%L", player_id, "EXIT" );
+    menu_additem( menu, menuGeneralItem, _, 0 );
 }
 
-stock addMenuMoreBackButtons( menu, player_id, disabledReason[], bool:isToEnableMoreButton, bool:isToEnableBackButton, itemsCount )
+stock addMenuMoreBackButtons( menu, player_id, menuGeneralItem[], bool:isToEnableMoreButton, bool:isToEnableBackButton, itemsCount )
 {
     LOGGER( 128, "I AM ENTERING ON addMenuMoreBackButtons(5) isToEnableBackButton: %d", isToEnableBackButton )
 
@@ -12434,8 +12490,8 @@ stock addMenuMoreBackButtons( menu, player_id, disabledReason[], bool:isToEnable
     while( itemsCount < MAX_NOM_MENU_ITEMS_PER_PAGE )
     {
         itemsCount++;
-        formatex( disabledReason, MAX_SHORT_STRING - 1, "%L", player_id, "OFF" );
-        menu_additem( menu, disabledReason, _, 1 << 26 );
+        formatex( menuGeneralItem, MAX_SHORT_STRING - 1, "%L", player_id, "OFF" );
+        menu_additem( menu, menuGeneralItem, _, 1 << 26 );
 
         // When using slot=1 this might break your menu. To achieve this functionality
         // menu_addblank2() should be used (AMXX 183 only).
@@ -12444,28 +12500,28 @@ stock addMenuMoreBackButtons( menu, player_id, disabledReason[], bool:isToEnable
 
     // Add some space from the control options and format the back button within the LANG file.
     menu_addblank( menu, 0 );
-    formatex( disabledReason, MAX_SHORT_STRING - 1, "%L", player_id, "BACK" );
+    formatex( menuGeneralItem, MAX_SHORT_STRING - 1, "%L", player_id, "BACK" );
 
     // If we are on the first page, disable the back option.
     if( isToEnableBackButton )
     {
-        menu_additem( menu, disabledReason, _, 0 );
+        menu_additem( menu, menuGeneralItem, _, 0 );
     }
     else
     {
-        menu_additem( menu, disabledReason, _, 1 << 26 );
+        menu_additem( menu, menuGeneralItem, _, 1 << 26 );
     }
 
-    formatex( disabledReason, MAX_SHORT_STRING - 1, "%L", player_id, "MORE" );
+    formatex( menuGeneralItem, MAX_SHORT_STRING - 1, "%L", player_id, "MORE" );
 
     // If there are more maps, add the more option
     if( isToEnableMoreButton )
     {
-        menu_additem( menu, disabledReason, _, 0 );
+        menu_additem( menu, menuGeneralItem, _, 0 );
     }
     else
     {
-        menu_additem( menu, disabledReason, _, 1 << 26 );
+        menu_additem( menu, menuGeneralItem, _, 1 << 26 );
     }
 }
 
@@ -13315,7 +13371,6 @@ public nomination_list()
 stock getMapNameIndex( mapName[] )
 {
     LOGGER( 128, "I AM ENTERING ON getMapNameIndex(1) mapName: %s", mapName )
-    new map[ MAX_MAPNAME_LENGHT ];
 
     if( TrieKeyExists( g_nominationLoadedMapsTrie, mapName ) )
     {
