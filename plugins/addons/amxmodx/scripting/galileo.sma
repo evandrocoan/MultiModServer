@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.0.3-757";
+new const PLUGIN_VERSION[] = "v5.0.3-759";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -2975,8 +2975,8 @@ stock configureTheRTVFeature( mapFilerFilePath[] )
     if( get_pcvar_num( cvar_nomPlayerAllowance ) )
     {
         register_clcmd( "gal_votemap", "cmd_voteMap", ADMIN_MAP );
-        register_concmd( "gal_listmaps", "map_listAll" );
         register_clcmd( "say nominations", "cmd_nominations", 0, "- displays current nominations for next map" );
+        register_concmd( "gal_listmaps", "map_listAll" );
 
         if( get_pcvar_num( cvar_nomPrefixes ) )
         {
@@ -11941,6 +11941,8 @@ stock sayHandlerForOneNomWords( player_id, firstWord[] )
         }
         else // if contains a prefix
         {
+            new containsPosition;
+
             for( new prefix_index = 0; prefix_index < g_mapPrefixCount; prefix_index++ )
             {
                 LOGGER( 4, "( sayHandlerForOneNomWords ) firstWord: %s, \
@@ -11950,9 +11952,12 @@ stock sayHandlerForOneNomWords( player_id, firstWord[] )
                         prefix_index, g_mapPrefixes[ prefix_index ], \
                         firstWord, g_mapPrefixes[ prefix_index ], containi( firstWord, g_mapPrefixes[ prefix_index ] ) )
 
-                if( containi( firstWord, g_mapPrefixes[ prefix_index ] ) > -1 )
+                // We are using strlen(1) to now allow compute this menu for something which seems to be usual prefix.
+                // This is because the partial attempt menu computation is expensive.
+                if( ( containsPosition = containi( firstWord, g_mapPrefixes[ prefix_index ] ) ) > -1
+                    && containsPosition < strlen( g_mapPrefixes[ prefix_index ] ) )
                 {
-                    nomination_menu( player_id );
+                    buildNominationPartNameAttempt( player_id, firstWord );
 
                     LOGGER( 1, "    ( sayHandlerForOneNomWords ) Just Returning PLUGIN_HANDLED, nomination_menu(1) chosen." )
                     return true;
@@ -11990,20 +11995,7 @@ stock sayHandlerForTwoNomWords( player_id, firstWord[], secondWord[] )
     else if( equali( firstWord, "nominate" )
              || equali( firstWord, "nom" ) )
     {
-        strtolower( secondWord );
-        g_isSawPartialMatchFirstPage[ player_id ] = false;
-
-        if( g_partialMatchFirstPageItems[ player_id ] )
-        {
-            TRY_TO_APPLY( ArrayClear, g_partialMatchFirstPageItems[ player_id ] )
-        }
-        else
-        {
-            g_partialMatchFirstPageItems[ player_id ] = ArrayCreate();
-        }
-
-        copy( g_nominationPartialNameAttempt[ player_id ], charsmax( g_nominationPartialNameAttempt[] ), secondWord );
-        nominationAttemptWithNamePart( player_id );
+        buildNominationPartNameAttempt( player_id, secondWord );
 
         LOGGER( 1, "    ( sayHandlerForTwoNomWords ) Just Returning PLUGIN_HANDLED, nominationAttemptWithNamePart(2): %s", secondWord )
         return true;
@@ -12242,6 +12234,30 @@ stock nomination_menu( player_id )
 
     addMenuMoreBackExitOptions( menu, player_id, disabledReason, mapIndex < nominationsMapsCount, currentPageNumber > 0, itemsCount );
     menu_display( player_id, menu );
+}
+
+/**
+ * This must to be called every time the Partial Nomination Menu will be show to the player for the
+ * first time, i.e., when this is called from the forward cmd_say(1) handler.
+ */
+stock buildNominationPartNameAttempt( player_id, secondWord[] )
+{
+    LOGGER( 128, "I AM ENTERING ON buildNominationPartNameAttempt(2)" )
+
+    strtolower( secondWord );
+    g_isSawPartialMatchFirstPage[ player_id ] = false;
+
+    if( g_partialMatchFirstPageItems[ player_id ] )
+    {
+        TRY_TO_APPLY( ArrayClear, g_partialMatchFirstPageItems[ player_id ] )
+    }
+    else
+    {
+        g_partialMatchFirstPageItems[ player_id ] = ArrayCreate();
+    }
+
+    copy( g_nominationPartialNameAttempt[ player_id ], charsmax( g_nominationPartialNameAttempt[] ), secondWord );
+    nominationAttemptWithNamePart( player_id );
 }
 
 /**
@@ -13307,6 +13323,15 @@ stock getSurMapNameIndex( mapSurName[] )
     LOGGER( 128, "I AM ENTERING ON getSurMapNameIndex(1) mapSurName: %s", mapSurName )
     new map[ MAX_MAPNAME_LENGHT ];
 
+    if( TrieKeyExists( g_nominationLoadedMapsTrie, mapSurName ) )
+    {
+        new mapIndex;
+        TrieGetCell( g_nominationLoadedMapsTrie, mapSurName, mapIndex );
+
+        LOGGER( 1, "    ( getSurMapNameIndex ) Just Returning, mapIndex: %d (mapSurName)", mapIndex )
+        return mapIndex;
+    }
+
     for( new prefixIndex = 0; prefixIndex < g_mapPrefixCount; ++prefixIndex )
     {
         formatex( map, charsmax( map ), "%s%s", g_mapPrefixes[ prefixIndex ], mapSurName );
@@ -13316,7 +13341,7 @@ stock getSurMapNameIndex( mapSurName[] )
             new mapIndex;
             TrieGetCell( g_nominationLoadedMapsTrie, map, mapIndex );
 
-            LOGGER( 1, "    ( getSurMapNameIndex ) Just Returning, mapIndex: %d", mapIndex )
+            LOGGER( 1, "    ( getSurMapNameIndex ) Just Returning, mapIndex: %d (map)", mapIndex )
             return mapIndex;
         }
     }
