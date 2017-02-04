@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.2.0-766";
+new const PLUGIN_VERSION[] = "v5.2.0-767";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -11901,9 +11901,6 @@ public cmd_say( player_id )
 
                 setCorrectMenuPage( player_id, firstWord, g_voteMapMenuPages, lastPageNumber );
                 voteMapMenuBuilder( player_id );
-
-                LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, voteMapMenuBuilder(1) chosen." )
-                return PLUGIN_HANDLED;
             }
             else if( ( g_rtvCommands & RTV_CMD_SHORTHAND
                        && equali( firstWord, "rtv" ) )
@@ -11913,13 +11910,10 @@ public cmd_say( player_id )
                           && !( g_rtvCommands & RTV_CMD_STANDARD ) ) )
             {
                 vote_rock( player_id );
-
-                LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, vote_rock(1) chosen." )
-                return PLUGIN_HANDLED;
             }
             else if( nomPlayerAllowance )
             {
-                if( sayHandlerForOneNomWords( player_id, firstWord ) ) return PLUGIN_HANDLED;
+                sayHandlerForOneNomWords( player_id, firstWord );
             }
         }
         else if( nomPlayerAllowance
@@ -11932,17 +11926,14 @@ public cmd_say( player_id )
 
             setCorrectMenuPage( player_id, secondWord, g_voteMapMenuPages, lastPageNumber );
             voteMapMenuBuilder( player_id );
-
-            LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_HANDLED, voteMapMenuBuilder(1) chosen." )
-            return PLUGIN_HANDLED;
         }
         else if( nomPlayerAllowance )  // "say <nominate|nom|cancel> <map>"
         {
-            if( sayHandlerForTwoNomWords( player_id, firstWord, secondWord ) ) return PLUGIN_HANDLED;
+            sayHandlerForTwoNomWords( player_id, firstWord, secondWord );
         }
     }
 
-    LOGGER( 1, "    ( cmd_say ) Just Returning PLUGIN_CONTINUE, as reached the handler end." )
+    LOGGER( 1, "    ( cmd_say ) Just returning PLUGIN_CONTINUE, as reached the handler end." )
     return PLUGIN_CONTINUE;
 }
 
@@ -11957,7 +11948,7 @@ stock sayHandlerForOneNomWords( player_id, firstWord[] )
     {
         nomination_list();
 
-        LOGGER( 1, "    ( sayHandlerForOneNomWords ) Just Returning PLUGIN_HANDLED, nomination_list(0) chosen." )
+        LOGGER( 1, "    ( sayHandlerForOneNomWords ) Just returning true, nomination_list(0) chosen." )
         return true;
     }
     else
@@ -11968,7 +11959,7 @@ stock sayHandlerForOneNomWords( player_id, firstWord[] )
         {
             nomination_toggle( player_id, mapIndex );
 
-            LOGGER( 1, "    ( sayHandlerForOneNomWords ) Just Returning PLUGIN_HANDLED, nomination_toggle(2) chosen." )
+            LOGGER( 1, "    ( sayHandlerForOneNomWords ) Just returning true, nomination_toggle(2) chosen." )
             return true;
         }
         else if( strlen( firstWord ) > 5
@@ -11982,7 +11973,7 @@ stock sayHandlerForOneNomWords( player_id, firstWord[] )
             setCorrectMenuPage( player_id, firstWord, g_nominationPlayersMenuPages, lastPageNumber );
             nomination_menu( player_id );
 
-            LOGGER( 1, "    ( sayHandlerForOneNomWords ) Just Returning PLUGIN_HANDLED, nomination_menu(1) chosen." )
+            LOGGER( 1, "    ( sayHandlerForOneNomWords ) Just returning true, nomination_menu(1) chosen." )
             return true;
         }
         else // if contains a prefix
@@ -12000,7 +11991,7 @@ stock sayHandlerForOneNomWords( player_id, firstWord[] )
                 {
                     buildNominationPartNameAttempt( player_id, g_mapPrefixes[ prefix_index ] );
 
-                    LOGGER( 1, "    ( sayHandlerForOneNomWords ) Just Returning PLUGIN_HANDLED, nomination_menu(1) chosen." )
+                    LOGGER( 1, "    ( sayHandlerForOneNomWords ) Just returning true, nomination_menu(1) chosen." )
                     return true;
                 }
             }
@@ -12011,7 +12002,7 @@ stock sayHandlerForOneNomWords( player_id, firstWord[] )
                 firstWord, strlen( firstWord ) > 5 )
     }
 
-    LOGGER( 1, "    ( sayHandlerForOneNomWords ) Just Returning false." )
+    LOGGER( 1, "    ( sayHandlerForOneNomWords ) Just returning false." )
     return false;
 }
 
@@ -12030,7 +12021,7 @@ stock sayHandlerForTwoNomWords( player_id, firstWord[], secondWord[] )
         setCorrectMenuPage( player_id, secondWord, g_nominationPlayersMenuPages, lastPageNumber );
         nomination_menu( player_id );
 
-        LOGGER( 1, "    ( sayHandlerForTwoNomWords ) Just Returning PLUGIN_HANDLED, nomination_menu(1) chosen." )
+        LOGGER( 1, "    ( sayHandlerForTwoNomWords ) Just returning true, nomination_menu(1) chosen." )
         return true;
     }
     else if( equali( firstWord, "nominate" )
@@ -12038,7 +12029,7 @@ stock sayHandlerForTwoNomWords( player_id, firstWord[], secondWord[] )
     {
         buildNominationPartNameAttempt( player_id, secondWord );
 
-        LOGGER( 1, "    ( sayHandlerForTwoNomWords ) Just Returning PLUGIN_HANDLED, nominationAttemptWithNamePart(2): %s", secondWord )
+        LOGGER( 1, "    ( sayHandlerForTwoNomWords ) Just returning true, nominationAttemptWithNamePart(2): %s", secondWord )
         return true;
     }
     else if( equali( firstWord, "cancel" ) )
@@ -12049,12 +12040,12 @@ stock sayHandlerForTwoNomWords( player_id, firstWord[], secondWord[] )
         {
             nomination_cancel( player_id, mapIndex );
 
-            LOGGER( 1, "    ( sayHandlerForTwoNomWords ) Just Returning PLUGIN_HANDLED, nomination cancel option chosen." )
+            LOGGER( 1, "    ( sayHandlerForTwoNomWords ) Just returning true, nomination cancel option chosen." )
             return true;
         }
     }
 
-    LOGGER( 1, "    ( sayHandlerForTwoNomWords ) Just Returning false." )
+    LOGGER( 1, "    ( sayHandlerForTwoNomWords ) Just returning false." )
     return false;
 }
 
