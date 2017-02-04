@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.1.0-761";
+new const PLUGIN_VERSION[] = "v5.1.0-762";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -11916,7 +11916,7 @@ stock sayHandlerForOneNomWords( player_id, firstWord[] )
     }
     else
     {
-        new mapIndex = getSurMapNameIndex( firstWord );
+        new mapIndex = getMapNameIndex( firstWord );
 
         if( mapIndex >= 0 )
         {
@@ -11941,8 +11941,6 @@ stock sayHandlerForOneNomWords( player_id, firstWord[] )
         }
         else // if contains a prefix
         {
-            new containsPosition;
-
             for( new prefix_index = 0; prefix_index < g_mapPrefixCount; prefix_index++ )
             {
                 LOGGER( 4, "( sayHandlerForOneNomWords ) firstWord: %s, \
@@ -11952,12 +11950,9 @@ stock sayHandlerForOneNomWords( player_id, firstWord[] )
                         prefix_index, g_mapPrefixes[ prefix_index ], \
                         firstWord, g_mapPrefixes[ prefix_index ], containi( firstWord, g_mapPrefixes[ prefix_index ] ) )
 
-                // We are using strlen(1) to now allow compute this menu for something which seems to be usual prefix.
-                // This is because the partial attempt menu computation is expensive.
-                if( ( containsPosition = containi( firstWord, g_mapPrefixes[ prefix_index ] ) ) > -1
-                    && containsPosition < strlen( g_mapPrefixes[ prefix_index ] ) )
+                if( containi( firstWord, g_mapPrefixes[ prefix_index ] ) > -1 )
                 {
-                    buildNominationPartNameAttempt( player_id, firstWord );
+                    buildNominationPartNameAttempt( player_id, g_mapPrefixes[ prefix_index ] );
 
                     LOGGER( 1, "    ( sayHandlerForOneNomWords ) Just Returning PLUGIN_HANDLED, nomination_menu(1) chosen." )
                     return true;
@@ -12002,8 +11997,7 @@ stock sayHandlerForTwoNomWords( player_id, firstWord[], secondWord[] )
     }
     else if( equali( firstWord, "cancel" ) )
     {
-        // bpj -- allow ambiguous cancel in which case a menu of their nominations is shown
-        new mapIndex = getSurMapNameIndex( secondWord );
+        new mapIndex = getMapNameIndex( secondWord );
 
         if( mapIndex >= 0 )
         {
@@ -13318,35 +13312,21 @@ public nomination_list()
     }
 }
 
-stock getSurMapNameIndex( mapSurName[] )
+stock getMapNameIndex( mapName[] )
 {
-    LOGGER( 128, "I AM ENTERING ON getSurMapNameIndex(1) mapSurName: %s", mapSurName )
+    LOGGER( 128, "I AM ENTERING ON getMapNameIndex(1) mapName: %s", mapName )
     new map[ MAX_MAPNAME_LENGHT ];
 
-    if( TrieKeyExists( g_nominationLoadedMapsTrie, mapSurName ) )
+    if( TrieKeyExists( g_nominationLoadedMapsTrie, mapName ) )
     {
         new mapIndex;
-        TrieGetCell( g_nominationLoadedMapsTrie, mapSurName, mapIndex );
+        TrieGetCell( g_nominationLoadedMapsTrie, mapName, mapIndex );
 
-        LOGGER( 1, "    ( getSurMapNameIndex ) Just Returning, mapIndex: %d (mapSurName)", mapIndex )
+        LOGGER( 1, "    ( getMapNameIndex ) Just Returning, mapIndex: %d (mapName)", mapIndex )
         return mapIndex;
     }
 
-    for( new prefixIndex = 0; prefixIndex < g_mapPrefixCount; ++prefixIndex )
-    {
-        formatex( map, charsmax( map ), "%s%s", g_mapPrefixes[ prefixIndex ], mapSurName );
-
-        if( TrieKeyExists( g_nominationLoadedMapsTrie, map ) )
-        {
-            new mapIndex;
-            TrieGetCell( g_nominationLoadedMapsTrie, map, mapIndex );
-
-            LOGGER( 1, "    ( getSurMapNameIndex ) Just Returning, mapIndex: %d (map)", mapIndex )
-            return mapIndex;
-        }
-    }
-
-    LOGGER( 1, "    ( getSurMapNameIndex ) Just Returning, mapIndex: %d", -1 )
+    LOGGER( 1, "    ( getMapNameIndex ) Just Returning, mapIndex: %d", -1 )
     return -1;
 }
 
