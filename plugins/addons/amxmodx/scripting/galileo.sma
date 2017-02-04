@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.2.0-768";
+new const PLUGIN_VERSION[] = "v5.2.0-769";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -1233,6 +1233,7 @@ new const GAME_CRASH_RECREATION_FLAG_FILE[] = "gameCrashRecreationAction.txt";
 new const TO_STOP_THE_CRASH_SEARCH[]        = "delete_this_to_stop_the_crash_search.txt";
 new const MAPS_WHERE_THE_SERVER_CRASHED[]   = "maps_where_the_server_probably_crashed.txt";
 
+new bool:g_isRunningSvenCoop;
 new bool:g_isServerShuttingDown;
 new bool:g_isMapExtensionPeriodRunning;
 new bool:g_isTheRoundEndWhileVoting;
@@ -1698,8 +1699,15 @@ public plugin_init()
     register_dictionary( "adminvote.txt" );
     register_dictionary_colored( "galileo.txt" );
 
+    g_isRunningSvenCoop = is_running("svencoop");
+
+    // The `svencoop` mod seems to not have this event
+    if( !g_isRunningSvenCoop )
+    {
+        register_event( "HLTV", "new_round_event", "a", "1=0", "2=0");
+    }
+
     // This are default behaviors independent of any setting to be enabled.
-    register_event( "HLTV", "new_round_event", "a", "1=0", "2=0");
     register_logevent( "game_commencing_event", 2, "0=World triggered", "1=Game_Commencing" );
     register_logevent( "team_win_event",        6, "0=Team" );
     register_logevent( "round_restart_event",   2, "0=World triggered", "1&Restart_Round_" );
@@ -1809,7 +1817,7 @@ stock configureSpecificGameModFeature()
 
     // Register the voting start call from the Sven Coop game.
 #if IS_TO_ENABLE_SVEN_COOP_SUPPPORT > 0
-    if( is_running("svencoop") )
+    if( g_isRunningSvenCoop )
     {
         RegisterHam( Ham_Use, "game_end", "startVotingByGameEngineCall", false );
     }
@@ -4145,6 +4153,12 @@ public new_round_event()
 public round_start_event()
 {
     LOGGER( 128, "I AM ENTERING ON round_start_event(0)" )
+
+    // The `svencoop` mod seems to not have this event
+    if( g_isRunningSvenCoop )
+    {
+        new_round_event();
+    }
 
     g_isTheRoundEnded = false;
     g_roundStartTime  = floatround( get_gametime(), floatround_ceil );
