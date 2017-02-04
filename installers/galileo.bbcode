@@ -1596,6 +1596,10 @@ gal_votemap map1 map2
      to be used for the new file.  It will be created in the [COLOR="Blue"][B]./configs/galileo/[/B][/COLOR] folder.
 
 
+ [*] Command '[COLOR="Blue"][B]quit2[/B][/COLOR]' to be used instead of `quit`, when you want to the server
+     to restart on the same map it was before. It requires the cvar `[B]gal_srv_start[/B]` to be set to 1.
+
+
  [*] Command '[COLOR="Blue"][B]gal_changelevel[/B][/COLOR]', to immediately change level to the current map at
      the [COLOR="Blue"][B]cvar nextmap[/B][/COLOR]. If the next map is set to `[not yet voted on]` the map will
      be changed the next map on the map cycle. If the argument `now` is provided as in `gal_changelevel now`, the
@@ -1652,6 +1656,7 @@ gal_votemap map1 map2
 
 
  [*] [COLOR="Blue"][B]The Map Groups Feature[/B][/COLOR]:
+[SPOILER]
      It uses whatever file you have set in the cvar '[B]gal_vote_mapfile[/B]'. Normally, in that
      file you would just have a listing of maps, one per line. But to use the groups feature,
      your '[B]gal_vote_mapfile[/B]' cvar would point to a '.txt' file looking something like this
@@ -1695,9 +1700,11 @@ gal_votemap map1 map2
      map fillers from your map groups files '[B]1.ini[/B]' (1st line after [B][groups][/B]) and '[B]2.ini[/B]'
      (2nd line after [B][groups][/B]), the map '[COLOR="blue"]de_dust2[/COLOR]' will not be added because there is not
      enough space.
+[/SPOILER]
 
 
  [*] [COLOR="Blue"][B]The Whitelist Feature[/B][/COLOR]:
+[SPOILER]
      If uses whatever file you set on the cvar '[B]gal_vote_whitelist_mapfile[/B]' as the
      Whitelist. It specifies the time where its listed maps are allowed to be added to
      the voting list as fillers after the [B]nominations[/B] being loaded.
@@ -1758,6 +1765,9 @@ de_inferno
      Now [1-22] stands for from 1:00:00 until 22:59:59.
      Now [0-23] stands for from 0:00:00 until 23:59:59.
      And so on...
+[/SPOILER]
+
+
 [/LIST]
 [/QUOTE]
 
@@ -1937,6 +1947,10 @@ Thank you!  It means a lot to me.
 
 ******************************** [anchor]Change[/anchor][B][SIZE="6"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
 [SPOILER]
+
+[LIST=1]
+[*]Added the command `quit2` to be used instead of `quit`, when you want to the server to restart on the same map it was before.
+[/LIST]
 
 [B]2017-02-02 | v5.0.3-735[/B]
 [LIST=1]
