@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.0.3-754";
+new const PLUGIN_VERSION[] = "v5.0.3-755";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.0.3-754";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 16+8
+#define DEBUG_LEVEL 16
 
 
 /**
@@ -1230,6 +1230,7 @@ new const GAME_CRASH_RECREATION_FLAG_FILE[] = "gameCrashRecreationAction.txt";
 new const TO_STOP_THE_CRASH_SEARCH[]        = "delete_this_to_stop_the_crash_search.txt";
 new const MAPS_WHERE_THE_SERVER_CRASHED[]   = "maps_where_the_server_probably_crashed.txt";
 
+new bool:g_isServerShuttingDown;
 new bool:g_isMapExtensionPeriodRunning;
 new bool:g_isTheRoundEndWhileVoting;
 new bool:g_isTheRoundEnded;
@@ -2003,6 +2004,8 @@ stock configureServerStart()
     // at the first time the server is started.
     if( startAction )
     {
+        register_srvcmd( "quit2", "cmd_quit2" );
+
         if( get_pcvar_num( cvar_isFirstServerStart ) == FIRST_SERVER_START )
         {
             new backupMapsFilePath[ MAX_FILE_PATH_LENGHT ];
@@ -2057,6 +2060,29 @@ stock configureServerStart()
  * this, we need to detect here if this function is being called when the server admin the command
  * `rcon quit`.
  *
+ * Therefore, we register the server command `quit` setting the global variable `g_isServerShuttingDown`
+ * to true and returning `PLUGIN_CONTINUE`. But this first one is not working. Looks list only Orpheu
+ * can hook this. For now I am registering the command `quit2` which setup the global variable
+ * `g_isServerShuttingDown` and call the server command `quit`.
+ *
+ * This is an example to blocking the rcon command:
+ *
+ * #include <amxmodx>
+ * #include <orpheu>
+ *
+ * public plugin_init()
+ * {
+ *     OrpheuRegisterHook( OrpheuGetFunction( "SV_Rcon" ), "On_Rcon_Pre", OrpheuHookPre )
+ * }
+ *
+ * public OrpheuHookReturn:On_Rcon_Pre()
+ * {
+ *     g_isServerShuttingDown = true;
+ *     return OrpheuIgnored
+ * }
+ *
+ * ************************************************************************************************
+ *
  * Algorithm o detect the quit command: (Not implemented, Not finished)
  *
  * 1. Update only at server start the new file `lastServerStartMapName.dat`
@@ -2078,37 +2104,45 @@ stock configureServerStart()
 stock setTheCurrentAndNextMapSettings()
 {
     LOGGER( 128, "I AM ENTERING ON setTheCurrentAndNextMapSettings(0)" )
+    LOGGER( 4, "( setTheCurrentAndNextMapSettings ) g_isServerShuttingDown: %d", g_isServerShuttingDown )
 
-    // Must not to be run only at the first time the server is started, because the setup call to
-    // saveCurrentAndNextMapNames(3) does not need to be performed at the server first start as we
-    // are only reading the last data set, instead of setting new data to it.
-    if( get_pcvar_num( cvar_serverStartAction )
-        && get_pcvar_num( cvar_isFirstServerStart ) != FIRST_SERVER_START )
+    if( g_isServerShuttingDown )
     {
-        new nextMapName   [ MAX_MAPNAME_LENGHT ];
-        new currentMapName[ MAX_MAPNAME_LENGHT ];
-
-        // Remember, this is called at plugin_end(0), so the next map will became the the current map.
-        getNextMapName( currentMapName, charsmax( currentMapName ) );
-
-        // These data does not need to be synced/updated with `g_nextMapCyclePosition` because they
-        // are only used at the first time the server is started. Moreover, at the first time the
-        // server has started, these data will be used the find out the correct value for the
-        // variable `g_nextMapCyclePosition` use.
-        if( map_getNext( g_mapcycleFileListArray, currentMapName, nextMapName, "mapcyclefile" ) == -1 )
+        g_isServerShuttingDown = false;
+    }
+    else
+    {
+        // Must not to be run only at the first time the server is started, because the setup call to
+        // saveCurrentAndNextMapNames(3) does not need to be performed at the server first start as we
+        // are only reading the last data set, instead of setting new data to it.
+        if( get_pcvar_num( cvar_serverStartAction )
+            && get_pcvar_num( cvar_isFirstServerStart ) != FIRST_SERVER_START )
         {
-            // If we cannot find a valid next map, set it as the current map. Therefore when the
-            // getNextMapByPosition(5) to start looking for a new next map, it will automatically take the
-            // first map, as is does not allow the current map to be set as the next map.
-            trim( currentMapName );
-            saveCurrentAndNextMapNames( currentMapName, currentMapName );
-        }
-        else
-        {
-            trim( nextMapName );
-            trim( currentMapName );
+            new nextMapName   [ MAX_MAPNAME_LENGHT ];
+            new currentMapName[ MAX_MAPNAME_LENGHT ];
 
-            saveCurrentAndNextMapNames( currentMapName, nextMapName );
+            // Remember, this is called at plugin_end(0), so the next map will became the the current map.
+            getNextMapName( currentMapName, charsmax( currentMapName ) );
+
+            // These data does not need to be synced/updated with `g_nextMapCyclePosition` because they
+            // are only used at the first time the server is started. Moreover, at the first time the
+            // server has started, these data will be used the find out the correct value for the
+            // variable `g_nextMapCyclePosition` use.
+            if( map_getNext( g_mapcycleFileListArray, currentMapName, nextMapName, "mapcyclefile" ) == -1 )
+            {
+                // If we cannot find a valid next map, set it as the current map. Therefore when the
+                // getNextMapByPosition(5) to start looking for a new next map, it will automatically take the
+                // first map, as is does not allow the current map to be set as the next map.
+                trim( currentMapName );
+                saveCurrentAndNextMapNames( currentMapName, currentMapName );
+            }
+            else
+            {
+                trim( nextMapName );
+                trim( currentMapName );
+
+                saveCurrentAndNextMapNames( currentMapName, nextMapName );
+            }
         }
     }
 
@@ -11456,6 +11490,18 @@ public handleVoteMapActionMenu( player_id, pressedKeyCode )
 
     LOGGER( 1, "    ( handleEndOfTheMapVoteChoice ) Returning PLUGIN_HANDLED" )
     return PLUGIN_HANDLED;
+}
+
+/**
+ * See setTheCurrentAndNextMapSettings(0).
+ */
+public cmd_quit2()
+{
+    LOGGER( 128, "I AM ENTERING ON cmd_quit2(0)" )
+    g_isServerShuttingDown = true;
+
+    server_cmd( "quit" );
+    return PLUGIN_CONTINUE;
 }
 
 /**
