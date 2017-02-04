@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.2.0-764";
+new const PLUGIN_VERSION[] = "v5.2.0-765";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -458,6 +458,8 @@ new bool:g_isColoredChatEnabled;
  * On the first server start, we do not know whether the color chat is allowed/enabled. This is due
  * the register register_dictionary_colored(1) to be called on plugin_init(0) and the settings being
  * loaded only at plugin_cfg(0).
+ *
+ * When we put the color tags inside the plugin, we need to check whether the color chat is enabled.
  */
 #define IS_COLORED_CHAT_ENABLED() \
     ( g_isColorChatSupported \
@@ -6736,25 +6738,42 @@ stock handle_game_crash_recreation( secondsLeft )
                 case GameEndingType_ByMaxRounds:
                 {
                     new roundsLeft = get_pcvar_num( cvar_mp_maxrounds ) - g_totalRoundsPlayed;
-                    show_hudmessage( 0, "%L:^n%d:%2d %L", LANG_PLAYER, "TIME_LEFT", roundsLeft, LANG_PLAYER, "GAL_OPTION_NAME_ROUND" );
+
+                    show_hudmessage( 0, "%L:^n%d:%2d %L", LANG_PLAYER, "TIME_LEFT", roundsLeft, LANG_PLAYER, "GAL_ROUNDS" );
+                    color_print( 0, "%L %L...", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", roundsLeft, LANG_PLAYER, "GAL_ROUNDS" );
                 }
                 case GameEndingType_ByWinLimit:
                 {
                     new winLeft = get_pcvar_num( cvar_mp_winlimit ) - max( g_totalCtWins, g_totalTerroristsWins );
-                    show_hudmessage( 0, "%L:^n%d:%2d %L", LANG_PLAYER, "TIME_LEFT", winLeft, LANG_PLAYER, "GAL_OPTION_NAME_ROUND" );
+
+                    show_hudmessage( 0, "%L:^n%d:%2d %L", LANG_PLAYER, "TIME_LEFT", winLeft, LANG_PLAYER, "GAL_ROUNDS" );
+                    color_print( 0, "%L %L...", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", winLeft, LANG_PLAYER, "GAL_ROUNDS" );
                 }
                 case GameEndingType_ByFragLimit:
                 {
                     new fragsLeft = get_pcvar_num( cvar_mp_fraglimit ) - g_greatestKillerFrags;
-                    show_hudmessage( 0, "%L:^n%d:%2d %L", LANG_PLAYER, "TIME_LEFT", fragsLeft, LANG_PLAYER, "GAL_OPTION_NAME_FRAGS" );
+
+                    show_hudmessage( 0, "%L:^n%d:%2d %L", LANG_PLAYER, "TIME_LEFT", fragsLeft, LANG_PLAYER, "GAL_FRAGS" );
+                    color_print( 0, "%L %L...", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", fragsLeft, LANG_PLAYER, "GAL_FRAGS" );
                 }
                 case GameEndingType_ByTimeLimit:
                 {
                     set_task( 1.0, "displayRemainingTime", TASKID_DISPLAY_REMAINING_TIME, _, _, "a", displayTime );
+                    color_print( 0, "%L %L...", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", get_timeleft() / 60, LANG_PLAYER, "GAL_MINUTES" );
                 }
                 default:
                 {
                     show_hudmessage( 0, "%L:^n%L", LANG_PLAYER, "TIME_LEFT", LANG_PLAYER, "NO_T_LIMIT" );
+
+                    // When we put the color tags inside the plugin, we need to check whether the color chat is enabled.
+                    if( IS_COLORED_CHAT_ENABLED() )
+                    {
+                        color_print( 0, "^4%L:^1 %L...", LANG_PLAYER, "TIME_LEFT", LANG_PLAYER, "NO_T_LIMIT" );
+                    }
+                    else
+                    {
+                        color_print( 0, "%L: %L...", LANG_PLAYER, "TIME_LEFT", LANG_PLAYER, "NO_T_LIMIT" );
+                    }
                 }
             }
         }
@@ -15606,11 +15625,11 @@ stock sayRoundsLeft( id )
 
     if( IS_COLORED_CHAT_ENABLED() )
     {
-        color_print( 0, "^4%L:^1 %d %L", LANG_PLAYER, "TIME_LEFT", roundsLeft, LANG_PLAYER, "GAL_OPTION_NAME_ROUND" );
+        color_print( 0, "^4%L:^1 %d %L", LANG_PLAYER, "TIME_LEFT", roundsLeft, LANG_PLAYER, "GAL_ROUNDS" );
     }
     else
     {
-        client_print( 0, print_chat, "%L: %d %L", LANG_PLAYER, "TIME_LEFT", roundsLeft, LANG_PLAYER, "GAL_OPTION_NAME_ROUND" );
+        client_print( 0, print_chat, "%L: %d %L", LANG_PLAYER, "TIME_LEFT", roundsLeft, LANG_PLAYER, "GAL_ROUNDS" );
     }
 }
 
@@ -15626,11 +15645,11 @@ stock sayWinLimitLeft( id )
 
     if( IS_COLORED_CHAT_ENABLED() )
     {
-        color_print( 0, "^4%L:^1 %d %L", LANG_PLAYER, "TIME_LEFT", winLeft, LANG_PLAYER, "GAL_OPTION_NAME_ROUND" );
+        color_print( 0, "^4%L:^1 %d %L", LANG_PLAYER, "TIME_LEFT", winLeft, LANG_PLAYER, "GAL_ROUNDS" );
     }
     else
     {
-        client_print( 0, print_chat, "%L: %d %L", LANG_PLAYER, "TIME_LEFT", winLeft, LANG_PLAYER, "GAL_OPTION_NAME_ROUND" );
+        client_print( 0, print_chat, "%L: %d %L", LANG_PLAYER, "TIME_LEFT", winLeft, LANG_PLAYER, "GAL_ROUNDS" );
     }
 }
 
@@ -15646,11 +15665,11 @@ stock sayFragsLeft( id )
 
     if( IS_COLORED_CHAT_ENABLED() )
     {
-        color_print( 0, "^4%L:^1 %d %L", LANG_PLAYER, "TIME_LEFT", fragsLeft, LANG_PLAYER, "GAL_OPTION_NAME_FRAGS" );
+        color_print( 0, "^4%L:^1 %d %L", LANG_PLAYER, "TIME_LEFT", fragsLeft, LANG_PLAYER, "GAL_FRAGS" );
     }
     else
     {
-        client_print( 0, print_chat, "%L: %d %L", LANG_PLAYER, "TIME_LEFT", fragsLeft, LANG_PLAYER, "GAL_OPTION_NAME_FRAGS" );
+        client_print( 0, print_chat, "%L: %d %L", LANG_PLAYER, "TIME_LEFT", fragsLeft, LANG_PLAYER, "GAL_FRAGS" );
     }
 }
 
