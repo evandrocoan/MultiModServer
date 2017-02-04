@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.2.0-767";
+new const PLUGIN_VERSION[] = "v5.2.0-768";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -10409,8 +10409,8 @@ public cmd_rockthevote( player_id )
     color_print( player_id, "%L", player_id, "GAL_CMD_RTV" );
     vote_rock( player_id );
 
-    LOGGER( 1, "    ( cmd_rockthevote ) Returning PLUGIN_HANDLED" )
-    return PLUGIN_HANDLED;
+    LOGGER( 1, "    ( cmd_rockthevote ) Returning PLUGIN_CONTINUE" )
+    return PLUGIN_CONTINUE;
 }
 
 public cmd_nominations( player_id )
@@ -10476,8 +10476,8 @@ public cmd_listrecent( player_id )
         }
     }
 
-    LOGGER( 1, "    ( cmd_listrecent ) Returning PLUGIN_HANDLED" )
-    return PLUGIN_HANDLED;
+    LOGGER( 1, "    ( cmd_listrecent ) Returning PLUGIN_CONTINUE" )
+    return PLUGIN_CONTINUE;
 }
 
 public showRecentMapsListMenu( player_id )
@@ -10639,8 +10639,8 @@ public cmd_changeLevel( player_id, level, cid )
 
     if( !cmd_access( player_id, level, cid, 1 ) )
     {
-        LOGGER( 1, "    ( cmd_changeLevel ) Returning PLUGIN_HANDLED" )
-        return PLUGIN_HANDLED;
+        LOGGER( 1, "    ( cmd_changeLevel ) Returning PLUGIN_CONTINUE" )
+        return PLUGIN_CONTINUE;
     }
 
     new argumentsCount = read_argc();
@@ -10679,8 +10679,8 @@ public cmd_cancelVote( player_id, level, cid )
 
     if( !cmd_access( player_id, level, cid, 1 ) )
     {
-        LOGGER( 1, "    ( cmd_cancelVote ) Returning PLUGIN_HANDLED" )
-        return PLUGIN_HANDLED;
+        LOGGER( 1, "    ( cmd_cancelVote ) Returning PLUGIN_CONTINUE" )
+        return PLUGIN_CONTINUE;
     }
 
     // If the are on debug mode, just to erase everything, as may be there something overlapping.
@@ -10747,8 +10747,8 @@ public cmd_voteMap( player_id, level, cid )
 
     if( !cmd_access( player_id, level, cid, 1 ) )
     {
-        LOGGER( 1, "    ( cmd_voteMap ) Returning PLUGIN_HANDLED" )
-        return PLUGIN_HANDLED;
+        LOGGER( 1, "    ( cmd_voteMap ) Returning PLUGIN_CONTINUE" )
+        return PLUGIN_CONTINUE;
     }
 
     // There is a real strange `Run time error 5: memory access` bug around these declarations,
@@ -10796,6 +10796,7 @@ public cmd_voteMap( player_id, level, cid )
                     console_print( player_id, "%s: %L", argument, player_id, "GAL_MATCH_WHITELIST" );
                     LOGGER( 8, "    ( cmd_voteMap ) %s: %L", argument, player_id, "GAL_MATCH_WHITELIST" )
 
+                    // We do not need to print help, as the Whilelist message is clear.
                     goto invalid_map_provited;
                 }
                 else if( IS_MAP_VALID( argument ) )
@@ -11575,8 +11576,8 @@ public cmd_startVote( player_id, level, cid )
 
     if( !cmd_access( player_id, level, cid, 1 ) )
     {
-        LOGGER( 1, "    ( cmd_startVote ) Returning PLUGIN_HANDLED" )
-        return PLUGIN_HANDLED;
+        LOGGER( 1, "    ( cmd_startVote ) Returning PLUGIN_CONTINUE" )
+        return PLUGIN_CONTINUE;
     }
 
     if( g_voteStatus & IS_VOTE_IN_PROGRESS )
@@ -11627,8 +11628,8 @@ public cmd_createMapFile( player_id, level, cid )
 
     if( !cmd_access( player_id, level, cid, 1 ) )
     {
-        LOGGER( 1, "    ( cmd_createMapFile ) Returning PLUGIN_HANDLED" )
-        return PLUGIN_HANDLED;
+        LOGGER( 1, "    ( cmd_createMapFile ) Returning PLUGIN_CONTINUE" )
+        return PLUGIN_CONTINUE;
     }
 
     new argumentsNumber = read_argc() - 1;
@@ -11744,8 +11745,8 @@ public cmd_maintenanceMode( player_id, level, cid )
 
     if( !cmd_access( player_id, level, cid, 1 ) )
     {
-        LOGGER( 1, "    ( cmd_maintenanceMode ) Returning PLUGIN_HANDLED" )
-        return PLUGIN_HANDLED;
+        LOGGER( 1, "    ( cmd_maintenanceMode ) Returning PLUGIN_CONTINUE" )
+        return PLUGIN_CONTINUE;
     }
 
     // Always print to the console for logging, because it is a important event.
@@ -11775,8 +11776,8 @@ public cmd_lookingForCrashes( player_id, level, cid )
 
     if( !cmd_access( player_id, level, cid, 1 ) )
     {
-        LOGGER( 1, "    ( cmd_lookingForCrashes ) Returning PLUGIN_HANDLED" )
-        return PLUGIN_HANDLED;
+        LOGGER( 1, "    ( cmd_lookingForCrashes ) Returning PLUGIN_CONTINUE" )
+        return PLUGIN_CONTINUE;
     }
 
     new crashedMapsFile;
@@ -15038,8 +15039,8 @@ public sayNextMap()
     LOGGER( 4, "( sayNextMap ) cvar_endOfMapVote: %d, cvar_nextMapChangeAnnounce: %d", \
             get_pcvar_num( cvar_endOfMapVote ), get_pcvar_num( cvar_nextMapChangeAnnounce ) )
 
-    LOGGER( 1, "    ( sayNextMap ) Just Returning PLUGIN_HANDLED" )
-    return PLUGIN_HANDLED;
+    LOGGER( 1, "    ( sayNextMap ) Just Returning PLUGIN_CONTINUE" )
+    return PLUGIN_CONTINUE;
 }
 
 public sayCurrentMap()
