@@ -1,4 +1,4 @@
-[anchor]Top[/anchor][SIZE="7"][COLOR="Blue"][B]Galileo v5.1.1-763[/B][/COLOR][/SIZE] A feature rich map voting plugin
+[anchor]Top[/anchor][SIZE="7"][COLOR="Blue"][B]Galileo v5.2.0-763[/B][/COLOR][/SIZE] A feature rich map voting plugin
 [COLOR=Red][SIZE=1]Release: 2008-09-12 | Last Update: 2017-02-04 | Date Format: Year-Month-Day[/COLOR][/SIZE]
 
 If you want to translate the Galileo Mapchooser to your language or if you see some
@@ -182,7 +182,6 @@ amx_extendmap_max_frags 1
 [SPOILER]
 [pawn]
 // Galileo Configuration File
-
 
 
 
@@ -1182,6 +1181,7 @@ gal_vote_show_none_type 2
 //  2 - announce the voting 15 seconds before the voting to start, and to do
 //      the countdown on the last 5 seconds
 //  4 - set the option 2 time to 10 seconds before the voting to start.
+//  8 - Ignore option 2 and 4 and immediately start the voting.
 //
 // For example, if you want to use the options 1 and 2, use 1 + 2:
 // gal_endofmapvote_ask 3
@@ -1948,8 +1948,9 @@ Thank you!  It means a lot to me.
 ******************************** [anchor]Change[/anchor][B][SIZE="6"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
 [SPOILER]
 
-[B]2017-02-04 | v5.1.1-763[/B]
+[B]2017-02-04 | v5.2.0-764[/B]
 [LIST=1]
+[*]Added new option to the cvar `gal_endofmapvote_ask`, Ignore option 2 and 4 and immediately start the voting.
 [*]Added the command `quit2` to be used instead of `quit`, when you want to the server to restart on the same map it was before.
 [*]Improved the nominations detections and the nomination menu user experiencing.
 [*]Fixed the nomination menu always being showed, instead of try to add the nomination before.
