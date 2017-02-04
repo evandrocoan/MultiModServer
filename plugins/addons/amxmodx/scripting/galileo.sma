@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.1.1-763";
+new const PLUGIN_VERSION[] = "v5.2.0-764";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -500,9 +500,10 @@ new cvar_coloredChatEnabled;
 #define SECOND_SERVER_START 1
 #define AFTER_READ_MAPCYCLE 0
 
-#define END_OF_MAP_VOTE_ASK       1
-#define END_OF_MAP_VOTE_ANNOUNCE1 2
-#define END_OF_MAP_VOTE_ANNOUNCE2 4
+#define END_OF_MAP_VOTE_ASK             1
+#define END_OF_MAP_VOTE_ANNOUNCE1       2
+#define END_OF_MAP_VOTE_ANNOUNCE2       4
+#define END_OF_MAP_VOTE_NO_ANNOUNCEMENT 8
 
 #define VOTE_TIME_SEC       1.0
 #define VOTE_TIME_HUD1      7.0
@@ -7142,7 +7143,9 @@ stock initializeTheVoteDisplay()
     new player_id;
     new playersCount;
 
+    new isToAskForEndOfTheMapVote;
     new players[ MAX_PLAYERS ];
+
     new Float:handleChoicesDelay;
 
     // Clear all nominations
@@ -7171,14 +7174,15 @@ stock initializeTheVoteDisplay()
     handleChoicesDelay       = 0.1;
 #else
 
-    if( g_voteMapStatus & IS_DISABLED_VOTEMAP_INTRO )
+    isToAskForEndOfTheMapVote = get_pcvar_num( cvar_isToAskForEndOfTheMapVote );
+
+    if( g_voteMapStatus & IS_DISABLED_VOTEMAP_INTRO
+        || isToAskForEndOfTheMapVote & END_OF_MAP_VOTE_NO_ANNOUNCEMENT )
     {
         handleChoicesDelay = 0.1;
     }
     else
     {
-        new isToAskForEndOfTheMapVote = get_pcvar_num( cvar_isToAskForEndOfTheMapVote );
-
         // Set_task 1.0 + pendingVoteCountdown 1.0
         handleChoicesDelay = VOTE_TIME_SEC + VOTE_TIME_SEC + getVoteAnnouncementTime( isToAskForEndOfTheMapVote );
 
@@ -7260,15 +7264,22 @@ stock Float:getVoteAnnouncementTime( isToAskForEndOfTheMapVote )
 {
     LOGGER( 128, "I AM ENTERING ON getVoteAnnouncementTime(0)" )
 
-    if( isToAskForEndOfTheMapVote & END_OF_MAP_VOTE_ANNOUNCE1 )
+    if( isToAskForEndOfTheMapVote & END_OF_MAP_VOTE_NO_ANNOUNCEMENT )
     {
-        if( isToAskForEndOfTheMapVote & END_OF_MAP_VOTE_ANNOUNCE2 )
+        return 1.0;
+    }
+    else
+    {
+        if( isToAskForEndOfTheMapVote & END_OF_MAP_VOTE_ANNOUNCE1 )
         {
-            return VOTE_TIME_ANNOUNCE2 + VOTE_TIME_HUD2;
-        }
-        else
-        {
-            return VOTE_TIME_ANNOUNCE1 + VOTE_TIME_HUD2;
+            if( isToAskForEndOfTheMapVote & END_OF_MAP_VOTE_ANNOUNCE2 )
+            {
+                return VOTE_TIME_ANNOUNCE2 + VOTE_TIME_HUD2;
+            }
+            else
+            {
+                return VOTE_TIME_ANNOUNCE1 + VOTE_TIME_HUD2;
+            }
         }
     }
 
