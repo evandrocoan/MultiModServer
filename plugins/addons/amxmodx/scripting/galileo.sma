@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.2.0-769";
+new const PLUGIN_VERSION[] = "v5.2.0-770";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -1699,7 +1699,7 @@ public plugin_init()
     register_dictionary( "adminvote.txt" );
     register_dictionary_colored( "galileo.txt" );
 
-    g_isRunningSvenCoop = is_running("svencoop");
+    g_isRunningSvenCoop = !!is_running("svencoop");
 
     // The `svencoop` mod seems to not have this event
     if( !g_isRunningSvenCoop )
