@@ -151,7 +151,7 @@ public get_client_info(id)
         if(contain(ip[id],"192.168") == 0 || equal(ip[id],"127.0.0.1") || contain(ip[id],"10.")==0 ||  contain(ip[id],"172.")==0)
         {
             country[id] = "LAN"
-        } 
+        }
         else if(equal(ip[id],"loopback"))
         {
             country[id] = "ListenServer User"
@@ -213,10 +213,10 @@ public client_disconnect(id)
             {
                 player = players[i]
 
-                message_begin(MSG_ONE,saytext_msgid,{0,0,0},player)
-                write_byte(player)
-                write_string(string)
-                message_end()
+                // message_begin(MSG_ONE,saytext_msgid,{0,0,0},player)
+                // write_byte(player)
+                // write_string(string)
+                // message_end()
 
                 server_print(string)
 
