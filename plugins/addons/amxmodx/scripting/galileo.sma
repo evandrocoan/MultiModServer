@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.2.2-773";
+new const PLUGIN_VERSION[] = "v5.2.3-774";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -6733,104 +6733,98 @@ public vote_manageEnd()
 stock periodicTimeLeftHandleChecking( secondsLeft )
 {
     LOGGER( 256, "I AM ENTERING ON periodicTimeLeftHandleChecking(1) secondsLeft: %d", secondsLeft )
-    static showCounter;
 
-    // PERIODIC_CHECKING_INTERVAL = 15 seconds, 15 * 50 = 750 = 12.5 minutes
-    if( ++showCounter % 50 < 1 )
-    {
-        showRemainingTimeUntilVoting();
-    }
-
-    if( g_isToCreateGameCrashFlag
-        && (  g_timeLimitNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_timeLimitNumber - secondsLeft / 60
-           || g_fragLimitNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_greatestKillerFrags
-           || g_maxRoundsNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_totalRoundsPlayed + 1
-           || g_winLimitInteger / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_totalTerroristsWins + g_totalCtWins ) )
-    {
-        create_game_crash_recreation();
-    }
+    showRemainingTimeUntilVoting();
+    create_game_crash_recreation( secondsLeft );
 }
 
 stock showRemainingTimeUntilVoting()
 {
     LOGGER( 128, "I AM ENTERING ON showRemainingTimeUntilVoting(0)" )
 
-    new displayTime = 7;
-    set_hudmessage( 255, 255, 255, 0.15, 0.15, 0, 0.0, float( displayTime ), 0.1, 0.1, 1 );
+    static showCounter;
+    const trigger_count = 750 / PERIODIC_CHECKING_INTERVAL;
 
-    switch( whatGameEndingTypeItIs() )
+    // PERIODIC_CHECKING_INTERVAL = 15 seconds, 15 * 50 = 750 = 12.5 minutes
+    if( ++showCounter % trigger_count < 1 )
     {
-        case GameEndingType_ByMaxRounds:
-        {
-            new roundsLeft = get_pcvar_num( cvar_mp_maxrounds ) - g_totalRoundsPlayed;
+        new displayTime = 7;
+        set_hudmessage( 255, 255, 255, 0.15, 0.15, 0, 0.0, float( displayTime ), 0.1, 0.1, 1 );
 
-            if( roundsLeft > 0 )
+        switch( whatGameEndingTypeItIs() )
+        {
+            case GameEndingType_ByMaxRounds:
+            {
+                new roundsLeft = get_pcvar_num( cvar_mp_maxrounds ) - g_totalRoundsPlayed;
+
+                if( roundsLeft > 0 )
+                {
+                    if( !( get_pcvar_num( cvar_hudsHide ) & HUD_TIMELEFT_ANNOUNCE ) )
+                    {
+                        show_hudmessage( 0, "%L:^n%d:%2d %L", LANG_PLAYER, "TIME_LEFT", roundsLeft, LANG_PLAYER, "GAL_ROUNDS" );
+                    }
+
+                    color_print( 0, "%L %L...", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", roundsLeft, LANG_PLAYER, "GAL_ROUNDS" );
+                }
+            }
+            case GameEndingType_ByWinLimit:
+            {
+                new winLeft = get_pcvar_num( cvar_mp_winlimit ) - max( g_totalCtWins, g_totalTerroristsWins );
+
+                if( winLeft > 0 )
+                {
+                    if( !( get_pcvar_num( cvar_hudsHide ) & HUD_TIMELEFT_ANNOUNCE ) )
+                    {
+                        show_hudmessage( 0, "%L:^n%d:%2d %L", LANG_PLAYER, "TIME_LEFT", winLeft, LANG_PLAYER, "GAL_ROUNDS" );
+                    }
+
+                    color_print( 0, "%L %L...", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", winLeft, LANG_PLAYER, "GAL_ROUNDS" );
+                }
+            }
+            case GameEndingType_ByFragLimit:
+            {
+                new fragsLeft = get_pcvar_num( cvar_mp_fraglimit ) - g_greatestKillerFrags;
+
+                if( fragsLeft > 0 )
+                {
+                    if( !( get_pcvar_num( cvar_hudsHide ) & HUD_TIMELEFT_ANNOUNCE ) )
+                    {
+                        show_hudmessage( 0, "%L:^n%d:%2d %L", LANG_PLAYER, "TIME_LEFT", fragsLeft, LANG_PLAYER, "GAL_FRAGS" );
+                    }
+
+                    color_print( 0, "%L %L...", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", fragsLeft, LANG_PLAYER, "GAL_FRAGS" );
+                }
+            }
+            case GameEndingType_ByTimeLimit:
+            {
+                new timeLeft = get_timeleft() - g_totalVoteTime;
+
+                if( !( get_pcvar_num( cvar_hudsHide ) & HUD_TIMELEFT_ANNOUNCE ) )
+                {
+                    set_task( 1.0, "displayRemainingTime", TASKID_DISPLAY_REMAINING_TIME, _, _, "a", displayTime );
+                }
+
+                if( timeLeft > 0 )
+                {
+                    color_print( 0, "%L %L...", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", ( timeLeft ) / 60, LANG_PLAYER, "GAL_MINUTES" );
+                }
+            }
+            default:
             {
                 if( !( get_pcvar_num( cvar_hudsHide ) & HUD_TIMELEFT_ANNOUNCE ) )
                 {
-                    show_hudmessage( 0, "%L:^n%d:%2d %L", LANG_PLAYER, "TIME_LEFT", roundsLeft, LANG_PLAYER, "GAL_ROUNDS" );
+                    show_hudmessage( 0, "%L:^n%L", LANG_PLAYER, "TIME_LEFT", LANG_PLAYER, "NO_T_LIMIT" );
                 }
 
-                color_print( 0, "%L %L...", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", roundsLeft, LANG_PLAYER, "GAL_ROUNDS" );
-            }
-        }
-        case GameEndingType_ByWinLimit:
-        {
-            new winLeft = get_pcvar_num( cvar_mp_winlimit ) - max( g_totalCtWins, g_totalTerroristsWins );
-
-            if( winLeft > 0 )
-            {
-                if( !( get_pcvar_num( cvar_hudsHide ) & HUD_TIMELEFT_ANNOUNCE ) )
+                // When we put the color tags inside the plugin, we need to check whether the color chat is enabled.
+                if( IS_COLORED_CHAT_ENABLED() )
                 {
-                    show_hudmessage( 0, "%L:^n%d:%2d %L", LANG_PLAYER, "TIME_LEFT", winLeft, LANG_PLAYER, "GAL_ROUNDS" );
+                    color_print( 0, "^4%L:^1 %L...", LANG_PLAYER, "TIME_LEFT", LANG_PLAYER, "NO_T_LIMIT" );
                 }
-
-                color_print( 0, "%L %L...", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", winLeft, LANG_PLAYER, "GAL_ROUNDS" );
-            }
-        }
-        case GameEndingType_ByFragLimit:
-        {
-            new fragsLeft = get_pcvar_num( cvar_mp_fraglimit ) - g_greatestKillerFrags;
-
-            if( fragsLeft > 0 )
-            {
-                if( !( get_pcvar_num( cvar_hudsHide ) & HUD_TIMELEFT_ANNOUNCE ) )
+                else
                 {
-                    show_hudmessage( 0, "%L:^n%d:%2d %L", LANG_PLAYER, "TIME_LEFT", fragsLeft, LANG_PLAYER, "GAL_FRAGS" );
+                    color_print( 0, "%L: %L...", LANG_PLAYER, "TIME_LEFT", LANG_PLAYER, "NO_T_LIMIT" );
                 }
-
-                color_print( 0, "%L %L...", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", fragsLeft, LANG_PLAYER, "GAL_FRAGS" );
-            }
-        }
-        case GameEndingType_ByTimeLimit:
-        {
-            new timeLeft = get_timeleft() - g_totalVoteTime;
-
-            if( !( get_pcvar_num( cvar_hudsHide ) & HUD_TIMELEFT_ANNOUNCE ) )
-            {
-                set_task( 1.0, "displayRemainingTime", TASKID_DISPLAY_REMAINING_TIME, _, _, "a", displayTime );
-            }
-
-            if( timeLeft > 0 )
-            {
-                color_print( 0, "%L %L...", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", ( timeLeft ) / 60, LANG_PLAYER, "GAL_MINUTES" );
-            }
-        }
-        default:
-        {
-            if( !( get_pcvar_num( cvar_hudsHide ) & HUD_TIMELEFT_ANNOUNCE ) )
-            {
-                show_hudmessage( 0, "%L:^n%L", LANG_PLAYER, "TIME_LEFT", LANG_PLAYER, "NO_T_LIMIT" );
-            }
-
-            // When we put the color tags inside the plugin, we need to check whether the color chat is enabled.
-            if( IS_COLORED_CHAT_ENABLED() )
-            {
-                color_print( 0, "^4%L:^1 %L...", LANG_PLAYER, "TIME_LEFT", LANG_PLAYER, "NO_T_LIMIT" );
-            }
-            else
-            {
-                color_print( 0, "%L: %L...", LANG_PLAYER, "TIME_LEFT", LANG_PLAYER, "NO_T_LIMIT" );
             }
         }
     }
@@ -6852,33 +6846,41 @@ public displayRemainingTime()
  * Handle the action to take immediately after half of the time-left or rounds-left passed
  * when using the 'Game Server Crash Recreation' Feature.
  */
-stock create_game_crash_recreation()
+stock create_game_crash_recreation( secondsLeft )
 {
     LOGGER( 128, "I AM ENTERING ON create_game_crash_recreation(0)" )
-    new gameCrashActionFilePath[ MAX_FILE_PATH_LENGHT ];
 
-    // stop creating this file unnecessarily
-    g_isToCreateGameCrashFlag = false;
+    if( g_isToCreateGameCrashFlag
+        && (  g_timeLimitNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_timeLimitNumber - secondsLeft / 60
+           || g_fragLimitNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_greatestKillerFrags
+           || g_maxRoundsNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_totalRoundsPlayed + 1
+           || g_winLimitInteger / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_totalTerroristsWins + g_totalCtWins ) )
+    {
+        new gameCrashActionFilePath[ MAX_FILE_PATH_LENGHT ];
 
-    LOGGER( 32, "( vote_manageEnd )  %d/%d < %d: %d", \
-            g_timeLimitNumber, SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR, g_timeLimitNumber - secondsLeft / 60, \
-            g_timeLimitNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_timeLimitNumber - secondsLeft / 60)
+        // stop creating this file unnecessarily
+        g_isToCreateGameCrashFlag = false;
 
-    LOGGER( 32, "( vote_manageEnd )  %d/%d < %d: %d", \
-            g_fragLimitNumber, SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR, g_greatestKillerFrags, \
-            g_fragLimitNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_greatestKillerFrags )
+        LOGGER( 32, "( vote_manageEnd )  %d/%d < %d: %d", \
+                g_timeLimitNumber, SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR, g_timeLimitNumber - secondsLeft / 60, \
+                g_timeLimitNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_timeLimitNumber - secondsLeft / 60 )
 
-    LOGGER( 32, "( vote_manageEnd )  %d/%d < %d: %d", \
-            g_maxRoundsNumber, SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR, g_totalRoundsPlayed + 1, \
-            g_maxRoundsNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_totalRoundsPlayed + 1 )
+        LOGGER( 32, "( vote_manageEnd )  %d/%d < %d: %d", \
+                g_fragLimitNumber, SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR, g_greatestKillerFrags, \
+                g_fragLimitNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_greatestKillerFrags )
 
-    LOGGER( 32, "( vote_manageEnd )  %d/%d < %d: %d", \
-            g_winLimitInteger, SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR, g_totalTerroristsWins + g_totalCtWins, \
-            g_winLimitInteger / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_totalTerroristsWins + g_totalCtWins )
+        LOGGER( 32, "( vote_manageEnd )  %d/%d < %d: %d", \
+                g_maxRoundsNumber, SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR, g_totalRoundsPlayed + 1, \
+                g_maxRoundsNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_totalRoundsPlayed + 1 )
 
-    generateGameCrashActionFilePath( gameCrashActionFilePath, charsmax( gameCrashActionFilePath ) );
-    write_file( gameCrashActionFilePath, "Game Crash Action Flag File^n^nSee the cvar \
-            'gal_game_crash_recreation'.^nDo not delete it." );
+        LOGGER( 32, "( vote_manageEnd )  %d/%d < %d: %d", \
+                g_winLimitInteger, SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR, g_totalTerroristsWins + g_totalCtWins, \
+                g_winLimitInteger / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_totalTerroristsWins + g_totalCtWins )
+
+        generateGameCrashActionFilePath( gameCrashActionFilePath, charsmax( gameCrashActionFilePath ) );
+        write_file( gameCrashActionFilePath, "Game Crash Action Flag File^n^nSee the cvar \
+                'gal_game_crash_recreation'.^nDo not delete it." );
+    }
 }
 
 stock bool:approveTheVotingStart( bool:is_forced_voting )
