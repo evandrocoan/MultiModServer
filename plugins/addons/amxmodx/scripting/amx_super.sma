@@ -34,12 +34,12 @@
 *   Last Update: 9/26/2008
 *   Plugin Count: 46
 *
-*   by Bmann_420 
+*   by Bmann_420
 *   Link: http://forums.alliedmods.net/forumdisplay.php?f=111
 *
 *
 *********************************************************************************
-*   
+*
 *   +| Plugins |+
 * -) ADMIN HEAL v0.9.3 by f117bomb, revised by JTP10181 -- Gives health to players.
 * -) ADMIN ARMOR v1.0 by JTP10181 -- Gives armor to players.
@@ -102,16 +102,16 @@
 * (Fakemeta Conversion)
 * Twilight Suzuka
 *
-* (Plugin Support/Main References) 
+* (Plugin Support/Main References)
 * Bo0m!, Deviance, X-olent, Yami
-* BigBaller, Iceman, JTP10181, Connorr  
-* f117bomb, XxAvalanchexX, VEN, Sether 
+* BigBaller, Iceman, JTP10181, Connorr
+* f117bomb, XxAvalanchexX, VEN, Sether
 * and all the fine users of this plugin.
 *
 *********************************************************************************
 * Changelog
 * v4.1.1
-* Corrected some exceptions and added SpawnProtection countdown,  
+* Corrected some exceptions and added SpawnProtection countdown,
 *	and freeze time alignment support to amx_super 4.1 Nospeed.
 *
 *********************************************************************************
@@ -221,7 +221,7 @@ stock fm_entity_set_origin(index, const Float:origin[3]) {
 	return engfunc(EngFunc_SetOrigin, index, origin)
 }
 
-stock fm_give_item(index, const item[]) 
+stock fm_give_item(index, const item[])
 {
 	if (!equal(item, "weapon_", 7) && !equal(item, "ammo_", 5) && !equal(item, "item_", 5) && !equal(item, "tf_weapon_", 10))
 		return 0
@@ -246,10 +246,10 @@ stock fm_give_item(index, const item[])
 	return -1
 }
 
-stock fm_give_item_x(index, const item[], x) 
+stock fm_give_item_x(index, const item[], x)
 	for(new i; i <= x; i++) fm_give_item(index, item)
 
-stock fm_set_rendering(entity, fx = kRenderFxNone, r = 255, g = 255, b = 255, render = kRenderNormal, amount = 16) 
+stock fm_set_rendering(entity, fx = kRenderFxNone, r = 255, g = 255, b = 255, render = kRenderNormal, amount = 16)
 {
 	new Float:RenderColor[3]
 	RenderColor[0] = float(r)
@@ -277,7 +277,7 @@ new fm_plinfo[33]
 
 public FM_SetListen(iReceiver, iSender, bListen)
 {
-	if( (fm_plinfo[iSender] & SPEAK_MUTED) != 0) 
+	if( (fm_plinfo[iSender] & SPEAK_MUTED) != 0)
 	{
 		engfunc(EngFunc_SetClientListening, iReceiver, iSender, 0)
 
@@ -285,7 +285,7 @@ public FM_SetListen(iReceiver, iSender, bListen)
 		return FMRES_SUPERCEDE;
 	}
 
-	if( (fm_plinfo[iSender] & SPEAK_ALL) != 0) 
+	if( (fm_plinfo[iSender] & SPEAK_ALL) != 0)
 	{
 		engfunc(EngFunc_SetClientListening, iReceiver, iSender, 1)
 
@@ -293,7 +293,7 @@ public FM_SetListen(iReceiver, iSender, bListen)
 		return FMRES_SUPERCEDE;
 	}
 
-	if( (fm_plinfo[iReceiver] & SPEAK_LISTENALL) != 0) 
+	if( (fm_plinfo[iReceiver] & SPEAK_LISTENALL) != 0)
 	{
 		engfunc(EngFunc_SetClientListening, iReceiver, iSender, 1)
 
@@ -337,7 +337,7 @@ stock get_team_target(arg[],players[32],&pnum,skipMode=GET_TEAM_TARGET_SKIPNOBOD
 		whoTeam = GET_TEAM_TARGET_ISALL
 		get_players(players,pnum,cmdflags)
 	}
-		
+
 	if(equali(arg[1],"TERRORIST",strlen(arg[1]))) {
 		whoTeam = GET_TEAM_TARGET_ISTERRORIST
 		get_players(players,pnum,cmdflags,"TERRORIST")
@@ -354,18 +354,18 @@ stock get_team_target(arg[],players[32],&pnum,skipMode=GET_TEAM_TARGET_SKIPNOBOD
 ///
 ///// You may edit some of these Defines (not all)
 ///
-*/ 
+*/
 #define TASK_SPAWN_PROTECTION_ID 1337
 #define ADMIN_CHECK ADMIN_KICK  // For Admin Check
 #define LOADINGSOUNDS 14	// Number of loading songs
-#define VoiceCommMute 1		// 0 = Disabled | 1 = Voicecomm muteing enabled. 
+#define VoiceCommMute 1		// 0 = Disabled | 1 = Voicecomm muteing enabled.
 #define BlockNameChange 1	// 0 = Disabled | 1 = Block namechange on gagged clients
 #define LogAdminActions 1	// 0 = Disabled | 1 = Admin actions will be logged
 #define DefaultGagTime 600.0	// The std gag time if no other time was entered. ( this is 10 min ), Remember the value MUST contain a .0
 #define PlaySound 1		// 0 = Disabled | 1 = Play a sound to gagged clients when their trying to talk
 #define GagReason 0		// 0 = Disabled | 1 = Gagged clients can see why there where gagged when they try to talk
 #define AllowOtherPlugin2Interface 1
-#define DAMAGE_RECIEVED		// Comment out this define to show only damage done, otherwise this will show damage recieved also.	
+#define DAMAGE_RECIEVED		// Comment out this define to show only damage done, otherwise this will show damage recieved also.
 #define TE 0			///////////////////
 #define CT 1			//	Team Locker
 #define AUTO 4			//	   Teams
@@ -380,7 +380,7 @@ stock get_team_target(arg[],players[32],&pnum,skipMode=GET_TEAM_TARGET_SKIPNOBOD
 #define LASTWEAPON_T -2
 #define LASTWEAPON_ALL -3
 
-new const g_timersprite[MAX_SPRITES][] = { "bombticking", "bombticking1" }      
+new const g_timersprite[MAX_SPRITES][] = { "bombticking", "bombticking1" }
 
 // Loading Sounds List
 new soundlist[LOADINGSOUNDS][] = {"Half-Life01","Half-Life02","Half-Life03","Half-Life04","Half-Life06","Half-Life08","Half-Life10","Half-Life11","Half-Life12","Half-Life13","Half-Life14","Half-Life15","Half-Life16","Half-Life17"}
@@ -405,7 +405,7 @@ new const g_afk_kick_chat[]  = "AMX_SUPER_AFK_KICK_CHAT"
 new const g_afktospec_chat[] = "AMX_SUPER_AFK_TO_SPEC_CHAT"
 
 //C4 Bomb message
-new const g_message[] = "Detonation time intiallized....." 
+new const g_message[] = "Detonation time intiallized....."
 
 // AFK check interval (seconds)
 #define AFK_CHECK_INTERVAL 5
@@ -416,7 +416,7 @@ new const g_message[] = "Detonation time intiallized....."
 ///
 */
 
-// Team Locker Team Names 
+// Team Locker Team Names
 new const Teamnames[6][] = {
 	"Terrorists",
 	"Counter-Terrorists",
@@ -613,12 +613,12 @@ new bool:blockjoining[6]
 new bool:unammo[33]
 new bool:badaim[33] = false
 new bool:autoban[33] = false
-new bool:count[33][33] 
+new bool:count[33][33]
 new bool:g_connected[MAX_PLAYERS + 1]
 
 // PCvars
-new revivemsg, deadchat, bulletdamage, loadsong, soundfixon, allowsoundfix, leavemessage, autobantimed, autobanall 
-new flashsound, transferfm_DispatchSpawn, transfertime, allowcatchfire, cvar_showteam, adminlisten, leavemessage_enable 
+new revivemsg, deadchat, bulletdamage, loadsong, soundfixon, allowsoundfix, leavemessage, autobantimed, autobanall
+new flashsound, transferfm_DispatchSpawn, transfertime, allowcatchfire, cvar_showteam, adminlisten, leavemessage_enable
 new cvar_flash, cvar_sprite, cvar_msg, statsm, cvPlrAmt, cvFullTime, cvTimeBetw, cvVertLoc, ba_followimmunity
 new statsmarquee, sv_sp, sv_sptime, sv_spmessage, sv_spshellthick, sv_spglow, entermessage, joinleave_message, admincheck
 new mp_c4timer, allow_spectators, amx_show_activity, hostname, mp_freezetime, mp_timelimit, sv_contact, sv_alltalk, sv_gravity, sv_password
@@ -629,7 +629,7 @@ new gmsgDamage
 new gmsg_SetFOV
 new mflash, smoke, blueflare2, white, light
 new gmsg_TeamInfo
-new gMsgScreenFade 
+new gMsgScreenFade
 new g_MsgSync
 new g_carrier
 new g_pos[33][3]
@@ -638,7 +638,7 @@ new gReloadTime[33]
 new g_maxplayers
 new maxplayers
 new gmsgSayText
-new user_limit = 0	 
+new user_limit = 0
 new g_gagged[33]
 new g_wasgagged[33][32]
 new g_gagflags[33]
@@ -646,7 +646,7 @@ new g_c4timer
 //new g_msg_showtimer
 new g_msg_roundtime
 new g_msg_scenario
-new g_name[33][32] 
+new g_name[33][32]
 new g_playerspk[33]
 new g_admin[33]
 new g_glow[33][4]
@@ -661,7 +661,7 @@ new g_iMode
 
 #if defined DAMAGE_RECIEVED
 	new g_MsgSync2
-#endif	
+#endif
 
 new g_GagPlayers[MaxPlayers+1]	// Used to check if a player is gagged
 #if GagReason == 1
@@ -700,8 +700,8 @@ public plugin_init()
 	register_concmd("amx_gravity","admin_gravity",ADMIN_LEVEL_A,"<gravity #>")
 	register_concmd("amx_unammo", "admin_unammo", ADMIN_LEVEL_A, "<nick, #userid or @team> [0|1] - 0=OFF 1=ON")
 	register_concmd("amx_extend","admin_extend",ADMIN_LEVEL_A,"<added time to extend> : ex. 5, if you want to extend it five more minutes.")
-	register_concmd("amx_gag","admin_gag",ADMIN_LEVEL_A,"<nick, #userid or authid> <a|b|c> <time> - Flags: a = Normal Chat | b = Team Chat | c = Voicecomm") 
-	register_concmd("amx_ungag","admin_ungag",ADMIN_LEVEL_A,"<nick, #userid or authid>") 
+	register_concmd("amx_gag","admin_gag",ADMIN_LEVEL_A,"<nick, #userid or authid> <a|b|c> <time> - Flags: a = Normal Chat | b = Team Chat | c = Voicecomm")
+	register_concmd("amx_ungag","admin_ungag",ADMIN_LEVEL_A,"<nick, #userid or authid>")
 	register_concmd("amx_bury","admin_bury",ADMIN_LEVEL_B,"<nick, #userid, authid or @team>")
 	register_concmd("amx_unbury","admin_unbury",ADMIN_LEVEL_B,"<nick, #userid, authid or @team>")
 	register_concmd("amx_disarm","admin_disarm",ADMIN_LEVEL_B,"<nick, #userid, authid or @team>")
@@ -727,7 +727,7 @@ public plugin_init()
 	register_concmd("amx_transfer", "cmd_transfer", ADMIN_LEVEL_D,"- <name> <CT/T/Spec> Transfers that player to the specified team")
 	register_concmd("amx_team", "cmd_transfer", ADMIN_LEVEL_D,"- <name> <CT/T/Spec> Transfers that player to the specified team")
 	register_concmd("amx_swap", "cmd_swap", ADMIN_LEVEL_D,"- <name 1> <name 2> Swaps two players with eachother")
-	register_concmd("amx_teamswap", "cmd_teamswap", ADMIN_LEVEL_D,"- Swaps two teams with eachother") 
+	register_concmd("amx_teamswap", "cmd_teamswap", ADMIN_LEVEL_D,"- Swaps two teams with eachother")
 	register_concmd("amx_lock", "admin_lock", ADMIN_LEVEL_D,"- <CT/T/Auto/Spec> - Locks selected team")
 	register_concmd("amx_unlock", "admin_unlock", ADMIN_LEVEL_D,"- <CT/T/Auto/Spec> - Unlocks selected team")
 	register_concmd("amx_exec","admin_exec",ADMIN_BAN,"<nick or @team> <command>")
@@ -736,12 +736,12 @@ public plugin_init()
 	register_concmd("amx_nopass", "admin_nopass", ADMIN_PASSWORD, "- Removes the server password")
 	register_concmd("amx_quit","admin_quit",ADMIN_LEVEL_E,"<nick, #userid, authid or @team>")
 	register_concmd("amx_shutdown","fnShutDown",ADMIN_RCON,"<seconds (1-20)> - shuts down the server in seconds")
-	
+
 	//Server Commands
 	register_srvcmd("soundfix","fRemove")
 
 	//Events
-	register_event("DeathMsg","event_death","a") 
+	register_event("DeathMsg","event_death","a")
 	register_event("ResetHUD","event_hud_reset","be")
 	register_event("CurWeapon", "changeWeapon", "be", "1=1")
 	register_event("Damage", "on_damage", "b", "2!0", "3=0", "4!0")
@@ -750,7 +750,7 @@ public plugin_init()
 	register_event("SayText","catch_say","b")
 	register_event("DeathMsg","death_hook","a")
 	register_event("VoiceMask","voice_hook","b")
-	
+
 	//Cvars
 	revivemsg = register_cvar("amx_revivemsg","1");
 	deadchat = register_cvar("amx_deadchat","1");
@@ -765,21 +765,21 @@ public plugin_init()
 	cvar_showteam = register_cvar("amx_showc4timer", "3");
 	cvar_flash = register_cvar("amx_showc4flash", "0");
 	cvar_sprite = register_cvar("amx_showc4sprite", "1");
-	cvar_msg = register_cvar("amx_showc4msg", "0");	
+	cvar_msg = register_cvar("amx_showc4msg", "0");
 	cvPlrAmt = register_cvar("amx_marqplayeramount","40");
 	cvVertLoc = register_cvar("amx_marqvertlocation","2");
 	cvFullTime = register_cvar("amx_marqfulltime","600.0");
 	cvTimeBetw = register_cvar("amx_marqtimebetween","6.0");
 	statsmarquee = register_cvar("stats_marquee","1");
 	sv_sp = register_cvar("sv_sp", "1");
-	sv_sptime = register_cvar("sv_sptime", "5"); 
-   	sv_spmessage = register_cvar("sv_spmessage", "1"); 
-   	sv_spshellthick = register_cvar("sv_spshellthick", "25"); 
-   	sv_spglow = register_cvar("sv_spglow", "0"); 	
+	sv_sptime = register_cvar("sv_sptime", "5");
+   	sv_spmessage = register_cvar("sv_spmessage", "1");
+   	sv_spshellthick = register_cvar("sv_spshellthick", "25");
+   	sv_spglow = register_cvar("sv_spglow", "0");
 	adminlisten = register_cvar("amx_adminlisten","1");
 	leavemessage_enable = register_cvar("amx_leavemessage_enable","1");
 	entermessage = register_cvar("amx_enter_message", "%name% has joined!\nEnjoy the Server!\nCurrent Ranking is %rankpos%");
-	leavemessage = register_cvar("amx_leave_message", "%name% has left!\nHope to see you back sometime."); 
+	leavemessage = register_cvar("amx_leave_message", "%name% has left!\nHope to see you back sometime.");
 	joinleave_message = register_cvar("amx_join_leave", "1");
 	autobantimed = register_cvar("amx_autobantimed", "1");
 	autobanall = register_cvar("amx_autobanall", "1");
@@ -791,12 +791,12 @@ public plugin_init()
 	afkcheck_allow = register_cvar("amx_afkcheck_allow","1");
 	allow_public_spec = register_cvar("allow_public_spec","1");
 	immune_access_listen = register_cvar("listen_immune_access","d");
-	
+
 	// Execute main configuration file (amx_super.cfg)
 	/*new configsDir[64]
 	get_configsdir(configsDir, 63)
 	server_cmd("exec %s/amx_super.cfg", configsDir) */
-	
+
 	// Variables Set
 	maxplayers = get_maxplayers()
 	gmsgSayText = get_user_msgid("SayText")
@@ -811,10 +811,10 @@ public plugin_init()
 
 	//Weapon III new round hook
 	//register_event("RoundTime", "event_new_roundw", "bc")
-	
+
 	//Speed Fix
 	//server_cmd("sv_maxspeed 9999999");
-	
+
 	//Voice Comm Admin
 	register_forward(FM_Voice_SetClientListening, "fm_mute_forward")
 
@@ -822,7 +822,7 @@ public plugin_init()
 	//g_msg_showtimer	= get_user_msgid("ShowTimer")
 	g_msg_roundtime	= get_user_msgid("RoundTime")
 	g_msg_scenario	= get_user_msgid("Scenario")
-	
+
 	register_event("HLTV", "event_hltv", "a", "1=0", "2=0")
 	register_logevent("logevent_plantedthebomb", 3, "2=Planted_The_Bomb")
 
@@ -831,13 +831,13 @@ public plugin_init()
 
 	// Fix Echo Sounds Task
 	set_task(0.1,"fRemove")
-	
+
 	//Stats Marquee
 	//set_task(15.0,"displayplr",0,"",0,"a",1);
-	
+
 	// Event to keep speed
 	//register_event( "CurWeapon", "event_weapon", "be", "1=1" )
-	
+
 	//AFK Manager
 	register_event("TeamInfo", "event_spectate", "a", "2=UNASSIGNED", "2=SPECTATOR")
 	register_event("TeamInfo", "event_playteam", "a", "2=TERRORIST", "2=CT")
@@ -852,12 +852,12 @@ public plugin_init()
 
 	// AFK Bomb Transfer Logevents
 	register_logevent("logevent_round_start", 2, "1=Round_Start")
-	
+
 	register_logevent( "event_roundstart", 2, "0=World triggered", "1=Round_Start" )
 	register_logevent( "event_roundstart", 2, "0=World triggered", "1=Game_Commencing" )
 	register_logevent( "event_roundstart", 2, "0=World triggered", "1=Restart_Round" )
 	register_logevent( "event_roundend", 2, "0=World triggered", "1=Round_End" )
-	
+
 
 	// AFK Bomb Transfer Task
 	set_task(1.0, "task_afk_check", _, _, _, "b") // AFK Bomb Transfer core loop
@@ -879,7 +879,7 @@ public plugin_init()
 		++gNum
 	} return PLUGIN_CONTINUE
 	#endif
-	if (!fm_find_ent_by_class(-1, "func_bomb_target")) 
+	if (!fm_find_ent_by_class(-1, "func_bomb_target"))
 		return
 }
 
@@ -887,7 +887,7 @@ public get_immune_access_flag()
 {
 	new flags[24]
 	get_pcvar_string(immune_access, flags, 23)
-	
+
 	return(read_flags(flags))
 }
 
@@ -895,7 +895,7 @@ public get_immune_access_flag2()
 {
 	new flags[24]
 	get_pcvar_string(immune_access_listen, flags, 23)
-	
+
 	return(read_flags(flags))
 }
 
@@ -972,16 +972,16 @@ public event_bomb_drop() {
 	g_carrier = 0
 }
 
-public logevent_round_start() 
+public logevent_round_start()
 {
     new id[32], num
     get_players(id, num, "ae", "TERRORIST")
-    
+
     if (!num) // is server empty?
     return
-    
+
     g_freezetime = false
-    
+
     new x
     for (new i = 0; i < num; ++i) {
         x = id[i]
@@ -1032,7 +1032,7 @@ public task_afk_check() {
 		}
 	}
 
-	if (!recipient) 
+	if (!recipient)
 		return
 
 	new carrier = g_carrier
@@ -1041,7 +1041,7 @@ public task_afk_check() {
 	if (!c4)
 		return
 
-	new backpack = pev(c4, pev_owner) 
+	new backpack = pev(c4, pev_owner)
 	if (backpack <= g_maxplayers)
 		return
 
@@ -1094,7 +1094,7 @@ public event_hud_reset(id) {
 public fRemove() {
 	if(get_pcvar_num(soundfixon) != 1)
 		return PLUGIN_HANDLED
-    
+
 	new Echo = fm_find_ent_by_class(0,"env_sound")
 	while(Echo)
 	{
@@ -1118,7 +1118,7 @@ public cmdStopsound(id)
 		return PLUGIN_HANDLED
 	}
 	return PLUGIN_CONTINUE
-}  
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1174,13 +1174,13 @@ public death_hook()
 }
 
 public client_PreThink(id)
-{	
+{
 	if(badaim[id])
 	{
 		new Float:badvec[3] = {100.0,100.0,100.0}
 		for(new j = 0;j<6;j++)
 		{
-			set_pev(id,pev_punchangle,badvec)  
+			set_pev(id,pev_punchangle,badvec)
 			set_pev(id,pev_punchangle,badvec)
 			set_pev(id,pev_punchangle,badvec)  //Three's a charm!
 		}
@@ -1320,7 +1320,7 @@ public bad_vault(id)
 
 	if(vaultdata_exists(vaultkey))
 		remove_vaultdata(vaultkey)
-	set_vaultdata(vaultkey,"1")		
+	set_vaultdata(vaultkey,"1")
 }
 
 public remove_bad_vault(id)
@@ -1345,10 +1345,10 @@ public check_bad_vault(id)
 
 	if(vaultdata_exists(vaultkey))
 	{
-		badaim[id] = true	
+		badaim[id] = true
 		if(get_pcvar_num(autobanall))
 			autoban[id] = true
-	}	
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1358,7 +1358,7 @@ public cmd_drug( id, level, cid )
 {
 	if( !cmd_access( id, level, cid, 2 ) )
 		return PLUGIN_HANDLED
-	
+
 	new arg[32]
 	read_argv( 1, arg, 31 )
 	if( arg[0] == '@' )
@@ -1446,7 +1446,7 @@ public cmd_speed( id, level, cid )
 {
 	if( !cmd_access( id, level, cid, 3 ) )
 		return PLUGIN_HANDLED
-	
+
 	new arg[32]
 	new arg2[32], bool:num = false
 
@@ -1506,36 +1506,36 @@ public cmd_speed( id, level, cid )
 	else
 	{
 		new flags = 7
-	
+
 		if( get_user_flags( id ) & ADMIN_IMMUNITY)
 			flags--
 		new player = cmd_target( id, arg, flags )
 		if( !player ) return PLUGIN_HANDLED
-	
+
 		g_speed[player] = num
 		formatex( arg2, 31, "off" )
-	
+
 		if( g_speed[player] )
 		{
 			formatex( arg2, 31, "on" )
 		}
-	
+
 		event_weapon(player);
-		
+
 		new name[32], name2[32], authid[32], authid2[32]
-	
+
 		get_user_name( id, name, 31 )
 		get_user_authid( id, authid, 31 )
-	
+
 		get_user_name( player, name2, 31 )
 		get_user_authid( player, authid2, 31 )
-	
+
 		switch( get_pcvar_num( amx_show_activity ) )
 		{
 			case 2: client_print( 0, print_chat, "%L", LANG_PLAYER, "AMX_SUPER_SPEED_PLAYER_CASE2", name, arg2, name2 )
 			case 1: client_print( 0, print_chat, "%L", LANG_PLAYER, "AMX_SUPER_SPEED_PLAYER_CASE1", arg2, name2 )
 		}
-	
+
 		console_print( id, "%L", id, "AMX_SUPER_SPEED_PLAYER_MSG", arg2, name2 )
 		log_amx( "%L", LANG_SERVER, "AMX_SUPER_SPEED_PLAYER_LOG", name, authid, name2, authid2 )
 	}
@@ -1557,11 +1557,11 @@ public event_weapon(id)
 				case CSW_SCOUT: maxspeed=260.0
 				case CSW_P90: maxspeed=245.0
 				case CSW_XM1014,CSW_AUG,CSW_GALIL,CSW_FAMAS: maxspeed=240.0
-				case CSW_SG552 : maxspeed=235.0 
-				case CSW_M3,CSW_M4A1 : maxspeed=230.0 
-				case CSW_AK47 : maxspeed=221.0  
-				case CSW_M249 : maxspeed=220.0 
-				case CSW_AWP,CSW_SG550,CSW_G3SG1 : maxspeed=210.0 
+				case CSW_SG552 : maxspeed=235.0
+				case CSW_M3,CSW_M4A1 : maxspeed=230.0
+				case CSW_AK47 : maxspeed=221.0
+				case CSW_M249 : maxspeed=220.0
+				case CSW_AWP,CSW_SG550,CSW_G3SG1 : maxspeed=210.0
 				default : maxspeed=250.0
 			}
 		}
@@ -1584,19 +1584,19 @@ public displayplr()
 	new VertLoc = get_pcvar_num(cvVertLoc)
 	new Float:FullTime = get_pcvar_float(cvFullTime)
 	new Float:TimeBetw = get_pcvar_float(cvTimeBetw)
-	
+
 	if(VertLoc==1)
 		VertLoc2 = -0.74
 	else
 		VertLoc2 = 0.77
-	
+
 	get_stats(statsm, Stats, Body, Name, 31)
-	
+
 	statsm++
-	
+
 	set_hudmessage(0, 240, 10, 0.70, VertLoc2, 0, TimeBetw, TimeBetw, 0.5, 0.15, -1)
-	show_hudmessage(0,"Server Top %d^n%s^nRank %d %d kills %d deaths", PlrAmt, Name, statsm, Stats[0], Stats[1])	
-	
+	show_hudmessage(0,"Server Top %d^n%s^nRank %d %d kills %d deaths", PlrAmt, Name, statsm, Stats[0], Stats[1])
+
 	if(statsm >= PlrAmt)
 	{
 		statsm = 0
@@ -1606,7 +1606,7 @@ public displayplr()
 	{
 		set_task(TimeBetw,"displayplr",0,"",0,"a",1)
 	}
-	
+
 	return PLUGIN_CONTINUE
 }
 
@@ -1614,16 +1614,16 @@ public displayplr()
 //ADMIN LISTEN v2.3 by Psychoguard, rewritten by Maxim and ported by Oj@eKiLLzZz deb/urandom
 //==========================================================================================================
 public catch_say()
-{	
+{
 	if (!get_pcvar_num(adminlisten))
 	return PLUGIN_CONTINUE;
 
-	new reciever = read_data(0) 
-	new sender = read_data(1)   
-	new message[151]            
+	new reciever = read_data(0)
+	new sender = read_data(1)
+	new message[151]
 	new channel[151]
 	new sender_name[32]
-	
+
 	if (is_running("czero")||is_running("cstrike"))
 	{
 		read_data(2,channel,150)
@@ -1634,28 +1634,28 @@ public catch_say()
 
 		read_data(2,message,150)
 	}
-	
+
 	count[sender][reciever] = true
-	
+
 	if (sender == reciever)
-	{      
-		new player_count = get_playersnum()  
-		new players[32] 
+	{
+		new player_count = get_playersnum()
+		new players[32]
 
 		get_players(players, player_count, "c")
-		
-		for (new i = 0; i < player_count; i++) 
+
+		for (new i = 0; i < player_count; i++)
 		{
-			
+
 			if (get_user_flags(players[i])&get_immune_access_flag2())
-			{     
-		
+			{
+
 				if (!count[sender][players[i]])
-				{              
+				{
 					message_begin(MSG_ONE, get_user_msgid("SayText"),{0,0,0},players[i])
-					
+
 					write_byte(sender)
-			
+
 					if (is_running("czero")||is_running("cstrike"))
 					{
 						write_string(channel)
@@ -1679,13 +1679,13 @@ public client_putinserver(id)
 {
 	new param[1]
 
-	param[0] = id 
+	param[0] = id
 	g_name[id][0] = 0
 
 	get_user_name(id, g_name[id], 31)
 
 	set_task(2.0, "enter_msg", 0, param, 1)
-    
+
 	badaim[id] = false
 	autoban[id] = false
 	check_bad_vault(id)
@@ -1735,91 +1735,91 @@ public client_putinserver(id)
 		}
 	}
 
-	return PLUGIN_CONTINUE 
-}  
+	return PLUGIN_CONTINUE
+}
 
-public leave_msg(param[]) 
-{ 
+public leave_msg(param[])
+{
     if (get_pcvar_num(joinleave_message) == 1 && get_pcvar_num(leavemessage_enable) == 1)
     {
         new id = param[0]
 
-        if(is_user_bot(id)) 
+        if(is_user_bot(id))
 		return PLUGIN_HANDLED
 
-        new message[192], _hostname[64] 
+        new message[192], _hostname[64]
 
-        get_pcvar_string(leavemessage, message, 191)  
-        get_pcvar_string(hostname, _hostname, 63)   
-    
+        get_pcvar_string(leavemessage, message, 191)
+        get_pcvar_string(hostname, _hostname, 63)
+
         replace(message, 191, "%hostname%", _hostname)
-        replace(message, 191, "%name%", g_name[id]) 
+        replace(message, 191, "%name%", g_name[id])
 
         replace_all(message, 191, "\n", "^n")
 
-        set_hudmessage(12, 240, 0, 0.10, 0.55, 0, 6.0, 6.0, 0.5, 0.15, 3) 
-        show_hudmessage(0, message) 
+        set_hudmessage(12, 240, 0, 0.10, 0.55, 0, 6.0, 6.0, 0.5, 0.15, 3)
+        show_hudmessage(0, message)
     }
-    
+
     return PLUGIN_CONTINUE
 }
 
-public enter_msg(param[]) 
-{ 
+public enter_msg(param[])
+{
     if (get_pcvar_num(joinleave_message) == 1)
     {
         new id = param[0]
 
-        //if(is_user_bot(id)) 
+        //if(is_user_bot(id))
 		//return PLUGIN_HANDLED
-        
-        new message[192], _hostname[64] 
-        
-        get_pcvar_string(entermessage, message, 191)
-        
-        get_pcvar_string(hostname, _hostname, 63)   
-        replace(message,191, "%hostname%", _hostname)
-        
-        if (cvar_exists("csstats_reset"))
-        { 
-            new data[8], rankpos[8], pos 
 
-            pos = get_user_stats(id, data, data) 
-            
+        new message[192], _hostname[64]
+
+        get_pcvar_string(entermessage, message, 191)
+
+        get_pcvar_string(hostname, _hostname, 63)
+        replace(message,191, "%hostname%", _hostname)
+
+        if (cvar_exists("csstats_reset"))
+        {
+            new data[8], rankpos[8], pos
+
+            pos = get_user_stats(id, data, data)
+
             num_to_str(pos, rankpos, 7)
-            
-            replace(message, 191, "%rankpos%", rankpos) 
+
+            replace(message, 191, "%rankpos%", rankpos)
             replace(message, 191, "%name%", g_name[id])
-            
+
             replace_all(message, 191, "\n", "^n")
-            
+
             if (get_user_flags(id) & ADMIN_RESERVATION) {
-                
+
                 set_hudmessage(12, 240, 0, 0.10, 0.55, 0, 6.0, 6.0, 0.5, 0.15, 3)
                 show_hudmessage(0, message)
-                
+
                 client_cmd(0,"spk buttons/blip1.wav")
                 return PLUGIN_HANDLED
-                
+
             }
             else
             {
-                
-                set_hudmessage(0, 255, 0, 0.10, 0.55, 0, 6.0, 6.0, 0.5, 0.15, 3) 
-                show_hudmessage(0, message) 
+
+                set_hudmessage(0, 255, 0, 0.10, 0.55, 0, 6.0, 6.0, 0.5, 0.15, 3)
+                show_hudmessage(0, message)
             }
         }
     }
-    
+
     return PLUGIN_CONTINUE
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //VOCOM ADMIN v1.3 by Nut
 //==========================================================================================================
-public client_authorized(id) { 
- 
-	if (get_user_flags(id) & ADMIN_RESERVATION) { 
+public client_authorized(id) {
+
+	if (get_user_flags(id) & ADMIN_RESERVATION) {
 		g_admin[id] = 1
 	}
 }
@@ -1832,7 +1832,7 @@ public fm_mute_forward(receiver, sender, listen) {
 
 	if (receiver == sender) return FMRES_IGNORED
 	if (get_user_speak(sender) == SPEAK_ADMIN) {
-		
+
 		if (g_admin[receiver] == 1) {
 			engfunc(EngFunc_SetClientListening, receiver, sender, SPEAK_NORMAL2)
 		}else{
@@ -1873,24 +1873,24 @@ public vocomStart(id) {
 	get_user_name(id,name,32)
 
 	get_players(players, pCount, "c")
- 
+
 	for (new i = 0; i < pCount; i++) {
 		if (g_admin[i]) {
 			if (i != id) {
 
 				client_print(i,print_chat, "%L", LANG_PLAYER, "AMX_SUPER_VOCOM_SPEAKING1",name)
 			}
-		}	
+		}
 	}
-	
+
 	client_print(id,print_chat, "%L", LANG_PLAYER, "AMX_SUPER_VOCOM_SPEAKING2",name)
 	return PLUGIN_HANDLED
 }
 
 public vocomStop(id) {
 
-	if(is_user_connected(id)) { 
-			
+	if(is_user_connected(id)) {
+
 		client_cmd(id,"-voicerecord")
 		if(get_user_speak(id) == SPEAK_ADMIN) {
 
@@ -1909,7 +1909,7 @@ public cmd_glow(id, level, cid)
 {
 	if(!cmd_access(id, level, cid, 3))
 		return PLUGIN_HANDLED
-	
+
 	new command[16], arg1[32], arg2[32], arg3[32], arg4[32], arg5[32]
 	read_argv(0, command, 15)
 	read_argv(1, arg1, 31)
@@ -1917,21 +1917,21 @@ public cmd_glow(id, level, cid)
 	read_argv(3, arg3, 31)
 	read_argv(4, arg4, 31)
 	read_argv(5, arg5, 31)
-	
+
 	new bool:isPermGlow = false
 	if(command[8] == '2')
 		isPermGlow = true
-	
+
 	new name[32], authid[32]
 	get_user_name(id, name, 31)
 	get_user_authid(id, authid, 31)
-	
+
 	if(!color_check(arg2)&&!strlen(arg3))
 	{
 		console_print(id, "%L", LANG_PLAYER, "AMX_SUPER_GLOW_INVALID_COLOR")
 		return PLUGIN_HANDLED
 	}
-	
+
 	new num, bool:valid = false
 	for(num = 0; num < 30; num++)
 	{
@@ -1964,7 +1964,7 @@ public cmd_glow(id, level, cid)
 		console_print(id, "Usage: amx_glow(2) <nick, #userid, or authid> <color>")
 		console_print(id, "Usage: amx_glow(2) <nick, #userid, or authid> <rrr> <ggg> <bbb> <aaa>")
 		return PLUGIN_HANDLED;
-	}	
+	}
 	if(rnum > 255) rnum = 255
 	else if(rnum < 0) rnum = 0
 	if(gnum > 255) gnum = 255
@@ -1973,7 +1973,7 @@ public cmd_glow(id, level, cid)
 	else if(bnum < 0) bnum = 0
 	if(anum > 255) anum = 255
 	else if(anum < 0) anum = 0
-	
+
 	new pid, activity = get_pcvar_num(amx_show_activity)
 	if(arg1[0] == '@')
 	{
@@ -1981,7 +1981,7 @@ public cmd_glow(id, level, cid)
 		if(equali("T",arg1[1])) copy( arg1[1], 31, "TERRORIST" )
 		if(equali("ALL",arg1[1])) get_players( players, pnum, "a" )
 		else get_players( players, pnum, "ae", arg1[1] )
-		
+
 		if(!pnum) return PLUGIN_HANDLED
 		for( new i = 0; i < pnum; i++ )
 		{
@@ -2046,7 +2046,7 @@ public cmd_glowcolors(id, level, cid)
 {
 	if(!cmd_access(id, level, cid, 0))
 		return PLUGIN_HANDLED;
-	
+
 	new sColors[192], i
 	for(i = 0; i < 30; i += 5)
 	{
@@ -2082,21 +2082,21 @@ stock color_check(color[])
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //SPAWN PROTECTION v7.1 by Peli Revised for Glow On/Off by KaszpiR Revised by Bmann_420
 //==========================================================================================================
-public cmd_sptime(id, level, cid) 
+public cmd_sptime(id, level, cid)
 {
 	if(!cmd_access(id, level, cid, 2))
 		return PLUGIN_HANDLED
-	
+
 	new arg_str[3]
 	read_argv(1, arg_str, 3)
 	new arg = str_to_num(arg_str)
-	
+
 	if(arg > 10 || arg < 1)
 	{
 		client_print(id, print_chat, "%L", LANG_PLAYER, "AMX_SUPER_SPAWN_PROTECTION_BADTIME")
 		return PLUGIN_HANDLED
 	}
-	
+
 	else if (arg > 0 || arg < 11)
 	{
 		set_pcvar_num(sv_sptime, arg)
@@ -2106,34 +2106,34 @@ public cmd_sptime(id, level, cid)
 	return PLUGIN_CONTINUE
 }
 
-public cmd_spmessage(id, level, cid) 
+public cmd_spmessage(id, level, cid)
 {
 	if (!cmd_access(id, level, cid, 2))
 	{
 		return PLUGIN_HANDLED
 	}
-	
+
 	new sp[3]
 	read_argv(1, sp, 2)
-	
+
 	if (sp[0] == '1')
 	{
 		set_pcvar_num(sv_spmessage, 1)
 	}
-	
+
 	else if (sp[0] == '0')
 	{
 		set_pcvar_num(sv_spmessage, 0)
 	}
-	
+
 	else if (sp[0] != '1' || sp[0] != '0')
 	{
-		
+
 		console_print(id, "Usage : amx_spmessage 1 = Messages ON | 0 = Messages OFF")
 		return PLUGIN_HANDLED
-		
+
 	}
-	
+
 	return PLUGIN_HANDLED
 }
 
@@ -2141,19 +2141,19 @@ public cmd_spshellthickness(id, level, cid)
 {
 	if(!cmd_access(id, level, cid, 2))
 		return PLUGIN_HANDLED
-	
+
 	new arg_str[3]
 	read_argv(1, arg_str, 3)
 	new arg = str_to_num(arg_str)
-	
+
 	if(arg > 100 || arg < 1)
 	{
-		
+
 		client_print(id, print_chat, "%L", LANG_PLAYER, "AMX_SUPER_SPAWN_PROTECTION_BADSHELL")
 		return PLUGIN_HANDLED
-		
+
 	}
-	
+
 	else if (arg > 0 || arg < 101)
 	{
 		set_pcvar_num(sv_spshellthick, arg)
@@ -2167,34 +2167,34 @@ public cmd_spglow(id, level, cid)
 {
 	if(!cmd_access(id, level, cid, 2))
 		return PLUGIN_HANDLED
-	
+
 	new arg_str[3]
 	read_argv(1, arg_str, 3)
 	new arg = str_to_num(arg_str)
-	
-	
+
+
 	if (arg > 0)
 	{
 		arg = 1
 		client_print(id, print_chat, "%L", LANG_PLAYER, "AMX_SUPER_SPAWN_PROTECTION_GLOW_ON")
 	}
-	else	
+	else
 	{
 		arg = 0
 		client_print(id, print_chat, "%L", LANG_PLAYER, "AMX_SUPER_SPAWN_PROTECTION_GLOW_OFF")
 	}
 	set_pcvar_num(sv_spglow, arg)
-	
+
 	return PLUGIN_CONTINUE
 }
 
-public sp_on(id) 
+public sp_on(id)
 {
 	if (get_pcvar_num(sv_sp) == 1)
 	{
 		set_task(0.1, "protect", id)
 	}
-	
+
 	return PLUGIN_CONTINUE
 }
 
@@ -2205,19 +2205,19 @@ public event_roundstart()
 {
     isRoundStarted = true
 }
-                    
+
 public event_roundend()
 {
     isRoundStarted = false
 }
 
-public protect(id) 
+public protect(id)
 {
     new FTime = get_pcvar_num(mp_freezetime)
     new Float:SPTime = get_pcvar_float(sv_sptime)
     new SPShell = get_pcvar_num(sv_spshellthick)
     fm_set_user_godmode(id, 1)
-	
+
     if( isRoundStarted )
 	{
 	    FTime = 0
@@ -2225,20 +2225,20 @@ public protect(id)
 	{
 	    FTime = get_pcvar_num(mp_freezetime)
 	}
-    if(get_pcvar_num(sv_spglow)) 
-	{ 
-		
+    if(get_pcvar_num(sv_spglow))
+	{
+
 		if(get_user_team(id) == 1)
 		{
 			fm_set_rendering(id, kRenderFxGlowShell, 255, 0, 0, kRenderNormal, SPShell)
 		}
-		
-		if(get_user_team(id) == 2) 
+
+		if(get_user_team(id) == 2)
 		{
 			fm_set_rendering(id, kRenderFxGlowShell, 0, 0, 255, kRenderNormal, SPShell)
 		}
 	}
-    
+
     if(get_pcvar_num(sv_spmessage) == 1)
 	{
 	    new argSpawn[64]
@@ -2247,7 +2247,7 @@ public protect(id)
 	    SpawnProtection[id] = floatround(SPTime + FTime)
 	    //server_print("%f", floatround(SPTime + FTime) )
 	}
-    
+
     return PLUGIN_HANDLED
 }
 
@@ -2255,16 +2255,16 @@ public SpawnProtectionCountDown( stringID[] )
 {
     new id = str_to_num( stringID )
     //server_print("%s - %d", stringID, id )
-    
-    set_hudmessage( 200, 200, 0, 0.35, 0.85, 0, 0.0, 1.0, 0.1, 0.1, 4 ) 
+
+    set_hudmessage( 200, 200, 0, 0.35, 0.85, 0, 0.0, 1.0, 0.1, 0.1, 4 )
     show_hudmessage( id, "%L", LANG_PLAYER, "AMX_SUPER_SPAWN_PROTECTION_MESSAGE", SpawnProtection[id] - 1 )
-    
+
     SpawnProtection[id]--;
 
     if ( SpawnProtection[id] <= 0 )
-    {   
+    {
         if ( task_exists( TASK_SPAWN_PROTECTION_ID + id ) )
-        {   
+        {
             remove_task( TASK_SPAWN_PROTECTION_ID + id );
             sp_off(id)
             return;
@@ -2272,7 +2272,7 @@ public SpawnProtectionCountDown( stringID[] )
     }
 }
 
-public sp_off(id) 
+public sp_off(id)
 {
 	if(!is_user_connected(id))
 	{
@@ -2282,12 +2282,12 @@ public sp_off(id)
 	{
 		fm_set_rendering( id, kRenderFxGlowShell, g_glow[id][0], g_glow[id][1], g_glow[id][2], kRenderTransAlpha, g_glow[id][3] )
 	}
-	
+
 	else if( !HasPermGod[id] )
 	{
 		fm_set_rendering(id, kRenderFxGlowShell, 0, 0, 0, kRenderTransAlpha, 255)
 	}
-	fm_set_user_godmode(id, 0) 
+	fm_set_user_godmode(id, 0)
 	return PLUGIN_HANDLED
 }
 
@@ -2299,7 +2299,7 @@ public admin_extend(id,level,cid)
 {
 	if (!cmd_access(id,level,cid,2))
 		return PLUGIN_HANDLED
-	
+
 	new arg[32],name[32]
 	read_argv(1,arg,31)
 	get_user_name(id,name,31)
@@ -2329,7 +2329,7 @@ public admin_extend(id,level,cid)
 			tlimit = EXTENDTIME
 		}
 		set_pcvar_float(mp_timelimit,get_pcvar_float(mp_timelimit) + tlimit)
-		
+
 		switch(get_pcvar_num(amx_show_activity))	{
 			case 2:	client_print(0,print_chat,"%L", LANG_PLAYER, "AMX_SUPER_EXTEND_SUCCESS_CASE2",name,tlimit)
 			case 1:	client_print(0,print_chat,"%L", LANG_PLAYER, "AMX_SUPER_EXTEND_SUCCESS_CASE1",tlimit)
@@ -2337,9 +2337,9 @@ public admin_extend(id,level,cid)
 		++user_limit
 		return PLUGIN_HANDLED
 	}
-	
+
 	return PLUGIN_HANDLED
-}		
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2351,7 +2351,7 @@ public event_hltv()
 public logevent_plantedthebomb()
 {
 	new showtteam = get_pcvar_num(cvar_showteam)
-	
+
 	static players[32], num, i
 	switch(showtteam)
 	{
@@ -2367,18 +2367,18 @@ public update_timer(id)
 {
 	//message_begin(MSG_ONE_UNRELIABLE, g_msg_showtimer, _, id)
 	//message_end()
-	
+
 	message_begin(MSG_ONE_UNRELIABLE, g_msg_roundtime, _, id)
 	write_short(g_c4timer)
 	message_end()
-	
+
 	message_begin(MSG_ONE_UNRELIABLE, g_msg_scenario, _, id)
 	write_byte(1)
 	write_string(g_timersprite[clamp(get_pcvar_num(cvar_sprite), 0, (MAX_SPRITES - 1))])
 	write_byte(150)
 	write_short(get_pcvar_num(cvar_flash) ? 20 : 0)
 	message_end()
-	
+
 	if(get_pcvar_num(cvar_msg))
 	{
 		set_hudmessage(255, 180, 0, 0.44, 0.87, 2, 6.0, 6.0)
@@ -2388,7 +2388,7 @@ public update_timer(id)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //ADMIN CHECK v1.15 by OneEyed
 //==========================================================================================================
-public show_admins(user) 
+public show_admins(user)
 {
 	new message[256]
 	if(get_pcvar_num(admincheck))
@@ -2396,12 +2396,12 @@ public show_admins(user)
 		new adminnames[33][32]
 		new contactinfo[256], contact[112]
 		new id, count, x, len
-		
+
 		for(id = 1 ; id <= maxplayers ; id++)
 			if(is_user_connected(id))
 				if(get_user_flags(id) & ADMIN_CHECK)
 					get_user_name(id, adminnames[count++], 31)
-		
+
 		len = format(message, 255, "%s ADMINS ONLINE: ",COLOR)
 		if(count > 0) {
 			for(x = 0 ; x < count ; x++) {
@@ -2417,7 +2417,7 @@ public show_admins(user)
 			len += format(message[len], 255-len, "No admins online.")
 			print_message(user, message)
 		}
-		
+
 		get_pcvar_string(sv_contact, contact, 63)
 		if(contact[0])  {
 			format(contactinfo, 111, "%s Contact Server Admin -- %s", COLOR, contact)
@@ -2442,9 +2442,9 @@ print_message(id, msg[]) {
 //ADMIN FLASH v1.0 by AssKicR
 //Rewritten by Bo0m!
 //==========================================================================================================
-public admin_flash(id,level,cid) { 
+public admin_flash(id,level,cid) {
 	if (!cmd_access(id,level,cid,2))
-		return PLUGIN_HANDLED 
+		return PLUGIN_HANDLED
 
 	new arg[32]
 	new name[32], name2[32], authid[35], authid2[35]
@@ -2503,14 +2503,14 @@ public admin_flash(id,level,cid) {
 }
 
 public Flash(id) {
-	message_begin(MSG_ONE,gMsgScreenFade,{0,0,0},id) 
-	write_short( 1<<15 ) 
+	message_begin(MSG_ONE,gMsgScreenFade,{0,0,0},id)
+	write_short( 1<<15 )
 	write_short( 1<<10 )
 	write_short( 1<<12 )
-	write_byte( 255 ) 
-	write_byte( 255 ) 
-	write_byte( 255 ) 
-	write_byte( 255 ) 
+	write_byte( 255 )
+	write_byte( 255 )
+	write_byte( 255 )
+	write_byte( 255 )
 	message_end()
 
 	if(get_pcvar_num(flashsound) == 1)
@@ -2523,27 +2523,27 @@ public Flash(id) {
 public admin_unammo(id, level, cid)
 {
 	if(!cmd_access(id, level, cid, 2)) return PLUGIN_HANDLED
-		
+
 	new arg1[32], arg2[2]
 	read_argv(1, arg1, 31)
 	read_argv(2, arg2, 1)
 	new setting = str_to_num(arg2)
 	new name[32], authid[36]
-	
+
 	get_user_name(id, name, 31)
 	get_user_authid(id, authid, 35)
-	
+
 	if(equali(arg1, "@", 1))
-	{		
+	{
 		new players[32], num
-		
+
 		if(containi(arg1, "ALL") != -1)
 		{
 			get_players(players, num)
 			formatex(arg1[1], 30, "players");
 		}
 		else get_players(players, num, "e", !equali(arg1, "CT") ? "TERRORIST":"CT")
-		
+
 		if(!num)
 		{
 			console_print(id,"%L", LANG_PLAYER, AMX_SUPER_NO_PLAYERS)
@@ -2557,7 +2557,7 @@ public admin_unammo(id, level, cid)
 				case 1:{unammo[players[i]] = true;}
 			}
 		}
-		switch(get_pcvar_num(amx_show_activity))	
+		switch(get_pcvar_num(amx_show_activity))
 		{
 			case 2:	client_print(0, print_chat, "%L", LANG_PLAYER, "AMX_SUPER_AMMO_TEAM_CASE2", name, arg1[1], setting)
 			case 1:	client_print(0, print_chat, "%L", LANG_PLAYER, "AMX_SUPER_AMMO_TEAM_CASE1", arg1[1], setting)
@@ -2569,9 +2569,9 @@ public admin_unammo(id, level, cid)
 	{
 		new name2[32], authid2[36]
 		new player = cmd_target(id, arg1, 2)
-		
+
 		if(!player) return PLUGIN_HANDLED
-		
+
 		get_user_name(player, name2, 31)
 		get_user_authid(player, authid2, 35)
 		switch(setting)
@@ -2579,7 +2579,7 @@ public admin_unammo(id, level, cid)
 				case 0:{unammo[player] = false;}
 				case 1:{unammo[player] = true;}
 			}
-		switch(get_pcvar_num(amx_show_activity)) 
+		switch(get_pcvar_num(amx_show_activity))
 		{
 			case 2:	client_print(0, print_chat, "%L", LANG_PLAYER, "AMX_SUPER_AMMO_PLAYER_CASE2", name, name2, setting)
 			case 1:	client_print(0, print_chat, "%L", LANG_PLAYER, "AMX_SUPER_AMMO_PLAYER_CASE1", name2, setting)
@@ -2658,25 +2658,25 @@ stock getMaxClipAmmo(wpnid)
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//TEAM/PLAYER TRANSFER v1.0 by Doombringer/Deviance 
+//TEAM/PLAYER TRANSFER v1.0 by Doombringer/Deviance
 //==========================================================================================================
-public cmd_transfer(id, level, cid) 
+public cmd_transfer(id, level, cid)
 {
 	if (!cmd_access(id, level, cid, 2))
 	return PLUGIN_HANDLED
-	
+
 	new arg1[32], arg2[32]
-	
+
 	read_argv(1, arg1, 31)
 	read_argv(2, arg2, 31)
-	
+
 	new player = cmd_target(id, arg1, 2)
-	
+
 	if(!player)
 		return PLUGIN_HANDLED
-	
+
 	new teamname[32]
-	
+
 	if(!strlen(arg2))
 	{
 		cs_set_user_team(player, cs_get_user_team(player) == CS_TEAM_CT ? CS_TEAM_T:CS_TEAM_CT)
@@ -2700,7 +2700,7 @@ public cmd_transfer(id, level, cid)
 		{
 			user_silentkill(player)
 			cs_set_user_team(player, CS_TEAM_SPECTATOR)
-			
+
 			teamname = "Spectator"
 		}
 		else
@@ -2709,15 +2709,15 @@ public cmd_transfer(id, level, cid)
 			return PLUGIN_HANDLED
 		}
 	}
-	
+
 	new name[32], admin[32], authid[35]
-	
+
 	get_user_name(id, admin, 31)
 	get_user_name(player, name, 31)
-	
+
 	get_user_authid(id, authid, 34)
-	
-	switch(get_pcvar_num(amx_show_activity)) 
+
+	switch(get_pcvar_num(amx_show_activity))
 	{
 		case 2:	client_print(0, print_chat, "%L", LANG_PLAYER, "AMX_SUPER_TRANSFER_PLAYER_CASE2", admin, name, teamname)
 		case 1:	client_print(0, print_chat, "%L", LANG_PLAYER, "AMX_SUPER_TRANSFER_PLAYER_CASE1", name, teamname)
@@ -2730,56 +2730,56 @@ public cmd_transfer(id, level, cid)
 	return PLUGIN_HANDLED
 }
 
-public cmd_swap(id, level, cid) 
+public cmd_swap(id, level, cid)
 {
 	if (!cmd_access(id, level, cid, 3))
 	return PLUGIN_HANDLED
-	
+
 	new arg1[32], arg2[32]
-	
+
 	read_argv(1, arg1, 31)
 	read_argv(2, arg2, 31)
-	
+
 	new player = cmd_target(id, arg1, 2)
 	new player2 = cmd_target(id, arg2, 2)
-	
+
 	if(!player || !player2)
 	return PLUGIN_HANDLED
-	
+
 	new CsTeams:team = cs_get_user_team(player)
 	new CsTeams:team2 = cs_get_user_team(player2)
-	
+
 	if(team == team2)
 	{
 		client_print(id, print_console, "%L", LANG_PLAYER, "AMX_SUPER_TRANSFER_PLAYER_ERROR_CASE1")
 		return PLUGIN_HANDLED
 	}
-	
+
 	if(team == CS_TEAM_UNASSIGNED || team2 == CS_TEAM_UNASSIGNED)
 	{
 		client_print(id, print_console, "%L", LANG_PLAYER, "AMX_SUPER_TRANSFER_PLAYER_ERROR_CASE2")
 		return PLUGIN_HANDLED
 	}
-	
+
 	if(team == CS_TEAM_SPECTATOR)
 		user_silentkill(player2)
-	
+
 	else if(team2 == CS_TEAM_SPECTATOR)
 		user_silentkill(player)
-	
+
 	cs_set_user_team(player, team2)
 	fm_DispatchSpawn(player)
 	cs_set_user_team(player2, team)
 	fm_DispatchSpawn(player2)
-	
+
 	new name[32], name2[32], admin[32], authid[35]
-	
+
 	get_user_name(id, admin, 31)
 	get_user_name(player, name, 31)
 	get_user_name(player2, name2, 31)
-	
+
 	get_user_authid(id, authid, 34)
-	
+
 	switch(get_pcvar_num(amx_show_activity)) {
 		case 2:	client_print(0,print_chat,"%L", LANG_PLAYER, "AMX_SUPER_TRANSFER_SWAP_PLAYERS_SUCCESS_CASE2",admin,name,name2)
 		case 1:	client_print(0, print_chat,"%L", LANG_PLAYER, "AMX_SUPER_TRANSFER_SWAP_PLAYERS_SUCCESS_CASE1", name, name2);
@@ -2790,18 +2790,18 @@ public cmd_swap(id, level, cid)
 
 	client_print(id, print_console, "%L", LANG_PLAYER, "AMX_SUPER_TRANSFER_SWAP_PLAYERS_CONSOLE", name, name2)
 	log_amx("%L", LANG_PLAYER, "AMX_SUPER_TRANSFER_SWAP_PLAYERS_LOG", admin, authid, name, name2)
-	
+
 	return PLUGIN_HANDLED
 }
 
-public cmd_teamswap(id, level, cid) 
+public cmd_teamswap(id, level, cid)
 {
 	if (!cmd_access(id, level, cid, 1))
 	return PLUGIN_HANDLED
 
 	new players[32], num
 	get_players(players, num)
-	
+
 	new player
 	for(new i = 0; i < num; i++)
 	{
@@ -2809,9 +2809,9 @@ public cmd_teamswap(id, level, cid)
 		cs_set_user_team(player, cs_get_user_team(player) == CS_TEAM_T ? CS_TEAM_CT:CS_TEAM_T)
 		fm_DispatchSpawn(player)
 	}
-	
+
 	new name[32], authid[35]
-	
+
 	get_user_name(id, name, 31)
 	get_user_authid(id, authid, 34)
 
@@ -2822,7 +2822,7 @@ public cmd_teamswap(id, level, cid)
 
 	console_print(id,"%L", LANG_PLAYER, "AMX_SUPER_TRANSFER_SWAP_TEAM_MESSAGE")
 	log_amx("%L", LANG_SERVER, "AMX_SUPER_TRANSFER_SWAP_TEAM_LOG", name,authid)
-	
+
 	return PLUGIN_HANDLED
 }
 
@@ -2834,19 +2834,19 @@ public admin_unlock(id, level, cid)
 {
 	if(!cmd_access(id, level, cid, 2))
 	return PLUGIN_HANDLED
-	
+
 	new Arg1[6]
-	
+
 	read_argv(1, Arg1, 5)
-	
+
 	if(!equali(Arg1, "T") && !equali(Arg1, "CT") && !equali(Arg1, "Auto") && !equali(Arg1, "Spec"))
 	{
 		client_print(id, print_console, "%L", LANG_PLAYER, AMX_SUPER_TEAM_INVALID)
 		return PLUGIN_HANDLED
 	}
-	
+
 	new team
-	
+
 	if(equali(Arg1, "T"))
 		team = TE
 	else if(equali(Arg1, "CT"))
@@ -2855,14 +2855,14 @@ public admin_unlock(id, level, cid)
 		team = AUTO
 	else if(equali(Arg1, "Spec"))
 		team = SPEC
-		
+
 	blockjoining[team] = false
-	
+
 	new name[32], steamid[38]
-	
+
 	get_user_name(id, name, 31)
 	get_user_authid(id, steamid, 37)
-	
+
 	switch(get_pcvar_num(amx_show_activity)) {
 		case 2:	client_print(0,print_chat,"%L", LANG_PLAYER, "AMX_SUPER_TEAM_UNLOCK_CASE2",name,Teamnames[team])
 		case 1:	client_print(0,print_chat,"%L", LANG_PLAYER, "AMX_SUPER_TEAM_UNLOCK_CASE1",Teamnames[team])
@@ -2878,19 +2878,19 @@ public admin_lock(id, level, cid)
 {
 	if(!cmd_access(id, level, cid, 2))
 	return PLUGIN_HANDLED
-	
+
 	new Arg1[6]
-	
+
 	read_argv(1, Arg1, 5)
-	
+
 	if(!equali(Arg1, "T") && !equali(Arg1, "CT") && !equali(Arg1, "Auto") && !equali(Arg1, "Spec"))
 	{
 		client_print(id, print_console, "%L", LANG_PLAYER, AMX_SUPER_TEAM_INVALID)
 		return PLUGIN_HANDLED
 	}
-	
+
 	new team
-	
+
 	if(equali(Arg1, "T"))
 		team = TE
 	else if(equali(Arg1, "CT"))
@@ -2899,14 +2899,14 @@ public admin_lock(id, level, cid)
 		team = AUTO
 	else if(equali(Arg1, "Spec"))
 		team = SPEC
-		
+
 	blockjoining[team] = true
-	
+
 	new name[32], steamid[38]
-	
+
 	get_user_name(id, name, 31)
 	get_user_authid(id, steamid, 37)
-	
+
 	switch(get_pcvar_num(amx_show_activity)) {
 		case 2:	client_print(0,print_chat,"%L", LANG_PLAYER, "AMX_SUPER_TEAM_LOCK_CASE2",name,Teamnames[team])
 		case 1:	client_print(0,print_chat,"%L", LANG_PLAYER, "AMX_SUPER_TEAM_LOCK_CASE1",Teamnames[team])
@@ -2918,35 +2918,35 @@ public admin_lock(id, level, cid)
 	return PLUGIN_HANDLED
 }
 
-public team_select(id, key) 
-{ 
+public team_select(id, key)
+{
 	if ( blockjoining[key] == true )
 	{
-		engclient_cmd(id, "chooseteam") 
-		return PLUGIN_HANDLED 
-	} 		
-	
-	return PLUGIN_CONTINUE 
-} 
+		engclient_cmd(id, "chooseteam")
+		return PLUGIN_HANDLED
+	}
 
-public join_team(id) 
+	return PLUGIN_CONTINUE
+}
+
+public join_team(id)
 {
-        if (get_user_flags(id) & ( ADMIN_KICK | ADMIN_LEVEL_A )) 
+        if (get_user_flags(id) & ( ADMIN_KICK | ADMIN_LEVEL_A ))
 	{
 		remove_task(id)
 		return PLUGIN_CONTINUE
 	}
-	
-	new arg[2] 
+
+	new arg[2]
         read_argv(1, arg, 1)
-	
+
         if (blockjoining[str_to_num(arg)-1] == true)
 	{
-                engclient_cmd(id, "chooseteam") 
-                return PLUGIN_HANDLED 
-        } 
-	
-        return PLUGIN_CONTINUE 
+                engclient_cmd(id, "chooseteam")
+                return PLUGIN_HANDLED
+        }
+
+        return PLUGIN_CONTINUE
 }
 
 
@@ -2958,7 +2958,7 @@ public admin_revive(id,level,cid)
 {
 	if (!cmd_access(id,level,cid,2))
 		return PLUGIN_HANDLED
-	
+
 	new arg[32]
 	new name[32], name2[32], authid[35], authid2[35]
 	read_argv(1,arg,31)
@@ -2988,7 +2988,7 @@ public admin_revive(id,level,cid)
 			//fm_DispatchSpawn(players[a])
 			ExecuteHamB(Ham_CS_RoundRespawn, players[a])
 			set_task(0.1,"revivePl",0,ids,2)
-			
+
 			if (get_pcvar_num(sv_sp) == 1)
 			{
 				set_task(0.1, "protect", id)
@@ -3040,27 +3040,27 @@ public admin_revive(id,level,cid)
 		{
 			set_hudmessage(0,200,0,-1.0,0.30,0,6.0,6.0,0.5,0.15,1)
 			show_hudmessage(0,"%L", LANG_PLAYER, "AMX_SUPER_REVIVE_PLAYER_HUD",name2)
-		} 
+		}
 	}
-	
+
 	return PLUGIN_HANDLED
 }
 
-public revivePl(ids[]) 
-{ 
-	new id = str_to_num(ids) 
-	fm_DispatchSpawn(id) 
-	if (get_user_team(id)==1) 
-	{ 
-		fm_give_item(id,weapons[WEAPON_KNIFE]) 
-		fm_give_item(id,weapons[WEAPON_GLOCK18]) 
+public revivePl(ids[])
+{
+	new id = str_to_num(ids)
+	fm_DispatchSpawn(id)
+	if (get_user_team(id)==1)
+	{
+		fm_give_item(id,weapons[WEAPON_KNIFE])
+		fm_give_item(id,weapons[WEAPON_GLOCK18])
 		fm_give_item_x(id,ammo_9mm,2)
-	} 
-	else 
-	{ 
-		fm_give_item(id,weapons[WEAPON_KNIFE]) 
-		fm_give_item(id,weapons[WEAPON_USP]) 
-		fm_give_item_x(id,ammo_45acp,2) 
+	}
+	else
+	{
+		fm_give_item(id,weapons[WEAPON_KNIFE])
+		fm_give_item(id,weapons[WEAPON_USP])
+		fm_give_item_x(id,ammo_45acp,2)
 	}
 }
 
@@ -3138,7 +3138,7 @@ public admin_userorigin(id,level,cid) {
 //==========================================================================================================
 public admin_heal(id,level,cid)
 {
-	if (!cmd_access(id,level,cid,3)) 
+	if (!cmd_access(id,level,cid,3))
 		return PLUGIN_HANDLED
 
 	new arg[32], arg2[8]
@@ -3283,12 +3283,12 @@ public admin_armor(id,level,cid)
 //ADMIN GODMODE v1.0 by Bo0m!
 //Revised some by Doombringer/Deviance
 //==========================================================================================================
-public admin_godmode(id,level,cid) 
+public admin_godmode(id,level,cid)
 {
-	
+
 	if (!cmd_access(id,level,cid,3))
 		return PLUGIN_HANDLED
-	
+
 	new arg[32], arg2[8], name2[32]
 
 	read_argv(1, arg, 31)
@@ -3297,10 +3297,10 @@ public admin_godmode(id,level,cid)
 	new setting = str_to_num(arg2)
 
 	new name[32], authid[36]
-	
+
 	get_user_name(id, name2, 31)
 	get_user_authid(id, authid, 35)
-	
+
 	new bool:l_postRound = false;
 	if(str_to_num(arg2) == 2)
 
@@ -3308,35 +3308,35 @@ public admin_godmode(id,level,cid)
 		arg2 = "1";
 		l_postRound = true;
 	}
-	
+
 	if (arg[0]=='@'){
-		
+
 		new players[32], inum
-		
+
 		if(!(arg[1]=='a' || arg[1]=='A' || arg[1]=='C' || arg[1]=='c' || arg[1]=='T' || arg[1]=='t'))
 		inum = 0
 
 		else
 
 		get_players(players,inum,"")
-		
+
 		if (inum==0)
 		{
 			console_print(id,"%L", LANG_PLAYER, AMX_SUPER_NO_PLAYERS)
 			return PLUGIN_HANDLED
 		}
-		
-		for(new a=0;a<inum;++a) 
+
+		for(new a=0;a<inum;++a)
 		{
 			if((arg[1]=='a' || arg[1]=='A') || (cs_get_user_team(players[a]) == CS_TEAM_T && (arg[1]=='T' || arg[1]=='t')) || (cs_get_user_team(players[a]) == CS_TEAM_CT && (arg[1]=='C' || arg[1]=='c')))
-			
+
 		{
 			fm_set_user_godmode(players[a],str_to_num(arg2))
 			HasPermGod[players[a]] = l_postRound;
 		}
 
 		}
-		switch(get_pcvar_num(amx_show_activity))	
+		switch(get_pcvar_num(amx_show_activity))
 		{
 			case 2:	client_print(0, print_chat, "%L", LANG_PLAYER, "AMX_SUPER_GODMODE_TEAM_CASE2", name, setting, arg[1])
 			case 1:	client_print(0, print_chat, "%L", LANG_PLAYER, "AMX_SUPER_GODMODE_TEAM_CASE1", setting, arg[1])
@@ -3345,22 +3345,22 @@ public admin_godmode(id,level,cid)
 		console_print(id, "%L", LANG_PLAYER, "AMX_SUPER_GODMODE_TEAM_MSG", setting, arg[1])
 		log_amx("%L", LANG_SERVER, "AMX_SUPER_GODMODE_TEAM_LOG", name, authid, setting, arg[1])
 	}
-	else 
+	else
 	{
 		new authid2[36]
-		
+
 		new player = cmd_target(id, arg, 3)
-		
+
 		if(!player)
 			return PLUGIN_HANDLED
-		
+
 		get_user_name(player, name2, 31)
 		get_user_authid(player, authid2, 35)
-		
+
 		fm_set_user_godmode(player,str_to_num(arg2))
 		HasPermGod[player] = l_postRound;
-		
-		switch(get_pcvar_num(amx_show_activity)) 
+
+		switch(get_pcvar_num(amx_show_activity))
 		{
 			case 2:	client_print(0, print_chat, "%L", LANG_PLAYER, "AMX_SUPER_GODMODE_PLAYER_CASE2", name, setting, name2)
 			case 1:	client_print(0, print_chat, "%L", LANG_PLAYER, "AMX_SUPER_GODMODE_PLAYER_CASE1", setting, name2)
@@ -3379,7 +3379,7 @@ public admin_godmode(id,level,cid)
 //==========================================================================================================
 public admin_noclip(id,level,cid)
 {
-	if (!cmd_access(id,level,cid,3)) 
+	if (!cmd_access(id,level,cid,3))
 		return PLUGIN_HANDLED
 
 	new arg[32], arg2[8]
@@ -3501,21 +3501,21 @@ public admin_givemoney(id,level,cid)
 {
 	if(!cmd_access(id,level,cid,3))
 		return PLUGIN_HANDLED
-	
+
 	new arg[32], arg2[32]
 	read_argv(1,arg,32)
 	read_argv(2,arg2,31)
-	
+
 	new adminAuthid[36], adminName[32]
 	get_user_authid(id,adminAuthid,35)
 	get_user_name(id,adminName,31)
-	
+
 	new amount = str_to_num(arg2)
 	if(amount < 0) {
 		console_print(id,"%L", LANG_PLAYER, AMX_SUPER_AMOUNT_GREATER)
 		return PLUGIN_HANDLED
 	}
-	
+
 	if(arg[0] == '@')
 	{
 		new players[32], pnum, i;
@@ -3540,24 +3540,24 @@ public admin_givemoney(id,level,cid)
 	}
 	else
 	{
-		
+
 		new player = cmd_target(id,arg,2)
 		if(!player) return PLUGIN_HANDLED
-	
+
 		new playerName[32]
 		get_user_name(player,playerName,31)
-		
+
 		new playerAuthid[36]
 		get_user_authid(player,playerAuthid,35)
-	
+
 		cs_set_user_money(player,cs_get_user_money(player)+amount)
-		
+
 		switch(get_pcvar_num(amx_show_activity))
 		{
 			case 2: client_print(0,print_chat,"%L", LANG_PLAYER, "AMX_SUPER_GIVEMONEY_PLAYER_CASE2",adminName,amount,playerName)
 			case 1: client_print(0,print_chat,"%L", LANG_PLAYER, "AMX_SUPER_GIVEMONEY_PLAYER_CASE1",amount,playerName)
 		}
-		
+
 		console_print(id,"%L", LANG_PLAYER, "AMX_SUPER_GIVEMONEY_PLAYER_MSG",amount,playerName,amount)
 		log_amx("%L", LANG_SERVER, "AMX_SUPER_GIVEMONEY_PLAYER_LOG",adminName,adminAuthid,amount,playerName,playerAuthid)
 
@@ -3569,7 +3569,7 @@ public admin_takemoney(id,level,cid)
 {
 	if(!cmd_access(id,level,cid,3))
 		return PLUGIN_HANDLED
-	
+
 	new arg[32], arg2[32]
 	read_argv(1,arg,32)
 	read_argv(2,arg2,31)
@@ -3580,11 +3580,11 @@ public admin_takemoney(id,level,cid)
 	new playerName[32], adminName[32]
 	get_user_name(player,playerName,31)
 	get_user_name(id,adminName,31)
-	
+
 	new playerAuthid[36], adminAuthid[36]
 	get_user_authid(player,playerAuthid,35)
 	get_user_authid(id,adminAuthid,35)
-	
+
 	new amount = str_to_num(arg2)
 
 	if(amount < 0) {
@@ -3603,7 +3603,7 @@ public admin_takemoney(id,level,cid)
 
 		console_print(id,"%L", LANG_PLAYER, "AMX_SUPER_TAKEMONEY_ALL_PLAYER_MSG",amount,playerName,amount)
 		log_amx("%L", LANG_SERVER, "AMX_SUPER_TAKEMONEY_ALL_PLAYER_LOG",adminName,adminAuthid,playerName,playerAuthid)
-	
+
 		return PLUGIN_HANDLED
 	}
 
@@ -3615,7 +3615,7 @@ public admin_takemoney(id,level,cid)
 			case 2: client_print(0,print_chat,"%L", LANG_PLAYER, "AMX_SUPER_TAKEMONEY_PLAYER_CASE2",adminName,amount,playerName)
 			case 1: client_print(0,print_chat,"%L", LANG_PLAYER, "AMX_SUPER_TAKEMONEY_PLAYER_CASE1",amount,playerName)
 		}
-	
+
 		console_print(id,"%L", LANG_PLAYER, "AMX_SUPER_TAKEMONEY_PLAYER_MSG",amount,playerName,amount)
 		log_amx("%L", LANG_SERVER, "AMX_SUPER_TAKEMONEY_PLAYER_LOG",adminName,adminAuthid,amount,playerName,playerAuthid)
 
@@ -3838,7 +3838,7 @@ public admin_unbury(id,level,cid){
 //Revised by Bo0m!
 //==========================================================================================================
 disarm_player(id,victim){
-	
+
 	new name[32], origin[3]
 	get_user_origin(victim,origin)
 	origin[2] -= 2000
@@ -4106,12 +4106,12 @@ new bool:onfire[33]
 
 public ignite_effects(skIndex[])   {
 	new kIndex = skIndex[0]
-	
-	
+
+
 	if (is_user_alive(kIndex) && onfire[kIndex] )    {
 		new korigin[3]
 		get_user_origin(kIndex,korigin)
-		
+
 		//TE_SPRITE - additive sprite, plays 1 cycle
 		message_begin( MSG_BROADCAST,SVC_TEMPENTITY)
 		write_byte( 17 )
@@ -4122,7 +4122,7 @@ public ignite_effects(skIndex[])   {
 		write_byte( 20 ) // byte (scale in 0.1's)
 		write_byte( 200 ) // byte (brightness)
 		message_end()
-		
+
 		//Smoke
 		message_begin( MSG_BROADCAST,SVC_TEMPENTITY,korigin)
 		write_byte( 5 )
@@ -4133,7 +4133,7 @@ public ignite_effects(skIndex[])   {
 		write_byte( 20 ) // byte (scale in 0.1's)
 		write_byte( 15 ) // byte (framerate)
 		message_end()
-		
+
 		set_task(0.2, "ignite_effects" , 0 , skIndex, 2)
 	}
 	else    {
@@ -4147,14 +4147,14 @@ public ignite_effects(skIndex[])   {
 
 public ignite_player(skIndex[])   {
 	new kIndex = skIndex[0]
-	
+
 	if (is_user_alive(kIndex) && onfire[kIndex] )    {
 		new korigin[3]
 		new players[32], inum = 0
 		new pOrigin[3]
 		new kHeath = get_user_health(kIndex)
 		get_user_origin(kIndex,korigin)
-		
+
 		//create some damage
 		fm_set_user_health(kIndex,kHeath - 10)
 		message_begin(MSG_ONE, gmsgDamage, {0,0,0}, kIndex)
@@ -4165,49 +4165,49 @@ public ignite_player(skIndex[])   {
 		write_coord(korigin[1]) // damageOrigin.y
 		write_coord(korigin[2]) // damageOrigin.z
 		message_end()
-		
+
 		//create some sound
 		emit_sound(kIndex,CHAN_ITEM, "ambience/flameburst1.wav", 0.6, ATTN_NORM, 0, PITCH_NORM)
-		
-		//Ignite Others 
-		if ( get_pcvar_num(allowcatchfire))    {       
-			get_players(players,inum,"a") 
-			for(new i = 0 ;i < inum; ++i)   {                            
-				get_user_origin(players[i],pOrigin) 
-				
-				if( get_distance(korigin,pOrigin) < 100  )   { 
-					
-					if( !onfire[players[i]] )   { 
-						
-						new spIndex[2] 
-						spIndex[0] = players[i] 
-						new pName[32], kName[32]                
-						get_user_name(players[i],pName,31) 
-						get_user_name(kIndex,kName,31) 
-						emit_sound(players[i],CHAN_WEAPON ,"scientist/scream07.wav", 1.0, ATTN_NORM, 0, PITCH_HIGH) 
-						client_print(0,3,"* [AMX] OH! NO! %s has caught %s on fire!",kName,pName) 
+
+		//Ignite Others
+		if ( get_pcvar_num(allowcatchfire))    {
+			get_players(players,inum,"a")
+			for(new i = 0 ;i < inum; ++i)   {
+				get_user_origin(players[i],pOrigin)
+
+				if( get_distance(korigin,pOrigin) < 100  )   {
+
+					if( !onfire[players[i]] )   {
+
+						new spIndex[2]
+						spIndex[0] = players[i]
+						new pName[32], kName[32]
+						get_user_name(players[i],pName,31)
+						get_user_name(kIndex,kName,31)
+						emit_sound(players[i],CHAN_WEAPON ,"scientist/scream07.wav", 1.0, ATTN_NORM, 0, PITCH_HIGH)
+						client_print(0,3,"* [AMX] OH! NO! %s has caught %s on fire!",kName,pName)
 						onfire[players[i]] = true
-						ignite_player(players[i]) 
-						ignite_effects(players[i])    
-					}                
-				} 
-			}          
-			players[0] = 0 
-			pOrigin[0] = 0                
-			korigin[0] = 0       
-		} 
-		//Call Again in 2 seconds       
-		set_task(2.0, "ignite_player" , 0 , skIndex, 2)       
-	}    
-	
-	return PLUGIN_CONTINUE 
-} 
+						ignite_player(players[i])
+						ignite_effects(players[i])
+					}
+				}
+			}
+			players[0] = 0
+			pOrigin[0] = 0
+			korigin[0] = 0
+		}
+		//Call Again in 2 seconds
+		set_task(2.0, "ignite_player" , 0 , skIndex, 2)
+	}
+
+	return PLUGIN_CONTINUE
+}
 
 
 public admin_fire(id,level,cid) {
 	if (!cmd_access(id,level,cid,2))
 		return PLUGIN_HANDLED
-	
+
 	new arg[32]
 	read_argv(1,arg,31)
 	new skIndex[2];
@@ -4242,25 +4242,25 @@ public admin_fire(id,level,cid) {
 		new victim = cmd_target(id,arg,7)
 		if (!victim)
 			return PLUGIN_HANDLED
-		
+
 		skIndex[0] = victim
 		new name[32], victimauthid[36]
 		get_user_name(victim,name,31)
 		get_user_authid(victim,victimauthid,35)
-		
+
 		onfire[victim] = true
 		ignite_effects(skIndex)
 		ignite_player(skIndex)
-		
+
 		switch(get_pcvar_num(amx_show_activity))   {
 			case 2:   client_print(0,print_chat,"%L", LANG_PLAYER, "AMX_SUPER_FIRE_PLAYER_CASE2",adminname,name)
 			case 1:   client_print(0,print_chat,"%L", LANG_PLAYER, "AMX_SUPER_FIRE_PLAYER_CASE1",name)
 			}
-		
+
 		console_print(id,"%L", LANG_PLAYER, "AMX_SUPER_FIRE_PLAYER_MSG",name)
 		log_amx("%L", LANG_SERVER, "AMX_SUPER_FIRE_PLAYER_LOG",adminname,adminauthid,name,victimauthid)
 	}
-	
+
 	return PLUGIN_HANDLED
 }
 
@@ -4547,10 +4547,10 @@ public slap_player(ids[]) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // AMX EXEC 2 v0.3 by v3x
 //==========================================================================================================
-public admin_exec(id,level,cid) 
+public admin_exec(id,level,cid)
 {
 
-	if(!cmd_access(id,level,cid,3)) 
+	if(!cmd_access(id,level,cid,3))
 	{
 		return PLUGIN_HANDLED
 	}
@@ -4564,7 +4564,7 @@ public admin_exec(id,level,cid)
 	read_argv(2,command,63)
 
 	remove_quotes(command)
-	
+
 	while(replace(command,63,"\'","^"")) { } // Credited to OLO
 
 	new activity = get_pcvar_num(amx_show_activity)
@@ -4575,41 +4575,41 @@ public admin_exec(id,level,cid)
 
 	if(arg[0]=='@') {
 		whoTeam = get_team_target(arg,players,num)
-		
-		if(!(num)) 
+
+		if(!(num))
 		{
 			console_print(id,"%L", LANG_PLAYER, AMX_SUPER_NO_PLAYERS)
 			return PLUGIN_HANDLED
 		}
 
-			
-		for(i=0;i<num;i++) 
+
+		for(i=0;i<num;i++)
 		{
 
 			player = players[i]
 
 			if(!is_user_connected(player)) continue
-				
-			else if(player) 
+
+			else if(player)
 			{
 
-				if(!(get_user_flags(player) & ADMIN_IMMUNITY)) 
+				if(!(get_user_flags(player) & ADMIN_IMMUNITY))
 				{
 					client_cmd(player,command)
 				}
 			}
 		}
 
-		if(whoTeam == GET_TEAM_TARGET_ISALL) 
+		if(whoTeam == GET_TEAM_TARGET_ISALL)
 		{
-			switch(activity) 
+			switch(activity)
 			{
 				case 2:	client_print(0,print_chat,"%L", LANG_PLAYER, "AMX_SUPER_EXEC_ALL_CASE2",admin,command)
 				case 1:	client_print(0,print_chat,"%L", LANG_PLAYER, "AMX_SUPER_EXEC_ALL_CASE1",command)
 			}
 			log_amx("%L", LANG_SERVER, "AMX_SUPER_EXEC_ALL_LOG",admin,adminauthid,command)
 		} else {
-			switch(activity) 
+			switch(activity)
 			{
 				case 2:	client_print(0,print_chat,"%L", LANG_PLAYER, "AMX_SUPER_EXEC_TEAM_CASE2",admin,command,arg[1])
 				case 1:	client_print(0,print_chat,"%L", LANG_PLAYER, "AMX_SUPER_EXEC_TEAM_CASE1",command,arg[1])
@@ -4618,12 +4618,12 @@ public admin_exec(id,level,cid)
 		}
 	}
 
-	else 
+	else
 	{
 		new target = cmd_target(id,arg,3)
 		new name[33], playerauthid[36]
 
-		if(!is_user_connected(target)) 
+		if(!is_user_connected(target))
 		{
 			return PLUGIN_HANDLED
 		}
@@ -4631,13 +4631,13 @@ public admin_exec(id,level,cid)
 		get_user_name(target,name,32)
 		get_user_authid(target,playerauthid,35)
 
-		if(!(get_user_flags(target) & ADMIN_IMMUNITY)) 
+		if(!(get_user_flags(target) & ADMIN_IMMUNITY))
 		{
 			client_cmd(target,command)
 		}
 
 
-		switch(activity) 
+		switch(activity)
 		{
 			case 2:	client_print(0,print_chat,"%L", LANG_PLAYER, "AMX_SUPER_EXEC_PLAYER_CASE2",admin,command,name)
 			case 1:	client_print(0,print_chat,"%L", LANG_PLAYER, "AMX_SUPER_EXEC_PLAYER_CASE1",command,name)
@@ -4657,56 +4657,56 @@ public admin_status(id, level, cid)
 {
     if(!cmd_access(id, level, cid, 1))
         return PLUGIN_HANDLED
-    
+
     new len = 0, message[1024], temp[32]
-    
+
     len += format(message[len], (1023-len), "<table>")
-    
+
     new player_id[32], player_num, ping = 0, loss = 0
     new time = 0, seconds = 0, minutes = 0, hours = 0
-    
+
     get_players(player_id, player_num, "c")
-    
+
     for(new i = 0; i < player_num; i++)
     {
         // ID
         len += format(message[len], (1023-len), "<tr><td>#</td><td>%d</td></tr>", get_user_userid(player_id[i]))
         len += format(message[len], (1023-len), "<tr><td>Edict</td><td>%d</td>", id)
-        
+
         // Name
         get_user_name(player_id[i], temp, 31)
         len += format(message[len], (1023-len), "<tr><td>Nick</td><td>%s</td>", temp)
-        
+
         // Steam ID
         get_user_authid(player_id[i], temp, 31)
         len += format(message[len], (1023-len), "<tr><td>Steam</td><td>%s</td>", temp)
-        
+
         // Ip
         get_user_ip(player_id[i], temp, 31)
         len += format(message[len], (1023-len), "<tr><td>IP</td><td>%s</td>", temp)
-        
+
         // Flags
         get_flags(get_user_flags(player_id[i]), temp, 31)
         len += format(message[len], (1023-len), "<tr><td>Flags</td><td>%s</td>", temp)
-        
+
         // Frags
         len += format(message[len], (1023-len), "<tr><td>Frags</td><td>%d</td>", get_user_frags(player_id[i]))
-        
+
         // Death
         len += format(message[len], (1023-len), "<tr><td>Deaths</td><td>%d</td>", get_user_deaths(player_id[i]))
-        
+
         // Health
         len += format(message[len], (1023-len), "<tr><td>Health</td><td>%d</td>", get_user_health(player_id[i]))
-        
+
         // Ping
         get_user_ping(player_id[i], ping, loss)
         len += format(message[len], (1023-len), "<tr><td>Ping</td><td>%d</td>", ping)
         len += format(message[len], (1023-len), "<tr><td>Loss</td><td>%d</td>", loss)
-        
+
         // Team
         get_user_team(player_id[i], temp, 31)
         len += format(message[len], (1023-len), "<tr><td>Team</td><td>%s</td>", temp)
-        
+
         // Time in Seconds Playing
         time = get_user_time( player_id[i] )
         seconds = time
@@ -4719,11 +4719,11 @@ public admin_status(id, level, cid)
         hours = ( hours - minutes ) / 60
         len += format(message[len], (1023-len), "<tr><td>Time On</td><td>%d:%d:%d</td>", hours, minutes, seconds)
     }
-    
+
     len += format(message[len], (1023-len), "</table>")
-    
+
     show_motd(id, message, "Status")
-    
+
     return PLUGIN_CONTINUE
 }
 
@@ -4835,82 +4835,82 @@ public admin_quit(id,level,cid){
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//ADMIN GAG v1.8.3 by EKS 
+//ADMIN GAG v1.8.3 by EKS
 //==========================================================================================================
-public block_gagged(id){  
-	if(!g_GagPlayers[id]) return PLUGIN_CONTINUE 
-	new cmd[5] 
-	read_argv(0,cmd,4) 
+public block_gagged(id){
+	if(!g_GagPlayers[id]) return PLUGIN_CONTINUE
+	new cmd[5]
+	read_argv(0,cmd,4)
 	if ( cmd[3] == '_' )
-		{ 
-		if (g_GagPlayers[id] & 2){ 
+		{
+		if (g_GagPlayers[id] & 2){
 #if GagReason == 1
-			client_print(id,print_chat, "%L", LANG_PLAYER, "AMX_SUPER_GAG_REASON",gs_GagReason[id]) 
+			client_print(id,print_chat, "%L", LANG_PLAYER, "AMX_SUPER_GAG_REASON",gs_GagReason[id])
 #else
-			client_print(id,print_chat, "%L", LANG_PLAYER, "AMX_SUPER_PLAYER_GAGGED") 
+			client_print(id,print_chat, "%L", LANG_PLAYER, "AMX_SUPER_PLAYER_GAGGED")
 #endif
 
 #if PlaySound == 1
 			client_cmd(id,"spk barney/youtalkmuch")
 #endif
-			return PLUGIN_HANDLED 
-			} 
-		} 
-	else if (g_GagPlayers[id] & 1)   { 
+			return PLUGIN_HANDLED
+			}
+		}
+	else if (g_GagPlayers[id] & 1)   {
 #if GagReason == 1
-			client_print(id,print_chat, "%L", LANG_PLAYER, "AMX_SUPER_GAG_REASON",gs_GagReason[id]) 
+			client_print(id,print_chat, "%L", LANG_PLAYER, "AMX_SUPER_GAG_REASON",gs_GagReason[id])
 #else
-			client_print(id,print_chat, "%L", LANG_PLAYER, "AMX_SUPER_PLAYER_GAGGED") 
+			client_print(id,print_chat, "%L", LANG_PLAYER, "AMX_SUPER_PLAYER_GAGGED")
 #endif
 #if PlaySound == 1
 			client_cmd(id,"spk barney/youtalkmuch")
 #endif
-		return PLUGIN_HANDLED 
-		} 
-	return PLUGIN_CONTINUE 
-	} 
-public admin_gag(id,level,cid) 
-{ 
+		return PLUGIN_HANDLED
+		}
+	return PLUGIN_CONTINUE
+	}
+public admin_gag(id,level,cid)
+{
 	if(!cmd_access (id,level,cid,2)) return PLUGIN_HANDLED
 	new arg[32],VictimID
-	
-	read_argv(1,arg,31)  			
-	VictimID = cmd_target(id,arg,8)		
-	if ((get_user_flags(VictimID) & ADMIN_IMMUNITY) && VictimID != id || !cmd_access (id,level,cid,2) ) { return PLUGIN_HANDLED; } 
+
+	read_argv(1,arg,31)
+	VictimID = cmd_target(id,arg,8)
+	if ((get_user_flags(VictimID) & ADMIN_IMMUNITY) && VictimID != id || !cmd_access (id,level,cid,2) ) { return PLUGIN_HANDLED; }
 	new s_Flags[4],VictimName[32],AdminName[32],flags,ShowFlags[32],CountFlags,s_GagTime[8],Float:f_GagTime
 
-	read_argv(2,arg,31) 
-	if (!arg[0]) 
+	read_argv(2,arg,31)
+	if (!arg[0])
 	{
 		f_GagTime = DefaultGagTime
 		format(s_Flags,7,"abc")
 	}
 	else
 	{
-		if(contain(arg,"m")!=-1 && contain(arg,"!")==-1) 
+		if(contain(arg,"m")!=-1 && contain(arg,"!")==-1)
 		{
 			copyc(s_GagTime,7,arg, 'm')
 			f_GagTime = floatstr(s_GagTime) * 60
 		}
-		else if(isdigit(arg[0])&& contain(arg,"!")==-1) 
+		else if(isdigit(arg[0])&& contain(arg,"!")==-1)
 		{
 			format(s_GagTime,7,arg)
 			f_GagTime = floatstr(s_GagTime)
 		}
 		read_argv(3,arg,8)
-		if (!arg[0])	
+		if (!arg[0])
 			format(s_Flags,7,"abc")
-		else if(contain(arg,"!")==-1)		
+		else if(contain(arg,"!")==-1)
 			format(s_Flags,7,arg)
-		else if(contain(arg,"!")!=-1)		
+		else if(contain(arg,"!")!=-1)
 			format(s_Flags,7,"abc")
 		if (f_GagTime == 0.0)
 		{
 			read_argv(2,arg,8)
 			if(contain(arg,"!")!=-1)
-				format(s_Flags,3,"abc") 
+				format(s_Flags,3,"abc")
 			else
-				format(s_Flags,3,arg) 
+				format(s_Flags,3,arg)
 			f_GagTime = DefaultGagTime
 		}
 #if GagReason == 1
@@ -4919,7 +4919,7 @@ public admin_gag(id,level,cid)
 		{
 			read_argv(i,arg,31)
 			if(contain(arg,"!")!=-1)
-			{	
+			{
 				read_args(arg,31)
 				new tmp[32]
 				copyc(tmp,32,arg,33)
@@ -4927,20 +4927,20 @@ public admin_gag(id,level,cid)
 				GagReasonFound = 1
 			}
 		}
-		if(GagReasonFound == 0)	
+		if(GagReasonFound == 0)
 			format(gs_GagReason[VictimID],47,"You Were Gagged For Not Following The Rules")
 #endif
 	}
 
-	flags = read_flags(s_Flags) 
-	g_GagPlayers[VictimID] = flags 
+	flags = read_flags(s_Flags)
+	g_GagPlayers[VictimID] = flags
 #if VoiceCommMute == 1
-	if(flags & 4) 
+	if(flags & 4)
 		fm_set_speak(VictimID, SPEAK_MUTED)
 #endif
-	new TaskParm[1]		
+	new TaskParm[1]
 	TaskParm[0] = VictimID
-	set_task( f_GagTime,"task_UnGagPlayer",VictimID,TaskParm,1) 
+	set_task( f_GagTime,"task_UnGagPlayer",VictimID,TaskParm,1)
 
 	CountFlags = 0
 	if (flags & 1)
@@ -4961,25 +4961,25 @@ public admin_gag(id,level,cid)
 		if(CountFlags)
 			format(ShowFlags,31,"%s / voicecomm",ShowFlags)
 		if(!CountFlags)
-			format(ShowFlags,31,"voicecomm")		
+			format(ShowFlags,31,"voicecomm")
 	}
 #endif
 	get_user_name(id,AdminName,31)
 	get_user_name(VictimID,VictimName,31)
 
-	switch(get_pcvar_num(amx_show_activity))   
-	{ 
+	switch(get_pcvar_num(amx_show_activity))
+	{
 #if GagReason == 1
-		case 2:   client_print(0,print_chat,"%L", LANG_PLAYER, "AMX_SUPER_GAG_PLAYER_REASON_CASE2",AdminName,VictimName,gs_GagReason[VictimID],ShowFlags) 
-   		case 1:   client_print(0,print_chat,"%L", LANG_PLAYER, "AMX_SUPER_GAG_PLAYER_REASON_CASE1",VictimName,gs_GagReason[VictimID],ShowFlags) 
+		case 2:   client_print(0,print_chat,"%L", LANG_PLAYER, "AMX_SUPER_GAG_PLAYER_REASON_CASE2",AdminName,VictimName,gs_GagReason[VictimID],ShowFlags)
+   		case 1:   client_print(0,print_chat,"%L", LANG_PLAYER, "AMX_SUPER_GAG_PLAYER_REASON_CASE1",VictimName,gs_GagReason[VictimID],ShowFlags)
 #else
-		case 2:   client_print(0,print_chat,"%L", LANG_PLAYER, "AMX_SUPER_GAG_PLAYER_CASE2",AdminName,VictimName,ShowFlags) 
-   		case 1:   client_print(0,print_chat,"%L", LANG_PLAYER, "AMX_SUPER_GAG_PLAYER_CASE1",VictimName,ShowFlags) 
+		case 2:   client_print(0,print_chat,"%L", LANG_PLAYER, "AMX_SUPER_GAG_PLAYER_CASE2",AdminName,VictimName,ShowFlags)
+   		case 1:   client_print(0,print_chat,"%L", LANG_PLAYER, "AMX_SUPER_GAG_PLAYER_CASE1",VictimName,ShowFlags)
 #endif
-	 
-	 }	
+
+	 }
 #if LogAdminActions == 1
-	new parm[5] 
+	new parm[5]
 	parm[0] = VictimID
 	parm[1] = id
 	parm[2] = 0
@@ -4988,43 +4988,43 @@ public admin_gag(id,level,cid)
 	LogAdminAction(parm)
 #endif
 	return PLUGIN_HANDLED
-} 
+}
 
-public admin_ungag(id,level,cid)  
+public admin_ungag(id,level,cid)
 {
 	new arg[32],VictimID
-	read_argv(1,arg,31)  		
-	
-	VictimID = cmd_target(id,arg,8)		
-	if ((get_user_flags(VictimID) & ADMIN_IMMUNITY) && VictimID != id || !cmd_access (id,level,cid,2) ) { return PLUGIN_HANDLED; } 
+	read_argv(1,arg,31)
 
-	new AdminName[32],VictimName[32] 
+	VictimID = cmd_target(id,arg,8)
+	if ((get_user_flags(VictimID) & ADMIN_IMMUNITY) && VictimID != id || !cmd_access (id,level,cid,2) ) { return PLUGIN_HANDLED; }
 
-	get_user_name(id,AdminName,31)		
+	new AdminName[32],VictimName[32]
+
+	get_user_name(id,AdminName,31)
 	get_user_name(VictimID,VictimName,31)
 
-	if(!g_GagPlayers[VictimID])		
+	if(!g_GagPlayers[VictimID])
 	{
 		console_print(id, "%L", LANG_PLAYER, "AMX_SUPER_NOT_GAGGED",arg)
 		return PLUGIN_HANDLED
 	}
-	switch(get_pcvar_num(amx_show_activity))   
-	{ 
-   		case 2:   client_print(0,print_chat, "%L", LANG_PLAYER, "AMX_SUPER_UNGAG_PLAYER_CASE2",AdminName,VictimName) 
-   		case 1:   client_print(0,print_chat, "%L", LANG_PLAYER, "AMX_SUPER_UNGAG_PLAYER_CASE1",VictimName) 
+	switch(get_pcvar_num(amx_show_activity))
+	{
+   		case 2:   client_print(0,print_chat, "%L", LANG_PLAYER, "AMX_SUPER_UNGAG_PLAYER_CASE2",AdminName,VictimName)
+   		case 1:   client_print(0,print_chat, "%L", LANG_PLAYER, "AMX_SUPER_UNGAG_PLAYER_CASE1",VictimName)
   	}
 
 #if LogAdminActions == 1
-	new parm[3] 
+	new parm[3]
 	parm[0] = VictimID
 	parm[1] = id
 	parm[2] = 1
 	LogAdminAction(parm)
 #endif
-	remove_task(VictimID)		
-	UnGagPlayer(VictimID)		
+	remove_task(VictimID)
+	UnGagPlayer(VictimID)
 	return PLUGIN_HANDLED
-} 
+}
 
 #if BlockNameChange == 1
 public client_infochanged(id)
@@ -5034,7 +5034,7 @@ public client_infochanged(id)
 		new newname[32], oldname[32]
 		get_user_info(id, "name", newname,31)
 		get_user_name(id,oldname,31)
-	
+
 		if (!equal(oldname,newname))
 		{
 			client_print(id,print_chat, "%L", LANG_PLAYER, "AMX_SUPER_PLAYER_NAMELOCK")
@@ -5043,7 +5043,7 @@ public client_infochanged(id)
 	}
 }
 #endif
-public task_UnGagPlayer(TaskParm[])	
+public task_UnGagPlayer(TaskParm[])
 {
 	new VictimName[32]
 	get_user_name(TaskParm[0],VictimName,31)
@@ -5051,8 +5051,8 @@ public task_UnGagPlayer(TaskParm[])
 	UnGagPlayer(TaskParm[0])
 }
 #if LogAdminActions == 1
-stock LogAdminAction(parm[]) 
-{ 
+stock LogAdminAction(parm[])
+{
 	new VictimName[32],AdminName[32],AdminAuth[35],VictimAuth[35]
 	get_user_name(parm[1],AdminName,31)
 	get_user_name(parm[0],VictimName,31)
@@ -5070,14 +5070,14 @@ stock LogAdminAction(parm[])
 		log_amx( "%L", LANG_PLAYER, "AMX_SUPER_UNGAG_PLAYER_LOG",AdminName,AdminAuth,VictimName,VictimAuth)
 }
 #endif
-stock UnGagPlayer(id) 
-{ 
+stock UnGagPlayer(id)
+{
 #if VoiceCommMute == 1
 	if(g_GagPlayers[id] & 4)
 	{
 		if(get_pcvar_num(sv_alltalk) == 1)
 			fm_set_speak(id, SPEAK_ALL)
-		else 
+		else
 			fm_set_speak(id, SPEAK_NORMAL)
 	}
 #endif
@@ -5089,8 +5089,8 @@ stock UnGagPlayer(id)
 #if AllowOtherPlugin2Interface == 1
 public func_AddGag(id)
 {
-	g_GagPlayers[id] = 7 
-	new TaskParm[1]	
+	g_GagPlayers[id] = 7
+	new TaskParm[1]
 	TaskParm[0] = id
 #if VoiceCommMute == 1
 	fm_set_speak(id, SPEAK_MUTED)
@@ -5100,7 +5100,7 @@ public func_AddGag(id)
 
 public func_RemoveGag(id)
 {
-	remove_task(id)		
+	remove_task(id)
 	UnGagPlayer(id)
 }
 #endif
@@ -5121,9 +5121,9 @@ public admin_weapon(id,level,cid)
 	read_argv(2,arg2,7)
 	get_user_name(id,aName,31)
 	get_user_authid(id,aAuthid,35)
-	
+
 	weapon = str_to_num(arg2)
-	
+
 	if(!weapon){
 		//cycle thru our weapons array under position 30 until match
 		for(new i; i < 30; i++){
@@ -5133,7 +5133,7 @@ public admin_weapon(id,level,cid)
 			}
 		}
 	}
-	
+
 	if (arg[0]=='@'){
 		new plist[32], pnum
 		if (equali("T",arg[1]))         copy(arg[1],31,"TERRORIST")
@@ -5144,8 +5144,8 @@ public admin_weapon(id,level,cid)
 			console_print(id,"%L", LANG_PLAYER, AMX_SUPER_NO_PLAYERS)
 			return PLUGIN_HANDLED
 		}
-		
-		
+
+
 		for(new i=0; i<pnum; i++)
 			give_weapon(plist[i],weapon)
 
@@ -5246,11 +5246,11 @@ give_weapon(id,weapon)
 			fm_give_item(id,weapons[WEAPON_P90])
 			fm_give_item_x(id,ammo_57mm,4)
 		}
-		case 35:{ 
+		case 35:{
 			fm_give_item(id,weapons[WEAPON_UMP45])
 			fm_give_item_x(id,ammo_45acp,9)
-		} 
-		//Rifles 
+		}
+		//Rifles
 		case 40:{
 			fm_give_item(id,weapons[WEAPON_FAMAS])
 			fm_give_item_x(id,ammo_556nato,3)
@@ -5293,7 +5293,7 @@ give_weapon(id,weapon)
 		}
 		//Machine gun (M249 Para)
 		case 51:{
-			fm_give_item(id,weapons[WEAPON_M249]) 
+			fm_give_item(id,weapons[WEAPON_M249])
 			fm_give_item_x(id,ammo_556natobox,7)
 		}
 		//Shield combos
@@ -5342,7 +5342,7 @@ give_weapon(id,weapon)
 			fm_give_item(id,weapons[WEAPON_FLASHBANG])
 			fm_give_item(id,weapons[ITEM_ASSAULTSUIT])
 		}
-		//Equipment 
+		//Equipment
 		case 81:{
 			fm_give_item(id,weapons[ITEM_KEVLAR])
 		}
@@ -5463,50 +5463,50 @@ public fnShutDown(id,level,cid)
 {
 	if(!cmd_access(id,level,cid,2) || g_bShuttingDown)
 		return PLUGIN_HANDLED
-		
+
 	new szArg[6]
 	read_argv(0,szArg,5)
-	
+
 	if(equali(szArg,"amx_r"))
 		g_iMode = RESTART
-		
+
 	read_argv(1,szArg,5)
 	new iTime = str_to_num(szArg)
-	
+
 	if(!iTime || iTime > 20)
 	{
 		console_print(id, "%L", LANG_PLAYER, "AMX_SUPER_SHUTDOWN_CONSOLE")
-		
+
 		return PLUGIN_HANDLED
 	}
-	
+
 	new szName[32]
 	get_user_name(id,szName,31)
-	
+
 	new szAuthid[32]
 	get_user_authid(id,szAuthid,31)
-	
+
 	log_amx("%L", LANG_PLAYER, "AMX_SUPER_SHUTDOWN_MESSAGE_LOG",szName,id,szAuthid,g_iMode ? "restart" : "shutdown")
-	
+
 	switch(get_pcvar_num(amx_show_activity))
 	{
 		case 1 : client_print(0,print_chat, "%L", LANG_PLAYER, "AMX_SUPER_SHUTDOWN_CASE1",g_iMode ? "Restart" : "Shutdown",iTime)
 		case 2 : client_print(0,print_chat, "%L", LANG_PLAYER, "AMX_SUPER_SHUTDOWN_CASE2",szName,g_iMode ? "Restart" : "Shutdown",iTime)
 	}
-	
+
 	fnInitiate(iTime)
-	
+
 	return PLUGIN_HANDLED
 }
 
 public fnInitiate(iTime)
 {
 	g_bShuttingDown = true
-	
+
 	new iCount
 	for(iCount = iTime;iCount != 0;iCount--)
 		set_task(float(abs(iCount-iTime)),"fnCallTime",iCount)
-	
+
 	set_task(float(iTime),"fnCallTime",0)
 }
 
@@ -5518,15 +5518,15 @@ public fnCallTime(iCount)
 		{
 			case SHUTDOWN :
 				server_cmd("quit")
-			
+
 			case RESTART :
 				server_cmd("reload")
 		}
 	}
-	
+
 	new szWord[32]
 	num_to_word(iCount,szWord,31)
-	
+
 	client_cmd(0,"spk ^"fvox/%s^"",szWord)
 }
 
@@ -5535,7 +5535,7 @@ public fnCallTime(iCount)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Death Event
 //==========================================================================================================
-public event_death() { 
+public event_death() {
 
 //----------------------------------------------------------------------------------------------------------
 //SPECTATOR BUG FIX v1.0 by ]FUSION[ Gray Death
@@ -5572,17 +5572,17 @@ public client_connect(id) {
 	HasPermGlow[id] = false
 
 	set_user_speak(id,SPEAK_NORMAL2)
-	g_admin[id] = 0	
+	g_admin[id] = 0
 	g_speed[id] = false;
 
 //----------------------------------------------------------------------------------------------------------
 //"SHOWNDEAD" SCOREBOARD FIX v0.9.4 by EJ/Vantage/Mouse
 //----------------------------------------------------------------------------------------------------------
-	if(!(is_user_bot(id)) ) { 
-		message_begin(MSG_ALL, gmsg_TeamInfo, {0, 0, 0}, id) 
-		write_byte(id) 
-		write_string(SpecName) 
-		message_end() 
+	if(!(is_user_bot(id)) ) {
+		message_begin(MSG_ALL, gmsg_TeamInfo, {0, 0, 0}, id)
+		write_byte(id)
+		write_string(SpecName)
+		message_end()
 	}
 
 //----------------------------------------------------------------------------------------------------------
@@ -5595,7 +5595,7 @@ public client_connect(id) {
 	}
 
 //----------------------------------------------------------------------------------------------------------
-//AFK Manager by VEN  
+//AFK Manager by VEN
 //----------------------------------------------------------------------------------------------------------
 	g_connected[id] = true
 
@@ -5620,7 +5620,7 @@ public client_connect(id) {
 
 	if (candidate) {
 		chat_msg(candidate, g_spec_kick_chat)
-		client_kick(candidate)
+		client_kick(candidate, g_spec_kick_chat)
 		return PLUGIN_CONTINUE
 	}
 
@@ -5644,7 +5644,7 @@ public client_connect(id) {
 
 	if (candidate) {
 		chat_msg(candidate, g_afk_kick_chat)
-		client_kick(candidate)
+		client_kick(candidate, g_afk_kick_chat)
 	}
 
 	return PLUGIN_CONTINUE
@@ -5653,7 +5653,7 @@ public task_afk_check2() {
 
 	if(!get_pcvar_num(afkcheck_allow))
 		return
-		
+
 	static players[32], num, i, bool:allafk, origin[3]
 	for (new a; a < 2; ++a) {
 		get_players(players, num, "ae", g_teamname[a])
@@ -5714,8 +5714,11 @@ chat_msg(id, const text[]) {
 	client_print(0, print_chat, "%L", LANG_PLAYER, text, name)
 }
 
-stock client_kick(id, const reason[] = "") {
-	server_cmd("kick #%d ^"%L^"", get_user_userid(id), reason)
+stock client_kick(id, const lang[]){
+	new user_name[ 32 ];
+	get_user_name( id, user_name, charsmax( user_name ) )
+
+	server_cmd( "kick #%d ^"%L^"", get_user_userid( id ), LANG_PLAYER, lang, user_name )
 	server_exec()
 }
 
@@ -5750,10 +5753,10 @@ public changeWeapon(id)
 	{
 		new wpnid = read_data(2);
 		new clip = read_data(3);
-	
+
 		if (wpnid == CSW_C4 || wpnid == CSW_KNIFE) return;
 		if (wpnid == CSW_HEGRENADE || wpnid == CSW_SMOKEGRENADE || wpnid == CSW_FLASHBANG) return;
-	
+
 		if (clip == 0) reloadAmmo(id);
 	}
 }
@@ -5775,12 +5778,12 @@ public client_disconnect(id) {
 	autoban[id] = false
 
 	new param[1]
-    	param[0] = id 
-    	set_task(2.0, "leave_msg", 0, param, 1) 
-	
+    	param[0] = id
+    	set_task(2.0, "leave_msg", 0, param, 1)
+
 	for( new i = 0; i < 4; i++ )
 		g_glow[id][i] = 0
-	
+
 	if( g_gagged[id] )
 	{
 		new name[32]
@@ -5789,14 +5792,14 @@ public client_disconnect(id) {
 		client_print( 0, print_chat, "%L", LANG_PLAYER, AMX_SUPER_GAG_CONNECTED, name, g_wasgagged[id] )
 		g_gagged[id] = 0
 	}
-	
+
 	remove_task(id)
 
 	if (g_admin[id]) {
 		set_user_speak(id,SPEAK_NORMAL2)
 		g_admin[id] = 0
 	}
-	
+
 	team[id] = CS_TEAM_UNASSIGNED
 
 	g_connected[id] = false
