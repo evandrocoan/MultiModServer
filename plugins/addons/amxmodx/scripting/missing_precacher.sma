@@ -11,6 +11,9 @@ public plugin_init()
 }
 public plugin_precache()
 {
+    precache_generic( "grid_cso.wad" )
+    engfunc(EngFunc_PrecacheGeneric, "grid_cso.wad")
+
     // Catch these engine functions so we can precache *t.mdl
     register_forward(FM_PrecacheModel, "PrecacheCallback");
     register_forward(FM_PrecacheGeneric, "PrecacheCallback");
