@@ -41,7 +41,7 @@ new display_type_pcvar
 
 new name[33][32]
 new authid[33][32]
-new country[33][46]
+new country[33][100]
 new ip[33][32]
 
 new connect_soundfile[64]
@@ -108,8 +108,11 @@ public client_putinserver(id)
                 replace(string,199,"%ip",ip[id])
             }
 
+            server_print(string)
+
             new num, players[32], player
             get_players(players,num,"ch")
+
             for(new i=0;i<num;i++)
             {
                 player = players[i]
@@ -118,8 +121,6 @@ public client_putinserver(id)
                 write_byte(player)
                 write_string(string)
                 message_end()
-
-                server_print(string)
 
                 if(display_type & PLAY_SOUND_CONNECT)
                 {
@@ -144,7 +145,7 @@ public get_client_info(id)
     get_user_authid(id,authid[id],31)
 
     get_user_ip(id,ip[id],31)
-    geoip_country(ip[id],country[id])
+    new written_chars = geoip_country_ex( ip[id], country[id], charsmax( country[] ), -1 )
 
     if(equal(country[id],"error"))
     {
@@ -160,7 +161,15 @@ public get_client_info(id)
         {
             country[id] = "Unknown Country"
         }
+
+        written_chars = strlen( country[id] )
     }
+
+    written_chars += copy( country[ id ][ written_chars ], charsmax( country[] ) - written_chars, "/" )
+    written_chars += geoip_region_name( ip[ id ], country[ id ][ written_chars ], charsmax( country[] ) - written_chars, -1 )
+
+    written_chars += copy( country[ id ][ written_chars ], charsmax( country[] ) - written_chars, "/" )
+    geoip_city( ip[ id ], country[ id ][ written_chars ], charsmax( country[] ) - written_chars, -1 )
 }
 
 public client_infochanged(id)
@@ -207,18 +216,19 @@ public client_disconnect(id)
                 replace(string,199,"%ip",ip[id])
             }
 
+            server_print(string)
+
             new num, players[32], player
             get_players(players,num,"ch")
+
             for(new i=0;i<num;i++)
             {
                 player = players[i]
 
-                // message_begin(MSG_ONE,saytext_msgid,{0,0,0},player)
-                // write_byte(player)
-                // write_string(string)
-                // message_end()
-
-                server_print(string)
+                message_begin(MSG_ONE,saytext_msgid,{0,0,0},player)
+                write_byte(player)
+                write_string(string)
+                message_end()
 
                 if(display_type & PLAY_SOUND_DISCONNECT)
                 {
