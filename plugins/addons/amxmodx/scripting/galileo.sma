@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.2.3-774";
+new const PLUGIN_VERSION[] = "v5.3.0-775";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -515,10 +515,11 @@ new cvar_coloredChatEnabled;
 #define VOTE_TIME_RUNOFF    3.0
 #define VOTE_TIME_COUNT     5.5
 
-#define RTV_CMD_STANDARD              1
-#define RTV_CMD_SHORTHAND             2
-#define RTV_CMD_DYNAMIC               4
-#define RTV_CMD_SINGLE_PLAYER_DISABLE 8
+#define RTV_CMD_STANDARD               1
+#define RTV_CMD_SHORTHAND              2
+#define RTV_CMD_DYNAMIC                4
+#define RTV_CMD_SINGLE_PLAYER_DISABLE  8
+#define RTV_CMD_EXTENSION_WAIT_DISABLE 16
 
 #define MAPFILETYPE_SINGLE 1
 #define MAPFILETYPE_GROUPS 2
@@ -1951,6 +1952,11 @@ public cacheCvarsValues()
 {
     LOGGER( 128, "I AM ENTERING ON cacheCvarsValues(0)" )
 
+    // RTV wait time
+    g_rtvWaitRounds             = get_pcvar_num( cvar_rtvWaitRounds          );
+    g_rtvWaitFrags              = get_pcvar_num( cvar_rtvWaitFrags           );
+    g_rtvWaitMinutes            = get_pcvar_float( cvar_rtvWaitMinutes       );
+
     g_rtvCommands               = get_pcvar_num( cvar_rtvCommands            );
     g_extendmapStepRounds       = get_pcvar_num( cvar_extendmapStepRounds    );
     g_extendmapStepFrags        = get_pcvar_num( cvar_extendmapStepFrags     );
@@ -2973,10 +2979,6 @@ stock loadMapFiles( bool:readMapCycle = true )
 stock configureTheRTVFeature( mapFilerFilePath[] )
 {
     LOGGER( 128, "I AM ENTERING ON configureTheRTVFeature(1)" )
-
-    g_rtvWaitMinutes = get_pcvar_float( cvar_rtvWaitMinutes );
-    g_rtvWaitRounds  = get_pcvar_num( cvar_rtvWaitRounds );
-    g_rtvWaitFrags   = get_pcvar_num( cvar_rtvWaitFrags );
 
     if( g_rtvCommands & RTV_CMD_STANDARD )
     {
@@ -9295,6 +9297,7 @@ stock map_extend( lang[] )
     LOGGER( 2, "( map_extend ) TRYING to change the cvar %15s from '%d'.", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) )
 
     saveEndGameLimits();
+    resetTheRtvWaitTime();
     doTheActualMapExtension();
 
     // Remove the fail safe, as we are extending the map. The fail safe could be running if the
@@ -9307,8 +9310,6 @@ stock map_extend( lang[] )
 
     blockNewVotingToStart();
     toAnnounceTheMapExtension( lang );
-
-    resetTheRtvWaitTime();
     noLongerIsAnEarlyVoting();
 
     LOGGER( 2, "    ( map_extend ) CHECKOUT the cvar %19s is '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
@@ -9342,34 +9343,46 @@ public unblockNewVotingToStart()
 
 /**
  * Reset the "rtv wait" time, taking into consideration the map extension.
+ *
+ * This must to be called before the doTheActualMapExtension(0)!
  */
 stock resetTheRtvWaitTime()
 {
     LOGGER( 128, "I AM ENTERING ON resetTheRtvWaitTime(0)" )
+    LOGGER( 2, "( resetTheRtvWaitTime ) g_rtvWaitFrags:   %d", g_rtvWaitFrags )
+    LOGGER( 2, "( resetTheRtvWaitTime ) g_rtvWaitRounds:  %d", g_rtvWaitRounds )
+    LOGGER( 2, "( resetTheRtvWaitTime ) g_rtvWaitMinutes: %d", g_rtvWaitMinutes )
 
-    if( g_rtvWaitMinutes )
+    if( !( g_rtvCommands & RTV_CMD_EXTENSION_WAIT_DISABLE ) )
     {
-        g_rtvWaitMinutes += GAME_ENDING_CONTEXT_SAVED( g_timeLimitContextSaved, get_pcvar_float( cvar_mp_timelimit ) );
-    }
-
-    if( g_rtvWaitRounds )
-    {
-        new cache = GAME_ENDING_CONTEXT_SAVED( g_maxRoundsContextSaved, get_pcvar_num( cvar_mp_maxrounds ) );
-
-        if( cache )
+        if( g_rtvWaitMinutes )
         {
-            g_rtvWaitRounds += cache;
+            g_rtvWaitMinutes += GAME_ENDING_CONTEXT_SAVED( g_timeLimitContextSaved, get_pcvar_float( cvar_mp_timelimit ) );
         }
-        else if( ( cache = GAME_ENDING_CONTEXT_SAVED( g_winLimitContextSaved, get_pcvar_num( cvar_mp_winlimit ) ) ) )
+
+        if( g_rtvWaitRounds )
         {
-            g_rtvWaitRounds += cache;
+            new cache = GAME_ENDING_CONTEXT_SAVED( g_maxRoundsContextSaved, get_pcvar_num( cvar_mp_maxrounds ) );
+
+            if( cache )
+            {
+                g_rtvWaitRounds += cache;
+            }
+            else if( ( cache = GAME_ENDING_CONTEXT_SAVED( g_winLimitContextSaved, get_pcvar_num( cvar_mp_winlimit ) ) ) )
+            {
+                g_rtvWaitRounds += cache;
+            }
+        }
+
+        if( g_rtvWaitFrags )
+        {
+            g_rtvWaitFrags += GAME_ENDING_CONTEXT_SAVED( g_fragLimitContextSaved, get_pcvar_num( cvar_mp_fraglimit ) );
         }
     }
 
-    if( g_rtvWaitFrags )
-    {
-        g_rtvWaitFrags += GAME_ENDING_CONTEXT_SAVED( g_fragLimitContextSaved, get_pcvar_num( cvar_mp_fraglimit ) );
-    }
+    LOGGER( 2, "( resetTheRtvWaitTime ) g_rtvWaitFrags:   %d", g_rtvWaitFrags )
+    LOGGER( 2, "( resetTheRtvWaitTime ) g_rtvWaitRounds:  %d", g_rtvWaitRounds )
+    LOGGER( 2, "( resetTheRtvWaitTime ) g_rtvWaitMinutes: %d", g_rtvWaitMinutes )
 }
 
 stock doTheActualMapExtension()
