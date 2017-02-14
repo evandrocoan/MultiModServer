@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.3.0-775";
+new const PLUGIN_VERSION[] = "v5.3.0-776";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -665,7 +665,7 @@ new cvar_coloredChatEnabled;
 /**
  * Determine whether there will be a alternate vote option as `Stay Here` or `Extend Map`.
  */
-#define IS_MAP_EXTENSION_ALLOWED() ( g_isMapExtensionAllowed || g_isExtendmapAllowStay && !g_isGameFinalVoting )
+#define IS_MAP_EXTENSION_ALLOWED() ( g_isMapExtensionAllowed && g_isGameFinalVoting || g_isExtendmapAllowStay && !g_isGameFinalVoting )
 
 /**
  * Every time an operation close to the call to map_manageEnd(0) need to be performed on the cvars
@@ -7123,9 +7123,6 @@ stock configureTheExtensionOption( bool:is_forced_voting )
     LOGGER( 4, "( configureTheExtensionOption ) is_forced_voting:        %d", is_forced_voting )
     LOGGER( 4, "( configureTheExtensionOption ) g_isGameFinalVoting:     %d", g_isGameFinalVoting )
     LOGGER( 4, "( configureTheExtensionOption ) g_isMapExtensionAllowed: %d", g_isMapExtensionAllowed )
-
-    // Allow it only on a end map voting.
-    g_isMapExtensionAllowed = g_isMapExtensionAllowed && g_isGameFinalVoting;
 }
 
 /**
@@ -8993,9 +8990,19 @@ public computeVotes()
                 LOGGER( 1, "    ( computeVotes ) Just Returning/blocking, its runoff starting." )
                 return;
             }
-            else if( runoffEnabled == RUNOFF_EXTEND )
+            else if( runoffEnabled == RUNOFF_EXTEND
+                     && IS_MAP_EXTENSION_ALLOWED() )
             {
-                map_extend( "GAL_RUNOFF_REQUIRED_TOP" );
+                // Allow it only on a end map voting
+                if( g_isGameFinalVoting )
+                {
+                    map_extend( "GAL_RUNOFF_REQUIRED_TOP" );
+                }
+                else
+                {
+                    stayHereWon( "GAL_RUNOFF_REQUIRED_TOP" );
+                }
+
                 LOGGER( 1, "( computeVotes ) Its runoff extending." )
             }
             else
@@ -9018,6 +9025,18 @@ public computeVotes()
             g_isTimeToRestart, g_voteStatus & IS_FORCED_VOTE != 0 )
 
     finalizeVoting();
+}
+
+stock stayHereWon( const reason[] )
+{
+    LOGGER( 128, "I AM ENTERING ON stayHereWon(0)" )
+
+    color_print( 0, "%L: %L", LANG_PLAYER, reason, LANG_PLAYER, "GAL_WINNER_STAY2" );
+    toShowTheMapStayHud( "GAL_VOTE_ENDED", reason, "GAL_WINNER_STAY1" );
+
+    // However here, none decisions are being made. Anyways, we cannot block the execution
+    // right here without executing the remaining code.
+    noLongerIsAnEarlyVoting();
 }
 
 stock chooseTheVotingMapWinner( firstPlaceChoices[], numberOfMapsAtFirstPosition )
@@ -9058,12 +9077,7 @@ stock chooseTheVotingMapWinner( firstPlaceChoices[], numberOfMapsAtFirstPosition
                 LOGGER( 1, "    ( chooseTheVotingMapWinner ) Just opened the menu due g_voteMapStatus: %d", g_voteMapStatus )
             }
 
-            color_print( 0, "%L: %L", LANG_PLAYER, "DMAP_MAP_EXTENDED1", LANG_PLAYER, "GAL_WINNER_STAY2" );
-            toShowTheMapStayHud( "GAL_VOTE_ENDED", "DMAP_MAP_EXTENDED1", "GAL_WINNER_STAY1" );
-
-            // However here, none decisions are being made. Anyways, we cannot block the execution
-            // right here without executing the remaining code.
-            noLongerIsAnEarlyVoting();
+            stayHereWon( "DMAP_MAP_EXTENDED1" );
         }
         else if( !g_isGameFinalVoting // "stay here" won and the map must be restarted.
                  && g_isTimeToRestart )
@@ -9206,7 +9220,7 @@ stock map_getMinutesElapsedInteger()
     return get_pcvar_num( cvar_mp_timelimit ) - ( get_timeleft() / 60 );
 }
 
-stock toAnnounceTheMapExtension( lang[] )
+stock toAnnounceTheMapExtension( const lang[] )
 {
     LOGGER( 128, "I AM ENTERING ON toAnnounceTheMapExtension(1) lang: %s", lang )
 
@@ -9227,9 +9241,9 @@ stock toAnnounceTheMapExtension( lang[] )
     }
 }
 
-stock toShowTheMapExtensionHud( lang1[], lang2[], lang3[], extend )
+stock toShowTheMapExtensionHud( const lang1[], const lang2[], const lang3[], extend_step )
 {
-    LOGGER( 128, "I AM ENTERING ON toShowTheMapExtensionHud(4) lang2: %s, lang3: %s, extend: %d", lang2, lang3, extend )
+    LOGGER( 128, "I AM ENTERING ON toShowTheMapExtensionHud(4) lang2: %s, lang3: %s, extend_step: %d", lang2, lang3, extend_step )
 
     if( !( get_pcvar_num( cvar_hudsHide ) & HUD_VOTE_RESULTS_ANNOUNCE ) )
     {
@@ -9239,27 +9253,37 @@ stock toShowTheMapExtensionHud( lang1[], lang2[], lang3[], extend )
         // otherwise the message will be too big and will break a line which should not.
         if( equali( lang1, "GAL_RUNOFF_REQUIRED_TOP" ) )
         {
-            show_hudmessage( 0, "%L:^n%L", LANG_PLAYER, lang1, LANG_PLAYER, lang3, extend );
+            show_hudmessage( 0, "%L:^n%L", LANG_PLAYER, lang1, LANG_PLAYER, lang3, extend_step );
         }
         else
         {
-            show_hudmessage( 0, "%L. %L:^n%L", LANG_PLAYER, lang1, LANG_PLAYER, lang2, LANG_PLAYER, lang3, extend );
+            show_hudmessage( 0, "%L. %L:^n%L", LANG_PLAYER, lang1, LANG_PLAYER, lang2, LANG_PLAYER, lang3, extend_step );
         }
     }
 }
 
-stock toShowTheMapStayHud( lang1[], lang2[], lang3[] )
+stock toShowTheMapStayHud( const lang1[], const lang2[], const lang3[] )
 {
     LOGGER( 128, "I AM ENTERING ON toShowTheMapStayHud(3) lang1: %s, lang2: %s, lang3: %s", lang1, lang2, lang3 )
 
     if( !( get_pcvar_num( cvar_hudsHide ) & HUD_VOTE_RESULTS_ANNOUNCE ) )
     {
         set_hudmessage( 150, 120, 0, -1.0, 0.13, 0, 1.0, 6.94, 0.0, 0.0, -1 );
-        show_hudmessage( 0, "%L. %L:^n%L", LANG_PLAYER, lang1, LANG_PLAYER, lang2, LANG_PLAYER, lang3 );
+
+        // If our lang is `GAL_RUNOFF_REQUIRED_TOP`, we cannot include the lang `DMAP_MAP_EXTENDED1`
+        // otherwise the message will be too big and will break a line which should not.
+        if( equali( lang2, "GAL_RUNOFF_REQUIRED_TOP" ) )
+        {
+            show_hudmessage( 0, "%L:^n%L", LANG_PLAYER, lang2, LANG_PLAYER, lang3 );
+        }
+        else
+        {
+            show_hudmessage( 0, "%L. %L:^n%L", LANG_PLAYER, lang1, LANG_PLAYER, lang2, LANG_PLAYER, lang3 );
+        }
     }
 }
 
-stock toShowTheMapNextHud( lang1[], lang2[], lang3[], map[] )
+stock toShowTheMapNextHud( const lang1[], const lang2[], const lang3[], map[] )
 {
     LOGGER( 128, "I AM ENTERING ON toShowTheMapNextHud(4) lang1: %s, lang2: %s, lang3: %s", lang1, lang2, lang3 )
 
@@ -9272,7 +9296,7 @@ stock toShowTheMapNextHud( lang1[], lang2[], lang3[], map[] )
     }
 }
 
-stock map_extend( lang[] )
+stock map_extend( const lang[] )
 {
     LOGGER( 128, "I AM ENTERING ON map_extend(1)" )
     LOGGER( 2, "%32s g_rtvWaitMinutes: %f, g_extendmapStepMinutes: %d", "map_extend( in )", g_rtvWaitMinutes, g_extendmapStepMinutes )
@@ -18874,8 +18898,8 @@ public timeRemain()
         g_endVotingType |= IS_BY_TIMER;
         vote_startDirector( false );
 
-        ERR( "g_isMapExtensionAllowed must be 1, instead of %d.", g_isMapExtensionAllowed )
-        setTestFailure( test_id, !g_isMapExtensionAllowed, errorMessage );
+        ERR( "g_isMapExtensionAllowed must be 1, instead of %d.", g_isMapExtensionAllowed && g_isGameFinalVoting )
+        setTestFailure( test_id, !( g_isMapExtensionAllowed && g_isGameFinalVoting ), errorMessage );
     }
 
     /**
@@ -18889,8 +18913,8 @@ public timeRemain()
         // Case 2
         test_id = test_registerSeriesNaming( "test_endOfMapVoting", s );
 
-        ERR( "g_isMapExtensionAllowed must be 1, instead of %d.", g_isMapExtensionAllowed )
-        setTestFailure( test_id, !g_isMapExtensionAllowed, errorMessage );
+        ERR( "g_isMapExtensionAllowed must be 1, instead of %d.", g_isMapExtensionAllowed && g_isGameFinalVoting )
+        setTestFailure( test_id, !( g_isMapExtensionAllowed && g_isGameFinalVoting ), errorMessage );
 
         color_print( 0, "%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED2" );
         cancelVoting();
@@ -18904,8 +18928,8 @@ public timeRemain()
         g_endVotingType |= IS_BY_TIMER;
         vote_startDirector( false );
 
-        ERR( "g_isMapExtensionAllowed must be 0, instead of was %d.", g_isMapExtensionAllowed )
-        setTestFailure( test_id, g_isMapExtensionAllowed, errorMessage );
+        ERR( "g_isMapExtensionAllowed must be 0, instead of was %d.", g_isMapExtensionAllowed && g_isGameFinalVoting )
+        setTestFailure( test_id, g_isMapExtensionAllowed && g_isGameFinalVoting, errorMessage );
     }
 
     /**
@@ -18923,8 +18947,8 @@ public timeRemain()
         new errorMessage[ MAX_LONG_STRING ];
         test_id = test_registerSeriesNaming( "test_endOfMapVoting", s );
 
-        ERR( "g_isMapExtensionAllowed must be 0, instead of %d.", g_isMapExtensionAllowed )
-        setTestFailure( test_id, g_isMapExtensionAllowed, errorMessage );
+        ERR( "g_isMapExtensionAllowed must be 0, instead of %d.", g_isMapExtensionAllowed && g_isGameFinalVoting )
+        setTestFailure( test_id, g_isMapExtensionAllowed && g_isGameFinalVoting, errorMessage );
 
         cancelVoting();
         secondsLeft = get_timeleft();
