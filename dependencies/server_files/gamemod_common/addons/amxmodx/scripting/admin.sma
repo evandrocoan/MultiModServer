@@ -127,7 +127,7 @@ public client_connect(id)
 	g_CaseSensitiveName[id] = false;
 }
 
-public amx_reloadadmins()
+public reload_admins()
 {
 	server_cmd( "amx_reloadadmins" )
 }
