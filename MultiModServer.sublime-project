@@ -33,6 +33,20 @@
                     "cmd": ["galileo.bat"],
                 },
             ]
-        }
+        },
+        {
+            "working_dir": "$project_path/",
+            // "selector": "source.AmxxPawn, source.AMXX", // comment this to build from everywhere
+
+            "name": "Install Multimod Plugins",
+            "cmd": ["sh", "$project_path/installers/install_multimod_plugins.sh"],
+        },
+        {
+            "working_dir": "$project_path/dependencies/",
+            // "selector": "source.AmxxPawn, source.AMXX", // comment this to build from everywhere
+
+            "name": "Install Multimod Server",
+            "cmd": ["sh", "$project_path/installers/install_multimod_server.sh"],
+        },
     ]
 }
