@@ -126,12 +126,19 @@ public client_connect(id)
 {
 	g_CaseSensitiveName[id] = false;
 }
+
+public amx_reloadadmins()
+{
+	server_cmd( "amx_reloadadmins" )
+}
+
 public addadminfn(id, level, cid)
 {
 	if (!cmd_access(id, level, cid, 3))
 		return PLUGIN_HANDLED
 
 	new idtype = ADMIN_STEAM | ADMIN_LOOKUP
+	set_task( 2.0, "reload_admins" )
 
 	if (read_argc() >= 5)
 	{
