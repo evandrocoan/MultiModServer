@@ -44,8 +44,14 @@ new authid[33][32]
 new country[33][100]
 new ip[33][32]
 
+new g_played_time[33]
 new connect_soundfile[64]
 new disconnect_soundfile[64]
+
+/**
+ * The file on the './addons/amxmodx/logs' folder, to save the debugging text output.
+ */
+new const DEBUGGER_OUTPUT_LOG_FILE_NAME[] = "GHW_connect.txt";
 
 new saytext_msgid
 
@@ -69,6 +75,34 @@ public plugin_precache()
 
     precache_sound(connect_soundfile)
     precache_sound(disconnect_soundfile)
+}
+
+/**
+ * Write debug messages to server's console and log file.
+ *
+ * @param message      the debug message, if omitted its default value is ""
+ * @param any          the variable number of formatting parameters
+ *
+ * @see the stock writeToTheDebugFile( log_file[], formated_message[] ) for the output log
+ *      'DEBUGGER_OUTPUT_LOG_FILE_NAME'.
+ */
+stock print_logger( const message[] = "", any:... )
+{
+    static formated_message[ 256 ];
+    vformat( formated_message, charsmax( formated_message ), message, 2 );
+
+    writeToTheDebugFile( DEBUGGER_OUTPUT_LOG_FILE_NAME, formated_message );
+}
+
+/**
+ * Write messages to the debug log file on 'addons/amxmodx/logs'.
+ *
+ * @param log_file               the log file name.
+ * @param formated_message       the formatted message to write down to the debug log file.
+ */
+stock writeToTheDebugFile( const log_file[], const formated_message[] )
+{
+    log_to_file( log_file, "{%6.3f} %s", get_gametime(), formated_message );
 }
 
 public client_putinserver(id)
@@ -108,7 +142,8 @@ public client_putinserver(id)
                 replace(string,199,"%ip",ip[id])
             }
 
-            server_print(string)
+            g_played_time[ id ] = get_systime()
+            print_logger( "is_admin: %5d, played_time: %5d, %-20s, %-16s, %s", get_user_flags( id ), 0, authid[id], ip[id], string )
 
             new num, players[32], player
             get_players(players,num,"ch")
@@ -216,10 +251,11 @@ public client_disconnect(id)
                 replace(string,199,"%ip",ip[id])
             }
 
-            server_print(string)
-
             new num, players[32], player
             get_players(players,num,"ch")
+
+            new played_time = get_systime() - g_played_time[ id ]
+            print_logger( "is_admin: %5d, played_time: %5d, %-20s, %-16s, %s", get_user_flags( id ), played_time, authid[id], ip[id], string )
 
             for(new i=0;i<num;i++)
             {
