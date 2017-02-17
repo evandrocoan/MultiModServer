@@ -102,7 +102,10 @@ stock print_logger( const message[] = "", any:... )
  */
 stock writeToTheDebugFile( const log_file[], const formated_message[] )
 {
-    log_to_file( log_file, "{%6.3f} %s", get_gametime(), formated_message );
+    new time[32];
+    formatex( time, charsmax(time), "%.3f", get_gametime() )
+
+    log_to_file( log_file, "{%10s} %s", time, formated_message );
 }
 
 public client_putinserver(id)
@@ -143,7 +146,7 @@ public client_putinserver(id)
             }
 
             g_played_time[ id ] = get_systime()
-            print_logger( "is_admin: %5d, played_time: %5d, %-20s, %-16s, %s", get_user_flags( id ), 0, authid[id], ip[id], string )
+            print_logger( "played_time: %5d, %-20s, %-16s, is_admin: %10d, %s", 0, authid[id], ip[id], get_user_flags( id ), string )
 
             new num, players[32], player
             get_players(players,num,"ch")
@@ -255,7 +258,7 @@ public client_disconnect(id)
             get_players(players,num,"ch")
 
             new played_time = get_systime() - g_played_time[ id ]
-            print_logger( "is_admin: %5d, played_time: %5d, %-20s, %-16s, %s", get_user_flags( id ), played_time, authid[id], ip[id], string )
+            print_logger( "played_time: %5d, %-20s, %-16s, is_admin: %10d, %s", played_time, authid[id], ip[id], get_user_flags( id ), string )
 
             for(new i=0;i<num;i++)
             {
@@ -279,6 +282,11 @@ public client_disconnect(id)
                     }
                 }
             }
+        }
+        else
+        {
+            new played_time = get_systime() - g_played_time[ id ]
+            print_logger( "played_time: %5d, %-20s, %-16s, is_admin: %10d", played_time, authid[id], ip[id], get_user_flags( id ) )
         }
     }
 }
