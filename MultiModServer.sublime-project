@@ -6,7 +6,7 @@
             "folder_exclude_patterns":
             [
                 "installers/clean_setup",
-                "dependencies/amxmodx/plugins/",
+                "dependencies/amxmodx/plugins",
             ],
         },
         {
