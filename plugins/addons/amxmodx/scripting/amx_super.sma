@@ -5656,7 +5656,7 @@ public task_afk_check2() {
 
 	static players[32], num, i, bool:allafk, origin[3]
 	for (new a; a < 2; ++a) {
-		get_players(players, num, "ae", g_teamname[a])
+		get_players(players, num, "ace", g_teamname[a])
 		allafk = true
 		for (new x; x < num; ++x) {
 			i = players[x]
