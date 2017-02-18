@@ -5604,7 +5604,7 @@ public client_connect(id) {
 
 	static players[32], num, i, tchar[2]
 	new candidate, candidatetime
-	get_players(players, num, "b")
+	get_players(players, num, "bch")
 	for (new x; x < num; ++x) {
 		i = players[x]
 
@@ -5625,7 +5625,7 @@ public client_connect(id) {
 	}
 
 	static origin[3], afktime
-	get_players(players, num, "a")
+	get_players(players, num, "ach")
 	for (new x; x < num; ++x) {
 		i = players[x]
 		get_user_origin(i, origin)
@@ -5656,7 +5656,7 @@ public task_afk_check2() {
 
 	static players[32], num, i, bool:allafk, origin[3]
 	for (new a; a < 2; ++a) {
-		get_players(players, num, "ace", g_teamname[a])
+		get_players(players, num, "aceh", g_teamname[a])
 		allafk = true
 		for (new x; x < num; ++x) {
 			i = players[x]
