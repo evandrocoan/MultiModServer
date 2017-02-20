@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.3.0-776";
+new const PLUGIN_VERSION[] = "v5.3.0-777";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -464,6 +464,13 @@ new bool:g_isColoredChatEnabled;
 #define IS_COLORED_CHAT_ENABLED() \
     ( g_isColorChatSupported \
       && g_isColoredChatEnabled )
+
+/**
+ * Accordingly to `https://wiki.alliedmods.net/Half-life_1_game_events#HLTV`, only some mods support
+ * this game event.
+ */
+#define IS_NEW_ROUND_EVENT_SUPPORTED() \
+    ( g_isColorChatSupported || g_isDayOfDefeat )
 
 #if AMXX_VERSION_NUM < 183
     new g_user_msgid;
@@ -1234,6 +1241,7 @@ new const GAME_CRASH_RECREATION_FLAG_FILE[] = "gameCrashRecreationAction.txt";
 new const TO_STOP_THE_CRASH_SEARCH[]        = "delete_this_to_stop_the_crash_search.txt";
 new const MAPS_WHERE_THE_SERVER_CRASHED[]   = "maps_where_the_server_probably_crashed.txt";
 
+new bool:g_isDayOfDefeat;
 new bool:g_isRunningSvenCoop;
 new bool:g_isServerShuttingDown;
 new bool:g_isMapExtensionPeriodRunning;
@@ -1700,10 +1708,12 @@ public plugin_init()
     register_dictionary( "adminvote.txt" );
     register_dictionary_colored( "galileo.txt" );
 
-    g_isRunningSvenCoop = !!is_running("svencoop");
+    g_isDayOfDefeat        = !!is_running("dod");
+    g_isRunningSvenCoop    = !!is_running("svencoop");
+    g_isColorChatSupported = ( is_running( "czero" ) || is_running( "cstrike" ) );
 
-    // The `svencoop` mod seems to not have this event
-    if( !g_isRunningSvenCoop )
+    // Register the HLTV for the supported game mods.
+    if( IS_NEW_ROUND_EVENT_SUPPORTED() )
     {
         register_event( "HLTV", "new_round_event", "a", "1=0", "2=0");
     }
@@ -1807,10 +1817,6 @@ stock runTheServerMapCrashSearch()
 
 stock configureSpecificGameModFeature()
 {
-    // If it is enabled, Load whether the color chat is supported by the current Game Modification.
-    g_isColorChatSupported = ( is_running( "czero" )
-                               || is_running( "cstrike" ) );
-
     // On the first server start, we do not know whether the color chat is allowed/enabled. This is due
     // the register register_dictionary_colored(1) to be called on plugin_init(0) and the settings being
     // loaded only at plugin_cfg(0).
@@ -4156,8 +4162,8 @@ public round_start_event()
 {
     LOGGER( 128, "I AM ENTERING ON round_start_event(0)" )
 
-    // The `svencoop` mod seems to not have this event
-    if( g_isRunningSvenCoop )
+    // Provide the new_round_event(0) support for HLTV non supported game mods.
+    if( !IS_NEW_ROUND_EVENT_SUPPORTED() )
     {
         new_round_event();
     }
