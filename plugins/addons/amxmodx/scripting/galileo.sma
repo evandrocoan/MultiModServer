@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.3.0-777";
+new const PLUGIN_VERSION[] = "v5.3.0-780";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -2743,7 +2743,7 @@ public map_loadRecentBanList( maximumLoadMapsCount )
         {
             if( maxRecentMapsBans + maxVotingChoices > maximumLoadMapsCount )
             {
-                maxRecentMapsBans = maxRecentMapsBans - maxVotingChoices;
+                maxRecentMapsBans = maximumLoadMapsCount - maxVotingChoices;
             }
         }
         else
@@ -6448,7 +6448,8 @@ stock loadTheDefaultVotingChoices()
 
     // To add the next map to the voting menu, if enabled.
     if( get_pcvar_num( cvar_voteMapChoiceNext )
-        && !equali( g_currentMapName, g_nextMapName ) )
+        && !equali( g_currentMapName, g_nextMapName )
+        && !map_isTooRecent( g_nextMapName ) )
     {
         new mapIndex;
         new mapInfo[ MAX_MAPNAME_LENGHT ];
