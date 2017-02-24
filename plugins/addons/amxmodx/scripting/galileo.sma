@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.3.0-780";
+new const PLUGIN_VERSION[] = "v5.3.0-781";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -1107,6 +1107,7 @@ enum (+= 100000)
     TASKID_VOTE_HANDLEDISPLAY,
     TASKID_VOTE_DISPLAY,
     TASKID_VOTE_EXPIRE,
+    TASKID_NOMINATION_PARTIAL,
     TASKID_PENDING_VOTE_COUNTDOWN,
     TASKID_DBG_FAKEVOTES,
     TASKID_VOTE_STARTDIRECTOR,
@@ -12366,6 +12367,12 @@ stock buildNominationPartNameAttempt( player_id, secondWord[] )
 {
     LOGGER( 128, "I AM ENTERING ON buildNominationPartNameAttempt(2)" )
 
+    if( task_exists( TASKID_NOMINATION_PARTIAL + player_id ) )
+    {
+        LOGGER( 4, "( buildNominationPartNameAttempt ) Blocking, the task already exists!" )
+        return;
+    }
+
     strtolower( secondWord );
     g_isSawPartialMatchFirstPage[ player_id ] = false;
 
@@ -12547,7 +12554,7 @@ public fillThePartialNominationMenu( argumentsIn[] )
             argumentsOut[ 7 ] = menu;
             argumentsOut[ 8 ] = currentPageNumber;
 
-            set_task( 1.0, "fillThePartialNominationMenu", _, argumentsOut, sizeof argumentsOut );
+            set_task( 1.0, "fillThePartialNominationMenu", TASKID_NOMINATION_PARTIAL + player_id, argumentsOut, sizeof argumentsOut );
 
             // The map search could take some time, as there are more than MAX_NOM_MATCH_COUNT unsuccessful matches.
             if( endSearchIndex == MAX_NOM_MATCH_COUNT )
