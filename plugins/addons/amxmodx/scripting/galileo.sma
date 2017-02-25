@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.3.1-785";
+new const PLUGIN_VERSION[] = "v5.3.1-788";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -78,13 +78,13 @@ new const PLUGIN_VERSION[] = "v5.3.1-785";
  *
  * 32  - Run the MANUAL test on server start.
  *
- * 64  - Disable the LOGGER() while running the Unit Tests.
+ * 64  - Disable the LOG() while running the Unit Tests.
  *
  * 127 - Enable the levels 1, 2, 4, 8, 16, 32 and 64.
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 16+32
+#define DEBUG_LEVEL 0
 
 
 /**
@@ -148,7 +148,7 @@ new const PLUGIN_VERSION[] = "v5.3.1-785";
     new bool:g_test_areTheUnitTestsRunning;
 
     /**
-     * Allow the Manual Unit Tests to disable LOGGER() debugging messages when the level
+     * Allow the Manual Unit Tests to disable LOG() debugging messages when the level
      * DEBUG_LEVEL_DISABLE_TEST_LOGS is enabled.
      */
     new bool:g_test_isToEnableLogging;
@@ -180,7 +180,7 @@ new const PLUGIN_VERSION[] = "v5.3.1-785";
  */
 #if DEBUG_LEVEL & ( DEBUG_LEVEL_NORMAL | DEBUG_LEVEL_CRITICAL_MODE )
     #define DEBUG
-    #define LOGGER(%1) debugMesssageLogger( %1 );
+    #define LOG(%1) debugMesssageLogger( %1 );
 
     /**
      * 0    - Disabled all debug output print.
@@ -245,7 +245,7 @@ new const PLUGIN_VERSION[] = "v5.3.1-785";
         }
     }
 #else
-    #define LOGGER(%1)
+    #define LOG(%1)
 
 #endif
 
@@ -263,7 +263,7 @@ new const PLUGIN_VERSION[] = "v5.3.1-785";
      */
     stock normalTestsToExecute()
     {
-        LOGGER( 128, "I AM ENTERING ON normalTestsToExecute(0)" )
+        LOG( 128, "I AM ENTERING ON normalTestsToExecute(0)" )
 
         test_registerTest();
         test_isInEmptyCycle();
@@ -293,7 +293,7 @@ new const PLUGIN_VERSION[] = "v5.3.1-785";
      */
     public dalayedTestsToExecute()
     {
-        LOGGER( 128, "I AM ENTERING ON dalayedTestsToExecute(0)" )
+        LOG( 128, "I AM ENTERING ON dalayedTestsToExecute(0)" )
         // Currently there are none Delayed Unit Tests Created.
     }
 
@@ -302,7 +302,7 @@ new const PLUGIN_VERSION[] = "v5.3.1-785";
      */
     public inGameTestsToExecute( player_id )
     {
-        LOGGER( 128, "I AM ENTERING ON inGameTestsToExecute(1) player_id: %d", player_id )
+        LOG( 128, "I AM ENTERING ON inGameTestsToExecute(1) player_id: %d", player_id )
 
         // Save the game cvars?
         if( !g_test_areTheUnitTestsRunning ) saveServerCvarsForTesting();
@@ -313,7 +313,7 @@ new const PLUGIN_VERSION[] = "v5.3.1-785";
             {
             }
 
-            // LOGGER( 1, "Current i is: %d", i )
+            // LOG( 1, "Current i is: %d", i )
         }
 
         // test_endOfMapVoting();
@@ -373,7 +373,7 @@ new const PLUGIN_VERSION[] = "v5.3.1-785";
     { \
         if( setTestFailure( %1 ) ) \
         { \
-            LOGGER( 1, "    ( SET_TEST_FAILURE ) Just returning/blocking." ) \
+            LOG( 1, "    ( SET_TEST_FAILURE ) Just returning/blocking." ) \
             return; \
         } \
     }
@@ -1008,7 +1008,7 @@ new __g_getMapNameRightToken[ MAX_MAPNAME_LENGHT ];
  */
 #define TRY_TO_APPLY(%1,%2) \
 { \
-    LOGGER( 128, "I AM ENTERING ON TRY_TO_APPLY(2) objectIndentifation: %d", %2 ) \
+    LOG( 128, "I AM ENTERING ON TRY_TO_APPLY(2) objectIndentifation: %d", %2 ) \
     if( %2 ) \
     { \
         %1( %2 ); \
@@ -1025,7 +1025,7 @@ new __g_getMapNameRightToken[ MAX_MAPNAME_LENGHT ];
  */
 #define TRY_TO_CLEAN(%1,%2,%3) \
 { \
-    LOGGER( 128, "I AM ENTERING ON TRY_TO_CLEAN(3) objectIndentifation: %d", %2 ) \
+    LOG( 128, "I AM ENTERING ON TRY_TO_CLEAN(3) objectIndentifation: %d", %2 ) \
     if( %2 ) \
     { \
         %1( %2 ); \
@@ -1048,7 +1048,7 @@ new __g_getMapNameRightToken[ MAX_MAPNAME_LENGHT ];
  */
 #define DESTROY_PLAYER_NEW_MENU_TYPE(%1) \
 { \
-    LOGGER( 128, "I AM ENTERING ON DESTROY_PLAYER_NEW_MENU_TYPE(1) menu_id: %d", %1 ) \
+    LOG( 128, "I AM ENTERING ON DESTROY_PLAYER_NEW_MENU_TYPE(1) menu_id: %d", %1 ) \
     if( %1 ) \
     { \
         menu_destroy( %1 ); \
@@ -1063,7 +1063,7 @@ new __g_getMapNameRightToken[ MAX_MAPNAME_LENGHT ];
  */
 #define TOGGLE_BIT_FLAG_ON_OFF(%1,%2) \
 { \
-    LOGGER( 256, "I AM ENTERING ON TOGGLE_BIT_FLAG_ON_OFF(2) mask: %d, flag: %d", %1, %2 ) \
+    LOG( 256, "I AM ENTERING ON TOGGLE_BIT_FLAG_ON_OFF(2) mask: %d, flag: %d", %1, %2 ) \
     %1 & %2 ? ( %1 &= ~%2 ) : ( %1 |= %2 ); \
 }
 
@@ -1575,15 +1575,15 @@ public plugin_init()
 #endif
 
     register_plugin( PLUGIN_NAME, PLUGIN_VERSION, PLUGIN_AUTHOR );
-    LOGGER( 1, "^n^n^n^n^n^n^n^n^n^n^n^n%s PLUGIN VERSION %s INITIATING...", PLUGIN_NAME, PLUGIN_VERSION )
+    LOG( 1, "^n^n^n^n^n^n^n^n^n^n^n^n%s PLUGIN VERSION %s INITIATING...", PLUGIN_NAME, PLUGIN_VERSION )
 
-    LOGGER( 1, "( plugin_init )" )
-    LOGGER( 1, "( plugin_init ) AMXX_VERSION_NUM:                         %d", AMXX_VERSION_NUM )
-    LOGGER( 1, "( plugin_init ) IS_TO_ENABLE_SVEN_COOP_SUPPPORT:          %d", IS_TO_ENABLE_SVEN_COOP_SUPPPORT )
-    LOGGER( 1, "( plugin_init ) FAKE_PLAYERS_NUMBER_FOR_DEBUGGING:        %d", FAKE_PLAYERS_NUMBER_FOR_DEBUGGING )
-    LOGGER( 1, "( plugin_init ) MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST:    %d", MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST )
-    LOGGER( 1, "( plugin_init ) IS_TO_ENABLE_RE_HLDS_RE_AMXMODX_SUPPORT:  %d", IS_TO_ENABLE_RE_HLDS_RE_AMXMODX_SUPPORT )
-    LOGGER( 1, "( plugin_init )" )
+    LOG( 1, "( plugin_init )" )
+    LOG( 1, "( plugin_init ) AMXX_VERSION_NUM:                         %d", AMXX_VERSION_NUM )
+    LOG( 1, "( plugin_init ) IS_TO_ENABLE_SVEN_COOP_SUPPPORT:          %d", IS_TO_ENABLE_SVEN_COOP_SUPPPORT )
+    LOG( 1, "( plugin_init ) FAKE_PLAYERS_NUMBER_FOR_DEBUGGING:        %d", FAKE_PLAYERS_NUMBER_FOR_DEBUGGING )
+    LOG( 1, "( plugin_init ) MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST:    %d", MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST )
+    LOG( 1, "( plugin_init ) IS_TO_ENABLE_RE_HLDS_RE_AMXMODX_SUPPORT:  %d", IS_TO_ENABLE_RE_HLDS_RE_AMXMODX_SUPPORT )
+    LOG( 1, "( plugin_init )" )
 
     cvar_serverStartAction         = register_cvar( "gal_srv_start"                , "0"    );
     cvar_serverMoveCursor          = register_cvar( "gal_srv_move_cursor"          , "0"    );
@@ -1628,7 +1628,7 @@ public plugin_init()
     new debug_level[ MAX_SHORT_STRING ];
     formatex( debug_level, charsmax( debug_level ), "%d | %d", g_debug_level, DEBUG_LEVEL );
 
-    LOGGER( 1, "( plugin_init ) gal_debug_level: %s", debug_level )
+    LOG( 1, "( plugin_init ) gal_debug_level: %s", debug_level )
     register_cvar( "gal_debug_level", debug_level, FCVAR_SERVER | FCVAR_SPONLY );
 #endif
 
@@ -1734,8 +1734,8 @@ public plugin_init()
     register_concmd( "gal_command_maintenance", "cmd_maintenanceMode", ADMIN_RCON );
     register_concmd( "gal_looking_for_crashes", "cmd_lookingForCrashes", ADMIN_RCON );
 
-    LOGGER( 1, "    I AM EXITING plugin_init(0)..." )
-    LOGGER( 1, "" )
+    LOG( 1, "    I AM EXITING plugin_init(0)..." )
+    LOG( 1, "" )
 }
 
 /**
@@ -1744,7 +1744,7 @@ public plugin_init()
  */
 public plugin_cfg()
 {
-    LOGGER( 128, "I AM ENTERING ON plugin_cfg(0)" )
+    LOG( 128, "I AM ENTERING ON plugin_cfg(0)" )
     get_mapname( g_currentMapName, charsmax( g_currentMapName ) );
 
     /**
@@ -1761,14 +1761,14 @@ public plugin_cfg()
     loadPluginSetttings();
     loadMapFiles();
 
-    LOGGER( 4, "" )
-    LOGGER( 4, "" )
+    LOG( 4, "" )
+    LOG( 4, "" )
 
     // The 'mp_fraglimitCvarSupport(0)' could register a new cvar, hence only call 'cacheCvarsValues' them after it.
     mp_fraglimitCvarSupport();
     resetRoundsScores();
 
-    LOGGER( 0, "", printTheCurrentAndNextMapNames() )
+    LOG( 0, "", printTheCurrentAndNextMapNames() )
 
     // Used to loop through all server maps looking for crashing ones
     configureServerStart();
@@ -1779,8 +1779,8 @@ public plugin_cfg()
     configureTheUnitTests();
 #endif
 
-    LOGGER( 1, "    I AM EXITING plugin_cfg(0)..." )
-    LOGGER( 1, "" )
+    LOG( 1, "    I AM EXITING plugin_cfg(0)..." )
+    LOG( 1, "" )
 }
 
 stock runTheServerMapCrashSearch()
@@ -1846,7 +1846,7 @@ stock configureSpecificGameModFeature()
  */
 stock configureEndGameCvars()
 {
-    LOGGER( 128, "I AM ENTERING ON configureEndGameCvars(0)" )
+    LOG( 128, "I AM ENTERING ON configureEndGameCvars(0)" )
 
     tryToGetGameModCvar( cvar_mp_maxrounds    , "mp_maxrounds"     );
     tryToGetGameModCvar( cvar_mp_winlimit     , "mp_winlimit"      );
@@ -1865,19 +1865,19 @@ stock configureEndGameCvars()
 
 stock tryToGetGameModCvar( &cvar_to_get, cvar_name[] )
 {
-    LOGGER( 128, "I AM ENTERING ON tryToGetGameModCvar(2) cvar_to_get: %d, cvar_name: %s", cvar_to_get, cvar_name )
+    LOG( 128, "I AM ENTERING ON tryToGetGameModCvar(2) cvar_to_get: %d, cvar_name: %s", cvar_to_get, cvar_name )
 
     if( !( cvar_to_get = get_cvar_pointer( cvar_name ) ) )
     {
         cvar_to_get = cvar_disabledValuePointer;
     }
 
-    LOGGER( 1, "    ( tryToGetGameModCvar ) %s is cvar_to_get: %d", cvar_name, cvar_to_get )
+    LOG( 1, "    ( tryToGetGameModCvar ) %s is cvar_to_get: %d", cvar_name, cvar_to_get )
 }
 
 stock configureTheVotingMenus()
 {
-    LOGGER( 128, "I AM ENTERING ON configureTheVotingMenus(0)" )
+    LOG( 128, "I AM ENTERING ON configureTheVotingMenus(0)" )
 
     g_chooseMapMenuId             = register_menuid( CHOOSE_MAP_MENU_NAME );
     g_chooseMapQuestionMenuId     = register_menuid( CHOOSE_MAP_MENU_QUESTION );
@@ -1894,7 +1894,7 @@ stock configureTheVotingMenus()
 
 stock loadPluginSetttings()
 {
-    LOGGER( 128, "I AM ENTERING ON loadPluginSetttings(0)" )
+    LOG( 128, "I AM ENTERING ON loadPluginSetttings(0)" )
     new writtenSize;
 
     writtenSize = get_configsdir( g_configsDirPath, charsmax( g_configsDirPath ) );
@@ -1906,11 +1906,11 @@ stock loadPluginSetttings()
     if( !dir_exists( g_dataDirPath )
         && mkdir( g_dataDirPath ) )
     {
-        LOGGER( 1, "AMX_ERR_NOTFOUND, %L", LANG_SERVER, "GAL_CREATIONFAILED", g_dataDirPath )
+        LOG( 1, "AMX_ERR_NOTFOUND, %L", LANG_SERVER, "GAL_CREATIONFAILED", g_dataDirPath )
         log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_CREATIONFAILED", g_dataDirPath );
     }
 
-    LOGGER( 1, "( loadPluginSetttings ) g_configsDirPath: %s, g_dataDirPath: %s,", g_configsDirPath, g_dataDirPath )
+    LOG( 1, "( loadPluginSetttings ) g_configsDirPath: %s, g_dataDirPath: %s,", g_configsDirPath, g_dataDirPath )
 
     server_cmd( "exec %s/galileo.cfg", g_configsDirPath );
     server_exec();
@@ -1922,11 +1922,11 @@ stock loadPluginSetttings()
  */
 stock mp_fraglimitCvarSupport()
 {
-    LOGGER( 128, "I AM ENTERING ON mp_fraglimitCvarSupport(0)" )
+    LOG( 128, "I AM ENTERING ON mp_fraglimitCvarSupport(0)" )
 
     // mp_fraglimit
     new exists_mp_fraglimit_cvar = cvar_exists( "mp_fraglimit" );
-    LOGGER( 32, "( mp_fraglimitCvarSupport ) exists_mp_fraglimit_cvar: %d", exists_mp_fraglimit_cvar )
+    LOG( 32, "( mp_fraglimitCvarSupport ) exists_mp_fraglimit_cvar: %d", exists_mp_fraglimit_cvar )
 
     if( exists_mp_fraglimit_cvar )
     {
@@ -1943,8 +1943,8 @@ stock mp_fraglimitCvarSupport()
         cvar_mp_fraglimit = cvar_disabledValuePointer;
     }
 
-    LOGGER( 1, "( mp_fraglimitCvarSupport ) cvar_disabledValuePointer: %d", cvar_disabledValuePointer )
-    LOGGER( 1, "( mp_fraglimitCvarSupport ) mp_fraglimit is cvar_to_get: %d", cvar_mp_fraglimit )
+    LOG( 1, "( mp_fraglimitCvarSupport ) cvar_disabledValuePointer: %d", cvar_disabledValuePointer )
+    LOG( 1, "( mp_fraglimitCvarSupport ) mp_fraglimit is cvar_to_get: %d", cvar_mp_fraglimit )
 
     // re-cache later to wait load some late server configurations, as the per-map configs.
     set_task( DELAY_TO_WAIT_THE_SERVER_CVARS_TO_BE_LOADED, "cacheCvarsValues" );
@@ -1957,7 +1957,7 @@ stock mp_fraglimitCvarSupport()
  */
 public cacheCvarsValues()
 {
-    LOGGER( 128, "I AM ENTERING ON cacheCvarsValues(0)" )
+    LOG( 128, "I AM ENTERING ON cacheCvarsValues(0)" )
 
     // RTV wait time
     g_rtvWaitRounds             = get_pcvar_num( cvar_rtvWaitRounds          );
@@ -2012,7 +2012,7 @@ public cacheCvarsValues()
  */
 stock configureServerStart()
 {
-    LOGGER( 128, "I AM ENTERING ON configureServerStart(0)" )
+    LOG( 128, "I AM ENTERING ON configureServerStart(0)" )
     new startAction;
 
     set_task( float( PERIODIC_CHECKING_INTERVAL ), "vote_manageEnd", _, _, _, "b" );
@@ -2078,7 +2078,7 @@ stock configureServerStart()
         // when the `startAction` is disabled we must to set it to the seconds level `SECOND_SERVER_START`.
         set_pcvar_num( cvar_isFirstServerStart, SECOND_SERVER_START );
 
-        LOGGER( 2, "( configureServerStart ) IS CHANGING THE CVAR 'gal_server_starting' to '%d'.", \
+        LOG( 2, "( configureServerStart ) IS CHANGING THE CVAR 'gal_server_starting' to '%d'.", \
                 get_pcvar_num( cvar_isFirstServerStart ) )
     }
 }
@@ -2139,8 +2139,8 @@ stock configureServerStart()
  */
 stock setTheCurrentAndNextMapSettings()
 {
-    LOGGER( 128, "I AM ENTERING ON setTheCurrentAndNextMapSettings(0)" )
-    LOGGER( 4, "( setTheCurrentAndNextMapSettings ) g_isServerShuttingDown: %d", g_isServerShuttingDown )
+    LOG( 128, "I AM ENTERING ON setTheCurrentAndNextMapSettings(0)" )
+    LOG( 4, "( setTheCurrentAndNextMapSettings ) g_isServerShuttingDown: %d", g_isServerShuttingDown )
 
     if( g_isServerShuttingDown )
     {
@@ -2196,7 +2196,7 @@ stock setTheCurrentAndNextMapSettings()
         }
     }
 
-    LOGGER( 2, "( setTheCurrentAndNextMapSettings ) IS CHANGING THE CVAR 'gal_server_starting' to '%d'.", \
+    LOG( 2, "( setTheCurrentAndNextMapSettings ) IS CHANGING THE CVAR 'gal_server_starting' to '%d'.", \
             get_pcvar_num( cvar_isFirstServerStart ) )
 }
 
@@ -2219,7 +2219,7 @@ stock setTheCurrentAndNextMapSettings()
  */
 public handleServerStart( backupMapsFilePath[], startAction )
 {
-    LOGGER( 128, "I AM ENTERING ON handleServerStart(2) backupMapsFilePath: %s", backupMapsFilePath )
+    LOG( 128, "I AM ENTERING ON handleServerStart(2) backupMapsFilePath: %s", backupMapsFilePath )
     isHandledGameCrashAction( startAction );
 
     new mapToChange[ MAX_MAPNAME_LENGHT ];
@@ -2292,7 +2292,7 @@ public handleServerStart( backupMapsFilePath[], startAction )
                 // If we got here, the level was `FIRST_SERVER_START`, and as we are not changing
                 // the map, we must to set it to the next level `SECOND_SERVER_START`.
                 set_pcvar_num( cvar_isFirstServerStart, SECOND_SERVER_START );
-                LOGGER( 2, "( handleServerStart ) IS CHANGING THE CVAR 'gal_server_starting' to '%d'.", SECOND_SERVER_START )
+                LOG( 2, "( handleServerStart ) IS CHANGING THE CVAR 'gal_server_starting' to '%d'.", SECOND_SERVER_START )
             }
             else
             {
@@ -2331,7 +2331,7 @@ public handleServerStart( backupMapsFilePath[], startAction )
  */
 stock configureTheMapcycleSystem( mapToChange[], possibleNextMap[], possibleNextMapPosition )
 {
-    LOGGER( 128, "I AM ENTERING ON configureTheMapcycleSystem(2) mapToChange: %s", mapToChange )
+    LOG( 128, "I AM ENTERING ON configureTheMapcycleSystem(2) mapToChange: %s", mapToChange )
     trim( mapToChange );
 
     new restartsOnTheCurrentMap;
@@ -2340,17 +2340,17 @@ stock configureTheMapcycleSystem( mapToChange[], possibleNextMap[], possibleNext
     copy( crashingMap, charsmax( crashingMap ), mapToChange );
     restartsOnTheCurrentMap = getRestartsOnTheCurrentMap( mapToChange );
 
-    LOGGER( 4, "( configureTheMapcycleSystem ) mapToChange: %s", mapToChange )
-    LOGGER( 4, "( configureTheMapcycleSystem ) possibleNextMap: %s", possibleNextMap )
-    LOGGER( 4, "( configureTheMapcycleSystem ) restartsOnTheCurrentMap: %d", restartsOnTheCurrentMap )
+    LOG( 4, "( configureTheMapcycleSystem ) mapToChange: %s", mapToChange )
+    LOG( 4, "( configureTheMapcycleSystem ) possibleNextMap: %s", possibleNextMap )
+    LOG( 4, "( configureTheMapcycleSystem ) restartsOnTheCurrentMap: %d", restartsOnTheCurrentMap )
 
     // Set the new current map as the actual next map.
     if( restartsOnTheCurrentMap > MAX_SERVER_RESTART_ACCEPTABLE )
     {
         new lastMapChangedFile;
 
-        LOGGER( 4, "( configureTheMapcycleSystem ) restartsOnTheCurrentMap > MAX_SERVER_RESTART_ACCEPTABLE" )
-        LOGGER( 4, "" )
+        LOG( 4, "( configureTheMapcycleSystem ) restartsOnTheCurrentMap > MAX_SERVER_RESTART_ACCEPTABLE" )
+        LOG( 4, "" )
 
         setThisMapAsPossibleCrashingMap( crashingMap );
 
@@ -2396,7 +2396,7 @@ stock configureTheMapcycleSystem( mapToChange[], possibleNextMap[], possibleNext
         }
 
         // Clear the old data
-        LOGGER( 4, "" )
+        LOG( 4, "" )
         formatex( lastMapChangedFilePath, charsmax( lastMapChangedFilePath ), "%s/%s", g_dataDirPath, LAST_CHANGE_MAP_FILE_NAME );
 
         if( ( lastMapChangedFile = fopen( lastMapChangedFilePath, "wt" ) ) )
@@ -2418,14 +2418,14 @@ stock configureTheMapcycleSystem( mapToChange[], possibleNextMap[], possibleNext
     else
     {
         configureTheNextMapPlugin( mapToChange, possibleNextMap, possibleNextMapPosition );
-        LOGGER( 4, "( configureTheMapcycleSystem ) restartsOnTheCurrentMap < MAX_SERVER_RESTART_ACCEPTABLE" )
-        LOGGER( 4, "" )
+        LOG( 4, "( configureTheMapcycleSystem ) restartsOnTheCurrentMap < MAX_SERVER_RESTART_ACCEPTABLE" )
+        LOG( 4, "" )
     }
 }
 
 stock setThisMapAsPossibleCrashingMap( const mapName[] )
 {
-    LOGGER( 128, "I AM ENTERING ON setThisMapAsPossibleCrashingMap(1) mapName: %s", mapName )
+    LOG( 128, "I AM ENTERING ON setThisMapAsPossibleCrashingMap(1) mapName: %s", mapName )
 
     new serverCrashedMapsFile;
     new serverCrashedMapsFilePath[ MAX_FILE_PATH_LENGHT ];
@@ -2452,12 +2452,12 @@ stock setThisMapAsPossibleCrashingMap( const mapName[] )
  */
 stock configureTheNextMapPlugin( possibleCurrentMap[], possibleNextMap[], possibleNextMapPosition, bool:forceUpdateFile = false )
 {
-    LOGGER( 128, "I AM ENTERING ON configureTheNextMapPlugin(4)" )
+    LOG( 128, "I AM ENTERING ON configureTheNextMapPlugin(4)" )
 
-    LOGGER( 4, "( configureTheNextMapPlugin ) forceUpdateFile: %d", forceUpdateFile )
-    LOGGER( 4, "( configureTheNextMapPlugin ) possibleNextMap: %s",  possibleNextMap )
-    LOGGER( 4, "( configureTheNextMapPlugin ) possibleCurrentMap: %s",  possibleCurrentMap )
-    LOGGER( 4, "( configureTheNextMapPlugin ) possibleNextMapPosition: %d", possibleNextMapPosition )
+    LOG( 4, "( configureTheNextMapPlugin ) forceUpdateFile: %d", forceUpdateFile )
+    LOG( 4, "( configureTheNextMapPlugin ) possibleNextMap: %s",  possibleNextMap )
+    LOG( 4, "( configureTheNextMapPlugin ) possibleCurrentMap: %s",  possibleCurrentMap )
+    LOG( 4, "( configureTheNextMapPlugin ) possibleNextMapPosition: %d", possibleNextMapPosition )
 
     if( possibleNextMapPosition )
     {
@@ -2471,7 +2471,7 @@ stock configureTheNextMapPlugin( possibleCurrentMap[], possibleNextMap[], possib
 
 stock getRestartsOnTheCurrentMap( const mapToChange[] )
 {
-    LOGGER( 128, "I AM ENTERING ON getRestartsOnTheCurrentMap(1) mapToChange: %s", mapToChange )
+    LOG( 128, "I AM ENTERING ON getRestartsOnTheCurrentMap(1) mapToChange: %s", mapToChange )
 
     new lastMapChangedFile;
     new lastMapChangedCount;
@@ -2482,8 +2482,8 @@ stock getRestartsOnTheCurrentMap( const mapToChange[] )
 
     formatex( lastMapChangedFilePath, charsmax( lastMapChangedFilePath ), "%s/%s", g_dataDirPath, LAST_CHANGE_MAP_FILE_NAME );
 
-    LOGGER( 4, "( getRestartsOnTheCurrentMap ) mapToChange: %s,", mapToChange )
-    LOGGER( 4, "( getRestartsOnTheCurrentMap ) lastMapChangedFilePath: %s", lastMapChangedFilePath )
+    LOG( 4, "( getRestartsOnTheCurrentMap ) mapToChange: %s,", mapToChange )
+    LOG( 4, "( getRestartsOnTheCurrentMap ) lastMapChangedFilePath: %s", lastMapChangedFilePath )
 
     if( ( lastMapChangedFile = fopen( lastMapChangedFilePath, "rt" ) ) )
     {
@@ -2505,12 +2505,12 @@ stock getRestartsOnTheCurrentMap( const mapToChange[] )
             if( equali( mapToChange, lastMapChangedName ) )
             {
                 ++lastMapChangedCount;
-                LOGGER( 4, "( getRestartsOnTheCurrentMap ) mapToChange is equal to lastMapChangedName." )
+                LOG( 4, "( getRestartsOnTheCurrentMap ) mapToChange is equal to lastMapChangedName." )
             }
             else
             {
                 lastMapChangedCount = 0;
-                LOGGER( 4, "( getRestartsOnTheCurrentMap ) mapToChange is not equal to lastMapChangedName." )
+                LOG( 4, "( getRestartsOnTheCurrentMap ) mapToChange is not equal to lastMapChangedName." )
             }
 
             fprintf( lastMapChangedFile, "%d^n", lastMapChangedCount );
@@ -2521,9 +2521,9 @@ stock getRestartsOnTheCurrentMap( const mapToChange[] )
             doAmxxLog( "ERROR, getRestartsOnTheCurrentMap: Couldn't open the file to write ^"%s^"", lastMapChangedFilePath );
         }
 
-        LOGGER( 4, "( getRestartsOnTheCurrentMap ) lastMapChangedName: %s", lastMapChangedName )
-        LOGGER( 4, "( getRestartsOnTheCurrentMap ) lastMapChangedCount: %d", lastMapChangedCount )
-        LOGGER( 4, "( getRestartsOnTheCurrentMap ) lastMapChangedCountString: %s", lastMapChangedCountString )
+        LOG( 4, "( getRestartsOnTheCurrentMap ) lastMapChangedName: %s", lastMapChangedName )
+        LOG( 4, "( getRestartsOnTheCurrentMap ) lastMapChangedCount: %d", lastMapChangedCount )
+        LOG( 4, "( getRestartsOnTheCurrentMap ) lastMapChangedCountString: %s", lastMapChangedCountString )
     }
     else
     {
@@ -2541,7 +2541,7 @@ stock getRestartsOnTheCurrentMap( const mapToChange[] )
 
     }
 
-    LOGGER( 1, "    ( getRestartsOnTheCurrentMap ) Returning lastMapChangedCount: %d", lastMapChangedCount )
+    LOG( 1, "    ( getRestartsOnTheCurrentMap ) Returning lastMapChangedCount: %d", lastMapChangedCount )
     return lastMapChangedCount;
 }
 
@@ -2551,7 +2551,7 @@ stock getRestartsOnTheCurrentMap( const mapToChange[] )
  */
 stock setNextMap( currentMapName[], nextMapName[], bool:isToUpdateTheCvar = true, bool:forceUpdateFile = false )
 {
-    LOGGER( 128, "I AM ENTERING ON setNextMap(4) nextMapName: %s", nextMapName )
+    LOG( 128, "I AM ENTERING ON setNextMap(4) nextMapName: %s", nextMapName )
 
     // While the `IS_DISABLED_VOTEMAP_EXIT` bit flag is set, we cannot allow any decisions.
     if( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXIT )
@@ -2561,7 +2561,7 @@ stock setNextMap( currentMapName[], nextMapName[], bool:isToUpdateTheCvar = true
         // vote menu.
         copy( g_invokerVoteMapNameToDecide, charsmax( g_invokerVoteMapNameToDecide ), nextMapName );
 
-        LOGGER( 1, "    ( setNextMap ) Just returning/blocking, g_voteMapStatus: %d", g_voteMapStatus )
+        LOG( 1, "    ( setNextMap ) Just returning/blocking, g_voteMapStatus: %d", g_voteMapStatus )
         return;
     }
 
@@ -2572,7 +2572,7 @@ stock setNextMap( currentMapName[], nextMapName[], bool:isToUpdateTheCvar = true
             || !( get_pcvar_num( cvar_nextMapChangeAnnounce )
                   && get_pcvar_num( cvar_endOfMapVote ) ) )
         {
-            LOGGER( 2, "( setNextMap ) IS CHANGING THE CVAR 'amx_nextmap' to '%s'.", nextMapName )
+            LOG( 2, "( setNextMap ) IS CHANGING THE CVAR 'amx_nextmap' to '%s'.", nextMapName )
             set_pcvar_string( cvar_amx_nextmap, nextMapName );
 
         #if IS_TO_ENABLE_SVEN_COOP_SUPPPORT > 0
@@ -2591,11 +2591,11 @@ stock setNextMap( currentMapName[], nextMapName[], bool:isToUpdateTheCvar = true
         trim( currentMapName );
 
         saveCurrentAndNextMapNames( currentMapName, nextMapName, forceUpdateFile );
-        LOGGER( 2, "( setNextMap ) IS CHANGING THE global variable g_nextMapName to '%s'.", nextMapName )
+        LOG( 2, "( setNextMap ) IS CHANGING THE global variable g_nextMapName to '%s'.", nextMapName )
     }
     else
     {
-        LOGGER( 1, "AMX_ERR_PARAMS, %s, was tried to set a invalid next-map!", nextMapName )
+        LOG( 1, "AMX_ERR_PARAMS, %s, was tried to set a invalid next-map!", nextMapName )
         log_error( AMX_ERR_PARAMS, "%s, was tried to set a invalid next-map!", nextMapName );
     }
 }
@@ -2610,7 +2610,7 @@ stock setNextMap( currentMapName[], nextMapName[], bool:isToUpdateTheCvar = true
  */
 stock saveCurrentAndNextMapNames( const currentMapName[], const nextMapName[], bool:forceUpdateFile = false )
 {
-    LOGGER( 128, "I AM ENTERING ON saveCurrentAndNextMapNames(3) currentMapName: %s, nextMapName: %s", currentMapName, nextMapName )
+    LOG( 128, "I AM ENTERING ON saveCurrentAndNextMapNames(3) currentMapName: %s, nextMapName: %s", currentMapName, nextMapName )
 
     // We do not need to check whether the `cvar_serverStartAction` is enabled or not, because the
     // execution flow only gets here when it is enabled.
@@ -2649,7 +2649,7 @@ stock saveCurrentAndNextMapNames( const currentMapName[], const nextMapName[], b
  */
 public isHandledGameCrashAction( &startAction )
 {
-    LOGGER( 128, "I AM ENTERING ON isHandledGameCrashAction(1) startAction: %d", startAction )
+    LOG( 128, "I AM ENTERING ON isHandledGameCrashAction(1) startAction: %d", startAction )
 
     new gameCrashAction;
     new gameCrashActionFilePath[ MAX_FILE_PATH_LENGHT ];
@@ -2690,10 +2690,10 @@ public isHandledGameCrashAction( &startAction )
 
 stock generateGameCrashActionFilePath( gameCrashActionFilePath[], charsmaxGameCrashActionFilePath )
 {
-    LOGGER( 128, "I AM ENTERING ON gameCrashActionFilePath(2) charsmaxGameCrashActionFilePath: %d", charsmaxGameCrashActionFilePath )
+    LOG( 128, "I AM ENTERING ON gameCrashActionFilePath(2) charsmaxGameCrashActionFilePath: %d", charsmaxGameCrashActionFilePath )
 
     formatex( gameCrashActionFilePath, charsmaxGameCrashActionFilePath, "%s/%s", g_dataDirPath, GAME_CRASH_RECREATION_FLAG_FILE );
-    LOGGER( 1, "( generateGameCrashActionFilePath ) gameCrashActionFilePath: %s", gameCrashActionFilePath )
+    LOG( 1, "( generateGameCrashActionFilePath ) gameCrashActionFilePath: %s", gameCrashActionFilePath )
 }
 
 /**
@@ -2701,7 +2701,7 @@ stock generateGameCrashActionFilePath( gameCrashActionFilePath[], charsmaxGameCr
  */
 public setGameToFinishAtHalfTime()
 {
-    LOGGER( 128, "I AM ENTERING ON setGameToFinishAtHalfTime(0)" )
+    LOG( 128, "I AM ENTERING ON setGameToFinishAtHalfTime(0)" )
     saveEndGameLimits();
 
     tryToSetGameModCvarFloat( cvar_mp_timelimit, g_originalTimelimit / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR );
@@ -2709,10 +2709,10 @@ public setGameToFinishAtHalfTime()
     tryToSetGameModCvarNum(   cvar_mp_winlimit,  g_originalWinLimit  / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR );
     tryToSetGameModCvarNum(   cvar_mp_fraglimit, g_originalFragLimit / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR );
 
-    LOGGER( 2, "( setGameToFinishAtHalfTime ) IS CHANGING THE CVAR 'mp_timelimit' to '%f'.", get_pcvar_float( cvar_mp_timelimit ) )
-    LOGGER( 2, "( setGameToFinishAtHalfTime ) IS CHANGING THE CVAR 'mp_fraglimit' to '%d'.", get_pcvar_num( cvar_mp_fraglimit ) )
-    LOGGER( 2, "( setGameToFinishAtHalfTime ) IS CHANGING THE CVAR 'mp_maxrounds' to '%d'.", get_pcvar_num( cvar_mp_maxrounds ) )
-    LOGGER( 2, "( setGameToFinishAtHalfTime ) IS CHANGING THE CVAR 'mp_winlimit' to '%d'.", get_pcvar_num( cvar_mp_winlimit ) )
+    LOG( 2, "( setGameToFinishAtHalfTime ) IS CHANGING THE CVAR 'mp_timelimit' to '%f'.", get_pcvar_float( cvar_mp_timelimit ) )
+    LOG( 2, "( setGameToFinishAtHalfTime ) IS CHANGING THE CVAR 'mp_fraglimit' to '%d'.", get_pcvar_num( cvar_mp_fraglimit ) )
+    LOG( 2, "( setGameToFinishAtHalfTime ) IS CHANGING THE CVAR 'mp_maxrounds' to '%d'.", get_pcvar_num( cvar_mp_maxrounds ) )
+    LOG( 2, "( setGameToFinishAtHalfTime ) IS CHANGING THE CVAR 'mp_winlimit' to '%d'.", get_pcvar_num( cvar_mp_winlimit ) )
 }
 
 /**
@@ -2725,7 +2725,7 @@ public setGameToFinishAtHalfTime()
  */
 public map_loadRecentBanList( maximumLoadMapsCount )
 {
-    LOGGER( 128, "I AM ENTERING ON map_loadRecentBanList(1) maximumLoadMapsCount: %d", maximumLoadMapsCount )
+    LOG( 128, "I AM ENTERING ON map_loadRecentBanList(1) maximumLoadMapsCount: %d", maximumLoadMapsCount )
 
     new loadedMapsCount;
     new recentMapsFilePath[ MAX_FILE_PATH_LENGHT ];
@@ -2752,8 +2752,8 @@ public map_loadRecentBanList( maximumLoadMapsCount )
             maxRecentMapsBans = 0;
         }
 
-        LOGGER( 4, "( map_loadRecentBanList ) maxVotingChoices: %d", maxVotingChoices )
-        LOGGER( 4, "( map_loadRecentBanList ) maxRecentMapsBans: %d", maxRecentMapsBans )
+        LOG( 4, "( map_loadRecentBanList ) maxVotingChoices: %d", maxVotingChoices )
+        LOG( 4, "( map_loadRecentBanList ) maxRecentMapsBans: %d", maxRecentMapsBans )
 
         while( !feof( recentMapsFileDescriptor ) )
         {
@@ -2782,13 +2782,13 @@ public map_loadRecentBanList( maximumLoadMapsCount )
         fclose( recentMapsFileDescriptor );
     }
 
-    LOGGER( 1, "    ( map_loadRecentBanList ) Returning loadedMapsCount: %d", loadedMapsCount )
+    LOG( 1, "    ( map_loadRecentBanList ) Returning loadedMapsCount: %d", loadedMapsCount )
     return loadedMapsCount;
 }
 
 stock writeRecentMapsBanList( loadedMapsCount )
 {
-    LOGGER( 128, "I AM ENTERING ON writeRecentMapsBanList(1) g_recentListMapsArray: %d", g_recentListMapsArray )
+    LOG( 128, "I AM ENTERING ON writeRecentMapsBanList(1) g_recentListMapsArray: %d", g_recentListMapsArray )
 
     new recentMapName     [ MAX_MAPNAME_LENGHT ];
     new recentMapsFilePath[ MAX_FILE_PATH_LENGHT ];
@@ -2799,7 +2799,7 @@ stock writeRecentMapsBanList( loadedMapsCount )
     if( recentMapsFileDescriptor )
     {
         new bool:isOnlyRecentMapcycleMaps = get_pcvar_num( cvar_isOnlyRecentMapcycleMaps ) != 0;
-        LOGGER( 4, "( writeRecentMapsBanList ) isOnlyRecentMapcycleMaps: %s", isOnlyRecentMapcycleMaps )
+        LOG( 4, "( writeRecentMapsBanList ) isOnlyRecentMapcycleMaps: %s", isOnlyRecentMapcycleMaps )
 
         // Do not ban repeated maps
         if( !TrieKeyExists( g_recentMapsTrie, g_currentMapName ) )
@@ -2838,7 +2838,7 @@ stock writeRecentMapsBanList( loadedMapsCount )
         }
 
         fclose( recentMapsFileDescriptor );
-        LOGGER( 0, "", debugPrintRecentBanFile( recentMapsFilePath ) )
+        LOG( 0, "", debugPrintRecentBanFile( recentMapsFilePath ) )
     }
     else
     {
@@ -2848,7 +2848,7 @@ stock writeRecentMapsBanList( loadedMapsCount )
 
 stock debugPrintRecentBanFile( recentMapsFilePath[] )
 {
-    LOGGER( 128, "I AM ENTERING ON debugPrintRecentBanFile(1) recentMapsFilePath: %s", recentMapsFilePath )
+    LOG( 128, "I AM ENTERING ON debugPrintRecentBanFile(1) recentMapsFilePath: %s", recentMapsFilePath )
 
     new loadedMapName[ MAX_MAPNAME_LENGHT ];
     new mapFileDescriptor = fopen( recentMapsFilePath, "rt" );
@@ -2863,10 +2863,10 @@ stock debugPrintRecentBanFile( recentMapsFilePath[] )
         if( mapCount++ < MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST
             && !( g_debug_level & 256 ) )
         {
-            LOGGER( 4, "( debugPrintRecentBanFile ) %d, loadedMapName: %s", mapCount, loadedMapName )
+            LOG( 4, "( debugPrintRecentBanFile ) %d, loadedMapName: %s", mapCount, loadedMapName )
         }
 
-        LOGGER( 256, "( debugPrintRecentBanFile ) %d, loadedMapName: %s", mapCount, loadedMapName )
+        LOG( 256, "( debugPrintRecentBanFile ) %d, loadedMapName: %s", mapCount, loadedMapName )
     }
 
     fclose( mapFileDescriptor );
@@ -2875,8 +2875,8 @@ stock debugPrintRecentBanFile( recentMapsFilePath[] )
 
 stock loadWhiteListFileFromFile( &Array:whitelistArray, whiteListFilePath[] )
 {
-    LOGGER( 128, "I AM ENTERING ON loadWhiteListFileFromFile(2) whitelistArray: %d", whitelistArray)
-    LOGGER( 8, "( loadWhiteListFileFromFile ) whiteListFilePath: %s", whiteListFilePath )
+    LOG( 128, "I AM ENTERING ON loadWhiteListFileFromFile(2) whitelistArray: %d", whitelistArray)
+    LOG( 8, "( loadWhiteListFileFromFile ) whiteListFilePath: %s", whiteListFilePath )
 
     new loadedCount;
     new whiteListFileDescriptor;
@@ -2886,7 +2886,7 @@ stock loadWhiteListFileFromFile( &Array:whitelistArray, whiteListFilePath[] )
 
     if( !( whiteListFileDescriptor = fopen( whiteListFilePath, "rt" ) ) )
     {
-        LOGGER( 8, "ERROR! Invalid file descriptor. whiteListFileDescriptor: %d, whiteListFilePath: %s", \
+        LOG( 8, "ERROR! Invalid file descriptor. whiteListFileDescriptor: %d, whiteListFilePath: %s", \
                 whiteListFileDescriptor, whiteListFilePath )
     }
 
@@ -2905,7 +2905,7 @@ stock loadWhiteListFileFromFile( &Array:whitelistArray, whiteListFilePath[] )
         }
         else
         {
-            LOGGER( 8, "( loadWhiteListFileFromFile ) Adding the currentLine: %s", currentLine )
+            LOG( 8, "( loadWhiteListFileFromFile ) Adding the currentLine: %s", currentLine )
             ArrayPushString( whitelistArray, currentLine );
 
             loadedCount++;
@@ -2913,16 +2913,16 @@ stock loadWhiteListFileFromFile( &Array:whitelistArray, whiteListFilePath[] )
     }
 
     fclose( whiteListFileDescriptor );
-    LOGGER( 1, "I AM EXITING loadWhiteListFileFromFile(2) whitelistArray: %d", whitelistArray )
+    LOG( 1, "I AM EXITING loadWhiteListFileFromFile(2) whitelistArray: %d", whitelistArray )
 
-    LOGGER( 1, "    ( loadWhiteListFileFromFile ) Returning loadedCount: %d", loadedCount )
+    LOG( 1, "    ( loadWhiteListFileFromFile ) Returning loadedCount: %d", loadedCount )
     return loadedCount;
 }
 
 stock processLoadedGroupMapFileFrom( Array:playerFillerMapsArray, Array:fillersFilePathsArray,
                                      Trie:minPlayerFillerMapGroupTrie=Invalid_Trie, bool:isToClearTheTrie=true )
 {
-    LOGGER( 128, "I AM ENTERING ON processLoadedGroupMapFileFrom(2) groupCount: %d", ArraySize( fillersFilePathsArray ) )
+    LOG( 128, "I AM ENTERING ON processLoadedGroupMapFileFrom(2) groupCount: %d", ArraySize( fillersFilePathsArray ) )
 
     new loadedMapsTotal;
     new fillerFilePath[ MAX_FILE_PATH_LENGHT ];
@@ -2939,8 +2939,8 @@ stock processLoadedGroupMapFileFrom( Array:playerFillerMapsArray, Array:fillersF
         loadedMapsTotal += map_populateList( fillerMapsArray, fillerFilePath, minPlayerFillerMapGroupTrie, isToClearTheTrie );
         ArrayPushCell( playerFillerMapsArray, fillerMapsArray );
 
-        LOGGER( 8, "[%i] groupCount: %i, filersMapCount: %i", groupIndex, groupCount, ArraySize( fillerMapsArray ) )
-        LOGGER( 8, "     fillersFilePaths[%i]: %s", groupIndex, fillerFilePath )
+        LOG( 8, "[%i] groupCount: %i, filersMapCount: %i", groupIndex, groupCount, ArraySize( fillerMapsArray ) )
+        LOG( 8, "     fillersFilePaths[%i]: %s", groupIndex, fillerFilePath )
     }
 
     return loadedMapsTotal;
@@ -2951,7 +2951,7 @@ stock processLoadedGroupMapFileFrom( Array:playerFillerMapsArray, Array:fillersF
  */
 stock loadMapFiles( bool:readMapCycle = true )
 {
-    LOGGER( 128, "I AM ENTERING ON loadMapFiles(1)" )
+    LOG( 128, "I AM ENTERING ON loadMapFiles(1)" )
 
     enum loadMapFilesTypes
     {
@@ -2978,14 +2978,14 @@ stock loadMapFiles( bool:readMapCycle = true )
     configureServerMapChange( mapFilerFilePath );
     loadTheBanRecentMapsFeature( loadedCount[ t_NormalPlayers ] );
 
-    LOGGER( 4, "( loadMapFiles ) Maps Files Loaded." )
-    LOGGER( 4, "" )
-    LOGGER( 4, "" )
+    LOG( 4, "( loadMapFiles ) Maps Files Loaded." )
+    LOG( 4, "" )
+    LOG( 4, "" )
 }
 
 stock configureTheRTVFeature( mapFilerFilePath[] )
 {
-    LOGGER( 128, "I AM ENTERING ON configureTheRTVFeature(1)" )
+    LOG( 128, "I AM ENTERING ON configureTheRTVFeature(1)" )
 
     if( g_rtvCommands & RTV_CMD_STANDARD )
     {
@@ -3006,8 +3006,8 @@ stock configureTheRTVFeature( mapFilerFilePath[] )
         loadNominationList( mapFilerFilePath );
     }
 
-    LOGGER( 4, "" )
-    LOGGER( 4, "" )
+    LOG( 4, "" )
+    LOG( 4, "" )
 }
 
 /**
@@ -3015,7 +3015,7 @@ stock configureTheRTVFeature( mapFilerFilePath[] )
  */
 stock configureServerMapChange( emptyCycleFilePath[] )
 {
-    LOGGER( 128, "I AM ENTERING ON configureServerMapChange(1)" )
+    LOG( 128, "I AM ENTERING ON configureServerMapChange(1)" )
 
     if( IS_WHITELIST_BLOCKING( IS_WHITELIST_ENABLED(), g_nextMapName ) )
     {
@@ -3043,7 +3043,7 @@ stock configureServerMapChange( emptyCycleFilePath[] )
 
 stock configureTheNorPlayersFeature( mapFilerFilePath[] )
 {
-    LOGGER( 128, "I AM ENTERING ON configureTheNorPlayersFeature(1)" )
+    LOG( 128, "I AM ENTERING ON configureTheNorPlayersFeature(1)" )
 
     new loadedCount;
     get_pcvar_string( cvar_voteMapFilePath, mapFilerFilePath, MAX_FILE_PATH_LENGHT - 1 );
@@ -3054,7 +3054,7 @@ stock configureTheNorPlayersFeature( mapFilerFilePath[] )
             || mapFilerFilePath[ 0 ] == MAP_CYCLE_LOAD_FLAG
             || mapFilerFilePath[ 0 ] == MAP_FOLDER_LOAD_FLAG )
         {
-            LOGGER( 4, "" )
+            LOG( 4, "" )
             TRY_TO_CLEAN( clear_two_dimensional_array, g_norPlayerFillerMapGroupArrays, ArrayCreate() )
 
             TRY_TO_CLEAN( ArrayClear, g_voteNorPlayerFillerPathsArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
@@ -3063,7 +3063,7 @@ stock configureTheNorPlayersFeature( mapFilerFilePath[] )
             loadMapGroupsFeatureFile( mapFilerFilePath, g_voteNorPlayerFillerPathsArray, g_norMaxMapsPerGroupToUseArray );
             loadedCount = processLoadedGroupMapFileFrom( g_norPlayerFillerMapGroupArrays, g_voteNorPlayerFillerPathsArray );
 
-            LOGGER( 4, "", debugLoadedGroupMapFileFrom( g_norPlayerFillerMapGroupArrays, g_norMaxMapsPerGroupToUseArray ) )
+            LOG( 4, "", debugLoadedGroupMapFileFrom( g_norPlayerFillerMapGroupArrays, g_norMaxMapsPerGroupToUseArray ) )
         }
         else
         {
@@ -3071,13 +3071,13 @@ stock configureTheNorPlayersFeature( mapFilerFilePath[] )
         }
     }
 
-    LOGGER( 1, "    ( configureTheNorPlayersFeature ) Returning loadedCount: %d", loadedCount )
+    LOG( 1, "    ( configureTheNorPlayersFeature ) Returning loadedCount: %d", loadedCount )
     return loadedCount;
 }
 
 stock configureTheMidPlayersFeature( mapFilerFilePath[] )
 {
-    LOGGER( 128, "I AM ENTERING ON configureTheMidPlayersFeature(1)" )
+    LOG( 128, "I AM ENTERING ON configureTheMidPlayersFeature(1)" )
     new loadedCount;
 
     if( get_pcvar_num( cvar_voteMidPlayers ) > VOTE_MIDDLE_PLAYERS_REQUIRED )
@@ -3089,7 +3089,7 @@ stock configureTheMidPlayersFeature( mapFilerFilePath[] )
             if( file_exists( mapFilerFilePath )
                 || mapFilerFilePath[ 0 ] == MAP_CYCLE_LOAD_FLAG )
             {
-                LOGGER( 4, "" )
+                LOG( 4, "" )
                 TRY_TO_CLEAN( clear_two_dimensional_array, g_midPlayerFillerMapGroupArrays, ArrayCreate() )
 
                 TRY_TO_CLEAN( ArrayClear, g_voteMidPlayerFillerPathsArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
@@ -3098,7 +3098,7 @@ stock configureTheMidPlayersFeature( mapFilerFilePath[] )
                 loadMapGroupsFeatureFile( mapFilerFilePath, g_voteMidPlayerFillerPathsArray, g_midMaxMapsPerGroupToUseArray );
                 loadedCount = processLoadedGroupMapFileFrom( g_midPlayerFillerMapGroupArrays, g_voteMidPlayerFillerPathsArray );
 
-                LOGGER( 4, "", debugLoadedGroupMapFileFrom( g_midPlayerFillerMapGroupArrays, g_midMaxMapsPerGroupToUseArray ) )
+                LOG( 4, "", debugLoadedGroupMapFileFrom( g_midPlayerFillerMapGroupArrays, g_midMaxMapsPerGroupToUseArray ) )
             }
             else
             {
@@ -3107,13 +3107,13 @@ stock configureTheMidPlayersFeature( mapFilerFilePath[] )
         }
     }
 
-    LOGGER( 1, "    ( configureTheMidPlayersFeature ) Returning loadedCount: %d", loadedCount )
+    LOG( 1, "    ( configureTheMidPlayersFeature ) Returning loadedCount: %d", loadedCount )
     return loadedCount;
 }
 
 stock configureTheMinPlayersFeature( mapFilerFilePath[] )
 {
-    LOGGER( 128, "I AM ENTERING ON configureTheMinPlayersFeature(1)" )
+    LOG( 128, "I AM ENTERING ON configureTheMinPlayersFeature(1)" )
     new loadedCount;
 
     if( get_pcvar_num( cvar_voteMinPlayers ) > VOTE_MININUM_PLAYERS_REQUIRED )
@@ -3125,7 +3125,7 @@ stock configureTheMinPlayersFeature( mapFilerFilePath[] )
             if( file_exists( mapFilerFilePath )
                 || mapFilerFilePath[ 0 ] == MAP_CYCLE_LOAD_FLAG )
             {
-                LOGGER( 4, "" )
+                LOG( 4, "" )
                 TRY_TO_CLEAN( clear_two_dimensional_array, g_minPlayerFillerMapGroupArrays, ArrayCreate() )
                 TRY_TO_CLEAN( TrieClear, g_minPlayerFillerMapGroupTrie , TrieCreate() )
 
@@ -3137,7 +3137,7 @@ stock configureTheMinPlayersFeature( mapFilerFilePath[] )
                 loadedCount = processLoadedGroupMapFileFrom( g_minPlayerFillerMapGroupArrays,
                         g_voteMinPlayerFillerPathsArray, g_minPlayerFillerMapGroupTrie, false );
 
-                LOGGER( 4, "", debugLoadedGroupMapFileFrom( g_minPlayerFillerMapGroupArrays, g_minMaxMapsPerGroupToUseArray ) )
+                LOG( 4, "", debugLoadedGroupMapFileFrom( g_minPlayerFillerMapGroupArrays, g_minMaxMapsPerGroupToUseArray ) )
             }
             else
             {
@@ -3146,18 +3146,18 @@ stock configureTheMinPlayersFeature( mapFilerFilePath[] )
         }
     }
 
-    LOGGER( 1, "    ( configureTheMinPlayersFeature ) Returning loadedCount: %d", loadedCount )
+    LOG( 1, "    ( configureTheMinPlayersFeature ) Returning loadedCount: %d", loadedCount )
     return loadedCount;
 }
 
 stock configureTheWhiteListFeature( mapFilerFilePath[] )
 {
-    LOGGER( 128, "I AM ENTERING ON configureTheWhiteListFeature(1)" )
+    LOG( 128, "I AM ENTERING ON configureTheWhiteListFeature(1)" )
     new loadedCount;
 
     if( IS_WHITELIST_ENABLED() )
     {
-        LOGGER( 4, "" )
+        LOG( 4, "" )
 
         get_pcvar_string( cvar_voteWhiteListMapFilePath, mapFilerFilePath, MAX_FILE_PATH_LENGHT - 1 );
         loadedCount = loadWhiteListFileFromFile( g_whitelistFileArray, mapFilerFilePath );
@@ -3166,13 +3166,13 @@ stock configureTheWhiteListFeature( mapFilerFilePath[] )
         loadTheWhiteListFeature();
     }
 
-    LOGGER( 1, "    ( configureTheWhiteListFeature ) Returning loadedCount: %d", loadedCount )
+    LOG( 1, "    ( configureTheWhiteListFeature ) Returning loadedCount: %d", loadedCount )
     return loadedCount;
 }
 
 stock loadTheBanRecentMapsFeature( maximumLoadMapsCount )
 {
-    LOGGER( 128, "I AM ENTERING ON loadTheBanRecentMapsFeature(1)" )
+    LOG( 128, "I AM ENTERING ON loadTheBanRecentMapsFeature(1)" )
     new loadedCount;
 
     if( get_pcvar_num( cvar_recentMapsBannedNumber ) )
@@ -3202,13 +3202,13 @@ stock loadTheBanRecentMapsFeature( maximumLoadMapsCount )
         }
     }
 
-    LOGGER( 1, "    ( loadTheBanRecentMapsFeature ) Returning loadedCount: %d", loadedCount )
+    LOG( 1, "    ( loadTheBanRecentMapsFeature ) Returning loadedCount: %d", loadedCount )
     return loadedCount;
 }
 
 stock debugLoadedGroupMapFileFrom( &Array:playerFillerMapsArray, &Array:maxMapsPerGroupToUseArray )
 {
-    LOGGER( 128, "I AM ENTERING ON debugLoadedGroupMapFileFrom(2) groupCount: %d", ArraySize( playerFillerMapsArray ) )
+    LOG( 128, "I AM ENTERING ON debugLoadedGroupMapFileFrom(2) groupCount: %d", ArraySize( playerFillerMapsArray ) )
 
     new arraySize;
     new Array:fillerMapsArray;
@@ -3222,13 +3222,13 @@ stock debugLoadedGroupMapFileFrom( &Array:playerFillerMapsArray, &Array:maxMapsP
         fillerMapsArray = ArrayGetCell( playerFillerMapsArray, groupIndex );
         arraySize = ArraySize( fillerMapsArray );
 
-        LOGGER( 8, "[%i] maxMapsPerGroupToUse: %i, filersMapCount: %i", groupIndex, \
+        LOG( 8, "[%i] maxMapsPerGroupToUse: %i, filersMapCount: %i", groupIndex, \
                 ArrayGetCell( maxMapsPerGroupToUseArray, groupIndex ), arraySize )
 
         for( new mapIndex = 0; mapIndex < arraySize && mapIndex < 10; mapIndex++ )
         {
             GET_MAP_NAME( fillerMapsArray, mapIndex, fillerMap )
-            LOGGER( 8, "   fillerMap[%i]: %s", mapIndex, fillerMap )
+            LOG( 8, "   fillerMap[%i]: %s", mapIndex, fillerMap )
         }
     }
 
@@ -3237,7 +3237,7 @@ stock debugLoadedGroupMapFileFrom( &Array:playerFillerMapsArray, &Array:maxMapsP
 
 stock loadMapGroupsFeatureFile( mapFilerFilePath[], &Array:mapFilersPathArray, &Array:maxMapsPerGroupToUse )
 {
-    LOGGER( 128, "I AM ENTERING ON loadMapGroupsFeatureFile(3), mapFilerFilePath: %s", mapFilerFilePath )
+    LOG( 128, "I AM ENTERING ON loadMapGroupsFeatureFile(3), mapFilerFilePath: %s", mapFilerFilePath )
 
     // The mapFilerFilePaths '*' and '#' disables The Map Groups Feature.
     if( mapFilerFilePath[ 0 ] != MAP_FOLDER_LOAD_FLAG
@@ -3258,8 +3258,8 @@ stock loadMapGroupsFeatureFile( mapFilerFilePath[], &Array:mapFilersPathArray, &
                 new groupCount;
                 new fillerFilePath[ MAX_MAPNAME_LENGHT ];
 
-                LOGGER( 8, "" )
-                LOGGER( 8, "this is a [groups] mapFilerFile" )
+                LOG( 8, "" )
+                LOG( 8, "this is a [groups] mapFilerFile" )
 
                 // read the filler mapFilerFile to determine how many groups there are ( max of MAX_OPTIONS_IN_VOTE )
                 while( !feof( mapFilerFile ) )
@@ -3267,7 +3267,7 @@ stock loadMapGroupsFeatureFile( mapFilerFilePath[], &Array:mapFilersPathArray, &
                     fgets( mapFilerFile, currentReadedLine, charsmax( currentReadedLine ) );
                     trim( currentReadedLine );
 
-                    LOGGER( 8, "currentReadedLine: %s   isdigit: %i   groupCount: %i  ", \
+                    LOG( 8, "currentReadedLine: %s   isdigit: %i   groupCount: %i  ", \
                             currentReadedLine, isdigit( currentReadedLine[ 0 ] ), groupCount )
 
                     if( isdigit( currentReadedLine[ 0 ] ) )
@@ -3280,11 +3280,11 @@ stock loadMapGroupsFeatureFile( mapFilerFilePath[], &Array:mapFilersPathArray, &
                             formatex( fillerFilePath, charsmax( fillerFilePath ), "%s/%i.ini", g_configsDirPath, groupCount );
 
                             ArrayPushString( mapFilersPathArray, fillerFilePath );
-                            LOGGER( 8, "fillersFilePaths: %s", fillerFilePath )
+                            LOG( 8, "fillersFilePaths: %s", fillerFilePath )
                         }
                         else
                         {
-                            LOGGER( 1, "AMX_ERR_BOUNDS, %L %L", LANG_SERVER, "GAL_GRP_FAIL_TOOMANY", \
+                            LOG( 1, "AMX_ERR_BOUNDS, %L %L", LANG_SERVER, "GAL_GRP_FAIL_TOOMANY", \
                                     mapFilerFilePath, LANG_SERVER, "GAL_GRP_FAIL_TOOMANY_2" )
 
                             log_error( AMX_ERR_BOUNDS, "%L %L", LANG_SERVER, "GAL_GRP_FAIL_TOOMANY",
@@ -3297,7 +3297,7 @@ stock loadMapGroupsFeatureFile( mapFilerFilePath[], &Array:mapFilersPathArray, &
 
                 if( groupCount == 0 )
                 {
-                    LOGGER( 1, "AMX_ERR_GENERAL, %L", LANG_SERVER, "GAL_GRP_FAIL_NOCOUNTS", mapFilerFilePath )
+                    LOG( 1, "AMX_ERR_GENERAL, %L", LANG_SERVER, "GAL_GRP_FAIL_NOCOUNTS", mapFilerFilePath )
                     log_error( AMX_ERR_GENERAL, "%L", LANG_SERVER, "GAL_GRP_FAIL_NOCOUNTS", mapFilerFilePath );
 
                     fclose( mapFilerFile );
@@ -3315,7 +3315,7 @@ stock loadMapGroupsFeatureFile( mapFilerFilePath[], &Array:mapFilersPathArray, &
         }
         else
         {
-            LOGGER( 1, "AMX_ERR_NOTFOUND, %L", LANG_SERVER, "GAL_FILLER_NOTFOUND", mapFilerFilePath )
+            LOG( 1, "AMX_ERR_NOTFOUND, %L", LANG_SERVER, "GAL_FILLER_NOTFOUND", mapFilerFilePath )
             log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_FILLER_NOTFOUND", mapFilerFilePath );
 
             goto loadTheDefaultMapFile;
@@ -3331,9 +3331,9 @@ stock loadMapGroupsFeatureFile( mapFilerFilePath[], &Array:mapFilersPathArray, &
         ArrayPushCell( maxMapsPerGroupToUse, MAX_OPTIONS_IN_VOTE );
     }
 
-    LOGGER( 4, "( loadMapGroupsFeatureFile ) MapsGroups Loaded, mapFilerFilePath: %s", mapFilerFilePath )
-    LOGGER( 4, "" )
-    LOGGER( 4, "" )
+    LOG( 4, "( loadMapGroupsFeatureFile ) MapsGroups Loaded, mapFilerFilePath: %s", mapFilerFilePath )
+    LOG( 4, "" )
+    LOG( 4, "" )
 }
 
 /**
@@ -3342,7 +3342,7 @@ stock loadMapGroupsFeatureFile( mapFilerFilePath[], &Array:mapFilersPathArray, &
  */
 public client_death_event()
 {
-    LOGGER( 256, "I AM ENTERING ON client_death_event(0)" )
+    LOG( 256, "I AM ENTERING ON client_death_event(0)" )
     new killerId = read_data( 1 );
 
     if( killerId < MAX_PLAYERS_COUNT
@@ -3395,7 +3395,7 @@ public client_death_event()
  */
 stock chooseTheEndOfMapStartOption( roundsRemaining )
 {
-    LOGGER( 128, "I AM ENTERING ON chooseTheEndOfMapStartOption(1) roundsRemaining: %d", roundsRemaining )
+    LOG( 128, "I AM ENTERING ON chooseTheEndOfMapStartOption(1) roundsRemaining: %d", roundsRemaining )
     new endOfMapVoteStart = get_pcvar_num( cvar_endOfMapVoteStart );
 
     switch( get_pcvar_num( cvar_endOnRound ) )
@@ -3406,7 +3406,7 @@ stock chooseTheEndOfMapStartOption( roundsRemaining )
             if( endOfMapVoteStart
                 && roundsRemaining < endOfMapVoteStart + 1 )
             {
-                LOGGER( 1, "    ( chooseTheEndOfMapStartOption ) 1. Returning true." )
+                LOG( 1, "    ( chooseTheEndOfMapStartOption ) 1. Returning true." )
                 return true;
             }
         }
@@ -3416,7 +3416,7 @@ stock chooseTheEndOfMapStartOption( roundsRemaining )
                 || ( endOfMapVoteStart
                    && roundsRemaining < endOfMapVoteStart ) )
             {
-                LOGGER( 1, "    ( chooseTheEndOfMapStartOption ) 2. Returning true." )
+                LOG( 1, "    ( chooseTheEndOfMapStartOption ) 2. Returning true." )
                 return true;
             }
         }
@@ -3430,7 +3430,7 @@ stock chooseTheEndOfMapStartOption( roundsRemaining )
                         || ( endOfMapVoteStart
                            && roundsRemaining < endOfMapVoteStart ) )
                     {
-                        LOGGER( 1, "    ( chooseTheEndOfMapStartOption ) 3. Returning true." )
+                        LOG( 1, "    ( chooseTheEndOfMapStartOption ) 3. Returning true." )
                         return true;
                     }
                 }
@@ -3440,7 +3440,7 @@ stock chooseTheEndOfMapStartOption( roundsRemaining )
                         || ( endOfMapVoteStart
                              && roundsRemaining < endOfMapVoteStart ) )
                     {
-                        LOGGER( 1, "    ( chooseTheEndOfMapStartOption ) 4. Returning true." )
+                        LOG( 1, "    ( chooseTheEndOfMapStartOption ) 4. Returning true." )
                         return true;
                     }
                 }
@@ -3449,7 +3449,7 @@ stock chooseTheEndOfMapStartOption( roundsRemaining )
                     if( endOfMapVoteStart
                         && roundsRemaining < endOfMapVoteStart )
                     {
-                        LOGGER( 1, "    ( chooseTheEndOfMapStartOption ) 5. Returning true." )
+                        LOG( 1, "    ( chooseTheEndOfMapStartOption ) 5. Returning true." )
                         return true;
                     }
                 }
@@ -3457,7 +3457,7 @@ stock chooseTheEndOfMapStartOption( roundsRemaining )
         }
     }
 
-    LOGGER( 1, "    ( chooseTheEndOfMapStartOption ) Returning false." )
+    LOG( 1, "    ( chooseTheEndOfMapStartOption ) Returning false." )
     return false;
 }
 
@@ -3473,7 +3473,7 @@ stock chooseTheEndOfMapStartOption( roundsRemaining )
  */
 stock isToStartTheVotingOnThisRound( secondsRemaining, GameEndingType:gameEndingType )
 {
-    LOGGER( 128, "I AM ENTERING ON isToStartTheVotingOnThisRound(2) secondsRemaining: %d", secondsRemaining )
+    LOG( 128, "I AM ENTERING ON isToStartTheVotingOnThisRound(2) secondsRemaining: %d", secondsRemaining )
 
     if( get_pcvar_num( cvar_endOfMapVote )
         && !task_exists( TASKID_START_VOTING_DELAYED ) )
@@ -3489,19 +3489,19 @@ stock isToStartTheVotingOnThisRound( secondsRemaining, GameEndingType:gameEnding
             }
         }
 
-        LOGGER( 0, "", debugIsTimeToStartTheEndOfMap( secondsRemaining, 256 ) )
+        LOG( 0, "", debugIsTimeToStartTheEndOfMap( secondsRemaining, 256 ) )
 
         new roundsRemaining = howManyRoundsAreRemaining( secondsPassed, gameEndingType );
         return chooseTheEndOfMapStartOption( roundsRemaining );
     }
 
-    LOGGER( 1, "    ( isToStartTheVotingOnThisRound ) Just returning false." )
+    LOG( 1, "    ( isToStartTheVotingOnThisRound ) Just returning false." )
     return false;
 }
 
 stock howManySecondsLastMapTheVoting( bool:isToIncludeRunoff = true )
 {
-    LOGGER( 128, "I AM ENTERING ON howManySecondsLastMapTheVoting(0)" )
+    LOG( 128, "I AM ENTERING ON howManySecondsLastMapTheVoting(0)" )
 
     new temp;
     new Float:voteTime;
@@ -3524,7 +3524,7 @@ stock howManySecondsLastMapTheVoting( bool:isToIncludeRunoff = true )
         voteTime = voteTime + voteTime + temp + VOTE_TIME_RUNOFF;
     }
 
-    LOGGER( 1, "    ( howManySecondsLastMapTheVoting ) Returning the vote total time: %f", voteTime )
+    LOG( 1, "    ( howManySecondsLastMapTheVoting ) Returning the vote total time: %f", voteTime )
     return floatround( voteTime, floatround_ceil );
 }
 
@@ -3539,7 +3539,7 @@ stock howManySecondsLastMapTheVoting( bool:isToIncludeRunoff = true )
  */
 stock howManyRoundsAreRemaining( secondsRemaining, GameEndingType:whatGameEndingType )
 {
-    LOGGER( 128, "I AM ENTERING ON howManyRoundsAreRemaining(2), g_roundAverageTime: %d", g_roundAverageTime )
+    LOG( 128, "I AM ENTERING ON howManyRoundsAreRemaining(2), g_roundAverageTime: %d", g_roundAverageTime )
     new avoidExtraRound;
 
     if( IS_THE_ROUND_AVERAGE_TIME_TOO_SHORT() )
@@ -3582,13 +3582,13 @@ stock howManyRoundsAreRemaining( secondsRemaining, GameEndingType:whatGameEnding
         }
     }
 
-    LOGGER( 1, "    ( howManyRoundsAreRemaining ) Returning MAX_INTEGER: %d", MAX_INTEGER )
+    LOG( 1, "    ( howManyRoundsAreRemaining ) Returning MAX_INTEGER: %d", MAX_INTEGER )
     return MAX_INTEGER;
 }
 
 stock getRoundsRemainingBy( &by_time = 0, &by_frags = 0 )
 {
-    LOGGER( 128, "I AM ENTERING ON getRoundsRemainingBy(2), by_time: %d, by_frags: %d", by_time, by_frags )
+    LOG( 128, "I AM ENTERING ON getRoundsRemainingBy(2), by_time: %d, by_frags: %d", by_time, by_frags )
 
     if( by_time  < 1 ) by_time  = 1;
     if( by_frags < 1 ) by_frags = 1;
@@ -3636,27 +3636,27 @@ stock getRoundsRemainingBy( &by_time = 0, &by_frags = 0 )
 stock debugWhatGameEndingTypeItIs( rounds_left_by_maxrounds, rounds_left_by_time, rounds_left_by_winlimit,
                                    rounds_left_by_frags, debugLevel )
 {
-    LOGGER( debugLevel, "I AM ENTERING ON debugWhatGameEndingTypeItIs(5)" )
+    LOG( debugLevel, "I AM ENTERING ON debugWhatGameEndingTypeItIs(5)" )
 
-    LOGGER( debugLevel, "" )
-    LOGGER( debugLevel, "( whatGameEndingTypeItIs ) cv_winlimit: %2d", get_pcvar_num( cvar_mp_winlimit  ) )
-    LOGGER( debugLevel, "( whatGameEndingTypeItIs ) cv_maxrounds: %0d", get_pcvar_num( cvar_mp_maxrounds ) )
-    LOGGER( debugLevel, "( whatGameEndingTypeItIs ) cv_time: %6f", get_pcvar_float( cvar_mp_timelimit ) )
-    LOGGER( debugLevel, "( whatGameEndingTypeItIs ) cv_frags: %5d", get_pcvar_num( cvar_mp_fraglimit ) )
+    LOG( debugLevel, "" )
+    LOG( debugLevel, "( whatGameEndingTypeItIs ) cv_winlimit: %2d", get_pcvar_num( cvar_mp_winlimit  ) )
+    LOG( debugLevel, "( whatGameEndingTypeItIs ) cv_maxrounds: %0d", get_pcvar_num( cvar_mp_maxrounds ) )
+    LOG( debugLevel, "( whatGameEndingTypeItIs ) cv_time: %6f", get_pcvar_float( cvar_mp_timelimit ) )
+    LOG( debugLevel, "( whatGameEndingTypeItIs ) cv_frags: %5d", get_pcvar_num( cvar_mp_fraglimit ) )
 
-    LOGGER( debugLevel, "( whatGameEndingTypeItIs )" )
-    LOGGER( debugLevel, "( whatGameEndingTypeItIs ) rounds_left_by_winlimit: %2d", rounds_left_by_winlimit )
-    LOGGER( debugLevel, "( whatGameEndingTypeItIs ) rounds_left_by_maxrounds: %0d", rounds_left_by_maxrounds )
-    LOGGER( debugLevel, "( whatGameEndingTypeItIs ) rounds_left_by_time: %6d", rounds_left_by_time )
-    LOGGER( debugLevel, "( whatGameEndingTypeItIs ) rounds_left_by_frags: %5d", rounds_left_by_frags )
+    LOG( debugLevel, "( whatGameEndingTypeItIs )" )
+    LOG( debugLevel, "( whatGameEndingTypeItIs ) rounds_left_by_winlimit: %2d", rounds_left_by_winlimit )
+    LOG( debugLevel, "( whatGameEndingTypeItIs ) rounds_left_by_maxrounds: %0d", rounds_left_by_maxrounds )
+    LOG( debugLevel, "( whatGameEndingTypeItIs ) rounds_left_by_time: %6d", rounds_left_by_time )
+    LOG( debugLevel, "( whatGameEndingTypeItIs ) rounds_left_by_frags: %5d", rounds_left_by_frags )
 
-    LOGGER( debugLevel, "( whatGameEndingTypeItIs )" )
-    LOGGER( debugLevel, "( whatGameEndingTypeItIs ) GameEndingType_ByWinLimit: %2d", GameEndingType_ByWinLimit )
-    LOGGER( debugLevel, "( whatGameEndingTypeItIs ) GameEndingType_ByMaxRounds: %d", GameEndingType_ByMaxRounds )
-    LOGGER( debugLevel, "( whatGameEndingTypeItIs ) GameEndingType_ByTimeLimit: %d", GameEndingType_ByTimeLimit )
-    LOGGER( debugLevel, "( whatGameEndingTypeItIs ) GameEndingType_ByFragLimit: %d", GameEndingType_ByFragLimit )
+    LOG( debugLevel, "( whatGameEndingTypeItIs )" )
+    LOG( debugLevel, "( whatGameEndingTypeItIs ) GameEndingType_ByWinLimit: %2d", GameEndingType_ByWinLimit )
+    LOG( debugLevel, "( whatGameEndingTypeItIs ) GameEndingType_ByMaxRounds: %d", GameEndingType_ByMaxRounds )
+    LOG( debugLevel, "( whatGameEndingTypeItIs ) GameEndingType_ByTimeLimit: %d", GameEndingType_ByTimeLimit )
+    LOG( debugLevel, "( whatGameEndingTypeItIs ) GameEndingType_ByFragLimit: %d", GameEndingType_ByFragLimit )
 
-    LOGGER( debugLevel, "" )
+    LOG( debugLevel, "" )
     return 0;
 }
 
@@ -3668,14 +3668,14 @@ stock debugWhatGameEndingTypeItIs( rounds_left_by_maxrounds, rounds_left_by_time
     gameType = switchEndingGameType( %0, %1, %2, %3, %4, %5, %6, %7, %8, %9 ); \
     if( gameType != GameEndingType_ByNothing ) \
     { \
-        LOGGER( 1, "    ( SWITCH_ENDING_GAME_TYPE_RETURN ) Returning GameEndingType: %d", gameType ) \
+        LOG( 1, "    ( SWITCH_ENDING_GAME_TYPE_RETURN ) Returning GameEndingType: %d", gameType ) \
         return gameType; \
     } \
 }
 
 stock GameEndingType:whatGameEndingTypeItIs()
 {
-    LOGGER( 128, "I AM ENTERING ON whatGameEndingTypeItIs(0)" )
+    LOG( 128, "I AM ENTERING ON whatGameEndingTypeItIs(0)" )
     new GameEndingType:gameType;
 
     new by_time;
@@ -3699,7 +3699,7 @@ stock GameEndingType:whatGameEndingTypeItIs()
     by_winlimit  = cv_winlimit  - max( g_totalCtWins, g_totalTerroristsWins );
 
     getRoundsRemainingBy( by_time, by_frags );
-    LOGGER( 0, "", debugWhatGameEndingTypeItIs( by_maxrounds, by_time, by_winlimit, by_frags, 256 ) )
+    LOG( 0, "", debugWhatGameEndingTypeItIs( by_maxrounds, by_time, by_winlimit, by_frags, 256 ) )
 
     // Check whether there is any allowed combination.
     SWITCH_ENDING_GAME_TYPE_RETURN( by_winlimit    , cv_winlimit , by_time    , cv_time      , \
@@ -3721,14 +3721,14 @@ stock GameEndingType:whatGameEndingTypeItIs()
     SWITCH_ENDING_GAME_TYPE_RETURN( cv_frags       , cv_frags    , cv_time    , cv_time      , \
             cv_maxrounds, cv_maxrounds, cv_winlimit, cv_winlimit , GameEndingType_ByFragLimit, true )
 
-    LOGGER( 256, "    ( whatGameEndingTypeItIs ) Returning: %d", GameEndingType_ByNothing )
+    LOG( 256, "    ( whatGameEndingTypeItIs ) Returning: %d", GameEndingType_ByNothing )
     return GameEndingType_ByNothing;
 }
 
 stock GameEndingType:switchEndingGameType( by_maxrounds, cv_maxrounds, by_time, cv_time, by_winlimit, cv_winlimit,
                                            by_frags, cv_frags, GameEndingType:type, bool:allowSelfReturn )
 {
-    LOGGER( 256, "I AM ENTERING ON switchEndingGameType(10) GameEndingType: %d", type )
+    LOG( 256, "I AM ENTERING ON switchEndingGameType(10) GameEndingType: %d", type )
 
     // If the cvar original value is set to a zero value, the round will never ended by such cvar.
     if( cv_maxrounds > 0 )
@@ -3743,7 +3743,7 @@ stock GameEndingType:switchEndingGameType( by_maxrounds, cv_maxrounds, by_time, 
                 && by_winlimit > by_maxrounds
                 && by_frags > by_maxrounds )
             {
-                LOGGER( 256, "    ( switchEndingGameType ) 1" )
+                LOG( 256, "    ( switchEndingGameType ) 1" )
                 return type;
             }
         }
@@ -3753,7 +3753,7 @@ stock GameEndingType:switchEndingGameType( by_maxrounds, cv_maxrounds, by_time, 
             if( by_time > by_maxrounds
                 && by_winlimit > by_maxrounds )
             {
-                LOGGER( 256, "    ( switchEndingGameType ) 2" )
+                LOG( 256, "    ( switchEndingGameType ) 2" )
                 return type;
             }
         }
@@ -3763,7 +3763,7 @@ stock GameEndingType:switchEndingGameType( by_maxrounds, cv_maxrounds, by_time, 
             if( by_time > by_maxrounds
                 && by_frags > by_maxrounds )
             {
-                LOGGER( 256, "    ( switchEndingGameType ) 3" )
+                LOG( 256, "    ( switchEndingGameType ) 3" )
                 return type;
             }
         }
@@ -3773,7 +3773,7 @@ stock GameEndingType:switchEndingGameType( by_maxrounds, cv_maxrounds, by_time, 
             if( by_winlimit > by_maxrounds
                 && by_frags > by_maxrounds )
             {
-                LOGGER( 256, "    ( switchEndingGameType ) 4" )
+                LOG( 256, "    ( switchEndingGameType ) 4" )
                 return type;
             }
         }
@@ -3782,53 +3782,53 @@ stock GameEndingType:switchEndingGameType( by_maxrounds, cv_maxrounds, by_time, 
         else if( cv_time > 0
                  && by_time > by_maxrounds )
         {
-            LOGGER( 256, "    ( switchEndingGameType ) 5" )
+            LOG( 256, "    ( switchEndingGameType ) 5" )
             return type;
         }
         else if( cv_winlimit > 0
                  && by_winlimit > by_maxrounds )
         {
-            LOGGER( 256, "    ( switchEndingGameType ) 6" )
+            LOG( 256, "    ( switchEndingGameType ) 6" )
             return type;
         }
         else if( cv_frags > 0
                  && by_frags > by_maxrounds )
         {
-            LOGGER( 256, "    ( switchEndingGameType ) 7" )
+            LOG( 256, "    ( switchEndingGameType ) 7" )
             return type;
         }
         else if( allowSelfReturn )
         {
-            LOGGER( 256, "    ( switchEndingGameType ) 8" )
+            LOG( 256, "    ( switchEndingGameType ) 8" )
             return type;
         }
     }
 
-    LOGGER( 256, "    ( switchEndingGameType ) Returning GameEndingType_ByNothing: %d", GameEndingType_ByNothing )
+    LOG( 256, "    ( switchEndingGameType ) Returning GameEndingType_ByNothing: %d", GameEndingType_ByNothing )
     return GameEndingType_ByNothing;
 }
 
 stock debugIsTimeToStartTheEndOfMap( secondsRemaining, debugLevel )
 {
-    LOGGER( 128, "I AM ENTERING ON debugIsTimeToStartTheEndOfMap(2)" )
+    LOG( 128, "I AM ENTERING ON debugIsTimeToStartTheEndOfMap(2)" )
     new taskExist = task_exists( TASKID_START_VOTING_DELAYED );
 
-    LOGGER( debugLevel, "" )
-    LOGGER( debugLevel, "( isTimeToStartTheEndOfMapVoting ) task_exists TASKID_START_VOTING_DELAYED: %d", taskExist )
-    LOGGER( debugLevel, "( isTimeToStartTheEndOfMapVoting ) g_isTheLastGameRound: %d", g_isTheLastGameRound )
-    LOGGER( debugLevel, "( isTimeToStartTheEndOfMapVoting ) g_isThePenultGameRound: %d", g_isThePenultGameRound )
-    LOGGER( debugLevel, "( isTimeToStartTheEndOfMapVoting ) debugLevel: %d", debugLevel )
-    LOGGER( debugLevel, "( isTimeToStartTheEndOfMapVoting ) secondsRemaining: %d", secondsRemaining )
-    LOGGER( debugLevel, "( isTimeToStartTheEndOfMapVoting ) cvar_endOnRound: %d", get_pcvar_num( cvar_endOnRound ) )
-    LOGGER( debugLevel, "( isTimeToStartTheEndOfMapVoting ) cvar_endOfMapVote: %d", get_pcvar_num( cvar_endOfMapVote ) )
-    LOGGER( debugLevel, "( isTimeToStartTheEndOfMapVoting ) cvar_endOfMapVoteStart: %d", get_pcvar_num( cvar_endOfMapVoteStart ) )
-    LOGGER( debugLevel, "( isTimeToStartTheEndOfMapVoting ) START_VOTEMAP_MIN_TIME: %d",  START_VOTEMAP_MIN_TIME )
-    LOGGER( debugLevel, "( isTimeToStartTheEndOfMapVoting ) START_VOTEMAP_MAX_TIME: %d",  START_VOTEMAP_MAX_TIME )
-    LOGGER( debugLevel, "( isTimeToStartTheEndOfMapVoting ) g_totalRoundsSavedTimes: %d", g_totalRoundsSavedTimes )
-    LOGGER( debugLevel, "( isTimeToStartTheEndOfMapVoting ) PERIODIC_CHECKING_INTERVAL: %d", PERIODIC_CHECKING_INTERVAL )
-    LOGGER( debugLevel, "( isTimeToStartTheEndOfMapVoting ) MIN_VOTE_START_ROUNDS_DELAY: %d", MIN_VOTE_START_ROUNDS_DELAY )
-    LOGGER( debugLevel, "( isTimeToStartTheEndOfMapVoting ) IS_END_OF_MAP_VOTING_GOING_ON(): %d", IS_END_OF_MAP_VOTING_GOING_ON() )
-    LOGGER( debugLevel, "" )
+    LOG( debugLevel, "" )
+    LOG( debugLevel, "( isTimeToStartTheEndOfMapVoting ) task_exists TASKID_START_VOTING_DELAYED: %d", taskExist )
+    LOG( debugLevel, "( isTimeToStartTheEndOfMapVoting ) g_isTheLastGameRound: %d", g_isTheLastGameRound )
+    LOG( debugLevel, "( isTimeToStartTheEndOfMapVoting ) g_isThePenultGameRound: %d", g_isThePenultGameRound )
+    LOG( debugLevel, "( isTimeToStartTheEndOfMapVoting ) debugLevel: %d", debugLevel )
+    LOG( debugLevel, "( isTimeToStartTheEndOfMapVoting ) secondsRemaining: %d", secondsRemaining )
+    LOG( debugLevel, "( isTimeToStartTheEndOfMapVoting ) cvar_endOnRound: %d", get_pcvar_num( cvar_endOnRound ) )
+    LOG( debugLevel, "( isTimeToStartTheEndOfMapVoting ) cvar_endOfMapVote: %d", get_pcvar_num( cvar_endOfMapVote ) )
+    LOG( debugLevel, "( isTimeToStartTheEndOfMapVoting ) cvar_endOfMapVoteStart: %d", get_pcvar_num( cvar_endOfMapVoteStart ) )
+    LOG( debugLevel, "( isTimeToStartTheEndOfMapVoting ) START_VOTEMAP_MIN_TIME: %d",  START_VOTEMAP_MIN_TIME )
+    LOG( debugLevel, "( isTimeToStartTheEndOfMapVoting ) START_VOTEMAP_MAX_TIME: %d",  START_VOTEMAP_MAX_TIME )
+    LOG( debugLevel, "( isTimeToStartTheEndOfMapVoting ) g_totalRoundsSavedTimes: %d", g_totalRoundsSavedTimes )
+    LOG( debugLevel, "( isTimeToStartTheEndOfMapVoting ) PERIODIC_CHECKING_INTERVAL: %d", PERIODIC_CHECKING_INTERVAL )
+    LOG( debugLevel, "( isTimeToStartTheEndOfMapVoting ) MIN_VOTE_START_ROUNDS_DELAY: %d", MIN_VOTE_START_ROUNDS_DELAY )
+    LOG( debugLevel, "( isTimeToStartTheEndOfMapVoting ) IS_END_OF_MAP_VOTING_GOING_ON(): %d", IS_END_OF_MAP_VOTING_GOING_ON() )
+    LOG( debugLevel, "" )
 
     return 0;
 }
@@ -3845,8 +3845,8 @@ stock debugIsTimeToStartTheEndOfMap( secondsRemaining, debugLevel )
  */
 stock isTimeToStartTheEndOfMapVoting( endOfMapVote )
 {
-    LOGGER( 256, "I AM ENTERING ON isTimeToStartTheEndOfMapVoting(1) secondsRemaining: %d", get_timeleft() )
-    LOGGER( 0, "", debugIsTimeToStartTheEndOfMap( get_timeleft(), 32 ) )
+    LOG( 256, "I AM ENTERING ON isTimeToStartTheEndOfMapVoting(1) secondsRemaining: %d", get_timeleft() )
+    LOG( 0, "", debugIsTimeToStartTheEndOfMap( get_timeleft(), 32 ) )
 
     if( !IS_END_OF_MAP_VOTING_GOING_ON()
         && !task_exists( TASKID_START_VOTING_DELAYED )
@@ -3873,12 +3873,12 @@ stock isTimeToStartTheEndOfMapVoting( endOfMapVote )
            || IS_THE_ROUND_TIME_TOO_BIG( get_pcvar_float( cvar_mp_roundtime ) )
            || IS_THE_ROUND_AVERAGE_TIME_TOO_SHORT() )
         {
-            LOGGER( 256, "    ( isTimeToStartTheEndOfMapVoting ) Just returning true." )
+            LOG( 256, "    ( isTimeToStartTheEndOfMapVoting ) Just returning true." )
             return true;
         }
     }
 
-    LOGGER( 256, "    ( isTimeToStartTheEndOfMapVoting ) Just returning false." )
+    LOG( 256, "    ( isTimeToStartTheEndOfMapVoting ) Just returning false." )
     return false;
 }
 
@@ -3891,7 +3891,7 @@ stock isTimeToStartTheEndOfMapVoting( endOfMapVote )
  */
 stock tryToStartTheVotingOnThisRound( startDelay )
 {
-    LOGGER( 128, "I AM ENTERING ON tryToStartTheVotingOnThisRound(1) startDelay: %d", startDelay )
+    LOG( 128, "I AM ENTERING ON tryToStartTheVotingOnThisRound(1) startDelay: %d", startDelay )
 
     new timeLeft;
     new GameEndingType:gameEndingType;
@@ -3935,33 +3935,33 @@ stock tryToStartTheVotingOnThisRound( startDelay )
 
 stock debugTeamWinEvent( string_team_winner[], wins_CT_trigger, wins_Terrorist_trigger )
 {
-    LOGGER( 32, "I AM ENTERING ON debugTeamWinEvent(3)" )
+    LOG( 32, "I AM ENTERING ON debugTeamWinEvent(3)" )
 
-    LOGGER( 32, "( team_win_event )" )
-    LOGGER( 32, "( team_win_event ) string_team_winner: %s", string_team_winner )
-    LOGGER( 32, "( team_win_event ) g_winLimitInteger: %d", g_winLimitInteger )
-    LOGGER( 32, "( team_win_event ) wins_CT_trigger: %d", wins_CT_trigger )
-    LOGGER( 32, "( team_win_event ) wins_Terrorist_trigger: %d", wins_Terrorist_trigger )
-    LOGGER( 32, "( team_win_event ) g_isGameEndingTypeContextSaved: %d", g_isGameEndingTypeContextSaved )
-    LOGGER( 32, "( team_win_event ) g_gameEndingTypeContextSaved: %d", g_gameEndingTypeContextSaved )
-    LOGGER( 32, "( team_win_event ) g_timeLeftContextSaved: %d", g_timeLeftContextSaved )
-    LOGGER( 32, "( team_win_event ) g_maxRoundsContextSaved: %d", g_maxRoundsContextSaved )
-    LOGGER( 32, "( team_win_event ) g_winLimitContextSaved: %d", g_winLimitContextSaved )
-    LOGGER( 32, "( team_win_event ) g_fragLimitContextSaved: %d", g_fragLimitContextSaved )
-    LOGGER( 32, "( team_win_event ) g_isTheLastGameRound: %d", g_isTheLastGameRound )
-    LOGGER( 32, "( team_win_event ) g_isTheLastGameRoundContext: %d", g_isTheLastGameRoundContext )
-    LOGGER( 32, "( team_win_event ) g_isThePenultGameRound: %d", g_isThePenultGameRound )
-    LOGGER( 32, "( team_win_event ) g_isThePenultGameRoundContext: %d", g_isThePenultGameRoundContext )
-    LOGGER( 32, "( team_win_event )" )
+    LOG( 32, "( team_win_event )" )
+    LOG( 32, "( team_win_event ) string_team_winner: %s", string_team_winner )
+    LOG( 32, "( team_win_event ) g_winLimitInteger: %d", g_winLimitInteger )
+    LOG( 32, "( team_win_event ) wins_CT_trigger: %d", wins_CT_trigger )
+    LOG( 32, "( team_win_event ) wins_Terrorist_trigger: %d", wins_Terrorist_trigger )
+    LOG( 32, "( team_win_event ) g_isGameEndingTypeContextSaved: %d", g_isGameEndingTypeContextSaved )
+    LOG( 32, "( team_win_event ) g_gameEndingTypeContextSaved: %d", g_gameEndingTypeContextSaved )
+    LOG( 32, "( team_win_event ) g_timeLeftContextSaved: %d", g_timeLeftContextSaved )
+    LOG( 32, "( team_win_event ) g_maxRoundsContextSaved: %d", g_maxRoundsContextSaved )
+    LOG( 32, "( team_win_event ) g_winLimitContextSaved: %d", g_winLimitContextSaved )
+    LOG( 32, "( team_win_event ) g_fragLimitContextSaved: %d", g_fragLimitContextSaved )
+    LOG( 32, "( team_win_event ) g_isTheLastGameRound: %d", g_isTheLastGameRound )
+    LOG( 32, "( team_win_event ) g_isTheLastGameRoundContext: %d", g_isTheLastGameRoundContext )
+    LOG( 32, "( team_win_event ) g_isThePenultGameRound: %d", g_isThePenultGameRound )
+    LOG( 32, "( team_win_event ) g_isThePenultGameRoundContext: %d", g_isThePenultGameRoundContext )
+    LOG( 32, "( team_win_event )" )
 
     return 0;
 }
 
 public team_win_event()
 {
-    LOGGER( 128, "" )
-    LOGGER( 128, "" )
-    LOGGER( 128, "I AM ENTERING ON team_win_event(0)" )
+    LOG( 128, "" )
+    LOG( 128, "" )
+    LOG( 128, "I AM ENTERING ON team_win_event(0)" )
 
     new wins_Terrorist_trigger;
     new wins_CT_trigger;
@@ -4005,12 +4005,12 @@ public team_win_event()
         g_isTheRoundEndWhileVoting = true;
     }
 
-    LOGGER( 0, "", debugTeamWinEvent( string_team_winner, wins_CT_trigger, wins_Terrorist_trigger ) )
+    LOG( 0, "", debugTeamWinEvent( string_team_winner, wins_CT_trigger, wins_Terrorist_trigger ) )
 }
 
 public round_end_event()
 {
-    LOGGER( 128, "I AM ENTERING ON round_end_event(0)" )
+    LOG( 128, "I AM ENTERING ON round_end_event(0)" )
 
     new current_rounds_trigger;
     saveTheRoundTime();
@@ -4053,8 +4053,8 @@ public round_end_event()
         g_isTheRoundEndWhileVoting = true;
     }
 
-    LOGGER( 32, "( round_end_event ) g_maxRoundsNumber: %d", g_maxRoundsNumber )
-    LOGGER( 32, "( round_end_event ) g_totalRoundsPlayed: %d, current_rounds_trigger: %d", \
+    LOG( 32, "( round_end_event ) g_maxRoundsNumber: %d", g_maxRoundsNumber )
+    LOG( 32, "( round_end_event ) g_totalRoundsPlayed: %d, current_rounds_trigger: %d", \
             g_totalRoundsPlayed, current_rounds_trigger )
 }
 
@@ -4064,7 +4064,7 @@ public round_end_event()
  */
 stock endRoundWatchdog()
 {
-    LOGGER( 128, "I AM ENTERING ON endRoundWatchdog(0)" )
+    LOG( 128, "I AM ENTERING ON endRoundWatchdog(0)" )
     new bool:endOfMapVoteExpiration = get_pcvar_num( cvar_endOfMapVoteExpiration ) != 0;
 
     if( endOfMapVoteExpiration
@@ -4100,7 +4100,7 @@ stock endRoundWatchdog()
 
 stock saveTheRoundTime()
 {
-    LOGGER( 128, "I AM ENTERING ON saveTheRoundTime(0)" )
+    LOG( 128, "I AM ENTERING ON saveTheRoundTime(0)" )
     new roundTotalTime = floatround( get_gametime(), floatround_ceil ) - g_roundStartTime;
 
     // Rounds taking less than 10 seconds does not seem to fit.
@@ -4126,18 +4126,18 @@ stock saveTheRoundTime()
             g_roundAverageTime = g_roundAverageTime + roundPlayedTimes[ index ];
         }
 
-        LOGGER( 32, "( saveTheRoundTime ) Total Sum: %d", g_roundAverageTime )
+        LOG( 32, "( saveTheRoundTime ) Total Sum: %d", g_roundAverageTime )
         g_roundAverageTime = ( g_roundAverageTime / g_totalRoundsSavedTimes ) + 1;
 
         // Updates the next position to be inserted.
         lastSavedRound = ( lastSavedRound + 1 ) % sizeof roundPlayedTimes;
 
-        LOGGER( 32, "( saveTheRoundTime ) lastSavedRound: %d", lastSavedRound )
-        LOGGER( 32, "( saveTheRoundTime ) g_roundAverageTime: %d", g_roundAverageTime )
-        LOGGER( 32, "( saveTheRoundTime ) g_totalRoundsSavedTimes: %d", g_totalRoundsSavedTimes )
+        LOG( 32, "( saveTheRoundTime ) lastSavedRound: %d", lastSavedRound )
+        LOG( 32, "( saveTheRoundTime ) g_roundAverageTime: %d", g_roundAverageTime )
+        LOG( 32, "( saveTheRoundTime ) g_totalRoundsSavedTimes: %d", g_totalRoundsSavedTimes )
     }
 
-    LOGGER( 32, "( saveTheRoundTime ) roundTotalTime: %d", roundTotalTime )
+    LOG( 32, "( saveTheRoundTime ) roundTotalTime: %d", roundTotalTime )
 }
 
 /**
@@ -4145,7 +4145,7 @@ stock saveTheRoundTime()
  */
 public new_round_event()
 {
-    LOGGER( 128, "I AM ENTERING ON new_round_event(0)" )
+    LOG( 128, "I AM ENTERING ON new_round_event(0)" )
     tryToStartTheVotingOnThisRound( ROUND_VOTING_START_SECONDS_DELAY() );
 
     if( g_isTheLastGameRound
@@ -4161,7 +4161,7 @@ public new_round_event()
  */
 public round_start_event()
 {
-    LOGGER( 128, "I AM ENTERING ON round_start_event(0)" )
+    LOG( 128, "I AM ENTERING ON round_start_event(0)" )
 
     // Provide the new_round_event(0) support for HLTV non supported game mods.
     if( !IS_NEW_ROUND_EVENT_SUPPORTED() )
@@ -4196,7 +4196,7 @@ public round_start_event()
 
 stock try_to_manage_map_end( bool:isFragLimitEnd = false )
 {
-    LOGGER( 128, "I AM ENTERING ON try_to_manage_map_end()" )
+    LOG( 128, "I AM ENTERING ON try_to_manage_map_end()" )
 
     if( g_isOnMaintenanceMode )
     {
@@ -4221,7 +4221,7 @@ stock try_to_manage_map_end( bool:isFragLimitEnd = false )
  */
 stock try_to_process_last_round( bool:isFragLimitEnd = false )
 {
-    LOGGER( 128, "I AM ENTERING ON try_to_process_last_round(0)" )
+    LOG( 128, "I AM ENTERING ON try_to_process_last_round(0)" )
     new bool:allowMapChange;
 
     if( g_voteStatus & IS_VOTE_OVER )
@@ -4276,8 +4276,8 @@ stock try_to_process_last_round( bool:isFragLimitEnd = false )
  */
 public map_manageEnd()
 {
-    LOGGER( 128, "I AM ENTERING ON map_manageEnd(0)" )
-    LOGGER( 2, "%32s mp_timelimit: %f, get_real_players_number: %d", "map_manageEnd(in)", \
+    LOG( 128, "I AM ENTERING ON map_manageEnd(0)" )
+    LOG( 2, "%32s mp_timelimit: %f, get_real_players_number: %d", "map_manageEnd(in)", \
             get_pcvar_float( cvar_mp_timelimit ), get_real_players_number() )
 
     switch( get_pcvar_num( cvar_endOnRound ) )
@@ -4303,7 +4303,7 @@ public map_manageEnd()
         }
         default:
         {
-            LOGGER( 1, "    ( map_manageEnd ) Just returning and blocking the end management." )
+            LOG( 1, "    ( map_manageEnd ) Just returning and blocking the end management." )
             return false;
         }
     }
@@ -4326,16 +4326,16 @@ public map_manageEnd()
     prevent_map_change();
     configure_last_round_HUD();
 
-    LOGGER( 2, "%32s mp_timelimit: %f, get_real_players_number: %d", "map_manageEnd(out)", \
+    LOG( 2, "%32s mp_timelimit: %f, get_real_players_number: %d", "map_manageEnd(out)", \
             get_pcvar_float( cvar_mp_timelimit ), get_real_players_number() )
 
-    LOGGER( 1, "    ( map_manageEnd ) Just returning and allowing the end management." )
+    LOG( 1, "    ( map_manageEnd ) Just returning and allowing the end management." )
     return true;
 }
 
 stock saveGameEndingTypeContext()
 {
-    LOGGER( 128, "I AM ENTERING ON saveGameEndingTypeContext(0)" )
+    LOG( 128, "I AM ENTERING ON saveGameEndingTypeContext(0)" )
     g_isGameEndingTypeContextSaved = true;
 
     // Save a round time which will force the voting to start immediately by howManyRoundsAreRemaining(2).
@@ -4354,7 +4354,7 @@ stock saveGameEndingTypeContext()
 
 stock prevent_map_change()
 {
-    LOGGER( 128, "I AM ENTERING ON prevent_map_change(0)" )
+    LOG( 128, "I AM ENTERING ON prevent_map_change(0)" )
     saveEndGameLimits();
 
     // If somehow the cvar_mp_roundtime does not exist, it will point to a cvar within zero
@@ -4366,10 +4366,10 @@ stock prevent_map_change()
     tryToSetGameModCvarNum(   cvar_mp_winlimit,  0   );
     tryToSetGameModCvarNum(   cvar_mp_fraglimit, 0   );
 
-    LOGGER( 2, "( prevent_map_change ) IS CHANGING THE CVAR %-22s to '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
-    LOGGER( 2, "( prevent_map_change ) IS CHANGING THE CVAR %-22s to '%d'.", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) )
-    LOGGER( 2, "( prevent_map_change ) IS CHANGING THE CVAR %-22s to '%d'.", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) )
-    LOGGER( 2, "( prevent_map_change ) IS CHANGING THE CVAR %-22s to '%d'.", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) )
+    LOG( 2, "( prevent_map_change ) IS CHANGING THE CVAR %-22s to '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
+    LOG( 2, "( prevent_map_change ) IS CHANGING THE CVAR %-22s to '%d'.", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) )
+    LOG( 2, "( prevent_map_change ) IS CHANGING THE CVAR %-22s to '%d'.", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) )
+    LOG( 2, "( prevent_map_change ) IS CHANGING THE CVAR %-22s to '%d'.", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) )
 
     // Prevent the map from being played indefinitely. We do not need to check here for the
     // `g_isThePenultGameRound` because it is being properly handled on endRoundWatchdog(0).
@@ -4395,7 +4395,7 @@ stock prevent_map_change()
  */
 stock process_last_round( bool:isToImmediatelyChangeLevel, bool:isCountDownAllowed = true )
 {
-    LOGGER( 128, "I AM ENTERING ON process_last_round(2) isToImmediatelyChangeLevel: %d", isToImmediatelyChangeLevel )
+    LOG( 128, "I AM ENTERING ON process_last_round(2) isToImmediatelyChangeLevel: %d", isToImmediatelyChangeLevel )
 
     // While the `IS_DISABLED_VOTEMAP_EXIT` bit flag is set, we cannot allow any decisions
     if( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXIT )
@@ -4404,7 +4404,7 @@ stock process_last_round( bool:isToImmediatelyChangeLevel, bool:isCountDownAllow
         // invoke it before returning.
         openTheVoteMapActionMenu();
 
-        LOGGER( 1, "    ( process_last_round ) Just returning/blocking, g_voteMapStatus: %d", g_voteMapStatus )
+        LOG( 1, "    ( process_last_round ) Just returning/blocking, g_voteMapStatus: %d", g_voteMapStatus )
         return;
     }
 
@@ -4469,7 +4469,7 @@ stock process_last_round( bool:isToImmediatelyChangeLevel, bool:isCountDownAllow
 
 stock intermission_processing( bool:isCountDownAllowed = true )
 {
-    LOGGER( 128, "I AM ENTERING ON intermission_processing(0)" )
+    LOG( 128, "I AM ENTERING ON intermission_processing(0)" )
     new Float:mp_chattime = isCountDownAllowed ? get_intermission_chattime() : 0.1;
 
     // Choose how to change the level.
@@ -4487,7 +4487,7 @@ stock intermission_processing( bool:isCountDownAllowed = true )
 
 stock Float:get_intermission_chattime()
 {
-    LOGGER( 128, "I AM ENTERING ON get_intermission_chattime(0)" )
+    LOG( 128, "I AM ENTERING ON get_intermission_chattime(0)" )
     new Float:mp_chattime = get_pcvar_float( cvar_mp_chattime );
 
     // Make sure the `mp_chattime` is long enough.
@@ -4508,7 +4508,7 @@ stock Float:get_intermission_chattime()
  */
 stock show_intermission( Float:mp_chattime )
 {
-    LOGGER( 128, "I AM ENTERING ON show_intermission(1) mp_chattime: %f", mp_chattime )
+    LOG( 128, "I AM ENTERING ON show_intermission(1) mp_chattime: %f", mp_chattime )
     new endGameType = get_pcvar_num( cvar_isEndMapCountdown );
 
     if( endGameType )
@@ -4518,14 +4518,14 @@ stock show_intermission( Float:mp_chattime )
     }
     else
     {
-        LOGGER( 4, " ( show_intermission ) Do nothing, just change the map." )
+        LOG( 4, " ( show_intermission ) Do nothing, just change the map." )
         intermission_hold();
     }
 }
 
 public intermission_hold()
 {
-    LOGGER( 128, "I AM ENTERING ON intermission_hold(0)" )
+    LOG( 128, "I AM ENTERING ON intermission_hold(0)" )
 
     message_begin( MSG_ALL, SVC_INTERMISSION );
     message_end();
@@ -4533,14 +4533,14 @@ public intermission_hold()
 
 stock intermission_effects( endGameType, Float:mp_chattime )
 {
-    LOGGER( 128, "I AM ENTERING ON intermission_effects(1) endGameType: %d", endGameType )
+    LOG( 128, "I AM ENTERING ON intermission_effects(1) endGameType: %d", endGameType )
 
     if( endGameType & IS_MAP_MAPCHANGE_FREEZE_PLAYERS )
     {
         g_original_sv_maxspeed = get_pcvar_float( cvar_sv_maxspeed );
         tryToSetGameModCvarFloat( cvar_sv_maxspeed, 0.0 );
 
-        LOGGER( 2, "( intermission_effects ) IS CHANGING THE CVAR 'sv_maxspeed' to '%f'.", get_pcvar_float( cvar_sv_maxspeed ) )
+        LOG( 2, "( intermission_effects ) IS CHANGING THE CVAR 'sv_maxspeed' to '%f'.", get_pcvar_float( cvar_sv_maxspeed ) )
     }
 
     if( cvar_mp_friendlyfire
@@ -4551,7 +4551,7 @@ stock intermission_effects( endGameType, Float:mp_chattime )
             tryToSetGameModCvarNum( cvar_mp_friendlyfire, 1 );
         }
 
-        LOGGER( 2, "( intermission_effects ) IS CHANGING THE CVAR 'mp_friendlyfire' to '%d'.", get_pcvar_num( cvar_mp_friendlyfire ) )
+        LOG( 2, "( intermission_effects ) IS CHANGING THE CVAR 'mp_friendlyfire' to '%d'.", get_pcvar_num( cvar_mp_friendlyfire ) )
     }
 
     if( endGameType & ( IS_MAP_MAPCHANGE_DROP_WEAPONS | IS_MAP_MAPCHANGE_BUY_GRENADES ) )
@@ -4593,7 +4593,7 @@ stock intermission_effects( endGameType, Float:mp_chattime )
 
 public last_round_countdown()
 {
-    LOGGER( 128, "I AM ENTERING ON last_round_countdown(0) g_lastRoundCountdown: %d", g_lastRoundCountdown )
+    LOG( 128, "I AM ENTERING ON last_round_countdown(0) g_lastRoundCountdown: %d", g_lastRoundCountdown )
     new real_number = g_lastRoundCountdown - 1;
 
     if( real_number )
@@ -4629,7 +4629,7 @@ public last_round_countdown()
 
 public configure_last_round_HUD()
 {
-    LOGGER( 128, "I AM ENTERING ON configure_last_round_HUD(0)" )
+    LOG( 128, "I AM ENTERING ON configure_last_round_HUD(0)" )
 
     if( !( get_pcvar_num( cvar_hudsHide ) & HUD_CHANGELEVEL_ANNOUNCE ) )
     {
@@ -4642,7 +4642,7 @@ public configure_last_round_HUD()
 
 public setup_last_round_HUD()
 {
-    LOGGER( 128, "I AM ENTERING ON setup_last_round_HUD(0) g_showLastRoundHudCounter: %d", g_showLastRoundHudCounter )
+    LOG( 128, "I AM ENTERING ON setup_last_round_HUD(0) g_showLastRoundHudCounter: %d", g_showLastRoundHudCounter )
 
     g_showLastRoundHudCounter = 0;
     set_task( 1.0, "show_last_round_HUD", TASKID_SHOW_LAST_ROUND_HUD, _, _, "b" );
@@ -4650,7 +4650,7 @@ public setup_last_round_HUD()
 
 public show_last_round_message()
 {
-    LOGGER( 128, "I AM ENTERING ON show_last_round_message(0)" )
+    LOG( 128, "I AM ENTERING ON show_last_round_message(0)" )
 
     new nextMapName[ MAX_MAPNAME_LENGHT ];
     get_pcvar_string( cvar_amx_nextmap, nextMapName, charsmax( nextMapName ) );
@@ -4678,7 +4678,7 @@ public show_last_round_message()
 
 public show_last_round_HUD()
 {
-    LOGGER( 256, "I AM ENTERING ON show_last_round_HUD(0)" )
+    LOG( 256, "I AM ENTERING ON show_last_round_HUD(0)" )
 
     if( ++g_showLastRoundHudCounter % LAST_ROUND_HUD_SHOW_INTERVAL > 6
         || g_isTheRoundEnded )
@@ -4724,7 +4724,7 @@ public show_last_round_HUD()
  */
 stock is_there_game_commencing()
 {
-    LOGGER( 128, "I AM ENTERING ON is_there_game_commencing(0)" )
+    LOG( 128, "I AM ENTERING ON is_there_game_commencing(0)" )
     new players[ 32 ];
 
     new players_count;
@@ -4749,12 +4749,12 @@ stock is_there_game_commencing()
 
         if( CT_count && TR_count )
         {
-            LOGGER( 1, "    ( is_there_game_commencing ) Returning true." )
+            LOG( 1, "    ( is_there_game_commencing ) Returning true." )
             return true;
         }
     }
 
-    LOGGER( 1, "    ( is_there_game_commencing ) Returning false." )
+    LOG( 1, "    ( is_there_game_commencing ) Returning false." )
     return false;
 }
 
@@ -4766,7 +4766,7 @@ stock is_there_game_commencing()
  */
 public round_restart_event()
 {
-    LOGGER( 128, "I AM ENTERING ON round_restart_event(0)" )
+    LOG( 128, "I AM ENTERING ON round_restart_event(0)" )
 
     // Enable a new voting, as a new game is starting
     g_voteStatus &= ~IS_VOTE_OVER;
@@ -4798,16 +4798,16 @@ public round_restart_event()
  */
 public game_commencing_event()
 {
-    LOGGER( 128, "I AM ENTERING ON game_commencing_event(0)" )
+    LOG( 128, "I AM ENTERING ON game_commencing_event(0)" )
 
 #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
     if( get_gametime() < 100
         && ( get_playersnum( 1 )
              || g_test_areTheUnitTestsRunning ) )
     {
-        LOGGER( 1, "^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n" )
-        LOGGER( 1, "There are players on the server!" )
-        LOGGER( 1, "^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n" )
+        LOG( 1, "^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n" )
+        LOG( 1, "There are players on the server!" )
+        LOG( 1, "^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n^n" )
     }
     else
     {
@@ -4827,7 +4827,7 @@ public game_commencing_event()
  */
 stock resetRoundEnding()
 {
-    LOGGER( 128, "I AM ENTERING ON resetRoundEnding(0)" )
+    LOG( 128, "I AM ENTERING ON resetRoundEnding(0)" )
 
     // Each one of these entries must to be saved on saveRoundEnding(1) and restored at restoreRoundEnding(1).
     g_isTheLastGameRound       = false;
@@ -4842,10 +4842,10 @@ stock resetRoundEnding()
 
 stock saveRoundEnding( bool:roundEndStatus[ SaveRoundEnding ] )
 {
-    LOGGER( 128, "I AM ENTERING ON saveRoundEnding(1)" )
-    LOGGER( 128, "( saveRoundEnding ) roundEndStatus[0]: %d", roundEndStatus[ SaveRoundEnding_LastRound   ] )
-    LOGGER( 128, "( saveRoundEnding ) roundEndStatus[1]: %d", roundEndStatus[ SaveRoundEnding_RestartTime ] )
-    LOGGER( 128, "( saveRoundEnding ) roundEndStatus[2]: %d", roundEndStatus[ SaveRoundEnding_PenultRound ] )
+    LOG( 128, "I AM ENTERING ON saveRoundEnding(1)" )
+    LOG( 128, "( saveRoundEnding ) roundEndStatus[0]: %d", roundEndStatus[ SaveRoundEnding_LastRound   ] )
+    LOG( 128, "( saveRoundEnding ) roundEndStatus[1]: %d", roundEndStatus[ SaveRoundEnding_RestartTime ] )
+    LOG( 128, "( saveRoundEnding ) roundEndStatus[2]: %d", roundEndStatus[ SaveRoundEnding_PenultRound ] )
 
     roundEndStatus[ SaveRoundEnding_LastRound   ] = g_isTheLastGameRound;
     roundEndStatus[ SaveRoundEnding_RestartTime ] = g_isTimeToRestart;
@@ -4856,10 +4856,10 @@ stock saveRoundEnding( bool:roundEndStatus[ SaveRoundEnding ] )
 
 stock restoreRoundEnding( bool:roundEndStatus[ SaveRoundEnding ] )
 {
-    LOGGER( 128, "I AM ENTERING ON restoreRoundEnding(1)" )
-    LOGGER( 128, "( restoreRoundEnding ) roundEndStatus[0]: %d", roundEndStatus[ SaveRoundEnding_LastRound   ] )
-    LOGGER( 128, "( restoreRoundEnding ) roundEndStatus[1]: %d", roundEndStatus[ SaveRoundEnding_RestartTime ] )
-    LOGGER( 128, "( restoreRoundEnding ) roundEndStatus[2]: %d", roundEndStatus[ SaveRoundEnding_PenultRound ] )
+    LOG( 128, "I AM ENTERING ON restoreRoundEnding(1)" )
+    LOG( 128, "( restoreRoundEnding ) roundEndStatus[0]: %d", roundEndStatus[ SaveRoundEnding_LastRound   ] )
+    LOG( 128, "( restoreRoundEnding ) roundEndStatus[1]: %d", roundEndStatus[ SaveRoundEnding_RestartTime ] )
+    LOG( 128, "( restoreRoundEnding ) roundEndStatus[2]: %d", roundEndStatus[ SaveRoundEnding_PenultRound ] )
 
     g_isTheLastGameRound       = bool:roundEndStatus[ SaveRoundEnding_LastRound   ];
     g_isTimeToRestart          = bool:roundEndStatus[ SaveRoundEnding_RestartTime ];
@@ -4896,11 +4896,11 @@ stock restoreRoundEnding( bool:roundEndStatus[ SaveRoundEnding ] )
 
 public resetRoundsScores()
 {
-    LOGGER( 128 + 2, "I AM ENTERING ON resetRoundsScores(0)" )
-    LOGGER( 2, "( resetRoundsScores ) TRYING to change the cvar %15s from '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
-    LOGGER( 2, "( resetRoundsScores ) TRYING to change the cvar %15s from '%d'.", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) )
-    LOGGER( 2, "( resetRoundsScores ) TRYING to change the cvar %15s from '%d'.", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) )
-    LOGGER( 2, "( resetRoundsScores ) TRYING to change the cvar %15s from '%d'.", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) )
+    LOG( 128 + 2, "I AM ENTERING ON resetRoundsScores(0)" )
+    LOG( 2, "( resetRoundsScores ) TRYING to change the cvar %15s from '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
+    LOG( 2, "( resetRoundsScores ) TRYING to change the cvar %15s from '%d'.", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) )
+    LOG( 2, "( resetRoundsScores ) TRYING to change the cvar %15s from '%d'.", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) )
+    LOG( 2, "( resetRoundsScores ) TRYING to change the cvar %15s from '%d'.", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) )
 
     new serverLimiterValue;
 
@@ -4915,18 +4915,18 @@ public resetRoundsScores()
     g_totalRoundsPlayed   = -1;
     g_greatestKillerFrags = 0;
 
-    LOGGER( 2, "( resetRoundsScores ) CHECKOUT the cvar %-25s is '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
-    LOGGER( 2, "( resetRoundsScores ) CHECKOUT the cvar %-25s is '%d'.", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) )
-    LOGGER( 2, "( resetRoundsScores ) CHECKOUT the cvar %-25s is '%d'.", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) )
-    LOGGER( 2, "( resetRoundsScores ) CHECKOUT the cvar %-25s is '%d'.", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) )
-    LOGGER( 1, "    I AM EXITING ON resetRoundsScores(0)" )
+    LOG( 2, "( resetRoundsScores ) CHECKOUT the cvar %-25s is '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
+    LOG( 2, "( resetRoundsScores ) CHECKOUT the cvar %-25s is '%d'.", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) )
+    LOG( 2, "( resetRoundsScores ) CHECKOUT the cvar %-25s is '%d'.", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) )
+    LOG( 2, "( resetRoundsScores ) CHECKOUT the cvar %-25s is '%d'.", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) )
+    LOG( 1, "    I AM EXITING ON resetRoundsScores(0)" )
 }
 
 stock map_populateList( Array:mapArray=Invalid_Array, mapFilePath[],
                         Trie:fillerMapTrie=Invalid_Trie, bool:isToClearTheTrie=true,
                         bool:isToLoadDuplicatedMaps=true )
 {
-    LOGGER( 128, "I AM ENTERING ON map_populateList(5) mapFilePath: %s", mapFilePath )
+    LOG( 128, "I AM ENTERING ON map_populateList(5) mapFilePath: %s", mapFilePath )
 
     // load the array with maps
     new mapCount;
@@ -4953,22 +4953,22 @@ stock map_populateList( Array:mapArray=Invalid_Array, mapFilePath[],
             if( !isMapFolderLoad
                 && mapFilePath[ 0 ] != MAP_CYCLE_LOAD_FLAG )
             {
-                LOGGER( 4, "" )
-                LOGGER( 4, "    map_populateList(...) Loading the PASSED FILE! mapFilePath: %s", mapFilePath )
+                LOG( 4, "" )
+                LOG( 4, "    map_populateList(...) Loading the PASSED FILE! mapFilePath: %s", mapFilePath )
                 mapCount = loadMapFileList( mapArray, mapFilePath, fillerMapTrie, duplicatedMaps );
             }
             else if( isMapFolderLoad )
             {
-                LOGGER( 4, "" )
-                LOGGER( 4, "    map_populateList(...) Loading the MAP FOLDER! mapFilePath: %s", mapFilePath )
+                LOG( 4, "" )
+                LOG( 4, "    map_populateList(...) Loading the MAP FOLDER! mapFilePath: %s", mapFilePath )
                 mapCount = loadMapsFolderDirectory( mapArray, fillerMapTrie );
             }
             else
             {
                 get_cvar_string( "mapcyclefile", mapFilePath, MAX_FILE_PATH_LENGHT - 1 );
 
-                LOGGER( 4, "" )
-                LOGGER( 4, "    map_populateList(...) Loading the MAPCYCLE! mapFilePath: %s", mapFilePath )
+                LOG( 4, "" )
+                LOG( 4, "    map_populateList(...) Loading the MAPCYCLE! mapFilePath: %s", mapFilePath )
                 mapCount = loadMapFileList( mapArray, mapFilePath, fillerMapTrie, duplicatedMaps );
             }
 
@@ -4980,13 +4980,13 @@ stock map_populateList( Array:mapArray=Invalid_Array, mapFilePath[],
         }
     }
 
-    LOGGER( 1, "    I AM EXITING map_populateList(4) mapCount: %d", mapCount )
+    LOG( 1, "    I AM EXITING map_populateList(4) mapCount: %d", mapCount )
     return mapCount;
 }
 
 stock checkIfThereEnoughMapPopulated( mapCount, mapFileDescriptor, mapFilePath[] )
 {
-    LOGGER( 128, "I AM ENTERING ON checkIfThereEnoughMapPopulated(2) mapCount: %d", mapCount )
+    LOG( 128, "I AM ENTERING ON checkIfThereEnoughMapPopulated(2) mapCount: %d", mapCount )
 
     if( mapCount < 2 )
     {
@@ -5012,8 +5012,8 @@ stock checkIfThereEnoughMapPopulated( mapCount, mapFileDescriptor, mapFilePath[]
             }
         }
 
-        LOGGER( 1, "( checkIfThereEnoughMapPopulated ) Not valid/enough(%d) maps found in: %s", mapCount, mapFilePath )
-        LOGGER( 1, "( checkIfThereEnoughMapPopulated ) ERROR %d, readLines: %s^n", AMX_ERR_NOTFOUND, readLines )
+        LOG( 1, "( checkIfThereEnoughMapPopulated ) Not valid/enough(%d) maps found in: %s", mapCount, mapFilePath )
+        LOG( 1, "( checkIfThereEnoughMapPopulated ) ERROR %d, readLines: %s^n", AMX_ERR_NOTFOUND, readLines )
 
         log_error( AMX_ERR_NOTFOUND, "Not valid/enough(%d) maps found in: %s", mapCount, mapFilePath );
         log_error( AMX_ERR_NOTFOUND, "readLines: %s^n", readLines );
@@ -5022,7 +5022,7 @@ stock checkIfThereEnoughMapPopulated( mapCount, mapFileDescriptor, mapFilePath[]
 
 stock loadMapFileList( Array:mapArray, mapFilePath[], Trie:fillerMapTrie, Trie:duplicatedMaps )
 {
-    LOGGER( 128, "I AM ENTERING ON loadMapFileList(4) mapFilePath: %s", mapFilePath )
+    LOG( 128, "I AM ENTERING ON loadMapFileList(4) mapFilePath: %s", mapFilePath )
 
     new mapCount;
     new mapFileDescriptor = fopen( mapFilePath, "rt" );
@@ -5045,18 +5045,18 @@ stock loadMapFileList( Array:mapArray, mapFilePath[], Trie:fillerMapTrie, Trie:d
         }
         else
         {
-            LOGGER( 1, "( loadMapFileList ) An invalid map descriptors %d/%d!^n", mapArray, fillerMapTrie )
+            LOG( 1, "( loadMapFileList ) An invalid map descriptors %d/%d!^n", mapArray, fillerMapTrie )
             log_error( AMX_ERR_PARAMS, "loadMapFileList: An invalid map descriptor %d/%d!^n", mapArray, fillerMapTrie );
         }
 
         checkIfThereEnoughMapPopulated( mapCount, mapFileDescriptor, mapFilePath );
 
         fclose( mapFileDescriptor );
-        LOGGER( 4, "" )
+        LOG( 4, "" )
     }
     else
     {
-        LOGGER( 1, "( loadMapFileList ) ERROR %d, %L", AMX_ERR_NOTFOUND, LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilePath )
+        LOG( 1, "( loadMapFileList ) ERROR %d, %L", AMX_ERR_NOTFOUND, LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilePath )
         log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilePath );
     }
 
@@ -5065,7 +5065,7 @@ stock loadMapFileList( Array:mapArray, mapFilePath[], Trie:fillerMapTrie, Trie:d
 
 stock loadMapFileListComplete( mapFileDescriptor, Array:mapArray, Trie:fillerMapTrie, Trie:duplicatedMaps )
 {
-    LOGGER( 128, "I AM ENTERING ON loadMapFileListComplete(2) mapFileDescriptor: %d", mapFileDescriptor )
+    LOG( 128, "I AM ENTERING ON loadMapFileListComplete(2) mapFileDescriptor: %d", mapFileDescriptor )
 
     new mapCount;
     new loadedMapLine[ MAX_MAPNAME_LENGHT ];
@@ -5092,7 +5092,7 @@ stock loadMapFileListComplete( mapFileDescriptor, Array:mapArray, Trie:fillerMap
                         TrieSetCell( fillerMapTrie, loadedMapName, mapCount );
 
                         ArrayPushString( mapArray, loadedMapLine );
-                        LOGGER( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapLine ) )
+                        LOG( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapLine ) )
 
                         ++mapCount;
                     }
@@ -5117,7 +5117,7 @@ stock loadMapFileListComplete( mapFileDescriptor, Array:mapArray, Trie:fillerMap
                     TrieSetCell( fillerMapTrie, loadedMapName, mapCount );
 
                     ArrayPushString( mapArray, loadedMapLine );
-                    LOGGER( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapLine ) )
+                    LOG( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapLine ) )
 
                     ++mapCount;
                 }
@@ -5130,7 +5130,7 @@ stock loadMapFileListComplete( mapFileDescriptor, Array:mapArray, Trie:fillerMap
 
 stock loadMapFileListArray( mapFileDescriptor, Array:mapArray, Trie:duplicatedMaps )
 {
-    LOGGER( 128, "I AM ENTERING ON loadMapFileListArray(2) mapFileDescriptor: %d", mapFileDescriptor )
+    LOG( 128, "I AM ENTERING ON loadMapFileListArray(2) mapFileDescriptor: %d", mapFileDescriptor )
 
     new mapCount;
     new loadedMapName[ MAX_MAPNAME_LENGHT ];
@@ -5156,7 +5156,7 @@ stock loadMapFileListArray( mapFileDescriptor, Array:mapArray, Trie:duplicatedMa
                         ArrayPushString( mapArray, loadedMapLine );
                         TrieSetCell( duplicatedMaps, loadedMapName, mapCount );
 
-                        LOGGER( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapLine ) )
+                        LOG( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapLine ) )
                         ++mapCount;
                     }
                 }
@@ -5177,7 +5177,7 @@ stock loadMapFileListArray( mapFileDescriptor, Array:mapArray, Trie:duplicatedMa
                 if( IS_MAP_VALID( loadedMapName ) )
                 {
                     ArrayPushString( mapArray, loadedMapLine );
-                    LOGGER( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapLine ) )
+                    LOG( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapLine ) )
 
                     ++mapCount;
                 }
@@ -5190,7 +5190,7 @@ stock loadMapFileListArray( mapFileDescriptor, Array:mapArray, Trie:duplicatedMa
 
 stock loadMapFileListTrie( mapFileDescriptor, Trie:fillerMapTrie, Trie:duplicatedMaps )
 {
-    LOGGER( 128, "I AM ENTERING ON loadMapFileListTrie(2) mapFileDescriptor: %d", mapFileDescriptor )
+    LOG( 128, "I AM ENTERING ON loadMapFileListTrie(2) mapFileDescriptor: %d", mapFileDescriptor )
 
     new mapCount;
     new loadedMapName[ MAX_MAPNAME_LENGHT ];
@@ -5216,7 +5216,7 @@ stock loadMapFileListTrie( mapFileDescriptor, Trie:fillerMapTrie, Trie:duplicate
                         TrieSetCell( duplicatedMaps, loadedMapName, mapCount );
                         TrieSetCell( fillerMapTrie, loadedMapName, mapCount );
 
-                        LOGGER( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapLine ) )
+                        LOG( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapLine ) )
                         ++mapCount;
                     }
                 }
@@ -5239,7 +5239,7 @@ stock loadMapFileListTrie( mapFileDescriptor, Trie:fillerMapTrie, Trie:duplicate
                     strtolower( loadedMapName );
                     TrieSetCell( fillerMapTrie, loadedMapName, mapCount );
 
-                    LOGGER( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapLine ) )
+                    LOG( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapLine ) )
                     ++mapCount;
                 }
             }
@@ -5251,7 +5251,7 @@ stock loadMapFileListTrie( mapFileDescriptor, Trie:fillerMapTrie, Trie:duplicate
 
 stock loadMapsFolderDirectory( Array:mapArray, Trie:fillerMapTrie )
 {
-    LOGGER( 128, "I AM ENTERING ON loadMapsFolderDirectory(2) Array:mapArray: %d", mapArray )
+    LOG( 128, "I AM ENTERING ON loadMapsFolderDirectory(2) Array:mapArray: %d", mapArray )
 
     new mapCount;
     new directoryDescriptor;
@@ -5277,7 +5277,7 @@ stock loadMapsFolderDirectory( Array:mapArray, Trie:fillerMapTrie )
         }
         else
         {
-            LOGGER( 1, "( loadMapsFolderDirectory ) An invalid map descriptors %d/%d!^n", mapArray, fillerMapTrie )
+            LOG( 1, "( loadMapsFolderDirectory ) An invalid map descriptors %d/%d!^n", mapArray, fillerMapTrie )
             log_error( AMX_ERR_PARAMS, "loadMapsFolderDirectory: An invalid map descriptor %d/%d!^n", mapArray, fillerMapTrie );
         }
 
@@ -5286,7 +5286,7 @@ stock loadMapsFolderDirectory( Array:mapArray, Trie:fillerMapTrie )
     else
     {
         // directory not found, wtf?
-        LOGGER( 1, "( loadMapsFolderDirectory ) ERROR %d, %L", AMX_ERR_NOTFOUND, LANG_SERVER, "GAL_MAPS_FOLDERMISSING" )
+        LOG( 1, "( loadMapsFolderDirectory ) ERROR %d, %L", AMX_ERR_NOTFOUND, LANG_SERVER, "GAL_MAPS_FOLDERMISSING" )
         log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FOLDERMISSING" );
     }
 
@@ -5295,7 +5295,7 @@ stock loadMapsFolderDirectory( Array:mapArray, Trie:fillerMapTrie )
 
 stock loadMapsFolderDirectoryComplete( directoryDescriptor, Array:mapArray, Trie:fillerMapTrie )
 {
-    LOGGER( 128, "I AM ENTERING ON loadMapsFolderDirectoryComplete(3) directoryDescriptor: %d", directoryDescriptor )
+    LOG( 128, "I AM ENTERING ON loadMapsFolderDirectoryComplete(3) directoryDescriptor: %d", directoryDescriptor )
 
     new mapCount;
     new mapNameLength;
@@ -5316,7 +5316,7 @@ stock loadMapsFolderDirectoryComplete( directoryDescriptor, Array:mapArray, Trie
                 strtolower( loadedMapName );
 
                 TrieSetCell( fillerMapTrie, loadedMapName, mapCount );
-                LOGGER( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapName ) )
+                LOG( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapName ) )
 
                 ++mapCount;
             }
@@ -5328,7 +5328,7 @@ stock loadMapsFolderDirectoryComplete( directoryDescriptor, Array:mapArray, Trie
 
 stock loadMapsFolderDirectoryArray( directoryDescriptor, Array:mapArray )
 {
-    LOGGER( 128, "I AM ENTERING ON loadMapsFolderDirectoryArray(2) directoryDescriptor: %d", directoryDescriptor )
+    LOG( 128, "I AM ENTERING ON loadMapsFolderDirectoryArray(2) directoryDescriptor: %d", directoryDescriptor )
 
     new mapCount;
     new mapNameLength;
@@ -5346,7 +5346,7 @@ stock loadMapsFolderDirectoryArray( directoryDescriptor, Array:mapArray )
             if( IS_MAP_VALID( loadedMapName ) )
             {
                 ArrayPushString( mapArray, loadedMapName );
-                LOGGER( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapName ) )
+                LOG( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapName ) )
 
                 ++mapCount;
             }
@@ -5358,7 +5358,7 @@ stock loadMapsFolderDirectoryArray( directoryDescriptor, Array:mapArray )
 
 stock loadMapsFolderDirectoryTrie( directoryDescriptor, Trie:fillerMapTrie )
 {
-    LOGGER( 128, "I AM ENTERING ON loadMapsFolderDirectoryTrie(2) directoryDescriptor: %d", directoryDescriptor )
+    LOG( 128, "I AM ENTERING ON loadMapsFolderDirectoryTrie(2) directoryDescriptor: %d", directoryDescriptor )
 
     new mapCount;
     new mapNameLength;
@@ -5378,7 +5378,7 @@ stock loadMapsFolderDirectoryTrie( directoryDescriptor, Trie:fillerMapTrie )
                 strtolower( loadedMapName );
                 TrieSetCell( fillerMapTrie, loadedMapName, mapCount );
 
-                LOGGER( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapName ) )
+                LOG( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapName ) )
                 ++mapCount;
             }
         }
@@ -5389,7 +5389,7 @@ stock loadMapsFolderDirectoryTrie( directoryDescriptor, Trie:fillerMapTrie )
 
 public loadNominationList( nomMapFilePath[] )
 {
-    LOGGER( 128, "I AM ENTERING ON loadNominationList(1)" )
+    LOG( 128, "I AM ENTERING ON loadNominationList(1)" )
 
     TRY_TO_CLEAN( ArrayClear, g_nominatedMapsArray       , ArrayCreate()                     )
     TRY_TO_CLEAN( ArrayClear, g_nominationLoadedMapsArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
@@ -5399,11 +5399,11 @@ public loadNominationList( nomMapFilePath[] )
     TRY_TO_CLEAN( TrieClear, g_nominationLoadedMapsTrie    , TrieCreate() )
 
     get_pcvar_string( cvar_nomMapFilePath, nomMapFilePath, MAX_FILE_PATH_LENGHT - 1 );
-    LOGGER( 4, "( loadNominationList ) cvar_nomMapFilePath: %s", nomMapFilePath )
+    LOG( 4, "( loadNominationList ) cvar_nomMapFilePath: %s", nomMapFilePath )
 
     map_populateList( g_nominationLoadedMapsArray, nomMapFilePath, g_nominationLoadedMapsTrie );
-    LOGGER( 1, "    ( loadNominationList ) loadedCount:                 %d", ArraySize( g_nominationLoadedMapsArray ) )
-    LOGGER( 1, "    ( loadNominationList ) g_nominationLoadedMapsArray: %d", g_nominationLoadedMapsArray )
+    LOG( 1, "    ( loadNominationList ) loadedCount:                 %d", ArraySize( g_nominationLoadedMapsArray ) )
+    LOG( 1, "    ( loadNominationList ) g_nominationLoadedMapsArray: %d", g_nominationLoadedMapsArray )
 }
 
 /**
@@ -5419,18 +5419,18 @@ public loadNominationList( nomMapFilePath[] )
  */
 stock map_loadEmptyCycleList( emptyCycleFilePath[] )
 {
-    LOGGER( 128, "I AM ENTERING ON map_loadEmptyCycleList(1)" )
+    LOG( 128, "I AM ENTERING ON map_loadEmptyCycleList(1)" )
 
     TRY_TO_CLEAN( ArrayClear, g_emptyCycleMapsArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
     get_pcvar_string( cvar_emptyMapFilePath, emptyCycleFilePath, MAX_FILE_PATH_LENGHT - 1 );
 
     map_populateList( g_emptyCycleMapsArray, emptyCycleFilePath, .isToLoadDuplicatedMaps=false );
-    LOGGER( 4, "( map_loadEmptyCycleList ) loadedCount: %d", ArraySize( g_emptyCycleMapsArray ) )
+    LOG( 4, "( map_loadEmptyCycleList ) loadedCount: %d", ArraySize( g_emptyCycleMapsArray ) )
 }
 
 public map_loadPrefixList( prefixesFilePath[] )
 {
-    LOGGER( 128, "I AM ENTERING ON map_loadPrefixList(1) g_mapPrefixCount: %d", g_mapPrefixCount )
+    LOG( 128, "I AM ENTERING ON map_loadPrefixList(1) g_mapPrefixCount: %d", g_mapPrefixCount )
     new prefixesFile;
 
     // To clear old values in case of reloading.
@@ -5458,7 +5458,7 @@ public map_loadPrefixList( prefixesFilePath[] )
                 }
                 else
                 {
-                    LOGGER( 1, "AMX_ERR_BOUNDS, %L", LANG_SERVER, "GAL_PREFIXES_TOOMANY", MAX_PREFIX_COUNT, prefixesFilePath )
+                    LOG( 1, "AMX_ERR_BOUNDS, %L", LANG_SERVER, "GAL_PREFIXES_TOOMANY", MAX_PREFIX_COUNT, prefixesFilePath )
                     log_error( AMX_ERR_BOUNDS, "%L", LANG_SERVER, "GAL_PREFIXES_TOOMANY", MAX_PREFIX_COUNT, prefixesFilePath );
 
                     break;
@@ -5470,11 +5470,11 @@ public map_loadPrefixList( prefixesFilePath[] )
     }
     else
     {
-        LOGGER( 1, "AMX_ERR_NOTFOUND, %L", LANG_SERVER, "GAL_PREFIXES_NOTFOUND", prefixesFilePath )
+        LOG( 1, "AMX_ERR_NOTFOUND, %L", LANG_SERVER, "GAL_PREFIXES_NOTFOUND", prefixesFilePath )
         log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_PREFIXES_NOTFOUND", prefixesFilePath );
     }
 
-    LOGGER( 1, "    ( map_loadPrefixList ) g_mapPrefixCount: %d", g_mapPrefixCount )
+    LOG( 1, "    ( map_loadPrefixList ) g_mapPrefixCount: %d", g_mapPrefixCount )
 }
 
 /**
@@ -5512,14 +5512,14 @@ public map_loadPrefixList( prefixesFilePath[] )
  */
 stock bool:isToLoadNextWhiteListGroupOpen( currentHour, startHour, endHour, bool:isBlackList = false )
 {
-    LOGGER( 256, "I AM ENTERING ON isToLoadNextWhiteListGroupOpen(4) currentHour: %d", currentHour )
-    LOGGER( 256, "( isToLoadNextWhiteListGroupOpen ) startHour: %d, endHour: %d", startHour, endHour )
+    LOG( 256, "I AM ENTERING ON isToLoadNextWhiteListGroupOpen(4) currentHour: %d", currentHour )
+    LOG( 256, "( isToLoadNextWhiteListGroupOpen ) startHour: %d, endHour: %d", startHour, endHour )
     new bool:isToLoadTheseMaps;
 
     // Here handle all the cases when the start hour is equals to the end hour.
     if( startHour == endHour )
     {
-        LOGGER( 8, "( isToLoadNextWhiteListGroupOpen ) startHour == endHour: %d", startHour )
+        LOG( 8, "( isToLoadNextWhiteListGroupOpen ) startHour == endHour: %d", startHour )
 
         // Manual fix needed to convert 5-5 to 05:00:00 until 05:59:59, instead of all day long.
         if( endHour == currentHour )
@@ -5536,14 +5536,14 @@ stock bool:isToLoadNextWhiteListGroupOpen( currentHour, startHour, endHour, bool
         isToLoadTheseMaps = isToLoadNextWhiteListEndProcess( currentHour, startHour, endHour, isBlackList );
     }
 
-    LOGGER( 0, "", debugIsToLoadNextWhiteListGroup( currentHour, startHour, endHour, isToLoadTheseMaps ) )
+    LOG( 0, "", debugIsToLoadNextWhiteListGroup( currentHour, startHour, endHour, isToLoadTheseMaps ) )
     return isToLoadTheseMaps;
 }
 
 stock bool:isToLoadNextWhiteListGroupClose( currentHour, startHour, endHour, bool:isBlackList = false )
 {
-    LOGGER( 256, "I AM ENTERING ON isToLoadNextWhiteListGroupClose(4) currentHour: %d", currentHour )
-    LOGGER( 256, "( isToLoadNextWhiteListGroupClose ) startHour: %d, endHour: %d", startHour, endHour )
+    LOG( 256, "I AM ENTERING ON isToLoadNextWhiteListGroupClose(4) currentHour: %d", currentHour )
+    LOG( 256, "( isToLoadNextWhiteListGroupClose ) startHour: %d, endHour: %d", startHour, endHour )
 
     new bool:isToLoadTheseMaps;
     new bool:isDecreased = false;
@@ -5562,12 +5562,12 @@ stock bool:isToLoadNextWhiteListGroupClose( currentHour, startHour, endHour, boo
         }
     }
 
-    LOGGER( 256, "( isToLoadNextWhiteListGroupClose ) startHour: %d, endHour: %d", startHour, endHour )
+    LOG( 256, "( isToLoadNextWhiteListGroupClose ) startHour: %d, endHour: %d", startHour, endHour )
 
     // Here handle all the cases when the start hour is equals to the end hour.
     if( startHour == endHour )
     {
-        LOGGER( 8, "( isToLoadNextWhiteListGroupClose ) startHour == endHour: %d", startHour )
+        LOG( 8, "( isToLoadNextWhiteListGroupClose ) startHour == endHour: %d", startHour )
 
         // Manual set needed to convert 5-5 to always block a map. Now 0-23 is 00:00:00 until 22:59:59,
         // and there is not way to allow a map from 00:00:00 until 23:59:59.
@@ -5586,13 +5586,13 @@ stock bool:isToLoadNextWhiteListGroupClose( currentHour, startHour, endHour, boo
         isToLoadTheseMaps = isToLoadNextWhiteListEndProcess( currentHour, startHour, endHour, isBlackList );
     }
 
-    LOGGER( 0, "", debugIsToLoadNextWhiteListGroup( currentHour, startHour, endHour, isToLoadTheseMaps ) )
+    LOG( 0, "", debugIsToLoadNextWhiteListGroup( currentHour, startHour, endHour, isToLoadTheseMaps ) )
     return isToLoadTheseMaps;
 }
 
 stock bool:isToLoadNextWhiteListEndProcess( currentHour, startHour, endHour, bool:isBlackList )
 {
-    LOGGER( 256, "I AM ENTERING ON isToLoadNextWhiteListEndProcess(4)" )
+    LOG( 256, "I AM ENTERING ON isToLoadNextWhiteListEndProcess(4)" )
 
     //      5          3
     if( startHour > endHour )
@@ -5613,13 +5613,13 @@ stock bool:isToLoadNextWhiteListEndProcess( currentHour, startHour, endHour, boo
         //         4           3
             && currentHour > endHour )
         {
-            LOGGER( 256, "( isToLoadNextWhiteListEndProcess ) 1. Returning: %d", !isBlackList )
+            LOG( 256, "( isToLoadNextWhiteListEndProcess ) 1. Returning: %d", !isBlackList )
             return !isBlackList;
         }
         //               6           5
         else // if( currentHour > startHour )
         {
-            LOGGER( 256, "( isToLoadNextWhiteListEndProcess ) 2. Returning: %d", isBlackList )
+            LOG( 256, "( isToLoadNextWhiteListEndProcess ) 2. Returning: %d", isBlackList )
             return isBlackList;
         }
     }
@@ -5641,33 +5641,33 @@ stock bool:isToLoadNextWhiteListEndProcess( currentHour, startHour, endHour, boo
         //          2           3
             || currentHour < startHour )
         {
-            LOGGER( 256, "( isToLoadNextWhiteListEndProcess ) 3. Returning: %d", !isBlackList )
+            LOG( 256, "( isToLoadNextWhiteListEndProcess ) 3. Returning: %d", !isBlackList )
             return !isBlackList;
         }
         //              4            3
         else // if( currentHour > startHour )
         {
-            LOGGER( 256, "( isToLoadNextWhiteListEndProcess ) 4. Returning: %d", isBlackList )
+            LOG( 256, "( isToLoadNextWhiteListEndProcess ) 4. Returning: %d", isBlackList )
             return isBlackList;
         }
     }
 
     // This is in fact unreachable code and the AMXX 183 know that, but he AMXX 182 don't.
 #if AMXX_VERSION_NUM < 183
-    LOGGER( 256, "    ( isToLoadNextWhiteListEndProcess ) Returning false." )
+    LOG( 256, "    ( isToLoadNextWhiteListEndProcess ) Returning false." )
     return false;
 #endif
 }
 
 stock debugIsToLoadNextWhiteListGroup( currentHour, startHour, endHour, isToLoadTheseMaps )
 {
-    LOGGER( 8, "( debugIsToLoadNextWhiteListGroup ) %2d >  %2d     : %2d", startHour, endHour, startHour > endHour )
-    LOGGER( 8, "( debugIsToLoadNextWhiteListGroup ) %2d >= %2d > %2d: %2d", \
+    LOG( 8, "( debugIsToLoadNextWhiteListGroup ) %2d >  %2d     : %2d", startHour, endHour, startHour > endHour )
+    LOG( 8, "( debugIsToLoadNextWhiteListGroup ) %2d >= %2d > %2d: %2d", \
             startHour, currentHour, endHour, \
             startHour >= currentHour && currentHour > endHour )
 
-    LOGGER( 8, "( debugIsToLoadNextWhiteListGroup ) %2d <  %2d     : %2d", startHour, endHour, startHour < endHour )
-    LOGGER( 8, "( debugIsToLoadNextWhiteListGroup ) %2d <= %2d < %2d: %2d, isToLoadTheseMaps: %d", \
+    LOG( 8, "( debugIsToLoadNextWhiteListGroup ) %2d <  %2d     : %2d", startHour, endHour, startHour < endHour )
+    LOG( 8, "( debugIsToLoadNextWhiteListGroup ) %2d <= %2d < %2d: %2d, isToLoadTheseMaps: %d", \
             startHour, currentHour, endHour, \
             startHour <= currentHour && currentHour < endHour, isToLoadTheseMaps )
 
@@ -5679,27 +5679,27 @@ stock debugIsToLoadNextWhiteListGroup( currentHour, startHour, endHour, isToLoad
  */
 stock standardizeTheHoursForWhitelist( &currentHour, &startHour, &endHour )
 {
-    LOGGER( 256, "I AM ENTERING ON standardizeTheHoursForWhitelist(3) currentHour: %d, startHour: %d, endHour: %d", \
+    LOG( 256, "I AM ENTERING ON standardizeTheHoursForWhitelist(3) currentHour: %d, startHour: %d, endHour: %d", \
             currentHour, startHour, endHour )
 
     if( startHour > 23
         || startHour < 0 )
     {
-        LOGGER( 8, "( standardizeTheHoursForWhitelist ) startHour: %d, will became 0.", startHour )
+        LOG( 8, "( standardizeTheHoursForWhitelist ) startHour: %d, will became 0.", startHour )
         startHour = 0;
     }
 
     if( endHour > 23
         || endHour < 0 )
     {
-        LOGGER( 8, "( standardizeTheHoursForWhitelist ) endHour: %d, will became 0.", endHour )
+        LOG( 8, "( standardizeTheHoursForWhitelist ) endHour: %d, will became 0.", endHour )
         endHour = 0;
     }
 
     if( currentHour > 23
         || currentHour < 0 )
     {
-        LOGGER( 8, "( standardizeTheHoursForWhitelist ) currentHour: %d, will became 0.", currentHour )
+        LOG( 8, "( standardizeTheHoursForWhitelist ) currentHour: %d, will became 0.", currentHour )
         currentHour = 0;
     }
 }
@@ -5716,14 +5716,14 @@ stock standardizeTheHoursForWhitelist( &currentHour, &startHour, &endHour )
 //                                     3         0
 stock bool:convertWhitelistToBlacklist( &startHour, &endHour )
 {
-    LOGGER( 256, "I AM ENTERING ON convertWhitelistToBlacklist(2)" )
+    LOG( 256, "I AM ENTERING ON convertWhitelistToBlacklist(2)" )
     new backup;
 
     backup    = ( endHour   + 1 > 23 ? 0  : endHour   + 1 );
     endHour   = ( startHour - 1 < 0  ? 23 : startHour - 1 );
     startHour = backup;
 
-    LOGGER( 256, "( convertWhitelistToBlacklist ) startHour: %d, endHour: %d", startHour, endHour )
+    LOG( 256, "( convertWhitelistToBlacklist ) startHour: %d, endHour: %d", startHour, endHour )
 
     if( startHour == 0
         && endHour == 23 )
@@ -5731,11 +5731,11 @@ stock bool:convertWhitelistToBlacklist( &startHour, &endHour )
         startHour = 0;
         endHour   = 0;
 
-        LOGGER( 256, "    ( convertWhitelistToBlacklist ) Returning true." )
+        LOG( 256, "    ( convertWhitelistToBlacklist ) Returning true." )
         return true;
     }
 
-    LOGGER( 256, "    ( convertWhitelistToBlacklist ) Returning false." )
+    LOG( 256, "    ( convertWhitelistToBlacklist ) Returning false." )
     return false;
 }
 
@@ -5747,7 +5747,7 @@ stock bool:convertWhitelistToBlacklist( &startHour, &endHour )
  */
 stock loadTheWhiteListFeature()
 {
-    LOGGER( 128, "I AM ENTERING ON loadTheWhiteListFeature(0)" )
+    LOG( 128, "I AM ENTERING ON loadTheWhiteListFeature(0)" )
 
     new currentHour;
     new currentHourString[ 8 ];
@@ -5778,7 +5778,7 @@ stock loadTheWhiteListFeature()
  */
 stock loadWhiteListFile( currentHour, &Trie:listTrie, Array:whitelistFileArray, bool:isBlackList, &Array:listArray = Invalid_Array )
 {
-    LOGGER( 128, "I AM ENTERING ON loadWhiteListFile(5) currentHour: %d, listTrie: %d", currentHour, listTrie )
+    LOG( 128, "I AM ENTERING ON loadWhiteListFile(5) currentHour: %d, listTrie: %d", currentHour, listTrie )
 
     if( whitelistFileArray )
     {
@@ -5819,12 +5819,12 @@ stock loadWhiteListFile( currentHour, &Trie:listTrie, Array:whitelistFileArray, 
             }
             else
             {
-                LOGGER( 8, "( loadWhiteListFile ) Trying to add: %s", currentLine )
+                LOG( 8, "( loadWhiteListFile ) Trying to add: %s", currentLine )
                 GET_MAP_NAME_LEFT( currentLine, mapName )
 
                 if( IS_MAP_VALID( mapName ) )
                 {
-                    LOGGER( 8, "( loadWhiteListFile ) %d. OK! ", listTrie )
+                    LOG( 8, "( loadWhiteListFile ) %d. OK! ", listTrie )
                     TrieSetCell( listTrie, mapName, lineIndex );
 
                     if( listArray )
@@ -5837,16 +5837,16 @@ stock loadWhiteListFile( currentHour, &Trie:listTrie, Array:whitelistFileArray, 
     }
     else
     {
-        LOGGER( 1, "( loadWhiteListFile ) An invalid map descriptors %d/%d!^n", whitelistFileArray, listTrie )
+        LOG( 1, "( loadWhiteListFile ) An invalid map descriptors %d/%d!^n", whitelistFileArray, listTrie )
         log_error( AMX_ERR_PARAMS, "loadWhiteListFile: An invalid map descriptor %d/%d!^n", whitelistFileArray, listTrie );
     }
 
-    LOGGER( 1, "    I AM EXITING loadWhiteListFile(5) listArray: %d, whitelistFileArray: %d", listArray, whitelistFileArray )
+    LOG( 1, "    I AM EXITING loadWhiteListFile(5) listArray: %d, whitelistFileArray: %d", listArray, whitelistFileArray )
 }
 
 stock whiteListHourlySet( trigger, currentLine[], startHourString[], endHourString[], &isBlackList, &currentHour, &startHour, &endHour )
 {
-    LOGGER( 256, "I AM ENTERING ON whiteListHourlySet(4) trigger: %c", trigger )
+    LOG( 256, "I AM ENTERING ON whiteListHourlySet(4) trigger: %c", trigger )
 
     if( currentLine[ 0 ] == trigger
         && isdigit( currentLine[ 1 ] ) )
@@ -5857,9 +5857,9 @@ stock whiteListHourlySet( trigger, currentLine[], startHourString[], endHourStri
         replace_all( currentLine, MAX_MAPNAME_LENGHT - 1, "}", "" );
         replace_all( currentLine, MAX_MAPNAME_LENGHT - 1, "]", "" );
 
-        LOGGER( 8, "( whiteListHourlySet ) " )
-        LOGGER( 8, "( whiteListHourlySet ) If we are %s these hours, we must load these maps:", ( isBlackList? "between" : "outside" ) )
-        LOGGER( 8, "( whiteListHourlySet ) currentLine: %s (currentHour: %d)", currentLine, currentHour )
+        LOG( 8, "( whiteListHourlySet ) " )
+        LOG( 8, "( whiteListHourlySet ) If we are %s these hours, we must load these maps:", ( isBlackList? "between" : "outside" ) )
+        LOG( 8, "( whiteListHourlySet ) currentLine: %s (currentHour: %d)", currentLine, currentHour )
 
         // broke the current line
         STR_TOKEN( currentLine ,
@@ -5870,18 +5870,18 @@ stock whiteListHourlySet( trigger, currentLine[], startHourString[], endHourStri
         endHour   = str_to_num( endHourString );
 
         standardizeTheHoursForWhitelist( currentHour, startHour, endHour );
-        LOGGER( 256, "    ( whiteListHourlySet ) Returning true for: %s", currentLine )
+        LOG( 256, "    ( whiteListHourlySet ) Returning true for: %s", currentLine )
         return true;
     }
 
-    LOGGER( 256, "    ( whiteListHourlySet ) Returning false for: %s", currentLine )
+    LOG( 256, "    ( whiteListHourlySet ) Returning false for: %s", currentLine )
     return false;
 }
 
 stock setupLoadWhiteListParams( bool:isWhiteListBlockOut, &Trie:listTrie, &Array:listArray )
 {
-    LOGGER( 128, "I AM ENTERING ON setupLoadWhiteListParams(3) isWhiteListBlockOut: %d", isWhiteListBlockOut )
-    LOGGER( 128, "( setupLoadWhiteListParams ) listTrie: %d, listArray: %d", listTrie, listArray )
+    LOG( 128, "I AM ENTERING ON setupLoadWhiteListParams(3) isWhiteListBlockOut: %d", isWhiteListBlockOut )
+    LOG( 128, "( setupLoadWhiteListParams ) listTrie: %d, listArray: %d", listTrie, listArray )
 
     if( listTrie )
     {
@@ -5908,7 +5908,7 @@ stock setupLoadWhiteListParams( bool:isWhiteListBlockOut, &Trie:listTrie, &Array
 
 stock fillersFilePathType:loadMapGroupsFeature()
 {
-    LOGGER( 128, "I AM ENTERING ON loadMapGroupsFeature(0)" )
+    LOG( 128, "I AM ENTERING ON loadMapGroupsFeature(0)" )
     new realPlayersNumber = get_real_players_number();
 
     if( realPlayersNumber > 0 )
@@ -5934,7 +5934,7 @@ stock fillersFilePathType:loadMapGroupsFeature()
 
 stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMapsBuffer[], &announcementShowedTimes )
 {
-    LOGGER( 128, "I AM ENTERING ON processLoadedMapsFile(3) fillersFilePathEnum: %d, announcementShowedTimes: %d", \
+    LOG( 128, "I AM ENTERING ON processLoadedMapsFile(3) fillersFilePathEnum: %d, announcementShowedTimes: %d", \
             fillersFilePathEnum, announcementShowedTimes )
 
     new groupCount;
@@ -5995,12 +5995,12 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
     }
 
     groupCount = ArraySize( fillerMapGroupsArrays );
-    LOGGER( 4, "( processLoadedMapsFile ) groupCount: %d, fillerMapGroupsArrays: %d", groupCount, fillerMapGroupsArrays )
+    LOG( 4, "( processLoadedMapsFile ) groupCount: %d, fillerMapGroupsArrays: %d", groupCount, fillerMapGroupsArrays )
 
     // The Whitelist Out Block feature disables The Map Groups Feature.
     if( isWhiteListOutBlock )
     {
-        LOGGER( 4, "( processLoadedMapsFile ) Disabling the MapsGroups Feature due isWhiteListOutBlock" )
+        LOG( 4, "( processLoadedMapsFile ) Disabling the MapsGroups Feature due isWhiteListOutBlock" )
 
     #if AMXX_VERSION_NUM < 183
         groupCount = ArraySize( fillerMapGroupsArrays );
@@ -6032,7 +6032,7 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
             // The Whitelist out block feature, disables The Map Groups Feature.
             if( isWhiteListOutBlock )
             {
-                LOGGER( 0, "", print_is_white_list_out_block() )
+                LOG( 0, "", print_is_white_list_out_block() )
 
                 fillerMapsArray      = g_whitelistArray;
                 useWhitelistOutBlock = false;
@@ -6049,8 +6049,8 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
 
         filersMapCount = ArraySize( fillerMapsArray );
 
-        LOGGER( 8, "" )
-        LOGGER( 8, "[%i] groupCount:%i, filersMapCount: %i,  g_totalVoteOptions: %i, maxVotingChoices: %i", \
+        LOG( 8, "" )
+        LOG( 8, "[%i] groupCount:%i, filersMapCount: %i,  g_totalVoteOptions: %i, maxVotingChoices: %i", \
                 groupIndex, groupCount, filersMapCount, g_totalVoteOptions, maxVotingChoices )
 
         if( filersMapCount
@@ -6061,10 +6061,10 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
                                              maxMapsPerGroupToUse, maxVotingChoices - g_totalVoteOptions
                                            ), filersMapCount );
 
-            LOGGER( 8, "[%i] allowedFilersCount: %i   maxMapsPerGroupToUse[%i]: %i", groupIndex, \
+            LOG( 8, "[%i] allowedFilersCount: %i   maxMapsPerGroupToUse[%i]: %i", groupIndex, \
                     allowedFilersCount, groupIndex, maxMapsPerGroupToUse )
-            LOGGER( 8, "" )
-            LOGGER( 8, "" )
+            LOG( 8, "" )
+            LOG( 8, "" )
 
             for( choiceIndex = 0; choiceIndex < allowedFilersCount; ++choiceIndex )
             {
@@ -6076,7 +6076,7 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
                 mapIndex = random_num( 0, filersMapCount - 1 );
                 GET_MAP_NAME( fillerMapsArray, mapIndex, mapName )
 
-                LOGGER( 8, "( in  ) [%i] choiceIndex: %i, mapIndex: %i, mapName: %s, unsuccessfulCount: %i, g_totalVoteOptions: %i", \
+                LOG( 8, "( in  ) [%i] choiceIndex: %i, mapIndex: %i, mapName: %s, unsuccessfulCount: %i, g_totalVoteOptions: %i", \
                         groupIndex, choiceIndex, mapIndex, mapName, unsuccessfulCount, g_totalVoteOptions )
 
                 while( map_isInMenu( mapName )
@@ -6099,8 +6099,8 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
                      )
                 {
                     // Some spacing
-                    LOGGER( 8, "" )
-                    LOGGER( 0, "", debug_vote_map_selection( choiceIndex, mapName, useWhitelistOutBlock, \
+                    LOG( 8, "" )
+                    LOG( 0, "", debug_vote_map_selection( choiceIndex, mapName, useWhitelistOutBlock, \
                             isWhiteListOutBlock, useEqualiCurrentMap, unsuccessfulCount, currentBlockerStrategy, \
                             useIsPrefixInMenu, useMapIsTooRecent, blockedFillersMapTrie ) )
 
@@ -6122,11 +6122,11 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
                             {
                                 if( isWhiteListOutBlock )
                                 {
-                                    LOGGER( 8, "" )
-                                    LOGGER( 8, "" )
-                                    LOGGER( 8, "WARNING! This BlockerStrategy case is not used by the isWhiteListOutBlock." )
-                                    LOGGER( 8, "" )
-                                    LOGGER( 8, "" )
+                                    LOG( 8, "" )
+                                    LOG( 8, "" )
+                                    LOG( 8, "WARNING! This BlockerStrategy case is not used by the isWhiteListOutBlock." )
+                                    LOG( 8, "" )
+                                    LOG( 8, "" )
 
                                     ++currentBlockerStrategy;
                                     goto isWhiteListOutBlockExitCase;
@@ -6141,11 +6141,11 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
                             }
                             default:
                             {
-                                LOGGER( 8, "" )
-                                LOGGER( 8, "" )
-                                LOGGER( 8, "WARNING! unsuccessfulCount: %i, filersMapCount: %i", unsuccessfulCount, filersMapCount )
-                                LOGGER( 8, "" )
-                                LOGGER( 8, "" )
+                                LOG( 8, "" )
+                                LOG( 8, "" )
+                                LOG( 8, "WARNING! unsuccessfulCount: %i, filersMapCount: %i", unsuccessfulCount, filersMapCount )
+                                LOG( 8, "" )
+                                LOG( 8, "" )
 
                                 goto exitSearch;
                             }
@@ -6164,7 +6164,7 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
                     unsuccessfulCount++;
                     GET_MAP_NAME( fillerMapsArray, mapIndex, mapName )
 
-                    LOGGER( 0, "", debug_vote_map_selection( choiceIndex, mapName, useWhitelistOutBlock, \
+                    LOG( 0, "", debug_vote_map_selection( choiceIndex, mapName, useWhitelistOutBlock, \
                             isWhiteListOutBlock, useEqualiCurrentMap, unsuccessfulCount, currentBlockerStrategy, \
                             useIsPrefixInMenu, useMapIsTooRecent, blockedFillersMapTrie ) )
                 }
@@ -6173,11 +6173,11 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
                     && !isWhiteListOutBlock
                     && TrieKeyExists( g_blacklistTrie, mapName ) )
                 {
-                    LOGGER( 8, "    Trying to block: %s, by the whitelist map setting...", mapName )
+                    LOG( 8, "    Trying to block: %s, by the whitelist map setting...", mapName )
 
                     if( !TrieKeyExists( blockedFillersMapTrie, mapName ) )
                     {
-                        LOGGER( 8, "    BLOCKED!" )
+                        LOG( 8, "    BLOCKED!" )
 
                         TrieSetCell( blockedFillersMapTrie, mapName, 0 );
                         announceVoteBlockedMap( mapName, blockedMapsBuffer, "GAL_FILLER_BLOCKED", announcementShowedTimes );
@@ -6189,22 +6189,22 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
                 GET_MAP_INFO( fillerMapsArray, mapIndex, mapInfo )
                 addMapToTheVotingMenu( mapName, mapInfo );
 
-                LOGGER( 8, "" )
-                LOGGER( 8, "( out ) [%i] choiceIndex: %i, mapIndex: %i, mapName: %s, unsuccessfulCount: %i, g_totalVoteOptions: %i", \
+                LOG( 8, "" )
+                LOG( 8, "( out ) [%i] choiceIndex: %i, mapIndex: %i, mapName: %s, unsuccessfulCount: %i, g_totalVoteOptions: %i", \
                         groupIndex, choiceIndex, mapIndex, mapName, unsuccessfulCount, g_totalVoteOptions )
-                LOGGER( 8, "" )
-                LOGGER( 8, "" )
+                LOG( 8, "" )
+                LOG( 8, "" )
             }
 
             if( g_dummy_value )
             {
                 exitSearch:
 
-                LOGGER( 8, "" )
-                LOGGER( 8, "" )
-                LOGGER( 8, "WARNING! There aren't enough maps in this filler file to continue adding anymore." )
-                LOGGER( 8, "" )
-                LOGGER( 8, "" )
+                LOG( 8, "" )
+                LOG( 8, "" )
+                LOG( 8, "WARNING! There aren't enough maps in this filler file to continue adding anymore." )
+                LOG( 8, "" )
+                LOG( 8, "" )
             }
         }
     }
@@ -6215,21 +6215,21 @@ stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMap
 
 stock print_is_white_list_out_block()
 {
-    LOGGER( 128, "I AM ENTERING ON print_is_white_list_out_block(2)" )
+    LOG( 128, "I AM ENTERING ON print_is_white_list_out_block(2)" )
 
     new mapName[ MAX_MAPNAME_LENGHT ];
     new filersMapCount = ArraySize( g_whitelistArray );
 
-    LOGGER( 8, "" )
-    LOGGER( 8, "( print_is_white_list_out_block|FOR in)" )
+    LOG( 8, "" )
+    LOG( 8, "( print_is_white_list_out_block|FOR in)" )
 
     for( new currentMapIndex = 0; currentMapIndex < filersMapCount; ++currentMapIndex )
     {
         ArrayGetString( g_whitelistArray, currentMapIndex, mapName, charsmax( mapName ) );
-        LOGGER( 8, "( print_is_white_list_out_block|FOR ) g_whitelistArray[%d]: %s", currentMapIndex, mapName )
+        LOG( 8, "( print_is_white_list_out_block|FOR ) g_whitelistArray[%d]: %s", currentMapIndex, mapName )
     }
 
-    LOGGER( 8, "( print_is_white_list_out_block|FOR out)" )
+    LOG( 8, "( print_is_white_list_out_block|FOR out)" )
 
     return 0;
 }
@@ -6238,7 +6238,7 @@ stock debug_vote_map_selection( choiceIndex, mapName[], useWhitelistOutBlock, is
                                 useEqualiCurrentMap, unsuccessfulCount, currentBlockerStrategy,
                                 useIsPrefixInMenu, useMapIsTooRecent, Trie:blockedFillersMapTrie )
 {
-    LOGGER( 256, "I AM ENTERING ON debug_vote_map_selection(10) choiceIndex: %d", choiceIndex )
+    LOG( 256, "I AM ENTERING ON debug_vote_map_selection(10) choiceIndex: %d", choiceIndex )
     new type[5];
 
     static isIncrementTime = 0;
@@ -6263,19 +6263,19 @@ stock debug_vote_map_selection( choiceIndex, mapName[], useWhitelistOutBlock, is
         copy( type, charsmax( type ), "out" );
     }
 
-    LOGGER( 8, "%d. ( debug_vote_map_selection|while_%s ) mapName: %s, map_isInMenu: %d, is_theCurrentMap: %d, \
+    LOG( 8, "%d. ( debug_vote_map_selection|while_%s ) mapName: %s, map_isInMenu: %d, is_theCurrentMap: %d, \
             map_isTooRecent: %d", currentMapIndex, type, mapName, map_isInMenu( mapName ), \
             equali( g_currentMapName, mapName ), map_isTooRecent( mapName ) )
 
-    LOGGER( 8, "          isPrefixInMenu: %d, TrieKeyExists( blockedFillersMapTrie ): %d, \
+    LOG( 8, "          isPrefixInMenu: %d, TrieKeyExists( blockedFillersMapTrie ): %d, \
             !TrieKeyExists( g_whitelistTrie ): %d", isPrefixInMenu( mapName ), \
             ( useWhitelistOutBlock?  TrieKeyExists( blockedFillersMapTrie, mapName ) : false ), \
             ( isWhiteListOutBlock ? !TrieKeyExists( g_whitelistTrie      , mapName ) : false ) )
 
-    LOGGER( 8, "          useMapIsTooRecent: %d, useIsPrefixInMenu: %d, useEqualiCurrentMap: %d", \
+    LOG( 8, "          useMapIsTooRecent: %d, useIsPrefixInMenu: %d, useEqualiCurrentMap: %d", \
             useMapIsTooRecent, useIsPrefixInMenu, useEqualiCurrentMap )
 
-    LOGGER( 8, "          currentBlockerStrategy: %d, unsuccessfulCount:%d, useWhitelistOutBlock: %d", \
+    LOG( 8, "          currentBlockerStrategy: %d, unsuccessfulCount:%d, useWhitelistOutBlock: %d", \
             currentBlockerStrategy, unsuccessfulCount, useWhitelistOutBlock )
 
     return 0;
@@ -6283,7 +6283,7 @@ stock debug_vote_map_selection( choiceIndex, mapName[], useWhitelistOutBlock, is
 
 stock vote_addFillers( blockedMapsBuffer[], &announcementShowedTimes = 0 )
 {
-    LOGGER( 128, "I AM ENTERING ON vote_addFillers(2) announcementShowedTimes: %d", announcementShowedTimes )
+    LOG( 128, "I AM ENTERING ON vote_addFillers(2) announcementShowedTimes: %d", announcementShowedTimes )
 
     new maxVotingChoices = MAX_VOTING_CHOICES();
 
@@ -6294,23 +6294,23 @@ stock vote_addFillers( blockedMapsBuffer[], &announcementShowedTimes = 0 )
     }
     else
     {
-        LOGGER( 8, " ( vote_addFillers ) maxVotingChoices: %d", maxVotingChoices )
-        LOGGER( 8, " ( vote_addFillers ) g_maxVotingChoices: %d", g_maxVotingChoices )
-        LOGGER( 8, " ( vote_addFillers ) g_totalVoteOptions: %d", g_totalVoteOptions )
-        LOGGER( 1, "    ( vote_addFillers ) Just Returning/blocking, the voting list is filled." )
+        LOG( 8, " ( vote_addFillers ) maxVotingChoices: %d", maxVotingChoices )
+        LOG( 8, " ( vote_addFillers ) g_maxVotingChoices: %d", g_maxVotingChoices )
+        LOG( 8, " ( vote_addFillers ) g_totalVoteOptions: %d", g_totalVoteOptions )
+        LOG( 1, "    ( vote_addFillers ) Just Returning/blocking, the voting list is filled." )
     }
 }
 
 stock vote_addNominations( blockedMapsBuffer[], &announcementShowedTimes = 0 )
 {
-    LOGGER( 128, "I AM ENTERING ON vote_addNominations(2) announcementShowedTimes: %d", announcementShowedTimes )
+    LOG( 128, "I AM ENTERING ON vote_addNominations(2) announcementShowedTimes: %d", announcementShowedTimes )
     new nominatedMapsCount;
 
     // Try to add the nominations, if there are nominated maps.
     if( g_nominatedMapsArray
         && ( nominatedMapsCount = ArraySize( g_nominatedMapsArray ) ) )
     {
-        LOGGER( 128, "( vote_addNominations ) nominatedMapsCount: %d", nominatedMapsCount )
+        LOG( 128, "( vote_addNominations ) nominatedMapsCount: %d", nominatedMapsCount )
         new Trie:whitelistMapTrie;
 
         new mapIndex;
@@ -6329,7 +6329,7 @@ stock vote_addNominations( blockedMapsBuffer[], &announcementShowedTimes = 0 )
             if( !mapFilerFilePath[ 0 ]
                 || mapFilerFilePath[ 0 ] == MAP_FOLDER_LOAD_FLAG )
             {
-                LOGGER( 1, "AMX_ERR_NOTFOUND, %L", LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilerFilePath )
+                LOG( 1, "AMX_ERR_NOTFOUND, %L", LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilerFilePath )
                 log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilerFilePath );
             }
             else
@@ -6346,7 +6346,7 @@ stock vote_addNominations( blockedMapsBuffer[], &announcementShowedTimes = 0 )
         new voteNominationMax = ( maxNominations ) ? min( maxNominations, slotsAvailable ) : slotsAvailable;
 
         // print the players nominations for debug
-        LOGGER( 4, "( vote_addNominations ) nominatedMapsCount", nominatedMapsCount, show_all_players_nominations() )
+        LOG( 4, "( vote_addNominations ) nominatedMapsCount", nominatedMapsCount, show_all_players_nominations() )
 
         // Add as many nominations as we can by FIFO
         for( new nominationIndex = 0; nominationIndex < nominatedMapsCount; ++nominationIndex )
@@ -6358,12 +6358,12 @@ stock vote_addNominations( blockedMapsBuffer[], &announcementShowedTimes = 0 )
             else
             {
                 GET_MAP_NAME( g_nominationLoadedMapsArray, mapIndex, mapName )
-                LOGGER( 4, "( vote_addNominations ) g_nominationLoadedMapsArray.mapIndex: %d, mapName: %s", mapIndex, mapName )
+                LOG( 4, "( vote_addNominations ) g_nominationLoadedMapsArray.mapIndex: %d, mapName: %s", mapIndex, mapName )
 
                 if( whitelistMapTrie
                     && !TrieKeyExists( whitelistMapTrie, mapName ) )
                 {
-                    LOGGER( 8, "    The map: %s, was blocked by the minimum players map setting.", mapName )
+                    LOG( 8, "    The map: %s, was blocked by the minimum players map setting.", mapName )
                     announceVoteBlockedMap( mapName, blockedMapsBuffer, "GAL_FILLER_BLOCKED", announcementShowedTimes );
 
                     continue;
@@ -6382,13 +6382,13 @@ stock vote_addNominations( blockedMapsBuffer[], &announcementShowedTimes = 0 )
 
     } // end if nominations
 
-    LOGGER( 4, "" )
-    LOGGER( 4, "" )
+    LOG( 4, "" )
+    LOG( 4, "" )
 }
 
 stock show_all_players_nominations()
 {
-    LOGGER( 128, "I AM ENTERING ON show_all_players_nominations(0)" )
+    LOG( 128, "I AM ENTERING ON show_all_players_nominations(0)" )
 
     new mapIndex;
     new nominator_id;
@@ -6401,12 +6401,12 @@ stock show_all_players_nominations()
 
     for( new nominationIndex = 0; nominationIndex < maxPlayerNominations; ++nominationIndex )
     {
-        LOGGER( 4, "" )
-        LOGGER( 4, "" )
-        LOGGER( 4, "( show_all_players_nominations ) nominationIndex:             %d", nominationIndex )
-        LOGGER( 4, "( show_all_players_nominations ) maxPlayerNominations:        %d", maxPlayerNominations )
-        LOGGER( 4, "( show_all_players_nominations ) g_nominationLoadedMapsArray: %d", g_nominationLoadedMapsArray )
-        LOGGER( 4, "( show_all_players_nominations ) ArraySize:                   %d", ArraySize( g_nominationLoadedMapsArray ) )
+        LOG( 4, "" )
+        LOG( 4, "" )
+        LOG( 4, "( show_all_players_nominations ) nominationIndex:             %d", nominationIndex )
+        LOG( 4, "( show_all_players_nominations ) maxPlayerNominations:        %d", maxPlayerNominations )
+        LOG( 4, "( show_all_players_nominations ) g_nominationLoadedMapsArray: %d", g_nominationLoadedMapsArray )
+        LOG( 4, "( show_all_players_nominations ) ArraySize:                   %d", ArraySize( g_nominationLoadedMapsArray ) )
 
         for( new player_id = 1; player_id < MAX_PLAYERS_COUNT; ++player_id )
         {
@@ -6420,7 +6420,7 @@ stock show_all_players_nominations()
                 nominator_id = nomination_getPlayer( mapIndex );
 
                 GET_USER_NAME( nominator_id, playerName )
-                LOGGER( 4, "      %-32s %s", mapName, playerName )
+                LOG( 4, "      %-32s %s", mapName, playerName )
             }
         }
     }
@@ -6430,7 +6430,7 @@ stock show_all_players_nominations()
 
 stock loadOnlyNominationVoteChoices()
 {
-    LOGGER( 128, "I AM ENTERING ON loadOnlyNominationVoteChoices(0)" )
+    LOG( 128, "I AM ENTERING ON loadOnlyNominationVoteChoices(0)" )
 
     if( IS_NOMINATION_MININUM_PLAYERS_CONTROL_ENABLED()
         || IS_WHITELIST_ENABLED() )
@@ -6450,7 +6450,7 @@ stock loadOnlyNominationVoteChoices()
 
 stock loadTheDefaultVotingChoices()
 {
-    LOGGER( 128, "I AM ENTERING ON loadTheDefaultVotingChoices(0)" )
+    LOG( 128, "I AM ENTERING ON loadTheDefaultVotingChoices(0)" )
 
     // To add the next map to the voting menu, if enabled.
     if( get_pcvar_num( cvar_voteMapChoiceNext )
@@ -6490,8 +6490,8 @@ stock loadTheDefaultVotingChoices()
 
     SET_VOTING_TIME_TO( g_votingSecondsRemaining, cvar_voteDuration )
 
-    LOGGER( 4, "" )
-    LOGGER( 4, "I AM EXITING ON loadTheDefaultVotingChoices(0) g_totalVoteOptions: %d", g_totalVoteOptions )
+    LOG( 4, "" )
+    LOG( 4, "I AM EXITING ON loadTheDefaultVotingChoices(0) g_totalVoteOptions: %d", g_totalVoteOptions )
 }
 
 /**
@@ -6504,7 +6504,7 @@ stock loadTheDefaultVotingChoices()
  */
 stock announceVoteBlockedMap( mapToAnnounce[], blockedMapsBuffer[], flushAnnouncement[], &announcementShowedTimes )
 {
-    LOGGER( 128, "I AM ENTERING ON announceVoteBlockedMap(4) announcementShowedTimes: %d, \
+    LOG( 128, "I AM ENTERING ON announceVoteBlockedMap(4) announcementShowedTimes: %d, \
             mapToAnnounce: %s, ", announcementShowedTimes, mapToAnnounce )
 
     if( announcementShowedTimes
@@ -6536,8 +6536,8 @@ stock announceVoteBlockedMap( mapToAnnounce[], blockedMapsBuffer[], flushAnnounc
  */
 stock flushVoteBlockedMaps( blockedMapsBuffer[], flushAnnouncement[], &announcementShowedTimes )
 {
-    LOGGER( 128, "I AM ENTERING ON flushVoteBlockedMaps(3) announcementShowedTimes: %d, ", announcementShowedTimes )
-    LOGGER( 128, "blockedMapsBuffer: %s",  blockedMapsBuffer )
+    LOG( 128, "I AM ENTERING ON flushVoteBlockedMaps(3) announcementShowedTimes: %d, ", announcementShowedTimes )
+    LOG( 128, "blockedMapsBuffer: %s",  blockedMapsBuffer )
 
     if( blockedMapsBuffer[ 0 ] )
     {
@@ -6556,7 +6556,7 @@ stock flushVoteBlockedMaps( blockedMapsBuffer[], flushAnnouncement[], &announcem
 
 stock computeNextWhiteListLoadTime( seconds, bool:isSecondsLeft = true )
 {
-    LOGGER( 128, "I AM ENTERING ON computeNextWhiteListLoadTime(2) seconds: %d, isSecondsLeft: %d", seconds, isSecondsLeft )
+    LOG( 128, "I AM ENTERING ON computeNextWhiteListLoadTime(2) seconds: %d, isSecondsLeft: %d", seconds, isSecondsLeft )
     new secondsForReload;
 
     // This is tricky as 'seconds' could be 0, when there is no time-limit.
@@ -6595,7 +6595,7 @@ stock computeNextWhiteListLoadTime( seconds, bool:isSecondsLeft = true )
         doAmxxLog( "ERROR, computeNextWhiteListLoadTime: The seconds parameter is zero!" );
     }
 
-    LOGGER( 1, "I AM EXITING computeNextWhiteListLoadTime(2) g_whitelistNomBlockTime: %d, secondsForReload: %d", g_whitelistNomBlockTime, secondsForReload )
+    LOG( 1, "I AM EXITING computeNextWhiteListLoadTime(2) g_whitelistNomBlockTime: %d, secondsForReload: %d", g_whitelistNomBlockTime, secondsForReload )
 }
 
 /**
@@ -6604,7 +6604,7 @@ stock computeNextWhiteListLoadTime( seconds, bool:isSecondsLeft = true )
  */
 stock vote_manageEarlyStart()
 {
-    LOGGER( 128, "I AM ENTERING ON vote_manageEarlyStart(0) g_voteStatus: %d", g_voteStatus )
+    LOG( 128, "I AM ENTERING ON vote_manageEarlyStart(0) g_voteStatus: %d", g_voteStatus )
     g_voteStatus |= IS_EARLY_VOTE;
 
     set_task( 120.0, "startNonForcedVoting", TASKID_VOTE_STARTDIRECTOR );
@@ -6612,14 +6612,14 @@ stock vote_manageEarlyStart()
 
 public startNonForcedVoting()
 {
-    LOGGER( 128, "I AM ENTERING ON startNonForcedVoting(0) g_endVotingType: %d", g_endVotingType )
+    LOG( 128, "I AM ENTERING ON startNonForcedVoting(0) g_endVotingType: %d", g_endVotingType )
     vote_startDirector( false );
 }
 
 public start_voting_by_winlimit()
 {
-    LOGGER( 128, "I AM ENTERING ON start_voting_by_winlimit(0) g_endVotingType: %d", g_endVotingType)
-    LOGGER( 32, "( start_voting_by_winlimit ) get_pcvar_num( cvar_endOfMapVote ): %d", get_pcvar_num( cvar_endOfMapVote ) )
+    LOG( 128, "I AM ENTERING ON start_voting_by_winlimit(0) g_endVotingType: %d", g_endVotingType)
+    LOG( 32, "( start_voting_by_winlimit ) get_pcvar_num( cvar_endOfMapVote ): %d", get_pcvar_num( cvar_endOfMapVote ) )
 
     if( get_pcvar_num( cvar_endOfMapVote ) )
     {
@@ -6633,8 +6633,8 @@ public start_voting_by_winlimit()
 
 public start_voting_by_maxrounds()
 {
-    LOGGER( 128, "I AM ENTERING ON start_voting_by_maxrounds(0) g_endVotingType: %d", g_endVotingType)
-    LOGGER( 32, "( start_voting_by_maxrounds ) get_pcvar_num( cvar_endOfMapVote ): %d", get_pcvar_num( cvar_endOfMapVote ) )
+    LOG( 128, "I AM ENTERING ON start_voting_by_maxrounds(0) g_endVotingType: %d", g_endVotingType)
+    LOG( 32, "( start_voting_by_maxrounds ) get_pcvar_num( cvar_endOfMapVote ): %d", get_pcvar_num( cvar_endOfMapVote ) )
 
     if( get_pcvar_num( cvar_endOfMapVote ) )
     {
@@ -6648,8 +6648,8 @@ public start_voting_by_maxrounds()
 
 public start_voting_by_frags()
 {
-    LOGGER( 128, "I AM ENTERING ON start_voting_by_frags(0) g_endVotingType: %d", g_endVotingType)
-    LOGGER( 32, "( start_voting_by_frags ) get_pcvar_num( cvar_endOfMapVote ): %d", get_pcvar_num( cvar_endOfMapVote ) )
+    LOG( 128, "I AM ENTERING ON start_voting_by_frags(0) g_endVotingType: %d", g_endVotingType)
+    LOG( 32, "( start_voting_by_frags ) get_pcvar_num( cvar_endOfMapVote ): %d", get_pcvar_num( cvar_endOfMapVote ) )
 
     if( get_pcvar_num( cvar_endOfMapVote ) )
     {
@@ -6663,8 +6663,8 @@ public start_voting_by_frags()
 
 public start_voting_by_timer()
 {
-    LOGGER( 128, "I AM ENTERING ON start_voting_by_timer(0) g_endVotingType: %d", g_endVotingType)
-    LOGGER( 32, "( start_voting_by_timer ) get_pcvar_num( cvar_endOfMapVote ): %d", get_pcvar_num( cvar_endOfMapVote ) )
+    LOG( 128, "I AM ENTERING ON start_voting_by_timer(0) g_endVotingType: %d", g_endVotingType)
+    LOG( 32, "( start_voting_by_timer ) get_pcvar_num( cvar_endOfMapVote ): %d", get_pcvar_num( cvar_endOfMapVote ) )
 
     if( get_pcvar_num( cvar_endOfMapVote ) )
     {
@@ -6678,8 +6678,8 @@ public start_voting_by_timer()
 
 public startVotingByGameEngineCall()
 {
-    LOGGER( 128, "I AM ENTERING ON startVotingByGameEngineCall(0) g_endVotingType: %d", g_endVotingType)
-    LOGGER( 32, "( startVotingByGameEngineCall ) get_pcvar_num( cvar_endOfMapVote ): %d", get_pcvar_num( cvar_endOfMapVote ) )
+    LOG( 128, "I AM ENTERING ON startVotingByGameEngineCall(0) g_endVotingType: %d", g_endVotingType)
+    LOG( 32, "( startVotingByGameEngineCall ) get_pcvar_num( cvar_endOfMapVote ): %d", get_pcvar_num( cvar_endOfMapVote ) )
 
     if( get_pcvar_num( cvar_endOfMapVote ) )
     {
@@ -6693,7 +6693,7 @@ public startVotingByGameEngineCall()
 
 public vote_manageEnd()
 {
-    LOGGER( 256, "I AM ENTERING ON vote_manageEnd(0) get_real_players_number: %d", get_real_players_number() )
+    LOG( 256, "I AM ENTERING ON vote_manageEnd(0) get_real_players_number: %d", get_real_players_number() )
     new secondsLeft = get_timeleft();
 
     if( secondsLeft )
@@ -6747,7 +6747,7 @@ public vote_manageEnd()
 
 stock periodicTimeLeftHandleChecking( secondsLeft )
 {
-    LOGGER( 256, "I AM ENTERING ON periodicTimeLeftHandleChecking(1) secondsLeft: %d", secondsLeft )
+    LOG( 256, "I AM ENTERING ON periodicTimeLeftHandleChecking(1) secondsLeft: %d", secondsLeft )
 
     showRemainingTimeUntilVoting();
     create_game_crash_recreation( secondsLeft );
@@ -6755,7 +6755,7 @@ stock periodicTimeLeftHandleChecking( secondsLeft )
 
 stock showRemainingTimeUntilVoting()
 {
-    LOGGER( 128, "I AM ENTERING ON showRemainingTimeUntilVoting(0)" )
+    LOG( 128, "I AM ENTERING ON showRemainingTimeUntilVoting(0)" )
 
     static showCounter;
     const trigger_count = 750 / PERIODIC_CHECKING_INTERVAL;
@@ -6847,7 +6847,7 @@ stock showRemainingTimeUntilVoting()
 
 public displayRemainingTime()
 {
-    LOGGER( 128, "I AM ENTERING ON displayRemainingTime(0)" )
+    LOG( 128, "I AM ENTERING ON displayRemainingTime(0)" )
 
     new timeLeft = get_timeleft();
     new seconds  = timeLeft % 60;
@@ -6863,7 +6863,7 @@ public displayRemainingTime()
  */
 stock create_game_crash_recreation( secondsLeft )
 {
-    LOGGER( 128, "I AM ENTERING ON create_game_crash_recreation(0)" )
+    LOG( 128, "I AM ENTERING ON create_game_crash_recreation(0)" )
 
     if( g_isToCreateGameCrashFlag
         && (  g_timeLimitNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_timeLimitNumber - secondsLeft / 60
@@ -6876,19 +6876,19 @@ stock create_game_crash_recreation( secondsLeft )
         // stop creating this file unnecessarily
         g_isToCreateGameCrashFlag = false;
 
-        LOGGER( 32, "( vote_manageEnd )  %d/%d < %d: %d", \
+        LOG( 32, "( vote_manageEnd )  %d/%d < %d: %d", \
                 g_timeLimitNumber, SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR, g_timeLimitNumber - secondsLeft / 60, \
                 g_timeLimitNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_timeLimitNumber - secondsLeft / 60 )
 
-        LOGGER( 32, "( vote_manageEnd )  %d/%d < %d: %d", \
+        LOG( 32, "( vote_manageEnd )  %d/%d < %d: %d", \
                 g_fragLimitNumber, SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR, g_greatestKillerFrags, \
                 g_fragLimitNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_greatestKillerFrags )
 
-        LOGGER( 32, "( vote_manageEnd )  %d/%d < %d: %d", \
+        LOG( 32, "( vote_manageEnd )  %d/%d < %d: %d", \
                 g_maxRoundsNumber, SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR, g_totalRoundsPlayed + 1, \
                 g_maxRoundsNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_totalRoundsPlayed + 1 )
 
-        LOGGER( 32, "( vote_manageEnd )  %d/%d < %d: %d", \
+        LOG( 32, "( vote_manageEnd )  %d/%d < %d: %d", \
                 g_winLimitInteger, SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR, g_totalTerroristsWins + g_totalCtWins, \
                 g_winLimitInteger / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_totalTerroristsWins + g_totalCtWins )
 
@@ -6900,7 +6900,7 @@ stock create_game_crash_recreation( secondsLeft )
 
 stock bool:approveTheVotingStart( bool:is_forced_voting )
 {
-    LOGGER( 128, "I AM ENTERING ON approveTheVotingStart(1) is_forced_voting: %d, get_real_players_number: %d", \
+    LOG( 128, "I AM ENTERING ON approveTheVotingStart(1) is_forced_voting: %d, get_real_players_number: %d", \
             is_forced_voting, get_real_players_number() )
 
     if( get_pcvar_num( cvar_nextMapChangeVotemap )
@@ -6923,7 +6923,7 @@ stock bool:approveTheVotingStart( bool:is_forced_voting )
             // The voting is over, i.e., must to be performed.
             g_voteStatus |= IS_VOTE_OVER;
 
-            LOGGER( 1, "    ( approveTheVotingStart ) Returning false due the `gal_nextmap_votemap` feature." )
+            LOG( 1, "    ( approveTheVotingStart ) Returning false due the `gal_nextmap_votemap` feature." )
             return false;
         }
     }
@@ -6935,13 +6935,13 @@ stock bool:approveTheVotingStart( bool:is_forced_voting )
         || ( !is_forced_voting
              && g_voteStatus & IS_VOTE_OVER ) )
     {
-        LOGGER( 1, "    ( approveTheVotingStart ) g_voteStatus: %d, g_voteStatus & IS_VOTE_OVER: %d", \
+        LOG( 1, "    ( approveTheVotingStart ) g_voteStatus: %d, g_voteStatus & IS_VOTE_OVER: %d", \
                 g_voteStatus, g_voteStatus & IS_VOTE_OVER != 0 )
 
     #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
         if( g_test_areTheUnitTestsRunning )
         {
-            LOGGER( 1, "    ( approveTheVotingStart ) Returning true on the if !g_test_areTheUnitTestsRunning, \
+            LOG( 1, "    ( approveTheVotingStart ) Returning true on the if !g_test_areTheUnitTestsRunning, \
                     cvar_isEmptyCycleByMapChange: %d.", get_pcvar_num( cvar_isEmptyCycleByMapChange ) )
             return true;
         }
@@ -6960,7 +6960,7 @@ stock bool:approveTheVotingStart( bool:is_forced_voting )
             }
         }
 
-        LOGGER( 1, "    ( approveTheVotingStart ) Returning false on the big blocker." )
+        LOG( 1, "    ( approveTheVotingStart ) Returning false on the big blocker." )
         return false;
     }
 
@@ -6989,25 +6989,25 @@ stock bool:approveTheVotingStart( bool:is_forced_voting )
     if( g_isMapExtensionPeriodRunning
         && !is_forced_voting )
     {
-        LOGGER( 1, "    ( approveTheVotingStart ) Returning false, block the new voting after the map extension." )
+        LOG( 1, "    ( approveTheVotingStart ) Returning false, block the new voting after the map extension." )
         return false;
     }
 
-    LOGGER( 1, "    ( approveTheVotingStart ) Returning true, due passed by all requirements." )
+    LOG( 1, "    ( approveTheVotingStart ) Returning true, due passed by all requirements." )
     return true;
 }
 
 stock printVotingMaps( mapNames[][], mapInfos[][], votingMapsCount = MAX_OPTIONS_IN_VOTE )
 {
-    LOGGER( 128, "I AM ENTERING ON printVotingMaps(3) votingMapsCount: %d", votingMapsCount )
+    LOG( 128, "I AM ENTERING ON printVotingMaps(3) votingMapsCount: %d", votingMapsCount )
 
     for( new index = 0; index < votingMapsCount; index++ )
     {
-        LOGGER( 16, "( printVotingMaps ) Voting map %d: %s %s", index, mapNames[ index ], mapInfos[ index ] )
+        LOG( 16, "( printVotingMaps ) Voting map %d: %s %s", index, mapNames[ index ], mapInfos[ index ] )
     }
 
-    LOGGER( 16, "" )
-    LOGGER( 16, "" )
+    LOG( 16, "" )
+    LOG( 16, "" )
 
     // Removes the compiler warning `warning 203: symbol is never used` with some DEBUG levels.
     if( mapNames[ 0 ][ 0 ] && mapInfos[ 0 ][ 0 ] ) { }
@@ -7017,7 +7017,7 @@ stock printVotingMaps( mapNames[][], mapInfos[][], votingMapsCount = MAX_OPTIONS
 
 stock loadRunOffVoteChoices()
 {
-    LOGGER( 128, "I AM ENTERING ON loadRunOffVoteChoices(0)" )
+    LOG( 128, "I AM ENTERING ON loadRunOffVoteChoices(0)" )
 
     new runoffChoiceName[ MAX_OPTIONS_IN_VOTE ][ MAX_MAPNAME_LENGHT ];
     new runoffChoiceInfo[ MAX_OPTIONS_IN_VOTE ][ MAX_MAPNAME_LENGHT ];
@@ -7037,12 +7037,12 @@ stock loadRunOffVoteChoices()
     }
 
     SET_VOTING_TIME_TO( g_votingSecondsRemaining, cvar_runoffDuration )
-    LOGGER( 0, "", printVotingMaps(  g_votingMapNames, g_votingMapInfos, g_totalVoteOptions ) )
+    LOG( 0, "", printVotingMaps(  g_votingMapNames, g_votingMapInfos, g_totalVoteOptions ) )
 }
 
 stock configureVotingStart( bool:is_forced_voting )
 {
-    LOGGER( 128, "I AM ENTERING ON configureVotingStart(1) is_forced_voting: %d", is_forced_voting )
+    LOG( 128, "I AM ENTERING ON configureVotingStart(1) is_forced_voting: %d", is_forced_voting )
 
     // update cached data for the new voting
     cacheCvarsValues();
@@ -7061,8 +7061,8 @@ stock configureVotingStart( bool:is_forced_voting )
 
     configureTheExtensionOption( is_forced_voting );
 
-    LOGGER( 4, "( configureVotingStart ) g_voteStatus: %d, ", g_voteStatus )
-    LOGGER( 4, "( configureVotingStart ) g_voteMapStatus: %d, ", g_voteMapStatus )
+    LOG( 4, "( configureVotingStart ) g_voteStatus: %d, ", g_voteStatus )
+    LOG( 4, "( configureVotingStart ) g_voteMapStatus: %d, ", g_voteMapStatus )
 
     // stop RTV reminders
     remove_task( TASKID_RTV_REMINDER );
@@ -7073,25 +7073,25 @@ stock configureVotingStart( bool:is_forced_voting )
  */
 stock configureTheExtensionOption( bool:is_forced_voting )
 {
-    LOGGER( 128, "I AM ENTERING ON configureTheExtensionOption(1) is_forced_voting: %d", is_forced_voting )
+    LOG( 128, "I AM ENTERING ON configureTheExtensionOption(1) is_forced_voting: %d", is_forced_voting )
     new Float:cache;
 
     // If we cannot find anything cancelling/blocking the map extension, allow it by the default.
     if( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXTENSION )
     {
-        LOGGER( 4, "( configureTheExtensionOption ) 1. " )
+        LOG( 4, "( configureTheExtensionOption ) 1. " )
         g_isMapExtensionAllowed = false;
     }
     else if( g_voteStatus & IS_RTV_VOTE
              && get_pcvar_num( cvar_rtvWaitAdmin ) & IS_TO_RTV_NOT_ALLOW_STAY )
     {
-        LOGGER( 4, "( configureTheExtensionOption ) 2. " )
+        LOG( 4, "( configureTheExtensionOption ) 2. " )
         g_isMapExtensionAllowed = false;
     }
     else if( g_endVotingType & IS_BY_FRAGS
              && ( cache = Float:get_pcvar_num( cvar_maxMapExtendFrags ) ) )
     {
-        LOGGER( 4, "( configureTheExtensionOption ) 3. " )
+        LOG( 4, "( configureTheExtensionOption ) 3. " )
 
         g_isMapExtensionAllowed =
                 GAME_ENDING_CONTEXT_SAVED( g_fragLimitContextSaved, get_pcvar_num( cvar_mp_fraglimit ) ) < cache;
@@ -7099,7 +7099,7 @@ stock configureTheExtensionOption( bool:is_forced_voting )
     else if( g_endVotingType & IS_BY_ROUNDS
              && ( cache = Float:get_pcvar_num( cvar_maxMapExtendRounds ) ) )
     {
-        LOGGER( 4, "( configureTheExtensionOption ) 4. " )
+        LOG( 4, "( configureTheExtensionOption ) 4. " )
 
         g_isMapExtensionAllowed =
                 GAME_ENDING_CONTEXT_SAVED( g_maxRoundsContextSaved, get_pcvar_num( cvar_mp_maxrounds ) ) < cache;
@@ -7107,7 +7107,7 @@ stock configureTheExtensionOption( bool:is_forced_voting )
     else if( g_endVotingType & IS_BY_WINLIMIT
              && ( cache = get_pcvar_float( cvar_maxMapExtendRounds ) ) )
     {
-        LOGGER( 4, "( configureTheExtensionOption ) 5. " )
+        LOG( 4, "( configureTheExtensionOption ) 5. " )
 
         g_isMapExtensionAllowed =
                 GAME_ENDING_CONTEXT_SAVED( g_winLimitContextSaved, get_pcvar_num( cvar_mp_winlimit ) ) < cache;
@@ -7115,14 +7115,14 @@ stock configureTheExtensionOption( bool:is_forced_voting )
     else if( g_endVotingType & IS_BY_TIMER
              && ( cache = get_pcvar_float( cvar_maxMapExtendTime ) ) )
     {
-        LOGGER( 4, "( configureTheExtensionOption ) 6. " )
+        LOG( 4, "( configureTheExtensionOption ) 6. " )
 
         g_isMapExtensionAllowed =
                 GAME_ENDING_CONTEXT_SAVED( g_timeLimitContextSaved, get_pcvar_float( cvar_mp_timelimit ) ) < cache;
     }
     else
     {
-        LOGGER( 4, "( configureTheExtensionOption ) 7. " )
+        LOG( 4, "( configureTheExtensionOption ) 7. " )
         g_isMapExtensionAllowed = true;
     }
 
@@ -7132,10 +7132,10 @@ stock configureTheExtensionOption( bool:is_forced_voting )
                               || g_endVotingType & IS_BY_FRAGS )
                             && !is_forced_voting );
 
-    LOGGER( 4, "( configureTheExtensionOption ) g_endVotingType:         %d", g_endVotingType )
-    LOGGER( 4, "( configureTheExtensionOption ) is_forced_voting:        %d", is_forced_voting )
-    LOGGER( 4, "( configureTheExtensionOption ) g_isGameFinalVoting:     %d", g_isGameFinalVoting )
-    LOGGER( 4, "( configureTheExtensionOption ) g_isMapExtensionAllowed: %d", g_isMapExtensionAllowed )
+    LOG( 4, "( configureTheExtensionOption ) g_endVotingType:         %d", g_endVotingType )
+    LOG( 4, "( configureTheExtensionOption ) is_forced_voting:        %d", is_forced_voting )
+    LOG( 4, "( configureTheExtensionOption ) g_isGameFinalVoting:     %d", g_isGameFinalVoting )
+    LOG( 4, "( configureTheExtensionOption ) g_isMapExtensionAllowed: %d", g_isMapExtensionAllowed )
 }
 
 /**
@@ -7144,11 +7144,11 @@ stock configureTheExtensionOption( bool:is_forced_voting )
  */
 stock vote_startDirector( bool:is_forced_voting )
 {
-    LOGGER( 128, "I AM ENTERING ON vote_startDirector(1) is_forced_voting: %d", is_forced_voting )
+    LOG( 128, "I AM ENTERING ON vote_startDirector(1) is_forced_voting: %d", is_forced_voting )
 
     if( !approveTheVotingStart( is_forced_voting ) )
     {
-        LOGGER( 1, "    ( vote_startDirector ) Just Returning/blocking, the voting was not approved." )
+        LOG( 1, "    ( vote_startDirector ) Just Returning/blocking, the voting was not approved." )
         return;
     }
 
@@ -7183,9 +7183,9 @@ stock vote_startDirector( bool:is_forced_voting )
         finalizeVoting();
     }
 
-    LOGGER( 4, "" )
-    LOGGER( 4, "    ( vote_startDirector|out ) g_isTheLastGameRound: %d", g_isTheLastGameRound )
-    LOGGER( 4, "    ( vote_startDirector|out ) g_isTimeToRestart: %d, g_voteStatus & IS_FORCED_VOTE: %d", \
+    LOG( 4, "" )
+    LOG( 4, "    ( vote_startDirector|out ) g_isTheLastGameRound: %d", g_isTheLastGameRound )
+    LOG( 4, "    ( vote_startDirector|out ) g_isTimeToRestart: %d, g_voteStatus & IS_FORCED_VOTE: %d", \
             g_isTimeToRestart, g_voteStatus & IS_FORCED_VOTE != 0 )
 }
 
@@ -7198,8 +7198,8 @@ stock vote_startDirector( bool:is_forced_voting )
  */
 stock SortCustomSynced2D( array[][], arraySync[][], arraySize )
 {
-    LOGGER( 128, "I AM ENTERING ON SortCustomSynced2D(3) arraySize: %d", arraySize )
-    LOGGER( 0, "", printVotingMaps( array, arraySync ) )
+    LOG( 128, "I AM ENTERING ON SortCustomSynced2D(3) arraySize: %d", arraySize )
+    LOG( 0, "", printVotingMaps( array, arraySync ) )
 
     new outerIndex;
     new innerIndex;
@@ -7225,12 +7225,12 @@ stock SortCustomSynced2D( array[][], arraySync[][], arraySize )
         }
     }
 
-    LOGGER( 0, "", printVotingMaps( array, arraySync ) )
+    LOG( 0, "", printVotingMaps( array, arraySync ) )
 }
 
 stock initializeTheVoteDisplay()
 {
-    LOGGER( 128, "I AM ENTERING ON initializeTheVoteDisplay(0)" )
+    LOG( 128, "I AM ENTERING ON initializeTheVoteDisplay(0)" )
 
     new player_id;
     new playersCount;
@@ -7314,7 +7314,7 @@ stock initializeTheVoteDisplay()
 #endif
 
     // Set debug options
-    LOGGER( 0, "", configureVoteDisplayDebugging() )
+    LOG( 0, "", configureVoteDisplayDebugging() )
 
     // Display the map choices, 1 second from now
     set_task( handleChoicesDelay, "vote_handleDisplay", TASKID_VOTE_HANDLEDISPLAY );
@@ -7322,7 +7322,7 @@ stock initializeTheVoteDisplay()
 
 stock announceThePendingVoteTime( Float:time )
 {
-    LOGGER( 128, "I AM ENTERING ON announceThePendingVoteTime(1) time: %f", time )
+    LOG( 128, "I AM ENTERING ON announceThePendingVoteTime(1) time: %f", time )
 
     new targetTime = floatround( time, floatround_floor );
     color_print( 0, "%L", LANG_PLAYER, "DMAP_NEXTMAP_VOTE_REMAINING2", targetTime );
@@ -7338,7 +7338,7 @@ stock announceThePendingVoteTime( Float:time )
 
 public announceThePendingVote()
 {
-    LOGGER( 128, "I AM ENTERING ON announceThePendingVote(0)" )
+    LOG( 128, "I AM ENTERING ON announceThePendingVote(0)" )
 
     if( get_pcvar_num( cvar_isToAskForEndOfTheMapVote ) & END_OF_MAP_VOTE_ANNOUNCE1 )
     {
@@ -7354,7 +7354,7 @@ public announceThePendingVote()
 
 stock Float:getVoteAnnouncementTime( isToAskForEndOfTheMapVote )
 {
-    LOGGER( 128, "I AM ENTERING ON getVoteAnnouncementTime(0)" )
+    LOG( 128, "I AM ENTERING ON getVoteAnnouncementTime(0)" )
 
     if( isToAskForEndOfTheMapVote & END_OF_MAP_VOTE_NO_ANNOUNCEMENT )
     {
@@ -7383,13 +7383,13 @@ stock configureVoteDisplayDebugging()
     // Print the voting map options
     new voteOptions = ( g_totalVoteOptions == 1 ? 2 : g_totalVoteOptions );
 
-    LOGGER( 4, "" )
-    LOGGER( 4, "" )
-    LOGGER( 4, "   [PLAYER CHOICES]" )
+    LOG( 4, "" )
+    LOG( 4, "" )
+    LOG( 4, "   [PLAYER CHOICES]" )
 
     for( new dbgChoice = 0; dbgChoice < voteOptions; dbgChoice++ )
     {
-        LOGGER( 4, "      %i. %s %s", dbgChoice + 1, g_votingMapNames[ dbgChoice ], g_votingMapInfos[ dbgChoice ] )
+        LOG( 4, "      %i. %s %s", dbgChoice + 1, g_votingMapNames[ dbgChoice ], g_votingMapInfos[ dbgChoice ] )
     }
 
     return 0;
@@ -7397,7 +7397,7 @@ stock configureVoteDisplayDebugging()
 
 public pendingVoteCountdown()
 {
-    LOGGER( 128, "I AM ENTERING ON pendingVoteCountdown(0) g_pendingVoteCountdown: %d", g_pendingVoteCountdown )
+    LOG( 128, "I AM ENTERING ON pendingVoteCountdown(0) g_pendingVoteCountdown: %d", g_pendingVoteCountdown )
 
     if( get_pcvar_num( cvar_isToAskForEndOfTheMapVote ) & END_OF_MAP_VOTE_ASK
         && !( g_voteStatus & IS_RUNOFF_VOTE ) )
@@ -7432,7 +7432,7 @@ public pendingVoteCountdown()
 
 public displayEndOfTheMapVoteMenu( player_id )
 {
-    LOGGER( 128, "I AM ENTERING ON displayEndOfTheMapVoteMenu(1) player_id: %d", player_id )
+    LOG( 128, "I AM ENTERING ON displayEndOfTheMapVoteMenu(1) player_id: %d", player_id )
 
     static menu_body   [ MAX_LONG_STRING ];
     static menu_counter[ MAX_SHORT_STRING ];
@@ -7501,22 +7501,22 @@ public displayEndOfTheMapVoteMenu( player_id )
                 show_menu( player_id, menuKeys, menu_body, ( g_pendingVoteCountdown == 1 ? 1 : 2 ), CHOOSE_MAP_MENU_QUESTION );
             }
 
-            LOGGER( 4, " ( displayEndOfTheMapVoteMenu| for ) menu_body: %s", menu_body )
-            LOGGER( 4, "    menu_id:%d, menuKeys: %d, isVoting: %d, playerAnswered:%d, \
+            LOG( 4, " ( displayEndOfTheMapVoteMenu| for ) menu_body: %s", menu_body )
+            LOG( 4, "    menu_id:%d, menuKeys: %d, isVoting: %d, playerAnswered:%d, \
                     player_id: %d, playerIndex: %d", menu_id, menuKeys, isVoting, playerAnswered, \
                     player_id, playerIndex )
 
-            LOGGER( 4, "    playersCount: %d, g_pendingVoteCountdown: %d, menu_counter: %s", \
+            LOG( 4, "    playersCount: %d, g_pendingVoteCountdown: %d, menu_counter: %s", \
                     playersCount, g_pendingVoteCountdown, menu_counter )
         }
     }
 
-    LOGGER( 4, "%48s", " ( displayEndOfTheMapVoteMenu| out )" )
+    LOG( 4, "%48s", " ( displayEndOfTheMapVoteMenu| out )" )
 }
 
 public handleEndOfTheMapVoteChoice( player_id, pressedKeyCode )
 {
-    LOGGER( 128, "I AM ENTERING ON handleEndOfTheMapVoteChoice(2) player_id: %d, pressedKeyCode: %d", \
+    LOG( 128, "I AM ENTERING ON handleEndOfTheMapVoteChoice(2) player_id: %d, pressedKeyCode: %d", \
             player_id, pressedKeyCode )
 
     // pressedKeyCode 0 means the keyboard key 1
@@ -7534,7 +7534,7 @@ public handleEndOfTheMapVoteChoice( player_id, pressedKeyCode )
     {
         g_isPlayerClosedTheVoteMenu[ player_id ] = true;
 
-        LOGGER( 1, "    ( handleEndOfTheMapVoteChoice ) Returning PLUGIN_HANDLED" )
+        LOG( 1, "    ( handleEndOfTheMapVoteChoice ) Returning PLUGIN_HANDLED" )
         return PLUGIN_HANDLED;
     }
 
@@ -7543,13 +7543,13 @@ public handleEndOfTheMapVoteChoice( player_id, pressedKeyCode )
     // displayEndOfTheMapVoteMenu( player_id );
     set_task( 0.1, "displayEndOfTheMapVoteMenu", player_id );
 
-    LOGGER( 1, "    ( handleEndOfTheMapVoteChoice ) Returning PLUGIN_HANDLED" )
+    LOG( 1, "    ( handleEndOfTheMapVoteChoice ) Returning PLUGIN_HANDLED" )
     return PLUGIN_HANDLED;
 }
 
 public vote_handleDisplay()
 {
-    LOGGER( 128, "I AM ENTERING ON vote_handleDisplay(0)" )
+    LOG( 128, "I AM ENTERING ON vote_handleDisplay(0)" )
 
     // announce: "time to choose"
     if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_TIME_TO_CHOOSE ) )
@@ -7584,7 +7584,7 @@ public vote_handleDisplay()
 
 public tryToShowTheVotingMenu()
 {
-    LOGGER( 128, "I AM ENTERING ON tryToShowTheVotingMenu(0)" )
+    LOG( 128, "I AM ENTERING ON tryToShowTheVotingMenu(0)" )
 
     new player_id;
     new playersCount;
@@ -7612,7 +7612,7 @@ public tryToShowTheVotingMenu()
 
 public closeVoting()
 {
-    LOGGER( 128, "I AM ENTERING ON closeVoting(0)" )
+    LOG( 128, "I AM ENTERING ON closeVoting(0)" )
     new argument[ 2 ] = { false, -1 };
 
     // waits until the last voting second to finish
@@ -7625,7 +7625,7 @@ public closeVoting()
 
 public voteExpire()
 {
-    LOGGER( 128, "I AM ENTERING ON voteExpire(0)" )
+    LOG( 128, "I AM ENTERING ON voteExpire(0)" )
     g_voteStatus |= IS_VOTE_EXPIRED;
 
     // For the results to show up on the `Voting Results` menu.
@@ -7647,7 +7647,7 @@ public voteExpire()
  */
 public vote_display( argument[ 2 ] )
 {
-    LOGGER( 4, "I AM ENTERING ON vote_display(1)" )
+    LOG( 4, "I AM ENTERING ON vote_display(1)" )
     new menuKeys;
 
     static voteStatus    [ MAX_BIG_BOSS_STRING - 100 ];
@@ -7664,12 +7664,12 @@ public vote_display( argument[ 2 ] )
     // Update time remaining
     if( updateTimeRemaining ) g_votingSecondsRemaining--;
 
-    LOGGER( 4, "  ( votedisplay ) player_id: %d", argument[ 1 ]  )
-    LOGGER( 4, "  ( votedisplay ) g_voteStatus: %d", g_voteStatus )
-    LOGGER( 4, "  ( votedisplay ) updateTimeRemaining: %d", argument[ 0 ]  )
-    LOGGER( 4, "  ( votedisplay ) g_totalVoteOptions: %d", g_totalVoteOptions )
-    LOGGER( 4, "  ( votedisplay ) g_votingSecondsRemaining: %d", g_votingSecondsRemaining )
-    LOGGER( 4, "  ( votedisplay ) strlen( g_voteStatusClean ): %d", strlen( g_voteStatusClean )  )
+    LOG( 4, "  ( votedisplay ) player_id: %d", argument[ 1 ]  )
+    LOG( 4, "  ( votedisplay ) g_voteStatus: %d", g_voteStatus )
+    LOG( 4, "  ( votedisplay ) updateTimeRemaining: %d", argument[ 0 ]  )
+    LOG( 4, "  ( votedisplay ) g_totalVoteOptions: %d", g_totalVoteOptions )
+    LOG( 4, "  ( votedisplay ) g_votingSecondsRemaining: %d", g_votingSecondsRemaining )
+    LOG( 4, "  ( votedisplay ) strlen( g_voteStatusClean ): %d", strlen( g_voteStatusClean )  )
 
     // wipe the previous vote status
     voteStatus[ 0 ] = '^0';
@@ -7773,7 +7773,7 @@ public vote_display( argument[ 2 ] )
 
 stock dispaly_the_vote_sub_menu( player_id )
 {
-    LOGGER( 128, "I AM ENTERING ON dispaly_the_vote_sub_menu(1) player_id: %d", player_id )
+    LOG( 128, "I AM ENTERING ON dispaly_the_vote_sub_menu(1) player_id: %d", player_id )
     static menu_body[ MAX_LONG_STRING ];
 
     new      menuKeys    = MENU_KEY_0 | MENU_KEY_5;
@@ -7799,12 +7799,12 @@ stock dispaly_the_vote_sub_menu( player_id )
             player_id );
 
     display_vote_menu( true, player_id, menu_body, menuKeys );
-    LOGGER( 4, "%48s", " ( dispaly_the_vote_sub_menu| out )" )
+    LOG( 4, "%48s", " ( dispaly_the_vote_sub_menu| out )" )
 }
 
 stock processSubMenuKeyHit( player_id, key )
 {
-    LOGGER( 4, "I AM ENTERING ON processSubMenuKeyHit(2) player_id: %d, key: %d", player_id, key )
+    LOG( 4, "I AM ENTERING ON processSubMenuKeyHit(2) player_id: %d, key: %d", player_id, key )
 
     switch( key )
     {
@@ -7834,8 +7834,8 @@ stock processSubMenuKeyHit( player_id, key )
 
 stock addExtensionOption( player_id, copiedChars, voteStatus[], voteStatusLenght, menuKeys, bool:isToAddResults = true )
 {
-    LOGGER( 4, "I AM ENTERING ON addExtensionOption(6) player_id: %d", player_id )
-    LOGGER( 4, "( addExtensionOption ) voteStatusLenght: %d, menuKeys: %d, copiedChars: %d", voteStatusLenght, menuKeys, copiedChars )
+    LOG( 4, "I AM ENTERING ON addExtensionOption(6) player_id: %d", player_id )
+    LOG( 4, "( addExtensionOption ) voteStatusLenght: %d, menuKeys: %d, copiedChars: %d", voteStatusLenght, menuKeys, copiedChars )
 
     new bool:allowStay;
     new bool:allowExtend;
@@ -7862,7 +7862,7 @@ stock addExtensionOption( player_id, copiedChars, voteStatus[], voteStatusLenght
         }
     }
 
-    LOGGER( 4, "    ( addExtensionOption ) Add optional menu item, allowStay: %d, allowExtend: %d, \
+    LOG( 4, "    ( addExtensionOption ) Add optional menu item, allowStay: %d, allowExtend: %d, \
             g_isExtendmapAllowStay: %d", allowStay, allowExtend, g_isExtendmapAllowStay )
 
     // add optional menu item
@@ -7943,14 +7943,14 @@ stock addExtensionOption( player_id, copiedChars, voteStatus[], voteStatusLenght
         menuKeys |= ( 1 << g_totalVoteOptions );
     }
 
-    LOGGER( 256, "    ( addExtensionOption ) Returning menuKeys: %d", menuKeys )
+    LOG( 256, "    ( addExtensionOption ) Returning menuKeys: %d", menuKeys )
     return menuKeys;
 }
 
 stock display_menu_dirt( player_id, menuKeys, bool:isVoteOver, bool:noneIsHidden, voteStatus[] )
 {
-    LOGGER( 256, "I AM ENTERING ON display_menu_dirt(5) player_id: %d", player_id )
-    LOGGER( 256, "( display_menu_dirt ) menuKeys: %d, noneIsHidden: %d, isVoteOver: %d", menuKeys, noneIsHidden, isVoteOver )
+    LOG( 256, "I AM ENTERING ON display_menu_dirt(5) player_id: %d", player_id )
+    LOG( 256, "( display_menu_dirt ) menuKeys: %d, noneIsHidden: %d, isVoteOver: %d", menuKeys, noneIsHidden, isVoteOver )
 
     new bool:isToShowUndo;
     new bool:isToAddExtraLine;
@@ -8067,8 +8067,8 @@ stock display_menu_dirt( player_id, menuKeys, bool:isVoteOver, bool:noneIsHidden
 
 stock computeVoteMenuFooter( player_id, voteFooter[], voteFooterSize )
 {
-    LOGGER( 256, "I AM ENTERING ON computeVoteMenuFooter(3) player_id: %d", player_id )
-    LOGGER( 256, "( computeVoteMenuFooter ) voteFooterSize: %d", voteFooterSize )
+    LOG( 256, "I AM ENTERING ON computeVoteMenuFooter(3) player_id: %d", player_id )
+    LOG( 256, "( computeVoteMenuFooter ) voteFooterSize: %d", voteFooterSize )
 
     new copiedChars;
     copiedChars = copy( voteFooter, voteFooterSize, "^n^n" );
@@ -8097,9 +8097,9 @@ stock computeVoteMenuFooter( player_id, voteFooter[], voteFooterSize )
 
 stock computeUndoButton( player_id, bool:isToShowUndo, bool:isVoteOver, noneOption[], noneOptionSize )
 {
-    LOGGER( 256, "I AM ENTERING ON computeUndoButton(5) player_id: %d", player_id )
-    LOGGER( 256, "( computeUndoButton ) isToShowUndo: %d", isToShowUndo )
-    LOGGER( 256, "( computeUndoButton ) noneOption: %s, noneOptionSize: %d", noneOption, noneOptionSize )
+    LOG( 256, "I AM ENTERING ON computeUndoButton(5) player_id: %d", player_id )
+    LOG( 256, "( computeUndoButton ) isToShowUndo: %d", isToShowUndo )
+    LOG( 256, "( computeUndoButton ) noneOption: %s, noneOptionSize: %d", noneOption, noneOptionSize )
 
     new bool:isToAddExtraLine = ( g_voteStatus & IS_RUNOFF_VOTE
                                   || !IS_MAP_EXTENSION_ALLOWED()
@@ -8169,8 +8169,8 @@ stock computeUndoButton( player_id, bool:isToShowUndo, bool:isVoteOver, noneOpti
 
 stock display_menu_clean( player_id, menuKeys )
 {
-    LOGGER( 256, "I AM ENTERING ON display_menu_clean(2) player_id: %d", player_id )
-    LOGGER( 256, "( display_menu_clean ) menuKeys: %d", menuKeys )
+    LOG( 256, "I AM ENTERING ON display_menu_clean(2) player_id: %d", player_id )
+    LOG( 256, "( display_menu_clean ) menuKeys: %d", menuKeys )
 
     new bool:isToShowUndo;
     new bool:isToAddExtraLine;
@@ -8254,9 +8254,9 @@ stock display_menu_clean( player_id, menuKeys )
 
 stock display_vote_menu( bool:menuType, player_id, menuBody[], menuKeys )
 {
-    LOGGER( 128, "I AM ENTERING ON display_vote_menu(4) menuType: %d", menuType )
-    LOGGER( 4, "( display_vote_menu ) player_id: %d", player_id )
-    LOGGER( 4, "( display_vote_menu ) menuBody: %s, menuKeys: %d", menuBody, menuKeys )
+    LOG( 128, "I AM ENTERING ON display_vote_menu(4) menuType: %d", menuType )
+    LOG( 4, "( display_vote_menu ) player_id: %d", player_id )
+    LOG( 4, "( display_vote_menu ) menuBody: %s, menuKeys: %d", menuBody, menuKeys )
 
     if( isPlayerAbleToSeeTheVoteMenu( player_id ) )
     {
@@ -8268,7 +8268,7 @@ stock display_vote_menu( bool:menuType, player_id, menuBody[], menuKeys )
 
 stock isPlayerAbleToSeeTheVoteMenu( player_id )
 {
-    LOGGER( 128, "I AM ENTERING ON isPlayerAbleToSeeTheVoteMenu(1) player_id: %d", player_id )
+    LOG( 128, "I AM ENTERING ON isPlayerAbleToSeeTheVoteMenu(1) player_id: %d", player_id )
 
     new menu_id;
     new menuKeys_unused;
@@ -8282,13 +8282,13 @@ stock isPlayerAbleToSeeTheVoteMenu( player_id )
 
 public vote_handleChoice( player_id, key )
 {
-    LOGGER( 128, "I AM ENTERING ON vote_handleChoice(2) player_id: %d, key: %d", player_id, key )
+    LOG( 128, "I AM ENTERING ON vote_handleChoice(2) player_id: %d, key: %d", player_id, key )
 
     if( g_voteStatus & IS_VOTE_EXPIRED )
     {
         client_cmd( player_id, "^"slot%i^"", key + 1 );
 
-        LOGGER( 1, "    ( vote_handleChoice ) Just Returning/blocking, slot key pressed." )
+        LOG( 1, "    ( vote_handleChoice ) Just Returning/blocking, slot key pressed." )
         return;
     }
 
@@ -8355,7 +8355,7 @@ stock reshowTheVoteMenu( player_id )
 
 stock cancel_player_vote( player_id )
 {
-    LOGGER( 128, "I AM ENTERING ON cancel_player_vote(1) player_id: %d", player_id )
+    LOG( 128, "I AM ENTERING ON cancel_player_vote(1) player_id: %d", player_id )
     new voteWeight = g_playerVotedWeight[ player_id ];
 
     g_isPlayerVoted[ player_id ]         = false;
@@ -8374,7 +8374,7 @@ stock cancel_player_vote( player_id )
  */
 stock register_vote( player_id, pressedKeyCode )
 {
-    LOGGER( 128, "I AM ENTERING ON register_vote(2) player_id: %d, pressedKeyCode: %d", player_id, pressedKeyCode )
+    LOG( 128, "I AM ENTERING ON register_vote(2) player_id: %d, pressedKeyCode: %d", player_id, pressedKeyCode )
 
     announceRegistedVote( player_id, pressedKeyCode );
     g_isPlayerVoted[ player_id ] = true;
@@ -8418,7 +8418,7 @@ stock register_vote( player_id, pressedKeyCode )
 
 stock announceRegistedVote( player_id, pressedKeyCode )
 {
-    LOGGER( 128, "I AM ENTERING ON announceRegistedVote(2) player_id: %d, pressedKeyCode: %d", player_id, pressedKeyCode )
+    LOG( 128, "I AM ENTERING ON announceRegistedVote(2) player_id: %d, pressedKeyCode: %d", player_id, pressedKeyCode )
 
     new player_name[ MAX_PLAYER_NAME_LENGHT ];
     new bool:isToAnnounceChoice = get_pcvar_num( cvar_voteAnnounceChoice ) != 0;
@@ -8431,7 +8431,7 @@ stock announceRegistedVote( player_id, pressedKeyCode )
     // confirm the player's choice (pressedKeyCode = 9 means 0 on the keyboard, 8 is 7, etc)
     if( pressedKeyCode == 9 )
     {
-        LOGGER( 4, "      %-32s ( none )", player_name )
+        LOG( 4, "      %-32s ( none )", player_name )
 
         if( isToAnnounceChoice )
         {
@@ -8448,7 +8448,7 @@ stock announceRegistedVote( player_id, pressedKeyCode )
         // ( we can make it here from the vote status menu too )
         if( !g_isPlayerVoted[ player_id ] )
         {
-            LOGGER( 4, "      %-32s ( extend )", player_name )
+            LOG( 4, "      %-32s ( extend )", player_name )
 
             if( g_isGameFinalVoting )
             {
@@ -8476,7 +8476,7 @@ stock announceRegistedVote( player_id, pressedKeyCode )
     }
     else
     {
-        LOGGER( 4, "      %-32s %s", player_name, g_votingMapNames[ pressedKeyCode ] )
+        LOG( 4, "      %-32s %s", player_name, g_votingMapNames[ pressedKeyCode ] )
 
         if( isToAnnounceChoice )
         {
@@ -8493,7 +8493,7 @@ stock announceRegistedVote( player_id, pressedKeyCode )
 
 stock computeMapVotingCount( mapVotingCount[], mapVotingCountLength, voteIndex, bool:isToAddResults = true )
 {
-    LOGGER( 256, "I AM ENTERING ON computeMapVotingCount(3) mapVotingCount: %s, mapVotingCountLength: %d, \
+    LOG( 256, "I AM ENTERING ON computeMapVotingCount(3) mapVotingCount: %s, mapVotingCountLength: %d, \
             voteIndex: %d", mapVotingCount, mapVotingCountLength, voteIndex )
 
     new voteCountNumber = g_arrayOfMapsWithVotesNumber[ voteIndex ];
@@ -8543,30 +8543,30 @@ stock computeMapVotingCount( mapVotingCount[], mapVotingCountLength, voteIndex, 
         mapVotingCount[ 0 ] = '^0';
     }
 
-    LOGGER( 256, " ( computeMapVotingCount ) g_showVoteStatus: %d, g_showVoteStatusType: %d, voteCountNumber: %d", \
+    LOG( 256, " ( computeMapVotingCount ) g_showVoteStatus: %d, g_showVoteStatusType: %d, voteCountNumber: %d", \
             g_showVoteStatus, g_showVoteStatusType, voteCountNumber )
 }
 
 stock showPlayersVoteResult()
 {
-    LOGGER( 128, "I AM ENTERING ON showPlayersVoteResult(0)" )
+    LOG( 128, "I AM ENTERING ON showPlayersVoteResult(0)" )
     new mapVotingCount[ 32 ];
 
-    LOGGER( 4, "" )
-    LOGGER( 4, "   [VOTE RESULT]" )
+    LOG( 4, "" )
+    LOG( 4, "   [VOTE RESULT]" )
 
     for( new playerVoteMapChoiceIndex = 0; playerVoteMapChoiceIndex <= g_totalVoteOptions;
          ++playerVoteMapChoiceIndex )
     {
         computeMapVotingCount( mapVotingCount, charsmax( mapVotingCount ), playerVoteMapChoiceIndex );
 
-        LOGGER( 4, "      %2i/%-2i, %i. %s %s", \
+        LOG( 4, "      %2i/%-2i, %i. %s %s", \
                 g_arrayOfMapsWithVotesNumber[ playerVoteMapChoiceIndex ], g_totalVotesCounted, \
                 playerVoteMapChoiceIndex, g_votingMapNames[ playerVoteMapChoiceIndex ], \
                 g_votingMapInfos[ playerVoteMapChoiceIndex ] )
     }
 
-    LOGGER( 4, "" )
+    LOG( 4, "" )
     return 0;
 }
 
@@ -8603,7 +8603,7 @@ stock showPlayersVoteResult()
  */
 stock getUniqueRandomInteger( Array:holder, minimum = MIN_INTEGER, maximum = MIN_INTEGER, restart = true )
 {
-    LOGGER( 128, "I AM ENTERING ON getUniqueRandomInteger(2) range: %d-%d", minimum, maximum )
+    LOG( 128, "I AM ENTERING ON getUniqueRandomInteger(2) range: %d-%d", minimum, maximum )
     static lastMaximum = MIN_INTEGER;
 
     new randomIndex;
@@ -8614,7 +8614,7 @@ stock getUniqueRandomInteger( Array:holder, minimum = MIN_INTEGER, maximum = MIN
         || ( restart
              && holderSize < 1 ) )
     {
-        LOGGER( 1, "( getUniqueRandomInteger ) Reseting the sequence, ArraySize: %d", holderSize )
+        LOG( 1, "( getUniqueRandomInteger ) Reseting the sequence, ArraySize: %d", holderSize )
 
         lastMaximum = maximum;
         TRY_TO_APPLY( ArrayClear, holder )
@@ -8631,7 +8631,7 @@ stock getUniqueRandomInteger( Array:holder, minimum = MIN_INTEGER, maximum = MIN
         return -1;
     }
 
-    LOGGER( 1, "( getUniqueRandomInteger ) ArraySize: %d", ArraySize( holder ) )
+    LOG( 1, "( getUniqueRandomInteger ) ArraySize: %d", ArraySize( holder ) )
     --holderSize;
 
     // Get a unique random value
@@ -8643,7 +8643,7 @@ stock getUniqueRandomInteger( Array:holder, minimum = MIN_INTEGER, maximum = MIN
     ArraySwap( holder, randomIndex, holderSize );
     ArrayDeleteItem( holder, holderSize );
 
-    LOGGER( 1, "    ( getUniqueRandomInteger ) %d. Just Returning the random integer: %d", holderSize, returnValue )
+    LOG( 1, "    ( getUniqueRandomInteger ) %d. Just Returning the random integer: %d", holderSize, returnValue )
     return returnValue;
 }
 
@@ -8660,7 +8660,7 @@ stock getUniqueRandomInteger( Array:holder, minimum = MIN_INTEGER, maximum = MIN
  */
 stock getUniqueRandomIntegerBasic( sequence, maximum )
 {
-    LOGGER( 128, "I AM ENTERING ON getUniqueRandomIntegerBasic(2) maximum: %d", maximum )
+    LOG( 128, "I AM ENTERING ON getUniqueRandomIntegerBasic(2) maximum: %d", maximum )
     static maximumBitField;
 
     static lastSequence   = -1;
@@ -8691,22 +8691,22 @@ stock getUniqueRandomIntegerBasic( sequence, maximum )
             // Set bit on the sortedIntegers bit-field, so the integer will now be considered selected
             sortedIntegers |= ( 1 << randomInteger );
 
-            LOGGER( 1, "    ( getUniqueRandomIntegerBasic ) %d. Just Returning the random integer: %d", sequence, randomInteger )
+            LOG( 1, "    ( getUniqueRandomIntegerBasic ) %d. Just Returning the random integer: %d", sequence, randomInteger )
             return randomInteger;
         }
     }
 
-    LOGGER( 1, "    ( getUniqueRandomIntegerBasic ) %d. Just Returning the random integer: %d", sequence, -1 )
+    LOG( 1, "    ( getUniqueRandomIntegerBasic ) %d. Just Returning the random integer: %d", sequence, -1 )
     return -1;
 }
 
 stock printIntegerArray( level, integerArray[], arrayName[], integerArraySize )
 {
-    LOGGER( 128, "I AM ENTERING ON printIntegerArray(4) integerArraySize: %d", integerArraySize )
+    LOG( 128, "I AM ENTERING ON printIntegerArray(4) integerArraySize: %d", integerArraySize )
 
     for( new index = 0; index < integerArraySize; index++ )
     {
-        LOGGER( level, "( printIntegerArray ) %s: %d", arrayName, integerArray[ index ] )
+        LOG( level, "( printIntegerArray ) %s: %d", arrayName, integerArray[ index ] )
     }
 
     return 0;
@@ -8714,11 +8714,11 @@ stock printIntegerArray( level, integerArray[], arrayName[], integerArraySize )
 
 stock printRunOffMaps( runOffMapsCount )
 {
-    LOGGER( 128, "I AM ENTERING ON printRunOffMaps(1) runOffMapsCount: %d", runOffMapsCount )
+    LOG( 128, "I AM ENTERING ON printRunOffMaps(1) runOffMapsCount: %d", runOffMapsCount )
 
     for( new index = 0; index < runOffMapsCount; index++ )
     {
-        LOGGER( 16, "( printRunOffMaps ) RunOff map %d: %s", index, g_votingMapNames[ g_arrayOfRunOffChoices[ index ] ] )
+        LOG( 16, "( printRunOffMaps ) RunOff map %d: %s", index, g_votingMapNames[ g_arrayOfRunOffChoices[ index ] ] )
     }
 
     return 0;
@@ -8726,8 +8726,8 @@ stock printRunOffMaps( runOffMapsCount )
 
 stock handleMoreThanTwoMapsAtFirst( firstPlaceChoices[], numberOfMapsAtFirstPosition )
 {
-    LOGGER( 128, "I AM ENTERING ON handleMoreThanTwoMapsAtFirst(2)" )
-    LOGGER( 0, "", printIntegerArray( 16, firstPlaceChoices, "firstPlaceChoices", numberOfMapsAtFirstPosition ) )
+    LOG( 128, "I AM ENTERING ON handleMoreThanTwoMapsAtFirst(2)" )
+    LOG( 0, "", printIntegerArray( 16, firstPlaceChoices, "firstPlaceChoices", numberOfMapsAtFirstPosition ) )
 
     new seedValue;
     new randomInteger;
@@ -8761,8 +8761,8 @@ stock handleMoreThanTwoMapsAtFirst( firstPlaceChoices[], numberOfMapsAtFirstPosi
         g_arrayOfRunOffChoices[ voteOptionIndex ] = firstPlaceChoices[ randomInteger ];
     }
 
-    LOGGER( 16, "( handleMoreThanTwoMapsAtFirst ) Number of Maps at First Position > 2" )
-    LOGGER( 0, "", printRunOffMaps( g_totalVoteOptions ) )
+    LOG( 16, "( handleMoreThanTwoMapsAtFirst ) Number of Maps at First Position > 2" )
+    LOG( 0, "", printRunOffMaps( g_totalVoteOptions ) )
 
     color_print( 0, "%L", LANG_PLAYER, "GAL_RESULT_TIED1", numberOfMapsAtFirstPosition );
 }
@@ -8770,7 +8770,7 @@ stock handleMoreThanTwoMapsAtFirst( firstPlaceChoices[], numberOfMapsAtFirstPosi
 stock startRunoffVoting( firstPlaceChoices[], secondPlaceChoices[], numberOfMapsAtFirstPosition,
                          numberOfMapsAtSecondPosition )
 {
-    LOGGER( 128, "I AM ENTERING ON startRunoffVoting(4)" )
+    LOG( 128, "I AM ENTERING ON startRunoffVoting(4)" )
     new votePercent = floatround( 100 * get_pcvar_float( cvar_runoffRatio ), floatround_ceil );
 
     // announce runoff voting requirement
@@ -8812,7 +8812,7 @@ stock startRunoffVoting( firstPlaceChoices[], secondPlaceChoices[], numberOfMaps
 
 stock handleTwoMapsAtFirstPosition( firstPlaceChoices[] )
 {
-    LOGGER( 128, "I AM ENTERING ON handleTwoMapsAtFirstPosition(1)" )
+    LOG( 128, "I AM ENTERING ON handleTwoMapsAtFirstPosition(1)" )
 
     if( firstPlaceChoices[ 0 ] == g_totalVoteOptions )
     {
@@ -8833,13 +8833,13 @@ stock handleTwoMapsAtFirstPosition( firstPlaceChoices[] )
         g_arrayOfRunOffChoices[ 1 ] = firstPlaceChoices[ 1 ];
     }
 
-    LOGGER( 16, "( handleTwoMapsAtFirstPosition ) Number of Maps at First Position == 2" )
-    LOGGER( 0, "", printRunOffMaps( g_totalVoteOptions ) )
+    LOG( 16, "( handleTwoMapsAtFirstPosition ) Number of Maps at First Position == 2" )
+    LOG( 0, "", printRunOffMaps( g_totalVoteOptions ) )
 }
 
 stock handleOneMapAtSecondPosition( firstPlaceChoices[], secondPlaceChoices[] )
 {
-    LOGGER( 128, "I AM ENTERING ON handleOneMapAtSecondPosition(2)" )
+    LOG( 128, "I AM ENTERING ON handleOneMapAtSecondPosition(2)" )
 
     if( firstPlaceChoices[ 0 ] == g_totalVoteOptions )
     {
@@ -8860,8 +8860,8 @@ stock handleOneMapAtSecondPosition( firstPlaceChoices[], secondPlaceChoices[] )
         g_arrayOfRunOffChoices[ 1 ] = secondPlaceChoices[ 0 ];
     }
 
-    LOGGER( 16, "( handleOneMapAtSecondPosition ) Number of Maps at Second Position == 1" )
-    LOGGER( 0, "", printRunOffMaps( g_totalVoteOptions ) )
+    LOG( 16, "( handleOneMapAtSecondPosition ) Number of Maps at Second Position == 1" )
+    LOG( 0, "", printRunOffMaps( g_totalVoteOptions ) )
 }
 
 /**
@@ -8879,7 +8879,7 @@ stock handleOneMapAtSecondPosition( firstPlaceChoices[], secondPlaceChoices[] )
  */
 stock handleOneMapAtFirstPosition( firstPlaceChoices[], secondPlaceChoices[], numberOfMapsAtSecondPosition )
 {
-    LOGGER( 128, "I AM ENTERING ON handleOneMapAtFirstPosition(3)" )
+    LOG( 128, "I AM ENTERING ON handleOneMapAtFirstPosition(3)" )
     new randonNumber = random_num( 0, numberOfMapsAtSecondPosition - 1 );
 
     if( firstPlaceChoices[ 0 ] == g_totalVoteOptions )
@@ -8901,8 +8901,8 @@ stock handleOneMapAtFirstPosition( firstPlaceChoices[], secondPlaceChoices[], nu
         g_arrayOfRunOffChoices[ 1 ] = secondPlaceChoices[ randonNumber ];
     }
 
-    LOGGER( 16, "( handleOneMapAtFirstPosition ) Number of Maps at First Position == 1 && At Second Position > 1" )
-    LOGGER( 0, "", printRunOffMaps( g_totalVoteOptions ) )
+    LOG( 16, "( handleOneMapAtFirstPosition ) Number of Maps at First Position == 1 && At Second Position > 1" )
+    LOG( 0, "", printRunOffMaps( g_totalVoteOptions ) )
 
     color_print( 0, "%L", LANG_PLAYER, "GAL_RESULT_TIED2", numberOfMapsAtSecondPosition );
 }
@@ -8911,7 +8911,7 @@ stock determineTheVotingFirstChoices( firstPlaceChoices[], secondPlaceChoices[],
                                       &numberOfVotesAtSecondPlace, &numberOfMapsAtFirstPosition,
                                       &numberOfMapsAtSecondPosition )
 {
-    LOGGER( 128, "I AM ENTERING ON determineTheVotingFirstChoices(6)" )
+    LOG( 128, "I AM ENTERING ON determineTheVotingFirstChoices(6)" )
 
     new playerVoteMapChoiceIndex;
     new bool:isRunoffVoting = ( g_voteStatus & IS_RUNOFF_VOTE ) != 0;
@@ -8941,7 +8941,7 @@ stock determineTheVotingFirstChoices( firstPlaceChoices[], secondPlaceChoices[],
     for( playerVoteMapChoiceIndex = 0; playerVoteMapChoiceIndex < maxVotingChoices;
          ++playerVoteMapChoiceIndex )
     {
-        LOGGER( 16, "Inside the for to determine which maps are in 1st and 2nd places, \
+        LOG( 16, "Inside the for to determine which maps are in 1st and 2nd places, \
                 g_arrayOfMapsWithVotesNumber[%d] = %d ", playerVoteMapChoiceIndex, \
                 g_arrayOfMapsWithVotesNumber[ playerVoteMapChoiceIndex ] )
 
@@ -8956,21 +8956,21 @@ stock determineTheVotingFirstChoices( firstPlaceChoices[], secondPlaceChoices[],
     }
 
     // At for: g_totalVoteOptions: 5, numberOfMapsAtFirstPosition: 3, numberOfMapsAtSecondPosition: 0
-    LOGGER( 16, "After for to determine which maps are in 1st and 2nd places." )
-    LOGGER( 16, "maxVotingChoices: %d, isRunoffVoting: %d", maxVotingChoices, isRunoffVoting )
-    LOGGER( 16, "g_totalVoteOptions: %d", g_totalVoteOptions )
-    LOGGER( 16, "numberOfMapsAtFirstPosition: %d", numberOfMapsAtFirstPosition )
-    LOGGER( 16, "numberOfMapsAtSecondPosition: %d", numberOfMapsAtSecondPosition )
+    LOG( 16, "After for to determine which maps are in 1st and 2nd places." )
+    LOG( 16, "maxVotingChoices: %d, isRunoffVoting: %d", maxVotingChoices, isRunoffVoting )
+    LOG( 16, "g_totalVoteOptions: %d", g_totalVoteOptions )
+    LOG( 16, "numberOfMapsAtFirstPosition: %d", numberOfMapsAtFirstPosition )
+    LOG( 16, "numberOfMapsAtSecondPosition: %d", numberOfMapsAtSecondPosition )
 
-    LOGGER( 1, "( determineTheVotingFirstChoices ) g_isTheLastGameRound: %d", g_isTheLastGameRound )
-    LOGGER( 1, "( determineTheVotingFirstChoices ) g_isTimeToRestart: %d", g_isTimeToRestart )
-    LOGGER( 1, "( determineTheVotingFirstChoices ) g_voteStatus & IS_FORCED_VOTE: %d", g_voteStatus & IS_FORCED_VOTE != 0 )
+    LOG( 1, "( determineTheVotingFirstChoices ) g_isTheLastGameRound: %d", g_isTheLastGameRound )
+    LOG( 1, "( determineTheVotingFirstChoices ) g_isTimeToRestart: %d", g_isTimeToRestart )
+    LOG( 1, "( determineTheVotingFirstChoices ) g_voteStatus & IS_FORCED_VOTE: %d", g_voteStatus & IS_FORCED_VOTE != 0 )
 }
 
 public computeVotes()
 {
-    LOGGER( 128, "I AM ENTERING ON computeVotes(0)" )
-    LOGGER( 0, "", showPlayersVoteResult() )
+    LOG( 128, "I AM ENTERING ON computeVotes(0)" )
+    LOG( 0, "", showPlayersVoteResult() )
 
     new numberOfVotesAtFirstPlace;
     new numberOfVotesAtSecondPlace;
@@ -9000,7 +9000,7 @@ public computeVotes()
                 startRunoffVoting( firstPlaceChoices, secondPlaceChoices, numberOfMapsAtFirstPosition,
                         numberOfMapsAtSecondPosition );
 
-                LOGGER( 1, "    ( computeVotes ) Just Returning/blocking, its runoff starting." )
+                LOG( 1, "    ( computeVotes ) Just Returning/blocking, its runoff starting." )
                 return;
             }
             else if( runoffEnabled == RUNOFF_EXTEND
@@ -9016,7 +9016,7 @@ public computeVotes()
                     stayHereWon( "GAL_RUNOFF_REQUIRED_TOP" );
                 }
 
-                LOGGER( 1, "( computeVotes ) Its runoff extending." )
+                LOG( 1, "( computeVotes ) Its runoff extending." )
             }
             else
             {
@@ -9033,8 +9033,8 @@ public computeVotes()
         chooseRandomVotingWinner();
     }
 
-    LOGGER( 1, "    ( computeVotes|out ) g_isTheLastGameRound: %d", g_isTheLastGameRound )
-    LOGGER( 1, "    ( computeVotes|out ) g_isTimeToRestart: %d, g_voteStatus & IS_FORCED_VOTE: %d", \
+    LOG( 1, "    ( computeVotes|out ) g_isTheLastGameRound: %d", g_isTheLastGameRound )
+    LOG( 1, "    ( computeVotes|out ) g_isTimeToRestart: %d, g_voteStatus & IS_FORCED_VOTE: %d", \
             g_isTimeToRestart, g_voteStatus & IS_FORCED_VOTE != 0 )
 
     finalizeVoting();
@@ -9042,7 +9042,7 @@ public computeVotes()
 
 stock stayHereWon( const reason[] )
 {
-    LOGGER( 128, "I AM ENTERING ON stayHereWon(0)" )
+    LOG( 128, "I AM ENTERING ON stayHereWon(0)" )
 
     color_print( 0, "%L: %L", LANG_PLAYER, reason, LANG_PLAYER, "GAL_WINNER_STAY2" );
     toShowTheMapStayHud( "GAL_VOTE_ENDED", reason, "GAL_WINNER_STAY1" );
@@ -9054,7 +9054,7 @@ stock stayHereWon( const reason[] )
 
 stock chooseTheVotingMapWinner( firstPlaceChoices[], numberOfMapsAtFirstPosition )
 {
-    LOGGER( 128, "I AM ENTERING ON chooseTheVotingMapWinner(2)" )
+    LOG( 128, "I AM ENTERING ON chooseTheVotingMapWinner(2)" )
     new winnerVoteMapIndex;
 
     // If there is a tie for 1st, randomly select one as the winner
@@ -9070,8 +9070,8 @@ stock chooseTheVotingMapWinner( firstPlaceChoices[], numberOfMapsAtFirstPosition
         winnerVoteMapIndex = firstPlaceChoices[ 0 ];
     }
 
-    LOGGER( 1, "    ( chooseTheVotingMapWinner ) g_isTheLastGameRound: %d ", g_isTheLastGameRound )
-    LOGGER( 1, "    ( chooseTheVotingMapWinner ) g_isTimeToRestart: %d, g_voteStatus & IS_FORCED_VOTE: %d", \
+    LOG( 1, "    ( chooseTheVotingMapWinner ) g_isTheLastGameRound: %d ", g_isTheLastGameRound )
+    LOG( 1, "    ( chooseTheVotingMapWinner ) g_isTimeToRestart: %d, g_voteStatus & IS_FORCED_VOTE: %d", \
             g_isTimeToRestart, g_voteStatus & IS_FORCED_VOTE != 0 )
 
     // winnerVoteMapIndex == g_totalVoteOptions, means the 'Stay Here' option.
@@ -9087,7 +9087,7 @@ stock chooseTheVotingMapWinner( firstPlaceChoices[], numberOfMapsAtFirstPosition
                 // When the stay here option is called, there is anyone else trying to show action menu,
                 // therefore invoke it before continuing.
                 openTheVoteMapActionMenu();
-                LOGGER( 1, "    ( chooseTheVotingMapWinner ) Just opened the menu due g_voteMapStatus: %d", g_voteMapStatus )
+                LOG( 1, "    ( chooseTheVotingMapWinner ) Just opened the menu due g_voteMapStatus: %d", g_voteMapStatus )
             }
 
             stayHereWon( "DMAP_MAP_EXTENDED1" );
@@ -9131,7 +9131,7 @@ stock chooseTheVotingMapWinner( firstPlaceChoices[], numberOfMapsAtFirstPosition
 
 stock noLongerIsAnEarlyVoting()
 {
-    LOGGER( 128, "I AM ENTERING ON noLongerIsAnEarlyVoting(0)" )
+    LOG( 128, "I AM ENTERING ON noLongerIsAnEarlyVoting(0)" )
 
     // We are extending the map as result of the voting outcome, so reset the ending round variables.
     resetRoundEnding();
@@ -9143,7 +9143,7 @@ stock noLongerIsAnEarlyVoting()
 
 stock chooseRandomVotingWinner()
 {
-    LOGGER( 128, "I AM ENTERING ON chooseRandomVotingWinner(1) isExtendmapOrderAllowed: %d", get_pcvar_num( cvar_isExtendmapOrderAllowed ) )
+    LOG( 128, "I AM ENTERING ON chooseRandomVotingWinner(1) isExtendmapOrderAllowed: %d", get_pcvar_num( cvar_isExtendmapOrderAllowed ) )
 
     switch( get_pcvar_num( cvar_isExtendmapOrderAllowed ) )
     {
@@ -9183,7 +9183,7 @@ stock chooseRandomVotingWinner()
 
 stock resetVoteTypeGlobals()
 {
-    LOGGER( 128, "I AM ENTERING ON resetVoteTypeGlobals(0)" )
+    LOG( 128, "I AM ENTERING ON resetVoteTypeGlobals(0)" )
 
     g_endVotingType                 = 0;
     g_isRunOffNeedingKeepCurrentMap = false;
@@ -9194,7 +9194,7 @@ stock resetVoteTypeGlobals()
  */
 stock finalizeVoting()
 {
-    LOGGER( 128, "I AM ENTERING ON finalizeVoting(0)" )
+    LOG( 128, "I AM ENTERING ON finalizeVoting(0)" )
 
     // As the voting has ended, reset the voting ending type.
     resetVoteTypeGlobals();
@@ -9215,13 +9215,13 @@ stock finalizeVoting()
 
 stock Float:map_getMinutesElapsed()
 {
-    LOGGER( 128, "I AM ENTERING ON Float:map_getMinutesElapsed(0) mp_timelimit: %f", get_pcvar_float( cvar_mp_timelimit ) )
+    LOG( 128, "I AM ENTERING ON Float:map_getMinutesElapsed(0) mp_timelimit: %f", get_pcvar_float( cvar_mp_timelimit ) )
     return get_pcvar_float( cvar_mp_timelimit ) - ( float( get_timeleft() ) / 60.0 );
 }
 
 stock map_getMinutesElapsedInteger()
 {
-    LOGGER( 128, "I AM ENTERING ON Float:map_getMinutesElapsed(0) mp_timelimit: %f", get_pcvar_float( cvar_mp_timelimit ) )
+    LOG( 128, "I AM ENTERING ON Float:map_getMinutesElapsed(0) mp_timelimit: %f", get_pcvar_float( cvar_mp_timelimit ) )
 
     // While the Unit Tests are running, to force a specific time.
 #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
@@ -9235,7 +9235,7 @@ stock map_getMinutesElapsedInteger()
 
 stock toAnnounceTheMapExtension( const lang[] )
 {
-    LOGGER( 128, "I AM ENTERING ON toAnnounceTheMapExtension(1) lang: %s", lang )
+    LOG( 128, "I AM ENTERING ON toAnnounceTheMapExtension(1) lang: %s", lang )
 
     if( g_endVotingType & ( IS_BY_ROUNDS | IS_BY_WINLIMIT ) )
     {
@@ -9256,7 +9256,7 @@ stock toAnnounceTheMapExtension( const lang[] )
 
 stock toShowTheMapExtensionHud( const lang1[], const lang2[], const lang3[], extend_step )
 {
-    LOGGER( 128, "I AM ENTERING ON toShowTheMapExtensionHud(4) lang2: %s, lang3: %s, extend_step: %d", lang2, lang3, extend_step )
+    LOG( 128, "I AM ENTERING ON toShowTheMapExtensionHud(4) lang2: %s, lang3: %s, extend_step: %d", lang2, lang3, extend_step )
 
     if( !( get_pcvar_num( cvar_hudsHide ) & HUD_VOTE_RESULTS_ANNOUNCE ) )
     {
@@ -9277,7 +9277,7 @@ stock toShowTheMapExtensionHud( const lang1[], const lang2[], const lang3[], ext
 
 stock toShowTheMapStayHud( const lang1[], const lang2[], const lang3[] )
 {
-    LOGGER( 128, "I AM ENTERING ON toShowTheMapStayHud(3) lang1: %s, lang2: %s, lang3: %s", lang1, lang2, lang3 )
+    LOG( 128, "I AM ENTERING ON toShowTheMapStayHud(3) lang1: %s, lang2: %s, lang3: %s", lang1, lang2, lang3 )
 
     if( !( get_pcvar_num( cvar_hudsHide ) & HUD_VOTE_RESULTS_ANNOUNCE ) )
     {
@@ -9298,7 +9298,7 @@ stock toShowTheMapStayHud( const lang1[], const lang2[], const lang3[] )
 
 stock toShowTheMapNextHud( const lang1[], const lang2[], const lang3[], map[] )
 {
-    LOGGER( 128, "I AM ENTERING ON toShowTheMapNextHud(4) lang1: %s, lang2: %s, lang3: %s", lang1, lang2, lang3 )
+    LOG( 128, "I AM ENTERING ON toShowTheMapNextHud(4) lang1: %s, lang2: %s, lang3: %s", lang1, lang2, lang3 )
 
     // The end of map count countdown will immediately start, so there is not point int showing any messages.
     if( !g_isToChangeMapOnVotingEnd
@@ -9311,8 +9311,8 @@ stock toShowTheMapNextHud( const lang1[], const lang2[], const lang3[], map[] )
 
 stock map_extend( const lang[] )
 {
-    LOGGER( 128, "I AM ENTERING ON map_extend(1)" )
-    LOGGER( 2, "%32s g_rtvWaitMinutes: %f, g_extendmapStepMinutes: %d", "map_extend( in )", g_rtvWaitMinutes, g_extendmapStepMinutes )
+    LOG( 128, "I AM ENTERING ON map_extend(1)" )
+    LOG( 2, "%32s g_rtvWaitMinutes: %f, g_extendmapStepMinutes: %d", "map_extend( in )", g_rtvWaitMinutes, g_extendmapStepMinutes )
 
     // While the `IS_DISABLED_VOTEMAP_EXIT` bit flag is set, we cannot allow any decisions.
     if( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXIT )
@@ -9324,14 +9324,14 @@ stock map_extend( const lang[] )
         // therefore invoke it before returning.
         openTheVoteMapActionMenu();
 
-        LOGGER( 1, "    ( map_extend ) Just returning/blocking, g_voteMapStatus: %d", g_voteMapStatus )
+        LOG( 1, "    ( map_extend ) Just returning/blocking, g_voteMapStatus: %d", g_voteMapStatus )
         return;
     }
 
-    LOGGER( 2, "( map_extend ) TRYING to change the cvar %15s from '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
-    LOGGER( 2, "( map_extend ) TRYING to change the cvar %15s from '%d'.", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) )
-    LOGGER( 2, "( map_extend ) TRYING to change the cvar %15s from '%d'.", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) )
-    LOGGER( 2, "( map_extend ) TRYING to change the cvar %15s from '%d'.", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) )
+    LOG( 2, "( map_extend ) TRYING to change the cvar %15s from '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
+    LOG( 2, "( map_extend ) TRYING to change the cvar %15s from '%d'.", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) )
+    LOG( 2, "( map_extend ) TRYING to change the cvar %15s from '%d'.", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) )
+    LOG( 2, "( map_extend ) TRYING to change the cvar %15s from '%d'.", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) )
 
     saveEndGameLimits();
     resetTheRtvWaitTime();
@@ -9349,11 +9349,11 @@ stock map_extend( const lang[] )
     toAnnounceTheMapExtension( lang );
     noLongerIsAnEarlyVoting();
 
-    LOGGER( 2, "    ( map_extend ) CHECKOUT the cvar %19s is '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
-    LOGGER( 2, "    ( map_extend ) CHECKOUT the cvar %19s is '%d'.", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) )
-    LOGGER( 2, "    ( map_extend ) CHECKOUT the cvar %19s is '%d'.", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) )
-    LOGGER( 2, "    ( map_extend ) CHECKOUT the cvar %19s is '%d'.", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) )
-    LOGGER( 2, "%32s g_rtvWaitMinutes: %f, g_extendmapStepMinutes: %d", "map_extend( out )", g_rtvWaitMinutes, g_extendmapStepMinutes )
+    LOG( 2, "    ( map_extend ) CHECKOUT the cvar %19s is '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
+    LOG( 2, "    ( map_extend ) CHECKOUT the cvar %19s is '%d'.", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) )
+    LOG( 2, "    ( map_extend ) CHECKOUT the cvar %19s is '%d'.", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) )
+    LOG( 2, "    ( map_extend ) CHECKOUT the cvar %19s is '%d'.", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) )
+    LOG( 2, "%32s g_rtvWaitMinutes: %f, g_extendmapStepMinutes: %d", "map_extend( out )", g_rtvWaitMinutes, g_extendmapStepMinutes )
 }
 
 /**
@@ -9366,7 +9366,7 @@ stock map_extend( const lang[] )
  */
 stock blockNewVotingToStart()
 {
-    LOGGER( 128, "I AM ENTERING ON blockNewVotingToStart(0)" )
+    LOG( 128, "I AM ENTERING ON blockNewVotingToStart(0)" )
 
     g_isMapExtensionPeriodRunning = true;
     set_task( 120.0, "unblockNewVotingToStart", TASKID_BLOCK_NEW_VOTING_START );
@@ -9374,7 +9374,7 @@ stock blockNewVotingToStart()
 
 public unblockNewVotingToStart()
 {
-    LOGGER( 128, "I AM ENTERING ON unblockNewVotingToStart(0)" )
+    LOG( 128, "I AM ENTERING ON unblockNewVotingToStart(0)" )
     g_isMapExtensionPeriodRunning = false;
 }
 
@@ -9385,10 +9385,10 @@ public unblockNewVotingToStart()
  */
 stock resetTheRtvWaitTime()
 {
-    LOGGER( 128, "I AM ENTERING ON resetTheRtvWaitTime(0)" )
-    LOGGER( 2, "( resetTheRtvWaitTime ) g_rtvWaitFrags:   %d", g_rtvWaitFrags )
-    LOGGER( 2, "( resetTheRtvWaitTime ) g_rtvWaitRounds:  %d", g_rtvWaitRounds )
-    LOGGER( 2, "( resetTheRtvWaitTime ) g_rtvWaitMinutes: %d", g_rtvWaitMinutes )
+    LOG( 128, "I AM ENTERING ON resetTheRtvWaitTime(0)" )
+    LOG( 2, "( resetTheRtvWaitTime ) g_rtvWaitFrags:   %d", g_rtvWaitFrags )
+    LOG( 2, "( resetTheRtvWaitTime ) g_rtvWaitRounds:  %d", g_rtvWaitRounds )
+    LOG( 2, "( resetTheRtvWaitTime ) g_rtvWaitMinutes: %d", g_rtvWaitMinutes )
 
     if( !( g_rtvCommands & RTV_CMD_EXTENSION_WAIT_DISABLE ) )
     {
@@ -9417,14 +9417,14 @@ stock resetTheRtvWaitTime()
         }
     }
 
-    LOGGER( 2, "( resetTheRtvWaitTime ) g_rtvWaitFrags:   %d", g_rtvWaitFrags )
-    LOGGER( 2, "( resetTheRtvWaitTime ) g_rtvWaitRounds:  %d", g_rtvWaitRounds )
-    LOGGER( 2, "( resetTheRtvWaitTime ) g_rtvWaitMinutes: %d", g_rtvWaitMinutes )
+    LOG( 2, "( resetTheRtvWaitTime ) g_rtvWaitFrags:   %d", g_rtvWaitFrags )
+    LOG( 2, "( resetTheRtvWaitTime ) g_rtvWaitRounds:  %d", g_rtvWaitRounds )
+    LOG( 2, "( resetTheRtvWaitTime ) g_rtvWaitMinutes: %d", g_rtvWaitMinutes )
 }
 
 stock doTheActualMapExtension()
 {
-    LOGGER( 128, "I AM ENTERING ON doTheActualMapExtension(0)" )
+    LOG( 128, "I AM ENTERING ON doTheActualMapExtension(0)" )
 
     // Stop the map changing on a forced voting.
     g_isToChangeMapOnVotingEnd = false;
@@ -9469,7 +9469,7 @@ stock doTheActualMapExtension()
 
 stock saveEndGameLimits()
 {
-    LOGGER( 128, "I AM ENTERING ON saveEndGameLimits(0)" )
+    LOG( 128, "I AM ENTERING ON saveEndGameLimits(0)" )
 
     if( !g_isEndGameLimitsChanged )
     {
@@ -9480,24 +9480,24 @@ stock saveEndGameLimits()
         g_originalWinLimit  = get_pcvar_num(   cvar_mp_winlimit  );
         g_originalFragLimit = get_pcvar_num(   cvar_mp_fraglimit );
 
-        LOGGER( 2, "( saveEndGameLimits ) SAVING the cvar %15s to '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
-        LOGGER( 2, "( saveEndGameLimits ) SAVING the cvar %15s to '%d'.", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) )
-        LOGGER( 2, "( saveEndGameLimits ) SAVING the cvar %15s to '%d'.", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) )
-        LOGGER( 2, "( saveEndGameLimits ) SAVING the cvar %15s to '%d'.", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) )
+        LOG( 2, "( saveEndGameLimits ) SAVING the cvar %15s to '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
+        LOG( 2, "( saveEndGameLimits ) SAVING the cvar %15s to '%d'.", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) )
+        LOG( 2, "( saveEndGameLimits ) SAVING the cvar %15s to '%d'.", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) )
+        LOG( 2, "( saveEndGameLimits ) SAVING the cvar %15s to '%d'.", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) )
     }
 }
 
 public map_restoreEndGameCvars()
 {
-    LOGGER( 128 + 2, "I AM ENTERING ON map_restoreEndGameCvars(0)" )
+    LOG( 128 + 2, "I AM ENTERING ON map_restoreEndGameCvars(0)" )
 
     restoreTheChatTime();
     restoreOriginalServerMaxSpeed();
 
-    LOGGER( 2, "( map_restoreEndGameCvars ) TRYING to change the cvar %15s from '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
-    LOGGER( 2, "( map_restoreEndGameCvars ) TRYING to change the cvar %15s from '%d'.", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) )
-    LOGGER( 2, "( map_restoreEndGameCvars ) TRYING to change the cvar %15s from '%d'.", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) )
-    LOGGER( 2, "( map_restoreEndGameCvars ) TRYING to change the cvar %15s from '%d'.", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) )
+    LOG( 2, "( map_restoreEndGameCvars ) TRYING to change the cvar %15s from '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
+    LOG( 2, "( map_restoreEndGameCvars ) TRYING to change the cvar %15s from '%d'.", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) )
+    LOG( 2, "( map_restoreEndGameCvars ) TRYING to change the cvar %15s from '%d'.", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) )
+    LOG( 2, "( map_restoreEndGameCvars ) TRYING to change the cvar %15s from '%d'.", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) )
 
     if( g_isEndGameLimitsChanged )
     {
@@ -9508,10 +9508,10 @@ public map_restoreEndGameCvars()
         tryToSetGameModCvarNum(   cvar_mp_winlimit , g_originalWinLimit  );
         tryToSetGameModCvarNum(   cvar_mp_fraglimit, g_originalFragLimit );
 
-        LOGGER( 2, "( map_restoreEndGameCvars ) RESTORING the cvar %-24s to '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
-        LOGGER( 2, "( map_restoreEndGameCvars ) RESTORING the cvar %-24s to '%d'.", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) )
-        LOGGER( 2, "( map_restoreEndGameCvars ) RESTORING the cvar %-24s to '%d'.", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) )
-        LOGGER( 2, "( map_restoreEndGameCvars ) RESTORING the cvar %-24s to '%d'.", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) )
+        LOG( 2, "( map_restoreEndGameCvars ) RESTORING the cvar %-24s to '%f'.", "'mp_timelimit'", get_pcvar_float( cvar_mp_timelimit ) )
+        LOG( 2, "( map_restoreEndGameCvars ) RESTORING the cvar %-24s to '%d'.", "'mp_fraglimit'", get_pcvar_num( cvar_mp_fraglimit ) )
+        LOG( 2, "( map_restoreEndGameCvars ) RESTORING the cvar %-24s to '%d'.", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) )
+        LOG( 2, "( map_restoreEndGameCvars ) RESTORING the cvar %-24s to '%d'.", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) )
 
         // restore to the original/right values
         g_rtvWaitMinutes = get_pcvar_float( cvar_rtvWaitMinutes );
@@ -9520,17 +9520,17 @@ public map_restoreEndGameCvars()
     }
 
     cacheCvarsValues();
-    LOGGER( 1, "    I AM EXITING ON map_restoreEndGameCvars(0)" )
+    LOG( 1, "    I AM EXITING ON map_restoreEndGameCvars(0)" )
 }
 
 stock restoreOriginalServerMaxSpeed()
 {
-    LOGGER( 128, "I AM ENTERING ON restoreOriginalServerMaxSpeed(0) g_original_sv_maxspeed: %f", g_original_sv_maxspeed )
+    LOG( 128, "I AM ENTERING ON restoreOriginalServerMaxSpeed(0) g_original_sv_maxspeed: %f", g_original_sv_maxspeed )
 
     if( floatround( g_original_sv_maxspeed, floatround_floor ) )
     {
         tryToSetGameModCvarFloat( cvar_sv_maxspeed, g_original_sv_maxspeed );
-        LOGGER( 2, "( restoreOriginalServerMaxSpeed ) IS CHANGING THE CVAR 'sv_maxspeed' to '%f'.", g_original_sv_maxspeed )
+        LOG( 2, "( restoreOriginalServerMaxSpeed ) IS CHANGING THE CVAR 'sv_maxspeed' to '%f'.", g_original_sv_maxspeed )
 
         g_original_sv_maxspeed = 0.0;
     }
@@ -9539,7 +9539,7 @@ stock restoreOriginalServerMaxSpeed()
         && g_isToRestoreFriendlyFire )
     {
         tryToSetGameModCvarNum( cvar_mp_friendlyfire, 0 );
-        LOGGER( 2, "( restoreOriginalServerMaxSpeed ) IS CHANGING THE CVAR 'mp_friendlyfire' to '%d'.", get_pcvar_num( cvar_mp_friendlyfire ) )
+        LOG( 2, "( restoreOriginalServerMaxSpeed ) IS CHANGING THE CVAR 'mp_friendlyfire' to '%d'.", get_pcvar_num( cvar_mp_friendlyfire ) )
 
         g_isToRestoreFriendlyFire = false;
     }
@@ -9547,32 +9547,32 @@ stock restoreOriginalServerMaxSpeed()
 
 stock map_isInMenu( map[] )
 {
-    LOGGER( 256, "I AM ENTERING ON map_isInMenu(1) map: %s", map )
+    LOG( 256, "I AM ENTERING ON map_isInMenu(1) map: %s", map )
 
     for( new playerVoteMapChoiceIndex = 0;
          playerVoteMapChoiceIndex < g_totalVoteOptions; ++playerVoteMapChoiceIndex )
     {
         if( equali( map, g_votingMapNames[ playerVoteMapChoiceIndex ] ) )
         {
-            LOGGER( 256, "    ( map_isInMenu ) Returning true." )
+            LOG( 256, "    ( map_isInMenu ) Returning true." )
             return true;
         }
     }
 
-    LOGGER( 256, "    ( map_isInMenu ) Returning false." )
+    LOG( 256, "    ( map_isInMenu ) Returning false." )
     return false;
 }
 
 stock removeMapFromTheVotingMenu( mapName[] )
 {
-    LOGGER( 1, "I AM ENTERING ON removeMapFromTheVotingMenu(1) map: %s", mapName )
+    LOG( 1, "I AM ENTERING ON removeMapFromTheVotingMenu(1) map: %s", mapName )
     new index;
 
     for( ; index < g_totalVoteOptions; index++ )
     {
         if( equali( mapName, g_votingMapNames[ index ] ) )
         {
-            LOGGER( 4, "( removeMapFromTheVotingMenu ) Removing map: %s", mapName )
+            LOG( 4, "( removeMapFromTheVotingMenu ) Removing map: %s", mapName )
 
             g_votingMapNames[ index ][ 0 ] = '^0';
             g_votingMapInfos[ index ][ 0 ] = '^0';
@@ -9592,7 +9592,7 @@ stock removeMapFromTheVotingMenu( mapName[] )
 
 stock addMapToTheVotingMenu( mapName[], mapInfo[] )
 {
-    LOGGER( 1, "I AM ENTERING ON addMapToTheVotingMenu(1) map: %s, mapInfo: %s", mapName, mapInfo )
+    LOG( 1, "I AM ENTERING ON addMapToTheVotingMenu(1) map: %s, mapInfo: %s", mapName, mapInfo )
 
     if( !map_isInMenu( mapName ) )
     {
@@ -9605,7 +9605,7 @@ stock addMapToTheVotingMenu( mapName[], mapInfo[] )
 
 stock isPrefixInMenu( map[] )
 {
-    LOGGER( 256, "I AM ENTERING ON isPrefixInMenu(1) map: %s", map )
+    LOG( 256, "I AM ENTERING ON isPrefixInMenu(1) map: %s", map )
 
     new junk[ 8 ];
     new possiblePrefix[ 8 ];
@@ -9622,22 +9622,22 @@ stock isPrefixInMenu( map[] )
 
         if( equali( possiblePrefix, existingPrefix ) )
         {
-            LOGGER( 256, "    ( isPrefixInMenu ) Returning true." )
+            LOG( 256, "    ( isPrefixInMenu ) Returning true." )
             return true;
         }
     }
 
-    LOGGER( 256, "    ( isPrefixInMenu ) Returning false." )
+    LOG( 256, "    ( isPrefixInMenu ) Returning false." )
     return false;
 }
 
 stock map_isTooRecent( map[] )
 {
-    LOGGER( 256, "I AM ENTERING ON map_isTooRecent(1) map: %s", map )
+    LOG( 256, "I AM ENTERING ON map_isTooRecent(1) map: %s", map )
 
     if( g_recentMapsTrie )
     {
-        LOGGER( 256, "    ( map_isTooRecent ) Returning TrieKeyExists: %d", TrieKeyExists( g_recentMapsTrie, map ) )
+        LOG( 256, "    ( map_isTooRecent ) Returning TrieKeyExists: %d", TrieKeyExists( g_recentMapsTrie, map ) )
         return TrieKeyExists( g_recentMapsTrie, map );
     }
 
@@ -9646,7 +9646,7 @@ stock map_isTooRecent( map[] )
 
 stock announcerockFailToosoon( player_id, Float:minutesElapsed )
 {
-    LOGGER( 128, "I AM ENTERING ON announcerockFailToosoon(1) minutesElapsed: %d", minutesElapsed )
+    LOG( 128, "I AM ENTERING ON announcerockFailToosoon(1) minutesElapsed: %d", minutesElapsed )
     new remaining_time;
 
     // It will be 2 minutes because there is not point to calculate whether it will be 1 or 2 minutes.
@@ -9660,12 +9660,12 @@ stock announcerockFailToosoon( player_id, Float:minutesElapsed )
     }
 
     color_print( player_id, "%L", player_id, "GAL_ROCK_FAIL_TOOSOON", remaining_time );
-    LOGGER( 1, "    ( announcerockFailToosoon ) Just Returning/blocking, too soon to rock by minutes." )
+    LOG( 1, "    ( announcerockFailToosoon ) Just Returning/blocking, too soon to rock by minutes." )
 }
 
 stock is_to_block_RTV( player_id )
 {
-    LOGGER( 128, "I AM ENTERING ON is_to_block_RTV(1) player_id: %d", player_id )
+    LOG( 128, "I AM ENTERING ON is_to_block_RTV(1) player_id: %d", player_id )
 
     // If time-limit is 0, minutesElapsed will always be 0.
     new Float:minutesElapsed;
@@ -9674,21 +9674,21 @@ stock is_to_block_RTV( player_id )
     if( g_voteStatus & IS_EARLY_VOTE )
     {
         color_print( player_id, "%L", player_id, "GAL_ROCK_FAIL_PENDINGVOTE" );
-        LOGGER( 1, "    ( is_to_block_RTV ) Just Returning/blocking, the early voting is pending." )
+        LOG( 1, "    ( is_to_block_RTV ) Just Returning/blocking, the early voting is pending." )
     }
 
     // Rocks can only be made if a vote isn't already in progress
     else if( g_voteStatus & IS_VOTE_IN_PROGRESS )
     {
         color_print( player_id, "%L", player_id, "GAL_ROCK_FAIL_INPROGRESS" );
-        LOGGER( 1, "    ( is_to_block_RTV ) Just Returning/blocking, the voting is in progress." )
+        LOG( 1, "    ( is_to_block_RTV ) Just Returning/blocking, the voting is in progress." )
     }
 
     // If the outcome of the vote hasn't already been determined
     else if( g_voteStatus & IS_VOTE_OVER )
     {
         color_print( player_id, "%L", player_id, "GAL_ROCK_FAIL_VOTEOVER" );
-        LOGGER( 1, "    ( is_to_block_RTV ) Just Returning/blocking, the voting is over." )
+        LOG( 1, "    ( is_to_block_RTV ) Just Returning/blocking, the voting is over." )
     }
 
     // Cannot rock when admins are online
@@ -9696,7 +9696,7 @@ stock is_to_block_RTV( player_id )
              && g_rtvWaitAdminNumber > 0 )
     {
         color_print( player_id, "%L", player_id, "GAL_ROCK_WAIT_ADMIN" );
-        LOGGER( 1, "    ( is_to_block_RTV ) Just Returning/blocking, cannot rock when admins are online." )
+        LOG( 1, "    ( is_to_block_RTV ) Just Returning/blocking, cannot rock when admins are online." )
     }
 
     // If the player is the only one on the server, bring up the vote immediately
@@ -9704,7 +9704,7 @@ stock is_to_block_RTV( player_id )
              && !( g_rtvCommands & RTV_CMD_SINGLE_PLAYER_DISABLE ) )
     {
         start_rtvVote();
-        LOGGER( 1, "    ( is_to_block_RTV ) Just Returning/blocking, the voting started." )
+        LOG( 1, "    ( is_to_block_RTV ) Just Returning/blocking, the voting started." )
     }
 
     // Make sure enough time has gone by on the current map
@@ -9722,7 +9722,7 @@ stock is_to_block_RTV( player_id )
         new remaining_rounds = g_rtvWaitRounds - g_totalRoundsPlayed;
 
         color_print( player_id, "%L", player_id, "GAL_ROCK_FAIL_TOOSOON_ROUNDS", remaining_rounds );
-        LOGGER( 1, "    ( is_to_block_RTV ) Just Returning/blocking, too soon to rock by rounds." )
+        LOG( 1, "    ( is_to_block_RTV ) Just Returning/blocking, too soon to rock by rounds." )
     }
 
     // Make sure enough frags has gone by on the current map
@@ -9732,11 +9732,11 @@ stock is_to_block_RTV( player_id )
         new remaining_frags =  g_rtvWaitFrags - g_greatestKillerFrags;
 
         color_print( player_id, "%L", player_id, "GAL_ROCK_FAIL_TOOSOON_FRAGS", remaining_frags );
-        LOGGER( 1, "    ( is_to_block_RTV ) Just Returning/blocking, too soon to rock by frags." )
+        LOG( 1, "    ( is_to_block_RTV ) Just Returning/blocking, too soon to rock by frags." )
     }
     else
     {
-        LOGGER( 1, "    ( is_to_block_RTV ) Just Returning/allowing, the RTV." )
+        LOG( 1, "    ( is_to_block_RTV ) Just Returning/allowing, the RTV." )
         return false;
     }
 
@@ -9745,7 +9745,7 @@ stock is_to_block_RTV( player_id )
 
 public vote_rock( player_id )
 {
-    LOGGER( 128, "I AM ENTERING ON vote_rock(1) player_id: %d", player_id )
+    LOG( 128, "I AM ENTERING ON vote_rock(1) player_id: %d", player_id )
     new rocksNeeded;
 
     if( !is_to_block_RTV( player_id )
@@ -9766,14 +9766,14 @@ stock compute_the_RTV_vote( player_id, rocksNeeded )
         color_print( player_id, "%L", player_id, "GAL_ROCK_FAIL_ALREADY", rocksNeeded - g_rockedVoteCount );
         rtv_remind( TASKID_RTV_REMINDER + player_id );
 
-        LOGGER( 1, "    ( vote_rock ) Just Returning/blocking, already rocked the vote." )
+        LOG( 1, "    ( vote_rock ) Just Returning/blocking, already rocked the vote." )
         return false;
     }
 
     g_rockedVote[ player_id ] = true;
     color_print( player_id, "%L", player_id, "GAL_ROCK_SUCCESS" );
 
-    LOGGER( 1, "    ( vote_rock ) Just Returning/blocking, accepting rock the vote." )
+    LOG( 1, "    ( vote_rock ) Just Returning/blocking, accepting rock the vote." )
     return true;
 }
 
@@ -9820,7 +9820,7 @@ stock try_to_start_the_RTV( rocksNeeded )
  */
 stock start_rtvVote()
 {
-    LOGGER( 128, "I AM ENTERING ON start_rtvVote(0)" )
+    LOG( 128, "I AM ENTERING ON start_rtvVote(0)" )
     new endOnRoundRtv = get_pcvar_num( cvar_endOnRoundRtv );
 
     // Just to be sure. And this must to be called the first thing here.
@@ -9846,7 +9846,7 @@ stock start_rtvVote()
 
 stock vote_unrockTheVote( player_id )
 {
-    LOGGER( 128, "I AM ENTERING ON vote_unrockTheVote(1) player_id: %d", player_id )
+    LOG( 128, "I AM ENTERING ON vote_unrockTheVote(1) player_id: %d", player_id )
 
     if( g_rockedVote[ player_id ] )
     {
@@ -9857,13 +9857,13 @@ stock vote_unrockTheVote( player_id )
 
 stock vote_getRocksNeeded()
 {
-    LOGGER( 128, "I AM ENTERING ON vote_getRocksNeeded(0)" )
+    LOG( 128, "I AM ENTERING ON vote_getRocksNeeded(0)" )
     return floatround( get_pcvar_float( cvar_rtvRatio ) * float( get_real_players_number() ), floatround_ceil );
 }
 
 public rtv_remind( param )
 {
-    LOGGER( 128, "I AM ENTERING ON rtv_remind(1) param: %d", param )
+    LOG( 128, "I AM ENTERING ON rtv_remind(1) param: %d", param )
     new player_id = param - TASKID_RTV_REMINDER;
 
     // let the players know how many more rocks are needed
@@ -9873,7 +9873,7 @@ public rtv_remind( param )
 // change to the map
 public map_change()
 {
-    LOGGER( 128, "I AM ENTERING ON map_change(0)" )
+    LOG( 128, "I AM ENTERING ON map_change(0)" )
 
     // grab the name of the map we're changing to
     new map[ MAX_MAPNAME_LENGHT ];
@@ -9895,19 +9895,19 @@ public map_change()
 
 public map_change_stays()
 {
-    LOGGER( 128, "I AM ENTERING ON map_change_stays(0)" )
+    LOG( 128, "I AM ENTERING ON map_change_stays(0)" )
     resetRoundEnding();
 
-    LOGGER( 4, "( map_change_stays ) g_currentMapName: %s", g_currentMapName )
+    LOG( 4, "( map_change_stays ) g_currentMapName: %s", g_currentMapName )
     serverChangeLevel( g_currentMapName );
 }
 
 public serverChangeLevel( mapName[] )
 {
-    LOGGER( 128, "I AM ENTERING ON serverChangeLevel(1) mapName: %s", mapName )
+    LOG( 128, "I AM ENTERING ON serverChangeLevel(1) mapName: %s", mapName )
 
-    LOGGER( 4, "( serverChangeLevel ) AMXX_VERSION_NUM: %d", AMXX_VERSION_NUM )
-    LOGGER( 4, "( serverChangeLevel ) IS_TO_ENABLE_RE_HLDS_RE_AMXMODX_SUPPORT: %d", IS_TO_ENABLE_RE_HLDS_RE_AMXMODX_SUPPORT )
+    LOG( 4, "( serverChangeLevel ) AMXX_VERSION_NUM: %d", AMXX_VERSION_NUM )
+    LOG( 4, "( serverChangeLevel ) IS_TO_ENABLE_RE_HLDS_RE_AMXMODX_SUPPORT: %d", IS_TO_ENABLE_RE_HLDS_RE_AMXMODX_SUPPORT )
 
 #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
     if( g_test_areTheUnitTestsRunning )
@@ -9922,8 +9922,8 @@ public serverChangeLevel( mapName[] )
             copy( g_currentMapName[ length ], charsmax( g_currentMapName ) - length, "_invalid_map" );
         }
 
-        LOGGER( 1, "    I AM EXITING serverChangeLevel(1)... g_currentMapName: %s", g_currentMapName )
-        LOGGER( 1, "" )
+        LOG( 1, "    I AM EXITING serverChangeLevel(1)... g_currentMapName: %s", g_currentMapName )
+        LOG( 1, "" )
         return;
     }
 #endif
@@ -9934,29 +9934,29 @@ public serverChangeLevel( mapName[] )
     engine_changelevel( mapName );
 #endif
 
-    LOGGER( 1, "    I AM EXITING serverChangeLevel(1)..." )
-    LOGGER( 1, "" )
+    LOG( 1, "    I AM EXITING serverChangeLevel(1)..." )
+    LOG( 1, "" )
 }
 
 public cmd_HL1_votemap( player_id )
 {
-    LOGGER( 128, "I AM ENTERING ON cmd_HL1_votemap(1) player_id: %d", player_id )
+    LOG( 128, "I AM ENTERING ON cmd_HL1_votemap(1) player_id: %d", player_id )
 
     if( get_pcvar_num( cvar_cmdVotemap ) == 0 )
     {
         console_print( player_id, "%L", player_id, "GAL_DISABLED" );
 
-        LOGGER( 1, "    ( cmd_HL1_votemap ) Returning PLUGIN_HANDLED" )
+        LOG( 1, "    ( cmd_HL1_votemap ) Returning PLUGIN_HANDLED" )
         return PLUGIN_HANDLED;
     }
 
-    LOGGER( 1, "    ( cmd_HL1_votemap ) Returning PLUGIN_CONTINUE" )
+    LOG( 1, "    ( cmd_HL1_votemap ) Returning PLUGIN_CONTINUE" )
     return PLUGIN_CONTINUE;
 }
 
 public cmd_HL1_listmaps( player_id )
 {
-    LOGGER( 128, "I AM ENTERING ON cmd_HL1_listmaps(1) player_id: %d", player_id )
+    LOG( 128, "I AM ENTERING ON cmd_HL1_listmaps(1) player_id: %d", player_id )
 
     switch( get_pcvar_num( cvar_cmdListmaps ) )
     {
@@ -9970,18 +9970,18 @@ public cmd_HL1_listmaps( player_id )
         }
         default:
         {
-            LOGGER( 1, "    ( cmd_HL1_listmaps ) Returning PLUGIN_CONTINUE" )
+            LOG( 1, "    ( cmd_HL1_listmaps ) Returning PLUGIN_CONTINUE" )
             return PLUGIN_CONTINUE;
         }
     }
 
-    LOGGER( 1, "    ( cmd_HL1_listmaps ) Returning PLUGIN_HANDLED" )
+    LOG( 1, "    ( cmd_HL1_listmaps ) Returning PLUGIN_HANDLED" )
     return PLUGIN_HANDLED;
 }
 
 public map_listAll( player_id )
 {
-    LOGGER( 128, "I AM ENTERING ON map_listAll(1) player_id: %d", player_id )
+    LOG( 128, "I AM ENTERING ON map_listAll(1) player_id: %d", player_id )
     static lastMapDisplayed[ MAX_MAPNAME_LENGHT ][ 2 ];
 
     new start;
@@ -10111,7 +10111,7 @@ public map_listAll( player_id )
  */
 stock no_color_print( const player_id, const message[], any:... )
 {
-    LOGGER( 128, "I AM ENTERING ON color_console_print(...) player_id: %d, message: %s...", player_id, message )
+    LOG( 128, "I AM ENTERING ON color_console_print(...) player_id: %d, message: %s...", player_id, message )
     new formated_message[ MAX_COLOR_MESSAGE ];
 
     vformat( formated_message, charsmax( formated_message ), message, 3 );
@@ -10122,10 +10122,10 @@ stock no_color_print( const player_id, const message[], any:... )
 
 stock restartEmptyCycle()
 {
-    LOGGER( 128, "I AM ENTERING ON restartEmptyCycle(0)" )
+    LOG( 128, "I AM ENTERING ON restartEmptyCycle(0)" )
     set_pcvar_num( cvar_isToStopEmptyCycle, 0 );
 
-    LOGGER( 2, "( restartEmptyCycle ) IS CHANGING THE CVAR 'gal_in_empty_cycle' to '%d'.", 0 )
+    LOG( 2, "( restartEmptyCycle ) IS CHANGING THE CVAR 'gal_in_empty_cycle' to '%d'.", 0 )
     remove_task( TASKID_EMPTYSERVER );
 }
 
@@ -10136,7 +10136,7 @@ stock restartEmptyCycle()
  */
 #define CLIENT_AUTHORIZED_MACRO(%1) \
 { \
-    LOGGER( 128, "I AM ENTERING ON client_authorized(1) player_id: %d", %1 ) \
+    LOG( 128, "I AM ENTERING ON client_authorized(1) player_id: %d", %1 ) \
     restartEmptyCycle(); \
     if( get_user_flags( %1 ) & ADMIN_MAP ) \
     { \
@@ -10160,7 +10160,7 @@ public client_authorized( player_id )
     public client_disconnected( player_id )
 #endif
 {
-    LOGGER( 128, "I AM ENTERING ON client_disconnected(1) player_id: %d", player_id )
+    LOG( 128, "I AM ENTERING ON client_disconnected(1) player_id: %d", player_id )
     if( is_user_bot( player_id ) ) return;
 
     if( get_user_flags( player_id ) & ADMIN_MAP )
@@ -10180,7 +10180,7 @@ public client_authorized( player_id )
 
 stock unnominatedDisconnectedPlayer( player_id )
 {
-    LOGGER( 128, "I AM ENTERING ON unnominatedDisconnectedPlayer(1) player_id: %d", player_id )
+    LOG( 128, "I AM ENTERING ON unnominatedDisconnectedPlayer(1) player_id: %d", player_id )
 
     new mapIndex;
     new maxPlayerNominations;
@@ -10217,10 +10217,10 @@ stock unnominatedDisconnectedPlayer( player_id )
  */
 stock isToHandleRecentlyEmptyServer()
 {
-    LOGGER( 128, "I AM ENTERING ON isToHandleRecentlyEmptyServer(0)" )
+    LOG( 128, "I AM ENTERING ON isToHandleRecentlyEmptyServer(0)" )
     new playersCount = get_real_players_number();
 
-    LOGGER( 2, "( isToHandleRecentlyEmptyServer ) mp_timelimit: %f, g_originalTimelimit: %f, playersCount: %d", \
+    LOG( 2, "( isToHandleRecentlyEmptyServer ) mp_timelimit: %f, g_originalTimelimit: %f, playersCount: %d", \
             get_pcvar_float( cvar_mp_timelimit ), g_originalTimelimit, playersCount )
 
     if( playersCount == 0 )
@@ -10243,7 +10243,7 @@ stock isToHandleRecentlyEmptyServer()
         }
     }
 
-    LOGGER( 2, "I AM EXITING ON isToHandleRecentlyEmptyServer(0) g_isUsingEmptyCycle = %d, \
+    LOG( 2, "I AM EXITING ON isToHandleRecentlyEmptyServer(0) g_isUsingEmptyCycle = %d, \
             g_emptyCycleMapsArray: %d", g_isUsingEmptyCycle, g_emptyCycleMapsArray )
 }
 
@@ -10252,7 +10252,7 @@ stock isToHandleRecentlyEmptyServer()
  */
 public inicializeEmptyCycleFeature()
 {
-    LOGGER( 128, "I AM ENTERING ON inicializeEmptyCycleFeature(0)" )
+    LOG( 128, "I AM ENTERING ON inicializeEmptyCycleFeature(0)" )
 
     if( get_real_players_number() == 0 )
     {
@@ -10271,7 +10271,7 @@ public inicializeEmptyCycleFeature()
 
 stock startEmptyCycleCountdown()
 {
-    LOGGER( 128, "I AM ENTERING ON startEmptyCycleCountdown(0)" )
+    LOG( 128, "I AM ENTERING ON startEmptyCycleCountdown(0)" )
     new waitMinutes = get_pcvar_num( cvar_emptyServerWaitMinutes );
 
     if( waitMinutes )
@@ -10287,7 +10287,7 @@ stock startEmptyCycleCountdown()
  */
 stock configureNextEmptyCycleMap()
 {
-    LOGGER( 128, "I AM ENTERING ON configureNextEmptyCycleMap(0)" )
+    LOG( 128, "I AM ENTERING ON configureNextEmptyCycleMap(0)" )
     new mapIndex;
 
     new nextMapName      [ MAX_MAPNAME_LENGHT ];
@@ -10311,7 +10311,7 @@ stock configureNextEmptyCycleMap()
 
 stock getLastEmptyCycleMap( lastEmptyCycleMap[ MAX_MAPNAME_LENGHT ] )
 {
-    LOGGER( 128, "I AM ENTERING ON getLastEmptyCycleMap(1) lastEmptyCycleMap: %s", lastEmptyCycleMap )
+    LOG( 128, "I AM ENTERING ON getLastEmptyCycleMap(1) lastEmptyCycleMap: %s", lastEmptyCycleMap )
 
     new lastEmptyCycleMapFile;
     new lastEmptyCycleMapFilePath[ MAX_FILE_PATH_LENGHT ];
@@ -10327,7 +10327,7 @@ stock getLastEmptyCycleMap( lastEmptyCycleMap[ MAX_MAPNAME_LENGHT ] )
 
 stock setLastEmptyCycleMap( lastEmptyCycleMap[ MAX_MAPNAME_LENGHT ] )
 {
-    LOGGER( 128, "I AM ENTERING ON setLastEmptyCycleMap(1) lastEmptyCycleMap: %s", lastEmptyCycleMap )
+    LOG( 128, "I AM ENTERING ON setLastEmptyCycleMap(1) lastEmptyCycleMap: %s", lastEmptyCycleMap )
 
     new lastEmptyCycleMapFile;
     new lastEmptyCycleMapFilePath[ MAX_FILE_PATH_LENGHT ];
@@ -10344,11 +10344,11 @@ stock setLastEmptyCycleMap( lastEmptyCycleMap[ MAX_MAPNAME_LENGHT ] )
 
 public startEmptyCycleSystem()
 {
-    LOGGER( 128, "I AM ENTERING ON startEmptyCycleSystem(0)" )
+    LOG( 128, "I AM ENTERING ON startEmptyCycleSystem(0)" )
 
     // stop this system at the next map, due we already be at a popular map
     set_pcvar_num( cvar_isToStopEmptyCycle, 1 );
-    LOGGER( 2, "( startEmptyCycleSystem ) IS CHANGING THE CVAR 'gal_in_empty_cycle' to '%d'.", 1 )
+    LOG( 2, "( startEmptyCycleSystem ) IS CHANGING THE CVAR 'gal_in_empty_cycle' to '%d'.", 1 )
 
     // if the current map isn't part of the empty cycle,
     // immediately change to next map that is
@@ -10373,7 +10373,7 @@ public startEmptyCycleSystem()
  */
 stock map_getNext( Array:mapArray, const currentMap[], nextMapName[], const caller[] )
 {
-    LOGGER( 128, "I AM ENTERING ON map_getNext(4) currentMap: %s", currentMap )
+    LOG( 128, "I AM ENTERING ON map_getNext(4) currentMap: %s", currentMap )
     new bool:isWhitelistBlocking;
 
     new mapCount;
@@ -10443,13 +10443,13 @@ stock map_getNext( Array:mapArray, const currentMap[], nextMapName[], const call
         }
     }
 
-    LOGGER( 1, "    ( map_getNext ) Returning mapIndex: %d, nextMapName: %s", returnValue, nextMapName )
+    LOG( 1, "    ( map_getNext ) Returning mapIndex: %d, nextMapName: %s", returnValue, nextMapName )
     return returnValue;
 }
 
 public client_putinserver( player_id )
 {
-    LOGGER( 128, "I AM ENTERING ON client_putinserver(1) player_id: %d", player_id )
+    LOG( 128, "I AM ENTERING ON client_putinserver(1) player_id: %d", player_id )
 
     if( ( g_voteStatus & IS_EARLY_VOTE )
         && !is_user_bot( player_id )
@@ -10461,7 +10461,7 @@ public client_putinserver( player_id )
 
 public srv_announceEarlyVote( player_id )
 {
-    LOGGER( 128, "I AM ENTERING ON srv_announceEarlyVote(1) player_id: %d", player_id )
+    LOG( 128, "I AM ENTERING ON srv_announceEarlyVote(1) player_id: %d", player_id )
 
     if( is_user_connected( player_id ) )
     {
@@ -10471,13 +10471,13 @@ public srv_announceEarlyVote( player_id )
 
 stock nomination_announceCancellation( nominations[] )
 {
-    LOGGER( 128, "I AM ENTERING ON nomination_announceCancellation(1) nominations: %s", nominations )
+    LOG( 128, "I AM ENTERING ON nomination_announceCancellation(1) nominations: %s", nominations )
     color_print( 0, "%L", LANG_PLAYER, "GAL_CANCEL_SUCCESS", nominations );
 }
 
 stock nomination_clearAll()
 {
-    LOGGER( 128, "I AM ENTERING ON nomination_clearAll(0)" )
+    LOG( 128, "I AM ENTERING ON nomination_clearAll(0)" )
 
     if( get_pcvar_num( cvar_nomCleaning ) )
     {
@@ -10490,7 +10490,7 @@ stock nomination_clearAll()
 
 stock map_announceNomination( player_id, map[] )
 {
-    LOGGER( 128, "I AM ENTERING ON map_announceNomination(2) player_id: %d, map: %s", player_id, map )
+    LOG( 128, "I AM ENTERING ON map_announceNomination(2) player_id: %d, map: %s", player_id, map )
     new player_name[ MAX_PLAYER_NAME_LENGHT ];
 
     GET_USER_NAME( player_id, player_name )
@@ -10499,29 +10499,29 @@ stock map_announceNomination( player_id, map[] )
 
 public cmd_rockthevote( player_id )
 {
-    LOGGER( 128, "I AM ENTERING ON cmd_rockthevote(1) player_id: %d", player_id )
+    LOG( 128, "I AM ENTERING ON cmd_rockthevote(1) player_id: %d", player_id )
 
     color_print( player_id, "%L", player_id, "GAL_CMD_RTV" );
     vote_rock( player_id );
 
-    LOGGER( 1, "    ( cmd_rockthevote ) Returning PLUGIN_CONTINUE" )
+    LOG( 1, "    ( cmd_rockthevote ) Returning PLUGIN_CONTINUE" )
     return PLUGIN_CONTINUE;
 }
 
 public cmd_nominations( player_id )
 {
-    LOGGER( 128, "I AM ENTERING ON cmd_nominations(1) player_id: %d", player_id )
+    LOG( 128, "I AM ENTERING ON cmd_nominations(1) player_id: %d", player_id )
 
     color_print( player_id, "%L", player_id, "GAL_CMD_NOMS" );
     nomination_list();
 
-    LOGGER( 1, "    ( cmd_nominations ) Returning PLUGIN_CONTINUE" )
+    LOG( 1, "    ( cmd_nominations ) Returning PLUGIN_CONTINUE" )
     return PLUGIN_CONTINUE;
 }
 
 public cmd_listrecent( player_id )
 {
-    LOGGER( 128, "I AM ENTERING ON cmd_listrecent(1) player_id: %d", player_id )
+    LOG( 128, "I AM ENTERING ON cmd_listrecent(1) player_id: %d", player_id )
     new recentMapCount;
 
     if( g_recentListMapsArray
@@ -10571,13 +10571,13 @@ public cmd_listrecent( player_id )
         }
     }
 
-    LOGGER( 1, "    ( cmd_listrecent ) Returning PLUGIN_CONTINUE" )
+    LOG( 1, "    ( cmd_listrecent ) Returning PLUGIN_CONTINUE" )
     return PLUGIN_CONTINUE;
 }
 
 public showRecentMapsListMenu( player_id )
 {
-    LOGGER( 128, "I AM ENTERING ON showRecentMapsListMenu(1) player_id: %d", player_id )
+    LOG( 128, "I AM ENTERING ON showRecentMapsListMenu(1) player_id: %d", player_id )
 
     new mapIndex;
     new itemsCount;
@@ -10613,14 +10613,14 @@ public showRecentMapsListMenu( player_id )
     // Add the menu items.
     for( ; mapIndex < recentMapCount && itemsCount < MAX_MENU_ITEMS_PER_PAGE; ++mapIndex, ++itemsCount )
     {
-        LOGGER( 4, "( showRecentMapsListMenu ) mapIndex: %d", mapIndex )
+        LOG( 4, "( showRecentMapsListMenu ) mapIndex: %d", mapIndex )
         ArrayGetString( g_recentListMapsArray, mapIndex, recentMapName, charsmax( recentMapName ) );
 
         menu_additem( menu, recentMapName );
-        LOGGER( 4, "( showRecentMapsListMenu ) recentMapName: %s", recentMapName )
+        LOG( 4, "( showRecentMapsListMenu ) recentMapName: %s", recentMapName )
     }
 
-    LOGGER( 4, "( showRecentMapsListMenu ) itemsCount: %d, mapIndex: %d", itemsCount, mapIndex )
+    LOG( 4, "( showRecentMapsListMenu ) itemsCount: %d, mapIndex: %d", itemsCount, mapIndex )
     addMenuMoreBackOptions( menu, player_id, menuOptionString, mapIndex < recentMapCount, currentPageNumber > 0, itemsCount );
 
     // To display the menu.
@@ -10629,7 +10629,7 @@ public showRecentMapsListMenu( player_id )
 
 stock addMenuMoreBackOptions( menu, player_id, menuOptionString[], bool:isToEnableMoreButton, bool:isToEnableBackButton, itemsCount )
 {
-    LOGGER( 128, "I AM ENTERING ON addMenuMoreBackOptions(5) isToEnableMoreButton: %d, \
+    LOG( 128, "I AM ENTERING ON addMenuMoreBackOptions(5) isToEnableMoreButton: %d, \
             isToEnableBackButton: %d", isToEnableMoreButton, isToEnableBackButton )
 
     // Force the menu control options to be present on the keys 8 (more), 9 (back) and 0 (exit).
@@ -10678,7 +10678,7 @@ stock addMenuMoreBackOptions( menu, player_id, menuOptionString[], bool:isToEnab
  */
 public cmd_listrecent_handler( player_id, menu, item )
 {
-    LOGGER( 128, "I AM ENTERING ON cmd_listrecent_handler(3) player_id: %d, menu: %d, item: %d", player_id, menu, item )
+    LOG( 128, "I AM ENTERING ON cmd_listrecent_handler(3) player_id: %d, menu: %d, item: %d", player_id, menu, item )
 
     // Let go to destroy the menu and clean some memory. As the menu is not paginated, the item 9
     // is the key 0 on the keyboard. Also, the item 8 is the key 9; 7, 8; 6, 7; 5, 6; 4, 5; etc.
@@ -10688,7 +10688,7 @@ public cmd_listrecent_handler( player_id, menu, item )
     {
         DESTROY_PLAYER_NEW_MENU_TYPE( menu )
 
-        LOGGER( 1, "    ( cmd_listrecent_handler ) Just Returning PLUGIN_HANDLED, as menu is destroyed." )
+        LOG( 1, "    ( cmd_listrecent_handler ) Just Returning PLUGIN_HANDLED, as menu is destroyed." )
         return PLUGIN_HANDLED;
     }
 
@@ -10703,7 +10703,7 @@ public cmd_listrecent_handler( player_id, menu, item )
         // set_task( 0.1, "showRecentMapsListMenu", player_id );
         showRecentMapsListMenu( player_id );
 
-        LOGGER( 1, "    ( cmd_listrecent_handler ) Just Returning PLUGIN_HANDLED, doing the back button." )
+        LOG( 1, "    ( cmd_listrecent_handler ) Just Returning PLUGIN_HANDLED, doing the back button." )
         return PLUGIN_HANDLED;
     }
 
@@ -10717,24 +10717,24 @@ public cmd_listrecent_handler( player_id, menu, item )
         // set_task( 0.1, "showRecentMapsListMenu", player_id );
         showRecentMapsListMenu( player_id );
 
-        LOGGER( 1, "    ( cmd_listrecent_handler ) Just Returning PLUGIN_HANDLED, doing the more button." )
+        LOG( 1, "    ( cmd_listrecent_handler ) Just Returning PLUGIN_HANDLED, doing the more button." )
         return PLUGIN_HANDLED;
     }
 
     // Just keep showing the menu until the exit button is pressed.
     menu_display( player_id, menu );
 
-    LOGGER( 1, "    ( cmd_listrecent_handler ) Just Returning PLUGIN_HANDLED." )
+    LOG( 1, "    ( cmd_listrecent_handler ) Just Returning PLUGIN_HANDLED." )
     return PLUGIN_HANDLED;
 }
 
 public cmd_changeLevel( player_id, level, cid )
 {
-    LOGGER( 128, "I AM ENTERING ON cmd_changeLevel(3) player_id: %d, level: %d, cid: %d", player_id, level, cid )
+    LOG( 128, "I AM ENTERING ON cmd_changeLevel(3) player_id: %d, level: %d, cid: %d", player_id, level, cid )
 
     if( !cmd_access( player_id, level, cid, 1 ) )
     {
-        LOGGER( 1, "    ( cmd_changeLevel ) Returning PLUGIN_CONTINUE" )
+        LOG( 1, "    ( cmd_changeLevel ) Returning PLUGIN_CONTINUE" )
         return PLUGIN_CONTINUE;
     }
 
@@ -10747,8 +10747,8 @@ public cmd_changeLevel( player_id, level, cid )
         read_args( arguments, charsmax( arguments ) );
         remove_quotes( arguments );
 
-        LOGGER( 8, "( cmd_changeLevel ) " )
-        LOGGER( 8, "( cmd_changeLevel ) argumentsCount: %d, arguments: %s", argumentsCount, arguments )
+        LOG( 8, "( cmd_changeLevel ) " )
+        LOG( 8, "( cmd_changeLevel ) argumentsCount: %d, arguments: %s", argumentsCount, arguments )
 
         if( containi( arguments, "now" ) > -1 )
         {
@@ -10764,17 +10764,17 @@ public cmd_changeLevel( player_id, level, cid )
         process_last_round( true );
     }
 
-    LOGGER( 1, "    ( cmd_changeLevel ) Returning PLUGIN_HANDLED" )
+    LOG( 1, "    ( cmd_changeLevel ) Returning PLUGIN_HANDLED" )
     return PLUGIN_HANDLED;
 }
 
 public cmd_cancelVote( player_id, level, cid )
 {
-    LOGGER( 128, "I AM ENTERING ON cmd_cancelVote(3) player_id: %d, level: %d, cid: %d", player_id, level, cid )
+    LOG( 128, "I AM ENTERING ON cmd_cancelVote(3) player_id: %d, level: %d, cid: %d", player_id, level, cid )
 
     if( !cmd_access( player_id, level, cid, 1 ) )
     {
-        LOGGER( 1, "    ( cmd_cancelVote ) Returning PLUGIN_CONTINUE" )
+        LOG( 1, "    ( cmd_cancelVote ) Returning PLUGIN_CONTINUE" )
         return PLUGIN_CONTINUE;
     }
 
@@ -10785,7 +10785,7 @@ public cmd_cancelVote( player_id, level, cid )
     // To avoid the warning unreachable code.
     if( !g_dummy_value )
     {
-        LOGGER( 1, "    ( cmd_cancelVote ) Returning PLUGIN_HANDLED" )
+        LOG( 1, "    ( cmd_cancelVote ) Returning PLUGIN_HANDLED" )
         return PLUGIN_HANDLED;
     }
 #endif
@@ -10800,19 +10800,19 @@ public cmd_cancelVote( player_id, level, cid )
         color_print( 0, "%L", LANG_SERVER, "NO_VOTE_CANC" );
     }
 
-    LOGGER( 1, "    ( cmd_cancelVote ) Returning PLUGIN_HANDLED" )
+    LOG( 1, "    ( cmd_cancelVote ) Returning PLUGIN_HANDLED" )
     return PLUGIN_HANDLED;
 }
 
 stock bool:approveTheVotingStartLight()
 {
-    LOGGER( 128, "I AM ENTERING ON approveTheVotingStartLight(1) get_real_players_number: %d", \
+    LOG( 128, "I AM ENTERING ON approveTheVotingStartLight(1) get_real_players_number: %d", \
             get_real_players_number() )
 
     // block the voting on some not allowed situations/cases
     if( get_real_players_number() == 0)
     {
-        LOGGER( 1, "    ( approveTheVotingStartLight ) Returning false 0 players on the server." )
+        LOG( 1, "    ( approveTheVotingStartLight ) Returning false 0 players on the server." )
         return false;
     }
 
@@ -10825,7 +10825,7 @@ stock bool:approveTheVotingStartLight()
         vote_resetStats();
     }
 
-    LOGGER( 1, "    ( approveTheVotingStart ) Returning true, due passed by all requirements." )
+    LOG( 1, "    ( approveTheVotingStart ) Returning true, due passed by all requirements." )
     return true;
 }
 
@@ -10838,11 +10838,11 @@ stock bool:approveTheVotingStartLight()
  */
 public cmd_voteMap( player_id, level, cid )
 {
-    LOGGER( 128, "I AM ENTERING ON cmd_voteMap(3) player_id: %d, level: %d, cid: %d", player_id, level, cid )
+    LOG( 128, "I AM ENTERING ON cmd_voteMap(3) player_id: %d, level: %d, cid: %d", player_id, level, cid )
 
     if( !cmd_access( player_id, level, cid, 1 ) )
     {
-        LOGGER( 1, "    ( cmd_voteMap ) Returning PLUGIN_CONTINUE" )
+        LOG( 1, "    ( cmd_voteMap ) Returning PLUGIN_CONTINUE" )
         return PLUGIN_CONTINUE;
     }
 
@@ -10863,8 +10863,8 @@ public cmd_voteMap( player_id, level, cid )
         argumentsCount = read_argc();
         log_amx( "%L: %s", LANG_SERVER, "GAL_VOTE_START", arguments );
 
-        LOGGER( 8, "( cmd_voteMap ) " )
-        LOGGER( 8, "( cmd_voteMap ) arguments: %s", arguments )
+        LOG( 8, "( cmd_voteMap ) " )
+        LOG( 8, "( cmd_voteMap ) arguments: %s", arguments )
 
         if( argumentsCount > 1
             && g_isExtendmapAllowStay
@@ -10884,39 +10884,39 @@ public cmd_voteMap( player_id, level, cid )
             for( new index = 1; index < argumentsCount; index++ )
             {
                 read_argv( index, argument, charsmax( argument ) );
-                LOGGER( 8, "( cmd_voteMap ) argument[%d]: %s", index, argument )
+                LOG( 8, "( cmd_voteMap ) argument[%d]: %s", index, argument )
 
                 if( IS_WHITELIST_BLOCKING( isWhitelistEnabled, argument ) )
                 {
                     console_print( player_id, "%s: %L", argument, player_id, "GAL_MATCH_WHITELIST" );
-                    LOGGER( 8, "    ( cmd_voteMap ) %s: %L", argument, player_id, "GAL_MATCH_WHITELIST" )
+                    LOG( 8, "    ( cmd_voteMap ) %s: %L", argument, player_id, "GAL_MATCH_WHITELIST" )
 
                     // We do not need to print help, as the Whilelist message is clear.
                     goto invalid_map_provited;
                 }
                 else if( IS_MAP_VALID( argument ) )
                 {
-                    LOGGER( 8, "    ( cmd_voteMap ) argument is a valid map." )
+                    LOG( 8, "    ( cmd_voteMap ) argument is a valid map." )
                     addMapToTheVotingMenu( argument, "" );
                 }
                 else if( -1 < containi( argument, "nointro" ) < 2 )
                 {
-                    LOGGER( 8, "    ( cmd_voteMap ) Entering on argument `nointro`" )
+                    LOG( 8, "    ( cmd_voteMap ) Entering on argument `nointro`" )
                     g_voteMapStatus |= IS_DISABLED_VOTEMAP_INTRO;
                 }
                 else if( -1 < containi( argument, "norunoff" ) < 2  )
                 {
-                    LOGGER( 8, "    ( cmd_voteMap ) Entering on argument `norunoff`" )
+                    LOG( 8, "    ( cmd_voteMap ) Entering on argument `norunoff`" )
                     g_voteMapStatus |= IS_DISABLED_VOTEMAP_RUNOFF;
                 }
                 else if( -1 < containi( argument, "noextension" ) < 2 )
                 {
-                    LOGGER( 8, "    ( cmd_voteMap ) Entering on argument `noextension`" )
+                    LOG( 8, "    ( cmd_voteMap ) Entering on argument `noextension`" )
                     g_voteMapStatus |= IS_DISABLED_VOTEMAP_EXTENSION;
                 }
                 else if( -1 < containi( argument, "loadnominations" ) < 2 )
                 {
-                    LOGGER( 8, "    ( cmd_voteMap ) Entering on argument `loadnominations`" )
+                    LOG( 8, "    ( cmd_voteMap ) Entering on argument `loadnominations`" )
 
                     // Load on the nominations maps.
                     loadOnlyNominationVoteChoices();
@@ -10934,12 +10934,12 @@ public cmd_voteMap( player_id, level, cid )
                     // we would have to use a buffers loader as on announceVoteBlockedMap(4) and
                     // flushVoteBlockedMaps(3) to avoid the client overflow when too many how arguments
                     // are passed by.
-                    LOGGER( 1, "    ( cmd_voteMap ) Returning PLUGIN_HANDLED" )
+                    LOG( 1, "    ( cmd_voteMap ) Returning PLUGIN_HANDLED" )
                     return PLUGIN_HANDLED;
                 }
             }
 
-            LOGGER( 8, "    ( cmd_voteMap ) g_voteMapStatus: %d", g_voteMapStatus )
+            LOG( 8, "    ( cmd_voteMap ) g_voteMapStatus: %d", g_voteMapStatus )
             startVoteMapVoting( player_id );
         }
         else
@@ -10948,13 +10948,13 @@ public cmd_voteMap( player_id, level, cid )
         }
     }
 
-    LOGGER( 1, "    ( cmd_voteMap ) Returning PLUGIN_HANDLED" )
+    LOG( 1, "    ( cmd_voteMap ) Returning PLUGIN_HANDLED" )
     return PLUGIN_HANDLED;
 }
 
 stock startVoteMapVoting( player_id )
 {
-    LOGGER( 128, "I AM ENTERING ON startVoteMapVoting(1) player_id: %s", player_id )
+    LOG( 128, "I AM ENTERING ON startVoteMapVoting(1) player_id: %s", player_id )
 
     if( g_totalVoteOptions > 0
         && !( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXTENSION )
@@ -10988,7 +10988,7 @@ stock startVoteMapVoting( player_id )
  */
 stock showGalVoteMapHelp( player_id, index = 0, argument[] = {0} )
 {
-    LOGGER( 128, "I AM ENTERING ON showGalVoteMapHelp(1) argument: %s", argument )
+    LOG( 128, "I AM ENTERING ON showGalVoteMapHelp(1) argument: %s", argument )
 
     if( argument[ 0 ] )
     {
@@ -11016,7 +11016,7 @@ stock showGalVoteMapHelp( player_id, index = 0, argument[] = {0} )
  */
 stock voteMapMenuBuilder( player_id )
 {
-    LOGGER( 128, "I AM ENTERING ON voteMapMenuBuilder(0) player_id: %d", player_id )
+    LOG( 128, "I AM ENTERING ON voteMapMenuBuilder(0) player_id: %d", player_id )
 
     // The initial settings setup
     g_voteMapStatus = IS_DISABLED_VOTEMAP_EXIT;
@@ -11036,7 +11036,7 @@ stock voteMapMenuBuilder( player_id )
  */
 public displayVoteMapMenuHook( player_id )
 {
-    LOGGER( 128, "I AM ENTERING ON displayVoteMapMenuHook(1) currentPage: %d", g_voteMapMenuPages[ player_id ] )
+    LOG( 128, "I AM ENTERING ON displayVoteMapMenuHook(1) currentPage: %d", g_voteMapMenuPages[ player_id ] )
     displayVoteMapMenu( player_id );
 }
 
@@ -11045,7 +11045,7 @@ public displayVoteMapMenuHook( player_id )
  */
 stock displayVoteMapMenu( player_id )
 {
-    LOGGER( 128, "I AM ENTERING ON displayVoteMapMenu(1) player_id: %d", player_id )
+    LOG( 128, "I AM ENTERING ON displayVoteMapMenu(1) player_id: %d", player_id )
 
     new mapIndex;
     new itemsCount;
@@ -11146,7 +11146,7 @@ stock displayVoteMapMenu( player_id )
             }
 
             formatex( choice, charsmax( choice ), "%s %s %s", nominationMap, selectedMap, disabledReason );
-            LOGGER( 4, "( displayVoteMapMenu ) choice: %s", choice )
+            LOG( 4, "( displayVoteMapMenu ) choice: %s", choice )
 
             menu_additem( menu, choice, _, ( disabledReason[ 0 ] == '^0' ? 0 : ( 1 << 26 ) ) );
 
@@ -11154,7 +11154,7 @@ stock displayVoteMapMenu( player_id )
 
     } // end for 'mapIndex'.
 
-    LOGGER( 4, "( displayVoteMapMenu ) itemsCount: %d, mapIndex: %d", itemsCount, mapIndex )
+    LOG( 4, "( displayVoteMapMenu ) itemsCount: %d, mapIndex: %d", itemsCount, mapIndex )
 
     addMenuMoreBackStartOptions( menu, player_id, disabledReason, mapIndex < nominationsMapsCount, currentPageNumber > 0, itemsCount );
     menu_display( player_id, menu );
@@ -11162,7 +11162,7 @@ stock displayVoteMapMenu( player_id )
 
 stock addMenuMoreBackStartOptions( menu, player_id, disabledReason[], bool:isToEnableMoreButton, bool:isToEnableBackButton, itemsCount )
 {
-    LOGGER( 128, "I AM ENTERING ON addMenuMoreBackStartOptions(5) isToEnableMoreButton: %d", isToEnableMoreButton )
+    LOG( 128, "I AM ENTERING ON addMenuMoreBackStartOptions(5) isToEnableMoreButton: %d", isToEnableMoreButton )
     addMenuMoreBackButtons( menu, player_id, disabledReason, isToEnableMoreButton, isToEnableBackButton, itemsCount );
 
     // To add the exit button
@@ -11189,7 +11189,7 @@ stock addMenuMoreBackStartOptions( menu, player_id, disabledReason[], bool:isToE
  */
 public handleDisplayVoteMap( player_id, menu, item )
 {
-    LOGGER( 128, "I AM ENTERING ON handleDisplayVoteMap(3) player_id: %d, menu: %d, item: %d", player_id, menu, item )
+    LOG( 128, "I AM ENTERING ON handleDisplayVoteMap(3) player_id: %d, menu: %d, item: %d", player_id, menu, item )
 
     // Let go to destroy the menu and clean some memory. As the menu is not paginated, the item 9
     // is the key 0 on the keyboard. Also, the item 8 is the key 9; 7, 8; 6, 7; 5, 6; 4, 5; etc.
@@ -11202,7 +11202,7 @@ public handleDisplayVoteMap( player_id, menu, item )
     {
         DESTROY_PLAYER_NEW_MENU_TYPE( menu )
 
-        LOGGER( 1, "    ( handleDisplayVoteMap ) Just Returning PLUGIN_HANDLED, the menu is destroyed." )
+        LOG( 1, "    ( handleDisplayVoteMap ) Just Returning PLUGIN_HANDLED, the menu is destroyed." )
         return PLUGIN_HANDLED;
     }
 
@@ -11216,7 +11216,7 @@ public handleDisplayVoteMap( player_id, menu, item )
         DESTROY_PLAYER_NEW_MENU_TYPE( menu )
         displayVoteMapMenuCommands( player_id );
 
-        LOGGER( 1, "    ( handleDisplayVoteMap ) Just Returning PLUGIN_HANDLED, starting the voting." )
+        LOG( 1, "    ( handleDisplayVoteMap ) Just Returning PLUGIN_HANDLED, starting the voting." )
         return PLUGIN_HANDLED;
     }
 
@@ -11232,7 +11232,7 @@ public handleDisplayVoteMap( player_id, menu, item )
             // set_task( 0.1, "displayVoteMapMenuHook", player_id );
             displayVoteMapMenuHook( player_id );
 
-            LOGGER( 1, "    ( handleDisplayVoteMap ) Just Returning PLUGIN_HANDLED, doing the back button." )
+            LOG( 1, "    ( handleDisplayVoteMap ) Just Returning PLUGIN_HANDLED, doing the back button." )
             return PLUGIN_HANDLED;
         }
         // If the 9 button item is hit, and we are on some page not the last one, we must to perform the more option.
@@ -11245,7 +11245,7 @@ public handleDisplayVoteMap( player_id, menu, item )
             // set_task( 0.1, "displayVoteMapMenuHook", player_id );
             displayVoteMapMenuHook( player_id );
 
-            LOGGER( 1, "    ( handleDisplayVoteMap ) Just Returning PLUGIN_HANDLED, doing the more button." )
+            LOG( 1, "    ( handleDisplayVoteMap ) Just Returning PLUGIN_HANDLED, doing the more button." )
             return PLUGIN_HANDLED;
         }
     }
@@ -11259,17 +11259,17 @@ public handleDisplayVoteMap( player_id, menu, item )
             // pressedKeyCode 0 means the keyboard key 1
             case 0:
             {
-                LOGGER( 8, "    ( cmd_voteMap ) Entering on argument `nointro`" )
+                LOG( 8, "    ( cmd_voteMap ) Entering on argument `nointro`" )
                 TOGGLE_BIT_FLAG_ON_OFF( g_voteMapStatus, IS_DISABLED_VOTEMAP_INTRO )
             }
             case 1:
             {
-                LOGGER( 8, "    ( cmd_voteMap ) Entering on argument `norunoff`" )
+                LOG( 8, "    ( cmd_voteMap ) Entering on argument `norunoff`" )
                 TOGGLE_BIT_FLAG_ON_OFF( g_voteMapStatus, IS_DISABLED_VOTEMAP_RUNOFF )
             }
             case 2:
             {
-                LOGGER( 8, "    ( cmd_voteMap ) Entering on argument `noextension`" )
+                LOG( 8, "    ( cmd_voteMap ) Entering on argument `noextension`" )
                 TOGGLE_BIT_FLAG_ON_OFF( g_voteMapStatus, IS_DISABLED_VOTEMAP_EXTENSION )
             }
             case 3:
@@ -11279,7 +11279,7 @@ public handleDisplayVoteMap( player_id, menu, item )
 
                 // This option cannot be undone, to reduce the code complexity.
                 g_voteMapStatus |= IS_ENABLED_VOTEMAP_NOMINATIONS;
-                LOGGER( 8, "    ( cmd_voteMap ) Entering on argument `loadnominations`" )
+                LOG( 8, "    ( cmd_voteMap ) Entering on argument `loadnominations`" )
             }
         }
     }
@@ -11304,7 +11304,7 @@ public handleDisplayVoteMap( player_id, menu, item )
     // displayVoteMapMenuHook( player_id );
     set_task( 0.1, "displayVoteMapMenuHook", player_id );
 
-    LOGGER( 1, "    ( handleDisplayVoteMap ) Just Returning PLUGIN_HANDLED, successful nomination." )
+    LOG( 1, "    ( handleDisplayVoteMap ) Just Returning PLUGIN_HANDLED, successful nomination." )
     return PLUGIN_HANDLED;
 }
 
@@ -11320,7 +11320,7 @@ public handleDisplayVoteMap( player_id, menu, item )
  */
 public displayVoteMapMenuCommands( player_id )
 {
-    LOGGER( 128, "I AM ENTERING ON displayVoteMapMenuCommands(1) player_id: %d", player_id )
+    LOG( 128, "I AM ENTERING ON displayVoteMapMenuCommands(1) player_id: %d", player_id )
 
     new mapIndex;
     new info[ 1 ];
@@ -11363,7 +11363,7 @@ public displayVoteMapMenuCommands( player_id )
             info[ 0 ] = VOTEMAP_VOTING_MAP_NAMES_INDEX_FLAG - mapIndex;
             formatex( choice, charsmax( choice ), "%s%s %L", g_votingMapNames[ mapIndex ], COLOR_YELLOW, player_id, "GAL_MATCH_NOMINATED" );
 
-            LOGGER( 4, "( displayVoteMapMenuCommands ) choice: %s, info[0]: %d", choice, info[ 0 ] )
+            LOG( 4, "( displayVoteMapMenuCommands ) choice: %s, info[0]: %d", choice, info[ 0 ] )
             menu_additem( menu, choice, info, 0 );
         }
     }
@@ -11391,14 +11391,14 @@ public displayVoteMapMenuCommands( player_id )
  */
 public handleDisplayVoteMapCommands( player_id, menu, item )
 {
-    LOGGER( 128, "I AM ENTERING ON handleDisplayVoteMapCommands(3) player_id: %d, menu: %d, item: %d", player_id, menu, item )
+    LOG( 128, "I AM ENTERING ON handleDisplayVoteMapCommands(3) player_id: %d, menu: %d, item: %d", player_id, menu, item )
 
     if( item == MENU_EXIT )
     {
         DESTROY_PLAYER_NEW_MENU_TYPE( menu )
         displayVoteMapMenu( player_id );
 
-        LOGGER( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, returning to the main menu." )
+        LOG( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, returning to the main menu." )
         return PLUGIN_HANDLED;
     }
 
@@ -11406,7 +11406,7 @@ public handleDisplayVoteMapCommands( player_id, menu, item )
     {
         DESTROY_PLAYER_NEW_MENU_TYPE( menu )
 
-        LOGGER( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, the menu is destroyed." )
+        LOG( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, the menu is destroyed." )
         return PLUGIN_HANDLED;
     }
 
@@ -11417,14 +11417,14 @@ public handleDisplayVoteMapCommands( player_id, menu, item )
             DESTROY_PLAYER_NEW_MENU_TYPE( menu )
             startVoteMapVoting( player_id );
 
-            LOGGER( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, starting the voting." )
+            LOG( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, starting the voting." )
             return PLUGIN_HANDLED;
         }
         case 1:
         {
             DESTROY_PLAYER_NEW_MENU_TYPE( menu )
 
-            LOGGER( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, exit the menu." )
+            LOG( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, exit the menu." )
             return PLUGIN_HANDLED;
         }
         case 2:
@@ -11434,7 +11434,7 @@ public handleDisplayVoteMapCommands( player_id, menu, item )
 
             DESTROY_PLAYER_NEW_MENU_TYPE( menu )
 
-            LOGGER( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, cleaning the voting." )
+            LOG( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, cleaning the voting." )
             return PLUGIN_HANDLED;
         }
         case 3:
@@ -11442,13 +11442,13 @@ public handleDisplayVoteMapCommands( player_id, menu, item )
             DESTROY_PLAYER_NEW_MENU_TYPE( menu )
             client_cmd( player_id, "messagemode ^"say %s^"", GAL_VOTEMAP_MENU_COMMAND );
 
-            LOGGER( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, opening go to page." )
+            LOG( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, opening go to page." )
             return PLUGIN_HANDLED;
         }
     }
 
     // debugging menu info tracker
-    LOGGER( 4, "", debug_nomination_match_choice( player_id, menu, item ) )
+    LOG( 4, "", debug_nomination_match_choice( player_id, menu, item ) )
 
     new access;
     new callback;
@@ -11484,25 +11484,25 @@ public handleDisplayVoteMapCommands( player_id, menu, item )
     // set_task( 0.1, "displayVoteMapMenuCommands", player_id );
     displayVoteMapMenuCommands( player_id );
 
-    LOGGER( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, the menu is showed again." )
+    LOG( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, the menu is showed again." )
     return PLUGIN_HANDLED;
 }
 
 stock debug_nomination_match_choice( player_id, menu, item )
 {
-    LOGGER( 128, "I AM ENTERING ON debug_nomination_match_choice(3) player_id: %d, menu: %d, item: %d", player_id, menu, item )
+    LOG( 128, "I AM ENTERING ON debug_nomination_match_choice(3) player_id: %d, menu: %d, item: %d", player_id, menu, item )
 
     new access;
     new callback;
 
     new info[ 1 ];
-    LOGGER( 4, "( debug_nomination_match_choice ) item: %d, player_id: %d, menu: %d, \
+    LOG( 4, "( debug_nomination_match_choice ) item: %d, player_id: %d, menu: %d, \
             g_menuMapIndexForPlayerArrays[player_id]: %d", \
             item, player_id, menu, g_menuMapIndexForPlayerArrays[ player_id ] )
 
     // Get item info
     menu_item_getinfo( menu, item, access, info, sizeof info, _, _, callback );
-    LOGGER( 4, "( debug_nomination_match_choice ) info[0]: %d, access: %d, menu%d", info[ 0 ], access, menu )
+    LOG( 4, "( debug_nomination_match_choice ) info[0]: %d, access: %d, menu%d", info[ 0 ], access, menu )
 
     return 0;
 }
@@ -11512,7 +11512,7 @@ stock debug_nomination_match_choice( player_id, menu, item )
  */
 stock openTheVoteMapActionMenu()
 {
-    LOGGER( 128, "I AM ENTERING ON openTheVoteMapActionMenu(0) player_id: %d", g_voteMapInvokerPlayerId )
+    LOG( 128, "I AM ENTERING ON openTheVoteMapActionMenu(0) player_id: %d", g_voteMapInvokerPlayerId )
 
     g_pendingMapVoteCountdown = get_pcvar_num( cvar_voteDuration ) + 120;
     set_task( 1.0, "displayTheVoteMapActionMenu", TASKID_PENDING_VOTE_COUNTDOWN, _, _, "a", g_pendingMapVoteCountdown );
@@ -11523,7 +11523,7 @@ stock openTheVoteMapActionMenu()
  */
 public displayTheVoteMapActionMenu()
 {
-    LOGGER( 128, "I AM ENTERING ON displayTheVoteMapActionMenu(0) player_id: %d", g_voteMapInvokerPlayerId )
+    LOG( 128, "I AM ENTERING ON displayTheVoteMapActionMenu(0) player_id: %d", g_voteMapInvokerPlayerId )
     new player_id = g_voteMapInvokerPlayerId;
 
     if( is_user_connected( player_id )
@@ -11580,9 +11580,9 @@ public displayTheVoteMapActionMenu()
                     CHOOSE_VOTEMAP_MENU_QUESTION );
         }
 
-        LOGGER( 4, "( displayTheVoteMapActionMenu ) menu_body: %s", menu_body )
-        LOGGER( 4, "    menu_id: %d, menuKeys: %d, ", menu_id, menuKeys )
-        LOGGER( 4, "    g_pendingMapVoteCountdown: %d", g_pendingMapVoteCountdown )
+        LOG( 4, "( displayTheVoteMapActionMenu ) menu_body: %s", menu_body )
+        LOG( 4, "    menu_id: %d, menuKeys: %d, ", menu_id, menuKeys )
+        LOG( 4, "    g_pendingMapVoteCountdown: %d", g_pendingMapVoteCountdown )
     }
     else
     {
@@ -11590,7 +11590,7 @@ public displayTheVoteMapActionMenu()
         handleVoteMapActionMenu( player_id, 0 );
     }
 
-    LOGGER( 4, "%48s", " ( displayTheVoteMapActionMenu| out )" )
+    LOG( 4, "%48s", " ( displayTheVoteMapActionMenu| out )" )
 }
 
 /**
@@ -11598,7 +11598,7 @@ public displayTheVoteMapActionMenu()
  */
 public handleVoteMapActionMenu( player_id, pressedKeyCode )
 {
-    LOGGER( 128, "I AM ENTERING ON handleVoteMapActionMenu(2) player_id: %d, pressedKeyCode: %d", \
+    LOG( 128, "I AM ENTERING ON handleVoteMapActionMenu(2) player_id: %d, pressedKeyCode: %d", \
             player_id, pressedKeyCode )
 
     // Allow the result outcome to be processed
@@ -11644,7 +11644,7 @@ public handleVoteMapActionMenu( player_id, pressedKeyCode )
         }
     }
 
-    LOGGER( 1, "    ( handleEndOfTheMapVoteChoice ) Returning PLUGIN_HANDLED" )
+    LOG( 1, "    ( handleEndOfTheMapVoteChoice ) Returning PLUGIN_HANDLED" )
     return PLUGIN_HANDLED;
 }
 
@@ -11653,7 +11653,7 @@ public handleVoteMapActionMenu( player_id, pressedKeyCode )
  */
 public cmd_quit2()
 {
-    LOGGER( 128, "I AM ENTERING ON cmd_quit2(0)" )
+    LOG( 128, "I AM ENTERING ON cmd_quit2(0)" )
     g_isServerShuttingDown = true;
 
     server_cmd( "quit" );
@@ -11667,11 +11667,11 @@ public cmd_quit2()
  */
 public cmd_startVote( player_id, level, cid )
 {
-    LOGGER( 128, "I AM ENTERING ON cmd_startVote(3) player_id: %d, level: %d, cid: %d", player_id, level, cid )
+    LOG( 128, "I AM ENTERING ON cmd_startVote(3) player_id: %d, level: %d, cid: %d", player_id, level, cid )
 
     if( !cmd_access( player_id, level, cid, 1 ) )
     {
-        LOGGER( 1, "    ( cmd_startVote ) Returning PLUGIN_CONTINUE" )
+        LOG( 1, "    ( cmd_startVote ) Returning PLUGIN_CONTINUE" )
         return PLUGIN_CONTINUE;
     }
 
@@ -11700,10 +11700,10 @@ public cmd_startVote( player_id, level, cid )
                 g_isTimeToRestart = true;
             }
 
-            LOGGER( 8, "( cmd_startVote ) equali( %s, '-restart', 4 )? %d", argument, equali( argument, "-restart", 4 ) )
+            LOG( 8, "( cmd_startVote ) equali( %s, '-restart', 4 )? %d", argument, equali( argument, "-restart", 4 ) )
         }
 
-        LOGGER( 8, "( cmd_startVote ) g_isTimeToRestart? %d, g_isToChangeMapOnVotingEnd? %d, \
+        LOG( 8, "( cmd_startVote ) g_isTimeToRestart? %d, g_isToChangeMapOnVotingEnd? %d, \
                 g_voteStatus & IS_FORCED_VOTE: %d", g_isTimeToRestart, g_isToChangeMapOnVotingEnd, \
                 g_voteStatus & IS_FORCED_VOTE != 0 )
 
@@ -11713,17 +11713,17 @@ public cmd_startVote( player_id, level, cid )
         vote_startDirector( true );
     }
 
-    LOGGER( 1, "    ( cmd_startVote ) Returning PLUGIN_HANDLED" )
+    LOG( 1, "    ( cmd_startVote ) Returning PLUGIN_HANDLED" )
     return PLUGIN_HANDLED;
 }
 
 public cmd_createMapFile( player_id, level, cid )
 {
-    LOGGER( 128, "I AM ENTERING ON cmd_createMapFile(3) player_id: %d, level: %d, cid: %d", player_id, level, cid )
+    LOG( 128, "I AM ENTERING ON cmd_createMapFile(3) player_id: %d, level: %d, cid: %d", player_id, level, cid )
 
     if( !cmd_access( player_id, level, cid, 1 ) )
     {
-        LOGGER( 1, "    ( cmd_createMapFile ) Returning PLUGIN_CONTINUE" )
+        LOG( 1, "    ( cmd_createMapFile ) Returning PLUGIN_CONTINUE" )
         return PLUGIN_CONTINUE;
     }
 
@@ -11750,13 +11750,13 @@ public cmd_createMapFile( player_id, level, cid )
         }
     }
 
-    LOGGER( 1, "    ( cmd_createMapFile ) Returning PLUGIN_HANDLED" )
+    LOG( 1, "    ( cmd_createMapFile ) Returning PLUGIN_HANDLED" )
     return PLUGIN_HANDLED;
 }
 
 stock createMapFileFromAllServerMaps( player_id, mapFilePath[] )
 {
-    LOGGER( 128, "I AM ENTERING ON createMapFileFromAllServerMaps(2) player_id: %d, mapFilePath: %s", player_id, mapFilePath )
+    LOG( 128, "I AM ENTERING ON createMapFileFromAllServerMaps(2) player_id: %d, mapFilePath: %s", player_id, mapFilePath )
 
     // map name is MAX_MAPNAME_LENGHT, .bsp: 4 + string terminator: 1 = 5
     new loadedMapName[ MAX_MAPNAME_LENGHT + 5 ];
@@ -11807,7 +11807,7 @@ stock createMapFileFromAllServerMaps( player_id, mapFilePath[] )
         else
         {
             console_print( player_id, "%L", player_id, "GAL_CREATIONFAILED", mapFilePath );
-            LOGGER( 1, "ERROR: %L", LANG_SERVER, "GAL_CREATIONFAILED", mapFilePath )
+            LOG( 1, "ERROR: %L", LANG_SERVER, "GAL_CREATIONFAILED", mapFilePath )
         }
 
         close_dir( directoryDescriptor );
@@ -11816,13 +11816,13 @@ stock createMapFileFromAllServerMaps( player_id, mapFilePath[] )
     {
         // directory not found, wtf?
         console_print( player_id, "%L", player_id, "GAL_MAPSFOLDERMISSING" );
-        LOGGER( 1, "ERROR: %L", LANG_SERVER, "GAL_MAPSFOLDERMISSING" )
+        LOG( 1, "ERROR: %L", LANG_SERVER, "GAL_MAPSFOLDERMISSING" )
     }
 }
 
 public sort_stringsi( Array:array, elem1, elem2, data[], data_size )
 {
-    LOGGER( 256, "I AM ENTERING ON sort_stringsi(5) array: %d, elem1: %d, elem2: %d", array, elem1, elem2 )
+    LOG( 256, "I AM ENTERING ON sort_stringsi(5) array: %d, elem1: %d, elem2: %d", array, elem1, elem2 )
 
     new map1[ MAX_MAPNAME_LENGHT ];
     new map2[ MAX_MAPNAME_LENGHT ];
@@ -11830,17 +11830,17 @@ public sort_stringsi( Array:array, elem1, elem2, data[], data_size )
     ArrayGetString( array, elem1, map1, charsmax( map1 ) );
     ArrayGetString( array, elem2, map2, charsmax( map2 ) );
 
-    LOGGER( 256, "    ( sort_stringsi ) Returning %s > %s: %d", map1, map2, strcmp( map1, map2, 1 ) )
+    LOG( 256, "    ( sort_stringsi ) Returning %s > %s: %d", map1, map2, strcmp( map1, map2, 1 ) )
     return strcmp( map1, map2, 1 );
 }
 
 public cmd_maintenanceMode( player_id, level, cid )
 {
-    LOGGER( 128, "I AM ENTERING ON cmd_maintenanceMode(3) player_id: %d, level: %d, cid: %d", player_id, level, cid )
+    LOG( 128, "I AM ENTERING ON cmd_maintenanceMode(3) player_id: %d, level: %d, cid: %d", player_id, level, cid )
 
     if( !cmd_access( player_id, level, cid, 1 ) )
     {
-        LOGGER( 1, "    ( cmd_maintenanceMode ) Returning PLUGIN_CONTINUE" )
+        LOG( 1, "    ( cmd_maintenanceMode ) Returning PLUGIN_CONTINUE" )
         return PLUGIN_CONTINUE;
     }
 
@@ -11861,17 +11861,17 @@ public cmd_maintenanceMode( player_id, level, cid )
         no_color_print( player_id, "%L", player_id, "GAL_CHANGE_MAINTENANCE_STATE", player_id, "GAL_CHANGE_MAINTENANCE_ON" );
     }
 
-    LOGGER( 1, "    ( cmd_maintenanceMode ) Returning PLUGIN_HANDLED" )
+    LOG( 1, "    ( cmd_maintenanceMode ) Returning PLUGIN_HANDLED" )
     return PLUGIN_HANDLED;
 }
 
 public cmd_lookingForCrashes( player_id, level, cid )
 {
-    LOGGER( 128, "I AM ENTERING ON cmd_lookingForCrashes(3) player_id: %d, level: %d, cid: %d", player_id, level, cid )
+    LOG( 128, "I AM ENTERING ON cmd_lookingForCrashes(3) player_id: %d, level: %d, cid: %d", player_id, level, cid )
 
     if( !cmd_access( player_id, level, cid, 1 ) )
     {
-        LOGGER( 1, "    ( cmd_lookingForCrashes ) Returning PLUGIN_CONTINUE" )
+        LOG( 1, "    ( cmd_lookingForCrashes ) Returning PLUGIN_CONTINUE" )
         return PLUGIN_CONTINUE;
     }
 
@@ -11937,7 +11937,7 @@ public cmd_lookingForCrashes( player_id, level, cid )
         }
     }
 
-    LOGGER( 1, "    ( cmd_lookingForCrashes ) Returning PLUGIN_HANDLED" )
+    LOG( 1, "    ( cmd_lookingForCrashes ) Returning PLUGIN_HANDLED" )
     return PLUGIN_HANDLED;
 }
 
@@ -11948,7 +11948,7 @@ public cmd_lookingForCrashes( player_id, level, cid )
  */
 public cmd_say( player_id )
 {
-    LOGGER( 128, "I AM ENTERING ON cmd_say(1) player_id: %s", player_id )
+    LOG( 128, "I AM ENTERING ON cmd_say(1) player_id: %s", player_id )
     new thirdWord[ 2 ];
 
     static sentence  [ 70 ];
@@ -11967,7 +11967,7 @@ public cmd_say( player_id )
            secondWord, charsmax( secondWord ),
            thirdWord , charsmax( thirdWord  ) );
 
-    LOGGER( 4, "( cmd_say ) sentence: %s, firstWord: %s, secondWord: %s, thirdWord: %s", \
+    LOG( 4, "( cmd_say ) sentence: %s, firstWord: %s, secondWord: %s, thirdWord: %s", \
             sentence, firstWord, secondWord, thirdWord )
 
     // if the chat line has more than 2 words, we're not interested at all
@@ -11976,7 +11976,7 @@ public cmd_say( player_id )
         new userFlags          = get_user_flags( player_id );
         new nomPlayerAllowance = get_pcvar_num( cvar_nomPlayerAllowance );
 
-        LOGGER( 4, "( cmd_say ) the thirdWord is empty, userFlags: %d", userFlags )
+        LOG( 4, "( cmd_say ) the thirdWord is empty, userFlags: %d", userFlags )
 
         strtolower( firstWord );
         strtolower( secondWord );
@@ -11985,7 +11985,7 @@ public cmd_say( player_id )
         // "say [rtv|rockthe<anything>vote]"
         if( secondWord[ 0 ] == '^0' )
         {
-            LOGGER( 4, "( cmd_say ) the secondWord is empty. Handling: '%s'.", firstWord )
+            LOG( 4, "( cmd_say ) the secondWord is empty. Handling: '%s'.", firstWord )
 
             if( nomPlayerAllowance
                 && userFlags & ADMIN_MAP
@@ -12029,14 +12029,14 @@ public cmd_say( player_id )
         }
     }
 
-    LOGGER( 1, "    ( cmd_say ) Just returning PLUGIN_CONTINUE, as reached the handler end." )
+    LOG( 1, "    ( cmd_say ) Just returning PLUGIN_CONTINUE, as reached the handler end." )
     return PLUGIN_CONTINUE;
 }
 
 stock sayHandlerForOneNomWords( player_id, firstWord[] )
 {
-    LOGGER( 128, "I AM ENTERING ON sayHandlerForOneNomWords(3)" )
-    LOGGER( 4, "( sayHandlerForOneNomWords ) on the 1 word: else if( cvar_nomPlayerAllowance ), \
+    LOG( 128, "I AM ENTERING ON sayHandlerForOneNomWords(3)" )
+    LOG( 4, "( sayHandlerForOneNomWords ) on the 1 word: else if( cvar_nomPlayerAllowance ), \
             get_pcvar_num( cvar_nomPlayerAllowance ): %d", get_pcvar_num( cvar_nomPlayerAllowance ) )
 
     if( equali( firstWord, "noms" )
@@ -12044,7 +12044,7 @@ stock sayHandlerForOneNomWords( player_id, firstWord[] )
     {
         nomination_list();
 
-        LOGGER( 1, "    ( sayHandlerForOneNomWords ) Just returning true, nomination_list(0) chosen." )
+        LOG( 1, "    ( sayHandlerForOneNomWords ) Just returning true, nomination_list(0) chosen." )
         return true;
     }
     else
@@ -12055,7 +12055,7 @@ stock sayHandlerForOneNomWords( player_id, firstWord[] )
         {
             nomination_toggle( player_id, mapIndex );
 
-            LOGGER( 1, "    ( sayHandlerForOneNomWords ) Just returning true, nomination_toggle(2) chosen." )
+            LOG( 1, "    ( sayHandlerForOneNomWords ) Just returning true, nomination_toggle(2) chosen." )
             return true;
         }
         else if( strlen( firstWord ) > 5
@@ -12069,14 +12069,14 @@ stock sayHandlerForOneNomWords( player_id, firstWord[] )
             setCorrectMenuPage( player_id, firstWord, g_nominationPlayersMenuPages, lastPageNumber );
             nomination_menu( player_id );
 
-            LOGGER( 1, "    ( sayHandlerForOneNomWords ) Just returning true, nomination_menu(1) chosen." )
+            LOG( 1, "    ( sayHandlerForOneNomWords ) Just returning true, nomination_menu(1) chosen." )
             return true;
         }
         else // if contains a prefix
         {
             for( new prefix_index = 0; prefix_index < g_mapPrefixCount; prefix_index++ )
             {
-                LOGGER( 4, "( sayHandlerForOneNomWords ) firstWord: %s, \
+                LOG( 4, "( sayHandlerForOneNomWords ) firstWord: %s, \
                         g_mapPrefixes[%d]: %s, \
                         containi( %s, %s )? %d", \
                         firstWord, \
@@ -12087,24 +12087,24 @@ stock sayHandlerForOneNomWords( player_id, firstWord[] )
                 {
                     buildNominationPartNameAttempt( player_id, g_mapPrefixes[ prefix_index ] );
 
-                    LOGGER( 1, "    ( sayHandlerForOneNomWords ) Just returning true, nomination_menu(1) chosen." )
+                    LOG( 1, "    ( sayHandlerForOneNomWords ) Just returning true, nomination_menu(1) chosen." )
                     return true;
                 }
             }
         }
 
-        LOGGER( 4, "( sayHandlerForOneNomWords ) equali(%s, 'nom', 3)? %d, strlen(%s) > 5? %d", \
+        LOG( 4, "( sayHandlerForOneNomWords ) equali(%s, 'nom', 3)? %d, strlen(%s) > 5? %d", \
                 firstWord, equali( firstWord, "nom", 3 ), \
                 firstWord, strlen( firstWord ) > 5 )
     }
 
-    LOGGER( 1, "    ( sayHandlerForOneNomWords ) Just returning false." )
+    LOG( 1, "    ( sayHandlerForOneNomWords ) Just returning false." )
     return false;
 }
 
 stock sayHandlerForTwoNomWords( player_id, firstWord[], secondWord[] )
 {
-    LOGGER( 128, "I AM ENTERING ON sayHandlerForTwoNomWords(3)" )
+    LOG( 128, "I AM ENTERING ON sayHandlerForTwoNomWords(3)" )
 
     if( strlen( firstWord ) > 5
         && equali( firstWord, "nom", 3 )
@@ -12117,7 +12117,7 @@ stock sayHandlerForTwoNomWords( player_id, firstWord[], secondWord[] )
         setCorrectMenuPage( player_id, secondWord, g_nominationPlayersMenuPages, lastPageNumber );
         nomination_menu( player_id );
 
-        LOGGER( 1, "    ( sayHandlerForTwoNomWords ) Just returning true, nomination_menu(1) chosen." )
+        LOG( 1, "    ( sayHandlerForTwoNomWords ) Just returning true, nomination_menu(1) chosen." )
         return true;
     }
     else if( equali( firstWord, "nominate" )
@@ -12125,7 +12125,7 @@ stock sayHandlerForTwoNomWords( player_id, firstWord[], secondWord[] )
     {
         buildNominationPartNameAttempt( player_id, secondWord );
 
-        LOGGER( 1, "    ( sayHandlerForTwoNomWords ) Just returning true, nominationAttemptWithNamePart(2): %s", secondWord )
+        LOG( 1, "    ( sayHandlerForTwoNomWords ) Just returning true, nominationAttemptWithNamePart(2): %s", secondWord )
         return true;
     }
     else if( equali( firstWord, "cancel" ) )
@@ -12136,12 +12136,12 @@ stock sayHandlerForTwoNomWords( player_id, firstWord[], secondWord[] )
         {
             nomination_cancel( player_id, mapIndex );
 
-            LOGGER( 1, "    ( sayHandlerForTwoNomWords ) Just returning true, nomination cancel option chosen." )
+            LOG( 1, "    ( sayHandlerForTwoNomWords ) Just returning true, nomination cancel option chosen." )
             return true;
         }
     }
 
-    LOGGER( 1, "    ( sayHandlerForTwoNomWords ) Just returning false." )
+    LOG( 1, "    ( sayHandlerForTwoNomWords ) Just returning false." )
     return false;
 }
 
@@ -12151,7 +12151,7 @@ stock sayHandlerForTwoNomWords( player_id, firstWord[], secondWord[] )
  */
 stock setCorrectMenuPage( player_id, pageString[], menuPages[], pagesCount )
 {
-    LOGGER( 128, "I AM ENTERING ON setCorrectMenuPage(4) pageString: %s, pagesCount: %d", pageString, pagesCount )
+    LOG( 128, "I AM ENTERING ON setCorrectMenuPage(4) pageString: %s, pagesCount: %d", pageString, pagesCount )
 
     if( strlen( pageString ) > 0 )
     {
@@ -12168,13 +12168,13 @@ stock setCorrectMenuPage( player_id, pageString[], menuPages[], pagesCount )
             searchIndex++;
         }
 
-        LOGGER( 4, "( setCorrectMenuPage ) 1. pageString: %s", pageString )
+        LOG( 4, "( setCorrectMenuPage ) 1. pageString: %s", pageString )
 
         // When the page number start with a digit, we would erase all the string if not doing this.
         if( searchIndex == 0
             && isdigit( pageString[ 0 ] ) )
         {
-            LOGGER( 4, "( setCorrectMenuPage ) 2. searchIndex: %d", searchIndex )
+            LOG( 4, "( setCorrectMenuPage ) 2. searchIndex: %d", searchIndex )
 
             do
             {
@@ -12186,7 +12186,7 @@ stock setCorrectMenuPage( player_id, pageString[], menuPages[], pagesCount )
         }
         else if( isdigit( pageString[ searchIndex ] ) )
         {
-            LOGGER( 4, "( setCorrectMenuPage ) 3. searchIndex: %d", searchIndex )
+            LOG( 4, "( setCorrectMenuPage ) 3. searchIndex: %d", searchIndex )
 
             do
             {
@@ -12200,12 +12200,12 @@ stock setCorrectMenuPage( player_id, pageString[], menuPages[], pagesCount )
         }
         else
         {
-            LOGGER( 4, "( setCorrectMenuPage ) 4. searchIndex: %d", searchIndex )
+            LOG( 4, "( setCorrectMenuPage ) 4. searchIndex: %d", searchIndex )
             pageString[ searchIndex ] = '^0';
         }
     }
 
-    LOGGER( 4, "( setCorrectMenuPage ) 5. pageString: %s", pageString )
+    LOG( 4, "( setCorrectMenuPage ) 5. pageString: %s", pageString )
 
     // The pages index, start on 0
     if( isdigit( pageString[ 0 ] ) )
@@ -12222,7 +12222,7 @@ stock setCorrectMenuPage( player_id, pageString[], menuPages[], pagesCount )
  */
 public nomination_menuHook( player_id )
 {
-    LOGGER( 128, "I AM ENTERING ON nomination_menuHook(1) currentPage: %d", g_nominationPlayersMenuPages[ player_id ] )
+    LOG( 128, "I AM ENTERING ON nomination_menuHook(1) currentPage: %d", g_nominationPlayersMenuPages[ player_id ] )
     nomination_menu( player_id );
 }
 
@@ -12264,7 +12264,7 @@ stock getRecentMapsAndWhiteList( player_id, &isRecentMapNomBlocked, &isWhiteList
  */
 stock nomination_menu( player_id )
 {
-    LOGGER( 128, "I AM ENTERING ON nomination_menu(1) player_id: %d", player_id )
+    LOG( 128, "I AM ENTERING ON nomination_menu(1) player_id: %d", player_id )
 
     new itemsCount;
     new nominationsMapsCount;
@@ -12350,7 +12350,7 @@ stock nomination_menu( player_id )
             }
 
             formatex( choice, charsmax( choice ), "%s %s", nominationMap, disabledReason );
-            LOGGER( 4, "( nomination_menu ) choice: %s", choice )
+            LOG( 4, "( nomination_menu ) choice: %s", choice )
 
             menu_additem( menu, choice, _, ( disabledReason[ 0 ] == '^0' ? 0 : ( 1 << 26 ) ) );
 
@@ -12358,7 +12358,7 @@ stock nomination_menu( player_id )
 
     } // end for 'mapIndex'.
 
-    LOGGER( 4, "( nominationAttemptWithNamePart ) itemsCount: %d, mapIndex: %d", itemsCount, mapIndex )
+    LOG( 4, "( nominationAttemptWithNamePart ) itemsCount: %d, mapIndex: %d", itemsCount, mapIndex )
 
     addMenuMoreBackExitOptions( menu, player_id, disabledReason, mapIndex < nominationsMapsCount, currentPageNumber > 0, itemsCount );
     menu_display( player_id, menu );
@@ -12370,11 +12370,11 @@ stock nomination_menu( player_id )
  */
 stock buildNominationPartNameAttempt( player_id, secondWord[] )
 {
-    LOGGER( 128, "I AM ENTERING ON buildNominationPartNameAttempt(2)" )
+    LOG( 128, "I AM ENTERING ON buildNominationPartNameAttempt(2)" )
 
     if( task_exists( TASKID_NOMINATION_PARTIAL + player_id ) )
     {
-        LOGGER( 4, "( buildNominationPartNameAttempt ) Blocking, the task already exists!" )
+        LOG( 4, "( buildNominationPartNameAttempt ) Blocking, the task already exists!" )
         return;
     }
 
@@ -12401,7 +12401,7 @@ stock buildNominationPartNameAttempt( player_id, secondWord[] )
  */
 public nominationAttemptWithNameHook( parameters[] )
 {
-    LOGGER( 128, "I AM ENTERING ON nominationAttemptWithNameHook(2) startSearchIndex: %d", parameters[ 1 ] )
+    LOG( 128, "I AM ENTERING ON nominationAttemptWithNameHook(2) startSearchIndex: %d", parameters[ 1 ] )
     nominationAttemptWithNamePart( parameters[ 0 ], parameters[ 1 ] );
 }
 
@@ -12412,7 +12412,7 @@ public nominationAttemptWithNameHook( parameters[] )
  */
 stock nominationAttemptWithNamePart( player_id, startSearchIndex = 0 )
 {
-    LOGGER( 128, "I AM ENTERING ON nominationAttemptWithNamePart(2) startSearchIndex: %d", startSearchIndex )
+    LOG( 128, "I AM ENTERING ON nominationAttemptWithNamePart(2) startSearchIndex: %d", startSearchIndex )
 
     new itemsCount;
     new nominationsMapsCount;
@@ -12470,17 +12470,17 @@ stock nominationAttemptWithNamePart( player_id, startSearchIndex = 0 )
  */
 public fillThePartialNominationMenu( argumentsIn[] )
 {
-    LOGGER( 128, "I AM ENTERING ON fillThePartialNominationMenu(1)" )
+    LOG( 128, "I AM ENTERING ON fillThePartialNominationMenu(1)" )
 
-    LOGGER( 128, "( fillThePartialNominationMenu ) player_id:             %d", argumentsIn[ 0 ] )
-    LOGGER( 128, "( fillThePartialNominationMenu ) mapIndex:              %d", argumentsIn[ 1 ] )
-    LOGGER( 128, "( fillThePartialNominationMenu ) itemsCount:            %d", argumentsIn[ 2 ] )
-    LOGGER( 128, "( fillThePartialNominationMenu ) startSearchIndex:      %d", argumentsIn[ 3 ] )
-    LOGGER( 128, "( fillThePartialNominationMenu ) nominationsMapsCount:  %d", argumentsIn[ 4 ] )
-    LOGGER( 128, "( fillThePartialNominationMenu ) isWhiteListNomBlock:   %d", argumentsIn[ 5 ] )
-    LOGGER( 128, "( fillThePartialNominationMenu ) isRecentMapNomBlocked: %d", argumentsIn[ 6 ] )
-    LOGGER( 128, "( fillThePartialNominationMenu ) menu:                  %d", argumentsIn[ 7 ] )
-    LOGGER( 128, "( fillThePartialNominationMenu ) currentPageNumber:     %d", argumentsIn[ 8 ] )
+    LOG( 128, "( fillThePartialNominationMenu ) player_id:             %d", argumentsIn[ 0 ] )
+    LOG( 128, "( fillThePartialNominationMenu ) mapIndex:              %d", argumentsIn[ 1 ] )
+    LOG( 128, "( fillThePartialNominationMenu ) itemsCount:            %d", argumentsIn[ 2 ] )
+    LOG( 128, "( fillThePartialNominationMenu ) startSearchIndex:      %d", argumentsIn[ 3 ] )
+    LOG( 128, "( fillThePartialNominationMenu ) nominationsMapsCount:  %d", argumentsIn[ 4 ] )
+    LOG( 128, "( fillThePartialNominationMenu ) isWhiteListNomBlock:   %d", argumentsIn[ 5 ] )
+    LOG( 128, "( fillThePartialNominationMenu ) isRecentMapNomBlocked: %d", argumentsIn[ 6 ] )
+    LOG( 128, "( fillThePartialNominationMenu ) menu:                  %d", argumentsIn[ 7 ] )
+    LOG( 128, "( fillThePartialNominationMenu ) currentPageNumber:     %d", argumentsIn[ 8 ] )
 
     new const player_id             = argumentsIn[ 0 ];
     new mapIndex                    = argumentsIn[ 1 ];
@@ -12538,7 +12538,7 @@ public fillThePartialNominationMenu( argumentsIn[] )
                     }
 
                     formatex( choice, charsmax( choice ), "%s %s", nominationMap, disabledReason );
-                    LOGGER( 4, "( fillThePartialNominationMenu ) choice: %s", choice )
+                    LOG( 4, "( fillThePartialNominationMenu ) choice: %s", choice )
 
                     menu_additem( menu, choice, _, ( disabledReason[ 0 ] == '^0' ? 0 : ( 1 << 26 ) ) );
 
@@ -12576,8 +12576,8 @@ public fillThePartialNominationMenu( argumentsIn[] )
 
     new lastPosition = ArraySize( g_partialMatchFirstPageItems[ player_id ] ) - 1;
 
-    LOGGER( 4, "( fillThePartialNominationMenu ) mapIndex: %d", mapIndex)
-    LOGGER( 4, "( fillThePartialNominationMenu ) itemsCount: %d, lastPosition: %d", itemsCount, lastPosition )
+    LOG( 4, "( fillThePartialNominationMenu ) mapIndex: %d", mapIndex)
+    LOG( 4, "( fillThePartialNominationMenu ) itemsCount: %d, lastPosition: %d", itemsCount, lastPosition )
 
     // If the last position is negative, then there is not last position, moreover this is the
     // first call to fillThePartialNominationMenu(3), then it means there any or one matches for
@@ -12611,7 +12611,7 @@ public fillThePartialNominationMenu( argumentsIn[] )
 
 stock addMenuMoreBackExitOptions( menu, player_id, menuGeneralItem[], bool:isToEnableMoreButton, bool:isToEnableBackButton, itemsCount )
 {
-    LOGGER( 128, "I AM ENTERING ON addMenuMoreBackExitOptions(5) isToEnableMoreButton: %d, \
+    LOG( 128, "I AM ENTERING ON addMenuMoreBackExitOptions(5) isToEnableMoreButton: %d, \
             isToEnableBackButton: %d", isToEnableMoreButton, isToEnableBackButton )
 
     addMenuMoreBackButtons( menu, player_id, menuGeneralItem, isToEnableMoreButton, isToEnableBackButton, itemsCount );
@@ -12623,7 +12623,7 @@ stock addMenuMoreBackExitOptions( menu, player_id, menuGeneralItem[], bool:isToE
 
 stock addMenuMoreBackButtons( menu, player_id, menuGeneralItem[], bool:isToEnableMoreButton, bool:isToEnableBackButton, itemsCount )
 {
-    LOGGER( 128, "I AM ENTERING ON addMenuMoreBackButtons(5) isToEnableBackButton: %d", isToEnableBackButton )
+    LOG( 128, "I AM ENTERING ON addMenuMoreBackButtons(5) isToEnableBackButton: %d", isToEnableBackButton )
 
     // Force the menu control options to be present on the keys 8 (more), 9 (back) and 0 (exit).
     while( itemsCount < MAX_NOM_MENU_ITEMS_PER_PAGE )
@@ -12670,7 +12670,7 @@ stock addMenuMoreBackButtons( menu, player_id, menuGeneralItem[], bool:isToEnabl
  */
 public nomination_handleMatchChoice( player_id, menu, item )
 {
-    LOGGER( 128, "I AM ENTERING ON nomination_handleMatchChoice(1) player_id: %d, menu: %d, item: %d", player_id, menu, item )
+    LOG( 128, "I AM ENTERING ON nomination_handleMatchChoice(1) player_id: %d, menu: %d, item: %d", player_id, menu, item )
 
     // Let go to destroy the menu and clean some memory. As the menu is not paginated, the item 9
     // is the key 0 on the keyboard. Also, the item 8 is the key 9; 7, 8; 6, 7; 5, 6; 4, 5; etc.
@@ -12679,7 +12679,7 @@ public nomination_handleMatchChoice( player_id, menu, item )
     {
         DESTROY_PLAYER_NEW_MENU_TYPE( menu )
 
-        LOGGER( 1, "    ( nomination_handleMatchChoice ) Just Returning PLUGIN_HANDLED, the menu is destroyed." )
+        LOG( 1, "    ( nomination_handleMatchChoice ) Just Returning PLUGIN_HANDLED, the menu is destroyed." )
         return PLUGIN_HANDLED;
     }
 
@@ -12691,7 +12691,7 @@ public nomination_handleMatchChoice( player_id, menu, item )
         unnominatedDisconnectedPlayer( player_id );
         DESTROY_PLAYER_NEW_MENU_TYPE( menu )
 
-        LOGGER( 1, "    ( nomination_handleMatchChoice ) Just Returning PLUGIN_HANDLED, the nominations were cancelled." )
+        LOG( 1, "    ( nomination_handleMatchChoice ) Just Returning PLUGIN_HANDLED, the nominations were cancelled." )
         return PLUGIN_HANDLED;
     }
 
@@ -12705,7 +12705,7 @@ public nomination_handleMatchChoice( player_id, menu, item )
         // set_task( 0.1, "nomination_menuHook", player_id );
         nomination_menuHook( player_id );
 
-        LOGGER( 1, "    ( nomination_handleMatchChoice ) Just Returning PLUGIN_HANDLED, doing the back button." )
+        LOG( 1, "    ( nomination_handleMatchChoice ) Just Returning PLUGIN_HANDLED, doing the back button." )
         return PLUGIN_HANDLED;
     }
 
@@ -12719,7 +12719,7 @@ public nomination_handleMatchChoice( player_id, menu, item )
         // set_task( 0.1, "nomination_menuHook", player_id );
         nomination_menuHook( player_id );
 
-        LOGGER( 1, "    ( nomination_handleMatchChoice ) Just Returning PLUGIN_HANDLED, doing the more button." )
+        LOG( 1, "    ( nomination_handleMatchChoice ) Just Returning PLUGIN_HANDLED, doing the more button." )
         return PLUGIN_HANDLED;
     }
 
@@ -12730,7 +12730,7 @@ public nomination_handleMatchChoice( player_id, menu, item )
     map_nominate( player_id, item );
     DESTROY_PLAYER_NEW_MENU_TYPE( menu )
 
-    LOGGER( 1, "    ( nomination_handleMatchChoice ) Just Returning PLUGIN_HANDLED, successful nomination." )
+    LOG( 1, "    ( nomination_handleMatchChoice ) Just Returning PLUGIN_HANDLED, successful nomination." )
     return PLUGIN_HANDLED;
 }
 
@@ -12749,7 +12749,7 @@ public nomination_handleMatchChoice( player_id, menu, item )
  */
 public nomination_handlePartialMatch( player_id, menu, item )
 {
-    LOGGER( 128, "I AM ENTERING ON nomination_handlePartialMatch(1) player_id: %d, menu: %d, item: %d", player_id, menu, item )
+    LOG( 128, "I AM ENTERING ON nomination_handlePartialMatch(1) player_id: %d, menu: %d, item: %d", player_id, menu, item )
 
     // Let go to destroy the menu and clean some memory. As the menu is not paginated, the item 9
     // is the key 0 on the keyboard. Also, the item 8 is the key 9; 7, 8; 6, 7; 5, 6; 4, 5; etc.
@@ -12758,7 +12758,7 @@ public nomination_handlePartialMatch( player_id, menu, item )
     {
         DESTROY_PLAYER_NEW_MENU_TYPE( menu )
 
-        LOGGER( 1, "    ( nomination_handlePartialMatch ) Just Returning PLUGIN_HANDLED, the menu is destroyed." )
+        LOG( 1, "    ( nomination_handlePartialMatch ) Just Returning PLUGIN_HANDLED, the menu is destroyed." )
         return PLUGIN_HANDLED;
     }
 
@@ -12787,7 +12787,7 @@ public nomination_handlePartialMatch( player_id, menu, item )
         // set_task( 0.1, "nominationAttemptWithNameHook", _, arguments, sizeof arguments );
         nominationAttemptWithNameHook( arguments );
 
-        LOGGER( 1, "    ( nomination_handlePartialMatch ) Just Returning PLUGIN_HANDLED, doing the back button." )
+        LOG( 1, "    ( nomination_handlePartialMatch ) Just Returning PLUGIN_HANDLED, doing the back button." )
         return PLUGIN_HANDLED;
     }
 
@@ -12806,7 +12806,7 @@ public nomination_handlePartialMatch( player_id, menu, item )
         // set_task( 0.1, "nominationAttemptWithNameHook", _, arguments, sizeof arguments );
         nominationAttemptWithNameHook( arguments );
 
-        LOGGER( 1, "    ( nomination_handlePartialMatch ) Just Returning PLUGIN_HANDLED, doing the more button." )
+        LOG( 1, "    ( nomination_handlePartialMatch ) Just Returning PLUGIN_HANDLED, doing the more button." )
         return PLUGIN_HANDLED;
     }
 
@@ -12816,7 +12816,7 @@ public nomination_handlePartialMatch( player_id, menu, item )
     map_nominate( player_id, item );
     DESTROY_PLAYER_NEW_MENU_TYPE( menu )
 
-    LOGGER( 1, "    ( nomination_handlePartialMatch ) Just Returning PLUGIN_HANDLED, successful nomination." )
+    LOG( 1, "    ( nomination_handlePartialMatch ) Just Returning PLUGIN_HANDLED, successful nomination." )
     return PLUGIN_HANDLED;
 }
 
@@ -12830,7 +12830,7 @@ public nomination_handlePartialMatch( player_id, menu, item )
  */
 stock convert_numeric_base( origin_number, origin_base, destiny_base )
 {
-    LOGGER( 128, "I AM ENTERING ON convert_numeric_base(3) number: %d (%d->%d)", \
+    LOG( 128, "I AM ENTERING ON convert_numeric_base(3) number: %d (%d->%d)", \
             origin_number, origin_base, destiny_base )
 
     new integer;
@@ -12848,7 +12848,7 @@ stock convert_numeric_base( origin_number, origin_base, destiny_base )
     integer = fromDigitsRepresentation( digits, 10 );
     ArrayDestroy( digits );
 
-    LOGGER( 1, "    ( convert_numeric_base ) Returning integer: %d", integer )
+    LOG( 1, "    ( convert_numeric_base ) Returning integer: %d", integer )
     return integer;
 }
 
@@ -12862,7 +12862,7 @@ stock convert_numeric_base( origin_number, origin_base, destiny_base )
  */
 stock fromDigitsRepresentation( Array:digits, origin_base )
 {
-    LOGGER( 128, "I AM ENTERING ON fromDigitsRepresentation(2) origin_base: %d", origin_base )
+    LOG( 128, "I AM ENTERING ON fromDigitsRepresentation(2) origin_base: %d", origin_base )
 
     new integer;
     new arraySize = ArraySize( digits );
@@ -12885,7 +12885,7 @@ stock fromDigitsRepresentation( Array:digits, origin_base )
  */
 stock Array:toDigitsRepresentation( origin_number, origin_base )
 {
-    LOGGER( 128, "I AM ENTERING ON toDigitsRepresentation(2) origin_number: %d -> %d", origin_number, origin_base )
+    LOG( 128, "I AM ENTERING ON toDigitsRepresentation(2) origin_number: %d -> %d", origin_number, origin_base )
     new Array:digits = ArrayCreate();
 
     ArrayPushCell( digits, origin_number % origin_base );
@@ -12905,7 +12905,7 @@ stock Array:toDigitsRepresentation( origin_number, origin_base )
  */
 stock convert_octal_to_decimal( octal_number )
 {
-    LOGGER( 128, "I AM ENTERING ON convert_octal_to_decimal(1) octal_number: %d", octal_number )
+    LOG( 128, "I AM ENTERING ON convert_octal_to_decimal(1) octal_number: %d", octal_number )
     new remainder;
 
     new decimal = 0;
@@ -12920,7 +12920,7 @@ stock convert_octal_to_decimal( octal_number )
         ++index;
     }
 
-    LOGGER( 1, "    ( convert_octal_to_decimal ) Returning decimal: %d", decimal )
+    LOG( 1, "    ( convert_octal_to_decimal ) Returning decimal: %d", decimal )
     return decimal;
 }
 
@@ -12933,13 +12933,13 @@ stock convert_octal_to_decimal( octal_number )
  */
 stock nomination_getPlayer( mapIndex )
 {
-    LOGGER( 128, "I AM ENTERING ON nomination_getPlayer(1) mapIndex: %d", mapIndex )
+    LOG( 128, "I AM ENTERING ON nomination_getPlayer(1) mapIndex: %d", mapIndex )
 
     new trieKey          [ MAX_NOMINATION_TRIE_KEY_SIZE ];
     new mapNominationData[ MapNominationsType ];
 
     num_to_str( mapIndex, trieKey, charsmax( trieKey ) );
-    LOGGER( 4, "( nomination_getPlayer ) trieKey: %s", trieKey )
+    LOG( 4, "( nomination_getPlayer ) trieKey: %s", trieKey )
 
     if( TrieKeyExists( g_reverseSearchNominationsTrie, trieKey ) )
     {
@@ -12947,13 +12947,13 @@ stock nomination_getPlayer( mapIndex )
 
         if( mapNominationData[ MapNomination_NominationIndex ] > -1 )
         {
-            LOGGER( 1, "    ( nomination_getPlayer ) Returning mapNominationData[MapNomination_PlayerId]: %d", \
+            LOG( 1, "    ( nomination_getPlayer ) Returning mapNominationData[MapNomination_PlayerId]: %d", \
                    mapNominationData[ MapNomination_PlayerId ] )
             return mapNominationData[ MapNomination_PlayerId ];
         }
     }
 
-    LOGGER( 1, "    ( nomination_getPlayer ) Returning mapNominationData[MapNomination_PlayerId]: %d", 0 )
+    LOG( 1, "    ( nomination_getPlayer ) Returning mapNominationData[MapNomination_PlayerId]: %d", 0 )
     return 0;
 }
 
@@ -12964,7 +12964,7 @@ stock nomination_getPlayer( mapIndex )
  */
 stock getPlayerNominationMapIndex( player_id, nominationIndex )
 {
-    LOGGER( 256, "I AM ENTERING ON getPlayerNominationMapIndex(2) player_id: %d, nominationIndex: %d", player_id, nominationIndex )
+    LOG( 256, "I AM ENTERING ON getPlayerNominationMapIndex(2) player_id: %d, nominationIndex: %d", player_id, nominationIndex )
 
     new trieKey             [ MAX_NOMINATION_TRIE_KEY_SIZE ];
     new playerNominationData[ MAX_OPTIONS_IN_VOTE ];
@@ -12977,11 +12977,11 @@ stock getPlayerNominationMapIndex( player_id, nominationIndex )
     }
     else
     {
-        LOGGER( 256, "    ( getPlayerNominationMapIndex ) Returning playerNominationData[nominationIndex]: %d", -1 )
+        LOG( 256, "    ( getPlayerNominationMapIndex ) Returning playerNominationData[nominationIndex]: %d", -1 )
         return -1;
     }
 
-    LOGGER( 256, "    ( getPlayerNominationMapIndex ) Returning playerNominationData[nominationIndex]: %d", \
+    LOG( 256, "    ( getPlayerNominationMapIndex ) Returning playerNominationData[nominationIndex]: %d", \
            playerNominationData[ nominationIndex ] )
     return playerNominationData[ nominationIndex ];
 }
@@ -12997,7 +12997,7 @@ stock getPlayerNominationMapIndex( player_id, nominationIndex )
  */
 stock setPlayerNominationMapIndex( player_id, nominationIndex, mapIndex )
 {
-    LOGGER( 128, "I AM ENTERING ON setPlayerNominationMapIndex(3) player_id: %d, nominationIndex: %d, mapIndex: %d", \
+    LOG( 128, "I AM ENTERING ON setPlayerNominationMapIndex(3) player_id: %d, nominationIndex: %d, mapIndex: %d", \
             player_id, nominationIndex, mapIndex )
 
     if( nominationIndex < MAX_OPTIONS_IN_VOTE )
@@ -13007,18 +13007,18 @@ stock setPlayerNominationMapIndex( player_id, nominationIndex, mapIndex )
     }
     else
     {
-        LOGGER( 1, "AMX_ERR_BOUNDS: %d. Was tried to set a wrong nomination bound index: %d", AMX_ERR_BOUNDS, nominationIndex )
+        LOG( 1, "AMX_ERR_BOUNDS: %d. Was tried to set a wrong nomination bound index: %d", AMX_ERR_BOUNDS, nominationIndex )
         log_error( AMX_ERR_BOUNDS, "Was tried to set a wrong nomination bound index: %d", nominationIndex );
     }
 }
 
 stock updateNominationsForwardSearch( player_id, nominationIndex, mapIndex )
 {
-    LOGGER( 128, "I AM ENTERING ON updateNominationsForwardSearch(3) player_id: %d, \
+    LOG( 128, "I AM ENTERING ON updateNominationsForwardSearch(3) player_id: %d, \
             nominationIndex: %d, mapIndex: %d",  player_id, nominationIndex, mapIndex )
 
     // new openNominationIndex;
-    // LOGGER( 1, "^n^n^ncountPlayerNominations: %d", countPlayerNominations( player_id, openNominationIndex ) )
+    // LOG( 1, "^n^n^ncountPlayerNominations: %d", countPlayerNominations( player_id, openNominationIndex ) )
 
     new originalMapIndex;
     new trieKey                 [ MAX_NOMINATION_TRIE_KEY_SIZE ];
@@ -13045,8 +13045,8 @@ stock updateNominationsForwardSearch( player_id, nominationIndex, mapIndex )
         TrieSetArray( g_forwardSearchNominationsTrie, trieKey, playerNominationsIndexes, sizeof playerNominationsIndexes );
     }
 
-    // LOGGER( 1, "^n^n^ncountPlayerNominations: %d", countPlayerNominations( player_id, openNominationIndex ) )
-    LOGGER( 1, "    ( updateNominationsForwardSearch ) Returning originalMapIndex: %d", originalMapIndex )
+    // LOG( 1, "^n^n^ncountPlayerNominations: %d", countPlayerNominations( player_id, openNominationIndex ) )
+    LOG( 1, "    ( updateNominationsForwardSearch ) Returning originalMapIndex: %d", originalMapIndex )
     return originalMapIndex;
 }
 
@@ -13069,12 +13069,12 @@ stock updateNominationsForwardSearch( player_id, nominationIndex, mapIndex )
  */
 stock updateNominationsReverseSearch( player_id, nominationIndex, mapIndex, originalMapIndex )
 {
-    LOGGER( 128, "I AM ENTERING ON updateNominationsReverseSearch(4) player_id: %d, \
+    LOG( 128, "I AM ENTERING ON updateNominationsReverseSearch(4) player_id: %d, \
             nominationIndex: %d, mapIndex: %d, originalMapIndex: %d",  player_id, \
             nominationIndex,     mapIndex,     originalMapIndex )
 
     new nominatedIndex;
-    LOGGER( 4, "( updateNominationsReverseSearch|in  ) ArraySize(g_nominatedMapsArray): %d", ArraySize( g_nominatedMapsArray ) )
+    LOG( 4, "( updateNominationsReverseSearch|in  ) ArraySize(g_nominatedMapsArray): %d", ArraySize( g_nominatedMapsArray ) )
 
     new trieKey[ MAX_NOMINATION_TRIE_KEY_SIZE ];
     new mapNominationData[ MapNominationsType ];
@@ -13128,16 +13128,16 @@ stock updateNominationsReverseSearch( player_id, nominationIndex, mapIndex, orig
         TrieSetArray( g_reverseSearchNominationsTrie, trieKey, mapNominationData, sizeof mapNominationData );
     }
 
-    LOGGER( 4, "( updateNominationsReverseSearch|out ) ArraySize(g_nominatedMapsArray): %d", ArraySize( g_nominatedMapsArray ) )
+    LOG( 4, "( updateNominationsReverseSearch|out ) ArraySize(g_nominatedMapsArray): %d", ArraySize( g_nominatedMapsArray ) )
 }
 
 stock countPlayerNominations( player_id, &openNominationIndex )
 {
-    LOGGER( 128, "I AM ENTERING ON countPlayerNominations(2) player_id: %d, openNominationIndex: %d", \
+    LOG( 128, "I AM ENTERING ON countPlayerNominations(2) player_id: %d, openNominationIndex: %d", \
             player_id, openNominationIndex )
 
     new nominationCount;
-    LOGGER( 4, "( countPlayerNominations ) ArraySize(g_nominatedMapsArray): %d", ArraySize( g_nominatedMapsArray ) )
+    LOG( 4, "( countPlayerNominations ) ArraySize(g_nominatedMapsArray): %d", ArraySize( g_nominatedMapsArray ) )
 
     new trieKey[ MAX_NOMINATION_TRIE_KEY_SIZE ];
     new playerNominationData[ MAX_OPTIONS_IN_VOTE ];
@@ -13151,7 +13151,7 @@ stock countPlayerNominations( player_id, &openNominationIndex )
 
         for( new nominationIndex = 0; nominationIndex < MAX_OPTIONS_IN_VOTE; ++nominationIndex )
         {
-            LOGGER( 4, "( countPlayerNominations ) playerNominationData[%d]: %d", \
+            LOG( 4, "( countPlayerNominations ) playerNominationData[%d]: %d", \
                     nominationIndex, playerNominationData[ nominationIndex ] )
 
             if( playerNominationData[ nominationIndex ] < 0 )
@@ -13169,7 +13169,7 @@ stock countPlayerNominations( player_id, &openNominationIndex )
         nominationCount = 0;
     }
 
-    LOGGER( 4, "( countPlayerNominations ) nominationCount: %d, trieKey: %s, openNominationIndex: %d", \
+    LOG( 4, "( countPlayerNominations ) nominationCount: %d, trieKey: %s, openNominationIndex: %d", \
             nominationCount, trieKey, openNominationIndex )
 
     return nominationCount;
@@ -13177,7 +13177,7 @@ stock countPlayerNominations( player_id, &openNominationIndex )
 
 stock createPlayerNominationKey( player_id, trieKey[], trieKeyLength )
 {
-    LOGGER( 256, "I AM ENTERING ON createPlayerNominationKey(3) player_id: %d, trieKeyLength: %d", \
+    LOG( 256, "I AM ENTERING ON createPlayerNominationKey(3) player_id: %d, trieKeyLength: %d", \
             player_id, trieKeyLength )
 
     new ipSize;
@@ -13189,12 +13189,12 @@ stock createPlayerNominationKey( player_id, trieKey[], trieKeyLength )
     }
 
     get_user_authid( player_id, trieKey[ ipSize ], trieKeyLength - ipSize );
-    LOGGER( 256, "( createPlayerNominationKey ) player_id: %d, trieKey: %s,", player_id, trieKey )
+    LOG( 256, "( createPlayerNominationKey ) player_id: %d, trieKey: %s,", player_id, trieKey )
 }
 
 stock nomination_toggle( player_id, mapIndex )
 {
-    LOGGER( 128, "I AM ENTERING ON nomination_toggle(2) player_id: %d, mapIndex: %d", player_id, mapIndex )
+    LOG( 128, "I AM ENTERING ON nomination_toggle(2) player_id: %d, mapIndex: %d", player_id, mapIndex )
     new nominatorPlayerId = nomination_getPlayer( mapIndex );
 
     if( nominatorPlayerId == player_id )
@@ -13209,7 +13209,7 @@ stock nomination_toggle( player_id, mapIndex )
 
 stock nomination_cancel( player_id, mapIndex )
 {
-    LOGGER( 128, "I AM ENTERING ON nomination_cancel(2) player_id: %d, mapIndex: %d", player_id, mapIndex )
+    LOG( 128, "I AM ENTERING ON nomination_cancel(2) player_id: %d, mapIndex: %d", player_id, mapIndex )
 
     if( !is_to_block_map_nomination( player_id, {0} ) )
     {
@@ -13267,20 +13267,20 @@ stock nomination_cancel( player_id, mapIndex )
 
 stock is_to_block_map_nomination( player_id, mapName[] )
 {
-    LOGGER( 128, "I AM ENTERING ON is_to_block_map_nomination(2) player_id: %d, mapName: %d", player_id, mapName )
+    LOG( 128, "I AM ENTERING ON is_to_block_map_nomination(2) player_id: %d, mapName: %d", player_id, mapName )
 
     // nominations can only be made if a vote isn't already in progress
     if( g_voteStatus & IS_VOTE_IN_PROGRESS )
     {
         color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_INPROGRESS" );
-        LOGGER( 1, "    ( is_to_block_map_nomination ) Just Returning/blocking, the voting is in progress." )
+        LOG( 1, "    ( is_to_block_map_nomination ) Just Returning/blocking, the voting is in progress." )
     }
 
     // and if the outcome of the vote hasn't already been determined
     else if( g_voteStatus & IS_VOTE_OVER )
     {
         color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_VOTEOVER" );
-        LOGGER( 1, "    ( is_to_block_map_nomination ) Just Returning/blocking, the voting is over." )
+        LOG( 1, "    ( is_to_block_map_nomination ) Just Returning/blocking, the voting is over." )
     }
 
     // players can not nominate the current map
@@ -13288,7 +13288,7 @@ stock is_to_block_map_nomination( player_id, mapName[] )
              && equali( g_currentMapName, mapName ) )
     {
         color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_CURRENTMAP", g_currentMapName );
-        LOGGER( 1, "    ( is_to_block_map_nomination ) Just Returning/blocking, cannot nominate the current map." )
+        LOG( 1, "    ( is_to_block_map_nomination ) Just Returning/blocking, cannot nominate the current map." )
     }
 
     // players may not be able to nominate recently played maps
@@ -13302,11 +13302,11 @@ stock is_to_block_map_nomination( player_id, mapName[] )
     {
         color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_TOORECENT", mapName );
         color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_TOORECENT_HLP" );
-        LOGGER( 1, "    ( is_to_block_map_nomination ) Just Returning/blocking, cannot nominate recent maps." )
+        LOG( 1, "    ( is_to_block_map_nomination ) Just Returning/blocking, cannot nominate recent maps." )
     }
     else
     {
-        LOGGER( 1, "    ( is_to_block_map_nomination ) Just Returning/allowing, the map nominations." )
+        LOG( 1, "    ( is_to_block_map_nomination ) Just Returning/allowing, the map nominations." )
         return false;
     }
 
@@ -13315,12 +13315,12 @@ stock is_to_block_map_nomination( player_id, mapName[] )
 
 stock map_nominate( player_id, mapIndex )
 {
-    LOGGER( 128, "I AM ENTERING ON map_nominate(2) player_id: %d, mapIndex: %d", player_id, mapIndex )
+    LOG( 128, "I AM ENTERING ON map_nominate(2) player_id: %d, mapIndex: %d", player_id, mapIndex )
     new mapName[ MAX_MAPNAME_LENGHT ];
 
     // get the nominated map name
     GET_MAP_NAME( g_nominationLoadedMapsArray, mapIndex, mapName )
-    LOGGER( 4, "( map_nominate ) mapIndex: %d, mapName: %s", mapIndex, mapName )
+    LOG( 4, "( map_nominate ) mapIndex: %d, mapName: %s", mapIndex, mapName )
 
     if( !is_to_block_map_nomination( player_id, mapName ) )
     {
@@ -13332,7 +13332,7 @@ stock map_nominate( player_id, mapIndex )
             if( IS_WHITELIST_BLOCKING( isWhiteListNomBlock, mapName ) )
             {
                 color_print( player_id, "%L", player_id, "GAL_NOM_FAIL_WHITELIST", mapName );
-                LOGGER( 1, "    ( map_nominate ) The map: %s, was blocked by the whitelist map setting.", mapName )
+                LOG( 1, "    ( map_nominate ) The map: %s, was blocked by the whitelist map setting.", mapName )
                 return;
             }
         }
@@ -13343,7 +13343,7 @@ stock map_nominate( player_id, mapIndex )
 
 stock try_to_add_the_nomination( player_id, mapIndex, mapName[] )
 {
-    LOGGER( 128, "I AM ENTERING ON try_to_add_the_nomination(3) player_id: %d, mapIndex: %d, mapName: %s", \
+    LOG( 128, "I AM ENTERING ON try_to_add_the_nomination(3) player_id: %d, mapIndex: %d, mapName: %s", \
             player_id, mapIndex, mapName )
 
     // check if the map has already been nominated
@@ -13374,7 +13374,7 @@ stock try_to_add_the_nomination( player_id, mapIndex, mapName[] )
 
 stock add_my_nomination( player_id, mapIndex, mapName[] )
 {
-    LOGGER( 128, "I AM ENTERING ON add_my_nomination(0) player_id: %d, mapIndex: %d, mapName: %s", \
+    LOG( 128, "I AM ENTERING ON add_my_nomination(0) player_id: %d, mapIndex: %d, mapName: %s", \
             player_id, mapIndex, mapName )
 
     new openNominationIndex;
@@ -13394,12 +13394,12 @@ stock add_my_nomination( player_id, mapIndex, mapName[] )
         color_print( player_id, "%L", player_id, "GAL_NOM_GOOD_HLP" );
     }
 
-    LOGGER( 4, "( try_to_add_the_nomination ) openNominationIndex: %d, mapName: %s", openNominationIndex, mapName )
+    LOG( 4, "( try_to_add_the_nomination ) openNominationIndex: %d, mapName: %s", openNominationIndex, mapName )
 }
 
 stock show_my_nominated_maps( player_id, maxPlayerNominations )
 {
-    LOGGER( 128, "I AM ENTERING ON show_my_nominated_maps(2) player_id: %d, maxPlayerNominations: %d", \
+    LOG( 128, "I AM ENTERING ON show_my_nominated_maps(2) player_id: %d, maxPlayerNominations: %d", \
             player_id, maxPlayerNominations )
 
     new mapIndex;
@@ -13436,7 +13436,7 @@ stock show_my_nominated_maps( player_id, maxPlayerNominations )
  */
 public nomination_list()
 {
-    LOGGER( 128, "I AM ENTERING ON nomination_list(0)" )
+    LOG( 128, "I AM ENTERING ON nomination_list(0)" )
 
     new mapIndex;
     new copiedChars;
@@ -13509,24 +13509,24 @@ public nomination_list()
 
 stock getMapNameIndex( mapName[] )
 {
-    LOGGER( 128, "I AM ENTERING ON getMapNameIndex(1) mapName: %s", mapName )
+    LOG( 128, "I AM ENTERING ON getMapNameIndex(1) mapName: %s", mapName )
 
     if( TrieKeyExists( g_nominationLoadedMapsTrie, mapName ) )
     {
         new mapIndex;
         TrieGetCell( g_nominationLoadedMapsTrie, mapName, mapIndex );
 
-        LOGGER( 1, "    ( getMapNameIndex ) Just Returning, mapIndex: %d (mapName)", mapIndex )
+        LOG( 1, "    ( getMapNameIndex ) Just Returning, mapIndex: %d (mapName)", mapIndex )
         return mapIndex;
     }
 
-    LOGGER( 1, "    ( getMapNameIndex ) Just Returning, mapIndex: %d", -1 )
+    LOG( 1, "    ( getMapNameIndex ) Just Returning, mapIndex: %d", -1 )
     return -1;
 }
 
 stock get_real_players_number()
 {
-    LOGGER( 256, "I AM ENTERING ON get_real_players_number(0)" )
+    LOG( 256, "I AM ENTERING ON get_real_players_number(0)" )
     new playersCount;
 
     new players[ MAX_PLAYERS ];
@@ -13560,7 +13560,7 @@ stock get_real_players_number()
 
 stock percent( is, of )
 {
-    LOGGER( 256, "I AM ENTERING ON percent(2) is: %d, of: %d", is, of )
+    LOG( 256, "I AM ENTERING ON percent(2) is: %d, of: %d", is, of )
     return ( of != 0 ) ? floatround( floatmul( float( is ) / float( of ), 100.0 ) ) : 0;
 }
 
@@ -13625,14 +13625,14 @@ stock percent( is, of )
  */
 stock color_print( const player_id, const message[], any:... )
 {
-    LOGGER( 128, "I AM ENTERING ON color_print(...) player_id: %d, message: %s...", player_id, message )
+    LOG( 128, "I AM ENTERING ON color_print(...) player_id: %d, message: %s...", player_id, message )
     new formated_message[ MAX_COLOR_MESSAGE ];
 
 #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
     g_test_printedMessage[ 0 ] = '^0';
 
     vformat( g_test_printedMessage, charsmax( g_test_printedMessage ), message, 3 );
-    LOGGER( 64, "( color_print ) player_id: %d, g_test_printedMessage: %s", player_id, g_test_printedMessage )
+    LOG( 64, "( color_print ) player_id: %d, g_test_printedMessage: %s", player_id, g_test_printedMessage )
 #endif
 
     /**
@@ -13655,19 +13655,19 @@ stock color_print( const player_id, const message[], any:... )
             {
                 formatex( message, charsmax( message ), "^1%s^1%s", g_coloredChatPrefix, formated_message[ 1 ] );
 
-                LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, message )
+                LOG( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, message )
                 PRINT_COLORED_MESSAGE( player_id, message )
             }
             else
             {
-                LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
+                LOG( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
                 PRINT_COLORED_MESSAGE( player_id, formated_message )
             }
         }
         else
         {
             vformat( formated_message, charsmax( formated_message ), message, 3 );
-            LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
+            LOG( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
 
             REMOVE_CODE_COLOR_TAGS( formated_message )
             client_print( player_id, print_chat, "%s%s", g_coloredChatPrefix, formated_message );
@@ -13684,7 +13684,7 @@ stock color_print( const player_id, const message[], any:... )
         // so we don't execute useless code
         if( !playersCount )
         {
-            LOGGER( 64, "    ( color_print ) Returning on playersCount: %d...", playersCount )
+            LOG( 64, "    ( color_print ) Returning on playersCount: %d...", playersCount )
             return;
         }
 
@@ -13699,14 +13699,14 @@ stock color_print( const player_id, const message[], any:... )
         params_number                  = numargs();
         multi_lingual_constants_number = 0;
 
-        LOGGER( 64, "( color_print ) playersCount: %d, params_number: %d...", playersCount, params_number )
+        LOG( 64, "( color_print ) playersCount: %d, params_number: %d...", playersCount, params_number )
 
         // ML can be used
         if( params_number > 3 )
         {
             for( argument_index = 2; argument_index < params_number; argument_index++ )
             {
-                LOGGER( 64, "( color_print ) getarg(%d): %d", argument_index, getarg( argument_index, 0 ) )
+                LOG( 64, "( color_print ) getarg(%d): %d", argument_index, getarg( argument_index, 0 ) )
 
                 // retrieve original param value and check if it's LANG_PLAYER value
                 if( getarg( argument_index ) == LANG_PLAYER )
@@ -13720,10 +13720,10 @@ stock color_print( const player_id, const message[], any:... )
                     }
                     formated_message[ string_index ] = '^0';
 
-                    LOGGER( 64, "( color_print ) player_id: %d, formated_message: %s", \
+                    LOG( 64, "( color_print ) player_id: %d, formated_message: %s", \
                             player_id, formated_message )
 
-                    LOGGER( 64, "( color_print ) GetLangTransKey( formated_message ) != TransKey_Bad: %d, \
+                    LOG( 64, "( color_print ) GetLangTransKey( formated_message ) != TransKey_Bad: %d, \
                           multi_lingual_constants_number: %d, string_index: %d...", \
                           GetLangTransKey( formated_message ) != TransKey_Bad, \
                           multi_lingual_constants_number, string_index )
@@ -13738,12 +13738,12 @@ stock color_print( const player_id, const message[], any:... )
                         multi_lingual_constants_number++;
                     }
 
-                    LOGGER( 64, "( color_print ) argument_index (after ArrayPushCell): %d...", argument_index )
+                    LOG( 64, "( color_print ) argument_index (after ArrayPushCell): %d...", argument_index )
                 }
             }
         }
 
-        LOGGER( 64, "( color_print ) multi_lingual_constants_number: %d...", multi_lingual_constants_number )
+        LOG( 64, "( color_print ) multi_lingual_constants_number: %d...", multi_lingual_constants_number )
 
         for( --playersCount; playersCount >= 0; --playersCount )
         {
@@ -13753,7 +13753,7 @@ stock color_print( const player_id, const message[], any:... )
             {
                 for( argument_index = 0; argument_index < multi_lingual_constants_number; argument_index++ )
                 {
-                    LOGGER( 64, "( color_print ) argument_index: %d, player_id: %d, \
+                    LOG( 64, "( color_print ) argument_index: %d, player_id: %d, \
                             ArrayGetCell( %d, %d ): %d...", \
                             argument_index, player_id, \
                             multi_lingual_indexes_array, argument_index, \
@@ -13777,19 +13777,19 @@ stock color_print( const player_id, const message[], any:... )
                 {
                     formatex( message, charsmax( message ), "^1%s^1%s", g_coloredChatPrefix, formated_message[ 1 ] );
 
-                    LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, message )
+                    LOG( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, message )
                     PRINT_COLORED_MESSAGE( player_id, message )
                 }
                 else
                 {
-                    LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
+                    LOG( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
                     PRINT_COLORED_MESSAGE( player_id, formated_message )
                 }
             }
             else
             {
                 vformat( formated_message, charsmax( formated_message ), message, 3 );
-                LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
+                LOG( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
 
                 REMOVE_CODE_COLOR_TAGS( formated_message )
                 client_print( player_id, print_chat, "%s%s", g_coloredChatPrefix, formated_message );
@@ -13801,7 +13801,7 @@ stock color_print( const player_id, const message[], any:... )
 #else // this else only works for AMXX 183 or superior, due noted bug above.
 
     vformat( formated_message, charsmax( formated_message ), message, 3 );
-    LOGGER( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
+    LOG( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
 
     if( IS_COLORED_CHAT_ENABLED() )
     {
@@ -13814,7 +13814,7 @@ stock color_print( const player_id, const message[], any:... )
     }
 #endif
 
-    LOGGER( 64, "( color_print ) [out] player_id: %d, Chat printed: %s...", player_id, formated_message )
+    LOG( 64, "( color_print ) [out] player_id: %d, Chat printed: %s...", player_id, formated_message )
 }
 
 /**
@@ -13825,11 +13825,11 @@ stock color_print( const player_id, const message[], any:... )
  */
 stock register_dictionary_colored( const dictionaryFile[] )
 {
-    LOGGER( 128, "I AM ENTERING ON register_dictionary_colored(1) dictionaryFile: %s", dictionaryFile )
+    LOG( 128, "I AM ENTERING ON register_dictionary_colored(1) dictionaryFile: %s", dictionaryFile )
 
     if( !register_dictionary( dictionaryFile ) )
     {
-        LOGGER( 1, "    Returning 0 on if( !register_dictionary(%s) )", dictionaryFile )
+        LOG( 1, "    Returning 0 on if( !register_dictionary(%s) )", dictionaryFile )
         return 0;
     }
 
@@ -13844,7 +13844,7 @@ stock register_dictionary_colored( const dictionaryFile[] )
     if( !dictionaryFile )
     {
         doAmxxLog( "ERROR, register_dictionary_colored: Failed to open ^"%s^"", dictionaryFilePath );
-        LOGGER( 1, "    Returning 0 on if( !dictionaryFile ), Failed to open ^"%s^"", dictionaryFilePath )
+        LOG( 1, "    Returning 0 on if( !dictionaryFile ), Failed to open ^"%s^"", dictionaryFilePath )
 
         return 0;
     }
@@ -13886,7 +13886,7 @@ stock register_dictionary_colored( const dictionaryFile[] )
                     REMOVE_LETTER_COLOR_TAGS( langTranslationText )
                 }
 
-                // LOGGER( 256, "lang: %s, Id: %d, Text: %s", langTypeAcronym, translationKeyId, langTranslationText )
+                // LOG( 256, "lang: %s, Id: %d, Text: %s", langTypeAcronym, translationKeyId, langTranslationText )
                 AddTranslation( langTypeAcronym, translationKeyId, langTranslationText[ 2 ] );
             }
         }
@@ -13901,7 +13901,7 @@ stock register_dictionary_colored( const dictionaryFile[] )
  */
 stock cancelVoting( bool:isToDoubleReset = false )
 {
-    LOGGER( 128, "I AM ENTERING ON cancelVoting(1) isToDoubleReset: %d", isToDoubleReset )
+    LOG( 128, "I AM ENTERING ON cancelVoting(1) isToDoubleReset: %d", isToDoubleReset )
 
     remove_task( TASKID_START_VOTING_DELAYED );
     remove_task( TASKID_DELETE_USERS_MENUS );
@@ -13941,7 +13941,7 @@ stock cancelVoting( bool:isToDoubleReset = false )
  */
 public vote_resetStats()
 {
-    LOGGER( 128, "I AM ENTERING ON vote_resetStats(0)" )
+    LOG( 128, "I AM ENTERING ON vote_resetStats(0)" )
 
     g_voteStatusClean[ 0 ] = '^0';
     g_totalVotesCounted    = 0;
@@ -13979,7 +13979,7 @@ stock clearTheVotingMenu()
 
     for( new currentIndex = 0; currentIndex < sizeof g_votingMapNames; ++currentIndex )
     {
-        LOGGER( 8, "Cleaning g_votingMapNames[%d]: %s", currentIndex, g_votingMapNames[ currentIndex ] )
+        LOG( 8, "Cleaning g_votingMapNames[%d]: %s", currentIndex, g_votingMapNames[ currentIndex ] )
         g_arrayOfRunOffChoices[ currentIndex ] = 0;
 
         g_votingMapNames[ currentIndex ][ 0 ] = '^0';
@@ -13989,13 +13989,13 @@ stock clearTheVotingMenu()
 
 public delete_users_menus_care()
 {
-    LOGGER( 128, "I AM ENTERING ON delete_users_menus_care(0)" )
+    LOG( 128, "I AM ENTERING ON delete_users_menus_care(0)" )
     delete_users_menus();
 }
 
 stock delete_user_menu( player_id )
 {
-    LOGGER( 128, "I AM ENTERING ON delete_user_menu(1) player_id: %d", player_id )
+    LOG( 128, "I AM ENTERING ON delete_user_menu(1) player_id: %d", player_id )
 
     new menu_id;
     new menuKeys;
@@ -14019,7 +14019,7 @@ stock delete_user_menu( player_id )
 
 stock delete_users_menus( bool:isToDoubleReset = false )
 {
-    LOGGER( 128, "I AM ENTERING ON delete_users_menus(1) isToDoubleReset: %d", isToDoubleReset )
+    LOG( 128, "I AM ENTERING ON delete_users_menus(1) isToDoubleReset: %d", isToDoubleReset )
 
     new menu_id;
     new player_id;
@@ -14056,49 +14056,49 @@ stock delete_users_menus( bool:isToDoubleReset = false )
 
 stock tryToSetGameModCvarFloat( cvarPointer, Float:value )
 {
-    LOGGER( 1, "" )
-    LOGGER( 128, "I AM ENTERING ON tryToSetGameModCvarFloat(2) cvarPointer: %d, value: %f", cvarPointer, value )
-    LOGGER( 1, "    ( tryToSetGameModCvarNum ) cvar_disabledValuePointer: %d", cvar_disabledValuePointer )
+    LOG( 1, "" )
+    LOG( 128, "I AM ENTERING ON tryToSetGameModCvarFloat(2) cvarPointer: %d, value: %f", cvarPointer, value )
+    LOG( 1, "    ( tryToSetGameModCvarNum ) cvar_disabledValuePointer: %d", cvar_disabledValuePointer )
 
     if( cvarPointer != cvar_disabledValuePointer )
     {
-        LOGGER( 2, "    ( tryToSetGameModCvarFloat ) IS CHANGING THE CVAR '%d' to '%f'.", cvarPointer, value )
+        LOG( 2, "    ( tryToSetGameModCvarFloat ) IS CHANGING THE CVAR '%d' to '%f'.", cvarPointer, value )
         set_pcvar_float( cvarPointer, value );
     }
 }
 
 stock tryToSetGameModCvarNum( cvarPointer, num )
 {
-    LOGGER( 1, "" )
-    LOGGER( 128, "I AM ENTERING ON tryToSetGameModCvarNum(2) cvarPointer: %d, num: %d", cvarPointer, num )
-    LOGGER( 1, "    ( tryToSetGameModCvarNum ) cvar_disabledValuePointer: %d", cvar_disabledValuePointer )
+    LOG( 1, "" )
+    LOG( 128, "I AM ENTERING ON tryToSetGameModCvarNum(2) cvarPointer: %d, num: %d", cvarPointer, num )
+    LOG( 1, "    ( tryToSetGameModCvarNum ) cvar_disabledValuePointer: %d", cvar_disabledValuePointer )
 
     if( cvarPointer != cvar_disabledValuePointer )
     {
-        LOGGER( 2, "    ( tryToSetGameModCvarNum ) IS CHANGING THE CVAR '%d' to '%d'.", cvarPointer, num )
+        LOG( 2, "    ( tryToSetGameModCvarNum ) IS CHANGING THE CVAR '%d' to '%d'.", cvarPointer, num )
         set_pcvar_num( cvarPointer, num );
     }
 }
 
 stock tryToSetGameModCvarString( cvarPointer, string[] )
 {
-    LOGGER( 1, "" )
-    LOGGER( 128, "I AM ENTERING ON tryToSetGameModCvarString(2) cvarPointer: %d, string: %s", cvarPointer, string )
-    LOGGER( 1, "    ( tryToSetGameModCvarNum ) cvar_disabledValuePointer: %d", cvar_disabledValuePointer )
+    LOG( 1, "" )
+    LOG( 128, "I AM ENTERING ON tryToSetGameModCvarString(2) cvarPointer: %d, string: %s", cvarPointer, string )
+    LOG( 1, "    ( tryToSetGameModCvarNum ) cvar_disabledValuePointer: %d", cvar_disabledValuePointer )
 
     if( cvarPointer != cvar_disabledValuePointer )
     {
-        LOGGER( 2, "    ( tryToSetGameModCvarString ) IS CHANGING THE CVAR '%d' to '%s'.", cvarPointer, string )
+        LOG( 2, "    ( tryToSetGameModCvarString ) IS CHANGING THE CVAR '%d' to '%s'.", cvarPointer, string )
         set_pcvar_string( cvarPointer, string );
     }
 }
 
 public plugin_end()
 {
-    LOGGER( 32, "" )
-    LOGGER( 32, "" )
-    LOGGER( 32, "" )
-    LOGGER( 32, "I AM ENTERING ON plugin_end(0). THE END OF THE PLUGIN LIFE!" )
+    LOG( 32, "" )
+    LOG( 32, "" )
+    LOG( 32, "" )
+    LOG( 32, "I AM ENTERING ON plugin_end(0). THE END OF THE PLUGIN LIFE!" )
 
 #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
     // Just in case the Unit Tests are running while changing level.
@@ -14179,7 +14179,7 @@ public plugin_end()
  */
 stock printTheCurrentAndNextMapNames()
 {
-    LOGGER( 0, "I AM ENTERING ON printTheCurrentAndNextMapNames(0)" )
+    LOG( 0, "I AM ENTERING ON printTheCurrentAndNextMapNames(0)" )
 
     new nextMap   [ MAX_MAPNAME_LENGHT ];
     new currentMap[ MAX_MAPNAME_LENGHT ];
@@ -14197,12 +14197,12 @@ stock printTheCurrentAndNextMapNames()
     nextMap   [ nextLength    ] = '^0';
     currentMap[ currentLength ] = '^0';
 
-    LOGGER( 4, "" )
-    LOGGER( 4, "" )
-    LOGGER( 4, " The current map is [ %s ]", currentMap )
-    LOGGER( 4, " The  next   map is [ %s ]", nextMap )
-    LOGGER( 4, "" )
-    LOGGER( 4, "" )
+    LOG( 4, "" )
+    LOG( 4, "" )
+    LOG( 4, " The current map is [ %s ]", currentMap )
+    LOG( 4, " The  next   map is [ %s ]", nextMap )
+    LOG( 4, "" )
+    LOG( 4, "" )
 
     return 0;
 }
@@ -14218,7 +14218,7 @@ stock doAmxxLog( const message[] = "", any:... )
     static formated_message[ MAX_LONG_STRING ];
     vformat( formated_message, charsmax( formated_message ), message, 2 );
 
-    LOGGER( 1, formated_message )
+    LOG( 1, formated_message )
     log_amx( formated_message );
 }
 
@@ -14230,7 +14230,7 @@ stock doAmxxLog( const message[] = "", any:... )
  */
 stock destroy_two_dimensional_array( Array:outerArray, bool:isToDestroyTheOuterArray = true )
 {
-    LOGGER( 128, "I AM ENTERING ON destroy_two_dimensional_array(1) arrayIndentifation: %d", outerArray )
+    LOG( 128, "I AM ENTERING ON destroy_two_dimensional_array(1) arrayIndentifation: %d", outerArray )
 
     if( outerArray )
     {
@@ -14264,7 +14264,7 @@ stock is_map_valid_bsp_check( mapName[] )
     // The mapName was too short to possibly house the .bsp extension
     if( length < 0 )
     {
-        LOGGER( 256, "    ( is_map_valid_bsp_check ) Returning false, %s length < 0.", mapName )
+        LOG( 256, "    ( is_map_valid_bsp_check ) Returning false, %s length < 0.", mapName )
         return false;
     }
 
@@ -14277,12 +14277,12 @@ stock is_map_valid_bsp_check( mapName[] )
         // Recheck
         if( is_map_valid( mapName ) )
         {
-            LOGGER( 256, "    ( is_map_valid_bsp_check ) Returning true, %s", mapName )
+            LOG( 256, "    ( is_map_valid_bsp_check ) Returning true, %s", mapName )
             return true;
         }
     }
 
-    LOGGER( 256, "    ( is_map_valid_bsp_check ) Returning false, %s", mapName )
+    LOG( 256, "    ( is_map_valid_bsp_check ) Returning false, %s", mapName )
     return false;
 }
 
@@ -14294,7 +14294,7 @@ stock printUntilTheNthLoadedMap( mapIndex, mapName[] )
 {
     if( mapIndex < MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST )
     {
-        LOGGER( 4, "( printUntilTheNthLoadedMap ) %d, loadedMapLine: %s", mapIndex, mapName )
+        LOG( 4, "( printUntilTheNthLoadedMap ) %d, loadedMapLine: %s", mapIndex, mapName )
     }
 
     return 0;
@@ -14302,7 +14302,7 @@ stock printUntilTheNthLoadedMap( mapIndex, mapName[] )
 
 stock printDynamicArrayMaps( Array:populatedArray, debugLevel )
 {
-    LOGGER( debugLevel, "I AM ENTERING ON printDynamicArrayMaps(1) array id: %d", populatedArray )
+    LOG( debugLevel, "I AM ENTERING ON printDynamicArrayMaps(1) array id: %d", populatedArray )
 
     new mapName[ MAX_MAPNAME_LENGHT ];
     new size = ArraySize( populatedArray );
@@ -14310,7 +14310,7 @@ stock printDynamicArrayMaps( Array:populatedArray, debugLevel )
     for( new index = 0; index < size; index++ )
     {
         ArrayGetString( populatedArray, index, mapName, charsmax( mapName ) );
-        LOGGER( debugLevel, "index: %d, mapName: %s", index, mapName )
+        LOG( debugLevel, "index: %d, mapName: %s", index, mapName )
     }
 
     return 0;
@@ -14400,7 +14400,7 @@ stock flushCellStrings( cellStringsBuffer[] )
 
 public nextmapPluginInit()
 {
-    LOGGER( 128, "I AM ENTERING ON nextmapPluginInit(0)" )
+    LOG( 128, "I AM ENTERING ON nextmapPluginInit(0)" )
 
     pause( "acd", "nextmap.amxx" );
     register_event( "30", "changeMap", "a" );
@@ -14419,22 +14419,22 @@ public nextmapPluginInit()
 
 stock loadTheNextMapFile( mapcycleFilePath[], &Array:mapcycleFileListArray, &Trie:mapcycleFileListTrie )
 {
-    LOGGER( 128, "I AM ENTERING ON loadTheNextMapFile(3)" )
+    LOG( 128, "I AM ENTERING ON loadTheNextMapFile(3)" )
     new mapCount;
 
     TRY_TO_CLEAN( TrieClear, mapcycleFileListTrie, TrieCreate() )
     TRY_TO_CLEAN( ArrayClear, mapcycleFileListArray, ArrayCreate( MAX_MAPNAME_LENGHT ) )
 
     mapCount = map_populateListOnSeries( mapcycleFileListArray, mapcycleFileListTrie, mapcycleFilePath );
-    LOGGER( 0, "", printDynamicArrayMaps( mapcycleFileListArray, 256 ) )
+    LOG( 0, "", printDynamicArrayMaps( mapcycleFileListArray, 256 ) )
 
-    LOGGER( 1, "    ( loadTheNextMapFile ) Returning mapCount: %d", mapCount )
+    LOG( 1, "    ( loadTheNextMapFile ) Returning mapCount: %d", mapCount )
     return mapCount;
 }
 
 stock getNextMapLocalInfoToken( currentMapcycleFilePath[] )
 {
-    LOGGER( 128, "I AM ENTERING ON getNextMapLocalInfoToken(1) currentMapcycleFilePath: %s", currentMapcycleFilePath )
+    LOG( 128, "I AM ENTERING ON getNextMapLocalInfoToken(1) currentMapcycleFilePath: %s", currentMapcycleFilePath )
     new nextMapCyclePosition;
 
     new mapcycleCurrentIndex   [ MAX_MAPNAME_LENGHT ];
@@ -14447,10 +14447,10 @@ stock getNextMapLocalInfoToken( currentMapcycleFilePath[] )
     parse( tockenMapcycleAndPosion, lastMapcycleFilePath, charsmax( lastMapcycleFilePath ),
                                     mapcycleCurrentIndex, charsmax( mapcycleCurrentIndex ) );
 
-    LOGGER( 2, "( getNextMapLocalInfoToken ) mapcycleCurrentIndex:    %s", mapcycleCurrentIndex    )
-    LOGGER( 2, "( getNextMapLocalInfoToken ) lastMapcycleFilePath:    %s", lastMapcycleFilePath    )
-    LOGGER( 2, "( getNextMapLocalInfoToken ) tockenMapcycleAndPosion: %s", tockenMapcycleAndPosion )
-    LOGGER( 2, "( getNextMapLocalInfoToken ) currentMapcycleFilePath: %s", currentMapcycleFilePath )
+    LOG( 2, "( getNextMapLocalInfoToken ) mapcycleCurrentIndex:    %s", mapcycleCurrentIndex    )
+    LOG( 2, "( getNextMapLocalInfoToken ) lastMapcycleFilePath:    %s", lastMapcycleFilePath    )
+    LOG( 2, "( getNextMapLocalInfoToken ) tockenMapcycleAndPosion: %s", tockenMapcycleAndPosion )
+    LOG( 2, "( getNextMapLocalInfoToken ) currentMapcycleFilePath: %s", currentMapcycleFilePath )
 
     // This acts on when the server is restarted. As the next map position is set when reading
     // the map cycle file, we need to undo it in order to keep the original next map before restart.
@@ -14464,7 +14464,7 @@ stock getNextMapLocalInfoToken( currentMapcycleFilePath[] )
         nextMapCyclePosition = 0;
     }
 
-    LOGGER( 2, "    ( getNextMapLocalInfoToken ) Returning nextMapCyclePosition: %d", nextMapCyclePosition )
+    LOG( 2, "    ( getNextMapLocalInfoToken ) Returning nextMapCyclePosition: %d", nextMapCyclePosition )
     return nextMapCyclePosition;
 }
 
@@ -14475,7 +14475,7 @@ stock getNextMapLocalInfoToken( currentMapcycleFilePath[] )
  */
 stock registerTheMayCycleCvar()
 {
-    LOGGER( 128, "I AM ENTERING ON registerTheMayCycleCvar(0)" )
+    LOG( 128, "I AM ENTERING ON registerTheMayCycleCvar(0)" )
 
     new mapcycleFilePath[ MAX_FILE_PATH_LENGHT ];
     get_pcvar_string( cvar_gal_mapcyclefile, mapcycleFilePath, charsmax( mapcycleFilePath ) );
@@ -14500,7 +14500,7 @@ stock registerTheMayCycleCvar()
  */
 stock configureTheNextMapSetttings( currentMapcycleFilePath[] )
 {
-    LOGGER( 128, "I AM ENTERING ON configureTheNextMapSetttings(1)" )
+    LOG( 128, "I AM ENTERING ON configureTheNextMapSetttings(1)" )
 
     new mapCount;
     new nextMapCyclePosition;
@@ -14517,13 +14517,13 @@ stock configureTheNextMapSetttings( currentMapcycleFilePath[] )
     setTheNextMapCvarFlag( g_nextMapName );
     saveCurrentMapCycleSetting( g_currentMapName, currentMapcycleFilePath, nextMapCyclePosition );
 
-    LOGGER( 1, "    ( configureTheNextMapSetttings ) Returning mapCount: %d", mapCount )
+    LOG( 1, "    ( configureTheNextMapSetttings ) Returning mapCount: %d", mapCount )
     return mapCount;
 }
 
 stock getLastNextMapFromServerStart( Array:mapcycleFileListArray, nextMapName[], &nextMapCyclePosition )
 {
-    LOGGER( 128, "I AM ENTERING ON getLastNextMapFromServerStart(3) nextMapCyclePosition: %d", nextMapCyclePosition )
+    LOG( 128, "I AM ENTERING ON getLastNextMapFromServerStart(3) nextMapCyclePosition: %d", nextMapCyclePosition )
 
     // Get the last next map set on the first server start.
     if( get_pcvar_num( cvar_serverStartAction )
@@ -14531,7 +14531,7 @@ stock getLastNextMapFromServerStart( Array:mapcycleFileListArray, nextMapName[],
     {
         // This is the key that tells us if this server has been started or not.
         set_pcvar_num( cvar_isFirstServerStart, AFTER_READ_MAPCYCLE );
-        LOGGER( 2, "( getLastNextMapFromServerStart ) IS CHANGING THE CVAR 'gal_server_starting' to '%d'.", AFTER_READ_MAPCYCLE )
+        LOG( 2, "( getLastNextMapFromServerStart ) IS CHANGING THE CVAR 'gal_server_starting' to '%d'.", AFTER_READ_MAPCYCLE )
 
         get_pcvar_string( cvar_amx_nextmap, nextMapName, MAX_MAPNAME_LENGHT - 1 );
 
@@ -14543,7 +14543,7 @@ stock getLastNextMapFromServerStart( Array:mapcycleFileListArray, nextMapName[],
 
         if( IS_MAP_VALID( nextMapName ) )
         {
-            LOGGER( 4, "( getLastNextMapFromServerStart ) nextMapName: %s", nextMapName )
+            LOG( 4, "( getLastNextMapFromServerStart ) nextMapName: %s", nextMapName )
         }
     }
     else
@@ -14555,17 +14555,17 @@ stock getLastNextMapFromServerStart( Array:mapcycleFileListArray, nextMapName[],
 
 stock configureTheAlternateSeries( Array:mapcycleFileListArray, &nextMapCyclePosition )
 {
-    LOGGER( 4, "" )
-    LOGGER( 128, "I AM ENTERING ON configureTheAlternateSeries(2)" )
+    LOG( 4, "" )
+    LOG( 128, "I AM ENTERING ON configureTheAlternateSeries(2)" )
 
     new bool:isTheServerRestarting;
     new lastMap[ MAX_MAPNAME_LENGHT ];
 
     get_localinfo( "galileo_lastmap", lastMap, charsmax( lastMap ) );
 
-    LOGGER( 4, "( configureTheAlternateSeries ) lastMap:              %s", lastMap              )
-    LOGGER( 4, "( configureTheAlternateSeries ) g_currentMapName:     %s", g_currentMapName     )
-    LOGGER( 4, "( configureTheAlternateSeries ) nextMapCyclePosition: %d", nextMapCyclePosition )
+    LOG( 4, "( configureTheAlternateSeries ) lastMap:              %s", lastMap              )
+    LOG( 4, "( configureTheAlternateSeries ) g_currentMapName:     %s", g_currentMapName     )
+    LOG( 4, "( configureTheAlternateSeries ) nextMapCyclePosition: %d", nextMapCyclePosition )
 
     // If successful, the tryToRunAnAlternateSeries(4) is already freezing the map cycle position.
     if( ( isTheServerRestarting = !!equali( g_currentMapName, lastMap ) ) )
@@ -14575,11 +14575,11 @@ stock configureTheAlternateSeries( Array:mapcycleFileListArray, &nextMapCyclePos
 
     getLastNextMapFromServerStart( mapcycleFileListArray, g_nextMapName, nextMapCyclePosition );
 
-    LOGGER( 4, "" )
-    LOGGER( 4, "" )
-    LOGGER( 4, "" )
-    LOGGER( 4, "" )
-    LOGGER( 4, "" )
+    LOG( 4, "" )
+    LOG( 4, "" )
+    LOG( 4, "" )
+    LOG( 4, "" )
+    LOG( 4, "" )
 
     if( tryToRunAnAlternateSeries( mapcycleFileListArray, g_currentMapName, g_nextMapName, nextMapCyclePosition ) )
     {
@@ -14592,12 +14592,12 @@ stock configureTheAlternateSeries( Array:mapcycleFileListArray, &nextMapCyclePos
         }
     }
 
-    LOGGER( 2, "    ( configureTheAlternateSeries ) Returning nextMapCyclePosition: %d", nextMapCyclePosition )
-    LOGGER( 4, "" )
-    LOGGER( 4, "" )
-    LOGGER( 4, "" )
-    LOGGER( 4, "" )
-    LOGGER( 4, "" )
+    LOG( 2, "    ( configureTheAlternateSeries ) Returning nextMapCyclePosition: %d", nextMapCyclePosition )
+    LOG( 4, "" )
+    LOG( 4, "" )
+    LOG( 4, "" )
+    LOG( 4, "" )
+    LOG( 4, "" )
 }
 
 /**
@@ -14617,12 +14617,12 @@ stock configureTheAlternateSeries( Array:mapcycleFileListArray, &nextMapCyclePos
  */
 stock tryToRunAnAlternateSeries( Array:mapcycleFileListArray, currentMapName[], defaultNextMapName[], &defaultNextMapCyclePosition )
 {
-    LOGGER( 128, "I AM ENTERING ON tryToRunAnAlternateSeries(4)" )
+    LOG( 128, "I AM ENTERING ON tryToRunAnAlternateSeries(4)" )
 
-    LOGGER( 4, "( tryToRunAnAlternateSeries ) currentMapName:              %s", currentMapName              )
-    LOGGER( 4, "( tryToRunAnAlternateSeries ) defaultNextMapName:          %s", defaultNextMapName          )
-    LOGGER( 4, "( tryToRunAnAlternateSeries ) defaultNextMapCyclePosition: %d", defaultNextMapCyclePosition )
-    LOGGER( 4, "" )
+    LOG( 4, "( tryToRunAnAlternateSeries ) currentMapName:              %s", currentMapName              )
+    LOG( 4, "( tryToRunAnAlternateSeries ) defaultNextMapName:          %s", defaultNextMapName          )
+    LOG( 4, "( tryToRunAnAlternateSeries ) defaultNextMapCyclePosition: %d", defaultNextMapCyclePosition )
+    LOG( 4, "" )
 
     if( get_pcvar_num( cvar_serverMoveCursor ) & IS_TO_LOAD_ALTERNATE_MAP_SERIES )
     {
@@ -14640,10 +14640,10 @@ stock tryToRunAnAlternateSeries( Array:mapcycleFileListArray, currentMapName[], 
         currentMapSerie      = getTheCurrentSerieForTheMap( currentMapNameClean );
         defaultNextMapSeries = getTheCurrentSerieForTheMap( defaultNextMapNameClean );
 
-        LOGGER( 4, "" )
-        LOGGER( 4, "( tryToRunAnAlternateSeries ) currentMapName:        %s", currentMapName        )
-        LOGGER( 4, "( tryToRunAnAlternateSeries ) defaultNextMapName:    %s", defaultNextMapName    )
-        LOGGER( 4, "" )
+        LOG( 4, "" )
+        LOG( 4, "( tryToRunAnAlternateSeries ) currentMapName:        %s", currentMapName        )
+        LOG( 4, "( tryToRunAnAlternateSeries ) defaultNextMapName:    %s", defaultNextMapName    )
+        LOG( 4, "" )
 
         // If both clear names are equal, the current map and the next map set are on the same series.
         // When the `mapcycleFileListArray` size is less than  and the current map name is the same as
@@ -14653,8 +14653,8 @@ stock tryToRunAnAlternateSeries( Array:mapcycleFileListArray, currentMapName[], 
             && !( equali( currentMapName, defaultNextMapName )
                   && ArraySize( mapcycleFileListArray ) < 1 ) )
         {
-            LOGGER( 1, "( tryToRunAnAlternateSeries ) Returning/blocking, the current map and the next map set are on the same series." )
-            LOGGER( 1, "    ( tryToRunAnAlternateSeries ) Returning false." )
+            LOG( 1, "( tryToRunAnAlternateSeries ) Returning/blocking, the current map and the next map set are on the same series." )
+            LOG( 1, "    ( tryToRunAnAlternateSeries ) Returning false." )
             return false;
         }
 
@@ -14670,13 +14670,13 @@ stock tryToRunAnAlternateSeries( Array:mapcycleFileListArray, currentMapName[], 
             if( tryToMoveTheMapCycleCursor( mapcycleFileListArray, defaultNextMapSeries,
                                             defaultNextMapNameClean, defaultNextMapCyclePosition ) )
             {
-                LOGGER( 1, "    ( tryToRunAnAlternateSeries ) Returning true." )
+                LOG( 1, "    ( tryToRunAnAlternateSeries ) Returning true." )
                 return true;
             }
         }
     }
 
-    LOGGER( 1, "    ( tryToRunAnAlternateSeries ) Returning false." )
+    LOG( 1, "    ( tryToRunAnAlternateSeries ) Returning false." )
     return false;
 }
 
@@ -14691,7 +14691,7 @@ stock tryToRunAnAlternateSeries( Array:mapcycleFileListArray, currentMapName[], 
  */
 stock bool:areWeRunningAnAlternateSeries( const currentMapNameClean[], currentMapSerie, possibleNextMap[] )
 {
-    LOGGER( 128, "I AM ENTERING ON areWeRunningAnAlternateSeries(3)" )
+    LOG( 128, "I AM ENTERING ON areWeRunningAnAlternateSeries(3)" )
 
     new cursorOnMapSeries;
     new bool:isAnAlternateSeries;
@@ -14712,20 +14712,20 @@ stock bool:areWeRunningAnAlternateSeries( const currentMapNameClean[], currentMa
 
         getTheCurrentSerieForTheMap( lastMapNameClean );
 
-        LOGGER( 4, "" )
-        LOGGER( 4, "( areWeRunningAnAlternateSeries ) lastMapName:         %s", lastMapName         )
-        LOGGER( 4, "( areWeRunningAnAlternateSeries ) currentMapNameClean: %s", currentMapNameClean )
-        LOGGER( 4, "" )
+        LOG( 4, "" )
+        LOG( 4, "( areWeRunningAnAlternateSeries ) lastMapName:         %s", lastMapName         )
+        LOG( 4, "( areWeRunningAnAlternateSeries ) currentMapNameClean: %s", currentMapNameClean )
+        LOG( 4, "" )
 
         if( currentMapSerie > 2
             && !equali( currentMapNameClean, lastMapNameClean ) )
         {
-            LOGGER( 2, "    ( areWeRunningAnAlternateSeries ) Returning false." )
+            LOG( 2, "    ( areWeRunningAnAlternateSeries ) Returning false." )
             return false;
         }
     }
 
-    LOGGER( 2, "    ( areWeRunningAnAlternateSeries ) Returning %d.", isAnAlternateSeries )
+    LOG( 2, "    ( areWeRunningAnAlternateSeries ) Returning %d.", isAnAlternateSeries )
     return isAnAlternateSeries;
 }
 /**
@@ -14739,7 +14739,7 @@ stock bool:areWeRunningAnAlternateSeries( const currentMapNameClean[], currentMa
 stock bool:tryToMoveTheMapCycleCursor( Array:mapcycleFileListArray, defaultNextMapSeries,
                                        const defaultNextMapNameClean[], &defaultNextMapCyclePosition )
 {
-    LOGGER( 128, "I AM ENTERING ON tryToMoveTheMapCycleCursor(4)" )
+    LOG( 128, "I AM ENTERING ON tryToMoveTheMapCycleCursor(4)" )
     new defaultCurrentMapIndex;
 
     new lastMapName          [ MAX_MAPNAME_LENGHT ];
@@ -14751,10 +14751,10 @@ stock bool:tryToMoveTheMapCycleCursor( Array:mapcycleFileListArray, defaultNextM
 
     get_localinfo( "galileo_lastmap", lastMapName, charsmax( lastMapName ) );
 
-    LOGGER( 4, "" )
-    LOGGER( 4, "( tryToMoveTheMapCycleCursor ) lastMapName:            %s", lastMapName            )
-    LOGGER( 4, "( tryToMoveTheMapCycleCursor ) defaultCurrentMapName:  %s", defaultCurrentMapName  )
-    LOGGER( 4, "( tryToMoveTheMapCycleCursor ) defaultCurrentMapIndex: %d", defaultCurrentMapIndex )
+    LOG( 4, "" )
+    LOG( 4, "( tryToMoveTheMapCycleCursor ) lastMapName:            %s", lastMapName            )
+    LOG( 4, "( tryToMoveTheMapCycleCursor ) defaultCurrentMapName:  %s", defaultCurrentMapName  )
+    LOG( 4, "( tryToMoveTheMapCycleCursor ) defaultCurrentMapIndex: %d", defaultCurrentMapIndex )
 
     // If the last map name is not the same as the defaultCurrentMapName, we already moved the cursor.
     if( equali( lastMapName, defaultCurrentMapName ) )
@@ -14794,11 +14794,11 @@ stock bool:tryToMoveTheMapCycleCursor( Array:mapcycleFileListArray, defaultNextM
                 // If the current serie is 1, it will return 2.
                 lastMapSerie = getTheCurrentSerieForTheMap( lastDefaultCurrentMapNameClean );
 
-                LOGGER( 4, "" )
-                LOGGER( 4, "( tryToMoveTheMapCycleCursor ) processedMaps:                  %d", processedMaps                  )
-                LOGGER( 4, "( tryToMoveTheMapCycleCursor ) defaultCurrentMapNameClean:     %s", defaultCurrentMapNameClean     )
-                LOGGER( 4, "( tryToMoveTheMapCycleCursor ) lastDefaultCurrentMapNameClean: %s", lastDefaultCurrentMapNameClean )
-                LOGGER( 4, "" )
+                LOG( 4, "" )
+                LOG( 4, "( tryToMoveTheMapCycleCursor ) processedMaps:                  %d", processedMaps                  )
+                LOG( 4, "( tryToMoveTheMapCycleCursor ) defaultCurrentMapNameClean:     %s", defaultCurrentMapNameClean     )
+                LOG( 4, "( tryToMoveTheMapCycleCursor ) lastDefaultCurrentMapNameClean: %s", lastDefaultCurrentMapNameClean )
+                LOG( 4, "" )
 
                 if( lastMapSerie < 3
                     && equali( defaultCurrentMapNameClean, lastDefaultCurrentMapNameClean ) )
@@ -14809,16 +14809,16 @@ stock bool:tryToMoveTheMapCycleCursor( Array:mapcycleFileListArray, defaultNextM
             } while( processedMaps++ < maximumTries
                      && equali( defaultCurrentMapNameClean, lastDefaultCurrentMapNameClean ) );
 
-            LOGGER( 2, "    ( tryToMoveTheMapCycleCursor ) 1. Returning true." )
+            LOG( 2, "    ( tryToMoveTheMapCycleCursor ) 1. Returning true." )
             return true;
         }
 
         approvedSeries:
 
-        LOGGER( 4, "" )
-        LOGGER( 4, "( tryToMoveTheMapCycleCursor ) defaultCurrentMapNameClean: %s", defaultCurrentMapNameClean )
-        LOGGER( 4, "( tryToMoveTheMapCycleCursor ) defaultNextMapNameClean:    %s", defaultNextMapNameClean    )
-        LOGGER( 4, "" )
+        LOG( 4, "" )
+        LOG( 4, "( tryToMoveTheMapCycleCursor ) defaultCurrentMapNameClean: %s", defaultCurrentMapNameClean )
+        LOG( 4, "( tryToMoveTheMapCycleCursor ) defaultNextMapNameClean:    %s", defaultNextMapNameClean    )
+        LOG( 4, "" )
 
         // Here we do not update the `defaultNextMapCyclePosition` to the next map beyond the last valid serie,
         // to be able to return to follow the map cycle when the new series is over.
@@ -14826,19 +14826,19 @@ stock bool:tryToMoveTheMapCycleCursor( Array:mapcycleFileListArray, defaultNextM
         {
             moveTheCursorToTheLastMap( mapcycleFileListArray, defaultCurrentMapNameClean, defaultNextMapCyclePosition );
 
-            LOGGER( 2, "    ( tryToMoveTheMapCycleCursor ) 2. Returning false." )
+            LOG( 2, "    ( tryToMoveTheMapCycleCursor ) 2. Returning false." )
             return false;
         }
         else if( isThereNextMapOnTheSerie( defaultNextMapSeries, defaultNextMapNameClean, lastMapName ) )
         {
             moveTheCursorToTheLastMap( mapcycleFileListArray, defaultNextMapNameClean, defaultNextMapCyclePosition );
 
-            LOGGER( 2, "    ( tryToMoveTheMapCycleCursor ) 3. Returning false." )
+            LOG( 2, "    ( tryToMoveTheMapCycleCursor ) 3. Returning false." )
             return false;
         }
     }
 
-    LOGGER( 2, "    ( tryToMoveTheMapCycleCursor ) 4. Returning true." )
+    LOG( 2, "    ( tryToMoveTheMapCycleCursor ) 4. Returning true." )
     return true;
 }
 
@@ -14850,7 +14850,7 @@ stock bool:tryToMoveTheMapCycleCursor( Array:mapcycleFileListArray, defaultNextM
  */
 stock moveTheCursorToTheLastMap( Array:mapcycleFileListArray, const defaultCurrentMapNameClean[], &defaultNextMapCyclePosition )
 {
-    LOGGER( 128, "I AM ENTERING ON moveTheCursorToTheLastMap(3)" )
+    LOG( 128, "I AM ENTERING ON moveTheCursorToTheLastMap(3)" )
 
     new maximumTries;
     new processedMaps;
@@ -14866,13 +14866,13 @@ stock moveTheCursorToTheLastMap( Array:mapcycleFileListArray, const defaultCurre
     // If the current serie is 1, it will return 2.
     nextMapCyclePosition = getTheCurrentSerieForTheMap( defaultNextOfNextMapNameClean );
 
-    LOGGER( 4, "( moveTheCursorToTheLastMap ) nextMapCyclePosition:          %d", nextMapCyclePosition          )
-    LOGGER( 4, "( moveTheCursorToTheLastMap ) defaultNextMapCyclePosition:   %d", defaultNextMapCyclePosition   )
-    LOGGER( 4, "" )
-    LOGGER( 4, "( moveTheCursorToTheLastMap ) defaultCurrentMapNameClean:    %s", defaultCurrentMapNameClean    )
-    LOGGER( 4, "( moveTheCursorToTheLastMap ) defaultNextOfNextMapNameClean: %s", defaultNextOfNextMapNameClean )
-    LOGGER( 4, "" )
-    LOGGER( 2, "( moveTheCursorToTheLastMap ) Moving the cursor..." )
+    LOG( 4, "( moveTheCursorToTheLastMap ) nextMapCyclePosition:          %d", nextMapCyclePosition          )
+    LOG( 4, "( moveTheCursorToTheLastMap ) defaultNextMapCyclePosition:   %d", defaultNextMapCyclePosition   )
+    LOG( 4, "" )
+    LOG( 4, "( moveTheCursorToTheLastMap ) defaultCurrentMapNameClean:    %s", defaultCurrentMapNameClean    )
+    LOG( 4, "( moveTheCursorToTheLastMap ) defaultNextOfNextMapNameClean: %s", defaultNextOfNextMapNameClean )
+    LOG( 4, "" )
+    LOG( 2, "( moveTheCursorToTheLastMap ) Moving the cursor..." )
 
     // Make sure we are incrementing the sequence on the right series.
     if( equali( defaultCurrentMapNameClean, defaultNextOfNextMapNameClean ) )
@@ -14883,13 +14883,13 @@ stock moveTheCursorToTheLastMap( Array:mapcycleFileListArray, const defaultCurre
             nextMapCyclePosition++;
             defaultNextMapCyclePosition++;
 
-            LOGGER( 4, "( moveTheCursorToTheLastMap ) nextMapCyclePosition:          %d", nextMapCyclePosition )
-            LOGGER( 4, "( moveTheCursorToTheLastMap ) defaultNextMapCyclePosition:   %d", defaultNextMapCyclePosition )
-            LOGGER( 4, "( moveTheCursorToTheLastMap ) defaultNextOfNextMapNameClean: %s", defaultNextOfNextMapNameClean )
+            LOG( 4, "( moveTheCursorToTheLastMap ) nextMapCyclePosition:          %d", nextMapCyclePosition )
+            LOG( 4, "( moveTheCursorToTheLastMap ) defaultNextMapCyclePosition:   %d", defaultNextMapCyclePosition )
+            LOG( 4, "( moveTheCursorToTheLastMap ) defaultNextOfNextMapNameClean: %s", defaultNextOfNextMapNameClean )
         }
     }
 
-    LOGGER( 2, "    ( moveTheCursorToTheLastMap ) Returning defaultNextMapCyclePosition: %d", defaultNextMapCyclePosition )
+    LOG( 2, "    ( moveTheCursorToTheLastMap ) Returning defaultNextMapCyclePosition: %d", defaultNextMapCyclePosition )
 }
 
 /**
@@ -14898,7 +14898,7 @@ stock moveTheCursorToTheLastMap( Array:mapcycleFileListArray, const defaultCurre
  */
 stock getMapIndexBefore( Array:mapcycleFileListArray, nextMapCyclePosition, shifting )
 {
-    LOGGER( 128, "I AM ENTERING ON getMapIndexBefore(3) nextMapCyclePosition: %d", nextMapCyclePosition )
+    LOG( 128, "I AM ENTERING ON getMapIndexBefore(3) nextMapCyclePosition: %d", nextMapCyclePosition )
     new mapIndexBefore;
 
     if( mapcycleFileListArray
@@ -14911,7 +14911,7 @@ stock getMapIndexBefore( Array:mapcycleFileListArray, nextMapCyclePosition, shif
         }
     }
 
-    LOGGER( 2, "    ( getMapIndexBefore ) Returning mapIndexBefore: %d", mapIndexBefore )
+    LOG( 2, "    ( getMapIndexBefore ) Returning mapIndexBefore: %d", mapIndexBefore )
     return mapIndexBefore;
 }
 
@@ -14931,10 +14931,10 @@ stock getMapIndexBefore( Array:mapcycleFileListArray, nextMapCyclePosition, shif
 stock getNextMapByPosition( Array:mapcycleFileListArray, nextMapName[], &nextMapCyclePosition,
                             bool:isUseTheCurrentMapRule=true, bool:isToIncrementThePosition=true )
 {
-    LOGGER( 128, "I AM ENTERING ON getNextMapByPosition(5)" )
-    LOGGER( 4, "( getNextMapByPosition ) nextMapCyclePosition: %d", nextMapCyclePosition )
-    LOGGER( 4, "( getNextMapByPosition ) isUseTheCurrentMapRule: %d", isUseTheCurrentMapRule )
-    LOGGER( 4, "( getNextMapByPosition ) isToIncrementThePosition: %d", isToIncrementThePosition )
+    LOG( 128, "I AM ENTERING ON getNextMapByPosition(5)" )
+    LOG( 4, "( getNextMapByPosition ) nextMapCyclePosition: %d", nextMapCyclePosition )
+    LOG( 4, "( getNextMapByPosition ) isUseTheCurrentMapRule: %d", isUseTheCurrentMapRule )
+    LOG( 4, "( getNextMapByPosition ) isToIncrementThePosition: %d", isToIncrementThePosition )
 
     new mapsProcessedNumber;
     new loadedMapName[ MAX_MAPNAME_LENGHT ];
@@ -14951,7 +14951,7 @@ stock getNextMapByPosition( Array:mapcycleFileListArray, nextMapName[], &nextMap
             // After reaching the end of the list, start from the first item.
             if( nextMapCyclePosition >= mapCycleMapsCount )
             {
-                LOGGER( 1, "WARNING, getNextMapByPosition: Restarting the map cycle at: %d", nextMapCyclePosition )
+                LOG( 1, "WARNING, getNextMapByPosition: Restarting the map cycle at: %d", nextMapCyclePosition )
                 nextMapCyclePosition = 0;
 
                 continue;
@@ -14966,19 +14966,19 @@ stock getNextMapByPosition( Array:mapcycleFileListArray, nextMapName[], &nextMap
             if( isUseTheCurrentMapRule
                 && equali( g_currentMapName, loadedMapName ) )
             {
-                LOGGER( 1, "WARNING, getNextMapByPosition: Blocking because this is the currentMap: %s!", loadedMapName )
+                LOG( 1, "WARNING, getNextMapByPosition: Blocking because this is the currentMap: %s!", loadedMapName )
                 continue;
             }
             else if( IS_WHITELIST_BLOCKING( isWhitelistEnabled, loadedMapName ) )
             {
-                LOGGER( 1, "WARNING, getNextMapByPosition: The Whitelist feature is blocking: %s!", loadedMapName )
+                LOG( 1, "WARNING, getNextMapByPosition: The Whitelist feature is blocking: %s!", loadedMapName )
                 continue;
             }
 
             copy( nextMapName, MAX_MAPNAME_LENGHT - 1, loadedMapName );
 
-            LOGGER( 4, "( getNextMapByPosition ) nextMapName: %s,", nextMapName )
-            LOGGER( 4, "    ( getNextMapByPosition ) Just returning nextMapCyclePosition: %d", nextMapCyclePosition )
+            LOG( 4, "( getNextMapByPosition ) nextMapName: %s,", nextMapName )
+            LOG( 4, "    ( getNextMapByPosition ) Just returning nextMapCyclePosition: %d", nextMapCyclePosition )
 
             return nextMapCyclePosition;
 
@@ -15001,15 +15001,15 @@ stock getNextMapByPosition( Array:mapcycleFileListArray, nextMapName[], &nextMap
         copy( nextMapName, MAX_MAPNAME_LENGHT - 1, g_currentMapName );
     }
 
-    LOGGER( 4, "( getNextMapByPosition ) nextMapName: %s,", nextMapName )
-    LOGGER( 4, "    ( getNextMapByPosition ) Just returning nextMapCyclePosition: %d", nextMapCyclePosition )
+    LOG( 4, "( getNextMapByPosition ) nextMapName: %s,", nextMapName )
+    LOG( 4, "    ( getNextMapByPosition ) Just returning nextMapCyclePosition: %d", nextMapCyclePosition )
 
     return nextMapCyclePosition;
 }
 
 stock setTheNextMapCvarFlag( nextMapName[] )
 {
-    LOGGER( 128, "I AM ENTERING ON setTheNextMapCvarFlag(1) nextMapName: %s", nextMapName )
+    LOG( 128, "I AM ENTERING ON setTheNextMapCvarFlag(1) nextMapName: %s", nextMapName )
 
     if( get_pcvar_num( cvar_nextMapChangeAnnounce )
         && get_pcvar_num( cvar_endOfMapVote ) )
@@ -15027,7 +15027,7 @@ stock setTheNextMapCvarFlag( nextMapName[] )
     else
     {
         set_pcvar_string( cvar_amx_nextmap, nextMapName );
-        LOGGER( 2, "( setTheNextMapCvarFlag ) IS CHANGING THE CVAR 'amx_nextmap' to '%s'.", nextMapName )
+        LOG( 2, "( setTheNextMapCvarFlag ) IS CHANGING THE CVAR 'amx_nextmap' to '%s'.", nextMapName )
 
     #if IS_TO_ENABLE_SVEN_COOP_SUPPPORT > 0
         tryToSetGameModCvarString( cvar_mp_nextmap_cycle, nextMapName );
@@ -15043,7 +15043,7 @@ stock setTheNextMapCvarFlag( nextMapName[] )
  */
 stock saveCurrentMapCycleSetting( const currentMapName[], const mapcycleFilePath[], nextMapCyclePosition )
 {
-    LOGGER( 128, "I AM ENTERING ON saveCurrentMapCycleSetting(3)" )
+    LOG( 128, "I AM ENTERING ON saveCurrentMapCycleSetting(3)" )
 
     // At some extreme situations, this can be se to a negative value and we cannot allow it to be saved as it.
     if( ( g_nextMapCyclePosition = nextMapCyclePosition ) < 0 )
@@ -15054,8 +15054,8 @@ stock saveCurrentMapCycleSetting( const currentMapName[], const mapcycleFilePath
     new tockenMapcycleAndPosion[ MAX_MAPNAME_LENGHT + MAX_FILE_PATH_LENGHT ];
     formatex( tockenMapcycleAndPosion, charsmax( tockenMapcycleAndPosion ), "%s %d", mapcycleFilePath, nextMapCyclePosition );
 
-    LOGGER( 2, "( saveCurrentMapCycleSetting ) currentMapName: %s", currentMapName )
-    LOGGER( 2, "( saveCurrentMapCycleSetting ) tockenMapcycleAndPosion: %s", tockenMapcycleAndPosion )
+    LOG( 2, "( saveCurrentMapCycleSetting ) currentMapName: %s", currentMapName )
+    LOG( 2, "( saveCurrentMapCycleSetting ) tockenMapcycleAndPosion: %s", tockenMapcycleAndPosion )
 
     // save lastmapcycle settings
     set_localinfo( "lastmapcycle"   , tockenMapcycleAndPosion );
@@ -15064,26 +15064,26 @@ stock saveCurrentMapCycleSetting( const currentMapName[], const mapcycleFilePath
 
 stock getNextMapName( nextMapName[], maxChars )
 {
-    LOGGER( 128, "I AM ENTERING ON getNextMapName(2) maxChars: %d", maxChars )
+    LOG( 128, "I AM ENTERING ON getNextMapName(2) maxChars: %d", maxChars )
     new length = get_pcvar_string( cvar_amx_nextmap, nextMapName, maxChars );
 
     if( IS_MAP_VALID( nextMapName ) )
     {
-        LOGGER( 4, "    ( getNextMapName ) Returning length: %d, nextMapName: %s", length, nextMapName )
+        LOG( 4, "    ( getNextMapName ) Returning length: %d, nextMapName: %s", length, nextMapName )
         return length;
     }
 
     length = copy( nextMapName, maxChars, g_nextMapName );
     set_pcvar_string( cvar_amx_nextmap, g_nextMapName );
 
-    LOGGER( 2, "( getNextMapName ) IS CHANGING THE CVAR 'amx_nextmap' to '%s'.", g_nextMapName )
-    LOGGER( 1, "    ( getNextMapName ) Returning length: %d, nextMapName: %s", length, nextMapName )
+    LOG( 2, "( getNextMapName ) IS CHANGING THE CVAR 'amx_nextmap' to '%s'.", g_nextMapName )
+    LOG( 1, "    ( getNextMapName ) Returning length: %d, nextMapName: %s", length, nextMapName )
     return length;
 }
 
 public sayNextMap()
 {
-    LOGGER( 128, "I AM ENTERING ON sayNextMap(0)" )
+    LOG( 128, "I AM ENTERING ON sayNextMap(0)" )
     new nextMapName[ MAX_MAPNAME_LENGHT ];
 
     get_pcvar_string( cvar_amx_nextmap, nextMapName, charsmax( nextMapName ) );
@@ -15137,16 +15137,16 @@ public sayNextMap()
         }
     }
 
-    LOGGER( 4, "( sayNextMap ) cvar_endOfMapVote: %d, cvar_nextMapChangeAnnounce: %d", \
+    LOG( 4, "( sayNextMap ) cvar_endOfMapVote: %d, cvar_nextMapChangeAnnounce: %d", \
             get_pcvar_num( cvar_endOfMapVote ), get_pcvar_num( cvar_nextMapChangeAnnounce ) )
 
-    LOGGER( 1, "    ( sayNextMap ) Just Returning PLUGIN_CONTINUE" )
+    LOG( 1, "    ( sayNextMap ) Just Returning PLUGIN_CONTINUE" )
     return PLUGIN_CONTINUE;
 }
 
 public sayCurrentMap()
 {
-    LOGGER( 128, "I AM ENTERING ON sayCurrentMap(0)" )
+    LOG( 128, "I AM ENTERING ON sayCurrentMap(0)" )
 
     if( IS_COLORED_CHAT_ENABLED() )
     {
@@ -15160,7 +15160,7 @@ public sayCurrentMap()
 
 public sayFFStatus()
 {
-    LOGGER( 128, "I AM ENTERING ON sayFFStatus(0)" )
+    LOG( 128, "I AM ENTERING ON sayFFStatus(0)" )
 
     if( IS_COLORED_CHAT_ENABLED() )
     {
@@ -15178,7 +15178,7 @@ public sayFFStatus()
 
 public changeMapIntermission()
 {
-    LOGGER( 128, "I AM ENTERING ON changeMapIntermission(0)" )
+    LOG( 128, "I AM ENTERING ON changeMapIntermission(0)" )
 
     intermission_hold();
     changeMap();
@@ -15190,11 +15190,11 @@ public changeMapIntermission()
  */
 stock restoreTheChatTime()
 {
-    LOGGER( 128, "I AM ENTERING ON restoreTheChatTime(0) g_originalChatTime: %f", g_originalChatTime )
+    LOG( 128, "I AM ENTERING ON restoreTheChatTime(0) g_originalChatTime: %f", g_originalChatTime )
 
     if( floatround( g_originalChatTime, floatround_floor ) )
     {
-        LOGGER( 2, "( restoreTheChatTime ) IS CHANGING THE CVAR 'mp_chattime' to '%f'.", g_originalChatTime )
+        LOG( 2, "( restoreTheChatTime ) IS CHANGING THE CVAR 'mp_chattime' to '%f'.", g_originalChatTime )
         tryToSetGameModCvarFloat( cvar_mp_chattime, g_originalChatTime );
 
         g_originalChatTime = 0.0;
@@ -15213,7 +15213,7 @@ stock restoreTheChatTime()
  */
 public changeMap()
 {
-    LOGGER( 128, "I AM ENTERING ON changeMap(0)" )
+    LOG( 128, "I AM ENTERING ON changeMap(0)" )
     new nextmap_name[ MAX_MAPNAME_LENGHT ];
 
     // mp_chattime defaults to 10 in other mods
@@ -15228,7 +15228,7 @@ public changeMap()
 
         // make sure mp_chattime is long
         tryToSetGameModCvarFloat( cvar_mp_chattime, chatTime + 2.0 );
-        LOGGER( 2, "( changeMap ) IS CHANGING THE CVAR 'mp_chattime' to '%f'.", chatTime + 2.0 )
+        LOG( 2, "( changeMap ) IS CHANGING THE CVAR 'mp_chattime' to '%f'.", chatTime + 2.0 )
     }
 
     // If this task is already running, just do nothing by here.
@@ -15243,11 +15243,11 @@ public changeMap()
 
 stock bool:isAValidMap( mapname[] )
 {
-    LOGGER( 128, "I AM ENTERING ON isAValidMap(1) mapname: %s", mapname )
+    LOG( 128, "I AM ENTERING ON isAValidMap(1) mapname: %s", mapname )
 
     if( IS_MAP_VALID( mapname ) )
     {
-        LOGGER( 256, "    ( isAValidMap ) Returning true." )
+        LOG( 256, "    ( isAValidMap ) Returning true." )
         return true;
     }
 
@@ -15257,7 +15257,7 @@ stock bool:isAValidMap( mapname[] )
     // The mapname was too short to possibly house the .bsp extension
     if( length < 0 )
     {
-        LOGGER( 256, "    ( isAValidMap ) Returning false. [length < 0]" )
+        LOG( 256, "    ( isAValidMap ) Returning false. [length < 0]" )
         return false;
     }
 
@@ -15270,19 +15270,19 @@ stock bool:isAValidMap( mapname[] )
         // recheck
         if( IS_MAP_VALID( mapname ) )
         {
-            LOGGER( 256, "    ( isAValidMap ) Returning true." )
+            LOG( 256, "    ( isAValidMap ) Returning true." )
             return true;
         }
     }
 
-    LOGGER( 256, "    ( isAValidMap ) Returning false." )
+    LOG( 256, "    ( isAValidMap ) Returning false." )
     return false;
 }
 
 stock getTheCurrentSerieForTheMap( mapNameClean[] )
 {
-    LOGGER( 256, "" )
-    LOGGER( 256, "I AM ENTERING ON getTheCurrentSerieForTheMap(1) mapNameClean: %s", mapNameClean )
+    LOG( 256, "" )
+    LOG( 256, "I AM ENTERING ON getTheCurrentSerieForTheMap(1) mapNameClean: %s", mapNameClean )
 
     new mapNameLength;
     new mapNameDirt[ MAX_MAPNAME_LENGHT ];
@@ -15303,7 +15303,7 @@ stock getTheCurrentSerieForTheMap( mapNameClean[] )
             searchIndex--;
         }
 
-        LOGGER( 256, "( getTheCurrentSerieForTheMap ) mapNameClean: %s", mapNameClean )
+        LOG( 256, "( getTheCurrentSerieForTheMap ) mapNameClean: %s", mapNameClean )
 
         // If its not a map name only within digits on its name, continues the algorithm.
         if( searchIndex > -1 )
@@ -15328,24 +15328,24 @@ stock getTheCurrentSerieForTheMap( mapNameClean[] )
         }
     }
 
-    LOGGER( 256, "( getTheCurrentSerieForTheMap ) mapNameDirt: %s", mapNameDirt )
+    LOG( 256, "( getTheCurrentSerieForTheMap ) mapNameDirt: %s", mapNameDirt )
 
     // We just to return the next map on the series instead of the current one, which is already loaded.
     if( isdigit( mapNameDirt[ 0 ] ) )
     {
-        LOGGER( 256, "    ( getTheCurrentSerieForTheMap ) Returning: %d", str_to_num( mapNameDirt ) + 1 )
+        LOG( 256, "    ( getTheCurrentSerieForTheMap ) Returning: %d", str_to_num( mapNameDirt ) + 1 )
         return str_to_num( mapNameDirt ) + 1;
     }
 
     // We are returning 0 because someone may try to start their map series naming at 0.
-    LOGGER( 256, "    ( getTheCurrentSerieForTheMap ) Returning 0, no number found." )
+    LOG( 256, "    ( getTheCurrentSerieForTheMap ) Returning 0, no number found." )
 
     return 0;
 }
 
 stock bool:isThereNextMapOnTheSerie( &currentSerie, const mapNameClean[], nextMapName[] )
 {
-    LOGGER( 256, "I AM ENTERING ON isThereNextMapOnTheSerie(3) mapNameClean: %s", mapNameClean )
+    LOG( 256, "I AM ENTERING ON isThereNextMapOnTheSerie(3) mapNameClean: %s", mapNameClean )
     new currentForwardLook;
 
     // Look forward to be able to find more spaced sequences as `de_dust2002` and `de_dust2015`.
@@ -15355,7 +15355,7 @@ stock bool:isThereNextMapOnTheSerie( &currentSerie, const mapNameClean[], nextMa
 
         if( IS_MAP_VALID( nextMapName ) )
         {
-            LOGGER( 256, "    ( isThereNextMapOnTheSerie ) Returning: true, nextMapName: %s", nextMapName )
+            LOG( 256, "    ( isThereNextMapOnTheSerie ) Returning: true, nextMapName: %s", nextMapName )
             return true;
         }
 
@@ -15364,14 +15364,14 @@ stock bool:isThereNextMapOnTheSerie( &currentSerie, const mapNameClean[], nextMa
 
     } while( currentForwardLook++ < MAX_NON_SEQUENCIAL_MAPS_ON_THE_SERIE );
 
-    LOGGER( 256, "    ( isThereNextMapOnTheSerie ) Returning: false" )
+    LOG( 256, "    ( isThereNextMapOnTheSerie ) Returning: false" )
     return false;
 }
 
 stock loadTheCursorOnMapSeries( Array:mapArray, Trie:mapTrie, Trie:loadedMapSeriesTrie, currentMapName[],
                                 nextMapName[] , &mapCount   , const cursorOnMapSeries )
 {
-    LOGGER( 256, "I AM ENTERING ON loadTheCursorOnMapSeries(7) currentMapName: %s", currentMapName )
+    LOG( 256, "I AM ENTERING ON loadTheCursorOnMapSeries(7) currentMapName: %s", currentMapName )
     new currentSerie;
 
     new mapNameClean[ MAX_MAPNAME_LENGHT ];
@@ -15383,7 +15383,7 @@ stock loadTheCursorOnMapSeries( Array:mapArray, Trie:mapTrie, Trie:loadedMapSeri
     if( ( ( currentSerie = getTheCurrentSerieForTheMap( mapNameClean ) ) > 2 )
         && ( cursorOnMapSeries & IS_TO_LOAD_EXPLICIT_MAP_SERIES ) )
     {
-        LOGGER( 256, "    ( loadTheCursorOnMapSeries ) Returning/Blocking the execution." )
+        LOG( 256, "    ( loadTheCursorOnMapSeries ) Returning/Blocking the execution." )
         return;
     }
 
@@ -15409,7 +15409,7 @@ stock loadTheCursorOnMapSeries( Array:mapArray, Trie:mapTrie, Trie:loadedMapSeri
                 TrieSetCell( mapTrie, nextMapName, mapCount );
                 ArrayPushString( mapArray, nextMapName );
 
-                LOGGER( 256, "( loadTheCursorOnMapSeries ) nextMapName: %s", nextMapName )
+                LOG( 256, "( loadTheCursorOnMapSeries ) nextMapName: %s", nextMapName )
 
                 // Moves the pointer to the next serie.
                 currentSerie++;
@@ -15425,7 +15425,7 @@ stock loadTheCursorOnMapSeries( Array:mapArray, Trie:mapTrie, Trie:loadedMapSeri
             TrieSetCell( mapTrie, nextMapName, mapCount );
             ArrayPushString( mapArray, nextMapName );
 
-            LOGGER( 256, "( loadTheCursorOnMapSeries ) nextMapName: %s", nextMapName )
+            LOG( 256, "( loadTheCursorOnMapSeries ) nextMapName: %s", nextMapName )
 
             // Moves the pointer to the next serie.
             currentSerie++;
@@ -15436,15 +15436,15 @@ stock loadTheCursorOnMapSeries( Array:mapArray, Trie:mapTrie, Trie:loadedMapSeri
 
 stock loadMapFileSeriesListArray( mapFileDescriptor, Array:mapArray, Trie:mapTrie, Trie:loadedMapSeriesTrie, const cursorOnMapSeries )
 {
-    LOGGER( 128, "I AM ENTERING ON loadMapFileSeriesListArray(5) mapFileDescriptor: %d", mapFileDescriptor )
+    LOG( 128, "I AM ENTERING ON loadMapFileSeriesListArray(5) mapFileDescriptor: %d", mapFileDescriptor )
 
     new mapCount;
     new nextMapName  [ MAX_MAPNAME_LENGHT ];
     new loadedMapName[ MAX_MAPNAME_LENGHT ];
     new loadedMapLine[ MAX_MAPNAME_LENGHT ];
 
-    LOGGER( 128, "( loadMapFileSeriesListArray ) cursorOnMapSeries:   %d", cursorOnMapSeries   )
-    LOGGER( 128, "( loadMapFileSeriesListArray ) loadedMapSeriesTrie: %d", loadedMapSeriesTrie )
+    LOG( 128, "( loadMapFileSeriesListArray ) cursorOnMapSeries:   %d", cursorOnMapSeries   )
+    LOG( 128, "( loadMapFileSeriesListArray ) loadedMapSeriesTrie: %d", loadedMapSeriesTrie )
 
     while( !feof( mapFileDescriptor ) )
     {
@@ -15460,7 +15460,7 @@ stock loadMapFileSeriesListArray( mapFileDescriptor, Array:mapArray, Trie:mapTri
                 TrieSetCell( mapTrie, loadedMapName, mapCount );
                 ArrayPushString( mapArray, loadedMapLine );
 
-                LOGGER( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapLine ) )
+                LOG( 0, "", printUntilTheNthLoadedMap( mapCount, loadedMapLine ) )
 
                 // We only load the map cycle as series when it is set the `IS_TO_LOAD_THE_FIRST_MAP_SERIES`
                 // or `IS_TO_LOAD_ALL_THE_MAP_SERIES` bit flags.
@@ -15475,13 +15475,13 @@ stock loadMapFileSeriesListArray( mapFileDescriptor, Array:mapArray, Trie:mapTri
         }
     }
 
-    LOGGER( 1, "    ( loadMapFileSeriesListArray ) Returning mapCount: %d", mapCount )
+    LOG( 1, "    ( loadMapFileSeriesListArray ) Returning mapCount: %d", mapCount )
     return mapCount;
 }
 
 stock loadMapFileListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
 {
-    LOGGER( 128, "I AM ENTERING ON loadMapFileListOnSeries(3) mapFilePath: %s", mapFilePath )
+    LOG( 128, "I AM ENTERING ON loadMapFileListOnSeries(3) mapFilePath: %s", mapFilePath )
 
     new mapCount;
     new mapFileDescriptor = fopen( mapFilePath, "rt" );
@@ -15508,15 +15508,15 @@ stock loadMapFileListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
         checkIfThereEnoughMapPopulated( mapCount, mapFileDescriptor, mapFilePath );
 
         fclose( mapFileDescriptor );
-        LOGGER( 4, "" )
+        LOG( 4, "" )
     }
     else
     {
-        LOGGER( 1, "( loadMapFileListOnSeries ) ERROR %d, %L", AMX_ERR_NOTFOUND, LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilePath )
+        LOG( 1, "( loadMapFileListOnSeries ) ERROR %d, %L", AMX_ERR_NOTFOUND, LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilePath )
         log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_MAPS_FILEMISSING", mapFilePath );
     }
 
-    LOGGER( 1, "    ( loadMapFileListOnSeries ) Returning mapCount: %d", mapCount )
+    LOG( 1, "    ( loadMapFileListOnSeries ) Returning mapCount: %d", mapCount )
     return mapCount;
 }
 
@@ -15546,7 +15546,7 @@ stock loadMapFileListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
  */
 stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
 {
-    LOGGER( 128, "I AM ENTERING ON map_populateListOnSeries(3) mapFilePath: %s", mapFilePath )
+    LOG( 128, "I AM ENTERING ON map_populateListOnSeries(3) mapFilePath: %s", mapFilePath )
 
     // load the array with maps
     new mapCount;
@@ -15560,8 +15560,8 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
             TRY_TO_APPLY( ArrayClear, mapArray )
             TRY_TO_APPLY( TrieClear , mapTrie )
 
-            LOGGER( 4, "" )
-            LOGGER( 4, "    map_populateListOnSeries(...) Loading the PASSED FILE! mapFilePath: %s", mapFilePath )
+            LOG( 4, "" )
+            LOG( 4, "    map_populateListOnSeries(...) Loading the PASSED FILE! mapFilePath: %s", mapFilePath )
 
             mapCount = loadMapFileListOnSeries( mapArray, mapTrie, mapFilePath );
         }
@@ -15571,7 +15571,7 @@ stock map_populateListOnSeries( Array:mapArray, Trie:mapTrie, mapFilePath[] )
         }
     }
 
-    LOGGER( 1, "    I AM EXITING map_populateListOnSeries(3) mapCount: %d", mapCount )
+    LOG( 1, "    I AM EXITING map_populateListOnSeries(3) mapCount: %d", mapCount )
     return mapCount;
 }
 
@@ -15613,7 +15613,7 @@ new g_amx_time_voice;
 
 public timeleftPluginInit()
 {
-    LOGGER( 128, "I AM ENTERING ON timeleftPluginInit(0)" )
+    LOG( 128, "I AM ENTERING ON timeleftPluginInit(0)" )
 
     g_amx_time_voice = register_cvar( "amx_time_voice", "1" );
     g_amx_timeleft   = register_cvar( "amx_timeleft", "00:00", FCVAR_SERVER | FCVAR_EXTDLL | FCVAR_UNLOGGED | FCVAR_SPONLY );
@@ -15629,7 +15629,7 @@ public timeleftPluginInit()
 
 public sayTheTime( id )
 {
-    LOGGER( 128, "I AM ENTERING ON sayTheTime(1) id: %d", id )
+    LOG( 128, "I AM ENTERING ON sayTheTime(1) id: %d", id )
 
     if( get_pcvar_num( g_amx_time_voice ) )
     {
@@ -15686,7 +15686,7 @@ public sayTheTime( id )
 
 public sayTimeLeft( id )
 {
-    LOGGER( 128, "I AM ENTERING ON sayTimeLeft(1) id: %d", id )
+    LOG( 128, "I AM ENTERING ON sayTimeLeft(1) id: %d", id )
 
     switch( whatGameEndingTypeItIs() )
     {
@@ -15724,7 +15724,7 @@ public sayTimeLeft( id )
 
 stock sayRoundsLeft( id )
 {
-    LOGGER( 128, "I AM ENTERING ON sayRoundsLeft(1) id: %d", id )
+    LOG( 128, "I AM ENTERING ON sayRoundsLeft(1) id: %d", id )
     new roundsLeft = get_pcvar_num( cvar_mp_maxrounds ) - g_totalRoundsPlayed;
 
     if( get_pcvar_num( g_amx_time_voice ) )
@@ -15744,7 +15744,7 @@ stock sayRoundsLeft( id )
 
 stock sayWinLimitLeft( id )
 {
-    LOGGER( 128, "I AM ENTERING ON sayWinLimitLeft(1) id: %d", id )
+    LOG( 128, "I AM ENTERING ON sayWinLimitLeft(1) id: %d", id )
     new winLeft = get_pcvar_num( cvar_mp_winlimit ) - max( g_totalCtWins, g_totalTerroristsWins );
 
     if( get_pcvar_num( g_amx_time_voice ) )
@@ -15764,7 +15764,7 @@ stock sayWinLimitLeft( id )
 
 stock sayFragsLeft( id )
 {
-    LOGGER( 128, "I AM ENTERING ON sayFragsLeft(1) id: %d", id )
+    LOG( 128, "I AM ENTERING ON sayFragsLeft(1) id: %d", id )
     new fragsLeft = get_pcvar_num( cvar_mp_fraglimit ) - g_greatestKillerFrags;
 
     if( get_pcvar_num( g_amx_time_voice ) )
@@ -15784,7 +15784,7 @@ stock sayFragsLeft( id )
 
 stock sayTimeLeftOn( id )
 {
-    LOGGER( 128, "I AM ENTERING ON sayTimeLeftOn(1) id: %d", id )
+    LOG( 128, "I AM ENTERING ON sayTimeLeftOn(1) id: %d", id )
     new timeLeft = get_timeleft();
 
     if( get_pcvar_num( g_amx_time_voice ) )
@@ -15807,7 +15807,7 @@ stock sayTimeLeftOn( id )
 
 stock speakRemainingInterger( id, integer )
 {
-    LOGGER( 128, "I AM ENTERING ON speakRemainingInterger(2) id: %d, integer: %d", id, integer )
+    LOG( 128, "I AM ENTERING ON speakRemainingInterger(2) id: %d, integer: %d", id, integer )
     new speakText[ MAX_COLOR_MESSAGE ];
 
     num_to_word( integer, speakText, charsmax( speakText ) );
@@ -15816,7 +15816,7 @@ stock speakRemainingInterger( id, integer )
 
 stock setTimeText( text[], len, tmlf, id )
 {
-    LOGGER( 128, "I AM ENTERING ON setTimeText(4) text: %s, len: %d, tmlf: %d, id: %d", text, len, tmlf, id )
+    LOG( 128, "I AM ENTERING ON setTimeText(4) text: %s, len: %d, tmlf: %d, id: %d", text, len, tmlf, id )
 
     new secs = tmlf % 60;
     new mins = tmlf / 60;
@@ -15837,7 +15837,7 @@ stock setTimeText( text[], len, tmlf, id )
 
 stock setTimeVoice( text[], len, flags, tmlf )
 {
-    LOGGER( 128, "I AM ENTERING ON setTimeVoice(4) text: %s, len: %d, flags: %d, tmlf: %d", text, len, flags, tmlf )
+    LOG( 128, "I AM ENTERING ON setTimeVoice(4) text: %s, len: %d, flags: %d, tmlf: %d", text, len, flags, tmlf )
 
     new temp[ 7 ][ 32 ];
     new secs = tmlf % 60;
@@ -15891,7 +15891,7 @@ stock setTimeVoice( text[], len, flags, tmlf )
 
 stock findDispFormat( _time )
 {
-    LOGGER( 256, "I AM ENTERING ON findDispFormat(1) _time: %d", _time )
+    LOG( 256, "I AM ENTERING ON findDispFormat(1) _time: %d", _time )
 
     // For the map to change, because somehow the game time left returned by the engine is sometimes
     // a littler bigger as 10 seconds, than the correct time left returned by get_timeleft(0).
@@ -15929,7 +15929,7 @@ stock findDispFormat( _time )
 
 public setDisplaying()
 {
-    LOGGER( 128, "I AM ENTERING ON setDisplaying(0)" )
+    LOG( 128, "I AM ENTERING ON setDisplaying(0)" )
 
     new arg  [ 32 ];
     new num  [ 32 ];
@@ -15960,7 +15960,7 @@ public setDisplaying()
 
 public timeRemain()
 {
-    LOGGER( 256, "I AM ENTERING ON timeRemain(0)")
+    LOG( 256, "I AM ENTERING ON timeRemain(0)")
 
     new gmtm = get_timeleft();
     new tmlf = g_Switch ? --g_CountDown : gmtm;
@@ -16027,7 +16027,7 @@ public timeRemain()
 #if DEBUG_LEVEL & DEBUG_LEVEL_FAKE_VOTES
     public create_fakeVotes()
     {
-        LOGGER( 128, "I AM ENTERING ON create_fakeVotes(0)" )
+        LOG( 128, "I AM ENTERING ON create_fakeVotes(0)" )
         writeToTheDebugFile( DEBUGGER_OUTPUT_LOG_FILE_NAME, "Creating fake votes..." );
 
         if( g_voteStatus & IS_RUNOFF_VOTE )
@@ -16064,7 +16064,7 @@ public timeRemain()
 #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
     stock configureTheUnitTests()
     {
-        LOGGER( 128, "I AM ENTERING ON configureTheUnitTests(0)" )
+        LOG( 128, "I AM ENTERING ON configureTheUnitTests(0)" )
 
         register_clcmd( "say run", "inGameTestsToExecute", -1 );
         register_clcmd( "say_team run", "inGameTestsToExecute", -1 );
@@ -16205,7 +16205,7 @@ public timeRemain()
      */
     public runTests()
     {
-        LOGGER( 128, "I AM ENTERING ON runTests(0)" )
+        LOG( 128, "I AM ENTERING ON runTests(0)" )
         saveCurrentTestsTimeStamp();
 
     #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_UNIT_TEST_DELAYED )
@@ -16283,7 +16283,7 @@ public timeRemain()
      */
     public show_delayed_results()
     {
-        LOGGER( 128, "I AM ENTERING ON show_delayed_results(0)" )
+        LOG( 128, "I AM ENTERING ON show_delayed_results(0)" )
         new nextCheckTime = g_test_maxDelayResult - g_test_lastMaxDelayResult;
 
         // All delayed tests finished.
@@ -16328,7 +16328,7 @@ public timeRemain()
             new numberOfFailures = ArraySize( g_test_failureIdsArray );
             new lastFailure      = ( numberOfFailures ? ArrayGetCell( g_test_failureIdsArray, numberOfFailures - 1 ) : 0 );
 
-            LOGGER( 1, "( displaysLastTestOk ) numberOfFailures: %d, lastFailure: %d, lastTestId: %d", \
+            LOG( 1, "( displaysLastTestOk ) numberOfFailures: %d, lastFailure: %d, lastTestId: %d", \
                     numberOfFailures, lastFailure, lastTestId )
 
             if( !numberOfFailures
@@ -16361,7 +16361,7 @@ public timeRemain()
 
     stock print_all_tests_executed( bool:isToPrintAllTests = true )
     {
-        LOGGER( 128, "I AM ENTERING ON print_all_tests_executed(0)" )
+        LOG( 128, "I AM ENTERING ON print_all_tests_executed(0)" )
         if( isToPrintAllTests )
         {
             if( g_test_isToEnableLogging )
@@ -16392,7 +16392,7 @@ public timeRemain()
 
     stock print_tests_failure()
     {
-        LOGGER( 256, "I AM ENTERING ON print_tests_failure(0)" )
+        LOG( 256, "I AM ENTERING ON print_tests_failure(0)" )
 
         new test_id;
         new test_name[ MAX_SHORT_STRING ];
@@ -16433,7 +16433,7 @@ public timeRemain()
      */
     stock setTestFailure( test_id, bool:isFailure, failure_reason[] )
     {
-        LOGGER( 256, "I AM ENTERING ON setTestFailure(...) test_id: %d, isFailure: %d, \
+        LOG( 256, "I AM ENTERING ON setTestFailure(...) test_id: %d, isFailure: %d, \
                 failure_reason: %s", test_id, isFailure, failure_reason )
 
         new trieKey[ 10 ];
@@ -16471,7 +16471,7 @@ public timeRemain()
      */
     stock register_test( max_delay_result, test_name[] )
     {
-        LOGGER( 256, "I AM ENTERING ON register_test(2) max_delay_result: %d, test_name: %s", max_delay_result, test_name )
+        LOG( 256, "I AM ENTERING ON register_test(2) max_delay_result: %d, test_name: %s", max_delay_result, test_name )
         ArrayPushString( g_test_idsAndNamesArray, test_name );
 
         // All the normal Unit Tests will be finished when the Delayed Unit Test begin. This is used
@@ -16622,11 +16622,13 @@ public timeRemain()
             currentMap[ stringIndex ] = '^0';
             ArrayPushString( argumentMapsArray, currentMap );
 
-            LOGGER( 256, "    ( helper_loadNominations ) currentMap[%d]: %s", currentIndex, currentMap )
+            LOG( 256, "    ( helper_loadNominations ) currentMap[%d]: %s", currentIndex, currentMap )
         }
 
         set_pcvar_string( cvar_nomMapFilePath, g_test_nomMapFilePath );
         HELPER_MAP_FILE_LIST_LOAD2( g_test_nomMapFilePath, argumentMapsArray )
+
+        LOG( 4, "( helper_loadNominations ) file '%s' exists: %d", g_test_nomMapFilePath, file_exists( g_test_nomMapFilePath ) )
 
         new mapFilePath[ MAX_FILE_PATH_LENGHT ];
         loadNominationList( mapFilePath );
@@ -16638,8 +16640,8 @@ public timeRemain()
             setPlayerNominationMapIndex( playerId++, optionIndex, currentIndex );
         }
 
-        LOGGER( 4, "( helper_loadNominations ) g_nominationLoadedMapsArray: %d", g_nominationLoadedMapsArray )
-        LOGGER( 4, "( helper_loadNominations ) ArraySize:                   %d", ArraySize( g_nominationLoadedMapsArray ) )
+        LOG( 4, "( helper_loadNominations ) g_nominationLoadedMapsArray: %d", g_nominationLoadedMapsArray )
+        LOG( 4, "( helper_loadNominations ) ArraySize:                   %d", ArraySize( g_nominationLoadedMapsArray ) )
 
         ArrayDestroy( argumentMapsArray );
     }
@@ -16658,7 +16660,7 @@ public timeRemain()
         new fileDescriptor;
         new currentMap[ MAX_MAPNAME_LENGHT ];
 
-        delete_file( mapFileListPath );
+        // delete_file( mapFileListPath );
         fileDescriptor = fopen( mapFileListPath, "wt" );
 
         if( fileDescriptor )
@@ -16702,7 +16704,7 @@ public timeRemain()
         new fileDescriptor;
         new currentMap[ MAX_MAPNAME_LENGHT ];
 
-        delete_file( mapFileListPath );
+        // delete_file( mapFileListPath );
         fileDescriptor = fopen( mapFileListPath, "wt" );
 
         if( fileDescriptor )
@@ -16720,7 +16722,7 @@ public timeRemain()
                     replace_all( currentMap, charsmax( currentMap ), "]", "{" );
                 }
 
-                LOGGER( 256, "    ( HELPER_MAP_FILE_LIST_LOAD2 ) currentMap[%d]: %s", currentIndex, currentMap )
+                LOG( 256, "    ( helper_mapFileListLoadReplace2 ) currentMap[%d]: %s", currentIndex, currentMap )
                 fprintf( fileDescriptor, "%s^n", currentMap );
             }
 
@@ -16774,7 +16776,7 @@ public timeRemain()
     {
         for( new currentIndex = 0; currentIndex < sizeof g_votingMapNames; ++currentIndex )
         {
-            LOGGER( 1, "g_votingMapNames[%d]: %s %s", currentIndex, g_votingMapNames[ currentIndex ], g_votingMapInfos[ currentIndex ] )
+            LOG( 1, "g_votingMapNames[%d]: %s %s", currentIndex, g_votingMapNames[ currentIndex ], g_votingMapInfos[ currentIndex ] )
         }
     }
 
@@ -17832,7 +17834,7 @@ public timeRemain()
         ERR( "The TrieSize must to be %d, instead of %d.", max_value, trieSize )
         setTestFailure( test_id, trieSize != randomCount, errorMessage );
 
-        LOGGER( 1, "" )
+        LOG( 1, "" )
         test_id = test_registerSeriesNaming( "test_getUniqueRandomInteger", 'c' );
 
         for( new index = 0; index < max_value + 1 ; index++ )
@@ -17940,7 +17942,7 @@ public timeRemain()
         tryToSetGameModCvarFloat( cvar_mp_timelimit, cvarT ? time : 0.0 );
         tryToSetGameModCvarNum(   cvar_mp_fraglimit, cvarF ? frag : 0   );
 
-        LOGGER( 32, "( test_whatGameEndingTypeIt ) timelimit: %d", floatround( get_pcvar_float( cvar_mp_timelimit ) * 60 ) )
+        LOG( 32, "( test_whatGameEndingTypeIt ) timelimit: %d", floatround( get_pcvar_float( cvar_mp_timelimit ) * 60 ) )
 
         if( time > 0.0 )
         {
@@ -17951,7 +17953,7 @@ public timeRemain()
                     ) / 60 );
         }
 
-        LOGGER( 32, "( test_whatGameEndingTypeIt ) timelimit: %d", floatround( get_pcvar_float( cvar_mp_timelimit ) * 60 ) )
+        LOG( 32, "( test_whatGameEndingTypeIt ) timelimit: %d", floatround( get_pcvar_float( cvar_mp_timelimit ) * 60 ) )
 
         gameType = whatGameEndingTypeItIs();
 
@@ -18097,7 +18099,7 @@ public timeRemain()
         for( new index = 0; index < ArraySize( populatedArray ); index++ )
         {
             ArrayGetString( populatedArray, index, errorMessage, charsmax( errorMessage ) );
-            LOGGER( 1, "populatedArray index: %d, mapName: %s", index, errorMessage )
+            LOG( 1, "populatedArray index: %d, mapName: %s", index, errorMessage )
         }
 
         ERR( "The map populatedArray size must to be %d, instead of %d.", expectedSize, mapCount )
@@ -18978,9 +18980,9 @@ public timeRemain()
                   + START_VOTEMAP_MAX_TIME + PERIODIC_CHECKING_INTERVAL - 5 )
                 / 60 );
 
-        LOGGER( 32, "( test_endOfMapVotingStart_case3 ) timelimit: %d", floatround( get_pcvar_float( cvar_mp_timelimit ) * 60 ) )
-        LOGGER( 32, "( test_endOfMapVotingStart_case3 ) START_VOTEMAP_MIN_TIME: %d", START_VOTEMAP_MIN_TIME )
-        LOGGER( 32, "( test_endOfMapVotingStart_case3 ) START_VOTEMAP_MAX_TIME: %d", START_VOTEMAP_MAX_TIME )
+        LOG( 32, "( test_endOfMapVotingStart_case3 ) timelimit: %d", floatround( get_pcvar_float( cvar_mp_timelimit ) * 60 ) )
+        LOG( 32, "( test_endOfMapVotingStart_case3 ) START_VOTEMAP_MIN_TIME: %d", START_VOTEMAP_MIN_TIME )
+        LOG( 32, "( test_endOfMapVotingStart_case3 ) START_VOTEMAP_MAX_TIME: %d", START_VOTEMAP_MAX_TIME )
     }
 
     /**
@@ -19200,8 +19202,8 @@ public timeRemain()
      */
     stock saveServerCvarsForTesting()
     {
-        LOGGER( 128, "I AM ENTERING ON saveServerCvarsForTesting(0)" )
-        LOGGER( 2, "    %38s cvar_mp_timelimit: %f  test_mp_timelimit: %f   g_originalTimelimit: %f", \
+        LOG( 128, "I AM ENTERING ON saveServerCvarsForTesting(0)" )
+        LOG( 2, "    %38s cvar_mp_timelimit: %f  test_mp_timelimit: %f   g_originalTimelimit: %f", \
                 "saveServerCvarsForTesting( in )", get_pcvar_float( cvar_mp_timelimit ), test_mp_timelimit, g_originalTimelimit )
 
         if( !g_test_areTheUnitTestsRunning )
@@ -19280,8 +19282,8 @@ public timeRemain()
      */
     stock restoreServerCvarsFromTesting()
     {
-        LOGGER( 128, "I AM ENTERING ON restoreServerCvarsFromTesting(0)" )
-        LOGGER( 2, "    %38s cvar_mp_timelimit: %f  test_mp_timelimit: %f  g_originalTimelimit: %f", \
+        LOG( 128, "I AM ENTERING ON restoreServerCvarsFromTesting(0)" )
+        LOG( 2, "    %38s cvar_mp_timelimit: %f  test_mp_timelimit: %f  g_originalTimelimit: %f", \
                 "restoreServerCvarsFromTesting( in )", get_pcvar_float( cvar_mp_timelimit ), test_mp_timelimit, g_originalTimelimit )
 
         if( g_test_areTheUnitTestsRunning )
@@ -19361,7 +19363,7 @@ public timeRemain()
         delete_file( g_test_whiteListFilePath );
         delete_file( g_test_minPlayersFilePath );
 
-        LOGGER( 2, "    %38s cvar_mp_timelimit: %f  test_mp_timelimit: %f  g_originalTimelimit: %f", \
+        LOG( 2, "    %38s cvar_mp_timelimit: %f  test_mp_timelimit: %f  g_originalTimelimit: %f", \
                 "restoreServerCvarsFromTesting( out )", get_pcvar_float( cvar_mp_timelimit ), test_mp_timelimit, g_originalTimelimit )
 
         // Only to disable the Unit Tests running, after all the print being outputted due the `DEBUG_LEVEL_DISABLE_TEST_LOGS` level.
