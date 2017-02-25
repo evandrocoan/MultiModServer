@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.3.1-783";
+new const PLUGIN_VERSION[] = "v5.3.1-785";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.3.1-783";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 2+64
+#define DEBUG_LEVEL 16+32
 
 
 /**
@@ -5012,7 +5012,9 @@ stock checkIfThereEnoughMapPopulated( mapCount, mapFileDescriptor, mapFilePath[]
             }
         }
 
-        LOGGER( 1, "( loadMapFileList ) ERROR %d, Not valid/enough(%d) maps found: %s^n", AMX_ERR_NOTFOUND, mapCount, readLines )
+        LOGGER( 1, "( checkIfThereEnoughMapPopulated ) Not valid/enough(%d) maps found in: %s", mapCount, mapFilePath )
+        LOGGER( 1, "( checkIfThereEnoughMapPopulated ) ERROR %d, readLines: %s^n", AMX_ERR_NOTFOUND, readLines )
+
         log_error( AMX_ERR_NOTFOUND, "Not valid/enough(%d) maps found in: %s", mapCount, mapFilePath );
         log_error( AMX_ERR_NOTFOUND, "readLines: %s^n", readLines );
     }
@@ -5400,7 +5402,8 @@ public loadNominationList( nomMapFilePath[] )
     LOGGER( 4, "( loadNominationList ) cvar_nomMapFilePath: %s", nomMapFilePath )
 
     map_populateList( g_nominationLoadedMapsArray, nomMapFilePath, g_nominationLoadedMapsTrie );
-    LOGGER( 1, "    ( loadNominationList ) loadedCount: %d", ArraySize( g_nominationLoadedMapsArray ) )
+    LOGGER( 1, "    ( loadNominationList ) loadedCount:                 %d", ArraySize( g_nominationLoadedMapsArray ) )
+    LOGGER( 1, "    ( loadNominationList ) g_nominationLoadedMapsArray: %d", g_nominationLoadedMapsArray )
 }
 
 /**
@@ -6400,8 +6403,10 @@ stock show_all_players_nominations()
     {
         LOGGER( 4, "" )
         LOGGER( 4, "" )
-        LOGGER( 4, "( vote_addNominations ) nominationIndex: %d, maxPlayerNominations: %d", \
-                nominationIndex, maxPlayerNominations )
+        LOGGER( 4, "( show_all_players_nominations ) nominationIndex:             %d", nominationIndex )
+        LOGGER( 4, "( show_all_players_nominations ) maxPlayerNominations:        %d", maxPlayerNominations )
+        LOGGER( 4, "( show_all_players_nominations ) g_nominationLoadedMapsArray: %d", g_nominationLoadedMapsArray )
+        LOGGER( 4, "( show_all_players_nominations ) ArraySize:                   %d", ArraySize( g_nominationLoadedMapsArray ) )
 
         for( new player_id = 1; player_id < MAX_PLAYERS_COUNT; ++player_id )
         {
@@ -16632,6 +16637,9 @@ public timeRemain()
             ArrayGetString( argumentMapsArray, currentIndex, currentMap, charsmax( currentMap ) );
             setPlayerNominationMapIndex( playerId++, optionIndex, currentIndex );
         }
+
+        LOGGER( 4, "( helper_loadNominations ) g_nominationLoadedMapsArray: %d", g_nominationLoadedMapsArray )
+        LOGGER( 4, "( helper_loadNominations ) ArraySize:                   %d", ArraySize( g_nominationLoadedMapsArray ) )
 
         ArrayDestroy( argumentMapsArray );
     }
