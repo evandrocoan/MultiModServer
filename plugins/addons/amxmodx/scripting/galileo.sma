@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.3.1-782";
+new const PLUGIN_VERSION[] = "v5.3.1-783";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.3.1-782";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 0
+#define DEBUG_LEVEL 2+64
 
 
 /**
@@ -151,7 +151,7 @@ new const PLUGIN_VERSION[] = "v5.3.1-782";
      * Allow the Manual Unit Tests to disable LOGGER() debugging messages when the level
      * DEBUG_LEVEL_DISABLE_TEST_LOGS is enabled.
      */
-    new bool:g_test_isToDisableLogging;
+    new bool:g_test_isToEnableLogging;
 
     /**
      * Write messages to the debug log file on 'addons/amxmodx/logs'.
@@ -170,7 +170,7 @@ new const PLUGIN_VERSION[] = "v5.3.1-782";
         lastRun = currentTime;
 
         // Removes the compiler warning `warning 203: symbol is never used` with some DEBUG levels.
-        if( g_test_areTheUnitTestsRunning && g_test_isToDisableLogging ) { }
+        if( g_test_areTheUnitTestsRunning && g_test_isToEnableLogging ) { }
         if( DEBUGGER_OUTPUT_LOG_FILE_NAME[0] ) { }
     }
 #endif
@@ -229,7 +229,7 @@ new const PLUGIN_VERSION[] = "v5.3.1-782";
         if( mode & g_debug_level )
         {
         #if DEBUG_LEVEL & DEBUG_LEVEL_DISABLE_TEST_LOGS
-            if( !g_test_isToDisableLogging )
+            if( g_test_isToEnableLogging )
             {
                 static formated_message[ MAX_BIG_BOSS_STRING ];
                 vformat( formated_message, charsmax( formated_message ), message, 3 );
@@ -16329,25 +16329,22 @@ public timeRemain()
             if( !numberOfFailures
                 || lastFailure != lastTestId )
             {
-            #if DEBUG_LEVEL & DEBUG_LEVEL_DISABLE_TEST_LOGS
-                if( !g_test_isToDisableLogging )
+                if( g_test_isToEnableLogging )
                 {
                     print_logger( "OK!" );
                     print_logger( "" );
                     print_logger( "" );
                 }
-            #else
-                print_logger( "OK!" );
-                print_logger( "" );
-                print_logger( "" );
-            #endif
             }
             else if( lastFailure == lastTestId  )
             {
-                print_logger( "FAILED!" );
-                print_logger( "" );
-                print_logger( "" );
-                print_logger( "" );
+                if( g_test_isToEnableLogging )
+                {
+                    print_logger( "FAILED!" );
+                    print_logger( "" );
+                    print_logger( "" );
+                    print_logger( "" );
+                }
 
                 // Blocks the delayed Unit Tests to run, because the chain is broke.
                 return false;
@@ -16362,28 +16359,29 @@ public timeRemain()
         LOGGER( 128, "I AM ENTERING ON print_all_tests_executed(0)" )
         if( isToPrintAllTests )
         {
-        #if !( DEBUG_LEVEL & DEBUG_LEVEL_DISABLE_TEST_LOGS )
-            new trieKey[ 10 ];
-            new test_name[ MAX_SHORT_STRING ];
-            new testsNumber = ArraySize( g_test_idsAndNamesArray );
-
-            print_logger( "" );
-            print_logger( "" );
-            print_logger( "" );
-            print_logger( "    The following tests were successfully executed: " );
-            print_logger( "" );
-
-            for( new test_index = 0; test_index < testsNumber; test_index++ )
+            if( g_test_isToEnableLogging )
             {
-                num_to_str( test_index + 1, trieKey, charsmax( trieKey ) );
+                new trieKey[ 10 ];
+                new test_name[ MAX_SHORT_STRING ];
+                new testsNumber = ArraySize( g_test_idsAndNamesArray );
 
-                if( !TrieKeyExists( g_test_failureIdsTrie, trieKey ) )
+                print_logger( "" );
+                print_logger( "" );
+                print_logger( "" );
+                print_logger( "    The following tests were successfully executed: " );
+                print_logger( "" );
+
+                for( new test_index = 0; test_index < testsNumber; test_index++ )
                 {
-                    ArrayGetString( g_test_idsAndNamesArray, test_index, test_name, charsmax( test_name ) );
-                    print_logger( "       %3d. %s", test_index + 1, test_name );
+                    num_to_str( test_index + 1, trieKey, charsmax( trieKey ) );
+
+                    if( !TrieKeyExists( g_test_failureIdsTrie, trieKey ) )
+                    {
+                        ArrayGetString( g_test_idsAndNamesArray, test_index, test_name, charsmax( test_name ) );
+                        print_logger( "       %3d. %s", test_index + 1, test_name );
+                    }
                 }
             }
-        #endif
         }
     }
 
@@ -16445,7 +16443,11 @@ public timeRemain()
             TrieSetCell( g_test_failureIdsTrie, trieKey, 0 );
 
             ArrayPushString( g_test_failureReasonsArray, failure_reason );
-            print_logger( "       TEST FAILURE! %s", failure_reason );
+
+            if( g_test_isToEnableLogging )
+            {
+                print_logger( "       TEST FAILURE! %s", failure_reason );
+            }
 
             return true;
         }
@@ -16476,16 +16478,11 @@ public timeRemain()
 
         g_test_testsNumber++;
 
-    #if DEBUG_LEVEL & DEBUG_LEVEL_DISABLE_TEST_LOGS
-        if( !g_test_isToDisableLogging )
+        if( g_test_isToEnableLogging )
         {
             print_logger( "        EXECUTING TEST %d AFTER %d WITH UNTIL %d SECONDS DELAYED - %s ",
                     g_test_testsNumber, computeTheTestElapsedTime(), max_delay_result, test_name );
         }
-    #else
-        print_logger( "        EXECUTING TEST %d AFTER %d WITH UNTIL %d SECONDS DELAYED - %s ",
-                g_test_testsNumber, computeTheTestElapsedTime(), max_delay_result, test_name );
-    #endif
 
         if( g_test_maxDelayResult < max_delay_result )
         {
@@ -19208,7 +19205,7 @@ public timeRemain()
             formatex( backupMapsFilePathNew, charsmax( backupMapsFilePathNew ), "%s/%s%s", g_dataDirPath, "old", CURRENT_AND_NEXTMAP_FILE_NAME );
             rename_file( backupMapsFilePathOld, backupMapsFilePathNew, 1 );
 
-            g_test_isToDisableLogging     = true;
+            g_test_isToEnableLogging      = !( DEBUG_LEVEL & DEBUG_LEVEL_DISABLE_TEST_LOGS );
             g_test_areTheUnitTestsRunning = true;
 
             print_logger( "" );
@@ -19360,7 +19357,7 @@ public timeRemain()
                 "restoreServerCvarsFromTesting( out )", get_pcvar_float( cvar_mp_timelimit ), test_mp_timelimit, g_originalTimelimit )
 
         // Only to disable the Unit Tests running, after all the print being outputted due the `DEBUG_LEVEL_DISABLE_TEST_LOGS` level.
-        g_test_isToDisableLogging = false;
+        g_test_isToEnableLogging = false;
     }
 #endif
 
