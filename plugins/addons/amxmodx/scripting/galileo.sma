@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.3.2-793";
+new const PLUGIN_VERSION[] = "v5.3.2-795";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.3.2-793";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 0
+#define DEBUG_LEVEL 16
 
 
 /**
@@ -157,16 +157,16 @@ new const PLUGIN_VERSION[] = "v5.3.2-793";
      * Write messages to the debug log file on 'addons/amxmodx/logs'.
      *
      * @param log_file               the log file name.
-     * @param formated_message       the formatted message to write down to the debug log file.
+     * @param formatted_message       the formatted message to write down to the debug log file.
      */
-    stock writeToTheDebugFile( const log_file[], const formated_message[] )
+    stock writeToTheDebugFile( const log_file[], const formatted_message[] )
     {
         new currentTime;
         static lastRun;
 
         currentTime = tickcount();
 
-        log_to_file( log_file, "{%.3f %d %5d %4d} %s", get_gametime(), heapspace(), currentTime, currentTime - lastRun, formated_message );
+        log_to_file( log_file, "{%.3f %d %5d %4d} %s", get_gametime(), heapspace(), currentTime, currentTime - lastRun, formatted_message );
         lastRun = currentTime;
 
         // Removes the compiler warning `warning 203: symbol is never used` with some DEBUG levels.
@@ -221,7 +221,7 @@ new const PLUGIN_VERSION[] = "v5.3.2-793";
      * @param text the debug message, if omitted its default value is ""
      * @param any the variable number of formatting parameters
      *
-     * @see the stock writeToTheDebugFile( log_file[], formated_message[] ) for the output log
+     * @see the stock writeToTheDebugFile( log_file[], formatted_message[] ) for the output log
      *      'DEBUGGER_OUTPUT_LOG_FILE_NAME'.
      */
     stock debugMesssageLogger( const mode, const message[] = "", any:... )
@@ -231,16 +231,16 @@ new const PLUGIN_VERSION[] = "v5.3.2-793";
         #if DEBUG_LEVEL & DEBUG_LEVEL_DISABLE_TEST_LOGS
             if( g_test_isToEnableLogging )
             {
-                static formated_message[ MAX_BIG_BOSS_STRING ];
-                vformat( formated_message, charsmax( formated_message ), message, 3 );
+                static formatted_message[ MAX_BIG_BOSS_STRING ];
+                vformat( formatted_message, charsmax( formatted_message ), message, 3 );
 
-                writeToTheDebugFile( DEBUGGER_OUTPUT_LOG_FILE_NAME, formated_message );
+                writeToTheDebugFile( DEBUGGER_OUTPUT_LOG_FILE_NAME, formatted_message );
             }
         #else
-            static formated_message[ MAX_BIG_BOSS_STRING ];
-            vformat( formated_message, charsmax( formated_message ), message, 3 );
+            static formatted_message[ MAX_BIG_BOSS_STRING ];
+            vformat( formatted_message, charsmax( formatted_message ), message, 3 );
 
-            writeToTheDebugFile( DEBUGGER_OUTPUT_LOG_FILE_NAME, formated_message );
+            writeToTheDebugFile( DEBUGGER_OUTPUT_LOG_FILE_NAME, formatted_message );
         #endif
         }
     }
@@ -384,15 +384,15 @@ new const PLUGIN_VERSION[] = "v5.3.2-793";
      * @param message      the debug message, if omitted its default value is ""
      * @param any          the variable number of formatting parameters
      *
-     * @see the stock writeToTheDebugFile( log_file[], formated_message[] ) for the output log
+     * @see the stock writeToTheDebugFile( log_file[], formatted_message[] ) for the output log
      *      'DEBUGGER_OUTPUT_LOG_FILE_NAME'.
      */
     stock print_logger( const message[] = "", any:... )
     {
-        static formated_message[ MAX_BIG_BOSS_STRING ];
-        vformat( formated_message, charsmax( formated_message ), message, 2 );
+        static formatted_message[ MAX_BIG_BOSS_STRING ];
+        vformat( formatted_message, charsmax( formatted_message ), message, 2 );
 
-        writeToTheDebugFile( DEBUGGER_OUTPUT_LOG_FILE_NAME, formated_message );
+        writeToTheDebugFile( DEBUGGER_OUTPUT_LOG_FILE_NAME, formatted_message );
     }
 
     /**
@@ -1703,15 +1703,13 @@ public plugin_init()
     configureTheVotingMenus();
     configureSpecificGameModFeature();
 
+    // Need to be called after the `IS_COLORED_CHAT_ENABLED()` initialization on configureSpecificGameModFeature(0)
+    register_dictionary_colored( "galileo.txt" );
+
     register_dictionary( "common.txt" );
     register_dictionary( "cmdmenu.txt" );
     register_dictionary( "mapsmenu.txt" );
     register_dictionary( "adminvote.txt" );
-    register_dictionary_colored( "galileo.txt" );
-
-    g_isDayOfDefeat        = !!is_running("dod");
-    g_isRunningSvenCoop    = !!is_running("svencoop");
-    g_isColorChatSupported = ( is_running( "czero" ) || is_running( "cstrike" ) );
 
     // Register the HLTV for the supported game mods.
     if( IS_NEW_ROUND_EVENT_SUPPORTED() )
@@ -1816,12 +1814,16 @@ stock runTheServerMapCrashSearch()
         set_pcvar_string( cvar_mapcyclefile, modeFlagFilePath );
     }
 }
-
+/**
+ * On the first server start, we do not know whether the color chat is allowed/enabled. This is due
+ * the register register_dictionary_colored(1) to be called on plugin_init(0) and the settings being
+ * loaded only at plugin_cfg(0).
+ */
 stock configureSpecificGameModFeature()
 {
-    // On the first server start, we do not know whether the color chat is allowed/enabled. This is due
-    // the register register_dictionary_colored(1) to be called on plugin_init(0) and the settings being
-    // loaded only at plugin_cfg(0).
+    g_isDayOfDefeat        = !!is_running("dod");
+    g_isRunningSvenCoop    = !!is_running("svencoop");
+    g_isColorChatSupported = ( is_running( "czero" ) || is_running( "cstrike" ) );
     g_isColoredChatEnabled = get_pcvar_num( cvar_coloredChatEnabled ) != 0;
 
     // Register the voting start call from the Sven Coop game.
@@ -10116,12 +10118,12 @@ public map_listAll( player_id )
 stock no_color_print( const player_id, const message[], any:... )
 {
     LOG( 128, "I AM ENTERING ON color_console_print(...) player_id: %d, message: %s...", player_id, message )
-    new formated_message[ MAX_COLOR_MESSAGE ];
+    new formatted_message[ MAX_COLOR_MESSAGE ];
 
-    vformat( formated_message, charsmax( formated_message ), message, 3 );
-    REMOVE_CODE_COLOR_TAGS( formated_message )
+    vformat( formatted_message, charsmax( formatted_message ), message, 3 );
+    REMOVE_CODE_COLOR_TAGS( formatted_message )
 
-    console_print( player_id, formated_message );
+    console_print( player_id, formatted_message );
 }
 
 stock restartEmptyCycle()
@@ -13621,21 +13623,23 @@ stock percent( is, of )
  * register_dictionary_colored file. Otherwise use '^1', '^2', '^3' and '^4'.
  *
  * @param player_id          the player id.
- * @param message[]          the text formatting rules to display.
+ * @param lang_formatting    the text formatting rules to display.
  * @param any                the variable number of formatting parameters.
  *
  * @see <a href="https://www.amxmodx.org/api/amxmodx/client_print_color">client_print_color</a>
  * for Amx Mod X 1.8.3 or superior.
  */
-stock color_print( const player_id, const message[], any:... )
+stock color_print( const player_id, const lang_formatting[], any:... )
 {
-    LOG( 128, "I AM ENTERING ON color_print(...) player_id: %d, message: %s...", player_id, message )
-    new formated_message[ MAX_COLOR_MESSAGE ];
+    LOG( 128, "I AM ENTERING ON color_print(...) player_id: %d, lang_formatting: %s...", player_id, lang_formatting )
+    LOG( 64, "IS_COLORED_CHAT_ENABLED(): %d", IS_COLORED_CHAT_ENABLED() )
+
+    new formatted_message[ MAX_COLOR_MESSAGE ];
 
 #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
     g_test_printedMessage[ 0 ] = '^0';
 
-    vformat( g_test_printedMessage, charsmax( g_test_printedMessage ), message, 3 );
+    vformat( g_test_printedMessage, charsmax( g_test_printedMessage ), lang_formatting, 3 );
     LOG( 64, "( color_print ) player_id: %d, g_test_printedMessage: %s", player_id, g_test_printedMessage )
 #endif
 
@@ -13650,31 +13654,30 @@ stock color_print( const player_id, const message[], any:... )
         if( IS_COLORED_CHAT_ENABLED() )
         {
             // On the AMXX 182, all the colored messaged must to start within a color.
-            formated_message[ 0 ] = '^1';
-            vformat( formated_message[ 1 ], charsmax( formated_message ) - 1, message, 3 );
-
-            new message[ MAX_COLOR_MESSAGE ];
+            formatted_message[ 0 ] = '^1';
+            vformat( formatted_message[ 1 ], charsmax( formatted_message ) - 1, lang_formatting, 3 );
 
             if( g_coloredChatPrefix[ 0 ] )
             {
-                formatex( message, charsmax( message ), "^1%s^1%s", g_coloredChatPrefix, formated_message[ 1 ] );
+                new message[ MAX_COLOR_MESSAGE ];
+                formatex( message, charsmax( message ), "^1%s^1%s", g_coloredChatPrefix, formatted_message[ 1 ] );
 
                 LOG( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, message )
                 PRINT_COLORED_MESSAGE( player_id, message )
             }
             else
             {
-                LOG( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
-                PRINT_COLORED_MESSAGE( player_id, formated_message )
+                LOG( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formatted_message )
+                PRINT_COLORED_MESSAGE( player_id, formatted_message )
             }
         }
         else
         {
-            vformat( formated_message, charsmax( formated_message ), message, 3 );
-            LOG( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
+            vformat( formatted_message, charsmax( formatted_message ), lang_formatting, 3 );
+            LOG( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formatted_message )
 
-            REMOVE_CODE_COLOR_TAGS( formated_message )
-            client_print( player_id, print_chat, "%s%s", g_coloredChatPrefix, formated_message );
+            REMOVE_CODE_COLOR_TAGS( formatted_message )
+            client_print( player_id, print_chat, "%s%s", g_coloredChatPrefix, formatted_message );
         }
     }
     else
@@ -13718,21 +13721,21 @@ stock color_print( const player_id, const message[], any:... )
                     string_index = 0;
 
                     // as LANG_PLAYER == -1, check if next param string is a registered language translation
-                    while( ( formated_message[ string_index ] =
+                    while( ( formatted_message[ string_index ] =
                                  getarg( argument_index + 1, string_index++ ) ) )
                     {
                     }
-                    formated_message[ string_index ] = '^0';
+                    formatted_message[ string_index ] = '^0';
 
-                    LOG( 64, "( color_print ) player_id: %d, formated_message: %s", \
-                            player_id, formated_message )
+                    LOG( 64, "( color_print ) player_id: %d, formatted_message: %s", \
+                            player_id, formatted_message )
 
-                    LOG( 64, "( color_print ) GetLangTransKey( formated_message ) != TransKey_Bad: %d, \
+                    LOG( 64, "( color_print ) GetLangTransKey( formatted_message ) != TransKey_Bad: %d, \
                           multi_lingual_constants_number: %d, string_index: %d...", \
-                          GetLangTransKey( formated_message ) != TransKey_Bad, \
+                          GetLangTransKey( formatted_message ) != TransKey_Bad, \
                           multi_lingual_constants_number, string_index )
 
-                    if( GetLangTransKey( formated_message ) != TransKey_Bad )
+                    if( GetLangTransKey( formatted_message ) != TransKey_Bad )
                     {
                         // Store that argument as LANG_PLAYER so we can alter it later
                         ArrayPushCell( multi_lingual_indexes_array, argument_index++ );
@@ -13772,31 +13775,30 @@ stock color_print( const player_id, const message[], any:... )
             if( IS_COLORED_CHAT_ENABLED() )
             {
                 // On the AMXX 182, all the colored messaged must to start within a color.
-                formated_message[ 0 ] = '^1';
-                vformat( formated_message[ 1 ], charsmax( formated_message ) - 1, message, 3 );
-
-                new message[ MAX_COLOR_MESSAGE ];
+                formatted_message[ 0 ] = '^1';
+                vformat( formatted_message[ 1 ], charsmax( formatted_message ) - 1, lang_formatting, 3 );
 
                 if( g_coloredChatPrefix[ 0 ] )
                 {
-                    formatex( message, charsmax( message ), "^1%s^1%s", g_coloredChatPrefix, formated_message[ 1 ] );
+                    new message[ MAX_COLOR_MESSAGE ];
+                    formatex( message, charsmax( message ), "^1%s^1%s", g_coloredChatPrefix, formatted_message[ 1 ] );
 
                     LOG( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, message )
                     PRINT_COLORED_MESSAGE( player_id, message )
                 }
                 else
                 {
-                    LOG( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
-                    PRINT_COLORED_MESSAGE( player_id, formated_message )
+                    LOG( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formatted_message )
+                    PRINT_COLORED_MESSAGE( player_id, formatted_message )
                 }
             }
             else
             {
-                vformat( formated_message, charsmax( formated_message ), message, 3 );
-                LOG( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
+                vformat( formatted_message, charsmax( formatted_message ), lang_formatting, 3 );
+                LOG( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formatted_message )
 
-                REMOVE_CODE_COLOR_TAGS( formated_message )
-                client_print( player_id, print_chat, "%s%s", g_coloredChatPrefix, formated_message );
+                REMOVE_CODE_COLOR_TAGS( formatted_message )
+                client_print( player_id, print_chat, "%s%s", g_coloredChatPrefix, formatted_message );
             }
         }
 
@@ -13804,21 +13806,21 @@ stock color_print( const player_id, const message[], any:... )
     }
 #else // this else only works for AMXX 183 or superior, due noted bug above.
 
-    vformat( formated_message, charsmax( formated_message ), message, 3 );
-    LOG( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formated_message )
+    vformat( formatted_message, charsmax( formatted_message ), lang_formatting, 3 );
+    LOG( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formatted_message )
 
     if( IS_COLORED_CHAT_ENABLED() )
     {
-        client_print_color( player_id, print_team_default, "%s^1%s", g_coloredChatPrefix, formated_message );
+        client_print_color( player_id, print_team_default, "%s^1%s", g_coloredChatPrefix, formatted_message );
     }
     else
     {
-        REMOVE_CODE_COLOR_TAGS( formated_message )
-        client_print( player_id, print_chat, "%s%s", g_coloredChatPrefix, formated_message );
+        REMOVE_CODE_COLOR_TAGS( formatted_message )
+        client_print( player_id, print_chat, "%s%s", g_coloredChatPrefix, formatted_message );
     }
 #endif
 
-    LOG( 64, "( color_print ) [out] player_id: %d, Chat printed: %s...", player_id, formated_message )
+    LOG( 64, "( color_print ) [out] player_id: %d, Chat printed: %s...", player_id, formatted_message )
 }
 
 /**
@@ -14219,11 +14221,11 @@ stock printTheCurrentAndNextMapNames()
  */
 stock doAmxxLog( const message[] = "", any:... )
 {
-    static formated_message[ MAX_LONG_STRING ];
-    vformat( formated_message, charsmax( formated_message ), message, 2 );
+    static formatted_message[ MAX_LONG_STRING ];
+    vformat( formatted_message, charsmax( formatted_message ), message, 2 );
 
-    LOG( 1, formated_message )
-    log_amx( formated_message );
+    LOG( 1, formatted_message )
+    log_amx( formatted_message );
 }
 
 /**
