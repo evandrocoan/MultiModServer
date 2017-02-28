@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.3.2-795";
+new const PLUGIN_VERSION[] = "v5.3.2-797";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.3.2-795";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 16
+#define DEBUG_LEVEL 0
 
 
 /**
@@ -1674,15 +1674,13 @@ public plugin_init()
     cvar_emptyMapFilePath          = register_cvar( "gal_emptyserver_mapfile"      , ""     );
     cvar_soundsMute                = register_cvar( "gal_sounds_mute"              , "27"   );
     cvar_hudsHide                  = register_cvar( "gal_sounds_hud"               , "31"   );
+    cvar_coloredChatEnabled        = register_cvar( "gal_colored_chat_enabled"     , "0"    );
     cvar_coloredChatPrefix         = register_cvar( "gal_colored_chat_prefix"      , ""     );
     cvar_endOnRound                = register_cvar( "gal_endonround"               , "0"    );
     cvar_endOnRoundMininum         = register_cvar( "gal_endonround_msg"           , "0"    );
     cvar_endOnRoundRtv             = register_cvar( "gal_endonround_rtv"           , "0"    );
     cvar_endOnRoundChange          = register_cvar( "gal_endonround_change"        , "1"    );
     cvar_isEndMapCountdown         = register_cvar( "gal_endonround_countdown"     , "0"    );
-
-    // Enables the colored chat control cvar.
-    cvar_coloredChatEnabled = register_cvar( "gal_colored_chat_enabled", "0", FCVAR_SPONLY );
 
     // Not a configurable cvars, these are used instead of the `localinfo`.
     //
@@ -1693,8 +1691,8 @@ public plugin_init()
     cvar_successfullLevels  = register_cvar( "gal_successfull_levels" , "0", FCVAR_SPONLY );
 
     // This is a general pointer used for cvars not registered on the game.
-    cvar_disabledValuePointer = register_cvar( "gal_disabled_value_pointer", "0", FCVAR_SPONLY );
     cvar_gal_mapcyclefile     = register_cvar( "gal_mapcyclefile"          , "" , FCVAR_SERVER );
+    cvar_disabledValuePointer = register_cvar( "gal_disabled_value_pointer", "0", FCVAR_SPONLY );
 
     // This are default behaviors independent of any setting to be enabled.
     configureEndGameCvars();
@@ -1702,14 +1700,6 @@ public plugin_init()
     timeleftPluginInit();
     configureTheVotingMenus();
     configureSpecificGameModFeature();
-
-    // Need to be called after the `IS_COLORED_CHAT_ENABLED()` initialization on configureSpecificGameModFeature(0)
-    register_dictionary_colored( "galileo.txt" );
-
-    register_dictionary( "common.txt" );
-    register_dictionary( "cmdmenu.txt" );
-    register_dictionary( "mapsmenu.txt" );
-    register_dictionary( "adminvote.txt" );
 
     // Register the HLTV for the supported game mods.
     if( IS_NEW_ROUND_EVENT_SUPPORTED() )
@@ -1757,6 +1747,9 @@ public plugin_cfg()
 
     // Load the initial settings
     loadPluginSetttings();
+
+    // Need to be called after the `IS_COLORED_CHAT_ENABLED()` settings load on loadPluginSetttings(0).
+    loadLangFiles();
     loadMapFiles();
 
     LOG( 4, "" )
@@ -1782,8 +1775,23 @@ public plugin_cfg()
     LOG( 1, "" )
 }
 
+stock loadLangFiles()
+{
+    LOG( 128, "I AM ENTERING ON loadLangFiles(0)" )
+
+    g_isColoredChatEnabled = get_pcvar_num( cvar_coloredChatEnabled ) != 0;
+    register_dictionary_colored( "galileo.txt" );
+
+    register_dictionary( "common.txt" );
+    register_dictionary( "cmdmenu.txt" );
+    register_dictionary( "mapsmenu.txt" );
+    register_dictionary( "adminvote.txt" );
+}
+
 stock runTheServerMapCrashSearch()
 {
+    LOG( 128, "I AM ENTERING ON runTheServerMapCrashSearch(0)" )
+
     new modeFlagFilePath[ MAX_FILE_PATH_LENGHT ];
     formatex( modeFlagFilePath, charsmax( modeFlagFilePath ), "%s/%s", g_dataDirPath, TO_STOP_THE_CRASH_SEARCH );
 
@@ -1821,10 +1829,11 @@ stock runTheServerMapCrashSearch()
  */
 stock configureSpecificGameModFeature()
 {
+    LOG( 128, "I AM ENTERING ON configureSpecificGameModFeature(0)" )
+
     g_isDayOfDefeat        = !!is_running("dod");
     g_isRunningSvenCoop    = !!is_running("svencoop");
     g_isColorChatSupported = ( is_running( "czero" ) || is_running( "cstrike" ) );
-    g_isColoredChatEnabled = get_pcvar_num( cvar_coloredChatEnabled ) != 0;
 
     // Register the voting start call from the Sven Coop game.
 #if IS_TO_ENABLE_SVEN_COOP_SUPPPORT > 0
@@ -1909,8 +1918,8 @@ stock loadPluginSetttings()
     if( !dir_exists( g_dataDirPath )
         && mkdir( g_dataDirPath ) )
     {
-        LOG( 1, "AMX_ERR_NOTFOUND, %L", LANG_SERVER, "GAL_CREATIONFAILED", g_dataDirPath )
-        log_error( AMX_ERR_NOTFOUND, "%L", LANG_SERVER, "GAL_CREATIONFAILED", g_dataDirPath );
+        LOG( 1, "AMX_ERR_NOTFOUND, Could not create: %s", g_dataDirPath )
+        log_error( AMX_ERR_NOTFOUND, "Could not create: %s", g_dataDirPath );
     }
 
     LOG( 1, "( loadPluginSetttings ) g_configsDirPath: %s, g_dataDirPath: %s,", g_configsDirPath, g_dataDirPath )
