@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.3.1-788";
+new const PLUGIN_VERSION[] = "v5.3.1-789";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -1766,6 +1766,7 @@ public plugin_cfg()
 
     // The 'mp_fraglimitCvarSupport(0)' could register a new cvar, hence only call 'cacheCvarsValues' them after it.
     mp_fraglimitCvarSupport();
+    cacheCvarsValues();
     resetRoundsScores();
 
     LOG( 0, "", printTheCurrentAndNextMapNames() )
@@ -1948,8 +1949,6 @@ stock mp_fraglimitCvarSupport()
 
     // re-cache later to wait load some late server configurations, as the per-map configs.
     set_task( DELAY_TO_WAIT_THE_SERVER_CVARS_TO_BE_LOADED, "cacheCvarsValues" );
-
-    cacheCvarsValues();
 }
 
 /**
