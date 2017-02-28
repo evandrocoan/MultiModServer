@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.3.1-789";
+new const PLUGIN_VERSION[] = "v5.3.1-790";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -1993,9 +1993,10 @@ public cacheCvarsValues()
     }
     else
     {
-        REMOVE_CODE_COLOR_TAGS( g_coloredChatPrefix )
+        REMOVE_LETTER_COLOR_TAGS( g_coloredChatPrefix )
     }
 
+    LOG( 128, "( cacheCvarsValues ) g_coloredChatPrefix: %s", g_coloredChatPrefix )
     g_maxVotingChoices = max( min( MAX_OPTIONS_IN_VOTE, get_pcvar_num( cvar_voteMapChoiceCount ) ), 2 );
 
     // It need to be cached after loading all the cvars
