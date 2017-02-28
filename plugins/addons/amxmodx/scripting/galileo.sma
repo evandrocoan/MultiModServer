@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.3.1-790";
+new const PLUGIN_VERSION[] = "v5.3.1-791";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -1485,7 +1485,7 @@ new g_rtvCommands;
 new g_rtvWaitRounds;
 new g_rtvWaitFrags;
 new g_rockedVoteCount;
-new g_winLimitInteger;
+new g_winLimitNumber;
 new g_maxRoundsNumber;
 new g_fragLimitNumber;
 new g_greatestKillerFrags;
@@ -1972,7 +1972,7 @@ public cacheCvarsValues()
     g_voteShowNoneOptionType    = get_pcvar_num( cvar_voteShowNoneOptionType );
     g_showVoteStatusType        = get_pcvar_num( cvar_showVoteStatusType     );
     g_maxRoundsNumber           = get_pcvar_num( cvar_mp_maxrounds           );
-    g_winLimitInteger           = get_pcvar_num( cvar_mp_winlimit            );
+    g_winLimitNumber            = get_pcvar_num( cvar_mp_winlimit            );
     g_fragLimitNumber           = get_pcvar_num( cvar_mp_fraglimit           );
     g_timeLimitNumber           = get_pcvar_num( cvar_mp_timelimit           );
 
@@ -3939,7 +3939,7 @@ stock debugTeamWinEvent( string_team_winner[], wins_CT_trigger, wins_Terrorist_t
 
     LOG( 32, "( team_win_event )" )
     LOG( 32, "( team_win_event ) string_team_winner: %s", string_team_winner )
-    LOG( 32, "( team_win_event ) g_winLimitInteger: %d", g_winLimitInteger )
+    LOG( 32, "( team_win_event ) g_winLimitNumber: %d", g_winLimitNumber )
     LOG( 32, "( team_win_event ) wins_CT_trigger: %d", wins_CT_trigger )
     LOG( 32, "( team_win_event ) wins_Terrorist_trigger: %d", wins_Terrorist_trigger )
     LOG( 32, "( team_win_event ) g_isGameEndingTypeContextSaved: %d", g_isGameEndingTypeContextSaved )
@@ -3979,22 +3979,22 @@ public team_win_event()
         g_totalCtWins++;
     }
 
-    g_winLimitInteger = get_pcvar_num( cvar_mp_winlimit );
+    g_winLimitNumber = get_pcvar_num( cvar_mp_winlimit );
 
-    if( g_winLimitInteger )
+    if( g_winLimitNumber )
     {
         wins_CT_trigger        = g_totalCtWins + VOTE_START_ROUNDS;
         wins_Terrorist_trigger = g_totalTerroristsWins + VOTE_START_ROUNDS;
 
-        if( ( wins_CT_trigger > g_winLimitInteger
-              || wins_Terrorist_trigger > g_winLimitInteger )
+        if( ( wins_CT_trigger > g_winLimitNumber
+              || wins_Terrorist_trigger > g_winLimitNumber )
             && isTimeToStartTheEndOfMapVoting( get_pcvar_num( cvar_endOfMapVote ) ) )
         {
             START_VOTING_BY_MIDDLE_ROUND_DELAY( "start_voting_by_winlimit" )
         }
 
-        if( g_totalCtWins > g_winLimitInteger - 2
-            || g_totalTerroristsWins > g_winLimitInteger - 2 )
+        if( g_totalCtWins > g_winLimitNumber - 2
+            || g_totalTerroristsWins > g_winLimitNumber - 2 )
         {
             try_to_manage_map_end();
         }
@@ -6869,7 +6869,7 @@ stock create_game_crash_recreation( secondsLeft )
         && (  g_timeLimitNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_timeLimitNumber - secondsLeft / 60
            || g_fragLimitNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_greatestKillerFrags
            || g_maxRoundsNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_totalRoundsPlayed + 1
-           || g_winLimitInteger / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_totalTerroristsWins + g_totalCtWins ) )
+           || g_winLimitNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_totalTerroristsWins + g_totalCtWins ) )
     {
         new gameCrashActionFilePath[ MAX_FILE_PATH_LENGHT ];
 
@@ -6889,8 +6889,8 @@ stock create_game_crash_recreation( secondsLeft )
                 g_maxRoundsNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_totalRoundsPlayed + 1 )
 
         LOG( 32, "( vote_manageEnd )  %d/%d < %d: %d", \
-                g_winLimitInteger, SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR, g_totalTerroristsWins + g_totalCtWins, \
-                g_winLimitInteger / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_totalTerroristsWins + g_totalCtWins )
+                g_winLimitNumber, SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR, g_totalTerroristsWins + g_totalCtWins, \
+                g_winLimitNumber / SERVER_GAME_CRASH_ACTION_RATIO_DIVISOR < g_totalTerroristsWins + g_totalCtWins )
 
         generateGameCrashActionFilePath( gameCrashActionFilePath, charsmax( gameCrashActionFilePath ) );
         write_file( gameCrashActionFilePath, "Game Crash Action Flag File^n^nSee the cvar \
@@ -9708,7 +9708,9 @@ stock is_to_block_RTV( player_id )
     }
 
     // Make sure enough time has gone by on the current map
-    else if( g_rtvWaitMinutes
+    else if( ( g_timeLimitNumber
+               || g_fragLimitNumber )
+             && g_rtvWaitMinutes
              && ( minutesElapsed = map_getMinutesElapsed() )
              && minutesElapsed < g_rtvWaitMinutes )
     {
@@ -9716,7 +9718,9 @@ stock is_to_block_RTV( player_id )
     }
 
     // Make sure enough rounds has gone by on the current map
-    else if( g_rtvWaitRounds
+    else if( ( g_maxRoundsNumber
+               || g_winLimitNumber )
+             && g_rtvWaitRounds
              && g_totalRoundsPlayed < g_rtvWaitRounds )
     {
         new remaining_rounds = g_rtvWaitRounds - g_totalRoundsPlayed;
