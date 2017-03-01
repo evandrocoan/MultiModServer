@@ -1782,19 +1782,6 @@ de_inferno
 
 [SIZE="4"][B]Client's Commands:[/B][/SIZE]
 
-[B]//[/B] Displays, to all players how much last until the map to end. This is
-[B]//[/B] a replacement for AMXX's command with the same name.
-[COLOR="Blue"]say [B]nextmap[/B][/COLOR]
-
-[B]//[/B] Displays, to all players, the next map that will be played.  This is
-[B]//[/B] a replacement for AMXX's command with the same name.
-[B]//[/B] When using end of map voting (CVAR "gal_endofmapvote" and
-[B]//[/B] "gal_nextmap_change" set to 1), this command will return "[not yet voted on]"
-[B]//[/B] if the map vote hasn't started yet and "[voting in progress]"
-[B]//[/B] once the vote has started. When the outcome of the vote is determined,
-[B]//[/B] this command will return the map name.
-[COLOR="Blue"]say [B]nextmap[/B][/COLOR]
-
 [B]//[/B] Displays, to all players, the current map name.
 [COLOR="Blue"]say [B]currentmap[/B][/COLOR]
 
@@ -1802,11 +1789,22 @@ de_inferno
 [B]//[/B] CVAR "gal_banrecent" to be set to a value higher than 0.
 [COLOR="Blue"]say [B]recentmaps[/B][/COLOR]
 
+[B]//[/B] Displays, to all players, the next map that will be played.  This is
+[B]//[/B] a replacement for AMXX's command with the same name.
+[B]//[/B]
+[B]//[/B] When using end of map voting (CVAR "gal_endofmapvote" and
+[B]//[/B] "gal_nextmap_change" set to 1), this command will return "[not yet voted on]"
+[B]//[/B] if the map vote hasn't started yet and "[voting in progress]"
+[B]//[/B] once the vote has started. When the outcome of the vote is determined,
+[B]//[/B] this command will return the map name.
+[COLOR="Blue"]say [B]nextmap[/B][/COLOR]
+
 [B]//[/B] Registers the players request for a map vote and change. The player will be
 [B]//[/B] informed how many more players need to rock the vote before a map vote
 [B]//[/B] will be forced. The [I]anything[/I] argument can be any "word" up to 20 characters
-[B]//[/B] without spaces. Requires the CVAR "gal_rtv_commands" to be set to an
-[B]//[/B] appropriate value.
+[B]//[/B] without spaces.
+[B]//[/B]
+[B]//[/B] Requires the CVAR "gal_rtv_commands" to be set to an appropriate value.
 [COLOR="Blue"]say [B]rockthevote[/B][/COLOR]
 [COLOR="Blue"]say [B]rtv[/B][/COLOR]
 [COLOR="Blue"]say rockthe[B]anything[/B]vote[/COLOR]
@@ -1820,6 +1818,7 @@ de_inferno
 [B]//[/B] Attempts to nominate the map specified by the [I]partialMapName[/I] argument.
 [B]//[/B] If there are multiple matches for [I]partialMapName[/I], a menu of the matches will
 [B]//[/B] be displayed to the player allowing them to select the map they meant.
+[B]//[/B]
 [B]//[/B] Requires the CVAR "gal_nom_playerallowance" to be set to a value higher than 0.
 [COLOR="Blue"]say [I]nominate[/I] [B]partialMapName[/B][/COLOR]
 [COLOR="Blue"]say [I]nom[/I] [B]partialMapName[/B][/COLOR]
@@ -1839,11 +1838,13 @@ de_inferno
 
 [B]//[/B] Cancels the nomination of [I]mapname[/I], which would have had to be previously
 [B]//[/B] nominated by the player.
+[B]//[/B]
 [B]//[/B] Requires the CVAR "gal_nom_playerallowance" to be set to a value higher than 0.
 [COLOR="Blue"]say [I]cancel[/I] [B]mapname[/B][/COLOR]
 
 [B]//[/B] If [I]mapname[/I] has been nominated by the player, will cancel the nomination.
 [B]//[/B] If [I]mapname[/I] has not been nominated by the player, will attempt to nominate it.
+[B]//[/B]
 [B]//[/B] Requires the CVAR "gal_nom_playerallowance" to be set to a value higher than 0.
 [COLOR="Blue"]say [B]mapname[/B][/COLOR]
 
