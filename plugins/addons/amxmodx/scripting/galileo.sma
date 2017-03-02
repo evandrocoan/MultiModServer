@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.3.2-797";
+new const PLUGIN_VERSION[] = "v5.3.2-798";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -10898,6 +10898,8 @@ public cmd_voteMap( player_id, level, cid )
             // To start from 1 because the first argument 0, is the command line name `gal_startvote`.
             for( new index = 1; index < argumentsCount; index++ )
             {
+                new cache;
+
                 read_argv( index, argument, charsmax( argument ) );
                 LOG( 8, "( cmd_voteMap ) argument[%d]: %s", index, argument )
 
@@ -10914,22 +10916,26 @@ public cmd_voteMap( player_id, level, cid )
                     LOG( 8, "    ( cmd_voteMap ) argument is a valid map." )
                     addMapToTheVotingMenu( argument, "" );
                 }
-                else if( -1 < containi( argument, "nointro" ) < 2 )
+                else if( -1 < ( cache = containi( argument, "nointro" ) )
+                         && cache < 2 )
                 {
                     LOG( 8, "    ( cmd_voteMap ) Entering on argument `nointro`" )
                     g_voteMapStatus |= IS_DISABLED_VOTEMAP_INTRO;
                 }
-                else if( -1 < containi( argument, "norunoff" ) < 2  )
+                else if( -1 < ( cache = containi( argument, "norunoff" ) )
+                         && cache < 2 )
                 {
                     LOG( 8, "    ( cmd_voteMap ) Entering on argument `norunoff`" )
                     g_voteMapStatus |= IS_DISABLED_VOTEMAP_RUNOFF;
                 }
-                else if( -1 < containi( argument, "noextension" ) < 2 )
+                else if( -1 < ( cache = containi( argument, "noextension" ) )
+                         && cache < 2 )
                 {
                     LOG( 8, "    ( cmd_voteMap ) Entering on argument `noextension`" )
                     g_voteMapStatus |= IS_DISABLED_VOTEMAP_EXTENSION;
                 }
-                else if( -1 < containi( argument, "loadnominations" ) < 2 )
+                else if( -1 < ( cache = containi( argument, "loadnominations" ) )
+                         && cache < 2 )
                 {
                     LOG( 8, "    ( cmd_voteMap ) Entering on argument `loadnominations`" )
 
