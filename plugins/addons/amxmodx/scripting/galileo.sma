@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.3.2-800";
+new const PLUGIN_VERSION[] = "v5.3.2-801";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -19241,8 +19241,12 @@ public timeRemain()
             new backupMapsFilePathOld[ MAX_FILE_PATH_LENGHT ];
             new backupMapsFilePathNew[ MAX_FILE_PATH_LENGHT ];
 
-            formatex( backupMapsFilePathOld, charsmax( backupMapsFilePathOld ), "%s/%s", g_dataDirPath, CURRENT_AND_NEXTMAP_FILE_NAME );
-            formatex( backupMapsFilePathNew, charsmax( backupMapsFilePathNew ), "%s/%s%s", g_dataDirPath, "old", CURRENT_AND_NEXTMAP_FILE_NAME );
+            formatex( backupMapsFilePathOld, charsmax( backupMapsFilePathOld ),
+                    "%s/%s", g_dataDirPath, CURRENT_AND_NEXTMAP_FILE_NAME );
+
+            formatex( backupMapsFilePathNew, charsmax( backupMapsFilePathNew ),
+                    "%s/%s%s", g_dataDirPath, "old", CURRENT_AND_NEXTMAP_FILE_NAME );
+
             rename_file( backupMapsFilePathOld, backupMapsFilePathNew, 1 );
 
             g_test_isToEnableLogging      = !( DEBUG_LEVEL & DEBUG_LEVEL_DISABLE_TEST_LOGS );
@@ -19266,11 +19270,10 @@ public timeRemain()
             copy( test_g_nextMapName   , charsmax( test_g_nextMapName )   , g_nextMapName    );
             copy( test_g_currentMapName, charsmax( test_g_currentMapName ), g_currentMapName );
 
-            get_localinfo( "lastmapcycle", test_lastmapcycle, charsmax( test_lastmapcycle ) );
+            get_localinfo( "lastmapcycle"   , test_lastmapcycle   , charsmax( test_lastmapcycle )    );
             get_localinfo( "galileo_lastmap", test_galileo_lastmap, charsmax( test_galileo_lastmap ) );
 
-            get_pcvar_string( cvar_amx_nextmap, test_amx_nextmap, charsmax( test_amx_nextmap ) );
-
+            get_pcvar_string( cvar_amx_nextmap              , test_amx_nextmap              , charsmax( test_amx_nextmap )               );
             get_pcvar_string( cvar_mapcyclefile             , test_mapcyclefile             , charsmax( test_mapcyclefile )              );
             get_pcvar_string( cvar_nomMapFilePath           , test_nomMapFilePath           , charsmax( test_nomMapFilePath )            );
             get_pcvar_string( cvar_voteMapFilePath          , test_voteMapFilePath          , charsmax( test_voteMapFilePath )           );
@@ -19321,47 +19324,42 @@ public timeRemain()
             new backupMapsFilePathOld[ MAX_FILE_PATH_LENGHT ];
             new backupMapsFilePathNew[ MAX_FILE_PATH_LENGHT ];
 
-            formatex( backupMapsFilePathOld, charsmax( backupMapsFilePathOld ), "%s/%s%s", g_dataDirPath, "old", CURRENT_AND_NEXTMAP_FILE_NAME );
-            formatex( backupMapsFilePathNew, charsmax( backupMapsFilePathNew ), "%s/%s", g_dataDirPath, CURRENT_AND_NEXTMAP_FILE_NAME );
-
-            delete_file( backupMapsFilePathNew );
-            rename_file( backupMapsFilePathOld, backupMapsFilePathNew, 1 );
-
             map_restoreEndGameCvars();
-            g_test_areTheUnitTestsRunning = false;
 
             g_originalTimelimit = 0.0;
             g_originalMaxRounds = 0;
             g_originalWinLimit  = 0;
             g_originalFragLimit = 0;
 
-            tryToSetGameModCvarFloat( cvar_mp_timelimit     , test_mp_timelimit );
+            g_test_areTheUnitTestsRunning = false;
+            tryToSetGameModCvarFloat( cvar_mp_timelimit, test_mp_timelimit );
 
-            tryToSetGameModCvarNum( cvar_mp_winlimit        , test_mp_winlimit  );
-            tryToSetGameModCvarNum( cvar_mp_maxrounds       , test_mp_maxrounds );
-            tryToSetGameModCvarNum( cvar_mp_fraglimit       , test_mp_fraglimit );
+            tryToSetGameModCvarNum( cvar_mp_winlimit , test_mp_winlimit  );
+            tryToSetGameModCvarNum( cvar_mp_maxrounds, test_mp_maxrounds );
+            tryToSetGameModCvarNum( cvar_mp_fraglimit, test_mp_fraglimit );
+
+            formatex( backupMapsFilePathOld, charsmax( backupMapsFilePathOld ), "%s/%s%s",
+                    g_dataDirPath, "old", CURRENT_AND_NEXTMAP_FILE_NAME );
+
+            formatex( backupMapsFilePathNew, charsmax( backupMapsFilePathNew ), "%s/%s",
+                    g_dataDirPath, CURRENT_AND_NEXTMAP_FILE_NAME );
+
+            delete_file( backupMapsFilePathNew );
+            rename_file( backupMapsFilePathOld, backupMapsFilePathNew, 1 );
+
+            set_pcvar_float( cvar_rtvRatio        , test_rtvRatio );
+            set_pcvar_float( cvar_maxMapExtendTime, test_extendMapMaximum );
+
+            set_localinfo( "lastmapcycle"   , test_lastmapcycle );
+            set_localinfo( "galileo_lastmap", test_galileo_lastmap );
 
             copy( g_nextMapName   , charsmax( g_nextMapName )   , test_g_nextMapName    );
             copy( g_currentMapName, charsmax( g_currentMapName ), test_g_currentMapName );
 
-            set_localinfo( "lastmapcycle", test_lastmapcycle );
-            set_localinfo( "galileo_lastmap", test_galileo_lastmap );
-
-            set_pcvar_string( cvar_amx_nextmap, test_amx_nextmap );
-
-            set_pcvar_string( cvar_mapcyclefile             , test_mapcyclefile              );
-            set_pcvar_string( cvar_nomMapFilePath           , test_nomMapFilePath            );
-            set_pcvar_string( cvar_voteMapFilePath          , test_voteMapFilePath           );
-            set_pcvar_string( cvar_voteWhiteListMapFilePath , test_voteWhiteListMapFilePath  );
-            set_pcvar_string( cvar_voteMinPlayersMapFilePath, test_voteMinPlayersMapFilePath );
-
-            set_pcvar_float( cvar_rtvRatio             , test_rtvRatio         );
-            set_pcvar_float( cvar_maxMapExtendTime     , test_extendMapMaximum );
-
-            set_pcvar_num( cvar_serverTimeLimitRestart , test_serverTimeLimitRestart );
-            set_pcvar_num( cvar_serverWinlimitRestart  , test_serverWinlimitRestart  );
-            set_pcvar_num( cvar_serverMaxroundsRestart , test_serverMaxroundsRestart );
-            set_pcvar_num( cvar_serverFraglimitRestart , test_serverFraglimitRestart );
+            set_pcvar_num( cvar_serverTimeLimitRestart , test_serverTimeLimitRestart  );
+            set_pcvar_num( cvar_serverWinlimitRestart  , test_serverWinlimitRestart   );
+            set_pcvar_num( cvar_serverMaxroundsRestart , test_serverMaxroundsRestart  );
+            set_pcvar_num( cvar_serverFraglimitRestart , test_serverFraglimitRestart  );
 
             set_pcvar_num( cvar_whitelistMinPlayers    , test_whitelistMinPlayers     );
             set_pcvar_num( cvar_isWhiteListNomBlock    , test_isWhiteListNomBlock     );
@@ -19378,6 +19376,13 @@ public timeRemain()
             set_pcvar_num( cvar_fragLimitSupport       , test_mp_fraglimitCvarSupport );
             set_pcvar_num( cvar_voteDuration           , test_voteDuration            );
             set_pcvar_num( cvar_runoffDuration         , test_runoffDuration          );
+
+            set_pcvar_string( cvar_amx_nextmap              , test_amx_nextmap               );
+            set_pcvar_string( cvar_mapcyclefile             , test_mapcyclefile              );
+            set_pcvar_string( cvar_nomMapFilePath           , test_nomMapFilePath            );
+            set_pcvar_string( cvar_voteMapFilePath          , test_voteMapFilePath           );
+            set_pcvar_string( cvar_voteWhiteListMapFilePath , test_voteWhiteListMapFilePath  );
+            set_pcvar_string( cvar_voteMinPlayersMapFilePath, test_voteMinPlayersMapFilePath );
         }
 
         // Clear tests results.
@@ -19394,7 +19399,8 @@ public timeRemain()
         delete_file( g_test_minPlayersFilePath );
 
         LOG( 2, "    %38s cvar_mp_timelimit: %f  test_mp_timelimit: %f  g_originalTimelimit: %f", \
-                "restoreServerCvarsFromTesting( out )", get_pcvar_float( cvar_mp_timelimit ), test_mp_timelimit, g_originalTimelimit )
+                "restoreServerCvarsFromTesting( out )", get_pcvar_float( cvar_mp_timelimit ), \
+                test_mp_timelimit, g_originalTimelimit )
 
         // Only to disable the Unit Tests running, after all the print being outputted due the `DEBUG_LEVEL_DISABLE_TEST_LOGS` level.
         g_test_isToEnableLogging = false;
