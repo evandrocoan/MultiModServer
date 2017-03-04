@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.3.2-798";
+new const PLUGIN_VERSION[] = "v5.3.2-800";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -4770,6 +4770,18 @@ stock is_there_game_commencing()
 }
 
 /**
+ * Enable a new voting, as a new game is starting
+ */
+stock enableNewVoting()
+{
+    LOG( 128, "I AM ENTERING ON enableNewVoting(0)" )
+
+    g_voteStatus &= ~IS_VOTE_OVER;
+    g_voteStatus &= ~IS_EARLY_VOTE;
+    g_voteStatus &= ~IS_VOTE_EXPIRED;
+}
+
+/**
  * Reset rounds scores every game restart event. This relies on that the 'game_commencing_event()'
  * is not triggered by the 'round_restart_event()'. This use 'is_there_game_commencing()' to determine
  * if it must restore the time limit by calling 'game_commencing_event()', when there is none game
@@ -4778,11 +4790,7 @@ stock is_there_game_commencing()
 public round_restart_event()
 {
     LOG( 128, "I AM ENTERING ON round_restart_event(0)" )
-
-    // Enable a new voting, as a new game is starting
-    g_voteStatus &= ~IS_VOTE_OVER;
-    g_voteStatus &= ~IS_EARLY_VOTE;
-    g_voteStatus &= ~IS_VOTE_EXPIRED;
+    enableNewVoting();
 
     if( g_isEndGameLimitsChanged
         && is_there_game_commencing()
@@ -4830,6 +4838,7 @@ public game_commencing_event()
     g_isTimeToResetRounds = true;
 #endif
 
+    enableNewVoting();
     cancelVoting( true );
 }
 
