@@ -6,21 +6,6 @@ AlliedModders' forum. See history posting: https://forums.alliedmods.net/search.
 
 
 
-
-## The Git Flow
-
-This project use/try to follow the gitflow: 
-
-1. http://nvie.com/posts/a-successful-git-branching-model/
-
-To contribute, fork this project and checkout to the 'develop' branch to proceed with your updates.
-The master branch is updated over an new plugin official release, while the 'develop' branch
-receives/stores all the updates which are waiting to be released on the next version. The updates
-to the 'develop' branch are usually done by merging into it, feature branches. Such approaches are
-well explained on gitflow tutorials, as the one just above.
-
-
-
 ## Git Subtrees
 
 These projects are mostly coming from another repositories, so to work with them based on its
