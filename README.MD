@@ -1,4 +1,4 @@
-#Galileo
+# Galileo
 
 This is a feature rich map voting plugin for AMX Mod X. It's intended to be used in place of
 any other map choosing plugin. See its complete description at AlliedModders' Forum: 
