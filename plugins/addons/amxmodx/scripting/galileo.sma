@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.3.2-801";
+new const PLUGIN_VERSION[] = "v5.3.2-802";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -6796,7 +6796,7 @@ stock showRemainingTimeUntilVoting()
                 {
                     if( !( get_pcvar_num( cvar_hudsHide ) & HUD_TIMELEFT_ANNOUNCE ) )
                     {
-                        show_hudmessage( 0, "%L:^n%d:%2d %L", LANG_PLAYER, "TIME_LEFT", roundsLeft, LANG_PLAYER, "GAL_ROUNDS" );
+                        show_hudmessage( 0, "%L:^n%d %L", LANG_PLAYER, "TIME_LEFT", roundsLeft, LANG_PLAYER, "GAL_ROUNDS" );
                     }
 
                     color_print( 0, "%L %L...", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", roundsLeft, LANG_PLAYER, "GAL_ROUNDS" );
@@ -6810,7 +6810,7 @@ stock showRemainingTimeUntilVoting()
                 {
                     if( !( get_pcvar_num( cvar_hudsHide ) & HUD_TIMELEFT_ANNOUNCE ) )
                     {
-                        show_hudmessage( 0, "%L:^n%d:%2d %L", LANG_PLAYER, "TIME_LEFT", winLeft, LANG_PLAYER, "GAL_ROUNDS" );
+                        show_hudmessage( 0, "%L:^n%d %L", LANG_PLAYER, "TIME_LEFT", winLeft, LANG_PLAYER, "GAL_ROUNDS" );
                     }
 
                     color_print( 0, "%L %L...", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", winLeft, LANG_PLAYER, "GAL_ROUNDS" );
@@ -6824,7 +6824,7 @@ stock showRemainingTimeUntilVoting()
                 {
                     if( !( get_pcvar_num( cvar_hudsHide ) & HUD_TIMELEFT_ANNOUNCE ) )
                     {
-                        show_hudmessage( 0, "%L:^n%d:%2d %L", LANG_PLAYER, "TIME_LEFT", fragsLeft, LANG_PLAYER, "GAL_FRAGS" );
+                        show_hudmessage( 0, "%L:^n%d %L", LANG_PLAYER, "TIME_LEFT", fragsLeft, LANG_PLAYER, "GAL_FRAGS" );
                     }
 
                     color_print( 0, "%L %L...", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", fragsLeft, LANG_PLAYER, "GAL_FRAGS" );
