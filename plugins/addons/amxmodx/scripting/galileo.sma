@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.4.0-803";
+new const PLUGIN_VERSION[] = "v5.4.0-804";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -2559,6 +2559,13 @@ stock getRestartsOnTheCurrentMap( const mapToChange[] )
 /**
  * Internally set the next map on `g_nextMapName` and save to the file `currentAndNextmapNames.dat`,
  * the current map name and the here provided nextMapName.
+ *
+ * @param currentMapName     the current map the server is playing
+ * @param nextMapName        the next map the server will be playing
+ * @param isToUpdateTheCvar  true if is to change the cvar `amx_nextmap` to the `nextMapName`,
+ *                           otherwise false
+ * @param forceUpdateFile    true if is to update current and next map names saved on the
+ *                           `currentAndNextmapNames.dat` file, otherwise false
  */
 stock setNextMap( currentMapName[], nextMapName[], bool:isToUpdateTheCvar = true, bool:forceUpdateFile = false )
 {
@@ -10327,7 +10334,7 @@ stock configureNextEmptyCycleMap()
         map_getNext( g_emptyCycleMapsArray, lastEmptyCycleMap, nextMapName, "empty_cycle_maps" );
 
         setLastEmptyCycleMap( nextMapName );
-        setNextMap( g_currentMapName, nextMapName, false );
+        setNextMap( g_currentMapName, nextMapName );
     }
 
     return mapIndex;
