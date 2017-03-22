@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.4.0-804";
+new const PLUGIN_VERSION[] = "v5.4.0-805";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -1168,6 +1168,7 @@ new cvar_extendmapAllowStay;
 new cvar_isToAskForEndOfTheMapVote;
 new cvar_emptyServerWaitMinutes;
 new cvar_isEmptyCycleByMapChange;
+new cvar_serverPlayersCount;
 new cvar_emptyMapFilePath;
 new cvar_rtvWaitMinutes;
 new cvar_rtvWaitRounds;
@@ -1671,6 +1672,7 @@ public plugin_init()
     cvar_listmapsPaginate          = register_cvar( "gal_listmaps_paginate"        , "10"   );
     cvar_emptyServerWaitMinutes    = register_cvar( "gal_emptyserver_wait"         , "0"    );
     cvar_isEmptyCycleByMapChange   = register_cvar( "gal_emptyserver_change"       , "0"    );
+    cvar_serverPlayersCount        = register_cvar( "gal_server_players_count"     , "0"    );
     cvar_emptyMapFilePath          = register_cvar( "gal_emptyserver_mapfile"      , ""     );
     cvar_soundsMute                = register_cvar( "gal_sounds_mute"              , "27"   );
     cvar_hudsHide                  = register_cvar( "gal_sounds_hud"               , "31"   );
@@ -13564,10 +13566,24 @@ stock getMapNameIndex( mapName[] )
 stock get_real_players_number()
 {
     LOG( 256, "I AM ENTERING ON get_real_players_number(0)" )
-    new playersCount;
 
+    new playersCount;
     new players[ MAX_PLAYERS ];
-    get_players( players, playersCount, "ch" );
+
+    if( get_pcvar_num( cvar_serverPlayersCount ) )
+    {
+        new temp;
+
+        get_players( players, temp, "che", "CT" );
+        playersCount += temp;
+
+        get_players( players, temp, "che", "TERRORIST" );
+        playersCount += temp;
+    }
+    else
+    {
+        get_players( players, playersCount, "ch" );
+    }
 
 #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED ) \
     && DEBUG_LEVEL & DEBUG_LEVEL_FAKE_VOTES
