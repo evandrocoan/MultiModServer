@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.4.0-805";
+new const PLUGIN_VERSION[] = "v5.4.0-806";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -13570,7 +13570,9 @@ stock get_real_players_number()
     new playersCount;
     new players[ MAX_PLAYERS ];
 
-    if( get_pcvar_num( cvar_serverPlayersCount ) )
+    // If colored chat is supported, we are running Counter-Strike, therefore there are the CT/TR teams.
+    if( g_isColorChatSupported
+        && get_pcvar_num( cvar_serverPlayersCount ) )
     {
         new temp;
 
