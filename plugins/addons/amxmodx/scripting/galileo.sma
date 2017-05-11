@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.5.0-813";
+new const PLUGIN_VERSION[] = "v5.5.0-814";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -4889,9 +4889,9 @@ stock resetRoundEnding()
 stock saveRoundEnding( bool:roundEndStatus[ SaveRoundEnding ] )
 {
     LOG( 128, "I AM ENTERING ON saveRoundEnding(1)" )
-    LOG( 128, "( saveRoundEnding ) roundEndStatus[0]: %d", roundEndStatus[ SaveRoundEnding_LastRound   ] )
-    LOG( 128, "( saveRoundEnding ) roundEndStatus[1]: %d", roundEndStatus[ SaveRoundEnding_RestartTime ] )
-    LOG( 128, "( saveRoundEnding ) roundEndStatus[2]: %d", roundEndStatus[ SaveRoundEnding_PenultRound ] )
+    LOG( 32, "( saveRoundEnding ) roundEndStatus[0]: %d", roundEndStatus[ SaveRoundEnding_LastRound   ] )
+    LOG( 32, "( saveRoundEnding ) roundEndStatus[1]: %d", roundEndStatus[ SaveRoundEnding_RestartTime ] )
+    LOG( 32, "( saveRoundEnding ) roundEndStatus[2]: %d", roundEndStatus[ SaveRoundEnding_PenultRound ] )
 
     roundEndStatus[ SaveRoundEnding_LastRound   ] = g_isTheLastGameRound;
     roundEndStatus[ SaveRoundEnding_RestartTime ] = g_isTimeToRestart;
@@ -4903,9 +4903,9 @@ stock saveRoundEnding( bool:roundEndStatus[ SaveRoundEnding ] )
 stock restoreRoundEnding( bool:roundEndStatus[ SaveRoundEnding ] )
 {
     LOG( 128, "I AM ENTERING ON restoreRoundEnding(1)" )
-    LOG( 128, "( restoreRoundEnding ) roundEndStatus[0]: %d", roundEndStatus[ SaveRoundEnding_LastRound   ] )
-    LOG( 128, "( restoreRoundEnding ) roundEndStatus[1]: %d", roundEndStatus[ SaveRoundEnding_RestartTime ] )
-    LOG( 128, "( restoreRoundEnding ) roundEndStatus[2]: %d", roundEndStatus[ SaveRoundEnding_PenultRound ] )
+    LOG( 32, "( restoreRoundEnding ) roundEndStatus[0]: %d", roundEndStatus[ SaveRoundEnding_LastRound   ] )
+    LOG( 32, "( restoreRoundEnding ) roundEndStatus[1]: %d", roundEndStatus[ SaveRoundEnding_RestartTime ] )
+    LOG( 32, "( restoreRoundEnding ) roundEndStatus[2]: %d", roundEndStatus[ SaveRoundEnding_PenultRound ] )
 
     g_isTheLastGameRound       = bool:roundEndStatus[ SaveRoundEnding_LastRound   ];
     g_isTimeToRestart          = bool:roundEndStatus[ SaveRoundEnding_RestartTime ];
@@ -5927,7 +5927,7 @@ stock whiteListHourlySet( trigger, currentLine[], startHourString[], endHourStri
 stock setupLoadWhiteListParams( bool:isWhiteListBlockOut, &Trie:listTrie, &Array:listArray )
 {
     LOG( 128, "I AM ENTERING ON setupLoadWhiteListParams(3) isWhiteListBlockOut: %d", isWhiteListBlockOut )
-    LOG( 128, "( setupLoadWhiteListParams ) listTrie: %d, listArray: %d", listTrie, listArray )
+    LOG( 8, "( setupLoadWhiteListParams ) listTrie: %d, listArray: %d", listTrie, listArray )
 
     if( listTrie )
     {
@@ -5962,6 +5962,8 @@ stock FillersFilePathType:loadMapGroupsFeature()
         new voteMininumPlayers = get_pcvar_num( cvar_voteMinPlayers );
         new voteMiddlePlayers  = get_pcvar_num( cvar_voteMidPlayers );
 
+        LOG( 4, "( processLoadedMapsFile ) blockedMapsBuffer:       %s", blockedMapsBuffer )
+
         if( realPlayersNumber < voteMininumPlayers
             && voteMininumPlayers > VOTE_MININUM_PLAYERS_REQUIRED )
         {
@@ -5981,9 +5983,9 @@ stock FillersFilePathType:loadMapGroupsFeature()
 stock processLoadedMapsFile( FillersFilePathType:fillersFilePathEnum, blockedMapsBuffer[], &announcementShowedTimes )
 {
     LOG( 128, "I AM ENTERING ON processLoadedMapsFile(3)" )
-    LOG( 128, "( processLoadedMapsFile ) fillersFilePathEnum:     %d", fillersFilePathEnum )
-    LOG( 128, "( processLoadedMapsFile ) announcementShowedTimes: %d", announcementShowedTimes )
-    LOG( 128, "( processLoadedMapsFile ) blockedMapsBuffer:       %s", blockedMapsBuffer )
+    LOG( 4, "( processLoadedMapsFile ) fillersFilePathEnum:     %d", fillersFilePathEnum )
+    LOG( 4, "( processLoadedMapsFile ) announcementShowedTimes: %d", announcementShowedTimes )
+    LOG( 4, "( processLoadedMapsFile ) blockedMapsBuffer:       %s", blockedMapsBuffer )
 
     new groupCount;
     new choiceIndex;
@@ -6584,7 +6586,7 @@ stock announceVoteBlockedMap( mapToAnnounce[], blockedMapsBuffer[], flushAnnounc
 stock flushVoteBlockedMaps( blockedMapsBuffer[], flushAnnouncement[], &announcementShowedTimes )
 {
     LOG( 128, "I AM ENTERING ON flushVoteBlockedMaps(3) announcementShowedTimes: %d, ", announcementShowedTimes )
-    LOG( 128, "blockedMapsBuffer: %s",  blockedMapsBuffer )
+    LOG( 8, "blockedMapsBuffer: %s",  blockedMapsBuffer )
 
     if( blockedMapsBuffer[ 0 ] )
     {
@@ -9812,8 +9814,8 @@ public vote_rock( player_id )
 stock compute_the_RTV_vote( player_id, rocksNeeded )
 {
     LOG( 128, "I AM ENTERING ON compute_the_RTV_vote(2)" )
-    LOG( 128, "( compute_the_RTV_vote ) player_id:   %d", player_id )
-    LOG( 128, "( compute_the_RTV_vote ) rocksNeeded: %d", rocksNeeded )
+    LOG( 4, "( compute_the_RTV_vote ) player_id:   %d", player_id )
+    LOG( 4, "( compute_the_RTV_vote ) rocksNeeded: %d", rocksNeeded )
 
     // make sure player hasn't already rocked the vote
     if( g_rockedVote[ player_id ] )
@@ -9840,8 +9842,8 @@ stock compute_the_RTV_vote( player_id, rocksNeeded )
 stock try_to_start_the_RTV( rocksNeeded )
 {
     LOG( 128, "I AM ENTERING ON try_to_start_the_RTV )" )
-    LOG( 128, "( try_to_start_the_RTV ) rocksNeeded:       %d", rocksNeeded )
-    LOG( 128, "( try_to_start_the_RTV ) g_rockedVoteCount: %d", g_rockedVoteCount )
+    LOG( 4, "( try_to_start_the_RTV ) rocksNeeded:       %d", rocksNeeded )
+    LOG( 4, "( try_to_start_the_RTV ) g_rockedVoteCount: %d", g_rockedVoteCount )
 
     // make sure the rtv reminder timer has stopped
     if( task_exists( TASKID_RTV_REMINDER ) )
@@ -9923,8 +9925,8 @@ stock vote_getRocksNeeded()
     LOG( 128, "I AM ENTERING ON vote_getRocksNeeded(0)" )
     new rocks = floatround( get_pcvar_float( cvar_rtvRatio ) * float( get_real_players_number() ), floatround_floor );
 
-    LOG( 128, "( vote_getRocksNeeded ) rocks: %d", rocks )
-    LOG( 128, "( vote_getRocksNeeded ) cvar_rtvRatio: %f", get_pcvar_float( cvar_rtvRatio ) )
+    LOG( 4, "( vote_getRocksNeeded ) rocks: %d", rocks )
+    LOG( 4, "( vote_getRocksNeeded ) cvar_rtvRatio: %f", get_pcvar_float( cvar_rtvRatio ) )
 
     return rocks;
 }
@@ -12556,15 +12558,15 @@ public fillThePartialNominationMenu( argumentsIn[] )
 {
     LOG( 128, "I AM ENTERING ON fillThePartialNominationMenu(1)" )
 
-    LOG( 128, "( fillThePartialNominationMenu ) player_id:             %d", argumentsIn[ 0 ] )
-    LOG( 128, "( fillThePartialNominationMenu ) mapIndex:              %d", argumentsIn[ 1 ] )
-    LOG( 128, "( fillThePartialNominationMenu ) itemsCount:            %d", argumentsIn[ 2 ] )
-    LOG( 128, "( fillThePartialNominationMenu ) startSearchIndex:      %d", argumentsIn[ 3 ] )
-    LOG( 128, "( fillThePartialNominationMenu ) nominationsMapsCount:  %d", argumentsIn[ 4 ] )
-    LOG( 128, "( fillThePartialNominationMenu ) isWhiteListNomBlock:   %d", argumentsIn[ 5 ] )
-    LOG( 128, "( fillThePartialNominationMenu ) isRecentMapNomBlocked: %d", argumentsIn[ 6 ] )
-    LOG( 128, "( fillThePartialNominationMenu ) menu:                  %d", argumentsIn[ 7 ] )
-    LOG( 128, "( fillThePartialNominationMenu ) currentPageNumber:     %d", argumentsIn[ 8 ] )
+    LOG( 4, "( fillThePartialNominationMenu ) player_id:             %d", argumentsIn[ 0 ] )
+    LOG( 4, "( fillThePartialNominationMenu ) mapIndex:              %d", argumentsIn[ 1 ] )
+    LOG( 4, "( fillThePartialNominationMenu ) itemsCount:            %d", argumentsIn[ 2 ] )
+    LOG( 4, "( fillThePartialNominationMenu ) startSearchIndex:      %d", argumentsIn[ 3 ] )
+    LOG( 4, "( fillThePartialNominationMenu ) nominationsMapsCount:  %d", argumentsIn[ 4 ] )
+    LOG( 4, "( fillThePartialNominationMenu ) isWhiteListNomBlock:   %d", argumentsIn[ 5 ] )
+    LOG( 4, "( fillThePartialNominationMenu ) isRecentMapNomBlocked: %d", argumentsIn[ 6 ] )
+    LOG( 4, "( fillThePartialNominationMenu ) menu:                  %d", argumentsIn[ 7 ] )
+    LOG( 4, "( fillThePartialNominationMenu ) currentPageNumber:     %d", argumentsIn[ 8 ] )
 
     new const player_id             = argumentsIn[ 0 ];
     new mapIndex                    = argumentsIn[ 1 ];
@@ -15543,8 +15545,8 @@ stock loadMapFileSeriesListArray( mapFileDescriptor, Array:mapArray, Trie:mapTri
     new loadedMapName[ MAX_MAPNAME_LENGHT ];
     new loadedMapLine[ MAX_MAPNAME_LENGHT ];
 
-    LOG( 128, "( loadMapFileSeriesListArray ) cursorOnMapSeries:   %d", cursorOnMapSeries   )
-    LOG( 128, "( loadMapFileSeriesListArray ) loadedMapSeriesTrie: %d", loadedMapSeriesTrie )
+    LOG( 8, "( loadMapFileSeriesListArray ) cursorOnMapSeries:   %d", cursorOnMapSeries   )
+    LOG( 8, "( loadMapFileSeriesListArray ) loadedMapSeriesTrie: %d", loadedMapSeriesTrie )
 
     while( !feof( mapFileDescriptor ) )
     {
