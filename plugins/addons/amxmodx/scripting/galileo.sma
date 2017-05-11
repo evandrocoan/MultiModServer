@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.5.0-810";
+new const PLUGIN_VERSION[] = "v5.5.0-811";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.5.0-810";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 0
+#define DEBUG_LEVEL 16
 
 
 /**
@@ -2743,6 +2743,8 @@ public setGameToFinishAtHalfTime()
  * This also restrict the number of maps to be write to the file `RECENT_BAN_MAPS_FILE_NAME` as if
  * not all maps have been loaded here, on them will be written down to the file on
  * writeRecentMapsBanList(0).
+ *
+ * @param maximumLoadMapsCount    how many maps are loaded from the main map file list.
  */
 public map_loadRecentBanList( maximumLoadMapsCount )
 {
@@ -2758,13 +2760,19 @@ public map_loadRecentBanList( maximumLoadMapsCount )
     {
         new recentMapName[ MAX_MAPNAME_LENGHT ];
 
+        // loads 6 maps to ban on `maxRecentMapsBans`
         new maxRecentMapsBans = get_pcvar_num( cvar_recentMapsBannedNumber );
-        new maxVotingChoices  = g_maxVotingChoices + 3;
 
+        // load the total voting choices on `maxVotingChoices` as 6, supposing your voting menu has 6 maps
+        new maxVotingChoices  = g_maxVotingChoices;
+
+        // So, `maximumLoadMapsCount` is 10 (10 maps in my .txt file), therefore 10 > 6 (maxVotingChoices)
         if( maximumLoadMapsCount > maxVotingChoices )
         {
+            // 6 + 6 > 10 =: 12 > 10
             if( maxRecentMapsBans + maxVotingChoices > maximumLoadMapsCount )
             {
+                // Therefore the banned maps count will be 10 - 6 = 4
                 maxRecentMapsBans = maximumLoadMapsCount - maxVotingChoices;
             }
         }
@@ -3191,6 +3199,11 @@ stock configureTheWhiteListFeature( mapFilerFilePath[] )
     return loadedCount;
 }
 
+/**
+ * Create the recent maps cvar and load the banned file list form the file system.
+ *
+ * @param maximumLoadMapsCount    how many maps are loaded from the main map file list.
+ */
 stock loadTheBanRecentMapsFeature( maximumLoadMapsCount )
 {
     LOG( 128, "I AM ENTERING ON loadTheBanRecentMapsFeature(1)" )
