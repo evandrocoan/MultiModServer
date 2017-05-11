@@ -9824,10 +9824,12 @@ stock compute_the_RTV_vote( player_id, rocksNeeded )
         return false;
     }
 
+    g_rockedVoteCount++;
     g_rockedVote[ player_id ] = true;
-    color_print( player_id, "%L", player_id, "GAL_ROCK_SUCCESS" );
 
+    color_print( player_id, "%L", player_id, "GAL_ROCK_SUCCESS" );
     LOG( 1, "    ( vote_rock ) Just Returning/blocking, accepting rock the vote." )
+
     return true;
 }
 
@@ -9846,7 +9848,7 @@ stock try_to_start_the_RTV( rocksNeeded )
         remove_task( TASKID_RTV_REMINDER );
     }
 
-    if( ++g_rockedVoteCount >= rocksNeeded )
+    if( g_rockedVoteCount >= rocksNeeded )
     {
         // announce that the vote has been rocked
         color_print( 0, "%L", LANG_PLAYER, "GAL_ROCK_ENOUGH" );
@@ -9908,9 +9910,11 @@ stock vote_unrockTheVote( player_id )
 
     if( g_rockedVote[ player_id ] )
     {
-        g_rockedVote[ player_id ] = false;
         g_rockedVoteCount--;
+        g_rockedVote[ player_id ] = false;
     }
+
+    try_to_start_the_RTV( vote_getRocksNeeded() );
 }
 
 stock vote_getRocksNeeded()
@@ -13605,7 +13609,7 @@ stock getMapNameIndex( mapName[] )
 
 stock get_real_players_number()
 {
-    LOG( 256, "I AM ENTERING ON get_real_players_number(0)" )
+    LOG( 256, "I AM ENTERING ON get_real_players_number(0) get_playersnum: %d", get_playersnum() )
 
     new playersCount;
     new players[ MAX_PLAYERS ];
