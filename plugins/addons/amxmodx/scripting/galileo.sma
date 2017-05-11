@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.5.0-812";
+new const PLUGIN_VERSION[] = "v5.5.0-813";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -1396,7 +1396,7 @@ new Array:g_norPlayerFillerMapGroupArrays;
  * Create a new type to perform the switch between the Minimum Players feature and the Normal
  * Voting map filling.
  */
-enum fillersFilePathType
+enum FillersFilePathType
 {
     fillersFilePaths_MininumPlayers,
     fillersFilePaths_MiddlePlayers,
@@ -2985,7 +2985,7 @@ stock loadMapFiles( bool:readMapCycle = true )
 {
     LOG( 128, "I AM ENTERING ON loadMapFiles(1)" )
 
-    enum loadMapFilesTypes
+    enum LoadMapFilesTypes
     {
         t_Whitelist,
         t_MininumPlayers,
@@ -2993,7 +2993,7 @@ stock loadMapFiles( bool:readMapCycle = true )
         t_NormalPlayers
     }
 
-    new loadedCount     [ loadMapFilesTypes ];
+    new loadedCount     [ LoadMapFilesTypes ];
     new mapFilerFilePath[ MAX_FILE_PATH_LENGHT ];
 
     // The Whitelist list must to be loaded as the fist thing as the configureTheNextMapSetttings(1)
@@ -5952,7 +5952,7 @@ stock setupLoadWhiteListParams( bool:isWhiteListBlockOut, &Trie:listTrie, &Array
     }
 }
 
-stock fillersFilePathType:loadMapGroupsFeature()
+stock FillersFilePathType:loadMapGroupsFeature()
 {
     LOG( 128, "I AM ENTERING ON loadMapGroupsFeature(0)" )
     new realPlayersNumber = get_real_players_number();
@@ -5978,10 +5978,12 @@ stock fillersFilePathType:loadMapGroupsFeature()
     return fillersFilePaths_NormalPlayers;
 }
 
-stock processLoadedMapsFile( fillersFilePathType:fillersFilePathEnum, blockedMapsBuffer[], &announcementShowedTimes )
+stock processLoadedMapsFile( FillersFilePathType:fillersFilePathEnum, blockedMapsBuffer[], &announcementShowedTimes )
 {
-    LOG( 128, "I AM ENTERING ON processLoadedMapsFile(3) fillersFilePathEnum: %d, announcementShowedTimes: %d", \
-            fillersFilePathEnum, announcementShowedTimes )
+    LOG( 128, "I AM ENTERING ON processLoadedMapsFile(3)" )
+    LOG( 128, "( processLoadedMapsFile ) fillersFilePathEnum:     %d", fillersFilePathEnum )
+    LOG( 128, "( processLoadedMapsFile ) announcementShowedTimes: %d", announcementShowedTimes )
+    LOG( 128, "( processLoadedMapsFile ) blockedMapsBuffer:       %s", blockedMapsBuffer )
 
     new groupCount;
     new choiceIndex;
@@ -6330,12 +6332,11 @@ stock debug_vote_map_selection( choiceIndex, mapName[], useWhitelistOutBlock, is
 stock vote_addFillers( blockedMapsBuffer[], &announcementShowedTimes = 0 )
 {
     LOG( 128, "I AM ENTERING ON vote_addFillers(2) announcementShowedTimes: %d", announcementShowedTimes )
-
     new maxVotingChoices = MAX_VOTING_CHOICES();
 
     if( g_totalVoteOptions < maxVotingChoices )
     {
-        new fillersFilePathType:fillersFilePathEnum = loadMapGroupsFeature();
+        new FillersFilePathType:fillersFilePathEnum = loadMapGroupsFeature();
         processLoadedMapsFile( fillersFilePathEnum, blockedMapsBuffer, announcementShowedTimes );
     }
     else
