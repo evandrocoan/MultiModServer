@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.5.0-812";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 2+64
+#define DEBUG_LEVEL 64+2
 
 
 /**
@@ -17782,7 +17782,7 @@ public timeRemain()
         g_rtvWaitFrags       = 0;
         g_rtvWaitAdminNumber = 0;
 
-        g_test_aimedPlayersNumber = 11;
+        g_test_aimedPlayersNumber = 10;
         set_pcvar_float( cvar_rtvRatio, 0.5 );
 
         // Add a RTV for the player 1
@@ -17791,10 +17791,10 @@ public timeRemain()
         vote_rock( 3 );
         vote_rock( 4 );
 
-        test_negativeRTVValues(  7, 10, 1 ); // Case 1
-        test_negativeRTVValues(  8,  9, 4 ); // Case 2
-        test_negativeRTVValues(  9,  8, 4 ); // Case 3
-        test_negativeRTVValues( 10,  7, 3 ); // Case 4
+        test_negativeRTVValues(  7, 9, 1 ); // Case 1
+        test_negativeRTVValues(  8, 8, 4 ); // Case 2 <- The voting must to start here therefore reset the count
+        test_negativeRTVValues(  9, 7, 4 ); // Case 3
+        test_negativeRTVValues( 10, 6, 3 ); // Case 4
     }
 
     /**
@@ -17810,9 +17810,15 @@ public timeRemain()
         test_id = test_registerSeriesNaming( "test_negativeRTVValues", 'b' );
 
         clientDisconnected( playerToDisconnect );
-        g_test_aimedPlayersNumber = aimedPlayerCount;
+
+        // It is expected to the voting to start sometimes, therefore we must properly close it.
+        if( g_voteStatus & IS_VOTE_IN_PROGRESS )
+        {
+            cancelVoting();
+        }
 
         actualValue = vote_getRocksNeeded() - g_rockedVoteCount;
+        g_test_aimedPlayersNumber = aimedPlayerCount;
 
         ERR( "Must to be %d RTVs needed, instead of %d.", aimValue, actualValue )
         setTestFailure( test_id, aimValue != actualValue, errorMessage );
