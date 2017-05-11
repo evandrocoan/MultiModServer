@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.5.0-811";
+new const PLUGIN_VERSION[] = "v5.5.0-812";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.5.0-811";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 16
+#define DEBUG_LEVEL 2+64
 
 
 /**
@@ -273,6 +273,7 @@ new const PLUGIN_VERSION[] = "v5.5.0-811";
         test_loadVoteChoices_cases();
         test_nominateAndUnnominate_load();
         test_RTVAndUnRTV_load();
+        test_negativeRTVValues_load();
         test_getUniqueRandomBasic_load();
         test_getUniqueRandomInt_load();
         test_whatGameEndingTypeIt_load();
@@ -316,6 +317,7 @@ new const PLUGIN_VERSION[] = "v5.5.0-811";
             // LOG( 1, "Current i is: %d", i )
         }
 
+        test_negativeRTVValues_load();
         // test_endOfMapVoting();
         // test_handleServerStart();
         // test_mapGetNext_cases();
@@ -331,7 +333,7 @@ new const PLUGIN_VERSION[] = "v5.5.0-811";
         // test_getUniqueRandomInt_load();
         // test_getUniqueRandomBasic_load();
         // test_nominateAndUnnominate_load();
-        test_loadVoteChoices_cases();
+        // test_loadVoteChoices_cases();
         //test_colorChatLimits( player_id );
         //test_unnominatedDisconnected( player_id );
         //test_announceVoteBlockedMap_a();
@@ -642,6 +644,7 @@ new cvar_coloredChatEnabled;
  * the next map on the map cycle to be played. The counter starts on 0.
  */
 #define MAX_SERVER_RESTART_ACCEPTABLE 3
+
 /**
  * The rounds number before the mp_maxrounds/mp_winlimit to be reached to start the map voting. This
  * constant is equivalent to the `START_VOTEMAP_MIN_TIME` and `START_VOTEMAP_MAX_TIME` concepts.
@@ -9807,6 +9810,10 @@ public vote_rock( player_id )
  */
 stock compute_the_RTV_vote( player_id, rocksNeeded )
 {
+    LOG( 128, "I AM ENTERING ON compute_the_RTV_vote(2)" )
+    LOG( 128, "( compute_the_RTV_vote ) player_id:   %d", player_id )
+    LOG( 128, "( compute_the_RTV_vote ) rocksNeeded: %d", rocksNeeded )
+
     // make sure player hasn't already rocked the vote
     if( g_rockedVote[ player_id ] )
     {
@@ -9829,6 +9836,10 @@ stock compute_the_RTV_vote( player_id, rocksNeeded )
  */
 stock try_to_start_the_RTV( rocksNeeded )
 {
+    LOG( 128, "I AM ENTERING ON try_to_start_the_RTV )" )
+    LOG( 128, "( try_to_start_the_RTV ) rocksNeeded:       %d", rocksNeeded )
+    LOG( 128, "( try_to_start_the_RTV ) g_rockedVoteCount: %d", g_rockedVoteCount )
+
     // make sure the rtv reminder timer has stopped
     if( task_exists( TASKID_RTV_REMINDER ) )
     {
@@ -9905,7 +9916,12 @@ stock vote_unrockTheVote( player_id )
 stock vote_getRocksNeeded()
 {
     LOG( 128, "I AM ENTERING ON vote_getRocksNeeded(0)" )
-    return floatround( get_pcvar_float( cvar_rtvRatio ) * float( get_real_players_number() ), floatround_ceil );
+    new rocks = floatround( get_pcvar_float( cvar_rtvRatio ) * float( get_real_players_number() ), floatround_floor );
+
+    LOG( 128, "( vote_getRocksNeeded ) rocks: %d", rocks )
+    LOG( 128, "( vote_getRocksNeeded ) cvar_rtvRatio: %f", get_pcvar_float( cvar_rtvRatio ) )
+
+    return rocks;
 }
 
 public rtv_remind( param )
@@ -10201,13 +10217,13 @@ public client_authorized( player_id )
     CLIENT_AUTHORIZED_MACRO( player_id )
 }
 
-#if AMXX_VERSION_NUM < 183
-    public client_disconnect( player_id )
-#else
-    public client_disconnected( player_id )
-#endif
+/**
+ * I do not know whether client_disconnected(1) will present the same problem as CLIENT_AUTHORIZED_MACRO(1)
+ * macro just above fixes, so I put it on a stock just for precaution.
+ */
+stock clientDisconnected( player_id )
 {
-    LOG( 128, "I AM ENTERING ON client_disconnected(1) player_id: %d", player_id )
+    LOG( 128, "I AM ENTERING ON clientDisconnected(1) player_id: %d [%d]", player_id, get_playersnum() )
     if( is_user_bot( player_id ) ) return;
 
     if( get_user_flags( player_id ) & ADMIN_MAP )
@@ -10223,6 +10239,16 @@ public client_authorized( player_id )
     }
 
     isToHandleRecentlyEmptyServer();
+}
+
+#if AMXX_VERSION_NUM < 183
+    public client_disconnect( player_id )
+#else
+    public client_disconnected( player_id )
+#endif
+{
+    LOG( 128, "I AM ENTERING ON client_disconnected(1) player_id: %d", player_id )
+    clientDisconnected( player_id );
 }
 
 stock unnominatedDisconnectedPlayer( player_id )
@@ -17739,7 +17765,53 @@ public timeRemain()
         test_RTVAndUnRTV( .player_id = 3, .total_RTVs = 3, .action = 'a' ); // Case 14
 
         cancelVoting();
-        test_RTVAndUnRTV( .player_id = 1, .total_RTVs = 0, .action = 'n' ); // Case 15
+        test_RTVAndUnRTV( .player_id = 1, .total_RTVs = 0, .action = '.' ); // Case 15
+    }
+
+    /**
+     * To test the RTV feature. Simulates a non-RTV vote player disconnecting.
+     */
+    stock test_negativeRTVValues_load()
+    {
+        g_rtvWaitMinutes     = 0.0;
+        g_rtvWaitRounds      = 0;
+        g_rtvWaitFrags       = 0;
+        g_rtvWaitAdminNumber = 0;
+
+        g_test_aimedPlayersNumber = 11;
+        set_pcvar_float( cvar_rtvRatio, 0.5 );
+
+        // Add a RTV for the player 1
+        vote_rock( 1 );
+        vote_rock( 2 );
+        vote_rock( 3 );
+        vote_rock( 4 );
+
+        test_negativeRTVValues(  7, 10, 1 ); // Case 1
+        test_negativeRTVValues(  8,  9, 4 ); // Case 2
+        test_negativeRTVValues(  9,  8, 4 ); // Case 3
+        test_negativeRTVValues( 10,  7, 3 ); // Case 4
+    }
+
+    /**
+     * Create one case test for the RTV feature based on its parameters passed by the
+     * test_negativeRTVValues_load(0) loader function.
+     */
+    stock test_negativeRTVValues( playerToDisconnect, aimedPlayerCount, aimValue )
+    {
+        new test_id;
+        new actualValue;
+
+        new errorMessage[ MAX_LONG_STRING ];
+        test_id = test_registerSeriesNaming( "test_negativeRTVValues", 'b' );
+
+        clientDisconnected( playerToDisconnect );
+        g_test_aimedPlayersNumber = aimedPlayerCount;
+
+        actualValue = vote_getRocksNeeded() - g_rockedVoteCount;
+
+        ERR( "Must to be %d RTVs needed, instead of %d.", aimValue, actualValue )
+        setTestFailure( test_id, aimValue != actualValue, errorMessage );
     }
 
     /**
