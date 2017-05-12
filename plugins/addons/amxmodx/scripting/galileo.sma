@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.5.0-814";
+new const PLUGIN_VERSION[] = "v5.5.0-815";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.5.0-814";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 64+2
+#define DEBUG_LEVEL 2+64
 
 
 /**
@@ -198,7 +198,7 @@ new const PLUGIN_VERSION[] = "v5.5.0-814";
      *
      * 8    - a) Loaded vote choices.
      *        b) Minplayers-Whitelist debugging.
-     *        c) Actions at vote_startDirector(1).
+     *        c) Actions at startTheVoting(1).
      *
      * 16   - Runoff voting.
      *
@@ -1113,7 +1113,7 @@ enum (+= 100000)
     TASKID_NOMINATION_PARTIAL,
     TASKID_PENDING_VOTE_COUNTDOWN,
     TASKID_DBG_FAKEVOTES,
-    TASKID_VOTE_STARTDIRECTOR,
+    TASKID_START_THE_VOTING,
     TASKID_MAP_CHANGE,
     TASKID_INTERMISSION_HOLD,
     TASKID_FINISH_GAME_TIME_BY_HALF,
@@ -6656,13 +6656,13 @@ stock vote_manageEarlyStart()
     LOG( 128, "I AM ENTERING ON vote_manageEarlyStart(0) g_voteStatus: %d", g_voteStatus )
     g_voteStatus |= IS_EARLY_VOTE;
 
-    set_task( 120.0, "startNonForcedVoting", TASKID_VOTE_STARTDIRECTOR );
+    set_task( 120.0, "startNonForcedVoting", TASKID_START_THE_VOTING );
 }
 
 public startNonForcedVoting()
 {
     LOG( 128, "I AM ENTERING ON startNonForcedVoting(0) g_endVotingType: %d", g_endVotingType )
-    vote_startDirector( false );
+    startTheVoting( false );
 }
 
 public start_voting_by_winlimit()
@@ -6676,7 +6676,7 @@ public start_voting_by_winlimit()
         resetVoteTypeGlobals();
 
         g_endVotingType |= IS_BY_WINLIMIT;
-        vote_startDirector( false );
+        startTheVoting( false );
     }
 }
 
@@ -6691,7 +6691,7 @@ public start_voting_by_maxrounds()
         resetVoteTypeGlobals();
 
         g_endVotingType |= IS_BY_ROUNDS;
-        vote_startDirector( false );
+        startTheVoting( false );
     }
 }
 
@@ -6706,7 +6706,7 @@ public start_voting_by_frags()
         resetVoteTypeGlobals();
 
         g_endVotingType |= IS_BY_FRAGS;
-        vote_startDirector( false );
+        startTheVoting( false );
     }
 }
 
@@ -6721,7 +6721,7 @@ public start_voting_by_timer()
         resetVoteTypeGlobals();
 
         g_endVotingType |= IS_BY_TIMER;
-        vote_startDirector( false );
+        startTheVoting( false );
     }
 }
 
@@ -6736,7 +6736,7 @@ public startVotingByGameEngineCall()
         resetVoteTypeGlobals();
 
         g_isToChangeMapOnVotingEnd = true;
-        vote_startDirector( false );
+        startTheVoting( false );
     }
 }
 
@@ -7191,13 +7191,13 @@ stock configureTheExtensionOption( bool:is_forced_voting )
  * Any voting not started by `cvar_endOfMapVoteStart`, `cvar_endOnRound` or ending limit expiration,
  * is a forced voting.
  */
-stock vote_startDirector( bool:is_forced_voting )
+stock startTheVoting( bool:is_forced_voting )
 {
-    LOG( 128, "I AM ENTERING ON vote_startDirector(1) is_forced_voting: %d", is_forced_voting )
+    LOG( 128, "I AM ENTERING ON startTheVoting(1) is_forced_voting: %d", is_forced_voting )
 
     if( !approveTheVotingStart( is_forced_voting ) )
     {
-        LOG( 1, "    ( vote_startDirector ) Just Returning/blocking, the voting was not approved." )
+        LOG( 1, "    ( startTheVoting ) Just Returning/blocking, the voting was not approved." )
         return;
     }
 
@@ -7233,8 +7233,8 @@ stock vote_startDirector( bool:is_forced_voting )
     }
 
     LOG( 4, "" )
-    LOG( 4, "    ( vote_startDirector|out ) g_isTheLastGameRound: %d", g_isTheLastGameRound )
-    LOG( 4, "    ( vote_startDirector|out ) g_isTimeToRestart: %d, g_voteStatus & IS_FORCED_VOTE: %d", \
+    LOG( 4, "    ( startTheVoting|out ) g_isTheLastGameRound: %d", g_isTheLastGameRound )
+    LOG( 4, "    ( startTheVoting|out ) g_isTimeToRestart: %d, g_voteStatus & IS_FORCED_VOTE: %d", \
             g_isTimeToRestart, g_voteStatus & IS_FORCED_VOTE != 0 )
 }
 
@@ -8855,8 +8855,8 @@ stock startRunoffVoting( firstPlaceChoices[], secondPlaceChoices[], numberOfMaps
     // clear all the votes
     vote_resetStats();
 
-    // start the runoff vote, vote_startDirector
-    set_task( VOTE_TIME_RUNOFF, "startNonForcedVoting", TASKID_VOTE_STARTDIRECTOR );
+    // start the runoff vote, startTheVoting
+    set_task( VOTE_TIME_RUNOFF, "startNonForcedVoting", TASKID_START_THE_VOTING );
 }
 
 stock handleTwoMapsAtFirstPosition( firstPlaceChoices[] )
@@ -9904,7 +9904,7 @@ stock start_rtvVote()
     g_voteStatus |= IS_RTV_VOTE;
 
     // Any voting not started by `cvar_endOfMapVoteStart` or ending limit expiration, is a forced voting.
-    vote_startDirector( true );
+    startTheVoting( true );
 }
 
 stock vote_unrockTheVote( player_id )
@@ -11796,7 +11796,7 @@ public cmd_startVote( player_id, level, cid )
         waitTime = floatround( getVoteAnnouncementTime( get_pcvar_num( cvar_isToAskForEndOfTheMapVote ) ), floatround_ceil );
         console_print( player_id, "%L", player_id, "GAL_VOTE_COUNTDOWN", waitTime );
 
-        vote_startDirector( true );
+        startTheVoting( true );
     }
 
     LOG( 1, "    ( cmd_startVote ) Returning PLUGIN_HANDLED" )
@@ -14013,7 +14013,7 @@ stock cancelVoting( bool:isToDoubleReset = false )
     remove_task( TASKID_DBG_FAKEVOTES );
     remove_task( TASKID_VOTE_HANDLEDISPLAY );
     remove_task( TASKID_VOTE_EXPIRE );
-    remove_task( TASKID_VOTE_STARTDIRECTOR );
+    remove_task( TASKID_START_THE_VOTING );
     remove_task( TASKID_PENDING_VOTE_COUNTDOWN );
     remove_task( TASKID_MAP_CHANGE );
     remove_task( TASKID_INTERMISSION_HOLD );
@@ -14077,6 +14077,7 @@ public vote_resetStats()
 
 stock clearTheVotingMenu()
 {
+    LOG( 128, "I AM ENTERING ON clearTheVotingMenu(0)" )
     g_totalVoteOptions = 0;
 
     for( new currentIndex = 0; currentIndex < sizeof g_votingMapNames; ++currentIndex )
@@ -16920,8 +16921,8 @@ public timeRemain()
 
     // Here below to start the Delayed Unit Tests code
     //
-    // This is the 'vote_startDirector(1)' tests chain beginning. Because the 'vote_startDirector(1)' cannot
-    // to be tested simultaneously. Then, all tests that involves the 'vote_startDirector(1)' chain, must
+    // This is the 'startTheVoting(1)' tests chain beginning. Because the 'startTheVoting(1)' cannot
+    // to be tested simultaneously. Then, all tests that involves the 'startTheVoting(1)' chain, must
     // to be executed sequentially after this chain end. This is the 1º chain test.
     // ###########################################################################################
 
@@ -16947,7 +16948,7 @@ public timeRemain()
 
 
 
-    // Place new 'vote_startDirector(1)' chain tests above here.
+    // Place new 'startTheVoting(1)' chain tests above here.
     // ############################################################################################
 
     /**
@@ -19071,7 +19072,7 @@ public timeRemain()
         tryToSetGameModCvarFloat( cvar_mp_timelimit, 10.0 );
 
         g_endVotingType |= IS_BY_TIMER;
-        vote_startDirector( false );
+        startTheVoting( false );
 
         ERR( "g_isMapExtensionAllowed must be 1, instead of %d.", g_isMapExtensionAllowed && g_isGameFinalVoting )
         setTestFailure( test_id, !( g_isMapExtensionAllowed && g_isGameFinalVoting ), errorMessage );
@@ -19101,7 +19102,7 @@ public timeRemain()
         tryToSetGameModCvarFloat( cvar_mp_timelimit, 20.0 );
 
         g_endVotingType |= IS_BY_TIMER;
-        vote_startDirector( false );
+        startTheVoting( false );
 
         ERR( "g_isMapExtensionAllowed must be 0, instead of was %d.", g_isMapExtensionAllowed && g_isGameFinalVoting )
         setTestFailure( test_id, g_isMapExtensionAllowed && g_isGameFinalVoting, errorMessage );
