@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.5.0-818";
+new const PLUGIN_VERSION[] = "v5.5.0-820";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -9895,10 +9895,13 @@ stock compute_the_RTV_vote( player_id, rocksNeeded )
 
 /**
  * Determine if there have been enough rocks for a vote yet.
+ *
+ * @param rocksNeeded   how many RTVs are necessary/required to start the voting
+ * @param silent        whether or not to announce by chat how many RTVs are remaining to start the voting
  */
-stock try_to_start_the_RTV( rocksNeeded )
+stock try_to_start_the_RTV( rocksNeeded, bool:silent=false )
 {
-    LOG( 128, "I AM ENTERING ON try_to_start_the_RTV )" )
+    LOG( 128, "I AM ENTERING ON try_to_start_the_RTV(2)" )
     LOG( 4, "( try_to_start_the_RTV ) rocksNeeded:       %d", rocksNeeded )
     LOG( 4, "( try_to_start_the_RTV ) g_rockedVoteCount: %d", g_rockedVoteCount )
 
@@ -9916,7 +9919,7 @@ stock try_to_start_the_RTV( rocksNeeded )
         // start up the vote director
         start_rtvVote();
     }
-    else
+    else if( !silent )
     {
         // let the players know how many more rocks are needed
         rtv_remind( TASKID_RTV_REMINDER );
@@ -9974,7 +9977,7 @@ stock vote_unrockTheVote( player_id )
         g_rockedVote[ player_id ] = false;
     }
 
-    try_to_start_the_RTV( vote_getRocksNeeded() );
+    try_to_start_the_RTV( vote_getRocksNeeded(), true );
 }
 
 stock vote_getRocksNeeded()
@@ -13960,7 +13963,7 @@ stock color_print( const player_id, const lang_formatting[], any:... )
 #else // this else only works for AMXX 183 or superior, due noted bug above.
 
     vformat( formatted_message, charsmax( formatted_message ), lang_formatting, 3 );
-    LOG( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formatted_message )
+    LOG( 64, "( color_print ) [in AMXX 183] player_id: %d, Chat printed: %s...", player_id, formatted_message )
 
     if( IS_COLORED_CHAT_ENABLED() )
     {
@@ -16192,23 +16195,23 @@ public timeRemain()
 
         if( g_voteStatus & IS_RUNOFF_VOTE )
         {
-            g_arrayOfMapsWithVotesNumber[ 0 ] += 2;     // choice 1
-            g_arrayOfMapsWithVotesNumber[ 1 ] += 2;     // choice 2
+            g_arrayOfMapsWithVotesNumber[ 0 ] += 1;     // choice 1
+            g_arrayOfMapsWithVotesNumber[ 1 ] += 1;     // choice 2
 
             g_totalVotesCounted = g_arrayOfMapsWithVotesNumber[ 0 ] + g_arrayOfMapsWithVotesNumber[ 1 ];
         }
         else
         {
             g_arrayOfMapsWithVotesNumber[ 0 ] += 0;     // map 1
-            g_arrayOfMapsWithVotesNumber[ 1 ] += 2;     // map 2
-            g_arrayOfMapsWithVotesNumber[ 2 ] += 2;     // map 3
+            g_arrayOfMapsWithVotesNumber[ 1 ] += 1;     // map 2
+            g_arrayOfMapsWithVotesNumber[ 2 ] += 1;     // map 3
             g_arrayOfMapsWithVotesNumber[ 3 ] += 0;     // map 4
             g_arrayOfMapsWithVotesNumber[ 4 ] += 0;     // map 5
 
             if( g_isExtendmapAllowStay
                 || g_isGameFinalVoting )
             {
-                g_arrayOfMapsWithVotesNumber[ 5 ] += 2;    // extend option
+                g_arrayOfMapsWithVotesNumber[ 5 ] += 0;    // extend option
             }
 
             g_totalVotesCounted = g_arrayOfMapsWithVotesNumber[ 0 ] + g_arrayOfMapsWithVotesNumber[ 1 ] +
