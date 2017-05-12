@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.5.0-820";
+new const PLUGIN_VERSION[] = "v5.5.0-821";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.5.0-820";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 8+16
+#define DEBUG_LEVEL 16
 
 
 /**
@@ -6758,6 +6758,9 @@ public vote_manageEnd()
             try_to_manage_map_end();
         }
 
+        LOG( 256, "( vote_manageEnd ) START_VOTEMAP_MIN_TIME: %d", START_VOTEMAP_MIN_TIME )
+        LOG( 256, "( vote_manageEnd ) START_VOTEMAP_MAX_TIME: %d", START_VOTEMAP_MAX_TIME )
+
         // Are we ready to start an "end of map" vote?
         if( secondsLeft < START_VOTEMAP_MIN_TIME
             && secondsLeft > START_VOTEMAP_MAX_TIME )
@@ -6952,8 +6955,9 @@ stock create_game_crash_recreation( secondsLeft )
 stock bool:approveTheVotingStart( bool:is_forced_voting )
 {
     LOG( 128, "I AM ENTERING ON approveTheVotingStart(1)" )
-    LOG( 4, "( approveTheVotingStart ) is_forced_voting:        %d", is_forced_voting )
-    LOG( 4, "( approveTheVotingStart ) get_real_players_number: %d", get_real_players_number() )
+    LOG( 4, "( approveTheVotingStart ) is_forced_voting:          %d", is_forced_voting )
+    LOG( 4, "( approveTheVotingStart ) get_real_players_number:   %d", get_real_players_number() )
+    LOG( 4, "( approveTheVotingStart ) cvar_nextMapChangeVotemap: %d", get_pcvar_num( cvar_nextMapChangeVotemap ) )
 
     if( get_pcvar_num( cvar_nextMapChangeVotemap )
         && !is_forced_voting )
@@ -6966,6 +6970,11 @@ stock bool:approveTheVotingStart( bool:is_forced_voting )
 
         new bool:isNextMapChangeAnnounce = get_pcvar_num( cvar_nextMapChangeAnnounce ) != 0;
         get_pcvar_string( cvar_amx_nextmap, nextMapName, charsmax( nextMapName ) );
+
+        LOG( 4, "( approveTheVotingStart ) nextMapFlag:             %s", nextMapFlag )
+        LOG( 4, "( approveTheVotingStart ) nextMapName:             %s", nextMapName )
+        LOG( 4, "( approveTheVotingStart ) g_nextMapName:           %s", g_nextMapName )
+        LOG( 4, "( approveTheVotingStart ) isNextMapChangeAnnounce: %d", isNextMapChangeAnnounce )
 
         if( isNextMapChangeAnnounce
             && !equali( nextMapFlag, nextMapName, strlen( nextMapName ) )
