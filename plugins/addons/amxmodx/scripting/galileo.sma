@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.5.0-815";
+new const PLUGIN_VERSION[] = "v5.5.0-816";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -6539,8 +6539,8 @@ stock loadTheDefaultVotingChoices()
 
     SET_VOTING_TIME_TO( g_votingSecondsRemaining, cvar_voteDuration )
 
-    LOG( 4, "" )
-    LOG( 4, "I AM EXITING ON loadTheDefaultVotingChoices(0) g_totalVoteOptions: %d", g_totalVoteOptions )
+    LOG( 4, "    ( loadTheDefaultVotingChoices ) g_totalVoteOptions: %d", g_totalVoteOptions )
+    return g_totalVoteOptions;
 }
 
 /**
@@ -6949,8 +6949,9 @@ stock create_game_crash_recreation( secondsLeft )
 
 stock bool:approveTheVotingStart( bool:is_forced_voting )
 {
-    LOG( 128, "I AM ENTERING ON approveTheVotingStart(1) is_forced_voting: %d, get_real_players_number: %d", \
-            is_forced_voting, get_real_players_number() )
+    LOG( 128, "I AM ENTERING ON approveTheVotingStart(1)" )
+    LOG( 4, "( approveTheVotingStart ) is_forced_voting:        %d", is_forced_voting )
+    LOG( 4, "( approveTheVotingStart ) get_real_players_number: %d", get_real_players_number() )
 
     if( get_pcvar_num( cvar_nextMapChangeVotemap )
         && !is_forced_voting )
@@ -6979,23 +6980,24 @@ stock bool:approveTheVotingStart( bool:is_forced_voting )
 
     // block the voting on some not allowed situations/cases
     if( get_real_players_number() == 0
-        || ( g_voteStatus & IS_VOTE_IN_PROGRESS
-             && !( g_voteStatus & IS_RUNOFF_VOTE ) )
+        || g_voteStatus & IS_VOTE_IN_PROGRESS
+        || g_voteStatus & IS_RUNOFF_VOTE
         || ( !is_forced_voting
              && g_voteStatus & IS_VOTE_OVER ) )
     {
-        LOG( 1, "    ( approveTheVotingStart ) g_voteStatus: %d, g_voteStatus & IS_VOTE_OVER: %d", \
-                g_voteStatus, g_voteStatus & IS_VOTE_OVER != 0 )
+        LOG( 1, "    ( approveTheVotingStart ) g_voteStatus: %d", g_voteStatus )
+        LOG( 1, "    ( approveTheVotingStart ) g_voteStatus & IS_VOTE_OVER: %d", g_voteStatus & IS_VOTE_OVER != 0 )
 
     #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
         if( g_test_areTheUnitTestsRunning )
         {
-            LOG( 1, "    ( approveTheVotingStart ) Returning true on the if !g_test_areTheUnitTestsRunning, \
-                    cvar_isEmptyCycleByMapChange: %d.", get_pcvar_num( cvar_isEmptyCycleByMapChange ) )
+            LOG( 1, "    ( approveTheVotingStart ) Returning true on the if !g_test_areTheUnitTestsRunning" )
+            LOG( 1, "    ( approveTheVotingStart ) cvar_isEmptyCycleByMapChange: %d", get_pcvar_num( cvar_isEmptyCycleByMapChange ) )
             return true;
         }
     #endif
 
+        // Start the empty cycle on the end of the map, if this feature is enabled
         if( get_real_players_number() == 0 )
         {
             if( get_pcvar_num( cvar_isEmptyCycleByMapChange ) )
@@ -7003,6 +7005,7 @@ stock bool:approveTheVotingStart( bool:is_forced_voting )
                 startEmptyCycleSystem();
             }
 
+            // If somehow the voting is going on, disables it
             if( g_voteStatus & IS_VOTE_IN_PROGRESS )
             {
                 cancelVoting();
@@ -7043,6 +7046,36 @@ stock bool:approveTheVotingStart( bool:is_forced_voting )
     }
 
     LOG( 1, "    ( approveTheVotingStart ) Returning true, due passed by all requirements." )
+    return true;
+}
+
+stock bool:approveTheRunoffVotingStart()
+{
+    LOG( 128, "I AM ENTERING ON approveTheRunoffVotingStart(0)" )
+    LOG( 4, "( approveTheRunoffVotingStart ) get_real_players_number: %d", get_real_players_number() )
+
+    // block the voting on some not allowed situations/cases
+    if( get_real_players_number() == 0
+        || ( g_voteStatus & IS_VOTE_OVER )
+        || !( g_voteStatus & IS_RUNOFF_VOTE ) )
+    {
+        LOG( 1, "    ( approveTheRunoffVotingStart ) g_voteStatus: %d", g_voteStatus )
+        LOG( 1, "    ( approveTheRunoffVotingStart ) g_voteStatus & IS_VOTE_OVER: %d", g_voteStatus & IS_VOTE_OVER != 0 )
+
+    #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
+        if( g_test_areTheUnitTestsRunning )
+        {
+            LOG( 1, "    ( approveTheRunoffVotingStart ) Returning true on the if !g_test_areTheUnitTestsRunning" )
+            LOG( 1, "    ( approveTheRunoffVotingStart ) cvar_isEmptyCycleByMapChange: %d", get_pcvar_num( cvar_isEmptyCycleByMapChange ) )
+            return true;
+        }
+    #endif
+
+        LOG( 1, "    ( approveTheRunoffVotingStart ) Returning false on the first blocker." )
+        return false;
+    }
+
+    LOG( 1, "    ( approveTheRunoffVotingStart ) Returning true, due passed by all requirements." )
     return true;
 }
 
@@ -7087,6 +7120,9 @@ stock loadRunOffVoteChoices()
 
     SET_VOTING_TIME_TO( g_votingSecondsRemaining, cvar_runoffDuration )
     LOG( 0, "", printVotingMaps(  g_votingMapNames, g_votingMapInfos, g_totalVoteOptions ) )
+
+    LOG( 1, "    ( loadRunOffVoteChoices ) g_totalVoteOptions: %d", g_totalVoteOptions )
+    return g_totalVoteOptions;
 }
 
 stock configureVotingStart( bool:is_forced_voting )
@@ -7201,27 +7237,16 @@ stock startTheVoting( bool:is_forced_voting )
         return;
     }
 
-    if( g_voteStatus & IS_RUNOFF_VOTE )
-    {
-        // to load runoff vote choices
-        loadRunOffVoteChoices();
-    }
-    else
-    {
-        // Clear the cmd_startVote(3) map settings just in case they where loaded.
-        // Clean it just to be sure as the voteMapMenuBuilder() could let it filled.
-        clearTheVotingMenu();
-        g_voteMapStatus = 0;
+    // Clear the cmd_startVote(3) map settings just in case they where loaded.
+    // Clean it just to be sure as the voteMapMenuBuilder() could let it filled.
+    clearTheVotingMenu();
+    g_voteMapStatus = 0;
 
-        // to prepare the initial voting state
-        configureVotingStart( is_forced_voting );
+    // to prepare the initial voting state
+    configureVotingStart( is_forced_voting );
 
-        // to load vote choices
-        loadTheDefaultVotingChoices();
-    }
-
-    // Show up the voting menu
-    if( g_totalVoteOptions )
+    // To load vote choices  and show up the voting menu
+    if( loadTheDefaultVotingChoices() )
     {
         initializeTheVoteDisplay();
     }
@@ -7233,9 +7258,41 @@ stock startTheVoting( bool:is_forced_voting )
     }
 
     LOG( 4, "" )
-    LOG( 4, "    ( startTheVoting|out ) g_isTheLastGameRound: %d", g_isTheLastGameRound )
-    LOG( 4, "    ( startTheVoting|out ) g_isTimeToRestart: %d, g_voteStatus & IS_FORCED_VOTE: %d", \
-            g_isTimeToRestart, g_voteStatus & IS_FORCED_VOTE != 0 )
+    LOG( 4, "    ( startTheVoting|out ) g_isTheLastGameRound:          %d", g_isTheLastGameRound )
+    LOG( 4, "    ( startTheVoting|out ) g_isTimeToRestart:             %d", g_isTimeToRestart )
+    LOG( 4, "    ( startTheVoting|out ) g_voteStatus & IS_FORCED_VOTE: %d", g_voteStatus & IS_FORCED_VOTE != 0 )
+}
+
+/**
+ * Any voting not started by `cvar_endOfMapVoteStart`, `cvar_endOnRound` or ending limit expiration,
+ * is a forced voting.
+ */
+public startTheRunoffVoting()
+{
+    LOG( 128, "I AM ENTERING ON startTheRunoffVoting(1) is_forced_voting: %d", is_forced_voting )
+
+    if( !approveTheRunoffVotingStart() )
+    {
+        LOG( 1, "    ( startTheRunoffVoting ) Just Returning/blocking, the voting was not approved." )
+        return;
+    }
+
+    // To load runoff vote choices and show up the voting menu
+    if( loadRunOffVoteChoices() )
+    {
+        initializeTheVoteDisplay();
+    }
+    else
+    {
+        // Vote creation failed; no maps found.
+        color_print( 0, "%L", LANG_PLAYER, "GAL_VOTE_NOMAPS" );
+        finalizeVoting();
+    }
+
+    LOG( 4, "" )
+    LOG( 4, "    ( startTheRunoffVoting|out ) g_isTheLastGameRound:          %d", g_isTheLastGameRound )
+    LOG( 4, "    ( startTheRunoffVoting|out ) g_isTimeToRestart:             %d", g_isTimeToRestart )
+    LOG( 4, "    ( startTheRunoffVoting|out ) g_voteStatus & IS_FORCED_VOTE: %d", g_voteStatus & IS_FORCED_VOTE != 0 )
 }
 
 /**
@@ -8816,10 +8873,10 @@ stock handleMoreThanTwoMapsAtFirst( firstPlaceChoices[], numberOfMapsAtFirstPosi
     color_print( 0, "%L", LANG_PLAYER, "GAL_RESULT_TIED1", numberOfMapsAtFirstPosition );
 }
 
-stock startRunoffVoting( firstPlaceChoices[], secondPlaceChoices[], numberOfMapsAtFirstPosition,
+stock configureTheRunoffVoting( firstPlaceChoices[], secondPlaceChoices[], numberOfMapsAtFirstPosition,
                          numberOfMapsAtSecondPosition )
 {
-    LOG( 128, "I AM ENTERING ON startRunoffVoting(4)" )
+    LOG( 128, "I AM ENTERING ON configureTheRunoffVoting(4)" )
     new votePercent = floatround( 100 * get_pcvar_float( cvar_runoffRatio ), floatround_ceil );
 
     // announce runoff voting requirement
@@ -8856,7 +8913,7 @@ stock startRunoffVoting( firstPlaceChoices[], secondPlaceChoices[], numberOfMaps
     vote_resetStats();
 
     // start the runoff vote, startTheVoting
-    set_task( VOTE_TIME_RUNOFF, "startNonForcedVoting", TASKID_START_THE_VOTING );
+    set_task( VOTE_TIME_RUNOFF, "startTheRunoffVoting", TASKID_START_THE_VOTING );
 }
 
 stock handleTwoMapsAtFirstPosition( firstPlaceChoices[] )
@@ -9046,7 +9103,7 @@ public computeVotes()
                 && !( g_voteStatus & IS_RUNOFF_VOTE )
                 && !( g_voteMapStatus & IS_DISABLED_VOTEMAP_RUNOFF ) )
             {
-                startRunoffVoting( firstPlaceChoices, secondPlaceChoices, numberOfMapsAtFirstPosition,
+                configureTheRunoffVoting( firstPlaceChoices, secondPlaceChoices, numberOfMapsAtFirstPosition,
                         numberOfMapsAtSecondPosition );
 
                 LOG( 1, "    ( computeVotes ) Just Returning/blocking, its runoff starting." )
