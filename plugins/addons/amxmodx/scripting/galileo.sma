@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.5.0-817";
+new const PLUGIN_VERSION[] = "v5.5.0-818";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.5.0-817";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 2+64
+#define DEBUG_LEVEL 8+16
 
 
 /**
@@ -7343,9 +7343,7 @@ stock initializeTheVoteDisplay()
     new player_id;
     new playersCount;
 
-    new isToAskForEndOfTheMapVote;
     new players[ MAX_PLAYERS ];
-
     new Float:handleChoicesDelay;
 
     // Clear all nominations
@@ -7373,7 +7371,7 @@ stock initializeTheVoteDisplay()
     g_votingSecondsRemaining = 5;
     handleChoicesDelay       = 0.1;
 #else
-
+    new isToAskForEndOfTheMapVote;
     isToAskForEndOfTheMapVote = get_pcvar_num( cvar_isToAskForEndOfTheMapVote );
 
     if( g_voteMapStatus & IS_DISABLED_VOTEMAP_INTRO
@@ -16203,7 +16201,7 @@ public timeRemain()
         {
             g_arrayOfMapsWithVotesNumber[ 0 ] += 0;     // map 1
             g_arrayOfMapsWithVotesNumber[ 1 ] += 2;     // map 2
-            g_arrayOfMapsWithVotesNumber[ 2 ] += 0;     // map 3
+            g_arrayOfMapsWithVotesNumber[ 2 ] += 2;     // map 3
             g_arrayOfMapsWithVotesNumber[ 3 ] += 0;     // map 4
             g_arrayOfMapsWithVotesNumber[ 4 ] += 0;     // map 5
 
