@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.5.0-816";
+new const PLUGIN_VERSION[] = "v5.5.0-817";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -5962,7 +5962,9 @@ stock FillersFilePathType:loadMapGroupsFeature()
         new voteMininumPlayers = get_pcvar_num( cvar_voteMinPlayers );
         new voteMiddlePlayers  = get_pcvar_num( cvar_voteMidPlayers );
 
-        LOG( 4, "( processLoadedMapsFile ) blockedMapsBuffer:       %s", blockedMapsBuffer )
+        LOG( 4, "( processLoadedMapsFile ) realPlayersNumber:       %s", realPlayersNumber )
+        LOG( 4, "( processLoadedMapsFile ) voteMininumPlayers:      %s", voteMininumPlayers )
+        LOG( 4, "( processLoadedMapsFile ) voteMiddlePlayers:       %s", voteMiddlePlayers )
 
         if( realPlayersNumber < voteMininumPlayers
             && voteMininumPlayers > VOTE_MININUM_PLAYERS_REQUIRED )
@@ -7269,7 +7271,7 @@ stock startTheVoting( bool:is_forced_voting )
  */
 public startTheRunoffVoting()
 {
-    LOG( 128, "I AM ENTERING ON startTheRunoffVoting(1) is_forced_voting: %d", is_forced_voting )
+    LOG( 128, "I AM ENTERING ON startTheRunoffVoting(0)" )
 
     if( !approveTheRunoffVotingStart() )
     {
