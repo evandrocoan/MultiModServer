@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.5.0-821";
+new const PLUGIN_VERSION[] = "v5.5.0-825";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.5.0-821";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 16
+#define DEBUG_LEVEL 0
 
 
 /**
@@ -7003,10 +7003,11 @@ stock bool:approveTheVotingStart( bool:is_forced_voting )
         if( g_test_areTheUnitTestsRunning )
         {
             LOG( 1, "    ( approveTheVotingStart ) Returning true on the if !g_test_areTheUnitTestsRunning" )
-            LOG( 1, "    ( approveTheVotingStart ) cvar_isEmptyCycleByMapChange: %d", get_pcvar_num( cvar_isEmptyCycleByMapChange ) )
             return true;
         }
     #endif
+
+        LOG( 1, "( approveTheVotingStart ) cvar_isEmptyCycleByMapChange: %d", get_pcvar_num( cvar_isEmptyCycleByMapChange ) )
 
         // Start the empty cycle on the end of the map, if this feature is enabled
         if( get_real_players_number() == 0 )
@@ -9989,15 +9990,26 @@ stock vote_unrockTheVote( player_id )
     try_to_start_the_RTV( vote_getRocksNeeded(), true );
 }
 
+/**
+ * It does not consider how may RTV there are done, just how many are needed in total.
+ *
+ * @return how many RTVs there necessary to start the voting
+ */
 stock vote_getRocksNeeded()
 {
     LOG( 128, "I AM ENTERING ON vote_getRocksNeeded(0)" )
     new rocks = floatround( get_pcvar_float( cvar_rtvRatio ) * float( get_real_players_number() ), floatround_floor );
 
-    LOG( 4, "( vote_getRocksNeeded ) rocks: %d", rocks )
-    LOG( 4, "( vote_getRocksNeeded ) cvar_rtvRatio: %f", get_pcvar_float( cvar_rtvRatio ) )
+    LOG( 4, "( vote_getRocksNeeded ) rocks:                   %d", rocks )
+    LOG( 4, "( vote_getRocksNeeded ) cvar_rtvRatio:           %f", get_pcvar_float( cvar_rtvRatio ) )
+    LOG( 4, "( vote_getRocksNeeded ) get_real_players_number: %d", get_real_players_number() )
 
-    return rocks;
+    if( rocks > 0 )
+    {
+        return rocks;
+    }
+
+    return 1;
 }
 
 public rtv_remind( param )
@@ -10043,8 +10055,9 @@ public map_change_stays()
 
 public serverChangeLevel( mapName[] )
 {
-    LOG( 128, "I AM ENTERING ON serverChangeLevel(1) mapName: %s", mapName )
+    LOG( 128, "I AM ENTERING ON serverChangeLevel(1)" )
 
+    LOG( 4, "( serverChangeLevel ) mapName:          %s", mapName )
     LOG( 4, "( serverChangeLevel ) AMXX_VERSION_NUM: %d", AMXX_VERSION_NUM )
     LOG( 4, "( serverChangeLevel ) IS_TO_ENABLE_RE_HLDS_RE_AMXMODX_SUPPORT: %d", IS_TO_ENABLE_RE_HLDS_RE_AMXMODX_SUPPORT )
 
@@ -10299,7 +10312,7 @@ public client_authorized( player_id )
  */
 stock clientDisconnected( player_id )
 {
-    LOG( 128, "I AM ENTERING ON clientDisconnected(1) player_id: %d [%d]", player_id, get_playersnum() )
+    LOG( 128, "I AM ENTERING ON clientDisconnected(1) player_id: %d [%d|%d]", player_id, get_playersnum(), get_real_players_number() )
     if( is_user_bot( player_id ) ) return;
 
     if( get_user_flags( player_id ) & ADMIN_MAP )
@@ -10307,6 +10320,9 @@ stock clientDisconnected( player_id )
         g_rtvWaitAdminNumber--;
     }
 
+    // Always unrock the vote, otherwise the server may start a new map vote and for the map to
+    // change immediately when the `approveTheVotingStart(1)` reach on the `gal_nextmap_votemap`
+    // feature, which triggers the `startEmptyCycleSystem(0)`.
     vote_unrockTheVote( player_id );
 
     if( get_pcvar_num( cvar_unnominateDisconnected ) )
@@ -10455,6 +10471,7 @@ stock configureNextEmptyCycleMap()
         setNextMap( g_currentMapName, nextMapName );
     }
 
+    LOG( 128, "    ( configureNextEmptyCycleMap ) mapIndex: %d", mapIndex )
     return mapIndex;
 }
 
