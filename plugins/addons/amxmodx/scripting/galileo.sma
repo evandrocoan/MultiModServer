@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.5.0-826";
+new const PLUGIN_VERSION[] = "v5.5.0-828";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.5.0-826";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 2+64
+#define DEBUG_LEVEL 2+64+16
 
 
 /**
@@ -149,9 +149,10 @@ new const PLUGIN_VERSION[] = "v5.5.0-826";
 
     /**
      * Allow the Manual Unit Tests to disable LOG() debugging messages when the level
-     * DEBUG_LEVEL_DISABLE_TEST_LOGS is enabled.
+     * DEBUG_LEVEL_DISABLE_TEST_LOGS is enabled. Initialize it with true to allow the server to be
+     * logging from its first start.
      */
-    new bool:g_test_isToEnableLogging;
+    new bool:g_test_isToEnableLogging = true;
 
     /**
      * Write messages to the debug log file on 'addons/amxmodx/logs'.
@@ -170,8 +171,7 @@ new const PLUGIN_VERSION[] = "v5.5.0-826";
         lastRun = currentTime;
 
         // Removes the compiler warning `warning 203: symbol is never used` with some DEBUG levels.
-        if( g_test_areTheUnitTestsRunning && g_test_isToEnableLogging ) { }
-        if( DEBUGGER_OUTPUT_LOG_FILE_NAME[0] ) { }
+        if( g_test_areTheUnitTestsRunning && g_test_isToEnableLogging && DEBUGGER_OUTPUT_LOG_FILE_NAME[0] ) { }
     }
 #endif
 
@@ -3985,8 +3985,6 @@ stock tryToStartTheVotingOnThisRound( startDelay )
 
 stock debugTeamWinEvent( string_team_winner[], wins_CT_trigger, wins_Terrorist_trigger )
 {
-    LOG( 32, "I AM ENTERING ON debugTeamWinEvent(3)" )
-
     LOG( 32, "( team_win_event )" )
     LOG( 32, "( team_win_event ) string_team_winner: %s", string_team_winner )
     LOG( 32, "( team_win_event ) g_winLimitNumber: %d", g_winLimitNumber )
@@ -9792,9 +9790,30 @@ stock announcerockFailToosoon( player_id, Float:minutesElapsed )
     LOG( 1, "    ( announcerockFailToosoon ) Just Returning/blocking, too soon to rock by minutes." )
 }
 
+stock debugRtvVote()
+{
+    LOG( 4, "( is_to_block_RTV ) g_voteStatus:            %d", g_voteStatus )
+    LOG( 4, "( is_to_block_RTV ) g_rtvCommands:           %d", g_rtvCommands )
+    LOG( 4, "( is_to_block_RTV ) g_timeLimitNumber:       %d", g_timeLimitNumber )
+    LOG( 4, "( is_to_block_RTV ) g_fragLimitNumber:       %d", g_fragLimitNumber )
+    LOG( 4, "( is_to_block_RTV ) g_rtvWaitMinutes:        %d", g_rtvWaitMinutes )
+    LOG( 4, "( is_to_block_RTV ) g_maxRoundsNumber:       %d", g_maxRoundsNumber )
+    LOG( 4, "( is_to_block_RTV ) g_winLimitNumber:        %d", g_winLimitNumber )
+    LOG( 4, "( is_to_block_RTV ) g_rtvWaitRounds:         %d", g_rtvWaitRounds )
+    LOG( 4, "( is_to_block_RTV ) g_totalRoundsPlayed:     %d", g_totalRoundsPlayed )
+    LOG( 4, "( is_to_block_RTV ) g_rtvWaitFrags:          %d", g_rtvWaitFrags )
+    LOG( 4, "( is_to_block_RTV ) g_greatestKillerFrags    %d", g_greatestKillerFrags )
+    LOG( 4, "( is_to_block_RTV ) g_rtvWaitAdminNumber:    %d", g_rtvWaitAdminNumber )
+    LOG( 4, "( is_to_block_RTV ) cvar_rtvWaitAdmin:       %d", get_pcvar_num( cvar_rtvWaitAdmin ) )
+    LOG( 4, "( is_to_block_RTV ) get_real_players_number: %d", get_real_players_number() )
+
+    return 0;
+}
+
 stock is_to_block_RTV( player_id )
 {
     LOG( 128, "I AM ENTERING ON is_to_block_RTV(1) player_id: %d", player_id )
+    LOG( 0, "", debugRtvVote() )
 
     // If time-limit is 0, minutesElapsed will always be 0.
     new Float:minutesElapsed;
@@ -19647,8 +19666,8 @@ public timeRemain()
                 "restoreServerCvarsFromTesting( out )", get_pcvar_float( cvar_mp_timelimit ), \
                 test_mp_timelimit, g_originalTimelimit )
 
-        // Only to disable the Unit Tests running, after all the print being outputted due the `DEBUG_LEVEL_DISABLE_TEST_LOGS` level.
-        g_test_isToEnableLogging = false;
+        // Only to enable the logging, after all the print being outputted due the `DEBUG_LEVEL_DISABLE_TEST_LOGS` level.
+        g_test_isToEnableLogging = true;
     }
 #endif
 
