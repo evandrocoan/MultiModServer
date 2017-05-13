@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.5.0-828";
+new const PLUGIN_VERSION[] = "v5.5.0-829";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -14138,7 +14138,8 @@ stock register_dictionary_colored( const dictionaryFile[] )
 }
 
 /**
- * Immediately stops any vote in progress.
+ * Immediately stops any vote in progress. It keeps the `IS_VOTE_OVER` flag to maintain any older
+ * voting valid after the cancellation.
  */
 stock cancelVoting( bool:isToDoubleReset = false )
 {
@@ -19652,6 +19653,9 @@ public timeRemain()
         // Clear tests results.
         resetRoundsScores();
         cancelVoting();
+
+        // We need to manually reset because cancelVoting(0) cannot completely zero it
+        g_voteStatus            = 0;
         g_totalRoundsSavedTimes = 0;
 
         // Reload unloaded features.
