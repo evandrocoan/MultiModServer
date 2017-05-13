@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.5.0-825";
+new const PLUGIN_VERSION[] = "v5.5.0-826";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.5.0-825";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 0
+#define DEBUG_LEVEL 2+64
 
 
 /**
@@ -492,6 +492,8 @@ new cvar_coloredChatEnabled;
 /**
  * General Constants.
  */
+#define MUTE_MESSAGES_SPAMMING 1
+
 #define MAX_INTEGER  2147483647
 #define MIN_INTEGER -2147483648
 
@@ -697,6 +699,15 @@ new cvar_coloredChatEnabled;
 
 // In-place Macros
 // ###############################################################################################
+
+/**
+ * To return `PLUGIN_HANDLED` or `PLUGIN_CONTINUE`, accordantly to the settings set by the cvar.
+ *
+ * @param true if the message/command should be blocked (PLUGIN_HANDLED), false otherwise (PLUGIN_CONTINUE).
+ */
+#define IS_TO_MUTE(%1) \
+    ( ( %1 && ( get_pcvar_num( cvar_generalOptions ) & MUTE_MESSAGES_SPAMMING ) ) ? PLUGIN_HANDLED : PLUGIN_CONTINUE )
+//
 
 /**
  * When there are enough rounds played and the round average time is neither even half to the vote
@@ -1197,6 +1208,7 @@ new cvar_isEndMapCountdown;
 new cvar_voteMapChoiceCount;
 new cvar_voteMapChoiceNext;
 new cvar_voteAnnounceChoice;
+new cvar_generalOptions;
 new cvar_voteUniquePrefixes;
 new cvar_rtvReminder;
 new cvar_serverStartAction;
@@ -1670,6 +1682,7 @@ public plugin_init()
     cvar_isToShowExpCountdown      = register_cvar( "gal_vote_expirationcountdown" , "0"    );
     cvar_isToShowVoteCounter       = register_cvar( "gal_vote_show_counter"        , "1"    );
     cvar_voteAnnounceChoice        = register_cvar( "gal_vote_announcechoice"      , "0"    );
+    cvar_generalOptions            = register_cvar( "gal_general_options"          , "0"    );
     cvar_isToAskForEndOfTheMapVote = register_cvar( "gal_endofmapvote_ask"         , "0"    );
     cvar_cmdVotemap                = register_cvar( "gal_cmd_votemap"              , "1"    );
     cvar_cmdListmaps               = register_cvar( "gal_cmd_listmaps"             , "1"    );
@@ -9890,7 +9903,7 @@ stock compute_the_RTV_vote( player_id, rocksNeeded )
         color_print( player_id, "%L", player_id, "GAL_ROCK_FAIL_ALREADY", rocksNeeded - g_rockedVoteCount );
         rtv_remind( TASKID_RTV_REMINDER + player_id );
 
-        LOG( 1, "    ( vote_rock ) Just Returning/blocking, already rocked the vote." )
+        LOG( 1, "    ( compute_the_RTV_vote ) Just Returning/blocking, already rocked the vote." )
         return false;
     }
 
@@ -9898,7 +9911,7 @@ stock compute_the_RTV_vote( player_id, rocksNeeded )
     g_rockedVote[ player_id ] = true;
 
     color_print( player_id, "%L", player_id, "GAL_ROCK_SUCCESS" );
-    LOG( 1, "    ( vote_rock ) Just Returning/blocking, accepting rock the vote." )
+    LOG( 1, "    ( compute_the_RTV_vote ) Just Returning/blocking, accepting rock the vote." )
 
     return true;
 }
@@ -9912,6 +9925,7 @@ stock compute_the_RTV_vote( player_id, rocksNeeded )
 stock try_to_start_the_RTV( rocksNeeded, bool:silent=false )
 {
     LOG( 128, "I AM ENTERING ON try_to_start_the_RTV(2)" )
+
     LOG( 4, "( try_to_start_the_RTV ) rocksNeeded:       %d", rocksNeeded )
     LOG( 4, "( try_to_start_the_RTV ) g_rockedVoteCount: %d", g_rockedVoteCount )
 
@@ -10000,15 +10014,17 @@ stock vote_getRocksNeeded()
     LOG( 128, "I AM ENTERING ON vote_getRocksNeeded(0)" )
     new rocks = floatround( get_pcvar_float( cvar_rtvRatio ) * float( get_real_players_number() ), floatround_floor );
 
-    LOG( 4, "( vote_getRocksNeeded ) rocks:                   %d", rocks )
+
     LOG( 4, "( vote_getRocksNeeded ) cvar_rtvRatio:           %f", get_pcvar_float( cvar_rtvRatio ) )
     LOG( 4, "( vote_getRocksNeeded ) get_real_players_number: %d", get_real_players_number() )
 
     if( rocks > 0 )
     {
+        LOG( 4, "    ( vote_getRocksNeeded ) rocks: %d", rocks )
         return rocks;
     }
 
+    LOG( 4, "    ( vote_getRocksNeeded ) There are %d rocks! Returning: 1", rocks )
     return 1;
 }
 
@@ -12121,6 +12137,8 @@ public cmd_lookingForCrashes( player_id, level, cid )
 public cmd_say( player_id )
 {
     LOG( 128, "I AM ENTERING ON cmd_say(1) player_id: %s", player_id )
+
+    new bool:status;
     new thirdWord[ 2 ];
 
     static sentence  [ 70 ];
@@ -12169,6 +12187,8 @@ public cmd_say( player_id )
 
                 setCorrectMenuPage( player_id, firstWord, g_voteMapMenuPages, lastPageNumber );
                 voteMapMenuBuilder( player_id );
+
+                status = true;
             }
             else if( ( g_rtvCommands & RTV_CMD_SHORTHAND
                        && equali( firstWord, "rtv" ) )
@@ -12178,10 +12198,11 @@ public cmd_say( player_id )
                           && !( g_rtvCommands & RTV_CMD_STANDARD ) ) )
             {
                 vote_rock( player_id );
+                status = true;
             }
             else if( nomPlayerAllowance )
             {
-                sayHandlerForOneNomWords( player_id, firstWord );
+                status = sayHandlerForOneNomWords( player_id, firstWord );
             }
         }
         else if( nomPlayerAllowance
@@ -12194,18 +12215,26 @@ public cmd_say( player_id )
 
             setCorrectMenuPage( player_id, secondWord, g_voteMapMenuPages, lastPageNumber );
             voteMapMenuBuilder( player_id );
+
+            status = true;
         }
         else if( nomPlayerAllowance )  // "say <nominate|nom|cancel> <map>"
         {
-            sayHandlerForTwoNomWords( player_id, firstWord, secondWord );
+            status = sayHandlerForTwoNomWords( player_id, firstWord, secondWord );
         }
     }
 
-    LOG( 1, "    ( cmd_say ) Just returning PLUGIN_CONTINUE, as reached the handler end." )
-    return PLUGIN_CONTINUE;
+    LOG( 1, "    ( cmd_say ) Just returning %s, as reached the handler end.", \
+           IS_TO_MUTE( status ) ? "PLUGIN_HANDLED" : "PLUGIN_CONTINUE" )
+    return IS_TO_MUTE( status );
 }
 
-stock sayHandlerForOneNomWords( player_id, firstWord[] )
+/**
+ * Handles one user word said on chat.
+ *
+ * @return true when it is performed some nomination command, false otherwise
+ */
+stock bool:sayHandlerForOneNomWords( player_id, firstWord[] )
 {
     LOG( 128, "I AM ENTERING ON sayHandlerForOneNomWords(3)" )
     LOG( 4, "( sayHandlerForOneNomWords ) on the 1 word: else if( cvar_nomPlayerAllowance ), \
@@ -12274,7 +12303,12 @@ stock sayHandlerForOneNomWords( player_id, firstWord[] )
     return false;
 }
 
-stock sayHandlerForTwoNomWords( player_id, firstWord[], secondWord[] )
+/**
+ * Handles two user word said on chat.
+ *
+ * @return true when it is performed some nomination command, false otherwise
+ */
+stock bool:sayHandlerForTwoNomWords( player_id, firstWord[], secondWord[] )
 {
     LOG( 128, "I AM ENTERING ON sayHandlerForTwoNomWords(3)" )
 
