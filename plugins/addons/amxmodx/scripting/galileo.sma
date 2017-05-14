@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.5.0-833";
+new const PLUGIN_VERSION[] = "v5.5.0-834";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -474,10 +474,7 @@ new bool:g_isColoredChatEnabled;
 #define IS_NEW_ROUND_EVENT_SUPPORTED() \
     ( g_isColorChatSupported || g_isDayOfDefeat )
 
-#if AMXX_VERSION_NUM < 183
-    new g_user_msgid;
-#endif
-
+new g_user_msgid;
 new cvar_coloredChatEnabled;
 
 /**
@@ -1755,14 +1752,12 @@ public plugin_cfg()
     get_mapname( g_currentMapName, charsmax( g_currentMapName ) );
 
     /**
-     * Register the color chat 'g_user_msgid' variable, for the AMXX 182.
+     * Register the color chat 'g_user_msgid' variable. Note, if some exception happened before
+     * this, all color_print(...) messages will cause native error 10, on the AMXX 182. It is
+     * because, the execution flow will not reach here, then the player "g_user_msgid" will be be
+     * initialized.
      */
-#if AMXX_VERSION_NUM < 183
-    // If some exception happened before this, all color_print(...) messages will cause native
-    // error 10, on the AMXX 182. It is because, the execution flow will not reach here, then
-    // the player "g_user_msgid" will be be initialized.
     g_user_msgid = get_user_msgid( "SayText" );
-#endif
 
     // Load the initial settings
     loadPluginSetttings();
@@ -10311,7 +10306,7 @@ public map_listAll( player_id )
  */
 stock no_color_print( const player_id, const message[], any:... )
 {
-    LOG( 128, "I AM ENTERING ON color_console_print(...) player_id: %d, message: %s...", player_id, message )
+    LOG( 128, "I AM ENTERING ON color_console_print(...) player_id: %d, message: `%s`", player_id, message )
     new formatted_message[ MAX_COLOR_MESSAGE ];
 
     vformat( formatted_message, charsmax( formatted_message ), message, 3 );
@@ -13827,43 +13822,6 @@ stock percent( is, of )
  * ConnorMcLeod's [Dyn Native] ColorChat v0.3.2 (04 jul 2013) register_dictionary_colored function:
  *   <a href="https://forums.alliedmods.net/showthread.php?p=851160">ColorChat v0.3.2</a>
  *
- * If you are at the Amx Mod X 1.8.2, you can call this function using the player_id as 0. But it
- * will use more resources to decode its arguments. To be more optimized you should call it to every
- * player on the server, to display the colored message to all players using global scope. Example:
- * @code{.cpp}
- * #if AMXX_VERSION_NUM < 183
- * new g_colored_player_id
- * new g_colored_players_number
- * new g_colored_current_index
- * new g_colored_players_ids[ 32 ]
- * #endif
- *
- * some_function()
- * {
- *     ... some code
- * #if AMXX_VERSION_NUM < 183
- *     get_players( g_colored_players_ids, g_colored_players_number, "ch" );
- *
- *     for( g_colored_current_index = 0; g_colored_current_index < g_colored_players_number;
- *          g_colored_current_index++ )
- *     {
- *         g_colored_player_id = g_colored_players_ids[ g_colored_current_index ]
- *
- *         color_print( g_colored_player_id, "%L %L %L",
- *                 g_colored_player_id, "LANG_A", g_colored_player_id, "LANG_B",
- *                 g_colored_player_id, "LANG_C", any_variable_used_on_LANG_C )
- *     }
- * #else
- *     color_print( 0, "%L %L %L", LANG_PLAYER, "LANG_A",
- *             LANG_PLAYER, "LANG_B", LANG_PLAYER, "LANG_C", any_variable_used_on_LANG_C );
- * #endif
- *     ... some code
- * }
- * @endcode
- *
- * If you are at the Amx Mod X 1.8.3 or superior, you can call this function using the player_id
- * as 0, to display the colored message to all players on the server.
- *
  * If you run this function on a Game Mod that do not support colored messages, they will be
  * displayed as normal messages without any errors or bad formats.
  *
@@ -13875,11 +13833,11 @@ stock percent( is, of )
  * @param any                the variable number of formatting parameters.
  *
  * @see <a href="https://www.amxmodx.org/api/amxmodx/client_print_color">client_print_color</a>
- * for Amx Mod X 1.8.3 or superior.
+ * @see <a href="https://forums.alliedmods.net/showthread.php?t=297484">vformat() ignoring user language</a>
  */
 stock color_print( const player_id, const lang_formatting[], any:... )
 {
-    LOG( 128, "I AM ENTERING ON color_print() player_id: %d, lang_formatting: %s...", player_id, lang_formatting )
+    LOG( 128, "I AM ENTERING ON color_print() player_id: %d, lang_formatting: `%s`", player_id, lang_formatting )
     LOG( 64, "IS_COLORED_CHAT_ENABLED(): %d", IS_COLORED_CHAT_ENABLED() )
 
     new formatted_message[ MAX_COLOR_MESSAGE ];
@@ -13891,12 +13849,6 @@ stock color_print( const player_id, const lang_formatting[], any:... )
     LOG( 64, "( color_print ) player_id: %d, g_test_printedMessage: %s", player_id, g_test_printedMessage )
 #endif
 
-    /**
-     * Bug; On AMXX 1.8.2, disabling the color chat, make all messages to all players being on the
-     * server language, instead of the player language. This is a AMXX 1.8.2 bug only. There is a
-     * way to overcome this. It is to print a message to each player, as the colored print does.
-     */
-#if AMXX_VERSION_NUM < 183
     if( player_id )
     {
         if( IS_COLORED_CHAT_ENABLED() )
@@ -13910,7 +13862,7 @@ stock color_print( const player_id, const lang_formatting[], any:... )
                 new message[ MAX_COLOR_MESSAGE ];
                 formatex( message, charsmax( message ), "^1%s^1%s", g_coloredChatPrefix, formatted_message[ 1 ] );
 
-                LOG( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, message )
+                LOG( 64, "( color_print ) [in] player_id: %d, Chat printed: `%s`", player_id, message )
                 PRINT_COLORED_MESSAGE( player_id, message )
             }
             else
@@ -13931,7 +13883,8 @@ stock color_print( const player_id, const lang_formatting[], any:... )
         new playersCount;
         new players[ MAX_PLAYERS ];
 
-        get_players( players, playersCount, "ch" );
+        // Get the server players skipping the bots
+        get_players( players, playersCount, "c" );
 
         // Figure out if at least 1 player is connected, so we don't execute useless code
         if( !playersCount )
@@ -14026,7 +13979,7 @@ stock color_print( const player_id, const lang_formatting[], any:... )
                     new message[ MAX_COLOR_MESSAGE ];
                     formatex( message, charsmax( message ), "^1%s^1%s", g_coloredChatPrefix, formatted_message[ 1 ] );
 
-                    LOG( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, message )
+                    LOG( 64, "( color_print ) [in] player_id: %d, Chat printed: `%s`", player_id, message )
                     PRINT_COLORED_MESSAGE( player_id, message )
                 }
                 else
@@ -14047,23 +14000,6 @@ stock color_print( const player_id, const lang_formatting[], any:... )
     }
 
     LOG( 64, "( color_print ) [in AMXX 182] player_id: %d, Chat printed: `%s`", player_id, formatted_message )
-
-#else // this else only works for AMXX 183 or superior
-
-    vformat( formatted_message, charsmax( formatted_message ), lang_formatting, 3 );
-
-    if( IS_COLORED_CHAT_ENABLED() )
-    {
-        client_print_color( player_id, print_team_default, "%s^1%s", g_coloredChatPrefix, formatted_message );
-    }
-    else
-    {
-        REMOVE_CODE_COLOR_TAGS( formatted_message )
-        client_print( player_id, print_chat, "%s%s", g_coloredChatPrefix, formatted_message );
-    }
-
-    LOG( 64, "( color_print ) [in AMXX 183] player_id: %d, Chat printed: `%s`", player_id, formatted_message )
-#endif
 }
 
 /**
