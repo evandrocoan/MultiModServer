@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.5.0-829";
+new const PLUGIN_VERSION[] = "v5.5.0-831";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -9034,11 +9034,13 @@ stock handleOneMapAtFirstPosition( firstPlaceChoices[], secondPlaceChoices[], nu
     color_print( 0, "%L", LANG_PLAYER, "GAL_RESULT_TIED2", numberOfMapsAtSecondPosition );
 }
 
-stock determineTheVotingFirstChoices( firstPlaceChoices[], secondPlaceChoices[], &numberOfVotesAtFirstPlace,
-                                      &numberOfVotesAtSecondPlace, &numberOfMapsAtFirstPosition,
-                                      &numberOfMapsAtSecondPosition )
+stock determineTheVotingFirstChoices( firstPlaceChoices[], secondPlaceChoices[],
+                                      &numberOfMapsAtFirstPosition, &numberOfMapsAtSecondPosition )
 {
-    LOG( 128, "I AM ENTERING ON determineTheVotingFirstChoices(6)" )
+    LOG( 128, "I AM ENTERING ON determineTheVotingFirstChoices(4)" )
+
+    new numberOfVotesAtFirstPlace;
+    new numberOfVotesAtSecondPlace;
 
     new playerVoteMapChoiceIndex;
     new bool:isRunoffVoting = ( g_voteStatus & IS_RUNOFF_VOTE ) != 0;
@@ -9084,14 +9086,21 @@ stock determineTheVotingFirstChoices( firstPlaceChoices[], secondPlaceChoices[],
 
     // At for: g_totalVoteOptions: 5, numberOfMapsAtFirstPosition: 3, numberOfMapsAtSecondPosition: 0
     LOG( 16, "After for to determine which maps are in 1st and 2nd places." )
+    LOG( 16, "" )
     LOG( 16, "maxVotingChoices: %d, isRunoffVoting: %d", maxVotingChoices, isRunoffVoting )
     LOG( 16, "g_totalVoteOptions: %d", g_totalVoteOptions )
+    LOG( 16, "" )
+    LOG( 16, "numberOfVotesAtFirstPlace: %d", numberOfVotesAtFirstPlace )
+    LOG( 16, "numberOfVotesAtSecondPlace: %d", numberOfVotesAtSecondPlace )
+    LOG( 16, "" )
     LOG( 16, "numberOfMapsAtFirstPosition: %d", numberOfMapsAtFirstPosition )
     LOG( 16, "numberOfMapsAtSecondPosition: %d", numberOfMapsAtSecondPosition )
-
+    LOG( 16, "" )
     LOG( 1, "( determineTheVotingFirstChoices ) g_isTheLastGameRound: %d", g_isTheLastGameRound )
     LOG( 1, "( determineTheVotingFirstChoices ) g_isTimeToRestart: %d", g_isTimeToRestart )
     LOG( 1, "( determineTheVotingFirstChoices ) g_voteStatus & IS_FORCED_VOTE: %d", g_voteStatus & IS_FORCED_VOTE != 0 )
+
+    return numberOfVotesAtFirstPlace;
 }
 
 public computeVotes()
@@ -9099,8 +9108,8 @@ public computeVotes()
     LOG( 128, "I AM ENTERING ON computeVotes(0)" )
     LOG( 0, "", showPlayersVoteResult() )
 
+    new runoffEnabled;
     new numberOfVotesAtFirstPlace;
-    new numberOfVotesAtSecondPlace;
 
     // retain the number of draw maps at first and second positions
     new numberOfMapsAtFirstPosition;
@@ -9109,17 +9118,21 @@ public computeVotes()
     new firstPlaceChoices [ MAX_OPTIONS_IN_VOTE ];
     new secondPlaceChoices[ MAX_OPTIONS_IN_VOTE ];
 
-    determineTheVotingFirstChoices( firstPlaceChoices, secondPlaceChoices, numberOfVotesAtFirstPlace,
-            numberOfVotesAtSecondPlace, numberOfMapsAtFirstPosition, numberOfMapsAtSecondPosition );
+    runoffEnabled = get_pcvar_num( cvar_runoffEnabled );
 
-    new runoffEnabled= get_pcvar_num( cvar_runoffEnabled );
+    numberOfVotesAtFirstPlace = determineTheVotingFirstChoices( firstPlaceChoices,
+            secondPlaceChoices, numberOfMapsAtFirstPosition, numberOfMapsAtSecondPosition );
 
     // announce the outcome
     if( numberOfVotesAtFirstPlace )
     {
+        LOG( 1, "( computeVotes ) On if(numberOfVotesAtFirstPlace)" )
+
         // if the top vote getting map didn't receive over 50% of the votes cast, to start a runoff vote
         if( numberOfVotesAtFirstPlace <= g_totalVotesCounted * get_pcvar_float( cvar_runoffRatio ) )
         {
+            LOG( 1, "( computeVotes ) On cvar_runoffRatio" )
+
             if( runoffEnabled == RUNOFF_ENABLED
                 && !( g_voteStatus & IS_RUNOFF_VOTE )
                 && !( g_voteMapStatus & IS_DISABLED_VOTEMAP_RUNOFF ) )
