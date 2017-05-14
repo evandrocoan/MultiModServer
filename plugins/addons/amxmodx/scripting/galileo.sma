@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.5.0-831";
+new const PLUGIN_VERSION[] = "v5.5.0-833";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.5.0-831";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 2+64+16
+#define DEBUG_LEVEL 0
 
 
 /**
@@ -13879,7 +13879,7 @@ stock percent( is, of )
  */
 stock color_print( const player_id, const lang_formatting[], any:... )
 {
-    LOG( 128, "I AM ENTERING ON color_print(...) player_id: %d, lang_formatting: %s...", player_id, lang_formatting )
+    LOG( 128, "I AM ENTERING ON color_print() player_id: %d, lang_formatting: %s...", player_id, lang_formatting )
     LOG( 64, "IS_COLORED_CHAT_ENABLED(): %d", IS_COLORED_CHAT_ENABLED() )
 
     new formatted_message[ MAX_COLOR_MESSAGE ];
@@ -13901,7 +13901,7 @@ stock color_print( const player_id, const lang_formatting[], any:... )
     {
         if( IS_COLORED_CHAT_ENABLED() )
         {
-            // On the AMXX 182, all the colored messaged must to start within a color.
+            // Here all the colored messaged must to start within a color.
             formatted_message[ 0 ] = '^1';
             vformat( formatted_message[ 1 ], charsmax( formatted_message ) - 1, lang_formatting, 3 );
 
@@ -13915,14 +13915,12 @@ stock color_print( const player_id, const lang_formatting[], any:... )
             }
             else
             {
-                LOG( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formatted_message )
                 PRINT_COLORED_MESSAGE( player_id, formatted_message )
             }
         }
         else
         {
             vformat( formatted_message, charsmax( formatted_message ), lang_formatting, 3 );
-            LOG( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formatted_message )
 
             REMOVE_CODE_COLOR_TAGS( formatted_message )
             client_print( player_id, print_chat, "%s%s", g_coloredChatPrefix, formatted_message );
@@ -13935,8 +13933,7 @@ stock color_print( const player_id, const lang_formatting[], any:... )
 
         get_players( players, playersCount, "ch" );
 
-        // Figure out if at least 1 player is connected
-        // so we don't execute useless code
+        // Figure out if at least 1 player is connected, so we don't execute useless code
         if( !playersCount )
         {
             LOG( 64, "    ( color_print ) Returning on playersCount: %d...", playersCount )
@@ -13988,8 +13985,7 @@ stock color_print( const player_id, const lang_formatting[], any:... )
                         // Store that argument as LANG_PLAYER so we can alter it later
                         ArrayPushCell( multi_lingual_indexes_array, argument_index++ );
 
-                        // Update ML array, so we'll know 1st if ML is used,
-                        // 2nd how many arguments we have to change
+                        // Update ML array, so we'll know 1st if ML is used, 2nd how many arguments we have to change
                         multi_lingual_constants_number++;
                     }
 
@@ -14014,15 +14010,14 @@ stock color_print( const player_id, const lang_formatting[], any:... )
                             multi_lingual_indexes_array, argument_index, \
                             ArrayGetCell( multi_lingual_indexes_array, argument_index ) )
 
-                    // Set all LANG_PLAYER args to player index ( = player_id )
-                    // so we can format the text for that specific player
+                    // Set all LANG_PLAYER args to player index ( = player_id ), so we can format the text for that specific player
                     setarg( ArrayGetCell( multi_lingual_indexes_array, argument_index ), _, player_id );
                 }
             }
 
             if( IS_COLORED_CHAT_ENABLED() )
             {
-                // On the AMXX 182, all the colored messaged must to start within a color.
+                // Here all the colored messaged must to start within a color.
                 formatted_message[ 0 ] = '^1';
                 vformat( formatted_message[ 1 ], charsmax( formatted_message ) - 1, lang_formatting, 3 );
 
@@ -14036,14 +14031,12 @@ stock color_print( const player_id, const lang_formatting[], any:... )
                 }
                 else
                 {
-                    LOG( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formatted_message )
                     PRINT_COLORED_MESSAGE( player_id, formatted_message )
                 }
             }
             else
             {
                 vformat( formatted_message, charsmax( formatted_message ), lang_formatting, 3 );
-                LOG( 64, "( color_print ) [in] player_id: %d, Chat printed: %s...", player_id, formatted_message )
 
                 REMOVE_CODE_COLOR_TAGS( formatted_message )
                 client_print( player_id, print_chat, "%s%s", g_coloredChatPrefix, formatted_message );
@@ -14052,10 +14045,12 @@ stock color_print( const player_id, const lang_formatting[], any:... )
 
         ArrayDestroy( multi_lingual_indexes_array );
     }
-#else // this else only works for AMXX 183 or superior, due noted bug above.
+
+    LOG( 64, "( color_print ) [in AMXX 182] player_id: %d, Chat printed: `%s`", player_id, formatted_message )
+
+#else // this else only works for AMXX 183 or superior
 
     vformat( formatted_message, charsmax( formatted_message ), lang_formatting, 3 );
-    LOG( 64, "( color_print ) [in AMXX 183] player_id: %d, Chat printed: %s...", player_id, formatted_message )
 
     if( IS_COLORED_CHAT_ENABLED() )
     {
@@ -14066,9 +14061,9 @@ stock color_print( const player_id, const lang_formatting[], any:... )
         REMOVE_CODE_COLOR_TAGS( formatted_message )
         client_print( player_id, print_chat, "%s%s", g_coloredChatPrefix, formatted_message );
     }
-#endif
 
-    LOG( 64, "( color_print ) [out] player_id: %d, Chat printed: %s...", player_id, formatted_message )
+    LOG( 64, "( color_print ) [in AMXX 183] player_id: %d, Chat printed: `%s`", player_id, formatted_message )
+#endif
 }
 
 /**
