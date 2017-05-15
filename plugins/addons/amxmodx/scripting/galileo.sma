@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.5.0-835";
+new const PLUGIN_VERSION[] = "v5.5.0-836";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -1195,6 +1195,7 @@ new cvar_recentNomMapsAllowance;
 new cvar_isOnlyRecentMapcycleMaps;
 new cvar_banRecentStyle;
 new cvar_voteDuration;
+new cvar_voteMinimun;
 new cvar_nomMapFilePath;
 new cvar_nomPrefixes;
 new cvar_nomQtyUsed;
@@ -1614,6 +1615,7 @@ public plugin_init()
     cvar_voteMapChoiceCount        = register_cvar( "gal_vote_mapchoices"          , "5"    );
     cvar_voteMapChoiceNext         = register_cvar( "gal_vote_mapchoices_next"     , "1"    );
     cvar_voteDuration              = register_cvar( "gal_vote_duration"            , "30"   );
+    cvar_voteMinimun               = register_cvar( "gal_vote_minimum"             , "0"    );
     cvar_voteMapFilePath           = register_cvar( "gal_vote_mapfile"             , "#"    );
     cvar_voteMinPlayers            = register_cvar( "gal_vote_minplayers"          , "0"    );
     cvar_voteMidPlayers            = register_cvar( "gal_vote_midplayers"          , "0"    );
@@ -9118,8 +9120,12 @@ public computeVotes()
     numberOfVotesAtFirstPlace = determineTheVotingFirstChoices( firstPlaceChoices,
             secondPlaceChoices, numberOfMapsAtFirstPosition, numberOfMapsAtSecondPosition );
 
+    LOG( 1, "( computeVotes ) cvar_voteMinimun:    %d", get_pcvar_num( cvar_voteMinimun ) )
+    LOG( 1, "( computeVotes ) g_totalVotesCounted: %d", g_totalVotesCounted )
+
     // announce the outcome
-    if( numberOfVotesAtFirstPlace )
+    if( numberOfVotesAtFirstPlace
+        && g_totalVotesCounted > get_pcvar_num( cvar_voteMinimun ) )
     {
         LOG( 1, "( computeVotes ) On if(numberOfVotesAtFirstPlace)" )
 
