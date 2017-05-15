@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.5.0-836";
+new const PLUGIN_VERSION[] = "v5.5.0-838";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -54,7 +54,7 @@ new const PLUGIN_VERSION[] = "v5.5.0-836";
 
 /**
  * This is to view internal program data while execution. See the function 'debugMesssageLogger(...)'
- * and the variable 'g_debug_level' for more information. Usage example, to enables several levels:
+ * and the variable 'g_debug_level' for more information. Usage example, to enable several levels:
  * #define DEBUG_LEVEL 1+2+4+16
  *
  * @note when the 'DEBUG_LEVEL_FAKE_VOTES' is activated, usually the voting will be approved
@@ -16241,7 +16241,7 @@ public timeRemain()
         {
             g_arrayOfMapsWithVotesNumber[ 0 ] += 0;     // map 1
             g_arrayOfMapsWithVotesNumber[ 1 ] += 1;     // map 2
-            g_arrayOfMapsWithVotesNumber[ 2 ] += 1;     // map 3
+            g_arrayOfMapsWithVotesNumber[ 2 ] += 0;     // map 3
             g_arrayOfMapsWithVotesNumber[ 3 ] += 0;     // map 4
             g_arrayOfMapsWithVotesNumber[ 4 ] += 0;     // map 5
 
@@ -16534,7 +16534,8 @@ public timeRemain()
             if( !numberOfFailures
                 || lastFailure != lastTestId )
             {
-                if( g_test_isToEnableLogging )
+                if( g_test_isToEnableLogging
+                    && ( DEBUG_LEVEL & 1 ) )
                 {
                     print_logger( "OK!" );
                     print_logger( "" );
@@ -16543,7 +16544,8 @@ public timeRemain()
             }
             else if( lastFailure == lastTestId  )
             {
-                if( g_test_isToEnableLogging )
+                if( g_test_isToEnableLogging
+                    && ( DEBUG_LEVEL & 1 ) )
                 {
                     print_logger( "FAILED!" );
                     print_logger( "" );
@@ -16561,32 +16563,33 @@ public timeRemain()
 
     stock print_all_tests_executed( bool:isToPrintAllTests = true )
     {
-        LOG( 128, "I AM ENTERING ON print_all_tests_executed(0)" )
-        if( isToPrintAllTests )
+        LOG( 128, "I AM ENTERING ON print_all_tests_executed(1)" )
+
+        if( isToPrintAllTests
+            && g_test_isToEnableLogging )
         {
-            if( g_test_isToEnableLogging )
+            print_logger( "" );
+            print_logger( "" );
+            print_logger( "" );
+            print_logger( "    The following tests were successfully executed: " );
+            print_logger( "" );
+
+        #if !( DEBUG_LEVEL & DEBUG_LEVEL_DISABLE_TEST_LOGS )
+            new trieKey[ 10 ];
+            new test_name[ MAX_SHORT_STRING ];
+            new testsNumber = ArraySize( g_test_idsAndNamesArray );
+
+            for( new test_index = 0; test_index < testsNumber; test_index++ )
             {
-                new trieKey[ 10 ];
-                new test_name[ MAX_SHORT_STRING ];
-                new testsNumber = ArraySize( g_test_idsAndNamesArray );
+                num_to_str( test_index + 1, trieKey, charsmax( trieKey ) );
 
-                print_logger( "" );
-                print_logger( "" );
-                print_logger( "" );
-                print_logger( "    The following tests were successfully executed: " );
-                print_logger( "" );
-
-                for( new test_index = 0; test_index < testsNumber; test_index++ )
+                if( !TrieKeyExists( g_test_failureIdsTrie, trieKey ) )
                 {
-                    num_to_str( test_index + 1, trieKey, charsmax( trieKey ) );
-
-                    if( !TrieKeyExists( g_test_failureIdsTrie, trieKey ) )
-                    {
-                        ArrayGetString( g_test_idsAndNamesArray, test_index, test_name, charsmax( test_name ) );
-                        print_logger( "       %3d. %s", test_index + 1, test_name );
-                    }
+                    ArrayGetString( g_test_idsAndNamesArray, test_index, test_name, charsmax( test_name ) );
+                    print_logger( "       %3d. %s", test_index + 1, test_name );
                 }
             }
+        #endif
         }
     }
 
@@ -16683,7 +16686,8 @@ public timeRemain()
 
         g_test_testsNumber++;
 
-        if( g_test_isToEnableLogging )
+        if( g_test_isToEnableLogging
+            && ( DEBUG_LEVEL & 1 ) )
         {
             print_logger( "        EXECUTING TEST %d AFTER %d WITH UNTIL %d SECONDS DELAYED - %s ",
                     g_test_testsNumber, computeTheTestElapsedTime(), max_delay_result, test_name );
