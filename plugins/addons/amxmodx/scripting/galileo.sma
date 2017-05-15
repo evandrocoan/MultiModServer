@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.5.0-834";
+new const PLUGIN_VERSION[] = "v5.5.0-835";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -9141,17 +9141,7 @@ public computeVotes()
             else if( runoffEnabled == RUNOFF_EXTEND
                      && IS_MAP_EXTENSION_ALLOWED() )
             {
-                // Allow it only on a end map voting
-                if( g_isGameFinalVoting )
-                {
-                    map_extend( "GAL_RUNOFF_REQUIRED_TOP" );
-                }
-                else
-                {
-                    stayHereWon( "GAL_RUNOFF_REQUIRED_TOP" );
-                }
-
-                LOG( 1, "( computeVotes ) Its runoff extending." )
+                performRunoffExtending();
             }
             else
             {
@@ -9173,6 +9163,23 @@ public computeVotes()
             g_isTimeToRestart, g_voteStatus & IS_FORCED_VOTE != 0 )
 
     finalizeVoting();
+}
+
+/**
+ * Allow it only on a end map voting.
+ */
+stock performRunoffExtending()
+{
+    LOG( 128, "I AM ENTERING ON performRunoffExtending(0)" )
+
+    if( g_isGameFinalVoting )
+    {
+        map_extend( "GAL_RUNOFF_REQUIRED_TOP" );
+    }
+    else
+    {
+        stayHereWon( "GAL_RUNOFF_REQUIRED_TOP" );
+    }
 }
 
 stock stayHereWon( const reason[] )
