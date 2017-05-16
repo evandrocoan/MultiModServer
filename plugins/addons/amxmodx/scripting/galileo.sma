@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.5.0-852";
+new const PLUGIN_VERSION[] = "v5.6.0-853";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.5.0-852";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 2+64
+#define DEBUG_LEVEL 0
 
 
 /**
@@ -8443,8 +8443,16 @@ stock display_menu_clean( player_id, menuKeys )
 stock display_vote_menu( bool:menuType, player_id, menuBody[], menuKeys )
 {
     LOG( 128, "I AM ENTERING ON display_vote_menu(4) menuType: %d", menuType )
-    LOG( 4, "( display_vote_menu ) player_id: %d", player_id )
-    LOG( 4, "( display_vote_menu ) menuBody: %s, menuKeys: %d", menuBody, menuKeys )
+
+    // Displays only the menu for the player id equals 1, to not pollute the log too much. Only
+    // comment the if when you want to be able to see every players menus.
+#if defined DEBUG
+    if( player_id == 1 )
+    {
+        LOG( 4, "( display_vote_menu ) player_id: %d", player_id )
+        LOG( 4, "( display_vote_menu ) menuBody: %s, menuKeys: %d", menuBody, menuKeys )
+    }
+#endif
 
     if( isPlayerAbleToSeeTheVoteMenu( player_id ) )
     {
