@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.5.0-851";
+new const PLUGIN_VERSION[] = "v5.5.0-852";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.5.0-851";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 16
+#define DEBUG_LEVEL 2+64
 
 
 /**
@@ -1704,16 +1704,16 @@ public plugin_init()
     cvar_isWhiteListBlockOut       = register_cvar( "gal_whitelist_block_out"      , "0"    );
     cvar_voteWhiteListMapFilePath  = register_cvar( "gal_vote_whitelist_mapfile"   , ""     );
     cvar_voteUniquePrefixes        = register_cvar( "gal_vote_uniqueprefixes"      , "0"    );
-    cvar_extendmapStepMinutes      = register_cvar( "amx_extendmap_step"           , "15"   );
-    cvar_maxMapExtendTime          = register_cvar( "amx_extendmap_max"            , "1"   );
-    cvar_extendmapStepRounds       = register_cvar( "amx_extendmap_step_rounds"    , "20"   );
-    cvar_maxMapExtendRounds        = register_cvar( "amx_extendmap_max_rounds"     , "1"    );
+    cvar_extendmapStepMinutes      = register_cvar( "gal_extendmap_step_min"       , "15"   );
+    cvar_maxMapExtendTime          = register_cvar( "gal_extendmap_max_min"        , "1"    );
+    cvar_extendmapStepRounds       = register_cvar( "gal_extendmap_step_rounds"    , "20"   );
+    cvar_maxMapExtendRounds        = register_cvar( "gal_extendmap_max_rounds"     , "1"    );
     cvar_fragLimitSupport          = register_cvar( "gal_mp_fraglimit_support"     , "0"    );
-    cvar_extendmapStepFrags        = register_cvar( "amx_extendmap_step_frags"     , "30"   );
-    cvar_maxMapExtendFrags         = register_cvar( "amx_extendmap_max_frags"      , "1"    );
-    cvar_extendmapAllowStay        = register_cvar( "amx_extendmap_allow_stay"     , "0"    );
-    cvar_extendmapAllowStayType    = register_cvar( "amx_extendmap_allow_stay_type", "0"    );
-    cvar_isExtendmapOrderAllowed   = register_cvar( "amx_extendmap_allow_order"    , "1"    );
+    cvar_extendmapStepFrags        = register_cvar( "gal_extendmap_step_frags"     , "30"   );
+    cvar_maxMapExtendFrags         = register_cvar( "gal_extendmap_max_frags"      , "1"    );
+    cvar_extendmapAllowStay        = register_cvar( "gal_extendmap_allow_stay"     , "0"    );
+    cvar_extendmapAllowStayType    = register_cvar( "gal_extendmap_allow_stay_type", "0"    );
+    cvar_isExtendmapOrderAllowed   = register_cvar( "gal_extendmap_allow_order"    , "1"    );
     cvar_showVoteStatus            = register_cvar( "gal_vote_showstatus"          , "4"    );
     cvar_showVoteStatusType        = register_cvar( "gal_vote_showstatustype"      , "2"    );
     cvar_isToReplaceByVoteMenu     = register_cvar( "gal_vote_replace_menu"        , "1"    );
