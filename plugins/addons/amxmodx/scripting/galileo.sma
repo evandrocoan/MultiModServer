@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.5.0-849";
+new const PLUGIN_VERSION[] = "v5.5.0-850";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -726,7 +726,7 @@ new cvar_coloredChatEnabled;
 //
 
 /**
- * Determines whether a new empty line should me added near the voting menu footer.
+ * Determines whether a new empty line should be added near the voting menu footer.
  *
  * The last rule `g_totalVoteOptions == 1 && !g_isRunOffNeedingKeepCurrentMap` is used when the
  * voting is not an runoff voting the there is only 1 map on the voting menu. At the moment this
@@ -737,6 +737,16 @@ new cvar_coloredChatEnabled;
       || !IS_MAP_EXTENSION_ALLOWED() \
       || ( g_totalVoteOptions == 1 \
            && !g_isRunOffNeedingKeepCurrentMap ) )
+//
+
+/**
+ * Determines whether undo vote button should be added to the voting menu footer.
+ */
+#define IS_TO_ADD_VOTE_MENU_UNDO_BUTTON() \
+    ( ( player_id > 0 ) \
+      && ( g_voteShowNoneOptionType == CONVERT_NONE_OPTION_TO_CANCEL_LAST_VOTE ) \
+      && ( g_isPlayerVoted[ player_id ] ) \
+      && ( !g_isPlayerCancelledVote[ player_id ] ) )
 //
 
 /**
@@ -8144,12 +8154,9 @@ stock display_menu_dirt( player_id, menuKeys, bool:isVoteOver, bool:noneIsHidden
 
     menuDirty  [ 0 ] = '^0';
     noneOption [ 0 ] = '^0';
-    isToAddExtraLine = IS_TO_ADD_VOTE_MENU_NEW_LINE();
 
-    isToShowUndo = ( player_id > 0 \
-                     && g_voteShowNoneOptionType == CONVERT_NONE_OPTION_TO_CANCEL_LAST_VOTE \
-                     && g_isPlayerVoted[ player_id ] \
-                     && !g_isPlayerCancelledVote[ player_id ] );
+    isToAddExtraLine = IS_TO_ADD_VOTE_MENU_NEW_LINE();
+    isToShowUndo     = IS_TO_ADD_VOTE_MENU_UNDO_BUTTON();
 
     computeVoteMenuFooter( player_id, voteFooter, charsmax( voteFooter ) );
 
@@ -8361,12 +8368,9 @@ stock display_menu_clean( player_id, menuKeys )
 
     menuClean  [ 0 ] = '^0';
     noneOption [ 0 ] = '^0';
-    isToAddExtraLine = IS_TO_ADD_VOTE_MENU_NEW_LINE();
 
-    isToShowUndo = ( player_id > 0
-                     && g_voteShowNoneOptionType == CONVERT_NONE_OPTION_TO_CANCEL_LAST_VOTE
-                     && g_isPlayerVoted[ player_id ]
-                     && !g_isPlayerCancelledVote[ player_id ] );
+    isToAddExtraLine = IS_TO_ADD_VOTE_MENU_NEW_LINE();
+    isToShowUndo     = IS_TO_ADD_VOTE_MENU_UNDO_BUTTON();
 
     computeVoteMenuFooter( player_id, voteFooter, charsmax( voteFooter ) );
     menuKeys = addExtensionOption( player_id, 0, voteExtension, charsmax( voteExtension ), menuKeys, false );
