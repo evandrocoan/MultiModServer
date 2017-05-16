@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.5.0-844";
+new const PLUGIN_VERSION[] = "v5.5.0-845";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.5.0-844";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 2+64
+#define DEBUG_LEVEL 16
 
 
 /**
@@ -12294,9 +12294,8 @@ public cmd_say( player_id )
  */
 stock bool:sayHandlerForOneNomWords( player_id, firstWord[] )
 {
-    LOG( 128, "I AM ENTERING ON sayHandlerForOneNomWords(3)" )
-    LOG( 4, "( sayHandlerForOneNomWords ) on the 1 word: else if( cvar_nomPlayerAllowance ), \
-            get_pcvar_num( cvar_nomPlayerAllowance ): %d", get_pcvar_num( cvar_nomPlayerAllowance ) )
+    LOG( 128, "I AM ENTERING ON sayHandlerForOneNomWords(2)" )
+    LOG( 4, "( sayHandlerForOneNomWords ) get_pcvar_num( cvar_nomPlayerAllowance ): %d", get_pcvar_num( cvar_nomPlayerAllowance ) )
 
     if( equali( firstWord, "noms" )
         || equali( firstWord, "nominations" ) )
@@ -13706,6 +13705,12 @@ public nomination_list()
     new copiedChars;
     new nomMapCount;
 
+    /**
+     * Used to avoid an empty list to be showed to the player. Bug reported on:
+     * https://forums.alliedmods.net/showpost.php?p=2520787&postcount=677
+     */
+    new bool:isFlushed;
+
     new mapsList[ 101 ];
     new mapName [ MAX_MAPNAME_LENGHT ];
 
@@ -13719,6 +13724,17 @@ public nomination_list()
         }
         else
         {
+            // list 4 maps per chat line
+            if( nomMapCount == 4 )
+            {
+                isFlushed = true;
+                printNominationList( mapsList );
+
+                copiedChars = 0;
+                nomMapCount = 0;
+            }
+
+            ++nomMapCount;
             GET_MAP_NAME( g_nominationLoadedMapsArray, mapIndex, mapName )
 
             if( copiedChars )
@@ -13727,24 +13743,24 @@ public nomination_list()
             }
 
             copiedChars += copy( mapsList[ copiedChars ], charsmax( mapsList ) - copiedChars, mapName );
-
-            if( ++nomMapCount == 4 )     // list 4 maps per chat line
-            {
-                if( IS_COLORED_CHAT_ENABLED() )
-                {
-                    color_chat( 0, 0, "%L: ^4%s", LANG_PLAYER, "GAL_NOMINATIONS", mapsList );
-                }
-                else
-                {
-                    REMOVE_CODE_COLOR_TAGS( mapsList )
-                    color_chat( 0, 0, "%L: %s", LANG_PLAYER, "GAL_NOMINATIONS", mapsList );
-                }
-
-                nomMapCount   = 0;
-                mapsList[ 0 ] = '^0';
-            }
         }
     }
+
+    printNominationList( mapsList, isFlushed );
+}
+
+/**
+ * Print a nomination map list to the user. When the list is empty, it does show no nominations
+ * available.
+ *
+ * param mapsList      the list of maps to be printed to the user.
+ * @param isFlushed    whether the list has already been printed to the user after the `say noms` command.
+ */
+stock printNominationList( mapsList[], isFlushed=false )
+{
+    LOG( 128, "I AM ENTERING ON printNominationList(2)" )
+    LOG( 128, "( printNominationList ) isFlushed: %d", isFlushed )
+    LOG( 128, "( printNominationList ) mapsList:  %s", mapsList )
 
     if( mapsList[ 0 ] )
     {
@@ -13757,8 +13773,10 @@ public nomination_list()
             REMOVE_CODE_COLOR_TAGS( mapsList )
             client_print( 0, print_chat, "%L: %s", LANG_PLAYER, "GAL_NOMINATIONS", mapsList );
         }
+
+        mapsList[ 0 ] = '^0';
     }
-    else
+    else if( !isFlushed )
     {
         if( IS_COLORED_CHAT_ENABLED() )
         {
