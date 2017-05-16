@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.5.0-841";
+new const PLUGIN_VERSION[] = "v5.5.0-843";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -495,9 +495,11 @@ new cvar_coloredChatEnabled;
  * Switch between the AMXX 182 and 183 deprecated/bugged functions.
  */
 #if AMXX_VERSION_NUM < 183
-    #define STR_TOKEN strtok
+    #define str_token strtok
+    #define str_break strbreak
 #else
-    #define STR_TOKEN strtok2
+    #define str_token strtok2
+    #define str_break argbreak
 #endif
 
 /**
@@ -963,7 +965,7 @@ new cvar_coloredChatEnabled;
  */
 #define GET_MAP_NAME_LEFT(%2,%3) \
 { \
-    STR_TOKEN( %2,                   %3, MAX_MAPNAME_LENGHT - 1, \
+    str_token( %2,                   %3, MAX_MAPNAME_LENGHT - 1, \
                __g_getMapNameRightToken, MAX_MAPNAME_LENGHT - 1, ' ' ); \
 }
 
@@ -975,7 +977,7 @@ new cvar_coloredChatEnabled;
  */
 #define GET_MAP_INFO_RIGHT(%2,%3) \
 { \
-    STR_TOKEN( %2, __g_getMapNameRightToken, MAX_MAPNAME_LENGHT - 1, \
+    str_token( %2, __g_getMapNameRightToken, MAX_MAPNAME_LENGHT - 1, \
                %3                          , MAX_MAPNAME_LENGHT - 1, ' ' ); \
 }
 
@@ -5932,7 +5934,7 @@ stock whiteListHourlySet( trigger, currentLine[], startHourString[], endHourStri
         LOG( 8, "( whiteListHourlySet ) currentLine: %s (currentHour: %d)", currentLine, currentHour )
 
         // broke the current line
-        STR_TOKEN( currentLine ,
+        str_token( currentLine ,
                 startHourString, MAX_MAPNAME_LENGHT / 2,
                 endHourString  , MAX_MAPNAME_LENGHT / 2, '-', 0 );
 
@@ -9775,12 +9777,12 @@ stock isPrefixInMenu( map[] )
     new possiblePrefix[ 8 ];
     new existingPrefix[ 8 ];
 
-    STR_TOKEN( map, possiblePrefix, charsmax( possiblePrefix ), junk, charsmax( junk ), '_', 1 );
+    str_token( map, possiblePrefix, charsmax( possiblePrefix ), junk, charsmax( junk ), '_', 1 );
 
     for( new playerVoteMapChoiceIndex = 0;
          playerVoteMapChoiceIndex < g_totalVoteOptions; ++playerVoteMapChoiceIndex )
     {
-        STR_TOKEN( g_votingMapNames[ playerVoteMapChoiceIndex ],
+        str_token( g_votingMapNames[ playerVoteMapChoiceIndex ],
                 existingPrefix, charsmax( existingPrefix ),
                 junk          , charsmax( junk )          , '_', 1 );
 
@@ -14019,8 +14021,8 @@ stock hidden_color_print( const player_id, not_used, const lang_formatting[], an
             }
             else
             {
-                // Added `+ not_used` to remove the not used warning
-                not_used ? 0 : 0;
+                // Added to remove the not used warning
+                not_used = not_used ? 0 : 0;
 
                 vformat( formatted_message, charsmax( formatted_message ), lang_formatting, 3 );
 
@@ -14082,16 +14084,11 @@ stock register_dictionary_colored( const dictionaryFile[] )
 
         if( currentReadLine[ 0 ] == '[' )
         {
-            STR_TOKEN( currentReadLine[ 1 ], langTypeAcronym, charsmax( langTypeAcronym ), currentReadLine, 1, ']' );
+            str_token( currentReadLine[ 1 ], langTypeAcronym, charsmax( langTypeAcronym ), currentReadLine, 1, ']' );
         }
         else if( currentReadLine[ 0 ] )
         {
-        #if AMXX_VERSION_NUM < 183
-            strbreak( currentReadLine, langConstantName, charsmax( langConstantName ), langTranslationText, charsmax( langTranslationText ) );
-        #else
-            argbreak( currentReadLine, langConstantName, charsmax( langConstantName ), langTranslationText, charsmax( langTranslationText ) );
-        #endif
-
+            str_break( currentReadLine, langConstantName, charsmax( langConstantName ), langTranslationText, charsmax( langTranslationText ) );
             translationKeyId = GetLangTransKey( langConstantName );
 
             if( translationKeyId != TransKey_Bad )
