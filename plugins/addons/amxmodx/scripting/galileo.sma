@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.5.0-847";
+new const PLUGIN_VERSION[] = "v5.5.0-848";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.5.0-847";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 2+64
+#define DEBUG_LEVEL 0
 
 
 /**
@@ -8034,7 +8034,7 @@ stock addExtensionOption( player_id, copiedChars, voteStatus[], voteStatusLenght
     if( ( IS_MAP_EXTENSION_ALLOWED()
           || g_isRunOffNeedingKeepCurrentMap )
         && ( allowExtend
-            || allowStay ) )
+             || allowStay ) )
     {
         new mapVotingCount[ MAX_MAPNAME_LENGHT ];
 
