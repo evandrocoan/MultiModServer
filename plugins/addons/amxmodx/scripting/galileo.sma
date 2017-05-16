@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.5.0-850";
+new const PLUGIN_VERSION[] = "v5.5.0-851";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.5.0-850";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 0
+#define DEBUG_LEVEL 16
 
 
 /**
@@ -7223,7 +7223,7 @@ stock configureVotingStart( bool:is_forced_voting )
 stock configureTheExtensionOption( bool:is_forced_voting )
 {
     LOG( 128, "I AM ENTERING ON configureTheExtensionOption(1) is_forced_voting: %d", is_forced_voting )
-    new Float:cache;
+    new cacheInteger;
 
     //
     if( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXTENSION )
@@ -7236,7 +7236,7 @@ stock configureTheExtensionOption( bool:is_forced_voting )
     else if( g_voteStatus & IS_RTV_VOTE
              && get_pcvar_num( cvar_rtvWaitAdmin ) & IS_TO_RTV_NOT_ALLOW_STAY )
     {
-        LOG( 4, "( configureTheExtensionOption ) 2. " )
+        LOG( 4, "( configureTheExtensionOption ) 2. cvar_rtvWaitAdmin: %d", get_pcvar_num( cvar_rtvWaitAdmin ) )
         g_isMapExtensionAllowed = false;
     }
 
@@ -7244,54 +7244,63 @@ stock configureTheExtensionOption( bool:is_forced_voting )
     // as the extend option was previously showed.
     else if( g_isRunOffNeedingKeepCurrentMap )
     {
+        LOG( 4, "( configureTheExtensionOption ) 3. g_isRunOffNeedingKeepCurrentMap: %d", g_isRunOffNeedingKeepCurrentMap )
         g_isMapExtensionAllowed = true;
     }
 
     //
     else if( g_endVotingType & IS_BY_FRAGS
-             && ( cache = Float:get_pcvar_num( cvar_maxMapExtendFrags ) ) )
+             && ( cacheInteger = get_pcvar_num( cvar_maxMapExtendFrags ) ) )
     {
-        LOG( 4, "( configureTheExtensionOption ) 3. " )
+        LOG( 4, "( configureTheExtensionOption ) 4. cvar_maxMapExtendFrags: %d", get_pcvar_num( cvar_maxMapExtendFrags ) )
+        LOG( 4, "( configureTheExtensionOption ) cacheInteger:              %d", cacheInteger )
+        LOG( 4, "( configureTheExtensionOption ) g_fragLimitContextSaved:   %d", g_fragLimitContextSaved )
 
         g_isMapExtensionAllowed =
-                GAME_ENDING_CONTEXT_SAVED( g_fragLimitContextSaved, get_pcvar_num( cvar_mp_fraglimit ) ) < cache;
+                GAME_ENDING_CONTEXT_SAVED( g_fragLimitContextSaved, get_pcvar_num( cvar_mp_fraglimit ) ) < cacheInteger;
     }
 
     //
     else if( g_endVotingType & IS_BY_ROUNDS
-             && ( cache = Float:get_pcvar_num( cvar_maxMapExtendRounds ) ) )
+             && ( cacheInteger = get_pcvar_num( cvar_maxMapExtendRounds ) ) )
     {
-        LOG( 4, "( configureTheExtensionOption ) 4. " )
+        LOG( 4, "( configureTheExtensionOption ) 5. cvar_maxMapExtendRounds: %d", get_pcvar_num( cvar_maxMapExtendRounds ) )
+        LOG( 4, "( configureTheExtensionOption ) cacheInteger:               %d", cacheInteger )
+        LOG( 4, "( configureTheExtensionOption ) g_maxRoundsContextSaved:    %d", g_maxRoundsContextSaved )
 
         g_isMapExtensionAllowed =
-                GAME_ENDING_CONTEXT_SAVED( g_maxRoundsContextSaved, get_pcvar_num( cvar_mp_maxrounds ) ) < cache;
+                GAME_ENDING_CONTEXT_SAVED( g_maxRoundsContextSaved, get_pcvar_num( cvar_mp_maxrounds ) ) < cacheInteger;
     }
 
     //
     else if( g_endVotingType & IS_BY_WINLIMIT
-             && ( cache = get_pcvar_float( cvar_maxMapExtendRounds ) ) )
+             && ( cacheInteger = get_pcvar_num( cvar_maxMapExtendRounds ) ) )
     {
-        LOG( 4, "( configureTheExtensionOption ) 5. " )
+        LOG( 4, "( configureTheExtensionOption ) 6. cvar_maxMapExtendRounds: %d", get_pcvar_num( cvar_maxMapExtendRounds ) )
+        LOG( 4, "( configureTheExtensionOption ) cacheInteger:               %d", g_timeLimitContextSaved )
+        LOG( 4, "( configureTheExtensionOption ) g_winLimitContextSaved:     %d", g_winLimitContextSaved )
 
         g_isMapExtensionAllowed =
-                GAME_ENDING_CONTEXT_SAVED( g_winLimitContextSaved, get_pcvar_num( cvar_mp_winlimit ) ) < cache;
+                GAME_ENDING_CONTEXT_SAVED( g_winLimitContextSaved, get_pcvar_num( cvar_mp_winlimit ) ) < cacheInteger;
     }
 
     //
     else if( g_endVotingType & IS_BY_TIMER
-             && ( cache = get_pcvar_float( cvar_maxMapExtendTime ) ) )
+             && ( cacheInteger = get_pcvar_num( cvar_maxMapExtendTime ) ) )
     {
-        LOG( 4, "( configureTheExtensionOption ) 6. " )
+        LOG( 4, "( configureTheExtensionOption ) 7. cvar_mp_timelimit:    %f", get_pcvar_float( cvar_mp_timelimit ) )
+        LOG( 4, "( configureTheExtensionOption ) cacheInteger:            %d", cacheInteger )
+        LOG( 4, "( configureTheExtensionOption ) g_timeLimitContextSaved: %d", g_timeLimitContextSaved )
 
         g_isMapExtensionAllowed =
-                GAME_ENDING_CONTEXT_SAVED( g_timeLimitContextSaved, get_pcvar_float( cvar_mp_timelimit ) ) < cache;
+                GAME_ENDING_CONTEXT_SAVED( g_timeLimitContextSaved, get_pcvar_float( cvar_mp_timelimit ) ) < cacheInteger;
     }
 
-    // If we cannot find anything cancelling/blocking the map extension, allow it by the default.
+    // If we cannot find anything allowing it, block it by the default.
     else
     {
-        LOG( 4, "( configureTheExtensionOption ) 7. " )
-        g_isMapExtensionAllowed = true;
+        LOG( 4, "( configureTheExtensionOption ) 8. g_isMapExtensionAllowed: %d", g_isMapExtensionAllowed )
+        g_isMapExtensionAllowed = false;
     }
 
     // Determine whether the voting is whether forced or automatically started.
@@ -7302,7 +7311,9 @@ stock configureTheExtensionOption( bool:is_forced_voting )
                             && !is_forced_voting );
 
     // Log some data resulted
+    LOG( 4, "( configureTheExtensionOption )" )
     LOG( 4, "( configureTheExtensionOption ) g_endVotingType:         %d", g_endVotingType )
+    LOG( 4, "( configureTheExtensionOption ) g_voteMapStatus:         %d", g_voteMapStatus )
     LOG( 4, "( configureTheExtensionOption ) is_forced_voting:        %d", is_forced_voting )
     LOG( 4, "( configureTheExtensionOption ) g_isGameFinalVoting:     %d", g_isGameFinalVoting )
     LOG( 4, "( configureTheExtensionOption ) g_isMapExtensionAllowed: %d", g_isMapExtensionAllowed )
