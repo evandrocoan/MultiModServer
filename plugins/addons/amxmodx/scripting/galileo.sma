@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.5.0-848";
+new const PLUGIN_VERSION[] = "v5.5.0-849";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -688,14 +688,6 @@ new cvar_coloredChatEnabled;
 #define MAX_SAVED_ROUNDS_FOR_AVERAGE 5
 
 /**
- * Determine whether there will be a alternate vote option as `Stay Here`/`Extend Map` or not.
- */
-#define IS_MAP_EXTENSION_ALLOWED() \
-    ( ( g_isMapExtensionAllowed && g_isGameFinalVoting ) \
-      || ( g_isExtendmapAllowStay && !g_isGameFinalVoting ) )
-//
-
-/**
  * Every time an operation close to the call to map_manageEnd(0) need to be performed on the cvars
  * `mp_timelimit`, `mp_fraglimit`, `mp_maxrounds` and `mp_winlimit`, this macro must to be used to
  * retrieve the correct cvar value, otherwise it will probably get the value 0 and go nuts.
@@ -723,6 +715,28 @@ new cvar_coloredChatEnabled;
  */
 #define IS_TO_MUTE(%1) \
     ( ( %1 && ( get_pcvar_num( cvar_generalOptions ) & MUTE_MESSAGES_SPAMMING ) ) ? PLUGIN_HANDLED : PLUGIN_CONTINUE )
+//
+
+/**
+ * Determine whether there will be a alternate vote option as `Stay Here`/`Extend Map` or not.
+ */
+#define IS_MAP_EXTENSION_ALLOWED() \
+    ( ( g_isMapExtensionAllowed && g_isGameFinalVoting ) \
+      || ( g_isExtendmapAllowStay && !g_isGameFinalVoting ) )
+//
+
+/**
+ * Determines whether a new empty line should me added near the voting menu footer.
+ *
+ * The last rule `g_totalVoteOptions == 1 && !g_isRunOffNeedingKeepCurrentMap` is used when the
+ * voting is not an runoff voting the there is only 1 map on the voting menu. At the moment this
+ * could happens when the voting is started by the `gal_votemap`/`say galmenu` command.
+ */
+#define IS_TO_ADD_VOTE_MENU_NEW_LINE() \
+    ( ( g_voteStatus & IS_RUNOFF_VOTE ) \
+      || !IS_MAP_EXTENSION_ALLOWED() \
+      || ( g_totalVoteOptions == 1 \
+           && !g_isRunOffNeedingKeepCurrentMap ) )
 //
 
 /**
@@ -8130,10 +8144,7 @@ stock display_menu_dirt( player_id, menuKeys, bool:isVoteOver, bool:noneIsHidden
 
     menuDirty  [ 0 ] = '^0';
     noneOption [ 0 ] = '^0';
-    isToAddExtraLine = ( g_voteStatus & IS_RUNOFF_VOTE
-                         || !IS_MAP_EXTENSION_ALLOWED()
-                         || g_totalVoteOptions == 1
-                            && !g_isRunOffNeedingKeepCurrentMap );
+    isToAddExtraLine = IS_TO_ADD_VOTE_MENU_NEW_LINE();
 
     isToShowUndo = ( player_id > 0 \
                      && g_voteShowNoneOptionType == CONVERT_NONE_OPTION_TO_CANCEL_LAST_VOTE \
@@ -8264,13 +8275,12 @@ stock computeVoteMenuFooter( player_id, voteFooter[], voteFooterSize )
 stock computeUndoButton( player_id, bool:isToShowUndo, bool:isVoteOver, noneOption[], noneOptionSize )
 {
     LOG( 256, "I AM ENTERING ON computeUndoButton(5) player_id: %d", player_id )
+    new bool:isToAddExtraLine;
+
     LOG( 256, "( computeUndoButton ) isToShowUndo: %d", isToShowUndo )
     LOG( 256, "( computeUndoButton ) noneOption: %s, noneOptionSize: %d", noneOption, noneOptionSize )
 
-    new bool:isToAddExtraLine = ( g_voteStatus & IS_RUNOFF_VOTE
-                                  || !IS_MAP_EXTENSION_ALLOWED()
-                                  || g_totalVoteOptions == 1
-                                     && !g_isRunOffNeedingKeepCurrentMap );
+    isToAddExtraLine = IS_TO_ADD_VOTE_MENU_NEW_LINE();
 
     if( isToShowUndo )
     {
@@ -8351,10 +8361,7 @@ stock display_menu_clean( player_id, menuKeys )
 
     menuClean  [ 0 ] = '^0';
     noneOption [ 0 ] = '^0';
-    isToAddExtraLine = ( g_voteStatus & IS_RUNOFF_VOTE
-                         || !IS_MAP_EXTENSION_ALLOWED()
-                         || g_totalVoteOptions == 1
-                            && !g_isRunOffNeedingKeepCurrentMap );
+    isToAddExtraLine = IS_TO_ADD_VOTE_MENU_NEW_LINE();
 
     isToShowUndo = ( player_id > 0
                      && g_voteShowNoneOptionType == CONVERT_NONE_OPTION_TO_CANCEL_LAST_VOTE
