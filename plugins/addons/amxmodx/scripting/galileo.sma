@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.5.0-845";
+new const PLUGIN_VERSION[] = "v5.5.0-846";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.5.0-845";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 16
+#define DEBUG_LEVEL 16+8
 
 
 /**
@@ -3477,7 +3477,7 @@ stock chooseTheEndOfMapStartOption( roundsRemaining )
         }
         case END_AT_THE_CURRENT_ROUND_END:
         {
-            if( ( g_isGameEndingTypeContextSaved ? g_isTheLastGameRoundContext : g_isTheLastGameRound )
+            if( GAME_ENDING_CONTEXT_SAVED( g_isTheLastGameRoundContext, g_isTheLastGameRound )
                 || ( endOfMapVoteStart
                    && roundsRemaining < endOfMapVoteStart ) )
             {
@@ -3491,7 +3491,7 @@ stock chooseTheEndOfMapStartOption( roundsRemaining )
             {
                 case 1:
                 {
-                    if( ( g_isGameEndingTypeContextSaved ? g_isTheLastGameRoundContext : g_isTheLastGameRound )
+                    if( GAME_ENDING_CONTEXT_SAVED( g_isTheLastGameRoundContext, g_isTheLastGameRound )
                         || ( endOfMapVoteStart
                            && roundsRemaining < endOfMapVoteStart ) )
                     {
@@ -3501,7 +3501,7 @@ stock chooseTheEndOfMapStartOption( roundsRemaining )
                 }
                 case 2:
                 {
-                    if( ( g_isGameEndingTypeContextSaved ? g_isThePenultGameRoundContext : g_isThePenultGameRound )
+                    if( GAME_ENDING_CONTEXT_SAVED( g_isThePenultGameRoundContext, g_isThePenultGameRound )
                         || ( endOfMapVoteStart
                              && roundsRemaining < endOfMapVoteStart ) )
                     {
@@ -3620,19 +3620,18 @@ stock howManyRoundsAreRemaining( secondsRemaining, GameEndingType:whatGameEnding
     {
         case GameEndingType_ByMaxRounds:
         {
-            return ( g_isGameEndingTypeContextSaved ?
-                     g_maxRoundsContextSaved : get_pcvar_num( cvar_mp_maxrounds ) ) - g_totalRoundsPlayed - 1 + avoidExtraRound;
+            return GAME_ENDING_CONTEXT_SAVED( g_maxRoundsContextSaved, get_pcvar_num( cvar_mp_maxrounds ) )
+                    - g_totalRoundsPlayed - 1 + avoidExtraRound;
         }
         case GameEndingType_ByWinLimit:
         {
-            return ( g_isGameEndingTypeContextSaved ?
-                     g_winLimitContextSaved :
-                     get_pcvar_num( cvar_mp_winlimit ) ) - max( g_totalCtWins, g_totalTerroristsWins ) - 1 + avoidExtraRound;
+            return GAME_ENDING_CONTEXT_SAVED( g_winLimitContextSaved, get_pcvar_num( cvar_mp_winlimit ) )
+                    - max( g_totalCtWins, g_totalTerroristsWins ) - 1 + avoidExtraRound;
         }
         case GameEndingType_ByFragLimit:
         {
-            new roundsLeftBy_frags = ( g_isGameEndingTypeContextSaved ?
-                                       g_fragLimitContextSaved : get_pcvar_num( cvar_mp_fraglimit ) ) - g_greatestKillerFrags;
+            new roundsLeftBy_frags = GAME_ENDING_CONTEXT_SAVED( g_fragLimitContextSaved, get_pcvar_num( cvar_mp_fraglimit ) )
+                    - g_greatestKillerFrags;
 
             getRoundsRemainingBy( _, roundsLeftBy_frags );
             return roundsLeftBy_frags + avoidExtraRound;
