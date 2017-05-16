@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.5.0-846";
+new const PLUGIN_VERSION[] = "v5.5.0-847";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.5.0-846";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 16+8
+#define DEBUG_LEVEL 2+64
 
 
 /**
@@ -688,9 +688,12 @@ new cvar_coloredChatEnabled;
 #define MAX_SAVED_ROUNDS_FOR_AVERAGE 5
 
 /**
- * Determine whether there will be a alternate vote option as `Stay Here` or `Extend Map`.
+ * Determine whether there will be a alternate vote option as `Stay Here`/`Extend Map` or not.
  */
-#define IS_MAP_EXTENSION_ALLOWED() ( g_isMapExtensionAllowed && g_isGameFinalVoting || g_isExtendmapAllowStay && !g_isGameFinalVoting )
+#define IS_MAP_EXTENSION_ALLOWED() \
+    ( ( g_isMapExtensionAllowed && g_isGameFinalVoting ) \
+      || ( g_isExtendmapAllowStay && !g_isGameFinalVoting ) )
+//
 
 /**
  * Every time an operation close to the call to map_manageEnd(0) need to be performed on the cvars
@@ -7198,18 +7201,29 @@ stock configureTheExtensionOption( bool:is_forced_voting )
     LOG( 128, "I AM ENTERING ON configureTheExtensionOption(1) is_forced_voting: %d", is_forced_voting )
     new Float:cache;
 
-    // If we cannot find anything cancelling/blocking the map extension, allow it by the default.
+    //
     if( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXTENSION )
     {
         LOG( 4, "( configureTheExtensionOption ) 1. " )
         g_isMapExtensionAllowed = false;
     }
+
+    //
     else if( g_voteStatus & IS_RTV_VOTE
              && get_pcvar_num( cvar_rtvWaitAdmin ) & IS_TO_RTV_NOT_ALLOW_STAY )
     {
         LOG( 4, "( configureTheExtensionOption ) 2. " )
         g_isMapExtensionAllowed = false;
     }
+
+    // When this is set to true, we must allow the extension. Otherwise we would not get here never
+    // as the extend option was previously showed.
+    else if( g_isRunOffNeedingKeepCurrentMap )
+    {
+        g_isMapExtensionAllowed = true;
+    }
+
+    //
     else if( g_endVotingType & IS_BY_FRAGS
              && ( cache = Float:get_pcvar_num( cvar_maxMapExtendFrags ) ) )
     {
@@ -7218,6 +7232,8 @@ stock configureTheExtensionOption( bool:is_forced_voting )
         g_isMapExtensionAllowed =
                 GAME_ENDING_CONTEXT_SAVED( g_fragLimitContextSaved, get_pcvar_num( cvar_mp_fraglimit ) ) < cache;
     }
+
+    //
     else if( g_endVotingType & IS_BY_ROUNDS
              && ( cache = Float:get_pcvar_num( cvar_maxMapExtendRounds ) ) )
     {
@@ -7226,6 +7242,8 @@ stock configureTheExtensionOption( bool:is_forced_voting )
         g_isMapExtensionAllowed =
                 GAME_ENDING_CONTEXT_SAVED( g_maxRoundsContextSaved, get_pcvar_num( cvar_mp_maxrounds ) ) < cache;
     }
+
+    //
     else if( g_endVotingType & IS_BY_WINLIMIT
              && ( cache = get_pcvar_float( cvar_maxMapExtendRounds ) ) )
     {
@@ -7234,6 +7252,8 @@ stock configureTheExtensionOption( bool:is_forced_voting )
         g_isMapExtensionAllowed =
                 GAME_ENDING_CONTEXT_SAVED( g_winLimitContextSaved, get_pcvar_num( cvar_mp_winlimit ) ) < cache;
     }
+
+    //
     else if( g_endVotingType & IS_BY_TIMER
              && ( cache = get_pcvar_float( cvar_maxMapExtendTime ) ) )
     {
@@ -7242,18 +7262,22 @@ stock configureTheExtensionOption( bool:is_forced_voting )
         g_isMapExtensionAllowed =
                 GAME_ENDING_CONTEXT_SAVED( g_timeLimitContextSaved, get_pcvar_float( cvar_mp_timelimit ) ) < cache;
     }
+
+    // If we cannot find anything cancelling/blocking the map extension, allow it by the default.
     else
     {
         LOG( 4, "( configureTheExtensionOption ) 7. " )
         g_isMapExtensionAllowed = true;
     }
 
+    // Determine whether the voting is whether forced or automatically started.
     g_isGameFinalVoting = ( ( g_endVotingType & IS_BY_ROUNDS
                               || g_endVotingType & IS_BY_WINLIMIT
                               || g_endVotingType & IS_BY_TIMER
                               || g_endVotingType & IS_BY_FRAGS )
                             && !is_forced_voting );
 
+    // Log some data resulted
     LOG( 4, "( configureTheExtensionOption ) g_endVotingType:         %d", g_endVotingType )
     LOG( 4, "( configureTheExtensionOption ) is_forced_voting:        %d", is_forced_voting )
     LOG( 4, "( configureTheExtensionOption ) g_isGameFinalVoting:     %d", g_isGameFinalVoting )
@@ -8007,9 +8031,10 @@ stock addExtensionOption( player_id, copiedChars, voteStatus[], voteStatusLenght
             g_isExtendmapAllowStay: %d", allowStay, allowExtend, g_isExtendmapAllowStay )
 
     // add optional menu item
-    if( IS_MAP_EXTENSION_ALLOWED()
+    if( ( IS_MAP_EXTENSION_ALLOWED()
+          || g_isRunOffNeedingKeepCurrentMap )
         && ( allowExtend
-             || allowStay ) )
+            || allowStay ) )
     {
         new mapVotingCount[ MAX_MAPNAME_LENGHT ];
 
@@ -8865,6 +8890,12 @@ stock printRunOffMaps( runOffMapsCount )
     return 0;
 }
 
+/**
+ * This case is triggered when there are more than 1 map at the first position.
+ *
+ * It also implements the feature on: https://github.com/addonszz/Galileo/issues/33, for the cvar
+ * `cvar_runoffMapchoices` on this case.
+ */
 stock handleMoreThanTwoMapsAtFirst( firstPlaceChoices[], numberOfMapsAtFirstPosition )
 {
     LOG( 128, "I AM ENTERING ON handleMoreThanTwoMapsAtFirst(2)" )
@@ -8951,6 +8982,9 @@ stock configureTheRunoffVoting( firstPlaceChoices[], secondPlaceChoices[], numbe
     set_task( VOTE_TIME_RUNOFF, "startTheRunoffVoting", TASKID_START_THE_VOTING );
 }
 
+/**
+ * This case is triggered when there are 2 map at the first position.
+ */
 stock handleTwoMapsAtFirstPosition( firstPlaceChoices[] )
 {
     LOG( 128, "I AM ENTERING ON handleTwoMapsAtFirstPosition(1)" )
@@ -8978,6 +9012,9 @@ stock handleTwoMapsAtFirstPosition( firstPlaceChoices[] )
     LOG( 0, "", printRunOffMaps( g_totalVoteOptions ) )
 }
 
+/**
+ * This case is triggered when there is 1 map at the first and another on the second position.
+ */
 stock handleOneMapAtSecondPosition( firstPlaceChoices[], secondPlaceChoices[] )
 {
     LOG( 128, "I AM ENTERING ON handleOneMapAtSecondPosition(2)" )
@@ -9006,17 +9043,8 @@ stock handleOneMapAtSecondPosition( firstPlaceChoices[], secondPlaceChoices[] )
 }
 
 /**
- * Do not implement the feature below here in:
- *
- *     Another CVAR for the number of maps to be included in runoff voting.
- *     https://github.com/addonszz/Galileo/issues/33
- *
- * It is because it will cause complications as when there is only one player at the server. If the
- * player vote for one map, it will cause this option to be triggered:
- *
- *     numberOfMapsAtFirstPosition == 1 && numberOfMapsAtSecondPosition > 1
- *
- * And then a run off voting would be triggered when there is only one player at the server.
+ * This case is triggered when there are 1 map at the first position, but several on the second
+ * position.
  */
 stock handleOneMapAtFirstPosition( firstPlaceChoices[], secondPlaceChoices[], numberOfMapsAtSecondPosition )
 {
