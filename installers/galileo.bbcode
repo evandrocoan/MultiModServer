@@ -17,17 +17,29 @@ and come here to [URL="https://forums.alliedmods.net/showthread.php?t=277636"]th
 [*][goanchor=Introduction]Introduction[/goanchor]
 [*][goanchor=Brief]Brief Features' list[/goanchor]
 [*][goanchor=Requirements]Requirements and Commands[/goanchor]
-[*][goanchor=Installation][B]Installation[/B][/goanchor]
+
+
+[*][B]Installation[/B]:
+   [LIST=1]
+   [*][goanchor=InstallationAMXX182][B]Basic Installation[/B][/goanchor]
+   [*][goanchor=InstallationAMXX183]AMXX 183 or superior[/goanchor]
+   [*][goanchor=InstallationNotes]Installation Notes[/goanchor]
+   [/LIST]
+
+
 [*][goanchor=Mapcycle]Setting up a Mapcycle[/goanchor]
 [*][goanchor=TODO]TODO[/goanchor]
 [*][goanchor=Credits]Credits[/goanchor]
+
+
 [*][goanchor=Support][B]Support[/B][/goanchor]
-[*][goanchor=Change]Change Log[/goanchor]
 [*][goanchor=Screen]Screenshots[/goanchor]
+[*][goanchor=Change]Change Log[/goanchor]
 [*][goanchor=Compilations]Compilations Data[/goanchor]
+
+
 [*][B]Downloads[/B]:
    [LIST=1]
-   [*][URL="https://forums.alliedmods.net/showthread.php?t=172936#Compiling"]How to compile plugins[/URL]
    [*][goanchor=Development]Development Versions[/goanchor]
    [*][goanchor=Old]Old Versions Downloads[/goanchor]
    [*][goanchor=LatestRelease][B]Latest Release Download[/B][/goanchor]
@@ -184,7 +196,7 @@ amx_extendmap_max_frags 1
 
 [B]Default `galileo.cfg`:[/B]
 [SPOILER]
-[pawn]
+[php]
 // Galileo Configuration File
 
 
@@ -470,6 +482,15 @@ gal_vote_mapchoices_next 1
 // Default: 30
 gal_vote_duration 30
 
+// Specifies the minimum number of votes the voting should have to be
+// considered a valid voting.
+//
+// If the voting does not have the minimum votes, the action set by the
+// cvar `gal_extendmap_allow_order` will be selected/chose.
+//
+// Default: 0
+gal_vote_minimum 0
+
 
 
 
@@ -519,7 +540,31 @@ gal_vote_mapfile "#"
 // When there are less players than cvar 'gal_vote_minplayers' value on
 // the server, use a different map file list specified at the cvar
 // 'gal_vote_minplayers_mapfile' to fill the map voting as map fillers
-// instead of the cvar 'gal_vote_mapfile' map file list. This is the range:
+// instead of the cvar 'gal_vote_mapfile' map file list.
+//
+// Example:
+//
+// gal_vote_minplayers 3
+// gal_vote_midplayers 5
+//
+// mapcycle.txt --> de_dust2
+// midplayers.txt --> de_nuke
+// minplayers.txt --> de_inferno
+//
+// When we are 2 on the server, this is how the feature use the maps:
+//
+// 1. If there are between 1 and 3 players, (on your case 2 is between), the
+//    `minplayers_mapcycle.txt` will be used. On this case on the file there is
+//    the map `de_inferno`, and it was correctly showed on the menu.
+//
+// 2. If there are between 4 and 5 players, the file `midplayers_mapcycle.txt`
+//    will be used and the map `de_nuke` will be on the voting menu.
+//
+// 3. If there are between 6 and 32 players, the file `mapcycle.txt` will be
+//    used and the map `de_dust2` will be on the voting menu. When the cvar `gal_vote_mapfile`
+//    is set to `mapcycle.txt`, it will load the map `de_dust2`.
+//
+// This is the range, where `player_count` must to be for the minimum players feature:
 //
 //     0 < player_count < gal_vote_minplayers < MAX_PLAYERS
 //
@@ -528,17 +573,17 @@ gal_vote_mapfile "#"
 // Default: 0
 gal_vote_minplayers 0
 
-// When there are less players than cvar `gal_vote_middle_players` and
+// When there are less players than cvar `gal_vote_midplayers` and
 // the more or equally players than the cvar `gal_vote_minplayers` value
 // on the server, use a different map file list specified at the cvar
 // `gal_vote_midplayers_mapfile` to fill the map voting as map fillers
 // instead of the cvar `gal_vote_mapfile` map file list.
 //
-// If both `gal_vote_minplayers` and `gal_vote_middle_players` are set to
-// the same value greater than 1, the `gal_vote_minimum_players` map file
+// If both `gal_vote_minplayers` and `gal_vote_midplayers` are set to
+// the same value greater than 1, the `gal_vote_minplayers` map file
 // will be used. This is the range:
 //
-//     0 < gal_vote_minplayers <= player_count < gal_vote_middle_players < MAX_PLAYERS
+//     0 < gal_vote_minplayers <= player_count < gal_vote_midplayers < MAX_PLAYERS
 //
 // A value of 0, 1 or 2 will disable this feature.
 //
@@ -617,7 +662,7 @@ gal_runoff_duration 20
 // To disabled this feature, set the cvar `gal_runoff_enabled` to 0
 //
 // Default: 0.5
-gal_runoff_ratio 0.5
+gal_runoff_ratio 0.4
 
 // Specifies the number of maps players can choose from during the runoff
 // vote. The number of maps must be between 2 and 9. This count includes
@@ -718,9 +763,8 @@ gal_unnominate_disconnected 0
 // Specifies how many of the most recent maps are disallowed from a map
 // vote.
 //
-// If you specify a value greater than the number o maps in your server
-// mapcycle file, the file on the cvar `mapcyclefile`, it will automatically
-// ban only the maximum allowed.
+// If you specify a value greater than the number of maps in your server,
+// it will automatically ban only the maximum allowed.
 //
 // A value of 0 will disable this feature.
 //
@@ -976,10 +1020,10 @@ gal_vote_uniqueprefixes 0
 // Specifies the number of minutes a map will be extended each time
 // the "Extend Map" option wins the map vote.
 //
-// To disabled this feature, set the cvar `amx_extendmap_max` to 1
+// To disabled this feature, set the cvar `gal_extendmap_max_min` to 1
 //
 // Default: 15
-amx_extendmap_step 15
+gal_extendmap_step_min 15
 
 // Specifies the maximum number of minutes a map can be played, if it
 // has been extended. A value less than mp_timelimit will not let
@@ -989,17 +1033,17 @@ amx_extendmap_step 15
 // To always block map extension, set this cvar to 1
 //
 // Default: 1
-amx_extendmap_max 0
+gal_extendmap_max_min 0
 
 // Specifies the number of rounds a map will be extended each time
 // the "Extend Map" option wins the map vote. This only has effect
 // when you are using 'mp_winlimit' or 'mp_maxrounds' instead of
 // 'mp_timelimit'.
 //
-// To disabled this feature, set the cvar `amx_extendmap_max_rounds` to 1
+// To disabled this feature, set the cvar `gal_extendmap_max_rounds` to 1
 //
 // Default: 20
-amx_extendmap_step_rounds 20
+gal_extendmap_step_rounds 20
 
 // Specifies the maximum number of rounds a map can be played, if it
 // has been extended. A value less than `mp_maxrounds/mp_winlimit` will
@@ -1009,7 +1053,7 @@ amx_extendmap_step_rounds 20
 // To always block map extension, set this cvar to 1
 //
 // Default: 1
-amx_extendmap_max_rounds 0
+gal_extendmap_max_rounds 0
 
 // Enable virtual support for the Half-File cvar 'mp_fraglimit' on
 // game modes as 'Counter-Strike' which do not support the cvar
@@ -1027,10 +1071,10 @@ gal_mp_fraglimit_support 0
 // when you are using 'mp_fraglimit' instead of 'mp_timelimit',
 // 'mp_winlimit' or 'mp_maxrounds'.
 //
-// To disabled this feature, set the cvar `amx_extendmap_max_frags` to 1
+// To disabled this feature, set the cvar `gal_extendmap_max_frags` to 1
 //
 // Default: 30
-amx_extendmap_step_frags 30
+gal_extendmap_step_frags 30
 
 // Specifies the maximum number of frag a map can be played, if it
 // has been extended. A value less than mp_fraglimit will not let
@@ -1040,7 +1084,7 @@ amx_extendmap_step_frags 30
 // To always block map extension, set this cvar to 1
 //
 // Default: 1
-amx_extendmap_max_frags 0
+gal_extendmap_max_frags 0
 
 // Control the 'Stay Here' vote option when performing early votes
 // or by the 'gal_startvote/gal_votemap/say galmenu' server commands.
@@ -1049,7 +1093,7 @@ amx_extendmap_max_frags 0
 // 1 - show the vote option "Stay Here".
 //
 // Default: 0
-amx_extendmap_allow_stay 1
+gal_extendmap_allow_stay 1
 
 // This feature allow to show the map name on the stay here vote option.
 //
@@ -1057,7 +1101,7 @@ amx_extendmap_allow_stay 1
 // 1 - show the map name on the 'stay here' vote option.
 //
 // Default: 0
-amx_extendmap_allow_stay_type 0
+gal_extendmap_allow_stay_type 0
 
 // Choose how to follow the mapcycle, when anyone vote for next map, i.e.,
 // no votes on any map on the voting list, but there are players playing.
@@ -1067,7 +1111,7 @@ amx_extendmap_allow_stay_type 0
 // 2 - extend the current map.
 //
 // Default: 1
-amx_extendmap_allow_order 1
+gal_extendmap_allow_order 1
 
 
 
@@ -1234,6 +1278,21 @@ gal_vote_show_counter 1
 // Default: 0
 gal_vote_announcechoice 1
 
+// Indicates several adjusting options for the plugin general behavior.
+// The flags are additive. A value of 0 will not enable any of the options.
+//
+//  1 - Indicates whether the use commands should output on the chat or
+//      not. For example: If this is enabled, it will not show `RTV` on
+//      chat when a players does the `say RTV` command.
+//
+// For example, if you want to mude the options 1 and 2, use 1 + 2:
+// gal_general_options 3
+//
+// Instead of:
+// gal_general_options 0
+//
+// Default: 0
+gal_general_options 0
 
 
 
@@ -1330,6 +1389,18 @@ gal_emptyserver_wait 0
 //
 // Default: 0
 gal_emptyserver_change 0
+
+// If enabled, it will ignore players on the spectator team. This will have effect
+// when the plugin need counting the server players. Only works for Counter-Strike/CZ mod.
+//
+// If you also enabled the cvar `gal_emptyserver_change`, it will cause the empty-cycle
+// feature to work when there are spectators on server.
+//
+// 0 - disabled this feature.
+// 1 - enable this feature.
+//
+// Default: 0
+gal_server_players_count 0
 
 // Specifies the file which contains a listing of maps, one per line,
 // to be used as the mapcycle when the server is empty. You can specify
@@ -1493,7 +1564,7 @@ gal_endonround_change 1
 //
 // Default: 0
 gal_endonround_countdown 31
-[/pawn]
+[/php]
 [/SPOILER]
 
 
@@ -1856,21 +1927,32 @@ de_inferno
 
 ******************************** [anchor]Installation[/anchor][B][SIZE="6"][COLOR="Blue"]Installation[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor]  ***********************
 
+[anchor]InstallationAMXX182[/anchor][SIZE="4"][B]Basic Installation[/B][/SIZE]: [goanchor=Top]Go to top[/goanchor]
+
 [QUOTE]Hi ,
 I want to use your this plugin . but i am confused which .sma i will use
 [/QUOTE]
 
-You can use this:
+This installation is usually for AMXX 182. You can use this:
+[goanchor=LatestRelease][img]http://i.imgur.com/0Onj35H.png?1[/img][/goanchor]
 
-[img]http://i.imgur.com/0Onj35H.png[/img]
-
-It is the same which is on the `[B]Galileo-X.X.X-XXX.zip[/B]` file. The difference is it is already compiled. So you do not need to compile the `.sma`
+It is the same which is on the `[B]Galileo-X.X.X-XXX.zip[/B]` file. The difference is it is already compiled.
+So you do not need to compile the `.sma`
 
 But you still [COLOR="Red"]need to download[/COLOR] the `[B]Galileo-X.X.X-XXX.zip[/B]` file within the resource files.
 [LIST=1]
-[*]The file `[B]Galileo-X.X.X-XXX.zip[/B]` contain all the files you need, including the `.sma`, the lang file and the [COLOR="Red"]default settings file[/COLOR].
-[*]The file `[B]Minimal_Configuration_File_(Opcional_Little-Options).zip[/B]` is the smallest setting file you need to configure. You can download it if you want to use easy settings to configure. [COLOR="Red"]This file is opcional.[/COLOR]
-[*]The file `[B]Simple_Configuration_File_(Opcional_Less-Options).zip[/B]` a smaller settings file. You can download it if you want to use the original settings by `Brad's` version. [COLOR="Red"]This file is opcional.[/COLOR]
+[*]The file `[B]Galileo-X.X.X-XXX.zip[/B]` contain all the files you need, including the `.sma`,
+the lang file and the [COLOR="Red"]default settings file[/COLOR].
+
+
+[*]The file `[B]Minimal_Configuration_File_(Opcional_Little-Options).zip[/B]` is the
+smallest setting file you need to configure. You can download it if you want to use easy
+settings to configure. [COLOR="Red"]This file is opcional.[/COLOR]
+
+
+[*]The file `[B]Simple_Configuration_File_(Opcional_Less-Options).zip[/B]` is a
+smaller settings file. You can download it if you want to use the original settings by
+`Brad's` version. [COLOR="Red"]This file is opcional.[/COLOR]
 [/LIST]
 
 Replace '[B]Galileo-XXX[/B]' by '[B]Galileo-3.2.2[/B]' [or the current version], and download the right zip file.
@@ -1897,32 +1979,39 @@ the [B]deagsmapmanager.amxx[/B]: [QUOTE]
 galileo.amxx
 [/QUOTE]
 [/LIST]
-It is not clear enough? See the video tutorial [URL="https://vid.me/miPP"]How to Install the Galileo Mapchooser Plugin[/URL].
-Stills not clear enough? See more tutorials on [URL="https://forums.alliedmods.net/showthread.php?t=172936#Compiling"]Useful Tutorials, Guides, Snippets, and References[/URL].
 
+[anchor]InstallationNotes[/anchor][SIZE="4"][B]Installation Notes[/B][/SIZE]: [goanchor=Top]Go to top[/goanchor]
 
+It is not clear enough? See the video tutorial [URL="https://vid.me/miPP"]How to Install the Galileo Mapchooser Plugin[/URL] (Step by step tutorial).
+Stills not clear enough? See more tutorials on [URL="https://forums.alliedmods.net/showthread.php?t=172936#Compiling"]Useful Tutorials, Guides, Snippets, and References[/URL] (How to compile plugins).
 If you are using AMXX 182, but if you want the special vote map feature for SvenCoop server, you need to:
 [LIST=1]
 [*]Install AMXX 183 within the new HamSandwich.
-[*]Or disable the special feature downloading the source code `galileo.sma`, changing the constant `IS_TO_ENABLE_SVEN_COOP_SUPPPORT` from 1 to 0 and recompiling/installing the plugin `galileo.amxx`:
 
+
+[*]Or disable the special feature downloading the source code `galileo.sma`, changing the constant
+`IS_TO_ENABLE_SVEN_COOP_SUPPPORT` from 1 to 0 and recompiling/installing the plugin `galileo.amxx`:
 
 [img]http://i.imgur.com/mFwpKNr.png[/img]
 [/LIST]
 
+[anchor]InstallationAMXX183[/anchor][SIZE="4"][B]Installation for AMXX 183 or superior[/B][/SIZE]: [goanchor=Top]Go to top[/goanchor]
 
-[anchor]Mapcycle[/anchor][SIZE="4"][B]Setting up a Mapcycle[/B][/SIZE]: [goanchor=Top]Go to top[/goanchor]
+[QUOTE=wlmraziel;2521021][B]what is ML_NOTFOUND when I write "nextmap", "timeleft"[/B][/QUOTE]
 
-[QUOTE=azure;11799]hrrmm this is very interesting. Could I set this up to change the mapcycle possibly?
+This installation is usually for AMXX 183 or superior. I was doing some tests the other day and I
+noticed it can also happens if you compile the plugin with the AMXX 182 compiler, but uses on your
+server the AMXX 183 like build 5116.
 
-like have mapcycle 1 from 9 till 23 and then mapcycle2 from 23 til 9?
-[/QUOTE]
-The plugin [URL="https://forums.alliedmods.net/showthread.php?p=12724"]Task Scheduler[/URL] can do that. See here [URL="https://forums.alliedmods.net/showthread.php?p=12724#post12724"]how to configure it[/URL]. You can use it to configure the
-cvars:[LIST=1]mapcyclefile
-[*]gal_vote_mapfile
-[*]gal_vote_minplayers_mapfile
-[*]gal_nom_mapfile
-[*]gal_emptyserver_mapfile[/LIST]To use another mapcycle files which does not contain the maps you do not want to use by early hours.
+The version you download here on the forum from the button:
+
+[img]http://i.imgur.com/0Onj35H.png?1[/img]
+
+Is using the AMXX 182 compiler. So you cannot use it with the AMXX 183 development version.
+You need to download the `galileo.sma` and to compile the plugin locally using your AMXX 183 compiler.
+
+The [url=https://vid.me/miPP]video pointed[/url] by [B]@kristi[/B] is compiling the plugin locally, so you can see how it is done.
+Also there are more useful tutorials on [URL="https://forums.alliedmods.net/showthread.php?t=172936#Compiling"]Useful Tutorials, Guides, Snippets, and References[/URL]
 
 
 
@@ -2026,6 +2115,8 @@ commands in your [COLOR="Blue"][B]game's console[/B][/COLOR]:
 [*]Paste here [COLOR="red"][B]*only*[/B][/COLOR] the CVARs that contain "[COLOR="SeaGreen"][B]galileo.amxx[/B][/COLOR]" in the last column
 from the [B]amxx cvars[/B] command. They will be grouped together.
 [/LIST]
+__________________________________________________________________________________________
+
 
 People just saying it is broken/lagging and do not help providing the requested information at the main's page
 [goanchor=Support]Support[/goanchor] section, will be ignored.
@@ -2877,22 +2968,37 @@ Press enter to exit ...
 [anchor]Development[/anchor][SIZE="4"][B]Development Versions[/B][/SIZE]: [goanchor=Top]Go to top[/goanchor]
 
 Here you can see what is going on the latest [COLOR="Red"]unreleased[/COLOR] version over development at:
-[URL="https://github.com/addonszz/Galileo/commits/master"][B]Github[/B]
-[IMG]http://i.imgur.com/TWUBJiH.png[/IMG]
-https://github.com/addonszz/Galileo/commits/develop[/URL]
+[URL="https://github.com/addonszz/Galileo/commits/master"][B]Github[/B][/URL]
+[URL="https://github.com/addonszz/Galileo/commits/master"][IMG]http://i.imgur.com/TWUBJiH.png[/IMG][/URL]
+[URL="https://github.com/addonszz/Galileo/commits/master"]https://github.com/addonszz/Galileo/commits/develop[/URL]
 
 And this is a direct link to always to download the latest [COLOR="Red"]unreleased[/COLOR] changes you see on the above link:
 [URL="https://github.com/addonszz/Galileo/archive/master.zip"] https://github.com/addonszz/Galileo/archive/develop.zip[/URL]
 
-[IMG]http://i.imgur.com/lbWQaiO.png?1[/IMG]
-
-And because it is the development version, the debugging is enabled. Go to around the 'line 60' and find:[PAWN]
+And because it is the development version, the debugging is enabled. Go to around the 'line 87' and find:[PAWN]
 #define DEBUG_LEVEL SomeNumber(s)[/PAWN]and change it to:[PAWN]
 #define DEBUG_LEVEL 0
 [/PAWN]
 
-Note that these versions above are probably not tested or maybe not stable as the [goanchor=LatestRelease]Latest Release
-Download[/goanchor] [B][COLOR="Red"]below[/B][/COLOR]. See here how to compile plugins [URL="https://forums.alliedmods.net/showthread.php?t=172936#Compiling"][HOW TO] Compiling plugins[/URL].
+[img]http://i.imgur.com/qcAwlUW.png[/img]
+
+Note that these versions above are probably not tested or maybe not stable as the
+[goanchor=LatestRelease]Latest Release Download[/goanchor] [B][COLOR="Red"]below[/B][/COLOR].
+See here how to compile plugins on: [URL="https://forums.alliedmods.net/showthread.php?t=172936#Compiling"][HOW TO] Compiling plugins[/URL].
+
+
+[anchor]Mapcycle[/anchor][SIZE="4"][B]Setting up a Mapcycle[/B][/SIZE]: [goanchor=Top]Go to top[/goanchor]
+
+[QUOTE=azure;11799]hrrmm this is very interesting. Could I set this up to change the mapcycle possibly?
+
+like have mapcycle 1 from 9 till 23 and then mapcycle2 from 23 til 9?
+[/QUOTE]
+The plugin [URL="https://forums.alliedmods.net/showthread.php?p=12724"]Task Scheduler[/URL] can do that. See here [URL="https://forums.alliedmods.net/showthread.php?p=12724#post12724"]how to configure it[/URL]. You can use it to configure the
+cvars:[LIST=1]mapcyclefile
+[*]gal_vote_mapfile
+[*]gal_vote_minplayers_mapfile
+[*]gal_nom_mapfile
+[*]gal_emptyserver_mapfile[/LIST]To use another mapcycle files which does not contain the maps you do not want to use by early hours.
 
 
 [anchor]Old[/anchor][SIZE="4"][B]Old Versions Downloads[/B][/SIZE]: [goanchor=Top]Go to top[/goanchor]
