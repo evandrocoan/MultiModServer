@@ -1,5 +1,5 @@
-[anchor]Top[/anchor][SIZE="7"][COLOR="Blue"][B]Galileo v5.6.0-853[/B][/COLOR][/SIZE] A feature rich map voting plugin
-[COLOR=Red][SIZE=1]Release: 2008-09-12 | Last Update: 2017-05-16 | Date Format: Year-Month-Day[/COLOR][/SIZE]
+[anchor]Top[/anchor][SIZE="7"][COLOR="Blue"][B]Galileo v5.6.1-855[/B][/COLOR][/SIZE] A feature rich map voting plugin
+[COLOR=Red][SIZE=1]Release: 2008-09-12 | Last Update: 2017-05-19 | Date Format: Year-Month-Day[/COLOR][/SIZE]
 
 I wanted a good plugin for mapchoosing long time ago, but I found none. So did one, starting with
 the original Galileo by brad which looked to be the best at the time.
@@ -22,7 +22,6 @@ and come here to [URL="https://forums.alliedmods.net/showthread.php?t=277636"]th
 [*][B]Installation[/B]:
    [LIST=1]
    [*][goanchor=InstallationAMXX182][B]Basic Installation[/B][/goanchor]
-   [*][goanchor=InstallationAMXX183]AMXX 183 or superior[/goanchor]
    [*][goanchor=InstallationNotes]Installation Notes[/goanchor]
    [/LIST]
 
@@ -483,10 +482,13 @@ gal_vote_mapchoices_next 1
 gal_vote_duration 30
 
 // Specifies the minimum number of votes the voting should have to be
-// considered a valid voting.
+// considered a valid voting. The value of 0 will disable this feature.
 //
 // If the voting does not have the minimum votes, the action set by the
 // cvar `gal_extendmap_allow_order` will be selected/chose.
+//
+// For example, if you set this cvar to 1, it will require 2 players
+// votes to the voting to be considered valid.
 //
 // Default: 0
 gal_vote_minimum 0
@@ -1996,24 +1998,6 @@ If you are using AMXX 182, but if you want the special vote map feature for Sven
 [img]http://i.imgur.com/mFwpKNr.png[/img]
 [/LIST]
 
-[anchor]InstallationAMXX183[/anchor][SIZE="4"][B]Installation for AMXX 183 or superior[/B][/SIZE]: [goanchor=Top]Go to top[/goanchor]
-
-[QUOTE=wlmraziel;2521021][B]what is ML_NOTFOUND when I write "nextmap", "timeleft"[/B][/QUOTE]
-
-This installation is usually for AMXX 183 or superior. I was doing some tests the other day and I
-noticed it can also happens if you compile the plugin with the AMXX 182 compiler, but uses on your
-server the AMXX 183 like build 5116.
-
-The version you download here on the forum from the button:
-
-[img]http://i.imgur.com/0Onj35H.png?1[/img]
-
-Is using the AMXX 182 compiler. So you cannot use it with the AMXX 183 development version.
-You need to download the `galileo.sma` and to compile the plugin locally using your AMXX 183 compiler.
-
-The [url=https://vid.me/miPP]video pointed[/url] by [B]@kristi[/B] is compiling the plugin locally, so you can see how it is done.
-Also there are more useful tutorials on [URL="https://forums.alliedmods.net/showthread.php?t=172936#Compiling"]Useful Tutorials, Guides, Snippets, and References[/URL]
-
 
 
 ******************************** [anchor]TODO[/anchor][B][SIZE="6"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] *********************************
@@ -2054,6 +2038,7 @@ See the current issues/features request list on [URL="https://github.com/addonsz
 [B][URL="https://forums.alliedmods.net/member.php?u=228788"]GoRiLliAz[/URL][/B]: For the `empty-cycle` feature wrong map change bug report, testing and several other bug reports.
 [B][URL="https://forums.alliedmods.net/member.php?u=278611"]wlmraziel[/URL][/B]: For the cvar `gal_vote_minimum` [url=https://forums.alliedmods.net/showpost.php?p=2520388&postcount=660]feature[/url] request and [es] Spanish language [url=https://forums.alliedmods.net/showpost.php?p=2520995&postcount=35]review[/url].
 [B][URL="https://forums.alliedmods.net/member.php?u=246922"]blood2k[/URL][/B]: For the command `say noms` [url=https://forums.alliedmods.net/showthread.php?p=2520787#post2520787]bug report[/url] for more than 4 maps are nominated.
+[B][URL="https://forums.alliedmods.net/member.php?u=156100"]Skyliner[/URL][/B]: For the colored chat [url=https://forums.alliedmods.net/showthread.php?p=2521542#post2521542]bug report[/url] confirmation on AMXX 182.
 [QUOTE=Brad;684848]
 A lot of time and effort went into making this plugin, making features just right,
 making sure there were no bugs, making sure it was easy to use. If you are glad I made
@@ -2170,9 +2155,13 @@ doesn't use them anymore and/or is tired of supporting so many repos.
 ******************************** [anchor]Change[/anchor][B][SIZE="6"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
 [SPOILER]
 
-
 [LIST=1]
 [*]
+[/LIST]
+
+[B]2017-05-19 | v5.6.1-855[/B]
+[LIST=1]
+[*]Fixed colored chat broken on AMXX 182.
 [/LIST]
 
 [B]2017-05-16 | v5.6.0-853[/B]
