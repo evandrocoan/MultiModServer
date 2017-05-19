@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.6.0-853";
+new const PLUGIN_VERSION[] = "v5.6.1-855";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -13944,15 +13944,17 @@ stock percent( is, of )
  */
 stock hidden_color_print( const player_id, not_used, const lang_formatting[], any:... )
 {
-    LOG( 128, "I AM ENTERING ON hidden_color_print() player_id: %d, lang_formatting: `%s`", player_id, lang_formatting )
-    LOG( 64, "IS_COLORED_CHAT_ENABLED(): %d", IS_COLORED_CHAT_ENABLED() )
+    LOG( 128, "I AM ENTERING ON hidden_color_print()" )
+    LOG( 64, "( hidden_color_print ) IS_COLORED_CHAT_ENABLED(): %d (%d)", IS_COLORED_CHAT_ENABLED(), not_used )
+    LOG( 64, "( hidden_color_print ) player_id: %d, lang_formatting: `%s`", player_id, lang_formatting )
 
+    const first_lang_parameter_position = 4;
     new formatted_message[ MAX_COLOR_MESSAGE ];
 
 #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
     g_test_printedMessage[ 0 ] = '^0';
 
-    vformat( g_test_printedMessage, charsmax( g_test_printedMessage ), lang_formatting, 3 );
+    vformat( g_test_printedMessage, charsmax( g_test_printedMessage ), lang_formatting, first_lang_parameter_position );
     LOG( 64, "( hidden_color_print ) player_id: %d, g_test_printedMessage: %s", player_id, g_test_printedMessage )
 #endif
 
@@ -13962,7 +13964,7 @@ stock hidden_color_print( const player_id, not_used, const lang_formatting[], an
         {
             // Here all the colored messaged must to start within a color.
             formatted_message[ 0 ] = '^1';
-            vformat( formatted_message[ 1 ], charsmax( formatted_message ) - 1, lang_formatting, 3 );
+            vformat( formatted_message[ 1 ], charsmax( formatted_message ) - 1, lang_formatting, first_lang_parameter_position );
 
             if( g_coloredChatPrefix[ 0 ] )
             {
@@ -13979,7 +13981,7 @@ stock hidden_color_print( const player_id, not_used, const lang_formatting[], an
         }
         else
         {
-            vformat( formatted_message, charsmax( formatted_message ), lang_formatting, 3 );
+            vformat( formatted_message, charsmax( formatted_message ), lang_formatting, first_lang_parameter_position );
 
             REMOVE_CODE_COLOR_TAGS( formatted_message )
             client_print( player_id, print_chat, "%s%s", g_coloredChatPrefix, formatted_message );
@@ -14014,9 +14016,9 @@ stock hidden_color_print( const player_id, not_used, const lang_formatting[], an
         LOG( 64, "( hidden_color_print ) playersCount: %d, params_number: %d...", playersCount, params_number )
 
         // ML can be used
-        if( params_number > 3 )
+        if( params_number > first_lang_parameter_position )
         {
-            for( argument_index = 2; argument_index < params_number; argument_index++ )
+            for( argument_index = first_lang_parameter_position - 1; argument_index < params_number; argument_index++ )
             {
                 LOG( 64, "( hidden_color_print ) getarg(%d): %d", argument_index, getarg( argument_index, 0 ) )
 
@@ -14030,26 +14032,22 @@ stock hidden_color_print( const player_id, not_used, const lang_formatting[], an
                                  getarg( argument_index + 1, string_index++ ) ) )
                     {
                     }
+
+                    // Closes the open string
                     formatted_message[ string_index ] = '^0';
 
-                    LOG( 64, "( hidden_color_print ) player_id: %d, formatted_message: %s", \
-                            player_id, formatted_message )
-
-                    LOG( 64, "( hidden_color_print ) GetLangTransKey( formatted_message ) != TransKey_Bad: %d, \
-                          multi_lingual_constants_number: %d, string_index: %d...", \
-                          GetLangTransKey( formatted_message ) != TransKey_Bad, \
-                          multi_lingual_constants_number, string_index )
+                    LOG( 64, "( hidden_color_print ) LANG name: %s, GetLangTransKey(): %d, TransKey_Bad: %d", \
+                            formatted_message, GetLangTransKey( formatted_message ), TransKey_Bad )
 
                     if( GetLangTransKey( formatted_message ) != TransKey_Bad )
                     {
                         // Store that argument as LANG_PLAYER so we can alter it later
+                        LOG( 64, "( hidden_color_print ) Pushing argument_index: %d", argument_index )
                         ArrayPushCell( multi_lingual_indexes_array, argument_index++ );
 
                         // Update ML array, so we'll know 1st if ML is used, 2nd how many arguments we have to change
                         multi_lingual_constants_number++;
                     }
-
-                    LOG( 64, "( hidden_color_print ) argument_index (after ArrayPushCell): %d...", argument_index )
                 }
             }
         }
@@ -14064,11 +14062,9 @@ stock hidden_color_print( const player_id, not_used, const lang_formatting[], an
             {
                 for( argument_index = 0; argument_index < multi_lingual_constants_number; argument_index++ )
                 {
-                    LOG( 64, "( hidden_color_print ) argument_index: %d, player_id: %d, \
-                            ArrayGetCell( %d, %d ): %d...", \
-                            argument_index, player_id, \
-                            multi_lingual_indexes_array, argument_index, \
-                            ArrayGetCell( multi_lingual_indexes_array, argument_index ) )
+                    LOG( 64, "( hidden_color_print ) player_id: %d, argument_index: %d, ArrayGetCell(%d,%d): %d", \
+                            player_id, argument_index, \
+                            multi_lingual_indexes_array, argument_index, ArrayGetCell( multi_lingual_indexes_array, argument_index ) )
 
                     // Set all LANG_PLAYER args to player index ( = player_id ), so we can format the text for that specific player
                     setarg( ArrayGetCell( multi_lingual_indexes_array, argument_index ), _, player_id );
@@ -14079,38 +14075,37 @@ stock hidden_color_print( const player_id, not_used, const lang_formatting[], an
             {
                 // Here all the colored messaged must to start within a color.
                 formatted_message[ 0 ] = '^1';
-                vformat( formatted_message[ 1 ], charsmax( formatted_message ) - 1, lang_formatting, 3 );
+                vformat( formatted_message[ 1 ], charsmax( formatted_message ) - 1, lang_formatting, first_lang_parameter_position );
 
                 if( g_coloredChatPrefix[ 0 ] )
                 {
                     new message[ MAX_COLOR_MESSAGE ];
                     formatex( message, charsmax( message ), "^1%s^1%s", g_coloredChatPrefix, formatted_message[ 1 ] );
 
-                    LOG( 64, "( hidden_color_print ) [in] player_id: %d, Chat printed: `%s`", player_id, message )
+                    LOG( 64, "( hidden_color_print ) 1. [out] colored message: `%s`", message )
                     PRINT_COLORED_MESSAGE( player_id, message )
                 }
                 else
                 {
+                    LOG( 64, "( hidden_color_print ) 2. [out] colored message: `%s`", formatted_message )
                     PRINT_COLORED_MESSAGE( player_id, formatted_message )
                 }
             }
             else
             {
-                // Added to remove the not used warning
-                not_used = not_used ? 0 : 0;
-
-                vformat( formatted_message, charsmax( formatted_message ), lang_formatting, 3 );
-
+                vformat( formatted_message, charsmax( formatted_message ), lang_formatting, first_lang_parameter_position );
                 REMOVE_CODE_COLOR_TAGS( formatted_message )
+
+                LOG( 64, "( hidden_color_print ) 3. [out] uncolored message: `%s`", formatted_message )
                 client_print( player_id, print_chat, "%s%s", g_coloredChatPrefix, formatted_message );
+
+                // Added to remove the not used warning. It was here because this part should not be called often.
+                not_used = not_used ? 0 : 0;
             }
         }
 
         ArrayDestroy( multi_lingual_indexes_array );
     }
-
-    LOG( 64, "( hidden_color_print ) not_used: %d", not_used )
-    LOG( 64, "( hidden_color_print ) [in AMXX 182] player_id: %d, Chat printed: `%s`", player_id, formatted_message )
 }
 
 /**
