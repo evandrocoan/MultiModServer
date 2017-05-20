@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.6.1-857";
+new const PLUGIN_VERSION[] = "v5.6.1-858";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -658,7 +658,7 @@ new cvar_coloredChatEnabled;
  * Define how many times the server can crash on a map, before that map to be ignored and to select
  * the next map on the map cycle to be played. The counter starts on 0.
  */
-#define MAX_SERVER_RESTART_ACCEPTABLE 3
+#define MAX_SERVER_RESTART_ACCEPTABLE 1
 
 /**
  * The rounds number before the mp_maxrounds/mp_winlimit to be reached to start the map voting. This
