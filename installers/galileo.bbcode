@@ -1679,14 +1679,14 @@ gal_votemap map1 map2
      5 seconds countdown just before change level will not be presented.
 
 
- [*] Command '[COLOR="Blue"][B]gal_looking_for_crashes[/B][/COLOR]', to search crashing maps through all your server maps. This command will:
+ [*] Command '[COLOR="Blue"][B]gal_look_for_crashes[/B][/COLOR]', to search crashing maps through all your server maps. This command will:
 
      [LIST=1]
      [*]Set the mp_chattime to 3,
      [*]Change the map to the next map every 7 seconds,
      [/LIST]
 
-     If you want to stop it, run the same command gal_start_looking_for_crashes on your server console.
+     If you want to stop it, run the same command gal_look_for_crashes on your server console.
      After stop, it will output the contents of the crashing maps at:
      `addons/amxmodx/data/galielo/maps_where_the_server_probably_crashed.txt`
 
@@ -1701,7 +1701,7 @@ gal_votemap map1 map2
 
  [*] [COLOR="Blue"][B]The Maintenance Mode[/B][/COLOR]:
      If the owner of the server is fixing something or updating the server and doesn't wanna the map
-     to be changed, he will enable the maintenance command '[B]gal_command_maintenance[/B]', so the map
+     to be changed, he will enable the maintenance command '[B]gal_maintenance_mode[/B]', so the map
      can't be changed by any method like gal_startvote/rtv/timeleft or maxrounds ended... and will displayed
      a print chat with something like that: You cannot change the map when the server is in mode maintenance.
 
@@ -2155,8 +2155,10 @@ doesn't use them anymore and/or is tired of supporting so many repos.
 ******************************** [anchor]Change[/anchor][anchor]Changelog[/anchor][B][SIZE="6"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
 [SPOILER]
 
+
 [LIST=1]
-[*]
+[*]Renamed the command `gal_command_maintenance` to `gal_maintenance_mode`.
+[*]Renamed the command `gal_looking_for_crashes` to `gal_look_for_crashes`.
 [/LIST]
 
 [B]2017-05-19 | v5.6.1-855[/B]
