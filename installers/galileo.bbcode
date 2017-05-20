@@ -1675,7 +1675,7 @@ gal_votemap map1 map2
 
  [*] Command '[COLOR="Blue"][B]gal_changelevel[/B][/COLOR]', to immediately change level to the current map at
      the [COLOR="Blue"][B]cvar nextmap[/B][/COLOR]. If the next map is set to `[not yet voted on]` the map will
-     be changed the next map on the map cycle. If the argument `now` is provided as in `gal_changelevel now`, the
+     be changed the next map on the map cycle. If the argument `now` is provided as in `[b]gal_changelevel[/b] now`, the
      5 seconds countdown just before change level will not be presented.
 
 
@@ -1686,7 +1686,7 @@ gal_votemap map1 map2
      [*]Change the map to the next map every 7 seconds,
      [/LIST]
 
-     If you want to stop it, run the same command gal_look_for_crashes on your server console.
+     If you want to stop it, run the same command `[B]gal_look_for_crashes[/B]` on your server console.
      After stop, it will output the contents of the crashing maps at:
      `addons/amxmodx/data/galielo/maps_where_the_server_probably_crashed.txt`
 
@@ -1694,9 +1694,9 @@ gal_votemap map1 map2
  [*] Command '[COLOR="Blue"][B]say galmenu [page_number][/B][/COLOR]', (admin MAP level required) to choose from the loaded server
      maps, the maps to create a map voting by a menu, as the one with the `gal_votemap` command. Consider here the
      nomination file list as maps source to build up the menu. If specified the `page_number` argument, the menu
-     will be opened a the specified page. Example: `say galmenu 50` will open the menu right on the page 50.
+     will be opened a the specified page. Example: `[b]say galmenu 50[/b]` will open the menu right on the page 50.
      If the argument `page_number` is omitted, the menu will open at the first page, or the last page
-     you opened it. It requires the cvar `gal_nom_playerallowance` to be set to a value higher than 0.
+     you opened it. It requires the cvar `[b]gal_nom_playerallowance[/b]` to be set to a value higher than 0.
 
 
  [*] [COLOR="Blue"][B]The Maintenance Mode[/B][/COLOR]:
