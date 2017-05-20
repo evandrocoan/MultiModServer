@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.6.1-855";
+new const PLUGIN_VERSION[] = "v5.6.1-856";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -1780,8 +1780,8 @@ public plugin_init()
     register_concmd( "gal_cancelvote", "cmd_cancelVote", ADMIN_MAP );
     register_concmd( "gal_changelevel", "cmd_changeLevel", ADMIN_MAP );
     register_concmd( "gal_createmapfile", "cmd_createMapFile", ADMIN_RCON );
-    register_concmd( "gal_command_maintenance", "cmd_maintenanceMode", ADMIN_RCON );
-    register_concmd( "gal_looking_for_crashes", "cmd_lookingForCrashes", ADMIN_RCON );
+    register_concmd( "gal_maintenance_mode", "cmd_maintenanceMode", ADMIN_RCON );
+    register_concmd( "gal_look_for_crashes", "cmd_lookForCrashes", ADMIN_RCON );
 
     LOG( 1, "    I AM EXITING plugin_init(0)..." )
     LOG( 1, "" )
@@ -1871,7 +1871,7 @@ stock runTheServerMapCrashSearch()
         server_print( "The next map will be: %s", g_nextMapName );
         server_print( "Successfully completed server change levels without crash: %d^n", successfullLevels );
 
-        // Allow the admin to connect to the server and to disable the command `gal_looking_for_crashes`.
+        // Allow the admin to connect to the server and to disable the command `gal_look_for_crashes`.
         delay = get_real_players_number() ? 100.0 : 7.0;
         server_print( "The server is changing level in %d seconds!", floatround( delay, floatround_floor ) );
 
@@ -12168,13 +12168,13 @@ public cmd_maintenanceMode( player_id, level, cid )
     return PLUGIN_HANDLED;
 }
 
-public cmd_lookingForCrashes( player_id, level, cid )
+public cmd_lookForCrashes( player_id, level, cid )
 {
-    LOG( 128, "I AM ENTERING ON cmd_lookingForCrashes(3) player_id: %d, level: %d, cid: %d", player_id, level, cid )
+    LOG( 128, "I AM ENTERING ON cmd_lookForCrashes(3) player_id: %d, level: %d, cid: %d", player_id, level, cid )
 
     if( !cmd_access( player_id, level, cid, 1 ) )
     {
-        LOG( 1, "    ( cmd_lookingForCrashes ) Returning PLUGIN_CONTINUE" )
+        LOG( 1, "    ( cmd_lookForCrashes ) Returning PLUGIN_CONTINUE" )
         return PLUGIN_CONTINUE;
     }
 
@@ -12210,7 +12210,7 @@ public cmd_lookingForCrashes( player_id, level, cid )
         }
         else
         {
-            doAmxxLog( "ERROR, cmd_lookingForCrashes: Couldn't open the file ^"%s^"", crashedMapsFilePath );
+            doAmxxLog( "ERROR, cmd_lookForCrashes: Couldn't open the file ^"%s^"", crashedMapsFilePath );
         }
     }
     else
@@ -12236,11 +12236,11 @@ public cmd_lookingForCrashes( player_id, level, cid )
         }
         else
         {
-            doAmxxLog( "ERROR, cmd_lookingForCrashes: Couldn't create the file ^"%s^"", crashedMapsFilePath );
+            doAmxxLog( "ERROR, cmd_lookForCrashes: Couldn't create the file ^"%s^"", crashedMapsFilePath );
         }
     }
 
-    LOG( 1, "    ( cmd_lookingForCrashes ) Returning PLUGIN_HANDLED" )
+    LOG( 1, "    ( cmd_lookForCrashes ) Returning PLUGIN_HANDLED" )
     return PLUGIN_HANDLED;
 }
 
