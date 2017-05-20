@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.6.1-856";
+new const PLUGIN_VERSION[] = "v5.6.1-857";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -4463,7 +4463,8 @@ stock prevent_map_change()
     // Prevent the map from being played indefinitely. We do not need to check here for the
     // `g_isThePenultGameRound` because it is being properly handled on endRoundWatchdog(0).
     if( g_isTheLastGameRound
-        || !( roundTimeMinutes > 0.1 ) )
+        || ( roundTimeMinutes < 0.1 )
+        || ( ( roundTimeMinutes * 3.0 ) > 9.0 ) )
     {
         roundTimeMinutes = 9.0;
     }
