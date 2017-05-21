@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.6.1-860";
+new const PLUGIN_VERSION[] = "v5.6.1-861";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.6.1-860";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 0
+#define DEBUG_LEVEL 2+64
 
 
 /**
@@ -4480,6 +4480,11 @@ stock saveGameEndingTypeContext()
     g_isThePenultGameRoundContext = g_isThePenultGameRound;
 }
 
+/**
+ * This need to prevent the map changing at least for the voting time plus 1 minutes when the
+ * `gal_endonround` feature is enabled and blocking the map end. This is because it allows the
+ * voting to start very close, may be even after this blocker function to be called.
+ */
 stock prevent_map_change()
 {
     LOG( 128, "I AM ENTERING ON prevent_map_change(0)" )
