@@ -1504,6 +1504,22 @@ gal_colored_chat_prefix "!g[!yAMXX!g] "
 // Default: 0
 gal_endonround 1
 
+// Indicates how much time to wait before forcing to change the map.
+// This is used when the cvar `gal_endonround` is blocking the map
+// change. That way it will change after round end, but if the round
+// does not end for these minutes it will change no matter what.
+//
+// The default limit used will be 3 times the cvar `mp_roundtime`,
+// however that value will be limited by this maximum time, if it is
+// greater than this.
+//
+// That is useful if your server is not `Deathmatch` all day, but only
+// from 23 to 9 in the morning. To disabled this feature, set the cvar
+// `gal_endonround` to 0
+//
+// Default: 9
+gal_endonround_max 9
+
 // If selected a value higher than 0, this cvar indicates the players
 // minimum number necessary to allow the last round to be finished
 // when the time runs out.
@@ -2039,6 +2055,7 @@ See the current issues/features request list on [URL="https://github.com/addonsz
 [B][URL="https://forums.alliedmods.net/member.php?u=278611"]wlmraziel[/URL][/B]: For the cvar `gal_vote_minimum` [url=https://forums.alliedmods.net/showpost.php?p=2520388&postcount=660]feature[/url] request and [es] Spanish language [url=https://forums.alliedmods.net/showpost.php?p=2520995&postcount=35]review[/url].
 [B][URL="https://forums.alliedmods.net/member.php?u=246922"]blood2k[/URL][/B]: For the command `say noms` [url=https://forums.alliedmods.net/showthread.php?p=2520787#post2520787]bug report[/url] for more than 4 maps are nominated.
 [B][URL="https://forums.alliedmods.net/member.php?u=156100"]Skyliner[/URL][/B]: For the colored chat [url=https://forums.alliedmods.net/showthread.php?p=2521542#post2521542]bug report[/url] confirmation on AMXX 182.
+[B][URL="https://forums.alliedmods.net/member.php?u=156100"]404YF[/URL][/B]: For the `say rockthevote` command [url=https://forums.alliedmods.net/showthread.php?p=2521911#post2521911]bug report[/url].
 [QUOTE=Brad;684848]
 A lot of time and effort went into making this plugin, making features just right,
 making sure there were no bugs, making sure it was easy to use. If you are glad I made
@@ -2157,6 +2174,7 @@ doesn't use them anymore and/or is tired of supporting so many repos.
 
 
 [LIST=1]
+[*]Added a new cvar `gal_endonround_max` to indicates the maximum time to wait before forcing to change the map.
 [*]Fixed the command `say rockthevote` not working when cvar `gal_rtv_commands` enables it.
 [*]Renamed the command `gal_command_maintenance` to `gal_maintenance_mode`.
 [*]Renamed the command `gal_looking_for_crashes` to `gal_look_for_crashes`.

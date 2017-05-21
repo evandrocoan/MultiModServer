@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.6.1-859";
+new const PLUGIN_VERSION[] = "v5.6.1-860";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -1203,6 +1203,7 @@ new cvar_isToStopEmptyCycle;
 new cvar_successfullLevels;
 new cvar_unnominateDisconnected;
 new cvar_endOnRound;
+new cvar_endOnRoundMax;
 new cvar_endOnRoundChange;
 new cvar_endOfMapVote;
 new cvar_endOfMapVoteExpiration;
@@ -1738,6 +1739,7 @@ public plugin_init()
     cvar_coloredChatEnabled        = register_cvar( "gal_colored_chat_enabled"     , "0"    );
     cvar_coloredChatPrefix         = register_cvar( "gal_colored_chat_prefix"      , ""     );
     cvar_endOnRound                = register_cvar( "gal_endonround"               , "0"    );
+    cvar_endOnRoundMax             = register_cvar( "gal_endonround_max"           , "9"    );
     cvar_endOnRoundMininum         = register_cvar( "gal_endonround_msg"           , "0"    );
     cvar_endOnRoundRtv             = register_cvar( "gal_endonround_rtv"           , "0"    );
     cvar_endOnRoundChange          = register_cvar( "gal_endonround_change"        , "1"    );
@@ -3622,6 +3624,12 @@ stock isToStartTheVotingOnThisRound( secondsRemaining, GameEndingType:gameEnding
     return false;
 }
 
+/**
+ * Calculates how time time the voting last.
+ *
+ * @param isToIncludeRunoff       whether to include the `runoff` time in the total. Its default value is true.
+ * @return the total voting time in seconds.
+ */
 stock howManySecondsLastMapTheVoting( bool:isToIncludeRunoff = true )
 {
     LOG( 128, "I AM ENTERING ON howManySecondsLastMapTheVoting(0)" )
@@ -4478,7 +4486,8 @@ stock prevent_map_change()
     saveEndGameLimits();
 
     // If somehow the cvar_mp_roundtime does not exist, it will point to a cvar within zero
-    new Float:roundTimeMinutes = get_pcvar_float( cvar_mp_roundtime );
+    new Float:roundTimeMinutes    = get_pcvar_float( cvar_mp_roundtime );
+    new Float:maxRoundTimeMinutes = get_pcvar_float( cvar_endOnRoundMax );
 
     // Prevent the map from ending automatically.
     tryToSetGameModCvarFloat( cvar_mp_timelimit, 0.0 );
@@ -4491,18 +4500,28 @@ stock prevent_map_change()
     LOG( 2, "( prevent_map_change ) IS CHANGING THE CVAR %-22s to '%d'.", "'mp_maxrounds'", get_pcvar_num( cvar_mp_maxrounds ) )
     LOG( 2, "( prevent_map_change ) IS CHANGING THE CVAR %-22s to '%d'.", "'mp_winlimit'", get_pcvar_num( cvar_mp_winlimit ) )
 
+    if( ( maxRoundTimeMinutes < 1 )
+        || ( ( maxRoundTimeMinutes * 60.0 ) < ( g_totalVoteTime + 60.0 ) ) )
+    {
+        maxRoundTimeMinutes = ( float( g_totalVoteTime ) / 60.0 ) + 1.0;
+    }
+
     // Prevent the map from being played indefinitely. We do not need to check here for the
     // `g_isThePenultGameRound` because it is being properly handled on endRoundWatchdog(0).
     if( g_isTheLastGameRound
         || ( roundTimeMinutes < 0.1 )
-        || ( ( roundTimeMinutes * 3.0 ) > 9.0 ) )
+        || ( ( roundTimeMinutes * 3.0 ) > maxRoundTimeMinutes ) )
     {
-        roundTimeMinutes = 9.0;
+        roundTimeMinutes = maxRoundTimeMinutes;
     }
     else
     {
         roundTimeMinutes *= 3.0;
     }
+
+    LOG( 2, "( prevent_map_change ) g_totalVoteTime:     %d", g_totalVoteTime )
+    LOG( 2, "( prevent_map_change ) roundTimeMinutes:    %f", roundTimeMinutes )
+    LOG( 2, "( prevent_map_change ) maxRoundTimeMinutes: %f", maxRoundTimeMinutes )
 
     cacheCvarsValues();
     set_task( roundTimeMinutes * 60, "map_restoreEndGameCvars", TASKID_PREVENT_INFITY_GAME );
