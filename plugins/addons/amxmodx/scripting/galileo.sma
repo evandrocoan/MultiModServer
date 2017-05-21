@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.6.1-858";
+new const PLUGIN_VERSION[] = "v5.6.1-859";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -369,7 +369,7 @@ new const PLUGIN_VERSION[] = "v5.6.1-858";
      * double failure at the test control system. This is to be used instead of setTestFailure(1)
      * when 2 consecutive tests use the same `test_id`.
      *
-     * @see the stock 'setTestFailure(3)'.
+     * @see also the stock setTestFailure(3)
      */
     #define SET_TEST_FAILURE(%1) \
     { \
@@ -386,8 +386,8 @@ new const PLUGIN_VERSION[] = "v5.6.1-858";
      * @param message      the debug message, if omitted its default value is ""
      * @param any          the variable number of formatting parameters
      *
-     * @see the stock writeToTheDebugFile( log_file[], formatted_message[] ) for the output log
-     *      'DEBUGGER_OUTPUT_LOG_FILE_NAME'.
+     * @see the also stock writeToTheDebugFile( log_file[], formatted_message[] ) for the output log
+     *      `DEBUGGER_OUTPUT_LOG_FILE_NAME`.
      */
     stock print_logger( const message[] = "", any:... )
     {
@@ -1816,9 +1816,9 @@ public plugin_cfg()
     LOG( 4, "" )
     LOG( 4, "" )
 
-    // The 'mp_fraglimitCvarSupport(0)' could register a new cvar, hence only call 'cacheCvarsValues' them after it.
+    // The 'mp_fraglimitCvarSupport(0)' could register a new cvar, hence only call cacheCvarsValuesIgnored(0) them after it.
     mp_fraglimitCvarSupport();
-    cacheCvarsValues();
+    cacheCvarsValuesIgnored();
     resetRoundsScores();
 
     LOG( 0, "", printTheCurrentAndNextMapNames() )
@@ -1987,6 +1987,8 @@ stock loadPluginSetttings()
 
     server_cmd( "exec %s/galileo.cfg", g_configsDirPath );
     server_exec();
+
+    cacheCvarsValues( true );
 }
 
 /**
@@ -2020,39 +2022,58 @@ stock mp_fraglimitCvarSupport()
     LOG( 1, "( mp_fraglimitCvarSupport ) mp_fraglimit is cvar_to_get: %d", cvar_mp_fraglimit )
 
     // re-cache later to wait load some late server configurations, as the per-map configs.
-    set_task( DELAY_TO_WAIT_THE_SERVER_CVARS_TO_BE_LOADED, "cacheCvarsValues" );
+    set_task( DELAY_TO_WAIT_THE_SERVER_CVARS_TO_BE_LOADED, "cacheCvarsValuesPublic" );
+}
+
+/**
+ * Used to allow the menu cacheCvarsValues(1) to have parameters within a default value. It is
+ * because public functions are not allow to have a default value and we need this function be
+ * public to allow it to be called from a set_task().
+ */
+public cacheCvarsValuesPublic()
+{
+    LOG( 128, "I AM ENTERING ON cacheCvarsValuesPublic(0)" )
+    cacheCvarsValues();
 }
 
 /**
  * To cache some high used server cvars.
+ *
+ * @param ignoreUnregistred     whether retrieve the settings dependent cvars or not.
+ *
+ * @see cacheCvarsValuesIgnored(0)
  */
-public cacheCvarsValues()
+stock cacheCvarsValues( ignoreUnregistred=false )
 {
-    LOG( 128, "I AM ENTERING ON cacheCvarsValues(0)" )
+    LOG( 128, "I AM ENTERING ON cacheCvarsValues(1)" )
 
     // RTV wait time
-    g_rtvWaitRounds             = get_pcvar_num( cvar_rtvWaitRounds          );
-    g_rtvWaitFrags              = get_pcvar_num( cvar_rtvWaitFrags           );
-    g_rtvWaitMinutes            = get_pcvar_float( cvar_rtvWaitMinutes       );
+    g_rtvWaitRounds  = get_pcvar_num( cvar_rtvWaitRounds    );
+    g_rtvWaitFrags   = get_pcvar_num( cvar_rtvWaitFrags     );
+    g_rtvWaitMinutes = get_pcvar_float( cvar_rtvWaitMinutes );
 
-    g_rtvCommands               = get_pcvar_num( cvar_rtvCommands            );
-    g_extendmapStepRounds       = get_pcvar_num( cvar_extendmapStepRounds    );
-    g_extendmapStepFrags        = get_pcvar_num( cvar_extendmapStepFrags     );
-    g_extendmapStepMinutes      = get_pcvar_num( cvar_extendmapStepMinutes   );
-    g_extendmapAllowStayType    = get_pcvar_num( cvar_extendmapAllowStayType );
-    g_showVoteStatus            = get_pcvar_num( cvar_showVoteStatus         );
-    g_voteShowNoneOptionType    = get_pcvar_num( cvar_voteShowNoneOptionType );
-    g_showVoteStatusType        = get_pcvar_num( cvar_showVoteStatusType     );
-    g_maxRoundsNumber           = get_pcvar_num( cvar_mp_maxrounds           );
-    g_winLimitNumber            = get_pcvar_num( cvar_mp_winlimit            );
-    g_fragLimitNumber           = get_pcvar_num( cvar_mp_fraglimit           );
-    g_timeLimitNumber           = get_pcvar_num( cvar_mp_timelimit           );
+    if( !ignoreUnregistred )
+    {
+        cacheCvarsValuesIgnored();
+    }
 
-    g_isExtendmapAllowStay      = get_pcvar_num( cvar_extendmapAllowStay   ) != 0;
-    g_isToShowNoneOption        = get_pcvar_num( cvar_isToShowNoneOption   ) == 1;
-    g_isToShowSubMenu           = get_pcvar_num( cvar_isToShowNoneOption   ) == 2;
-    g_isToShowVoteCounter       = get_pcvar_num( cvar_isToShowVoteCounter  ) != 0;
-    g_isToShowExpCountdown      = get_pcvar_num( cvar_isToShowExpCountdown ) != 0;
+    g_rtvCommands            = get_pcvar_num( cvar_rtvCommands            );
+    g_extendmapStepRounds    = get_pcvar_num( cvar_extendmapStepRounds    );
+    g_extendmapStepFrags     = get_pcvar_num( cvar_extendmapStepFrags     );
+    g_extendmapStepMinutes   = get_pcvar_num( cvar_extendmapStepMinutes   );
+    g_extendmapAllowStayType = get_pcvar_num( cvar_extendmapAllowStayType );
+    g_showVoteStatus         = get_pcvar_num( cvar_showVoteStatus         );
+    g_voteShowNoneOptionType = get_pcvar_num( cvar_voteShowNoneOptionType );
+    g_showVoteStatusType     = get_pcvar_num( cvar_showVoteStatusType     );
+    g_maxRoundsNumber        = get_pcvar_num( cvar_mp_maxrounds           );
+    g_winLimitNumber         = get_pcvar_num( cvar_mp_winlimit            );
+    g_timeLimitNumber        = get_pcvar_num( cvar_mp_timelimit           );
+
+    g_isExtendmapAllowStay   = get_pcvar_num( cvar_extendmapAllowStay   ) != 0;
+    g_isToShowNoneOption     = get_pcvar_num( cvar_isToShowNoneOption   ) == 1;
+    g_isToShowSubMenu        = get_pcvar_num( cvar_isToShowNoneOption   ) == 2;
+    g_isToShowVoteCounter    = get_pcvar_num( cvar_isToShowVoteCounter  ) != 0;
+    g_isToShowExpCountdown   = get_pcvar_num( cvar_isToShowExpCountdown ) != 0;
 
     // load the weighted votes flags and chat prefix.
     get_pcvar_string( cvar_voteWeightFlags, g_voteWeightFlags, charsmax( g_voteWeightFlags ) );
@@ -2073,6 +2094,16 @@ public cacheCvarsValues()
 
     // It need to be cached after loading all the cvars
     g_totalVoteTime = howManySecondsLastMapTheVoting();
+}
+
+/**
+ * Some cvars are not registered right after the settings are loaded because these cvars are
+ * settings dependents.
+ */
+stock cacheCvarsValuesIgnored()
+{
+    LOG( 128, "I AM ENTERING ON cacheCvarsValuesIgnored(0)" )
+    g_fragLimitNumber = get_pcvar_num( cvar_mp_fraglimit );
 }
 
 /**
@@ -17813,7 +17844,7 @@ public timeRemain()
     }
 
     /**
-     * @see test_loadVoteChoices_case(3).
+     * @see test_loadVoteChoices_case(3)
      */
     stock test_loadVoteChoices_check( newSeries, mapToCheck[], bool:isToBePresent )
     {
@@ -18683,7 +18714,7 @@ public timeRemain()
     }
 
     /**
-     * @see test_GET_MAP_INFO(2).
+     * @see test_GET_MAP_INFO(2)
      */
     stock test_GET_MAP_INFO_check( test_id, textToCheck[], bool:is, bool:toBe )
     {
@@ -19448,7 +19479,7 @@ public timeRemain()
     /**
      * Calls the 'test_loadVoteChoices_load(1)' series case 'c' for manual testing.
      *
-     * @see test_announceVoteBlockedMap_a(0).
+     * @see test_announceVoteBlockedMap_a(0)
      */
     stock test_announceVoteBlockedMap_c()
     {
