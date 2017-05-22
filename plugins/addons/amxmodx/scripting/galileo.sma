@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.6.1-863";
+new const PLUGIN_VERSION[] = "v5.6.1-864";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -8425,7 +8425,7 @@ stock display_menu_clean( player_id, menuKeys )
     static menuClean[ MAX_BIG_BOSS_STRING ];
 
     static voteFooter   [ MAX_SHORT_STRING ];
-    new voteExtension[ MAX_SHORT_STRING ];
+    static voteExtension[ MAX_SHORT_STRING ];
     static menuHeader   [ MAX_SHORT_STRING / 2 ];
     static noneOption   [ MAX_SHORT_STRING / 2 ];
 
