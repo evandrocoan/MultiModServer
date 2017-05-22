@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.6.1-866";
+new const PLUGIN_VERSION[] = "v5.6.1-867";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -1692,6 +1692,7 @@ public plugin_init()
     register_cvar( "gal_debug_level", debug_level, FCVAR_SERVER | FCVAR_SPONLY );
 #endif
 
+    cvar_endOnRoundRtv             = register_cvar( "gal_endonround_rtv"           , "0"    );
     cvar_rtvCommands               = register_cvar( "gal_rtv_commands"             , "0"    );
     cvar_rtvWaitMinutes            = register_cvar( "gal_rtv_wait"                 , "10"   );
     cvar_rtvWaitRounds             = register_cvar( "gal_rtv_wait_rounds"          , "5"    );
@@ -1741,7 +1742,6 @@ public plugin_init()
     cvar_endOnRound                = register_cvar( "gal_endonround"               , "0"    );
     cvar_endOnRoundMax             = register_cvar( "gal_endonround_max"           , "9"    );
     cvar_endOnRoundMininum         = register_cvar( "gal_endonround_msg"           , "0"    );
-    cvar_endOnRoundRtv             = register_cvar( "gal_endonround_rtv"           , "0"    );
     cvar_endOnRoundChange          = register_cvar( "gal_endonround_change"        , "1"    );
     cvar_isEndMapCountdown         = register_cvar( "gal_endonround_countdown"     , "0"    );
 
