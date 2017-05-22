@@ -2248,7 +2248,7 @@ doesn't use them anymore and/or is tired of supporting so many repos.
 
 [B]2017-02-06 | v5.2.1-771[/B]
 [LIST=1]
-[*]Added new option to the cvar `gal_endofmapvote_ask`, Ignore option 2 and 4 and immediately start the voting.
+[*]Added a new option to the cvar `gal_endofmapvote_ask`, Ignore option 2 and 4 and immediately start the voting.
 [*]Added the command `quit2` to be used instead of `quit`, when you want to the server to restart on the same map it was before.
 [*]Added a chat print on the periodic time left HUD announcement. Update your LANG file `galielo.txt`.
 [*]Improved the nominations detections and the nomination menu user experiencing.
@@ -2283,7 +2283,7 @@ doesn't use them anymore and/or is tired of supporting so many repos.
 [*]Added a new command `say timeleft` to show how many seconds there are remaining to the map end.
 [*]Added support to the command `say timeleft` say how may rounds/frags are remaining.
 [*]Added voice support to the command `say timeleft` say how may rounds/frags are remaining.
-[*]Added new requirement, now you need to disable the default `timeleft.amxx` plugin.
+[*]Added a new requirement, now you need to disable the default `timeleft.amxx` plugin.
 [*]Added to the cvar `gal_srv_start` option 1, an automatically created list called `maps_where_the_server_probably_crashed.txt`.
 [*]Added a new option to the cvar `gal_endofmapvote_ask`, to announce the voting 10 seconds before the voting to start.
 [*]Added a new option to the cvar `gal_srv_move_cursor`, to start following the series when it changes by an RTV vote.
@@ -2421,7 +2421,7 @@ doesn't use them anymore and/or is tired of supporting so many repos.
 
 [B]2016-07-09 | v3.2.0-195[/B]
 [LIST=1]
-[*]Added new constant 'IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES' on the source code, to disable the colored chat at compilation time.
+[*]Added a new constant 'IS_TO_DISABLE_THE_COLORED_TEXT_MESSAGES' on the source code, to disable the colored chat at compilation time.
 [*]Fixed the cvar 'gal_whitelist_block_out' disabling The Maps Groups Feature, when the Whitelist Feature is disabled.
 [*]Fixed bug On AMXX 1.8.2, where disabling the color chat, make all messages to all players being on the server language.
 [*]Improved the 'Whitelist' Feature memory and processor use.
@@ -2443,14 +2443,14 @@ doesn't use them anymore and/or is tired of supporting so many repos.
 [B]2016-07-07 | v3.0.0-162[/B]
 [LIST=1]
 [*]Translated the plugin to Dutch [nl] and Serbian [sr] languages. See the new LANG file 'galileo.txt'.
-[*]Added new LANG constant 'GAL_WINNER_ORDERED' to be used when anyone voted and is to follow the map cycle.
+[*]Added a new LANG constant 'GAL_WINNER_ORDERED' to be used when anyone voted and is to follow the map cycle.
 [*]Added support to the Half-File cvar 'mp_fraglimit' for change map limiter as the 'mp_timelimit'.
 [*]Added hierarchical maps list filling ignoring, after go throw all available maps.
-[*]Added new cvar 'gal_whitelist_block_out' to allow to block maps not included on the 'Whitelist' rules.
-[*]Added new cvar 'gal_mp_fraglimit_support', to enable the cvar 'mp_fraglimit' on game modes as 'Counter-Strike'.
-[*]Added new cvar 'gal_recent_nom_maps' to allow the recent maps to be nominated.
-[*]Added new cvar 'gal_game_crash_recreation' configure the game crash actions.
-[*]Added new cvar 'gal_banrecent_mapcycle' to mark as recent played maps only the map-cycle maps.
+[*]Added a new cvar 'gal_whitelist_block_out' to allow to block maps not included on the 'Whitelist' rules.
+[*]Added a new cvar 'gal_mp_fraglimit_support', to enable the cvar 'mp_fraglimit' on game modes as 'Counter-Strike'.
+[*]Added a new cvar 'gal_recent_nom_maps' to allow the recent maps to be nominated.
+[*]Added a new cvar 'gal_game_crash_recreation' configure the game crash actions.
+[*]Added a new cvar 'gal_banrecent_mapcycle' to mark as recent played maps only the map-cycle maps.
 [*]Added the server maintenance mode feature. Use 'gal_command_maintenance' to enable it.
 [*]Allowed the whitelist feature to be used with the minimum players nominations control feature.
 [*]Removed the maximum maps limit from the cvar 'gal_banrecent' maps.
@@ -2466,7 +2466,7 @@ doesn't use them anymore and/or is tired of supporting so many repos.
 
 [B]2016-04-09 | v2.6[/B]
 [LIST=1]
-[*]Added new cvar 'gal_whitelist_minplayers' to control the Whitelist feature behavior.
+[*]Added a new cvar 'gal_whitelist_minplayers' to control the Whitelist feature behavior.
 [*]Fixed server crash when there are less maps than the minimum voting required.
 [*]Fixed the Whitelist feature showing an empty blocked map list.
 [/LIST]
@@ -2480,7 +2480,7 @@ doesn't use them anymore and/or is tired of supporting so many repos.
 [LIST=1]
 [*]Added a new LANG constant 'GAL_NOM_CANCEL_OPTION' = Cancel all your Nominations.
 [*]Added the option to the 'gal_vote_minplayers_mapfile' to use the map cycle file.
-[*]Add new cvar 'gal_nom_minplayers_control' to control the nominations voting map list behavior.
+[*]Add a new cvar 'gal_nom_minplayers_control' to control the nominations voting map list behavior.
 [*]Added to the nomination's menu title, it's LANG constant.
 [*]Fixed the 'nomenu' using the wrong map selection.
 [/LIST]
@@ -2547,7 +2547,7 @@ doesn't use them anymore and/or is tired of supporting so many repos.
 [*]Improved the 'vote_startDirector()' Unit Tests sequencial running.
 [*]Fixed the cvar 'gal_nextmap_change' working when the cvar 'gal_endofmapvote' is disabled.
 [*]Created a voting round start detection delay, to give time to buy weapons before the voting to start.
-[*]Added new cvar 'gal_endofmapvote_start' to enable or disabled the voting round start detection delay.
+[*]Added a new cvar 'gal_endofmapvote_start' to enable or disabled the voting round start detection delay.
 [*]Fixed to start an early map vote after the first two minutes bad behavior.
 [*]Fixed a new voting reset after the 'gal_cancelvote' command.
 [/LIST]
@@ -2567,23 +2567,23 @@ doesn't use them anymore and/or is tired of supporting so many repos.
 [*]Fixed bug using mp_maxrounds: if the vote started automatic and the result is extend its works fine and with mp_maxrounds.
    If the vote started by rtv and the result is extend he will with extend with mp_timelimit. It must use mp_maxrounds.
 [*]Fixed 'sv_restartround' time detection.
-[*]Added new cvar 'gal_endonround_rtv' to Indicates when a map should end after the RTV voting is finished.
+[*]Added a new cvar 'gal_endonround_rtv' to Indicates when a map should end after the RTV voting is finished.
    0 - end immediately after the voting finished. 1 - end after the current round.
-[*]Added new cvar 'gal_rtv_wait_admin'. If an admin have the change map flag is online:
+[*]Added a new cvar 'gal_rtv_wait_admin'. If an admin have the change map flag is online:
    0 - players can normally rock the vote. 1 - RTV will not work and will print 'Cannot rock the vote when an admin is online'.
 [*]Fixed bug where the handle empty server feature would change the map when there are players playing.
 [*]Integrated the cvar 'gal_endonround_players' features into the cvar 'gal_endonround_msg'.
 [*]Added to the 'gal_endonround_rtv' cvar the players minimum number necessary to allow the last round to be finished when the time runs out.
-[*]Added new option 2 to the cvar 'gal_vote_show_none_type'. After the user voted, transform the '0 - None' option on 'one time cancel' vote opportunity.
+[*]Added a new option 2 to the cvar 'gal_vote_show_none_type'. After the user voted, transform the '0 - None' option on 'one time cancel' vote opportunity.
 [*]Added support to 'engine_changelevel' from AMX Mod X 183.
 [*]Added correct documentation for the 'gal_srv_start' cvar to indicates which action to take when it is detected that the server has been 'externally restarted'.
 [*]Improved 'gal_emptyserver_wait' cvar documentation in the configuration file.
 [*]Fixed empty-server map cycle bug to always starting at its first map.
-[*]Added new cvar 'gal_emptyserver_change'. When the server is empty, only change to an alternate empty-server map cycle after timelimit, maxrounds or winlimit expiration.
-[*]Added new cvar 'gal_endofmapvote_ask' to indicates whether there should be asked to the players if they want to participate the map vote to decide what the next map will be.
+[*]Added a new cvar 'gal_emptyserver_change'. When the server is empty, only change to an alternate empty-server map cycle after timelimit, maxrounds or winlimit expiration.
+[*]Added a new cvar 'gal_endofmapvote_ask' to indicates whether there should be asked to the players if they want to participate the map vote to decide what the next map will be.
 [*]Added to the handle server start feature the ability to continues the mapcycle from the lastmap played instead of the first map on the mapcycle list.
 [*]Added the Map Groups Feature feature documentation.
-[*]Added new cvar 'gal_vote_whitelist_mapfile' that points a configuration file which specifies the time where its listed
+[*]Added a new cvar 'gal_vote_whitelist_mapfile' that points a configuration file which specifies the time where its listed
    maps are allowed to be added to the voting list as fillers after the nominations being loaded.
 [/LIST]
 
@@ -2593,18 +2593,18 @@ doesn't use them anymore and/or is tired of supporting so many repos.
 [*]Fixed bug when the vote started by rtv vote work but the map didn't change.
 [*]Added RTV support to 'mp_maxrounds' and 'mp_winlimit'.
 [*]Fixed the command 'gal_startvote' handler not ignoring double quotes.
-[*]Added new cvar 'gal_vote_minplayers_mapfile' to specifiy the mapcycle file to use when 'gal_vote_minplayers' is activated.
-[*]Added new cvar 'gal_vote_minplayers' to specify the minimum players number to use the 'gal_vote_minplayers_mapfile'.
+[*]Added a new cvar 'gal_vote_minplayers_mapfile' to specifiy the mapcycle file to use when 'gal_vote_minplayers' is activated.
+[*]Added a new cvar 'gal_vote_minplayers' to specify the minimum players number to use the 'gal_vote_minplayers_mapfile'.
 [/LIST]
 
 [B]2016-01-17 | v1.2-release_candidate1.hotfix1[/B]
 [LIST=1]
-[*]Added new cvar 'amx_extendmap_allow_stay_type' to allow show the current map name on stay here option.
+[*]Added a new cvar 'amx_extendmap_allow_stay_type' to allow show the current map name on stay here option.
 [*]Fixed misspelling at multilingual file.
 [*]Fixed 'None' vote map option blink at the last second.
 [*]Fixed voting on option none after the voting end.
 [*]Fixed remaining time showing 0 seconds instead of 'vote has ended'.
-[*]Added new cvar 'gal_vote_show_none_type', to control the 'None' option behavior when it is active.
+[*]Added a new cvar 'gal_vote_show_none_type', to control the 'None' option behavior when it is active.
 [*]Fixed 'gal_vote_showstatus' option 2, causing the voting to show the countdown timer freezed.
 [/LIST]
 
@@ -2616,7 +2616,7 @@ doesn't use them anymore and/or is tired of supporting so many repos.
 [*]Added a new cvar to disable the colored chat.
 [*]Fixed 'gal_startvote' [-restart] argument not working.
 [*]Fixed showing that the player chose extend map, instead of stay on map.
-[*]Added new cvar 'amx_extendmap_allow_order' to follow the map cycle map order, when anyone vote for next map.
+[*]Added a new cvar 'amx_extendmap_allow_order' to follow the map cycle map order, when anyone vote for next map.
 [*]Added support to the old cvar variable 'gal_vote_mapfile', and a new option '*' to choose use the mapcycle instead.
 [*]Added the 'gal_vote_show_none' cvar to shows the voting option "None" for people to choose if they don't like any other choice.
 [*]Added a new cvar 'gal_vote_show_counter', to show only the last 10 seconds remaining to end the voting.
@@ -2633,15 +2633,15 @@ doesn't use them anymore and/or is tired of supporting so many repos.
 [*]Implemented mp_winlimit and mp_maxrounds end map voting.
 [*]Removed automatic vote map, after forcing votemap using '-nochange' argument.
 [*]Replaced the command 'gal_startvote2' with 'gal_startvote' and options '-nochange' and '-restart'.
-[*]Added new cvar "gal_endonround_players" which indicates the players minimum number necessary to allow the last round to be finished when time runs out.
-[*]Added new cvar option "gal_rtv_commands 7" to enable 7 the options 1, 2 and 4 at the same time.
-[*]Added new cvar "amx_extendmap_step_rounds" to the config file.
-[*]Added new cvar "amx_extendmap_max" which limits the max extension time.
-[*]Added new cvar "gal_emptyserver_wait" which implements the server empty feature.
-[*]Added new cvar "gal_emptyserver_mapfile" which specifies a empty server map cycle list.
-[*]Added new cvar "gal_unnominate_disconnected" to remove a disconnected player nominations.
-[*]Added new cvar "gal_endonround_countdown" to show the countdown, drop weapons and buy grenades.
-[*]Added new cvar "gal_endonround_msg" to indicates how to announce the last round.
+[*]Added a new cvar "gal_endonround_players" which indicates the players minimum number necessary to allow the last round to be finished when time runs out.
+[*]Added a new cvar option "gal_rtv_commands 7" to enable 7 the options 1, 2 and 4 at the same time.
+[*]Added a new cvar "amx_extendmap_step_rounds" to the config file.
+[*]Added a new cvar "amx_extendmap_max" which limits the max extension time.
+[*]Added a new cvar "gal_emptyserver_wait" which implements the server empty feature.
+[*]Added a new cvar "gal_emptyserver_mapfile" which specifies a empty server map cycle list.
+[*]Added a new cvar "gal_unnominate_disconnected" to remove a disconnected player nominations.
+[*]Added a new cvar "gal_endonround_countdown" to show the countdown, drop weapons and buy grenades.
+[*]Added a new cvar "gal_endonround_msg" to indicates how to announce the last round.
 [*]Fixed the cvar "gal_endonround" that indicates when a map should end when time runs out.
 [*]Removed an unused cvar "gal_vote_mapfile" as we just use the current map cycle file.
 [*]Fixed concurrency problem between mp_maxrounds, mp_winlimit and mp_timelimit.
