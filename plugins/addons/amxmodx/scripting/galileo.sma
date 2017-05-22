@@ -8424,7 +8424,7 @@ stock display_menu_clean( player_id, menuKeys )
     static menuClean[ MAX_BIG_BOSS_STRING ];
 
     static voteFooter   [ MAX_SHORT_STRING ];
-    static voteExtension[ MAX_SHORT_STRING ];
+    new voteExtension[ MAX_SHORT_STRING ];
     static menuHeader   [ MAX_SHORT_STRING / 2 ];
     static noneOption   [ MAX_SHORT_STRING / 2 ];
 
