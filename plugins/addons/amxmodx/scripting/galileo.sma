@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.6.1-864";
+new const PLUGIN_VERSION[] = "v5.6.1-865";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -12054,16 +12054,16 @@ public cmd_startVote( player_id, level, cid )
             LOG( 8, "( cmd_startVote ) equali( %s, '-restart', 4 )? %d", argument, equali( argument, "-restart", 4 ) )
         }
         else
-		{
-			new endOnRoundRtv = get_pcvar_num( cvar_endOnRoundRtv );
+        {
+            new endOnRoundRtv = get_pcvar_num( cvar_endOnRoundRtv );
 
-			if( endOnRoundRtv
-				&& get_real_players_number() >= endOnRoundRtv )
-			{
-				g_isTheLastGameRound = true;
-				g_isToChangeMapOnVotingEnd = false;
-			}
-		}
+            if( endOnRoundRtv
+                && get_real_players_number() >= endOnRoundRtv )
+            {
+                g_isTheLastGameRound = true;
+                g_isToChangeMapOnVotingEnd = false;
+            }
+        }
 
         LOG( 8, "( cmd_startVote ) g_isTimeToRestart? %d, g_isToChangeMapOnVotingEnd? %d, \
                 g_voteStatus & IS_FORCED_VOTE: %d", g_isTimeToRestart, g_isToChangeMapOnVotingEnd, \
