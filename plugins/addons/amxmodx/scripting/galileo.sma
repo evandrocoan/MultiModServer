@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.6.1-862";
+new const PLUGIN_VERSION[] = "v5.6.1-863";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -6782,9 +6782,6 @@ public start_voting_by_winlimit()
 
     if( get_pcvar_num( cvar_endOfMapVote ) )
     {
-        // This must to be called the first thing here.
-        resetVoteTypeGlobals();
-
         g_endVotingType |= IS_BY_WINLIMIT;
         startTheVoting( false );
     }
@@ -6797,9 +6794,6 @@ public start_voting_by_maxrounds()
 
     if( get_pcvar_num( cvar_endOfMapVote ) )
     {
-        // This must to be called the first thing here.
-        resetVoteTypeGlobals();
-
         g_endVotingType |= IS_BY_ROUNDS;
         startTheVoting( false );
     }
@@ -6812,9 +6806,6 @@ public start_voting_by_frags()
 
     if( get_pcvar_num( cvar_endOfMapVote ) )
     {
-        // This must to be called the first thing here.
-        resetVoteTypeGlobals();
-
         g_endVotingType |= IS_BY_FRAGS;
         startTheVoting( false );
     }
@@ -6827,9 +6818,6 @@ public start_voting_by_timer()
 
     if( get_pcvar_num( cvar_endOfMapVote ) )
     {
-        // This must to be called the first thing here.
-        resetVoteTypeGlobals();
-
         g_endVotingType |= IS_BY_TIMER;
         startTheVoting( false );
     }
@@ -6842,9 +6830,6 @@ public startVotingByGameEngineCall()
 
     if( get_pcvar_num( cvar_endOfMapVote ) )
     {
-        // This must to be called the first thing here.
-        resetVoteTypeGlobals();
-
         g_isToChangeMapOnVotingEnd = true;
         startTheVoting( false );
     }
@@ -10150,9 +10135,6 @@ stock start_rtvVote()
 {
     LOG( 128, "I AM ENTERING ON start_rtvVote(0)" )
     new endOnRoundRtv = get_pcvar_num( cvar_endOnRoundRtv );
-
-    // Just to be sure. And this must to be called the first thing here.
-    resetVoteTypeGlobals();
 
     if( endOnRoundRtv
         && get_real_players_number() >= endOnRoundRtv )
