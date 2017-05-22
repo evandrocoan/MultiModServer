@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.6.1-865";
+new const PLUGIN_VERSION[] = "v5.6.1-866";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -12033,13 +12033,13 @@ public cmd_startVote( player_id, level, cid )
     else
     {
         new waitTime;
+        new argument[ 32 ];
+
         g_isToChangeMapOnVotingEnd = true;
+        read_args( argument, charsmax( argument ) );
 
-        if( read_argc() == 2 )
+        if( read_argc() <= 2 )
         {
-            new argument[ 32 ];
-
-            read_args( argument, charsmax( argument ) );
             remove_quotes( argument );
 
             if( equali( argument, "-nochange" ) )
@@ -12050,29 +12050,34 @@ public cmd_startVote( player_id, level, cid )
             {
                 g_isTimeToRestart = true;
             }
-
-            LOG( 8, "( cmd_startVote ) equali( %s, '-restart', 4 )? %d", argument, equali( argument, "-restart", 4 ) )
-        }
-        else
-        {
-            new endOnRoundRtv = get_pcvar_num( cvar_endOnRoundRtv );
-
-            if( endOnRoundRtv
-                && get_real_players_number() >= endOnRoundRtv )
+            else if( equali( argument, "-roundend", 4 ) )
             {
                 g_isTheLastGameRound = true;
                 g_isToChangeMapOnVotingEnd = false;
             }
+
+            LOG( 8, "( cmd_startVote ) g_isTimeToRestart: %d", g_isTimeToRestart )
+            LOG( 8, "( cmd_startVote ) g_isTheLastGameRound: %d, argument: %s", g_isTheLastGameRound, argument )
+            LOG( 8, "( cmd_startVote ) g_isToChangeMapOnVotingEnd: %d, g_voteStatus: %d", g_isToChangeMapOnVotingEnd, g_voteStatus )
+
+            waitTime = floatround( getVoteAnnouncementTime( get_pcvar_num( cvar_isToAskForEndOfTheMapVote ) ), floatround_ceil );
+            console_print( player_id, "%L", player_id, "GAL_VOTE_COUNTDOWN", waitTime );
+
+            startTheVoting( true );
         }
+        else
+        {
+            console_print( player_id, "^nThe argument `%s` could not be recognized as a valid option.", argument );
 
-        LOG( 8, "( cmd_startVote ) g_isTimeToRestart? %d, g_isToChangeMapOnVotingEnd? %d, \
-                g_voteStatus & IS_FORCED_VOTE: %d", g_isTimeToRestart, g_isToChangeMapOnVotingEnd, \
-                g_voteStatus & IS_FORCED_VOTE != 0 )
-
-        waitTime = floatround( getVoteAnnouncementTime( get_pcvar_num( cvar_isToAskForEndOfTheMapVote ) ), floatround_ceil );
-        console_print( player_id, "%L", player_id, "GAL_VOTE_COUNTDOWN", waitTime );
-
-        startTheVoting( true );
+            // It was necessary to split the message up to 190 characters due the output print being cut.
+            console_print( player_id,
+                   "Examples:\
+                    ^ngal_votemap\
+                    ^ngal_votemap -nochange\
+                    ^ngal_votemap -restart\
+                    ^ngal_votemap -roundend\
+                    " );
+        }
     }
 
     LOG( 1, "    ( cmd_startVote ) Returning PLUGIN_HANDLED" )
