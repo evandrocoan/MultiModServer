@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.6.1-861";
+new const PLUGIN_VERSION[] = "v5.6.1-862";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.6.1-861";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 2+64
+#define DEBUG_LEVEL 16+8
 
 
 /**
@@ -729,8 +729,8 @@ new cvar_coloredChatEnabled;
  * Determines whether a new empty line should be added near the voting menu footer.
  *
  * The last rule `g_totalVoteOptions == 1 && !g_isRunOffNeedingKeepCurrentMap` is used when the
- * voting is not an runoff voting the there is only 1 map on the voting menu. At the moment this
- * could happens when the voting is started by the `gal_votemap`/`say galmenu` command.
+ * voting is not an runoff voting, therefore there is only 1 map on the voting menu. At the moment,
+ * this could happens when the voting is started by the `gal_votemap`/`say galmenu` command.
  */
 #define IS_TO_ADD_VOTE_MENU_NEW_LINE() \
     ( ( g_voteStatus & IS_RUNOFF_VOTE ) \
@@ -8103,6 +8103,10 @@ stock addExtensionOption( player_id, copiedChars, voteStatus[], voteStatusLenght
                   && !g_isGameFinalVoting
                   && !( g_voteStatus & IS_RUNOFF_VOTE ) );
 
+    // We need to clear the remaining status, otherwise it can show up unwanted.
+    // https://forums.alliedmods.net/showthread.php?p=2522088#post2522088
+    voteStatus[ copiedChars ] = '^0';
+
     if( g_isRunOffNeedingKeepCurrentMap )
     {
         // if it is a end map RunOff, then it is a extend button, not a keep current map button
@@ -8118,8 +8122,8 @@ stock addExtensionOption( player_id, copiedChars, voteStatus[], voteStatusLenght
         }
     }
 
-    LOG( 4, "    ( addExtensionOption ) Add optional menu item, allowStay: %d, allowExtend: %d, \
-            g_isExtendmapAllowStay: %d", allowStay, allowExtend, g_isExtendmapAllowStay )
+    LOG( 4, "( addExtensionOption ) allowStay: %d, allowExtend: %d, g_isExtendmapAllowStay: %d", \
+            allowStay, allowExtend, g_isExtendmapAllowStay )
 
     // add optional menu item
     if( ( IS_MAP_EXTENSION_ALLOWED()
@@ -8127,12 +8131,17 @@ stock addExtensionOption( player_id, copiedChars, voteStatus[], voteStatusLenght
         && ( allowExtend
              || allowStay ) )
     {
+        LOG( 4, "( addExtensionOption ) IS_MAP_EXTENSION_ALLOWED(): %d",  IS_MAP_EXTENSION_ALLOWED() )
         new mapVotingCount[ MAX_MAPNAME_LENGHT ];
 
-        new bool:isToAddExtraLine = !( g_totalVoteOptions == 1
-                                       && !g_isRunOffNeedingKeepCurrentMap );
+        // We need to add a new line when `g_isRunOffNeedingKeepCurrentMap` is set to true, because
+        // each map menu entry (on this case the extension option) must to start adding a new line.
+        new bool:isToAddExtraLine = ( g_totalVoteOptions != 1
+                                      || g_isRunOffNeedingKeepCurrentMap );
 
-        // if it's not a runoff vote, add a space between the maps and the additional option
+        // If it's not a runoff vote, add a space between the maps and the additional option.
+        // Because it is a run off voting we must to put a space because there are usually only 2
+        // items, therefore it would be awkward view/menu.
         if( !( g_voteStatus & IS_RUNOFF_VOTE ) )
         {
             copiedChars += formatex( voteStatus[ copiedChars ], voteStatusLenght - copiedChars, "^n" );
@@ -8173,6 +8182,8 @@ stock addExtensionOption( player_id, copiedChars, voteStatus[], voteStatusLenght
         }
         else
         {
+            LOG( 4, "( addExtensionOption ) g_extendmapAllowStayType: %d",  g_extendmapAllowStayType )
+
             // add the "Stay Here" menu item
             if( g_extendmapAllowStayType )
             {
@@ -8443,15 +8454,14 @@ stock display_menu_clean( player_id, menuKeys )
     menuKeys = addExtensionOption( player_id, 0, voteExtension, charsmax( voteExtension ), menuKeys, false );
 
     // Add the header
-    formatex( menuHeader, charsmax( menuHeader ), "%s%L",
-            COLOR_YELLOW, player_id, "GAL_CHOOSE" );
+    formatex( menuHeader, charsmax( menuHeader ), "%s%L", COLOR_YELLOW, player_id, "GAL_CHOOSE" );
 
     // Append a "None" option on for people to choose if they don't like any other choice to append
     // it here to always shows it WHILE voting.
     if( g_isToShowSubMenu )
     {
         formatex( menuClean, charsmax( menuClean ),
-               "%s^n%s^n\
+               "%s^n%s\
                 %s^n\
                 %s%s0.%s %L^n\
                 %s",
@@ -8472,7 +8482,7 @@ stock display_menu_clean( player_id, menuKeys )
         }
 
         formatex( menuClean, charsmax( menuClean ),
-               "%s^n%s^n\
+               "%s^n%s\
                 %s^n\
                 %s%s0. %s%L\
                 %s",
