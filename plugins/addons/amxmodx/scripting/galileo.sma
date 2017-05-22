@@ -12053,6 +12053,17 @@ public cmd_startVote( player_id, level, cid )
 
             LOG( 8, "( cmd_startVote ) equali( %s, '-restart', 4 )? %d", argument, equali( argument, "-restart", 4 ) )
         }
+        else
+		{
+			new endOnRoundRtv = get_pcvar_num( cvar_endOnRoundRtv );
+
+			if( endOnRoundRtv
+				&& get_real_players_number() >= endOnRoundRtv )
+			{
+				g_isTheLastGameRound = true;
+				g_isToChangeMapOnVotingEnd = false;
+			}
+		}
 
         LOG( 8, "( cmd_startVote ) g_isTimeToRestart? %d, g_isToChangeMapOnVotingEnd? %d, \
                 g_voteStatus & IS_FORCED_VOTE: %d", g_isTimeToRestart, g_isToChangeMapOnVotingEnd, \
