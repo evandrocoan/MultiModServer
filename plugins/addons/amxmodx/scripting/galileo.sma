@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.6.1-867";
+new const PLUGIN_VERSION[] = "v5.6.1-868";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.6.1-867";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 16+8
+#define DEBUG_LEVEL 2+64 //16+8
 
 
 /**
@@ -505,7 +505,8 @@ new cvar_coloredChatEnabled;
 /**
  * General Constants.
  */
-#define MUTE_MESSAGES_SPAMMING 1
+#define MUTE_MESSAGES_SPAMMING  1
+#define VOTE_WAIT_FOR_ROUND_END 2
 
 #define MAX_INTEGER  2147483647
 #define MIN_INTEGER -2147483648
@@ -12051,6 +12052,13 @@ public cmd_startVote( player_id, level, cid )
                 g_isTimeToRestart = true;
             }
             else if( equali( argument, "-roundend", 4 ) )
+            {
+                g_isTheLastGameRound = true;
+                g_isToChangeMapOnVotingEnd = false;
+            }
+
+            // Change the map at the current round end, instead of immediately.
+            if( get_pcvar_num( cvar_generalOptions ) & VOTE_WAIT_FOR_ROUND_END )
             {
                 g_isTheLastGameRound = true;
                 g_isToChangeMapOnVotingEnd = false;
