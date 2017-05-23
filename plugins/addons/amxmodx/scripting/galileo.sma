@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.6.1-873";
+new const PLUGIN_VERSION[] = "v5.6.1-874";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.6.1-873";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 2
+#define DEBUG_LEVEL 16+8
 
 
 /**
@@ -1727,7 +1727,7 @@ public plugin_init()
     cvar_isToShowExpCountdown      = register_cvar( "gal_vote_expirationcountdown" , "0"    );
     cvar_isToShowVoteCounter       = register_cvar( "gal_vote_show_counter"        , "1"    );
     cvar_voteAnnounceChoice        = register_cvar( "gal_vote_announcechoice"      , "0"    );
-    cvar_generalOptions            = register_cvar( "gal_general_options"          , "2"    );
+    cvar_generalOptions            = register_cvar( "gal_general_options"          , "0"    );
     cvar_isToAskForEndOfTheMapVote = register_cvar( "gal_endofmapvote_ask"         , "0"    );
     cvar_cmdVotemap                = register_cvar( "gal_cmd_votemap"              , "1"    );
     cvar_cmdListmaps               = register_cvar( "gal_cmd_listmaps"             , "1"    );
@@ -8204,6 +8204,12 @@ stock addExtensionOption( player_id, copiedChars, voteStatus[], voteStatusLenght
             }
         }
 
+        // When these options are enabled, it is required a new line at this ending for proper spacing.
+        if( g_isToShowNoneOption || g_isToShowSubMenu )
+        {
+            copiedChars += formatex( voteStatus[ copiedChars ], voteStatusLenght - copiedChars, "^n" );
+        }
+
         // Added the extension/stay key option (1 << 2 = key 3, 1 << 3 = key 4, ...)
         menuKeys |= ( 1 << g_totalVoteOptions );
     }
@@ -8242,15 +8248,19 @@ stock display_menu_dirt( player_id, menuKeys, bool:isVoteOver, bool:noneIsHidden
         formatex( menuHeader, charsmax( menuHeader ), "%s%L",
                 COLOR_YELLOW, player_id, "GAL_RESULT" );
 
+        // When these options are enabled, it is required a new line at this ending for proper spacing.
+        #define DISPLAY_MENU_ENDED_MESSAGE() \
+            ( g_isToShowNoneOption || g_isToShowSubMenu ) ? "" : "^n", COLOR_YELLOW, player_id, "GAL_VOTE_ENDED"
+
         if( g_isToShowSubMenu )
         {
             formatex( menuDirty, charsmax( menuDirty ),
-                   "%s^n%s^n\
+                   "%s^n%s\
                     %s%s0.%s %L^n^n\
-                    %s%L",
+                    %s%s%L",
                     menuHeader, voteStatus,
                     isToAddExtraLine ? "^n" : "", COLOR_RED, COLOR_WHITE, player_id, "CMD_MENU",
-                    COLOR_YELLOW, player_id, "GAL_VOTE_ENDED" );
+                    DISPLAY_MENU_ENDED_MESSAGE() );
         }
         else if( g_isToShowNoneOption
                  && g_voteShowNoneOptionType )
@@ -8258,32 +8268,31 @@ stock display_menu_dirt( player_id, menuKeys, bool:isVoteOver, bool:noneIsHidden
             computeUndoButton( player_id, isToShowUndo, isVoteOver, noneOption, charsmax( noneOption ) );
 
             formatex( menuDirty, charsmax( menuDirty ),
-                   "%s^n%s^n\
+                   "%s^n%s\
                     %s^n^n\
-                    %s%L",
+                    %s%s%L",
                     menuHeader, voteStatus,
                     noneOption,
-                    COLOR_YELLOW, player_id, "GAL_VOTE_ENDED" );
+                    DISPLAY_MENU_ENDED_MESSAGE() );
         }
         else
         {
             formatex( menuDirty, charsmax( menuDirty ),
-                   "%s^n%s^n^n\
-                    %s%L",
+                   "%s^n%s^n\
+                    %s%s%L",
                     menuHeader, voteStatus,
-                    COLOR_YELLOW, player_id, "GAL_VOTE_ENDED" );
+                    DISPLAY_MENU_ENDED_MESSAGE() );
         }
     }
     else
     {
         // add the header
-        formatex( menuHeader, charsmax( menuHeader ), "%s%L",
-                COLOR_YELLOW, player_id, "GAL_CHOOSE" );
+        formatex( menuHeader, charsmax( menuHeader ), "%s%L", COLOR_YELLOW, player_id, "GAL_CHOOSE" );
 
         if( g_isToShowSubMenu )
         {
             formatex( menuDirty, charsmax( menuDirty ),
-                   "%s^n%s^n\
+                   "%s^n%s\
                     %s%s0.%s %L\
                     %s",
                     menuHeader, voteStatus,
@@ -8303,7 +8312,7 @@ stock display_menu_dirt( player_id, menuKeys, bool:isVoteOver, bool:noneIsHidden
             }
 
             formatex( menuDirty, charsmax( menuDirty ),
-                   "%s^n%s^n\
+                   "%s^n%s\
                     %s\
                     %s",
                     menuHeader, voteStatus,
@@ -8324,13 +8333,15 @@ stock display_menu_dirt( player_id, menuKeys, bool:isVoteOver, bool:noneIsHidden
     display_vote_menu( false, player_id, menuDirty, menuKeys );
 }
 
+/**
+ * Based on how many seconds are remaining, calculates the vote menu `Time Remaining` seconds. It
+ * also displays that the voting has ended when the timer is negative, however this option seems to
+ * be deprecated. Therefore the actual `GAL_VOTE_ENDED` is displayed by display_menu_dirt(5).
+ */
 stock computeVoteMenuFooter( player_id, voteFooter[], voteFooterSize )
 {
     LOG( 256, "I AM ENTERING ON computeVoteMenuFooter(3) player_id: %d", player_id )
     LOG( 256, "( computeVoteMenuFooter ) voteFooterSize: %d", voteFooterSize )
-
-    new copiedChars;
-    copiedChars = copy( voteFooter, voteFooterSize, "^n^n" );
 
     if( g_isToShowExpCountdown )
     {
@@ -8342,13 +8353,12 @@ stock computeVoteMenuFooter( player_id, voteFooter[], voteFooterSize )
         {
             if( g_votingSecondsRemaining >= 0 )
             {
-                formatex( voteFooter[ copiedChars ], voteFooterSize - copiedChars, "%s%L: %s%i",
+                formatex( voteFooter, voteFooterSize, "^n^n%s%L: %s%i",
                         COLOR_WHITE, player_id, "GAL_TIMELEFT", COLOR_RED, g_votingSecondsRemaining + 1 );
             }
             else
             {
-                formatex( voteFooter[ copiedChars ], voteFooterSize - copiedChars,
-                        "%s%L", COLOR_YELLOW, player_id, "GAL_VOTE_ENDED" );
+                formatex( voteFooter, voteFooterSize, "^n^n%s%L", COLOR_YELLOW, player_id, "GAL_VOTE_ENDED" );
             }
         }
     }
@@ -8459,8 +8469,8 @@ stock display_menu_clean( player_id, menuKeys )
     {
         formatex( menuClean, charsmax( menuClean ),
                "%s^n%s\
-                %s^n\
-                %s%s0.%s %L^n\
+                %s\
+                %s%s0.%s %L\
                 %s",
                 menuHeader, g_voteStatusClean,
                 voteExtension,
@@ -8480,7 +8490,7 @@ stock display_menu_clean( player_id, menuKeys )
 
         formatex( menuClean, charsmax( menuClean ),
                "%s^n%s\
-                %s^n\
+                %s\
                 %s%s0. %s%L\
                 %s",
                 menuHeader, g_voteStatusClean,
@@ -8492,7 +8502,7 @@ stock display_menu_clean( player_id, menuKeys )
     {
         formatex( menuClean, charsmax( menuClean ),
                "%s^n%s\
-                %s^n\
+                %s\
                 %s",
                 menuHeader, g_voteStatusClean,
                 voteExtension,
@@ -8547,7 +8557,7 @@ public vote_handleChoice( player_id, key )
     {
         client_cmd( player_id, "^"slot%i^"", key + 1 );
 
-        LOG( 1, "    ( vote_handleChoice ) Just Returning/blocking, slot key pressed." )
+        LOG( 1, "    ( vote_handleChoice ) Just Returning/blocking, pressing the slot key:", key + 1 )
         return;
     }
 
@@ -8564,11 +8574,13 @@ public vote_handleChoice( player_id, key )
         }
 
         reshowTheVoteMenu( player_id );
+        LOG( 1, "    ( vote_handleChoice ) Just Returning/blocking, seeing the submenu." )
         return;
     }
     else if( g_isPlayerSeeingTheSubMenu[ player_id ] )
     {
         processSubMenuKeyHit( player_id, key );
+        LOG( 1, "    ( vote_handleChoice ) Just Returning/blocking, submenu command selected." )
         return;
     }
     else if( !g_isPlayerVoted[ player_id ] )
@@ -8584,6 +8596,7 @@ public vote_handleChoice( player_id, key )
     }
     else
     {
+        LOG( 1, "( vote_handleChoice ) Pressing the slot key: %d", key + 1 )
         client_cmd( player_id, "^"slot%i^"", key + 1 );
     }
 
@@ -8600,10 +8613,14 @@ public vote_handleChoice( player_id, key )
         // Some times the menu does not exit after voting. So, override manually.
         show_menu( player_id, 1, ".", 1, CHOOSE_MAP_MENU_NAME );
     }
+
+    LOG( 1, "    I AM EXITING vote_handleChoice(2)..." )
+    LOG( 1, "" )
 }
 
 stock reshowTheVoteMenu( player_id )
 {
+    LOG( 128, "I AM ENTERING ON reshowTheVoteMenu(1) player_id: %d", player_id )
     new argument[ 2 ];
 
     argument[ 0 ] = false;
@@ -8640,15 +8657,15 @@ stock register_vote( player_id, pressedKeyCode )
 
     if( pressedKeyCode == 9 )
     {
+        g_playerVotedWeight[ player_id ]     = 0;     // the None option has no weight
+        g_playerVotedOption[ player_id ]     = 0;     // the None option does not integrate vote counting
         g_isPlayerParticipating[ player_id ] = false; // if is not interested now, at runoff wont also
-        g_playerVotedOption[ player_id ]     = 0; // the None option does not integrate vote counting
-        g_playerVotedWeight[ player_id ]     = 0; // the None option has no weight
     }
     else
     {
-        g_isPlayerParticipating[ player_id ] = true;
-        g_playerVotedOption[ player_id ]     = pressedKeyCode;
         g_playerVotedWeight[ player_id ]     = 1;
+        g_playerVotedOption[ player_id ]     = pressedKeyCode;
+        g_isPlayerParticipating[ player_id ] = true;
     }
 
     // pressedKeyCode 9 means the keyboard key 0 (the None option) and it does not integrate the vote
