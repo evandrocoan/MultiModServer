@@ -1628,8 +1628,10 @@ gal_endonround_countdown 31
      when the remaining rounds end up.
 
 
- [*] Command '[COLOR="Blue"][B]gal_startvote[/B] -nochange[/COLOR] or [COLOR="Blue"]-restart[/COLOR] or [COLOR="Blue"]-roundend[/COLOR]', to forces a map vote to begin
-     and the map will be changed once the next map has been determined.
+ [*] Command '[COLOR="Blue"][B]gal_startvote[/B] -nochange[/COLOR] or [COLOR="Blue"]-restart[/COLOR] or [COLOR="Blue"]other args[/COLOR]', to forces a map vote
+     to begin and the map will be changed immediately or at the end of the current round.
+     You can see the cvar `gal_general_options` to set the default behavior to change the
+     map immediately or the end of the current round.
 
 
             [LIST]
@@ -1643,9 +1645,13 @@ gal_endonround_countdown 31
             plugin.
 
 
+            [*]If the "[COLOR="blue"][B]-now[/B][/COLOR]" argument is supplied, the map will be changed immediately by [COLOR="Blue"]Galileo[/COLOR],
+            after the voting to finish. This is the same as the cvar `gal_general_options` set to 0.
+
+
             [*]If the "[COLOR="blue"][B]-roundend[/B][/COLOR]" argument is supplied, the map will only be changed by
             [COLOR="Blue"]Galileo[/COLOR], after the round where the voting is going on finish. This is the same as
-            the cvar `gal_endonround` set to 1, but here it is for the current round where
+            the cvar `gal_general_options` set to 2, but here it is for the current round where
             the voting finished.
             [/LIST]
 
@@ -2183,8 +2189,10 @@ doesn't use them anymore and/or is tired of supporting so many repos.
 
 [LIST=1]
 [*]Added a new option to the cvar `gal_general_options`, change the command `gal_startvote` command default behavior.
+[*]Added a new argument to the command `gal_startvote`. The argument `-now` to allow the map to change immediately at the voting end.
 [*]Added a new argument to the command `gal_startvote`. The argument `-roundend` to allow the round to finish after the voting end.
 [*]Added a new cvar `gal_endonround_max` to indicates the maximum time to wait before forcing to change the map.
+[*]Fixed the cvars `gal_extendmap_max_*` option 0 always blocking the vote, instead of allowing it.
 [*]Fixed the command `say rockthevote` not working when cvar `gal_rtv_commands` enables it.
 [*]Fixed a ghost extension option showing up on `runoff` voting.
 [*]Fixed the possibility of the voting being messed up by its own automatic trigger.
