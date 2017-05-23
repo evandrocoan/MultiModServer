@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.6.1-875";
+new const PLUGIN_VERSION[] = "v5.6.1-876";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -10298,6 +10298,9 @@ public serverChangeLevel( mapName[] )
     LOG( 1, "" )
 }
 
+/**
+ * The default engine console `votemap command` customization.
+ */
 public cmd_HL1_votemap( player_id )
 {
     LOG( 128, "I AM ENTERING ON cmd_HL1_votemap(1) player_id: %d", player_id )
@@ -10314,6 +10317,9 @@ public cmd_HL1_votemap( player_id )
     return PLUGIN_CONTINUE;
 }
 
+/**
+ * The default engine console `listmaps` command customization.
+ */
 public cmd_HL1_listmaps( player_id )
 {
     LOG( 128, "I AM ENTERING ON cmd_HL1_listmaps(1) player_id: %d", player_id )
@@ -10339,6 +10345,9 @@ public cmd_HL1_listmaps( player_id )
     return PLUGIN_HANDLED;
 }
 
+/**
+ * Properly list all server maps at the user console.
+ */
 public map_listAll( player_id )
 {
     LOG( 128, "I AM ENTERING ON map_listAll(1) player_id: %d", player_id )
@@ -10871,10 +10880,14 @@ stock map_announceNomination( player_id, map[] )
     color_chat( 0, 0, "%L", LANG_PLAYER, "GAL_NOM_SUCCESS", player_name, map );
 }
 
+/**
+ * The command `say rockthevote`.
+ */
 public cmd_rockthevote( player_id )
 {
     LOG( 128, "I AM ENTERING ON cmd_rockthevote(1) player_id: %d", player_id )
 
+    // Suggests to use `say rtv` and call the actual rock the vote function vote_rock(1).
     color_chat( player_id, 0, "%L", player_id, "GAL_CMD_RTV" );
     vote_rock( player_id );
 
@@ -10882,10 +10895,14 @@ public cmd_rockthevote( player_id )
     return PLUGIN_CONTINUE;
 }
 
+/**
+ * The command `say nominations`.
+ */
 public cmd_nominations( player_id )
 {
     LOG( 128, "I AM ENTERING ON cmd_nominations(1) player_id: %d", player_id )
 
+    // Suggests to use `say noms` and call the actual rock the vote function nomination_list().
     color_chat( player_id, 0, "%L", player_id, "GAL_CMD_NOMS" );
     nomination_list();
 
@@ -10893,6 +10910,9 @@ public cmd_nominations( player_id )
     return PLUGIN_CONTINUE;
 }
 
+/**
+ * The command `say recentmaps` and its menu implementation.
+ */
 public cmd_listrecent( player_id )
 {
     LOG( 128, "I AM ENTERING ON cmd_listrecent(1) player_id: %d", player_id )
@@ -10949,6 +10969,9 @@ public cmd_listrecent( player_id )
     return PLUGIN_CONTINUE;
 }
 
+/**
+ * Build and displays the `say recentmaps` menu.
+ */
 public showRecentMapsListMenu( player_id )
 {
     LOG( 128, "I AM ENTERING ON showRecentMapsListMenu(1) player_id: %d", player_id )
@@ -11102,6 +11125,9 @@ public cmd_listrecent_handler( player_id, menu, item )
     return PLUGIN_HANDLED;
 }
 
+/**
+ * The command `gal_changelevel`.
+ */
 public cmd_changeLevel( player_id, level, cid )
 {
     LOG( 128, "I AM ENTERING ON cmd_changeLevel(3) player_id: %d, level: %d, cid: %d", player_id, level, cid )
@@ -11124,6 +11150,7 @@ public cmd_changeLevel( player_id, level, cid )
         LOG( 8, "( cmd_changeLevel ) " )
         LOG( 8, "( cmd_changeLevel ) argumentsCount: %d, arguments: %s", argumentsCount, arguments )
 
+        // Immediately change the level, instead of wait the changing count down, if it is enabled.
         if( containi( arguments, "now" ) > -1 )
         {
             process_last_round( true, false );
@@ -11142,6 +11169,9 @@ public cmd_changeLevel( player_id, level, cid )
     return PLUGIN_HANDLED;
 }
 
+/**
+ * The command `gal_cancelvote`.
+ */
 public cmd_cancelVote( player_id, level, cid )
 {
     LOG( 128, "I AM ENTERING ON cmd_cancelVote(3) player_id: %d, level: %d, cid: %d", player_id, level, cid )
@@ -11204,9 +11234,9 @@ stock bool:approveTheVotingStartLight()
 }
 
 /**
- * It will receive a list of maps and will to perform a map voting as if it was an automatic or
- * forced one. The only difference would be the maps it will use. Instead of random, they will
- * the the maps passed to the command `gal_votemap map1 map2 map3 ... map9`.
+ * The command `gal_votemap`. It will receive a list of maps and will to perform a map voting as if
+ * it was an automatic or forced one. The only difference would be the maps it will use. Instead of
+ * random, they will the the maps passed to the command `gal_votemap map1 map2 map3 ... map9`.
  *
  * Issue: Add the command `gal_votemap` https://github.com/addonszz/Galileo/issues/48
  */
@@ -12029,7 +12059,7 @@ public handleVoteMapActionMenu( player_id, pressedKeyCode )
 }
 
 /**
- * See setTheCurrentAndNextMapSettings(0).
+ * The command `quit2`. See also setTheCurrentAndNextMapSettings(0).
  */
 public cmd_quit2()
 {
@@ -12041,9 +12071,7 @@ public cmd_quit2()
 }
 
 /**
- * Called when need to start a vote map, where the command line first argument could be:
- *    -nochange: extend the current map, aka, Keep Current Map, will to do the real extend.
- *    -restart: extend the current map, aka, Keep Current Map restart the server at the current map.
+ * The command `gal_startvote`, used when need to start a forced vote map.
  */
 public cmd_startVote( player_id, level, cid )
 {
@@ -12136,6 +12164,9 @@ public cmd_startVote( player_id, level, cid )
     return PLUGIN_HANDLED;
 }
 
+/**
+ * The command `gal_createmapfile`.
+ */
 public cmd_createMapFile( player_id, level, cid )
 {
     LOG( 128, "I AM ENTERING ON cmd_createMapFile(3) player_id: %d, level: %d, cid: %d", player_id, level, cid )
@@ -12253,6 +12284,9 @@ public sort_stringsi( Array:array, elem1, elem2, data[], data_size )
     return strcmp( map1, map2, 1 );
 }
 
+/**
+ * The command `gal_maintenance_mode`.
+ */
 public cmd_maintenanceMode( player_id, level, cid )
 {
     LOG( 128, "I AM ENTERING ON cmd_maintenanceMode(3) player_id: %d, level: %d, cid: %d", player_id, level, cid )
@@ -12284,6 +12318,9 @@ public cmd_maintenanceMode( player_id, level, cid )
     return PLUGIN_HANDLED;
 }
 
+/**
+ * The command `gal_look_for_crashes`.
+ */
 public cmd_lookForCrashes( player_id, level, cid )
 {
     LOG( 128, "I AM ENTERING ON cmd_lookForCrashes(3) player_id: %d, level: %d, cid: %d", player_id, level, cid )
