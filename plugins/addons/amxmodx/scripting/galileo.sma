@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.6.1-868";
+new const PLUGIN_VERSION[] = "v5.6.1-871";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.6.1-868";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 2+64 //16+8
+#define DEBUG_LEVEL 16
 
 
 /**
@@ -1727,7 +1727,7 @@ public plugin_init()
     cvar_isToShowExpCountdown      = register_cvar( "gal_vote_expirationcountdown" , "0"    );
     cvar_isToShowVoteCounter       = register_cvar( "gal_vote_show_counter"        , "1"    );
     cvar_voteAnnounceChoice        = register_cvar( "gal_vote_announcechoice"      , "0"    );
-    cvar_generalOptions            = register_cvar( "gal_general_options"          , "0"    );
+    cvar_generalOptions            = register_cvar( "gal_general_options"          , "2"    );
     cvar_isToAskForEndOfTheMapVote = register_cvar( "gal_endofmapvote_ask"         , "0"    );
     cvar_cmdVotemap                = register_cvar( "gal_cmd_votemap"              , "1"    );
     cvar_cmdListmaps               = register_cvar( "gal_cmd_listmaps"             , "1"    );
@@ -12057,7 +12057,7 @@ public cmd_startVote( player_id, level, cid )
                 g_isToChangeMapOnVotingEnd = false;
             }
 
-            // Change the map at the current round end, instead of immediately.
+            // Force the map at the current round end, instead of immediately.
             if( get_pcvar_num( cvar_generalOptions ) & VOTE_WAIT_FOR_ROUND_END )
             {
                 g_isTheLastGameRound = true;
@@ -19231,11 +19231,11 @@ public timeRemain()
         // Force mark the map as crashing.
         for( new index = -1; index < MAX_SERVER_RESTART_ACCEPTABLE; ++index )
         {
-            test_handleServerStart_case( startAction, "some_map1", "de_dust3", 6 ); // Case 7-18
+            test_handleServerStart_case( startAction, "some_map1", "de_dust3", 6 ); // Cases 7-13
         }
 
         // It is expected to the map cycle position to go from 3 to 4.
-        test_handleServerStart_case( startAction, "some_map1", "de_dust4", 4, .iA=true, .iP=3 ); // Case 19-21
+        test_handleServerStart_case( startAction, "some_map1", "de_dust4", 4, .iA=true, .iP=3 ); // Case 14-15
     }
 
     /**

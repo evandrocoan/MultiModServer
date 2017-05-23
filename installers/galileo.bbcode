@@ -1628,7 +1628,7 @@ gal_endonround_countdown 31
      when the remaining rounds end up.
 
 
- [*] Command '[COLOR="Blue"][B]gal_startvote -nochange or -restart[/B][/COLOR]', to forces a map vote to begin
+ [*] Command '[COLOR="Blue"][B]gal_startvote[/B] -nochange[/COLOR] or [COLOR="Blue"]-restart[/COLOR] or [COLOR="Blue"]-roundend[/COLOR]', to forces a map vote to begin
      and the map will be changed once the next map has been determined.
 
 
@@ -1641,6 +1641,12 @@ gal_endonround_countdown 31
             [*]If the "[COLOR="blue"][B]-restart[/B][/COLOR]" argument is supplied and the voting opting "Stay Here" wins,
             the current map is restarted. This command is for the "[URL="https://forums.alliedmods.net/showthread.php?t=273020"]Multi-Mod Manager[/URL]"
             plugin.
+
+
+            [*]If the "[COLOR="blue"][B]-roundend[/B][/COLOR]" argument is supplied, the map will only be changed by
+            [COLOR="Blue"]Galileo[/COLOR], after the round where the voting is going on finish. This is the same as
+            the cvar `gal_endonround` set to 1, but here it is for the current round where
+            the voting finished.
             [/LIST]
 
 
