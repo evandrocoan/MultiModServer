@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.6.1-876";
+new const PLUGIN_VERSION[] = "v5.6.1-877";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -10911,1154 +10911,6 @@ public cmd_nominations( player_id )
 }
 
 /**
- * The command `say recentmaps` and its menu implementation.
- */
-public cmd_listrecent( player_id )
-{
-    LOG( 128, "I AM ENTERING ON cmd_listrecent(1) player_id: %d", player_id )
-    new recentMapCount;
-
-    if( g_recentListMapsArray
-        && ( recentMapCount = ArraySize( g_recentListMapsArray ) ) > 0 )
-    {
-        switch( get_pcvar_num( cvar_banRecentStyle ) )
-        {
-            case 1:
-            {
-                new copiedChars;
-                new recentMapName    [ MAX_MAPNAME_LENGHT ];
-                new recentMapsMessage[ MAX_COLOR_MESSAGE ];
-
-                for( new mapIndex = 0; mapIndex < recentMapCount; ++mapIndex )
-                {
-                    ArrayGetString( g_recentListMapsArray, mapIndex, recentMapName, charsmax( recentMapName ) );
-
-                    if( copiedChars < charsmax( recentMapsMessage ) )
-                    {
-                        copiedChars += formatex( recentMapsMessage[ copiedChars ],
-                                charsmax( recentMapsMessage ) - copiedChars, ", %s", recentMapName );
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-
-                color_chat( 0, 0, "%L: %s", LANG_PLAYER, "GAL_MAP_RECENTMAPS", recentMapsMessage[ 2 ] );
-            }
-            case 2:
-            {
-                new recentMapName[ MAX_MAPNAME_LENGHT ];
-
-                for( new mapIndex = 0; mapIndex < recentMapCount && mapIndex < 5; ++mapIndex )
-                {
-                    ArrayGetString( g_recentListMapsArray, mapIndex, recentMapName, charsmax( recentMapName ) );
-
-                    color_chat( 0, 0, "%L ( %i );: %s",
-                            LANG_PLAYER, "GAL_MAP_RECENTMAP", mapIndex + 1, recentMapName );
-                }
-            }
-            case 3:
-            {
-                showRecentMapsListMenu( player_id );
-            }
-        }
-    }
-
-    LOG( 1, "    ( cmd_listrecent ) Returning PLUGIN_CONTINUE" )
-    return PLUGIN_CONTINUE;
-}
-
-/**
- * Build and displays the `say recentmaps` menu.
- */
-public showRecentMapsListMenu( player_id )
-{
-    LOG( 128, "I AM ENTERING ON showRecentMapsListMenu(1) player_id: %d", player_id )
-
-    new mapIndex;
-    new itemsCount;
-
-    new recentMapName[ MAX_MAPNAME_LENGHT ];
-    new menuOptionString[ 64 ];
-
-    // Calculate how much pages there are available.
-    new recentMapCount    = ArraySize( g_recentListMapsArray );
-    new currentPageNumber = g_recentMapsMenuPages[ player_id ];
-    new lastPageNumber    = GET_LAST_PAGE_NUMBER( recentMapCount, MAX_MENU_ITEMS_PER_PAGE )
-
-    // To create the menu
-    formatex( menuOptionString, charsmax( menuOptionString ),
-            IS_COLORED_CHAT_ENABLED() ? "%L\R%d /%d" : "%L  %d /%d",
-            player_id, "GAL_MAP_RECENTMAPS", currentPageNumber + 1, lastPageNumber );
-
-    new menu = menu_create( menuOptionString, "cmd_listrecent_handler" );
-
-    // Disables the menu paging.
-    menu_setprop( menu, MPROP_PERPAGE, 0 );
-
-    // Configure the menu buttons.
-    // SET_MENU_LANG_STRING_PROPERTY( MPROP_EXITNAME, menu, "EXIT" )
-    // SET_MENU_LANG_STRING_PROPERTY( MPROP_NEXTNAME, menu, "MORE" )
-    // SET_MENU_LANG_STRING_PROPERTY( MPROP_BACKNAME, menu, "BACK" )
-
-    if( ( mapIndex = currentPageNumber * MAX_MENU_ITEMS_PER_PAGE ) )
-    {
-        mapIndex = mapIndex - 1;
-    }
-
-    // Add the menu items.
-    for( ; mapIndex < recentMapCount && itemsCount < MAX_MENU_ITEMS_PER_PAGE; ++mapIndex, ++itemsCount )
-    {
-        LOG( 4, "( showRecentMapsListMenu ) mapIndex: %d", mapIndex )
-        ArrayGetString( g_recentListMapsArray, mapIndex, recentMapName, charsmax( recentMapName ) );
-
-        menu_additem( menu, recentMapName );
-        LOG( 4, "( showRecentMapsListMenu ) recentMapName: %s", recentMapName )
-    }
-
-    LOG( 4, "( showRecentMapsListMenu ) itemsCount: %d, mapIndex: %d", itemsCount, mapIndex )
-    addMenuMoreBackOptions( menu, player_id, menuOptionString, mapIndex < recentMapCount, currentPageNumber > 0, itemsCount );
-
-    // To display the menu.
-    menu_display( player_id, menu );
-}
-
-stock addMenuMoreBackOptions( menu, player_id, menuOptionString[], bool:isToEnableMoreButton, bool:isToEnableBackButton, itemsCount )
-{
-    LOG( 128, "I AM ENTERING ON addMenuMoreBackOptions(5) isToEnableMoreButton: %d, \
-            isToEnableBackButton: %d", isToEnableMoreButton, isToEnableBackButton )
-
-    // Force the menu control options to be present on the keys 8 (more), 9 (back) and 0 (exit).
-    while( itemsCount < MAX_MENU_ITEMS_PER_PAGE )
-    {
-        itemsCount++;
-        formatex( menuOptionString, MAX_SHORT_STRING - 1, "%L", player_id, "OFF" );
-        menu_additem( menu, menuOptionString, _, 1 << 26 );
-
-        // When using slot=1 this might break your menu. To achieve this functionality
-        // menu_addblank2() should be used (AMXX 183 only).
-        // menu_addblank( menu, 1 );
-    }
-
-    // Add some space from the control options and format the more button within the LANG file.
-    menu_addblank( menu, 0 );
-    formatex( menuOptionString, MAX_SHORT_STRING - 1, "%L", player_id, "MORE" );
-
-    // If there are more maps, add the more option
-    if( isToEnableMoreButton )
-    {
-        menu_additem( menu, menuOptionString, _, 0 );
-    }
-    else
-    {
-        menu_additem( menu, menuOptionString, _, 1 << 26 );
-    }
-
-    // If we are on the first page, disable the back option and to add the exit button.
-    if( isToEnableBackButton )
-    {
-        formatex( menuOptionString, MAX_SHORT_STRING - 1, "%L", player_id, "BACK" );
-        menu_additem( menu, menuOptionString, _, 0 );
-    }
-    else
-    {
-        // To add the exit button
-        formatex( menuOptionString, MAX_SHORT_STRING - 1, "%L", player_id, "EXIT" );
-        menu_additem( menu, menuOptionString, _, 0 );
-    }
-}
-
-/**
- * This menu handler uses the convert_numeric_base(3) instead of menu_item_getinfo() to allow easy
- * conversion to the olde menu style, and also because it is working fine as it is.
- */
-public cmd_listrecent_handler( player_id, menu, item )
-{
-    LOG( 128, "I AM ENTERING ON cmd_listrecent_handler(3) player_id: %d, menu: %d, item: %d", player_id, menu, item )
-
-    // Let go to destroy the menu and clean some memory. As the menu is not paginated, the item 9
-    // is the key 0 on the keyboard. Also, the item 8 is the key 9; 7, 8; 6, 7; 5, 6; 4, 5; etc.
-    if( item < 0
-        || ( item == 9
-             && g_recentMapsMenuPages[ player_id ] == 0 ) )
-    {
-        DESTROY_PLAYER_NEW_MENU_TYPE( menu )
-
-        LOG( 1, "    ( cmd_listrecent_handler ) Just Returning PLUGIN_HANDLED, as menu is destroyed." )
-        return PLUGIN_HANDLED;
-    }
-
-    // If the 0 button item is hit, and we are not on the first page, we must to perform the back option.
-    if( item == 9
-        && g_recentMapsMenuPages[ player_id ] > 0 )
-    {
-        DESTROY_PLAYER_NEW_MENU_TYPE( menu )
-        g_recentMapsMenuPages[ player_id ] ? g_recentMapsMenuPages[ player_id ]-- : 0;
-
-        // Try to block/difficult players from performing the Denial Of Server attack.
-        // set_task( 0.1, "showRecentMapsListMenu", player_id );
-        showRecentMapsListMenu( player_id );
-
-        LOG( 1, "    ( cmd_listrecent_handler ) Just Returning PLUGIN_HANDLED, doing the back button." )
-        return PLUGIN_HANDLED;
-    }
-
-    // If the 9 button item is hit, and we are on some page not the last one, we must to perform the more option.
-    if( item == 8 )
-    {
-        DESTROY_PLAYER_NEW_MENU_TYPE( menu )
-        g_recentMapsMenuPages[ player_id ]++;
-
-        // Try to block/difficult players from performing the Denial Of Server attack.
-        // set_task( 0.1, "showRecentMapsListMenu", player_id );
-        showRecentMapsListMenu( player_id );
-
-        LOG( 1, "    ( cmd_listrecent_handler ) Just Returning PLUGIN_HANDLED, doing the more button." )
-        return PLUGIN_HANDLED;
-    }
-
-    // Just keep showing the menu until the exit button is pressed.
-    menu_display( player_id, menu );
-
-    LOG( 1, "    ( cmd_listrecent_handler ) Just Returning PLUGIN_HANDLED." )
-    return PLUGIN_HANDLED;
-}
-
-/**
- * The command `gal_changelevel`.
- */
-public cmd_changeLevel( player_id, level, cid )
-{
-    LOG( 128, "I AM ENTERING ON cmd_changeLevel(3) player_id: %d, level: %d, cid: %d", player_id, level, cid )
-
-    if( !cmd_access( player_id, level, cid, 1 ) )
-    {
-        LOG( 1, "    ( cmd_changeLevel ) Returning PLUGIN_CONTINUE" )
-        return PLUGIN_CONTINUE;
-    }
-
-    new argumentsCount = read_argc();
-
-    if( argumentsCount > 1 )
-    {
-        new arguments[ MAX_BIG_BOSS_STRING ];
-
-        read_args( arguments, charsmax( arguments ) );
-        remove_quotes( arguments );
-
-        LOG( 8, "( cmd_changeLevel ) " )
-        LOG( 8, "( cmd_changeLevel ) argumentsCount: %d, arguments: %s", argumentsCount, arguments )
-
-        // Immediately change the level, instead of wait the changing count down, if it is enabled.
-        if( containi( arguments, "now" ) > -1 )
-        {
-            process_last_round( true, false );
-        }
-        else
-        {
-            process_last_round( true );
-        }
-    }
-    else
-    {
-        process_last_round( true );
-    }
-
-    LOG( 1, "    ( cmd_changeLevel ) Returning PLUGIN_HANDLED" )
-    return PLUGIN_HANDLED;
-}
-
-/**
- * The command `gal_cancelvote`.
- */
-public cmd_cancelVote( player_id, level, cid )
-{
-    LOG( 128, "I AM ENTERING ON cmd_cancelVote(3) player_id: %d, level: %d, cid: %d", player_id, level, cid )
-
-    if( !cmd_access( player_id, level, cid, 1 ) )
-    {
-        LOG( 1, "    ( cmd_cancelVote ) Returning PLUGIN_CONTINUE" )
-        return PLUGIN_CONTINUE;
-    }
-
-    // If the are on debug mode, just to erase everything, as may be there something overlapping.
-#if defined DEBUG
-    cancelVoting( true );
-
-    // To avoid the warning unreachable code.
-    if( !g_dummy_value )
-    {
-        LOG( 1, "    ( cmd_cancelVote ) Returning PLUGIN_HANDLED" )
-        return PLUGIN_HANDLED;
-    }
-#endif
-
-    if( g_voteStatus & IS_VOTE_IN_PROGRESS )
-    {
-        color_chat( 0, 0, "%L", LANG_SERVER, "VOT_CANC" );
-        cancelVoting( true );
-    }
-    else
-    {
-        color_chat( 0, 0, "%L", LANG_SERVER, "NO_VOTE_CANC" );
-    }
-
-    LOG( 1, "    ( cmd_cancelVote ) Returning PLUGIN_HANDLED" )
-    return PLUGIN_HANDLED;
-}
-
-stock bool:approveTheVotingStartLight()
-{
-    LOG( 128, "I AM ENTERING ON approveTheVotingStartLight(1) get_real_players_number: %d", \
-            get_real_players_number() )
-
-    // block the voting on some not allowed situations/cases
-    if( get_real_players_number() == 0)
-    {
-        LOG( 1, "    ( approveTheVotingStartLight ) Returning false 0 players on the server." )
-        return false;
-    }
-
-    // the rounds start delay task could be running
-    remove_task( TASKID_START_VOTING_DELAYED );
-
-    // If the voting menu deletion task is running, remove it then delete the menus right now.
-    if( remove_task( TASKID_DELETE_USERS_MENUS ) )
-    {
-        vote_resetStats();
-    }
-
-    LOG( 1, "    ( approveTheVotingStart ) Returning true, due passed by all requirements." )
-    return true;
-}
-
-/**
- * The command `gal_votemap`. It will receive a list of maps and will to perform a map voting as if
- * it was an automatic or forced one. The only difference would be the maps it will use. Instead of
- * random, they will the the maps passed to the command `gal_votemap map1 map2 map3 ... map9`.
- *
- * Issue: Add the command `gal_votemap` https://github.com/addonszz/Galileo/issues/48
- */
-public cmd_voteMap( player_id, level, cid )
-{
-    LOG( 128, "I AM ENTERING ON cmd_voteMap(3) player_id: %d, level: %d, cid: %d", player_id, level, cid )
-
-    if( !cmd_access( player_id, level, cid, 1 ) )
-    {
-        LOG( 1, "    ( cmd_voteMap ) Returning PLUGIN_CONTINUE" )
-        return PLUGIN_CONTINUE;
-    }
-
-    // There is a real strange `Run time error 5: memory access` bug around these declarations,
-    // if you use the approveTheVotingStart(1) instead of the approveTheVotingStartLight(1)!
-    if( g_voteStatus & IS_VOTE_IN_PROGRESS )
-    {
-        color_chat( player_id, 0, "%L", player_id, "GAL_VOTE_INPROGRESS" );
-    }
-    else if( approveTheVotingStartLight() )
-    {
-        new argumentsCount;
-        new arguments[ MAX_BIG_BOSS_STRING ];
-
-        read_args( arguments, charsmax( arguments ) );
-        remove_quotes( arguments );
-
-        argumentsCount = read_argc();
-        log_amx( "%L: %s", LANG_SERVER, "GAL_VOTE_START", arguments );
-
-        LOG( 8, "( cmd_voteMap ) " )
-        LOG( 8, "( cmd_voteMap ) arguments: %s", arguments )
-
-        if( argumentsCount > 1
-            && g_isExtendmapAllowStay
-            || argumentsCount > 2 )
-        {
-            new argument[ MAX_MAPNAME_LENGHT  ];
-            new bool:isWhitelistEnabled = IS_WHITELIST_ENABLED();
-
-            // If the voteMapMenuBuilder(1) added some maps, they will be around here, but we do not
-            // want to them be here as this is a full spec command.
-            clearTheVotingMenu();
-
-            // The initial settings setup
-            g_voteMapStatus = IS_DISABLED_VOTEMAP_EXIT;
-
-            // To start from 1 because the first argument 0, is the command line name `gal_startvote`.
-            for( new index = 1; index < argumentsCount; index++ )
-            {
-                new cache;
-
-                read_argv( index, argument, charsmax( argument ) );
-                LOG( 8, "( cmd_voteMap ) argument[%d]: %s", index, argument )
-
-                if( IS_WHITELIST_BLOCKING( isWhitelistEnabled, argument ) )
-                {
-                    console_print( player_id, "%s: %L", argument, player_id, "GAL_MATCH_WHITELIST" );
-                    LOG( 8, "    ( cmd_voteMap ) %s: %L", argument, player_id, "GAL_MATCH_WHITELIST" )
-
-                    // We do not need to print help, as the Whilelist message is clear.
-                    goto invalid_map_provited;
-                }
-                else if( IS_MAP_VALID( argument ) )
-                {
-                    LOG( 8, "    ( cmd_voteMap ) argument is a valid map." )
-                    addMapToTheVotingMenu( argument, "" );
-                }
-                else if( -1 < ( cache = containi( argument, "nointro" ) )
-                         && cache < 2 )
-                {
-                    LOG( 8, "    ( cmd_voteMap ) Entering on argument `nointro`" )
-                    g_voteMapStatus |= IS_DISABLED_VOTEMAP_INTRO;
-                }
-                else if( -1 < ( cache = containi( argument, "norunoff" ) )
-                         && cache < 2 )
-                {
-                    LOG( 8, "    ( cmd_voteMap ) Entering on argument `norunoff`" )
-                    g_voteMapStatus |= IS_DISABLED_VOTEMAP_RUNOFF;
-                }
-                else if( -1 < ( cache = containi( argument, "noextension" ) )
-                         && cache < 2 )
-                {
-                    LOG( 8, "    ( cmd_voteMap ) Entering on argument `noextension`" )
-                    g_voteMapStatus |= IS_DISABLED_VOTEMAP_EXTENSION;
-                }
-                else if( -1 < ( cache = containi( argument, "loadnominations" ) )
-                         && cache < 2 )
-                {
-                    LOG( 8, "    ( cmd_voteMap ) Entering on argument `loadnominations`" )
-
-                    // Load on the nominations maps.
-                    loadOnlyNominationVoteChoices();
-                }
-                else
-                {
-                    showGalVoteMapHelp( player_id, index, argument );
-                    invalid_map_provited:
-
-                    // If this was just called but not within the sufficient maps, the menu will contain
-                    // invalid maps, therefore clean it just to be sure.
-                    clearTheVotingMenu();
-
-                    // As should not be any invalid arguments, we do allow to keep going on, otherwise
-                    // we would have to use a buffers loader as on announceVoteBlockedMap(4) and
-                    // flushVoteBlockedMaps(3) to avoid the client overflow when too many how arguments
-                    // are passed by.
-                    LOG( 1, "    ( cmd_voteMap ) Returning PLUGIN_HANDLED" )
-                    return PLUGIN_HANDLED;
-                }
-            }
-
-            LOG( 8, "    ( cmd_voteMap ) g_voteMapStatus: %d", g_voteMapStatus )
-            startVoteMapVoting( player_id );
-        }
-        else
-        {
-            showGalVoteMapHelp( player_id );
-        }
-    }
-
-    LOG( 1, "    ( cmd_voteMap ) Returning PLUGIN_HANDLED" )
-    return PLUGIN_HANDLED;
-}
-
-stock startVoteMapVoting( player_id )
-{
-    LOG( 128, "I AM ENTERING ON startVoteMapVoting(1) player_id: %s", player_id )
-
-    if( g_totalVoteOptions > 0
-        && !( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXTENSION )
-        && g_isExtendmapAllowStay
-        || g_totalVoteOptions > 1 )
-    {
-        // Load the voting time
-        SET_VOTING_TIME_TO( g_votingSecondsRemaining, cvar_voteDuration )
-
-        // Save the invoker id to use it later when we get the outcome result
-        g_voteMapInvokerPlayerId = player_id;
-
-        // to prepare the initial voting state, forcing the start up.
-        configureVotingStart( true );
-
-        // Show up the voting menu
-        initializeTheVoteDisplay();
-    }
-    else
-    {
-        // Vote creation failed; no maps found.
-        color_chat( 0, 0, "%L", LANG_PLAYER, "GAL_VOTE_NOMAPS" );
-
-        finalizeVoting();
-        showGalVoteMapHelp( player_id );
-    }
-}
-
-/**
- * This is the `gal_votemap` admin's command line help displayer.
- */
-stock showGalVoteMapHelp( player_id, index = 0, argument[] = {0} )
-{
-    LOG( 128, "I AM ENTERING ON showGalVoteMapHelp(1) argument: %s", argument )
-
-    if( argument[ 0 ] )
-    {
-        console_print( player_id,
-                "^nThe argument `%d=%s` could not be recognized as a valid map or option.", index, argument );
-    }
-
-    // It was necessary to split the message up to 190 characters due the output print being cut.
-    console_print( player_id,
-           "Examples:\
-            ^ngal_votemap map1 map2 map3 map4 ... map9 -nointro -noextension -norunoff" );
-
-    console_print( player_id,
-           "gal_votemap map1 map2 map3 map4 ... map9\
-            ^ngal_votemap map1 map2 map3 -nointro -noextension" );
-
-    console_print( player_id,
-           "gal_votemap map1 map2 -nointro\
-            ^ngal_votemap map1 map2 -loadnominations\
-            ^ngal_votemap map1 map2" );
-}
-
-/**
- * This is the main `say galmenu` builder called from the cmd_say(1) handler.
- */
-stock voteMapMenuBuilder( player_id )
-{
-    LOG( 128, "I AM ENTERING ON voteMapMenuBuilder(0) player_id: %d", player_id )
-
-    // The initial settings setup
-    g_voteMapStatus = IS_DISABLED_VOTEMAP_EXIT;
-
-    displayVoteMapMenuHook( player_id );
-}
-
-/**
- * Due there are several first menu options, take `VOTEMAP_FIRST_PAGE_ITEMS_COUNTING` items less.
- */
-#define VOTEMAP_FIRST_PAGE_ITEMS_COUNTING 4
-
-/**
- * Used to allow the menu displayVoteMapMenu(1) to have parameters within a default value.
- * It is because public functions are not allow to have a default value and we need this function
- * be public to allow it to be called from a set_task().
- */
-public displayVoteMapMenuHook( player_id )
-{
-    LOG( 128, "I AM ENTERING ON displayVoteMapMenuHook(1) currentPage: %d", g_voteMapMenuPages[ player_id ] )
-    displayVoteMapMenu( player_id );
-}
-
-/**
- * This is the main menu `say galmenu` builder.
- */
-stock displayVoteMapMenu( player_id )
-{
-    LOG( 128, "I AM ENTERING ON displayVoteMapMenu(1) player_id: %d", player_id )
-
-    new mapIndex;
-    new itemsCount;
-    new nominationsMapsCount;
-
-    new choice        [ MAX_MAPNAME_LENGHT + 32 ];
-    new nominationMap [ MAX_MAPNAME_LENGHT ];
-    new selectedMap   [ MAX_SHORT_STRING ];
-    new disabledReason[ MAX_SHORT_STRING ];
-
-    nominationsMapsCount  = ArraySize( g_nominationLoadedMapsArray );
-
-    // Calculate how much pages there are available.
-    new currentPageNumber = g_voteMapMenuPages[ player_id ];
-    new lastPageNumber    = ( ( ( nominationsMapsCount + 1 ) / MAX_NOM_MENU_ITEMS_PER_PAGE )
-                        + ( ( ( ( nominationsMapsCount + 1 ) % MAX_NOM_MENU_ITEMS_PER_PAGE ) > 0 ) ? 1 : 0 ) );
-
-    // To create the menu
-    formatex( disabledReason, charsmax( disabledReason ),
-            IS_COLORED_CHAT_ENABLED() ? "%L\R%d /%d" : "%L  %d /%d",
-            player_id, "GAL_LISTMAPS_TITLE", currentPageNumber + 1, lastPageNumber );
-
-    new menu = menu_create( disabledReason, "handleDisplayVoteMap" );
-
-    // The first page contains by default options, then the first page will get one less items due
-    // the extra options.
-    if( currentPageNumber < 1 )
-    {
-        new bool:isOn;
-        formatex( selectedMap, charsmax( selectedMap ), "%s%L", COLOR_YELLOW, player_id, "GAL_CHOICE_MAP", 0, 0 );
-
-        mapIndex   = 0;
-        itemsCount = 4;
-
-        isOn = g_voteMapStatus & IS_DISABLED_VOTEMAP_INTRO != 0;
-        formatex( disabledReason, charsmax( disabledReason ), "-nointro %s", isOn ? selectedMap : {0} );
-        menu_additem( menu, disabledReason, _, 0 );
-
-        isOn = g_voteMapStatus & IS_DISABLED_VOTEMAP_RUNOFF != 0;
-        formatex( disabledReason, charsmax( disabledReason ), "-norunoff %s", isOn ? selectedMap : {0} );
-        menu_additem( menu, disabledReason, _, 0 );
-
-        isOn = g_voteMapStatus & IS_DISABLED_VOTEMAP_EXTENSION != 0;
-        formatex( disabledReason, charsmax( disabledReason ), "-noextension %s", isOn ? selectedMap : {0} );
-        menu_additem( menu, disabledReason, _, 0 );
-
-        isOn = g_voteMapStatus & IS_ENABLED_VOTEMAP_NOMINATIONS != 0;
-        formatex( disabledReason, charsmax( disabledReason ), "-loadnominations %s", isOn ? selectedMap : {0} );
-        menu_additem( menu, disabledReason, _, isOn ? ( 1 << 26 ) : 0 );
-
-        // Add some space from the last option.
-        // menu_addblank( menu, 0 );
-    }
-    else
-    {
-        // Due there are several first menu options, take `VOTEMAP_FIRST_PAGE_ITEMS_COUNTING` items less.
-        mapIndex   = currentPageNumber * MAX_NOM_MENU_ITEMS_PER_PAGE - VOTEMAP_FIRST_PAGE_ITEMS_COUNTING;
-        itemsCount = 0;
-    }
-
-    // Disables the menu paging.
-    menu_setprop( menu, MPROP_PERPAGE, 0 );
-
-    // Configure the menu buttons.
-    // SET_MENU_LANG_STRING_PROPERTY( MPROP_EXITNAME, menu, "EXIT" )
-    // SET_MENU_LANG_STRING_PROPERTY( MPROP_NEXTNAME, menu, "MORE" )
-    // SET_MENU_LANG_STRING_PROPERTY( MPROP_BACKNAME, menu, "BACK" )
-
-    new bool:isWhitelistEnabled = IS_WHITELIST_ENABLED();
-
-    for( ; mapIndex < nominationsMapsCount && itemsCount < MAX_NOM_MENU_ITEMS_PER_PAGE; mapIndex++ )
-    {
-        GET_MAP_NAME( g_nominationLoadedMapsArray, mapIndex, nominationMap )
-        itemsCount++;
-
-        // Start the menu entry item calculation
-        {
-            // in most cases, the map will be available for selection, so assume that's the case here
-            selectedMap   [ 0 ] = '^0';
-            disabledReason[ 0 ] = '^0';
-
-            // disable if the map has already been nominated
-            if( map_isInMenu( nominationMap ) )
-            {
-                formatex( selectedMap, charsmax( selectedMap ), "%s%L", COLOR_YELLOW, player_id, "GAL_MATCH_NOMINATED" );
-            }
-            else if( g_totalVoteOptions > 8 )
-            {
-                formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_GRP_FAIL_TOOMANY_2" );
-            }
-            else if( equali( g_currentMapName, nominationMap ) )
-            {
-                formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_CURRENTMAP" );
-            }
-            else if( IS_WHITELIST_BLOCKING( isWhitelistEnabled, nominationMap ) )
-            {
-                formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_WHITELIST" );
-            }
-
-            formatex( choice, charsmax( choice ), "%s %s %s", nominationMap, selectedMap, disabledReason );
-            LOG( 4, "( displayVoteMapMenu ) choice: %s", choice )
-
-            menu_additem( menu, choice, _, ( disabledReason[ 0 ] == '^0' ? 0 : ( 1 << 26 ) ) );
-
-        } // end the menu entry item calculation.
-
-    } // end for 'mapIndex'.
-
-    LOG( 4, "( displayVoteMapMenu ) itemsCount: %d, mapIndex: %d", itemsCount, mapIndex )
-
-    addMenuMoreBackStartOptions( menu, player_id, disabledReason, mapIndex < nominationsMapsCount, currentPageNumber > 0, itemsCount );
-    menu_display( player_id, menu );
-}
-
-stock addMenuMoreBackStartOptions( menu, player_id, disabledReason[], bool:isToEnableMoreButton, bool:isToEnableBackButton, itemsCount )
-{
-    LOG( 128, "I AM ENTERING ON addMenuMoreBackStartOptions(5) isToEnableMoreButton: %d", isToEnableMoreButton )
-    addMenuMoreBackButtons( menu, player_id, disabledReason, isToEnableMoreButton, isToEnableBackButton, itemsCount );
-
-    // To add the exit button
-    if( g_totalVoteOptions > 0
-        && !( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXTENSION )
-        && g_isExtendmapAllowStay
-        || g_totalVoteOptions > 1 )
-    {
-        formatex( disabledReason, MAX_SHORT_STRING - 1, "%L%s (%d)", player_id, "CMD_MENU", COLOR_YELLOW, g_totalVoteOptions );
-        menu_additem( menu, disabledReason, _, 0 );
-    }
-    else
-    {
-        formatex( disabledReason, MAX_SHORT_STRING - 1, "%L%s (%d)", player_id, "EXIT", COLOR_GREY, g_totalVoteOptions );
-        menu_additem( menu, disabledReason, _, 0 );
-    }
-}
-
-/**
- * This is the `say galmenu` main menu handler.
- *
- * This menu handler uses the convert_numeric_base(3) instead of menu_item_getinfo() to allow easy
- * conversion to the olde menu style, and also because it is working fine as it is.
- */
-public handleDisplayVoteMap( player_id, menu, item )
-{
-    LOG( 128, "I AM ENTERING ON handleDisplayVoteMap(3) player_id: %d, menu: %d, item: %d", player_id, menu, item )
-
-    // Let go to destroy the menu and clean some memory. As the menu is not paginated, the item 9
-    // is the key 0 on the keyboard. Also, the item 8 is the key 9; 7, 8; 6, 7; 5, 6; 4, 5; etc.
-    if( item < 0
-        || ( item == 9
-             && !( g_totalVoteOptions > 0
-                   && !( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXTENSION )
-                   && g_isExtendmapAllowStay
-                   || g_totalVoteOptions > 1 ) ) )
-    {
-        DESTROY_PLAYER_NEW_MENU_TYPE( menu )
-
-        LOG( 1, "    ( handleDisplayVoteMap ) Just Returning PLUGIN_HANDLED, the menu is destroyed." )
-        return PLUGIN_HANDLED;
-    }
-
-    // To start the voting
-    if( item == 9
-        && ( g_totalVoteOptions > 0
-             && !( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXTENSION )
-             && g_isExtendmapAllowStay
-             || g_totalVoteOptions > 1 ) )
-    {
-        DESTROY_PLAYER_NEW_MENU_TYPE( menu )
-        displayVoteMapMenuCommands( player_id );
-
-        LOG( 1, "    ( handleDisplayVoteMap ) Just Returning PLUGIN_HANDLED, starting the voting." )
-        return PLUGIN_HANDLED;
-    }
-
-    switch( item )
-    {
-        // If the 8 button item is hit, and we are not on the first page, we must to perform the back option.
-        case 7:
-        {
-            DESTROY_PLAYER_NEW_MENU_TYPE( menu )
-            g_voteMapMenuPages[ player_id ] ? g_voteMapMenuPages[ player_id ]-- : 0;
-
-            // Try to block/difficult players from performing the Denial Of Server attack.
-            // set_task( 0.1, "displayVoteMapMenuHook", player_id );
-            displayVoteMapMenuHook( player_id );
-
-            LOG( 1, "    ( handleDisplayVoteMap ) Just Returning PLUGIN_HANDLED, doing the back button." )
-            return PLUGIN_HANDLED;
-        }
-        // If the 9 button item is hit, and we are on some page not the last one, we must to perform the more option.
-        case 8:
-        {
-            DESTROY_PLAYER_NEW_MENU_TYPE( menu )
-            g_voteMapMenuPages[ player_id ]++;
-
-            // Try to block/difficult players from performing the Denial Of Server attack.
-            // set_task( 0.1, "displayVoteMapMenuHook", player_id );
-            displayVoteMapMenuHook( player_id );
-
-            LOG( 1, "    ( handleDisplayVoteMap ) Just Returning PLUGIN_HANDLED, doing the more button." )
-            return PLUGIN_HANDLED;
-        }
-    }
-
-    // Due the firsts items to be specials, intercept them, but if and only if we are on the menu's first page.
-    if( g_voteMapMenuPages[ player_id ] == 0
-        && item < 4 )
-    {
-        switch( item )
-        {
-            // pressedKeyCode 0 means the keyboard key 1
-            case 0:
-            {
-                LOG( 8, "    ( cmd_voteMap ) Entering on argument `nointro`" )
-                TOGGLE_BIT_FLAG_ON_OFF( g_voteMapStatus, IS_DISABLED_VOTEMAP_INTRO )
-            }
-            case 1:
-            {
-                LOG( 8, "    ( cmd_voteMap ) Entering on argument `norunoff`" )
-                TOGGLE_BIT_FLAG_ON_OFF( g_voteMapStatus, IS_DISABLED_VOTEMAP_RUNOFF )
-            }
-            case 2:
-            {
-                LOG( 8, "    ( cmd_voteMap ) Entering on argument `noextension`" )
-                TOGGLE_BIT_FLAG_ON_OFF( g_voteMapStatus, IS_DISABLED_VOTEMAP_EXTENSION )
-            }
-            case 3:
-            {
-                // Load on the nominations maps.
-                loadOnlyNominationVoteChoices();
-
-                // This option cannot be undone, to reduce the code complexity.
-                g_voteMapStatus |= IS_ENABLED_VOTEMAP_NOMINATIONS;
-                LOG( 8, "    ( cmd_voteMap ) Entering on argument `loadnominations`" )
-            }
-        }
-    }
-    else
-    {
-        new mapName[ MAX_MAPNAME_LENGHT ];
-        new mapInfo[ MAX_MAPNAME_LENGHT ];
-        new pageSeptalNumber = convert_numeric_base( g_voteMapMenuPages[ player_id ], 10, MAX_NOM_MENU_ITEMS_PER_PAGE );
-
-        // Due there are several first menu options, take `VOTEMAP_FIRST_PAGE_ITEMS_COUNTING` items less.
-        item = convert_numeric_base( pageSeptalNumber * 10, MAX_NOM_MENU_ITEMS_PER_PAGE, 10 ) + item - VOTEMAP_FIRST_PAGE_ITEMS_COUNTING;
-
-        GET_MAP_NAME( g_nominationLoadedMapsArray, item, mapName )
-        GET_MAP_INFO( g_nominationLoadedMapsArray, item, mapInfo )
-
-        // Toggle it if enabled
-        map_isInMenu( mapName ) ? removeMapFromTheVotingMenu( mapName ) : addMapToTheVotingMenu( mapName, mapInfo );
-    }
-
-    DESTROY_PLAYER_NEW_MENU_TYPE( menu )
-
-    // displayVoteMapMenuHook( player_id );
-    set_task( 0.1, "displayVoteMapMenuHook", player_id );
-
-    LOG( 1, "    ( handleDisplayVoteMap ) Just Returning PLUGIN_HANDLED, successful nomination." )
-    return PLUGIN_HANDLED;
-}
-
-/**
- * Used to select indexes values at the array `g_votingMapNames` instead of the usual array, when we're
- * are on the submenu `Commands Menu`.
- */
-#define VOTEMAP_VOTING_MAP_NAMES_INDEX_FLAG -2
-
-/**
- * This is the secondary `say galmenu` builder. It is used to choose to cancel the personal voting,
- * start it or see the added maps.
- */
-public displayVoteMapMenuCommands( player_id )
-{
-    LOG( 128, "I AM ENTERING ON displayVoteMapMenuCommands(1) player_id: %d", player_id )
-
-    new mapIndex;
-    new info[ 1 ];
-
-    new choice          [ MAX_SHORT_STRING ];
-    new menuOptionString[ MAX_SHORT_STRING ];
-
-    // To create the menu
-    formatex( choice, charsmax( choice ), "%L", player_id, "CMD_MENU" );
-    new menu = menu_create( choice, "handleDisplayVoteMapCommands" );
-
-    // The first menus items
-    formatex( choice, charsmax( choice ), "%L%s (%d)", player_id, "GAL_VOTE_START", COLOR_YELLOW, g_totalVoteOptions );
-    menu_additem( menu, choice, { -1 }, g_totalVoteOptions > 0
-                                        && g_isExtendmapAllowStay
-                                        && !( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXTENSION )
-                                        || g_totalVoteOptions > 1 ? 0 : ( 1 << 26 ) );
-
-    formatex( choice, charsmax( choice ), "%L", player_id, "EXIT" );
-    menu_additem( menu, choice, { -1 }, 0 );
-
-    formatex( choice, charsmax( choice ), "%L", player_id, "CANC_VOTE" );
-    menu_additem( menu, choice, { -1 }, g_totalVoteOptions > 0 ? 0 : ( 1 << 26 ) );
-
-    formatex( choice, charsmax( choice ), "%L", player_id, "GAL_VOTE_GO_TO_PAGE" );
-    menu_additem( menu, choice, { -1 }, 0 );
-
-    // Add some space from the first menu options.
-    // menu_addblank( menu, 0 );
-
-    // Configure the menu buttons.
-    SET_MENU_LANG_STRING_PROPERTY( MPROP_EXITNAME, menu, "GAL_LISTMAPS_TITLE" )
-    SET_MENU_LANG_STRING_PROPERTY( MPROP_NEXTNAME, menu, "MORE" )
-    SET_MENU_LANG_STRING_PROPERTY( MPROP_BACKNAME, menu, "BACK" )
-
-    for( mapIndex = 0; mapIndex < g_totalVoteOptions; mapIndex++ )
-    {
-        if( g_votingMapNames[ mapIndex ][ 0 ] )
-        {
-            info[ 0 ] = VOTEMAP_VOTING_MAP_NAMES_INDEX_FLAG - mapIndex;
-            formatex( choice, charsmax( choice ), "%s%s %L", g_votingMapNames[ mapIndex ], COLOR_YELLOW, player_id, "GAL_MATCH_NOMINATED" );
-
-            LOG( 4, "( displayVoteMapMenuCommands ) choice: %s, info[0]: %d", choice, info[ 0 ] )
-            menu_additem( menu, choice, info, 0 );
-        }
-    }
-
-    // The exit option is not showing up at the button 0, but on 9! This forces it to.
-    while( mapIndex + 3 < MAX_NOM_MENU_ITEMS_PER_PAGE )
-    {
-        mapIndex++;
-        formatex( menuOptionString, MAX_SHORT_STRING - 1, "%L", player_id, "OFF" );
-        menu_additem( menu, menuOptionString, _, 1 << 26 );
-
-        // When using slot=1 this might break your menu. To achieve this functionality
-        // menu_addblank2() should be used (AMXX 183 only).
-        // menu_addblank( menu, 1 );
-    }
-
-    menu_display( player_id, menu );
-}
-
-/**
- * This is the secondary `say galmenu` handler.
- *
- * This menu handler uses the menu_item_getinfo() instead of convert_numeric_base(3) because it was
- * recently written and there is not need to use the old menu's style with specific handler.
- */
-public handleDisplayVoteMapCommands( player_id, menu, item )
-{
-    LOG( 128, "I AM ENTERING ON handleDisplayVoteMapCommands(3) player_id: %d, menu: %d, item: %d", player_id, menu, item )
-
-    if( item == MENU_EXIT )
-    {
-        DESTROY_PLAYER_NEW_MENU_TYPE( menu )
-        displayVoteMapMenu( player_id );
-
-        LOG( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, returning to the main menu." )
-        return PLUGIN_HANDLED;
-    }
-
-    if( item < 0 )
-    {
-        DESTROY_PLAYER_NEW_MENU_TYPE( menu )
-
-        LOG( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, the menu is destroyed." )
-        return PLUGIN_HANDLED;
-    }
-
-    switch( item )
-    {
-        case 0:
-        {
-            DESTROY_PLAYER_NEW_MENU_TYPE( menu )
-            startVoteMapVoting( player_id );
-
-            LOG( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, starting the voting." )
-            return PLUGIN_HANDLED;
-        }
-        case 1:
-        {
-            DESTROY_PLAYER_NEW_MENU_TYPE( menu )
-
-            LOG( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, exit the menu." )
-            return PLUGIN_HANDLED;
-        }
-        case 2:
-        {
-            clearTheVotingMenu();
-            g_voteMapMenuPages[ player_id ] = 0;
-
-            DESTROY_PLAYER_NEW_MENU_TYPE( menu )
-
-            LOG( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, cleaning the voting." )
-            return PLUGIN_HANDLED;
-        }
-        case 3:
-        {
-            DESTROY_PLAYER_NEW_MENU_TYPE( menu )
-            client_cmd( player_id, "messagemode ^"say %s^"", GAL_VOTEMAP_MENU_COMMAND );
-
-            LOG( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, opening go to page." )
-            return PLUGIN_HANDLED;
-        }
-    }
-
-    // debugging menu info tracker
-    LOG( 4, "", debug_nomination_match_choice( player_id, menu, item ) )
-
-    new access;
-    new callback;
-
-    new info[ 1 ];
-    new mapName[ MAX_MAPNAME_LENGHT ];
-    new mapInfo[ MAX_MAPNAME_LENGHT ];
-
-    menu_item_getinfo( menu, item, access, info, sizeof info, _, _, callback );
-
-    if( info[ 0 ] > -1 )
-    {
-        GET_MAP_NAME( g_nominationLoadedMapsArray, info[0], mapName )
-        GET_MAP_INFO( g_nominationLoadedMapsArray, info[0], mapInfo )
-
-        // Toggle it if enabled
-        map_isInMenu( mapName ) ? removeMapFromTheVotingMenu( mapName ) : addMapToTheVotingMenu( mapName, mapInfo );
-    }
-    else
-    {
-        new mapIndex = abs( info[ 0 ] ) + VOTEMAP_VOTING_MAP_NAMES_INDEX_FLAG;
-
-        if( g_votingMapNames[ mapIndex ][ 0 ] )
-        {
-            removeMapFromTheVotingMenu( g_votingMapNames[ mapIndex ] );
-        }
-    }
-
-    // Before re-creating the menu within the updated data, we need to wait for it be destroyed.
-    DESTROY_PLAYER_NEW_MENU_TYPE( menu )
-
-    // Try to block/difficult players from performing the Denial Of Server attack.
-    // set_task( 0.1, "displayVoteMapMenuCommands", player_id );
-    displayVoteMapMenuCommands( player_id );
-
-    LOG( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, the menu is showed again." )
-    return PLUGIN_HANDLED;
-}
-
-stock debug_nomination_match_choice( player_id, menu, item )
-{
-    LOG( 128, "I AM ENTERING ON debug_nomination_match_choice(3) player_id: %d, menu: %d, item: %d", player_id, menu, item )
-
-    new access;
-    new callback;
-
-    new info[ 1 ];
-    LOG( 4, "( debug_nomination_match_choice ) item: %d, player_id: %d, menu: %d, \
-            g_menuMapIndexForPlayerArrays[player_id]: %d", \
-            item, player_id, menu, g_menuMapIndexForPlayerArrays[ player_id ] )
-
-    // Get item info
-    menu_item_getinfo( menu, item, access, info, sizeof info, _, _, callback );
-    LOG( 4, "( debug_nomination_match_choice ) info[0]: %d, access: %d, menu%d", info[ 0 ], access, menu )
-
-    return 0;
-}
-
-/**
- * This set up the `say galmenu` final admin's choice builder.
- */
-stock openTheVoteMapActionMenu()
-{
-    LOG( 128, "I AM ENTERING ON openTheVoteMapActionMenu(0) player_id: %d", g_voteMapInvokerPlayerId )
-
-    g_pendingMapVoteCountdown = get_pcvar_num( cvar_voteDuration ) + 120;
-    set_task( 1.0, "displayTheVoteMapActionMenu", TASKID_PENDING_VOTE_COUNTDOWN, _, _, "a", g_pendingMapVoteCountdown );
-}
-
-/**
- * This is the `say galmenu` final admin's choice builder.
- */
-public displayTheVoteMapActionMenu()
-{
-    LOG( 128, "I AM ENTERING ON displayTheVoteMapActionMenu(0) player_id: %d", g_voteMapInvokerPlayerId )
-    new player_id = g_voteMapInvokerPlayerId;
-
-    if( is_user_connected( player_id )
-        && --g_pendingMapVoteCountdown > 0 )
-    {
-        new winnerMap   [ MAX_MAPNAME_LENGHT ];
-        new menu_body   [ MAX_LONG_STRING    ];
-        new menu_counter[ MAX_SHORT_STRING   ];
-
-        new menu_id;
-        new menuKeys;
-        new menuKeysUnused;
-        new bool:allowChange = g_invokerVoteMapNameToDecide[ 0 ] != 0;
-
-        // To change the keys, go also to configureTheVotingMenus(0)
-        menuKeys = MENU_KEY_1;
-
-        // If the g_invokerVoteMapNameToDecide is empty, then the winner map is the stay here option.
-        if( allowChange )
-        {
-            menuKeys |= MENU_KEY_3 | MENU_KEY_5;
-            formatex( winnerMap, charsmax( winnerMap ), "%s", g_invokerVoteMapNameToDecide );
-        }
-        else
-        {
-            formatex( winnerMap, charsmax( winnerMap ), "%L", player_id, "GAL_OPTION_STAY" );
-        }
-
-        formatex( menu_counter, charsmax( menu_counter ),
-                " %s(%s%d %L%s)",
-                COLOR_YELLOW, COLOR_GREY, g_pendingMapVoteCountdown, player_id, "GAL_TIMELEFT", COLOR_YELLOW );
-
-        formatex( menu_body, charsmax( menu_body ),
-               "\
-                %L%s: %s%s^n\
-                %s%L^n\
-                ^n%s1.%s %L %s\
-                ^n%s3.%s %L %s\
-                ^n%s5.%s %L\
-                ",
-                player_id, "THE_RESULT", COLOR_RED, COLOR_WHITE, winnerMap,
-                COLOR_YELLOW, player_id, "WANT_CONTINUE",
-                COLOR_RED, COLOR_WHITE, player_id, "CANC_VOTE", menu_counter,
-                COLOR_RED, allowChange ? COLOR_WHITE : COLOR_GREY, player_id, "CHANGE_MAP_TO"              , winnerMap,
-                COLOR_RED, allowChange ? COLOR_WHITE : COLOR_GREY, player_id, "GAL_OPTION_CANCEL_PARTIALLY", winnerMap,
-                0 );
-
-        get_user_menu( player_id, menu_id, menuKeysUnused );
-
-        if( menu_id == 0
-            || menu_id == g_chooseVoteMapQuestionMenuId )
-        {
-            show_menu( player_id, menuKeys, menu_body, ( g_pendingMapVoteCountdown == 1 ? 1 : 2 ),
-                    CHOOSE_VOTEMAP_MENU_QUESTION );
-        }
-
-        LOG( 4, "( displayTheVoteMapActionMenu ) menu_body: %s", menu_body )
-        LOG( 4, "    menu_id: %d, menuKeys: %d, ", menu_id, menuKeys )
-        LOG( 4, "    g_pendingMapVoteCountdown: %d", g_pendingMapVoteCountdown )
-    }
-    else
-    {
-        // To perform the default action automatically, nothing is answered.
-        handleVoteMapActionMenu( player_id, 0 );
-    }
-
-    LOG( 4, "%48s", " ( displayTheVoteMapActionMenu| out )" )
-}
-
-/**
- * This is the `say galmenu` final admin's choice handler.
- */
-public handleVoteMapActionMenu( player_id, pressedKeyCode )
-{
-    LOG( 128, "I AM ENTERING ON handleVoteMapActionMenu(2) player_id: %d, pressedKeyCode: %d", \
-            player_id, pressedKeyCode )
-
-    // Allow the result outcome to be processed
-    g_voteMapStatus = 0;
-
-    // Stop the menu from showing up again
-    remove_task( TASKID_PENDING_VOTE_COUNTDOWN );
-
-    switch( pressedKeyCode )
-    {
-        // pressedKeyCode 0 means the keyboard key 1
-        case 0:
-        {
-            // If we are rejecting the results, allow a new map end voting to start
-            g_voteStatus &= ~IS_VOTE_OVER;
-
-            // Then this is empty, the winner was stay here, and this result has already been announced.
-            if( g_invokerVoteMapNameToDecide[ 0 ] )
-            {
-                color_chat( 0, 0, "%L. %L: %s", LANG_PLAYER, "RESULT_REF", LANG_PLAYER, "VOT_CANC", g_invokerVoteMapNameToDecide );
-                toShowTheMapNextHud( "RESULT_REF", "VOT_CANC", "GAL_OPTION_STAY_MAP", g_currentMapName );
-            }
-        }
-        case 2:
-        {
-            if( g_invokerVoteMapNameToDecide[ 0 ] )
-            {
-                // The end of map count countdown will immediately start, so there is not point int showing any messages.
-                setNextMap( g_currentMapName, g_invokerVoteMapNameToDecide );
-                process_last_round( true );
-            }
-        }
-        case 4:
-        {
-            // Only set the next map
-            if( g_invokerVoteMapNameToDecide[ 0 ] )
-            {
-                color_chat( 0, 0, "%L. %L: %s", LANG_PLAYER, "RESULT_ACC", LANG_PLAYER, "VOTE_SUCCESS", g_invokerVoteMapNameToDecide );
-                toShowTheMapNextHud( "RESULT_ACC", "DMAP_MAP_EXTENDED1", "GAL_WINNER_ORDERED1", g_invokerVoteMapNameToDecide );
-
-                setNextMap( g_currentMapName, g_invokerVoteMapNameToDecide );
-            }
-        }
-    }
-
-    LOG( 1, "    ( handleEndOfTheMapVoteChoice ) Returning PLUGIN_HANDLED" )
-    return PLUGIN_HANDLED;
-}
-
-/**
  * The command `quit2`. See also setTheCurrentAndNextMapSettings(0).
  */
 public cmd_quit2()
@@ -14014,6 +12866,1154 @@ stock getMapNameIndex( mapName[] )
 
     LOG( 1, "    ( getMapNameIndex ) Just Returning, mapIndex: %d", -1 )
     return -1;
+}
+
+/**
+ * The command `say recentmaps` and its menu implementation.
+ */
+public cmd_listrecent( player_id )
+{
+    LOG( 128, "I AM ENTERING ON cmd_listrecent(1) player_id: %d", player_id )
+    new recentMapCount;
+
+    if( g_recentListMapsArray
+        && ( recentMapCount = ArraySize( g_recentListMapsArray ) ) > 0 )
+    {
+        switch( get_pcvar_num( cvar_banRecentStyle ) )
+        {
+            case 1:
+            {
+                new copiedChars;
+                new recentMapName    [ MAX_MAPNAME_LENGHT ];
+                new recentMapsMessage[ MAX_COLOR_MESSAGE ];
+
+                for( new mapIndex = 0; mapIndex < recentMapCount; ++mapIndex )
+                {
+                    ArrayGetString( g_recentListMapsArray, mapIndex, recentMapName, charsmax( recentMapName ) );
+
+                    if( copiedChars < charsmax( recentMapsMessage ) )
+                    {
+                        copiedChars += formatex( recentMapsMessage[ copiedChars ],
+                                charsmax( recentMapsMessage ) - copiedChars, ", %s", recentMapName );
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+
+                color_chat( 0, 0, "%L: %s", LANG_PLAYER, "GAL_MAP_RECENTMAPS", recentMapsMessage[ 2 ] );
+            }
+            case 2:
+            {
+                new recentMapName[ MAX_MAPNAME_LENGHT ];
+
+                for( new mapIndex = 0; mapIndex < recentMapCount && mapIndex < 5; ++mapIndex )
+                {
+                    ArrayGetString( g_recentListMapsArray, mapIndex, recentMapName, charsmax( recentMapName ) );
+
+                    color_chat( 0, 0, "%L ( %i );: %s",
+                            LANG_PLAYER, "GAL_MAP_RECENTMAP", mapIndex + 1, recentMapName );
+                }
+            }
+            case 3:
+            {
+                showRecentMapsListMenu( player_id );
+            }
+        }
+    }
+
+    LOG( 1, "    ( cmd_listrecent ) Returning PLUGIN_CONTINUE" )
+    return PLUGIN_CONTINUE;
+}
+
+/**
+ * Build and displays the `say recentmaps` menu.
+ */
+public showRecentMapsListMenu( player_id )
+{
+    LOG( 128, "I AM ENTERING ON showRecentMapsListMenu(1) player_id: %d", player_id )
+
+    new mapIndex;
+    new itemsCount;
+
+    new recentMapName[ MAX_MAPNAME_LENGHT ];
+    new menuOptionString[ 64 ];
+
+    // Calculate how much pages there are available.
+    new recentMapCount    = ArraySize( g_recentListMapsArray );
+    new currentPageNumber = g_recentMapsMenuPages[ player_id ];
+    new lastPageNumber    = GET_LAST_PAGE_NUMBER( recentMapCount, MAX_MENU_ITEMS_PER_PAGE )
+
+    // To create the menu
+    formatex( menuOptionString, charsmax( menuOptionString ),
+            IS_COLORED_CHAT_ENABLED() ? "%L\R%d /%d" : "%L  %d /%d",
+            player_id, "GAL_MAP_RECENTMAPS", currentPageNumber + 1, lastPageNumber );
+
+    new menu = menu_create( menuOptionString, "cmd_listrecent_handler" );
+
+    // Disables the menu paging.
+    menu_setprop( menu, MPROP_PERPAGE, 0 );
+
+    // Configure the menu buttons.
+    // SET_MENU_LANG_STRING_PROPERTY( MPROP_EXITNAME, menu, "EXIT" )
+    // SET_MENU_LANG_STRING_PROPERTY( MPROP_NEXTNAME, menu, "MORE" )
+    // SET_MENU_LANG_STRING_PROPERTY( MPROP_BACKNAME, menu, "BACK" )
+
+    if( ( mapIndex = currentPageNumber * MAX_MENU_ITEMS_PER_PAGE ) )
+    {
+        mapIndex = mapIndex - 1;
+    }
+
+    // Add the menu items.
+    for( ; mapIndex < recentMapCount && itemsCount < MAX_MENU_ITEMS_PER_PAGE; ++mapIndex, ++itemsCount )
+    {
+        LOG( 4, "( showRecentMapsListMenu ) mapIndex: %d", mapIndex )
+        ArrayGetString( g_recentListMapsArray, mapIndex, recentMapName, charsmax( recentMapName ) );
+
+        menu_additem( menu, recentMapName );
+        LOG( 4, "( showRecentMapsListMenu ) recentMapName: %s", recentMapName )
+    }
+
+    LOG( 4, "( showRecentMapsListMenu ) itemsCount: %d, mapIndex: %d", itemsCount, mapIndex )
+    addMenuMoreBackOptions( menu, player_id, menuOptionString, mapIndex < recentMapCount, currentPageNumber > 0, itemsCount );
+
+    // To display the menu.
+    menu_display( player_id, menu );
+}
+
+stock addMenuMoreBackOptions( menu, player_id, menuOptionString[], bool:isToEnableMoreButton, bool:isToEnableBackButton, itemsCount )
+{
+    LOG( 128, "I AM ENTERING ON addMenuMoreBackOptions(5) isToEnableMoreButton: %d, \
+            isToEnableBackButton: %d", isToEnableMoreButton, isToEnableBackButton )
+
+    // Force the menu control options to be present on the keys 8 (more), 9 (back) and 0 (exit).
+    while( itemsCount < MAX_MENU_ITEMS_PER_PAGE )
+    {
+        itemsCount++;
+        formatex( menuOptionString, MAX_SHORT_STRING - 1, "%L", player_id, "OFF" );
+        menu_additem( menu, menuOptionString, _, 1 << 26 );
+
+        // When using slot=1 this might break your menu. To achieve this functionality
+        // menu_addblank2() should be used (AMXX 183 only).
+        // menu_addblank( menu, 1 );
+    }
+
+    // Add some space from the control options and format the more button within the LANG file.
+    menu_addblank( menu, 0 );
+    formatex( menuOptionString, MAX_SHORT_STRING - 1, "%L", player_id, "MORE" );
+
+    // If there are more maps, add the more option
+    if( isToEnableMoreButton )
+    {
+        menu_additem( menu, menuOptionString, _, 0 );
+    }
+    else
+    {
+        menu_additem( menu, menuOptionString, _, 1 << 26 );
+    }
+
+    // If we are on the first page, disable the back option and to add the exit button.
+    if( isToEnableBackButton )
+    {
+        formatex( menuOptionString, MAX_SHORT_STRING - 1, "%L", player_id, "BACK" );
+        menu_additem( menu, menuOptionString, _, 0 );
+    }
+    else
+    {
+        // To add the exit button
+        formatex( menuOptionString, MAX_SHORT_STRING - 1, "%L", player_id, "EXIT" );
+        menu_additem( menu, menuOptionString, _, 0 );
+    }
+}
+
+/**
+ * This menu handler uses the convert_numeric_base(3) instead of menu_item_getinfo() to allow easy
+ * conversion to the olde menu style, and also because it is working fine as it is.
+ */
+public cmd_listrecent_handler( player_id, menu, item )
+{
+    LOG( 128, "I AM ENTERING ON cmd_listrecent_handler(3) player_id: %d, menu: %d, item: %d", player_id, menu, item )
+
+    // Let go to destroy the menu and clean some memory. As the menu is not paginated, the item 9
+    // is the key 0 on the keyboard. Also, the item 8 is the key 9; 7, 8; 6, 7; 5, 6; 4, 5; etc.
+    if( item < 0
+        || ( item == 9
+             && g_recentMapsMenuPages[ player_id ] == 0 ) )
+    {
+        DESTROY_PLAYER_NEW_MENU_TYPE( menu )
+
+        LOG( 1, "    ( cmd_listrecent_handler ) Just Returning PLUGIN_HANDLED, as menu is destroyed." )
+        return PLUGIN_HANDLED;
+    }
+
+    // If the 0 button item is hit, and we are not on the first page, we must to perform the back option.
+    if( item == 9
+        && g_recentMapsMenuPages[ player_id ] > 0 )
+    {
+        DESTROY_PLAYER_NEW_MENU_TYPE( menu )
+        g_recentMapsMenuPages[ player_id ] ? g_recentMapsMenuPages[ player_id ]-- : 0;
+
+        // Try to block/difficult players from performing the Denial Of Server attack.
+        // set_task( 0.1, "showRecentMapsListMenu", player_id );
+        showRecentMapsListMenu( player_id );
+
+        LOG( 1, "    ( cmd_listrecent_handler ) Just Returning PLUGIN_HANDLED, doing the back button." )
+        return PLUGIN_HANDLED;
+    }
+
+    // If the 9 button item is hit, and we are on some page not the last one, we must to perform the more option.
+    if( item == 8 )
+    {
+        DESTROY_PLAYER_NEW_MENU_TYPE( menu )
+        g_recentMapsMenuPages[ player_id ]++;
+
+        // Try to block/difficult players from performing the Denial Of Server attack.
+        // set_task( 0.1, "showRecentMapsListMenu", player_id );
+        showRecentMapsListMenu( player_id );
+
+        LOG( 1, "    ( cmd_listrecent_handler ) Just Returning PLUGIN_HANDLED, doing the more button." )
+        return PLUGIN_HANDLED;
+    }
+
+    // Just keep showing the menu until the exit button is pressed.
+    menu_display( player_id, menu );
+
+    LOG( 1, "    ( cmd_listrecent_handler ) Just Returning PLUGIN_HANDLED." )
+    return PLUGIN_HANDLED;
+}
+
+/**
+ * The command `gal_changelevel`.
+ */
+public cmd_changeLevel( player_id, level, cid )
+{
+    LOG( 128, "I AM ENTERING ON cmd_changeLevel(3) player_id: %d, level: %d, cid: %d", player_id, level, cid )
+
+    if( !cmd_access( player_id, level, cid, 1 ) )
+    {
+        LOG( 1, "    ( cmd_changeLevel ) Returning PLUGIN_CONTINUE" )
+        return PLUGIN_CONTINUE;
+    }
+
+    new argumentsCount = read_argc();
+
+    if( argumentsCount > 1 )
+    {
+        new arguments[ MAX_BIG_BOSS_STRING ];
+
+        read_args( arguments, charsmax( arguments ) );
+        remove_quotes( arguments );
+
+        LOG( 8, "( cmd_changeLevel ) " )
+        LOG( 8, "( cmd_changeLevel ) argumentsCount: %d, arguments: %s", argumentsCount, arguments )
+
+        // Immediately change the level, instead of wait the changing count down, if it is enabled.
+        if( containi( arguments, "now" ) > -1 )
+        {
+            process_last_round( true, false );
+        }
+        else
+        {
+            process_last_round( true );
+        }
+    }
+    else
+    {
+        process_last_round( true );
+    }
+
+    LOG( 1, "    ( cmd_changeLevel ) Returning PLUGIN_HANDLED" )
+    return PLUGIN_HANDLED;
+}
+
+/**
+ * The command `gal_cancelvote`.
+ */
+public cmd_cancelVote( player_id, level, cid )
+{
+    LOG( 128, "I AM ENTERING ON cmd_cancelVote(3) player_id: %d, level: %d, cid: %d", player_id, level, cid )
+
+    if( !cmd_access( player_id, level, cid, 1 ) )
+    {
+        LOG( 1, "    ( cmd_cancelVote ) Returning PLUGIN_CONTINUE" )
+        return PLUGIN_CONTINUE;
+    }
+
+    // If the are on debug mode, just to erase everything, as may be there something overlapping.
+#if defined DEBUG
+    cancelVoting( true );
+
+    // To avoid the warning unreachable code.
+    if( !g_dummy_value )
+    {
+        LOG( 1, "    ( cmd_cancelVote ) Returning PLUGIN_HANDLED" )
+        return PLUGIN_HANDLED;
+    }
+#endif
+
+    if( g_voteStatus & IS_VOTE_IN_PROGRESS )
+    {
+        color_chat( 0, 0, "%L", LANG_SERVER, "VOT_CANC" );
+        cancelVoting( true );
+    }
+    else
+    {
+        color_chat( 0, 0, "%L", LANG_SERVER, "NO_VOTE_CANC" );
+    }
+
+    LOG( 1, "    ( cmd_cancelVote ) Returning PLUGIN_HANDLED" )
+    return PLUGIN_HANDLED;
+}
+
+stock bool:approveTheVotingStartLight()
+{
+    LOG( 128, "I AM ENTERING ON approveTheVotingStartLight(1) get_real_players_number: %d", \
+            get_real_players_number() )
+
+    // block the voting on some not allowed situations/cases
+    if( get_real_players_number() == 0)
+    {
+        LOG( 1, "    ( approveTheVotingStartLight ) Returning false 0 players on the server." )
+        return false;
+    }
+
+    // the rounds start delay task could be running
+    remove_task( TASKID_START_VOTING_DELAYED );
+
+    // If the voting menu deletion task is running, remove it then delete the menus right now.
+    if( remove_task( TASKID_DELETE_USERS_MENUS ) )
+    {
+        vote_resetStats();
+    }
+
+    LOG( 1, "    ( approveTheVotingStart ) Returning true, due passed by all requirements." )
+    return true;
+}
+
+/**
+ * The command `gal_votemap`. It will receive a list of maps and will to perform a map voting as if
+ * it was an automatic or forced one. The only difference would be the maps it will use. Instead of
+ * random, they will the the maps passed to the command `gal_votemap map1 map2 map3 ... map9`.
+ *
+ * Issue: Add the command `gal_votemap` https://github.com/addonszz/Galileo/issues/48
+ */
+public cmd_voteMap( player_id, level, cid )
+{
+    LOG( 128, "I AM ENTERING ON cmd_voteMap(3) player_id: %d, level: %d, cid: %d", player_id, level, cid )
+
+    if( !cmd_access( player_id, level, cid, 1 ) )
+    {
+        LOG( 1, "    ( cmd_voteMap ) Returning PLUGIN_CONTINUE" )
+        return PLUGIN_CONTINUE;
+    }
+
+    // There is a real strange `Run time error 5: memory access` bug around these declarations,
+    // if you use the approveTheVotingStart(1) instead of the approveTheVotingStartLight(1)!
+    if( g_voteStatus & IS_VOTE_IN_PROGRESS )
+    {
+        color_chat( player_id, 0, "%L", player_id, "GAL_VOTE_INPROGRESS" );
+    }
+    else if( approveTheVotingStartLight() )
+    {
+        new argumentsCount;
+        new arguments[ MAX_BIG_BOSS_STRING ];
+
+        read_args( arguments, charsmax( arguments ) );
+        remove_quotes( arguments );
+
+        argumentsCount = read_argc();
+        log_amx( "%L: %s", LANG_SERVER, "GAL_VOTE_START", arguments );
+
+        LOG( 8, "( cmd_voteMap ) " )
+        LOG( 8, "( cmd_voteMap ) arguments: %s", arguments )
+
+        if( argumentsCount > 1
+            && g_isExtendmapAllowStay
+            || argumentsCount > 2 )
+        {
+            new argument[ MAX_MAPNAME_LENGHT  ];
+            new bool:isWhitelistEnabled = IS_WHITELIST_ENABLED();
+
+            // If the voteMapMenuBuilder(1) added some maps, they will be around here, but we do not
+            // want to them be here as this is a full spec command.
+            clearTheVotingMenu();
+
+            // The initial settings setup
+            g_voteMapStatus = IS_DISABLED_VOTEMAP_EXIT;
+
+            // To start from 1 because the first argument 0, is the command line name `gal_startvote`.
+            for( new index = 1; index < argumentsCount; index++ )
+            {
+                new cache;
+
+                read_argv( index, argument, charsmax( argument ) );
+                LOG( 8, "( cmd_voteMap ) argument[%d]: %s", index, argument )
+
+                if( IS_WHITELIST_BLOCKING( isWhitelistEnabled, argument ) )
+                {
+                    console_print( player_id, "%s: %L", argument, player_id, "GAL_MATCH_WHITELIST" );
+                    LOG( 8, "    ( cmd_voteMap ) %s: %L", argument, player_id, "GAL_MATCH_WHITELIST" )
+
+                    // We do not need to print help, as the Whilelist message is clear.
+                    goto invalid_map_provited;
+                }
+                else if( IS_MAP_VALID( argument ) )
+                {
+                    LOG( 8, "    ( cmd_voteMap ) argument is a valid map." )
+                    addMapToTheVotingMenu( argument, "" );
+                }
+                else if( -1 < ( cache = containi( argument, "nointro" ) )
+                         && cache < 2 )
+                {
+                    LOG( 8, "    ( cmd_voteMap ) Entering on argument `nointro`" )
+                    g_voteMapStatus |= IS_DISABLED_VOTEMAP_INTRO;
+                }
+                else if( -1 < ( cache = containi( argument, "norunoff" ) )
+                         && cache < 2 )
+                {
+                    LOG( 8, "    ( cmd_voteMap ) Entering on argument `norunoff`" )
+                    g_voteMapStatus |= IS_DISABLED_VOTEMAP_RUNOFF;
+                }
+                else if( -1 < ( cache = containi( argument, "noextension" ) )
+                         && cache < 2 )
+                {
+                    LOG( 8, "    ( cmd_voteMap ) Entering on argument `noextension`" )
+                    g_voteMapStatus |= IS_DISABLED_VOTEMAP_EXTENSION;
+                }
+                else if( -1 < ( cache = containi( argument, "loadnominations" ) )
+                         && cache < 2 )
+                {
+                    LOG( 8, "    ( cmd_voteMap ) Entering on argument `loadnominations`" )
+
+                    // Load on the nominations maps.
+                    loadOnlyNominationVoteChoices();
+                }
+                else
+                {
+                    showGalVoteMapHelp( player_id, index, argument );
+                    invalid_map_provited:
+
+                    // If this was just called but not within the sufficient maps, the menu will contain
+                    // invalid maps, therefore clean it just to be sure.
+                    clearTheVotingMenu();
+
+                    // As should not be any invalid arguments, we do allow to keep going on, otherwise
+                    // we would have to use a buffers loader as on announceVoteBlockedMap(4) and
+                    // flushVoteBlockedMaps(3) to avoid the client overflow when too many how arguments
+                    // are passed by.
+                    LOG( 1, "    ( cmd_voteMap ) Returning PLUGIN_HANDLED" )
+                    return PLUGIN_HANDLED;
+                }
+            }
+
+            LOG( 8, "    ( cmd_voteMap ) g_voteMapStatus: %d", g_voteMapStatus )
+            startVoteMapVoting( player_id );
+        }
+        else
+        {
+            showGalVoteMapHelp( player_id );
+        }
+    }
+
+    LOG( 1, "    ( cmd_voteMap ) Returning PLUGIN_HANDLED" )
+    return PLUGIN_HANDLED;
+}
+
+stock startVoteMapVoting( player_id )
+{
+    LOG( 128, "I AM ENTERING ON startVoteMapVoting(1) player_id: %s", player_id )
+
+    if( g_totalVoteOptions > 0
+        && !( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXTENSION )
+        && g_isExtendmapAllowStay
+        || g_totalVoteOptions > 1 )
+    {
+        // Load the voting time
+        SET_VOTING_TIME_TO( g_votingSecondsRemaining, cvar_voteDuration )
+
+        // Save the invoker id to use it later when we get the outcome result
+        g_voteMapInvokerPlayerId = player_id;
+
+        // to prepare the initial voting state, forcing the start up.
+        configureVotingStart( true );
+
+        // Show up the voting menu
+        initializeTheVoteDisplay();
+    }
+    else
+    {
+        // Vote creation failed; no maps found.
+        color_chat( 0, 0, "%L", LANG_PLAYER, "GAL_VOTE_NOMAPS" );
+
+        finalizeVoting();
+        showGalVoteMapHelp( player_id );
+    }
+}
+
+/**
+ * This is the `gal_votemap` admin's command line help displayer.
+ */
+stock showGalVoteMapHelp( player_id, index = 0, argument[] = {0} )
+{
+    LOG( 128, "I AM ENTERING ON showGalVoteMapHelp(1) argument: %s", argument )
+
+    if( argument[ 0 ] )
+    {
+        console_print( player_id,
+                "^nThe argument `%d=%s` could not be recognized as a valid map or option.", index, argument );
+    }
+
+    // It was necessary to split the message up to 190 characters due the output print being cut.
+    console_print( player_id,
+           "Examples:\
+            ^ngal_votemap map1 map2 map3 map4 ... map9 -nointro -noextension -norunoff" );
+
+    console_print( player_id,
+           "gal_votemap map1 map2 map3 map4 ... map9\
+            ^ngal_votemap map1 map2 map3 -nointro -noextension" );
+
+    console_print( player_id,
+           "gal_votemap map1 map2 -nointro\
+            ^ngal_votemap map1 map2 -loadnominations\
+            ^ngal_votemap map1 map2" );
+}
+
+/**
+ * This is the main `say galmenu` builder called from the cmd_say(1) handler.
+ */
+stock voteMapMenuBuilder( player_id )
+{
+    LOG( 128, "I AM ENTERING ON voteMapMenuBuilder(0) player_id: %d", player_id )
+
+    // The initial settings setup
+    g_voteMapStatus = IS_DISABLED_VOTEMAP_EXIT;
+
+    displayVoteMapMenuHook( player_id );
+}
+
+/**
+ * Due there are several first menu options, take `VOTEMAP_FIRST_PAGE_ITEMS_COUNTING` items less.
+ */
+#define VOTEMAP_FIRST_PAGE_ITEMS_COUNTING 4
+
+/**
+ * Used to allow the menu displayVoteMapMenu(1) to have parameters within a default value.
+ * It is because public functions are not allow to have a default value and we need this function
+ * be public to allow it to be called from a set_task().
+ */
+public displayVoteMapMenuHook( player_id )
+{
+    LOG( 128, "I AM ENTERING ON displayVoteMapMenuHook(1) currentPage: %d", g_voteMapMenuPages[ player_id ] )
+    displayVoteMapMenu( player_id );
+}
+
+/**
+ * This is the main menu `say galmenu` builder.
+ */
+stock displayVoteMapMenu( player_id )
+{
+    LOG( 128, "I AM ENTERING ON displayVoteMapMenu(1) player_id: %d", player_id )
+
+    new mapIndex;
+    new itemsCount;
+    new nominationsMapsCount;
+
+    new choice        [ MAX_MAPNAME_LENGHT + 32 ];
+    new nominationMap [ MAX_MAPNAME_LENGHT ];
+    new selectedMap   [ MAX_SHORT_STRING ];
+    new disabledReason[ MAX_SHORT_STRING ];
+
+    nominationsMapsCount  = ArraySize( g_nominationLoadedMapsArray );
+
+    // Calculate how much pages there are available.
+    new currentPageNumber = g_voteMapMenuPages[ player_id ];
+    new lastPageNumber    = ( ( ( nominationsMapsCount + 1 ) / MAX_NOM_MENU_ITEMS_PER_PAGE )
+                        + ( ( ( ( nominationsMapsCount + 1 ) % MAX_NOM_MENU_ITEMS_PER_PAGE ) > 0 ) ? 1 : 0 ) );
+
+    // To create the menu
+    formatex( disabledReason, charsmax( disabledReason ),
+            IS_COLORED_CHAT_ENABLED() ? "%L\R%d /%d" : "%L  %d /%d",
+            player_id, "GAL_LISTMAPS_TITLE", currentPageNumber + 1, lastPageNumber );
+
+    new menu = menu_create( disabledReason, "handleDisplayVoteMap" );
+
+    // The first page contains by default options, then the first page will get one less items due
+    // the extra options.
+    if( currentPageNumber < 1 )
+    {
+        new bool:isOn;
+        formatex( selectedMap, charsmax( selectedMap ), "%s%L", COLOR_YELLOW, player_id, "GAL_CHOICE_MAP", 0, 0 );
+
+        mapIndex   = 0;
+        itemsCount = 4;
+
+        isOn = g_voteMapStatus & IS_DISABLED_VOTEMAP_INTRO != 0;
+        formatex( disabledReason, charsmax( disabledReason ), "-nointro %s", isOn ? selectedMap : {0} );
+        menu_additem( menu, disabledReason, _, 0 );
+
+        isOn = g_voteMapStatus & IS_DISABLED_VOTEMAP_RUNOFF != 0;
+        formatex( disabledReason, charsmax( disabledReason ), "-norunoff %s", isOn ? selectedMap : {0} );
+        menu_additem( menu, disabledReason, _, 0 );
+
+        isOn = g_voteMapStatus & IS_DISABLED_VOTEMAP_EXTENSION != 0;
+        formatex( disabledReason, charsmax( disabledReason ), "-noextension %s", isOn ? selectedMap : {0} );
+        menu_additem( menu, disabledReason, _, 0 );
+
+        isOn = g_voteMapStatus & IS_ENABLED_VOTEMAP_NOMINATIONS != 0;
+        formatex( disabledReason, charsmax( disabledReason ), "-loadnominations %s", isOn ? selectedMap : {0} );
+        menu_additem( menu, disabledReason, _, isOn ? ( 1 << 26 ) : 0 );
+
+        // Add some space from the last option.
+        // menu_addblank( menu, 0 );
+    }
+    else
+    {
+        // Due there are several first menu options, take `VOTEMAP_FIRST_PAGE_ITEMS_COUNTING` items less.
+        mapIndex   = currentPageNumber * MAX_NOM_MENU_ITEMS_PER_PAGE - VOTEMAP_FIRST_PAGE_ITEMS_COUNTING;
+        itemsCount = 0;
+    }
+
+    // Disables the menu paging.
+    menu_setprop( menu, MPROP_PERPAGE, 0 );
+
+    // Configure the menu buttons.
+    // SET_MENU_LANG_STRING_PROPERTY( MPROP_EXITNAME, menu, "EXIT" )
+    // SET_MENU_LANG_STRING_PROPERTY( MPROP_NEXTNAME, menu, "MORE" )
+    // SET_MENU_LANG_STRING_PROPERTY( MPROP_BACKNAME, menu, "BACK" )
+
+    new bool:isWhitelistEnabled = IS_WHITELIST_ENABLED();
+
+    for( ; mapIndex < nominationsMapsCount && itemsCount < MAX_NOM_MENU_ITEMS_PER_PAGE; mapIndex++ )
+    {
+        GET_MAP_NAME( g_nominationLoadedMapsArray, mapIndex, nominationMap )
+        itemsCount++;
+
+        // Start the menu entry item calculation
+        {
+            // in most cases, the map will be available for selection, so assume that's the case here
+            selectedMap   [ 0 ] = '^0';
+            disabledReason[ 0 ] = '^0';
+
+            // disable if the map has already been nominated
+            if( map_isInMenu( nominationMap ) )
+            {
+                formatex( selectedMap, charsmax( selectedMap ), "%s%L", COLOR_YELLOW, player_id, "GAL_MATCH_NOMINATED" );
+            }
+            else if( g_totalVoteOptions > 8 )
+            {
+                formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_GRP_FAIL_TOOMANY_2" );
+            }
+            else if( equali( g_currentMapName, nominationMap ) )
+            {
+                formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_CURRENTMAP" );
+            }
+            else if( IS_WHITELIST_BLOCKING( isWhitelistEnabled, nominationMap ) )
+            {
+                formatex( disabledReason, charsmax( disabledReason ), "%L", player_id, "GAL_MATCH_WHITELIST" );
+            }
+
+            formatex( choice, charsmax( choice ), "%s %s %s", nominationMap, selectedMap, disabledReason );
+            LOG( 4, "( displayVoteMapMenu ) choice: %s", choice )
+
+            menu_additem( menu, choice, _, ( disabledReason[ 0 ] == '^0' ? 0 : ( 1 << 26 ) ) );
+
+        } // end the menu entry item calculation.
+
+    } // end for 'mapIndex'.
+
+    LOG( 4, "( displayVoteMapMenu ) itemsCount: %d, mapIndex: %d", itemsCount, mapIndex )
+
+    addMenuMoreBackStartOptions( menu, player_id, disabledReason, mapIndex < nominationsMapsCount, currentPageNumber > 0, itemsCount );
+    menu_display( player_id, menu );
+}
+
+stock addMenuMoreBackStartOptions( menu, player_id, disabledReason[], bool:isToEnableMoreButton, bool:isToEnableBackButton, itemsCount )
+{
+    LOG( 128, "I AM ENTERING ON addMenuMoreBackStartOptions(5) isToEnableMoreButton: %d", isToEnableMoreButton )
+    addMenuMoreBackButtons( menu, player_id, disabledReason, isToEnableMoreButton, isToEnableBackButton, itemsCount );
+
+    // To add the exit button
+    if( g_totalVoteOptions > 0
+        && !( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXTENSION )
+        && g_isExtendmapAllowStay
+        || g_totalVoteOptions > 1 )
+    {
+        formatex( disabledReason, MAX_SHORT_STRING - 1, "%L%s (%d)", player_id, "CMD_MENU", COLOR_YELLOW, g_totalVoteOptions );
+        menu_additem( menu, disabledReason, _, 0 );
+    }
+    else
+    {
+        formatex( disabledReason, MAX_SHORT_STRING - 1, "%L%s (%d)", player_id, "EXIT", COLOR_GREY, g_totalVoteOptions );
+        menu_additem( menu, disabledReason, _, 0 );
+    }
+}
+
+/**
+ * This is the `say galmenu` main menu handler.
+ *
+ * This menu handler uses the convert_numeric_base(3) instead of menu_item_getinfo() to allow easy
+ * conversion to the olde menu style, and also because it is working fine as it is.
+ */
+public handleDisplayVoteMap( player_id, menu, item )
+{
+    LOG( 128, "I AM ENTERING ON handleDisplayVoteMap(3) player_id: %d, menu: %d, item: %d", player_id, menu, item )
+
+    // Let go to destroy the menu and clean some memory. As the menu is not paginated, the item 9
+    // is the key 0 on the keyboard. Also, the item 8 is the key 9; 7, 8; 6, 7; 5, 6; 4, 5; etc.
+    if( item < 0
+        || ( item == 9
+             && !( g_totalVoteOptions > 0
+                   && !( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXTENSION )
+                   && g_isExtendmapAllowStay
+                   || g_totalVoteOptions > 1 ) ) )
+    {
+        DESTROY_PLAYER_NEW_MENU_TYPE( menu )
+
+        LOG( 1, "    ( handleDisplayVoteMap ) Just Returning PLUGIN_HANDLED, the menu is destroyed." )
+        return PLUGIN_HANDLED;
+    }
+
+    // To start the voting
+    if( item == 9
+        && ( g_totalVoteOptions > 0
+             && !( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXTENSION )
+             && g_isExtendmapAllowStay
+             || g_totalVoteOptions > 1 ) )
+    {
+        DESTROY_PLAYER_NEW_MENU_TYPE( menu )
+        displayVoteMapMenuCommands( player_id );
+
+        LOG( 1, "    ( handleDisplayVoteMap ) Just Returning PLUGIN_HANDLED, starting the voting." )
+        return PLUGIN_HANDLED;
+    }
+
+    switch( item )
+    {
+        // If the 8 button item is hit, and we are not on the first page, we must to perform the back option.
+        case 7:
+        {
+            DESTROY_PLAYER_NEW_MENU_TYPE( menu )
+            g_voteMapMenuPages[ player_id ] ? g_voteMapMenuPages[ player_id ]-- : 0;
+
+            // Try to block/difficult players from performing the Denial Of Server attack.
+            // set_task( 0.1, "displayVoteMapMenuHook", player_id );
+            displayVoteMapMenuHook( player_id );
+
+            LOG( 1, "    ( handleDisplayVoteMap ) Just Returning PLUGIN_HANDLED, doing the back button." )
+            return PLUGIN_HANDLED;
+        }
+        // If the 9 button item is hit, and we are on some page not the last one, we must to perform the more option.
+        case 8:
+        {
+            DESTROY_PLAYER_NEW_MENU_TYPE( menu )
+            g_voteMapMenuPages[ player_id ]++;
+
+            // Try to block/difficult players from performing the Denial Of Server attack.
+            // set_task( 0.1, "displayVoteMapMenuHook", player_id );
+            displayVoteMapMenuHook( player_id );
+
+            LOG( 1, "    ( handleDisplayVoteMap ) Just Returning PLUGIN_HANDLED, doing the more button." )
+            return PLUGIN_HANDLED;
+        }
+    }
+
+    // Due the firsts items to be specials, intercept them, but if and only if we are on the menu's first page.
+    if( g_voteMapMenuPages[ player_id ] == 0
+        && item < 4 )
+    {
+        switch( item )
+        {
+            // pressedKeyCode 0 means the keyboard key 1
+            case 0:
+            {
+                LOG( 8, "    ( cmd_voteMap ) Entering on argument `nointro`" )
+                TOGGLE_BIT_FLAG_ON_OFF( g_voteMapStatus, IS_DISABLED_VOTEMAP_INTRO )
+            }
+            case 1:
+            {
+                LOG( 8, "    ( cmd_voteMap ) Entering on argument `norunoff`" )
+                TOGGLE_BIT_FLAG_ON_OFF( g_voteMapStatus, IS_DISABLED_VOTEMAP_RUNOFF )
+            }
+            case 2:
+            {
+                LOG( 8, "    ( cmd_voteMap ) Entering on argument `noextension`" )
+                TOGGLE_BIT_FLAG_ON_OFF( g_voteMapStatus, IS_DISABLED_VOTEMAP_EXTENSION )
+            }
+            case 3:
+            {
+                // Load on the nominations maps.
+                loadOnlyNominationVoteChoices();
+
+                // This option cannot be undone, to reduce the code complexity.
+                g_voteMapStatus |= IS_ENABLED_VOTEMAP_NOMINATIONS;
+                LOG( 8, "    ( cmd_voteMap ) Entering on argument `loadnominations`" )
+            }
+        }
+    }
+    else
+    {
+        new mapName[ MAX_MAPNAME_LENGHT ];
+        new mapInfo[ MAX_MAPNAME_LENGHT ];
+        new pageSeptalNumber = convert_numeric_base( g_voteMapMenuPages[ player_id ], 10, MAX_NOM_MENU_ITEMS_PER_PAGE );
+
+        // Due there are several first menu options, take `VOTEMAP_FIRST_PAGE_ITEMS_COUNTING` items less.
+        item = convert_numeric_base( pageSeptalNumber * 10, MAX_NOM_MENU_ITEMS_PER_PAGE, 10 ) + item - VOTEMAP_FIRST_PAGE_ITEMS_COUNTING;
+
+        GET_MAP_NAME( g_nominationLoadedMapsArray, item, mapName )
+        GET_MAP_INFO( g_nominationLoadedMapsArray, item, mapInfo )
+
+        // Toggle it if enabled
+        map_isInMenu( mapName ) ? removeMapFromTheVotingMenu( mapName ) : addMapToTheVotingMenu( mapName, mapInfo );
+    }
+
+    DESTROY_PLAYER_NEW_MENU_TYPE( menu )
+
+    // displayVoteMapMenuHook( player_id );
+    set_task( 0.1, "displayVoteMapMenuHook", player_id );
+
+    LOG( 1, "    ( handleDisplayVoteMap ) Just Returning PLUGIN_HANDLED, successful nomination." )
+    return PLUGIN_HANDLED;
+}
+
+/**
+ * Used to select indexes values at the array `g_votingMapNames` instead of the usual array, when we're
+ * are on the submenu `Commands Menu`.
+ */
+#define VOTEMAP_VOTING_MAP_NAMES_INDEX_FLAG -2
+
+/**
+ * This is the secondary `say galmenu` builder. It is used to choose to cancel the personal voting,
+ * start it or see the added maps.
+ */
+public displayVoteMapMenuCommands( player_id )
+{
+    LOG( 128, "I AM ENTERING ON displayVoteMapMenuCommands(1) player_id: %d", player_id )
+
+    new mapIndex;
+    new info[ 1 ];
+
+    new choice          [ MAX_SHORT_STRING ];
+    new menuOptionString[ MAX_SHORT_STRING ];
+
+    // To create the menu
+    formatex( choice, charsmax( choice ), "%L", player_id, "CMD_MENU" );
+    new menu = menu_create( choice, "handleDisplayVoteMapCommands" );
+
+    // The first menus items
+    formatex( choice, charsmax( choice ), "%L%s (%d)", player_id, "GAL_VOTE_START", COLOR_YELLOW, g_totalVoteOptions );
+    menu_additem( menu, choice, { -1 }, g_totalVoteOptions > 0
+                                        && g_isExtendmapAllowStay
+                                        && !( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXTENSION )
+                                        || g_totalVoteOptions > 1 ? 0 : ( 1 << 26 ) );
+
+    formatex( choice, charsmax( choice ), "%L", player_id, "EXIT" );
+    menu_additem( menu, choice, { -1 }, 0 );
+
+    formatex( choice, charsmax( choice ), "%L", player_id, "CANC_VOTE" );
+    menu_additem( menu, choice, { -1 }, g_totalVoteOptions > 0 ? 0 : ( 1 << 26 ) );
+
+    formatex( choice, charsmax( choice ), "%L", player_id, "GAL_VOTE_GO_TO_PAGE" );
+    menu_additem( menu, choice, { -1 }, 0 );
+
+    // Add some space from the first menu options.
+    // menu_addblank( menu, 0 );
+
+    // Configure the menu buttons.
+    SET_MENU_LANG_STRING_PROPERTY( MPROP_EXITNAME, menu, "GAL_LISTMAPS_TITLE" )
+    SET_MENU_LANG_STRING_PROPERTY( MPROP_NEXTNAME, menu, "MORE" )
+    SET_MENU_LANG_STRING_PROPERTY( MPROP_BACKNAME, menu, "BACK" )
+
+    for( mapIndex = 0; mapIndex < g_totalVoteOptions; mapIndex++ )
+    {
+        if( g_votingMapNames[ mapIndex ][ 0 ] )
+        {
+            info[ 0 ] = VOTEMAP_VOTING_MAP_NAMES_INDEX_FLAG - mapIndex;
+            formatex( choice, charsmax( choice ), "%s%s %L", g_votingMapNames[ mapIndex ], COLOR_YELLOW, player_id, "GAL_MATCH_NOMINATED" );
+
+            LOG( 4, "( displayVoteMapMenuCommands ) choice: %s, info[0]: %d", choice, info[ 0 ] )
+            menu_additem( menu, choice, info, 0 );
+        }
+    }
+
+    // The exit option is not showing up at the button 0, but on 9! This forces it to.
+    while( mapIndex + 3 < MAX_NOM_MENU_ITEMS_PER_PAGE )
+    {
+        mapIndex++;
+        formatex( menuOptionString, MAX_SHORT_STRING - 1, "%L", player_id, "OFF" );
+        menu_additem( menu, menuOptionString, _, 1 << 26 );
+
+        // When using slot=1 this might break your menu. To achieve this functionality
+        // menu_addblank2() should be used (AMXX 183 only).
+        // menu_addblank( menu, 1 );
+    }
+
+    menu_display( player_id, menu );
+}
+
+/**
+ * This is the secondary `say galmenu` handler.
+ *
+ * This menu handler uses the menu_item_getinfo() instead of convert_numeric_base(3) because it was
+ * recently written and there is not need to use the old menu's style with specific handler.
+ */
+public handleDisplayVoteMapCommands( player_id, menu, item )
+{
+    LOG( 128, "I AM ENTERING ON handleDisplayVoteMapCommands(3) player_id: %d, menu: %d, item: %d", player_id, menu, item )
+
+    if( item == MENU_EXIT )
+    {
+        DESTROY_PLAYER_NEW_MENU_TYPE( menu )
+        displayVoteMapMenu( player_id );
+
+        LOG( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, returning to the main menu." )
+        return PLUGIN_HANDLED;
+    }
+
+    if( item < 0 )
+    {
+        DESTROY_PLAYER_NEW_MENU_TYPE( menu )
+
+        LOG( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, the menu is destroyed." )
+        return PLUGIN_HANDLED;
+    }
+
+    switch( item )
+    {
+        case 0:
+        {
+            DESTROY_PLAYER_NEW_MENU_TYPE( menu )
+            startVoteMapVoting( player_id );
+
+            LOG( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, starting the voting." )
+            return PLUGIN_HANDLED;
+        }
+        case 1:
+        {
+            DESTROY_PLAYER_NEW_MENU_TYPE( menu )
+
+            LOG( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, exit the menu." )
+            return PLUGIN_HANDLED;
+        }
+        case 2:
+        {
+            clearTheVotingMenu();
+            g_voteMapMenuPages[ player_id ] = 0;
+
+            DESTROY_PLAYER_NEW_MENU_TYPE( menu )
+
+            LOG( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, cleaning the voting." )
+            return PLUGIN_HANDLED;
+        }
+        case 3:
+        {
+            DESTROY_PLAYER_NEW_MENU_TYPE( menu )
+            client_cmd( player_id, "messagemode ^"say %s^"", GAL_VOTEMAP_MENU_COMMAND );
+
+            LOG( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, opening go to page." )
+            return PLUGIN_HANDLED;
+        }
+    }
+
+    // debugging menu info tracker
+    LOG( 4, "", debug_nomination_match_choice( player_id, menu, item ) )
+
+    new access;
+    new callback;
+
+    new info[ 1 ];
+    new mapName[ MAX_MAPNAME_LENGHT ];
+    new mapInfo[ MAX_MAPNAME_LENGHT ];
+
+    menu_item_getinfo( menu, item, access, info, sizeof info, _, _, callback );
+
+    if( info[ 0 ] > -1 )
+    {
+        GET_MAP_NAME( g_nominationLoadedMapsArray, info[0], mapName )
+        GET_MAP_INFO( g_nominationLoadedMapsArray, info[0], mapInfo )
+
+        // Toggle it if enabled
+        map_isInMenu( mapName ) ? removeMapFromTheVotingMenu( mapName ) : addMapToTheVotingMenu( mapName, mapInfo );
+    }
+    else
+    {
+        new mapIndex = abs( info[ 0 ] ) + VOTEMAP_VOTING_MAP_NAMES_INDEX_FLAG;
+
+        if( g_votingMapNames[ mapIndex ][ 0 ] )
+        {
+            removeMapFromTheVotingMenu( g_votingMapNames[ mapIndex ] );
+        }
+    }
+
+    // Before re-creating the menu within the updated data, we need to wait for it be destroyed.
+    DESTROY_PLAYER_NEW_MENU_TYPE( menu )
+
+    // Try to block/difficult players from performing the Denial Of Server attack.
+    // set_task( 0.1, "displayVoteMapMenuCommands", player_id );
+    displayVoteMapMenuCommands( player_id );
+
+    LOG( 1, "    ( handleDisplayVoteMapCommands ) Just Returning PLUGIN_HANDLED, the menu is showed again." )
+    return PLUGIN_HANDLED;
+}
+
+stock debug_nomination_match_choice( player_id, menu, item )
+{
+    LOG( 128, "I AM ENTERING ON debug_nomination_match_choice(3) player_id: %d, menu: %d, item: %d", player_id, menu, item )
+
+    new access;
+    new callback;
+
+    new info[ 1 ];
+    LOG( 4, "( debug_nomination_match_choice ) item: %d, player_id: %d, menu: %d, \
+            g_menuMapIndexForPlayerArrays[player_id]: %d", \
+            item, player_id, menu, g_menuMapIndexForPlayerArrays[ player_id ] )
+
+    // Get item info
+    menu_item_getinfo( menu, item, access, info, sizeof info, _, _, callback );
+    LOG( 4, "( debug_nomination_match_choice ) info[0]: %d, access: %d, menu%d", info[ 0 ], access, menu )
+
+    return 0;
+}
+
+/**
+ * This set up the `say galmenu` final admin's choice builder.
+ */
+stock openTheVoteMapActionMenu()
+{
+    LOG( 128, "I AM ENTERING ON openTheVoteMapActionMenu(0) player_id: %d", g_voteMapInvokerPlayerId )
+
+    g_pendingMapVoteCountdown = get_pcvar_num( cvar_voteDuration ) + 120;
+    set_task( 1.0, "displayTheVoteMapActionMenu", TASKID_PENDING_VOTE_COUNTDOWN, _, _, "a", g_pendingMapVoteCountdown );
+}
+
+/**
+ * This is the `say galmenu` final admin's choice builder.
+ */
+public displayTheVoteMapActionMenu()
+{
+    LOG( 128, "I AM ENTERING ON displayTheVoteMapActionMenu(0) player_id: %d", g_voteMapInvokerPlayerId )
+    new player_id = g_voteMapInvokerPlayerId;
+
+    if( is_user_connected( player_id )
+        && --g_pendingMapVoteCountdown > 0 )
+    {
+        new winnerMap   [ MAX_MAPNAME_LENGHT ];
+        new menu_body   [ MAX_LONG_STRING    ];
+        new menu_counter[ MAX_SHORT_STRING   ];
+
+        new menu_id;
+        new menuKeys;
+        new menuKeysUnused;
+        new bool:allowChange = g_invokerVoteMapNameToDecide[ 0 ] != 0;
+
+        // To change the keys, go also to configureTheVotingMenus(0)
+        menuKeys = MENU_KEY_1;
+
+        // If the g_invokerVoteMapNameToDecide is empty, then the winner map is the stay here option.
+        if( allowChange )
+        {
+            menuKeys |= MENU_KEY_3 | MENU_KEY_5;
+            formatex( winnerMap, charsmax( winnerMap ), "%s", g_invokerVoteMapNameToDecide );
+        }
+        else
+        {
+            formatex( winnerMap, charsmax( winnerMap ), "%L", player_id, "GAL_OPTION_STAY" );
+        }
+
+        formatex( menu_counter, charsmax( menu_counter ),
+                " %s(%s%d %L%s)",
+                COLOR_YELLOW, COLOR_GREY, g_pendingMapVoteCountdown, player_id, "GAL_TIMELEFT", COLOR_YELLOW );
+
+        formatex( menu_body, charsmax( menu_body ),
+               "\
+                %L%s: %s%s^n\
+                %s%L^n\
+                ^n%s1.%s %L %s\
+                ^n%s3.%s %L %s\
+                ^n%s5.%s %L\
+                ",
+                player_id, "THE_RESULT", COLOR_RED, COLOR_WHITE, winnerMap,
+                COLOR_YELLOW, player_id, "WANT_CONTINUE",
+                COLOR_RED, COLOR_WHITE, player_id, "CANC_VOTE", menu_counter,
+                COLOR_RED, allowChange ? COLOR_WHITE : COLOR_GREY, player_id, "CHANGE_MAP_TO"              , winnerMap,
+                COLOR_RED, allowChange ? COLOR_WHITE : COLOR_GREY, player_id, "GAL_OPTION_CANCEL_PARTIALLY", winnerMap,
+                0 );
+
+        get_user_menu( player_id, menu_id, menuKeysUnused );
+
+        if( menu_id == 0
+            || menu_id == g_chooseVoteMapQuestionMenuId )
+        {
+            show_menu( player_id, menuKeys, menu_body, ( g_pendingMapVoteCountdown == 1 ? 1 : 2 ),
+                    CHOOSE_VOTEMAP_MENU_QUESTION );
+        }
+
+        LOG( 4, "( displayTheVoteMapActionMenu ) menu_body: %s", menu_body )
+        LOG( 4, "    menu_id: %d, menuKeys: %d, ", menu_id, menuKeys )
+        LOG( 4, "    g_pendingMapVoteCountdown: %d", g_pendingMapVoteCountdown )
+    }
+    else
+    {
+        // To perform the default action automatically, nothing is answered.
+        handleVoteMapActionMenu( player_id, 0 );
+    }
+
+    LOG( 4, "%48s", " ( displayTheVoteMapActionMenu| out )" )
+}
+
+/**
+ * This is the `say galmenu` final admin's choice handler.
+ */
+public handleVoteMapActionMenu( player_id, pressedKeyCode )
+{
+    LOG( 128, "I AM ENTERING ON handleVoteMapActionMenu(2) player_id: %d, pressedKeyCode: %d", \
+            player_id, pressedKeyCode )
+
+    // Allow the result outcome to be processed
+    g_voteMapStatus = 0;
+
+    // Stop the menu from showing up again
+    remove_task( TASKID_PENDING_VOTE_COUNTDOWN );
+
+    switch( pressedKeyCode )
+    {
+        // pressedKeyCode 0 means the keyboard key 1
+        case 0:
+        {
+            // If we are rejecting the results, allow a new map end voting to start
+            g_voteStatus &= ~IS_VOTE_OVER;
+
+            // Then this is empty, the winner was stay here, and this result has already been announced.
+            if( g_invokerVoteMapNameToDecide[ 0 ] )
+            {
+                color_chat( 0, 0, "%L. %L: %s", LANG_PLAYER, "RESULT_REF", LANG_PLAYER, "VOT_CANC", g_invokerVoteMapNameToDecide );
+                toShowTheMapNextHud( "RESULT_REF", "VOT_CANC", "GAL_OPTION_STAY_MAP", g_currentMapName );
+            }
+        }
+        case 2:
+        {
+            if( g_invokerVoteMapNameToDecide[ 0 ] )
+            {
+                // The end of map count countdown will immediately start, so there is not point int showing any messages.
+                setNextMap( g_currentMapName, g_invokerVoteMapNameToDecide );
+                process_last_round( true );
+            }
+        }
+        case 4:
+        {
+            // Only set the next map
+            if( g_invokerVoteMapNameToDecide[ 0 ] )
+            {
+                color_chat( 0, 0, "%L. %L: %s", LANG_PLAYER, "RESULT_ACC", LANG_PLAYER, "VOTE_SUCCESS", g_invokerVoteMapNameToDecide );
+                toShowTheMapNextHud( "RESULT_ACC", "DMAP_MAP_EXTENDED1", "GAL_WINNER_ORDERED1", g_invokerVoteMapNameToDecide );
+
+                setNextMap( g_currentMapName, g_invokerVoteMapNameToDecide );
+            }
+        }
+    }
+
+    LOG( 1, "    ( handleEndOfTheMapVoteChoice ) Returning PLUGIN_HANDLED" )
+    return PLUGIN_HANDLED;
 }
 
 stock get_real_players_number()
