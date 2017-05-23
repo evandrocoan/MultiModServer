@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.6.1-874";
+new const PLUGIN_VERSION[] = "v5.6.1-875";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -9088,7 +9088,7 @@ stock configureTheRunoffVoting( firstPlaceChoices[], secondPlaceChoices[], numbe
     // clear all the votes
     vote_resetStats();
 
-    // start the runoff vote, startTheVoting
+    // start the runoff vote
     set_task( VOTE_TIME_RUNOFF, "startTheRunoffVoting", TASKID_START_THE_VOTING );
 }
 
@@ -12067,31 +12067,45 @@ public cmd_startVote( player_id, level, cid )
         g_isToChangeMapOnVotingEnd = true;
         read_args( argument, charsmax( argument ) );
 
-        if( read_argc() <= 2 )
+        if( read_argc() < 3 )
         {
+            new bool:isImmediateChange;
             remove_quotes( argument );
 
-            if( equali( argument, "-nochange" ) )
+            if( strlen( argument ) > 0 )
             {
-                g_isToChangeMapOnVotingEnd = false;
-            }
-            else if( equali( argument, "-restart", 4 ) )
-            {
-                g_isTimeToRestart = true;
-            }
-            else if( equali( argument, "-roundend", 4 ) )
-            {
-                g_isTheLastGameRound = true;
-                g_isToChangeMapOnVotingEnd = false;
+                if( equali( argument, "-nochange" ) )
+                {
+                    g_isToChangeMapOnVotingEnd = false;
+                }
+                else if( equali( argument, "-restart", 4 ) )
+                {
+                    g_isTimeToRestart = true;
+                }
+                else if( equali( argument, "-roundend", 4 ) )
+                {
+                    g_isTheLastGameRound = true;
+                    g_isToChangeMapOnVotingEnd = false;
+                }
+                else if( ( isImmediateChange = ( equali( argument, "-now", 4 ) != 0 ) ) )
+                {
+                    // Do nothing here
+                }
+                else
+                {
+                    goto showHelp;
+                }
             }
 
             // Force the map at the current round end, instead of immediately.
-            if( get_pcvar_num( cvar_generalOptions ) & VOTE_WAIT_FOR_ROUND_END )
+            if( !isImmediateChange
+                && get_pcvar_num( cvar_generalOptions ) & VOTE_WAIT_FOR_ROUND_END )
             {
                 g_isTheLastGameRound = true;
                 g_isToChangeMapOnVotingEnd = false;
             }
 
+            LOG( 8, "( cmd_startVote ) isImmediateChange: %d", isImmediateChange )
             LOG( 8, "( cmd_startVote ) g_isTimeToRestart: %d", g_isTimeToRestart )
             LOG( 8, "( cmd_startVote ) g_isTheLastGameRound: %d, argument: %s", g_isTheLastGameRound, argument )
             LOG( 8, "( cmd_startVote ) g_isToChangeMapOnVotingEnd: %d, g_voteStatus: %d", g_isToChangeMapOnVotingEnd, g_voteStatus )
@@ -12103,12 +12117,14 @@ public cmd_startVote( player_id, level, cid )
         }
         else
         {
+            showHelp:
             console_print( player_id, "^nThe argument `%s` could not be recognized as a valid option.", argument );
 
             // It was necessary to split the message up to 190 characters due the output print being cut.
             console_print( player_id,
                    "Examples:\
                     ^ngal_votemap\
+                    ^ngal_votemap -now\
                     ^ngal_votemap -nochange\
                     ^ngal_votemap -restart\
                     ^ngal_votemap -roundend\
