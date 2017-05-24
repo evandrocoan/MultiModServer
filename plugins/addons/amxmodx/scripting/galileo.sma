@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.7.0-878";
+new const PLUGIN_VERSION[] = "v5.7.1-879";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -2146,6 +2146,7 @@ stock configureServerStart()
     // at the first time the server is started.
     if( startAction )
     {
+        // This cvar is only required when the start action is enabled.
         register_srvcmd( "quit2", "cmd_quit2" );
 
         if( get_pcvar_num( cvar_isFirstServerStart ) == FIRST_SERVER_START )
@@ -2922,7 +2923,7 @@ stock writeRecentMapsBanList( loadedMapsCount )
         new bool:isOnlyRecentMapcycleMaps = get_pcvar_num( cvar_isOnlyRecentMapcycleMaps ) != 0;
         LOG( 4, "( writeRecentMapsBanList ) isOnlyRecentMapcycleMaps: %s", isOnlyRecentMapcycleMaps )
 
-        // Do not ban repeated maps
+        // Do not repeatedly ban maps
         if( !TrieKeyExists( g_recentMapsTrie, g_currentMapName ) )
         {
             // Add the current map to the ban list
@@ -3320,9 +3321,8 @@ stock loadTheBanRecentMapsFeature( maximumLoadMapsCount )
         register_clcmd( "say recentmaps", "cmd_listrecent", 0 );
 
         // Do nothing if the map will be instantly changed
-        if( loadedCount
-            && !( get_pcvar_num( cvar_isFirstServerStart ) == FIRST_SERVER_START
-                  && get_pcvar_num( cvar_serverStartAction ) ) )
+        if( get_pcvar_num( cvar_isFirstServerStart ) != FIRST_SERVER_START
+            || !get_pcvar_num( cvar_serverStartAction ) )
         {
             writeRecentMapsBanList( loadedCount );
         }
