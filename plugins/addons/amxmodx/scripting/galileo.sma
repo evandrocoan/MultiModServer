@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.7.2-882";
+new const PLUGIN_VERSION[] = "v5.7.2-883";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -417,8 +417,6 @@ new const PLUGIN_VERSION[] = "v5.7.2-882";
     new g_test_aimedPlayersNumber;
     new g_test_gameElapsedTime;
     new g_test_startDayInteger;
-
-    new g_test_printedMessage[ MAX_COLOR_MESSAGE ];
 
     new g_test_nomMapFilePath[]     = "test_nomMapFilePath.txt";
     new g_test_voteMapFilePath[]    = "test_voteFilePathTestFile.txt";
@@ -14294,13 +14292,6 @@ stock general_chat_print( const player_id, const lang_formatting[], any:... )
 
     const first_lang_parameter_position = 3;
     new formatted_message[ MAX_COLOR_MESSAGE ];
-
-#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
-    g_test_printedMessage[ 0 ] = '^0';
-
-    vformat( g_test_printedMessage, charsmax( g_test_printedMessage ), lang_formatting, first_lang_parameter_position );
-    LOG( 64, "( general_chat_print ) player_id: %d, g_test_printedMessage: %s", player_id, g_test_printedMessage )
-#endif
 
     if( player_id )
     {
