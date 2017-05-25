@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.7.2-883";
+new const PLUGIN_VERSION[] = "v5.7.2-884";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -204,7 +204,7 @@ new const PLUGIN_VERSION[] = "v5.7.2-883";
      *
      * 32   - Rounds end map voting.
      *
-     * 64   - Debug for the color_print(...) function.
+     * 64   - Debug for the color_chat(...) function.
      *
      * 128  - Functions entrances messages.
      *
@@ -475,71 +475,10 @@ new bool:g_isColoredChatEnabled;
 //
 
 /**
- * This is holder to allow pass fake "variadic" arguments to the macro COLOR().
- *
- * @param variadic_args     a variable number of arguments
- */
-#define CHAT(%1) %1
-
-/**
- * Properly switch the colored chat implementation accordantly to the AMXX's compilers version.
- */
-#if AMXX_VERSION_NUM < 183
-    /**
-     * Same as the functions COLOR(CHAT) just bellow, but uses color_print_only() for AMXX 182.
-     *
-     * @see <a href="https://www.amxmodx.org/api/amxmodx/client_print">client_print</a>
-     */
-    #define COLOR(%1,%2) \
-    { \
-        LOG( 128, "" ) \
-        LOG( 128, "I AM ENTERING ON COLOR(CHAT) player_id: %d", %1 ) \
-        \
-        if( IS_COLORED_CHAT_ENABLED() ) \
-        { \
-            color_print_only( %1, %2 ); \
-        } \
-        else \
-        { \
-            client_print( %1, print_chat, %2 ); \
-        } \
-    }
-    new g_user_msgid;
-#else
-    /**
-     * Dynamically switch on runtime the client colored print function supported by the current game
-     * mod running. This is necessary because the colored print function client_print_color() is
-     * only supported by a very few game modes. Therefore we cannot know at compile time whether the
-     * game mod will supported the colored print function client_print_color().
-     *
-     * The usage is: COLOR( 0, CHAT( "Message: %d", argument ) )
-     *
-     * @param player_id         the player id
-     * @param variadic_args     a variable number of arguments
-     *
-     * @see <a href="https://www.amxmodx.org/api/amxmodx/client_print_color">client_print_color</a>
-     */
-    #define COLOR(%1,%2) \
-    { \
-        LOG( 128, "" ) \
-        LOG( 128, "I AM ENTERING ON COLOR(CHAT) player_id:  %d", %1 ) \
-        LOG( 128, "( COLOR(CHAT) ) IS_COLORED_CHAT_ENABLED: %d, constant: %s", IS_COLORED_CHAT_ENABLED(), %2 ) \
-        \
-        if( IS_COLORED_CHAT_ENABLED() ) \
-        { \
-            client_print_color( %1, print_team_default, %2 ); \
-        } \
-        else \
-        { \
-            client_print( %1, print_chat, %2 ); \
-        } \
-    }
-#endif
-
-/**
  * The cvar `gal_colored_chat_enabled` to enable or disable the colored chat messages.
  */
 new cvar_coloredChatEnabled;
+new g_user_msgid;
 
 /**
  * Switch between the AMXX 182 and 183 deprecated/bugged functions.
@@ -1855,9 +1794,7 @@ public plugin_cfg()
      * the execution flow will not reach here, then the player "g_user_msgid" will be be
      * initialized.
      */
-#if AMXX_VERSION_NUM < 183
     g_user_msgid = get_user_msgid( "SayText" );
-#endif
 
     // Load the initial settings
     loadPluginSetttings();
@@ -4380,7 +4317,7 @@ stock try_to_manage_map_end( bool:isFragLimitEnd = false )
     if( g_isOnMaintenanceMode )
     {
         prevent_map_change();
-        COLOR( 0, CHAT( "%L", LANG_PLAYER, "GAL_CHANGE_MAINTENANCE" ) )
+        color_chat( 0, "%L", LANG_PLAYER, "GAL_CHANGE_MAINTENANCE" );
     }
     else if( !( g_isTheLastGameRound
                 || g_isThePenultGameRound ) )
@@ -4643,7 +4580,7 @@ stock process_last_round( bool:isToImmediatelyChangeLevel, bool:isCountDownAllow
                 set_task( 1.0, "last_round_countdown", TASKID_PROCESS_LAST_ROUND_COUNT, _, _, "a", totalTime );
 
                 get_pcvar_string( cvar_amx_nextmap, nextMapName, charsmax( nextMapName ) );
-                COLOR( 0, CHAT( "%L...", LANG_PLAYER, "DMAP_MAP_CHANGING_IN2", nextMapName, totalTime ) )
+                color_chat( 0, "%L...", LANG_PLAYER, "DMAP_MAP_CHANGING_IN2", nextMapName, totalTime );
             }
         }
         else
@@ -4856,19 +4793,19 @@ public show_last_round_message()
         if( g_isTheLastGameRound
             && !g_isToChangeMapOnVotingEnd )
         {
-            COLOR( 0, CHAT( "%L %L", \
+            color_chat( 0, "%L %L", \
                     LANG_PLAYER, "GAL_CHANGE_NEXTROUND", \
-                    LANG_PLAYER, "GAL_NEXTMAP2", nextMapName ) )
+                    LANG_PLAYER, "GAL_NEXTMAP2", nextMapName );
         }
         else if( g_isThePenultGameRound )
         {
-            COLOR( 0, CHAT( "%L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED2", LANG_PLAYER, "GAL_NEXTMAP2", nextMapName ) )
+            color_chat( 0, "%L %L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED2", LANG_PLAYER, "GAL_NEXTMAP2", nextMapName );
         }
     }
     else if( g_isTheLastGameRound
              || g_isThePenultGameRound )
     {
-        COLOR( 0, CHAT( "%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED2" ) )
+        color_chat( 0, "%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED2" );
     }
 }
 
@@ -6753,11 +6690,11 @@ stock flushVoteBlockedMaps( blockedMapsBuffer[], flushAnnouncement[], &announcem
     {
         if( announcementShowedTimes == 1 )
         {
-            COLOR( 0, CHAT( "%L", LANG_PLAYER, flushAnnouncement, 0, 0 ) )
+            color_chat( 0, "%L", LANG_PLAYER, flushAnnouncement, 0, 0 );
         }
 
         if( !IS_COLORED_CHAT_ENABLED() ) REMOVE_CODE_COLOR_TAGS( blockedMapsBuffer )
-        COLOR( 0, CHAT( "%L", LANG_PLAYER, "GAL_MATCHING", blockedMapsBuffer[ 3 ] ) )
+        color_chat( 0, "%L", LANG_PLAYER, "GAL_MATCHING", blockedMapsBuffer[ 3 ] );
 
         announcementShowedTimes++;
         blockedMapsBuffer[ 0 ] = '^0';
@@ -6977,7 +6914,7 @@ stock showRemainingTimeUntilVoting()
                         show_hudmessage( 0, "%L:^n%d %L", LANG_PLAYER, "TIME_LEFT", roundsLeft, LANG_PLAYER, "GAL_ROUNDS" );
                     }
 
-                    COLOR( 0, CHAT( "%L %L...", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", roundsLeft, LANG_PLAYER, "GAL_ROUNDS" ) )
+                    color_chat( 0, "%L %L...", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", roundsLeft, LANG_PLAYER, "GAL_ROUNDS" );
                 }
             }
             case GameEndingType_ByWinLimit:
@@ -6991,7 +6928,7 @@ stock showRemainingTimeUntilVoting()
                         show_hudmessage( 0, "%L:^n%d %L", LANG_PLAYER, "TIME_LEFT", winLeft, LANG_PLAYER, "GAL_ROUNDS" );
                     }
 
-                    COLOR( 0, CHAT( "%L %L...", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", winLeft, LANG_PLAYER, "GAL_ROUNDS" ) )
+                    color_chat( 0, "%L %L...", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", winLeft, LANG_PLAYER, "GAL_ROUNDS" );
                 }
             }
             case GameEndingType_ByFragLimit:
@@ -7005,7 +6942,7 @@ stock showRemainingTimeUntilVoting()
                         show_hudmessage( 0, "%L:^n%d %L", LANG_PLAYER, "TIME_LEFT", fragsLeft, LANG_PLAYER, "GAL_FRAGS" );
                     }
 
-                    COLOR( 0, CHAT( "%L %L...", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", fragsLeft, LANG_PLAYER, "GAL_FRAGS" ) )
+                    color_chat( 0, "%L %L...", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", fragsLeft, LANG_PLAYER, "GAL_FRAGS" );
                 }
             }
             case GameEndingType_ByTimeLimit:
@@ -7019,7 +6956,7 @@ stock showRemainingTimeUntilVoting()
 
                 if( timeLeft > 0 )
                 {
-                    COLOR( 0, CHAT( "%L %L...", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", ( timeLeft ) / 60, LANG_PLAYER, "GAL_MINUTES" ) )
+                    color_chat( 0, "%L %L...", LANG_PLAYER, "GAL_VOTE_COUNTDOWN", ( timeLeft ) / 60, LANG_PLAYER, "GAL_MINUTES" );
                 }
             }
             default:
@@ -7032,11 +6969,11 @@ stock showRemainingTimeUntilVoting()
                 // When we put the color tags inside the plugin, we need to check whether the color chat is enabled.
                 if( IS_COLORED_CHAT_ENABLED() )
                 {
-                    COLOR( 0, CHAT( "^4%L:^1 %L...", LANG_PLAYER, "TIME_LEFT", LANG_PLAYER, "NO_T_LIMIT" ) )
+                    color_chat( 0, "^4%L:^1 %L...", LANG_PLAYER, "TIME_LEFT", LANG_PLAYER, "NO_T_LIMIT" );
                 }
                 else
                 {
-                    COLOR( 0, CHAT( "%L: %L...", LANG_PLAYER, "TIME_LEFT", LANG_PLAYER, "NO_T_LIMIT" ) )
+                    color_chat( 0, "%L: %L...", LANG_PLAYER, "TIME_LEFT", LANG_PLAYER, "NO_T_LIMIT" );
                 }
             }
         }
@@ -7448,7 +7385,7 @@ stock startTheVoting( bool:is_forced_voting )
     else
     {
         // Vote creation failed; no maps found.
-        COLOR( 0, CHAT( "%L", LANG_PLAYER, "GAL_VOTE_NOMAPS" ) )
+        color_chat( 0, "%L", LANG_PLAYER, "GAL_VOTE_NOMAPS" );
         finalizeVoting();
     }
 
@@ -7480,7 +7417,7 @@ public startTheRunoffVoting()
     else
     {
         // Vote creation failed; no maps found.
-        COLOR( 0, CHAT( "%L", LANG_PLAYER, "GAL_VOTE_NOMAPS" ) )
+        color_chat( 0, "%L", LANG_PLAYER, "GAL_VOTE_NOMAPS" );
         finalizeVoting();
     }
 
@@ -7624,7 +7561,7 @@ stock announceThePendingVoteTime( Float:time )
     LOG( 128, "I AM ENTERING ON announceThePendingVoteTime(1) time: %f", time )
 
     new targetTime = floatround( time, floatround_floor );
-    COLOR( 0, CHAT( "%L", LANG_PLAYER, "DMAP_NEXTMAP_VOTE_REMAINING2", targetTime ) )
+    color_chat( 0, "%L", LANG_PLAYER, "DMAP_NEXTMAP_VOTE_REMAINING2", targetTime );
 
     // If there is enough time
     if( targetTime > 4
@@ -8733,7 +8670,7 @@ stock register_vote( player_id, pressedKeyCode )
             g_arrayOfMapsWithVotesNumber[ pressedKeyCode ] += voteWeight;
             g_totalVotesCounted                            += ( voteWeight - 1 );
 
-            COLOR( player_id, CHAT( "%L", player_id, "GAL_VOTE_WEIGHTED", voteWeight ) )
+            color_chat( player_id, "%L", player_id, "GAL_VOTE_WEIGHTED", voteWeight );
         }
         else
         {
@@ -8761,11 +8698,11 @@ stock announceRegistedVote( player_id, pressedKeyCode )
 
         if( isToAnnounceChoice )
         {
-            COLOR( 0, CHAT( "%L", LANG_PLAYER, "GAL_CHOICE_NONE_ALL", player_name ) )
+            color_chat( 0, "%L", LANG_PLAYER, "GAL_CHOICE_NONE_ALL", player_name );
         }
         else
         {
-            COLOR( player_id, CHAT( "%L", player_id, "GAL_CHOICE_NONE" ) )
+            color_chat( player_id, "%L", player_id, "GAL_CHOICE_NONE" );
         }
     }
     else if( pressedKeyCode == g_totalVoteOptions )
@@ -8780,22 +8717,22 @@ stock announceRegistedVote( player_id, pressedKeyCode )
             {
                 if( isToAnnounceChoice )
                 {
-                    COLOR( 0, CHAT( "%L", LANG_PLAYER, "GAL_CHOICE_EXTEND_ALL", player_name ) )
+                    color_chat( 0, "%L", LANG_PLAYER, "GAL_CHOICE_EXTEND_ALL", player_name );
                 }
                 else
                 {
-                    COLOR( player_id, CHAT( "%L", player_id, "GAL_CHOICE_EXTEND" ) )
+                    color_chat( player_id, "%L", player_id, "GAL_CHOICE_EXTEND" );
                 }
             }
             else
             {
                 if( isToAnnounceChoice )
                 {
-                    COLOR( 0, CHAT( "%L", LANG_PLAYER, "GAL_CHOICE_STAY_ALL", player_name ) )
+                    color_chat( 0, "%L", LANG_PLAYER, "GAL_CHOICE_STAY_ALL", player_name );
                 }
                 else
                 {
-                    COLOR( player_id, CHAT( "%L", player_id, "GAL_CHOICE_STAY" ) )
+                    color_chat( player_id, "%L", player_id, "GAL_CHOICE_STAY" );
                 }
             }
         }
@@ -8806,13 +8743,13 @@ stock announceRegistedVote( player_id, pressedKeyCode )
 
         if( isToAnnounceChoice )
         {
-            COLOR( 0, CHAT( "%L", LANG_PLAYER, "GAL_CHOICE_MAP_ALL", \
-                    player_name, g_votingMapNames[ pressedKeyCode ] ) )
+            color_chat(0, "%L", LANG_PLAYER, "GAL_CHOICE_MAP_ALL", \
+                    player_name, g_votingMapNames[ pressedKeyCode ] );
         }
         else
         {
-            COLOR( player_id, CHAT( "%L", player_id, "GAL_CHOICE_MAP", \
-                    g_votingMapNames[ pressedKeyCode ] ) )
+            color_chat( player_id, "%L", player_id, "GAL_CHOICE_MAP", \
+                    g_votingMapNames[ pressedKeyCode ] );
         }
     }
 }
@@ -9096,7 +9033,7 @@ stock handleMoreThanTwoMapsAtFirst( firstPlaceChoices[], numberOfMapsAtFirstPosi
     LOG( 16, "( handleMoreThanTwoMapsAtFirst ) Number of Maps at First Position > 2" )
     LOG( 0, "", printRunOffMaps( g_totalVoteOptions ) )
 
-    COLOR( 0, CHAT( "%L", LANG_PLAYER, "GAL_RESULT_TIED1", numberOfMapsAtFirstPosition ) )
+    color_chat( 0, "%L", LANG_PLAYER, "GAL_RESULT_TIED1", numberOfMapsAtFirstPosition );
 }
 
 stock configureTheRunoffVoting( firstPlaceChoices[], secondPlaceChoices[], numberOfMapsAtFirstPosition,
@@ -9106,7 +9043,7 @@ stock configureTheRunoffVoting( firstPlaceChoices[], secondPlaceChoices[], numbe
     new votePercent = floatround( 100 * get_pcvar_float( cvar_runoffRatio ), floatround_ceil );
 
     // announce runoff voting requirement
-    COLOR( 0, CHAT( "%L", LANG_PLAYER, "GAL_RUNOFF_REQUIRED", votePercent ) )
+    color_chat( 0, "%L", LANG_PLAYER, "GAL_RUNOFF_REQUIRED", votePercent );
 
     if( !( get_pcvar_num( cvar_soundsMute ) & SOUND_RUNOFF_REQUIRED ) )
     {
@@ -9233,7 +9170,7 @@ stock handleOneMapAtFirstPosition( firstPlaceChoices[], secondPlaceChoices[], nu
     LOG( 16, "( handleOneMapAtFirstPosition ) Number of Maps at First Position == 1 && At Second Position > 1" )
     LOG( 0, "", printRunOffMaps( g_totalVoteOptions ) )
 
-    COLOR( 0, CHAT( "%L", LANG_PLAYER, "GAL_RESULT_TIED2", numberOfMapsAtSecondPosition ) )
+    color_chat( 0, "%L", LANG_PLAYER, "GAL_RESULT_TIED2", numberOfMapsAtSecondPosition );
 }
 
 stock determineTheVotingFirstChoices( firstPlaceChoices[], secondPlaceChoices[],
@@ -9397,7 +9334,7 @@ stock stayHereWon( const reason[] )
 {
     LOG( 128, "I AM ENTERING ON stayHereWon(0)" )
 
-    COLOR( 0, CHAT( "%L: %L", LANG_PLAYER, reason, LANG_PLAYER, "GAL_WINNER_STAY2" ) )
+    color_chat( 0, "%L: %L", LANG_PLAYER, reason, LANG_PLAYER, "GAL_WINNER_STAY2" );
     toShowTheMapStayHud( "GAL_VOTE_ENDED", reason, "GAL_WINNER_STAY1" );
 
     // However here, none decisions are being made. Anyways, we cannot block the execution
@@ -9416,7 +9353,7 @@ stock chooseTheVotingMapWinner( firstPlaceChoices[], numberOfMapsAtFirstPosition
         // This message and others like it, does not need a HUD because they are not the last ones
         // to be displayed, i.e., soon a new ending message within a HUD will be show.
         winnerVoteMapIndex = firstPlaceChoices[ random_num( 0, numberOfMapsAtFirstPosition - 1 ) ];
-        COLOR( 0, CHAT( "%L", LANG_PLAYER, "GAL_WINNER_TIED", numberOfMapsAtFirstPosition ) )
+        color_chat( 0, "%L", LANG_PLAYER, "GAL_WINNER_TIED", numberOfMapsAtFirstPosition );
     }
     else
     {
@@ -9449,7 +9386,7 @@ stock chooseTheVotingMapWinner( firstPlaceChoices[], numberOfMapsAtFirstPosition
                  && g_isTimeToRestart )
         {
             // This message does not need HUD's because immediately the map will be changed immediately.
-            COLOR( 0, CHAT( "%L", LANG_PLAYER, "GAL_WINNER_STAY2" ) )
+            color_chat( 0, "%L", LANG_PLAYER, "GAL_WINNER_STAY2" );
 
             noLongerIsAnEarlyVoting();
             process_last_round( g_isToChangeMapOnVotingEnd, false );
@@ -9469,12 +9406,12 @@ stock chooseTheVotingMapWinner( firstPlaceChoices[], numberOfMapsAtFirstPosition
         // When it is a `gal_votemap` we need to print its map winner, instead of the `g_nextMapName`.
         if( g_invokerVoteMapNameToDecide[ 0 ] )
         {
-            COLOR( 0, CHAT( "%L: %L", LANG_PLAYER, "DMAP_MAP_EXTENDED1", LANG_PLAYER, "GAL_NEXTMAP2", g_invokerVoteMapNameToDecide ) )
+            color_chat( 0, "%L: %L", LANG_PLAYER, "DMAP_MAP_EXTENDED1", LANG_PLAYER, "GAL_NEXTMAP2", g_invokerVoteMapNameToDecide );
             toShowTheMapNextHud( "GAL_VOTE_ENDED", "DMAP_MAP_EXTENDED1", "GAL_NEXTMAP1", g_invokerVoteMapNameToDecide );
         }
         else
         {
-            COLOR( 0, CHAT( "%L: %L", LANG_PLAYER, "DMAP_MAP_EXTENDED1", LANG_PLAYER, "GAL_NEXTMAP2", g_nextMapName ) )
+            color_chat( 0, "%L: %L", LANG_PLAYER, "DMAP_MAP_EXTENDED1", LANG_PLAYER, "GAL_NEXTMAP2", g_nextMapName );
             toShowTheMapNextHud( "GAL_VOTE_ENDED", "DMAP_MAP_EXTENDED1", "GAL_NEXTMAP1", g_nextMapName );
         }
 
@@ -9505,7 +9442,7 @@ stock chooseRandomVotingWinner()
         {
             g_voteStatus |= IS_VOTE_OVER;
 
-            COLOR( 0, CHAT( "%L. %L", LANG_PLAYER, "GAL_WINNER_NO_ONE_VOTED", LANG_PLAYER, "GAL_WINNER_ORDERED2", g_nextMapName ) )
+            color_chat( 0, "%L. %L", LANG_PLAYER, "GAL_WINNER_NO_ONE_VOTED", LANG_PLAYER, "GAL_WINNER_ORDERED2", g_nextMapName );
             toShowTheMapNextHud( "GAL_WINNER_NO_ONE_VOTED", "DMAP_MAP_EXTENDED1", "GAL_WINNER_ORDERED1", g_nextMapName );
 
             // Need to be called to trigger special behaviors.
@@ -9526,7 +9463,7 @@ stock chooseRandomVotingWinner()
             new winnerVoteMapIndex = random_num( 0, g_totalVoteOptions - 1 );
             setNextMap( g_currentMapName, g_votingMapNames[ winnerVoteMapIndex ] );
 
-            COLOR( 0, CHAT( "%L. %L", LANG_PLAYER, "GAL_WINNER_NO_ONE_VOTED", LANG_PLAYER, "GAL_WINNER_RANDOM2", g_nextMapName ) )
+            color_chat( 0, "%L. %L", LANG_PLAYER, "GAL_WINNER_NO_ONE_VOTED", LANG_PLAYER, "GAL_WINNER_RANDOM2", g_nextMapName );
             toShowTheMapNextHud( "GAL_WINNER_NO_ONE_VOTED", "DMAP_MAP_EXTENDED1", "GAL_WINNER_RANDOM1", g_nextMapName );
 
             process_last_round( g_isToChangeMapOnVotingEnd );
@@ -9592,17 +9529,17 @@ stock toAnnounceTheMapExtension( const lang[] )
 
     if( g_endVotingType & ( IS_BY_ROUNDS | IS_BY_WINLIMIT ) )
     {
-        COLOR( 0, CHAT( "%L %L", LANG_PLAYER, lang, LANG_PLAYER, "GAL_WINNER_EXTEND_ROUND2", g_extendmapStepRounds ) )
+        color_chat( 0, "%L %L", LANG_PLAYER, lang, LANG_PLAYER, "GAL_WINNER_EXTEND_ROUND2", g_extendmapStepRounds );
         toShowTheMapExtensionHud( lang, "DMAP_MAP_EXTENDED1", "GAL_WINNER_EXTEND_ROUND1", g_extendmapStepRounds );
     }
     else if( g_endVotingType & IS_BY_FRAGS )
     {
-        COLOR( 0, CHAT( "%L %L", LANG_PLAYER, lang, LANG_PLAYER, "GAL_WINNER_EXTEND_FRAGS2", g_extendmapStepFrags ) )
+        color_chat( 0, "%L %L", LANG_PLAYER, lang, LANG_PLAYER, "GAL_WINNER_EXTEND_FRAGS2", g_extendmapStepFrags );
         toShowTheMapExtensionHud( lang, "DMAP_MAP_EXTENDED1", "GAL_WINNER_EXTEND_FRAGS1", g_extendmapStepFrags );
     }
     else
     {
-        COLOR( 0, CHAT( "%L %L", LANG_PLAYER, lang, LANG_PLAYER, "GAL_WINNER_EXTEND2", g_extendmapStepMinutes ) )
+        color_chat( 0, "%L %L", LANG_PLAYER, lang, LANG_PLAYER, "GAL_WINNER_EXTEND2", g_extendmapStepMinutes );
         toShowTheMapExtensionHud( lang, "DMAP_MAP_EXTENDED1", "GAL_WINNER_EXTEND1", g_extendmapStepMinutes );
     }
 }
@@ -9670,7 +9607,7 @@ stock map_extend( const lang[] )
     // While the `IS_DISABLED_VOTEMAP_EXIT` bit flag is set, we cannot allow any decisions.
     if( g_voteMapStatus & IS_DISABLED_VOTEMAP_EXIT )
     {
-        COLOR( 0, CHAT( "%L: %L", LANG_PLAYER, "DMAP_MAP_EXTENDED1", LANG_PLAYER, "GAL_WINNER_STAY2" ) )
+        color_chat( 0, "%L: %L", LANG_PLAYER, "DMAP_MAP_EXTENDED1", LANG_PLAYER, "GAL_WINNER_STAY2" );
         toShowTheMapExtensionHud( "GAL_VOTE_ENDED", "DMAP_MAP_EXTENDED1", "GAL_WINNER_STAY1", 0 );
 
         // When the map extension is called, there is anyone else trying to show action menu,
@@ -10012,7 +9949,7 @@ stock announcerockFailToosoon( player_id, Float:minutesElapsed )
         remaining_time = floatround( g_rtvWaitMinutes - minutesElapsed, floatround_ceil );
     }
 
-    COLOR( player_id, CHAT( "%L", player_id, "GAL_ROCK_FAIL_TOOSOON", remaining_time ) )
+    color_chat( player_id, "%L", player_id, "GAL_ROCK_FAIL_TOOSOON", remaining_time );
     LOG( 1, "    ( announcerockFailToosoon ) Just Returning/blocking, too soon to rock by minutes." )
 }
 
@@ -10047,21 +9984,21 @@ stock is_to_block_RTV( player_id )
     // If an early vote is pending, don't allow any rocks
     if( g_voteStatus & IS_EARLY_VOTE )
     {
-        COLOR( player_id, CHAT( "%L", player_id, "GAL_ROCK_FAIL_PENDINGVOTE" ) )
+        color_chat( player_id, "%L", player_id, "GAL_ROCK_FAIL_PENDINGVOTE" );
         LOG( 1, "    ( is_to_block_RTV ) Just Returning/blocking, the early voting is pending." )
     }
 
     // Rocks can only be made if a vote isn't already in progress
     else if( g_voteStatus & IS_VOTE_IN_PROGRESS )
     {
-        COLOR( player_id, CHAT( "%L", player_id, "GAL_ROCK_FAIL_INPROGRESS" ) )
+        color_chat( player_id, "%L", player_id, "GAL_ROCK_FAIL_INPROGRESS" );
         LOG( 1, "    ( is_to_block_RTV ) Just Returning/blocking, the voting is in progress." )
     }
 
     // If the outcome of the vote hasn't already been determined
     else if( g_voteStatus & IS_VOTE_OVER )
     {
-        COLOR( player_id, CHAT( "%L", player_id, "GAL_ROCK_FAIL_VOTEOVER" ) )
+        color_chat( player_id, "%L", player_id, "GAL_ROCK_FAIL_VOTEOVER" );
         LOG( 1, "    ( is_to_block_RTV ) Just Returning/blocking, the voting is over." )
     }
 
@@ -10069,7 +10006,7 @@ stock is_to_block_RTV( player_id )
     else if( get_pcvar_num( cvar_rtvWaitAdmin ) & IS_TO_RTV_WAIT_ADMIN
              && g_rtvWaitAdminNumber > 0 )
     {
-        COLOR( player_id, CHAT( "%L", player_id, "GAL_ROCK_WAIT_ADMIN" ) )
+        color_chat( player_id, "%L", player_id, "GAL_ROCK_WAIT_ADMIN" );
         LOG( 1, "    ( is_to_block_RTV ) Just Returning/blocking, cannot rock when admins are online." )
     }
 
@@ -10099,7 +10036,7 @@ stock is_to_block_RTV( player_id )
     {
         new remaining_rounds = g_rtvWaitRounds - g_totalRoundsPlayed;
 
-        COLOR( player_id, CHAT( "%L", player_id, "GAL_ROCK_FAIL_TOOSOON_ROUNDS", remaining_rounds ) )
+        color_chat( player_id, "%L", player_id, "GAL_ROCK_FAIL_TOOSOON_ROUNDS", remaining_rounds );
         LOG( 1, "    ( is_to_block_RTV ) Just Returning/blocking, too soon to rock by rounds." )
     }
 
@@ -10109,7 +10046,7 @@ stock is_to_block_RTV( player_id )
     {
         new remaining_frags =  g_rtvWaitFrags - g_greatestKillerFrags;
 
-        COLOR( player_id, CHAT( "%L", player_id, "GAL_ROCK_FAIL_TOOSOON_FRAGS", remaining_frags ) )
+        color_chat( player_id, "%L", player_id, "GAL_ROCK_FAIL_TOOSOON_FRAGS", remaining_frags );
         LOG( 1, "    ( is_to_block_RTV ) Just Returning/blocking, too soon to rock by frags." )
     }
     else
@@ -10145,7 +10082,7 @@ stock compute_the_RTV_vote( player_id, rocksNeeded )
     // make sure player hasn't already rocked the vote
     if( g_rockedVote[ player_id ] )
     {
-        COLOR( player_id, CHAT( "%L", player_id, "GAL_ROCK_FAIL_ALREADY", rocksNeeded - g_rockedVoteCount ) )
+        color_chat( player_id, "%L", player_id, "GAL_ROCK_FAIL_ALREADY", rocksNeeded - g_rockedVoteCount );
         rtv_remind( TASKID_RTV_REMINDER + player_id );
 
         LOG( 1, "    ( compute_the_RTV_vote ) Just Returning/blocking, already rocked the vote." )
@@ -10155,7 +10092,7 @@ stock compute_the_RTV_vote( player_id, rocksNeeded )
     g_rockedVoteCount++;
     g_rockedVote[ player_id ] = true;
 
-    COLOR( player_id, CHAT( "%L", player_id, "GAL_ROCK_SUCCESS" ) )
+    color_chat( player_id, "%L", player_id, "GAL_ROCK_SUCCESS" );
     LOG( 1, "    ( compute_the_RTV_vote ) Just Returning/blocking, accepting rock the vote." )
 
     return true;
@@ -10183,7 +10120,7 @@ stock try_to_start_the_RTV( rocksNeeded, bool:silent=false )
     if( g_rockedVoteCount >= rocksNeeded )
     {
         // announce that the vote has been rocked
-        COLOR( 0, CHAT( "%L", LANG_PLAYER, "GAL_ROCK_ENOUGH" ) )
+        color_chat( 0, "%L", LANG_PLAYER, "GAL_ROCK_ENOUGH" );
 
         // start up the vote director
         start_rtvVote();
@@ -10276,7 +10213,7 @@ public rtv_remind( param )
     new player_id = param - TASKID_RTV_REMINDER;
 
     // let the players know how many more rocks are needed
-    COLOR( player_id, CHAT( "%L", LANG_PLAYER, "GAL_ROCK_NEEDMORE", vote_getRocksNeeded() - g_rockedVoteCount ) )
+    color_chat( player_id, "%L", LANG_PLAYER, "GAL_ROCK_NEEDMORE", vote_getRocksNeeded() - g_rockedVoteCount );
 }
 
 // change to the map
@@ -10528,7 +10465,7 @@ public map_listAll( player_id )
  * @param message[]         the text formatting rules to display.
  * @param any               the variable number of formatting parameters.
  */
-stock no_color_print( const player_id, const message[], any:... )
+stock no_color_console( const player_id, const message[], any:... )
 {
     LOG( 128, "I AM ENTERING ON color_console_print(...) player_id: %d, message: `%s`", player_id, message )
     new formatted_message[ MAX_COLOR_MESSAGE ];
@@ -10898,14 +10835,14 @@ public srv_announceEarlyVote( player_id )
 
     if( is_user_connected( player_id ) )
     {
-        COLOR( player_id, CHAT( "%L", player_id, "GAL_VOTE_EARLY" ) )
+        color_chat( player_id, "%L", player_id, "GAL_VOTE_EARLY" );
     }
 }
 
 stock nomination_announceCancellation( nominations[] )
 {
     LOG( 128, "I AM ENTERING ON nomination_announceCancellation(1) nominations: %s", nominations )
-    COLOR( 0, CHAT( "%L", LANG_PLAYER, "GAL_CANCEL_SUCCESS", nominations ) )
+    color_chat( 0, "%L", LANG_PLAYER, "GAL_CANCEL_SUCCESS", nominations );
 }
 
 stock nomination_clearAll()
@@ -10927,7 +10864,7 @@ stock map_announceNomination( player_id, map[] )
     new player_name[ MAX_PLAYER_NAME_LENGHT ];
 
     GET_USER_NAME( player_id, player_name )
-    COLOR( 0, CHAT( "%L", LANG_PLAYER, "GAL_NOM_SUCCESS", player_name, map ) )
+    color_chat( 0, "%L", LANG_PLAYER, "GAL_NOM_SUCCESS", player_name, map );
 }
 
 /**
@@ -10938,7 +10875,7 @@ public cmd_rockthevote( player_id )
     LOG( 128, "I AM ENTERING ON cmd_rockthevote(1) player_id: %d", player_id )
 
     // Suggests to use `say rtv` and call the actual rock the vote function vote_rock(1).
-    COLOR( player_id, CHAT( "%L", player_id, "GAL_CMD_RTV" ) )
+    color_chat( player_id, "%L", player_id, "GAL_CMD_RTV" );
     vote_rock( player_id );
 
     LOG( 1, "    ( cmd_rockthevote ) Returning PLUGIN_CONTINUE" )
@@ -10953,7 +10890,7 @@ public cmd_nominations( player_id )
     LOG( 128, "I AM ENTERING ON cmd_nominations(1) player_id: %d", player_id )
 
     // Suggests to use `say noms` and call the actual rock the vote function nomination_list().
-    COLOR( player_id, CHAT( "%L", player_id, "GAL_CMD_NOMS" ) )
+    color_chat( player_id, "%L", player_id, "GAL_CMD_NOMS" );
     nomination_list();
 
     LOG( 1, "    ( cmd_nominations ) Returning PLUGIN_CONTINUE" )
@@ -10987,7 +10924,7 @@ public cmd_startVote( player_id, level, cid )
 
     if( g_voteStatus & IS_VOTE_IN_PROGRESS )
     {
-        COLOR( player_id, CHAT( "%L", player_id, "GAL_VOTE_INPROGRESS" ) )
+        color_chat( player_id, "%L", player_id, "GAL_VOTE_INPROGRESS" );
     }
     else
     {
@@ -11205,15 +11142,15 @@ public cmd_maintenanceMode( player_id, level, cid )
         g_isOnMaintenanceMode = false;
         map_restoreEndGameCvars();
 
-        COLOR( 0, CHAT( "%L", LANG_PLAYER, "GAL_CHANGE_MAINTENANCE_STATE", LANG_PLAYER, "GAL_CHANGE_MAINTENANCE_OFF" ) )
-        no_color_print( player_id, "%L", player_id, "GAL_CHANGE_MAINTENANCE_STATE", player_id, "GAL_CHANGE_MAINTENANCE_OFF" );
+        color_chat( 0, "%L", LANG_PLAYER, "GAL_CHANGE_MAINTENANCE_STATE", LANG_PLAYER, "GAL_CHANGE_MAINTENANCE_OFF" );
+        no_color_console( player_id, "%L", player_id, "GAL_CHANGE_MAINTENANCE_STATE", player_id, "GAL_CHANGE_MAINTENANCE_OFF" );
     }
     else
     {
         g_isOnMaintenanceMode = true;
 
-        COLOR( 0, CHAT( "%L", LANG_PLAYER, "GAL_CHANGE_MAINTENANCE_STATE", LANG_PLAYER, "GAL_CHANGE_MAINTENANCE_ON" ) )
-        no_color_print( player_id, "%L", player_id, "GAL_CHANGE_MAINTENANCE_STATE", player_id, "GAL_CHANGE_MAINTENANCE_ON" );
+        color_chat( 0, "%L", LANG_PLAYER, "GAL_CHANGE_MAINTENANCE_STATE", LANG_PLAYER, "GAL_CHANGE_MAINTENANCE_ON" );
+        no_color_console( player_id, "%L", player_id, "GAL_CHANGE_MAINTENANCE_STATE", player_id, "GAL_CHANGE_MAINTENANCE_ON" );
     }
 
     LOG( 1, "    ( cmd_maintenanceMode ) Returning PLUGIN_HANDLED" )
@@ -11939,8 +11876,8 @@ public fillThePartialNominationMenu( argumentsIn[] )
             // The map search could take some time, as there are more than MAX_NOM_MATCH_COUNT unsuccessful matches.
             if( endSearchIndex == MAX_NOM_MATCH_COUNT )
             {
-                COLOR( player_id, CHAT( "%L", player_id, "GAL_NOM_MATCHES_MAX", \
-                        nominationsMapsCount / MAX_NOM_MATCH_COUNT, MAX_NOM_MATCH_COUNT ) )
+                color_chat( player_id, "%L", player_id, "GAL_NOM_MATCHES_MAX",
+                        nominationsMapsCount / MAX_NOM_MATCH_COUNT, MAX_NOM_MATCH_COUNT );
             }
 
             // Block the menu from displaying before the search goes through all the possible items.
@@ -11961,7 +11898,7 @@ public fillThePartialNominationMenu( argumentsIn[] )
         && itemsCount < 1 )
     {
         // no matches; pity the poor fool
-        COLOR( player_id, CHAT( "%L", player_id, "GAL_NOM_FAIL_NOMATCHES", g_nominationPartialNameAttempt[ player_id ] ) )
+        color_chat( player_id, "%L", player_id, "GAL_NOM_FAIL_NOMATCHES", g_nominationPartialNameAttempt[ player_id ] );
 
         // Destroys the menu, as is was not used.
         TRY_TO_APPLY( menu_destroy, menu )
@@ -11972,7 +11909,7 @@ public fillThePartialNominationMenu( argumentsIn[] )
         if( !g_isSawPartialMatchFirstPage[ player_id ] )
         {
             g_isSawPartialMatchFirstPage[ player_id ] = true;
-            COLOR( player_id, CHAT( "%L", player_id, "GAL_NOM_MATCHES", g_nominationPartialNameAttempt[ player_id ] ) )
+            color_chat( player_id, "%L", player_id, "GAL_NOM_MATCHES", g_nominationPartialNameAttempt[ player_id ] );
         }
 
         // Old behavior: If this function is called within this parameter true, it means this is
@@ -12630,11 +12567,11 @@ stock nomination_cancel( player_id, mapIndex )
                 new player_name[ MAX_PLAYER_NAME_LENGHT ];
 
                 GET_USER_NAME( nominatorPlayerId, player_name )
-                COLOR( player_id, CHAT( "%L", player_id, "GAL_CANCEL_FAIL_SOMEONEELSE", mapName, player_name ) )
+                color_chat( player_id, "%L", player_id, "GAL_CANCEL_FAIL_SOMEONEELSE", mapName, player_name );
             }
             else
             {
-                COLOR( player_id, CHAT( "%L", player_id, "GAL_CANCEL_FAIL_WASNOTYOU", mapName ) )
+                color_chat( player_id, "%L", player_id, "GAL_CANCEL_FAIL_WASNOTYOU", mapName );
             }
         }
     }
@@ -12647,14 +12584,14 @@ stock is_to_block_map_nomination( player_id, mapName[] )
     // nominations can only be made if a vote isn't already in progress
     if( g_voteStatus & IS_VOTE_IN_PROGRESS )
     {
-        COLOR( player_id, CHAT( "%L", player_id, "GAL_NOM_FAIL_INPROGRESS" ) )
+        color_chat( player_id, "%L", player_id, "GAL_NOM_FAIL_INPROGRESS" );
         LOG( 1, "    ( is_to_block_map_nomination ) Just Returning/blocking, the voting is in progress." )
     }
 
     // and if the outcome of the vote hasn't already been determined
     else if( g_voteStatus & IS_VOTE_OVER )
     {
-        COLOR( player_id, CHAT( "%L", player_id, "GAL_NOM_FAIL_VOTEOVER" ) )
+        color_chat( player_id, "%L", player_id, "GAL_NOM_FAIL_VOTEOVER" );
         LOG( 1, "    ( is_to_block_map_nomination ) Just Returning/blocking, the voting is over." )
     }
 
@@ -12662,7 +12599,7 @@ stock is_to_block_map_nomination( player_id, mapName[] )
     else if( mapName[0]
              && equali( g_currentMapName, mapName ) )
     {
-        COLOR( player_id, CHAT( "%L", player_id, "GAL_NOM_FAIL_CURRENTMAP", g_currentMapName ) )
+        color_chat( player_id, "%L", player_id, "GAL_NOM_FAIL_CURRENTMAP", g_currentMapName );
         LOG( 1, "    ( is_to_block_map_nomination ) Just Returning/blocking, cannot nominate the current map." )
     }
 
@@ -12675,8 +12612,8 @@ stock is_to_block_map_nomination( player_id, mapName[] )
                     && !( get_user_flags( player_id ) & ADMIN_MAP ) )
                   || get_pcvar_num( cvar_recentNomMapsAllowance ) == 0 ) )
     {
-        COLOR( player_id, CHAT( "%L", player_id, "GAL_NOM_FAIL_TOORECENT", mapName ) )
-        COLOR( player_id, CHAT( "%L", player_id, "GAL_NOM_FAIL_TOORECENT_HLP" ) )
+        color_chat( player_id, "%L", player_id, "GAL_NOM_FAIL_TOORECENT", mapName );
+        color_chat( player_id, "%L", player_id, "GAL_NOM_FAIL_TOORECENT_HLP" );
         LOG( 1, "    ( is_to_block_map_nomination ) Just Returning/blocking, cannot nominate recent maps." )
     }
     else
@@ -12706,7 +12643,7 @@ stock map_nominate( player_id, mapIndex )
         {
             if( IS_WHITELIST_BLOCKING( isWhiteListNomBlock, mapName ) )
             {
-                COLOR( player_id, CHAT( "%L", player_id, "GAL_NOM_FAIL_WHITELIST", mapName ) )
+                color_chat( player_id, "%L", player_id, "GAL_NOM_FAIL_WHITELIST", mapName );
                 LOG( 1, "    ( map_nominate ) The map: %s, was blocked by the whitelist map setting.", mapName )
                 return;
             }
@@ -12734,7 +12671,7 @@ stock try_to_add_the_nomination( player_id, mapIndex, mapName[] )
     {
         // If the nominatorPlayerId is equal to the current player_id, the player is trying to nominate
         // the same map again. And it is not allowed.
-        COLOR( player_id, CHAT( "%L", player_id, "GAL_NOM_FAIL_ALREADY", mapName ) )
+        color_chat( player_id, "%L", player_id, "GAL_NOM_FAIL_ALREADY", mapName );
     }
     else
     {
@@ -12742,8 +12679,8 @@ stock try_to_add_the_nomination( player_id, mapIndex, mapName[] )
         new player_name[ MAX_PLAYER_NAME_LENGHT ];
         GET_USER_NAME( nominatorPlayerId, player_name )
 
-        COLOR( player_id, CHAT( "%L", player_id, "GAL_NOM_FAIL_SOMEONEELSE", mapName, player_name ) )
-        COLOR( player_id, CHAT( "%L", player_id, "GAL_NOM_FAIL_SOMEONEELSE_HLP" ) )
+        color_chat( player_id, "%L", player_id, "GAL_NOM_FAIL_SOMEONEELSE", mapName, player_name );
+        color_chat( player_id, "%L", player_id, "GAL_NOM_FAIL_SOMEONEELSE_HLP" );
     }
 }
 
@@ -12766,7 +12703,7 @@ stock add_my_nomination( player_id, mapIndex, mapName[] )
         setPlayerNominationMapIndex( player_id, openNominationIndex, mapIndex );
 
         map_announceNomination( player_id, mapName );
-        COLOR( player_id, CHAT( "%L", player_id, "GAL_NOM_GOOD_HLP" ) )
+        color_chat( player_id, "%L", player_id, "GAL_NOM_GOOD_HLP" );
     }
 
     LOG( 4, "( try_to_add_the_nomination ) openNominationIndex: %d, mapName: %s", openNominationIndex, mapName )
@@ -12802,8 +12739,8 @@ stock show_my_nominated_maps( player_id, maxPlayerNominations )
                 charsmax( nominatedMaps ) - copiedChars, nominatedMapName );
     }
 
-    COLOR( player_id, CHAT( "%L", player_id, "GAL_NOM_FAIL_TOOMANY", maxPlayerNominations, nominatedMaps ) )
-    COLOR( player_id, CHAT( "%L", player_id, "GAL_NOM_FAIL_TOOMANY_HLP" ) )
+    color_chat( player_id, "%L", player_id, "GAL_NOM_FAIL_TOOMANY", maxPlayerNominations, nominatedMaps );
+    color_chat( player_id, "%L", player_id, "GAL_NOM_FAIL_TOOMANY_HLP" );
 }
 
 /**
@@ -12878,7 +12815,7 @@ stock printNominationList( mapsList[], isFlushed=false )
     {
         if( IS_COLORED_CHAT_ENABLED() )
         {
-            COLOR( 0, CHAT( "%L: ^4%s", LANG_PLAYER, "GAL_NOMINATIONS", mapsList ) )
+            color_chat( 0, "%L: ^4%s", LANG_PLAYER, "GAL_NOMINATIONS", mapsList );
         }
         else
         {
@@ -12892,7 +12829,7 @@ stock printNominationList( mapsList[], isFlushed=false )
     {
         if( IS_COLORED_CHAT_ENABLED() )
         {
-            COLOR( 0, CHAT( "%L: ^4%L", LANG_PLAYER, "GAL_NOMINATIONS", LANG_PLAYER, "NONE" ) )
+            color_chat( 0, "%L: ^4%L", LANG_PLAYER, "GAL_NOMINATIONS", LANG_PLAYER, "NONE" );
         }
         else
         {
@@ -12952,7 +12889,7 @@ public cmd_listrecent( player_id )
                     }
                 }
 
-                COLOR( 0, CHAT( "%L: %s", LANG_PLAYER, "GAL_MAP_RECENTMAPS", recentMapsMessage[ 2 ] ) )
+                color_chat( 0, "%L: %s", LANG_PLAYER, "GAL_MAP_RECENTMAPS", recentMapsMessage[ 2 ] );
             }
             case 2:
             {
@@ -12962,8 +12899,8 @@ public cmd_listrecent( player_id )
                 {
                     ArrayGetString( g_recentListMapsArray, mapIndex, recentMapName, charsmax( recentMapName ) );
 
-                    COLOR( 0, CHAT( "%L ( %i ) ): %s", \
-                            LANG_PLAYER, "GAL_MAP_RECENTMAP", mapIndex + 1, recentMapName ) )
+                    color_chat( 0, "%L ( %i );: %s", \
+                            LANG_PLAYER, "GAL_MAP_RECENTMAP", mapIndex + 1, recentMapName );
                 }
             }
             case 3:
@@ -13204,12 +13141,12 @@ public cmd_cancelVote( player_id, level, cid )
 
     if( g_voteStatus & IS_VOTE_IN_PROGRESS )
     {
-        COLOR( 0, CHAT( "%L", LANG_SERVER, "VOT_CANC" ) )
+        color_chat( 0, "%L", LANG_SERVER, "VOT_CANC" );
         cancelVoting( true );
     }
     else
     {
-        COLOR( 0, CHAT( "%L", LANG_SERVER, "NO_VOTE_CANC" ) )
+        color_chat( 0, "%L", LANG_SERVER, "NO_VOTE_CANC" );
     }
 
     LOG( 1, "    ( cmd_cancelVote ) Returning PLUGIN_HANDLED" )
@@ -13262,7 +13199,7 @@ public cmd_voteMap( player_id, level, cid )
     // if you use the approveTheVotingStart(1) instead of the approveTheVotingStartLight(1)!
     if( g_voteStatus & IS_VOTE_IN_PROGRESS )
     {
-        COLOR( player_id, CHAT( "%L", player_id, "GAL_VOTE_INPROGRESS" ) )
+        color_chat( player_id, "%L", player_id, "GAL_VOTE_INPROGRESS" );
     }
     else if( approveTheVotingStartLight() )
     {
@@ -13394,7 +13331,7 @@ stock startVoteMapVoting( player_id )
     else
     {
         // Vote creation failed; no maps found.
-        COLOR( 0, CHAT( "%L", LANG_PLAYER, "GAL_VOTE_NOMAPS" ) )
+        color_chat( 0, "%L", LANG_PLAYER, "GAL_VOTE_NOMAPS" );
 
         finalizeVoting();
         showGalVoteMapHelp( player_id );
@@ -14036,7 +13973,7 @@ public handleVoteMapActionMenu( player_id, pressedKeyCode )
             // Then this is empty, the winner was stay here, and this result has already been announced.
             if( g_invokerVoteMapNameToDecide[ 0 ] )
             {
-                COLOR( 0, CHAT( "%L. %L: %s", LANG_PLAYER, "RESULT_REF", LANG_PLAYER, "VOT_CANC", g_invokerVoteMapNameToDecide ) )
+                color_chat( 0, "%L. %L: %s", LANG_PLAYER, "RESULT_REF", LANG_PLAYER, "VOT_CANC", g_invokerVoteMapNameToDecide );
                 toShowTheMapNextHud( "RESULT_REF", "VOT_CANC", "GAL_OPTION_STAY_MAP", g_currentMapName );
             }
         }
@@ -14054,7 +13991,7 @@ public handleVoteMapActionMenu( player_id, pressedKeyCode )
             // Only set the next map
             if( g_invokerVoteMapNameToDecide[ 0 ] )
             {
-                COLOR( 0, CHAT( "%L. %L: %s", LANG_PLAYER, "RESULT_ACC", LANG_PLAYER, "VOTE_SUCCESS", g_invokerVoteMapNameToDecide ) )
+                color_chat( 0, "%L. %L: %s", LANG_PLAYER, "RESULT_ACC", LANG_PLAYER, "VOTE_SUCCESS", g_invokerVoteMapNameToDecide );
                 toShowTheMapNextHud( "RESULT_ACC", "DMAP_MAP_EXTENDED1", "GAL_WINNER_ORDERED1", g_invokerVoteMapNameToDecide );
 
                 setNextMap( g_currentMapName, g_invokerVoteMapNameToDecide );
@@ -14123,147 +14060,6 @@ stock percent( is, of )
 }
 
 /**
- * For documentation and a general printer which accepts colored messages, but remove the color tags
- * when colored chat is disabled, see general_chat_print() just below.
- *
- * This only accepts messages when the colored chat is enabled by IS_COLORED_CHAT_ENABLED().
- */
-stock color_print_only( const player_id, const lang_formatting[], any:... )
-{
-    LOG( 128, "I AM ENTERING ON color_print_only()" )
-    LOG( 64, "( color_print_only ) IS_COLORED_CHAT_ENABLED(): %d", IS_COLORED_CHAT_ENABLED() )
-    LOG( 64, "( color_print_only ) player_id: %d, lang_formatting: `%s`", player_id, lang_formatting )
-
-    const first_lang_parameter_position = 3;
-    new formatted_message[ MAX_COLOR_MESSAGE ];
-
-    if( player_id )
-    {
-        // Here all the colored messaged must to start within a color.
-        formatted_message[ 0 ] = '^1';
-        vformat( formatted_message[ 1 ], charsmax( formatted_message ) - 1, lang_formatting, first_lang_parameter_position );
-
-        if( g_coloredChatPrefix[ 0 ] )
-        {
-            new message[ MAX_COLOR_MESSAGE ];
-            formatex( message, charsmax( message ), "^1%s^1%s", g_coloredChatPrefix, formatted_message[ 1 ] );
-
-            LOG( 64, "( color_print_only ) [in] player_id: %d, Chat printed: `%s`", player_id, message )
-            PRINT_COLORED_MESSAGE( player_id, message )
-        }
-        else
-        {
-            PRINT_COLORED_MESSAGE( player_id, formatted_message )
-        }
-    }
-    else
-    {
-        new playersCount;
-        new players[ MAX_PLAYERS ];
-
-        // Get the server players skipping the bots
-        get_players( players, playersCount, "c" );
-
-        // Figure out if at least 1 player is connected, so we don't execute useless code
-        if( !playersCount )
-        {
-            LOG( 64, "    ( color_print_only ) Returning on playersCount: %d...", playersCount )
-            return;
-        }
-
-        new player_id;
-        new string_index;
-        new argument_index;
-        new multi_lingual_constants_number;
-        new params_number;
-        new Array:multi_lingual_indexes_array;
-
-        multi_lingual_indexes_array    = ArrayCreate();
-        params_number                  = numargs();
-        multi_lingual_constants_number = 0;
-
-        LOG( 64, "( color_print_only ) playersCount: %d, params_number: %d...", playersCount, params_number )
-
-        // ML can be used
-        if( params_number > first_lang_parameter_position )
-        {
-            for( argument_index = first_lang_parameter_position - 1; argument_index < params_number; argument_index++ )
-            {
-                LOG( 64, "( color_print_only ) getarg(%d): %d", argument_index, getarg( argument_index, 0 ) )
-
-                // retrieve original param value and check if it's LANG_PLAYER value
-                if( getarg( argument_index ) == LANG_PLAYER )
-                {
-                    string_index = 0;
-
-                    // as LANG_PLAYER == -1, check if next param string is a registered language translation
-                    while( ( formatted_message[ string_index ] =
-                                 getarg( argument_index + 1, string_index++ ) ) )
-                    {
-                    }
-
-                    // Closes the open string
-                    formatted_message[ string_index ] = '^0';
-
-                    LOG( 64, "( color_print_only ) LANG name: %s, GetLangTransKey(): %d, TransKey_Bad: %d", \
-                            formatted_message, GetLangTransKey( formatted_message ), TransKey_Bad )
-
-                    if( GetLangTransKey( formatted_message ) != TransKey_Bad )
-                    {
-                        // Store that argument as LANG_PLAYER so we can alter it later
-                        LOG( 64, "( color_print_only ) Pushing argument_index: %d", argument_index )
-                        ArrayPushCell( multi_lingual_indexes_array, argument_index++ );
-
-                        // Update ML array, so we'll know 1st if ML is used, 2nd how many arguments we have to change
-                        multi_lingual_constants_number++;
-                    }
-                }
-            }
-        }
-
-        LOG( 64, "( color_print_only ) multi_lingual_constants_number: %d...", multi_lingual_constants_number )
-
-        for( --playersCount; playersCount >= 0; --playersCount )
-        {
-            player_id = players[ playersCount ];
-
-            if( multi_lingual_constants_number )
-            {
-                for( argument_index = 0; argument_index < multi_lingual_constants_number; argument_index++ )
-                {
-                    LOG( 64, "( color_print_only ) player_id: %d, argument_index: %d, ArrayGetCell(%d,%d): %d", \
-                            player_id, argument_index, \
-                            multi_lingual_indexes_array, argument_index, ArrayGetCell( multi_lingual_indexes_array, argument_index ) )
-
-                    // Set all LANG_PLAYER args to player index ( = player_id ), so we can format the text for that specific player
-                    setarg( ArrayGetCell( multi_lingual_indexes_array, argument_index ), _, player_id );
-                }
-            }
-
-            // Here all the colored messaged must to start within a color.
-            formatted_message[ 0 ] = '^1';
-            vformat( formatted_message[ 1 ], charsmax( formatted_message ) - 1, lang_formatting, first_lang_parameter_position );
-
-            if( g_coloredChatPrefix[ 0 ] )
-            {
-                new message[ MAX_COLOR_MESSAGE ];
-                formatex( message, charsmax( message ), "^1%s^1%s", g_coloredChatPrefix, formatted_message[ 1 ] );
-
-                LOG( 64, "( color_print_only ) 1. [out] colored message: `%s`", message )
-                PRINT_COLORED_MESSAGE( player_id, message )
-            }
-            else
-            {
-                LOG( 64, "( color_print_only ) 2. [out] colored message: `%s`", formatted_message )
-                PRINT_COLORED_MESSAGE( player_id, formatted_message )
-            }
-        }
-
-        ArrayDestroy( multi_lingual_indexes_array );
-    }
-}
-
-/**
  * Print colored text to a given player_id. It has to be called to each player using its player_id
  * instead of 'LANG_PLAYER' constant. Just use the 'LANG_PLAYER' constant when using this function
  * to display to all players.
@@ -14284,11 +14080,11 @@ stock color_print_only( const player_id, const lang_formatting[], any:... )
  *
  * @see <a href="https://forums.alliedmods.net/showthread.php?t=297484">vformat() ignoring user language</a>
  */
-stock general_chat_print( const player_id, const lang_formatting[], any:... )
+stock color_chat( const player_id, const lang_formatting[], any:... )
 {
-    LOG( 128, "I AM ENTERING ON general_chat_print()" )
-    LOG( 64, "( general_chat_print ) IS_COLORED_CHAT_ENABLED(): %d", IS_COLORED_CHAT_ENABLED() )
-    LOG( 64, "( general_chat_print ) player_id: %d, lang_formatting: `%s`", player_id, lang_formatting )
+    LOG( 128, "I AM ENTERING ON color_chat()" )
+    LOG( 64, "( color_chat ) IS_COLORED_CHAT_ENABLED(): %d", IS_COLORED_CHAT_ENABLED() )
+    LOG( 64, "( color_chat ) player_id: %d, lang_formatting: `%s`", player_id, lang_formatting )
 
     const first_lang_parameter_position = 3;
     new formatted_message[ MAX_COLOR_MESSAGE ];
@@ -14306,7 +14102,7 @@ stock general_chat_print( const player_id, const lang_formatting[], any:... )
                 new message[ MAX_COLOR_MESSAGE ];
                 formatex( message, charsmax( message ), "^1%s^1%s", g_coloredChatPrefix, formatted_message[ 1 ] );
 
-                LOG( 64, "( general_chat_print ) [in] player_id: %d, Chat printed: `%s`", player_id, message )
+                LOG( 64, "( color_chat ) [in] player_id: %d, Chat printed: `%s`", player_id, message )
                 PRINT_COLORED_MESSAGE( player_id, message )
             }
             else
@@ -14333,7 +14129,7 @@ stock general_chat_print( const player_id, const lang_formatting[], any:... )
         // Figure out if at least 1 player is connected, so we don't execute useless code
         if( !playersCount )
         {
-            LOG( 64, "    ( general_chat_print ) Returning on playersCount: %d...", playersCount )
+            LOG( 64, "    ( color_chat ) Returning on playersCount: %d...", playersCount )
             return;
         }
 
@@ -14348,14 +14144,14 @@ stock general_chat_print( const player_id, const lang_formatting[], any:... )
         params_number                  = numargs();
         multi_lingual_constants_number = 0;
 
-        LOG( 64, "( general_chat_print ) playersCount: %d, params_number: %d...", playersCount, params_number )
+        LOG( 64, "( color_chat ) playersCount: %d, params_number: %d...", playersCount, params_number )
 
         // ML can be used
         if( params_number > first_lang_parameter_position )
         {
             for( argument_index = first_lang_parameter_position - 1; argument_index < params_number; argument_index++ )
             {
-                LOG( 64, "( general_chat_print ) getarg(%d): %d", argument_index, getarg( argument_index, 0 ) )
+                LOG( 64, "( color_chat ) getarg(%d): %d", argument_index, getarg( argument_index, 0 ) )
 
                 // retrieve original param value and check if it's LANG_PLAYER value
                 if( getarg( argument_index ) == LANG_PLAYER )
@@ -14371,13 +14167,13 @@ stock general_chat_print( const player_id, const lang_formatting[], any:... )
                     // Closes the open string
                     formatted_message[ string_index ] = '^0';
 
-                    LOG( 64, "( general_chat_print ) LANG name: %s, GetLangTransKey(): %d, TransKey_Bad: %d", \
+                    LOG( 64, "( color_chat ) LANG name: %s, GetLangTransKey(): %d, TransKey_Bad: %d", \
                             formatted_message, GetLangTransKey( formatted_message ), TransKey_Bad )
 
                     if( GetLangTransKey( formatted_message ) != TransKey_Bad )
                     {
                         // Store that argument as LANG_PLAYER so we can alter it later
-                        LOG( 64, "( general_chat_print ) Pushing argument_index: %d", argument_index )
+                        LOG( 64, "( color_chat ) Pushing argument_index: %d", argument_index )
                         ArrayPushCell( multi_lingual_indexes_array, argument_index++ );
 
                         // Update ML array, so we'll know 1st if ML is used, 2nd how many arguments we have to change
@@ -14387,7 +14183,7 @@ stock general_chat_print( const player_id, const lang_formatting[], any:... )
             }
         }
 
-        LOG( 64, "( general_chat_print ) multi_lingual_constants_number: %d...", multi_lingual_constants_number )
+        LOG( 64, "( color_chat ) multi_lingual_constants_number: %d...", multi_lingual_constants_number )
 
         for( --playersCount; playersCount >= 0; --playersCount )
         {
@@ -14397,7 +14193,7 @@ stock general_chat_print( const player_id, const lang_formatting[], any:... )
             {
                 for( argument_index = 0; argument_index < multi_lingual_constants_number; argument_index++ )
                 {
-                    LOG( 64, "( general_chat_print ) player_id: %d, argument_index: %d, ArrayGetCell(%d,%d): %d", \
+                    LOG( 64, "( color_chat ) player_id: %d, argument_index: %d, ArrayGetCell(%d,%d): %d", \
                             player_id, argument_index, \
                             multi_lingual_indexes_array, argument_index, ArrayGetCell( multi_lingual_indexes_array, argument_index ) )
 
@@ -14417,12 +14213,12 @@ stock general_chat_print( const player_id, const lang_formatting[], any:... )
                     new message[ MAX_COLOR_MESSAGE ];
                     formatex( message, charsmax( message ), "^1%s^1%s", g_coloredChatPrefix, formatted_message[ 1 ] );
 
-                    LOG( 64, "( general_chat_print ) 1. [out] colored message: `%s`", message )
+                    LOG( 64, "( color_chat ) 1. [out] colored message: `%s`", message )
                     PRINT_COLORED_MESSAGE( player_id, message )
                 }
                 else
                 {
-                    LOG( 64, "( general_chat_print ) 2. [out] colored message: `%s`", formatted_message )
+                    LOG( 64, "( color_chat ) 2. [out] colored message: `%s`", formatted_message )
                     PRINT_COLORED_MESSAGE( player_id, formatted_message )
                 }
             }
@@ -14431,7 +14227,7 @@ stock general_chat_print( const player_id, const lang_formatting[], any:... )
                 vformat( formatted_message, charsmax( formatted_message ), lang_formatting, first_lang_parameter_position );
                 REMOVE_CODE_COLOR_TAGS( formatted_message )
 
-                LOG( 64, "( general_chat_print ) 3. [out] uncolored message: `%s`", formatted_message )
+                LOG( 64, "( color_chat ) 3. [out] uncolored message: `%s`", formatted_message )
                 client_print( player_id, print_chat, "%s%s", g_coloredChatPrefix, formatted_message );
             }
         }
@@ -15714,7 +15510,7 @@ public sayNextMap()
     {
         if( g_voteStatus & IS_VOTE_IN_PROGRESS )
         {
-            COLOR( 0, CHAT( "%L %L", LANG_PLAYER, "NEXT_MAP", LANG_PLAYER, "GAL_NEXTMAP_VOTING" ) )
+            color_chat( 0, "%L %L", LANG_PLAYER, "NEXT_MAP", LANG_PLAYER, "GAL_NEXTMAP_VOTING" );
         }
         else if( get_pcvar_num( cvar_nextMapChangeVotemap ) )
         {
@@ -15740,7 +15536,7 @@ public sayNextMap()
         else
         {
             gal_nextmap_unknown:
-            COLOR( 0, CHAT( "%L %L", LANG_PLAYER, "NEXT_MAP", LANG_PLAYER, "GAL_NEXTMAP_UNKNOWN" ) )
+            color_chat( 0, "%L %L", LANG_PLAYER, "NEXT_MAP", LANG_PLAYER, "GAL_NEXTMAP_UNKNOWN" );
         }
     }
     else
@@ -15749,7 +15545,7 @@ public sayNextMap()
 
         if( IS_COLORED_CHAT_ENABLED() )
         {
-            COLOR( 0, CHAT( "%L ^4%s", LANG_PLAYER, "NEXT_MAP", nextMapName ) )
+            color_chat( 0, "%L ^4%s", LANG_PLAYER, "NEXT_MAP", nextMapName );
         }
         else
         {
@@ -15770,7 +15566,7 @@ public sayCurrentMap()
 
     if( IS_COLORED_CHAT_ENABLED() )
     {
-        COLOR( 0, CHAT( "%L:^4 %s", LANG_PLAYER, "PLAYED_MAP", g_currentMapName ) )
+        color_chat( 0, "%L:^4 %s", LANG_PLAYER, "PLAYED_MAP", g_currentMapName );
     }
     else
     {
@@ -15784,9 +15580,9 @@ public sayFFStatus()
 
     if( IS_COLORED_CHAT_ENABLED() )
     {
-        COLOR( 0, CHAT( "%L: ^4%L", \
+        color_chat( 0, "%L: ^4%L", \
                 LANG_PLAYER, "FRIEND_FIRE", \
-                LANG_PLAYER, get_pcvar_num( cvar_mp_friendlyfire ) ? "ON" : "OFF" ) )
+                LANG_PLAYER, get_pcvar_num( cvar_mp_friendlyfire ) ? "ON" : "OFF" );
     }
     else
     {
@@ -16301,7 +16097,7 @@ public sayTheTime( id )
 
     if( IS_COLORED_CHAT_ENABLED() )
     {
-        COLOR( 0, CHAT( "^4%L:^1 %s", LANG_PLAYER, "THE_TIME", ctime ) )
+        color_chat( 0, "^4%L:^1 %s", LANG_PLAYER, "THE_TIME", ctime );
     }
     else
     {
@@ -16337,7 +16133,7 @@ public sayTimeLeft( id )
         {
             if( IS_COLORED_CHAT_ENABLED() )
             {
-                COLOR( 0, CHAT( "^4%L:^1 %L", LANG_PLAYER, "TIME_LEFT", LANG_PLAYER, "NO_T_LIMIT" ) )
+                color_chat( 0, "^4%L:^1 %L", LANG_PLAYER, "TIME_LEFT", LANG_PLAYER, "NO_T_LIMIT" );
             }
             else
             {
@@ -16361,7 +16157,7 @@ stock sayRoundsLeft( id )
 
     if( IS_COLORED_CHAT_ENABLED() )
     {
-        COLOR( 0, CHAT( "^4%L:^1 %d %L", LANG_PLAYER, "TIME_LEFT", roundsLeft, LANG_PLAYER, "GAL_ROUNDS" ) )
+        color_chat( 0, "^4%L:^1 %d %L", LANG_PLAYER, "TIME_LEFT", roundsLeft, LANG_PLAYER, "GAL_ROUNDS" );
     }
     else
     {
@@ -16381,7 +16177,7 @@ stock sayWinLimitLeft( id )
 
     if( IS_COLORED_CHAT_ENABLED() )
     {
-        COLOR( 0, CHAT( "^4%L:^1 %d %L", LANG_PLAYER, "TIME_LEFT", winLeft, LANG_PLAYER, "GAL_ROUNDS" ) )
+        color_chat( 0, "^4%L:^1 %d %L", LANG_PLAYER, "TIME_LEFT", winLeft, LANG_PLAYER, "GAL_ROUNDS" );
     }
     else
     {
@@ -16401,7 +16197,7 @@ stock sayFragsLeft( id )
 
     if( IS_COLORED_CHAT_ENABLED() )
     {
-        COLOR( 0, CHAT( "^4%L:^1 %d %L", LANG_PLAYER, "TIME_LEFT", fragsLeft, LANG_PLAYER, "GAL_FRAGS" ) )
+        color_chat( 0, "^4%L:^1 %d %L", LANG_PLAYER, "TIME_LEFT", fragsLeft, LANG_PLAYER, "GAL_FRAGS" );
     }
     else
     {
@@ -16424,7 +16220,7 @@ stock sayTimeLeftOn( id )
 
     if( IS_COLORED_CHAT_ENABLED() )
     {
-        COLOR( 0, CHAT( "^4%L:^1 %d:%02d %L", LANG_PLAYER, "TIME_LEFT", ( timeLeft / 60 ), ( timeLeft % 60 ), LANG_PLAYER, "MINUTES" ) )
+        color_chat( 0, "^4%L:^1 %d:%02d %L", LANG_PLAYER, "TIME_LEFT", ( timeLeft / 60 ), ( timeLeft % 60 ), LANG_PLAYER, "MINUTES" );
     }
     else
     {
@@ -19620,7 +19416,7 @@ public timeRemain()
         ERR( "g_isMapExtensionAllowed must be 1, instead of %d.", g_isMapExtensionAllowed && g_isGameFinalVoting )
         setTestFailure( test_id, !( g_isMapExtensionAllowed && g_isGameFinalVoting ), errorMessage );
 
-        COLOR( 0, CHAT( "%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED2" ) )
+        color_chat( 0, "%L", LANG_PLAYER, "GAL_CHANGE_TIMEEXPIRED2" );
         cancelVoting();
 
         // Case 3
@@ -19821,14 +19617,14 @@ public timeRemain()
                 ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ \
                 ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ ABCDEFGHIJKLMNOPQRSTUVWXZ";
 
-        COLOR( 0, CHAT( team, string ) )
-        COLOR( player_id, CHAT( team, string ) )
+        color_chat( 0, team, string );
+        color_chat( player_id, team, string );
 
         new formats[ MAX_BIG_BOSS_STRING ];
         copy( formats, charsmax( formats ), "My big formatter: %s" );
 
-        COLOR( 0, CHAT( team, formats, string ) )
-        COLOR( player_id, CHAT( team, formats, string ) )
+        color_chat( 0, team, formats, string );
+        color_chat( player_id, team, formats, string );
     }
 
 
