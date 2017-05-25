@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.7.2-881";
+new const PLUGIN_VERSION[] = "v5.7.2-882";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -14136,7 +14136,7 @@ stock color_print_only( const player_id, const lang_formatting[], any:... )
     LOG( 64, "( color_print_only ) IS_COLORED_CHAT_ENABLED(): %d", IS_COLORED_CHAT_ENABLED() )
     LOG( 64, "( color_print_only ) player_id: %d, lang_formatting: `%s`", player_id, lang_formatting )
 
-    const first_lang_parameter_position = 4;
+    const first_lang_parameter_position = 3;
     new formatted_message[ MAX_COLOR_MESSAGE ];
 
     if( player_id )
@@ -14292,7 +14292,7 @@ stock general_chat_print( const player_id, const lang_formatting[], any:... )
     LOG( 64, "( general_chat_print ) IS_COLORED_CHAT_ENABLED(): %d", IS_COLORED_CHAT_ENABLED() )
     LOG( 64, "( general_chat_print ) player_id: %d, lang_formatting: `%s`", player_id, lang_formatting )
 
-    const first_lang_parameter_position = 4;
+    const first_lang_parameter_position = 3;
     new formatted_message[ MAX_COLOR_MESSAGE ];
 
 #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
