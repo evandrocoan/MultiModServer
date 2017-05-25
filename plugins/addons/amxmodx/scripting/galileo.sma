@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.7.2-884";
+new const PLUGIN_VERSION[] = "v5.7.2-885";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -2065,8 +2065,22 @@ stock cacheCvarsValues( ignoreUnregistred=false )
     g_isToShowVoteCounter    = get_pcvar_num( cvar_isToShowVoteCounter  ) != 0;
     g_isToShowExpCountdown   = get_pcvar_num( cvar_isToShowExpCountdown ) != 0;
 
-    // load the weighted votes flags and chat prefix.
     get_pcvar_string( cvar_voteWeightFlags, g_voteWeightFlags, charsmax( g_voteWeightFlags ) );
+    g_maxVotingChoices = max( min( MAX_OPTIONS_IN_VOTE, get_pcvar_num( cvar_voteMapChoiceCount ) ), 2 );
+
+    // It need to be cached after loading all the cvars, because it use some of them.
+    g_totalVoteTime = howManySecondsLastMapTheVoting();
+}
+
+/**
+ * Some cvars are not registered right after the settings are loaded because these cvars are
+ * settings dependents.
+ */
+stock cacheCvarsValuesIgnored()
+{
+    LOG( 128, "I AM ENTERING ON cacheCvarsValuesIgnored(0)" )
+
+    g_fragLimitNumber = get_pcvar_num( cvar_mp_fraglimit );
     get_pcvar_string( cvar_coloredChatPrefix, g_coloredChatPrefix, charsmax( g_coloredChatPrefix ) );
 
     //Do not put it before the variable `g_isColoredChatEnabled` caching.
@@ -2079,21 +2093,7 @@ stock cacheCvarsValues( ignoreUnregistred=false )
         REMOVE_LETTER_COLOR_TAGS( g_coloredChatPrefix )
     }
 
-    LOG( 1, "( cacheCvarsValues ) g_coloredChatPrefix: %s", g_coloredChatPrefix )
-    g_maxVotingChoices = max( min( MAX_OPTIONS_IN_VOTE, get_pcvar_num( cvar_voteMapChoiceCount ) ), 2 );
-
-    // It need to be cached after loading all the cvars
-    g_totalVoteTime = howManySecondsLastMapTheVoting();
-}
-
-/**
- * Some cvars are not registered right after the settings are loaded because these cvars are
- * settings dependents.
- */
-stock cacheCvarsValuesIgnored()
-{
-    LOG( 128, "I AM ENTERING ON cacheCvarsValuesIgnored(0)" )
-    g_fragLimitNumber = get_pcvar_num( cvar_mp_fraglimit );
+    LOG( 1, "( cacheCvarsValuesIgnored ) g_coloredChatPrefix: %s", g_coloredChatPrefix )
 }
 
 /**
@@ -14083,7 +14083,7 @@ stock percent( is, of )
 stock color_chat( const player_id, const lang_formatting[], any:... )
 {
     LOG( 128, "I AM ENTERING ON color_chat()" )
-    LOG( 64, "( color_chat ) IS_COLORED_CHAT_ENABLED(): %d", IS_COLORED_CHAT_ENABLED() )
+    LOG( 64, "( color_chat ) IS_COLORED_CHAT_ENABLED(): %d `%s`", IS_COLORED_CHAT_ENABLED(), g_coloredChatPrefix )
     LOG( 64, "( color_chat ) player_id: %d, lang_formatting: `%s`", player_id, lang_formatting )
 
     const first_lang_parameter_position = 3;
