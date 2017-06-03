@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.7.2-886";
+new const PLUGIN_VERSION[] = "v5.7.2-887";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -494,8 +494,9 @@ new g_user_msgid;
 /**
  * General Constants.
  */
-#define MUTE_MESSAGES_SPAMMING  1
-#define VOTE_WAIT_FOR_ROUND_END 2
+#define MUTE_MESSAGES_SPAMMING          1
+#define VOTE_WAIT_FOR_ROUND_END         2
+#define DO_NOT_ALPHABETIZE_VOTEMAP_MENU 4
 
 #define MAX_INTEGER  2147483647
 #define MIN_INTEGER -2147483648
@@ -7471,7 +7472,10 @@ stock initializeTheVoteDisplay()
     nomination_clearAll();
 
     // Alphabetize the maps
-    SortCustomSynced2D( g_votingMapNames, g_votingMapInfos, g_totalVoteOptions );
+    if( !( get_pcvar_num( cvar_generalOptions ) & DO_NOT_ALPHABETIZE_VOTEMAP_MENU ) )
+    {
+        SortCustomSynced2D( g_votingMapNames, g_votingMapInfos, g_totalVoteOptions );
+    }
 
     // Skip bots and hltv
     get_players( players, playersCount, "ch" );
