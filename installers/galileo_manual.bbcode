@@ -1,38 +1,32 @@
-[anchor]Top[/anchor][SIZE="7"][COLOR="Blue"][B]Galileo Mapchooser Manual[/B][/COLOR][/SIZE] Advanced usage for a feature rich map voting plugin
-[COLOR=Red][SIZE=1]Release: 2017-06-04 | Last Update: 2017-06-04 | Date Format: Year-Month-Day[/COLOR][/SIZE]
+[anchor]Top[/anchor][SIZE="7"][COLOR="Blue"][B]Galileo Mapchooser Manual[/B][/COLOR][/SIZE]
+Advanced usage for a feature rich map voting plugin [COLOR=Red][SIZE=1]Release: 2017-06-04 | Last Update: 2017-06-04 | Date Format: Year-Month-Day[/COLOR][/SIZE]
 
 [QUOTE=HamletEagle;2526121]You should always try to keep things as short and as straight as possible.
 This can even stop people from using your plugin in the first place. Like they open the main page and see one giant wall of text. They'll say "it's too complicated, I want something simple".
 [/QUOTE]
 
-So I agree with him. Then I decided to split the main post into 2. This is the second post created
+So I agree, therefore I decided to split the main post in two posts. This is the second post created
 which retained the information removed from the main post at:
 [list=1]
-[*][url=https://forums.alliedmods.net/showthread.php?t=273019]Galileo (a feature rich map voting
-plugin)[/url]
+[*][url=https://forums.alliedmods.net/showthread.php?t=273019]Galileo (a feature rich map voting plugin)[/url]
 [/list]
-
 
 [SIZE="6"][COLOR="blue"][B]Contents' Table[/B][/COLOR][/SIZE]
 
 [LIST=1]
 [*][goanchor=Introduction]Introduction[/goanchor]
 [*][goanchor=Brief]Features' list[/goanchor]
-[*][goanchor=TODO]To Do[/goanchor]
-
-
 [*][goanchor=Requirements]Commands[/goanchor]
+[*][goanchor=TODO]To Do[/goanchor]
 [*][goanchor=Changelog]Change Log[/goanchor]
 [*][goanchor=Compilations]Compilations Data[/goanchor]
-
-
 [*][goanchor=Support][B]Support[/B][/goanchor]
-[*][goanchor=Unsupported]Un-Supported?[/goanchor][/anchor][SIZE="6"][COLOR="blue"][B]
-
-
-[*][goanchor=Development][B]Development Versions[/B][/goanchor]
+[*][goanchor=Unsupported]Un-Supported?[/goanchor]
+[*][B]Downloads[/B]:
+   [LIST=1]
+   [*][goanchor=Downloads]Development Versions[/goanchor]
+   [/LIST]
 [/LIST]
-
 
 [B]Contributing[/B]
 
@@ -40,7 +34,6 @@ If you are interested in contributing with the development of this plugin you ca
 [list=1]
 [*][url=https://github.com/addonszz/Galileo#galileo] https://github.com/addonszz/Galileo#galileo[/url]
 [/list]
-
 
 
 ********************** [anchor]Introduction[/anchor][B][SIZE="6"][COLOR="blue"]Introduction[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor]  *******************************
@@ -69,8 +62,8 @@ If you are interested in contributing with the development of this plugin you ca
 
 [SIZE="4"][B]How to upgrade your Galileo?[/B][/SIZE]
 [LIST=1]
-[*]Download the "[B]galileo.amxx[/B]"
-[*]Replace your currenty installed version.
+[*]Download the "[B]galileo.amxx[/B]" and `[b]data/lang/galileo.txt[/b]`
+[*]Replace your currently installed version.
 [*]It is done.
 [/LIST]
 
@@ -1314,12 +1307,17 @@ Here you can see what is going on the latest [COLOR="Red"]unreleased[/COLOR] ver
 And this is a direct link to always to download the latest [COLOR="Red"]unreleased[/COLOR] changes you see on the above link:
 [URL="https://github.com/addonszz/Galileo/archive/master.zip"] https://github.com/addonszz/Galileo/archive/develop.zip[/URL]
 
-And because it is the development version, the debugging is enabled. Go to around the 'line 87' and find:[PAWN]
-#define DEBUG_LEVEL SomeNumber(s)[/PAWN]and change it to:[PAWN]
+And because it is the development version, the debugging is enabled. Go to around the 'line 87' and find:
+[SPOILER]
+[PAWN]
+#define DEBUG_LEVEL SomeNumber(s)
+[/PAWN]
+and change it to:
+[PAWN]
 #define DEBUG_LEVEL 0
 [/PAWN]
 
-[img]http://i.imgur.com/qcAwlUW.png[/img]
+[img]http://i.imgur.com/qcAwlUW.png[/img][/SPOILER]
 
 [QUOTE=BeNq!;2526104]Yes but Have you checked the content that gets downloaded? There isn't galileo there.[/QUOTE]
 
@@ -1327,10 +1325,7 @@ Galileo is on the folder `plugins/addons/amxmodx/scripting/galileo.sma`.
 You can run the script on `installers/galileo.bat`. It will create all galileo files on the folder `installers\clean_setup\Galileo-VERSION`
 
 Note that these versions above are probably not tested or maybe not stable as the
-[URL=https://forums.alliedmods.net/showthread.php?t=273019#LatestRelease]Latest Release Download[/URL] [B][COLOR="Red"]below[/B][/COLOR]. See here how to compile plugins on: [URL="https://forums.alliedmods.net/showthread.php?t=172936#Compiling"][HOW TO] Compiling plugins[/URL].
+[URL=https://forums.alliedmods.net/showthread.php?t=273019#LatestRelease]Latest Release Download[/URL]. See here how to compile plugins on: [URL="https://forums.alliedmods.net/showthread.php?t=172936#Compiling"][HOW TO] Compiling plugins[/URL].
 
-
-[SIZE="4"][B]Downloading it[/B][/SIZE]:
-
-[img]http://i.imgur.com/4myoqnb.gif[/img]
+[SPOILER][img]http://i.imgur.com/4myoqnb.gif[/img][/SPOILER]
 
