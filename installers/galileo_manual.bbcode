@@ -28,7 +28,6 @@ as:[URL="https://github.com/addonszz/Galileo/commit/f386a49c6e07f4a4d52375a0a1d3
 [*][goanchor=Unsupported]Un-Supported?[/goanchor][/anchor][SIZE="6"][COLOR="blue"][B]
 
 [*][goanchor=Changelog]Change Log[/goanchor]
-[*][goanchor=Screen]Screenshots[/goanchor]
 [*][goanchor=TODO]To Do[/goanchor]
 
 
@@ -1165,82 +1164,6 @@ doesn't use them anymore and/or is tired of supporting so many repos.
 [LIST=1]
 [*]Initial release.
 [/LIST]
-[/SPOILER]
-
-
-******************************** [anchor]Screen[/anchor][B][SIZE="6"][COLOR="blue"]Screenshots[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
-[SPOILER]
-[LIST=1]
-[*][goanchor=gal_colored_chat_enabled]Colored chat[/goanchor]
-[*][goanchor=gal_endofmapvote_ask]Ask the players whether to vote[/goanchor]
-[*][goanchor=gal_vote_show_none_type]Undo their last vote[/goanchor]
-[*][goanchor=amx_extendmap_allow_stay]'Stay Here' vote option[/goanchor]
-[/LIST]
-
-[anchor]gal_colored_chat_enabled[/anchor][SIZE="5"][B]Colored chat[/B][/SIZE]: [goanchor=Screen]Go to Screenshots[/goanchor]
-
-[IMG]http://i.imgur.com/47qmyN3.png[/IMG]
-
-[IMG]http://i.imgur.com/WX5y6Aw.png?1[/IMG]
-
-If someones do not want colors when using this plugin/colored LANG file, just needs to disable this cvar on the 'galileo.cfg' config file:
-[PAWN]
-// Enable or disable the color on the plugin text message chat (colored chat).
-// 0 - Disabled
-// 1 - Enabled
-gal_colored_chat_enabled 1
-[/PAWN]
-
-
-[anchor]gal_endofmapvote_ask[/anchor][SIZE="5"][B]Ask the players whether to vote[/B][/SIZE]: [goanchor=Screen]Go to Screenshots[/goanchor]
-
-[IMG]http://i.imgur.com/YAzTLsN.png[/IMG]
-
-[IMG]http://i.imgur.com/U8hdOL4.png[/IMG]
-
-If someones do not want to ask the players whether to vote for the next map, just needs to disable this cvar on the 'galileo.cfg' config file:
-[PAWN]
-// Indicates whether there should be asked to the players if they want to
-// participate the map vote to decide what the next map will be.
-// 0 - disabled this feature
-// 1 - enable this feature
-// When using that feature, the players will be asked if they want to vote.
-// They need to press 6 for yes and 0 for no. So they cannot press the wrong key.
-gal_endofmapvote_ask 1
-[/PAWN]
-
-
-[anchor]gal_vote_show_none_type[/anchor][SIZE="5"][B]Undo their last vote[/B][/SIZE]: [goanchor=Screen]Go to Screenshots[/goanchor]
-
-[IMG]http://i.imgur.com/xXxyIBr.png[/IMG]
-
-[IMG]http://i.imgur.com/ekDyONQ.png[/IMG]
-
-If someones do not want to allow the players to undo their last vote, just needs to disable this cvar on the 'galileo.cfg' config file:
-[PAWN]
-// How the 'None' option should behavior when it is active.
-// 0 - Hide after the user voted on some option.
-// 1 - Always keep showing
-// 2 - Convert it to 'Cancel Last Vote' option, to allow only
-//     'one time cancel' vote opportunity. Then, when you vote on the
-//     wrong option, because you pressed the wrong key, you just need
-//     to press 0 and your vote will be undone, hence you can vote again.
-gal_vote_show_none_type 2
-[/PAWN]
-
-
-[anchor]amx_extendmap_allow_stay[/anchor][SIZE="6"][B]'Stay Here' vote option[/B][/SIZE]: [goanchor=Screen]Go to Screenshots[/goanchor]
-
-[IMG]http://i.imgur.com/wUOVsqI.png[/IMG]
-
-If someones do not want to see the 'Stay Here' vote option, just needs to disable this cvar on the 'galileo.cfg' config file:
-[PAWN]
-// Control the 'Stay Here' vote option when performing early votes
-// or by the 'gal_startvote' server command.
-// 0 - do not show the vote option "Stay Here".
-// 1 - show the vote option "Stay Here".
-amx_extendmap_allow_stay 1
-[/PAWN]
 [/SPOILER]
 
 
