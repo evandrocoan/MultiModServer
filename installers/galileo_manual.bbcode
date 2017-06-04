@@ -22,24 +22,19 @@ as:[URL="https://github.com/addonszz/Galileo/commit/f386a49c6e07f4a4d52375a0a1d3
 [LIST=1]
 [*][goanchor=Introduction]Introduction[/goanchor]
 [*][goanchor=Brief]Features' list[/goanchor]
+[*][goanchor=TODO]To Do[/goanchor]
+
+
 [*][goanchor=Requirements]Commands[/goanchor]
+[*][goanchor=Changelog]Change Log[/goanchor]
+[*][goanchor=Compilations]Compilations Data[/goanchor]
 
 
 [*][goanchor=Support][B]Support[/B][/goanchor]
 [*][goanchor=Unsupported]Un-Supported?[/goanchor][/anchor][SIZE="6"][COLOR="blue"][B]
 
 
-[*][goanchor=TODO]To Do[/goanchor]
-[*][goanchor=Changelog]Change Log[/goanchor]
-[*][goanchor=Compilations]Compilations Data[/goanchor]
-
-
-[*][B]Downloads[/B]:
-   [LIST=1]
-   [*][goanchor=Development]Development Versions[/goanchor]
-   [*][goanchor=Old]Old Versions Downloads[/goanchor]
-   [*][goanchor=LatestRelease][B]Latest Release Download[/B][/goanchor]
-   [/LIST]
+[*][goanchor=Development][B]Development Versions[/B][/goanchor]
 [/LIST]
 
 ********************** [anchor]Introduction[/anchor][B][SIZE="6"][COLOR="blue"]Introduction[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor]  *******************************
@@ -373,6 +368,12 @@ de_inferno
 
 
 
+******************************** [anchor]TODO[/anchor][B][SIZE="6"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] *********************************
+
+See the current issues/features request list on [URL="https://github.com/addonszz/Galileo/issues"] https://github.com/addonszz/Galileo/issues[/URL].
+
+
+
 ********************** [anchor]Requirements[/anchor][SIZE="6"][COLOR="Blue"][B]Commands[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor]  ******
 
 [SIZE="4"][B]Client's Commands:[/B][/SIZE]
@@ -442,113 +443,6 @@ de_inferno
 [B]//[/B]
 [B]//[/B] Requires the CVAR "gal_nom_playerallowance" to be set to a value higher than 0.
 [COLOR="Blue"]say [B]mapname[/B][/COLOR]
-
-
-
-******************************** [anchor]TODO[/anchor][B][SIZE="6"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] *********************************
-
-See the current issues/features request list on [URL="https://github.com/addonszz/Galileo/issues"] https://github.com/addonszz/Galileo/issues[/URL].
-
-
-
-******************************** [anchor]Sourcecode[/anchor][anchor]Support[/anchor][SIZE="6"][COLOR="blue"][B]Support[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor] *******************************
-
-You can [B]receive support[/B] for this plugin within this thread. Non-Steam servers are not supported.
-
-For any problems with this plugin visit this own page for support:
-[url="https://forums.alliedmods.net/newreply.php?do=postreply&t=273019"] https://forums.alliedmods.net/newreply.php?do=postreply&t=273019[/url]
-
-If you are [B]posting[/B] because the plugin or a [B]feature[/B] of the plugin isn't working for you, [B]please[/B] do
-all of the following, so we can [COLOR="Blue"]more efficiently[/COLOR] figure out what's going on:
-
-[LIST=1]
-[*]You need to edit the `galileo.sma` changing the `DEBUG_LEVEL` variable. You need to set the DEBUG_LEVEL to 16,
-instead of the level 0 as default. [URL="https://forums.alliedmods.net/showthread.php?t=273019#Development"]See here where[/URL] to do it.
-
-After that, to compile, install the plugin, restart your server and let your server run until the problem
-you are experiencing happens and after that send me by PM or post here log file '[COLOR="Blue"]_galileo_log.txt[/COLOR]'.
-The log file '[COLOR="Blue"]_galileo_log.txt[/COLOR]' will be at the folder '[COLOR="blue"]addons/amxmodx/logs[/COLOR]'.
-
-The file '[COLOR="Blue"]_galileo_log.txt[/COLOR]' will be very helpful to find out why it is not working.
-You current plugin is not creating the file log file '[COLOR="Blue"]_galileo_log.txt[/COLOR]', only the one with the debugging
-log enabled, as I explained above with the DEBUG_LEVEL 16 constant inside the plugin.
-
-
-[*]If you have access to your [COLOR="Blue"][B]game server's console[/B][/COLOR], type the [COLOR="Red"][B]following[/B][/COLOR] commands in the server console:
-[LIST]
-[*]status
-[*]version
-[*]meta list
-[*]amxx list
-[*]amxx cvars
-[/LIST]
-
-If you don't have access the your game server's console, join your server and type the [COLOR="Red"][B]following[/B][/COLOR]
-commands in your [COLOR="Blue"][B]game's console[/B][/COLOR]:
-[LIST]
-[*]status
-[*]rcon_password "YOUR_RCON_PASSWORD"
-[*]rcon version
-[*]rcon meta list
-[*]rcon amxx list
-[*]rcon amxx cvars
-[/LIST]
-[/LIST]
-[LIST=1]
-[*]Paste here everything from the [B]status[/B] command [COLOR="Red"][B]*except*[/B][/COLOR] the player list.
-[*]Paste here the entire result from the [B]version[/B], [B]meta list[/B] and [B]amxx list[/B] commands.
-[*]Paste here [COLOR="red"][B]*only*[/B][/COLOR] the CVARs that contain "[COLOR="SeaGreen"][B]galileo.amxx[/B][/COLOR]" in the last column
-from the [B]amxx cvars[/B] command. They will be grouped together.
-[/LIST]
-
-
-******************************** [anchor]Unsupported[/anchor][SIZE="6"][COLOR="blue"][B]Un-Supported?[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor] *******************************
-
-People just saying it is broken/lagging and do not help providing the requested information at the main's page
-[goanchor=Support]Support[/goanchor] section, will be ignored.
-
-I am not asking to you write code, I asking to just copy and paste something from your server. Then if you
-cannot neither do just such a simple thing, it will be broken for ever or until you fix by yourself, or until
-someday I/or someone else notice your problem on my/their server and copy and paste what I am asking.
-
-If you cannot help me figure out what is wrong with the plugin, it is definitely not my problem, but it is all
-your problem as, you will need to use it bugged or not use at all. Which is not relevant, you should use whatever
-work better for your server, if you can find such. At least on my server it is working fine and I do not see
-anything wrong with it. But if you are finding and fixing bugs and not releasing/sharing  it, this is not good
-from you to the others at all. Would you like I never shared the source code? That depends, if you got something
-which works much better for your server, then this plugin is pretty much irrelevant to you and you would not care
-whether I shared my coding or not.
-
-Basically, I am assuming anyone which posts problems here and do not provide the requested information as trollers. Because:
-[LIST=1]
-[*]I do not run a server where I can test behavior related to a running voting within several people.
-[*]I am not a magician or psychic to guess your server environment or how the plugin is behaving if you do not provide it.
-[*]Until now I was able to fix everything reported by users which collaborate.
-[/LIST]
-
-[HTML]
-Maybe he's tired of supporting them. Maybe he doesn't use those anymore so it
-doesn't make sense for him to support them. You can fork them if you like. You
-could be the next maintainer as it is open source.
-
-It takes time to support repos. Supporting repos is work. I know because I
-support a bunch. It is often a thankless job. People always want something, but
-often don't want to put in effort to contribute (even if it's just a simple
-donation). People don't like to read the documentation and love to ask a
-question you've documented and answered hundreds of times. People don't like to
-follow instructions you give them to get your support.
-
-With that said, there are people who do contribute. And there are those who
-occasionally give thanks (sometimes verbally and sometimes with donations and
-sometimes with pull requests). Those are the people that usually give repo
-maintainers the motivation to keep supporting the project.
-
-In short, sometimes it can just get tiring. And if you've moved on from your
-project (you don't even use it yourself anymore), it might not make sense to
-keep supporting it. Only tito can answer exactly why. But I imagine he either
-doesn't use them anymore and/or is tired of supporting so many repos.
-[/HTML]
-[URL="https://forum.sublimetext.com/t/why-some-packages-are-removed-from-package-control/24248/4"]Why some packages are removed from Package Control?#facelessuser[/URL]
 
 
 
@@ -1298,6 +1192,108 @@ Press enter to exit ...
 [/html]
 [/SPOILER]
 [/SPOILER]
+
+
+
+******************************** [anchor]Sourcecode[/anchor][anchor]Support[/anchor][SIZE="6"][COLOR="blue"][B]Support[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor] *******************************
+
+You can [B]receive support[/B] for this plugin within this thread. Non-Steam servers are not supported.
+
+For any problems with this plugin visit this own page for support:
+[url="https://forums.alliedmods.net/newreply.php?do=postreply&t=273019"] https://forums.alliedmods.net/newreply.php?do=postreply&t=273019[/url]
+
+If you are [B]posting[/B] because the plugin or a [B]feature[/B] of the plugin isn't working for you, [B]please[/B] do
+all of the following, so we can [COLOR="Blue"]more efficiently[/COLOR] figure out what's going on:
+
+[LIST=1]
+[*]You need to edit the `galileo.sma` changing the `DEBUG_LEVEL` variable. You need to set the DEBUG_LEVEL to 16,
+instead of the level 0 as default. [URL="https://forums.alliedmods.net/showthread.php?t=273019#Development"]See here where[/URL] to do it.
+
+After that, to compile, install the plugin, restart your server and let your server run until the problem
+you are experiencing happens and after that send me by PM or post here log file '[COLOR="Blue"]_galileo_log.txt[/COLOR]'.
+The log file '[COLOR="Blue"]_galileo_log.txt[/COLOR]' will be at the folder '[COLOR="blue"]addons/amxmodx/logs[/COLOR]'.
+
+The file '[COLOR="Blue"]_galileo_log.txt[/COLOR]' will be very helpful to find out why it is not working.
+You current plugin is not creating the file log file '[COLOR="Blue"]_galileo_log.txt[/COLOR]', only the one with the debugging
+log enabled, as I explained above with the DEBUG_LEVEL 16 constant inside the plugin.
+
+
+[*]If you have access to your [COLOR="Blue"][B]game server's console[/B][/COLOR], type the [COLOR="Red"][B]following[/B][/COLOR] commands in the server console:
+[LIST]
+[*]status
+[*]version
+[*]meta list
+[*]amxx list
+[*]amxx cvars
+[/LIST]
+
+If you don't have access the your game server's console, join your server and type the [COLOR="Red"][B]following[/B][/COLOR]
+commands in your [COLOR="Blue"][B]game's console[/B][/COLOR]:
+[LIST]
+[*]status
+[*]rcon_password "YOUR_RCON_PASSWORD"
+[*]rcon version
+[*]rcon meta list
+[*]rcon amxx list
+[*]rcon amxx cvars
+[/LIST]
+[/LIST]
+[LIST=1]
+[*]Paste here everything from the [B]status[/B] command [COLOR="Red"][B]*except*[/B][/COLOR] the player list.
+[*]Paste here the entire result from the [B]version[/B], [B]meta list[/B] and [B]amxx list[/B] commands.
+[*]Paste here [COLOR="red"][B]*only*[/B][/COLOR] the CVARs that contain "[COLOR="SeaGreen"][B]galileo.amxx[/B][/COLOR]" in the last column
+from the [B]amxx cvars[/B] command. They will be grouped together.
+[/LIST]
+
+
+******************************** [anchor]Unsupported[/anchor][SIZE="6"][COLOR="blue"][B]Un-Supported?[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor] *******************************
+
+People just saying it is broken/lagging and do not help providing the requested information at the main's page
+[goanchor=Support]Support[/goanchor] section, will be ignored.
+
+I am not asking to you write code, I asking to just copy and paste something from your server. Then if you
+cannot neither do just such a simple thing, it will be broken for ever or until you fix by yourself, or until
+someday I/or someone else notice your problem on my/their server and copy and paste what I am asking.
+
+If you cannot help me figure out what is wrong with the plugin, it is definitely not my problem, but it is all
+your problem as, you will need to use it bugged or not use at all. Which is not relevant, you should use whatever
+work better for your server, if you can find such. At least on my server it is working fine and I do not see
+anything wrong with it. But if you are finding and fixing bugs and not releasing/sharing  it, this is not good
+from you to the others at all. Would you like I never shared the source code? That depends, if you got something
+which works much better for your server, then this plugin is pretty much irrelevant to you and you would not care
+whether I shared my coding or not.
+
+Basically, I am assuming anyone which posts problems here and do not provide the requested information as trollers. Because:
+[LIST=1]
+[*]I do not run a server where I can test behavior related to a running voting within several people.
+[*]I am not a magician or psychic to guess your server environment or how the plugin is behaving if you do not provide it.
+[*]Until now I was able to fix everything reported by users which collaborate.
+[/LIST]
+
+[HTML]
+Maybe he's tired of supporting them. Maybe he doesn't use those anymore so it
+doesn't make sense for him to support them. You can fork them if you like. You
+could be the next maintainer as it is open source.
+
+It takes time to support repos. Supporting repos is work. I know because I
+support a bunch. It is often a thankless job. People always want something, but
+often don't want to put in effort to contribute (even if it's just a simple
+donation). People don't like to read the documentation and love to ask a
+question you've documented and answered hundreds of times. People don't like to
+follow instructions you give them to get your support.
+
+With that said, there are people who do contribute. And there are those who
+occasionally give thanks (sometimes verbally and sometimes with donations and
+sometimes with pull requests). Those are the people that usually give repo
+maintainers the motivation to keep supporting the project.
+
+In short, sometimes it can just get tiring. And if you've moved on from your
+project (you don't even use it yourself anymore), it might not make sense to
+keep supporting it. Only tito can answer exactly why. But I imagine he either
+doesn't use them anymore and/or is tired of supporting so many repos.
+[/HTML]
+[URL="https://forum.sublimetext.com/t/why-some-packages-are-removed-from-package-control/24248/4"]Why some packages are removed from Package Control?#facelessuser[/URL]
+
 
 
 ******************************** [anchor]Downloads[/anchor][SIZE="6"][COLOR="Blue"][B]Downloads[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor] *************************
