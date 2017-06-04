@@ -16,7 +16,7 @@ and come here to [URL="https://forums.alliedmods.net/showthread.php?t=277636"]th
 [LIST=1]
 [*][goanchor=Introduction]Introduction[/goanchor]
 [*][goanchor=Brief]Brief Features' list[/goanchor]
-[*][goanchor=Requirements]Requirements and Commands[/goanchor]
+[*][goanchor=Requirements]Requirements[/goanchor]
 
 
 [*][B]Installation[/B]:
@@ -482,7 +482,7 @@ de_inferno
 
 
 
-********************** [anchor]Requirements[/anchor][SIZE="6"][COLOR="Blue"][B]Requirements and Commands[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor]  ******
+********************** [anchor]Requirements[/anchor][SIZE="6"][COLOR="Blue"][B]Requirements[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor]  ******
 
 [SIZE="4"][B]Server's Requirements:[/B][/SIZE]
 [LIST=1]
@@ -492,75 +492,6 @@ de_inferno
 [*]The Default '[B]Amx Mod X[/B]' [COLOR="Red"]Mapchooser Plugin [B]Disabled[/B][/COLOR] (mapchooser.amxx)
 [*]Any other [B]mapchooser[/B] plugin [B]disabled[/B].
 [/LIST]
-
-[SIZE="4"][B]Client's Commands:[/B][/SIZE]
-
-[B]//[/B] Displays, to all players, the current map name.
-[COLOR="Blue"]say [B]currentmap[/B][/COLOR]
-
-[B]//[/B] Displays a listing, to all players, of the most recently played maps. Requires the
-[B]//[/B] CVAR "gal_banrecent" to be set to a value higher than 0.
-[COLOR="Blue"]say [B]recentmaps[/B][/COLOR]
-
-[B]//[/B] Displays, to all players, the next map that will be played.  This is
-[B]//[/B] a replacement for AMXX's command with the same name.
-[B]//[/B]
-[B]//[/B] When using end of map voting (CVAR "gal_endofmapvote" and
-[B]//[/B] "gal_nextmap_change" set to 1), this command will return "[not yet voted on]"
-[B]//[/B] if the map vote hasn't started yet and "[voting in progress]"
-[B]//[/B] once the vote has started. When the outcome of the vote is determined,
-[B]//[/B] this command will return the map name.
-[COLOR="Blue"]say [B]nextmap[/B][/COLOR]
-
-[B]//[/B] Registers the players request for a map vote and change. The player will be
-[B]//[/B] informed how many more players need to rock the vote before a map vote
-[B]//[/B] will be forced. The [I]anything[/I] argument can be any "word" up to 20 characters
-[B]//[/B] without spaces.
-[B]//[/B]
-[B]//[/B] Requires the CVAR "gal_rtv_commands" to be set to an appropriate value.
-[COLOR="Blue"]say [B]rockthevote[/B][/COLOR]
-[COLOR="Blue"]say [B]rtv[/B][/COLOR]
-[COLOR="Blue"]say rockthe[B]anything[/B]vote[/COLOR]
-
-[B]//[/B] Displays, to all players, a listing of maps that have been nominated.
-[B]//[/B] Requires the CVAR "gal_nom_playerallowance" to be set to a value higher
-[B]//[/B] than 0. The [I]anything[/I] argument can be any "word" up to 20 characters.
-[COLOR="Blue"]say [B]nominations[/B][/COLOR]
-[COLOR="Blue"]say [B]noms[/B][/COLOR]
-
-[B]//[/B] Attempts to nominate the map specified by the [I]partialMapName[/I] argument.
-[B]//[/B] If there are multiple matches for [I]partialMapName[/I], a menu of the matches will
-[B]//[/B] be displayed to the player allowing them to select the map they meant.
-[B]//[/B]
-[B]//[/B] Requires the CVAR "gal_nom_playerallowance" to be set to a value higher than 0.
-[COLOR="Blue"]say [I]nominate[/I] [B]partialMapName[/B][/COLOR]
-[COLOR="Blue"]say [I]nom[/I] [B]partialMapName[/B][/COLOR]
-
-[B]//[/B] Open a nomination map menu containing all the plugins allowed to nominate. If specified
-[B]//[/B] the `page_number` argument, the menu will be opened a the specified page. Example:
-[B]//[/B] `say galmenu 50` will open the menu right on the page 50. If the argument `page_number`
-[B]//[/B] is omitted, the menu will open at the first page, or the last page you opened it.
-[B]//[/B]
-[B]//[/B] The [I]anything[/I] argument can be any "word" up to 20 characters without spaces.
-[B]//[/B] Configure the valid map prefixed at './amxmodx/configs/galileo/prefixes.ini'.
-[B]//[/B] Requires the CVAR "gal_nom_playerallowance" to be set to a value higher than 0.
-[B]//[/B] Requires the CVAR "gal_nom_prefixes" to be set to a value higher than 0.
-[COLOR="Blue"]say [I]nom[/I][B]anything[/B]menu[/COLOR]
-[COLOR="Blue"]say [I]nom[/I]menu[/COLOR] [page_number]
-[COLOR="Blue"]say [B]mapprefix_[/B][/COLOR]
-
-[B]//[/B] Cancels the nomination of [I]mapname[/I], which would have had to be previously
-[B]//[/B] nominated by the player.
-[B]//[/B]
-[B]//[/B] Requires the CVAR "gal_nom_playerallowance" to be set to a value higher than 0.
-[COLOR="Blue"]say [I]cancel[/I] [B]mapname[/B][/COLOR]
-
-[B]//[/B] If [I]mapname[/I] has been nominated by the player, will cancel the nomination.
-[B]//[/B] If [I]mapname[/I] has not been nominated by the player, will attempt to nominate it.
-[B]//[/B]
-[B]//[/B] Requires the CVAR "gal_nom_playerallowance" to be set to a value higher than 0.
-[COLOR="Blue"]say [B]mapname[/B][/COLOR]
-
 
 
 ******************************** [anchor]Installation[/anchor][B][SIZE="6"][COLOR="Blue"]Installation[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor]  ***********************
