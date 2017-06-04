@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.7.2-887";
+new const PLUGIN_VERSION[] = "v5.7.2-888";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -492,7 +492,7 @@ new g_user_msgid;
 #endif
 
 /**
- * General Constants.
+ * General Constants for the cvar `gal_general_options` options.
  */
 #define MUTE_MESSAGES_SPAMMING          1
 #define VOTE_WAIT_FOR_ROUND_END         2
