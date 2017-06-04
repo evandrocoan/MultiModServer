@@ -23,7 +23,7 @@ and come here to [URL="https://forums.alliedmods.net/showthread.php?t=277636"]th
    [LIST=1]
    [*][goanchor=InstallationAMXX182][B]Basic Installation[/B][/goanchor]
    [*][goanchor=InstallationNotes]Installation Notes[/goanchor]
-   [*][goanchor=Changelog]Change Log[/goanchor]
+   [*][goanchor=Mapcycle]Setting up a Mapcycle[/goanchor]
    [/LIST]
 
 
@@ -34,12 +34,10 @@ and come here to [URL="https://forums.alliedmods.net/showthread.php?t=277636"]th
 
 [*][goanchor=Credits]Credits[/goanchor]
 [*][goanchor=Compilations]Compilations Data[/goanchor]
-[*][goanchor=Mapcycle]Setting up a Mapcycle[/goanchor]
 
 
 [*][B]Downloads[/B]:
    [LIST=1]
-   [*][goanchor=Development]Development Versions[/goanchor]
    [*][goanchor=Old]Old Versions Downloads[/goanchor]
    [*][goanchor=LatestRelease][B]Latest Release Download[/B][/goanchor]
    [/LIST]
@@ -636,6 +634,19 @@ If you are using AMXX 182, but if you want the special vote map feature for Sven
 
 [img]http://i.imgur.com/mFwpKNr.png[/img]
 [/LIST]
+
+[anchor]Mapcycle[/anchor][SIZE="4"][B]Setting up a Mapcycle[/B][/SIZE]: [goanchor=Top]Go to top[/goanchor]
+
+[QUOTE=azure;11799]hrrmm this is very interesting. Could I set this up to change the mapcycle possibly?
+
+like have mapcycle 1 from 9 till 23 and then mapcycle2 from 23 til 9?
+[/QUOTE]
+The plugin [URL="https://forums.alliedmods.net/showthread.php?p=12724"]Task Scheduler[/URL] can do that. See here [URL="https://forums.alliedmods.net/showthread.php?p=12724#post12724"]how to configure it[/URL]. You can use it to configure the
+cvars:[LIST=1]mapcyclefile
+[*]gal_vote_mapfile
+[*]gal_vote_minplayers_mapfile
+[*]gal_nom_mapfile
+[*]gal_emptyserver_mapfile[/LIST]To use another mapcycle files which does not contain the maps you do not want to use by early hours.
 
 
 
@@ -1620,47 +1631,7 @@ Press enter to exit ...
 
 ******************************** [anchor]Downloads[/anchor][SIZE="6"][COLOR="Blue"][B]Downloads[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor] *************************
 
-[anchor]Development[/anchor][SIZE="4"][B]Development Versions[/B][/SIZE]: [goanchor=Top]Go to top[/goanchor]
-
-Here you can see what is going on the latest [COLOR="Red"]unreleased[/COLOR] version over development at:
-[URL="https://github.com/addonszz/Galileo/commits/master"][B]Github[/B][/URL]
-[URL="https://github.com/addonszz/Galileo/commits/master"][IMG]http://i.imgur.com/TWUBJiH.png[/IMG][/URL]
-[URL="https://github.com/addonszz/Galileo/commits/master"]https://github.com/addonszz/Galileo/commits/develop[/URL]
-
-And this is a direct link to always to download the latest [COLOR="Red"]unreleased[/COLOR] changes you see on the above link:
-[URL="https://github.com/addonszz/Galileo/archive/master.zip"] https://github.com/addonszz/Galileo/archive/develop.zip[/URL]
-
-And because it is the development version, the debugging is enabled. Go to around the 'line 87' and find:[PAWN]
-#define DEBUG_LEVEL SomeNumber(s)[/PAWN]and change it to:[PAWN]
-#define DEBUG_LEVEL 0
-[/PAWN]
-
-[img]http://i.imgur.com/qcAwlUW.png[/img]
-
-[QUOTE=BeNq!;2526104]Yes but Have you checked the content that gets downloaded? There isn't galileo there.[/QUOTE]
-
-Galileo is on the folder `plugins/addons/amxmodx/scripting/galileo.sma`.
-You can run the script on `installers/galileo.bat`. It will create all galileo files on the folder `installers\clean_setup\Galileo-VERSION`
-
-Note that these versions above are probably not tested or maybe not stable as the
-[goanchor=LatestRelease]Latest Release Download[/goanchor] [B][COLOR="Red"]below[/B][/COLOR]. See here how to compile plugins on: [URL="https://forums.alliedmods.net/showthread.php?t=172936#Compiling"][HOW TO] Compiling plugins[/URL].
-
-
-[anchor]Mapcycle[/anchor][SIZE="4"][B]Setting up a Mapcycle[/B][/SIZE]: [goanchor=Top]Go to top[/goanchor]
-
-[QUOTE=azure;11799]hrrmm this is very interesting. Could I set this up to change the mapcycle possibly?
-
-like have mapcycle 1 from 9 till 23 and then mapcycle2 from 23 til 9?
-[/QUOTE]
-The plugin [URL="https://forums.alliedmods.net/showthread.php?p=12724"]Task Scheduler[/URL] can do that. See here [URL="https://forums.alliedmods.net/showthread.php?p=12724#post12724"]how to configure it[/URL]. You can use it to configure the
-cvars:[LIST=1]mapcyclefile
-[*]gal_vote_mapfile
-[*]gal_vote_minplayers_mapfile
-[*]gal_nom_mapfile
-[*]gal_emptyserver_mapfile[/LIST]To use another mapcycle files which does not contain the maps you do not want to use by early hours.
-
-
-[anchor]Old[/anchor][SIZE="4"][B]Old Versions Downloads[/B][/SIZE]: [goanchor=Top]Go to top[/goanchor]
+[anchor]Old[/anchor][SIZE="4"][B]Old Versions Downloads[/B][/SIZE]
 
 [URL="https://github.com/addonszz/Galileo/releases"] https://github.com/addonszz/Galileo/releases[/URL]
 [CODE]
