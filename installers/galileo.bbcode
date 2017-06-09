@@ -733,43 +733,45 @@ If you are [B]posting[/B] because the plugin or a [B]feature[/B] of the plugin i
 all of the following, so we can [COLOR="Blue"]more efficiently[/COLOR] figure out what's going on:
 
 [LIST=1]
-[*]You need to edit the `galileo.sma` changing the `DEBUG_LEVEL` variable. You need to set the DEBUG_LEVEL to 16,
-instead of the level 0 as default. [URL="https://forums.alliedmods.net/showthread.php?t=273019#Development"]See here where[/URL] to do it.
+  [*]If you have access to your [COLOR="Blue"][B]game server's console[/B][/COLOR], type the [COLOR="Red"][B]following[/B][/COLOR] commands in the server console:
+  [LIST]
+    [*]status
+    [*]version
+    [*]meta list
+    [*]amxx list
+    [*]amxx cvars
+  [/LIST]
 
-After that, to compile, install the plugin, restart your server and let your server run until the problem
-you are experiencing happens and after that send me by PM or post here log file '[COLOR="Blue"]_galileo_log.txt[/COLOR]'.
-The log file '[COLOR="Blue"]_galileo_log.txt[/COLOR]' will be at the folder '[COLOR="blue"]addons/amxmodx/logs[/COLOR]'.
+  If you don't have access the your game server's console, join your server and type the [COLOR="Red"][B]following[/B][/COLOR]
+  commands in your [COLOR="Blue"][B]game's console[/B][/COLOR]:
+  [LIST]
+    [*]status
+    [*]rcon_password "YOUR_RCON_PASSWORD"
+    [*]rcon version
+    [*]rcon meta list
+    [*]rcon amxx list
+    [*]rcon amxx cvars
+  [/LIST]
 
-The file '[COLOR="Blue"]_galileo_log.txt[/COLOR]' will be very helpful to find out why it is not working.
-You current plugin is not creating the file log file '[COLOR="Blue"]_galileo_log.txt[/COLOR]', only the one with the debugging
-log enabled, as I explained above with the DEBUG_LEVEL 16 constant inside the plugin.
+
+  [LIST=1]
+    [*]Paste here everything from the [B]status[/B] command [COLOR="Red"][B]*except*[/B][/COLOR] the player list.
+    [*]Paste here the entire result from the [B]version[/B], [B]meta list[/B] and [B]amxx list[/B] commands.
+    [*]Paste here [COLOR="red"][B]*only*[/B][/COLOR] the CVARs that contain "[COLOR="SeaGreen"][B]galileo.amxx[/B][/COLOR]" in the last column
+    from the [B]amxx cvars[/B] command. They will be grouped together.
+  [/LIST]
 
 
-[*]If you have access to your [COLOR="Blue"][B]game server's console[/B][/COLOR], type the [COLOR="Red"][B]following[/B][/COLOR] commands in the server console:
-[LIST]
-[*]status
-[*]version
-[*]meta list
-[*]amxx list
-[*]amxx cvars
-[/LIST]
+  [*]You need to edit the `galileo.sma` changing the `DEBUG_LEVEL` variable. You need to set the DEBUG_LEVEL to 16,
+  instead of the level 0 as default. [URL="https://forums.alliedmods.net/showthread.php?t=273019#Development"]See here where[/URL] to do it.
 
-If you don't have access the your game server's console, join your server and type the [COLOR="Red"][B]following[/B][/COLOR]
-commands in your [COLOR="Blue"][B]game's console[/B][/COLOR]:
-[LIST]
-[*]status
-[*]rcon_password "YOUR_RCON_PASSWORD"
-[*]rcon version
-[*]rcon meta list
-[*]rcon amxx list
-[*]rcon amxx cvars
-[/LIST]
-[/LIST]
-[LIST=1]
-[*]Paste here everything from the [B]status[/B] command [COLOR="Red"][B]*except*[/B][/COLOR] the player list.
-[*]Paste here the entire result from the [B]version[/B], [B]meta list[/B] and [B]amxx list[/B] commands.
-[*]Paste here [COLOR="red"][B]*only*[/B][/COLOR] the CVARs that contain "[COLOR="SeaGreen"][B]galileo.amxx[/B][/COLOR]" in the last column
-from the [B]amxx cvars[/B] command. They will be grouped together.
+  After that, to compile, install the plugin, restart your server and let your server run until the problem
+  you are experiencing happens and after that send me by PM or post here log file '[COLOR="Blue"]_galileo_log.txt[/COLOR]'.
+  The log file '[COLOR="Blue"]_galileo_log.txt[/COLOR]' will be at the folder '[COLOR="blue"]addons/amxmodx/logs[/COLOR]'.
+
+  The file '[COLOR="Blue"]_galileo_log.txt[/COLOR]' will be very helpful to find out why it is not working.
+  You current plugin is not creating the file log file '[COLOR="Blue"]_galileo_log.txt[/COLOR]', only the one with the debugging
+  log enabled, as I explained above with the DEBUG_LEVEL 16 constant inside the plugin.
 [/LIST]
 
 ********************** [anchor]Downloads[/anchor][SIZE="6"][COLOR="Blue"][B]Downloads[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor] *************************
