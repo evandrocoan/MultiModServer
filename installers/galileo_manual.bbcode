@@ -1,5 +1,5 @@
 [anchor]Top[/anchor][SIZE="7"][COLOR="Blue"][B]Galileo Development[/B][/COLOR][/SIZE]
-Advanced usage for a feature rich map voting plugin [COLOR=Red][SIZE=1]Release: 2017-06-04 | Last Update: 2017-06-04 | Date Format: Year-Month-Day[/COLOR][/SIZE]
+Advanced usage for a feature rich map voting plugin
 
 [QUOTE=HamletEagle;2526121]You should always try to keep things as short and as straight as possible.
 This can even stop people from using your plugin in the first place. Like they open the main page and see one giant wall of text. They'll say "it's too complicated, I want something simple".
@@ -18,10 +18,11 @@ which retained the information removed from the main post at:
 [*][goanchor=TODO]To Do[/goanchor]
 [*][goanchor=Changelog]Change Log[/goanchor]
 [*][goanchor=Compilations]Compilations Data[/goanchor]
-[*][goanchor=Unsupported]Un-Supported?[/goanchor]
+[*][goanchor=Unsupported][b]Un-Supported?[/b][/goanchor]
 [*][B]Downloads[/B]:
    [LIST=1]
    [*][goanchor=Downloads]Development Versions[/goanchor]
+   [*][goanchor=devinstall]How to install[/goanchor]
    [/LIST]
 [/LIST]
 
@@ -892,7 +893,6 @@ And this is a direct link to always to download the latest [COLOR="Red"]unreleas
 [URL="https://github.com/addonszz/Galileo/archive/master.zip"] https://github.com/addonszz/Galileo/archive/develop.zip[/URL]
 
 And because it is the development version, the debugging is enabled. Go to around the 'line 87' and find:
-[SPOILER]
 [PAWN]
 #define DEBUG_LEVEL SomeNumber(s)
 [/PAWN]
@@ -901,7 +901,11 @@ and change it to:
 #define DEBUG_LEVEL 0
 [/PAWN]
 
-[img]http://i.imgur.com/qcAwlUW.png[/img][/SPOILER]
+[img]http://i.imgur.com/qcAwlUW.png[/img]
+
+
+[anchor]devinstall[/anchor][SIZE="4"][B]How to install[/B][/SIZE]:
+
 [QUOTE=BeNq!;2526104]Yes but Have you checked the content that gets downloaded? There isn't galileo there.[/QUOTE]
 
 Galileo is on the folder `plugins/addons/amxmodx/scripting/galileo.sma`.
