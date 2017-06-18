@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.7.2-888";
+new const PLUGIN_VERSION[] = "v5.7.2-889";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -10938,6 +10938,9 @@ public cmd_startVote( player_id, level, cid )
             {
                 if( equali( argument, "-nochange" ) )
                 {
+                    // Block the `cvar_generalOptions` to force the map change when the option
+                    // `VOTE_WAIT_FOR_ROUND_END` is set.
+                    isImmediateChange = true;
                     g_isToChangeMapOnVotingEnd = false;
                 }
                 else if( equali( argument, "-restart", 4 ) )
