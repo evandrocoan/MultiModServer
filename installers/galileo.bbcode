@@ -756,7 +756,7 @@ For any problems with this plugin visit this own page for support:
 
 
   [LIST=1]
-    [*]If you have access to your [COLOR="Blue"][B]game server's console[/B][/COLOR], type the [COLOR="Red"][B]following[/B][/COLOR] commands in the server console:
+    [*]If you have access to your [COLOR="Blue"][B]game [color="green"]server[/color]'s console[/B][/COLOR], type the [COLOR="Red"][B]following[/B][/COLOR] commands in the [color="green"][b]server[/b][/color] console:
     [LIST]
       [*]status
       [*]version
@@ -765,7 +765,7 @@ For any problems with this plugin visit this own page for support:
       [*]amxx cvars
     [/LIST]
 
-    If you don't have access the your game server's console, join your server and type the [COLOR="Red"][B]following[/B][/COLOR]
+    If you don't have access the your game [color="green"][b]server[/b][/color]'s console, join your [color="green"][b]server[/b][/color] and type the [COLOR="Red"][B]following[/B][/COLOR]
     commands in your [COLOR="Blue"][B]game's console[/B][/COLOR]:
     [LIST]
       [*]status
@@ -780,7 +780,7 @@ For any problems with this plugin visit this own page for support:
     [LIST=1]
       [*]Paste here everything from the [B]status[/B] command [COLOR="Red"][B]*except*[/B][/COLOR] the player list.
       [*]Paste here the entire result from the [B]version[/B], [B]meta list[/B] and [B]amxx list[/B] commands.
-      [*]Paste here [COLOR="red"][B]*only*[/B][/COLOR] the CVARs that contain "[COLOR="SeaGreen"][B]galileo.amxx[/B][/COLOR]" in the last column
+      [*]Paste here [COLOR="red"][B]*only*[/B][/COLOR] the CVARs that contain "[COLOR="green"][B]galileo.amxx[/B][/COLOR]" in the last column
       from the [B]amxx cvars[/B] command. They will be grouped together.
     [/LIST]
 
@@ -788,13 +788,48 @@ For any problems with this plugin visit this own page for support:
     [*]To enable the [b]Galileo[/b] logging, editing the `galileo.sma` changing the `DEBUG_LEVEL` variable.
     You need to set the DEBUG_LEVEL to 16, instead of the level 0 as default. [URL="https://forums.alliedmods.net/showpost.php?p=2526315&postcount=752#Development"]See here where[/URL] to do it.
 
-    After that, to compile, install the plugin, restart your server and let your server run until the problem
+    After that, to compile, install the plugin, restart your [color="green"][b]server[/b][/color] and let your [color="green"][b]server[/b][/color] run until the problem
     you are experiencing happens and after that send me by PM or post on the forum the log file '[COLOR="Blue"]_galileo_log.txt[/COLOR]'.
     The log file '[COLOR="Blue"]_galileo_log.txt[/COLOR]' will be at the folder '[COLOR="blue"]addons/amxmodx/logs[/COLOR]'.
 
     The file '[COLOR="Blue"]_galileo_log.txt[/COLOR]' will be very helpful to find out why it is not working.
     You current plugin is not creating the file log file '[COLOR="Blue"]_galileo_log.txt[/COLOR]', only the one with the debugging
     log enabled, as I explained above with the DEBUG_LEVEL 16 constant inside the plugin.
+
+
+    [*]If you are having problems with the [color="green"][b]server[/b][/color] cvars changing when they should not, you can also enable
+    the [color="green"][b]server[/b][/color] cvars logging. To do that, enter on your [color="green"][b]server[/b][/color] console and run the commands:
+    [code]
+condebug
+log on
+    [/code]
+    You should see something like this output bellow, on your [color="green"][b]server[/b][/color] console after entering these commands just above:
+    [code]
+condebug
+condebug enabled
+log on
+Server logging data to file logs\L0618002.log
+L 06/18/2017 - 12:00:30: Log file started (file "logs\L0618002.log") (game "czero") (version "48/1.0.0.3/6153")
+    [/code]
+    Later let you [color="green"][b]server[/b][/color] run, and when the bug happens, send me by PM or post on the forum the log file `[b]qconsole.log[/b]`,
+    which will be on the `Half-File` folder or on your Game Mod's folder as `cstrike` or `czero`.
+
+
+    [*]If your [color="green"][b]server[/b][/color] is crashing on the start, you can look if there are any logs on the folders
+    `./addons/amxmodx/logs` and `./logs`. And also enable the `[color="blue"]-condebug[/color]` option on [color="green"][b]server[/b][/color] start.
+
+    When enabled the `[color="blue"]-condebug[/color]`, the `[b]qconsole.log[/b]` file will be created on the `Half-File or your Game Mod's folder.
+    If the file `[b]qconsole.log[/b]` currently does not exist, you need to enable the condebug adding `[color="blue"]-condebug[/color]` option
+    to the [color="green"][b]server[/b][/color] command line options.
+
+    Example:
+    [CODE]
+echo "For windows:"
+start hlds.exe -console -game czero -pingboost 2 +log on -autoupdate -update [COLOR="Red"]-condebug[/COLOR] -noaff [COLOR="red"]-debug -allowdebug[/COLOR] -secure +map de_dust2 +maxplayers 32 +port 27013
+
+echo "For Linux:"
+./hlds_run -console -game cstrike -pingboost 2 +log on -autoupdate [COLOR="red"]-condebug[/COLOR] -noaff [COLOR="red"]-debug -allowdebug[/COLOR] -secure +map de_dust2 +maxplayers 32 +port 27015
+    [/CODE]
   [/LIST]
 [/LIST]
 
