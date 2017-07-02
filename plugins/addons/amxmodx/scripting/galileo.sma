@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.7.2-889";
+new const PLUGIN_VERSION[] = "v5.7.2-890";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -10103,6 +10103,7 @@ stock try_to_start_the_RTV( rocksNeeded, bool:silent=false )
 {
     LOG( 128, "I AM ENTERING ON try_to_start_the_RTV(2)" )
 
+    LOG( 4, "( try_to_start_the_RTV ) silent:            %d", silent )
     LOG( 4, "( try_to_start_the_RTV ) rocksNeeded:       %d", rocksNeeded )
     LOG( 4, "( try_to_start_the_RTV ) g_rockedVoteCount: %d", g_rockedVoteCount )
 
@@ -10158,7 +10159,7 @@ stock start_rtvVote()
     }
 
     // Set the RTV voting status and remember, the RTV voting does not need to set the `g_endVotingType`
-    // because there is not map extension option, only `Stay Here` for forced voting as RTV.
+    // because there is no map extension option, only `Stay Here` for forced voting as RTV.
     g_voteStatus |= IS_RTV_VOTE;
 
     // Any voting not started by `cvar_endOfMapVoteStart` or ending limit expiration, is a forced voting.
