@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.7.2-890";
+new const PLUGIN_VERSION[] = "v5.7.2-891";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -10932,16 +10932,14 @@ public cmd_startVote( player_id, level, cid )
 
         if( read_argc() < 3 )
         {
-            new bool:isImmediateChange;
+            // When `false`, block the the map change when the option `VOTE_WAIT_FOR_ROUND_END` is set.
+            new bool:isChangeOnRoundEnd;
             remove_quotes( argument );
 
             if( strlen( argument ) > 0 )
             {
                 if( equali( argument, "-nochange" ) )
                 {
-                    // Block the `cvar_generalOptions` to force the map change when the option
-                    // `VOTE_WAIT_FOR_ROUND_END` is set.
-                    isImmediateChange = true;
                     g_isToChangeMapOnVotingEnd = false;
                 }
                 else if( equali( argument, "-restart", 4 ) )
@@ -10953,9 +10951,9 @@ public cmd_startVote( player_id, level, cid )
                     g_isTheLastGameRound = true;
                     g_isToChangeMapOnVotingEnd = false;
                 }
-                else if( ( isImmediateChange = ( equali( argument, "-now", 4 ) != 0 ) ) )
+                else if( ( isChangeOnRoundEnd = ( equali( argument, "-now", 4 ) != 1 ) ) )
                 {
-                    // Do nothing here
+                    // Do nothing here, just break the if chain.
                 }
                 else
                 {
@@ -10963,15 +10961,15 @@ public cmd_startVote( player_id, level, cid )
                 }
             }
 
-            // Force the map at the current round end, instead of immediately.
-            if( !isImmediateChange
+            // Force the map change at the current round end, instead of immediately.
+            if( isChangeOnRoundEnd
                 && get_pcvar_num( cvar_generalOptions ) & VOTE_WAIT_FOR_ROUND_END )
             {
                 g_isTheLastGameRound = true;
                 g_isToChangeMapOnVotingEnd = false;
             }
 
-            LOG( 8, "( cmd_startVote ) isImmediateChange: %d", isImmediateChange )
+            LOG( 8, "( cmd_startVote ) isChangeOnRoundEnd: %d", isChangeOnRoundEnd )
             LOG( 8, "( cmd_startVote ) g_isTimeToRestart: %d", g_isTimeToRestart )
             LOG( 8, "( cmd_startVote ) g_isTheLastGameRound: %d, argument: %s", g_isTheLastGameRound, argument )
             LOG( 8, "( cmd_startVote ) g_isToChangeMapOnVotingEnd: %d, g_voteStatus: %d", g_isToChangeMapOnVotingEnd, g_voteStatus )
