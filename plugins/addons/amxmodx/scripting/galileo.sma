@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.7.2-893";
+new const PLUGIN_VERSION[] = "v5.7.2-896";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -7069,8 +7069,8 @@ stock bool:approveTheVotingStart( bool:is_forced_voting )
         || ( !is_forced_voting
              && g_voteStatus & IS_VOTE_OVER ) )
     {
-        LOG( 1, "    ( approveTheVotingStart ) g_voteStatus: %d", g_voteStatus )
-        LOG( 1, "    ( approveTheVotingStart ) g_voteStatus & IS_VOTE_OVER: %d", g_voteStatus & IS_VOTE_OVER != 0 )
+        LOG( 1, "( approveTheVotingStart ) g_voteStatus: %d", g_voteStatus )
+        LOG( 1, "( approveTheVotingStart ) g_voteStatus & IS_VOTE_OVER: %d", g_voteStatus & IS_VOTE_OVER != 0 )
 
     #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
         if( g_test_areTheUnitTestsRunning )
@@ -10056,17 +10056,18 @@ stock is_to_block_RTV( player_id )
 public vote_rock( player_id )
 {
     LOG( 128, "I AM ENTERING ON vote_rock(1) player_id: %d", player_id )
-    new rocksNeeded;
+    new rocksNeeded = vote_getRocksNeeded();
 
-    if( !is_to_block_RTV( player_id )
-        && compute_the_RTV_vote( player_id, ( rocksNeeded = vote_getRocksNeeded() ) ) )
+    if( !is_to_block_RTV( player_id ) )
     {
-        try_to_start_the_RTV( rocksNeeded );
+        try_to_start_the_RTV( rocksNeeded, !compute_the_RTV_vote( player_id, rocksNeeded ) );
     }
 }
 
 /**
  * Allow the player to rock the vote.
+ *
+ * @return true when the vote is computed, false otherwise.
  */
 stock compute_the_RTV_vote( player_id, rocksNeeded )
 {
