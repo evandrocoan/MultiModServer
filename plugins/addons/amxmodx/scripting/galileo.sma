@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.7.2-891";
+new const PLUGIN_VERSION[] = "v5.7.2-892";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -10077,7 +10077,7 @@ stock compute_the_RTV_vote( player_id, rocksNeeded )
     // make sure player hasn't already rocked the vote
     if( g_rockedVote[ player_id ] )
     {
-        color_chat( player_id, "%L", player_id, "GAL_ROCK_FAIL_ALREADY", rocksNeeded - g_rockedVoteCount );
+        color_chat( player_id, "%L", player_id, "GAL_ROCK_FAIL_ALREADY", rocksNeeded );
         rtv_remind( TASKID_RTV_REMINDER + player_id );
 
         LOG( 1, "    ( compute_the_RTV_vote ) Just Returning/blocking, already rocked the vote." )
@@ -10113,7 +10113,7 @@ stock try_to_start_the_RTV( rocksNeeded, bool:silent=false )
         remove_task( TASKID_RTV_REMINDER );
     }
 
-    if( g_rockedVoteCount >= rocksNeeded )
+    if( rocksNeeded < 1 )
     {
         // announce that the vote has been rocked
         color_chat( 0, "%L", LANG_PLAYER, "GAL_ROCK_ENOUGH" );
@@ -10180,27 +10180,23 @@ stock vote_unrockTheVote( player_id )
 }
 
 /**
- * It does not consider how may RTV there are done, just how many are needed in total.
+ * Consider how may RTV votes are required to start the voting. If 0, the voting must to start
+ * immediately.
  *
  * @return how many RTVs there necessary to start the voting
  */
 stock vote_getRocksNeeded()
 {
     LOG( 128, "I AM ENTERING ON vote_getRocksNeeded(0)" )
-    new rocks = floatround( get_pcvar_float( cvar_rtvRatio ) * float( get_real_players_number() ), floatround_floor );
+    new rocks_required = floatround( get_pcvar_float( cvar_rtvRatio ) * float( get_real_players_number() ), floatround_floor );
 
-
+    LOG( 4, "( vote_getRocksNeeded ) rocks_required:          %d", rocks_required )
+    LOG( 4, "( vote_getRocksNeeded ) g_rockedVoteCount:       %d", g_rockedVoteCount )
     LOG( 4, "( vote_getRocksNeeded ) cvar_rtvRatio:           %f", get_pcvar_float( cvar_rtvRatio ) )
     LOG( 4, "( vote_getRocksNeeded ) get_real_players_number: %d", get_real_players_number() )
 
-    if( rocks > 0 )
-    {
-        LOG( 4, "    ( vote_getRocksNeeded ) rocks: %d", rocks )
-        return rocks;
-    }
-
-    LOG( 4, "    ( vote_getRocksNeeded ) There are %d rocks! Returning: 1", rocks )
-    return 1;
+    LOG( 4, "    ( vote_getRocksNeeded ) Returning: %d", rocks_required - g_rockedVoteCount )
+    return rocks_required - g_rockedVoteCount;
 }
 
 public rtv_remind( param )
@@ -10209,7 +10205,7 @@ public rtv_remind( param )
     new player_id = param - TASKID_RTV_REMINDER;
 
     // let the players know how many more rocks are needed
-    color_chat( player_id, "%L", LANG_PLAYER, "GAL_ROCK_NEEDMORE", vote_getRocksNeeded() - g_rockedVoteCount );
+    color_chat( player_id, "%L", LANG_PLAYER, "GAL_ROCK_NEEDMORE", vote_getRocksNeeded() );
 }
 
 // change to the map
@@ -18060,7 +18056,7 @@ public timeRemain()
             cancelVoting();
         }
 
-        actualValue = vote_getRocksNeeded() - g_rockedVoteCount;
+        actualValue = vote_getRocksNeeded();
         g_test_aimedPlayersNumber = aimedPlayerCount;
 
         ERR( "Must to be %d RTVs needed, instead of %d.", aimValue, actualValue )
