@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.7.2-892";
+new const PLUGIN_VERSION[] = "v5.7.2-893";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -10189,14 +10189,19 @@ stock vote_getRocksNeeded()
 {
     LOG( 128, "I AM ENTERING ON vote_getRocksNeeded(0)" )
     new rocks_required = floatround( get_pcvar_float( cvar_rtvRatio ) * float( get_real_players_number() ), floatround_floor );
+    new rocks_needed   = rocks_required - g_rockedVoteCount;
 
+    LOG( 4, "( vote_getRocksNeeded ) rocks_needed:            %d", rocks_needed )
     LOG( 4, "( vote_getRocksNeeded ) rocks_required:          %d", rocks_required )
     LOG( 4, "( vote_getRocksNeeded ) g_rockedVoteCount:       %d", g_rockedVoteCount )
     LOG( 4, "( vote_getRocksNeeded ) cvar_rtvRatio:           %f", get_pcvar_float( cvar_rtvRatio ) )
     LOG( 4, "( vote_getRocksNeeded ) get_real_players_number: %d", get_real_players_number() )
 
-    LOG( 4, "    ( vote_getRocksNeeded ) Returning: %d", rocks_required - g_rockedVoteCount )
-    return rocks_required - g_rockedVoteCount;
+    // Ensure positive values
+    if( rocks_needed < 0 ) rocks_needed = 0;
+
+    LOG( 4, "    ( vote_getRocksNeeded ) Returning: %d", rocks_needed )
+    return rocks_needed;
 }
 
 public rtv_remind( param )
