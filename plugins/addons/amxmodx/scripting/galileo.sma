@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.7.2-896";
+new const PLUGIN_VERSION[] = "v5.7.2-897";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -9673,7 +9673,7 @@ stock resetTheRtvWaitTime()
     LOG( 128, "I AM ENTERING ON resetTheRtvWaitTime(0)" )
     LOG( 2, "( resetTheRtvWaitTime ) g_rtvWaitFrags:   %d", g_rtvWaitFrags )
     LOG( 2, "( resetTheRtvWaitTime ) g_rtvWaitRounds:  %d", g_rtvWaitRounds )
-    LOG( 2, "( resetTheRtvWaitTime ) g_rtvWaitMinutes: %d", g_rtvWaitMinutes )
+    LOG( 2, "( resetTheRtvWaitTime ) g_rtvWaitMinutes: %f", g_rtvWaitMinutes )
 
     if( !( g_rtvCommands & RTV_CMD_EXTENSION_WAIT_DISABLE ) )
     {
@@ -9704,7 +9704,7 @@ stock resetTheRtvWaitTime()
 
     LOG( 2, "( resetTheRtvWaitTime ) g_rtvWaitFrags:   %d", g_rtvWaitFrags )
     LOG( 2, "( resetTheRtvWaitTime ) g_rtvWaitRounds:  %d", g_rtvWaitRounds )
-    LOG( 2, "( resetTheRtvWaitTime ) g_rtvWaitMinutes: %d", g_rtvWaitMinutes )
+    LOG( 2, "( resetTheRtvWaitTime ) g_rtvWaitMinutes: %f", g_rtvWaitMinutes )
 }
 
 stock doTheActualMapExtension()
@@ -9954,7 +9954,7 @@ stock debugRtvVote()
     LOG( 4, "( is_to_block_RTV ) g_rtvCommands:           %d", g_rtvCommands )
     LOG( 4, "( is_to_block_RTV ) g_timeLimitNumber:       %d", g_timeLimitNumber )
     LOG( 4, "( is_to_block_RTV ) g_fragLimitNumber:       %d", g_fragLimitNumber )
-    LOG( 4, "( is_to_block_RTV ) g_rtvWaitMinutes:        %d", g_rtvWaitMinutes )
+    LOG( 4, "( is_to_block_RTV ) g_rtvWaitMinutes:        %f", g_rtvWaitMinutes )
     LOG( 4, "( is_to_block_RTV ) g_maxRoundsNumber:       %d", g_maxRoundsNumber )
     LOG( 4, "( is_to_block_RTV ) g_winLimitNumber:        %d", g_winLimitNumber )
     LOG( 4, "( is_to_block_RTV ) g_rtvWaitRounds:         %d", g_rtvWaitRounds )
