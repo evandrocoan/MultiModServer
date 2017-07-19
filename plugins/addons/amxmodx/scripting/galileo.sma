@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.7.2-906";
+new const PLUGIN_VERSION[] = "v5.7.2-907";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -1338,8 +1338,8 @@ new const CHOOSE_VOTEMAP_MENU_QUESTION[]    = "chooseVoteMapQuestion";
 new const GAME_CRASH_RECREATION_FLAG_FILE[] = "gameCrashRecreationAction.txt";
 new const TO_STOP_THE_CRASH_SEARCH[]        = "delete_this_to_stop_the_crash_search.txt";
 new const MAPS_WHERE_THE_SERVER_CRASHED[]   = "maps_where_the_server_probably_crashed.txt";
-new const CANNOT_START_VOTE_SPECTATIORS[]   = "Cannot start the voting. The cvar `gal_server_players_count` \
-is not supported on this Game Mod.";
+new const CANNOT_START_VOTE_SPECTATORS[]    = "Cannot start the voting. The cvar `gal_server_players_count` \
+                                                is not supported on this Game Mod.";
 
 new bool:g_isDayOfDefeat;
 new bool:g_isRunningSvenCoop;
@@ -7142,18 +7142,18 @@ stock bool:approveTheVotingStart( bool:is_forced_voting )
                 startEmptyCycleSystem();
             }
 
+            // If there are 0 players, announce the voting will never start.
+            if( IS_TO_IGNORE_SPECTATORS() )
+            {
+                color_chat( 0, CANNOT_START_VOTE_SPECTATORS );
+                server_print( CANNOT_START_VOTE_SPECTATORS );
+            }
+
             // If somehow the voting is going on, disables it
             if( g_voteStatus & IS_VOTE_IN_PROGRESS )
             {
                 cancelVoting();
             }
-        }
-
-        // If there are 0 players, the voting will never start.
-        if( IS_TO_IGNORE_SPECTATORS()
-            && playersCount == 0 )
-        {
-            color_chat( 0, CANNOT_START_VOTE_SPECTATIORS );
         }
 
         LOG( 1, "    ( approveTheVotingStart ) Returning false on the big blocker." )
@@ -10192,7 +10192,7 @@ stock try_to_start_the_RTV( rocksNeeded, bool:silent=false )
     if( IS_TO_IGNORE_SPECTATORS()
         && get_real_players_number() == 0 )
     {
-        color_chat( 0, CANNOT_START_VOTE_SPECTATIORS );
+        color_chat( 0, CANNOT_START_VOTE_SPECTATORS );
     }
     else
     {
