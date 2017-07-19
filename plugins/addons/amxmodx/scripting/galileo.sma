@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.7.2-907";
+new const PLUGIN_VERSION[] = "v5.7.2-908";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -1269,6 +1269,7 @@ new cvar_rtvWaitRounds;
 new cvar_rtvWaitFrags;
 new cvar_rtvWaitAdmin;
 new cvar_rtvRatio;
+new cvar_rtvRocks;
 new cvar_rtvCommands;
 new cvar_cmdVotemap;
 new cvar_cmdListmaps;
@@ -1740,6 +1741,7 @@ public plugin_init()
     cvar_rtvWaitFrags              = register_cvar( "gal_rtv_wait_frags"           , "10"   );
     cvar_rtvWaitAdmin              = register_cvar( "gal_rtv_wait_admin"           , "0"    );
     cvar_rtvRatio                  = register_cvar( "gal_rtv_ratio"                , "0.60" );
+    cvar_rtvRocks                  = register_cvar( "gal_rtv_rocks"                , "0"    );
     cvar_rtvReminder               = register_cvar( "gal_rtv_reminder"             , "2"    );
     cvar_whitelistType             = register_cvar( "gal_whitelist_type"           , "0"    );
     cvar_whitelistMinPlayers       = register_cvar( "gal_whitelist_minplayers"     , "0"    );
@@ -10275,17 +10277,29 @@ stock vote_getRocksNeeded()
     new rocks_needed;
     new rocks_required;
 
-    // Calculate how many rocks are necessary
-    rocks_required = floatround( get_pcvar_float( cvar_rtvRatio ) * float( get_real_players_number() ), floatround_floor );
-    LOG( 4, "( vote_getRocksNeeded ) rocks_required:          %d", rocks_required )
+    if( ( rocks_required = get_pcvar_num( cvar_rtvRocks ) ) > 0 )
+    {
+        LOG( 4, "( vote_getRocksNeeded ) rocks_required:    %d", rocks_required )
 
-    // Ensure there are a valid count
-    if( rocks_required < 1 ) rocks_required = 1;
-    rocks_needed = rocks_required - g_rockedVoteCount;
+        // Ensure a valid limit
+        if( rocks_required > MAX_PLAYERS ) rocks_required = 31;
+        rocks_needed = rocks_required - g_rockedVoteCount;
+    }
+    else
+    {
+        // Calculate how many rocks are necessary
+        rocks_required = floatround( get_pcvar_float( cvar_rtvRatio ) * float( get_real_players_number() ), floatround_floor );
+        LOG( 4, "( vote_getRocksNeeded ) rocks_required:    %d", rocks_required )
 
-    LOG( 4, "( vote_getRocksNeeded ) rocks_needed:            %d", rocks_needed )
-    LOG( 4, "( vote_getRocksNeeded ) g_rockedVoteCount:       %d", g_rockedVoteCount )
-    LOG( 4, "( vote_getRocksNeeded ) cvar_rtvRatio:           %f", get_pcvar_float( cvar_rtvRatio ) )
+        // Ensure there are a valid count
+        if( rocks_required < 1 ) rocks_required = 1;
+        rocks_needed = rocks_required - g_rockedVoteCount;
+
+        LOG( 4, "( vote_getRocksNeeded ) cvar_rtvRatio:     %f", get_pcvar_float( cvar_rtvRatio ) )
+    }
+
+    LOG( 4, "( vote_getRocksNeeded ) rocks_needed:      %d", rocks_needed )
+    LOG( 4, "( vote_getRocksNeeded ) g_rockedVoteCount: %d", g_rockedVoteCount )
 
     // Ensure positive values
     if( rocks_needed < 0 ) rocks_needed = 0;
