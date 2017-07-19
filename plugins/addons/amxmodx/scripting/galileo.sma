@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.7.2-903";
+new const PLUGIN_VERSION[] = "v5.7.2-904";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.7.2-903";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 16
+#define DEBUG_LEVEL 32+16
 
 
 /**
@@ -317,6 +317,7 @@ new const PLUGIN_VERSION[] = "v5.7.2-903";
             // LOG( 1, "Current i is: %d", i )
         }
 
+        test_RTVAndUnRTV_load();
         test_negativeRTVValues_load();
         // test_endOfMapVoting();
         // test_handleServerStart();
@@ -10103,7 +10104,7 @@ stock is_to_block_RTV( player_id )
                   && playerTeam != 2 ) )
     {
         color_chat( player_id, "%L", player_id, "GAL_ROCK_WAIT_SPECTATOR" );
-        LOG( 1, "    ( is_to_block_RTV ) Just Returning/blocking, is on the spectators team." )
+        LOG( 1, "    ( is_to_block_RTV ) Just Returning/blocking, the player is on the spectators team." )
     }
 
     // Allow the Rock The Vote
@@ -18080,6 +18081,7 @@ public timeRemain()
 
         g_test_aimedPlayersNumber = 7;
         set_pcvar_float( cvar_rtvRatio, 0.5 );
+        set_pcvar_num( cvar_serverPlayersCount, 0 );
 
         // Add a RTV for the player 1
         test_RTVAndUnRTV( .player_id = 1, .total_RTVs = 1, .action = 'a' ); // Case 1
@@ -19648,6 +19650,7 @@ public timeRemain()
     new test_serverWinlimitRestart;
     new test_serverMaxroundsRestart;
     new test_serverFraglimitRestart;
+    new test_serverPlayersCount;
     new test_whitelistMinPlayers;
     new test_isWhiteListNomBlock;
     new test_isWhiteListBlockOut;
@@ -19745,6 +19748,7 @@ public timeRemain()
             test_serverMaxroundsRestart  = get_pcvar_num( cvar_serverMaxroundsRestart );
             test_serverFraglimitRestart  = get_pcvar_num( cvar_serverFraglimitRestart );
 
+            test_serverPlayersCount      = get_pcvar_num( cvar_serverPlayersCount     );
             test_whitelistMinPlayers     = get_pcvar_num( cvar_whitelistMinPlayers    );
             test_isWhiteListNomBlock     = get_pcvar_num( cvar_isWhiteListNomBlock    );
             test_isWhiteListBlockOut     = get_pcvar_num( cvar_isWhiteListBlockOut    );
@@ -19814,6 +19818,7 @@ public timeRemain()
             set_pcvar_num( cvar_serverMaxroundsRestart , test_serverMaxroundsRestart  );
             set_pcvar_num( cvar_serverFraglimitRestart , test_serverFraglimitRestart  );
 
+            set_pcvar_num( cvar_serverPlayersCount     , test_serverPlayersCount      );
             set_pcvar_num( cvar_whitelistMinPlayers    , test_whitelistMinPlayers     );
             set_pcvar_num( cvar_isWhiteListNomBlock    , test_isWhiteListNomBlock     );
             set_pcvar_num( cvar_isWhiteListBlockOut    , test_isWhiteListBlockOut     );
