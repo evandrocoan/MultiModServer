@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.7.2-897";
+new const PLUGIN_VERSION[] = "v5.7.2-898";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -10056,11 +10056,10 @@ stock is_to_block_RTV( player_id )
 public vote_rock( player_id )
 {
     LOG( 128, "I AM ENTERING ON vote_rock(1) player_id: %d", player_id )
-    new rocksNeeded = vote_getRocksNeeded();
 
     if( !is_to_block_RTV( player_id ) )
     {
-        try_to_start_the_RTV( rocksNeeded, !compute_the_RTV_vote( player_id, rocksNeeded ) );
+        try_to_start_the_RTV( vote_getRocksNeeded(), !compute_the_RTV_vote( player_id ) );
     }
 }
 
@@ -10069,16 +10068,15 @@ public vote_rock( player_id )
  *
  * @return true when the vote is computed, false otherwise.
  */
-stock compute_the_RTV_vote( player_id, rocksNeeded )
+stock compute_the_RTV_vote( player_id )
 {
     LOG( 128, "I AM ENTERING ON compute_the_RTV_vote(2)" )
     LOG( 4, "( compute_the_RTV_vote ) player_id:   %d", player_id )
-    LOG( 4, "( compute_the_RTV_vote ) rocksNeeded: %d", rocksNeeded )
 
     // make sure player hasn't already rocked the vote
     if( g_rockedVote[ player_id ] )
     {
-        color_chat( player_id, "%L", player_id, "GAL_ROCK_FAIL_ALREADY", rocksNeeded );
+        color_chat( player_id, "%L", player_id, "GAL_ROCK_FAIL_ALREADY", vote_getRocksNeeded() );
         rtv_remind( TASKID_RTV_REMINDER + player_id );
 
         LOG( 1, "    ( compute_the_RTV_vote ) Just Returning/blocking, already rocked the vote." )
@@ -10189,11 +10187,18 @@ stock vote_unrockTheVote( player_id )
 stock vote_getRocksNeeded()
 {
     LOG( 128, "I AM ENTERING ON vote_getRocksNeeded(0)" )
-    new rocks_required = floatround( get_pcvar_float( cvar_rtvRatio ) * float( get_real_players_number() ), floatround_floor );
-    new rocks_needed   = rocks_required - g_rockedVoteCount;
+    new rocks_needed;
+    new rocks_required;
+
+    // Calculate how many rocks are necessary
+    rocks_required = floatround( get_pcvar_float( cvar_rtvRatio ) * float( get_real_players_number() ), floatround_floor );
+    LOG( 4, "( vote_getRocksNeeded ) rocks_required:          %d", rocks_required )
+
+    // Ensure there are a valid count
+    if( rocks_required < 1 ) rocks_required = 1;
+    rocks_needed = rocks_required - g_rockedVoteCount;
 
     LOG( 4, "( vote_getRocksNeeded ) rocks_needed:            %d", rocks_needed )
-    LOG( 4, "( vote_getRocksNeeded ) rocks_required:          %d", rocks_required )
     LOG( 4, "( vote_getRocksNeeded ) g_rockedVoteCount:       %d", g_rockedVoteCount )
     LOG( 4, "( vote_getRocksNeeded ) cvar_rtvRatio:           %f", get_pcvar_float( cvar_rtvRatio ) )
     LOG( 4, "( vote_getRocksNeeded ) get_real_players_number: %d", get_real_players_number() )
