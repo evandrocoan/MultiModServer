@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.7.2-898";
+new const PLUGIN_VERSION[] = "v5.7.2-899";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -700,9 +700,23 @@ new g_user_msgid;
 // ###############################################################################################
 
 /**
- * To return `PLUGIN_HANDLED` or `PLUGIN_CONTINUE`, accordantly to the settings set by the cvar.
+ * If the cvar `gal_server_players_count` is enabled, we must ignore the spectators team on
+ * Counter-Strike. If colored chat is supported, we are running Counter-Strike, therefore there are
+ * the CT/TR teams.
  *
- * @param true if the message/command should be blocked (PLUGIN_HANDLED), false otherwise (PLUGIN_CONTINUE).
+ * @return true if the spectators team must be ignored, false otherwise
+ */
+#define IS_TO_IGNORE_SPECTATORS() \
+    ( g_isColorChatSupported \
+      && get_pcvar_num( cvar_serverPlayersCount ) )
+//
+
+
+/**
+ * Control whether the players commands are going to be displayed to everybody or just him.
+ *
+ * @param true if the message/command should be blocked (PLUGIN_HANDLED), false otherwise (PLUGIN_CONTINUE)
+ * @return `PLUGIN_HANDLED` or `PLUGIN_CONTINUE`, accordantly to the settings set by the cvar
  */
 #define IS_TO_MUTE(%1) \
     ( ( %1 && ( get_pcvar_num( cvar_generalOptions ) & MUTE_MESSAGES_SPAMMING ) ) ? PLUGIN_HANDLED : PLUGIN_CONTINUE )
@@ -710,6 +724,8 @@ new g_user_msgid;
 
 /**
  * Determine whether there will be a alternate vote option as `Stay Here`/`Extend Map` or not.
+ *
+ * @return true when the map extension is allowed right now, false otherwise
  */
 #define IS_MAP_EXTENSION_ALLOWED() \
     ( ( g_isMapExtensionAllowed && g_isGameFinalVoting ) \
@@ -722,6 +738,8 @@ new g_user_msgid;
  * The last rule `g_totalVoteOptions == 1 && !g_isRunOffNeedingKeepCurrentMap` is used when the
  * voting is not an runoff voting, therefore there is only 1 map on the voting menu. At the moment,
  * this could happens when the voting is started by the `gal_votemap`/`say galmenu` command.
+ *
+ * @return true when a new line must be added, false otherwise
  */
 #define IS_TO_ADD_VOTE_MENU_NEW_LINE() \
     ( ( g_voteStatus & IS_RUNOFF_VOTE ) \
@@ -732,6 +750,8 @@ new g_user_msgid;
 
 /**
  * Determines whether undo vote button should be added to the voting menu footer.
+ *
+ * @return true when the undo button must be added, false otherwise
  */
 #define IS_TO_ADD_VOTE_MENU_UNDO_BUTTON() \
     ( ( player_id > 0 ) \
@@ -743,6 +763,8 @@ new g_user_msgid;
 /**
  * When there are enough rounds played and the round average time is neither even half to the vote
  * total time, it is pretty pointless the try start the voting at the round start.
+ *
+ * @return true when the round average time is too small/low/short, false otherwise
  */
 #define IS_THE_ROUND_AVERAGE_TIME_TOO_SHORT() \
     ( g_totalRoundsSavedTimes > MAX_SAVED_ROUNDS_FOR_AVERAGE - 2 \
@@ -753,6 +775,8 @@ new g_user_msgid;
  * When there are some rounds played and the round average time is just smaller than the to the vote
  * total time, we need to try start the voting at the round start on round before the actual point as
  * the voting will extend from one round to the other round.
+ *
+ * @return true when the round average time is just small/low/short, false otherwise
  */
 #define IS_THE_ROUND_AVERAGE_TIME_SHORT() \
     ( g_totalRoundsSavedTimes > MIN_VOTE_START_ROUNDS_DELAY \
@@ -762,6 +786,8 @@ new g_user_msgid;
 /**
  * If this is called when the voting or the round ending is going on, it will cause the voting/round
  * ending to be cut and will force the map to immediately change to the next map.
+ *
+ * @return true when we can perform a map change, i.e, it is allowed right now, false otherwise
  */
 #define IS_ABLE_TO_PERFORM_A_MAP_CHANGE() \
     ( !task_exists( TASKID_PROCESS_LAST_ROUND_COUNT ) \
@@ -773,6 +799,8 @@ new g_user_msgid;
 /**
  * This indicates the players minimum number necessary to allow the last round to be finished when
  * the time runs out.
+ *
+ * @return true when we must to wait for the round to end, false otherwise
  */
 #define ARE_THERE_ENOUGH_PLAYERS_FOR_MANAGE_END() \
     ( get_real_players_number() >= get_pcvar_num( cvar_endOnRoundMininum ) )
@@ -780,6 +808,8 @@ new g_user_msgid;
 
 /**
  * Specifies how much time to delay the voting start after the round start.
+ *
+ * @return an integer, how many seconds to wait
  */
 #define ROUND_VOTING_START_SECONDS_DELAY() \
     ( get_pcvar_num( cvar_mp_freezetime ) + PERIODIC_CHECKING_INTERVAL \
@@ -796,6 +826,8 @@ new g_user_msgid;
 
 /**
  * Verifies if a voting is or was already processed.
+ *
+ * @return true when the voting is completely finished or running on, false otherwise
  */
 #define IS_END_OF_MAP_VOTING_GOING_ON() \
     ( g_voteStatus & ( IS_VOTE_IN_PROGRESS | IS_VOTE_OVER ) )
@@ -804,6 +836,8 @@ new g_user_msgid;
 /**
  * Verifies if the round time is too big. If the map time is too big or near zero, makes not sense
  * to wait to start the map voting and will probably not to start the voting.
+ *
+ * @return true when the round time is too big/long/tall, false otherwise
  */
 #define IS_THE_ROUND_TIME_TOO_BIG(%1) \
     ( ( %1 > 8.0 \
@@ -814,6 +848,8 @@ new g_user_msgid;
 /**
  * Boolean check for the Whitelist feature. The Whitelist feature specifies the time where the maps
  * are allowed to be added to the voting list as fillers after the nominations being loaded.
+ *
+ * @return true when the Whitelist feature is enabled, false otherwise
  */
 #define IS_WHITELIST_ENABLED() \
     ( get_pcvar_num( cvar_whitelistMinPlayers ) == 1 \
@@ -825,6 +861,8 @@ new g_user_msgid;
  * players than cvar 'cvar_voteMinPlayers' value on the server, use a different map file list
  * specified at the cvar 'gal_vote_minplayers_mapfile' to fill the map voting as map fillers
  * instead of the cvar 'gal_vote_mapfile' map file list.
+ *
+ * @return true when the Nomination Minimum Players feature is enabled, false otherwise
  */
 #define IS_NOMINATION_MININUM_PLAYERS_CONTROL_ENABLED() \
     ( get_real_players_number() < get_pcvar_num( cvar_voteMinPlayers ) \
@@ -835,6 +873,8 @@ new g_user_msgid;
  * When it is set the maximum voting options as 9, we need to give space to the `Stay Here` and
  * `Extend` on the voting menu, calculating how many voting choices are allowed to be used,
  * considering whether the voting map extension option is being showed or not.
+ *
+ * @return an integer, how many voting choices are allowed, i.e., its maximum value
  */
 #define MAX_VOTING_CHOICES() \
     ( IS_MAP_EXTENSION_ALLOWED() ? \
@@ -844,6 +884,8 @@ new g_user_msgid;
 
 /**
  * Return whether is to allow a crash search on this server start or not.
+ *
+ * @return true when the crash map search is enabled/allowed, false otherwise
  */
 #define IS_TO_ALLOW_A_CRASH_SEARCH(%1) \
     ( file_exists( modeFlagFilePath ) \
@@ -853,8 +895,9 @@ new g_user_msgid;
 /**
  * Used to determine whether a map is blocked by the Whitelist feature.
  *
- * @param isWhitelistEnabled     whether or not is to allow the Whitelist blockage.
- * @param mapNameToCheck         the map name to be verified if the map list checking is enabled.
+ * @param isWhitelistEnabled     whether or not is to allow the Whitelist blockage
+ * @param mapNameToCheck         the map name to be verified if the map list checking is enabled
+ * @return true when the `mapNameToCheck` is blocked by the Whitelist feature, false otherwise
  */
 #define IS_WHITELIST_BLOCKING(%1,%2) \
     ( %1 \
@@ -941,7 +984,7 @@ new g_user_msgid;
  * Get the player name. If the player is not connected, uses "Unknown Dude" as its name.
  *
  * @param player_id          the player id
- * @param name_string        a string pointer to hold the player name.
+ * @param name_string        a string pointer to hold the player name
  */
 #define GET_USER_NAME(%1,%2) \
 { \
@@ -972,6 +1015,9 @@ new g_user_msgid;
 
 /**
  * Accept a map as valid, even when they end with `.bsp`.
+ *
+ * @param mapName the map name to check
+ * @return true when the `mapName` is a valid engine map, false otherwise
  */
 #define IS_MAP_VALID_BSP(%1) ( is_map_valid( %1 ) || is_map_valid_bsp_check( %1 ) )
 
@@ -1117,6 +1163,7 @@ new __g_getMapNameRightToken[ MAX_MAPNAME_LENGHT ];
  *
  * @param totalMenuItems     how many items there are on the menu
  * @param menuItemPerPage    how much items there are on each menu's page
+ * @return an integer, as the page number
  */
 #define GET_LAST_PAGE_NUMBER(%1,%2) \
         ( ( ( %1 + 1 ) / %2 ) \
@@ -10044,12 +10091,27 @@ stock is_to_block_RTV( player_id )
         color_chat( player_id, "%L", player_id, "GAL_ROCK_FAIL_TOOSOON_FRAGS", remaining_frags );
         LOG( 1, "    ( is_to_block_RTV ) Just Returning/blocking, too soon to rock by frags." )
     }
+
+    // Make sure the spectators team is allowed to RTV
+    // 0 - UNASSIGNED
+    // 1 - TERRORIST
+    // 2 - CT
+    // 3 - SPECTATOR
+    else if( IS_TO_IGNORE_SPECTATORS()
+             && get_user_team( player_id ) == 3 )
+    {
+        color_chat( player_id, "%L", player_id, "GAL_ROCK_WAIT_SPECTATOR" );
+        LOG( 1, "    ( is_to_block_RTV ) Just Returning/blocking, is on the spectators team." )
+    }
+
+    // Allow the Rock The Vote
     else
     {
         LOG( 1, "    ( is_to_block_RTV ) Just Returning/allowing, the RTV." )
         return false;
     }
 
+    // Block the Rock The Vote
     return true;
 }
 
@@ -13998,9 +14060,7 @@ stock get_real_players_number()
     new playersCount;
     new players[ MAX_PLAYERS ];
 
-    // If colored chat is supported, we are running Counter-Strike, therefore there are the CT/TR teams.
-    if( g_isColorChatSupported
-        && get_pcvar_num( cvar_serverPlayersCount ) )
+    if( IS_TO_IGNORE_SPECTATORS() )
     {
         new temp;
 
