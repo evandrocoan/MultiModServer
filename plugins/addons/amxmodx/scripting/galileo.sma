@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.7.2-905";
+new const PLUGIN_VERSION[] = "v5.7.2-906";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.7.2-905";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 32+16
+#define DEBUG_LEVEL 16
 
 
 /**
@@ -1338,6 +1338,8 @@ new const CHOOSE_VOTEMAP_MENU_QUESTION[]    = "chooseVoteMapQuestion";
 new const GAME_CRASH_RECREATION_FLAG_FILE[] = "gameCrashRecreationAction.txt";
 new const TO_STOP_THE_CRASH_SEARCH[]        = "delete_this_to_stop_the_crash_search.txt";
 new const MAPS_WHERE_THE_SERVER_CRASHED[]   = "maps_where_the_server_probably_crashed.txt";
+new const CANNOT_START_VOTE_SPECTATIORS[]   = "Cannot start the voting. The cvar `gal_server_players_count` \
+is not supported on this Game Mod.";
 
 new bool:g_isDayOfDefeat;
 new bool:g_isRunningSvenCoop;
@@ -7076,8 +7078,10 @@ stock create_game_crash_recreation( secondsLeft )
 stock bool:approveTheVotingStart( bool:is_forced_voting )
 {
     LOG( 128, "I AM ENTERING ON approveTheVotingStart(1)" )
+    new playersCount = get_real_players_number();
+
     LOG( 4, "( approveTheVotingStart ) is_forced_voting:          %d", is_forced_voting )
-    LOG( 4, "( approveTheVotingStart ) get_real_players_number:   %d", get_real_players_number() )
+    LOG( 4, "( approveTheVotingStart ) get_real_players_number:   %d", playersCount )
     LOG( 4, "( approveTheVotingStart ) cvar_nextMapChangeVotemap: %d", get_pcvar_num( cvar_nextMapChangeVotemap ) )
 
     if( get_pcvar_num( cvar_nextMapChangeVotemap )
@@ -7111,7 +7115,7 @@ stock bool:approveTheVotingStart( bool:is_forced_voting )
     }
 
     // block the voting on some not allowed situations/cases
-    if( get_real_players_number() == 0
+    if( playersCount == 0
         || g_voteStatus & IS_VOTE_IN_PROGRESS
         || g_voteStatus & IS_RUNOFF_VOTE
         || ( !is_forced_voting
@@ -7131,7 +7135,7 @@ stock bool:approveTheVotingStart( bool:is_forced_voting )
         LOG( 1, "( approveTheVotingStart ) cvar_isEmptyCycleByMapChange: %d", get_pcvar_num( cvar_isEmptyCycleByMapChange ) )
 
         // Start the empty cycle on the end of the map, if this feature is enabled
-        if( get_real_players_number() == 0 )
+        if( playersCount == 0 )
         {
             if( get_pcvar_num( cvar_isEmptyCycleByMapChange ) )
             {
@@ -7143,6 +7147,13 @@ stock bool:approveTheVotingStart( bool:is_forced_voting )
             {
                 cancelVoting();
             }
+        }
+
+        // If there are 0 players, the voting will never start.
+        if( IS_TO_IGNORE_SPECTATORS()
+            && playersCount == 0 )
+        {
+            color_chat( 0, CANNOT_START_VOTE_SPECTATIORS );
         }
 
         LOG( 1, "    ( approveTheVotingStart ) Returning false on the big blocker." )
@@ -10181,7 +10192,7 @@ stock try_to_start_the_RTV( rocksNeeded, bool:silent=false )
     if( IS_TO_IGNORE_SPECTATORS()
         && get_real_players_number() == 0 )
     {
-        color_chat( 0, "Cannot start the voting. The cvar `gal_server_players_count` is not supported on this Game Mod." );
+        color_chat( 0, CANNOT_START_VOTE_SPECTATIORS );
     }
     else
     {
