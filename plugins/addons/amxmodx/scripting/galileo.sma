@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.7.2-902";
+new const PLUGIN_VERSION[] = "v5.7.2-903";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -10176,24 +10176,33 @@ stock try_to_start_the_RTV( rocksNeeded, bool:silent=false )
         remove_task( TASKID_RTV_REMINDER );
     }
 
-    if( rocksNeeded < 1 )
+    // If there are 0 players, the voting will never start.
+    if( IS_TO_IGNORE_SPECTATORS()
+        && get_real_players_number() == 0 )
     {
-        // announce that the vote has been rocked
-        color_chat( 0, "%L", LANG_PLAYER, "GAL_ROCK_ENOUGH" );
-
-        // start up the vote director
-        start_rtvVote();
+        color_chat( 0, "Cannot start the voting. The cvar `gal_server_players_count` is not supported on this Game Mod." );
     }
-    else if( !silent )
+    else
     {
-        // let the players know how many more rocks are needed
-        rtv_remind( TASKID_RTV_REMINDER );
-
-        if( get_pcvar_num( cvar_rtvReminder ) )
+        if( rocksNeeded < 1 )
         {
-            // initialize the rtv reminder timer to repeat how many
-            // rocks are still needed, at regular intervals
-            set_task( get_pcvar_float( cvar_rtvReminder ) * 60.0, "rtv_remind", TASKID_RTV_REMINDER, _, _, "b" );
+            // announce that the vote has been rocked
+            color_chat( 0, "%L", LANG_PLAYER, "GAL_ROCK_ENOUGH" );
+
+            // start up the vote director
+            start_rtvVote();
+        }
+        else if( !silent )
+        {
+            // let the players know how many more rocks are needed
+            rtv_remind( TASKID_RTV_REMINDER );
+
+            if( get_pcvar_num( cvar_rtvReminder ) )
+            {
+                // initialize the rtv reminder timer to repeat how many
+                // rocks are still needed, at regular intervals
+                set_task( get_pcvar_float( cvar_rtvReminder ) * 60.0, "rtv_remind", TASKID_RTV_REMINDER, _, _, "b" );
+            }
         }
     }
 }
