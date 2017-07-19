@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.7.2-908";
+new const PLUGIN_VERSION[] = "v5.7.2-909";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -4446,8 +4446,7 @@ stock try_to_process_last_round( bool:isFragLimitEnd = false )
 public map_manageEnd()
 {
     LOG( 128, "I AM ENTERING ON map_manageEnd(0)" )
-    LOG( 2, "%32s mp_timelimit: %f, get_real_players_number: %d", "map_manageEnd(in)", \
-            get_pcvar_float( cvar_mp_timelimit ), get_real_players_number() )
+    LOG( 2, "%32s mp_timelimit: %f", "map_manageEnd(in)", get_pcvar_float( cvar_mp_timelimit ) )
 
     switch( get_pcvar_num( cvar_endOnRound ) )
     {
@@ -4495,9 +4494,7 @@ public map_manageEnd()
     prevent_map_change();
     configure_last_round_HUD();
 
-    LOG( 2, "%32s mp_timelimit: %f, get_real_players_number: %d", "map_manageEnd(out)", \
-            get_pcvar_float( cvar_mp_timelimit ), get_real_players_number() )
-
+    LOG( 2, "%32s mp_timelimit: %f", "map_manageEnd(out)", get_pcvar_float( cvar_mp_timelimit ) )
     LOG( 1, "    ( map_manageEnd ) Just returning and allowing the end management." )
     return true;
 }
@@ -6877,7 +6874,7 @@ public startVotingByGameEngineCall()
 
 public vote_manageEnd()
 {
-    LOG( 256, "I AM ENTERING ON vote_manageEnd(0) get_real_players_number: %d", get_real_players_number() )
+    LOG( 256, "I AM ENTERING ON vote_manageEnd(0)" )
     new secondsLeft = get_timeleft();
 
     if( secondsLeft )
@@ -7083,7 +7080,6 @@ stock bool:approveTheVotingStart( bool:is_forced_voting )
     new playersCount = get_real_players_number();
 
     LOG( 4, "( approveTheVotingStart ) is_forced_voting:          %d", is_forced_voting )
-    LOG( 4, "( approveTheVotingStart ) get_real_players_number:   %d", playersCount )
     LOG( 4, "( approveTheVotingStart ) cvar_nextMapChangeVotemap: %d", get_pcvar_num( cvar_nextMapChangeVotemap ) )
 
     if( get_pcvar_num( cvar_nextMapChangeVotemap )
@@ -7198,7 +7194,6 @@ stock bool:approveTheVotingStart( bool:is_forced_voting )
 stock bool:approveTheRunoffVotingStart()
 {
     LOG( 128, "I AM ENTERING ON approveTheRunoffVotingStart(0)" )
-    LOG( 4, "( approveTheRunoffVotingStart ) get_real_players_number: %d", get_real_players_number() )
 
     // block the voting on some not allowed situations/cases
     if( get_real_players_number() == 0
@@ -10011,6 +10006,8 @@ stock announcerockFailToosoon( player_id, Float:minutesElapsed )
 
 stock debugRtvVote()
 {
+    new players_number = get_real_players_number();
+
     LOG( 4, "( is_to_block_RTV ) g_voteStatus:            %d", g_voteStatus )
     LOG( 4, "( is_to_block_RTV ) g_rtvCommands:           %d", g_rtvCommands )
     LOG( 4, "( is_to_block_RTV ) g_timeLimitNumber:       %d", g_timeLimitNumber )
@@ -10024,7 +10021,7 @@ stock debugRtvVote()
     LOG( 4, "( is_to_block_RTV ) g_greatestKillerFrags    %d", g_greatestKillerFrags )
     LOG( 4, "( is_to_block_RTV ) g_rtvWaitAdminNumber:    %d", g_rtvWaitAdminNumber )
     LOG( 4, "( is_to_block_RTV ) cvar_rtvWaitAdmin:       %d", get_pcvar_num( cvar_rtvWaitAdmin ) )
-    LOG( 4, "( is_to_block_RTV ) get_real_players_number: %d", get_real_players_number() )
+    LOG( 4, "( is_to_block_RTV ) get_real_players_number: %d", players_number )
 
     return 0;
 }
@@ -13241,8 +13238,7 @@ public cmd_cancelVote( player_id, level, cid )
 
 stock bool:approveTheVotingStartLight()
 {
-    LOG( 128, "I AM ENTERING ON approveTheVotingStartLight(1) get_real_players_number: %d", \
-            get_real_players_number() )
+    LOG( 128, "I AM ENTERING ON approveTheVotingStartLight(0)" )
 
     // block the voting on some not allowed situations/cases
     if( get_real_players_number() == 0)
