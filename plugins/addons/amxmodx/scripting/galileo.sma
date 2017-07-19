@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.7.2-899";
+new const PLUGIN_VERSION[] = "v5.7.2-900";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -700,6 +700,16 @@ new g_user_msgid;
 // ###############################################################################################
 
 /**
+ * Accept a map as valid, even when they end with `.bsp`.
+ *
+ * @param mapName the map name to check
+ * @return true when the `mapName` is a valid engine map, false otherwise
+ */
+#define IS_MAP_VALID_BSP(%1) \
+    ( is_map_valid( %1 ) || is_map_valid_bsp_check( %1 ) )
+//
+
+/**
  * If the cvar `gal_server_players_count` is enabled, we must ignore the spectators team on
  * Counter-Strike. If colored chat is supported, we are running Counter-Strike, therefore there are
  * the CT/TR teams.
@@ -710,7 +720,6 @@ new g_user_msgid;
     ( g_isColorChatSupported \
       && get_pcvar_num( cvar_serverPlayersCount ) )
 //
-
 
 /**
  * Control whether the players commands are going to be displayed to everybody or just him.
@@ -818,13 +827,6 @@ new g_user_msgid;
 //
 
 /**
- * Start a map voting delayed after the mp_maxrounds or mp_winlimit minimum to be reached.
- */
-#define START_VOTING_BY_MIDDLE_ROUND_DELAY(%1) \
-    set_task( float( ROUND_VOTING_START_SECONDS_DELAY() ), %1, TASKID_START_VOTING_DELAYED );
-//
-
-/**
  * Verifies if a voting is or was already processed.
  *
  * @return true when the voting is completely finished or running on, false otherwise
@@ -911,6 +913,12 @@ new g_user_msgid;
 
 // Global Macro Expansions
 // ###############################################################################################
+
+/**
+ * Start a map voting delayed after the mp_maxrounds or mp_winlimit minimum to be reached.
+ */
+#define START_VOTING_BY_MIDDLE_ROUND_DELAY(%1) \
+    set_task( float( ROUND_VOTING_START_SECONDS_DELAY() ), %1, TASKID_START_VOTING_DELAYED );
 
 /**
  * Used to set a the voting time to a variable.
@@ -1012,14 +1020,6 @@ new g_user_msgid;
     formatex( menuOptionString, charsmax( menuOptionString ), "%L", player_id, %3 ); \
     menu_setprop( %2, %1, menuOptionString ); \
 }
-
-/**
- * Accept a map as valid, even when they end with `.bsp`.
- *
- * @param mapName the map name to check
- * @return true when the `mapName` is a valid engine map, false otherwise
- */
-#define IS_MAP_VALID_BSP(%1) ( is_map_valid( %1 ) || is_map_valid_bsp_check( %1 ) )
 
 /**
  * Split the map name from a string.
