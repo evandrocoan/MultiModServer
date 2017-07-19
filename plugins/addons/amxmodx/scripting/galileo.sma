@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.7.2-900";
+new const PLUGIN_VERSION[] = "v5.7.2-902";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.7.2-900";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 0
+#define DEBUG_LEVEL 16
 
 
 /**
@@ -10022,6 +10022,7 @@ stock is_to_block_RTV( player_id )
 
     // If time-limit is 0, minutesElapsed will always be 0.
     new Float:minutesElapsed;
+    new playerTeam;
 
     // If an early vote is pending, don't allow any rocks
     if( g_voteStatus & IS_EARLY_VOTE )
@@ -10098,7 +10099,8 @@ stock is_to_block_RTV( player_id )
     // 2 - CT
     // 3 - SPECTATOR
     else if( IS_TO_IGNORE_SPECTATORS()
-             && get_user_team( player_id ) == 3 )
+             && ( ( playerTeam = get_user_team( player_id ) ) != 1
+                  && playerTeam != 2 ) )
     {
         color_chat( player_id, "%L", player_id, "GAL_ROCK_WAIT_SPECTATOR" );
         LOG( 1, "    ( is_to_block_RTV ) Just Returning/blocking, is on the spectators team." )
@@ -10263,7 +10265,6 @@ stock vote_getRocksNeeded()
     LOG( 4, "( vote_getRocksNeeded ) rocks_needed:            %d", rocks_needed )
     LOG( 4, "( vote_getRocksNeeded ) g_rockedVoteCount:       %d", g_rockedVoteCount )
     LOG( 4, "( vote_getRocksNeeded ) cvar_rtvRatio:           %f", get_pcvar_float( cvar_rtvRatio ) )
-    LOG( 4, "( vote_getRocksNeeded ) get_real_players_number: %d", get_real_players_number() )
 
     // Ensure positive values
     if( rocks_needed < 0 ) rocks_needed = 0;
@@ -14065,15 +14066,27 @@ stock get_real_players_number()
         new temp;
 
         get_players( players, temp, "che", "CT" );
+        LOG( 256, "( get_real_players_number ) playersCount(CT): %d", temp )
         playersCount += temp;
 
         get_players( players, temp, "che", "TERRORIST" );
+        LOG( 256, "( get_real_players_number ) playersCount(TERRORIST): %d", temp )
         playersCount += temp;
+
+    #if defined DEBUG
+        get_players( players, temp, "che", "SPECTATOR" );
+        LOG( 256, "( get_real_players_number ) playersCount(SPECTATOR): %d", temp )
+
+        get_players( players, temp, "che", "UNASSIGNED" );
+        LOG( 256, "( get_real_players_number ) playersCount(UNASSIGNED): %d", temp )
+    #endif
     }
     else
     {
         get_players( players, playersCount, "ch" );
     }
+
+    LOG( 256, "( get_real_players_number ) playersCount: %d", playersCount )
 
 #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED ) \
     && DEBUG_LEVEL & DEBUG_LEVEL_FAKE_VOTES
