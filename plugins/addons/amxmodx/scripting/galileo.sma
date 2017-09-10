@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.7.2-912";
+new const PLUGIN_VERSION[] = "v5.8.0-913";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.7.2-912";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 1+32
+#define DEBUG_LEVEL 0
 
 
 /**
