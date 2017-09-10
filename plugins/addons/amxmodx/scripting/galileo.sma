@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.7.2-910";
+new const PLUGIN_VERSION[] = "v5.7.2-911";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.7.2-910";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 16
+#define DEBUG_LEVEL 2+64
 
 
 /**
@@ -317,8 +317,8 @@ new const PLUGIN_VERSION[] = "v5.7.2-910";
             // LOG( 1, "Current i is: %d", i )
         }
 
-        test_RTVAndUnRTV_load();
-        test_negativeRTVValues_load();
+        // test_RTVAndUnRTV_load();
+        // test_negativeRTVValues_load();
         // test_endOfMapVoting();
         // test_handleServerStart();
         // test_mapGetNext_cases();
@@ -327,7 +327,7 @@ new const PLUGIN_VERSION[] = "v5.7.2-910";
         // test_SortCustomSynced2D();
         // test_GET_MAP_INFO_load();
         // test_GET_MAP_NAME_load();
-        // test_populateListOnSeries_load();
+        test_populateListOnSeries_load();
         // test_setCorrectMenuPage_load();
         // test_convertNumericBase_load();
         // test_whatGameEndingTypeIt_load();
@@ -18638,10 +18638,10 @@ public timeRemain()
         test_populateListOnSeries( s, populatedArray, {3}    , "de_dust6", false, is ); // Case  8-9
         test_populateListOnSeries( s, populatedArray, {5}    , "de_nuke" , false, is ); // Case 10-11
 
-        test_populateListOnSeries( s, populatedArray, _      , "de_nuke2", true , is ); // Case 12-13
-        test_populateListOnSeries( s, populatedArray, _      , "de_dust" , true , is ); // Case 14-15
-        test_populateListOnSeries( s, populatedArray, _      , "de_dust3", true , is ); // Case 16-17
-        test_populateListOnSeries( s, populatedArray, _      , "de_dust4", true , is ); // Case 18-19
+        test_populateListOnSeries( s, populatedArray, {0}    , "de_nuke2", true , is ); // Case 12-13
+        test_populateListOnSeries( s, populatedArray, {0}    , "de_dust" , true , is ); // Case 14-15
+        test_populateListOnSeries( s, populatedArray, {0}    , "de_dust3", true , is ); // Case 16-17
+        test_populateListOnSeries( s, populatedArray, {0}    , "de_dust4", true , is ); // Case 18-19
 
         TrieDestroy( populatedTrie );
         ArrayDestroy( populatedArray );
@@ -18666,10 +18666,10 @@ public timeRemain()
         test_populateListOnSeries( s, populatedArray, {3,6,10}, "de_dust6", false, is ); // Case  8-9
         test_populateListOnSeries( s, populatedArray, {7}     , "de_nuke" , false, is ); // Case 10-11
 
-        test_populateListOnSeries( s, populatedArray, _       , "de_nuke2", true , is ); // Case 12-13
-        test_populateListOnSeries( s, populatedArray, _       , "de_dust" , true , is ); // Case 14-15
-        test_populateListOnSeries( s, populatedArray, _       , "de_dust3", true , is ); // Case 16-17
-        test_populateListOnSeries( s, populatedArray, _       , "de_dust4", true , is ); // Case 18-19
+        test_populateListOnSeries( s, populatedArray, {0}     , "de_nuke2", true , is ); // Case 12-13
+        test_populateListOnSeries( s, populatedArray, {0}     , "de_dust" , true , is ); // Case 14-15
+        test_populateListOnSeries( s, populatedArray, {0}     , "de_dust3", true , is ); // Case 16-17
+        test_populateListOnSeries( s, populatedArray, {0}     , "de_dust4", true , is ); // Case 18-19
 
         TrieDestroy( populatedTrie );
         ArrayDestroy( populatedArray );
@@ -18694,10 +18694,10 @@ public timeRemain()
         test_populateListOnSeries( s, populatedArray, {3}    , "de_dust6", false, is ); // Case  8-9
         test_populateListOnSeries( s, populatedArray, {5}    , "de_nuke" , false, is ); // Case 10-11
 
-        test_populateListOnSeries( s, populatedArray, _      , "de_nuke2", true , is ); // Case 12-13
-        test_populateListOnSeries( s, populatedArray, _      , "de_dust" , true , is ); // Case 14-15
-        test_populateListOnSeries( s, populatedArray, _      , "de_dust3", true , is ); // Case 16-17
-        test_populateListOnSeries( s, populatedArray, _      , "de_dust4", true , is ); // Case 18-19
+        test_populateListOnSeries( s, populatedArray, {0}    , "de_nuke2", true , is ); // Case 12-13
+        test_populateListOnSeries( s, populatedArray, {0}    , "de_dust" , true , is ); // Case 14-15
+        test_populateListOnSeries( s, populatedArray, {0}    , "de_dust3", true , is ); // Case 16-17
+        test_populateListOnSeries( s, populatedArray, {0}    , "de_dust4", true , is ); // Case 18-19
 
         TrieDestroy( populatedTrie );
         ArrayDestroy( populatedArray );
@@ -18707,7 +18707,7 @@ public timeRemain()
      * Create one case test for the stock map_populateListOnSeries(3) based on its parameters passed
      * by the test_populateListOnSeries_loada(0) loader function.
      */
-    stock test_populateListOnSeries( s, Array:populatedArray, expectedIndexes[]={0}, mapName[], bool:isNotToBe, isFull  )
+    stock test_populateListOnSeries( s, Array:populatedArray, expectedIndexes[], mapName[], bool:isNotToBe, isFull  )
     {
         new test_id;
         new arraySize;
