@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.7.2-909";
+new const PLUGIN_VERSION[] = "v5.7.2-910";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -11218,8 +11218,8 @@ public sort_stringsi( Array:array, elem1, elem2, data[], data_size )
     ArrayGetString( array, elem1, map1, charsmax( map1 ) );
     ArrayGetString( array, elem2, map2, charsmax( map2 ) );
 
-    LOG( 256, "    ( sort_stringsi ) Returning %s > %s: %d", map1, map2, strcmp( map1, map2, 1 ) )
-    return strcmp( map1, map2, 1 );
+    LOG( 256, "    ( sort_stringsi ) Returning %s > %s: %d", map1, map2, strcmp( map1, map2, true ) )
+    return strcmp( map1, map2, true );
 }
 
 /**
