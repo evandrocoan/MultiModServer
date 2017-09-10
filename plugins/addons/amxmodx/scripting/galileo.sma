@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.7.2-911";
+new const PLUGIN_VERSION[] = "v5.7.2-912";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.7.2-911";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 2+64
+#define DEBUG_LEVEL 1+32
 
 
 /**
@@ -18717,6 +18717,7 @@ public timeRemain()
         new errorMessage[ MAX_LONG_STRING ];
 
         test_id = test_registerSeriesNaming( isFull ? "test_configureTheNextMap" : "test_populateListOnSeries", s );
+        printDynamicArrayMaps( populatedArray, 1);
 
         if( isFull ) populatedArray = g_mapcycleFileListArray;
         arraySize = ArraySize( populatedArray );
@@ -18724,9 +18725,11 @@ public timeRemain()
         for( new index = 0; index < arraySize; index++ )
         {
             GET_MAP_NAME( populatedArray, index, errorMessage )
+            LOG( 1, "mapName: %s, errorMessage: %s: equally: %d", mapName, errorMessage, equali( errorMessage, mapName ) != 0 )
 
             if( equali( errorMessage, mapName ) != 0 )
             {
+                LOG( 1, "Inside equali, eyah" )
                 isOnTheArray = true;
 
                 ERR( "The map `%10s` must be at the index %d, instead of %d.", mapName, expectedIndexes[ expectedIndex ], index )
