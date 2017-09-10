@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.8.0-913";
+new const PLUGIN_VERSION[] = "v5.8.0-916";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.8.0-913";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 0
+#define DEBUG_LEVEL 2+64
 
 
 /**
@@ -14821,6 +14821,11 @@ stock printDynamicArrayMaps( Array:populatedArray, debugLevel )
         LOG( debugLevel, "index: %d, mapName: %s", index, mapName )
     }
 
+    // Fix warning 203: symbol is never used: "debugLevel" with some debug levels, but this must not
+    // to be called with `DEBUG_LEVEL` 0, as this function is for debug purposes only.
+#if DEBUG_LEVEL > 0
+    debugLevel++;
+#endif
     return 0;
 }
 
