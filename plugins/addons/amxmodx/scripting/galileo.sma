@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.8.0-917";
+new const PLUGIN_VERSION[] = "v5.8.1-918";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.8.0-917";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 2+64
+#define DEBUG_LEVEL 0
 
 
 /**
@@ -10285,7 +10285,7 @@ stock vote_getRocksNeeded()
     else
     {
         // Calculate how many rocks are necessary
-        rocks_required = floatround( get_pcvar_float( cvar_rtvRatio ) * float( get_real_players_number() ), floatround_floor );
+        rocks_required = floatround( get_pcvar_float( cvar_rtvRatio ) * float( get_real_players_number() ), floatround_ceil );
         LOG( 4, "( vote_getRocksNeeded ) rocks_required:    %d", rocks_required )
 
         // Ensure there are a valid count
@@ -18142,32 +18142,32 @@ public timeRemain()
         g_rtvWaitFrags       = 0;
         g_rtvWaitAdminNumber = 0;
 
-        g_test_aimedPlayersNumber = 10;
         set_pcvar_float( cvar_rtvRatio, 0.5 );
 
-        // Add a RTV for the player 1
+        // Add RTV votes for some players
+        g_test_aimedPlayersNumber = 10;
         vote_rock( 1 );
         vote_rock( 2 );
         vote_rock( 3 );
         vote_rock( 4 );
 
-        test_negativeRTVValues(  7, 9, 1 ); // Case 1
-        test_negativeRTVValues(  8, 8, 4 ); // Case 2 <- The voting must to start here therefore reset the count
-        test_negativeRTVValues(  9, 7, 4 ); // Case 3
-        test_negativeRTVValues( 10, 6, 3 ); // Case 4
+        test_negativeRTVValues(  7, 1 ); // Case 1
+        test_negativeRTVValues(  8, 1 ); // Case 2 <- The voting must to start here therefore reset the count
+        test_negativeRTVValues(  9, 4 ); // Case 3
+        test_negativeRTVValues( 10, 4 ); // Case 4
     }
 
     /**
      * Create one case test for the RTV feature based on its parameters passed by the
      * test_negativeRTVValues_load(0) loader function.
      */
-    stock test_negativeRTVValues( playerToDisconnect, aimedPlayerCount, aimValue )
+    stock test_negativeRTVValues( playerToDisconnect, aimRtvCount )
     {
         new test_id;
-        new actualValue;
+        new readRtvCount;
 
         new errorMessage[ MAX_LONG_STRING ];
-        test_id = test_registerSeriesNaming( "test_negativeRTVValues", 'b' );
+        test_id = test_registerSeriesNaming( "test_negativeRTVValues", 'c' );
 
         clientDisconnected( playerToDisconnect );
 
@@ -18177,11 +18177,11 @@ public timeRemain()
             cancelVoting();
         }
 
-        actualValue = vote_getRocksNeeded();
-        g_test_aimedPlayersNumber = aimedPlayerCount;
+        readRtvCount = vote_getRocksNeeded();
+        g_test_aimedPlayersNumber = g_test_aimedPlayersNumber - 1;
 
-        ERR( "Must to be %d RTVs needed, instead of %d.", aimValue, actualValue )
-        setTestFailure( test_id, aimValue != actualValue, errorMessage );
+        ERR( "Must to be %d RTVs needed, instead of %d.", aimRtvCount, readRtvCount )
+        setTestFailure( test_id, aimRtvCount != readRtvCount, errorMessage );
     }
 
     /**
