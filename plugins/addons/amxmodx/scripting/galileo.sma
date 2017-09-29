@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.8.1-919";
+new const PLUGIN_VERSION[] = "v5.8.1-921";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -16828,13 +16828,13 @@ public timeRemain()
         if( isToPrintAllTests
             && g_test_isToEnableLogging )
         {
+        #if !( DEBUG_LEVEL & DEBUG_LEVEL_DISABLE_TEST_LOGS )
             print_logger( "" );
             print_logger( "" );
             print_logger( "" );
             print_logger( "    The following tests were successfully executed: " );
             print_logger( "" );
 
-        #if !( DEBUG_LEVEL & DEBUG_LEVEL_DISABLE_TEST_LOGS )
             new trieKey[ 10 ];
             new test_name[ MAX_SHORT_STRING ];
             new testsNumber = ArraySize( g_test_idsAndNamesArray );
