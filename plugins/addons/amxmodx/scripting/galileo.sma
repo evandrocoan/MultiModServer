@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.8.1-918";
+new const PLUGIN_VERSION[] = "v5.8.1-919";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -84,7 +84,7 @@ new const PLUGIN_VERSION[] = "v5.8.1-918";
  *
  * Default value: 0
  */
-#define DEBUG_LEVEL 0
+#define DEBUG_LEVEL 2+64
 
 
 /**
@@ -132,6 +132,12 @@ new const PLUGIN_VERSION[] = "v5.8.1-918";
  * Force the use of semicolons on every statements.
  */
 #pragma semicolon 1
+
+/**
+ * Some times we need to run a different code when performing Unit Tests as unnecessary delays.
+ */
+#define ARE_WE_RUNNING_UNIT_TESTS \
+    ( DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED ) )
 
 /**
  * Global Debugging tools used on any 'DEBUG_LEVEL'.
@@ -257,7 +263,7 @@ new const PLUGIN_VERSION[] = "v5.8.1-918";
 /**
  * Setup the Unit Tests when they are used/necessary.
  */
-#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
+#if ARE_WE_RUNNING_UNIT_TESTS
     /**
      * Contains all imediates unit tests to execute.
      */
@@ -1788,7 +1794,8 @@ public plugin_init()
     cvar_endOnRoundChange          = register_cvar( "gal_endonround_change"        , "1"    );
     cvar_isEndMapCountdown         = register_cvar( "gal_endonround_countdown"     , "0"    );
 
-    // Not a configurable cvars, these are used instead of the `localinfo`.
+    // These are NOT configurable cvars. Do not change/use them. These are used instead of the
+    // `localinfo`.
     //
     // When `cvar_isFirstServerStart` set set to 2 we are on the first server start period. If this
     // is set to 1, we are on the beginning of the second server map change level.
@@ -1871,7 +1878,7 @@ public plugin_cfg()
     runTheServerMapCrashSearch();
 
     // Configure the Unit Tests, when they are activate.
-#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
+#if ARE_WE_RUNNING_UNIT_TESTS
     configureTheUnitTests();
 #endif
 
@@ -2167,7 +2174,7 @@ stock configureServerStart()
     if( get_pcvar_num( cvar_rtvCommands )
         || get_pcvar_num( cvar_nomPlayerAllowance ) )
     {
-        register_clcmd( "say"     , "cmd_say", -1 );
+        register_clcmd( "say",      "cmd_say", -1 );
         register_clcmd( "say_team", "cmd_say", -1 );
     }
 
@@ -2444,7 +2451,7 @@ public handleServerStart( backupMapsFilePath[], startAction )
             else
             {
                 // When the Unit Tests are running, we do not want to or can wait anything.
-            #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
+            #if ARE_WE_RUNNING_UNIT_TESTS
                 if( g_test_areTheUnitTestsRunning )
                 {
                     serverChangeLevel( mapToChange );
@@ -4991,7 +4998,7 @@ public game_commencing_event()
 {
     LOG( 128, "I AM ENTERING ON game_commencing_event(0)" )
 
-#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
+#if ARE_WE_RUNNING_UNIT_TESTS
     if( get_gametime() < 100
         && ( get_playersnum( 1 )
              || g_test_areTheUnitTestsRunning ) )
@@ -7122,7 +7129,7 @@ stock bool:approveTheVotingStart( bool:is_forced_voting )
         LOG( 1, "( approveTheVotingStart ) g_voteStatus: %d", g_voteStatus )
         LOG( 1, "( approveTheVotingStart ) g_voteStatus & IS_VOTE_OVER: %d", g_voteStatus & IS_VOTE_OVER != 0 )
 
-    #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
+    #if ARE_WE_RUNNING_UNIT_TESTS
         if( g_test_areTheUnitTestsRunning )
         {
             LOG( 1, "    ( approveTheVotingStart ) Returning true on the if !g_test_areTheUnitTestsRunning" )
@@ -7203,7 +7210,7 @@ stock bool:approveTheRunoffVotingStart()
         LOG( 1, "    ( approveTheRunoffVotingStart ) g_voteStatus: %d", g_voteStatus )
         LOG( 1, "    ( approveTheRunoffVotingStart ) g_voteStatus & IS_VOTE_OVER: %d", g_voteStatus & IS_VOTE_OVER != 0 )
 
-    #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
+    #if ARE_WE_RUNNING_UNIT_TESTS
         if( g_test_areTheUnitTestsRunning )
         {
             LOG( 1, "    ( approveTheRunoffVotingStart ) Returning true on the if !g_test_areTheUnitTestsRunning" )
@@ -9565,7 +9572,7 @@ stock map_getMinutesElapsedInteger()
     LOG( 128, "I AM ENTERING ON Float:map_getMinutesElapsed(0) mp_timelimit: %f", get_pcvar_float( cvar_mp_timelimit ) )
 
     // While the Unit Tests are running, to force a specific time.
-#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
+#if ARE_WE_RUNNING_UNIT_TESTS
     if( g_test_areTheUnitTestsRunning )
     {
         return g_test_gameElapsedTime;
@@ -10354,7 +10361,7 @@ public serverChangeLevel( mapName[] )
     LOG( 4, "( serverChangeLevel ) AMXX_VERSION_NUM: %d", AMXX_VERSION_NUM )
     LOG( 4, "( serverChangeLevel ) IS_TO_ENABLE_RE_HLDS_RE_AMXMODX_SUPPORT: %d", IS_TO_ENABLE_RE_HLDS_RE_AMXMODX_SUPPORT )
 
-#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
+#if ARE_WE_RUNNING_UNIT_TESTS
     if( g_test_areTheUnitTestsRunning )
     {
         if( IS_MAP_VALID( mapName ) )
@@ -14119,8 +14126,7 @@ stock get_real_players_number()
 
     LOG( 256, "( get_real_players_number ) playersCount: %d", playersCount )
 
-#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED ) \
-    && DEBUG_LEVEL & DEBUG_LEVEL_FAKE_VOTES
+#if ARE_WE_RUNNING_UNIT_TESTS && DEBUG_LEVEL & DEBUG_LEVEL_FAKE_VOTES
     if( g_test_areTheUnitTestsRunning )
     {
         return g_test_aimedPlayersNumber;
@@ -14128,7 +14134,7 @@ stock get_real_players_number()
 
     return FAKE_PLAYERS_NUMBER_FOR_DEBUGGING;
 #else
-    #if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
+    #if ARE_WE_RUNNING_UNIT_TESTS
         if( g_test_areTheUnitTestsRunning )
         {
             return g_test_aimedPlayersNumber;
@@ -14608,7 +14614,7 @@ public plugin_end()
     LOG( 32, "" )
     LOG( 32, "I AM ENTERING ON plugin_end(0). THE END OF THE PLUGIN LIFE!" )
 
-#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
+#if ARE_WE_RUNNING_UNIT_TESTS
     // Just in case the Unit Tests are running while changing level.
     restoreServerCvarsFromTesting();
 
@@ -16515,7 +16521,7 @@ public timeRemain()
 
 
 // The Unit Tests execution
-#if DEBUG_LEVEL & ( DEBUG_LEVEL_UNIT_TEST_NORMAL | DEBUG_LEVEL_MANUAL_TEST_START | DEBUG_LEVEL_UNIT_TEST_DELAYED )
+#if ARE_WE_RUNNING_UNIT_TESTS
     stock configureTheUnitTests()
     {
         LOG( 128, "I AM ENTERING ON configureTheUnitTests(0)" )
