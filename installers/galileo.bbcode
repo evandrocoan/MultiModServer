@@ -34,7 +34,6 @@ the original Galileo by brad which looked to be the best at the time.
 This is the first post within the main and simple information about the plugin.
 The second post with advanced information may be hidden under this `SPOILER` bellow
 with its own table of contents:
-[/LIST]
 [SPOILER]
 [SIZE="7"][COLOR="Blue"][B]Galileo Development[/B][/COLOR][/SIZE]
 Advanced usage for a feature rich map voting plugin
@@ -71,13 +70,13 @@ If you are interested in contributing with the development of this plugin you ca
 [/list]
 
 
-******************************** [anchor]TODO[/anchor][B][SIZE="6"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] *********************************
+******************************** [anchor]TODO[/anchor][B][SIZE="6"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=advanced_top]Go to Top[/goanchor] *********************************
 
 See the current issues/features request list on [URL="https://github.com/addonszz/Galileo/issues"] https://github.com/addonszz/Galileo/issues[/URL].
 
 
 
-******************************** [anchor]Change[/anchor][anchor]Changelog[/anchor][B][SIZE="6"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor] ***********************
+******************************** [anchor]Change[/anchor][anchor]Changelog[/anchor][B][SIZE="6"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=advanced_top]Go to Top[/goanchor] ***********************
 [SPOILER]
 
 
@@ -662,7 +661,7 @@ See the current issues/features request list on [URL="https://github.com/addonsz
 [/SPOILER]
 
 
-[anchor]Compilations[/anchor]******************************** [B][SIZE="6"][COLOR="blue"]Compilations Data[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor]  *****************
+[anchor]Compilations[/anchor]******************************** [B][SIZE="6"][COLOR="blue"]Compilations Data[/COLOR][/SIZE][/B] [goanchor=advanced_top]Go to Top[/goanchor]  *****************
 
 [SPOILER]
 [B]Compilations data at the Amx Mod X "1.8.3-dev+5067" between[/B]:
@@ -844,7 +843,7 @@ Press enter to exit ...
 [/SPOILER]
 [/SPOILER]
 
-******************************** [anchor]Unsupported[/anchor][SIZE="6"][COLOR="blue"][B]Un-Supported?[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor] *******************************
+******************************** [anchor]Unsupported[/anchor][SIZE="6"][COLOR="blue"][B]Un-Supported?[/B][/COLOR][/SIZE] [goanchor=advanced_top]Go to Top[/goanchor] *******************************
 
 People just saying it is broken/lagging and do not help providing the requested information at the main's page
 [goanchor=Support]Support[/goanchor] section, will be ignored.
@@ -894,7 +893,7 @@ doesn't use them anymore and/or is tired of supporting so many repos.
 
 
 
-******************************** [anchor]Downloads[/anchor][SIZE="6"][COLOR="Blue"][B]Downloads[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor] *************************
+******************************** [anchor]Downloads[/anchor][SIZE="6"][COLOR="Blue"][B]Downloads[/B][/COLOR][/SIZE] [goanchor=advanced_top]Go to Top[/goanchor] *************************
 
 [anchor]Development[/anchor][SIZE="4"][B]Development Versions[/B][/SIZE]:
 
@@ -1204,12 +1203,13 @@ cvars:[LIST=1]mapcyclefile
 
 
  [*] After the user voted, transform the '[B]0 - None[/B]' option to an '[COLOR="blue"]one time cancel[/COLOR]' vote
-     opportunity, configured by cvar.
+     opportunity, configured by cvar (See the cvar 'gal_vote_show_none_type').
 
 
  [*] If you are using only '[B]mp_timelimit[/B]' the map extension will be in minutes.
      If you are using '[B]mp_maxrounds[/B]/[B]mp_winlimit[/B]' the map extension will be in rounds.
-     If you are using both '[B]mp_timelimit[/B]/[B]mp_maxrounds[/B]/[B]mp_winlimit[/B]', it gives you the
+     If you are using '[B]mp_fraglimit[/B]' the map extension will be by frags count (See the cvar 'gal_mp_fraglimit_support').
+     If you are using both '[B]mp_timelimit[/B]/[B]mp_maxrounds[/B]/[B]mp_winlimit[/B]/[B]mp_fraglimit[/B]', it gives you the
      first to get close to finish the map. For example, suppose that there are [COLOR="Blue"]3 minutes[/COLOR] left
      and [COLOR="Blue"]10 rounds[/COLOR] remaining. It will give you by minutes, and not by rounds. And to avoid
      re-voting when those [COLOR="Blue"]10 rounds[/COLOR] end up, it will [COLOR="Blue"]temporarily[/COLOR] disables the rounds voting
@@ -1228,7 +1228,7 @@ cvars:[LIST=1]mapcyclefile
             changing of the map.
 
 
-            [*]If the "[COLOR="blue"][B]-restart[/B][/COLOR]" argument is supplied and the voting opting "Stay Here" wins,
+            [*]If the "[COLOR="blue"][B]-restart[/B][/COLOR]" argument is supplied and the voting option "Stay Here" wins,
             the current map is restarted. This command is for the "[URL="https://forums.alliedmods.net/showthread.php?t=273020"]Multi-Mod Manager[/URL]"
             plugin.
 
@@ -1347,11 +1347,11 @@ addons/amxmodx/data/galileo/maps_where_the_server_probably_crashed.txt
 
 
  [*] [COLOR="Blue"][B]The Map Groups Feature[/B][/COLOR]:
-[SPOILER]
      It uses whatever file you have set in the cvar '[B]gal_vote_mapfile[/B]'. Normally, in that
      file you would just have a listing of maps, one per line. But to use the groups feature,
      your '[B]gal_vote_mapfile[/B]' cvar would point to a '.txt' file looking something like this
      instead:
+[SPOILER]
      [CODE]
 [groups]
 2
@@ -1395,11 +1395,10 @@ addons/amxmodx/data/galileo/maps_where_the_server_probably_crashed.txt
 
 
  [*] [COLOR="Blue"][B]The Whitelist Feature[/B][/COLOR]:
-[SPOILER]
      If uses whatever file you set on the cvar '[B]gal_vote_whitelist_mapfile[/B]' as the
      Whitelist. It specifies the time where its listed maps are allowed to be added to
      the voting list as fillers after the [B]nominations[/B] being loaded.
-
+[SPOILER]
      The Whitelist must follow this pattern:
      [CODE]
 [10-22]
