@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.9.0-922";
+new const PLUGIN_VERSION[] = "v5.9.0-923";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -8025,7 +8025,8 @@ public vote_display( argument[ 2 ] )
         new playersCount;
         new players[ MAX_PLAYERS ];
 
-        get_players( players, playersCount, "ch" ); // skip bots and hltv
+        // skip bots and hltv
+        get_players( players, playersCount, "ch" );
 
         for( new playerIndex = 0; playerIndex < playersCount; ++playerIndex )
         {
