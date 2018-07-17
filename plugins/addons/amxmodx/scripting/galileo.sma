@@ -1,7 +1,7 @@
 /*********************** Licensing *******************************************************
 *
 *   Copyright 2008-2010 @ Brad Jones
-*   Copyright 2015-2017 @ Addons zz
+*   Copyright 2015-2018 @ Addons zz
 *   Copyright 2004-2017 @ AMX Mod X Development Team
 *
 *   Plugin Thread: https://forums.alliedmods.net/showthread.php?t=273019
@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.9.0-924";
+new const PLUGIN_VERSION[] = "v5.9.1-925";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
