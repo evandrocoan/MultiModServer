@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.9.0-923";
+new const PLUGIN_VERSION[] = "v5.9.0-924";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -1794,8 +1794,7 @@ public plugin_init()
     cvar_endOnRoundChange          = register_cvar( "gal_endonround_change"        , "1"    );
     cvar_isEndMapCountdown         = register_cvar( "gal_endonround_countdown"     , "0"    );
 
-    // These are NOT configurable cvars. Do not change/use them. These are used instead of the
-    // `localinfo`.
+    // These are NOT configurable cvars. Do not change/use them. These are used instead of the `localinfo`.
     //
     // When `cvar_isFirstServerStart` set set to 2 we are on the first server start period. If this
     // is set to 1, we are on the beginning of the second server map change level.
@@ -1817,7 +1816,7 @@ public plugin_init()
     // Register the HLTV for the supported game mods.
     if( IS_NEW_ROUND_EVENT_SUPPORTED() )
     {
-        register_event( "HLTV", "new_round_event", "a", "1=0", "2=0");
+        register_event( "HLTV", "new_round_event", "a", "1=0", "2=0" );
     }
 
     // This are default behaviors independent of any setting to be enabled.
@@ -1933,6 +1932,24 @@ stock runTheServerMapCrashSearch()
         set_pcvar_string( cvar_mapcyclefile, modeFlagFilePath );
     }
 }
+
+/**
+ * After the settings being loaded, the `gal_mapcyclefile` setting will be overridden and the crash
+ * search will be broken. Then this function restores its correct value.
+ */
+stock restoreModeFlagFilePath()
+{
+    LOG( 128, "I AM ENTERING ON restoreModeFlagFilePath(0)" )
+
+    new modeFlagFilePath[ MAX_FILE_PATH_LENGHT ];
+    formatex( modeFlagFilePath, charsmax( modeFlagFilePath ), "%s/%s", g_dataDirPath, TO_STOP_THE_CRASH_SEARCH );
+
+    if( IS_TO_ALLOW_A_CRASH_SEARCH( modeFlagFilePath ) )
+    {
+        set_pcvar_string( cvar_mapcyclefile, modeFlagFilePath );
+    }
+}
+
 /**
  * On the first server start, we do not know whether the color chat is allowed/enabled. This is due
  * the register register_dictionary_colored(1) to be called on plugin_init(0) and the settings being
@@ -2038,6 +2055,10 @@ stock loadPluginSetttings()
     server_cmd( "exec %s/galileo.cfg", g_configsDirPath );
     server_exec();
 
+    registerTheMapCycleCvar();
+    restoreModeFlagFilePath();
+
+    server_exec();
     cacheCvarsValues( true );
 }
 
@@ -3152,9 +3173,12 @@ stock loadMapFiles( bool:readMapCycle = true )
     LOG( 4, "" )
 }
 
+/**
+ * @param mapFilerFilePath any string trash variable with length MAX_FILE_PATH_LENGHT
+ */
 stock configureTheRTVFeature( mapFilerFilePath[] )
 {
-    LOG( 128, "I AM ENTERING ON configureTheRTVFeature(1)" )
+    LOG( 128, "I AM ENTERING ON configureTheRTVFeature(1): %s", mapFilerFilePath )
 
     if( g_rtvCommands & RTV_CMD_STANDARD )
     {
@@ -3181,10 +3205,12 @@ stock configureTheRTVFeature( mapFilerFilePath[] )
 
 /**
  * Setup the main task that schedules the end map voting and allow round finish feature.
+ *
+ * @param mapFilerFilePath any string trash variable with length MAX_FILE_PATH_LENGHT
  */
 stock configureServerMapChange( emptyCycleFilePath[] )
 {
-    LOG( 128, "I AM ENTERING ON configureServerMapChange(1)" )
+    LOG( 128, "I AM ENTERING ON configureServerMapChange(1): %s", emptyCycleFilePath )
 
     if( IS_WHITELIST_BLOCKING( IS_WHITELIST_ENABLED(), g_nextMapName ) )
     {
@@ -3210,9 +3236,12 @@ stock configureServerMapChange( emptyCycleFilePath[] )
     }
 }
 
+/**
+ * @param mapFilerFilePath any string trash variable with length MAX_FILE_PATH_LENGHT
+ */
 stock configureTheNorPlayersFeature( mapFilerFilePath[] )
 {
-    LOG( 128, "I AM ENTERING ON configureTheNorPlayersFeature(1)" )
+    LOG( 128, "I AM ENTERING ON configureTheNorPlayersFeature(1): %s", mapFilerFilePath )
 
     new loadedCount;
     get_pcvar_string( cvar_voteMapFilePath, mapFilerFilePath, MAX_FILE_PATH_LENGHT - 1 );
@@ -3244,9 +3273,12 @@ stock configureTheNorPlayersFeature( mapFilerFilePath[] )
     return loadedCount;
 }
 
+/**
+ * @param mapFilerFilePath any string trash variable with length MAX_FILE_PATH_LENGHT
+ */
 stock configureTheMidPlayersFeature( mapFilerFilePath[] )
 {
-    LOG( 128, "I AM ENTERING ON configureTheMidPlayersFeature(1)" )
+    LOG( 128, "I AM ENTERING ON configureTheMidPlayersFeature(1): %s", mapFilerFilePath )
     new loadedCount;
 
     if( get_pcvar_num( cvar_voteMidPlayers ) > VOTE_MIDDLE_PLAYERS_REQUIRED )
@@ -3280,9 +3312,12 @@ stock configureTheMidPlayersFeature( mapFilerFilePath[] )
     return loadedCount;
 }
 
+/**
+ * @param mapFilerFilePath any string trash variable with length MAX_FILE_PATH_LENGHT
+ */
 stock configureTheMinPlayersFeature( mapFilerFilePath[] )
 {
-    LOG( 128, "I AM ENTERING ON configureTheMinPlayersFeature(1)" )
+    LOG( 128, "I AM ENTERING ON configureTheMinPlayersFeature(1): %s", mapFilerFilePath )
     new loadedCount;
 
     if( get_pcvar_num( cvar_voteMinPlayers ) > VOTE_MININUM_PLAYERS_REQUIRED )
@@ -3319,9 +3354,12 @@ stock configureTheMinPlayersFeature( mapFilerFilePath[] )
     return loadedCount;
 }
 
+/**
+ * @param mapFilerFilePath any string trash variable with length MAX_FILE_PATH_LENGHT
+ */
 stock configureTheWhiteListFeature( mapFilerFilePath[] )
 {
-    LOG( 128, "I AM ENTERING ON configureTheWhiteListFeature(1)" )
+    LOG( 128, "I AM ENTERING ON configureTheWhiteListFeature(1): %s", mapFilerFilePath )
     new loadedCount;
 
     if( IS_WHITELIST_ENABLED() )
@@ -11156,7 +11194,6 @@ stock createMapFileFromAllServerMaps( player_id, mapFilePath[] )
 
     // map name is MAX_MAPNAME_LENGHT, .bsp: 4 + string terminator: 1 = 5
     new loadedMapName[ MAX_MAPNAME_LENGHT + 5 ];
-
     new directoryDescriptor = open_dir( "maps", loadedMapName, charsmax( loadedMapName )  );
 
     if( directoryDescriptor )
@@ -14939,7 +14976,7 @@ public nextmapPluginInit()
 
 stock loadTheNextMapFile( mapcycleFilePath[], &Array:mapcycleFileListArray, &Trie:mapcycleFileListTrie )
 {
-    LOG( 128, "I AM ENTERING ON loadTheNextMapFile(3)" )
+    LOG( 128, "I AM ENTERING ON loadTheNextMapFile(3): %s", mapcycleFilePath )
     new mapCount;
 
     TRY_TO_CLEAN( TrieClear, mapcycleFileListTrie, TrieCreate() )
@@ -14993,9 +15030,9 @@ stock getNextMapLocalInfoToken( currentMapcycleFilePath[] )
  * `mapcycle.txt`file. Therefore, you can use this cvar instead of the default `mapcyclefile` cvar
  * if you want to have more map on your map cycle file.
  */
-stock registerTheMayCycleCvar()
+stock registerTheMapCycleCvar()
 {
-    LOG( 128, "I AM ENTERING ON registerTheMayCycleCvar(0)" )
+    LOG( 128, "I AM ENTERING ON registerTheMapCycleCvar(0)" )
 
     new mapcycleFilePath[ MAX_FILE_PATH_LENGHT ];
     get_pcvar_string( cvar_gal_mapcyclefile, mapcycleFilePath, charsmax( mapcycleFilePath ) );
@@ -15008,7 +15045,7 @@ stock registerTheMayCycleCvar()
         }
         else
         {
-            doAmxxLog( "ERROR, registerTheMayCycleCvar: Couldn't open the file to read ^"%s^"", mapcycleFilePath );
+            doAmxxLog( "ERROR, registerTheMapCycleCvar: Couldn't open the file to read ^"%s^"", mapcycleFilePath );
         }
     }
 }
@@ -15017,18 +15054,17 @@ stock registerTheMayCycleCvar()
  * If we were playing a map series map `cs_map1`, and due an RTV voting was started a new series as
  * `de_map1`, we need to set the next map as `de_map2` instead of `cs_map1`. Also, after the series
  * to be finished we must to be able to return to the next map after the original series `cs_map1`.
+ *
+ * @param currentMapcycleFilePath any string trash variable with length MAX_FILE_PATH_LENGHT
  */
 stock configureTheNextMapSetttings( currentMapcycleFilePath[] )
 {
-    LOG( 128, "I AM ENTERING ON configureTheNextMapSetttings(1)" )
-
+    LOG( 128, "I AM ENTERING ON configureTheNextMapSetttings(1): %s", currentMapcycleFilePath )
     new mapCount;
     new nextMapCyclePosition;
 
-    registerTheMayCycleCvar();
-
     // Load the full map cycle considering whether the feature `gal_srv_move_cursor` is enabled or not.
-    get_pcvar_string( cvar_mapcyclefile, currentMapcycleFilePath, MAX_MAPNAME_LENGHT - 1 );
+    get_pcvar_string( cvar_mapcyclefile, currentMapcycleFilePath, MAX_FILE_PATH_LENGHT - 1 );
     mapCount = loadTheNextMapFile( currentMapcycleFilePath, g_mapcycleFileListArray, g_mapcycleFileListTrie );
 
     nextMapCyclePosition = getNextMapLocalInfoToken( currentMapcycleFilePath );
@@ -15510,7 +15546,7 @@ stock getNextMapByPosition( Array:mapcycleFileListArray, nextMapName[], &nextMap
     {
         setTheCurrentMap:
 
-        // This warning cannot be throw when it is being called from the configureTheAlternateSeries(2)
+        // This warning cannot be throw when it is being called from the configureTheAlternateSeries(2), which
         // is trying to calculate the correct next map.
         if( isToIncrementThePosition )
         {
