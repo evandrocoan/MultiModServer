@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.9.1-925";
+new const PLUGIN_VERSION[] = "v5.9.1-926";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -1946,6 +1946,7 @@ stock restoreModeFlagFilePath()
 
     if( IS_TO_ALLOW_A_CRASH_SEARCH( modeFlagFilePath ) )
     {
+        set_pcvar_num( cvar_serverStartAction, 1 );
         set_pcvar_string( cvar_mapcyclefile, modeFlagFilePath );
     }
 }
