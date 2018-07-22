@@ -76,6 +76,7 @@ set /p Build=<"%~dp0..\githooks\galileo.version"
 call xcopy /S /Y "%~dp0..\plugins\addons\amxmodx\configs\galileo"       "clean_setup\Galileo-%Build%\configs\galileo\"
 call xcopy /S /Y "%~dp0..\plugins\addons\amxmodx\data\lang\galileo.txt" "clean_setup\Galileo-%Build%\data\lang\"
 call xcopy /S /Y "%~dp0..\plugins\addons\amxmodx\scripting\galileo.sma" "clean_setup\Galileo-%Build%\scripting\"
+call xcopy /S /Y "%~dp0..\plugins\addons\amxmodx\scripting\galileo.sma" "clean_setup\"
 
 echo.
 GOTO end
