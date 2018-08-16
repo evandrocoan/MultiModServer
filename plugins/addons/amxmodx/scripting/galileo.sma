@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.9.1-926";
+new const PLUGIN_VERSION[] = "v5.9.1-927";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -1349,7 +1349,9 @@ new const CANNOT_START_VOTE_SPECTATORS[]    = "Cannot start the voting. The cvar
                                                 is not supported on this Game Mod.";
 
 new bool:g_isDayOfDefeat;
-new bool:g_isRunningSvenCoop;
+#if IS_TO_ENABLE_SVEN_COOP_SUPPPORT > 0
+    new bool:g_isRunningSvenCoop;
+#endif
 new bool:g_isServerShuttingDown;
 new bool:g_isMapExtensionPeriodRunning;
 new bool:g_isTheRoundEndWhileVoting;
@@ -1961,11 +1963,11 @@ stock configureSpecificGameModFeature()
     LOG( 128, "I AM ENTERING ON configureSpecificGameModFeature(0)" )
 
     g_isDayOfDefeat        = !!is_running("dod");
-    g_isRunningSvenCoop    = !!is_running("svencoop");
     g_isColorChatSupported = ( is_running( "czero" ) || is_running( "cstrike" ) );
 
     // Register the voting start call from the Sven Coop game.
 #if IS_TO_ENABLE_SVEN_COOP_SUPPPORT > 0
+    g_isRunningSvenCoop    = !!is_running("svencoop");
     if( g_isRunningSvenCoop )
     {
         RegisterHam( Ham_Use, "game_end", "startVotingByGameEngineCall", false );
@@ -6906,17 +6908,19 @@ public start_voting_by_timer()
     }
 }
 
-public startVotingByGameEngineCall()
-{
-    LOG( 128, "I AM ENTERING ON startVotingByGameEngineCall(0) g_endVotingType: %d", g_endVotingType)
-    LOG( 32, "( startVotingByGameEngineCall ) get_pcvar_num( cvar_endOfMapVote ): %d", get_pcvar_num( cvar_endOfMapVote ) )
-
-    if( get_pcvar_num( cvar_endOfMapVote ) )
+#if IS_TO_ENABLE_SVEN_COOP_SUPPPORT > 0
+    public startVotingByGameEngineCall()
     {
-        g_isToChangeMapOnVotingEnd = true;
-        startTheVoting( false );
+        LOG( 128, "I AM ENTERING ON startVotingByGameEngineCall(0) g_endVotingType: %d", g_endVotingType)
+        LOG( 32, "( startVotingByGameEngineCall ) get_pcvar_num( cvar_endOfMapVote ): %d", get_pcvar_num( cvar_endOfMapVote ) )
+
+        if( get_pcvar_num( cvar_endOfMapVote ) )
+        {
+            g_isToChangeMapOnVotingEnd = true;
+            startTheVoting( false );
+        }
     }
-}
+#endif
 
 public vote_manageEnd()
 {
@@ -14633,18 +14637,20 @@ stock tryToSetGameModCvarNum( cvarPointer, num )
     }
 }
 
-stock tryToSetGameModCvarString( cvarPointer, string[] )
-{
-    LOG( 1, "" )
-    LOG( 128, "I AM ENTERING ON tryToSetGameModCvarString(2) cvarPointer: %d, string: %s", cvarPointer, string )
-    LOG( 1, "    ( tryToSetGameModCvarNum ) cvar_disabledValuePointer: %d", cvar_disabledValuePointer )
-
-    if( cvarPointer != cvar_disabledValuePointer )
+#if IS_TO_ENABLE_SVEN_COOP_SUPPPORT > 0
+    stock tryToSetGameModCvarString( cvarPointer, string[] )
     {
-        LOG( 2, "    ( tryToSetGameModCvarString ) IS CHANGING THE CVAR '%d' to '%s'.", cvarPointer, string )
-        set_pcvar_string( cvarPointer, string );
+        LOG( 1, "" )
+        LOG( 128, "I AM ENTERING ON tryToSetGameModCvarString(2) cvarPointer: %d, string: %s", cvarPointer, string )
+        LOG( 1, "    ( tryToSetGameModCvarNum ) cvar_disabledValuePointer: %d", cvar_disabledValuePointer )
+
+        if( cvarPointer != cvar_disabledValuePointer )
+        {
+            LOG( 2, "    ( tryToSetGameModCvarString ) IS CHANGING THE CVAR '%d' to '%s'.", cvarPointer, string )
+            set_pcvar_string( cvarPointer, string );
+        }
     }
-}
+#endif
 
 public plugin_end()
 {
