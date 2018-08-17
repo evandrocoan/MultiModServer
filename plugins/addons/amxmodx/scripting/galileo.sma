@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.9.1-927";
+new const PLUGIN_VERSION[] = "v5.9.1-928";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -12090,8 +12090,12 @@ stock addMenuMoreBackButtons( menu, player_id, menuGeneralItem[], bool:isToEnabl
     while( itemsCount < MAX_NOM_MENU_ITEMS_PER_PAGE )
     {
         itemsCount++;
+    #if AMXX_VERSION_NUM < 183
         formatex( menuGeneralItem, MAX_SHORT_STRING - 1, "%L", player_id, "OFF" );
         menu_additem( menu, menuGeneralItem, _, 1 << 26 );
+    #else
+        menu_addblank2( menu );
+    #endif
 
         // When using slot=1 this might break your menu. To achieve this functionality
         // menu_addblank2() should be used (AMXX 183 only).
@@ -13111,8 +13115,12 @@ stock addMenuMoreBackOptions( menu, player_id, menuOptionString[], bool:isToEnab
     while( itemsCount < MAX_MENU_ITEMS_PER_PAGE )
     {
         itemsCount++;
+    #if AMXX_VERSION_NUM < 183
         formatex( menuOptionString, MAX_SHORT_STRING - 1, "%L", player_id, "OFF" );
         menu_additem( menu, menuOptionString, _, 1 << 26 );
+    #else
+        menu_addblank2( menu );
+    #endif
 
         // When using slot=1 this might break your menu. To achieve this functionality
         // menu_addblank2() should be used (AMXX 183 only).
@@ -13859,8 +13867,12 @@ public displayVoteMapMenuCommands( player_id )
     while( mapIndex + 3 < MAX_NOM_MENU_ITEMS_PER_PAGE )
     {
         mapIndex++;
+    #if AMXX_VERSION_NUM < 183
         formatex( menuOptionString, MAX_SHORT_STRING - 1, "%L", player_id, "OFF" );
         menu_additem( menu, menuOptionString, _, 1 << 26 );
+    #else
+        menu_addblank2( menu );
+    #endif
 
         // When using slot=1 this might break your menu. To achieve this functionality
         // menu_addblank2() should be used (AMXX 183 only).
