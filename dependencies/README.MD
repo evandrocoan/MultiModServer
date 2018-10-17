@@ -1,7 +1,7 @@
 AlliedModders' Files
 =============================
 
-Contains my published plugins and games configurations files for games supported on the 
+Contains my published plugins and games configurations files for games supported on the
 AlliedModders' forum. See history posting: https://forums.alliedmods.net/search.php?do=finduser&u=262504
 
 
@@ -21,26 +21,28 @@ If you prefer to avoid repeating the repository URL, then you can add it as a re
 * Do this the first time:
 ```
 $ git remote add -f -t master --no-tags remote_name https://github.com/git/git.git
-$ git subtree add --squash --prefix=third_party/git remote_name/master
+$ git subtree add --squash --prefix=local_directory remote_name/master
 ```
+
+Or use this single command:
+```
+git subtree add --squash --prefix=code file:///D:/GitDirectory/.git master
+```
+
 
 * In future, you can merge in additional changes as follows:
 ```
-$ git subtree pull --squash --prefix=third_party/git remote_name/master
+$ git subtree pull --squash --prefix=local_directory remote_name/master
 ```
 
 * And you can push changes back upstream as follows:
 ```
-$ git subtree push --prefix=third_party/git remote_name/master
+$ git subtree push --prefix=local_directory remote_name/master
+$ git subtree push --prefix=local_directory https://github.com/git/git.git master
 ```
 
-* Or possibly (not sure what the difference is):
-```
-$ git subtree push --squash --prefix=third_party/git remote_name/master
-```
-
-1. [Add subdirectory of remote repo with git-subtree](http://stackoverflow.com/q/23937436/4934640)
-
-
-
-
+1. https://stackoverflow.com/questions/23937436/add-subdirectory-of-remote-repo-with-git-subtree
+1. https://stackoverflow.com/questions/20102594/git-subtree-push-squash-does-not-squash
+1. https://stackoverflow.com/questions/9614255/git-subtree-push-squash-needs-a-long-time-and-it-is-getting-longer-over-time
+1. https://stackoverflow.com/questions/10081681/git-subtree-push-changes-back-to-subtree-project
+1. https://stackoverflow.com/questions/26928299/why-does-git-subtree-push-always-list-hundreds-of-commits
