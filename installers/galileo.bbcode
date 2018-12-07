@@ -9,13 +9,13 @@ the original Galileo by brad which looked to be the best at the time.
 
 [LIST=1]
 [*][goanchor=Introduction]Introduction[/goanchor]
-[*][goanchor=Requirements]Requirements[/goanchor]
 [*][goanchor=Translation]Translation Request[/goanchor]
 [*][B]Installation[/B]:
    [LIST=1]
-   [*][goanchor=InstallationAMXX182][B]Basic Installation[/B][/goanchor]
+   [*][goanchor=Requirements][B]Basic Installation[/B][/goanchor]
    [*][goanchor=InstallationNotes]Installation Notes[/goanchor]
    [*][goanchor=Mapcycle]Setting up a Mapcycle[/goanchor]
+   [*][goanchor=IAmConfused]I am confused[/goanchor]
    [/LIST]
 [*][goanchor=Brief]Features' list[/goanchor]
 [*][goanchor=Requirements]Commands[/goanchor]
@@ -203,7 +203,7 @@ See the current issues/features request list on [URL="https://github.com/addonsz
 
 [B]2017-01-29 | v5.0.0-723[/B]
 [LIST=1]
-[*]Created the Minimal_Configuration_File_(Opcional_Little-Options).zip, available at the [URL=https://forums.alliedmods.net/showthread.php?t=273019#Downloads]Downloads[/URL] section.
+[*]Created the Minimal_Configuration_File_(Optional_Little-Options).zip, available at the [URL=https://forums.alliedmods.net/showthread.php?t=273019#Downloads]Downloads[/URL] section.
 [*]Disabled by default all settings allowing the delete the configuration file and only add a few settings as you need.
 [*]Forced the command `gal_createmapfile` to create the file alphabetically sorted.
 [*]Allowed the `gal_votemap` and `say galmenu` to create a vote map with only 1 map, if the `Stay Here` setting is enabled.
@@ -1061,54 +1061,19 @@ See here the current and effectively integrated LANGs constants:
 [/LIST]
 
 
-********************** [anchor]Requirements[/anchor][SIZE="6"][COLOR="Blue"][B]Requirements[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor]  ***********************
+********************** [anchor]Requirements[/anchor][SIZE="6"][COLOR="Blue"][B]Requirements / Installation[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor]  **
 
-[SIZE="4"][B]Server's Requirements:[/B][/SIZE]
+[SIZE="4"][B]Server's Requirements[/B][/SIZE]: [goanchor=Top]Go to top[/goanchor]
 [LIST=1]
 [*]Amx Mod X [B]1.8[/B] or [COLOR="Red"][B]higher only[/B][/COLOR]
 [*]The Default '[B]Amx Mod X[/B]' [COLOR="Red"]NextMap Plugin [B]Disabled[/B][/COLOR] (nextmap.amxx)
 [*]The Default '[B]Amx Mod X[/B]' [COLOR="Red"]TimeLeft Plugin [B]Disabled[/B][/COLOR] (timeleft.amxx)
 [*]The Default '[B]Amx Mod X[/B]' [COLOR="Red"]Mapchooser Plugin [B]Disabled[/B][/COLOR] (mapchooser.amxx)
-[*]Any other [B]mapchooser[/B] plugin [B]disabled[/B].
+[*]Any other [B]mapchooser[/B] plugin [COLOR="Red"][B]Disabled[/B][/COLOR].
 [/LIST]
 
+[anchor]InstallationAMXX182[/anchor][SIZE="4"][B]Basic Installation[/B][/SIZE]: [goanchor=Top]Go to top[/goanchor]
 
-********************** [anchor]Installation[/anchor][B][SIZE="6"][COLOR="Blue"]Installation[/COLOR][/SIZE][/B] [goanchor=Top]Go to top[/goanchor]  *****************************
-
-[SIZE="4"][B]Miscellaneous[/B][/SIZE]:
-[LIST=0]
-[*]You need to disable [B]nextmap.amxx[/B].
-[*]You need to disable any other map choosing plugins, such as [B]mapchooser.amxx[/B].
-[/LIST]
-[anchor]InstallationAMXX182[/anchor][SIZE="4"][B]Basic Installation[/B][/SIZE]:
-
-[QUOTE]Hi ,
-I want to use your this plugin . but i am confused which .sma i will use
-[/QUOTE]
-
-This installation is usually for AMXX 182. You can use this:
-[SPOILER]
-[goanchor=LatestRelease][img]http://i.imgur.com/0Onj35H.png?1[/img][/goanchor]
-
-It is the same which is on the `[B]Galileo-X.X.X-XXX.zip[/B]` file. The difference is it is already compiled.
-So you do not need to compile the `.sma`
-
-But you still [COLOR="Red"][b]need to download[/b][/COLOR] the `[B]Galileo-X.X.X-XXX.zip[/B]` file within the resource files.
-[LIST=1]
-[*]The file `[B]Galileo-X.X.X-XXX.zip[/B]` contain all the files you need, including the `.sma`,
-the lang file and the [COLOR="Red"][b]default settings file[/b][/COLOR].
-
-
-[*]The file `[B]Minimal_Configuration_File_(Opcional_Little-Options).zip[/B]` is the
-smallest setting file you need to configure. You can download it if you want to use easy
-settings to configure. [COLOR="Red"][b]This file is opcional[/b][/COLOR].
-
-
-[*]The file `[B]Simple_Configuration_File_(Opcional_Less-Options).zip[/B]` is a
-smaller settings file. You can download it if you want to use the original settings by
-`Brad's` version. [COLOR="Red"][b]This file is opcional[/b][/COLOR].
-[/LIST]
-[/SPOILER]
 Replace '[B]Galileo-XXX[/B]' by '[B]Galileo-3.2.2[/B]' [or the current version], and download the right zip file.
 [LIST=1]
 [*] Download the file "[B]Galileo-XXX.zip[/B]" at [goanchor=LatestRelease]Downloads[/goanchor] section.
@@ -1126,7 +1091,7 @@ plugins folder usually at "[COLOR="Blue"]yourGameMod/addons/amxmodx/[/COLOR][B]p
 
 [*] Put the [B]next line[/B] to your "[B]plugins.ini[/B]" file at "[COLOR="Blue"]yourGameMod/addons/amxmodx/[/COLOR][B]configs[/B]"
 folder and disable the original "[B]mapchooser.amxx[/B]" or any other [B]map manager plugin[/B], like
-the [B]deagsmapmanager.amxx[/B]: [QUOTE]
+[B]deagsmapmanager.amxx[/B], [B]timeleft.amxx[/B] and [B]nextmap.amxx[/B]: [QUOTE]
 ;mapchooser.amxx
 ;nextmap.amxx
 ;timeleft.amxx
@@ -1162,6 +1127,35 @@ cvars:[LIST=1]mapcyclefile
 [*]gal_vote_minplayers_mapfile
 [*]gal_nom_mapfile
 [*]gal_emptyserver_mapfile[/LIST]To use another mapcycle files which does not contain the maps you do not want to use by early hours.
+
+
+[anchor]IAmConfused[/anchor][SIZE="4"][B]I am confused[/B][/SIZE]: [goanchor=Top]Go to top[/goanchor]
+
+[QUOTE]Hi ,
+I want to use your this plugin . but i am confused which .sma i will use
+[/QUOTE]
+
+This installation is usually for AMXX 182. You can use this:
+[goanchor=LatestRelease][img]http://i.imgur.com/0Onj35H.png?1[/img][/goanchor]
+
+It is the same which is on the `[B]Galileo-X.X.X-XXX.zip[/B]` file. The difference is it is already compiled.
+So you do not need to compile the `.sma`
+
+But you still [COLOR="Red"][b]need to download[/b][/COLOR] the `[B]Galileo-X.X.X-XXX.zip[/B]` file within the resource files.
+[LIST=1]
+[*]The file `[B]Galileo-X.X.X-XXX.zip[/B]` contain all the files you need, including the `.sma`,
+the lang file and the [COLOR="Red"][b]default settings file[/b][/COLOR].
+
+
+[*]The file `[B]Minimal_Configuration_File_(Optional_Little-Options).zip[/B]` is the
+smallest setting file you need to configure. You can download it if you want to use easy
+settings to configure. [COLOR="Red"][b]This file is optional[/b][/COLOR].
+
+
+[*]The file `[B]Simple_Configuration_File_(Optional_Less-Options).zip[/B]` is a
+smaller settings file. You can download it if you want to use the original settings by
+`Brad's` version. [COLOR="Red"][b]This file is optional[/b][/COLOR].
+[/LIST]
 
 
 ********************** [anchor]Brief[/anchor][SIZE="6"][COLOR="Blue"][B]Features' list[/B][/COLOR][/SIZE] [goanchor=Top]Go to top[/goanchor] ******
