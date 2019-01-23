@@ -1293,6 +1293,17 @@ gal_votemap map1 map2
      [code]
 addons/amxmodx/data/galileo/maps_where_the_server_probably_crashed.txt
      [/code]
+[SPOILER]
+     [QUOTE=krassetasche;2592464]How is it possible to disable this "gal_look_for_crashes"?[/QUOTE]
+     Just run the same command again on your server console, or delete the following file:
+     [code]
+addons/amxmodx/data/galileo/delete_this_to_stop_the_crash_search.txt
+     [/code]
+     The `gal_look_for_crashes` command will make your server cycle through all server maps more fast,
+     i.e., each 7 seconds it will do a changelevel. But cannot be any players connected on/to the server,
+     otherwise, the map change will happen only after 120 seconds.
+
+[/SPOILER]
 
  [*] Command '[COLOR="Blue"][B]say galmenu [page_number][/B][/COLOR]', (admin MAP level required) to choose from the loaded server
      maps, the maps to create a map voting by a menu, as the one with the `gal_votemap` command. Consider here the
