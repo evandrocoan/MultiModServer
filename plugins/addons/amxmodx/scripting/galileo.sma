@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.9.1-928";
+new const PLUGIN_VERSION[] = "v5.9.1-929";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -68,6 +68,7 @@ new const PLUGIN_VERSION[] = "v5.9.1-928";
  * 2   - Run the NORMAL Unit Tests on the server start.
  *
  * 4   - Run the DELAYED Unit Tests on the server start.
+ *       Currently there are none Delayed Unit Tests Created.
  *
  * 8   - a) To create fake votes. See the function 'create_fakeVotes()'.
  *       b) Set the vote time to 5 seconds.
