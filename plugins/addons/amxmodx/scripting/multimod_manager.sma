@@ -41,7 +41,7 @@ new const VERSION[] = "1.1-rc1.1"
  * ( 01000 ) 8 displays the the mapcycle configuration.
  *
  * ( 100.. ) 64 displays messages related 'client_print_color_internal'.
- * ( 1001111 ) 79 displays all debug levels.
+ * ( 111.. ) 127 displays all debug levels.
  */
 new g_debug_level = 79
 
