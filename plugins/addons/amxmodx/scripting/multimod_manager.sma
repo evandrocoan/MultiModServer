@@ -60,7 +60,7 @@ stock debugMesssageLogger( mode, message[], any: ... )
 
         vformat( formated_message, charsmax( formated_message ), message, 3 )
 
-        server_print( "%s", formated_message         )
+        server_print( "%s", formated_message )
     }
 }
 
@@ -206,11 +206,10 @@ public plugin_init()
 }
 
 /**
- * Makes auto configuration about mapchooser plugin, switching between multimod_mapchooser and
- * galileo.
+ * Auto configure the mapchooser plugin by switching between multimod_mapchooser and galileo.
  *
- * Gets current game mods cvars pointer to this program global variables.
- * Adjust the localinfo variable that store the current mod loaded, reading the current mod file.
+ * Also gets the current game mods cvars pointer for global variables.
+ * And adjust the localinfo variable to store the current mod loaded, reading the current mod file.
  */
 public plugin_cfg()
 {
@@ -256,17 +255,17 @@ public plugin_cfg()
 }
 
 /**
- * After the first time the server loads, this function execute the late configuration file
- * used to restaure the last active mod cvars changed and the first mapcycle used.
+ * After the first time the server loads, this function runs the late configuration file
+ * used to restore the last active mod cvars changed and the first mapcycle used.
  *
- * This function stills detect when the mod is changed due specific maps configurations
- * files like, "./configs/maps/plugins-zm.ini", that actives the zombie plague mod.
+ * This function also detect when the current mod is changed due specific maps configuration
+ * files like, "./configs/maps/plugins-zm.ini", which activates the zombie plague mod.
  *
  * In order to this works, you must configure the file "./configs/maps/prefix_zm.cfg"
  * with the command:
  *          localinfo amx_lastmod zp50Money
  *
- * For the zombie plague mod, short mod name.
+ * Note: zp50Money is the zombie plague mod, short mod name defined on your configuration file.
  */
 public unloadLastActiveMod()
 {
@@ -361,7 +360,7 @@ public configureModID( shortName[] )
 }
 
 /**
- * Check the activation of the function of disableMods and help.
+ * Checks the activation function for disableMods and help commands.
  *
  * @param firstCommand_lineArgument[]       the first command line argument
  * @param secondCommand_lineArgument[]      the second command line argument
@@ -391,8 +390,7 @@ public primitiveFunctions( player_id, firstCommand_lineArgument[], isTimeToResta
 }
 
 /**
- * Given a player id, prints to him and at server console the help about the command
- * "amx_setmod".
+ * Given a player id, prints to him and at server console, usage for the command "amx_setmod".
  *
  * @param player_id         the player id
  */
@@ -504,8 +502,7 @@ public client_disconnected( player_id )
 /**
  * Process the input command "amx_setmod OPITON1 OPITON2".
  *
- * Straight restarting the server, ( silent mod ) and changes and configures the mapcycle if
- * there is one
+ * Straight restarting the server ( silent mod ) and configures the mapcycle file if there is one.
  *
  * @param player_id         - will hold the players id who started the command
  * @param level             - will hold the access level of the command
@@ -557,17 +554,17 @@ public restartTheServer()
 }
 
 /**
- * Loads the 'currentmod_id.ini' and 'currentmod_shortname.ini', at ".configs/multimod" folder,
+ * Loads the 'currentmod_id.ini' and 'currentmod_shortname.ini', at ".configs/multimod" directory,
  * that stores the current mod actually active and the current mod was activated by
  * silent mode, respectively.
  *
  * If the mod_id stored at 'currentmod_id.ini' is:
- * greater than 0, it is any mod saved.
- * 0, a silent mod is activated.
- * -1, the mods are disabled.
+ *     1. greater than 0, then, it is any mod saved.
+ *     2. 0, then, it is a silent mod is activated.
+ *     3. -1, then, the server mods are disabled.
  *
- * When 'currentmod_id.ini' stores 0, 'currentmod_shortname.ini' defines the current mod.
- * When 'currentmod_id.ini' stores anything that is not 0, 'currentmod_id.ini' defines the current mod.
+ * When 'currentmod_id.ini' is 0, the 'currentmod_shortname.ini' defines the current mod.
+ * When 'currentmod_id.ini' is anything different than 0, the 'currentmod_id.ini' has the current mod.
  */
 public loadCurrentMod()
 {
@@ -577,7 +574,7 @@ public loadCurrentMod()
     new currentModCode_String[ SHORT_STRING ]
     new currentMod_shortName[ SHORT_STRING ]
 
-    // normal mod activation
+    // normal mod activation (laud, i.e., messages sounds, announcements)
     if( file_exists( g_currentMod_id_filePath ) )
     {
         read_file(   g_currentMod_id_filePath, 0, currentModCode_String,
@@ -591,7 +588,7 @@ public loadCurrentMod()
         write_file( g_currentMod_id_filePath,    "-1"     )
     }
 
-    // silent mod activation
+    // silent mod activation, i.e., without any notice.
     if( file_exists( g_currentMod_shortName_filePath ) )
     {
         read_file( g_currentMod_shortName_filePath, 0, currentMod_shortName,
@@ -607,11 +604,11 @@ public loadCurrentMod()
 }
 
 /**
- * Configure the current mod action after is being loaded from the file at map server start.
+ * Configure the current mod action after it was loaded from the settings file at map server start.
  *
  * @param currentModCode             the code loaded from the current mod file. If it is:
- *                                   -1, there is no mod active.
- *                                   0, the current mod was activated by silent mode.
+ *                                       1. -1, then, there is no mod active.
+ *                                       2. 0, then, the current mod was activated by silent mode.
  *
  * @param currentMod_shortName[]     the current mod short name loaded from the
  *                                   current mod silent file.
@@ -646,11 +643,11 @@ public configureMod_byModCode( currentModCode, currentMod_shortName[] )
 }
 
 /**
- * Configure the current mod action after being voted the next mod.
+ * Configure the current mod action after the next mod is voted.
  *
  * @param mostVoted_modID       the mod most voted during the vote mod:
- *                              If 1, is to keep the current mod
- *                              If 2, is to disable the current mod.
+ *                                  If 1, is to keep the current mod
+ *                                  If 2, is to disable the current mod.
  */
 public configureMod_byModID( mostVoted_modID )
 {
@@ -704,12 +701,12 @@ public retrievesCurrentMod_atLocalInfo()
 }
 
 /**
- * Given a mod_id_number, salves it to file "currentmod_id.ini", at multimod folder.
+ * Given a mod_id_number, salves it to file "currentmod_id.ini", at multimod directory.
  *
  * @param mod_id_number    the mod id. If the mod_id_number is:
- *                         greater than 2, it is any mod.
- *                         2, a silent mod activated.
- *                         1, the mods are disabled.
+ *                             1. greater than 2, it is any mod.
+ *                             2. 2, then, is a silent mod activated.
+ *                             3. 1, then, the mods are disabled.
  */
 saveCurrentModBy_id( mod_id_number )
 {
@@ -726,7 +723,7 @@ saveCurrentModBy_id( mod_id_number )
 }
 
 /**
- * Saves the current silent mod activated to file "currentmod_shortname.ini", at multimod folder.
+ * Saves the current silent mod activated to file "currentmod_shortname.ini", at multimod directory.
  *
  * @param modShortName[]       the mod short name. Ex: surf.
  */
@@ -839,7 +836,7 @@ public load_votingList()
 
 /**
  * Hard code the message recourse file location at the string parameter messageResource_filePath[].
- * These are the resource messages files at ".configs/multimod/" folder. executed when a
+ * These are the resource messages files at ".configs/multimod/" directory. executed when a
  *   resource as disable, is activated by the command "amx_setmod".
  *
  * @param modShortName[]                  the mod short name without extension. Ex: surf
@@ -855,7 +852,7 @@ public messageResource_pathCoder( resourceName[], messageResource_filePath[], st
 
 /**
  * Hard code the message file location at the string parameter message_filePath[].
- * These are the messages files at ".configs/multimod/msg/" folder, executed when a
+ * These are the messages files at ".configs/multimod/msg/" directory, executed when a
  *   mod is activated by the command "amx_setmod".
  *
  * @param modShortName[]             the mod short name without extension. Ex: surf
@@ -869,7 +866,7 @@ public message_pathCoder( modShortName[], message_filePath[], stringReturnSize )
 
 /**
  * Hard code the plugin file location at the string parameter plugin_filePath[].
- * These are the mods plugins files, to be activated at ".configs/multimod/plugins/" folder.
+ * These are the mods plugins files, to be activated at ".configs/multimod/plugins/" directory.
  *
  * @param modShortName[]           the mod short name without extension. Ex: surf
  * @param plugin_filePath[]        the plugin file path containing its file extension. Ex: mapcycles/surf.txt
@@ -882,7 +879,7 @@ public plugin_pathCoder( modShortName[], plugin_filePath[], stringReturnSize )
 
 /**
  * Hard code the config file location at the string parameter config_filePath[].
- * These are the mods configuration files, to be loaded at ".configs/multimod/cfg/" folder.
+ * These are the mods configuration files, to be loaded at ".configs/multimod/cfg/" directory.
  *
  * @param modShortName[]          the mod short name without extension. Ex: surf
  * @param config_filePath[]       the config file path containing its file extension. Ex: mapcycles/surf.txt
@@ -895,7 +892,7 @@ public config_pathCoder( modShortName[], config_filePath[], stringReturnSize )
 
 /**
  * Hard code the late config file location at the string parameter lateConfig_filePath[].
- * These are the mods configuration files, to be loaded at ".configs/multimod/latecfg/" folder.
+ * These are the mods configuration files, to be loaded at ".configs/multimod/latecfg/" directory.
  * These files are only executed once when the mod is deactivated.
  *
  * @param modShortName[]              the mod short name without extension. Ex: surf
@@ -909,7 +906,7 @@ public lateConfig_pathCoder( modShortName[], lateConfig_filePath[], stringReturn
 
 /**
  * Hard code the mapcycle file location at the string parameter mapcycle_filePath[].
- * These are the mods mapcycles files at ".gamemod/mapcycles/" folder, to be used when a mod is
+ * These are the mods mapcycles files at ".gamemod/mapcycles/" directory, to be used when a mod is
  *   activated.
  *
  * @param modShortName[]               the mod short name without extension. Ex: surf
@@ -1088,7 +1085,7 @@ public disableMods()
 
 /**
  * Actives a mod by its short name. If the the short name plugin file exists and
- *    change the current mod to 'Keep Current Mod'.
+ * change the current mod to 'Keep Current Mod'.
  *
  * @param modShortName[]         the mod short name to active. Ex: surf
  *
@@ -1215,7 +1212,7 @@ public messageModActivated( modShortName[], isTimeToRestart, isTimeTo_executeMes
 
 /**
  * Displays a message to all server player about a command line Resource active with "amx_setmod".
- * Its must match the file msg name at "multimod" folder.
+ * Its must match the file msg name at "multimod" directory.
  *
  * @param resourceName[]               the name of the activated resource. Ex: disable
  * @param isTimeToRestart              inform to restart the server
@@ -1262,8 +1259,8 @@ public user_currentmod( player_id )
 
 /**
  * Called with "say votemod". Checks:
- * If users can invoke voting.
- * If its already voted.
+ *     1. If users can invoke voting.
+ *     2. If its already voted.
  *
  * @param player_id the player id
  */
@@ -1315,8 +1312,8 @@ public check_task()
  * Start multi mod voting.
  *
  * If a new voting was invoked:
- * Restart voting count.
- * Restart voting players menu position.
+ *     1. Restart voting count.
+ *     2. Restart voting players menu position.
  */
 public start_vote()
 {
@@ -1346,7 +1343,7 @@ public start_vote()
 }
 
 /**
- * Create the vote mod menu multi pages.
+ * Create the vote mod menu with multiple pages.
  *
  * @param player_id             the player id to display the menu.
  * @param menu_current_page     the number of the current menu page to draw the menu.
@@ -1424,7 +1421,7 @@ public display_votemod_menu( player_id, menu_current_page )
 
     menu_valid_keys |= MENU_KEY_9
 
-    // calculates the the final page buttons
+    // calculates the final page buttons
     if( menu_current_page )
     {
         if( g_menu_total_pages == menu_current_page + 1 )
@@ -1561,7 +1558,7 @@ public player_vote( player_id, key )
 }
 
 /**
- * Given a current_menu_page and a current_pressed_key, returns internal the vote mod id.
+ * Given a current_menu_page and a current_pressed_key, returns the internal vote mod id.
  *
  * @param current_menu_page        the current page of player vote menu.
  * @param current_pressed_key      the key pressed by the player to vote.
@@ -1575,7 +1572,7 @@ public get_mod_vote_id( current_menu_page, current_pressed_key )
 }
 
 /**
- * Start computing the mod voting.
+ * Start computing the mod voting results.
  */
 public check_vote()
 {
@@ -1631,7 +1628,7 @@ public displayVoteResults( mostVoted_modID, totalVotes )
 }
 
 /**
- * Returns the percent of player playing at game server, skipping bots and spectators.
+ * Returns the percent of players playing at game server, skipping bots and spectators.
  *
  * @param percent       a percent of the total playing players, in decimal. Example for 30%: 0.3
  *
