@@ -33,13 +33,13 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.9.1-929";
+new const PLUGIN_VERSION[] = "v5.9.1-930";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
  * "game_end". It will require the '<hamsandwich>' module.
  */
-#define IS_TO_ENABLE_SVEN_COOP_SUPPPORT 1
+#define IS_TO_ENABLE_SVEN_COOP_SUPPORT 1
 
 /**
  * Change this value from 1 to 0, to disable Re-HLDS and Re-Amx Mod X support. If you disable the
@@ -451,7 +451,7 @@ new const PLUGIN_VERSION[] = "v5.9.1-929";
 /**
  * Includes the Sven Coop required module for support.
  */
-#if IS_TO_ENABLE_SVEN_COOP_SUPPPORT > 0
+#if IS_TO_ENABLE_SVEN_COOP_SUPPORT > 0
     #include <hamsandwich>
     new cvar_mp_nextmap_cycle;
 #endif
@@ -1350,7 +1350,7 @@ new const CANNOT_START_VOTE_SPECTATORS[]    = "Cannot start the voting. The cvar
                                                 is not supported on this Game Mod.";
 
 new bool:g_isDayOfDefeat;
-#if IS_TO_ENABLE_SVEN_COOP_SUPPPORT > 0
+#if IS_TO_ENABLE_SVEN_COOP_SUPPORT > 0
     new bool:g_isRunningSvenCoop;
 #endif
 new bool:g_isServerShuttingDown;
@@ -1689,7 +1689,7 @@ public plugin_init()
     LOG( 1, "( plugin_init )" )
     LOG( 1, "( plugin_init ) AMXX_VERSION_NUM:                         %d", AMXX_VERSION_NUM )
     LOG( 1, "( plugin_init ) AMXX_VERSION_STR:                         %s", AMXX_VERSION_STR )
-    LOG( 1, "( plugin_init ) IS_TO_ENABLE_SVEN_COOP_SUPPPORT:          %d", IS_TO_ENABLE_SVEN_COOP_SUPPPORT )
+    LOG( 1, "( plugin_init ) IS_TO_ENABLE_SVEN_COOP_SUPPORT:          %d", IS_TO_ENABLE_SVEN_COOP_SUPPORT )
     LOG( 1, "( plugin_init ) FAKE_PLAYERS_NUMBER_FOR_DEBUGGING:        %d", FAKE_PLAYERS_NUMBER_FOR_DEBUGGING )
     LOG( 1, "( plugin_init ) MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST:    %d", MAX_MAPS_TO_SHOW_ON_MAP_POPULATE_LIST )
     LOG( 1, "( plugin_init ) IS_TO_ENABLE_RE_HLDS_RE_AMXMODX_SUPPORT:  %d", IS_TO_ENABLE_RE_HLDS_RE_AMXMODX_SUPPORT )
@@ -1967,7 +1967,7 @@ stock configureSpecificGameModFeature()
     g_isColorChatSupported = ( is_running( "czero" ) || is_running( "cstrike" ) );
 
     // Register the voting start call from the Sven Coop game.
-#if IS_TO_ENABLE_SVEN_COOP_SUPPPORT > 0
+#if IS_TO_ENABLE_SVEN_COOP_SUPPORT > 0
     g_isRunningSvenCoop    = !!is_running("svencoop");
     if( g_isRunningSvenCoop )
     {
@@ -2002,7 +2002,7 @@ stock configureEndGameCvars()
     tryToGetGameModCvar( cvar_sv_maxspeed     , "sv_maxspeed"      );
     tryToGetGameModCvar( cvar_mapcyclefile    , "mapcyclefile"     );
 
-#if IS_TO_ENABLE_SVEN_COOP_SUPPPORT > 0
+#if IS_TO_ENABLE_SVEN_COOP_SUPPORT > 0
     tryToGetGameModCvar( cvar_mp_nextmap_cycle, "mp_nextmap_cycle" );
 #endif
 }
@@ -2761,7 +2761,7 @@ stock setNextMap( currentMapName[], nextMapName[], bool:isToUpdateTheCvar = true
             LOG( 2, "( setNextMap ) IS CHANGING THE CVAR 'amx_nextmap' to '%s'.", nextMapName )
             set_pcvar_string( cvar_amx_nextmap, nextMapName );
 
-        #if IS_TO_ENABLE_SVEN_COOP_SUPPPORT > 0
+        #if IS_TO_ENABLE_SVEN_COOP_SUPPORT > 0
             tryToSetGameModCvarString( cvar_mp_nextmap_cycle, nextMapName );
         #endif
         }
@@ -6909,7 +6909,7 @@ public start_voting_by_timer()
     }
 }
 
-#if IS_TO_ENABLE_SVEN_COOP_SUPPPORT > 0
+#if IS_TO_ENABLE_SVEN_COOP_SUPPORT > 0
     public startVotingByGameEngineCall()
     {
         LOG( 128, "I AM ENTERING ON startVotingByGameEngineCall(0) g_endVotingType: %d", g_endVotingType)
@@ -14650,7 +14650,7 @@ stock tryToSetGameModCvarNum( cvarPointer, num )
     }
 }
 
-#if IS_TO_ENABLE_SVEN_COOP_SUPPPORT > 0
+#if IS_TO_ENABLE_SVEN_COOP_SUPPORT > 0
     stock tryToSetGameModCvarString( cvarPointer, string[] )
     {
         LOG( 1, "" )
@@ -15596,7 +15596,7 @@ stock setTheNextMapCvarFlag( nextMapName[] )
         REMOVE_CODE_COLOR_TAGS( nextMapFlag )
         set_pcvar_string( cvar_amx_nextmap, nextMapFlag );
 
-    #if IS_TO_ENABLE_SVEN_COOP_SUPPPORT > 0
+    #if IS_TO_ENABLE_SVEN_COOP_SUPPORT > 0
         tryToSetGameModCvarString( cvar_mp_nextmap_cycle, nextMapFlag );
     #endif
     }
@@ -15605,7 +15605,7 @@ stock setTheNextMapCvarFlag( nextMapName[] )
         set_pcvar_string( cvar_amx_nextmap, nextMapName );
         LOG( 2, "( setTheNextMapCvarFlag ) IS CHANGING THE CVAR 'amx_nextmap' to '%s'.", nextMapName )
 
-    #if IS_TO_ENABLE_SVEN_COOP_SUPPPORT > 0
+    #if IS_TO_ENABLE_SVEN_COOP_SUPPORT > 0
         tryToSetGameModCvarString( cvar_mp_nextmap_cycle, nextMapName );
     #endif
     }
