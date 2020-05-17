@@ -9,9 +9,6 @@
                 "dependencies/amxmodx/plugins",
             ],
         },
-        {
-            "path": "D:/User/Dropbox/Applications/SoftwareVersioning/SublimeText/Data/Packages"
-        },
     ],
     "build_systems":
     [
