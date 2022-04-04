@@ -33,7 +33,7 @@
  */
 new const PLUGIN_NAME[]    = "Galileo";
 new const PLUGIN_AUTHOR[]  = "Brad Jones/Addons zz";
-new const PLUGIN_VERSION[] = "v5.9.1-931";
+new const PLUGIN_VERSION[] = "v5.9.1-932";
 
 /**
  * Enables the support to Sven Coop 'mp_nextmap_cycle' cvar and vote map start by the Ham_Use
@@ -5996,7 +5996,7 @@ stock loadTheWhiteListFeature()
     get_time( "%H", currentHourString, charsmax( currentHourString ) );
     currentHour = str_to_num( currentHourString );
 
-    // When the `cvar_whitelistType` is set to true, the `cvar_isWhiteListBlockOut` must to loas as a Whitelist.
+    // When the `cvar_whitelistType` is set to true, the `cvar_isWhiteListBlockOut` must to load as a Whitelist.
     new bool:whitelistType = get_pcvar_num( cvar_whitelistType ) != 0;
 
     if( get_pcvar_num( cvar_isWhiteListBlockOut ) )
@@ -6948,9 +6948,9 @@ public vote_manageEnd()
         {
             new endOfMapVote = get_pcvar_num( cvar_endOfMapVote );
 
-            // Here we tread a special case. There were not enough rounds saved, but we already hit
+            // Here we treat a special case. There were not enough rounds saved, but we already hit
             // the vote_manageEnd(0) which is only called on the last seconds of the map. Then just
-            // to start the voting right now, to allow one round maps.
+            // to start the voting right now.
             //
             // Note: Only timed maps are susceptible to this problem, maps guided by fraglimit,
             // maxrounds and winlimit are good to go.
@@ -13315,7 +13315,7 @@ stock bool:approveTheVotingStartLight()
         vote_resetStats();
     }
 
-    LOG( 1, "    ( approveTheVotingStart ) Returning true, due passed by all requirements." )
+    LOG( 1, "    ( approveTheVotingStartLight ) Returning true, due passed by all requirements." )
     return true;
 }
 
