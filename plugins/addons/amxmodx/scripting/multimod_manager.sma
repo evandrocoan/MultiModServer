@@ -43,7 +43,7 @@ new const VERSION[] = "1.1-rc1.1"
  * ( 100.. ) 64 displays messages related 'client_print_color_internal'.
  * ( 111.. ) 127 displays all debug levels.
  */
-new g_debug_level = 79
+new g_debug_level = 127
 
 /**
  * Write debug messages to server's console accordantly to the global variable g_debug_level.
@@ -1266,7 +1266,7 @@ public user_currentmod( player_id )
  */
 public user_votemod( player_id )
 {
-    if( get_pcvar_num( gp_allowedvote ) )
+    if( !get_pcvar_num( gp_allowedvote ) )
     {
         ArrayGetString(               g_mod_names, g_currentMod_id, g_mod_name_temp, charsmax( g_mod_name_temp ) )
         client_print_color_internal( player_id, "^1%L", player_id, "MM_VOTEMOD", g_mod_name_temp )
