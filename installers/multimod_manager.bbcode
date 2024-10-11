@@ -59,9 +59,9 @@
 [*]server's admins with right flag can change the server's current mod without needing direct access like ftp, to the server's files.
 [/LIST]
 
-[B]See its current development at: [URL="https://github.com/addonszz/Multi-Mod_Manager/commits/develop"]Github
+[B]See its current development at: [URL="https://github.com/addonszz/Galileo/blob/master/plugins/addons/amxmodx/scripting/multimod_manager.sma"]Github
 [IMG]http://i.imgur.com/TWUBJiH.png[/IMG]
-https://github.com/addonszz/Multi-Mod_Manager/commits/develop[/URL][/B]
+https://github.com/addonszz/Galileo[/URL][/B]
 [B][COLOR="Blue"](look for the developer and feature branches)[/COLOR][/B]
 
 The original plugin "[URL="https://forums.alliedmods.net/showthread.php?t=95568"]multimod.sma[/URL]" is originally written by [URL="https://forums.alliedmods.net/member.php?u=48840"][B]JoRoPiTo[/B][/URL]. This "[B]Multi-Mod Manager[/B]" works
@@ -82,15 +82,15 @@ only active when you are not using any mod, or your current mod does not specifi
 "[B]mapcycles[/B]" and "[B]server cfg[/B]" files respectively, are located at "[COLOR="Blue"]yourgamemod/mapcycles/[/COLOR][B]day[/B]" and
 "[COLOR="Blue"]yourgamemod/mapcycles/[/COLOR][B]day/cfg[/B]".
 [URL="http://www.gametracker.com/search/?search_by=server_variable&search_by2=MultiModManager&query=&loc=_all&sort=&order="]
-[SIZE=4][B][COLOR=DarkGreen]Click here to see all servers using this plugin.[/COLOR][/B][/SIZE][/URL]
-
+[SIZE=5][B][COLOR=DarkGreen]Click here to see all servers using this plugin.[/COLOR][/B][/SIZE][/URL]
 [anchor]Introduction[/anchor]
+
 ********************** [B][SIZE="5"][COLOR="blue"]Introduction[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor]  *******************************
 This is a multi-mod server manager, that controls which mod is, or will be activated.
 A mod can be activated by vote ([B]say votemod[/B]), or by force ([B]amx_setmod[/B] or [B]amx_setmods[/B]).
 
 There is a list of mods ([COLOR="Blue"][B]voting_list.ini[/B][/COLOR]) that decides which mods will show up at a mod vote.
-The vote mod supports a multi-page menu, that display [COLOR="Red"][B]unlimited[/B][/COLOR] Mods loaded from “[B]voting_list.ini[/B]” file.
+The vote mod supports a multi-page menu, that display [COLOR="Red"][B]unlimited[/B][/COLOR] Mods loaded from ï¿½[B]voting_list.ini[/B]ï¿½ file.
 
 [IMG]http://addons.zz.mu/recursos/2015-08-16_14-08_Counter-Strike.jpg[/IMG]
 
@@ -297,121 +297,10 @@ exec addons/amxmodx/configs/multimod/votingfinished.cfg
 [COLOR="Blue"]gungame mod[/COLOR]  is active.
 
 ******************************** [anchor]TODO[/anchor][B][SIZE="5"][COLOR="blue"]TODO[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *********************************
-[CODE]
- * Create a new folder called cvars, to list the cvars to autosave to the latecfg file name. An give an option to autodetect the changed cvars from the './multimod/cfg' folder.
- * Create a option to automatically create a file at '.configs/maps' folder, to autoload a mod on its maps types, as deathrun on deathrun_/zm_ prefixes maps names. To do this, add at the voting_list, a last parameter specifing the map_prefix where that mod must be autoloaded.
-[/CODE]
-The plugin allows you to run different mod or sets of plugins on the same server. Each mod can have different set of plugins, different advertisements, different maps and even different motd. players can type /rtv to rock the vote for next mod and next map or can type /votemap or /votemod to rock the vote for map or mod respectively.
-
-Features :-
--rtv
--votemap
--votemod
--blockmod
--different motd for each mod
--different advertisement for each mod
-
-Installation :-
-
--Extract the .rar file in addons/amxmodx folder.
--Restart the server.
-
-Installation of mods:-
-
--Add a new line in addons/amxmodx/configs/multimod/multimod.ini file with the format "MOD Name" "Mod Tag".
- example:- "Gun game" "gg"
--Create those files for each mod in addons/amxmodx/configs/multimod folder
- example:- modtag-plugins.ini, modtag-maps.ini, modtag-cfg.cfg, modtag-ads.ini, modtag-motd.txt.
-
-modtag-plugins.ini: plugin list to be loaded for the mod (you must include multimod.amxx, admin plugins, menu plugins, mod specific plugins, etc).
-modtag-maps.ini: maps list for the mod.
-modtag-cfg.cfg: custom cvars and values for the mod.
-modtag-motd.txt: motd for the mod.
-modtag-ads.ini: custom advertisements for the mod.
-
-Cvars :-
-All cvar's are included in addons/amxmodx/configs/multimod/multimod.cfg file
-
-Spoiler Hide
-// Chat / Menu prefix
-mm_prefix "[AMXX]"
-
-// Enable / disable changing hostname according to mod
-mm_hostname_enable "1"
-
-// Hostname format ( work's only when mm_hostname_enable is set to 1 )
-// use %modname% for current mod name
-mm_hostname "Multi-Mod [%modname%] server"
-
-// Different advertisement for each mod
-mm_mod_advertisement "1"
-
-// Interval of time between advertisement ( time differenc between two different ads ) in seconds
-mm_mod_advertisement_interval "40.0"
-
-// Enable / Disable mod Blocking
-mm_blockmod_enable "1"
-
-// Block mod admin flag
-// Admins with only specified flag will be able to block / unblock mod, change current mod to block mod
-mm_blockmod_adminflag "l"
-
-// Enable / Disable Mod Motd file
-// If enable $moddir/addons/amxmodx/configs/multimod/$modname-motd.txt will be consider as motd file
-// If disable $moddir/motd.txt will be consider as motd file
-mm_motd_enable "1"
-
-// Rtv Mod
-// 0 = disable Rtv feature
-// 1 = Normal Rtv Mod
-// 2 = Advanced Rtv mod ( votemod and votemap )
-mm_rtv_mode "1"
-
-// Normal Rtv Mod
-mm_rtv_minplayers "3"
-mm_rtv_mintime "8"
-mm_rtv_max "8"
-mm_rtv_percent "30"
-
-// Advanced Rtv mod ( votemod and votemap )
-// Votemod
-mm_votemod_enable "1"
-mm_votemod_minplayers "3"
-mm_votemod_mintime "8"
-mm_votemod_max "8"
-mm_votemod_percent "30"
-
-// Votemap
-mm_votemap_enable "1"
-mm_votemap_minplayers "3"
-mm_votemap_mintime "8"
-mm_votemap_max "8"
-mm_votemap_percent "30"
-
-// Mod Extend Limit
-// -1 to disable extend mod
-mm_rtv_maxextend "1"
-
-
-Say Commands (work with "/" or without "/" ) :-
-
-nextmod - show next mod
-lastmod - show last mod
-currentmod - show currently running mod
-mods - shows a menu with all mods installed on the server
-nextmap - show nextmap ( requries nextmap.amxx, mapchooser.amxx plugins running )
-lastmap - show lastmap
-maps - shows a menu with all maps installed for currently running mod
-rtv - rock the vote for mod and map ( if mm_rtv_mode is set to 1)
-votemap - rock the vote for map ( if mm_rtv_mode is set to 2)
-votemod - rock the vote for mod ( if mm_rtv_mode is set to 2)
-
-I have been developing / working on these plugin since 7 months and have develop it to run the server with less space and less downloads for the clients.
-http://counteristrike.com/forums/index.php/topic/58-multi-mod-manager/
-
-
-
-******************************** [anchor]Change[/anchor][B][SIZE="5"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] ***********************
+[LIST=0]
+[*]Create a new folder called cvars, to list the cvars to autosave to the latecfg file name. An give an option to autodetect the changed cvars from the './multimod/cfg' folder.
+[*]Create a option to automatically create a file at '.configs/maps' folder, to autoload a mod on its maps types, as deathrun on deathrun_/zm_ prefixes maps names. To do this, add at the voting_list, a last parameter specifing the map_prefix where that mod must be autoloaded.
+[/LIST]******************************** [anchor]Change[/anchor][B][SIZE="5"][COLOR="blue"]Change Log[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] ***********************
 [HTML]
 2016-01-21 | v1.1-release_candidate1.hotfix1
  * Fixed voting reset bug.
@@ -464,7 +353,9 @@ http://counteristrike.com/forums/index.php/topic/58-multi-mod-manager/
 
 2015-10-10 | v1.0-release_candidate1
  * Initial release candidate.
-[/HTML]******************************** [anchor]Credits[/anchor][B][SIZE="5"][COLOR="blue"]Credits[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *******************************
+[/HTML]
+
+******************************** [anchor]Credits[/anchor][B][SIZE="5"][COLOR="blue"]Credits[/COLOR][/SIZE][/B] [goanchor=Top]Go Top[/goanchor] *******************************
 [B]fysiks[/B]: The first to realize the idea of "multimod.sma" and various code improvements.
 [B]joropito[/B]: The idea/program developer of "[URL="https://forums.alliedmods.net/showthread.php?t=95568"]multimod.sma[/URL]".
 [B]crazyeffect[/B]: Colaborate with multilangual support of "multimod.sma".
